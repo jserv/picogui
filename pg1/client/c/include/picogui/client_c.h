@@ -625,6 +625,23 @@ u32 pgGetInactivity(void);
  */
 pghandle pgGetServerRes(u32 id);
 
+/*!
+ * \brief Get the name of a key
+ *
+ * \returns A string corresponding to a PGKEY_ code.  This function and its
+ * sister pgKeyByName are meant, for example, for dumping input or
+ * saving/loading keybindings.
+ */
+char *pgKeyName (u32 key);
+
+/*!
+ * \brief Get a key from its name
+ *
+ * \returns The PGKEY_ code corresponding to the given string.  This function
+ * and its sister pgKeyByName are meant, for example, for dumping input or
+ * saving/loading keybindings.
+ */
+u32 pgKeyByName (const char *name);
 //! \}
 
 /******************** Objects */

@@ -27,7 +27,7 @@
  * Contributors: 
  * Philippe Ney <philippe.ney@smartdata.ch>
  * Brandon Smith <lottabs2@yahoo.com>
- * 
+ * Lalo Martins <lalo@laranja.org>
  * 
  */
 
@@ -1008,5 +1008,29 @@ void * pgSyncAppMessage (pghandle dest, struct pgmemdata data)
   return answer;
 }
 
+
+/******* Getting key names, or getting the value from the name */
+
+extern char *_pgKeyNames[];
+
+char *pgKeyName (u32 key)
+{
+  if (key < PGKEY_MAX)
+    return _pgKeyNames[key];
+  else
+    return NULL;
+}
+
+/* warning: this is MUCH more expensive, don't abuse it */
+u32 pgKeyByName (const char *name)
+{
+  u32 i;
+
+  for (i = 8; i <= PGKEY_MAX; i++)
+    if (strcasecmp (_pgKeyNames[i], name) == 0)
+      return i;
+
+  return 0;
+}
 
 /* The End */

@@ -1,5 +1,8 @@
 INCLUDES = -I$(top_srcdir)/include $(PGSERVER_CFLAGS)
 
+keynames.c: ../../../server/include/picogui/pgkeys.h
+	(cd ..; python grab_keynames.py)
+
 lib_LTLIBRARIES = libpgui.la
 
 libpgui_la_SOURCES = \
@@ -15,6 +18,7 @@ libpgui_la_SOURCES = \
 	dlg_filepicker.c \
 	dlg_colorpicker.c \
 	applet.c \
+	keynames.c \
 	$(PLATFORM)
 
 EXTRA_libpgui_la_SOURCES = platform.c
