@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.15 2000/06/10 00:31:36 micahjd Exp $
+/* $Id: div.c,v 1.16 2000/06/10 04:31:15 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -50,10 +50,10 @@ void divnode_recalc(struct divnode *n) {
 	 n->div->h = n->h;
        }       
        if (n->next) {
-	 n->div->x = n->x;
-	 n->div->y = n->y;
-	 n->div->w = 0;
-	 n->div->h = 0;
+	 n->next->x = n->x;
+	 n->next->y = n->y;
+	 n->next->w = 0;
+	 n->next->h = 0;
        }       
      }
 

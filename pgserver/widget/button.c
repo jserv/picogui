@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.21 2000/06/10 00:31:36 micahjd Exp $
+/* $Id: button.c,v 1.22 2000/06/10 04:31:15 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -224,9 +224,11 @@ g_error button_set(struct widget *self,int property, glob data) {
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC |
       DIVNODE_PROPAGATE_RECALC;
-    self->in->next->flags &= SIDEMASK;
-    self->in->next->flags |= ((sidet)data);
-    resizebutton(self);
+    if (data!=S_ALL) {
+      self->in->next->flags &= SIDEMASK;
+      self->in->next->flags |= ((sidet)data);
+      resizebutton(self);
+    }
     self->dt->flags |= DIVTREE_NEED_RECALC;
     redraw_bg(self);
     break;
