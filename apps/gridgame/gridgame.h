@@ -35,6 +35,4 @@ void ggmove(gridpos from, gridpos to, squarestatus newstatus);
 gridpos findselected(void);
 /* Gets the status of a square (player and brick type) */
 squarestatus gggetstatus(gridpos square);
-/* draws the board */
-void ggdrawboard(void);
 

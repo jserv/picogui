@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include "gridgame.h"
 
@@ -15,21 +16,33 @@ static gridpos lastselected={-1,-1};
 
 /* Grid game support functions declared in gridgame.h */
 
-void ggmove(gridpos from, gridpos to, squarestatus newstatus)
+static void redraw(void)
  {
-  /* this is the only way for the games to put pieces on the board */
-  SQ(to)=newstatus;
-  if(newstatus.bricktype)
-    pgWriteCmd(canvas, PGCANVAS_EXECFILL, 6,
-      newstatus.player?player[newstatus.player-1]:thobj, newstatus.bricktype,
-      SCALE*to.x, SCALE*to.y, SCALE, SCALE);
-  else
-    /* FIXME removing bricks? */;
+  gridpos p;
+
+  for(p.x=0; p.x<game->width; p.x++)
+    for(p.y=0; p.y<game->height; p.y++)
+     {
+      if(SQ(p).bricktype)
+	pgWriteCmd(canvas, PGCANVAS_EXECFILL, 6,
+	    SQ(p).player?player[SQ(p).player-1]:thobj,
+	    SQ(p).bricktype, SCALE*p.x, SCALE*p.y, SCALE, SCALE);
+     }
   pgWriteCmd(canvas, PGCANVAS_REDRAW, 0);
   pgSubUpdate(canvas);
  }
 
-void ggdrawboard(void)
+void ggmove(gridpos from, gridpos to, squarestatus newstatus)
+ {
+  /* this is the only way for the games to put pieces on the board */
+  if(ggisvalid(to) && memcmp(&SQ(to),&newstatus,sizeof(newstatus)))
+   {
+    SQ(to)=newstatus;
+    redraw();
+   }
+ }
+
+static void drawboard(void)
  {
   int i, j;
 
@@ -54,7 +67,8 @@ void ggdrawboard(void)
       if(bgevenodd[1&(i^j)])
 	pgWriteCmd(canvas, PGCANVAS_EXECFILL, 6, thobj, (1&(i^j))?BGODD:BGEVEN,
 	    i*SCALE, j*SCALE, SCALE, SCALE);
-  /* immediate drawing of pieces? */
+  /* immediate drawing of pieces */
+  pgWriteCmd(canvas, PGCANVAS_DEFAULTFLAGS, 1, PG_GROPF_TRANSIENT);
  }
 
 squarestatus gggetstatus(gridpos square)
@@ -133,25 +147,31 @@ static void selectgame(int which)
   bgevenodd[1]=pgThemeLookup(thobj, BGODD);
   squares=malloc(sizeof(squares[0])*game->width*game->height);
   memset(squares, 0, sizeof(squares[0])*game->width*game->height);
-  ggdrawboard();
+  drawboard();
   game->init();
  }
 
 static int ptrx, ptry;
 
-int evtPtrDown(struct pgEvent *evt)
+static int evtPtrDown(struct pgEvent *evt)
  {
   ptrx=evt->e.pntr.x;
   ptry=evt->e.pntr.y;
  }
 
-int evtPtrUp(struct pgEvent *evt)
+static int evtPtrUp(struct pgEvent *evt)
  {
   if(game)
    {
     if(game->drag)
       game->drag(ptrx, ptry, evt->e.pntr.x, evt->e.pntr.y);
    }
+ }
+
+static int evtBuild(struct pgEvent *evt)
+ {
+  if(squares)
+    redraw();
  }
 
 int main(int argc, char *argv[])
@@ -169,6 +189,7 @@ int main(int argc, char *argv[])
   canvas=pgNewWidget(PG_WIDGET_CANVAS, 0, 0);
   pgBind(PGDEFAULT, PG_WE_PNTR_DOWN, evtPtrDown, NULL);
   pgBind(PGDEFAULT, PG_WE_PNTR_UP, evtPtrUp, NULL);
+  pgBind(PGDEFAULT, PG_WE_BUILD, evtBuild, NULL);
 
   /* Start game engine */
   selectgame(0);	/* TODO: select other games */
@@ -176,3 +197,4 @@ int main(int argc, char *argv[])
   pgEventLoop();
   return 0;
  }
+
