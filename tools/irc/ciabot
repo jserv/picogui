@@ -50,7 +50,7 @@ module=`echo $1 | cut -d/ -f1`
 tmpfile="/tmp/$RANDOM-$projectname"
 cat <<EOF >$tmpfile
 From: $returnaddress
-To: commits@picogui.org
+To: $commitaddress
 Content-Type: text/plain;
 Subject: Announce $projectname
 
