@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.81 2003/01/01 03:43:04 micahjd Exp $
+/* $Id: memtheme.c,v 1.82 2003/01/27 09:57:06 pney Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -318,7 +318,8 @@ void div_rebuild(struct divnode *d) {
    struct gropctxt c;
 
 #ifdef DEBUG_VIDEO
-   printf("div_rebuild: div %p at %d,%d,%d,%d\n", d,d->x,d->y,d->w,d->h);
+   printf("div_rebuild: div %p at %d,%d,%d,%d\n",
+	  d, d->r.x, d->r.y, d->r.w, d->r.h);
 #endif
 
    if (d->build) {
