@@ -44,6 +44,7 @@ close_section
 open_section DEBUGGING
 
 add_if_true videotest.c $CONFIG_VIDEOTEST
+add_if_true benchmark.c $CONFIG_VIDEOTEST
 
 close_section
 

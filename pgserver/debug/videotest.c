@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.31 2002/10/14 10:22:11 micahjd Exp $
+/* $Id: videotest.c,v 1.32 2002/10/20 15:09:59 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -426,52 +426,6 @@ void videotest_run(s16 number) {
 
   videotest_cleanup();
 }
-
-/************ Benchmarking */
-
-/* Runs a test, returns FPS 
- * (we could just return a float, but PicoGUI doesn't have any floating
- * point in it and I don't want to start now... Used fixed point to make
- * a string, and return that string.)
- */
-const char *videotest_time_one(int number,int update) {
-   time_t start,seconds;
-   u32 frames = 0;
-   static char fpsbuf[10];	/* we rely on this being 0-initialized */
-   
-   start = time(NULL);
-   do {
-      videotest_run_one(number,update);
-      frames++;
-      seconds = time(NULL) - start;
-   } while (seconds < TEST_DURATION);
-
-   snprintf(fpsbuf, sizeof(fpsbuf)-1,
-       "%5ld.%02ld",frames/seconds,(frames*100/seconds)%100);
-   return fpsbuf;
-}
-
-/* Run all benchmark tests */
-void videotest_benchmark(void) {
-   int i;
-   
-   printf("\nPlease wait... Each test will take %d seconds to complete.\n"
-	  "Results are measured in frames per second. Complete includes\n"
-	  "screen hardware updates, raw is just the software. Raw should\n"
-	  "equal complete if the driver does not double-buffer\n\n",
-	  TEST_DURATION*2);
-   
-   printf(" Test  | Complete / Raw\n"
-	  "------------------------\n");
-   for (i=1;i<=NUM_PATTERNS;i++) {
-      printf(" %5d | %s / ",i,videotest_time_one(i,1));
-      printf("%s\n",videotest_time_one(i,0));
-   }
-
-   videotest_cleanup();
-   printf("\nDone.\n");
-}
-      
 
 /* The End */
 

@@ -69,7 +69,7 @@ quoted appropriately. For example:
   Set it to "help" to list the possible settings.
 
 - benchmark
-  Set this to 1 to enable benchmarking mode
+  Set this to enable benchmarking mode
 
 - messagefile
   The name of a file to load internationalized messages/errors from
@@ -591,6 +591,19 @@ quoted appropriately. For example:
 - max_bytes
   Maximum number of bytes to use for cached data
   Defaults to the Freetype default
+
+[benchmark]
+
+- test
+  Run only tests whose names contain this string
+
+- use_sizes
+  If this is nonzero, run some tests at multiple sizes
+  Default is off
+
+- use_lgops
+  If this is nonzero, run tests with every lgop
+  Default is off
 
 --- The End ---
 

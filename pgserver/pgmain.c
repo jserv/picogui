@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.43 2002/10/14 15:23:13 micahjd Exp $
+/* $Id: pgmain.c,v 1.44 2002/10/20 15:09:59 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -603,24 +603,28 @@ int main(int argc, char **argv) {
 #endif   
     update(NULL,1);
 
-  /* Need to calibrate touchscreen? */
-#ifdef CONFIG_TOUCHSCREEN
-  if (prerror(touchscreen_init(&use_tpcal)))
-    return 1;
-#endif
 
-  /* Start the first child process, either tpcal or the session manager */
-  if (use_tpcal) {
-    if (!run_config_process("tpcal")) {
-      if (run_config_process("session"))
-	use_sessionmgmt = 1;
+  if (mainloop_proceed) {
+
+    /* Need to calibrate touchscreen? */
+#ifdef CONFIG_TOUCHSCREEN
+    if (prerror(touchscreen_init(&use_tpcal)))
+      return 1;
+#endif
+    
+    /* Start the first child process, either tpcal or the session manager */
+    if (use_tpcal) {
+      if (!run_config_process("tpcal")) {
+	if (run_config_process("session"))
+	  use_sessionmgmt = 1;
+      }
+      else
+	sessionmgr_secondary = 1;
     }
-    else
-      sessionmgr_secondary = 1;
-  }
-  else {
-    if (run_config_process("session"))
-      use_sessionmgmt = 1;    
+    else {
+      if (run_config_process("session"))
+	use_sessionmgmt = 1;    
+    }
   }
 
   /* Done! */
