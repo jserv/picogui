@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.3 2000/12/31 23:18:18 micahjd Exp $
+/* $Id: terminal.c,v 1.4 2001/01/05 00:24:48 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -28,6 +28,23 @@
 
 #include <pgserver/widget.h>
 
+/* Default text attribute */
+#define ATTR_DEFAULT 0x07
+
+/* Cursor attribute */
+#define ATTR_CURSOR  0xA0
+
+/* On and off times in milliseconds */
+#define FLASHTIME_ON   250
+#define FLASHTIME_OFF  125
+
+/* Size of buffer for VT102 escape codes */
+#define ESCAPEBUF_SIZE 32
+
+/* Maximum # of params for a CSI escape code.
+ * Same limit imposed by the linux console, should be fine */
+#define CSIARGS_SIZE   16
+
 struct termdata {
   /* character info */
   handle font;
@@ -38,7 +55,16 @@ struct termdata {
   int bufferw,bufferh,buffersize;
   int crsrx,crsry;
   unsigned char attr_under_crsr;
-   
+  unsigned char attr;             /* Default attribute for new characters */
+
+  /* Escape code buffer */
+  char escapebuf[ESCAPEBUF_SIZE];
+  int escbuf_pos;   /* Position in buffer */
+
+  /* Parameter buffer for processed CSI codes */
+  int csiargs[CSIARGS_SIZE];
+  int num_csiargs;
+
   /* The incremental gropnode */
   struct gropnode *inc;
   int x,y;              /* Base coordinates */
@@ -55,19 +81,16 @@ struct termdata {
 
   /* Do we have keyboard focus? */
   unsigned int focus : 1;
+
+  /* Handling an escape code? */
+  unsigned int escapemode : 1;
 };
 #define DATA ((struct termdata *)(self->data))
 
-/* Default text attribute */
-#define ATTR_DEFAULT 0x07
-
-/* Cursor attribute */
-#define ATTR_CURSOR  0xA0
-
-#define FLASHTIME_ON   250
-#define FLASHTIME_OFF  150
-
 /**** Internal functions */
+
+/* Handle a single key event as received from the server */
+void kbd_event(struct widget *self, int pgkey,int mods);
 
 /* Create an incremental gropnode for the update rectangle */
 void term_realize(struct widget *self);
@@ -91,7 +114,14 @@ unsigned char term_chattr(struct widget *self,int x,int y,char c);
 void term_setcursor(struct widget *self,int flag);
 
 /* Clear a chunk of buffer */
-void term_clearbuf(struct widget *self,int offset,int size);
+void term_clearbuf(struct widget *self,int fromx,int fromy,int chars);
+
+/* Handle a parsed ECMA-48 SGR sequence */
+void term_ecma48sgr(struct widget *self);
+
+/* Handle a parsed CSI sequence other than ECMA-48, ending
+   with the specified character */
+void term_othercsi(struct widget *self,char c);
 
 /********************************************** Widget functions */
 
@@ -129,9 +159,10 @@ g_error terminal_install(struct widget *self) {
   memset(self->data,0,sizeof(struct termdata));
 
   DATA->attr_under_crsr = ATTR_DEFAULT;
+  DATA->attr = ATTR_DEFAULT;
    
-  DATA->bufferw = 38;
-  DATA->bufferh = 18;
+  DATA->bufferw = 80;
+  DATA->bufferh = 25;
 
   /* Allocate buffer */
   DATA->buffersize = (DATA->bufferw*DATA->bufferh) << 1;
@@ -141,7 +172,7 @@ g_error terminal_install(struct widget *self) {
   e = mkhandle(&DATA->hbuffer,PG_TYPE_STRING,-1,DATA->buffer);
   errorcheck;
 
-  term_clearbuf(self,0,DATA->buffersize);
+  term_clearbuf(self,0,0,DATA->bufferw * DATA->bufferh);
      
   /* Default terminal font */
   e = findfont(&DATA->font,-1,"Console",0,PG_FSTYLE_FIXED);
@@ -158,7 +189,7 @@ g_error terminal_install(struct widget *self) {
 
   self->trigger_mask = TRIGGER_STREAM | TRIGGER_CHAR | TRIGGER_DOWN |
      TRIGGER_UP | TRIGGER_RELEASE | TRIGGER_ACTIVATE | TRIGGER_DEACTIVATE |
-     TRIGGER_TIMER;
+     TRIGGER_TIMER | TRIGGER_KEYDOWN;
 
   return sucess;
 }
@@ -251,14 +282,16 @@ void terminal_trigger(struct widget *self,long type,union trigparam *param) {
       term_realize(self);  /* Realize rects, but don't do a full update */
       return;
       
-    case TRIGGER_CHAR:
-      /* A spoonful of translation */
-      if (param->kbd.key == PGKEY_RETURN)
-	param->kbd.key = '\n';
-      
-      /* Send the keypress back to the app */
-      post_event(PG_WE_ACTIVATE,self,param->kbd.key,0);
-      return;
+   case TRIGGER_CHAR:
+     /* Normal ASCII-ish character */
+     kbd_event(self,param->kbd.key,param->kbd.mods);
+     return;
+     
+   case TRIGGER_KEYDOWN:
+     /* Handle control characters that CHAR doesn't map */
+     if (param->kbd.mods & (PGMOD_CTRL | PGMOD_ALT))
+       kbd_event(self,param->kbd.key,param->kbd.mods);
+     return;
       
     case TRIGGER_DEACTIVATE:
       DATA->focus = 0;
@@ -286,6 +319,64 @@ void terminal_trigger(struct widget *self,long type,union trigparam *param) {
    
    term_realize(self);
    update(self->in->div,1);
+}
+
+/********************************************** Keyboard input functions */
+
+/* Handle a single key event as received from the server */
+void kbd_event(struct widget *self, int pgkey,int mods) {
+  char *rtn;
+
+  /****** Modified key translations */
+
+  if (mods & PGMOD_CTRL)
+    pgkey -= PGKEY_a - 1;
+
+  /****** Unmodified Key translation */
+
+  /* Not sure that this is 100% correct, and I know it's not complete... */
+
+  switch (pgkey) {
+
+  case PGKEY_RETURN:        rtn = "\n";       break;
+
+  case PGKEY_UP:            rtn = "\033[A";   break;
+  case PGKEY_DOWN:          rtn = "\033[B";   break;
+  case PGKEY_RIGHT:         rtn = "\033[C";   break;
+  case PGKEY_LEFT:          rtn = "\033[D";   break;
+  case PGKEY_HOME:          rtn = "\033[1~";  break;
+  case PGKEY_INSERT:        rtn = "\033[2~";  break;
+  case PGKEY_DELETE:        rtn = "\033[3~";  break;
+  case PGKEY_END:           rtn = "\033[4~";  break;
+  case PGKEY_PAGEUP:        rtn = "\033[5~";  break;
+  case PGKEY_PAGEDOWN:      rtn = "\033[6~";  break;
+
+  case PGKEY_F1:            rtn = "\033OP";  break;
+  case PGKEY_F2:            rtn = "\033OQ";  break;
+  case PGKEY_F3:            rtn = "\033OR";  break;
+  case PGKEY_F4:            rtn = "\033OS";  break;
+
+  case PGKEY_F5:            rtn = "\033[15~";break;
+  case PGKEY_F6:            rtn = "\033[17~";break;
+  case PGKEY_F7:            rtn = "\033[18~";break;
+  case PGKEY_F8:            rtn = "\033[19~";break;
+  case PGKEY_F9:            rtn = "\033[20~";break;
+  case PGKEY_F10:           rtn = "\033[21~";break;
+  case PGKEY_F11:           rtn = "\033[23~";break;
+  case PGKEY_F12:           rtn = "\033[24~";break;
+
+  default:
+    /**** Send an untranslated key */
+    post_event(PG_WE_ACTIVATE,self,pgkey,0);
+    return;
+  }
+
+  /* After translating a key, send back the string.
+   * For now just emulate multiple individual keys and rely on the
+   * event buffer, but this may be improved later. 
+   */
+  while (*rtn)
+    post_event(PG_WE_ACTIVATE,self,*(rtn++),0); 
 }
 
 /********************************************** Terminal output functions */
@@ -360,7 +451,11 @@ void term_updrect(struct widget *self,int x,int y,int w,int h) {
 
 /* Plot a character at an x,y position */
 void term_plot(struct widget *self,int x,int y,char c) {
-   DATA->buffer[((x + y*DATA->bufferw)<<1) + 1] = c;
+   unsigned char *p = DATA->buffer + ((x + y*DATA->bufferw)<<1);
+
+   p[0] = DATA->attr;
+   p[1] = c;
+
    term_updrect(self,x,y,1,1);
 }
 
@@ -379,44 +474,124 @@ unsigned char term_chattr(struct widget *self,int x,int y,char c) {
 /* Format and/or draw one incoming character. 
  * Handle escape codes if present. */
 void term_char(struct widget *self,char c) {
-   term_setcursor(self,0);  /* Hide */
-   
-   switch (c) {
+  term_setcursor(self,0);  /* Hide */
+  
+  /* Handling an escape code? */
+  if (DATA->escapemode) {
+
+    /* Too much? */
+    if (DATA->escbuf_pos >= ESCAPEBUF_SIZE) {
+      DATA->escapemode = 0;
+      return;
+    }
+
+    /* Toss it on */
+    DATA->escapebuf[DATA->escbuf_pos++] = c;
+
+    /* Depending on the type of escape code, look for a different termination
+     * character and handle the code appropriately
+     */
+
+    /* Starts with a CSI? (ESC [) 
+     * CSI codes start with CSI, then optionally list numerical arguments
+     * separated by punctuation. An alpha character identifies and terminates the code
+     */
+    if (*DATA->escapebuf == '[' && DATA->escbuf_pos>1) {
+      char *p,*endp,*num_end;
+
+      /* If there's more, come back later */
+      if (!isalpha(c))
+	return;
+
+      /* We're ending the code */
+      DATA->escapemode = 0;
+
+      /* Numericalize the arguments */
+      DATA->num_csiargs = 0;
+      /* Unspecified params must be zero */
+      memset(&DATA->csiargs,0,sizeof(int) * CSIARGS_SIZE);
+      p    = DATA->escapebuf+1;                  /* Start after the CSI */
+      endp = DATA->escapebuf+DATA->escbuf_pos-1; /* Stop before the end */
+      while (p<endp) {
+	/* Convert the number */
+	DATA->csiargs[DATA->num_csiargs] = strtol(p,&num_end,10);
+
+	/* Got nothing good? */
+	if (p==num_end)
+	  break;
+
+	/* Increment but check for overflow */
+	DATA->num_csiargs++;
+	if (DATA->num_csiargs >= CSIARGS_SIZE)
+	  break;
+
+	/* Skip to the next one */
+	p = num_end+1;
+      }
+
+      /* If it ended with 'm', we got an ECMA-48 CSI sequence (colors) */
+      if (c=='m')
+	term_ecma48sgr(self);
+
+      /* Other CSI sequence (mainly cursor control) */
+      else
+	term_othercsi(self,c);
+    }
+  }
+
+
+  /* Is it a control character? */
+  else if (c <= '\033')
+    switch (c) {
+    case '\033':        /* Escape */
+      DATA->escapemode = 1;
+      DATA->escbuf_pos = 0;
+      return;
+      
+    case '\a':
+      /* Pass on the bell to our terminal */
+      write(2,&c,1);
+      return;
       
     case '\n':
-    case '\r':
       DATA->crsrx = 0;
       DATA->crsry++;
       break;
       
-    case PGKEY_BACKSPACE:
+    case '\t':
+      /* Not sure this is right, but it's consistant with observed behavior */
+      DATA->crsrx += 8 - (DATA->crsrx & 7);
+      break;
+      
+    case '\b':
       if (!DATA->crsrx)  /* Can't backspace past the edge */
 	return;
       term_plot(self,--DATA->crsrx,DATA->crsry,' ');
       break;
-      
-    default:      /* Normal character */
-      term_plot(self,DATA->crsrx++,DATA->crsry,c);
-      break;
-		
-   }
-   
-   /* Handle screen edges */
+    }
 
-   if (DATA->crsrx >= DATA->bufferw) {  /* Wrap around the side */
-      DATA->crsrx = 0;
-      DATA->crsry++;
-   }
-   
-   if (DATA->crsry >= DATA->bufferh) {  /* Scroll vertically */
-      DATA->crsry = DATA->bufferh-1;
-      memcpy(DATA->buffer,DATA->buffer + (DATA->bufferw<<1),
-	      DATA->buffersize-(DATA->bufferw<<1));
-      term_clearbuf(self,(DATA->bufferw<<1)*(DATA->bufferh-1),DATA->bufferw<<1);
-      term_updrect(self,0,0,DATA->bufferw,DATA->bufferh);
-   }
-      
-   term_setcursor(self,1);  /* Show cursor */
+  /* Normal character */
+  else
+    term_plot(self,DATA->crsrx++,DATA->crsry,c);
+  
+  /* Handle screen edges */
+  if (DATA->crsrx < 0)
+    DATA->crsrx = 0;
+  else if (DATA->crsrx >= DATA->bufferw) {  /* Wrap around the side */
+    DATA->crsrx = 0;
+    DATA->crsry++;
+  }
+  if (DATA->crsry < 0)
+    DATA->crsry = 0;
+  else if (DATA->crsry >= DATA->bufferh) {  /* Scroll vertically */
+    DATA->crsry = DATA->bufferh-1;
+    memcpy(DATA->buffer,DATA->buffer + (DATA->bufferw<<1),
+	   DATA->buffersize-(DATA->bufferw<<1));
+    term_clearbuf(self,0,DATA->bufferh-1,DATA->bufferw);
+    term_updrect(self,0,0,DATA->bufferw,DATA->bufferh);
+  }
+  
+  term_setcursor(self,1);  /* Show cursor */
 }
 
 /* Hide/show cursor */
@@ -444,16 +619,188 @@ void term_rectprepare(struct widget *self) {
 }
 
 /* Clear a chunk of buffer */
-void term_clearbuf(struct widget *self,int offset,int size) {
+void term_clearbuf(struct widget *self,int fromx,int fromy,int chars) {
    unsigned char *p;
    int i;
+   int size = chars<<1;
+   long offset = (fromx + fromy * DATA->bufferw)<<1;
    
    /* Clear the buffer: set attribute bytes to ATTR_DEFAULT
     * and character bytes to blanks */
    for (p=DATA->buffer+offset,i=size;i;i-=2) {
-      *(p++) = ATTR_DEFAULT;
+      *(p++) = DATA->attr;
       *(p++) = ' ';
    }
+}
+
+/* Handle a parsed ECMA-48 CSI sequence */
+void term_ecma48sgr(struct widget *self) {
+  int *arg = DATA->csiargs;
+  for (;DATA->num_csiargs;DATA->num_csiargs--,arg++)
+    switch (*arg) {
+
+      /* 0 - reset to normal */
+    case 0:
+      DATA->attr = ATTR_DEFAULT;
+      break;
+
+      /* 1 - bold */
+      /* 4 - underline (we treat it like a bold) */
+    case 1:
+    case 4:
+      DATA->attr |= 0x08;
+      break;
+
+      /* 5 - blink (not really, it's like bold for backgrounds) */
+    case 5:
+      DATA->attr |= 0x80;
+      break;
+
+      /* 7 - reverse video on */
+      /* 27 - reverse video off */
+    case 7:
+    case 27:
+      DATA->attr = (DATA->attr >> 4) | (DATA->attr << 4);
+      break;
+
+      /* 21 or 22 - normal intensity */
+      /* 24 - underline off */
+    case 21:
+    case 22:
+    case 24:
+      DATA->attr &= 0xF7;
+      break;
+
+      /* 25 - blink off */
+    case 25:
+      DATA->attr &= 0x7F;
+      break;
+      
+      /* 30 through 37 - foreground colors */
+    case 30: DATA->attr = (DATA->attr & 0xF8) | 0x00; break;  /* These are kinda funky, */
+    case 31: DATA->attr = (DATA->attr & 0xF8) | 0x04; break;  /* because VT100 uses BGR */
+    case 32: DATA->attr = (DATA->attr & 0xF8) | 0x02; break;  /* for the colors instead */
+    case 33: DATA->attr = (DATA->attr & 0xF8) | 0x06; break;  /* of RGB */
+    case 34: DATA->attr = (DATA->attr & 0xF8) | 0x01; break;
+    case 35: DATA->attr = (DATA->attr & 0xF8) | 0x05; break;
+    case 36: DATA->attr = (DATA->attr & 0xF8) | 0x03; break;
+    case 37: DATA->attr = (DATA->attr & 0xF8) | 0x07; break;
+
+      /* 38 - set default foreground, underline on */
+    case 38:
+      DATA->attr = (DATA->attr & 0xF0) | ((ATTR_DEFAULT & 0x0F) | 0x08);
+      break;
+
+      /* 39 - set default foreground, underline off */
+    case 39:
+      DATA->attr = (DATA->attr & 0xF0) | (ATTR_DEFAULT & 0x0F);
+      break;
+
+      /* 40 through 47 - background colors */
+    case 40: DATA->attr = (DATA->attr & 0x1F) | 0x00; break;
+    case 41: DATA->attr = (DATA->attr & 0x1F) | 0x40; break;
+    case 42: DATA->attr = (DATA->attr & 0x1F) | 0x20; break;
+    case 43: DATA->attr = (DATA->attr & 0x1F) | 0x60; break;
+    case 44: DATA->attr = (DATA->attr & 0x1F) | 0x10; break;
+    case 45: DATA->attr = (DATA->attr & 0x1F) | 0x50; break;
+    case 46: DATA->attr = (DATA->attr & 0x1F) | 0x30; break;
+    case 47: DATA->attr = (DATA->attr & 0x1F) | 0x70; break;
+
+      /* 49 - default background */
+    case 49:
+      DATA->attr = (DATA->attr & 0x0F) | (ATTR_DEFAULT & 0xF0);
+      break;
+
+    }
+
+}
+
+/* Handle a parsed CSI sequence other than ECMA-48 SGR, ending
+   with the specified character */
+void term_othercsi(struct widget *self,char c) {
+  int i;
+  switch (c) {
+
+    /* @ - Insert the indicated # of blank characters */
+  case '@':
+    for (i=0;i<DATA->csiargs[0];i++)
+      term_char(self,' ');
+    break;
+
+    /* A - Move cursor up */
+  case 'A':
+    DATA->crsry -= DATA->csiargs[0];
+    break;
+
+    /* B - Move cursor down */
+  case 'B':
+    DATA->crsry += DATA->csiargs[0];
+    break;
+
+    /* C - Move cursor right */
+  case 'C':
+    DATA->crsrx += DATA->csiargs[0];
+    break;
+
+    /* D - Move cursor left */
+  case 'D':
+    DATA->crsrx -= DATA->csiargs[0];
+    break;
+
+    /* E - Move cursor down and to column 1 */
+  case 'E':
+    DATA->crsry += DATA->csiargs[0];
+    DATA->crsrx = 0;
+    break;
+
+    /* F - Move cursor up and to column 1 */
+  case 'F':
+    DATA->crsry -= DATA->csiargs[0];
+    DATA->crsrx = 0;
+    break;
+
+    /* G - Set column */
+  case 'G':
+    DATA->crsrx = DATA->csiargs[0] - 1;
+    break;
+
+    /* H - Set row,column */
+  case 'H':
+    DATA->crsry = DATA->csiargs[0] - 1;
+    DATA->crsrx = DATA->csiargs[1] - 1;
+    break;
+
+    /* J - Erase */
+  case 'J':
+    switch (DATA->csiargs[0]) {
+    case 1:
+      term_clearbuf(self,0,0,DATA->crsry * DATA->bufferw + DATA->crsrx);
+      break;
+    case 2:
+      term_clearbuf(self,0,0,DATA->bufferw * DATA->bufferh);
+      break;
+    default:
+      term_clearbuf(self,DATA->crsrx,DATA->crsry,DATA->bufferw * 
+		    (DATA->bufferh-DATA->crsry) + DATA->bufferw - DATA->crsrx);
+    }
+    break;
+
+    /* K - Erase Line */
+  case 'K':
+    switch (DATA->csiargs[0]) {
+    case 1:
+      term_clearbuf(self,0,DATA->crsry,DATA->crsrx);
+      break;
+    case 2:
+      term_clearbuf(self,0,DATA->crsry,DATA->bufferw);
+      break;
+    default:
+      term_clearbuf(self,DATA->crsrx,DATA->crsry,DATA->bufferw-DATA->crsrx);
+    }
+    break;
+
+
+  }
 }
 
 /* The End */

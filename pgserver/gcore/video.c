@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.22 2000/12/29 22:31:58 micahjd Exp $
+/* $Id: video.c,v 1.23 2001/01/05 00:24:46 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -219,6 +219,15 @@ void add_updarea(int x,int y,int w,int h) {
 
 /* Update and reset the update rectangle */
 void realize_updareas(void) {
+  /* This lock is an effort to fix a bug observed while running in SDL:
+   * while blitting the update rectangles, another event is recieved,
+   * causing this to be entered twice. Apparently X doesn't like that :)
+   */
+  static unsigned char lock = 0;
+
+  if (lock) return;
+  lock = 1;
+
    if (upd_w) {
       if (upd_x<0) {
 	 upd_w += upd_x;
@@ -239,6 +248,8 @@ void realize_updareas(void) {
       (*vid->update)(upd_x,upd_y,upd_w,upd_h);
       upd_x = upd_y = upd_w = upd_h = 0;
    } 
+   
+   lock = 0;
 }
 
 /* The End */
