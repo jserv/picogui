@@ -1,4 +1,4 @@
-/* $Id: textedit_frontend.c,v 1.5 2002/10/12 15:13:32 micahjd Exp $
+/* $Id: textedit_frontend.c,v 1.6 2002/10/22 09:27:55 pney Exp $
  *
  * textedit.c - Multi-line text widget. By Chuck Groom,
  * cgroom@bluemug.com, Blue Mug, Inc, July 2002. Intended to be
@@ -466,7 +466,7 @@ void textedit_trigger ( struct widget *self,
                 text_backend_cursor_move_dir(DATA, key);
             break;
         default:
-            if ((key >= PGKEY_SPACE) && (key <= PGKEY_TILDE)) {
+            if ((key >= PGKEY_SPACE) && (key <= PGKEY_MAX)) {
                 if (param->kbd.mods & (PGMOD_SHIFT | PGMOD_CAPS)) {
                     key = upper(key);
                 }
