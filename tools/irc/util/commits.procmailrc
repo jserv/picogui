@@ -35,7 +35,7 @@ UMASK=033
 
 :0
 * ^Subject: \[Emacs-commit\]
-| /home/commits/tools/irc/filters/emacs.sh
+| /home/commits/tools/irc/filters/emacs.py
 
 ###### Automatic sourceforge tracker filtering
 
