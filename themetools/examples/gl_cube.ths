@@ -6,8 +6,8 @@
  * also requires the PNM, JPEG, and PNG image loaders.
  *
  * It draws on the background, so you can run it without any apps to
- * see the effect. There should be an interlaced background with water
- * blended and flowing across it, then a spinning cube in the middle with
+ * see the effect. There should be a water background with a scrolling
+ * interlace effect on it, then a spinning cube in the middle with
  * the "pG" logo on each face.
  *
  */
