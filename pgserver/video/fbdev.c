@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.5 2001/03/22 00:20:38 micahjd Exp $
+/* $Id: fbdev.c,v 1.6 2001/04/16 05:14:04 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -36,6 +36,8 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <linux/fb.h>
+#include <linux/vt.h>
+#include <linux/kd.h>
 
 /* This information is only saved so we can munmap() and close()... */
 int fbdev_fd;
@@ -118,6 +120,20 @@ g_error fbdev_init(void) {
       close(fbdev_fd);
       return mkerror(PG_ERRT_IO,96);       /* Error mapping framebuffer */
    }
+
+   /* Put the console into graphics-only mode */
+#ifdef CONFIG_LINUX_MIPS
+   /* horrible hack (from wserver's linux.c) */
+   {
+      int xx = open("/dev/tty1", O_RDWR);
+      if (xx >= 0) {
+	 ioctl(xx, KDSETMODE, KD_GRAPHICS);
+	 close(xx);
+      }
+   }
+#else
+   ioctl(0, KDSETMODE, KD_GRAPHICS);
+#endif
    
    /* Set up a palette for RGB simulation */
    if (vid->bpp == 8) {
