@@ -1,4 +1,6 @@
-noinst_HEADERS = \
+includedir = @includedir@/picogui
+
+include_HEADERS = \
 	canvas.h \
 	constants.h \
 	network.h \

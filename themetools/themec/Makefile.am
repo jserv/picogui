@@ -2,9 +2,6 @@ bin_PROGRAMS = themec
 
 themec_SOURCES = pgtheme.y pglex.l main.c backend.c symtab.c themec.h pgtheme.h
 
-
-INCLUDES = -I$(top_srcdir)/include
-
 YACC = @YACC@ -d
 
 MKSYMTAB := perl $(srcdir)/mksymtab.pl
@@ -13,8 +10,8 @@ LDADD = @LEXLIB@
 
 # Standard PicoGUI headers that would be of interest to themes
 
-CONSTANTS := $(top_srcdir)/include/picogui/constants.h \
-             $(top_srcdir)/include/picogui/pgkeys.h
+CONSTANTS := $(includedir)/picogui/constants.h \
+             $(includedir)/picogui/pgkeys.h
 
 # Some extras for OpenGL support, but only if available
 
