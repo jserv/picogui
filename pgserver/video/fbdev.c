@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.46 2003/03/10 23:48:24 micahjd Exp $
+/* $Id: fbdev.c,v 1.47 2003/03/23 03:40:50 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -614,10 +614,7 @@ void fbdev_message(u32 message, u32 param, u32 *ret) {
         ioctl (fbdev_fd, FBIOBLANK, VESA_NO_BLANKING);
         backlight_disabled = 0;
       }
-      break;
-    
-    default:
-      /* g_assert_not_reached (); */
+      break;    
     }
     return; /* case PGDM_BACKLIGHT */
     
@@ -656,14 +653,8 @@ void fbdev_message(u32 message, u32 param, u32 *ret) {
         display_disabled = 0;
       }  
       break;
-    
-    default:
-      /* g_assert_not_reached (); */
     }
     return; /* case PGDM_POWER */
-    
-  default:
-    /* continue further processing below... */
   }
   
 #ifdef CONFIG_FB_VT
