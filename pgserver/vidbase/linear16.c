@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.3 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: linear16.c,v 1.4 2001/10/15 16:25:19 bauermeister Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers (5-6-5 RGB mapping)
@@ -34,6 +34,7 @@
 
 #include <pgserver/inlstring.h>    /* inline-assembly __memcpy */
 #include <pgserver/video.h>
+#include <pgserver/autoconf.h>
 
 /* Macros to easily access the members of vid->display */
 #define FB_MEM     (((struct stdbitmap*)dest)->bits)
@@ -57,7 +58,12 @@ void linear16_pixel(hwrbitmap dest, s16 x,s16 y,hwrcolor c,s16 lgop) {
    PIXEL(x,y) = c;
 }
 hwrcolor linear16_getpixel(hwrbitmap dest, s16 x,s16 y) {
+#ifdef DRIVER_S1D13806
+  hwrcolor c = PIXEL(x,y);
+  return c << 8 | c >> 8;
+#else
   return PIXEL(x,y);
+#endif
 }
 
 /*********************************************** Accelerated (?) primitives */
