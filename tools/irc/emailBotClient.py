@@ -202,14 +202,14 @@ if __name__ == '__main__':
                     if line == subjectFields[1]:
                         # we have found the channel, ie a bot is already present in it
                         socketName = socketBaseName + "." + lastBotID
-                        print "found socket = " + socketName
+                        #print "found socket = " + socketName
                 f.close()
 
             # we did not find the channel
             if socketName == socketBaseName:
                 # we always choose the last bot to be started for joining channels
                 socketName = socketBaseName + "." + lastBotID;
-            print "socketName is " + socketName
+            #print "socketName is " + socketName
             # now launch the client object
             f = AnnounceClientFactory()
             reactor.connectUNIX(socketName, f)
