@@ -1,6 +1,0 @@
-NAME = Times
-SIZE = 10
-STYLE = extended
-NORMAL = times10
-BOLD = times10b
-GEO = 8 3 0
