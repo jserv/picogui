@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.23 2000/11/05 05:39:52 micahjd Exp $
+/* $Id: constants.h,v 1.24 2000/11/05 06:55:20 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -449,6 +449,7 @@ typedef unsigned long pghandle;
 /* Constants for PG_WP_EXTDEVENTS, to enable extra events */
 #define PG_EXEV_PNTR_UP   0x0001
 #define PG_EXEV_PNTR_DOWN 0x0002
+#define PG_EXEV_NOCLICK   0x0004  /* (ignore clicks) */
 
 /******************** Events */
 
