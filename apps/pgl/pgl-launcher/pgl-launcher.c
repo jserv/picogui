@@ -343,25 +343,44 @@ int setPreferences(void){
 }
 
 int launchMenu(struct pgEvent *evt){
-  pghandle *items;
   pgoNodeIdentifier *nodeList;
   pgllApp *app;
   int item;
+  pghandle insertion_point;
 
+  /* Make a neat little scrolling popup menu for our apps, with some decoration */
   pgEnterContext();
+  pgNewPopupAt(PG_POPUP_ATEVENT, PG_POPUP_ATEVENT, 0, 0);
+  pgSetPayload(PGDEFAULT,0);
 
-  items = alloca(sizeof(pghandle) * pgoLLListLength(gAppList)+1);
+  insertion_point = pgNewWidget(PG_WIDGET_LABEL,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT, pgNewString("PicoGUI"),
+	      PG_WP_TRANSPARENT, 0,
+	      PG_WP_THOBJ, PGTH_O_PANELBAR,
+	      PG_WP_SIDE, PG_S_LEFT,
+	      PG_WP_DIRECTION, PG_DIR_VERTICAL,
+	      0);
+  
   nodeList = pgoLLListIdentifiers(gAppList, NULL);
-
   for(item = 0; item < pgoLLListLength(gAppList); item++){
     app = pgoLLGetRecord(gAppList, nodeList[item], NULL);
-    items[item] = pgNewString(app->appName);
+    insertion_point = pgNewWidget(PG_WIDGET_MENUITEM, PG_DERIVE_AFTER,insertion_point);
+    pgSetWidget(PGDEFAULT,
+		PG_WP_TEXT, pgNewString(app->appName),
+		0);
+    pgSetPayload(PGDEFAULT, item+1);
   }
 
-  //Add the standard options
-  items[pgoLLListLength(gAppList)] = pgNewString("Preferences...");
+  // Add the standard options
+  insertion_point = pgNewWidget(PG_WIDGET_MENUITEM, PG_DERIVE_AFTER,insertion_point);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT, pgNewString("Preferences..."),
+	      0);
+  pgSetPayload(PGDEFAULT,++item);
 
-  item = pgMenuFromArray(items, pgoLLListLength(gAppList)+1);
+  /* Get an event */
+  item = pgGetPayload(pgGetEvent()->from);
 
   if(item){
     if(item == pgoLLListLength(gAppList)+1){
