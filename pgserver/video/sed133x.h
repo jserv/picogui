@@ -18,17 +18,17 @@
    further data bytes */
 #if 0
 #define sed_command_l(cmd,dat,len) do { \
-	outb((cmd),(unsigned long)sed133x_command_port); \
+	outb((cmd),(u32)sed133x_command_port); \
 	outsb(sed133x_data_port,(dat),(len)); \
 } while (0)
 #else
 #define sed_command_l(cmd,dat,len) do { \
 	unsigned int i; \
 	/* volatile int j; for (j= 0; j < 100; j++) {} */\
-	outb((cmd),(unsigned long)sed133x_command_port); \
+	outb((cmd),(u32)sed133x_command_port); \
 	for (i=0; i < len;i++) { \
 		/* for (j=0; j < 100; j++) {} */\
-		outb((dat)[i],(unsigned long)sed133x_data_port); \
+		outb((dat)[i],(u32)sed133x_data_port); \
 	} \
 } while (0)
 #endif

@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.42 2002/02/26 18:22:47 micahjd Exp $
+/* $Id: sdlfb.c,v 1.43 2002/03/26 03:12:35 instinc Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -113,7 +113,7 @@ g_error sdlfb_init(void) {
 }
 
 g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
-  unsigned long sdlflags = SDL_RESIZABLE;
+  u32 sdlflags = SDL_RESIZABLE;
   char str[80];
   SDL_Color palette[256];
   int i;
@@ -338,7 +338,7 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   if ((s = get_param_str("video-sdlfb","background",NULL))) {
     FILE *f;
     char *mem;
-    unsigned long len;
+    u32 len;
     hwrbitmap bg;
 
     f = fopen(s,"rb");

@@ -1,4 +1,4 @@
-/* $Id: sdlgl_init.c,v 1.11 2002/03/06 11:38:46 micahjd Exp $
+/* $Id: sdlgl_init.c,v 1.12 2002/03/26 03:12:35 instinc Exp $
  *
  * sdlgl_init.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has initialization, shutdown, and registration.
@@ -73,7 +73,7 @@ g_error sdlgl_init(void) {
 }
 
 g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
-  unsigned long sdlflags = SDL_RESIZABLE | SDL_OPENGL;
+  u32 sdlflags = SDL_RESIZABLE | SDL_OPENGL;
   char str[80];
   float a,x,y,z;
   g_error e;

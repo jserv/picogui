@@ -1,4 +1,4 @@
-/* $Id: ez328.c,v 1.23 2002/01/23 14:49:50 abergmann Exp $
+/* $Id: ez328.c,v 1.24 2002/03/26 03:12:34 instinc Exp $
  *
  * ez328.c - Driver for the 68EZ328's (aka Motorola Dragonball EZ)
  *           built-in LCD controller. It assumes the LCD parameters
@@ -171,7 +171,7 @@ g_error ez328_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
     g_free(FB_MEM);
   e = g_malloc((void **) &FB_MEM, vid->yres * FB_BPL);
   errorcheck;
-  LSSA = (unsigned long) FB_MEM;
+  LSSA = (u32) FB_MEM;
 
   return success;
 }

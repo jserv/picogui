@@ -1,4 +1,4 @@
-/* $Id: svgafb.c,v 1.12 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: svgafb.c,v 1.13 2002/03/26 03:12:35 instinc Exp $
  *
  * svgafb.c - A driver for linear-framebuffer svga devices that uses the linear*
  *          VBLs instead of the default vbl and libvgagl.
@@ -52,7 +52,7 @@
 #define SVGAFB_PAGEDBLITS     (1<<1)    /* Blit to nonlinear memory */
 
 unsigned char svgafb_flags;
-unsigned long svgafb_fbsize;
+u32 svgafb_fbsize;
 
 /* Function prototypes */
 int svgafb_closest_mode(s16 xres,s16 yres,s16 bpp);
@@ -235,7 +235,7 @@ void svgafb_close(void) {
 /* Normal copy blit */
 void svgafb_update_linear(s16 x,s16 y,s16 w,s16 h) {
    unsigned char *src,*dest;
-   unsigned long fbstart;
+   u32 fbstart;
    
    /* Blit calculations */
    fbstart = y * FB_BPL + x;
@@ -258,7 +258,7 @@ void svgafb_update_linear(s16 x,s16 y,s16 w,s16 h) {
  * correct me!)
  */
 void svgafb_update_paged(s16 x,s16 y,s16 w,s16 h) {
-   unsigned long vp;
+   u32 vp;
    int page;
    char *bp;
 

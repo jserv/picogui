@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.29 2002/02/23 11:13:06 micahjd Exp $
+/* $Id: fbdev.c,v 1.30 2002/03/26 03:12:35 instinc Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -64,7 +64,7 @@
 
 /* This information is only saved so we can munmap() and close()... */
 int fbdev_fd;
-unsigned long fbdev_mapsize;
+u32 fbdev_mapsize;
 int ttyfd;
 
 /* Save screen info for color conversion */
@@ -73,7 +73,7 @@ struct fb_var_screeninfo varinfo;
 
 #ifdef CONFIG_FIX_VR3
 //Color map for the Agenda VR3
-static unsigned short vr_lcd_intensity[16] = {
+static u16 vr_lcd_intensity[16] = {
     0x0000,
     0x1111,
     0x2222,
@@ -397,7 +397,7 @@ g_error fbdev_init(void) {
    /* Set up a palette for RGB simulation */
    if (vid->bpp == 8) {
       struct fb_cmap colors;
-      unsigned short reds[256],greens[256],blues[256];
+      u16 reds[256],greens[256],blues[256];
       int i;
       
       colors.start  = 0;
@@ -408,9 +408,9 @@ g_error fbdev_init(void) {
       colors.transp = NULL;
       
       for (i=0;i<256;i++) { 
-	reds[i]   = (((unsigned long)i) & 0xC0) * 0xFFFF / 0xC0;
-	greens[i] = (((unsigned long)i) & 0x38) * 0xFFFF / 0x38;
-	blues[i]  = (((unsigned long)i) & 0x07) * 0xFFFF / 0x07;
+	reds[i]   = (((u32)i) & 0xC0) * 0xFFFF / 0xC0;
+	greens[i] = (((u32)i) & 0x38) * 0xFFFF / 0x38;
+	blues[i]  = (((u32)i) & 0x07) * 0xFFFF / 0x07;
       }
       
       ioctl(fbdev_fd,FBIOPUTCMAP,&colors);
@@ -419,7 +419,7 @@ g_error fbdev_init(void) {
 #ifdef CONFIG_FIX_VR3
    // Fix the screwed up color palette on the VR3
    {
-     unsigned short red[16], green[16], blue[16];
+     u16 red[16], green[16], blue[16];
      struct fb_cmap cmap;
      int i;
      

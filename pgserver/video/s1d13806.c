@@ -1,4 +1,4 @@
-/* $Id: s1d13806.c,v 1.7 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: s1d13806.c,v 1.8 2002/03/26 03:12:35 instinc Exp $
  *
  * s1d13806.c - use a Epson S1D13806 video chip with a M68VZ328
  *
@@ -69,7 +69,7 @@
 #define CSA_EN		0x0001	/* Chip-Select Enable */
 
 g_error s1d13806_init (void);
-g_error s1d13806_setmode (s16 xres, s16 yres, s16 bpp, unsigned long flags);
+g_error s1d13806_setmode (s16 xres, s16 yres, s16 bpp, u32 flags);
 void    s1d13806_close (void);
 
 unsigned char version  = 0x00;
@@ -79,10 +79,10 @@ unsigned char revision = 0x00;
 void
 init_dragonball (void)
 {
-  ulong addr32 = S1D_PHYSICAL_VMEM_ADDR / 0x2000;
+  u32 addr32 = S1D_PHYSICAL_VMEM_ADDR / 0x2000;
 
   /* need bit28 to bit14 */
-  ushort addr16 = addr32;
+  u16 addr16 = addr32;
 
   dbgprint ("----------------init_dragonball --------------------\n");
   dbgprint ("---> VRAM starts at: 0x%08X\n", S1D_PHYSICAL_VMEM_ADDR);
@@ -128,7 +128,7 @@ init_s1d13806 (void)
 {
   int i;
   volatile unsigned char *addr;
-  volatile unsigned short *mem;
+  volatile u16 *mem;
   S1D_INDEX s1dReg;
   S1D_VALUE s1dValue;
 
@@ -177,7 +177,7 @@ init_s1d13806 (void)
   PMDATA |= PM5;		/* PM[5] high */
 /*
 	dbgprint("clear memory: ");
-	mem = (volatile unsigned short*)(S1D_PHYSICAL_VMEM_ADDR);
+	mem = (volatile u16 *)(S1D_PHYSICAL_VMEM_ADDR);
 	for (i = 0; i < S1D_DISPLAY_WIDTH*S1D_DISPLAY_HEIGHT*S1D_DISPLAY_BPP/16; i++, mem++)
 	{
 
@@ -197,7 +197,7 @@ init_s1d13806 (void)
 */
 };
 
-g_error s1d13806_setmode (s16 xres, s16 yres, s16 bpp, unsigned long flags)
+g_error s1d13806_setmode (s16 xres, s16 yres, s16 bpp, u32 flags)
 {
   int i;
   S1D_VALUE r, g, b;
