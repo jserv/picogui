@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.9 2001/01/14 19:41:06 micahjd Exp $
+/* $Id: linear8.c,v 1.10 2001/02/08 04:56:03 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -453,6 +453,11 @@ void linear8_blit(struct stdbitmap *srcbit,int src_x,int src_y,
   unsigned char *dest;
   int i,offset_dest;
   
+#ifdef DEBUG_VIDEO
+   printf("linear8_blit(0x%08X,%d,%d,%d,%d,%d,%d,%d)\n",
+	  srcbit,src_x,src_y,dest_x,dest_y,w,h,lgop);
+#endif
+   
   /* Screen-to-screen blit */
   if (!srcbit) {
     srcbit = &screen;
@@ -478,6 +483,13 @@ void linear8_blit(struct stdbitmap *srcbit,int src_x,int src_y,
   */
 
   /* Normal blit loop */
+#ifdef UCLINUX   /* The 32-bit stuff isn't aligned, crashes uclinux */
+#define BLITLOOP(op,xtra32,xtra8)                                   \
+    for (;h;h--,src+=offset_src,dest+=offset_dest) {                \
+      for (i=w;i;i--,src++,dest++)                                  \
+	*dest op *src xtra8;                                        \
+    }
+#else
 #define BLITLOOP(op,xtra32,xtra8)                                   \
     for (;h;h--,src+=offset_src,dest+=offset_dest) {                \
       for (i=w>>2;i;i--,src+=4,dest+=4)                             \
@@ -485,9 +497,27 @@ void linear8_blit(struct stdbitmap *srcbit,int src_x,int src_y,
       for (i=w&3;i;i--,src++,dest++)                                \
 	*dest op *src xtra8;                                        \
     }
-
+#endif
+   
   /* Tiled blit loop - similar to tileblit() but always restarts the bitmap
    * on a tile boundary, instead of tiling a bitmap section */
+#ifdef UCLINUX   /* The 32-bit stuff isn't aligned, crashes uclinux */
+#define TILEBLITLOOP(op,xtra32,xtra8)                                     \
+   while (h) {                                                            \
+      for (;sh && h;sh--,h--,src_line+=srcbit->w,dest+=offset_dest) {     \
+	 src = src_line + src_x;                                          \
+	 swm = (swp < w) ? swp : w;                                       \
+	 for (dw=w;dw;) {                                                 \
+	    for (sw=swm;sw;sw--,src++,dest++,dw--)                        \
+	      *dest op *src xtra8;                                        \
+	    src = src_line;                                               \
+	    swm = (srcbit->w < dw) ? srcbit->w : dw;                      \
+	 }                                                                \
+      }                                                                   \
+      sh = srcbit->h;                                                     \
+      src_line = srcbit->bits;                                            \
+   }
+#else
 #define TILEBLITLOOP(op,xtra32,xtra8)                                     \
    while (h) {                                                            \
       for (;sh && h;sh--,h--,src_line+=srcbit->w,dest+=offset_dest) {     \
@@ -505,6 +535,7 @@ void linear8_blit(struct stdbitmap *srcbit,int src_x,int src_y,
       sh = srcbit->h;                                                     \
       src_line = srcbit->bits;                                            \
    }
+#endif
    
   /* Is this a normal or tiled blit? */
   if (w>(srcbit->w-src_x) || h>(srcbit->h-src_y)) {   /* Tiled */
@@ -573,6 +604,11 @@ void linear8_unblit(int src_x,int src_y,
 		    int w,int h) {
   unsigned char *src,*dest;
 
+#ifdef DEBUG_VIDEO
+   printf("linear8_unblit(%d,%d,0x%08X,%d,%d,%d,%d)\n",
+	  src_x,src_y,destbit,dest_x,dest_y,w,h);
+#endif
+   
   /* A few calculations */
   src  = LINE(src_y) + src_x;
   dest = destbit->bits + dest_x + dest_y*destbit->w;

@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.12 2001/02/08 02:37:07 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.13 2001/02/08 04:56:03 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -945,7 +945,10 @@ void def_unblit(int src_x,int src_y,
 }
 
 void def_sprite_show(struct sprite *spr) {
-
+#ifdef DEBUG_VIDEO
+   printf("def_sprite_show\n");
+#endif
+   
   if (spr->onscreen || !spr->visible) return;
    
   /* Clip to a divnode */
@@ -985,16 +988,16 @@ void def_sprite_show(struct sprite *spr) {
   /* Grab a new backbuffer */
   (*vid->unblit)(spr->x,spr->y,spr->backbuffer,
   	       0,0,spr->ow,spr->oh);
-  
+
   /* Display the sprite */
-  if (spr->mask) {
+ if (spr->mask) {
     (*vid->blit)(spr->mask,0,0,
 		 spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_AND);
     (*vid->blit)(spr->bitmap,0,0,
 		 spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_OR);
   }
   else
-    (*vid->blit)(spr->bitmap,0,0,
+   (*vid->blit)(spr->bitmap,0,0,
 		 spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_NONE);
 
   add_updarea(spr->x,spr->y,spr->ow,spr->oh);
@@ -1063,6 +1066,10 @@ void def_sprite_show(struct sprite *spr) {
 
 void def_sprite_hide(struct sprite *spr) {
   static struct cliprect cr;
+
+#ifdef DEBUG_VIDEO
+   printf("def_sprite_hide\n");
+#endif
    
   if ( (!spr->onscreen) ||
        (spr->ox == -1) )
@@ -1085,6 +1092,10 @@ void def_sprite_hide(struct sprite *spr) {
 }
 
 void def_sprite_update(struct sprite *spr) {
+#ifdef DEBUG_VIDEO
+   printf("def_sprite_update\n");
+#endif
+   
   (*vid->sprite_hide)(spr);
   (*vid->sprite_show)(spr);
 
@@ -1095,7 +1106,12 @@ void def_sprite_update(struct sprite *spr) {
 /* Traverse first -> last, showing sprites */
 void def_sprite_showall(void) {
   struct sprite *p = spritelist;
-  while (p) {
+
+#ifdef DEBUG_VIDEO
+   printf("def_sprite_showall\n");
+#endif
+
+   while (p) {
     (*vid->sprite_show)(p);
     p = p->next;
   }
@@ -1115,6 +1131,10 @@ void def_sprite_hideall(void) {
 void def_sprite_protectarea(struct cliprect *in,struct sprite *from) {
    /* Base case: from is null */
    if (!from) return;
+
+#ifdef DEBUG_VIDEO
+   printf("def_sprite_protectarea\n");
+#endif
 
    /* Load this all on the stack so we go backwards */
    def_sprite_protectarea(in,from->next);

@@ -1,13 +1,10 @@
-/* $Id: ez328.c,v 1.2 2001/02/07 07:28:08 micahjd Exp $
+/* $Id: ez328.c,v 1.3 2001/02/08 04:56:03 micahjd Exp $
  *
  * ez328.c - Driver for the 68EZ328's (aka Motorola Dragonball EZ)
  *           built-in LCD controller. It assumes the LCD parameters
  *           have been set at boot in the kernel (for the boot logo)
  *           and uses them to set up the driver.
  * 
- * NOTE: very slow and kludgey now. Just need to see if it will work.
- *       currently hard-coded for Kiwi's LCD.
- *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
  *
@@ -47,20 +44,16 @@ g_error ez328_init(int xres,int yres,int bpp,unsigned long flags) {
    /* Save existing register settings */
    memcpy(ez328_saveregs,REGS_START,REGS_LEN);
    
-   vid->xres   = 240;
-   vid->yres   = 64;
-   vid->fb_bpl = 240;
-   vid->bpp    = bpp;
+   vid->xres   = 160;
+   vid->yres   = 200;
+   vid->bpp    = 8;
+   vid->fb_bpl = (vid->xres * vid->bpp) >> 3;
    
    /* Allocate video memory */
-   e = g_malloc((void **) &vid->fb_mem, 240*32);
+   e = g_malloc((void **) &vid->fb_mem, vid->yres * vid->fb_bpl);
    errorcheck;
    LSSA = (unsigned long) vid->fb_mem;
 
-   /* Invert the palette so that the and/or stuff
-    * works and the palette is consistant */
-   LPOLCF |= 1;
-   
    return sucess;
 }
 
@@ -70,48 +63,21 @@ void ez328_close(void) {
    g_free(vid->fb_mem);
 }
 
-void ez328_pixel(int x,int y,hwrcolor c) {
-/*   if (x<0 || y<0 || x>=240 || y>=64) {
-      printf("Bad pixel coordinates (%d,%d) (c=0x%08X)\n",x,y,c);
-      return;
-   }*/
-   
-  if (y<32) {
-    vid->fb_mem[y*240+x] &= 0xF0;
-    vid->fb_mem[y*240+x] |= c;
-  }
-  else {
-    vid->fb_mem[(y-32)*240+x] &= 0x0F;
-    vid->fb_mem[(y-32)*240+x] |= c << 4;
-  }
-}
-
-hwrcolor ez328_getpixel(int x,int y) {
-   if (x<0 || y<0 || x>=240 || y>=64) {
-      printf("Bad pixel coordinates (%d,%d) in getpixel)\n",x,y);
-      return;
-   }
-   
-   if (y<32) {
-      return vid->fb_mem[y*240+x] & 0x0F;
-   }
-   else {
-      return vid->fb_mem[(y-32)*240+x] >> 4;
-   }
-}
-
 hwrcolor ez328_color_pgtohwr(pgcolor c) {
-   return (getred(c)+getgreen(c)+getblue(c))/48;
+//   return (getred(c)+getgreen(c)+getblue(c))/48;
+
+   unsigned char x = ((getred(c)+getgreen(c)+getblue(c))/48);
+   return x | (x<<4);
 }
    
 g_error ez328_regfunc(struct vidlib *v) {
-//   setvbl_linear8(v);
-   setvbl_default(v);
+   setvbl_linear8(v);
+//   setvbl_default(v);
    
    v->init = &ez328_init;
    v->close = &ez328_close;
-   v->pixel = &ez328_pixel;
-   v->getpixel = &ez328_getpixel;
+//   v->pixel = &ez328_pixel;
+//   v->getpixel = &ez328_getpixel;
    v->color_pgtohwr = &ez328_color_pgtohwr;
    return sucess;
 }
