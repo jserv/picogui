@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.39 2002/09/25 04:07:44 micahjd Exp $
+/* $Id: netcore.c,v 1.40 2002/12/18 08:37:52 pney Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -474,9 +474,12 @@ void _pg_getresponse(int eventwait) {
       if (!(_pg_return.e.data.data = 
 	    _pg_malloc(_pg_return.e.data.size+1)))
 	return;
-      if (_pg_recv(_pg_return.e.data.data,_pg_return.e.data.size))
-	return;
 
+      if (_pg_return.e.data.size)
+      {
+	if (_pg_recv(_pg_return.e.data.data,_pg_return.e.data.size))
+	  return;
+      }
       /* Add a null terminator */
       ((char *)_pg_return.e.data.data)[_pg_return.e.data.size] = 0;
     }
@@ -655,7 +658,7 @@ void pgInit(int argc, char **argv)
 	
 	else if (!strcmp(arg,"version")) {
 	  /* --pgversion : For now print CVS id */
-	  fprintf(stderr,"$Id: netcore.c,v 1.39 2002/09/25 04:07:44 micahjd Exp $\n");
+	  fprintf(stderr,"$Id: netcore.c,v 1.40 2002/12/18 08:37:52 pney Exp $\n");
 	  exit(1);
 	}
 	
