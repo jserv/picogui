@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.23 2000/07/31 20:46:10 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.24 2000/08/02 04:43:49 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -31,7 +31,7 @@ use Carp;
 		NewFont NewBitmap delete SetBackground RestoreBackground
 		SendPoint SendKey ThemeSet RegisterApp EventLoop NewPopup
 		GetTextSize GrabKeyboard GrabPointingDevice GiveKeyboard
-		GivePointingDevice ExitEventLoop);
+		GivePointingDevice ExitEventLoop EnterContext LeaveContext);
 
 ################################ Constants
 
@@ -67,6 +67,7 @@ use Carp;
 	  'se' => 8,
 	  'all' => 9
 	  );
+%rALIGN = reverse %ALIGN;
 
 %SIDE = (
 	 'top' => (1<<3),
@@ -75,6 +76,7 @@ use Carp;
 	 'right' => (1<<6),
 	 'all' => (1<<11)
 	 );
+%rSIDE = reverse %SIDE;
 
 %RSHIPS = (
 	   '-before' => 0,
@@ -313,6 +315,15 @@ sub _flushpackets {
 	return unpack("nNN",$rsp);
     }
 
+    if ($rspt==4) {
+	# Data
+	read S,$rsp,6 or croak "PicoGUI - Error reading return data header";
+	($r_id,$size) = unpack("nN",$rsp);
+	$r_id == $id or carp "PicoGUI - incorrect packet ID ($id -> $r_id)\n";
+	read S,$data,$size or croak "PicoGUI - Error reading return data";
+	return $data;
+    }
+
     croak "PicoGUI - Unexpected response type ($rspt)\n";
 }
 
@@ -414,6 +425,19 @@ sub GiveKeyboard {
 sub GivePointingDevice {
     _request(22);
 }
+sub EnterContext {
+    _request(23);
+}
+sub LeaveContext {
+    _request(24);
+}
+sub _focus {
+    _request(25,pack('N',@_));
+}
+sub _getstring {
+    _request(26,pack('N',@_));
+    _flushpackets();
+}
 
 
 ######### Public functions
@@ -486,6 +510,16 @@ sub delete {
     _free($self->{'h'});
 }
 
+sub focus {
+    my $self = shift;
+    _focus($self->{'h'});
+}
+
+sub GetString {
+    my $self = shift;
+    _getstring($self->{'h'});
+}
+
 sub SetBackground {
     my $self = shift;
     _setbg($self->{'h'});
@@ -517,6 +551,38 @@ sub SetWidget {
 	    _set($self->GetHandle(),$arg,$prop);
 	}
     }
+}
+
+sub GetWidget {
+    my ($self,$prop) = @_;
+    my ($arg);
+
+    # Grab the widget property from the server
+    $prop = $WPROP{$_ = $prop};
+    croak "Undefined property" if (!defined $prop);
+    $arg = _get($self->GetHandle(),$prop);
+
+    # Any special formatting needed?
+    
+    if (/text/ or /bitmap/ or /font/ or /bitmask/ or /bind/) {
+	# Handle- return as perl object
+	my $obj = {};
+	bless $obj;
+	$obj->{'h'} = $arg;
+	return $obj;
+    }
+
+    if (/side/) {
+	# Reverse-lookup in %SIDE
+	return $rSIDE{$arg};
+    }
+
+    if (/align/) {
+	# Reverse-lookup in %ALIGN
+	return $rALIGN{$arg};
+    }
+
+    return $arg;
 }
 
 sub NewFont {
