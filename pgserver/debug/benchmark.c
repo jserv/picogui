@@ -1,4 +1,4 @@
-/* $Id: benchmark.c,v 1.2 2002/10/20 15:12:15 micahjd Exp $
+/* $Id: benchmark.c,v 1.3 2002/10/20 15:19:32 micahjd Exp $
  *
  * benchmark.c - Run benchmarks on vidlib functions
  *
@@ -31,6 +31,7 @@
 
 hwrbitmap benchmark_srcbit;
 u8 *benchmark_char, *benchmark_gamma;
+hwrcolor benchmark_color;
 
 struct benchmark_param {
   int lgop;
@@ -42,12 +43,20 @@ struct benchmark_param {
 void bench_noop(struct benchmark_param *b) {
 }
 
+void bench_color_pgtohwr(struct benchmark_param *b) {
+  benchmark_color = VID(color_pgtohwr)(0xFFFF00);
+}
+
+void bench_color_hwrtopg(struct benchmark_param *b) {
+  VID(color_hwrtopg)(benchmark_color);
+}
+
 void bench_update(struct benchmark_param *b) {
   VID(update)(0,0,b->w,b->h);
 }
 
 void bench_pixel(struct benchmark_param *b) {
-  VID(pixel)(vid->display,42,42,0,b->lgop);
+  VID(pixel)(vid->display,42,42,benchmark_color,b->lgop);
 }
 
 void bench_getpixel(struct benchmark_param *b) {
@@ -55,23 +64,23 @@ void bench_getpixel(struct benchmark_param *b) {
 }
 
 void bench_slab(struct benchmark_param *b) {
-  VID(slab)(vid->display,0,0,b->w,0,b->lgop);
+  VID(slab)(vid->display,0,0,b->w,benchmark_color,b->lgop);
 }
 
 void bench_bar(struct benchmark_param *b) {
-  VID(bar)(vid->display,0,0,b->h,0,b->lgop);
+  VID(bar)(vid->display,0,0,b->h,benchmark_color,b->lgop);
 }
 
 void bench_line(struct benchmark_param *b) {
-  VID(line)(vid->display,0,0,b->w,b->h,0,b->lgop);
+  VID(line)(vid->display,0,0,b->w,b->h,benchmark_color,b->lgop);
 }
 
 void bench_rect(struct benchmark_param *b) {
-  VID(rect)(vid->display,0,0,b->w,b->h,0,b->lgop);
+  VID(rect)(vid->display,0,0,b->w,b->h,benchmark_color,b->lgop);
 }
 
 void bench_gradient(struct benchmark_param *b) {
-  VID(gradient)(vid->display,0,0,b->w,b->h,0,0,0,b->lgop);
+  VID(gradient)(vid->display,0,0,b->w,b->h,0,0xFF0000,0x0000FF,b->lgop);
 }
 
 void bench_blit(struct benchmark_param *b) {
@@ -270,6 +279,8 @@ struct benchmark_test {
   const char *name;
 } benchmark_tests[] = {  
   { &bench_noop,                0,0, "nop"                          },
+  { &bench_color_pgtohwr,       0,0, "color pgtohwr"                },
+  { &bench_color_hwrtopg,       0,0, "color hwrtopg"                },
   { &bench_update,              0,0, "update"                       },
   { &bench_pixel,               1,0, "pixel"                        },
   { &bench_getpixel,            0,0, "getpixel"                     },
@@ -335,6 +346,7 @@ void benchmark_run_one(struct benchmark_test *test, struct benchmark_param *b) {
   for (i=0;i<1000;i++)
     test->func(b);
   gettimeofday(&end,NULL);
+  VID(update)(0,0,vid->lxres,vid->lyres);
 
   result = (end.tv_sec - start.tv_sec)*1000000 + (end.tv_usec - start.tv_usec);
 
@@ -380,13 +392,18 @@ void videotest_benchmark(void) {
 	 "Time             Name                           LGOP            Size   \n"
 	 "-----------------------------------------------------------------------\n");
 
+  VID(rect)(vid->display, 0,0,vid->lxres,vid->lyres,
+	    VID(color_pgtohwr)(0x606060), PG_LGOP_NONE);
+  VID(rect)(vid->display, 0,0,vid->lxres,vid->lyres,
+	    VID(color_pgtohwr)(0xA0A0A0), PG_LGOP_STIPPLE);
+
   /* Create a source bitmap needed by some of the tests */
   vid->bitmap_new(&benchmark_srcbit,128,128,vid->bpp);
   benchmark_char = malloc(128*128);
   benchmark_gamma = malloc(256);
   memset(benchmark_char,0xFF,128*128);
   memset(benchmark_gamma,0,256);
-  
+
   for (t=benchmark_tests; t->func; t++) {
     if (!strstr(t->name,testname))
       continue;
