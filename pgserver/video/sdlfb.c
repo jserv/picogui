@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.9 2001/03/01 02:23:11 micahjd Exp $
+/* $Id: sdlfb.c,v 1.10 2001/03/16 04:06:25 micahjd Exp $
  *
  * sdlfb.c - Video driver for SDL using a linear framebuffer.
  *           This will soon replace sdl.c, but only after the
@@ -68,6 +68,12 @@ g_error sdlfb_init(int xres,int yres,int bpp,unsigned long flags) {
   if (flags & PG_VID_FULLSCREEN)
     sdlflags |= SDL_FULLSCREEN;
 
+#ifdef CONFIG_SDLEMU_BLIT
+   /* Make screen divisible by a byte */
+  if (bpp && bpp<8)
+     xres &= ~((8/bpp)-1);
+#endif CONFIG_SDLEMU_BLIT
+   
   /* Set the video mode */
   sdl_vidsurf = SDL_SetVideoMode(xres,yres,(bpp && bpp<8) ? 8 : bpp,sdlflags);
   if (!sdl_vidsurf)

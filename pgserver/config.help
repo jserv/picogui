@@ -218,4 +218,14 @@ CONFIG_NOPANELBAR
       Disable the panelbar in the panel widget, making it impossible
       for users to manually resize applications
       
+     
+CONFIG_FORMAT_XBM
+      A loader for binary XBM images is included for internal use.
+      This is necessary to display the icon in guru() messages,
+      and most importantly the built-in mouse cursor.
+      
+      
+CONFIG_FORMAT_PNM
+      This is capable of loading any binary or ascii Portable
+      Anymap in black and white, grayscale, or true color.
       

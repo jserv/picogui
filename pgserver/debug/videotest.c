@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.3 2001/03/01 02:23:11 micahjd Exp $
+/* $Id: videotest.c,v 1.4 2001/03/16 04:06:25 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -230,13 +230,34 @@ void testpat_unblit(void) {
    }
 }
 
+/************ Slab test pattern */
+
+void testpat_slab(void) {
+   hwrcolor bg = (*vid->color_pgtohwr)(0xFFFFFF);
+   hwrcolor fg = (*vid->color_pgtohwr)(0x000000);
+   int i;
+
+   /* Background */
+   (*vid->rect)(0,0,vid->xres,vid->yres,bg);
+
+   for (i=0;i<16;i++) {
+      (*vid->slab)(5+i,5+(i<<1),12,fg);
+      (*vid->slab)(35+i,5+(i<<1),8,fg);
+      (*vid->slab)(65+i,5+(i<<1),5,fg);
+
+      (*vid->slab)(5,45+(i<<1),i+1,fg);
+      (*vid->slab)(35+i,45+(i<<1),i+1,fg);
+   }
+}
+
 /************ Front-end */
 
 void videotest_help(void) {
    puts("\nVideo test modes:\n"
 	"\t1\tLine test pattern\n"
    	"\t2\tColor test pattern\n"
-	"\t3\tBlit/unblit test pattern\n");
+	"\t3\tBlit/unblit test pattern\n"
+	"\t4\tSlab alignment test pattern\n");
 }
 
 void videotest_run(int number) {
@@ -251,7 +272,10 @@ void videotest_run(int number) {
     case 3:
       testpat_unblit();
       break;
-    
+    case 4:
+      testpat_slab();
+      break;
+      
     default:
       printf("Unknown video test mode");
       exit(1);

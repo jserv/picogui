@@ -1,4 +1,4 @@
-/* $Id: linear1.c,v 1.2 2001/02/28 00:19:07 micahjd Exp $
+/* $Id: linear1.c,v 1.3 2001/03/16 04:06:25 micahjd Exp $
  *
  * Video Base Library:
  * linear1.c - For 1-bit packed pixel devices (most black and white displays)
@@ -41,11 +41,13 @@
 #define LINE(y)        ((y)*vid->fb_bpl+vid->fb_mem)
 #define PIXELBYTE(x,y) (((x)>>3)+LINE(y))
 
-/* Table of masks used to isolate one pixel within a byte */
-unsigned const char notmask1[] = { 0x7F, 0xBF, 0xDF, 0xEF,
-                                  0xF7, 0xFB, 0xFD, 0xFE };
-unsigned const char pxlmask1[] = { 0x80, 0x40, 0x20, 0x10,
-                                  0x08, 0x04, 0x02, 0x01 };
+/* Table of masks used to isolate pixels within a byte */
+unsigned const char notmask1[]  = { 0x7F, 0xBF, 0xDF, 0xEF,
+                                    0xF7, 0xFB, 0xFD, 0xFE };
+unsigned const char pxlmask1[]  = { 0x80, 0x40, 0x20, 0x10,
+                                    0x08, 0x04, 0x02, 0x01 };
+unsigned const char slabmask1[] = { 0xFF, 0x7F, 0x3F, 0x1F,
+                                    0x0F, 0x07, 0x03, 0x01 };
 
 /************************************************** Minimum functionality */
 
@@ -73,26 +75,72 @@ hwrcolor linear1_getpixel(int x,int y) {
    
 /*********************************************** Accelerated (?) primitives */
 
-
+/* 'Simple' horizontal line */
+void linear1_slab(int x,int y,int w,hwrcolor c) {
+   char *p = PIXELBYTE(x,y);
+   u8 mask, remainder = x&7;
+   int bw;
+   c = c ? 0xFF : 0x00;                    /* Expand color to 8 bits */
    
+   /* If the slab is completely contained within one byte,
+    * use a different method */
+   if ( (remainder + w) < 8 ) {
+      mask  = slabmask1[remainder];        /* Isolate the necessary pixels */
+      mask &= ~slabmask1[remainder+w];
+      *p &= ~mask;
+      *p |= c & mask;
+      return;
+   }
+   
+   if (remainder) {                        /* Draw the partial byte before */
+      mask = slabmask1[remainder];
+      *p &= ~mask;
+      *p |= c & mask;
+      p++;
+      w-=8-remainder;
+   }
+   if (w<1)                                /* That it? */
+     return;
+   __memset(p,c,bw = (w>>3));              /* Full bytes */
+   if (remainder = (w&7)) {                /* Partial byte afterwards */
+      p+=bw;
+      mask = slabmask1[remainder];
+      *p &= mask;
+      *p |= c & ~mask;
+   }
+}
+
+void linear1_bar(int x,int y,int h,hwrcolor c) {
+   /* Compute the masks ahead of time and reuse! */   
+   char *p = PIXELBYTE(x,y);
+   u8 remainder = x&7;
+   u8 mask  = notmask1[remainder];
+   if (c) c = pxlmask1[remainder];
+   
+   for (;h;h--,p+=vid->fb_bpl) {
+      *p &= mask;
+      *p |= c;
+   }
+}
+
 /*********************************************** Registration */
 
 /* Load our driver functions into a vidlib */
 void setvbl_linear1(struct vidlib *vid) {
-  /* Start with the defaults */
-  setvbl_default(vid);
-
-  /* Minimum functionality */
-  vid->pixel          = &linear1_pixel;
-  vid->getpixel       = &linear1_getpixel;
-  vid->color_pgtohwr  = &linear1_color_pgtohwr;
-  vid->color_hwrtopg  = &linear1_color_hwrtopg;
+   /* Start with the defaults */
+   setvbl_default(vid);
    
-  /* Accelerated functions */
-//  vid->slab           = &linear1_slab;
-//  vid->bar            = &linear1_bar;
+   /* Minimum functionality */
+   vid->pixel          = &linear1_pixel;
+   vid->getpixel       = &linear1_getpixel;
+   vid->color_pgtohwr  = &linear1_color_pgtohwr;
+   vid->color_hwrtopg  = &linear1_color_hwrtopg;
+   
+   /* Accelerated functions */
+   vid->slab           = &linear1_slab;
+   vid->bar            = &linear1_bar;
 //  vid->line           = &linear1_line;
-//  vid->rect           = &linear1_rect;
+//   vid->rect           = &linear1_rect;
 //  vid->gradient       = &linear1_gradient;
 //  vid->dim            = &linear1_dim;
 //  vid->scrollblit     = &linear1_scrollblit;
