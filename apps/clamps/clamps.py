@@ -95,7 +95,7 @@ class clampsInterface:
             filename = self.app.server.getstring(button.text)[:-1]
             splitName = string.split(filename, '.', 1)
             if len(splitName) > 1:
-                self.contentHandler.handleFile(splitName[1], self.path+filename)
+                self.contentHandler.handleFile(splitName[1], self.fsi.path+filename)
             else:
                 self.fsi.followDir(filename)
                 self.redraw()
