@@ -1,5 +1,7 @@
 SUBDIRS = thdump themec 
 
+EXTRA_DIST = themetools.spec
+
 dist-hook:
 	$(mkinstalldirs) $(distdir)/examples/data
 	$(mkinstalldirs) $(distdir)/include/picogui

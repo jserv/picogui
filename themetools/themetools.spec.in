@@ -1,0 +1,33 @@
+%define prefix @prefix@
+
+Summary: PicoGUI Theme Builder
+Name: @PACKAGE@
+Version: @VERSION@
+Release: 1
+Copyright: GPL
+Group: Developpment/Graphic
+Packager: Frédéric Gobry <frederic.gobry@smartdata.ch>
+Source: @PACKAGE@-@VERSION@.tar.gz
+
+Buildroot: %{_tmppath}/@PACKAGE@
+
+%description
+This set of tools allows the compilation of themes for the PicoGUI
+client/server windowing system
+
+%prep
+%setup
+
+%build
+./configure --prefix=%{prefix}
+make
+
+%install
+make install prefix=$RPM_BUILD_ROOT%{prefix}
+
+%files
+%{prefix}/bin/*
+
+%clean
+[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf ${RPM_BUILD_ROOT}
+

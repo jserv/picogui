@@ -23,4 +23,5 @@ AC_OUTPUT(
 	Makefile
 	thdump/Makefile
 	themec/Makefile
+	themetools.spec
 )
