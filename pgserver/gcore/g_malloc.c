@@ -1,4 +1,4 @@
-/* $Id: g_malloc.c,v 1.22 2002/03/03 18:34:48 micahjd Exp $
+/* $Id: g_malloc.c,v 1.23 2002/03/26 04:13:52 instinc Exp $
  *
  * g_malloc.c - malloc wrapper providing error handling
  *
@@ -32,18 +32,18 @@
 
 #include <stdlib.h>
 
-long memref = 0;
+s32 memref = 0;
 
 #ifdef DEBUG_ANY
-long memamt = 0;       /* Bytes of memory total */
+s32 memamt = 0;       /* Bytes of memory total */
 #endif
 
 #ifdef DEBUG_KEYS
 /* Memory allocation statistics, for debugging and profiling */
-long num_grops = 0;    /* Number of gropnodes */
-long num_divs = 0;     /* Number of divnodes */
-long num_widgets = 0;  /* Number of widgets */
-long num_handles = 0;  /* Number of handles */
+s32 num_grops = 0;    /* Number of gropnodes */
+s32 num_divs = 0;     /* Number of divnodes */
+s32 num_widgets = 0;  /* Number of widgets */
+s32 num_handles = 0;  /* Number of handles */
 #endif
 
 #ifdef DEBUG_MEMORY

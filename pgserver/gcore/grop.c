@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.52 2002/03/03 19:23:30 micahjd Exp $
+/* $Id: grop.c,v 1.53 2002/03/26 04:13:52 instinc Exp $
  *
  * grop.c - grop-list management
  *
@@ -41,7 +41,7 @@
  * the limit CONFIG_MAX_ZOMBIEGROPS
  */
 struct gropnode *grop_zombie_list;   
-long grop_zombie_count;
+s32 grop_zombie_count;
 
 g_error gropnode_alloc(struct gropnode **n) {
 #ifdef DEBUG_KEYS
