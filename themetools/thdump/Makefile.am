@@ -2,7 +2,7 @@ bin_PROGRAMS = thdump
 
 thdump_SOURCES = symtab.c main.c thdump.h
 
-CONSTANTS := $(includedir)/picogui/constants.h
+CONSTANTS := $(PGSERVER_INCLUDES)/picogui/constants.h
 MKSYMTAB  := perl $(srcdir)/mksymtab.pl
 
 symtab.c : $(CONSTANTS) $(srcdir)/mksymtab.pl

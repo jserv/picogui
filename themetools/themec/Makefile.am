@@ -10,8 +10,8 @@ LDADD = @LEXLIB@
 
 # Standard PicoGUI headers that would be of interest to themes
 
-CONSTANTS := $(includedir)/picogui/constants.h \
-             $(includedir)/picogui/pgkeys.h
+CONSTANTS := $(PGSERVER_INCLUDES)/picogui/constants.h \
+             $(PGSERVER_INCLUDES)/picogui/pgkeys.h
 
 # Some extras for OpenGL support, but only if available
 

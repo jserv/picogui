@@ -42,11 +42,13 @@ AM_CONDITIONAL(OPENGL, test x$opengl = xtrue)
 
 dnl Check for user-specified pgserver installation path
 PGSERVER_CFLAGS=""
-PGSERVER_LDFLAGS=""
+PGSERVER_INCLUDES="${includedir}/include"
 
 AC_ARG_WITH(pgserver,
 	[  --with-pgserver=...        prefix of the pgserver installation path],
-	PGSERVER_CFLAGS="-I${withval}/include")
+	PGSERVER_INCLUDES="${withval}/include")
+
+PGSERVER_CFLAGS="-I${PGSERVER_INCLUDES}"
 
 dnl Check that we can compile with the specified paths
 dnl 1.- save the old flags
@@ -67,6 +69,7 @@ CFLAGS="${old_CFLAGS}"
 
 dnl 5.- ...and export our symbol
 AC_SUBST(PGSERVER_CFLAGS)
+AC_SUBST(PGSERVER_INCLUDES)
 
 
 AC_OUTPUT(
