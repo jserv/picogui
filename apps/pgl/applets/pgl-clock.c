@@ -1,4 +1,4 @@
-/* $Id: pgl-clock.c,v 1.4 2002/01/06 09:22:56 micahjd Exp $
+/* $Id: pgl-clock.c,v 1.5 2002/01/09 16:40:18 carpman Exp $
  * 
  * pgl-clock.c - This is a simple clock applet for PGL
  *
@@ -35,6 +35,12 @@
 /* Maximum length of clock contents */
 #define CLKMAX 50
 
+/* The toolbar */
+pghandle pglToolbar;
+
+/* The toolbar's response variable */
+char *pglToolbarResponse;
+
 /* Clock settings */
 struct clockData {
   /* The clock itself */
@@ -59,9 +65,75 @@ struct clockData {
 } currentClock;
 
 /* Functions */
+void loadSettings(void);
+void storeSettings(void);
+void recieveMessage(struct pgEvent *evt);
 int btnDialog(struct pgEvent *btnevt);
 void mungeSettings(void);
 void updateTime(void);
+
+void loadSettings(void){
+  
+  pgAppMessage(pglToolbar, pglBuildMessage(PGL_GETPREF, "PGL-Clock", "flashColon", ""));
+  recieveMessage(pgGetEvent());
+  if(!strcmp(pglToolbarResponse, "Y")){
+    currentClock.flashColon = 1;
+  }else{
+    currentClock.flashColon = 0;
+  }
+  
+  pgAppMessage(pglToolbar, pglBuildMessage(PGL_GETPREF, "PGL-Clock", "enable24Hour", ""));
+  recieveMessage(pgGetEvent());
+  if(!strcmp(pglToolbarResponse, "Y")){
+    currentClock.enable24hour = 1;
+  }else{
+    currentClock.enable24hour = 0;
+  }
+  
+  pgAppMessage(pglToolbar, pglBuildMessage(PGL_GETPREF, "PGL-Clock", "enableSeconds", ""));
+  recieveMessage(pgGetEvent());
+  if(!strcmp(pglToolbarResponse, "Y")){
+    currentClock.enableSeconds = 1;
+  }else{
+    currentClock.enableSeconds = 0;
+  }
+  
+  pgAppMessage(pglToolbar, pglBuildMessage(PGL_GETPREF, "PGL-Clock", "enableWeekday", ""));
+  recieveMessage(pgGetEvent());
+  if(!strcmp(pglToolbarResponse, "Y")){
+    currentClock.enableWeekDay = 1;
+  }else{
+    currentClock.enableWeekDay = 0;
+  }
+
+  pgAppMessage(pglToolbar, pglBuildMessage(PGL_GETPREF, "PGL-Clock", "enableDay", ""));
+  recieveMessage(pgGetEvent());
+  if(!strcmp(pglToolbarResponse, "Y")){
+    currentClock.enableDay = 1;
+  }else{
+    currentClock.enableDay = 0;
+  }
+
+  pgAppMessage(pglToolbar, pglBuildMessage(PGL_GETPREF, "PGL-Clock", "enableMonth", ""));
+  recieveMessage(pgGetEvent());
+  if(!strcmp(pglToolbarResponse, "Y")){
+    currentClock.enableMonth = 1;
+  }else{
+    currentClock.enableMonth = 0;
+  }
+
+  pgAppMessage(pglToolbar, pglBuildMessage(PGL_GETPREF, "PGL-Clock", "enableYear", ""));
+  recieveMessage(pgGetEvent());
+  if(!strcmp(pglToolbarResponse, "Y")){
+    currentClock.enableYear = 1;
+  }else{
+    currentClock.enableYear = 0;
+  }
+}
+
+void storeSettings(void){
+  
+  if(currentClock.
 
 /* Options Dialog */
 int btnDialog(struct pgEvent *btnevt) {

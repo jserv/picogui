@@ -299,12 +299,16 @@ int main(int argc, char **argv){
 
   pgInit(argc, argv);
 
+  sleep(1);
+
   //Install into the toolbar
   pglBar = pgFindWidget("PGL-AppletBar");
   if(!pglBar){
     pgMessageDialog(argv[0], "This applet requires PGL",PG_MSGICON_ERROR);
     return 1;
   } 
+
+  printf("Got toolbar\n");
 
   //Create our widget
   pglButton = pgNewWidget(PG_WIDGET_BUTTON, PG_DERIVE_INSIDE, pglBar);
