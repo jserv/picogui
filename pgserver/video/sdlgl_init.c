@@ -1,4 +1,4 @@
-/* $Id: sdlgl_init.c,v 1.9 2002/03/05 11:26:30 micahjd Exp $
+/* $Id: sdlgl_init.c,v 1.10 2002/03/06 00:52:19 micahjd Exp $
  *
  * sdlgl_init.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has initialization, shutdown, and registration.
@@ -105,7 +105,7 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
 
   /* Clear */
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  glClearColor(0.0f, 0.4f, 0.0f, 0.0f);
   glClearDepth(1.0);
 
   //  glDepthFunc(GL_LEQUAL);

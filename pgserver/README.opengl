@@ -42,4 +42,6 @@ use for debugging while PicoGUI is running:
 
  - CTRL-ALT-F: Toggle the frames per second display :)
 
+ - CTRL-ALT-W: Toggle wireframe mode
+
 --- The End ---

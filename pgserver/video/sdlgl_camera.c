@@ -1,4 +1,4 @@
-/* $Id: sdlgl_camera.c,v 1.2 2002/03/03 18:59:19 micahjd Exp $
+/* $Id: sdlgl_camera.c,v 1.3 2002/03/06 00:52:19 micahjd Exp $
  *
  * sdlgl_camera.c - OpenGL driver for picogui, using SDL for portability.
  *                  This file traps keyboard and mouse input for camera control
@@ -71,6 +71,11 @@ int sdlgl_key_event_hook(u32 *type, s16 *key, s16 *mods) {
 
     case PGKEY_g:
       gl_global.grid = !gl_global.grid;
+      gl_global.need_update++;
+      return 1;
+
+    case PGKEY_w:
+      gl_global.wireframe = !gl_global.wireframe;
       gl_global.need_update++;
       return 1;
 

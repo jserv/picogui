@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.8 2002/03/05 11:26:30 micahjd Exp $
+/* $Id: sdlgl_util.c,v 1.9 2002/03/06 00:52:19 micahjd Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.
@@ -170,11 +170,15 @@ void gl_frame(void) {
     gl_render_grid();
 
   /***************** Divtrees */
+  
+  gl_set_wireframe(gl_global.wireframe);
 
   /* Redraw the whole frame */
   for (p=dts->top;p;p=p->next)
     p->flags |= DIVTREE_ALL_REDRAW;
   update(NULL,0);
+
+  gl_set_wireframe(0);
 
   /***************** Sprites */
 
@@ -264,8 +268,6 @@ void gl_render_grid(void) {
 
   /* Clear background */
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-  glClearDepth(1.0);
 
   /* Reset matrix */
   glPushMatrix();
@@ -273,7 +275,7 @@ void gl_render_grid(void) {
   gl_matrix_pixelcoord();
 
   /* Green mesh */
-  glColor3f(0.0f, 0.5f, 0.0f);
+  glColor3f(0.0f, 0.6f, 0.0f);
   glBegin(GL_LINES);
   /* Horizontal lines. */
   for (i=0; i<=vid->yres; i+=32) {
@@ -397,6 +399,10 @@ void gl_make_texture(struct glbitmap *glb) {
     
     //  gl_showtexture(glb->texture, glb->tw, glb->th);
   }      
+}
+
+void gl_set_wireframe(int on) {
+  glPolygonMode(GL_FRONT_AND_BACK, on ? GL_LINE : GL_FILL);
 }
 
 /* The End */

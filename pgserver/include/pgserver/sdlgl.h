@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.10 2002/03/05 11:26:29 micahjd Exp $
+/* $Id: sdlgl.h,v 1.11 2002/03/06 00:52:19 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -202,7 +202,8 @@ struct sdlgl_data {
   int need_update;
   int continuous;
   int update_throttle;
-  
+  int wireframe;
+
   /* save the old font list so we can restore it on exit */
   struct fontstyle_node *old_fonts;
 };
@@ -271,6 +272,7 @@ hwrcolor sdlgl_color_pgtohwr(pgcolor c);
 pgcolor sdlgl_color_hwrtopg(pgcolor c);
 void sdlgl_grop_handler(struct groprender *r, struct gropnode *n);
 void gl_make_texture(struct glbitmap *glb);
+void gl_set_wireframe(int on);
 
 #endif /* _H_SDLGL */
 
