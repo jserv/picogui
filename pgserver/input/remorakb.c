@@ -1,4 +1,4 @@
-/* $Id: remorakb.c,v 1.4 2001/11/10 12:23:50 bauermeister Exp $
+/* $Id: remorakb.c,v 1.5 2001/11/12 00:58:00 bauermeister Exp $
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -50,30 +50,30 @@
 
 /*****************************************************************************/
 
-#define DEBUG 1
-#define TRACE 0
+#define LOCAL_DEBUG 1
+#define LOCAL_TRACE 0
 
 /* ------------------------------------------------------------------------- */
 
-#if DEBUG
-# define DPRINTF(x) printf x
-# define WARNF(x)   printf x
+#if LOCAL_DEBUG
+# define DPRINTF(x...) printf(__FILE__": " x)
+# define WARNF(x...)   printf(__FILE__": " x)
 #else
-# define DPRINTF(x)
-# define WARNF(x)   printf x
-# undef TRACE
-# define TRACE 0
+# define DPRINTF(x...)
+# define WARNF(x...)   printf(__FILE__": " x)
+# undef LOCAL_TRACE
+# define LOCAL_TRACE 0
 #endif
 
-#if TRACE
-# define TRACEF(x) printf x
+#if LOCAL_TRACE
+# define TRACEF(x...)  printf(__FILE__": " x)
 #else
-# define TRACEF(x)
+# define TRACEF(x...)
 #endif
 
 /* ------------------------------------------------------------------------- */
 
-#if DEBUG
+#if LOCAL_DEBUG
 
 void print_pgmods(u16 mod)
 {
@@ -545,15 +545,15 @@ static int lookup(u16 hwcode)
   int upper_index = sizeof(key_def_table)/sizeof(HwKeyDef) -1;
   int lower_index = 0;
 
-  TRACEF((">>> lookup(%04X)\n", hwcode));
+  TRACEF(">>> lookup(%04X)\n", hwcode);
 
   /* Dichotomic search for the hwcode in the table */
   while(1) {
-    TRACEF(("=> %3d[%04X] [%04X] %3d[%04X]\n",
+    TRACEF("=> %3d[%04X] [%04X] %3d[%04X]\n",
             lower_index , key_def_table[lower_index].hw_code,
             hwcode,
             upper_index , key_def_table[upper_index].hw_code
-            ));
+            );
 
     if(key_def_table[lower_index].hw_code==hwcode)
       return lower_index;
@@ -615,7 +615,7 @@ static const CompositionDef comp_def_table[] = {
 static u16 compose_lookup(u16 code, u16 comp)
 {
   const CompositionDef *def;
-  TRACEF((">>> compose_lookup([%c], [%c])\n", code, comp));
+  TRACEF(">>> compose_lookup([%c], [%c])\n", code, comp);
 
   for(def=comp_def_table; def->accent; ++def) {
     if((def->accent&0xff) == comp) {
@@ -652,7 +652,7 @@ static struct termios saved_options;
 
 static void kb_init_mods()
 {
-  TRACEF((">>> kb_init_mods()\n"));
+  TRACEF(">>> kb_init_mods()\n");
   mod_caps  = 0;
   mod_ctr   = 0;
   mod_fn    = 0;
@@ -672,7 +672,7 @@ static int kb_getkey_index(int fd)
   int index;
   u16 hwcode = 0;
 
-  TRACEF((">>> kb_getkey_index()\n"));
+  TRACEF(">>> kb_getkey_index()\n");
 
   while(1) {
     /* try to read a valid key code */
@@ -683,7 +683,7 @@ static int kb_getkey_index(int fd)
     if(n<=0)
       return -1;
 
-    TRACEF(("=>%d[%02X]\n", nbread, c));
+    TRACEF("=>%d[%02X]\n", nbread, c);
     /* resynch sleep */
     if(c==0x74) {
       return -1;
@@ -706,7 +706,7 @@ static int kb_getkey_index(int fd)
 
     if(nbread>=2) {
       /* mbd error */
-      WARNF(("*** kbd error, resetting\n"));
+      WARNF("*** kbd error, resetting\n");
       kb_init_mods();
       return -1;
     }
@@ -718,7 +718,7 @@ static int kb_getkey_index(int fd)
 static int kb_fd_activate(int fd)
 {
   int index;
-  TRACEF((">>> kb_fd_activate()\n"));
+  TRACEF(">>> kb_fd_activate()\n");
 
   /*
    * is the fd mine ?
@@ -873,7 +873,7 @@ static int kb_fd_activate(int fd)
           code = compose_lookup(code, comp_char);
       }
 
-      TRACEF(("\n[%s] [%s] [%s] [%s] [%s] [%s] [%s]",
+      TRACEF("\n[%s] [%s] [%s] [%s] [%s] [%s] [%s]",
               mod_caps  ? "CAPS" : "    ",
               mod_ctr   ? "CTR"  : "   ",
               mod_fn    ? "FN"   : "  ",
@@ -881,7 +881,7 @@ static int kb_fd_activate(int fd)
               mod_rsh   ? "rSHFT": "     ",
               mod_lsh   ? "lSHFT": "     ",
               comp_char ? "comp" : "    "
-              ));
+              );
       
       comp_char = 0;
       pg_code = code;
@@ -893,28 +893,30 @@ static int kb_fd_activate(int fd)
     }
     
 
-#if DEBUG
+#if LOCAL_DEBUG
     if(pg_type==TRIGGER_CHAR)
-      DPRINTF(("CHAR, char:['%c'=%02x]", pg_code, pg_code));
+      DPRINTF("CHAR, char:['%c'=%02x]", pg_code, pg_code);
     else {
-      DPRINTF(("%s, key:[%02X=",
+      DPRINTF("%s, key:[%02X=",
 	       pg_type==TRIGGER_KEYUP ? "KEYUP" : "KEYDOWN",
-	       pg_code));
+	       pg_code);
       print_pgkeyname(pg_code);
-      DPRINTF(("]"));
+      printf("]");
     }
-    DPRINTF(("\r\t\t\t\t\t\tMODS:["));
+    printf("\r\t\t\t\t\t\tMODS:[");
     print_pgmods(pg_mods);
-    DPRINTF(("]\n"));
+    printf("]\n");
 #endif
     
     /*
      * Send it up !
      */
-    VID(sprite_show)(cursor);
     dispatch_key(pg_type, pg_code, pg_mods);
     if(pg_type==TRIGGER_CHAR && pg_code==' ')
       dispatch_key(TRIGGER_KEYDOWN, PGKEY_SPACE, pg_mods);
+    drivermessage(PGDM_CURSORVISIBLE,1,NULL);
+    drivermessage(PGDM_CURSORBLKEN,0,NULL);
+
     return 1;
   }
 }
@@ -926,17 +928,17 @@ static g_error kb_init(void)
   struct termios options;
   const char* device = get_param_str("remora-kb", "device", NULL);
 
-  TRACEF((">>> kb_init()\n"));
+  TRACEF(">>> kb_init()\n");
 
   if(device==NULL) {
     /* keyboard not connected, this is not an error */
-printf("kb_init: no kb\n");
+    WARNF("kb_init: no kb found\n");
     kb_fd = -1;
     return sucess;
   }
-printf("kb_init: trying [%s] Nr %d\n", device, device[strlen(device)-1]);
+  DPRINTF("kb_init: trying [%s] Nr %d\n", device, device[strlen(device)-1]);
 
-  TRACEF(("  > device=[%s]\n", device));
+  TRACEF("device=[%s]\n", device);
   kb_fd = open(device, O_RDONLY | O_NOCTTY | O_NDELAY);
 
   if(kb_fd < 0)
@@ -970,7 +972,7 @@ printf("kb_init: trying [%s] Nr %d\n", device, device[strlen(device)-1]);
   kb_init_mods();           /* init states*/
 
 
-  TRACEF(("  > kb_init done\n"));
+  TRACEF("  > kb_init done\n");
   return sucess;
 }
 
@@ -988,7 +990,7 @@ static void kb_fd_init(int *n, fd_set *readfds, struct timeval *timeout)
 
 static void kb_close(void)
 {
-  TRACEF((">>> kb_close()\n"));
+  TRACEF(">>> kb_close()\n");
   tcsetattr(kb_fd, TCSANOW, &saved_options);
   close(kb_fd);
 }
@@ -997,7 +999,7 @@ static void kb_close(void)
 
 g_error remorakb_regfunc(struct inlib *i)
 {
-  TRACEF((">>> remorakb_regfunc()\n"));
+  TRACEF(">>> remorakb_regfunc()\n");
   i->init = &kb_init;
   i->fd_activate = &kb_fd_activate;
   i->fd_init = &kb_fd_init;
