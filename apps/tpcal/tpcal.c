@@ -37,7 +37,7 @@
 #define DBG(x)
 #endif
 
-static int xext=0, yext=0;
+static int xext=0, yext=0, xoffs=0, yoffs=0;
 static CALIBRATION_PAIRS cps;
 static CALIBRATION_PAIR* pcp = 0;
 static POINT current_target_location;
@@ -99,8 +99,9 @@ POINT GetTarget(int n)
 
 void showTransformations(void)
 {
-
+  char str[256];
   TRANSFORMATION_COEFFICIENTS tc;
+
 #if 0
   CalcTransformationCoefficientsSimple(&cps, &tc);
   printf("%d %d %d %d %d %d %d\n",
@@ -113,9 +114,10 @@ void showTransformations(void)
 	 tc.a, tc.b, tc.c, tc.d, tc.e, tc.f, tc.s);
 #endif
   CalcTransformationCoefficientsBest(&cps, &tc);
-  printf("%d %d %d %d %d %d %d\n",
+  sprintf(str, "COEFFv1 %d %d %d %d %d %d %d",
 	 tc.a, tc.b, tc.c, tc.d, tc.e, tc.f, tc.s);
-    
+  puts(str);
+  pgDriverMessage(PGDM_INPUT_SETCAL, pgNewString(str));
 
   pgMessageDialogFmt("Done!",0,
 		     "You completed calibration!\n\n" 
@@ -126,7 +128,7 @@ void showTransformations(void)
 
 }
 
-void DrawTarget(struct pgEvent *evt, POINT p, unsigned long int c) {
+void DrawTarget(POINT p, unsigned long int c) {
   const int center = 3;
   const int scale = 9;
   pgcontext gc;
@@ -136,7 +138,7 @@ void DrawTarget(struct pgEvent *evt, POINT p, unsigned long int c) {
   /* I wanted to use a label to update new coordinates, didn't get this working yet. */
   pgReplaceTextFmt(wStatusLabel,"Please touch the center of the target (%d,%d)",p.x,p.y);
 
-  gc = pgNewCanvasContext(evt->from,PGFX_PERSISTENT);
+  gc = pgNewCanvasContext(wCanvas,PGFX_PERSISTENT);
 
   pgSetColor(gc,c);        /* An 'X' across the canvas */
   pgFrame(gc,p.x-center,p.y-center,center*2+1,center*2+1);
@@ -161,33 +163,42 @@ int evtDrawTarget(struct pgEvent *evt) {
   if(!xext) {
     xext = evt->e.size.w;
     yext = evt->e.size.h;
+    xoffs = pgGetWidget(evt->from, PG_WP_ABSOLUTEX);
+    yoffs = pgGetWidget(evt->from, PG_WP_ABSOLUTEY);
   } else {
     /* erase the old target */
-    DrawTarget(evt, last, 0xFFFFFF);
+    DrawTarget(last, 0xFFFFFF);
   }
 
   DBG((__FUNCTION__" current_target=%d (%dx%d)\n",current_target,xext,yext));
 
-  if (current_target == total_targets) {
-    /* we are done, bring up a dialog and show the transformations */
-    showTransformations();
+  if (current_target != total_targets) {
+    /* draw new target at current location */
+    current_target_location = GetTarget(current_target);
+    DrawTarget(current_target_location, 0x000000);
   }
-
-  /* draw new target at current location */
-  current_target_location = GetTarget(current_target);
-  DrawTarget(evt, current_target_location, 0x000000);
 
   return 0;
 
 }
 
-int evtMouseDown(struct pgEvent *evt) {
+int evtPenUp(struct pgEvent *evt) {
+  if(current_target == total_targets) {
+    pgUnregisterOwner(PG_OWN_POINTER);
+    pgDriverMessage(PGDM_INPUT_CALEN, 0);
+    pgBind(PGBIND_ANY,PG_NWE_PNTR_DOWN,NULL,NULL);
+    pgBind(PGBIND_ANY,PG_NWE_PNTR_UP,NULL,NULL);
+    showTransformations();
+  }
+}
+
+int evtPenDown(struct pgEvent *evt) {
 
   DBG((__FUNCTION__ " (x=%d,y=%d)\n",evt->e.pntr.x,evt->e.pntr.y));
 
   if (pcp != 0) {
-    pcp->screen.x = current_target_location.x * TRANSFORMATION_UNITS_PER_PIXEL;
-    pcp->screen.y = current_target_location.y * TRANSFORMATION_UNITS_PER_PIXEL;
+    pcp->screen.x = current_target_location.x + xoffs;
+    pcp->screen.y = current_target_location.y + yoffs;
     pcp->device.x = evt->e.pntr.x;
     pcp->device.y = evt->e.pntr.y;
   }
@@ -214,7 +225,10 @@ int main(int argc, char *argv[])
 
   wCanvas = pgNewWidget(PG_WIDGET_CANVAS,0,0);
   pgBind(PGDEFAULT,PG_WE_BUILD,&evtDrawTarget,NULL);
-  pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&evtMouseDown,NULL);
+  pgBind(PGBIND_ANY,PG_NWE_PNTR_DOWN,&evtPenDown,NULL);
+  pgBind(PGBIND_ANY,PG_NWE_PNTR_UP,&evtPenUp,NULL);
+  pgRegisterOwner(PG_OWN_POINTER);
+  pgDriverMessage(PGDM_INPUT_CALEN, 1);
 
   /* couldn't figure out how to attach the label to the app bar, and have it replace text */
   wStatusLabel = pgNewWidget(PG_WIDGET_LABEL,0,0);
