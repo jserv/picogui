@@ -352,13 +352,95 @@ object scroll.h {
 object scroll.v.on bitmap2 = LoadBitmap("data/scrollthumb_v_bright.png");
 object scroll.h.on bitmap2 = LoadBitmap("data/scrollthumb_h_bright.png");
 
-/********************************** Scroll */
+/********************************** Menus */
+
+object popup.menu {
+  bitmap1 = LoadBitmap("data/menu_border.png");
+  margin = 1;
+
+  backdrop = fillstyle {
+    var bar_w,bar_h,min_size;
+
+    /* De-emphasize the rest of the screen */
+    SetLgop(PG_LGOP_ALPHA);
+    SetColor(PGCF_ALPHA | PGC_WHITE | (45<<24));
+    Rect(0,0,0x7FFF,0x7FFF);
+    SetLgop(PG_LGOP_NONE);
+
+    /* Size the decoration bars measured from x,y */
+    min_size = 27;
+    bar_w = w * 80/100;
+    bar_h = h * 30/100;
+    bar_w = bar_w>min_size ? bar_w : min_size;
+    bar_h = bar_h>min_size ? bar_h : min_size;
+
+    /* This whole thing is alpha blended */
+    SetLgop(PG_LGOP_ALPHA);
+
+    /* Top-left */
+    SetSrc(0,0,15,15);
+    Bitmap(x-10,y-10,15,15,bitmap1);
+
+    /* Top bar */
+    SetSrc(15,0,7,10);
+    Tilebitmap(x+5,y-10,bar_w-17,10,bitmap1);
+
+    /* Top bar-shadow junction */
+    SetSrc(22,0,12,10);
+    Bitmap(x+bar_w-12,y-10,12,10,bitmap1);
+
+    /* Top shadow */
+    SetSrc(34,0,9,10);
+    Tilebitmap(x+bar_w,y-10,w-bar_w-4,10,bitmap1);
+
+    /* Top-right */
+    SetSrc(43,0,11,14);
+    Bitmap(x+w-4,y-10,11,14,bitmap1);
+
+    /* Right */
+    SetSrc(47,17,7,22);
+    Tilebitmap(x+w,y+4,7,h-8,bitmap1);
+    
+    /* Bottom-right */
+    SetSrc(43,45,11,11);
+    Bitmap(x+w-4,y+h-4,11,11,bitmap1);
+    
+    /* Bottom */
+    SetSrc(17,49,22,7);
+    Tilebitmap(x+4,y+h,w-8,7,bitmap1);
+
+    /* Bottom-left */
+    SetSrc(0,45,14,11);
+    Bitmap(x-10,y+h-4,14,11,bitmap1);
+
+    /* Left bar */
+    SetSrc(0,15,10,4);
+    Tilebitmap(x-10,y+5,10,bar_h-17,bitmap1);
+
+    /* Left bar-shadow junction */
+    SetSrc(0,21,10,12);
+    Bitmap(x-10,y+bar_h-12,10,12,bitmap1);
+
+    /* Left shadow */
+    SetSrc(0,34,10,10);
+    Tilebitmap(x-10,y+bar_h,10,h-bar_h-4,bitmap1);
+
+    /* Cleanup */
+    SetLgop(PG_LGOP_NONE);
+    SetSrc(0,0,0,0);
+  };
+
+  bgfill = fillstyle {
+    Bitmap(x,y,w,h,bDarkInterlace);
+  };
+}
 
 object menuitem {
   bgfill = fillstyle {
-    Bitmap(x,y,w,h,bitmap1);
-    h = h - 1;
+    Bitmap(x,y,w,h,bDarkInterlace);
+    h = h - menuitem.hilight::offset;
   };
+
   align = PG_A_LEFT;
   height = 18;
 }
