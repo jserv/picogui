@@ -163,12 +163,12 @@ if test "$CONFIG_FORMAT_JPEG" = "y"; then
 
 	echo "user defined jpeg path: $PGUI_WITH_JPEG_DIR"
 	
-	if [ ! test -f $PGUI_WITH_JPEG_DIR/jpeglib.h ]; then
+	if [ ! test -f $PGUI_WITH_JPEG_DIR/include/jpeglib.h ]; then
             AC_MSG_ERROR(jpeglib.h not found! Make sure $PGUI_WITH_JPEG_DIR has jpeglib.h)
 	fi
 
-	LIBS="$LIBS -L $PGUI_WITH_JPEG_DIR -ljpeg"
-	CFLAGS="-I $PGUI_WITH_JPEG_DIR"
+	LIBS="$LIBS -L $PGUI_WITH_JPEG_DIR/lib -ljpeg"
+	CFLAGS="-I $PGUI_WITH_JPEG_DIR/include"
   fi
 
 fi
