@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/include
+INCLUDES = -I$(top_srcdir)/include $(PGSERVER_CFLAGS)
 
 lib_LTLIBRARIES = libpgui.la
 
