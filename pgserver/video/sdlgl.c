@@ -1,4 +1,4 @@
-/* $Id: sdlgl.c,v 1.12 2002/11/25 08:44:31 micahjd Exp $
+/* $Id: sdlgl.c,v 1.13 2002/11/25 09:49:23 micahjd Exp $
  *
  * sdlgl.c - Video driver using SDL and the OpenGL VBL 
  *
@@ -31,6 +31,12 @@
 #include <pgserver/configfile.h>
 #include <pgserver/gl.h>
 #include <SDL/SDL.h> 
+
+#ifdef CONFIG_SDLSKIN
+extern s16 sdlfb_display_x;
+extern s16 sdlfb_display_y;
+extern u16 sdlfb_scale;
+#endif
 
 g_error sdlgl_init(void) {
   g_error e;
@@ -72,6 +78,15 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   vid->bpp  = surface->format->BitsPerPixel;
   vid->xres = xres;
   vid->yres = yres;
+
+#ifdef CONFIG_SDLSKIN
+  /* If we've got SDL skinning support, set the relevant vars to good values 
+   * so the input driver won't get wacky on us.
+   */
+  sdlfb_display_x = 0;
+  sdlfb_display_y = 0;
+  sdlfb_scale     = 1;
+#endif
    
   e = gl_setmode(xres,yres,bpp,flags);
   errorcheck;
