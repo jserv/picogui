@@ -1,4 +1,4 @@
-/* $Id: demo.c,v 1.16 2000/11/05 20:20:45 micahjd Exp $
+/* $Id: demo.c,v 1.17 2001/01/10 04:29:27 micahjd Exp $
  *
  * demo.c -   source file for testing PicoGUI
  *
@@ -159,7 +159,11 @@ int main(int argc, char *argv[])
 		 "reason why this market is to be\n"
 		 "considered as one of the major fast\n"
 		 "growing markets at the beginning\n"
-		 "of this millennium.\n"),
+		 "of this millennium.\n"
+		 "\n----------------------------------------------------\n\n"
+		 "This is more text\n"
+		 "            (for your scrolling pleasure)\n"
+		 "Brought to you by pgSetWidget() and pgNewString()\n"),
 	      0);
 
   /* Add a scrollbar */
