@@ -7,7 +7,7 @@ from clients connecting to it on a UNIX socket
 socketName = "/tmp/announceBot.socket"
 channelFile = "/home/commits/channels.list"
 
-secondsBetweenLines = 2
+secondsBetweenLines = 0.5
 
 from twisted.im import basechat, baseaccount, ircsupport 
 from twisted.internet.protocol import Factory
@@ -33,8 +33,8 @@ channelFile = channelFile + "." + str(botID);
 
 # Lalo's joke: A brainless entity created to keep an eye on subversion                 
 botNick = "CIA"
-if botID > 1:
-    botNick = botNick + str(botID)  
+##if botID > 1:
+##    botNick = botNick + str(botID)  
 
 # List of channels we're in. These will be autojoined by the
 # AccountManager. We update this and save it when we get a mail
