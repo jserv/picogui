@@ -83,6 +83,9 @@ cat<<EOF
 @INPUTDRIVERS@
 depth = 16
 
+[input-ttykb]
+device = /dev/tty1
+
 [timers]
 cursorhide = 10
 backlightoff = 300
