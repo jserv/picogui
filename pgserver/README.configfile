@@ -438,7 +438,7 @@ quoted appropriately. For example:
   Defaults to 0.25
 
 - showfps
-  Show the frames per second in the corner of the screen, when doing continuous updating.
+  If nonzero, this is the font size to show the frames per second in.
 
 --- The End ---
 

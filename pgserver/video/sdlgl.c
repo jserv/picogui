@@ -1,4 +1,4 @@
-/* $Id: sdlgl.c,v 1.6 2002/02/28 07:09:05 micahjd Exp $
+/* $Id: sdlgl.c,v 1.7 2002/02/28 08:06:33 micahjd Exp $
  *
  * sdlgl.c - OpenGL driver for picogui, using SDL for portability
  *
@@ -86,8 +86,8 @@ float gl_fps;
  */
 float gl_fps_interval;
 
-/* Nonzero to show the frames per second counter */
-int gl_showfps;
+/* 0 to hide the FPS display, or the FPS display's font */
+handle gl_fps_font;
 
 /* Input library optionally loaded to make this driver continously redraw */
 struct inlib *gl_continuous;
@@ -347,23 +347,24 @@ hwrcolor sdlgl_getpixel(hwrbitmap dest,s16 x,s16 y) {
 
 /* It's double-buffered */
 void sdlgl_update(s16 x, s16 y, s16 w, s16 h) {
+  struct fontdesc *fd;
 
   /* Show the FPS display here if needed */
-  if (gl_showfps) {
+  if (gl_fps_font) {
     char buf[40];
-    struct fontdesc *fd;
     
-    if (!iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,defaultfont))) {
-      snprintf(buf,sizeof(buf),"FPS: %.2f",gl_fps);
+    if (!iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,gl_fps_font))) {
 
-      /* Draw the text multiple times to get a border effect */
-      outtext(vid->display,fd,6,5,0x202020,buf,NULL,PG_LGOP_NONE,0);
-      outtext(vid->display,fd,5,6,0x202020,buf,NULL,PG_LGOP_NONE,0);
-      outtext(vid->display,fd,6,6,0x202020,buf,NULL,PG_LGOP_NONE,0);
-      outtext(vid->display,fd,4,5,0x202020,buf,NULL,PG_LGOP_NONE,0);
-      outtext(vid->display,fd,5,4,0x202020,buf,NULL,PG_LGOP_NONE,0);
-      outtext(vid->display,fd,4,4,0x202020,buf,NULL,PG_LGOP_NONE,0);
-      outtext(vid->display,fd,5,5,0xFFFF00,buf,NULL,PG_LGOP_NONE,0);
+    snprintf(buf,sizeof(buf),"FPS: %.2f",gl_fps);
+    
+    /* Draw the text multiple times to get a border effect */
+    outtext(vid->display,fd,6,5,0x202020,buf,NULL,PG_LGOP_NONE,0);
+    outtext(vid->display,fd,5,6,0x202020,buf,NULL,PG_LGOP_NONE,0);
+    outtext(vid->display,fd,6,6,0x202020,buf,NULL,PG_LGOP_NONE,0);
+    outtext(vid->display,fd,4,5,0x202020,buf,NULL,PG_LGOP_NONE,0);
+    outtext(vid->display,fd,5,4,0x202020,buf,NULL,PG_LGOP_NONE,0);
+    outtext(vid->display,fd,4,4,0x202020,buf,NULL,PG_LGOP_NONE,0);
+    outtext(vid->display,fd,5,5,0xFFFF00,buf,NULL,PG_LGOP_NONE,0);
     }
   }
 
@@ -706,6 +707,8 @@ void sdlgl_bitmap_free(hwrbitmap bmp) {
 
 g_error sdlgl_init(void) {
   const char *s;
+  int i;
+  g_error e;
 
   /* Default mode: 640x480 */
   if (!vid->xres) vid->xres = 640;
@@ -729,7 +732,6 @@ g_error sdlgl_init(void) {
 
   /* Optionally load the continuous-running "input driver" */
   if (get_param_int("video-sdlgl","continuous",0)) {
-    g_error e;
     e = load_inlib(&gl_continuous_regfunc,&gl_continuous);
     errorcheck;
   }
@@ -743,7 +745,12 @@ g_error sdlgl_init(void) {
   }
 
   sscanf(get_param_str("video-sdlgl","fps_interval","0.25"),"%f",&gl_fps_interval);
-  gl_showfps = get_param_int("video-sdlgl","showfps",0);
+  
+  i = get_param_int("video-sdlgl","showfps",0);
+  if (i) {
+    e = findfont(&gl_fps_font,-1,NULL,i,0);
+    errorcheck;
+  }
 
   /* Load a main input driver */
   return load_inlib(&sdlinput_regfunc,&inlib_main);
@@ -838,6 +845,8 @@ void sdlgl_close(void) {
   unload_inlib(inlib_main);   /* Take out our input driver */
   if (gl_continuous)
     unload_inlib(gl_continuous);
+  if (gl_fps_font)
+    handle_free(gl_fps_font,-1);
   SDL_Quit();
 }
 
