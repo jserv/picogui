@@ -4,7 +4,7 @@
 """
 from twisted.internet import reactor, protocol
 
-socketName = "/tmp/announceBot.socket"
+socketName = "/tmp/announceBot.socket.1"
 
 class AnnounceClient(protocol.Protocol):
     def connectionMade(self):

@@ -131,7 +131,6 @@ class AnnounceClient(protocol.Protocol):
                 # Our lame little stat page
                 if subjectFields[0] in statCountedCommands:
                     updateStats(subjectFields[1])
-                
                 # This limits the length of the maximum message, mainly to prevent DOS'ing the bot too badly
                 for l in lines:
                     self.transport.write(l)
