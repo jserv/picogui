@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.28 2002/03/27 15:09:24 lonetech Exp $
+/* $Id: pgmain.c,v 1.29 2002/03/29 18:03:22 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -317,6 +317,7 @@ int main(int argc, char **argv) {
 	p->name = optarg;  /* Optarg points inside argv so it
 			    * will stick around for a while */
 	p->next = NULL;
+	p->h = NULL;
 	if (tail)
 	  tail->next = p;
 	else
@@ -409,6 +410,7 @@ int main(int argc, char **argv) {
 	   if (iserror(prerror(g_malloc((void**)&p,
 					sizeof(struct themefilenode)))))
 	     return 1;
+	   p->h = NULL;
 	   p->name = tok;
 	   p->next = NULL;
 	   if (tail)
@@ -529,27 +531,9 @@ int main(int argc, char **argv) {
     if (!themefiles)
       reload_hotkeys();
 
-    p = themefiles;
-    while (p) {
-
-#ifdef DEBUG_INIT
-      printf("Init: loading theme '%s'\n",p->name);
-#endif
-      
-      /* Load */
-      if ((fd = open(p->name,O_RDONLY))<=0) {
-	perror(p->name);
-	return 1;
-      }
-      fstat(fd,&st);
-      if (iserror(prerror(g_malloc((void**)&themebuf,st.st_size)))) return 1;
-      read(fd,themebuf,st.st_size);
-      close(fd);
-      if (iserror(prerror(theme_load(&p->h,-1,themebuf,st.st_size)))) return 1;
-      g_free(themebuf);
-
-      p = p->next;
-    }
+    /* Load us some themes */
+    if (iserror(prerror(reload_initial_themes())))
+      return 1;
 
 #endif /* WINDOWS */
 
@@ -666,20 +650,31 @@ g_error reload_initial_themes(void) {
    unsigned char *themebuf;
    int fd;
    struct stat st;
+   const char *themedir;
 
-   /* Don't need to reload them if we're not even done initting yet.
-    * It would be bad to reload themes before the appmgr or layout engine
-    * is up! */
-   if (in_init) return success;
-   
+   /* See if we have a theme directory... */
+   themedir = get_param_str("pgserver","themedir",NULL);
+
    for (p=themefiles;p;p=p->next) {
-      
+      char *filename;
+      char pathbuffer[1024];
+
       /* Kill the previous load */
-      handle_free(-1,p->h);
+      if (p->h)
+	handle_free(-1,p->h);
       
+      if (themedir) {
+	pathbuffer[sizeof(pathbuffer)-1] = 0;
+	snprintf(pathbuffer,sizeof(pathbuffer)-1,"%s/%s",themedir,p->name);
+	filename = pathbuffer;
+      }
+      else
+	filename = p->name;
+
       /* Load theme from file */
-      if ((fd = open(p->name,O_RDONLY))<=0)
-	 continue;     /* Maybe next time we will beink more successful, da? */
+      printf("Trying to load %s\n",filename);
+      if ((fd = open(filename,O_RDONLY))<=0)
+	return mkerror(PG_ERRT_IO,109);       /* Can't find a theme file */
       fstat(fd,&st);
       e = g_malloc((void**)&themebuf,st.st_size);
       errorcheck;
@@ -687,6 +682,7 @@ g_error reload_initial_themes(void) {
       close(fd);
       e = theme_load(&p->h,-1,themebuf,st.st_size);
       errorcheck;
+      printf("Theme loaded- %s is %d\n",filename, p->h);
       
       /* FIXME: Theme not loaded in the correct order */
       

@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.34 2002/03/29 13:21:18 micahjd Exp $
+/* $Id: fbdev.c,v 1.35 2002/03/29 18:03:22 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -614,8 +614,8 @@ g_error fbdev_init(void) {
 
      /* And set up the virtual resolution for 2 buffers stacked vertically
       */
-     varinfo.xres_virtual = varinfo.xres;
-     varinfo.yres_virtual = varinfo.yres << 1;
+     varinfo.xres_virtual = vid->xres;
+     varinfo.yres_virtual = vid->yres << 1;
      varinfo.xoffset = 0;
      varinfo.yoffset = 0;
      ioctl(fbdev_fd,FBIOPUT_VSCREENINFO,&varinfo);  

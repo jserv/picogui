@@ -78,6 +78,9 @@ quoted appropriately. For example:
 - themes
   Whitespace-separated list of theme files to load
 
+- themedir
+  Directory to prefix each theme with. Makes typing in the 'themes' line a lot less tedious
+
 - input
   Whitespace-separated list of input drivers to load
 

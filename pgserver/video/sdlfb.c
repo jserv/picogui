@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.43 2002/03/26 03:12:35 instinc Exp $
+/* $Id: sdlfb.c,v 1.44 2002/03/29 18:03:22 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -38,6 +38,11 @@
 #include <pgserver/configfile.h>  /* For loading our configuration */
 
 #include <SDL/SDL.h>              /* This is the SDL video driver */
+
+#ifdef DEBUG_VIDEO
+#define DEBUG_FILE
+#endif
+#include <pgserver/debug.h>
 
 #ifdef CONFIG_SDLSKIN
 #include <stdio.h>                /* File I/O for loading skin bitmap */
@@ -406,6 +411,7 @@ void sdlfb_close(void) {
 }
 
 void sdlfb_update(s16 x,s16 y,s16 w,s16 h) {
+  DBG("at %d,%d,%d,%d\n",x,y,w,h);
 
 #ifdef CONFIG_SDLSKIN
    x += sdlfb_display_x;
