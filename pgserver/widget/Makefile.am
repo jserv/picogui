@@ -3,7 +3,6 @@ INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include
 noinst_LIBRARIES = libwidget.a
 
 libwidget_a_SOURCES = \
-    bitmap.c \
     indicator.c \
     label.c \
     toolbar.c \

@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.139 2002/05/20 16:00:49 micahjd Exp $
+/* $Id: constants.h,v 1.140 2002/05/20 21:10:48 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -954,6 +954,7 @@ typedef unsigned long pghandle;
 #define PG_DIR_HORIZONTAL     0
 #define PG_DIR_VERTICAL       90
 #define PG_DIR_ANTIHORIZONTAL 180
+#define PG_DIR_ANTIVERTICAL   270
 
 /******************** Events */
 

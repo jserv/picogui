@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.104 2002/05/20 19:18:38 micahjd Exp $
+/* $Id: button.c,v 1.105 2002/05/20 21:10:48 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -52,9 +52,19 @@ struct btndata {
 
   /* This flag is set when our hotkey is received */
   unsigned int hotkey_received : 1;
+
+  /* Allow the background to show through. */
+  unsigned int transparent : 1;
   
+  /* Set if the client is overriding the theme's setting */
+  unsigned int alignset : 1;
+  unsigned int colorset : 1;
+
   handle bitmap,bitmask,text,font;
   
+  pgcolor color;
+  short align, direction, lgop;
+
   /* Values set by PG_WP_THOBJ_BUTTON_* */
   int state,state_on,state_hilight,state_on_nohilight,bitmap_side;
 
@@ -117,12 +127,16 @@ void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
   }
    
   /* Background */
-  exec_fillstyle(c,state,PGTH_P_BGFILL);
+  if (!DATA->transparent)
+     exec_fillstyle(c,state,PGTH_P_BGFILL);
+   else
+     /* Redraw the containing widget if we're transparent */
+     redraw_bg(self);
 
   position_button(self,&bp);
 
   /* Align the whole thing */
-  align(c,theme_lookup(state,PGTH_P_ALIGN),&bp.w,&bp.h,&bp.x,&bp.y);
+  align(c,DATA->alignset ? DATA->align : theme_lookup(state,PGTH_P_ALIGN),&bp.w,&bp.h,&bp.x,&bp.y);
 
   /* AND the mask, then OR the bitmap. Yay for transparency effects! */
   if (DATA->bitmask) {
@@ -132,13 +146,12 @@ void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
     c->current->param[0] = DATA->bitmask;
   }
   if (DATA->bitmap) {
-    if (DATA->bitmask) {
+    if (DATA->bitmask || DATA->lgop) {
        addgrop(c,PG_GROP_SETLGOP);
-       c->current->param[0] = PG_LGOP_OR;
+       c->current->param[0] = DATA->lgop ? DATA->lgop : PG_LGOP_OR;
     }
-
     /* Automatically use alpha blending if necessary */
-    if (DATA->has_alpha) {
+    else if (DATA->has_alpha) {
       addgrop(c,PG_GROP_SETLGOP);
       c->current->param[0] = PG_LGOP_ALPHA;
     }
@@ -161,11 +174,18 @@ void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
   if (DATA->text) {
     addgrop(c,PG_GROP_SETCOLOR);
     c->current->param[0] = VID(color_pgtohwr) 
-       (theme_lookup(state,PGTH_P_FGCOLOR));
+       (DATA->colorset ? DATA->color : theme_lookup(state,PGTH_P_FGCOLOR));
+
     if (bp.font != defaultfont) {
        addgrop(c,PG_GROP_SETFONT);
        c->current->param[0] = bp.font;
     }
+
+    if (DATA->direction) {
+      addgrop(c,PG_GROP_SETANGLE);
+      c->current->param[0] = DATA->direction; 
+    }
+
     addgropsz(c,PG_GROP_TEXT,bp.x+bp.tx,bp.y+bp.ty,bp.tw,bp.th);
     c->current->param[0] = DATA->text;
   }
@@ -337,6 +357,36 @@ g_error button_set(struct widget *self,int property, glob data) {
     DATA->hotkey = data;
     break;
 
+  case PG_WP_TRANSPARENT:
+    DATA->transparent = data;
+    set_widget_rebuild(self);
+    break;
+
+   case PG_WP_ALIGN:
+    if (data > PG_AMAX) return mkerror(PG_ERRT_BADPARAM,11);
+    DATA->align = (alignt) data;
+    DATA->alignset = 1;
+    set_widget_rebuild(self);
+    break;
+
+   case PG_WP_COLOR:
+    DATA->color = (pgcolor) data;
+    DATA->colorset = 1;
+    set_widget_rebuild(self);
+    break;
+
+  case PG_WP_DIRECTION:
+    DATA->direction = data;
+    resizewidget(self);
+    set_widget_rebuild(self);
+    break;
+
+  case PG_WP_LGOP:
+    DATA->lgop = data;
+    resizewidget(self);
+    set_widget_rebuild(self);
+    break;
+
   default:
     return mkerror(ERRT_PASS,0);
   }
@@ -390,6 +440,21 @@ glob button_get(struct widget *self,int property) {
 
   case PG_WP_HOTKEY_CONSUME:
     return (glob) DATA->hotkey_consume;
+
+  case PG_WP_TRANSPARENT:
+    return (glob) DATA->transparent;
+
+  case PG_WP_ALIGN:
+    return (glob) DATA->align;
+
+  case PG_WP_DIRECTION:
+    return (glob) DATA->direction;
+
+  case PG_WP_COLOR:
+    return (glob) DATA->color;
+
+  case PG_WP_LGOP:
+    return (glob) DATA->lgop;
 
   default:
     return 0;
@@ -753,8 +818,12 @@ void position_button(struct widget *self,struct btnposition *bp) {
   }
 
   /* Find sizes */
-  if (text)
-    sizetext(fd,&bp->tw,&bp->th,text);
+  if (text) {
+    if (DATA->direction == PG_DIR_VERTICAL || DATA->direction == PG_DIR_ANTIVERTICAL)
+      sizetext(fd,&bp->th,&bp->tw,text);
+    else
+      sizetext(fd,&bp->tw,&bp->th,text);
+  }
   if (bit)
     VID(bitmap_getsize) (bit,&bp->bw,&bp->bh);
   
@@ -838,6 +907,14 @@ void position_button(struct widget *self,struct btnposition *bp) {
     bp->w = 0;
     bp->h = 0;
   }
+
+  /* Munge the text coordinates a bit according to its direction */
+  switch (DATA->direction) {
+  case PG_DIR_VERTICAL:  
+    bp->ty += bp->th; 
+    break;
+  }
+
 
   /* Remember if the bitmap has an alpha channel */
   DATA->has_alpha = bit && bp->bw && ( VID(getpixel)(bit,0,0) & PGCF_ALPHA );
