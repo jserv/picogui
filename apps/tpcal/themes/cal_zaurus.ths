@@ -34,7 +34,7 @@ obj "tpcal" {
     };
   center = 3;
   scale = 9;
-  message1 = "Welcome to PicoGUI!";
+  message1 = "Welcome to PicoGUI";
   message2 = "Tap each target firmly and\naccurately to calibrate\nyour touchscreen.";
   logo = LoadBitmap("data/micropingizauru.png");
   bgcolor = 0xE0E0D0;
