@@ -1,4 +1,4 @@
-/* $Id: types.h,v 1.3 2002/10/12 14:46:34 micahjd Exp $
+/* $Id: types.h,v 1.4 2002/10/24 18:59:41 micahjd Exp $
  *
  * pgserver/types.h - Common types used throughout pgserver
  *                    (but only in pgserver)
@@ -55,6 +55,6 @@ struct rect {
   s16 x,y,w,h;
 };
 
-#endif __SERVER_TYPES_H
+#endif /* __SERVER_TYPES_H */
 
 /* The End */
