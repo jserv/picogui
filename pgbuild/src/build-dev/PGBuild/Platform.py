@@ -99,7 +99,7 @@ class Platform(object):
 
 
 def evalPlatformAlias(ctx, name):
-    """Resolve a platform alias. This can return anything that parse() can handle."""
+    """Resolve a platform alias into a Platform descriptor string"""
     value = ctx.config.eval("profile/platform[@name='%s']/text()" % name)
     if value:
         return value
@@ -111,8 +111,26 @@ def evalPlatformAlias(ctx, name):
 def parse(ctx, name):
     """Given a platform specification string, a platform alias,
        or a Platform instance, return a Platform object."""
-    
-    pass
+    if isinstance(name, Platform):
+        return name
+    elif name in platformAliases:
+        return parse(ctx, evalPlatformAlias(ctx, name))
+    else:
+        import re
+        if re.search(r'\s', name):
+            import PGBuild.Errors
+            raise PGBuild.Errors.ConfigError('Platform name "%s" contains whitespace' % name)
+        descriptors = str(name).split(sep)
+        platform = Platform()
+        for descriptorName in platformFormat:
+            if not descriptors:
+                break
+            setattr(platform, descriptorName, descriptors[0])
+            descriptors = descriptors[1:]
+        if descriptors:
+            import PGBuild.Errors
+            raise PGBuild.Errors.ConfigError('Platform name "%s" contains too many descriptors' % name)
+        return platform
 
 
 def determinePlatform():
