@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.42 2001/08/08 14:21:16 micahjd Exp $
+/* $Id: scroll.c,v 1.43 2001/08/14 03:18:56 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -75,11 +75,20 @@ void scrollupdate(struct widget *self) {
 
 void build_scroll(struct gropctxt *c,unsigned short state,struct widget *self) {
   struct widget *wgt;
+  s16 oldres;
 
   /* Size ourselves to fit the widget we are bound to */
+  oldres = DATA->res;
   if (!iserror(rdhandle((void **)&wgt,PG_TYPE_WIDGET,-1,
 			DATA->binding)) && wgt) 
     DATA->res = wgt->in->ch - wgt->in->h;
+  if (DATA->res < 0)
+    DATA->res = 0;
+  if (DATA->value > DATA->res)
+    scroll_set(self,PG_WP_VALUE,DATA->res);
+  if ( (oldres && !DATA->res) ||
+       (DATA->res && !oldres) )
+    resizewidget(self);
 
   /* Background for the bar */
   exec_fillstyle(c,state,PGTH_P_BGFILL);
@@ -115,13 +124,15 @@ void scroll_resize(struct widget *self) {
        (self->in->flags & PG_S_BOTTOM)) {
       
       self->in->div->pw = 0;
-      self->in->div->ph = theme_lookup(PGTH_O_SCROLL,PGTH_P_WIDTH);
+      self->in->div->ph = DATA->res ? 
+	theme_lookup(PGTH_O_SCROLL,PGTH_P_WIDTH) : 0;
    }
    else if ((self->in->flags & PG_S_LEFT) ||
 	    (self->in->flags & PG_S_RIGHT)) {
       
       self->in->div->ph = 0;
-      self->in->div->pw = theme_lookup(PGTH_O_SCROLL,PGTH_P_WIDTH);
+      self->in->div->pw = DATA->res ?
+	theme_lookup(PGTH_O_SCROLL,PGTH_P_WIDTH) : 0;
    }
 }
 

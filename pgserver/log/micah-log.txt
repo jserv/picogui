@@ -1,3 +1,15 @@
+2001-08-13    Micah Dowty <micahjd@users.sourceforge.net>
+
+Am fixink bugs and cleaning up scrolling some. I also need to get that extra
+hotspot stuff in sdlinput written so that silkscreen and hardware buttons in
+skins work.
+ 
+      * themetools/examples/lcdmono.ths: Reniftified the scroll bars
+ 
+      * widget/scroll.c: Adding extra error checking to scroll resolution,
+		  adding support for auto-hiding the scroll bars when it's not necessary.
+		  
+
 2001-08-12    Micah Dowty <micahjd@users.sourceforge.net>
 
 Just for fun, but also to make the development environment for embedded
@@ -9,7 +21,8 @@ drivers, and writing some config files for the skins.
       * README.configfile: Added many new options to sdlfb and sdlinput
       
       * skin/helio*: Added some example Helio skins
-      
+
+		* skin/*: Added nifty VR3 and Chipslice skins
 
 
 2001-08-11    Micah Dowty <micahjd@users.sourceforge.net>
