@@ -239,7 +239,7 @@ int clickski(struct pgEvent *evt)
 	  //	  pgUpdate();
 	  pgBind(evt->from,PG_WE_PNTR_DOWN,&clickski2,NULL);
 	  draw_spot(guessx,guessy,PLAY_GUESS);
-	  pgWriteCmd(canvas,PGCANVAS_REDRAW,0)
+	  pgWriteCmd(canvas,PGCANVAS_REDRAW,0);
 	  pgMessageDialogFmt("ERROR",PG_MSGBTN_OK ,"YOU NEED TO KEEP YOUR SHIPS");
 	  quoe(10);
 	  picked_color = 0;
