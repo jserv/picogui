@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4-p1 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p4 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -104,11 +104,13 @@ uniqpath = @uniqpath@
 EXTRA_DIST = pixmaps/* makefile.msc makeinc.msc 	fe-text/fe-text.c fe-text/myglib.h 	fe-text/README fe-text/fe-text.h fe-text/glib.c
 
 
+@DO_PICOGUI_TRUE@picogui_fe = fe-picogui
+
 @DO_TEXT_TRUE@text_fe = fe-text
 
 @DO_GTK_TRUE@gtk_fe = fe-gtk
 
-SUBDIRS = common $(gtk_fe) $(text_fe)
+SUBDIRS = common $(gtk_fe) $(text_fe) $(picogui_fe)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -117,15 +119,15 @@ DIST_COMMON =  Makefile.am Makefile.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
-DIST_SUBDIRS =  common fe-gtk fe-text
+DIST_SUBDIRS =  common fe-gtk fe-text fe-picogui
 all: all-redirect
 .SUFFIXES:
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps src/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu src/Makefile
 
-Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
@@ -224,6 +226,11 @@ distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 subdir = src
 
 distdir: $(DISTFILES)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(top_distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu src/Makefile
 	$(mkinstalldirs) $(distdir)/fe-text $(distdir)/pixmaps
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \

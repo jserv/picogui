@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4-p1 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p4 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -443,8 +443,13 @@ DIST_COMMON =  Makefile.am Makefile.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
+DEP_FILES =  .deps/cfgfiles.P .deps/ctcp.P .deps/dcc.P .deps/history.P \
+.deps/ignore.P .deps/inbound.P .deps/jcode.P .deps/modes.P \
+.deps/network.P .deps/notify.P .deps/outbound.P .deps/perl.P \
+.deps/plugin.P .deps/python.P .deps/server.P .deps/ssl.P .deps/text.P \
+.deps/userlist.P .deps/util.P .deps/xchat.P
 SOURCES = $(libxchatmain_a_SOURCES)
 OBJECTS = $(libxchatmain_a_OBJECTS)
 
@@ -452,9 +457,9 @@ all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .o .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps src/common/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu src/common/Makefile
 
-Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
@@ -467,9 +472,6 @@ clean-noinstLIBRARIES:
 distclean-noinstLIBRARIES:
 
 maintainer-clean-noinstLIBRARIES:
-
-.c.o:
-	$(COMPILE) -c $<
 
 .s.o:
 	$(COMPILE) -c $<
@@ -526,6 +528,11 @@ distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 subdir = src/common
 
 distdir: $(DISTFILES)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(top_distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu src/common/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
@@ -536,50 +543,38 @@ distdir: $(DISTFILES)
 	    || cp -p $$d/$$file $(distdir)/$$file || :; \
 	  fi; \
 	done
-cfgfiles.o: cfgfiles.c xchat.h ../../config.h history.h cfgfiles.h \
-	util.h fe.h userlist.h dcc.h text.h xchatc.h
-ctcp.o: ctcp.c xchat.h ../../config.h history.h cfgfiles.h util.h \
-	plugin.h modes.h outbound.h inbound.h dcc.h ctcp.h xchatc.h
-dcc.o: dcc.c inet.h xchat.h ../../config.h history.h perlc.h util.h \
-	plugin.h fe.h userlist.h dcc.h outbound.h inbound.h network.h \
-	text.h xchatc.h
-history.o: history.c history.h
-ignore.o: ignore.c ../../config.h xchat.h history.h ignore.h plugin.h \
-	cfgfiles.h fe.h userlist.h dcc.h text.h util.h xchatc.h
-inbound.o: inbound.c inet.h xchat.h ../../config.h history.h util.h \
-	ignore.h plugin.h perlc.h fe.h userlist.h dcc.h modes.h \
-	notify.h outbound.h inbound.h text.h ctcp.h xchatc.h
-jcode.o: jcode.c jcode.h
-modes.o: modes.c xchat.h ../../config.h history.h xchatc.h modes.h \
-	plugin.h fe.h userlist.h dcc.h
-network.o: network.c inet.h ../../config.h network.h
-notify.o: notify.c ../../config.h xchat.h history.h notify.h cfgfiles.h \
-	plugin.h fe.h userlist.h dcc.h text.h util.h xchatc.h
-outbound.o: outbound.c inet.h xchat.h ../../config.h history.h plugin.h \
-	ignore.h util.h fe.h userlist.h dcc.h cfgfiles.h network.h \
-	modes.h notify.h inbound.h text.h xchatc.h server.h perlc.h \
-	pythonc.h outbound.h
-perl.o: perl.c ../../config.h xchat.h history.h cfgfiles.h util.h \
-	ignore.h notify.h fe.h userlist.h dcc.h text.h outbound.h \
-	xchatc.h perlc.h
-plugin.o: plugin.c xchat.h ../../config.h history.h util.h plugin.h fe.h \
-	userlist.h dcc.h outbound.h cfgfiles.h text.h
-python.o: python.c xchat.h ../../config.h history.h plugin.h \
-	pys_signals.h fe.h userlist.h dcc.h pythonc.h text.h util.h \
-	cfgfiles.h outbound.h xchatc.h
-server.o: server.c inet.h xchat.h ../../config.h history.h plugin.h fe.h \
-	userlist.h dcc.h cfgfiles.h network.h notify.h xchatc.h \
-	inbound.h outbound.h text.h util.h server.h
-ssl.o: ssl.c ssl.h ../../config.h
-text.o: text.c xchat.h ../../config.h history.h cfgfiles.h plugin.h fe.h \
-	userlist.h dcc.h util.h outbound.h perlc.h xchatc.h text.h
-userlist.o: userlist.c ../../config.h xchat.h history.h modes.h fe.h \
-	userlist.h dcc.h notify.h xchatc.h util.h
-util.o: util.c xchat.h ../../config.h history.h util.h
-xchat.o: xchat.c inet.h xchat.h ../../config.h history.h fe.h userlist.h \
-	dcc.h util.h cfgfiles.h ignore.h plugin.h notify.h server.h \
-	pythonc.h outbound.h text.h perlc.h xchatc.h
 
+DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
+
+-include $(DEP_FILES)
+
+mostlyclean-depend:
+
+clean-depend:
+
+distclean-depend:
+	-rm -rf .deps
+
+maintainer-clean-depend:
+
+%.o: %.c
+	@echo '$(COMPILE) -c $<'; \
+	$(COMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
+
+%.lo: %.c
+	@echo '$(LTCOMPILE) -c $<'; \
+	$(LTCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
 info-am:
 info: info-am
 dvi-am:
@@ -616,23 +611,25 @@ distclean-generic:
 
 maintainer-clean-generic:
 mostlyclean-am:  mostlyclean-noinstLIBRARIES mostlyclean-compile \
-		mostlyclean-tags mostlyclean-generic
+		mostlyclean-tags mostlyclean-depend mostlyclean-generic
 
 mostlyclean: mostlyclean-am
 
-clean-am:  clean-noinstLIBRARIES clean-compile clean-tags clean-generic \
-		mostlyclean-am
+clean-am:  clean-noinstLIBRARIES clean-compile clean-tags clean-depend \
+		clean-generic mostlyclean-am
 
 clean: clean-am
 
 distclean-am:  distclean-noinstLIBRARIES distclean-compile \
-		distclean-tags distclean-generic clean-am
+		distclean-tags distclean-depend distclean-generic \
+		clean-am
 
 distclean: distclean-am
 
 maintainer-clean-am:  maintainer-clean-noinstLIBRARIES \
 		maintainer-clean-compile maintainer-clean-tags \
-		maintainer-clean-generic distclean-am
+		maintainer-clean-depend maintainer-clean-generic \
+		distclean-am
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
@@ -642,12 +639,13 @@ maintainer-clean: maintainer-clean-am
 clean-noinstLIBRARIES maintainer-clean-noinstLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile tags mostlyclean-tags distclean-tags \
-clean-tags maintainer-clean-tags distdir info-am info dvi-am dvi check \
-check-am installcheck-am installcheck install-exec-am install-exec \
-install-data-am install-data install-am install uninstall-am uninstall \
-all-redirect all-am all installdirs mostlyclean-generic \
-distclean-generic clean-generic maintainer-clean-generic clean \
-mostlyclean distclean maintainer-clean
+clean-tags maintainer-clean-tags distdir mostlyclean-depend \
+distclean-depend clean-depend maintainer-clean-depend info-am info \
+dvi-am dvi check check-am installcheck-am installcheck install-exec-am \
+install-exec install-data-am install-data install-am install \
+uninstall-am uninstall all-redirect all-am all installdirs \
+mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

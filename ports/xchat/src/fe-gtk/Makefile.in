@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4-p1 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p4 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -256,8 +256,16 @@ DIST_COMMON =  Makefile.am Makefile.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
+DEP_FILES =  .deps/about.P .deps/ascii.P .deps/banlist.P \
+.deps/chanlist.P .deps/dccgui.P .deps/dialog.P .deps/editlist.P \
+.deps/fe-gtk.P .deps/fkeys.P .deps/gtkutil.P .deps/ignoregui.P \
+.deps/maingui.P .deps/menu.P .deps/mmx_cmod.P .deps/notifygui.P \
+.deps/palette.P .deps/panel.P .deps/pixmaps.P .deps/plugingui.P \
+.deps/rawlog.P .deps/search.P .deps/serverlist.P .deps/settings.P \
+.deps/textgui.P .deps/urlgrab.P .deps/userlistgui.P .deps/usermenu.P \
+.deps/wins.P .deps/xtext.P
 SOURCES = $(xchat_SOURCES)
 OBJECTS = $(xchat_OBJECTS)
 
@@ -265,9 +273,9 @@ all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .o .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps src/fe-gtk/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu src/fe-gtk/Makefile
 
-Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
@@ -296,9 +304,6 @@ uninstall-binPROGRAMS:
 	list='$(bin_PROGRAMS)'; for p in $$list; do \
 	  rm -f $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
 	done
-
-.c.o:
-	$(COMPILE) -c $<
 
 .s.o:
 	$(COMPILE) -c $<
@@ -354,6 +359,11 @@ distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 subdir = src/fe-gtk
 
 distdir: $(DISTFILES)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(top_distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu src/fe-gtk/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
@@ -364,130 +374,38 @@ distdir: $(DISTFILES)
 	    || cp -p $$d/$$file $(distdir)/$$file || :; \
 	  fi; \
 	done
-about.o: about.c fe-gtk.h ../../config.h fake_gnome.h ../common/xchat.h \
-	../common/../../config.h ../common/history.h ../common/util.h \
-	palette.h gtkutil.h about.h
-ascii.o: ascii.c fe-gtk.h ../../config.h fake_gnome.h ../common/xchat.h \
-	../common/../../config.h ../common/history.h ../common/xchatc.h \
-	gtkutil.h wins.h ascii.h
-banlist.o: banlist.c fe-gtk.h ../../config.h fake_gnome.h \
-	../common/xchat.h ../common/../../config.h ../common/history.h \
-	../common/outbound.h ../common/xchatc.h gtkutil.h wins.h \
-	banlist.h
-chanlist.o: chanlist.c ../../config.h fe-gtk.h fake_gnome.h \
-	../common/xchat.h ../common/../../config.h ../common/history.h \
-	../common/xchatc.h ../common/outbound.h ../common/util.h \
-	gtkutil.h wins.h
-dccgui.o: dccgui.c ../common/inet.h fe-gtk.h ../../config.h fake_gnome.h \
-	../common/xchat.h ../common/../../config.h ../common/history.h \
-	../common/xchatc.h ../common/plugin.h ../common/fe.h \
-	../common/userlist.h ../common/dcc.h ../common/util.h \
-	../common/network.h gtkutil.h wins.h palette.h
-dialog.o: dialog.c fe-gtk.h ../../config.h fake_gnome.h \
-	../common/xchat.h ../common/../../config.h ../common/history.h \
-	../common/fe.h ../common/userlist.h ../common/dcc.h \
-	../common/text.h ../common/util.h ../common/outbound.h \
-	../common/xchatc.h gtkutil.h menu.h xtext.h wins.h fkeys.h \
-	maingui.h palette.h dialog.h
-editlist.o: editlist.c fe-gtk.h ../../config.h fake_gnome.h \
-	../common/xchat.h ../common/../../config.h ../common/history.h \
-	../common/cfgfiles.h ../common/xchatc.h ../common/fe.h \
-	../common/userlist.h ../common/dcc.h menu.h gtkutil.h \
-	usermenu.h wins.h editlist.h
-fe-gtk.o: fe-gtk.c ../../config.h fe-gtk.h fake_gnome.h \
-	../common/xchat.h ../common/../../config.h ../common/history.h \
-	../common/fe.h ../common/userlist.h ../common/dcc.h \
-	../common/util.h ../common/text.h ../common/cfgfiles.h \
-	../common/xchatc.h gtkutil.h maingui.h pixmaps.h xtext.h \
-	palette.h menu.h notifygui.h textgui.h fkeys.h urlgrab.h
-fkeys.o: fkeys.c ../../config.h fe-gtk.h fake_gnome.h ../common/xchat.h \
-	../common/../../config.h ../common/history.h ../common/xchatc.h \
-	../common/cfgfiles.h ../common/userlist.h ../common/outbound.h \
-	../common/util.h ../common/text.h gtkutil.h menu.h xtext.h \
-	wins.h palette.h maingui.h textgui.h fkeys.h
-gtkutil.o: gtkutil.c fe-gtk.h ../../config.h fake_gnome.h \
-	../common/xchat.h ../common/../../config.h ../common/history.h \
-	gtkutil.h
-ignoregui.o: ignoregui.c fe-gtk.h ../../config.h fake_gnome.h \
-	../common/xchat.h ../common/../../config.h ../common/history.h \
-	../common/ignore.h ../common/plugin.h ../common/cfgfiles.h \
-	gtkutil.h wins.h
-maingui.o: maingui.c ../../config.h fe-gtk.h fake_gnome.h \
-	../common/inet.h ../common/xchat.h ../common/../../config.h \
-	../common/history.h ../common/fe.h ../common/userlist.h \
-	../common/dcc.h ../common/xchatc.h ../common/util.h \
-	../common/outbound.h ascii.h banlist.h dialog.h gtkutil.h \
-	menu.h palette.h panel.h pixmaps.h xtext.h wins.h fkeys.h \
-	userlistgui.h maingui.h
-menu.o: menu.c fe-gtk.h ../../config.h fake_gnome.h ../common/xchat.h \
-	../common/../../config.h ../common/history.h ../common/xchatc.h \
-	../common/cfgfiles.h ../common/outbound.h ../common/ignore.h \
-	../common/fe.h ../common/userlist.h ../common/dcc.h \
-	../common/util.h ../common/plugin.h ../common/perlc.h xtext.h \
-	about.h banlist.h chanlist.h editlist.h fkeys.h gtkutil.h \
-	maingui.h notifygui.h rawlog.h palette.h search.h settings.h \
-	textgui.h usermenu.h urlgrab.h menu.h
-notifygui.o: notifygui.c fe-gtk.h ../../config.h fake_gnome.h \
-	../common/xchat.h ../common/../../config.h ../common/history.h \
-	../common/notify.h ../common/cfgfiles.h ../common/plugin.h \
-	../common/util.h ../common/userlist.h gtkutil.h wins.h \
-	palette.h notifygui.h
-palette.o: palette.c fe-gtk.h ../../config.h fake_gnome.h \
-	../common/xchat.h ../common/../../config.h ../common/history.h \
-	../common/util.h ../common/xchatc.h ../common/cfgfiles.h \
-	gtkutil.h xtext.h wins.h
-panel.o: panel.c ../common/xchat.h ../common/../../config.h \
-	../common/history.h ../common/xchatc.h fe-gtk.h ../../config.h \
-	gtkutil.h wins.h maingui.h about.h
-pixmaps.o: pixmaps.c fe-gtk.h ../../config.h fake_gnome.h \
-	../common/xchat.h ../common/../../config.h ../common/history.h \
-	gtkutil.h ../pixmaps/globe.xpm ../pixmaps/server.xpm \
-	../pixmaps/admin.xpm ../pixmaps/op.xpm ../pixmaps/hop.xpm \
-	../pixmaps/voice.xpm ../pixmaps/xchat_mini.xpm \
-	../pixmaps/xchat.xpm
-plugingui.o: plugingui.c fe-gtk.h ../../config.h ../common/xchat.h \
-	../common/../../config.h ../common/history.h ../common/plugin.h \
-	../common/text.h ../common/util.h gtkutil.h
-rawlog.o: rawlog.c fe-gtk.h ../../config.h fake_gnome.h \
-	../common/xchat.h ../common/../../config.h ../common/history.h \
-	../common/xchatc.h gtkutil.h palette.h wins.h rawlog.h
-search.o: search.c fe-gtk.h ../../config.h fake_gnome.h \
-	../common/xchat.h ../common/../../config.h ../common/history.h \
-	../common/util.h ../common/xchatc.h gtkutil.h xtext.h wins.h
-serverlist.o: serverlist.c fe-gtk.h ../../config.h fake_gnome.h \
-	../common/xchat.h ../common/../../config.h ../common/history.h \
-	../common/cfgfiles.h ../common/fe.h ../common/userlist.h \
-	../common/dcc.h ../common/server.h ../common/xchatc.h \
-	serverlist.h gtkutil.h pixmaps.h wins.h
-settings.o: settings.c fe-gtk.h ../../config.h fake_gnome.h \
-	../common/xchat.h ../common/../../config.h ../common/history.h \
-	../common/cfgfiles.h ../common/fe.h ../common/userlist.h \
-	../common/dcc.h ../common/util.h ../common/outbound.h \
-	../common/notify.h ../common/xchatc.h settings.h gtkutil.h \
-	xtext.h palette.h maingui.h menu.h pixmaps.h
-textgui.o: textgui.c fe-gtk.h ../../config.h fake_gnome.h \
-	../common/xchat.h ../common/../../config.h ../common/history.h \
-	../common/xchatc.h ../common/cfgfiles.h ../common/plugin.h \
-	../common/outbound.h ../common/text.h gtkutil.h xtext.h wins.h \
-	palette.h textgui.h
-urlgrab.o: urlgrab.c ../../config.h fe-gtk.h fake_gnome.h \
-	../common/xchat.h ../common/../../config.h ../common/history.h \
-	../common/cfgfiles.h ../common/util.h ../common/xchatc.h \
-	gtkutil.h menu.h wins.h urlgrab.h
-userlistgui.o: userlistgui.c fe-gtk.h ../../config.h fake_gnome.h \
-	../common/xchat.h ../common/../../config.h ../common/history.h \
-	../common/util.h ../common/userlist.h ../common/modes.h \
-	../common/notify.h ../common/xchatc.h ../common/dcc.h gtkutil.h \
-	palette.h maingui.h pixmaps.h userlistgui.h
-usermenu.o: usermenu.c fe-gtk.h ../../config.h fake_gnome.h \
-	../common/xchat.h ../common/../../config.h ../common/history.h \
-	../common/xchatc.h menu.h
-wins.o: wins.c fe-gtk.h ../../config.h fake_gnome.h ../common/xchat.h \
-	../common/../../config.h ../common/history.h ../common/fe.h \
-	../common/userlist.h ../common/dcc.h pixmaps.h gtkutil.h \
-	maingui.h panel.h wins.h
-xtext.o: xtext.c ../../config.h xtext.h mmx_cmod.h
 
+DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
+
+-include $(DEP_FILES)
+
+mostlyclean-depend:
+
+clean-depend:
+
+distclean-depend:
+	-rm -rf .deps
+
+maintainer-clean-depend:
+
+%.o: %.c
+	@echo '$(COMPILE) -c $<'; \
+	$(COMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
+
+%.lo: %.c
+	@echo '$(LTCOMPILE) -c $<'; \
+	$(LTCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
 info-am:
 info: info-am
 dvi-am:
@@ -525,23 +443,24 @@ distclean-generic:
 
 maintainer-clean-generic:
 mostlyclean-am:  mostlyclean-binPROGRAMS mostlyclean-compile \
-		mostlyclean-tags mostlyclean-generic
+		mostlyclean-tags mostlyclean-depend mostlyclean-generic
 
 mostlyclean: mostlyclean-am
 
-clean-am:  clean-binPROGRAMS clean-compile clean-tags clean-generic \
-		mostlyclean-am
+clean-am:  clean-binPROGRAMS clean-compile clean-tags clean-depend \
+		clean-generic mostlyclean-am
 
 clean: clean-am
 
 distclean-am:  distclean-binPROGRAMS distclean-compile distclean-tags \
-		distclean-generic clean-am
+		distclean-depend distclean-generic clean-am
 
 distclean: distclean-am
 
 maintainer-clean-am:  maintainer-clean-binPROGRAMS \
 		maintainer-clean-compile maintainer-clean-tags \
-		maintainer-clean-generic distclean-am
+		maintainer-clean-depend maintainer-clean-generic \
+		distclean-am
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
@@ -551,12 +470,13 @@ maintainer-clean: maintainer-clean-am
 maintainer-clean-binPROGRAMS uninstall-binPROGRAMS install-binPROGRAMS \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile tags mostlyclean-tags distclean-tags \
-clean-tags maintainer-clean-tags distdir info-am info dvi-am dvi check \
-check-am installcheck-am installcheck install-exec-am install-exec \
-install-data-am install-data install-am install uninstall-am uninstall \
-all-redirect all-am all installdirs mostlyclean-generic \
-distclean-generic clean-generic maintainer-clean-generic clean \
-mostlyclean distclean maintainer-clean
+clean-tags maintainer-clean-tags distdir mostlyclean-depend \
+distclean-depend clean-depend maintainer-clean-depend info-am info \
+dvi-am dvi check check-am installcheck-am installcheck install-exec-am \
+install-exec install-data-am install-data install-am install \
+uninstall-am uninstall all-redirect all-am all installdirs \
+mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
