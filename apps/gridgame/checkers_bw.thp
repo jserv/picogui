@@ -8,7 +8,7 @@ object custom {
     SetOffset(0,0,0,0);
     SetColor(0x808080);
   };
-  BGEVEN = fillstyle {
+  bgeven = fillstyle {
     Rect(x,y,w,h);
   };
 }
@@ -16,7 +16,7 @@ object custom {
 object custom {
   name = "checkers.player1";
   bgcolor = 0xFFFFFF;
-  PIECE = fillstyle {
+  piece = fillstyle {
     SetOffset(1,1,-2,-2);
     SetColor(bgcolor);
     Fellipse(x,y,w,h);

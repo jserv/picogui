@@ -5,7 +5,8 @@ pkgdata_DATA = checkers.th overflow.th
 SUFFIXES += .th .ths .thp
 
 %.ths: %.thp
-	$(CPP) -x c -P -C -nostdinc -include $(srcdir)/gridth.h -o $@ $<
+	$(CPP) -x c -P -C -nostdinc -DTHEMESOURCE \
+	    -include $(srcdir)/gridth.h -o $@ $<
 
 %.th: %.ths
 	themec $<

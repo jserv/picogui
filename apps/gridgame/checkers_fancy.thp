@@ -10,7 +10,7 @@ object custom {
     SetLgop(PG_LGOP_XOR);
     SetColor(0xFFFFFF);
   };
-  BGEVEN = fillstyle {
+  bgeven = fillstyle {
     Rect(x,y,w,h);
   };
 }
@@ -18,7 +18,7 @@ object custom {
 object custom {
   name = "checkers.player1";
   bgcolor = 0x2F77C4;
-  PIECE = fillstyle {
+  piece = fillstyle {
 
     /* Checker body */
     SetOffset(1,1,-2,-2);

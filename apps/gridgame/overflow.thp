@@ -4,13 +4,13 @@
 
 object custom {
   name = "checkers.player1";
-  FOURQUARTERS = fillstyle {
+  fourquarters = fillstyle {
     SetColor(bgcolor);
     Fellipse(x,y,w,h);
     SetColor(fgcolor);
     Ellipse(x,y,w,h);
   };
-  THREEQUARTERS = fillstyle {
+  threequarters = fillstyle {
     var ox, oy;
     ox=500*w/7464;
     oy=500*h/7464;
@@ -23,7 +23,7 @@ object custom {
     SetColor(fgcolor);
     Ellipse(x,y,w,h);
   };
-  TWOQUARTERS = fillstyle {
+  twoquarters = fillstyle {
     var ox, oy;
     ox=500*w/3414;
     oy=500*w/3414;
@@ -36,7 +36,7 @@ object custom {
     SetColor(fgcolor);
     Ellipse(x,y,w,h);
   };
-  ONEQUARTER = fillstyle {
+  onequarter = fillstyle {
     var ox, oy;
     ox=w/4;
     oy=h/4;
@@ -49,7 +49,7 @@ object custom {
     SetColor(fgcolor);
     Ellipse(x,y,w,h);
   };
-  OWNEDBUTEMPTY = fillstyle {
+  ownedbutempty = fillstyle {
     x=x+w/4;
     y=y+h/4;
     w=w/2;

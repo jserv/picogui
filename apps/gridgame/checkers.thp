@@ -16,14 +16,14 @@ object "checkers" {
     SetOffset(0,0,0,0);
     SetColor(0x8080FF);
   };
-  BGEVEN = fillstyle {
+  bgeven = fillstyle {
     Rect(x,y,w,h);
   };
 }
 
 object "checkers.player1" {
   bgcolor = 0xFFFF00;
-  PIECE = fillstyle {
+  piece = fillstyle {
     /* Circle with black border one pixel inside the grid */
     SetOffset(1,1,-2,-2);
     SetColor(bgcolor);
