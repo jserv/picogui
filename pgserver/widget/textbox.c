@@ -1,0 +1,69 @@
+/* $Id: textbox.c,v 1.1 2001/09/18 21:53:15 micahjd Exp $
+ *
+ * textbox.c - works along with the rendering engine to provide advanced
+ * text display and editing capabilities
+ *
+ * PicoGUI small and efficient client/server GUI
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * Contributors:
+ * 
+ * 
+ * 
+ */
+
+#include <pgserver/common.h>
+#include <pgserver/widget.h>
+
+/* Set up divnodes */
+g_error textbox_install(struct widget *self) {
+   g_error e;
+   
+   /* Main split */
+   e = newdiv(&self->in,self);
+   errorcheck;
+   self->in->flags |= PG_S_ALL;
+   self->out = &self->in->next;
+   
+   /* Visible node */
+   e = newdiv(&self->in->div,self);
+   errorcheck;
+   
+   return sucess;
+}
+
+void textbox_remove(struct widget *self) {
+   if (!in_shutdown)
+     r_divnode_free(self->in);
+}
+
+void textbox_resize(struct widget *self) {
+}
+
+g_error textbox_set(struct widget *self,int property, glob data) {
+   return mkerror(ERRT_PASS,0);
+}
+
+glob textbox_get(struct widget *self,int property) {
+   return 0;
+}
+
+void textbox_trigger(struct widget *self,long type,union trigparam *param) {
+}
+
+   
+/* The End */
