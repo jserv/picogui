@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.7 2000/09/09 01:46:15 micahjd Exp $
+/* $Id: errortext.c,v 1.8 2000/09/21 05:55:45 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -121,6 +121,7 @@ static const char *errors[] = {
   /* 76 */  "This input driver is already loaded",
   /* 77 */  "Nonexistant video driver",
   /* 78 */  "All installed video drivers failed!",
+  /* 79 */  "Unknown PG_APPSPEC constant!",
 };
 
 #endif /* TINY_MESSAGES */

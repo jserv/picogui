@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.3 2000/09/16 04:12:52 micahjd Exp $
+/* $Id: constants.h,v 1.4 2000/09/21 05:55:45 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -36,10 +36,28 @@
 
 /******************** Application manager */
 
-/* Values for application type */
+/**** Values for application type */
 #define PG_APP_NORMAL  1
 #define PG_APP_TOOLBAR 2
 #define PG_APPMAX      2
+
+/**** Extra parameters for applications */
+
+/* a PG_S_* value for the initial side the app sticks to */
+#define PG_APPSPEC_SIDE      1
+
+/* a bitmask of acceptable sides for the app */
+#define PG_APPSPEC_SIDEMASK  2
+
+/* Initial width and height */
+#define PG_APPSPEC_WIDTH     3
+#define PG_APPSPEC_HEIGHT    4
+
+/* Minimum and maximum size */
+#define PG_APPSPEC_MINWIDTH  5
+#define PG_APPSPEC_MAXWIDTH  6
+#define PG_APPSPEC_MINHEIGHT 7
+#define PG_APPSPEC_MAXHEIGHT 8
 
 /******************** Layout */
 

@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.5 2000/09/11 04:42:00 micahjd Exp $
+/* $Id: dispatch.c,v 1.6 2000/09/21 05:55:45 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -387,22 +387,76 @@ g_error rqh_register(int owner, struct pgrequest *req,
 		     void *data, unsigned long *ret, int *fatal) {
   struct app_info i;
   g_error e;
+  short int *spec = (short int *)(((char*)data)+sizeof(struct pgreqd_register));
+  unsigned long remaining = req->size - sizeof(struct pgreqd_register);
   reqarg(register);
 
   memset(&i,0,sizeof(i));
 
+  /* Note: most of this doesn't work yet, just trying to
+     get a framework in place so apps written now won't
+     break later.
+  */
+
   i.owner = owner;
   i.name = ntohl(arg->name);
   i.type = ntohs(arg->type);
-  i.side = ntohs(arg->side);
-  i.sidemask = ntohs(arg->sidemask);
-  i.w = ntohs(arg->w);
-  i.h = ntohs(arg->h);
-  i.minw = ntohs(arg->minw);
-  i.maxw = ntohs(arg->maxw);
-  i.minh = ntohs(arg->minh);
-  i.maxh = ntohs(arg->maxh);
- 
+
+  i.side = PG_S_TOP;
+  i.sidemask = 0xFFFF;
+  i.w = 10000;           /* !!! like i said... */
+  i.h = 10000;
+  i.minw = -1;
+  i.maxw = -1;
+  i.minh = -1;
+  i.maxh = -1;
+
+  /* Process APPSPECs */
+  for (;remaining >= 4;remaining -= 4) {
+    short key,value;
+    key   = ntohs(*(spec++));
+    value = ntohs(*(spec++));
+
+    switch (key) {
+      
+    case PG_APPSPEC_SIDE:
+      i.side = value;
+      break;
+
+    case PG_APPSPEC_SIDEMASK:
+      i.sidemask = value;
+      break;
+
+    case PG_APPSPEC_WIDTH:
+      i.w = value;
+      break;
+
+    case PG_APPSPEC_HEIGHT:
+      i.h = value;
+      break;
+
+    case PG_APPSPEC_MINWIDTH:
+      i.minw = value;
+      break;
+
+    case PG_APPSPEC_MAXWIDTH:
+      i.maxw = value;
+      break;
+
+    case PG_APPSPEC_MINHEIGHT:
+      i.minh = value;
+      break;
+
+    case PG_APPSPEC_MAXHEIGHT:
+      i.maxh = value;
+      break;
+
+    default:
+      return mkerror(PG_ERRT_BADPARAM,79);  /*  Bad PG_APPSPEC_*  */
+
+    }
+  }
+
   e = appmgr_register(&i);
 
   *ret = i.rootw;
