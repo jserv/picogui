@@ -31,17 +31,23 @@
 
 int main(int argc, char **argv) {
   pghandle box,row1,row2,row3,row4,row5;
-  
+  pghandle fResult, fButton;
+  int btn_height;
+
   pgInit(argc,argv);
   pgRegisterApp(PG_APP_NORMAL,
-		"VRCalc",0);
+		"Calculator",0);
 
+  btn_height = pgThemeLookup(PGTH_O_BUTTON,PGTH_P_HEIGHT);
+  fResult = pgNewFont(NULL,btn_height + btn_height/2,0);
+  fButton = pgNewFont(NULL,btn_height, PG_FSTYLE_BOLD);
+   
   //Display results in this widget
   display=pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("0"),
 	      PG_WP_TRANSPARENT,0,
-	      PG_WP_FONT,pgNewFont(NULL,pgThemeLookup(PGTH_O_BUTTON,PGTH_P_HEIGHT),0),
+	      PG_WP_FONT,fResult,
 	      PG_WP_ALIGN, PG_A_RIGHT,
 	      0);
   //Container for the buttons
@@ -91,6 +97,7 @@ int main(int argc, char **argv) {
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
 	      PG_WP_TEXT,pgNewString("2nd"),
+	      PG_WP_FONT, fButton,
 	      PG_WP_EXTDEVENTS,PG_EXEV_TOGGLE,
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnSecond,&display);
@@ -99,6 +106,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_FONT, fButton,
 	      PG_WP_TEXT,pgNewString("<-"),
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnDelete,&display);
@@ -107,6 +115,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_FONT, fButton,
 	      PG_WP_TEXT,pgNewString("+/-"),
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnNegate,&display);
@@ -115,6 +124,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_FONT, fButton,
 	      PG_WP_TEXT,pgNewString("^"),
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnPower,&display);
@@ -123,6 +133,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_FONT, fButton,
 	      PG_WP_TEXT,pgNewString("7"),
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnSeven,&display);
@@ -131,6 +142,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_FONT, fButton,
 	      PG_WP_TEXT,pgNewString("8"),
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnEight,&display);
@@ -139,6 +151,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_FONT, fButton,
 	      PG_WP_TEXT,pgNewString("9"),
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnNine,&display);
@@ -147,6 +160,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_FONT, fButton,
 	      PG_WP_TEXT,pgNewString("/"),
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnDivide,&display);
@@ -155,6 +169,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_FONT, fButton,
 	      PG_WP_TEXT,pgNewString("4"),
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnFour,&display);
@@ -163,6 +178,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_FONT, fButton,
 	      PG_WP_TEXT,pgNewString("5"),
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnFive,&display);
@@ -171,6 +187,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_FONT, fButton,
 	      PG_WP_TEXT,pgNewString("6"),
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnSix,&display);
@@ -179,6 +196,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_FONT, fButton,
 	      PG_WP_TEXT,pgNewString("*"),
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnMultiply,&display);
@@ -187,6 +205,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_FONT, fButton,
 	      PG_WP_TEXT,pgNewString("1"),
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnOne,&display);
@@ -195,6 +214,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_FONT, fButton,
 	      PG_WP_TEXT,pgNewString("2"),
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnTwo,&display);
@@ -203,6 +223,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_FONT, fButton,
 	      PG_WP_TEXT,pgNewString("3"),
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnThree,&display);
@@ -211,6 +232,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_FONT, fButton,
 	      PG_WP_TEXT,pgNewString("-"),
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnMinus,&display);
@@ -219,6 +241,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_FONT, fButton,
 	      PG_WP_TEXT,pgNewString("0"),
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnZero,&display);
@@ -227,6 +250,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_FONT, fButton,
 	      PG_WP_TEXT,pgNewString("."),
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnDecimal,&display);
@@ -235,6 +259,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_FONT, fButton,
 	      PG_WP_TEXT,pgNewString("="),
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnEquals,&display);
@@ -243,6 +268,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_FONT, fButton,
 	      PG_WP_TEXT,pgNewString("+"),
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnPlus,&display);
