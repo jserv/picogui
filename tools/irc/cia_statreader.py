@@ -70,7 +70,7 @@ def readStats():
     totalSamples = 0
     totalTime = 0
     projectMTBC = {}
-    for project in projects:
+    for project in ['commits'] + projects:
         try:
             projectSamples = loadInt(os.path.join(statDir, mtbcSubdir, project + '.numSamples'))
             projectTime = loadInt(os.path.join(statDir, mtbcSubdir, project + '.totalTime'))
@@ -79,6 +79,6 @@ def readStats():
             totalTime += projectTime
         except IOError:
             projectMTBC[project] = None
-    totalMTBC = totalTime * 1.0 / totalSamples
+    totalMTBC = projectMTBC['commits']
 
 readStats()

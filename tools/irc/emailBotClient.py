@@ -96,6 +96,7 @@ def updateCommitTimes(project):
 def updateStats(project):
     incrementProjectCommits(project)
     updateCommitTimes(project)
+    updateCommitTimes('commits')   # For overall MTBC
 
 def applyColorTags(message):
     # We support tags of the form {red}, {bold}, {normal}, etc.
