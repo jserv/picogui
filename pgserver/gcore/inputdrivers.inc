@@ -37,6 +37,10 @@
   DRV("tuxts",&tuxts_regfunc)
 #endif
 
+#ifdef DRIVER_UCB1X00
+  DRV("ucb1x00",&ucb1x00_regfunc)
+#endif
+
 #ifdef DRIVER_TTYKB
   DRV("ttykb",&ttykb_regfunc)
 #endif

@@ -14,6 +14,7 @@ EXTRA_libinput_a_SOURCES = \
 	eventbroker.c \
 	vr3ts.c \
 	tuxts.c \
+	ucb1x00.c \
 	ttykb.c \
 	remorakb.c \
 	serialmouse.c \

@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.22 2001/11/19 18:46:24 micahjd Exp $
+/* $Id: input.h,v 1.23 2001/11/24 10:33:17 gork Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -134,6 +134,7 @@ g_error rrsim_regfunc(struct inlib *i);
 g_error rrts_regfunc(struct inlib *i);
 g_error vr3ts_regfunc(struct inlib *i);
 g_error tuxts_regfunc(struct inlib *i);
+g_error ucb1x00_regfunc(struct inlib *i);
 g_error ttykb_regfunc(struct inlib *i);
 g_error remorakb_regfunc(struct inlib *i);
 g_error serialmouse_regfunc(struct inlib *i);
