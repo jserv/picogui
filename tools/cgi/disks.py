@@ -12,9 +12,11 @@ class DiskPage(navi_cgi.NaviPage):
     allSections = ['charts', 'uptime', 'mounts', 'raid']
     parameters = navi_cgi.NaviPage.parameters + [
         ('percent', float),
+        ('chartsPerLine', int),
         ]
     width = 128
     height = 128
+    chartsPerLine = 3
 
     def runCommand(self, write, command):
         f = os.popen(command)
@@ -45,28 +47,39 @@ class DiskPage(navi_cgi.NaviPage):
             mounts[mount] = (percent[:-1], total, used, available)
         f.close()
 
-        for mount in mounts:
-            write('<div class="chartBox">')
-            write('<div class="chartHeading">%s</div>' % mount)
-            write('<div class="chartBody">')
-            write('<span class="chart">')
+        # Split up the charts into separate tables to obey chartsPerLine
+        remainingCharts = mounts.keys()
+        while remainingCharts:
+            lineContents = remainingCharts[:self.chartsPerLine]
+            remainingCharts = remainingCharts[self.chartsPerLine:]
 
-            # Invoke our image_usage_pie() function to generate the chart
-            write('<img width="%s" height="%s" src="%s"/>' %
-                  (self.width, self.height, self.linkURL({
-                'image': 'usage_pie',
-                'percent': mounts[mount][0]
-                })))
+            # Headings for all charts on this line
+            write('<table><tr>')
+            for chart in lineContents:
+                write('<th>%s</th>' % chart)
+            write('</tr><tr>')
+
+            # Charts and legends for this line
+            for mount in lineContents:
+                # Invoke our image_usage_pie() function to generate the chart
+                write('<td><table class="chart"><tr class="chart"><td class="chartBody">')
+                write('<img width="%s" height="%s" src="%s"/>' %
+                      (self.width, self.height, self.linkURL({
+                    'image': 'usage_pie',
+                    'percent': mounts[mount][0]
+                    })))
+
+                # Add some numbers
+                write('</td><td class="chartLegend">')
+                write('%s%%<br/><br/>' % mounts[mount][0])
+                write('%s total <br/>' % mounts[mount][1])
+                write('%s used <br/>' % mounts[mount][2])
+                write('%s available <br/>' % mounts[mount][3])
+                write('</td></tr></table></td>')
+            write('</tr></table>')
             
-            # Add some numbers
-            write('</span><span class="chartLegend">')
-            write('%s%%<br/><br/>' % mounts[mount][0])
-            write('%s total <br/>' % mounts[mount][1])
-            write('%s used <br/>' % mounts[mount][2])
-            write('%s available <br/>' % mounts[mount][3])
-            write('</span></div></div>')
         self.end_section(write)
-
+                
     def section_uptime(self, write):
         self.begin_section(write, "uptime", "Uptime", "monoBox")
         self.runCommand(write, 'uptime')
