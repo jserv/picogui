@@ -211,8 +211,8 @@ class Package(object):
            try the package's host platform, falling back on the default host.
            """
         import PGBuild.Platform
-        return PGBuild.Platform.parse(ctx.config.eval('hostPlatform',
-                                                       self.configNode) or "host")
+        return PGBuild.Platform.parse(ctx, ctx.config.eval('hostPlatform',
+                                                           self.configNode) or "host")
 
 
 def splitPackageName(name):

@@ -61,46 +61,64 @@ OS-specific information:
 _svn_id = "$Id: __init__.py 4093 2003-05-30 05:33:04Z micah $"
 
 
+# List of platform aliases- these will be looked up in the profile/platform
+# tags, and they all default to PGBuild.platform
 platformAliases = ['host', 'build', 'target']
+
+# This specifies the format for platform specifiers. It's used for
+# parsing platforms and representing them as strings.
+platformFormat = ['operatingSystem', 'architecture', 'libc']
+
+# Following suit with the os module
+sep = "-"
 
 
 class Platform(object):
     """Object to represent a set of platform specifiers"""
-    def __init__(self, operatingSystem, architecture=None, libC=None):
-        self.operatingSystem = operatingSystem
-        self.architecture = architecture
-        self.libC = libC
+    def __init__(self, **kwargs):
+        """This should be passed platform specifiers from platformFormat.
+           Any specifiers not given are assumed None.
+           """
+        for arg in kwargs:
+            if not arg in platformFormat:
+                import PGBuild.Errors
+                raise PGBuild.Errors.InternalError("%s is not a platform specifier" % arg)
+        for specifier in platformFormat:
+            try:
+                setattr(self, specifier, kwargs[specifier])
+            except KeyError:
+                setattr(self, specifier, None)
 
     def __str__(self):
-        spec = self.operatingSystem
-        if self.architecture:
-            spec += '-' + self.architecture
-        if self.libC:
-            spec += '-' + self.libC
-        return spec
+        specs = []
+        for spec in platformFormat:
+            specValue = getattr(self, spec)
+            if specValue:
+                specs.append(str(specValue))
+        return sep.join(specs)
 
 
 def evalPlatformAlias(ctx, name):
-    """Resolve a platform alias (recursively if necessary) to a Platform"""
-    if name in platformAliases:
-        # See if we have a matching invocation option
-        opt = ctx.config.eval("invocation/option[@name='%sPlatform']/text()" % name)
-        if not opt:
-            opt = ctx.config.eval("sys/platform/text()")
-        return parse(opt)
-    
+    """Resolve a platform alias. This can return anything that parse() can handle."""
+    value = ctx.config.eval("profile/platform[@name='%s']/text()" % name)
+    if value:
+        return value
+    else:
+        import PGBuild
+        return PGBuild.platform
 
 
-def parse(name):
+def parse(ctx, name):
     """Given a platform specification string, a platform alias,
-       or a Platform instance, construct a Platform object"""
-
+       or a Platform instance, return a Platform object."""
     
     pass
 
 
 def determinePlatform():
-    """Guess the current system's platform"""
+    """Guess the current system's platform. This will be run once at startup
+       and stored in sys/platform by the config bootstrapping.
+       """
     import os
     
     if os.name == 'posix':
@@ -116,11 +134,13 @@ def determinePlatform():
             toolchain = "gnu"
         except:
             pass
-        return Platform(uname[0].lower(), uname[4].lower(), libC)
+        return Platform(operatingSystem=uname[0].lower(),
+                        architecture=uname[4].lower(),
+                        libc=libC)
 
     else:
         # All other systems, we can only provide the OS name python gives us
-        return Platform(os.name.lower())
+        return Platform(operatingSystem=os.name.lower())
     
 
 ### The End ###

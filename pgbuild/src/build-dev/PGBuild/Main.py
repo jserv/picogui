@@ -70,6 +70,8 @@ class OptionParser(optik.OptionParser):
         #      options to be listed together, that's what groups are for.
         #
 
+        self.add_option("--console", action="store_true", dest="console",
+                        help="Enters an interactive Python console.")
         self.add_option("--platform", action="platform",
                         help="Shows the detected platform and exits.")
         self.add_option("--scons-version", action="sconsVersion",

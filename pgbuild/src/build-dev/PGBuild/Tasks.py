@@ -154,6 +154,22 @@ class CleanupUITask(InternalTask):
     def execute(self):
         self.ctx.ui.cleanup(self.ctx)
 
+class ConsoleTask(UserTask):
+    """Handle --console command line option"""
+    def isActive(self):
+        return not not self.ctx.config.eval("invocation/option[@name='console']/text()")
+
+    def execute(self):
+        import code, PGBuild
+        try:
+            import readline
+        except ImportError:
+            pass
+        local = {
+            'ctx': self.ctx,
+            }
+        code.interact(PGBuild.about, raw_input, local)
+
 class DumpTreeTask(UserTask):
     """Handle --dump-tree command line option"""
     def init(self):
@@ -192,6 +208,7 @@ allTasks = [
     MergeTask,
     BuildSystemRunTask,
     CleanupUITask,
+    ConsoleTask,
     DumpTreeTask,
     ListTask,
     ]
