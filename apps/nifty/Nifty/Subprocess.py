@@ -1,6 +1,13 @@
 from Buffer import Buffer
 from Terminal import Terminal
-import os, pty, fcntl, termios, struct
+try:
+    import os, pty, fcntl, termios, struct
+except ImportError:
+    import sys
+    class NotSupported(Exception): pass
+    notSupported = NotSupported('Subprocesses not supported: %s' % sys.exc_info()[1])
+else:
+    notSupported = False
 
 _marker = []
 
@@ -11,6 +18,8 @@ class Subprocess(Buffer):
     _argv = _marker
 
     def __init__(self, argv=None):
+        if notSupported:
+            raise notSupported
         if argv is not None:
             self._argv = argv
         if self._argv is _marker:
