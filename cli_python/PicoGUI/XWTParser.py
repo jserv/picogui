@@ -1,6 +1,7 @@
+#!/usr/bin/python2.2
 # Parser for XML Widget Templates
 
-import PicoGUI, string
+import PicoGUI
 from xml.parsers import expat
     
 class XWTParser:
@@ -52,7 +53,7 @@ class XWTParser:
 
     def __characterDataHandler(self, data):
         widget = self.widgetStack[-1]
-        data = string.strip(data)
+        data = data.strip()
         if len(data):
             widget.server.set(widget.handle, 'text', data)
 
@@ -63,5 +64,14 @@ class XWTParser:
         Parser.CharacterDataHandler = self.__characterDataHandler
         Parser.Parse(xwt)
         return self.app.server.dump()
+
+# execute from command line, if wished
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) != 2:
+        print 'usage: %s FILE.XWT' % sys.argv[0]
+        sys.exit(0)
+    parser = XWTParser()
+    sys.stdout.write(parser.Parse(file(sys.argv[1]).read()))
 
 ### The End ###
