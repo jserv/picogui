@@ -10,9 +10,13 @@
  * Permission is granted to use, distribute, or modify this source,
  * provided that this copyright notice remains intact.
  *
+ *
+ * 13/03/02	- Added support for function keys.
+ * 		  J.Lindau <joel.lindau@minec.se>
  */
 
 #include <termios.h>
+#include <sys/poll.h>
 
 #include <pgserver/common.h>
 #include <pgserver/input.h>
@@ -20,16 +24,20 @@
 #include <pgserver/pgnet.h>
 #include <picogui/pgkeys.h>
 #include <picogui/constants.h>
-#include <pgserver/configfile.h>
 
 #define	KEYBOARD	"/dev/tty"	/* keyboard associated with screen*/
 
 static	int    ttykb_fd;		/* file descriptor for keyboard */
 static	struct termios	old;		/* original terminal modes */
 
+typedef struct {
+	char *string;
+	int key;
+} f_key;
+
 static int keymap[128] = {		/* The keymap */
   0,0,0,0,0,						/* 0   */
-  0,0,0,0,PGKEY_TAB,					/* 5   */
+  0,0,0,PGKEY_BACKSPACE,PGKEY_TAB,					/* 5   */
   0,0,0,PGKEY_RETURN,0,					/* 10  */
   0,0,0,0,0,						/* 15  */
   0,0,0,0,0,						/* 20  */
@@ -61,6 +69,22 @@ static int keymap[128] = {		/* The keymap */
   PGKEY_RIGHTBRACE,PGKEY_TILDE,PGKEY_BACKSPACE		/* 125 */
 };	
 
+f_key f_keymap[] = { // Keymap for function keys
+		   { "[A", PGKEY_UP },
+		   { "[B", PGKEY_DOWN },
+		   { "[C", PGKEY_RIGHT },
+		   { "[D", PGKEY_LEFT },
+		   { "OP", PGKEY_F1 },
+		   { "OQ", PGKEY_F2 },
+		   { "OR", PGKEY_F3 },
+		   { "OS", PGKEY_F4 },
+		   { "[15~", PGKEY_F5 },
+		   { "[17~", PGKEY_F6 },
+		   { "[18~", PGKEY_F7 },
+		   { "[19~", PGKEY_F8 },
+		   { NULL }
+};
+
 /*
  * Open the keyboard.
  * This is real simple, we just use a special file handle
@@ -69,10 +93,13 @@ static int keymap[128] = {		/* The keymap */
  */
 g_error ttykb_init(null)
 {
+  char *env;
+
+	int		i;
+	int		ledstate = 0;
 	struct termios	new;
 
-	ttykb_fd = open(get_param_str("input-ttykb","device", KEYBOARD),
-		 O_NONBLOCK);
+	ttykb_fd = open(KEYBOARD, O_NONBLOCK);
 	
 	if (ttykb_fd < 0)
 		return -1;
@@ -117,28 +144,54 @@ void ttykb_fd_init(int *n,fd_set *readfds,struct timeval *timeout)
 	FD_SET(ttykb_fd,readfds);
 }
 
+int get_escaped_key(int fd) {
+
+	// Get escaped keys. F-key, home, end, arrow-keys etc
+	// Mainly for arrow-keys
+
+	int len = 0, pos = 0;
+	unsigned char key, buf[5];
+	
+	while ( read(fd, &key, 1) && len < 5 )
+		buf[len++] = key;
+	buf[len] = '\0';
+	
+	while ( f_keymap[pos].string != NULL ) {
+		if ( !strcmp(f_keymap[pos].string, buf) )
+			return(f_keymap[pos].key);
+		pos++;
+	}
+	return(PGKEY_ESCAPE);
+}
+
+
 int ttykb_fd_activate(int fd)
 {
 	
+	unsigned char curkey;
+	int key;
 	int	cc;			/* characters read */
-	int	curkey;
-	unsigned char buf[1];
+	
+	if( fd != ttykb_fd ) 
+		return 0;
 
-	if(fd != ttykb_fd) return 0;
-
-	cc = read(fd, buf, 1);
-	if (cc > 0) {
-		curkey = buf[0];
-
-		if (keymap[curkey] != 0) {
-		  dispatch_key(TRIGGER_CHAR,keymap[curkey],0);
+	cc = read(fd, &curkey, 1);
+	if ( cc ) {
+		if ( keymap[curkey] == PGKEY_ESCAPE )
+			key = get_escaped_key(fd);
+		else
+			key = keymap[curkey];
+		
+		if ( key != 0 ) {
+		  if ( key <= 255 ) // Don't send TRIGGER_CHAR for function-keys
+		  	dispatch_key(TRIGGER_CHAR,key,0);
 
 		  /* FIXME: TRIGGER_KEYUP is not implemented yet, but we at
 		   * least need this so that hotkeys work correctly. This
 		   * needs to respond to a few keys TRIGGER_CHAR does not,
 		   * like the arrow keys */
-		  dispatch_key(TRIGGER_KEYDOWN,keymap[curkey],0);
-		  dispatch_key(TRIGGER_KEYUP,keymap[curkey],0);
+		  dispatch_key(TRIGGER_KEYDOWN,key,0);
+		  dispatch_key(TRIGGER_KEYUP,key,0);
 		}
 		return 1;		/* keypress*/
 	}
