@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.23 2002/11/04 13:14:05 micahjd Exp $
+/* $Id: x11input.c,v 1.24 2002/11/05 16:36:29 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -78,6 +78,9 @@ int x11input_fd_activate(int fd) {
   u32 btn;
   union trigparam p;
   struct x11bitmap *xb;
+  int need_resize = 0;
+  int new_width, new_height;
+  Window resizing_window;
 
   if(fd != x11_fd) return 0;
 
@@ -110,15 +113,11 @@ int x11input_fd_activate(int fd) {
       /****************** Resizing */
 
     case ConfigureNotify: 
-      if (VID(is_rootless)) {
-	if ((xb = x11_get_window(ev.xmotion.window)))
-	  x11_acknowledge_resize((hwrbitmap)xb, ev.xconfigure.width, ev.xconfigure.height);
-      }
-      else {
-	video_setmode(ev.xconfigure.width, ev.xconfigure.height,
-		      vid->bpp, PG_FM_ON,0); 
-	update(NULL,1);
-      }
+      /* Just store this, so we only act on the last event in the queue */
+      need_resize = 1;
+      new_width = ev.xconfigure.width;
+      new_height = ev.xconfigure.height;
+      resizing_window = ev.xconfigure.window;
       break;
 
       /****************** Mouse events
@@ -213,6 +212,18 @@ int x11input_fd_activate(int fd) {
       }
       break;
 
+    }
+  }
+
+  /* Handle the last of whatever resize events were queued */
+  if (need_resize) {
+    if (VID(is_rootless)) {
+      if ((xb = x11_get_window(resizing_window)))
+	x11_acknowledge_resize((hwrbitmap)xb, new_width, new_height);
+    }
+    else {
+      video_setmode(new_width, new_height, vid->bpp, PG_FM_ON,0); 
+      update(NULL,1);
     }
   }
   return 1;

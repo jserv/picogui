@@ -1,4 +1,4 @@
-/* $Id: x11_util.c,v 1.5 2002/11/04 12:24:36 micahjd Exp $
+/* $Id: x11_util.c,v 1.6 2002/11/05 16:36:29 micahjd Exp $
  *
  * x11_util.c - Utility functions for picogui's driver for the X window system
  *
@@ -311,14 +311,7 @@ void x11_expose(Window w, Region r) {
   if (!xb) 
     return;
 
-  if (xb->frontbuffer) {
-    /* Double-buffered expose update */
-    XSetRegion(x11_display,x11_gctab[PG_LGOP_NONE],r);
-    XCopyArea(x11_display,xb->d,xb->frontbuffer->d,
-	      x11_gctab[PG_LGOP_NONE],0,0,xb->w,xb->h,0,0);
-    XSetRegion(x11_display,x11_gctab[PG_LGOP_NONE],x11_display_region);
-  }
-  else {
+  if (!xb->frontbuffer) {
     /* Ugly non-double-buffered expose update */
 
     struct divtree *p;
@@ -417,6 +410,8 @@ void x11_acknowledge_resize(hwrbitmap window, int w, int h) {
     }
 
     update(NULL,1);
+    if (XB(window)->frontbuffer)
+      XSetWindowBackgroundPixmap(x11_display, XB(window)->frontbuffer->d, XB(window)->d);
   }
 }
 
