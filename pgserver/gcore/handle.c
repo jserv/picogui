@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.17 2000/09/09 01:46:15 micahjd Exp $
+/* $Id: handle.c,v 1.18 2000/09/11 04:42:00 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -486,6 +486,18 @@ g_error rehandle(handle h, void *obj) {
   struct handlenode *hn = htree_find(h);
   if (!hn) return mkerror(PG_ERRT_HANDLE,26);
   hn->obj = obj;
+  return sucess;
+}
+
+/* Gets a pointer to the handle's payload, stores it in the variable
+ * pointed to by pppayload
+ */
+g_error handle_payload(unsigned long **pppayload,int owner,handle h) {
+  struct handlenode *n = htree_find(h);
+  if (!n) return mkerror(PG_ERRT_HANDLE,26);
+  if (owner>=0 && n->owner != owner) 
+    return mkerror(PG_ERRT_HANDLE,27);
+  *pppayload = &n->payload;
   return sucess;
 }
 

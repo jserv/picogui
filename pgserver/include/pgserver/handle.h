@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.2 2000/09/09 01:46:15 micahjd Exp $
+/* $Id: handle.h,v 1.3 2000/09/11 04:42:00 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -54,6 +54,7 @@ struct handlenode {
 				  that this handle points to. Upper 2 bits
 				  are for HFLAGs */
   int context;
+  unsigned long int payload;   /* Client-definable data */
   void *obj;
   struct handlenode *left,*right,*parent;
 };
@@ -66,6 +67,11 @@ g_error mkhandle(handle *h,unsigned char type,int owner,void *obj);
 /* Reads the handle, returns NULL if handle is invalid or if it
    doesn't match the required type and user. If owner is -1, we don't care */
 g_error rdhandle(void **p,unsigned char reqtype,int owner,handle h);
+
+/* Gets a pointer to the handle's payload, stores it in the variable
+ * pointed to by pppayload
+ */
+g_error handle_payload(unsigned long **pppayload,int owner,handle h);
 
 /* Given a pointer to an object, returns its handle.  Returns 0 if
    there is no matching handle. Places the owner in 'owner' if not null.
