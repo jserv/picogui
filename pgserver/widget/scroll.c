@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.46 2001/12/14 22:56:45 micahjd Exp $
+/* $Id: scroll.c,v 1.47 2001/12/18 04:53:06 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -76,8 +76,8 @@ void build_scroll(struct gropctxt *c,unsigned short state,struct widget *self) {
   /* Size ourselves to fit the widget we are bound to */
   oldres = DATA->res;
   if (!iserror(rdhandle((void **)&wgt,PG_TYPE_WIDGET,-1,
-			self->scrollbind)) && wgt) 
-    DATA->res = wgt->in->ch - wgt->in->h;
+			self->scrollbind)) && wgt && wgt->in->div)
+    DATA->res = wgt->in->div->h - wgt->in->div->calch;
   if (DATA->res < 0)
     DATA->res = 0;
   if (DATA->value > DATA->res)
@@ -176,8 +176,7 @@ g_error scroll_set(struct widget *self,int property, glob data) {
    DATA->value = data;
    scrollevent(self);
    scrollupdate(self);
-   div_setstate(self->in->div,PGTH_O_SCROLL_ON,1);
-
+   div_setstate(self->in->div,self->in->div->state,1);
    break;
 
   case PG_WP_SIZE:
@@ -207,10 +206,6 @@ g_error scroll_set(struct widget *self,int property, glob data) {
      */
     if (w->type != PG_WIDGET_SCROLL)
       widget_set(w,PG_WP_BIND,hlookup(self,NULL));
-
-    /* Use a special scroll-enhanced theme if possible */
-    if (w->type == PG_WIDGET_LABEL)
-      w->in->div->state = PGTH_O_LABEL_SCROLL;
 
     break;
 

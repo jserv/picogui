@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.39 2001/12/17 22:39:22 micahjd Exp $
+/* $Id: terminal.c,v 1.40 2001/12/18 04:53:06 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -68,9 +68,13 @@ struct termdata {
   struct gropnode *inc;
   int x,y;              /* Base coordinates */
   int celw,celh;        /* Character cel size */
+  int fontmargin;
 
   /* Update rectangle (in characters) */
   int updx,updy,updw,updh;
+
+  /* Preferred height in lines */
+  int pref_lines;
 
   /* Mouse button down? */
   unsigned int on : 1;
@@ -150,18 +154,24 @@ void load_terminal_theme(struct widget *self) {
    */
   f = theme_lookup(self->in->div->state,PGTH_P_FONT);
   if (DATA->font == DATA->deffont && f != defaultfont)
-    DATA->font = f;
+    terminal_set(self,PG_WP_FONT,f);
 }
 
 /* Preferred size, 80*25 characters */
 void terminal_resize(struct widget *self) {
-   self->in->div->pw = DATA->celw * 80;
-   self->in->div->ph = DATA->celh * 25;
-   load_terminal_theme(self);
+  self->in->div->pw = DATA->celw * 80;
+  self->in->div->ph = DATA->celh * DATA->pref_lines;
+
+  /* Remember, we must account for the terminal's margin */
+  if (DATA->fontmargin) {
+    self->in->div->pw += DATA->celw;
+    self->in->div->ph += DATA->celh;
+  }
+
+  load_terminal_theme(self);
 }
    
 void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self) {
-  struct fontdesc *fd;
   int neww,newh;
   struct gropnode *grid;
   pghandle bitmap = theme_lookup(self->in->div->state,PGTH_P_BITMAP1);
@@ -190,17 +200,10 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
 
   /************** Size calculations */
 
-  /* Calculate character cell size */
-  if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
-		       DATA->font)) || !fd)
-    return;
-  DATA->celw = fd->font->w;
-  DATA->celh = fd->font->h;
-
   /* Using our grop context and character cell size,
    * calculate a good size for us */
-  neww = c->w / DATA->celw - (fd->margin ? 1 : 0);   /* A little margin */
-  newh = c->h / DATA->celh - (fd->margin ? 1 : 0);
+  neww = c->w / DATA->celw - (DATA->fontmargin ? 1 : 0);   /* A little margin */
+  newh = c->h / DATA->celh - (DATA->fontmargin ? 1 : 0);
 
   /* If we're rolled up, don't bother */
   if ((neww>0) && (newh>0)) {
@@ -292,7 +295,7 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
   DATA->bginc = c->current;
 
   /* For the margin we figured in earlier */
-  if (fd->margin) {
+  if (DATA->fontmargin) {
      c->x += DATA->celw >> 1;
      c->y += DATA->celh >> 1;
   }
@@ -344,6 +347,7 @@ g_error terminal_install(struct widget *self) {
    
   DATA->bufferw = 80;
   DATA->bufferh = 25;
+  DATA->pref_lines = 25;
 
   /* Allocate buffer */
   DATA->buffersize = (DATA->bufferw*DATA->bufferh) << 1;
@@ -358,7 +362,7 @@ g_error terminal_install(struct widget *self) {
   /* Default terminal font */
   e = findfont(&DATA->deffont,-1,NULL,0,PG_FSTYLE_FIXED | PG_FSTYLE_DEFAULT);
   errorcheck;
-  DATA->font = DATA->deffont;
+  terminal_set(self,PG_WP_FONT,DATA->deffont);
    
   self->trigger_mask = TRIGGER_STREAM | TRIGGER_CHAR | TRIGGER_DOWN |
      TRIGGER_UP | TRIGGER_RELEASE | TRIGGER_ACTIVATE | TRIGGER_DEACTIVATE |
@@ -387,8 +391,21 @@ g_error terminal_set(struct widget *self,int property, glob data) {
     if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,data)) || !fd) 
       return mkerror(PG_ERRT_HANDLE,12);
     DATA->font = (handle) data;
+    
+    /* Get the character cell size, we need it early 
+     * on to calculate preferred size */
+    DATA->celw = fd->font->w;
+    DATA->celh = fd->font->h;
+    DATA->fontmargin = fd->margin;
+
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
+    break;
+
+  case PG_WP_LINES:
+    if (data>0)
+      DATA->pref_lines = data;
+    resizewidget(self);
     break;
 
   default:
@@ -411,6 +428,9 @@ glob terminal_get(struct widget *self,int property) {
 
   case PG_WP_FONT:
     return (glob) DATA->font;
+
+  case PG_WP_LINES:
+    return DATA->bufferh;
 
   default:
     return 0;

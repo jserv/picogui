@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.12 2001/10/24 20:45:37 micahjd Exp $
+/* $Id: main.c,v 1.13 2001/12/18 04:53:05 micahjd Exp $
  *
  * main.c - PicoGUI Terminal (the 'p' is silent :)
  *          This handles the PicoGUI init and events
@@ -174,6 +174,10 @@ int main(int argc, char **argv) {
   pgRegisterApp(PG_APP_NORMAL,title,0);              /* Register app */
   
   wTerminal = pgNewWidget(PG_WIDGET_TERMINAL,0,0);   /* Make a terminal */
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_TOP,
+	      //      PG_WP_LINES,100,
+	      0);
   if (fontsize)
      pgSetWidget(PGDEFAULT,PG_WP_FONT,
 		 pgNewFont(NULL,fontsize,PG_FSTYLE_FIXED),0);
@@ -182,6 +186,14 @@ int main(int argc, char **argv) {
   pgBind(PGDEFAULT,PG_WE_RESIZE,&termResize,NULL);   /* Resize handler */
   pgFocus(PGDEFAULT);
   
+  /* Scroll bar */
+  /*
+  pgNewWidget(PG_WIDGET_SCROLL,PG_DERIVE_BEFORE,wTerminal);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_BIND,wTerminal,
+	      0);
+  */
+
   /*** Start up subprocess */
 
   /* So we know when the subprocess exits... */
