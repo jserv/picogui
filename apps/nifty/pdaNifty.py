@@ -41,7 +41,7 @@ class _main_err(object):
         self.tb = None
 main_err = _main_err()
 # uncomment when you need to debug
-main_err = sys.stderr
+#main_err = sys.stderr
 
 class _stream_manager (object):
     def __init__(self, name, fallback):
