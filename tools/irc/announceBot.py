@@ -3,6 +3,7 @@
 A quick and dirty twisted.im based announce bot. It simply says anything it reads
 from clients connecting to it on a UNIX socket
 """
+
 socketName = "/tmp/announceBot.socket"
 channelFile = "/home/commits/channels.list"
 
@@ -12,7 +13,26 @@ from twisted.im import basechat, baseaccount, ircsupport
 from twisted.internet.protocol import Factory
 from twisted.internet.app import Application
 from twisted.protocols.basic import LineReceiver
-import time, irc_colors, sys
+import time, irc_colors, glob, sys, re, os
+
+# Figure out what our botID is.
+# This is necessary because there we may wish to have multiple bots dealing with a limited number of channels
+# That lets us get around limits some IRC networks have on the number of channels you can join
+socketsCurrentlyInExistance = glob.glob(socketName + ".*");
+lastSockID = 0;
+
+# this algorithm could lead to fragmentation in an environment where many bots are connecting and disconnecting
+for socket in socketsCurrentlyInExistance:
+    lastSockID = re.compile('.*\.(.*)$').search(socket).group(1);
+botID = int(lastSockID) + 1;
+print "botID = " + str(botID)
+socketName = socketName + "." + str(botID);
+channelFile = channelFile + "." + str(botID);
+
+# Lalo's joke: A brainless entity created to keep an eye on subversion                 
+botNick = "CIA"
+if botID > 1:
+    botNick = "CIA" + str(botID)  
 
 # List of channels we're in. These will be autojoined by the
 # AccountManager. We update this and save it when we get a mail
@@ -21,17 +41,20 @@ f = open(channelFile)
 channelList = {}
 for line in f.readlines():
     line = line.strip()
-    if line:
-        channelList[line] = 1
+    match = re.compile(' (.*?)$').search(line); 
+    if match is not None and int(match.group(1)) == botID:
+        print line
+        channelList[line.split(' ')[0]] = 1
 f.close()
+
+print channelList.keys();
 
 accounts = [
     ircsupport.IRCAccount("IRC", 1,
-        # Lalo's joke: A brainless entity created to keep an eye on subversion                 
-        "CIA",              # nickname
-        "",                 # passwd
-        "irc.freenode.net", # irc server
-        6667,               # port
+        botNick,               # nickname
+        "",                    # passwd
+        "irc.freenode.net",    # irc server
+        6667,                  # port
         ",".join(channelList.keys())
     )
 ]
@@ -55,16 +78,19 @@ class AnnounceServer(LineReceiver):
             (command, project) = line.split(" ", 2)
         
 	if command == "Announce":
-            # Now we'll try to send the message to #commits, #only-commits, #<project>, and #<project>-commits.
-            # No big deal if any of them fails becase we're not joined to that channel.
-	    try:
-	        groups['only-commits'].sendText(irc_colors.boldify(project + ": ") + message)
-            except KeyError:
-                pass
-	    try:
-	        groups['commits'].sendText(irc_colors.boldify(project + ": ") + message)
-            except KeyError:
-                pass
+            # if we are the first bot, we send to the main channels
+            if botID == 1:
+                # Now we'll try to send the message to #commits, #only-commits, #<project>, and #<project>-commits.
+                # No big deal if any of them fails becase we're not joined to that channel.
+                try:
+                    groups['only-commits'].sendText(irc_colors.boldify(project + ": ") + message)
+                except KeyError:
+                    pass
+                try:
+                    groups['commits'].sendText(irc_colors.boldify(project + ": ") + message)
+                except KeyError:
+                    pass
+                
             try:
                 groups[project].sendText(message)
             except KeyError:
@@ -140,4 +166,3 @@ application.listenUNIX(socketName, serv)
 
 if __name__ == '__main__':
     application.run()
-

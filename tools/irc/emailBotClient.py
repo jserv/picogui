@@ -7,17 +7,17 @@
  There's also a lot of goop in here to update stats.
 """
 from twisted.internet import reactor, protocol
-import sys, email, os
+import sys, email, os, re, time
 import irc_colors
 
 baseDir = "/home/commits"
+channelFile = "/home/commits/channels.list"
 mailLog = os.path.join(baseDir, "mail.log")
 commandLog = os.path.join(baseDir, "commands.log")
 statsDir = os.path.join(baseDir, "stats")
 urlDir = os.path.join(baseDir, "urls")
 statsSubdirs = ("forever", "daily", "weekly", "monthly")
-socketName = "/tmp/announceBot.socket"
-import re, time
+socketBaseName = "/tmp/announceBot.socket"
 
 # Allowed commands, split up into those with content and those without
 allowedTextCommands = ("Announce", "SendToChannels")
@@ -123,32 +123,11 @@ def setProjectURL(project, url):
 
 class AnnounceClient(protocol.Protocol):
     def connectionMade(self):
-        import sys
-        mailMsg  = email.message_from_file(sys.stdin)
-        f = open(mailLog, "a")
-        f.write(mailMsg.as_string())
-        f.close()
-        subjectFields = mailMsg['Subject'].split(" ")
-        message = mailMsg.get_payload()
-        try:
-            subjectFields[1] = subjectFields[1].lower()
-            if subjectFields[1][0] == "#":
-                subjectFields[1] = subjectFields[1][1:]
-        except IndexError:
-            pass
-
+        # at this point we have got a message, have done some basic parsing, and know that it's meant for a channel
         # Don't allow known bad channels, or names with slashes
         if len(subjectFields)<2 or (not subjectFields[1] in badChannels and subjectFields[1].find(os.sep) < 0):
-
-            # Commands we process here
-            if subjectFields[0] == "SetProjectURL":
-                setProjectURL(subjectFields[1], message.split("\n")[0].strip())
-
-            elif subjectFields[0] == "Die":
-                os.system("killall python")
-
             # Send allowed text commands
-            elif subjectFields[0] in allowedTextCommands:
+            if subjectFields[0] in allowedTextCommands:
                 # Our lame little stat page
                 if subjectFields[0] in statCountedCommands:
                     updateStats(subjectFields[1])
@@ -185,6 +164,56 @@ class AnnounceClientFactory(protocol.ClientFactory):
 
 if __name__ == '__main__':
     import sys
-    f = AnnounceClientFactory()
-    reactor.connectUNIX(socketName, f)
-    reactor.run()
+
+    mailMsg  = email.message_from_file(sys.stdin)
+    
+    # log it
+    f = open(mailLog, "a")
+    f.write(mailMsg.as_string())
+    f.close()
+
+    subjectFields = mailMsg['Subject'].split(" ")
+    message = mailMsg.get_payload()
+    # Commands we process here
+    if subjectFields[0] == "SetProjectURL":
+        setProjectURL(subjectFields[1], message.split("\n")[0].strip())
+    elif subjectFields[0] == "Die":
+        os.system("killall python")
+    else:
+        try:
+            # this block only completes if the command has a second argument, ie it is related to a channel
+            
+            subjectFields[1] = subjectFields[1].lower()
+            # strip the hash from the channel if the user gave us one
+            if subjectFields[1][0] == "#":
+                subjectFields[1] = subjectFields[1][1:]
+            
+            # now locate the right socket for the given channel
+            import glob
+            channelFilesCurrentlyInExistance = glob.glob(channelFile + ".*");
+            socketName = socketBaseName            
+            for cf in channelFilesCurrentlyInExistance:
+                f = open(cf)
+                channelList = {}
+                lastBotID = re.compile('.*\.(.*)$').search(cf).group(1)
+                for line in f.readlines():
+                    line = line.strip()
+                    if line == subjectFields[1]:
+                        # we have found the channel, ie a bot is already present in it
+                        socketName = socketBaseName + "." + lastBotID
+                f.close()
+
+            # we did not find the channel
+            if socketName == socketBaseName:
+                # we always choose the last bot to be started for joining channels
+                socketName = socketBaseName + "." + lastBotID;
+            
+            # now launch the client object
+            f = AnnounceClientFactory()
+            reactor.connectUNIX(socketName, f)
+            reactor.run()
+            
+        except IndexError:
+            # this command does not relate to a channel
+            pass
+    
