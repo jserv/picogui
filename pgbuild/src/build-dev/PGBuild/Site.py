@@ -66,10 +66,21 @@ class Location:
            and we're not forcing a retest, otherwise it will be tested
            using testSpeed().
            """
-        # If we have no <speed> tag in the host, or we're being
-        # forced to retest, test the speed
-        if self.config.eval("invocation/option[@name='retestMirrors']/text()") or \
-           not self.host.getElementsByTagName('speed'):
+
+        needTest = 0
+
+        # If we have no <speed> tag in the host, we definitely need to test
+        if not self.host.getElementsByTagName('speed'):
+            needTest = 1
+
+        # Are we being forced to retest?
+        if self.config.eval("invocation/option[@name='retestMirrors']/text()"):
+            # We only want to retest all the mirrors once each
+            if not hasattr(self, 'retested'):
+                needTest = 1
+                self.retested = 1
+
+        if needTest:
             self.testSpeed()
             if progress:
                 progress.report("tested", self.absoluteURI)
