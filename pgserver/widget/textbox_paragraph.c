@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.9 2002/10/27 15:25:56 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.10 2002/10/27 21:38:20 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -144,6 +144,10 @@ void paragraph_delete(struct paragraph *par) {
   r_divnode_free(par->div);
 
   pgstring_delete(par->content);
+
+  /* The paragraph's handle is managed independently of the paragraph itself */
+  handle_free(-1,hlookup(par,NULL));
+
   g_free(par);
 }
 

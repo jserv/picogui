@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.45 2002/10/27 15:25:56 micahjd Exp $
+/* $Id: textbox_document.c,v 1.46 2002/10/27 21:38:20 micahjd Exp $
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and
@@ -328,7 +328,7 @@ void textbox_delete_parlist(struct paragraph *list) {
   while (list) {
     condemn = list;
     list = list->next;
-    handle_free(-1,hlookup(condemn,NULL));
+    paragraph_delete(condemn);
   }
 }
 

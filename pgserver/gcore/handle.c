@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.62 2002/10/27 17:26:09 micahjd Exp $
+/* $Id: handle.c,v 1.63 2002/10/27 21:38:20 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -401,17 +401,10 @@ void object_free(struct handlenode *n) {
       font_descriptor_destroy((struct font_descriptor *)n->obj);
       break;
 
+      /* Object types that are memory-managed independently of their handles */
     case PG_TYPE_DIVTREE:
-      /* We don't want to free the divtree itself here, it needs
-       * to be managed by the divtree stack.
-       */
-      break;
-
-#ifdef CONFIG_WIDGET_TEXTBOX
     case PG_TYPE_PARAGRAPH:
-      paragraph_delete(((struct paragraph *)n->obj));
       break;
-#endif
 
     default:
       g_free(n->obj);
