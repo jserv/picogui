@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.78 2002/02/26 06:42:16 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.79 2002/02/27 18:12:03 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -1893,7 +1893,7 @@ g_error def_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
 
   /* ack... we need to make a new context */
 
-  VID(bitmap_getsize)(bmp,&w,&h);
+  def_bitmap_getsize(bmp,&w,&h);
 
   e = g_malloc((void **) rend,sizeof(struct groprender));
   errorcheck;

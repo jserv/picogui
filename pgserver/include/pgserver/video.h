@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.76 2002/02/26 18:22:47 micahjd Exp $
+/* $Id: video.h,v 1.77 2002/02/27 18:12:03 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -593,6 +593,13 @@ void def_coord_logicalize(s16 *x, s16 *y);
 void rotate90_coord_logicalize(s16 *x, s16 *y);
 void rotate180_coord_logicalize(s16 *x, s16 *y);
 void rotate270_coord_logicalize(s16 *x, s16 *y);
+void linear32_pixel(hwrbitmap dest, s16 x, s16 y, hwrcolor c, s16 lgop);
+hwrcolor linear32_getpixel(hwrbitmap src, s16 x, s16 y);
+void linear32_slab(hwrbitmap dest, s16 x, s16 y, s16 w, hwrcolor c, s16 lgop);
+void linear32_bar(hwrbitmap dest, s16 x,s16 y,s16 h,hwrcolor c, s16 lgop);
+void linear32_rect(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop);
+void linear32_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
+	      s16 src_x, s16 src_y, s16 lgop);
 
 /************* Registration functions for video drivers */
 
