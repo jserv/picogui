@@ -1,3 +1,16 @@
+2001-06-6    Micah Dowty <micahjd@users.sourceforge.net>
+
+<Early morning...>
+Ugh. Trying to evaluate the performance of linear1 slabs and blits on the
+uCsimm using benchmarking, only to find out that the gradient video test
+screen crashes the simm. No debugger to be had on this thing, but with
+printf()'s I narrowed it down to a divide-by-zero. In the gradient function,
+both the sine and cosine values were zero. This shouldn't happen... Turns
+out that the trigtab[] has been clobbered! About the second half of it or so
+has been zeroed out. It appears ok in the binary, so it's probably not a
+linker problem. This could be a pain to debug... Good night.
+
+
 2001-06-5    Micah Dowty <micahjd@users.sourceforge.net>
 
 Now that linear1 has good, fast primitives, it should be a breeze to modify
@@ -27,6 +40,10 @@ them for linear2 and linear4.
       * video/nullfb.c: For easier benchmarking and profiling, added a video
         driver that utilizes linear* but does nothing with the generated
         frames
+	
+      * video/linear1.c: Started to implement 32-bits-at-a-time copying in
+        blit (and eventually slab) but byte order issues reduce portability
+	to about zero. I'll wait to do this in the ASM optimization.
 
 2001-05-31    Micah Dowty <micahjd@users.sourceforge.net>
 
