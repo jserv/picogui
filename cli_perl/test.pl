@@ -27,7 +27,7 @@ NewWidget(-type => panel,
 	  -side => top);
 
 # Set the panel's color
-$p->SetWidget(-color => 0xE0E0C0);
+$p->SetWidget(-bgcolor => 0xE0E0C0);
 
 # Make a widget inside the panel
 $tx = NewWidget(-type => label,
@@ -41,6 +41,8 @@ $tbox = NewWidget(-type => label,
 		  -after => $p,
 		  -align => nw,
 		  -side => left,
+		  -bgcolor => 0x0000FF,
+		  -color => 0xFFFF00,
 		  -font => NewFont("",0,bold,grayline),
 		  -text => NewString(<<EOF));
 This is text!
@@ -57,7 +59,7 @@ $bits = NewBitmap(-file => '/home/micah/images/tux.color.pnm');
 # Make a sequence of widgets in a panel
 $holder = NewWidget(-type => panel,
 		    -side => top,
-		    -color => 0xFFFFFF,
+		    -bgcolor => 0xFFFFFF,
 		    -after => $tbox,
 		    -size => 40
 		    );

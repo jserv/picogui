@@ -1,7 +1,7 @@
 #############################################################################
 #
 # PicoGUI client module for Perl
-# $Revision: 1.1 $
+# $Revision: 1.2 $
 #
 # Micah Dowty <micah@homesoftware.com>
 #
@@ -72,28 +72,20 @@ require Exporter;
 	   );
 
 %WPROP = (
-	  'panel-size' => 0,
-	  'panel-side' => 1,
-	  'panel-color' => 2,
-	  'panel-bordercolor' => 3,
-	  'panel-bordersize' => 4,
-	  'panel-sizemode' => 5,
-	  'label-side' => 0,
-	  'label-color' => 1,
-	  'label-font' => 2,
-	  'label-text' => 3,
-	  'label-align' => 4,
-	  'label-transparent' => 5,
-	  'bitmap-side' => 0,
-	  'bitmap-color' => 1,
-	  'bitmap-bitmap' => 2,
-	  'bitmap-lgop' => 3,
-	  'bitmap-align' => 4,
-	  'bitmap-transparent' => 5,
-	  'scroll-value' => 0,
-	  'indicator-value' => 0,
-	  'indicator-side' => 1,
-	  'indicator-width' => 2
+	  '-size' => 1,
+	  '-side' => 2,
+	  '-align' => 3,
+	  '-bgcolor' => 4,
+	  '-color' => 5,
+	  '-sizemode' => 6,
+	  '-text' => 7,
+	  '-font' => 8,
+	  '-transparent' => 9,
+	  '-bordercolor' => 10,
+	  '-bordersize' => 11,
+	  '-bitmap' => 12,
+	  '-lgop' => 13,
+	  '-value' => 14
 	  );
 
 $MAGIC     = 0x31415926;
@@ -222,7 +214,7 @@ sub SetWidget {
     my %args = @_;
     my $prop;
     foreach (keys %args) {
-	$prop = $WPROP{$self->{'type'}.$_};
+	$prop = $WPROP{$_};
 	$arg = $args{$_};
 	$arg = $ALIGN{$arg} if (/align/);
 	$arg = $SIDE{$arg} if (/side/);
