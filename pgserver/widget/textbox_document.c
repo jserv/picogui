@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.39 2002/10/11 09:44:38 micahjd Exp $
+/* $Id: textbox_document.c,v 1.40 2002/10/11 10:21:32 micahjd Exp $
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and
@@ -48,7 +48,9 @@ void textbox_build_par_div(struct gropctxt *c, u16 state, struct widget *self);
 struct txtformat text_formats[] = {
   { "plaintext", &plaintext_load, &plaintext_save },
 #ifdef CONFIG_FORMAT_HTML
-  //  { "html", &html_load, &html_save },
+  /* HTML not working yet, but plaintext is better than nothing :) */
+  // { "html", &html_load, &html_save },
+  { "html", &plaintext_load, &plaintext_save },
 #endif
   { NULL, NULL, NULL }
 };
