@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.48 2002/01/25 16:10:33 pney Exp $
+/* $Id: font.c,v 1.49 2002/01/30 19:42:47 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -284,9 +284,10 @@ void outtext(hwrbitmap dest, struct fontdesc *fd,
 	}
       else if (ch!='\r') {
 	if(fd->passwdc > 0) {    /* Is the font to be a password? */
-	  const u8 *u8_passwdc = &(fd->passwdc);
-	  outchar(dest,fd,&x,&y,col,
-		  fd->decoder(&u8_passwdc),clip,lgop,angle);
+	  /* We don't need to run the fd->decoder() here since fd->password
+	   * is a character code, not a string.
+	   */
+	  outchar(dest,fd,&x,&y,col,fd->passwdc,clip,lgop,angle);
 	}
 	else
 	  outchar(dest,fd,&x,&y,col,ch,clip,lgop,angle);

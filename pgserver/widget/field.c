@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.46 2002/01/30 15:37:55 pney Exp $
+/* $Id: field.c,v 1.47 2002/01/30 19:42:47 micahjd Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -43,6 +43,8 @@
 
 struct fielddata {
   handle font;
+  struct fontdesc fd;    /* Local copy of the font, so we can modify it */
+  handle localfont;      /* Handle to our local copy */
   int focus,on,flash_on;
 
   /* Maximum size the field can hold */
@@ -71,22 +73,27 @@ void fieldstate(struct widget *self);
 
 void build_field(struct gropctxt *c,unsigned short state,struct widget *self) {
   struct fontdesc *fd;
-  handle font = DATA->font ? DATA->font : theme_lookup(state,PGTH_P_FONT);
-
+  handle hfd;
+  
+  if (DATA->font) {
+    fd = &DATA->fd;
+    hfd = DATA->localfont;
+  }
+  else {
+    hfd = theme_lookup(state,PGTH_P_FONT);
+    if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,hfd)) || !fd) return;
+  }
+  
   exec_fillstyle(c,state,PGTH_P_BGFILL);
 
-  /* Center the font vertically and use the same amount of margin on the side */
-  if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,
-		       font)) || !fd) return;
-  
   /* Save it for later */
   DATA->startctxt = *c;
 
   /* The text itself */
-  if (font != defaultfont) {
-     addgrop(c,PG_GROP_SETFONT);
-     c->current->param[0] = font;
-  }
+
+  addgrop(c,PG_GROP_SETFONT);
+  c->current->param[0] = DATA->localfont;
+  
   addgrop(c,PG_GROP_SETCOLOR);
   c->current->param[0] = VID(color_pgtohwr) 
      (theme_lookup(state,PGTH_P_FGCOLOR)); 
@@ -115,6 +122,11 @@ g_error field_install(struct widget *self) {
   e = g_malloc(&self->data,sizeof(struct fielddata));
   errorcheck;
   memset(self->data,0,sizeof(struct fielddata));
+
+  /* Get a handle to our local fontdesc */
+  e = mkhandle(&DATA->localfont, PG_TYPE_FONTDESC | HFLAG_NFREE, 
+	       self->owner, &DATA->fd);
+  errorcheck;
 
   /* Set up the buffer */
   e = g_malloc((void *) &DATA->buffer,FIELDBUF_DEFAULTSIZE);
@@ -146,6 +158,7 @@ g_error field_install(struct widget *self) {
 
 void field_remove(struct widget *self) {
   handle_free(-1,DATA->hbuffer);
+  handle_free(self->owner,DATA->localfont);
   g_free(DATA->buffer);
 
   g_free(self->data);
@@ -165,19 +178,17 @@ g_error field_set(struct widget *self,int property, glob data) {
   case PG_WP_FONT:
     /* Test if a font already exist to keep password properties */
     if(DATA->font) {
-      /* get the fontdesc pointer */
-      if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,DATA->font)) || !fd)
-	return mkerror(PG_ERRT_HANDLE,44);
-      /* save password property */
-      passwdc = fd->passwdc;
+      passwdc = DATA->fd.passwdc;
     }
 
     if (iserror(rdhandle((void **)&fd,
 			 PG_TYPE_FONTDESC,-1,data)) || !fd) 
       return mkerror(PG_ERRT_HANDLE,44); 
     DATA->font = (handle) data;
+    DATA->fd = *fd;
+
     /* restore password property if needed */
-    if(passwdc) fd->passwdc = passwdc;
+    if(passwdc) DATA->fd.passwdc = passwdc;
 
     psplit = self->in->split;
     if (self->in->split != psplit) {
@@ -213,28 +224,10 @@ g_error field_set(struct widget *self,int property, glob data) {
 
   case PG_WP_PASSWORD:
     /* If no font already associated with the field, create a default one */
-    if(!DATA->font) findfont(&(DATA->font),-1,NULL,0,PG_FSTYLE_DEFAULT);
-
-     /* get the fontdesc pointer */
-    if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,DATA->font)) || !fd)
-      return mkerror(PG_ERRT_HANDLE,44);
-
-     /* set the font to 'password look' */
-     /* firs, test if arch is big or little endian */
-    {
-      int ilocal = (int) data;
-      u32 b1 = 1;
-      u32 b2,b3,b4;
-
-      if(*(char *)&b1 != 1) {         /* big endian arch, then swap bytes  */
-	b4 = (ilocal >> 24) & 0xff;
-	b3 = (ilocal >> 16) & 0xff;
-	b2 = (ilocal >> 8)  & 0xff;
-	b1 =  ilocal        & 0xff;
-	ilocal = (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
-      }
-      fd->passwdc = ilocal;
-    }
+    if(!DATA->font)
+      widget_set(self, PG_WP_FONT, defaultfont);
+   
+    DATA->fd.passwdc = data;
     break;
 
   default:
