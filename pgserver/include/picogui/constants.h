@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.160 2002/10/08 08:49:09 micahjd Exp $
+/* $Id: constants.h,v 1.161 2002/10/11 10:41:18 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -935,11 +935,7 @@ typedef unsigned long pghandle;
 				 * in this container */
 #define PG_WP_DISABLED    28    /* For buttons, grays out text and prevents clicking */
 #define PG_WP_MARGIN      29    /* For boxes, overrides the default margin */
-#define PG_WP_TEXTFORMAT  30    /* For the textbox, defines a format for 
-				 * PG_WP_TEXT. Format name, with optional
-				 * preceeding '+' to prevent erasing existing
-				 * data, just append at the cursor position
-				 */
+#define PG_WP_TEXTFORMAT  30    /* For the textbox, defines a format for  PG_WP_TEXT */
 #define PG_WP_TRIGGERMASK 31    /* Mask of extra triggers accepted (self->trigger_mask) */
 #define PG_WP_HILIGHTED   32    /* Widget property to hilight a widget and all it's children */
 #define PG_WP_SELECTED    33    /* List property to select a row. */
@@ -971,12 +967,20 @@ typedef unsigned long pghandle;
 #define PG_WP_MULTILINE       57  /* Turn this off on the textbox widget to get a single line textbox */
 #define PG_WP_SELECTION       58  /* Selected text in the textedit widget */
 #define PG_WP_READONLY        59
+#define PG_WP_INSERTMODE      60  /* Set to a PG_INSERT_* constant, for textbox widget */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0
 #define PG_SZMODE_PERCENT       (1<<2)    /* The DIVNODE_UNIT_PERCENT flag */
 #define PG_SZMODE_CNTFRACT      (1<<15)   /* The DIVNODE_UNIT_CNTFRACT flag */
 #define PG_SZMODEMASK           (PG_SZMODE_PERCENT|PG_SZMODE_PIXEL|PG_SZMODE_CNTFRACT)
+
+/* Constants for PG_WP_INSERTMODE */
+#define PG_INSERT_OVERWRITE   0   /* Overwrite the entire contents of the widget (Default) */
+#define PG_INSERT_APPEND      1   /* Insert at the end of the document */
+#define PG_INSERT_PREPEND     2   /* Insert at the beginning of the document */
+#define PG_INSERT_ATCURSOR    3   /* Insert at the cursor */
+#define PG_INSERTMAX          3   /* For error checking */
 
 /* Constants for positioning a popup box */
 #define PG_POPUP_CENTER   -1
