@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.85 2002/09/28 10:58:10 micahjd Exp $
+/* $Id: panel.c,v 1.86 2002/10/04 05:20:30 micahjd Exp $
  *
  * panel.c - Resizable container with decorations. It uses a panelbar for resizing purposes,
  *           and optionally supplies some standard buttons for the panel.
@@ -250,7 +250,11 @@ g_error panel_install(struct widget *self) {
 /**** Properties */
 
 void panel_remove(struct widget *self) {
-  handle_free(-1, DATA->hbar);
+  handle_free(self->owner, DATA->hrotate);
+  handle_free(self->owner, DATA->hzoom);
+  handle_free(self->owner, DATA->hclose);
+  handle_free(self->owner, DATA->hlabel);
+  handle_free(self->owner, DATA->hbar);
   g_free(DATA);
   r_divnode_free(self->in);
 }

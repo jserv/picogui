@@ -1,4 +1,4 @@
-/* $Id: scrollbox.c,v 1.4 2002/10/02 20:26:19 micahjd Exp $
+/* $Id: scrollbox.c,v 1.5 2002/10/04 05:20:30 micahjd Exp $
  *
  * scrollbox.c - A box widget that includes scrollbars. It also
  *               conglomerates properties and events as necessary
@@ -84,7 +84,7 @@ g_error scrollbox_install(struct widget *self) {
   e = widget_set(DATA->box, PG_WP_BIND, self->h);
   errorcheck;
 
-   /* Make a divnode after the title to act as an insertion point for child widgets */
+  /* Make a divnode after the title to act as an insertion point for child widgets */
   e = newdiv(DATA->box->sub, self);
   errorcheck;
   interior = *DATA->box->sub;

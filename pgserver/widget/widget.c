@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.194 2002/09/28 10:58:11 micahjd Exp $
+/* $Id: widget.c,v 1.195 2002/10/04 05:20:30 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -206,9 +206,6 @@ g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **wher
 
   DBG("widget %p, container %d, owner %d\n",w,container,owner);
   
-  if (w->isroot)
-    return mkerror(PG_ERRT_BADPARAM,58);  /* Root widgets can't be reattached */
-
   if (!dt)
     dt = &fakedt;
 
@@ -218,46 +215,49 @@ g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **wher
   w->dt = dt;
   w->container = container;
   
-  /* If we just added a widget that can accept text input, and this is inside
-   * a popup box, keep it in the nontoolbar area so keyboards still work */
-  if ((w->trigger_mask & PG_TRIGGER_NONTOOLBAR) && dt->head->next && dt->head->next->div && 
-      dt->head->next->div->owner->type == PG_WIDGET_POPUP) {
-    dt->head->next->div->flags |= DIVNODE_POPUP_NONTOOLBAR;
-  }
-
   /* If this widget is already in the divtree, remove it */
   if (w->where) {
-    if (w->out && *w->out) {
+    if (w->out) {
       *w->where = *w->out;
-      if (*w->out && (*w->out)->owner)
+      /* Make sure that the attachment point is connected to the _beginning_
+       * of another widget. (Necessary to prevent improper detachment when
+       * a widget is embedded within another)
+       */
+      if (*w->out && (*w->out)->owner && (*w->out)==(*w->out)->owner->in)
 	(*w->out)->owner->where = w->where;
-    }
-    else if ( w->where )
-      *w->where = NULL;
-    if (w->out)
       *w->out = NULL;
+    }
+    else 
+      *w->where = NULL;
 
     /* Take off all the unnecessary divscroll flags */
     r_div_unscroll(w->in);
   }
   
   /* Add the widget to the divtree */
+  w->where = where;
   if (where) {
     *w->out = *where;
     *where = w->in;
-    w->where = where;
     if (w->out && *w->out && (*w->out)->owner) {
       (*w->out)->owner->where = w->out;
+    }
+
+    /* If we just added a widget that can accept text input, and this is inside
+     * a popup box, keep it in the nontoolbar area so keyboards still work */
+    if ((w->trigger_mask & PG_TRIGGER_NONTOOLBAR) && dt->head->next && dt->head->next->div && 
+	dt->head->next->div->owner->type == PG_WIDGET_POPUP) {
+      dt->head->next->div->flags |= DIVNODE_POPUP_NONTOOLBAR;
     }
 
     /* Resize for the first time */
     resizewidget(w);
   }
-  else
-    w->where = NULL;
   
-  dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC;
-  dt->flags |= DIVTREE_NEED_RECALC;
+  if (w->dt && w->dt->head) {
+    dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC;
+    dt->flags |= DIVTREE_NEED_RECALC;
+  }
   return success;
 }
 
@@ -314,90 +314,62 @@ g_error widget_derive(struct widget **w, handle *h,
 }
 
 void widget_remove(struct widget *w) {
-  struct divnode *sub_end;  
-  handle hw;
-
-  DBG("%p\n",w);
+  struct widget *child;
+  struct divnode **old_where;
+  DBG("%p, type %d\n",w,w->type);
 
   /* Get out of the timer list */
   remove_timer(w);
-  
-  /* Remove inner widgets if it can be done safely
-     (only remove if they have handles) */
-  while (w->sub && *w->sub) {    
-    if ((*w->sub)->owner && (hw = hlookup((*w->sub)->owner,NULL))) {
-      DBG("Removing inner widget %d\n",hw);
-      handle_free(-1,hw);
-    }
-    else {
-      DBG("Can't remove inner widget!\n");
-      break;
-    }
+
+  /* Detach the widget from the widget tree */
+  old_where = w->where;
+  widget_attach(w,w->dt,NULL,0,w->owner);
+
+  /* Detach all children from this widget */
+  while ((child = widget_traverse(w,PG_TRAVERSE_CHILDREN,0))) {
+    DBG("removing child %p, type %d. where %p\n",child,child->type,child->where);
+    widget_attach(child,child->dt,NULL,0,child->owner);
   }
-  
-  if (w->sub && *w->sub) {    
-    /* More pointer mangling...  :) If this widget has other 
-       widgets inside of it, we will need to insert the 'sub'
-       list. This is a desperate attempt to not segfault. */
-    
-    DBG("************** Relocating sub list. w=%p\n",w);
-    
-    sub_end = *w->sub;
-    while (sub_end->next) 
-      sub_end = sub_end->next;
-    
-    if (w->where) 
-      *w->where = *w->sub;
-    
-    if (w->sub && *w->sub && (*w->sub)->owner)
-      (*w->sub)->owner->where = w->where;
-    
-    if (w->out) {
-      sub_end->next = *w->out;
-      if (*w->out && (*w->out)->owner)
-	(*w->out)->owner->where = &sub_end->next;
-    }     
-    else
-      sub_end->next = NULL;
-    
-  }
-  else {
-    if (w->out && *w->out && w->where) {
-      DBG("Reattaching *w->where to *w->out\n");
-      *w->where = *w->out;
-      
-      /* We must make sure the new where pointer would be valid
-       * before we set it. This is important when a tree of widgets
-       * is completely self-contained within another widget, as in
-       * the case of the panelbar inside the panel widget.
-       */
-      if (*w->out && (*w->out)->owner && *w->where==(*w->out)->owner->in)
-	(*w->out)->owner->where = w->where;
-    }
-    else if ( w->where ) {
-      DBG("Setting *w->where = NULL\n");
-      *w->where = NULL;
-    }
-  }
-  
-  /* If we don't break this link, then deleting
-   * the widget's divtree will keep on going
-   * and delete other widgets' divtrees 
+
+  /* Note that the widget may have it's 'sub' attachment point filled even
+   * if it doesn't have any real children, if it was used inside another widget.
+   * We need to reattach any child divnodes this widget still has back to its insertion
+   * point, so that they are properly deleted when the widget owning this subtree is
+   * finishes removing its component pieces.
+   * Note that we're attaching it to the widget's former "where" attachment point,
+   * since by this time it's been detached from the widget tree and w->where
+   * should be NULL.
    */
-  if (w->out) *w->out = NULL; 
-  if (w->sub) *w->sub = NULL;
- 
+  if (w->out && *w->out && w->sub && *w->sub) {
+    /* If this widget has two subtrees, we need to append them into just one
+     * before we link this back into the parent's subtree. A messy process, but
+     * cleaner than the alternative (voodoo memory management :)
+     */
+
+    struct divnode *n;
+    n = *w->sub;
+    while (n->next) n = n->next;
+    n->next = *w->out;
+    *old_where = *w->sub;
+    *w->out = *w->sub = NULL;
+  }
+  /* If there's only one child, link it directly */
+  else if (w->out && *w->out) {
+    *old_where = *w->out;
+    *w->out = NULL;
+  }
+  else if (w->sub && *w->sub) {
+    *old_where = *w->sub;
+    *w->sub = NULL;
+  }
+
+  /* Free the widget's private data and divnodes */
   if (w->def->remove) (*w->def->remove)(w);
   
-  /* Set the flags for redraw */
-  if (w->dt && w->dt->head) {
-    w->dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC;
-    w->dt->flags |= DIVTREE_NEED_RECALC;
-  }   
-
   /* Free the array of subclass data */
   g_free(w->data);
 
+  /* Free the widget itself */
 #ifdef DEBUG_KEYS
   num_widgets--;
 #endif
@@ -709,7 +681,13 @@ struct widget *widget_traverse(struct widget *w, int direction, int count) {
   case PG_TRAVERSE_CHILDREN:
     if (!w)
       return NULL;
-    if (!w->sub || !*w->sub)
+    /* Make sure not only that this widget has an occupied child
+     * attachment point, but make sure that the thing attached to it is
+     * really the "in" connector on another widget. This is necessary to avoid
+     * an improper result when this is called with a widget used inside another
+     * widget as a container.
+     */
+    if (!w->sub || !*w->sub || (*w->sub)->owner->in != *w->sub)
       return NULL;
     return widget_traverse((*w->sub)->owner,PG_TRAVERSE_FORWARD,count);
 
