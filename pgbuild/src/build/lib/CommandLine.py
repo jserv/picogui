@@ -82,7 +82,7 @@ class Progress:
         self.color.write(" - ", ('bold',))
         self.color.write("%s..." % name, ('bold', 'cyan'))
         self.color.write("\n")
-        newProgress = StdProgress()
+        newProgress = Progress()
         newProgress.taskStack = self.taskStack[:]
         newProgress.taskStack.append(name)
         return newProgress
