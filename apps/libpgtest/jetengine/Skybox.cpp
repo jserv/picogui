@@ -31,50 +31,50 @@ void Skybox::draw() {
 
   right->bind();
   glBegin(GL_QUADS); {
-    glTexCoord2f(1, 1); glVertex3f(-size, -size, -size);
-    glTexCoord2f(1, 0); glVertex3f(-size,  size, -size);
-    glTexCoord2f(0, 0); glVertex3f(-size,  size,  size);
-    glTexCoord2f(0, 1); glVertex3f(-size, -size,  size);
+    glTexCoord2f(1, 1); glVertex3f(-size + 2, -size, -size);
+    glTexCoord2f(1, 0); glVertex3f(-size + 2,  size, -size);
+    glTexCoord2f(0, 0); glVertex3f(-size + 2,  size,  size);
+    glTexCoord2f(0, 1); glVertex3f(-size + 2, -size,  size);
   } glEnd();
 
   left->bind();
   glBegin(GL_QUADS); {
-    glTexCoord2f(1, 1); glVertex3f(size, -size,  size);
-    glTexCoord2f(1, 0); glVertex3f(size,  size,  size);
-    glTexCoord2f(0, 0); glVertex3f(size,  size, -size);
-    glTexCoord2f(0, 1); glVertex3f(size, -size, -size);
+    glTexCoord2f(1, 1); glVertex3f(size - 2, -size,  size);
+    glTexCoord2f(1, 0); glVertex3f(size - 2,  size,  size);
+    glTexCoord2f(0, 0); glVertex3f(size - 2,  size, -size);
+    glTexCoord2f(0, 1); glVertex3f(size - 2, -size, -size);
   } glEnd();
 
   top->bind();
   glBegin(GL_QUADS); {
-    glTexCoord2f(1, 1); glVertex3f(-size, size, -size);
-    glTexCoord2f(1, 0); glVertex3f( size, size, -size);
-    glTexCoord2f(0, 0); glVertex3f( size, size,  size);
-    glTexCoord2f(0, 1); glVertex3f(-size, size,  size);
+    glTexCoord2f(1, 1); glVertex3f(-size, size - 2, -size);
+    glTexCoord2f(1, 0); glVertex3f( size, size - 2, -size);
+    glTexCoord2f(0, 0); glVertex3f( size, size - 2,  size);
+    glTexCoord2f(0, 1); glVertex3f(-size, size - 2,  size);
   } glEnd();
 
   bottom->bind();
   glBegin(GL_QUADS); {
-    glTexCoord2f(0, 0); glVertex3f(-size, -size,  size);
-    glTexCoord2f(0, 1); glVertex3f( size, -size,  size);
-    glTexCoord2f(1, 1); glVertex3f( size, -size, -size);
-    glTexCoord2f(1, 0); glVertex3f(-size, -size, -size);
+    glTexCoord2f(0, 0); glVertex3f(-size, -size + 2,  size);
+    glTexCoord2f(0, 1); glVertex3f( size, -size + 2,  size);
+    glTexCoord2f(1, 1); glVertex3f( size, -size + 2, -size);
+    glTexCoord2f(1, 0); glVertex3f(-size, -size + 2, -size);
   } glEnd();
 
   back->bind();
   glBegin(GL_QUADS); {
-    glTexCoord2f(1, 0); glVertex3f(-size,  size,  size);
-    glTexCoord2f(0, 0); glVertex3f( size,  size,  size);
-    glTexCoord2f(0, 1); glVertex3f( size, -size,  size);
-    glTexCoord2f(1, 1); glVertex3f(-size, -size,  size);
+    glTexCoord2f(1, 0); glVertex3f(-size,  size,  size - 2);
+    glTexCoord2f(0, 0); glVertex3f( size,  size,  size - 2);
+    glTexCoord2f(0, 1); glVertex3f( size, -size,  size - 2);
+    glTexCoord2f(1, 1); glVertex3f(-size, -size,  size - 2);
   } glEnd();
 
   front->bind();
   glBegin(GL_QUADS); {
-    glTexCoord2f(0, 1); glVertex3f(-size, -size, -size);
-    glTexCoord2f(1, 1); glVertex3f( size, -size, -size);
-    glTexCoord2f(1, 0); glVertex3f( size,  size, -size);
-    glTexCoord2f(0, 0); glVertex3f(-size,  size, -size);
+    glTexCoord2f(0, 1); glVertex3f(-size, -size, -size + 2);
+    glTexCoord2f(1, 1); glVertex3f( size, -size, -size + 2);
+    glTexCoord2f(1, 0); glVertex3f( size,  size, -size + 2);
+    glTexCoord2f(0, 0); glVertex3f(-size,  size, -size + 2);
   } glEnd();
 
   glDisable(GL_TEXTURE_2D);
