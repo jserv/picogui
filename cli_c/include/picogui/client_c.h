@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.85 2002/05/20 16:00:48 micahjd Exp $
+/* $Id: client_c.h,v 1.86 2002/05/22 09:26:30 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -631,6 +631,13 @@ void pgSetInactivity(u32 time);
  * \sa pgSetInactivity
  */
 u32 pgGetInactivity(void);
+
+/*!
+ * \brief Get a server resource
+ *
+ * \returns The resource handle associated with the given PGRES_* constant
+ */
+pghandle pgGetServerRes(u32 id);
 
 //! \}
 

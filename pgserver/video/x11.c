@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.26 2002/04/23 20:11:34 bauermeister Exp $
+/* $Id: x11.c,v 1.27 2002/05/22 09:26:33 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -275,7 +275,7 @@ g_error x11_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
   memset(*rend,0,sizeof(struct groprender));
   (*rend)->lgop = PG_LGOP_NONE;
   (*rend)->output = bmp;
-  (*rend)->hfont = defaultfont;
+  (*rend)->hfont = res[PGRES_DEFAULT_FONT];
   (*rend)->clip.x2 = w - 1;
   (*rend)->clip.y2 = h - 1;
   (*rend)->orig_clip = (*rend)->clip;

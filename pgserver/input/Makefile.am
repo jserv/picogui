@@ -7,6 +7,15 @@ LIBS   = @LIBS@ @RM_LIBS@
 
 libinput_a_SOURCES = \
 	input_drivers.c \
+	input_filters.c \
+	if_key_dispatch.c \
+	if_key_magic.c \
+	if_key_normalize.c \
+	if_key_preprocess.c \
+	if_pntr_dispatch.c \
+	if_pntr_normalize.c \
+	if_pntr_preprocess.c \
+	if_touchscreen.c \
 	$(INPUT)
 
 EXTRA_libinput_a_SOURCES = \

@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.34 2002/04/08 13:37:52 micahjd Exp $
+/* $Id: textbox_document.c,v 1.35 2002/05/22 09:26:34 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -360,7 +360,7 @@ g_error text_insert_string(struct textbox_cursor *c, const u8 *str,
     e = rdhandle((void**) &fd, PG_TYPE_FONTDESC, c->widget->owner,
 	c->c_div->div->grop->param[0]);
   else
-    e = rdhandle((void**) &fd, PG_TYPE_FONTDESC, -1, defaultfont);
+    e = rdhandle((void**) &fd, PG_TYPE_FONTDESC, -1, res[PGRES_DEFAULT_FONT]);
   errorcheck;
 
   th = fd->font->ascent+fd->font->descent+fd->interline_space+fd->margin;

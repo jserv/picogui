@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.32 2002/04/04 23:02:50 micahjd Exp $
+/* $Id: g_error.c,v 1.33 2002/05/22 09:26:32 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -107,7 +107,7 @@ void guru(const char *fmt, ...) {
     /* Setup */
     VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,VID(color_pgtohwr)(0),
 	       PG_LGOP_NONE);
-    rdhandle((void**)&df,PG_TYPE_FONTDESC,-1,defaultfont);
+    rdhandle((void**)&df,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
     screenclip.x1 = screenclip.y1 = 0;
     screenclip.x2 = vid->lxres-1;
     screenclip.y2 = vid->lyres-1;

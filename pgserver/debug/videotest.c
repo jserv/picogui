@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.26 2002/03/31 17:16:04 micahjd Exp $
+/* $Id: videotest.c,v 1.27 2002/05/22 09:26:32 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -45,7 +45,7 @@ void testpat_line(void) {
    int patx,paty,patw;
    int i;
    
-   rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,defaultfont);
+   rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
    
    /* Background */
    VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,bg,PG_LGOP_NONE);
@@ -110,7 +110,7 @@ void testpat_color(void) {
    int y=0;
    int h;
    
-   rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,defaultfont);
+   rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
    h = fd->fs->normal->h;
    
    /* Background */
@@ -166,7 +166,7 @@ void testpat_unblit(void) {
    hwrbitmap bit;
    char buf[20];
    
-   rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,defaultfont);
+   rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
    
    /* Background */
    VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,bg,PG_LGOP_NONE);
@@ -272,7 +272,7 @@ void testpat_text(void) {
    s16 x,y;
    u8 c;
    
-   rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,defaultfont);
+   rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
    
    /* Background */
    VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,bg,PG_LGOP_NONE);

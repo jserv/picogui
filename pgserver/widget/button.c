@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.110 2002/05/22 00:30:29 micahjd Exp $
+/* $Id: button.c,v 1.111 2002/05/22 09:26:33 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -183,7 +183,7 @@ void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
     c->current->param[0] = VID(color_pgtohwr) 
        (DATA->colorset ? DATA->color : theme_lookup(state,PGTH_P_FGCOLOR));
 
-    if (bp.font != defaultfont) {
+    if (bp.font != res[PGRES_DEFAULT_FONT]) {
        addgrop(c,PG_GROP_SETFONT);
        c->current->param[0] = bp.font;
     }
@@ -835,7 +835,7 @@ void position_button(struct widget *self,struct btnposition *bp) {
     bp->font = theme_lookup(self->in->div->state,PGTH_P_FONT);    
     if (iserror(rdhandle((void **) &fd,PG_TYPE_FONTDESC,-1,bp->font))) {
       /* Still bad? 'Tis a bug in the theme. Fall back on the default font */
-      rdhandle((void **) &fd,PG_TYPE_FONTDESC,-1,defaultfont);
+      rdhandle((void **) &fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
     }
   }
 

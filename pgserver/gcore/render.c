@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.31 2002/03/29 20:09:23 micahjd Exp $
+/* $Id: render.c,v 1.32 2002/05/22 09:26:32 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -34,7 +34,7 @@
 #include <pgserver/common.h>
 
 #include <pgserver/render.h>
-#include <pgserver/appmgr.h>    /* for defaultfont */
+#include <pgserver/appmgr.h>    /* for res[PGRES_DEFAULT_FONT] */
 
 int display_owner;
 int disable_output;   /* can be used by the video driver to disable rendering,
@@ -64,7 +64,7 @@ void grop_render(struct divnode *div) {
    memset(&rend,0,sizeof(rend));
    rend.lgop = PG_LGOP_NONE;
    rend.output = vid->display;
-   rend.hfont = defaultfont;
+   rend.hfont = res[PGRES_DEFAULT_FONT];
    
    /* Allow the video driver to override */
    if (!VID(grop_render_presetup_hook)(&div,&listp,&rend)) {

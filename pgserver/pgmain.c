@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.35 2002/05/20 19:18:38 micahjd Exp $
+/* $Id: pgmain.c,v 1.36 2002/05/22 09:26:31 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -517,6 +517,10 @@ int main(int argc, char **argv) {
    printf("Init: timer\n");
 #endif
     if (iserror(prerror(timer_init())))  return 1;
+#ifdef DEBUG_INIT
+   printf("Init: infilter\n");
+#endif
+    if (iserror(prerror(infilter_init())))  return 1;
 
 #ifndef WINDOWS   /* This is also broke for windoze */
 

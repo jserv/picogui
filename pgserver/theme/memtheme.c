@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.63 2002/05/20 19:18:38 micahjd Exp $
+/* $Id: memtheme.c,v 1.64 2002/05/22 09:26:33 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -226,23 +226,13 @@ u32 theme_lookup(u16 object, u16 property) {
     
   case PGTH_P_BGCOLOR:          return 0xFFFFFF;
   case PGTH_P_FGCOLOR:          return 0x000000;
-  case PGTH_P_FONT:             return defaultfont;
+  case PGTH_P_FONT:             return res[PGRES_DEFAULT_FONT];
   case PGTH_P_ALIGN:            return PG_A_CENTER;
   case PGTH_P_BITMAPSIDE:       return PG_S_LEFT;
   case PGTH_P_BITMAPMARGIN:     return 2;
   case PGTH_P_MARGIN:           return 2;
   case PGTH_P_WIDTH:            return 12;
   case PGTH_P_HEIGHT:           return 15;
-  case PGTH_P_STRING_OK:        return string_ok;
-  case PGTH_P_STRING_CANCEL:    return string_cancel;
-  case PGTH_P_STRING_YES:       return string_yes;
-  case PGTH_P_STRING_NO:        return string_no;
-  case PGTH_P_STRING_SEGFAULT:  return string_segfault;
-  case PGTH_P_STRING_MATHERR:   return string_matherr;
-  case PGTH_P_STRING_PGUIERR:   return string_pguierr;
-  case PGTH_P_STRING_PGUIWARN:  return string_pguiwarn;
-  case PGTH_P_STRING_PGUIERRDLG:return string_pguierrdlg;
-  case PGTH_P_STRING_PGUICOMPAT:return string_pguicompat;
   case PGTH_P_SIDE:
     switch (object) {
     case PGTH_O_PANEL:    return PG_S_BOTTOM;
@@ -261,7 +251,7 @@ u32 theme_lookup(u16 object, u16 property) {
   case PGTH_P_HOTKEY_NEXT:      return PGKEY_TAB;
   case PGTH_P_ATTR_DEFAULT:     return 0x07;
   case PGTH_P_ATTR_CURSOR:      return 0xF0;
-  case PGTH_P_TEXTCOLORS:       return default_textcolors;
+  case PGTH_P_TEXTCOLORS:       return res[PGRES_DEFAULT_TEXTCOLORS];
   case PGTH_P_TIME_ON:          return 250;
   case PGTH_P_TIME_OFF:         return 125;
   case PGTH_P_TIME_DELAY:       return 500;

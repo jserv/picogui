@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.51 2002/03/06 11:38:45 micahjd Exp $
+/* $Id: font.c,v 1.52 2002/05/22 09:26:32 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -351,7 +351,7 @@ g_error findfont(handle *pfh,int owner, const u8 *name,int size,stylet flags) {
    
    /* If the font size is zero, assume the default font size */
    if ((!size) && 
-       (!iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,defaultfont))) && fd)
+       (!iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]))) && fd)
      size = fd->font->h;
      
    e = g_malloc((void **) &fd,sizeof(struct fontdesc));

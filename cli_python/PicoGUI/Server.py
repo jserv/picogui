@@ -80,6 +80,28 @@ constants = {
             'encoding unicode':		((1<<17), {}),	# unicode encoding
     },),
     'register': _getString,
+    'getresource': {
+        'default font':			(0, {}),
+        'string ok':			(1, {}),
+        'string cancel':		(2, {}),
+        'string yes':			(3, {}),
+        'string no':			(4, {}),
+        'string segfault':		(5, {}),
+        'string matherr':		(6, {}),
+        'string pguierr':		(7, {}),
+        'string pguiwarn':		(8, {}),
+        'string pguierrdlg':		(9, {}),
+        'string pguicompat':		(10, {}),
+        'default textcolors':		(11, {}),
+        'infilter key normalize':	(12, {}),
+        'infilter pntr normalize':	(13, {}),
+        'infilter touchscreen':		(14, {}),
+        'infilter key preprocess':	(15, {}),
+        'infilter pntr preprocess':	(16, {}),
+        'infilter key magic':		(17, {}),
+        'infilter key dispatch':	(18, {}),
+        'infilter pntr dispatch':	(19, {}),
+    },
     'set': {
         'size':				(1, {
         }),

@@ -1,4 +1,4 @@
-/* $Id: dvbl_bitmap.c,v 1.2 2002/04/11 04:25:03 micahjd Exp $
+/* $Id: dvbl_bitmap.c,v 1.3 2002/05/22 09:26:33 micahjd Exp $
  *
  * dvbl_bitmap.c - This file is part of the Default Video Base Library,
  *                 providing the basic video functionality in picogui but
@@ -36,7 +36,7 @@
 #include <pgserver/video.h>
 #include <pgserver/font.h>
 #include <pgserver/render.h>
-#include <pgserver/appmgr.h>   /* for defaultfont */
+#include <pgserver/appmgr.h>   /* for res[PGRES_DEFAULT_FONT] */
 
 /******* Table of available bitmap formats */
 
@@ -417,7 +417,7 @@ g_error def_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
   memset(*rend,0,sizeof(struct groprender));
   (*rend)->lgop = PG_LGOP_NONE;
   (*rend)->output = bmp;
-  (*rend)->hfont = defaultfont;
+  (*rend)->hfont = res[PGRES_DEFAULT_FONT];
   (*rend)->clip.x2 = w - 1;
   (*rend)->clip.y2 = h - 1;
   (*rend)->orig_clip = (*rend)->clip;

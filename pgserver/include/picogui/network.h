@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.59 2002/04/15 02:40:31 micahjd Exp $
+/* $Id: network.h,v 1.60 2002/05/22 09:26:32 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -34,7 +34,7 @@
 #define _H_PG_NETWORK
 
 #define PG_REQUEST_PORT    30450
-#define PG_PROTOCOL_VER    15     /* Increment this whenever changes are made */
+#define PG_PROTOCOL_VER    16     /* Increment this whenever changes are made */
 #define PG_REQUEST_MAGIC   0x31415926
 
 #include <picogui/types.h>
@@ -111,7 +111,7 @@ struct pghello {
 #define PGREQ_MKTHEME      9   /* Load a compiled theme          |  theme  */
 #define PGREQ_IN_KEY       10  /* Dispatch keyboard input        |  struct */
 #define PGREQ_IN_POINT     11  /* Dispatch pointing device input |  struct */
-#define PGREQ_DEPRECATED_1 12  /* Depreacated, replace this with a new entry */
+#define PGREQ_GETRESOURCE  12  /* Get a pgserver resource handle |  struct */
 #define PGREQ_WAIT         13  /* Wait for an event              |  none   */
 #define PGREQ_MKFILLSTYLE  14  /* Load a fill style,return handle|  fillstyle */
 #define PGREQ_REGISTER     15  /* Register a new application     |  struct */
@@ -323,6 +323,9 @@ struct pgreqd_rmcontext {
    * and the app's context number is left alone.
    */
   u32 context;
+};
+struct pgreqd_getresource {
+  u32 id;
 };
 
 struct pgdata_getfstyle {

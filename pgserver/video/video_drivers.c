@@ -1,4 +1,4 @@
-/* $Id: video_drivers.c,v 1.1 2002/05/21 19:45:33 micahjd Exp $
+/* $Id: video_drivers.c,v 1.2 2002/05/22 09:26:33 micahjd Exp $
  *
  * video_drivers.c - handles loading/switching video drivers and modes
  *
@@ -221,16 +221,16 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
      int i;
 
      /* Allocate space for textcolors if we haven't already */
-     if (!default_textcolors) {
+     if (!res[PGRES_DEFAULT_TEXTCOLORS]) {
        u32 *ptr;
        e = g_malloc((void**)&ptr,sizeof(u32)*17);
        errorcheck;
        ptr[0] = 16;
-       e = mkhandle(&default_textcolors,PG_TYPE_PALETTE,-1,(void*)ptr);
+       e = mkhandle(&res[PGRES_DEFAULT_TEXTCOLORS],PG_TYPE_PALETTE,-1,(void*)ptr);
        errorcheck;
      }
 
-     e = rdhandle((void **) &tc, PG_TYPE_PALETTE, -1, default_textcolors);
+     e = rdhandle((void **) &tc, PG_TYPE_PALETTE, -1, res[PGRES_DEFAULT_TEXTCOLORS]);
      errorcheck;
       
      /* VGA 16-color palette */

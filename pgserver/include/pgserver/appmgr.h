@@ -1,4 +1,4 @@
-/* $Id: appmgr.h,v 1.19 2002/01/22 12:25:08 micahjd Exp $
+/* $Id: appmgr.h,v 1.20 2002/05/22 09:26:32 micahjd Exp $
  *
  * appmgr.h - All the window-manager-ish functionality, except we don't
  * do windows (X windows, that is?)
@@ -58,7 +58,7 @@ struct app_info {
 };
 
 /* Global objects */
-extern handle defaultfont;
+extern handle res[PGRES_NUM];
 extern struct app_info *applist;
 extern struct sprite *cursor;
 extern hwrbitmap defaultcursor_bitmap,defaultcursor_bitmask;
@@ -68,17 +68,6 @@ extern struct widget *wtbboundary;  /* htbboundary, dereferenced. Only used for 
 				       when deleting a toolbar. Do not rely on the
 				       validity of this pointer, dereferencing it could
 				       cause a segfault! */
-extern handle string_ok;
-extern handle string_cancel;
-extern handle string_yes;
-extern handle string_no;
-extern handle string_segfault;
-extern handle string_matherr;
-extern handle string_pguierr;
-extern handle string_pguiwarn;
-extern handle string_pguierrdlg;
-extern handle string_pguicompat;
-extern handle default_textcolors;
 
 /* Init & Free */
 g_error appmgr_init(void);

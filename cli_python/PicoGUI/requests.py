@@ -82,6 +82,9 @@ def getmode(id=None):
 def getpayload(obj_id, id=None):
 	return request (29, pack('L', obj_id), id=id)
 	
+def getresource(res_id, id=None):
+	return request(12, pack('L', res_id), id=id)
+
 def getstring(obj_id, id=None):
 	return request(26, pack('L', obj_id), id=id)
 	

@@ -1,4 +1,4 @@
-/* $Id: magicbutton.c,v 1.9 2002/05/20 19:11:20 micahjd Exp $
+/* $Id: magicbutton.c,v 1.10 2002/05/22 09:26:32 micahjd Exp $
  *
  * magicbutton.c - CTRL-ALT-foo is magical
  *
@@ -63,7 +63,7 @@ g_error debug_bitmaps(const void **pobj, void *extra) {
       screenclip.x1 = screenclip.y1 = 0;
       screenclip.x2 = vid->lxres-1;
       screenclip.y2 = vid->lyres-1;
-      rdhandle((void**)&df,PG_TYPE_FONTDESC,-1,defaultfont);
+      rdhandle((void**)&df,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
 
       outtext(vid->display,df,10,vid->lyres-df->font->h*3,VID(color_pgtohwr) (0xFFFF00),
 	      "Too many bitmaps for this screen.\nChange video mode and try again",

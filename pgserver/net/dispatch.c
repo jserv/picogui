@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.97 2002/05/20 19:11:20 micahjd Exp $
+/* $Id: dispatch.c,v 1.98 2002/05/22 09:26:32 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -533,7 +533,7 @@ g_error rqh_sizetext(int owner, struct pgrequest *req,
   if (arg->font)
     e = rdhandle((void**) &fd,PG_TYPE_FONTDESC,owner,ntohl(arg->font));
   else
-    e = rdhandle((void**) &fd,PG_TYPE_FONTDESC,-1,defaultfont);
+    e = rdhandle((void**) &fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
   errorcheck;
 
   e = rdhandle((void**) &txt,PG_TYPE_STRING,owner,ntohl(arg->text));
@@ -1292,6 +1292,18 @@ g_error rqh_mktemplate(int owner, struct pgrequest *req,
   return success;
 }
 
+g_error rqh_getresource(int owner, struct pgrequest *req,
+			void *data, u32 *ret, int *fatal) {
+  g_error e;
+  reqarg(getresource);
+  
+  if (ntohl(arg->id) >= PGRES_NUM)
+    return mkerror(PG_ERRT_BADPARAM, 118);  /* resource identifier out of range */
+
+  *ret = res[ntohl(arg->id)];
+
+  return success;
+}
 
 /* The End */
 

@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.42 2002/05/20 16:00:49 micahjd Exp $
+/* $Id: api.c,v 1.43 2002/05/22 09:26:31 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -408,6 +408,25 @@ u32 pgGetPayload(pghandle object) {
 }
 #else 
   _pg_add_request(PGREQ_GETPAYLOAD,&object,sizeof(object));
+  pgFlushRequests();
+  return _pg_return.e.retdata;
+#endif  
+}
+
+pghandle pgGetServerRes(u32 res) {
+  struct pgreqd_getresource arg;
+  arg.id = htonl(res);
+
+#ifdef ENABLE_THREADING_SUPPORT
+{
+  pgClientReturnData retData;
+  sem_init(&retData.sem, 0, 0);
+  _pg_add_request(PGREQ_GETRESOURCE,&arg,sizeof(arg), (unsigned int)&retData, 1);
+  sem_wait(&retData.sem);
+  return retData.ret.e.retdata;
+}
+#else 
+  _pg_add_request(PGREQ_GETRESOURCE,&arg,sizeof(arg));
   pgFlushRequests();
   return _pg_return.e.retdata;
 #endif  

@@ -1,4 +1,4 @@
-/* $Id: sdlgl_bitmap.c,v 1.3 2002/03/03 16:42:26 micahjd Exp $
+/* $Id: sdlgl_bitmap.c,v 1.4 2002/05/22 09:26:33 micahjd Exp $
  *
  * sdlgl_bitmap.c - OpenGL driver for picogui, using SDL for portability
  *                  Functions to replace PicoGUI's normal bitmap data type
@@ -51,7 +51,7 @@ g_error sdlgl_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
     memset(gl_global.display_rend,0,sizeof(struct groprender));
     gl_global.display_rend->lgop = PG_LGOP_NONE;
     gl_global.display_rend->output = NULL;
-    gl_global.display_rend->hfont = defaultfont;
+    gl_global.display_rend->hfont = res[PGRES_DEFAULT_FONT];
     gl_global.display_rend->clip.x2 = vid->lxres - 1;
     gl_global.display_rend->clip.y2 = vid->lyres - 1;
     gl_global.display_rend->orig_clip = gl_global.display_rend->clip;

@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.62 2002/03/28 11:51:24 micahjd Exp $
+/* $Id: global.c,v 1.63 2002/05/22 09:26:31 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -72,7 +72,7 @@ unsigned char const cursor_mask_bits[] = {
 #endif /* CONFIG_FORMAT_XBM */
 
 struct app_info *applist;
-handle defaultfont;
+handle res[PGRES_NUM];
 struct widget *bgwidget;
 handle hbgwidget;
 struct sprite *cursor;
@@ -83,18 +83,6 @@ struct widget *wtbboundary;  /* htbboundary, dereferenced. Only used for compari
 				when deleting a toolbar. Do not rely on the
 				validity of this pointer, dereferencing it could
 				cause a segfault! */
-
-handle string_ok;
-handle string_cancel;
-handle string_yes;
-handle string_no;
-handle string_segfault;
-handle string_matherr;
-handle string_pguierr;
-handle string_pguiwarn;
-handle string_pguierrdlg;
-handle string_pguicompat;
-handle default_textcolors;
 
 
 g_error appmgr_init(void) {
@@ -107,7 +95,7 @@ g_error appmgr_init(void) {
 #endif
 
   /* Allocate default font */
-  e = findfont(&defaultfont,-1,NULL,0,PG_FSTYLE_DEFAULT);
+  e = findfont(&res[PGRES_DEFAULT_FONT],-1,NULL,0,PG_FSTYLE_DEFAULT);
   errorcheck;
 
 #ifdef DEBUG_INIT
@@ -174,34 +162,34 @@ g_error appmgr_init(void) {
 #endif
    
   /* Default strings */
-  e = mkhandle(&string_ok,PG_TYPE_STRING | HFLAG_NFREE,-1,
+  e = mkhandle(&res[PGRES_STRING_OK],PG_TYPE_STRING | HFLAG_NFREE,-1,
 	       errortext(mkerror(0,1)));  /* Ok */
   errorcheck;
-  e = mkhandle(&string_cancel,PG_TYPE_STRING | HFLAG_NFREE,-1,
+  e = mkhandle(&res[PGRES_STRING_CANCEL],PG_TYPE_STRING | HFLAG_NFREE,-1,
 	       errortext(mkerror(0,7)));  /* Cancel */
   errorcheck;
-  e = mkhandle(&string_yes,PG_TYPE_STRING | HFLAG_NFREE,-1,
+  e = mkhandle(&res[PGRES_STRING_YES],PG_TYPE_STRING | HFLAG_NFREE,-1,
 	       errortext(mkerror(0,14)));  /* Yes */
   errorcheck;
-  e = mkhandle(&string_no,PG_TYPE_STRING | HFLAG_NFREE,-1,
+  e = mkhandle(&res[PGRES_STRING_NO],PG_TYPE_STRING | HFLAG_NFREE,-1,
 	       errortext(mkerror(0,15)));  /* No */
   errorcheck;
-  e = mkhandle(&string_segfault,PG_TYPE_STRING | HFLAG_NFREE,-1,
+  e = mkhandle(&res[PGRES_STRING_SEGFAULT],PG_TYPE_STRING | HFLAG_NFREE,-1,
 	       errortext(mkerror(0,16)));
   errorcheck;
-  e = mkhandle(&string_matherr,PG_TYPE_STRING | HFLAG_NFREE,-1,
+  e = mkhandle(&res[PGRES_STRING_MATHERR],PG_TYPE_STRING | HFLAG_NFREE,-1,
 	       errortext(mkerror(0,19)));
   errorcheck;
-  e = mkhandle(&string_pguierr,PG_TYPE_STRING | HFLAG_NFREE,-1,
+  e = mkhandle(&res[PGRES_STRING_PGUIERR],PG_TYPE_STRING | HFLAG_NFREE,-1,
 	       errortext(mkerror(0,24)));
   errorcheck;
-  e = mkhandle(&string_pguiwarn,PG_TYPE_STRING | HFLAG_NFREE,-1,
+  e = mkhandle(&res[PGRES_STRING_PGUIWARN],PG_TYPE_STRING | HFLAG_NFREE,-1,
 	       errortext(mkerror(0,31)));
   errorcheck;
-  e = mkhandle(&string_pguierrdlg,PG_TYPE_STRING | HFLAG_NFREE,-1,
+  e = mkhandle(&res[PGRES_STRING_PGUIERRDLG],PG_TYPE_STRING | HFLAG_NFREE,-1,
 	       errortext(mkerror(0,29)));
   errorcheck;
-  e = mkhandle(&string_pguicompat,PG_TYPE_STRING | HFLAG_NFREE,-1,
+  e = mkhandle(&res[PGRES_STRING_PGUICOMPAT],PG_TYPE_STRING | HFLAG_NFREE,-1,
 	       errortext(mkerror(0,32)));
   errorcheck;
 

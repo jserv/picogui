@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.51 2002/05/20 19:18:38 micahjd Exp $
+/* $Id: terminal.c,v 1.52 2002/05/22 09:26:34 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -157,10 +157,10 @@ void load_terminal_theme(struct widget *self) {
   DATA->cursor_wait = theme_lookup(self->in->div->state,PGTH_P_TIME_DELAY);
   
   /* Allow setting the font in the theme or with PG_WP_FONT, but default
-   * to our fixed-width font instead of the global defaultfont
+   * to our fixed-width font instead of the global res[PGRES_DEFAULT_FONT]
    */
   f = theme_lookup(self->in->div->state,PGTH_P_FONT);
-  if (DATA->font == DATA->deffont && f != defaultfont)
+  if (DATA->font == DATA->deffont && f != res[PGRES_DEFAULT_FONT])
     terminal_set(self,PG_WP_FONT,f);
 }
 
@@ -198,7 +198,7 @@ void build_terminal(struct gropctxt *c,u16 state,struct widget *self) {
     }
     if (iserror(e) || textcolors[0]<16) {
       /* Try the default textcolors */
-      e = rdhandle((void**)&textcolors,PG_TYPE_PALETTE,-1,default_textcolors);
+      e = rdhandle((void**)&textcolors,PG_TYPE_PALETTE,-1,res[PGRES_DEFAULT_TEXTCOLORS]);
       if (iserror(e) || textcolors[0]<16)
 	return;
     }

@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.31 2002/04/08 12:41:35 micahjd Exp $
+/* $Id: netcore.c,v 1.32 2002/05/22 09:26:31 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -218,12 +218,10 @@ void _pg_defaulterr(u16 errortype,const char *msg) {
 	* We must copy the strings because the pgGetString buffer is only valid
 	* until the next picogui call */
   in_defaulterr = 1;
-  s1 = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
-				 PGTH_P_STRING_PGUIERR));
+  s1 = pgGetString(pgGetServerRes(PGRES_STRING_PGUIERR));
   copys1 = alloca(strlen(s1)+1);
   strcpy(copys1,s1);
-  s2 = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
-				 PGTH_P_STRING_PGUIERRDLG));
+  s2 = pgGetString(pgGetServerRes(PGRES_STRING_PGUIERRDLG));
   copys2 = alloca(strlen(s2)+strlen(pgErrortypeString(errortype))+
 		  strlen(_pg_appname)+strlen(msg)+1);
   sprintf(copys2,s2,pgErrortypeString(errortype),_pg_appname,msg);
@@ -238,16 +236,16 @@ void _pg_defaulterr(u16 errortype,const char *msg) {
 /* Some 'user friendly' default sig handlers */
 void _pgsig(int sig) {
   char *a,*b;
-  s16 id;
+  u32 id;
   
   switch (sig) {
     
   case SIGSEGV:
-    id = PGTH_P_STRING_SEGFAULT;
+    id = PGRES_STRING_SEGFAULT;
     break;
     
   case SIGFPE:
-    id = PGTH_P_STRING_MATHERR;
+    id = PGRES_STRING_MATHERR;
     break;
     
   default:
@@ -255,8 +253,7 @@ void _pgsig(int sig) {
     
   }
   
-  a = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
-				id));
+  a = pgGetString(pgGetServerRes(id));
   b = alloca(strlen(a)+1);
   strcpy(b,a);
   clienterr(b);
@@ -855,7 +852,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.31 2002/04/08 12:41:35 micahjd Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.32 2002/05/22 09:26:31 micahjd Exp $\n");
 	exit(1);
       }
 
@@ -994,12 +991,10 @@ void pgInit(int argc, char **argv)
      
 	 /* We must copy the first string temporarily because the pgGetString
 	  * buffer is only valid until the next picogui call */
-	 s1 = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
-					PGTH_P_STRING_PGUIWARN));
+	 s1 = pgGetString(pgGetServerRes(PGRES_STRING_PGUIWARN));
 	 copys1 = alloca(strlen(s1)+1);
 	 strcpy(copys1, s1);
-	 s2 = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
-					PGTH_P_STRING_PGUICOMPAT)),   
+	 s2 = pgGetString(pgGetServerRes(PGRES_STRING_PGUICOMPAT)),   
 	   pgMessageDialog(copys1,s2,0);
   }
 

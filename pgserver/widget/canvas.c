@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.41 2002/05/20 19:18:38 micahjd Exp $
+/* $Id: canvas.c,v 1.42 2002/05/22 09:26:33 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -357,7 +357,7 @@ void canvas_command(struct widget *self, u16 command,
 	 if (numparams>(NUMGROPPARAMS+1)) numparams = NUMGROPPARAMS+1;
 
 	 if (params[0] == PG_GROP_SETFONT && !params[1])
-	   params[1] = defaultfont;
+	   params[1] = res[PGRES_DEFAULT_FONT];
 
 	 addgrop(CTX,params[0]);
 	 for (i=1;i<numparams;i++)

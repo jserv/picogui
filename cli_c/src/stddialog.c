@@ -1,4 +1,4 @@
-/* $Id: stddialog.c,v 1.14 2002/04/15 02:40:31 micahjd Exp $
+/* $Id: stddialog.c,v 1.15 2002/05/22 09:26:31 micahjd Exp $
  *
  * stddialog.c - Various preconstructed dialog boxes the application
  *               may use. These are implemented 100% client-side using
@@ -73,7 +73,7 @@ void dlgbtn(pghandle tb,u32 payload,int textproperty,
 
   pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,tb);
   pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,textproperty),
+	      PG_WP_TEXT,pgGetServerRes(textproperty),
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_HOTKEY,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,key),
 	      PG_WP_BITMAP,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
@@ -134,16 +134,16 @@ int pgMessageDialog(const char *title,const char *text,u32 flags) {
 
   /* Buttons */
   if (flags & PG_MSGBTN_CANCEL)
-    dlgbtn(wToolbar,PG_MSGBTN_CANCEL,PGTH_P_STRING_CANCEL,
+    dlgbtn(wToolbar,PG_MSGBTN_CANCEL,PGRES_STRING_CANCEL,
 	   PGTH_P_ICON_CANCEL,PGTH_P_HOTKEY_CANCEL);
   if (flags & PG_MSGBTN_OK)
-    dlgbtn(wToolbar,PG_MSGBTN_OK,PGTH_P_STRING_OK,
+    dlgbtn(wToolbar,PG_MSGBTN_OK,PGRES_STRING_OK,
 	   PGTH_P_ICON_OK,PGTH_P_HOTKEY_OK);
   if (flags & PG_MSGBTN_YES)
-    dlgbtn(wToolbar,PG_MSGBTN_YES,PGTH_P_STRING_YES,
+    dlgbtn(wToolbar,PG_MSGBTN_YES,PGRES_STRING_YES,
 	   PGTH_P_ICON_YES,PGTH_P_HOTKEY_YES);
   if (flags & PG_MSGBTN_NO)
-    dlgbtn(wToolbar,PG_MSGBTN_NO,PGTH_P_STRING_NO,
+    dlgbtn(wToolbar,PG_MSGBTN_NO,PGRES_STRING_NO,
 	   PGTH_P_ICON_NO,PGTH_P_HOTKEY_NO);
 
   /* Icons */
@@ -291,8 +291,7 @@ pghandle pgInputDialog(const char *title, const char *message,
   /* buttons */
   wCancel = pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
   pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
-				       PGTH_P_STRING_CANCEL),
+	      PG_WP_TEXT,pgGetServerRes(PGRES_STRING_CANCEL),
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_HOTKEY,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					 PGTH_P_HOTKEY_CANCEL),
@@ -303,8 +302,7 @@ pghandle pgInputDialog(const char *title, const char *message,
 	      0);
   wOk = pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
   pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
-				       PGTH_P_STRING_OK),
+	      PG_WP_TEXT,pgGetServerRes(PGRES_STRING_OK),
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_HOTKEY,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					 PGTH_P_HOTKEY_OK),

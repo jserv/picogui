@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.56 2002/05/20 19:18:38 micahjd Exp $
+/* $Id: field.c,v 1.57 2002/05/22 09:26:34 micahjd Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -219,7 +219,7 @@ g_error field_set(struct widget *self,int property, glob data) {
   case PG_WP_PASSWORD:
     /* If no font already associated with the field, create a default one */
     if(!DATA->font)
-      widget_set(self, PG_WP_FONT, defaultfont);
+      widget_set(self, PG_WP_FONT, res[PGRES_DEFAULT_FONT]);
    
     DATA->fd.passwdc = data;
     break;

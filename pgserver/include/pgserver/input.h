@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.40 2002/05/22 00:09:58 micahjd Exp $
+/* $Id: input.h,v 1.41 2002/05/22 09:26:32 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -46,6 +46,7 @@
 #endif
 
 #include <pgserver/g_error.h>
+#include <pgserver/handle.h>
 
 /********************************************** Trigger constants */
 
@@ -233,24 +234,19 @@ extern int disable_input;
 
 /********************************************** Input filter interface */
 
+typedef void (*infilter_handler)(u32 trigger, union trigparam *param);
+
 struct infilter {
   u32 accept_trigs;    /* Mask of trigger types to process here */
   u32 absorb_trigs;    /* Mask of trigger types to _not_ automatically pass on */
 
-  void (*handler)(u32 trigger, union trigparam *param);
+  infilter_handler handler;
 
   struct infilter *next;
 };
 
 /* Head of the input filter list */
-struct infilter *infilter_list;
-
-/* The built-in input filters.
- */
-struct infilter *infilter_touchscreen;                               /* Transformation and filtering for touchscreens */
-struct infilter *infilter_key_preprocess, *infilter_pntr_preprocess; /* Transformation and munging                    */
-struct infilter *infilter_key_magic;                                 /* Handling magic CTRL-ALT-* keys                */
-struct infilter *infilter_key_dispatch, *infilter_pntr_dispatch;     /* Send the input where it needs to go           */
+extern struct infilter *infilter_list;
 
 /* Pass an event to the next input filter, given a source filter.
  * Events coming directly from drivers should give NULL as the source.
@@ -258,9 +254,10 @@ struct infilter *infilter_key_dispatch, *infilter_pntr_dispatch;     /* Send the
 void infilter_send(struct infilter *from, u32 trigger, union trigparam *param);
 
 /* Management functions */
-struct infilter *infilter_create(void);
-void infilter_insert(struct infilter *node, struct infilter **where);
+g_error infilter_insert(struct infilter **insertion, handle *h, int owner,
+			struct infilter *template);
 void infilter_delete(struct infilter *node);
+g_error infilter_init(void);
 
 #endif /* __H_INPUT */
 /* The End */

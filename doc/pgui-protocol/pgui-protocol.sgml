@@ -716,6 +716,30 @@ server returned data : <structfield>pgresponse_ret.data</>
    </para>
   </sect2>
 
+  <sect2 id="pgreq-getresource">
+   <title>PGREQ_GETRESOURCE - Get a handle to a server-owned resource</>
+   <programlisting>
+type                 : PGREQ_GETRESOURCE (12)
+client lib equivalent: pgGetServerRes()
+additional data      : <link linkend="pgreqdgetresource">struct pgreqd_getresource</>
+server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : <structfield>pgresponse_ret.data</>
+   </programlisting>
+   <para>
+	Get the handle associated with a particular server-side resource ID.  See
+   </para>
+   <figure id="pgreqdgetresource"><title>struct pgreqd_getresource</><programlisting>
+struct pgreqd_getresource {
+  u32 id;
+};
+   </programlisting></figure>
+   <para>
+        The <structfield>id</> is a <constant>PGRES_*</> constant identifying the resource
+	to retrieve. The value returned should not change over the duration of the client's
+        connection, so it is safe for the client libarary to cache the server resources.
+   </para>
+  </sect2>
+
   <sect2 id="pgreq-getstring">
    <title>PGREQ_GETSTRING - Return a string data</>
    <programlisting>
@@ -2085,6 +2109,7 @@ chbtn = (<structfield>pgresponse_event.param</> &gt;&gt; 28) &amp; 0xF;
   <row><entry>PGREQ_MKTHEME</><entry>9</><entry>Load a compiled theme</></>
   <row><entry>PGREQ_IN_KEY</><entry>10</><entry>Dispatch keyboard input</></>
   <row><entry>PGREQ_IN_POINT</><entry>11</><entry>Dispatch pointing device input</></>
+  <row><entry>PGREQ_GETRESOURCE</><entry>12</><entry>Get a handle to a server-owned resource</></>
   <row><entry>PGREQ_WAIT</><entry>13</><entry>Wait for an event</></>
   <row><entry>PGREQ_MKFILLSTYLE</><entry>14</><entry>Load a fill style, return handle</></>
   <row><entry>PGREQ_REGISTER</><entry>15</><entry>Register a new application</></>

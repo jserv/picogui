@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.142 2002/05/22 00:09:58 micahjd Exp $
+/* $Id: constants.h,v 1.143 2002/05/22 09:26:32 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -254,6 +254,7 @@ typedef unsigned long pghandle;
 #define PG_TYPE_PALETTE    9    //!< An array of pgcolors, transformed into hwrcolors
 #define PG_TYPE_GROP       10   //!< A graphical operation (used by the canvas widget)
 #define PG_TYPE_WT         11   //!< Created by pgLoadWidgetTemplate
+#define PG_TYPE_INFILTER   12   //!< One filter in the input filter chain
 
 #define PG_TYPEMASK        0x1F
 
@@ -463,17 +464,6 @@ typedef unsigned long pghandle;
 #define PGTH_P_XOFFSET       36  //!< General purpose
 #define PGTH_P_YOFFSET       37  //!< General purpose
 #define PGTH_P_TICKS         38  //!< The time in millisecond ticks (use with caution)
-
-#define PGTH_P_STRING_OK          501    //!< String property (usually in PGTH_O_DEFAULT)
-#define PGTH_P_STRING_CANCEL      502    //!< String property (usually in PGTH_O_DEFAULT)
-#define PGTH_P_STRING_YES         503    //!< String property (usually in PGTH_O_DEFAULT)
-#define PGTH_P_STRING_NO          504    //!< String property (usually in PGTH_O_DEFAULT)
-#define PGTH_P_STRING_SEGFAULT    505    //!< String property (usually in PGTH_O_DEFAULT)
-#define PGTH_P_STRING_MATHERR     506    //!< String property (usually in PGTH_O_DEFAULT)
-#define PGTH_P_STRING_PGUIERR     507    //!< String property (usually in PGTH_O_DEFAULT)
-#define PGTH_P_STRING_PGUIWARN    508    //!< String property (usually in PGTH_O_DEFAULT)
-#define PGTH_P_STRING_PGUIERRDLG  509    //!< String property (usually in PGTH_O_DEFAULT)
-#define PGTH_P_STRING_PGUICOMPAT  510    //!< String property (usually in PGTH_O_DEFAULT)
 
 #define PGTH_P_ICON_OK            1000   //!< Icon property (usually in PGTH_O_DEFAULT)
 #define PGTH_P_ICON_OK_MASK       1001   //!< Icon property (usually in PGTH_O_DEFAULT)
@@ -1071,6 +1061,43 @@ typedef unsigned long pghandle;
 #define PGC_TEAL      0x008080
 #define PGC_FUCHSIA   0xFF00FF
 #define PGC_AQUA      0x00FFFF
+
+
+/******************** Global resources */
+
+/*!
+ * \defgroup res Global resources
+ *
+ * The PicoGUI server contains several objects allocated globally, that
+ * any client may have limited access to.
+ *
+ * \{
+ */
+
+#define PGRES_DEFAULT_FONT              0
+#define PGRES_STRING_OK                 1
+#define PGRES_STRING_CANCEL             2
+#define PGRES_STRING_YES                3
+#define PGRES_STRING_NO                 4
+#define PGRES_STRING_SEGFAULT           5
+#define PGRES_STRING_MATHERR            6
+#define PGRES_STRING_PGUIERR            7
+#define PGRES_STRING_PGUIWARN           8
+#define PGRES_STRING_PGUIERRDLG         9
+#define PGRES_STRING_PGUICOMPAT         10
+#define PGRES_DEFAULT_TEXTCOLORS        11
+#define PGRES_INFILTER_KEY_NORMALIZE    12
+#define PGRES_INFILTER_PNTR_NORMALIZE   13
+#define PGRES_INFILTER_TOUCHSCREEN      14
+#define PGRES_INFILTER_KEY_PREPROCESS   15
+#define PGRES_INFILTER_PNTR_PREPROCESS  16
+#define PGRES_INFILTER_KEY_MAGIC        17
+#define PGRES_INFILTER_KEY_DISPATCH     18
+#define PGRES_INFILTER_PNTR_DISPATCH    19
+
+#define PGRES_NUM                       20   /* Total number of resources */
+
+//! \}
 
 
 //! \}
