@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.9 2000/09/23 05:53:20 micahjd Exp $
+/* $Id: picogui_client.c,v 1.10 2000/09/29 07:52:57 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -30,6 +30,8 @@
 /* System includes */
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <stdio.h>    /* for fprintf() */
@@ -122,6 +124,9 @@ void _pg_add_request(short reqtype,void *data,unsigned long datasize);
  * (handling errors if necessary)
  */
 void _pg_getresponse(void);
+
+/* Get rid of a pgmemdata structure when done with it */
+void _pg_free_memdata(struct pgmemdata memdat);
 
 /* atexit() handler */
 void _pg_cleanup(void);
@@ -334,6 +339,13 @@ void _pg_cleanup(void) {
     n = n->next;
     free(condemn);
   }
+}
+
+void _pg_free_memdata(struct pgmemdata memdat) {
+  if (memdat.flags & PGMEMDAT_NEED_FREE)
+    free(memdat.pointer);
+  if (memdat.flags & PGMEMDAT_NEED_UNMAP)
+    munmap(memdat.pointer,memdat.size);
 }
 
 /******************* API functions */
@@ -559,6 +571,58 @@ void pgEnterContext(void) {
 void pgLeaveContext(void) {
   _pg_add_request(PGREQ_RMCONTEXT,NULL,0);
 }  
+
+pghandle pgLoadTheme(struct pgmemdata obj) {
+  /* FIXME: I should probably find a way to do this that
+     doesn't involve copying the data- probably flushing any
+     pending packets, then writing the mmap'd file data directly
+     to the socket.
+
+     The current method is memory hungry when dealing with larger files.
+  */
+  _pg_add_request(PGREQ_MKTHEME,obj.pointer,obj.size);
+  _pg_free_memdata(obj);
+}
+
+/******* Data loading */
+
+/* Data already loaded in memory */
+struct pgmemdata pgFromMemory(void *data,unsigned long length) {
+  static struct pgmemdata x;    /* Maybe make something like this
+				   global to use less memory? */
+  x.pointer = data;
+  x.size = length;
+  x.flags = 0;
+  return x;
+}
+
+/* Load from a normal disk file */
+struct pgmemdata pgFromFile(const char *file) {
+  static struct pgmemdata x;
+  struct stat st;
+  int fd;
+
+  /* FIXME: Make this code try to use mmap(2) to load files first.
+     Much more efficient for larger files. */
+
+  fd = open(file,O_RDONLY);
+  if (fd<0)
+    /* FIXME: Better error message / a way for the app to catch this error */
+    clienterr("Error opening file in pgFromFile()");
+  fstat(fd,&st);
+  x.size = st.st_size;
+
+  /* FIXME: more error checking (you can tell this function has been
+     a quick hack so I can test theme loading :) */
+  if (!(x.pointer = malloc(x.size)))
+    clienterr("malloc error in pgFromFile");
+  x.flags = PGMEMDAT_NEED_FREE;
+
+  read(fd,x.pointer,x.size);
+
+  close(fd);
+  return x;
+}
 
 /******* A little more complex ones, with args */
 

@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.9 2000/09/23 05:53:20 micahjd Exp $
+/* $Id: client_c.h,v 1.10 2000/09/29 07:52:57 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -44,6 +44,19 @@
 
 /* event handler used in pgBind */
 typedef void (*pgevthandler)(short event,pghandle from,long param);
+
+/* Structure representing data, loaded or mapped into memory.
+ * This is returned by the pgFrom* series of functions for loading
+ * data. You probably shouldn't use anything in this structure
+ * directly, for compatibility reasons.
+ */
+struct pgmemdata {
+  void *pointer;
+  unsigned long size;
+  int flags;           /* PGMEMDAT_* flags or'ed together */
+};
+#define PGMEMDAT_NEED_FREE    0x0001   /* Should be free()'d when done */
+#define PGMEMDAT_NEED_UNMAP   0x0002   /* Should be munmap()'d when done */
 
 /******************** Administration */
 
@@ -162,6 +175,29 @@ void pgReplaceTextFmt(pghandle widget,const char *fmt, ...);
    to ignore that parameter.
 */
 pghandle pgNewFont(const char *name,short size,unsigned long style);
+
+/* Load a compiled theme file into the server */
+pghandle pgLoadTheme(struct pgmemdata obj);
+
+/******************** Data loading */
+
+/* Data already loaded in memory */
+struct pgmemdata pgFromMemory(void *data,unsigned long length);
+
+/* Load from a normal disk file */
+struct pgmemdata pgFromFile(const char *file);
+
+/* TODO: Load from resource. Allow apps to package necessary bitmaps
+   and things in a file, named after their binary but with a '.res'
+   extension.
+   The server will also be able to request reloading data from these
+   resource files, for example to reload bitmaps when the bit depth
+   changes.
+
+   This is just an idea, and I'll implement it later...
+   This while pgmemdata business is just my attempt to leave enough
+   hooks to make this work.
+*/
 
 /******************** Program flow */
 
