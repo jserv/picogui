@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.31 2001/03/22 00:20:38 micahjd Exp $
+/* $Id: handle.c,v 1.32 2001/03/24 01:02:08 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -551,22 +551,28 @@ g_error handle_payload(unsigned long **pppayload,int owner,handle h) {
 }
 
 /* Iterator function used by resizeall() */
-void resizeall_iterate(void **p) {
+g_error resizeall_iterate(void **p) {
    struct widget *w = (struct widget *) *p;
    if (w && w->resize)
      (*w->resize)(w);
+   return sucess;
 }
    
 /* Recursive part of handle_iterate() */
-void r_iterate(struct handlenode *n,u8 type,void (*iterator)(void **pobj)) {
-   if ((!n) || (n==NIL)) return;
-   if ((n->type & ~(HFLAG_RED|HFLAG_NFREE))==type)
-     (*iterator)(&n->obj);
-   r_iterate(n->left,type,iterator);
-   r_iterate(n->right,type,iterator);
+g_error r_iterate(struct handlenode *n,u8 type,g_error (*iterator)(void **pobj)) {
+   g_error e;
+   
+   if ((!n) || (n==NIL)) return sucess;
+   if ((n->type & ~(HFLAG_RED|HFLAG_NFREE))==type) {
+     e = (*iterator)(&n->obj);
+     errorcheck;
+   }
+   e = r_iterate(n->left,type,iterator);
+   errorcheck;
+   return r_iterate(n->right,type,iterator);
 }
-void handle_iterate(u8 type,void (*iterator)(void **pobj)) {
-   r_iterate(htree,type,iterator);
+g_error handle_iterate(u8 type,g_error (*iterator)(void **pobj)) {
+   return r_iterate(htree,type,iterator);
 }
 
 /* Call the resize() function on all widgets with handles */

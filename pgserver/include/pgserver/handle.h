@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.11 2001/03/22 00:20:38 micahjd Exp $
+/* $Id: handle.h,v 1.12 2001/03/24 01:02:08 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -124,7 +124,7 @@ void resizeall(void);
  * This allows a particular transformation to be applied to objects
  * in bulk.
  */
-void handle_iterate(u8 type,void (*iterator)(void **pobj));
+g_error handle_iterate(u8 type,g_error (*iterator)(void **pobj));
 
 #endif /* __HANDLE_H */
 /* The End */

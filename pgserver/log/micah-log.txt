@@ -13,6 +13,14 @@ to be for :)
       * vidwrap/rotate90.c: Now checks whether cursor is allocated before
         rotating it, this prevents segfault with -r flag.
 
+      * include/pgserver/handle.h: Changed return type of handle_iterate to
+        g_error from void
+	
+      * gcore/handle.c: Made changes necessary for handle_iterate to return
+        errors from iterator functions.
+
+      * vidwrap_rotate90.c: Added error checking to rotate90_entermode
+
 2001-03-22    Micah Dowty <micahjd@users.sourceforge.net>
 
 Happy Friday! (my last day of school before spring break)

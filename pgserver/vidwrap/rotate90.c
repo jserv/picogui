@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.8 2001/03/23 23:10:19 micahjd Exp $
+/* $Id: rotate90.c,v 1.9 2001/03/24 01:02:08 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -180,26 +180,38 @@ g_error rotate90_entermode(void) {
    /* Rotate all bitmaps with handles, the default cursor,
     * and al sprite backbuffers */
    struct sprite *spr;
-   /* FIXME: this actually could return an error... */
-   handle_iterate(PG_TYPE_BITMAP,vid->bitmap_rotate90);
+   g_error e;
+   
+   e = handle_iterate(PG_TYPE_BITMAP,vid->bitmap_rotate90);
+   errorcheck;
+   
    if (defaultcursor_bitmap) {           /* If we are rotating by default
 					  * this might be during init
 					  * before cursor is alloc'd */
-      (*vid->bitmap_rotate90)(&defaultcursor_bitmap);
-      (*vid->bitmap_rotate90)(&defaultcursor_bitmask);
+      e = (*vid->bitmap_rotate90)(&defaultcursor_bitmap);
+      errorcheck;
+      e = (*vid->bitmap_rotate90)(&defaultcursor_bitmask);
+      errorcheck;
    }
-   for (spr=spritelist;spr;spr=spr->next)
-     (*vid->bitmap_rotate90)(&spr->backbuffer);
-
+   for (spr=spritelist;spr;spr=spr->next) {
+      e = (*vid->bitmap_rotate90)(&spr->backbuffer);
+      errorcheck;
+   }
+      
    return sucess;
 }
 
 g_error rotate90_exitmode(void) {
-   /* FIXME: need a real 90-degree clockwise rotation? */
+   g_error e;
    
-   rotate90_entermode();
-   rotate90_entermode();
-   rotate90_entermode();
+   /* Rotate 3 more times to get back to normal.
+    * This is slower, but maybe saves memory? */
+   e = rotate90_entermode();
+   errorcheck;
+   e = rotate90_entermode();
+   errorcheck;
+   e = rotate90_entermode();
+   errorcheck;
    return sucess;
 }
 
