@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.28 2002/10/17 00:29:39 micahjd Exp $
+/* $Id: font_freetype.c,v 1.29 2002/10/17 04:07:57 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -125,13 +125,13 @@ g_error freetype_engine_init(void) {
     return mkerror(PG_ERRT_IO,119);   /* Error initializing font engine */
 
   /* Custom glyph flags */
-  ft_glyph_flags = ftc_image_format_bitmap;
+  ft_glyph_flags = FT_LOAD_RENDER;
   if (get_param_int(CFGSECTION,"no_hinting",0))
-    ft_glyph_flags |= ftc_image_flag_unhinted;
+    ft_glyph_flags |= FT_LOAD_NO_HINTING;
   if (get_param_int(CFGSECTION,"no_bitmap",1))
-    ft_glyph_flags |= ftc_image_flag_no_sbits;
+    ft_glyph_flags |= FT_LOAD_NO_BITMAP;
   if (get_param_int(CFGSECTION,"force_autohint",1))
-    ft_glyph_flags |= ftc_image_flag_autohinted;
+    ft_glyph_flags |= FT_LOAD_FORCE_AUTOHINT;
 
   /* Default font and sizing config */
   ft_style_scan(&ft_default_fs,get_param_str(CFGSECTION,"default","Helmet:12"));
@@ -650,7 +650,7 @@ void ft_get_descriptor_face(struct font_descriptor *self, FT_Face *aface) {
 
 void ft_load_image(struct font_descriptor *self, int ch, FT_Glyph *g) {
   FTC_CMapDescRec cmapd;
-  FTC_ImageDesc imgd;
+  FTC_ImageTypeRec imgd;
 
   cmapd.face_id = (FTC_FaceID) DATA->face;
   cmapd.type = FTC_CMAP_BY_INDEX;
@@ -659,7 +659,7 @@ void ft_load_image(struct font_descriptor *self, int ch, FT_Glyph *g) {
   imgd.font.face_id = DATA->face;
   imgd.font.pix_width = 0;
   imgd.font.pix_height = DATA->size;
-  imgd.type = ft_glyph_flags;
+  imgd.flags = ft_glyph_flags;
 
   FTC_ImageCache_Lookup(ft_image_cache, &imgd,
 			FTC_CMapCache_Lookup(ft_cmap_cache, &cmapd, ch),
