@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import PicoGUI, struct, os
+import PicoGUI, struct, os, sys
 from PicoGUI import constants
 
 class TerminalPage:
@@ -47,9 +47,9 @@ class TerminalPage:
         # expire this terminal if pid is finished
 	status = os.waitpid(self._ptypid, os.WNOHANG)
 	if status[0] != 0:
-	    print "child exited\n"
 	    self._app.delWidget(self.tabpage)
 	    self._app.destroy(self._position)
+	    os.close(self._ptyfd)
 
     def terminalRead(self):
         if self._termProcess:
@@ -80,10 +80,13 @@ class App(PicoGUI.Application):
         self.appendtab()
 
     def destroy(self, position):
-        print "pages is ",len(self._pages)," elements long"
         self._pages = self._pages[0:position] + self._pages[position + 1:]
-        print "pages is ",len(self._pages)," elements long"
-        pass
+	i = position;
+	if(len(self._pages) != 0):
+	    while(i != len(self._pages)):
+	        self._pages[i].setPosition(i)
+	        i = i + 1
+	    self._pages[position].tabpage.on = 1
 
     def appendtab(self):
 	self._pages.append(TerminalPage(self._pages[-1].tabpage,'after', self, len(self._pages)))
@@ -96,6 +99,8 @@ class App(PicoGUI.Application):
 	i = 0
 	while(i != len(self._pages)):
 	    self._pages[i].update()
+	    if(len(self._pages) == 0):
+	        sys.exit(0)
 	    i = i + 1
 	time.sleep(0.001)
 
