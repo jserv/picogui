@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.4 2000/09/04 00:33:33 micahjd Exp $
+/* $Id: pgmain.c,v 1.5 2000/09/04 02:43:04 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -51,45 +51,86 @@ void sigterm_handler(int x);
 
 /********** And it all starts here... **********/
 int main(int argc, char **argv) {
-  int argi=1;
-  const char *arg;
-
+  
 #ifndef WINDOWS
   my_pid = getpid();
 #endif
 
   /*************************************** Command-line processing */
 
-  while (argi<argc && argv[argi][0]=='-') {
-    arg = argv[argi++] + 1;
+  {  /* Restrict the scope of these vars so they go away after
+	initialization is done with them */
 
-    do {
-      switch (*arg) {
-	/* No actual command line options yet... */
-	
-      case '-':  /* --, forces end of switches */
-	if (!arg[1])  /* Falls through to default if it's a long arg */
-	  goto switches_done;
-	
-      default:   /* Catches -, -h, --help, etc... */
-	puts("\nPicoGUI server (http://pgui.sourceforge.net)\n"
-	     "$Id: pgmain.c,v 1.4 2000/09/04 00:33:33 micahjd Exp $\n\n"
-	     "pgserver [-h] [--] [session manager prog]\n\n"
-	     "\t-h: Displays this usage screen\n"
-	     "\nIf a session manager program is specified, it will be run when PicoGUI\n"
-	     "starts, and PicoGUI will shut down when closes.\n");
-	exit(1);
+    int c;
+
+    /* Default video mode: 0x0x0 (driver chooses) */
+    int vidw=0,vidh=0,vidd=0,vidf=0;
+    
+    while (1) {
+
+      /* Note: I haven't tested or really cared about the windoze support
+	 lately, so this code probably breaks it.  If I need the windoze
+	 support in the future (or if people bug me about it) I'll
+	 fix it though
+      */
+      
+      c = getopt(argc,argv,"fhlx:y:d:v:i:");
+      if (c==-1)
+	break;
+      
+      switch (c) {
+
+      case 'f':        /* Fullscreen */
+	vidf |= PGVID_FULLSCREEN;
+	break;
+
+      case 'l':        /* List */
+	break;
+
+      case 'x':        /* Width */
+       	vidw = atoi(optarg);
+	break;
+
+      case 'y':        /* Height */
+	vidh = atoi(optarg);
+	break;
+
+      case 'd':        /* Depth */
+       	vidd = atoi(optarg);
+	break;
+
+      case 'v':        /* Video */
+      case 'i':        /* Input */
+
+      case '?':        /* Need help */
+      case 'h':
+#ifdef TINY_MESSAGES
+	puts("Commandline error");
+#else
+	puts("PicoGUI server (pgui.sourceforge.net)\n\n"
+	     "usage: pgserver [-fhl] [-x width] [-y height] [-d depth] [-v driver]\n"
+	     "                [-i driver] [session manager...]\n\n"
+	     "  f : Fullscreen mode (if the driver supports it)\n"
+	     "  h : This help message\n"
+	     "  l : List installed drivers and fonts\n\n"
+	     "  x width   : default screen width\n"
+	     "  y height  : default screen height\n"
+	     "  d depth   : default bits per pixel\n"
+	     "  v driver  : default video driver (see -l)\n"
+	     "  i driver  : load an input driver, can use more than one (see -l)\n\n"
+	     "  If specified, a session manager process will be run after server\n"
+	     "  initialization is done, and the server will quit after the last\n"
+	     "  client disconencts.");
+#endif
+	exit(0);
       }
-    } while (*arg);
-  };
- switches_done:
+      
+    }
 
-  /*************************************** Initialization */
+    if (iserror(prerror(load_vidlib(sdl_regfunc,vidw,vidh,vidd,vidf)))) exit(1);  
+  }
 
-  /* HACK ALERT */
-  if (iserror(prerror(load_vidlib(
-				  sdl_regfunc,640,480,0,0 	
-		      )))) exit(1);  
+  /*************************************** More Initialization */
 
   /* Subsystem initialization and error check */
   if (iserror(prerror(dts_new()))) exit(1);
@@ -110,6 +151,8 @@ int main(int argc, char **argv) {
 
   /* Now that the socket is listening, run the session manager */
 
+#if 0
+
   if (argi<argc && argv[argi]) {
     use_sessionmgmt = 1;
 
@@ -128,6 +171,8 @@ int main(int argc, char **argv) {
 #endif
 
   }
+
+#endif
 
   /*************************************** Main loop */
 
