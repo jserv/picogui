@@ -1,20 +1,22 @@
-//#ifdef ENABLE_PICOGUI_SUPPORT
+#ifdef CONFIG_PICOGUI_SUPPORT
 
-/*#include "res_c.h"
+#include <picogui.h>
+
+#include "res_c.h"
 #include "confparse.h"
-//#include "picogui_support.h"
+#include "picogui_support.h"
 
 //-------------PicoGUI specific functions----------------------
 struct pgmemdata pgFromResource(resResource *resource, char *resourceName){
   struct pgmemdata newData;
   int size;
-  void *data = resGetResource(resource, "Resources", resourceName, &size);
+  void *data = (void *)resGetResource(resource, "Resources", resourceName, &size);
 
-  x.pointer = data;
-  x.size = size;
-  x.flags = PGMEMDAT_NEED_FREE;
+  newData.pointer = data;
+  newData.size = size;
+  newData.flags = 0;
 
   return newData;
-  }*/
+}
 
-//#endif
+#endif

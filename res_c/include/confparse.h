@@ -60,3 +60,5 @@ int configfile_write(char *filename);
 
 //---------Config parsing--------------------------------
 char *resCGetACProperty(resResource *resource, char *section, char *property);
+void resSetACProperty(resResource *resource, char *section, char *property, char *data);
+char **resListACProperties(resResource *resource, char *section, int *count);

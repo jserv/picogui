@@ -342,3 +342,37 @@ char *resGetACProperty(resResource *resource, char *section, char *property){
   free(confPath);
   return propertyData;
 }
+
+void resSetACProperty(resResource *resource, char *section, char *property, char *data){
+  char *confPath = malloc(strlen(resource->workingDir)+sizeof("/app.conf")+1);
+
+  sprintf(confPath, "%s/app.conf", resource->workingDir);
+  if(configfile_parse(confPath)){
+    set_param_str(section, property, data);
+    configfile_write(confPath);
+    configfile_free();
+  }
+  free(confPath);
+}
+
+char **resListACProperties(resResource *resource, char *section, int *count){
+  char *confPath = malloc(strlen(resource->workingDir)+sizeof("/app.conf")+1);
+  char **paramList = NULL, **outputList = NULL;
+  int paramCount = 0;
+
+  if(count){
+    sprintf(confPath, "%s/app.conf", resource->workingDir);
+    if(configfile_parse(confPath)){
+      paramList = get_section_params(section, &paramCount);
+      if(paramList){
+	*count = paramCount;
+	outputList = malloc(sizeof(char *)*paramCount);
+	for(;paramCount > 0; paramCount--)
+	  outputList[paramCount-1] = strdup(paramList[paramCount-1]);
+      }
+      configfile_free();
+    }
+  }
+  free(confPath);
+  return paramList;
+}

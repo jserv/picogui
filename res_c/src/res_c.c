@@ -141,7 +141,7 @@ void resSetProperty(resResource *resource, char *section, char *property, char *
     //Do some REALY interesting stuff here.
     break;
   case RES_APPCONF:
-    //resSetACProperty(resource, section, property, data);
+    resSetACProperty(resource, section, property, data);
     break;
   default:
     break;
@@ -183,7 +183,20 @@ void *resGetResource(resResource *resource, char *section, char *property, int *
   return propertyData;
 }
 
-void resFreeResource(void *data);
+char **resListResources(resResource *resource, char *section, int *count){
+  
+ switch(resource->resourceType){
+ case RES_ELF:
+   break;
+ case RES_APPCONF:
+   return resListACProperties(resource, section, count);
+   break;
+ default:
+   break;
+ }
+ 
+ return NULL;
+}
 
 void resUnloadResource(resResource *resource){
   if(resource){
