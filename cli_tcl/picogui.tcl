@@ -158,8 +158,17 @@ array set pg_vid {\
 array set pg_we {\
 	activate	1
 	close		3
+	pntr_down	516
+	pntr_up		517
+	pntr_move	521
 }
-
+array set pg_trigger {\
+	timer		1
+	pntr_relative	2
+	activate	4
+	deactivate	8
+	move		1024
+}
 set binds(any) "any {parray event} $pg_we(close) exit"
 
 set connection 0
