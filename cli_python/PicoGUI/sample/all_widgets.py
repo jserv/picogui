@@ -107,6 +107,6 @@ term.size = 100
 # Write to the terminal after everything's sized,
 # since writing to a 0-size terminal is no fun
 app.server.update()
-term.writeTo('terminal\n\rwidget')
+term.write('terminal\n\rwidget')
 
 app.run()
