@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.18 2001/11/07 17:38:50 cgrigis Exp $
+/* $Id: pgboard.c,v 1.19 2001/11/09 18:10:38 cgrigis Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -344,6 +344,7 @@ void drawDisabledKeyboard ()
 }
 
 #ifdef POCKETBEE
+
 /*
  * Release the lock preventing multiple instances.
  */
@@ -361,6 +362,26 @@ void sig_handler (int sig)
   release_lock ();
   _exit (1);
 }
+
+/*
+ * Handler for click event on the Keyboard button
+ */
+int kbd_btn_handler (struct pgEvent * evt)
+{
+  if (evt->type == PG_WE_ACTIVATE)
+    {
+      pgSetWidget(wApp,
+		  PG_WP_SIZE, mpat->app_size - pgGetWidget (wApp, PG_WP_SIZE),
+		  0);
+    }
+  else
+    {
+      /* Ignore */
+    }
+
+  return 1;
+}
+
 #endif /* POCKETBEE */
 
 int main(int argc,char **argv) {
@@ -436,6 +457,31 @@ int main(int argc,char **argv) {
 #ifdef POCKETBEE
   /* Signal the parent of a proper start */
   kill (getppid (), SIGUSR1);
+
+  /* Find the public box in the finder */
+  {
+    pghandle box;
+    int i = 0;
+
+    while ( !(box = pgFindWidget ("FinderKbdBox")) && i < 5 )
+      {
+	printf ("Finder public box not found, waiting ...\n");
+	sleep (1);
+	i++;
+      }
+
+    if (box)
+      {
+	/* Create a button in this box */
+	pgNewWidget (PG_WIDGET_BUTTON, PG_DERIVE_INSIDE, box);
+	pgSetWidget (PGDEFAULT,
+		     PG_WP_TEXT, pgNewString ("Kbd"),
+		     0);
+
+	/* Attach a handler to it */
+	pgBind (PGDEFAULT, PG_WE_ACTIVATE, &kbd_btn_handler, NULL);
+      }
+  }
 #endif /* POCKETBEE */
 
   pgEventLoop();
