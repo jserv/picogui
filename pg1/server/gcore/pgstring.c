@@ -652,7 +652,7 @@ void pgstr_utf8_seek(const struct pgstring *str, struct pgstr_iterator *p, s32 c
     if (str->num_chars < 1)
       p->offset = 0;
     else
-      p->offset = str->num_chars - 1;
+      p->offset = str->num_bytes - 1;
     break;
   }
 
