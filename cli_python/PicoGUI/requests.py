@@ -11,6 +11,15 @@ def request(reqtype, data='', id=None):
 def attachwidget(parent_id, child_id, relationship, id=None):
 	return request(47, pack('!LLHxx', parent_id, child_id, relationship), id=id)
 
+def batch(req_list, id=None):
+	# example code:
+	# l = []
+	# l.append(requests.somerequest())
+	# l.append(requests.somerequest())
+	# l.append(requests.somerequest())
+	# connection.send(requests.batch(l))
+	return request(18, ''.join(req_list), id=id)
+
 def chcontext(obj_id, delta, id=None):
 	return request(30, pack('!LHxx', obj_id, delta), id=id)
 	
