@@ -1,0 +1,43 @@
+#!/bin/sh
+
+# POST-COMMIT HOOK
+#
+# The post-commit hook is invoked after a commit. Subversion runs
+# this hook by invoking a program (script, executable, binary,
+# etc.) named `post-commit' (for which
+# this file is a template) with the following ordered arguments:
+#
+#   [1] REPOS-PATH   (the path to this repository)
+#   [2] REV          (the number of the revision just committed)
+#
+# Because the commit has already completed and cannot be undone,
+# the exit code of the hook program is ignored.  The hook program
+# can use the `svnlook' utility to help it examine the
+# newly-committed tree.
+#
+# On a Unix system, the normal procedure is to have `post-commit'
+# invoke other programs to do the real work, though it may do the
+# work itself too.
+#
+# Note that `post-commit' must be executable by the user(s) who will
+# invoke it (typically the user httpd runs as), and that user must
+# have filesystem-level permission to access the repository.
+#
+# On a Windows system, you should name the hook program
+# `post-commit.bat' or `post-commit.exe',
+# but the basic idea is the same.
+# 
+# Here is an example hook script, for a Unix /bin/sh interpreter:
+
+REPOS="$1"
+REV="$2"
+
+# Automatic backup
+svnadmin dump --incremental -r "$REV" "$REPOS" > /navi/backups/svn_auto/picogui-incremental.$REV 2> /dev/null
+
+# IRC notification
+$REPOS/hooks/announceClient.py localhost picogui "`svnlook author -r $REV $REPOS`" committed revision $REV: "`svnlook log -r $REV $REPOS`"
+
+# Send commit mail
+$REPOS/hooks/commit-email.pl --from "micah@navi.picogui.org" "$REPOS" "$REV" pgui-commits@lists.sourceforge.net
+
