@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.14 2001/11/24 13:03:19 micahjd Exp $
+/* $Id: x11.c,v 1.15 2001/11/25 02:47:35 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -258,11 +258,14 @@ void x11_nonbuffered_expose(int x,int y,int w,int h) {
 g_error x11_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
   g_error e;
   struct x11bitmap *xb = (struct x11bitmap *) bmp;
+  s16 w,h;
 
   if (xb->rend) {
     *rend = xb->rend;
     return sucess;
   }
+
+  VID(bitmap_getsize)(bmp,&w,&h);
 
   /* New groprender context for this bitmap */
   e = g_malloc((void **) rend,sizeof(struct groprender));
@@ -272,11 +275,11 @@ g_error x11_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
   (*rend)->lgop = PG_LGOP_NONE;
   (*rend)->output = bmp;
   (*rend)->hfont = defaultfont;
-  (*rend)->clip.x2 = xb->w - 1;
-  (*rend)->clip.y2 = xb->h - 1;
+  (*rend)->clip.x2 = w - 1;
+  (*rend)->clip.y2 = h - 1;
   (*rend)->orig_clip = (*rend)->clip;
-  (*rend)->output_rect.w = xb->w;
-  (*rend)->output_rect.h = xb->h;
+  (*rend)->output_rect.w = w;
+  (*rend)->output_rect.h = h;
 
   return sucess;
 }
@@ -321,6 +324,9 @@ void x11_bitmap_free(hwrbitmap bmp) {
     x11_bitmap_free((hwrbitmap) xb->tile);
   if (xb->rend)
     g_free(xb->rend);
+#ifdef CONFIG_X11_XFT
+  XftDrawDestroy(xb->xftd);
+#endif
   XFreePixmap(xdisplay,xb->d);
   g_free(xb);
 }
@@ -492,8 +498,9 @@ void x11_xft_font_sizetext_hook(struct fontdesc *fd, s16 *w, s16 *h,
   else
     XftTextExtents8(xdisplay,font,txt,strlen(txt),&xgi);
   
-  if (w) *w = xgi.width;
-  if (h) *h = xgi.height;
+  if (w) *w = xgi.xOff;
+  if (h) *h = xgi.yOff;
+  printf("'%s' %d,%d\n",txt,*w,*h);
 }
 
 /* Override outtext to provide proper sub-pixel character spacing */

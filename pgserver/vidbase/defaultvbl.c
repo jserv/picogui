@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.60 2001/11/24 13:03:19 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.61 2001/11/25 02:47:35 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -1782,6 +1782,7 @@ g_error def_bitmap_modeunconvert(struct stdbitmap **bmp) {
 g_error def_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
   struct stdbitmap *b = (struct stdbitmap *) bmp;
   g_error e;
+  s16 w,h;
 
   if (b->rend) {
     *rend = b->rend;
@@ -1790,6 +1791,8 @@ g_error def_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
 
   /* ack... we need to make a new context */
 
+  VID(bitmap_getsize)(bmp,&w,&h);
+
   e = g_malloc((void **) rend,sizeof(struct groprender));
   errorcheck;
   b->rend = *rend;
@@ -1797,11 +1800,11 @@ g_error def_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
   (*rend)->lgop = PG_LGOP_NONE;
   (*rend)->output = bmp;
   (*rend)->hfont = defaultfont;
-  (*rend)->clip.x2 = b->w - 1;
-  (*rend)->clip.y2 = b->h - 1;
+  (*rend)->clip.x2 = w - 1;
+  (*rend)->clip.y2 = h - 1;
   (*rend)->orig_clip = (*rend)->clip;
-  (*rend)->output_rect.w = b->w;
-  (*rend)->output_rect.h = b->h;
+  (*rend)->output_rect.w = w;
+  (*rend)->output_rect.h = h;
 
   return sucess;
 }

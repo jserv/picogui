@@ -1,4 +1,4 @@
-/* $Id: rotate270.c,v 1.1 2001/10/27 20:43:25 bornet Exp $
+/* $Id: rotate270.c,v 1.2 2001/11/25 02:47:35 micahjd Exp $
  *
  * rotate270.c - Video wrapper to rotate the screen 270 degrees
  *
@@ -81,7 +81,7 @@ void rotate270_slab(hwrbitmap dest,s16 x,s16 y,s16 w,hwrcolor c,s16 lgop) {
 void rotate270_bar(hwrbitmap dest,s16 x,s16 y,s16 h,hwrcolor c,s16 lgop) {
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
-   (*vid->slab)(dest,dx-1-y-h,x,h,c,lgop);
+   (*vid->slab)(dest,dx-y-h,x,h,c,lgop);
 }
 void rotate270_line(hwrbitmap dest,s16 x1,s16 y1,s16 x2,
 		   s16 y2,hwrcolor c, s16 lgop) {

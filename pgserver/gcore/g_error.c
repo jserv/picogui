@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.24 2001/10/09 05:15:26 micahjd Exp $
+/* $Id: g_error.c,v 1.25 2001/11/25 02:47:35 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -84,8 +84,14 @@ void guru(const char *fmt, ...) {
   char c;
   va_list ap;
   struct quad screenclip;
+  static int semaphore = 0;
    
   if (!vid) return;
+  if (semaphore) {
+    printf("GURU re-entered!\n");
+    return;
+  }
+  semaphore++;
 
   /* Setup */
   VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,VID(color_pgtohwr)(0),
@@ -130,6 +136,8 @@ void guru(const char *fmt, ...) {
      fprintf(stderr,"GURU:  %s\n",pline); 
   }
 #endif
+
+  semaphore--;
 }
 
 #endif /* DEBUG_ANY */
