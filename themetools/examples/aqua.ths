@@ -1,4 +1,4 @@
-/* $Id: aqua.ths,v 1.41 2002/10/22 20:02:56 micahjd Exp $
+/* $Id: aqua.ths,v 1.42 2002/10/29 03:59:17 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
@@ -13,6 +13,7 @@
  *
  * Changelog:
  *
+ *  1.08 - Fixed textbox background
  *  1.07 - Black background for terminal
  *  1.06 - Fixed textbox margins
  *  1.05 - Used the new widget object to fix interlacing alignment, panelbtn cleanups
@@ -27,7 +28,7 @@ prop interlace;
 
 /* The stripey background */
 object default {
-  name = "PicoAqua 1.07";
+  name = "PicoAqua 1.08";
 
   bgfill = Copy(default::interlace);
   bitmap1 = LoadBitmap("data/aq_bg.pnm");
@@ -374,5 +375,10 @@ object checkbox {
 object checkbox.on bitmap1 = LoadBitmap("data/aq_check_on.pnm");
 
 object field height = 20;
+
+object textbox {
+  bgfill = Copy(default::bgfill);
+  bitmap1 = Copy(default::bitmap1);
+}
 
 /* The End */
