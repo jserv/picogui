@@ -37,6 +37,8 @@
 #include "applet.h"
 #include "configfile.h"
 
+struct pgllApp *gAppList = NULL;
+int gAppCount;
 char *appDir;
 char *confPath;
 char *toolbarResponse;
@@ -52,7 +54,7 @@ void loadPreferences(void);
 int recieveMessage(struct pgEvent *evt);
 
 int directoryScan(char *path){
-  int appCount = 0, appCopy = 0;
+  int appCount = 0, appCopy = 0, freeLoop;
   char architecture[] = "Application";  //DJ: For now.
   char *appname, *binpath, *appicon;
   char absPath[1024];              //DJ: THIS MUST BE FIXED!!!
@@ -74,26 +76,29 @@ int directoryScan(char *path){
     }
     
     if(appCount > 0){
+      if(gAppList){
+	  for(freeLoop = 0; freeLoop < gAppCount; freeLoop++){
+	    freeApplication(&gAppList[freeLoop]);
+	  }      
+	  free(gAppList);
+      }
       gAppList = (struct pgllApp *)malloc((sizeof(struct pgllApp)*appCount));
       rewinddir(d);
       while((dent = readdir(d))){
 	sprintf(absPath, "%s/%s/app.conf", path, dent->d_name);
 	if(configfile_parse(absPath)){
 	  if((binpath = (char *)get_param_str(architecture, "binpath", NULL))){
-	    gAppList[appCopy].appPath = (char *)malloc(strlen(binpath)+1);
-	    strcpy(gAppList[appCopy].appPath, binpath);
+	    gAppList[appCopy].appPath = strdup(binpath);
 	  }else{
 	    gAppList[appCopy].appPath = NULL;
 	  }
 	  if((appname = get_param_str(architecture, "appname", NULL))){
-	    gAppList[appCopy].appName = (char *)malloc(strlen(appname)+1);
-	    strcpy(gAppList[appCopy].appName, appname);
+	    gAppList[appCopy].appName = strdup(appname);
 	  }else{
 	    gAppList[appCopy].appName = NULL;
 	  }
 	  if((appicon = get_param_str(architecture, "iconpath", NULL))){
-	    gAppList[appCopy].appIcon = (char *)malloc(strlen(appicon)+1);
-	    strcpy(gAppList[appCopy].appIcon, appname);
+	    gAppList[appCopy].appIcon = strdup(appicon);
 	  }else{
 	    gAppList[appCopy].appIcon = NULL;
 	  }
@@ -109,9 +114,12 @@ int directoryScan(char *path){
 }
 
 void freeApplication(struct pgllApp *app){
-  free(app->appName);
-  free(app->appPath);
-  free(app->appIcon);
+  if(app->appName)
+    free(app->appName);
+  if(app->appPath)
+    free(app->appPath);
+  if(app->appIcon)
+    free(app->appIcon);
 }
 
 void childDied(int foo){ 
@@ -244,6 +252,8 @@ void loadPreferences(void){
 
   pgAppMessage(pglBar, pglBuildMessage(PGL_GETPREF, "PGL-Launcher", "appdir", ""));
   recieveMessage(pgGetEvent());
+  if(appDir)
+    free(appDir);
   appDir = strdup(toolbarResponse);
 
   //We probably should re-scan our app dir now
@@ -285,6 +295,7 @@ int main(int argc, char **argv){
   int gotPrefs = 0;
 
   toolbarResponse = NULL;
+  appDir = NULL;
 
   pgInit(argc, argv);
 
