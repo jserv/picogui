@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.45 2000/10/29 01:45:35 micahjd Exp $
+/* $Id: widget.c,v 1.46 2000/10/29 02:54:19 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.

@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.26 2000/10/29 01:45:34 micahjd Exp $
+/* $Id: div.c,v 1.27 2000/10/29 02:54:19 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -269,7 +269,12 @@ void r_divnode_free(struct divnode *n) {
 
 /* Master update function, does everything necessary to redraw the screen */
 void update(void) {
-  if (dts->update_lock) return;   /* Don't want multiple threads updating */
+  if (dts->update_lock) {
+#ifdef DEBUG
+    printf("***** Locked update! *****");
+#endif
+    return;   /* Don't want multiple threads updating */
+  }
   dts->update_lock++;           /* at the same time !                   */
 
   if (dts->update_lock==1) {
@@ -281,6 +286,10 @@ void update(void) {
     /* NOW we update the hardware */
     (*vid->update)();
   }
+#ifdef DEBUG
+  else
+    printf("***** Locked update! (stage 2) *****");
+#endif
 
   dts->update_lock = 0;
 

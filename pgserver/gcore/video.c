@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.13 2000/10/29 01:45:35 micahjd Exp $
+/* $Id: video.c,v 1.14 2000/10/29 02:54:19 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -37,6 +37,7 @@
 struct vidlib *vid;
 struct vidlib vidlib_static;
 struct sprite *spritelist;
+unsigned char sprites_hidden;
 
 /* Trig table used in hwr_gradient (sin*256 for theta from 0 to 90) */
 unsigned char trigtab[] = {
@@ -818,10 +819,12 @@ void def_sprite_hide(struct sprite *spr) {
   /* Put back the old image */
   if (spr->ox != -1)
   (*vid->blit)(spr->backbuffer,0,0,
-  spr->ox,spr->oy,spr->w,spr->h,PG_LGOP_NONE);
+	       spr->ox,spr->oy,spr->w,spr->h,PG_LGOP_NONE);
 }
 
 void def_sprite_update(struct sprite *spr) {
+  if (sprites_hidden || dts->update_lock) return;
+
   if (spr->next) {
     (*vid->sprite_hideall)();
     (*vid->sprite_showall)();
@@ -883,10 +886,12 @@ void free_sprite(struct sprite *s) {
 /* Traverse first -> last, showing sprites */
 void def_sprite_showall(void) {
   struct sprite *p = spritelist;
+  if (!sprites_hidden) return;
   while (p) {
     (*vid->sprite_show)(p);
     p = p->next;
   }
+  sprites_hidden = 0;
 }
 
 /* Traverse last -> first, hiding sprites */
@@ -896,6 +901,8 @@ void r_spritehide(struct sprite *s) {
   (*vid->sprite_hide)(s);
 }
 void def_sprite_hideall(void) {
+  if (sprites_hidden) return;
+  sprites_hidden = 1;
   r_spritehide(spritelist);
 }
 
