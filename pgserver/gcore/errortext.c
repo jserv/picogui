@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.26 2001/06/28 21:06:44 micahjd Exp $
+/* $Id: errortext.c,v 1.27 2001/07/03 08:13:28 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -27,39 +27,48 @@
 
 #include <pgserver/common.h>
 
-/************************ Numeric Errors */
+/* A loadable error table */
+char *loaded_errors[];
+int   num_loaded_errors;
 
-/* If CONFIG_TEXT is not defined, no error
- * strings are stored- the user gets a nice
- * hexadecimal error code that is in most
- * cases not too much worse than the string :)
- */
-
-#ifndef CONFIG_TEXT
-
-/* Eek! Cryptic, but saves lots of space */
-const char *errortext(g_error e) {
-  static char err[11];
-  sprintf(err,"Err 0x%04X",e);
-  return err;
-}
-
-#else /* CONFIG_TEXT */
-
-/************************ String errors */
-
-static const char *errors[];
-
-const char *errortext(g_error e) {
-	return errors[(e & 0xFF)-1];
-}
-
-/* Builtin error table, can be overrided by translations */
-static const char *errors[] = {
-#include "defaulttext.inc"
+/* Builtin error table */
+static const char *builtin_errors[] = {
+#ifdef CONFIG_TEXT          /* Normal error table */
+# include "defaulttext.inc"
+#else                       /* Minimalist error table */
+# include "tinytext.inc"
+#endif
 };
 
-#endif /* !CONFIG_TEXT */
+/* Return an error string for the given error code.
+ * 
+ * Search for a string in this order:
+ * 1. Loaded error table 
+ * 2. Builtin error table
+ * 3. Numeric code
+ *
+ */
+const char *errortext(g_error e) {
+  const char *errtxt = NULL;
+  int errnum = (e & 0xFF) - 1;
+  static char errbuf[10];
+
+  /* Loaded table */
+  if (loaded_errors && (errnum < num_loaded_errors))
+    errtxt = loaded_errors[errnum];
+  if (errtxt)
+    return errtxt;
+
+  /* Builtin table */
+  if (errnum < sizeof(builtin_errors))
+    errtxt = builtin_errors[errnum];
+  if (errtxt)
+    return errtxt;
+
+  /* Nothing left to do but give the raw numeric error code */
+  sprintf(errbuf,"#%d/%d",e>>8,e & 0xFF);
+  return errbuf;
+}
 
 /* The End */
 
