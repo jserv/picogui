@@ -11,7 +11,10 @@ class infoBox:
         self.app = app
         self.infoLabels = dict()
 
-        self.infoBoxW = self.app.addWidget("box")
+        self.infoBoxW = self.app.addWidget('box')
+        self.infoBoxW.side = 'bottom'
+        self.infoBoxW.transparent = 1
+        self.infoBoxW.margin = 0
         self.addInfo("filename", "File Name:", "---.---")
         self.addInfo("filesize", "File Size:", "0 kb")
         self.addInfo("mimetype", "Mime Type:", "None/None")
@@ -19,7 +22,6 @@ class infoBox:
     def addInfo(self, infoName, infoLabel, emptyText):
         box = self.infoBoxW.addWidget("box", "inside")
         box.side = "right"
-        box.transparent = 1
         infoLabelW = box.addWidget("label", "inside")
         infoLabelW.text = infoLabel
         infoLabelW.side = "left"
@@ -126,14 +128,15 @@ class clampsInterface:
         self.fsa = fsa
         self.fsi = fsa.getDefaultFilesystem()
 
+        #Dirview
+        self.dirview = self.app.addWidget("scrollbox")
+
         #InfoBox
         self.infoBoxW = infoBox(self.app)
 
         #Toolbox
-        self.toolbox = self.app.addWidget("box")
+        self.toolbox = self.app.addWidget("toolbar")
         self.toolbox.side = "top"
-        self.toolbox.sizemode = "percent"
-        self.toolbox.size = "20"
 
         #Tools
         self.pathView = self.toolbox.addWidget("field", "inside")
@@ -142,15 +145,6 @@ class clampsInterface:
         self.pathGo.side = "right"
         self.app.link(self.pathUpdate, self.pathGo, "activate")
         #self.app.link(self.pathView, self.pathGo, "activate")
-
-        #Dirview
-        metaview = self.app.addWidget("box")
-        metaview.sizemode = "percent"
-        metaview.size = 70
-        metaview.side = "bottom"
-        self.dirview = metaview.addWidget("box", "inside")
-        self.dirview.side = "top"
-        scroll = metaview.addWidget("scroll", "inside").bind = self.dirview
 
     def redraw(self):
         #Set the pathView location
