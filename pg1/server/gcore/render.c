@@ -937,6 +937,7 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 	      n->r.y,
 	      n->r.w,
 	      n->r.h,
+	      0,
 	      n->param[0],
 	      n->param[1],
 	      c, 
