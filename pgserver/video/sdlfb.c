@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.22 2001/08/13 03:04:45 micahjd Exp $
+/* $Id: sdlfb.c,v 1.23 2001/08/13 03:27:50 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -353,10 +353,11 @@ void sdlfb_update(s16 x,s16 y,s16 w,s16 h) {
       int shift;
       unsigned char c, mask = (1<<vid->bpp) - 1;
 
-      /* Align it to an 8-pixel boundary (simplifies blit) */
-      w += (x&7) + 7;
-      w &= ~7;
-      x &= ~7;
+      /* Align it to a byte boundary (simplifies blit) */
+      i = (8/vid->bpp) - 1;
+      w += (x&i) + i;
+      w &= ~i;
+      x &= ~i;
       
       /* Calculations */
       srcline = src = sdlfb_backbuffer + ((x * vid->bpp) >> 3) +y*FB_BPL;
