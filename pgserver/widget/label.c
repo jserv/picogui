@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.33 2001/04/29 17:28:40 micahjd Exp $
+/* $Id: label.c,v 1.34 2001/04/29 19:14:42 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -72,8 +72,9 @@ void build_label(struct gropctxt *c,unsigned short state,struct widget *self) {
   if (DATA->direction) {
      addgrop(c,PG_GROP_SETANGLE);
      c->current->param[0] = DATA->direction; 
+     y+=h;
   }
-     
+   
   addgropsz(c,PG_GROP_TEXT,x,y,w,h);
   c->current->param[0] = DATA->text;
   c->current->flags |= PG_GROPF_TRANSLATE;
