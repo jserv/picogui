@@ -1,5 +1,5 @@
 bin_PROGRAMS = pgboard
-pgboard_SOURCES = pgboard.c kbfile.h kbfile.c
+pgboard_SOURCES = pgboard.c kbfile.h kbfile.c ntohs_fr.h
 
 EXTRA_DIST = kbcompile.pl
 

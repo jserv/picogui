@@ -1,4 +1,4 @@
-/* $Id: kbfile.c,v 1.5 2001/10/23 17:25:05 cgrigis Exp $
+/* $Id: kbfile.c,v 1.6 2001/10/24 09:47:37 bornet Exp $
   *
   * kbfile.c - Functions to validate and load patterns from a keyboard file
   * 
@@ -26,9 +26,15 @@
   */
 
 #include <stdio.h>
-#include <netinet/in.h>
 #include <picogui.h>
 #include "kbfile.h"
+
+/* as some systems don't have htons primitives (as uClinux) */
+#ifdef _NEED_NTOHS_FRIENDS_
+    #include "ntohs_fr.h"
+#else
+    #include <netinet/in.h>
+#endif
 
 /* Validate a pattern's header, fill in global data for mem_pattern */
 int kb_validate(FILE *f, struct mem_pattern *pat) {

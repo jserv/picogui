@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.9 2001/10/24 01:32:51 micahjd Exp $
+/* $Id: pgboard.c,v 1.10 2001/10/24 09:47:37 bornet Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -31,6 +31,13 @@
 #include <picogui.h>
 #include <picogui/pgboard.h>
 #include "kbfile.h"
+
+/* as some systems don't have htons primitives (as uClinux) */
+#ifdef _NEED_NTOHS_FRIENDS_
+    #include "ntohs_fr.h"
+#else
+    #include <netinet/in.h>
+#endif
 
 FILE *fpat;
 struct mem_pattern mpat;
