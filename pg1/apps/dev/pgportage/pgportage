@@ -1,0 +1,121 @@
+#!/usr/bin/python
+import PicoGUI, portage, sys
+
+localtree = portage.db[portage.root]['vartree']
+
+app = PicoGUI.Application("Portage tree")
+
+last = pkg_list = app.addWidget('Scrollbox')
+last.default_relationship = 'inside'
+info_panel = None
+selected = None
+real_stdout = sys.stdout
+out_window = None
+class Tee(object):
+    def write(self, data):
+        real_stdout.write(data)
+        if out_window is not None:
+            out_window.write(data)
+            out_window.write('\r')
+sys.stdout = Tee()
+
+def watch(ev):
+    print repr(ev)
+#app.link(watch)
+
+def del_panel(ev):
+    global info_panel
+    if info_panel is not None:
+        out_window = None
+        app.delWidget(info_panel)
+        info_panel = None
+
+def show_pkg(ev=None):
+    global info_panel, selected, out_window
+
+    if ev is not None:
+        if ev.widget is selected:
+            return
+        selected = ev.widget
+
+    if info_panel is None:
+        info_panel = pkg_list.addWidget('Panel', 'before')
+        info_panel.text = 'Package info'
+        info_panel.side = 'right'
+        info_panel.sizemode = 'percent'
+        info_panel.size = 30
+        app.link(del_panel, info_panel, 'close')
+    else:
+        if out_window is not None:
+            out_window.detach()
+        app.delWidget(info_panel._children)
+
+    d = info_panel._children = info_panel.addWidget('Scrollbox', 'inside')
+
+    pkg_name = selected.text
+    info_name = d.addWidget('Label', 'inside')
+    info_name.font = ':16'
+    info_name.text = pkg_name
+    info_name.align = 'left'
+
+    matches = localtree.dep_match(pkg_name)
+    desc = 'no matching ebuilds found'
+    hp = None
+    if matches:
+        matches_ = matches[:]
+        #matches_.sort()
+        matches_.reverse()
+        for m in matches_:
+            try:
+                desc, hp = portage.portdb.aux_get(m, ['DESCRIPTION', 'HOMEPAGE'])
+                break
+            except KeyError:
+                pass
+        del matches_
+        last = info_name.addWidget('Label')
+        last.text = desc
+        last.font = ':12:italic'
+        last.align = 'left'
+    else:
+        last = info_name.addWidget('Label')
+        last.text = 'not installed.'
+        app.delWidget(selected)
+
+    if hp:
+        last = last.addWidget('Label')
+        last.text = hp
+        last.font = ':0:underline'
+        last.align = 'left'
+
+    for pkg_match in matches:
+        last = last.addWidget('Box')
+        ver = last.addWidget('Label', 'inside')
+        ver.side = 'left'
+        ver.text = 'Installed: ' + pkg_match[len(pkg_name)+1:]
+        unm = ver.addWidget('Button')
+        unm.text = 'Unmerge'
+        unm._pkg = tuple(pkg_match.split('/'))
+        app.link(unmerge, unm, 'activate')
+
+    if out_window is not None:
+        out_window.attach(last)
+    else:
+        out_window = last.addWidget('Terminal')
+
+def unmerge(ev):
+    print 'unmerging %s/%s' % ev.widget._pkg
+    portage.unmerge(ev.widget._pkg[0], ev.widget._pkg[1], portage.root, 1)
+    print 'done.'
+    global selected
+    show_pkg()
+
+# give the user something to see while we load...
+app.server.update()
+packages = localtree.getallnodes()
+packages.sort()
+for p in packages:
+    last = last.addWidget('ListItem')
+    last.text = p
+    app.link(show_pkg, last, 'activate')
+
+app.run()
