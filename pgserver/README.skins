@@ -1,0 +1,15 @@
+PicoGUI's SDL driver supports 'skins', configurations that make PicoGUI
+appear and act as if it is running on a handheld computer or other embedded
+system. To use skins, you must have skin support for the sdlfb driver
+compiled in. Also, because the supplied skins use JPEG bitmaps you must have
+the JPEG loader compiled in. All the *.conf files in the 'skin' directory
+are skin configuration files. To try the Agenda VR3 skin, for example:
+
+  pgserver -nc skin/vr3.conf
+  
+Currently skins only make pgserver look neat and help you design your
+application with an LCD's color constraints in mind. Skins already simulate
+the backlight, and soon they will have support for the hardware buttons and
+silkscreen area that many handhelds have.
+
+-- Micah
