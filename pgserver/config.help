@@ -76,7 +76,7 @@ DEBUG_KEYS
       CTRL-ALT-S : Display all loaded strings
       CTRL-ALT-H : Dump _complete_ handle tree to stdout
       CTRL-ALT-N : Dump all gropnodes to stdout
-      CTRL_ALT-D : Dump all divnodes to stdout
+      CTRL_ALT-T : Dump all divnodes to stdout
 
       With or without this option CTRL-ALT-/ exits the server
       

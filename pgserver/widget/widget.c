@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.119 2001/10/09 05:15:26 micahjd Exp $
+/* $Id: widget.c,v 1.120 2001/10/19 22:24:14 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -937,7 +937,7 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
       grop_dump();
       return;
 
-    case PGKEY_d:           /* CTRL-ALT-d dumps all divnodes */
+    case PGKEY_t:           /* CTRL-ALT-t dumps all divnodes */
       div_dump();
       return;
        
