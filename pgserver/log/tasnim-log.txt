@@ -1,3 +1,14 @@
+2001-08-14    Tasnim Ahmed <tasnim@users.sourceforge.net>
+
+      * uSpread: util.[c|h] csv_info done, returns rows, cols 
+                 for a file, handy for dynamic allocation.
+      * uSpread: improved dynamic allocation of data plus fixed
+                 a missing free();
+      * uSpread: rows were placed in correct order with S_BOTTOM,
+                 causing small files to show way down. fixed.
+      * uSpread: some NULL checks before using values
+
+
 2001-08-13    Tasnim Ahmed <tasnim@users.sourceforge.net>
 
       * uSpread: implemented dynamic allocation for data and widgets
