@@ -23,6 +23,7 @@ int main(int argc,char **argv) {
    pgRegisterApp(PG_APP_NORMAL,"PGFX Immediate Canvas",0);
    pgNewWidget(PG_WIDGET_CANVAS,0,0);
    gc = pgNewCanvasContext(PGDEFAULT,PGFX_IMMEDIATE);
+   pgUpdate();
    while (1) {
      animate();
      pgEventPoll();
