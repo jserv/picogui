@@ -182,10 +182,8 @@ class Server(object):
         return self._do_send_and_wait(self._mkrequest(handler, args, req_id), req_id, timeout)
 
     def getString(self, text):
-        try:
+        if type(text) is unicode:
             text = text.encode('utf8')
-        except AttributeError:
-            pass
         if not self._strings.has_key(text):
             self._strings[text] = self.mkstring(text)
         return self._strings[text]
