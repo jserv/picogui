@@ -209,7 +209,7 @@ if __name__ == '__main__':
                         #print "found socket = " + socketName
                 f.close()
 
-            if lastBotID != "": 
+            if lastBotID != "":
                 # we did not find the channel
                 if socketName == socketBaseName:
                     # we always choose the last bot to be started for joining channels
