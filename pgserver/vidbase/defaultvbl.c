@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.44 2001/07/11 09:22:28 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.45 2001/07/12 03:00:24 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -71,6 +71,9 @@ void def_update(s16 x,s16 y,s16 w,s16 h) {
 }
 
 void def_coord_logicalize(s16 *x,s16 *y) {
+}
+
+void def_coord_keyrotate(s16 *k) {
 }
 
 /******* colors */
@@ -1439,6 +1442,7 @@ void setvbl_default(struct vidlib *vid) {
   vid->bitmap_modeconvert = &def_bitmap_modeconvert;
   vid->bitmap_modeunconvert = &def_bitmap_modeunconvert;
   vid->bitmap_get_groprender = &def_bitmap_get_groprender;
+  vid->coord_keyrotate = &def_coord_keyrotate;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.47 2001/07/11 09:22:27 micahjd Exp $
+/* $Id: video.h,v 1.48 2001/07/12 03:00:24 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -159,6 +159,13 @@ struct vidlib {
    * Default implementation: does nothing
    */
   void (*coord_physicalize)(s16 *x,s16 *y);
+
+  /* Optional
+   *   For video wrappers, rotate keypads along with the display
+   *
+   * Default implementation: does nothing
+   */
+  void (*coord_keyrotate)(s16 *k);
 
   /* Reccomended (without double-buffer, it looks really dumb)
    *   Update changes to the screen, if device is double-buffered or

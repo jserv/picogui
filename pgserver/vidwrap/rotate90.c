@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.15 2001/07/11 09:22:28 micahjd Exp $
+/* $Id: rotate90.c,v 1.16 2001/07/12 03:00:25 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -192,6 +192,15 @@ g_error rotate90_exitmode(void) {
    return sucess;
 }
 
+void rotate90_coord_keyrotate(s16 *k) {
+  switch (*k) {
+  case PGKEY_UP:    *k = PGKEY_RIGHT; break;
+  case PGKEY_RIGHT: *k = PGKEY_DOWN;  break;
+  case PGKEY_DOWN:  *k = PGKEY_LEFT;  break;
+  case PGKEY_LEFT:  *k = PGKEY_UP;    break;
+  }
+}
+
 /******* Registration */
 
 void vidwrap_rotate90(struct vidlib *vid) {
@@ -216,6 +225,7 @@ void vidwrap_rotate90(struct vidlib *vid) {
    vid->bitmap_getsize = &rotate90_bitmap_getsize;
    vid->entermode = &rotate90_entermode;
    vid->exitmode = &rotate90_exitmode;
+   vid->coord_keyrotate = &rotate90_coord_keyrotate;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: rotate180.c,v 1.3 2001/07/11 09:22:28 micahjd Exp $
+/* $Id: rotate180.c,v 1.4 2001/07/12 03:00:25 micahjd Exp $
  *
  * rotate180.c - Video wrapper to rotate the screen 180 degrees
  *
@@ -173,6 +173,15 @@ g_error rotate180_entermode(void) {
    return bitmap_iterate(vid->bitmap_rotate90);
 }
 
+void rotate180_coord_keyrotate(s16 *k) {
+  switch (*k) {
+  case PGKEY_UP:    *k = PGKEY_DOWN;  break;
+  case PGKEY_RIGHT: *k = PGKEY_LEFT;  break;
+  case PGKEY_DOWN:  *k = PGKEY_UP;    break;
+  case PGKEY_LEFT:  *k = PGKEY_RIGHT; break;
+  }
+}
+
 /******* Registration */
 
 void vidwrap_rotate180(struct vidlib *vid) {
@@ -195,6 +204,7 @@ void vidwrap_rotate180(struct vidlib *vid) {
    vid->bitmap_load = &rotate180_bitmap_load;
    vid->entermode = &rotate180_entermode;
    vid->exitmode = &rotate180_entermode;   /* rotation is reversible */
+   vid->coord_keyrotate = &rotate180_coord_keyrotate;
 }
 
 /* The End */

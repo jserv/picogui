@@ -1,4 +1,4 @@
-/* $Id: hotspot.c,v 1.3 2001/07/11 07:38:20 micahjd Exp $
+/* $Id: hotspot.c,v 1.4 2001/07/12 03:00:24 micahjd Exp $
  *
  * hotspot.c - This is an interface for managing hotspots.
  *             The divtree is scanned for hotspot divnodes.
@@ -241,6 +241,7 @@ void hotspot_graph(void) {
  */
 void hotspot_traverse(short direction) {
   struct hotspot *p;
+  s16 px,py;
 
   /* rebuild the graph */
   if (!hotspotlist) {
@@ -267,7 +268,10 @@ void hotspot_traverse(short direction) {
   }
 
   /* move the cursor */
-  dispatch_pointing(PG_TRIGGER_MOVE,p->x,p->y,0);
+  px = p->x;
+  py = p->y;
+  VID(coord_physicalize)(&px,&py);
+  dispatch_pointing(PG_TRIGGER_MOVE,px,py,0);
 
   /* focus the widget under the cursor*/
   if (under)

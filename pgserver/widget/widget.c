@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.86 2001/07/11 08:18:02 micahjd Exp $
+/* $Id: widget.c,v 1.87 2001/07/12 03:00:25 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -742,6 +742,9 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
   long keycode = (mods<<16) | key;     /* Combines mods and the key */
   
   inactivity_reset();
+
+  /* For rotating arrow keys along with the rest of PicoGUI */
+  VID(coord_keyrotate)(&key);
 
   if (type == TRIGGER_KEYDOWN &&
       get_param_int("sound","keyclick",0))

@@ -7,6 +7,15 @@ I left off with yesterday.
       * net/dispatch.c: Added the PGREQ_LOADDRIVER to load an input driver
 		  and get a handle to it.
 
+		* gcore/hotspot.c: Fixed coordinate translation bug
+		  (silly me, I used an int instead of a s16 for the coords)
+		  
+		* include/pgserver/video.h: Added the coord_keyrotate vidlib function
+		
+		* widget/widget.c: Call coord_keyrotate to translate key input
+		
+		* vidwrap/*.c: Implemented coord_keyrotate
+
 2001-07-10    Micah Dowty <micahjd@users.sourceforge.net>
 
 Fixing a few bugs, continuing on the meta-input features.
