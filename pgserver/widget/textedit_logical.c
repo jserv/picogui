@@ -1,4 +1,4 @@
-/* $Id: textedit_logical.c,v 1.10 2002/10/29 22:23:54 cgroom Exp $
+/* $Id: textedit_logical.c,v 1.11 2002/10/30 14:33:29 pney Exp $
  *
  * textedit_logical.c - Backend for multi-line text widget. This
  * defines the behavior of a generic wrapping text widget, and is not
@@ -37,6 +37,8 @@
  *   Philippe Ney - global text clipboard to all instance of the widget.
  *                  Embryo of the future pgserver global clipboard support,
  *                - support for ctrl-[xcv] keyboard event.
+ *                - unicode support through wchar_t data format for
+ *                  manipulations and utf-8 for communication
  *   
  *   October 28, 2002
  *   Chuck Groom  - Cleaned up memory allocation, error handling
@@ -394,103 +396,6 @@ g_error text_backend_build ( text_widget * widget,
 }
 
 
-#ifdef CONFIG_TEXTEDIT_WCHART
-g_error text_backend_set_text ( text_widget * widget,
-                             struct pgstring * text ) {
-    g_error e;
-    LList * ll_b, * ll_p, * ll_a;
-    size_t para_len;
-    block * b;
-    paragraph * p;
-    u32 len;
-    wchar_t txtBuf [text->num_chars + 1];
-    wchar_t * txt = txtBuf;
-    int cnt = 0;
-    size_t n;
-    char * pBuf = (char *) text->buffer;
-
-
-    utf8ToWchart (pBuf, text->num_chars, txt);
-
-
-    /* Destroy everything in widget */
-    for (ll_b = widget->blocks; ll_b; ll_b = llist_next(ll_b))
-        block_destroy(BLOCK(ll_b));
-    llist_free(widget->blocks);
-    widget->blocks = NULL;
-
-    e = block_create(&b);
-    errorcheck;
-
-    b->b_gap = 0;
-    e = llist_append(&widget->blocks, widget->blocks, b);
-    errorcheck;
-
-    len = text->num_chars;
-    while (len) {
-        for (para_len = 0; 
-             (para_len < len) && (txt[para_len] != L'\n'); 
-             para_len++) {
-	    ;  /* no operation, go out of the loop also when newline */
-	}
-
-	/* test carriage return only if we don't reach the end of the string */
-	if (para_len < len) {
-	  if (txt[para_len] == L'\n') {
-	    para_len++;
-	  }
-	}
-
-        while (para_len + 1 > b->data_size - b->len) {
-            /* Paragraph won't fit into b */
-            if (b->len) {
-                e = block_create(&b);
-                errorcheck;
-                
-                e = llist_append(&widget->blocks, widget->blocks, b);
-                errorcheck;
-            } else { 
-                /* Single long para */
-                e = block_data_resize (widget, b, b->len + para_len + BUFFER_GROW);
-                errorcheck;
-            }
-        }
-        TEXTEDIT_STRNCPY(b->data + b->b_gap, txt, para_len);
-        e = paragraph_create(&p);
-        errorcheck;
-
-        e = llist_append(&b->paragraphs, b->paragraphs, p);
-        errorcheck;
-
-        p->len = para_len;
-        len -= para_len;
-        b->len += para_len;
-        b->b_gap += para_len;
-        ATOM(p->atoms)->len = para_len;
-        txt += para_len;
-    }
-
-    /* Set cursor */
-    widget->fvb = widget->current = widget->blocks;
-    widget->v_y_top = 0;
-    widget->cursor_v_y  = 0;
-
-    b = BLOCK(widget->current);
-    b->cursor_paragraph = b->paragraphs;
-    block_set_bgap(b, 0);
-    p = PARAGRAPH(b->cursor_paragraph);
-    UNSET_FLAG(ATOM(p->atoms)->flags, ATOM_FLAG_LEFT);
-    e = llist_prepend(&p->atoms, p->atoms, atom_create(ATOM_TEXT, ATOM_FLAG_LEFT));
-    errorcheck;
-    b->cursor_atom = p->atoms;
-
-    e = text_backend_build(widget, widget->width, widget->height);
-    errorcheck;
-    return success;
-}
-
-#else /* ! CONFIG_TEXTEDIT_WCHART */
-
 g_error text_backend_set_text ( text_widget * widget,
                              struct pgstring * text ) {
     g_error e;
@@ -499,8 +404,20 @@ g_error text_backend_set_text ( text_widget * widget,
     block * b;
     paragraph * p;
     atom * a;
+#ifdef CONFIG_TEXTEDIT_WCHART
+    u32 len;
+    wchar_t txtBuf [text->num_chars + 1];
+    wchar_t * txt = txtBuf;
+    int cnt = 0;
+    size_t n;
+    char * pBuf = (char *) text->buffer;
+
+    utf8ToWchart (pBuf, text->num_chars, txt);
+
+#else
     u8 * txt = text->buffer;
     u16 len = text->num_bytes;
+#endif
 
     /* Destroy everything in widget */
     for (ll_b = widget->blocks; ll_b; ll_b = llist_next(ll_b))
@@ -515,16 +432,30 @@ g_error text_backend_set_text ( text_widget * widget,
     e = llist_append(&widget->blocks, widget->blocks, b);
     errorcheck;
     
+#ifdef CONFIG_TEXTEDIT_WCHART
+    len = text->num_chars;
     while (len) {
         for (para_len = 0;
-             (para_len < len) && (txt[para_len] != '\n'); 
+             (para_len < len) && (txt[para_len] != L'\n'); 
              para_len++) {
 	  ;            /* noop, just parse the paragraph */
 	}
+#else
+    while (len) {
+        for (para_len = 0;
+             (para_len < len) && (txt[para_len] != L'\n'); 
+             para_len++) {
+	  ;            /* noop, just parse the paragraph */
+	}
+#endif
 
 	/* test carriage return only if we don't reach the end of the string */
 	if (para_len < len) {
+#ifdef CONFIG_TEXTEDIT_WCHART
+	  if (txt[para_len] == L'\n') {
+#else
 	  if (txt[para_len] == '\n') {
+#endif
             para_len++;
 	  }
 	}
@@ -546,7 +477,10 @@ g_error text_backend_set_text ( text_widget * widget,
         TEXTEDIT_STRNCPY(b->data + b->b_gap, txt, para_len);
         e = paragraph_create(&p);
         errorcheck;
+
         e = llist_append(&b->paragraphs, b->paragraphs, p);
+	errorcheck;
+
         p->len = para_len;
         len -= para_len;
         b->len += para_len;
@@ -576,7 +510,6 @@ g_error text_backend_set_text ( text_widget * widget,
     errorcheck;
     return success;
 }
-#endif /* CONFIG_TEXTEDIT_WCHART */
 
 
 g_error text_backend_set_selection ( text_widget * widget,
