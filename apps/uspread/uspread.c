@@ -2,6 +2,7 @@
  *
  * uspread.c -   micro-spread (sheet) application for PicoGUI
  *
+ * Copyright (C) 2001 Tasnim Ahmed <tasnim@users.sourceforge.net>
  *
  * <license source="demo.c" pkg="PicoGUI/cli_c">
  * PicoGUI small and efficient client/server GUI
