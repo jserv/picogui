@@ -94,7 +94,7 @@ blocked  = 1
     elif platform.platform == 'native-linux':
         fd.write ('''
 name = picogui-server
-argv = pgserver -c etc/pgserver.conf
+argv = pgserver -c etc/pgserver.conf -m 320x240x16
 
 restart  = 1
 announce = 1
