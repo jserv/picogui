@@ -313,7 +313,7 @@ def noop(*a, **kw):
 # the class itself
 
 class Server(object):
-    def __init__(self, address='localhost', display=0, stream=None, stream_read=0):
+    def __init__(self, address=None, display=None, stream=None, stream_read=0):
         if stream:
             self._connection = stream
             try:
