@@ -41,7 +41,7 @@ int btnOpen(struct pgEvent *evt) {
 }
 
 int main(int argc, char **argv) {
-  pghandle titleLabel,box;
+  pghandle titleLabel,box,toolbar;
   
   pgInit(argc,argv);
   pgLoadTheme(pgFromMemory(imgviewtheme_bits,imgviewtheme_len));
@@ -63,8 +63,14 @@ int main(int argc, char **argv) {
 	      0);
 
   titleLabel = pgGetWidget(panel, PG_WP_PANELBAR_LABEL);
+  if (!titleLabel) {
+    /* If we don't have a panelbar, make a toolbar */
+    toolbar = pgNewWidget(PG_WIDGET_TOOLBAR,PG_DERIVE_INSIDE,panel);
+  }
 
-  pgNewWidget(PG_WIDGET_BUTTON, PG_DERIVE_BEFORE, titleLabel);
+  pgNewWidget(PG_WIDGET_BUTTON,
+	      titleLabel ? PG_DERIVE_BEFORE : PG_DERIVE_INSIDE,
+	      titleLabel ? titleLabel : toolbar);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE, PG_S_LEFT,
 	      PG_WP_TEXT, pgNewString("Open"),
