@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.2 2000/06/08 05:28:28 micahjd Exp $
+/* $Id: dispatch.c,v 1.3 2000/06/08 06:06:56 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -50,6 +50,7 @@ DEF_REQHANDLER(themeset)
 DEF_REQHANDLER(register)
 DEF_REQHANDLER(mkpopup)
 DEF_REQHANDLER(sizetext)
+DEF_REQHANDLER(batch)
 DEF_REQHANDLER(undef)
 g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(ping)
@@ -70,6 +71,7 @@ g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(register)
   TAB_REQHANDLER(mkpopup)
   TAB_REQHANDLER(sizetext)
+  TAB_REQHANDLER(batch)
   TAB_REQHANDLER(undef)
 };
 
@@ -95,7 +97,7 @@ int dispatch_packet(int from,struct uipkt_request *req,void *data) {
     errlen = strlen(e.msg);
     
     rsp.type = htons(RESPONSE_ERR);
-    rsp.id = req->id;
+    rsp.id = htons(req->id);
     rsp.errt = htons(e.type);
     rsp.msglen = htons(errlen);
 
@@ -430,6 +432,61 @@ g_error rqh_sizetext(int owner, struct uipkt_request *req,
   *ret = w<<16 | h;
 
   return sucess;
+}
+
+/* This accepts a packet that contains many individual request packets.
+   This is for stacking together lots of commands (a batch!) that execute
+   in sequence.  If any command fails, its error code is returned and the
+   other commands are ignored.  Only the return value from the last
+   command is saved.
+*/
+g_error rqh_batch(int owner, struct uipkt_request *req,
+		  void *data, unsigned long *ret, int *fatal) {
+  int remaining = req->size;
+  unsigned char *p = (unsigned char *) data;
+  struct uipkt_request *subreq;
+  void *subdata;
+  unsigned char null_save;
+  g_error e;
+
+  while (remaining) {
+    /* Extract a request header */
+    subreq = (struct uipkt_request *) p;
+    p += sizeof(struct uipkt_request);
+    remaining -= sizeof(struct uipkt_request);    
+    if (remaining<0)
+      return mkerror(ERRT_BADPARAM,"Partial request header in batch");
+
+    /* Reorder the bytes in the header */
+    subreq->type = ntohs(subreq->type);
+    subreq->id = ntohs(subreq->id);
+    subreq->size = ntohl(subreq->size);
+
+    /* Extract the data */
+    subdata = (void *) p;
+    p += subreq->size;
+    remaining -= subreq->size;
+    if (remaining<0)
+      return mkerror(ERRT_BADPARAM,"Partial request data in batch");    
+
+    /* _temporarily_ insert a null terminator (writing over the next
+       request header, then putting it back)
+    */
+    null_save = *p;
+    *p = 0;
+    
+    /* No invalid pointers for you! */
+    if (subreq->type>RQH_UNDEF) subreq->type = RQH_UNDEF;
+    
+    /* Dispatch to one of the handlers in the table */
+    e = (*rqhtab[subreq->type])(owner,subreq,subdata,ret,fatal);
+    if (e.type!=ERRT_NONE) break;
+
+    /* Undo the null terminator */
+    *p = null_save;
+  }
+
+  return e;
 }
 
 /* The End */

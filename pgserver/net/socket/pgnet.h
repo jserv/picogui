@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.3 2000/06/08 05:28:28 micahjd Exp $
+/* $Id: pgnet.h,v 1.4 2000/06/08 06:06:56 micahjd Exp $
  *
  * pgnet.h - header for all PicoGUI networking stuff (request/packet/event...)
  *
@@ -205,6 +205,7 @@ struct event *get_event(int owner,int remove);
 #define RQH_REGISTER  15     /* Register a new application     |  struct */
 #define RQH_MKPOPUP   16     /* Create a popup root widget     |  struct */
 #define RQH_SIZETEXT  17     /* Find the size of text          |  struct */
+#define RQH_BATCH     18     /* Executes many requests         |  requests */
 
 #define RQH_UNDEF     18     /* types > this will be truncated. return error */
 
