@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.60 2001/11/19 02:05:23 micahjd Exp $
+/* $Id: video.h,v 1.61 2001/11/19 09:50:13 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -547,6 +547,7 @@ void def_sprite_protectarea(struct quad *in,struct sprite *from);
 g_error def_bitmap_loadxbm(hwrbitmap *bmp,const u8 *data, s16 w, s16 h,
 			   hwrcolor fg, hwrcolor bg);
 struct fontglyph const *def_font_getglyph(struct fontdesc *fd, int ch);
+g_error def_bitmap_getsize(hwrbitmap bmp,s16 *w,s16 *h);
 
 /************* Registration functions for video drivers */
 
@@ -563,6 +564,7 @@ g_error fbdev_regfunc(struct vidlib *v);
 g_error serial40x4_regfunc(struct vidlib *v);
 g_error scrshot_regfunc(struct vidlib *v);
 g_error s1d13806_regfunc(struct vidlib *v);
+g_error x11_regfunc(struct vidlib *v);
 
 /************** Registration functions for Video Base Libraries */
 void setvbl_default(struct vidlib *vid);

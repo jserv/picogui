@@ -190,6 +190,15 @@ AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_SVGAFB, [
 ])
 
 
+dnl check for the X window system
+
+AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_X11, [
+
+  AC_CHECK_LIB(X11, XOpenDisplay,, AC_MSG_WARN([can't find libncurses]))
+
+  DRIVER_LIBS="-lX11"
+])
+
 dnl check for ncurses & gpm
 
 AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_NCURSES, [

@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.47 2001/11/16 00:35:42 micahjd Exp $
+/* $Id: video.c,v 1.48 2001/11/19 09:50:13 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -197,13 +197,13 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
    vid->lxres = vid->xres;
    vid->lyres = vid->yres;
    
-   /* Synchronize vid->display info */
-	if (vid->display) {
-		if (((struct stdbitmap *)vid->display)->rend)
-		   g_free(((struct stdbitmap *)vid->display)->rend);
-      ((struct stdbitmap *)vid->display)->freebits = 0;
-      ((struct stdbitmap *)vid->display)->w = vid->xres;
-      ((struct stdbitmap *)vid->display)->h = vid->yres;
+   /* Synchronize vid->display info automatically if we're using stdbitmap */
+   if (vid->display && vid->bitmap_getsize==def_bitmap_getsize) {
+     if (((struct stdbitmap *)vid->display)->rend)
+       g_free(((struct stdbitmap *)vid->display)->rend);
+     ((struct stdbitmap *)vid->display)->freebits = 0;
+     ((struct stdbitmap *)vid->display)->w = vid->xres;
+     ((struct stdbitmap *)vid->display)->h = vid->yres;
    }
       
    /* Reset wrapper library (before using VID macro) */

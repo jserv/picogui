@@ -63,6 +63,7 @@ add_if_true fbdev.c      $DRIVER_FBDEV
 add_if_true serial40x4.c $DRIVER_SERIAL40X4
 add_if_true scrshot.c    $DRIVER_SCRSHOT
 add_if_true s1d13806.c   $DRIVER_S1D13806
+add_if_true x11.c        $DRIVER_X11
 
 close_section
 

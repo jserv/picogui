@@ -6,6 +6,10 @@
  * (see driverinfo.c for more info)
  */
 
+#ifdef DRIVER_X11
+  DRV("x11",&x11_regfunc)
+#endif
+
 #ifdef DRIVER_FBDEV
   DRV("fbdev",&fbdev_regfunc)
 #endif

@@ -339,3 +339,11 @@ CONFIG_SDL_FULLUPDATE
       graphics primitives scribbling where they're not
       supposed to on the screen.
 
+DRIVER_X11
+      Unlike the sdlfb driver, which was designed for compatibility
+      and correctly emulating embedded systems, the X11 driver
+      is designed for speed. It does _not_ require any VBLs
+      (linear1, linear2, etc...) and it does _not_ require any
+      fonts compiled into pgserver. It offloads as much work
+      as possible to the X server, so that pgserver acts more
+      like a traditional widget set than a complete GUI server.

@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.15 2001/09/07 04:25:02 micahjd Exp $
+/* $Id: pgmain.c,v 1.16 2001/11/19 09:50:13 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -610,7 +610,8 @@ int main(int argc, char **argv) {
   appmgr_free();
   grop_kill_zombies();
   if (vid) {
-     if (vid->display && ((struct stdbitmap *)vid->display)->rend)
+     if (vid->display && ((struct stdbitmap *)vid->display)->rend &&
+	 vid->bitmap_getsize==def_bitmap_getsize)
 	    g_free(((struct stdbitmap *)vid->display)->rend);
      VID(close) ();
   }
