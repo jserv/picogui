@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.9 2000/09/08 00:38:16 micahjd Exp $
+/* $Id: video.c,v 1.10 2000/09/09 01:46:15 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -91,7 +91,7 @@ int ascread(unsigned char **dat,unsigned long *datlen) {
 */
 
 g_error def_setmode(int xres,int yres,int bpp,unsigned long flags) {
-  return mkerror(ERRT_BADPARAM,72);
+  return mkerror(PG_ERRT_BADPARAM,72);
 }
 
 void emulate_dos(void) {
@@ -416,7 +416,7 @@ void def_scrollblit(int src_x,int src_y,
   */
 
   for (src_y+=h-1,dest_y+=h-1;h;h--,src_y--,dest_y--)
-    (*vid->blit)(NULL,src_x,src_y,NULL,dest_x,dest_y,w,1,LGOP_NONE);
+    (*vid->blit)(NULL,src_x,src_y,NULL,dest_x,dest_y,w,1,PG_LGOP_NONE);
 }
 
 void def_charblit(unsigned char *chardat,int dest_x,
@@ -563,7 +563,7 @@ g_error def_bitmap_loadpnm(struct stdbitmap **bmp,
   unsigned char *p;
   int oshift = 0;
   g_error e;
-  g_error efmt = mkerror(ERRT_BADPARAM,48);
+  g_error efmt = mkerror(PG_ERRT_BADPARAM,48);
   hwrcolor hc;
 
   ascskip(&data,&datalen);

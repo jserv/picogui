@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.18 2000/09/04 00:15:53 micahjd Exp $
+/* $Id: global.c,v 1.19 2000/09/09 01:42:15 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -74,29 +74,29 @@ g_error appmgr_init(void) {
   applist = NULL;  /* No apps yet! */
 
   /* Default theme */
-  memcpy(&current_theme,&default_theme,sizeof(struct element)*E_NUM);
+  memcpy(&current_theme,&default_theme,sizeof(struct element)*PG_E_NUM);
 
   /* Allocate default font */
-  e = findfont(&defaultfont,-1,NULL,0,FSTYLE_DEFAULT);
+  e = findfont(&defaultfont,-1,NULL,0,PG_FSTYLE_DEFAULT);
   errorcheck;
 
   /* Load the default background */
   e = (*vid->bitmap_loadpnm)(&bgbits,bg_bits,bg_len);
   errorcheck;
-  e = mkhandle(&background,TYPE_BITMAP,-1,bgbits);
+  e = mkhandle(&background,PG_TYPE_BITMAP,-1,bgbits);
   errorcheck;
 
   /* Make the background widget */
-  e = widget_create(&bgwidget,WIDGET_BITMAP,dts->root,
+  e = widget_create(&bgwidget,PG_WIDGET_BITMAP,dts->root,
 		    &dts->root->head->next,0,-1);
   errorcheck;
-  e = widget_set(bgwidget,WP_BITMAP,(glob)background);
+  e = widget_set(bgwidget,PG_WP_BITMAP,(glob)background);
   errorcheck;
-  e = widget_set(bgwidget,WP_ALIGN,A_ALL);
+  e = widget_set(bgwidget,PG_WP_ALIGN,PG_A_ALL);
   errorcheck;
-  e = widget_set(bgwidget,WP_SIDE,S_ALL);
+  e = widget_set(bgwidget,PG_WP_SIDE,PG_S_ALL);
   errorcheck;
-  e = mkhandle(&hbgwidget,TYPE_WIDGET,-1,bgwidget);   
+  e = mkhandle(&hbgwidget,PG_TYPE_WIDGET,-1,bgwidget);   
   errorcheck;
 
   return sucess;
@@ -123,14 +123,14 @@ g_error appmgr_setbg(int owner,handle bitmap) {
     /* Load our default */
     e = (*vid->bitmap_loadpnm)(&bgbits,bg_bits,bg_len);
     errorcheck;
-    e = mkhandle(&bitmap,TYPE_BITMAP,-1,bgbits);
+    e = mkhandle(&bitmap,PG_TYPE_BITMAP,-1,bgbits);
     errorcheck;
     owner = -1;
   }
 
   e = handle_bequeath(background,bitmap,owner);
   errorcheck;
-  return widget_set(bgwidget,WP_BITMAP,0);
+  return widget_set(bgwidget,PG_WP_BITMAP,0);
 }
 
 /* Unregisters applications owned by a given connection */
@@ -165,39 +165,39 @@ g_error appmgr_register(struct app_info *i) {
   /* Allocate root widget, do any setup specific to the app type */
   switch (i->type) {
 
-  case APP_TOOLBAR:
+  case PG_APP_TOOLBAR:
     /* Create a simple toolbar as a root widget */
-    e = widget_create(&w,WIDGET_TOOLBAR,dts->root,&dts->root->head->next,0,i->owner);
+    e = widget_create(&w,PG_WIDGET_TOOLBAR,dts->root,&dts->root->head->next,0,i->owner);
     errorcheck;
-    e = mkhandle(&i->rootw,TYPE_WIDGET,i->owner,w);
+    e = mkhandle(&i->rootw,PG_TYPE_WIDGET,i->owner,w);
     errorcheck;    
 
     /* Size specs are ignored for the toolbar.
        They won't be moved by the appmgr, so sidemask has no effect.
        Set the side here, though.
     */
-    e = widget_set(w,WP_SIDE,i->side);
+    e = widget_set(w,PG_WP_SIDE,i->side);
     errorcheck;
     
     break;
 
-  case APP_NORMAL:
+  case PG_APP_NORMAL:
     /* Use a panel */
-    e = widget_create(&w,WIDGET_PANEL,dts->root,&dts->root->head->next,0,i->owner);
+    e = widget_create(&w,PG_WIDGET_PANEL,dts->root,&dts->root->head->next,0,i->owner);
     errorcheck;
-    e = mkhandle(&i->rootw,TYPE_WIDGET,i->owner,w);
+    e = mkhandle(&i->rootw,PG_TYPE_WIDGET,i->owner,w);
     errorcheck;    
 
     /* Set all the properties */
-    e = widget_set(w,WP_SIDE,i->side);
+    e = widget_set(w,PG_WP_SIDE,i->side);
     errorcheck;
-    e = widget_set(w,WP_SIZE,(i->side & (S_LEFT|S_RIGHT)) ? i->w : i->h);
+    e = widget_set(w,PG_WP_SIZE,(i->side & (PG_S_LEFT|PG_S_RIGHT)) ? i->w : i->h);
     errorcheck;
     
     break;
 
   default:
-    return mkerror(ERRT_BADPARAM,30);
+    return mkerror(PG_ERRT_BADPARAM,30);
   }
 
   w->isroot = 1;

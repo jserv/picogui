@@ -1,4 +1,4 @@
-/* $Id: all.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: all.h,v 1.2 2000/09/09 01:46:15 micahjd Exp $
  *
  * pgserver/all.h - Includes all the pgserver files. Some files
  *                  need so many includes that this just makes sense.
@@ -30,7 +30,6 @@
 #include <pgserver/divtree.h>
 #include <pgserver/g_error.h>
 #include <pgserver/handle.h>
-#include <pgserver/pgkeys.h>
 #include <pgserver/pgnet.h>
 #include <pgserver/timer.h>
 #include <pgserver/widget.h>
@@ -41,5 +40,8 @@
 #include <pgserver/pgmain.h>
 #include <pgserver/theme.h>
 #include <pgserver/video.h>
+
+#include <picogui/network.h>
+#include <picogui/constants.h>
 
 /* The End */

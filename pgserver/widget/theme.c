@@ -1,4 +1,4 @@
-/* $Id: theme.c,v 1.13 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: theme.c,v 1.14 2000/09/09 01:46:16 micahjd Exp $
  *
  * theme.h - This defines the structures and functions for themes,
  * parameters defining the way widgets are drawn that are reconfigurable
@@ -31,7 +31,7 @@
 #include <pgserver/divtree.h>
 #include <pgserver/widget.h>
 
-struct element current_theme[E_NUM];
+struct element current_theme[PG_E_NUM];
 
 /* Creates a gropnode representing an element.
  * Depending on the type and the size, create a gradient, rectangle,
@@ -40,16 +40,16 @@ struct element current_theme[E_NUM];
 void addelement(struct divnode *d,struct element *el,
 		int *x,int *y,int *w,int *h) {
   
-  if (el->type == ELEM_GRADIENT) {
-    grop_gradient(&d->grop,*x,*y,*w,*h,el->state[STATE_NORMAL].c1,
-		  el->state[STATE_NORMAL].c2,el->state[STATE_NORMAL].angle,
-		  el->state[STATE_NORMAL].translucent);
+  if (el->type == PG_ELEM_GRADIENT) {
+    grop_gradient(&d->grop,*x,*y,*w,*h,el->state[PG_STATE_NORMAL].c1,
+		  el->state[PG_STATE_NORMAL].c2,el->state[PG_STATE_NORMAL].angle,
+		  el->state[PG_STATE_NORMAL].translucent);
   }
-  else if (el->type == ELEM_FLAT) {
+  else if (el->type == PG_ELEM_FLAT) {
     if (el->width==1)
-      grop_frame(&d->grop,*x,*y,*w,*h,el->state[STATE_NORMAL].c1);
+      grop_frame(&d->grop,*x,*y,*w,*h,el->state[PG_STATE_NORMAL].c1);
     else
-      grop_rect(&d->grop,*x,*y,*w,*h,el->state[STATE_NORMAL].c1);
+      grop_rect(&d->grop,*x,*y,*w,*h,el->state[PG_STATE_NORMAL].c1);
   }
   else
     grop_null(&d->grop);
@@ -63,20 +63,20 @@ void addelement(struct divnode *d,struct element *el,
   else if (el->width < 0) {
     switch (d->owner->in->flags & (~SIDEMASK)) {
 
-    case S_LEFT:
+    case PG_S_LEFT:
       *w += el->width;
       break;
 
-    case S_RIGHT:
+    case PG_S_RIGHT:
       *w += el->width;
       *x -= el->width;
       break;
 
-    case S_TOP:
+    case PG_S_TOP:
       *h += el->width;
       break;
 
-    case S_BOTTOM:
+    case PG_S_BOTTOM:
       *h += el->width;
       *y -= el->width;
       break;
@@ -96,38 +96,38 @@ void applystate(struct gropnode *n,struct element *el,int state) {
 
 void themeset(int element,int state,int param,unsigned long value) {
   struct element *el;
-  if ((element<0) || (element>=E_NUM)) return;
+  if ((element<0) || (element>=PG_E_NUM)) return;
 
-  /* With STATE_ALL, call ourselves for all states */
-  if (state == STATE_ALL) {
+  /* With PG_STATE_ALL, call ourselves for all states */
+  if (state == PG_STATE_ALL) {
     int i;
-    for (i=0;i<STATE_NUM;i++)
+    for (i=0;i<PG_STATENUM;i++)
       themeset(element,i,param,value);
     return;
   }
 
   el = &current_theme[element];
   switch (param) {
-  case EPARAM_WIDTH:
+  case PG_EPARAM_WIDTH:
     el->width = value;
     break;
-  case EPARAM_TYPE:
+  case PG_EPARAM_TYPE:
     el->type = value;
     break;
-  case EPARAM_C1:
-    if ((state<STATE_NUM) && (state>=0))
+  case PG_EPARAM_C1:
+    if ((state<PG_STATENUM) && (state>=0))
       el->state[state].c1 = value;
     break;
-  case EPARAM_C2:
-    if ((state<STATE_NUM) && (state>=0))
+  case PG_EPARAM_C2:
+    if ((state<PG_STATENUM) && (state>=0))
       el->state[state].c2 = value;
     break;
-  case EPARAM_ANGLE:
-    if ((state<STATE_NUM) && (state>=0))
+  case PG_EPARAM_ANGLE:
+    if ((state<PG_STATENUM) && (state>=0))
       el->state[state].angle = value;
     break;
-  case EPARAM_TRANSLUCENT:
-    if ((state<STATE_NUM) && (state>=0))
+  case PG_EPARAM_TRANSLUCENT:
+    if ((state<PG_STATENUM) && (state>=0))
       el->state[state].translucent = value;
     break;
   }  
@@ -135,7 +135,7 @@ void themeset(int element,int state,int param,unsigned long value) {
 
 /* Restore defaults */
 void restoretheme(void) {
-  memcpy(&current_theme,&default_theme,sizeof(struct element)*E_NUM);
+  memcpy(&current_theme,&default_theme,sizeof(struct element)*PG_E_NUM);
   appmgr_setbg(-1,0);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.12 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: indicator.c,v 1.13 2000/09/09 01:46:16 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -35,8 +35,8 @@ void indicator(struct divnode *d) {
 
   /* Background for the whole bar */
   x=y=0; w=d->w; h=d->h;
-  addelement(d,&current_theme[E_INDICATOR_BORDER],&x,&y,&w,&h);
-  addelement(d,&current_theme[E_INDICATOR_FILL],&x,&y,&w,&h);
+  addelement(d,&current_theme[PG_E_INDICATOR_BORDER],&x,&y,&w,&h);
+  addelement(d,&current_theme[PG_E_INDICATOR_FILL],&x,&y,&w,&h);
 
   /* Within the remaining space, figure out where the indicator is
      hilighted. */
@@ -50,7 +50,7 @@ void indicator(struct divnode *d) {
   }
 
   /* Add the hilight */
-  addelement(d,&current_theme[E_INDICATOR_OVERLAY],&x,&y,&w,&h);
+  addelement(d,&current_theme[PG_E_INDICATOR_OVERLAY],&x,&y,&w,&h);
 
   /* If this is a vertical indicator, rotate the gradients */
   if (d->h >= d->w) {
@@ -68,7 +68,7 @@ g_error indicator_install(struct widget *self) {
 
   e = newdiv(&self->in,self);
   errorcheck;
-  self->in->flags |= S_TOP;
+  self->in->flags |= PG_S_TOP;
   self->in->split = 10;
   self->out = &self->in->next;
   e = newdiv(&self->in->div,self);
@@ -86,7 +86,7 @@ void indicator_remove(struct widget *self) {
 g_error indicator_set(struct widget *self,int property, glob data) {
   switch (property) {
 
-  case WP_VALUE:
+  case PG_WP_VALUE:
     if (data > 100) data = 100;
     if (data < 0) data = 0;
     VALUE = (int) data;
@@ -110,15 +110,15 @@ g_error indicator_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_REDRAW;   
     break;
 
-  case WP_SIZE:
-    if (data < 0) return mkerror(ERRT_BADPARAM,7);
+  case PG_WP_SIZE:
+    if (data < 0) return mkerror(PG_ERRT_BADPARAM,7);
     self->in->split = (int) data;
     self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,8);
+  case PG_WP_SIDE:
+    if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,8);
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
       DIVNODE_PROPAGATE_RECALC;
@@ -126,7 +126,7 @@ g_error indicator_set(struct widget *self,int property, glob data) {
     break;
     
   default:
-    return mkerror(ERRT_BADPARAM,9);
+    return mkerror(PG_ERRT_BADPARAM,9);
   }
   return sucess;
 }
@@ -134,13 +134,13 @@ g_error indicator_set(struct widget *self,int property, glob data) {
 glob indicator_get(struct widget *self,int property) {
   switch (property) {
 
-  case WP_VALUE:
+  case PG_WP_VALUE:
     return VALUE;
 
-  case WP_SIZE:
+  case PG_WP_SIZE:
     return self->in->split;
 
-  case WP_SIDE:
+  case PG_WP_SIDE:
     return self->in->flags & (~SIDEMASK);
 
   }

@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.11 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: popup.c,v 1.12 2000/09/09 01:46:16 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -39,7 +39,7 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   errorcheck;
 
   /* Add the new popup widget - a simple theme-enabled container widget */
-  e = widget_create(wgt,WIDGET_POPUP,dts->top,&dts->top->head->next,0,owner);
+  e = widget_create(wgt,PG_WIDGET_POPUP,dts->top,&dts->top->head->next,0,owner);
   errorcheck;
 
   (*wgt)->isroot = 1;  /* This widget has no siblings, so no point going
@@ -48,10 +48,10 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   /* Positioning, centering, and clipping */
   if (((signed short)x)==-1) x=(vid->xres>>1)-(w>>1); /*-1 centers */ 
   if (((signed short)y)==-1) y=(vid->yres>>1)-(h>>1);
-  (*wgt)->in->div->x = x-current_theme[E_POPUP_BORDER].width;
-  (*wgt)->in->div->y = y-current_theme[E_POPUP_BORDER].width;
-  (*wgt)->in->div->w = w+(current_theme[E_POPUP_BORDER].width<<1);
-  (*wgt)->in->div->h = h+(current_theme[E_POPUP_BORDER].width<<1);
+  (*wgt)->in->div->x = x-current_theme[PG_E_POPUP_BORDER].width;
+  (*wgt)->in->div->y = y-current_theme[PG_E_POPUP_BORDER].width;
+  (*wgt)->in->div->w = w+(current_theme[PG_E_POPUP_BORDER].width<<1);
+  (*wgt)->in->div->h = h+(current_theme[PG_E_POPUP_BORDER].width<<1);
   if ((*wgt)->in->div->x <0) (*wgt)->in->div->x = 0;
   if ((*wgt)->in->div->y <0) (*wgt)->in->div->y = 0;
   if ((*wgt)->in->div->x+(*wgt)->in->div->w >= vid->xres)
@@ -71,8 +71,8 @@ void popup(struct divnode *d) {
   int x,y,w,h;
   x=y=0; w=d->w; h=d->h;
 
-  addelement(d,&current_theme[E_POPUP_BORDER],&x,&y,&w,&h);
-  addelement(d,&current_theme[E_POPUP_FILL],&x,&y,&w,&h);
+  addelement(d,&current_theme[PG_E_POPUP_BORDER],&x,&y,&w,&h);
+  addelement(d,&current_theme[PG_E_POPUP_FILL],&x,&y,&w,&h);
 }
 
 g_error popup_install(struct widget *self) {
@@ -89,7 +89,7 @@ g_error popup_install(struct widget *self) {
   errorcheck;
   self->in->div->on_recalc = &popup;
   self->in->div->flags = DIVNODE_SPLIT_BORDER;
-  self->in->div->split = current_theme[E_POPUP_BORDER].width;
+  self->in->div->split = current_theme[PG_E_POPUP_BORDER].width;
 
   self->out = &self->in->next;
   self->sub = &self->in->div->div;
@@ -118,7 +118,7 @@ g_error popup_set(struct widget *self,int property, glob data) {
   /* Because the layer(s) under a popup are 'frozen' it can't be moved
      after it is created.  Therefore, there isn't anything to change.
   */
-  return mkerror(ERRT_BADPARAM,40);
+  return mkerror(PG_ERRT_BADPARAM,40);
 }
 
 glob popup_get(struct widget *self,int property) {

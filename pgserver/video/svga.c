@@ -1,4 +1,4 @@
-/* $Id: svga.c,v 1.8 2000/09/04 21:46:56 micahjd Exp $
+/* $Id: svga.c,v 1.9 2000/09/09 01:46:16 micahjd Exp $
  *
  * svga.c - video driver for (S)VGA cards, via vgagl and svgalib
  *
@@ -133,7 +133,7 @@ void svga_clip_off(void) {
 void svga_blit(struct stdbitmap *src,int src_x,int src_y,
 		 struct stdbitmap *dest,int dest_x,int dest_y,
 		 int w,int h,int lgop) {
-  if (lgop==LGOP_NULL) return;
+  if (lgop==PG_LGOP_NULL) return;
   if (w<=0) return;
   if (h<=0) return;
   
@@ -150,7 +150,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
     return;
   }
   
-  if (lgop==LGOP_NONE)
+  if (lgop==PG_LGOP_NONE)
     if (src_x==0 && src_y==0)
       gl_putbox(dest_x,dest_y,src->w,src->h,src->bits);
     else
@@ -168,7 +168,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
     bytew = w*BYTESPERPIXEL;
     switch (lgop) {
       
-    case LGOP_OR:
+    case PG_LGOP_OR:
       lo = src->w-w;
       for (;h;h--,dest_y++,b+=lo) {
         gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
@@ -178,7 +178,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
       }
       break;
       
-    case LGOP_AND:
+    case PG_LGOP_AND:
       lo = (src->w-w)*BYTESPERPIXEL;
       for (;h;h--,dest_y++,b+=lo) {
         gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
@@ -188,7 +188,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
       }
       break;
       
-    case LGOP_XOR:
+    case PG_LGOP_XOR:
       lo = (src->w-w)*BYTESPERPIXEL;
       for (;h;h--,dest_y++,b+=lo) {
         gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
@@ -198,7 +198,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
       }
       break;
       
-    case LGOP_INVERT:
+    case PG_LGOP_INVERT:
       lo = (src->w-w)*BYTESPERPIXEL;
       for (;h;h--,dest_y++,b+=lo) {
         for (iw=bytew;iw;iw--)
@@ -207,7 +207,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
       }
       break;
       
-    case LGOP_INVERT_OR:
+    case PG_LGOP_INVERT_OR:
       lo = (src->w-w)*BYTESPERPIXEL;
       for (;h;h--,dest_y++,b+=lo) {
         gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
@@ -217,7 +217,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
       }
       break;
       
-    case LGOP_INVERT_AND:
+    case PG_LGOP_INVERT_AND:
       lo = (src->w-w)*BYTESPERPIXEL;
       for (;h;h--,dest_y++,b+=lo) {
         gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
@@ -227,7 +227,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
       }
       break;
       
-    case LGOP_INVERT_XOR:
+    case PG_LGOP_INVERT_XOR:
       lo = (src->w-w)*BYTESPERPIXEL;
       for (;h;h--,dest_y++,b+=lo) {
         gl_getbox(dest_x,dest_y,w,1,b=svga_buf);

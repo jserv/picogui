@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: widget.h,v 1.2 2000/09/09 01:46:15 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -30,13 +30,14 @@
 #ifndef __WIDGET_H
 #define __WIDGET_H
 
+#include <picogui/constants.h>
+
 #include <pgserver/divtree.h>
 #include <pgserver/font.h>
 #include <pgserver/video.h>
 #include <pgserver/g_error.h>
 #include <pgserver/g_malloc.h>
 #include <pgserver/pgmain.h>
-#include <pgserver/pgkeys.h>
 #include <pgserver/theme.h>
 
 struct blob;
@@ -47,12 +48,6 @@ struct widget;
 
 /* A data type to represent anything */
 typedef long glob;
-
-/* Constants used for rship, the relationship between a widget and its
-   parent */
-#define DERIVE_BEFORE 0
-#define DERIVE_AFTER  1
-#define DERIVE_INSIDE 2
 
 /* Constants for a trigger type. One of these constants is used to identify
    a trigger when it happens, and they are combined to form a trigger mask */
@@ -196,58 +191,6 @@ DEF_WIDGET_PROTO(panel)
 DEF_STATICWIDGET_PROTO(popup)
 DEF_STATICWIDGET_PROTO(box)
 DEF_WIDGET_PROTO(field)
-
-/* Types of widgets (in the same order they are in the table in widget.c) */
-#define WIDGET_TOOLBAR    0
-#define WIDGET_LABEL      1
-#define WIDGET_SCROLL     2
-#define WIDGET_INDICATOR  3
-#define WIDGET_BITMAP     4
-#define WIDGET_BUTTON     5
-#define WIDGET_PANEL      6
-#define WIDGET_POPUP      7
-#define WIDGET_BOX        8
-#define WIDGET_FIELD      9
-#define WIDGETMAX         9    /* For error checking */
-     
-/* Constants for properties */
-#define WP_SIZE        1
-#define WP_SIDE        2
-#define WP_ALIGN       3
-#define WP_BGCOLOR     4
-#define WP_COLOR       5
-#define WP_SIZEMODE    6
-#define WP_TEXT        7
-#define WP_FONT        8
-#define WP_TRANSPARENT 9
-#define WP_BORDERCOLOR 10
-#define WP_BITMAP      12
-#define WP_LGOP        13
-#define WP_VALUE       14
-#define WP_BITMASK     15
-#define WP_BIND        16
-#define WP_SCROLL      17    /* Scroll bar binds here on scrollable widgets */
-#define WP_VIRTUALH    18    /* Basically, the maximum vertical scroll */
-#define WP_HOTKEY      19
-
-/* Constants for SIZEMODE */
-#define SZMODE_PIXEL         0
-#define SZMODE_PERCENT       DIVNODE_UNIT_PERCENT
-
-#define SZMODE_MASK          (~DIVNODE_UNIT_PERCENT)
-
-/* Widget events */
-#define WE_ACTIVATE    1  /* Gets focus (or for a non-focusing widget such
-			     as a button, it has been clicked/selected  */
-#define WE_DEACTIVATE  2  /* Lost focus */
-     
-/* Non-widget events */
-#define WE_KBD_CHAR    10 /* These are sent if the client has captured the */
-#define WE_KBD_KEYUP   11 /* keyboard (or pointing device ) */
-#define WE_KBD_KEYDOWN 12
-#define WE_PNTR_MOVE   13
-#define WE_PNTR_UP     14
-#define WE_PNTR_DOWN   15
 
 /* Set to the client # if a client has taken over the input device */
 extern int keyboard_owner;

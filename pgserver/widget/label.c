@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.20 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: label.c,v 1.21 2000/09/09 01:46:16 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -50,9 +50,9 @@ void text(struct divnode *d) {
   struct widget *self = d->owner;
 
   /* Measure the exact width and height of the text and align it */
-  if (iserror(rdhandle((void **)&fd,TYPE_FONTDESC,-1,DATA->font))
+  if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,DATA->font))
       || !fd) return;
-  if (iserror(rdhandle((void **)&str,TYPE_STRING,-1,DATA->text))
+  if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,DATA->text))
       || !str) return;
   sizetext(fd,&w,&h,str);
   if (w>d->w) w = d->w;
@@ -78,14 +78,14 @@ g_error label_install(struct widget *self) {
 
   e = newdiv(&self->in,self);
   errorcheck;
-  self->in->flags |= S_TOP;
+  self->in->flags |= PG_S_TOP;
   self->in->split = 0;
   self->out = &self->in->next;
   e = newdiv(&self->in->div,self);
   errorcheck;
   self->in->div->on_recalc = &text;
   DATA->bg = 0xFFFFFF;
-  DATA->align = A_CENTER;
+  DATA->align = PG_A_CENTER;
   DATA->font = defaultfont;
 
   return sucess;
@@ -105,8 +105,8 @@ g_error label_set(struct widget *self,int property, glob data) {
 
   switch (property) {
 
-  case WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,11);
+  case PG_WP_SIDE:
+    if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,11);
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC |
       DIVNODE_PROPAGATE_RECALC;
@@ -116,20 +116,20 @@ g_error label_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_COLOR:
+  case PG_WP_COLOR:
     DATA->fg = data;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_BGCOLOR:
+  case PG_WP_BGCOLOR:
     DATA->bg = data;
     DATA->transparent = 0;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_TRANSPARENT:
+  case PG_WP_TRANSPARENT:
     DATA->transparent = (data != 0);
     if (DATA->transparent)
       redraw_bg(self);
@@ -137,8 +137,8 @@ g_error label_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_ALIGN:
-    if (data > AMAX) return mkerror(ERRT_BADPARAM,11);
+  case PG_WP_ALIGN:
+    if (data > PG_AMAX) return mkerror(PG_ERRT_BADPARAM,11);
     DATA->align = (alignt) data;
     if (DATA->transparent)
       redraw_bg(self);
@@ -146,9 +146,9 @@ g_error label_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_FONT:
-    if (iserror(rdhandle((void **)&fd,TYPE_FONTDESC,-1,data)) || !fd) 
-      return mkerror(ERRT_HANDLE,12);
+  case PG_WP_FONT:
+    if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,data)) || !fd) 
+      return mkerror(PG_ERRT_HANDLE,12);
     DATA->font = (handle) data;
     psplit = self->in->split;
     resizelabel(self);
@@ -161,9 +161,9 @@ g_error label_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_TEXT:
-    if (iserror(rdhandle((void **)&str,TYPE_STRING,-1,data)) || !str) 
-      return mkerror(ERRT_HANDLE,13);
+  case PG_WP_TEXT:
+    if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,data)) || !str) 
+      return mkerror(PG_ERRT_HANDLE,13);
     DATA->text = (handle) data;
     psplit = self->in->split;
     resizelabel(self);
@@ -176,14 +176,14 @@ g_error label_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_SCROLL:
+  case PG_WP_SCROLL:
     self->in->div->ty = -data;
     self->in->div->flags |= DIVNODE_SCROLL_ONLY;
     self->dt->flags |= DIVTREE_NEED_REDRAW;
     break;
 
   default:
-    return mkerror(ERRT_BADPARAM,14);
+    return mkerror(PG_ERRT_BADPARAM,14);
   }
   return sucess;
 }
@@ -197,34 +197,34 @@ glob label_get(struct widget *self,int property) {
 
   switch (property) {
 
-  case WP_SIDE:
+  case PG_WP_SIDE:
     return self->in->flags & (~SIDEMASK);
 
-  case WP_BGCOLOR:
+  case PG_WP_BGCOLOR:
     return DATA->bg;
 
-  case WP_COLOR:
+  case PG_WP_COLOR:
     return DATA->fg;
 
-  case WP_TRANSPARENT:
+  case PG_WP_TRANSPARENT:
     return DATA->transparent;
 
-  case WP_ALIGN:
+  case PG_WP_ALIGN:
     return DATA->align;
 
-  case WP_FONT:
+  case PG_WP_FONT:
     return (glob) DATA->font;
 
-  case WP_TEXT:
+  case PG_WP_TEXT:
     return (glob) DATA->text;
 
-  case WP_SCROLL:
+  case PG_WP_SCROLL:
     return -self->in->div->ty;
 
-  case WP_VIRTUALH:
-    if (iserror(rdhandle((void**)&str,TYPE_STRING,-1,DATA->text)) 
+  case PG_WP_VIRTUALH:
+    if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,DATA->text)) 
         || !str) break;
-    if (iserror(rdhandle((void**)&fd,TYPE_FONTDESC,-1,DATA->font)) 
+    if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,DATA->font)) 
         || !fd) break;
     sizetext(fd,&tw,&th,str);
     return th;
@@ -239,21 +239,21 @@ void resizelabel(struct widget *self) {
   struct fontdesc *fd;
   char *str;
 
-  /* With S_ALL we'll get ignored anyway... */
-  if (self->in->flags & S_ALL) return;
+  /* With PG_S_ALL we'll get ignored anyway... */
+  if (self->in->flags & PG_S_ALL) return;
 
-  if (iserror(rdhandle((void **)&fd,TYPE_FONTDESC,-1,DATA->font))
+  if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,DATA->font))
 	      || !fd) return;
-  if (iserror(rdhandle((void **)&str,TYPE_STRING,-1,DATA->text))
+  if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,DATA->text))
 	      || !str) return;
   
   sizetext(fd,&w,&h,str);
   
-  if ((self->in->flags & S_TOP) ||
-      (self->in->flags & S_BOTTOM))
+  if ((self->in->flags & PG_S_TOP) ||
+      (self->in->flags & PG_S_BOTTOM))
     self->in->split = h;
-  else if ((self->in->flags & S_LEFT) ||
-	   (self->in->flags & S_RIGHT))
+  else if ((self->in->flags & PG_S_LEFT) ||
+	   (self->in->flags & PG_S_RIGHT))
     self->in->split = w;
 }
 

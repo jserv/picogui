@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.24 2000/09/03 20:42:05 micahjd Exp $
+/* $Id: scroll.c,v 1.25 2000/09/09 01:46:16 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -46,7 +46,7 @@ struct scrolldata {
 		       the point that was clicked */
   int release_delta;
   int value,old_value;
-  handle binding;  /* If nonzero, this widget's WP_SCROLL property will
+  handle binding;  /* If nonzero, this widget's PG_WP_SCROLL property will
 		      be set in response to scrollbar movement instead of
 		      an event being sent back to the client */
 
@@ -60,23 +60,23 @@ void scrollbar(struct divnode *d) {
   struct widget *wgt;
   
   /* Size ourselves to fit the widget we are bound to */
-  if (!iserror(rdhandle((void **)&wgt,TYPE_WIDGET,-1,
+  if (!iserror(rdhandle((void **)&wgt,PG_TYPE_WIDGET,-1,
 			DATA->binding)) && wgt) 
-    DATA->res = widget_get(wgt,WP_VIRTUALH) - wgt->in->h;
+    DATA->res = widget_get(wgt,PG_WP_VIRTUALH) - wgt->in->h;
 
   /* Background for the whole bar */
   x=y=0; w=d->w; h=d->h;
-  addelement(d,&current_theme[E_SCROLLBAR_BORDER],&x,&y,&w,&h);
-  addelement(d,&current_theme[E_SCROLLBAR_FILL],&x,&y,&w,&h);
+  addelement(d,&current_theme[PG_E_SCROLLBAR_BORDER],&x,&y,&w,&h);
+  addelement(d,&current_theme[PG_E_SCROLLBAR_FILL],&x,&y,&w,&h);
 
   /* Within the remaining space, figure out where the indicator goes */
   y += DATA->value * (h-(h>>HEIGHT_DIV)) / DATA->res;
   h = h>>HEIGHT_DIV;
 
   /* Add the indicator elements */
-  addelement(d,&current_theme[E_SCROLLIND_BORDER],&x,&y,&w,&h);
-  addelement(d,&current_theme[E_SCROLLIND_FILL],&x,&y,&w,&h);
-  addelement(d,&current_theme[E_SCROLLIND_OVERLAY],&x,&y,&w,&h);
+  addelement(d,&current_theme[PG_E_SCROLLIND_BORDER],&x,&y,&w,&h);
+  addelement(d,&current_theme[PG_E_SCROLLIND_FILL],&x,&y,&w,&h);
+  addelement(d,&current_theme[PG_E_SCROLLIND_OVERLAY],&x,&y,&w,&h);
 }
 
 /* When the value changes, send an event */
@@ -85,13 +85,13 @@ void scrollevent(struct widget *self) {
 
   if (DATA->binding) {
     /* Send to a widget */
-    if (!iserror(rdhandle((void **)&w,TYPE_WIDGET,
+    if (!iserror(rdhandle((void **)&w,PG_TYPE_WIDGET,
 			  -1,DATA->binding)) && w) 
-      widget_set(w,WP_SCROLL,DATA->value);
+      widget_set(w,PG_WP_SCROLL,DATA->value);
   }
   else {
     /* Send to a client */
-    post_event(WE_ACTIVATE,self,DATA->value,0);
+    post_event(PG_WE_ACTIVATE,self,DATA->value,0);
   }
 }
 
@@ -106,21 +106,21 @@ void scrollupdate(struct widget *self) {
   
   /* Apply the current state to the elements */
   if (DATA->on)
-    state = STATE_ACTIVATE;
+    state = PG_STATE_ACTIVATE;
   else if (DATA->over)
-    state = STATE_HILIGHT;
+    state = PG_STATE_HILIGHT;
   else
-    state = STATE_NORMAL;
+    state = PG_STATE_NORMAL;
   applystate(self->in->div->grop,
-	     &current_theme[E_SCROLLBAR_BORDER],state);
+	     &current_theme[PG_E_SCROLLBAR_BORDER],state);
   applystate(self->in->div->grop->next,
-	     &current_theme[E_SCROLLBAR_FILL],state);
+	     &current_theme[PG_E_SCROLLBAR_FILL],state);
   applystate(self->in->div->grop->next->next,
-	     &current_theme[E_SCROLLIND_BORDER],state);
+	     &current_theme[PG_E_SCROLLIND_BORDER],state);
   applystate(self->in->div->grop->next->next->next,
-	     &current_theme[E_SCROLLIND_FILL],state);
+	     &current_theme[PG_E_SCROLLIND_FILL],state);
   applystate(self->in->div->grop->next->next->next->next,
-	     &current_theme[E_SCROLLIND_OVERLAY],state);
+	     &current_theme[PG_E_SCROLLIND_OVERLAY],state);
 
   /* Border */
   self->in->div->grop->next->next->y = DATA->value * 
@@ -128,13 +128,13 @@ void scrollupdate(struct widget *self) {
   /* Fill */
   self->in->div->grop->next->next->next->y = 
     self->in->div->grop->next->next->y + (
-    (current_theme[E_SCROLLIND_BORDER].width >= 0) ?
-    current_theme[E_SCROLLIND_BORDER].width : 0);
+    (current_theme[PG_E_SCROLLIND_BORDER].width >= 0) ?
+    current_theme[PG_E_SCROLLIND_BORDER].width : 0);
   /* Overlay */
   self->in->div->grop->next->next->next->next->y = 
     self->in->div->grop->next->next->next->y + (
-    (current_theme[E_SCROLLIND_FILL].width >= 0) ?
-    current_theme[E_SCROLLIND_FILL].width : 0);
+    (current_theme[PG_E_SCROLLIND_FILL].width >= 0) ?
+    current_theme[PG_E_SCROLLIND_FILL].width : 0);
 
   self->in->div->flags |= DIVNODE_NEED_REDRAW;
   self->dt->flags |= DIVTREE_NEED_REDRAW;   
@@ -155,7 +155,7 @@ g_error scroll_install(struct widget *self) {
 
   e = newdiv(&self->in,self);
   errorcheck;
-  self->in->flags |= S_RIGHT;
+  self->in->flags |= PG_S_RIGHT;
   self->in->split = HWG_SCROLL;
   e = newdiv(&self->in->div,self);
   errorcheck;
@@ -179,37 +179,37 @@ g_error scroll_set(struct widget *self,int property, glob data) {
 
   switch (property) {
 
-  case WP_VALUE:
+  case PG_WP_VALUE:
     DATA->value = data;
     scrollupdate(self);
     break;
 
-  case WP_SIZE:
+  case PG_WP_SIZE:
     DATA->res = data;
     scrollupdate(self);
     break;
 
-  case WP_BIND:
+  case PG_WP_BIND:
     if (!data) {
       DATA->binding = 0;
       break;
     }
 
-    if (iserror(rdhandle((void **)&w,TYPE_WIDGET,-1,data)) || !w) 
-      return mkerror(ERRT_HANDLE,17);
+    if (iserror(rdhandle((void **)&w,PG_TYPE_WIDGET,-1,data)) || !w) 
+      return mkerror(PG_ERRT_HANDLE,17);
 
-    /* Do a test run to see if the widget supports WP_SCROLL */
-    if (iserror(widget_set(w,WP_SCROLL,DATA->value)))
-      return mkerror(ERRT_BADPARAM,18);
+    /* Do a test run to see if the widget supports PG_WP_SCROLL */
+    if (iserror(widget_set(w,PG_WP_SCROLL,DATA->value)))
+      return mkerror(PG_ERRT_BADPARAM,18);
     DATA->binding = (handle) data;
 
     /* If applicable, turn off transparency in the widget */
-    widget_set(w,WP_TRANSPARENT,0);
+    widget_set(w,PG_WP_TRANSPARENT,0);
 
     break;
 
   default:
-    return mkerror(ERRT_BADPARAM,19);
+    return mkerror(PG_ERRT_BADPARAM,19);
   }
   return sucess;
 }
@@ -217,10 +217,10 @@ g_error scroll_set(struct widget *self,int property, glob data) {
 glob scroll_get(struct widget *self,int property) {
   switch (property) {
 
-  case WP_VALUE:
+  case PG_WP_VALUE:
     return DATA->value;
    
-  case WP_SIZE:
+  case PG_WP_SIZE:
     return DATA->res;
 
   }

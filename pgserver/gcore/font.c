@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.7 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: font.c,v 1.8 2000/09/09 01:46:15 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -166,7 +166,7 @@ g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
 
   e = g_malloc((void **) &fd,sizeof(struct fontdesc));
   errorcheck;
-  e = mkhandle(pfh,TYPE_FONTDESC,owner,fd);
+  e = mkhandle(pfh,PG_TYPE_FONTDESC,owner,fd);
   errorcheck;
 
   /* Initialize the fd */
@@ -174,10 +174,10 @@ g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
   fd->hline = -1;
   fd->hline_c = (*vid->color_pgtohwr)(0x000000);
   
-  if (!(flags & FSTYLE_FLUSH)) fd->margin = 2;
-  if (flags & FSTYLE_GRAYLINE) {
+  if (!(flags & PG_FSTYLE_FLUSH)) fd->margin = 2;
+  if (flags & PG_FSTYLE_GRAYLINE) {
     fd->hline_c = (*vid->color_pgtohwr)(0x808080);
-    flags |= FSTYLE_UNDERLINE;
+    flags |= PG_FSTYLE_UNDERLINE;
   }
 
   /* Now that the easy stuff is taken care of, find the font to use */
@@ -192,36 +192,36 @@ g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
   }
   fd->fs = closest;
 
-  if ((flags&FSTYLE_BOLD) && (flags&FSTYLE_ITALIC) && closest->bolditalic) {
-    flags &= ~(FSTYLE_BOLD|FSTYLE_ITALIC);
+  if ((flags&PG_FSTYLE_BOLD) && (flags&PG_FSTYLE_ITALIC) && closest->bolditalic) {
+    flags &= ~(PG_FSTYLE_BOLD|PG_FSTYLE_ITALIC);
     fd->font = closest->bolditalic;
   }
-  else if ((flags&FSTYLE_ITALIC) && closest->italic) {
-    flags &= ~FSTYLE_ITALIC;
+  else if ((flags&PG_FSTYLE_ITALIC) && closest->italic) {
+    flags &= ~PG_FSTYLE_ITALIC;
     fd->font = closest->italic;
   }
-  else if ((flags&FSTYLE_BOLD) && closest->bold) {
-    flags &= ~FSTYLE_BOLD;
+  else if ((flags&PG_FSTYLE_BOLD) && closest->bold) {
+    flags &= ~PG_FSTYLE_BOLD;
     fd->font = closest->bold;
   }
   else					
     fd->font = closest->normal;
 
-  if (flags&FSTYLE_BOLD) fd->boldw = closest->boldw;
+  if (flags&PG_FSTYLE_BOLD) fd->boldw = closest->boldw;
 
-  if (flags&FSTYLE_DOUBLESPACE) fd->interline_space = 
+  if (flags&PG_FSTYLE_DOUBLESPACE) fd->interline_space = 
 				  fd->font->h+fd->font->vspace;
-  if (flags&FSTYLE_DOUBLEWIDTH) fd->interchar_space =
+  if (flags&PG_FSTYLE_DOUBLEWIDTH) fd->interchar_space =
 				  fd->font->vwtab[' ']+fd->font->hspace+
 				  fd->boldw;
-  if (flags&FSTYLE_UNDERLINE) fd->hline = closest->ulineh;
-  if (flags&FSTYLE_STRIKEOUT) fd->hline = closest->slineh;
+  if (flags&PG_FSTYLE_UNDERLINE) fd->hline = closest->ulineh;
+  if (flags&PG_FSTYLE_STRIKEOUT) fd->hline = closest->slineh;
 
-  if (flags&FSTYLE_ITALIC2) {
+  if (flags&PG_FSTYLE_ITALIC2) {
     fd->skew = DEFAULT_SKEW / 2;
     fd->italicw = closest->ulineh / fd->skew; 
   }
-  else if (flags&FSTYLE_ITALIC) {
+  else if (flags&PG_FSTYLE_ITALIC) {
     fd->skew = DEFAULT_SKEW;
     fd->italicw = closest->ulineh / fd->skew; 
   }
@@ -245,21 +245,21 @@ int fontcmp(struct fontstyle_node *fs,char *name, int size, stylet flags) {
   }
 
   if (name && (!strcasecmp(name,fs->name))) result |= FCMP_NAME;
-  if ((flags&FSTYLE_FIXED)==(fs->flags&FSTYLE_FIXED)) result |= FCMP_FIXEDVAR;
-  if ((flags&FSTYLE_DEFAULT) && (fs->flags&FSTYLE_DEFAULT)) 
+  if ((flags&PG_FSTYLE_FIXED)==(fs->flags&PG_FSTYLE_FIXED)) result |= FCMP_FIXEDVAR;
+  if ((flags&PG_FSTYLE_DEFAULT) && (fs->flags&PG_FSTYLE_DEFAULT)) 
     result |= FCMP_DEFAULT;
 
-  if (((flags&(FSTYLE_BOLD|FSTYLE_ITALIC)) == FSTYLE_BOLD)
+  if (((flags&(PG_FSTYLE_BOLD|PG_FSTYLE_ITALIC)) == PG_FSTYLE_BOLD)
       && fs->bold) result |= FCMP_STYLE;
-  if (((flags&(FSTYLE_BOLD|FSTYLE_ITALIC)) == FSTYLE_ITALIC)
+  if (((flags&(PG_FSTYLE_BOLD|PG_FSTYLE_ITALIC)) == PG_FSTYLE_ITALIC)
       && fs->italic) result |= FCMP_STYLE;
-  if (((flags&(FSTYLE_BOLD|FSTYLE_ITALIC)) == (FSTYLE_BOLD|FSTYLE_ITALIC))
+  if (((flags&(PG_FSTYLE_BOLD|PG_FSTYLE_ITALIC)) == (PG_FSTYLE_BOLD|PG_FSTYLE_ITALIC))
       && fs->bolditalic) result |= FCMP_STYLE;
-  if ( ((flags&FSTYLE_SYMBOL)==(fs->flags&FSTYLE_SYMBOL)) &&
-       ((flags&FSTYLE_SUBSET)==(fs->flags&FSTYLE_SUBSET)))
+  if ( ((flags&PG_FSTYLE_SYMBOL)==(fs->flags&PG_FSTYLE_SYMBOL)) &&
+       ((flags&PG_FSTYLE_SUBSET)==(fs->flags&PG_FSTYLE_SUBSET)))
     result |= FCMP_TYPE;
-  if ( ((flags&FSTYLE_EXTENDED)==(fs->flags&FSTYLE_EXTENDED)) &&
-       ((flags&FSTYLE_IBMEXTEND)==(fs->flags&FSTYLE_IBMEXTEND)))
+  if ( ((flags&PG_FSTYLE_EXTENDED)==(fs->flags&PG_FSTYLE_EXTENDED)) &&
+       ((flags&PG_FSTYLE_IBMEXTEND)==(fs->flags&PG_FSTYLE_IBMEXTEND)))
     result |= FCMP_CHARSET;
 
   return result;

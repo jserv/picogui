@@ -1,4 +1,4 @@
-/* $Id: appmgr.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: appmgr.h,v 1.2 2000/09/09 01:46:15 micahjd Exp $
  *
  * appmgr.h - All the window-manager-ish functionality, except we don't
  * do windows (X windows, that is?)
@@ -29,9 +29,7 @@
 #ifndef __H_APPMGR
 #define __H_APPMGR
 
-/* Values for application type */
-#define APP_NORMAL  1
-#define APP_TOOLBAR 2
+#include <picogui/constants.h>
 
 /* Parameters defining an application */
 struct app_info {

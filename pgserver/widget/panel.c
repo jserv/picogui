@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.27 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: panel.c,v 1.28 2000/09/09 01:46:16 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -73,8 +73,8 @@ void panelbar(struct divnode *d) {
   int x,y,w,h;
   x=y=0; w=d->w; h=d->h;
 
-  addelement(d,&current_theme[E_PANELBAR_BORDER],&x,&y,&w,&h);
-  addelement(d,&current_theme[E_PANELBAR_FILL],&x,&y,&w,&h);
+  addelement(d,&current_theme[PG_E_PANELBAR_BORDER],&x,&y,&w,&h);
+  addelement(d,&current_theme[PG_E_PANELBAR_FILL],&x,&y,&w,&h);
 
   themeify_panel(d);
 }
@@ -83,8 +83,8 @@ void panel(struct divnode *d) {
   int x,y,w,h;
   x=y=0; w=d->w; h=d->h;
 
-  addelement(d,&current_theme[E_PANEL_BORDER],&x,&y,&w,&h);
-  addelement(d,&current_theme[E_PANEL_FILL],&x,&y,&w,&h);
+  addelement(d,&current_theme[PG_E_PANEL_BORDER],&x,&y,&w,&h);
+  addelement(d,&current_theme[PG_E_PANEL_FILL],&x,&y,&w,&h);
 }
 
 /* Pointers, pointers, and more pointers. What's the point?
@@ -101,7 +101,7 @@ g_error panel_install(struct widget *self) {
   /* This split determines the size of the main panel area */
   e = newdiv(&self->in,self);
   errorcheck;
-  self->in->flags |= S_TOP;
+  self->in->flags |= PG_S_TOP;
 
   /* This draws the panel background and provides a border */
   e = newdiv(&self->in->div,self);
@@ -113,7 +113,7 @@ g_error panel_install(struct widget *self) {
   /* Split off another chunk of space for the bar */
   e = newdiv(&self->in->next,self);
   errorcheck;
-  self->in->next->flags |= S_TOP;
+  self->in->next->flags |= PG_S_TOP;
   self->in->next->split = PANELBAR_SIZE;
 
   /* And finally, the divnode that draws the panelbar */
@@ -139,8 +139,8 @@ void panel_remove(struct widget *self) {
 g_error panel_set(struct widget *self,int property, glob data) {
   switch (property) {
 
-  case WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,38);
+  case PG_WP_SIDE:
+    if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,38);
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
       DIVNODE_PROPAGATE_RECALC;
@@ -149,7 +149,7 @@ g_error panel_set(struct widget *self,int property, glob data) {
     self->in->next->flags |= ((sidet)data);
     return sucess;
 
-  case WP_SIZE:
+  case PG_WP_SIZE:
     if (data<0) data = 0;
     self->in->split = data;
     if (data>0)
@@ -159,7 +159,7 @@ g_error panel_set(struct widget *self,int property, glob data) {
     break;
 
   default:
-    return mkerror(ERRT_BADPARAM,39);
+    return mkerror(PG_ERRT_BADPARAM,39);
 
   }
   return sucess;
@@ -168,10 +168,10 @@ g_error panel_set(struct widget *self,int property, glob data) {
 glob panel_get(struct widget *self,int property) {
   switch (property) {
 
-  case WP_SIDE:
+  case PG_WP_SIDE:
     return self->in->flags & (~SIDEMASK);
 
-  case WP_SIZE:
+  case PG_WP_SIZE:
     return self->in->split;
     
   }
@@ -212,16 +212,16 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
        the edge shared by the panel and the
        panel bar. */
     switch (self->in->flags & (~SIDEMASK)) {
-    case S_TOP:
+    case PG_S_TOP:
       DATA->grab_offset = param->mouse.y - PANELBAR_DIV->y;
       break;
-    case S_BOTTOM:
+    case PG_S_BOTTOM:
       DATA->grab_offset = PANELBAR_DIV->y + PANELBAR_DIV->h - 1 - param->mouse.y;
       break;
-    case S_LEFT:
+    case PG_S_LEFT:
       DATA->grab_offset = param->mouse.x - PANELBAR_DIV->x;
       break;
-    case S_RIGHT:
+    case PG_S_RIGHT:
       DATA->grab_offset = PANELBAR_DIV->x + PANELBAR_DIV->w - 1 - param->mouse.x;
       break;
     }
@@ -250,7 +250,7 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     /* Grab a bitmap of the panelbar */
     (*vid->blit)(NULL,PANELBAR_DIV->x,
 		 PANELBAR_DIV->y,DATA->bar,0,0,
-		 PANELBAR_DIV->w,PANELBAR_DIV->h,LGOP_NONE);
+		 PANELBAR_DIV->w,PANELBAR_DIV->h,PG_LGOP_NONE);
 
     /* Reset ox and oy */
     DATA->ox = DATA->oy = -1;
@@ -264,23 +264,23 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
 
     /* Now use grab_offset to calculate a new split value */
     switch (self->in->flags & (~SIDEMASK)) {
-    case S_TOP:
+    case PG_S_TOP:
       self->in->split =  param->mouse.y - DATA->grab_offset - self->in->y;
       if (self->in->split + PANELBAR_DIV->h > self->in->h)
 	self->in->split = self->in->h - PANELBAR_DIV->h;
       break;
-    case S_BOTTOM:
+    case PG_S_BOTTOM:
       self->in->split = self->in->y + self->in->h - 1 -
 	param->mouse.y - DATA->grab_offset;
       if (self->in->split + PANELBAR_DIV->h > self->in->h)
 	self->in->split = self->in->h - PANELBAR_DIV->h;
       break;
-    case S_LEFT:
+    case PG_S_LEFT:
       self->in->split =  param->mouse.x - DATA->grab_offset - self->in->x;
       if (self->in->split + PANELBAR_DIV->w > self->in->w)
 	self->in->split = self->in->w - PANELBAR_DIV->w;
       break;
-    case S_RIGHT:
+    case PG_S_RIGHT:
       self->in->split = self->in->x + self->in->w - 1 -
 	param->mouse.x - DATA->grab_offset;
       if (self->in->split + PANELBAR_DIV->w > self->in->w)
@@ -351,19 +351,19 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
 
     /* Determine where to blit the bar to... */
     switch (self->in->flags & (~SIDEMASK)) {
-    case S_TOP:
+    case PG_S_TOP:
       DATA->x = PANELBAR_DIV->x;
       DATA->y = param->mouse.y - DATA->grab_offset;
       break;
-    case S_BOTTOM:
+    case PG_S_BOTTOM:
       DATA->x = PANELBAR_DIV->x;
       DATA->y = param->mouse.y + DATA->grab_offset - PANELBAR_DIV->h;
       break;
-    case S_LEFT:
+    case PG_S_LEFT:
       DATA->y = PANELBAR_DIV->y;
       DATA->x = param->mouse.x - DATA->grab_offset;
       break;
-    case S_RIGHT:
+    case PG_S_RIGHT:
       DATA->y = PANELBAR_DIV->y;
       DATA->x = param->mouse.x + DATA->grab_offset - PANELBAR_DIV->w;
       break;
@@ -380,18 +380,18 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     if (DATA->ox != -1)
       (*vid->blit)(DATA->behindbar,0,0,NULL,
 		   DATA->ox,DATA->oy,PANELBAR_DIV->w,
-		   PANELBAR_DIV->h,LGOP_NONE);
+		   PANELBAR_DIV->h,PG_LGOP_NONE);
     
     /* Grab a new one */
     DATA->ox = DATA->x; DATA->oy = DATA->y;
     (*vid->blit)(NULL,DATA->ox,DATA->oy,DATA->behindbar,
 		 0,0,PANELBAR_DIV->w,PANELBAR_DIV->h,
-		 LGOP_NONE);
+		 PG_LGOP_NONE);
 
     /* Do a Bit Block Transfer (tm)   :-)  */
     (*vid->blit)(DATA->bar,0,0,NULL,
 		 DATA->x,DATA->y,PANELBAR_DIV->w,
-		 PANELBAR_DIV->h,LGOP_NONE);
+		 PANELBAR_DIV->h,PG_LGOP_NONE);
 
     /* Because we have this divtree to ourselves, do
      * the hwr_update() directly. */
@@ -413,29 +413,29 @@ void themeify_panel(struct divnode *d) {
 
   /* Apply the current state to the elements */
   if (DATA->on)
-    state = STATE_ACTIVATE;
+    state = PG_STATE_ACTIVATE;
   else if (DATA->over)
-    state = STATE_HILIGHT;
+    state = PG_STATE_HILIGHT;
   else
-    state = STATE_NORMAL;
+    state = PG_STATE_NORMAL;
 
   applystate(d->grop,
-	     &current_theme[E_PANELBAR_BORDER],state);
+	     &current_theme[PG_E_PANELBAR_BORDER],state);
   applystate(d->grop->next,
-	     &current_theme[E_PANELBAR_FILL],state);
+	     &current_theme[PG_E_PANELBAR_FILL],state);
 
   /* Rotate the gradient on the panelbar
      depending on the side it is attached to */
   switch (self->in->flags & (~SIDEMASK)) {
-  case S_RIGHT:
+  case PG_S_RIGHT:
     d->grop->param.gradient.angle += 90;
     d->grop->next->param.gradient.angle += 90;
     break;
-  case S_BOTTOM:
+  case PG_S_BOTTOM:
     d->grop->param.gradient.angle += 180;
     d->grop->next->param.gradient.angle += 180;
     break;
-  case S_LEFT:
+  case PG_S_LEFT:
     d->grop->param.gradient.angle += 270;
     d->grop->next->param.gradient.angle += 270;
     break;

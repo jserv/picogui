@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.6 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: timer.c,v 1.7 2000/09/09 01:46:15 micahjd Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -68,13 +68,13 @@ g_error timer_init(void) {
   /* Set timer resolution */
   result = timeBeginPeriod(TIMERINTERVAL);
   if ( result != TIMERR_NOERROR ) 
-    return mkerror(ERRT_IO,"Can't set timer resolution");
+    return mkerror(PG_ERRT_IO,"Can't set timer resolution");
 
   /* Start up the repeating timer, just like
      the sigalrm handler for linux... */
   ntimer = timeSetEvent(TIMERINTERVAL,1,HandleAlarm,0,TIME_PERIODIC);
   if (!ntimer)
-    return mkerror(ERRT_IO,"Can't set timer event");
+    return mkerror(PG_ERRT_IO,"Can't set timer event");
   
   return sucess;
 }

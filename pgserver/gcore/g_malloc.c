@@ -1,5 +1,5 @@
 
-/* $Id: g_malloc.c,v 1.6 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: g_malloc.c,v 1.7 2000/09/09 01:46:15 micahjd Exp $
  *
  * g_malloc.c - malloc wrapper providing error handling
  *
@@ -40,14 +40,14 @@ long memamt = 0;
 #endif
 
 g_error g_malloc(void **p,size_t s) {
-  if (!p) return mkerror(ERRT_INTERNAL,24);
+  if (!p) return mkerror(PG_ERRT_INTERNAL,24);
 
 #ifdef DEBUG
   *p = malloc(s+sizeof(size_t));
 #else
   *p = malloc(s);
 #endif
-  if (!(*p)) return mkerror(ERRT_MEMORY,25);
+  if (!(*p)) return mkerror(PG_ERRT_MEMORY,25);
   memref++;
 #ifdef DEBUG
   *(((size_t *)(*p))++) = s;
@@ -82,7 +82,7 @@ g_error g_realloc(void **p,size_t s) {
   size_t from;
 #endif
 
-  if (!p) return mkerror(ERRT_BADPARAM,24);
+  if (!p) return mkerror(PG_ERRT_BADPARAM,24);
 
 #ifdef DEBUG
   ((size_t*)(*p))--;    /* Get the _real_ pointer so realloc will like us */
@@ -91,7 +91,7 @@ g_error g_realloc(void **p,size_t s) {
 #else
   *p = realloc(*p,s);
 #endif
-  if (!(*p)) return mkerror(ERRT_MEMORY,25);
+  if (!(*p)) return mkerror(PG_ERRT_MEMORY,25);
 
 #ifdef DEBUG
   *(((size_t *)(*p))++) = s;

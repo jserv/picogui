@@ -1,4 +1,4 @@
-/* $Id: sdlmin.c,v 1.5 2000/09/04 02:44:30 micahjd Exp $
+/* $Id: sdlmin.c,v 1.6 2000/09/09 01:46:16 micahjd Exp $
  *
  * sdlmin.c - video driver wrapper for SDL.
  *            this 'min' version defines only the
@@ -54,16 +54,16 @@ g_error sdlmin_init(int xres,int yres,int bpp,unsigned long flags) {
 
   /* Start up the SDL video subsystem thingy */
   if (SDL_Init(SDL_INIT_VIDEO))
-    return mkerror(ERRT_IO,46);
+    return mkerror(PG_ERRT_IO,46);
 
   /* Interpret flags */
-  if (flags & PGVID_FULLSCREEN)
+  if (flags & PG_VID_FULLSCREEN)
     sdlflags |= SDL_FULLSCREEN;
 
   /* Set the video mode */
   sdlmin_vidsurf = SDL_SetVideoMode(xres,yres,bpp,sdlflags);
   if (!sdlmin_vidsurf)
-    return mkerror(ERRT_IO,47);
+    return mkerror(PG_ERRT_IO,47);
 
   /* Save the actual video mode (might be different than what
      was requested) */
@@ -155,7 +155,7 @@ void sdlmin_blit(struct stdbitmap *src,int src_x,int src_y,
   int i,j,s_of,d_of;
   unsigned char *s,*sl,*d,*dl;
 
-  if (lgop==LGOP_NULL) return;
+  if (lgop==PG_LGOP_NULL) return;
 
   if (src && (w>(src->w-src_x) || h>(src->h-src_y))) {
     int i,j;
@@ -203,48 +203,48 @@ void sdlmin_blit(struct stdbitmap *src,int src_x,int src_y,
   /* Now the actual blitter code depends on the LGOP */
   switch (lgop) {
     
-  case LGOP_NONE:
+  case PG_LGOP_NONE:
     for (;h;h--,s+=s_of,d+=d_of)
       memcpy(d,s,w);
     break;
     
-  case LGOP_OR:
+  case PG_LGOP_OR:
     for (sl=s,dl=d;h;h--,s=(sl+=s_of),d=(dl+=d_of))
       for (i=w;i;i--,d++,s++)
         *d |= *s;
     break;
     
-  case LGOP_AND:
+  case PG_LGOP_AND:
     for (sl=s,dl=d;h;h--,s=(sl+=s_of),d=(dl+=d_of))
       for (i=w;i;i--,d++,s++)
         *d &= *s;
     break;
     
-  case LGOP_XOR:
+  case PG_LGOP_XOR:
     for (sl=s,dl=d;h;h--,s=(sl+=s_of),d=(dl+=d_of))
       for (i=w;i;i--,d++,s++)
         *d ^= *s;
     break;
     
-  case LGOP_INVERT:
+  case PG_LGOP_INVERT:
     for (sl=s,dl=d;h;h--,s=(sl+=s_of),d=(dl+=d_of))
       for (i=w;i;i--,d++,s++)
         *d = (*s) ^ 0xFFFFFF;
     break;
     
-  case LGOP_INVERT_OR:
+  case PG_LGOP_INVERT_OR:
     for (sl=s,dl=d;h;h--,s=(sl+=s_of),d=(dl+=d_of))
       for (i=w;i;i--,d++,s++)
         *d |= (*s) ^ 0xFFFFFF;
     break;
     
-  case LGOP_INVERT_AND:
+  case PG_LGOP_INVERT_AND:
     for (sl=s,dl=d;h;h--,s=(sl+=s_of),d=(dl+=d_of))
       for (i=w;i;i--,d++,s++)
         *d &= (*s) ^ 0xFFFFFF;
     break;
     
-  case LGOP_INVERT_XOR:
+  case PG_LGOP_INVERT_XOR:
     for (sl=s,dl=d;h;h--,s=(sl+=s_of),d=(dl+=d_of))
       for (i=w;i;i--,d++,s++)
         *d ^= (*s) ^ 0xFFFFFF;

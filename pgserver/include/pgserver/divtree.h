@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: divtree.h,v 1.2 2000/09/09 01:46:15 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -27,6 +27,8 @@
 
 #ifndef __DIVTREE_H
 #define __DIVTREE_H
+
+#include <picogui/constants.h>
 
 #include <pgserver/handle.h>
 #include <pgserver/g_error.h>
@@ -66,19 +68,7 @@ struct divtree {
 #define DIVTREE_NEED_REDRAW	  (1<<1)
 #define DIVTREE_ALL_REDRAW	  (1<<2)
 
-/* Alignment types */
 typedef short int alignt;
-#define A_CENTER   0
-#define A_TOP      1
-#define A_LEFT     2
-#define A_BOTTOM   3
-#define A_RIGHT    4
-#define A_NW       5
-#define A_SW       6
-#define A_NE       7
-#define A_SE       8
-#define A_ALL      9
-#define AMAX       9   /* For error checking the range of the align */
 
 /* Parameter structures for gropnodes and divnodes */
 union grop_param {
@@ -160,16 +150,10 @@ struct divnode {
 #define DIVNODE_PROPAGATE_REDRAW (1<<12) /* redraw spreads through next also*/
 #define DIVNODE_SCROLL_ONLY     (1<<13)  /* Only tx/ty changed */
 
-/* Values for the 'side' parameter */
-
-#define S_LEFT    DIVNODE_SPLIT_LEFT
-#define S_RIGHT   DIVNODE_SPLIT_RIGHT
-#define S_TOP     DIVNODE_SPLIT_TOP
-#define S_BOTTOM  DIVNODE_SPLIT_BOTTOM
-#define S_ALL     DIVNODE_SPLIT_EXPAND
+/* Side value macros and stuff */
 typedef unsigned short int sidet;
-#define VALID_SIDE(x) (x==S_LEFT || x==S_RIGHT || x==S_TOP || x==S_BOTTOM \
-		       || x==S_ALL)
+#define VALID_SIDE(x) (x==PG_S_LEFT || x==PG_S_RIGHT || x==PG_S_TOP || x==PG_S_BOTTOM \
+		       || x==PG_S_ALL)
 
 /* And the divnode's flags with this to clear the split type */
 #define SIDEMASK  (~(DIVNODE_SPLIT_TOP|DIVNODE_SPLIT_BOTTOM|    \
@@ -188,22 +172,6 @@ struct gropnode {
   union grop_param param;
 };
  
-/* Possible gropnode types */
-#define GROP_NULL	0	/* Doesn't do anything - for temporarily
-				 * turning something off, or for disabling
-				 * unused features while keeping the grop
-				 * node order constant */
-#define GROP_PIXEL	1	
-#define GROP_LINE	2
-#define GROP_RECT	3
-#define GROP_FRAME      4
-#define GROP_SLAB       5
-#define GROP_BAR        6
-#define GROP_DIM        7
-#define GROP_TEXT       8
-#define GROP_BITMAP     9
-#define GROP_GRADIENT   10
-
 /***************** grop functions */
 
 void grop_render(struct divnode *div);

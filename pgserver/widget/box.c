@@ -1,4 +1,4 @@
-/* $Id: box.c,v 1.6 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: box.c,v 1.7 2000/09/09 01:46:16 micahjd Exp $
  *
  * box.c - Generic container for laying out widgets
  *
@@ -46,7 +46,7 @@ g_error box_install(struct widget *self) {
 
   e = newdiv(&self->in,self);
   errorcheck;
-  self->in->flags |= S_TOP;
+  self->in->flags |= PG_S_TOP;
   self->in->split = HWG_BUTTON+(BOXMARGIN<<1);
   self->out = &self->in->next;
 
@@ -67,8 +67,8 @@ void box_remove(struct widget *self) {
 g_error box_set(struct widget *self,int property, glob data) {
   switch (property) {
 
-  case WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,41);
+  case PG_WP_SIDE:
+    if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,41);
     redraw_bg(self);
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
@@ -76,7 +76,7 @@ g_error box_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_SIZE:
+  case PG_WP_SIZE:
     if (data<0) data = 0;
     self->in->split = data;
     redraw_bg(self);
@@ -84,7 +84,7 @@ g_error box_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_BORDERCOLOR:
+  case PG_WP_BORDERCOLOR:
     BOXCOLOR = data;
     self->in->div->on_recalc = &box;
     self->in->flags |= DIVNODE_NEED_RECALC;
@@ -92,7 +92,7 @@ g_error box_set(struct widget *self,int property, glob data) {
     break;
 
   default:
-    return mkerror(ERRT_BADPARAM,42);
+    return mkerror(PG_ERRT_BADPARAM,42);
 
   }
   return sucess;
@@ -101,10 +101,10 @@ g_error box_set(struct widget *self,int property, glob data) {
 glob box_get(struct widget *self,int property) {
   switch (property) {
 
-  case WP_SIDE:
+  case PG_WP_SIDE:
     return self->in->flags & (~SIDEMASK);
 
-  case WP_SIZE:
+  case PG_WP_SIZE:
     return self->in->split;
 
   }

@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.22 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: div.c,v 1.23 2000/09/09 01:46:14 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -401,43 +401,43 @@ void dts_pop(void) {
  */
 void align(struct divnode *d,alignt align,int *w,int *h,int *x,int *y) {
   switch (align) {
-  case A_CENTER:
+  case PG_A_CENTER:
     *x = (d->w-*w)/2;
     *y = (d->h-*h)/2;
     break;
-  case A_TOP:
+  case PG_A_TOP:
     *x = (d->w-*w)/2;
     *y = 0;
     break;
-  case A_BOTTOM:
+  case PG_A_BOTTOM:
     *x = (d->w-*w)/2;
     *y = d->h-*h;
     break;
-  case A_LEFT:
+  case PG_A_LEFT:
     *y = (d->h-*h)/2;
     *x = 0;
     break;
-  case A_RIGHT:
+  case PG_A_RIGHT:
     *y = (d->h-*h)/2;
     *x = d->w-*w;
     break;
-  case A_NW:
+  case PG_A_NW:
     *x = 0;
     *y = 0;
     break;
-  case A_NE:
+  case PG_A_NE:
     *x = d->w-*w;
     *y = 0;
     break;
-  case A_SW:
+  case PG_A_SW:
     *x = 0;
     *y = d->h-*h;
     break;
-  case A_SE:
+  case PG_A_SE:
     *x = d->w-*w;
     *y = d->h-*h;
     break;
-  case A_ALL:
+  case PG_A_ALL:
     *x = 0;
     *y = 0;
     *w = d->w;

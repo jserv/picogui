@@ -1,4 +1,4 @@
-/* $Id: svgainput.c,v 1.4 2000/09/04 21:46:56 micahjd Exp $
+/* $Id: svgainput.c,v 1.5 2000/09/09 01:46:15 micahjd Exp $
  *
  * svgainput.h - input driver for SVGAlib
  *
@@ -44,7 +44,7 @@ extern int __svgalib_kbd_fd;
 g_error svgainput_init(void) {
 
   if (keyboard_init()==-1)
-    return mkerror(ERRT_IO,73);
+    return mkerror(PG_ERRT_IO,73);
   vga_setmousesupport(1);
 
   return sucess;

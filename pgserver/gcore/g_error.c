@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.6 2000/09/04 18:35:17 micahjd Exp $
+/* $Id: g_error.c,v 1.7 2000/09/09 01:46:15 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -42,13 +42,13 @@ g_error prerror(g_error e) {
 #ifndef TINY_MESSAGES
   printf("*** ERROR (");
   switch (errtype(e)) {
-  case ERRT_MEMORY: printf("MEMORY"); break;
-  case ERRT_IO: printf("IO"); break;
-  case ERRT_NETWORK: printf("NETWORK"); break;
-  case ERRT_BADPARAM: printf("BADPARAM"); break;
-  case ERRT_HANDLE: printf("HANDLE"); break;
-  case ERRT_INTERNAL: printf("INTERNAL"); break;
-  case ERRT_BUSY: printf("BUSY"); break;
+  case PG_ERRT_MEMORY: printf("MEMORY"); break;
+  case PG_ERRT_IO: printf("IO"); break;
+  case PG_ERRT_NETWORK: printf("NETWORK"); break;
+  case PG_ERRT_BADPARAM: printf("BADPARAM"); break;
+  case PG_ERRT_HANDLE: printf("HANDLE"); break;
+  case PG_ERRT_INTERNAL: printf("INTERNAL"); break;
+  case PG_ERRT_BUSY: printf("BUSY"); break;
   default: printf("?");
   }
   printf(") : %s\n",errortext(e));
@@ -84,13 +84,13 @@ void guru(const char *fmt, ...) {
   /* Setup */
   (*vid->clip_off)();
   (*vid->clear)();
-  rdhandle((void**)&df,TYPE_FONTDESC,-1,defaultfont);
+  rdhandle((void**)&df,PG_TYPE_FONTDESC,-1,defaultfont);
 
   /* Icon (if this fails, no big deal) */
   if (!iserror((*vid->bitmap_loadxbm)(&icon,deadcomp_bits,
 				      deadcomp_width,deadcomp_height,
 				      (*vid->color_pgtohwr)(0xFF8080),0))) {
-    (*vid->blit)(icon,0,0,NULL,10,10,deadcomp_width,deadcomp_height,LGOP_NONE);
+    (*vid->blit)(icon,0,0,NULL,10,10,deadcomp_width,deadcomp_height,PG_LGOP_NONE);
     (*vid->bitmap_free)(icon);
   }
 

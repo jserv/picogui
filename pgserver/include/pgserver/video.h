@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.2 2000/09/04 04:21:55 micahjd Exp $
+/* $Id: video.h,v 1.3 2000/09/09 01:46:15 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -30,21 +30,6 @@
 #define __H_VIDEO
 
 #include <pgserver/g_error.h>
-
-/* Flags used for 'flags' in init and setmode */
-#define PGVID_FULLSCREEN     0x0001
-
-/* Logical operations for blits */
-#define LGOP_NULL        0   /* Don't blit */
-#define LGOP_NONE        1   /* Blit, but don't use an LGOP */
-#define LGOP_OR          2
-#define LGOP_AND         3
-#define LGOP_XOR         4
-#define LGOP_INVERT      5
-#define LGOP_INVERT_OR   6
-#define LGOP_INVERT_AND  7
-#define LGOP_INVERT_XOR  8
-#define LGOPMAX          8   /* For error-checking */
 
 /* Hardware-specific color value */
 typedef unsigned long hwrcolor;

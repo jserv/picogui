@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.16 2000/09/03 23:51:56 micahjd Exp $
+/* $Id: handle.c,v 1.17 2000/09/09 01:46:15 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -333,10 +333,10 @@ handle newhandle(void) {
 void object_free(struct handlenode *n) {
   if (!(n->type & HFLAG_NFREE)) {
     switch (n->type & ~(HFLAG_RED|HFLAG_NFREE)) {
-    case TYPE_BITMAP:
+    case PG_TYPE_BITMAP:
       (*vid->bitmap_free)(n->obj);
       break;
-    case TYPE_WIDGET:
+    case PG_TYPE_WIDGET:
       widget_remove(n->obj);
       break;
     default:
@@ -358,7 +358,7 @@ g_error mkhandle(handle *h,unsigned char type,int owner,void *obj) {
   if ((owner!=-1) && (owner_conbuf = find_conbuf(owner)))
     context = owner_conbuf->context;
 
-  if (!h) return mkerror(ERRT_INTERNAL,24);
+  if (!h) return mkerror(PG_ERRT_INTERNAL,24);
   if (obj==NULL) {
     *h = 0;
     return sucess;
@@ -379,17 +379,17 @@ g_error mkhandle(handle *h,unsigned char type,int owner,void *obj) {
    doesn't match the required type */
 g_error rdhandle(void **p,unsigned char reqtype,int owner,handle h) {
   struct handlenode *n;
-  if (!p) return mkerror(ERRT_INTERNAL,24);
+  if (!p) return mkerror(PG_ERRT_INTERNAL,24);
   if (!h) {
     *p = NULL;
     return sucess;
   }
   n = htree_find(h);
-  if (!n) return mkerror(ERRT_HANDLE,26);
+  if (!n) return mkerror(PG_ERRT_HANDLE,26);
   if ((n->type & ~(HFLAG_RED|HFLAG_NFREE)) != reqtype) 
-    return mkerror(ERRT_HANDLE,28);
+    return mkerror(PG_ERRT_HANDLE,28);
   if (owner>=0 && n->owner != owner) 
-    return mkerror(ERRT_HANDLE,27);
+    return mkerror(PG_ERRT_HANDLE,27);
   *p = n->obj;
   return sucess;
 }
@@ -410,7 +410,7 @@ g_error handle_free(int owner,handle h) {
   ncopy = *n;
 
   if (owner>=0 && n->owner != owner) 
-    return mkerror(ERRT_HANDLE,27);
+    return mkerror(PG_ERRT_HANDLE,27);
   htree_delete(n);    /* Remove from the handle tree BEFORE deleting the object itself */
   object_free(&ncopy);
 
@@ -450,12 +450,12 @@ g_error handle_bequeath(handle dest, handle src, int srcowner) {
   /* First, validate both handles */
   struct handlenode *s = htree_find(src);
   struct handlenode *d = htree_find(dest);
-  if (!(src && s && dest && d)) return mkerror(ERRT_HANDLE,29);
+  if (!(src && s && dest && d)) return mkerror(PG_ERRT_HANDLE,29);
   if (srcowner>=0 && s->owner != srcowner) 
-    return mkerror(ERRT_HANDLE,27);
+    return mkerror(PG_ERRT_HANDLE,27);
   if ((s->type & ~(HFLAG_RED|HFLAG_NFREE)) !=
       (d->type & ~(HFLAG_RED|HFLAG_NFREE)))
-    return mkerror(ERRT_HANDLE,28);
+    return mkerror(PG_ERRT_HANDLE,28);
 
   object_free(d);
   d->obj = s->obj;
@@ -484,7 +484,7 @@ handle hlookup(void *obj,int *owner) {
 /* Changes the object pointer of a handle */
 g_error rehandle(handle h, void *obj) {
   struct handlenode *hn = htree_find(h);
-  if (!hn) return mkerror(ERRT_HANDLE,26);
+  if (!hn) return mkerror(PG_ERRT_HANDLE,26);
   hn->obj = obj;
   return sucess;
 }

@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.17 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: grop.c,v 1.18 2000/09/09 01:46:15 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -61,7 +61,7 @@ void grop_render(struct divnode *div) {
       if ((div->h+ydif)>0)
 	(*vid->blit)(NULL,div->x,div->y-ydif,
 		     NULL,div->x,div->y,
-		     div->w,div->h+ydif,LGOP_NONE);
+		     div->w,div->h+ydif,PG_LGOP_NONE);
 
       x = div->y+div->h-1+ydif;
       if (x>div->y)
@@ -120,41 +120,41 @@ void grop_render(struct divnode *div) {
     }
 
     switch (list->type) {
-    case GROP_PIXEL:
+    case PG_GROP_PIXEL:
       (*vid->pixel)(x,y,list->param.c);
       break;
-    case GROP_LINE:
+    case PG_GROP_LINE:
       (*vid->line)(x,y,w+x,h+y,list->param.c);
       break;
-    case GROP_RECT:
+    case PG_GROP_RECT:
       (*vid->rect)(x,y,w,h,list->param.c);
       break;
-    case GROP_DIM:
+    case PG_GROP_DIM:
       (*vid->dim)();
       break;
-    case GROP_FRAME:
+    case PG_GROP_FRAME:
       (*vid->frame)(x,y,w,h,list->param.c);
       break;
-    case GROP_SLAB:
+    case PG_GROP_SLAB:
       (*vid->slab)(x,y,w,list->param.c);
       break;
-    case GROP_BAR:
+    case PG_GROP_BAR:
       (*vid->bar)(x,y,h,list->param.c);
       break;
-    case GROP_TEXT:
-      if (iserror(rdhandle((void**)&str,TYPE_STRING,-1,
+    case PG_GROP_TEXT:
+      if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,
 			   list->param.text.string)) || !str) break;
-      if (iserror(rdhandle((void**)&fd,TYPE_FONTDESC,-1,
+      if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
 			   list->param.text.fd)) || !fd) break;
 
       outtext(fd,x,y,list->param.text.col,str);
       break;
-    case GROP_BITMAP:
-      if (iserror(rdhandle((void**)&bit,TYPE_BITMAP,-1,
+    case PG_GROP_BITMAP:
+      if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
 			   list->param.bitmap.bitmap)) || !bit) break;
       (*vid->blit)(bit,0,0,NULL,x,y,w,h,list->param.bitmap.lgop);
       break;
-    case GROP_GRADIENT:
+    case PG_GROP_GRADIENT:
       /* Gradients are fun! */
       if (list->param.gradient.translucent &&
 	  (!list->param.gradient.c1) &&
@@ -211,7 +211,7 @@ g_error grop_pixel(struct gropnode **headpp,
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
   errorcheck;
-  n->type = GROP_PIXEL;
+  n->type = PG_GROP_PIXEL;
   n->x = x;
   n->y = y;
   n->param.c = (*vid->color_pgtohwr)(c);
@@ -225,7 +225,7 @@ g_error grop_line(struct gropnode **headpp,
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
   errorcheck;
-  n->type = GROP_LINE;
+  n->type = PG_GROP_LINE;
   n->x = x1;
   n->y = y1;
   n->w = x2;
@@ -241,7 +241,7 @@ g_error grop_rect(struct gropnode **headpp,
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
   errorcheck;
-  n->type = GROP_RECT;
+  n->type = PG_GROP_RECT;
   n->x = x;
   n->y = y;
   n->w = w;
@@ -256,7 +256,7 @@ g_error grop_dim(struct gropnode **headpp) {
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
   errorcheck;
-  n->type = GROP_DIM;
+  n->type = PG_GROP_DIM;
   n->x = n->y = n->w = n->h = 0;
   grop_addnode(headpp,n);
   return sucess;
@@ -268,7 +268,7 @@ g_error grop_frame(struct gropnode **headpp,
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
   errorcheck;
-  n->type = GROP_FRAME;
+  n->type = PG_GROP_FRAME;
   n->x = x;
   n->y = y;
   n->w = w;
@@ -284,7 +284,7 @@ g_error grop_slab(struct gropnode **headpp,
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
   errorcheck;
-  n->type = GROP_SLAB;
+  n->type = PG_GROP_SLAB;
   n->x = x;
   n->y = y;
   n->w = w;
@@ -300,7 +300,7 @@ g_error grop_bar(struct gropnode **headpp,
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
   errorcheck;
-  n->type = GROP_BAR;
+  n->type = PG_GROP_BAR;
   n->x = x;
   n->y = y;
   n->h = h;
@@ -316,7 +316,7 @@ g_error grop_text(struct gropnode **headpp,
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
   errorcheck;
-  n->type = GROP_TEXT;
+  n->type = PG_GROP_TEXT;
   n->x = x;
   n->y = y;
   n->w = n->h = 0;
@@ -333,7 +333,7 @@ g_error grop_bitmap(struct gropnode **headpp,
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
   errorcheck;
-  n->type = GROP_BITMAP;
+  n->type = PG_GROP_BITMAP;
   n->x = x;
   n->y = y;
   n->w = w;
@@ -351,7 +351,7 @@ g_error grop_gradient(struct gropnode **headpp,
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
   errorcheck;
-  n->type = GROP_GRADIENT;
+  n->type = PG_GROP_GRADIENT;
   n->x = x;
   n->y = y;
   n->w = w;
@@ -369,7 +369,7 @@ g_error grop_null(struct gropnode **headpp) {
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
   errorcheck;
-  n->type = GROP_NULL;
+  n->type = PG_GROP_NULL;
   n->x = n->y = n->w = n->h = 0;
   grop_addnode(headpp,n);
   return sucess;

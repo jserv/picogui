@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.9 2000/09/04 05:00:19 micahjd Exp $
+/* $Id: pgmain.c,v 1.10 2000/09/09 01:46:15 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
       switch (c) {
 
       case 'f':        /* Fullscreen */
-	vidf |= PGVID_FULLSCREEN;
+	vidf |= PG_VID_FULLSCREEN;
 	break;
 
 #ifndef TINY_MESSAGES
@@ -119,8 +119,8 @@ int main(int argc, char **argv) {
 		   p->bold ? '*' : ' ',
 		   p->italic ? '*' : ' ',
 		   p->bolditalic ? '*' : ' ',
-		   (p->flags & FSTYLE_FIXED) ? '*' : ' ',
-		   (p->flags & FSTYLE_DEFAULT) ? '*' : ' ');
+		   (p->flags & PG_FSTYLE_FIXED) ? '*' : ' ',
+		   (p->flags & PG_FSTYLE_DEFAULT) ? '*' : ' ');
 
 	    p = p->next;
 	  }
@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
 
       case 'v':        /* Video */
 	if (!(viddriver = find_videodriver(optarg))) {
-	  prerror(mkerror(ERRT_BADPARAM,77));
+	  prerror(mkerror(PG_ERRT_BADPARAM,77));
 	  exit(1);
 	}
 	break;
@@ -204,7 +204,7 @@ int main(int argc, char **argv) {
       }
       if (!p->name) {
 	/* Oh well... */
-	prerror(mkerror(ERRT_IO,78));
+	prerror(mkerror(PG_ERRT_IO,78));
 	exit(1);
       }
     }
@@ -221,7 +221,7 @@ int main(int argc, char **argv) {
 #ifndef WINDOWS
   /* Signal handler (it's usually good to have a way to exit!) */
   if (signal(SIGTERM,&sigterm_handler)==SIG_ERR) {
-    prerror(mkerror(ERRT_INTERNAL,54));
+    prerror(mkerror(PG_ERRT_INTERNAL,54));
     exit(1);
   }
 #endif
@@ -236,13 +236,13 @@ int main(int argc, char **argv) {
 
 #ifdef WINDOWS
     if (_spawnvp(_P_NOWAIT,argv[optind],argv+optind)<=0) {
-      prerror(mkerror(ERRT_BADPARAM,55));
+      prerror(mkerror(PG_ERRT_BADPARAM,55));
       exit(1);
     }
 #else
     if (!fork()) {
       execvp(argv[optind],argv+optind);
-      prerror(mkerror(ERRT_BADPARAM,55));
+      prerror(mkerror(PG_ERRT_BADPARAM,55));
       kill(my_pid,SIGTERM);
       exit(1);
     }
@@ -265,7 +265,7 @@ int main(int argc, char **argv) {
   appmgr_free();
   if (vid)
     (*vid->close)();
-  if (memref!=0) prerror(mkerror(ERRT_MEMORY,56));
+  if (memref!=0) prerror(mkerror(PG_ERRT_MEMORY,56));
   exit(0);
 }
 

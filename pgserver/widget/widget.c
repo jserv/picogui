@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.40 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: widget.c,v 1.41 2000/09/09 01:46:16 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -69,8 +69,8 @@ g_error widget_create(struct widget **w,int type,
 		      handle container,int owner) {
   g_error e;
 
-  if ((type > WIDGETMAX) || (!dt) || (!where)) return 
-      mkerror(ERRT_BADPARAM,20);
+  if ((type > PG_WIDGETMAX) || (!dt) || (!where)) return 
+      mkerror(PG_ERRT_BADPARAM,20);
 
   e = g_malloc((void **)w,sizeof(struct widget));
   errorcheck;
@@ -93,7 +93,7 @@ g_error widget_create(struct widget **w,int type,
        	(*(*w)->out)->owner->where = (*w)->out;
   }
   else
-    return mkerror(ERRT_INTERNAL,21);
+    return mkerror(PG_ERRT_INTERNAL,21);
 
   dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
   dt->flags |= DIVTREE_NEED_RECALC;
@@ -103,14 +103,14 @@ g_error widget_create(struct widget **w,int type,
 g_error widget_derive(struct widget **w,
 		      int type,struct widget *parent,
 		      handle hparent,int rship,int owner) {
-  if (rship==DERIVE_INSIDE)
+  if (rship==PG_DERIVE_INSIDE)
     return widget_create(w,type,parent->dt,parent->sub,hparent,owner);
-  else if (rship==DERIVE_AFTER)
+  else if (rship==PG_DERIVE_AFTER)
     return widget_create(w,type,parent->dt,parent->out,parent->container,owner);
-  else if (rship==DERIVE_BEFORE)
+  else if (rship==PG_DERIVE_BEFORE)
     return widget_create(w,type,parent->dt,parent->where,parent->container,owner);
   else
-    return mkerror(ERRT_BADPARAM,22);
+    return mkerror(PG_ERRT_BADPARAM,22);
 }
 
 /* Used internally */
@@ -225,7 +225,7 @@ void widget_remove(struct widget *w) {
 
 g_error inline widget_set(struct widget *w, int property, glob data) {
   if (w && w->def->set) return (*w->def->set)(w,property,data);
-  return mkerror(ERRT_INTERNAL,23);
+  return mkerror(PG_ERRT_INTERNAL,23);
 }
 
 glob inline widget_get(struct widget *w, int property) {
@@ -240,7 +240,7 @@ void redraw_bg(struct widget *self) {
   struct widget *container;
 
   /* Dereference the handle */
-  if (iserror(rdhandle((void **)&container,TYPE_WIDGET,-1,
+  if (iserror(rdhandle((void **)&container,PG_TYPE_WIDGET,-1,
 		       self->container)) || ! container) return;
 
   /* Flags! Redraws automatically propagate through all child nodes of the
@@ -406,13 +406,13 @@ void dispatch_pointing(long type,int x,int y,int btn) {
     int evt=0;
     switch (type) {
     case TRIGGER_MOVE:
-      evt = WE_PNTR_MOVE;
+      evt = PG_NWE_PNTR_MOVE;
       break;
     case TRIGGER_UP:
-      evt = WE_PNTR_UP;
+      evt = PG_NWE_PNTR_UP;
       break;
     case TRIGGER_DOWN:
-      evt = WE_PNTR_DOWN;
+      evt = PG_NWE_PNTR_DOWN;
       break;
     }
     if (evt)
@@ -539,13 +539,13 @@ void dispatch_key(long type,int key,int mods) {
     int evt=0;
     switch (type) {
     case TRIGGER_CHAR:
-      evt = WE_KBD_CHAR;
+      evt = PG_NWE_KBD_CHAR;
       break;
     case TRIGGER_KEYUP:
-      evt = WE_KBD_KEYUP;
+      evt = PG_NWE_KBD_KEYUP;
       break;
     case TRIGGER_KEYDOWN:
-      evt = WE_KBD_KEYDOWN;
+      evt = PG_NWE_KBD_KEYDOWN;
       break;
     }
     if (evt)

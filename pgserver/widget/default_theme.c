@@ -1,4 +1,4 @@
-/* $Id: default_theme.c,v 1.9 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: default_theme.c,v 1.10 2000/09/09 01:46:16 micahjd Exp $
  *
  * default_theme.h - Theme table initialized with the default theme
  *
@@ -32,12 +32,12 @@
  * This format is more limiting than the actual theme definition format,
  * but the default theme needs to be simple enough to work on any hardware.
  */
-#define EL_NULL {0,ELEM_NULL}
-#define EL_FLAT(w,c) {w,ELEM_FLAT,{{c},{c},{c}}}
-#define EL_ACTIVE(c1,c2,c3) {0,ELEM_FLAT,{{c1},{c2},{c3}}}
+#define EL_NULL {0,PG_ELEM_NULL}
+#define EL_FLAT(w,c) {w,PG_ELEM_FLAT,{{c},{c},{c}}}
+#define EL_ACTIVE(c1,c2,c3) {0,PG_ELEM_FLAT,{{c1},{c2},{c3}}}
 
 /* This is initialized to the default theme */
-struct element default_theme[E_NUM] = {
+struct element default_theme[PG_E_NUM] = {
 
   /* 00 button.border */
   EL_FLAT(1,mkcolor(0,0,0)),

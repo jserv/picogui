@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: font.h,v 1.2 2000/09/09 01:46:15 micahjd Exp $
  *
  * font.h - structures for representing fonts
  *
@@ -52,7 +52,7 @@ struct fontdesc {
 			   for expanded text */
   int margin;
   int boldw;    /* If nonzero, font will be offset and duplicated this
-		   many times to produce bold.  Must use lgop == LGOP_OR
+		   many times to produce bold.  Must use lgop == PG_LGOP_OR
 		   for this to work. */
   int hline;    /* If this is non-negative, draw a horizontal line at this many
 		   pixels down from the top of the font. Can be used to
@@ -63,34 +63,6 @@ struct fontdesc {
 		   pixels */
   int italicw;  /* Extra width added by the italic */
 };
-
-/* Flags for a font style */
-#define FSTYLE_FIXED      (1<<0)
-#define FSTYLE_DEFAULT    (1<<1)    /* The default font in its category,
-				       fixed or proportional. */
-#define FSTYLE_SYMBOL     (1<<2)    /* Font contains special chars not letters
-				       and will not be chosen unless
-				       specifically asked for */
-#define FSTYLE_SUBSET     (1<<3)    /* Font does not contain all the ASCII
-				       chars before 127, and shouldn't
-				       be used unless asked for */
-#define FSTYLE_EXTENDED   (1<<4)    /* Contains international characters
-				       above 127 and will be used if this
-				       is requested */
-#define FSTYLE_IBMEXTEND  (1<<5)    /* Has IBM-PC extended characters */
-
-/* These FSTYLE_* options should only be used for findfont, not in
- * a fontstyle_node.
- */
-#define FSTYLE_DOUBLESPACE (1<<7)
-#define FSTYLE_BOLD       (1<<8)
-#define FSTYLE_ITALIC     (1<<9)
-#define FSTYLE_UNDERLINE  (1<<10)
-#define FSTYLE_STRIKEOUT  (1<<11)
-#define FSTYLE_GRAYLINE   (1<<12)  /* A faint underline */
-#define FSTYLE_FLUSH      (1<<14)  /* No margin */
-#define FSTYLE_DOUBLEWIDTH (1<<15)
-#define FSTYLE_ITALIC2     (1<<16) /* Twice the normal italic */
 
 /* This is a description that goes along with a font style.
    It indicates its name, size, bold, italic, etc.
@@ -103,7 +75,7 @@ struct fontstyle_node {
 
   /* Various versions of this font. If one of these is NULL it can be
    * synthesized from the above information */
-  struct font *normal;
+  struct font *normal;  /* The only required one */
   struct font *bold;
   struct font *italic;
   struct font *bolditalic;

@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.3 2000/09/08 23:56:26 micahjd Exp $
+/* $Id: dispatch.c,v 1.4 2000/09/09 01:46:16 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -108,7 +108,7 @@ int dispatch_packet(int from,struct pgrequest *req,void *data) {
   /* Dispatch to one of the handlers in the table */
   e = (*rqhtab[req->type])(from,req,data,&ret_data,&fatal);
   
-  if (errtype(e) == ERRT_NONE) {
+  if (errtype(e) == PG_ERRT_NONE) {
     /* No error, send a return code packet */
 
     struct pgresponse_ret rsp;
@@ -131,7 +131,7 @@ int dispatch_packet(int from,struct pgrequest *req,void *data) {
     
     rsp.type = htons(PG_RESPONSE_ERR);
     rsp.id = htons(req->id);
-    rsp.errt = htons(neterrtype(e));
+    rsp.errt = htons(errtype(e));
     rsp.msglen = htons(errlen);
 
     /* Send the error */
@@ -164,29 +164,29 @@ g_error rqh_mkwidget(int owner, struct pgrequest *req,
   g_error e;
 
   if (req->size < sizeof(struct pgreqd_mkwidget)) 
-    return mkerror(ERRT_BADPARAM,57);
+    return mkerror(PG_ERRT_BADPARAM,57);
 
   /* Don't allow direct creation of 'special' widgets that must
      be created by other means (app registration, popup boxes)
   */
   switch (ntohs(arg->type)) {
-  case WIDGET_PANEL:
-  case WIDGET_POPUP:
-    return mkerror(ERRT_BADPARAM,58);
+  case PG_WIDGET_PANEL:
+  case PG_WIDGET_POPUP:
+    return mkerror(PG_ERRT_BADPARAM,58);
   }
 
-  e = rdhandle((void**) &parent,TYPE_WIDGET,owner,xh=ntohl(arg->parent));
+  e = rdhandle((void**) &parent,PG_TYPE_WIDGET,owner,xh=ntohl(arg->parent));
   errorcheck;
-  if (!parent) return mkerror(ERRT_BADPARAM,59);
+  if (!parent) return mkerror(PG_ERRT_BADPARAM,59);
 
   /* Don't let an app put stuff outside its root widget */
-  if (owner>=0 && parent->isroot && ntohs(arg->rship)!=DERIVE_INSIDE)
-    return mkerror(ERRT_BADPARAM,60);
+  if (owner>=0 && parent->isroot && ntohs(arg->rship)!=PG_DERIVE_INSIDE)
+    return mkerror(PG_ERRT_BADPARAM,60);
 
   e = widget_derive(&w,ntohs(arg->type),parent,xh,ntohs(arg->rship),owner);
   errorcheck;
 
-  e = mkhandle(&h,TYPE_WIDGET,owner,w);
+  e = mkhandle(&h,PG_TYPE_WIDGET,owner,w);
   errorcheck;
   
   *ret = h;
@@ -205,7 +205,7 @@ g_error rqh_mkbitmap(int owner, struct pgrequest *req,
   int w;
 
   if (req->size <= sizeof(struct pgreqd_mkbitmap)) 
-    return mkerror(ERRT_BADPARAM,57);
+    return mkerror(PG_ERRT_BADPARAM,57);
 
   bits = ((unsigned char *)data)+sizeof(struct pgreqd_mkbitmap);
   bitsz = req->size - sizeof(struct pgreqd_mkbitmap);
@@ -218,7 +218,7 @@ g_error rqh_mkbitmap(int owner, struct pgrequest *req,
     else
       w = w/8;
     if (bitsz < (w*ntohs(arg->h)))
-      return mkerror(ERRT_BADPARAM,61);
+      return mkerror(PG_ERRT_BADPARAM,61);
     e = (*vid->bitmap_loadxbm)(&bmp,bits,ntohs(arg->w),ntohs(arg->h),
 			       (*vid->color_pgtohwr)(ntohl(arg->fg)),
 			       (*vid->color_pgtohwr)(ntohl(arg->bg)));
@@ -229,7 +229,7 @@ g_error rqh_mkbitmap(int owner, struct pgrequest *req,
   }
   errorcheck;
 
-  e = mkhandle(&h,TYPE_BITMAP,owner,bmp);
+  e = mkhandle(&h,PG_TYPE_BITMAP,owner,bmp);
   errorcheck;
   
   *ret = h;
@@ -244,7 +244,7 @@ g_error rqh_mkfont(int owner, struct pgrequest *req,
   g_error e;
 
   if (req->size <= sizeof(struct pgreqd_mkfont)) 
-    return mkerror(ERRT_BADPARAM,57);
+    return mkerror(PG_ERRT_BADPARAM,57);
 
   e = findfont(&h,owner,arg->name,ntohs(arg->size),ntohl(arg->style));
   errorcheck;
@@ -264,7 +264,7 @@ g_error rqh_mkstring(int owner, struct pgrequest *req,
   memcpy(buf,data,req->size);
   buf[req->size] = 0;  /* Null terminate it if it isn't already */
 
-  e = mkhandle(&h,TYPE_STRING,owner,buf);
+  e = mkhandle(&h,PG_TYPE_STRING,owner,buf);
   errorcheck;
 
   *ret = h;
@@ -275,7 +275,7 @@ g_error rqh_free(int owner, struct pgrequest *req,
 		   void *data, unsigned long *ret, int *fatal) {
   struct pgreqd_free *arg = (struct pgreqd_free *) data;
   if (req->size < sizeof(struct pgreqd_free)) 
-    return mkerror(ERRT_BADPARAM,57);
+    return mkerror(PG_ERRT_BADPARAM,57);
   
   return handle_free(owner,ntohl(arg->h));
 }
@@ -287,8 +287,8 @@ g_error rqh_set(int owner, struct pgrequest *req,
   g_error e;
 
   if (req->size < sizeof(struct pgreqd_set)) 
-    return mkerror(ERRT_BADPARAM,57);
-  e = rdhandle((void**) &w,TYPE_WIDGET,owner,ntohl(arg->widget));
+    return mkerror(PG_ERRT_BADPARAM,57);
+  e = rdhandle((void**) &w,PG_TYPE_WIDGET,owner,ntohl(arg->widget));
   errorcheck;
 
   return widget_set(w,ntohs(arg->property),ntohl(arg->glob));
@@ -301,8 +301,8 @@ g_error rqh_get(int owner, struct pgrequest *req,
   g_error e;
 
   if (req->size < sizeof(struct pgreqd_get)) 
-    return mkerror(ERRT_BADPARAM,57);
-  e = rdhandle((void**) &w,TYPE_WIDGET,owner,ntohl(arg->widget));
+    return mkerror(PG_ERRT_BADPARAM,57);
+  e = rdhandle((void**) &w,PG_TYPE_WIDGET,owner,ntohl(arg->widget));
   errorcheck;
 
   *ret = widget_get(w,ntohs(arg->property));
@@ -314,21 +314,21 @@ g_error rqh_setbg(int owner, struct pgrequest *req,
 		   void *data, unsigned long *ret, int *fatal) {
   struct pgreqd_setbg *arg = (struct pgreqd_setbg *) data;
   if (req->size < sizeof(struct pgreqd_setbg)) 
-    return mkerror(ERRT_BADPARAM,57);
+    return mkerror(PG_ERRT_BADPARAM,57);
   
   return appmgr_setbg(owner,ntohl(arg->h));
 }
 
 g_error rqh_undef(int owner, struct pgrequest *req,
 		   void *data, unsigned long *ret, int *fatal) {
-  return mkerror(ERRT_BADPARAM,62);
+  return mkerror(PG_ERRT_BADPARAM,62);
 }
 
 g_error rqh_in_key(int owner, struct pgrequest *req,
 		   void *data, unsigned long *ret, int *fatal) {
   struct pgreqd_in_key *arg = (struct pgreqd_in_key *) data;
   if (req->size < sizeof(struct pgreqd_in_key)) 
-    return mkerror(ERRT_BADPARAM,57);
+    return mkerror(PG_ERRT_BADPARAM,57);
   dispatch_key(ntohl(arg->type),(int) ntohs(arg->key),ntohs(arg->mods));
   return sucess;
 }
@@ -337,7 +337,7 @@ g_error rqh_in_point(int owner, struct pgrequest *req,
 		     void *data, unsigned long *ret, int *fatal) {
   struct pgreqd_in_point *arg = (struct pgreqd_in_point *) data;
   if (req->size < sizeof(struct pgreqd_in_point)) 
-    return mkerror(ERRT_BADPARAM,57);
+    return mkerror(PG_ERRT_BADPARAM,57);
   dispatch_pointing(ntohl(arg->type),ntohs(arg->x),ntohs(arg->y),
 		    ntohs(arg->btn));
   return sucess;
@@ -347,7 +347,7 @@ g_error rqh_themeset(int owner, struct pgrequest *req,
 		     void *data, unsigned long *ret, int *fatal) {
   struct pgreqd_themeset *arg = (struct pgreqd_themeset *) data;
   if (req->size < sizeof(struct pgreqd_themeset)) 
-    return mkerror(ERRT_BADPARAM,57);
+    return mkerror(PG_ERRT_BADPARAM,57);
 
   /* Don't worry about errors here.  If they try to set a nonexistant
      theme, its no big deal.  Just means that the theme is a later
@@ -368,7 +368,7 @@ g_error rqh_in_direct(int owner, struct pgrequest *req,
 		   void *data, unsigned long *ret, int *fatal) {
   struct pgreqd_in_direct *arg = (struct pgreqd_in_direct *) data;
   if (req->size < (sizeof(struct pgreqd_in_direct)+1)) 
-    return mkerror(ERRT_BADPARAM,57);
+    return mkerror(PG_ERRT_BADPARAM,57);
   dispatch_direct(((char*)arg)+sizeof(struct pgreqd_in_direct),
 		  ntohl(arg->param));
   return sucess;
@@ -407,7 +407,7 @@ g_error rqh_register(int owner, struct pgrequest *req,
   g_error e;
   memset(&i,0,sizeof(i));
   if (req->size < (sizeof(struct pgreqd_register))) 
-    return mkerror(ERRT_BADPARAM,57);
+    return mkerror(PG_ERRT_BADPARAM,57);
 
   i.owner = owner;
   i.name = ntohl(arg->name);
@@ -436,12 +436,12 @@ g_error rqh_mkpopup(int owner, struct pgrequest *req,
   g_error e;
 
   if (req->size < (sizeof(struct pgreqd_mkpopup))) 
-    return mkerror(ERRT_BADPARAM,57);
+    return mkerror(PG_ERRT_BADPARAM,57);
 
   e = create_popup(ntohs(arg->x),ntohs(arg->y),ntohs(arg->w),ntohs(arg->h),&w,owner);
   errorcheck;
 
-  e = mkhandle(&h,TYPE_WIDGET,owner,w);
+  e = mkhandle(&h,PG_TYPE_WIDGET,owner,w);
   errorcheck;
   
   *ret = h;
@@ -458,15 +458,15 @@ g_error rqh_sizetext(int owner, struct pgrequest *req,
   g_error e;
 
   if (req->size < (sizeof(struct pgreqd_sizetext))) 
-    return mkerror(ERRT_BADPARAM,57);
+    return mkerror(PG_ERRT_BADPARAM,57);
 
   if (arg->font)
-    e = rdhandle((void**) &fd,TYPE_FONTDESC,owner,ntohl(arg->font));
+    e = rdhandle((void**) &fd,PG_TYPE_FONTDESC,owner,ntohl(arg->font));
   else
-    e = rdhandle((void**) &fd,TYPE_FONTDESC,-1,defaultfont);
+    e = rdhandle((void**) &fd,PG_TYPE_FONTDESC,-1,defaultfont);
   errorcheck;
 
-  e = rdhandle((void**) &txt,TYPE_STRING,owner,ntohl(arg->text));
+  e = rdhandle((void**) &txt,PG_TYPE_STRING,owner,ntohl(arg->text));
   errorcheck;
 
   sizetext(fd,&w,&h,txt);
@@ -498,7 +498,7 @@ g_error rqh_batch(int owner, struct pgrequest *req,
     p += sizeof(struct pgrequest);
     remaining -= sizeof(struct pgrequest);    
     if (remaining<0)
-      return mkerror(ERRT_BADPARAM,63);
+      return mkerror(PG_ERRT_BADPARAM,63);
 
     /* Reorder the bytes in the header */
     subreq->type = ntohs(subreq->type);
@@ -510,7 +510,7 @@ g_error rqh_batch(int owner, struct pgrequest *req,
     p += subreq->size;
     remaining -= subreq->size;
     if (remaining<0)
-      return mkerror(ERRT_BADPARAM,64);    
+      return mkerror(PG_ERRT_BADPARAM,64);    
 
     /* _temporarily_ insert a null terminator (writing over the next
        request header, then putting it back)
@@ -535,7 +535,7 @@ g_error rqh_batch(int owner, struct pgrequest *req,
 g_error rqh_grabkbd(int owner, struct pgrequest *req,
 		    void *data, unsigned long *ret, int *fatal) {
   if (keyboard_owner)
-    return mkerror(ERRT_BUSY,65);
+    return mkerror(PG_ERRT_BUSY,65);
   keyboard_owner = owner;
   return sucess;
 }
@@ -543,7 +543,7 @@ g_error rqh_grabkbd(int owner, struct pgrequest *req,
 g_error rqh_grabpntr(int owner, struct pgrequest *req,
 		     void *data, unsigned long *ret, int *fatal) {
   if (pointer_owner)
-    return mkerror(ERRT_BUSY,65);
+    return mkerror(PG_ERRT_BUSY,65);
   pointer_owner = owner;
   return sucess;
 }
@@ -551,7 +551,7 @@ g_error rqh_grabpntr(int owner, struct pgrequest *req,
 g_error rqh_givekbd(int owner, struct pgrequest *req,
 		    void *data, unsigned long *ret, int *fatal) {
   if (keyboard_owner!=owner)
-    return mkerror(ERRT_BADPARAM,67);
+    return mkerror(PG_ERRT_BADPARAM,67);
   keyboard_owner = 0;
   return sucess;
 }
@@ -559,7 +559,7 @@ g_error rqh_givekbd(int owner, struct pgrequest *req,
 g_error rqh_givepntr(int owner, struct pgrequest *req,
 		     void *data, unsigned long *ret, int *fatal) {
   if (pointer_owner!=owner)
-    return mkerror(ERRT_BADPARAM,68);
+    return mkerror(PG_ERRT_BADPARAM,68);
   pointer_owner = 0;
   return sucess;
 }
@@ -567,7 +567,7 @@ g_error rqh_givepntr(int owner, struct pgrequest *req,
 g_error rqh_mkcontext(int owner, struct pgrequest *req,
 		      void *data, unsigned long *ret, int *fatal) {
   struct conbuf *cb = find_conbuf(owner);
-  if (!cb) return mkerror(ERRT_INTERNAL,69);
+  if (!cb) return mkerror(PG_ERRT_INTERNAL,69);
 
   cb->context++;
 
@@ -577,8 +577,8 @@ g_error rqh_mkcontext(int owner, struct pgrequest *req,
 g_error rqh_rmcontext(int owner, struct pgrequest *req,
 		      void *data, unsigned long *ret, int *fatal) {
   struct conbuf *cb = find_conbuf(owner);
-  if (!cb) return mkerror(ERRT_INTERNAL,69);
-  if (cb->context<=0) return mkerror(ERRT_BADPARAM,70);
+  if (!cb) return mkerror(PG_ERRT_INTERNAL,69);
+  if (cb->context<=0) return mkerror(PG_ERRT_BADPARAM,70);
 
   handle_cleanup(owner,cb->context);
   cb->context--;
@@ -593,9 +593,9 @@ g_error rqh_focus(int owner, struct pgrequest *req,
   struct widget *w;
 
   if (req->size < (sizeof(struct pgreqd_focus))) 
-    return mkerror(ERRT_BADPARAM,57);
+    return mkerror(PG_ERRT_BADPARAM,57);
 
-  e = rdhandle((void**) &w,TYPE_WIDGET,owner,ntohl(arg->h));
+  e = rdhandle((void**) &w,PG_TYPE_WIDGET,owner,ntohl(arg->h));
   errorcheck;
   
   request_focus(w);
@@ -612,9 +612,9 @@ g_error rqh_getstring(int owner, struct pgrequest *req,
   g_error e;
 
   if (req->size < (sizeof(struct pgreqd_getstring))) 
-    return mkerror(ERRT_BADPARAM,57);
+    return mkerror(PG_ERRT_BADPARAM,57);
 
-  e = rdhandle((void**) &string,TYPE_STRING,owner,ntohl(arg->h));
+  e = rdhandle((void**) &string,PG_TYPE_STRING,owner,ntohl(arg->h));
   errorcheck;
 
   /* Send a PG_RESPONSE_DATA back */

@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.6 2000/09/04 08:19:52 micahjd Exp $
+/* $Id: sdlinput.c,v 1.7 2000/09/09 01:46:15 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -113,7 +113,7 @@ g_error sdlinput_init(void) {
   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,SDL_DEFAULT_REPEAT_INTERVAL);
 #ifndef WINDOWS
   sdlinput_thread = SDL_CreateThread(&sdlinput_threadfunc,NULL);
-  if (!sdlinput_thread) return mkerror(ERRT_IO,71);
+  if (!sdlinput_thread) return mkerror(PG_ERRT_IO,71);
 #endif
   return sucess;
 }

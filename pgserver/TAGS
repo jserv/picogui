@@ -8,10 +8,10 @@ handle hbgwidget;41,1397
 unsigned char bg_bits[44,1480
 #define bg_len 67,2810
 g_error appmgr_init(69,2830
-void appmgr_free(107,3805
-g_error appmgr_setbg(118,4000
-void appmgr_unregowner(137,4451
-g_error appmgr_register(160,4851
+void appmgr_free(107,3826
+g_error appmgr_setbg(118,4021
+void appmgr_unregowner(137,4478
+g_error appmgr_register(160,4878
 
 gcore/div.c,341
 void divnode_recalc(36,1252
@@ -27,6 +27,10 @@ void dts_free(361,9169
 g_error dts_push(377,9468
 void dts_pop(390,9625
 void align(402,9906
+
+gcore/driverinfo.c,76
+struct vidinfo videodrivers[37,1259
+struct inputinfo inputdrivers[55,1623
 
 gcore/errortext.c,132
 const char *errortext(32,1076
@@ -48,37 +52,37 @@ void outchar_fake(92,2917
 void outtext(111,3488
 void sizetext(135,4021
 g_error findfont(159,4582
-int fontcmp(234,6652
+int fontcmp(234,6655
 
 gcore/g_error.c,144
 g_error prerror(40,1193
-#define deadcomp_width 64,1816
-#define deadcomp_height 65,1842
-static char deadcomp_bits[66,1869
-void guru(76,2432
+#define deadcomp_width 64,1837
+#define deadcomp_height 65,1863
+static char deadcomp_bits[66,1890
+void guru(76,2453
 
 gcore/g_malloc.c,116
 long memref 36,1189
 long memamt 39,1220
 g_error g_malloc(42,1245
-void g_free(62,1612
-g_error g_realloc(80,1875
+void g_free(62,1618
+g_error g_realloc(80,1881
 
 gcore/grop.c,393
 void grop_render(38,1273
-void grop_addnode(178,4704
-void grop_free(191,4964
-g_error grop_pixel(208,5351
-g_error grop_line(222,5667
-g_error grop_rect(238,6026
-g_error grop_dim(254,6377
-g_error grop_frame(265,6626
-g_error grop_slab(281,6979
-g_error grop_bar(297,7323
-g_error grop_text(313,7665
-g_error grop_bitmap(330,8086
-g_error grop_gradient(347,8469
-g_error grop_null(367,8980
+void grop_addnode(178,4716
+void grop_free(191,4976
+g_error grop_pixel(208,5363
+g_error grop_line(222,5679
+g_error grop_rect(238,6038
+g_error grop_dim(254,6389
+g_error grop_frame(265,6638
+g_error grop_slab(281,6991
+g_error grop_bar(297,7335
+g_error grop_text(313,7677
+g_error grop_bitmap(330,8098
+g_error grop_gradient(347,8481
+g_error grop_null(367,8992
 
 gcore/handle.c,623
 #define NIL 35,1234
@@ -93,70 +97,23 @@ void htree_delete(239,5867
 struct handlenode *htree_find(285,6814
 handle newhandle(305,7507
 void object_free(333,8007
-g_error mkhandle(351,8386
-g_error rdhandle(380,9105
-g_error handle_free(398,9633
-int r_handle_cleanup(425,10335
-void handle_cleanup(441,10811
-g_error handle_bequeath(449,11157
-handle r_hlookup(467,11749
-handle hlookup(480,12058
-g_error rehandle(485,12182
-
-gcore/timer.c,409
-#define WINDOWS30,1075
-#define TIMERINTERVAL 44,1328
-static DWORD first_tick;53,1495
-static UINT ntimer;54,1520
-static void CALLBACK HandleAlarm(56,1541
-g_error timer_init(62,1689
-void timer_release(82,2225
-unsigned long getticks(90,2356
-static struct timeval first_tick;97,2448
-static void sigalarm(99,2483
-g_error timer_init(103,2537
-void timer_release(137,3515
-unsigned long getticks(146,3677
-
-gcore/video.c,886
-struct vidlib *vid;36,1210
-struct vidlib vidlib_static;37,1230
-unsigned char trigtab[40,1331
-void ascskip(54,1912
-int ascread(72,2304
-g_error def_setmode(93,2827
-void emulate_dos(97,2935
-void def_clip_set(100,2963
-void def_clip_off(107,3099
-hwrcolor def_color_pgtohwr(111,3177
-pgcolor def_color_hwrtopg(134,3725
-void def_addpixel(138,3780
-void def_subpixel(159,4257
-void def_clear(179,4685
-void def_slab(183,4754
-void def_bar(187,4830
-void def_line(200,5269
-void def_rect(259,6190
-void def_gradient(267,6345
-void def_frame(390,10294
-void def_dim(397,10464
-void def_scrollblit(409,10788
-void def_charblit(422,11178
-g_error def_bitmap_loadxbm(455,11962
-g_error def_bitmap_loadpnm(552,13756
-g_error def_bitmap_new(729,16904
-void def_bitmap_free(751,17424
-g_error def_bitmap_getsize(757,17548
-g_error load_vidlib(768,17853
-g_error (*find_videodriver(825,19196
+g_error mkhandle(351,8392
+g_error rdhandle(380,9114
+g_error handle_free(398,9654
+int r_handle_cleanup(425,10359
+void handle_cleanup(441,10835
+g_error handle_bequeath(449,11181
+handle r_hlookup(467,11782
+handle hlookup(480,12091
+g_error rehandle(485,12215
 
 gcore/input.c,189
 struct inlib *inlib_list 33,1116
 struct inlib *inlib_main;34,1149
 g_error load_inlib(38,1246
-void unload_inlib(86,2140
-void cleanup_inlib(108,2515
-g_error (*find_inputdriver(123,2760
+void unload_inlib(86,2146
+void cleanup_inlib(108,2521
+g_error (*find_inputdriver(123,2766
 
 gcore/pgmain.c,273
 #define WINDOWS33,1151
@@ -167,64 +124,107 @@ extern long memref;44,1346
 struct dtstack *dts;45,1366
 pid_t my_pid;48,1404
 int main(53,1505
-void sigterm_handler(273,6589
-void request_quit(278,6644
+void sigterm_handler(273,6607
+void request_quit(278,6662
 
-gcore/driverinfo.c,76
-struct vidinfo videodrivers[37,1259
-struct inputinfo inputdrivers[55,1623
+gcore/timer.c,409
+#define WINDOWS30,1075
+#define TIMERINTERVAL 44,1328
+static DWORD first_tick;53,1495
+static UINT ntimer;54,1520
+static void CALLBACK HandleAlarm(56,1541
+g_error timer_init(62,1689
+void timer_release(82,2231
+unsigned long getticks(90,2362
+static struct timeval first_tick;97,2454
+static void sigalarm(99,2489
+g_error timer_init(103,2543
+void timer_release(137,3521
+unsigned long getticks(146,3683
+
+gcore/video.c,886
+struct vidlib *vid;36,1210
+struct vidlib vidlib_static;37,1230
+unsigned char trigtab[40,1331
+void ascskip(54,1912
+int ascread(72,2304
+g_error def_setmode(93,2827
+void emulate_dos(97,2938
+void def_clip_set(100,2966
+void def_clip_off(107,3102
+hwrcolor def_color_pgtohwr(111,3180
+pgcolor def_color_hwrtopg(134,3728
+void def_addpixel(138,3783
+void def_subpixel(159,4260
+void def_clear(179,4688
+void def_slab(183,4757
+void def_bar(187,4833
+void def_line(200,5272
+void def_rect(259,6193
+void def_gradient(267,6348
+void def_frame(390,10297
+void def_dim(397,10467
+void def_scrollblit(409,10791
+void def_charblit(422,11184
+g_error def_bitmap_loadxbm(455,11968
+g_error def_bitmap_loadpnm(552,13762
+g_error def_bitmap_new(729,16913
+void def_bitmap_free(751,17433
+g_error def_bitmap_getsize(757,17557
+g_error load_vidlib(768,17862
+g_error (*find_videodriver(825,19205
 
 input/sdlinput.c,223
 #define WINDOWS38,1161
 SDL_Thread *sdlinput_thread;42,1201
 int sdlinput_threadfunc(53,1527
 g_error sdlinput_init(111,2935
-void sdlinput_close(121,3227
-void sdlinput_fd_init(129,3371
-g_error sdlinput_regfunc(138,3571
+void sdlinput_close(121,3230
+void sdlinput_fd_init(129,3374
+g_error sdlinput_regfunc(138,3574
 
 input/svgainput.c,269
 extern int __svgalib_mouse_fd;39,1220
 extern int __svgalib_kbd_fd;40,1251
 g_error svgainput_init(44,1347
-void svgainput_close(53,1486
-void svgainput_fd_init(57,1538
-int svgainput_fd_activate(64,1812
-void svgainput_poll(77,2067
-g_error svgainput_regfunc(85,2220
+void svgainput_close(53,1489
+void svgainput_fd_init(57,1541
+int svgainput_fd_activate(64,1815
+void svgainput_poll(77,2070
+g_error svgainput_regfunc(85,2223
 
 net/dispatch.c,933
 DEF_REQHANDLER(35,1316
 int dispatch_packet(100,3047
-g_error rqh_ping(147,4225
-g_error rqh_update(152,4347
-g_error rqh_mkwidget(158,4483
-g_error rqh_mkbitmap(197,5545
-g_error rqh_mkfont(240,6571
-g_error rqh_mkstring(256,6969
-g_error rqh_free(274,7362
-g_error rqh_set(283,7655
-g_error rqh_get(297,8075
-g_error rqh_setbg(313,8496
-g_error rqh_undef(322,8794
-g_error rqh_in_key(327,8936
-g_error rqh_in_point(336,9281
-g_error rqh_themeset(346,9653
-g_error rqh_in_direct(367,10363
-g_error rqh_wait(377,10739
-g_error rqh_register(403,11334
-g_error rqh_mkpopup(431,12028
-g_error rqh_sizetext(452,12523
-g_error rqh_batch(486,13509
-g_error rqh_grabkbd(535,14817
-g_error rqh_grabpntr(543,15025
-g_error rqh_givekbd(551,15233
-g_error rqh_givepntr(559,15448
-g_error rqh_mkcontext(567,15663
-g_error rqh_rmcontext(577,15899
-g_error rqh_focus(589,16230
-g_error rqh_getstring(606,16633
-g_error rqh_restoretheme(632,17352
+g_error rqh_ping(147,4231
+g_error rqh_update(152,4353
+g_error rqh_mkwidget(158,4489
+g_error rqh_mkbitmap(197,5572
+g_error rqh_mkfont(240,6607
+g_error rqh_mkstring(256,7008
+g_error rqh_free(274,7404
+g_error rqh_set(283,7700
+g_error rqh_get(297,8126
+g_error rqh_setbg(313,8553
+g_error rqh_undef(322,8854
+g_error rqh_in_key(327,8999
+g_error rqh_in_point(336,9347
+g_error rqh_themeset(346,9722
+g_error rqh_in_direct(367,10435
+g_error rqh_wait(377,10814
+g_error rqh_register(403,11412
+g_error rqh_mkpopup(431,12109
+g_error rqh_sizetext(452,12610
+g_error rqh_batch(486,13608
+g_error rqh_grabkbd(535,14922
+g_error rqh_grabpntr(543,15133
+g_error rqh_givekbd(551,15344
+g_error rqh_givepntr(559,15562
+g_error rqh_mkcontext(567,15780
+g_error rqh_rmcontext(577,16019
+g_error rqh_focus(589,16356
+g_error rqh_getstring(606,16765
+g_error rqh_restoretheme(632,17493
 
 net/eventq.c,58
 void post_event(40,1492
@@ -244,19 +244,8 @@ void readfd(130,3235
 struct conbuf *find_conbuf(233,5804
 int send_response(246,6043
 g_error net_init(258,6278
-void net_release(304,7439
-void net_iteration(331,7931
-
-video/sdlmin.c,276
-SDL_Surface *sdlmin_vidsurf;43,1580
-g_error sdlmin_init(47,1676
-void sdlmin_close(99,2965
-void sdlmin_pixel(103,3008
-hwrcolor sdlmin_getpixel(130,3761
-void sdlmin_update(144,4182
-void sdlmin_blit(150,4376
-void sdlmin_clip_set(255,6835
-g_error sdlmin_regfunc(266,7133
+void net_release(304,7454
+void net_iteration(331,7946
 
 video/sdl.c,494
 SDL_Surface *sdl_vidsurf;35,1061
@@ -266,17 +255,28 @@ int sdl_upd_w;38,1117
 int sdl_upd_h;39,1132
 void sdl_addarea(44,1263
 g_error sdl_init(69,1804
-void sdl_close(122,3137
-void sdl_pixel(129,3240
-hwrcolor sdl_getpixel(158,4003
-void sdl_update(172,4409
-void sdl_blit(182,4602
-void sdl_clip_set(288,7090
-void sdl_rect(296,7270
-hwrcolor sdl_color_pgtohwr(320,7726
-pgcolor sdl_color_hwrtopg(324,7844
-void sdl_gradient(334,8083
-g_error sdl_regfunc(560,13530
+void sdl_close(122,3143
+void sdl_pixel(129,3246
+hwrcolor sdl_getpixel(158,4009
+void sdl_update(172,4415
+void sdl_blit(182,4608
+void sdl_clip_set(288,7123
+void sdl_rect(296,7303
+hwrcolor sdl_color_pgtohwr(320,7759
+pgcolor sdl_color_hwrtopg(324,7877
+void sdl_gradient(334,8116
+g_error sdl_regfunc(560,13563
+
+video/sdlmin.c,276
+SDL_Surface *sdlmin_vidsurf;43,1580
+g_error sdlmin_init(47,1676
+void sdlmin_close(99,2971
+void sdlmin_pixel(103,3014
+hwrcolor sdlmin_getpixel(130,3767
+void sdlmin_update(144,4188
+void sdlmin_blit(150,4382
+void sdlmin_clip_set(255,6868
+g_error sdlmin_regfunc(266,7166
 
 video/svga.c,467
 GraphicsContext *svga_virtual,38,1130
@@ -291,41 +291,41 @@ void svga_update(114,2783
 void svga_clip_set(120,2870
 void svga_clip_off(129,3067
 void svga_blit(133,3121
-void svga_rect(244,6142
-hwrcolor svga_color_pgtohwr(248,6223
-g_error svga_regfunc(255,6435
+void svga_rect(244,6169
+hwrcolor svga_color_pgtohwr(248,6250
+g_error svga_regfunc(255,6462
 
 widget/bitmap.c,223
 struct bitmapdata bitmapdata30,1039
 #define DATA 35,1133
 void bitmap(38,1222
-g_error bitmap_install(69,2096
-void bitmap_remove(92,2612
-g_error bitmap_set(98,2729
-glob bitmap_get(173,4769
-void resizebitmap(200,5207
+g_error bitmap_install(69,2099
+void bitmap_remove(92,2624
+g_error bitmap_set(98,2741
+glob bitmap_get(173,4823
+void resizebitmap(200,5282
 
 widget/box.c,173
 #define BOXMARGIN 30,1008
 #define BOXCOLOR 35,1128
 void box(37,1169
 g_error box_install(44,1335
-void box_remove(62,1732
-g_error box_set(67,1824
-glob box_get(101,2664
+void box_remove(62,1735
+g_error box_set(67,1827
+glob box_get(101,2682
 
 widget/button.c,305
 #define ON_OFFSET 32,1115
 struct btndata btndata34,1136
 #define DATA 43,1355
 void button(48,1482
-void buttonstate(133,3700
-g_error button_install(170,4944
-void button_remove(204,5760
-g_error button_set(210,5877
-glob button_get(308,8540
-void button_trigger(343,9055
-void resizebutton(408,10426
+void buttonstate(133,3727
+g_error button_install(170,4989
+void button_remove(204,5805
+g_error button_set(210,5922
+glob button_get(308,8645
+void button_trigger(343,9184
+void resizebutton(408,10561
 
 widget/default_theme.c,133
 #define EL_NULL 35,1252
@@ -344,32 +344,32 @@ widget/field.c,547
 struct fielddata fielddata43,1527
 #define DATA 59,1890
 void field(66,2155
-g_error field_install(88,2848
-void field_remove(123,3790
-g_error field_set(132,3964
-glob field_get(185,5179
-void field_trigger(217,5646
-void fieldstate(311,7631
-g_error bufcheck_grow(348,8813
-g_error bufcheck_shrink(365,9246
+g_error field_install(88,2851
+void field_remove(123,3799
+g_error field_set(132,3973
+glob field_get(185,5218
+void field_trigger(217,5703
+void fieldstate(311,7691
+g_error bufcheck_grow(348,8876
+g_error bufcheck_shrink(365,9309
 
 widget/indicator.c,173
 #define VALUE 30,1014
 void indicator(32,1047
-g_error indicator_install(66,1937
-void indicator_remove(81,2238
-g_error indicator_set(86,2336
-glob indicator_get(134,3685
+g_error indicator_install(66,1946
+void indicator_remove(81,2250
+g_error indicator_set(86,2348
+glob indicator_get(134,3715
 
 widget/label.c,215
 struct labeldata labeldata32,1080
 #define DATA 37,1164
 void text(42,1270
-g_error label_install(71,2130
-void label_remove(94,2641
-g_error label_set(100,2757
-glob label_get(191,5146
-void resizelabel(237,5955
+g_error label_install(71,2136
+void label_remove(94,2653
+g_error label_set(100,2769
+glob label_get(191,5206
+void resizelabel(237,6048
 
 widget/panel.c,446
 #define PANELMARGIN 32,1052
@@ -381,52 +381,52 @@ widget/panel.c,446
 struct paneldata paneldata51,1568
 #define DATA 70,2060
 void panelbar(72,2109
-void panel(82,2334
-g_error panel_install(93,2616
-void panel_remove(133,3752
-g_error panel_set(139,3868
-glob panel_get(168,4623
-void panel_trigger(181,4824
-void themeify_panel(410,11502
+void panel(82,2340
+g_error panel_install(93,2628
+void panel_remove(133,3770
+g_error panel_set(139,3886
+glob panel_get(168,4653
+void panel_trigger(181,4860
+void themeify_panel(410,11559
 
 widget/popup.c,162
 g_error create_popup(34,1286
-void popup(70,2678
-g_error popup_install(78,2872
-void popup_remove(100,3417
-g_error popup_set(117,3710
-glob popup_get(124,3960
+void popup(70,2690
+g_error popup_install(78,2890
+void popup_remove(100,3438
+g_error popup_set(117,3731
+glob popup_get(124,3984
 
 widget/scroll.c,371
 #define SCROLL_DELAY 32,1139
 #define SCROLLSPEED 35,1232
 #define HEIGHT_DIV 39,1348
 struct scrolldata scrolldata42,1445
-#define DATA 55,1911
-void scrollbar(57,1961
-void scrollevent(83,2879
-void scrollupdate(99,3264
-g_error scroll_install(148,4936
-void scroll_remove(171,5574
-g_error scroll_set(177,5691
-glob scroll_get(217,6513
-void scroll_trigger(230,6691
+#define DATA 55,1914
+void scrollbar(57,1964
+void scrollevent(83,2903
+void scrollupdate(99,3297
+g_error scroll_install(148,5005
+void scroll_remove(171,5646
+g_error scroll_set(177,5763
+glob scroll_get(217,6615
+void scroll_trigger(230,6799
 
 widget/theme.c,139
 struct element current_theme[34,1172
-void addelement(40,1354
-void applystate(89,2409
-void themeset(97,2737
-void restoretheme(137,3690
+void addelement(40,1357
+void applystate(89,2433
+void themeset(97,2761
+void restoretheme(137,3738
 
 widget/toolbar.c,139
 void toolbar(30,1004
-g_error toolbar_install(41,1292
-void toolbar_remove(60,1731
-g_error toolbar_set(65,1827
-glob toolbar_get(82,2250
+g_error toolbar_install(41,1298
+void toolbar_remove(60,1740
+g_error toolbar_set(65,1836
+glob toolbar_get(82,2268
 
-widget/widget.c,889
+widget/widget.c,890
 struct widgetdef widgettab[33,1135
 struct divnode *divmatch;48,1558
 struct widget *under;49,1584
@@ -439,85 +439,174 @@ int keyboard_owner;61,1863
 int pointer_owner;62,1883
 int timerlock 64,1903
 g_error widget_create(67,1963
-g_error widget_derive(103,2960
-void remove_from_timerlist(117,3485
-void widget_remove(136,3807
-g_error inline widget_set(226,6011
-glob inline widget_get(231,6185
-void redraw_bg(239,6460
-void reset_pointer(258,6988
-long find_hotkey(265,7095
-void install_hotkey(271,7175
-void install_timer(305,7958
-void inline trigger_timer(335,8681
-void request_focus(356,9194
-void widgetunder(371,9627
-int send_trigger(381,9994
-void dispatch_pointing(391,10215
-void dispatch_key(486,12511
-void dispatch_direct(582,15101
+g_error widget_derive(103,2969
+void remove_from_timerlist(117,3506
+void widget_remove(136,3828
+g_error inline widget_set(226,6032
+glob inline widget_get(231,6209
+void redraw_bg(239,6484
+void reset_pointer(258,7015
+long find_hotkey(265,7122
+void install_hotkey(271,7202
+void install_timer(305,7985
+void inline trigger_timer(335,8708
+void request_focus(356,9221
+void widgetunder(371,9654
+int send_trigger(381,10021
+void dispatch_pointing(391,10242
+void dispatch_key(486,12550
+void dispatch_direct(582,15152
 
-include/picogui/network.h,2210
-#define _H_PG_NETWORK30,1088
-#define PG_REQUEST_PORT 32,1111
-#define PG_PROTOCOL_VER 33,1144
-#define PG_REQUEST_MAGIC 34,1178
-struct pgrequest pgrequest39,1311
-#define PG_MAX_RESPONSE_SZ 48,1613
-#define PG_RESPONSE_ERR 50,1660
-struct pgresponse_err pgresponse_err51,1686
-#define PG_RESPONSE_RET 58,1876
-struct pgresponse_ret pgresponse_ret59,1902
-#define PG_RESPONSE_EVENT 65,2033
-struct pgresponse_event pgresponse_event66,2061
-#define PG_RESPONSE_DATA 73,2207
-struct pgresponse_data pgresponse_data74,2234
-struct pghello pghello82,2453
-#define PGREQ_PING 91,2670
-#define PGREQ_UPDATE 92,2751
-#define PGREQ_MKWIDGET 93,2832
-#define PGREQ_MKBITMAP 94,2913
-#define PGREQ_MKFONT 95,2994
-#define PGREQ_MKSTRING 96,3075
-#define PGREQ_FREE 97,3156
-#define PGREQ_SET 98,3237
-#define PGREQ_GET 99,3318
-#define PGREQ_SETBG 100,3399
-#define PGREQ_IN_KEY 101,3480
-#define PGREQ_IN_POINT 102,3561
-#define PGREQ_IN_DIRECT 103,3642
-#define PGREQ_WAIT 104,3723
-#define PGREQ_THEMESET 105,3804
-#define PGREQ_REGISTER 107,3938
-#define PGREQ_MKPOPUP 108,4019
-#define PGREQ_SIZETEXT 109,4100
-#define PGREQ_BATCH 110,4181
-#define PGREQ_GRABKBD 111,4264
-#define PGREQ_GRABPNTR 112,4343
-#define PGREQ_GIVEKBD 113,4422
-#define PGREQ_GIVEPNTR 114,4501
-#define PGREQ_MKCONTEXT 115,4580
-#define PGREQ_RMCONTEXT 116,4659
-#define PGREQ_FOCUS 117,4738
-#define PGREQ_GETSTRING 118,4819
-#define PGREQ_RESTORETHEME 119,4900
-#define PGREQ_UNDEF 121,4982
-struct pgreqd_mkwidget pgreqd_mkwidget135,5437
-struct pgreqd_free pgreqd_free140,5536
-struct pgreqd_mkbitmap pgreqd_mkbitmap143,5579
-struct pgreqd_mkfont pgreqd_mkfont150,5916
-struct pgreqd_set pgreqd_set156,6029
-struct pgreqd_get pgreqd_get162,6149
-struct pgreqd_setbg pgreqd_setbg167,6247
-struct pgreqd_in_key pgreqd_in_key170,6321
-struct pgreqd_in_point pgreqd_in_point175,6443
-struct pgreqd_in_direct pgreqd_in_direct182,6630
-struct pgreqd_themeset pgreqd_themeset186,6765
-struct pgreqd_register pgreqd_register193,6914
-struct pgreqd_mkpopup pgreqd_mkpopup209,7277
-struct pgreqd_sizetext pgreqd_sizetext215,7384
-struct pgreqd_focus pgreqd_focus219,7490
-struct pgreqd_getstring pgreqd_getstring222,7570
+include/pgserver/all.h,0
+
+include/pgserver/appmgr.h,137
+#define __H_APPMGR30,1056
+struct app_info app_info35,1149
+extern handle defaultfont;59,1776
+extern struct app_info *applist;60,1803
+
+include/pgserver/divtree.h,1044
+#define __DIVTREE_H29,1018
+struct dtstack dtstack48,1529
+extern struct dtstack *dts;56,1735
+struct divtree divtree58,1764
+#define DIVTREE_NEED_RECALC	67,2038
+#define DIVTREE_NEED_REDRAW	68,2075
+#define DIVTREE_ALL_REDRAW	69,2112
+typedef short int alignt;alignt71,2149
+union grop_param grop_param74,2230
+struct divnode divnode97,2600
+#define DIVNODE_NEED_RECALC	138,4053
+#define DIVNODE_NEED_REDRAW	139,4088
+#define DIVNODE_UNIT_PERCENT 140,4123
+#define DIVNODE_SPLIT_TOP	141,4188
+#define DIVNODE_SPLIT_BOTTOM 142,4221
+#define DIVNODE_SPLIT_LEFT 143,4260
+#define DIVNODE_SPLIT_RIGHT	144,4299
+#define DIVNODE_SPLIT_BORDER	145,4334
+#define DIVNODE_SPLIT_CENTER 146,4411
+#define DIVNODE_PROPAGATE_RECALC 147,4486
+#define DIVNODE_SPLIT_IGNORE 148,4565
+#define DIVNODE_SPLIT_EXPAND 149,4644
+#define DIVNODE_PROPAGATE_REDRAW 150,4723
+#define DIVNODE_SCROLL_ONLY 151,4802
+typedef unsigned short int sidet;sidet154,4903
+#define VALID_SIDE(VALID_SIDE155,4937
+#define SIDEMASK 159,5115
+struct gropnode gropnode164,5351
+
+include/pgserver/font.h,216
+#define __H_FONT29,990
+extern struct fontstyle_node *fontstyles;35,1062
+typedef long stylet;stylet41,1220
+struct fontdesc fontdesc46,1367
+struct fontstyle_node fontstyle_node70,2434
+struct font font89,3008
+
+include/pgserver/g_error.h,253
+#define __H_GERROR29,992
+typedef unsigned int g_error;g_error34,1085
+#define ERRT_NOREPLY 37,1169
+#define mkerror(mkerror42,1332
+#define iserror(iserror43,1379
+#define errtype(errtype44,1439
+#define sucess 46,1512
+#define errorcheck 49,1599
+
+include/pgserver/g_malloc.h,28
+#define __H_GMALLOC29,1007
+
+include/pgserver/handle.h,225
+#define __HANDLE_H31,1128
+#define HFLAG_RED 36,1213
+#define HFLAG_NFREE 37,1273
+typedef unsigned short handle;handle46,1584
+#define HANDLE_BITS 47,1615
+#define HANDLE_SIZE 48,1642
+struct handlenode handlenode50,1680
+
+include/pgserver/input.h,219
+#define __H_INPUT29,991
+struct inlib inlib42,1369
+extern struct inlib *inlib_list;85,2807
+extern struct inlib *inlib_main;91,2988
+struct inputinfo inputinfo110,3451
+extern struct inputinfo inputdrivers[114,3526
+
+include/pgserver/pgmain.h,67
+#define _H_PGMAIN29,1004
+extern volatile int in_shutdown;31,1023
+
+include/pgserver/pgnet.h,410
+#define _H_PGNET32,1156
+#define WINDOWS47,1509
+#define EAGAIN 49,1546
+#define ioctl 50,1576
+extern fd_set evtwait;66,1895
+#define REQUEST_BACKLOG 68,1919
+#define EVENTQ_LEN 87,2523
+#define PKTBUF_LEN 88,2593
+struct event event91,2684
+struct conbuf conbuf98,2776
+extern struct conbuf *conbufs;136,3698
+#define DEF_REQHANDLER(DEF_REQHANDLER156,4410
+#define TAB_REQHANDLER(TAB_REQHANDLER158,4564
+
+include/pgserver/theme.h,148
+#define __THEME_H31,1101
+struct element element43,1382
+extern struct element default_theme[61,1773
+extern struct element current_theme[62,1820
+
+include/pgserver/timer.h,26
+#define __H_TIMER30,1052
+
+include/pgserver/video.h,601
+#define __H_VIDEO30,1021
+typedef unsigned long hwrcolor;hwrcolor35,1107
+typedef unsigned long pgcolor;pgcolor40,1233
+#define getred(getred41,1264
+#define getgreen(getgreen42,1306
+#define getblue(getblue43,1347
+#define mkcolor(mkcolor44,1383
+#define HWG_BUTTON 48,1543
+#define HWG_MARGIN 49,1565
+#define HWG_SCROLL 50,1586
+typedef void * hwrbitmap;hwrbitmap53,1640
+struct stdbitmap stdbitmap58,1765
+struct vidlib vidlib72,2247
+extern struct vidlib *vid;319,8925
+extern unsigned char trigtab[322,8995
+struct vidinfo vidinfo343,9688
+extern struct vidinfo videodrivers[347,9762
+
+include/pgserver/widget.h,942
+#define __WIDGET_H31,1113
+typedef long glob;glob50,1480
+#define TRIGGER_TIMER 54,1654
+#define TRIGGER_HOTKEY 55,1726
+#define TRIGGER_DIRECT 56,1803
+#define TRIGGER_ACTIVATE 57,1871
+#define TRIGGER_DEACTIVATE 58,1940
+#define TRIGGER_KEYUP 59,1994
+#define TRIGGER_KEYDOWN 60,2073
+#define TRIGGER_RELEASE 61,2121
+#define TRIGGER_UP 62,2182
+#define TRIGGER_DOWN 63,2253
+#define TRIGGER_MOVE 64,2316
+#define TRIGGER_ENTER 65,2396
+#define TRIGGER_LEAVE 66,2463
+#define TRIGGER_DRAG 67,2531
+#define TRIGGER_CHAR 68,2597
+union trigparam trigparam74,2817
+struct widgetdef widgetdef88,3105
+extern struct widgetdef widgettab[102,3570
+struct widget widget105,3651
+#define DEF_WIDGET_TABLE(DEF_WIDGET_TABLE167,5283
+#define DEF_STATICWIDGET_TABLE(DEF_STATICWIDGET_TABLE169,5371
+#define DEF_WIDGET_PROTO(DEF_WIDGET_PROTO171,5458
+#define DEF_STATICWIDGET_PROTO(DEF_STATICWIDGET_PROTO177,5770
+DEF_STATICWIDGET_PROTO(184,6037
 
 include/picogui/constants.h,4890
 #define _H_PG_CONSTANTS30,1014
@@ -668,6 +757,68 @@ typedef unsigned long pghandle;pghandle118,3724
 #define PG_NWE_PNTR_MOVE 266,8385
 #define PG_NWE_PNTR_UP 267,8415
 #define PG_NWE_PNTR_DOWN 268,8445
+
+include/picogui/network.h,2210
+#define _H_PG_NETWORK30,1088
+#define PG_REQUEST_PORT 32,1111
+#define PG_PROTOCOL_VER 33,1144
+#define PG_REQUEST_MAGIC 34,1178
+struct pgrequest pgrequest39,1311
+#define PG_MAX_RESPONSE_SZ 48,1613
+#define PG_RESPONSE_ERR 50,1660
+struct pgresponse_err pgresponse_err51,1686
+#define PG_RESPONSE_RET 58,1876
+struct pgresponse_ret pgresponse_ret59,1902
+#define PG_RESPONSE_EVENT 65,2033
+struct pgresponse_event pgresponse_event66,2061
+#define PG_RESPONSE_DATA 73,2207
+struct pgresponse_data pgresponse_data74,2234
+struct pghello pghello82,2453
+#define PGREQ_PING 91,2670
+#define PGREQ_UPDATE 92,2751
+#define PGREQ_MKWIDGET 93,2832
+#define PGREQ_MKBITMAP 94,2913
+#define PGREQ_MKFONT 95,2994
+#define PGREQ_MKSTRING 96,3075
+#define PGREQ_FREE 97,3156
+#define PGREQ_SET 98,3237
+#define PGREQ_GET 99,3318
+#define PGREQ_SETBG 100,3399
+#define PGREQ_IN_KEY 101,3480
+#define PGREQ_IN_POINT 102,3561
+#define PGREQ_IN_DIRECT 103,3642
+#define PGREQ_WAIT 104,3723
+#define PGREQ_THEMESET 105,3804
+#define PGREQ_REGISTER 107,3938
+#define PGREQ_MKPOPUP 108,4019
+#define PGREQ_SIZETEXT 109,4100
+#define PGREQ_BATCH 110,4181
+#define PGREQ_GRABKBD 111,4264
+#define PGREQ_GRABPNTR 112,4343
+#define PGREQ_GIVEKBD 113,4422
+#define PGREQ_GIVEPNTR 114,4501
+#define PGREQ_MKCONTEXT 115,4580
+#define PGREQ_RMCONTEXT 116,4659
+#define PGREQ_FOCUS 117,4738
+#define PGREQ_GETSTRING 118,4819
+#define PGREQ_RESTORETHEME 119,4900
+#define PGREQ_UNDEF 121,4982
+struct pgreqd_mkwidget pgreqd_mkwidget135,5437
+struct pgreqd_free pgreqd_free140,5536
+struct pgreqd_mkbitmap pgreqd_mkbitmap143,5579
+struct pgreqd_mkfont pgreqd_mkfont150,5916
+struct pgreqd_set pgreqd_set156,6029
+struct pgreqd_get pgreqd_get162,6149
+struct pgreqd_setbg pgreqd_setbg167,6247
+struct pgreqd_in_key pgreqd_in_key170,6321
+struct pgreqd_in_point pgreqd_in_point175,6443
+struct pgreqd_in_direct pgreqd_in_direct182,6630
+struct pgreqd_themeset pgreqd_themeset186,6765
+struct pgreqd_register pgreqd_register193,6914
+struct pgreqd_mkpopup pgreqd_mkpopup209,7277
+struct pgreqd_sizetext pgreqd_sizetext215,7384
+struct pgreqd_focus pgreqd_focus219,7490
+struct pgreqd_getstring pgreqd_getstring222,7570
 
 include/picogui/pgkeys.h,7441
 #define __PGKEYS_H29,1008
@@ -915,154 +1066,3 @@ include/picogui/pgkeys.h,7441
 #define PGMOD_NUM 281,8960
 #define PGMOD_CAPS 282,8989
 #define PGMOD_MODE 283,9018
-
-include/pgserver/appmgr.h,137
-#define __H_APPMGR30,1056
-struct app_info app_info35,1149
-extern handle defaultfont;59,1776
-extern struct app_info *applist;60,1803
-
-include/pgserver/divtree.h,1044
-#define __DIVTREE_H29,1018
-struct dtstack dtstack48,1529
-extern struct dtstack *dts;56,1735
-struct divtree divtree58,1764
-#define DIVTREE_NEED_RECALC	67,2038
-#define DIVTREE_NEED_REDRAW	68,2075
-#define DIVTREE_ALL_REDRAW	69,2112
-typedef short int alignt;alignt71,2149
-union grop_param grop_param74,2230
-struct divnode divnode97,2600
-#define DIVNODE_NEED_RECALC	138,4053
-#define DIVNODE_NEED_REDRAW	139,4088
-#define DIVNODE_UNIT_PERCENT 140,4123
-#define DIVNODE_SPLIT_TOP	141,4188
-#define DIVNODE_SPLIT_BOTTOM 142,4221
-#define DIVNODE_SPLIT_LEFT 143,4260
-#define DIVNODE_SPLIT_RIGHT	144,4299
-#define DIVNODE_SPLIT_BORDER	145,4334
-#define DIVNODE_SPLIT_CENTER 146,4411
-#define DIVNODE_PROPAGATE_RECALC 147,4486
-#define DIVNODE_SPLIT_IGNORE 148,4565
-#define DIVNODE_SPLIT_EXPAND 149,4644
-#define DIVNODE_PROPAGATE_REDRAW 150,4723
-#define DIVNODE_SCROLL_ONLY 151,4802
-typedef unsigned short int sidet;sidet154,4903
-#define VALID_SIDE(VALID_SIDE155,4937
-#define SIDEMASK 159,5115
-struct gropnode gropnode164,5351
-
-include/pgserver/font.h,216
-#define __H_FONT29,990
-extern struct fontstyle_node *fontstyles;35,1062
-typedef long stylet;stylet41,1220
-struct fontdesc fontdesc46,1367
-struct fontstyle_node fontstyle_node70,2431
-struct font font89,3005
-
-include/pgserver/g_error.h,253
-#define __H_GERROR29,992
-typedef unsigned int g_error;g_error34,1085
-#define ERRT_NOREPLY 37,1169
-#define mkerror(mkerror42,1332
-#define iserror(iserror43,1379
-#define errtype(errtype44,1436
-#define sucess 46,1509
-#define errorcheck 49,1593
-
-include/pgserver/g_malloc.h,28
-#define __H_GMALLOC29,1007
-
-include/pgserver/handle.h,225
-#define __HANDLE_H31,1128
-#define HFLAG_RED 36,1213
-#define HFLAG_NFREE 37,1273
-typedef unsigned short handle;handle46,1584
-#define HANDLE_BITS 47,1615
-#define HANDLE_SIZE 48,1642
-struct handlenode handlenode50,1680
-
-include/pgserver/input.h,219
-#define __H_INPUT29,991
-struct inlib inlib42,1369
-extern struct inlib *inlib_list;85,2807
-extern struct inlib *inlib_main;91,2988
-struct inputinfo inputinfo110,3451
-extern struct inputinfo inputdrivers[114,3526
-
-include/pgserver/pgmain.h,67
-#define _H_PGMAIN29,1004
-extern volatile int in_shutdown;31,1023
-
-include/pgserver/pgnet.h,410
-#define _H_PGNET32,1156
-#define WINDOWS47,1509
-#define EAGAIN 49,1546
-#define ioctl 50,1576
-extern fd_set evtwait;66,1895
-#define REQUEST_BACKLOG 68,1919
-#define EVENTQ_LEN 87,2523
-#define PKTBUF_LEN 88,2593
-struct event event91,2684
-struct conbuf conbuf98,2776
-extern struct conbuf *conbufs;136,3698
-#define DEF_REQHANDLER(DEF_REQHANDLER156,4410
-#define TAB_REQHANDLER(TAB_REQHANDLER158,4564
-
-include/pgserver/theme.h,148
-#define __THEME_H31,1101
-struct element element43,1382
-extern struct element default_theme[61,1773
-extern struct element current_theme[62,1820
-
-include/pgserver/timer.h,26
-#define __H_TIMER30,1052
-
-include/pgserver/video.h,601
-#define __H_VIDEO30,1021
-typedef unsigned long hwrcolor;hwrcolor35,1107
-typedef unsigned long pgcolor;pgcolor40,1233
-#define getred(getred41,1264
-#define getgreen(getgreen42,1306
-#define getblue(getblue43,1347
-#define mkcolor(mkcolor44,1383
-#define HWG_BUTTON 48,1543
-#define HWG_MARGIN 49,1565
-#define HWG_SCROLL 50,1586
-typedef void * hwrbitmap;hwrbitmap53,1640
-struct stdbitmap stdbitmap58,1765
-struct vidlib vidlib72,2247
-extern struct vidlib *vid;319,8925
-extern unsigned char trigtab[322,8995
-struct vidinfo vidinfo343,9688
-extern struct vidinfo videodrivers[347,9762
-
-include/pgserver/widget.h,942
-#define __WIDGET_H31,1113
-typedef long glob;glob50,1480
-#define TRIGGER_TIMER 54,1654
-#define TRIGGER_HOTKEY 55,1726
-#define TRIGGER_DIRECT 56,1803
-#define TRIGGER_ACTIVATE 57,1871
-#define TRIGGER_DEACTIVATE 58,1940
-#define TRIGGER_KEYUP 59,1994
-#define TRIGGER_KEYDOWN 60,2073
-#define TRIGGER_RELEASE 61,2121
-#define TRIGGER_UP 62,2182
-#define TRIGGER_DOWN 63,2253
-#define TRIGGER_MOVE 64,2316
-#define TRIGGER_ENTER 65,2396
-#define TRIGGER_LEAVE 66,2463
-#define TRIGGER_DRAG 67,2531
-#define TRIGGER_CHAR 68,2597
-union trigparam trigparam74,2817
-struct widgetdef widgetdef88,3105
-extern struct widgetdef widgettab[102,3570
-struct widget widget105,3651
-#define DEF_WIDGET_TABLE(DEF_WIDGET_TABLE167,5283
-#define DEF_STATICWIDGET_TABLE(DEF_STATICWIDGET_TABLE169,5371
-#define DEF_WIDGET_PROTO(DEF_WIDGET_PROTO171,5458
-#define DEF_STATICWIDGET_PROTO(DEF_STATICWIDGET_PROTO177,5770
-DEF_STATICWIDGET_PROTO(184,6037
-
-include/pgserver/all.h,0

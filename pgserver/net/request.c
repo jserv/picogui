@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.6 2000/09/08 23:56:26 micahjd Exp $
+/* $Id: request.c,v 1.7 2000/09/09 01:46:16 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -273,15 +273,15 @@ g_error net_init(void) {
 		     programmers would accept WinSock, but incompatible enough
 		     to break everything.  Another Microsoft 'innovation' */
   if (WSAStartup(MAKEWORD(2,0),&wsad))
-    return mkerror(ERRT_NETWORK,49);
+    return mkerror(PG_ERRT_NETWORK,49);
 #endif
 
   if((s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
-    return mkerror(ERRT_NETWORK,50);
+    return mkerror(PG_ERRT_NETWORK,50);
   
   if((setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (void *)&true, 
      sizeof(true))) == -1)
-    return mkerror(ERRT_NETWORK,51);
+    return mkerror(PG_ERRT_NETWORK,51);
 
   server_sockaddr.sin_family = AF_INET;
   server_sockaddr.sin_port = htons(PG_REQUEST_PORT);
@@ -289,10 +289,10 @@ g_error net_init(void) {
 
   if(bind(s, (struct sockaddr *)&server_sockaddr, 
      sizeof(server_sockaddr)) == -1)
-    return mkerror(ERRT_NETWORK,52);
+    return mkerror(PG_ERRT_NETWORK,52);
 
   if(listen(s, REQUEST_BACKLOG) == -1)
-    return mkerror(ERRT_NETWORK,53);
+    return mkerror(PG_ERRT_NETWORK,53);
 
   con_n = s+1;
   FD_ZERO(&con);

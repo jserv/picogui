@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.12 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: field.c,v 1.13 2000/09/09 01:46:16 micahjd Exp $
  *
  * Single-line no-frills text editing box
  *
@@ -69,7 +69,7 @@ void field(struct divnode *d) {
   struct widget *self = d->owner;
 
   /* Center the font vertically and use the same amount of margin on the side */
-  if (iserror(rdhandle((void **)&fd,TYPE_FONTDESC,-1,
+  if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,
 		       DATA->font)) || !fd) return;
   
   /* Draw order: background, text, cursor, border */
@@ -100,12 +100,12 @@ g_error field_install(struct widget *self) {
   DATA->bufmax  = FIELDBUF_DEFAULTMAX;
   DATA->bufsize = FIELDBUF_DEFAULTSIZE;
   DATA->bufuse  = 1;
-  e = mkhandle(&DATA->hbuffer,TYPE_STRING | HFLAG_NFREE,self->owner,DATA->buffer);
+  e = mkhandle(&DATA->hbuffer,PG_TYPE_STRING | HFLAG_NFREE,self->owner,DATA->buffer);
   errorcheck;
 
   e = newdiv(&self->in,self);
   errorcheck;
-  self->in->flags |= S_TOP;
+  self->in->flags |= PG_S_TOP;
   self->in->split = 20;
   self->out = &self->in->next;
   e = newdiv(&self->in->div,self);
@@ -137,30 +137,30 @@ g_error field_set(struct widget *self,int property, glob data) {
 
   switch (property) {
 
-  case WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,43);
+  case PG_WP_SIDE:
+    if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,43);
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC |
       DIVNODE_PROPAGATE_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_COLOR:
+  case PG_WP_COLOR:
     DATA->fg = data;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_BGCOLOR:
+  case PG_WP_BGCOLOR:
     DATA->bg = data;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_FONT:
+  case PG_WP_FONT:
     if (iserror(rdhandle((void **)&fd,
-			 TYPE_FONTDESC,-1,data)) || !fd) 
-      return mkerror(ERRT_HANDLE,44); 
+			 PG_TYPE_FONTDESC,-1,data)) || !fd) 
+      return mkerror(PG_ERRT_HANDLE,44); 
     DATA->font = (handle) data;
     psplit = self->in->split;
     if (self->in->split != psplit) {
@@ -170,14 +170,14 @@ g_error field_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-    /* FIXME: WP_TEXT
-       case WP_TEXT:
+    /* FIXME: PG_WP_TEXT
+       case PG_WP_TEXT:
 
        break;
     */
 
   default:
-    return mkerror(ERRT_BADPARAM,45);
+    return mkerror(PG_ERRT_BADPARAM,45);
   }
   return sucess;
 }
@@ -191,22 +191,22 @@ glob field_get(struct widget *self,int property) {
 
   switch (property) {
 
-  case WP_SIDE:
+  case PG_WP_SIDE:
     return self->in->flags & (~SIDEMASK);
 
-  case WP_BGCOLOR:
+  case PG_WP_BGCOLOR:
     return DATA->bg;
 
-  case WP_COLOR:
+  case PG_WP_COLOR:
     return DATA->fg;
 
-  case WP_FONT:
+  case PG_WP_FONT:
     return (glob) DATA->font;
 
-  case WP_TEXT:
+  case PG_WP_TEXT:
     return (glob) DATA->hbuffer;
 
-  case WP_SCROLL:
+  case PG_WP_SCROLL:
     return -self->in->div->ty;
 
   default:
@@ -266,7 +266,7 @@ void field_trigger(struct widget *self,long type,union trigparam *param) {
 
     case PGKEY_RETURN:
       /* Pass on a return to the app */
-      post_event(WE_ACTIVATE,self,0,0);
+      post_event(PG_WE_ACTIVATE,self,0,0);
       return;
 
     case PGKEY_TAB:
@@ -316,7 +316,7 @@ void fieldstate(struct widget *self) {
      total of the text width as it is done, but this whole widget
      so far is a quick hack anyway...
   */
-  if (iserror(rdhandle((void**)&fd,TYPE_FONTDESC,-1,
+  if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
 		       DATA->font)) || !fd) return;
   sizetext(fd,&tw,&th,DATA->buffer);
 

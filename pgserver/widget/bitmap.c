@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.18 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: bitmap.c,v 1.19 2000/09/09 01:46:16 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -45,15 +45,15 @@ void bitmap(struct divnode *d) {
 
   /* Here if the bitmap is null we don't want to be blitting from the
      screen... */
-  if (DATA->bitmap && !iserror(rdhandle((void **) &bit,TYPE_BITMAP,-1,
+  if (DATA->bitmap && !iserror(rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,
       DATA->bitmap)) && bit) {
     (*vid->bitmap_getsize)(bit,&w,&h);
     align(d,DATA->align,&w,&h,&x,&y);
 
     /* Optional bitmask */
-    if (DATA->bitmask && !iserror(rdhandle((void **) &bit,TYPE_BITMAP,-1,
+    if (DATA->bitmask && !iserror(rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,
 	DATA->bitmask)) && bit)
-      grop_bitmap(&d->grop,x,y,w,h,DATA->bitmask,LGOP_AND);
+      grop_bitmap(&d->grop,x,y,w,h,DATA->bitmask,PG_LGOP_AND);
     else
       grop_null(&d->grop);
 
@@ -76,15 +76,15 @@ g_error bitmap_install(struct widget *self) {
 
   e = newdiv(&self->in,self);
   errorcheck;
-  self->in->flags |= S_TOP;
+  self->in->flags |= PG_S_TOP;
   self->in->split = 0;
   self->out = &self->in->next;
   e = newdiv(&self->in->div,self);
   errorcheck;
   self->in->div->on_recalc = &bitmap;
   DATA->fill = 0xFFFFFF;
-  DATA->align = A_CENTER;
-  DATA->lgop = LGOP_NONE;
+  DATA->align = PG_A_CENTER;
+  DATA->lgop = PG_LGOP_NONE;
 
   return sucess;
 }
@@ -101,8 +101,8 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
 
   switch (property) {
 
-  case WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,2);
+  case PG_WP_SIDE:
+    if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,2);
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
       DIVNODE_PROPAGATE_RECALC;
@@ -110,39 +110,39 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_BGCOLOR:
+  case PG_WP_BGCOLOR:
     DATA->fill = data;
     DATA->transparent = 0;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_TRANSPARENT:
+  case PG_WP_TRANSPARENT:
     DATA->transparent = (data != 0);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_ALIGN:
-    if (data > AMAX) return mkerror(ERRT_BADPARAM,2);
+  case PG_WP_ALIGN:
+    if (data > PG_AMAX) return mkerror(PG_ERRT_BADPARAM,2);
     DATA->align = (alignt) data;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_LGOP:
-    if (data > LGOPMAX) return mkerror(ERRT_BADPARAM,3);
+  case PG_WP_LGOP:
+    if (data > PG_LGOPMAX) return mkerror(PG_ERRT_BADPARAM,3);
     DATA->lgop = data;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_BITMAP:
+  case PG_WP_BITMAP:
     if (!data) {
       self->in->div->flags |= DIVNODE_NEED_REDRAW;
       self->dt->flags |= DIVTREE_NEED_REDRAW;
     }
-    else if (!iserror(rdhandle((void **)&bit,TYPE_BITMAP,-1,data)) && bit) {
+    else if (!iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)) && bit) {
       DATA->bitmap = (handle) data;
       psplit = self->in->split;
       resizebitmap(self);
@@ -151,20 +151,20 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
       self->in->flags |= DIVNODE_NEED_RECALC;
       self->dt->flags |= DIVTREE_NEED_RECALC;
     }
-    else return mkerror(ERRT_HANDLE,4);
+    else return mkerror(PG_ERRT_HANDLE,4);
     break;
 
-  case WP_BITMASK:
-    if (!iserror(rdhandle((void **)&bit,TYPE_BITMAP,-1,data)) && bit) {
+  case PG_WP_BITMASK:
+    if (!iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)) && bit) {
       DATA->bitmask = (handle) data;
       self->in->flags |= DIVNODE_NEED_RECALC;
       self->dt->flags |= DIVTREE_NEED_RECALC;
     }
-    else return mkerror(ERRT_HANDLE,5);
+    else return mkerror(PG_ERRT_HANDLE,5);
     break;
 
   default:
-    return mkerror(ERRT_BADPARAM,6);
+    return mkerror(PG_ERRT_BADPARAM,6);
   }
 
   return sucess;
@@ -173,25 +173,25 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
 glob bitmap_get(struct widget *self,int property) {
   switch (property) {
 
-  case WP_SIDE:
+  case PG_WP_SIDE:
     return self->in->flags & (~SIDEMASK);
 
-  case WP_COLOR:
+  case PG_WP_COLOR:
     return DATA->fill;
     
-  case WP_TRANSPARENT:
+  case PG_WP_TRANSPARENT:
     return DATA->transparent;
 
-  case WP_ALIGN:
+  case PG_WP_ALIGN:
     return DATA->align;
 
-  case WP_LGOP:
+  case PG_WP_LGOP:
     return DATA->lgop;
 
-  case WP_BITMAP:
+  case PG_WP_BITMAP:
     return (glob) DATA->bitmap;
 
-  case WP_BITMASK:
+  case PG_WP_BITMASK:
     return (glob) DATA->bitmask;
   }
   return 0;
@@ -201,7 +201,7 @@ void resizebitmap(struct widget *self) {
   struct bitmap *bit;
   int w,h;
  
-  if (iserror(rdhandle((void **) &bit,TYPE_BITMAP,-1,DATA->bitmap)))
+  if (iserror(rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,DATA->bitmap)))
     return;
   if (!bit) return;
   (*vid->bitmap_getsize)(bit,&w,&h);

@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.31 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: button.c,v 1.32 2000/09/09 01:46:16 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -60,14 +60,14 @@ void button(struct divnode *d) {
   printf("Button recalc\n");
 #endif
 
-  addelement(d,&current_theme[E_BUTTON_BORDER],&ex,&ey,&ew,&eh);
-  addelement(d,&current_theme[E_BUTTON_FILL],&ex,&ey,&ew,&eh);
+  addelement(d,&current_theme[PG_E_BUTTON_BORDER],&ex,&ey,&ew,&eh);
+  addelement(d,&current_theme[PG_E_BUTTON_FILL],&ex,&ey,&ew,&eh);
 
   /* Dereference the handles */
-  rdhandle((void **) &bit,TYPE_BITMAP,-1,DATA->bitmap);
-  rdhandle((void **) &bitmask,TYPE_BITMAP,-1,DATA->bitmask);
-  rdhandle((void **) &text,TYPE_STRING,-1,DATA->text);
-  rdhandle((void **) &fd,TYPE_FONTDESC,-1,DATA->font);
+  rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,DATA->bitmap);
+  rdhandle((void **) &bitmask,PG_TYPE_BITMAP,-1,DATA->bitmask);
+  rdhandle((void **) &text,PG_TYPE_STRING,-1,DATA->text);
+  rdhandle((void **) &fd,PG_TYPE_FONTDESC,-1,DATA->font);
 
   /* Find the total width and height */
   if (text) {
@@ -98,11 +98,11 @@ void button(struct divnode *d) {
     y+=ON_OFFSET;
   }
   if (DATA->bitmask)
-    grop_bitmap(&d->grop,x,y,bw,bh,DATA->bitmask,LGOP_AND);
+    grop_bitmap(&d->grop,x,y,bw,bh,DATA->bitmask,PG_LGOP_AND);
   else
     grop_null(&d->grop);
   if (DATA->bitmap)
-    grop_bitmap(&d->grop,x,y,bw,bh,DATA->bitmap,LGOP_OR);
+    grop_bitmap(&d->grop,x,y,bw,bh,DATA->bitmap,PG_LGOP_OR);
   else
     grop_null(&d->grop);
 
@@ -124,7 +124,7 @@ void button(struct divnode *d) {
   else
     grop_null(&d->grop);
   
-  addelement(d,&current_theme[E_BUTTON_OVERLAY],&ex,&ey,&ew,&eh);
+  addelement(d,&current_theme[PG_E_BUTTON_OVERLAY],&ex,&ey,&ew,&eh);
 
   buttonstate(self);
 }
@@ -142,20 +142,20 @@ void buttonstate(struct widget *self) {
   x = DATA->x;
   y = DATA->y;
   if (DATA->on && DATA->over) {
-    state = STATE_ACTIVATE;
+    state = PG_STATE_ACTIVATE;
     x += ON_OFFSET;
     y += ON_OFFSET;
   }
   else if (DATA->over)
-    state = STATE_HILIGHT;
+    state = PG_STATE_HILIGHT;
   else
-    state = STATE_NORMAL;
+    state = PG_STATE_NORMAL;
   applystate(self->in->div->grop,
-	     &current_theme[E_BUTTON_BORDER],state);
+	     &current_theme[PG_E_BUTTON_BORDER],state);
   applystate(self->in->div->grop->next,
-	     &current_theme[E_BUTTON_FILL],state);
+	     &current_theme[PG_E_BUTTON_FILL],state);
   applystate(self->in->div->grop->next->next->next->next->next,
-	     &current_theme[E_BUTTON_OVERLAY],state);
+	     &current_theme[PG_E_BUTTON_OVERLAY],state);
   self->in->div->grop->next->next->x = x;
   self->in->div->grop->next->next->next->x = x;
   self->in->div->grop->next->next->y = y;
@@ -175,12 +175,12 @@ g_error button_install(struct widget *self) {
   memset(self->data,0,sizeof(struct btndata));
 
   DATA->font = defaultfont;
-  DATA->align = A_CENTER;
+  DATA->align = PG_A_CENTER;
 
   /* Main split */
   e = newdiv(&self->in,self);
   errorcheck;
-  self->in->flags |= S_LEFT;
+  self->in->flags |= PG_S_LEFT;
   self->in->split = HWG_BUTTON;
 
   /* Visible node */
@@ -191,7 +191,7 @@ g_error button_install(struct widget *self) {
   /* Spacer (between buttons) */
   e = newdiv(&self->in->next,self);
   errorcheck;
-  self->in->next->flags |= S_LEFT;
+  self->in->next->flags |= PG_S_LEFT;
   self->in->next->split = HWG_MARGIN;
   self->out = &self->in->next->next;
 
@@ -216,12 +216,12 @@ g_error button_set(struct widget *self,int property, glob data) {
 
   switch (property) {
 
-  case WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,31);
+  case PG_WP_SIDE:
+    if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,31);
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC |
       DIVNODE_PROPAGATE_RECALC;
-    if (data!=S_ALL) {
+    if (data!=PG_S_ALL) {
       self->in->next->flags &= SIDEMASK;
       self->in->next->flags |= ((sidet)data);
       resizebutton(self);
@@ -230,21 +230,21 @@ g_error button_set(struct widget *self,int property, glob data) {
     redraw_bg(self);
     break;
 
-  case WP_ALIGN:
-    if (data > AMAX) return mkerror(ERRT_BADPARAM,32);
+  case PG_WP_ALIGN:
+    if (data > PG_AMAX) return mkerror(PG_ERRT_BADPARAM,32);
     DATA->align = (alignt) data;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_COLOR:
+  case PG_WP_COLOR:
     DATA->textcolor = data;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_BITMAP:
-    if (!iserror(rdhandle((void **)&bit,TYPE_BITMAP,-1,data)) && bit) {
+  case PG_WP_BITMAP:
+    if (!iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)) && bit) {
       DATA->bitmap = (handle) data;
       psplit = self->in->split;
       resizebutton(self);
@@ -255,21 +255,21 @@ g_error button_set(struct widget *self,int property, glob data) {
       self->in->flags |= DIVNODE_NEED_RECALC;
       self->dt->flags |= DIVTREE_NEED_RECALC;
     }
-    else return mkerror(ERRT_HANDLE,33);
+    else return mkerror(PG_ERRT_HANDLE,33);
     break;
 
-  case WP_BITMASK:
-    if (!iserror(rdhandle((void **)&bit,TYPE_BITMAP,-1,data)) && bit) {
+  case PG_WP_BITMASK:
+    if (!iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)) && bit) {
       DATA->bitmask = (handle) data;
       self->in->flags |= DIVNODE_NEED_RECALC;
       self->dt->flags |= DIVTREE_NEED_RECALC;
     }
-    else return mkerror(ERRT_HANDLE,34);
+    else return mkerror(PG_ERRT_HANDLE,34);
     break;
 
-  case WP_FONT:
-    if (!iserror(rdhandle((void **)&fd,TYPE_FONTDESC,-1,data)) || !fd) 
-      return mkerror(ERRT_HANDLE,35);
+  case PG_WP_FONT:
+    if (!iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,data)) || !fd) 
+      return mkerror(PG_ERRT_HANDLE,35);
     DATA->font = (handle) data;
     psplit = self->in->split;
     resizebutton(self);
@@ -281,9 +281,9 @@ g_error button_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_TEXT:
-    if (iserror(rdhandle((void **)&str,TYPE_STRING,-1,data)) || !str) 
-      return mkerror(ERRT_HANDLE,36);
+  case PG_WP_TEXT:
+    if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,data)) || !str) 
+      return mkerror(PG_ERRT_HANDLE,36);
     DATA->text = (handle) data;
     psplit = self->in->split;
     resizebutton(self);
@@ -295,12 +295,12 @@ g_error button_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_HOTKEY:
+  case PG_WP_HOTKEY:
     install_hotkey(self,data);
     break;
 
   default:
-    return mkerror(ERRT_BADPARAM,37);
+    return mkerror(PG_ERRT_BADPARAM,37);
   }
   return sucess;
 }
@@ -311,28 +311,28 @@ glob button_get(struct widget *self,int property) {
 
   switch (property) {
 
-  case WP_SIDE:
+  case PG_WP_SIDE:
     return self->in->flags & (~SIDEMASK);
 
-  case WP_ALIGN:
+  case PG_WP_ALIGN:
     return DATA->align;
 
-  case WP_COLOR:
+  case PG_WP_COLOR:
     return DATA->textcolor;
 
-  case WP_BITMAP:
+  case PG_WP_BITMAP:
     return DATA->bitmap;
 
-  case WP_BITMASK:
+  case PG_WP_BITMASK:
     return DATA->bitmask;
 
-  case WP_FONT:
+  case PG_WP_FONT:
     return (glob) DATA->font;
 
-  case WP_TEXT:
+  case PG_WP_TEXT:
     return (glob) DATA->text;
 
-  case WP_HOTKEY:
+  case PG_WP_HOTKEY:
     return (glob) self->hotkey;
 
   default:
@@ -381,7 +381,7 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
   case TRIGGER_DIRECT:
     /* No graphical interaction here, so just
        post the event and get on with it */
-    post_event(WE_ACTIVATE,self,2,0);
+    post_event(PG_WE_ACTIVATE,self,2,0);
     return;
     
   }
@@ -399,7 +399,7 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
   self->dt->flags |= DIVTREE_NEED_REDRAW;   
   if (self->dt==dts->top) update();
   if (event>=0)
-    post_event(WE_ACTIVATE,self,event,0);
+    post_event(PG_WE_ACTIVATE,self,event,0);
 }
 
 /* HWG_BUTTON is the minimum size (either dimension) for a button.
@@ -412,14 +412,14 @@ void resizebutton(struct widget *self) {
   char *text=NULL;
   struct fontdesc *fd=NULL;
 
-  /* With S_ALL we'll get ignored anyway... */
-  if (self->in->flags & S_ALL) return;
+  /* With PG_S_ALL we'll get ignored anyway... */
+  if (self->in->flags & PG_S_ALL) return;
   
   /* Dereference the handles */
-  rdhandle((void **) &bit,TYPE_BITMAP,-1,DATA->bitmap);
-  rdhandle((void **) &bitmask,TYPE_BITMAP,-1,DATA->bitmask);
-  rdhandle((void **) &text,TYPE_STRING,-1,DATA->text);
-  rdhandle((void **) &fd,TYPE_FONTDESC,-1,DATA->font);
+  rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,DATA->bitmap);
+  rdhandle((void **) &bitmask,PG_TYPE_BITMAP,-1,DATA->bitmask);
+  rdhandle((void **) &text,PG_TYPE_STRING,-1,DATA->text);
+  rdhandle((void **) &fd,PG_TYPE_FONTDESC,-1,DATA->font);
 
 #ifdef DEBUG
   printf("Resize button.  Text: '%s'\n",text);
@@ -437,11 +437,11 @@ void resizebutton(struct widget *self) {
     w += HWG_MARGIN;
 
   /* Set split to w or h depending on split orientation */
-  if ((self->in->flags & S_TOP) ||
-      (self->in->flags & S_BOTTOM))
+  if ((self->in->flags & PG_S_TOP) ||
+      (self->in->flags & PG_S_BOTTOM))
     self->in->split = h;
-  else if ((self->in->flags & S_LEFT) ||
-	   (self->in->flags & S_RIGHT))
+  else if ((self->in->flags & PG_S_LEFT) ||
+	   (self->in->flags & PG_S_RIGHT))
     self->in->split = w;
 
   /* HWG_BUTTON is the minimum */

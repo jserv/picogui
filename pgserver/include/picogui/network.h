@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.2 2000/09/08 23:56:26 micahjd Exp $
+/* $Id: network.h,v 1.3 2000/09/09 01:46:15 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -74,8 +74,8 @@ struct pgresponse_event {
 struct pgresponse_data {
   unsigned short type;    /* RESPONSE_DATA */
   unsigned short id;
-  unsigned long size
-  /* 'size' bytes of data follow */;
+  unsigned long size;
+  /* 'size' bytes of data follow */
 };
 
 /* This is sent to the client after establishing a connection */

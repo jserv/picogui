@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.6 2000/09/04 05:00:19 micahjd Exp $
+/* $Id: errortext.c,v 1.7 2000/09/09 01:46:15 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -43,24 +43,24 @@ const char *errortext(g_error e) {
 }
 
 static const char *errors[] = {
-  /* 1  */  "The parameter of a bitmap, WP_SIDE, is not right",
-  /* 2  */  "The attempt at alignment (in your bitmap) yields a munged WP_ALIGN",
+  /* 1  */  "The parameter of a bitmap, PG_WP_SIDE, is not right",
+  /* 2  */  "The attempt at alignment (in your bitmap) yields a munged PG_WP_ALIGN",
   /* 3  */  "What LGOP is that in your bitmap? I suppose I will have to guess.",
-  /* 4  */  "Your WP_BITMAP, a droplet in the mist, has escaped its handle",
-  /* 5  */  "WP_BITMASK is invalid. No transparency for you!",
+  /* 4  */  "Your PG_WP_BITMAP, a droplet in the mist, has escaped its handle",
+  /* 5  */  "PG_WP_BITMASK is invalid. No transparency for you!",
   /* 6  */  "Invalid property for bitmap widget. I shall complain about it!",
   /* 7  */  "Indicator with negative size not render well. Invert space-time and try again",
   /* 8  */  "Indicator was lost; invalid side",
   /* 9  */  "What strange property you specify for indicator; nowhere to be found",
-  /* 10 */  "Invalid WP_SIDE for a label",
+  /* 10 */  "Invalid PG_WP_SIDE for a label",
   /* 11 */  "Nice try... Bad ALIGN value for label",
   /* 12 */  "Your label font is nowhere to be seen...",
   /* 13 */  "Strings, labels, everywhere. Your handle not ever found.",
   /* 14 */  "Your client lib newer that I: label property not found",
-  /* 15 */  "Invalid WP_SIDE of toolbar.  Where shall I put it?",
+  /* 15 */  "Invalid PG_WP_SIDE of toolbar.  Where shall I put it?",
   /* 16 */  "Toolbars do not have many properties.  Do not invent new ones without telling me.",
   /* 17 */  "In binding the scrollbar, you have misplaced the handle: cannot lift widget",
-  /* 18 */  "The widget you wish to bind, has no WP_SCROLL",
+  /* 18 */  "The widget you wish to bind, has no PG_WP_SCROLL",
   /* 19 */  "The property for scrollbar is invalid. Abort, retry, fail?",
   /* 20 */  "The widget you seek to create cannot exist",
   /* 21 */  "A mess of pointers; something must go wrong. widget has no in and out pointers",
@@ -73,14 +73,14 @@ static const char *errors[] = {
   /* 28 */  "The handle you seek has been found, but it is not what you are looking for",
   /* 29 */  "The handle you try to bequeath is invalid. Your heirs are disappointed",
   /* 30 */  "The application type you need does not exist.",
-  /* 31 */  "Bad WP_SIDE for button.",
+  /* 31 */  "Bad PG_WP_SIDE for button.",
   /* 32 */  "Button can't be aligned with that",
   /* 33 */  "The bitmap you specify for a button can not be found",
   /* 34 */  "Button bitmask is missing!",
   /* 35 */  "Button font can't be found",
   /* 36 */  "Doh! Bad string handle for button!",
   /* 37 */  "A nonexistant button property does not exist",
-  /* 38 */  "Yet another error; Bad WP_SIDE for a panel",
+  /* 38 */  "Yet another error; Bad PG_WP_SIDE for a panel",
   /* 39 */  "Invalid property for the panel",
   /* 40 */  "Ha! Popups have no properties!",
   /* 41 */  "Bad side parameter for a box",
