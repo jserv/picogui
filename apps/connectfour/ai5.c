@@ -31,8 +31,8 @@
 #include "ai4.h"
 #include "ai5.h"
 
-#define DEBUG
-#define FUNCTION_DEBUG
+//#define DEBUG
+//#define FUNCTION_DEBUG
 
 void ai5(struct board *it)
 {
@@ -113,6 +113,8 @@ int gentrapwin(struct board *it)
   fprintf(stderr,"gentrapwin called\n");
 #endif
 
+  
+
   return -1;
 }
 
@@ -128,13 +130,29 @@ int gentraplose(struct board *it)
 
 int spotwin(struct board *it, int x, int y, int player)
 {
-  int i;
+  int i,j;
+
+#ifdef FUNCTION_DEBUG
+  fprintf(stderr,"spotwin called - x = %d, y = %d, player = %d\n",x,y,player);
+#endif
 
   for(i-0;i<3;i++)
   {
     /* Horizontal */
-    if((gmask(it,x,y+1,x-2+i,y) + gmask(it,x,y+1,x-1+i,y) + gmask(it,x,y+1,x+i,y)) == -2)
-      return -1;
+    if((gmask(it,x,8,x-2+i,y)+gmask(it,x,8,x-1+i,y)+gmask(it,x,8,x+i,y)) == player * 2)
+      for(j=0;j<5;j++)
+	if(gmask(it,x,8,x-2+i,y) == 0 && gmask(it,x,8,x-2+i,y-1) != 0)
+	  return maskout(x,x-2+i);
+    /* positive slope */
+    if((gmask(it,x,y,x-2+i,y-2+i)+gmask(it,x,y,x-1+i,y-1+i)+gmask(it,x,y,x+i,y+i)) == player*2)
+      for(j=0;j<5;j++)
+	if(gmask(it,x,y,x-2+i,y-2+i) == 0 && gmask(it,x,y,x-2+i,(y-2+i)-1) != 0)
+	  return maskout(x,x-2+i);
+    /* negative slope */
+    if((gmask(it,x,y,x-2+i,y+2-i)+gmask(it,x,y,x-1+i,y+1-i)+gmask(it,x,y,x+i,y-i)) == player*2)
+      for(j=0;j<5;j++)
+	if(gmask(it,x,y,x-2+i,y+2-i) == 0 && gmask(it,x,y,x-2+i,(y+2-i)-1) != 0)
+	  return maskout(x,x-2+i);
   }
   return -1;
 }
@@ -142,7 +160,23 @@ int spotwin(struct board *it, int x, int y, int player)
 /*this masks an X and Y thing out of a board, so that the caller doesn't "see" it */
 int gmask(struct board *it, int maskx, int masky, int x, int y)
 {
+#ifdef FUNCTION_DEBUG
+  fprintf(stderr,"gmask called - maskx = %d, masky = %d, x = %d, y = %d\n",maskx,masky,x,y);
+#endif
+
   if(x >= maskx) x++;
   if(y >= masky) y++;
   return glook(it,x,y);
+}
+
+int maskout(int mask, int val)
+{
+
+#ifdef FUNCTION_DEBUG
+  fprintf(stderr,"maskout called\n");
+#endif
+
+  if(val >= mask)
+    val++;
+  return val;
 }

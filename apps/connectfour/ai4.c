@@ -30,8 +30,8 @@
 #include "ai3.h"
 #include "ai4.h"
 
-#define FUNCTION_DEBUG
-#define DEBUG
+//#define FUNCTION_DEBUG
+//#define DEBUG
 
 void ai4(struct board *it)
 {
