@@ -24,15 +24,12 @@ _svn_id = "$Id$"
 
 import os, shutil
 
-
 class PackageVersion(object):
     """A single version of a package, representing a local copy and a repository.
        Supports updating the local copy from the repository, and performing builds
        on the local copy.
-
-       This is an abstract base class. A subclass must provide information about
-       building the package and where to store it locally.
        """
+
     def __init__(self, package, configNode, appendPaths=[]):
         """package is the Package instance this belongs to,
            configNode is the DOM node for our <version> tag,
@@ -70,10 +67,16 @@ class PackageVersion(object):
         return os.sep.join(str(self).split("/"))
 
     def getLocalPath(self, ctx):
-        """Using the current bootstrap configuration, get the local path for this package
-           Must be implemented by a base class.
-           """
-        pass
+        """Using the current bootstrap configuration, get the local path for this package"""
+        return os.path.join(ctx.config.eval('bootstrap/path[@name="packages"]/text()'),
+                            self.getPathName())
+
+    def getBinaryPath(self, ctx):
+        """Using the current bootstrap configuration and package build platform,
+           get the binary path for this package."""
+        return os.path.join(ctx.config.eval('bootstrap/path[@name="bin"]/text()'),
+                            str(self.package.getHostPlatform(ctx)),
+                            self.getPathName())
 
     def update(self, ctx):
        """Update the package if possible. Return 1 if there was an update available, 0 if not."""
@@ -141,34 +144,7 @@ class PackageVersion(object):
         import PGBuild.Build
         PGBuild.Build.loadScriptDir(ctx.task("Loading SCons scripts"), self.getLocalPath(ctx))
 
-    
-class SourcePackageVersion(PackageVersion):
-    def getLocalPath(self, ctx):
-        return os.path.join(ctx.config.eval('bootstrap/path[@name="packages"]/text()'),
-                            self.getPathName())
-
-    def getBinaryPath(self, ctx):
-        """Using the current bootstrap configuration and package build platform,
-           get the binary path for this package."""
-        return os.path.join(ctx.config.eval('bootstrap/path[@name="bin"]/text()'),
-                            str(self.package.getHostPlatform(ctx)),
-                            self.getPathName())
-
-
-class DocPackageVersion(PackageVersion):
-    def getLocalPath(self, ctx):
-        return os.path.join(ctx.config.eval('bootstrap/path[@name="doc"]/text()'),
-                            self.getPathName())
-
-
-# Mapping of package 'type' attributes to the PackageVersion class to use
-packageTypes = {
-    None: SourcePackageVersion,       # Default to source package
-    'source': SourcePackageVersion, 
-    'doc': DocPackageVersion,
-    }
-
-
+        
 class Package(object):
     """A package object, initialized from the configuration tree.
        Holds details common to all package versions.
@@ -186,16 +162,13 @@ class Package(object):
             raise PGBuild.Errors.ConfigError("Can't find a package with the name '%s'" % self.name)
         self.configNode = self.configNode[0]
 
-        # Find a class for constructing package versions, based on the type attribute
-        self.versionClass = packageTypes[ctx.config.eval("@type", self.configNode)]
-
         self.versions = {}
         self._loadVersions(ctx, self.configNode)
 
     def _loadVersions(self, ctx, node, paths=[]):
         """Load <version> tags from the given DOM node, recursively loading <versiongroup>s"""
         for versionNode in node.getElementsByTagName('version'):
-            self.versions[versionNode.attributes['name'].value] = self.versionClass(self, versionNode, paths)
+            self.versions[versionNode.attributes['name'].value] = PackageVersion(self, versionNode, paths)
         for groupNode in node.getElementsByTagName('versiongroup'):
             try:
                 groupName = groupNode.attributes['name'].value
