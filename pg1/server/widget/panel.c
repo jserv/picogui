@@ -279,6 +279,11 @@ g_error panel_set(struct widget *self,int property, glob data) {
       (*app)->name = data;
     return widget_set(w,property,data);
 
+  case PG_WP_IMAGE:
+    e = rdhandle((void **) &w, PG_TYPE_WIDGET, self->owner, DATA->hlabel);
+    errorcheck;
+    return widget_set(w,property,data);
+
   case PG_WP_MARGIN:
     DATA->margin = data;
     DATA->margin_override = data >= 0;
@@ -302,6 +307,11 @@ glob panel_get(struct widget *self,int property) {
     return DATA->bg->state;
 
   case PG_WP_TEXT:
+    e = rdhandle((void **) &w, PG_TYPE_WIDGET, self->owner, DATA->hlabel);
+    errorcheck;
+    return widget_get(w,property);
+
+  case PG_WP_IMAGE:
     e = rdhandle((void **) &w, PG_TYPE_WIDGET, self->owner, DATA->hlabel);
     errorcheck;
     return widget_get(w,property);
