@@ -1,0 +1,32 @@
+PicoGUI Freetype Font Package
+-----------------------------
+
+This is a set of core fonts to use with PicoGUI's Freetype font backend.
+It contains fonts taken from OpenOffice, Ghostscript, and X11. They are
+all licensed in a GPL-compatible way as far as I know.
+
+Hopefully this will form a base set of fonts for themes and defaults to
+refer to, and to be included in most products using PicoGUI and Freetype.
+
+Note that this directory also includes font.index, for fast loading.
+Assuming you installed this font package at /usr/share/picogui/fonts, you
+could use the following lines in your pgserver.conf to use the index:
+
+[font-freetype]
+path = /usr/share/picogui/fonts
+scan_list = /usr/share/picogui/fonts/font.index
+
+-------------- Contents:
+
+  - Helmet
+    From OpenOffice, a good general-purpose sans-serif font
+    
+  - Timmons
+    From OpenOffice, a general purpose serif font
+    
+  - Nimbus Mono L
+    From Ghostscript, a scalable monospaced font
+    
+  - Clean (6,8,12)
+    From X11, a bitmapped font that works nicely for
+    terminals at small sizes
