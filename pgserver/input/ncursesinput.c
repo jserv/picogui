@@ -1,6 +1,9 @@
-/* $Id: ncursesinput.c,v 1.1 2001/01/14 23:03:11 micahjd Exp $
+/* $Id: ncursesinput.c,v 1.2 2001/01/15 04:04:55 micahjd Exp $
  *
  * ncursesinput.h - input driver for ncurses
+ * 
+ * Note that even though ncurses can provide a wrapper around gpm,
+ * most distros get this all munged up, so we connect to gpm directly.
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -32,40 +35,103 @@
 #include <pgserver/pgnet.h>
 
 #include <curses.h>
-
-#define POLL_USEC 100
+#include <gpm.h>
 
 /******************************************** Implementations */
 
-void ncursesinput_poll(void) {
+int ncursesinput_fd_activate(int fd) {
    int ch;
-   switch (ch = getch()) {
-      
-    case ERR:    /* Nothing yet */
-      return;
-
-    default:     /* Normal key */
-      dispatch_key(TRIGGER_CHAR,ch,0);
+   Gpm_Event evt;
+   static int savedbtn = 0;
+   
+   /* Keyboard activity? */
+   if (fd==3) {
+      switch (ch = getch()) {
+	 
+       case ERR:    /* Nothing yet */
+	 break;
+	 
+       default:     /* Normal key */
+	 dispatch_key(TRIGGER_CHAR,ch,0);
+      }
    }
+   
+   /* Mouse activity? */
+   else if (fd==gpm_fd)
+      if (Gpm_GetEvent(&evt) > 0) {
+	 int trigger;
+	 
+	 switch (evt.type & (GPM_MOVE | GPM_DRAG | GPM_UP | GPM_DOWN)) {
+	    
+	  case GPM_MOVE:
+	  case GPM_DRAG:
+	    trigger = TRIGGER_MOVE;
+	    savedbtn = evt.buttons;
+	    break;
+	    
+	  case GPM_UP:
+	    trigger = TRIGGER_UP;
+	    evt.buttons = savedbtn &= ~evt.buttons;
+	    break;
+	    
+	  case GPM_DOWN:
+	    trigger = TRIGGER_DOWN;
+	    savedbtn = evt.buttons;
+	    break;
+	    
+	  default:
+	    return 1;
+	 }
+
+	 dispatch_pointing(trigger,evt.x,evt.y,
+			   ((evt.buttons>>2)&1) ||
+			   ((evt.buttons<<2)&4) ||
+			   (evt.buttons&2));
+	 GPM_DRAWPOINTER(&evt);
+      }
+      
+   /* Pass on the event if necessary */
+   else
+     return 0;
+   return 1;
+}
+
+void ncursesinput_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
+   if ((*n)<(gpm_fd+1))
+     *n = gpm_fd+1;
+   FD_SET(3,readfds);           /* stdin */
+   if (gpm_fd>0)                /* mouse */
+     FD_SET(gpm_fd,readfds);
 }
 
 g_error ncursesinput_init(void) {
+   Gpm_Connect my_gpm;
+
    /* Make getch nonblocking */
    nodelay(stdscr,1);
+
+   /* Connect to GPM */
+   my_gpm.eventMask = GPM_MOVE | GPM_DRAG | GPM_UP | GPM_DOWN;
+   my_gpm.defaultMask = 0;                 /* Pass nothing */
+   my_gpm.minMod = 0;                      /* Any modifier keys */
+   my_gpm.maxMod = ~0;
+   if (Gpm_Open(&my_gpm,0) == -1)
+     return mkerror(PG_ERRT_IO,74);
+   gpm_zerobased = 1;
+   
    return sucess;
 }
 
-/* Polling time for the input driver */ 
-void ncursesinput_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
-   timeout->tv_sec = 0;
-   timeout->tv_usec = POLL_USEC;
+void ncursesinput_close(void) {
+   while (Gpm_Close());
 }
 
 /******************************************** Driver registration */
 
 g_error ncursesinput_regfunc(struct inlib *i) {
    i->init = &ncursesinput_init;
-   i->poll = &ncursesinput_poll;
+   i->close = &ncursesinput_close;
+   i->fd_activate = &ncursesinput_fd_activate;
    i->fd_init = &ncursesinput_fd_init;
    return sucess;
 }
