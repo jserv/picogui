@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.17 2002/01/14 09:06:17 micahjd Exp $
+/* $Id: fbdev.c,v 1.18 2002/01/16 01:18:54 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -47,6 +47,13 @@
 int fbdev_fd;
 unsigned long fbdev_mapsize;
 
+/* Save screen info for color conversion */
+struct fb_fix_screeninfo fixinfo;
+struct fb_var_screeninfo varinfo;
+
+pgcolor fbdev_color_hwrtopg(hwrcolor c);
+hwrcolor fbdev_color_pgtohwr(pgcolor c);
+
 #ifdef CONFIG_FIX_VR3
 //Color map for the Agenda VR3
 static unsigned short vr_lcd_intensity[16] = {
@@ -72,8 +79,6 @@ static unsigned short vr_lcd_intensity[16] = {
 g_error fbdev_init(void) {
    g_error e;
    int fbdev_fd;
-   struct fb_fix_screeninfo fixinfo;
-   struct fb_var_screeninfo varinfo;
    
    /* Open the framebuffer device */
    if (!(fbdev_fd = open("/dev/fb0", O_RDWR)))
@@ -139,6 +144,16 @@ g_error fbdev_init(void) {
     default:
       close(fbdev_fd);
       return mkerror(PG_ERRT_BADPARAM,101);   /* Unknown bpp */
+   }
+
+   /* There are several encodings that can be used for 16bpp true
+    * color, including 5-6-5 and 4-4-4 color. These color conversion
+    * functions use the info in the 'varinfo' structure to handle
+    * any encoding.
+    */
+   if (vid->bpp > 8) {
+     vid->color_hwrtopg = &fbdev_color_hwrtopg;
+     vid->color_pgtohwr = &fbdev_color_pgtohwr;
    }
    
    /* Map it */
@@ -208,6 +223,20 @@ g_error fbdev_init(void) {
 #endif
    
    return success;
+}
+
+/* Our own conversion routines for true color
+ */
+pgcolor fbdev_color_hwrtopg(hwrcolor c) {
+  return mkcolor( (u8)((c >> varinfo.red.offset  ) << (8 - varinfo.red.length  )),
+		  (u8)((c >> varinfo.green.offset) << (8 - varinfo.green.length)),
+		  (u8)((c >> varinfo.blue.offset ) << (8 - varinfo.blue.length )) );
+
+}
+hwrcolor fbdev_color_pgtohwr(pgcolor c) {
+  return ( (((u32)getred(c))   >> (8 - varinfo.red.length  )) << varinfo.red.offset   ) ||
+         ( (((u32)getgreen(c)) >> (8 - varinfo.green.length)) << varinfo.green.offset ) ||
+         ( (((u32)getblue(c))  >> (8 - varinfo.blue.length )) << varinfo.blue.offset  );
 }
 
 void fbdev_close(void) {
