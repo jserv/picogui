@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.121 2003/03/10 23:48:17 micahjd Exp $
+/* $Id$
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -500,6 +500,8 @@ struct vidlib {
 		     hwrbitmap src, s16 src_x, s16 src_y, s16 src_w, s16 src_h,
 		     struct pgquad *clip, s16 angle, s16 lgop);
  
+  void (*arc) (hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
+	       s16 angle_start, s16 angle_stop, hwrcolor color, s16 lgop);
   void (*ellipse) (hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
   void (*fellipse) (hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
   void (*fpolygon) (hwrbitmap dest, s32* array, s16 xoff, s16 yoff , hwrcolor c, s16 lgop);
@@ -805,6 +807,8 @@ void yuv16_422_planar_pixel(hwrbitmap dest, s16 x, s16 y, hwrcolor c, s16 lgop);
 hwrcolor yuv16_422_planar_getpixel(hwrbitmap src, s16 x, s16 y);
 void yuv16_422_planar_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 		   s16 src_x, s16 src_y, s16 lgop);
+void def_arc(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
+	     s16 angle_start, s16 angle_stop, hwrcolor color, s16 lgop);
 void def_ellipse(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
 void def_fellipse(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
 void def_fpolygon(hwrbitmap dest, s32* array, s16 xoff, s16 yoff , hwrcolor c, s16 lgop);

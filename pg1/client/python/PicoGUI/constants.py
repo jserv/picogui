@@ -480,6 +480,7 @@ _constants = {
             'fpolygon':		  (0x34, _stop),
             'blur':		  (0x44, _stop),
             'rotatebitmap':	  (0x74, _stop),
+            'arc':		  (0x08, _stop),
             'resetclip':	  (0x13, _stop),
             'setoffset':	  (0x01, _stop),
             'setclip':		  (0x11, _stop),

@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.51 2003/03/10 23:48:08 micahjd Exp $
+/* $Id$
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -931,6 +931,18 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 		   n->param[2],
 		   r->lgop);      
     break;
+  case PG_GROP_ARC: 
+    VID(arc) (r->output,
+	      n->r.x,
+	      n->r.y,
+	      n->r.w,
+	      n->r.h,
+	      n->param[0],
+	      n->param[1],
+	      c, 
+	      r->lgop 
+	      ); 
+    break; 
   case PG_GROP_ELLIPSE: 
     VID(ellipse) (r->output, 
 		  n->r.x, 

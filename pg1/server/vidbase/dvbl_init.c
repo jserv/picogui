@@ -1,4 +1,4 @@
-/* $Id: dvbl_init.c,v 1.14 2003/01/01 03:43:05 micahjd Exp $
+/* $Id$
  *
  * dvbl_init.c - This file is part of the Default Video Base Library,
  *               providing the basic video functionality in picogui but
@@ -134,6 +134,7 @@ void setvbl_default(struct vidlib *vid) {
   vid->gradient = &def_gradient;
   vid->multiblit = &def_multiblit;
   vid->scrollblit = &def_scrollblit;
+  vid->arc = &def_arc; 
   vid->ellipse = &def_ellipse; 
   vid->fellipse = &def_fellipse; 
   vid->fpolygon = &def_fpolygon;

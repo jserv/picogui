@@ -1,4 +1,4 @@
-/* $Id: dvbl_primitives.c,v 1.3 2003/01/01 03:43:05 micahjd Exp $
+/* $Id$
  *
  * dvbl_primitives.c - This file is part of the Default Video Base Library,
  *                     providing the basic video functionality in picogui but
@@ -40,6 +40,7 @@
 
 #include <stdlib.h>		/* for qsort */
 #include <string.h>
+#include <math.h>
 
 /* There are about a million ways to optimize this-
    At the very least, combine it with pixel() and
@@ -105,6 +106,53 @@ void def_line(hwrbitmap dest,s16 x1,s16 y1,s16 x2,s16 y2,hwrcolor c,s16 lgop) {
       (*vid->pixel) (dest,x1,y1,c,lgop);
     }
   }
+}
+
+void def_arc(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
+	     s16 angle_start, s16 angle_stop, hwrcolor color, s16 lgop)
+{
+    double rad_start, rad_stop;
+    double aStep;            /* Angle step */
+    double a;                /* Current angle */
+    s16 xc, yc, radius1, radius2, x_last, x_next, y_last, y_next;
+
+    /* This algorythm wants center and two radiuses... */
+    xc = x+w/2;
+    yc = y+h/2;
+    radius1 = w/2;
+    radius2 = h/2;
+    /* ... and radians */
+    rad_start = angle_start * M_PI / 180;
+    rad_stop = angle_stop * M_PI / 180;
+
+    /* Angle step in rad */
+    if (radius1<radius2) {
+        if (radius1<1.0e-4) {
+            aStep=1.0;
+        } else {
+            aStep=asin(2.0/radius1);
+        }
+    } else {
+        if (radius2<1.0e-4) {
+            aStep=1.0;
+        } else {
+            aStep=asin(2.0/radius2);
+        }
+    }
+
+    if(aStep<0.05) {
+        aStep = 0.05;
+    }
+
+    x_last = xc+cos(rad_start)*radius1;
+    y_last = yc-sin(rad_start)*radius2;
+    for(a=rad_start+aStep; a<=rad_stop; a+=aStep) {
+      x_next = xc+cos(a)*radius1;
+      y_next = yc-sin(a)*radius2;
+      (*vid->line) (dest, x_last, y_last, x_next, y_next, color, lgop);
+      x_last = x_next;
+      y_last = y_next;
+    }
 }
 
 #define SYMMETRY(X,Y) (*vid->pixel) (dest,xoff+X,yoff+Y,c,lgop); \
