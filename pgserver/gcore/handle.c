@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.20 2000/10/19 01:21:23 micahjd Exp $
+/* $Id: handle.c,v 1.21 2000/11/05 07:18:40 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -272,6 +272,7 @@ void htree_delete(struct handlenode *z) {
     z->owner = y->owner;
     z->obj = y->obj;
     z->context = y->context;
+    z->payload = y->payload;
     z->type &= HFLAG_RED;
     z->type |= y->type & ~HFLAG_RED;
   }  
@@ -373,6 +374,7 @@ g_error mkhandle(handle *h,unsigned char type,int owner,void *obj) {
   n->context = context;
   n->obj = obj;
   n->owner = owner;
+  n->payload = 0;
   htree_insert(n);
   *h = n->id;
   return sucess;
