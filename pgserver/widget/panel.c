@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.57 2001/04/07 22:41:45 micahjd Exp $
+/* $Id: panel.c,v 1.58 2001/04/18 01:08:43 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -435,12 +435,26 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     VID(sprite_hideall) ();   /* This line combined with the zero flag on */
     update(NULL,0);             /*  the next gets a clean spriteless grab */
 
+    /* In case there was no release trigger (bug in input driver) */
+    if (DATA->s) {
+       free_sprite(DATA->s);
+       DATA->s = NULL;
+    }
+    if (DATA->sbit) {
+       VID(bitmap_free) (DATA->sbit);
+       DATA->sbit = NULL;
+    }
+     
     /* Allocate the new sprite */
-    if(iserror(new_sprite(&DATA->s,BARDIV->w,BARDIV->h)))
-      return;
+    if(iserror(new_sprite(&DATA->s,BARDIV->w,BARDIV->h))) {
+       DATA->s = NULL;
+       return;
+    }
     if (iserror(VID(bitmap_new) (&DATA->sbit,BARDIV->w,BARDIV->h))) {
-      free_sprite(DATA->s);
-      return;
+       free_sprite(DATA->s);
+       DATA->s = NULL;
+       DATA->sbit = NULL;
+       return;
     }
     DATA->s->bitmap = &DATA->sbit;
     
@@ -456,7 +470,7 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
   case TRIGGER_UP:
   case TRIGGER_RELEASE:
     if (!DATA->on) return;
-    if (param->mouse.chbtn != 1) return;
+    if (!(param->mouse.chbtn & 1)) return;
 
     panel_calcsplit(self,param->mouse.x,param->mouse.y);
      
@@ -490,6 +504,8 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
 #ifndef CONFIG_DRAGSOLID
     VID(bitmap_free) (DATA->sbit);
     free_sprite(DATA->s);
+    DATA->s = NULL;
+    DATA->sbit = NULL;
 #endif
      
     DATA->on = 0;

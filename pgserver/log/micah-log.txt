@@ -1,4 +1,53 @@
+2001-04-17    Micah Dowty <micahjd@users.sourceforge.net>
+
+After reading the mips version of stdarg.h, it all made sense. Now i can fix
+some non-fatal bugs, put up a how-to web page for the helio port, and start
+the next video overhaul. (to add some important new engine features and
+uncruftify a bit)
+
+      * cli_c/src/api.c: Modified calls to va_arg to use the correct types.
+        As noted in stdarg.h's source, va_arg(...,short) isn't valid in mips
+	
+      * widget/panel.c: The panel dropped sprites on the floor, had to pick
+        them up. Fixed the condition in which a second mouse press without
+	a release causes a memory leak and potential segfault. (sprite
+	referencing invalid bitmap)
+	
+      * input/r3912ts.c: Added smarter handling of up/down triggers and
+        out-of-bounds conditions.
+
+      * vidwrap/rotate90.c: Wouldn't compile when XBM was disabled, fixed
+        the #ifdefs
+
+      * Helio.config: Added a copy of the .config I used with the Helio
+      
+
+2001-04-16    Micah Dowty <micahjd@users.sourceforge.net>
+
+Considering there are now two major things I need to add to the video
+drivers, global support for lgops and rendering to any bitmap, I should
+probably do that before writing any more optimized primitives.
+I wanted to take a little break first to fix up the lcdmono theme some.
+The Helio port is nice, especially with working power management, but the
+annoying problem of blank buttons and nonfunctional app still looms over the
+whole thing. Many debug statements later I traced the problem to
+pgSetWidget.
+
+      * themetools/examples/data/mono*.pbm: Added 9x9 mono icons
+      
+      * themetools/examples/lcdmono.ths: Many improvements for
+        better look in general and better look on 1bpp devices
+
+2001-04-15    Micah Dowty <micahjd@users.sourceforge.net>
+
+Started porting PicoGUI to the VTech Helio, which mostly involved hacking at
+various kernels.
+
+      * input/r3912ts.c: New touchscreen driver for the Linux-VR kernel
+
 2001-04-14    Micah Dowty <micahjd@users.sourceforge.net>
+
+Argh, I'm getting lazy with the website/log updates
 
       * vidbase/defaultvbl.c: Fixed 90 degree rotation crash bug
       

@@ -1,4 +1,4 @@
-/* $Id: r3912ts.c,v 1.1 2001/04/16 04:38:30 micahjd Exp $
+/* $Id: r3912ts.c,v 1.2 2001/04/18 01:08:43 micahjd Exp $
  *
  * r3912ts.c - input driver for r3912 touch screen found on the VTech Helio
  *             and others. Other touch screens using the same data format should
@@ -225,6 +225,8 @@ void r3912ts_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
 int r3912ts_fd_activate(int fd) {
    struct tpanel_sample ts;
    XYPOINT dev,scr;
+   static u8 state = 0;
+   int trigger;
    
    /* Read raw data from the driver */
    if (fd!=r3912ts_fd)
@@ -238,39 +240,65 @@ int r3912ts_fd_activate(int fd) {
    scr = DeviceToScreen(dev);
    scr.x >>= 2;
    scr.y >>= 2;
+
+   /* What type of pointer event? */
+   if (ts.state) {
+      if (state)
+	trigger = TRIGGER_MOVE;
+      else
+	trigger = TRIGGER_DOWN;
+   }
+   else {
+      if (state)
+	trigger = TRIGGER_UP;
+      else
+	return 1;
+   }
    
-   /* Clip to screen resolution */
-
-   if (scr.x < 0)
-     scr.x = 0;
-   else if (scr.x >= vid->xres)
-     scr.x = vid->xres-1;
-
-   if (scr.y < 0)
-     scr.y = 0;
+   /* Clip to screen resolution
+    *
+    * If it's offscreen, ignore unless it's a TRIGGER_UP
+    */
+   if (scr.x < 0) {
+      if (trigger==TRIGGER_UP)
+	scr.x = 0;
+      else
+	return 1;
+   }
+   else if (scr.x >= vid->xres) {
+      if (trigger==TRIGGER_UP)
+	scr.x = vid->xres-1;
+      else
+	return 1;
+   }
+   if (scr.y < 0) {
+      if (trigger==TRIGGER_UP)
+	scr.y = 0;
+      else
+	return 1;
+   }
    else if (scr.y >= vid->yres) {
       /* If it's off the bottom of the screen, handle
        * the silk-screened buttons */
 #ifdef DRIVER_R3912TS_HELIOSS
       handle_silkscreen_buttons(scr.x,scr.y,ts.state);
-      return 1;
+      if (state) {
+	 scr.y = vid->yres-1;
+	 trigger = TRIGGER_UP;
+      }
+      else
+	return 1;
 #else
-      scr.y = vid->yres-1;
+      if (trigger==TRIGGER_UP)
+	scr.y = vid->yres-1;
+      else
+	return 1;
 #endif
    }
    
-   /* Send a pointer event */
-   switch (ts.state) {
-    case 0:
-      dispatch_pointing(TRIGGER_UP,scr.x,scr.y,0);
-      break;
-    case 1:
-      dispatch_pointing(TRIGGER_DOWN,scr.x,scr.y,1);
-      break;
-    case 2:
-      dispatch_pointing(TRIGGER_MOVE,scr.x,scr.y,1);
-      break;
-   }
+   /* If we got this far, accept the new state and send the event */
+   state = (trigger != TRIGGER_UP);
+   dispatch_pointing(trigger,scr.x,scr.y,state);
    
    return 1;
 }
