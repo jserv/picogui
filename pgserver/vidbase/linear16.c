@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.19 2002/10/07 03:31:16 micahjd Exp $
+/* $Id: linear16.c,v 1.20 2002/10/07 05:48:47 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -142,7 +142,15 @@ void linear16_blit(hwrbitmap dest,
      def_blit(dest,dst_x,dst_y,w,h,sbit,src_x,src_y,lgop);
      return;
   }
-   
+
+  /* If we try to do alpha blending on a 16bpp source bitmap, we will
+   * get a bus error on platforms like ARM that don't allow unaligned access!
+   */
+  if (lgop==PG_LGOP_ALPHA && srcbit->bpp!=32) {
+    linear16_rect(dest,dst_x,dst_y,w,h,0xFF00,PG_LGOP_NONE);
+    return;
+  }
+
   dst = PIXELADDR(dst_x,dst_y);
   offset_dst = (FB_BPL>>1) - w;
   src = ((u16*)srcbit->bits) + ((src_x*srcbit->bpp)>>4) + src_y*(srcbit->pitch>>1);
