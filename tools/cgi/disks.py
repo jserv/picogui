@@ -212,7 +212,7 @@ class DiskPage(navi_cgi.NaviPage):
 
     def section_raid(self, write):
         self.begin_section(write, "raid", "RAID", "monoBox")
-        self.runCommand(write, 'cat /proc/mdstat')
+        self.runCommand(write, 'cat /proc/mdstat | fold -s -w 120')
         self.end_section(write)
 
 if __name__ == '__main__':
