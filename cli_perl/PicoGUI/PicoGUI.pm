@@ -674,6 +674,7 @@ our %EXPORT_TAGS = ( 'all' => [ qw(
 	pgFraction
 	pgMenuFromArray
 	pgSetWidget
+	pgWriteCmd
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );

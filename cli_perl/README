@@ -40,6 +40,5 @@ pgNewBitmap
 pgSizeText
 pgLoadTheme
 pgWriteData
-pgWriteCmd
 
 ** The End **

@@ -56,11 +56,29 @@ pgNewWidget(PG_WIDGET_BUTTON);
 pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("Quack!"),PG_WP_SIDE,PG_S_RIGHT);
 
 $wLabel = pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_AFTER,$toolbar);
-pgNewWidget(PG_WIDGET_CANVAS);
+# Canvas with some junk in it
+$c = pgNewWidget(PG_WIDGET_CANVAS);
+pgWriteCmd($c,PGCANVAS_GROP,PG_GROP_FRAME, 80,25,5,5);
+pgWriteCmd($c,PGCANVAS_SETGROP,1,0);
+pgWriteCmd($c,PGCANVAS_COLORCONV,1,1);
+pgWriteCmd($c,PGCANVAS_GROP,PG_GROP_LINE, 10,10,50,20);
+pgWriteCmd($c,PGCANVAS_SETGROP,1,0);
+pgWriteCmd($c,PGCANVAS_COLORCONV,1,1);
+pgWriteCmd($c,PGCANVAS_GROP,PG_GROP_LINE, 30,10,-12,30);
+pgWriteCmd($c,PGCANVAS_SETGROP,1,0);
+pgWriteCmd($c,PGCANVAS_COLORCONV,1,1);
+
 # Little event loop
 while ($evt{from} != $popup) {
       %evt = pgGetEvent();
       pgReplaceText($wLabel,join(',',%evt));
+      
+      # Move the little frame (grop #0) when canvas is clicked
+      if ($evt{from} == $c) {
+      	 pgWriteCmd($c,PGCANVAS_FINDGROP,0);
+	 pgWriteCmd($c,PGCANVAS_MOVEGROP,$evt{x}-3,$evt{y}-3,5,5);
+	 pgWriteCmd($c,PGCANVAS_REDRAW);
+      }
 }
 pgLeaveContext();
 

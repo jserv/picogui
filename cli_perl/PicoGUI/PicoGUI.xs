@@ -3922,7 +3922,7 @@ not_there:
 static double
 constant_PGCANVAS_G(char *name, int len, int arg)
 {
-    if (10 + 3 >= len ) {
+    if (10 + 2 >= len ) {
 	errno = EINVAL;
 	return 0;
     }
@@ -9258,6 +9258,34 @@ pgSetWidget(widget, ...)
 	     pgSetWidget(widget,SvIV(ST(i)),SvIV(ST(i+1)),0);
 	}
 
+void
+pgWriteCmd(widget, command, ...)
+        pghandle widget
+        short command
+    CODE:
+        {
+	   struct pgcommand *hdr;
+	   signed long *params;
+	   unsigned long bufsize;
+	   char *buf;
+	   int i;
+	   
+	   bufsize = (items-2) * sizeof(signed long) + sizeof(struct pgcommand);
+	   buf = alloca(bufsize);
+	   hdr = (struct pgcommand *) buf;
+	   params = (signed long *) (buf + sizeof(struct pgcommand));
+	   
+	   hdr->command = htons(command);
+	   hdr->numparams = htons(items-2);
+	   
+	   for (i=2;i<items;i++) {
+	      *params = htonl(SvIV(ST(i)));
+	      params++;
+	   }
+   
+	   pgWriteData(widget,pgFromMemory(buf,bufsize));
+	}
+	   
 int
 pgMessageDialog(title,text,flags=0)
 	const char *title
