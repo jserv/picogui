@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.15 2002/07/03 22:03:31 micahjd Exp $
+/* $Id: x11input.c,v 1.16 2002/08/15 01:19:56 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -137,7 +137,7 @@ int x11input_fd_activate(int fd) {
       break;
 
     case ButtonPress:
-      infilter_send_pointing(G_TRIGGER_DOWN,ev.xbutton.x, ev.xbutton.y,
+      infilter_send_pointing(PG_TRIGGER_DOWN,ev.xbutton.x, ev.xbutton.y,
 			     (ev.xbutton.state >> 8) | (1 << (ev.xbutton.button-1)),
 			     x11input_pgcursor);
       break;
