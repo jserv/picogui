@@ -43,6 +43,7 @@ multiple locations:
     to portably extract packages distributed in .tar.bz2 and .tar.gz files.
     Note that this module will be built in with Python 2.3, but we include
     it to stay compatible with Python 2.2.
+    See http://www.gustaebel.de/lars/tarfile/
 
   - PGBuild
     dev
