@@ -1,4 +1,4 @@
-/* $Id: aqua.ths,v 1.22 2000/11/05 02:21:51 micahjd Exp $
+/* $Id: aqua.ths,v 1.23 2000/11/05 05:08:08 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
@@ -176,11 +176,19 @@ object popup {
     Gradient(x+w-margin,y,margin,h,0,0x000000,0x808080,-1);
     Gradient(x,y+h-margin,w,margin,90,0x000000,0x808080,-1);
   };
-  margin = 7;
   
   /* Extra padding */
+  margin = 7;
   width = 70;
   height = 50;
+
+  /*** Dim the stuff behind us */
+
+  /* This method is pretty nifty */
+  //  backdrop = fillstyle { Gradient(x,y,w,h,0,0x000000,0xFFFFFF,-1); }; 
+
+  /* Regular dim */
+  //  backdrop = fillstyle { Dim(x,y,w,h); };
 }
 object label.dlgtitle {
   bitmap1 = LoadBitmap("data/aq_title_blu_h.pnm");
@@ -195,6 +203,13 @@ object popup.menu {
     Frame(x,y,w,h,ColorConv(0x808080));
   };
   margin = 1;
+  
 }
+object menuitem {
+  align = PG_A_LEFT;
+  spacing = 0;
+  height = 20;
+}
+object menuitem.hilight bitmap1 = LoadBitmap("data/aq_menuselect.pnm");
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.21 2000/11/05 02:21:51 micahjd Exp $
+/* $Id: constants.h,v 1.22 2000/11/05 05:08:09 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -206,10 +206,12 @@ typedef unsigned long pghandle;
 #define PGTH_O_ZOOMBTN_HILIGHT       36   /* A panelbar zoom button, mouse over */
 #define PGTH_O_POPUP_MENU            37   /* A popup menu */
 #define PGTH_O_POPUP_MESSAGEDLG      38   /* A message dialog */
+#define PGTH_O_MENUITEM              39   /* Item in a popup menu (customized button) */
+#define PGTH_O_MENUITEM_HILIGHT      40   /* menuitem with the mouse over it */
 
 /* If you add a themeobject, be sure to increment this and add
    an inheritance entry in theme/thobjtab.c */
-#define PGTH_ONUM                    39
+#define PGTH_ONUM                    41
 
 /*** Loaders */
 
@@ -256,6 +258,7 @@ typedef unsigned long pghandle;
 #define PGTH_P_SPACING    20  /*   int         Distance between similar widgets */
 #define PGTH_P_TEXT       21  /* H string      Text caption for something like a button */
 #define PGTH_P_SIDE       22  /*   int         Side for a widget or subwidget */
+#define PGTH_P_BACKDROP   23  /* H fillstyle   Fillstyle on the screen behind a popup */
 
 /* String properties (usually part of PGTH_O_DEFAULT) */
 #define PGTH_P_STRING_OK             501
@@ -403,7 +406,8 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_BOX        8
 #define PG_WIDGET_FIELD      9
 #define PG_WIDGET_BACKGROUND 10    /* Internal use only! */
-#define PG_WIDGETMAX         10    /* For error checking */
+#define PG_WIDGET_MENUITEM   11    /* A variation on button */
+#define PG_WIDGETMAX         11    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1
@@ -424,6 +428,7 @@ typedef unsigned long pghandle;
 #define PG_WP_SCROLL      17    /* Scroll bar binds here on scrollable widgets */
 #define PG_WP_VIRTUALH    18    /* Basically, the maximum vertical scroll */
 #define PG_WP_HOTKEY      19
+#define PG_WP_EXTDEVENTS  20    /* For buttons, a mask of extra events to send */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0
@@ -448,6 +453,8 @@ typedef unsigned long pghandle;
 			           as a button, it has been clicked/selected  */
 #define PG_WE_DEACTIVATE  2     /* Lost focus */
 #define PG_WE_CLOSE       3     /* A top-level widget has closed */
+#define PG_WE_PNTR_DOWN   4     /* The "mouse" button is now down */
+#define PG_WE_PNTR_UP     5     /* The "mouse" button is now up */
 
 /* Non-widget events */
 #define PG_NWE_KBD_CHAR    10   /* These are sent if the client has captured the */
