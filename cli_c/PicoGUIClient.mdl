@@ -6,10 +6,18 @@ multicompile = 1
 
 depends = [ 'resourcemanager' ]
 
+runtime = [
+    Runtime ('libpgui.so', 'PicoGUI client shared library',
+             content = ['lib/libpgui.so.0.0.0',
+                        'lib/libpgui.so.0',
+                        'lib/libpgui.so'])
+    ]
 
 def prepare (module, platform, project):
     command = "../configure --prefix=/  --enable-bee --enable-unix-sockets " + \
-              "--with-prefix --host=%s" %  platform.platform
+              "--with-prefix=%s --host=%s" % \
+              (platform.toolchain,
+               platform.platform)
 
     message  ("running: %s" % command)
     sequence ("rm -f config.status ; test ! -f ../autogen.sh || (cd .. ; ./autogen.sh || true)",
