@@ -18,13 +18,7 @@ The extra rules imposed on the XML:
 
 2. In merging child nodes, order is preserved
 
-3. Python attributes from the second of the two nodes are preserved
-   when merging. This means that metadata like the 'minfo' attribute
-   is overwritten on new mounts. So, a read-write mount merely has
-   to mention an element to claim ownership of it when it comes time
-   so save changes.
-
-4. To keep the DOM tidy, text elements have leading and trailing
+3. To keep the DOM tidy, text elements have leading and trailing
    whitespace stripped. Empty text nodes are then removed.
 
 """
@@ -136,49 +130,52 @@ class MountInfo:
     """Object defining the file and mode of a mounted
        document, attached to each node in the tree.
        """
-    def __init__(self, file, mode, attributes, dom):
+    def __init__(self, file, attributes, dom):
         self.file = file
-        self.mode = mode
         self.attributes = attributes
-        self.dom = None
+        self.dom = dom
 
-        if mode != 'r' and mode != 'rw':
-            raise PGBuild.Errors.InternalError("Unknown mount mode")
+    def getMode(self):
+        try:
+            return self.attributes['mode'].value
+        except KeyError:
+            return "r"
 
-        # Tree will end up destroying the original DOM as it moves nodes out
-        # of it for the merge process. Normally this is fine, but we'll need
-        # to save a pristine deep copy for any read-write mounts so we can edit
-        # and save them.
-        if mode == 'rw':
-            self.dom = dom.cloneNode(1)
-            # At this point it's easy to point our original to the pristine copy,
-            # so let's do so and save us much headache when it comes time to call
-            # Tree.commit().
-            def link(copy, original):
-                original.minfoNode = copy
-                for i in xrange(len(original.childNodes)):
-                    link(copy.childNodes[i], original.childNodes[i])
-            link(self.dom, dom)
+    def getRoot(self):
+        try:
+            return self.attributes['root'].value
+        except KeyError:
+            return "."
+
+    def getTitle(self):
+        try:
+            return self.attributes['title'].value
+        except KeyError:
+            return None
+
+    def hasMode(self, mode):
+        """Returns true if the mount's mode contains all characters
+           in the given mode string.
+           """
+        selfMode = self.getMode()
+        for char in mode:
+            if selfMode.find(char) < 0:
+                return 0
+        return 1
 
     def __str__(self):
         # This makes deciphering the mounts array of the Tree much easier
-        try:
-            name = '"%s"' % self.attributes['title'].value
-        except:
-            name = str(self.file)
-        try:
-            mountSpec = " mounted at %s" % self.attributes['root'].value
-        except:
-            mountSpec = ""
-        return "<%s.%s %s from %s%s with mode '%s'>" % (
-            self.__module__, self.__class__.__name__, name, self.file, mountSpec, self.mode)
+        return '<%s.%s %s from %s, mounted at %s with mode %s>' % (
+            self.__module__, self.__class__.__name__,
+            repr(self.getTitle()), repr(self.file), repr(self.getRoot()),
+            repr(self.getMode()))
 
     def __repr__(self):
         return self.__str__()
 
 class Tree(PGBuild.XMLUtil.Document):
     """Configuration tree- an XML document that supports merging
-       in other documents with the same root type, then saving
+       in other documents with the same root element type, then saving
        changes back to those documents.
        """
     def __init__(self, title="Merged configuration tree", rootName="pgbuild"):
@@ -188,65 +185,10 @@ class Tree(PGBuild.XMLUtil.Document):
         self.title = title
         self.mounts = []
 
-    def mount(self, file, mode="r"):
-        """Mount the given document in the config tree, at the
-           location specified in that document's pgbuild/@root.
-           The default mode of "r" prevents writing changes back,
-           a mode of "w" allows writing back changes.
+    def resolveMountPath(self, mountPath):
+        """resolve the given mount path to exactly one element, creating
+           container elements if necessary.
            """
-        dom = PGBuild.XMLUtil.Document(file)
-
-        # Validate the <pgbuild> tag
-        if dom.getRoot().nodeName != self.rootName:
-            raise PGBuild.Errors.UserError(
-                "Trying to mount a config tree with a <%s> root where <%s> is expected" %
-                (dom.getRoot().nodeName,self.rootName))
-
-        # Recursively tag all objects in the
-        # new DOM with their MountInfo
-        def rTag(element, minfo):
-            # minfo is a reference to the MountInfo() object for this node's mount.
-            # minfoNode is a reference to the original DOM node corresponding to a
-            #   mounted node, only set for writeable mounts. It is assigned in
-            #   MountInfo() after it has made a copy of the original DOM.
-            element.minfo = minfo
-            element.minfoNode = None
-            for child in element.childNodes:
-                rTag(child, minfo)
-        rTag(dom, minfo)
-
-        # Save the document's attributes and it's original DOM in the
-        # MountInfo for later access via mounts[]
-        minfo = MountInfo(file, mode, dom.getRoot().attributes, dom)
-        self.mounts.append(minfo)
-
-        # Merge any top-level processing instruction nodes regardless
-        # of mount points. This, for example, lets our tree painlessly
-        # inherit a stylesheet defined in the conf package.
-        # Note that this merging rule is different than that for tags-
-        # parent is disregarded since we only work at the top level,
-        # and different attributes do not imply a tag is unique.
-        for newNode in dom.childNodes:
-            if newNode.nodeType == newNode.PROCESSING_INSTRUCTION_NODE:
-                # Delete any existing instruction with the same name
-                for oldNode in self.childNodes:
-                    if oldNode.nodeType == newNode.nodeType and oldNode.nodeName == newNode.nodeName:
-                        self.removeChild(oldNode)
-                # The reason for messing with parentNode is explained below
-                # in the main appending code.
-                newNode.parentNode = None
-                self.insertBefore(newNode, self.getRoot())
-
-        # This implements the semantics described in sources.xml for the
-        # /pgbuild/@root attribute. If it's not present, the document
-        # is mounted at the pgbuild element. Otherwise it's an XPath
-        # relative to the pgbuild element.
-        try:
-            mountPath = dom.getRoot().attributes['root'].value
-        except KeyError:
-            mountPath = '.'
-
-        # Now we need to resolve the mount path to exactly one element.
         while 1:
             matches = self.xpath(mountPath)
 
@@ -286,51 +228,91 @@ class Tree(PGBuild.XMLUtil.Document):
                         n = newN
                 if len(self.xpath(mountPath)) == 0:
                     raise PGBuild.Errors.InternalError("Automatic mount point creation failed")
+        return mountElement
 
-        # Now that we have the source and destination resolved, we can
-        # implement the mount by appending all the children of dom.getRoot()
-        # to mountElement. Then, let mergeElements() sort out the rest.
-        appendElements(dom.getRoot(), mountElement)
+    def mount(self, file):
+        """Mount the given document in the config tree, at the
+           location specified in that document's pgbuild/@root.
+           The document's pgbuild/@mode element can be "rw" to
+           make the document a read-write mount. This means that
+           on a commit(), the configuration tree is written back
+           to that document starting at the location specified
+           as its root. The mode defaults to "r", read only.
+           Note that it's also possible to create a write-only mount,
+           in which case the file isn't merged in on mount, but
+           does save changes.
+           """
+        dom = PGBuild.XMLUtil.Document(file)
 
-        # Strip whitespace, strip empty text nodes, and merge the tree
-        stripElements(self)
-        self.normalize()
-        mergeElements(self)
+        # Validate the <pgbuild> tag
+        if dom.getRoot().nodeName != self.rootName:
+            raise PGBuild.Errors.UserError(
+                "Trying to mount a config tree with a <%s> root where <%s> is expected" %
+                (dom.getRoot().nodeName,self.rootName))
+
+        # Recursively tag all objects in the
+        # new DOM with their MountInfo
+        def rTag(element, minfo):
+            element.minfo = minfo
+            for child in element.childNodes:
+                rTag(child, minfo)
+        rTag(dom, minfo)
+
+        # Save the document's attributes in the
+        # MountInfo for later access via mounts[]
+        minfo = MountInfo(file, dom.getRoot().attributes, dom)
+        self.mounts.append(minfo)
+
+        # Make sure the mount path will resolve, whether we're using
+        # it right away or not.
+        mountPath = minfo.getRoot()
+        mountElement = self.resolveMountPath(minfo.getRoot())
+        
+        # Only actually perform the mount if the mode includes read access
+        if minfo.hasMode("r"):
+            # Merge any top-level processing nstruction nodes regardless
+            # of mount points. This, for example, lets our tree painlessly
+            # inherit a stylesheet defined in the conf package.
+            # Note that this merging rule is different than that for tags-
+            # parent is disregarded since we only work at the top level,
+            # and different attributes do not imply a tag is unique.
+            for newNode in dom.childNodes:
+                if newNode.nodeType == newNode.PROCESSING_INSTRUCTION_NODE:
+                    # Delete any existing instruction with the same name
+                    for oldNode in self.childNodes:
+                        if oldNode.nodeType == newNode.nodeType and oldNode.nodeName == newNode.nodeName:
+                            self.removeChild(oldNode)
+                    # The reason for messing with parentNode is explained below
+                    # in the main appending code.
+                    newNode.parentNode = None
+                    self.insertBefore(newNode, self.getRoot())
+
+            # Now that we have the source and destination resolved, we can
+            # implement the mount by appending all the children of dom.getRoot()
+            # to mountElement. Then, let mergeElements() sort out the rest.
+            appendElements(dom.getRoot(), mountElement)
+
+            # Strip whitespace, strip empty text nodes, and merge the tree
+            stripElements(self)
+            self.normalize()
+            mergeElements(self)
 
     def commit(self):
-        """Save all changes to the config tree. This involves first propagating
-           changes from the config tree into the pristine DOMs, then saving those DOMs.
-           Note that changes to areas of the tree without read-write mounts are ignored,
-           since this doesn't yet have any way to find out whether a change has been made-
-           read-write mounts always get written to when this is called.
-           """
+        """Save changes to all config trees that include 'w' in their mode"""
 
-        def propagate(node):
-            # Note: this doesn't yet support deleting nodes out of the originals
-            #       that have been deleted in the mounted copy.
+        comment="""This file was automatically generated by PGBuild.Config
 
-            # Do we have a place to store this node?
-            if node.minfoNode:
-                # Store attributes and data
-                if node.nodeType == node.ELEMENT_NODE:
-                    node.minfoNode.attributes = node.attributes
-                if node.nodeType == node.TEXT_NODE:
-                    node.minfoNode.data = node.data
-                    
-            for child in node.childNodes:
-                if not child.minfoNode and node.minfoNode:
-                    # This is an 
-                    child.minfoNode = node.minfoNode
-                self.
-
-                # 
+                   Feel free to edit it by hand, but note that any formatting
+                   or comments you add will not be preserved.
+                   """
+        
+        for minfo in self.mounts:
+            if minfo.hasMode("w"):
+                mountElement = self.resolveMountPath(minfo.getRoot())
+                PGBuild.XMLUtil.writeSubtree(mountElement, minfo.file,
+                                             self.rootName,minfo.attributes,
+                                             comment)
                 
-
-        # Start the propagation at the document root. Note that this means nodes like
-        # XML processing instructions that are outside the root node won't be
-        # automatically saved.
-        propagate(self.getRoot())
-                    
 default = Tree()
 
 ### The End ###

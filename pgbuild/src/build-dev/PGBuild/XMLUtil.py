@@ -159,6 +159,23 @@ class Document(PGBuild.XML.dom.minidom.Document):
         if len(n) == 1:
             return n[0]
         return n
+
+def writeSubtree(root, dest, rootName=None, rootAttributes=None, comment=None):
+    """Write part of a document to a file in XML format, optionally renaming
+       and replacing the attributes of its root element.
+       """
+
+    # If we were passed an SCons file node or a string instead of an opened file,
+    # go ahead and open it now.
+    needClose = 0
+    if type(dest) != file:
+        file = open(str(file), "w")
+        needClose = 1
+
+    
+
+    if needClose:
+        file.close()
     
 ### The End ###
         
