@@ -109,7 +109,8 @@ def htmlifyColorTags(message):
 
     insideTags = []
     outputMessage = ""
-    import irc_colors
+    import irc_colors, re, copy
+    message = re.sub("<", "&lt;", message)
 
     class ColorState:
         fgColor = None
@@ -132,10 +133,10 @@ def htmlifyColorTags(message):
                 while insideTags:
                     outputMessage += "</%s>" % insideTags.pop()
                 if parsedState.bgColor:
-                    outputMessage += '<span class="bgColor-%s">' % parsedState.bgColor
+                    outputMessage += '<span class="bgColor-%s">' % re.sub(" ", "-", parsedState.bgColor)
                     insideTags.append('span')
                 if parsedState.fgColor:
-                    outputMessage += '<span class="fgColor-%s">' % parsedState.fgColor
+                    outputMessage += '<span class="fgColor-%s">' % re.sub(" ", "-", parsedState.fgColor)
                     insideTags.append('span')
                 if parsedState.bold:
                     outputMessage += '<b>'
@@ -143,7 +144,7 @@ def htmlifyColorTags(message):
                 if parsedState.underline:
                     outputMessage += '<u>'
                     insideTags.append('u')
-                htmlState = parsedState
+                htmlState = copy.deepcopy(parsedState)
 
             if nextSquiggly > 0:
                 outputMessage += message[:nextSquiggly]
