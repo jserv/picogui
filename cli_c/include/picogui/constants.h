@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.88 2001/11/13 10:51:04 bauermeister Exp $
+/* $Id: constants.h,v 1.89 2001/11/15 11:18:12 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -843,6 +843,7 @@ typedef unsigned long pghandle;
 				 * preceeding '+' to prevent erasing existing
 				 * data, just append at the cursor position
 				 */
+#define PG_WP_TRIGGERMASK 31    /* Mask of extra triggers accepted (self->trigger_mask) */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0
