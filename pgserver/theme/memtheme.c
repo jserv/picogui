@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.65 2002/06/12 14:34:05 micahjd Exp $
+/* $Id: memtheme.c,v 1.66 2002/06/14 02:42:34 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -638,7 +638,7 @@ g_error theme_load(handle *h,int owner,char *themefile,
 	}
 
 	/* Group the handle so it is cleaned up at the same time */
-	handle_group(owner,*h,mpropp->data);
+	handle_group(owner,*h,mpropp->data,-1);
 
       } break;
 

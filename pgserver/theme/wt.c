@@ -1,4 +1,4 @@
-/* $Id: wt.c,v 1.1 2002/04/07 01:26:17 micahjd Exp $
+/* $Id: wt.c,v 1.2 2002/06/14 02:42:34 micahjd Exp $
  * 
  * wt.c - Loading and instantiation of PicoGUI's Widget Templates
  *
@@ -201,7 +201,7 @@ g_error wt_run_requests(handle group, int owner, u8 **requests, int *requests_le
     errorcheck;
 
     /* Group the resulting handle so it's freed when we are */
-    handle_group(owner,group,ret);
+    handle_group(owner,group,ret,owner);
 
     /* Now stick the return value in the handle table if we need to */
     if (req.id < num_handles)

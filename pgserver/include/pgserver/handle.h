@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.30 2002/05/20 19:11:20 micahjd Exp $
+/* $Id: handle.h,v 1.31 2002/06/14 02:42:33 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -125,8 +125,14 @@ g_error handle_bequeath(handle dest, handle src, int srcowner);
 /* Changes the object pointer of a handle */
 g_error rehandle(handle h, void *obj, u8 type);
 
-/* Add handle to another handle's group so they are freed at the same time */
-g_error handle_group(int owner,handle from, handle to);
+/* Group a handle with the theme containing it. Puts the 'to' handle in the
+ * group of the theme 'from'.
+ * 
+ * Also sets the owner of 'to' to new_owner. The theme code uses this
+ * to set the handle's owner to -1 so it can be read by anyone.
+ * FIXME: We need real handle permissions
+ */
+g_error handle_group(int owner,handle from, handle to,int new_owner);
 
 /* Call the specified function on all handles of the specified type,
  * with a pointer to the handle's object pointer.

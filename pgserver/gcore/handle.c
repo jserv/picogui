@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.56 2002/05/20 19:11:20 micahjd Exp $
+/* $Id: handle.c,v 1.57 2002/06/14 02:42:33 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -481,10 +481,11 @@ g_error mkhandle(handle *h,unsigned char type,int owner,const void *obj) {
 /* Group a handle with the theme containing it. Puts the 'to' handle in the
  * group of the theme 'from'.
  * 
- * Also sets the owner of 'to' to -1 (system) so anyone has read-only access
- * to it, which is necessary for themes.
+ * Also sets the owner of 'to' to new_owner. The theme code uses this
+ * to set the handle's owner to -1 so it can be read by anyone.
+ * FIXME: We need real handle permissions
  */
-g_error handle_group(int owner,handle from, handle to) {
+g_error handle_group(int owner,handle from, handle to, int new_owner) {
   /* First, validate both handles */
   struct handlenode *f = htree_find(from);
   struct handlenode *t = htree_find(to);
@@ -492,6 +493,7 @@ g_error handle_group(int owner,handle from, handle to) {
   if (owner>=0 && ((t->owner != owner) || (f->owner !=owner))) 
     return mkerror(PG_ERRT_HANDLE,27);
   t->group = f->id;
+  t->owner = new_owner;
   return success;
 }
 
