@@ -69,7 +69,7 @@ class statPage:
         except KeyError:
             pass
         try:
-            self.sections = self.form['sections'].value.split("+")
+            self.sections = self.form['sections'].value.split(" ")
         except KeyError:
             pass
         try:
@@ -94,7 +94,7 @@ class statPage:
         mutableForm.update(formKeys)
 
         # Figure out the name of this script so we can link to ourselves
-        scriptName = os.getenv("REQUEST_URI").split("/")[-1].split("?")[0].split("#")[0]
+        scriptName = os.getenv("REQUEST_URI").split("?")[0].split("/")[-1]
 
         # Stick together a new URL
         attributes = []
@@ -114,16 +114,22 @@ class statPage:
         print foldText(collapseWhitespace(doc.getvalue()))
 
     def begin_section(self, write, section, title, contentClass="row"):
-        write("""
-           <div>
-              <span class="section">%s</span>
-              <a class="section" href="#">hide section</a>
-              <a class="section" href="#">this section only</a>
-           </div>
-           <div class="section">
-           <div class="sectionTop"></div>
-           <div class="%s">
-           """ % (title, contentClass))
+        write('<div><span class="section">%s</span>' % title)
+
+        # If this isn't already the only section, give some links to hide
+        # this section and to view only this section
+        if len(self.sections) > 1:
+            sectionHideList = []
+            for listedSection in self.sections:
+                if listedSection != section:
+                    sectionHideList.append(listedSection)
+            sectionHideLink = self.linkURL({'sections': "+".join(sectionHideList)})
+            sectionOnlyLink = self.linkURL({'sections': section})
+            write('<a class="section" href="%s">hide section</a>' % sectionHideLink)
+            write('<a class="section" href="%s">this section only</a>' % sectionOnlyLink)
+
+        write('</div><div class="section"><div class="sectionTop"></div>')
+        write('<div class="%s">' % contentClass)
 
     def end_section(self, write):
         write("</div></div>")
