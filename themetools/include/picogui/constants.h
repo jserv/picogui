@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.55 2002/01/20 08:40:38 micahjd Exp $
+/* $Id: constants.h,v 1.56 2002/01/22 12:25:50 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -977,6 +977,8 @@ typedef unsigned long pghandle;
 /* These are event constants used for networked input drivers. It is a subset
  * of the TRIGGER_* constants in the server, representing only those needed
  * for input drivers. */
+#define PG_TRIGGER_ACTIVATE   (1<<3)  /* Sent when it receives focus */
+#define PG_TRIGGER_DEACTIVATE (1<<4)  /* Losing focus */
 #define PG_TRIGGER_KEYUP      (1<<5)  /* Ignores autorepeat, etc. Raw key codes*/
 #define PG_TRIGGER_KEYDOWN    (1<<6)  /* Ditto. */
 #define PG_TRIGGER_UP         (1<<8)  /* Mouse up */
@@ -984,6 +986,14 @@ typedef unsigned long pghandle;
 #define PG_TRIGGER_MOVE       (1<<10) /* any mouse movement in node */
 #define PG_TRIGGER_CHAR       (1<<14) /* A processed ASCII/Unicode character */
 
+/* More flags used in PicoGUI's keyboard triggers to indicate the circumstances
+ * under which a key event is received.
+ */
+#define PG_KF_FOCUSED           (1<<0)  /* The widget receiving the event is focused */
+#define PG_KF_CHILD_FOCUSED     (1<<1)  /* Any child widget of this one is focused */
+#define PG_KF_CONTAINER_FOCUSED (1<<2)  /* Any container of this widget is focused */
+#define PG_KF_ALWAYS            (1<<3)  /* This is always on */
+#define PG_KF_APP_TOPMOST       (1<<4)  /* Set if the widget's app is top in "z-order" */
 
 //! \}
 #endif /* __H_PG_CONSTANTS */
