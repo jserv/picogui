@@ -55,11 +55,11 @@ int messageHandler(struct pgEvent *evt){
   pglMessage *appletMessage;
   char *sender = NULL, *key = NULL, *data = NULL, *response = NULL;
   pghandle applet;
+  appletMessage = malloc(evt->e.data.size);
+  memcpy(appletMessage, evt->e.data.pointer, evt->e.data.size);
 
   pgEnterContext();
 
-  appletMessage = malloc(evt->e.data.size);
-  memcpy(appletMessage, evt->e.data.pointer, evt->e.data.size);
   appletMessage = pglDecodeMessage(appletMessage);
   switch(appletMessage->messageType){
   case PGL_APPLETINSTALLED:
