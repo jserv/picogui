@@ -332,7 +332,7 @@ char *resGetACProperty(resResource *resource, char *section, char *property){
   char *confPath = malloc(strlen(resource->workingDir)+sizeof("/app.conf")+1);
   char *propertyData = NULL;
 
-  sprintf(confPath, "%sapp.conf", resource->workingDir);
+  sprintf(confPath, "%s/app.conf", resource->workingDir);
   if(configfile_parse(confPath)){
     if(propertyData = get_param_str(section, property, NULL)){
       propertyData = strdup(propertyData);

@@ -43,8 +43,8 @@ char *resMakeAbsPath(char *rootPath, char *subdir, int appConf){
   char *appPath = NULL;
 
   if(!appConf){
-    appPath = malloc(strlen(rootPath)+strlen(subdir)+3);
-    sprintf(appPath, "%s/%s/", rootPath, subdir);
+    appPath = malloc(strlen(rootPath)+strlen(subdir)+2);
+    sprintf(appPath, "%s/%s", rootPath, subdir);
   }else{
     appPath = malloc(strlen(rootPath)+strlen(subdir)+strlen("/app.conf")+3);
     sprintf(appPath, "%s/%s/app.conf", rootPath, subdir);
@@ -116,6 +116,7 @@ resResource *resLoadResource(char *path){
   }else{
     newResource->workingDir = getcwd(newResource->workingDir, 0);
   }
+  newResource->resourceTable = malloc(sizeof(resElement *));
   newResource->resourceType = RES_APPCONF;
   return newResource;
 }
@@ -132,6 +133,19 @@ char *resGetProperty(resResource *resource, char *section, char *property){
     break;
   }
   return NULL;
+}
+
+void resSetProperty(resResource *resource, char *section, char *property, char *data){
+  switch(resource->resourceType){
+  case RES_ELF:
+    //Do some REALY interesting stuff here.
+    break;
+  case RES_APPCONF:
+    //resSetACProperty(resource, section, property, data);
+    break;
+  default:
+    break;
+  }
 }
 
 void *resGetResource(resResource *resource, char *section, char *property, int *size){
@@ -158,11 +172,27 @@ void *resGetResource(resResource *resource, char *section, char *property, int *
   default:
     break;
   }
+  if(propertyData){
+    resource->resourceCount++;
+    resource->resourceTable = realloc(resource->resourceTable, sizeof(resElement *)*resource->resourceCount+1);
+    resource->resourceTable[resource->resourceCount] = malloc(sizeof(resElement));
+    resource->resourceTable[resource->resourceCount]->data = propertyData;
+    resource->resourceTable[resource->resourceCount]->size = *size;
+    printf("New resource %x\n", resource->resourceTable[resource->resourceCount]->data);
+  }
   return propertyData;
 }
 
+void resFreeResource(void *data);
+
 void resUnloadResource(resResource *resource){
   if(resource){
+    for(;resource->resourceCount > 0; resource->resourceCount--){
+      printf("Freeing resource %x\n", resource->resourceTable[resource->resourceCount-1]->data);
+      munmap(resource->resourceTable[resource->resourceCount-1]->data, 
+	     resource->resourceTable[resource->resourceCount-1]->size);
+    }
+    free(resource->resourceTable);
     if(resource->workingDir)
       free(resource->workingDir);
     free(resource);
