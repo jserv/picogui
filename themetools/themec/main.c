@@ -1,9 +1,12 @@
-/* $Id: main.c,v 1.17 2002/01/05 16:51:46 micahjd Exp $
+/* $Id: main.c,v 1.18 2002/10/04 17:22:11 micahjd Exp $
  *
  * main.c - main() and some parser utility functions for
  *          the PicoGUI theme compiler.  The actual parsing
  *          is done in the lex and yacc files pgtheme.l and
  *          pgtheme.y
+ *
+ * MAGIC compiler
+ * Magic Algorithm for General Interface Configurability
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -76,7 +79,9 @@ int main(int argc, char **argv) {
       
     case '?':        /* Need help */
     case 'h':
-      puts("PicoGUI Theme Compiler (http://picogui.org)\n\n"
+      puts(" PicoGUI \"Magic\" theme compiler (http://picogui.org)\n"
+           " Magic Algorithm for General Interface Configurability\n"
+           "\n"
 	   "usage: themec [-q] [-t] [-o thfile] [thsfile]\n\n"
 	   "  q         : Quiet, suppress theme statistics\n"
 	   "  t         : Test run, parse and output stats but don't write file\n"

@@ -1,7 +1,10 @@
-/* $Id: backend.c,v 1.8 2002/01/03 23:53:34 micahjd Exp $
+/* $Id: backend.c,v 1.9 2002/10/04 17:22:11 micahjd Exp $
  *
  * backend.c - convert the in-memory representation of the
  *             theme data to the actual compiled theme file
+ *
+ * MAGIC compiler
+ * Magic Algorithm for General Interface Configurability
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>

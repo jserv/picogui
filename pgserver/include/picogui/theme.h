@@ -1,7 +1,10 @@
-/* $Id: theme.h,v 1.7 2002/02/02 19:14:41 lonetech Exp $
+/* $Id: theme.h,v 1.8 2002/10/04 17:22:11 micahjd Exp $
  * 
  * theme.h - Defines the theme file format, used by the server and by
  *           programs that read and write theme files
+ *
+ * MAGIC format
+ * Magic Algorithm for General Interface Configurability
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
