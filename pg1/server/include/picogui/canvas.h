@@ -1,4 +1,4 @@
-/* $Id: canvas.h,v 1.11 2003/03/19 04:59:07 micahjd Exp $
+/* $Id$
  *
  * picogui/canvas.h - This defines the commands sent from the client to a
  *                    canvas widget (Via RQH_WRITECMD)
@@ -241,6 +241,24 @@
  * \param 2. h
  */
 #define PGCANVAS_GRIDSIZE      14
+
+/*!
+ * \brief Add a sequencec of new gropnode to the end of the list
+ * 
+ * The 'current gropnode' becomes the last newly built node
+ * 
+ * The parameters are a concatenation of N instances of the following:
+ *
+ * \param 1. length of this grop (how many parameters, counting this one)
+ * \param 2. gropnode type (a PG_GROP_* constant)
+ * \param x. Unless the gropnode is 'unpositioned' (setcolor and friends) the
+ *           next 4 args are the x,y,w,h positioning (all 4 are required!)
+ * \param x. Gropnode parameters
+ *
+ * See PGCANVAS_GROP for notes on the parameters.
+ *
+ */
+#define PGCANVAS_GROPSEQ       15
 
 #endif /* __H_PG_CANVAS */
 /* The End */

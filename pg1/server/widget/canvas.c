@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.57 2003/04/10 13:20:31 lalo Exp $
+/* $Id$
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -30,6 +30,11 @@
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <picogui/canvas.h>
+
+#ifdef DEBUG_CANVAS
+#define DEBUG_FILE
+#endif
+#include <pgserver/debug.h>
 
 void canvas_command(struct widget *self, u32 command, 
 		    u32 numparams, s32 *params);
@@ -319,10 +324,91 @@ void canvas_resize(struct widget *self) {
 }
 
 /*********************************** Commands */
+
+void canvas_do_grop(struct widget *self,
+		    u32 numparams, s32 *params) {
+   int i;
+
+   if (numparams<1) return;
+   if (PG_GROP_IS_UNPOSITIONED(params[0])) {
+     if (numparams>(NUMGROPPARAMS+1)) numparams = NUMGROPPARAMS+1;
+
+     if (params[0] == PG_GROP_SETFONT && !params[1])
+       params[1] = res[PGRES_DEFAULT_FONT];
+
+     addgrop(CTX,params[0]);
+     for (i=1;i<numparams;i++)
+       CTX->current->param[i-1] = params[i];
+
+     /* Store the current font for use in determining the size
+      * of text gropnodes.
+      *
+      * FIXME: If grops are not entered in order, this won't work.
+      *        But, considering it's not possible to enter gropnodes
+      *        out of order yet, it should be fine for now.
+      *
+      * FIXME: This also doesn't work for angled text... go figure :)
+      */
+     if (params[0] == PG_GROP_SETFONT)
+       DATA->lastfont = params[1];
+   }
+   else {
+     if (numparams<5) return;
+     if (numparams>(NUMGROPPARAMS+5)) numparams = NUMGROPPARAMS+5;
+     if(params[0]==PG_GROP_FPOLYGON) {
+       s32* arr;
+       s16 i,hix,lox,hiy,loy;
+       if (iserror(rdhandle((void**)&arr,PG_TYPE_ARRAY,-1,
+			    params[5])) || !arr) return;
+       i=0;
+       hix=arr[1];
+       lox=arr[1];
+       hiy=arr[2];
+       loy=arr[2];
+       for(i=1;i<=arr[0];i+=2) {
+	 if(arr[i]<lox)
+	   lox=arr[i];
+	 else if(arr[i]>hix)
+	   hix=arr[i];
+	 if(arr[i+1]<loy)
+	   loy=arr[i+1];
+	 else if(arr[i+1]>hiy)
+	   hiy=arr[i+1];
+       }
+       params[1]=lox;
+       params[2]=loy;
+       params[3]=hix-lox;
+       params[4]=hiy-loy;
+     }
+     addgropsz(CTX,params[0],params[1],params[2],params[3],params[4]);
+     for (i=5;i<numparams;i++)
+       CTX->current->param[i-5] = params[i];
+
+     /* Determine the _real_ size of a text gropnode.
+      * Has a couple issues... see above FIXMEs 
+      */
+     if (params[0] == PG_GROP_TEXT) {
+       struct font_descriptor *fd = NULL;
+       struct pgstring *str = NULL;
+       rdhandle((void **) &fd,PG_TYPE_FONTDESC,-1,DATA->lastfont);
+       rdhandle((void **) &str,PG_TYPE_PGSTRING,-1,params[5]);
+       if (fd && str)
+	 fd->lib->measure_string(fd,str,0,&CTX->current->r.w,&CTX->current->r.h);
+     }
+
+     /* Update bounding box */
+     canvas_extendbox(self,CTX->current);
+   }
+   if (params[0]==PG_GROP_SETCOLOR || 
+       (CTX->current->flags & PG_GROPF_COLORED))
+     CTX->current->param[0] = VID(color_pgtohwr) 
+       (CTX->current->param[0]);
+}      
    
 void canvas_command(struct widget *self, u32 command, 
 		    u32 numparams, s32 *params) {
    int i;
+   u32 remaining;
 
    /* Must we fix the gropctxt's pointers? */
    if (self->in->div->flags & DIVNODE_GROPLIST_DIRTY) {
@@ -341,80 +427,22 @@ void canvas_command(struct widget *self, u32 command,
       break;
       
     case PGCANVAS_GROP:
-      if (numparams<1) return;
-      if (PG_GROP_IS_UNPOSITIONED(params[0])) {
-	 if (numparams>(NUMGROPPARAMS+1)) numparams = NUMGROPPARAMS+1;
-
-	 if (params[0] == PG_GROP_SETFONT && !params[1])
-	   params[1] = res[PGRES_DEFAULT_FONT];
-
-	 addgrop(CTX,params[0]);
-	 for (i=1;i<numparams;i++)
-	   CTX->current->param[i-1] = params[i];
-
-	 /* Store the current font for use in determining the size
-	  * of text gropnodes.
-	  *
-	  * FIXME: If grops are not entered in order, this won't work.
-	  *        But, considering it's not possible to enter gropnodes
-	  *        out of order yet, it should be fine for now.
-	  *
-	  * FIXME: This also doesn't work for angled text... go figure :)
-	  */
-	 if (params[0] == PG_GROP_SETFONT)
-	   DATA->lastfont = params[1];
+      DBG("canvas: grop %i (%i)\n", params[0], numparams);
+      canvas_do_grop(self, numparams, params);
+      break;
+      
+    case PGCANVAS_GROPSEQ:
+      DBG("canvas: gropseq (%i)\n", numparams);
+      remaining = numparams;
+      while (remaining > 0) {
+	numparams = params[0];
+	if (!numparams)
+	  break;
+	canvas_do_grop(self, numparams - 1, params+1);
+	remaining -= numparams;
+	DBG("canvas: grop %i used %i params, %i remaining\n", params[1], numparams, remaining);
+	params += numparams;
       }
-      else {
-	 if (numparams<5) return;
-	 if (numparams>(NUMGROPPARAMS+5)) numparams = NUMGROPPARAMS+5;
-	 if(params[0]==PG_GROP_FPOLYGON) {
-	   s32* arr;
-	   s16 i,hix,lox,hiy,loy;
-	   if (iserror(rdhandle((void**)&arr,PG_TYPE_ARRAY,-1,
-			     params[5])) || !arr) break;
-	   i=0;
-	   hix=arr[1];
-	   lox=arr[1];
-	   hiy=arr[2];
-	   loy=arr[2];
-	   for(i=1;i<=arr[0];i+=2) {
-	     if(arr[i]<lox)
-	       lox=arr[i];
-	     else if(arr[i]>hix)
-	       hix=arr[i];
-	     if(arr[i+1]<loy)
-	       loy=arr[i+1];
-	     else if(arr[i+1]>hiy)
-	       hiy=arr[i+1];
-	   }
-	   params[1]=lox;
-	   params[2]=loy;
-	   params[3]=hix-lox;
-	   params[4]=hiy-loy;
-	 }
-	 addgropsz(CTX,params[0],params[1],params[2],params[3],params[4]);
-	 for (i=5;i<numparams;i++)
-	   CTX->current->param[i-5] = params[i];
-
-	 /* Determine the _real_ size of a text gropnode.
-	  * Has a couple issues... see above FIXMEs 
-	  */
-	 if (params[0] == PG_GROP_TEXT) {
-	   struct font_descriptor *fd = NULL;
-	   struct pgstring *str = NULL;
-	   rdhandle((void **) &fd,PG_TYPE_FONTDESC,-1,DATA->lastfont);
-	   rdhandle((void **) &str,PG_TYPE_PGSTRING,-1,params[5]);
-	   if (fd && str)
-	     fd->lib->measure_string(fd,str,0,&CTX->current->r.w,&CTX->current->r.h);
-	 }
-
-	 /* Update bounding box */
-	 canvas_extendbox(self,CTX->current);
-      }
-      if (params[0]==PG_GROP_SETCOLOR || 
-	  (CTX->current->flags & PG_GROPF_COLORED))
-	CTX->current->param[0] = VID(color_pgtohwr) 
-	  (CTX->current->param[0]);
       break;
       
     case PGCANVAS_EXECFILL:

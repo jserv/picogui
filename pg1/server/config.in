@@ -49,6 +49,7 @@ bool 'Virtual terminal debugging'       DEBUG_VT
 bool 'Video driver debugging'           DEBUG_VIDEODRIVER
 bool 'Trace pgstring memory management' DEBUG_PGSTRING_MEM
 bool 'Textbox widget debugging'         DEBUG_TEXTBOX
+bool 'Canvas widget debugging'          DEBUG_CANVAS
 bool 'Textedit widget debugging'        DEBUG_TEXTEDIT
 bool 'Profile X11 SHM synchronization'  CONFIG_X11_SHM_PROFILE
 
