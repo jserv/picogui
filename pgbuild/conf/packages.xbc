@@ -1,0 +1,3 @@
+<?xml version="1.0" ?>
+<!-- This file is a placeholder for local modifications to the package list -->
+<pgbuild title="Locally editable package list" mode="rw" root="packages"/>

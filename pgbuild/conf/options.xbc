@@ -1,0 +1,3 @@
+<?xml version="1.0" ?>
+<!-- This file is a placeholder for saving modifications to the build options -->
+<pgbuild title="Locally editable build options" mode="rw" root="options"/>
