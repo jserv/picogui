@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.3 2000/07/31 20:18:22 micahjd Exp $
+/* $Id: field.c,v 1.4 2000/08/01 18:11:28 micahjd Exp $
  *
  * Single-line no-frills text editing box
  *
@@ -249,9 +249,15 @@ void field_trigger(struct widget *self,long type,union trigparam *param) {
     
     /* Misc. keys */
     switch (param->kbd.key) {
+
     case PGKEY_RETURN:
+      /* Pass on a return to the app */
+      post_event(WE_ACTIVATE,self,0,0);
+      return;
+
     case PGKEY_TAB:
       return;
+
     default:
     }
 
@@ -272,6 +278,12 @@ void field_trigger(struct widget *self,long type,union trigparam *param) {
     break;
 
   }
+
+
+  /* If we're busy rebuilding the grop list, don't bother poking
+     at the individual nodes */
+  if (self->in->div->grop_lock || !self->in->div->grop)
+    return;
 
   /* Update stuff */
   fieldstate(self);

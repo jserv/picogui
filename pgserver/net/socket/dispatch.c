@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.8 2000/08/01 06:31:39 micahjd Exp $
+/* $Id: dispatch.c,v 1.9 2000/08/01 18:11:26 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -57,6 +57,7 @@ DEF_REQHANDLER(givekbd)
 DEF_REQHANDLER(givepntr)
 DEF_REQHANDLER(mkcontext)
 DEF_REQHANDLER(rmcontext)
+DEF_REQHANDLER(focus)
 DEF_REQHANDLER(undef)
 g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(ping)
@@ -84,6 +85,7 @@ g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(givepntr)
   TAB_REQHANDLER(mkcontext)
   TAB_REQHANDLER(rmcontext)
+  TAB_REQHANDLER(focus)
   TAB_REQHANDLER(undef)
 };
 
@@ -558,6 +560,23 @@ g_error rqh_rmcontext(int owner, struct uipkt_request *req,
   handle_cleanup(owner,cb->context);
   cb->context--;
   
+  return sucess;
+}
+
+g_error rqh_focus(int owner, struct uipkt_request *req,
+		  void *data, unsigned long *ret, int *fatal) {
+  struct rqhd_focus *arg = (struct rqhd_focus *) data;
+  g_error e;
+  struct widget *w;
+
+  if (req->size < (sizeof(struct rqhd_focus))) 
+    return mkerror(ERRT_BADPARAM,"rqhd_focus too small");
+
+  e = rdhandle((void**) &w,TYPE_WIDGET,owner,ntohl(arg->h));
+  if (e.type != ERRT_NONE) return e;
+  
+  request_focus(w);
+
   return sucess;
 }
 

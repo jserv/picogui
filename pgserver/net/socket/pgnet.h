@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.9 2000/08/01 06:31:39 micahjd Exp $
+/* $Id: pgnet.h,v 1.10 2000/08/01 18:11:27 micahjd Exp $
  *
  * pgnet.h - header for all PicoGUI networking stuff (request/packet/event...)
  *
@@ -216,8 +216,9 @@ struct event *get_event(int owner,int remove);
 #define RQH_GIVEPNTR  22     /* Give the pointing device back  |  none */
 #define RQH_MKCONTEXT 23     /* Enters a new context           |  none */
 #define RQH_RMCONTEXT 24     /* Cleans up and kills the context|  none */
+#define RQH_FOCUS     25     /* Force focus to specified widget|  struct */
 
-#define RQH_UNDEF     25     /* types > this will be truncated. return error */
+#define RQH_UNDEF     26     /* types > this will be truncated. return error */
 
 /* Structures passed to request handlers as 'data'.
  * Dummy variables pad it to a multiple of 4 bytes (compiler likes it?)
@@ -305,6 +306,9 @@ struct rqhd_mkpopup {
 struct rqhd_sizetext {
   unsigned long text;
   unsigned long font;
+};
+struct rqhd_focus {
+  unsigned long h;
 };
 
 #endif /* __H_PGNET */
