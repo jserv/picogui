@@ -8,7 +8,7 @@
  
 /* 1  */  "Ok",
 /* 2  */  "Unknown side parameter for PG_WP_SIDE",
-/* 3  */  "Invalid LGOP parameter",
+/* 3  */  "1qzQZ12abcABC23defDEF34ghiGHI45jklJKL56mnoMNO67prsPRS78tuvTUV89wxyWXY90 $.#0",
 /* 4  */  "Bad bitmap handle for PG_WP_BITMAP",
 /* 5  */  "Bad bitmap handle for PG_WP_BITMASK",
 /* 6  */  "Invalid widget property",
@@ -113,3 +113,4 @@
 /* 105 */ "Exclusive resource access has been disabled",
 /* 106 */ "Fatal signal received, quick & dirty shutdown complete",
 /* 107 */ "Error opening TTY (try setting the video-fbdev.ttydev config variable)",
+/* 108 */ "Invalid LGOP parameter",

@@ -1,4 +1,4 @@
-/* $Id: sed133x.c,v 1.3 2002/02/05 08:22:22 abergmann Exp $
+/* $Id: sed133x.c,v 1.4 2002/02/20 04:52:41 micahjd Exp $
  *
  * sed133x.c -- driver for Epson SED1330/SED1335/SED1336 based LC displays
  *
@@ -109,18 +109,18 @@ static g_error sed133x_init(void) {
     int fd;
     fd = open("/dev/mem", O_RDWR | O_SYNC);
     if (fd < 0) {
-	return mkerror(PG_ERRT_IO,110);
+	return mkerror(PG_ERRT_IO,95);
     }
     sed133x_data_port = mmap(0, 2, (PROT_READ | PROT_WRITE), MAP_SHARED,
 		    		fd, 0x30000000UL);
     if (sed133x_data_port == MAP_FAILED) {
-	return mkerror(PG_ERRT_IO,111);
+	return mkerror(PG_ERRT_IO,96);
     }
 
     close(fd);    
 #else
     if (iopl(3) == -1) {
-	return mkerror(PG_ERRT_IO,112);
+	return mkerror(PG_ERRT_IO,96);
     }
 #endif
     
@@ -199,9 +199,9 @@ static g_error sed133x_init(void) {
 	const char *ttydev = get_param_str("video-sed133x","device", "/dev/tty");
 	ttyfd = open (ttydev, O_RDWR);
 	if (ttyfd<0)
-	    return mkerror(PG_ERRT_IO,113);
+	    return mkerror(PG_ERRT_IO,107);
 	if (ioctl(ttyfd, KDSETMODE, KD_GRAPHICS) < 0) {
-	    return mkerror(PG_ERRT_IO,114);
+	    return mkerror(PG_ERRT_IO,107);
 	}
     }
 #endif

@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.37 2002/02/11 19:39:23 micahjd Exp $
+/* $Id: bitmap.c,v 1.38 2002/02/20 04:52:42 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -123,7 +123,7 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
     break;
 
   case PG_WP_LGOP:
-    if (data > PG_LGOPMAX) return mkerror(PG_ERRT_BADPARAM,3);
+    if (data > PG_LGOPMAX) return mkerror(PG_ERRT_BADPARAM,108);
     DATA->lgop = data;
     set_widget_rebuild(self);
     break;

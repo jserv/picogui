@@ -5,7 +5,7 @@
  
 /* 1  */  "Ok",
 /* 2  */  NULL,
-/* 3  */  NULL,
+/* 3  */  "1qzQZ12abcABC23defDEF34ghiGHI45jklJKL56mnoMNO67prsPRS78tuvTUV89wxyWXY90 $.#0",
 /* 4  */  NULL,
 /* 5  */  NULL,
 /* 6  */  NULL,

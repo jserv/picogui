@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.163 2002/02/16 14:36:28 micahjd Exp $
+/* $Id: widget.c,v 1.164 2002/02/20 04:52:42 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -1191,17 +1191,13 @@ void global_hotkey(u16 key,u16 mods, u32 type) {
       else if (key == hotkey_right)
 	hotspot_traverse(HOTSPOT_RIGHT);
 
-#ifdef CONFIG_KEY_ALPHA
       else if (key == PGKEY_ALPHA) {
 	/* Nifty table for looking up the next alpha character. To find the
 	 * next character in the rotation, look up the first occurance of the
 	 * existing character, and the next character in the string is the
 	 * character to replace it with.
 	 */
-	static const char alphatab[] = 
-	  "1qzQZ12abcABC23defDEF3"
-	  "4ghiGHI45jklJKL56mnoMNO6"
-	  "7prsPRS78tuvTUV89wxyWXY90 $.#0";
+	const char *alphatab = errortext(mkerror(0,3));  /* Error 3 is the table */
 	const char *p;
 
 	if (last_char_key > 255)
@@ -1217,7 +1213,6 @@ void global_hotkey(u16 key,u16 mods, u32 type) {
 	dispatch_key(PG_TRIGGER_CHAR,PGKEY_BACKSPACE,0);
 	dispatch_key(PG_TRIGGER_CHAR,*p,0);
       }
-#endif
 
     }
     
