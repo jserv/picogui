@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.38 2001/08/30 21:06:56 micahjd Exp $
+/* $Id: widget.h,v 1.39 2001/09/02 19:10:26 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -374,6 +374,12 @@ void resizeall(void);
  * should send unused keys here.
  */
 void global_hotkey(u16 key,u16 mods, u32 type);
+
+/* Reloads global hotkey settings from the theme when it changes */
+void reload_hotkeys(void);
+extern u16 hotkey_left, hotkey_right, hotkey_up, hotkey_down;
+extern u16 hotkey_activate, hotkey_next;
+
 
 #endif /* __WIDGET_H */
 

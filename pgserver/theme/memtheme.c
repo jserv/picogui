@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.37 2001/08/31 18:05:47 micahjd Exp $
+/* $Id: memtheme.c,v 1.38 2001/09/02 19:10:26 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -522,6 +522,9 @@ g_error theme_load(handle *h,int owner,char *themefile,
 
   /* Reload the mouse cursor */
   appmgr_loadcursor(PGTH_O_DEFAULT);
+
+  /* Reload global hotkeys from the theme */
+  reload_hotkeys();
    
   /* Schedule a global recalc (Yikes!) so it takes effect */
   resizeall();

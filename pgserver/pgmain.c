@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.13 2001/07/25 21:08:21 epchristi Exp $
+/* $Id: pgmain.c,v 1.14 2001/09/02 19:10:26 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -474,6 +474,10 @@ int main(int argc, char **argv) {
 #ifdef DEBUG_INIT
     printf("Init: loading themes\n");
 #endif
+
+    /* If we aren't loading any themes, set the default nav hotkeys */
+    if (!themefiles)
+      reload_hotkeys();
 
     p = themefiles;
     while (p) {

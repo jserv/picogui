@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.74 2001/08/30 19:39:45 micahjd Exp $
+/* $Id: button.c,v 1.75 2001/09/02 19:10:26 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -291,7 +291,7 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     break;
    
   case TRIGGER_KEYDOWN:
-    if (param->kbd.key != PGKEY_SPACE) {
+    if (param->kbd.key != hotkey_activate) {
       global_hotkey(param->kbd.key,param->kbd.mods,type);
       return;
     }
@@ -302,7 +302,8 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
   case TRIGGER_DOWN:
     if (DATA->extdevents & PG_EXEV_PNTR_DOWN)
       post_event(PG_WE_PNTR_DOWN,self,param->mouse.chbtn,0,NULL);
-    if (param->mouse.chbtn==1 && !(DATA->extdevents & PG_EXEV_NOCLICK)) {
+    if (param->mouse.chbtn==1 && 
+	!(DATA->extdevents & PG_EXEV_NOCLICK)) {
       /* If this is a toggle button, and we're toggling it on, send the
        * activate now!
        */
@@ -340,7 +341,7 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     break;
 
   case TRIGGER_KEYUP:
-    if (param->kbd.key != PGKEY_SPACE) {
+    if (param->kbd.key != hotkey_activate) {
       global_hotkey(param->kbd.key,param->kbd.mods,type);
       return;
     }

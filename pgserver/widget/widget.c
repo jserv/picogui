@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.104 2001/08/30 21:06:56 micahjd Exp $
+/* $Id: widget.c,v 1.105 2001/09/02 19:10:26 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -1054,6 +1054,18 @@ void resizeall(void) {
     divresize_recursive(tree->head);
 }
 
+/* Global hotkeys, and a function to load them */
+u16 hotkey_left, hotkey_right, hotkey_up, hotkey_down;
+u16 hotkey_activate, hotkey_next;
+void reload_hotkeys(void) {
+  hotkey_left     = theme_lookup(PGTH_O_DEFAULT,PGTH_P_HOTKEY_LEFT);
+  hotkey_right    = theme_lookup(PGTH_O_DEFAULT,PGTH_P_HOTKEY_RIGHT);
+  hotkey_up       = theme_lookup(PGTH_O_DEFAULT,PGTH_P_HOTKEY_UP);
+  hotkey_down     = theme_lookup(PGTH_O_DEFAULT,PGTH_P_HOTKEY_DOWN);
+  hotkey_activate = theme_lookup(PGTH_O_DEFAULT,PGTH_P_HOTKEY_ACTIVATE);
+  hotkey_next     = theme_lookup(PGTH_O_DEFAULT,PGTH_P_HOTKEY_NEXT);
+}
+
 /* Check for global hotkeys, like those used to move between widgets.
  * Widgets that can be focused (this includes widgets with hotspots)
  * should send unused keys here.
@@ -1064,33 +1076,23 @@ void global_hotkey(u16 key,u16 mods, u32 type) {
     if (!mods) {
       /* Key down, no modifiers */
 
-      switch (key) {
-      case PGKEY_TAB:
+      if (key == hotkey_next)
 	hotspot_traverse(HOTSPOT_NEXT);
-	break;
-      case PGKEY_UP:
+      else if (key == hotkey_up)
 	hotspot_traverse(HOTSPOT_UP);
-	break;
-      case PGKEY_DOWN:
+      else if (key == hotkey_down)
 	hotspot_traverse(HOTSPOT_DOWN);
-	break;
-      case PGKEY_LEFT:
+      else if (key == hotkey_left)
 	hotspot_traverse(HOTSPOT_LEFT);
-	break;
-      case PGKEY_RIGHT:
+      else if (key == hotkey_right)
 	hotspot_traverse(HOTSPOT_RIGHT);
-	break;
-      }
     }
     
     else if (mods & PGMOD_SHIFT) {
       /* Key down with shift */
 
-      switch (key) {
-      case PGKEY_TAB:
+      if (key == hotkey_next)
 	hotspot_traverse(HOTSPOT_PREV);
-	break;
-      }
     }
   } 
 }
