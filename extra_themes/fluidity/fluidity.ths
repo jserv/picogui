@@ -25,7 +25,8 @@ prop left_sz, right_sz, top_sz, bottom_sz;
 
 object default {
   name = "Fluidity";
-  bgfill = Copy(default::fNop);
+  bgfill = Copy(default::fBitmap);
+  bitmap1 = Copy(default::bDarkInterlace);
   font = Font("Helvetica",10,0);
 
   bBackground = LoadBitmap("data/background.jpeg");
@@ -123,27 +124,42 @@ object background {
 
 /********************************** Panels */
 
-object base.tlcontainer {
-  bgfill = Copy(default::fBitmap);
-  bitmap1 = Copy(default::bDarkInterlace);
-}
-
-object panel {
+=object panel {
   margin = 0;
 }
 
 object panelbar {
   width = 16;
   bgfill = Copy(default::fExpand);
+  fgcolor = 0x57596F;
+  margin = 2;
+  font = Font("Gelly",10,0);
+  
+  /* This will make it left-justified when horizontal,
+   * and centered when vertical. PG_A_NW will make it at the
+   * top when vertical, but that doesn't look as good.
+   */
+  align = PG_A_LEFT;
+}
+
+object panelbar.h {
   bitmap1 = LoadBitmap("data/bright_hbar.png");
   srcw = 17;
   srch = 16;
   left_sz = 8;
   right_sz = 6;
-  align = PG_A_LEFT;
-  fgcolor = 0x57596F;
-  margin = 2;
-  font = Font("Gelly",10,0);
+  top_sz = 8;
+  bottom_sz = 7;
+}
+
+object panelbar.v {
+  bitmap1 = LoadBitmap("data/bright_vbar.png");
+  srcw = 16;
+  srch = 17;
+  left_sz = 8;
+  right_sz = 7;
+  top_sz = 8;
+  bottom_sz = 6;
 }
 
 object base.panelbtn {
@@ -227,5 +243,9 @@ object button {
 }  
 
 object button.on bitmap1 = LoadBitmap("data/button_bright_small.png");
+
+/********************************** Scroll */
+
+
 
 /* The End */
