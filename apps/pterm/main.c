@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.17 2002/03/30 20:43:55 instinc Exp $
+/* $Id: main.c,v 1.18 2002/04/11 16:21:55 gobry Exp $
  *
  * main.c - PicoGUI Terminal (the 'p' is silent :)
  *          This handles the PicoGUI init and events
@@ -143,6 +143,8 @@ int main(int argc, char **argv) {
   int childpid;
   unsigned char fontsize = 0;
   unsigned char noexit = 0;
+  pghandle panelbar;
+
   pgInit(argc,argv);
 
   /* Process arguments */
@@ -176,18 +178,20 @@ int main(int argc, char **argv) {
   }	
    
   /*** PicoGUI Initialization */
-
   wPanel = pgRegisterApp(PG_APP_NORMAL,title,0);              /* Register app */
   
-  /* Use our supernifty panelbar functionality to add a font button 
-   */
-  pgNewWidget(PG_WIDGET_BUTTON, PG_DERIVE_BEFORE, 
-	      pgGetWidget(wPanel,PG_WP_PANELBAR_LABEL));
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_SIDE, PG_S_LEFT,
-	      PG_WP_TEXT, pgNewString("f"),
-	      0);
-  pgBind(PGDEFAULT, PG_WE_ACTIVATE, btnFont, NULL);
+  /* Use our supernifty panelbar functionality to add a font button,
+     if the panelbar was not disabled at compilation time */
+  panelbar = pgGetWidget(wPanel,PG_WP_PANELBAR_LABEL);
+
+  if (panelbar) {
+    pgNewWidget(PG_WIDGET_BUTTON, PG_DERIVE_BEFORE, panelbar);
+    pgSetWidget(PGDEFAULT,
+		PG_WP_SIDE, PG_S_LEFT,
+		PG_WP_TEXT, pgNewString("f"),
+		0);
+    pgBind(PGDEFAULT, PG_WE_ACTIVATE, btnFont, NULL);
+  }
 
   /* Make a terminal 
    */
@@ -218,27 +222,19 @@ int main(int argc, char **argv) {
   /* So we know when the subprocess exits... */
   if (!noexit)
      signal(SIGCHLD,&sigChild);
-   
-  /* Fork! */  
-  if ( (childpid = ptyfork(&ptyfd)) < 0 ) {
-    pgMessageDialogFmt(argv[0] ? argv[0] : "Shell",
-		       0,"Error acquiring pseudoterminal:\n%s",
-		       strerror(errno));
-    exit(1);
-  }
-  if (!childpid) {
-    /* This is the child process */
 
-    if (argv[0])
-       /* Run specified program */
-       execvp(argv[0],argv);
-    else
-       /* A login shell */
-       execlp("/bin/sh","-sh",NULL);
-       
-    perror("Starting subprocess");
-    pause();        /* Give a chance to read the error */
-    _exit(127);
+  /* Fork! */
+  {
+    char * cmd [] = {
+      "/bin/sh", "-sh", NULL 
+    };
+
+    if ((childpid = ptyfork (& ptyfd, argv [0] ? argv : cmd)) < 0 ) {
+      pgMessageDialogFmt (argv [0] ? argv[0] : "Shell",
+			  0, "Error acquiring pseudoterminal:\n%s",
+			  strerror (errno));
+      exit(1);
+    }
   }
 
   /*** Event loop */
