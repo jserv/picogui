@@ -115,11 +115,11 @@ picosmUI *buildUI(void){
   }
 
   if(!(newUI->wButtonBox = pgFindWidget("PSMButtonBox"))){
-    newUI->wButtonBox = pgNewWidget(PG_WIDGET_BOX, PG_DERIVE_INSIDE, 
+    newUI->wButtonBox = pgNewWidget(PG_WIDGET_TOOLBAR, PG_DERIVE_INSIDE, 
 				    newUI->wApp);
     pgSetWidget(newUI->wButtonBox,
 		PG_WP_NAME,pgNewString("PSMButtonBox"),
-		PG_WP_TRANSPARENT, 1,
+		PG_WP_SIDE, PG_S_BOTTOM,
 		0);
   }
 
