@@ -42,6 +42,6 @@ if tag:
 s = smtplib.SMTP()
 s.connect()
 s.sendmail(returnAddress, toAddress,
-           "From: %s\nTo: %s\nSubject: Announce %s\n\n%s" % \
+           "From: %s\nTo: %s\nSubject: Announce %s\n\n{black}{reverse}%s" % \
            (returnAddress, toAddress, projectName, ciaMessage))
 s.close()
