@@ -1,4 +1,4 @@
-/* $Id: html.c,v 1.8 2001/11/06 09:34:33 bornet Exp $
+/* $Id: html.c,v 1.9 2001/11/07 09:19:36 micahjd Exp $
  *
  * html.c - Use the textbox_document inferface to load HTML markup
  *
@@ -667,6 +667,8 @@ g_error html_textfragment(struct html_parse *hp,
   
   /* Transcribe it into a new string, converting &foo; using html_findchar() 
    */
+  if (!length) 
+    return sucess;
   e = g_malloc((void**)&str, length+1);
   errorcheck;
   str[length] = 0;

@@ -1,4 +1,4 @@
-/* $Id: plaintext.c,v 1.2 2001/11/06 09:34:33 bornet Exp $
+/* $Id: plaintext.c,v 1.3 2001/11/07 09:19:36 micahjd Exp $
  *
  * plaintext.c - Load plain text into the textbox widget
  *
@@ -85,6 +85,8 @@ g_error plaintext_word(struct textbox_cursor *c, const u8 *start,
 
   /* Allocate a new string */
   length = end-start+1;
+  if (!length)
+    return sucess;
   e = g_malloc((void**)&str, length+1);
   errorcheck;
   str[length] = 0;  
