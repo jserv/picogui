@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.27 2001/10/14 01:30:06 micahjd Exp $
+/* $Id: canvas.c,v 1.28 2001/11/15 11:17:42 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -94,10 +94,11 @@ g_error canvas_install(struct widget *self) {
    /* Init grop context */
    gropctxt_init(CTX,self->in->div);
    self->rawbuild = 1;
-   
-   self->trigger_mask = TRIGGER_STREAM | TRIGGER_UP | TRIGGER_DOWN |
-     TRIGGER_RELEASE | TRIGGER_CHAR | TRIGGER_KEYUP | TRIGGER_KEYDOWN |
-     TRIGGER_MOVE;
+
+   /* By default accept only stream commands and mouse clicks. The app can use
+    * PG_WP_TRIGGERMASK to turn on mouse movement and keyboard events
+    */
+   self->trigger_mask = TRIGGER_STREAM | TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE;
    
    return sucess;
 }
