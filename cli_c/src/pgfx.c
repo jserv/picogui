@@ -1,4 +1,4 @@
-/* $Id: pgfx.c,v 1.4 2001/05/31 06:53:19 micahjd Exp $
+/* $Id: pgfx.c,v 1.5 2001/05/31 07:32:52 micahjd Exp $
  *
  * picogui/pgfx.c - PGFX general-purpose utility functions
  * 
@@ -59,8 +59,11 @@ inline pgprim pgFrame(pgcontext c,pgu x,pgu y,pgu w,pgu h) {
 inline pgprim pgSlab(pgcontext c,pgu x,pgu y,pgu w) {
    return (*(c)->lib->slab)(c,x,y,w);
 }
-inline pgprim pgBar(pgcontext c,pgu x,pgu y,pgu h) {
-   return (*(c)->lib->bar)(c,x,y,h);
+inline pgprim pgEllipse(pgcontext c,pgu x,pgu y,pgu w,pgu h) {
+   return (*(c)->lib->ellipse)(c,x,y,w,h);
+}
+inline pgprim pgFEllipse(pgcontext c,pgu x,pgu y,pgu w,pgu h) {
+   return (*(c)->lib->fellipse)(c,x,y,w,h);
 }
 inline pgprim pgText(pgcontext c,pgu x,pgu y,pghandle string) {
    return (*(c)->lib->text)(c,x,y,string);

@@ -33,6 +33,10 @@ int main(int argc,char **argv) {
    pgSetColor(gc,0xFFFFFF);        /* Gradient thingy */
    pgGradient(gc,30,30,40,40,25,0x8080FF,0xF0F080);
    pgFrame(gc,30,30,40,40);
+   pgSetColor(gc,0xFFFF00);        /* Ellipses */
+   pgFEllipse(gc,35,35,30,30);
+   pgSetColor(gc,0x000000);
+   pgEllipse(gc,35,35,30,30);
    pgSetColor(gc,0xFFFFFF);        /* XOR a stripe down the middle */
    pgSetLgop(gc,PG_LGOP_XOR);
    pgRect(gc,0,45,100,10);

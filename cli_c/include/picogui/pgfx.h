@@ -1,4 +1,4 @@
-/* $Id: pgfx.h,v 1.10 2001/05/16 04:22:56 micahjd Exp $
+/* $Id: pgfx.h,v 1.11 2001/05/31 07:32:52 micahjd Exp $
  *
  * picogui/pgfx.h - The PicoGUI abstract graphics interface
  * 
@@ -129,6 +129,10 @@ struct pgfx_lib {
    pgprim (*slab)      (pgcontext c, pgu x,  pgu y,  pgu w);
    //! Implementation of pgBar
    pgprim (*bar)       (pgcontext c, pgu x,  pgu y,  pgu h);
+  //! Implementation of pgEllipse 
+   pgprim (*ellipse)   (pgcontext c, pgu x,  pgu y,  pgu w,  pgu h); 
+   //! Implementation of pgFEllipse 
+   pgprim (*fellipse)  (pgcontext c, pgu x,  pgu y,  pgu w,  pgu h);  
    //! Implementation of pgText
    pgprim (*text)      (pgcontext c, pgu x,  pgu y,  pghandle string);
    //! Implementation of pgBitmap
@@ -179,6 +183,10 @@ inline pgprim pgFrame(pgcontext c,pgu x,pgu y,pgu w,pgu h);
 inline pgprim pgSlab(pgcontext c,pgu x,pgu y,pgu w);
 //! Draw a vertical line beginning at \p (x,y) and extending down \p h pixels
 inline pgprim pgBar(pgcontext c,pgu x,pgu y,pgu h);
+//! Draw a non-filled ellipse in the current color
+inline pgprim pgEllipse(pgcontext c,pgu x,pgu y,pgu w,pgu h);
+//! Draw a filled ellipse in the current color
+inline pgprim pgFEllipse(pgcontext c,pgu x,pgu y,pgu w,pgu h);
 /*! 
  * \brief Draw a string in the current color, font, and angle
  * 
