@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.33 2002/10/20 16:54:34 micahjd Exp $
+/* $Id: linear16.c,v 1.34 2002/10/21 13:31:06 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -495,13 +495,7 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
  * This is a different algorigthm with longer buffers and no division.
  * It forces the blur radius to be a power of two. It uses no buffer, just
  * a set of accumulators. This way each pixel requires just a handful of
- * bitshifts and ands, no division. Since the blur is linear rather than
- * the ideal gaussian curve, there's some interlacing to make the effect
- * a little closer.
- * Another limitation of this blur is that it does not do any bounds checking
- * explicitely, so it will not let the radius extend past the top or bottom of
- * the image (sides are ok, they will wrap) and the diameter can't be larger
- * than the image width.
+ * bitshifts and ands, no division.
  */
 void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
   int log_diameter, diameter, i, j;
