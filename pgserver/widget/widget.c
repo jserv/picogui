@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.114 2001/09/25 17:51:20 micahjd Exp $
+/* $Id: widget.c,v 1.115 2001/10/06 09:02:41 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -596,12 +596,15 @@ void request_focus(struct widget *self) {
 */
 void widgetunder(int x,int y,struct divnode *div) {
   if (!div) return;
+  /* If the widget contains the given point,
+   * it's the one. Ignore it if it has no trigger mask
+   */
   if ( ((!((div->flags & DIVNODE_DIVSCROLL) && div->divscroll)) ||
 	( div->divscroll->calcx<=x && div->divscroll->calcy<=y &&
 	  (div->divscroll->calcx+div->divscroll->calcw)>x &&
 	  (div->divscroll->calcy+div->divscroll->calch)>y )) &&
        div->x<=x && div->y<=y && (div->x+div->w)>x && (div->y+div->h)>y
-       && div->owner && div->build && div->owner->trigger_mask)
+       && div->owner && div->owner->trigger_mask)
     div_under_crsr = div;
   widgetunder(x,y,div->next);
   widgetunder(x,y,div->div);

@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.4 2001/10/06 01:39:57 micahjd Exp $
+/* $Id: textbox_document.c,v 1.5 2001/10/06 09:02:41 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -244,32 +244,47 @@ g_error text_compact(struct textbox_cursor *c) {
 /* Show the caret at the current cursor position */
 g_error text_caret_on(struct textbox_cursor *c) {
   g_error e;
+  struct gropnode *g; 
 
   /* is the caret not at the right place? */
   if (c->caret != &c->c_div->grop) {
 
     /* Delete old caret? */
     if (c->caret && *c->caret) {
-      struct gropnode *condemn; 
-      condemn = *c->caret;
+      g = *c->caret;
       *c->caret = (*c->caret)->next;
-      gropnode_free(condemn);
+      gropnode_free(g);
     }
 
     /* Allocate new caret */
     c->caret = &c->c_div->grop;
+    g = *c->caret;
     e = gropnode_alloc(c->caret);
     errorcheck;
-    //    (*c->caret)
+    (*c->caret)->flags = PG_GROPF_UNIVERSAL | PG_GROPF_COLORED;
+    (*c->caret)->next = g;
+    (*c->caret)->r.x = 0;
+    (*c->caret)->r.y = 0;
+    (*c->caret)->r.w = 2;
+    (*c->caret)->r.h = 0x7FFF;
+    (*c->caret)->type = PG_GROP_RECT;
   }
 
   /* Make the caret visible */
+  (*c->caret)->param[0] = 0x000000;
+  c->c_div->flags |= DIVNODE_INCREMENTAL;
+  update(c->c_div,1);
 
   return sucess;
 }
 
 /* Hide the caret at the current cursor position */
 g_error text_caret_off(struct textbox_cursor *c) {
+  if (c->caret && *c->caret) {
+    (*c->caret)->param[0] = 0xFFFFFF;
+    c->c_div->flags |= DIVNODE_INCREMENTAL;
+    update(c->c_div,1);
+  }
   return sucess;
 }
 
