@@ -1,185 +1,199 @@
-button.border.normal.x = 2
-button.border.normal.y = 2
-button.border.normal.w = -4
-button.border.normal.h = -4
-button.border.normal.type = gradient
-button.border.normal.c1 = 0x7080A0
-button.border.normal.c2 = 0x000000
-button.border.normal.angle = 45
-button.border.normal.trans = none
-button.border.hilighted.c1 = 0x7080A0
-button.border.hilighted.c2 = 0x000000
-button.border.hilighted.angle = 45
-button.border.hilighted.trans = none
-button.border.active.c1 = 0x7080A0
-button.border.active.c2 = 0x000000
-button.border.active.angle = 225
-button.border.active.trans = none
+# PicoGUI theme
+# Blue Steel
 
-button.fill.normal.x = 0
-button.fill.normal.y = 0
-button.fill.normal.w = 0
-button.fill.normal.h = 0
-button.fill.normal.type = gradient
-button.fill.normal.c1 = 0x8090B0
-button.fill.normal.c2 = 0x000000
-button.fill.normal.angle = 240
-button.fill.normal.trans = none
-button.fill.hilighted.c1 = 0x8090B0
-button.fill.hilighted.c2 = 0x000000
-button.fill.hilighted.angle = 240
-button.fill.hilighted.trans = none
-button.fill.active.c1 = 0x8090B0
-button.fill.active.c2 = 0x000000
-button.fill.active.angle = 240
-button.fill.active.trans = none
+# Cute little theme with lotsa gradients.
+# Micah Dowty
 
-button.overlay.normal.x = 2
-button.overlay.normal.y = 2
-button.overlay.normal.w = -4
-button.overlay.normal.h = -4
-button.overlay.normal.type = gradient
-button.overlay.normal.c1 = 0x000000
-button.overlay.normal.c2 = 0x000000
-button.overlay.normal.angle = 270
-button.overlay.normal.trans = light
-button.overlay.hilighted.c1 = 0x505000
-button.overlay.hilighted.c2 = 0x000000
-button.overlay.hilighted.angle = 270
-button.overlay.hilighted.trans = light
-button.overlay.active.c1 = 0x505000
-button.overlay.active.c2 = 0x000000
-button.overlay.active.angle = 270
-button.overlay.active.trans = light
+button {
+	border {
+		normal.width = 2
+		normal.type = gradient
+		normal.c1 = 0x7080A0
+		normal.c2 = 0x000000
+		normal.angle = 45
+		normal.trans = none
+		hilighted.c1 = 0x7080A0
+		hilighted.c2 = 0x000000
+		hilighted.angle = 45
+		hilighted.trans = none
+		active.c1 = 0x7080A0
+		active.c2 = 0x000000
+		active.angle = 225
+		active.trans = none
+	}
+	fill {
+		normal.width = 0
+		normal.type = gradient
+		normal.c1 = 0x8090B0
+		normal.c2 = 0x000000
+		normal.angle = 240
+		normal.trans = none
+		hilighted.c1 = 0x8090B0
+		hilighted.c2 = 0x000000
+		hilighted.angle = 240
+		hilighted.trans = none
+		active.c1 = 0x8090B0
+		active.c2 = 0x000000
+		active.angle = 240
+		active.trans = none
+	}
+	overlay {
+		normal.width = 2
+		normal.type = gradient
+		normal.c1 = 0x000000
+		normal.c2 = 0x000000
+		normal.angle = 270
+		normal.trans = light
+		hilighted.c1 = 0x505000
+		hilighted.c2 = 0x000000
+		hilighted.angle = 270
+		hilighted.trans = light
+		active.c1 = 0x505000
+		active.c2 = 0x000000
+		active.angle = 270
+		active.trans = light
+	}
+}
 
-toolbar.border.normal.x = 1
-toolbar.border.normal.y = 1
-toolbar.border.normal.w = -2
-toolbar.border.normal.h = -2
-toolbar.border.normal.type = flat
-toolbar.border.normal.c = 0x000000
+toolbar {
+	border {
+		normal.width = -1
+		normal.type = flat
+		normal.c = 0x000000
+	}
+	fill {
+		normal.width = 0
+		normal.type = gradient
+		normal.c1 = 0x7080A0
+		normal.c2 = 0x102030
+		normal.angle = 85
+		normal.trans = none
+	}
+}
 
-toolbar.fill.normal.x = 0
-toolbar.fill.normal.y = 0
-toolbar.fill.normal.w = 0
-toolbar.fill.normal.h = 0
-toolbar.fill.normal.type = gradient
-toolbar.fill.normal.c1 = 0x7080A0
-toolbar.fill.normal.c2 = 0x102030
-toolbar.fill.normal.angle = 85
-toolbar.fill.normal.trans = none
+scrollbar {
+	border {
+		normal.width = -1
+		normal.type = flat
+		normal.c = 0x000000
+		active.c = 0x000000
+		hilighted.c = 0x000000
+	}
+	fill {
+		normal.width = 0
+		normal.type = gradient
+		normal.c1 = 0x70A0A0
+		normal.c2 = 0x103030
+		normal.angle = 4
+		normal.trans = none
+		active.c1 = 0x80B0D0
+		active.c2 = 0x103040
+		active.angle = 0
+		active.trans = none
+		hilighted.c1 = 0x80B0D0
+		hilighted.c2 = 0x103040
+		hilighted.angle = 0
+		hilighted.trans = none
+	}
+}
 
-scrollbar.border.normal.x = 1
-scrollbar.border.normal.y = 1
-scrollbar.border.normal.w = -2
-scrollbar.border.normal.h = -2
-scrollbar.border.normal.type = flat
-scrollbar.border.normal.c = 0x000000
-scrollbar.border.active.c = 0x000000
-scrollbar.border.hilighted.c = 0x000000
+scrollind {
+	border {
+		normal.width = 1
+		normal.type = gradient
+		normal.c1 = 0x8080A0
+		normal.c2 = 0x000000
+		normal.angle = 45
+		normal.trans = none
+		hilighted.c1 = 0x8080A0
+		hilighted.c2 = 0x000000
+		hilighted.angle = 45
+		hilighted.trans = none
+		active.c1 = 0x8080A0
+		active.c2 = 0x000000
+		active.angle = 225
+		active.trans = none
+	}
+	fill {
+		normal.width = 0
+		normal.type = gradient
+		normal.c1 = 0xB090B0
+		normal.c2 = 0x000000
+		normal.angle = 185
+		normal.trans = none
+		hilighted.c1 = 0xB090B0
+		hilighted.c2 = 0x000000
+		hilighted.angle = 185
+		hilighted.trans = none
+		active.c1 = 0xB090B0
+		active.c2 = 0x000000
+		active.angle = 185
+		active.trans = none
+	}
+	overlay {
+		normal.width = 1
+		normal.type = gradient
+		normal.c1 = 0x000000
+		normal.c2 = 0x000000
+		normal.angle = 270
+		normal.trans = light
+		hilighted.c1 = 0x505000
+		hilighted.c2 = 0x000000
+		hilighted.angle = 270
+		hilighted.trans = light
+		active.c1 = 0x505000
+		active.c2 = 0x000000
+		active.angle = 270
+		active.trans = light
+	}
+}
 
-scrollbar.fill.normal.x = 0
-scrollbar.fill.normal.y = 0
-scrollbar.fill.normal.w = 0
-scrollbar.fill.normal.h = 0
-scrollbar.fill.normal.type = gradient
-scrollbar.fill.normal.c1 = 0x70A0A0
-scrollbar.fill.normal.c2 = 0x103030
-scrollbar.fill.normal.angle = 4
-scrollbar.fill.normal.trans = none
-scrollbar.fill.active.c1 = 0x80B0D0
-scrollbar.fill.active.c2 = 0x103040
-scrollbar.fill.active.angle = 0
-scrollbar.fill.active.trans = none
-scrollbar.fill.hilighted.c1 = 0x80B0D0
-scrollbar.fill.hilighted.c2 = 0x103040
-scrollbar.fill.hilighted.angle = 0
-scrollbar.fill.hilighted.trans = none
+indicator {
+	border {
+		normal.width = 1
+		normal.type = flat
+		normal.c = 0x000000
+	}
+	fill {
+		normal.width = 0
+		normal.type = gradient
+		normal.c1 = 0x8080F0
+		normal.c2 = 0x202020
+		normal.angle = 90
+		normal.trans = none
+	}
+	overlay {
+		normal.width = 0
+		normal.type = gradient
+		normal.c1 = 0x000000
+		normal.c2 = 0xD0D000
+		normal.angle = 0
+		normal.trans = light
+	}
+}
 
-scrollind.border.normal.x = 1
-scrollind.border.normal.y = 1
-scrollind.border.normal.w = -2
-scrollind.border.normal.h = -2
-scrollind.border.normal.type = gradient
-scrollind.border.normal.c1 = 0x8080A0
-scrollind.border.normal.c2 = 0x000000
-scrollind.border.normal.angle = 45
-scrollind.border.normal.trans = none
-scrollind.border.hilighted.c1 = 0x8080A0
-scrollind.border.hilighted.c2 = 0x000000
-scrollind.border.hilighted.angle = 45
-scrollind.border.hilighted.trans = none
-scrollind.border.active.c1 = 0x8080A0
-scrollind.border.active.c2 = 0x000000
-scrollind.border.active.angle = 225
-scrollind.border.active.trans = none
-
-scrollind.fill.normal.x = 0
-scrollind.fill.normal.y = 0
-scrollind.fill.normal.w = 0
-scrollind.fill.normal.h = 0
-scrollind.fill.normal.type = gradient
-scrollind.fill.normal.c1 = 0xB090B0
-scrollind.fill.normal.c2 = 0x000000
-scrollind.fill.normal.angle = 185
-scrollind.fill.normal.trans = none
-scrollind.fill.hilighted.c1 = 0xB090B0
-scrollind.fill.hilighted.c2 = 0x000000
-scrollind.fill.hilighted.angle = 185
-scrollind.fill.hilighted.trans = none
-scrollind.fill.active.c1 = 0xB090B0
-scrollind.fill.active.c2 = 0x000000
-scrollind.fill.active.angle = 185
-scrollind.fill.active.trans = none
-
-scrollind.overlay.normal.x = 1
-scrollind.overlay.normal.y = 1
-scrollind.overlay.normal.w = -2
-scrollind.overlay.normal.h = -2
-scrollind.overlay.normal.type = gradient
-scrollind.overlay.normal.c1 = 0x000000
-scrollind.overlay.normal.c2 = 0x000000
-scrollind.overlay.normal.angle = 270
-scrollind.overlay.normal.trans = light
-scrollind.overlay.hilighted.c1 = 0x505000
-scrollind.overlay.hilighted.c2 = 0x000000
-scrollind.overlay.hilighted.angle = 270
-scrollind.overlay.hilighted.trans = light
-scrollind.overlay.active.c1 = 0x505000
-scrollind.overlay.active.c2 = 0x000000
-scrollind.overlay.active.angle = 270
-scrollind.overlay.active.trans = light
-
-indicator.border.normal.x = 1
-indicator.border.normal.y = 1
-indicator.border.normal.w = -2
-indicator.border.normal.h = -2
-indicator.border.normal.type = flat
-indicator.border.normal.c = 0x000000
-
-indicator.fill.normal.x = 0
-indicator.fill.normal.y = 0
-indicator.fill.normal.w = 0
-indicator.fill.normal.h = 0
-indicator.fill.normal.type = gradient
-indicator.fill.normal.c1 = 0x8080F0
-indicator.fill.normal.c2 = 0x202020
-indicator.fill.normal.angle = 90
-indicator.fill.normal.trans = none
-
-indicator.overlay.normal.x = 0
-indicator.overlay.normal.y = 0
-indicator.overlay.normal.w = 0
-indicator.overlay.normal.h = 0
-indicator.overlay.normal.type = gradient
-indicator.overlay.normal.c1 = 0x000000
-indicator.overlay.normal.c2 = 0xD0D000
-indicator.overlay.normal.angle = 0
-indicator.overlay.normal.trans = light
+popup {
+	border {
+		normal.width = 4
+		normal.type = gradient
+		normal.c1 = 0xD0E0F0
+		normal.c2 = 0x607080
+		normal.angle = 45
+		normal.trans = none
+	}
+	fill {
+		normal.width = 4
+		normal.type = gradient
+		normal.c1 = 0x607080
+		normal.c2 = 0xD0E0F0
+		normal.angle = 90
+		normal.trans = none
+	}
+}	
 
 background = ../images/bg/darkblueswirl.pnm
 
-
+### The End ###
 
 
 

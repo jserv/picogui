@@ -32,7 +32,7 @@ sub tuxclick {
     NewWidget(-type => label, -text => NewString("Message Box"),
 	      -font => NewFont("",0,bold),-color => 0xFFFFFF,-bgcolor => 0x000000);
     $tb = NewWidget(-type => toolbar, -side => left);
-    NewWidget(-type => label, -text => NewString($s),-align => nw,
+    NewWidget(-type => label, -text =>NewString($s),-side=>all,
 	      -transparent => 1);
     
     NewWidget(-type => button, -onclick => sub {$p->delete},

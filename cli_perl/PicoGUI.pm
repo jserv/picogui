@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.15 2000/06/02 07:59:12 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.16 2000/06/03 18:37:47 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -70,7 +70,8 @@ use Carp;
 	 'top' => (1<<3),
 	 'bottom' => (1<<4),
 	 'left' => (1<<5),
-	 'right' => (1<<6)
+	 'right' => (1<<6),
+	 'all' => (1<<11)
 	 );
 
 %RSHIPS = (
@@ -119,7 +120,13 @@ use Carp;
 	    'scrollind.overlay' => 9,
 	    'indicator.border' => 10,
 	    'indicator.fill' => 11,
-	    'indicator.overlay' => 12
+	    'indicator.overlay' => 12,
+	    'panel.border' => 13,
+	    'panel.fill' => 14,
+	    'panelbar.border' => 15,
+	    'panelbar.fill' => 16,
+	    'popup.border' => 17,
+	    'popup.fill' => 18
 	    );
 
 %STATE = (
@@ -132,19 +139,18 @@ use Carp;
 	  );
 	   
 %PARAM = (
-	  'x' => 1,
-	  'y' => 2,
-	  'w' => 3,
-	  'h' => 4,
-	  'type' => 5,
-	  'c' => 6,
-	  'c1' => 6,
-	  'c2' => 7,
-	  'a' => 8,
-	  'angle' => 8,
-	  'translucent' => 9,
-	  'trans' => 9,
-	  't' => 9
+	  'width' => 1,
+	  'w' => 1,
+	  'type' => 2,
+	  'color' => 3,
+	  'c' => 3,
+	  'c1' => 3,
+	  'c2' => 4,
+	  'a' => 5,
+	  'angle' => 5,
+	  'translucent' => 6,
+	  'trans' => 6,
+	  't' => 6
 	  );
 
 %VALUES = (

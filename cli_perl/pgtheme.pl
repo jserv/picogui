@@ -7,13 +7,24 @@ use PicoGUI;
 while (<>) {
 	s/#.*//;
 	next if (!/\S/);
-	if (/\s*(\S+)\s*=\s*(\S+)/) {
-		if ($1 eq 'background') {
-			$bmp = NewBitmap(-file => $2); 
-			$bmp->SetBackground();
-		}
-		else {
-			ThemeSet($1 => eval($2));
-		}		
+	if (/\}/) {
+	    pop @prefices;
+	}
+	elsif (/(\w+)\W*\{/) {
+	    push @prefices, $1;
+	}
+	elsif (/\s*(\S+)\s*=\s*(\S+)/) {
+	    if ($1 eq 'background') {
+		$bmp = NewBitmap(-file => $2); 
+		$bmp->SetBackground();
+	    }
+	    else {
+		 $th = (join('.',@prefices).(@prefices?'.':'').$1);
+		 $v = eval($2);
+#		 print "$th = $v\n";
+		 ThemeSet($th => $v);
+	    }		
 	}
 }
+
+
