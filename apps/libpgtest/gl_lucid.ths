@@ -1,7 +1,7 @@
 /* Slightly hacked up lucid theme */
 
 property fTranslucent, fSolid, fFramedTranslucent;
-property fNop, frameColor, fBeveledPrism;
+property fNop, frameColor, fBeveledPrism, fFlame;
 property alpha, depth, bevel;
 
 object default {
@@ -72,8 +72,28 @@ object default {
   };
 
   fTranslucent = fillstyle {
+    Blur(x,y,w,h,2);
     SetLgop(PG_LGOP_ALPHA);
     SetColor(PGCF_ALPHA | alpha | bgcolor);
+    Rect(x,y,w,h);
+    SetLgop(PG_LGOP_NONE);
+  };
+
+  fFlame = fillstyle {
+    var wiggle;
+
+    /* This uses interference between the engine's frame rate
+     * and the clock to generate the flame's wiggle
+     */
+    wiggle = ticks & 1;
+
+    GL.pushmatrix();
+    GL.translatef(0,-(1+wiggle)<<16,(-2+wiggle)<<16);
+    GL.feedback(x,y,w,h);
+    GL.popmatrix();
+
+    SetLgop(PG_LGOP_MULTIPLY);
+    SetColor(0xF2E0A0);
     Rect(x,y,w,h);
     SetLgop(PG_LGOP_NONE);
   };
@@ -100,7 +120,6 @@ object default {
 }
 
 object base.tlcontainer {
-  bgcolor = 0xffffff;
   margin = 10;
 }
 
@@ -124,6 +143,14 @@ object panelbar {
 
 object base.panelbtn {
   side = PG_S_RIGHT;
+}
+
+object textbox {
+  bgfill = fillstyle {
+    fFlame(x,y,w,h);
+  };
+  fgcolor = 0xFFFFFF;
+  bgcolor = 0x000000;
 }
 
 object closebtn text = "X";

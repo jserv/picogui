@@ -135,6 +135,10 @@ g_error protected_main(int argc, char **argv) {
   e = set_param_str("pgserver", "font_engine", "ftgl");
   errorcheck;
 
+  /* Standard picogui fonts */
+  e = set_param_str("font-ftgl", "path", "../../fonts");
+  errorcheck;
+
   /* No need for sprite dragging */
   e = set_param_str("pgserver", "dragsolid", "1");
   errorcheck;

@@ -1,4 +1,4 @@
-/* $Id: sdlgl_grop.c,v 1.4 2002/03/26 03:46:04 instinc Exp $
+/* $Id: sdlgl_grop.c,v 1.5 2002/11/23 02:01:41 micahjd Exp $
  *
  * sdlgl_grop.c - OpenGL driver for picogui, using SDL for portability.
  *                This handles all new gropnodes that export OpenGL interfaces to
@@ -146,6 +146,11 @@ void sdlgl_grop_handler(struct groprender *r, struct gropnode *n) {
 
   case PG_GROP_GL_BLENDFUNC:
     glBlendFunc(n->param[0],n->param[1]);
+    break;
+
+  case PG_GROP_GL_FEEDBACK:
+    gl_feedback(n->r.x, n->r.y, n->r.w, n->r.h,
+		r->lgop, GL_LINEAR, GL_FRONT, GL_FALSE, 0);
     break;
 
   }

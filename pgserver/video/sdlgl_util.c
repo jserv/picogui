@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.25 2002/11/21 15:12:48 micahjd Exp $
+/* $Id: sdlgl_util.c,v 1.26 2002/11/23 02:01:41 micahjd Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.
@@ -444,6 +444,98 @@ void gl_make_texture(struct glbitmap *glb) {
 
 void gl_set_wireframe(int on) {
   glPolygonMode(GL_FRONT_AND_BACK, on ? GL_LINE : GL_FILL);
+}
+
+/* Tiled feedback blitter, the basis for blurring and normal feedback effects */
+void gl_feedback(int x, int y, int w, int h, int lgop, int filter,
+		 int source, int generate_mipmaps, int mipmap_level) {
+  /* Texture size (256x256) */
+  const int t_exponent = 8;
+  const int t_size = 1 << t_exponent;
+  static GLuint texture = 0;
+  float texw, texh;
+  int tilex, tiley, tilew, tileh;
+  int i,j,ix,iy;
+  int h_tiles = (w + t_size - 1) >> t_exponent;
+  int v_tiles = (h + t_size - 1) >> t_exponent;
+  float originx, originy, originw;
+  float projection[16], modelview[16];
+
+  /* We'll need a temporary texture if we don't already have one */
+  if (!texture) {
+    glGenTextures(1,&texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,filter);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,filter);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP);
+
+    /* Just allocate an empty texture */
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, t_size, t_size, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+  }
+  else {
+    glBindTexture(GL_TEXTURE_2D, texture);
+  }
+
+  /* Use an OpenGL extension to automatically generate mipmaps if we want that */
+  glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+  glEnable(GL_TEXTURE_2D);
+
+  /* Find the origin of the modelview matrix, projected into viewport coordinates */
+  glGetFloatv(GL_PROJECTION_MATRIX, projection);
+  glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
+  /* First multiply the modelview matrix's rightmost column (the origin)
+   * by the projection matrix. We ignore Z, and get x, y, and w.
+   */
+  originx  = modelview[12]*projection[0]  + modelview[13]*projection[4] + 
+             modelview[14]*projection[8]  + modelview[15]*projection[12];
+  originy  = modelview[12]*projection[1]  + modelview[13]*projection[5] + 
+             modelview[14]*projection[9]  + modelview[15]*projection[13];
+  originw  = modelview[12]*projection[3]  + modelview[13]*projection[7] + 
+             modelview[14]*projection[11] + modelview[15]*projection[15];
+  /* Division for the perspective calculation */
+  originx /= originw;
+  originy /= originw;
+  /* Convert from normalized device coordinates to pixels */
+  originx = (originx*0.5+0.5) * vid->xres;
+  originy = (-originy*0.5+0.5) * vid->yres;
+
+  /* Split into tiles no larger than the texture size */
+  for (j=0,iy=0;j<v_tiles;j++,iy+=t_size)
+    for (i=0,ix=0;i<h_tiles;i++,ix+=t_size) {
+      tilex = x+ix;
+      tiley = y+iy;
+      tilew = min(w-ix,t_size);
+      tileh = min(h-iy,t_size);
+
+      /* Copy from the source buffer */
+      glReadBuffer(source);
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_BASE_LEVEL,0);
+      glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 
+			  tilex+originx, vid->yres-(originy+tiley+tileh), tilew, tileh);
+
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_BASE_LEVEL,mipmap_level);
+
+      texw = ((float)tilew) / t_size;
+      texh = ((float)tileh) / t_size;
+      gl_lgop(lgop);
+      
+      /* Render from texture */
+      glBegin(GL_QUADS);
+      glColor4f(1.0f,1.0f,1.0f,1.0f);
+      glNormal3f(0.0f,0.0f,1.0f);
+      glTexCoord2f(0,texh);
+      glVertex2f(tilex,tiley);
+      glTexCoord2f(texw,texh);
+      glVertex2f(tilex+tilew,tiley);
+      glTexCoord2f(texw,0);
+      glVertex2f(tilex+tilew,tiley+tileh);
+      glTexCoord2f(0,0);
+      glVertex2f(tilex,tiley+tileh);
+      glEnd();
+    }
+  
+  glDisable(GL_TEXTURE_2D);
 }
 
 /* The End */

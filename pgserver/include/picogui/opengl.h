@@ -1,4 +1,4 @@
-/* $Id: opengl.h,v 1.1 2002/03/06 08:51:56 micahjd Exp $
+/* $Id: opengl.h,v 1.2 2002/11/23 02:01:41 micahjd Exp $
  *
  * picogui/opengl.h - This is an extension to PicoGUI, supported by the sdlgl
  *                    driver, for including OpenGL commands in groplists.
@@ -105,6 +105,7 @@
 #define PG_GROP_GL_MATRIX_PIXELCOORD  0x3143   //!< (no params. Multiplies in PicoGUI's pixel coordinates matrix)
 #define PG_GROP_GL_COLOR              0x3157   //!< params: one pgcolor
 #define PG_GROP_GL_BLENDFUNC          0x316B   //!< params: 2 integer constants
+#define PG_GROP_GL_FEEDBACK           0x3010   //1< (no params)
 
 //! \}
 

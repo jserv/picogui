@@ -1,4 +1,4 @@
-/* $Id: sdlgl_primitives.c,v 1.18 2002/11/22 10:23:06 micahjd Exp $
+/* $Id: sdlgl_primitives.c,v 1.19 2002/11/23 02:01:41 micahjd Exp $
  *
  * sdlgl_primitives.c - OpenGL driver for picogui, using SDL for portability.
  *                      Implement standard picogui primitives using OpenGL
@@ -433,20 +433,6 @@ void sdlgl_grop_render_end_hook(struct divnode **div, struct gropnode ***listp,
   glPopMatrix();
 }
 
-/* There's no good way to implement these font blits.
- * They should be using a special font engine with this driver.
- */
-void sdlgl_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
-		    s16 lines, s16 angle, hwrcolor c, struct quad *clip,
-		    s16 lgop, int char_pitch) {
-}
-#ifdef CONFIG_FONTENGINE_FREETYPE
-void sdlgl_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
-			  int char_pitch, u8 *gammatable, s16 angle, hwrcolor c,
-			  struct quad *clip, s16 lgop) {
-}
-#endif /* CONFIG_FONTENGINE_FREETYPE */
-
 void sdlgl_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
 		     hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 xo, s16 yo, s16 lgop) {
   s16 i,j;
@@ -510,13 +496,15 @@ void sdlgl_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
   }
 }
 
+void sdlgl_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
+  int i,j;
+
+  /* Convert the radius to a power of 2 */
+  for (i=0,j=radius;j!=1;i++)
+    j >>= 1;
+
+  gl_feedback(x,y,w,h,PG_LGOP_NONE,GL_LINEAR_MIPMAP_NEAREST,GL_BACK,GL_TRUE,i);
+}
+
 /* The End */
-
-
-
-
-
-
-
-
 

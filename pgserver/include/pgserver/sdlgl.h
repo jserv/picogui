@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.24 2002/11/21 11:37:29 micahjd Exp $
+/* $Id: sdlgl.h,v 1.25 2002/11/23 02:01:40 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -204,6 +204,8 @@ inline float gl_dist_line_to_point(float point_x, float point_y,
 inline void gl_lgop(s16 lgop);
 int gl_power2_round(int x);
 void gl_frame(void);
+void gl_feedback(int x, int y, int w, int h, int lgop, int filter,
+		 int source, int generate_mipmaps, int mipmap_level);
 void sdlgl_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop);
 hwrcolor sdlgl_getpixel(hwrbitmap dest,s16 x,s16 y);
 void sdlgl_rect(hwrbitmap dest,s16 x,s16 y,s16 w, s16 h, hwrcolor c,s16 lgop);
@@ -253,15 +255,9 @@ int sdlgl_grop_render_postsetup_hook(struct divnode **div, struct gropnode ***li
 void sdlgl_grop_render_end_hook(struct divnode **div, struct gropnode ***listp,
 				struct groprender *rend);
 g_error sdlgl_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm);
-
-void sdlgl_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
-		    s16 lines, s16 angle, hwrcolor c, struct quad *clip,
-		    s16 lgop, int char_pitch);
-void sdlgl_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
-			  int char_pitch, u8 *gammatable, s16 angle, hwrcolor c,
-			  struct quad *clip, s16 lgop);
 void sdlgl_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
 		     hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 xo, s16 yo, s16 lgop);
+void sdlgl_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius);
 
 #endif /* _H_SDLGL */
 
