@@ -35,9 +35,9 @@ runtime = [
                      content = [ '../etc/rm.d/picoguiserver',
                                  'bin/picogui-launcher.sh' ],
                      
-                     depends = [ 'picoguiserver/install', 'resourcemanager/server',
-                                 (S ('module/picoguiserver/server') & S ('platform/m68k-pic-coff')) >> S ('module/pocketapps/bioscall'),
-                                 (S ('module/picoguiserver/server') & S ('platform/m68k-pic-coff')) >> S ('module/pocketapps/initenv'),
+                     depends = [ 'picoguiserver/install', 'resourcemanager/start',
+                                 (S ('module/picoguiserver/start') & S ('platform/m68k-pic-coff')) >> S ('module/pocketapps/bioscall'),
+                                 (S ('module/picoguiserver/start') & S ('platform/m68k-pic-coff')) >> S ('module/pocketapps/initenv'),
                                  ],
 
                      rcscript = 'picogui-launcher.sh',
