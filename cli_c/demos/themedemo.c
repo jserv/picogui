@@ -1,4 +1,4 @@
-/* $Id: themedemo.c,v 1.3 2000/10/10 00:22:33 micahjd Exp $
+/* $Id: themedemo.c,v 1.4 2001/01/29 00:51:09 micahjd Exp $
  *
  * themedemo.c - Test proggie for the new theme stuff I've been
  *               working on in the theme_overhaul branch of
@@ -33,7 +33,7 @@
 int main(int argc, char **argv) {
   pgInit(argc,argv);
 
-  pgLoadTheme(pgFromFile("example.th"));
+  pgLoadTheme(pgFromFile(argv[1]));
   pgUpdate();
 
   getc(stdin);
