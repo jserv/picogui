@@ -28,7 +28,7 @@ class StatPage(navi_cgi.NaviPage):
     subtitle = "Because SF stats weren't pointless enough"
     allSections = ['table', 'totals', 'channels', 'recent']
     footer = navi_cgi.NaviPage.footer + '<a href="http://freenode.org"><img src="/images/web/freenode.png" width="137" height="39" alt="freenode"/></a>'
-    sort = 'daily_D'
+    sort = 'end-of-day_D'
     recentLines = 20
     parameters = navi_cgi.NaviPage.parameters + [
         'sort',
@@ -54,7 +54,7 @@ class StatPage(navi_cgi.NaviPage):
             else:
                 # This isn't the current sort key. Default to ascending sort.
                 boldOpen = boldClose = ""
-                url = self.linkURL({'sort': "%s_A" % heading})
+                url = self.linkURL({'sort': "%s_D" % heading})
 
             write('<th><a href="%s">%s%s%s</a></th>' %
                   (url, boldOpen, cia_statreader.statHeadings[heading], boldClose))
