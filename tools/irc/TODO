@@ -6,7 +6,6 @@ The green section holds items that people have suggested but I don't consider hi
 probably won't get done unless I'm sent patches.
 
 RED:
- * Automatic reconnect
  * Allow the bot to register with NickServ so we don't have to keep re-opping it in #only-commits
  * Allow the bot to op itself on freenode (OPER)
  * BUG: python filter script doesn't strip dupes
