@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.8 2001/01/05 06:42:28 micahjd Exp $
+/* $Id: terminal.c,v 1.9 2001/01/05 11:25:12 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -64,6 +64,10 @@ struct termdata {
   /* Parameter buffer for processed CSI codes */
   int csiargs[CSIARGS_SIZE];
   int num_csiargs;
+
+  /* Background */
+  struct gropnode *bg,*bginc;
+  handle bitmap;
 
   /* The incremental gropnode */
   struct gropnode *inc;
@@ -132,91 +136,121 @@ void textblit(char *src,char *dest,int src_x,int src_y,int src_w,
 void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self) {
   struct fontdesc *fd;
   int neww,newh;
-   
+
+  /************** Size calculations */
+
+  /* Calculate character cell size */
+  if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
+		       DATA->font)) || !fd)
+    return;
+  DATA->celw = fd->font->vwtab['W'];
+  DATA->celh = fd->font->h;
+
+  /* Using our grop context and character cell size,
+   * calculate a good size for us */
+  neww = c->w / DATA->celw - 1;   /* A little margin */
+  newh = c->h / DATA->celh - 1;
+
+  /* If we're rolled up, don't bother */
+  if ((neww>0) && (newh>0)) {
+
+    /* Resize the buffer if necessary */
+    if (neww != DATA->bufferw || newh != DATA->bufferh) {
+      char *newbuffer,*p;
+      long newbuffer_size,i;
+      /* Blit parameters */
+      int src_y,dest_y,w,h;
+      
+      /* Allocate */
+      newbuffer_size = (neww*newh) << 1;
+      if (iserror(g_malloc((void **) &newbuffer,newbuffer_size+1)))
+	return;
+      newbuffer[newbuffer_size] = 0;  /* Null past the buffer itself */
+      
+      /* Clear the new buffer */
+      for (p=newbuffer,i=newbuffer_size;i;i-=2) {
+	*(p++) = DATA->attr;
+	*(p++) = ' ';
+      }
+      
+      /* Start off assuming the new buffer is smaller, then perform clipping */
+      
+      dest_y = 0;
+      w = neww;
+      h = newh;
+      src_y = DATA->bufferh - newh;
+      
+      if (src_y<0) {
+	h += src_y;
+	src_y = 0;
+      }
+      if (w>DATA->bufferw)
+	w = DATA->bufferw;
+      if (h>DATA->bufferh) {
+	src_y += h - DATA->bufferh;
+	h = DATA->bufferh;
+      }
+      
+      /* Move the cursor too */
+      DATA->crsry -= src_y;
+      if (DATA->crsry < 0) {
+	src_y += DATA->crsry;
+	DATA->crsry = 0;
+      }
+      
+      /* Blit! */
+      textblit(DATA->buffer,newbuffer,0,src_y,
+	       DATA->bufferw,0,dest_y,neww,w,h);
+      
+      /* Free the old buffer and update the handle */
+      g_free(DATA->buffer);
+      rehandle(DATA->hbuffer,DATA->buffer = newbuffer);
+      
+      /* Update the rest of our data */
+      DATA->bufferw = neww;
+      DATA->bufferh = newh;
+      DATA->buffersize = newbuffer_size;
+    }
+  }
+
+  /************** Gropnodes */
+
+  /* Background (solid color or bitmap) */
+  addgrop(c,DATA->bitmap ? PG_GROP_BITMAP : PG_GROP_RECT,c->x,c->y,c->w,c->h);
+  c->current->param[0] = DATA->bitmap;
+  c->current->param[1] = PG_LGOP_NONE;
+  c->current->param[2] = -c->x;
+  c->current->param[3] = -c->y;
+  DATA->bg = c->current;
+
+  /* Incremental grop for the background */
+  addgrop(c,DATA->bitmap ? PG_GROP_BITMAP : PG_GROP_RECT,0,0,0,0);
+  c->current->flags   |= PG_GROPF_INCREMENTAL;
+  c->current->param[0] = DATA->bitmap;
+  c->current->param[1] = PG_LGOP_NONE;
+  c->current->param[2] = 0;
+  c->current->param[3] = 0;
+  DATA->bginc = c->current;
+
+  /* For the margin we figured in earlier */
+  c->x += DATA->celw >> 1;
+  c->y += DATA->celh >> 1;
+
+  /* Non-incremental text grid */   
   addgrop(c,PG_GROP_TEXTGRID,c->x,c->y,c->w,c->h);
   c->current->param[0] = DATA->hbuffer;
   c->current->param[1] = DATA->font;
   c->current->param[2] = DATA->bufferw;
   c->current->param[3] = 0;
 
-  /* Calculate character cell size */
-  if (!iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
-		       DATA->font)) && fd) {
-     DATA->celw = fd->font->vwtab['W'];
-     DATA->celh = fd->font->h;
-  }
-
-  /* Using our grop context and character cell size,
-   * calculate a good size for us */
-  neww = c->w / DATA->celw;
-  newh = c->h / DATA->celh;
-
-  /* This gropnode used for incremental updating */
-  addgrop(c,PG_GROP_TEXTGRID,0,0,DATA->celw,DATA->celh);
+  /* Incremental grop for the text grid */
+  addgrop(c,PG_GROP_TEXTGRID,0,0,0,0);
   c->current->flags   |= PG_GROPF_INCREMENTAL;
   c->current->param[0] = DATA->hbuffer;
   c->current->param[1] = DATA->font;
   DATA->inc = c->current;
   DATA->x = c->x;
   DATA->y = c->y;
-
-  /* Resize the buffer if necessary */
-  if (neww != DATA->bufferw || newh != DATA->bufferh) {
-    char *newbuffer,*p;
-    long newbuffer_size,i;
-    /* Blit parameters */
-    int src_y,dest_y,w,h;
-
-    /* Allocate */
-    newbuffer_size = (neww*newh) << 1;
-    if (iserror(g_malloc((void **) &newbuffer,newbuffer_size+1)))
-      return;
-    newbuffer[newbuffer_size] = 0;  /* Null past the buffer itself */
-
-    /* Clear the new buffer */
-    for (p=newbuffer,i=newbuffer_size;i;i-=2) {
-      *(p++) = DATA->attr;
-      *(p++) = ' ';
-    }
-
-    /* Start off assuming the new buffer is smaller, then perform clipping */
-
-    dest_y = 0;
-    w = neww;
-    h = newh;
-    src_y = DATA->bufferh - newh;
-
-    if (src_y<0) {
-      h += src_y;
-      src_y = 0;
-    }
-    if (w>DATA->bufferw)
-      w = DATA->bufferw;
-    if (h>DATA->bufferh) {
-      src_y += h - DATA->bufferh;
-      h = DATA->bufferh;
-    }
-
-    /* Move the cursor too */
-    DATA->crsry -= src_y;
-    if (DATA->crsry < 0) {
-      src_y += DATA->crsry;
-      DATA->crsry = 0;
-    }
-
-    /* Blit! */
-    textblit(DATA->buffer,newbuffer,0,src_y,
-	     DATA->bufferw,0,dest_y,neww,w,h);
-
-    /* Free the old buffer and update the handle */
-    g_free(DATA->buffer);
-    rehandle(DATA->hbuffer,DATA->buffer = newbuffer);
-
-    /* Update the rest of our data */
-    DATA->bufferw = neww;
-    DATA->bufferh = newh;
-    DATA->buffersize = newbuffer_size;
-  }
 }
 
 g_error terminal_install(struct widget *self) {
@@ -272,6 +306,7 @@ g_error terminal_set(struct widget *self,int property, glob data) {
   g_error e;
   struct fontdesc *fd;
   char *str;
+  hwrbitmap bit;
 
   switch (property) {
 
@@ -291,8 +326,16 @@ g_error terminal_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-    //  default:
-    //    return mkerror(PG_ERRT_BADPARAM,14);
+  case PG_WP_BITMAP:
+    if (iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)) || !bit)
+      return mkerror(PG_ERRT_HANDLE,4);
+    DATA->bitmap = data;
+    self->in->flags |= DIVNODE_NEED_RECALC;
+    self->dt->flags |= DIVTREE_NEED_RECALC;
+    break;
+
+  default:
+    return mkerror(PG_ERRT_BADPARAM,14);
   }
   return sucess;
 }
@@ -488,12 +531,14 @@ void term_realize(struct widget *self) {
 	DATA->bufferw,DATA->bufferh);
 */
  
-   /* Gropnode position */
-   DATA->inc->x = DATA->x + DATA->updx * DATA->celw;
-   DATA->inc->y = DATA->y + DATA->updy * DATA->celh;
-   DATA->inc->w = DATA->updw * DATA->celw;
-   DATA->inc->h = DATA->updh * DATA->celh;
-   
+   /* Gropnode position (background and text) */
+   DATA->bginc->x = DATA->inc->x = DATA->x + DATA->updx * DATA->celw;
+   DATA->bginc->y = DATA->inc->y = DATA->y + DATA->updy * DATA->celh;
+   DATA->bginc->w = DATA->inc->w = DATA->updw * DATA->celw;
+   DATA->bginc->h = DATA->inc->h = DATA->updh * DATA->celh;
+   DATA->bginc->param[2] = DATA->bginc->x - DATA->x;
+   DATA->bginc->param[3] = DATA->bginc->y - DATA->y;
+
    /* Set the incremental update flag */
    self->in->div->flags |= DIVNODE_INCREMENTAL;
 }
@@ -689,7 +734,13 @@ void term_char(struct widget *self,char c) {
     memcpy(DATA->buffer,DATA->buffer + (DATA->bufferw<<1),
 	   DATA->buffersize-(DATA->bufferw<<1));
     term_clearbuf(self,0,DATA->bufferh-1,DATA->bufferw);
+
+    /* Two methods here - just redraw the screen or try a scroll blit */
+
     term_updrect(self,0,0,DATA->bufferw,DATA->bufferh);
+
+    //self->in->div->flags |= DIVNODE_SCROLL_ONLY;
+    //self->in->div->oty = DATA->celh;
   }
   
   term_setcursor(self,1);  /* Show cursor */

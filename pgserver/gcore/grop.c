@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.28 2000/12/29 22:31:58 micahjd Exp $
+/* $Id: grop.c,v 1.29 2001/01/05 11:25:09 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -41,7 +41,7 @@ void grop_render(struct divnode *div) {
   struct gropnode *list;
   struct fontdesc *fd;
   hwrbitmap bit;
-  int x,y,w,h,ydif;
+  int x,y,w,h,ydif,bw,bh;
   unsigned char *str;
   int cx1,cx2,cy1,cy2;   /* Clipping */
   int srcx,srcy;         /* Offset added to source bitmap,
@@ -79,10 +79,18 @@ void grop_render(struct divnode *div) {
     if (ydif<0) {
       /* Go up */
 
-      if ((div->h+ydif)>0)
+      if ((div->h+ydif)>0) {
+	cr.x1 = div->x;
+	cr.y1 = div->y;
+	cr.x2 = div->x + div->w - 1;
+	cr.y2 = div->y + div->h + ydif - 1;
+	add_updarea(cr.x1,cr.y1,cr.x2,cr.y2);
+	(*vid->sprite_protectarea)(&cr,spritelist);
+
 	(*vid->blit)(NULL,div->x,div->y-ydif,
 		     div->x,div->y,
 		     div->w,div->h+ydif,PG_LGOP_NONE);
+      }
 
       x = div->y+div->h-1+ydif;
       if (x>cy1)
@@ -91,10 +99,18 @@ void grop_render(struct divnode *div) {
     else if (ydif>0) {
       /* Go down */
 
-      if ((div->h-ydif)>0)
+      if ((div->h-ydif)>0) {
+	cr.x1 = div->x;
+	cr.y1 = div->y + ydif;
+	cr.x2 = div->x + div->w - 1;
+	cr.y2 = div->y + div->h - 1;
+	add_updarea(cr.x1,cr.y1,cr.x2,cr.y2);
+	(*vid->sprite_protectarea)(&cr,spritelist);
+
 	(*vid->scrollblit)(div->x,div->y,div->x,div->y+ydif,
 			   div->w,div->h-ydif);
-      
+      }      
+
       x = div->y+ydif-1;
       if (x<cx2)
 	cx2 = x;
@@ -386,11 +402,8 @@ void grop_render(struct divnode *div) {
 	    }
 	    if (charh>bufferh)
 	      charh = bufferh;
-	    ox = x;
 
-	    /* Draw the background */
-	    (*vid->rect)(x,y,w,h,textcolors[0]);
-	    
+	    ox = x;
 	    for (;charh;charh--,y+=celh,str+=offset)
 	      for (x=ox,i=charw;i;i--,x+=celw,str++) {
 		 attr = *(str++);
@@ -410,7 +423,13 @@ void grop_render(struct divnode *div) {
       if (list->param[1]==PG_LGOP_NULL) break;
       if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
 			   list->param[0])) || !bit) break;
-      (*vid->blit)(bit,list->param[2]+srcx,list->param[3]+srcy,x,y,w,h,list->param[1]);
+      (*vid->bitmap_getsize)(bit,&bw,&bh);
+      /** FIXME: this will crash for large negative src_x or src_y */
+      if (list->param[2]<0)
+	list->param[2] += bw;
+      if (list->param[3]<0)
+	list->param[3] += bh;
+      (*vid->blit)(bit,(list->param[2]+srcx)%bw,(list->param[3]+srcy)%bh,x,y,w,h,list->param[1]);
       break;
     case PG_GROP_TILEBITMAP:
       if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
