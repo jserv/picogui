@@ -28,11 +28,11 @@ _wtype_consts = {
             'indicator':	(3, {}),
             'bitmap':		(4, {}),
             'button':		(5, {}),
-            #'panel':		(6, {}),	# internal use only!
+            'panel':		(6, {}),
             'popup':		(7, {}),
             'box':		(8, {}),
             'field':		(9, {}),
-            #'background':	(10, {}),	# internal use only!
+            'background':	(10, {}),
             'menuitem':		(11, {}),	# a variation on button
             'terminal':		(12, {}),	# a full terminal emulator
             'canvas':		(13, {}),
