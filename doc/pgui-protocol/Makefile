@@ -27,6 +27,7 @@ $(DOCNAME).html: $(DOCNAME).sgml
 
 html: $(DOCNAME).sgml
 	db2html $(DOCNAME).sgml
+	rm -rf $(DOCNAME).junk
 
 clean:
 	rm -rf *.pdf *.dvi *.rtf *.ps *.html $(DOCNAME)
