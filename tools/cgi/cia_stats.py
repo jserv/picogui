@@ -28,7 +28,7 @@ class StatPage(navi_cgi.NaviPage):
     subtitle = "Because SF stats weren't pointless enough"
     allSections = ['table', 'totals', 'channels', 'recent']
     footer = navi_cgi.NaviPage.footer + '<a href="http://freenode.org"><img src="/images/web/freenode.png" width="137" height="39" alt="freenode"/></a>'
-    sort = 'forever_D'
+    sort = 'daily_D'
     recentLines = 20
     parameters = navi_cgi.NaviPage.parameters + [
         'sort',
