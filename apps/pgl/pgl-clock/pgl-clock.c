@@ -1,4 +1,4 @@
-/* $Id: pgl-clock.c,v 1.2 2002/02/07 01:34:17 carpman Exp $
+/* $Id: pgl-clock.c,v 1.3 2002/06/12 14:16:43 micahjd Exp $
  * 
  * pgl-clock.c - This is a simple clock applet for PGL
  *
@@ -220,8 +220,7 @@ int btnDialog(struct pgEvent *btnevt) {
 
   wCancel = pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wTB);
   pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
-				       PGTH_P_STRING_CANCEL),
+	      PG_WP_TEXT,pgGetServerRes(PGRES_STRING_CANCEL),
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_HOTKEY,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					 PGTH_P_HOTKEY_CANCEL),
@@ -232,8 +231,7 @@ int btnDialog(struct pgEvent *btnevt) {
 	      0);
   wOk = pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wTB);
   pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
-				       PGTH_P_STRING_OK),
+	      PG_WP_TEXT,pgGetServerRes(PGRES_STRING_OK),
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_HOTKEY,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					 PGTH_P_HOTKEY_OK),

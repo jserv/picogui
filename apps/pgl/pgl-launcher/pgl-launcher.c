@@ -298,8 +298,7 @@ int setPreferences(void){
 
   cancel = pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,toolbar);
   pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
-				       PGTH_P_STRING_CANCEL),
+	      PG_WP_TEXT,pgGetServerRes(PGRES_STRING_CANCEL),
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_HOTKEY,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					 PGTH_P_HOTKEY_CANCEL),
@@ -310,8 +309,7 @@ int setPreferences(void){
 	      0);
   ok = pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,toolbar);
   pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
-				       PGTH_P_STRING_OK),
+	      PG_WP_TEXT,pgGetServerRes(PGRES_STRING_OK),
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_HOTKEY,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					 PGTH_P_HOTKEY_OK),

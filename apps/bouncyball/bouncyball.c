@@ -36,7 +36,7 @@ int main(int argc,char **argv) {
   wOk = pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_BOTTOM,
-	      PG_WP_TEXT,pgThemeLookup(PGTH_O_DEFAULT,PGTH_P_STRING_OK),
+	      PG_WP_TEXT,pgGetServerRes(PGRES_STRING_OK),
 	      PG_WP_HOTKEY,pgThemeLookup(PGTH_O_DEFAULT,PGTH_P_HOTKEY_OK),
 	      0);
   wBitmap = pgNewWidget(PG_WIDGET_BITMAP,0,0);
