@@ -201,6 +201,39 @@ $lessontextwidget = NewWidget(-type => label,-transparent => 1,
 			      -side => top, -align => nw,
 			      -font => NewFont("Times"));
 
+NewWidget(-type=>button,-inside => $tb,-side => right,
+	  -text => NewString("Reset scores for this lesson"),
+	  -onclick => sub {
+
+     EnterContext;
+     NewPopup(200,100);
+     $tb = NewWidget(-type => toolbar,-side => bottom);
+
+     NewWidget(-type=>bitmap,-side=>right,-lgop => 'or',-transparent=>1,
+	       -bitmap  => NewBitmap(-file => "question.pnm"),
+	       -bitmask => NewBitmap(-file => "question_mask.pnm"));
+     
+     NewWidget(-type=>label,-transparent=>1, -side=>all,
+	       -text=>NewString("Erase the scores for\n\"$lname\"?"));
+
+     NewWidget(-type => button,-bitmap=>$check,-hotkey => $PGKEY{'y'},
+	       -bitmask=>$checkmask,-text=>NewString("Yes"),-side=>left,
+	       -inside => $tb,-onclick => sub {
+		   delete $student{$lname};
+		   savestudent();
+		   LeaveContext;
+		   setlesson();
+	       });
+     
+     NewWidget(-type => button,-bitmap=>$ex,-hotkey => $PGKEY{'n'},
+	       -bitmask=>$exmask,-text=>NewString("No"),-side=>right,
+	       -onclick => sub {LeaveContext; Update;});
+
+     Update;
+
+ });
+
+
 NewWidget(-type=>button,-inside => $tb,-side => left,
 	  -bitmap => $circ,-bitmask => $circmask,
 	  -text => NewString("Try this lesson"),
@@ -249,7 +282,7 @@ foreach (@lesson_names) {
 	      -bitmap => $student{$_} ? $greenbox : $redbox,-bitmask => $boxmask);
     $w = NewWidget(-type => button,-side => all,
 		   -text => NewString($_),-onclick => \&setlesson);
-    $setlessonto = $w if (!$setlessonto);
+    $setlessonto = $w if (!$student{$_} and !$setlessonto);
 }
 setlesson($setlessonto) if ($setlessonto);
 
@@ -748,6 +781,8 @@ sub setlesson {
 	$plural = 's';
 	$plural = '' if ($ntimes==1);
 
+	$boxes{$lname}->SetWidget(-bitmap => $greenbox);
+
 	$str = <<EOF;
 You have completed "$lname" $ntimes time$plural.
 
@@ -763,6 +798,8 @@ Your best scores for this lesson are:
 EOF
     }
     else {
+	$boxes{$lname}->SetWidget(-bitmap => $redbox);
+
 	$str = "You have not completed \"$lname\" yet.";
     }
 
@@ -809,9 +846,7 @@ sub typechar {
 		    undef $tstext;
 
 		    setlesson($currentlessonwidget);
-		    
-		    $boxes{$lname}->SetWidget(-bitmap => $greenbox);
-
+		    		    
 		    if ($ntimes!=1 and $congrat) {
 			# A cute little dialog box
 
@@ -877,30 +912,32 @@ sub typechar {
 }
 
 sub savestudent {
-     if (open STUDENTF,'>'.$studentdir.$fname) {
-	 foreach (keys %student) {
-	     print STUDENTF "$_:$student{$_}\n";
-	 }
-	 close STUDENTF;
-     }
-     else {
-	 # This hopefully won't happen, but just in case...
-	 # This is really stupid, need to add a real error dialog
-	 # box to picogui.  Should go in a 'composite widget' library
+    return if (!$fname);
 
-	 $err = $!;
-
-	 EnterContext;
-	 NewPopup(200,100);
-	 
-	 NewWidget(-type=>label,-transparent=>1, -side=>all,
+    if (open STUDENTF,'>'.$studentdir.$fname) {
+	foreach (keys %student) {
+	    print STUDENTF "$_:$student{$_}\n";
+	}
+	close STUDENTF;
+    }
+    else {
+	# This hopefully won't happen, but just in case...
+	# This is really stupid, need to add a real error dialog
+	# box to picogui.  Should go in a 'composite widget' library
+	
+	$err = $!;
+	
+	EnterContext;
+	NewPopup(200,100);
+	
+	NewWidget(-type=>label,-transparent=>1, -side=>all,
 		   -text=>NewString("Error saving student data:\n$err"));
-	 
-	 Update;
-	 sleep 5;
-	 LeaveContext;
-	 Update;
-     }
+	
+	Update;
+	sleep 5;
+	LeaveContext;
+	Update;
+    }
 }
 
 ### The End ###
