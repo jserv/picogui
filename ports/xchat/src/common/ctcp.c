@@ -81,7 +81,7 @@ handle_ctcp (struct session *sess, char *outbuf, char *to, char *nick,
 
 	if (!strncasecmp (msg, "VERSION", 7) && !prefs.hidever)
 	{
-		sprintf (outbuf, "NOTICE %s :\001VERSION xchat "VERSION" %s\001\r\n",
+		sprintf (outbuf, "NOTICE %s :\001VERSION xchat "VERSION" %s (PicoGUI)\001\r\n",
 					nick, get_cpu_str ());
 		tcp_send (sess->server, outbuf);
 	}

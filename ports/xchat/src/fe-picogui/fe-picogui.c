@@ -59,6 +59,14 @@ fieldActivate(struct pgEvent *evt)
 	return 0;
 }
 static int
+evtActionsToggle(struct pgEvent *evt)
+{
+	pgSetWidget(((struct session_gui*)evt->extra)->buttonbox,
+		    PG_WP_SIZE, pgGetWidget(evt->from,PG_WP_ON) ? -1 : 0,
+		    0);
+	return 0;
+}
+static int
 evtCloseMessage(struct pgEvent *evt)
 {
 	pghandle title=pgGetWidget(evt->from, PG_WP_TEXT);
@@ -134,23 +142,40 @@ fe_new_window (struct session *sess)
 			    PG_WP_DIRECTION, PG_DIR_VERTICAL,
 			    PG_WP_SIDE, PG_S_ALL,
 			    PG_WP_THOBJ, PGTH_O_PANELBAR,
+			    PG_WP_TEXT, pgNewString("User List (Drag to resize)"),
 			    0);
+		pgNewWidget(PG_WIDGET_BUTTON, PG_DERIVE_BEFORE, 0);
+		pgSetWidget(PGDEFAULT,
+			    PG_WP_DIRECTION, PG_DIR_VERTICAL,
+			    PG_WP_SIDE, PG_S_BOTTOM,
+			    PG_WP_TEXT, pgNewString("Actions"),
+			    PG_WP_EXTDEVENTS, PG_EXEV_TOGGLE,
+			    0);
+		pgBind(PGDEFAULT, PG_WE_ACTIVATE, evtActionsToggle, sess->gui);
 
 		/* scroll bug: the scroll doesn't recalculate correctly
 		 * when resized. be sure to have the top of the nicklist
 		 * visible when enlarging */
 		sess->gui->userscroll=pgNewWidget(PG_WIDGET_SCROLL, PG_DERIVE_AFTER, boxbar);
 		sess->gui->userlist=pgNewWidget(PG_WIDGET_BOX, 0, 0);
-		pgSetWidget(0, PG_WP_SIDE, PG_S_TOP, 0);
+		pgSetWidget(0, PG_WP_SIDE, PG_S_ALL, 0);
 		pgSetWidget (sess->gui->userscroll, PG_WP_BIND,
 				sess->gui->userlist, 0);
+		sess->gui->buttonbox = pgNewWidget(PG_WIDGET_BOX, PG_DERIVE_AFTER, boxbar);
+		pgSetWidget(PGDEFAULT, 
+			    PG_WP_SIDE, PG_S_BOTTOM,
+			    PG_WP_SIZE, 0,
+			    0);
 		fe_buttons_update(sess);
 		pgNewWidget(PG_WIDGET_BOX, 0, rightbox);
 	}
 	else
 		pgNewWidget(PG_WIDGET_BOX, 0, 0);
 
-	pgSetWidget(0, PG_WP_SIDE, PG_S_ALL, 0);
+	pgSetWidget(0, 
+		    PG_WP_SIDE, PG_S_ALL,
+		    PG_WP_MARGIN, 0,
+		    0);
 	scroll=pgNewWidget(PG_WIDGET_SCROLL, PG_DERIVE_INSIDE, 0);
 	pgSetWidget(0, PG_WP_SIDE, PG_S_RIGHT, 0);
 	/* can be set from command line */
@@ -853,6 +878,7 @@ void
 fe_pluginlist_update (void)
 {
 }
+
 static int
 evtUserButton (struct pgEvent *evt)
 {
@@ -949,9 +975,11 @@ fe_buttons_update (struct session *sess)
 			sess->gui->userbutton[sess->gui->buttons-1].cmd=
 				pop->cmd;
 			sess->gui->userbutton[sess->gui->buttons-1].h=
-				pgNewWidget(PG_WIDGET_BUTTON, PG_DERIVE_BEFORE,
-						sess->gui->buttons-1?0:
-						sess->gui->userscroll);
+				pgNewWidget(PG_WIDGET_BUTTON, 
+					    sess->gui->buttons-1?0:
+					    PG_DERIVE_INSIDE,
+					    sess->gui->buttons-1?0:
+					    sess->gui->buttonbox);
 			pgSetWidget(0, PG_WP_TEXT, pgNewString(pop->name),
 					PG_WP_SIDE, PG_S_BOTTOM, 0);
 			pgBind(0, PG_WE_ACTIVATE, evtUserButton, sess);
@@ -983,23 +1011,23 @@ fe_set_title (struct session *sess)
 	{
 		case SESS_DIALOG:
 			pgReplaceTextFmt(sess->gui->app,
-					"X-Chat ["VERSION"]: Dialog with %s @ %s",
+					"%s @ %s : X-Chat",
 					sess->channel, sess->server->servername);
 			break;
 		case SESS_SERVER:
-			pgReplaceTextFmt(sess->gui->app, "X-Chat ["VERSION"]: %s @ %s",
+			pgReplaceTextFmt(sess->gui->app, "%s @ %s : X-Chat",
 					sess->server->nick, sess->server->servername);
 			break;
 		case SESS_CHANNEL:
 			pgReplaceTextFmt(sess->gui->app,
-					"X-Chat ["VERSION"]: %s @ %s / %s (%s)",
-					sess->server->nick, sess->server->servername,
-					sess->channel, sess->current_modes);
+					"%s @ %s : X-Chat",
+					 sess->server->nick,
+					 sess->channel);
 			break;
 		case SESS_NOTICES:
 		case SESS_SNOTICES:
 			pgReplaceTextFmt(sess->gui->app,
-					"X-Chat ["VERSION"]: %s @ %s (notices)",
+					"%s @ %s (notices) : X-Chat",
 					sess->server->nick, sess->server->servername);
 			break;
 		default:

@@ -14,7 +14,7 @@ struct userbut {
 
 struct session_gui {
 	pghandle app, topic, output, input, userscroll,
-		userlistinfo, userlist;
+		userlistinfo, userlist, buttonbox;
 	u16 output_type;
 	struct userbut *userbutton;
 	struct uhmapping *uhmap;
