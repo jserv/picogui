@@ -1,8 +1,16 @@
 # patch distutils if it can't cope with the "classifiers" keyword
-import sys
+import sys, os, re
 if sys.version < '2.2.3':
     from distutils.dist import DistributionMetadata
     DistributionMetadata.classifiers = None
+
+def listdir (dir, pattern):
+    content = []
+    for f in os.listdir (dir or '.'):
+        if dir: f = os.path.join (dir, f)
+        if not os.path.isdir (f) and re.search (pattern, f) is not None:
+            content.append (f)
+    return content
 
 from distutils.core import setup
 setup (name = "PicoGUI",
@@ -19,5 +27,9 @@ setup (name = "PicoGUI",
            "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
        ],
        license = "LGPL",
-       packages = ['PicoGUI']
+       packages = ['PicoGUI'],
+       # add the samples
+       data_files=[('share/picogui/python/sample',
+                    listdir ('PicoGUI/sample/', 'py$'))
+                   ],
        )
