@@ -1,28 +1,38 @@
 <toolbarapp side="all">
-	<box>
-		<label side="all" font=":20:bold">
-			Title goes here
+
+	<!--========================================== Header =======-->
+	<box side="top">
+		<label side="all" font=":32:italic">
+			JetStream
 		</label>
 	</box>	
 
+	<!--========================================== Footer =======-->
 	<box side="bottom">
-		<label bitmap_src="pglogo3.png" side="right" />
-		<label bitmap_src="pythonlogo.png" side="left" />
+		<label side="all">
+			JetEngine - JetStream technology demo
+		</label>		
+	</box>
+	
+	<box transparent="1" side="all">
+
+		<!--================================== Introduction =-->
+		<tabpage text="Introduction" side="left">
+			<scrollbox transparent="1">
+				<textbox text_src="intro.text" side="all" readonly="1"/>
+			</scrollbox>
+		</tabpage>
+
+		<!--================================== About ========-->
+		<tabpage text="About" side="left">
+			<box transparent="1" margin="0" side="bottom">
+				<label bitmap_src="pglogo3.png" side="left" />
+				<label bitmap_src="pythonlogo.png" side="right" />		
+			</box>
+			<scrollbox transparent="1">
+				<textbox text_src="intro.text" side="all" readonly="1"/>
+			</scrollbox>
+		</tabpage>
 	</box>
 
-	<box side="left"
-	     transparent="1"
-	     sizemode="Container fraction"
-	     size="1/3"
-	     >
-		<button side="top" text="These"/>
-		<button side="top" text="will"/>
-		<button side="top" text="be"/>
-		<button side="top" text="menu"/>
-		<button side="top" text="items"/>
-	</box>
-
-	<box side="all">
-		<label side="all" font=":30" text="Preview"/>
-	</box>
 </toolbarapp>

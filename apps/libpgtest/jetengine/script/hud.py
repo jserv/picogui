@@ -1,4 +1,4 @@
-# $Id: hud.py,v 1.2 2002/11/26 19:18:07 micahjd Exp $
+# $Id: hud.py,v 1.3 2002/11/27 01:28:12 micahjd Exp $
 #
 # hud.py - A Heads Up Display based on Widget Templates
 #
@@ -33,7 +33,7 @@ class Hud:
             ])
 
     def setVelocity(self, v):
-        self.wt.Velocity.text = "%.0f" % v
+        self.wt.Velocity.text = str(v)
 
     def setLasers(self, lasers):
         self.wt.Lasers.text = str(lasers)

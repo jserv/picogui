@@ -4,7 +4,7 @@
  */
 
 prop fGlowPanel, fPanelVertices, fWetPanel, fEmptyPanel;
-prop upperBevel, lowerBevel, alpha, causticsAlpha, panelMargin;
+prop upperBevel, lowerBevel, alpha, causticsAlpha, panelMargin, borderColor;
 
 prop caustic00,caustic01,caustic02,caustic03,caustic04,caustic05,caustic06,caustic07;
 prop caustic08,caustic09,caustic10,caustic11,caustic12,caustic13,caustic14,caustic15;
@@ -100,7 +100,7 @@ object default {
 
     /* Panel border */
     GL.enable(GL_LINE_SMOOTH);
-    GL.color(bgcolor);
+    GL.color(borderColor);
     GL.begin(GL_LINE_LOOP);
     fPanelVertices(x+m,y+m,w-m-m,h-m-m);
     GL.end();
@@ -179,6 +179,7 @@ object default {
   };
   
   bgcolor       = 0xe5e8fd;
+  borderColor   = 0xe5e8ff;
   alpha         = 0x40000000;
   causticsAlpha = 0x30000000;
 
@@ -199,15 +200,21 @@ object button {
   margin = 15;
   spacing = 5;
   panelMargin = 2;
-  bgcolor = 0x8091fc;
-  alpha = 0x20000000;
-
-  cursorbitmap = LoadBitmap("crosshair.png");
-  cursorbitmask = 0;
-  crsrhotspot.x = 22; 
-  crsrhotspot.y = 22;
+  bgcolor = 0xb8b7ff;
+  alpha = 0x50000000;
+  fgcolor = PGCF_ALPHA | 0x50000000 | PGC_BLACK;
+  borderColor = PGCF_ALPHA | 0x50000000 | PGC_WHITE;
 }
-object button.hilight alpha = 0x60000000;
+
+object button.hilight {
+  alpha = 0x7f000000;
+  fgcolor = PGC_BLACK;
+  borderColor = PGC_WHITE;
+}
+
+object button.on {
+  bgcolor = 0xEDEDFF;
+}
 
 object field {
   bgfill = Copy(default::fEmptyPanel);
@@ -245,3 +252,14 @@ object zoombtn {
   width = 0;
   height = 0;
 }
+
+object tab.page parent = PGTH_O_BOX;
+
+/*
+object background {
+  cursorbitmap = LoadBitmap("crosshair.png");
+  cursorbitmask = 0;
+  crsrhotspot.x = 22; 
+  crsrhotspot.y = 22;
+}
+*/

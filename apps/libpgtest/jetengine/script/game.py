@@ -1,4 +1,4 @@
-# $Id: game.py,v 1.26 2002/11/26 23:03:05 micahjd Exp $
+# $Id: game.py,v 1.27 2002/11/27 01:28:12 micahjd Exp $
 #
 # game.py - The main module imported by the game engine,
 #           and containing the thread() function it invokes.
@@ -47,7 +47,7 @@ class game:
         
         self.input = input.Input(self)
         self.hud = hud.Hud(self)
-        #self.mainmenu = mainmenu.MainMenu(self)
+        self.mainmenu = mainmenu.MainMenu(self)
 
         self.setVelocity(10)
         self.setLasers(100)

@@ -1,4 +1,4 @@
-# $Id: mainmenu.py,v 1.2 2002/11/26 19:18:07 micahjd Exp $
+# $Id: mainmenu.py,v 1.3 2002/11/27 01:28:12 micahjd Exp $
 #
 # mainmenu.py - The game's main menu, based on Widget Templates
 #
@@ -25,8 +25,13 @@ class MainMenu:
     def __init__(self, game):
         self.game = game
         self.app = game.app
-        
+        self.show()
+
+    def show(self):
         # Load our widget template, importing widgets from it
-        self.wt = self.app.newTemplate(open("data/mainmenu.wt").read()).instantiate([
+        self.template = self.app.newTemplate(open("data/mainmenu.wt").read())
+        self.inst = self.template.instantiate([
             ])
 
+    def hide(self):
+        self.template.destroy()
