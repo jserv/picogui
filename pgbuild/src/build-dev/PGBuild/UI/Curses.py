@@ -20,6 +20,7 @@ A Curses-based frontend for PGBuild
 #  License along with this library; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
+_svn_id = "$Id$"
 
 import PGBuild
 import PGBuild.UI.None

@@ -19,7 +19,8 @@ A minimal read-only WebDAV client
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
-# 
+#
+_svn_id = "$Id$"
 
 from httplib import HTTPConnection
 from urlparse import *
@@ -27,13 +28,11 @@ from xml.parsers import expat
 import PGBuild.Errors
 
 try:
-    revision = "$Rev$".split()[1]
+    revision = "$Rev: 4078 $".split()[1]
 except IndexError:
     revision = None
 
-userAgent = "PGBuild-MiniDAV"
-if revision:
-    userAgent += "/r%s" % revision
+userAgent = "%s/%s" % (PGBuild.name, PGBuild.version)
 
 class DavPropertyParser(object):
     """Utility to parse the XML responses from a PROPFIND request"""

@@ -22,6 +22,7 @@ as soon as it creates a Bootstrap object with vital path and package names.
 #  License along with this library; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
+_svn_id = "$Id$"
 
 # Check for a suitable version of python- currently we require version 2.2 or
 # later, mostly for compatibility with the various modules we need.

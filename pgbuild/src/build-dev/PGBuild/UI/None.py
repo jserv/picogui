@@ -23,6 +23,7 @@ Base classes for all UI modules, doesn't implement any UI at all.
 
 import PGBuild.Errors
 import time
+_svn_id = "$Id$"
 
 
 class TimeStamp(object):
