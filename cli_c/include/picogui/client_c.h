@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.49 2001/06/26 11:34:38 micahjd Exp $
+/* $Id: client_c.h,v 1.50 2001/06/30 08:52:47 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -757,6 +757,18 @@ void pgSizeText(int *w,int *h,pghandle font,pghandle text);
  * \sa pgFromMemory, pgFromFile, pgFromStream, pgFromTempMemory, pgDelete, pgEnterContext, pgLeaveContext
  */
 pghandle pgLoadTheme(struct pgmemdata obj);
+
+/*!
+ * \brief Retrieve a theme property
+ *
+ * \param object A PGTH_O_* theme object constant
+ * \param property A PGTH_P_* theme property constant
+ *
+ * \returns The theme property's value
+ *
+ * \sa pgLoadTheme
+ */
+unsigned long pgThemeLookup(short object, short property);
 
 /*! 
  * \brief Set an object's payload

@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.5 2001/06/07 23:41:00 micahjd Exp $
+/* $Id: netcore.c,v 1.6 2001/06/30 08:52:47 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -146,7 +146,8 @@ void *_pg_malloc(size_t size) {
  */
 void _pg_defaulterr(unsigned short errortype,const char *msg) {
   static unsigned char in_defaulterr = 0;
-
+  char *s1,*copys1,*s2,*copys2;
+		  
   /* Are we unable to make a dialog? (no connection, or we already tried) */  
   if (in_defaulterr)
     exit(errortype);
@@ -158,31 +159,52 @@ void _pg_defaulterr(unsigned short errortype,const char *msg) {
   if (!_pgsockfd)
     exit(errortype);
 
-  /* Try a dialog box */
+  /* Try a dialog box.
+	* We must copy the strings because the pgGetString buffer is only valid
+	* until the next picogui call */
   in_defaulterr = 1;
+  s1 = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
+											PGTH_P_STRING_PGUIERR));
+  copys1 = alloca(strlen(s1)+1);
+  strcpy(copys1,s1);
+  s2 = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
+											PGTH_P_STRING_PGUIERRDLG));
+  copys2 = alloca(strlen(s2)+strlen(pgErrortypeString(errortype))+
+						strlen(_pg_appname)+strlen(msg)+1);
+  sprintf(copys2,s2,pgErrortypeString(errortype),_pg_appname,msg);
   if (PG_MSGBTN_YES ==
-      pgMessageDialogFmt("PicoGUI Error",PG_MSGBTN_YES | PG_MSGBTN_NO,
-			 "An error of type %s occurred"
-			 " in %s:\n\n%s\n\nTerminate the application?",
-			 pgErrortypeString(errortype),_pg_appname,msg))
-    exit(errortype);
-  pgUpdate(); /* In case this happens in a wierd place, go ahead and update. */
-  in_defaulterr = 0;
+      pgMessageDialog(copys1,copys2,
+							 PG_MSGBTN_YES | PG_MSGBTN_NO))
+					 exit(errortype);
+	   pgUpdate(); /* In case this happens in a weird place, go ahead and update. */
+	   in_defaulterr = 0;
 }
 
 /* Some 'user friendly' default sig handlers */
 void _pgsig(int sig) {
-   switch (sig) {
+	 char *a,*b;
+	 short id;
+		  
+	 switch (sig) {
     
     case SIGSEGV:
-      clienterr("Segmentation Fault");
-      return;
-    
+		id = PGTH_P_STRING_SEGFAULT;
+  		break;
+			  				
     case SIGFPE:
-      clienterr("Floating Point Exception");
-      return;
-      
-   }
+		id = PGTH_P_STRING_MATHERR;
+      break;
+     
+	 default:
+		return;
+
+	 }
+				
+	 a = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
+											 id));
+	 b = alloca(strlen(a)+1);
+	 strcpy(b,a);
+	 clienterr(b);
 }
 
 /* Put a request into the queue */
@@ -270,20 +292,18 @@ void _pg_getresponse(void) {
       pg_err.type = _pg_return.type;
       if (_pg_recv(((char*)&pg_err)+sizeof(_pg_return.type),
 		   sizeof(pg_err)-sizeof(_pg_return.type)))
-	return;
+			   return;
       rsp_id = pg_err.id;
       pg_err.errt = ntohs(pg_err.errt);
       pg_err.msglen = ntohs(pg_err.msglen);
       
       /* Dynamically allocated buffer for the error message */ 
-      if (!(msg = _pg_malloc(pg_err.msglen+1)))
-	return;
+      msg = alloca(pg_err.msglen+1);
       if(_pg_recv(msg,pg_err.msglen))
-	return;
+		      return;
       msg[pg_err.msglen] = 0;
        
       (*_pgerrhandler)(pg_err.errt,msg);
-      free(msg);
     }
     break;
 
@@ -513,7 +533,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.5 2001/06/07 23:41:00 micahjd Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.6 2001/06/30 08:52:47 micahjd Exp $\n");
 	exit(1);
       }
       
@@ -599,10 +619,19 @@ void pgInit(int argc, char **argv)
     clienterr("server has bad magic number");
     return;
   }
-  if(ServerInfo.protover < PG_PROTOCOL_VER)
-    pgMessageDialog("PicoGUI Warning",
-		    "The PicoGUI server is older than this program;\n"
-		    "you may experience compatibility problems.",0);
+  if(ServerInfo.protover < PG_PROTOCOL_VER) {
+	 const char *s1, *copys1, *s2;
+			 
+			 /* We must copy the first string temporarily because the pgGetString
+			  * buffer is only valid until the next picogui call */
+			 s1 = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
+													  PGTH_P_STRING_PGUIWARN));
+			 copys1 = alloca(strlen(s1)+1);
+			 strcpy(copys1,s1);
+			 s2 = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
+													  PGTH_P_STRING_PGUICOMPAT)),   
+			 pgMessageDialog(copys1,s2,0);
+  }
 }
 
 void pgSetErrorHandler(void (*handler)(unsigned short errortype,

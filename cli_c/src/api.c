@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.13 2001/06/26 11:34:38 micahjd Exp $
+/* $Id: api.c,v 1.14 2001/06/30 08:52:47 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -61,6 +61,16 @@ pghandle pgLoadTheme(struct pgmemdata obj) {
   _pg_add_request(PGREQ_MKTHEME,obj.pointer,obj.size);
   _pg_free_memdata(obj);
 }
+
+unsigned long pgThemeLookup(short object, short property) {
+  struct pgreqd_thlookup arg;
+
+  arg.object = htons(object);
+  arg.property = htons(property);
+  _pg_add_request(PGREQ_THLOOKUP,&arg,sizeof(arg));
+  pgFlushRequests();
+  return _pg_return.e.retdata;
+}  
 
 /******* Data loading */
 
