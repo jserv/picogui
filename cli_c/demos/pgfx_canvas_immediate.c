@@ -6,8 +6,13 @@
 pgcontext gc;
 
 void animate(void) {
-   pgSetcolor(gc,rand()%0xFFFFFF);
-   pgRect(gc, rand()%500, rand()%500, rand()%50, rand()%50);
+   int i;
+   /* Send 100 random rectangles, they all get rendered at once. This will
+    * temporarily use 100 gropnodes, but nothing is stored permanently */
+   for (i=0;i<100;i++) {
+      pgSetcolor(gc,rand()%0xFFFFFF);
+      pgRect(gc, rand()%500, rand()%500, rand()%50, rand()%50);
+   }
    pgContextUpdate(gc);
 }
 

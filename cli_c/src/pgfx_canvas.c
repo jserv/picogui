@@ -1,4 +1,4 @@
-/* $Id: pgfx_canvas.c,v 1.3 2001/04/14 07:48:34 micahjd Exp $
+/* $Id: pgfx_canvas.c,v 1.4 2001/04/14 22:47:55 micahjd Exp $
  *
  * picogui/pgfx_canvas.c - lib functions and registration for canvas
  *                         drawing through the PGFX interface
@@ -131,8 +131,10 @@ void _pgfxcanvas_setcolor(pgcontext c, pgcolor color) {
 }
 
 void _pgfxcanvas_update(pgcontext c) {
-   pgWriteCmd(c->device,PGCANVAS_INCREMENTAL,0);
+   pgWriteCmd(c->device,PGCANVAS_REDRAW,0);
    pgSubUpdate(c->device);
+   if (c->flags == PGFX_IMMEDIATE)
+     c->sequence = 0;
 }
 
 /******************************* Registration */
