@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.63 2002/07/26 11:11:37 micahjd Exp $
+/* $Id: network.h,v 1.64 2002/07/26 11:13:43 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -34,7 +34,7 @@
 #define _H_PG_NETWORK
 
 #define PG_REQUEST_PORT    30450
-#define PG_PROTOCOL_VER    18     /* Increment this whenever changes are made */
+#define PG_PROTOCOL_VER    19     /* Increment this whenever changes are made */
 #define PG_REQUEST_MAGIC   0x31415926
 
 #include <picogui/types.h>
