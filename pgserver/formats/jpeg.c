@@ -1,4 +1,4 @@
-/* $Id: jpeg.c,v 1.16 2003/04/16 14:05:02 cgrigis Exp $
+/* $Id: jpeg.c,v 1.17 2003/04/16 16:24:38 cgrigis Exp $
  *
  * jpeg.c - Functions to convert any of the jpeg formats 
  *
@@ -208,7 +208,7 @@ bool jpeg_detect(const u8 *data, u32 datalen) {
   char jpeg_start [3] = { 0xFF, 0xD8, 0xFF };
   char jpeg_end   [2] = { 0xFF, 0xD9 };
 
-  if (datalen < 2) return 0;
+  if (datalen < 3) return 0;
 
   if ( (strncmp (jpeg_start, data,               3) == 0) &&
        (strncmp (jpeg_end,   data + datalen - 2, 2) == 0) ) {
