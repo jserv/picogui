@@ -12,13 +12,16 @@ class XWTParser:
         # Is this widget at the root level? If this is an application
         # of some type, we'll create that, otherwise make a detached widget.
         if len(self.widgetStack) == 0:
-            if name == 'application':
+            if name == 'application' or name == 'toolbarapp':
                 if attrs.has_key('text'):
                     apptitle = attrs['text']
                     del attrs['text']
                 else:
                     apptitle = ''
-                self.app = PicoGUI.Application(apptitle,PicoGUI.WTFile())
+                if name == 'toolbarapp':
+                    self.app = PicoGUI.ToolbarApp(apptitle,PicoGUI.WTFile())
+                else:
+                    self.app = PicoGUI.Application(apptitle,PicoGUI.WTFile())                    
                 widget = self.app
             else:
                 self.app = PicoGUI.InvisibleApp('',PicoGUI.WTFile())
