@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.25 2001/08/30 16:41:09 micahjd Exp $
+/* $Id: font.c,v 1.26 2001/09/01 23:12:10 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -55,31 +55,52 @@
    the request and a particular font */
 int fontcmp(struct fontstyle_node *fs,char *name, int size, stylet flags);
 
+/* Small helper function used in outchar_fake and outchar */
+struct fontglyph const *font_getglyph(struct fontdesc *fd, u8 c) {
+  s16 ch = c;
+
+  ch -= fd->font->beginglyph;
+  if (ch < 0 || ch >= fd->font->numglyphs)
+    ch = fd->font->defaultglyph;
+  return fd->font->glyphs+ch;
+}
+
 /* Outputs a character. It also updates (*x,*y) as a cursor position. */
 void outchar(hwrbitmap dest, struct fontdesc *fd,
-	     int *x, int *y,hwrcolor col,unsigned char c,struct quad *clip,
+	     s16 *x, s16 *y,hwrcolor col,unsigned char c,struct quad *clip,
 	     bool fill, hwrcolor bg, s16 lgop, s16 angle) {
    int i,j;
-   int cel_w; /* Total width of this character cel */
-   int glyph_w,glyph_h;
-   unsigned char *glyph;
+   s16 cel_w; /* Total width of this character cel */
+   struct fontglyph const *g = font_getglyph(fd,c);
+   u8 *glyph;
+   s16 mx,my; /* Character positions we are free to munge (screen logical coordinates) */
+   s16 u,v;   /* Displacement (in font coordinate space) of character from the cursor position */
+
+   cel_w = g->dwidth + fd->boldw + fd->interchar_space;
    
-   glyph_w = fd->font->vwtab[c];
-   cel_w = glyph_w + fd->font->hspace + fd->boldw + fd->interchar_space;
-   if (fd->font->trtab[c] >= 0) {
-      glyph = (((unsigned char *)fd->font->bitmaps)+fd->font->trtab[c]);
-      glyph_h = fd->font->h;
+   mx = *x;
+   my = *y;
+
+   u = g->x;
+   v = fd->font->ascent - g->h - g->y - 1;
+
+   /* Only render if the character has a bitmap */
+   if (g->w && g->h) {
+      glyph = (((unsigned char *)fd->font->bitmaps)+g->bitmap);
 
       switch (angle) {
     
        case 0:
+	 mx += u;
+	 my += v;
+
 	 /* underline, overline, strikeout */
 	 if (fd->hline>=0) {
 	   /* We must clip this! */
 
-	   int sx,sy,w;
-	   sx = *x;
-	   sy = fd->hline+(*y);
+	   s16 sx,sy,w;
+	   sx = mx;
+	   sy = fd->hline+(my);
 	   w  = cel_w;
 	   
 	   if (clip) {
@@ -92,73 +113,79 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
 	   }	   
 
 	   if (w>0 && ( (!clip) || (sy >= clip->y1 && sy <= clip->y2) ))
-	     VID(slab) (dest,*x,fd->hline+(*y),cel_w,fd->hline_c,lgop);
+	     VID(slab) (dest,mx,fd->hline+(my),cel_w,fd->hline_c,lgop);
 	 }	 
 
 	 /* The actual character */
 	 i=0;
 	 if (fd->skew) 
 	   i = fd->italicw;
-	 VID(charblit) (dest,glyph,(*x)+i,*y,glyph_w,glyph_h,fd->skew,angle,col,
+	 VID(charblit) (dest,glyph,(mx)+i,my,g->w,g->h,fd->skew,angle,col,
 			clip,fill,bg,lgop);
 	 
 	 /* bold */
 	 for (i++,j=0;j<fd->boldw;i++,j++)
-	   VID(charblit) (dest,glyph,(*x)+i,*y,glyph_w,glyph_h,fd->skew,angle,col,
+	   VID(charblit) (dest,glyph,(mx)+i,my,g->w,g->h,fd->skew,angle,col,
 			  clip,fill,bg,lgop);
 	 break;
 	 
        case 90:
+	 mx += v;
+	 my -= u;
+
 	 /* underline, overline, strikeout */
 	 if (fd->hline>=0)
-	   VID(bar) (dest,(*x)+fd->hline,(*y)-cel_w+1,cel_w,fd->hline_c,lgop);
+	   VID(bar) (dest,(mx)+fd->hline,(my)-cel_w+1,cel_w,fd->hline_c,lgop);
 	 
 	 /* The actual character */
 	 i=0;
 	 if (fd->skew) 
 	   i = fd->italicw;
-	 VID(charblit) (dest,glyph,*x,(*y)-i,glyph_w,glyph_h,fd->skew,angle,col,
+	 VID(charblit) (dest,glyph,mx,(my)-i,g->w,g->h,fd->skew,angle,col,
 			clip,fill,bg,lgop);
 	 
 	 /* bold */
 	 for (i++,j=0;j<fd->boldw;i++,j++)
-	   VID(charblit) (dest,glyph,*x,(*y)-i,glyph_w,glyph_h,fd->skew,angle,col,
+	   VID(charblit) (dest,glyph,mx,(my)-i,g->w,g->h,fd->skew,angle,col,
 			  clip,fill,bg,lgop);
 	 break;
 	 
        case 180:
+	 mx -= v;
+	 my -= u;
+
 	 /* underline, overline, strikeout */
 	 if (fd->hline>=0)
-	   VID(slab) (dest,(*x)+cel_w-1,(*y)-fd->hline,cel_w,fd->hline_c,lgop);
+	   VID(slab) (dest,(mx)+cel_w-1,(my)-fd->hline,cel_w,fd->hline_c,lgop);
 	 
 	 /* The actual character */
 	 i=0;
 	 if (fd->skew) 
 	   i = fd->italicw;
-	 VID(charblit) (dest,glyph,(*x)-i,*y,glyph_w,glyph_h,fd->skew,angle,col,
+	 VID(charblit) (dest,glyph,(mx)-i,my,g->w,g->h,fd->skew,angle,col,
 			clip,fill,bg,lgop);
 	 
 	 /* bold */
 	 for (i++,j=0;j<fd->boldw;i++,j++)
-	   VID(charblit) (dest,glyph,(*x)-i,*y,glyph_w,glyph_h,fd->skew,angle,col,
+	   VID(charblit) (dest,glyph,(mx)-i,my,g->w,g->h,fd->skew,angle,col,
 			  clip,fill,bg,lgop);
 	 break;
 	 
        case 270:
 	 /* underline, overline, strikeout */
 	 if (fd->hline>=0)
-	   VID(slab) (dest,(*x)+fd->hline,*y,cel_w,fd->hline_c,lgop);
+	   VID(slab) (dest,(mx)+fd->hline,my,cel_w,fd->hline_c,lgop);
 	 
 	 /* The actual character */
 	 i=0;
 	 if (fd->skew) 
 	   i = fd->italicw;
-	 VID(charblit) (dest,glyph,*x,(*y)+i,glyph_w,glyph_h,fd->skew,angle,col,
+	 VID(charblit) (dest,glyph,mx,(my)+i,g->w,g->h,fd->skew,angle,col,
 			clip,fill,bg,lgop);
 	 
 	 /* bold */
 	 for (i++,j=0;j<fd->boldw;i++,j++)
-	   VID(charblit) (dest,glyph,*x,(*y)+i,glyph_w,glyph_h,fd->skew,angle,col,
+	   VID(charblit) (dest,glyph,mx,(my)+i,g->w,g->h,fd->skew,angle,col,
 			  clip,fill,bg,lgop);
 	 break;
 	 
@@ -188,27 +215,15 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
 
 /* A version of outchar that doesn't make any
    output. Used for sizetext */
-void outchar_fake(struct fontdesc *fd,
-	     s16 *x, s16 *y,unsigned char c) {
-  int i,j;
-  int cel_w; /* Total width of this character cel */
-  int glyph_w,glyph_h;
-  unsigned char *glyph;
-
-  glyph_w = fd->font->vwtab[c];
-  cel_w = glyph_w + fd->font->hspace + fd->boldw + fd->interchar_space;
-  if (fd->font->trtab[c] >= 0) {
-    glyph = (((unsigned char *)fd->font->bitmaps)+fd->font->trtab[c]);
-    glyph_h = fd->font->h;
-  }
-  *x += cel_w;  
+void outchar_fake(struct fontdesc *fd, s16 *x,unsigned char c) {
+  *x += font_getglyph(fd,c)->dwidth + fd->boldw + fd->interchar_space;
 }
 
 /* Output text, interpreting '\n' but no other control chars.
  * This function does add the margin as specified by fd->margin.
  */
 void outtext(hwrbitmap dest, struct fontdesc *fd,
-	     int x,int y,hwrcolor col,char *txt,struct quad *clip,
+	     s16 x,s16 y,hwrcolor col,char *txt,struct quad *clip,
 	     bool fill, hwrcolor bg, s16 lgop, s16 angle) {
    int b;
    
@@ -245,22 +260,22 @@ void outtext(hwrbitmap dest, struct fontdesc *fd,
 	switch (angle) {
 	 
 	 case 0:
-	   y += fd->font->h+fd->font->vspace+fd->interline_space;
+	   y += fd->font->h+fd->interline_space;
 	   x = b;
 	   break;
 	   
 	 case 90:
-	   x += fd->font->h+fd->font->vspace+fd->interline_space;
+	   x += fd->font->h+fd->interline_space;
 	   y = b;
 	   break;
 	   
 	 case 180:
-	   y -= fd->font->h+fd->font->vspace+fd->interline_space;
+	   y -= fd->font->h+fd->interline_space;
 	   x = b;
 	   break;
 	   
 	 case 270:
-	   x -= fd->font->h+fd->font->vspace+fd->interline_space;
+	   x -= fd->font->h+fd->interline_space;
 	   y = b;
 	   break;
 	   
@@ -292,17 +307,17 @@ void sizetext(struct fontdesc *fd, s16 *w, s16 *h, char *txt) {
 
   while (*txt) {
     if ((*txt)=='\n') {
-      *h += fd->font->h + fd->font->vspace + fd->interline_space;
+      *h += fd->font->h + fd->interline_space;
       if ((*w)>o_w) o_w = *w;
       *w = fd->margin << 1;
     }
     else {
-      outchar_fake(fd,w,h,*txt);
+      outchar_fake(fd,w,*txt);
     }
     txt++;
   }
   if ((*w)<o_w) *w = o_w;
-  *w -= fd->font->hspace + fd->interchar_space;
+  *w -= fd->interchar_space;
   *w += fd->italicw;
 }
 
@@ -372,11 +387,10 @@ g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
       
       if (flags&PG_FSTYLE_BOLD) fd->boldw = closest->boldw;
       
-      if (flags&PG_FSTYLE_DOUBLESPACE) fd->interline_space = 
-	fd->font->h+fd->font->vspace;
+      if (flags&PG_FSTYLE_DOUBLESPACE) fd->interline_space = fd->font->h;
       if (flags&PG_FSTYLE_DOUBLEWIDTH) fd->interchar_space =
-	fd->font->vwtab[' ']+fd->font->hspace+
-	fd->boldw;
+					 font_getglyph(fd,-1)->dwidth+
+					 fd->boldw;
       if (flags&PG_FSTYLE_UNDERLINE) fd->hline = closest->ulineh;
       if (flags&PG_FSTYLE_STRIKEOUT) fd->hline = closest->slineh;
       

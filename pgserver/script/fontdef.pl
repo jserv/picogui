@@ -1,8 +1,14 @@
 #!/usr/bin/perl
-# $Id: fontdef.pl,v 1.12 2001/04/29 17:28:39 micahjd Exp $
+# $Id: fontdef.pl,v 1.13 2001/09/01 23:12:10 micahjd Exp $
 #
-# This reads in .fi files, and creates the static linked list
-# of font styles.  It also uses cnvfont to load the .fdf files
+# This script turns a directory full of .fi and .bdf font files
+# into C source code that is compiled into the PicoGUI server.
+# The .fi files define a fontstyle, including one or more .bdf
+# font files. The .bdf files are parsed (using the word loosely :)
+# and converted into fonts and fontglyphs. This program now translates
+# directly from BDF to C, without using the old FDF format.
+#
+# Yes, I know this code is messy...
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -86,129 +92,132 @@ foreach $file (@fontfiles) {
 }
 
 # Build the font datas
-foreach (sort keys %fdfs) {
-    open FDATA,"$fontdir/$_.fdf";
+foreach $fntname (sort keys %fdfs) {
+    open FDATA,"$fontdir/$fntname.bdf";
 
-    $hspace = 1;
-    $vspace = 1;
-    $fg = 15;
-    $bg = 0;
-    $num = $size = 0;
-
-    @trtab = ();
-    @vwtab = ();
-    @bitmaps = ();
-
-    for ($i=0;$i<256;$i++) {
-	push @trtab,-1;
-	push @vwtab,0;
-    }
+    $numglyphs = 0;
+    $beginglyph = -1;
+    $defaultglyph = 32;
+    $h = 0;
+    $ascent = 0;
+    $descent = 0;
     
+    @glyphs = ();
+    $bitmapdata = "";
+
+    # ************ Parse BDF file
     while (<FDATA>) {
 	chomp;
-	if (/^\s*\#/) {
-	    print "/* $_ */\n";
+
+	# Top-level lines (for the whole font, not a glyph)
+	
+	if (/^DEFAULT_CHAR\s*(\S+)/) {
+	    $defaultglyph = $1;
 	}
-	elsif (/\[([^\]]*)\](.*)/) {
-	    $fntname = $1;
-	    $param   = $2;
-	    if ($param =~ /\(\s*([\-0-9]+)\s*,\s*([\-0-9]+)\s*\)/) {
-		$hspace = $1;
-		$vspace = $2;
-	    }
-	    if ($param =~ /b([\-0-9]+)/) {
-		for ($i=0;$i<256;$i++) {
-		    $vwtab[$i] = $1;
-		}
-	    }
+	elsif (/^PIXEL_SIZE\s*(\S+)/) {
+	    $h = $1;
 	}
-	elsif (/:/) {
-	    if (/\'(.)\'/) {
-		$asc = ord($1);
-	    }
-	    elsif (/\#([0-9]+)/) {
-		$asc = $1;
-	    }
-	    $trtab[$asc] = $size;
-	    $dat = '';
-	    $h = 0;
+	elsif (/^FONT_ASCENT\s*(\S+)/) {
+	    $ascent = $1;
+	}
+	elsif (/^FONT_DESCENT\s*(\S+)/) {
+	    $descent = $1;
+	}
+	elsif (/^FONTBOUNDINGBOX\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/) {
+	    $fw = $1;
+	    $fh = $2;
+	    $fx = $3;
+	    $fy = $4;
+	}
+	elsif (/^STARTCHAR/) {
+
+	    # Process one glyph
+
+	    $defaultglyph = 32 if (!$defaultglyph);
+
+	    $bitmapmode = 0;
 	    while (<FDATA>) {
-		last if (!/\S/);
-		s/\s//g;
-		$w = length $_;
-		s/\./0/g;
-		s/[^0]/1/g;
-		while ((length($_)%8)) {$_ .= '0'}
-		$dat .= $_;
-		$h++;
+		chomp;
+
+		if ($bitmapmode and !/[^0-9a-fA-F]/) {
+		    $bitmapdata .= $_;
+		}
+		elsif (/^ENCODING\s*(\S+)/) {
+		    if ($encoding+1 != $1 and $beginglyph!=-1) {
+			# We will later replace these extras with copies of the default glyph
+			$numglyphs++;
+			push @glyphs, "";
+		    }
+		    $encoding = $1;
+		    $saved_beginglyph = $beginglyph;
+		    $beginglyph = $encoding if ($beginglyph==-1);
+		    $gdwidth = $gw = $gh = $gx = $gy =  0;
+		    $gbitmap = length($bitmapdata)/2;
+		}
+		elsif (/^ENDCHAR/) {
+		    # If this character had no actual bitmap data, and isn't the default glyph,
+                    # omit it. Some fonts include useless duplicates of the default glyph that just
+		    # take up space before or after the actual characters.
+		    if (length($bitmapdata)/2 == $gbitmap and $encoding != $defaultglyph) {
+			$beginglyph = -1 if ($saved_beginglyph==-1);
+		    }
+		    else {
+			$numglyphs++;
+			push @glyphs, "$gdwidth, $gw, $gh, $gx, $gy, $gbitmap";
+		    }
+		}
+		elsif (/^DWIDTH\s*(\S+)/) {
+		    $gdwidth = $1;
+		}
+		elsif (/^BBX\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/) {
+		    $gw = $1;
+		    $gh = $2;
+		    $gx = $3;
+		    $gy = $4;
+		}
+		elsif (/^BITMAP/) {
+		    $bitmapmode = 1;
+		}
+		
 	    }
-	    $_ = $dat;
-	    $dat = '';
-	    $bw = 0;
-	    while (s/^(.{8})//) {
-		$dat .= '0x'.unpack('H2',pack('B8',$1)).',';
-		$bw++;  # bytes
-	    }
-	    chop $dat;
-	    $vwtab[$asc] = $w;
-	    $size += $bw;
-	    push @bitmaps,$dat;
-	    $num++;
 	}
     }
     
-    # Character translation table
-    print "\nlong const ${fntname}_tr[256] = {\n";
-    $com = ',';
-    for ($i=0;$i<256;$i++) {
-	$com = ' ' if ($i==255);
-	if ($i>=ord(' ') and $i<=ord('z')) {
-	    $c = '\''.chr($i)."' ";
-	}
-	else {
-	    $c = '';
-	}
-	print "\t$trtab[$i]$com\t/* $i ${c}*/\n";
+    # ************ Output glyph table
+
+    print "\nstruct fontglyph const ${fntname}_glyphs[$numglyphs] = {\n";
+    $i = $beginglyph;
+    foreach (@glyphs) {
+	$_ = $glyphs[$defaultglyph-$beginglyph] if ($_ eq "");
+	print "{$_},\t/* $i */ \n";
+	$i++;
     }
     print "};\n";
     
-    # Variable width table
-    if (!$fixed) {
-	print "\nunsigned char const ${fntname}_vw[256] = {\n";
-	$com = ',';
-	for ($i=0;$i<256;$i++) {
-	    $com = ' ' if ($i==255);
-	    if ($i>=ord(' ') and $i<=ord('z')) {
-		$c = '\''.chr($i)."' ";
-	    }
-	    else {
-		$c = '';
-	    }
-	    print "\t$vwtab[$i]$com\t/* $i $c*/\n";
-	}
-	print "};\n";
-    }
+    # ************ Output bitmap data
     
-    # Bitmap data
-    print "\nunsigned char const ${fntname}_bits[$size] = {\n";
-    $com = ',';
-    for ($i=0;$i<$num;$i++) {
-	$com = ' ' if ($i==$num-1);
-	print "\t$bitmaps[$i]$com\t/* $i */\n";
+    print "\nunsigned char const ${fntname}_bits[] = {\n";
+    for ($i=0; $i<length($bitmapdata); $i+=2) {
+	print "0x".substr($bitmapdata,$i,2).", ";
+	print "\n" if (($i&15)==14);
     }
     print "};\n";
+
+    # ************ Font structure
     
     print "\nstruct font const $fntname = {\n\t";
-    print "${fntname}_bits, $h, $hspace, $vspace, ${fntname}_vw, ${fntname}_tr";
-    $hdrs = 256*5;
+    print "$numglyphs, $beginglyph, $defaultglyph, $fw, $h, $ascent, ";
+    print "$descent, ${fntname}_glyphs, ${fntname}_bits\n";
     print "\n};\n";
     
-    $totalsize = $hdrs+$size;
-    print STDERR "Summary of font [$fntname] :\n";
-    print STDERR "\theaders = $hdrs\n";
-    print STDERR "\tchardata = $size\n";
-    print STDERR "\tnumchars = $num\n";
-    print STDERR "\ttotalsize = $totalsize\n";
+#    $hdrs = 256*5;
+#    $totalsize = $hdrs+$size;
+
+#    print STDERR "Summary of font [$fntname] :\n";
+#    print STDERR "\theaders = $hdrs\n";
+#    print STDERR "\tchardata = $size\n";
+#    print STDERR "\tnumchars = $num\n";
+#    print STDERR "\ttotalsize = $totalsize\n";
 
     close FDATA;
 }

@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.15 2001/06/06 03:21:08 micahjd Exp $
+/* $Id: videotest.c,v 1.16 2001/09/01 23:12:10 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -281,7 +281,7 @@ void testpat_text(void) {
    x=y=0;
    c=' ';
    while (1) {
-      if (x+fd->font->vwtab[c]>vid->xres) {
+      if (x+fd->font->w>vid->xres) {
 	 y+=fd->font->h;
 	 x = 0;
       }

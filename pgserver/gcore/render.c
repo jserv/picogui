@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.10 2001/08/05 10:50:52 micahjd Exp $
+/* $Id: render.c,v 1.11 2001/09/01 23:12:10 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -673,10 +673,11 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 	   int celw,celh,charw,charh,offset;
 	   int i;
 	   unsigned char attr;
+	   struct fontglyph *glyph;
 	   
 	   /* Should be fine for fixed width fonts
 	    * and pseudo-acceptable for others? */
-	   celw      = fd->font->vwtab['W'];  
+	   celw      = fd->font->w;  
 	   celh      = fd->font->h;
 	   
 	   bufferw   = n->param[1];
@@ -697,22 +698,11 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 	   
 	   r->orig.x = n->r.x;
 	   for (;charh;charh--,n->r.y+=celh,str+=offset)
-	     for (n->r.x=r->orig.x,i=charw;i;i--,n->r.x+=celw,str++) {
+	     for (n->r.x=r->orig.x,i=charw;i;i--,str++) {
 		attr = *(str++);
-/*
- * This code made obsolete by fill and bg parameter of charblit
- * 
- if (attr & 0xF0)
- VID(rect) (r->output,n->r.x,n->r.y,celw,celh,
- textcolors[attr>>4],r->lgop);
- if ((*str) != ' ')
- */
-		VID(charblit) (r->output,
-			       (((unsigned char *)fd->font->bitmaps)+
-				fd->font->trtab[*str]),
-			       n->r.x,n->r.y,fd->font->vwtab[*str],
-			       celh,0,0,textcolors[attr & 0x0F],NULL,
-			       (attr & 0xF0)!=0,textcolors[attr>>4],r->lgop);
+
+		outchar(r->output, fd, &n->r.x, &n->r.y, textcolors[attr & 0x0F],
+			*str, NULL, (attr & 0xF0)!=0,textcolors[attr>>4], r->lgop, 0);
 	     }
 	   
 	}

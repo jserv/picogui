@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.29 2001/07/11 08:18:02 micahjd Exp $
+/* $Id: terminal.c,v 1.30 2001/09/01 23:12:10 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -159,7 +159,7 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
   if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
 		       DATA->font)) || !fd)
     return;
-  DATA->celw = fd->font->vwtab['W'];
+  DATA->celw = fd->font->w;
   DATA->celh = fd->font->h;
 
   /* Using our grop context and character cell size,

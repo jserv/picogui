@@ -7,25 +7,25 @@ BUILT_SOURCES = fonts.c
 libfont_a_SOURCES = fonts.c
 
 FDF_FILES = \
-	clean12.fdf \
-	clean6.fdf \
-	console8.fdf \
-	courier12b.fdf \
-	courier12.fdf \
-	helvetica10.fdf \
-	helvetica12b.fdf \
-	helvetica12.fdf \
-	helvetica14b.fdf \
-	helvetica14.fdf \
-	helvetica18b.fdf \
-	helvetica18.fdf \
-	helvetica24b.fdf \
-	helvetica24.fdf \
-	helvetica8.fdf \
-	lucida10.fdf \
-	times10b.fdf \
-	times10.fdf \
-	utopia25.fdf
+	clean12.bdf \
+	clean6.bdf \
+	console8.bdf \
+	courier12b.bdf \
+	courier12.bdf \
+	helvetica10.bdf \
+	helvetica12b.bdf \
+	helvetica12.bdf \
+	helvetica14b.bdf \
+	helvetica14.bdf \
+	helvetica18b.bdf \
+	helvetica18.bdf \
+	helvetica24b.bdf \
+	helvetica24.bdf \
+	helvetica8.bdf \
+	lucida10.bdf \
+	times10b.bdf \
+	times10.bdf \
+	utopia25.bdf
 
 FI_FILES = \
 	clean12.fi \
@@ -46,7 +46,7 @@ EXTRA_DIST = $(FDF_FILES) $(FI_FILES)
 
 
 libfont_a_DEPENDENCIES = \
-	$(srcdir)/*.fdf \
+	$(srcdir)/*.bdf \
 	$(srcdir)/*.fi  \
 	$(top_srcdir)/script/fontdef.pl \
 	@CONFIG_FILE@

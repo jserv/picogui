@@ -31,10 +31,9 @@ pgserver_LDADD = \
 
 
 EXTRA_DIST = \
-	script/cnvfont.1bpp.pl 		\
 	script/fontdef.pl 		\
-	script/grabfonts.pl 		\
 	script/pnm_embed.pl		\
+	script/lserrors.pl		\
 	config.in			\
 	select.in			\
 	profile.defaults 		\

@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.8 2001/05/13 06:36:42 micahjd Exp $
+/* $Id: font.h,v 1.9 2001/09/01 23:12:10 micahjd Exp $
  *
  * font.h - structures for representing fonts
  *
@@ -85,18 +85,25 @@ struct fontstyle_node {
   int boldw;    /* Width of a bold if a bold version is not available */
 };
 
+/* One glyph in a font */
+struct fontglyph {
+  s16 dwidth; /* Delta X between this char and the next */
+  s16 w,h;    /* Width and height of the glyph bitmap   */
+  s16 x,y;    /* X and Y displacement for the glyph     */
+  u16 bitmap; /* Offset to bitmap data                  */
+};
+
 /* An individual bitmapped font */
 struct font {
-  u8 *bitmaps;   /* Table of converted bitmaps */
-  s16 h;
-  s16 hspace; /* Space between characters */
-  s16 vspace; /* Space between lines */
-  u8 *vwtab; /* table of character widths, indexed by ASCII value */
-  u32 *trtab;    /* This table translates ASCII values
-		    to bitmap indices. A negative bitmap index indicates
-		    a blank. To get the data for a char, add it's trtab
-		    value to 'bitmaps' 
-		  */
+  u16 numglyphs;    /* Total number of glyphs in the table */
+  u16 beginglyph;   /* Character number for the first glyph */
+  u16 defaultglyph; /* Default glyph, when the requested glyph isn't found */
+  s16 w,h;          /* Font size (pixels) */            
+  s16 ascent;       /* Distance glyphs will extend above the baseline */
+  s16 descent;      /* Distance glyphs will extend below the baseline */
+
+  struct fontglyph const *glyphs;   /* Table of glyphs */
+  u8 const *bitmaps;                /* Chunk of bitmap data for the font */
 };
 
 /******** Functions */
@@ -105,14 +112,14 @@ struct font {
  * requested by the fontdesc.
  */
 void outchar(hwrbitmap dest, struct fontdesc *fd,
-	     int *x, int *y,hwrcolor col,unsigned char c,struct quad *clip,
+	     s16 *x, s16 *y,hwrcolor col,unsigned char c,struct quad *clip,
 	     bool fill, hwrcolor bg, s16 lgop, s16 angle);
 
 /* These functions interpret the '\n' character, but no other control
  * chars
  */
 void outtext(hwrbitmap dest, struct fontdesc *fd,
-	     int x,int y,hwrcolor col,char *txt,struct quad *clip,
+	     s16 x,s16 y,hwrcolor col,char *txt,struct quad *clip,
 	     bool fill, hwrcolor bg, s16 lgop, s16 angle);
 void sizetext(struct fontdesc *fd, s16 *w, s16 *h, char *txt);
 
