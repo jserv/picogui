@@ -23,7 +23,9 @@ are set, the widget needs to leave the widget's sizing alone.
         would cause a crash on any rdhandle failure... sometimes. Gotta
 	love pointers!
 	
-      
+      * gcore/handle.c: I think I've tracked this mess down to another
+        handle system bug. I added more handle debugging. Turn on
+	DEBUG_MEMORY, and grep output for 'handle'
       
       
 2001-04-05    Micah Dowty <micahjd@users.sourceforge.net>
