@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.25 2000/11/04 22:33:47 micahjd Exp $
+/* $Id: global.c,v 1.26 2000/11/12 19:41:09 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -41,6 +41,8 @@ struct widget *bgwidget;
 handle hbgwidget;
 struct sprite *pointer;
 handle string_ok,string_cancel,string_yes,string_no;
+handle htbboundary;       /* The last toolbar, represents the boundary between
+			     toolbars and application panels */
 
 g_error appmgr_init(void) {
   hwrbitmap bgbits;
@@ -123,18 +125,27 @@ void appmgr_unregowner(int owner) {
 
 g_error appmgr_register(struct app_info *i) {
   struct app_info *dest;
-  struct widget *w;
+  struct widget *w,*wtbboundary;
   g_error e;
+
+  /* Dereference the toolbar boundary */
+  if (iserror(rdhandle((void**) &wtbboundary,PG_TYPE_WIDGET,-1,htbboundary)))
+    wtbboundary = NULL;  
 
   /* Allocate root widget, do any setup specific to the app type */
   switch (i->type) {
 
   case PG_APP_TOOLBAR:
-    /* Create a simple toolbar as a root widget */
-    e = widget_create(&w,PG_WIDGET_TOOLBAR,dts->root,&dts->root->head->next,0,i->owner);
+    /* Create a simple toolbar as a root widget. Create it after the previous
+     * toolbar, if applicable, and update htbboundary. */
+    if (wtbboundary)
+      e = widget_derive(&w,PG_WIDGET_TOOLBAR,wtbboundary,htbboundary,PG_DERIVE_AFTER,i->owner);
+    else
+      e = widget_create(&w,PG_WIDGET_TOOLBAR,dts->root,&dts->root->head->next,0,i->owner);
     errorcheck;
     e = mkhandle(&i->rootw,PG_TYPE_WIDGET,i->owner,w);
     errorcheck;    
+    htbboundary = i->rootw;
 
     /* Size specs are ignored for the toolbar.
        They won't be moved by the appmgr, so sidemask has no effect.
@@ -146,8 +157,11 @@ g_error appmgr_register(struct app_info *i) {
     break;
 
   case PG_APP_NORMAL:
-    /* Use a panel */
-    e = widget_create(&w,PG_WIDGET_PANEL,dts->root,&dts->root->head->next,0,i->owner);
+    /* Use a panel, create it after the toolbars */
+    if (wtbboundary)
+      e = widget_derive(&w,PG_WIDGET_PANEL,wtbboundary,htbboundary,PG_DERIVE_AFTER,i->owner);
+    else
+      e = widget_create(&w,PG_WIDGET_PANEL,dts->root,&dts->root->head->next,0,i->owner);
     errorcheck;
     e = mkhandle(&i->rootw,PG_TYPE_WIDGET,i->owner,w);
     errorcheck;    

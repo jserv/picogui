@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.40 2000/11/04 21:25:29 micahjd Exp $
+/* $Id: panel.c,v 1.41 2000/11/12 19:41:16 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -28,6 +28,7 @@
 #include <pgserver/widget.h>
 #include <pgserver/video.h>
 #include <pgserver/timer.h>
+#include <pgserver/appmgr.h>
 
 #define DRAG_DELAY    20   /* Min. # of milliseconds between
 			      updates while dragging */
@@ -157,17 +158,25 @@ void panelbtn_rotate(struct widget *self,struct widget *button) {
 
 void panelbtn_zoom(struct widget *self,struct widget *button) {
   struct divnode **where;
-
+  struct widget *wtbboundary;
+  
   /* This requires a bit of black magic, but fear not, it's not
      as bad as widget.c ;-) */
   
+  /* Dereference the toolbar boundary */
+  if (iserror(rdhandle((void**) &wtbboundary,PG_TYPE_WIDGET,-1,htbboundary)))
+    wtbboundary = NULL;  
+
   /* Remove from our current position */
   *self->where = *self->out;
   if (*self->out && (*self->out)->owner)
     (*self->out)->owner->where = self->where;
 
   /* Where to move ourselves to */
-  where = &self->dt->head->next;
+  if (wtbboundary)
+    where = wtbboundary->out;
+  else
+    where = &self->dt->head->next;
 
   /* Add again */
   *self->out = *where;
@@ -175,6 +184,10 @@ void panelbtn_zoom(struct widget *self,struct widget *button) {
   self->where = where;
   if (*self->out && (*self->out)->owner)
     (*self->out)->owner->where = self->out;
+
+  /* Update other parameters related to the parent */
+  if (wtbboundary)
+    self->container = wtbboundary->container;
 
   /* tada! */
   self->dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
