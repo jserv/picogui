@@ -1,4 +1,4 @@
-/* $Id: gl_util.c,v 1.7 2002/12/03 02:54:54 micahjd Exp $
+/* $Id: gl_util.c,v 1.8 2002/12/03 11:12:16 micahjd Exp $
  *
  * gl_util.c - OpenGL driver for picogui
  *             This file has utilities shared by multiple components of the driver.
@@ -379,7 +379,7 @@ void gl_bind_texture(struct glbitmap *glb) {
   if (!glb->texture) {
     hwrbitmap tmpbit;
     u32 *p;
-    u32 i;
+    s32 i;
     
     glGenTextures(1,&glb->texture);
     glBindTexture(GL_TEXTURE_2D, glb->texture);
@@ -408,16 +408,12 @@ void gl_bind_texture(struct glbitmap *glb) {
     vid->blit(tmpbit, 0,0, glb->sb->w, glb->sb->h, (hwrbitmap)glb, 0,0, PG_LGOP_NONE);
 
     /* Left and right edges */
-    if (glb->tw > glb->sb->w) {
-      vid->blit(tmpbit, glb->sb->w,0, 1, glb->sb->h, (hwrbitmap)glb, glb->sb->w-1,0, PG_LGOP_NONE);
-      vid->blit(tmpbit, glb->tw-1,0, 1,glb->sb->h, (hwrbitmap)glb, 0,0, PG_LGOP_NONE);
-    }
+    for (i=glb->tw - glb->sb->w - 1;i>=0;i--)
+      vid->blit(tmpbit, glb->sb->w+i,0, 1, glb->sb->h, (hwrbitmap)glb, glb->sb->w-1,0, PG_LGOP_NONE);
     
     /* Top and bottom edges */
-    if (glb->th > glb->sb->h) {
-      vid->blit(tmpbit, 0,glb->sb->h, glb->sb->w, 1, (hwrbitmap)glb, 0,glb->sb->h-1, PG_LGOP_NONE);
-      vid->blit(tmpbit, 0,glb->th-1, glb->sb->w,1, (hwrbitmap)glb, 0,0, PG_LGOP_NONE);
-    }
+    for (i=glb->th - glb->sb->h - 1;i>=0;i--)
+      vid->blit(tmpbit, 0,glb->sb->h+i, glb->sb->w,1, (hwrbitmap)glb, 0,glb->sb->h-1, PG_LGOP_NONE);
     
     /* Corners */
     if (glb->tw > glb->sb->w && glb->th > glb->sb->h) {
