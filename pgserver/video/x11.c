@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.30 2002/09/23 22:51:26 micahjd Exp $
+/* $Id: x11.c,v 1.31 2002/10/22 19:08:54 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -368,7 +368,6 @@ void x11_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
     XCopyArea(xdisplay,sxb->d,dxb->d,g,src_x,src_y,w,h,x,y);
 }
 
-extern void def_sprite_update(struct sprite *spr);
 /* The default sprite code is fine on slow LCDs, or
  * on double-buffered displays. On X11 without double-buffering,
  * the flickering's pretty bad. x11_sprite_update() does a little

@@ -54,7 +54,6 @@ bool 'Initialization debugging'         DEBUG_INIT
 bool 'Memory debugging'                 DEBUG_MEMORY
 bool 'Mirror guru() output on stderr'   CONFIG_STDERR_GURU
 bool 'HTML parser debugging'            DEBUG_HTML
-bool 'Disable pixel/getpixel in x11'    CONFIG_X11_NOPIXEL
 bool 'PicoGUI error tracing'            CONFIG_ERROR_TRACE
 bool 'Virtual terminal debugging'       DEBUG_VT
 bool 'Video driver debugging'           DEBUG_VIDEODRIVER
@@ -118,9 +117,10 @@ if [ "$DRIVER_SDLFB" = "y" ]; then
 fi
 bool 'X Window System driver (EXPERIMENTAL)' DRIVER_X11
 if [ "$DRIVER_X11" = "y" ]; then
-   bool '  Disable slow blending LGOPs' CONFIG_X11_NOSLOWLGOP
+   bool '  Disable slow pixel/getpixel'                     CONFIG_X11_NOPIXEL
+   bool '  Disable slow blending LGOPs'                     CONFIG_X11_NOSLOWLGOP
    bool '  XFreeType antialiased text (VERY EXPERIMENTAL)'  CONFIG_X11_XFT
-   bool '  Enable pgserver icon' CONFIG_X11_ICON
+   bool '  Enable pgserver icon'                            CONFIG_X11_ICON
 fi
 bool 'SDL/OpenGL driver (EXPERIMENTAL, see README.opengl)'    DRIVER_SDLGL
 bool 'SVGAlib framebuffer driver'          DRIVER_SVGAFB
