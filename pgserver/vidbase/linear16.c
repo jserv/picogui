@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.11 2002/02/04 23:11:45 micahjd Exp $
+/* $Id: linear16.c,v 1.12 2002/03/26 17:37:29 instinc Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -50,7 +50,7 @@
 /* Lookup table for alpha blending */
 #ifdef CONFIG_FAST_ALPHA
 u8 alpha_table[256*128];
-#endif CONFIG_FAST_ALPHA
+#endif
 
 /************************************************** Minimum functionality */
 

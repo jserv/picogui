@@ -1,4 +1,4 @@
-/* $Id: linear32.c,v 1.5 2002/03/26 03:56:57 instinc Exp $
+/* $Id: linear32.c,v 1.6 2002/03/26 17:37:30 instinc Exp $
  *
  * Video Base Library:
  * linear32.c - For 32bpp linear framebuffers
@@ -51,7 +51,7 @@
 /* Lookup table for alpha blending */
 #ifdef CONFIG_FAST_ALPHA
 u8 alpha_table[256*128];
-#endif CONFIG_FAST_ALPHA
+#endif
 
 /************************************************** Minimum functionality */
 
