@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.4 2000/10/10 00:49:05 micahjd Exp $
+/* $Id: constants.h,v 1.5 2000/10/13 20:20:26 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -187,7 +187,7 @@ typedef unsigned long pghandle;
 
 /* If you add a themeobject, be sure to increment this and add
    an inheritance entry in theme/thobjtab.c */
-#define PGTH_ONUM                  16
+#define PGTH_ONUM                  17
 
 /*** Loaders */
 
@@ -261,27 +261,32 @@ typedef unsigned long pghandle;
 #define PGTH_OPCMD_LONGSET       0x2B  /* Followed by a 1-byte var offset */
 #define PGTH_OPCMD_PROPERTY      0x2C  /* Followed by 2-byte object code and 2-byte property code */
 #define PGTH_OPCMD_LOCALPROP     0x2D  /* Followed by 2-byte property code */
+#define PGTH_OPCMD_COLOR         0x2E  /* Convert pgcolor to hwrcolor */
 
 /******************** Video */
 
 /* Gropnode types (gropnodes are a single element in a metafile-like
  * structure to hold GRaphics OPerations)
+ *
+ * Bits 4-7 indicate the number of parameters (in addition to
+ * the standard x,y,w,h.
  */
-#define PG_GROP_NULL       0	/* Doesn't do anything - for temporarily
-				 * turning something off, or for disabling
-				 * unused features while keeping the grop
-				 * node order constant */
-#define PG_GROP_PIXEL      1	
-#define PG_GROP_LINE   	   2
-#define PG_GROP_RECT	   3
-#define PG_GROP_FRAME      4
-#define PG_GROP_SLAB       5
-#define PG_GROP_BAR        6
-#define PG_GROP_DIM        7
-#define PG_GROP_TEXT       8
-#define PG_GROP_BITMAP     9
-#define PG_GROP_GRADIENT   10
-#define PG_GROPMAX         10
+#define PG_GROP_NULL       0x0000	/* Doesn't do anything - for temporarily
+					 * turning something off, or for disabling
+					 * unused features while keeping the grop
+					 * node order constant */
+#define PG_GROP_PIXEL      0x0010
+#define PG_GROP_LINE   	   0x0011
+#define PG_GROP_RECT	   0x0012
+#define PG_GROP_FRAME      0x0013
+#define PG_GROP_SLAB       0x0014
+#define PG_GROP_BAR        0x0015
+#define PG_GROP_DIM        0x0001
+#define PG_GROP_TEXT       0x0030
+#define PG_GROP_BITMAP     0x0020
+#define PG_GROP_GRADIENT   0x0040
+
+#define PG_GROPPARAMS(x)   (((x)>>4)&0x0F)
 
 /* Video mode flags */
 #define PG_VID_FULLSCREEN     0x0001
