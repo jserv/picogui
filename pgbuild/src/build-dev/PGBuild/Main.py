@@ -35,9 +35,10 @@ if sys.hexversion < 0x020200F0:
 
 import optik
 import PGBuild
-import os, re
+import os, re, sys
 import xml.dom.minidom
 
+exitStatus = 0
 
 class OptionParser(optik.OptionParser):
     def __init__(self):
@@ -307,6 +308,7 @@ def main(bootstrap, argv):
          - Initializing the UI module
          - Exception catching
        """
+    global exitStatus
 
     config = None
     ui = None
@@ -332,11 +334,13 @@ def main(bootstrap, argv):
             # If we have a UI yet, try to let it handle the exception. Otherwise just reraise it.
             if ui:
                 ui.exception(sys.exc_info())
+                exitStatus = 2
             else:
                 raise
     finally:
         if config:
             config.commit()
+    sys.exit(exitStatus)
 
 ### The End ###
         

@@ -259,13 +259,13 @@ def writeSubtree(root, dest, rootName=None, rootAttributes=None, comment=None, p
         dest.close()
 
 
-def getChildData(tag, childName):
+def getChildData(tag, childName, default=None):
     """Find exactly one child tag with the given name, and return its data content"""
     children = tag.getElementsByTagName(childName)
     if len(children) > 1:
         raise PGBuild.Errors.ConfigError("Multiple <%s> tags found where only one was expected" % childName)
     if len(children) == 0:
-        return None
+        return default
     data = ''
     for grandChild in children[0].childNodes:
         if grandChild.nodeType == grandChild.TEXT_NODE:

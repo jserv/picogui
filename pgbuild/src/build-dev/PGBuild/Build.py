@@ -3,8 +3,7 @@
 Manages the actual build process using SCons.
 This includes facilities to construct an SCons environment using the
 configuration database, to set up other SCons parameters, execute
-SConscripts, and build targets. Parts of this code have been adapted
-from SCons' Script module.
+SConscripts, and build targets.
 """
 # 
 # PicoGUI Build System
@@ -30,12 +29,8 @@ _svn_id = "$Id$"
 scriptNames = ['SConscript', 'Sconscript', 'sconscript']
 
 import SCons.Taskmaster
+import SCons.Node
 import sys
-
-# FIXME: move these to invocation options
-keep_going_on_error = False
-ignore_errors = False
-exit_status = 0
 
 class BuildTask(SCons.Taskmaster.Task):
     """An SCons build task. Note that this is mostly copied from SCons.Script.BuildTask,
@@ -54,24 +49,22 @@ class BuildTask(SCons.Taskmaster.Task):
             SCons.Taskmaster.Task.execute(self)
 
     def do_failed(self, status=2):
-        global exit_status
-        if ignore_errors:
+        if self.config.eval("invocation/option[@name='ignoreErrors']/text()"):
             SCons.Taskmaster.Task.executed(self)
-        elif keep_going_on_error:
+        elif self.config.eval("invocation/option[@name='keepGoing']/text()"):
             SCons.Taskmaster.Task.fail_continue(self)
-            exit_status = status
+            import PGBuild.Main
+            PGBuild.Main.exitStatus = status
         else:
             SCons.Taskmaster.Task.fail_stop(self)
-            exit_status = status
+            import PGBuild.Main
+            PGBuild.Main.exitStatus = status
             
     def executed(self):
         t = self.targets[0]
         if self.top and not t.has_builder() and not t.side_effect:
             if not t.exists():
                 s = "Do not know how to make target `%s'." % t
-                if not keep_going_on_error:
-                    s += "  Stop."
-                s += "\n"
                 self.progress.error(s)
                 self.do_failed()
             else:
@@ -79,21 +72,6 @@ class BuildTask(SCons.Taskmaster.Task):
                 SCons.Taskmaster.Task.executed(self)
         else:
             SCons.Taskmaster.Task.executed(self)
-
-        # print the tree here instead of in execute() because
-        # this method is serialized, but execute isn't:
-        if print_tree and self.top:
-            print
-            print SCons.Util.render_tree(self.targets[0], get_all_children)
-        if print_dtree and self.top:
-            print
-            print SCons.Util.render_tree(self.targets[0], get_derived_children)
-        if print_includes and self.top:
-            t = self.targets[0]
-            tree = t.render_include_tree()
-            if tree:
-                print
-                print tree
 
     def failed(self):
         e = sys.exc_value
@@ -108,8 +86,6 @@ class BuildTask(SCons.Taskmaster.Task):
             self.progress.error(e)
         elif sys.exc_type == SCons.Errors.StopError:
             s = str(e)
-            if not keep_going_on_error:
-                s = s + '  Stop.'
             self.progress.error(s)
         elif sys.exc_type == SCons.Errors.ExplicitExit:
             status = e.status
@@ -123,6 +99,8 @@ class BuildTask(SCons.Taskmaster.Task):
 
 def loadScript(name, progress):
     """Load one SCons script"""
+    import SCons.Node
+    import SCons.Script
     progress.showTaskHeading()
     d = SCons.Node.FS.default_fs.File(name).dir
     SCons.Node.FS.default_fs.set_SConstruct_dir(d)
@@ -162,13 +140,13 @@ class System(object):
 
     def processInvocationOptions(self):
         # Default task is to build targets
-        self.task_class = BuildTask
-        
+        self.task_class = BuildTask        
         self.invocationTargets = self.config.listEval('invocation/target/text()')
 
     def run(self, progress):
         import SCons.Node
         import SCons.Job
+        import SCons.Taskmaster
 
         # Set default targets
         self.defaultTargets = SCons.Script.SConscript.default_targets

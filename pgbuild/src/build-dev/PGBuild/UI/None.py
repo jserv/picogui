@@ -166,55 +166,12 @@ class Interface(object):
         pass
 
     def run(self):
-        """Examine the provided configuration and take the specified actions"""
-        # Note that order is important here!
-        # It wouldn't make sense to run --nuke after --merge, for example.
-
-        # Merge the bootstrap packages. This performs everything
-        # except the actual configuration mount, since we had to do that
-        # during PGBuild.Main.boot()
-        bootMergeTask = self.progress.task("Merging bootstrap packages")
-        for package in self.config.packages.getBootstrapPackages():
-            self.config.packages.findPackageVersion(package).merge(bootMergeTask, False)
-
-        # Set up the build environment
-        import PGBuild.Build
-        buildSys = PGBuild.Build.System(self.config)
-
-        # Handle --nuke command line option
-        if self.config.eval("invocation/option[@name='nuke']/text()"):
-            self.config.packages.nuke(self.progress)
-
-        # Handle --merge-all command line option
-        if self.config.eval("invocation/option[@name='mergeAll']/text()"):
-            mergeTask = self.progress.task("Merging all packages")
-            packages = self.config.listEval("packages/package/@name")
-            packages.sort()
-            for name in packages:
-                self.config.packages.findPackageVersion(name).merge(mergeTask)
-        else:
-            # Handle --merge command line option
-            mergeTask = self.progress.task("Merging user-specified packages")
-            for name in self.config.listEval("invocation/option[@name='merge']/item/text()"):
-                self.config.packages.findPackageVersion(name).merge(mergeTask)
-
-        # Run SCons tasks
-        buildSys.run(self.progress)
-
-        # Interface cleanup- options that dump to stdout and don't use any UI features
-        #                    should be placed after this line!
-        self.cleanup()
-
-        # Handle --dump-tree command line option
-        treeDumpFile = self.config.eval("invocation/option[@name='treeDumpFile']/text()")
-        if treeDumpFile:
-            self.config.dump(treeDumpFile, self.progress)
-
-        # Handle --list command line option
-        listPath = self.config.eval("invocation/option[@name='listPath']/text()")
-        if listPath:
-            self.list(listPath)
-
+        """Execute the UI. By default, this just executes
+           all PGBuild Tasks according to invocation options.
+           """
+        import PGBuild.Tasks
+        PGBuild.Tasks.TaskList(self, PGBuild.Tasks.allTasks).run()
+        
     def exitWithError(self, message):
         self.progress.error(message)
         self.cleanup()
