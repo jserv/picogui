@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.36 2002/01/05 14:37:55 micahjd Exp $
+/* $Id: pgtheme.y,v 1.37 2002/01/05 15:06:22 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -75,7 +75,7 @@
 %type <propid>   property
 %type <prop>     statement
 %type <prop>     stmt_list
-%type <prop>     compount_stmt
+%type <prop>     compound_stmt
 %type <obj>      objectdef
 %type <obj>      unit
 %type <obj>      unitlist
@@ -126,7 +126,7 @@ unit: objectdef
 		      insist on ending object definitions with a ';' */
     ;
 
-objectdef:  OBJ thobj compount_stmt      { 
+objectdef:  OBJ thobj compound_stmt      { 
   /* Add to the list of objects */
   $$ = malloc(sizeof(struct propnode));
   if ($$) {
@@ -140,9 +140,60 @@ objectdef:  OBJ thobj compount_stmt      {
   else
     yyerror("memory allocation error");  
 }
+         |  OBJ STRING compound_stmt {
+  struct propnode *nameprop;
+  unsigned char *buf;
+  struct pgrequest *req;
+  int len = strlen($2);
+
+  /* Allocate the buffer for name property's request */
+  if (buf = malloc(sizeof(struct pgrequest)+len)) {
+
+    /* Reserve space for the request header */
+    req = (struct pgrequest *) buf;
+    memset(req,0,sizeof(struct pgrequest));
+    req->type = htons(PGREQ_MKSTRING);
+    req->size = htonl(len);
+    
+    /* copy string and discard original */
+    memcpy(buf+sizeof(struct pgrequest),$2,len);
+    free($2);
+    
+    /* Create the name property */
+    nameprop = malloc(sizeof(struct propnode));
+    if (nameprop) {
+      memset(nameprop,0,sizeof(struct propnode));
+      nameprop->loader = PGTH_LOAD_REQUEST;
+      nameprop->data   = 0;
+      nameprop->ldnode = newloader(buf,(sizeof(struct pgrequest)+len));
+      nameprop->propid = PGTH_P_NAME;
+      nameprop->next   = $3;
+      num_totprop++;
+      
+      /* Add to the list of objects, including a name property */
+      $$ = malloc(sizeof(struct propnode));
+      if ($$) {
+	memset($$,0,sizeof(struct propnode));
+	$$->proplist = nameprop;
+	$$->id       = PGTH_O_CUSTOM;
+	$$->next     = objectlist;
+	objectlist   = $$;
+	num_thobj++;
+      }
+      else
+	yyerror("memory allocation error");  
+    }
+    else
+      yyerror("memory allocation error");  
+  }
+  else
+    yyerror("memory allocation error");  
+}
+
+
          ;
 
-compount_stmt:  statement                { $$ = $1; }
+compound_stmt:  statement                { $$ = $1; }
              |  '{' stmt_list '}'        { $$ = $2; }
              ;
 

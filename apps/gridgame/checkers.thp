@@ -1,5 +1,4 @@
-object custom {
-  name = "checkers";
+object "checkers" {
   bgfill = fillstyle {
     /* Gray box one pixel _outside_ the game:
      * this way when the game is played in a non-square
@@ -22,8 +21,7 @@ object custom {
   };
 }
 
-object custom {
-  name = "checkers.player1";
+object "checkers.player1" {
   bgcolor = 0xFFFF00;
   PIECE = fillstyle {
     /* Circle with black border one pixel inside the grid */
@@ -35,8 +33,7 @@ object custom {
   };
 }
 
-object custom {
-  name = "checkers.player2";
+object "checkers.player2" {
   bgcolor = 0xFF00FF;
   parent = FindThemeObject("checkers.player1");
 }
