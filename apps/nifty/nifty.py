@@ -8,5 +8,8 @@ for name in sys.argv[1:]:
 if len(frame._pages) == 0:
     frame.open(ScratchBuffer('__scratch__', 'This buffer is for experimenting with Nifty'))
 
+sys.stdout = frame.minibuffer
+sys.stderr = frame.stderr
+
 sys.exit(frame.run())
 
