@@ -1,4 +1,4 @@
-/* $Id: tsinput.c,v 1.19 2001/08/08 12:43:39 bauermeister Exp $
+/* $Id: tsinput.c,v 1.20 2001/08/27 07:13:36 bauermeister Exp $
  *
  * tsinput.c - input driver for touch screen
  *
@@ -195,8 +195,12 @@ g_error tsinput_init(void) {
     ts_params.y_min          = 0;
     ts_params.x_max          = 159;
     ts_params.x_min          = 0;
+
     /* overwrite xy_swap for XCopilot environment */
     ts_params.xy_swap        = 0;
+
+    /* want no deglitch timeout on emulator */
+    ts_params.deglitch_ms    = 0;
 
     /* according to mc68328digi.h 'How to calculate the parameters', we have
      * measured:
@@ -211,8 +215,12 @@ g_error tsinput_init(void) {
     ts_params.y_min          = 0;
     ts_params.x_max          = 240-1;
     ts_params.x_min          = 0;
+
     /* overwrite xy_swap for XCopilot environment */
     ts_params.xy_swap        = 0;
+
+    /* want no deglitch timeout on emulator */
+    ts_params.deglitch_ms    = 0;
 
     /* ratio s are like for xcopilot, except that for big screen
      * height, y is divided by two
