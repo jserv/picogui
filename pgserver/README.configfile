@@ -161,7 +161,7 @@ quoted appropriately. For example:
 
 - sound
   Use XBell to handle PGDM_SOUNDFX events.
-  This is on by default
+  This is off by default
 
 [input-x11]
 

@@ -1,4 +1,4 @@
-/* $Id: x11_util.c,v 1.2 2002/11/04 10:29:34 micahjd Exp $
+/* $Id: x11_util.c,v 1.3 2002/11/04 11:44:29 micahjd Exp $
  *
  * x11_util.c - Utility functions for picogui's driver for the X window system
  *
@@ -110,7 +110,7 @@ void x11_message(u32 message, u32 param, u32 *ret) {
 
   case PGDM_SOUNDFX:
     /* XFree86 ignores the volume, it seems */
-    if (get_param_int("video-x11","sound",1)) 
+    if (get_param_int("video-x11","sound",0)) 
       XBell(x11_display,50);
     break;
   }
@@ -259,8 +259,8 @@ void x11_window_set_size(hwrbitmap window, s16 w, s16 h) {
     XDestroyRegion(xb->display_region);
   xb->display_region = XCreateRegion();
   rect.x = rect.y = 0;
-  rect.width = vid->xres;
-  rect.height = vid->yres;
+  rect.width = w;
+  rect.height = h;
   XUnionRectWithRegion(&rect,xb->display_region,xb->display_region);
 
   /* Set input event mask */
@@ -268,6 +268,14 @@ void x11_window_set_size(hwrbitmap window, s16 w, s16 h) {
 	       KeyPressMask | KeyReleaseMask | ExposureMask | ButtonMotionMask |
 	       ButtonPressMask | ButtonReleaseMask | PointerMotionMask | StructureNotifyMask);
   XAutoRepeatOn(x11_display);
+
+  /* Resize the divtree */
+  if (xb->dt) {
+    xb->dt->head->r.w = w;
+    xb->dt->head->r.h = h;
+    xb->dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC | DIVNODE_NEED_REBUILD;
+    xb->dt->flags |= DIVTREE_NEED_RECALC | DIVTREE_ALL_REDRAW;
+  }
 
   XFlush(x11_display);
 }

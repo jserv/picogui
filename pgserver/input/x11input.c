@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.20 2002/11/04 10:29:34 micahjd Exp $
+/* $Id: x11input.c,v 1.21 2002/11/04 11:44:29 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -76,10 +76,13 @@ int x11input_fd_activate(int fd) {
   Region expose_region = XCreateRegion();
   XRectangle rect;
   u32 btn;
+  union trigparam p;
+  struct x11bitmap *xb;
 
   if(fd != x11_fd) return 0;
 
   for (i=XPending(x11_display);i;i--) {
+    memset(&p,0,sizeof(p));
     XNextEvent(x11_display, &ev);
     switch (ev.type) {
 
@@ -107,9 +110,11 @@ int x11input_fd_activate(int fd) {
       /****************** Resizing */
 
     case ConfigureNotify: 
-      video_setmode(ev.xconfigure.width, ev.xconfigure.height,
-		    vid->bpp, PG_FM_ON,0); 
-      update(NULL,1);
+      if (!VID(is_rootless)) {
+	video_setmode(ev.xconfigure.width, ev.xconfigure.height,
+		      vid->bpp, PG_FM_ON,0); 
+	update(NULL,1);
+      }
       break;
 
       /****************** Mouse events
@@ -125,25 +130,35 @@ int x11input_fd_activate(int fd) {
        */
 
     case MotionNotify:
-      infilter_send_pointing(PG_TRIGGER_MOVE,ev.xmotion.x, ev.xmotion.y, 
-			     (ev.xmotion.state >> 8) & 0x07, NULL);
+      if ((xb = x11_get_window(ev.xmotion.window)))
+	p.mouse.divtree = hlookup(xb->dt,NULL);
+      p.mouse.x = ev.xmotion.x;
+      p.mouse.y = ev.xmotion.y;
+      p.mouse.btn = (ev.xmotion.state >> 8) & 0x07;
+      infilter_send(NULL,PG_TRIGGER_MOVE,&p);
       break;
 
     case ButtonPress:
+      if ((xb = x11_get_window(ev.xbutton.window)))
+	p.mouse.divtree = hlookup(xb->dt,NULL);
       btn = (ev.xbutton.state >> 8) | (1 << (ev.xbutton.button-1));
-      if (btn & 0x08)
-	infilter_send_pointing(PG_TRIGGER_SCROLLWHEEL,0,-x11input_scroll_distance,0,NULL);
-      if (btn & 0x10)
-	infilter_send_pointing(PG_TRIGGER_SCROLLWHEEL,0,x11input_scroll_distance,0,NULL);
-	
-      infilter_send_pointing(PG_TRIGGER_DOWN,ev.xbutton.x, ev.xbutton.y,
-			     btn & 0x07, NULL);
+      if (btn & 0x08) {
+	p.mouse.y = -x11input_scroll_distance;
+	infilter_send(NULL,PG_TRIGGER_SCROLLWHEEL,&p);
+      }
+      if (btn & 0x10) {
+	p.mouse.y = x11input_scroll_distance;
+	infilter_send(NULL,PG_TRIGGER_SCROLLWHEEL,&p);
+      }
       break;
 
     case ButtonRelease:
-      infilter_send_pointing(PG_TRIGGER_UP,ev.xbutton.x, ev.xbutton.y,
-			     ((ev.xbutton.state >> 8) & (~(1 << (ev.xbutton.button-1)))) & 0x07,
-			     NULL);
+      if ((xb = x11_get_window(ev.xbutton.window)))
+	p.mouse.divtree = hlookup(xb->dt,NULL);
+      p.mouse.x   = ev.xbutton.x;
+      p.mouse.y   = ev.xbutton.y;
+      p.mouse.btn = ((ev.xbutton.state >> 8) & (~(1 << (ev.xbutton.button-1)))) & 0x07;
+      infilter_send(NULL,PG_TRIGGER_UP,&p);
       break;
 
       /****************** Keyboard events
@@ -155,22 +170,38 @@ int x11input_fd_activate(int fd) {
        */
 
     case KeyPress:
+      if ((xb = x11_get_window(ev.xkey.window)))
+	p.kbd.divtree = hlookup(xb->dt,NULL);
       x11_translate_key(x11_display, &ev.xkey, ev.xkey.keycode, &sym, &mod, &chr);
-      if (sym)
-	infilter_send_key(PG_TRIGGER_KEYDOWN,sym,mod);
-      if (chr)
-	infilter_send_key(PG_TRIGGER_CHAR,chr,mod);
+      if (sym) {
+	p.kbd.key  = sym;
+	p.kbd.mods = mod;
+	infilter_send(NULL,PG_TRIGGER_KEYDOWN,&p);
+      }
+      if (chr) {
+	p.kbd.key  = chr;
+	p.kbd.mods = mod;
+	infilter_send(NULL,PG_TRIGGER_CHAR,&p);
+      }
       break;
 
     case KeyRelease:
+      if ((xb = x11_get_window(ev.xkey.window)))
+	p.kbd.divtree = hlookup(xb->dt,NULL);
       x11_translate_key(x11_display, &ev.xkey, ev.xkey.keycode, &sym, &mod, &chr);
       if (x11_key_repeat(x11_display, &ev)) {
-	if (chr)
-	  infilter_send_key(PG_TRIGGER_CHAR,chr,mod);
+	if (chr) {
+	  p.kbd.key  = chr;
+	  p.kbd.mods = mod;
+	  infilter_send(NULL,PG_TRIGGER_CHAR,&p);
+	}
       }
       else {
-	if (sym)
-	  infilter_send_key(PG_TRIGGER_KEYUP,sym,mod);
+	if (sym) {
+	  p.kbd.key  = sym;
+	  p.kbd.mods = mod;
+	  infilter_send(NULL,PG_TRIGGER_KEYUP,&p);
+	}
       }
       break;
 

@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.99 2002/11/04 08:36:24 micahjd Exp $
+/* $Id: div.c,v 1.100 2002/11/04 11:44:29 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -609,6 +609,13 @@ void divtree_size_and_calc(struct divtree *dt) {
   if (dt->flags & DIVTREE_NEED_RESIZE) {
     divresize_recursive(dt->head);
     dt->flags &= ~DIVTREE_NEED_RESIZE;
+    
+    /* Give the top-level widget a chance to resize (necessary if
+     * it's acting as a gateway between picogui's sizing system and that of 
+     * a host GUI.
+     */
+    if (dt->head->next)
+      dt->head->next->owner->def->resize(dt->head->next->owner);
   }
   
   if (dt->flags & DIVTREE_NEED_RECALC) {

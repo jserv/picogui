@@ -1,4 +1,4 @@
-/* $Id: managedwindow.c,v 1.3 2002/11/04 10:40:15 micahjd Exp $
+/* $Id: managedwindow.c,v 1.4 2002/11/04 11:44:30 micahjd Exp $
  *
  * managedwindow.c - A root widget representing a window managed by a host GUI
  *
@@ -45,8 +45,6 @@ g_error managedwindow_install(struct widget *self) {
   errorcheck;
   DATA->my_dt = dts->top;
   
-  VID(window_set_size)(DATA->my_dt->display,512,384);
-
   /* Take up the entire size of the divtree root */
   e = newdiv(&self->in,self);
   errorcheck;
@@ -144,7 +142,8 @@ glob managedwindow_get(struct widget *self,int property) {
 
 
 void managedwindow_resize(struct widget *self) {
-  /* This space intentionally left blank... */
+  if (self->in->child.w && self->in->child.h)
+    VID(window_set_size)(DATA->my_dt->display,self->in->child.w,self->in->child.h);
 }
 
 /* The End */

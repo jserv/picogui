@@ -1,4 +1,4 @@
-/* $Id: x11_init.c,v 1.2 2002/11/04 10:29:34 micahjd Exp $
+/* $Id: x11_init.c,v 1.3 2002/11/04 11:44:29 micahjd Exp $
  *
  * x11_init.c - Initialization for picogui'x driver for the X window system
  *
@@ -57,6 +57,7 @@ g_error x11_init(void) {
 
   /* Connect to the default X server */
   x11_display = XOpenDisplay(NULL);
+
   if (!x11_display)
     return mkerror(PG_ERRT_IO,46);   /* Error initializing video */
 
