@@ -1,3 +1,16 @@
+2001-08-10    Micah Dowty <micahjd@users.sourceforge.net>
+
+I don't have the specs for PGL itself yet, but I'm sure writing PGL applets
+will be useful. I'm starting with a clock, the must-have applet. Other
+applets like a backlight control will follow. Of course I'm also fixing bugs
+in pgserver and occasionally tossing in the odd feature here and there.
+
+      * widget/button.c: Fixed some errors in position_button()'s error
+        handling. This was causing those guru messages, and in some cases
+	segfaults. Now instead of segfaulting if you delete a button's font,
+	it will fall back on the theme's button font or in extreme cases
+	the default font.
+
 2001-08-08    Micah Dowty <micahjd@users.sourceforge.net>
 
 I'm starting Applet support, for PGL, today. An application should be able
@@ -6,17 +19,17 @@ to reference that container by name and create a root widget inside it.
 
       * widget/scroll.c: Fixed the segfault bug that Olivier found.
 		
-		* include/picogui/constants.h: Adding the PG_WP_NAME property
+      * include/picogui/constants.h: Adding the PG_WP_NAME property
 		
-		* widget/widget.c: Implmenting the PG_WP_NAME property for all widgets
+      * widget/widget.c: Implmenting the PG_WP_NAME property for all widgets
 
-		* include/picogui/network.h: Adding PGREQ_FINDWIDGET
+      * include/picogui/network.h: Adding PGREQ_FINDWIDGET
 		
-		* net/dispatch.c: Implemented PGREQ_FINDWIDGET
+      * net/dispatch.c: Implemented PGREQ_FINDWIDGET
 
       * cli_c/src/api.c: Implemented pgFindWidget
 		
-		* include/picogui/constants.h: Added the PG_WP_PUBLICBOX
+      * include/picogui/constants.h: Added the PG_WP_PUBLICBOX
 		
 		* net/dispatch.c, widget/widget.c: Implemented the PG_WP_PUBLICBOX flag
 

@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.70 2001/08/05 10:50:52 micahjd Exp $
+/* $Id: button.c,v 1.71 2001/08/10 12:59:08 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -482,27 +482,32 @@ void position_button(struct widget *self,struct btnposition *bp) {
   struct fontdesc *fd = NULL;
   char *text = NULL;
 
-  /* These shouldn't fail! If we're debugging, do some sanity checks */
-#ifdef DEBUG_KEYS
-  if (iserror(rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,DATA->bitmap)))
-     guru("Error dereferencing bitmap handle in position_button()\n0x%08X",
-	  DATA->bitmap);
-  if (iserror(rdhandle((void **) &bitmask,PG_TYPE_BITMAP,-1,DATA->bitmask)))
-     guru("Error dereferencing bitmask handle in position_button()\n0x%08X",
-	  DATA->bitmask);
-  if (iserror(rdhandle((void **) &text,PG_TYPE_STRING,-1,DATA->text)))
-     guru("Error dereferencing text handle in position_button()\n0x%08X",
-	  DATA->text);
-#else
-  if (iserror(rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,DATA->bitmap)))
-     return;
-  if (iserror(rdhandle((void **) &bitmask,PG_TYPE_BITMAP,-1,DATA->bitmask)))
-     return;
-  if (iserror(rdhandle((void **) &text,PG_TYPE_STRING,-1,DATA->text)))
-     return;
-#endif
-  bp->font = DATA->font ? DATA->font : theme_lookup(self->in->div->state,PGTH_P_FONT);
-  rdhandle((void **) &fd,PG_TYPE_FONTDESC,-1,bp->font);
+  bp->font = DATA->font ? DATA->font : 
+    theme_lookup(self->in->div->state,PGTH_P_FONT);
+
+  /* If any of our handles have been deleted, set them to zero */
+
+  if (iserror(rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,DATA->bitmap))) {
+    DATA->bitmap = 0;
+    bit = NULL;
+  }
+  if (iserror(rdhandle((void **) &bitmask,PG_TYPE_BITMAP,-1,DATA->bitmask))) {
+    DATA->bitmask = 0;
+    bitmask = NULL;
+  }
+  if (iserror(rdhandle((void **) &text,PG_TYPE_STRING,-1,DATA->text))) {
+    DATA->text = 0;
+    text = NULL;
+  }
+  if (iserror(rdhandle((void **) &fd,PG_TYPE_FONTDESC,-1,bp->font))) {
+    /* Turn off our custom font and try the theme's font */
+    DATA->font = 0;
+    bp->font = theme_lookup(self->in->div->state,PGTH_P_FONT);    
+    if (iserror(rdhandle((void **) &fd,PG_TYPE_FONTDESC,-1,bp->font))) {
+      /* Still bad? 'Tis a bug in the theme. Fall back on the default font */
+      rdhandle((void **) &fd,PG_TYPE_FONTDESC,-1,defaultfont);
+    }
+  }
 
   /* Find sizes */
   if (text)
