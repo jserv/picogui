@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.69 2002/11/06 07:46:24 micahjd Exp $
+/* $Id: popup.c,v 1.70 2002/11/06 08:39:01 micahjd Exp $
  *
  * popup.c - A root widget for modal dialogs that display above the
  *           root divtree.
@@ -70,13 +70,6 @@ void clip_popup(struct divnode *div) {
     div->r.w = div->calc.w = ntb.r.x+ntb.r.w - div->calc.x;
   if (div->calc.y+div->calc.h >= ntb.r.y+ntb.r.h)
     div->r.h = div->calc.h = ntb.r.y+ntb.r.h - div->calc.y;
-  
-  if (VID(is_rootless)()) {
-    /* In rootless mode, we can shrinkwrap our containing window to the popup */
-    div->r.x = div->calc.x = 0;
-    div->r.y = div->calc.y = 0;
-    VID(window_set_size)(div->owner->dt->display,div->r.w,div->r.h);
-  }
 }
 
 void build_popupbg(struct gropctxt *c,unsigned short state,struct widget *self) {
