@@ -1,0 +1,29 @@
+/*
+ * Adds translucent popups and menus to the aqua theme
+ */
+
+object default name = "Modifier: Translucent Aqua";
+
+object popup {
+  bitmap1 = LoadBitmap("data/aq_bg_70percent.png");
+  bgfill = fillstyle {
+    SetLgop(PG_LGOP_ALPHA);
+    Bitmap(x,y,w,h,bitmap1);
+    SetLgop(PG_LGOP_NONE);
+    SetColor(0x000000);
+    Frame(x,y,w,h);
+    SetLgop(PG_LGOP_SUBTRACT);
+    Gradient(x+w-margin,y,margin,h,0,0x000000,0x808080);
+    Gradient(x,y+h-margin,w,margin,90,0x000000,0x808080);
+  };
+}
+
+object popup.menu {
+  bgfill = fillstyle {
+    SetLgop(PG_LGOP_ALPHA);
+    Bitmap(x,y,w,h,bitmap1);
+    SetLgop(PG_LGOP_NONE);
+    SetColor(0x808080);
+    Frame(x,y,w,h);
+  };
+}
