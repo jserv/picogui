@@ -3,11 +3,18 @@ struct uhmapping {
 	pghandle handle;
 };
 
+struct userbut {
+	const char *cmd;
+	pghandle h;
+};
+
 struct session_gui {
-	pghandle app, topic, output, input, userlistinfo, userlist;
+	pghandle app, topic, output, input, userscroll,
+		userlistinfo, userlist;
 	short int output_type;
+	struct userbut *userbutton;
 	struct uhmapping *uhmap;
-	int users;
+	int users, buttons;
 };
 
 struct server_gui {

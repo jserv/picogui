@@ -35,12 +35,11 @@
 #include <picogui.h>
 #include "fe-picogui.h"
 
-
 static GSList *tmr_list;		  /* timer list */
 static int tmr_list_count;
 static GSList *se_list;			  /* socket event list */
 static int se_list_count;
-static pghandle pgEmptyString;
+static pghandle pgEmptyString, pgPlusHTML;
 
 static int
 fieldActivate(struct pgEvent *evt)
@@ -49,7 +48,7 @@ fieldActivate(struct pgEvent *evt)
 	pghandle handle;
 
 	handle=pgGetWidget(evt->from, PG_WP_TEXT);
-	if(handle&&(cmd=strdup(pgGetString(pgGetWidget(evt->from, PG_WP_TEXT)))))
+	if(handle&&(cmd=strdup(pgGetString(handle))))
 	{
 		pgSetWidget(evt->from, PG_WP_TEXT, pgEmptyString, 0);
 		/* Must do handle_command last because it may be /close */
@@ -58,14 +57,21 @@ fieldActivate(struct pgEvent *evt)
 	}
 	return 0;
 }
-
 static int
-evtClose(struct pgEvent *evt)
+evtCloseMessage(struct pgEvent *evt)
 {
+	pghandle title=pgGetWidget(evt->from, PG_WP_TEXT);
+	pgDelete(evt->from);
+	pgDelete(title);
+	/* for labels, but not textboxen */
 	if(evt->extra)
-		fe_close_window(evt->extra);
-	else
-		pgDelete(evt->from);
+		pgDelete((pghandle)evt->extra);
+	return 1;
+}
+static int
+evtCloseWindow(struct pgEvent *evt)
+{
+	fe_close_window(evt->extra);
 	/* 1 prevents us from exiting */
 	return 1;
 }
@@ -76,12 +82,21 @@ evtPassFocus(struct pgEvent *evt)
 	int i;
 
 	pgFocus((pghandle)evt->extra);
-	if(evt->type==PG_WE_DATA)
+	switch(evt->type)
 	{
+	    case PG_WE_DATA:
 		/* hope they don't send things with mods.. */
 		for(i=0;i<evt->e.data.size;i++)
-			pgSendKeyInput(PG_TRIGGER_CHAR, evt->e.data.pointer[i],
-					0);
+			pgSendKeyInput(PG_TRIGGER_CHAR,
+					evt->e.data.pointer[i], 0);
+		break;
+	    case PG_WE_KBD_CHAR:
+#if 0
+	    case PG_WE_KBD_KEYUP:
+	    case PG_WE_KBD_KEYDOWN:
+#endif		/* I suspect those may cause shiftlocks... */
+		pgSendKeyInput(evt->type, evt->e.kbd.key, evt->e.kbd.mods);
+		break;
 	}
 	return 1;
 }
@@ -92,53 +107,55 @@ void
 fe_new_window (struct session *sess)
 {
 	char buf[512];
-	pghandle scroll, rightbox;
 	short int output_type=PG_WIDGET_TERMINAL;
+	pghandle scroll, rightbox;
 
 	sess->gui = malloc(sizeof(struct session_gui));
 	memset(sess->gui, 0, sizeof(struct session_gui));
 	/* App */
 	sess->gui->app = pgRegisterApp(PG_APP_NORMAL, "X-Chat ["VERSION"]", 0);
 	fe_set_title(sess);
-	pgBind(PGDEFAULT, PG_WE_CLOSE, evtClose, sess);
-	sess->gui->input = pgNewWidget(PG_WIDGET_FIELD, PGDEFAULT, PGDEFAULT);
-	pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_BOTTOM, 0);
-	pgBind(PGDEFAULT, PG_WE_ACTIVATE, fieldActivate, sess);
-	pgFocus(PGDEFAULT);
+	pgBind(0, PG_WE_CLOSE, evtCloseWindow, sess);
+	sess->gui->input = pgNewWidget(PG_WIDGET_FIELD, 0, 0);
+	pgSetWidget(0, PG_WP_SIDE, PG_S_BOTTOM, 0);
+	pgBind(0, PG_WE_ACTIVATE, fieldActivate, sess);
+	pgFocus(0);
 	/* Chat area */
-	rightbox=pgNewWidget(PG_WIDGET_BOX, PGDEFAULT, PGDEFAULT);
-	pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_RIGHT, 0);
-	sess->gui->userlistinfo=pgNewWidget(PG_WIDGET_LABEL, PG_DERIVE_INSIDE, 0);
+	rightbox=pgNewWidget(PG_WIDGET_BOX, 0, 0);
+	pgSetWidget(0, PG_WP_SIDE, PG_S_RIGHT, 0);
+	sess->gui->userlistinfo=pgNewWidget(PG_WIDGET_LABEL,
+			PG_DERIVE_INSIDE, 0);
 	/* scroll bug: the scroll doesn't recalculate correctly when resized.
 	 * be sure to have the top of the nicklist visible when enlarging */
-	scroll=pgNewWidget(PG_WIDGET_SCROLL, PGDEFAULT, PGDEFAULT);
-	sess->gui->userlist=pgNewWidget(PG_WIDGET_BOX, PGDEFAULT, PGDEFAULT);
-	pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_TOP, 0);
-	pgSetWidget (scroll, PG_WP_BIND, sess->gui->userlist, PGDEFAULT);
+	sess->gui->userscroll=pgNewWidget(PG_WIDGET_SCROLL, 0, 0);
+	sess->gui->userlist=pgNewWidget(PG_WIDGET_BOX, 0, 0);
+	pgSetWidget(0, PG_WP_SIDE, PG_S_TOP, 0);
+	pgSetWidget (sess->gui->userscroll, PG_WP_BIND, sess->gui->userlist, 0);
 	/* textbox bug: wrapped text somehow winds up after all other text. */
-	rightbox=pgNewWidget(PG_WIDGET_BOX, PGDEFAULT, rightbox);
-	pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_ALL, 0);
-	scroll=pgNewWidget(PG_WIDGET_SCROLL, PG_DERIVE_INSIDE, PGDEFAULT);
-	pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_RIGHT, 0);
+	pgNewWidget(PG_WIDGET_BOX, 0, rightbox);
+	pgSetWidget(0, PG_WP_SIDE, PG_S_ALL, 0);
+	scroll=pgNewWidget(PG_WIDGET_SCROLL, PG_DERIVE_INSIDE, 0);
+	pgSetWidget(0, PG_WP_SIDE, PG_S_RIGHT, 0);
 	/* FIXME - preference? */
 	sess->gui->output_type = output_type;
-	sess->gui->output = pgNewWidget(output_type, PGDEFAULT, PGDEFAULT);
+	sess->gui->output = pgNewWidget(output_type, 0, 0);
 	pgSetWidget(scroll, PG_WP_BIND, sess->gui->output, 0);
 	switch(output_type) {
 		case PG_WIDGET_TEXTBOX:
 			/* set the textbox to autoscroll, append HTML */
-			pgSetWidget(PGDEFAULT, PG_WP_AUTOSCROLL, 1,
-				PG_WP_SIDE, PG_S_ALL,
-				PG_WP_TEXTFORMAT, pgNewString("+HTML"), 0);
+			pgSetWidget(0, PG_WP_AUTOSCROLL, 1,
+				PG_WP_SIDE, PG_S_ALL, PG_WP_TEXTFORMAT,
+				pgPlusHTML, 0);
 			break;
 		case PG_WIDGET_TERMINAL:
 			/* make the terminal widget pass focus to the input */
-			pgBind(PGDEFAULT, PG_WE_DATA, evtPassFocus,
+			pgBind(0, PG_WE_DATA, evtPassFocus,
 					(void*)sess->gui->input);
-			pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_ALL, 0);
+			pgSetWidget(0, PG_WP_SIDE, PG_S_ALL, 0);
 			/* FIXME: hide cursor (not implemented in terminal) */
 			break;
 	}
+	fe_buttons_update(sess);
 
 	if (!sess->server->front_session)
 		sess->server->front_session = sess;
@@ -279,6 +296,7 @@ fe_args (int argc, char *argv[])
 {
 	pgInit(argc, argv);
 	pgEmptyString=pgNewString("");
+	pgPlusHTML=pgNewString("+HTML");
 	if (argc > 1)
 	{
 		if (!strcasecmp (argv[1], "--version") || !strcasecmp (argv[1], "-v"))
@@ -506,15 +524,15 @@ void
 fe_message (char *msg, int wait)
 {
 	if(wait)
-		pgMessageDialog("X-Chat", msg, PGDEFAULT);
+		pgMessageDialog("X-Chat", msg, 0);
 	else
 	{
 		pghandle text;
 
 		pgRegisterApp(PG_APP_NORMAL, "X-Chat message", 0);
-		pgBind(PGDEFAULT, PG_WE_CLOSE, evtClose, NULL);
-		pgNewWidget(PG_WIDGET_TEXTBOX, PGDEFAULT, PGDEFAULT);
-		pgSetWidget(PGDEFAULT, PG_WP_TEXT, text=pgNewString(msg), 0);
+		pgBind(0, PG_WE_CLOSE, evtCloseMessage, NULL);
+		pgNewWidget(PG_WIDGET_TEXTBOX, 0, 0);
+		pgSetWidget(0, PG_WP_TEXT, text=pgNewString(msg), 0);
 		pgDelete(text);
 	}
 }
@@ -522,9 +540,25 @@ fe_message (char *msg, int wait)
 void
 fe_close_window (struct session *sess)
 {
-	if(sess->gui->uhmap)
-		free(sess->gui->uhmap);
+	int i;
+
+	sess->gui->userlistinfo=pgGetWidget(sess->gui->userlistinfo,PG_WP_TEXT);
+	sess->gui->topic=pgGetWidget(sess->gui->app, PG_WP_TEXT);
+	for(i=0;i<sess->gui->buttons;i++)
+		sess->gui->userbutton[i].h=
+			pgGetWidget(sess->gui->userbutton[i].h, PG_WP_TEXT);
+	for(i=0;i<sess->gui->users;i++)
+		sess->gui->uhmap[i].handle=
+			pgGetWidget(sess->gui->uhmap[i].handle, PG_WP_TEXT);
 	pgDelete(sess->gui->app);
+	for(i=0;i<sess->gui->buttons;i++)
+		pgDelete(sess->gui->userbutton[i].h);
+	free(sess->gui->userbutton);
+	for(i=0;i<sess->gui->users;i++)
+		pgDelete(sess->gui->uhmap[i].handle);
+	free(sess->gui->uhmap);
+	pgDelete(sess->gui->topic);
+	pgDelete(sess->gui->userlistinfo);
 	kill_session_callback (sess);
 }
 
@@ -570,8 +604,8 @@ fe_set_topic (struct session *sess, char *topic)
 	{
 		sess->gui->topic = pgNewWidget(PG_WIDGET_FIELD, PG_DERIVE_BEFORE,
 				sess->gui->input);
-		pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_TOP, 0);
-		pgBind(PGDEFAULT, PG_WE_ACTIVATE, setTopic, sess);
+		pgSetWidget(0, PG_WP_SIDE, PG_S_TOP, 0);
+		pgBind(0, PG_WE_ACTIVATE, setTopic, sess);
 	}
 	str=pgNewString(topic);
 	pgSetWidget(sess->gui->topic, PG_WP_TEXT, str, 0);
@@ -580,6 +614,8 @@ fe_set_topic (struct session *sess, char *topic)
 void
 fe_cleanup (void)
 {
+	pgDelete(pgPlusHTML);
+	pgDelete(pgEmptyString);
 }
 void
 fe_set_hilight (struct session *sess)
@@ -654,10 +690,11 @@ fe_userlist_insert (struct session *sess, struct User *newuser, int row)
 	else
 		for(i=sess->gui->users-1;i>row;i--)
 			sess->gui->uhmap[i]=sess->gui->uhmap[i-1];
-	label=pgNewWidget(PG_WIDGET_LABEL, row?PG_DERIVE_AFTER:PG_DERIVE_INSIDE,
-			row?sess->gui->uhmap[row-1].handle:sess->gui->userlist);
-	pgSetWidget(PGDEFAULT, PG_WP_ALIGN, PG_A_LEFT, 0);
-	pgReplaceTextFmt(PGDEFAULT, "%c%s", newuser->prefix, newuser->nick);
+	label=pgNewWidget(PG_WIDGET_LABEL, row?PG_DERIVE_AFTER:
+			PG_DERIVE_INSIDE, row?sess->gui->uhmap[row-1].handle:
+			sess->gui->userlist);
+	pgSetWidget(0, PG_WP_ALIGN, PG_A_LEFT, 0);
+	pgReplaceTextFmt(0, "%c%s", newuser->prefix, newuser->nick);
 	sess->gui->uhmap[row].user=newuser;
 	sess->gui->uhmap[row].handle=label;
 }
@@ -714,7 +751,6 @@ fe_userlist_move (struct session *sess, struct User *user, int new_row)
 	pgAttachWidget(new_row?sess->gui->uhmap[new_row-1].handle:
 			sess->gui->userlist, new_row?PG_DERIVE_AFTER:
 			PG_DERIVE_INSIDE, tmp.handle);
-	/*pgSubUpdate(sess->gui->userlist);*/
 }
 void
 fe_userlist_numbers (struct session *sess)
@@ -725,15 +761,19 @@ fe_userlist_numbers (struct session *sess)
 void
 fe_userlist_clear (struct session *sess)
 {
-	int i;
+	int i=sess->gui->users;
+	pghandle h;
 
 	if(!sess->gui->uhmap)
 		return;
-	for(i=0;i<sess->gui->users;i++)
+	while(i--)
 	{
-		pgListRemove(sess->gui->userlist, sess->gui->uhmap[i].handle);
+		h=pgGetWidget(sess->gui->uhmap[i].handle, PG_WP_TEXT);
+		if(h)
+			pgDelete(h);
 		pgDelete(sess->gui->uhmap[i].handle);
 	}
+	sess->gui->users=0;
 	free(sess->gui->uhmap);
 	sess->gui->uhmap=NULL;
 }
@@ -777,9 +817,61 @@ void
 fe_pluginlist_update (void)
 {
 }
+static int			/* FIXME userlist connection */
+evtUserButton (struct pgEvent *evt)
+{
+	struct session *sess=evt->extra;
+	int i;
+
+	for(i=0;i<sess->gui->buttons;i++)
+		if(sess->gui->userbutton[i].h==evt->from)
+		{
+			handle_command (sess->gui->userbutton[i].cmd, sess,
+					FALSE, FALSE);
+			break;
+		}
+	return 1;
+}
 void
 fe_buttons_update (struct session *sess)
 {
+	GSList *list;
+	struct popup *pop;
+	pghandle h;
+
+	if(sess->gui->userbutton)
+	{
+		while(--sess->gui->buttons>=0)
+		{
+			h=sess->gui->userbutton[sess->gui->buttons].h;
+			pgDelete(pgGetWidget(h, PG_WP_TEXT));
+			pgDelete(h);
+		}
+		free(sess->gui->userbutton);
+		sess->gui->userbutton=NULL;
+	}
+	sess->gui->buttons=0;
+	list=button_list;
+	while(list)
+	{
+		pop = (struct popup *) list->data;
+		if(pop->cmd[0])
+		{
+			sess->gui->userbutton=realloc(sess->gui->userbutton,
+					sizeof(struct userbut) *
+					++sess->gui->buttons);
+			sess->gui->userbutton[sess->gui->buttons-1].cmd=
+				pop->cmd;
+			sess->gui->userbutton[sess->gui->buttons-1].h=
+				pgNewWidget(PG_WIDGET_BUTTON, PG_DERIVE_BEFORE,
+						sess->gui->buttons-1?0:
+						sess->gui->userscroll);
+			pgSetWidget(0, PG_WP_TEXT, pgNewString(pop->name),
+					PG_WP_SIDE, PG_S_BOTTOM, 0);
+			pgBind(0, PG_WE_ACTIVATE, evtUserButton, sess);
+		}
+		list=list->next;
+	}
 }
 void
 fe_dlgbuttons_update (struct session *sess)
