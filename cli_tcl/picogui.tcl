@@ -43,9 +43,11 @@ array set pg_request {\
 	update		1\
 	mkwidget	2\
 	mkbitmap	3\
+	mkfont		4\
 	mkstring	5\
 	set		7\
 	wait		13\
+	register	15\
 	mkpopup		16\
 	getmode		22\
 	mkcontext	23\
@@ -57,12 +59,20 @@ array set pg_request {\
 array set pg_wp {\
 	side		2\
 	text		7\
+	font		8\
 	transparent	9\
 	bitmap		12\
 	thobj		25\
 }
-array set pg_th_o {
+array set pg_app { \
+	normal	1\
+	toolbar	2\
+}
+array set pg_th_o {\
 	label_dlgtitle	25\
+}
+array set pg_fstyle {\
+	bold 256
 }
 
 set connection 0
@@ -246,14 +256,20 @@ proc pgNewButton {{text ""} {rship 0} {parent 0}} {
 	pgSetText $button $text
 	return $button
 }
+proc isInteger {test} {
+	set res 0
+	scan $test "%d" res
+	if {$test == $res} {
+		return 1
+	}
+	return 0
+}
 proc pgNewBitmap {{image 0} {rship 0} {parent 0}} {
 	global pg_widget
-	set test 0
 	set bitmap [pgNewWidget $pg_widget(bitmap) $rship $parent]
-	scan $image "%d" test
 	if {$image ==0} {
 		return $bitmap
-	} elseif {$test == $image} {
+	} elseif {[isInteger $image] == 1} {
 		pgSetBitmap $bitmap $image
 	} else {
 		pgSetBitmap $bitmap [pgLoadBitmap $image]
@@ -264,6 +280,13 @@ proc pgSetBitmap {widget bitmap} {
 	global pg_wp
 	pgSetWidget $widget $pg_wp(bitmap) $bitmap
 }
+proc pgSetSide {widget side} {
+	global pg_wp pg_s
+	if { [isInteger $side] == 0 } {
+		set side $pg_s($side)
+	}
+	pgSetWidget $widget $pg_wp(side) $side
+}
 proc pgDialog {title} {
 	global pg_derive pg_wp pg_th_o pg_s
 	set popup [pgNewPopup 0 0]
@@ -271,4 +294,32 @@ proc pgDialog {title} {
 	pgSetWidget $label $pg_wp(transparent) 0
 	pgSetWidget $label $pg_wp(thobj) $pg_th_o(label_dlgtitle)
 	return $popup
+}
+proc pgNewFont {name style size} {
+	global pg_request
+	set len [string length $name]
+	send_packet [pack_pgrequest 1 48 $pg_request(mkfont)]
+	send_packet $name
+	while {$len < 40 } {
+		send_packet "\0"
+		incr len
+	}
+	send_packet [binary format "ISS" $style $size 0]
+	array set ret [pgGetResponse]
+	return $ret(data)
+}
+proc pgSetFont {widget font} {
+	global pg_wp
+	pgSetWidget $widget $pg_wp(font) $font
+}
+proc pgRegisterApp {title type} {
+	global pg_request defaultparent
+	set textid [pgNewString $title]
+	send_packet [pack_pgrequest 1 8 $pg_request(register)]
+	send_packet [binary format "ISS" $textid $type 0]
+	array set ret [pgGetResponse]
+	if {$defaultparent == 0} {
+		set defaultparent $ret(data)
+	}
+	return ret(data)
 }

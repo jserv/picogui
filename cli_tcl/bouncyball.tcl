@@ -1,3 +1,4 @@
+#!/usr/bin/tclsh
 source picogui.tcl
 
 set NUMFRAMES 13
@@ -18,10 +19,10 @@ while {$imgnr<$NUMFRAMES} {
 set dlg [pgDialog "Boing!"]
 
 set ok [pgNewButton "Ok"]
-pgSetWidget $ok $pg_wp(side) $pg_s(bottom)
+pgSetSide $ok bottom
 
 set bmp [pgNewBitmap $img(0)]
-pgSetWidget $bmp $pg_wp(side) $pg_s(all)
+pgSetSide $bmp all
 
 set i 0
 set d 1
