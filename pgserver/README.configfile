@@ -426,5 +426,8 @@ quoted appropriately. For example:
   Performed after rotation and translation.
   (performed in pixel coordinates)
 
+- texture_filtering
+  This may be "linear" or "nearest". Defaults to "linear"
+
 --- The End ---
 

@@ -1,4 +1,4 @@
-/* $Id: sdlgl.c,v 1.4 2002/02/28 01:00:51 micahjd Exp $
+/* $Id: sdlgl.c,v 1.5 2002/02/28 05:58:18 micahjd Exp $
  *
  * sdlgl.c - OpenGL driver for picogui, using SDL for portability
  *
@@ -71,6 +71,9 @@ extern s16 sdlfb_display_y;
 extern u16 sdlfb_scale;
 #endif
 
+/* Type of texture filtering to use */
+GLint gl_texture_filtering;
+
 /* Redefine PicoGUI's hwrbitmap
  * Note that it's very likely we'll want to use this as a texture, yet
  * OpenGL can't render directly into textures. So, we'll keep a stdbitmap
@@ -116,6 +119,7 @@ inline float gl_dist_line_to_point(float point_x, float point_y,
 				   float line_vx, float line_vy);
 inline void gl_lgop(s16 lgop);
 int gl_power2_round(int x);
+void gl_frame(void);
 void sdlgl_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop);
 hwrcolor sdlgl_getpixel(hwrbitmap dest,s16 x,s16 y);
 void sdlgl_update(s16 x, s16 y, s16 w, s16 h);
@@ -266,6 +270,18 @@ int gl_power2_round(int x) {
   return 1<<(i+1);
 }
 
+/* Re-render the whole frame, keep track of frames per second */
+void gl_frame(void) {
+  struct divtree *p;
+  static u32 frames;
+
+  for (p=dts->top;p;p=p->next)
+    p->flags |= DIVTREE_ALL_REDRAW;
+  update(NULL,1);
+
+  frames++;
+}
+
 /************************************************** Basic primitives */
 
 void sdlgl_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
@@ -327,10 +343,12 @@ void sdlgl_slab(hwrbitmap dest,s16 x,s16 y,s16 w, hwrcolor c,s16 lgop) {
   }
 
   gl_lgop(lgop);
-  glBegin(GL_LINES);
+  glBegin(GL_QUADS);
   gl_color(c);
   glVertex2f(x,y);
   glVertex2f(x+w,y);
+  glVertex2f(x+w,y+1);
+  glVertex2f(x,y+1);
   glEnd();
 }
 
@@ -341,9 +359,11 @@ void sdlgl_bar(hwrbitmap dest,s16 x,s16 y,s16 h, hwrcolor c,s16 lgop) {
   }
 
   gl_lgop(lgop);
-  glBegin(GL_LINES);
+  glBegin(GL_QUADS);
   gl_color(c);
   glVertex2f(x,y);
+  glVertex2f(x+1,y);
+  glVertex2f(x+1,y+h);
   glVertex2f(x,y+h);
   glEnd();
 }
@@ -500,8 +520,9 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
       glBindTexture(GL_TEXTURE_2D, glsrc->texture);
 
       /* Linear filtering */
-      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,gl_texture_filtering);
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,gl_texture_filtering);
 
       /* We have to round up to the nearest power of two...
        * FIXME: this is wasteful. We need a way to pack multiple
@@ -518,28 +539,26 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
       glTexImage2D(GL_TEXTURE_2D, 0, 4, glsrc->tw, glsrc->th, 0, 
 		   GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
-      /* Paste our subimage into it */
+      /* Paste our subimage into it.
+       * We put additional copies offset one pixel so that the row or column
+       * immediately past the bitmap has the same data as the edge of the
+       * bitmap, to eliminate rendering artifacts
+       */
+      glTexSubImage2D(GL_TEXTURE_2D,0, 1,0, glsrc->sb->w, glsrc->sb->h,
+		      GL_BGRA_EXT, GL_UNSIGNED_BYTE, glsrc->sb->bits);
+      glTexSubImage2D(GL_TEXTURE_2D,0, 0,1, glsrc->sb->w, glsrc->sb->h,
+		      GL_BGRA_EXT, GL_UNSIGNED_BYTE, glsrc->sb->bits);
       glTexSubImage2D(GL_TEXTURE_2D,0, 0,0, glsrc->sb->w, glsrc->sb->h,
 		      GL_BGRA_EXT, GL_UNSIGNED_BYTE, glsrc->sb->bits);
 
-      /* If there are extra rows/columns on the right and bottom sides, paste
-       * copies of the adjacent row so opengl doesn't blend the bitmap with
-       * random data.
-       */
-      glTexSubImage2D(GL_TEXTURE_2D,0, glsrc->sb->w,0, 1,glsrc->sb->h,
-		      GL_BGRA_EXT, GL_UNSIGNED_BYTE, 
-		      ((u32*)glsrc->sb->bits) + glsrc->sb->w-1); 
-      glTexSubImage2D(GL_TEXTURE_2D,0, 0,glsrc->sb->h, glsrc->sb->w,1,
-		      GL_BGRA_EXT, GL_UNSIGNED_BYTE, 
-		      glsrc->sb->bits + (glsrc->sb->h-1)*glsrc->sb->pitch); 
     }      
     
     /* Calculate texture coordinates */
     tx1 = glsrc->tx1 + src_x * (glsrc->tx2 - glsrc->tx1) / w;
     ty1 = glsrc->ty1 + src_y * (glsrc->ty2 - glsrc->ty1) / h;
-    tx2 = glsrc->tx1 + (src_x + w - 1) * (glsrc->tx2 - glsrc->tx1) / w;
-    ty2 = glsrc->ty1 + (src_y + h - 1) * (glsrc->ty2 - glsrc->ty1) / h;
-
+    tx2 = glsrc->tx1 + (src_x + w) * (glsrc->tx2 - glsrc->tx1) / w;
+    ty2 = glsrc->ty1 + (src_y + h) * (glsrc->ty2 - glsrc->ty1) / h;
+    
     /* Draw a texture-mapped quad
      */
     glEnable(GL_TEXTURE_2D);
@@ -664,6 +683,7 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   unsigned long sdlflags = SDL_RESIZABLE | SDL_OPENGL;
   char str[80];
   float a,x,y,z;
+  const char *s;
    
   /* Interpret flags */
   if (get_param_int("video-sdlgl","fullscreen",0))
@@ -685,6 +705,16 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   snprintf(str,sizeof(str),get_param_str("video-sdlgl","caption","PicoGUI (sdlgl@%dx%d)"),
 	   vid->xres,vid->yres,bpp);
   SDL_WM_SetCaption(str,NULL);
+
+  /* Load params */
+  
+  s = get_param_str("video-sdlgl","texture_filtering","linear");
+  if (!strcmp(s,"linear")) {
+    gl_texture_filtering = GL_LINEAR;
+  }
+  else {
+    gl_texture_filtering = GL_NEAREST;
+  }
 
   /********** OpenGL setup */
 
