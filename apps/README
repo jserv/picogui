@@ -9,7 +9,7 @@ Make sure you have the cli_c directory from the source tree,
 and run 'make install' as root to install headers and the
 library.
 
-Web page at: pgui.sourceforge.net
+Web page at: http://picogui.org
 
 Admin:
 Micah Dowty <micahjd@users.sourceforge.net>
