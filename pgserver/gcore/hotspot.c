@@ -1,4 +1,4 @@
-/* $Id: hotspot.c,v 1.7 2001/09/02 19:26:19 micahjd Exp $
+/* $Id: hotspot.c,v 1.8 2001/09/02 19:45:22 micahjd Exp $
  *
  * hotspot.c - This is an interface for managing hotspots.
  *             The divtree is scanned for hotspot divnodes.

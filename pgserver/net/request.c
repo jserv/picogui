@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.24 2001/07/11 00:25:53 micahjd Exp $
+/* $Id: request.c,v 1.25 2001/09/02 19:45:22 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -335,7 +335,8 @@ g_error net_init(void) {
   setsockopt(s,6 /*PROTO_TCP*/,TCP_NODELAY,(void *)&tmp,sizeof(tmp));
    
   server_sockaddr.sin_family = AF_INET;
-  server_sockaddr.sin_port = htons(PG_REQUEST_PORT);
+  server_sockaddr.sin_port = htons(PG_REQUEST_PORT + 
+				   get_param_int("pgserver","display",0));
   server_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
   if(bind(s, (struct sockaddr *)&server_sockaddr, 

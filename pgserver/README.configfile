@@ -79,6 +79,12 @@ quoted appropriately. For example:
   A program or shell command to run whenever pgserver starts up. pgserver
   will exit when the last client disconnects
 
+- display
+  By giving each PicoGUI server a different display number, you can run
+  multiple PicoGUI servers on one computer. The display number should be a
+  small nonzero integer. In the current implementation, this is used to
+  select a TCP/IP port.
+
 [sound]
 
 - click
