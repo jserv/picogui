@@ -3,10 +3,10 @@ from Views import Viewer
 import persistence, transaction
 
 class Field(persistence.Persistent):
-    def __init__(self, name, widget='Field'):
+    def __init__(self, name, widget=None):
         persistence.Persistent.__init__(self)
         self.name = name
-        self.widget = widget
+        self.widget = widget or 'Field'
 
 class PoingEditable(persistence.Persistent, Buffer):
     widget = Viewer
@@ -37,6 +37,18 @@ class PoingEditable(persistence.Persistent, Buffer):
         transaction.get_transaction().commit()
         print 'Poing db saved'
 
+    def Schema(self):
+        raise NotImplemented
+
+    def getField(self, name):
+        raise NotImplemented
+
+    def setField(self, name, value):
+        raise NotImplemented
+
+    def title(self):
+        return type(self).__name__
+
 class Schema(PoingEditable):
     def __init__(self):
         PoingEditable.__init__(self)
@@ -64,7 +76,7 @@ class Schema(PoingEditable):
                 return
         raise KeyError, name
 
-    def addField(self, name, widget='Field'):
+    def addField(self, name, widget=None):
         try:
             self.getField(name)
         except KeyError:
@@ -94,3 +106,6 @@ class Datum(PoingEditable):
 
     def setField(self, name, value):
         setattr(self, name, value)
+
+    def title(self):
+        return self.schema.name
