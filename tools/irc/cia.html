@@ -14,26 +14,44 @@
 
     <p>For CVS, firstly place this script somewhere on the server:</p>
     <code><pre>
-	
+
 #!/bin/bash
 message=`cat`
 uname=`id -un`
 lineno=`echo "$message" | grep -n "Log Message:" | awk -F: ' { print $1 } '`
-message=`echo "$message" | sed "1,${lineno}d" | head -n 1`
-                                                                                                                                   
-cat &lt;&lt;EOF | /usr/sbin/sendmail -t
-From: commits@autopackage.org
+message=`echo "$message" | sed "1,${lineno}d"`
+
+projectname="<i><font color="#FF0000">project name</font></i>"
+tmpfile="/tmp/$RANDOM-$projectname"
+
+cat <<EOF >$tmpfile
+From: commits@<i><font color="#FF0000">project domain</font></i>
 To: commits@picogui.org
 Content-Type: text/plain;
-Subject: Announce <i>channelname</i>
-                                                                                                                                   
-cvs commit by $uname: $message
+Subject: Announce $projectname
+
+commit by $uname: $message
 EOF
+
+if [ -e /tmp/lastlog-$projectname ]; then
+        if ! diff /tmp/lastlog-$projectname $tmpfile &>/dev/null; then
+                # there are differences, so this is a different commit
+                cat $tmpfile | /usr/sbin/sendmail
+                mv $tmpfile /tmp/lastlog-$projectname
+        else
+                # it's just cvs spamming us from another directory
+                rm $tmpfile
+        fi
+else
+        cat $tmpfile | /usr/sbin/sendmail
+        mv $tmpfile /tmp/lastlog-$projectname
+fi
 
     </pre></code>
 
-    <p> Then replace "channelname" with the name of your projects IRC channel. (Leave out the "#" in the channel name.) 
-        That name will be prefixed to the output in the #commits channel as well. </p>
+    <p> Replace all the text in red with values applicable to your project. If your project has an IRC channel on freenode,
+        the project name should be the channel name without the leading "#" character. It will be used to prefix the output in #commits
+        as well. </p>
 
     <p> The script is very simple, customise it however you like. The code at the top strips out all the extra info CVS gives
         you, like which files are modified. It then puts the result in an email and sends it to the bot. It assumes you are using
@@ -83,7 +101,7 @@ echo "`svnlook author -r $REV $REPOS`" committed revision $REV: "`svnlook log -r
 
     <h1> Why is it called CIA? </h1>
 
-    <p> Joke from Lalo, CIA was originally written to monitor the PicoGUI subversion repository, so the bot is a
+    <p> Lalo Martins' joke: CIA was originally written to monitor the PicoGUI subversion repository, so the bot is a
       brainless entity designed to monitor subversion. If you don't get it, forget it :) </p>
 
     <hr>
