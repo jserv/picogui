@@ -69,7 +69,10 @@ class Repository(PGBuild.Repository.RepositoryBase):
                 # inside a directory named similarly to the tar file itself.
                 # This seems to be the easiest, though not cleanest, way to
                 # extract a file to an arbitrary destination path.
-                relativeName = os.sep.join(file.name.split(os.sep)[1:])
+                # NOTE: We split using '/' and recombine using os.sep,
+                #       because apparently the paths inside the tar are always
+                #       handed to us in a unixy format.
+                relativeName = os.sep.join(file.name.split("/")[1:])
                 try:
                     tar._extract_member(file, os.path.join(destination, relativeName))
                     progress.report("added", relativeName)
