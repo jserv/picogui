@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.5 2001/01/15 01:03:27 micahjd Exp $
+/* $Id: ncurses.c,v 1.6 2001/01/15 04:18:27 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -35,9 +35,13 @@
 #include <pgserver/input.h>
 
 #include <curses.h>
+#include <gpm.h>
 
 /* Buffer with the current status of the screen */
 chtype *ncurses_screen;
+
+/* The most recent mouse event, exported by ncursesinput */
+extern Gpm_Event ncurses_last_event;
 
 /******************************************** Fake font */
 /* This is a little hack to trick PicoGUI's text rendering */
@@ -187,6 +191,9 @@ hwrcolor ncurses_getpixel(int x,int y) {
 
 void ncurses_update(int x,int y,int w,int h) {
    refresh();
+
+   /* Show the cursor */
+   GPM_DRAWPOINTER(&ncurses_last_event);
 }
 
 void ncurses_blit(struct stdbitmap *src,int src_x,int src_y,

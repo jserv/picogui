@@ -1,4 +1,4 @@
-/* $Id: ncursesinput.c,v 1.2 2001/01/15 04:04:55 micahjd Exp $
+/* $Id: ncursesinput.c,v 1.3 2001/01/15 04:18:27 micahjd Exp $
  *
  * ncursesinput.h - input driver for ncurses
  * 
@@ -37,6 +37,8 @@
 #include <curses.h>
 #include <gpm.h>
 
+Gpm_Event ncurses_last_event;
+
 /******************************************** Implementations */
 
 int ncursesinput_fd_activate(int fd) {
@@ -60,6 +62,8 @@ int ncursesinput_fd_activate(int fd) {
    else if (fd==gpm_fd)
       if (Gpm_GetEvent(&evt) > 0) {
 	 int trigger;
+
+	 ncurses_last_event = evt;
 	 
 	 switch (evt.type & (GPM_MOVE | GPM_DRAG | GPM_UP | GPM_DOWN)) {
 	    
@@ -87,7 +91,6 @@ int ncursesinput_fd_activate(int fd) {
 			   ((evt.buttons>>2)&1) ||
 			   ((evt.buttons<<2)&4) ||
 			   (evt.buttons&2));
-	 GPM_DRAWPOINTER(&evt);
       }
       
    /* Pass on the event if necessary */
