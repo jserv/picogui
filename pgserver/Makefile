@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.22 2000/09/02 17:19:15 micahjd Exp $
+# $Id: Makefile,v 1.23 2000/09/03 17:32:21 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -33,7 +33,7 @@ SRC := widget/bitmap.c widget/indicator.c widget/label.c \
        gcore/handle.c gcore/g_error.c appmgr/global.c widget/button.c \
        widget/panel.c widget/default_theme.c widget/popup.c widget/box.c \
        widget/field.c gcore/timer.c gcore/errortext.c gcore/video.c \
-       gcore/input.c \
+       gcore/input.c gcore/driverinfo.c \
        video/sdlmin.c video/sdl.c input/sdlinput.c
 #       video/svga.c
 

@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.12 2000/09/02 17:19:15 micahjd Exp $
+/* $Id: video.h,v 1.13 2000/09/03 17:32:22 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -353,6 +353,13 @@ g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
 g_error sdlmin_regfunc(struct vidlib *v);
 g_error sdl_regfunc(struct vidlib *v);
 g_error svga_regfunc(struct vidlib *v);
+
+/* List of installed video drivers */
+struct vidinfo {
+  char *name;
+  g_error (*regfunc)(struct vidlib *v);
+};
+extern struct vidinfo videodrivers[];
 
 #endif /* __H_VIDEO */
 

@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.4 2000/09/02 17:19:15 micahjd Exp $
+/* $Id: input.h,v 1.5 2000/09/03 17:32:22 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -104,6 +104,13 @@ void cleanup_inlib(void);
 
 /* Registration functions */
 g_error sdlinput_regfunc(struct inlib *i);
+
+/* List of installed input drivers */
+struct inputinfo {
+  char *name;
+  g_error (*regfunc)(struct inlib *i);
+};
+extern struct inputinfo inputdrivers[];
 
 #endif /* __H_INPUT */
 /* The End */
