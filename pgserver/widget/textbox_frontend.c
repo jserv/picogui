@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.9 2002/10/11 09:44:38 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.10 2002/10/11 09:48:21 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -76,6 +76,8 @@ g_error textbox_install(struct widget *self) {
   /* Global background and container for the document */
   e = newdiv(&self->in->div,self);
   errorcheck;
+  self->in->div->flags |= DIVNODE_SPLIT_BORDER;
+  self->in->div->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
   self->in->div->build = &build_bgfill_only;
   self->in->div->state = PGTH_O_TEXTBOX;
   self->out = &self->in->next;
@@ -101,6 +103,7 @@ void textbox_remove(struct widget *self) {
 }
 
 void textbox_resize(struct widget *self) {
+  self->in->div->split = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
 }
 
 g_error textbox_set(struct widget *self,int property, glob data) {
