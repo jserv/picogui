@@ -1,0 +1,9 @@
+Copy, move or symlink the Nifty directory to somewhere in
+your PYTHONPATH (/usr/local/lib/python2.3 for example).
+
+Copy, move or symlink nifty.py to somewhere in your PATH
+(/usr/local/bin for example).
+
+I promise to include a setup.py file in the near future, if
+Micah doesn't beat me to it by moving the whole PicoGUI
+build system to SCons.
