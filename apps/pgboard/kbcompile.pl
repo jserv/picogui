@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: kbcompile.pl,v 1.7 2001/07/23 08:32:51 micahjd Exp $
+# $Id: kbcompile.pl,v 1.8 2001/07/24 09:05:21 micahjd Exp $
 #
 # This script converts a .kbs keyboard definition source to the .kb
 # binary representation as defined in kbfile.h
@@ -135,7 +135,7 @@ sub request {
 sub loadfile {
     my ($fname) = @_;
     my $data;
-    open INFILE,$option{'path'}.$fname;
+    open INFILE,$option{'path'}.$fname or die;
     $data = join '', <INFILE>;
     close INFILE;
     return $data;
