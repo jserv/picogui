@@ -22,7 +22,8 @@ EXTRA_libvidbase_a_SOURCES = \
 	linear24.c      \
 	linear32.c      \
 	slowvbl.c       \
-	dvbl_dither.c
+	dvbl_dither.c   \
+	visibone2.c     
 
 libvidbase_a_LIBADD       = $(VIDBASE:%.c=%.o)
 libvidbase_a_DEPENDENCIES = $(VIDBASE:%.c=%.o)

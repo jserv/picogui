@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.84 2002/04/03 08:08:40 micahjd Exp $
+/* $Id: video.h,v 1.85 2002/04/03 16:56:49 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -798,6 +798,14 @@ void videotest_benchmark(void);
 /************** Send a driver message (to all loaded drivers) */
 
 void drivermessage(u32 message, u32 param, u32 *ret);
+
+
+/************** Palettes */
+
+#ifdef CONFIG_PAL8_CUSTOM
+extern pgcolor palette8_custom[256];
+g_error load_custom_palette(const char *name);
+#endif
 
 #endif /* __H_VIDEO */
 

@@ -1,4 +1,4 @@
-/* $Id: magicbutton.c,v 1.7 2002/02/05 01:51:34 micahjd Exp $
+/* $Id: magicbutton.c,v 1.8 2002/04/03 16:56:49 micahjd Exp $
  *
  * magicbutton.c - CTRL-ALT-foo is magical
  *
@@ -290,6 +290,7 @@ void magic_button(s16 key) {
 	 "  CTRL-ALT-O: Divn[o]de outline\n"
 	 "  CTRL-ALT-A: [A]pplication dump to stdout\n"
 	 "  CTRL-ALT-R: Hotspot g[r]aph\n" 
+	 "  CTRL-ALT-I: Mode [I]nfo\n"
 	 );
     return;
     
@@ -415,6 +416,75 @@ void magic_button(s16 key) {
       VID(update) (0,0,vid->lxres,vid->lyres);
     }    
     return;
+
+  case PGKEY_i:           /* CTRL-ALT-i gets video mode info */
+    {
+      int x,y,celw,celh, pixelx,pixely;
+      hwrcolor i, white, black, numcolors;
+
+      guru("Video mode:\n"
+	   "Logical %dx%d, physical %dx%d, %d-bit color\n"
+	   "\n"
+	   "Color palette:\n",
+	   vid->lxres, vid->lyres, vid->xres, vid->yres, vid->bpp);      
+
+      if (vid->bpp <= 8) {
+	/* Actual palette display */
+
+	i = 0;
+	celw = (vid->lxres-20) >> 4;
+	celh = (vid->lyres-70) >> 4;
+	if (celw < celh)
+	  celh = celw;
+	else
+	  celw = celh;
+
+	white = VID(color_pgtohwr)(PGC_WHITE);
+	black = VID(color_pgtohwr)(PGC_BLACK);
+	numcolors = 1 << vid->bpp;
+	
+	for (y=0;y<16;y++)
+	  for (x=0;x<16 && i<numcolors;x++,i++) {
+	    pixelx = x*celw+10;
+	    pixely = y*celh+60;
+	    
+	    /* Display a rectangle of the color with black and white borders.
+	     * This is a lot like what the scribble app does, but we don't have
+	     * the convenience of a "frame" gropnode at this low level.
+	     */
+	    VID(slab)(vid->display,pixelx,pixely,celw,white,PG_LGOP_NONE);
+	    VID(slab)(vid->display,pixelx,pixely+celh,celw,white,PG_LGOP_NONE);
+	    VID(bar)(vid->display,pixelx,pixely,celh,white,PG_LGOP_NONE);
+	    VID(bar)(vid->display,pixelx+celw,pixely,celh,white,PG_LGOP_NONE);
+	    VID(slab)(vid->display,pixelx+1,pixely+1,celw-2, black, PG_LGOP_NONE);
+	    VID(slab)(vid->display,pixelx+1,pixely-1+celh,celw-2, black, PG_LGOP_NONE);
+	    VID(bar)(vid->display,pixelx+1,pixely+1,celh-2, black, PG_LGOP_NONE);
+	    VID(bar)(vid->display,pixelx-1+celh,pixely+1,celh-2, black, PG_LGOP_NONE);
+	    VID(rect)(vid->display,pixelx+2,pixely+2,celw-3,celh-3, i    , PG_LGOP_NONE);
+	  }
+      }
+      else {
+	/* Just some RGB gradients */
+
+        y = 60;
+	VID(gradient)(vid->display,10,y,vid->lxres-20,20,0,
+		      0x000000,0xFFFFFF, PG_LGOP_NONE);
+	y += 30;
+	VID(gradient)(vid->display,10,y,vid->lxres-20,20,0,
+		      0x000000,0xFF0000, PG_LGOP_NONE);
+	y += 30;
+	VID(gradient)(vid->display,10,y,vid->lxres-20,20,0,
+		      0x000000,0x00FF00, PG_LGOP_NONE);
+	y += 30;
+	VID(gradient)(vid->display,10,y,vid->lxres-20,20,0,
+		      0x000000,0x0000FF, PG_LGOP_NONE);
+	y += 30;
+      }
+
+      VID(update) (0,0,vid->lxres,vid->lyres);
+    }
+    return;
+
 
 #endif /* DEBUG_KEYS */
     

@@ -115,3 +115,4 @@
 /* 107 */ "Error opening TTY (try setting the video-fbdev.ttydev config variable)",
 /* 108 */ "Invalid LGOP parameter",
 /* 109 */ "Can't open a theme file specified for automatic loading",
+/* 110 */ "Can't open the specified palette file",

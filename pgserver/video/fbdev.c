@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.35 2002/03/29 18:03:22 micahjd Exp $
+/* $Id: fbdev.c,v 1.36 2002/04/03 16:56:49 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -532,6 +532,7 @@ g_error fbdev_init(void) {
       struct fb_cmap colors;
       u16 reds[256],greens[256],blues[256];
       int i;
+      pgcolor pgc;
       
       colors.start  = 0;
       colors.len    = 256;
@@ -541,9 +542,10 @@ g_error fbdev_init(void) {
       colors.transp = NULL;
       
       for (i=0;i<256;i++) { 
-	reds[i]   = (((u32)i) & 0xC0) * 0xFFFF / 0xC0;
-	greens[i] = (((u32)i) & 0x38) * 0xFFFF / 0x38;
-	blues[i]  = (((u32)i) & 0x07) * 0xFFFF / 0x07;
+	pgc = vid->color_hwrtopg(i);
+	reds[i]   = (getred(pgc) << 8) | getred(pgc);
+	greens[i] = (getgreen(pgc) << 8) | getgreen(pgc);
+	blues[i]  = (getblue(pgc) << 8) | getblue(pgc);
       }
       
       ioctl(fbdev_fd,FBIOPUTCMAP,&colors);

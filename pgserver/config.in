@@ -152,6 +152,7 @@ endmenu
 
 mainmenu_option next_comment
 comment 'Video Base Libraries'
+comment 'Color depth support'
 bool 'Linear framebuffer @ 1bpp'  CONFIG_VBL_LINEAR1
 bool 'Linear framebuffer @ 2bpp'  CONFIG_VBL_LINEAR2
 bool 'Linear framebuffer @ 4bpp'  CONFIG_VBL_LINEAR4
@@ -159,21 +160,42 @@ bool 'Linear framebuffer @ 8bpp'  CONFIG_VBL_LINEAR8
 bool 'Linear framebuffer @ 16bpp' CONFIG_VBL_LINEAR16
 bool 'Linear framebuffer @ 24bpp' CONFIG_VBL_LINEAR24
 bool 'Linear framebuffer @ 32bpp' CONFIG_VBL_LINEAR32
-bool 'Fast alpha blending (+ 32K, 16bpp and 32bpp only)' CONFIG_FAST_ALPHA
-if [ "$CONFIG_FAST_ALPHA" = "y" ]; then
-  choice '16bpp fast alpha color conversion mode' \
-	 "5-6-5       CONFIG_FAST_ALPHA_565 \
-          5-5-5       CONFIG_FAST_ALPHA_555 \
-          4-4-4       CONFIG_FAST_ALPHA_444" 5-6-5
-fi  
-bool 'Fast blurring (16bpp 5-6-5 only)'                  CONFIG_FAST_BLUR
-bool 'Faster blurring (16bpp 5-6-5 only, lower quality)' CONFIG_FASTER_BLUR
+bool 'Planar VGA framebuffer @ 4bpp'                     CONFIG_VBL_VGAPLAN4
+
+comment 'Depth-specific options'
+if [ "$CONFIG_VBL_LINEAR16" = "y" ]; then
+  bool 'Fast blurring (16bpp 5-6-5 only)'                  CONFIG_FAST_BLUR
+  bool 'Faster blurring (16bpp 5-6-5 only, lower quality)' CONFIG_FASTER_BLUR
+  bool 'Dont write to VRAM with memcpy (16bpp only)'       CONFIG_NO_VRAM_MEMCPY
+fi
+if [ "$CONFIG_VBL_LINEAR16" = "y" -o "$CONFIG_VBL_LINEAR32" = "y" ]; then
+  bool 'Fast alpha blending (+ 32K, 16bpp and 32bpp only)' CONFIG_FAST_ALPHA
+  if [ "$CONFIG_FAST_ALPHA" = "y" ]; then
+    choice '16bpp fast alpha color conversion mode' \
+  	   "5-6-5       CONFIG_FAST_ALPHA_565 \
+            5-5-5       CONFIG_FAST_ALPHA_555 \
+            4-4-4       CONFIG_FAST_ALPHA_444" 5-6-5
+  fi  
+fi
+if [ "$CONFIG_VBL_LINEAR8" = "y" ]; then
+  choice 'Palette for 8bpp modes' \
+         "2-2-2       CONFIG_PAL8_222 \
+	  2-3-3       CONFIG_PAL8_233 \
+          Custom      CONFIG_PAL8_CUSTOM" 2-3-3
+  if [ "$CONFIG_PAL8_CUSTOM" = "y" ]; then
+    bool 'Include Visibone2 as default custom palette'   CONFIG_PAL8_VISIBONE2
+    choice 'Palette lookup method' \
+           "Exact           CONFIG_PAL8_LOOKUP_EXACT \
+	    32k_Hash        CONFIG_PAL8_LOOKUP_32K \
+            256k_Hash       CONFIG_PAL8_LOOKUP_256K" 32k_Hash
+  fi  
+fi
+
+comment 'Other options'
 bool 'Floyd-steinberg image dithering'                   CONFIG_DITHER
 if [ "$CONFIG_DITHER" = "y" ]; then
   bool '  Also dither gradients (slow)'                  CONFIG_DITHER_GRADIENTS
 fi
-bool 'Dont write to VRAM with memcpy (16bpp only)'       CONFIG_NO_VRAM_MEMCPY
-bool 'Planar VGA framebuffer @ 4bpp'                     CONFIG_VBL_VGAPLAN4
 bool 'Very slow VBL (for debugging)'                     CONFIG_VBL_SLOWVBL
 bool '90 degree video rotation'                          CONFIG_ROTATE
 bool '180 degree video rotation'                         CONFIG_ROTATE180

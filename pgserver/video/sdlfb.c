@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.44 2002/03/29 18:03:22 micahjd Exp $
+/* $Id: sdlfb.c,v 1.45 2002/04/03 16:56:49 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -195,7 +195,7 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   /* Use the default depth? */
   if (!bpp)
      bpp  = sdl_vidsurf->format->BitsPerPixel;
-   
+
   /* If we're emulating low bpp with color conversion, load custom
    * color functions and a palette */
 #if defined(CONFIG_SDLEMU_COLOR) || defined(CONFIG_SDLEMU_BLIT)
@@ -254,15 +254,18 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
 	vid->color_hwrtopg = &sdlfbemu_color_hwrtopg;
      }
      else
-     /* If this is 8bpp set up a 2-3-3 palette for pseudo-RGB */
+       /* If this is 8bpp set up palette defined by the VBL */
 #endif
      {
-	for (i=0;i<256;i++) {
-	   palette[i].r = (i & 0xC0) * 255 / 0xC0;
-	   palette[i].g = (i & 0x38) * 255 / 0x38;
-	   palette[i].b = (i & 0x07) * 255 / 0x07;
-	}
-	SDL_SetColors(sdl_vidsurf,palette,0,256);
+       pgcolor pgc;
+       vid->bpp = bpp;
+       for (i=0;i<256;i++) {
+	 pgc = vid->color_hwrtopg(i);
+	 palette[i].r = getred(pgc);
+	 palette[i].g = getgreen(pgc);
+	 palette[i].b = getblue(pgc);
+       }
+       SDL_SetColors(sdl_vidsurf,palette,0,256);
      }
      break;
 #endif

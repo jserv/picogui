@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.32 2002/04/01 12:51:58 lonetech Exp $
+/* $Id: pgmain.c,v 1.33 2002/04/03 16:56:49 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -438,6 +438,12 @@ int main(int argc, char **argv) {
 	 free(inputs);
        }
      } 
+
+    /* Before loading the video driver, load the palette */
+#ifdef CONFIG_PAL8_CUSTOM
+     if (iserror(prerror(load_custom_palette(get_param_str("pgserver","palette",NULL)))))
+       return 1;
+#endif
 
     /* Process video driver config options */
     vidw = get_param_int("pgserver","width",0);
