@@ -1,4 +1,4 @@
-/* $Id: s1d13806.c,v 1.5 2001/12/14 22:56:43 micahjd Exp $
+/* $Id: s1d13806.c,v 1.6 2002/01/04 14:29:09 gobry Exp $
  *
  * s1d13806.c - use a Epson S1D13806 video chip with a M68VZ328
  *
@@ -39,6 +39,8 @@
 #include <asm/MC68VZ328.h>	/* for bus and port definition of DragonBall VZ */
 #include <asm/io.h>
 
+#include <stdio.h>
+
 #include "s1d13806.h"
 
 
@@ -46,10 +48,10 @@
 #define FB_MEM   (((struct stdbitmap*)vid->display)->bits)
 #define FB_BPL   (((struct stdbitmap*)vid->display)->pitch)
 
-#define DEBUG
+#undef DEBUG
 
 #ifdef DEBUG
-# define dbgprint printf
+# define dbgprint(fmt...) fprintf (stderr, "pgserver: s1d13806: " fmt)
 #else
 # define dbgprint
 #endif
@@ -68,9 +70,9 @@
 
 g_error s1d13806_init (void);
 g_error s1d13806_setmode (s16 xres, s16 yres, s16 bpp, unsigned long flags);
-void s1d13806_close (void);
+void    s1d13806_close (void);
 
-unsigned char version = 0x00;
+unsigned char version  = 0x00;
 unsigned char revision = 0x00;
 
 
@@ -252,8 +254,8 @@ g_error s1d13806_setmode (s16 xres, s16 yres, s16 bpp, unsigned long flags)
   vid->bpp = bpp;
   FB_BPL = (vid->xres * vid->bpp) >> 3;
 
-  printf ("s1d13806 mode: xres=%d yres=%d pbb=%d flags=%d BPL=%d\n", xres,
-	  yres, bpp, flags, FB_BPL);
+  dbgprint ("s1d13806 mode: xres=%d yres=%d pbb=%d flags=%d BPL=%d\n", xres,
+	    yres, bpp, flags, FB_BPL);
 
   return success;
 }
@@ -267,7 +269,7 @@ g_error s1d13806_init (void)
 
   vid->xres = S1D_DISPLAY_WIDTH;
   vid->yres = S1D_DISPLAY_HEIGHT;
-  vid->bpp = S1D_DISPLAY_BPP;
+  vid->bpp  = S1D_DISPLAY_BPP;
 
   FB_MEM = (void *) S1D_PHYSICAL_VMEM_ADDR;
 
@@ -297,8 +299,8 @@ s1d13806_close (void)
 
 g_error s1d13806_regfunc (struct vidlib *v)
 {
-  v->init = & s1d13806_init;
-  v->close = & s1d13806_close;
+  v->init    = & s1d13806_init;
+  v->close   = & s1d13806_close;
   v->setmode = & s1d13806_setmode;
 
   return success;
