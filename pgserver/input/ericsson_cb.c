@@ -1,4 +1,4 @@
-/* $Id: ericsson_cb.c,v 1.7 2002/04/18 09:18:04 bauermeister Exp $
+/* $Id: ericsson_cb.c,v 1.8 2002/04/24 13:14:29 bauermeister Exp $
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -417,15 +417,16 @@ static const KeyStr key_str_table[] = {
   { "*"                 , PGKEY_CAPSLOCK    /* shift-space */ , 0    ,  0    },
   { "0"                 , PGKEY_PLUS                          , '+'  ,  '+'  },
   { "0,20"              , PGKEY_0                             , '0'  ,  '0'  },
-  { "0,20?huh?"         , PGKEY_RIGHTBRACKET                  , ')'  ,  ')'  },
   { "00"                , PGKEY_AMPERSAND                     , '&'  ,  '&'  },
   { "000"               , PGKEY_AT                            , '@'  ,  '@'  },
   { "0000"              , PGKEY_SLASH                         , '/'  ,  '/'  },
   { "000000"            , PGKEY_PERCENT                       , '%'  ,  '%'  },
   { "0000000"           , PGKEY_DOLLAR                        , '$'  ,  '$'  },
   { "00000000"          , 0                 /* pound */       , 0xa3 ,  0    },
+  { "0000000000000"     , PGKEY_0                             , '0'  ,  '0'  },
   { "0000000000000000"  , 0                 /* psi */         , 0    ,  0    },
-  { "00000000000000000" , 0                 /* omega */       , 0    ,  0    },
+//{ "00000000000000000" , 0                 /* omega */       , 0    ,  0    },
+  { "00000000000000000" , PGKEY_UNDERSCORE  /* omega */       , '_'  ,  '_'  },
   { "1"                 , PGKEY_SPACE                         , ' '  ,  ' '  },
   { "1,20"              , PGKEY_1                             , '1'  ,  '1'  },
   { "11"                , PGKEY_MINUS                         , '-'  ,  '-'  },
@@ -437,6 +438,7 @@ static const KeyStr key_str_table[] = {
   { "111111111"         , PGKEY_QUOTEDBL                      , '"'  ,  '"'  },
   { "1111111111"        , PGKEY_QUOTE                         , '\'' ,  '\'' },
   { "11111111111111"    , PGKEY_LEFTBRACKET                   , '('  ,  '('  },
+  { "111111111111111"   , PGKEY_RIGHTBRACKET                  , ')'  ,  ')'  },
   { "1111111111111111"  , PGKEY_1                             , '1'  ,  '1'  },
   { "2"                 , PGKEY_a                             , 'A'  ,  'a'  },
   { "2,20"              , PGKEY_2                             , '2'  ,  '2'  },
@@ -446,21 +448,26 @@ static const KeyStr key_str_table[] = {
   { "22222"             , 0                 /* a-trema */     , 0xc4 ,  0xe4 },
   { "222222"            , 0                 /* ae */          , 0xc6 ,  0xe6 },
   { "2222222"           , 0                 /* a-grave */     , 0xc0 ,  0xe0 },
+  { "22222222"          , 0                 /* c-cedille */   , 0xc7 ,  0xe7 },
+  { "222222222"         , PGKEY_2                             , '2'  ,  '2'  },
   { "3"                 , PGKEY_d                             , 'D'  ,  'd'  },
   { "3,20"              , PGKEY_3                             , '3'  ,  '3'  },
   { "33"                , PGKEY_e                             , 'E'  ,  'e'  },
   { "333"               , PGKEY_f                             , 'F'  ,  'f'  },
+  { "3333"              , 0                 /* e-grave */     , 0xc8 ,  0xe8 },
   { "33333"             , 0                 /* e-aigu */      , 0xc9 ,  0xe9 },
-  { "33?huh?"           , 0                 /* e-grave */     , 0xc8 ,  0xe8 },
+  { "333333"            , PGKEY_3                             , '3'  ,  '3'  },
   { "4"                 , PGKEY_g                             , 'G'  ,  'g'  },
   { "4,20"              , PGKEY_4                             , '4'  ,  '4'  },
   { "44"                , PGKEY_h                             , 'H'  ,  'h'  },
   { "444"               , PGKEY_i                             , 'I'  ,  'i'  },
   { "4444"              , 0                 /* i-grave */     , 0xcc ,  0xec },
+  { "44444"             , PGKEY_4                             , '4'  ,  '4'  },
   { "5"                 , PGKEY_j                             , 'J'  ,  'j'  },
   { "5,20"              , PGKEY_5                             , '5'  ,  '5'  },
   { "55"                , PGKEY_k                             , 'K'  ,  'k'  },
   { "555"               , PGKEY_l                             , 'L'  ,  'l'  },
+  { "5555"              , PGKEY_5                             , '5'  ,  '5'  },
   { "6"                 , PGKEY_m                             , 'M'  ,  'm'  },
   { "6,20"              , PGKEY_6                             , '6'  ,  '6'  },
   { "66"                , PGKEY_n                             , 'N'  ,  'n'  },
@@ -469,14 +476,17 @@ static const KeyStr key_str_table[] = {
   { "66666"             , 0                 /* o-trema */     , 0xd6 ,  0xf6 },
   { "666666"            , 0                 /* o-barre */     , 0xd8 ,  0xf8 },
   { "6666666"           , 0                 /* o-grave */     , 0xd2 ,  0xf2 },
+  { "66666666"          , PGKEY_6                             , '6'  ,  '6'  },
   { "7"                 , PGKEY_p                             , 'P'  ,  'p'  },
   { "7,20"              , PGKEY_7                             , '7'  ,  '7'  },
   { "77"                , PGKEY_q                             , 'Q'  ,  'q'  },
   { "777"               , PGKEY_r                             , 'R'  ,  'r'  },
   { "7777"              , PGKEY_s                             , 'S'  ,  's'  },
   { "77777"             , 0                 /* beta */        , 0xdf ,  0xdf },
+  { "777777"            , PGKEY_7                             , '7'  ,  '7'  },
   { "7777777"           , 0                 /* pi */          , 0xb6 ,  0xb6 },
-  { "77777777"          , 0                 /* sigma */       , 0    ,  0    },
+//{ "77777777"          , 0                 /* sigma */       , 0    ,  0    },
+  { "77777777"          , PGKEY_LCTRL       /* sigma */       , 0    ,  0    },
   { "8"                 , PGKEY_t                             , 'T'  ,  't'  },
   { "8,20"              , PGKEY_8                             , '8'  ,  '8'  },
   { "8666*1111111*"     , PGKEY_F3          /* [E-mail] */    , 0    ,  0    },
@@ -484,13 +494,14 @@ static const KeyStr key_str_table[] = {
   { "888"               , PGKEY_v                             , 'V'  ,  'v'  },
   { "8888"              , 0                 /* u-trema */     , 0xdc ,  0xfc },
   { "88888"             , 0                 /* u-grave */     , 0xd9 ,  0xf9 },
+  { "888888"            , PGKEY_8                             , '8'  ,  '8'  },
   { "9"                 , PGKEY_w                             , 'W'  ,  'w'  },
   { "9,20"              , PGKEY_9                             , '9'  ,  '9'  },
   { "99"                , PGKEY_x                             , 'X'  ,  'x'  },
   { "999"               , PGKEY_y                             , 'Y'  ,  'y'  },
   { "9991111111"        , PGKEY_F1          /* [WWW] */       , 0    ,  0    },
   { "9999"              , PGKEY_z                             , 'Z'  ,  'z'  },
-  { "9?huh?"            , 0                 /* c-cedille */   , 0xc7 ,  0xe7 },
+  { "99999"             , PGKEY_9                             , '9'  ,  '9'  },
   { "<"                 , PGKEY_LEFT                          , 0    ,  0    },
   { ">"                 , PGKEY_RIGHT                         , 0    ,  0    },
   { "c"                 , PGKEY_BACKSPACE   /* <-- */         , 8    ,  8    },
@@ -498,7 +509,11 @@ static const KeyStr key_str_table[] = {
   { "eseee<see<s>>s"    , PGKEY_F4          /* [PhoneBook] */ , 0    ,  0    },
   { "s"                 , PGKEY_RETURN      /* [Yes] */       , 13   ,  13   },
   /*
-   * The table above must be sorted using 'LC_ALL=C sort -k 2'
+   * Notes:
+   * - The table above must be sorted using 'LC_ALL=C sort -k 2'
+   * - SHIFT-SPACE toggles CAPSLOCK
+   * - OMEGA is remapped to UNDERSCORE
+   * - SIGMA toggles CTRL
    */
 };
 
@@ -583,6 +598,7 @@ static struct termios saved_options;
 
 static int  cb_fd;
 static int  skip_line;
+static int  ctrl_down;
 static int  chars_in_buffer;
 static char buffer[100];
 
@@ -594,6 +610,7 @@ static void cb_init_mods()
   mod_caps  = 0;
   chars_in_buffer = 0;
   skip_line = 0;
+  ctrl_down = 0;
 }
 
 static void outc(int fd, unsigned char c)
@@ -673,7 +690,8 @@ static void __dispatch_key(u32 type,s16 key,s16 mods)
 static inline u16 calc_mods(u16 extra)
 {
   return
-    ( mod_caps ? PGMOD_CAPS : 0) | 
+    ( ctrl_down ? PGMOD_CTRL : 0) |
+    ( mod_caps  ? PGMOD_CAPS : 0) | 
     extra;
 }
 
@@ -704,6 +722,10 @@ static void treat_key(int index)
     pg_code = PGKEY_TAB;  /* otherwise become a tab key */
     break;
 
+  case PGKEY_LCTRL:
+    ctrl_down = !ctrl_down;
+    return;
+
   default:
     pg_char = key->pg_lchar;
     if(mod_caps) {
@@ -712,9 +734,11 @@ static void treat_key(int index)
     }
   }
 
+  if(ctrl_down)
   dispatch_key(TRIGGER_KEYDOWN, pg_code, calc_mods(pg_mods_extra));
   if(pg_char) dispatch_key(TRIGGER_CHAR, pg_char, calc_mods(pg_mods_extra));
   dispatch_key(TRIGGER_KEYUP, pg_code, calc_mods(pg_mods_extra));
+  ctrl_down = 0;
 }
 
 /*****************************************************************************/
