@@ -1,4 +1,4 @@
-/* $Id: eventbroker.c,v 1.12 2002/09/19 07:45:10 gobry Exp $
+/* $Id: eventbroker.c,v 1.13 2002/11/05 14:50:40 bornet Exp $
  *
  * eventbroker.c - input driver to manage driver messages
  *
@@ -243,7 +243,7 @@ static g_error eventbroker_init(void)
   rm_init();
 
   /* set the rm event handlers */
-  rm_set_event_callback(rm_event_callback);
+  rm_event_callback_set(rm_event_callback);
 
 # if !LOCAL_DEBUG
   rm_register(RM_ST_CPU_RUNNING);
