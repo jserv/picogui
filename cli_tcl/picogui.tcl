@@ -40,6 +40,66 @@ array set pg_widget {\
 	panelbar	20\
 	simplemenu	21\
 }
+array set pg_wp {\
+	size				1\
+	side				2\
+	align				3\
+	bgcolor				4\
+	color				5\
+	sizemod				6\
+	text				7\
+	font				8\
+	transparent			9\
+	bordercolor			10\
+	bitmap				12\
+	lgop				13\
+	value				14\
+	bitmask				15\
+	bind				16\
+	scroll_x			17\
+	scroll_y			18\
+	hotkey				19\
+	extdevents			20\
+	direction			21\
+	absolutx			22\
+	absoluty			23\
+	on				24\
+	thobj				25\
+	name				26\
+	publicbox			27\
+	disabled			28\
+	margin				29\
+	textformat			30\
+	triggermask			31\
+	highlighted			32\
+	selected			33\
+	selected_handle			34\
+	autoscroll			35\
+	lines				36\
+	preferred_w			37\
+	preferred_h			38\
+	panelbar			39\
+	auto_orientation		40\
+	thobj_button			41\
+	thobj_button_hilight		42\
+	thobj_button_on			43\
+	thobj_button_on_nohilight	44\
+	panelbar_label			45\
+	panelbar_close			46\
+	panelbar_rotate			47\
+	panelbar_zoom			48\
+	bitmapside			49\
+	passwd				50\
+	hotkey_flags			51\
+	hotkey_consume			52\
+	width				53\
+	height				54\
+	spacing				55\
+}
+array set pg_app { \
+	normal	1\
+	toolbar	2\
+}
 array set pg_request {\
 	update		1\
 	mkwidget	2\
@@ -57,20 +117,6 @@ array set pg_request {\
 	getstring	26\
 	thlookup	36\
 	checkevent	43\
-}
-array set pg_wp {\
-	side		2\
-	text		7\
-	font		8\
-	transparent	9\
-	bitmap		12\
-	thobj		25\
-	margin		29\
-	spacing		55\
-}
-array set pg_app { \
-	normal	1\
-	toolbar	2\
 }
 array set pg_th_o {\
 	label_dlgtitle	25\
