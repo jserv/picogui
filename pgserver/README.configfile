@@ -291,6 +291,17 @@ quoted appropriately. For example:
   symlink to a serial port, but it could theoretically be anything you can
   write to.
 
+[video-fbdev]
+
+- device
+  The framebuffer device, defaults to /dev/fb0
+
+- ttydev
+  The tty device (for setting graphics mode) defaults to /dev/tty
+
+- slowvbl
+  Use the slowvbl layer for video debugging if nonzero
+
 [input-serialmouse]
 
 - device

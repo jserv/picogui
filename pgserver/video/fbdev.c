@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.19 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: fbdev.c,v 1.20 2002/01/17 07:58:54 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -81,7 +81,7 @@ g_error fbdev_init(void) {
    int fbdev_fd;
    
    /* Open the framebuffer device */
-   if (!(fbdev_fd = open("/dev/fb0", O_RDWR)))
+   if (!(fbdev_fd = open(get_param_str("video-fbdev","device","/dev/fb0"), O_RDWR)))
      return mkerror(PG_ERRT_IO,95);        /* Error opening framebuffer */
    
    /* Get info on the framebuffer */
@@ -146,6 +146,11 @@ g_error fbdev_init(void) {
       return mkerror(PG_ERRT_BADPARAM,101);   /* Unknown bpp */
    }
 
+#ifdef CONFIG_VBL_SLOWVBL
+   if (get_param_int("video-fbdev","slowvbl",0))
+     setvbl_slowvbl(vid);
+#endif
+
    /* There are several encodings that can be used for 16bpp true
     * color, including 5-6-5 and 4-4-4 color. These color conversion
     * functions use the info in the 'varinfo' structure to handle
@@ -167,7 +172,7 @@ g_error fbdev_init(void) {
    /* Put the console into graphics-only mode */
 #ifndef CONFIG_FB_NOGRAPHICS
    {
-      int xx = open("/dev/tty", O_RDWR);
+      int xx = open(get_param_str("video-fbdev","ttydev","/dev/tty"), O_RDWR);
       if (xx >= 0) {
 	 ioctl(xx, KDSETMODE, KD_GRAPHICS);
 	 close(xx);
@@ -232,8 +237,8 @@ pgcolor fbdev_color_hwrtopg(hwrcolor c) {
 
 }
 hwrcolor fbdev_color_pgtohwr(pgcolor c) {
-  return ( (((u32)getred(c))   >> (8 - varinfo.red.length  )) << varinfo.red.offset   ) ||
-         ( (((u32)getgreen(c)) >> (8 - varinfo.green.length)) << varinfo.green.offset ) ||
+  return ( (((u32)getred(c))   >> (8 - varinfo.red.length  )) << varinfo.red.offset   ) |
+         ( (((u32)getgreen(c)) >> (8 - varinfo.green.length)) << varinfo.green.offset ) |
          ( (((u32)getblue(c))  >> (8 - varinfo.blue.length )) << varinfo.blue.offset  );
 }
 
@@ -247,7 +252,7 @@ void fbdev_close(void) {
    /* Back to text mode */
 #ifndef CONFIG_FB_NOGRAPHICS
    {
-      int xx = open("/dev/tty", O_RDWR);
+      int xx = open(get_param_str("video-fbdev","ttydev","/dev/tty"), O_RDWR);
       if (xx >= 0) {
 	 ioctl(xx, KDSETMODE, KD_TEXT);
 	 close(xx);
