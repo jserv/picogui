@@ -1,4 +1,4 @@
-# $Id: mksymtab.pl,v 1.4 2000/10/07 05:49:30 micahjd Exp $
+# $Id: mksymtab.pl,v 1.5 2000/10/08 06:13:43 micahjd Exp $
 #
 # mksymtab.pl - convert the constant definitions in constants.h
 #               into a symbol table to compile into the theme
@@ -68,6 +68,7 @@ while (<>) {
     if ($n =~ /^PG_GROP_(.*)/) {
 	$_ = $1;
 	tr/A-Z/a-z/;
+	s/^(.)/uc($1)/e;
 	print "\t{FSFUNC,\"$_\",$n},\n";
     }
 }

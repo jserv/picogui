@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.12 2000/10/07 23:50:28 micahjd Exp $
+/* $Id: pgtheme.y,v 1.13 2000/10/08 06:13:43 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -54,6 +54,7 @@
 %token <num>     FSVAR
 %token <num>     FSFUNC
 %token <str>     STRING 
+%token <str>     UNKNOWNSYM
 
 %type <num>      constexp
 %type <propval>  propertyval
@@ -76,7 +77,9 @@
 %type <fsn>      fsvar
 
    /* Reserved words */
-%token UNKNOWNSYM OBJ FILLSTYLE VAR SHIFTR SHIFTL
+%token OBJ FILLSTYLE VAR SHIFTR SHIFTL
+
+%nonassoc CONSTPROMOTE
 
 %left '|'
 %left '&'
@@ -198,6 +201,10 @@ propertyval:  constexp          { $$.data = $1; $$.loader = PGTH_LOAD_NONE; $$.l
 constexp: constexp '+' constexp { $$ = $1 + $3; }
         | constexp '-' constexp { $$ = $1 - $3; }
         | constexp '*' constexp { $$ = $1 * $3; }
+        | constexp '&' constexp { $$ = $1 & $3; }
+        | constexp '|' constexp { $$ = $1 | $3; }
+        | constexp SHIFTL constexp { $$ = $1 << $3; }
+        | constexp SHIFTR constexp { $$ = $1 >> $3; }
         | constexp '/' constexp {
 	  if ($3 == 0)
 	    yyerror("Divide by zero");
@@ -239,8 +246,19 @@ fillstyle: FILLSTYLE  { yyerror("fillstyle requires parameters"); }
       bp = buf+t;
     }      
 
-    /* FIXME: Optimization lookahead thingy */
-    /* FIXME: Pack short values */
+    /* Pack short values when possible */
+    if (p->op == PGTH_OPCMD_LONGLITERAL &&
+	p->param < PGTH_OPSIMPLE_LITERAL)
+      p->op = PGTH_OPSIMPLE_LITERAL | p->param;
+    else if (p->op == PGTH_OPCMD_LONGGROP &&
+	     p->param < PGTH_OPSIMPLE_GROP)
+      p->op = PGTH_OPSIMPLE_GROP | p->param;
+    else if (p->op == PGTH_OPCMD_LONGGET &&
+	     p->param < PGTH_OPSIMPLE_GET)
+      p->op = PGTH_OPSIMPLE_GET | p->param;
+    else if (p->op == PGTH_OPCMD_LONGSET &&
+	     p->param < PGTH_OPSIMPLE_GET)
+      p->op = PGTH_OPSIMPLE_SET | p->param;
     
     /* Output opcode byte */
     *(bp++) = p->op;
@@ -279,6 +297,9 @@ fillstyle: FILLSTYLE  { yyerror("fillstyle requires parameters"); }
 
   $$.ldnode = newloader(buf,bp-buf);
   $$.loader = PGTH_LOAD_REQUEST;
+
+  /* Set the variable table up for the next fillstyle */
+  fsvartab_pos = FS_NUMPARAMS;
 }
          ;
 
@@ -298,7 +319,15 @@ fsvar_list: fsvar                { $$ = $1; }
           | fsvar_list ',' fsvar { $$ = fsnodecat($1,$3); }
           ;
 
-fsvar: UNKNOWNSYM                { $$ = fsnewnode(PGTH_OPSIMPLE_LITERAL); }
+fsvar: UNKNOWNSYM                { 
+  fsvartab[fsvartab_pos++] = $1;
+  $$ = fsnewnode(PGTH_OPCMD_LONGLITERAL);
+}
+     | UNKNOWNSYM '=' constexp   {
+  fsvartab[fsvartab_pos++] = $1;
+  $$ = fsnewnode(PGTH_OPCMD_LONGLITERAL);
+  $$->param = $3;
+}
      ;
 
 fsstmt_list: fsstmt              { $$ = $1; }
@@ -331,7 +360,8 @@ fsexp: '(' fsexp ')'    { $$ = $2; } %prec VARPAREN
      | fsexp '&' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_AND)); } %prec VARAND  
      | fsexp SHIFTL fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_SHIFTL)); } %prec VARSHIFT 
      | fsexp SHIFTR fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_SHIFTR)); } %prec VARSHIFT 
-     | NUMBER           { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = $1; }               
+     | constexp            { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = $1; }          %prec CONSTPROMOTE     
+     | FSVAR            { $$ = fsnewnode(PGTH_OPCMD_LONGGET); $$->param = $1; }
      ;
 
 %%

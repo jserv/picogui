@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.8 2000/10/07 22:06:08 micahjd Exp $
+/* $Id: main.c,v 1.9 2000/10/08 06:13:43 micahjd Exp $
  *
  * main.c - main() and some parser utility functions for
  *          the PicoGUI theme compiler.  The actual parsing
@@ -41,6 +41,8 @@ unsigned long num_totprop;
 unsigned long datasz_loader;
 unsigned long datasz_tags;
 char *filename;
+char *fsvartab[FS_MAX_LOCALS];
+int fsvartab_pos;
 
 int main(int argc, char **argv) {
 
@@ -55,6 +57,15 @@ int main(int argc, char **argv) {
       return 2;
     }
   }
+
+  /*** Initialization */
+
+  /* Local variable table */
+  fsvartab[0] = "x";
+  fsvartab[1] = "y";
+  fsvartab[2] = "w";
+  fsvartab[3] = "h";
+  fsvartab_pos = FS_NUMPARAMS;
 
   /**** Front end (Scanner/parser) */
   /* Parse the input file, generating linked lists */
@@ -102,6 +113,7 @@ int symlookup(const char *sym,unsigned long *value) {
     }
     n++;
   }
+  if (value) *value = strdup(sym);
   return UNKNOWNSYM;
 }
 

@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.l,v 1.11 2000/10/07 23:50:28 micahjd Exp $
+/* $Id: pgtheme.l,v 1.12 2000/10/08 06:13:43 micahjd Exp $
  *
  * pgtheme.l - lexer for processing PicoGUI theme source code
  *
@@ -40,16 +40,24 @@
 obj(ect)?       { return OBJ; }
 fillstyle       { return FILLSTYLE; }
 var             { return VAR; }
-x               { yylval.num = 0; return FSVAR; }
-y               { yylval.num = 1; return FSVAR; }
-w               { yylval.num = 2; return FSVAR; }
-h               { yylval.num = 3; return FSVAR; }
 "<<"            { return SHIFTL; }
 ">>"            { return SHIFTR; }
 
    /* symbols, operators, and strings */
 
-[a-zA-Z_][a-zA-Z0-9_\.]* { return symlookup(yytext,&yylval.num); }
+[a-zA-Z_][a-zA-Z0-9_\.]* { 
+  int i;
+
+  /* First try looking in the fillstyle variable table */
+  for (i=0;i<fsvartab_pos;i++)
+    if (!strcmp(yytext,fsvartab[i])) {
+      yylval.num = i;
+      return FSVAR;
+    }
+
+  /* Next the constant symbol table */
+  return symlookup(yytext,&yylval.num);
+}
 [-+*/()=;{},\&\|]        { return yytext[0]; }
 
 \"([^\"\n\\]*(\\.)*)+[\"\n] { 

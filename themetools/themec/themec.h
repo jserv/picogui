@@ -1,4 +1,4 @@
-/* $Id: themec.h,v 1.8 2000/10/07 22:06:08 micahjd Exp $
+/* $Id: themec.h,v 1.9 2000/10/08 06:13:43 micahjd Exp $
  *
  * themec.h - definitions used internally in the theme compiler
  *
@@ -52,6 +52,16 @@ struct symnode {
 };
 
 extern struct symnode symboltab[];
+
+/* Because the interpreter itself places strict
+   limitations on the stack space, doesn't make
+   sense using a dynamic variable table */
+#define FS_MAX_LOCALS   64    /* Server's limit is probably much smaller */
+
+/* fillstyle local variable table */
+extern char *fsvartab[FS_MAX_LOCALS];
+extern int fsvartab_pos;
+#define FS_NUMPARAMS  4 /* Number of parameter variables (non-allocated) */
 
 /*** Structures for the in-memory representation ***/
 
