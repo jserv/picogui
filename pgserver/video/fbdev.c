@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.37 2002/04/04 23:02:51 micahjd Exp $
+/* $Id: fbdev.c,v 1.38 2002/10/08 15:35:15 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -335,13 +335,13 @@ g_error fbdev_initvt(void) {
   const char *vt;
   char buf[20];
 
-  fbdev_savedvt = fbdev_getvt();
-  
   /* We'll need /dev/tty0 just to determine what VT to run on
    */
-  ttyfd = open("/dev/tty0", O_RDWR);
+  ttyfd = open(get_param_str("video-fbdev","ttydev",DEFAULT_TTY),O_RDWR);
   if (ttyfd <= 0)
     return mkerror(PG_ERRT_IO,107);   /* can't open TTY */
+  
+  fbdev_savedvt = fbdev_getvt();
   
   /* What VT should we run on?
    */
