@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.170 2002/10/25 23:59:55 micahjd Exp $
+/* $Id: constants.h,v 1.171 2002/11/06 20:23:46 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -1101,6 +1101,7 @@ typedef unsigned long pghandle;
 					  * wheel values */
 #define PG_TRIGGER_TOUCHSCREEN   (1<<21) /* A touchscreen event to be processed by infilter_touchscreen */
 #define PG_TRIGGER_TS_CALIBRATE  (1<<22) /* Store the touchscreen calibration given in this event */
+#define PG_TRIGGER_CLOSE         (1<<23) /* Sent by drivers to a managed window when externally closed */
 
 /* List of triggers that use the mouse parameters 
  */

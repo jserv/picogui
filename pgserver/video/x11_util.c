@@ -1,4 +1,4 @@
-/* $Id: x11_util.c,v 1.12 2002/11/06 09:44:27 micahjd Exp $
+/* $Id: x11_util.c,v 1.13 2002/11/06 20:23:46 micahjd Exp $
  *
  * x11_util.c - Utility functions for picogui's driver for the X window system
  *
@@ -245,6 +245,7 @@ void x11_internal_window_resize(hwrbitmap window, int w, int h) {
   XWindowChanges wc;
   XEvent ev;
   struct x11bitmap *xb = XB(window)->frontbuffer ? XB(window)->frontbuffer : XB(window);
+  Atom a;
 
   /* Can't have a zero size, X will throw an error */
   if (!w) w = 1;
@@ -270,6 +271,10 @@ void x11_internal_window_resize(hwrbitmap window, int w, int h) {
 	       KeyPressMask | KeyReleaseMask | ExposureMask | ButtonMotionMask |
 	       ButtonPressMask | ButtonReleaseMask | PointerMotionMask | StructureNotifyMask);
   XAutoRepeatOn(x11_display);
+
+  /* Set WM protocols - we just need close events */
+  a = XInternAtom(x11_display, "WM_DELETE_WINDOW", False);
+  XSetWMProtocols(x11_display, xb->d, &a, 1);
 
   XFlush(x11_display);
 }

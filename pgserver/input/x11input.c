@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.27 2002/11/06 06:40:32 micahjd Exp $
+/* $Id: x11input.c,v 1.28 2002/11/06 20:23:46 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -35,6 +35,7 @@
 #include <pgserver/input.h>
 #include <pgserver/configfile.h>
 #include <pgserver/x11.h>
+#include <pgserver/init.h>
 
 int x11input_scroll_distance;
 
@@ -220,6 +221,29 @@ int x11input_fd_activate(int fd) {
 	  p.kbd.key  = sym;
 	  p.kbd.mods = mod;
 	  infilter_send(NULL,PG_TRIGGER_KEYUP,&p);
+	}
+      }
+      break;
+
+      /****************** ICCCM messages
+       */
+
+    case ClientMessage:
+      if (ev.xclient.format == 32) {         /*** WM_PROTOCOLS message ***/
+
+	/* WM_DELETE_WINDOW 
+	 * In rootless mdoe, pass this event along to the widget.
+	 * In monolithic mode, exit pgserver.
+	 */
+	if (ev.xclient.data.l[0] == XInternAtom(x11_display, "WM_DELETE_WINDOW", False)) {
+	  if (VID(is_rootless)) {
+	    xb = x11_get_window(ev.xclient.window);
+	    if (xb && xb->dt && xb->dt->head && xb->dt->head->next && xb->dt->head->next->owner)
+	      send_trigger(xb->dt->head->next->owner, PG_TRIGGER_CLOSE, NULL);
+	  }
+	  else {
+	    mainloop_stop();
+	  }
 	}
       }
       break;
