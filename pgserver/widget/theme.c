@@ -1,4 +1,4 @@
-/* $Id: theme.c,v 1.11 2000/08/27 05:54:28 micahjd Exp $
+/* $Id: theme.c,v 1.12 2000/08/27 09:15:33 micahjd Exp $
  *
  * theme.h - This defines the structures and functions for themes,
  * parameters defining the way widgets are drawn that are reconfigurable
@@ -116,11 +116,11 @@ void themeset(int element,int state,int param,unsigned long value) {
     break;
   case EPARAM_C1:
     if ((state<STATE_NUM) && (state>=0))
-      el->state[state].c1 = (*vid->color_pgtohwr)(value);
+      el->state[state].c1 = value;
     break;
   case EPARAM_C2:
     if ((state<STATE_NUM) && (state>=0))
-      el->state[state].c2 = (*vid->color_pgtohwr)(value);
+      el->state[state].c2 = value;
     break;
   case EPARAM_ANGLE:
     if ((state<STATE_NUM) && (state>=0))

@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.29 2000/08/27 05:54:28 micahjd Exp $
+/* $Id: button.c,v 1.30 2000/08/27 09:15:33 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -242,7 +242,7 @@ g_error button_set(struct widget *self,int property, glob data) {
     break;
 
   case WP_COLOR:
-    DATA->textcolor = (*vid->color_pgtohwr)(data);
+    DATA->textcolor = data;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;

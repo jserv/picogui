@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.16 2000/08/27 05:54:28 micahjd Exp $
+/* $Id: label.c,v 1.17 2000/08/27 09:15:33 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -119,13 +119,13 @@ g_error label_set(struct widget *self,int property, glob data) {
     break;
 
   case WP_COLOR:
-    DATA->fg = (*vid->color_pgtohwr)(data);
+    DATA->fg = data;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
   case WP_BGCOLOR:
-    DATA->bg = (*vid->color_pgtohwr)(data);
+    DATA->bg = data;
     DATA->transparent = 0;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;

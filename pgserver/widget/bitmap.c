@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.14 2000/08/27 05:54:28 micahjd Exp $
+/* $Id: bitmap.c,v 1.15 2000/08/27 09:15:33 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -110,7 +110,7 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
     break;
 
   case WP_BGCOLOR:
-    DATA->fill = (*vid->color_pgtohwr)(data);
+    DATA->fill = data;
     DATA->transparent = 0;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;

@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.14 2000/08/27 05:54:27 micahjd Exp $
+/* $Id: grop.c,v 1.15 2000/08/27 09:15:33 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -214,7 +214,7 @@ g_error grop_pixel(struct gropnode **headpp,
   n->type = GROP_PIXEL;
   n->x = x;
   n->y = y;
-  n->param.c = c;
+  n->param.c = (*vid->color_pgtohwr)(c);
   grop_addnode(headpp,n);
   return sucess;
 }
@@ -230,7 +230,7 @@ g_error grop_line(struct gropnode **headpp,
   n->y = y1;
   n->w = x2;
   n->h = y2;
-  n->param.c = c;
+  n->param.c = (*vid->color_pgtohwr)(c);
   grop_addnode(headpp,n);
   return sucess;
 }
@@ -246,7 +246,7 @@ g_error grop_rect(struct gropnode **headpp,
   n->y = y;
   n->w = w;
   n->h = h;
-  n->param.c = c;
+  n->param.c = (*vid->color_pgtohwr)(c);
   grop_addnode(headpp,n);
   return sucess;
 }
@@ -273,7 +273,7 @@ g_error grop_frame(struct gropnode **headpp,
   n->y = y;
   n->w = w;
   n->h = h;
-  n->param.c = c;
+  n->param.c = (*vid->color_pgtohwr)(c);
   grop_addnode(headpp,n);
   return sucess;
 }
@@ -289,7 +289,7 @@ g_error grop_slab(struct gropnode **headpp,
   n->y = y;
   n->w = w;
   n->h = 1;
-  n->param.c = c;
+  n->param.c = (*vid->color_pgtohwr)(c);
   grop_addnode(headpp,n);
   return sucess;
 }
@@ -305,7 +305,7 @@ g_error grop_bar(struct gropnode **headpp,
   n->y = y;
   n->h = h;
   n->w = 1;
-  n->param.c = c;
+  n->param.c = (*vid->color_pgtohwr)(c);
   grop_addnode(headpp,n);
   return sucess;
 }
@@ -322,7 +322,7 @@ g_error grop_text(struct gropnode **headpp,
   n->w = n->h = 0;
   n->param.text.string = str;
   n->param.text.fd = fd;
-  n->param.text.col = col;
+  n->param.text.col = (*vid->color_pgtohwr)(col);
   grop_addnode(headpp,n);
   return sucess;
 }
@@ -356,8 +356,8 @@ g_error grop_gradient(struct gropnode **headpp,
   n->y = y;
   n->w = w;
   n->h = h;
-  n->param.gradient.c1 = c1;
-  n->param.gradient.c2 = c2;
+  n->param.gradient.c1 = (*vid->color_pgtohwr)(c1);
+  n->param.gradient.c2 = (*vid->color_pgtohwr)(c2);
   n->param.gradient.angle = angle;
   n->param.gradient.translucent = translucent;
   grop_addnode(headpp,n);
