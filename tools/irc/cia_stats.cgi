@@ -82,7 +82,7 @@ for project in projects:
     
 print """
     </table>
-    (graph is logarithmic)
+    (graph is logarithmic. MTBC == Mean Time Between Commits)
   </div>
 </div>
 
