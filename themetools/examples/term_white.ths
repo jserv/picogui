@@ -1,5 +1,7 @@
 /* Black-on-white terminal theme */
 
+obj default name = "White background terminal theme";
+
 obj terminal {
   /*
    * 'textcolors' is an array of 16 pgcolor values to use as a palette.

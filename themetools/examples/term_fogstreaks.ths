@@ -1,5 +1,7 @@
 /* Example terminal theme with a bitmapped background */
 
+obj default name = "'Fogstreaks' bitmapped terminal background";
+
 obj terminal {
   /*
    * 'textcolors' is an array of 16 pgcolor values to use as a palette.
