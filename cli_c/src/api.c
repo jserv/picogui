@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.19 2001/08/01 11:20:27 micahjd Exp $
+/* $Id: api.c,v 1.20 2001/08/01 14:39:24 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -545,6 +545,25 @@ char *pgGetString(pghandle string) {
   _pg_add_request(PGREQ_GETSTRING,&string,sizeof(pghandle));
   pgFlushRequests();
   return _pg_return.e.data.data;
+}
+
+int pgGetFontStyle(short index, char *name, unsigned short *size,
+		   unsigned short *fontrep, unsigned long *flags) {
+  struct pgreqd_getfstyle arg;
+  struct pgdata_getfstyle *gfs;
+
+  arg.index = htons(index);
+  arg.dummy = 0;
+  _pg_add_request(PGREQ_GETFSTYLE,&arg,sizeof(arg));
+  pgFlushRequests();
+  gfs = (struct pgdata_getfstyle *) _pg_return.e.data.data;
+
+  strcpy(name,gfs->name);
+  *size = ntohs(gfs->size);
+  *fontrep = ntohs(gfs->fontrep);
+  *flags = ntohl(gfs->flags);
+
+  return name[0]!=0;
 }
 
 /* Get video mode data */

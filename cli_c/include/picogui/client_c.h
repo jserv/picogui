@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.57 2001/08/01 11:20:26 micahjd Exp $
+/* $Id: client_c.h,v 1.58 2001/08/01 14:39:24 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -818,9 +818,50 @@ fBig     = pgNewFont(NULL,40,PG_FSTYLE_ITALIC);                  // A large ital
 fFlush   = pgNewFont("Helvetica",0,PG_FSTYLE_FLUSH);             // Helvetica at the default size, with no space at the edges
  * \endcode
  * 
- * \sa pgNewString, pgDelete, pgEnterContext, pgLeaveContext
+ * \sa pgNewString, pgDelete, pgEnterContext, pgLeaveContext, pgGetFontStyle
  */
 pghandle pgNewFont(const char *name,short size,unsigned long style);
+
+/*!
+ * \brief Get information about a font style
+ *
+ * \param index A zero-based index to select a font style in the order that
+ *              the were compiled or loaded into pgserver
+ * \param name  Pointer to a buffer to store the font name in. Must be
+ *              40 bytes long
+ * \param size  Pointer that the font size is returned in. For bitmapped
+ *              fonts (all PicoGUI currently supports) this is height in
+ *              pixels
+ * \param fontrep Pointer that the font representation is returned in. This
+ *                is a combination of one or more PG_FR_* flags.
+ * \param flags   Pointer that font style flags are returned in. This is
+ *                a combination of PG_FSTYLE_* flags
+ * \returns Nonzero if the index was valid and data was stored in the supplied
+ *          pointers
+ *
+ * This function can be used to iterate through the available fonts. For
+ * example:
+ * \code
+char name[40];
+unsigned short size;
+unsigned short fontrep;
+unsigned long flags;
+short i;
+
+i = 0;
+while (pgGetFontStyle(i++, name, &size, &fontrep, &flags)) {
+   printf("Font #%d: %s\n"
+          "    size: %d\n"
+	  " fontrep: 0x%04X\n"
+	  "   flags: 0x%08X\n\n",
+	  i,name,size,fontrep,flags);
+}
+ * \endcode
+ *
+ * \sa pgNewFont
+ */
+int pgGetFontStyle(short index, char *name, unsigned short *size,
+		   unsigned short *fontrep, unsigned long *flags);
 
 /*!
  * \brief Measure a string of text
