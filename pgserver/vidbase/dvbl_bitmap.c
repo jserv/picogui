@@ -1,4 +1,4 @@
-/* $Id: dvbl_bitmap.c,v 1.9 2002/10/07 10:21:58 micahjd Exp $
+/* $Id: dvbl_bitmap.c,v 1.10 2002/10/08 08:37:50 micahjd Exp $
  *
  * dvbl_bitmap.c - This file is part of the Default Video Base Library,
  *                 providing the basic video functionality in picogui but
@@ -129,22 +129,26 @@ void def_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y, s16 w, s16 h,
     vid->blit(dest,dest_x,dest_y,w,h,src,src_x,src_y,lgop);
     return;
 
-  case 90:
+  case 270:
     /*   x       y        */
     a =  0; b =  1; /* x' */
     c = -1; d =  0; /* y' */
+    src_y += w-1;
     break;
 
   case 180:
     /*   x       y        */
     a = -1; b =  0; /* x' */
     c =  0; d = -1; /* y' */
+    src_x += w-1;
+    src_y += h-1;
     break;
 
-  case 270:
+  case 90:
     /*   x       y        */
     a =  0; b = -1; /* x' */
     c =  1; d =  0; /* y' */
+    src_x += h-1;
     break;
 
   default:
@@ -158,13 +162,13 @@ void def_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y, s16 w, s16 h,
     dy = dest_y;
     for (i=w;i;i--) {
       vid->pixel(dest,dx,dy,vid->getpixel(src,sx,sy),PG_LGOP_NONE);
-      sx++;
-      dx += a;
-      dy += c;
+      dx++;
+      sx += a;
+      sy += c;
     }
-    src_y++;
-    dest_x += b;
-    dest_y += d;
+    dest_y++;
+    src_x += b;
+    src_y += d;
   }
 }
 

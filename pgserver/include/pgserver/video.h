@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.94 2002/10/07 10:21:57 micahjd Exp $
+/* $Id: video.h,v 1.95 2002/10/08 08:37:50 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -444,10 +444,10 @@ struct vidlib {
 		   s16 lgop);
 
   /* Reccomended on platforms that are usually rotated
-   *   Rotate a bitmap while copying. The source and destination
-   *   coordinates both refer to the _original_ top-left of the bitmap.
-   *   This does not handle tiling, and currently only handles angles
-   *   that are a multiple of 90 degrees.
+   *   Rotate a bitmap while copying. The destination width and height are in
+   *   the nonrotated coordinate system.
+   *   This does not handle tiling, the caller must assure to properly clip to
+   *   the source rectangle accounting for the rotation.
    *
    * Default implementation: Assumes linear bitmap, has code for
    *                         all common bit depths

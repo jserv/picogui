@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.37 2002/10/07 03:31:16 micahjd Exp $
+/* $Id: render.c,v 1.38 2002/10/08 08:37:49 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -42,6 +42,10 @@ int display_owner;
 int disable_output;   /* can be used by the video driver to disable rendering,
 		       * if pgserver is minimized or on a different terminal
 		       */
+
+/* Primitives used in clipping, return 1 to discard the gropnode */
+int gropnode_line_clip(struct groprender *r, struct gropnode *n);
+void gropnode_rect_clip(struct groprender *r, struct gropnode *n);
 
 /****************************************************** grop_render */
 
@@ -571,188 +575,222 @@ void gropnode_map(struct groprender *r, struct gropnode *n) {
 /****************************************************** gropnode_clip */
 
 void gropnode_clip(struct groprender *r, struct gropnode *n) {
-    /* Clip - clipping serves two purposes:
-     *   1. security, an app/widget stays in its allocated space
-     *   2. scrolling needs to be able to update any arbitrary
-     *      slice of an area
-     */
-
-   /* Save node's coordinates before clipping */
-   r->orig = n->r;    
-
-   r->csrc.x = 0;
-   r->csrc.y = 0;
-   switch (n->type) {
-      
-      /* Text clipping is handled by the charblit, but we can
-       * go ahead and handle a few cases on the string level */
-    case PG_GROP_TEXT:
-      switch (r->angle) {
-	 
-       case 0:
-	 if (n->r.x>r->clip.x2 || n->r.y>r->clip.y2)
-	   goto skip_this_node;
-	 break;
-	 
-       case 90:
-	 if (n->r.y<r->clip.y1)
-	   goto skip_this_node;
-	 break;
-	 
-      }
-      break;
-
-      /* Similar deal with textgrid and paragraph, easier to handle clipping later */
-   case PG_GROP_TEXTGRID:
-   case PG_GROP_PARAGRAPH:
-   case PG_GROP_PARAGRAPH_INC:
+  s16 bw,bh;
+  hwrbitmap bit;
+  
+  /* Save node's coordinates before clipping */
+  r->orig = n->r;    
+  
+  r->csrc.x = 0;
+  r->csrc.y = 0;
+  switch (n->type) {
+    
+    /* Text clipping is handled by the charblit, but we can
+     * go ahead and handle a few cases on the string level */
+  case PG_GROP_TEXT:
+    switch (r->angle) {
+    case 0:
       if (n->r.x>r->clip.x2 || n->r.y>r->clip.y2)
 	goto skip_this_node;
-      break;
-	 
-    case PG_GROP_LINE:
-      
-      /* Is this line just completely out there? */
-      if ( ((n->r.x<r->clip.x1) && ((n->r.x+n->r.w)<r->clip.x1)) ||
-	  ((n->r.x>r->clip.x2) && ((n->r.x+n->r.w)>r->clip.x2)) ||
-	  ((n->r.y<r->clip.y1) && ((n->r.y+n->r.h)<r->clip.y1)) ||
-	  ((n->r.y>r->clip.y2) && ((n->r.y+n->r.h)>r->clip.y2)) )
+      break; 
+    case 90:
+      if (n->r.y<r->clip.y1)
 	goto skip_this_node;
-            
-      if (n->r.w && n->r.h) {        /* Not horizontal or vertical */
-	 int t,u;
-	 
-	 /* A real line - clip, taking slope into account */
-	 
-	 if (n->r.x<r->clip.x1) {               /* Point 1 left of clip */
-	    t = r->clip.x1 - n->r.x;
-	    u = t * n->r.h / n->r.w;
-	    n->r.y += u;
-	    n->r.h -= u;
-	    n->r.w -= t;
-	    n->r.x = r->clip.x1;
-	 }
-	 
-	 else if (n->r.x>r->clip.x2) {          /* Point 1 right of clip */
-	    t = n->r.x - r->clip.x2;
-	    u = t * n->r.h / n->r.w;
-	    n->r.y -= u;
-	    n->r.h += u;
-	    n->r.w += t;
-	    n->r.x = r->clip.x2;
-	 }
-	 
-	 if (n->r.y<r->clip.y1) {               /* Point 1 above clip */
-	    t = r->clip.y1 - n->r.y;
-	    if (!n->r.h) goto skip_this_node;   /* Avoid divide by zero */
-	    u = t * n->r.w / n->r.h;
-	    n->r.x += u;
-	    n->r.w -= u;
-	    n->r.h -= t;
-	    n->r.y = r->clip.y1;
-	 }
-	 
-	 else if (n->r.y>r->clip.y2) {          /* Point 1 below clip */
-	    t = n->r.y - r->clip.y2;
-	    if (!n->r.h) goto skip_this_node;   /* Avoid divide by zero */
-	    u = t * n->r.w / n->r.h;
-	    n->r.x -= u;
-	    n->r.w += u;
-	    n->r.h += t;
-	    n->r.y = r->clip.y2;
-	 }
-	 
-	 if ((n->r.x+n->r.w)<r->clip.x1) {           /* Point 2 left of clip */
-	    t = r->clip.x1 - n->r.x - n->r.w;
-	    if (!n->r.w) goto skip_this_node;   /* Avoid divide by zero */
-	    n->r.h += t * n->r.h / n->r.w;
-	    n->r.w = r->clip.x1-n->r.x;
-	 }
-	 
-	 else if ((n->r.x+n->r.w)>r->clip.x2) {      /* Point 2 right of clip */
-	    t = n->r.x + n->r.w - r->clip.x2;
-	    if (!n->r.w) goto skip_this_node;   /* Avoid divide by zero */
-	    n->r.h -= t * n->r.h / n->r.w;
-	    n->r.w = r->clip.x2-n->r.x;
-	 }
-	 
-	 if ((n->r.y+n->r.h)<r->clip.y1) {           /* Point 2 above clip */
-	    t = r->clip.y1 - n->r.y - n->r.h;
-	    if (!n->r.h) goto skip_this_node;   /* Avoid divide by zero */
-	    n->r.w += t * n->r.w / n->r.h;
-	    n->r.h = r->clip.y1-n->r.y;
-	 }
-	 
-	 else if ((n->r.y+n->r.h)>r->clip.y2) {      /* Point 2 below clip */
-	    t = n->r.y + n->r.h - r->clip.y2;
-	    if (!n->r.h) goto skip_this_node;   /* Avoid divide by zero */
-	    n->r.w -= t * n->r.w / n->r.h;
-	    n->r.h = r->clip.y2-n->r.y;
-	 }
-	 
-	 /* If the line's endpoints are no longer within the clipping
-	  * rectangle, it means the line never intersected it in the
-	  * first place */
-	 
-	 if ( (n->r.x<r->clip.x1) || (n->r.x>r->clip.x2) || 
-	     (n->r.y<r->clip.y1) || (n->r.y>r->clip.y2) ||
-	     ((n->r.x+n->r.w)<r->clip.x1) || ((n->r.x+n->r.w)>r->clip.x2) ||
-	     ((n->r.y+n->r.h)<r->clip.y1) || ((n->r.y+n->r.h)>r->clip.y2) )
-	   goto skip_this_node;
-	 
-	 break;
-      }
-      
-      else {
-	 /* It's horizontal or vertical. Do a little prep, then
-	  * let it -fall through- to the normal clipper */
-	 
-	 if (n->r.w) {
-	    n->r.h=1;   
-	    if (n->r.w<0) {
-	       n->r.x += n->r.w;
-	       n->r.w = -n->r.w;
-	    }
-	    n->r.w++;
-	    n->type = PG_GROP_SLAB;
-	 }
-	 
-	 else {
-	    n->r.w=1;
-	    if (n->r.h<0) {
-	       n->r.y += n->r.h;
-	       n->r.h = -n->r.h;
-	    }
-	    n->r.h++;
-	    n->type = PG_GROP_BAR;
-	 }
-	 
-	 /* ... and fall through to default */
-      }
-      /* Default clipping just truncates */
-    default:
-      if (n->r.x<r->clip.x1) {
-	 n->r.w -= r->csrc.x = r->clip.x1 - n->r.x;
-	 n->r.x = r->clip.x1;
-      }
-      if (n->r.y<r->clip.y1) {
-	 n->r.h -= r->csrc.y = r->clip.y1 - n->r.y;
-	 n->r.y = r->clip.y1;
-      }
-      if ((n->r.x+n->r.w-1)>r->clip.x2)
-	n->r.w = r->clip.x2-n->r.x+1;
-      if ((n->r.y+n->r.h-1)>r->clip.y2)
-	n->r.h = r->clip.y2-n->r.y+1;
-   }
+      break;
+    }
+    break;
+    
+    /* Similar deal with textgrid and paragraph, easier to handle clipping later */
+  case PG_GROP_TEXTGRID:
+  case PG_GROP_PARAGRAPH:
+  case PG_GROP_PARAGRAPH_INC:
+    if (n->r.x>r->clip.x2 || n->r.y>r->clip.y2)
+      goto skip_this_node;
+    break;
+    
+  case PG_GROP_LINE:
+    if (gropnode_line_clip(r,n))
+      goto skip_this_node;
+    break;
 
-   if ((n->r.w <= 0 || n->r.h <= 0) && n->type!=PG_GROP_LINE)
-     goto skip_this_node;
+    /* Also clip the source rectangle to the source bitmap in tilblits */
+  case PG_GROP_TILEBITMAP:
+    if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
+			 n->param[0])) || !bit) break;
+    VID(bitmap_getsize) (bit,&bw,&bh);
+    if (r->src.x < 0) r->src.x = 0;
+    if (r->src.y < 0) r->src.y = 0;
+    if (r->src.w > (bw - r->src.x)) r->src.w = bw - r->src.x;
+    if (r->src.h > (bh - r->src.y)) r->src.h = bh - r->src.y;
+    gropnode_rect_clip(r,n);
+    break;
+    
+    /* Clip to the source rectangle here too, but the rotation adds extra work */
+  case PG_GROP_ROTATEBITMAP:
+    if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
+			 n->param[0])) || !bit) break;
+    VID(bitmap_getsize) (bit,&bw,&bh);
+    if (r->angle == 90 || r->angle==270) {
+      s16 t;
+      t = bw;
+      bw = bh;
+      bh = t;
+    }
+    if (r->src.x < 0) r->src.x = 0;
+    if (r->src.y < 0) r->src.y = 0;
+    if (r->src.w > (bw - r->src.x)) r->src.w = bw - r->src.x;
+    if (r->src.h > (bh - r->src.y)) r->src.h = bh - r->src.y;
+    gropnode_rect_clip(r,n);
+    break;
 
-   return;
-   skip_this_node:
-   n->type = PG_GROP_NOP;
+  default:
+    gropnode_rect_clip(r,n);
+  }
+  
+  if ((n->r.w <= 0 || n->r.h <= 0) && n->type!=PG_GROP_LINE)
+    goto skip_this_node;
+  
+  return;
+ skip_this_node:
+  n->type = PG_GROP_NOP;
 }
  
+int gropnode_line_clip(struct groprender *r, struct gropnode *n) {  
+  /* Is this line just completely out there? */
+  if ( ((n->r.x<r->clip.x1) && ((n->r.x+n->r.w)<r->clip.x1)) ||
+       ((n->r.x>r->clip.x2) && ((n->r.x+n->r.w)>r->clip.x2)) ||
+       ((n->r.y<r->clip.y1) && ((n->r.y+n->r.h)<r->clip.y1)) ||
+       ((n->r.y>r->clip.y2) && ((n->r.y+n->r.h)>r->clip.y2)) )
+    return 1;
+  
+  if (n->r.w && n->r.h) {        /* Not horizontal or vertical */
+    int t,u;
+    
+    /* A real line - clip, taking slope into account */
+    
+    if (n->r.x<r->clip.x1) {               /* Point 1 left of clip */
+      t = r->clip.x1 - n->r.x;
+      u = t * n->r.h / n->r.w;
+      n->r.y += u;
+      n->r.h -= u;
+      n->r.w -= t;
+      n->r.x = r->clip.x1;
+    }
+    
+    else if (n->r.x>r->clip.x2) {          /* Point 1 right of clip */
+      t = n->r.x - r->clip.x2;
+      u = t * n->r.h / n->r.w;
+      n->r.y -= u;
+      n->r.h += u;
+      n->r.w += t;
+      n->r.x = r->clip.x2;
+    }
+    
+    if (n->r.y<r->clip.y1) {               /* Point 1 above clip */
+      t = r->clip.y1 - n->r.y;
+      if (!n->r.h) return 1;   /* Avoid divide by zero */
+      u = t * n->r.w / n->r.h;
+      n->r.x += u;
+      n->r.w -= u;
+      n->r.h -= t;
+      n->r.y = r->clip.y1;
+    }
+    
+    else if (n->r.y>r->clip.y2) {          /* Point 1 below clip */
+      t = n->r.y - r->clip.y2;
+      if (!n->r.h) return 1;   /* Avoid divide by zero */
+      u = t * n->r.w / n->r.h;
+      n->r.x -= u;
+      n->r.w += u;
+      n->r.h += t;
+      n->r.y = r->clip.y2;
+    }
+    
+    if ((n->r.x+n->r.w)<r->clip.x1) {           /* Point 2 left of clip */
+      t = r->clip.x1 - n->r.x - n->r.w;
+      if (!n->r.w) return 1;   /* Avoid divide by zero */
+      n->r.h += t * n->r.h / n->r.w;
+      n->r.w = r->clip.x1-n->r.x;
+    }
+    
+    else if ((n->r.x+n->r.w)>r->clip.x2) {      /* Point 2 right of clip */
+      t = n->r.x + n->r.w - r->clip.x2;
+      if (!n->r.w) return 1;   /* Avoid divide by zero */
+      n->r.h -= t * n->r.h / n->r.w;
+      n->r.w = r->clip.x2-n->r.x;
+    }
+    
+    if ((n->r.y+n->r.h)<r->clip.y1) {           /* Point 2 above clip */
+      t = r->clip.y1 - n->r.y - n->r.h;
+      if (!n->r.h) return 1;   /* Avoid divide by zero */
+      n->r.w += t * n->r.w / n->r.h;
+      n->r.h = r->clip.y1-n->r.y;
+    }
+    
+    else if ((n->r.y+n->r.h)>r->clip.y2) {      /* Point 2 below clip */
+      t = n->r.y + n->r.h - r->clip.y2;
+      if (!n->r.h) return 1;   /* Avoid divide by zero */
+      n->r.w -= t * n->r.w / n->r.h;
+      n->r.h = r->clip.y2-n->r.y;
+    }
+	 
+    /* If the line's endpoints are no longer within the clipping
+     * rectangle, it means the line never intersected it in the
+     * first place */
+	 
+    if ( (n->r.x<r->clip.x1) || (n->r.x>r->clip.x2) || 
+	 (n->r.y<r->clip.y1) || (n->r.y>r->clip.y2) ||
+	 ((n->r.x+n->r.w)<r->clip.x1) || ((n->r.x+n->r.w)>r->clip.x2) ||
+	 ((n->r.y+n->r.h)<r->clip.y1) || ((n->r.y+n->r.h)>r->clip.y2) )
+      return 1;
+  }
+      
+  else {
+    /* It's horizontal or vertical. Do a little prep, then
+     * clip it like a normal rectangle
+     */
+	 
+    if (n->r.w) {
+      n->r.h=1;   
+      if (n->r.w<0) {
+	n->r.x += n->r.w;
+	n->r.w = -n->r.w;
+      }
+      n->r.w++;
+      n->type = PG_GROP_SLAB;
+    }
+	 
+    else {
+      n->r.w=1;
+      if (n->r.h<0) {
+	n->r.y += n->r.h;
+	n->r.h = -n->r.h;
+      }
+      n->r.h++;
+      n->type = PG_GROP_BAR;
+    }
+	 
+    gropnode_rect_clip(r,n);
+  }
+
+  return 0;
+}
+
+void gropnode_rect_clip(struct groprender *r, struct gropnode *n) {
+  if (n->r.x<r->clip.x1) {
+    n->r.w -= r->csrc.x = r->clip.x1 - n->r.x;
+    n->r.x = r->clip.x1;
+  }
+  if (n->r.y<r->clip.y1) {
+    n->r.h -= r->csrc.y = r->clip.y1 - n->r.y;
+    n->r.y = r->clip.y1;
+  }
+  if ((n->r.x+n->r.w-1)>r->clip.x2)
+    n->r.w = r->clip.x2-n->r.x+1;
+  if ((n->r.y+n->r.h-1)>r->clip.y2)
+    n->r.h = r->clip.y2-n->r.y+1;
+}
+
 /****************************************************** gropnode_draw */
 
 void gropnode_draw(struct groprender *r, struct gropnode *n) {
@@ -865,6 +903,13 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 		     0,0,bw,bh,(r->src.x+r->csrc.x)%bw,
 		     (r->src.y+r->csrc.y)%bh,r->lgop);     
      break;
+
+   case PG_GROP_ROTATEBITMAP:
+     if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
+			  n->param[0])) || !bit) break;
+     VID(rotateblit) (r->output,n->r.x,n->r.y,n->r.w,n->r.h,bit,
+		      r->src.x,r->src.y,r->angle,r->lgop);     
+     break;
    
     case PG_GROP_BLUR:
       VID(blur) (r->output,n->r.x,n->r.y,n->r.w,n->r.h,n->param[0]);
@@ -873,14 +918,6 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
     case PG_GROP_TILEBITMAP:
       if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
 			   n->param[0])) || !bit) break;
-
-      /* Clip the source rectangle */
-      VID(bitmap_getsize) (bit,&bw,&bh);
-      if (r->src.x < 0) r->src.x = 0;
-      if (r->src.y < 0) r->src.y = 0;
-      if (r->src.w > (bw - r->src.x)) r->src.w = bw - r->src.x;
-      if (r->src.h > (bh - r->src.y)) r->src.h = bh - r->src.y;
-
       VID(multiblit) (r->output,n->r.x,n->r.y,n->r.w,n->r.h,bit,
 		      r->src.x,r->src.y,r->src.w,r->src.h,
 		      r->csrc.x % r->src.w,r->csrc.y % r->src.h,r->lgop);     
