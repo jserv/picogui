@@ -66,6 +66,8 @@ array set pg_th_o {
 }
 
 set connection 0
+set defaultparent 0
+set defaultrship $pg_derive(inside)
 
 proc pgGetResponse {} {
 	global pg_response pg_request connection
@@ -89,7 +91,7 @@ proc pack_pgrequest { id size type {dummy 0} } {
 	set req [binary format "IISS" $id $size $type $dummy]
 	return $req
 }
-proc connect {server display} {
+proc pgConnect {server display} {
 	global connection
 	set port [expr 30450 + $display] 
 	if { [catch {set sock [socket $server $port]}] != 0 } {
@@ -120,10 +122,13 @@ proc pgUpdate {} {
 	return $ret(data)
 }
 proc pgNewPopupAt {x y width height} {
-	global pg_request
+	global pg_request defaultparent
 	send_packet [pack_pgrequest 1 8 $pg_request(mkpopup)]
 	send_packet [binary format "SSSS" $x $y $width $height ]
 	array set ret [pgGetResponse]
+	if {$defaultparent == 0} {
+		set defaultparent $ret(data)
+	}
 	return $ret(data)
 }
 proc pgNewPopup {width height} {
@@ -144,34 +149,32 @@ proc pgGetString {textid} {
 	array set ret [pgGetResponse]
 	return $ret(data)
 }
-proc pgNewWidget {rship type parent} {
-	global pg_request
+proc pgNewWidget {type {rship 0} {parent 0}} {
+	global pg_request defaultparent defaultrship pg_derive
+	if {$parent == 0 } {
+		set parent $defaultparent
+	}
+	if {$rship == 0} {
+		set rship $defaultrship
+	}
 	send_packet [pack_pgrequest 1 8 $pg_request(mkwidget)]
 	send_packet [binary format "SSI" $rship $type $parent]
 	array set ret [pgGetResponse]
+	set defaultparent $ret(data)
+	set defaultrship $pg_derive(after)
 	return $ret(data)
 }
-proc pgSetWidget {widget glob property} {
+proc pgSetWidget {widget property glob} {
 	global pg_request
 	send_packet [pack_pgrequest 1 12 $pg_request(set)]
 	send_packet [binary format "IISS" $widget $glob $property 0]
 	array set ret [pgGetResponse]
 	return $ret(data)
 }
-proc pgNewLabel {rship parent {text ""}} {
-	global pg_wp pg_widget
+proc pgSetText { widget text} {
+	global pg_wp
 	set id [pgNewString $text]
-	set label [pgNewWidget $rship $pg_widget(label) $parent]
-	pgSetWidget $label $id $pg_wp(text)
-	return $label
-}
-proc pgDialog {title} {
-	global pg_derive pg_wp pg_th_o pg_s label
-	set popup [pgNewPopup 0 0]
-	set label [pgNewLabel $pg_derive(inside) $popup $title]
-	pgSetWidget $label 0 $pg_wp(transparent)
-	pgSetWidget $label $pg_th_o(label_dlgtitle) $pg_wp(thobj)
-	return $popup
+	pgSetWidget $widget $pg_wp(text) $id
 }
 proc pgThemeLookup {object property} {
 	global pg_request
@@ -210,14 +213,6 @@ proc pgLeaveContext {{id ""}} {
 	array set ret [pgGetResponse]
 	return $ret(data)
 }
-proc pgNewBitmap {data} {
-	global pg_request
-	send_packet [pack_pgrequest 1 [string length $data] \
-		$pg_request(mkbitmap)]
-	send_packet $data
-	array set ret [pgGetResponse]
-	return $ret(data)
-}
 proc pgFromFile { filename } {
 	set data ""
 	set f [open $filename]
@@ -227,4 +222,53 @@ proc pgFromFile { filename } {
 	}
 	close $f
 	return $data
+}
+proc pgLoadBitmap {data} {
+	global pg_request
+	if {[file exists $data] ==1} {
+		set data [pgFromFile $data]
+	}
+	send_packet [pack_pgrequest 1 [string length $data] \
+		$pg_request(mkbitmap)]
+	send_packet $data
+	array set ret [pgGetResponse]
+	return $ret(data)
+}
+proc pgNewLabel {{text ""} {rship 0} {parent 0}} {
+	global pg_widget
+	set label [pgNewWidget $pg_widget(label) $rship $parent]
+	pgSetText $label $text
+	return $label
+}
+proc pgNewButton {{text ""} {rship 0} {parent 0}} {
+	global pg_widget
+	set button [pgNewWidget $pg_widget(button) $rship $parent]
+	pgSetText $button $text
+	return $button
+}
+proc pgNewBitmap {{image 0} {rship 0} {parent 0}} {
+	global pg_widget
+	set test 0
+	set bitmap [pgNewWidget $pg_widget(bitmap) $rship $parent]
+	scan $image "%d" test
+	if {$image ==0} {
+		return $bitmap
+	} elseif {$test == $image} {
+		pgSetBitmap $bitmap $image
+	} else {
+		pgSetBitmap $bitmap [pgLoadBitmap $image]
+	}
+	return $bitmap
+}
+proc pgSetBitmap {widget bitmap} {
+	global pg_wp
+	pgSetWidget $widget $pg_wp(bitmap) $bitmap
+}
+proc pgDialog {title} {
+	global pg_derive pg_wp pg_th_o pg_s
+	set popup [pgNewPopup 0 0]
+	set label [pgNewLabel $title]
+	pgSetWidget $label $pg_wp(transparent) 0
+	pgSetWidget $label $pg_wp(thobj) $pg_th_o(label_dlgtitle)
+	return $popup
 }

@@ -1,28 +1,32 @@
 source picogui.tcl
-connect localhost 0
+
+set NUMFRAMES 13
+set imagebase "../apps/bouncyball/data/ball%02d.jpeg"
+pgConnect localhost 0
 if { $connection == 0 } {
 	puts "unable to connect to display"
 }
 
-set NUMFRAMES 13
 pgEnterContext
+
 set imgnr 0
 while {$imgnr<$NUMFRAMES} {
-	set img($imgnr) [pgNewBitmap [pgFromFile \
-		[format "../apps/bouncyball/data/ball%02d.jpeg" $imgnr]]]
+	set img($imgnr) [pgLoadBitmap [format $imagebase $imgnr]]
 	incr imgnr
 }
+
 set dlg [pgDialog "Boing!"]
-set ok [pgNewWidget $pg_derive(after) $pg_widget(button) $label]
-pgSetWidget $ok $pg_s(bottom) $pg_wp(side)
-set id [pgNewString "OK"]
-pgSetWidget $ok $id $pg_wp(text)
-set bmp [pgNewWidget $pg_derive(after) $pg_widget(bitmap) $ok]
-pgSetWidget $bmp $pg_s(all) $pg_wp(side)
+
+set ok [pgNewButton "Ok"]
+pgSetWidget $ok $pg_wp(side) $pg_s(bottom)
+
+set bmp [pgNewBitmap $img(0)]
+pgSetWidget $bmp $pg_wp(side) $pg_s(all)
+
 set i 0
 set d 1
 while { 1 } {
-	pgSetWidget $bmp $img($i) $pg_wp(bitmap)
+	pgSetBitmap $bmp $img($i)
 	pgUpdate
 	if { [pgCheckEvent] >0 } {
 		array set event [pgWaitEvent]
