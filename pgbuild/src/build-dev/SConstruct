@@ -8,8 +8,10 @@ env = Environment()
 # Use the default configuration tree
 conf = PGBuild.Config.default
 
-# Mount our test file into the configuration tree
-conf.mount(env.fs.Entry("test.xml"))
+# Mount the sources.xml from conf-dev read-only
+# and our test.xml read-write
+conf.mount(env.fs.Entry("../conf-dev/sources.xml"))
+conf.mount(env.fs.Entry("test.xml"), "rw")
 
 # Show the list of mounts
 print conf.mounts

@@ -1,14 +1,7 @@
-<pgbuild title="Test configuration file" root="some/thingy/doodad">
-  <quack>
-     <something>inside of quack...</something>
-  </quack>
-  <quack>
-     <somethingElse>that should be merged</somethingElse>
-  </quack>
-  <quack name="ploo">
-     <something>that shouldn't be merged</something>
-     <quack>
-       <something>that shouldn't be merged</something>
-     </quack>     
-  </quack>
+<pgbuild title="Test configuration file" root="packages">
+  <package name="test">
+    <version name="1.234">
+       <a href="http://google.com"/>
+    </version>
+  </package>
 </pgbuild>
