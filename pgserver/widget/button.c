@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.123 2002/10/22 20:14:39 micahjd Exp $
+/* $Id: button.c,v 1.124 2002/10/23 06:17:26 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -715,13 +715,8 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
 
   button_setstate(self);
 
-  if (event>=0) {
-#ifdef CONFIG_BUTTON_BEEP
-    /* Little compile-time hack to make the button beep */
-    drivermessage(PGDM_SOUNDFX,PG_SND_SHORTBEEP,NULL);
-#endif
+  if (event>=0)
     post_event(PG_WE_ACTIVATE,self,event,0,NULL);
-  }
 }
 
 void button_resize(struct widget *self) {

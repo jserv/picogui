@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.166 2002/10/18 12:20:23 micahjd Exp $
+/* $Id: constants.h,v 1.167 2002/10/23 06:17:25 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -383,9 +383,10 @@ typedef unsigned long pghandle;
 #define PGTH_O_PANELBAR_V_ON         77   //!< Clicked vertical panelbar
 #define PGTH_O_PANELBAR_V_HILIGHT    78   //!< Hilighted vertical panelbar
 #define PGTH_O_TEXTEDIT              79   //!< textedit widget
+#define PGTH_O_MANAGEDWINDOW         80   //!< Window managed by a host GUI
 
 //! If you add a themeobject, be sure to increment this and add an inheritance entry in theme/memtheme.c
-#define PGTH_ONUM                    80
+#define PGTH_ONUM                    81
 
 //! Using a theme object named "custom" makes the server automatically allocate a free theme object at load time
 #define PGTH_O_CUSTOM                0x7FFF
@@ -890,13 +891,7 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_LABEL           1
 #define PG_WIDGET_SCROLL          2
 #define PG_WIDGET_INDICATOR       3
-#define PG_WIDGET_UNDEF_1         4      /* FIXME: BITMAP widget is deprecated, this is here
-					  * to encourage future source compatibility
-				          * when the bitmap widget is removed from the
-					  * widget tables entirely. For now it's a clone
-					  * of the label widget.
-					  */
-#define PG_WIDGET_BITMAP          PG_WIDGET_LABEL
+#define PG_WIDGET_MANAGEDWINDOW   4
 #define PG_WIDGET_BUTTON          5
 #define PG_WIDGET_PANEL           6  
 #define PG_WIDGET_POPUP           7  

@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.91 2002/10/23 02:09:03 micahjd Exp $
+/* $Id: div.c,v 1.92 2002/10/23 06:17:25 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -78,7 +78,9 @@ void divnode_divscroll(struct divnode *n) {
 void divnode_split(struct divnode *n, struct rect *divrect,
 		   struct rect *nextrect) {
   s16 split = n->split;
+#ifdef CONFIG_WIDGET_POPUP
   int popupclip = 0;
+#endif
 
   /* DIVNODE_UNDERCONSTRUCTION _must_ be first, so it can
    * override all the normal sizing flags.
@@ -97,6 +99,7 @@ void divnode_split(struct divnode *n, struct rect *divrect,
     divrect->h = 0;
   }
 
+#ifdef CONFIG_WIDGET_POPUP
   /* Process as a popup box size */
   else if (n->flags & DIVNODE_SPLIT_POPUP) {
     int x,y,w,h,margin,i;
@@ -190,6 +193,8 @@ void divnode_split(struct divnode *n, struct rect *divrect,
     /* Remember to clip this later */
     popupclip = 1;
   }
+#endif /* CONFIG_WIDGET_POPUP */
+
   
   /* All available space for div */
   else if (n->flags & DIVNODE_SPLIT_EXPAND) {
@@ -343,9 +348,11 @@ void divnode_split(struct divnode *n, struct rect *divrect,
     n->div->calc = *divrect;
   }
 
+#ifdef CONFIG_WIDGET_POPUP
   /* Validate the size of a popup*/
   if (popupclip)
     clip_popup(n->div);  
+#endif
 }	   
 
 /* Fill in the x,y,w,h of this divnode's children node based on it's
@@ -618,6 +625,7 @@ void r_dtupdate(struct divtree *dt) {
   /* Draw on the way back up from the recursion, so the layers appear
      in the right order */
 
+#ifdef CONFIG_WIDGET_POPUP
   /* If we're drawing everything anyway, might as well take this opportunity
    * to update the popup clipping. This is necessary when toolbars are added
    * when a popup is onscreen */
@@ -626,6 +634,7 @@ void r_dtupdate(struct divtree *dt) {
 	dt->head->next->owner->type == PG_WIDGET_POPUP)
       clip_popup(dt->head->next->div);
   }
+#endif
 
   divtree_size_and_calc(dt);
 

@@ -26,6 +26,7 @@ bool 'Optimize for size'    CONFIG_OPTIMIZE_SIZE
 bool 'Optimize for speed'   CONFIG_OPTIMIZE_SPEED
 bool 'Maximum speed optimization (Breaks on some architectures!)'   CONFIG_MAX_OPTIMIZE
 bool 'Statically link'      CONFIG_LINK_STATIC
+int  'Maximum number of zombie gropnodes'     CONFIG_MAX_ZOMBIEGROPS
 endmenu
 
 mainmenu_option next_comment
@@ -37,7 +38,7 @@ bool 'Magic debugging keys'             DEBUG_KEYS
 bool 'Video test modes'                 CONFIG_VIDEOTEST
 bool 'Trace location of fatal signals'  DEBUG_SIGTRACE
 if [ "$UCLINUX" != "y" ]; then
-    bool 'Debugging symbols in binary'      CONFIG_NOSTRIP
+    bool 'Debugging symbols in binary'  CONFIG_NOSTRIP
 fi
 
 comment 'Debuggative spew'
@@ -233,15 +234,53 @@ bool 'Base rotation doesnt affect pointing device' CONFIG_ROTATIONBASE_NOPOINTIN
 endmenu
 
 mainmenu_option next_comment
-comment 'Widget Options'
-bool 'Terminal widget - VT102 emulator'       CONFIG_WIDGET_TERMINAL
-bool 'Canvas widget - for arbitrary graphics' CONFIG_WIDGET_CANVAS
-bool 'Textbox widget - text editing with formatting' CONFIG_WIDGET_TEXTBOX
-bool 'Textedit widget - simple text editor'   CONFIG_WIDGET_TEXTEDIT
-bool 'Disable panelbar on app panels'         CONFIG_NOPANELBAR
-bool 'Support for solid panel dragging'       CONFIG_DRAGSOLID
-int  'Maximum number of zombie gropnodes'     CONFIG_MAX_ZOMBIEGROPS
-bool 'Play the "short beep" sound on button press (hack)' CONFIG_BUTTON_BEEP
+comment 'Widgets'
+bool 'Background'                             CONFIG_WIDGET_BACKGROUND
+bool 'Box'                                    CONFIG_WIDGET_BOX     
+bool 'Button'                                 CONFIG_WIDGET_BUTTON  
+if [ "$CONFIG_WIDGET_BUTTON" = "y" ]; then
+  bool '  Checkbox'                           CONFIG_WIDGET_CHECKBOX
+  bool '  Flatbutton'                         CONFIG_WIDGET_FLATBUTTON
+  bool '  Label'                              CONFIG_WIDGET_LABEL
+  bool '  Listitem'                           CONFIG_WIDGET_LISTITEM
+  bool '  Menuitem'                           CONFIG_WIDGET_MENUITEM 
+  bool '  Radiobutton'                        CONFIG_WIDGET_RADIOBUTTON
+  bool '  Submenuitem'                        CONFIG_WIDGET_SUBMENUITEM
+fi
+bool 'Canvas'                                 CONFIG_WIDGET_CANVAS
+bool 'Dialogbox'                              CONFIG_WIDGET_DIALOGBOX
+if [ "$CONFIG_WIDGET_DIALOGBOX" = "y" ]; then
+  bool '  Messagedialog'                      CONFIG_WIDGET_MESSAGEDIALOG
+fi
+bool 'Indicator'                              CONFIG_WIDGET_INDICATOR
+bool 'Managedwindow'                          CONFIG_WIDGET_MANAGEDWINDOW
+bool 'Panelbar'                               CONFIG_WIDGET_PANELBAR
+if [ "$CONFIG_WIDGET_PANELBAR" = "y" ]; then
+  bool '  Panel'                              CONFIG_WIDGET_PANEL
+fi
+bool 'Popup'                                  CONFIG_WIDGET_POPUP   
+bool 'Scroll'                                 CONFIG_WIDGET_SCROLL  
+if [ "$CONFIG_WIDGET_SCROLL" = "y" ]; then
+  bool '  Scrollbox'                          CONFIG_WIDGET_SCROLLBOX
+fi
+bool 'Simplemenu'                             CONFIG_WIDGET_SIMPLEMENU
+bool 'Terminal'                               CONFIG_WIDGET_TERMINAL
+bool 'Textbox (text editing with formatting)' CONFIG_WIDGET_TEXTBOX
+if [ "$CONFIG_WIDGET_TEXTBOX" = "y" ]; then
+  bool '  Field'                              CONFIG_WIDGET_FIELD
+fi
+bool 'Textedit (simple text editor)'          CONFIG_WIDGET_TEXTEDIT
+bool 'Toolbar'                                CONFIG_WIDGET_TOOLBAR 
+endmenu
+
+mainmenu_option next_comment
+comment 'Application Management'
+bool 'Managed Rootless app manager'           CONFIG_APPMGR_MANAGED_ROOTLESS
+bool 'Panel app manager'                      CONFIG_APPMGR_PANEL
+if [ "$CONFIG_APPMGR_PANEL" = "y" ]; then
+  bool '  Support for solid panel dragging'   CONFIG_DRAGSOLID
+fi
+bool 'Null app manager'                       CONFIG_APPMGR_NULL
 endmenu
 
 mainmenu_option next_comment

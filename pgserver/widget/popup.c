@@ -1,9 +1,7 @@
-/* $Id: popup.c,v 1.64 2002/10/11 11:58:44 micahjd Exp $
+/* $Id: popup.c,v 1.65 2002/10/23 06:17:26 micahjd Exp $
  *
- * popup.c - A root widget that does not require an application:
- *           creates a new layer and provides a container for other
- *           widgets.  This is a 'special' widget that should only
- *           be created with a call to create_popup.
+ * popup.c - A root widget for modal dialogs that display above the
+ *           root divtree.
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -40,8 +38,6 @@ struct popupdata {
 };
 #define DATA WIDGET_DATA(0,popupdata)
 
-/* Clipping for popup boxes. Mainly used in create_popup, but it is
- * also called when switching video modes */
 void clip_popup(struct divnode *div) {
   struct divnode ntb;
 
@@ -149,15 +145,17 @@ g_error popup_install(struct widget *self) {
   errorcheck;
   DATA->my_dt = dts->top;
 
-  /* This is positioned absolutely, so don't bother with the layout engine,
-   * let create_popup position it.
-   */
   e = newdiv(&self->in,self);
   self->in->build = &build_popupbg;
   errorcheck;
   self->in->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
   self->in->flags |= DIVNODE_SPLIT_IGNORE | DIVNODE_SPLIT_POPUP;
 
+  /* The DIVNODE_SPLIT_POPUP flag will cause the sizing to be
+   * fully calculated at the next recalc, this gives the client
+   * a chance to set the size and/or populate the popup and
+   * let the autosizing work its magic.
+   */
   e = newdiv(&self->in->div,self);
   errorcheck;
   self->in->div->build = &build_popup;

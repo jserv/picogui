@@ -1,6 +1,6 @@
-/* $Id: menuitem.c,v 1.12 2002/10/23 06:17:26 micahjd Exp $
+/* $Id: submenuitem.c,v 1.1 2002/10/23 06:17:26 micahjd Exp $
  *
- * menuitem.c - a customized button, used for menu items
+ * submenuitem.c - a customized button, for menuitems opening submenus
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -28,7 +28,7 @@
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 
-g_error menuitem_install(struct widget *self) {
+g_error submenuitem_install(struct widget *self) {
   g_error e;
 
   /* Start with a button */
@@ -36,10 +36,10 @@ g_error menuitem_install(struct widget *self) {
   errorcheck;
 
   /* Customize */
-  widget_set(self, PG_WP_THOBJ_BUTTON,              PGTH_O_MENUITEM);
-  widget_set(self, PG_WP_THOBJ_BUTTON_ON,           PGTH_O_MENUITEM_HILIGHT);
-  widget_set(self, PG_WP_THOBJ_BUTTON_HILIGHT,      PGTH_O_MENUITEM_HILIGHT);
-  widget_set(self, PG_WP_THOBJ_BUTTON_ON_NOHILIGHT, PGTH_O_MENUITEM_HILIGHT);
+  widget_set(self, PG_WP_THOBJ_BUTTON,              PGTH_O_SUBMENUITEM);
+  widget_set(self, PG_WP_THOBJ_BUTTON_ON,           PGTH_O_SUBMENUITEM_HILIGHT);
+  widget_set(self, PG_WP_THOBJ_BUTTON_HILIGHT,      PGTH_O_SUBMENUITEM_HILIGHT);
+  widget_set(self, PG_WP_THOBJ_BUTTON_ON_NOHILIGHT, PGTH_O_SUBMENUITEM_HILIGHT);
 
   /* We need extra events */
   widget_set(self,PG_WP_EXTDEVENTS,PG_EXEV_PNTR_UP | PG_EXEV_NOCLICK);

@@ -22,21 +22,39 @@ add_if_false () {
 
 open_section WIDGET
 
+add_if_true  background.c          $CONFIG_WIDGET_BACKGROUND
+add_if_true  box.c                 $CONFIG_WIDGET_BOX
+add_if_true  button.c              $CONFIG_WIDGET_BUTTON
+add_if_true  checkbox.c            $CONFIG_WIDGET_CHECKBOX
+add_if_true  flatbutton.c          $CONFIG_WIDGET_FLATBUTTON
+add_if_true  label.c               $CONFIG_WIDGET_LABEL
+add_if_true  listitem.c            $CONFIG_WIDGET_LISTITEM
+add_if_true  menuitem.c            $CONFIG_WIDGET_MENUITEM
+add_if_true  radiobutton.c         $CONFIG_WIDGET_RADIOBUTTON
+add_if_true  submenuitem.c         $CONFIG_WIDGET_SUBMENUITEM
+add_if_true  canvas.c              $CONFIG_WIDGET_CANVAS
+add_if_true  dialogbox.c           $CONFIG_WIDGET_DIALOGBOX
+add_if_true  messagedialog.c       $CONFIG_WIDGET_MESSAGEDIALOG
+add_if_true  indicator.c           $CONFIG_WIDGET_INDICATOR
+add_if_true  managedwindow.c       $CONFIG_WIDGET_MANAGEDWINDOW
+add_if_true  panelbar.c            $CONFIG_WIDGET_PANELBAR
+add_if_true  panel.c               $CONFIG_WIDGET_PANEL
+add_if_true  popup.c               $CONFIG_WIDGET_POPUP
+add_if_true  scroll.c              $CONFIG_WIDGET_SCROLL
+add_if_true  scrollbox.c           $CONFIG_WIDGET_SCROLLBOX
+add_if_true  simplemenu.c          $CONFIG_WIDGET_SIMPLEMENU
 add_if_true  terminal_frontend.c   $CONFIG_WIDGET_TERMINAL
 add_if_true  terminal_vt102.c      $CONFIG_WIDGET_TERMINAL
 add_if_true  terminal_textgrid.c   $CONFIG_WIDGET_TERMINAL
-add_if_true  canvas.c              $CONFIG_WIDGET_CANVAS
-add_if_true  panel_nobar.c         $CONFIG_NOPANELBAR
-add_if_false panel.c               $CONFIG_NOPANELBAR
-add_if_false panelbar.c            $CONFIG_NOPANELBAR
 add_if_true  textbox_frontend.c    $CONFIG_WIDGET_TEXTBOX
 add_if_true  textbox_document.c    $CONFIG_WIDGET_TEXTBOX
 add_if_true  textbox_paragraph.c   $CONFIG_WIDGET_TEXTBOX
 add_if_true  pgstr_textbuffers.c   $CONFIG_WIDGET_TEXTBOX
-add_if_true  field.c               $CONFIG_WIDGET_TEXTBOX
+add_if_true  field.c               $CONFIG_WIDGET_FIELD
 add_if_true  textedit_frontend.c   $CONFIG_WIDGET_TEXTEDIT
 add_if_true  textedit_llist.c      $CONFIG_WIDGET_TEXTEDIT
 add_if_true  textedit_logical.c    $CONFIG_WIDGET_TEXTEDIT
+add_if_true  toolbar.c             $CONFIG_WIDGET_TOOLBAR
 
 close_section
 

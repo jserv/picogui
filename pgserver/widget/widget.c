@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.202 2002/10/18 12:20:24 micahjd Exp $
+/* $Id: widget.c,v 1.203 2002/10/23 06:17:26 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -40,84 +40,6 @@
 #endif
 #include <pgserver/debug.h>
 
-/* The macros here are just shortcuts for defining the list
- * of implementations for each widget, and the subclass number.
- * STATICWIDGET_TABLE assumes there is no trigger handler,
- * and HYBRIDWIDGET_TABLE is used to override the initialization
- * of an existing widget without fully subclassing it.
- */
-
-/* Table of widgets */
-#ifdef RUNTIME_FUNCPTR
-struct widgetdef widgettab[PG_WIDGETMAX+1];
-void widgettab_init(void) {
-   struct widgetdef *p = widgettab;
-#else
-struct widgetdef widgettab[] = {
-#endif
-   
-DEF_STATICWIDGET_TABLE(0,toolbar)
-DEF_HYBRIDWIDGET_TABLE(label,button)
-DEF_WIDGET_TABLE(0,scroll)
-DEF_STATICWIDGET_TABLE(0,indicator)
-DEF_HYBRIDWIDGET_TABLE(label,button)    /* FIXME: This is here for binary compatibility temporarily,
-					 * since the bitmap widget has been deprecated.
-					 */
-DEF_WIDGET_TABLE(0,button)
-DEF_STATICWIDGET_TABLE(0,panel)
-DEF_WIDGET_TABLE(0,popup)
-DEF_STATICWIDGET_TABLE(0,box)
-
-#ifdef CONFIG_WIDGET_TEXTBOX
-DEF_HYBRIDWIDGET_TABLE(field,textbox)
-#else
-DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,98))
-#endif
-
-DEF_WIDGET_TABLE(0,background)
-DEF_HYBRIDWIDGET_TABLE(menuitem,button)
-
-#ifdef CONFIG_WIDGET_TERMINAL
-DEF_WIDGET_TABLE(0,terminal)
-#else
-DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,102))
-#endif
-
-#ifdef CONFIG_WIDGET_CANVAS
-DEF_WIDGET_TABLE(0,canvas)
-#else
-DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,103))
-#endif
-				     
-DEF_HYBRIDWIDGET_TABLE(checkbox,button)
-DEF_HYBRIDWIDGET_TABLE(flatbutton,button)
-DEF_HYBRIDWIDGET_TABLE(listitem,button)
-DEF_HYBRIDWIDGET_TABLE(submenuitem,button)
-DEF_HYBRIDWIDGET_TABLE(radiobutton,button)
-
-#ifdef CONFIG_WIDGET_TEXTBOX
-DEF_WIDGET_TABLE(0,textbox)
-#else
-DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,98))
-#endif
-				     
-#ifndef CONFIG_NOPANELBAR
-DEF_WIDGET_TABLE(0,panelbar)
-#else
-DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,94))
-#endif
-
-DEF_WIDGET_TABLE(1,simplemenu)           /* Subclasses popup */
-DEF_WIDGET_TABLE(1,dialogbox)            /* Subclasses popup */
-DEF_STATICWIDGET_TABLE(2,messagedialog)  /* Subclasses dialogbox, popup */
-DEF_WIDGET_TABLE(0,scrollbox)
-
-#ifdef CONFIG_WIDGET_TEXTEDIT
-DEF_WIDGET_TABLE(0,textedit)
-#else
-DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,108))
-#endif
-};
 
 /******** Widget interface functions */
  
