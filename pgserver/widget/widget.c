@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.115 2001/10/06 09:02:41 micahjd Exp $
+/* $Id: widget.c,v 1.116 2001/10/06 19:43:24 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -596,18 +596,23 @@ void request_focus(struct widget *self) {
 */
 void widgetunder(int x,int y,struct divnode *div) {
   if (!div) return;
-  /* If the widget contains the given point,
-   * it's the one. Ignore it if it has no trigger mask
-   */
   if ( ((!((div->flags & DIVNODE_DIVSCROLL) && div->divscroll)) ||
 	( div->divscroll->calcx<=x && div->divscroll->calcy<=y &&
 	  (div->divscroll->calcx+div->divscroll->calcw)>x &&
 	  (div->divscroll->calcy+div->divscroll->calch)>y )) &&
-       div->x<=x && div->y<=y && (div->x+div->w)>x && (div->y+div->h)>y
-       && div->owner && div->owner->trigger_mask)
-    div_under_crsr = div;
-  widgetunder(x,y,div->next);
-  widgetunder(x,y,div->div);
+       div->x<=x && div->y<=y && (div->x+div->w)>x && (div->y+div->h)>y) {
+
+    /* The cursor is inside this divnode */
+    
+    /* If this divnode has an interactive widget as its owner, and it
+     * is visible, take it. */
+    if (div->owner && div->owner->trigger_mask && div->build)
+      div_under_crsr = div;
+
+    /* Check this divnode's children */
+    widgetunder(x,y,div->next);
+    widgetunder(x,y,div->div);
+  }
 }
 
 /* Internal function that sends a trigger to a widget if it accepts it. */
