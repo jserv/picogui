@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.23 2000/10/19 01:21:24 micahjd Exp $
+/* $Id: label.c,v 1.24 2000/11/05 19:45:48 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -31,7 +31,8 @@
 
 struct labeldata {
   handle text,font;
-  int transparent,align;
+  unsigned char transparent;
+  short int align,direction;
 };
 #define DATA ((struct labeldata *)(self->data))
 
@@ -51,12 +52,18 @@ void build_label(struct gropctxt *c,unsigned short state,struct widget *self) {
       || !fd) return;
   if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,DATA->text))
       || !str) return;
-  sizetext(fd,&w,&h,str);
+  if (DATA->direction == PG_DIR_VERTICAL)
+    sizetext(fd,&h,&w,str);
+  else
+    sizetext(fd,&w,&h,str);
   if (w>c->w) w = c->w;
   if (h>c->h) h = c->h;
   align(c,DATA->align,&w,&h,&x,&y);
 
-  addgrop(c,PG_GROP_TEXT,x,y,w,h);
+  if (DATA->direction == PG_DIR_VERTICAL)
+    addgrop(c,PG_GROP_TEXTV,x,y+h,w,h);
+  else
+    addgrop(c,PG_GROP_TEXT,x,y,w,h);
   c->current->param[0] = DATA->text;
   c->current->param[1] = font;
   c->current->param[2] = theme_lookup(state,PGTH_P_FGCOLOR);
@@ -131,6 +138,15 @@ g_error label_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
+  case PG_WP_DIRECTION:
+    DATA->direction = data;
+    resizelabel(self);
+    if (DATA->transparent)
+      redraw_bg(self);
+    self->in->flags |= DIVNODE_NEED_RECALC;
+    self->dt->flags |= DIVTREE_NEED_RECALC;
+    break;
+
   case PG_WP_FONT:
     if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,data)) || !fd) 
       return mkerror(PG_ERRT_HANDLE,12);
@@ -188,6 +204,9 @@ glob label_get(struct widget *self,int property) {
   case PG_WP_TRANSPARENT:
     return DATA->transparent;
 
+  case PG_WP_DIRECTION:
+    return DATA->direction;
+
   case PG_WP_ALIGN:
     return DATA->align;
 
@@ -207,7 +226,10 @@ glob label_get(struct widget *self,int property) {
 			 DATA->font : theme_lookup(self->in->div->state,PGTH_P_FONT))) 
         || !fd) break;
     sizetext(fd,&tw,&th,str);
-    return th;
+    if (DATA->direction == PG_DIR_VERTICAL)
+      return tw;
+    else
+      return th;
 
   default:
     return 0;
@@ -228,8 +250,11 @@ void resizelabel(struct widget *self) {
 	      || !fd) return;
   if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,DATA->text))
 	      || !str) return;
-  
-  sizetext(fd,&w,&h,str);
+
+  if (DATA->direction == PG_DIR_VERTICAL)
+    sizetext(fd,&h,&w,str);
+  else
+    sizetext(fd,&w,&h,str);
   
   if ((self->in->flags & PG_S_TOP) ||
       (self->in->flags & PG_S_BOTTOM))
