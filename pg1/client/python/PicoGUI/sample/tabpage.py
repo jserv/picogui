@@ -37,7 +37,11 @@ btn.text = 'right'
 btn.side = 'top'
 app.link(change_side, btn, 'activate')
 
-n = p
+n = p.addWidget('Tabpage')
+n.text = 'special'
+n.addWidget('Label', 'inside').text = 'This tabpage is different from the others.'
+t = PicoGUI.Widget(app.server, n.tab, n)
+t.side = 'right'
 for i in range(2, 6):
     n = n.addWidget('Tabpage')
     n.text = str(i)
