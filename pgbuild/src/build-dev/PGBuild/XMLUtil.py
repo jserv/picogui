@@ -23,6 +23,7 @@ and XPath utilities.
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
+import PGBuild.Errors
 import SCons.Node
 from xml.dom import minidom
 import dmutil.xsl.xpath
@@ -237,6 +238,33 @@ def writeSubtree(root, dest, rootName=None, rootAttributes=None, comment=None, p
 
     if needClose:
         dest.close()
+
+
+def getChildData(tag, childName):
+    """Find exactly one child tag with the given name, and return its data content"""
+    children = tag.getElementsByTagName(childName)
+    if len(children) > 1:
+        raise PGBuild.Errors.ConfigError("Multiple <%s> tags found where only one was expected" % childName)
+    if len(children) == 0:
+        return None
+    data = ''
+    for grandChild in children[0].childNodes:
+        if grandChild.nodeType == grandChild.TEXT_NODE:
+            data += grandChild.data
+    return data
+
+def setChildData(tag, childName, data):
+    """Set the named child tag's data, creating the child if it doesn't exist"""
+    # Create the new child node
+    doc = tag.ownerDocument
+    child = doc.createElement(childName)
+    child.appendChild(doc.createTextNode(str(data)))
+    # Remove old children
+    for oldChild in tag.getElementsByTagName(childName):
+        tag.removeChild(oldChild)
+    # Insert the new child
+    tag.appendChild(child)
+    
     
 ### The End ###
         

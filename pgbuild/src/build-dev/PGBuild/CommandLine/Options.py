@@ -49,6 +49,9 @@ def parse(config, argv):
     configGroup = parser.add_option_group("Configuration Management")
     configGroup.add_option("-t", "--dump-tree", dest="treeDumpFile",
                            help="dump the configuration tree to FILE", metavar="FILE")
+    configGroup.add_option("--retest-mirrors", dest="retestMirrors", action="store_true",
+                           help="re-run any mirror speed tests, ignoring saved results")
+
 
     config.mount(OptionsXML(parser.parse_args(argv[1:])))
 
