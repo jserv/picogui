@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.45 2001/05/16 00:45:32 micahjd Exp $
+/* $Id: client_c.h,v 1.46 2001/05/16 02:48:43 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -158,15 +158,17 @@ typedef int (*pgselecthandler)(int n, fd_set *readfds, fd_set *writefds,
  * This is returned by the pgFrom* series of functions for loading
  * data, and used by many PicoGUI functions that need to refer to a chunk of data.
  * 
+ * \internal
+ * 
  * \sa pgFromFile, pgFromStream, pgFromMemory, pgFromTempMemory, pgNewBitmap, pgLoadTheme
  */
 struct pgmemdata {
-  void *pointer;       // when null, indicates error
-  unsigned long size;
-  int flags;           // PGMEMDAT_* flags or'ed together
+  void *pointer;       //!< when null, indicates error
+  unsigned long size;  //!< size in bytes of data block
+  int flags;           //!< PGMEMDAT_* flags or'ed together
 };
-#define PGMEMDAT_NEED_FREE    0x0001   // Should be free()'d when done
-#define PGMEMDAT_NEED_UNMAP   0x0002   // Should be munmap()'d when done
+#define PGMEMDAT_NEED_FREE    0x0001   //!< pgmemdata should be free()'d when done
+#define PGMEMDAT_NEED_UNMAP   0x0002   //!< pgmemdata should be munmap()'d when done
 
 /******************** Administration */
 

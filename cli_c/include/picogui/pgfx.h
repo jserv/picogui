@@ -1,4 +1,4 @@
-/* $Id: pgfx.h,v 1.8 2001/05/16 01:36:21 micahjd Exp $
+/* $Id: pgfx.h,v 1.9 2001/05/16 02:48:43 micahjd Exp $
  *
  * picogui/pgfx.h - The PicoGUI abstract graphics interface
  * 
@@ -99,9 +99,10 @@ typedef struct pgfx_context {
    struct pgfx_lib *lib;   //!< Pointers to the rendering functions 
    pghandle device;        //!< Output device (canvas, bitmap, etc.)
    pgcolor color;          //!< Current color
-   pgu cx,cy;              //!< Current position for moveto/lineto
+   pgu cx;                 //!< Current x position for moveto/lineto
+   pgu cy;                 //!< Current y position for moveto/lineto
    unsigned long flags;    //!< Backend-defined
-   int sequence;
+   int sequence;           //!< Backend-defined
 } *pgcontext;
 
 
@@ -113,30 +114,46 @@ typedef struct pgfx_context {
  * \sa pgPixel, pgLine, pgRect, pgFrame, pgSlab, pgBar, pgText, pgBitmap, pgTileBitmap, pgGradient
  */
 struct pgfx_lib {
+   //! Implementation of pgPixel
    pgprim (*pixel)     (pgcontext c, pgu x,  pgu y);
+   //! Implementation of pgLine
    pgprim (*line)      (pgcontext c, pgu x1, pgu y1, pgu x2, pgu y2);
+   //! Implementation of pgRect
    pgprim (*rect)      (pgcontext c, pgu x,  pgu y,  pgu w,  pgu h);
+   //! Implementation of pgFrame
    pgprim (*frame)     (pgcontext c, pgu x,  pgu y,  pgu w,  pgu h);
+   //! Implementation of pgSlab
    pgprim (*slab)      (pgcontext c, pgu x,  pgu y,  pgu w);
+   //! Implementation of pgBar
    pgprim (*bar)       (pgcontext c, pgu x,  pgu y,  pgu h);
+   //! Implementation of pgText
    pgprim (*text)      (pgcontext c, pgu x,  pgu y,  pghandle string);
+   //! Implementation of pgBitmap
    pgprim (*bitmap)    (pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
 			pghandle bitmap);
+   //! Implementation of pgTileBitmap
    pgprim (*tilebitmap)(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
 			pghandle bitmap);
+   //! Implementation of pgGradient
    pgprim (*gradient)  (pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
 			pgu angle, pgcolor c1, pgcolor c2);
 
    /* Nonvisual primitives */
+   
+   //! Implementation of pgSetColor nonvisual primitive
    pgprim (*setcolor)(pgcontext c, pgcolor color);
+   //! Implementation of pgSetFont nonvisual primitive
    pgprim (*setfont)(pgcontext c, pghandle font);
+   //! Implementation of pgSetLgop nonvisual primitive
    pgprim (*setlgop)(pgcontext c, short lgop);
+   //! Implementation of pgSetAngle nonvisual primitive
    pgprim (*setangle)(pgcontext c, pgu angle);              /* For text */
+   //! Implementation of pgSetSrc nonvisual primitive
    pgprim (*setsrc)(pgcontext c, pgu x,pgu y,pgu w,pgu h);  /* For bitmaps */
+   //! Implementation of pgSetMapping nonvisual primitive
    pgprim (*setmapping)(pgcontext c, pgu x,pgu y,pgu w,pgu h,short type);
    
-   /* Call to mark the device for updating. Because PGFX is
-    * output-method-independant it is not necessary to call pgSubUpdate */
+   //! Implementation of pgUpdate
    void (*update)(pgcontext c);
    
    /* FIXME: add functions to manipulate grops after they're created 
@@ -293,7 +310,7 @@ pgprim  pgLineTo(pgcontext c, pgu x, pgu y);
  * flags to PG_GROPF_TRANSIENT so that gropnodes are deleted immediately
  * after rendering.
  *
- * \sa pgWriteCmd, PG_WIDGET_CANVAS, PG_GROPF_TRANSIENT
+ * \sa pgWriteCmd, PG_WIDGET_CANVAS, PG_GROPF_TRANSIENT, pgNewCanvasContext
  */
 #define PGFX_IMMEDIATE    1
 /*!
@@ -303,7 +320,7 @@ pgprim  pgLineTo(pgcontext c, pgu x, pgu y);
  * automatic redrawing by the server without client intervention.
  * Primitives can be manipulated after being sent to the server.
  * 
- * \sa pgWriteCmd, PG_WIDGET_CANVAS, pgSetMapping
+ * \sa pgWriteCmd, PG_WIDGET_CANVAS, pgSetMapping, pgNewCanvasContext
  */
 #define PGFX_PERSISTENT   2
 
