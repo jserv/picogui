@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.25 2002/11/06 02:07:13 micahjd Exp $
+/* $Id: x11input.c,v 1.26 2002/11/06 02:42:14 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -81,6 +81,7 @@ int x11input_fd_activate(int fd) {
   int need_resize = 0;
   int new_width, new_height;
   Window resizing_window;
+  s16 w,h;
 
   if(fd != x11_fd) return 0;
 
@@ -89,10 +90,7 @@ int x11input_fd_activate(int fd) {
     XNextEvent(x11_display, &ev);
     switch (ev.type) {
 
-      /****************** Expose event 
-       *
-       * This is all handled by the video driver...
-       */
+      /****************** Expose event */
 
     case Expose:
       /* Union our current expose rectangle with this one */
@@ -104,7 +102,16 @@ int x11input_fd_activate(int fd) {
 
       /* If this is the last contiguous expose event, go ahead and draw */
       if (!ev.xexpose.count) {
-	x11_expose(ev.xexpose.window,expose_region);
+	xb = x11_get_window(ev.xexpose.window);
+	if (!xb)
+	  break;
+	
+	/* If the window has just changed size, hold off on the expose */
+	x11_window_get_size((hwrbitmap)xb,&w,&h);
+	if (w!=xb->w || h!=xb->h)
+	  break;
+	
+	x11_expose(xb,expose_region);
 	XDestroyRegion(expose_region);
 	expose_region = XCreateRegion();
       }

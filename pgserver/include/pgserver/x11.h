@@ -1,4 +1,4 @@
-/* $Id: x11.h,v 1.5 2002/11/06 01:19:59 micahjd Exp $
+/* $Id: x11.h,v 1.6 2002/11/06 02:42:14 micahjd Exp $
  *
  * x11.h - Header shared by all the x11 driver components in picogui
  *
@@ -96,7 +96,7 @@ Region x11_display_region;
 /******************************************************** Shared utilities */
 
 /* Redisplay the area inside the given expose region */
-void x11_expose(Window w, Region r);
+void x11_expose(struct x11bitmap *xb, Region r);
 
 /* Generate a table of GCs for each lgop */
 void x11_gc_setup(Drawable d);

@@ -1,4 +1,4 @@
-/* $Id: x11_util.c,v 1.8 2002/11/06 01:19:59 micahjd Exp $
+/* $Id: x11_util.c,v 1.9 2002/11/06 02:42:14 micahjd Exp $
  *
  * x11_util.c - Utility functions for picogui's driver for the X window system
  *
@@ -320,11 +320,7 @@ void x11_gc_setup(Drawable d) {
 				    x11_stipple_width,x11_stipple_height));
 }
 
-void x11_expose(Window w, Region r) {
-  struct x11bitmap *xb = x11_get_window(w);
-  if (!xb) 
-    return;
-
+void x11_expose(struct x11bitmap *xb, Region r) {
   if (xb->frontbuffer) {
     /* Double-buffered expose update */
     XSetRegion(x11_display,x11_gctab[PG_LGOP_NONE],r);
