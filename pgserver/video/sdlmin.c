@@ -1,4 +1,4 @@
-/* $Id: sdlmin.c,v 1.4 2000/09/03 23:40:59 micahjd Exp $
+/* $Id: sdlmin.c,v 1.5 2000/09/04 02:44:30 micahjd Exp $
  *
  * sdlmin.c - video driver wrapper for SDL.
  *            this 'min' version defines only the
@@ -47,6 +47,10 @@ SDL_Surface *sdlmin_vidsurf;
 g_error sdlmin_init(int xres,int yres,int bpp,unsigned long flags) {
   unsigned long sdlflags = 0;
   char str[80];
+
+  /* Default mode: 640x480 */
+  if (!xres) xres = 640;
+  if (!yres) yres = 480;
 
   /* Start up the SDL video subsystem thingy */
   if (SDL_Init(SDL_INIT_VIDEO))
