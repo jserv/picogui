@@ -1,8 +1,12 @@
-INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include $(DRIVER_CFLAGS) @RM_CFLAGS@ @PM_CFLAGS@
+# Commented out by Micah until this is fixed to build properly without PocketBee
+# INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include $(DRIVER_CFLAGS) @RM_CFLAGS@ @PM_CFLAGS@
+
+INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include $(DRIVER_CFLAGS)
 
 noinst_LIBRARIES = libinput.a
 
-LIBS   = @LIBS@ @RM_LIBS@
+# Commented out by Micah until this is fixed to build properly without PocketBee
+# LIBS   = @LIBS@ @RM_LIBS@
 
 libinput_a_SOURCES =		\
 	input_drivers.c		\
