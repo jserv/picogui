@@ -92,32 +92,42 @@ class Application(Widget.Widget):
     def send(self, widget, name, **attrs):
         self._event_stack.append(InternalEvent(name, widget, attrs))
 
+    def poll_next_event(self):
+        ev = self.server.wait()
+        if ev.widget_id is None:
+            if ev.name == 'infilter':
+                ev = ev.trigger
+                try:
+                    ev.widget = self._infilter_registry[ev.sender]
+                except KeyError:
+                    ev.widget = self
+            else:
+                ev.widget = None
+        else:
+            try:
+                ev.widget = self._widget_registry[ev.widget_id]
+            except KeyError:
+                ev.widget = Widget.Widget(self.server, ev.widget_id)
+        self._event_stack.append(ev)
+
     def run(self):
         while 1:
 
             self.server.update()
-            queued = self.server.checkevent()
 
-            for i in range(queued):
-                ev = self.server.wait()
-                if ev.widget_id is None:
-                    if ev.name == 'infilter':
-                        ev = ev.trigger
-                        try:
-                            ev.widget = self._infilter_registry[ev.sender]
-                        except KeyError:
-                            ev.widget = self
-                    else:
-                        ev.widget = None
-                else:
-                    try:
-                        ev.widget = self._widget_registry[ev.widget_id]
-                    except KeyError:
-                        ev.widget = Widget.Widget(self.server, ev.widget_id)
-                self._event_stack.append(ev)
-            else: #nothing queued - send idle and sleep
-                self.send(self, 'idle')
-                time.sleep(0.1)
+            if self._event_registry.get(None, 'idle'):
+                # if we have idle handlers, we want to see to it that they are called
+                queued = self.server.checkevent()
+
+                for i in range(queued):
+                    self.poll_next_event()
+                else: #nothing queued - send idle and sleep
+                    self.send(self, 'idle')
+                    time.sleep(0.1)
+            else:
+                # otherwise, just get one single event and dispatch it
+                self.poll_next_event()
+            
             # XXX DANGER for thread-safety
             # (could lose events - when we decide to go thread-safe this operation
             # needs to be wrapped in a semaphore)
