@@ -32,6 +32,7 @@ int main(int argc, char **argv) {
 
   pgNewWidget(PG_WIDGET_FIELD,0,0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&fieldActivate,NULL);
+   pgFocus(PGDEFAULT);
    
   /* Run it */
   pgEventLoop();

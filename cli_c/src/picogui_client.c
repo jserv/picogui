@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.52 2001/02/15 01:28:13 micahjd Exp $
+/* $Id: picogui_client.c,v 1.53 2001/02/15 02:03:36 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -19,7 +19,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
- * Contributors: Philippe Ney <philippe.ney@smartdata.ch>
+ * Contributors: 
+ * Philippe Ney <philippe.ney@smartdata.ch>
  * Brandon Smith <lottabs2@yahoo.com>
  * 
  * 
@@ -103,8 +104,8 @@ struct {
     struct {
       unsigned long size;
       void *data;         /* Dynamically allocated - should be freed and
-                             set to NULL when done, or it will be freed
-                             next time flushpackets is called */
+			     set to NULL when done, or it will be freed
+			     next time flushpackets is called */
     } data;
 
   } e;  /* e for extra? ;-) */
@@ -172,7 +173,7 @@ int _pg_recvtimeout(short *rsptype) {
   fd_set readfds;
   struct pgrequest waitreq;
   struct pgrequest unwaitreq;
-  char cruft[sizeof(struct pgresponse_ret) - sizeof(short)];    /* Unused return packet */
+  char cruft[sizeof(struct pgresponse_ret) - sizeof(short)];	/* Unused return packet */
    
   /* Set up a packet to send to put us back on the waiting list */
   waitreq.type = htons(PGREQ_WAIT);
@@ -190,14 +191,14 @@ int _pg_recvtimeout(short *rsptype) {
      /* don't care about writefds and exceptfds: */
      
      if ((*_pgselect_handler)(_pgsockfd+1,&readfds,NULL,NULL,
-                              (tv.tv_sec + tv.tv_usec) ? &tv : NULL) < 0)
+			      (tv.tv_sec + tv.tv_usec) ? &tv : NULL) < 0)
        continue;
 
      /* Well, now we have something! */
 
      if (FD_ISSET(_pgsockfd, &readfds))   /* Got data from server */
-        return _pg_recv(rsptype,sizeof(short));
-        
+	return _pg_recv(rsptype,sizeof(short));
+	
      /* We'll need these */
      waitreq.id = ++_pgrequestid;
      unwaitreq.id = ++_pgrequestid;
@@ -217,7 +218,7 @@ int _pg_recvtimeout(short *rsptype) {
      _pg_recv(cruft,sizeof(cruft));
       
      /* At this point either it was a client-defined fd or a timeout.
-        Either way we need to kickstart the event loop. */
+	Either way we need to kickstart the event loop. */
 
      /* Run the idle handler, reset the event loop, then try again */
      _pg_idle();
@@ -259,9 +260,9 @@ void _pg_defaulterr(unsigned short errortype,const char *msg) {
   in_defaulterr = 1;
   if (PG_MSGBTN_YES ==
       pgMessageDialogFmt("PicoGUI Error",PG_MSGBTN_YES | PG_MSGBTN_NO,
-                         "An error of type %s occurred"
-                         " in %s:\n\n%s\n\nTerminate the application?",
-                         pgErrortypeString(errortype),_pg_appname,msg))
+			 "An error of type %s occurred"
+			 " in %s:\n\n%s\n\nTerminate the application?",
+			 pgErrortypeString(errortype),_pg_appname,msg))
     exit(errortype);
   pgUpdate(); /* In case this happens in a wierd place, go ahead and update. */
   in_defaulterr = 0;
@@ -325,7 +326,7 @@ void _pg_getresponse(void) {
    */
   
   if ( ((_pgidle_period.tv_sec + _pgidle_period.tv_usec)&&!_pgidle_lock) ||
-        (_pgselect_handler != &select) ) {
+	(_pgselect_handler != &select) ) {
      
      /* Use the interruptable wait */
      if (_pg_recvtimeout(&_pg_return.type))
@@ -351,17 +352,17 @@ void _pg_getresponse(void) {
       /* Read the rest of the error (already have response type) */
       pg_err.type = _pg_return.type;
       if (_pg_recv(((char*)&pg_err)+sizeof(_pg_return.type),
-                   sizeof(pg_err)-sizeof(_pg_return.type)))
-        return;
+		   sizeof(pg_err)-sizeof(_pg_return.type)))
+	return;
       rsp_id = pg_err.id;
       pg_err.errt = ntohs(pg_err.errt);
       pg_err.msglen = ntohs(pg_err.msglen);
       
       /* Dynamically allocated buffer for the error message */ 
       if (!(msg = _pg_malloc(pg_err.msglen+1)))
-        return;
+	return;
       if(_pg_recv(msg,pg_err.msglen))
-        return;
+	return;
       msg[pg_err.msglen] = 0;
        
       (*_pgerrhandler)(pg_err.errt,msg);
@@ -377,8 +378,8 @@ void _pg_getresponse(void) {
       /* Read the rest of the error (already have response type) */
       pg_ret.type = _pg_return.type;
       if (_pg_recv(((char*)&pg_ret)+sizeof(_pg_return.type),
-                   sizeof(pg_ret)-sizeof(_pg_return.type)))
-        return;
+		   sizeof(pg_ret)-sizeof(_pg_return.type)))
+	return;
       rsp_id = pg_ret.id;
       _pg_return.e.retdata = ntohl(pg_ret.data);
     }
@@ -391,8 +392,8 @@ void _pg_getresponse(void) {
 
       /* Read the rest of the event (already have response type) */
       if (_pg_recv(((char*)&pg_ev)+sizeof(_pg_return.type),
-                   sizeof(pg_ev)-sizeof(_pg_return.type)))
-        return;
+		   sizeof(pg_ev)-sizeof(_pg_return.type)))
+	return;
       pg_ev.type = _pg_return.type;
       memset(&_pg_return.e.event,0,sizeof(_pg_return.e.event));
       _pg_return.e.event.type = ntohs(pg_ev.event);
@@ -402,46 +403,46 @@ void _pg_getresponse(void) {
       /* Decode the event differently based on the type */
       switch (_pg_return.e.event.type & PG_EVENTCODINGMASK) {
 
-         /* Easy, da? */
+	 /* Easy, da? */
        default:
        case PG_EVENTCODING_PARAM:
-         _pg_return.e.event.e.param = pg_ev.param;      
-         break;
+	 _pg_return.e.event.e.param = pg_ev.param;      
+	 break;
        
-         /* On some architectures this isn't necessary due to the layout
-          * of the union. Hope the optimizer notices :) */
+	 /* On some architectures this isn't necessary due to the layout
+	  * of the union. Hope the optimizer notices :) */
        case PG_EVENTCODING_XY:
        case PG_EVENTCODING_KBD:   /* Same thing, just different names */
-         _pg_return.e.event.e.size.w = pg_ev.param >> 16;
-         _pg_return.e.event.e.size.h = pg_ev.param & 0xFFFF;
-         break;
-         
-         /* Decode 'mouse' parameters */
+	 _pg_return.e.event.e.size.w = pg_ev.param >> 16;
+	 _pg_return.e.event.e.size.h = pg_ev.param & 0xFFFF;
+	 break;
+	 
+	 /* Decode 'mouse' parameters */
        case PG_EVENTCODING_PNTR:
-         _pg_return.e.event.e.pntr.x     = pg_ev.param & 0x0FFF;
-         _pg_return.e.event.e.pntr.y     = (pg_ev.param>>12) & 0x0FFF;
-         _pg_return.e.event.e.pntr.btn   = pg_ev.param >> 28;
-         _pg_return.e.event.e.pntr.chbtn = (pg_ev.param>>24) & 0x000F;
-         break;
-         
-         /* Transfer extra data */
+	 _pg_return.e.event.e.pntr.x     = pg_ev.param & 0x0FFF;
+	 _pg_return.e.event.e.pntr.y     = (pg_ev.param>>12) & 0x0FFF;
+	 _pg_return.e.event.e.pntr.btn   = pg_ev.param >> 28;
+	 _pg_return.e.event.e.pntr.chbtn = (pg_ev.param>>24) & 0x000F;
+	 break;
+	 
+	 /* Transfer extra data */
        case PG_EVENTCODING_DATA:   
-         _pg_return.e.event.e.data.size = pg_ev.param;      
-         if (!(_pg_return.e.event.e.data.pointer = 
-               _pg_malloc(_pg_return.e.event.e.data.size+1)))
-           return;
-         if (_pg_recv(_pg_return.e.event.e.data.pointer,
-                      _pg_return.e.event.e.data.size))
-           return;
-         /* Add a null terminator */
-         ((char *)_pg_return.e.event.e.data.pointer)
-             [_pg_return.e.event.e.data.size] = 0;
-         break;
+	 _pg_return.e.event.e.data.size = pg_ev.param;      
+	 if (!(_pg_return.e.event.e.data.pointer = 
+	       _pg_malloc(_pg_return.e.event.e.data.size+1)))
+	   return;
+	 if (_pg_recv(_pg_return.e.event.e.data.pointer,
+		      _pg_return.e.event.e.data.size))
+	   return;
+	 /* Add a null terminator */
+	 ((char *)_pg_return.e.event.e.data.pointer)
+	     [_pg_return.e.event.e.data.size] = 0;
+	 break;
 
-         /* Decode keyboard event */
-         
+	 /* Decode keyboard event */
+	 
       }
-        
+	
     }
     break;
 
@@ -453,16 +454,16 @@ void _pg_getresponse(void) {
       /* Read the rest of the response (already have response type) */
       pg_data.type = _pg_return.type;
       if (_pg_recv(((char*)&pg_data)+sizeof(_pg_return.type),
-                   sizeof(pg_data)-sizeof(_pg_return.type)))
-        return;
+		   sizeof(pg_data)-sizeof(_pg_return.type)))
+	return;
       rsp_id = pg_data.id;
       _pg_return.e.data.size = ntohl(pg_data.size);
       
       if (!(_pg_return.e.data.data = 
-            _pg_malloc(_pg_return.e.data.size+1)))
-        return;
+	    _pg_malloc(_pg_return.e.data.size+1)))
+	return;
       if (_pg_recv(_pg_return.e.data.data,_pg_return.e.data.size))
-        return;
+	return;
 
       /* Add a null terminator */
       ((char *)_pg_return.e.data.data)[_pg_return.e.data.size] = 0;
@@ -485,7 +486,7 @@ void _pg_getresponse(void) {
 #ifdef DEBUG_EVT
    if (_pg_return.type == PG_RESPONSE_EVENT) 
      printf("Event is %d after case\n",
-            _pg_return.e.event.type);
+	    _pg_return.e.event.type);
 #endif
 }
 
@@ -520,11 +521,11 @@ char * _pg_dynformat(const char *fmt,va_list ap) {
       size *= 2;  /* twice the old size */
 
     free(p);     /* Don't depend on realloc here.
-                    In ucLinux, realloc is not available
-                    so it is implemented by allocating
-                    a new buffer and copying the data.
-                    We don't need the old data so this
-                    is more efficient. */    
+		    In ucLinux, realloc is not available
+		    so it is implemented by allocating
+		    a new buffer and copying the data.
+		    We don't need the old data so this
+		    is more efficient. */    
     if (!(p = _pg_malloc(size)))
       return NULL;
   }
@@ -580,28 +581,28 @@ void pgInit(int argc, char **argv)
       args_to_shift = 1;
 
       if (!strcmp(arg,"server")) {
-        /* --pgserver : Next argument is the picogui server */
-        args_to_shift = 2;
-        hostname = argv[i+1];
-        setenv("pgserver",hostname,1);    /* Child processes inherit server */
+	/* --pgserver : Next argument is the picogui server */
+	args_to_shift = 2;
+	hostname = argv[i+1];
+	setenv("pgserver",hostname,1);    /* Child processes inherit server */
       }
 
       else if (!strcmp(arg,"version")) {
-        /* --pgversion : For now print CVS id */
-        fprintf(stderr,"$Id: picogui_client.c,v 1.52 2001/02/15 01:28:13 micahjd Exp $\n");
-        exit(1);
+	/* --pgversion : For now print CVS id */
+	fprintf(stderr,"$Id: picogui_client.c,v 1.53 2001/02/15 02:03:36 micahjd Exp $\n");
+	exit(1);
       }
       
       else {
-        /* Other command, print some help */
-        fprintf(stderr,"PicoGUI Client Library\nCommands: --pgserver --pgversion\n");
-        exit(1);
+	/* Other command, print some help */
+	fprintf(stderr,"PicoGUI Client Library\nCommands: --pgserver --pgversion\n");
+	exit(1);
       }
 
       /* Remove this argument - shuffle all future args back a space */
       argc -= args_to_shift;
       for (j=i;j<argc;j++)
-        argv[j] = argv[j+args_to_shift];
+	argv[j] = argv[j+args_to_shift];
     }
   }
   /* Some programs might rely on this? */
@@ -650,12 +651,12 @@ void pgInit(int argc, char **argv)
   }
   if(ServerInfo.protover < PG_PROTOCOL_VER)
     pgMessageDialog("PicoGUI Warning",
-                    "The PicoGUI server is older than this program;\n"
-                    "you may experience compatibility problems.",0);
+		    "The PicoGUI server is older than this program;\n"
+		    "you may experience compatibility problems.",0);
 }
 
 void pgSetErrorHandler(void (*handler)(unsigned short errortype,
-                                       const char *msg)) {
+				       const char *msg)) {
   _pgerrhandler = handler;
 }
 
@@ -763,7 +764,7 @@ void pgEventLoop(void) {
 
 #ifdef DEBUG_EVT
      printf("Recieved event %d from 0x%08X with param 0x%08X\n",
-            evt.type,evt.from,evt.e.param);
+	    evt.type,evt.from,evt.e.param);
 #endif
 
     /* Search the handler list, executing the applicable ones */
@@ -771,9 +772,9 @@ void pgEventLoop(void) {
     num = 0;
     while (n) {
       if ( (((signed long)n->widgetkey)==PGBIND_ANY || n->widgetkey==evt.from) &&
-           (((signed short)n->eventkey)==PGBIND_ANY || n->eventkey==evt.type) )
-         if ((*n->handler)(&evt))
-           goto skiphandlers;
+	   (((signed short)n->eventkey)==PGBIND_ANY || n->eventkey==evt.type) )
+	 if ((*n->handler)(&evt))
+	   goto skiphandlers;
 
        n = n->next;
     }
@@ -809,50 +810,61 @@ struct pgEvent *pgGetEvent(void) {
 
 /* Add the specified handler to the list */
 void pgBind(pghandle widgetkey,unsigned short eventkey,
-            pgevthandler handler, void *extra) {
-  struct _pghandlernode *n;
+	    pgevthandler handler, void *extra) {
+   struct _pghandlernode *p,*n = NULL;
+   
+   /* Default widget? */
+   if (!widgetkey) 
+     widgetkey = _pgdefault_widget;
+   
+   p = _pghandlerlist;
+   
+   /* Are we just deleting a node? */
+   if (!handler) {
+      struct _pghandlernode **where = &_pghandlerlist;
+      
+      while (p) {
+	 if (p->widgetkey==widgetkey &&
+	     p->eventkey==eventkey) {
 
-  /* Default widget? */
-  if (!widgetkey) 
-    widgetkey = _pgdefault_widget;
-
-/* Check to see if the widget and event are the same as a previous node, also check the extra pointer*/
-/* Additions by Brandon Smith <lottabs2@yahoo.com> */
-/* If the widgetkey and eventkey are the same, it replaces the handler and the extra pointer*/
-n= _pghandlerlist;
-while (n) {
-  if(n->widgetkey==widgetkey &&
-     n->eventkey==eventkey){
-/* Yep, it exists so I'll replace it */
- n->handler = handler;
- n->extra = extra;
-}
- 
- /* Make sure this _exact_ node doesn't already exist */
-/*  n = _pghandlerlist;
-  while (n) {
-    if (n->widgetkey==widgetkey &&
-        n->eventkey==eventkey &&
-        n->handler==handler &&
-        n->extra==extra) /* added by Brandon Smith  */ /*
+	    *where = p->next;
+	    free(p);
+	    return;
+	 }
+	 where = &p->next;
+	 p = p->next;
+      }
       return;
-    n = n->next;
-  }
-*/
-  /* Allocate a new hander node */
-  if (!(n = _pg_malloc(sizeof(struct _pghandlernode))))
-    return;
-  
-  n->widgetkey = widgetkey;
-  n->eventkey = eventkey;
-  n->handler = handler;
-  n->extra = extra;
-
-  /* Add it at the beginning of the list (order doesn't
-   * matter, and this is faster and smaller */
-
-  n->next = _pghandlerlist;
-  _pghandlerlist = n;
+   }
+   
+   /* Is the node already present? */
+   while (p) {
+      if (p->widgetkey==widgetkey &&
+	  p->eventkey==eventkey) {
+	 n = p;
+	 break;
+      }
+      p = p->next;
+   }
+   
+   /* Allocate a new hander node */
+   if (!n) {
+      if (!(n = _pg_malloc(sizeof(struct _pghandlernode))))
+	return;
+      
+      /* Add it at the beginning of the list (order doesn't
+       * matter, and this is faster and smaller */
+      
+      n->next = _pghandlerlist;
+      _pghandlerlist = n;
+      
+      n->widgetkey = widgetkey;
+      n->eventkey = eventkey;
+   }
+   
+   /* Set the handler's effects... */
+   n->handler = handler;
+   n->extra = extra;
 }
 
 /* Set a custom handler instead of the usual select() */
@@ -900,7 +912,7 @@ pghandle pgLoadTheme(struct pgmemdata obj) {
 /* Data already loaded in memory */
 struct pgmemdata pgFromMemory(void *data,unsigned long length) {
   static struct pgmemdata x;    /* Maybe make something like this
-                                   global to use less memory? */
+				   global to use less memory? */
   x.pointer = data;
   x.size = length;
   x.flags = 0;
@@ -962,7 +974,7 @@ void pgUnregisterOwner(int resource) {
 }
 
 void pgSendKeyInput(unsigned long type,unsigned short key,
-                    unsigned short mods) {
+		    unsigned short mods) {
   struct pgreqd_in_key arg;
   arg.type = htonl(type);
   arg.key  = htons(key);
@@ -972,7 +984,7 @@ void pgSendKeyInput(unsigned long type,unsigned short key,
 
 /* Also used by networked input devices, but to send pointing device events */
 void pgSendPointerInput(unsigned long type,unsigned short x,unsigned short y,
-                        unsigned short btn) {
+			unsigned short btn) {
   struct pgreqd_in_point arg;
   arg.type = htonl(type);
   arg.x  = htons(x);

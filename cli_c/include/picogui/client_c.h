@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.35 2001/02/09 00:58:13 micahjd Exp $
+/* $Id: client_c.h,v 1.36 2001/02/15 02:03:36 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -182,15 +182,17 @@ void pgUpdate(void);
  */
 void pgSubUpdate(pghandle widget);
 
-/* Attatch an event handler to a widget and/or event. A NULL
- * widget uses the default, as usual. Either the handle or the
- * event (or both!) can be the wildcard PGBIND_ANY to match all
- * handles/events. If a handler with these properties already
- * exists, it is not removed. If the widget a handler refers to
- * is deleted, the handler is deleted however.
+/* Attatch an event handler to a widget and/or event.
+ * Widgetkey may be PGDEFAULT to attach to the most recent widget, or
+ * PGBIND_ANY to respond to any widget's events.
+ * Eventkey may be a PG_WE_* or PG_NWE_* constant to match a particular event
+ * or PGBIND_ANY to match any event.
+ * When the widgetkey and eventkey both match, the handler is called,
+ * and the specified value for extra is passed in its pgEvent structure.
  * 
- * The "extra" pointer is passed to the event handler invoked
- * through this binding.
+ * If widgetkey and eventkey are exactly the same as an existing binding, its
+ * handler and extra value are reset to the ones specified here. If handler is
+ * NULL the binding is deleted.
  */
 void pgBind(pghandle widgetkey,unsigned short eventkey,
 	    pgevthandler handler,void *extra);
