@@ -49,6 +49,7 @@ bool 'Mirror guru() output on stderr'   CONFIG_STDERR_GURU
 bool 'HTML parser debugging'            DEBUG_HTML
 bool 'Disable pixel/getpixel in x11'    CONFIG_X11_NOPIXEL
 bool 'Update the entire surface in sdlfb' CONFIG_SDL_FULLUPDATE
+bool 'PicoGUI error tracing'            CONFIG_ERROR_TRACE
 endmenu
 
 mainmenu_option next_comment

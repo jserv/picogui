@@ -1,4 +1,4 @@
-/* $Id: g_error.h,v 1.10 2001/12/14 22:56:43 micahjd Exp $
+/* $Id: g_error.h,v 1.11 2002/01/06 03:25:16 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -47,8 +47,17 @@ typedef unsigned int g_error;
 
 #define success               PG_ERRT_NONE
 
-/* It's so common, let's make it a macro */
+/* PicoGUI exception handling, if an error was generated in
+ * a called function, return it
+ */
+#ifdef CONFIG_ERROR_TRACE
+#define errorcheck           if (iserror(e)) {  \
+                               printf("%s at %s, line %d: ",__FUNCTION__,__FILE__,__LINE__); \
+                               prerror(e); return e; \
+                             }
+#else
 #define errorcheck           if (iserror(e)) return e;
+#endif
 
 /* Look up a text error message, with internationalization */
 const char *errortext(g_error e);

@@ -390,3 +390,8 @@ CONFIG_X11_NOSLOWLGOP
       At least in the current implementation, addition subtraction and
       multiplication LGOPs are very slow. Turning this on will make
       themes like PicoAqua run at a reasonable speed.
+
+CONFIG_ERROR_TRACE
+      Any time a PicoGUI function reports an erorr, this reports it to
+      stderr. This could be very useful for debugging errors from
+      unknown locations.
