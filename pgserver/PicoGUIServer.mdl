@@ -14,6 +14,8 @@ Provides the PicoGUI server, which is responsible for the
 graphical interface.
 """
 
+prefix = '/usr'
+
 depends = [
     'resourcemanager', 'kernel',
     ('libjpeg', S ('platform/ppc-linux') | S ('platform/native-linux'))
@@ -23,14 +25,15 @@ runtime = [
 
             Runtime ('install', 'Install PicoGUI Server',
                      content = [ 'bin/pgserver',
-                                 'etc/pgserver.conf'],
+                                 '../etc/pgserver.conf'],
                      depends = [ 'resourcemanager/install',
                                  'kernel/video'],
                      help = "Install the PicoGUI Server" ),
 
             Runtime ('server', 'Run PicoGUI Server',
 
-                     content = [ 'etc/rm.d/picoguiserver', 'bin/picogui-launcher.sh' ],
+                     content = [ '../etc/rm.d/picoguiserver',
+                                 'bin/picogui-launcher.sh' ],
                      
                      depends = [ 'picoguiserver/install', 'resourcemanager/server',
                                  (S ('module/picoguiserver/server') & S ('platform/m68k-pic-coff')) >> S ('module/pocketapps/bioscall'),
@@ -48,8 +51,9 @@ def prepare (module, platform, project):
               platform.fqn ()
 
     command = ["../configure",
-               "--with-profile=%s" % profile,
+               "--sysconfdir=/etc",
                "--prefix=%s" % module.path ['prefix'],
+               "--with-profile=%s" % profile,
                "--enable-bee",
                "--with-extra-ipath=%s/include" % project ['module/kernel'].path ['dfl'],
                "--with-rm=%s" % project ['module/resourcemanager'].path ['dfl'],
@@ -70,13 +74,13 @@ def prepare (module, platform, project):
     return
 
 def install (module, platform, project):
-    sequence ("make install prefix=%s" % module.path ['frz'])
+    sequence ("make install DESTDIR=%s" % module.path ['d_frz'])
 
     # try to install the mdl file in the root of the frozen directory
     installfile (module.file, module.path ['r_frz'])
 
     # generate the RM file
-    file = os.path.join (module.path ['frz'], 'etc', 'rm.d', 'picoguiserver')
+    file = os.path.join (module.path ['d_frz'], 'etc', 'rm.d', 'picoguiserver')
     makedirs (os.path.dirname (file))
 
     fd = open (file, 'w')
