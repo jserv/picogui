@@ -1,4 +1,4 @@
-/* $Id: terminal_textgrid.c,v 1.24 2003/03/27 10:23:00 micahjd Exp $
+/* $Id: terminal_textgrid.c,v 1.25 2003/03/27 10:47:46 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -89,7 +89,7 @@ void textgrid_render(struct groprender *r, struct gropnode *n) {
   if (celw < 1) celw = 1;
   if (celh < 1) celh = 1;
 
-  /* n->param[1]'s low u16 is the buffer width, the high u16 is
+  /* n->param[1]'s high u16 is the buffer width, the low u16 is
    * an offset from the beginning of the buffer.
    */
   bufferw = n->param[1] >> 16;
@@ -260,11 +260,7 @@ void term_realize(struct widget *self) {
   
   /**** Set up an incremental update for the update rectangle */
   
-  /* If this is more than one line, load the buffer width */
-  if (DATA->updh > 1)
-    DATA->inc->param[1] = DATA->bufferw << 16;
-  else
-    DATA->inc->param[1] = DATA->updw << 16;
+  DATA->inc->param[1] = DATA->bufferw << 16;
       
   /* Set the buffer offset */
   DATA->inc->param[1] |= DATA->updx + DATA->updy * DATA->bufferw;
