@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.59 2001/04/29 17:28:40 micahjd Exp $
+/* $Id: panel.c,v 1.60 2001/06/01 01:00:47 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -82,7 +82,7 @@ struct paneldata {
 };
 #define DATA ((struct paneldata *)(self->data))
 
-void themeify_panel(struct widget *self);
+void themeify_panel(struct widget *self,bool force);
 void panel_calcsplit(struct widget *self,int x,int y);
    
 /**** Build and resize */
@@ -385,7 +385,8 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
   unsigned long tick;
   int tmpover;
   g_error e;
-
+  bool force = 0;
+   
   switch (type) {
 
   case TRIGGER_ENTER:
@@ -437,7 +438,7 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
      
     /* Update the screen now, so we have an up-to-date picture
        of the panelbar stored in DATA->bar */
-    themeify_panel(self);
+    themeify_panel(self,0);
     VID(sprite_hideall) ();   /* This line combined with the zero flag on */
     update(NULL,0);             /*  the next gets a clean spriteless grab */
 
@@ -512,6 +513,7 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     free_sprite(DATA->s);
     DATA->s = NULL;
     DATA->sbit = NULL;
+    force = 1;           /* Definitely draw the new position */
 #endif
      
     DATA->on = 0;
@@ -584,17 +586,17 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
 #endif /* CONFIG_DRAGSOLID */
   }
 
-  themeify_panel(self);
+  themeify_panel(self,force);
 }
 
-void themeify_panel(struct widget *self) {
+void themeify_panel(struct widget *self,bool force) {
   /* Apply the current state  */
   if (DATA->on)
-    div_setstate(DATA->panelbar,PGTH_O_PANELBAR_ON);
+    div_setstate(DATA->panelbar,PGTH_O_PANELBAR_ON,force);
   else if (DATA->over)
-    div_setstate(DATA->panelbar,PGTH_O_PANELBAR_HILIGHT);
+    div_setstate(DATA->panelbar,PGTH_O_PANELBAR_HILIGHT,force);
   else
-    div_setstate(DATA->panelbar,PGTH_O_PANELBAR);
+    div_setstate(DATA->panelbar,PGTH_O_PANELBAR,force);
 }
 
 /* The End */

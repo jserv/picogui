@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.34 2001/04/29 17:28:40 micahjd Exp $
+/* $Id: scroll.c,v 1.35 2001/06/01 01:00:47 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -198,7 +198,8 @@ glob scroll_get(struct widget *self,int property) {
 
 void scroll_trigger(struct widget *self,long type,union trigparam *param) {
   unsigned long tick;
-
+  bool force = 0;     /* Force div_setstate to redraw? */
+   
   switch (type) {
 
   case TRIGGER_ENTER:
@@ -252,6 +253,7 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
       }
       
       scrollevent(self);
+      force = 1;
     }
   case TRIGGER_RELEASE:
     if (type==TRIGGER_TIMER) {
@@ -290,6 +292,7 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
     DATA->old_value = DATA->value;
 
     scrollevent(self);
+    force = 1;
     break;
   }
 
@@ -298,13 +301,11 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
   /* Change State */
   if (type != TRIGGER_DRAG)
     if (DATA->on)
-      div_setstate(self->in->div,PGTH_O_SCROLL_ON);
+      div_setstate(self->in->div,PGTH_O_SCROLL_ON,force);
     else if (DATA->over)
-      div_setstate(self->in->div,PGTH_O_SCROLL_HILIGHT);
+      div_setstate(self->in->div,PGTH_O_SCROLL_HILIGHT,force);
     else
-      div_setstate(self->in->div,PGTH_O_SCROLL);
-  
-  update(NULL,1);
+      div_setstate(self->in->div,PGTH_O_SCROLL,force);
 }
 
 /* The End */

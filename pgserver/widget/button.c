@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.60 2001/04/29 17:28:40 micahjd Exp $
+/* $Id: button.c,v 1.61 2001/06/01 01:00:47 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -345,11 +345,11 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
   /* Update, THEN send the event. */
 
   if (DATA->on)
-    div_setstate(self->in->div,DATA->state_on);
+    div_setstate(self->in->div,DATA->state_on,0);
   else if (DATA->over)
-    div_setstate(self->in->div,DATA->state_hilight);
+    div_setstate(self->in->div,DATA->state_hilight,0);
   else
-    div_setstate(self->in->div,DATA->state);
+    div_setstate(self->in->div,DATA->state,0);
 
   if (event>=0) {
     if (DATA->event)

@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.26 2001/05/31 06:14:21 micahjd Exp $
+/* $Id: field.c,v 1.27 2001/06/01 01:00:47 micahjd Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -192,7 +192,7 @@ g_error field_set(struct widget *self,int property, glob data) {
      /* Update text */
      strcpy(DATA->buffer,str);
      resizefield(self); 
-//     div_setstate(self->in->div,self->in->div->state);
+//     div_setstate(self->in->div,self->in->div->state,1);
      break;
 
    default:
@@ -305,12 +305,9 @@ void field_trigger(struct widget *self,long type,union trigparam *param) {
     break;
 
   }
-
-  /* Update appearance. Can't use div_setstate any more because the new
-   * state equality checking stuff would optimize out this update! */
-  div_rebuild(self->in->div);
-   if (self->dt == dts->top)
-         update(NULL,1);
+  
+  /* Always redraw the field */
+  div_setstate(self->in->div,self->in->div->state, 1);
 }
 
 /* Apply the current visual state */

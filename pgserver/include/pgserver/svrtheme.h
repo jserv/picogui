@@ -1,4 +1,4 @@
-/* $Id: svrtheme.h,v 1.3 2001/02/17 05:18:40 micahjd Exp $
+/* $Id: svrtheme.h,v 1.4 2001/06/01 01:00:47 micahjd Exp $
  * 
  * svrtheme.h - functions and data structures for themes, used
  *              only in the server
@@ -96,8 +96,11 @@ g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
 /* By calling the 'build' function, rebuilds a divnode's groplist */
 void div_rebuild(struct divnode *d);
 
-/* Change a divnode's state, and update the necessary things. */
-void div_setstate(struct divnode *d,unsigned short state);
+/* Change a divnode's state, and update the necessary things. 
+ * Unless 'force' is nonzero, it will check whether the update is really
+ * necessary.
+ */
+void div_setstate(struct divnode *d,unsigned short state,bool force);
 
 /* Small build function for widgets that only need a background */
 void build_bgfill_only(struct gropctxt *c,unsigned short state,struct widget *self);
