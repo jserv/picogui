@@ -1,8 +1,6 @@
 
 SUBDIRS = pgl-toolbar pgl-launcher pgl-clock
 
-endif
-
 if ENABLE_BEE
 
 dist-hook: @PACKAGE@.spec
