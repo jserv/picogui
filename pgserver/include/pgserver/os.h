@@ -1,4 +1,4 @@
-/* $Id: os.h,v 1.2 2002/11/03 22:44:47 micahjd Exp $
+/* $Id: os.h,v 1.3 2002/11/03 22:55:58 micahjd Exp $
  *
  * os.h - Interface to OS-specific functions used by pgserver, independent
  *        of the actual OS in use. Functions that only exist in a particular
@@ -48,7 +48,8 @@ int os_child_returncode(void);
 u32 os_getticks(void);
 
 /* Set a timer that will call master_timer() as soon as possible after
- * os_getticks() passes the given 'ticks' value.
+ * os_getticks() passes the given 'ticks' value. If 'ticks' is 0, disable
+ * the timer.
  */
 void os_set_timer(u32 ticks);
 

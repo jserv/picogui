@@ -1,4 +1,4 @@
-/* $Id: posix.c,v 1.2 2002/11/03 22:44:48 micahjd Exp $
+/* $Id: posix.c,v 1.3 2002/11/03 22:55:58 micahjd Exp $
  *
  * posix.c - Implementation of OS-specific functions for POSIX-compatible systems
  *
@@ -121,10 +121,13 @@ u32 os_getticks(void) {
 void os_set_timer(u32 ticks) {
   struct itimerval itv;
   os_posix_timer = ticks;
-  ticks -= os_getticks();
-  memset(&itv,0,sizeof(struct itimerval));
-  itv.it_value.tv_sec  = (ticks/1000);
-  itv.it_value.tv_usec = (ticks%1000)*1000;
+
+  if (ticks) {
+    ticks -= os_getticks();
+    memset(&itv,0,sizeof(struct itimerval));
+    itv.it_value.tv_sec  = (ticks/1000);
+    itv.it_value.tv_usec = (ticks%1000)*1000;
+  }
   setitimer(ITIMER_REAL,&itv,NULL);
 }
 

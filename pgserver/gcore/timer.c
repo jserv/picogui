@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.25 2002/11/03 22:44:47 micahjd Exp $
+/* $Id: timer.c,v 1.26 2002/11/03 22:55:58 micahjd Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -144,8 +144,8 @@ void remove_timer(struct widget *w) {
 void master_timer(void) {
   struct widget *w;
 
-  /* If we have nothing better to do, just come back in 5 seconds */
-  os_set_timer(os_getticks() + 5000);
+  /* If nothing below needs triggering, disable the timer */
+  os_set_timer(0);
 
   if (timer_cursorhide && timer_eval(timer_cursorhide + timer_lastactivity))
     hotspot_hide();
@@ -179,7 +179,10 @@ int timer_eval(u32 t) {
   if (t <= now)
     return 1;
 
-  os_set_timer(min(os_get_timer(), t));
+  if (os_get_timer())
+    os_set_timer(min(os_get_timer(), t));
+  else
+    os_set_timer(t);
   return 0;
 }
 
