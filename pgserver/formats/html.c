@@ -1,4 +1,4 @@
-/* $Id: html.c,v 1.7 2001/10/19 06:19:48 micahjd Exp $
+/* $Id: html.c,v 1.8 2001/11/06 09:34:33 bornet Exp $
  *
  * html.c - Use the textbox_document inferface to load HTML markup
  *
@@ -84,6 +84,8 @@
 
 #include <pgserver/common.h>
 #include <pgserver/textbox.h>
+
+#include <ctype.h>
 
 /* Font constants. These should probably be incorporated into the theme
  * system at some point.

@@ -1,4 +1,4 @@
-/* $Id: plaintext.c,v 1.1 2001/11/05 04:06:38 micahjd Exp $
+/* $Id: plaintext.c,v 1.2 2001/11/06 09:34:33 bornet Exp $
  *
  * plaintext.c - Load plain text into the textbox widget
  *
@@ -27,6 +27,8 @@
 
 #include <pgserver/common.h>
 #include <pgserver/textbox.h>
+
+#include <ctype.h>
 
 g_error plaintext_word(struct textbox_cursor *c, const u8 *start,
 		       const u8 *end);
