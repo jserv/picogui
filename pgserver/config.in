@@ -86,6 +86,7 @@ if [ "$DRIVER_SDLFB" = "y" ]; then
 fi
 bool 'X Window System driver'              DRIVER_X11
 if [ "$DRIVER_X11" = "y" ]; then
+   bool '  Disable slow blending LGOPs' CONFIG_X11_NOSLOWLGOP
    bool '  XFreeType antialiased text (EXPERIMENTAL)'  CONFIG_X11_XFT
 fi
 bool 'SVGAlib framebuffer driver'          DRIVER_SVGAFB

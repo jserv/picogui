@@ -375,3 +375,8 @@ CONFIG_X11_XFT
 CONFIG_ROTATIONBASE_NOKEYS
       This overrides rotating the coord_keyrotate function, so that even
       when there's a base rotation the keyboard isn't affected.
+
+CONFIG_X11_NOSLOWLGOP
+      At least in the current implementation, addition subtraction and
+      multiplication LGOPs are very slow. Turning this on will make
+      themes like PicoAqua run at a reasonable speed.

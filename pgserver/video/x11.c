@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.17 2001/11/30 02:52:11 micahjd Exp $
+/* $Id: x11.c,v 1.18 2001/12/05 17:48:29 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -98,7 +98,9 @@ void x11_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
   g = x11_gctab[PG_LGOP_NONE];
 #else
   if (!g) {
+#ifndef CONFIG_X11_NOSLOWLGOP
     def_pixel(dest,x,y,c,lgop);
+#endif
     return;
   }
 #endif
