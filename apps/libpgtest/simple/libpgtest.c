@@ -55,7 +55,7 @@ g_error protected_main(int argc, char **argv) {
   errorcheck;
 
   /* Standard picogui fonts */
-  e = set_param_str("font-ftgl", "path", "../../fonts");
+  e = set_param_str("font-ftgl", "path", "../../../fonts");
   errorcheck;
 
   /* No need for sprite dragging */
