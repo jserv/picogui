@@ -1,4 +1,4 @@
-/* $Id: pgstring.c,v 1.4 2002/09/26 12:11:54 micahjd Exp $
+/* $Id: pgstring.c,v 1.5 2002/10/11 09:44:38 micahjd Exp $
  *
  * pgstring.c - String data type to handle various encodings
  *
@@ -312,11 +312,11 @@ g_error pgstring_insert_char(struct pgstring *str, struct pgstr_iterator *p, u32
   memmove(str->buffer + p->offset + len, str->buffer + p->offset, 
 	  str->num_bytes - p->offset);
 
-  pgstring_encode_meta(str,p,ch,metadata);
- 
   str->num_chars++;
   str->num_bytes += len;
 
+  pgstring_encode_meta(str,p,ch,metadata);
+ 
   return success;
 } 
 

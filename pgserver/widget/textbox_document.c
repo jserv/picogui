@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.38 2002/09/23 22:51:26 micahjd Exp $
+/* $Id: textbox_document.c,v 1.39 2002/10/11 09:44:38 micahjd Exp $
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and
@@ -66,6 +66,7 @@ g_error document_new(struct textbox_document **doc, struct divnode *container_di
   errorcheck;
   memset(*doc, 0, sizeof(struct textbox_document));
   (*doc)->container_div = container_div;
+  (*doc)->multiline = 1;
 
   /* Initial paragraph, stick the cursor in it */
   e = textbox_new_par_div(&(*doc)->par_list, &container_div->div, container_div);

@@ -1,4 +1,4 @@
-/* $Id: textbox.h,v 1.14 2002/09/15 10:51:48 micahjd Exp $
+/* $Id: textbox.h,v 1.15 2002/10/11 09:44:38 micahjd Exp $
  *
  * textbox.h - Interface definitions for the textbox widget. This allows
  *             the main textbox widget functions and the text format loaders
@@ -38,6 +38,8 @@ struct textbox_document {
   struct paragraph *par_list;     /* Doubly-linked list of paragraphs */
   struct divnode *container_div;  /* Divnode containing everything */
   struct paragraph_cursor *crsr;  /* Current cursor (and therefore current paragraph) */
+
+  unsigned int multiline : 1;
 };
 
 /* Constants for document_seek, same meaning as in fseek

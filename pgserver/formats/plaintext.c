@@ -1,4 +1,4 @@
-/* $Id: plaintext.c,v 1.9 2002/09/15 10:51:46 micahjd Exp $
+/* $Id: plaintext.c,v 1.10 2002/10/11 09:44:37 micahjd Exp $
  *
  * plaintext.c - Load and save plain unformatted text into the textbox widget
  *
@@ -49,6 +49,8 @@ g_error plaintext_save(struct textbox_document *doc, struct pgstring **str) {
   for (p=doc->par_list;p;p=p->next) {
     e = pgstring_insert_string(*str,&i,p->content);
     errorcheck;
+    if (!doc->multiline)
+      return success;
     e = pgstring_insert_char(*str,&i,'\n',NULL);
     errorcheck;
   }

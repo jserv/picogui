@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.8 2002/10/07 15:30:36 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.9 2002/10/11 09:44:38 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -49,7 +49,6 @@ struct textboxdata {
 
   unsigned int focus : 1;
   unsigned int flash_on : 1;
-  unsigned int multiline : 1;
 };
 #define DATA WIDGET_DATA(0,textboxdata)
 
@@ -69,7 +68,6 @@ g_error textbox_install(struct widget *self) {
   g_error e;
 
   WIDGET_ALLOC_DATA(0,textboxdata)
-  DATA->multiline = 1;
 
   e = newdiv(&self->in,self);
   errorcheck;
@@ -113,7 +111,7 @@ g_error textbox_set(struct widget *self,int property, glob data) {
   switch (property) {
 
   case PG_WP_MULTILINE:
-    DATA->multiline = data;
+    DATA->doc->multiline = data;
 
   case PG_WP_TEXTFORMAT:
     DATA->textformat = data;
@@ -142,7 +140,7 @@ glob textbox_get(struct widget *self,int property) {
   switch (property) {
 
   case PG_WP_MULTILINE:
-    return DATA->multiline;
+    return DATA->doc->multiline;
 
   case PG_WP_TEXTFORMAT:
     return DATA->textformat;
@@ -277,7 +275,7 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
       else if (param->kbd.key == PGKEY_DELETE) {
 	document_delete_char(DATA->doc);
       }
-      else if (param->kbd.key == PGKEY_RETURN && !DATA->multiline) {
+      else if (param->kbd.key == PGKEY_RETURN && !DATA->doc->multiline) {
 	post_event(PG_WE_ACTIVATE,self,0,0,NULL);
       }
       else {
@@ -321,7 +319,7 @@ g_error textbox_getformat(struct widget *self, struct pgstring **fmt) {
 /* Find keys to ignore */
 int textbox_ignorekey(struct widget *self, int key) {
   /* Ignore some keys in single-line mode: */
-  if (!DATA->multiline)
+  if (!DATA->doc->multiline)
     switch (key) {
     case PGKEY_TAB:
     case PGKEY_UP:
