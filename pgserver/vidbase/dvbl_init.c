@@ -1,4 +1,4 @@
-/* $Id: dvbl_init.c,v 1.12 2002/11/04 08:36:25 micahjd Exp $
+/* $Id: dvbl_init.c,v 1.13 2002/11/07 10:43:04 micahjd Exp $
  *
  * dvbl_init.c - This file is part of the Default Video Base Library,
  *               providing the basic video functionality in picogui but
@@ -99,6 +99,9 @@ void def_window_free(hwrbitmap window) {
 void def_window_set_title(hwrbitmap window, const struct pgstring *title) {
 }
 
+void def_window_set_flags(hwrbitmap window, int flags) {
+}
+
 void def_window_set_position(hwrbitmap window, s16 x, s16 y) {
 }
 
@@ -175,6 +178,7 @@ void setvbl_default(struct vidlib *vid) {
   vid->window_get_position = &def_window_get_position;
   vid->window_set_size = &def_window_set_size;
   vid->window_get_size = &def_window_get_size;
+  vid->window_set_flags = &def_window_set_flags;
   vid->is_rootless = &def_is_rootless;
 #ifdef CONFIG_FONTENGINE_FREETYPE
   vid->alpha_charblit = &def_alpha_charblit;

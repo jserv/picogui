@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.112 2002/11/07 04:48:56 micahjd Exp $
+/* $Id: video.h,v 1.113 2002/11/07 10:43:04 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -309,6 +309,11 @@ struct vidlib {
    * Default implementation: does nothing
    */
   void (*window_set_title)(hwrbitmap window, const struct pgstring *title);
+
+  /* Optional
+   *   In a rootless driver, set the window flags (PG_WINDOW_* constants)
+   */
+  void (*window_set_flags)(hwrbitmap window, int flags);
 
   /* Optional
    *   Routines to get/set position and size for the window
@@ -818,6 +823,14 @@ g_error def_dither_start(hwrdither *d, hwrbitmap dest, int vflip,
 void def_dither_store(hwrdither d, pgcolor pixel, s16 lgop);
 void def_dither_finish(hwrdither d);
 #endif
+
+
+/**************************************** Window flags */
+
+#define PG_WINDOW_UNMANAGED   (1<<0)      /* This window should not be decorated or managed by the host GUI */
+#define PG_WINDOW_GRAB        (1<<1)      /* This window grabs all user input while it exists */
+#define PG_WINDOW_BACKGROUND  (1<<2)      /* This window stays behind all others and takes the entire screen */
+
 
 /**************************************** Registration functions for video drivers */
 
