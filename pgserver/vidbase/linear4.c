@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.1 2001/02/10 11:07:04 micahjd Exp $
+/* $Id: linear4.c,v 1.2 2001/02/12 05:29:17 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -377,118 +377,154 @@ void linear4_tileblit(struct stdbitmap *srcbit,
 void linear4_blit(struct stdbitmap *srcbit,int src_x,int src_y,
 		  int dest_x, int dest_y,
 		  int w, int h, int lgop) {
-  struct stdbitmap screen;
-  unsigned char *dest;
-  int i,offset_dest;
-  
-  /* Screen-to-screen blit */
-  if (!srcbit) {
-    srcbit = &screen;
-    screen.bits = vid->fb_mem;
-    screen.w = vid->fb_bpl;
-    screen.h = vid->yres;
-  }
-
-  /* Calculations needed by both normal and tiled blits */
-  dest = PIXELBYTE(dest_x,dest_y);
-  offset_dest = vid->fb_bpl - w;
-
-  /* The following little macro mess is to repeat the
-     loop using different logical operations.
-     (Putting the switch inside the loop would be
-     easier to read, but much slower)
-
-     You still have to admit that this blitter is _much_ better
-     written than the one on the old SDL driver...
-
-     This loop uses __memcpy for the normal blits, and for lgop blits
-     it uses loops, performing as much as possible 4 bytes at a time
-  */
-
-  /* Normal blit loop */
-#define BLITLOOP(op,xtra32,xtra8)                                   \
-    for (;h;h--,src+=offset_src,dest+=offset_dest) {                \
-      for (i=w;i;i--,src++,dest++)                                  \
-	*dest op *src xtra8;                                        \
-    }
+   struct stdbitmap screen;
+   unsigned char *dest,*destline,*src,*srcline;
+   int i,bw = w>>1;
+   unsigned char flag_l,flag_r;
    
-  /* Tiled blit loop - similar to tileblit() but always restarts the bitmap
-   * on a tile boundary, instead of tiling a bitmap section */
-#define TILEBLITLOOP(op,xtra32,xtra8)                                     \
-   while (h) {                                                            \
-      for (;sh && h;sh--,h--,src_line+=srcbit->w,dest+=offset_dest) {     \
-	 src = src_line + src_x;                                          \
-	 swm = (swp < w) ? swp : w;                                       \
-	 for (dw=w;dw;) {                                                 \
-	    for (sw=swm;sw;sw--,src++,dest++,dw--)                        \
-	      *dest op *src xtra8;                                        \
-	    src = src_line;                                               \
-	    swm = (srcbit->w < dw) ? srcbit->w : dw;                      \
-	 }                                                                \
-      }                                                                   \
-      sh = srcbit->h;                                                     \
-      src_line = srcbit->bits;                                            \
+   /* Screen-to-screen blit */
+   if (!srcbit) {
+      srcbit = &screen;
+      screen.bits = vid->fb_mem;
+      screen.w = vid->fb_bpl;
+      screen.h = vid->yres;
    }
    
-  /* Is this a normal or tiled blit? */
-  if (w>(srcbit->w-src_x) || h>(srcbit->h-src_y)) {   /* Tiled */
-    unsigned char *src,*src_line;
-    int dw,sh,swm,sw,swp;
-     
-    /* A few calculations for tiled blits */
-    src_x %= srcbit->w;
-    src_y %= srcbit->h;
-    src_line = srcbit->bits + src_y * srcbit->w; 
-    sh = srcbit->h - src_y;
-    swp = srcbit->w - src_x;
-
-    switch (lgop) {
-    case PG_LGOP_NONE:  
-       while (h) {
-	  for (;sh && h;sh--,h--,src_line+=srcbit->w,dest+=vid->fb_bpl) {
-	     src = src_line + src_x;
-	     swm = (swp < w) ? swp : w;
-	     for (dw=w;dw;) {
-		__memcpy(dest,src,swm);
-		src = src_line;
-		swm = (srcbit->w < dw) ? srcbit->w : dw;
-	     }
-	  }
-	  sh = srcbit->h;
-	  src_line = srcbit->bits;
-       }
-       break;
-    case PG_LGOP_OR:         TILEBLITLOOP(|=,,);                   break;
-    case PG_LGOP_AND:        TILEBLITLOOP(&=,,);                   break;
-    case PG_LGOP_XOR:        TILEBLITLOOP(^=,,);                   break;
-    case PG_LGOP_INVERT:     TILEBLITLOOP(= ,^ 0xFFFFFFFF,^ 0xFF); break;
-    case PG_LGOP_INVERT_OR:  TILEBLITLOOP(|=,^ 0xFFFFFFFF,^ 0xFF); break;
-    case PG_LGOP_INVERT_AND: TILEBLITLOOP(&=,^ 0xFFFFFFFF,^ 0xFF); break;
-    case PG_LGOP_INVERT_XOR: TILEBLITLOOP(^=,^ 0xFFFFFFFF,^ 0xFF); break;
-    }
-  }
-  else {                                        /* Normal */
-    int offset_src;
-    unsigned char *src;
-
-    /* Only needed for normal blits */
-    src = srcbit->bits + src_x + src_y*srcbit->w;
-    offset_src = srcbit->w - w;
-
-    switch (lgop) {
-    case PG_LGOP_NONE: 
-       for (;h;h--,src+=srcbit->w,dest+=vid->fb_bpl)
-	 __memcpy(dest,src,w);
-       break;
-    case PG_LGOP_OR:         BLITLOOP(|=,,);                   break;
-    case PG_LGOP_AND:        BLITLOOP(&=,,);                   break;
-    case PG_LGOP_XOR:        BLITLOOP(^=,,);                   break;
-    case PG_LGOP_INVERT:     BLITLOOP(= ,^ 0xFFFFFFFF,^ 0xFF); break;
-    case PG_LGOP_INVERT_OR:  BLITLOOP(|=,^ 0xFFFFFFFF,^ 0xFF); break;
-    case PG_LGOP_INVERT_AND: BLITLOOP(&=,^ 0xFFFFFFFF,^ 0xFF); break;
-    case PG_LGOP_INVERT_XOR: BLITLOOP(^=,^ 0xFFFFFFFF,^ 0xFF); break;
-    }
-  }
+   src  = srcline  = srcbit->bits + (src_x>>1) + src_y*srcbit->pitch;
+   dest = destline = PIXELBYTE(dest_x,dest_y);
+   flag_l = dest_x&1;
+   flag_r = (dest_x^w) & 1;
+   
+   for (;h;h--,src=srcline+=srcbit->pitch,dest=destline+=vid->fb_bpl) {
+      /* Check for an extra nibble at the beginning, and shift
+       * pixels while blitting */
+      if (flag_l) {
+	 switch (lgop) {
+	    
+	  case PG_LGOP_NONE:
+	    *dest &= 0xF0;
+	    *dest |= (*src) >> 4;
+	    dest++;
+	    for (i=bw;i;i--,dest++,src++)
+	      *dest = ((*src) << 4) | ((*(src+1)) >> 4);
+	    break;
+	  case PG_LGOP_OR:
+	    *dest |= (*src) >> 4;
+	    dest++;
+	    for (i=bw;i;i--,dest++,src++)
+	      *dest |= ((*src) << 4) | ((*(src+1)) >> 4);
+	    break;
+	  case PG_LGOP_AND:
+	    *dest &= ((*src) >> 4) | 0xF0;
+	    dest++;
+	    for (i=bw;i;i--,dest++,src++)
+	      *dest &= ((*src) << 4) | ((*(src+1)) >> 4);
+	    break;
+	  case PG_LGOP_XOR:
+	    *dest ^= (*src) >> 4;
+	    dest++;
+	    for (i=bw;i;i--,dest++,src++)
+	      *dest ^= ((*src) << 4) | ((*(src+1)) >> 4);
+	    break;
+	  case PG_LGOP_INVERT:
+	    *dest &= 0xF0;
+	    *dest |= ((*src) >> 4) ^ 0x0F;
+	    dest++;
+	    for (i=bw;i;i--,dest++,src++)
+	      *dest = (((*src) << 4) | ((*(src+1)) >> 4)) ^ 0xFF;
+	    break;
+	  case PG_LGOP_INVERT_OR:
+	    *dest |= ((*src) >> 4) ^ 0x0F;
+	    dest++;
+	    for (i=bw;i;i--,dest++,src++)
+	      *dest |= (((*src) << 4) | ((*(src+1)) >> 4)) ^ 0xFF;
+	    break;
+	  case PG_LGOP_INVERT_AND:
+	    *dest &= (((*src) >> 4) | 0xF0) ^ 0x0F;
+	    dest++;
+	    for (i=bw;i;i--,dest++,src++)
+	      *dest &= (((*src) << 4) | ((*(src+1)) >> 4)) ^ 0xFF;
+	    break;
+	  case PG_LGOP_INVERT_XOR:
+	    *dest ^= ((*src) >> 4) ^ 0x0F;
+	    dest++;
+	    for (i=bw;i;i--,dest++,src++)
+	      *dest ^= (((*src) << 4) | ((*(src+1)) >> 4)) ^ 0xFF;
+	    break;
+	 }
+      }
+      else {
+	 /* Normal byte copy */
+	 switch (lgop) {
+	    
+	  case PG_LGOP_NONE:
+	    __memcpy(dest,src,bw);
+	    dest+=bw;
+	    src+=bw;
+	    break;
+	  case PG_LGOP_OR:
+	    for (i=bw;i;i--,dest++,src++)
+	      *dest |= *src;
+	    break;
+	  case PG_LGOP_AND:
+	    for (i=bw;i;i--,dest++,src++)
+	      *dest &= *src;
+	    break;
+	  case PG_LGOP_XOR:
+	    for (i=bw;i;i--,dest++,src++)
+	      *dest ^= *src;
+	    break;
+	  case PG_LGOP_INVERT:
+	    for (i=bw;i;i--,dest++,src++)
+	      *dest = (*src) ^ 0xFF;
+	    break;
+	  case PG_LGOP_INVERT_OR:
+	    for (i=bw;i;i--,dest++,src++)
+	      *dest |= (*src) ^ 0xFF;
+	    break;
+	  case PG_LGOP_INVERT_AND:
+	    for (i=bw;i;i--,dest++,src++)
+	      *dest &= (*src) ^ 0xFF;
+	    break;
+	  case PG_LGOP_INVERT_XOR:
+	    for (i=bw;i;i--,dest++,src++)
+	      *dest ^= (*src) ^ 0xFF;
+	    break;
+	 }
+      }
+      if (flag_r) {
+	 /* Extra nibble on the right */
+	 switch (lgop) {
+	    
+	  case PG_LGOP_NONE:
+	    *dest &= 0x0F;
+	    *dest |= (*src) & 0xF0;
+	    break;
+	  case PG_LGOP_OR:
+	    *dest |= (*src) & 0xF0;
+	    break;
+	  case PG_LGOP_AND:
+	    *dest &= ((*src) & 0xF0) | 0x0F;
+	    break;
+	  case PG_LGOP_XOR:
+	    *dest ^= (*src) & 0xF0;
+	    break;
+	  case PG_LGOP_INVERT:
+	    *dest &= 0x0F;
+	    *dest = ((*src) & 0xF0) ^ 0xF0;
+	    break;
+	  case PG_LGOP_INVERT_OR:
+	    *dest |= ((*src) & 0xF0) ^ 0xF0;
+	    break;
+	  case PG_LGOP_INVERT_AND:
+	    *dest &= (((*src) & 0xF0) ^ 0xF0) | 0x0F;
+	    break;
+	  case PG_LGOP_INVERT_XOR:
+	    *dest ^= ((*src) & 0xF0) ^ 0xF0;
+	    break;
+	 }
+      }
+   }
 }
 
 /* Nice simple screen-to-bitmap blit */
@@ -519,14 +555,14 @@ void setvbl_linear4(struct vidlib *vid) {
   vid->bar            = &linear4_bar;
   vid->line           = &linear4_line;
   vid->rect           = &linear4_rect;
-  vid->gradient       = &linear4_gradient;
-  vid->dim            = &linear4_dim;
-  vid->scrollblit     = &linear4_scrollblit;
+//  vid->gradient       = &linear4_gradient;
+//  vid->dim            = &linear4_dim;
+//  vid->scrollblit     = &linear4_scrollblit;
   vid->charblit       = &linear4_charblit;
-  vid->charblit_v     = &linear4_charblit_v;
-  vid->tileblit       = &linear4_tileblit;
+//  vid->charblit_v     = &linear4_charblit_v;
+//  vid->tileblit       = &linear4_tileblit;
   vid->blit           = &linear4_blit;
-  vid->unblit         = &linear4_unblit;
+//  vid->unblit         = &linear4_unblit;
 }
 
 /* The End */

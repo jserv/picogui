@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.14 2001/02/10 11:07:04 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.15 2001/02/12 05:29:17 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -657,7 +657,8 @@ g_error def_bitmap_loadpnm(struct stdbitmap **bmp,
   pline = p = (*bmp)->bits;
 
   /* Read in the values, convert colors, output them... */
-  for (oshift=shiftset;h>0;h--,p=pline+=(*bmp)->pitch) {
+  for (;h>0;h--,p=pline+=(*bmp)->pitch) {
+    oshift=shiftset;
     bit = 0;
     for (i=0;i<w;i++) {
       if (!bit)
@@ -781,7 +782,7 @@ g_error def_bitmap_new(struct stdbitmap **bmp,
 
   /* Pad the line width up to the nearest byte */
   lw = (unsigned long) w * vid->bpp;
-  if ((vid->bpp<8) && (lw & ((8/vid->bpp))-1))
+  if ((vid->bpp<8) && (lw & 7))
      lw += 8;
   lw >>= 3;
   e = g_malloc((void **) bmp,sizeof(struct stdbitmap) + (lw * h));
@@ -844,8 +845,8 @@ void def_blit(struct stdbitmap *srcbit,int src_x,int src_y,
       screen.h = vid->yres;
    }
    
-   for (srcline=src=srcbit->bits,oshift=shiftset;h;h--,src_y++,dest_y++,src=srcline+=srcbit->pitch)
-     for (i=0;i<w;i++) {
+   for (srcline=src=srcbit->bits;h;h--,src_y++,dest_y++,src=srcline+=srcbit->pitch)
+     for (oshift=shiftset,i=0;i<w;i++) {
 	if (lgop!=PG_LGOP_NONE)
 	  s = (*vid->getpixel)(dest_x+i,dest_y);
 
@@ -906,13 +907,12 @@ void def_unblit(int src_x,int src_y,
    int i;
    char *dest = destbit->bits;
    char *destline = dest;
-   int dest_offset = (destbit->w - w) * vid->bpp >> 3;
    hwrcolor c;
    int shiftset = 8-vid->bpp;
-   int oshift = shiftset;
+   int oshift;
    
-   for (;h;h--,src_y++,dest=destline+=dest_offset)
-     for (i=0;i<w;i++) {
+   for (;h;h--,src_y++,dest=destline+=destbit->pitch)
+     for (oshift=shiftset,i=0;i<w;i++) {
 	c = (*vid->getpixel)(src_x+i,src_y);
 
 	switch (vid->bpp) {
