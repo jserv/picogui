@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.41 2001/08/05 04:21:30 micahjd Exp $
+/* $Id: scroll.c,v 1.42 2001/08/08 14:21:16 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -58,6 +58,15 @@ struct scrolldata {
 
 /* When value changes, update the grop coordinates */
 void scrollupdate(struct widget *self) {
+  /* Error checking for res <= 0.
+   * FIXME: If res<=0 we should make the scroll bar disappear, because
+   * there is nothing to scroll.
+   */
+  if (DATA->res < 0)
+    DATA->res = 0;
+  if (DATA->res == 0)
+    return;
+
   self->in->div->ty = DATA->value * DATA->thumbscale / DATA->res;
 
   self->in->div->flags |= DIVNODE_NEED_REDRAW;
