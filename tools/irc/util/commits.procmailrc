@@ -28,6 +28,10 @@ LOGFILE=$PMDIR/log
 * ^Subject: \[Python-checkins\]
 | /home/commits/tools/irc/filters/python.py
 
+:0
+* ^List-Id:.*XFree86
+| /home/commits/tools/irc/filters/xfree86.py
+
 ###### Automatic sourceforge tracker filtering
 
 :0
