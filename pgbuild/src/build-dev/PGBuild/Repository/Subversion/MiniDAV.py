@@ -187,7 +187,6 @@ class DavObject(object):
             if child.nodeType == child.ELEMENT_NODE:
                 name = "%s:%s" % (child.namespaceURI, child.localName)
                 pdict[name] = PGBuild.XMLUtil.getTextRecursive(child).strip()
-        print pdict
         return pdict
 
     def getType(self):
