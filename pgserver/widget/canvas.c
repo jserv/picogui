@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.19 2001/07/29 22:16:16 micahjd Exp $
+/* $Id: canvas.c,v 1.20 2001/07/29 23:14:15 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -207,11 +207,11 @@ void canvas_extendbox(struct widget *self, struct gropnode *n) {
 
   i = n->r.x * DATA->gridw;
   if (i > self->in->div->pw) self->in->div->pw = i;
-  i += n->r.w * DATA->gridw;
+  i += n->r.w;
   if (i > self->in->div->pw) self->in->div->pw = i;
   i = n->r.y * DATA->gridh;
   if (i > self->in->div->ph) self->in->div->ph = i;
-  i += n->r.h * DATA->gridh;
+  i += n->r.h;
   if (i > self->in->div->ph) self->in->div->ph = i;
 }
 
@@ -257,6 +257,10 @@ void canvas_command(struct widget *self, unsigned short command,
       if (numparams<1) return;
       if (PG_GROP_IS_UNPOSITIONED(params[0])) {
 	 if (numparams>(NUMGROPPARAMS+1)) numparams = NUMGROPPARAMS+1;
+
+	 if (params[0] == PG_GROP_SETFONT && !params[1])
+	   params[1] = defaultfont;
+
 	 addgrop(CTX,params[0]);
 	 for (i=1;i<numparams;i++)
 	   CTX->current->param[i-1] = params[i];
