@@ -195,7 +195,7 @@ AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_FORMAT_PNG, [
 
   AC_CHECK_LIB(png, png_sig_cmp,, AC_MSG_WARN(cannot find libpng))
 
-  DRIVER_LIBS="$DRIVER_LIBS -lpng"
+  DRIVER_LIBS="$DRIVER_LIBS -lm -lz -lpng"
 ])
 
 dnl check for the X window system
@@ -239,7 +239,15 @@ AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_MGL2FB, [
 
 # More compiler flags...
 
+AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_LINK_STATIC, [
+   DRIVER_LIBS="$DRIVER_LIBS --static"
+])
+
 AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_OPTIMIZE_SPEED, [
+   CFLAGS="${CFLAGS} -O2"
+])
+
+AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_MAX_OPTIMIZE, [
    CFLAGS="${CFLAGS} -O3"
 ])
 

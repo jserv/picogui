@@ -24,6 +24,8 @@ fi
 bool 'Use UNIX sockets instead of TCP/IP'   CONFIG_UNIX_SOCKET
 bool 'Optimize for size'    CONFIG_OPTIMIZE_SIZE
 bool 'Optimize for speed'   CONFIG_OPTIMIZE_SPEED
+bool 'Maximum speed optimization (Breaks on some architectures!)'   CONFIG_MAX_OPTIMIZE
+bool 'Statically link'      CONFIG_LINK_STATIC
 endmenu
 
 mainmenu_option next_comment
@@ -187,12 +189,15 @@ endmenu
 
 mainmenu_option next_comment
 comment 'File Formats'
+comment 'Graphics - self contained'
 bool 'Internal XBM loader'                               CONFIG_FORMAT_XBM
 bool 'PNM: portable anymap'                              CONFIG_FORMAT_PNM
-bool 'JPEG: lossy compression (needs libjpeg)'           CONFIG_FORMAT_JPEG
 bool 'BMP: windows bitmap'                               CONFIG_FORMAT_BMP
-bool 'PNG: portable network graphic (needs libpng)'      CONFIG_FORMAT_PNG
 bool 'GIF: graphics interchange format'                  CONFIG_FORMAT_GIF
+comment 'Graphics - libraries'
+bool 'JPEG: lossy compression (needs libjpeg)'           CONFIG_FORMAT_JPEG
+bool 'PNG: portable network graphic (needs libpng)'      CONFIG_FORMAT_PNG
+comment 'Text'
 bool 'TEXTSAVE: Plain text saving'			 CONFIG_FORMAT_TEXTSAVE
 bool 'HTML: hypertext markup'                            CONFIG_FORMAT_HTML
 endmenu
