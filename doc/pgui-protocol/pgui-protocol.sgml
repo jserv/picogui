@@ -2661,17 +2661,7 @@ chbtn = (<structfield>pgresponse_event.param</> &gt;&gt; 28) &amp; 0xF;
   <row><entry>PGTH_P_TIME_OFF</><entry>33</><entry>Milliseconds off for flashing cursor</></>
   <row><entry>PGTH_P_TIME_DELAY</><entry>34</><entry>Milliseconds to wait before flashing</></>
   <row><entry>PGTH_P_PARENT</><entry>35</><entry>Overrides the default theme inheritance</></>
-  <row><entry>PGTH_P_STRING_OK</><entry>501</><entry>String property (usually in PGTH_O_DEFAULT)</></>
-  <row><entry>PGTH_P_STRING_OK</><entry>501</><entry>String property (usually in PGTH_O_DEFAULT)</></>
-  <row><entry>PGTH_P_STRING_CANCEL</><entry>502</><entry>String property (usually in PGTH_O_DEFAULT)</></>
-  <row><entry>PGTH_P_STRING_YES</><entry>503</><entry>String property (usually in PGTH_O_DEFAULT)</></>
-  <row><entry>PGTH_P_STRING_NO</><entry>504</><entry>String property (usually in PGTH_O_DEFAULT)</></>
-  <row><entry>PGTH_P_STRING_SEGFAULT</><entry>505</><entry>String property (usually in PGTH_O_DEFAULT)</></>
-  <row><entry>PGTH_P_STRING_MATHERR</><entry>506</><entry>String property (usually in PGTH_O_DEFAULT)</></>
-  <row><entry>PGTH_P_STRING_PGUIERR</><entry>507</><entry>String property (usually in PGTH_O_DEFAULT)</></>
-  <row><entry>PGTH_P_STRING_PGUIWARN</><entry>508</><entry>String property (usually in PGTH_O_DEFAULT)</></>
-  <row><entry>PGTH_P_STRING_PGUIERRDLG</><entry>509</><entry>String property (usually in PGTH_O_DEFAULT)</></>
-  <row><entry>PGTH_P_STRING_PGUICOMPAT</><entry>510</><entry>String property (usually in PGTH_O_DEFAULT)</></>
+
   <row><entry>PGTH_P_ICON_OK</><entry>1000</><entry>Icon property (usually in PGTH_O_DEFAULT)</></>
   <row><entry>PGTH_P_ICON_OK_MASK</><entry>1001</><entry>Icon property (usually in PGTH_O_DEFAULT)</></>
   <row><entry>PGTH_P_ICON_CANCEL</><entry>1002</><entry>Icon property (usually in PGTH_O_DEFAULT)</></>
