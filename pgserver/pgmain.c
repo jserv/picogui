@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.39 2002/09/26 14:29:39 micahjd Exp $
+/* $Id: pgmain.c,v 1.40 2002/09/26 14:30:58 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -151,22 +151,22 @@ int main(int argc, char **argv) {
    
   /* Initialize pointer tables here if it can't be done at compile-time */
 #ifdef RUNTIME_FUNCPTR
-   widgettab_init();
-   drivertab_init();
-   rqhtab_init();
+  widgettab_init();
+  drivertab_init();
+  rqhtab_init();
 #endif
    
   /*************************************** Command-line processing */
 
 #ifdef DEBUG_INIT
-   printf("Init: signal handler\n");
+  printf("Init: signal handler\n");
 #endif
    
-   /* Get signals.c to init signal handlers */
-   signals_install();
+  /* Get signals.c to init signal handlers */
+  signals_install();
    
 #ifdef DEBUG_INIT
-   printf("Init: processing command line\n");
+  printf("Init: processing command line\n");
 #endif
 
   /* Read in global and user-specific config files */
@@ -286,21 +286,21 @@ int main(int argc, char **argv) {
 	{
 	  struct fontstyle_node *p = fontstyles;
 	  while (p) {
-	     printf(" %s%d[",p->name,p->size);
-	     if (p->normal)
-	       printf("n");
-	     if (p->bold)
-	       printf("b");
-	     if (p->italic)
-	       printf("i");
-	     if (p->bolditalic)
-	       printf("I");
-	     if (p->flags & PG_FSTYLE_FIXED)
-	       printf("f");
-	     if (p->flags & PG_FSTYLE_DEFAULT)
-	       printf("d");
-	     printf("]");
-	     p = p->next;
+	    printf(" %s%d[",p->name,p->size);
+	    if (p->normal)
+	      printf("n");
+	    if (p->bold)
+	      printf("b");
+	    if (p->italic)
+	      printf("i");
+	    if (p->bolditalic)
+	      printf("I");
+	    if (p->flags & PG_FSTYLE_FIXED)
+	      printf("f");
+	    if (p->flags & PG_FSTYLE_DEFAULT)
+	      printf("d");
+	    printf("]");
+	    p = p->next;
 	  }
 	}
 
@@ -315,20 +315,20 @@ int main(int argc, char **argv) {
 
 	printf("  Bitmap formats:");
 	{
-	   struct bitformat *p = bitmap_formats;
-	   char name[5] = {0,0,0,0,0};
-	   while (p->name[0]) {
-	      memcpy(name,p->name,4);
-	      printf(" %s[",name);
-	      if (p->detect)
-		printf("d");
-	      if (p->load)
-		printf("l");
-	      if (p->save)
-		printf("s");
-	      printf("]");
-	      p++;
-	   }
+	  struct bitformat *p = bitmap_formats;
+	  char name[5] = {0,0,0,0,0};
+	  while (p->name[0]) {
+	    memcpy(name,p->name,4);
+	    printf(" %s[",name);
+	    if (p->detect)
+	      printf("d");
+	    if (p->load)
+	      printf("l");
+	    if (p->save)
+	      printf("s");
+	    printf("]");
+	    p++;
+	  }
 	}
 	   
 	puts("\n");
@@ -373,99 +373,99 @@ int main(int argc, char **argv) {
     printf("Init: loading video drivers\n");
 #endif     
 
-     /* Load alternate messages into the error table */
-     if (iserror(prerror(errorload(get_param_str("pgserver",
-						 "messagefile",
-						 NULL)))))
-    return 1;
+    /* Load alternate messages into the error table */
+    if (iserror(prerror(errorload(get_param_str("pgserver",
+						"messagefile",
+						NULL)))))
+      return 1;
     
 #ifdef CONFIG_VIDEOTEST
-     /* Process test mode config options */
+    /* Process test mode config options */
 
-     if ((str = get_param_str("pgserver","videotest",NULL))) {
-	videotest_on = 1;
-	videotest_mode = atoi(str);
-	if (!videotest_mode) {
-	  videotest_help();
-	  exit(1);
-	}
-     }
+    if ((str = get_param_str("pgserver","videotest",NULL))) {
+      videotest_on = 1;
+      videotest_mode = atoi(str);
+      if (!videotest_mode) {
+	videotest_help();
+	exit(1);
+      }
+    }
 
-     if (get_param_int("pgserver","benchmark",0)) {
-	videotest_on = 2;
-     }
+    if (get_param_int("pgserver","benchmark",0)) {
+      videotest_on = 2;
+    }
 #endif
 
-     /* Transcribe the list of themes from config option to linked list.
-      * This makes it easier to load themes from the command line also,
-      * and this is necessary so handles to the loaded themes can be stored
-      * for reloading later 
-      *
-      * For some reason that wierd GNU manpage for strtok() says I shouldn't
-      * use it, but in this case there's no reason why not to.
-      */
-     {
-       const char *constthemes;
-       char *themes;
-       char *tok;
+    /* Transcribe the list of themes from config option to linked list.
+     * This makes it easier to load themes from the command line also,
+     * and this is necessary so handles to the loaded themes can be stored
+     * for reloading later 
+     *
+     * For some reason that wierd GNU manpage for strtok() says I shouldn't
+     * use it, but in this case there's no reason why not to.
+     */
+    {
+      const char *constthemes;
+      char *themes;
+      char *tok;
 
-       if ((constthemes = get_param_str("pgserver","themes",NULL))) {
-	 themes = strdup(constthemes);
+      if ((constthemes = get_param_str("pgserver","themes",NULL))) {
+	themes = strdup(constthemes);
 
-	 while ((tok = strtok(themes," \t"))) {
+	while ((tok = strtok(themes," \t"))) {
 
-	   if (iserror(prerror(g_malloc((void**)&p,
-					sizeof(struct themefilenode)))))
-	     return 1;
-	   p->h = 0;
-	   p->name = tok;
-	   p->next = NULL;
-	   if (tail)
-	     tail->next = p;
-	   else
-	     themefiles = tail = p;
-	   tail = p;
+	  if (iserror(prerror(g_malloc((void**)&p,
+				       sizeof(struct themefilenode)))))
+	    return 1;
+	  p->h = 0;
+	  p->name = tok;
+	  p->next = NULL;
+	  if (tail)
+	    tail->next = p;
+	  else
+	    themefiles = tail = p;
+	  tail = p;
 	   
-	   themes = NULL;
-	 }
-       }
-     } 
+	  themes = NULL;
+	}
+      }
+    } 
 
-     /* Use strtok again to load input drivers */
-     {
-       const char *constinputs;
-       char *inputs,*str;
-       char *tok;
+    /* Use strtok again to load input drivers */
+    {
+      const char *constinputs;
+      char *inputs,*str;
+      char *tok;
 
-       if ((constinputs = get_param_str("pgserver","input",NULL))) {
-	 str = inputs = strdup(constinputs);
+      if ((constinputs = get_param_str("pgserver","input",NULL))) {
+	str = inputs = strdup(constinputs);
 
-	 while ((tok = strtok(str," \t"))) {
-	   if (iserror(prerror(
-			       load_inlib(find_inputdriver(tok),NULL)
-			       ))) 
-	     return 1;
+	while ((tok = strtok(str," \t"))) {
+	  if (iserror(prerror(
+			      load_inlib(find_inputdriver(tok),NULL)
+			      ))) 
+	    return 1;
 
-	   str = NULL;
-	 }
-	 free(inputs);
-       }
-     } 
+	  str = NULL;
+	}
+	free(inputs);
+      }
+    } 
 
-     /* Input filters should be initialized before video drivers,
-      * since some video drivers may need to set up their own input
-      * filters. (sdlgl, particularly.)
-      * Since the input filters are pretty simple, this shouldn't hurt anything.
-      */
+    /* Input filters should be initialized before video drivers,
+     * since some video drivers may need to set up their own input
+     * filters. (sdlgl, particularly.)
+     * Since the input filters are pretty simple, this shouldn't hurt anything.
+     */
 #ifdef DEBUG_INIT
-   printf("Init: infilter\n");
+    printf("Init: infilter\n");
 #endif
     if (iserror(prerror(infilter_init())))  return 1;
 
     /* Before loading the video driver, load the palette */
 #ifdef CONFIG_PAL8_CUSTOM
-     if (iserror(prerror(load_custom_palette(get_param_str("pgserver","palette",NULL)))))
-       return 1;
+    if (iserror(prerror(load_custom_palette(get_param_str("pgserver","palette",NULL)))))
+      return 1;
 #endif
 
     /* Process video driver config options */
@@ -511,7 +511,7 @@ int main(int argc, char **argv) {
 	if (!iserror(
 		     load_vidlib(p->regfunc,vidw,vidh,vidd,vidf)
 		     ))
-	   /* Yay, found one that works */
+	  /* Yay, found one that works */
 	  break;
 	p++;
       }
@@ -525,19 +525,19 @@ int main(int argc, char **argv) {
     /* Subsystem initialization and error check */
 
 #ifdef DEBUG_INIT
-   printf("Init: divtree\n");
+    printf("Init: divtree\n");
 #endif
     if (iserror(prerror(dts_new())))     return 1;
 #ifdef DEBUG_INIT
-   printf("Init: net\n");
+    printf("Init: net\n");
 #endif
     if (iserror(prerror(net_init())))    return 1;
 #ifdef DEBUG_INIT
-   printf("Init: appmgr\n");
+    printf("Init: appmgr\n");
 #endif
     if (iserror(prerror(appmgr_init()))) return 1;
 #ifdef DEBUG_INIT
-   printf("Init: timer\n");
+    printf("Init: timer\n");
 #endif
     if (iserror(prerror(timer_init())))  return 1;
 
@@ -565,17 +565,17 @@ int main(int argc, char **argv) {
   /*************************************** More Initialization */
 
 #ifdef CONFIG_VIDEOTEST   /* Video test mode */
-    if (videotest_on==1)
-       videotest_run(videotest_mode);
-    if (videotest_on==2) {
-       videotest_benchmark();
-       mainloop_proceed = 0;   /* Don't bother with running a server :) */
-    }
+  if (videotest_on==1)
+    videotest_run(videotest_mode);
+  if (videotest_on==2) {
+    videotest_benchmark();
+    mainloop_proceed = 0;   /* Don't bother with running a server :) */
+  }
        
   /* initial update */
   if (!videotest_on)    /* If we have a test pattern, leave that up */
 #endif   
-     update(NULL,1);
+    update(NULL,1);
 
   /* Need to calibrate touchscreen? */
 #ifdef CONFIG_TOUCHSCREEN
@@ -629,10 +629,10 @@ int main(int argc, char **argv) {
   appmgr_free();
   grop_kill_zombies();
   if (vid) {
-     if (vid->display && ((struct stdbitmap *)vid->display)->rend &&
-	 vid->bitmap_getsize==def_bitmap_getsize)
-	    g_free(((struct stdbitmap *)vid->display)->rend);
-     VID(close) ();
+    if (vid->display && ((struct stdbitmap *)vid->display)->rend &&
+	vid->bitmap_getsize==def_bitmap_getsize)
+      g_free(((struct stdbitmap *)vid->display)->rend);
+    VID(close) ();
   }
   cleanup_inlib();   /* Cleanup inlib after video drivers, since video drivers may
 		      * delete inlibs they've loaded automatically.
@@ -641,13 +641,13 @@ int main(int argc, char **argv) {
   errorload(NULL);
 
   {  /* Free the list of loaded theme files */
-     struct themefilenode *p,*condemn;
-     p = themefiles;
-     while (p) {
-	condemn = p;
-	p = p->next;
-	g_free(condemn);
-     }
+    struct themefilenode *p,*condemn;
+    p = themefiles;
+    while (p) {
+      condemn = p;
+      p = p->next;
+      g_free(condemn);
+    }
   }
   
   /* Check for memory leaks and, finally, exit */
@@ -667,57 +667,57 @@ void request_quit(void) {
 /* This is called whenever video is reloaded at a higher color depth
  * to reload all themes passed on the command line */
 g_error reload_initial_themes(void) {
-   /* If we're still initializing, don't need to do this */
-   if (in_init)
-     return;
+  /* If we're still initializing, don't need to do this */
+  if (in_init)
+    return;
 
-   return load_themefile_list(themefiles);
+  return load_themefile_list(themefiles);
 }
 
 /* This loads a list of theme files into pgserver */
 g_error load_themefile_list(struct themefilenode *list) {
-   struct themefilenode *p;
-   g_error e;
-   unsigned char *themebuf;
-   int fd;
-   struct stat st;
-   const char *themedir;
+  struct themefilenode *p;
+  g_error e;
+  unsigned char *themebuf;
+  int fd;
+  struct stat st;
+  const char *themedir;
 
-   /* See if we have a theme directory... */
-   themedir = get_param_str("pgserver","themedir",NULL);
+  /* See if we have a theme directory... */
+  themedir = get_param_str("pgserver","themedir",NULL);
 
-   for (p=list;p;p=p->next) {
-      char *filename;
-      char pathbuffer[1024];
+  for (p=list;p;p=p->next) {
+    char *filename;
+    char pathbuffer[1024];
 
-      /* Kill the previous load */
-      if (p->h)
-	handle_free(-1,p->h);
+    /* Kill the previous load */
+    if (p->h)
+      handle_free(-1,p->h);
       
-      if (themedir) {
-	pathbuffer[sizeof(pathbuffer)-1] = 0;
-	snprintf(pathbuffer,sizeof(pathbuffer)-1,"%s/%s",themedir,p->name);
-	filename = pathbuffer;
-      }
-      else
-	filename = p->name;
+    if (themedir) {
+      pathbuffer[sizeof(pathbuffer)-1] = 0;
+      snprintf(pathbuffer,sizeof(pathbuffer)-1,"%s/%s",themedir,p->name);
+      filename = pathbuffer;
+    }
+    else
+      filename = p->name;
 
-      /* Load theme from file */
-      if ((fd = open(filename,O_RDONLY))<=0)
-	return mkerror(PG_ERRT_IO,109);       /* Can't find a theme file */
-      fstat(fd,&st);
-      e = g_malloc((void**)&themebuf,st.st_size);
-      errorcheck;
-      read(fd,themebuf,st.st_size);
-      close(fd);
-      e = theme_load(&p->h,-1,themebuf,st.st_size);
-      errorcheck;
+    /* Load theme from file */
+    if ((fd = open(filename,O_RDONLY))<=0)
+      return mkerror(PG_ERRT_IO,109);       /* Can't find a theme file */
+    fstat(fd,&st);
+    e = g_malloc((void**)&themebuf,st.st_size);
+    errorcheck;
+    read(fd,themebuf,st.st_size);
+    close(fd);
+    e = theme_load(&p->h,-1,themebuf,st.st_size);
+    errorcheck;
       
-      /* FIXME: Theme not loaded in the correct order */
+    /* FIXME: Theme not loaded in the correct order */
       
-      g_free(themebuf);
-   }
-   return success;
+    g_free(themebuf);
+  }
+  return success;
 }
 
 /* The End */
