@@ -1,6 +1,6 @@
-/* $Id: button.c,v 1.131 2003/03/19 18:14:05 lalo Exp $
+/* $Id: button.c,v 1.132 2003/03/19 19:18:29 lalo Exp $
  *
- * button.c - generic button, with a string or a bitmap
+ * button.c - generic button, with a string or a image
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
@@ -49,7 +49,7 @@ struct btndata {
    */
   unsigned int theme_side : 1;
 
-  /* Use the PG_LGOP_ALPHA operation to draw the bitmap */
+  /* Use the PG_LGOP_ALPHA operation to draw the image */
   unsigned int has_alpha : 1;
 
   /* This flag is set when our hotkey is received */
@@ -66,14 +66,14 @@ struct btndata {
   unsigned int margin_override : 1;
   int margin;
 
-  handle bitmap,bitmask,text,font;
+  handle image,bitmask,text,font;
   int spacing;
   
   pgcolor color;
   short align, direction, lgop;
 
   /* Values set by PG_WP_THOBJ_BUTTON_* */
-  int state,state_on,state_hilight,state_on_nohilight,bitmap_side;
+  int state,state_on,state_hilight,state_on_nohilight,image_side;
 
   int hotkey;
   int hotkey_flags;
@@ -89,9 +89,9 @@ struct btndata {
 
 struct btnposition {
   /* Coordinates calculated in position_button */
-  s16 x,y,w,h;  /* Coordinates of bitmap and text combined */
-  s16 bx,by,bw,bh;  /* Bitmap, relative to bitmap+text */
-  s16 tx,ty,tw,th;  /* Text, relative to bitmap+text */ 
+  s16 x,y,w,h;  /* Coordinates of image and text combined */
+  s16 bx,by,bw,bh;  /* Image, relative to image+text */
+  s16 tx,ty,tw,th;  /* Text, relative to image+text */ 
 
   /* position_button looks this up anyway */
   handle font;
@@ -171,14 +171,14 @@ void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
   /* Align the whole thing */
   align(c,DATA->alignset ? DATA->align : theme_lookup(state,PGTH_P_ALIGN),&bp.w,&bp.h,&bp.x,&bp.y);
 
-  /* AND the mask, then OR the bitmap. Yay for transparency effects! */
+  /* AND the mask, then OR the image. Yay for transparency effects! */
   if (DATA->bitmask) {
     addgrop(c,PG_GROP_SETLGOP);
     c->current->param[0] = PG_LGOP_AND;
     addgropsz(c,PG_GROP_BITMAP,bp.x+bp.bx,bp.y+bp.by,bp.bw,bp.bh);
     c->current->param[0] = DATA->bitmask;
   }
-  if (DATA->bitmap) {
+  if (DATA->image) {
     if (DATA->bitmask || DATA->lgop) {
        addgrop(c,PG_GROP_SETLGOP);
        c->current->param[0] = DATA->lgop ? DATA->lgop : PG_LGOP_OR;
@@ -190,7 +190,7 @@ void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
     }
 
     addgropsz(c,PG_GROP_BITMAP,bp.x+bp.bx,bp.y+bp.by,bp.bw,bp.bh);
-    c->current->param[0] = DATA->bitmap;
+    c->current->param[0] = DATA->image;
     if (DATA->bitmask) {
        addgrop(c,PG_GROP_SETLGOP);
        c->current->param[0] = PG_LGOP_NONE;
@@ -206,7 +206,7 @@ void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
   /* Text */
   if (DATA->text) {
     /* Reset the LGOP if we need to */
-    if (((DATA->bitmap && (DATA->lgop || DATA->has_alpha)) || DATA->bitmask) && !DATA->disabled) {
+    if (((DATA->image && (DATA->lgop || DATA->has_alpha)) || DATA->bitmask) && !DATA->disabled) {
       addgrop(c,PG_GROP_SETLGOP);
       c->current->param[0] = PG_LGOP_NONE;
     }
@@ -239,7 +239,7 @@ g_error button_install(struct widget *self) {
   WIDGET_ALLOC_DATA(btndata);
 
   DATA->theme_side = 1;
-  DATA->bitmap_side = -1;
+  DATA->image_side = -1;
   DATA->hotkey_flags = PG_KF_ALWAYS;
   DATA->hotkey_consume = 1;
   DATA->spacing = 1;
@@ -289,7 +289,7 @@ g_error button_set(struct widget *self,int property, glob data) {
     if (iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)))
        return mkerror(PG_ERRT_HANDLE,33);
      
-    DATA->bitmap = handle_canonicalize((handle) data);
+    DATA->image = handle_canonicalize((handle) data);
     resizewidget(self);
     set_widget_rebuild(self);
     break;
@@ -303,7 +303,7 @@ g_error button_set(struct widget *self,int property, glob data) {
     break;
 
   case PG_WP_IMAGESIDE:
-    DATA->bitmap_side = (int) data;
+    DATA->image_side = (int) data;
     resizewidget(self);
     set_widget_rebuild(self);
     break;
@@ -462,13 +462,13 @@ glob button_get(struct widget *self,int property) {
   switch (property) {
 
   case PG_WP_IMAGE:
-    return (glob) DATA->bitmap;
+    return (glob) DATA->image;
 
   case PG_WP_BITMASK:
     return (glob) DATA->bitmask;
 
   case PG_WP_IMAGESIDE:
-    return (glob) DATA->bitmap_side;
+    return (glob) DATA->image_side;
     
   case PG_WP_EXTDEVENTS:
     return (glob) DATA->extdevents;
@@ -843,8 +843,8 @@ void position_button(struct widget *self,struct btnposition *bp) {
 
   /* If any of our handles have been deleted, set them to zero */
 
-  if (iserror(rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,DATA->bitmap))) {
-    DATA->bitmap = 0;
+  if (iserror(rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,DATA->image))) {
+    DATA->image = 0;
     bit = NULL;
   }
   if (iserror(rdhandle((void **) &bitmask,PG_TYPE_BITMAP,-1,DATA->bitmask))) {
@@ -875,16 +875,16 @@ void position_button(struct widget *self,struct btnposition *bp) {
   if (bit)
     VID(bitmap_getsize) (bit,&bp->bw,&bp->bh);
   
-  /* Position the text and bitmap relative to each other */
+  /* Position the text and image relative to each other */
   if (text && bit) {
     int s = theme_lookup(self->in->div->state,PGTH_P_BITMAPSIDE);
     int m = theme_lookup(self->in->div->state,PGTH_P_BITMAPMARGIN);
 
-    if(DATA->bitmap_side >= 0) {
-      s = DATA->bitmap_side;
+    if(DATA->image_side >= 0) {
+      s = DATA->image_side;
     }
 
-    /* Rotate the bitmapside depending on the direction */
+    /* Rotate the imageside depending on the direction */
     switch (DATA->direction) {
     case PG_DIR_ANTIVERTICAL:  
       s = rotate_side(s);
@@ -980,7 +980,7 @@ void position_button(struct widget *self,struct btnposition *bp) {
     break;
   }
 
-  /* Remember if the bitmap has an alpha channel */
+  /* Remember if the image has an alpha channel */
   DATA->has_alpha = bit && bp->bw && ( VID(getpixel)(bit,0,0) & PGCF_ALPHA );
 }
 
