@@ -13,16 +13,12 @@ int main(int argc,char **argv) {
    pgNewWidget(PG_WIDGET_CANVAS,0,0);
    gc = pgNewCanvasContext(PGDEFAULT,PGFX_PERSISTENT);
 
-   /* Set coordinate mapping. There might be a cleaner way to do this soon,
-    * but I'm not sure it belongs in PGFX because it's probably canvas
-    * specific. 
-    *
+   /* Set coordinate mapping.
     * This sets up a transformation to scale 0,0,100,100 to whatever size the
     * canvas widget is. Now we have a 100x100 unit virtual area to draw
     * in, and it is scaled to the canvas widget's size
     */
-   pgWriteCmd(PGDEFAULT,PGCANVAS_GROP,6,PG_GROP_SETMAPPING,
-	      0,0,100,100,PG_MAP_SCALE);
+   pgSetMapping(gc,0,0,100,100,PG_MAP_SCALE);
    
    /* Some good ol'fashioned drawing */
 
@@ -35,9 +31,9 @@ int main(int argc,char **argv) {
    pgGradient(gc,30,30,40,40,25,0x8080FF,0xF0F080);
    pgFrame(gc,30,30,40,40);
    pgSetColor(gc,0xFFFFFF);        /* XOR a stripe down the middle */
-   pgWriteCmd(PGDEFAULT,PGCANVAS_GROP,2,PG_GROP_SETLGOP,PG_LGOP_XOR);
+   pgSetLgop(gc,PG_LGOP_XOR);
    pgRect(gc,0,45,100,10);
-   pgWriteCmd(PGDEFAULT,PGCANVAS_GROP,2,PG_GROP_SETLGOP,PG_LGOP_NONE);
+   pgSetLgop(gc,PG_LGOP_STIPPLE);      /* Dotted lines */
    pgSetColor(gc,0x000000);        /* Use offset to make a gap 2 pixels wide */
    pgWriteCmd(PGDEFAULT,PGCANVAS_GROP,5,PG_GROP_SETOFFSET,0,3,0,0);
    pgLine(gc,30,85,70,85);
