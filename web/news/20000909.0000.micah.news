@@ -1,0 +1,5 @@
+Finally have some code in the cli_c directory. Yep, the beginning of the
+long-procrastinated C client library.  I set up some of the headers, and a
+Makefile, but it's a first step. After testing out PicoGUI with the Perl API
+for a while, I decided I liked it enough to implement the C client lib about
+the same way. (Yay for object oriented programming in pure C!)

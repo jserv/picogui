@@ -1,0 +1,16 @@
+This is the beginnings of the first client-side library for PicoGUI.
+Unlike the server that is released under the GPL, the client library
+is LGPL'ed.  This allows non-free programs to connect to the server
+in the same standard way, instead of having to devise some non-standard
+way of doing so.
+
+This version of the client library is a Perl module.  Why perl?
+This client library is mainly for testing purposes.  I might change
+many aspects of it before the "real" standard client-side interface.
+I chose perl because I like it for writing testbed apps and
+rapid-prototyping of programs that don't need to be blazing fast.
+
+Included also are many example programs.  I leave it as an excersize to
+the reader to determine how/why they work.  :)
+
+-- Micah

@@ -1,0 +1,5 @@
+20001104_panels
+Tada! The panelbars are functional now. The leftmost button closes the
+application, the middle button rotates it, and the right button zooms it.
+(sort of places it closest to the edge of the screen and extends its
+panelbar) Drag the panelbar to resize, and click it to "roll up" the panel.

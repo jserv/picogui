@@ -1,0 +1,32 @@
+Gee, it's been way too long since the last news item :-( <br>
+First, the bad news: my fall break is almost over. 1 hour and 49 minutes left,
+officially. (Everyone knows I'm a student, right? Aren't all Open Source /
+Free Software programmers students? ;-)
+<p>
+There's plenty of good news though. I (mostly) finished the new theme
+system, and got it merged into the CVS. Bitmapped themes are here, complete
+with the obligatory Aqua clone. (Really, it's a lot more than just bitmaps.
+It has a really tiny programmable interpreter thingy) 
+<p>
+I worked some on the
+SVGAlib drivers the past few days. It will actually run now, but some pretty
+important features like bitblits and a mouse cursor are yet to be
+implemented. When it's finished I'd like to make a QNX-style 1.44MB demo disk.
+It would only have one or two tiny apps on it at first, but it would be a nice
+way to show off new features as PicoGUI progresses. The SDL driver still
+works fine, of course.
+<p>
+Also on the horizon is a
+complete rewrite of PicoGUI's web site. I have a couple possibilities for a
+good logo in the CVS, (images/logo/*) I plan on learning PHP, and I might
+even get a domain name like picogui.org or something. Probably a screenshot
+section, more dowloads, and (especially important) some real documentation.
+Besides, it's a pain adding news items to a flat HTML file like this...
+<p>
+Anyway, the point is that I should have a bit more time to work on PicoGUI
+shortly and good things are coming!
+<p>
+<b>Update:</b> Oh, forgot to mention: Philippe is working on porting PicoGUI
+to SMARTDATA's architecture, which includes 68EZ328 / ucLinux support code,
+and drivers for LCD panels. Yay for embedded computing!
+

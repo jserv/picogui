@@ -1,0 +1,9 @@
+PicoGUI C client lib
+--------------------
+
+This is a small library that programs link to in order to connect to a
+PicoGUI server.
+
+pgui.sourceforge.net
+
+--- The End ---

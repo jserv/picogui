@@ -1,0 +1,3 @@
+20000603_messagebox_320x240
+Yay! PicoGUI's first popup box screenshot! PicoGUI supports layers of modal
+'popup' widgets, for things like dialog boxes and menus.

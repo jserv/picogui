@@ -1,0 +1,132 @@
+# $Id: Makefile,v 1.1 2000/11/06 00:31:35 micahjd Exp $
+#
+# PicoGUI small and efficient client/server GUI
+# Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+# 
+# Contributors:
+#
+#
+#
+#
+
+######## Add new source and header files here
+
+BINNAME = pgserver
+
+SRC := widget/bitmap.c widget/indicator.c widget/label.c \
+       widget/toolbar.c widget/scroll.c widget/widget.c gcore/grop.c \
+       gcore/g_malloc.c gcore/div.c gcore/font.c widget/theme.c \
+       gcore/handle.c gcore/g_error.c appmgr/global.c widget/button.c \
+       widget/panel.c widget/default_theme.c widget/popup.c widget/box.c \
+       widget/field.c gcore/timer.c gcore/errortext.c gcore/video.c \
+       gcore/input.c gcore/driverinfo.c gcore/pgmain.c net/request.c \
+       net/dispatch.c net/eventq.c video/svga.c input/svgainput.c \
+       video/sdlmin.c video/sdl.c input/sdlinput.c
+
+HDR := include/pgserver/*.h include/picogui/*.h
+
+CFLAGS := -Iinclude
+
+######## Flags and Tools
+
+CFLAGS := $(CFLAGS) -O3 -g -c
+LDFLAGS := 
+
+# These are default, can be overridden later
+GCC := gcc
+STRIP := strip
+
+######## Load options from Makefile.cfg
+
+### Config parsing
+
+include Makefile.cfg
+
+# Target platform
+ifeq ($(strip $(PLATFORM)),windows)
+	GCC := i386-mingw32-$(GCC)
+	STRIP := i386-mingw32-$(STRIP)
+	BINNAME := $(BINNAME).exe
+	LDFLAGS := $(LDFLAGS) -lwsock32
+endif
+
+# Extra compiler flags needed by drivers
+
+ifneq ($(findstring DRIVER_SDL,$(DRV)),)
+        # Use sdl-config
+	SDLCONFIG := sdl-config
+	ifeq ($(strip $(PLATFORM)),windows)
+		SDLCONFIG := i386-mingw32-sdl-config
+	endif
+
+        # Libraries and includes for SDL
+	CFLAGS := $(CFLAGS) $(shell $(SDLCONFIG) --cflags) 
+	LDFLAGS := $(LDFLAGS) $(shell $(SDLCONFIG) --libs)
+endif
+ifneq ($(findstring DRIVER_SVGA,$(DRV)),)
+	LDFLAGS := $(LDFLAGS) -lvgagl -lvga
+endif
+
+# Generate a list of object files
+OBJ := $(SRC:.c=.o) font/fontdata.o
+
+### Rules
+
+all : $(BINNAME)
+
+clean:
+	rm -f $(BINNAME) *.da *.bb *.bbg debug/* $(OBJ) core 
+
+$(BINNAME): $(OBJ) $(HDR)
+	$(GCC) -o $(BINNAME) $(OBJ) $(LDFLAGS)
+ifeq ($(strip $(STRIPBIN)),yes)
+	$(STRIP) $(BINNAME)
+endif
+
+# Oodles of scripts to convert the .fdf and .fi files into
+# an object file
+font/fontdata.o : font/*.fdf font/*.fi Makefile.cfg script/fontdef.pl
+	script/fontdef.pl $(FONTS) > fonts.tmp.c
+	$(GCC) -o font/fontdata.o fonts.tmp.c $(CFLAGS)
+	rm -f fonts.tmp.c
+
+%.o : %.c $(HDR) Makefile.cfg
+	$(GCC) -o $@ $< $(CFLAGS) $(DRV)
+
+### The End ###
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

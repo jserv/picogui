@@ -1,0 +1,6 @@
+These fonts were converted from X11 fonts (except font3x5)
+and tweaked a bit in some cases.
+They are converted into 'fontdata.o' by the perl scripts.
+
+*.fdf = data for a particular instance of a font (e.g. Helvetica10 Bold)
+*.fi  = information on a font style

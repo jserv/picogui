@@ -1,0 +1,22 @@
+Much of PicoGUI's documentation is (will be?) built directly from the
+source code.  The scripts used to do this are in the 'src' directory.
+Generated documentation is sorted by file format.
+
+Software necessary to rebuild the documentation:
+
+- cinclude2dot (http://www.chaosreigns.com/code/cinclude2dot/)
+  This is used to build a confusing but interesting graph of the
+  server's include file structure
+
+- Graphvis (http://www.research.att.com/sw/tools/graphviz/)
+  Needed by cinclude2dot, and it is used for producing the theme object
+  inheritance diagram
+
+- Perl (You should already have this!)
+  cinclude2dot needs perl, and the various scripts in 'src' are written in
+  perl.
+
+- ImageMagick (You should already have this!)
+  For converting postscript images to jpegs, etc.
+
+$id$

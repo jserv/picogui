@@ -1,0 +1,391 @@
+/* $Id: field.c,v 1.1 2000/11/06 00:31:36 micahjd Exp $
+ *
+ * Single-line no-frills text editing box
+ *
+ * Todo: add theme support to this widget!
+ *
+ * PicoGUI small and efficient client/server GUI
+ * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * Contributors:
+ * 
+ * 
+ * 
+ */
+
+#include <pgserver/widget.h>
+#include <pgserver/appmgr.h>
+
+/* Buffer allocation settings */
+#define FIELDBUF_DEFAULTMAX      512   /* Default setting for buffer maximum */
+#define FIELDBUF_DEFAULTSIZE     20    /* Initial size for the buffer */
+#define FIELDBUF_MAXCRUFT        25    /* Amount of wasted space in buffer before it is resized */
+#define FIELDBUF_ALLOCSTEP       10    /* Amount to allocate when the buffer is full */
+
+#define CURSORWIDTH 2
+#define FLASHTIME_ON   250
+#define FLASHTIME_OFF  150
+
+struct fielddata {
+  handle font;
+  pgcolor fg,bg;
+  int focus,on,flash_on;
+
+  /* Maximum size the field can hold */
+  unsigned int bufmax;
+
+  /* The pointer, handle, and size of the text buffer */
+  char *buffer;
+  handle hbuffer;
+  unsigned int bufsize;
+
+  /* Amount of space in the buffer that is used (including null termination) */
+  unsigned int bufuse;
+};
+#define DATA ((struct fielddata *)(self->data))
+
+g_error bufcheck_grow(struct widget *self);     /* Check the buffer
+						   before adding a char */
+g_error bufcheck_shrink(struct widget *self);   /* Check before removing */
+void fieldstate(struct widget *self);
+
+void field(struct divnode *d) {
+  int x,y,w,h;
+  struct fontdesc *fd;
+  struct widget *self = d->owner;
+
+  /* Center the font vertically and use the same amount of margin on the side */
+  if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,
+		       DATA->font)) || !fd) return;
+  
+  /* Draw order: background, text, cursor, border */
+  grop_rect(&d->grop,-1,-1,-1,-1,DATA->bg);
+  grop_text(&d->grop,fd->margin,(d->h>>1) - (fd->font->h>>1),
+	    DATA->font,DATA->fg,DATA->hbuffer);
+  grop_rect(&d->grop,0,2,CURSORWIDTH,d->h-4,DATA->bg);
+  grop_frame(&d->grop,-1,-1,-1,-1,0x000000);
+
+  fieldstate(self);
+}
+
+/* Pointers, pointers, and more pointers. What's the point?
+   Set up some divnodes!
+*/
+g_error field_install(struct widget *self) {
+  g_error e;
+  int owner=-1;
+
+  e = g_malloc(&self->data,sizeof(struct fielddata));
+  errorcheck;
+  memset(self->data,0,sizeof(struct fielddata));
+
+  /* Set up the buffer */
+  e = g_malloc((void *) &DATA->buffer,FIELDBUF_DEFAULTSIZE);
+  errorcheck;
+  *DATA->buffer = 0;
+  DATA->bufmax  = FIELDBUF_DEFAULTMAX;
+  DATA->bufsize = FIELDBUF_DEFAULTSIZE;
+  DATA->bufuse  = 1;
+  e = mkhandle(&DATA->hbuffer,PG_TYPE_STRING | HFLAG_NFREE,self->owner,DATA->buffer);
+  errorcheck;
+
+  e = newdiv(&self->in,self);
+  errorcheck;
+  self->in->flags |= PG_S_TOP;
+  self->in->split = 20;
+  self->out = &self->in->next;
+  e = newdiv(&self->in->div,self);
+  errorcheck;
+  self->in->div->on_recalc = &field;
+  DATA->bg = 0xFFFFFF;
+  DATA->font = defaultfont;
+
+  self->trigger_mask = TRIGGER_UP | TRIGGER_ACTIVATE | TRIGGER_CHAR |
+    TRIGGER_DEACTIVATE | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_TIMER;
+
+  return sucess;
+}
+
+void field_remove(struct widget *self) {
+  handle_free(-1,DATA->hbuffer);
+  g_free(DATA->buffer);
+
+  g_free(self->data);
+  if (!in_shutdown)
+    r_divnode_free(self->in);
+}
+
+g_error field_set(struct widget *self,int property, glob data) {
+  g_error e;
+  struct fontdesc *fd;
+  char *str;
+  int psplit;
+
+  switch (property) {
+
+  case PG_WP_SIDE:
+    if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,43);
+    self->in->flags &= SIDEMASK;
+    self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC |
+      DIVNODE_PROPAGATE_RECALC;
+    self->dt->flags |= DIVTREE_NEED_RECALC;
+    break;
+
+  case PG_WP_COLOR:
+    DATA->fg = data;
+    self->in->flags |= DIVNODE_NEED_RECALC;
+    self->dt->flags |= DIVTREE_NEED_RECALC;
+    break;
+
+  case PG_WP_BGCOLOR:
+    DATA->bg = data;
+    self->in->flags |= DIVNODE_NEED_RECALC;
+    self->dt->flags |= DIVTREE_NEED_RECALC;
+    break;
+
+  case PG_WP_FONT:
+    if (iserror(rdhandle((void **)&fd,
+			 PG_TYPE_FONTDESC,-1,data)) || !fd) 
+      return mkerror(PG_ERRT_HANDLE,44); 
+    DATA->font = (handle) data;
+    psplit = self->in->split;
+    if (self->in->split != psplit) {
+      self->in->flags |= DIVNODE_PROPAGATE_RECALC;
+    }
+    self->in->flags |= DIVNODE_NEED_RECALC;
+    self->dt->flags |= DIVTREE_NEED_RECALC;
+    break;
+
+    /* FIXME: PG_WP_TEXT
+       case PG_WP_TEXT:
+
+       break;
+    */
+
+  default:
+    return mkerror(PG_ERRT_BADPARAM,45);
+  }
+  return sucess;
+}
+
+glob field_get(struct widget *self,int property) {
+  g_error e;
+  handle h;
+  int tw,th;
+  char *str;
+  struct fontdesc *fd;
+
+  switch (property) {
+
+  case PG_WP_SIDE:
+    return self->in->flags & (~SIDEMASK);
+
+  case PG_WP_BGCOLOR:
+    return DATA->bg;
+
+  case PG_WP_COLOR:
+    return DATA->fg;
+
+  case PG_WP_FONT:
+    return (glob) DATA->font;
+
+  case PG_WP_TEXT:
+    return (glob) DATA->hbuffer;
+
+  case PG_WP_SCROLL:
+    return -self->in->div->ty;
+
+  default:
+    return 0;
+  }
+}
+
+void field_trigger(struct widget *self,long type,union trigparam *param) {
+  switch (type) {
+
+    /* When clicked, request keyboard focus */
+
+  case TRIGGER_DOWN:
+    if (param->mouse.chbtn==1)
+      DATA->on=1;
+    return;
+
+  case TRIGGER_UP:
+    if (DATA->on && param->mouse.chbtn==1) {
+      DATA->on=0;
+      request_focus(self);
+    }
+    return;
+    
+  case TRIGGER_RELEASE:
+    if (param->mouse.chbtn==1)
+      DATA->on=0;
+    return;
+    
+    /* Update visual appearance to reflect focus or lack of focus */
+    
+  case TRIGGER_DEACTIVATE:
+    DATA->focus = 0;
+    DATA->flash_on = 0;
+    break;
+
+  case TRIGGER_ACTIVATE:
+    DATA->focus = 1;
+    /* No break; here! Get TRIGGER_TIMER to set up the flash timer*/
+    
+  case TRIGGER_TIMER:
+    if (DATA->focus==0) break;
+
+    DATA->flash_on = !DATA->flash_on;
+
+    /* Set it again... */
+    install_timer(self,(DATA->flash_on ? 
+			FLASHTIME_ON : FLASHTIME_OFF ));
+    break;
+
+    /* Keyboard input */
+
+  case TRIGGER_CHAR:
+    
+    /* Misc. keys */
+    switch (param->kbd.key) {
+
+    case PGKEY_RETURN:
+      /* Pass on a return to the app */
+      post_event(PG_WE_ACTIVATE,self,0,0);
+      return;
+
+    case PGKEY_TAB:
+      return;
+
+    default:
+    }
+
+
+    /* Backspace? */
+    if (param->kbd.key == PGKEY_BACKSPACE) {
+      if (DATA->bufuse<=1) return;
+      DATA->buffer[(--DATA->bufuse)-1] = 0;
+      bufcheck_shrink(self);
+      break;
+    }
+
+    /* Add a character */
+    bufcheck_grow(self);
+    if (DATA->bufuse>=DATA->bufsize) return;
+    DATA->buffer[DATA->bufuse-1] = param->kbd.key;
+    DATA->buffer[DATA->bufuse++] = 0;
+    break;
+
+  }
+
+
+  /* If we're busy rebuilding the grop list, don't bother poking
+     at the individual nodes */
+  if (self->in->div->grop_lock || !self->in->div->grop)
+    return;
+
+  /* Update stuff */
+  fieldstate(self);
+
+  self->in->div->flags |= DIVNODE_NEED_REDRAW;
+  self->dt->flags |= DIVTREE_NEED_REDRAW;   
+  if (self->dt==dts->top) update();
+}
+
+/* Apply the current visual state */
+void fieldstate(struct widget *self) {
+  int tw,th;
+  struct fontdesc *fd;
+
+  /* Size the text.  If this is a problem, we could keep a running
+     total of the text width as it is done, but this whole widget
+     so far is a quick hack anyway...
+  */
+  if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
+		       DATA->font)) || !fd) return;
+  sizetext(fd,&tw,&th,DATA->buffer);
+
+  /* If the whole text fits in the field, left justify it. Otherwise, 
+     right justify
+  */
+  if (tw<self->in->div->w) {
+    self->in->div->grop->next->x = fd->margin;
+    /* Move the cursor to the end of the text */
+    self->in->div->grop->next->next->x = tw;
+  }
+  else {
+    /* Right justify, cursor at right side of widget */
+    self->in->div->grop->next->x = 
+      (self->in->div->grop->next->next->x = 
+       self->in->div->w - fd->margin - CURSORWIDTH) - tw + fd->margin;    
+  }
+
+  /* Appear or disappear the cursor depending on focus and cursor
+     flashing state */
+  if (DATA->flash_on)
+    self->in->div->grop->next->next->param.c = DATA->fg;
+  else
+    self->in->div->grop->next->next->param.c = DATA->bg;
+  
+}
+
+/* If the buffer doesn't have room for one more char, enlarge it */
+g_error bufcheck_grow(struct widget *self) {
+  g_error e;
+
+  if (DATA->bufuse < DATA->bufsize) return sucess;
+
+  DATA->bufsize += FIELDBUF_ALLOCSTEP;
+  if (DATA->bufsize > DATA->bufmax) DATA->bufsize = DATA->bufmax;
+
+  e = g_realloc((void *)&DATA->buffer,DATA->bufsize);
+  errorcheck;
+
+  /* Possible race condition here? */
+
+  return rehandle(DATA->hbuffer,DATA->buffer);
+}
+
+/* If there's too much wasted space, shrink the buffer */
+g_error bufcheck_shrink(struct widget *self) {
+  g_error e;
+
+  if ((DATA->bufsize-DATA->bufuse)<FIELDBUF_MAXCRUFT) return sucess;
+
+  DATA->bufsize -= FIELDBUF_MAXCRUFT;
+
+  e = g_realloc((void *)&DATA->buffer,DATA->bufsize);
+  errorcheck;
+
+  /* Possible race condition here? */
+
+  return rehandle(DATA->hbuffer,DATA->buffer);
+}
+
+/* The End */
+
+
+
+
+
+
+
+
+
+
+

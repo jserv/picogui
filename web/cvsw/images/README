@@ -1,0 +1,14 @@
+These are graphics specifically designed or modified for PicoGUI.
+They are in PNM format.
+
+The buttons directory contains 16x16 images with mask for use in buttons.
+The bg directory has small tiling backgrounds.
+The src directory contains Gimp XCF files used to make the images. (or any
+other type of source file used)
+
+Because the default icons and such will soon be built into the server,
+this directory is now just a place to put useful images that might be
+integrated into the server or that people might use in themes.
+
+--Micah
+

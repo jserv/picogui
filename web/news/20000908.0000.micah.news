@@ -1,0 +1,16 @@
+Good news to report today. On Wednesday, (Sept 6) <a
+href="http://smartdata.ch">SmartData</a> joined the PicoGUI project to port
+it to their hardware.  Philippe Ney has joined the developers to add device
+drivers and a C client lib, and other things SmartData could need. (like an
+interface to a JVM) So, now that there is more than one developer anyone
+interested is encouraged to join the <a
+href="http://lists.sourceforge.net/mailman/listinfo/pgui-devel">pgui-devel 
+mailing list</a>.<p>
+In other news, the new driver archetecture is working just fine now. I
+haven't implemented everything yet (such as on-the-fly mode switching) but
+it already far exceeds the capability of the old interface. Also, just a few
+hours ago I finished restructuring the header files so the C client lib will
+be easier/possible.<p>
+Hmm... If I'm going to be posting news on a pseudo regular basis, maybe I
+need a better web site. Would Slashcode be overkill? ;-)<br>
+As always, volunteers are welcome!

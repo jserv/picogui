@@ -1,0 +1,20 @@
+Ugh. I have been too busy lately to update both the code and the HTML.
+Quite a lot has been happening with PicoGUI. As always, download the code
+from CVS, but if you're lazy you can get a perpetually-out-of-date tarball
+on the 
+<a href="http://sourceforge.net/projects/pgui/">sourceforge page</a> too
+;-)<p>
+Some of the major things going on lately are the new driver systems and more
+example programs. The Typing Program example in the perl client lib
+demonstrates a lot of the more interesting features. Keep in mind, though,
+that the methods it uses for panels and message boxes are more kludgey than
+I would like so they will probably be changing.<p>
+As for drivers, the new fully-modular system works great. The SDL driver is
+done, the SVGAlib driver works but it doesn't have an input driver yet.
+Both drivers still need optimization. The new system doesn't look like much
+from the 
+outside though, because I haven't implemented the command line args or the
+request structures to change video drivers/modes yet.
+<p>
+Well, happy hacking, and keep in mind that for the latest info use the CVS or
+<a href="mailto:micahjd@users.sourceforge.net">email me</a>.

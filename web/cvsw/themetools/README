@@ -1,0 +1,20 @@
+PicoGUI Theme Tools
+--------------------
+
+This directory contains programs to compile, analyze, or
+do anything else with PicoGUI theme files.
+The theme file format is defined in:
+	pgserver/include/picogui/theme.h
+and
+	pgserver/include/picogui/constants.h
+
+Right now this is only used with the code in the
+theme_overhaul branch of the server. Hopefully I'll update
+this README when I merge in the theme code, but I might
+forget so by the time you read this the code may have already
+been merged. Oh well... If you have any questions email me :)	
+
+Micah Dowty <micahjd@users.sourceforge.net>
+pgui.sourceforge.net
+
+--- The End ---

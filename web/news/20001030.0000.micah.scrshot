@@ -1,0 +1,5 @@
+20001030_dialog
+Until now, message dialog boxes had to be painstakingly constructed and
+cared for by the client. Now, the server can create a dialog box (using
+theme parameters) and the client library has a simple function call to
+display a message dialog and return the result.
