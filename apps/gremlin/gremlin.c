@@ -1,4 +1,4 @@
-/* $Id: gremlin.c,v 1.1 2001/04/10 00:51:19 micahjd Exp $
+/* $Id: gremlin.c,v 1.2 2001/04/10 02:36:16 micahjd Exp $
  * 
  * gremlin.c - This is similar to the PalmOS app with the similar name. It
  *             sends random (but repeatable) input events to the server in an
@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
    int c;
    unsigned long i,number = 1000000;
    unsigned int gremlin = 0;
-   time_t start,now,eta;
+   time_t start,now,last=0,eta=0;
    struct pgmodeinfo mi;
    char spinner[] = "/-\\|";
    char stats[80];
@@ -86,16 +86,17 @@ int main(int argc, char **argv) {
    for (i=0;i<number;i++) {
       /* Get the time and calculate the ETA */
       now = time(NULL) - start;
-      if (i)
-	eta = number * now / i;
-      else
-	eta = 0;
+      if (i && now>last) {  /* Only update ETA every second to prevent round errors
+			     * causing wild fluctuation */
+	 eta = (number * now / i) - now;
+	 last = now;
+      }
       
       /* Use unbuffered output or it looks bad */
-      write(1,stats,sprintf(stats,"\r %c -- #%-10lu ---"
+      write(1,stats,sprintf(stats,"\r %c --- #%-10lu ---"
 			    " Running %02d:%02d:%02d ---"
 			    " Remaining %02d:%02d:%02d ",
-			    spinner[(i>>6)&3],i,now/3600,(now%3600)/60,
+			    spinner[(i>>6)&3],i+1,now/3600,(now%3600)/60,
 			    now%60,eta/3600,(eta%3600)/60,eta%60));
 
       /* Move the mouse */
@@ -140,6 +141,8 @@ int main(int argc, char **argv) {
 	 usleep(1000);
    
    }
+
+   printf("\nDone. Remember to check for memory leaks with CTRL-ALT-M!\n");
    
    return 0;
 }
