@@ -1,4 +1,4 @@
-/* $Id: video_drivers.c,v 1.13 2002/11/11 07:33:04 micahjd Exp $
+/* $Id: video_drivers.c,v 1.14 2002/12/03 03:48:47 micahjd Exp $
  *
  * video_drivers.c - handles loading/switching video drivers and modes
  *
@@ -470,6 +470,8 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
      for (tree=dts->top;tree;tree=tree->next) {
 	tree->head->r.w = vid->lxres;
 	tree->head->r.h = vid->lyres;
+	tree->head->calc.w = vid->lxres;
+	tree->head->calc.h = vid->lyres;
 	tree->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC | DIVNODE_NEED_REBUILD;
 	tree->flags |= DIVTREE_NEED_RECALC | DIVTREE_ALL_REDRAW | DIVTREE_CLIP_POPUP;
      }
