@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.191 2002/09/27 02:59:27 micahjd Exp $
+/* $Id: widget.c,v 1.192 2002/09/28 04:06:56 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -107,9 +107,10 @@ DEF_WIDGET_TABLE(0,panelbar)
 DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,94))
 #endif
 
-DEF_WIDGET_TABLE(1,simplemenu)     /* Subclasses popup */
-DEF_WIDGET_TABLE(1,dialogbox)      /* Subclasses popup */
+DEF_WIDGET_TABLE(1,simplemenu)           /* Subclasses popup */
+DEF_WIDGET_TABLE(1,dialogbox)            /* Subclasses popup */
 DEF_STATICWIDGET_TABLE(2,messagedialog)  /* Subclasses dialogbox, popup */
+DEF_STATICWIDGET_TABLE(0,scrollbox)
 };
 
 /* To save space, instead of checking whether the divtree is valid every time
@@ -496,17 +497,17 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
       break;
       
     case PG_WP_SCROLL_X:
-      if (data < 0)
-	data = 0;
       if (data > w->in->cw-w->in->w)
 	data = w->in->cw-w->in->w;
+      if (data < 0)
+	data = 0;
       if (maindiv->tx != -data) {
 	maindiv->tx = -data;
-	maindiv->flags |= DIVNODE_SCROLL_ONLY;
+	maindiv->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_NEED_RECALC;;
 	w->dt->flags |= DIVTREE_NEED_REDRAW;
 	hotspot_free();
       }
-      maindiv->flags |= DIVNODE_DIVSCROLL | DIVNODE_EXTEND_HEIGHT;
+      maindiv->flags |= DIVNODE_DIVSCROLL | DIVNODE_EXTEND_WIDTH;
       break;
 
     case PG_WP_SCROLL_Y:
@@ -514,7 +515,6 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
 	data = w->in->ch-w->in->h;
       if (data < 0)
 	data = 0;
-      DBG("PG_WP_SCROLL_Y: ty = %d, data = %d\n",maindiv->ty, (int)data);
       if (maindiv->ty != -data) {
 	maindiv->ty = -data;
 	maindiv->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_NEED_RECALC;

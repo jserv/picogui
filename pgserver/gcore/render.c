@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.35 2002/09/17 23:01:57 micahjd Exp $
+/* $Id: render.c,v 1.36 2002/09/28 04:06:55 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -274,40 +274,53 @@ void grop_render(struct divnode *div, struct quad *clip) {
 void scroll_clip(struct quad *clip, struct pair *scroll) {
   s16 i;
 
-  /* Vertical scroll */
-  if (scroll->y) {
+  /* Scroll the region up */
+  if (scroll->y < 0) {
+    i = clip->y1;
+    clip->y1 = clip->y2 + scroll->y + 1;
+    if (clip->y1<i)
+      clip->y1 = i;
+  }
 
-    /* Scroll the region up */
-    if (scroll->y < 0) {
-      i = clip->y1;
-      clip->y1 = clip->y2 + scroll->y + 1;
-      if (clip->y1<i)
-	clip->y1 = i;
-    }
-    /* Scroll the region down */
-    else {
-      i = clip->y2;
-      clip->y2 = clip->y1 + scroll->y - 1;
-      if (clip->y2>i)
-	clip->y2 = i;
-    }
+  /* Scroll the region down */
+  if (scroll->y > 0) {
+    i = clip->y2;
+    clip->y2 = clip->y1 + scroll->y - 1;
+    if (clip->y2>i)
+      clip->y2 = i;
+  }
 
+  /* Scroll the region left */
+  if (scroll->x < 0) {
+    i = clip->x1;
+    clip->x1 = clip->x2 + scroll->x + 1;
+    if (clip->x1<i)
+      clip->x1 = i;
+  }
+
+  /* Scroll the region right */
+  if (scroll->x > 0) {
+    i = clip->x2;
+    clip->x2 = clip->x1 + scroll->x - 1;
+    if (clip->x2>i)
+      clip->x2 = i;
   }
 }
 
 
 void groplist_scroll(struct groprender *r, struct divnode *div) {
-
+  
   if ((div->flags & DIVNODE_DIVSCROLL) && div->divscroll!=div) {
     /* This is not the scrollable divnode itself, it is a child. 
      * We don't need to do any blitting here, but we do need to draw in
      * the correct clipping rectangle
      */
-
+    
     /* First, reproduce the truncated clipping rectangle used by the 
      * head scrolling node.
      */
     struct quad trclip;
+
     trclip.x1 = div->divscroll->calcx;
     trclip.y1 = div->divscroll->calcy;
     trclip.x2 = trclip.x1 + div->divscroll->calcw - 1;
@@ -324,44 +337,65 @@ void groplist_scroll(struct groprender *r, struct divnode *div) {
     if (r->clip.y2 > trclip.y2)
       r->clip.y2 = trclip.y2;
 
-    r->clip = trclip;
+    return;
   }
-  else {
-    /* This is the head scrolling node! We are in charge of clearing
-     * all sprites out of the area and performing the scroll's blit
-     */
+  
+  /* This is the head scrolling node! We are in charge of clearing
+   * all sprites out of the area and performing the scroll's blit
+   */
+  
+  /* Prepare the whole area for drawing */
+  VID(sprite_protectarea) (&r->clip,spritelist);
+  add_updarea(r->clip.x1,r->clip.y1,r->clip.x2-
+	      r->clip.x1+1,r->clip.y2-r->clip.y1+1);
 
-    /* Prepare the whole area for drawing */
-    VID(sprite_protectarea) (&r->clip,spritelist);
-    add_updarea(r->clip.x1,r->clip.y1,r->clip.x2-
-		r->clip.x1+1,r->clip.y2-r->clip.y1+1);
-
-    /* Vertical scroll: blit up or down */
-    if (r->scroll.y) {
-      
-      if (r->scroll.y < 0) {
-	s16 h = r->clip.y2 - r->clip.y1 + 1 + r->scroll.y;
-	/* If h<=0 the whole area is new, so we have nothing to blit */
-	if (h>0)
-	  VID(blit) (r->output,r->clip.x1,r->clip.y1,
-		     r->clip.x2 - r->clip.x1 + 1,h,
-		     r->output,r->clip.x1,r->clip.y1 - r->scroll.y,
-		     PG_LGOP_NONE);
-      }
-      else {
-	s16 h = r->clip.y2 - r->clip.y1 + 1 - r->scroll.y;
-	/* If h<=0 the whole area is new, so we have nothing to blit */
-	if (h>0)
-	  VID(scrollblit) (r->output,r->clip.x1,r->clip.y1 + r->scroll.y,
-			   r->clip.x2 - r->clip.x1 + 1,h,
-			   r->output,r->clip.x1,r->clip.y1,
-			   PG_LGOP_NONE);
-      }
-    }
-    
-    /* Truncate our own clipping rectangle */
-    scroll_clip(&r->clip,&r->scroll);
+  /* Now shift the existing pixels to where they need to be.
+   * We use scrollblit since the source and destination rectangles
+   * will overlap. Note that if w or h <= 0 below there are no pixels saved.
+   */
+ 
+  /* Scroll the region up */
+  if (r->scroll.y < 0) {
+    s16 h = r->clip.y2 - r->clip.y1 + 1 + r->scroll.y;
+    if (h>0)
+      VID(scrollblit) (r->output,r->clip.x1,r->clip.y1,
+		       r->clip.x2 - r->clip.x1 + 1,h,
+		       r->output,r->clip.x1,r->clip.y1 - r->scroll.y,
+		       PG_LGOP_NONE);
   }
+
+  /* Scroll the region down */
+  if (r->scroll.y > 0) {
+    s16 h = r->clip.y2 - r->clip.y1 + 1 - r->scroll.y;
+    if (h>0)
+      VID(scrollblit) (r->output,r->clip.x1,r->clip.y1 + r->scroll.y,
+		       r->clip.x2 - r->clip.x1 + 1,h,
+		       r->output,r->clip.x1,r->clip.y1,
+		       PG_LGOP_NONE);
+  }
+
+  /* Scroll the region left */
+  if (r->scroll.x < 0) {
+    s16 w = r->clip.x2 - r->clip.x1 + 1 + r->scroll.x;
+    if (w>0)
+      VID(blit) (r->output,r->clip.x1,r->clip.y1,
+		 w,r->clip.y2 - r->clip.y1 + 1,
+		 r->output,r->clip.x1 - r->scroll.x,r->clip.y1,
+		 PG_LGOP_NONE);
+  }
+
+  /* Scroll the region right */
+  if (r->scroll.x > 0) {
+    s16 w = r->clip.x2 - r->clip.x1 + 1 - r->scroll.x;
+    if (w>0)
+      VID(scrollblit) (r->output,r->clip.x1 + r->scroll.x,r->clip.y1,
+		       w, r->clip.y2 - r->clip.y1 + 1,
+		       r->output,r->clip.x1,r->clip.y1,
+		       PG_LGOP_NONE);
+  }
+
+  /* Truncate our own clipping rectangle */
+  scroll_clip(&r->clip,&r->scroll);
 }
 
 

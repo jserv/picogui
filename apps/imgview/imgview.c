@@ -41,7 +41,7 @@ int btnOpen(struct pgEvent *evt) {
 }
 
 int main(int argc, char **argv) {
-  pghandle titleLabel,scroll,box;
+  pghandle titleLabel,box;
   
   pgInit(argc,argv);
   pgLoadTheme(pgFromMemory(imgviewtheme_bits,imgviewtheme_len));
@@ -51,18 +51,15 @@ int main(int argc, char **argv) {
 	      PG_WP_THOBJ, pgFindThemeObject("imgview.panel"),
 	      0);
 
-  scroll = pgNewWidget (PG_WIDGET_SCROLL, 0, 0);
-  box = pgNewWidget (PG_WIDGET_BOX, 0, 0);
+  box = pgNewWidget(PG_WIDGET_SCROLLBOX, 0, 0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_THOBJ, pgFindThemeObject("imgview.box"),
-	      PG_WP_SIDE, PG_S_ALL,
 	      0);
-  pgSetWidget (scroll, PG_WP_BIND, box, 0);
-  
 
-  bitmapwidget = pgNewWidget(PG_WIDGET_BITMAP,PG_DERIVE_INSIDE,box);
+  bitmapwidget = pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_INSIDE,box);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE, PG_S_ALL,
+	      PG_WP_MARGIN, 0,
 	      0);
 
   titleLabel = pgGetWidget(panel, PG_WP_PANELBAR_LABEL);
@@ -80,9 +77,5 @@ int main(int argc, char **argv) {
   pgEventLoop();
   return 0;
 }
-
-
-
-
 
 /* The End */

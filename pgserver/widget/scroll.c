@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.63 2002/09/27 23:10:21 micahjd Exp $
+/* $Id: scroll.c,v 1.64 2002/09/28 04:06:56 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -184,7 +184,7 @@ void scrollevent(struct widget *self) {
     /* Send to a widget */
     if (!iserror(rdhandle((void **)&w,PG_TYPE_WIDGET,
 			  -1,self->scrollbind)) && w) 
-      widget_set(w,PG_WP_SCROLL,DATA->value);
+      widget_set(w,DATA->horizontal ? PG_WP_SCROLL_X : PG_WP_SCROLL_Y,DATA->value);
   }
   else {
     /* Send to a client */
@@ -193,20 +193,16 @@ void scrollevent(struct widget *self) {
 }
 
 void scroll_resize(struct widget *self) {
-   if ((self->in->flags & PG_S_TOP) ||
-       (self->in->flags & PG_S_BOTTOM)) {
-      
-      self->in->div->pw = 0;
-      self->in->split = self->in->div->ph = DATA->res ? 
-	theme_lookup(PGTH_O_SCROLL,PGTH_P_WIDTH) : 0;
-   }
-   else if ((self->in->flags & PG_S_LEFT) ||
-	    (self->in->flags & PG_S_RIGHT)) {
-      
-      self->in->div->ph = 0;
-      self->in->split = self->in->div->pw = DATA->res ?
-	theme_lookup(PGTH_O_SCROLL,PGTH_P_WIDTH) : 0;
-   }
+  if (DATA->horizontal) {
+    self->in->div->ph = 0;
+    self->in->split = self->in->div->pw = DATA->res ?
+      theme_lookup(self->in->div->state,PGTH_P_WIDTH) : 0;
+  }
+  else {
+    self->in->div->pw = 0;
+    self->in->split = self->in->div->ph = DATA->res ? 
+      theme_lookup(self->in->div->state,PGTH_P_WIDTH) : 0;
+  }
 }
 
 /* Here, the divnodes are set up.
@@ -281,7 +277,7 @@ g_error scroll_set(struct widget *self,int property, glob data) {
     widget_set(w,PG_WP_TRANSPARENT,0);
 
     /* Reset scrolling */
-    widget_set(w,PG_WP_SCROLL,0);
+    widget_set(w,DATA->horizontal ? PG_WP_SCROLL_X : PG_WP_SCROLL_Y,0);
 
     /* Set the other widget's binding, as long as it's not a scrollbar!
      * (That wouldn't make much sense, plus it would cause an infinite loop)
@@ -427,11 +423,11 @@ void scroll_trigger(struct widget *self,s32 type,union trigparam *param) {
 
   /* Change State */
   if (DATA->on)
-    div_setstate(self->in->div,PGTH_O_SCROLL_ON,force);
+    div_setstate(self->in->div,DATA->horizontal ? PGTH_O_SCROLL_H_ON : PGTH_O_SCROLL_V_ON,force);
   else if (DATA->over)
-    div_setstate(self->in->div,PGTH_O_SCROLL_HILIGHT,force);
+    div_setstate(self->in->div,DATA->horizontal ? PGTH_O_SCROLL_H_HILIGHT : PGTH_O_SCROLL_V_HILIGHT,force);
   else
-    div_setstate(self->in->div,PGTH_O_SCROLL,force);
+    div_setstate(self->in->div,DATA->horizontal ? PGTH_O_SCROLL_H : PGTH_O_SCROLL_V,force);
 }
 
 /* The End */

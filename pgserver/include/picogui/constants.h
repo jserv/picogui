@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.153 2002/09/27 23:10:21 micahjd Exp $
+/* $Id: constants.h,v 1.154 2002/09/28 04:06:55 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -362,10 +362,13 @@ typedef unsigned long pghandle;
 #define PGTH_O_INDICATOR_V           66   //!< Vertical indicator
 #define PGTH_O_SCROLL_H              67   //!< Horizontal scrollbar
 #define PGTH_O_SCROLL_V              68   //!< Vertical scrollbar
-
+#define PGTH_O_SCROLL_H_ON           69   //!< Clicked horizontal scrollbar
+#define PGTH_O_SCROLL_H_HILIGHT      70   //!< Hilighted horizontal scrollbar
+#define PGTH_O_SCROLL_V_ON           71   //!< Clicked vertical scrollbar
+#define PGTH_O_SCROLL_V_HILIGHT      72   //!< Hilighted vertical scrollbar
 
 //! If you add a themeobject, be sure to increment this and add an inheritance entry in theme/memtheme.c
-#define PGTH_ONUM                    69
+#define PGTH_ONUM                    73
 
 //! Using a theme object named "custom" makes the server automatically allocate a free theme object at load time
 #define PGTH_O_CUSTOM                0x7FFF
@@ -877,8 +880,9 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_SIMPLEMENU      21    /* create a simple menu from a string or array */
 #define PG_WIDGET_DIALOGBOX       22    /* A popup with a standard title */
 #define PG_WIDGET_MESSAGEDIALOG   23    /* A popup that displays a message and gets a response */
-#define PG_WIDGETMAX              23    /* For error checking */
-     
+#define PG_WIDGET_SCROLLBOX       24    /* A box widget including scroll bars */
+#define PG_WIDGETMAX              24    /* For error checking */
+
 /* Widget properties */
 #define PG_WP_SIZE        1
 #define PG_WP_SIDE        2

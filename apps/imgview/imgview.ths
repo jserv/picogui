@@ -1,3 +1,6 @@
+# This is the theme loaded by imgview, in imgview.th.h
+# This should be included as a resource when pgres is done!
+
 object "imgview.box" {
   margin = 0;
   bitmap1 = LoadBitmap("checkers.bmp");

@@ -166,18 +166,13 @@ int btnTarget(struct pgEvent *evt) {
 /******************* Main program */
 
 int main(int argc,char **argv) {
-  pghandle wBox, wScroll;
+  pghandle wBox;
   
   pgInit(argc,argv);
   pgRegisterApp(PG_APP_NORMAL,"Standard Dialogs",0);
 
   /* Scrollable box */
-  wScroll = pgNewWidget(PG_WIDGET_SCROLL,0,0);
-  wBox = pgNewWidget(PG_WIDGET_BOX,0,0);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_SIDE,PG_S_ALL,
-	      0);
-  pgSetWidget(wScroll,PG_WP_BIND,wBox,0);
+  wBox = pgNewWidget(PG_WIDGET_SCROLLBOX,0,0);
 
   /* Message Dialog */
   pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wBox);

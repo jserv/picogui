@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.116 2002/09/27 22:55:37 micahjd Exp $
+/* $Id: button.c,v 1.117 2002/09/28 04:06:56 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -60,6 +60,10 @@ struct btndata {
   /* Set if the client is overriding the theme's setting */
   unsigned int alignset : 1;
   unsigned int colorset : 1;
+
+  /* Allow the app to override the margin */
+  unsigned int margin_override : 1;
+  int margin;
 
   handle bitmap,bitmask,text,font;
   int spacing;
@@ -277,6 +281,12 @@ g_error button_set(struct widget *self,int property, glob data) {
     set_widget_rebuild(self);
     break;
 
+  case PG_WP_MARGIN:
+    DATA->margin = data;
+    DATA->margin_override = data >= 0;
+    resizewidget(self);
+    break;
+
   case PG_WP_FONT:
     if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,self->owner,data))) 
 	 return mkerror(PG_ERRT_HANDLE,35);
@@ -471,6 +481,9 @@ glob button_get(struct widget *self,int property) {
 
   case PG_WP_SPACING:
     return (glob) DATA->spacing;
+
+  case PG_WP_MARGIN:
+    return (glob) DATA->margin;
 
   default:
     return 0;
@@ -759,7 +772,7 @@ void button_resize(struct widget *self) {
   /* Minimum size and margin */
   w = theme_lookup(DATA->state,PGTH_P_WIDTH);
   h = theme_lookup(DATA->state,PGTH_P_HEIGHT);
-  m = theme_lookup(DATA->state,PGTH_P_MARGIN) << 1;
+  m = (DATA->margin_override ? DATA->margin : theme_lookup(DATA->state,PGTH_P_MARGIN)) << 1;
 
   /* Calculate everything */
   position_button(self,&bp);

@@ -21,6 +21,7 @@ libwidget_a_SOURCES = \
     simplemenu.c \
     dialogbox.c \
     messagedialog.c \
+    scrollbox.c \
     $(WIDGET)
 
 EXTRA_libwidget_a_SOURCES = \

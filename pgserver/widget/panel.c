@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.80 2002/09/25 15:26:08 micahjd Exp $
+/* $Id: panel.c,v 1.81 2002/09/28 04:06:56 micahjd Exp $
  *
  * panel.c - Resizable container with decorations. It uses a panelbar for resizing purposes,
  *           and optionally supplies some standard buttons for the panel.
@@ -38,6 +38,10 @@ struct paneldata {
 
   /* Child widgets */
   handle hrotate, hclose, hzoom, hbar, hlabel;
+
+  /* Allow the app to override margin */
+  int margin;
+  unsigned int margin_override:1;
 };
 #define DATA WIDGET_DATA(0,paneldata)
 
@@ -152,7 +156,10 @@ void panel_resize(struct widget *self) {
   struct widget *bar = NULL;
   rdhandle((void **) &bar, PG_TYPE_WIDGET, self->owner, DATA->hbar);
 
-  DATA->bg->split = theme_lookup(DATA->bg->state,PGTH_P_MARGIN);
+  if (DATA->margin_override)
+    DATA->bg->split = DATA->margin;
+  else
+    DATA->bg->split = theme_lookup(DATA->bg->state,PGTH_P_MARGIN);
   self->in->div->split = theme_lookup(DATA->bg->state,PGTH_P_BORDER_SIZE);
 
   /* The minimum setting on the panelbar needs to leave room for the margin
@@ -285,6 +292,12 @@ g_error panel_set(struct widget *self,int property, glob data) {
       (*app)->name = data;
     return widget_set(w,property,data);
 
+  case PG_WP_MARGIN:
+    DATA->margin = data;
+    DATA->margin_override = data >= 0;
+    resizewidget(self);
+    break;
+
   default:
     return mkerror(ERRT_PASS,0);
 
@@ -320,6 +333,9 @@ glob panel_get(struct widget *self,int property) {
 
   case PG_WP_PANELBAR_ZOOM:
     return DATA->hzoom;
+
+  case PG_WP_MARGIN:
+    return DATA->margin;
 
   }
   return 0;
