@@ -1,4 +1,4 @@
-/* $Id: gif.c,v 1.6 2002/04/02 21:16:51 micahjd Exp $
+/* $Id: gif.c,v 1.7 2002/11/03 23:27:55 micahjd Exp $
  *
  * gif.c - Read only GIF loader based on libungif
  *
@@ -51,17 +51,6 @@
 #include <pgserver/common.h>
 #include <pgserver/video.h>
 
-#ifdef __MSDOS__
-#include <io.h>
-#include <alloc.h>
-#include <stdlib.h>
-#include <sys\stat.h>
-#else
-#include <sys/types.h>
-#include <sys/stat.h>
-#endif /* __MSDOS__ */
-
-#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 
