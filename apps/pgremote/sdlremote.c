@@ -1,4 +1,4 @@
-/* $Id: sdlremote.c,v 1.2 2001/02/14 05:21:32 micahjd Exp $
+/* $Id: sdlremote.c,v 1.3 2001/04/20 23:45:18 micahjd Exp $
  * 
  * sdlremote.c - pgremote is a networked PicoGUI input driver.
  *               This uses SDL, so hopefully it is fairly portable.
@@ -37,10 +37,12 @@
 int main(int argc, char **argv) {
    SDL_Surface *surf;
    SDL_Event evt;
+   struct pgmodeinfo mi;
    int ox=0,oy=0,btnstate=0;
    
    /* Don't need an app, but a connection would be nice... */
    pgInit(argc,argv); 
+   mi = *pgGetVideoMode();
   
    /* Start up SDL */
    if (SDL_Init(SDL_INIT_VIDEO)) {
@@ -48,12 +50,8 @@ int main(int argc, char **argv) {
       return 1;
    }
    
-   /* 320x200 should be plenty. The mode used here need not match the server
-    * resolution, because we don't display anything useful (yet)
-    * 
-    * This mode is nice because it works on older hardware too :)
-    */
-   surf = SDL_SetVideoMode(320,200,8,0);
+   /* Set a video mode to match the server's _physical_ resolution */
+   surf = SDL_SetVideoMode(mi.xres,mi.yres,8,0);
    if (!surf) {
       printf("Error setting video mode: %s\n",SDL_GetError());
       return 1;
