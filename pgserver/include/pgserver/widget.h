@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.27 2001/05/05 20:54:17 micahjd Exp $
+/* $Id: widget.h,v 1.28 2001/06/25 00:48:50 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -107,6 +107,12 @@ struct widgetdef {
   /* Setting/getting properties */
   g_error (*set)(struct widget *self, int property, glob data);
   glob (*get)(struct widget *self, int property);
+
+  /* This function should recalculate the preferred size for all
+   * applicable divnodes. The widget can call it when a parameter has
+   * changed that would change the widget's size, the system can call it
+   * when something globally changes, like the theme. */
+  void (*resize)(struct widget *self);
 };
 
 /* The table of widgetdef's, indexed by type */
@@ -124,9 +130,6 @@ struct widget {
      widgets inside it, not before or after it */
   unsigned int isroot : 1;
 
-  /* If the size has been set manually, prevent automatic resizing */
-  unsigned int sizelock : 1;
-   
   /***** 16/8-bit packed values */
    
   /* Defines the type of widget */
@@ -158,10 +161,6 @@ struct widget {
   /* The divtree this widget is part of */
   struct divtree *dt;
 
-  /* This is called whenever sizing parameters have changed, such
-     as when a theme is loaded */
-  void (*resize)(struct widget *self);
-  
   /* Widget's private data (Properties) */
   void *data;
 
@@ -196,24 +195,24 @@ struct widget {
 #ifdef RUNTIME_FUNCPTR   /* If we can't use function pointers at compile-time */
 
 # define DEF_WIDGET_TABLE(n) \
-  p->install = &n##_install; p->remove = &n##_remove; p->trigger = &n##_trigger; p->set = &n##_set; p->get = &n##_get; p++;
+  p->install = &n##_install; p->remove = &n##_remove; p->trigger = &n##_trigger; p->set = &n##_set; p->get = &n##_get; p->resize = &n##_resize; p++;
 # define DEF_HYBRIDWIDGET_TABLE(n,m) \
-  p->install = &n##_install; p->remove = &m##_remove; p->trigger = &m##_trigger; p->set = &m##_set; p->get = &m##_get; p++;
+  p->install = &n##_install; p->remove = &m##_remove; p->trigger = &m##_trigger; p->set = &m##_set; p->get = &m##_get; p->resize = &m##_resize; p++;
 # define DEF_STATICWIDGET_TABLE(n) \
-  p->install = &n##_install; p->remove = &n##_remove; p->trigger = NULL; p->set = &n##_set; p->get = &n##_get; p++;
+  p->install = &n##_install; p->remove = &n##_remove; p->trigger = NULL; p->set = &n##_set; p->get = &n##_get; p->resize = &n##_resize; p++;
 # define DEF_ERRORWIDGET_TABLE(s) \
-  p->install = NULL; p->remove = (void *) s; p->trigger = NULL; p->set = NULL; p->get = NULL; p++;
+  p->install = NULL; p->remove = (void *) s; p->trigger = NULL; p->set = NULL; p->get = NULL; p->resize = NULL; p++;
 
 #else  /* ! RUNTIME_FUNCPTR */
 
 # define DEF_WIDGET_TABLE(n) \
-  n##_install, n##_remove, n##_trigger, n##_set, n##_get,
+  n##_install, n##_remove, n##_trigger, n##_set, n##_get, n##_resize,
 # define DEF_HYBRIDWIDGET_TABLE(n,m) \
-  n##_install, m##_remove, m##_trigger, m##_set, m##_get,
-#define DEF_STATICWIDGET_TABLE(n) \
-  n##_install, n##_remove, NULL, n##_set, n##_get,
-#define DEF_ERRORWIDGET_TABLE(s) \
-  NULL, (void *) s, NULL, NULL, NULL,
+  n##_install, m##_remove, m##_trigger, m##_set, m##_get, m##_resize,
+# define DEF_STATICWIDGET_TABLE(n) \
+  n##_install, n##_remove, NULL, n##_set, n##_get, n##_resize,
+# define DEF_ERRORWIDGET_TABLE(s) \
+  NULL, (void *) s, NULL, NULL, NULL, NULL,
 
 #endif  /* RUNTIME_FUNCPTR */
 #define DEF_WIDGET_PROTO(n) \
@@ -221,7 +220,8 @@ struct widget {
   void n##_remove(struct widget *self); \
   void n##_trigger(struct widget *self,long type,union trigparam *param); \
   g_error n##_set(struct widget *self, int property, glob data); \
-  glob n##_get(struct widget *self, int property);
+  glob n##_get(struct widget *self, int property); \
+  void n##_resize(struct widget *self);
 
 /* Widget prototypes */
 DEF_WIDGET_PROTO(toolbar)      /* A container for buttons */
@@ -348,7 +348,14 @@ void customize_button(struct widget *self,int state,int state_on,int state_hilig
  * used when changing video modes */
 void clip_popup(struct divnode *div);
 
-/* Call the resize() function on all widgets with handles */
+/* Resizes an individual widget and calculates a new split value if necessary.
+ * This is called by widgets whenever key parameters have changed, such as 
+ * widget text or font size. Recursively calculates the child divnode sizes, 
+ * and sets split parameters.
+ */
+void resizewidget(struct widget *w);
+
+/* Call the resizewidget() function on all widgets with handles */
 void resizeall(void);
 
 #endif /* __WIDGET_H */

@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.61 2001/06/01 01:00:47 micahjd Exp $
+/* $Id: button.c,v 1.62 2001/06/25 00:48:50 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -53,8 +53,6 @@ struct btndata {
 };
 #define DATA ((struct btndata *)(self->data))
 
-void resize_button(struct widget *self);
-
 /* Customizes the button's appearance
    (used by other widgets that embed buttons in themeselves) */
 void customize_button(struct widget *self,int state,int state_on,int state_hilight,
@@ -65,7 +63,7 @@ void customize_button(struct widget *self,int state,int state_on,int state_hilig
   DATA->extra = extra;
   DATA->event = event;
 
-  resize_button(self);
+  resizewidget(self);
 }
 
 struct btnposition {
@@ -166,7 +164,6 @@ g_error button_install(struct widget *self) {
 
   self->out = &self->in->next;
   self->sub = &self->in->div->div;
-  self->resize = &resize_button;
 
   return sucess;
 }
@@ -182,7 +179,6 @@ g_error button_set(struct widget *self,int property, glob data) {
   hwrbitmap bit;
   char *str;
   struct fontdesc *fd;
-  int psplit;
 
   switch (property) {
 
@@ -191,12 +187,7 @@ g_error button_set(struct widget *self,int property, glob data) {
        return mkerror(PG_ERRT_HANDLE,33);
      
     DATA->bitmap = (handle) data;
-    psplit = self->in->split;
-    resize_button(self);
-    if (self->in->split != psplit) {
-       redraw_bg(self);
-       self->in->flags |= DIVNODE_PROPAGATE_RECALC;
-    }
+    resizewidget(self);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -214,12 +205,7 @@ g_error button_set(struct widget *self,int property, glob data) {
     if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,data))) 
 	 return mkerror(PG_ERRT_HANDLE,35);
     DATA->font = (handle) data;
-    psplit = self->in->split;
-    resize_button(self);
-    if (self->in->split != psplit) {
-      redraw_bg(self);
-      self->in->flags |= DIVNODE_PROPAGATE_RECALC;
-    }
+    resizewidget(self);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -228,12 +214,7 @@ g_error button_set(struct widget *self,int property, glob data) {
     if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,data))) 
        return mkerror(PG_ERRT_HANDLE,36);
     DATA->text = (handle) data;
-    psplit = self->in->split;
-    resize_button(self);
-    if (self->in->split != psplit) {
-      redraw_bg(self);
-      self->in->flags |= DIVNODE_PROPAGATE_RECALC;
-    }
+    resizewidget(self);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -359,10 +340,7 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
   }
 }
 
-/* HWG_BUTTON is the minimum size (either dimension) for a button.
-   This function resizes if the text or bitmap goes over that minimum.
-*/
-void resize_button(struct widget *self) {
+void button_resize(struct widget *self) {
   struct btnposition bp;
   int w,h,m;
   u32 t;
@@ -405,43 +383,35 @@ void resize_button(struct widget *self) {
    
   lock = 0;
    
-  /* With PG_S_ALL we'll get ignored anyway... */
-  if (self->in->flags & PG_S_ALL) return;
-
-  /* Leave it alone if size is locked */
-  if (self->sizelock) return;
-   
   /* Minimum size and margin */
   w = theme_lookup(DATA->state,PGTH_P_WIDTH);
   h = theme_lookup(DATA->state,PGTH_P_HEIGHT);
-  m = theme_lookup(DATA->state,PGTH_P_MARGIN);
+  m = theme_lookup(DATA->state,PGTH_P_MARGIN) << 1;
 
   /* Calculate everything */
   position_button(self,&bp);
 
-  /* Orientation */
+  if (bp.h > h)
+     h = bp.h + m;
+  if ((bp.w+m) > w)
+     w = bp.w + m;
+   
+  /* Add spacing between buttons */
   if ((self->in->flags & PG_S_TOP) ||
       (self->in->flags & PG_S_BOTTOM)) {
 
-    /* Vertical */
-    if (bp.h > h)
-      self->in->split = bp.h;
-    else
-      self->in->split = h;
+     /* Vertical */
+     h += theme_lookup(DATA->state,PGTH_P_SPACING);
   }
   else if ((self->in->flags & PG_S_LEFT) ||
 	   (self->in->flags & PG_S_RIGHT)) {
 
-    /* Horizontal */
-    bp.w += m<<1;
-    if (bp.w > w)
-      self->in->split = bp.w;
-    else
-      self->in->split = w;
+     /* Horizontal */
+     w += theme_lookup(DATA->state,PGTH_P_SPACING);
   }
 
-  /* Necessary to account for spacing between buttons */
-  self->in->split += theme_lookup(DATA->state,PGTH_P_SPACING);
+  self->in->div->pw = w;
+  self->in->div->ph = h;
 }
 
 /* Code to generate the button coordinates, needed to resize or build the button */

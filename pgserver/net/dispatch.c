@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.37 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: dispatch.c,v 1.38 2001/06/25 00:48:50 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -727,31 +727,14 @@ g_error rqh_mkmsgdlg(int owner, struct pgrequest *req,
   handle h,htb;
   struct widget *w,*tb;
   unsigned long flags;
-  s16 bw=0,bh=0;
-  struct fontdesc *fd;
-  char *str;
   reqarg(mkmsgdlg);
 
   /* If no flags were specified, use the defaults */
   flags = ntohl(arg->flags);
   if (!flags) flags = PG_MSGBTN_OK;
 
-  /*** Sorta size the popup box... This could definitely be improved :) */
-  /* Start with the body text size */
-  if (!iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,
-			theme_lookup(PGTH_O_LABEL_DLGTEXT,PGTH_P_FONT)))
-      && fd) 
-    if (!iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,ntohl(arg->text)))
-	&& str)
-      sizetext(fd,&bw,&bh,str);
-  /* Account for doohickeys */
-  bh += theme_lookup(PGTH_O_TOOLBAR,PGTH_P_HEIGHT) << 1;
-  /* Any additions the theme may have */
-  bw += theme_lookup(PGTH_O_POPUP_MESSAGEDLG,PGTH_P_WIDTH);
-  bh += theme_lookup(PGTH_O_POPUP_MESSAGEDLG,PGTH_P_HEIGHT);
-
   /* The popup box itself */
-  e = create_popup(PG_POPUP_CENTER,PG_POPUP_CENTER,bw,bh,&w,owner);
+  e = create_popup(PG_POPUP_CENTER,PG_POPUP_CENTER,0,0,&w,owner);
   errorcheck;
   w->in->div->state = PGTH_O_POPUP_MESSAGEDLG;
   e = mkhandle(&h,PG_TYPE_WIDGET,owner,w);
@@ -810,31 +793,15 @@ g_error rqh_mkmenu(int owner, struct pgrequest *req,
 		   void *data, unsigned long *ret, int *fatal) {
   g_error e;
   char *str;
-  struct fontdesc *fd;
   struct widget *w,*wbox;
   handle h,hbox;
-  s16 bhmin,bw,bh,maxw = 0,ttlh = 0;
   s16 i,num = req->size / 4;
   u32 *items = data;
   u32 *ppayload;
 
-  /*** Find the maximum width and total height (and convert byte order) */
-  e = rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,
-	       theme_lookup(PGTH_O_LABEL_DLGTEXT,PGTH_P_FONT));
-  errorcheck;
-  bhmin = theme_lookup(PGTH_O_MENUITEM,PGTH_P_HEIGHT);
-  for (i=0;i<num;i++) {
-    e = rdhandle((void **)&str,PG_TYPE_STRING,-1,items[i] = ntohl(items[i]));
-    errorcheck;
-    sizetext(fd,&bw,&bh,str);
-    if (bw>maxw) maxw = bw;
-    if (bhmin>bh) bh = bhmin;
-    ttlh += bh;
-  }
-
   /* The popup box itself */
   e = create_popup(PG_POPUP_ATCURSOR,PG_POPUP_ATCURSOR,
-		   maxw,ttlh,&wbox,owner);
+		   0,0,&wbox,owner);
   errorcheck;
   e = mkhandle(&hbox,PG_TYPE_WIDGET,owner,wbox);
   errorcheck;

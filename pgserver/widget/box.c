@@ -1,4 +1,4 @@
-/* $Id: box.c,v 1.15 2001/04/12 02:37:56 micahjd Exp $
+/* $Id: box.c,v 1.16 2001/06/25 00:48:50 micahjd Exp $
  *
  * box.c - Generic container for holding a group of widgets. It's sizing and
  *         appearance are defined by the theme.
@@ -29,7 +29,7 @@
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 
-void resize_box(struct widget *self) {
+void box_resize(struct widget *self) {
    int m;
    
    /* Transparent boxen have the same margin as a button
@@ -39,13 +39,12 @@ void resize_box(struct widget *self) {
    else
      m = theme_lookup(PGTH_O_BUTTON,PGTH_P_SPACING) >> 1;
    
-   if (!self->sizelock) {
-      if (self->in->flags & (PG_S_TOP | PG_S_BOTTOM))
-	self->in->split = theme_lookup(PGTH_O_BUTTON,PGTH_P_HEIGHT)+(m<<1);
-      else
-	self->in->split = theme_lookup(PGTH_O_BUTTON,PGTH_P_WIDTH)+(m<<1);
-   }
-   
+   /* No minimum size */
+   self->in->ph = 0;
+   self->in->pw = 0;
+
+   /* Handle the margin ourselves */
+   self->in->div->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
    self->in->div->split = m;
 }
 
@@ -63,7 +62,6 @@ g_error box_install(struct widget *self) {
 
   self->out = &self->in->next;
   self->sub = &self->in->div->div;
-  self->resize = &resize_box;
 
   return sucess;
 }
@@ -97,7 +95,7 @@ glob box_get(struct widget *self,int property) {
     return self->in->flags & (~SIDEMASK);
 
   case PG_WP_SIZE:
-    resize_box(self);
+    resizewidget(self);
     return self->in->split;
 
   }

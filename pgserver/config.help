@@ -5,6 +5,7 @@ CONFIG_LINUX_GENERIC
      Linux-generic:
       This might work with other POSIX-ish OSes but it has only been
       tested with Linux.
+      This has been tested with linux/i386 and linux/ppc.
      
      uClinux-m68k:
       uClinux is a derivative of the standard Linux kernel, modified
@@ -30,7 +31,8 @@ CONFIG_NOSTRIP
       
 ASM_INTEL
       This enables intel-specific assembly language optimizations
-      where implemented
+      where implemented. It will cause compile-time errors on
+      other architectures.
       
 
 CONFIG_NO_OPTIMIZE
@@ -65,6 +67,7 @@ DEBUG_KEYS
       CTRL-ALT-P : Display all loaded bitmaps
       CTRL-ALT-H : Dump _complete_ handle tree to stdout
       CTRL-ALT-N : Dump all gropnodes to stdout
+      CTRL_ALT-D : Dump all divnodes to stdout
 
       With or without this option CTRL-ALT-/ exits the server
       

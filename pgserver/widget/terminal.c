@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.26 2001/05/13 17:28:26 micahjd Exp $
+/* $Id: terminal.c,v 1.27 2001/06/25 00:48:50 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -143,6 +143,12 @@ void textblit(char *src,char *dest,int src_x,int src_y,int src_w,
 
 /********************************************** Widget functions */
 
+/* Preferred size, 80*25 characters */
+void terminal_resize(struct widget *self) {
+   self->in->div->pw = DATA->celw * 80;
+   self->in->div->ph = DATA->celh * 25;
+}
+   
 void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self) {
   struct fontdesc *fd;
   int neww,newh;

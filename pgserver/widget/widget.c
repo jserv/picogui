@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.79 2001/04/29 17:28:40 micahjd Exp $
+/* $Id: widget.c,v 1.80 2001/06/25 00:48:50 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -143,7 +143,7 @@ g_error widget_create(struct widget **w,int type,
   }
      
   /* Resize for the first time */
-  if ((*w)->resize) (*(*w)->resize)(*w);
+  resizewidget(*w);
 
   dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
   dt->flags |= DIVTREE_NEED_RECALC;
@@ -303,8 +303,7 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
       w->in->flags &= SIDEMASK;
       w->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
 	DIVNODE_PROPAGATE_RECALC;
-      if (w->resize && data!=PG_S_ALL)
-	(*w->resize)(w);
+      resizewidget(w);
       w->dt->flags |= DIVTREE_NEED_RECALC;
       redraw_bg(w);
       break;
@@ -312,14 +311,14 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
     case PG_WP_SIZE:
       if (data<0) data = 0;
       w->in->split = data;
-      w->sizelock = 1;     /* No auto resizing */
+      w->in->flags &= ~DIVNODE_SIZE_AUTOSPLIT;     /* No auto resizing */
       w->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
       w->dt->flags |= DIVTREE_NEED_RECALC;
       redraw_bg(w);
       break;
 
     case PG_WP_SIZEMODE:
-      w->sizelock = 1;     /* No auto resizing */
+      w->in->flags &= ~DIVNODE_SIZE_AUTOSPLIT;     /* No auto resizing */
       w->in->flags &= ~PG_SZMODEMASK;
       w->in->flags |= data & PG_SZMODEMASK;
       redraw_bg(w);
@@ -693,6 +692,30 @@ void grop_dump(void) {
    printf("---------------- End grop tree dump\n");
 }
      
+/* Utility functions to implement CTRL-ALT-D divnode dump */
+void r_div_dump(struct divnode *div, const char *label, int level) {
+   int i;
+   
+   if (!div)
+     return;
+
+   printf(label);
+   for (i=0;i<level;i++)
+     printf("\t");
+   printf("Div 0x%08X: flags=0x%04X split=%d prefer=(%d,%d) child=(%d,%d)\n",
+	  div,div->flags,div->split,div->pw,div->ph,div->cw,div->ch);
+
+   r_div_dump(div->div," Div:",level+1);
+   r_div_dump(div->next,"Next:",level+1);
+}
+void div_dump(void) {
+   struct divtree *dt;
+   printf("---------------- Begin div tree dump\n");
+   for (dt=dts->top;dt;dt=dt->next)
+       r_div_dump(dt->head,"Root:",0);
+   printf("---------------- End div tree dump\n");
+}
+     
 #endif
    
 void dispatch_key(u32 type,s16 key,s16 mods) {
@@ -726,6 +749,9 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
       grop_dump();
       return;
 
+    case PGKEY_d:           /* CTRL-ALT-d dumps all divnodes */
+      div_dump();
+      return;
        
     case PGKEY_g:           /* Just for fun :) */
       guru("GURU MEDITATION #%08X\n\nCongratulations!\n"
@@ -872,18 +898,25 @@ void dispatch_direct(char *name,u32 param) {
   printf("Direct event: %s(0x%08X)\n",name,param);
 #endif
 }
+
+void resizewidget(struct widget *w) {
+  (*w->def->resize)(w);
+  divresize_recursive(w->dt->head);
+}
    
 /* Iterator function used by resizeall() */
 g_error resizeall_iterate(void **p) {
-   struct widget *w = (struct widget *) *p;
-   if (w && w->resize)
-     (*w->resize)(w);
+   (*((struct widget *) (*p))->def->resize)((struct widget *) (*p));
    return sucess;
 }
-   
 /* Call the resize() function on all widgets with handles */
 void resizeall(void) {
-   handle_iterate(PG_TYPE_WIDGET,&resizeall_iterate);
+  struct divtree *tree;
+
+  handle_iterate(PG_TYPE_WIDGET,&resizeall_iterate);
+  
+  for (tree=dts->top;tree;tree=tree->next)
+    divresize_recursive(tree->head);
 }
 
 /* The End */

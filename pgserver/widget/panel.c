@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.60 2001/06/01 01:00:47 micahjd Exp $
+/* $Id: panel.c,v 1.61 2001/06/25 00:48:50 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -117,12 +117,11 @@ void panel_calcsplit(struct widget *self,int x,int y) {
    self->in->split += BARWIDTH;    /* Account for panelbar height */
 }
 
-void resize_panel(struct widget *self) {
+void panel_resize(struct widget *self) {
   int s;
 
-  /* This function only reloads params, so go ahead even with sizelock on */
-   
   /* Spacings */
+  self->in->div->next->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
   self->in->div->next->split = theme_lookup(DATA->panelbar->state,PGTH_P_MARGIN);
   BARWIDTH = theme_lookup(DATA->panelbar->state,PGTH_P_WIDTH);
 
@@ -199,7 +198,7 @@ void panelbtn_rotate(struct widget *self,struct widget *button) {
 
   }
 
-  resize_panel(self);
+  resizewidget(self);
   update(NULL,1);
 }
 
@@ -257,6 +256,7 @@ g_error panel_install(struct widget *self) {
   /* This split determines the size of the main panel area */
   e = newdiv(&self->in,self);
   errorcheck;
+  self->in->flags &= ~(DIVNODE_SIZE_AUTOSPLIT | DIVNODE_SIZE_RECURSIVE);
   self->in->flags |= PG_S_TOP;
 
   /* Split off another chunk of space for the bar */
@@ -305,8 +305,6 @@ g_error panel_install(struct widget *self) {
   self->trigger_mask = TRIGGER_ENTER | TRIGGER_LEAVE | 
     TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE |
     TRIGGER_DRAG | TRIGGER_MOVE;
-
-  self->resize = &resize_panel;
 
   return sucess;
 }

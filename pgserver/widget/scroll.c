@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.35 2001/06/01 01:00:47 micahjd Exp $
+/* $Id: scroll.c,v 1.36 2001/06/25 00:48:50 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -101,8 +101,19 @@ void scrollevent(struct widget *self) {
   }
 }
 
-void resize_scroll(struct widget *self) {
-  self->in->split = theme_lookup(PGTH_O_SCROLL,PGTH_P_WIDTH);
+void scroll_resize(struct widget *self) {
+   if ((self->in->flags & PG_S_TOP) ||
+       (self->in->flags & PG_S_BOTTOM)) {
+      
+      self->in->div->pw = 0;
+      self->in->div->ph = theme_lookup(PGTH_O_SCROLL,PGTH_P_WIDTH);
+   }
+   else if ((self->in->flags & PG_S_LEFT) ||
+	    (self->in->flags & PG_S_RIGHT)) {
+      
+      self->in->div->ph = 0;
+      self->in->div->pw = theme_lookup(PGTH_O_SCROLL,PGTH_P_WIDTH);
+   }
 }
 
 /* Here, the divnodes are set up.
@@ -127,8 +138,6 @@ g_error scroll_install(struct widget *self) {
   self->out = &self->in->next;
   self->trigger_mask = TRIGGER_DRAG | TRIGGER_ENTER | TRIGGER_LEAVE |
     TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_TIMER;
-
-  self->resize = &resize_scroll;
 
   return sucess;
 }

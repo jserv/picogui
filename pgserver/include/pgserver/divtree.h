@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.17 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: divtree.h,v 1.18 2001/06/25 00:48:50 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -100,7 +100,17 @@ struct divnode {
   
   /* Width and height, of course */
   s16 w,h;
-  
+
+  /* The preferred width and height as calculated by the widget itself.
+   * This is taken as a minimum size when the divnode contains other divnodes,
+   * because the 'actual' preferred size is calculated as max(pw,cw),max(ph,ch)
+   */
+  s16 pw,ph;  
+	
+  /* Child width and height. As long as DIVNODE_SIZE_RECURSIVE is set,
+   * this is calculated from the combined size of the child divnodes */
+  s16 cw,ch;
+	
   /* Coordinates to translate the grop's by, for scrolling */
   s16 tx,ty;
   /* Scrolling coordinates as of last redraw */
@@ -141,6 +151,21 @@ struct divnode {
 					  * pointers. It's the widget's
 					  * responsibility to clear the flag
 					  * if necessary */
+#define DIVNODE_SIZE_RECURSIVE  (1<<17)  /* The preferred size is calculated
+					  * from contained divnodes
+					  * recursively, container's px,py is
+					  * used as it's minimum size */
+#define DIVNODE_SIZE_AUTOSPLIT  (1<<18)  /* When applicable, calculate 'split'
+					  * automatically based on the
+					  * preferred size */
+#define DIVNODE_SPLIT_POPUP     (1<<19)  /* The 'div' child's size is interpreted
+					  * as a popup box size (with optional
+					  * centering, "at mouse cursor", and
+					  * automatic sizing) then the absolute
+					  * position and size are stored back
+					  * to the divnode and this flag is
+					  * cleared. Should usually be combined
+					  * with DIVNODE_SPLIT_IGNORE */
 
 /* Side value macros and stuff */
 typedef unsigned short int sidet;
@@ -184,6 +209,15 @@ void dts_pop(struct divtree *dt);
    The old update function is equivalent to update(dts->top,1);
 */
 void update(struct divnode *subtree,int show);
+
+/***************** smart resizing */
+
+/* Calculate a new split value for the specified divnode
+ * based on the pw,ph,cw, and ch values of the node's 'div' child */
+void divresize_split(struct divnode *div);
+
+/* Recursively recalculate cw and ch for the given divnode */
+void divresize_recursive(struct divnode *div); 
 
 #endif /* __DIVTREE_H */
 

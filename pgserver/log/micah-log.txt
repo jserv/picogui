@@ -1,3 +1,165 @@
+2001-06-24    Micah Dowty <micahjd@users.sourceforge.net>
+
+Polishing up the resize code...
+Tada! It appears to be working correctly now!
+I'll stick all this in CVS next time I have an internet connection. (Aren't
+laptops fun :)
+-
+Starting localization support...
+I'm beginning by reading the documentation for GNU gettext. If gettext suits
+PicoGUI/uClinux/Chipslice's memory constraints, it might save a lot of time.
+
+      * widget/canvas.c: Fixed automatic canvas sizing. I realized it needs
+        to calculate a preferred size in canvas_resize(), but _also_ be able
+	to update that size whenever new gropnodes are added.
+	
+      * widget/canvas.c: Added code to automatically size text gropnodes.
+      	Has a couple FIXMEs for future reference, but for the canvas' current
+	capabilities it should be fine.
+	
+      * widget/box.c: Preferred size for box should be (0,0) so it always
+      	fits tightly around what's inside.
+	
+      * widget/label.c: Extra margin added on labels are not needed, the font
+        already includes enough.
+	
+      * cli_c/demos/fieldtest.c: Fieldtest should be using PG_S_ALL for the
+        field.
+
+      * widget/field.c: Better field sizing
+
+		* cli_c/demos/vidpopup.c: Modified to use automatic popup sizing
+
+2001-06-23    Micah Dowty <micahjd@users.sourceforge.net>
+
+Dialog box sizing works great, but buttons and panels are still a bit broke.
+I also noticed some handles randomly disappearing, but I'm not sure if that is
+related to the broken-ness of panelbars right now...
+Needs fixink.
+-
+Buttons are working great now, and getting the bugs out of div.c definitely
+helped. Still need to fix canvas sizing (looks like the size is being
+calculated before the gropnodes are added to the list?) and fix field and
+indicator sizing. Both of those two widgets are a little off.
+
+      * widget/button.c: Fixed (?) button margins so they don't look squished
+      	on the edges.
+
+      * gcore/div.c: Tracked down a bug in the handling of
+        DIVNODE_SIZE_RECURSIVE. Whether this flag is present or not, the child
+	sizes need to be recursively calculated. Only if this flag is set, the
+	sizes of the two children are combined to form the divnode's child
+	preferred size. This gives child nodes a chance to size themselves even
+	if the parent has a fixed size.
+	
+      * widget/button.c: Really fixed resizing margins... This time it seems
+      	to look good in all test cases I tried. If the width/height stays
+	under the minimum set by the theme, the minimum is used. Otherwise,
+	the actual width/height plus a margin value is used. For normal
+	buttons, the width is larger than the default so it gets the extra
+	margin, and height remains at the default. This is more
+	orientation-neutral though, so things like large bitmap buttons
+	are more likely to look correct.
+	
+      * cli_c/src/menutest.c: Added a line-drawing to the test dialog box
+        to test canvas_resize(). Doesn't seem to be working...
+
+2001-06-22    Micah Dowty <micahjd@users.sourceforge.net>
+
+Continuing widget resizing. All widgets can calculate a preferred size now,
+so I've just got to put together the glue that calculates sizes recursively
+and sets split parameters.
+-
+Now I have the widget resizing basically working. Needs some testing &
+optimization, but when you open a panel app, the panel will now
+automatically size. Same goes for things like toolbars. Still has some rough
+edges... text fields and sizemodes are not handled correctly yet.
+Main obstacle still is to get popup boxes to automatically size. As they are
+coded now, a popup box uses DIVNODE_SPLIT_IGNORE and the size/position can
+only be set in create_popup(). As it is, create_popup() has to be given
+absolute width and height. I don't see any reason to let the app specify
+absolute position at all, though there may be special cases like touchscreen
+calibration. The app needs to be able to set absolute X,Y position, or
+construct the popup centered on the screen or at the mouse cursor. The width
+and height should be determined by the popup box's children preferred size,
+but this could be overrided by the app. It's PicoGUI convention to use 0
+(aka PGDEFAULT) for don't care / default situations, so zero size will set
+it automatically. The X,Y coordinate handling is fine as is.
+Right now the size is calculated immediately after the popup is created.
+These parameters instead need to be stored, and the actual sizing deferred
+until the popup is rendered. This way it's size can be fixed after the app
+has populated it with widgets. This should make a nice shrink-wrapped dialog
+box in 99% of the cases, and manual override is for that other 1%.
+
+      * profile.defaults: Now that I have a PowerPC development machine
+        (a sparkly new iBook with 5 hours of battery life and a great LCD)
+	I realize that ASM_INTEL should _not_ be the default :)
+	
+      * include/pgserver/divtree.h: Adding functions to work with the new
+        sizing parameters in divnodes
+	
+      * gcore/div.c: Implementations for divresize_split() and
+        divresize_recursive()
+	
+      * widget/widget.c: Implementing widget-level resize functions like
+        resizewidget() and resizeall()
+	
+      * widget/widget.c: Implementing CTRL-ALT-D divnode dump
+
+      * widget/popup.c: Re-implementing popup sizing as a layout engine flag,
+        so it is done when first rendering the popup. create_popup() stores
+	the coordinates verbatim in the divnode, and sets the
+	DIVNODE_SPLIT_POPUP and DIVNODE_SPLIT_IGNORE flags. The layout engine 
+	calculates the size, stores it in the divnode, then
+	removes the DIVNODE_SIZE_POPUP flag.
+
+      * net/dispatch.c: Modified menu and dialog message popup boxes to use
+      	automatic sizing
+	
+      * cli_c/src/api.c: Keeping the pgNewPopup and pgNewPopupAt APIs, which
+        can now accept 0 (aka PGDEFAULT) as width and/or height, but also
+	adding pgDialogBox which makes a centered, automatically-sized popup
+	using the specified text as a title. It's just a few lines of code,
+	but without this I fear people will make dialog boxes without using
+	the correct theme style for the title widget.
+	
+      * cli_c/demos/menutest.c: Adding new demos to menutest. Buttons and
+        fields need some tweaking, but in general this is working 
+	really well. Neat!
+	
+      * widget/panel.c: Automatic sizing just interferes with panels,
+      	so turn it off
+	
+2001-06-12    Micah Dowty <micahjd@users.sourceforge.net>
+
+Continuing work on widget resizing
+
+      * include/pgserver/widget.h: Modifying widget table to include resize
+        functions. When size is calculated recursively, the container's
+	preferred size is taken as it's minimum size.
+
+      * widget/*.c: Replacing old resize code with the new
+        <widgetname>_resize() functions.
+
+2001-06-8    Micah Dowty <micahjd@users.sourceforge.net>
+
+Starting to add "Smart widget resizing." Basically this means that the
+widgets will be able to give the layout engine a preferred size, and the
+size for containers can be calculated recursively.
+
+      * include/pgserver/divtree.h: Added some new divnode flags, added the
+        preferred width (pw,ph) to the divnode definition.     
+
+      * gcore/div.c: Initialized divnode flags so that by default the
+        preferred size is calculated recursively, and the split parameter is
+        calculated automatically when applicable.
+
+      * include/pgserver/widget.h: Removed the old resize function, added
+        one in the widgetdef structure that tells the widget to calculate all
+	applicable preferred size parameters. Removed the 'sizelock'
+	parameter. Instead, the widget should turn off the
+	DIVNODE_SIZE_AUTOSPLIT flag.
+
 2001-06-6    Micah Dowty <micahjd@users.sourceforge.net>
 
 <Early morning...>

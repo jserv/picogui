@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.34 2001/04/29 19:14:42 micahjd Exp $
+/* $Id: label.c,v 1.35 2001/06/25 00:48:50 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -33,11 +33,9 @@
 struct labeldata {
   handle text,font;
   unsigned char transparent;
-  short int align,direction,osplit;
+  short int align,direction;
 };
 #define DATA ((struct labeldata *)(self->data))
-
-void resizelabel(struct widget *self);
 
 void build_label(struct gropctxt *c,unsigned short state,struct widget *self) {
   s16 x,y,w,h;
@@ -45,8 +43,12 @@ void build_label(struct gropctxt *c,unsigned short state,struct widget *self) {
   char *str;
   handle font = DATA->font ? DATA->font : theme_lookup(state,PGTH_P_FONT);
 
+
   if (!DATA->transparent)
-    exec_fillstyle(c,state,PGTH_P_BGFILL);
+     exec_fillstyle(c,state,PGTH_P_BGFILL);
+   else
+     /* Redraw the containing widget if we're transparent */
+     redraw_bg(self);
 
   /* Measure the exact width and height of the text and align it */
   if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,font))
@@ -101,7 +103,6 @@ g_error label_install(struct widget *self) {
   self->in->div->build = &build_label;
   self->in->div->state = PGTH_O_LABEL;
   DATA->align = PG_A_CENTER;
-  self->resize = &resizelabel;
 
   return sucess;
 }
@@ -134,7 +135,7 @@ g_error label_set(struct widget *self,int property, glob data) {
 
   case PG_WP_DIRECTION:
     DATA->direction = data;
-    resizelabel(self);
+    resizewidget(self);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -143,7 +144,7 @@ g_error label_set(struct widget *self,int property, glob data) {
     if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,data)) || !fd) 
       return mkerror(PG_ERRT_HANDLE,12);
     DATA->font = (handle) data;
-    resizelabel(self);
+    resizewidget(self);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -152,7 +153,7 @@ g_error label_set(struct widget *self,int property, glob data) {
     if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,data)) || !str) 
       return mkerror(PG_ERRT_HANDLE,13);
     DATA->text = (handle) data;
-    resizelabel(self);
+    resizewidget(self);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -220,21 +221,13 @@ glob label_get(struct widget *self,int property) {
   }
 }
  
-void resizelabel(struct widget *self) {
-  s16 w,h,m = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
+void label_resize(struct widget *self) {
+  s16 w,h;
   struct fontdesc *fd;
   char *str;
   handle font = DATA->font ? DATA->font : 
     theme_lookup(self->in->div->state,PGTH_P_FONT);
 
-  /* Redraw the containing widget if we're transparent */
-  if (DATA->transparent || DATA->osplit!=self->in->split)
-     redraw_bg(self);
-
-  /* With PG_S_ALL we'll get ignored anyway... */
-  if (self->in->flags & PG_S_ALL) return;
-  if (self->sizelock) return;
-   
   if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,font))
 	      || !fd) return;
   if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,DATA->text))
@@ -245,18 +238,8 @@ void resizelabel(struct widget *self) {
   else
     sizetext(fd,&w,&h,str);
 
-  DATA->osplit = self->in->split;
-  if ((self->in->flags & PG_S_TOP) ||
-      (self->in->flags & PG_S_BOTTOM))
-    self->in->split = h+m;
-  else if ((self->in->flags & PG_S_LEFT) ||
-	   (self->in->flags & PG_S_RIGHT))
-    self->in->split = w+m;
-
-  if (DATA->osplit!=self->in->split) {
-    self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
-  }
+  self->in->div->ph = h;
+  self->in->div->pw = w;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.31 2001/05/13 04:20:27 micahjd Exp $
+/* $Id: popup.c,v 1.32 2001/06/25 00:48:50 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -55,7 +55,7 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   /* Freeze the existing layer and make a new one */
   e = dts_push();
   errorcheck;
-
+  
   /* Add the new popup widget - a simple theme-enabled container widget */
   e = widget_create(wgt,PG_WIDGET_POPUP,dts->top,&dts->top->head->next,0,owner);
   errorcheck;
@@ -64,50 +64,22 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
 			  outside it anyway */
 
   /* Get margin value */
-  (*wgt)->in->div->split = margin =
-     theme_lookup((*wgt)->in->div->state,PGTH_P_MARGIN);
+  (*wgt)->in->div->split = theme_lookup((*wgt)->in->div->state,PGTH_P_MARGIN);
 
-  /* Special positioning codes */
-
-  if (((signed short)x) == PG_POPUP_CENTER) {
-    x=(vid->lxres>>1)-(w>>1);
-    y=(vid->lyres>>1)-(h>>1);
-  }
-
-  if (((signed short)x) == PG_POPUP_ATCURSOR) {
-    if (under && under->type == PG_WIDGET_BUTTON) {
-      /* snap to a button edge */
-      x = under->in->div->x;
-      y = under->in->div->y + under->in->div->h + margin;
-      if ((y+h)>=vid->yres)
-	y = under->in->div->y - h - margin;
-    }
-    else if (under && under->type == PG_WIDGET_MENUITEM) {
-      /* snap to a menuitem edge */
-      x = under->in->div->x + under->in->div->w;
-      y = under->in->div->y;
-    }
-    else {
-      /* exactly at the cursor */
-      x = cursor->x;
-      y = cursor->y;
-    } 
-
-    /* pop vertically if the cursor is on the bottom half of the screen */
-    // y = (cursor->y > (vid->yres>>1)) ? (cursor->y - h) : cursor->y;
-
+  /* Give it a menu theme if it's position is PG_POPUP_ATCURSOR */
+  if (x==PG_POPUP_ATCURSOR) {
     (*wgt)->in->div->state = PGTH_O_POPUP_MENU;
     (*wgt)->in->state = PGTH_O_POPUP_MENU;
   }
 
-  /* Set the position and size */
-  (*wgt)->in->div->x = x-margin;
-  (*wgt)->in->div->y = y-margin;
-  (*wgt)->in->div->w = w+(margin<<1);
-  (*wgt)->in->div->h = h+(margin<<1);
-   
-  clip_popup((*wgt)->in->div);
+  /* Set the position and size verbatim, let the
+   * layout engine sort things out */
 
+  (*wgt)->in->div->x = x;
+  (*wgt)->in->div->y = y;
+  (*wgt)->in->div->w = w;
+  (*wgt)->in->div->h = h;
+   
   /* Yahoo! */
   return sucess;
 }
@@ -127,13 +99,13 @@ g_error popup_install(struct widget *self) {
   self->in->build = &build_popupbg;
   self->in->state = PGTH_O_POPUP;
   errorcheck;
-  self->in->flags = DIVNODE_SPLIT_IGNORE;
+  self->in->flags |= DIVNODE_SPLIT_IGNORE | DIVNODE_SPLIT_POPUP;
 
   e = newdiv(&self->in->div,self);
   errorcheck;
   self->in->div->build = &build_bgfill_only;
   self->in->div->state = PGTH_O_POPUP;
-  self->in->div->flags = DIVNODE_SPLIT_BORDER;
+  self->in->div->flags |= DIVNODE_SPLIT_BORDER;
 
   self->out = &self->in->next;
   self->sub = &self->in->div->div;
@@ -177,6 +149,9 @@ void popup_trigger(struct widget *self,long type,union trigparam *param) {
 
   if (div_under_crsr == self->in)
     post_event(PG_WE_DEACTIVATE,self,0,0,NULL);
+}
+
+void popup_resize(struct widget *self) {
 }
 
 /* The End */

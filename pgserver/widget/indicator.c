@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.20 2001/06/01 01:00:47 micahjd Exp $
+/* $Id: indicator.c,v 1.21 2001/06/25 00:48:50 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -47,11 +47,19 @@ void build_indicator(struct gropctxt *c,unsigned short state,struct widget *self
   exec_fillstyle(c,state,PGTH_P_OVERLAY);
 }
 
-void resize_indicator(struct widget *self) {
-  if (self->sizelock) return;
-  self->in->split = theme_lookup(self->in->div->state,PGTH_P_WIDTH);
-  self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
-  self->dt->flags |= DIVTREE_NEED_RECALC;
+void indicator_resize(struct widget *self) {
+   if ((self->in->flags & PG_S_TOP) ||
+       (self->in->flags & PG_S_BOTTOM)) {
+      
+      self->in->div->pw = 0;
+      self->in->div->ph = theme_lookup(self->in->div->state,PGTH_P_WIDTH);
+   }
+   else if ((self->in->flags & PG_S_LEFT) ||
+	    (self->in->flags & PG_S_RIGHT)) {
+      
+      self->in->div->ph = 0;
+      self->in->div->pw = theme_lookup(self->in->div->state,PGTH_P_WIDTH);
+   }
 }
 
 /* Pointers, pointers, and more pointers. What's the point?
@@ -63,13 +71,11 @@ g_error indicator_install(struct widget *self) {
   e = newdiv(&self->in,self);
   errorcheck;
   self->in->flags |= PG_S_TOP;
-  self->in->split = 10;
   self->out = &self->in->next;
   e = newdiv(&self->in->div,self);
   errorcheck;
   self->in->div->build = &build_indicator;
   self->in->div->state = PGTH_O_INDICATOR;
-  self->resize = &resize_indicator;
 
   return sucess;
 }

@@ -1,4 +1,4 @@
-/* $Id: background.c,v 1.7 2001/03/19 05:59:28 micahjd Exp $
+/* $Id: background.c,v 1.8 2001/06/25 00:48:50 micahjd Exp $
  *
  * background.c - an internal widget for drawing the screen background
  *
@@ -72,7 +72,10 @@ void background_trigger(struct widget *self,long type,union trigparam *param) {
      post_event(PG_NWE_BGCLICK,NULL,param->mouse.chbtn,sysevent_owner,NULL);
 }
 
- 
+void background_resize(struct widget *self) {
+   self->in->pw = self->in->ph = 0;
+}
+
 /* The End */
 
 

@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.30 2001/04/29 17:28:40 micahjd Exp $
+/* $Id: bitmap.c,v 1.31 2001/06/25 00:48:50 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -71,8 +71,6 @@ void build_bitmap(struct gropctxt *c,unsigned short state,struct widget *self) {
   }
 }
 
-void resizebitmap(struct widget *self);
-
 /* Pointers, pointers, and more pointers. What's the point?
    Set up some divnodes!
 */
@@ -107,7 +105,6 @@ void bitmap_remove(struct widget *self) {
 
 g_error bitmap_set(struct widget *self,int property, glob data) {
   hwrbitmap bit;
-  int psplit;
 
   switch (property) {
 
@@ -138,10 +135,7 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
     }
     else if (!iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)) && bit) {
       DATA->bitmap = (handle) data;
-      psplit = self->in->split;
-      resizebitmap(self);
-      if (self->in->split != psplit)
-	self->in->flags |= DIVNODE_PROPAGATE_RECALC;
+      resizewidget(self);
       self->in->flags |= DIVNODE_NEED_RECALC;
       self->dt->flags |= DIVTREE_NEED_RECALC;
     }
@@ -188,23 +182,13 @@ glob bitmap_get(struct widget *self,int property) {
   return 0;
 }
  
-void resizebitmap(struct widget *self) {
+void bitmap_resize(struct widget *self) {
   hwrbitmap bit;
-  s16 w,h;
- 
-  if (self->sizelock) return;
    
   if (iserror(rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,DATA->bitmap)))
     return;
   if (!bit) return;
-  VID(bitmap_getsize) (bit,&w,&h);
-
-  if ((self->in->flags & DIVNODE_SPLIT_TOP) ||
-      (self->in->flags & DIVNODE_SPLIT_BOTTOM))
-    self->in->split = h;
-  else if ((self->in->flags & DIVNODE_SPLIT_LEFT) ||
-	   (self->in->flags & DIVNODE_SPLIT_RIGHT))
-    self->in->split = w;
+  VID(bitmap_getsize) (bit,&self->in->div->pw,&self->in->div->ph);
 }
 
 /* The End */

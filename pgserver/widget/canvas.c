@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.16 2001/05/05 21:44:29 micahjd Exp $
+/* $Id: canvas.c,v 1.17 2001/06/25 00:48:50 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -34,9 +34,10 @@ void canvas_command(struct widget *self, unsigned short command,
 		    unsigned short numparams,signed long *params);
 
 struct canvasdata {
-   struct gropctxt ctx;
-   struct rect input_map;
-   u8 input_maptype;
+  struct gropctxt ctx;
+  struct rect input_map;
+  u8 input_maptype;
+  handle lastfont;
 };
    
 #define DATA ((struct canvasdata *)self->data)
@@ -189,6 +190,40 @@ void canvas_trigger(struct widget *self,long type,union trigparam *param) {
 	      0,NULL);
 }
 
+/* Extend the canvas's preferred size to include the gropnode specified */
+void canvas_extendbox(struct widget *self, struct gropnode *n) {
+  int i;
+
+  if (PG_GROP_IS_NONVISUAL(n->type) || 
+      PG_GROP_IS_UNPOSITIONED(n->type))
+    return;
+
+  i = n->r.x;
+  if (i > self->in->div->pw) self->in->div->pw = i;
+  i += n->r.w;
+  if (i > self->in->div->pw) self->in->div->pw = i;
+  i = n->r.y;
+  if (i > self->in->div->ph) self->in->div->ph = i;
+  i += n->r.h;
+  if (i > self->in->div->ph) self->in->div->ph = i;
+}
+
+void canvas_resize(struct widget *self) {
+   /* Calculate the preferred size based on the gropnodes in the canvas */
+   
+   struct gropnode *n;
+   
+   n = self->in->div->grop;
+
+   self->in->div->pw = 0;
+   self->in->div->ph = 0;
+
+   while (n) {
+     canvas_extendbox(self,n);
+     n = n->next;
+   }
+}
+
 /*********************************** Commands */
    
 void canvas_command(struct widget *self, unsigned short command, 
@@ -218,6 +253,18 @@ void canvas_command(struct widget *self, unsigned short command,
 	 addgrop(CTX,params[0]);
 	 for (i=1;i<numparams;i++)
 	   CTX->current->param[i-1] = params[i];
+
+	 /* Store the current font for use in determining the size
+	  * of text gropnodes.
+	  *
+	  * FIXME: If grops are not entered in order, this won't work.
+	  *        But, considering it's not possible to enter gropnodes
+	  *        out of order yet, it should be fine for now.
+	  *
+	  * FIXME: This also doesn't work for angled text... go figure :)
+	  */
+	 if (params[0] == PG_GROP_SETFONT)
+	   DATA->lastfont = params[1];
       }
       else {
 	 if (numparams<5) return;
@@ -225,6 +272,21 @@ void canvas_command(struct widget *self, unsigned short command,
 	 addgropsz(CTX,params[0],params[1],params[2],params[3],params[4]);
 	 for (i=5;i<numparams;i++)
 	   CTX->current->param[i-5] = params[i];
+
+	 /* Determine the _real_ size of a text gropnode.
+	  * Has a couple issues... see above FIXMEs 
+	  */
+	 if (params[0] == PG_GROP_TEXT) {
+	   struct fontdesc *fd = NULL;
+	   char *str = NULL;
+	   rdhandle((void **) &fd,PG_TYPE_FONTDESC,-1,DATA->lastfont);
+	   rdhandle((void **) &str,PG_TYPE_STRING,-1,params[5]);
+	   if (fd && str)
+	     sizetext(fd,&CTX->current->r.w,&CTX->current->r.h,str);
+	 }
+
+	 /* Update bounding box */
+	 canvas_extendbox(self,CTX->current);
       }
       if (params[0]==PG_GROP_SETCOLOR || 
 	  (CTX->current->flags & PG_GROPF_COLORED))
@@ -296,7 +358,7 @@ void canvas_command(struct widget *self, unsigned short command,
       if (numparams<2) return;
       self->in->div->tx = params[0];
       self->in->div->ty = params[1];
-      self->in->div->flags = DIVNODE_SCROLL_ONLY;
+      self->in->div->flags |= DIVNODE_SCROLL_ONLY;
       break;
 
     case PGCANVAS_INPUTMAPPING:

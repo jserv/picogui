@@ -1,4 +1,4 @@
-/* $Id: panel_nobar.c,v 1.2 2001/03/30 18:46:41 micahjd Exp $
+/* $Id: panel_nobar.c,v 1.3 2001/06/25 00:48:50 micahjd Exp $
  *
  * panel_nobar.c - A simple replacement for panel that doesn't allow resizing
  *
@@ -29,8 +29,9 @@
 #include <pgserver/widget.h>
 #include <pgserver/appmgr.h>
 
-void resize_panel(struct widget *self) {
-  self->in->div->split = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
+void panel_resize(struct widget *self) {
+   self->in->div->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
+   self->in->div->split = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
 }
 
 g_error panel_install(struct widget *self) {
@@ -50,7 +51,6 @@ g_error panel_install(struct widget *self) {
 
   self->sub = &self->in->div->div;
   self->out = &self->in->next;
-  self->resize = &resize_panel;
    
   return sucess;
 }

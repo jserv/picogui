@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.39 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: div.c,v 1.40 2001/06/25 00:48:50 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -30,6 +30,11 @@
 #include <pgserver/divtree.h>
 #include <pgserver/widget.h>
 
+/* We'll need this if we don't already have it... */
+#ifndef max
+#define max(a,b) (((a) > (b)) ? (a) : (b))
+#endif
+
 /* Fill in the x,y,w,h of this divnode's children node based on it's
  * x,y,w,h and it's split. Also rebuilds child divnodes.
  * Recurse into all the node's children.
@@ -41,6 +46,64 @@ void divnode_recalc(struct divnode *n) {
 
    if (n->flags & DIVNODE_NEED_RECALC) {
      split = n->split;
+
+     /* Process as a popup box size */
+     if (n->flags & DIVNODE_SPLIT_POPUP) {
+       s16 x,y,w,h,margin;
+
+       n->flags &= ~DIVNODE_SPLIT_POPUP;   /* Clear flag */
+
+       /* Get size */
+       x = n->div->x;
+       y = n->div->y;
+       w = n->div->w;
+       h = n->div->h;
+
+       /* Get margin value */
+       margin = theme_lookup(n->owner->in->div->state,PGTH_P_MARGIN);
+
+       /* If the size is zero, default to the preferred size */
+
+       if (!w)
+	 w = max(n->div->cw,n->div->pw);
+       if (!h)
+	 h = max(n->div->ch,n->div->ph);
+
+       /* Special positioning codes */
+
+       if (x == PG_POPUP_CENTER) {
+	 x=(vid->lxres>>1)-(w>>1);
+	 y=(vid->lyres>>1)-(h>>1);
+       }
+       else if (x == PG_POPUP_ATCURSOR) {
+	 if (under && under->type == PG_WIDGET_BUTTON) {
+	   /* snap to a button edge */
+	   x = under->in->div->x;
+	   y = under->in->div->y + under->in->div->h + margin;
+	   if ((y+h)>=vid->yres) /* Flip over if near the bottom */
+	     y = under->in->div->y - h - margin;
+	 }
+	 else if (under && under->type == PG_WIDGET_MENUITEM) {
+	   /* snap to a menuitem edge */
+	   x = under->in->div->x + under->in->div->w;
+	   y = under->in->div->y;
+	 }
+	 else {
+	   /* exactly at the cursor */
+	   x = cursor->x;
+	   y = cursor->y;
+	 } 
+       }
+        
+       /* Set the position and size, accounting for the popup's border */
+       n->div->x = x-margin;
+       n->div->y = y-margin;
+       n->div->w = w+(margin<<1);
+       n->div->h = h+(margin<<1);
+       
+       /* Validate the size */
+       clip_popup(n->div);
+     }
 
      /* All available space for div */
      if (n->flags & DIVNODE_SPLIT_EXPAND) {
@@ -257,7 +320,10 @@ g_error newdiv(struct divnode **p,struct widget *owner) {
   e = g_malloc((void **)p,sizeof(struct divnode));
   errorcheck;
   memset(*p,0,sizeof(struct divnode));
-  (*p)->flags = DIVNODE_NEED_RECALC;
+  (*p)->flags = 
+     DIVNODE_NEED_RECALC | 
+     DIVNODE_SIZE_RECURSIVE |
+     DIVNODE_SIZE_AUTOSPLIT;
   (*p)->owner = owner;
   return sucess;
 }
@@ -490,6 +556,91 @@ int mangle_align(int al) {
   case PG_A_NW:     al = PG_A_NW;     break;
   }   
   return al;
+}
+
+/* Calculate a new split value for the specified divnode
+ * based on the pw,ph,cw, and ch values of the node's 'div' child */
+void divresize_split(struct divnode *div) {
+  s16 oldsplit = div->split;
+
+  if (div->flags & DIVNODE_SIZE_AUTOSPLIT) {
+
+    switch (div->flags & ~SIDEMASK) {
+    case PG_S_TOP:
+    case PG_S_BOTTOM:
+      div->split = max(div->div->ph,div->div->ch);
+      break;
+    case PG_S_LEFT:
+    case PG_S_RIGHT: 
+      div->split = max(div->div->pw,div->div->cw);
+      break;
+      
+      /* If it's something else, leave the split alone */
+    }
+    
+    if (div->split != oldsplit) {
+      /* recalc! */
+      div->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+      if (div->owner)
+	div->owner->dt->flags |= DIVTREE_NEED_RECALC;
+    }
+  }
+}
+
+/* Recursively recalculate cw and ch for the given divnode */
+void divresize_recursive(struct divnode *div) {
+  s16 dw,dh,nw,nh;  /* Size of div and next child nodes */
+
+  /* Calculate child nodes' sizes */
+	
+  if (div->div) {
+    divresize_recursive(div->div);
+    dw = max(div->div->cw,div->div->pw);
+    dh = max(div->div->ch,div->div->ph);
+  }
+  else
+    dw = dh = 0;
+  
+  if (div->next) {
+    divresize_recursive(div->next);
+    nw = max(div->next->cw,div->next->pw);
+    nh = max(div->next->ch,div->next->ph);
+  }
+  else
+    nw = nh = 0;
+  
+  if (div->flags & DIVNODE_SIZE_RECURSIVE) {
+    
+    /* Combine them depending on orientation */
+    switch (div->flags & ~SIDEMASK) {
+      
+    case PG_S_TOP:
+    case PG_S_BOTTOM:
+      div->ch = dh + nh;
+      div->cw = max(dw,nw);
+      break;
+      
+    case PG_S_LEFT:
+    case PG_S_RIGHT:
+      div->cw = dw + nw;
+      div->ch = max(dh,nh);
+      break;
+      
+    case PG_S_ALL:
+    case DIVNODE_SPLIT_CENTER:
+      div->cw = dw;
+      div->ch = dh;
+      break;
+      
+    case DIVNODE_SPLIT_BORDER:
+      div->cw = dw + (div->split<<1);
+      div->ch = dh + (div->split<<1);
+      break;
+
+    }
+  }    
+
+  divresize_split(div);
 }
 
 /* The End */
