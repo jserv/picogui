@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.29 2001/01/05 11:25:09 micahjd Exp $
+/* $Id: grop.c,v 1.30 2001/01/07 09:18:06 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -496,6 +496,15 @@ g_error addgrop(struct gropctxt *ctx, int type,int x,
 /* Delete the whole list */
 void grop_free(struct gropnode **headpp) {
   struct gropnode *p,*condemn;
+
+#ifdef DEBUG_MEMORY
+  static int lock = 0;
+  printf("-> grop_free(0x%08X = &0x%08X)\n",headpp,*headpp);
+  if (lock)
+    printf("     -- grop_free lock triggered --\n");
+  lock = 1;
+#endif
+
   if ((!headpp)) return;
   p = *headpp;
   while (p) {
@@ -507,6 +516,11 @@ void grop_free(struct gropnode **headpp) {
 #endif
   }
   *headpp = NULL;
+
+#ifdef DEBUG_MEMORY
+  printf("<- grop_free()\n");
+  lock = 0;
+#endif
 }
 
 /* Set up a grop context for rendering to a divnode */

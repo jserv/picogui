@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.11 2000/12/17 05:53:50 micahjd Exp $
+/* $Id: request.c,v 1.12 2001/01/07 09:18:09 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -344,6 +344,7 @@ void net_iteration(void) {
   fd_set rfds;
   struct timeval tv;
   struct inlib *n;   /* For iterating input drivers */
+  sigset_t newmask,oldmask;
 
   /* Get ready to select() the socket itself and all open connections */
   FD_ZERO(&rfds);
@@ -363,8 +364,17 @@ void net_iteration(void) {
     n = n->next;
   }
 
+  /* The only time we allow interruptions is during a select.
+     I used to try to make PicoGUI reentrant, but everything boiled down
+     to drawing operations which neither needed to be nor could be reentrant.
+  */
+  sigemptyset(&newmask);
+  sigaddset(&newmask, SIGALRM);
+  sigaddset(&newmask, SIGPIPE);
+  sigprocmask(SIG_BLOCK,&newmask,&oldmask);
   req_in_select = 1;
   i = select(con_n,&rfds,NULL,NULL,&tv);
+  sigprocmask(SIG_SETMASK,&oldmask,NULL);
   req_in_select = 0;
 
 #ifdef DEBUG_NET
