@@ -20,7 +20,6 @@ set id [pgNewString "OK"]
 pgSetWidget $ok $id $pg_wp(TEXT)
 set bmp [pgNewWidget $pg_derive(after) $pg_widget(BITMAP) $ok]
 pgSetWidget $bmp $pg_s(ALL) $pg_wp(SIDE)
-
 set i 0
 set d 1
 while { 1 } {

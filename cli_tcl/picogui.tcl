@@ -1,3 +1,4 @@
+set pg_response(error)	1
 set pg_response(ret)	2
 set pg_response(event)	3
 set pg_response(data)	4
@@ -40,11 +41,21 @@ set pg_s(ALL)		2048
 
 set connection 0
 
-proc get_response {} {
+proc pgGetResponse {} {
 	global pg_response pg_request connection
-	set data [read $connection 2]
-	binary scan $data "S" resp
-	return $resp
+	set data [read $connection 12]
+	binary scan $data "S" type
+	if { $type == $pg_response(ret) } {
+		binary scan $data "SSII" type dummy id data
+		return $data
+	} elseif { $type == $pg_response(event) } {
+		binary scan $data "SSII" type ret(event) ret(from) ret(param)
+		return [array get ret]
+	} elseif { $type == $pg_response(data) } {
+		binary scan $data "SSII" type dummy id size
+		return [read $connection $size]
+	}
+	return $type
 }
 proc pack_pgrequest { id size type {dummy 0} } {
 	set req [binary format "IISS" $id $size $type $dummy]
@@ -70,35 +81,21 @@ proc send_packet {packet} {
 proc pgGetVideoMode {} {
 	global pg_request pg_response connection
 	send_packet [pack_pgrequest 1 0 $pg_request(PGREQ_GETMODE)]
-	if { [get_response] == $pg_response(data) } {
-		set data [read $connection 10]
-		binary scan $data "SII" dummy id size
-		set data [read $connection 16]
-		binary scan $data "ISSSSSS" res(flags) \
-			res(xres) res(yres) \
-			res(lxres) res(lyres) res(bbp) res(dummy)
-	}
+	set data [pgGetResponse]
+	binary scan $data "ISSSSSS" res(flags) res(xres) res(yres) \
+		res(lxres) res(lyres) res(bbp) res(dummy)
 	return [array get res]
-}
-proc pgReturnResponse {} {
-	global pg_response connection
-	set resp [get_response]
-	if { $resp == $pg_response(ret)} {
-		set data [read $connection 10]
-		binary scan $data "SII" dummy id data
-		return $data
-	}
 }
 proc pgUpdate {} {
 	global pg_request pg_response
 	send_packet [pack_pgrequest 1 0 $pg_request(PGREQ_UPDATE)]
-	return [pgReturnResponse]
+	return [pgGetResponse]
 }
 proc pgNewPopupAt {x y width height} {
 	global pg_request pg_response
 	send_packet [pack_pgrequest 1 8 $pg_request(PGREQ_MKPOPUP)]
 	send_packet [binary format "SSSS" $x $y $width $height ]
-	return [pgReturnResponse]
+	return [pgGetResponse]
 }
 proc pgNewPopup {width height} {
 	return [pgNewPopupAt -1 -1 $width $height]
@@ -108,31 +105,25 @@ proc pgNewString {text} {
 	send_packet [pack_pgrequest \
 		1 [string length $text] $pg_request(PGREQ_MKSTRING)]
 	send_packet $text
-	return [pgReturnResponse]
+	return [pgGetResponse]
 }
 proc pgGetString {text} {
 	global pg_request pg_response connection
 	send_packet [pack_pgrequest 1 4 $pg_request(PGREQ_GETSTRING)]
 	send_packet [binary format "I" $text]
-	set resp [get_response]
-	if { $resp == $pg_response(data) } {
-		set data [read $connection 10]
-		binary scan $data "SII" dummy id size
-		set data [read $connection $size]
-		return $data
-	}
+	return [pgGetResponse]
 }
 proc pgNewWidget {rship type parent} {
 	global pg_request
 	send_packet [pack_pgrequest 1 8 $pg_request(PGREQ_MKWIDGET)]
 	send_packet [binary format "SSI" $rship $type $parent]
-	return [pgReturnResponse]
+	return [pgGetResponse]
 }
 proc pgSetWidget {widget glob property} {
 	global pg_request
 	send_packet [pack_pgrequest 1 12 $pg_request(PGREQ_SET)]
 	send_packet [binary format "IISS" $widget $glob $property 0]
-	return [pgReturnResponse]
+	return [pgGetResponse]
 }
 proc pgNewLabel {rship parent {text ""}} {
 	global pg_wp pg_widget
@@ -153,27 +144,22 @@ proc pgThemeLookup {object property} {
 	global pg_request
 	send_packet [pack_pgrequest 1 4 $pg_request(PGREQ_THLOOKUP)]
 	send_packet [binary format "SS" $object $property]
-	return [pgReturnResponse]
+	return [pgGetResponse]
 }
 proc pgEnterContext {} {
 	global pg_request
 	send_packet [pack_pgrequest 1 0 $pg_request(PGREQ_MKCONTEXT)]
-	return [pgReturnResponse]
+	return [pgGetResponse]
 }
 proc pgWaitEvent {} {
-	global pg_request pg_response connection
+	global pg_request
 	send_packet [pack_pgrequest 1 0 $pg_request(PGREQ_WAIT)]
-	set resp [get_response]
-	if { $resp == $pg_response(event) } {
-		set data [read $connection 10]
-		binary scan $data "SII" ret(event) ret(from) ret(param)
-		return [array get ret]
-	}
+	return [pgGetResponse]
 }
 proc pgCheckEvent {} {
 	global pg_request
 	send_packet [pack_pgrequest 1 0 $pg_request(PGREQ_CHECKEVENT)]
-	return [pgReturnResponse]
+	return [pgGetResponse]
 }
 proc pgLeaveContext {{id ""}} {
 	global pg_request
@@ -185,14 +171,14 @@ proc pgLeaveContext {{id ""}} {
 	if { $len < 0 } {
 		send_packet [binary format "I" $id]
 	}
-	return [pgReturnResponse]
+	return [pgGetResponse]
 }
 proc pgNewBitmap {data} {
 	global pg_request
 	send_packet [pack_pgrequest 1 [string length $data] \
 		$pg_request(PGREQ_MKBITMAP)]
 	send_packet $data
-	return [pgReturnResponse]
+	return [pgGetResponse]
 }
 proc pgFromFile { filename } {
 	set data ""
