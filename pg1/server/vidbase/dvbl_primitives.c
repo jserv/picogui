@@ -108,22 +108,34 @@ void def_line(hwrbitmap dest,s16 x1,s16 y1,s16 x2,s16 y2,hwrcolor c,s16 lgop) {
   }
 }
 
+#define _ARC_DO_ROTATE \
+  x_next = xc + (rot_cos * x_tmp) - (rot_sin * y_tmp); \
+  y_next = yc + (rot_cos * y_tmp) + (rot_sin * x_tmp)
+
 void def_arc(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
-	     s16 angle_start, s16 angle_stop, hwrcolor color, s16 lgop)
+	     s16 angle_start, s16 angle_stop, s16 angle_rot,
+	     hwrcolor color, s16 lgop)
 {
-    double rad_start, rad_stop;
+    double rad_start, rad_stop, rad_rot;
+    double rot_cos, rot_sin;
     double aStep;            /* Angle step */
     double a;                /* Current angle */
-    s16 xc, yc, radius1, radius2, x_last, x_next, y_last, y_next;
+    s16 xc, yc, radius1, radius2,
+      x_last, x_tmp, x_next,
+      y_last, y_tmp, y_next;
 
     /* This algorythm wants center and two radiuses... */
     xc = x+w/2;
     yc = y+h/2;
     radius1 = w/2;
     radius2 = h/2;
-    /* ... and radians */
+    /* ... and euclidian radians */
     rad_start = angle_start * M_PI / 180;
     rad_stop = angle_stop * M_PI / 180;
+    rad_rot = -angle_rot * M_PI / 180;
+    /* rotation multipliers */
+    rot_cos = cos(rad_rot);
+    rot_sin = sin(rad_rot);
 
     /* Angle step in rad */
     if (radius1<radius2) {
@@ -144,16 +156,21 @@ void def_arc(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
         aStep = 0.05;
     }
 
-    x_last = xc+cos(rad_start)*radius1;
-    y_last = yc-sin(rad_start)*radius2;
+    x_tmp = cos(rad_start)*radius1;
+    y_tmp = sin(rad_start)*radius2;
+    _ARC_DO_ROTATE;
+    x_last = x_next;
+    y_last = y_next;
     for(a=rad_start+aStep; a<=rad_stop; a+=aStep) {
-      x_next = xc+cos(a)*radius1;
-      y_next = yc-sin(a)*radius2;
+      x_tmp = cos(a)*radius1;
+      y_tmp = sin(a)*radius2;
+      _ARC_DO_ROTATE;
       (*vid->line) (dest, x_last, y_last, x_next, y_next, color, lgop);
       x_last = x_next;
       y_last = y_next;
     }
 }
+#undef _ARC_DO_ROTATE
 
 #define SYMMETRY(X,Y) (*vid->pixel) (dest,xoff+X,yoff+Y,c,lgop); \
                       (*vid->pixel) (dest,xoff-X,yoff+Y,c,lgop); \

@@ -501,7 +501,7 @@ struct vidlib {
 		     struct pgquad *clip, s16 angle, s16 lgop);
  
   void (*arc) (hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
-	       s16 angle_start, s16 angle_stop, hwrcolor color, s16 lgop);
+	       s16 angle_start, s16 angle_stop, s16 angle_rot, hwrcolor color, s16 lgop);
   void (*ellipse) (hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
   void (*fellipse) (hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
   void (*fpolygon) (hwrbitmap dest, s32* array, s16 xoff, s16 yoff , hwrcolor c, s16 lgop);
@@ -808,7 +808,7 @@ hwrcolor yuv16_422_planar_getpixel(hwrbitmap src, s16 x, s16 y);
 void yuv16_422_planar_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 		   s16 src_x, s16 src_y, s16 lgop);
 void def_arc(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
-	     s16 angle_start, s16 angle_stop, hwrcolor color, s16 lgop);
+	     s16 angle_start, s16 angle_stop, s16 angle_rot, hwrcolor color, s16 lgop);
 void def_ellipse(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
 void def_fellipse(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
 void def_fpolygon(hwrbitmap dest, s32* array, s16 xoff, s16 yoff , hwrcolor c, s16 lgop);
