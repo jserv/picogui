@@ -1,9 +1,16 @@
+---- Sunday, March 18
+
+Starting rotation. I have the easy parts (no blits) working. No runtime mode
+switching yet, still very preliminary.
+
 ---- Friday, March 16
 
 Happy Friday!
 
 I brought the uCsimm hardware today, so I should be able to debug the theme
 loading. 
+Argh. Seems to be a problem with the power supply, maybe. It's spontaneously
+hanging when I use the ethernet.
 
 ---- Thursday, March 15
 
