@@ -4,6 +4,13 @@
 
 object default name = "Modifier: Translucent Aqua";
 
+object base.display bgfill = fillstyle {
+  Bitmap(x,y,w,h,background::bitmap1);
+  SetLgop(PG_LGOP_ALPHA);
+  Bitmap(x,y,w,h,popup::bitmap1);
+  SetLgop(PG_LGOP_NONE);
+};
+
 object popup {
   bitmap1 = LoadBitmap("data/aq_bg_70percent.png");
   bgfill = fillstyle {
