@@ -18,6 +18,11 @@
 #include <pgserver/pgnet.h>
 #include <pgserver/configfile.h>
 
+#ifdef DEBUG_EVENT
+#define DEBUG_FILE
+#endif
+#include <pgserver/debug.h>
+
 #define SAMPLE_SET_SZ		3	/* how many samples to average */
 #define JITTER_TOLERANCE	3	/* Pixel radius to ignore jitter */
  
@@ -44,7 +49,7 @@ g_error ucb1x00_init(void)
 
   fd = open(DEVICE_FILE_NAME, O_NONBLOCK);
   if (fd < 0) {
-    printf("Error %d opening touch panel\n", errno);
+    DBG("Error %d opening touch panel\n", errno);
     return mkerror(PG_ERRT_IO, 74);
   }
 	
@@ -69,6 +74,8 @@ int ucb1x00_packet(int x, int y, int pressure) {
 
   last_x = x;
   last_y = y;
+
+  DBG("x=%d, y=%d, pressure=%d\n",x,y,pressure);
 
   /* Transform and filter */
   old_pendown = pen_down;
@@ -138,6 +145,8 @@ void ucb1x00_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
 }
 
 void ucb1x00_poll(void) {
+  DBG("polls_since_data=%d\n",polls_since_data);
+
   /* If it's been a while since we've gotten a sample, release the pen */
   if (polls_since_data++ >= 3 && pen_down) {
     ucb1x00_packet(last_x,last_y,0);
