@@ -1,4 +1,4 @@
-/* $Id: s1d13806.c,v 1.3 2001/11/06 10:51:09 gobry Exp $
+/* $Id: s1d13806.c,v 1.4 2001/11/23 14:45:59 gobry Exp $
  *
  * s1d13806.c - use a Epson S1D13806 video chip with a M68VZ328
  *
@@ -46,7 +46,7 @@
 #define FB_MEM   (((struct stdbitmap*)vid->display)->bits)
 #define FB_BPL   (((struct stdbitmap*)vid->display)->pitch)
 
-#undef DEBUG
+#define DEBUG
 
 #ifdef DEBUG
 # define dbgprint printf
@@ -107,8 +107,11 @@ init_dragonball (void)
   /* Chip select */
   CSGBB = addr16;		/* s1d13806 SDRAM start */
   dbgprint ("---> CSGBB   set to: 0x%04X\n", CSGBB);
-  //CSB = 0x00E7;         /* CSB SIZE = 1MB, 12 waitstates */
-  CSB = 0x00F9;			/* CSB SIZE = 2MB, DTACK */
+  
+  /*   CSB = 0x00E9;         /\* CSB SIZE = 2MB, 12 waitstates *\/ */
+  CSB = 0x00B9;         /* CSB SIZE = 2MB, 6 waitstates */
+
+  /*   CSB = 0x00F9;			/\* CSB SIZE = 2MB, DTACK *\/ */
   dbgprint ("---> CSB     set to: 0x%04X\n", CSB);
 
   //PM5 as register select
@@ -242,7 +245,7 @@ g_error s1d13806_setmode (s16 xres, s16 yres, s16 bpp, unsigned long flags)
 #endif
 
   default:
-    dbgprint ("PG_ERRT_BADPARAM\n");
+    dbgprint ("PG_ERRT_BADPARAM %d\n", bpp);
     return mkerror (PG_ERRT_BADPARAM, 101);	/* Unknown bpp */
   }
 
