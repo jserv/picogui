@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.27 2001/09/21 20:48:14 micahjd Exp $
+/* $Id: divtree.h,v 1.28 2001/09/22 10:33:01 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -240,7 +240,9 @@ typedef unsigned short int sidet;
 
 /***************** divnode functions */
 
-void divnode_recalc(struct divnode *n);
+void divnode_split(struct divnode *n,struct rect *div,
+		   struct rect *next);
+void divnode_recalc(struct divnode **pn);
 void divnode_redraw(struct divnode *n,int all);
 g_error newdiv(struct divnode **p,struct widget *owner);
 void r_divnode_free(struct divnode *n);

@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.54 2001/09/21 20:48:14 micahjd Exp $
+/* $Id: div.c,v 1.55 2001/09/22 10:33:01 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -65,271 +65,364 @@ void divnode_divscroll(struct divnode *n) {
   }
 }
 
+/* Small helper function- set the 'nextline' for n and all its
+ * children to the value 'nl'.
+ */
+void r_set_nextline(struct divnode *n, struct divnode *nl) {
+  if (!n)
+    return;
+  n->nextline = nl;
+  r_set_nextline(n->div,nl);
+  r_set_nextline(n->next,nl);
+}
+
+/* Split a divnode into two rectangles, according to the
+ * supplied divnode flags and 'split' value.
+ */
+void divnode_split(struct divnode *n, struct rect *divrect,
+		   struct rect *nextrect) {
+  s16 split = n->split;
+  int popupclip = 0;
+
+  /* Process as a popup box size */
+  if (n->flags & DIVNODE_SPLIT_POPUP) {
+    s16 x,y,w,h,margin,i;
+
+    n->flags &= ~DIVNODE_SPLIT_POPUP;   /* Clear flag */
+
+    /* Get size */
+    x = n->div->x;
+    y = n->div->y;
+    w = n->div->w;
+    h = n->div->h;
+
+    /* Get margin value */
+    margin = theme_lookup(n->owner->in->div->state,PGTH_P_MARGIN);
+    
+    /* If the size is zero, default to the preferred size 
+     *
+     * This preferred size has already accounted for the popup's 
+     * border, but we add this in again ourselves below.
+     *
+     * Simplest way to avoid adding it in twice is to subtract
+     * it from the preferred size.
+     */
+
+    if (!w)
+      w = max(n->div->cw,n->div->pw) - (margin<<1);
+    if (!h)
+      h = max(n->div->ch,n->div->ph) - (margin<<1);
+    
+    /* The width and height specified in the theme are minimum values */
+    i = theme_lookup(n->owner->in->div->state,PGTH_P_WIDTH);
+    if (w<i)
+      w = i;
+    i = theme_lookup(n->owner->in->div->state,PGTH_P_HEIGHT);
+    if (h<i)
+      h = i;
+    
+    /* Special positioning codes */
+    
+    if (x == PG_POPUP_CENTER) {
+      x=(vid->lxres>>1)-(w>>1);
+      y=(vid->lyres>>1)-(h>>1);
+    }
+    else if (x == PG_POPUP_ATCURSOR) {
+      /* This is a menu, allow it to overlap toolbars */
+      n->div->flags &= ~DIVNODE_POPUP_NONTOOLBAR;
+      
+      if (lastclicked && lastclicked->type == PG_WIDGET_BUTTON) {
+	/* snap to a button edge */
+	x = lastclicked->in->div->x;
+	y = lastclicked->in->div->y + lastclicked->in->div->h + margin;
+	if ((y+h)>=vid->yres) /* Flip over if near the bottom */
+	  y = lastclicked->in->div->y - h - margin;
+      }
+      else if (lastclicked && lastclicked->type == PG_WIDGET_MENUITEM) {
+	/* snap to a menuitem edge */
+	x = lastclicked->in->div->x + lastclicked->in->div->w;
+	y = lastclicked->in->div->y;
+      }
+      else {
+	/* exactly at the cursor */
+	x = cursor->x;
+	y = cursor->y;
+      } 
+    }
+    
+    /* Set the position and size, accounting for the popup's border */
+    divrect->x = x-margin;
+    divrect->y = y-margin;
+    divrect->w = w+(margin<<1);
+    divrect->h = h+(margin<<1);
+
+    /* Remember to clip this later */
+    popupclip = 1;
+  }
+  
+  /* All available space for div */
+  if (n->flags & DIVNODE_SPLIT_EXPAND) {
+    divrect->x = n->x;
+    divrect->y = n->y;
+    divrect->w = n->w;
+    divrect->h = n->h; 
+
+    nextrect->x = n->x;
+    nextrect->y = n->y;
+    nextrect->w = 0;
+    nextrect->h = 0;
+  }
+
+  /* Vertical */
+  else if (n->flags & (DIVNODE_SPLIT_TOP|DIVNODE_SPLIT_BOTTOM)) {
+    
+    if (n->flags & DIVNODE_UNIT_PERCENT)
+      split = (n->h*split)/100;
+    
+    else if ( (n->flags & DIVNODE_UNIT_CNTFRACT) && 
+	      n->owner && (split & 0xFF)) {
+      struct widget *container;
+      if (!iserror(rdhandle((void**)&container,PG_TYPE_WIDGET,
+			    -1,n->owner->container)))
+	split = container->in->div->h * (split >> 8) / (split & 0xFF);
+    }
+    
+    /* Not enough space. Normally we shrink the divnode to fit in the 
+     * available space. If the NOSQUISH flag is on, make the offending
+     * divnode disappear instead.
+     */
+    if (split>n->h) {
+      if (n->flags & DIVNODE_NOSQUISH)
+	split = 0;
+      else
+	split = n->h;
+    }       
+    
+    divrect->x = n->x;
+    divrect->w = n->w;
+    nextrect->x = n->x;
+    nextrect->w = n->w;
+
+    if (n->flags & DIVNODE_SPLIT_TOP) {
+      divrect->y = n->y;
+      divrect->h = split;
+      nextrect->y = n->y+split;
+      nextrect->h = n->h-split;
+    }
+    else {
+      divrect->y = n->y+n->h-split;
+      divrect->h = split;
+      nextrect->y = n->y;
+      nextrect->h = n->h-split;
+    }
+  }
+  
+  /* Horizontal */
+  else if (n->flags & (DIVNODE_SPLIT_LEFT|DIVNODE_SPLIT_RIGHT)) {
+    if (n->flags & DIVNODE_UNIT_PERCENT)
+      split = (n->w*split)/100;
+    
+    else if ( (n->flags & DIVNODE_UNIT_CNTFRACT) && 
+	      n->owner && (split & 0xFF)) {
+      struct widget *container;
+      if (!iserror(rdhandle((void**)&container,PG_TYPE_WIDGET,
+			    -1,n->owner->container)))
+	split = container->in->div->w * (split >> 8) / (split & 0xFF);
+    }
+    
+    /* Not enough space. Normally we shrink the divnode to fit in the 
+     * available space. If the NOSQUISH flag is on, make the offending
+     * divnode disappear instead.
+     */
+    if (split>n->w) {
+      if (n->flags & DIVNODE_NOSQUISH)
+	split = 0;
+      else
+	split = n->w;
+    }       
+    
+    divrect->y = n->y;
+    divrect->h = n->h;
+    nextrect->y = n->y;
+    nextrect->h = n->h;
+
+    if (n->flags & DIVNODE_SPLIT_LEFT) {
+      divrect->x = n->x;
+      divrect->w = split;
+      nextrect->x = n->x+split;
+      nextrect->w = n->w-split;
+    }
+    else {
+      divrect->x = n->x+n->w-split;
+      divrect->w = split;
+      nextrect->x = n->x;
+      nextrect->w = n->w-split;
+    }
+  }
+  
+  /* Center the 'div' node in this one. If a 'next' node exists,
+   * it has the same coords as this one */
+  else if (n->flags & DIVNODE_SPLIT_CENTER) {
+    divrect->w = n->cw;
+    divrect->h = n->ch;
+    divrect->x = n->x+(n->w-divrect->w)/2;
+    divrect->y = n->y+(n->h-divrect->h)/2;
+    
+    nextrect->x = n->x;
+    nextrect->y = n->y;
+    nextrect->w = n->w;
+    nextrect->h = n->h;
+  }
+  
+  /* Create a border of 'split' pixels between the 'div' node and
+   * this node, if a 'next' exists it is the same as this node. */
+  else if (n->flags & DIVNODE_SPLIT_BORDER) {
+    if ((split*2)>n->h || (split*2)>n->w) {
+      if (n->h>n->w)
+	split = n->w/2;
+      else
+	split = n->h/2;
+    }
+    
+    divrect->x = n->x+split;
+    divrect->y = n->y+split;
+    divrect->w = n->w-split*2;
+    divrect->h = n->h-split*2;
+    
+    nextrect->x = n->x;
+    nextrect->y = n->y;
+    nextrect->w = n->w;
+    nextrect->h = n->h;
+  }
+  
+  /* Otherwise give children same w,h,x,y */
+  else if (!(n->flags & DIVNODE_SPLIT_IGNORE)) {
+    nextrect->x = n->x;
+    nextrect->y = n->y;
+    nextrect->w = n->w;
+    nextrect->h = n->h;
+    
+    divrect->x = n->x;
+    divrect->y = n->y;
+    divrect->w = n->w;
+    divrect->h = n->h;
+  }
+
+  /* Transfer over rectangles */
+  if (n->next) {
+    n->next->x = nextrect->x;
+    n->next->y = nextrect->y;
+    n->next->w = nextrect->w;
+    n->next->h = nextrect->h;
+  }
+  if (n->div) {
+    n->div->x = divrect->x;
+    n->div->y = divrect->y;
+    n->div->w = divrect->w;
+    n->div->h = divrect->h;
+  }
+
+  /* Validate the size of a popup*/
+  if (popupclip)
+    clip_popup(n->div);  
+}	   
+
 /* Fill in the x,y,w,h of this divnode's children node based on it's
  * x,y,w,h and it's split. Also rebuilds child divnodes.
  * Recurse into all the node's children.
  */
-void divnode_recalc(struct divnode *n) {
-   int split;
+void divnode_recalc(struct divnode **pn) {
+   struct divnode *n = *pn;
+   struct rect divrect, nextrect;
 
    if (!n) return;
 
    if (n->flags & DIVNODE_NEED_RECALC) {
-     split = n->split;
-
-     /* Process as a popup box size */
-     if (n->flags & DIVNODE_SPLIT_POPUP) {
-       s16 x,y,w,h,margin,i;
-
-       n->flags &= ~DIVNODE_SPLIT_POPUP;   /* Clear flag */
-
-       /* Get size */
-       x = n->div->x;
-       y = n->div->y;
-       w = n->div->w;
-       h = n->div->h;
-
-       /* Get margin value */
-       margin = theme_lookup(n->owner->in->div->state,PGTH_P_MARGIN);
-
-       /* If the size is zero, default to the preferred size 
+     
+     /* Split the rectangle */
+     divnode_split(n,&divrect,&nextrect);
+     
+     /* Handle autowrapping */
+     if (n->flags & DIVNODE_AUTOWRAP) {
+       
+       /* If we're mushed, move this node to the next line. Normally
+	* it isn't a great idea to rearrange the divtree while it's
+	* recalculating...
+	* If this node gets relocated to a part of the tree that hasn't
+	* been traversed yet, it will probably be safe to continue.
+	* But, consider that it is relocated to somewhere we've already
+	* visited. It's safest to just redo the whole recalc. If we keep the
+	* flags straight, the recalc will reset itself and traverse again.
 	*
-	* This preferred size has already accounted for the popup's 
-	* border, but we add this in again ourselves below.
-	*
-	* Simplest way to avoid adding it in twice is to subtract
-	* it from the preferred size.
+	* FIXME: implement this ^
 	*/
+       if (!(nextrect.w && nextrect.h)) {
 
-       if (!w)
-	 w = max(n->div->cw,n->div->pw) - (margin<<1);
-       if (!h)
-	 h = max(n->div->ch,n->div->ph) - (margin<<1);
+	 /* Send to the next line */
+	 if (n->nextline) {
+	   struct divnode *p;
+	   
+	   /* Find the end of our subtree */
+	   p = n;
+	   while (p->next)
+	     p = p->next;
+	   
+	   /* Insert it at the beginning of the next line */
+	   p->next = n->nextline->div;
+	   n->nextline->div = n;
 
-       /* The width and height specified in the theme are minimum values */
-       i = theme_lookup(n->owner->in->div->state,PGTH_P_WIDTH);
-       if (w<i)
-	 w = i;
-       i = theme_lookup(n->owner->in->div->state,PGTH_P_HEIGHT);
-       if (h<i)
-	 h = i;
+	   /* Unlink from current position */
+	   *pn = NULL;            
 
-       /* Special positioning codes */
+	   /* Set recalc for the nextline */
+	   n->nextline->flags |= DIVNODE_NEED_RECALC |
+	     DIVNODE_PROPAGATE_RECALC;
 
-       if (x == PG_POPUP_CENTER) {
-	 x=(vid->lxres>>1)-(w>>1);
-	 y=(vid->lyres>>1)-(h>>1);
-       }
-       else if (x == PG_POPUP_ATCURSOR) {
-	 /* This is a menu, allow it to overlap toolbars */
-	 n->div->flags &= ~DIVNODE_POPUP_NONTOOLBAR;
-
-	 if (lastclicked && lastclicked->type == PG_WIDGET_BUTTON) {
-	   /* snap to a button edge */
-	   x = lastclicked->in->div->x;
-	   y = lastclicked->in->div->y + lastclicked->in->div->h + margin;
-	   if ((y+h)>=vid->yres) /* Flip over if near the bottom */
-	     y = lastclicked->in->div->y - h - margin;
-	 }
-	 else if (lastclicked && lastclicked->type == PG_WIDGET_MENUITEM) {
-	   /* snap to a menuitem edge */
-	   x = lastclicked->in->div->x + lastclicked->in->div->w;
-	   y = lastclicked->in->div->y;
+	   /* Update the nextline for this node and all children */
+	   r_set_nextline(n,n->nextline->nextline);
+	   
+	   return;
 	 }
 	 else {
-	   /* exactly at the cursor */
-	   x = cursor->x;
-	   y = cursor->y;
-	 } 
+	   /* Create a new line */
+	   
+	   /* FIXME: Create new lines automatically when possible */
+	 }
        }
-        
-       /* Set the position and size, accounting for the popup's border */
-       n->div->x = x-margin;
-       n->div->y = y-margin;
-       n->div->w = w+(margin<<1);
-       n->div->h = h+(margin<<1);
        
-       /* Validate the size */
-       clip_popup(n->div);
-     }
+       /* Otherwise, check whether there's extra room */
+       else if (n->nextline && (!n->next)) {
+	 struct divnode **p;
+	 s16 avw,avh;       /* Available width/height */
 
-     /* All available space for div */
-     if (n->flags & DIVNODE_SPLIT_EXPAND) {
-       if (n->div) {
-	 n->div->x = n->x;
-	 n->div->y = n->y;
-	 n->div->w = n->w;
-	 n->div->h = n->h;
-       }       
-       if (n->next) {
-	 n->next->x = n->x;
-	 n->next->y = n->y;
-	 n->next->w = 0;
-	 n->next->h = 0;
-       }       
-     }
+	 avw = nextrect.w;
+	 avh = nextrect.h;
 
-     /* Vertical */
-     else if (n->flags & (DIVNODE_SPLIT_TOP|DIVNODE_SPLIT_BOTTOM)) {
+	 /* See how many divnodes from the next line will fit here */
+	 p = &n->nextline->div;
+	 while (*p) {
+	   if ((*p)->flags & (DIVNODE_SPLIT_LEFT|DIVNODE_SPLIT_RIGHT))
+	     avw -= 10;//(*p)->pw;
+	   if ((*p)->flags & (DIVNODE_SPLIT_TOP|DIVNODE_SPLIT_BOTTOM))
+	     avh -= 10;//(*p)->ph;
+	   if (avw<=0 || avh<=0)
+	     break;
+	   p = &(*p)->next;
+	 }
+	 
+	 /* After this loop, *p points to the first node that can't be
+	  * moved to the current line. Munge the pointers a little to
+	  * move all that we can. Insert the subtree, and fix up
+	  * the nextline pointers.
+	  */
 
-       if (n->flags & DIVNODE_UNIT_PERCENT)
-	 split = (n->h*split)/100;
+	 if (*p != n->nextline->div) {
+	   n->next = n->nextline->div;
+	   n->nextline->div = *p;
+	   *p = NULL;
+	   r_set_nextline(n->next,n->nextline);
+	 }
 	
-       else if ( (n->flags & DIVNODE_UNIT_CNTFRACT) && 
-		n->owner && (split & 0xFF)) {
-	  struct widget *container;
-	  if (!iserror(rdhandle((void**)&container,PG_TYPE_WIDGET,
-				-1,n->owner->container)))
-	    split = container->in->div->h * (split >> 8) / (split & 0xFF);
-       }
-	
-       /* Not enough space. Normally we shrink the divnode to fit in the 
-	* available space. If the NOSQUISH flag is on, make the offending
-	* divnode disappear instead.
-	*/
-       if (split>n->h) {
-	 if (n->flags & DIVNODE_NOSQUISH)
-	   split = 0;
-	 else
-	   split = n->h;
-       }       
-
-       if (n->div) {
-	 n->div->x = n->x;
-	 n->div->w = n->w;
-       }
-       if (n->next) {
-	 n->next->x = n->x;
-	 n->next->w = n->w;
-       }
-       if (n->flags & DIVNODE_SPLIT_TOP) {
-	 if (n->div) {
-	   n->div->y = n->y;
-	   n->div->h = split;
-	 }
-	 if (n->next) { 
-	   n->next->y = n->y+split;
-	   n->next->h = n->h-split;
-	 }
-       }
-       else {
-	 if (n->div) {
-	   n->div->y = n->y+n->h-split;
-	   n->div->h = split;
-	 }
-	 if (n->next) {
-	   n->next->y = n->y;
-	   n->next->h = n->h-split;
-	 }
-       }
-     }
-     
-     /* Horizontal */
-     else if (n->flags & (DIVNODE_SPLIT_LEFT|DIVNODE_SPLIT_RIGHT)) {
-       if (n->flags & DIVNODE_UNIT_PERCENT)
-	 split = (n->w*split)/100;
-       
-       else if ( (n->flags & DIVNODE_UNIT_CNTFRACT) && 
-		n->owner && (split & 0xFF)) {
-	  struct widget *container;
-	  if (!iserror(rdhandle((void**)&container,PG_TYPE_WIDGET,
-				-1,n->owner->container)))
-	    split = container->in->div->w * (split >> 8) / (split & 0xFF);
-       }
-
-       /* Not enough space. Normally we shrink the divnode to fit in the 
-	* available space. If the NOSQUISH flag is on, make the offending
-	* divnode disappear instead.
-	*/
-       if (split>n->w) {
-	 if (n->flags & DIVNODE_NOSQUISH)
-	   split = 0;
-	 else
-	   split = n->w;
-       }       
-
-       if (n->div) {
-	 n->div->y = n->y;
-	 n->div->h = n->h;
-       }
-       if (n->next) {
-	 n->next->y = n->y;
-	 n->next->h = n->h;
-       }
-       if (n->flags & DIVNODE_SPLIT_LEFT) {
-	 if (n->div) {
-	   n->div->x = n->x;
-	   n->div->w = split;
-	 }
-	 if (n->next) {
-	   n->next->x = n->x+split;
-	   n->next->w = n->w-split;
-	 }
-       }
-       else {
-	 if (n->div) {
-	   n->div->x = n->x+n->w-split;
-	   n->div->w = split;
-	 }
-	 if (n->next) {
-	   n->next->x = n->x;
-	   n->next->w = n->w-split;
-	 }
-       }
-     }
-     
-     /* Center the 'div' node in this one. If a 'next' node exists,
-      * it has the same coords as this one */
-     else if (n->flags & DIVNODE_SPLIT_CENTER) {
-       if (n->div) {
-	 n->div->x = n->x+(n->w-n->div->w)/2;
-	 n->div->y = n->y+(n->h-n->div->h)/2;
-       }
-       if (n->next) {
-	 n->next->x = n->x;
-	 n->next->y = n->y;
-	 n->next->w = n->w;
-	 n->next->h = n->h;
-       }
-     }
-     
-     /* Create a border of 'split' pixels between the 'div' node and
-      * this node, if a 'next' exists it is the same as this node. */
-     else if (n->flags & DIVNODE_SPLIT_BORDER) {
-       if ((split*2)>n->h || (split*2)>n->w) {
-	 if (n->h>n->w)
-	   split = n->w/2;
-	 else
-	   split = n->h/2;
-       }
-
-       if (n->div) {
-	 n->div->x = n->x+split;
-	 n->div->y = n->y+split;
-	 n->div->w = n->w-split*2;
-	 n->div->h = n->h-split*2;
-       }
-       if (n->next) {
-	 n->next->x = n->x;
-	 n->next->y = n->y;
-	 n->next->w = n->w;
-	 n->next->h = n->h;
-       }
-     }
-
-     /* Otherwise give children same w,h,x,y */
-     else if (!(n->flags & DIVNODE_SPLIT_IGNORE)) {
-       if (n->next) {
-	 n->next->x = n->x;
-	 n->next->y = n->y;
-	 n->next->w = n->w;
-	 n->next->h = n->h;
-       }
-       if (n->div) {
-	 n->div->x = n->x;
-	 n->div->y = n->y;
-	 n->div->w = n->w;
-	 n->div->h = n->h;
        }
      }
      
@@ -352,8 +445,8 @@ void divnode_recalc(struct divnode *n) {
    }
 
    /* A child node might need a recalc even if we aren't forcing one */
-   divnode_recalc(n->div);
-   divnode_recalc(n->next);
+   divnode_recalc(&n->div);
+   divnode_recalc(&n->next);
 }
 
 /* Redraw the divnodes if they need it.
@@ -455,7 +548,7 @@ void update(struct divnode *subtree,int show) {
 	return;
     }
 
-    divnode_recalc(subtree);
+    divnode_recalc(&subtree);
     divnode_redraw(subtree,0);
   }
   else 
@@ -497,7 +590,7 @@ void r_dtupdate(struct divtree *dt) {
 #ifdef DEBUG_VIDEO
     printf("divnode_recalc\n",dt->head);
 #endif
-    divnode_recalc(dt->head);
+    divnode_recalc(&dt->head);
     /* If we recalc, at least one divnode will need redraw */
     dt->flags |= DIVTREE_NEED_REDRAW;
 

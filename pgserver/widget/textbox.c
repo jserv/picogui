@@ -1,4 +1,4 @@
-/* $Id: textbox.c,v 1.2 2001/09/21 20:48:14 micahjd Exp $
+/* $Id: textbox.c,v 1.3 2001/09/22 10:33:01 micahjd Exp $
  *
  * textbox.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities
@@ -39,6 +39,7 @@ g_error textbox_install(struct widget *self) {
    struct divnode **w;
    int i;
    char *p,*q;
+
    static char teststr[] = 
      "This is a test of text layout capability in PicoGUI. Right now "
      "it's just tokenizing this string into a bunch of divnodes with "
@@ -60,16 +61,31 @@ g_error textbox_install(struct widget *self) {
    
    /* 1st line */
    e = newdiv(&self->in->div,self);
-   self->in->div->flags |= PG_S_TOP;
    errorcheck;
+   self->in->div->flags |= PG_S_TOP;
 
-   /* Start at 1st line */
-   w = &self->in->div->div;
-   
    /* 2nd line */
    e = newdiv(&self->in->div->next,self);
-   self->in->div->flags |= PG_S_TOP;
    errorcheck;
+   self->in->div->next->flags |= PG_S_TOP;
+   self->in->div->nextline = self->in->div->next;
+
+#if 0
+   /* 3rd line */
+   e = newdiv(&self->in->div->next->next,self);
+   errorcheck;
+   self->in->div->next->next->flags |= PG_S_TOP;
+   self->in->div->next->nextline = self->in->div->next->next;
+
+   /* 4th line */
+   e = newdiv(&self->in->div->next->next->next,self);
+   errorcheck;
+   self->in->div->next->next->next->flags |= PG_S_TOP;
+   self->in->div->next->next->nextline = self->in->div->next->next->next;
+#endif
+
+   /* Start at 1st line */
+   w = &self->in->div->div;   
 
    /* Hackishly tokenize a string into text divnodes */
    p = teststr;
