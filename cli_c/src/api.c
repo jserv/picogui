@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.39 2002/04/07 01:26:16 micahjd Exp $
+/* $Id: api.c,v 1.40 2002/04/08 23:43:56 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -51,19 +51,36 @@ void pgUpdate(void) {
 #endif  
 }
 
-void pgEnterContext(void) {
+int pgEnterContext(void) {
 #ifdef ENABLE_THREADING_SUPPORT   
+   pgClientReturnData retData;
+   sem_init(&retData.sem, 0, 0);
    _pg_add_request(PGREQ_MKCONTEXT,NULL,0, -1, 0);
+   sem_wait(&retData.sem);
+   return retData.ret.e.retdata;
 #else   
   _pg_add_request(PGREQ_MKCONTEXT,NULL,0);
+  pgFlushRequests();
+  return _pg_return.e.retdata;
 #endif  
-}  
+}
 
 void pgLeaveContext(void) {
 #ifdef ENABLE_THREADING_SUPPORT   
    _pg_add_request(PGREQ_RMCONTEXT,NULL,0, -1, 0);
 #else   
   _pg_add_request(PGREQ_RMCONTEXT,NULL,0);
+#endif  
+}  
+
+void pgDeleteHandleContext(int id) {
+  struct pgreqd_rmcontext arg;
+  arg.context = htonl(id);
+
+#ifdef ENABLE_THREADING_SUPPORT   
+   _pg_add_request(PGREQ_RMCONTEXT,&arg,sizeof(arg), -1, 0);
+#else   
+  _pg_add_request(PGREQ_RMCONTEXT,&arg,sizeof(arg));
 #endif  
 }  
 

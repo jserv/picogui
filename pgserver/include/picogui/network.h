@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.56 2002/04/07 01:26:17 micahjd Exp $
+/* $Id: network.h,v 1.57 2002/04/08 23:43:57 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -34,7 +34,7 @@
 #define _H_PG_NETWORK
 
 #define PG_REQUEST_PORT    30450
-#define PG_PROTOCOL_VER    13    /* Increment this whenever changes are made */
+#define PG_PROTOCOL_VER    14     /* Increment this whenever changes are made */
 #define PG_REQUEST_MAGIC   0x31415926
 
 #include <picogui/types.h>
@@ -123,7 +123,7 @@ struct pghello {
 #define PGREQ_SETMODE      21  /* Sets video mode/depth/rotation |  struct */
 #define PGREQ_GETMODE      22  /* Returns a modeinfo struct      |  none */
 #define PGREQ_MKCONTEXT    23  /* Enters a new context           |  none */
-#define PGREQ_RMCONTEXT    24  /* Cleans up and kills the context|  none */
+#define PGREQ_RMCONTEXT    24  /* Cleans up and kills the context|  struct */
 #define PGREQ_FOCUS        25  /* Force focus to specified widget|  handle */
 #define PGREQ_GETSTRING    26  /* Returns a RESPONSE_DATA        |  handle */
 #define PGREQ_DUP          27  /* Duplicates an object           |  handle */
@@ -314,6 +314,15 @@ struct pgreqd_traversewgt {
   u16 direction;                /* PG_TRAVERSE_* flag */
   u16 count;
 };
+struct pgreqd_rmcontext {
+  /* This entire structure is optional.
+   * If it's absent, this removes the app's current context and 
+   * decrements. If it's here, the specified context is removed
+   * and the app's context number is left alone.
+   */
+  u32 context;
+};
+
 struct pgdata_getfstyle {
   /* This is returned by getfstyle.
    * If name[0] is 0, the font style index was invalid

@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.88 2002/04/07 01:26:17 micahjd Exp $
+/* $Id: dispatch.c,v 1.89 2002/04/08 23:43:57 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -724,19 +724,37 @@ g_error rqh_mkcontext(int owner, struct pgrequest *req,
   struct conbuf *cb = find_conbuf(owner);
   if (!cb) return mkerror(PG_ERRT_INTERNAL,69);
 
+  /* FIXME: There's a theoretical possibility cb->context will wrap around.
+   *        This won't happen when it's used as a stack, but when it's
+   *        used for unique IDs it will eventually happen. This should
+   *        check to make sure the context is unused before entering it.
+   */
+
   cb->context++;
+  *ret = cb->context;
 
   return success;
 }
 
 g_error rqh_rmcontext(int owner, struct pgrequest *req,
 		      void *data, u32 *ret, int *fatal) {
-  struct conbuf *cb = find_conbuf(owner);
-  if (!cb) return mkerror(PG_ERRT_INTERNAL,69);
-  if (cb->context<=0) return mkerror(PG_ERRT_BADPARAM,70);
+  struct conbuf *cb;
+  struct pgreqd_rmcontext *arg = (struct pgreqd_rmcontext *) data;
 
-  handle_cleanup(owner,cb->context);
-  cb->context--;
+  if (req->size < sizeof(struct pgreqd_rmcontext)) {
+    /* We don't have a structure, follow the stack behavior */
+
+    cb = find_conbuf(owner);
+    if (!cb) return mkerror(PG_ERRT_INTERNAL,69);
+    if (cb->context<=0) return mkerror(PG_ERRT_BADPARAM,70);
+    handle_cleanup(owner,cb->context);
+    cb->context--;
+  }
+  else {
+    /* We do have a structure, only delete one context */
+
+    handle_cleanup(owner,ntohl(arg->context));
+  }
   
   return success;
 }

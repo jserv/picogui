@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.83 2002/04/07 01:26:16 micahjd Exp $
+/* $Id: client_c.h,v 1.84 2002/04/08 23:43:56 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -1413,6 +1413,8 @@ void pgEventPoll(void);
  * Whenever the program leaves a context, all objects created
  * while in that context are deleted. No memory is used by creating a context,
  * and they can be nested a very large number of times.
+ *
+ * \returns the ID of the new context
  * 
  * Here is an example, indented to show the context levels:
  * \code
@@ -1429,17 +1431,32 @@ pgLeaveContext();             // x and z are deleted
  * 
  * \sa pgLeaveContext
  */
-void pgEnterContext(void);
+int pgEnterContext(void);
 
 /*!
  * \brief Leave a context
  * 
- * When leaving a context, all objects created within it are deleted.
+ * When leaving a context, all objects created within it are deleted, and the context
+ * ID is decremented. This default behavior simulates a stack of contexts.
  * See pgEnterContext for an example.
  * 
- * \sa pgEnterContext
+ * \sa pgEnterContext, pgDeleteHandleContext
  */
 void pgLeaveContext(void);
+
+/*!
+ * \brief Delete all handles in one context
+ *
+ * This lets you use contexts as individuals with an ID rather than as a stack.
+ * pgLeaveContext() deletes the current context (stored per-connection) and
+ * decrements that current context. This function deletes the specified context
+ * without touching the current context number. This way new contexts can be
+ * requested and discarded indefinitely (or at least until the IDs wrap around,
+ * in which case the server will skip context nubmers that are in use)
+ *
+ * \sa pgEnterContext
+ */
+void pgDeleteHandleContext(int id);
 
 //! \}
 

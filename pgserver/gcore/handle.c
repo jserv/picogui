@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.54 2002/04/07 01:26:17 micahjd Exp $
+/* $Id: handle.c,v 1.55 2002/04/08 23:43:57 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -537,8 +537,8 @@ g_error rdhandlep(void ***p,unsigned char reqtype,int owner,handle h) {
   return success;
 }
 
-/* Deletes all handles owned by owner with a context >= 'context',
-   (all handles if owner is -1)
+/* Deletes all handles owned by owner with a context == 'context',
+   (all handles if owner is -1, all contexts if context is -1)
    Traverses seperately to find each handle because the tree could
    be rearranged by deletion
 */
@@ -548,7 +548,8 @@ int r_handle_cleanup(struct handlenode *n,int owner,int context,
 
   if ((!n) || (n==NIL)) return 0;
 
-  if ( ((owner<0) || (owner==n->owner)) && (n->context>=context) &&
+  if ( ((owner<0) || (owner==n->owner)) && 
+       ((context)<0 || (n->context==context)) &&
        ((!group) || group==n->group)) {
 
     /* Same sequence as handle_free()
