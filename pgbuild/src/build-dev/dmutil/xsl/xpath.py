@@ -83,7 +83,12 @@ from string import upper, replace, atof, find
 
 ##############################################################################
 ## XML whitespace
-_WHITESPACE=r'[\x20\x9\xd\xa]'
+
+# Note: This original line confuses the re module, replaced it with the one below.
+#       -- Micah
+#_WHITESPACE=r'[\x20\x9\xd\xa]'
+_WHITESPACE=r'[ \t\n\r]'
+
 _re_spaces= re.compile(_WHITESPACE+'+')
 
 

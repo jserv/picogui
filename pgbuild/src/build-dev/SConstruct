@@ -3,14 +3,21 @@
 #
 
 import PGBuild.Node.XML
+import dmutil.xsl.xpath
 env = Environment()
 
-# Create a node to represent a tag in an XML file. Note
-# how the Document object can be addressed in standard DOM fashion.
+# Create an SCons node wrapper for the XML document's DOM
 testFile = env.fs.Entry("test.xml")
 doc = PGBuild.Node.XML.Document(testFile)
+
+# Look up a tag using DOM notation
 tag = doc.childNodes[0].getElementsByTagName("important")[0]
 print tag.toprettyxml()
+
+# Look up a tag using XPath
+parser = dmutil.xsl.xpath.makeParser()
+path = parser.parse('/boing/important')
+
 
 # Build a 'hello world'
 prog = env.Program('hello', 'hello.c')
