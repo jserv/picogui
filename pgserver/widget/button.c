@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.23 2000/06/10 22:09:37 micahjd Exp $
+/* $Id: button.c,v 1.24 2000/06/11 17:59:18 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -387,7 +387,7 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
   self->dt->flags |= DIVTREE_NEED_REDRAW;   
   if (self->dt==dts->top) update();
   if (event>=0)
-    post_event(WE_ACTIVATE,self,event);
+    post_event(WE_ACTIVATE,self,event,0);
 }
 
 /* HWG_BUTTON is the minimum size (either dimension) for a button.

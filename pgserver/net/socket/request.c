@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.19 2000/06/10 05:39:40 micahjd Exp $
+/* $Id: request.c,v 1.20 2000/06/11 17:59:18 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -49,6 +49,12 @@ struct conbuf *conbufs = NULL;
 /* Close a connection and clean up */
 void closefd(int fd) {
   struct conbuf *p,*condemn=NULL;
+  
+  /* Give up captured input devices */
+  if (keyboard_owner==fd)
+    keyboard_owner = 0;
+  if (pointer_owner==fd)
+    pointer_owner = 0;
 
 #ifdef DEBUG 
   printf("Close. fd = %d\n",fd);

@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.23 2000/06/10 14:15:57 micahjd Exp $
+/* $Id: widget.h,v 1.24 2000/06/11 17:59:18 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -212,6 +212,18 @@ DEF_STATICWIDGET_PROTO(box)
 #define WE_ACTIVATE    1  /* Gets focus (or for a non-focusing widget such
 			     as a button, it has been clicked/selected  */
 #define WE_DEACTIVATE  2  /* Lost focus */
+     
+/* Non-widget events */
+#define WE_KBD_CHAR    10 /* These are sent if the client has captured the */
+#define WE_KBD_KEYUP   11 /* keyboard (or pointing device ) */
+#define WE_KBD_KEYDOWN 12
+#define WE_PNTR_MOVE   13
+#define WE_PNTR_UP     14
+#define WE_PNTR_DOWN   15
+
+/* Set to the client # if a client has taken over the input device */
+extern int keyboard_owner;
+extern int pointer_owner;
 
 /******* These functions define the 'public' methods for widgets */
      

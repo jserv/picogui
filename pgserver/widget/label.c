@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.13 2000/06/10 10:17:37 micahjd Exp $
+/* $Id: label.c,v 1.14 2000/06/11 17:59:18 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -144,6 +144,8 @@ g_error label_set(struct widget *self,int property, glob data) {
     if (data > AMAX) return mkerror(ERRT_BADPARAM,
 		     "WP_ALIGN param is not a valid align value (label)");
     DATA->align = (alignt) data;
+    if (DATA->transparent)
+      redraw_bg(self);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -155,10 +157,10 @@ g_error label_set(struct widget *self,int property, glob data) {
     psplit = self->in->split;
     resizelabel(self);
     if (self->in->split != psplit) {
-      if (DATA->transparent)
-	redraw_bg(self);
       self->in->flags |= DIVNODE_PROPAGATE_RECALC;
     }
+    if (DATA->transparent)
+      redraw_bg(self);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -170,10 +172,10 @@ g_error label_set(struct widget *self,int property, glob data) {
     psplit = self->in->split;
     resizelabel(self);
     if (self->in->split != psplit) {
-      if (DATA->transparent)
-	redraw_bg(self);
       self->in->flags |= DIVNODE_PROPAGATE_RECALC;
     }
+    if (DATA->transparent)
+      redraw_bg(self);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;

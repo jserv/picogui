@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.24 2000/06/10 14:15:57 micahjd Exp $
+/* $Id: widget.c,v 1.25 2000/06/11 17:59:18 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -53,6 +53,11 @@ struct widget *under;
 struct widget *prev_under;
 int prev_btn;
 struct widget *capture;
+struct widget *kbdfocus;
+
+/* Set to the client # if a client has taken over the input device */
+int keyboard_owner;
+int pointer_owner;
 
 /******** Widget interface functions */
 
@@ -235,18 +240,54 @@ void dispatch_pointing(long type,int x,int y,int btn) {
   union trigparam param;
   int i;
 
+  param.mouse.x = x;
+  param.mouse.y = y;
+  param.mouse.btn = btn;
+  param.mouse.chbtn = btn ^ prev_btn;
+  prev_btn = btn;
+
+  /* Selfish apps that don't like using widgets can just steal the pointing
+     device for themselves.  Probably not something a word processor would
+     want to do.  Probably for games.
+  */
+  if (pointer_owner) {
+    int evt=0;
+    switch (type) {
+    case TRIGGER_MOVE:
+      evt = WE_PNTR_MOVE;
+      break;
+    case TRIGGER_UP:
+      evt = WE_PNTR_UP;
+      break;
+    case TRIGGER_DOWN:
+      evt = WE_PNTR_DOWN;
+      break;
+    }
+    if (evt)
+      /* Squeeze all the mouse params into a long, as follows.
+	 Note that if PicoGUI is to support screens bigger than
+	 4096x4096 this won't work!
+	 
+	 Bits 31-28:  buttons
+	 Bits 27-24:  changed buttons
+	 Bits 23-12:  Y
+	 Bits 11-0 :  X
+      */
+      post_event(evt,NULL,
+		 (param.mouse.btn << 28) |
+		 (param.mouse.chbtn << 24) |
+		 (param.mouse.y << 12) |
+		 param.mouse.x,
+		 keyboard_owner);
+    return;
+  }
+
   if (!(dts && dts->top && dts->top->head)) {
 #ifdef DEBUG
     printf("Pointer event with invalid tree\n");
 #endif
     return;   /* Without a valid tree, pointer events are meaningless */
   }
-
-  param.mouse.x = x;
-  param.mouse.y = y;
-  param.mouse.btn = btn;
-  param.mouse.chbtn = btn ^ prev_btn;
-  prev_btn = btn;
 
   divmatch = NULL;
   widgetunder(x,y,dts->top->head);
@@ -294,6 +335,35 @@ void dispatch_key(long type,int key,int mods) {
 #ifdef DEBUG
   printf("Keyboard event: 0x%08X (#%d, '%c') mod:0x%08X\n",type,key,key,mods);
 #endif
+
+  /* If the keyboard has been captured by a client, redirect everything
+     to them.  This would seem a bit selfish of the client to want ALL
+     keyboard input, but programs like games and kiosks are traditionally
+     very selfish and always dislike however the operating system or GUI
+     might handle the hardware.
+     Well, I guess this is for games, then.
+  */
+  if (keyboard_owner) {
+    int evt=0;
+    switch (type) {
+    case TRIGGER_CHAR:
+      evt = WE_KBD_CHAR;
+      break;
+    case TRIGGER_KEYUP:
+      evt = WE_KBD_KEYUP;
+      break;
+    case TRIGGER_KEYDOWN:
+      evt = WE_KBD_KEYDOWN;
+      break;
+    }
+    if (evt)
+      /* Pack the mods into the high word and the key into the
+	 low word.
+      */
+      post_event(evt,NULL,(mods<<16)|key,keyboard_owner);
+    return;
+  }
+
 
 }
 

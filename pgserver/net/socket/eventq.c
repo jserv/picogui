@@ -1,4 +1,4 @@
-/* $Id: eventq.c,v 1.4 2000/06/10 01:15:45 micahjd Exp $
+/* $Id: eventq.c,v 1.5 2000/06/11 17:59:18 micahjd Exp $
  *
  * eventq.c - This implements the post_event function that the widgets
  *            use to send events to the client.  It stores these in a
@@ -32,13 +32,17 @@
 
 #include <pgnet.h>
 
-void post_event(int event,struct widget *from,long param) {
+/* Either the originating widget or the owner must be specified.
+   If only 'from' is nonzero, the owner will be looked up, and the event
+   sent from the widget.
+   If owner is nonzero, it will be sent as a global event.
+*/
+void post_event(int event,struct widget *from,long param,int owner) {
   handle hfrom;
-  int owner;
 
   /* Determine the owner of the originating widget */
   hfrom = hlookup(from,&owner);
-  if (!(hfrom && owner)) return;
+  if (!(hfrom || owner)) return;
 
   /* Is the owner already waiting for an event? */
   if (FD_ISSET(owner,&evtwait)) {

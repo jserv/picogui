@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.7 2000/06/08 20:27:46 micahjd Exp $
+/* $Id: pgnet.h,v 1.8 2000/06/11 17:59:18 micahjd Exp $
  *
  * pgnet.h - header for all PicoGUI networking stuff (request/packet/event...)
  *
@@ -112,7 +112,7 @@ int dispatch_packet(int from,struct uipkt_request *req,void *data);
 g_error req_init(void);
 void req_free(void);
 int reqproc(void);
-void post_event(int event,struct widget *from,long param);
+void post_event(int event,struct widget *from,long param,int owner);
 int send_response(int to,const void *data,size_t len);
 
 /********* Buffers needed by each connection (packet and event) */
@@ -208,8 +208,12 @@ struct event *get_event(int owner,int remove);
 #define RQH_MKPOPUP   16     /* Create a popup root widget     |  struct */
 #define RQH_SIZETEXT  17     /* Find the size of text          |  struct */
 #define RQH_BATCH     18     /* Executes many requests         |  requests */
+#define RQH_GRABKBD   19     /* Become the keyboard owner      |  none */
+#define RQH_GRABPNTR  20     /* Own the pointing device        |  none */
+#define RQH_GIVEKBD   21     /* Give the keyboard back         |  none */
+#define RQH_GIVEPNTR  22     /* Give the pointing device back  |  none */
 
-#define RQH_UNDEF     19     /* types > this will be truncated. return error */
+#define RQH_UNDEF     23     /* types > this will be truncated. return error */
 
 /* Structures passed to request handlers as 'data'.
  * Dummy variables pad it to a multiple of 4 bytes (compiler likes it?)

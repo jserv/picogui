@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.6 2000/06/10 01:15:45 micahjd Exp $
+/* $Id: dispatch.c,v 1.7 2000/06/11 17:59:18 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -51,6 +51,10 @@ DEF_REQHANDLER(register)
 DEF_REQHANDLER(mkpopup)
 DEF_REQHANDLER(sizetext)
 DEF_REQHANDLER(batch)
+DEF_REQHANDLER(grabkbd)
+DEF_REQHANDLER(grabpntr)
+DEF_REQHANDLER(givekbd)
+DEF_REQHANDLER(givepntr)
 DEF_REQHANDLER(undef)
 g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(ping)
@@ -72,6 +76,10 @@ g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(mkpopup)
   TAB_REQHANDLER(sizetext)
   TAB_REQHANDLER(batch)
+  TAB_REQHANDLER(grabkbd)
+  TAB_REQHANDLER(grabpntr)
+  TAB_REQHANDLER(givekbd)
+  TAB_REQHANDLER(givepntr)
   TAB_REQHANDLER(undef)
 };
 
@@ -491,6 +499,40 @@ g_error rqh_batch(int owner, struct uipkt_request *req,
   }
 
   return e;
+}
+
+g_error rqh_grabkbd(int owner, struct uipkt_request *req,
+		    void *data, unsigned long *ret, int *fatal) {
+  if (keyboard_owner)
+    return mkerror(ERRT_BUSY,"Exclusive keyboard access already in use");
+  keyboard_owner = owner;
+  return sucess;
+}
+
+g_error rqh_grabpntr(int owner, struct uipkt_request *req,
+		     void *data, unsigned long *ret, int *fatal) {
+  if (pointer_owner)
+    return mkerror(ERRT_BUSY,
+		   "Exclusive pointing device access already in use");
+  pointer_owner = owner;
+  return sucess;
+}
+
+g_error rqh_givekbd(int owner, struct uipkt_request *req,
+		    void *data, unsigned long *ret, int *fatal) {
+  if (keyboard_owner!=owner)
+    return mkerror(ERRT_BADPARAM,"Not the current owner of the keyboard");
+  keyboard_owner = 0;
+  return sucess;
+}
+
+g_error rqh_givepntr(int owner, struct uipkt_request *req,
+		     void *data, unsigned long *ret, int *fatal) {
+  if (pointer_owner!=owner)
+    return mkerror(ERRT_BADPARAM,
+		   "Not the current owner of the pointing device");
+  pointer_owner = 0;
+  return sucess;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: g_error.h,v 1.2 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: g_error.h,v 1.3 2000/06/11 17:59:18 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -43,6 +43,7 @@ typedef struct {
 #define ERRT_BADPARAM 4
 #define ERRT_HANDLE   5
 #define ERRT_INTERNAL 6
+#define ERRT_BUSY     7
 
 extern g_error sucess;
 
