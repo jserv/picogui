@@ -1,0 +1,71 @@
+# $Id: Makefile.cfg-SMARTDATA,v 1.1 2000/10/12 16:28:25 pney Exp $
+#
+# This file has compile-time options for PicoGUI, including
+# which fonts and drivers are to be compiled in.
+#
+# There used to be a menu config system, but the needs
+# of the makefile outgrew it so I reverted to a simple
+# text config thing.  If someone can make a nicer 'dialog'
+# based menu system, I would be very grateful!
+#
+# If anyone cares to see the old menu code, it's in the
+# CVS archives.
+#
+# -- Micah Dowty <micahjd@users.sourceforge.net>
+#
+
+######################################## Compile settings
+
+#### Target system (uncomment only one)
+PLATFORM = linux
+#PLATFORM = windows
+#PLATFORM = uclinux
+
+#### Strip binary? (yes/no)
+STRIPBIN = no
+
+#### Numerical errors, saves ~5k
+#CFLAGS := $(CFLAGS) -DTINY_MESSAGES
+
+#### DEBUG flag
+#CFLAGS := $(CFLAGS) -DDEBUG
+
+#### ElectricFence malloc debugging
+#LDFLAGS := $(LDFLAGS) -lefence
+
+#### gcov coverage analysis
+#CFLAGS := $(CFLAGS) -fprofile-arcs -ftest-coverage
+
+#### gprof profiling
+#CFLAGS := $(CFLAGS) -pg
+#LDFLAGS := $(LDFLAGS) -pg
+
+######################################## Fonts
+
+#### Uncomment any number of the following
+FONTS := $(FONTS) font/helvetica.fi
+#FONTS := $(FONTS) font/console.fi  
+FONTS := $(FONTS) font/courier.fi  
+#FONTS := $(FONTS) font/times.fi    
+#FONTS := $(FONTS) font/tiny.fi     
+FONTS := $(FONTS) font/utopia.fi
+
+######################################## Drivers
+
+#### Video drivers. Uncomment any number of them.
+DRV := $(DRV) -DDRIVER_SDL                    # SDL driver
+DRV := $(DRV) -DDRIVER_SDLMIN                 # Debugging only!
+DRV := $(DRV) -DDRIVER_SVGA                   # SVGAlib driver
+#DRV := $(DRV) -DDRIVER_EZ328_CHIPSLICE        # SMARTDATA driver
+
+#### SMARTDATA spec. video drivers. Uncomment only one of them.
+#DRV := $(DRV) -DDRIVER_EZ328_CHIPSLICE_VD2_CITIZEN_G3243H
+                                              # VD2 = Version demo 2
+
+#### Input drivers. Uncomment any number of
+#### the following. Note that most video drivers
+#### will not link without a matching input driver
+DRV := $(DRV) -DDRIVER_SDLINPUT               # For the SDL driver
+DRV := $(DRV) -DDRIVER_SVGAINPUT              # For the SVGA driver
+
+### The End ###
