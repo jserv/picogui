@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.43 2001/03/22 00:20:38 micahjd Exp $
+/* $Id: constants.h,v 1.44 2001/03/29 20:38:04 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -220,10 +220,13 @@ typedef unsigned long pghandle;
 #define PGTH_O_POPUP_MESSAGEDLG      38   /* A message dialog */
 #define PGTH_O_MENUITEM              39   /* Item in a popup menu (customized button) */
 #define PGTH_O_MENUITEM_HILIGHT      40   /* menuitem with the mouse over it */
+#define PGTH_O_CHECKBOX              41   /* Check box (customized button) */
+#define PGTH_O_CHECKBOX_HILIGHT      42   /* checkbox with mouse over it */
+#define PGTH_O_CHECKBOX_ON           43   /* checkbox when on */
 
 /* If you add a themeobject, be sure to increment this and add
-   an inheritance entry in theme/thobjtab.c */
-#define PGTH_ONUM                    41
+   an inheritance entry in theme/memtheme.c */
+#define PGTH_ONUM                    44
 
 /*** Loaders */
 
@@ -439,7 +442,8 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_MENUITEM   11    /* A variation on button */
 #define PG_WIDGET_TERMINAL   12    /* A full terminal emulator */
 #define PG_WIDGET_CANVAS     13
-#define PG_WIDGETMAX         13    /* For error checking */
+#define PG_WIDGET_CHECKBOX   14    /* Another variation of button */
+#define PG_WIDGETMAX         14    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1
@@ -464,6 +468,7 @@ typedef unsigned long pghandle;
 #define PG_WP_DIRECTION   21
 #define PG_WP_ABSOLUTEX   22    /* read-only, relative to screen */
 #define PG_WP_ABSOLUTEY   23
+#define PG_WP_BUTTONFLAGS 
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0
@@ -485,10 +490,11 @@ typedef unsigned long pghandle;
 /* Constants for PG_WP_EXTDEVENTS, to enable extra events */
 #define PG_EXEV_PNTR_UP   0x0001
 #define PG_EXEV_PNTR_DOWN 0x0002
-#define PG_EXEV_NOCLICK   0x0004  /* (ignore clicks) */
+#define PG_EXEV_NOCLICK   0x0004  /* (ignore clicks) in buttons */
 #define PG_EXEV_PNTR_MOVE 0x0008
 #define PG_EXEV_KEY       0x0010  /* Raw key events KEYUP and KEYDOWN */
 #define PG_EXEV_CHAR      0x0020  /* Processed characters */
+#define PG_EXEV_TOGGLE    0x0040  /* Clicks toggle the button's state */
 
 /* Constants for PG_WP_DIRECTION */
 #define PG_DIR_HORIZONTAL 0

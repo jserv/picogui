@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.66 2001/03/18 18:52:02 micahjd Exp $
+# $Id: Makefile,v 1.67 2001/03/29 20:37:58 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -21,6 +21,9 @@
 #
 #
 # $Log: Makefile,v $
+# Revision 1.67  2001/03/29 20:37:58  micahjd
+# Added the checkbox widget
+#
 # Revision 1.66  2001/03/18 18:52:02  micahjd
 # Starting to add rotation. Started a video wrapper lib, rotate90.c
 #
@@ -94,6 +97,7 @@ SRC := \
     widget/field.c \
     widget/background.c \
     widget/menuitem.c \
+    widget/checkbox.c \
     \
     gcore/grop.c \
     gcore/g_malloc.c \

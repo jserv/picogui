@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.52 2001/03/17 04:16:36 micahjd Exp $
+/* $Id: button.c,v 1.53 2001/03/29 20:38:04 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -30,7 +30,7 @@
 #include <pgserver/appmgr.h>
 
 struct btndata {
-  int on,over;
+  u8 on,over,toggle;
   handle bitmap,bitmask,text,font;
 
   /* Hooks for embedding a button in another widget */
@@ -38,7 +38,8 @@ struct btndata {
   struct widget *extra;  /* the owner of a customized button */
   void (*event)(struct widget *extra,struct widget *button);
 
-  /* Mask of extended (other than ACTIVATE) events to send */
+  /* Mask of extended (other than ACTIVATE) events to send
+   * and other flags*/
   int extdevents;
 };
 #define DATA ((struct btndata *)(self->data))
@@ -294,7 +295,7 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
       post_event(PG_WE_PNTR_UP,self,param->mouse.chbtn,0,NULL);
     if (DATA->on && param->mouse.chbtn==1) {
       event = 0;
-      DATA->on=0;
+      DATA->on=(DATA->toggle^=1);
     }
     else
       return;

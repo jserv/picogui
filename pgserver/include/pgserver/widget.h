@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.21 2001/03/23 00:35:05 micahjd Exp $
+/* $Id: widget.h,v 1.22 2001/03/29 20:38:04 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -234,7 +234,8 @@ DEF_WIDGET_PROTO(background)
 DEF_WIDGET_PROTO(menuitem)
 DEF_WIDGET_PROTO(terminal)
 DEF_WIDGET_PROTO(canvas)
-			  
+DEF_WIDGET_PROTO(checkbox)
+			    
 /* Set to the client # if a client has taken over the system resource */
 extern int keyboard_owner;
 extern int pointer_owner;

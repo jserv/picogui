@@ -1,3 +1,21 @@
+2001-03-29    Micah Dowty <micahjd@users.sourceforge.net>
+
+Ugh. Spent the last 3 days installing a network for some jerk who doesn't
+deserve it. Anyway...
+In preparation for a video mode setting app I'm adding a checkbox widget.
+
+      * widget/checkbox.c: A little code to customize a button, just like in
+        menuitem.c
+	
+      * widget/button.c: Added a new EXEV flag so a click toggles the button
+        state, for push-on-push-off buttons
+	
+      * widget/widget.c, Makefile, include/picogui/constants.h,
+        include/pgserver/widget.h: Added checkbox widget
+
+      * theme/thobjtab.c: Added theme inheritance entries for the checkbox's
+        theme objects.
+
 2001-03-25    Micah Dowty <micahjd@users.sourceforge.net>
 
 Well, I'm on spring break now! So, aside from the multiplayer gaming, I have
@@ -10,7 +28,6 @@ plenty of time to code :)
       * video/sdlfb.c: Added SDL_RESIZABLE flag
 
       * video/sdlinput.c: Added call to video_setmode() on window resize
-
 
 2001-03-23    Micah Dowty <micahjd@users.sourceforge.net>
 
