@@ -350,6 +350,9 @@ quoted appropriately. For example:
   Set to 1 to show the cursor on any touchscreen activity. Helpful if you're
   not sure about the calibration.
 
+- pressure
+  The minimum pen pressure to detect a tap
+
 [eventbroker]
 
 - shortbeep_freq

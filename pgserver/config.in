@@ -120,10 +120,11 @@ mainmenu_option next_comment
 comment 'Input Drivers'
 bool 'Touchscreen calibration'		                CONFIG_TOUCHSCREEN
 if [ "$CONFIG_TOUCHSCREEN" = "y" ]; then
-   bool '  Palmax touchscreen driver'	                DRIVER_PALMAXTS
-   bool '  SC3 compatible touchscreen input driver'	DRIVER_SC3TS
-   bool '  R3912 (VTech Helio) touchscreen input driver'  DRIVER_R3912TS
-   bool '  Sharp Zaurus input driver'                   DRIVER_ZAURUS
+   bool '  Palmax touchscreen driver'	                 DRIVER_PALMAXTS
+   bool '  SC3 compatible touchscreen input driver'	 DRIVER_SC3TS
+   bool '  R3912 (VTech Helio) touchscreen input driver' DRIVER_R3912TS
+   bool '  Sharp Zaurus input driver'                    DRIVER_ZAURUS
+   bool '  New-Style TuxScreen touchscreen input driver'   DRIVER_UCB1X00
 fi
 bool 'Psion touchscreen (adc7843) driver'            DRIVER_ADC7843
 bool 'SDL input driver'                                 DRIVER_SDLINPUT
@@ -139,7 +140,6 @@ bool 'Old-Style TuxScreen touchscreen input driver'     DRIVER_TUXTS
 if [ "$DRIVER_TUXTS" = "y" ]; then
    bool '  Sound FX support via /dev/wheaties (EXPERIMENTAL)'  DRIVER_TUXTS_WHEATIES
 fi
-bool 'New-Style TuxScreen touchscreen input driver'     DRIVER_UCB1X00
 bool 'TTY keyboard driver (framebuffer, other terminals)'  DRIVER_TTYKB
 bool 'Rawmode TTY keyboard driver (linux console)'      DRIVER_RAWTTYKB
 bool 'Remora keyboard (Chipslice)'                      DRIVER_REMORAKB
