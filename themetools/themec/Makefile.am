@@ -11,7 +11,20 @@ MKSYMTAB := perl $(srcdir)/mksymtab.pl
 
 LDADD = @LEXLIB@
 
-CONSTANTS := $(top_srcdir)/include/picogui/*.h $(wildcard /usr/include/GL/gl.h)
+# Standard PicoGUI headers that would be of interest to themes
+
+CONSTANTS := $(top_srcdir)/include/picogui/constants.h \
+             $(top_srcdir)/include/picogui/pgkeys.h    \
+             $(top_srcdir)/include/picogui/canvas.h
+
+# Some extras for OpenGL support, but only if available
+
+GLHEADER := /usr/include/GL/gl.h
+if OPENGL
+  CONSTANTS := $(CONSTANTS) \
+	       $(top_srcdir)/include/picogui/opengl.h \
+	       $(GLHEADER)
+endif
 
 DISTCLEANFILES = symtab.c pgtheme.c pgtheme.h pglex.c
 
