@@ -1,3 +1,37 @@
+2001-04-13    Micah Dowty <micahjd@users.sourceforge.net>
+
+Ha. Just noticed that today's a Friday the 13th. Neat...
+Anyway, I'm anxious to get PicoGUI running on the Helio, but I need to
+finish my top-priority-todo-items first.
+
+      * cli_c/src/pgfx_canvas.c - Adding primitive implementations for the
+        PGFX_PERSISTENT mode
+	
+      * cli_c/demos/pgfx_canvas_persistent.c - Small snippet to illustrate
+        persistent mode with the canvas
+
+2001-04-12    Micah Dowty <micahjd@users.sourceforge.net>
+
+Starting the abstract graphics interface in the client.
+Got my Helio in today! It's a pretty nifty piece of hardware. I tried the
+pocketlinux and vhl-tools linux distros on it. Pocketlinux is quite sluggish
+even on that 75mhz CPU, but otherwise is pretty neat. vhl-tools starts up a
+neat "W" interface, and can access all hardware fine except the power
+management, hardware buttons, and audio. I'll have to try some of the latest
+Linux VR code on it to see if that's been fixed.
+
+      * include/picogui/pgfx.h: Defined the abstract graphics interface, pgfx
+      
+      * cli_c/src/pgfx.c: General utilities
+      
+      * cli_c/src/pgfx_canvas.c: Started PGFX lib for canvas drawing
+
+2001-04-11    Micah Dowty <micahjd@users.sourceforge.net>
+
+Today I wrote the new Perl client library.
+I did end up ordering a VTech Helio yesterday, so I should have a portable
+platform that will run Linux well soon.
+
 2001-04-10    Micah Dowty <micahjd@users.sourceforge.net>
 
 Well, now I've killed the bugs that were bothering people and at least know
