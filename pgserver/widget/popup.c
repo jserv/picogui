@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.35 2001/07/26 10:11:22 micahjd Exp $
+/* $Id: popup.c,v 1.36 2001/09/09 00:00:49 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -35,26 +35,35 @@
 /* Clipping for popup boxes. Mainly used in create_popup, but it is
  * also called when switching video modes */
 void clip_popup(struct divnode *div) {
-  struct divnode *ntb;
+  struct divnode ntb;
 
   /* If the popup is not allowed to overlap toolbars, clip to the nontoolbar
    * area. Otherwise, just clip to the root divnode to make sure we stay on
    * the display. */
   if (div->flags & DIVNODE_POPUP_NONTOOLBAR)
-    ntb = appmgr_nontoolbar_area();
+    ntb = *appmgr_nontoolbar_area();
   else
-    ntb = dts->root->head;
+    ntb = *dts->root->head;
 
-  if (div->x+div->w >= ntb->x+ntb->w)
-    div->x = ntb->x+ntb->w - div->w;
-  if (div->y+div->h >= ntb->y+ntb->h)
-    div->y = ntb->y+ntb->h - div->h;
-  if (div->x < ntb->x) div->x = ntb->x;
-  if (div->y < ntb->y) div->y = ntb->y;
-  if (div->x+div->w >= ntb->x+ntb->w)
-    div->w = ntb->x+ntb->w - div->x;
-  if (div->y+div->h >= ntb->y+ntb->h)
-    div->h = ntb->y+ntb->h - div->y;
+  /* In case the display resolution has been changed recently and the
+   * divtree hasn't been recalc'ed we should clip the ntb to the display size
+   * to prevent segfaulting.
+   */
+  if ( (ntb.x+ntb.w) > vid->lxres )
+    ntb.w = vid->lxres - ntb.x;
+  if ( (ntb.y+ntb.h) > vid->lyres )
+    ntb.h = vid->lyres - ntb.y;
+
+  if (div->x+div->w >= ntb.x+ntb.w)
+    div->x = ntb.x+ntb.w - div->w;
+  if (div->y+div->h >= ntb.y+ntb.h)
+    div->y = ntb.y+ntb.h - div->h;
+  if (div->x < ntb.x) div->x = ntb.x;
+  if (div->y < ntb.y) div->y = ntb.y;
+  if (div->x+div->w >= ntb.x+ntb.w)
+    div->w = ntb.x+ntb.w - div->x;
+  if (div->y+div->h >= ntb.y+ntb.h)
+    div->h = ntb.y+ntb.h - div->y;
 }
 
 /* We have a /special/ function to create a popup widget from scratch. */
