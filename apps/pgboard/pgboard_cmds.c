@@ -1,5 +1,5 @@
 /*
- * $Id: pgboard_cmds.c,v 1.5 2001/11/02 15:47:35 cgrigis Exp $
+ * $Id: pgboard_cmds.c,v 1.6 2001/11/09 08:50:33 cgrigis Exp $
  *
  * Small test appllication displaying buttons allowing the user to send various
  * commands to the virtual keyboard.
@@ -52,15 +52,15 @@ int handleButton (struct pgEvent * evt)
 int main (int argc, char * argv [])
 {
   /* Constants to facilitate passing commands through pgBind() */
-  const struct keyboard_command cmd_show           = {htons (PG_KEYBOARD_SHOW)};
-  const struct keyboard_command cmd_hide           = {htons (PG_KEYBOARD_HIDE)};
-  const struct keyboard_command cmd_toggle         = {htons (PG_KEYBOARD_TOGGLE)};
-  const struct keyboard_command cmd_enable         = {htons (PG_KEYBOARD_ENABLE)};
-  const struct keyboard_command cmd_disable        = {htons (PG_KEYBOARD_DISABLE)};
-  const struct keyboard_command cmd_toggle_display = {htons (PG_KEYBOARD_TOGGLE_DISPLAY)};
-  const struct keyboard_command cmd_select_pattern = {htons (PG_KEYBOARD_SELECT_PATTERN), htons (PG_KBPATTERN_NUMERIC)};
-  const struct keyboard_command cmd_push_context   = {htons (PG_KEYBOARD_PUSH_CONTEXT)};
-  const struct keyboard_command cmd_pop_context    = {htons (PG_KEYBOARD_POP_CONTEXT)};
+  struct keyboard_command cmd_show           = {htons (PG_KEYBOARD_SHOW)};
+  struct keyboard_command cmd_hide           = {htons (PG_KEYBOARD_HIDE)};
+  struct keyboard_command cmd_toggle         = {htons (PG_KEYBOARD_TOGGLE)};
+  struct keyboard_command cmd_enable         = {htons (PG_KEYBOARD_ENABLE)};
+  struct keyboard_command cmd_disable        = {htons (PG_KEYBOARD_DISABLE)};
+  struct keyboard_command cmd_toggle_display = {htons (PG_KEYBOARD_TOGGLE_DISPLAY)};
+  struct keyboard_command cmd_select_pattern = {htons (PG_KEYBOARD_SELECT_PATTERN), htons (PG_KBPATTERN_NUMERIC)};
+  struct keyboard_command cmd_push_context   = {htons (PG_KEYBOARD_PUSH_CONTEXT)};
+  struct keyboard_command cmd_pop_context    = {htons (PG_KEYBOARD_POP_CONTEXT)};
 
   /* Handle for GUI placement */
   pghandle lastBox;

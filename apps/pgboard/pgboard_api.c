@@ -1,4 +1,4 @@
-/* $Id: pgboard_api.c,v 1.4 2001/11/07 17:38:50 cgrigis Exp $
+/* $Id: pgboard_api.c,v 1.5 2001/11/09 08:50:32 cgrigis Exp $
  *
  * kbd_api.c - high-level API to manipulate the PicoGUI virtual keyboard
  * 
@@ -74,12 +74,16 @@ static void send_command (struct keyboard_command * cmd, int force);
 
 
 #ifdef POCKETBEE
+/* Flag indicating proper start of 'pgboard' */
+static int pgboard_started;
+
 /*
  * Signal handler activated when 'pgboard' has normally started.
  */
 void sig_pgboard_ok (int sig)
 {
   fprintf (stderr, "'pgboard' started properly\n");
+  pgboard_started = 1;
 }
 #endif /* POCKETBEE */
 
@@ -99,6 +103,7 @@ int run_pgboard ()
 
   /* Register handler to receive signal from 'pgboard' */
   signal (SIGUSR1, sig_pgboard_ok);
+  pgboard_started = 0;
 
   switch (pid = vfork ())
     {
@@ -121,18 +126,19 @@ int run_pgboard ()
       /* Wait on 'pgboard' */
       waitpid (pid, &status, 0);
 
-      if (WIFEXITED (status))
-	{
-	  /* 'pgboard' did not start properly and exited */
-	  retValue = 0;
-	}
-      else
+      if (pgboard_started)
 	{
 	  /* 'pgboard' signalled a proper start */
 	  retValue = 1;
 	  /* Ignore termination signals from 'pgboard' */
 	  signal (SIGCHLD, SIG_IGN);
 	}
+      else
+	{
+	  /* 'pgboard' did not start properly and exited */
+	  retValue = 0;
+	}
+
       break;
     }
 #endif /* POCKETBEE */
