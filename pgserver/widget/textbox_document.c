@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.36 2002/09/15 10:51:50 micahjd Exp $
+/* $Id: textbox_document.c,v 1.37 2002/09/21 23:40:24 micahjd Exp $
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and
@@ -127,8 +127,12 @@ g_error document_insert_char(struct textbox_document *doc, u32 ch, void *metadat
     e = textbox_new_par_div(&doc->crsr->par->next, &doc->crsr->par->div->next,
 			    doc->crsr->par->background);
     errorcheck;
+    paragraph_hide_cursor(doc->crsr);
+    doc->crsr->par->div->flags |= DIVNODE_NEED_RECALC;
+    doc->crsr->par->div->owner->dt->flags |= DIVTREE_NEED_RECALC | DIVTREE_NEED_RESIZE;
     doc->crsr = &doc->crsr->par->next->cursor;
-  }
+    paragraph_show_cursor(doc->crsr);
+ }
   else {
     /* Normal character */
     e = paragraph_insert_char(doc->crsr,ch,metadata);
@@ -212,6 +216,8 @@ g_error textbox_new_par_div(struct paragraph **par, struct divnode **div,
   g_error e;
   handle hpar;
   struct gropctxt c;
+  struct paragraph *old_par = *par;
+  struct divnode *old_div = *div;
 
   /* Top-level divnode for this paragraph is used for formatting, it's
    * child is where the paragraph renders to.
@@ -219,7 +225,8 @@ g_error textbox_new_par_div(struct paragraph **par, struct divnode **div,
   e = newdiv(div,background->owner);
   errorcheck;
   (*div)->flags |= DIVNODE_SPLIT_TOP;
-  
+  (*div)->flags &= ~DIVNODE_UNDERCONSTRUCTION;
+
   /* We want to prevent the normal groplist clearing in div_rebuild
    * because the only way our build function has to know the
    * paragraph handle is by reading the previous groplist.
@@ -228,6 +235,7 @@ g_error textbox_new_par_div(struct paragraph **par, struct divnode **div,
   errorcheck;
   (*div)->div->build = &textbox_build_par_div;
   (*div)->div->flags |= DIVNODE_RAW_BUILD;
+  (*div)->div->flags &= ~DIVNODE_UNDERCONSTRUCTION;
 
   /* New paragraph with associated handle */
   e = paragraph_new(par, *div);
@@ -247,6 +255,10 @@ g_error textbox_new_par_div(struct paragraph **par, struct divnode **div,
   addgrop(&c,PG_GROP_PARAGRAPH_INC);
   c.current->param[0] = hpar;
   c.current->flags |= PG_GROPF_INCREMENTAL;
+
+  /* Relink the portion of the paragraph and divnode lists after this node */
+  (*par)->next = old_par;
+  (*div)->next = old_div;
 
   return success;
 }

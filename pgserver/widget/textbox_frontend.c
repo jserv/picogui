@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.2 2002/09/15 10:51:50 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.3 2002/09/21 23:40:24 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -266,7 +266,7 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
 
   }
 
-  update(self->in->div,1);
+  update(NULL,1);
 }
 
 /********************************************** internal functions */
