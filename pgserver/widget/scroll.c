@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.65 2002/09/28 06:25:06 micahjd Exp $
+/* $Id: scroll.c,v 1.66 2002/09/28 10:58:10 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -251,7 +251,12 @@ g_error scroll_set(struct widget *self,int property, glob data) {
     self->in->div->state = DATA->horizontal ? PGTH_O_SCROLL_H : PGTH_O_SCROLL_V;
     return mkerror(ERRT_PASS,0);
 
+    /* VALUE is the native WP for this widget, but also accept the others
+     * for compatibility with the object being scrolled, or the scrollbox
+     */
   case PG_WP_VALUE:
+  case PG_WP_SCROLL_X:
+  case PG_WP_SCROLL_Y:
     if (data < 0)
       data = 0;
     if (data > DATA->res)
@@ -301,14 +306,19 @@ g_error scroll_set(struct widget *self,int property, glob data) {
 glob scroll_get(struct widget *self,int property) {
   switch (property) {
 
+    /* VALUE is the native WP for this widget, but also accept the others
+     * for compatibility with the object being scrolled, or the scrollbox
+     */
   case PG_WP_VALUE:
+  case PG_WP_SCROLL_X:
+  case PG_WP_SCROLL_Y:
     return DATA->value;
    
   case PG_WP_SIZE:
     return DATA->res;
 
   }
-  return 0;
+  return widget_base_get(self,property);
 }
 
 void scroll_trigger(struct widget *self,s32 type,union trigparam *param) {

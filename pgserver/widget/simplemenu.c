@@ -1,4 +1,4 @@
-/* $Id: simplemenu.c,v 1.2 2002/09/25 15:26:08 micahjd Exp $
+/* $Id: simplemenu.c,v 1.3 2002/09/28 10:58:11 micahjd Exp $
  *
  * simplemenu.c - This is a type of popup widget that builds a simple popup menu from
  *                either a single string of pipe-separated items or an array
@@ -47,7 +47,7 @@ g_error simplemenu_set(struct widget *self,int property, glob data) {
 }
 
 glob simplemenu_get(struct widget *self,int property) {
-  return 0;
+  return widget_base_get(self,property);
 }
 
 void simplemenu_trigger(struct widget *self,s32 type,union trigparam *param) {

@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.117 2002/09/28 04:06:56 micahjd Exp $
+/* $Id: button.c,v 1.118 2002/09/28 10:58:10 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -486,7 +486,7 @@ glob button_get(struct widget *self,int property) {
     return (glob) DATA->margin;
 
   default:
-    return 0;
+    return widget_base_get(self,property);
   }
 }
 

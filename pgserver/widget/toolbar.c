@@ -1,4 +1,4 @@
-/* $Id: toolbar.c,v 1.23 2002/05/20 19:18:38 micahjd Exp $
+/* $Id: toolbar.c,v 1.24 2002/09/28 10:58:11 micahjd Exp $
  *
  * toolbar.c - container widget for buttons
  *
@@ -121,7 +121,7 @@ g_error toolbar_set(struct widget *self,int property, glob data) {
 }
 
 glob toolbar_get(struct widget *self,int property) {
-  return 0;
+  return widget_base_get(self,property);
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.193 2002/09/28 06:25:06 micahjd Exp $
+/* $Id: widget.c,v 1.194 2002/09/28 10:58:11 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -582,73 +582,74 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
    return success;
 }
 
-glob widget_get(struct widget *w, int property) {
-   struct divnode *maindiv = w->in->div ? w->in->div : w->in;
+glob widget_get(struct widget *w, int property) {  
+  if (!(w && w->def->get))
+    return 0;
+  return (*w->def->get)(w,property);
+}
+
+glob widget_base_get(struct widget *w, int property) {  
+  struct divnode *maindiv = w->in->div ? w->in->div : w->in;
   
-   if (!(w && w->def->get))
-     return 0;
-   
-   /* handle some universal properties */
-   switch (property) {
-     
-   case PG_WP_ABSOLUTEX:      /* Absolute coordinates */
-     activate_client_divnodes(w->owner);
-     divtree_size_and_calc(w->dt);
-     return maindiv->x;
-   case PG_WP_ABSOLUTEY:
-     activate_client_divnodes(w->owner);
-     divtree_size_and_calc(w->dt);
-     return maindiv->y;
-
-   case PG_WP_WIDTH:          /* Real width and height */
-     activate_client_divnodes(w->owner);
-     divtree_size_and_calc(w->dt);
-     return maindiv->calcw;
-   case PG_WP_HEIGHT:
-     activate_client_divnodes(w->owner);
-     divtree_size_and_calc(w->dt);
-     return maindiv->calch;
-     
-   case PG_WP_SCROLL_X:
-     return -maindiv->tx;
-   case PG_WP_SCROLL_Y:
-     return -maindiv->ty;
-     
-   case PG_WP_SIDE:
-     return w->in->flags & (~SIDEMASK);
-     
-   case PG_WP_SIZE:
-     return w->in->split;
-     
-   case PG_WP_NAME:
-     return w->name;
-     
-   case PG_WP_PUBLICBOX:
-     return w->publicbox;
-
-   case PG_WP_STATE:
-     return maindiv->state;
-     
-   case PG_WP_BIND:
-     return w->scrollbind;
-
-   case PG_WP_TRIGGERMASK:
-     return w->trigger_mask;
-
-   case PG_WP_PREFERRED_W:
-     resizewidget(w);
-     return max(maindiv->pw, maindiv->cw);
-
-   case PG_WP_PREFERRED_H:
-     resizewidget(w);
-     return max(maindiv->ph, maindiv->ch);
-
-   case PG_WP_AUTO_ORIENTATION:
-     return w->auto_orientation;
-     
-   default:
-     return (*w->def->get)(w,property);
-   }
+  /* handle some universal properties */
+  switch (property) {
+    
+  case PG_WP_ABSOLUTEX:      /* Absolute coordinates */
+    activate_client_divnodes(w->owner);
+    divtree_size_and_calc(w->dt);
+    return maindiv->x;
+  case PG_WP_ABSOLUTEY:
+    activate_client_divnodes(w->owner);
+    divtree_size_and_calc(w->dt);
+    return maindiv->y;
+    
+  case PG_WP_WIDTH:          /* Real width and height */
+    activate_client_divnodes(w->owner);
+    divtree_size_and_calc(w->dt);
+    return maindiv->calcw;
+  case PG_WP_HEIGHT:
+    activate_client_divnodes(w->owner);
+    divtree_size_and_calc(w->dt);
+    return maindiv->calch;
+    
+  case PG_WP_SCROLL_X:
+    return -maindiv->tx;
+  case PG_WP_SCROLL_Y:
+    return -maindiv->ty;
+    
+  case PG_WP_SIDE:
+    return w->in->flags & (~SIDEMASK);
+    
+  case PG_WP_SIZE:
+    return w->in->split;
+    
+  case PG_WP_NAME:
+    return w->name;
+    
+  case PG_WP_PUBLICBOX:
+    return w->publicbox;
+    
+  case PG_WP_STATE:
+    return maindiv->state;
+    
+  case PG_WP_BIND:
+    return w->scrollbind;
+    
+  case PG_WP_TRIGGERMASK:
+    return w->trigger_mask;
+    
+  case PG_WP_PREFERRED_W:
+    resizewidget(w);
+    return max(maindiv->pw, maindiv->cw);
+    
+  case PG_WP_PREFERRED_H:
+    resizewidget(w);
+    return max(maindiv->ph, maindiv->ch);
+    
+  case PG_WP_AUTO_ORIENTATION:
+    return w->auto_orientation;
+  }
+  return 0;
 }
 
 /* This is used in transparent widgets - it propagates a redraw through

@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.84 2002/09/28 09:30:44 micahjd Exp $
+/* $Id: panel.c,v 1.85 2002/09/28 10:58:10 micahjd Exp $
  *
  * panel.c - Resizable container with decorations. It uses a panelbar for resizing purposes,
  *           and optionally supplies some standard buttons for the panel.
@@ -334,7 +334,7 @@ glob panel_get(struct widget *self,int property) {
     return DATA->margin;
 
   }
-  return 0;
+  return widget_base_get(self,property);
 }
 
 /* The End */

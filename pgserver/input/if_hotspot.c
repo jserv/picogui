@@ -1,4 +1,4 @@
-/* $Id: if_hotspot.c,v 1.3 2002/09/15 10:51:49 micahjd Exp $
+/* $Id: if_hotspot.c,v 1.4 2002/09/28 10:58:10 micahjd Exp $
  *
  * if_hotspot.c - Use arrow keys to navigate around the screen.
  *                Besides the actual input filter, this has utilities to build the
@@ -376,10 +376,10 @@ void scroll_to_divnode(struct divnode *div) {
   if (!iserror(rdhandle((void **)&w,PG_TYPE_WIDGET,-1,
 			ds->owner->scrollbind)) && w) {
     
-    /* FIXME: horizontal scroll here! */
-    
+    if (dx)
+      widget_set(w,PG_WP_SCROLL_X,widget_get(w,PG_WP_SCROLL_X) + dx);    
     if (dy)
-      widget_set(w,PG_WP_VALUE,widget_get(w,PG_WP_VALUE) + dy);
+      widget_set(w,PG_WP_SCROLL_Y,widget_get(w,PG_WP_SCROLL_Y) + dy);
     
     update(NULL,1);
   }

@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.59 2002/09/25 15:26:08 micahjd Exp $
+/* $Id: popup.c,v 1.60 2002/09/28 10:58:10 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -270,7 +270,7 @@ glob popup_get(struct widget *self,int property) {
     return self->in->div->calch;
 
   }
-  return 0;
+  return widget_base_get(self,property);
 }
 
 /* The DEACTIVATE event can be sent by a click outside the popup, or by pressing escape

@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.33 2002/09/25 15:26:08 micahjd Exp $
+/* $Id: indicator.c,v 1.34 2002/09/28 10:58:10 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -119,7 +119,7 @@ glob indicator_get(struct widget *self,int property) {
     return DATA->value;
 
   }
-  return 0;
+  return widget_base_get(self,property);
 }
 
 /* The End */

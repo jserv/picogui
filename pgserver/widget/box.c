@@ -1,4 +1,4 @@
-/* $Id: box.c,v 1.26 2002/09/25 15:26:08 micahjd Exp $
+/* $Id: box.c,v 1.27 2002/09/28 10:58:10 micahjd Exp $
  *
  * box.c - Generic container for holding a group of widgets. It's sizing and
  *         appearance are defined by the theme.
@@ -124,7 +124,7 @@ glob box_get(struct widget *self,int property) {
     return self->in->div->split;
 
   }
-  return 0;
+  return widget_base_get(self,property);
 }
 
 /* The End */

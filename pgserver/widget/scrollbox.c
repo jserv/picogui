@@ -1,6 +1,8 @@
-/* $Id: scrollbox.c,v 1.2 2002/09/28 06:25:06 micahjd Exp $
+/* $Id: scrollbox.c,v 1.3 2002/09/28 10:58:10 micahjd Exp $
  *
- * scrollbox.c - A box widget that includes scrollbars
+ * scrollbox.c - A box widget that includes scrollbars. It also
+ *               conglomerates properties and events as necessary
+ *               to support multiple scrollbars, and scroll wheels
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -74,6 +76,13 @@ g_error scrollbox_install(struct widget *self) {
   e = widget_set(DATA->scrollh, PG_WP_BIND, DATA->hbox);
   errorcheck;
 
+  /* We proxy the widget properties out to the two scrollbars,
+   * and we're the parent of both (so recalcs propagate to them)
+   * so set our box's scrollbind to point back to us.
+   */
+  e = widget_set(DATA->box, PG_WP_BIND, self->h);
+  errorcheck;
+
   /* Insertion points */
   self->out = &self->in->next;
   self->sub = DATA->box->sub;
@@ -126,7 +135,7 @@ glob scrollbox_get(struct widget *self,int property) {
 
     /* Let the box widget handle the rest */
   default:
-    return widget_get(DATA->box, property);
+    return box_get(DATA->box, property);
   }
 }
 

@@ -1,4 +1,4 @@
-/* $Id: dialogbox.c,v 1.2 2002/09/28 06:25:06 micahjd Exp $
+/* $Id: dialogbox.c,v 1.3 2002/09/28 10:58:10 micahjd Exp $
  *
  * dialogbox.c - The dialogbox is a type of popup widget that is always
  *               automatically sized, and has a title
@@ -87,7 +87,7 @@ g_error dialogbox_set(struct widget *self,int property, glob data) {
 }
 
 glob dialogbox_get(struct widget *self,int property) {
-  return 0;
+  return widget_base_get(self,property);
 }
 
 void dialogbox_trigger(struct widget *self,s32 type,union trigparam *param) {

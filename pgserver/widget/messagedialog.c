@@ -1,4 +1,4 @@
-/* $Id: messagedialog.c,v 1.2 2002/09/28 06:25:06 micahjd Exp $
+/* $Id: messagedialog.c,v 1.3 2002/09/28 10:58:10 micahjd Exp $
  *
  * messagedialog.c - A type of dialog box that can display a message and get
  *                   a user's response to it.
@@ -68,7 +68,7 @@ g_error messagedialog_set(struct widget *self,int property, glob data) {
 }
 
 glob messagedialog_get(struct widget *self,int property) {
-  return 0;
+  return widget_base_get(self,property);
 }
 
 /* The End */

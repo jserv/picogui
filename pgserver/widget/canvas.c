@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.46 2002/09/25 15:26:08 micahjd Exp $
+/* $Id: canvas.c,v 1.47 2002/09/28 10:58:10 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -130,7 +130,7 @@ g_error canvas_set(struct widget *self,int property, glob data) {
 }
 
 glob canvas_get(struct widget *self,int property) {
-   return 0;
+  return widget_base_get(self,property);
 }
 
 void canvas_trigger(struct widget *self, s32 type, union trigparam *param) {

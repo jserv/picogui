@@ -1,4 +1,4 @@
-/* $Id: panelbar.c,v 1.11 2002/09/25 15:26:08 micahjd Exp $
+/* $Id: panelbar.c,v 1.12 2002/09/28 10:58:10 micahjd Exp $
  *
  * panelbar.c - Container and draggable bar for resizing panels
  *
@@ -226,7 +226,7 @@ glob panelbar_get(struct widget *self,int property) {
     return DATA->minimum;
 
   }
-  return 0;
+  return widget_base_get(self,property);
 }
 
 /* Decide on either sprite or solid dragging */

@@ -1,4 +1,4 @@
-/* $Id: terminal_frontend.c,v 1.1 2002/09/26 14:11:03 micahjd Exp $
+/* $Id: terminal_frontend.c,v 1.2 2002/09/28 10:58:11 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -137,7 +137,7 @@ glob terminal_get(struct widget *self,int property) {
     return DATA->autoscroll;
     
   default:
-    return 0;
+    return widget_base_get(self,property);
   }
 }
 
