@@ -1,4 +1,4 @@
-/* $Id: platform.c,v 1.8 2001/05/08 09:11:19 gobry Exp $
+/* $Id: platform.c,v 1.9 2001/06/07 15:11:18 pney Exp $
  *
  * platforms.c - Contains platform-dependant stuff
  *
@@ -20,7 +20,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
  * Contributors:
- *   Philippe Ney <philippe.ney@smartdata.ch> :
+ *   Philippe Ney <philippe.ney@smartdata.ch>
  *   initial version
  *
  *   Pascal Bauermeister <pascal.bauermeister@smartdata.ch>
@@ -30,7 +30,7 @@
 #include <pgserver/common.h>
 #include <malloc.h>
 
-/* VSNPRINTF *********************************************************************************/
+/* VSNPRINTF *****************************************************************/
 
 #if 0
 #include "vnsprintf.c"
@@ -44,14 +44,16 @@
 
 /* The hack of vsnprintf is now clean */
 
-/* Define G_VA_COPY() to do the right thing for copying va_list variables.
+/*
+ * Define G_VA_COPY() to do the right thing for copying va_list variables.
  * va_list is a pointer.
  * From code in 'glib.h'
  */
 #define G_VA_COPY(ap1, ap2)     ((ap1) = (ap2))
 
 
-/* Return the size of the list
+/*
+ * Return the size of the list
  * Code derived from the on in the 'glib'
  */
 int g_printf_string_upper_bound (const char* format, va_list args) {
@@ -184,7 +186,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args) {
 
 #endif
 
-/* REALLOC ***********************************************************************************/
+/* REALLOC *******************************************************************/
 
 /* code for realloc, not provided in the libc.a of uclinux */ 
 void* realloc(void* ptr, size_t size)
@@ -200,7 +202,6 @@ void* realloc(void* ptr, size_t size)
   if (old[-1] > size)
     return ptr;  /* old size is bigger the new size */
 
-
   new = malloc(size);
   if (new)
     memcpy(new, ptr, old[-1]);
@@ -210,4 +211,34 @@ void* realloc(void* ptr, size_t size)
   return new;
 }
 
-/*********************************************************************************************/
+/*****************************************************************************/
+
+/* htonl, htons, ntohl, ntohs not provided in the libc.a of uclinux */
+#ifdef BIG_ENDIAN
+#  define htonl(x)  ((unsigned int)(x))
+#  define htonl(x)  ((unsigned short)(x))
+#  define ntohl(x)  ((unsigned int)(x))
+#  define ntohl(x)  ((unsigned short)(x))
+#endif /* BIG_ENDIAN */
+
+#ifdef LITTLE_ENDIAN
+#  define htonl(x)  ((__u32)( \
+                    (((__u32)(x) & (__u32)0x000000ffUL) << 24) | \
+                    (((__u32)(x) & (__u32)0x0000ff00UL) <<  8) | \
+                    (((__u32)(x) & (__u32)0x00ff0000UL) >>  8) | \
+                    (((__u32)(x) & (__u32)0xff000000UL) >> 24) ))
+
+#  define htonl(x)  ((__u16)( \
+                    (((__u16)(x) & (__u16)0x00ffU) << 8) | \
+                    (((__u16)(x) & (__u16)0xff00U) >> 8) ))
+
+#  define ntohl(x)  ((__u32)( \
+                    (((__u32)(x) & (__u32)0x000000ffUL) << 24) | \
+                    (((__u32)(x) & (__u32)0x0000ff00UL) <<  8) | \
+                    (((__u32)(x) & (__u32)0x00ff0000UL) >>  8) | \
+                    (((__u32)(x) & (__u32)0xff000000UL) >> 24) ))
+
+#  define ntohl(x)  ((__u16)( \
+                    (((__u16)(x) & (__u16)0x00ffU) << 8) | \
+                    (((__u16)(x) & (__u16)0xff00U) >> 8) ))
+#endif /* LITTLE_ENDIAN */
