@@ -8,7 +8,7 @@
 
 #define ANIMTITLE    "Boing!"
 #define NUMFRAMES    13
-#define FRAMENAME    "demos/data/ball%02d.jpeg"
+#define FRAMENAME    "data/ball%02d.jpeg"
 #define FRAMENAMELEN 40
 
 int main(int argc,char **argv) {
