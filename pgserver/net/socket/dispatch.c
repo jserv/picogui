@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.9 2000/08/01 18:11:26 micahjd Exp $
+/* $Id: dispatch.c,v 1.10 2000/08/02 03:23:16 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -58,6 +58,7 @@ DEF_REQHANDLER(givepntr)
 DEF_REQHANDLER(mkcontext)
 DEF_REQHANDLER(rmcontext)
 DEF_REQHANDLER(focus)
+DEF_REQHANDLER(getstring)
 DEF_REQHANDLER(undef)
 g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(ping)
@@ -86,6 +87,7 @@ g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(mkcontext)
   TAB_REQHANDLER(rmcontext)
   TAB_REQHANDLER(focus)
+  TAB_REQHANDLER(getstring)
   TAB_REQHANDLER(undef)
 };
 
@@ -104,8 +106,21 @@ int dispatch_packet(int from,struct uipkt_request *req,void *data) {
   /* Dispatch to one of the handlers in the table */
   e = (*rqhtab[req->type])(from,req,data,&ret_data,&fatal);
   
-  /* Send an error packet if there was an error */
-  if (e.type != ERRT_NONE) {
+  if (e.type == ERRT_NONE) {
+    /* No error, send a return code packet */
+
+    struct response_ret rsp;
+    
+    rsp.type = htons(RESPONSE_RET);
+    rsp.id = htons(req->id);
+    rsp.data = htonl(ret_data);
+    
+    /* Send the return packet */
+    fatal |= send_response(from,&rsp,sizeof(rsp));
+  }
+  else if (e.type != ERRT_NOREPLY) {
+    /* If we need a reply, send error message */
+
     int errlen;
     struct response_err rsp;
     errlen = strlen(e.msg);
@@ -119,17 +134,7 @@ int dispatch_packet(int from,struct uipkt_request *req,void *data) {
     fatal |= send_response(from,&rsp,sizeof(rsp)) | 
              send_response(from,e.msg,errlen);
   }
-  else if (req->type != RQH_WAIT) {  /*WAIT packet gets no response yet*/
-    /* Send a normal response packet */
-    struct response_ret rsp;
-    
-    rsp.type = htons(RESPONSE_RET);
-    rsp.id = htons(req->id);
-    rsp.data = htonl(ret_data);
-    
-    /* Send the return packet */
-    fatal |= send_response(from,&rsp,sizeof(rsp));
-  }
+
   return fatal;
 }
 
@@ -372,7 +377,7 @@ g_error rqh_wait(int owner, struct uipkt_request *req,
 #ifdef DEBUG
     printf("Client (#%d) added to waiting list\n",owner);
 #endif
-  return sucess;
+  return mkerror(ERRT_NOREPLY,NULL);
 }
 
 g_error rqh_register(int owner, struct uipkt_request *req,
@@ -578,6 +583,32 @@ g_error rqh_focus(int owner, struct uipkt_request *req,
   request_focus(w);
 
   return sucess;
+}
+
+g_error rqh_getstring(int owner, struct uipkt_request *req,
+		      void *data, unsigned long *ret, int *fatal) {
+  struct response_data rsp;
+  char *string;
+  unsigned long size;
+  struct rqhd_getstring *arg = (struct rqhd_getstring *) data;
+  g_error e;
+
+  if (req->size < (sizeof(struct rqhd_getstring))) 
+    return mkerror(ERRT_BADPARAM,"rqhd_getstring too small");
+
+  e = rdhandle((void**) &string,TYPE_STRING,owner,ntohl(arg->h));
+  if (e.type != ERRT_NONE) return e;
+
+  /* Send a RESPONSE_DATA back */
+  rsp.type = htons(RESPONSE_DATA);
+  rsp.id = htons(req->id);
+
+  size = strlen(string)+1;
+  rsp.size = htonl(size);
+  
+  *fatal |= send_response(owner,&rsp,sizeof(rsp));  
+  *fatal |= send_response(owner,string,size);  
+  return mkerror(ERRT_NOREPLY,NULL);
 }
 
 /* The End */

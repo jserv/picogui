@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.10 2000/08/01 18:11:27 micahjd Exp $
+/* $Id: pgnet.h,v 1.11 2000/08/02 03:23:16 micahjd Exp $
  *
  * pgnet.h - header for all PicoGUI networking stuff (request/packet/event...)
  *
@@ -83,16 +83,23 @@ struct response_err {
 };
 #define RESPONSE_RET 2
 struct response_ret {
-    unsigned short type;    /* RESPONSE_RET - return value */
-    unsigned short id;
-    unsigned long data;
+  unsigned short type;    /* RESPONSE_RET - return value */
+  unsigned short id;
+  unsigned long data;
 };
 #define RESPONSE_EVENT 3
 struct response_event {
-    unsigned short type;    /* RESPONSE_EVENT */
-    unsigned short event;
-    unsigned long from;
-    unsigned long param;
+  unsigned short type;    /* RESPONSE_EVENT */
+  unsigned short event;
+  unsigned long from;
+  unsigned long param;
+};
+#define RESPONSE_DATA 4
+struct response_data {
+  unsigned short type;    /* RESPONSE_DATA */
+  unsigned short id;
+  unsigned long size
+  /* 'size' bytes of data follow */;
 };
 struct uipkt_hello {
   unsigned long  magic; /* These 2 from this file */
@@ -217,8 +224,9 @@ struct event *get_event(int owner,int remove);
 #define RQH_MKCONTEXT 23     /* Enters a new context           |  none */
 #define RQH_RMCONTEXT 24     /* Cleans up and kills the context|  none */
 #define RQH_FOCUS     25     /* Force focus to specified widget|  struct */
+#define RQH_GETSTRING 26     /* Returns a RESPONSE_DATA        |  struct */
 
-#define RQH_UNDEF     26     /* types > this will be truncated. return error */
+#define RQH_UNDEF     27     /* types > this will be truncated. return error */
 
 /* Structures passed to request handlers as 'data'.
  * Dummy variables pad it to a multiple of 4 bytes (compiler likes it?)
@@ -308,6 +316,9 @@ struct rqhd_sizetext {
   unsigned long font;
 };
 struct rqhd_focus {
+  unsigned long h;
+};
+struct rqhd_getstring {
   unsigned long h;
 };
 

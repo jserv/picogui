@@ -1,4 +1,4 @@
-/* $Id: g_error.h,v 1.3 2000/06/11 17:59:18 micahjd Exp $
+/* $Id: g_error.h,v 1.4 2000/08/02 03:23:16 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -44,6 +44,11 @@ typedef struct {
 #define ERRT_HANDLE   5
 #define ERRT_INTERNAL 6
 #define ERRT_BUSY     7
+
+#define ERRT_NOREPLY  100    /* This special error type sends
+				no reply packet- assumes that
+				no reply is needed or that one
+				will be sent seperately */
 
 extern g_error sucess;
 
