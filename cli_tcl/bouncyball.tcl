@@ -12,18 +12,17 @@ while {$imgnr<$NUMFRAMES} {
 		[format "../apps/bouncyball/data/ball%02d.jpeg" $imgnr]]]
 	incr imgnr
 }
-
 set dlg [pgDialog "Boing!"]
-set ok [pgNewWidget $pg_derive(after) $pg_widget(BUTTON) $label]
-pgSetWidget $ok $pg_s(bottom) $pg_wp(SIDE)
+set ok [pgNewWidget $pg_derive(after) $pg_widget(button) $label]
+pgSetWidget $ok $pg_s(bottom) $pg_wp(side)
 set id [pgNewString "OK"]
-pgSetWidget $ok $id $pg_wp(TEXT)
-set bmp [pgNewWidget $pg_derive(after) $pg_widget(BITMAP) $ok]
-pgSetWidget $bmp $pg_s(all) $pg_wp(SIDE)
+pgSetWidget $ok $id $pg_wp(text)
+set bmp [pgNewWidget $pg_derive(after) $pg_widget(bitmap) $ok]
+pgSetWidget $bmp $pg_s(all) $pg_wp(side)
 set i 0
 set d 1
 while { 1 } {
-	pgSetWidget $bmp $img($i) $pg_wp(BITMAP)
+	pgSetWidget $bmp $img($i) $pg_wp(bitmap)
 	pgUpdate
 	if { [pgCheckEvent] >0 } {
 		array set event [pgWaitEvent]
