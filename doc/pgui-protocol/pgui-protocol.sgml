@@ -44,7 +44,29 @@
      MA 02111-1307 USA
    </para>
   </legalnotice>
+  <revhistory>
+   <revision>
+    <revnumber>0.3</revnumber>
+    <date>9 Feb 2002</date>
+    <authorinitials>eks</authorinitials>
+    <revremark>Added signed data types and PGREQ_[REGOWNER|UNREGOWNER|SETMODE|GETMODE|MKCONTEXT|RMCONTEXT|FOCUS]</revremark>
+   </revision>
+   <revision>
+    <revnumber>0.2</revnumber>
+    <date>9 Feb 2002</date>
+    <authorinitials>eks</authorinitials>
+    <revremark>Added PGREQ_[BATCH|MKFILLSTYLE|MKWAIT|MKPOPUP|REGISTER|SIZETEXT]</revremark>
+   </revision>
+   <revision>
+    <revnumber>0.1</revnumber>
+    <date>8 Feb 2002</date>
+    <authorinitials>eks</authorinitials>
+    <revremark>re-ordered the sections and linked the struct as figures</revremark>
+   </revision>
+  </revhistory>
  </bookinfo>
+
+ 
 
 <toc></toc>
 
@@ -78,8 +100,11 @@
   <tgroup cols=2 align=left>
   <tbody>
   <row><entry>char</><entry>signed 8bit value</entry></row>
+  <row><entry>s8</><entry>signed 8bit value (same as char)</entry></row>
   <row><entry>u8</><entry>unsigned 8bit value</entry></row>
+  <row><entry>s16</><entry>signed 16bit value</entry></row>
   <row><entry>u16</><entry>unsigned 16bit value</entry></row>
+  <row><entry>s32</><entry>signed 32bit value</entry></row>
   <row><entry>u32</><entry>unsigned 32bit value</entry></row>
   </tbody>
   </tgroup>
@@ -318,7 +343,7 @@ additional data      : struct pgreqd_handlestruct
    <para>
 	Free the handle specified and delete its associated object.
    </para>
-   <figure><title>struct pgreqd_handlestruct</title><programlisting>
+   <figure id="pgreqdhandlestruct"><title>struct pgreqd_handlestruct</title><programlisting>
 struct pgreqd_handlestruct {
   u32 h;
 };
@@ -675,14 +700,16 @@ struct pgreqd_register {
    <para>
 	The <structfield>type</> is a <constant>PG_APP_*</> constant.
    </para>
-   <table frame=none><title>PG_APP values</title>
-   <tgroup cols=2 align=left>
+   <table frame=none pgwide=1><title>PG_APP values</title>
+   <tgroup cols=3 align=left>
    <colspec colwidth="45*">
    <colspec colwidth="10*">
    <colspec colwidth="45*">
    <tbody>
-   <row><entry>PG_APP_NORMAL</><entry>1</><entry>Normal application assigned a resizeable window</></>
-   <row><entry>PG_APP_TOOLBAR</><entry>2</><entry>Toolbar application using a fixed width window without panelbar</></>
+   <row><entry>PG_APP_NORMAL</><entry>1</><entry>Normal application assigned
+   a resizeable window</></>
+   <row><entry>PG_APP_TOOLBAR</><entry>2</><entry>Toolbar application using a
+   fixed width window without panelbar</></>
    </tbody>
    </tgroup>
    </table>
@@ -754,6 +781,287 @@ additional data      : none
 	draw changed areas of the screen.
    </para>
   </sect2>
+
+  <sect2 id="pgreq-regowner">
+   <title>PGREQ_REGOWNER - Get exclusive privileges </>
+   <programlisting>
+type                 : PGREQ_REGOWNER
+client lib equivalent: pgRegisterOwner()
+additional data      : struct pgreqd_regowner
+   </programlisting>
+   <para>
+	Register exclusive access to a resouce.
+   <para>
+   <figure><title>struct pgreqd_regowner</><programlisting>
+struct pgreqd_regowner {
+  u16 res;
+};
+   </programlisting></figure>
+   <para>
+	Where <structfield>res</> is the <constant>PG_OWN_*</> constant value
+	of the resource to get exclusive privileges of.
+   </para>
+   <table frame=none pgwide=1 id="pgowntypes"><title>PG_OWN values</>
+   <tgroup cols=3 align=left>
+   <colspec colwidth="45*">
+   <colspec colwidth="10*">
+   <colspec colwidth="45*">
+   <tbody>
+   <row><entry>PG_OWN_KEYBOARD</><entry>1</><entry>Exclusive access to the keyboard</></>
+   <row><entry>PG_OWN_POINTER</><entry>2</><entry>Exclusive access to the pointer</></>
+   <row><entry>PG_OWN_SYSEVENTS</><entry>3</><entry>Receive system events like app open/close, click on background, etc.</></>
+   <row><entry>PG_OWN_DISPLAY</><entry>4</><entry>Exclusive access to the display via <constant>PGREQ_RENDER</> requests</></>
+   </tbody>
+   </tgroup>
+   </table>
+   <para>
+	<emphasis>NOTE:</> In the next protocol version the <structname>pgreqd_regowner</> structure will be padded to 32bits.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-unregowner">
+   <title>PGREQ_UNREGOWNER - Give up exclusive privileges</>
+   <programlisting>
+type                 : PGREQ_UNREGOWNER
+client lib equivalent: pgUnregisterOwner()
+additional data      : struct pgreqd_regowner
+   </programlisting>
+   <para>
+	Unregister exclusive access to a resouce.  An error will be returned
+	if the client does not already own the specified resource.
+   </para>
+   <para>
+	See also <xref linkend="pgreq-regowner"> and
+	<xref linkend="pgowntypes">.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-setmode">
+   <title>PGREQ_SETMODE - Set video mode/depth/rotation</>
+   <programlisting>
+type                 : PGREQ_SETMODE
+client lib equivalent: pgSetVideoMode()
+additional data      : struct pgreqd_setmode
+   </programlisting>
+   <para>
+	Change video mode/depth/rotation at runtime.
+   </para>
+   <figure><title>struct pgreqd_setmode</><programlisting>
+struct pgreqd_setmode {
+  u16 xres;
+  u16 yres;
+  u16 bpp;
+  u16 flagmode;
+  u32 flags;
+};
+   </programlisting></figure>
+   <para>
+ 	The <structfield>xres</> and <structfield>yres</> indicate the width
+	and height, respectively, of the video mode to use.  A value of 0 for
+	either of them means to not change the current value.
+   </para>
+   <para>
+	The <structfield>bpp</> indicates the depth to use (bits per pixel).
+	A value of 0 indicates to the server to keep the current video mode
+	depth.
+   </para>
+   <para>
+	The <structfield>flagmode</> is a <constant>PG_FM_*</> constant
+	specifying how to combine flags with the current video flags
+	(see <xref linkend="flagmodes"> below).
+   </para>
+   <para>
+	The <structfield>flags</> specifies extra optional features that may
+	be present in the video driver. Unsupported flags are ignored. It can
+	be zero or more <constant>PG_VID_*</> values or'ed together
+	(see <xref linkend="videoflags"> below).
+   </para>
+   <table id="flagmodes" frame=none pgwide=1>
+   <title>PG_FM values</title>
+   <tgroup cols=3 align=left>
+   <colspec colwidth="45*">
+   <colspec colwidth="10*">
+   <colspec colwidth="45*">
+   <tbody>
+   <row><entry>PG_FM_SET</><entry>0</><entry>Sets all flags to the specified value</></>
+   <row><entry>PG_FM_ON</><entry>1</><entry>Turns on specified flags</></>
+   <row><entry>PG_FM_OFF</><entry>2</><entry>Turns off specified flags</></>
+   <row><entry>PG_FM_TOGGLE</><entry>3</><entry>Toggles specified flags</></>
+   </tbody>
+   </tgroup>
+   </table>
+   <para>
+   </para>
+   <table id="videoflags" frame=none pgwide=1>
+   <title>PG_VID values</title>
+   <tgroup cols=3 align=left>
+   <colspec colwidth="45*">
+   <colspec colwidth="10*">
+   <colspec colwidth="45*">
+   <tbody>
+   <row><entry>PG_VID_FULLSCREEN</><entry>0x0001</><entry>Deprecated</></>
+   <row><entry>PG_VID_DOUBLEBUFFER</><entry>0x0002</><entry>Deprecated</></>
+   <row><entry>PG_VID_ROTATE90</><entry>0x0004</><entry>Rotate the display 90 degree clockwise</></>
+   <row><entry>PG_VID_ROTATE180</><entry>0x0008</><entry>Rotate the display 180 degree clockwise</></>
+   <row><entry>PG_VID_ROTATE270</><entry>0x0010</><entry>Rotate the display 270 degree clockwise</></>
+   </tbody>
+   </tgroup>
+   </table>
+   <para>
+	note: the <constant>PG_VID_ROTATE*</> flags are mutually exclusive.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-getmode">
+   <title>PGREQ_GETMODE - Get video mode information</>
+   <programlisting>
+type                 : PGREQ_GETMODE
+client lib equivalent: pgGetVideoMode()
+additional data      : none
+   </programlisting>
+   <para>
+	Get information about the current video mode.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-mkcontext">
+   <title>PGREQ_MKCONTEXT - Enter a new context</>
+   <programlisting>
+type                 : PGREQ_MKCONTEXT
+client lib equivalent: pgEnterContext()
+additional data      : none
+   </programlisting>
+   <para>
+	Enter a new context.
+   </para>
+   <para>
+	PicoGUI uses a context system, similar to a variable's scope in C.
+	Whenever the program leaves a context, all objects created while in
+	that context are deleted. No memory is used by creating a context,
+	and they can be nested a very large number of times.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-rmcontext">
+   <title>PGREQ_RMCONTEXT - Clean up and kill a context </>
+   <programlisting>
+type                 : PGREQ_RMCONTEXT
+client lib equivalent: pgLeaveContext()
+additional data      : none
+   </programlisting>
+   <para>
+	Leave a context.
+   </para>
+   <para>
+	When leaving a context, all objects created within it are deleted.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-focus">
+   <title>PGREQ_FOCUS - Forces focus to a specified widget</>
+   <programlisting>
+type                 : PGREQ_FOCUS
+client lib equivalent: pgFocus()
+additional data      : struct pgreqd_handlestruct
+   </programlisting>
+   <para>
+	Give a widget the keyboard focus.
+   </para>
+   <para>
+	See <xref linkend="pgreqdhandlestruct"> for more info about
+	<structname>pgreqd_handlestruct</>.
+   </para>
+  </sect2>
+
+<!--
+  <sect2 id="pgreq-">
+   <title>PGREQ_ </>
+   <programlisting>
+type                 : PGREQ_
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
+   <para>
+  </sect2>
+
+  <sect2 id="pgreq-">
+   <title>PGREQ_ </>
+   <programlisting>
+type                 : PGREQ_
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
+   <para>
+  </sect2>
+
+  <sect2 id="pgreq-">
+   <title>PGREQ_ </>
+   <programlisting>
+type                 : PGREQ_
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
+   <para>
+  </sect2>
+
+  <sect2 id="pgreq-">
+   <title>PGREQ_ </>
+   <programlisting>
+type                 : PGREQ_
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
+   <para>
+  </sect2>
+
+  <sect2 id="pgreq-">
+   <title>PGREQ_ </>
+   <programlisting>
+type                 : PGREQ_
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
+   <para>
+  </sect2>
+
+  <sect2 id="pgreq-">
+   <title>PGREQ_ </>
+   <programlisting>
+type                 : PGREQ_
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
+   <para>
+  </sect2>
+
+  <sect2 id="pgreq-">
+   <title>PGREQ_ </>
+   <programlisting>
+type                 : PGREQ_
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
+   <para>
+  </sect2>
+
+  <sect2 id="pgreq-LAST ONE!">
+   <title>PGREQ_ </>
+   <programlisting>
+type                 : PGREQ_
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
+   <para>
+  </sect2>
+-->
 
  </sect1>
 
