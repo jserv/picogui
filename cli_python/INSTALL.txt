@@ -1,0 +1,9 @@
+python2.2 setup.py install --prefix=/usr/local
+
+Python versions earlier than 2.2 will not work.
+
+You can use prefix=/usr if you are very sure about it (and if you are root). Usually, no --prefix argument installs on /usr
+
+You can also use "python2.2 setup.py dist" to generate a pretty tarball.
+
+More info at http://www.python.org/doc/current/inst/inst.html
