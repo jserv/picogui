@@ -1,4 +1,4 @@
-/* $Id: themedemo.c,v 1.1 2000/09/29 07:41:19 micahjd Exp $
+/* $Id: themedemo.c,v 1.2 2000/10/09 04:17:00 micahjd Exp $
  *
  * themedemo.c - Test proggie for the new theme stuff I've been
  *               working on in the theme_overhaul branch of
@@ -28,12 +28,15 @@
  */
 
 #include <picogui.h>
+#include <stdio.h>   /* For getc */
 
 int main(int argc, char **argv) {
   pgInit(argc,argv);
 
-  pgLoadTheme(pgFromFile("junk.th"));
+  pgLoadTheme(pgFromFile("example.th"));
   pgUpdate();
+
+  getc(stdin);
 
   return 0;
 }
