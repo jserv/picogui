@@ -1,0 +1,126 @@
+How to build and install PicoGUI
+=================================
+
+PicoGUI 0.x is one huge and complex collection of code and data.  For
+many reasons, it is nontrivial to build all the pieces.  This document
+is a guide on the order of steps you should take.
+
+This is the easy way.  Of course there are infinite variations on the
+theme; to begin with, you may want to install it somewhere other than
+/usr/local (the default).  But if you want/need to do that, we expect
+you to know how to adapt the instructions below.
+
+The instructions below are for releases.  If you want to build
+straight from svn, for directories with autoconf, you will first need
+to run the 'autogen.sh' script, to generate 'configure'.
+
+Directory structure notes
+::::::::::::::::::::::::::
+
+Some directories have subdivisions named 'working', 'dev' and 'test' -
+notably, themes and apps.  In these cases, usually all you want is in
+the 'working' directory.  Things in 'dev' are not yet functional, and
+things in 'test' are for testing PicoGUI or one of its components, or
+coding examples.
+
+Things that must be done in order
+::::::::::::::::::::::::::::::::::
+
+1. pgserver
+------------
+
+Even if you don't intend to run pgserver (a client-only machine, like,
+say, a PicoGUI application server?), you still need to build and
+install it first.  This is because some headers shared between the
+server and the C client library are stored in the server source tree
+and installed when the server is installed.
+
+To build and install pgserver, go into the 'server' directory.  It is
+an almost-standard automake/autoconf setup, except that you need to
+run menuconfig.  This is the routine:
+
+  % cd server
+  % mkdir build
+  % cd build
+  % ../configure
+  % make menuconfig
+  % make
+  % make install
+
+2. client/c
+------------
+
+Next, you need the C client library.  It's in the directory
+'client/c'.  Building it is the standard autoconf routine:
+
+  % cd client/c
+  % mkdir build
+  % cd build
+  % ../configure
+  % make
+  % make install
+
+You probably need to install the C library even if you don't think you
+will use it, because it's needed to build other parts.  For example,
+if you plan to build a theme, you need themec, which needs the C
+library.
+
+3. tools
+---------
+
+Now you need the theme compiler (themec), which is in the the
+directory 'tools'.  It's standard autoconf.  You need themec to build
+the themes and the apps.
+
+Things that are optional and have no particular order
+::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+Themes
+-------
+
+It is highly recommended that you install at least one theme.  PicoGUI
+has no concept of a "default theme" like, for example, GTK+ and Qt
+do.  Instead, themeless PicoGUI is an ugly black-on-white undecorated
+mess.  To build a single theme, just cd to its directory and do
+something like:
+
+  % cd themes/working/photonic
+  % themec photonic.ths
+
+Then copy or move the resulting binary theme file (in this case,
+photonic.th) to somewhere of your preference - I personally use
+/usr/local/share/picogui/themes.  You will need to inform the location
+of this directory to pgserver when you run it; read
+server/README.configfile and look for themedir option.
+
+To build and install all working themes, you can do:
+
+  % cd themes/working
+  % bash build.sh /usr/local/share/picogui/themes
+
+Of course, you can inform some other directory to build.sh instead of
+/usr/local/share/picogui/themes.
+
+Python client library
+----------------------
+
+To install the Python client library:
+
+  % cd client/python
+  % python setup.py install --prefix=/usr/local
+
+Alternatively, if you're constantly making changes to the library
+itself, you can just symlink the PicoGUI directory in client/python to
+somewhere in your Python path (/usr/local/lib/python2.3/sites-packages
+for example).
+
+Apps
+-----
+
+The 'apps' subdirectory is another standard autoconf setup.  By
+default, it will only build and install the 'working' apps, unless you
+pass the option '--enable-non-working' to configure.
+
+The first time you run 'make', it will fail, complaining about a
+missing file.  If you run 'make' again, it will work.  This is a known
+buglet which we expect to fix in the near future.
