@@ -1,0 +1,161 @@
+/* $Id: flux_capacitor.ths,v 1.1 2002/10/25 07:47:09 micahjd Exp $
+ *
+ * Flux Capacitor - This is a nice small theme inspired by the
+ *                  Cthulhain style for Fluxbox and Blackbox
+ *
+ * Micah Dowty
+ */
+
+/* Fillstyles */
+prop fBeveled, fSolid;
+
+/* Polygons */
+prop pBentArrow;
+
+/* Colors for fBeveled */
+prop bgcolor2, bodyAngle;
+prop bevelLeftTop, bevelLeftBottom;
+prop bevelRightTop, bevelRightBottom;
+prop bevelTopLeft, bevelTopRight;
+prop bevelBottomLeft, bevelBottomRight;
+
+
+/********************************** Default definitions */
+
+object default {
+  name = "Flux Capacitor";
+
+  bgfill = Copy(default::fBeveled);
+
+  fBeveled = fillstyle {
+    Gradient(x,y,w,1,0,bevelTopLeft,bevelTopRight);
+    Gradient(x,y+1,1,h-1,90,bevelLeftTop,bevelLeftBottom);
+    Gradient(x+1,y+h-1,w-1,1,0,bevelBottomLeft,bevelBottomRight);
+    Gradient(x+w-1,y+1,1,h-2,90,bevelRightTop,bevelRightBottom);
+    Gradient(x+1,y+1,w-2,h-2,bodyAngle,bgcolor,bgcolor2);
+  };
+
+  fSolid = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+
+    /*
+    SetColor(0xFFFFFF);
+    Fpolygon(3,3,10,8,pBentArrow);
+    */
+  };
+
+  /*
+  pBentArrow = Array(0,0,
+		     6,0,
+		     6,4,
+		     9,4,
+		     6,7,
+		     5,7,
+		     2,4,
+		     5,4,
+		     5,1,
+		     0,1);
+  */
+
+  bevelTopLeft     = 0x1f2124;
+  bevelTopRight    = 0x0f131b;
+  bevelLeftTop     = 0x2d2e30;
+  bevelLeftBottom  = 0x4c4c4c;
+  bevelRightTop    = 0x181e27;
+  bevelRightBottom = 0x575a5e;
+  bevelBottomLeft  = 0x999999;
+  bevelBottomRight = 0x575a5e;
+  fgcolor          = 0xFFFFFF;
+  bgcolor          = 0x11151b;
+  bgcolor2         = 0x656565;
+  bodyAngle        = 135;
+
+  margin = 5;
+  spacing = 5;
+}
+
+
+/********************************** Widgets */
+
+object background {
+  bgfill = Copy(default::fSolid);
+  bgcolor = 0x3a404b;
+}
+
+object button {
+  bevelTopLeft     = 0x6a7584;
+  bevelTopRight    = 0x1f2733;
+  bevelLeftTop     = 0x6a7584;
+  bevelLeftBottom  = 0xabb8ca;
+  bevelRightTop    = 0x12151b;
+  bevelRightBottom = 0x30343c;
+  bevelBottomLeft  = 0x575d67;
+  bevelBottomRight = 0x31373f;
+  bgcolor          = 0x181d25;
+  bgcolor2         = 0x717a87;
+  bodyAngle        = 95;
+}
+
+object button.hilight {
+  bgfill = fillstyle {
+    button::bgfill(x,y,w,h);
+    SetLgop(PG_LGOP_ADD);
+    Gradient(x+1,y+1,w-2,h-2,90,0x000000,0x202000);
+    SetLgop(PG_LGOP_NONE);
+  };
+}
+
+object toolbar {
+  bevelTopLeft     = 0x999999;
+  bevelTopRight    = 0x575a5e;
+  bevelLeftTop     = 0x999999;
+  bevelLeftBottom  = 0x606367;
+  bevelRightTop    = 0x2a2b2d;
+  bevelRightBottom = 0x090c0d;
+  bevelBottomLeft  = 0x2d2e30;
+  bevelBottomRight = 0x0d1013;
+  bgcolor          = 0x14181e;
+  bgcolor2         = 0x636363;
+  bodyAngle        = 95;
+}
+
+object panel {
+  border.size = 1;
+  border.fill = fillstyle {
+    SetColor(0x202020);
+    Frame(x,y,w,h);
+  };
+}
+
+object panelbar {
+  width = 17;
+  margin = 2;
+  font = Font(NULL,10,0);
+  bgfill = fillstyle {
+    toolbar::bgfill(x,y,w,h);
+    fBeveled(x+2,y+2,w-4,h-4);
+  };
+  bevelTopLeft     = 0x2a2d34;
+  bevelTopRight    = 0x1b212a;
+  bevelLeftTop     = 0x2a2d34;
+  bevelLeftBottom  = 0x5a5e69;
+  bevelRightTop    = 0x1b212a;
+  bevelRightBottom = 0x6a7585;
+  bevelBottomLeft  = 0xb7c4d9;
+  bevelBottomRight = 0x6a7585;
+  bgcolor          = 0x1d232b;
+  bgcolor2         = 0x757e8c;
+  bodyAngle        = 91;
+}
+
+object label.dlgtitle parent = PGTH_O_PANELBAR;
+
+object base.panelbtn {
+  side = PG_S_RIGHT;
+  spacing = 0;
+  width = 19;
+  height = 19;
+}
+
+/* The End */
