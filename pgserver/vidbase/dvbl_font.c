@@ -1,4 +1,4 @@
-/* $Id: dvbl_font.c,v 1.9 2002/10/16 22:33:41 micahjd Exp $
+/* $Id: dvbl_font.c,v 1.10 2002/11/01 23:09:17 micahjd Exp $
  *
  * dvbl_font.c - Low level implementations for font rendering
  *
@@ -298,7 +298,8 @@ void def_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
   u8 *l;
   s16 r,g,b;
   u8 a,a_;
-  hwrcolor oc;
+  pgcolor oc;
+  pgcolor pgc;
 
   /* This is going to suck anyway, so don't spend any effort doing clipping
    * or rotation beforehand.
@@ -332,15 +333,16 @@ void def_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 	  continue;
       
       oc = vid->color_hwrtopg(vid->getpixel(dest,xp,yp));
+      pgc = vid->color_hwrtopg(c);
       if (gammatable)
 	a_ = gammatable[*l];
       else
 	a_ = *l;
       a = 255-a_;
 
-      r = ((getred(c) * a_) >> 8) + ((getred(oc) * a) >> 8);
-      g = ((getgreen(c) * a_) >> 8) + ((getgreen(oc) * a) >> 8);
-      b = ((getblue(c) * a_) >> 8) + ((getblue(oc) * a) >> 8);
+      r = ((getred(pgc)   * a_) >> 8) + ((getred(oc)   * a) >> 8);
+      g = ((getgreen(pgc) * a_) >> 8) + ((getgreen(oc) * a) >> 8);
+      b = ((getblue(pgc)  * a_) >> 8) + ((getblue(oc)  * a) >> 8);
       
       vid->pixel(dest,xp,yp,vid->color_pgtohwr(mkcolor(r,g,b)),lgop);
     }
