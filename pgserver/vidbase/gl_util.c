@@ -1,4 +1,4 @@
-/* $Id: gl_util.c,v 1.8 2002/12/03 11:12:16 micahjd Exp $
+/* $Id: gl_util.c,v 1.9 2002/12/21 04:26:46 micahjd Exp $
  *
  * gl_util.c - OpenGL driver for picogui
  *             This file has utilities shared by multiple components of the driver.
@@ -210,7 +210,7 @@ void gl_frame(void) {
   gl_process_camera_smoothing();
 
   if (gl_global.showfps)
-    gl_osd_printf(&i,"FPS: %.2f",gl_global.fps);
+    gl_osd_printf(&i,"FHz: %.2f",gl_global.fps);
 
   switch (gl_global.camera_mode) {
   case GL_CAMERAMODE_TRANSLATE:
