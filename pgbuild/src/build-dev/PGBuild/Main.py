@@ -57,7 +57,7 @@ def parseCommandLine(config, argv):
                       help="report progress in more detail")    
     parser.add_option("-q", "--quiet", action="uncount", dest="verbosity", default=1,
                       help="report progress in less detail")    
-    parser.add_option("-u", "--ui", action="store", dest="ui", metavar="MODULE", default="none",
+    parser.add_option("-u", "--ui", action="store", dest="ui", metavar="MODULE", default="Text",
                       help="Select a front-end module. Try --ui=help to list the available modules")
 
     ############# Configuration management
