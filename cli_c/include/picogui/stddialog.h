@@ -1,4 +1,4 @@
-/* $Id: stddialog.h,v 1.1 2001/07/28 10:42:12 micahjd Exp $
+/* $Id: stddialog.h,v 1.2 2001/07/30 04:42:06 micahjd Exp $
  *
  * picogui/stddialog.h - Various preconstructed dialog boxes the application
  *                       may use. These are implemented 100% client-side using
@@ -29,6 +29,16 @@
 
 #ifndef _H_PG_STDDIALOG
 #define _H_PG_STDDIALOG
+
+/*! 
+ * \file stddialog.h
+ * \brief Standard Dialog Boxes
+ * 
+ * This file defines various standard dialog boxes available in the 
+ * C client library.
+ * Usually this file does not need to be included
+ * separately, it is included with <tt>\#include <picogui.h></tt>
+ */
 
 /*!
  * \brief Create a dialog box with title
@@ -105,6 +115,21 @@ int pgMenuFromString(char *items);
  */
 int pgMenuFromArray(pghandle *items,int numitems); 
 
+/*!
+ * \brief Show a date on a calendar, allow the user to select a new date
+ *
+ * \param year Initially, the year to display. Returns the selected year
+ * \param month Initially, the month to display. Returns the selected month
+ * \param day Initially, the day to display. Returns the selected day
+ * \param title Title to display in the dialog box
+ * \returns Nonzero if a new date was selected, zero if the
+ *          cancel button was pressed
+ *
+ * \p year, \p month, and/or \p day may be zero to use the current date.
+ *
+ * \sa pgDialogBox
+ */
+int pgDatePicker(int *year, int *month, int *day, const char *title);
 
 #endif /* __H_STDDIALOG */
 /* The End */

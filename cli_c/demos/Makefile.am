@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.4 2001/07/29 07:48:45 micahjd Exp $
+# $Id: Makefile.am,v 1.5 2001/07/30 04:42:06 micahjd Exp $
 
 noinst_PROGRAMS = \
 	abstest 		\
@@ -7,7 +7,6 @@ noinst_PROGRAMS = \
 	fieldtest 		\
 	imgview 		\
 	menutest 		\
-	msgdialog 		\
 	omnibar 		\
 	omnibar-helio 		\
 	pgfx_canvas_immediate 	\
@@ -15,7 +14,8 @@ noinst_PROGRAMS = \
 	themedemo 		\
 	vidpopup                \
 	offscreen        \
-	scrsaver
+	scrsaver			  \
+	dialogdemo
 
 noinst_SCRIPTS = Demo.app
 
@@ -34,20 +34,19 @@ demo_SOURCES      = demo.c
 fieldtest_SOURCES = fieldtest.c
 imgview_SOURCES   = imgview.c
 menutest_SOURCES  = menutest.c
-msgdialog_SOURCES = msgdialog.c
 omnibar_SOURCES   = omnibar.c
 omnibar_helio_SOURCES = omnibar-helio.c
 pgfx_canvas_immediate_SOURCES  = pgfx_canvas_immediate.c
 pgfx_canvas_persistent_SOURCES = pgfx_canvas_persistent.c
 themedemo_SOURCES = themedemo.c
 vidpopup_SOURCES  = vidpopup.c
+dialogdemo_SOURCES = dialogdemo.c
 
 Demo.app:
 	ln -fs fieldtest "Field Test.app"
 	ln -fs demo "Demo.app"
-	ln -fs msgdialog "Message Dialog Demo.app"
 	ln -fs menutest "Menu Test.app"
-	ln -fs calc "Calculator.app"
+	ln -fs dialogdemo "Dialog Demo.app"
 	ln -fs canvastst "Canvas Test.app"	
 	ln -fs vidpopup "Set Video Mode.app"
 	ln -fs ../../apps/pterm/pterm "Terminal (pterm).app"

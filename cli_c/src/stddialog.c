@@ -1,4 +1,4 @@
-/* $Id: stddialog.c,v 1.1 2001/07/28 10:42:12 micahjd Exp $
+/* $Id: stddialog.c,v 1.2 2001/07/30 04:42:06 micahjd Exp $
  *
  * stddialog.c - Various preconstructed dialog boxes the application
  *               may use. These are implemented 100% client-side using
@@ -99,10 +99,10 @@ int pgMessageDialog(const char *title,const char *text,unsigned long flags) {
     dlgbtn(wToolbar,PG_MSGBTN_CANCEL,PGTH_P_STRING_CANCEL,PGTH_P_HOTKEY_CANCEL);
   if (flags & PG_MSGBTN_OK)
     dlgbtn(wToolbar,PG_MSGBTN_OK,PGTH_P_STRING_OK,PGTH_P_HOTKEY_OK);
-  if (flags & PG_MSGBTN_NO)
-    dlgbtn(wToolbar,PG_MSGBTN_NO,PGTH_P_STRING_NO,PGTH_P_HOTKEY_NO);
   if (flags & PG_MSGBTN_YES)
     dlgbtn(wToolbar,PG_MSGBTN_YES,PGTH_P_STRING_YES,PGTH_P_HOTKEY_YES);
+  if (flags & PG_MSGBTN_NO)
+    dlgbtn(wToolbar,PG_MSGBTN_NO,PGTH_P_STRING_NO,PGTH_P_HOTKEY_NO);
 
   /* Run it (ignoring zero-payload events) */
   while (!(ret = pgGetPayload(pgGetEvent()->from)));
