@@ -1,4 +1,4 @@
-/* $Id: blackout.c,v 1.5 2001/04/18 01:22:47 micahjd Exp $
+/* $Id: blackout.c,v 1.6 2001/05/01 23:16:52 micahjd Exp $
  *
  * blackout.c - "Blackout" game to demonstrate game programming and
  *              canvas widget event handling.
@@ -41,7 +41,9 @@ pghandle wCanvas,wToolbar,wStatusLabel;
 int boardwidth, boardheight, boardsize;
 typedef unsigned char light;
 light *board;
+light *solution;
 #define LIGHT(x,y)     board[(x)+(y)*boardwidth]
+#define SOLUTION(x,y)  solution[(x)+(y)*boardwidth]
 #define LIGHTGROP(x,y) (2+(x)+(y)*boardwidth)  
 
 /* Colors */
@@ -58,8 +60,8 @@ int level;
 void setLight(int lx,int ly,light l) {
    pgWriteCmd(wCanvas,PGCANVAS_FINDGROP,1,LIGHTGROP(lx,ly));
    pgWriteCmd(wCanvas,PGCANVAS_SETGROP,1,l ? ON_COLOR : OFF_COLOR);
-   pgWriteCmd(wCanvas,PGCANVAS_COLORCONV,1,1);
-   pgWriteCmd(wCanvas,PGCANVAS_GROPFLAGS,1,PG_GROPF_PSEUDOINCREMENTAL);
+   pgWriteCmd(wCanvas,PGCANVAS_GROPFLAGS,1,PG_GROPF_PSEUDOINCREMENTAL |
+	      PG_GROPF_COLORED);
 }
 
 /* Toggle the light at the specified coordinates and update the groplist */
@@ -97,6 +99,7 @@ void startLevel(int newlev) {
    moves = 0;
    level = newlev;
    memset(board,0,boardsize);
+   memset(solution,0,boardsize);
 
    /* Make random moves */
    for (x=level;x;x--) {
@@ -107,6 +110,7 @@ void startLevel(int newlev) {
       invertLightNoupdate(i+1,j);
       invertLightNoupdate(i,j-1);
       invertLightNoupdate(i,j+1);
+      SOLUTION(i,j) ^= 1;
    }
       
    /* Set the gropnode states */
@@ -119,7 +123,62 @@ void startLevel(int newlev) {
    updateStatus();
 }
 
+/****************************** Menu items ***/
+
+void menuNewGame(void) {
+   if (pgMessageDialog("Give Up","Start over at level 1?",
+		       PG_MSGBTN_YES | PG_MSGBTN_NO) == PG_MSGBTN_YES)
+     startLevel(1);
+}
+
+void menuRestartLevel(void) {
+   if (pgMessageDialogFmt("Scratching Head",
+			  PG_MSGBTN_YES | PG_MSGBTN_NO,
+			  "Try level %d again?",level) == PG_MSGBTN_YES)
+     startLevel(level);
+}
+
+void menuShowSolution(void) {
+   int i,j;
+   printf("--- Solution\n");
+   for (j=0;j<boardheight;j++) {
+      for (i=0;i<boardwidth;i++)
+	printf(" %d",SOLUTION(i,j));
+      printf("\n");
+   }
+}
+
+void menuAbout(void) {
+   pgMessageDialog("About Blackout",
+		   "Blackout is part of the\n"
+		   "PicoGUI applications\n"
+		   "distrobution.\n"
+		   "\n"
+		   "http://pgui.sourceforge.net\n"
+		   "\n"
+		   "-- Micah Dowty, 2001",
+		   0);
+}
+   
 /****************************** Event handlers ***/
+
+/* Display the game menu */
+int btnMenu(struct pgEvent *evt) {
+   switch (pgMenuFromString("New Game...|Restart Level...|Show Solution|About...")) {
+    case 1:
+      menuNewGame();
+      break;
+    case 2:
+      menuRestartLevel();
+      break;
+    case 3:
+      menuShowSolution();
+      break;
+    case 4:
+      menuAbout();
+      break;
+   }
+}
 
 /* Redraw the game board */
 int evtDrawBoard(struct pgEvent *evt) {
@@ -139,28 +198,23 @@ int evtDrawBoard(struct pgEvent *evt) {
    /* Get rid of remainder */
    bs = boardwidth*lightw;
    
-   /* Clear the groplist */
+   /* Clear the groplist, by default store color with each grop */
    pgWriteCmd(evt->from,PGCANVAS_NUKE,0);
+   pgWriteCmd(evt->from,PGCANVAS_DEFAULTFLAGS,1,PG_GROPF_COLORED);
    
    /* Black game board background */
-   pgWriteCmd(evt->from,PGCANVAS_GROP,5,PG_GROP_RECT,0,0,
-	      evt->e.size.w,evt->e.size.h);
-   pgWriteCmd(evt->from,PGCANVAS_SETGROP,1,0x000000);
-   pgWriteCmd(evt->from,PGCANVAS_COLORCONV,1,1);
+   pgWriteCmd(evt->from,PGCANVAS_GROP,6,PG_GROP_RECT,0,0,
+	      evt->e.size.w,evt->e.size.h,0x000000);
    
    /* Game board frame */
-   pgWriteCmd(evt->from,PGCANVAS_GROP,5,PG_GROP_FRAME,bx-1,by-1,bs+3,bs+3);
-   pgWriteCmd(evt->from,PGCANVAS_SETGROP,1,0x808080);
-   pgWriteCmd(evt->from,PGCANVAS_COLORCONV,1,1);
+   pgWriteCmd(evt->from,PGCANVAS_GROP,6,PG_GROP_FRAME,
+	      bx-1,by-1,bs+3,bs+3,0x808080);
 
    /* Light gropnodes */
    for (j=boardheight,y=by;j;j--,y+=lighth)
      for (i=boardwidth,x=bx;i;i--,x+=lightw) {
-	pgWriteCmd(evt->from,PGCANVAS_GROP,5,PG_GROP_RECT,
-		   x+1,y+1,lightw-1,lighth-1);
-	pgWriteCmd(evt->from,PGCANVAS_SETGROP,1,
-		   (*(p++)) ? ON_COLOR : OFF_COLOR);
-	pgWriteCmd(evt->from,PGCANVAS_COLORCONV,1,1);
+	pgWriteCmd(evt->from,PGCANVAS_GROP,6,PG_GROP_RECT,
+		   x+1,y+1,lightw-1,lighth-1,(*(p++)) ? ON_COLOR : OFF_COLOR);
      }
    
    /* Draw it */
@@ -188,7 +242,8 @@ int evtMouseDown(struct pgEvent *evt) {
    invertLight(lx+1,ly);
    invertLight(lx,ly-1);
    invertLight(lx,ly+1);
-
+   SOLUTION(lx,ly) ^= 1;
+   
    /* Update the screen */
    pgWriteCmd(evt->from,PGCANVAS_INCREMENTAL,0);
    moves++;
@@ -208,19 +263,6 @@ int evtMouseDown(struct pgEvent *evt) {
    return 0;
 }
 
-int btnNewGame(struct pgEvent *evt) {
-   if (pgMessageDialog("Give Up","Start over at level 1?",
-		       PG_MSGBTN_YES | PG_MSGBTN_NO) == PG_MSGBTN_YES)
-     startLevel(1);
-}
-
-int btnRestartLevel(struct pgEvent *evt) {
-   if (pgMessageDialogFmt("Scratching Head",
-			  PG_MSGBTN_YES | PG_MSGBTN_NO,
-			  "Try level %d again?",level) == PG_MSGBTN_YES)
-     startLevel(level);
-}
-
 /****************************** Main Program ***/
 
 int main(int argc, char **argv) {
@@ -236,12 +278,11 @@ int main(int argc, char **argv) {
    /* Toolbar thingies */
    
    pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
-   pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("New"),0);
-   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnNewGame,NULL);
-
-   pgNewWidget(PG_WIDGET_BUTTON,0,0);
-   pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("Level"),0);
-   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnRestartLevel,NULL);
+   pgSetWidget(PGDEFAULT,
+	       PG_WP_TEXT,pgNewString("Menu"),
+	       PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
+	       0);
+   pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&btnMenu,NULL);
 
    wStatusLabel = pgNewWidget(PG_WIDGET_LABEL,0,0);
    pgSetWidget(PGDEFAULT,
@@ -253,11 +294,12 @@ int main(int argc, char **argv) {
 
 
    /*** Allocate default game board */
-   srand(time());
+   srand(time(NULL));
    boardwidth = 5;
    boardheight = 5;
    boardsize = sizeof(light) * boardwidth * boardheight;
    board = (light *) malloc(boardsize);
+   solution = (light *) malloc(boardsize);
    startLevel(1);
    
    /*** Event loop */
