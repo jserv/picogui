@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.92 2002/10/23 06:17:25 micahjd Exp $
+/* $Id: div.c,v 1.93 2002/10/24 22:50:56 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -192,6 +192,9 @@ void divnode_split(struct divnode *n, struct rect *divrect,
 
     /* Remember to clip this later */
     popupclip = 1;
+
+    /* Need to recalc it now */
+    n->flags |= DIVNODE_NEED_RECALC | DIVNODE_NEED_REBUILD;
   }
 #endif /* CONFIG_WIDGET_POPUP */
 
@@ -385,10 +388,12 @@ void divnode_recalc(struct divnode **pn, struct divnode *parent) {
      /* Recalc completed.  Propagate the changes to child nodes if their
       * dimensions have changed.
       */
-     if (n->div && memcmp(&divrect,&old_divrect,sizeof(divrect)))
-       n->div->flags |= DIVNODE_NEED_RECALC | DIVNODE_NEED_REBUILD;
-     if (n->next && memcmp(&nextrect,&old_nextrect,sizeof(nextrect)))
-       n->next->flags |= DIVNODE_NEED_RECALC | DIVNODE_NEED_REBUILD;
+     if (!(n->flags & DIVNODE_SPLIT_IGNORE)) {
+       if (n->div && memcmp(&divrect,&old_divrect,sizeof(divrect)))
+	 n->div->flags |= DIVNODE_NEED_RECALC | DIVNODE_NEED_REBUILD;
+       if (n->next && memcmp(&nextrect,&old_nextrect,sizeof(nextrect)))
+	 n->next->flags |= DIVNODE_NEED_RECALC | DIVNODE_NEED_REBUILD;
+     }       
 
      /* Force child recalc if necessary */
      if (n->flags & DIVNODE_FORCE_CHILD_RECALC) {
