@@ -1,7 +1,8 @@
-"""
- Package.py - Representation of a source package that can be automatically
-              downloaded, and that will participate in the
-              configure/build process.
+""" PGBuild.Package
+
+SCons node to represent a package that will be automatically downloaded
+and updated from a Repository, containing a config file that directs
+dependencies and compile time options.
 """
 # 
 # PicoGUI Build System

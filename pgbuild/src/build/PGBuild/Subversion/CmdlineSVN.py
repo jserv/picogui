@@ -1,5 +1,7 @@
-"""
- CmdlineSVN.py - A wrapper around the command line Subversion client
+""" PGBuild.Repository.Subversion.CmdlineSVN
+
+A wrapper around the command line Subversion client providing
+a Repository implementation.
 """
 # 
 # PicoGUI Build System

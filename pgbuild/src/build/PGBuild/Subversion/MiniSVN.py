@@ -1,7 +1,7 @@
-"""
- MiniSVN.py - A minimalist Subversion client capable of doing
-              atomic checkouts using only the Python standard
-              library and MiniDAV.
+""" PGBuild.Repository.Subversion.MiniSVN
+
+A minimalist Subversion client capable of doing atomic checkouts
+using only the Python standard library and MiniDAV.
 """
 # 
 # PicoGUI Build System

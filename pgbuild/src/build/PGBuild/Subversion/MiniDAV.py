@@ -1,5 +1,6 @@
-"""
- A minimal read-only WebDAV client
+""" PGBuild.Repository.Subversion.MiniDAV
+
+A minimal read-only WebDAV client
 """
 # 
 # PicoGUI Build System

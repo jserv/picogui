@@ -1,5 +1,6 @@
-"""
- CommandLine.py - Utilities specific to operating in a command line environment
+""" PGBuild.CommandLine
+
+Utilities for interacting with the user via a command line interface.
 """
 # 
 # PicoGUI Build System

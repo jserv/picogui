@@ -1,5 +1,6 @@
-"""
- Subversion/__init__.py - Automatically choose a subversion implementation
+""" PGBuild.Repository.Subversion
+
+Automatically chooses a Subversion implementation
 """
 # 
 # PicoGUI Build System
