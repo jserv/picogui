@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.111 2002/05/22 09:26:33 micahjd Exp $
+/* $Id: button.c,v 1.112 2002/05/22 10:01:21 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -232,10 +232,10 @@ g_error button_install(struct widget *self) {
   self->in->div->state = DATA->state;
   self->in->div->flags |= DIVNODE_HOTSPOT | DIVNODE_SPLIT_BORDER;
 
-  self->trigger_mask = TRIGGER_ENTER | TRIGGER_LEAVE | TRIGGER_CHAR |
-    TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_DIRECT |
-    TRIGGER_KEYUP | TRIGGER_KEYDOWN | TRIGGER_DEACTIVATE | TRIGGER_ACTIVATE |
-    TRIGGER_KEY_START;
+  self->trigger_mask = PG_TRIGGER_ENTER | PG_TRIGGER_LEAVE | PG_TRIGGER_CHAR |
+    PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_RELEASE | PG_TRIGGER_DIRECT |
+    PG_TRIGGER_KEYUP | PG_TRIGGER_KEYDOWN | PG_TRIGGER_DEACTIVATE | PG_TRIGGER_ACTIVATE |
+    PG_TRIGGER_KEY_START;
 
   self->out = &self->in->next;
   self->sub = &self->in->div->div;
@@ -485,29 +485,29 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
   /* If it's disabled, don't allow anything except
    * hilighting and global keys
    */
-  if (DATA->disabled && type!=TRIGGER_ENTER && type!=TRIGGER_LEAVE &&
-      !(type==TRIGGER_KEYDOWN && param->kbd.key!=hotkey_activate))
+  if (DATA->disabled && type!=PG_TRIGGER_ENTER && type!=PG_TRIGGER_LEAVE &&
+      !(type==PG_TRIGGER_KEYDOWN && param->kbd.key!=hotkey_activate))
     return;
 
   /* Figure out the button's new state */
   switch (type) {
 
-  case TRIGGER_ENTER:
+  case PG_TRIGGER_ENTER:
     DATA->over=1;
     break;
     
-  case TRIGGER_LEAVE:
+  case PG_TRIGGER_LEAVE:
     DATA->over=0;
     break;
    
-  case TRIGGER_CHAR:
+  case PG_TRIGGER_CHAR:
     if (param->kbd.key == hotkey_activate && (param->kbd.flags & PG_KF_FOCUSED))
       param->kbd.consume++;
     if (DATA->hotkey_consume && param->kbd.key == DATA->hotkey && (param->kbd.flags & DATA->hotkey_flags))
       param->kbd.consume++;
     return;
     
-  case TRIGGER_KEYDOWN:
+  case PG_TRIGGER_KEYDOWN:
     /* We want to consume the hotkey's KEYDOWN, but only act on KEYUP.
      */
     if (DATA->hotkey_consume && param->kbd.key == DATA->hotkey && (param->kbd.flags & DATA->hotkey_flags)) {
@@ -529,7 +529,7 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
     param = &tp;
     param->mouse.chbtn = 1;
     lastclicked = self;
-  case TRIGGER_DOWN:
+  case PG_TRIGGER_DOWN:
     if (DATA->extdevents & PG_EXEV_PNTR_DOWN)
       post_event(PG_WE_PNTR_DOWN,self,param->mouse.chbtn,0,NULL);
     if (param->mouse.chbtn==1 && 
@@ -572,10 +572,10 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
       return;
     break;
 
-  case TRIGGER_KEYUP:
+  case PG_TRIGGER_KEYUP:
 
 #ifdef DEBUG_EVENT
-      printf("TRIGGER_KEYUP: button %p, received\n",self);
+      printf("PG_TRIGGER_KEYUP: button %p, received\n",self);
 #endif
 
     /* Hotkey was pressed, simulate a keypress
@@ -585,7 +585,7 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
 	param->kbd.consume++;
 
 #ifdef DEBUG_EVENT
-      printf("TRIGGER_KEYUP: button %p, hotkey_received was %d\n",self, DATA->hotkey_received);
+      printf("PG_TRIGGER_KEYUP: button %p, hotkey_received was %d\n",self, DATA->hotkey_received);
 #endif
 
       /* Make sure we don't do this twice */
@@ -603,8 +603,8 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
 	/* Simulate a mouse press/release */
 	memset(&mytrig,0,sizeof(mytrig));
 	mytrig.mouse.chbtn = 1;
-	button_trigger(self,TRIGGER_DOWN,&mytrig);
-	button_trigger(self,TRIGGER_UP,&mytrig);
+	button_trigger(self,PG_TRIGGER_DOWN,&mytrig);
+	button_trigger(self,PG_TRIGGER_UP,&mytrig);
       }
       else {
 	/* No graphical interaction here, 
@@ -632,7 +632,7 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
     tp = *param;
     param = &tp;
     param->mouse.chbtn = 1;
-  case TRIGGER_UP:
+  case PG_TRIGGER_UP:
     if (DATA->extdevents & PG_EXEV_PNTR_UP)
       post_event(PG_WE_PNTR_UP,self,param->mouse.chbtn,0,NULL);
     if (DATA->on && param->mouse.chbtn==1) {
@@ -651,7 +651,7 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
       return;
     break;
 
-  case TRIGGER_RELEASE:
+  case PG_TRIGGER_RELEASE:
     if (param->mouse.chbtn==1 && !(DATA->extdevents & PG_EXEV_TOGGLE))
       DATA->on=0;
     else
@@ -659,7 +659,7 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
     break;
 
     /* When the widget is forcibly defocused, go ahead and un-push it */
-  case TRIGGER_DEACTIVATE:
+  case PG_TRIGGER_DEACTIVATE:
     if (DATA->on && !(DATA->extdevents & PG_EXEV_TOGGLE)) {
       DATA->on = 0;
       break;
@@ -667,14 +667,14 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
     else
       return;
 
-  case TRIGGER_ACTIVATE:
+  case PG_TRIGGER_ACTIVATE:
     if (DATA->extdevents & PG_EXEV_FOCUS)
       post_event(PG_WE_FOCUS,self,1,0,NULL);
     return;
 
-  case TRIGGER_KEY_START:
+  case PG_TRIGGER_KEY_START:
 #ifdef DEBUG_EVENT
-    printf("button %p got TRIGGER_KEY_START\n",self);
+    printf("button %p got PG_TRIGGER_KEY_START\n",self);
 #endif
     DATA->hotkey_received = 0;
     break;

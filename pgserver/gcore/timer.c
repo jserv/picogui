@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.22 2002/02/02 20:52:51 lonetech Exp $
+/* $Id: timer.c,v 1.23 2002/05/22 10:01:19 micahjd Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -61,7 +61,7 @@ void inactivity_check(void);
 void inactivity_init(void);
 
 /* This defines the maximum 
-   precision of the TRIGGER_TIMER */
+   precision of the PG_TRIGGER_TIMER */
 #define TIMERINTERVAL 50   /* In milliseconds */
 
 /* If this is nonzero, timers may not trigger

@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.42 2002/05/22 09:26:33 micahjd Exp $
+/* $Id: canvas.c,v 1.43 2002/05/22 10:01:21 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -119,7 +119,7 @@ g_error canvas_install(struct widget *self) {
    /* By default accept only stream commands and mouse clicks. The app can use
     * PG_WP_TRIGGERMASK to turn on mouse movement and keyboard events
     */
-   self->trigger_mask = TRIGGER_STREAM | TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE;
+   self->trigger_mask = PG_TRIGGER_STREAM | PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_RELEASE;
    
    return success;
 }
@@ -141,7 +141,7 @@ void canvas_trigger(struct widget *self, s32 type, union trigparam *param) {
    int evt;
    s16 mx,my;
    
-   if (type == TRIGGER_STREAM) {
+   if (type == PG_TRIGGER_STREAM) {
       /* Accept a command from the client */
       
       struct pgcommand *cmd;
@@ -181,16 +181,16 @@ void canvas_trigger(struct widget *self, s32 type, union trigparam *param) {
    /* Nope, it was some sort of event to pass on to the app */
 
    switch (type) {
-    case TRIGGER_UP:
+    case PG_TRIGGER_UP:
       evt = PG_WE_PNTR_UP;
       break;
-    case TRIGGER_DOWN:
+    case PG_TRIGGER_DOWN:
       evt = PG_WE_PNTR_DOWN;
       break;
-    case TRIGGER_RELEASE:
+    case PG_TRIGGER_RELEASE:
       evt = PG_WE_PNTR_RELEASE;
       break;
-    case TRIGGER_MOVE:
+    case PG_TRIGGER_MOVE:
       evt = PG_WE_PNTR_MOVE;
       break;
     default:
@@ -231,19 +231,19 @@ void canvas_trigger(struct widget *self, s32 type, union trigparam *param) {
 
    /* Keyboard event? */
    switch (type) {
-    case TRIGGER_KEYUP:
+    case PG_TRIGGER_KEYUP:
       if (!(param->kbd.flags & PG_KF_FOCUSED) || param->kbd.key==PGKEY_ALPHA)
 	return;
       evt = PG_WE_KBD_KEYUP;
       param->kbd.consume++;
       break;
-    case TRIGGER_KEYDOWN:
+    case PG_TRIGGER_KEYDOWN:
       if (!(param->kbd.flags & PG_KF_FOCUSED) || param->kbd.key==PGKEY_ALPHA)
 	return;
       evt = PG_WE_KBD_KEYDOWN;
       param->kbd.consume++;
       break;
-    case TRIGGER_CHAR:
+    case PG_TRIGGER_CHAR:
       if (!(param->kbd.flags & PG_KF_FOCUSED) || param->kbd.key==PGKEY_ALPHA)
 	return;
       evt = PG_WE_KBD_CHAR;
@@ -266,10 +266,10 @@ void canvas_trigger(struct widget *self, s32 type, union trigparam *param) {
    /* Focus event? */
    switch (type) 
      {
-     case TRIGGER_ACTIVATE:
+     case PG_TRIGGER_ACTIVATE:
        evt = PG_WE_ACTIVATE;
        break;
-     case TRIGGER_DEACTIVATE:
+     case PG_TRIGGER_DEACTIVATE:
        evt = PG_WE_DEACTIVATE;
        break;
      default:

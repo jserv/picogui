@@ -1,4 +1,4 @@
-/* $Id: adc7843.c,v 1.4 2002/04/15 15:21:54 micahjd Exp $
+/* $Id: adc7843.c,v 1.5 2002/05/22 10:01:20 micahjd Exp $
  *
  * adc7843.c - input driver for adc7843.c touch screen found on the Psion 5mx
  *             Other touch screens using the same data format should
@@ -62,7 +62,7 @@ int adc7843_fd;
 
 /* 
  * For keeping track of the coordinates so we know them to
- * be send with a TRIGGER_UP event...
+ * be send with a PG_TRIGGER_UP event...
  */
 int ox, oy;
 
@@ -130,19 +130,19 @@ int adc7843_fd_activate(int fd) {
    /* What type of pointer event? */
    if (ts.state) {
       if (down)
- 	     trigger = TRIGGER_MOVE;
+ 	     trigger = PG_TRIGGER_MOVE;
       else
-	     trigger = TRIGGER_DOWN;
+	     trigger = PG_TRIGGER_DOWN;
    }
    else {
       if (down)
-	     trigger = TRIGGER_UP;
+	     trigger = PG_TRIGGER_UP;
       else
 	return 1;
    }
    
    /* If we got this far, accept the new state and send the event */
-   state = (trigger != TRIGGER_UP);
+   state = (trigger != PG_TRIGGER_UP);
 
    
    if (ts.state)
@@ -150,7 +150,7 @@ int adc7843_fd_activate(int fd) {
    else
        down = false;
 
-   if ( trigger == TRIGGER_UP )
+   if ( trigger == PG_TRIGGER_UP )
       dispatch_pointing(trigger,ox,oy,state);
    else
       dispatch_pointing(trigger,x,y,state);

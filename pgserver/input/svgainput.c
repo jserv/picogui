@@ -1,4 +1,4 @@
-/* $Id: svgainput.c,v 1.21 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: svgainput.c,v 1.22 2002/05/22 10:01:20 micahjd Exp $
  *
  * svgainput.h - input driver for SVGAlib
  *
@@ -224,14 +224,14 @@ void svgainput_kbdhandler(int scancode,int press) {
 	  previouskey = 0;
 	  b &= scancode == SCANCODE_REMOVE ? ~2 : ~1;
 	}
-	dispatch_pointing(press ? TRIGGER_DOWN : TRIGGER_UP,
+	dispatch_pointing(press ? PG_TRIGGER_DOWN : PG_TRIGGER_UP,
 			  cursor->x,cursor->y,b);	
 	return;
      }
      else
        goto nomousekey;
 
-     dispatch_pointing(TRIGGER_MOVE,
+     dispatch_pointing(PG_TRIGGER_MOVE,
 		       cursor->x+((e-w)<<scale),
 		       cursor->y+((s-n)<<scale),b);
      mouse_setposition(cursor->x,cursor->y);
@@ -269,13 +269,13 @@ void svgainput_kbdhandler(int scancode,int press) {
 #endif
 
     if (c)
-      dispatch_key(TRIGGER_CHAR,c,svgainput_mod);
+      dispatch_key(PG_TRIGGER_CHAR,c,svgainput_mod);
   }
 
   /******* Handle raw key press/release events */
   
   /* Dispatch to the rest of PicoGUI */
-  dispatch_key(press ? TRIGGER_KEYDOWN : TRIGGER_KEYUP,svgainput_keymap[scancode],svgainput_mod);
+  dispatch_key(press ? PG_TRIGGER_KEYDOWN : PG_TRIGGER_KEYUP,svgainput_keymap[scancode],svgainput_mod);
 }
 
 /******************************************** Mouse handler */
@@ -301,11 +301,11 @@ void svgainput_mousehandler(int button,int dx,int dy,int dz,
 
   /* So, what just happened? */
   if (button & (~prevbutton))
-    trigger = TRIGGER_DOWN;
+    trigger = PG_TRIGGER_DOWN;
   else if (prevbutton & (~button))
-    trigger = TRIGGER_UP;
+    trigger = PG_TRIGGER_UP;
   else
-    trigger = TRIGGER_MOVE;      
+    trigger = PG_TRIGGER_MOVE;      
   prevbutton = button;
 
   /* Dispatch to PicoGUI */

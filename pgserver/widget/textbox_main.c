@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.36 2002/05/20 19:18:38 micahjd Exp $
+/* $Id: textbox_main.c,v 1.37 2002/05/22 10:01:22 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -82,9 +82,9 @@ g_error textbox_install(struct widget *self) {
    errorcheck;
 
    /**** Editing doesn't work yet 
-   self->trigger_mask = TRIGGER_UP | TRIGGER_ACTIVATE | TRIGGER_CHAR |
-     TRIGGER_DEACTIVATE | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_TIMER
-     | TRIGGER_MOVE;
+   self->trigger_mask = PG_TRIGGER_UP | PG_TRIGGER_ACTIVATE | PG_TRIGGER_CHAR |
+     PG_TRIGGER_DEACTIVATE | PG_TRIGGER_DOWN | PG_TRIGGER_RELEASE | PG_TRIGGER_TIMER
+     | PG_TRIGGER_MOVE;
    */
 
    return success;
@@ -226,7 +226,7 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
 
     /* When clicked, request keyboard focus */
     
-  case TRIGGER_DOWN:
+  case PG_TRIGGER_DOWN:
     if (param->mouse.chbtn!=1)
       break;
     DATA->on=1;
@@ -235,31 +235,31 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
     textbox_move_cursor(self,param);
     break;
 
-  case TRIGGER_MOVE:
+  case PG_TRIGGER_MOVE:
     /* Drag the cursor */
     if (DATA->on)
       textbox_move_cursor(self,param);
     break;
 
-  case TRIGGER_UP:
-  case TRIGGER_RELEASE:
+  case PG_TRIGGER_UP:
+  case PG_TRIGGER_RELEASE:
     if (param->mouse.chbtn==1)
       DATA->on=0;
     return;
     
     /* Update visual appearance to reflect focus or lack of focus */
     
-  case TRIGGER_DEACTIVATE:
+  case PG_TRIGGER_DEACTIVATE:
     DATA->focus = 0;
     DATA->flash_on = 0;
     text_caret_off(&DATA->c);
     break;
 
-  case TRIGGER_ACTIVATE:
+  case PG_TRIGGER_ACTIVATE:
     DATA->focus = 1;
-    /* No break; here! Get TRIGGER_TIMER to set up the flash timer*/
+    /* No break; here! Get PG_TRIGGER_TIMER to set up the flash timer*/
 
-  case TRIGGER_TIMER:
+  case PG_TRIGGER_TIMER:
     if (DATA->focus==0) break;
 
     /* extra parentheses to make gcc happy */
@@ -273,7 +273,7 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
 			FLASHTIME_ON : FLASHTIME_OFF ));
     break;
 
-  case TRIGGER_CHAR:    /* Keyboard input */
+  case PG_TRIGGER_CHAR:    /* Keyboard input */
     param->kbd.consume++;
     switch (param->kbd.key) {
     case PGKEY_RETURN:

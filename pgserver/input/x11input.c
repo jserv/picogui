@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.13 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: x11input.c,v 1.14 2002/05/22 10:01:20 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -127,21 +127,21 @@ int x11input_fd_activate(int fd) {
        */
 
     case MotionNotify:
-      dispatch_pointing(TRIGGER_MOVE,ev.xmotion.x, ev.xmotion.y, 
+      dispatch_pointing(PG_TRIGGER_MOVE,ev.xmotion.x, ev.xmotion.y, 
 			ev.xmotion.state >> 8);
       if (x11input_pgcursor)
 	drivermessage(PGDM_CURSORVISIBLE,1,NULL);
       break;
 
     case ButtonPress:
-      dispatch_pointing(TRIGGER_DOWN,ev.xbutton.x, ev.xbutton.y,
+      dispatch_pointing(PG_TRIGGER_DOWN,ev.xbutton.x, ev.xbutton.y,
 			(ev.xbutton.state >> 8) | (1 << (ev.xbutton.button-1)));
       if (x11input_pgcursor)
 	drivermessage(PGDM_CURSORVISIBLE,1,NULL);
       break;
 
     case ButtonRelease:
-      dispatch_pointing(TRIGGER_UP,ev.xbutton.x, ev.xbutton.y,
+      dispatch_pointing(PG_TRIGGER_UP,ev.xbutton.x, ev.xbutton.y,
 			(ev.xbutton.state >> 8) & (~(1 << (ev.xbutton.button-1))));
       if (x11input_pgcursor)
 	drivermessage(PGDM_CURSORVISIBLE,1,NULL);
@@ -158,20 +158,20 @@ int x11input_fd_activate(int fd) {
     case KeyPress:
       x11_translate_key(xdisplay, &ev.xkey, ev.xkey.keycode, &sym, &mod, &chr);
       if (sym)
-	dispatch_key(TRIGGER_KEYDOWN,sym,mod);
+	dispatch_key(PG_TRIGGER_KEYDOWN,sym,mod);
       if (chr)
-	dispatch_key(TRIGGER_CHAR,chr,mod);
+	dispatch_key(PG_TRIGGER_CHAR,chr,mod);
       break;
 
     case KeyRelease:
       x11_translate_key(xdisplay, &ev.xkey, ev.xkey.keycode, &sym, &mod, &chr);
       if (x11_key_repeat(xdisplay, &ev)) {
 	if (chr)
-	  dispatch_key(TRIGGER_CHAR,chr,mod);
+	  dispatch_key(PG_TRIGGER_CHAR,chr,mod);
       }
       else {
 	if (sym)
-	  dispatch_key(TRIGGER_KEYUP,sym,mod);
+	  dispatch_key(PG_TRIGGER_KEYUP,sym,mod);
       }
       break;
 

@@ -1,4 +1,4 @@
-/* $Id: r3912ts.c,v 1.7 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: r3912ts.c,v 1.8 2002/05/22 10:01:20 micahjd Exp $
  *
  * r3912ts.c - input driver for r3912 touch screen found on the VTech Helio
  *             and others. Other touch screens using the same data format should
@@ -88,19 +88,19 @@ int r3912ts_fd_activate(int fd) {
    /* What type of pointer event? */
    if (ts.state) {
       if (state)
-	trigger = TRIGGER_MOVE;
+	trigger = PG_TRIGGER_MOVE;
       else
-	trigger = TRIGGER_DOWN;
+	trigger = PG_TRIGGER_DOWN;
    }
    else {
       if (state)
-	trigger = TRIGGER_UP;
+	trigger = PG_TRIGGER_UP;
       else
 	return 1;
    }
    
    /* If we got this far, accept the new state and send the event */
-   state = (trigger != TRIGGER_UP);
+   state = (trigger != PG_TRIGGER_UP);
    dispatch_pointing(trigger,x,y,state);
    
    return 1;

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.182 2002/05/20 22:46:02 micahjd Exp $
+/* $Id: widget.c,v 1.183 2002/05/22 10:01:22 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -218,7 +218,7 @@ g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **wher
   
   /* If we just added a widget that can accept text input, and this is inside
    * a popup box, keep it in the nontoolbar area so keyboards still work */
-  if ((w->trigger_mask & TRIGGER_NONTOOLBAR) && dt->head->next && dt->head->next->div && 
+  if ((w->trigger_mask & PG_TRIGGER_NONTOOLBAR) && dt->head->next && dt->head->next->div && 
       dt->head->next->div->owner->type == PG_WIDGET_POPUP) {
     dt->head->next->div->flags |= DIVNODE_POPUP_NONTOOLBAR;
   }
@@ -243,7 +243,7 @@ g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **wher
 	div_under_crsr->owner->dt==&fakedt) {
       union trigparam param;
       memset(&param,0,sizeof(param));
-      send_trigger(div_under_crsr->owner,TRIGGER_LEAVE,&param);
+      send_trigger(div_under_crsr->owner,PG_TRIGGER_LEAVE,&param);
     }
   }
   
@@ -703,7 +703,7 @@ void reset_widget_pointers(void) {
 
 /*
    Set a timer.  At the time, in ticks, specified by 'time',
-   the widget will recieve a TRIGGER_TIMER
+   the widget will recieve a PG_TRIGGER_TIMER
 */
 void install_timer(struct widget *self,u32 interval) {
   struct widget *w;
@@ -748,7 +748,7 @@ void inline trigger_timer(void) {
     w = timerwidgets;
     timerwidgets = timerwidgets->tnext;
 
-    send_trigger(w,TRIGGER_TIMER,NULL);
+    send_trigger(w,PG_TRIGGER_TIMER,NULL);
   };
 }
 
@@ -761,10 +761,10 @@ void request_focus(struct widget *self) {
   if (kbdfocus==self) return;
 
   /* Deactivate the old widget, activate the new */
-  send_trigger(kbdfocus,TRIGGER_DEACTIVATE,NULL);
+  send_trigger(kbdfocus,PG_TRIGGER_DEACTIVATE,NULL);
   kbdfocus = self;
   appmgr_focus(appmgr_findapp(self));
-  send_trigger(self,TRIGGER_ACTIVATE,NULL);
+  send_trigger(self,PG_TRIGGER_ACTIVATE,NULL);
 
   /* If the cursor isn't already within this widget, scroll it in
    * and warp the cursor to it. This is important for
@@ -863,7 +863,7 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
 
   inactivity_reset();
 
-  if (type == TRIGGER_DOWN &&
+  if (type == PG_TRIGGER_DOWN &&
       get_param_int("sound","click",0))
     drivermessage(PGDM_SOUNDFX,PG_SND_KEYCLICK,NULL);
 
@@ -876,9 +876,9 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
    * specified coordinates, move there. This is almost completely unnecessary
    * for mice, but a must with touchscreens!
    */
-  if ( (type == TRIGGER_DOWN || type == TRIGGER_UP) &&
+  if ( (type == PG_TRIGGER_DOWN || type == PG_TRIGGER_UP) &&
        (x != cursor->x || y != cursor->y) )
-    dispatch_pointing(TRIGGER_MOVE,physx,physy,prev_btn);
+    dispatch_pointing(PG_TRIGGER_MOVE,physx,physy,prev_btn);
    
   param.mouse.x = x;
   param.mouse.y = y;
@@ -903,13 +903,13 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
   if (pointer_owner) {
     int evt=0;
     switch (type) {
-    case TRIGGER_MOVE:
+    case PG_TRIGGER_MOVE:
       evt = PG_NWE_PNTR_MOVE;
       break;
-    case TRIGGER_UP:
+    case PG_TRIGGER_UP:
       evt = PG_NWE_PNTR_UP;
       break;
-    case TRIGGER_DOWN:
+    case PG_TRIGGER_DOWN:
       evt = PG_NWE_PNTR_DOWN;
       break;
     }
@@ -967,7 +967,7 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
     under = div_under_crsr->owner;
     
     /* Keep track of the most recently clicked widget */
-    if (type==TRIGGER_DOWN) {
+    if (type==PG_TRIGGER_DOWN) {
       lastclicked = under;
       
       /* Also, allow clicks to focus applications */
@@ -975,7 +975,7 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
     }
 
     if ((!(btn & capturebtn)) && capture && (capture!=under)) {
-      release_captured = send_trigger(capture,TRIGGER_RELEASE,&param);
+      release_captured = send_trigger(capture,PG_TRIGGER_RELEASE,&param);
       capture = NULL;
     }
 
@@ -983,7 +983,7 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
     if (!release_captured)
       send_trigger(under,type,&param);
 
-    if (type==TRIGGER_DOWN && !capture) {
+    if (type==PG_TRIGGER_DOWN && !capture) {
       capture = under;
       capturebtn = param.mouse.chbtn;
     }
@@ -992,22 +992,22 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
   else {
     under = NULL;
     if ((!(btn & capturebtn)) && capture) {
-      send_trigger(capture,TRIGGER_RELEASE,&param);
+      send_trigger(capture,PG_TRIGGER_RELEASE,&param);
       capture = NULL;
     }
   }
 
   if (under!=prev_under) {
     /* Mouse has moved over a different widget */
-    send_trigger(under,TRIGGER_ENTER,&param);
-    send_trigger(prev_under,TRIGGER_LEAVE,&param);
+    send_trigger(under,PG_TRIGGER_ENTER,&param);
+    send_trigger(prev_under,PG_TRIGGER_LEAVE,&param);
     prev_under = under;
   }
 
-  /* If a captured widget accepts TRIGGER_DRAG, send it even when the
+  /* If a captured widget accepts PG_TRIGGER_DRAG, send it even when the
      mouse is outside its divnodes. */
-  if (type == TRIGGER_MOVE && capture)
-    send_trigger(capture,TRIGGER_DRAG,&param);
+  if (type == PG_TRIGGER_MOVE && capture)
+    send_trigger(capture,PG_TRIGGER_DRAG,&param);
 }
 
 /* Update which widget/divnode the mouse is inside, etc, when the divtree changes */
@@ -1018,7 +1018,7 @@ void update_pointing(void) {
   s16 x = cursor->x;
   s16 y = cursor->y;
   VID(coord_physicalize) (&x,&y);
-  dispatch_pointing(TRIGGER_MOVE,x,y,prev_btn);
+  dispatch_pointing(PG_TRIGGER_MOVE,x,y,prev_btn);
 }
 
 /* Iterator for dispatching a key to all widgets */
@@ -1062,12 +1062,12 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
   /* For rotating arrow keys along with the rest of PicoGUI */
   VID(coord_keyrotate)(&key);
 
-  if (type == TRIGGER_KEYDOWN &&
+  if (type == PG_TRIGGER_KEYDOWN &&
       get_param_int("sound","keyclick",0))
     drivermessage(PGDM_SOUNDFX,PG_SND_KEYCLICK,NULL);
 
   /* First, process magic 'double bucky' keys */
-  if (type==TRIGGER_KEYDOWN && (mods & PGMOD_CTRL) && (mods & PGMOD_ALT))
+  if (type==PG_TRIGGER_KEYDOWN && (mods & PGMOD_CTRL) && (mods & PGMOD_ALT))
     magic_button(key);
 
 #ifdef DEBUG_EVENT
@@ -1100,13 +1100,13 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
   if (keyboard_owner) {
     int evt=0;
     switch (type) {
-    case TRIGGER_CHAR:
+    case PG_TRIGGER_CHAR:
       evt = PG_NWE_KBD_CHAR;
       break;
-    case TRIGGER_KEYUP:
+    case PG_TRIGGER_KEYUP:
       evt = PG_NWE_KBD_KEYUP;
       break;
-    case TRIGGER_KEYDOWN:
+    case PG_TRIGGER_KEYDOWN:
       evt = PG_NWE_KBD_KEYDOWN;
       break;
     }
@@ -1114,12 +1114,12 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
       /* Pack the mods into the high word and the key into the
 	 low word.
       */
-      post_event(evt,NULL,(type==TRIGGER_CHAR) ? key : keycode,keyboard_owner,NULL);
+      post_event(evt,NULL,(type==PG_TRIGGER_CHAR) ? key : keycode,keyboard_owner,NULL);
     return;
   }
 
   /* Ignore CHAR events for keys modified by ALT or CTRL */
-  if (type == TRIGGER_CHAR && (mods & (PGMOD_ALT | PGMOD_CTRL))) return;
+  if (type == PG_TRIGGER_CHAR && (mods & (PGMOD_ALT | PGMOD_CTRL))) return;
 
   /* This event gets propagated until 'consume' is > 0 */
   param.kbd.key     = key;
@@ -1148,7 +1148,7 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
   {
     struct send_trigger_iterator_data data;
     data.param = &param;
-    data.type = TRIGGER_KEY_START;
+    data.type = PG_TRIGGER_KEY_START;
     param.kbd.flags = PG_KF_ALWAYS;
     handle_iterate(PG_TYPE_WIDGET,send_trigger_iterator,&data);
   }
@@ -1273,10 +1273,10 @@ void global_hotkey(u16 key,u16 mods, u32 type) {
 #ifdef DEBUG_INPUT
    printf(__FUNCTION__": Enter\n");
 #endif
-  if (type == TRIGGER_KEYDOWN) {
+  if (type == PG_TRIGGER_KEYDOWN) {
 
 #ifdef DEBUG_INPUT
-     printf(__FUNCTION__": type == TRIGGER_KEYDOWN\n");
+     printf(__FUNCTION__": type == PG_TRIGGER_KEYDOWN\n");
 #endif
     if (!(mods & ~(PGMOD_CAPS|PGMOD_NUM))) {
       /* Key down, no modifiers */

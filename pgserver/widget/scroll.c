@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.55 2002/05/20 19:18:38 micahjd Exp $
+/* $Id: scroll.c,v 1.56 2002/05/22 10:01:22 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -188,8 +188,8 @@ g_error scroll_install(struct widget *self) {
   self->in->div->build = &build_scroll;
   self->in->div->state = PGTH_O_SCROLL;
   self->out = &self->in->next;
-  self->trigger_mask = TRIGGER_DRAG | TRIGGER_ENTER | TRIGGER_LEAVE |
-    TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_TIMER;
+  self->trigger_mask = PG_TRIGGER_DRAG | PG_TRIGGER_ENTER | PG_TRIGGER_LEAVE |
+    PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_RELEASE | PG_TRIGGER_TIMER;
 
   return success;
 }
@@ -266,15 +266,15 @@ void scroll_trigger(struct widget *self,s32 type,union trigparam *param) {
    
   switch (type) {
 
-  case TRIGGER_ENTER:
+  case PG_TRIGGER_ENTER:
     DATA->over=1;
     break;
     
-  case TRIGGER_LEAVE:
+  case PG_TRIGGER_LEAVE:
     DATA->over=0;
     break;
     
-  case TRIGGER_DOWN:
+  case PG_TRIGGER_DOWN:
     if (param->mouse.chbtn==1) {
 
       DATA->value++;
@@ -301,9 +301,9 @@ void scroll_trigger(struct widget *self,s32 type,union trigparam *param) {
 
     /* Well, it gets the job done: */
     
-  case TRIGGER_TIMER:
+  case PG_TRIGGER_TIMER:
     if (DATA->release_delta == 0) return;
-  case TRIGGER_UP:
+  case PG_TRIGGER_UP:
     if (DATA->release_delta) {
       DATA->value += DATA->release_delta;
 
@@ -319,8 +319,8 @@ void scroll_trigger(struct widget *self,s32 type,union trigparam *param) {
       scrollevent(self);
       force = 1;
     }
-  case TRIGGER_RELEASE:
-    if (type==TRIGGER_TIMER) {
+  case PG_TRIGGER_RELEASE:
+    if (type==PG_TRIGGER_TIMER) {
       install_timer(self,SCROLLSPEED);
       break;
     }
@@ -328,7 +328,7 @@ void scroll_trigger(struct widget *self,s32 type,union trigparam *param) {
     DATA->release_delta = 0;
     break;
 
-  case TRIGGER_DRAG:
+  case PG_TRIGGER_DRAG:
     if (!DATA->on) return;
 
     /* Button 1 is being dragged through our widget. */

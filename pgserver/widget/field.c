@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.57 2002/05/22 09:26:34 micahjd Exp $
+/* $Id: field.c,v 1.58 2002/05/22 10:01:21 micahjd Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -151,9 +151,9 @@ g_error field_install(struct widget *self) {
   self->in->div->state = PGTH_O_FIELD;
   self->in->div->flags |= DIVNODE_HOTSPOT;
 
-  self->trigger_mask = TRIGGER_UP | TRIGGER_ACTIVATE | TRIGGER_CHAR |
-    TRIGGER_DEACTIVATE | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_TIMER |
-    TRIGGER_KEYUP | TRIGGER_KEYDOWN | TRIGGER_NONTOOLBAR;
+  self->trigger_mask = PG_TRIGGER_UP | PG_TRIGGER_ACTIVATE | PG_TRIGGER_CHAR |
+    PG_TRIGGER_DEACTIVATE | PG_TRIGGER_DOWN | PG_TRIGGER_RELEASE | PG_TRIGGER_TIMER |
+    PG_TRIGGER_KEYUP | PG_TRIGGER_KEYDOWN | PG_TRIGGER_NONTOOLBAR;
 
   return success;
 }
@@ -252,36 +252,36 @@ void field_trigger(struct widget *self, s32 type, union trigparam *param) {
 
     /* When clicked, request keyboard focus */
 
-  case TRIGGER_DOWN:
+  case PG_TRIGGER_DOWN:
     if (param->mouse.chbtn==1)
       DATA->on=1;
     return;
 
-  case TRIGGER_UP:
+  case PG_TRIGGER_UP:
     if (DATA->on && param->mouse.chbtn==1) {
       DATA->on=0;
       request_focus(self);
     }
     return;
     
-  case TRIGGER_RELEASE:
+  case PG_TRIGGER_RELEASE:
     if (param->mouse.chbtn==1)
       DATA->on=0;
     return;
     
     /* Update visual appearance to reflect focus or lack of focus */
     
-  case TRIGGER_DEACTIVATE:
+  case PG_TRIGGER_DEACTIVATE:
     DATA->focus = 0;
     DATA->flash_on = 0;
     break;
 
-  case TRIGGER_ACTIVATE:
+  case PG_TRIGGER_ACTIVATE:
     DATA->focus = 1;
     post_event(PG_WE_FOCUS,self,1,0,NULL);
-    /* No break; here! Get TRIGGER_TIMER to set up the flash timer*/
+    /* No break; here! Get PG_TRIGGER_TIMER to set up the flash timer*/
     
-  case TRIGGER_TIMER:
+  case PG_TRIGGER_TIMER:
     if (DATA->focus==0) break;
 
     DATA->flash_on = !DATA->flash_on;
@@ -293,7 +293,7 @@ void field_trigger(struct widget *self, s32 type, union trigparam *param) {
 
     /* Keyboard input */
 
-  case TRIGGER_CHAR:
+  case PG_TRIGGER_CHAR:
      if (!(param->kbd.flags & PG_KF_FOCUSED))
        return;
     
@@ -336,8 +336,8 @@ void field_trigger(struct widget *self, s32 type, union trigparam *param) {
     /* We don't care about KEYUP and KEYDOWN,
      * but we need to consume them.
      */
-  case TRIGGER_KEYUP:
-  case TRIGGER_KEYDOWN:
+  case PG_TRIGGER_KEYUP:
+  case PG_TRIGGER_KEYDOWN:
      if (!(param->kbd.flags & PG_KF_FOCUSED))
        return;
      switch (param->kbd.key) {

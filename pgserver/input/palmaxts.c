@@ -1,4 +1,4 @@
-/* $Id: palmaxts.c,v 1.5 2002/01/07 18:26:12 lonetech Exp $
+/* $Id: palmaxts.c,v 1.6 2002/05/22 10:01:20 micahjd Exp $
  *
  * palmaxts.c - input driver for Palmax touchscreens.
  *
@@ -127,15 +127,15 @@ int palmaxts_fd_activate(int fd) {
     }
   
   if ((buttons!=0)&&(btnstate==0)){
-    dispatch_pointing(TRIGGER_DOWN,cursorx,cursory,buttons);
+    dispatch_pointing(PG_TRIGGER_DOWN,cursorx,cursory,buttons);
     btnstate=1;
   }
   if ((buttons==0)&&(btnstate==1)){
-    dispatch_pointing(TRIGGER_UP,cursorx,cursory,buttons);
+    dispatch_pointing(PG_TRIGGER_UP,cursorx,cursory,buttons);
     btnstate=0;
   }
   if(buttons)
-    dispatch_pointing(TRIGGER_MOVE,cursorx,cursory,buttons);
+    dispatch_pointing(PG_TRIGGER_MOVE,cursorx,cursory,buttons);
   
   return 1;
 }

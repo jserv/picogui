@@ -1,4 +1,4 @@
-/* $Id: h3600ts.c,v 1.1 2002/03/02 16:39:15 abergmann Exp $
+/* $Id: h3600ts.c,v 1.2 2002/05/22 10:01:20 micahjd Exp $
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -62,14 +62,14 @@ int h3600ts_fd_activate(int fd) {
   
   if(ev.pressure) {
     if (!btnstate) {
-      action = TRIGGER_DOWN;
+      action = PG_TRIGGER_DOWN;
       x = ev.x; y = ev.y;
     } else {
-      action = TRIGGER_MOVE;
+      action = PG_TRIGGER_MOVE;
       x = ev.x; y = ev.y;
     }
   } else {
-    action = TRIGGER_UP;
+    action = PG_TRIGGER_UP;
   }
 
   btnstate = ev.pressure;

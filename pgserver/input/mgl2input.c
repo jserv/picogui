@@ -1,4 +1,4 @@
-/* $Id: mgl2input.c,v 1.1 2002/01/21 14:39:09 micahjd Exp $
+/* $Id: mgl2input.c,v 1.2 2002/05/22 10:01:20 micahjd Exp $
  *
  * mgl2input.c - input driver for MGL2
  *
@@ -87,50 +87,50 @@ void mgl2input_poll(void) {
 
   switch (key) {
   case MK_V1:
-    vkloc2pointing(TRIGGER_DOWN, 1);
+    vkloc2pointing(PG_TRIGGER_DOWN, 1);
     break;
   case MK_V2:
-    vkloc2pointing(TRIGGER_MOVE, 1);
+    vkloc2pointing(PG_TRIGGER_MOVE, 1);
     break;
   case MK_V3:
-    vkloc2pointing(TRIGGER_UP, 0);
+    vkloc2pointing(PG_TRIGGER_UP, 0);
     break;
   case MK_F1:
   case MK_LEFT:
     mx -= mv;
     if (mx < 0)
       mx = 0;
-    dispatch_pointing(TRIGGER_MOVE, mx, my, 1);
+    dispatch_pointing(PG_TRIGGER_MOVE, mx, my, 1);
     break;
   case MK_F2:
   case MK_DOWN:
     my += mv;
     if (my > SCREEN_HEIGHT)
       my = SCREEN_HEIGHT;
-    dispatch_pointing(TRIGGER_MOVE, mx, my, 1);
+    dispatch_pointing(PG_TRIGGER_MOVE, mx, my, 1);
     break;
   case MK_F3:
   case MK_UP:
     my -= mv;
     if (my < 0)
       my = 0;
-    dispatch_pointing(TRIGGER_MOVE, mx, my, 1);
+    dispatch_pointing(PG_TRIGGER_MOVE, mx, my, 1);
     break;
   case MK_F4:
   case MK_RIGHT:
     mx += mv;
     if (mx > SCREEN_WIDTH)
       mx = SCREEN_WIDTH;
-    dispatch_pointing(TRIGGER_MOVE, mx, my, 1);
+    dispatch_pointing(PG_TRIGGER_MOVE, mx, my, 1);
     break;
   case MK_F5:
     /*  case 0x20: */
     if (mbtn == 0) {
-      dispatch_pointing(TRIGGER_DOWN, mx, my, 1);
+      dispatch_pointing(PG_TRIGGER_DOWN, mx, my, 1);
       get_key(-1);
       mbtn = 1;
     } else {
-      dispatch_pointing(TRIGGER_UP, mx, my, 0);
+      dispatch_pointing(PG_TRIGGER_UP, mx, my, 0);
       get_key(-1);
       mbtn = 0;
     }
@@ -152,9 +152,9 @@ void mgl2input_poll(void) {
     else if (key & MGL_SKM_ALT)
       modkey = PGMOD_ALT;
 
-    dispatch_key(TRIGGER_CHAR, key & ~MGL_SKM_MASK, modkey);
+    dispatch_key(PG_TRIGGER_CHAR, key & ~MGL_SKM_MASK, modkey);
 #else
-    dispatch_key(TRIGGER_CHAR, key, modkey);
+    dispatch_key(PG_TRIGGER_CHAR, key, modkey);
 #endif
     break;
   }

@@ -181,15 +181,15 @@ int ttykb_fd_activate(int fd)
 			key = keymap[curkey];
 		
 		if ( key != 0 ) {
-		  if ( key <= 255 ) // Don't send TRIGGER_CHAR for function-keys
-		  	dispatch_key(TRIGGER_CHAR,key,0);
+		  if ( key <= 255 ) // Don't send PG_TRIGGER_CHAR for function-keys
+		  	dispatch_key(PG_TRIGGER_CHAR,key,0);
 
-		  /* FIXME: TRIGGER_KEYUP is not implemented yet, but we at
+		  /* FIXME: PG_TRIGGER_KEYUP is not implemented yet, but we at
 		   * least need this so that hotkeys work correctly. This
-		   * needs to respond to a few keys TRIGGER_CHAR does not,
+		   * needs to respond to a few keys PG_TRIGGER_CHAR does not,
 		   * like the arrow keys */
-		  dispatch_key(TRIGGER_KEYDOWN,key,0);
-		  dispatch_key(TRIGGER_KEYUP,key,0);
+		  dispatch_key(PG_TRIGGER_KEYDOWN,key,0);
+		  dispatch_key(PG_TRIGGER_KEYUP,key,0);
 		}
 		return 1;		/* keypress*/
 	}

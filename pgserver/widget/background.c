@@ -1,4 +1,4 @@
-/* $Id: background.c,v 1.12 2002/05/20 19:18:38 micahjd Exp $
+/* $Id: background.c,v 1.13 2002/05/22 10:01:21 micahjd Exp $
  *
  * background.c - an internal widget for drawing the screen background
  *
@@ -49,7 +49,7 @@ g_error background_install(struct widget *self) {
   self->in->state = PGTH_O_BACKGROUND;
   self->out = &self->in->next;
 
-  self->trigger_mask = TRIGGER_DOWN;
+  self->trigger_mask = PG_TRIGGER_DOWN;
    
   return success;
 }

@@ -1,4 +1,4 @@
-/* $Id: remorakb.c,v 1.11 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: remorakb.c,v 1.12 2002/05/22 10:01:20 micahjd Exp $
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -765,13 +765,13 @@ static int kb_fd_activate(int fd)
       switch(def->code&CODEMASK) {
       case SPd_CAPSLOCK:
         mod_caps = !mod_caps;
-        pg_type = TRIGGER_KEYDOWN;
+        pg_type = PG_TRIGGER_KEYDOWN;
         pg_code = PGKEY_CAPSLOCK;
         if(mod_caps)
           pg_mods |= PGMOD_CAPS;
         break;
       case SPu_CAPSLOCK:
-        pg_type = TRIGGER_KEYUP;
+        pg_type = PG_TRIGGER_KEYUP;
         pg_code = PGKEY_CAPSLOCK;
         if(mod_caps)
           pg_mods |= PGMOD_CAPS;
@@ -895,17 +895,17 @@ static int kb_fd_activate(int fd)
 
       /* char or key ? */
       pg_type = (qual==CHARKEY||qual==ALPHKEY)
-	? TRIGGER_CHAR 
-	: (upkey ? TRIGGER_KEYUP : TRIGGER_KEYDOWN);
+	? PG_TRIGGER_CHAR 
+	: (upkey ? PG_TRIGGER_KEYUP : PG_TRIGGER_KEYDOWN);
     }
     
 
 #if LOCAL_DEBUG
-    if(pg_type==TRIGGER_CHAR)
+    if(pg_type==PG_TRIGGER_CHAR)
       DPRINTF("CHAR, char:['%c'=%02x]", pg_code, pg_code);
     else {
       DPRINTF("%s, key:[%02X=",
-	       pg_type==TRIGGER_KEYUP ? "KEYUP" : "KEYDOWN",
+	       pg_type==PG_TRIGGER_KEYUP ? "KEYUP" : "KEYDOWN",
 	       pg_code);
       print_pgkeyname(pg_code);
       printf("]");
@@ -919,26 +919,26 @@ static int kb_fd_activate(int fd)
      * Send it up !
      */
     dispatch_key(pg_type, pg_code, pg_mods);
-    if(pg_type==TRIGGER_CHAR) {
+    if(pg_type==PG_TRIGGER_CHAR) {
       switch(pg_code) {
       case ' ':
-	dispatch_key(TRIGGER_KEYDOWN, PGKEY_SPACE, pg_mods);
-	dispatch_key(TRIGGER_KEYUP, PGKEY_SPACE, pg_mods);
+	dispatch_key(PG_TRIGGER_KEYDOWN, PGKEY_SPACE, pg_mods);
+	dispatch_key(PG_TRIGGER_KEYUP, PGKEY_SPACE, pg_mods);
 	break;
       case '\r':
-	dispatch_key(TRIGGER_KEYDOWN, PGKEY_RETURN, pg_mods);
-	dispatch_key(TRIGGER_KEYUP, PGKEY_RETURN, pg_mods);
+	dispatch_key(PG_TRIGGER_KEYDOWN, PGKEY_RETURN, pg_mods);
+	dispatch_key(PG_TRIGGER_KEYUP, PGKEY_RETURN, pg_mods);
 	break;
       }
     }
     else {
       switch(pg_code) {
       case PGKEY_ESCAPE:
-	dispatch_key(TRIGGER_KEYUP, PGKEY_ESCAPE, pg_mods);
+	dispatch_key(PG_TRIGGER_KEYUP, PGKEY_ESCAPE, pg_mods);
 	break;
       }
     }
-    drivermessage(PGDM_CURSORVISIBLE, pg_type!=TRIGGER_CHAR, NULL);
+    drivermessage(PGDM_CURSORVISIBLE, pg_type!=PG_TRIGGER_CHAR, NULL);
     drivermessage(PGDM_CURSORBLKEN, 0, NULL);
 
     return 1;

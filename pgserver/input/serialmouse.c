@@ -1,4 +1,4 @@
-/* $Id: serialmouse.c,v 1.7 2002/01/17 02:27:06 micahjd Exp $
+/* $Id: serialmouse.c,v 1.8 2002/05/22 10:01:20 micahjd Exp $
  *
  * serialmouse.c - input driver for serial mice.
  *
@@ -142,15 +142,15 @@ int serialmouse_fd_activate(int fd) {
   
   if ((buttons!=0)&&(btnstate==0)){
     
-    dispatch_pointing(TRIGGER_DOWN,cursorx,cursory,buttons);
+    dispatch_pointing(PG_TRIGGER_DOWN,cursorx,cursory,buttons);
     btnstate=1;}
   if ((buttons==0)&&(btnstate==1)){
     
-    dispatch_pointing(TRIGGER_UP,cursorx,cursory,buttons);
+    dispatch_pointing(PG_TRIGGER_UP,cursorx,cursory,buttons);
     btnstate=0;
   }
   if((dx!=0)||(dy!=0))
-    dispatch_pointing(TRIGGER_MOVE,cursorx,cursory,buttons);
+    dispatch_pointing(PG_TRIGGER_MOVE,cursorx,cursory,buttons);
   
   return 1;
 }

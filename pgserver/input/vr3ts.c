@@ -1,4 +1,4 @@
-/* $Id: vr3ts.c,v 1.7 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: vr3ts.c,v 1.8 2002/05/22 10:01:20 micahjd Exp $
  *
  * vr3ts.c - input driver for the Agenda VR3. This contains code from
  *           Agenda's xfree86 patch along with the framework from
@@ -221,7 +221,7 @@ int vr3ts_fd_activate(int fd) {
    XYPOINT dev,scr;
    static u8 state = 0;
    int trigger;
-   static int old_trigger=TRIGGER_UP;
+   static int old_trigger=PG_TRIGGER_UP;
    int x=0,y=0,z=0;
    static oldx=0,oldy=0;
    unsigned int b=0;
@@ -249,64 +249,64 @@ int vr3ts_fd_activate(int fd) {
      // position data wasn't available, so use old position data
      if (b) {
        if (state)
-	 trigger = TRIGGER_MOVE;
+	 trigger = PG_TRIGGER_MOVE;
        else
-	 trigger = TRIGGER_DOWN;
+	 trigger = PG_TRIGGER_DOWN;
      }
      else {
        if (state)
-	 trigger = TRIGGER_UP;
+	 trigger = PG_TRIGGER_UP;
        else
 	 return 1;
      }
      break;
    }
 
-   // Avoid sending a flood of TRIGGER_MOVE's if stylus is in
+   // Avoid sending a flood of PG_TRIGGER_MOVE's if stylus is in
    // the same place as last time
-   if (old_trigger==TRIGGER_MOVE && oldx==x && oldy==y)
+   if (old_trigger==PG_TRIGGER_MOVE && oldx==x && oldy==y)
      return 1;
 
    old_trigger=trigger;
 
    // Handle the silkscreen buttons
    // remember that these aren't quite lined up to the screen
-   if (x>=-6 && x<=164 && y>242 && trigger == TRIGGER_DOWN) {
+   if (x>=-6 && x<=164 && y>242 && trigger == PG_TRIGGER_DOWN) {
      switch ((x+6)/(171/7)) {
      case 0: 
-       dispatch_key(TRIGGER_KEYDOWN,PGKEY_F1,0);
-       dispatch_key(TRIGGER_KEYUP,PGKEY_F1,0);
+       dispatch_key(PG_TRIGGER_KEYDOWN,PGKEY_F1,0);
+       dispatch_key(PG_TRIGGER_KEYUP,PGKEY_F1,0);
        break;
      case 1: 
-       dispatch_key(TRIGGER_KEYDOWN,PGKEY_F2,0);
-       dispatch_key(TRIGGER_KEYUP,PGKEY_F2,0);
+       dispatch_key(PG_TRIGGER_KEYDOWN,PGKEY_F2,0);
+       dispatch_key(PG_TRIGGER_KEYUP,PGKEY_F2,0);
        break;
      case 2: 
-       dispatch_key(TRIGGER_KEYDOWN,PGKEY_F3,0);
-       dispatch_key(TRIGGER_KEYUP,PGKEY_F3,0);
+       dispatch_key(PG_TRIGGER_KEYDOWN,PGKEY_F3,0);
+       dispatch_key(PG_TRIGGER_KEYUP,PGKEY_F3,0);
        break;
      case 3: 
-       dispatch_key(TRIGGER_KEYDOWN,PGKEY_F4,0);
-       dispatch_key(TRIGGER_KEYUP,PGKEY_F4,0);
+       dispatch_key(PG_TRIGGER_KEYDOWN,PGKEY_F4,0);
+       dispatch_key(PG_TRIGGER_KEYUP,PGKEY_F4,0);
        break;
      case 4: 
-       dispatch_key(TRIGGER_KEYDOWN,PGKEY_F5,0);
-       dispatch_key(TRIGGER_KEYUP,PGKEY_F5,0);
+       dispatch_key(PG_TRIGGER_KEYDOWN,PGKEY_F5,0);
+       dispatch_key(PG_TRIGGER_KEYUP,PGKEY_F5,0);
        break;
      case 5: 
-       dispatch_key(TRIGGER_KEYDOWN,PGKEY_F6,0);
-       dispatch_key(TRIGGER_KEYUP,PGKEY_F6,0);
+       dispatch_key(PG_TRIGGER_KEYDOWN,PGKEY_F6,0);
+       dispatch_key(PG_TRIGGER_KEYUP,PGKEY_F6,0);
        break;
      case 6: 
-       dispatch_key(TRIGGER_KEYDOWN,PGKEY_F7,0);
-       dispatch_key(TRIGGER_KEYUP,PGKEY_F7,0);
+       dispatch_key(PG_TRIGGER_KEYDOWN,PGKEY_F7,0);
+       dispatch_key(PG_TRIGGER_KEYUP,PGKEY_F7,0);
        break;
      }
-     state = (trigger != TRIGGER_UP);
+     state = (trigger != PG_TRIGGER_UP);
      return 1; // We don't need to dispatch any pointer info
    }
    /* If we got this far, accept the new state and send the event */
-   state = (trigger != TRIGGER_UP);
+   state = (trigger != PG_TRIGGER_UP);
    if (noskip) {
      // use the newest data
      dispatch_pointing(trigger,x,y,state);

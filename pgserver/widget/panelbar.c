@@ -1,4 +1,4 @@
-/* $Id: panelbar.c,v 1.7 2002/05/20 19:18:38 micahjd Exp $
+/* $Id: panelbar.c,v 1.8 2002/05/22 10:01:21 micahjd Exp $
  *
  * panelbar.c - Container and draggable bar for resizing panels
  *
@@ -162,8 +162,8 @@ g_error panelbar_install(struct widget *self) {
   self->out = &self->in->next;
   self->sub = &self->in->div->div;
 
-  self->trigger_mask = TRIGGER_ENTER | TRIGGER_LEAVE | TRIGGER_DOWN |
-    TRIGGER_UP | TRIGGER_RELEASE | TRIGGER_DRAG | TRIGGER_MOVE;
+  self->trigger_mask = PG_TRIGGER_ENTER | PG_TRIGGER_LEAVE | PG_TRIGGER_DOWN |
+    PG_TRIGGER_UP | PG_TRIGGER_RELEASE | PG_TRIGGER_DRAG | PG_TRIGGER_MOVE;
 
   /* Panelbars use auto-orientation by default */
   self->auto_orientation = 1;
@@ -235,17 +235,17 @@ void panelbar_trigger_sprite(struct widget *self,s32 type,union trigparam *param
 
   switch (type) {
 
-  case TRIGGER_ENTER:
+  case PG_TRIGGER_ENTER:
     DATA->over = 1;
     break;
 
-  case TRIGGER_LEAVE:
+  case PG_TRIGGER_LEAVE:
     /* If we're dragging, the mouse didn't REALLY leave */
     if (DATA->on) return;
     DATA->over=0;
     break;
 
-  case TRIGGER_DOWN:
+  case PG_TRIGGER_DOWN:
     if (param->mouse.chbtn != 1) return;
 
     /* If we're bound to another widget (we should be) save its current size */
@@ -301,8 +301,8 @@ void panelbar_trigger_sprite(struct widget *self,s32 type,union trigparam *param
 
     return;
 
-  case TRIGGER_UP:
-  case TRIGGER_RELEASE:
+  case PG_TRIGGER_UP:
+  case PG_TRIGGER_RELEASE:
     if (!DATA->on) return;
     if (!(param->mouse.chbtn & 1)) return;
 
@@ -350,8 +350,8 @@ void panelbar_trigger_sprite(struct widget *self,s32 type,union trigparam *param
     DATA->on = 0;
     break;
 
-  case TRIGGER_MOVE:
-  case TRIGGER_DRAG:
+  case PG_TRIGGER_MOVE:
+  case PG_TRIGGER_DRAG:
     if (!DATA->on) return;
      /* Ok, button 1 is dragging through our widget... */
      
@@ -393,14 +393,14 @@ void panelbar_trigger_solid(struct widget *self,s32 type,union trigparam *param)
 
   switch (type) {
 
-  case TRIGGER_ENTER:
+  case PG_TRIGGER_ENTER:
     DATA->over = 1;
     break;
-  case TRIGGER_LEAVE:
+  case PG_TRIGGER_LEAVE:
     DATA->over=0;
     break;
 
-  case TRIGGER_DOWN:
+  case PG_TRIGGER_DOWN:
     if (param->mouse.chbtn != 1) return;
 
     /* If we're bound to another widget (we should be) save its current size */
@@ -421,8 +421,8 @@ void panelbar_trigger_solid(struct widget *self,s32 type,union trigparam *param)
     DATA->y = param->mouse.y;
     break;
 
-  case TRIGGER_UP:
-  case TRIGGER_RELEASE:
+  case PG_TRIGGER_UP:
+  case PG_TRIGGER_RELEASE:
     if (!DATA->on) return;
     if (!(param->mouse.chbtn & 1)) return;
 
@@ -458,8 +458,8 @@ void panelbar_trigger_solid(struct widget *self,s32 type,union trigparam *param)
     DATA->on = 0;
     break;
 
-  case TRIGGER_MOVE:
-  case TRIGGER_DRAG:
+  case PG_TRIGGER_MOVE:
+  case PG_TRIGGER_DRAG:
      if (!DATA->on) return;
      if (panel_throttle(self))
        return;

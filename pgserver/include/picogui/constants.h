@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.143 2002/05/22 09:26:32 micahjd Exp $
+/* $Id: constants.h,v 1.144 2002/05/22 10:01:20 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -996,17 +996,40 @@ typedef unsigned long pghandle;
 #define PG_NWE_PNTR_RAW    0x1101 /* Raw coordinates, for tpcal or games */
 #define PG_NWE_CALIB_PENPOS 0x1301 /* Raw 32-bit coordinates, for tpcal */
 
-/* These are event constants used for networked input drivers. It is a subset
- * of the TRIGGER_* constants in the server, representing only those needed
- * for input drivers. */
-#define PG_TRIGGER_ACTIVATE   (1<<3)  /* Sent when it receives focus */
-#define PG_TRIGGER_DEACTIVATE (1<<4)  /* Losing focus */
-#define PG_TRIGGER_KEYUP      (1<<5)  /* Ignores autorepeat, etc. Raw key codes*/
-#define PG_TRIGGER_KEYDOWN    (1<<6)  /* Ditto. */
-#define PG_TRIGGER_UP         (1<<8)  /* Mouse up */
-#define PG_TRIGGER_DOWN       (1<<9)  /* Mouse down */
-#define PG_TRIGGER_MOVE       (1<<10) /* any mouse movement in node */
-#define PG_TRIGGER_CHAR       (1<<14) /* A processed ASCII/Unicode character */
+/* 'Triggers' are the notation used to describe events passing between input drivers
+ * and widgets. These constants are used in input filters, and in specifying trigger masks
+ * for the widgets.
+ */
+#define PG_TRIGGER_TIMER         (1<<0)  /* Timer event from install_timer */
+#define PG_TRIGGER_UNUSED_1      (1<<1)
+#define PG_TRIGGER_DIRECT        (1<<2)  /* A trigger sent explicitely */
+#define PG_TRIGGER_ACTIVATE      (1<<3)  /* Sent when it receives focus */
+#define PG_TRIGGER_DEACTIVATE    (1<<4)  /* Losing focus */
+#define PG_TRIGGER_KEYUP         (1<<5)  /* Ignores autorepeat, etc. Raw key codes*/
+#define PG_TRIGGER_KEYDOWN       (1<<6)  /* Ditto. */
+#define PG_TRIGGER_RELEASE       (1<<7)  /* Mouse up (see note) */
+#define PG_TRIGGER_UP            (1<<8)  /* Mouse up in specified divnode */
+#define PG_TRIGGER_DOWN          (1<<9)  /* Mouse down in divnode */
+#define PG_TRIGGER_MOVE          (1<<10) /* Triggers on any mouse movement in node */
+#define PG_TRIGGER_ENTER         (1<<11) /* Mouse moves inside widget */
+#define PG_TRIGGER_LEAVE         (1<<12) /* Mouse moves outside widget */
+#define PG_TRIGGER_DRAG          (1<<13) /* Mouse move when captured */
+#define PG_TRIGGER_CHAR          (1<<14) /* A processed ASCII/Unicode character */
+#define PG_TRIGGER_STREAM        (1<<15) /* Incoming packet (from WRITETO) */
+#define PG_TRIGGER_KEY_START     (1<<16) /* Sent at the beginning of key propagation */
+#define PG_TRIGGER_NONTOOLBAR    (1<<17) /* Not really a trigger, but widgets can put this
+				       * in their trigger mask to request placement in
+				       * the nontoolbar area when applicable */
+#define PG_TRIGGER_PNTR_STATUS   (1<<18) /* A driver can send this trigger with the current
+				       * status of the mouse to have the input filters
+				       * automatically extrapolate other events. */
+#define PG_TRIGGER_KEY           (1<<19) /* A driver can send this with a key code when
+				       * the exact state of the key is unknown, to have
+				       * KEYUP, KEYDOWN, and CHAR events generated. */
+
+/* Note on PG_TRIGGER_RELEASE:  This is when the mouse was pressed inside
+   the widget, then released elsewhere.  */
+
 
 /* More flags used in PicoGUI's keyboard triggers to indicate the circumstances
  * under which a key event is received.

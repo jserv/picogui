@@ -1,4 +1,4 @@
-/* $Id: gpm.c,v 1.3 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: gpm.c,v 1.4 2002/05/22 10:01:20 micahjd Exp $
  *
  * gpm.c - input driver for gpm
  * 
@@ -75,17 +75,17 @@ int gpm_fd_activate(int fd) {
 	    
 	  case GPM_MOVE:
 	  case GPM_DRAG:
-	    trigger = TRIGGER_MOVE;
+	    trigger = PG_TRIGGER_MOVE;
 	    savedbtn = evt.buttons;
 	    break;
 	    
 	  case GPM_UP:
-	    trigger = TRIGGER_UP;
+	    trigger = PG_TRIGGER_UP;
 	    evt.buttons = savedbtn &= ~evt.buttons;
 	    break;
 	    
 	  case GPM_DOWN:
-	    trigger = TRIGGER_DOWN;
+	    trigger = PG_TRIGGER_DOWN;
 	    savedbtn = evt.buttons;
 	    break;
 	    

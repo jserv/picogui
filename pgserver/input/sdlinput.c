@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.37 2002/03/12 01:09:30 micahjd Exp $
+/* $Id: sdlinput.c,v 1.38 2002/05/22 10:01:20 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -109,11 +109,11 @@ void sdlinput_poll(void) {
 	  if (evt.type == SDL_MOUSEBUTTONDOWN) {
 	  /* Not a weird key? */
 	    if (sdlinput_map[i].key < 128)
-	      dispatch_key(TRIGGER_CHAR, sdlinput_map[i].key, 0);
-	    dispatch_key(TRIGGER_KEYDOWN, sdlinput_map[i].key, 0);
+	      dispatch_key(PG_TRIGGER_CHAR, sdlinput_map[i].key, 0);
+	    dispatch_key(PG_TRIGGER_KEYDOWN, sdlinput_map[i].key, 0);
 	  }
 	  else if (evt.type == SDL_MOUSEBUTTONUP)
-	    dispatch_key(TRIGGER_KEYUP, sdlinput_map[i].key, 0);
+	    dispatch_key(PG_TRIGGER_KEYUP, sdlinput_map[i].key, 0);
 	  
 	  return;
 	}
@@ -159,7 +159,7 @@ void sdlinput_poll(void) {
 	*/
 	
 	if (sdlinput_upmove || btnstate)
-	  dispatch_pointing(TRIGGER_MOVE, pgx, pgy, btnstate);
+	  dispatch_pointing(PG_TRIGGER_MOVE, pgx, pgy, btnstate);
 	if (sdlinput_pgcursor)
 	  drivermessage(PGDM_CURSORVISIBLE,1,NULL);
       }
@@ -169,14 +169,14 @@ void sdlinput_poll(void) {
       case SDL_MOUSEBUTTONDOWN:
 	if (sdlinput_foldbuttons)
 	  evt.button.button = evt.button.button!=0;
-	dispatch_pointing(TRIGGER_DOWN,
+	dispatch_pointing(PG_TRIGGER_DOWN,
 			  pgx, pgy,btnstate |= 1<<(evt.button.button-1));
 	break;
 	
       case SDL_MOUSEBUTTONUP:      
 	if (sdlinput_foldbuttons)
 	  evt.button.button = evt.button.button!=0;
-	dispatch_pointing(TRIGGER_UP,
+	dispatch_pointing(PG_TRIGGER_UP,
 			  pgx, pgy,btnstate &= ~(1<<(evt.button.button-1)));
 	break;
       }
@@ -189,14 +189,14 @@ void sdlinput_poll(void) {
     case SDL_KEYDOWN:
       if (!sdlinput_nokeyboard) {
 	if (evt.key.keysym.unicode)
-	  dispatch_key(TRIGGER_CHAR,evt.key.keysym.unicode,evt.key.keysym.mod);
-	dispatch_key(TRIGGER_KEYDOWN,evt.key.keysym.sym,evt.key.keysym.mod);
+	  dispatch_key(PG_TRIGGER_CHAR,evt.key.keysym.unicode,evt.key.keysym.mod);
+	dispatch_key(PG_TRIGGER_KEYDOWN,evt.key.keysym.sym,evt.key.keysym.mod);
       }
       break;
       
     case SDL_KEYUP:
       if (!sdlinput_nokeyboard)
-	dispatch_key(TRIGGER_KEYUP,evt.key.keysym.sym,evt.key.keysym.mod);
+	dispatch_key(PG_TRIGGER_KEYUP,evt.key.keysym.sym,evt.key.keysym.mod);
       break;
       
     case SDL_QUIT:

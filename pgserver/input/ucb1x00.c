@@ -84,13 +84,13 @@ void ucb1x00_packet(int x, int y, int pressure) {
    */
   if (pressure) {
     if (state)
-      trigger = TRIGGER_MOVE;
+      trigger = PG_TRIGGER_MOVE;
     else
-      trigger = TRIGGER_DOWN;
+      trigger = PG_TRIGGER_DOWN;
   }
   else {
     if (state)
-      trigger = TRIGGER_UP;
+      trigger = PG_TRIGGER_UP;
     else
       return 1;
   }
@@ -99,7 +99,7 @@ void ucb1x00_packet(int x, int y, int pressure) {
     drivermessage(PGDM_CURSORVISIBLE,1,NULL);
    
   /* If we got this far, accept the new state and send the event */
-  state = (trigger != TRIGGER_UP);
+  state = (trigger != PG_TRIGGER_UP);
   dispatch_pointing(trigger,x,y,state);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.52 2002/05/22 09:26:34 micahjd Exp $
+/* $Id: terminal.c,v 1.53 2002/05/22 10:01:22 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -371,9 +371,9 @@ g_error terminal_install(struct widget *self) {
   errorcheck;
   terminal_set(self,PG_WP_FONT,DATA->deffont);
    
-  self->trigger_mask = TRIGGER_STREAM | TRIGGER_CHAR | TRIGGER_DOWN |
-     TRIGGER_UP | TRIGGER_RELEASE | TRIGGER_ACTIVATE | TRIGGER_DEACTIVATE |
-     TRIGGER_TIMER | TRIGGER_KEYDOWN | TRIGGER_KEYUP;
+  self->trigger_mask = PG_TRIGGER_STREAM | PG_TRIGGER_CHAR | PG_TRIGGER_DOWN |
+     PG_TRIGGER_UP | PG_TRIGGER_RELEASE | PG_TRIGGER_ACTIVATE | PG_TRIGGER_DEACTIVATE |
+     PG_TRIGGER_TIMER | PG_TRIGGER_KEYDOWN | PG_TRIGGER_KEYUP;
 
   return success;
 }
@@ -444,24 +444,24 @@ void terminal_trigger(struct widget *self,s32 type,union trigparam *param) {
     
     /* When clicked, request keyboard focus */
     
-  case TRIGGER_DOWN:
+  case PG_TRIGGER_DOWN:
     if (param->mouse.chbtn==1)
       DATA->on=1;
     return;
     
-  case TRIGGER_UP:
+  case PG_TRIGGER_UP:
     if (DATA->on && param->mouse.chbtn==1) {
       DATA->on=0;
       request_focus(self);
     }
     return;
       
-  case TRIGGER_RELEASE:
+  case PG_TRIGGER_RELEASE:
     if (param->mouse.chbtn==1)
       DATA->on=0;
     return;
     
-  case TRIGGER_STREAM:
+  case PG_TRIGGER_STREAM:
     /* Output each character */
     for (;*param->stream.data;param->stream.data++)
       term_char(self,*param->stream.data);
@@ -489,7 +489,7 @@ void terminal_trigger(struct widget *self,s32 type,union trigparam *param) {
     DATA->update_time = getticks();
     return;
     
-  case TRIGGER_CHAR:
+  case PG_TRIGGER_CHAR:
     if (!(param->kbd.flags & PG_KF_FOCUSED))
       return;
     param->kbd.consume++;
@@ -499,7 +499,7 @@ void terminal_trigger(struct widget *self,s32 type,union trigparam *param) {
     /* Terminal always consumes normal characters */
     return;
      
-  case TRIGGER_KEYDOWN:
+  case PG_TRIGGER_KEYDOWN:
     if (!(param->kbd.flags & PG_KF_FOCUSED))
       return;
     param->kbd.consume++;
@@ -511,22 +511,22 @@ void terminal_trigger(struct widget *self,s32 type,union trigparam *param) {
     }
     return;
     
-  case TRIGGER_KEYUP:
+  case PG_TRIGGER_KEYUP:
     if (!(param->kbd.flags & PG_KF_FOCUSED))
       return;
     param->kbd.consume++;
     return;
     
-  case TRIGGER_DEACTIVATE:
+  case PG_TRIGGER_DEACTIVATE:
     DATA->focus = 0;
     term_setcursor(self,1);  /* Show cursor */
     break;    /* Update */
     
-  case TRIGGER_ACTIVATE:
+  case PG_TRIGGER_ACTIVATE:
     DATA->focus = 1;
-    /* No break; fall through to TRIGGER_TIMER to set up timer */
+    /* No break; fall through to PG_TRIGGER_TIMER to set up timer */
     
-  case TRIGGER_TIMER:
+  case PG_TRIGGER_TIMER:
     if (!DATA->focus) return;
     
     /* Reset timer */

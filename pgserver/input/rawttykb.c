@@ -1,4 +1,4 @@
-/* $Id: rawttykb.c,v 1.1 2002/04/02 10:28:52 micahjd Exp $
+/* $Id: rawttykb.c,v 1.2 2002/05/22 10:01:20 micahjd Exp $
  *
  * rawttykb.c - A medium-raw TTY keyboard driver that accurately
  *              represents the keyboard at the risk of less compatibility
@@ -370,8 +370,8 @@ static void handle_keyboard(void) {
 
       /* This maps quite nicely now to a picogui keyboard event or two */
       if (keysym.unicode && pressed)
-	dispatch_key(TRIGGER_CHAR,keysym.unicode,kbd_modstate);
-      dispatch_key(pressed ? TRIGGER_KEYDOWN : TRIGGER_KEYUP,keysym.sym,kbd_modstate);
+	dispatch_key(PG_TRIGGER_CHAR,keysym.unicode,kbd_modstate);
+      dispatch_key(pressed ? PG_TRIGGER_KEYDOWN : PG_TRIGGER_KEYUP,keysym.sym,kbd_modstate);
 
       break;
     }

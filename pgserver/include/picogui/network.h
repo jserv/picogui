@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.60 2002/05/22 09:26:32 micahjd Exp $
+/* $Id: network.h,v 1.61 2002/05/22 10:01:20 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -208,12 +208,12 @@ struct pgreqd_get {
   u16 dummy;
 };
 struct pgreqd_in_key {
-  u32 type;   /* A TRIGGER_* constant */
+  u32 type;   /* A PG_TRIGGER_* constant */
   u16 key;
   u16 mods;
 };
 struct pgreqd_in_point {
-  u32 type;   /* A TRIGGER_* constant */
+  u32 type;   /* A PG_TRIGGER_* constant */
   u16 x;
   u16 y;
   u16 btn;  /* button bitmask */

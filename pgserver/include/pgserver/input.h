@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.41 2002/05/22 09:26:32 micahjd Exp $
+/* $Id: input.h,v 1.42 2002/05/22 10:01:20 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -48,39 +48,9 @@
 #include <pgserver/g_error.h>
 #include <pgserver/handle.h>
 
-/********************************************** Trigger constants */
+/********************************************** Triggers */
 
-/* Constants for a trigger type. One of these constants is used to identify
-   a trigger when it happens, and they are combined to form a trigger mask */
-#define TRIGGER_TIMER         (1<<0)  /* Timer event from install_timer */
-#define TRIGGER_UNUSED_1      (1<<1)
-#define TRIGGER_DIRECT        (1<<2)  /* A trigger sent explicitely */
-#define TRIGGER_ACTIVATE      (1<<3)  /* Sent when it receives focus */
-#define TRIGGER_DEACTIVATE    (1<<4)  /* Losing focus */
-#define TRIGGER_KEYUP         (1<<5)  /* Ignores autorepeat, etc. Raw key codes*/
-#define TRIGGER_KEYDOWN       (1<<6)  /* Ditto. */
-#define TRIGGER_RELEASE       (1<<7)  /* Mouse up (see note) */
-#define TRIGGER_UP            (1<<8)  /* Mouse up in specified divnode */
-#define TRIGGER_DOWN          (1<<9)  /* Mouse down in divnode */
-#define TRIGGER_MOVE          (1<<10) /* Triggers on any mouse movement in node */
-#define TRIGGER_ENTER         (1<<11) /* Mouse moves inside widget */
-#define TRIGGER_LEAVE         (1<<12) /* Mouse moves outside widget */
-#define TRIGGER_DRAG          (1<<13) /* Mouse move when captured */
-#define TRIGGER_CHAR          (1<<14) /* A processed ASCII/Unicode character */
-#define TRIGGER_STREAM        (1<<15) /* Incoming packet (from WRITETO) */
-#define TRIGGER_KEY_START     (1<<16) /* Sent at the beginning of key propagation */
-#define TRIGGER_NONTOOLBAR    (1<<17) /* Not really a trigger, but widgets can put this
-				       * in their trigger mask to request placement in
-				       * the nontoolbar area when applicable */
-#define TRIGGER_PNTR_STATUS   (1<<18) /* A driver can send this trigger with the current
-				       * status of the mouse to have the input filters
-				       * automatically extrapolate other events. */
-#define TRIGGER_KEY           (1<<19) /* A driver can send this with a key code when
-				       * the exact state of the key is unknown, to have
-				       * KEYUP, KEYDOWN, and CHAR events generated. */
-
-/* Note on TRIGGER_RELEASE:  This is when the mouse was pressed inside
-   the widget, then released elsewhere.  */
+/* NOTE: Trigger types are now defined in constants.h */
 
 /* Trigger param union */
 union trigparam {

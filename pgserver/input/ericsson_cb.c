@@ -1,4 +1,4 @@
-/* $Id: ericsson_cb.c,v 1.8 2002/04/24 13:14:29 bauermeister Exp $
+/* $Id: ericsson_cb.c,v 1.9 2002/05/22 10:01:20 micahjd Exp $
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -664,13 +664,13 @@ static int editting(void)
 #if LOCAL_DEBUG
 static void __dispatch_key(u32 type,s16 key,s16 mods)
 {
-  if(type==TRIGGER_CHAR)
+  if(type==PG_TRIGGER_CHAR)
     printf("CHAR, char:['%c'=%02x]", key, key);
   else {
     printf("%s, key:[%02X=",
-	    type==TRIGGER_KEYUP
+	    type==PG_TRIGGER_KEYUP
 	    ? "KEYUP"
-	    : type==TRIGGER_KEYDOWN ? "KEYDOWN" : "unknown-trigger",
+	    : type==PG_TRIGGER_KEYDOWN ? "KEYDOWN" : "unknown-trigger",
 	    key);
     print_pgkeyname(key);
     printf("]");
@@ -706,9 +706,9 @@ static void treat_key(int index)
 
   switch(pg_code) {
   case PGKEY_CAPSLOCK:
-    dispatch_key(TRIGGER_KEYDOWN, PGKEY_CAPSLOCK, calc_mods(0));
+    dispatch_key(PG_TRIGGER_KEYDOWN, PGKEY_CAPSLOCK, calc_mods(0));
     mod_caps = !mod_caps;
-    dispatch_key(TRIGGER_KEYUP, PGKEY_CAPSLOCK, calc_mods(0));
+    dispatch_key(PG_TRIGGER_KEYUP, PGKEY_CAPSLOCK, calc_mods(0));
     return;
 
   case PGKEY_LEFT:
@@ -735,9 +735,9 @@ static void treat_key(int index)
   }
 
   if(ctrl_down)
-  dispatch_key(TRIGGER_KEYDOWN, pg_code, calc_mods(pg_mods_extra));
-  if(pg_char) dispatch_key(TRIGGER_CHAR, pg_char, calc_mods(pg_mods_extra));
-  dispatch_key(TRIGGER_KEYUP, pg_code, calc_mods(pg_mods_extra));
+  dispatch_key(PG_TRIGGER_KEYDOWN, pg_code, calc_mods(pg_mods_extra));
+  if(pg_char) dispatch_key(PG_TRIGGER_CHAR, pg_char, calc_mods(pg_mods_extra));
+  dispatch_key(PG_TRIGGER_KEYUP, pg_code, calc_mods(pg_mods_extra));
   ctrl_down = 0;
 }
 

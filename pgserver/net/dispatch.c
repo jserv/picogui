@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.98 2002/05/22 09:26:32 micahjd Exp $
+/* $Id: dispatch.c,v 1.99 2002/05/22 10:01:20 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -876,7 +876,7 @@ g_error rqh_writeto(int owner, struct pgrequest *req,
 
   e = rdhandle((void**) &w,PG_TYPE_WIDGET,owner,ntohl(arg->h));
   errorcheck;
-  send_trigger(w,TRIGGER_STREAM,&tp);
+  send_trigger(w,PG_TRIGGER_STREAM,&tp);
 
   return success;
 }

@@ -1,4 +1,4 @@
-/* $Id: pgkeys.h,v 1.9 2002/03/01 21:17:12 micahjd Exp $
+/* $Id: pgkeys.h,v 1.10 2002/05/22 10:01:20 micahjd Exp $
  *
  * pgkeys.h - Constants for the keyboard keys and modifiers
  *
@@ -28,7 +28,7 @@
 #ifndef __PGKEYS_H
 #define __PGKEYS_H
 
-/* Keysyms for TRIGGER_KEYUP and TRIGGER_KEYDOWN.
+/* Keysyms for PG_TRIGGER_KEYUP and PG_TRIGGER_KEYDOWN.
    These are copied from SDL's SDL_keysym.h
    (because I think it's a good character set! Thank you SDL!
    SDL_keysym.h is Copyright (C) 1997, 1998, 1999, 2000  Sam Lantinga

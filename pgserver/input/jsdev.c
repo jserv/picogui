@@ -1,4 +1,4 @@
-/* $Id: jsdev.c,v 1.3 2002/03/29 13:21:18 micahjd Exp $
+/* $Id: jsdev.c,v 1.4 2002/05/22 10:01:20 micahjd Exp $
  *
  * jsdev.c - Driver for cursor control and key input using a joystick,
  *           reads from the linux joystick device. Note that all joystick 
@@ -118,12 +118,12 @@ int jsdev_fd_activate(int fd) {
       if (js.value) {
 	/* press */
 	if (jsdev_buttons[js.number].key < 128)
-	  dispatch_key(TRIGGER_CHAR, jsdev_buttons[js.number].key, 0);
-	dispatch_key(TRIGGER_KEYDOWN, jsdev_buttons[js.number].key, 0);
+	  dispatch_key(PG_TRIGGER_CHAR, jsdev_buttons[js.number].key, 0);
+	dispatch_key(PG_TRIGGER_KEYDOWN, jsdev_buttons[js.number].key, 0);
       }
       else {
 	/* Release */
-	dispatch_key(TRIGGER_KEYUP, jsdev_buttons[js.number].key, 0);
+	dispatch_key(PG_TRIGGER_KEYUP, jsdev_buttons[js.number].key, 0);
       }
       break;
 
@@ -133,7 +133,7 @@ int jsdev_fd_activate(int fd) {
       cursory = cursor->y;
       VID(coord_physicalize)(&cursorx,&cursory);
 
-      dispatch_pointing(js.value ? TRIGGER_DOWN : TRIGGER_UP,
+      dispatch_pointing(js.value ? PG_TRIGGER_DOWN : PG_TRIGGER_UP,
 			cursorx,cursory,jsdev_buttons[js.number].mousebutton);	
       break;
 
@@ -152,12 +152,12 @@ int jsdev_fd_activate(int fd) {
 	if (newstate && !map->state) {
 	  /* press */
 	  if (map->key < 128)
-	    dispatch_key(TRIGGER_CHAR, map->key, 0);
-	  dispatch_key(TRIGGER_KEYDOWN, map->key, 0);
+	    dispatch_key(PG_TRIGGER_CHAR, map->key, 0);
+	  dispatch_key(PG_TRIGGER_KEYDOWN, map->key, 0);
 	}
 	else if (map->state && !newstate) {
 	  /* Release */
-	  dispatch_key(TRIGGER_KEYUP, map->key, 0);
+	  dispatch_key(PG_TRIGGER_KEYUP, map->key, 0);
 	}
 	map->state = newstate;
       }
@@ -340,7 +340,7 @@ void jsdev_poll(void) {
     if (cursory < 0)cursory=0;
    
     /* Move the cursor */
-    dispatch_pointing(TRIGGER_MOVE,cursorx,cursory,0);
+    dispatch_pointing(PG_TRIGGER_MOVE,cursorx,cursory,0);
   }
 }
 

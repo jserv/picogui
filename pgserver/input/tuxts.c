@@ -112,19 +112,19 @@ void tuxts_poll(void) {
       drivermessage(PGDM_CURSORVISIBLE,1,NULL);
 
     if(PEN_DOWN) {
-      dispatch_pointing(TRIGGER_MOVE,x,y,1);
+      dispatch_pointing(PG_TRIGGER_MOVE,x,y,1);
 #ifdef DEBUG_EVENT
       printf("Pen Move\n");
 #endif
     } else {
-      dispatch_pointing(TRIGGER_DOWN,x,y,1);
+      dispatch_pointing(PG_TRIGGER_DOWN,x,y,1);
       PEN_DOWN = 1;
 #ifdef DEBUG_EVENT
       printf("Pen Down\n");
 #endif
     }
   } else {
-    dispatch_pointing(TRIGGER_UP,x,y,0);
+    dispatch_pointing(PG_TRIGGER_UP,x,y,0);
 #ifdef DEBUG_EVENT
     printf("Pen Up\n");
 #endif

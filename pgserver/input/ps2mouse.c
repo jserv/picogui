@@ -1,4 +1,4 @@
-/* $Id: ps2mouse.c,v 1.1 2002/03/22 21:01:46 micahjd Exp $
+/* $Id: ps2mouse.c,v 1.2 2002/05/22 10:01:20 micahjd Exp $
  *
  * ps2mouse.c - Driver for PS/2 compatible mouse devices, including input core
  *              drivers that emulate PS/2 mice.
@@ -180,24 +180,24 @@ int ps2mouse_fd_activate(int fd) {
   
   /* FIXME: for now, map Z axis to buttons, like X does. This should be fixed */
   if (dz > 0) {
-    dispatch_pointing(TRIGGER_DOWN,cursorx,cursory,buttons | 8);
-    dispatch_pointing(TRIGGER_UP,cursorx,cursory,buttons | 8);
+    dispatch_pointing(PG_TRIGGER_DOWN,cursorx,cursory,buttons | 8);
+    dispatch_pointing(PG_TRIGGER_UP,cursorx,cursory,buttons | 8);
   }
   if (dz < 0) {
-    dispatch_pointing(TRIGGER_DOWN,cursorx,cursory,buttons | 16);
-    dispatch_pointing(TRIGGER_UP,cursorx,cursory,buttons | 16);
+    dispatch_pointing(PG_TRIGGER_DOWN,cursorx,cursory,buttons | 16);
+    dispatch_pointing(PG_TRIGGER_UP,cursorx,cursory,buttons | 16);
   }
 
   /* Process buttons */
   if (buttons & ~oldbuttons)
-    dispatch_pointing(TRIGGER_DOWN,cursorx,cursory,buttons);
+    dispatch_pointing(PG_TRIGGER_DOWN,cursorx,cursory,buttons);
   if (oldbuttons & ~buttons)
-    dispatch_pointing(TRIGGER_UP,cursorx,cursory,buttons);
+    dispatch_pointing(PG_TRIGGER_UP,cursorx,cursory,buttons);
   oldbuttons = buttons;
 
   /* Process motion */
   if((dx!=0)||(dy!=0))
-    dispatch_pointing(TRIGGER_MOVE,cursorx,cursory,buttons);
+    dispatch_pointing(PG_TRIGGER_MOVE,cursorx,cursory,buttons);
   
   return 1;
 }

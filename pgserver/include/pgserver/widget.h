@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.61 2002/05/22 00:09:58 micahjd Exp $
+/* $Id: widget.h,v 1.62 2002/05/22 10:01:20 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -146,11 +146,11 @@ struct widget {
   /* This is the scroll bar bound to us, set with the PG_WP_BIND property. */
   handle scrollbind;
 
-  /* widget sets this to accept triggers.  TRIGGER_* constants or'ed
+  /* widget sets this to accept triggers.  PG_TRIGGER_* constants or'ed
      together. */
   u32 trigger_mask;
 
-  /* Time (in ticks) for a TRIGGER_TIMER */
+  /* Time (in ticks) for a PG_TRIGGER_TIMER */
   u32 time;
   /* Widgets with timers are in a linked list */
   struct widget *tnext;
@@ -244,7 +244,7 @@ void redraw_bg(struct widget *self);
 
 /*
    Set a timer.  At the time, in ticks, specified by 'time',
-   the widget will recieve a TRIGGER_TIMER
+   the widget will recieve a PG_TRIGGER_TIMER
 */
 void install_timer(struct widget *self,u32 interval);
 
@@ -258,7 +258,7 @@ void trigger_timer(void);
 
 /*
   Request focus for a widget.  Usually called in response to a click, or 
-  a hotkey.  Sends TRIGGER_ACTIVATE and TRIGGER_DEACTIVATE, and sets kbdfocus
+  a hotkey.  Sends PG_TRIGGER_ACTIVATE and PG_TRIGGER_DEACTIVATE, and sets kbdfocus
 */
 void request_focus(struct widget *self);
 

@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.55 2002/05/20 19:18:38 micahjd Exp $
+/* $Id: popup.c,v 1.56 2002/05/22 10:01:21 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -83,7 +83,7 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
     memset(&param,0,sizeof(param));
     param.mouse.x = cursor->x;
     param.mouse.y = cursor->y;
-    send_trigger(under, TRIGGER_LEAVE, &param);
+    send_trigger(under, PG_TRIGGER_LEAVE, &param);
   }
 
   /* Freeze the existing layer and make a new one */
@@ -202,7 +202,7 @@ g_error popup_install(struct widget *self) {
   self->out = &self->in->next;
   self->sub = &self->in->div->div;
   
-  self->trigger_mask = TRIGGER_DOWN | TRIGGER_KEYUP | TRIGGER_KEYDOWN | TRIGGER_CHAR;
+  self->trigger_mask = PG_TRIGGER_DOWN | PG_TRIGGER_KEYUP | PG_TRIGGER_KEYDOWN | PG_TRIGGER_CHAR;
 
   return success;
 }
@@ -251,17 +251,17 @@ void popup_trigger(struct widget *self,s32 type,union trigparam *param) {
 
   switch (type) {
 
-  case TRIGGER_KEYUP:
-  case TRIGGER_KEYDOWN:
-  case TRIGGER_CHAR:
+  case PG_TRIGGER_KEYUP:
+  case PG_TRIGGER_KEYDOWN:
+  case PG_TRIGGER_CHAR:
     if (param->kbd.key != PGKEY_ESCAPE)
       return;
     param->kbd.consume++;
-    if (type != TRIGGER_KEYUP)
+    if (type != PG_TRIGGER_KEYUP)
       return;
     break;
 
-  case TRIGGER_DOWN:
+  case PG_TRIGGER_DOWN:
     if (div_under_crsr != self->in)
       return;
 

@@ -1,4 +1,4 @@
-/* $Id: zaurus.c,v 1.4 2002/04/09 21:20:16 micahjd Exp $
+/* $Id: zaurus.c,v 1.5 2002/05/22 10:01:20 micahjd Exp $
  *
  * zaurus.c - Input driver for the Sharp Zaurus SL-5000. This includes a
  *            simple touchscreen driver, and some extras to handle sound
@@ -101,19 +101,19 @@ int zaurus_ts_fd_activate(int fd) {
     */
    if (ts.pressure) {
       if (state)
-	trigger = TRIGGER_MOVE;
+	trigger = PG_TRIGGER_MOVE;
       else
-	trigger = TRIGGER_DOWN;
+	trigger = PG_TRIGGER_DOWN;
    }
    else {
       if (state)
-	trigger = TRIGGER_UP;
+	trigger = PG_TRIGGER_UP;
       else
 	return 1;
    }
    
    /* If we got this far, accept the new state and send the event */
-   state = (trigger != TRIGGER_UP);
+   state = (trigger != PG_TRIGGER_UP);
    dispatch_pointing(trigger,x,y,state);
    
    return 1;

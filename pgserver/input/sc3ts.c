@@ -1,4 +1,4 @@
-/* $Id: sc3ts.c,v 1.2 2002/01/10 20:48:10 lonetech Exp $
+/* $Id: sc3ts.c,v 1.3 2002/05/22 10:01:20 micahjd Exp $
  *
  * sc3ts.c - input driver for sc3 compatible touch screens
  *
@@ -95,15 +95,15 @@ int sc3_fd_activate(int fd) {
   touchscreen_pentoscreen(&cursorx, &cursory);
 
   if ((buttons!=0)&&(btnstate==0)){
-    dispatch_pointing(TRIGGER_DOWN,cursorx,cursory,buttons);
+    dispatch_pointing(PG_TRIGGER_DOWN,cursorx,cursory,buttons);
     btnstate=1;
   }
   if ((buttons==0)&&(btnstate==1)){
-    dispatch_pointing(TRIGGER_UP,cursorx,cursory,buttons);
+    dispatch_pointing(PG_TRIGGER_UP,cursorx,cursory,buttons);
     btnstate=0;
   }
   if(buttons)
-    dispatch_pointing(TRIGGER_MOVE,cursorx,cursory,buttons);
+    dispatch_pointing(PG_TRIGGER_MOVE,cursorx,cursory,buttons);
   
   return 1;
 }
