@@ -1,2 +1,6 @@
 This perl library is completely rewritten. It now aims to create an interface
 for perl that exactly mirrors the one for C, and uses the C client library.
+
+Note: This is my first attempt at an XS module, so please let me know where
+i messed up ;)
+  -- Micah
