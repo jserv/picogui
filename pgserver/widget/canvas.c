@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.34 2002/01/06 09:23:00 micahjd Exp $
+/* $Id: canvas.c,v 1.35 2002/01/08 17:24:15 cgrigis Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -246,11 +246,32 @@ void canvas_trigger(struct widget *self,long type,union trigparam *param) {
    }      
 
    if (evt)
-     post_event(evt,self,
-		(evt==PG_WE_KBD_CHAR) ? param->kbd.key : 
-		(param->kbd.mods<<16)|param->kbd.key,
-		0,NULL);
+     {
+       post_event(evt,self,
+		  (evt==PG_WE_KBD_CHAR) ? param->kbd.key : 
+		  (param->kbd.mods<<16)|param->kbd.key,
+		  0,NULL);
 
+       return;
+     }
+
+   /* Focus event? */
+   switch (type) 
+     {
+     case TRIGGER_ACTIVATE:
+       evt = PG_WE_ACTIVATE;
+       break;
+     case TRIGGER_DEACTIVATE:
+       evt = PG_WE_DEACTIVATE;
+       break;
+     default:
+       evt = 0;
+     }
+   
+   if (evt)
+     {
+       post_event (evt, self, 0, 0, NULL);
+     }
 
 }
 
