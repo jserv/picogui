@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.32 2000/11/03 23:38:33 micahjd Exp $
+/* $Id: panel.c,v 1.33 2000/11/04 02:13:06 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -75,21 +75,42 @@ void resize_panel(struct widget *self) {
 
 void build_panelbar(struct gropctxt *c,unsigned short state,
 		    struct widget *self) {
-  /*
   struct fontdesc *fd;
   char *str;
-  */    
+  int x,y,w,h;
+  int al = theme_lookup(state,PGTH_P_ALIGN);
+  handle font = theme_lookup(state,PGTH_P_FONT);
 
-  /* Dereference handles */
-  /*  if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,
-      || !fd) return;
-      if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,DATA->text))
-      || !str) return;*/
-
+  /* Background */
   exec_fillstyle(c,state,PGTH_P_BGFILL);
   
-  addgrop(c,(c->w > c->h) ? PG_GROP_TEXT : PG_GROP_TEXTV,0,(c->w > c->h) ?
-	  0 : c->h,1,1);
+  /* Measure the exact width and height of the text and align it */
+  if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,font))
+      || !fd) return;
+  if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,DATA->text))
+      || !str) return;
+  if (c->h > c->w) {      /* mangle the alignment if necessary */
+    switch (al) {
+    case PG_A_TOP:    al = PG_A_LEFT;   break;
+    case PG_A_NE:     al = PG_A_SW;     break;
+    case PG_A_RIGHT:  al = PG_A_BOTTOM; break;
+    case PG_A_SE:     al = PG_A_SE;     break;
+    case PG_A_BOTTOM: al = PG_A_RIGHT;  break;
+    case PG_A_SW:     al = PG_A_NE;     break;
+    case PG_A_LEFT:   al = PG_A_TOP;    break;
+    case PG_A_NW:     al = PG_A_NW;     break;
+    }   
+    sizetext(fd,&h,&w,str);
+  }
+  else
+    sizetext(fd,&w,&h,str);
+  if (w>c->w) w = c->w;
+  if (h>c->h) h = c->h;
+  align(c,al,&w,&h,&x,&y);
+  if (c->h > c->w)
+    y = c->h - y;
+
+  addgrop(c,(c->w > c->h) ? PG_GROP_TEXT : PG_GROP_TEXTV,x,y,w,h);
   c->current->param[0] = DATA->text;
   c->current->param[1] = theme_lookup(state,PGTH_P_FONT);
   c->current->param[2] = theme_lookup(state,PGTH_P_FGCOLOR);
