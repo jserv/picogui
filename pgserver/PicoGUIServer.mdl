@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-# $Id: PicoGUIServer.mdl,v 1.55 2003/01/22 13:47:37 bornet Exp $
+# $Id: PicoGUIServer.mdl,v 1.56 2003/04/03 08:40:42 bornet Exp $
 
 import os, string
 from Bee.Autoconf import compile, install, clean, configure, flags
@@ -123,7 +123,7 @@ blocked  = 1
     elif platform.platform == 'native-linux':
         fd.write ('''
 name = picogui-server
-argv = pgserver -m 320x240x16
+argv = pgserver -m 640x480
 
 restart  = 1
 announce = 1
