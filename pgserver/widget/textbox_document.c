@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.10 2001/10/18 05:35:11 micahjd Exp $
+/* $Id: textbox_document.c,v 1.11 2001/10/18 23:22:55 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -234,20 +234,20 @@ g_error text_insert_string(struct textbox_cursor *c, const char *str,
   if (!c->c_gctx.current) {
     gropctxt_init(&c->c_gctx,c->c_div);
     c->c_gx = c->c_gy = 0;
-   
-    /* Add font */
-    if (c->f_top && c->f_top->fontdef) {
-      c->f_top->font_refcnt++;
-      addgrop(&c->c_gctx,PG_GROP_SETFONT);
-      c->c_gctx.current->param[0] = c->f_top->fontdef;
-    }
-    /* Add color */
-    if (c->f_top && c->f_top->color) {
-      addgrop(&c->c_gctx,PG_GROP_SETCOLOR);
-      c->c_gctx.current->param[0] = c->f_top->color;
-    }
   }
   
+  /* Add font */
+  if (c->f_top && c->f_top->fontdef) {
+    c->f_top->font_refcnt++;
+    addgrop(&c->c_gctx,PG_GROP_SETFONT);
+    c->c_gctx.current->param[0] = c->f_top->fontdef;
+  }
+  /* Add color */
+  if (c->f_top && c->f_top->color) {
+    addgrop(&c->c_gctx,PG_GROP_SETCOLOR);
+    c->c_gctx.current->param[0] = c->f_top->color;
+  }
+
   /* Measure the text */
   if (c->f_top && c->f_top->fontdef)
     e = rdhandle((void**) &fd,PG_TYPE_FONTDESC,c->widget->owner,
