@@ -1,0 +1,6 @@
+NAME = Helvetica
+SIZE = 14
+STYLE = default extended
+NORMAL = helvetica14
+BOLD = helvetica14b
+GEO = 13 6 1
