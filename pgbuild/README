@@ -18,7 +18,7 @@ Files and directories included within:
     Bootstrap pathnames and packagenames for PGBuild, can function as an entry
     point identically to 'build' for operating systems that don't support "#!" lines
 
-  pgbuild-gui.py
+  pgbuild-gui.pyw
     (Python script)
     Yet another entry point, but automatically prepends --gui to all the given
     command line options, causing a graphical interface to be opened. This is for
