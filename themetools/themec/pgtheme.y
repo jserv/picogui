@@ -1,10 +1,10 @@
 %{
-/* $Id: pgtheme.y,v 1.15 2000/10/08 18:47:25 micahjd Exp $
+/* $Id: pgtheme.y,v 1.16 2000/10/10 00:49:06 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
+ * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

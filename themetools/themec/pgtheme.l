@@ -1,10 +1,10 @@
 %{
-/* $Id: pgtheme.l,v 1.13 2000/10/08 18:47:25 micahjd Exp $
+/* $Id: pgtheme.l,v 1.14 2000/10/10 00:49:06 micahjd Exp $
  *
  * pgtheme.l - lexer for processing PicoGUI theme source code
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
+ * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

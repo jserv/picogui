@@ -1,10 +1,10 @@
-/* $Id: backend.c,v 1.4 2000/10/07 22:06:07 micahjd Exp $
+/* $Id: backend.c,v 1.5 2000/10/10 00:49:06 micahjd Exp $
  *
  * backend.c - convert the in-memory representation of the
  *             theme data to the actual compiled theme file
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
+ * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

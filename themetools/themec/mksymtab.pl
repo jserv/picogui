@@ -1,11 +1,11 @@
-# $Id: mksymtab.pl,v 1.5 2000/10/08 06:13:43 micahjd Exp $
+# $Id: mksymtab.pl,v 1.6 2000/10/10 00:49:06 micahjd Exp $
 #
 # mksymtab.pl - convert the constant definitions in constants.h
 #               into a symbol table to compile into the theme
 #               compiler
 #
 # PicoGUI small and efficient client/server GUI
-# Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
+# Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License

@@ -1,9 +1,9 @@
-/* $Id: themec.h,v 1.9 2000/10/08 06:13:43 micahjd Exp $
+/* $Id: themec.h,v 1.10 2000/10/10 00:49:06 micahjd Exp $
  *
  * themec.h - definitions used internally in the theme compiler
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
+ * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
