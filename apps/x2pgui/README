@@ -1,0 +1,47 @@
+x2pgui is a quick hack of x2vnc to replace the VNC functionality
+with a PicoGUI remote input driver. The original readme for x2vnc
+follows...
+
+-- Micah Dowty <micahjd@users.sourceforge.net>
+
+--------8<--------
+
+
+                   x2vnc - A dual-screen hack
+          Written by Fredrik Hübinette <hubbe@hubbe.net>
+         Based on ideas from x2x and code from vncviewer.
+
+          Thanks to Grant McDorman and Brad Fitzpatrick
+            for helping me make this program better.
+
+
+This program merges the capabilities of x2x and vncviewer.
+It will allow a machine with an X display and a machine with
+a VNC server running on it's main screen to act as if they
+were two displays connected to one machine. When you move
+your mouse pointer off the screen in a direction of your
+choosing, the pointer will appear on the other screen instead.
+
+To compile x2vmc, execute the commands 'xmkmf' and then 'make'.
+The latest version of this program should be available from
+
+       http://Fredrik.Hubbe.net/x2vnc.html
+
+For more info about VNC: http://www.uk.research.att.com/vnc/
+For more info about x2x: http://ftp.digital.com/pub/Digital/SRC/x2x/
+
+This is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This software is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this software; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307,
+USA.
+
