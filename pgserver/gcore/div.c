@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.84 2002/04/15 02:40:31 micahjd Exp $
+/* $Id: div.c,v 1.85 2002/05/17 20:06:10 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -741,6 +741,27 @@ void update(struct divnode *subtree,int show) {
 #endif
 }
 
+void divtree_size_and_calc(struct divtree *dt) {
+  /* Perform a divresize_recursive if it has been requested */
+  if (dt->flags & DIVTREE_NEED_RESIZE)
+    divresize_recursive(dt->head);
+  
+  if (dt->flags & DIVTREE_NEED_RECALC) {
+#ifdef DEBUG_VIDEO
+    printf("divnode_recalc(%p)\n",dt->head);
+#endif
+
+    /* Recalc, repeat if aborted */
+    while (divnode_recalc(&dt->head,NULL));
+
+    /* If we recalc, at least one divnode will need redraw */
+    dt->flags |= DIVTREE_NEED_REDRAW;
+
+    /* The hotspot graph is now invalid */
+    hotspot_free();
+  }
+}
+
 /* Update the divtree's calculations and render (both only if necessary) */
 void r_dtupdate(struct divtree *dt) {
 
@@ -760,24 +781,8 @@ void r_dtupdate(struct divtree *dt) {
       clip_popup(dt->head->next->div);
   }
 
-  /* Perform a divresize_recursive if it has been requested */
-  if (dt->flags & DIVTREE_NEED_RESIZE)
-    divresize_recursive(dt->head);
-  
-  if (dt->flags & DIVTREE_NEED_RECALC) {
-#ifdef DEBUG_VIDEO
-    printf("divnode_recalc(%p)\n",dt->head);
-#endif
+  divtree_size_and_calc(dt);
 
-    /* Recalc, repeat if aborted */
-    while (divnode_recalc(&dt->head,NULL));
-
-    /* If we recalc, at least one divnode will need redraw */
-    dt->flags |= DIVTREE_NEED_REDRAW;
-
-    /* The hotspot graph is now invalid */
-    hotspot_free();
-  }
   if (dt->flags &(DIVTREE_NEED_REDRAW|DIVTREE_ALL_REDRAW)) {
 #ifdef DEBUG_VIDEO
     printf("divnode_redraw\n");

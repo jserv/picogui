@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.41 2002/03/03 19:23:30 micahjd Exp $
+/* $Id: divtree.h,v 1.42 2002/05/17 20:06:11 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -319,6 +319,9 @@ void dts_pop(struct divtree *dt);
    The old update function is equivalent to update(dts->top,1);
 */
 void update(struct divnode *subtree,int show);
+
+/* Performs the resize/recalc steps if necessary */
+void divtree_size_and_calc(struct divtree *dt);
 
 /* This function returns nonzero if there is more than one divtree layer,
    and all layers except for the root divtree has DIVNODE_POPUP_NONTOOLBAR */
