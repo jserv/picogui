@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.20 2002/10/28 01:00:22 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.21 2002/10/28 01:00:59 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -207,6 +207,9 @@ glob textbox_get(struct widget *self,int property) {
 
 void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
   struct paragraph *par;
+
+  if (DATA->readonly)
+    return;
 
   switch (type) {
     
