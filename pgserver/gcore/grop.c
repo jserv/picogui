@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.43 2001/04/14 07:47:52 micahjd Exp $
+/* $Id: grop.c,v 1.44 2001/04/14 08:24:13 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -37,13 +37,10 @@ short int defaultgropflags;
 
 /******************* Zombie gropnode management */
 
-/* Maximum number of 'zombie' gropnodes to keep around */
-#define MAX_ZOMBIEGROPS   50
-
 /* This is a linked list of 'undead' gropnodes. When a gropnode is deleted,
  * it goes here. When a new node is needed, the below functions
  * look here first. The zombies get killed off if this list goes above
- * the limit MAX_ZOMBIEGROPS
+ * the limit CONFIG_MAX_ZOMBIEGROPS
  */
 struct gropnode *grop_zombie_list;   
 long grop_zombie_count;
@@ -70,7 +67,7 @@ void gropnode_free(struct gropnode *n) {
 #endif
    
    /* Can we just stick it in the zombie list? */
-   if (grop_zombie_count < MAX_ZOMBIEGROPS) {
+   if (grop_zombie_count < CONFIG_MAX_ZOMBIEGROPS) {
       n->next = grop_zombie_list;
       grop_zombie_list = n;
       grop_zombie_count++;

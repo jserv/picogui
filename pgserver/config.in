@@ -104,6 +104,7 @@ bool 'Terminal widget (VT102 emulator)'       CONFIG_WIDGET_TERMINAL
 bool 'Canvas widget (for arbitrary graphics)' CONFIG_WIDGET_CANVAS
 bool 'Disable panelbar'                       CONFIG_NOPANELBAR
 bool 'Solid panel dragging'                   CONFIG_DRAGSOLID
+int  'Maximum number of zombie gropnodes'     CONFIG_MAX_ZOMBIEGROPS
 endmenu
 
 mainmenu_option next_comment

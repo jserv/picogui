@@ -4,31 +4,33 @@ Ha. Just noticed that today's a Friday the 13th. Neat...
 Anyway, I'm anxious to get PicoGUI running on the Helio, but I need to
 finish my top-priority-todo-items first.
 
-      * cli_c/src/pgfx_canvas.c - Adding primitive implementations for the
+      * cli_c/src/pgfx_canvas.c: Adding primitive implementations for the
         PGFX_PERSISTENT mode
 	
-      * cli_c/demos/pgfx_canvas_persistent.c - Small snippet to illustrate
+      * cli_c/demos/pgfx_canvas_persistent.c: Small snippet to illustrate
         persistent mode with the canvas
 
-      * gcore/grop.c - Adding 'transient' gropnodes for immediate-mode
+      * gcore/grop.c: Adding 'transient' gropnodes for immediate-mode
         grop rendering. Adding a 'zombie list' to cache allocated gropnodes.
 	This should make both immediate mode and normal gropnode rendering
 	faster by eliminating almost all memory allocs
 	
-      * widget/widget.c - Added zombie grop stats to the memory debug
+      * widget/widget.c: Added zombie grop stats to the memory debug
         guru screen
 	
-      * cli_c/src/pgfx_canvas.c - Adding support for the PGFX_IMMEDIATE
+      * cli_c/src/pgfx_canvas.c: Adding support for the PGFX_IMMEDIATE
         mode using the new PG_GROPF_TRANSIENT flag
 	
-      * cli_c/demos/pgfx_canvas_immediate.c - Snippet to illustrate animation
+      * cli_c/demos/pgfx_canvas_immediate.c: Snippet to illustrate animation
         using immediate mode
 
-      * widget/canvas.c - Fixed bad use of grop_ctxt that assumed the groplist
+      * widget/canvas.c: Fixed bad use of grop_ctxt that assumed the groplist
         wouldn't change structure while rendering
 	
-      * include/pgserver/divtree.h - Added a flag to divnode that specifies
+      * include/pgserver/divtree.h: Added a flag to divnode that specifies
         whether the groplist has been rearranged by transient node deletion
+	
+      * config.in: Added an option to specify maximum number of zombie grops
 
 2001-04-12    Micah Dowty <micahjd@users.sourceforge.net>
 

@@ -30,6 +30,7 @@ CONFIG_VIDEOTEST=y
 # DEBUG_NET is not set
 # DEBUG_INIT is not set
 # DEBUG_MEMORY is not set
+CONFIG_STDERR_GURU=y
 
 #
 # Fonts
@@ -41,6 +42,10 @@ FONT_CLEAN12=y
 # FONT_CONSOLE8 is not set
 # FONT_COURIER12 is not set
 # FONT_HELVETICA8 is not set
+# FONT_HELVETICA12 is not set
+# FONT_HELVETICA14 is not set
+# FONT_HELVETICA18 is not set
+# FONT_HELVETICA24 is not set
 # FONT_TIMES10 is not set
 # FONT_UTOPIA25 is not set
 
@@ -75,6 +80,7 @@ CONFIG_VBL_LINEAR4=y
 CONFIG_VBL_LINEAR8=y
 CONFIG_VBL_LINEAR16=y
 CONFIG_ROTATE=y
+# CONFIG_ROTATE180 is not set
 
 #
 # Widget Options
@@ -83,6 +89,7 @@ CONFIG_WIDGET_TERMINAL=y
 CONFIG_WIDGET_CANVAS=y
 # CONFIG_NOPANELBAR is not set
 # CONFIG_DRAGSOLID is not set
+CONFIG_MAX_ZOMBIEGROPS=150
 
 #
 # Bitmap Formats
