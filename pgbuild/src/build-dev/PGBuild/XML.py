@@ -33,39 +33,40 @@ A portability wrapper around Python's XML modules
 # of the xml module, and if it fails it uses a similarly hackish trick
 # to prevent the xml module from loading _xmlplus.
 
-class TestFailed(Exception):
-    pass
+import PGBuild.Errors
 
 def test():
     """A very flimsy test to determine if there's any chance of the current
        XML implementation functioning correctly.
        """
-    
-    import xml.dom.minidom
+    try:
+        import xml.dom.minidom
 
-    document = """\
-    <ramses>
-       <niblick/>
-       <niblick/>
-       <niblick>
-         <kerplunk/>
-         <kerplunk>
-           Whoops, where's my thribble?
-         </kerplunk>
-       </niblick>
-    </ramses>
-    """
+        document = """\
+        <ramses>
+          <niblick/>
+          <niblick/>
+          <niblick>
+            <kerplunk/>
+            <kerplunk>
+              Whoops, where's my thribble?
+            </kerplunk>
+          </niblick>
+        </ramses>
+        """
 
-    dom = xml.dom.minidom.parseString(document)
-
-    for a in dom.getElementsByTagName("ramses"):
-        for b in a.getElementsByTagName("niblick"):
-            for c in b.getElementsByTagName("kerplunk"):
-                for d in c.childNodes:
-                    if d.nodeType == d.TEXT_NODE:
-                        if d.toxml().find("thribble") == 30:
-                            return 1
-    raise TestFailed()
+        dom = xml.dom.minidom.parseString(document)
+        
+        for a in dom.getElementsByTagName("ramses"):
+            for b in a.getElementsByTagName("niblick"):
+                for c in b.getElementsByTagName("kerplunk"):
+                    for d in c.childNodes:
+                        if d.nodeType == d.TEXT_NODE:
+                            if d.toxml().find("thribble") >= 0:
+                                return
+    except:
+        pass
+    raise PGBuild.Errors.EnvironmentError("Can't find a working XML module for Python")
 
 
 # Try the test using the default XML modules

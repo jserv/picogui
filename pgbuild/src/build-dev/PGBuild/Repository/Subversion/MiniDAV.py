@@ -24,6 +24,7 @@ A minimal read-only WebDAV client
 from httplib import HTTPConnection
 from urlparse import *
 from xml.parsers import expat
+import PGBuild.Errors
 
 try:
     revision = "$Rev$".split()[1]
@@ -34,27 +35,13 @@ userAgent = "PicoGUI-MiniDAV"
 if revision:
     userAgent += "/r%s" % revision
 
-
-class MiniDAVException(Exception):
-    pass
-
-class UnknownProtocol(MiniDAVException):
-    def __init__(self, name):
-        self.args = name,
-        self.name = name
-
-class ErrorResponse(MiniDAVException):
-    def __init__(self, resp):
-        self.args = "%s %s" % (resp.status, resp.reason),
-        self.status = resp.status
-        self.reason = resp.reason
-
-class InvalidDavResponse(MiniDAVException):
-    pass
-
-
 class DavPropertyParser:
     """Utility to parse the XML responses from a PROPFIND request"""
+
+    # Note: this should probably be rewritten to use minidom. At the time I wrote this,
+    #       I was having trouble with the bug described in the source to PGBuild.XML
+    #       but I didn't have a solution for it.
+    
     def __init__(self):
         self.elementStack = []
         self.responses = {}
@@ -85,9 +72,6 @@ class DavPropertyParser:
         
             
     def __endElementHandler(self, name):
-        if self.elementStack.pop() != name:
-            raise InvalidDavResponse()
-
         # If we just left a tag immediately inside the <D:prop>, clear the current property
         try:
             if self.elementStack[-1] == 'DAV::prop':
@@ -118,7 +102,7 @@ class DavObject:
     def __init__(self, url):
         parsedURL = urlparse(url)
         if parsedURL[0] != 'http':
-            raise UnknownProtocol(parsedURL[0])
+            raise PGBuild.Errors.UserError("Unknown protocol '%s'" % parsedURL[0])
         self.url = url
         self.server = parsedURL[1]
         self.path = parsedURL[2]
@@ -132,7 +116,8 @@ class DavObject:
                        })       
         resp = conn.getresponse()
         if resp.status != 200:
-            raise ErrorResponse(resp)
+            raise PGBuild.Errors.EnvironmentError(
+                "Server returned status '%d' for GET request" % resp.status)
         data = resp.read()
         conn.close()
         return data
@@ -150,6 +135,8 @@ class DavObject:
                        })       
         resp = conn.getresponse()
         if resp.status != 207:
+            raise PGBuild.Errors.EnvironmentError(
+                "Server returned status '%d' for PROPFIND request" % resp.status)
             raise ErrorResponse(resp)
         parser = DavPropertyParser()
         parser.parse(resp.read())
@@ -170,8 +157,6 @@ class DavObject:
 
                 self.properties = parser.responses[response]
                 del parser.responses[response]
-        if not self.properties:
-            raise InvalidDavResponse()
 
         # Now that the response for this object has been safely tucked away,
         # all the objects left in the list, if any, should be subdirectories.

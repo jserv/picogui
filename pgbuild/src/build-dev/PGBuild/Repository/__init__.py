@@ -1,6 +1,7 @@
-""" PGBuild.Repository.Subversion
+""" PGBuild.Repository
 
-Automatically chooses a Subversion implementation
+Contains the Repository class that links a URI with a working directory,
+with methods to determine if the working copy is up to date and update it.
 """
 # 
 # PicoGUI Build System
@@ -21,18 +22,8 @@ Automatically chooses a Subversion implementation
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
-import PGBuild.Errors
-
-try:
-    import CmdlineSVN
-    implementation = CmdlineSVN
-except:
-    try:
-        import MiniSVN
-        implementation = MiniSVN
-    except:
-        raise PGBuild.Errors.EnvironmentError("No working Subversion implementation found")
-
-Repository = implementation.Repository
+# Nothing here yet
 
 ### The End ###
+        
+    

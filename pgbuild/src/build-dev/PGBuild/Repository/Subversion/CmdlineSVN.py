@@ -27,11 +27,7 @@ import os, re
 # The name of the svn command to use. This should be made customizable.
 svnCommand = "svn"
 
-class CmdlineSVNClientBroken(Exception):
-    pass
-
-class ErrorReturnCode(Exception):
-    pass
+import PGBuild.Errors
 
 def detectVersion():
     # Get the complete output from svn --version
@@ -41,7 +37,7 @@ def detectVersion():
 
     # If the response doesn't contain "Subversion", assume something's wrong
     if ver.find("Subversion") < 0:
-        raise CmdlineSVNClientBroken
+        raise PGBuild.Errors.EnvironmentError("The command line subversion client is broken or not installed")
     return ver
 
 class ptyopen:
@@ -104,7 +100,7 @@ def collectProgress(file, progress):
         if status:
             progress.report(status, line[2:].strip())
     if file.close():
-        raise ErrorReturnCode()
+        raise PGBuild.Errors.InternalError("The Subversion command returned an error code")
 
 def rmtree(path, progress):
     try:
