@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.24 2001/08/04 16:50:54 micahjd Exp $
+/* $Id: font.c,v 1.25 2001/08/30 16:41:09 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -277,10 +277,18 @@ void outtext(hwrbitmap dest, struct fontdesc *fd,
  */
 void sizetext(struct fontdesc *fd, s16 *w, s16 *h, char *txt) {
   int o_w=0;
-  *w = fd->margin << 1;
-  *h = (*w) + fd->fs->ulineh;
    
   if (!(fd && txt && w && h)) return;
+
+  /* No text, no size */
+  if (!*txt) {
+    *w = 0;
+    *h = 0;
+    return;
+  }
+
+  *w = fd->margin << 1;
+  *h = (*w) + fd->fs->ulineh;
 
   while (*txt) {
     if ((*txt)=='\n') {
