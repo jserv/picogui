@@ -1,5 +1,5 @@
 array set pg_response {error 1 ret 2 event 3 data 4}
-array set pg_s {TOP 8 BOTTOM 16 LEFT 32 RIGHT 64 ALL 2048}
+array set pg_s {top 8 bottom 16 left 32 right 64 all 2048}
 array set pg_derive {after 1 inside 2 before 3}
 
 set pg_widget(LABEL)	1

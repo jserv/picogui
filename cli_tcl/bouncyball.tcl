@@ -15,11 +15,11 @@ while {$imgnr<$NUMFRAMES} {
 
 set dlg [pgDialog "Boing!"]
 set ok [pgNewWidget $pg_derive(after) $pg_widget(BUTTON) $label]
-pgSetWidget $ok $pg_s(BOTTOM) $pg_wp(SIDE)
+pgSetWidget $ok $pg_s(bottom) $pg_wp(SIDE)
 set id [pgNewString "OK"]
 pgSetWidget $ok $id $pg_wp(TEXT)
 set bmp [pgNewWidget $pg_derive(after) $pg_widget(BITMAP) $ok]
-pgSetWidget $bmp $pg_s(ALL) $pg_wp(SIDE)
+pgSetWidget $bmp $pg_s(all) $pg_wp(SIDE)
 set i 0
 set d 1
 while { 1 } {
