@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.26 2000/07/13 03:35:49 micahjd Exp $
+/* $Id: widget.c,v 1.27 2000/07/28 10:09:15 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -42,6 +42,7 @@ DEF_WIDGET_TABLE(button)
 DEF_WIDGET_TABLE(panel)
 DEF_STATICWIDGET_TABLE(popup)
 DEF_STATICWIDGET_TABLE(box)
+DEF_WIDGET_TABLE(field)
 };
 
 /* These are needed to determine which widget is under the pointing
@@ -243,6 +244,17 @@ void install_hotkey(struct widget *self,int key,int mods) {
   }
 
   self->hotkey = (mods<<16) | key;
+}
+
+/*
+  A widget has requested focus... Send out the ACTIVATE and DEACTIVATE
+  triggers, and update necessary vars
+*/
+void request_focus(struct widget *self) {
+  if (kbdfocus==self) return;
+  send_trigger(kbdfocus,TRIGGER_DEACTIVATE,NULL);
+  kbdfocus = self;
+  send_trigger(self,TRIGGER_ACTIVATE,NULL);
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.25 2000/07/13 03:35:49 micahjd Exp $
+/* $Id: widget.h,v 1.26 2000/07/28 10:09:15 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -184,6 +184,7 @@ DEF_WIDGET_PROTO(button)
 DEF_WIDGET_PROTO(panel)
 DEF_STATICWIDGET_PROTO(popup)
 DEF_STATICWIDGET_PROTO(box)
+DEF_WIDGET_PROTO(field)
 
 /* Types of widgets (in the same order they are in the table in widget.c) */
 #define WIDGET_TOOLBAR    0
@@ -195,7 +196,8 @@ DEF_STATICWIDGET_PROTO(box)
 #define WIDGET_PANEL      6
 #define WIDGET_POPUP      7
 #define WIDGET_BOX        8
-#define WIDGETMAX         8    /* For error checking */
+#define WIDGET_FIELD      9
+#define WIDGETMAX         9    /* For error checking */
      
 /* Constants for properties */
 #define WP_SIZE        1
@@ -272,6 +274,12 @@ int find_hotkey(void);
    if necessary
 */
 void install_hotkey(struct widget *self,int key,int mods);
+
+/*
+  Request focus for a widget.  Usually called in response to a click, or 
+  a hotkey.  Sends TRIGGER_ACTIVATE and TRIGGER_DEACTIVATE, and sets kbdfocus
+*/
+void request_focus(struct widget *self);
 
 /**** These are entry points for the various input drivers. */
 
