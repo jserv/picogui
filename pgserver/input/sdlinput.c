@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.24 2001/08/30 00:38:51 micahjd Exp $
+/* $Id: sdlinput.c,v 1.25 2001/08/30 01:06:17 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -103,7 +103,7 @@ void sdlinput_poll(void) {
 	 */
 	if (evt.type == SDL_MOUSEBUTTONDOWN) {
 	  /* Not a weird key? */
-	  if (sdlinput_map[i].key < 128)
+	  if (sdlinput_map[i].key < 128 && sdlinput_map[i].key >= 32)
 	    dispatch_key(TRIGGER_CHAR, sdlinput_map[i].key, 0);
 	  dispatch_key(TRIGGER_KEYDOWN, sdlinput_map[i].key, 0);
 	}
