@@ -54,7 +54,7 @@ static int total_targets = 5;
 static int current_target = 0;
 const int inset = 10;
 
-pghandle  wCanvas;
+pghandle  wCanvas, infilter;
 int calth;
 
 POINT coord_logicalize(POINT pp)
@@ -159,21 +159,12 @@ void showTransformations(void)
   char str[256];
   union pg_client_trigger trig;
 
-#if 0
-  CalcTransformationCoefficientsSimple(&cps, &tc);
-  printf("%d %d %d %d %d %d %d\n",
-	 tc.a, tc.b, tc.c, tc.d, tc.e, tc.f, tc.s);
-  CalcTransformationCoefficientsBetter(&cps, &tc);
-  printf("%d %d %d %d %d %d %d\n",
-	 tc.a, tc.b, tc.c, tc.d, tc.e, tc.f, tc.s);
-  CalcTransformationCoefficientsEvenBetter(&cps, &tc);
-  printf("%d %d %d %d %d %d %d\n",
-	 tc.a, tc.b, tc.c, tc.d, tc.e, tc.f, tc.s);
-#endif
+  /* Done with our input filter now */
+  pgDelete(infilter);
+
   CalcTransformationCoefficientsBest(&cps.center, &tc, total_targets);
   sprintf(str, "COEFFv1 %d %d %d %d %d %d %d",
 	 tc.a, tc.b, tc.c, tc.d, tc.e, tc.f, tc.s);
-  DBG(("%s\n", str));
 
   /* Send a new calibration to pgserver's calibration input filter */
   memset(&trig,0,sizeof(trig));
@@ -183,11 +174,9 @@ void showTransformations(void)
 
   pgMessageDialogFmt("Done!",0,
 		     "You completed calibration!\n\n" 
-		     "%d %d %d %d %d %d %d\n",
-		     tc.a, tc.b, tc.c, tc.d, tc.e, tc.f, tc.s);
-
+		     "%s",str);
   exit(0);
- }
+}
 
 void DrawTarget(POINT p, unsigned long int c) {
   DBG((__FUNCTION__" (%d,%d)\n",p.x, p.y));
@@ -333,9 +322,7 @@ int main(int argc, char *argv[])
    * This filter gets a copy of mouse up/down events, and all
    * mouse-related events are absorbed.
    */
-  pgNewInFilter(pgGetServerRes(PGRES_INFILTER_PNTR_NORMALIZE),
-		PG_TRIGGER_TOUCHSCREEN,
-		PG_TRIGGER_TOUCHSCREEN);
+  infilter = pgNewInFilter(0,PG_TRIGGER_TOUCHSCREEN,PG_TRIGGER_TOUCHSCREEN);
   pgBind(PGBIND_ANY, PG_NWE_INFILTER, tpcalInFilter, NULL);
 
   pgEventLoop();
