@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.31 2002/10/23 02:09:07 micahjd Exp $
+/* $Id: linear4.c,v 1.32 2002/11/06 00:52:50 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -359,6 +359,7 @@ void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s1
   int xpix,xmin,xmax;
   unsigned char ch;
   char *destline;
+  int line_skip;
 
   if (!FB_ISNORMAL(dest,lgop) || angle) {
 	  def_charblit(dest,chardat,dest_x,dest_y,w,h,lines,angle,c,clip,lgop,char_pitch);
@@ -374,6 +375,7 @@ void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s1
   xmin = 0;
   xmax = w;
   hc = 0;
+  line_skip = FB_BPL - (char_pitch<<2); /* 4 bytes out for each byte in */
 
   /* Do vertical clipping ahead of time (it does not require a special case) */
   if (clip) {
@@ -406,7 +408,7 @@ void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s1
   if (olines || clipping) {
     /* Slower loop, taking skewing and clipping into account */
     
-    for (;hc<h;hc++,destline +=(FB_BPL-4)) {
+    for (;hc<h;hc++,destline += line_skip) {
       if (olines && lines==hc) {
 	lines += olines;
 	if ((--dest_x)&1)
@@ -448,7 +450,7 @@ void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s1
   }
 
   if(dest_x&1) {
-	  for (;hc<h;hc++, destline +=(FB_BPL-4)) {
+	  for (;hc<h;hc++, destline += line_skip) {
 		  for (iw=char_pitch;iw;iw--) {
 			  ch = *(chardat++);
 #ifdef SWAP_NYBBLES
@@ -473,7 +475,7 @@ void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s1
 		  }
 	  }
   } else {
-	  for (;hc<h;hc++, destline +=(FB_BPL-4)) {
+	  for (;hc<h;hc++, destline += line_skip) {
 		  for (iw=char_pitch;iw;iw--) {
 			  ch = *(chardat++);
 #ifdef SWAP_NYBBLES
