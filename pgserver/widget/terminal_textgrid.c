@@ -1,4 +1,4 @@
-/* $Id: terminal_textgrid.c,v 1.15 2003/03/23 22:54:39 micahjd Exp $
+/* $Id: terminal_textgrid.c,v 1.16 2003/03/24 01:11:52 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -353,12 +353,33 @@ void term_insert(struct widget *self, int n) {
   /* Shift the characters over */
   textblit(DATA->buffer, DATA->buffer, 
 	   DATA->current.crsrx, DATA->current.crsry, DATA->bufferw,
-	   DATA->current.crsrx + DATA->csiargs[0], DATA->current.crsry, DATA->bufferw,
-	   n, 1);
+	   DATA->current.crsrx + n, DATA->current.crsry, DATA->bufferw,
+	   DATA->bufferw - DATA->current.crsrx - n, 1);
 
   /* Blank out the inserted characters */
   term_clearbuf(self, DATA->current.crsrx, DATA->current.crsry, n);
+  
+  /* Update this changed region of the screen */
+  term_updrect(self, DATA->current.crsrx, DATA->current.crsry,
+	       DATA->bufferw - DATA->current.crsrx, 1);
+}
 
+/* Shift all the text after the cursor left by 'n' characters. */
+void term_delete(struct widget *self, int n) {
+
+  /* Clamp to the amount of space not left of the cursor */
+  if (n > DATA->bufferw - DATA->current.crsrx)
+    n = DATA->bufferw - DATA->current.crsrx;
+
+  /* Shift the characters over */
+  textblit(DATA->buffer, DATA->buffer, 
+	   DATA->current.crsrx + n, DATA->current.crsry, DATA->bufferw,
+	   DATA->current.crsrx, DATA->current.crsry, DATA->bufferw,
+	   DATA->bufferw - DATA->current.crsrx - n, 1);
+
+  /* Blank out the deleted characters */
+  term_clearbuf(self, DATA->bufferw - n, DATA->current.crsry, n);
+  
   /* Update this changed region of the screen */
   term_updrect(self, DATA->current.crsrx, DATA->current.crsry,
 	       DATA->bufferw - DATA->current.crsrx, 1);

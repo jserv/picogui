@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.17 2003/03/23 23:00:12 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.18 2003/03/24 01:11:52 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -399,7 +399,8 @@ void term_csi(struct widget *self, u8 c) {
 
     /* P - Delete characters */
   case 'P':
-    DBG("-UNIMPLEMENTED- delete %d characters\n", DATA->csiargs[0]);
+    DBG("delete %d characters\n", DATA->csiargs[0]);
+    term_delete(self, DATA->csiargs[0]);
     break;
     
     /* X - Erase characters */

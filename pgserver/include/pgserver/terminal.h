@@ -1,4 +1,4 @@
-/* $Id: terminal.h,v 1.6 2003/03/23 11:32:55 micahjd Exp $
+/* $Id: terminal.h,v 1.7 2003/03/24 01:11:51 micahjd Exp $
  *
  * terminal.h - Header file shared by components of the terminal emulator widget
  *
@@ -133,8 +133,11 @@ void textblit(struct pgstring *src,struct pgstring *dest,
 	      int src_x,int src_y,int src_w,
 	      int dest_x,int dest_y,int dest_w,int w,int h);
 
-/* Shift all the text at and after the cursor right by 'n' characters */
+/* Shift all the text at and after the cursor right by 'n' characters. */
 void term_insert(struct widget *self, int n);
+
+/* Shift all the text after the cursor left by 'n' characters. */
+void term_delete(struct widget *self, int n);
 
 /* Set a palette entry, making a mutable copy of the palette if necessary */
 void term_setpalette(struct widget *self, int n, pgcolor color);
