@@ -29,11 +29,12 @@ import PGBuild.Errors
 # List of UI module names and descriptions, sorted by priority.
 # The most preferred UIs should go first.
 catalog = [
-    ("Tk",    "Tkinter based front-end"),
-    ("Text",  "Command line front-end, with optional colorizing"),
-    ("None",  "No front-end"),
-    ("Help",  "List the available UI modules"),
-    ("Auto",  "Automatically choose a UI module"),
+    ("Tk",     "Tkinter based graphical front-end"),
+    ("Curses", "Curses based full-screen text front-end"),
+    ("Text",   "Command line front-end, with optional colorizing"),
+    ("None",   "No front-end"),
+    ("Help",   "List the available UI modules"),
+    ("Auto",   "Automatically choose a UI module"),
     ]
 
 

@@ -328,11 +328,12 @@ class Tree(PGBuild.XMLUtil.Document):
                                              self.rootName, minfo.attributes,
                                              comment)
 
-    def dump(self, file, progress):
+    def dump(self, file, progress=None):
         """Dump the full configuration tree to a file"""
         f = open(file, "w")
         f.write(self.toprettyxml())
         f.close()
-        progress.message("Configuration tree dumped to %s" % file)
+        if progress:        
+            progress.message("Configuration tree dumped to %s" % file)
                 
 ### The End ###

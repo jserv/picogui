@@ -38,6 +38,7 @@ import PGBuild.Config
 import optik
 import PGBuild
 import os, re, shutil
+import StringIO
 
 
 def parseCommandLine(config, argv):
@@ -73,6 +74,8 @@ def parseCommandLine(config, argv):
     packageGroup = parser.add_option_group("Package Management")
     packageGroup.add_option("--nuke", dest="nuke", action="store_true",
                             help="unconditionally delete local copies of all non-bootstrap packages")
+    packageGroup.add_option("--merge", dest="merge", action="append", metavar="PACKAGE",
+                            help="forcibly update the specified package and merge its configuration")
 
     config.mount(OptionsXML(parser.parse_args(argv[1:])))
 
@@ -112,17 +115,34 @@ class OptionsXML:
        """
     def __init__(self, parseResults):
         (self.options, self.args) = parseResults
-
-    def get_contents(self):
-        xml = '<pgbuild title="Command Line Options" root="invocation">\n'                
+        self.xml = StringIO.StringIO()
+        self.xml.write('<pgbuild title="Command Line Options" root="invocation">')
         for option in self.options.__dict__:
             value = getattr(self.options, option)
             if value != None:
-                xml += '\t<option name="%s">%s</option>\n' % (option, value)
+                self.xml.write('<option name="%s">' % option)
+                self.marshall(value)
+                self.xml.write('</option>')
         for arg in self.args:
-            xml += '\t<target name="%s">%s</target>\n' % (arg, self.args[arg])                    
-        xml += '</pgbuild>\n'
-        return xml
+            self.xml.write('<target name="%s">%s</target>' % (arg, self.args[arg]))
+        self.xml.write('</pgbuild>')
+
+    def marshall(self, value):
+        """Marshall an option value, writing the resulting XML to self.xml.
+           Initially I tried to use XML-RPC marshalling for this, but besides
+           being far too verbose for this, it didn't fit in with PGBuild.Config's
+           requirements for tag distinctness.
+           """
+        if type(value) == list or type(value) == tuple:
+            for i in xrange(len(value)):
+                self.xml.write('<item index="%s">' % i)
+                self.marshall(value[i])
+                self.xml.write('</item>')
+        else:
+            self.xml.write(str(value))
+
+    def get_contents(self):        
+        return self.xml.getvalue()
 
 
 def boot(config, bootstrap):
@@ -197,6 +217,8 @@ def main(bootstrap, argv):
 
             # Parse command line options into the <invocation> section
             parseCommandLine(config, argv)
+
+            config.dump("debug.xbc")
 
             # Load a UI module and run it
             ui = PGBuild.UI.find(config.eval("invocation/option[@name='ui']/text()")).Interface(config)

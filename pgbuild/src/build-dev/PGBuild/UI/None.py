@@ -142,23 +142,39 @@ class Interface:
 
         self.progress.message("Using UI module %s" % self.__class__.__module__, 2)
 
+    def cleanup(self):
+        pass
+
     def run(self):
         """Examine the provided configuration and take the specified actions"""
+        # Note that order is important here!
+        # It wouldn't make sense to run --nuke after --merge, for example.
 
         # Handle --nuke command line option
         if self.config.eval("invocation/option[@name='nuke']/text()"):
             self.config.packages.nuke(self.progress)
+
+        # Handle --merge command line option
+        mergeTask = self.progress.task("Forcibly merging packages")
+        for name in self.config.listEval("invocation/option[@name='merge']/item/text()"):
+            self.config.packages.findPackageVersion(name).merge(mergeTask)
 
         # Handle --dump-tree command line option
         treeDumpFile = self.config.eval("invocation/option[@name='treeDumpFile']/text()")
         if treeDumpFile:
             self.config.dump(treeDumpFile, self.progress)
 
+        self.cleanup()
+
     def exception(self, exc_info):
         """This is called when PGBuild.Main catches an exception. The default implementation
            transparently passes it along, but this gives subclasses a chance to reformat
            the exception in a way that makes sense for a particular UI.
            """
+        self.cleanup()
+        self._exception(exc_info)
+
+    def _exception(self, exc_info):
         raise exc_info[0], exc_info[1], exc_info[2]
 
 ### The End ###

@@ -223,7 +223,6 @@ class PackageList:
            if a version is specified in the 'version' parameter it overrides
            any version from the 'name'.
            """
-        
         (name, nameVersion) = splitPackageName(name)
         if version == None:
             version = nameVersion

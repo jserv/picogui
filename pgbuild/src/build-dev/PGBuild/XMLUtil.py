@@ -134,14 +134,10 @@ class Document(minidom.Document):
             context = self.getRoot()
         return default_xpath.parse(context, path)
 
-    def eval(self, path, context=None):
+    def listEval(self, path, context=None):
         """Evaluate an xpath, but instead of returning a list of matching
-           nodes this 'intelligently' tries to come up with a single value.
-
-           If the number of results is...
-             ...one, this returns a single value.
-             ...more than one, this evaluates each separately and returns a list.
-             ...zero, this returns None
+           nodes this 'intelligently' tries to substitute the nodes for
+           more usable values.
 
            If a result is...
              ...an element, this returns its XML representation
@@ -150,7 +146,6 @@ class Document(minidom.Document):
            """
         nodes = self.xpath(path, context)
         results = []
-
         for node in nodes:
             if node.nodeType == node.ELEMENT_NODE:
                 results.append(node.toxml())
@@ -158,7 +153,18 @@ class Document(minidom.Document):
                 results.append(node.data)
             elif node.nodeType == node.ATTRIBUTE_NODE:
                 results.append(node.value)
+        return results
+    
+    def eval(self, path, context=None):
+        """Like listEval, but also try to intelligently reduce the result
+           to a single value if that's possible.
 
+           If the number of results is...
+             ...one, this returns a single value.
+             ...more than one, this evaluates each separately and returns a list.
+             ...zero, this returns None
+           """
+        results = self.listEval(path, context)
         if len(results) == 1:
             return results[0]
         if len(results) > 1:
