@@ -12,7 +12,19 @@ Provides the PicoGUI demonstration applications
 
 prefix = '/'
 
-depends = [ 'picoguiclient' ]
+depends = [ 'picoguiclient',
+
+            (S ('module/picoguiapps/pgboard_run_us_qwerty') |
+             S ('module/picoguiapps/pgboard_run_us_qwerty_bitmap') |
+             S ('module/picoguiapps/pgboard_run_fitaly') |
+             S ('module/picoguiapps/pgboard_run_ch_qwertz')) >>
+            
+            (S ('module/picoguiapps/pgboard_run_us_qwerty') ^
+             S ('module/picoguiapps/pgboard_run_us_qwerty_bitmap') ^
+             S ('module/picoguiapps/pgboard_run_fitaly') ^
+             S ('module/picoguiapps/pgboard_run_ch_qwertz'))
+            
+            ]
 
 runtime = [
     Runtime ( 'pterm', 'Terminal',
@@ -41,40 +53,24 @@ runtime = [
               depends = [ 'picoguiserver/server',
                           'picoguiapps/fitaly',
                           'pocketguiapps/sd_finder_run',
-                          S ('module/picoguiapps/pgboard_run_fitaly') >>
-                          ( ~ S ('module/picoguiapps/pgboard_run_us_qwerty') &
-                            ~ S ('module/picoguiapps/pgboard_run_us_qwerty_bitmap') &
-                            ~ S ('module/picoguiapps/pgboard_run_us_qwerty') )
                           ],
               content = [ 'etc/rm.d/pgboard' ]),
     Runtime ( 'pgboard_run_us_qwerty', 'Run PGBoard with US QWERTY keymap',
               depends = [ 'picoguiserver/server',
                           'picoguiapps/us_qwerty',
                           'pocketguiapps/sd_finder_run',
-                          S ('module/picoguiapps/pgboard_run_us_qwerty') >>
-                          ( ~ S ('module/picoguiapps/pgboard_run_fitaly') &
-                            ~ S ('module/picoguiapps/pgboard_run_us_qwerty_bitmap') &
-                            ~ S ('module/picoguiapps/pgboard_run_us_qwerty') )
                           ],
               content = [ 'etc/rm.d/pgboard' ]),
     Runtime ( 'pgboard_run_us_qwerty_bitmap', 'Run PGBoard with US QWERTY keymap (Bitmap 240x80)',
               depends = [ 'picoguiserver/server',
                           'picoguiapps/us_qwerty_bitmap',
                           'pocketguiapps/sd_finder_run',
-                          S ('module/picoguiapps/pgboard_run_us_qwerty_bitmap') >>
-                          ( ~ S ('module/picoguiapps/pgboard_run_fitaly') &
-                            ~ S ('module/picoguiapps/pgboard_run_us_qwerty') &
-                            ~ S ('module/picoguiapps/pgboard_run_ch_qwertz') )
                           ],
               content = [ 'etc/rm.d/pgboard' ]),
     Runtime ( 'pgboard_run_ch_qwertz', 'Run PGBoard with CH QWERTZ keymap',
               depends = [ 'picoguiserver/server',
                           'picoguiapps/ch_qwertz',
                           'pocketguiapps/sd_finder_run',
-                          S ('module/picoguiapps/pgboard_run_ch_qwertz') >>
-                          ( ~ S ('module/picoguiapps/pgboard_run_fitaly') &
-                            ~ S ('module/picoguiapps/pgboard_run_us_qwerty') &
-                            ~ S ('module/picoguiapps/pgboard_run_us_qwerty_bitmap') )
                           ],
               content = [ 'etc/rm.d/pgboard' ]),
     Runtime ( 'pgboard_cmds', 'Virtual Keyboard Tester',
