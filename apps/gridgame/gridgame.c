@@ -22,10 +22,11 @@ void ggstatusline(const char *msg)
   pgReplaceText(statuslabel, msg);
  }
 
-static void redraw(void)
+static void fullredraw(void)
  {
   gridpos p;
 
+  pgWriteCmd(canvas, PG_GROP_RESETCLIP, 0);
   for(p.x=0; p.x<game->width; p.x++)
     for(p.y=0; p.y<game->height; p.y++)
      {
@@ -34,16 +35,32 @@ static void redraw(void)
 	    SQ(p).player?player[SQ(p).player-1]:thobj,
 	    SQ(p).bricktype, SCALE*p.x, SCALE*p.y, SCALE, SCALE);
      }
-  pgWriteCmd(canvas, PGCANVAS_REDRAW, 0);
+  pgWriteCmd(canvas, PGCANVAS_INCREMENTAL, 0);
   pgSubUpdate(canvas);
+ }
+
+static void redraw(gridpos p)
+ {
+  pgWriteCmd(canvas, PG_GROP_SETCLIP, 4, SCALE*p.x, SCALE*p.y, SCALE, SCALE);
+  if(bgfill)
+    pgWriteCmd(canvas, PGCANVAS_EXECFILL, 6, thobj, PGTH_P_BGFILL,
+	0, 0, SCALE*game->width, SCALE*game->height);
+  if(bgevenodd[1&(p.x^p.y)])
+    pgWriteCmd(canvas, PGCANVAS_EXECFILL, 6, thobj, (1&(p.x^p.y))?BGODD:BGEVEN,
+	p.x*SCALE, p.y*SCALE, SCALE, SCALE);
+  if(SQ(p).bricktype)
+    pgWriteCmd(canvas, PGCANVAS_EXECFILL, 6,
+	SQ(p).player?player[SQ(p).player-1]:thobj,
+	SQ(p).bricktype, SCALE*p.x, SCALE*p.y, SCALE, SCALE);
+  doredraw=1;
  }
 
 void ggset(gridpos pos, squarestatus status)
  {
   if(ggisvalid(pos) && memcmp(&status, &SQ(pos), sizeof(status)))
    {
-    doredraw=1;
     SQ(pos)=status;
+    redraw(pos);
    }
  }
 
@@ -54,9 +71,12 @@ void ggmove(gridpos from, gridpos to, squarestatus newstatus)
       memcmp(&SQ(to),&newstatus,sizeof(newstatus)))
    {
     SQ(to)=newstatus;
-    doredraw=1;
     if(to.x!=from.x || to.y!=from.y)
+     {
       memset(&SQ(from), 0, sizeof SQ(from));
+      redraw(from);
+     }
+    redraw(to);
    }
  }
 
@@ -182,14 +202,17 @@ static int evtPtrUp(struct pgEvent *evt)
     doredraw=0;
     game->drag(ptrx, ptry, evt->e.pntr.x, evt->e.pntr.y);
     if(doredraw)
-      redraw();
+     {
+      pgWriteCmd(canvas, PGCANVAS_INCREMENTAL, 0);
+      pgSubUpdate(canvas);
+     }
    }
  }
 
 static int evtBuild(struct pgEvent *evt)
  {
   if(game)
-    redraw();
+    fullredraw();
  }
 
 static int evtNewGame(struct pgEvent *evt)
