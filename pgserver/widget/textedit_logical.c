@@ -1,4 +1,4 @@
-/* $Id: textedit_logical.c,v 1.8 2002/10/28 16:40:00 pney Exp $
+/* $Id: textedit_logical.c,v 1.9 2002/10/29 12:47:38 pney Exp $
  *
  * textedit_logical.c - Backend for multi-line text widget. This
  * defines the behavior of a generic wrapping text widget, and is not
@@ -396,11 +396,16 @@ void text_backend_set_text ( text_widget * widget,
     while (len) {
         for (para_len = 0; 
              (para_len < len) && (txt[para_len] != L'\n'); 
-             para_len++)
+             para_len++) {
 	    ;  /* no operation, go out of the loop also when newline */
+	}
 
-        if (txt[para_len] == L'\n')
+	/* test carriage return only if we don't reach the end of the string */
+	if (para_len < len) {
+	  if (txt[para_len] == L'\n') {
 	    para_len++;
+	  }
+	}
 
         while (para_len + 1 > b->data_size - b->len) {
             /* Paragraph won't fit into b */
@@ -459,13 +464,20 @@ void text_backend_set_text ( text_widget * widget,
     b = block_create();
     b->b_gap = 0;
     widget->blocks = llist_append(widget->blocks, b);
+
     while (len) {
-        for (para_len = 0; 
+        for (para_len = 0;
              (para_len < len) && (txt[para_len] != '\n'); 
-             para_len++)
-            ;
-        if (txt[para_len] == '\n')
+             para_len++) {
+	  ;            /* noop, just parse the paragraph */
+	}
+
+	/* test carriage return only if we don't reach the end of the string */
+	if (para_len < len) {
+	  if (txt[para_len] == '\n') {
             para_len++;
+	  }
+	}
 
         while (para_len + 1 > b->data_size - b->len) {
             /* Paragraph won't fit into b */

@@ -1,4 +1,4 @@
-/* $Id: textedit_frontend.c,v 1.10 2002/10/28 16:40:00 pney Exp $
+/* $Id: textedit_frontend.c,v 1.11 2002/10/29 12:47:38 pney Exp $
  *
  * textedit.c - Multi-line text widget. By Chuck Groom,
  * cgroom@bluemug.com, Blue Mug, Inc, July 2002. Intended to be
@@ -493,6 +493,7 @@ void textedit_trigger ( struct widget *self,
  * This is bad, wicked, naughty, and in all ways reprehensible. 
  */
 struct scrolldata {
+  int horizontal;
   int on,over;
   int res;       
   int grab_offset;
