@@ -1,4 +1,4 @@
-/* $Id: blackout.c,v 1.2 2001/01/31 04:17:24 micahjd Exp $
+/* $Id: blackout.c,v 1.3 2001/02/02 07:44:03 micahjd Exp $
  *
  * blackout.c - "Blackout" game to demonstrate game programming and
  *              canvas widget event handling.
@@ -122,55 +122,58 @@ void startLevel(int newlev) {
 /****************************** Event handlers ***/
 
 /* Redraw the game board */
-int evtDrawBoard(short event, pghandle from, long param) {
+int evtDrawBoard(struct pgEvent *evt) {
    int x,y,i,j;
    light *p = board;
-   if (PG_W<PG_H)
 
-     bs = PG_W-2;
+   /* Extra space on the sides or top and bottom? */
+   if (evt->e.size.w < evt->e.size.h)
+     bs = evt->e.size.w-2;
    else
-     bs = PG_H-2;
-   bx = (PG_W-bs)>>1;
-   by = (PG_H-bs)>>1;
+     bs = evt->e.size.h-2;
+   
+   bx = (evt->e.size.w - bs)>>1;
+   by = (evt->e.size.h - bs)>>1;
    lightw = bs/boardwidth;
    lighth = bs/boardheight;
    /* Get rid of remainder */
    bs = boardwidth*lightw;
    
    /* Clear the groplist */
-   pgWriteCmd(from,PGCANVAS_NUKE,0);
+   pgWriteCmd(evt->from,PGCANVAS_NUKE,0);
    
    /* Black game board background */
-   pgWriteCmd(from,PGCANVAS_GROP,5,PG_GROP_RECT,0,0,PG_W,PG_H);
-   pgWriteCmd(from,PGCANVAS_SETGROP,1,0x000000);
-   pgWriteCmd(from,PGCANVAS_COLORCONV,1,1);
+   pgWriteCmd(evt->from,PGCANVAS_GROP,5,PG_GROP_RECT,0,0,
+	      evt->e.size.w,evt->e.size.h);
+   pgWriteCmd(evt->from,PGCANVAS_SETGROP,1,0x000000);
+   pgWriteCmd(evt->from,PGCANVAS_COLORCONV,1,1);
 
    /* Light gropnodes */
    for (j=boardheight,y=by;j;j--,y+=lighth)
      for (i=boardwidth,x=bx;i;i--,x+=lightw) {
-	pgWriteCmd(from,PGCANVAS_GROP,5,PG_GROP_RECT,
+	pgWriteCmd(evt->from,PGCANVAS_GROP,5,PG_GROP_RECT,
 		   x+1,y+1,lightw-2,lighth-2);
-	pgWriteCmd(from,PGCANVAS_SETGROP,1,
+	pgWriteCmd(evt->from,PGCANVAS_SETGROP,1,
 		   (*(p++)) ? ON_COLOR : OFF_COLOR);
-	pgWriteCmd(from,PGCANVAS_COLORCONV,1,1);
+	pgWriteCmd(evt->from,PGCANVAS_COLORCONV,1,1);
      }
    
    /* Draw it */
-   pgWriteCmd(from,PGCANVAS_REDRAW,0);
+   pgWriteCmd(evt->from,PGCANVAS_REDRAW,0);
    pgUpdate();
 
    return 0;
 }
 
 /* Clickski! */
-int evtMouseDown(short event, pghandle from, long param) {
+int evtMouseDown(struct pgEvent *evt) {
    int lx,ly;
    light *p;
    int i;
    
    /* What light was it in? */
-   lx = (PG_PNTR_X - bx) / lightw;
-   ly = (PG_PNTR_Y - by) / lighth;
+   lx = (evt->e.pntr.x - bx) / lightw;
+   ly = (evt->e.pntr.y - by) / lighth;
    if (lx < 0 || lx >= boardwidth ||
        ly < 0 || ly >= boardwidth)
      return 0;
@@ -182,7 +185,7 @@ int evtMouseDown(short event, pghandle from, long param) {
    invertLight(lx,ly+1);
 
    /* Update the screen */
-   pgWriteCmd(from,PGCANVAS_INCREMENTAL,0);
+   pgWriteCmd(evt->from,PGCANVAS_INCREMENTAL,0);
    moves++;
    updateStatus();
 
@@ -200,13 +203,13 @@ int evtMouseDown(short event, pghandle from, long param) {
    return 0;
 }
 
-int btnNewGame(short event, pghandle from, long param) {
+int btnNewGame(struct pgEvent *evt) {
    if (pgMessageDialog("Give Up","Start over at level 1?",
 		       PG_MSGBTN_YES | PG_MSGBTN_NO) == PG_MSGBTN_YES)
      startLevel(1);
 }
 
-int btnRestartLevel(short event, pghandle from, long param) {
+int btnRestartLevel(struct pgEvent *evt) {
    if (pgMessageDialogFmt("Scratching Head",
 			  PG_MSGBTN_YES | PG_MSGBTN_NO,
 			  "Try level %d again?",level) == PG_MSGBTN_YES)
@@ -222,18 +225,18 @@ int main(int argc, char **argv) {
    /*** Top-level widgets: toolbar and canvas */
    wToolbar = pgNewWidget(PG_WIDGET_TOOLBAR,0,0);
    wCanvas = pgNewWidget(PG_WIDGET_CANVAS,0,0);
-   pgBind(PGDEFAULT,PG_WE_BUILD,&evtDrawBoard);
-   pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&evtMouseDown);
+   pgBind(PGDEFAULT,PG_WE_BUILD,&evtDrawBoard,NULL);
+   pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&evtMouseDown,NULL);
 
    /* Toolbar thingies */
    
    pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
    pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("New Game"),0);
-   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnNewGame);
+   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnNewGame,NULL);
 
    pgNewWidget(PG_WIDGET_BUTTON,0,0);
    pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("Restart Level"),0);
-   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnRestartLevel);
+   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnRestartLevel,NULL);
 
    wStatusLabel = pgNewWidget(PG_WIDGET_LABEL,0,0);
    pgSetWidget(PGDEFAULT,

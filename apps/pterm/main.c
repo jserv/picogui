@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.5 2001/01/31 03:55:54 micahjd Exp $
+/* $Id: main.c,v 1.6 2001/02/02 07:44:03 micahjd Exp $
  *
  * main.c - PicoGUI Terminal (the 'p' is silent :)
  *          This handles the PicoGUI init and events
@@ -46,25 +46,27 @@ pghandle wTerminal;         /* Widgets */
 /* These functions pass data back and forth between the
  * terminal widget and the pseudoterminal */
 
-/* Recieves data from the pgBindData association */
-int termInput(pghandle from,long size,char *data) {
+/* Recieves data from the pgBind association */
+int termInput(struct pgEvent *evt) {
    /* Write the input character to the subprocess */
-   write(ptyfd,data,size);
+   write(ptyfd,evt->e.data.pointer,evt->e.data.size);
    return 0;
 }
 
 /* Terminal was resized, pass on the news */
-int termResize(short event, pghandle from, long param) {
+int termResize(struct pgEvent *evt) {
   struct winsize size;
 
   /* If we're rolled up just stay calm... */
-  if (!(PG_W || PG_H))
-     return;
+  if (!(evt->e.size.w || evt->e.size.h))
+     return 0;
    
   memset(&size,0,sizeof(size));
-  size.ws_row = PG_H;
-  size.ws_col = PG_W;
+  size.ws_row = evt->e.size.h;
+  size.ws_col = evt->e.size.h;
   ioctl(ptyfd,TIOCSWINSZ,(char *) &size);
+
+  return 0;
 }
 
 /* A wrapper around PicoGUI's select() call so we can
@@ -176,9 +178,9 @@ int main(int argc, char **argv) {
   if (fontsize)
      pgSetWidget(PGDEFAULT,PG_WP_FONT,
 		 pgNewFont(NULL,fontsize,PG_FSTYLE_FIXED),0);
-  pgBindData(PGDEFAULT,&termInput);                  /* Input handler */
+  pgBind(PGDEFAULT,PG_WE_DATA,&termInput,NULL);      /* Input handler */
   pgCustomizeSelect(&mySelect);                      /* select() wrapper for output */
-  pgBind(PGDEFAULT,PG_WE_RESIZE,&termResize);        /* Resize handler */
+  pgBind(PGDEFAULT,PG_WE_RESIZE,&termResize,NULL);   /* Resize handler */
   pgFocus(PGDEFAULT);
   
   /*** Start up subprocess */
