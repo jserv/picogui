@@ -356,7 +356,7 @@ int launchMenu(struct pgEvent *evt){
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT, pgNewString("PicoGUI"),
 	      PG_WP_TRANSPARENT, 0,
-	      PG_WP_THOBJ, PGTH_O_PANELBAR,
+	      PG_WP_THOBJ, PGTH_O_PANELBAR_V,
 	      PG_WP_SIDE, PG_S_LEFT,
 	      PG_WP_DIRECTION, PG_DIR_VERTICAL,
 	      0);
