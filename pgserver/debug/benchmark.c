@@ -1,4 +1,4 @@
-/* $Id: benchmark.c,v 1.3 2002/10/20 15:19:32 micahjd Exp $
+/* $Id: benchmark.c,v 1.4 2002/10/20 15:48:51 micahjd Exp $
  *
  * benchmark.c - Run benchmarks on vidlib functions
  *
@@ -32,6 +32,7 @@
 hwrbitmap benchmark_srcbit;
 u8 *benchmark_char, *benchmark_gamma;
 hwrcolor benchmark_color;
+int benchmark_iterations;
 
 struct benchmark_param {
   int lgop;
@@ -107,17 +108,17 @@ void bench_multiblit_1_1(struct benchmark_param *b) {
   VID(multiblit)(vid->display,0,0,b->w,b->h,benchmark_srcbit,0,0,1,1,0,0,b->lgop);
 }
 
-void bench_multiblit_1_128(struct benchmark_param *b) {
-  VID(multiblit)(vid->display,0,0,b->w,b->h,benchmark_srcbit,0,0,1,128,0,0,b->lgop);
+void bench_multiblit_1_32(struct benchmark_param *b) {
+  VID(multiblit)(vid->display,0,0,b->w,b->h,benchmark_srcbit,0,0,1,32,0,0,b->lgop);
 }
 
-void bench_multiblit_128_1(struct benchmark_param *b) {
-  VID(multiblit)(vid->display,0,0,b->w,b->h,benchmark_srcbit,0,0,128,1,0,0,b->lgop);
+void bench_multiblit_32_1(struct benchmark_param *b) {
+  VID(multiblit)(vid->display,0,0,b->w,b->h,benchmark_srcbit,0,0,32,1,0,0,b->lgop);
 
 }
 
-void bench_multiblit_128_128(struct benchmark_param *b) {
-  VID(multiblit)(vid->display,0,0,b->w,b->h,benchmark_srcbit,0,0,128,128,0,0,b->lgop);
+void bench_multiblit_32_32(struct benchmark_param *b) {
+  VID(multiblit)(vid->display,0,0,b->w,b->h,benchmark_srcbit,0,0,32,32,0,0,b->lgop);
 }
 
 void bench_rotateblit_0(struct benchmark_param *b) {
@@ -295,9 +296,9 @@ struct benchmark_test {
   { &bench_scrollblit_left,     1,1, "scrollblit left"              },
   { &bench_scrollblit_right,    1,1, "scrollblit right"             },
   { &bench_multiblit_1_1,       1,1, "multiblit (1x1 tile)"         },
-  { &bench_multiblit_1_128,     1,1, "multiblit (1x128 tile)"       },
-  { &bench_multiblit_128_1,     1,1, "multiblit (128x1 tile)"       },
-  { &bench_multiblit_128_128,   1,1, "multiblit (128x128 tile)"     },
+  { &bench_multiblit_1_32,      1,1, "multiblit (1x32 tile)"        },
+  { &bench_multiblit_32_1,      1,1, "multiblit (32x1 tile)"        },
+  { &bench_multiblit_32_32,     1,1, "multiblit (32x32 tile)"       },
   { &bench_rotateblit_0,        1,1, "rotateblit (0 degrees)"       },
   { &bench_rotateblit_90,       1,1, "rotateblit (90 degrees)"      },
   { &bench_rotateblit_180,      1,1, "rotateblit (180 degrees)"     },
@@ -305,8 +306,8 @@ struct benchmark_test {
   { &bench_ellipse,             1,1, "ellipse"                      },
   { &bench_fellipse,            1,1, "fellipse"                     },
   { &bench_polygon_star,        1,0, "polygon (star)"               },
-  { &bench_blur_2,              1,1, "blur (radius 2)"              },
-  { &bench_blur_16,             1,1, "blur (radius 16)"             },
+  { &bench_blur_2,              0,1, "blur (radius 2)"              },
+  { &bench_blur_16,             0,1, "blur (radius 16)"             },
   { &bench_charblit_0,          1,1, "charblit (0 degrees)"         },
   { &bench_charblit_90,         1,1, "charblit (90 degrees)"        },
   { &bench_charblit_180,        1,1, "charblit (180 degrees)"       },
@@ -343,12 +344,17 @@ void benchmark_run_one(struct benchmark_test *test, struct benchmark_param *b) {
   int i, result;
 
   gettimeofday(&start,NULL);
-  for (i=0;i<1000;i++)
+  for (i=0;i<benchmark_iterations;i++)
     test->func(b);
   gettimeofday(&end,NULL);
   VID(update)(0,0,vid->lxres,vid->lyres);
 
-  result = (end.tv_sec - start.tv_sec)*1000000 + (end.tv_usec - start.tv_usec);
+  result = ((end.tv_sec - start.tv_sec)*1000000 + (end.tv_usec - start.tv_usec)); 
+
+  if (benchmark_iterations > 1000)
+    result /= benchmark_iterations / 1000;
+  else
+    result *= 1000 / benchmark_iterations;
 
   printf("%12d ns  %-30s %-15s %dx%d\n",
 	 result, test->name, lgop_names[b->lgop], b->w,b->h);
@@ -397,12 +403,14 @@ void videotest_benchmark(void) {
   VID(rect)(vid->display, 0,0,vid->lxres,vid->lyres,
 	    VID(color_pgtohwr)(0xA0A0A0), PG_LGOP_STIPPLE);
 
+  benchmark_iterations = get_param_int("benchmark","iterations",1000);
+
   /* Create a source bitmap needed by some of the tests */
   vid->bitmap_new(&benchmark_srcbit,128,128,vid->bpp);
   benchmark_char = malloc(128*128);
   benchmark_gamma = malloc(256);
-  memset(benchmark_char,0xFF,128*128);
-  memset(benchmark_gamma,0,256);
+  memset(benchmark_char,0x55,128*128);
+  memset(benchmark_gamma,0x80,256);
 
   for (t=benchmark_tests; t->func; t++) {
     if (!strstr(t->name,testname))

@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.30 2002/10/20 10:21:55 micahjd Exp $
+/* $Id: linear16.c,v 1.31 2002/10/20 15:48:51 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -512,6 +512,11 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
   u16 color;
   s16 imgw, imgh;
 
+  /* And the radius can't be wider than the image, to avoid reading past the end */
+  vid->bitmap_getsize(dest,&imgw,&imgh);
+  if (radius > imgw)
+    radius = imgw;
+
   /* This algorithm is more intense than the usual one, so cut the radius in half */
   diameter = radius;
 
@@ -519,18 +524,17 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
   if (diameter <= 2)
     diameter = 4;
 
-  /* And the diameter can't be wider than the image, to avoid reading past the end */
-  vid->bitmap_getsize(dest,&imgw,&imgh);
-  if (diameter == imgw)
-    diameter = imgw;
-
   /* Don't let the radius overlap the top/bottom */
   if (y<=radius) {
     h-=radius+1-y;
     y=radius+1;
   }
-  if (h+y+radius>=imgh)
-    h = imgh-y-radius-1;
+  if (h+y+diameter>=imgh)
+    h = imgh-y-diameter-1;
+
+  /* Too small to blur? */
+  if (h<=0)
+    return;
 
   /* Find out the next highest power of two from radius, and the log of that */
   for (i=0,j=diameter;j!=1;i++)

@@ -594,6 +594,11 @@ quoted appropriately. For example:
 
 [benchmark]
 
+- iterations
+  Number of times to run each test. The more iterations,
+  the more accurate the results will be.
+  Default is 1000
+
 - test
   Run only tests whose names contain this string
 
