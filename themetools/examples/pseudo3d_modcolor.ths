@@ -1,0 +1,34 @@
+/* $Id: pseudo3d_modcolor.ths,v 1.1 2000/11/11 22:34:10 micahjd Exp $
+ *
+ * This is a theme meant to be loaded _in addition to_ pseudo3d.
+ * It adds extra colors and things.
+ *
+ * Micah Dowty
+ */
+
+/* Panelbars with gradients */
+object panelbar {
+  bgfill = fillstyle {
+    Frame(x,y,w,h,ColorConv(shadowcolor));
+    Gradient(x+1,y+1,w-2,h-2,w>h ? 0 : -90,shadowcolor,bgcolor,0);
+  };
+  bgcolor = 0x0000C0;
+}
+
+/* Tints and hilights for the buttons */
+object button         bgcolor = 0xC0C0D0;
+object button.hilight bgcolor = 0xE0E0FF;
+
+/* Tinted toolbar background */
+object toolbar bgcolor = 0xC0C0E0;
+
+/* Better menu item hilights */
+object menuitem.hilight {
+  bgcolor = 0xE0E0FF;
+  fgcolor = 0x000000;
+}
+
+/* Yellow tinted dialog boxes */
+object popup.messagedlg bgcolor = 0xE0E0C0;
+
+/* The End */

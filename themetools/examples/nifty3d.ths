@@ -1,0 +1,150 @@
+/* $Id: nifty3d.ths,v 1.1 2000/11/11 22:34:10 micahjd Exp $
+ *
+ * This theme's pretty darn cpu-intensive, but it
+ * demonstrates the neat things that can be done width
+ * fillstyles and gradients.
+ * Uses much less memory than Aqua, but probably not faster.
+ *
+ * Micah Dowty
+ */
+
+object default {
+
+  /* This generates a beveled surface, based on 'bgcolor'.
+     The amount of shading is determined by 'hilightcolor'
+     and the width is set by 'margin'. The amount to shade
+     the body of the surface is set by 'shadowcolor'. */
+  bgfill = fillstyle {
+    var m,a,p1,p2,hc;
+
+    /* Black frame around it all */
+    Frame(x,y,w,h,ColorConv(0x000000));    
+
+    /* Thickness of the border */
+    m = margin/2 + 1;
+    /* Displace angles by... */
+    a = offset;
+    /* Polarity of gradient */
+    p1 = a ? -1 : 1;
+    p2 = a ? 1 : -1;
+    /* Preload hilight color */
+    hc = hilightcolor;
+
+    /* Body of the surface */
+    Gradient(x+1,y+1,w-2,h-2,a ? 205 : 25,bgcolor,ColorSub(bgcolor,shadowcolor),0);
+
+    /* Hilights */
+    Gradient(x+1,y+1,m,h-2,0,hc,0,p1);
+    Gradient(x+1,y+1,w-2,m,90,hc,0,p1);
+    Gradient(x+w-m-1,y+1,m,h-2,180,hc,0,p2);
+    Gradient(x+1,y+h-m-1,w-2,m,270,hc,0,p2);
+
+    /* Displacement */
+    x = x+a;
+    y = y+a;
+  };
+
+  bgcolor = 0xC0C0C0;
+  hilightcolor = 0x202020;
+  shadowcolor = 0x303030;
+
+  /* Default sizing */
+  margin = 3;
+  spacing = 3;
+  width = 20;
+  height = 20;
+}
+
+/* Different default bevels for various types of objects */
+object base.interactive hilightcolor = 0x606060;
+object toolbar bgcolor = 0xC0C0E0;
+object base.container {
+  offset = 1;
+  margin = 4;
+}
+object base.tlcontainer {
+  hilightcolor = 0x606060;
+  margin = 6;
+}
+
+/* Button dynamics */
+object button.hilight bgcolor = 0xE0E0FF;
+object button.on      offset = 1;
+
+/* Background */
+object background {
+  bgfill = fillstyle {
+    Bitmap(x,y,w,h,bitmap1,PG_LGOP_NONE,0,0);
+  };
+  bitmap1 = LoadBitmap("data/bluesquares.pnm");
+}
+
+/* Panelbar */
+object panelbar {
+  bgcolor = 0x7898B3;
+  width = 17;
+}
+object base.panelbtn {
+  width = Copy(panelbar::width);
+  height = Copy(panelbar::width);
+  spacing = 0;
+  bgcolor = 0xC0C0C0;
+  shadowcolor = 0;
+}
+object closebtn  {
+  widgetbitmap = LoadBitmap("data/tiny_x.pnm");
+  side = PG_S_LEFT;
+}
+object rotatebtn {
+  widgetbitmap = LoadBitmap("data/tiny_arrow.pnm");
+  side = PG_S_RIGHT;
+}
+object zoombtn {
+  widgetbitmap = LoadBitmap("data/tiny_expand.pnm");
+  side = PG_S_RIGHT;
+}
+object closebtn.on offset = 1;
+object rotatebtn.on offset = 1;
+object zoombtn.on offset = 1;
+
+/* Menus */
+object menuitem {
+  spacing = 0;
+  hilightcolor = 0x101010;
+}
+object menuitem.hilight {
+  bgcolor = Copy(button.hilight::bgcolor);
+  hilightcolor = Copy(button.hilight::hilightcolor);
+}
+object popup.menu {
+  margin = 2;
+}
+
+/* A little 'fudge factor' for the dialogs */
+object popup.messagedlg {
+  width = 10;
+  height = 30;
+}
+
+/* A scroll-safe background */
+object label.scroll bgfill = fillstyle {
+  Rect(x,y,w,h,ColorConv(bgcolor));
+};
+object box shadowcolor = 0;
+
+/* Scroll bars */
+object scroll {
+  width = 13;
+  overlay = Copy(scroll::bgfill);
+}
+
+/* Indicator */
+object indicator {
+  margin = 4;
+  width = 15;
+  overlay = fillstyle {
+    Gradient(x+1,y+1,w-2,h-2,w>h ? 0 : 90,0x808000,0,1);
+  };
+}
+
+/* The End */
