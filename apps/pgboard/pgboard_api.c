@@ -1,4 +1,4 @@
-/* $Id: pgboard_api.c,v 1.5 2001/11/09 08:50:32 cgrigis Exp $
+/* $Id: pgboard_api.c,v 1.6 2001/11/20 09:44:47 cgrigis Exp $
  *
  * kbd_api.c - high-level API to manipulate the PicoGUI virtual keyboard
  * 
@@ -174,12 +174,15 @@ void send_command (struct keyboard_command * cmd, int force)
 {
   if ( cmd && (!physical_keyboard_available () || force) )
     {
-      struct pgmemdata data = {cmd, sizeof (struct keyboard_command), 0};
+/*       struct pgmemdata data = {cmd, sizeof (struct keyboard_command), 0}; */
       pghandle kb;
+
+/*       printf ("[pgboard_api] sending command: %d\n", cmd->type); */
+      cmd->type = htons (cmd->type);
 
       if ( !(kb = pgFindWidget (PG_KEYBOARD_APPNAME)) )
 	{
-	  printf ("'pgboard' not running, attempting to start it ...\n");
+	  printf ("[pgboard_api] 'pgboard' not running, attempting to start it ...\n");
 
 	  /* Start the virtual keyboard */
  	  if (!run_pgboard ()) return;
@@ -187,7 +190,7 @@ void send_command (struct keyboard_command * cmd, int force)
 	  /* Wait until it has started */
 	  do
 	    {
-	      printf ("Waiting for pgboard ...\n");
+	      printf ("[pgboard_api] Waiting for pgboard ...\n");
 	      sleep (1);
 	    }
 	  while ( !(kb = pgFindWidget (PG_KEYBOARD_APPNAME)) );
@@ -199,15 +202,16 @@ void send_command (struct keyboard_command * cmd, int force)
 	  if (cmd->type == PG_KEYBOARD_TOGGLE)
 	    {
 	      struct keyboard_command hide_cmd = {htons (PG_KEYBOARD_HIDE)};
-	      struct pgmemdata hide_data = {&hide_cmd, sizeof (struct keyboard_command), 0};
-	      pgAppMessage (kb, hide_data);
+/* 	      struct pgmemdata hide_data = {&hide_cmd, sizeof (struct keyboard_command), 0}; */
+	      pgAppMessage (kb, pgFromMemory (&hide_cmd, sizeof (struct keyboard_command)));
 	    }
 
-	  printf ("done.\n");
+	  printf ("[pgboard_api] done.\n");
 	}
 
       /* Send the user command */
-      pgAppMessage (kb, data);
+      pgAppMessage (kb, pgFromMemory (cmd, sizeof (struct keyboard_command)));
+      usleep (100000);
     }
 }
 
@@ -224,17 +228,20 @@ void showKeyboard (unsigned short key_pattern, int force)
   struct keyboard_command cmd;
 
   /* Select the given key pattern */
-  cmd.type = htons (PG_KEYBOARD_SELECT_PATTERN);
+  cmd.type = PG_KEYBOARD_SELECT_PATTERN;
   cmd.data.pattern = htons (key_pattern);
   send_command (&cmd, force);
 
   /* Enable the keyboard */
-  cmd.type = htons (PG_KEYBOARD_ENABLE);
+  cmd.type = PG_KEYBOARD_ENABLE;
   send_command (&cmd, force);
 
   /* Show the keyboard */
-  cmd.type = htons (PG_KEYBOARD_SHOW);
+  cmd.type = PG_KEYBOARD_SHOW;
   send_command (&cmd, force);
+
+  /* Flush PG_APPMSG requests */
+  pgFlushRequests ();
 }
 
 
@@ -248,8 +255,11 @@ void hideKeyboard (int force)
 {
   struct keyboard_command cmd;
 
-  cmd.type = htons (PG_KEYBOARD_HIDE);
+  cmd.type = PG_KEYBOARD_HIDE;
   send_command (&cmd, force);
+
+  /* Flush PG_APPMSG requests */
+  pgFlushRequests ();
 }
 
 
@@ -263,8 +273,11 @@ void toggleKeyboard (int force)
 {
   struct keyboard_command cmd;
 
-  cmd.type = htons (PG_KEYBOARD_TOGGLE);
+  cmd.type = PG_KEYBOARD_TOGGLE;
   send_command (&cmd, force);
+
+  /* Flush PG_APPMSG requests */
+  pgFlushRequests ();
 }
 
 
@@ -278,8 +291,11 @@ void disableKeyboard (int force)
 {
   struct keyboard_command cmd;
 
-  cmd.type = htons (PG_KEYBOARD_DISABLE);
+  cmd.type = PG_KEYBOARD_DISABLE;
   send_command (&cmd, force);
+
+  /* Flush PG_APPMSG requests */
+  pgFlushRequests ();
 }
 
 
@@ -293,8 +309,11 @@ void pushKeyboardContext (int force)
 {
   struct keyboard_command cmd;
 
-  cmd.type = htons (PG_KEYBOARD_PUSH_CONTEXT);
+  cmd.type = PG_KEYBOARD_PUSH_CONTEXT;
   send_command (&cmd, force);
+
+  /* Flush PG_APPMSG requests */
+  pgFlushRequests ();
 }
 
 
@@ -308,6 +327,9 @@ void popKeyboardContext (int force)
 {
   struct keyboard_command cmd;
 
-  cmd.type = htons (PG_KEYBOARD_POP_CONTEXT);
+  cmd.type = PG_KEYBOARD_POP_CONTEXT;
   send_command (&cmd, force);
+
+  /* Flush PG_APPMSG requests */
+  pgFlushRequests ();
 }

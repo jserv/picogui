@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.22 2001/11/19 13:14:42 cgrigis Exp $
+/* $Id: pgboard.c,v 1.23 2001/11/20 09:44:47 cgrigis Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -163,7 +163,8 @@ int evtMessage (struct pgEvent * evt)
 
       /* Command structure is in network byte order */
       cmd->type = ntohs(cmd->type);
-
+/*       printf ("[pgboard] received command: %d\n", cmd->type); */
+  
       switch (cmd->type)
 	{
 	case PG_KEYBOARD_SHOW:
@@ -206,7 +207,7 @@ int evtMessage (struct pgEvent * evt)
 	  break;
 
 	default:
-	  printf ("Unknown command: %d\n", cmd->type);
+	  printf ("[pgboard] Unknown command: %d\n", cmd->type);
 	  break;
 	}
 
@@ -257,9 +258,6 @@ int evtMouse(struct pgEvent *evt) {
   if (evt->type == PG_WE_PNTR_DOWN) {
     keydown = clickkey;
 
-    /* Click! */
-    pgDriverMessage (PGDM_SOUNDFX, PG_SND_KEYCLICK);
-  
     if (clickkey) {
       if (clickkey->key)
 	pgSendKeyInput(PG_TRIGGER_CHAR,clickkey->key,clickkey->mods);
