@@ -1,4 +1,4 @@
-/* $Id: x11_util.c,v 1.6 2002/11/05 16:36:29 micahjd Exp $
+/* $Id: x11_util.c,v 1.7 2002/11/05 17:08:38 micahjd Exp $
  *
  * x11_util.c - Utility functions for picogui's driver for the X window system
  *
@@ -160,6 +160,7 @@ g_error x11_create_window(hwrbitmap *hbmp) {
   struct x11bitmap *xb;
   int black;
   g_error e;
+  XSetWindowAttributes attr;
 
   e = g_malloc((void**)&xb, sizeof(struct x11bitmap));
   errorcheck;
@@ -174,6 +175,10 @@ g_error x11_create_window(hwrbitmap *hbmp) {
   xb->d = XCreateSimpleWindow(x11_display, DefaultRootWindow(x11_display),
 			      0, 0, 1, 1, 0, black, black);
   xb->w = xb->h = 0;
+
+  /* Set the bit gravity so X doesn't redraw any background */
+  attr.bit_gravity = StaticGravity;
+  XChangeWindowAttributes(x11_display, xb->d, CWBitGravity, &attr);
 
   /* Optionally double-buffer this window */
   if (get_param_int("video-x11","doublebuffer",1)) {
@@ -311,7 +316,14 @@ void x11_expose(Window w, Region r) {
   if (!xb) 
     return;
 
-  if (!xb->frontbuffer) {
+  if (xb->frontbuffer) {
+    /* Double-buffered expose update */
+    XSetRegion(x11_display,x11_gctab[PG_LGOP_NONE],r);
+    XCopyArea(x11_display,xb->d,xb->frontbuffer->d,
+	      x11_gctab[PG_LGOP_NONE],0,0,xb->w,xb->h,0,0);
+    XSetRegion(x11_display,x11_gctab[PG_LGOP_NONE],x11_display_region);
+  }
+  else {
     /* Ugly non-double-buffered expose update */
 
     struct divtree *p;
@@ -410,8 +422,6 @@ void x11_acknowledge_resize(hwrbitmap window, int w, int h) {
     }
 
     update(NULL,1);
-    if (XB(window)->frontbuffer)
-      XSetWindowBackgroundPixmap(x11_display, XB(window)->frontbuffer->d, XB(window)->d);
   }
 }
 
