@@ -1,11 +1,11 @@
 # low-level library version of Hello, World
 # missing a real event loop
 
+from PicoGUI import network, requests, responses
+
 def test(where='localhost'):
-  from PicoGUI import network, requests, responses
   connection = network.sock(where)
   pg_in = connection.makefile()
-  pg_out = connection.makefile('w')
   connection.send(requests.mkstring('Greetings'))
   string_id = responses.next(pg_in)
   connection.send(requests.register(string_id))
@@ -32,7 +32,16 @@ def test(where='localhost'):
   responses.next(pg_in)
   connection.send(requests.update())
   responses.next(pg_in)
-  raw_input()
+  return connection
+
+def event_loop(connection):
+  pg_in = connection.makefile()
+  while 1:
+    connection.send(requests.wait())
+    ev = responses.next(pg_in)
+    if isinstance(ev, responses.Event) and ev.type == 3: # PG_WE_CLOSE
+      return
 
 if __name__ == '__main__':
-	test()
+	c = test()
+        event_loop(c)
