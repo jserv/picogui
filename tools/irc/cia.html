@@ -5,7 +5,7 @@
 
   <body>
     <h1>What is CIA?</h1>
-    <p>CIA is a bot that will take email from your CVS/Subversion repositories' commit scripts, and output it to the
+    <p>CIA is a bot that will take email from your CVS/Subversion/BitKeeper repositories' commit scripts, and output it to the
       #commits channel on freenode, and optionally to your project's IRC channel.
       It means you can sit in that channel and marvel in real time at all the free software
       being written all over the world. CIA also collects some 
@@ -31,6 +31,11 @@ echo "`svnlook author -r $REV $REPOS`" committed revision $REV: "`svnlook log -r
     <p>Substitute the name of your channel for <i>channelname</i>. There is a slightly more complex
        example including colorizing and a commit directory name in the PicoGUI repository's
        <a href="http://navi.picogui.org/svn/picogui/trunk/tools/svn/hooks/post-commit">post-commit script</a>. </p>
+
+    <h1> Using it with BitKeeper </h1>
+
+    <p> Leonard Norrgard started a BitKeeper project to support using CIA with bk projects at
+        <a href="http://commits.bkbits.net/">http://commits.bkbits.net/</a>. It includes documentation. </p>
 
     <h1>Controlling the bot</h1>
 
