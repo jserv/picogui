@@ -211,6 +211,11 @@ def pieChart(width, height, slices):
     outlineColor = 0x000000
     shadowColor = 0xD0D0D0
 
+    # Limit the width and height to prevent DoS navi
+    # by getting this to use 1.5GB of swap space.
+    if width > 500 or height > 500:
+        raise Exception("Image too large")
+
     # PIL doesn't seem to support antialiasing on all primitives, so we'll fake it with oversampling.
     oversample = 3
     img = Image.new("RGB", (width * oversample, height * oversample), bgColor)
@@ -231,8 +236,9 @@ def pieChart(width, height, slices):
                           start, end, fill=shadowColor)
         else:
             # If this is an especially small size, turning off the usual outline
-            # will make it look a lot better.
-            if end - start < 4:
+            # will make it look a lot better. (Note that we calculate the arc length
+            # in pixels here, so that this still works at different image sizes)
+            if (end - start) * math.pi / 180 * img.size[0] < 20:
                 oc = color
             else:
                 oc = outlineColor
