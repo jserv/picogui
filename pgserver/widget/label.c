@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.8 2000/06/08 00:15:57 micahjd Exp $
+/* $Id: label.c,v 1.9 2000/06/09 01:53:39 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -32,6 +32,13 @@
 #include <g_malloc.h>
 #include <appmgr.h>
 
+struct labeldata {
+  handle text,font;
+  int transparent,align;
+  devcolort bg,fg;
+};
+#define DATA ((struct labeldata *)(self->data))
+
 void resizelabel(struct widget *self);
 
 /* param.text */
@@ -43,22 +50,22 @@ void text(struct divnode *d) {
   int x,y,w,h;
   struct fontdesc *fd;
   char *str;
+  struct widget *self = d->owner;
 
   /* Measure the exact width and height of the text and align it */
-  if (rdhandle((void **)&fd,TYPE_FONTDESC,-1,d->param.text.fd).type
+  if (rdhandle((void **)&fd,TYPE_FONTDESC,-1,DATA->font).type
       != ERRT_NONE || !fd) return;
-  if (rdhandle((void **)&str,TYPE_STRING,-1,d->param.text.string).type
+  if (rdhandle((void **)&str,TYPE_STRING,-1,DATA->text).type
       != ERRT_NONE || !str) return;
   sizetext(fd,&w,&h,str);
   if (w>d->w) w = d->w;
   if (h>d->h) h = d->h;
-  align(d,d->param.text.align,&w,&h,&x,&y);
+  align(d,DATA->align,&w,&h,&x,&y);
 
-  if (!d->param.text.transparent)
-    grop_rect(&d->grop,0,0,d->w,d->h,d->param.text.fill);
+  if (!DATA->transparent)
+    grop_rect(&d->grop,0,0,d->w,d->h,DATA->bg);
 
-  grop_text(&d->grop,x,y,d->param.text.fd,d->param.text.col,
-	    d->param.text.string);
+  grop_text(&d->grop,x,y,DATA->font,DATA->fg,DATA->text);
 }
 
 /* Pointers, pointers, and more pointers. What's the point?
@@ -66,6 +73,10 @@ void text(struct divnode *d) {
 */
 g_error label_install(struct widget *self) {
   g_error e;
+
+  e = g_malloc(&self->data,sizeof(struct labeldata));
+  if (e.type != ERRT_NONE) return e;
+  memset(self->data,0,sizeof(struct labeldata));
 
   e = newdiv(&self->in,self);
   if (e.type != ERRT_NONE) return e;
@@ -75,16 +86,15 @@ g_error label_install(struct widget *self) {
   e = newdiv(&self->in->div,self);
   if (e.type != ERRT_NONE) return e;
   self->in->div->on_recalc = &text;
-  self->in->div->param.text.fill = white;
-  self->in->div->param.text.align = A_CENTER;
-  self->in->div->param.text.transparent = 0;
-  self->in->div->param.text.fd = defaultfont;
-  self->in->div->param.text.string = 0;
+  DATA->bg = white;
+  DATA->align = A_CENTER;
+  DATA->font = defaultfont;
 
   return sucess;
 }
 
 void label_remove(struct widget *self) {
+  g_free(self->data);
   if (!in_shutdown)
     r_divnode_free(self->in);
 }
@@ -108,20 +118,20 @@ g_error label_set(struct widget *self,int property, glob data) {
     break;
 
   case WP_COLOR:
-    self->in->div->param.text.col = cnvcolor(data);
+    DATA->fg = cnvcolor(data);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
   case WP_BGCOLOR:
-    self->in->div->param.text.fill = cnvcolor(data);
-    self->in->div->param.text.transparent = 0;
+    DATA->bg = cnvcolor(data);
+    DATA->transparent = 0;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
   case WP_TRANSPARENT:
-    self->in->div->param.text.transparent = (data != 0);
+    DATA->transparent = (data != 0);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -129,7 +139,7 @@ g_error label_set(struct widget *self,int property, glob data) {
   case WP_ALIGN:
     if (data > AMAX) return mkerror(ERRT_BADPARAM,
 		     "WP_ALIGN param is not a valid align value (label)");
-    self->in->div->param.text.align = (alignt) data;
+    DATA->align = (alignt) data;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -137,7 +147,7 @@ g_error label_set(struct widget *self,int property, glob data) {
   case WP_FONT:
     if (rdhandle((void **)&fd,TYPE_FONTDESC,-1,data).type!=ERRT_NONE || !fd) 
       return mkerror(ERRT_HANDLE,"WP_FONT invalid font handle (label)");
-    self->in->div->param.text.fd = (handle) data;
+    DATA->font = (handle) data;
     psplit = self->in->split;
     resizelabel(self);
     if (self->in->split != psplit)
@@ -149,7 +159,7 @@ g_error label_set(struct widget *self,int property, glob data) {
   case WP_TEXT:
     if (rdhandle((void **)&str,TYPE_STRING,-1,data).type!=ERRT_NONE || !str) 
       return mkerror(ERRT_HANDLE,"WP_TEXT invalid string handle (label)");
-    self->in->div->param.text.string = (handle) data;
+    DATA->text = (handle) data;
     psplit = self->in->split;
     resizelabel(self);
     if (self->in->split != psplit)
@@ -174,22 +184,22 @@ glob label_get(struct widget *self,int property) {
     return self->in->flags & (~SIDEMASK);
 
   case WP_BGCOLOR:
-    return self->in->div->param.text.fill;
+    return DATA->bg;
 
   case WP_COLOR:
-    return self->in->div->param.text.col;
+    return DATA->fg;
 
   case WP_TRANSPARENT:
-    return self->in->div->param.text.transparent;
+    return DATA->transparent;
 
   case WP_ALIGN:
-    return self->in->div->param.text.align;
+    return DATA->align;
 
   case WP_FONT:
-    return (glob) self->in->div->param.text.fd;
+    return (glob) DATA->font;
 
   case WP_TEXT:
-    return (glob) self->in->div->param.text.string;
+    return (glob) DATA->text;
 
   default:
     return 0;
@@ -201,9 +211,9 @@ void resizelabel(struct widget *self) {
   struct fontdesc *fd;
   char *str;
 
-  if (rdhandle((void **)&fd,TYPE_FONTDESC,-1,self->in->div->param.text.fd).
+  if (rdhandle((void **)&fd,TYPE_FONTDESC,-1,DATA->font).
       type != ERRT_NONE || !fd) return;
-  if (rdhandle((void **)&str,TYPE_STRING,-1,self->in->div->param.text.string).
+  if (rdhandle((void **)&str,TYPE_STRING,-1,DATA->text).
       type != ERRT_NONE || !str) return;
   
   sizetext(fd,&w,&h,str);

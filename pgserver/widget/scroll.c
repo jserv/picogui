@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.12 2000/06/08 00:15:57 micahjd Exp $
+/* $Id: scroll.c,v 1.13 2000/06/09 01:53:39 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -40,6 +40,7 @@ struct scrolldata {
   int grab_offset;  /* The difference from the top of the indicator to
 		       the point that was clicked */
   int release_delta;
+  int value;
 };
 #define DATA ((struct scrolldata *)(self->data))
 
@@ -53,7 +54,7 @@ void scrollbar(struct divnode *d) {
   addelement(d,&current_theme[E_SCROLLBAR_FILL],&x,&y,&w,&h);
 
   /* Within the remaining space, figure out where the indicator goes */
-  y += d->param.i * (h-(h>>HEIGHT_DIV)) / DATA->res;
+  y += DATA->value * (h-(h>>HEIGHT_DIV)) / DATA->res;
   h = h>>HEIGHT_DIV;
 
   /* Add the indicator elements */
@@ -62,7 +63,7 @@ void scrollbar(struct divnode *d) {
   addelement(d,&current_theme[E_SCROLLIND_OVERLAY],&x,&y,&w,&h);
 }
 
-/* When param.i changes, update the grop coordinates */
+/* When value changes, update the grop coordinates */
 void scrollupdate(struct widget *self) {
 
   /* If we're busy rebuilding the grop list, don't bother poking
@@ -124,7 +125,7 @@ void scrollupdate(struct widget *self) {
   }
 
   /* Border */
-  self->in->div->grop->next->next->y = self->in->div->param.i * 
+  self->in->div->grop->next->next->y = DATA->value * 
     (self->in->div->h-(self->in->div->h>>HEIGHT_DIV)) / DATA->res;
   /* Fill */
   self->in->div->grop->next->next->next->y = 
@@ -179,7 +180,7 @@ g_error scroll_set(struct widget *self,int property, glob data) {
   switch (property) {
 
   case WP_VALUE:
-    self->in->div->param.i = data;
+    DATA->value = data;
     scrollupdate(self);
     break;
 
@@ -198,7 +199,7 @@ glob scroll_get(struct widget *self,int property) {
   switch (property) {
 
   case WP_VALUE:
-    return self->in->div->param.i;
+    return DATA->value;
    
   case WP_SIZE:
     return DATA->res;
@@ -234,14 +235,14 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
 
   case TRIGGER_UP:
     if (DATA->release_delta) {
-      self->in->div->param.i += DATA->release_delta;
+      DATA->value += DATA->release_delta;
 
-      if (self->in->div->param.i > DATA->res) 
-	self->in->div->param.i = DATA->res;
-      if (self->in->div->param.i < 0) 
-	self->in->div->param.i =   0;
+      if (DATA->value > DATA->res) 
+	DATA->value = DATA->res;
+      if (DATA->value < 0) 
+	DATA->value =   0;
       
-      post_event(WE_ACTIVATE,self,self->in->div->param.i);
+      post_event(WE_ACTIVATE,self,DATA->value);
     }
   case TRIGGER_RELEASE:
     DATA->on=0;
@@ -251,14 +252,14 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
   case TRIGGER_DRAG:
     if (!DATA->on) return;
     /* Button 1 is being dragged through our widget. */
-    self->in->div->param.i = (param->mouse.y - self->in->div->y - 
-			      DATA->grab_offset) * 100 /
+    DATA->value = (param->mouse.y - self->in->div->y - 
+		   DATA->grab_offset) * 100 /
       (self->in->div->h - (self->in->div->h>>HEIGHT_DIV));
 
-    if (self->in->div->param.i > DATA->res) self->in->div->param.i = DATA->res;
-    if (self->in->div->param.i < 0) self->in->div->param.i =   0;
+    if (DATA->value > DATA->res) DATA->value = DATA->res;
+    if (DATA->value < 0) DATA->value =   0;
 
-    post_event(WE_ACTIVATE,self,self->in->div->param.i);
+    post_event(WE_ACTIVATE,self,DATA->value);
     break;
 
   }

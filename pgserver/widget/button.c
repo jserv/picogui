@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.16 2000/06/08 00:15:57 micahjd Exp $
+/* $Id: button.c,v 1.17 2000/06/09 01:53:39 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -35,13 +35,11 @@
 /* Button content offsetted in X and Y coords by this much when on */
 #define ON_OFFSET 1
 
-/* This widget has extra data we can't store in the divnodes themselves */
 struct btndata {
   int on,over;
-  int x,y;      /* Coordinates of the button's content (bitmap or text) */
-  int text;     /* If this is nonzero, this is a bitmap button instead
-		   of a text button and the 'bitmap' param structure
-		   will be used. */
+  int x,y;
+  handle bitmap,bitmask,text,font;
+  int align;
 };
 #define DATA ((struct btndata *)(self->data))
 
@@ -66,11 +64,11 @@ void bitbutton(struct divnode *d) {
 
   /* We need at least the main bitmap for alignment.  The mask
      bitmap is optional, but without it what's the point... */
-  if (d->param.bitmap.bitmap && (rdhandle((void **) &bit,TYPE_BITMAP,-1,
-      d->param.bitmap.bitmap).type==ERRT_NONE) && bit) {
+  if (DATA->bitmap && (rdhandle((void **) &bit,TYPE_BITMAP,-1,
+      DATA->bitmap).type==ERRT_NONE) && bit) {
     w = bit->w;
     h = bit->h;
-    align(d,d->param.bitmap.align,&w,&h,&x,&y);
+    align(d,DATA->align,&w,&h,&x,&y);
 
     /* AND the mask, then OR the bitmap. Yay for transparency effects! */
     DATA->x = x;
@@ -79,8 +77,8 @@ void bitbutton(struct divnode *d) {
       x+=ON_OFFSET;
       y+=ON_OFFSET;
     }
-    grop_bitmap(&d->grop,x,y,w,h,d->param.bitmap.mask,LGOP_AND);
-    grop_bitmap(&d->grop,x,y,w,h,d->param.bitmap.bitmap,LGOP_OR);
+    grop_bitmap(&d->grop,x,y,w,h,DATA->bitmask,LGOP_AND);
+    grop_bitmap(&d->grop,x,y,w,h,DATA->bitmap,LGOP_OR);
   }
   else {
     grop_null(&d->grop);
@@ -147,14 +145,14 @@ g_error button_set(struct widget *self,int property, glob data) {
   case WP_ALIGN:
     if (data > AMAX) return mkerror(ERRT_BADPARAM,
 		     "WP_ALIGN param is not a valid align value (button)");
-    self->in->div->param.bitmap.align = (alignt) data;
+    DATA->align = (alignt) data;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
   case WP_BITMAP:
     if (rdhandle((void **)&bit,TYPE_BITMAP,-1,data).type==ERRT_NONE && bit) {
-      self->in->div->param.bitmap.bitmap = (handle) data;
+      DATA->bitmap = (handle) data;
       self->in->flags |= DIVNODE_NEED_RECALC;
       self->dt->flags |= DIVTREE_NEED_RECALC;
     }
@@ -163,7 +161,7 @@ g_error button_set(struct widget *self,int property, glob data) {
 
   case WP_BITMASK:
     if (rdhandle((void **)&bit,TYPE_BITMAP,-1,data).type==ERRT_NONE && bit) {
-      self->in->div->param.bitmap.mask = (handle) data;
+      DATA->bitmask = (handle) data;
       self->in->flags |= DIVNODE_NEED_RECALC;
       self->dt->flags |= DIVTREE_NEED_RECALC;
     }
@@ -186,7 +184,7 @@ glob button_get(struct widget *self,int property) {
     return self->in->flags & (~SIDEMASK);
 
   case WP_ALIGN:
-    return self->in->div->param.bitmap.align;
+    return DATA->align;
 
   default:
     return 0;

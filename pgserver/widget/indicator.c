@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.9 2000/06/08 00:15:57 micahjd Exp $
+/* $Id: indicator.c,v 1.10 2000/06/09 01:53:39 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -28,8 +28,11 @@
 #include <widget.h>
 #include <theme.h>
 
+#define VALUE ((int)self->data)
+
 void indicator(struct divnode *d) {
   int x,y,w,h;
+  struct widget *self = d->owner;
 
   /* Background for the whole bar */
   x=y=0; w=d->w; h=d->h;
@@ -39,10 +42,10 @@ void indicator(struct divnode *d) {
   /* Within the remaining space, figure out where the indicator is
      hilighted. */
   if (d->w > d->h)
-    w = w*d->param.i/100;
+    w = w*VALUE/100;
   else {
     int t;
-    t = h*(100-d->param.i)/100;
+    t = h*(100-VALUE)/100;
     y += t;
     h -= t;
   }
@@ -72,7 +75,6 @@ g_error indicator_install(struct widget *self) {
   e = newdiv(&self->in->div,self);
   if (e.type != ERRT_NONE) return e;
   self->in->div->on_recalc = &indicator;
-  self->in->div->param.i = 0;
 
   return sucess;
 }
@@ -88,7 +90,7 @@ g_error indicator_set(struct widget *self,int property, glob data) {
   case WP_VALUE:
     if (data > 100) data = 100;
     if (data < 0) data = 0;
-    self->in->div->param.i = (int) data;
+    VALUE = (int) data;
 
     /* Modify the gropnode directly */
     if (self->in->div->grop_lock || !self->in->div->grop)
@@ -97,10 +99,10 @@ g_error indicator_set(struct widget *self,int property, glob data) {
 	self->in->div->h)
       self->in->div->grop->next->next->w = 
 	self->in->div->grop->next->w *
-	self->in->div->param.i/100;
+	VALUE/100;
     else {
       int t = self->in->div->grop->next->h * 
-	(100-self->in->div->param.i)/100;
+	(100-VALUE)/100;
       self->in->div->grop->next->next->h = self->in->div->grop->next->h - t;
       self->in->div->grop->next->next->y = self->in->div->grop->next->y + t;
     }    
@@ -136,7 +138,7 @@ glob indicator_get(struct widget *self,int property) {
   switch (property) {
 
   case WP_VALUE:
-    return self->in->div->param.i;
+    return VALUE;
 
   case WP_SIZE:
     return self->in->split;

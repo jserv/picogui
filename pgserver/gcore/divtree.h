@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.14 2000/06/03 17:50:42 micahjd Exp $
+/* $Id: divtree.h,v 1.15 2000/06/09 01:51:45 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -80,36 +80,6 @@ typedef short int alignt;
 #define AMAX       9   /* For error checking the range of the align */
 
 /* Parameter structures for gropnodes and divnodes */
-union div_param {
-  /* Stuff for drawing text */
-  struct {          /* This structure is used when on_recalc == &text */
-    alignt align;
-    devcolort fill;
-    int transparent;
-
-    handle string;
-    handle fd;
-    devcolort col;
-  } text;
-
-  /* Bitmaps */
-  struct {
-    alignt align;
-    devcolort fill;
-    int transparent;
-
-    handle bitmap;
-    handle mask;
-    int lgop;
-  } bitmap;
-
-  /* colors */
-  devcolort c;
-
-  /* generic */
-  int i;
-};
-
 union grop_param {
   /* Stuff for drawing text */
   struct {          /* This structure is used when on_recalc == &text */
@@ -147,9 +117,6 @@ struct divnode {
    /* This function is called after the node is recalculated, so for example
     * a widget can recreate its groplist with new dimensions */
    void (*on_recalc)(struct divnode *self);
-   
-   /* Extra info that may be needed by on_recalc */
-   union div_param param;
    
    /* If this pointer is not null, the groplist is rendered to this divnode */
    struct gropnode *grop;
