@@ -9,5 +9,6 @@ include_HEADERS = \
 	pgkeys.h \
         theme.h \
 	stddialog.h \
+	applet.h \
 	types.h
 

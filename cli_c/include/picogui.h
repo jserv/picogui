@@ -1,4 +1,4 @@
-/* $Id: picogui.h,v 1.12 2002/01/14 10:36:53 cgrigis Exp $
+/* $Id: picogui.h,v 1.13 2002/02/06 20:08:11 carpman Exp $
  *
  * picogui.h - Include file for your average PicoGUI client using the
  *             C client library
@@ -32,5 +32,6 @@
 #include <picogui/stddialog.h>   /* Client-side standard dialogs */
 #include <picogui/canvas.h>      /* Canvas widget low-level interface */
 #include <picogui/pgfx.h>        /* PGFX abstract graphics interface */
+#include <picogui/applet.h>	 /* PGL applet messaging system */
 
 /* The End */
