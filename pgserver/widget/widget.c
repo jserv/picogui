@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.47 2000/11/04 04:22:05 micahjd Exp $
+/* $Id: widget.c,v 1.48 2000/11/04 19:03:58 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -52,6 +52,7 @@ struct widget *prev_under;
 int prev_btn;
 struct widget *capture;
 struct widget *kbdfocus;
+int capturebtn;           /* Button that is holding the capture */
 
 /* Sorted (chronological order) list of widgets
    with timers
@@ -402,7 +403,6 @@ int send_trigger(struct widget *w, long type,
 
 void dispatch_pointing(long type,int x,int y,int btn) {
   union trigparam param;
-  int i;
   memset(&param,0,sizeof(param));
 
   param.mouse.x = x;
@@ -464,25 +464,23 @@ void dispatch_pointing(long type,int x,int y,int btn) {
   if (div_under_crsr) {
     under = div_under_crsr->owner;
 
-    if ((type == TRIGGER_UP || !btn) && capture && (capture!=under)) {
+    if ((!(btn & capturebtn)) && capture && (capture!=under)) {
       send_trigger(capture,TRIGGER_RELEASE,&param);
       capture = NULL;
     }
 
     /* First send the 'raw' event, then handle the cooked ones. */
-    i = send_trigger(under,type,&param);
+    send_trigger(under,type,&param);
 
-    if (type==TRIGGER_DOWN) {
-      if (i)
-	capture = under;
-      else
-	capture = NULL;
+    if (type==TRIGGER_DOWN && !capture) {
+      capture = under;
+      capturebtn = param.mouse.chbtn;
     }
 
   }
   else {
     under = NULL;
-    if (type == TRIGGER_UP && capture) {
+    if ((!(btn & capturebtn)) && capture) {
       send_trigger(capture,TRIGGER_RELEASE,&param);
       capture = NULL;
     }
