@@ -1,4 +1,4 @@
-/* $Id: pgfx_bitmap.c,v 1.2 2001/07/11 01:10:04 micahjd Exp $
+/* $Id: pgfx_bitmap.c,v 1.3 2001/10/22 12:53:53 micahjd Exp $
  *
  * picogui/pgfx_bitmap.c - lib functions and registration for offscreen bitmap
  *                         drawing through the PGFX interface
@@ -129,6 +129,12 @@ pgprim _pgfxbitmap_setmapping(pgcontext c,
    return 0;
 }
 
+pgprim _pgfxbitmap_setclip(pgcontext c, 
+			   pgu x,pgu y,pgu w,pgu h) {
+   pgRender(c->device,PG_GROP_SETCLIP,x,y,w,h);
+   return 0;
+}
+
 void _pgfxbitmap_update(pgcontext c) {
 	/* Normally an update is not necessary, but if we're rendering
 	 * directly to the display there might be double-buffering
@@ -172,6 +178,7 @@ pgcontext pgNewBitmapContext(pghandle bitmap) {
    l.setangle   = _pgfxbitmap_setangle;
    l.setsrc     = _pgfxbitmap_setsrc;
    l.setmapping = _pgfxbitmap_setmapping;
+   l.setclip    = _pgfxbitmap_setclip;
    l.update     = _pgfxbitmap_update;
    
    ctx->lib = &l;
