@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.44 2002/10/22 01:35:03 micahjd Exp $
+/* $Id: textbox_document.c,v 1.45 2002/10/27 15:25:56 micahjd Exp $
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and
@@ -123,7 +123,9 @@ g_error document_nuke(struct textbox_document *doc) {
   e = textbox_new_par_div(&doc->par_list, &doc->container_div->div, doc->container_div);
   errorcheck;
   doc->crsr = &doc->par_list->cursor;
-  doc->crsr->par->div->owner->dt->flags |= DIVTREE_NEED_RESIZE;
+  doc->container_div->flags |= DIVNODE_NEED_RECALC | DIVNODE_NEED_REDRAW;
+  doc->container_div->owner->dt->flags |= DIVTREE_NEED_RESIZE | 
+    DIVTREE_NEED_RECALC | DIVTREE_NEED_REDRAW;
   if (was_visible)
     paragraph_show_cursor(doc->crsr);
 

@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.8 2002/10/14 15:59:32 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.9 2002/10/27 15:25:56 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -118,8 +118,8 @@ g_error paragraph_new(struct paragraph **par, struct divnode *div) {
    * as soon as there's text in here, but until then this is necessary for
    * sizing the cursor and this paragraph's surroundings properly.
    */
-  (*par)->div->div->preferred.h = (*par)->height = (*par)->lines->height = 
-    paragraph_font_height((*par)->lines->cache.fmt.fd);
+  (*par)->div->div->split = (*par)->div->div->preferred.h = 
+    (*par)->height = (*par)->lines->height = paragraph_font_height((*par)->lines->cache.fmt.fd);
 
   /* Initially hide the cursor and put it at the beginning */
   (*par)->cursor.visible = 0;
