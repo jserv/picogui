@@ -1,4 +1,4 @@
-import PicoGUI
+import PicoGUI, sys
 from Minibuffer import Minibuffer
 #import pax.backwards_compatibility
 
@@ -21,6 +21,7 @@ class Frame(object):
         self.link(self._save_button_handler, bt, 'activate')
 
         self.minibuffer = Minibuffer(self)
+        sys.stdout = self.minibuffer
 
     def get_current(self):
         for page in self._pages:
@@ -68,6 +69,9 @@ class Frame(object):
 
     def addWidget(self, *args):
         return self._app.addWidget(*args)
+
+    def focus_textbox(self):
+        self._app.server.focus(self.current)
 
     def run(self):
         return self._app.run()

@@ -5,6 +5,7 @@ class Minibuffer(object):
         self._frame = frame
         self._field = frame.addWidget('field')
         self._field.side = 'bottom'
+        self._saved_text = None
         self._history = []
         self._locals = {}
         self._globals = {'frame': frame}
@@ -12,6 +13,7 @@ class Minibuffer(object):
 
         frame.link(self._python_handler, self._field, 'activate')
         frame.link(self._key_handler, self._field, 'kbd keyup')
+        frame.link(self._focus_handler, self._field, 'focus')
 
     def append_to_history(self):
         st = self._field.text
@@ -40,6 +42,8 @@ class Minibuffer(object):
     def _python_handler(self, ev):
         self.append_to_history()
         self._field.text = ''
+        self._frame.focus_textbox()
+        self._saved_text = None
         self.bind(buffer = self._frame.current.buffer)
         try:
             exec self._history[-1] in self._globals, self._locals
@@ -63,6 +67,20 @@ class Minibuffer(object):
                     return
                 pos = (self.history_index() + 1) % len(self._history)
                 self._field.text = self._history[pos]
+
+    def _focus_handler(self, ev):
+        if self._saved_text is not None:
+            self._field.text = self._saved_text
+        self._saved_text = None
+
+    def write(self, text):
+        text = text.strip()
+        if not text:
+            return
+        if self._saved_text is None:
+            self._saved_text = self._field.text
+        self._field.text = text
+        self._frame.focus_textbox()
 
     def bind(__self, **kw):
         __self._globals.update(kw)

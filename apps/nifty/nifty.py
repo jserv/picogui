@@ -9,3 +9,4 @@ else:
         frame.open(FileBuffer(name))
 
 sys.exit(frame.run())
+
