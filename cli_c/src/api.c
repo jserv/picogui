@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.23 2001/08/09 10:57:01 micahjd Exp $
+/* $Id: api.c,v 1.24 2001/09/06 23:05:46 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -296,7 +296,7 @@ void pgDelete(pghandle object) {
 	free(condemn);
      }
      n = _pghandlerlist;
-     while (n->next) {
+     while (n && n->next) {
 	if (n->next->widgetkey == object) {
 	   condemn = n->next;
 	   n->next = condemn->next;
