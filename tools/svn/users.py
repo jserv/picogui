@@ -12,10 +12,6 @@ users = {}
 for line in open('activity.log').xreadlines():
     (revision, time, user, lines) = line.split()
 
-    # Skip 'users' that were really artifacts of the CVS repository
-    if user[0] == '-' or user[:3] == 'uid' or user == 'root':
-        continue
-
     # 'micahjd' was micah's old username
     if user == 'micahjd':
         user = 'micah'
