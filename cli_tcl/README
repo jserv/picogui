@@ -1,5 +1,7 @@
+pgui checkevent
 pgui connect ?-server servername? ?-display displaynum?
-pgui entercontext
-pgui update
 pgui createbitmap -name filename|-data filedata
 pgui createbitmap -width width -height height
+pgui entercontext
+pgui update
+pgui waitevent

@@ -162,25 +162,14 @@ proc pgThemeLookup {object property} {
 	array set ret [pgGetResponse]
 	return $ret(data)
 }
-proc pgWaitEvent {} {
-	global pg_request
-	send_packet [pack_pgrequest 1 0 $pg_request(wait)]
-	return [pgGetResponse]
-}
-proc pgCheckEvent {} {
-	global pg_request
-	send_packet [pack_pgrequest 1 0 $pg_request(checkevent)]
-	array set ret [pgGetResponse]
-	return $ret(data)
-}
 proc pgLeaveContext {{id ""}} {
 	global pg_request
 	set len 0
 	if { $id != "" } {
-		set len 1
+		set len 4
 	}
 	send_packet [pack_pgrequest 1 $len $pg_request(rmcontext)]
-	if { $len < 0 } {
+	if { $len > 0 } {
 		send_packet [binary format "I" $id]
 	}
 	array set ret [pgGetResponse]
@@ -331,6 +320,12 @@ proc pgui {command args} {
 	} elseif {$command =="entercontext"} {
 		send_packet [pack_pgrequest 1 0 $pg_request(mkcontext)]
 		array set ret [pgGetResponse]
+	} elseif {$command =="checkevent"} {
+		send_packet [pack_pgrequest 1 0 $pg_request(checkevent)]
+		array set ret [pgGetResponse]
+	} elseif {$command =="waitevent"} {
+		send_packet [pack_pgrequest 1 0 $pg_request(wait)]
+		array set ret [pgGetResponse]
 	} elseif {$command =="update"} {
 		send_packet [pack_pgrequest 1 0 $pg_request(update)]
 		array set ret [pgGetResponse]
@@ -353,14 +348,9 @@ proc pgui {command args} {
 			puts "unknown arguments for pgui createbitmap"
 		}
 	}
-	if {[info exists ret(data)]} {
+	if {[info exists ret(from)]} {
+		return [array get ret]
+	} elseif {[info exists ret(data)]} {
 		return $ret(data)
 	}
 }
-# A list of implemented procedures to be moved into the readme file
-#pgui connect ?-server servername? ?-display displaynum?
-#pgui entercontext
-#pgui update
-#pgui createbitmap -name filename|-data filedata
-#pgui createbitmap -width width -height height
-# -- in progress -- 
