@@ -1,4 +1,4 @@
-/* $Id: aqua.ths,v 1.37 2002/09/28 20:31:01 micahjd Exp $
+/* $Id: aqua.ths,v 1.38 2002/09/28 20:50:03 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
@@ -239,7 +239,11 @@ object scroll {
   };
 }
 
-object label margin = 10;
+object label {
+  bgfill = Copy(default::bgfill);
+  bitmap1 = Copy(default::bitmap1);
+  margin = 4;
+}
 
 /* Use a simple scrollbar-safe background when the label scrolls */
 object label.scroll {
