@@ -100,28 +100,46 @@ void
 fe_new_window (struct session *sess)
 {
 	char buf[512];
-	pghandle scroll, rightbox;
+	pghandle scroll, rightbox, boxbar;
 
 	sess->gui = malloc(sizeof(struct session_gui));
 	memset(sess->gui, 0, sizeof(struct session_gui));
+
 	/* App */
 	sess->gui->app = pgRegisterApp(PG_APP_NORMAL, "X-Chat ["VERSION"]", 0);
 	fe_set_title(sess);
 	pgBind(0, PG_WE_CLOSE, evtCloseWindow, sess);
+
 	sess->gui->input = pgNewWidget(PG_WIDGET_FIELD, 0, 0);
 	pgSetWidget(0, PG_WP_SIDE, PG_S_BOTTOM, 0);
 	pgBind(0, PG_WE_ACTIVATE, fieldActivate, sess);
+
 	/* Chat area */
 	if(sess->type!=SESS_DIALOG)
 	{
 		rightbox=pgNewWidget(PG_WIDGET_BOX, 0, 0);
-		pgSetWidget(0, PG_WP_SIDE, PG_S_RIGHT, 0);
-		sess->gui->userlistinfo=pgNewWidget(PG_WIDGET_LABEL,
-				PG_DERIVE_INSIDE, 0);
+		pgSetWidget(PGDEFAULT,
+			    PG_WP_SIDE, PG_S_RIGHT,
+			    PG_WP_MARGIN, 0,
+			    0);
+
+		/* Add a panelbar to resize the right box with */
+		boxbar = pgNewWidget(PG_WIDGET_PANELBAR, PG_DERIVE_INSIDE, rightbox);
+		pgSetWidget(PGDEFAULT,
+			    PG_WP_SIDE, PG_S_LEFT,
+			    PG_WP_BIND, rightbox,
+			    0);
+		sess->gui->userlistinfo = pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_INSIDE, 0);
+		pgSetWidget(PGDEFAULT,
+			    PG_WP_DIRECTION, PG_DIR_VERTICAL,
+			    PG_WP_SIDE, PG_S_ALL,
+			    PG_WP_THOBJ, PGTH_O_PANELBAR,
+			    0);
+
 		/* scroll bug: the scroll doesn't recalculate correctly
 		 * when resized. be sure to have the top of the nicklist
 		 * visible when enlarging */
-		sess->gui->userscroll=pgNewWidget(PG_WIDGET_SCROLL, 0, 0);
+		sess->gui->userscroll=pgNewWidget(PG_WIDGET_SCROLL, PG_DERIVE_AFTER, boxbar);
 		sess->gui->userlist=pgNewWidget(PG_WIDGET_BOX, 0, 0);
 		pgSetWidget(0, PG_WP_SIDE, PG_S_TOP, 0);
 		pgSetWidget (sess->gui->userscroll, PG_WP_BIND,
@@ -131,6 +149,7 @@ fe_new_window (struct session *sess)
 	}
 	else
 		pgNewWidget(PG_WIDGET_BOX, 0, 0);
+
 	pgSetWidget(0, PG_WP_SIDE, PG_S_ALL, 0);
 	scroll=pgNewWidget(PG_WIDGET_SCROLL, PG_DERIVE_INSIDE, 0);
 	pgSetWidget(0, PG_WP_SIDE, PG_S_RIGHT, 0);
@@ -772,7 +791,7 @@ fe_userlist_move (struct session *sess, struct User *user, int new_row)
 void
 fe_userlist_numbers (struct session *sess)
 {
-	pgReplaceTextFmt(sess->gui->userlistinfo, "@%d +%d %d",
+	pgReplaceTextFmt(sess->gui->userlistinfo, "User List - @%d +%d %d",
 			sess->ops, sess->voices, sess->total);
 }
 void
