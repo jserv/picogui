@@ -288,6 +288,28 @@ struct pgrequest {
 
   <!--................................................................-->
 
+  <sect2 id="pgreq-appmsg">
+   <title>PGREQ_APPMSG - Send PG_WE_APPMSG to any widget</>
+   <programlisting>
+type                 : PGREQ_APPMSG
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-attachwidget">
+   <title>PGREQ_ATTACHWIDGET - Attach widget</>
+   <programlisting>
+type                 : PGREQ_ATTACHWIDGET
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
+   </para>
+  </sect2>
+
   <sect2 id="pgreq-batch">
    <title>PGREQ_BATCH - Batch multiple requests</title> 
    <programlisting>
@@ -304,6 +326,47 @@ additional data      : requests
    <para>
 	The <structfield>size</> of this request must be set to the sum of
 	all the requests combined.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-chcontext">
+   <title>PGREQ_CHCONTEXT - Change a handle's context </>
+   <programlisting>
+type                 : PGREQ_CHCONTEXT
+client lib equivalent: pgChangeContext()
+additional data      : struct pgreqd_chcontext
+   </programlisting>
+   <para>
+	Change the handle context of an object.
+   </para>
+   <figure><title>struct pgreqd_chcontext</><programlisting>
+struct pgreqd_chcontext {
+  u32 handle;
+  s16 delta;
+  u16 dummy;
+};
+   </programlisting></figure>
+   <para>
+	The <structfield>handle</> is the handle of the object for which the
+	context must be changed.
+   </para>
+   <para>
+	The <structfield>delta</> is a signed value that will modify the
+	current context.  A positive delta value increases the object's
+	context, equivalent to adding extra <constant>PGREQ_MKCONTEXT</>
+	layers. The delta value may be negative, to 'send' the handle to a
+	higher-level context.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-checkevent">
+   <title>PGREQ_CHECKEVENT - Return number of queued events</>
+   <programlisting>
+type                 : PGREQ_CHECKEVENT
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
    </para>
   </sect2>
 
@@ -330,6 +393,75 @@ struct pgreqd_createwidget {
    <para>
 	Where <structfield>type</> is a type defined in
 	<xref linkend="widgettypes">.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-drivermsg">
+   <title>PGREQ_DRIVERMSG - Send a message to all drivers</>
+   <programlisting>
+type                 : PGREQ_DRIVERMSG
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-dup">
+   <title>PGREQ_DUP - Duplicate an object</>
+   <programlisting>
+type                 : PGREQ_DUP
+client lib equivalent: pgDup()
+additional data      : struct pgreqd_handlestruct
+   </programlisting>
+   <para>
+	Duplicate an object that has a handle. See
+	<xref linkend="pgreqdhandlestruct"> for
+	<structname>pgreqd_handlestruct</> structure format.
+   </para>
+   <para>
+	Some objects simply can't be duplicated: For example, it would not
+	make sense to duplicate a widget, driver, or theme.
+	<footnote><para>At the time of this writing, the only object type
+	for which duplication is implemented is the string object.</></>
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-findthobj">
+   <title>PGREQ_FINDTHOBJ - Find theme object by name</>
+   <programlisting>
+type                 : PGREQ_FINDTHOBJ
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-findwidget">
+   <title>PGREQ_FINDWIDGET - Get widget handle by name</>
+   <programlisting>
+type                 : PGREQ_FINDWIDGET
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-focus">
+   <title>PGREQ_FOCUS - Forces focus to a specified widget</>
+   <programlisting>
+type                 : PGREQ_FOCUS
+client lib equivalent: pgFocus()
+additional data      : struct pgreqd_handlestruct
+   </programlisting>
+   <para>
+	Give a widget the keyboard focus.
+   </para>
+   <para>
+	See <xref linkend="pgreqdhandlestruct"> for more info about
+	<structname>pgreqd_handlestruct</>.
    </para>
   </sect2>
 
@@ -377,6 +509,67 @@ struct pgreqd_get {
    <para>
 	The <structfield>property</> is a property identifier (see
 	<xref linkend="propertytypes"> for a complete listing).
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-getfstyle">
+   <title>PGREQ_GETFSTYLE - Get information on a font</>
+   <programlisting>
+type                 : PGREQ_GETFSTYLE
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-getinactive">
+   <title>PGREQ_GETINACTIVE - Get miliseconds of inactivity</>
+   <programlisting>
+type                 : PGREQ_GETINACTIVE
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-getmode">
+   <title>PGREQ_GETMODE - Get video mode information</>
+   <programlisting>
+type                 : PGREQ_GETMODE
+client lib equivalent: pgGetVideoMode()
+additional data      : none
+   </programlisting>
+   <para>
+	Get information about the current video mode.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-getpayload">
+   <title>PGREQ_GETPAYLOAD - Get the payload of an object </>
+   <programlisting>
+type                 : PGREQ_GETPAYLOAD
+client lib equivalent: pgGetPayload()
+additional data      : struct pgreqd_handlestruct
+   </programlisting>
+   <para>
+	Get an object's payload.  See <xref linkend="pgreq-setpayload"> for
+	more information.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-getstring">
+   <title>PGREQ_GETSTRING - Return a string data</>
+   <programlisting>
+type                 : PGREQ_GETSTRING
+client lib equivalent: pgGetString()
+additional data      : struct pgreqd_handlestruct
+   </programlisting>
+   <para>
+	Get the contents of a string handle.  See
+	<xref linkend="pgreqdhandlestruct"> for
+	<structname>pgreqd_handlestruct</> format.
    </para>
   </sect2>
 
@@ -457,6 +650,31 @@ struct pgreqd_in_point {
    </para>
   </sect2>
 
+  <sect2 id="pgreq-loaddriver">
+   <title>PGREQ_LOADDRIVER - Load input/misc driver</>
+   <programlisting>
+type                 : PGREQ_LOADDRIVER
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-mkarray">
+   <title>PGREQ_MKARRAY - Make an array</>
+   <programlisting>
+type                 : PGREQ_MKARRAY
+client lib equivalent: pgNewArray()
+additional data      : data
+   </programlisting>
+   <para>
+	Create a new array object.  Each array entry is 32bit and must be sent
+	to the server in the network byte order.  The <structfield>size</> of
+	the request will set the size of the array.
+   </para>
+  </sect2>
+
   <sect2 id="pgreq-mkbitmap">
    <title>PGREQ_MKBITMAP - Create a bitmap</title> 
    <programlisting>
@@ -483,6 +701,24 @@ struct pgreqd_newbitmap {
 	<structname>pgrequest</> and <structname>pgreqd_newbitmap</>
 	structures.  The data is sent as found in the image file, that is
 	JPEG, GIF, PNG, BMP, etc.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-mkcontext">
+   <title>PGREQ_MKCONTEXT - Enter a new context</>
+   <programlisting>
+type                 : PGREQ_MKCONTEXT
+client lib equivalent: pgEnterContext()
+additional data      : none
+   </programlisting>
+   <para>
+	Enter a new context.
+   </para>
+   <para>
+	PicoGUI uses a context system, similar to a variable's scope in C.
+	Whenever the program leaves a context, all objects created while in
+	that context are deleted. No memory is used by creating a context,
+	and they can be nested a very large number of times.
    </para>
   </sect2>
 
@@ -534,104 +770,6 @@ struct pgreqd_mkfont {
    </para>
   </sect2>
 
-  <sect2 id="pgreq-mkstring">
-   <title>PGREQ_MKSTRING - Create a string</title>
-   <programlisting>
-type                 : PGREQ_MKSTRING
-client lib equivalent: pgNewString()
-additional data      : string
-   </programlisting>
-   <para>
-	Create a new string object.
-   </para>
-   <para>
-	The string may be of variable length.  If the string is not
-	0-terminated the server will terminate it at the end of the packet.
-   </para>
-  </sect2>
-
-  <sect2 id="pgreq-mktheme">
-   <title>PGREQ_MKTHEME - Load a compiled theme</title>
-   <programlisting>
-type                 : PGREQ_MKTHEME
-client lib equivalent: pgLoadTheme()
-additional data      : compiled theme data
-   </programlisting>
-   <para>
-	Load a compiled theme and return the handle for it.
-   </para>
-  </sect2>
-
-  <sect2 id="pgreq-mkwait">
-   <title>PGREQ_MKWAIT - Wait for an event</title> 
-   <programlisting>
-type                 : PGREQ_MKWAIT
-client lib equivalent: pgEvent()
-additional data      : none
-   </programlisting>
-   <para>
-	Indicate to the server that the client is waiting for an event, if
-	any event is available it will be sent as a response immediately,
-	otherwise the client is placed in a waiting queue.
-   </para>
-   <para>
-	If any request is received by the server after a 
-	<constant>PGREQ_MKWAIT</>, the client will be removed from the wait
-	queue and the new request wil be processed. In the event where the
-	new request would be a <constant>PGREQ_MKWAIT</>, the client is sent
-	back in the waiting queue after discarding the previous request.
-   </para>
-   <para>
- 	<emphasis>IMPORTANT NOTE:</> The behaviour of this request will
-	change in a future implementation of this protocol, the client should
-	for now restrict itself from sending any other request after a
-	<constant>PGREQ_MKWAIT</> is sent.
-   </para>
-  </sect2>
-
-  <sect2 id="pgreq-mkwidget">
-   <title>PGREQ_MKWIDGET - Make a new widget</title> 
-   <programlisting>
-type                 : PGREQ_MKWIDGET
-client lib equivalent: pgNewWidget()
-additional data      : struct pgreqd_mkwidget()
-   </programlisting>
-   <para>
-	Create a new widget, derived from a parent widget.
-   </para>
-   <figure><title>struct pgreqd_mkwidget</><programlisting>
-struct pgreqd_mkwidget {
-  u16 rship;
-  u16 type;
-  u32 parent;
-};
-   </programlisting></figure>
-   <para>
-	The <structfield>rship</> is a <constant>PG_DERIVE_*</> constant
-	indicating the new widget's relationship to it's parent
-	(see <xref linkend="derivetypes"> for a complete listing).
-   </para>
-   <para>
-	The <structfield>type</> is a <constant>PG_WIDGET_*</> constant for
-	the widget type (see <xref linkend="widgettypes"> for a complete listing).
-   </para>
-   <para>
-	The <structfield>parent</> is the handle of the parent widget.
-   </para>
-  </sect2>
-
-  <sect2 id="pgreq-ping">
-   <title>PGREQ_PING - Ping request</title>
-   <programlisting>
-type                 : PGREQ_PING
-client lib equivalent: none
-additional data      : none
-   </programlisting>
-   <para>
-	return <constant>success</> if the server connection is ok.
-   </para>
-  </sect2>
-
   <sect2 id="pgreq-mkpopup">
    <title>PGREQ_MKPOPUP - Create a Popup root widget</title>
    <programlisting>
@@ -676,6 +814,88 @@ struct pgreqd_mkpopup {
    </table>
   </sect2>
 
+  <sect2 id="pgreq-mkstring">
+   <title>PGREQ_MKSTRING - Create a string</title>
+   <programlisting>
+type                 : PGREQ_MKSTRING
+client lib equivalent: pgNewString()
+additional data      : string
+   </programlisting>
+   <para>
+	Create a new string object.
+   </para>
+   <para>
+	The string may be of variable length.  If the string is not
+	0-terminated the server will terminate it at the end of the packet.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-mktheme">
+   <title>PGREQ_MKTHEME - Load a compiled theme</title>
+   <programlisting>
+type                 : PGREQ_MKTHEME
+client lib equivalent: pgLoadTheme()
+additional data      : compiled theme data
+   </programlisting>
+   <para>
+	Load a compiled theme and return the handle for it.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-mkwidget">
+   <title>PGREQ_MKWIDGET - Make a new widget</title> 
+   <programlisting>
+type                 : PGREQ_MKWIDGET
+client lib equivalent: pgNewWidget()
+additional data      : struct pgreqd_mkwidget()
+   </programlisting>
+   <para>
+	Create a new widget, derived from a parent widget.
+   </para>
+   <figure><title>struct pgreqd_mkwidget</><programlisting>
+struct pgreqd_mkwidget {
+  u16 rship;
+  u16 type;
+  u32 parent;
+};
+   </programlisting></figure>
+   <para>
+	The <structfield>rship</> is a <constant>PG_DERIVE_*</> constant
+	indicating the new widget's relationship to it's parent
+	(see <xref linkend="derivetypes"> for a complete listing).
+   </para>
+   <para>
+	The <structfield>type</> is a <constant>PG_WIDGET_*</> constant for
+	the widget type (see <xref linkend="widgettypes"> for a complete listing).
+   </para>
+   <para>
+	The <structfield>parent</> is the handle of the parent widget.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-newbitmap">
+   <title>PGREQ_NEWBITMAP - Create a blank bitmap</>
+   <programlisting>
+type                 : PGREQ_NEWBITMAP
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-ping">
+   <title>PGREQ_PING - Ping request</title>
+   <programlisting>
+type                 : PGREQ_PING
+client lib equivalent: none
+additional data      : none
+   </programlisting>
+   <para>
+	return <constant>success</> if the server connection is ok.
+   </para>
+  </sect2>
+
   <sect2 id="pgreq-register">
    <title>PGREQ_REGISTER - Register an application</title> 
    <programlisting>
@@ -715,73 +935,6 @@ struct pgreqd_register {
    </table>
   </sect2>
 
-  <sect2 id="pgreq-set">
-   <title>PGREQ_SET - Set a widget's properties</title> 
-   <programlisting>
-type                 : PGREQ_SET
-client lib equivalent: pgSetWidget()
-additional data      : struct pgreqd_set
-   </programlisting>
-   <para>
-	Set the properties of a widget.
-   </para>
-   <figure><title>struct pgreqd_set</><programlisting>
-struct pgreqd_set {
-  u32 widget;
-  u32 glob;
-  u16 property;
-  u16 dummy;
-};	
-   </programlisting></figure>
-   <para>
-	The <structfield>widget</> is the handle of the widget for which the
-	propertie needs to be set.
-   </para>
-   <para>
-	The <structfield>glob</> is the new value to assign to this property.
-   </para>
-   <para>
-	The <structfield>property</> is a property identifier (see
-	<xref linkend="propertytypes"> for a complete listing).
-   </para>
-  </sect2>
-
-  <sect2 id="pgreq-sizetext">
-   <title>PGREQ_SIZETEXT - Find the size of text</title> 
-   <programlisting>
-type                 : PGREQ_SIZETEXT
-client lib equivalent: pgSizeText()
-additional data      : struct pgreqd_sizetext
-   </programlisting>
-   <para>
-	Measure the length and height of a string of text.
-   </para>
-   <figure><title>struct pgreqd_sizetext</><programlisting>
-struct pgreqd_sizetext {
-  u32 text;
-  u32 font;
-};
-   </programlisting></figure>
-   <para>
-	Where <structfield>text</> and <structfield>font</> are handles of the
-	string and font to use respectively.
-   </para>
-  </sect2>
-
-  <sect2 id="pgreq-update">
-   <title>PGREQ_UPDATE - Update the screen</title> 
-   <programlisting>
-type                 : PGREQ_UPDATE
-client lib equivalent: pgUpdate()
-additional data      : none
-   </programlisting>
-   <para>
-	Redraw portions of the screen if necessary. This forces all unsent
-	packets to be flushed to the server, and instructs the server to
-	draw changed areas of the screen.
-   </para>
-  </sect2>
-
   <sect2 id="pgreq-regowner">
    <title>PGREQ_REGOWNER - Get exclusive privileges </>
    <programlisting>
@@ -817,22 +970,93 @@ struct pgreqd_regowner {
    <para>
 	<emphasis>NOTE:</> In the next protocol version the <structname>pgreqd_regowner</> structure will be padded to 32bits.
    </para>
-  </sect2>
 
-  <sect2 id="pgreq-unregowner">
-   <title>PGREQ_UNREGOWNER - Give up exclusive privileges</>
+  <sect2 id="pgreq-render">
+   <title>PGREQ_RENDER - Render a gropnode to a bitmap</>
    <programlisting>
-type                 : PGREQ_UNREGOWNER
-client lib equivalent: pgUnregisterOwner()
-additional data      : struct pgreqd_regowner
+type                 : PGREQ_RENDER
+client lib equivalent: pgRender()
+additional data      : struct pgreqd_render
+                       gropnode data
    </programlisting>
    <para>
-	Unregister exclusive access to a resouce.  An error will be returned
-	if the client does not already own the specified resource.
+	Render a gropnode to a bitmap
+   </para>
+   <figure><title>struct pgreqd_render</><programlisting>
+struct pgreqd_render {
+  u32 dest;
+  u32 groptype;
+};
+   </programlisting></figure>
+   <para>
+	The <structfield>dest</> is a bitmap handle to render to.
+	Alternatively, if the app has registered exclusive display access
+	this can be zero to draw directly to the display.
    </para>
    <para>
-	See also <xref linkend="pgreq-regowner"> and
-	<xref linkend="pgowntypes">.
+	The <structfield>groptype</> is a <constant>PG_GROP_*</> constant
+	indicating the type of gropnode (see below for a list of valid values).
+   </para>
+   <para>
+	Immediately following the <structfield>groptype</> the gropnode parameters
+	should follow.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-rmcontext">
+   <title>PGREQ_RMCONTEXT - Clean up and kill a context </>
+   <programlisting>
+type                 : PGREQ_RMCONTEXT
+client lib equivalent: pgLeaveContext()
+additional data      : none
+   </programlisting>
+   <para>
+	Leave a context.
+   </para>
+   <para>
+	When leaving a context, all objects created within it are deleted.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-set">
+   <title>PGREQ_SET - Set a widget's properties</title> 
+   <programlisting>
+type                 : PGREQ_SET
+client lib equivalent: pgSetWidget()
+additional data      : struct pgreqd_set
+   </programlisting>
+   <para>
+	Set the properties of a widget.
+   </para>
+   <figure><title>struct pgreqd_set</><programlisting>
+struct pgreqd_set {
+  u32 widget;
+  u32 glob;
+  u16 property;
+  u16 dummy;
+};	
+   </programlisting></figure>
+   <para>
+	The <structfield>widget</> is the handle of the widget for which the
+	propertie needs to be set.
+   </para>
+   <para>
+	The <structfield>glob</> is the new value to assign to this property.
+   </para>
+   <para>
+	The <structfield>property</> is a property identifier (see
+	<xref linkend="propertytypes"> for a complete listing).
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-setinactive">
+   <title>PGREQ_SETINACTIVE - Set miliseconds of inactivity</>
+   <programlisting>
+type                 : PGREQ_SETINACTIVE
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
    </para>
   </sect2>
 
@@ -912,156 +1136,197 @@ struct pgreqd_setmode {
    </para>
   </sect2>
 
-  <sect2 id="pgreq-getmode">
-   <title>PGREQ_GETMODE - Get video mode information</>
+  <sect2 id="pgreq-setpayload">
+   <title>PGREQ_SETPAYLOAD - Set an object's payload</>
    <programlisting>
-type                 : PGREQ_GETMODE
-client lib equivalent: pgGetVideoMode()
+type                 : PGREQ_SETPAYLOAD
+client lib equivalent: pgSetPayload()
+additional data      : struct pgreqd_setpayload
+   </programlisting>
+   <para>
+	Set an object's payload.  The "payload" is a client-defined chunk of
+	data attatched to any object that has a handle. Some good uses for
+	this are assigning numerical values to buttons, or even creating a
+	linked list of objects by storing a handle in the payload. It is
+	usually possible for the client to store pointers in the payload, but
+	this is not recommended, for two reasons:
+   </para>
+   <itemizedlist mark=opencircle>
+   <listitem>
+   <para>
+	If the pgserver is buggy or compromised, the client is vulnerable to
+	crashes or data corruption.
+   </para>
+   </listitem>
+   <listitem>
+   <para>
+	If the client-side architecture uses pointers of more than 32 bits,
+	it will not work.
+   </para>
+   </listitem>
+   </itemizedlist>
+   <figure><title>struct pgreqd_setpayload</><programlisting>
+struct pgreqd_setpayload {
+  u32 h;
+  u32 payload;
+};
+   </programlisting></figure>
+   <para>
+	Where <structfield>payload</> is the 32bit value to assign as payload
+	and <structfield>h</> is the handle of the object to assign the
+	payload to.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-sizebitmap">
+   <title>PGREQ_SIZEBITMAP - Find the size of a bitmap</>
+   <programlisting>
+type                 : PGREQ_SIZEBITMAP
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-sizetext">
+   <title>PGREQ_SIZETEXT - Find the size of text</title> 
+   <programlisting>
+type                 : PGREQ_SIZETEXT
+client lib equivalent: pgSizeText()
+additional data      : struct pgreqd_sizetext
+   </programlisting>
+   <para>
+	Measure the length and height of a string of text.
+   </para>
+   <figure><title>struct pgreqd_sizetext</><programlisting>
+struct pgreqd_sizetext {
+  u32 text;
+  u32 font;
+};
+   </programlisting></figure>
+   <para>
+	Where <structfield>text</> and <structfield>font</> are handles of the
+	string and font to use respectively.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-thlookup">
+   <title>PGREQ_THLOOKUP - Perform a theme lookup</>
+   <programlisting>
+type                 : PGREQ_THLOOKUP
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-traversewgt">
+   <title>PGREQ_TRAVERSEWGT - Find widgets after this one</>
+   <programlisting>
+type                 : PGREQ_TRAVERSEWGT
+client lib equivalent: 
+additional data      : 
+   </programlisting>
+   <para>
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-unregowner">
+   <title>PGREQ_UNREGOWNER - Give up exclusive privileges</>
+   <programlisting>
+type                 : PGREQ_UNREGOWNER
+client lib equivalent: pgUnregisterOwner()
+additional data      : struct pgreqd_regowner
+   </programlisting>
+   <para>
+	Unregister exclusive access to a resouce.  An error will be returned
+	if the client does not already own the specified resource.
+   </para>
+   <para>
+	See also <xref linkend="pgreq-regowner"> and
+	<xref linkend="pgowntypes">.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-update">
+   <title>PGREQ_UPDATE - Update the screen</title> 
+   <programlisting>
+type                 : PGREQ_UPDATE
+client lib equivalent: pgUpdate()
 additional data      : none
    </programlisting>
    <para>
-	Get information about the current video mode.
+	Redraw portions of the screen if necessary. This forces all unsent
+	packets to be flushed to the server, and instructs the server to
+	draw changed areas of the screen.
    </para>
   </sect2>
 
-  <sect2 id="pgreq-mkcontext">
-   <title>PGREQ_MKCONTEXT - Enter a new context</>
+  <sect2 id="pgreq-updatepart">
+   <title>PGREQ_UPDATEPART - Update a subtree of widgets</>
    <programlisting>
-type                 : PGREQ_MKCONTEXT
-client lib equivalent: pgEnterContext()
+type                 : PGREQ_UPDATEPART
+client lib equivalent: pgSubUpdate()
+additional data      : pgreqd_handlestruct
+   </programlisting>
+   <para>
+	Update a subsection of the screen.
+   </para>
+   <para>
+	The given widget and all other widgets contained within it are redrawn if necessary. The request buffer is flushed and the section is redrawn independantly and immediately.
+   </para>
+   <para>
+	This function is recommended for animation. Areas of the screen other than the specified widget and its children are never updated, and SubUpdates can occur in toolbars even while a popup dialog is onscreen.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-wait">
+   <title>PGREQ_WAIT - Wait for an event</title> 
+   <programlisting>
+type                 : PGREQ_WAIT
+client lib equivalent: pgEvent()
 additional data      : none
    </programlisting>
    <para>
-	Enter a new context.
+	Indicate to the server that the client is waiting for an event, if
+	any event is available it will be sent as a response immediately,
+	otherwise the client is placed in a waiting queue.
    </para>
    <para>
-	PicoGUI uses a context system, similar to a variable's scope in C.
-	Whenever the program leaves a context, all objects created while in
-	that context are deleted. No memory is used by creating a context,
-	and they can be nested a very large number of times.
-   </para>
-  </sect2>
-
-  <sect2 id="pgreq-rmcontext">
-   <title>PGREQ_RMCONTEXT - Clean up and kill a context </>
-   <programlisting>
-type                 : PGREQ_RMCONTEXT
-client lib equivalent: pgLeaveContext()
-additional data      : none
-   </programlisting>
-   <para>
-	Leave a context.
+	If any request is received by the server after a 
+	<constant>PGREQ_MKWAIT</>, the client will be removed from the wait
+	queue and the new request wil be processed. In the event where the
+	new request would be a <constant>PGREQ_MKWAIT</>, the client is sent
+	back in the waiting queue after discarding the previous request.
    </para>
    <para>
-	When leaving a context, all objects created within it are deleted.
+ 	<emphasis>IMPORTANT NOTE:</> The behaviour of this request will
+	change in a future implementation of this protocol, the client should
+	for now restrict itself from sending any other request after a
+	<constant>PGREQ_MKWAIT</> is sent.
    </para>
   </sect2>
 
-  <sect2 id="pgreq-focus">
-   <title>PGREQ_FOCUS - Forces focus to a specified widget</>
+  <sect2 id="pgreq-writeto">
+   <title>PGREQ_WRITETO - Write data to a widget </>
    <programlisting>
-type                 : PGREQ_FOCUS
-client lib equivalent: pgFocus()
-additional data      : struct pgreqd_handlestruct
+type                 : PGREQ_WRITETO
+client lib equivalent: pgWriteData()
+additional data      : pgreqd_handlestruct
+                       data
    </programlisting>
    <para>
-	Give a widget the keyboard focus.
+	Write a chunk of widget-defined data to a widget. For example, this
+	can be used to send text to a terminal widget or commands to a canvas
+	widget.
    </para>
    <para>
-	See <xref linkend="pgreqdhandlestruct"> for more info about
-	<structname>pgreqd_handlestruct</>.
+	See <xref linkend="pgreqdhandlestruct"> for the
+	<constant>pgreqd_handlestruct</> format.
    </para>
   </sect2>
-
-<!--
-  <sect2 id="pgreq-">
-   <title>PGREQ_ </>
-   <programlisting>
-type                 : PGREQ_
-client lib equivalent: 
-additional data      : 
-   </programlisting>
-   <para>
-   <para>
-  </sect2>
-
-  <sect2 id="pgreq-">
-   <title>PGREQ_ </>
-   <programlisting>
-type                 : PGREQ_
-client lib equivalent: 
-additional data      : 
-   </programlisting>
-   <para>
-   <para>
-  </sect2>
-
-  <sect2 id="pgreq-">
-   <title>PGREQ_ </>
-   <programlisting>
-type                 : PGREQ_
-client lib equivalent: 
-additional data      : 
-   </programlisting>
-   <para>
-   <para>
-  </sect2>
-
-  <sect2 id="pgreq-">
-   <title>PGREQ_ </>
-   <programlisting>
-type                 : PGREQ_
-client lib equivalent: 
-additional data      : 
-   </programlisting>
-   <para>
-   <para>
-  </sect2>
-
-  <sect2 id="pgreq-">
-   <title>PGREQ_ </>
-   <programlisting>
-type                 : PGREQ_
-client lib equivalent: 
-additional data      : 
-   </programlisting>
-   <para>
-   <para>
-  </sect2>
-
-  <sect2 id="pgreq-">
-   <title>PGREQ_ </>
-   <programlisting>
-type                 : PGREQ_
-client lib equivalent: 
-additional data      : 
-   </programlisting>
-   <para>
-   <para>
-  </sect2>
-
-  <sect2 id="pgreq-">
-   <title>PGREQ_ </>
-   <programlisting>
-type                 : PGREQ_
-client lib equivalent: 
-additional data      : 
-   </programlisting>
-   <para>
-   <para>
-  </sect2>
-
-  <sect2 id="pgreq-LAST ONE!">
-   <title>PGREQ_ </>
-   <programlisting>
-type                 : PGREQ_
-client lib equivalent: 
-additional data      : 
-   </programlisting>
-   <para>
-   <para>
-  </sect2>
--->
 
  </sect1>
 
@@ -1072,6 +1337,45 @@ additional data      :
   </para>
  </sect1>
  </chapter>
+
+ <appendix id="gropnodetypes">
+  <title>Gropnode Types</title>
+  <table id="groptypes" frame=none pgwide=1>
+  <title>PG_GROP values</title>
+  <tgroup cols=3 align=left>
+  <colspec colwidth="45*">
+  <colspec colwidth="10*">
+  <colspec colwidth="45*">
+  <tbody>
+  <row><entry>PG_GROP_RECT</><entry>0x00</><entry></></>
+  <row><entry>PG_GROP_FRAME</><entry>0x10</><entry></></>
+  <row><entry>PG_GROP_SLAB</><entry>0x20</><entry></></>
+  <row><entry>PG_GROP_BAR</><entry>0x30</><entry></></>
+  <row><entry>PG_GROP_PIXEL</><entry>0x40</><entry></></>
+  <row><entry>PG_GROP_LINE</><entry>0x50</><entry></></>
+  <row><entry>PG_GROP_ELLIPSE</><entry>0x60</><entry></></>
+  <row><entry>PG_GROP_FELLIPSE</><entry>0x70</><entry></></>
+  <row><entry>PG_GROP_TEXT</><entry>0x04</><entry>Param: string</></>
+  <row><entry>PG_GROP_BITMAP</><entry>0x14</><entry>Param: bitmap</></>
+  <row><entry>PG_GROP_TILEBITMAP</><entry>0x24</><entry>Param: bitmap</></>
+  <row><entry>PG_GROP_FPOLYGON</><entry>0x34</><entry>Param: array</></>
+  <row><entry>PG_GROP_GRADIENT</><entry>0x0C</><entry>Param: angle, c1, c2 </></>
+  <row><entry>PG_GROP_TEXTGRID</><entry>0x1C</><entry>Param: string, bufferw, offset</></>
+  <row><entry>PG_GROP_NOP</><entry>0x03</><entry></></>
+  <row><entry>PG_GROP_RESETCLIP</><entry>0x13</><entry>Reset clip to whole divnode</></>
+  <row><entry>PG_GROP_SETOFFSET</><entry>0x01</><entry>this grop's rect sets offset</></>
+  <row><entry>PG_GROP_SETCLIP</><entry>0x11</><entry>this grop's rect sets clipping</></>
+  <row><entry>PG_GROP_SETSRC</><entry>0x21</><entry>this grop's rect sets src_*</></>
+  <row><entry>PG_GROP_SETMAPPING</><entry>0x05</><entry>Param: PG_MAP_* const</></>
+  <row><entry>PG_GROP_SETCOLOR</><entry>0x07</><entry>Param: pgcolor</></>
+  <row><entry>PG_GROP_SETFONT</><entry>0x17</><entry>Param: font</></>
+  <row><entry>PG_GROP_SETLGOP</><entry>0x27</><entry>Param: lgop</></>
+  <row><entry>PG_GROP_SETANGLE</><entry>0x37</><entry>Param: angle in degrees</></>
+  <row><entry>PG_GROP_VIDUPDATE</><entry>0x800</><entry>Forces a video update</></>
+  </tbody>
+  </tgroup>
+  </table>
+ </appendix>
 
  <appendix id="propertytypes"><title>Property Types</title>
   <para>
