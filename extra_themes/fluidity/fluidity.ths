@@ -121,9 +121,8 @@ object default {
 /********************************** Background */
 
 object background {
-  name = "Electric Silk";
   bgfill = Copy(default::fBitmap);
-  bitmap1 = LoadBitmap("data/electric_silk.jpeg");
+  bitmap1 = LoadBitmap("data/electric_silk_2.jpeg");
 }
 
 /********************************** Panels */
