@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.76 2001/09/03 00:45:52 micahjd Exp $
+/* $Id: button.c,v 1.77 2001/09/03 01:20:34 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -33,6 +33,7 @@ struct btndata {
    unsigned int on : 1;
    unsigned int over : 1;
    unsigned int toggle : 1;
+   unsigned int disabled : 1;
 
    /* These keep track of when one of the parameters was customized by
     * a theme (as opposed to the app) so it can be appropriately unloaded */
@@ -120,6 +121,12 @@ void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
        addgrop(c,PG_GROP_SETLGOP);
        c->current->param[0] = PG_LGOP_NONE;
     }
+  }
+
+  /* FIXME: Allow theme to control how buttons are disabled */
+  if (DATA->disabled) {
+    addgrop(c,PG_GROP_SETLGOP);
+    c->current->param[0] = PG_LGOP_STIPPLE;
   }
 
   /* Text */
@@ -234,9 +241,15 @@ g_error button_set(struct widget *self,int property, glob data) {
     /* Fake a trigger to redraw the button */
     button_trigger(self,0,NULL);
     break;
+
+  case PG_WP_DISABLED:
+    DATA->disabled = data;
+    /* Fake a trigger to redraw the button */
+    button_trigger(self,0,NULL);
+    break;
      
-   default:
-     return mkerror(ERRT_PASS,0);
+  default:
+    return mkerror(ERRT_PASS,0);
   }
   return sucess;
 }
@@ -248,16 +261,16 @@ glob button_get(struct widget *self,int property) {
   switch (property) {
 
   case PG_WP_SIDE:
-    return self->in->flags & (~SIDEMASK);
+    return (glob) (self->in->flags & (~SIDEMASK));
 
   case PG_WP_BITMAP:
-    return DATA->bitmap;
+    return (glob) DATA->bitmap;
 
   case PG_WP_BITMASK:
-    return DATA->bitmask;
+    return (glob) DATA->bitmask;
 
   case PG_WP_EXTDEVENTS:
-    return DATA->extdevents;
+    return (glob) DATA->extdevents;
 
   case PG_WP_FONT:
     return (glob) DATA->font;
@@ -271,6 +284,9 @@ glob button_get(struct widget *self,int property) {
   case PG_WP_ON:
     return (glob) DATA->on;
 
+  case PG_WP_DISABLED:
+    return (glob) DATA->disabled;
+
   default:
     return 0;
   }
@@ -278,6 +294,13 @@ glob button_get(struct widget *self,int property) {
 
 void button_trigger(struct widget *self,long type,union trigparam *param) {
   int event=-1;
+
+  /* If it's disabled, don't allow anything except
+   * hilighting and global keys
+   */
+  if (DATA->disabled && type!=TRIGGER_ENTER && type!=TRIGGER_LEAVE &&
+      !(type==TRIGGER_KEYDOWN && param->kbd.key!=hotkey_activate))
+    return;
 
   /* Figure out the button's new state */
   switch (type) {
