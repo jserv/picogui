@@ -15,6 +15,7 @@ title.text = 'Welcome to PicoGUI'
 
 subtitle = title.addWidget('textbox')
 subtitle.text = 'To begin your PicoGUI session, enter your username and password below. You may also sit here and stare at the pretty icon to the left of this message, or admire the fact that all these extra useless widgets were brought to you in a conveniently packaged Widget Template (tm) for your enjoyment.'
+subtitle.readonly = 1
 
 loginbox = subtitle.addWidget('box')
 loginbox.name = 'PSMLoginBox'

@@ -240,6 +240,17 @@ constants = {
         }),
         'spacing':			(55, {
         }),
+        'minimum':			(56, {
+        }),
+        'multiline':			(57, {
+        }),
+        'selection':			(58, _getString),
+        'readonly':			(59, {
+        }),
+        'insertmode':			(60, {
+        }),
+        'type':				(61, {
+        }),
     },
     'traversewidget': {
         'children':	(1, {}),	# starting with first child, traverse forward
