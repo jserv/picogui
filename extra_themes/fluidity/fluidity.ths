@@ -23,10 +23,11 @@
  *
  * All graphics used here are original works also licensed under the GPL!
  *
- * Version 1.01
+ * Version 1.04
  *
  * Changelog:
  *
+ *  1.04 - New background de-emphasis, with blurring
  *  1.03 - Make interlacing align properly
  *  1.02 - Tweaked fonts
  *         Tweaked colors and sizes
@@ -40,7 +41,7 @@
 prop bDarkInterlace;
 
 /* Fillstyles */
-prop fBitmap, fNop, fExpand, fDarkInterlace;
+prop fBitmap, fNop, fExpand, fDarkInterlace, fDeEmphasize;
 
 /* X and Y of source bitmap */
 prop srcx, srcy, srcw, srch;
@@ -51,7 +52,7 @@ prop left_sz, right_sz, top_sz, bottom_sz;
 /********************************** Default definitions */
 
 object default {
-  name = "Fluidity v1.03";
+  name = "Fluidity v1.04";
   bgfill = Copy(default::fDarkInterlace);
   font = Font(NULL,11,0);
 
@@ -142,6 +143,15 @@ object default {
     SetSrc(0,0,0,0);
   };
 
+  /* De-emphasize the rest of the screen by blending with white then blurring */
+  fDeEmphasize = fillstyle {
+    SetLgop(PG_LGOP_ALPHA);
+    SetColor(PGCF_ALPHA | PGC_WHITE | (45<<24));
+    Rect(x,y,w,h);
+    SetLgop(PG_LGOP_NONE);
+    Blur(x,y,w,h,2);
+  };
+
   srcx = 0;
   srcy = 0;
   srcw = 0;
@@ -225,11 +235,7 @@ object popup {
   backdrop = fillstyle {
     var title_x,title_y,title_w;
 
-    /* De-emphasize the rest of the screen */
-    SetLgop(PG_LGOP_ALPHA);
-    SetColor(PGCF_ALPHA | PGC_WHITE | (45<<24));
-    Rect(0,0,0x7FFF,0x7FFF);
-    SetLgop(PG_LGOP_NONE);
+    fDeEmphasize(0,0,0x7FFF,0x7FFF);
 
     /* Drop shadow */
     SetLgop(PG_LGOP_MULTIPLY);
@@ -422,11 +428,7 @@ object popup.menu {
   backdrop = fillstyle {
     var bar_w,bar_h,min_size;
 
-    /* De-emphasize the rest of the screen */
-    SetLgop(PG_LGOP_ALPHA);
-    SetColor(PGCF_ALPHA | PGC_WHITE | (45<<24));
-    Rect(0,0,0x7FFF,0x7FFF);
-    SetLgop(PG_LGOP_NONE);
+    fDeEmphasize(0,0,0x7FFF,0x7FFF);
 
     /* Size the decoration bars measured from x,y */
     min_size = 27;
