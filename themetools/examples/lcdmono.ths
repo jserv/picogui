@@ -1,4 +1,4 @@
-/* $Id: lcdmono.ths,v 1.11 2001/07/29 06:12:38 micahjd Exp $
+/* $Id: lcdmono.ths,v 1.12 2001/07/29 06:17:43 micahjd Exp $
  *
  * Monochrome theme for LCDs. Rounded buttons and dialogs, a background
  * that looks good on a handheld, and handheld-friendly key mappings
@@ -204,6 +204,14 @@ object checkbox {
 }
 object checkbox.on bitmap1 = LoadBitmap("data/lcd_check_checked.pnm");
 
-obj toolbar margin = 2;
+object toolbar {
+   bgfill = fillstyle {
+      SetColor(bgcolor);
+      Rect(x,y,w,h);
+      SetColor(fgcolor);
+      Slab(x,y+h-1,w,1);
+   };
+   margin = 2;
+}
 
 /* The End */
