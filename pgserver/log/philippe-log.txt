@@ -1,0 +1,11 @@
+2001-05-24    Philippe Ney <philippe.ney@smartdata.ch>
+
+Some functions directly connected to the hardware like the 'sleep mode' are
+made by the bios and accessed from userland through the Ressources Manager
+
+	* tsinput.c: - add Ressources Manager call for sleep mode
+		         rm_init();
+		         rm_exit ();
+		         rm_sleep(RM_WAKE_ON_BUTTON);
+		     - disable xy swapping for XCopilot environment
+		         ts_params.xy_swap        = 0;
