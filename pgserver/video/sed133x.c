@@ -1,4 +1,4 @@
-/* $Id: sed133x.c,v 1.1 2002/01/23 14:49:50 abergmann Exp $
+/* $Id: sed133x.c,v 1.2 2002/01/31 12:57:48 abergmann Exp $
  *
  * sed133x.c -- driver for Epson SED1330/SED1335/SED1336 based LC displays
  *
@@ -38,8 +38,15 @@
 
 #include <pgserver/video.h>
 #include <pgserver/input.h>
+#include <pgserver/configfile.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <linux/kd.h>
+#include <fcntl.h>
 #include <sys/io.h> /* for iopl */
 #include <stdio.h>
+#include "sed133x.h"
 
 /* Macros to easily access the members of vid->display */
 #define FB_MEM   (((struct stdbitmap*)vid->display)->bits)
@@ -57,9 +64,19 @@
 #define FLICKER_FIX
 #endif
 
+#if 0
+/* Set this if you are not using the sed133xcon kernel driver
+   from SSV. Usually, the kernel should take care of all initialization,
+   but this might work as well.
+ */   
+#define SED133X_MUST_INITIALIZE
+#endif
 
 
 /****************************************** Data Structure Definitions */
+
+#define sed133x_data_port 0x240
+#define sed133x_command_port 0x241
 
 /* set this to your hardware */
 #define sed133x_data_port    0x240
@@ -68,112 +85,10 @@
 static int sed133x_xres = 320;
 static int sed133x_yres = 240;
 
-/* write a command to the sed133x chip, first the command code, then
-   further data bytes */
-#define sed_command_l(cmd,dat,len) do { \
-	unsigned int i; \
-	outb((cmd),sed133x_command_port); \
-	outsb(sed133x_data_port,(dat),(len)); \
-} while (0)
+#ifndef SED133X_MUST_INITIALIZE
+static int ttyfd;
+#endif
 
-/* similar to sed_command_l, left for debugging purposes */
-#define sed_read_l(cmd,dat,len) do { \
-	unsigned int i; \
-	outb((cmd),sed133x_command_port); \
-	for (i=0; i < (len); i++) \
-		(dat)[i] = inb(sed133x_command_port); \
-} while (0)
-
-/* to fix flickering, you can only write after the rising edge of 
-   bit 6 on the data port */
-#define sed_wait_ready() do {  \
-	while (!(inb_p(sed133x_data_port) & 0x40)); \
-	while ((inb_p(sed133x_data_port) & 0x40)); \
-} while (0)
-
-/* convenience macros for fixed length data structures */
-#define sed_command(cmd,dat) sed_command_l(cmd,(u8 *)&(dat),sizeof(dat))
-#define sed_read(cmd,dat) sed_read_l(cmd,(u8 *)&(dat),sizeof(dat))
-
-/* XXX the macro did not work when using FLICKER_FIX. why? */
-static inline void command_l(u8 cmd, u8*dat, unsigned int len)
-	{ sed_command_l(cmd,dat,len); }
-
-/* complete list of command codes, hopefully correct */
-enum sed_commands {
-  /* *COMMAND* 	*CODE*      *DESCRIPTION*            *LENGTH* */
-
-  /* system control */
-    SYSTEM_SET	= 0x40, /* initialize device/display 	 8 */
-    SLEEP_IN	= 0x53, /* enter standby mode 		 0 */
-  /* display control */
-    DISP_OFF	= 0x58, /* disable display/flashing 	 1 */
-    DISP_ON	= 0x59, /* enable display/flashing	 1 */
-    SCROLL	= 0x44, /* display start address 	10 */
-    CSRFORM	= 0x5d, /* cursor type 			 2 */
-    CGRAM_ADR	= 0x5c, /* character data start address  2 */ 
-    CSRDIR	= 0x4c, /* direction of cursor movement  0 */
-           /* ... 0x4f */
-    HDOT_SCR	= 0x5a, /* horizontal scroll position 	 1 */
-    OVLAY	= 0x5b, /* display overlay format 	 1 */
-  /* drawing control */
-    CSRW	= 0x46, /* cursor address (write) 	 2 */
-    CSRR	= 0x47, /* cursor address (read)  	 2 */
-  /* memory control */
-    MWRITE	= 0x42, /* write to display memory 	any */
-    MREAD	= 0x43  /* read display memory 		any */
-};
-
-struct system_set {
-	u8 m0 : 1; /* external character rom */
-	u8 m1 : 1; /* ram area for user defined characters */
-	u8 m2 : 1; /* 8 / 16 pixel height for character rom */
-	u8 ws : 1; /* single / dual panel */
-	u8 on : 1; /* reserved (1) */
-	u8 iv : 1; /* screen offset for inverse mode */
-	u8 tl : 1; /* LCD / TV mode */
-	u8 dr : 1; /* additional shift-clock cycles on two-panel LCD*/
-	
-	u8 fx : 3; /* character width */
-	u8    : 4;
-	u8 wf : 1; /* 16-line / two-frame AC drive */
-
-	u8 fy : 4; /* character height */
-	u8    : 4;
-
-	u8 cr;     /* address range of one line */
-	u8 tcr;    /* line length (in bytes) */
-	u8 lf;     /* lines per frame */
-	u16 ap;    /* horizontal address range of display */
-} __attribute__((packed));
-
-struct displ_onoff {
-	enum { ATTR_OFF, ATTR_ON, ATTR_FLASH, ATTR_FFLASH }
-	fc  : 2, /* cursor attributes   */
-        fp1 : 2, /* first screen block  */
-        fp2 : 2, /* second screen block */
-        fp3 : 2; /* third screen block  */
-} __attribute__((packed));
-
-struct csrform {
-	u8 x : 4; /* horizontal size   */
-	u8   : 4;
-	u8 y : 4; /* vertical size     */
-	u8   : 3;
-	u8 cm :1; /* underline / block */
-} __attribute__((packed));
-
-struct ovlay {
-	enum { MX_OR, MX_XOR, MX_AND, MX_POR }
-	mx   : 2; /* composition method */
-	enum { DM_TEXT, DM_GRAPHICS }
-	dm1 : 1, /* display mode block 1 */
-	dm3 : 1; /* display mode block 2 */
-	u8 ov : 1; /* two/three layer overlay */
-	u8 : 3;
-} __attribute__((packed));
-
-enum cursordir { CSR_RIGHT=0, CSR_LEFT, CSR_UP, CSR_DOWN };
 
 /**************************************************** Implementation */
 static g_error sed133x_init(void) {
@@ -188,10 +103,15 @@ static g_error sed133x_init(void) {
     vid->yres = sed133x_yres;
     vid->bpp = 1;
     FB_BPL = vid->xres >> 3;
-    
+
+/* all the important setup should now be done be
+   the kernel console driver, so we don't need to
+   do it here. If you are not using the kernel
+   driver, enable this. */
+#ifdef SED133X_MUST_INITIALIZE    
     /* general setup, hardware dependant */
     {
-	struct system_set sset = {
+	struct sed133x_system_set sset = {
 	    m0:0, m1:0, m2:0,
 	    ws:0, on:1, iv:1, tl:0, 
 	    dr:sset.ws, fx:7, wf:1, fy:7,
@@ -201,29 +121,9 @@ static g_error sed133x_init(void) {
 	};
 	sed_command(SYSTEM_SET, sset);
     }
-    /* which planes are shown */
-    {
-	struct displ_onoff dispon = {
-	    fc: ATTR_FLASH,
-	    fp1: ATTR_ON,
-	    fp2: ATTR_OFF,
-	    fp3: ATTR_OFF
-	};
-	sed_command(DISP_ON, dispon);
-    }
-    /* how they are displayed */
-    {
-	struct ovlay ovlay = {
-	    mx: MX_OR,
-	    dm1: DM_GRAPHICS,
-	    dm3: DM_GRAPHICS,
-	    ov: 0
-	};
-	sed_command(OVLAY,ovlay);
-    }
     /* cursor size */
     {
-	struct csrform csrform = {
+	struct sed133x_csrform csrform = {
 	    x: 0,
             y: 0,
 	    cm: 1
@@ -233,18 +133,53 @@ static g_error sed133x_init(void) {
     /* scrolling (off) */
     {
 	u8 hdot_scr = 0;
-        sed_command(HDOT_SCR, hdot_scr);	
+        sed_command(HDOT_SCR, hdot_scr);
+    }
+    /* memory offset */
+    {
+	struct sed133x_scroll1 scroll = {
+		sad1: 0,
+		sl1: sed133x_yres,
+		sad2: SED133X_GFX_OFFSET,
+		sl2: sed133x_yres,
+	};
+	sed_command(SCROLL, scroll);
     }
     /* cursor movement */
     {
 	outb(CSRDIR+CSR_RIGHT, sed133x_command_port);
     }
-    /* start address */
+    /* how they are displayed */
     {
-	u16 cgram_adr = 0;
-	sed_command(CGRAM_ADR, cgram_adr);
-    }    
-
+	struct sed133x_ovlay ovlay = {
+	    mx: MX_OR,
+	    dm1: DM_GRAPHICS,
+	    dm3: DM_GRAPHICS,
+	    ov: 0
+	};
+	sed_command(OVLAY,ovlay);
+    }
+    /* enter graphics mode */
+    {
+	struct sed133x_displ_onoff dispon = {
+	    fc: ATTR_OFF, /* cursor */
+	    fp1: ATTR_OFF,   /* first text screen */
+	    fp2: ATTR_ON,  /* graphics */
+	    fp3: ATTR_OFF   /* second text screen */
+	};
+	sed_command(DISP_ON, dispon);
+    }
+#else /* use tty dev for initialization */
+    {
+	const char *ttydev = get_param_str("video-sed133x","device", "/dev/tty");
+	ttyfd = open (ttydev, O_RDWR);
+	if (ttyfd<0)
+	    return PG_ERRT_IO;
+	if (ioctl(ttyfd, KDSETMODE, KD_GRAPHICS) < 0) {
+	    return PG_ERRT_IO;
+	}
+    }
+#endif
     /* create back buffer */
     e = g_malloc((void **) &FB_MEM, vid->yres * FB_BPL);
     errorcheck;
@@ -261,7 +196,7 @@ static void sed133x_update(s16 x,s16 y,s16 w,s16 h)
 #else
 #define max_bytes 0
 #endif
-    u16 cursor = PIXELBYTE(x,y) - FB_MEM -1;
+    u16 cursor = PIXELBYTE(x,y) - FB_MEM + SED133X_GFX_OFFSET;
     int len = (w >> 3) + 2;
     u8 *p;
     u8 inv_buffer[len+max_bytes];
@@ -288,6 +223,20 @@ static void sed133x_update(s16 x,s16 y,s16 w,s16 h)
 
 /* clear screen on shutdown */
 static void sed133x_close(void) {
+#ifdef SED133X_MUST_INITIALIZE
+    /* restore text mode */
+    {
+	struct sed133x_displ_onoff dispon = {
+	    fc: ATTR_FLASH, /* cursor */
+	    fp1: ATTR_ON,   /* first text screen */
+	    fp2: ATTR_OFF,  /* graphics */
+	    fp3: ATTR_ON   /* second text screen */
+	};
+	sed_command(DISP_ON, dispon);
+    }
+#else
+    ioctl(ttyfd, KDSETMODE, KD_TEXT);
+#endif
     memset(FB_MEM, 0xff, vid->yres * FB_BPL);
     sed133x_update(0,0,vid->xres,vid->yres);
     g_free(FB_MEM);
