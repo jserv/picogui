@@ -1,6 +1,0 @@
-Popup boxes work. Combination text/bitmap buttons work. Many speed
-enhancements in networking. Still a bug with S_ALL and buttons, but
-next on my feature list is scrolling, composite widgets, and (tada!) the
-text edit widget (with support for HTML and other cool stuff). Still
-works in Linux and windoze with SDL, and the SVGAlib driver is in progress.
-Haven't started the 68EZ328 driver yet. 

@@ -1,7 +1,0 @@
-The C client library that Philippe and I have been working on is almost
-completed. The important things like event bindings, widget properties, and
-packet buffering are 100% completed.  The new theme code is going slowly
-though. I just haven't had much time to work on it.  On the bright side, I
-think I've found a file format that will work and I have started writing a
-theme compiler in the new themetools/themec directory. (I'm learning lex and
-yacc!)

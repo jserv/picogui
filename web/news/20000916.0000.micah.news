@@ -1,9 +1,0 @@
-Philippe Ney was first to post actual code for the client lib. His demo
-prog made a sucessful connection to the server, and sent some packets. I
-cleaned up the code, debugged it, and added a handful of new features last
-night. I have the design for the new theme system planned out but I'm only
-starting to implement it. Find the new client lib in the cli_c directory (on
-CVS of course) and the theme code I'm working on will soon be on the
-theme_overhaul branch of the pgserver CVS.
-<br>BTW, we're actually using the mailing list now! Woohoo!
-
