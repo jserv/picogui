@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.75 2002/11/19 06:27:59 micahjd Exp $
+/* $Id: scroll.c,v 1.76 2002/12/17 22:24:25 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -373,7 +373,7 @@ void scroll_trigger(struct widget *self,s32 type,union trigparam *param) {
       
       if (DATA->grab_offset < 0)  
 	DATA->release_delta = -SCROLLAMOUNT;
-      else if (DATA->grab_offset > ( ((DATA->horizontal)?self->in->div->r.w:DATA->thumbsize)))
+      else if (DATA->grab_offset > DATA->thumbsize)
 	DATA->release_delta = SCROLLAMOUNT;
       else {
 	DATA->on=1;
