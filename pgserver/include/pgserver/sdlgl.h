@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.19 2002/09/19 22:34:27 micahjd Exp $
+/* $Id: sdlgl.h,v 1.20 2002/09/23 22:51:26 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -132,9 +132,10 @@ struct gl_glyph {
 #define STDB(dest) (((struct glbitmap*)(dest))->sb)
 
 /* Camera modes that let the user move the camera around */
-#define SDLGL_CAMERAMODE_NONE      0
-#define SDLGL_CAMERAMODE_TRANSLATE 1
-#define SDLGL_CAMERAMODE_ROTATE  2
+#define SDLGL_CAMERAMODE_NONE         0
+#define SDLGL_CAMERAMODE_TRANSLATE    1
+#define SDLGL_CAMERAMODE_ROTATE       2
+#define SDLGL_CAMERAMODE_FOLLOW_MOUSE 3
 
 /* This is a temporary structure used during font loading. It must
  * be initialized and shut down properly. */

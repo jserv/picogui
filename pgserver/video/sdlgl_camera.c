@@ -1,4 +1,4 @@
-/* $Id: sdlgl_camera.c,v 1.10 2002/09/20 02:06:14 micahjd Exp $
+/* $Id: sdlgl_camera.c,v 1.11 2002/09/23 22:51:26 micahjd Exp $
  *
  * sdlgl_camera.c - OpenGL driver for picogui, using SDL for portability.
  *                  This is an input filter that traps keyboard and mouse
@@ -32,6 +32,8 @@
 
 /* We need access to sdlinput's cursor */
 extern struct cursor *sdlinput_cursor;
+
+void gl_camera_reset(void);
 
 /********************************************** Input filter ****/
 
@@ -67,16 +69,18 @@ void infilter_sdlgl_handler(struct infilter *self, u32 trigger, union trigparam 
       gl_global.need_update++;
       return;
 
-    case PGKEY_r:
-      gl_global.camera_mode = SDLGL_CAMERAMODE_NONE;
-      gl_global.camera.e.tx = 0;
-      gl_global.camera.e.ty = 0;
-      gl_global.camera.e.tz = 0;
-      gl_global.camera.e.rx = 0;
-      gl_global.camera.e.ry = 0;
-      gl_global.camera.e.rz = 0;
-      gl_global.resetting = 1;
+    case PGKEY_z:
+      if (gl_global.camera_mode == SDLGL_CAMERAMODE_NONE)
+	gl_global.grid = 1;
+      if (gl_global.camera_mode == SDLGL_CAMERAMODE_FOLLOW_MOUSE)
+	gl_camera_reset();
+      else
+	gl_global.camera_mode = SDLGL_CAMERAMODE_FOLLOW_MOUSE;
       gl_global.need_update++;
+      return;
+
+    case PGKEY_r:
+      gl_camera_reset();
       return;
 
       /* Misc flags */
@@ -97,17 +101,43 @@ void infilter_sdlgl_handler(struct infilter *self, u32 trigger, union trigparam 
       return;
     }
   
-  /* In a camera mode? 
+  /* Keep track of pressed keys 
    */
-  if (gl_global.camera_mode != SDLGL_CAMERAMODE_NONE) {
+  if (trigger == PG_TRIGGER_KEYDOWN)
+    gl_global.pressed_keys[param->kbd.key] = 1;
+  if (trigger == PG_TRIGGER_KEYUP)
+    gl_global.pressed_keys[param->kbd.key] = 0;
 
-    /* Keep track of pressed keys 
-     */
-    if (trigger == PG_TRIGGER_KEYDOWN)
-      gl_global.pressed_keys[param->kbd.key] = 1;
-    if (trigger == PG_TRIGGER_KEYUP)
-      gl_global.pressed_keys[param->kbd.key] = 0;
+  /* Follow-mouse mode doesn't absorb normal events like the other modes */
+  if (gl_global.camera_mode == SDLGL_CAMERAMODE_FOLLOW_MOUSE) {
+    switch (trigger) {
+      
+    case PG_TRIGGER_MOVE:
+      /* We want smoothing for rotation and Z, but short-circuit the smoothing
+       * for X and Y, it's more disorienting than helpful.
+       */
+      gl_global.camera.e.tx = vid->xres/2 - param->mouse.x;
+      gl_global.camera.e.ty = vid->yres/2 - param->mouse.y;
+      gl_global.smoothed_cam.e.tx = gl_global.camera.e.tx;
+      gl_global.smoothed_cam.e.ty = gl_global.camera.e.ty;
+      break;
 
+    case PG_TRIGGER_DOWN:
+      if (gl_global.pressed_keys[PGKEY_LSHIFT] || gl_global.pressed_keys[PGKEY_RSHIFT]) {
+	if (param->mouse.btn & 8)
+	  gl_global.camera.e.tz += 20;
+	if (param->mouse.btn & 16)
+	  gl_global.camera.e.tz -= 20;
+	return;
+      }
+      break;
+
+    }
+  }
+  /* In a camera mode other than follow-mouse?
+   */
+  else if (gl_global.camera_mode != SDLGL_CAMERAMODE_NONE) {
+    
     /* A couple keys should exit camera mode... 
      */
     if (trigger == PG_TRIGGER_KEYDOWN)
@@ -187,6 +217,18 @@ void infilter_sdlgl_handler(struct infilter *self, u32 trigger, union trigparam 
 }
 
 /********************************************** Utilities ****/
+
+void gl_camera_reset(void) {
+  gl_global.camera_mode = SDLGL_CAMERAMODE_NONE;
+  gl_global.camera.e.tx = 0;
+  gl_global.camera.e.ty = 0;
+  gl_global.camera.e.tz = 0;
+  gl_global.camera.e.rx = 0;
+  gl_global.camera.e.ry = 0;
+  gl_global.camera.e.rz = 0;
+  gl_global.resetting = 1;
+  gl_global.need_update++;
+}
 
 /* Per-frame processing for motion keys
  */

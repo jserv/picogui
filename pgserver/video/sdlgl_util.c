@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.18 2002/09/19 22:57:10 micahjd Exp $
+/* $Id: sdlgl_util.c,v 1.19 2002/09/23 22:51:26 micahjd Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.
@@ -219,6 +219,9 @@ void gl_frame(void) {
     break;
   case SDLGL_CAMERAMODE_ROTATE:
     gl_osd_printf(&i,"Camera rotate mode");
+    break;
+  case SDLGL_CAMERAMODE_FOLLOW_MOUSE:
+    gl_osd_printf(&i,"Camera following mouse, shift-mousewheel to zoom");
     break;
   }
 

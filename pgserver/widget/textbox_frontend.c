@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.3 2002/09/21 23:40:24 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.4 2002/09/23 22:51:27 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -191,6 +191,8 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
     break;
    
   case PG_TRIGGER_DOWN:
+    if (param->mouse.chbtn != 1)
+      return;
     par = document_get_div_par(param->mouse.cursor->ctx.div_under);
     if (par) {
       paragraph_hide_cursor(DATA->doc->crsr);

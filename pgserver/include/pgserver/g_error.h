@@ -1,4 +1,4 @@
-/* $Id: g_error.h,v 1.15 2002/01/18 00:27:11 micahjd Exp $
+/* $Id: g_error.h,v 1.16 2002/09/23 22:51:26 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -77,9 +77,13 @@ g_error errorload(const char *filename);
 #define DEBUG_ANY
 #define HAS_GURU
 void guru(const char *fmt, ...);
+#else
+/* Allow guru to be used, just don't compile it to anything */
+#define guru(fmt, args...)
 #endif
 
 #endif /* __H_GERROR */
+
 /* The End */
 
 

@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.60 2002/09/21 02:55:08 micahjd Exp $
+/* $Id: scroll.c,v 1.61 2002/09/23 22:51:26 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -138,11 +138,15 @@ void build_scroll(struct gropctxt *c,u16 state,struct widget *self) {
      * coordinates.
      *
      * Note that it may be possible for the layout engine to oscillate
-     * between scrollbar states. We use the 'lock'
-     * variable here to prevent infinite recursion in that case.
+     * between scrollbar states, probably due to an inconsistency in some
+     * widget's preferred size calculations. We use the 'lock'
+     * variable here to prevent infinite recursion in that case. Note that
+     * this probably shouldn't happen, so if we can, bug some developer about it.
      */
-    if (lock)
+    if (lock) {
+      guru("Something's causing layout engine oscillation via the scroll widget!");
       return;
+    }
     lock++;
     resizewidget(self);
     self->in->flags |= DIVNODE_NEED_RECALC;

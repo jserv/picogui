@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.29 2002/08/15 02:19:53 micahjd Exp $
+/* $Id: x11.c,v 1.30 2002/09/23 22:51:26 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -478,14 +478,12 @@ void x11_xft_font_outchar_hook(hwrbitmap *dest, struct fontdesc **fd,
 }
 
 void x11_xft_font_sizetext_hook(struct fontdesc *fd, s16 *w, s16 *h, 
-				const u8 *txt) {
+				const struct pgstring *txt) {
   XGlyphInfo xgi;
   XftFont *font = (XftFont *) fd->extra;
  
-  if (fd->style & PG_FSTYLE_ENCODING_UNICODE)
-    XftTextExtentsUtf8(xdisplay,font,(char*)txt,strlen(txt),&xgi);
-  else
-    XftTextExtents8(xdisplay,font,(char*)txt,strlen(txt),&xgi);
+  /* FIXME: This doesn't use pgstring properly */
+  XftTextExtentsUtf8(xdisplay,font,(char*)txt->buffer,txt->num_chars,&xgi);
   
   if (w) *w = xgi.xOff;
   if (h) *h = xgi.height;
@@ -493,7 +491,7 @@ void x11_xft_font_sizetext_hook(struct fontdesc *fd, s16 *w, s16 *h,
 
 /* Override outtext to provide proper sub-pixel character spacing */
 void x11_xft_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
-			       s16 *x,s16 *y,hwrcolor *col,const u8 **txt,
+			       s16 *x,s16 *y,hwrcolor *col,const struct pgstring **txt,
 			       struct quad **clip, s16 *lgop, s16 *angle) {
   XftFont *font = (XftFont *) (*fd)->extra;
   struct x11bitmap *xb = (struct x11bitmap *) (*dest); 
@@ -508,10 +506,8 @@ void x11_xft_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
   color.pixel = *col;
 
   /* FreeType measures y coordinates relative to the bottom-left */
-  if ((*fd)->style & PG_FSTYLE_ENCODING_UNICODE)
-    XftTextExtentsUtf8(xdisplay,font,(char*)*txt,strlen(*txt),&xgi);
-  else
-    XftTextExtents8(xdisplay,font,(char*)*txt,strlen(*txt),&xgi);
+  /* FIXME: This doesn't use pgstring properly */
+  XftTextExtentsUtf8(xdisplay,font,(char*)(*txt)->buffer,(*txt)->num_chars,&xgi);
   *y += xgi.height;
 
   /* Do we have clipping?
@@ -535,13 +531,11 @@ void x11_xft_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
     XftDrawSetClip(xb->xftd,NULL);
 
   /* Draw text */
-  if ((*fd)->style & PG_FSTYLE_ENCODING_UNICODE)  
-    XftDrawStringUtf8(xb->xftd,&color,font,*x,*y,(char*)*txt,strlen(*txt));
-  else
-    XftDrawString8(xb->xftd,&color,font,*x,*y,(char*)*txt,strlen(*txt));
+  /* FIXME: This doesn't use pgstring properly */
+  XftDrawStringUtf8(xb->xftd,&color,font,*x,*y,(char*)(*txt)->buffer,(*txt)->num_chars);
 
   /* Suppress normal outtext behavior */
-  *txt = "";
+  *txt = pgstring_tmpwrap("");
 }
 
 void x11_xft_font_newdesc(struct fontdesc *fd, const u8 *name,

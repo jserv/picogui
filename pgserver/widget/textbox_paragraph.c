@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.2 2002/09/15 10:51:50 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.3 2002/09/23 22:51:27 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -80,6 +80,14 @@ void paragraph_render_cursor(struct groprender *r, struct paragraph_cursor *crsr
 /* Mark the cursor and the area overlapping it for rerendering */
 void paragraph_update_cursor(struct paragraph_cursor *crsr);
 
+/* Make the cursor's "line" pointer valid if it isn't already. If the cursor is pointing
+ * past the beginning or end of the paragraph, the results are undefined.
+ */
+void paragraph_validate_cursor_line(struct paragraph_cursor *crsr);
+
+/* Make the line cache for a particular line valid if it isn't already */
+void paragraph_validate_line_cache(struct paragraph *par, struct paragraph_line *line);
+
 /******************************************************** Public Methods **/
 
 g_error paragraph_new(struct paragraph **par, struct divnode *div) {
@@ -157,7 +165,7 @@ void paragraph_render(struct groprender *r, struct gropnode *n) {
     return;
   fmt = line->cache.fmt;
 
-  DBG("Normal render\n");
+  //  DBG("Normal render\n");
   
   /* Line rendering loop */
   while (line) {
@@ -220,7 +228,7 @@ void paragraph_render_inc(struct groprender *r, struct gropnode *n) {
   s16 y;
   int valid = 1;
 
-  DBG("Incremental render\n");
+  //  DBG("Incremental render\n");
 
   if (iserror(rdhandle((void**)&par,PG_TYPE_PARAGRAPH,-1,n->param[0])) || !par)
     return;
@@ -326,6 +334,7 @@ void paragraph_movecursor(struct paragraph_cursor *crsr,
  */
 void paragraph_seekcursor(struct paragraph_cursor *crsr, int num_chars) {
   pgstring_seek(crsr->par->content, &crsr->iterator, num_chars);
+  paragraph_validate_cursor_line(crsr);
 }
 
 /* Delete a character at the cursor */
@@ -417,18 +426,6 @@ g_error paragraph_wrap_line(struct paragraph *par, struct paragraph_line **line,
 
   /* Now accumulate characters in the line until we reach our wrapping point */
   for (;;) {
-    /* If we're at the cursor position, set the cursor line.
-     * This ensures that the cursor tracks lines as they wrap.
-     */
-    if (!pgstring_iteratorcmp(&i,&par->cursor.iterator)) {
-#ifdef DEBUG_FILE
-      if (par->cursor.line != *line) {
-	DBG("Cursor line is wrong, %p != %p\n",par->cursor.line,*line);
-      }
-#endif
-      par->cursor.line = *line;
-    }    
-
     ch = pgstring_decode_meta(par->content, &i, (void**) &meta);
 
     if (meta && meta->type == PAR_META_FONT) {
@@ -541,6 +538,14 @@ g_error paragraph_wrap(struct paragraph *par, int force) {
     errorcheck;
   }
 
+  /* Update the cursor line for this paragraph, needed for rendering
+   * the changes incrementally if the cursor was wrapped from one line
+   * to another during this process.
+   * This could be done in paragraph_wrap_line, but this widget isn't smart
+   * enough for that yet :)
+   */
+  paragraph_validate_cursor_line(&par->cursor);
+
   /* Update the layout engine with our new preferred size */
   if (par->div->div->ph != par->height) {
     par->div->div->ph = par->height;
@@ -630,7 +635,7 @@ void paragraph_rerender_line(struct groprender *r, struct gropnode *n,
   if (nchars && !*nchars)
     nchars = NULL;
 
-  DBG("Rerender line\n");
+  //  DBG("Rerender line\n");
 
   /* Skip until we get to the beginning of the change */
   if (skip_to) {
@@ -645,7 +650,7 @@ void paragraph_rerender_line(struct groprender *r, struct gropnode *n,
     }
   }
 
-  DBG("skipped to beginning of the change\n");
+  //  DBG("skipped to beginning of the change\n");
 
   /* Render the background behind the portion of the line after the change
    * We only do it in one big chunk if we're rendering all the characters on the line.
@@ -675,9 +680,9 @@ void paragraph_rerender_line(struct groprender *r, struct gropnode *n,
   /* Now render the remainder of the changed line over our freshly clean background.
    * If we're redrawing where the cursor is, put the cursor back where it was.
    */
-  DBG("Entering loop with i=%d, iterator at %d,%p,%d, cursor at %d,%p,%d\n",
-      i,p.offset,p.buffer,p.invalid,par->cursor.iterator.offset, par->cursor.iterator.buffer,
-      par->cursor.iterator.invalid);
+  //  DBG("Entering loop with i=%d, iterator at %d,%p,%d, cursor at %d,%p,%d\n",
+  //      i,p.offset,p.buffer,p.invalid,par->cursor.iterator.offset, par->cursor.iterator.buffer,
+  //      par->cursor.iterator.invalid);
 
   /* The >= here instead of > means we're going to look at the first character
    * in the next line too. We need this to draw cursors at the end of the line.
@@ -709,7 +714,7 @@ void paragraph_rerender_line(struct groprender *r, struct gropnode *n,
       outchar(r->output, fmt.fd, &x, y, fmt.color, ch, &r->clip, r->lgop, 0);    
 
     if (draw_cursor) {
-      DBG("Draw_cursor at %d,%d\n",old_x,*y);
+      //  DBG("Draw_cursor at %d,%d\n",old_x,*y);
       paragraph_render_cursor(r,&par->cursor,old_x,*y);
     }
 
@@ -748,6 +753,71 @@ void paragraph_render_cursor(struct groprender *r, struct paragraph_cursor *crsr
 
   gropnode_clip(r,&n);
   gropnode_draw(r,&n);
+}
+
+/* Make the cursor's "line" pointer valid if it isn't already. If the cursor is pointing
+ * past the beginning or end of the paragraph, the results are undefined.
+ */
+void paragraph_validate_cursor_line(struct paragraph_cursor *crsr) {
+
+  /* No idea at all where to start? This is probably
+   * a bad guess, but better than nothing...
+   */
+  if (!crsr->line)
+    crsr->line = crsr->par->lines;
+
+  DBG("starting\n");
+
+  while (crsr->line) {
+    /* Validate the next line's cache, so we can guarantee that the line cache
+     * for this line and the next one are valid.. this lets us step forward or back
+     * one line if needed, or stay right here and exit.
+     */
+
+    /* If there is no next line, validate the current line so we can see if this line
+     * is the right place to stop or if we need to go back one line. If we still
+     * need to go forward, the cursor location is invalid.
+     */
+    if (crsr->line->next)
+      paragraph_validate_line_cache(crsr->par, crsr->line->next);
+    else
+      paragraph_validate_line_cache(crsr->par, crsr->line);
+
+    /* Cursor before this line? */
+    if (pgstring_iteratorcmp(&crsr->iterator, &crsr->line->cache.iterator) < 0) {
+      crsr->line = crsr->line->prev;
+      DBG("previous line\n");
+    }
+      
+    /* After this line? */
+    else if (crsr->line->next && 
+	     (pgstring_iteratorcmp(&crsr->iterator, &crsr->line->next->cache.iterator) >= 0)) {
+      crsr->line = crsr->line->next;
+      DBG("next line");
+    }
+
+    /* On this line? */
+    else
+      return;
+  }
+}
+
+/* Make the line cache for a particular line valid if it isn't already */
+void paragraph_validate_line_cache(struct paragraph *par, struct paragraph_line *line) {
+  /* FIXME: This sucks, find a better way to do it. Maybe keep a variable in this 
+   *        paragraph indicating how far along the paragraph the line cache is valid.
+   *        You could assign sequence numbers to each line, so you can quickly figure
+   *        out whether the line is before or after that point. If you leave a large
+   *        gap in the sequence numbers, you could quickly insert/delete lines without
+   *        renumbering the lines often (Like old BASIC programs)
+   */
+
+  struct paragraph_line *l;
+  int valid = 1;
+
+  l = par->lines;
+  while (l && l!=line)
+    paragraph_line_skip(par,&l,&valid);
 }
 
 /* The End */

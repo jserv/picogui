@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.37 2002/09/21 23:40:24 micahjd Exp $
+/* $Id: textbox_document.c,v 1.38 2002/09/23 22:51:26 micahjd Exp $
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and
@@ -32,6 +32,11 @@
 #include <pgserver/paragraph.h>
 #include <pgserver/render.h>
 #include <pgserver/widget.h>
+
+#ifdef DEBUG_TEXTBOX
+#define DEBUG_FILE
+#endif
+#include <pgserver/debug.h>
 
 /* Create a paragraph and pair of divnodes tied to each other */
 g_error textbox_new_par_div(struct paragraph **par, struct divnode **div,
@@ -122,19 +127,22 @@ g_error document_nuke(struct textbox_document *doc) {
 g_error document_insert_char(struct textbox_document *doc, u32 ch, void *metadata) {
   g_error e;
 
+  /* Insert us the paragraph! */
   if (ch == '\n' || ch == '\r') {
-    /* Insert us the paragraph! */
+    int was_visible = doc->crsr->visible;
+
     e = textbox_new_par_div(&doc->crsr->par->next, &doc->crsr->par->div->next,
 			    doc->crsr->par->background);
     errorcheck;
     paragraph_hide_cursor(doc->crsr);
-    doc->crsr->par->div->flags |= DIVNODE_NEED_RECALC;
-    doc->crsr->par->div->owner->dt->flags |= DIVTREE_NEED_RECALC | DIVTREE_NEED_RESIZE;
+    doc->crsr->par->div->owner->dt->flags |= DIVTREE_NEED_RESIZE;
     doc->crsr = &doc->crsr->par->next->cursor;
-    paragraph_show_cursor(doc->crsr);
- }
+    if (was_visible)
+      paragraph_show_cursor(doc->crsr);
+  }
+  
+  /* Normal character */
   else {
-    /* Normal character */
     e = paragraph_insert_char(doc->crsr,ch,metadata);
     errorcheck;
   }
@@ -190,8 +198,16 @@ int document_eof(struct textbox_document *doc) {
  * document_eof() should be true
  */
 void document_delete_char(struct textbox_document *doc) {
-  if (!doc->crsr->iterator.invalid)
+
+  /* No character to delete? Should we merge this paragraph and the next paragraph? */
+  if (doc->crsr->iterator.invalid) {
+    
+  }
+
+  /* Yep, just delete the next character */
+  else {
     paragraph_delete_char(doc->crsr);
+  }
 }
 
 /* Retrieve the paragraph associated with a divnode */
@@ -289,6 +305,9 @@ void textbox_build_par_div(struct gropctxt *c, u16 state, struct widget *self) {
   grops->next->r.w = c->w;
   grops->next->r.h = c->h;
   grops->next->next->r = grops->next->r;
+
+  DBG("Build, size: %d,%d,%d,%d preferred: %d,%d\n",
+      c->x,c->y,c->w,c->h,c->owner->pw,c->owner->ph);
 }
 
 /* The End */

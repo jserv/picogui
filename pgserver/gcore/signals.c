@@ -1,4 +1,4 @@
-/* $Id: signals.c,v 1.11 2002/09/15 10:51:47 micahjd Exp $
+/* $Id: signals.c,v 1.12 2002/09/23 22:51:25 micahjd Exp $
  *
  * signal.c - Handle some fatal and not-so-fatal signals gracefully
  *            The SIGSEGV handling et cetera was inspired by SDL's
@@ -96,9 +96,7 @@ void signals_handler(int sig) {
 
   case SIGPIPE:
     /* Not fatal... but give a warning */
-#ifdef HAS_GURU
     guru("SIGPIPE received (ignoring it)");
-#endif
     break;
 
   case SIGTERM:
