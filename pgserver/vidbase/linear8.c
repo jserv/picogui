@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.5 2001/01/08 05:09:58 micahjd Exp $
+/* $Id: linear8.c,v 1.6 2001/01/08 07:28:27 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -259,8 +259,8 @@ void linear8_charblit(unsigned char *chardat,int dest_x,
   unsigned char ch;
 
   /* Is it at all in the clipping rect? */
-  if (dest_x>clip->x2 || dest_y>clip->y2 || (dest_x+w)<clip->x1 || 
-      (dest_y+h)<clip->y1) return;
+  if (clip && (dest_x>clip->x2 || dest_y>clip->y2 || (dest_x+w)<clip->x1 || 
+      (dest_y+h)<clip->y1)) return;
 
   /* Find the width of the source data in bytes */
   if (bw & 7) bw += 8;
