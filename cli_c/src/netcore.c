@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.17 2001/10/24 19:39:58 micahjd Exp $
+/* $Id: netcore.c,v 1.18 2001/10/25 06:26:12 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -492,13 +492,16 @@ char * _pg_dynformat(const char *fmt,va_list ap) {
 
 /* Idle handler */
 void _pg_idle(void) {
+#if 0
   struct timeval now, elapsed;
   static struct timeval then = {0,0};
+#endif
 
   /* Make sure we aren't recursing */
    if (_pgidle_lock) return;
   _pgidle_lock++;
 
+#if 0
   /* Make sure we've waited long enough */
   gettimeofday(&now,NULL);
   elapsed.tv_sec = now.tv_sec - then.tv_sec;
@@ -513,6 +516,7 @@ void _pg_idle(void) {
       elapsed.tv_usec < _pgidle_period.tv_usec)
     return;
   then = now;
+#endif
 
   /* Call the idle handle */
   if (_pgidle_handler)
@@ -581,7 +585,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.17 2001/10/24 19:39:58 micahjd Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.18 2001/10/25 06:26:12 micahjd Exp $\n");
 	exit(1);
       }
 
