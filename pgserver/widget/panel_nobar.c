@@ -1,4 +1,4 @@
-/* $Id: panel_nobar.c,v 1.6 2002/01/15 07:35:15 micahjd Exp $
+/* $Id: panel_nobar.c,v 1.7 2002/05/22 07:19:45 pney Exp $
  *
  * panel_nobar.c - A simple replacement for panel that doesn't allow resizing
  *
@@ -58,7 +58,6 @@ g_error panel_install(struct widget *self) {
 /**** Properties */
 
 void panel_remove(struct widget *self) {
-  if (!in_shutdown)
     r_divnode_free(self->in);
 }
 

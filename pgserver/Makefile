@@ -1,5 +1,5 @@
 # Generated automatically from Makefile.in by configure.
-# Makefile.in generated automatically by automake 1.4-p4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -62,14 +62,14 @@ host_triplet = i686-pc-linux-gnu
 AR = ar
 CC = gcc
 CC_FOR_BUILD = gcc
-CONFIG_FILE = /home/micah/sf/pgui/pgserver/profile.user
+CONFIG_FILE = /home/philippe/SourceForge_dev/pc/pgserver/profile.user
 CPP = gcc -E
 DEBUGGING =  videotest.c
-DRIVER =  sdlfb.c null.c nullfb.c fbdev.c scrshot.c
+DRIVER =  sdlfb.c
 DRIVER_CFLAGS =  -I/usr/include/SDL -D_REENTRANT
-DRIVER_LIBS =  -L/usr/lib -lSDL -lpthread -lm -lz -lpng
-FORMATS =  pnm.c jpeg.c bmp.c html.c png.c gif.c
-INPUT =  sdlinput.c jsdev.c
+DRIVER_LIBS =  -L/usr/lib -Wl,-rpath,/usr/lib -lSDL -lpthread
+FORMATS =  pnm.c bmp.c
+INPUT =  sdlinput.c
 LIB_OS = 
 LXDIALOG = lxdialog
 MAKEINFO = makeinfo
@@ -78,16 +78,18 @@ PACKAGE = picogui-server
 PERL = /usr/bin/perl
 PLATFORM = 
 RANLIB = ranlib
+RM_CFLAGS = 
+RM_LIBS = 
 RPM_CONFIGURE = ./configure 
 RPM_PLATFORM = i686-pc-linux-gnu
 RPM_PREFIX = /usr/local
 SDL_CFLAGS = -I/usr/include/SDL -D_REENTRANT
 SDL_CONFIG = /usr/bin/sdl-config
-SDL_LIBS = -L/usr/lib -lSDL -lpthread
+SDL_LIBS = -L/usr/lib -Wl,-rpath,/usr/lib -lSDL -lpthread
 VERSION = 0.0
-VIDBASE =  linear1.c linear2.c linear4.c linear8.c linear16.c linear24.c linear32.c slowvbl.c
-VIDWRAP =  rotate90.c rotate180.c rotate270.c
-WIDGET =  terminal.c canvas.c panel.c panelbar.c
+VIDBASE =  linear1.c linear2.c linear4.c linear8.c linear16.c linear24.c linear32.c slowvbl.c dvbl_primitives.c
+VIDWRAP = 
+WIDGET =  terminal.c canvas.c panel_nobar.c
 
 SUBDIRS =  	include 	widget appmgr debug gcore net 	vidbase theme video os vidwrap 	input font formats etc 	profiles 	.
 
@@ -100,7 +102,7 @@ bin_PROGRAMS = pgserver
 
 pgserver_SOURCES = pgmain.c
 
-pgserver_LDADD =  	gcore/libgcore.a		widget/libwidget.a 		appmgr/libappmgr.a		net/libnet.a			theme/libtheme.a		debug/libdebug.a		video/libvideo.a		vidwrap/libvidwrap.a		font/libfont.a			vidbase/libvidbase.a		input/libinput.a		formats/libformats.a					$(DRIVER_LIBS)		
+pgserver_LDADD =  	gcore/libgcore.a		widget/libwidget.a 		appmgr/libappmgr.a		net/libnet.a			theme/libtheme.a		debug/libdebug.a		video/libvideo.a		vidwrap/libvidwrap.a		font/libfont.a			vidbase/libvidbase.a		input/libinput.a		formats/libformats.a					$(DRIVER_LIBS)			
 
 
 EXTRA_DIST =  	script/fontdef.pl 			script/pnm_embed.pl			script/lserrors.pl			config.in				select.in				profile.defaults 			macros/aclocal-include.m4 		macros/pguiconfig.m4
@@ -117,7 +119,7 @@ PROGRAMS =  $(bin_PROGRAMS)
 DEFS = -DHAVE_CONFIG_H -I. -I$(srcdir) -I.
 CPPFLAGS = 
 LDFLAGS = 
-LIBS = -lpng -ljpeg  -ljpeg
+LIBS = 
 pgserver_OBJECTS =  pgmain.o
 pgserver_DEPENDENCIES =  gcore/libgcore.a widget/libwidget.a \
 appmgr/libappmgr.a net/libnet.a theme/libtheme.a debug/libdebug.a \
@@ -129,14 +131,14 @@ COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CF
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DIST_COMMON =  README ./stamp-h.in AUTHORS COPYING ChangeLog INSTALL \
-Makefile.am Makefile.in NEWS aclocal.m4 config.guess config.h.in \
-config.sub configure configure.in install-sh missing mkinstalldirs \
-picogui-server.spec.in
+Makefile.am Makefile.in NEWS acconfig.h aclocal.m4 config.guess \
+config.h.in config.sub configure configure.in install-sh missing \
+mkinstalldirs picogui-server.spec.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 DEP_FILES =  .deps/pgmain.P
 SOURCES = $(pgserver_SOURCES)
@@ -155,7 +157,7 @@ Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 $(ACLOCAL_M4):  configure.in 
 	cd $(srcdir) && $(ACLOCAL)
 
-config.status: $(srcdir)/configure.in $(CONFIG_STATUS_DEPENDENCIES)
+config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
 $(srcdir)/configure: $(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
@@ -175,7 +177,7 @@ $(srcdir)/config.h.in: $(srcdir)/stamp-h.in
 		rm -f $(srcdir)/stamp-h.in; \
 		$(MAKE) $(srcdir)/stamp-h.in; \
 	else :; fi
-$(srcdir)/stamp-h.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+$(srcdir)/stamp-h.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) acconfig.h
 	cd $(top_srcdir) && $(AUTOHEADER)
 	@echo timestamp > $(srcdir)/stamp-h.in 2> /dev/null
 
