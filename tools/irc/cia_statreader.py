@@ -22,13 +22,20 @@ statHeadings = {
     'daily': 'today',
     }
 
+# Projects we want to hide from stat lists
+hiddenProjects = ('stats', 'test')
+
 def readStats():
     """Stats are automatically read into the module on import,
        this can be called separately to refresh them.
        """
     global projects, channels, projectCounts
-    
-    projects = os.listdir(os.path.join(statDir, statSubdirs[0]))
+
+    # Add all projects that we aren't excempting from stats
+    projects = []
+    for project in os.listdir(os.path.join(statDir, statSubdirs[0])):
+        if not project in hiddenProjects:
+            projects.append(project)
 
     # Yucky hack to strip off "#"
     channels = []
