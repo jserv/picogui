@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.31 2002/10/20 15:48:51 micahjd Exp $
+/* $Id: linear16.c,v 1.32 2002/10/20 16:16:10 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -409,13 +409,13 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
    */
   vid->bitmap_getsize(dest,&imgw,&imgh);
   if (x<=0) x = 1;
-  if (h<=0) y = 1;
+  if (y<=0) y = 1;
   if (x+w>=imgw) w = imgw-x-1;
   if (y+h>=imgh) h = imgh-y-1;
 
   stride = FB_BPL>>1;
   skip = stride - w;
-  fallback = stride * h - 1;
+  fallback = stride * (h-1) - 1;
 
   while (radius--) {
 
