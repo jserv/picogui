@@ -10,8 +10,14 @@ int PythonThreadCallback(void *data) {
 
 PythonThread::PythonThread(char *module) {
   Py_Initialize();
+
   dict = PyImport_ImportModule(module);
+  if (!dict)
+    throw "Can't open python module";
+
   iteration = PyObject_GetAttrString(dict, "iteration");  
+  if (!iteration)
+    throw "Can't find 'iteration' in python module";
 
   running = true;
   thread = SDL_CreateThread(&PythonThreadCallback, this);
@@ -28,3 +34,4 @@ int PythonThread::threadHandler(void) {
   }
   return 0;
 }
+
