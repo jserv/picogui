@@ -1,4 +1,4 @@
-/* $Id: input.c,v 1.6 2000/08/06 20:35:10 micahjd Exp $
+/* $Id: input.c,v 1.7 2000/08/08 16:59:11 micahjd Exp $
  *
  * input.c - Input layer for SDL
  * 
@@ -120,9 +120,8 @@ void windows_inputpoll_hack(void) {
 #ifdef DEBUG
       /* Some magic keys for debugging */
 
-      /* Blank the screen on ctrl-alt-b */
+      /* Blank the screen on alt-b */
       if (evt.key.keysym.sym==PGKEY_b &&
-	  (evt.key.keysym.mod & PGMOD_CTRL) &&
 	  (evt.key.keysym.mod & PGMOD_ALT)) {
 	hwr_clear();
 	hwr_update();
