@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.11 2001/08/09 18:26:16 micahjd Exp $
+/* $Id: netcore.c,v 1.12 2001/09/02 19:57:46 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -504,6 +504,7 @@ void pgInit(int argc, char **argv)
   struct sockaddr_un server_addr; 
 #endif
   const char *hostname;
+  unsigned short port = PG_REQUEST_PORT;
   const char *appletparam = NULL;
   int fd,i,j,args_to_shift;
   char *arg;
@@ -545,7 +546,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.11 2001/08/09 18:26:16 micahjd Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.12 2001/09/02 19:57:46 micahjd Exp $\n");
 	exit(1);
       }
 
@@ -573,6 +574,16 @@ void pgInit(int argc, char **argv)
   /* Some programs might rely on this? */
   argv[argc] = NULL;
 
+  /* Separate the display number from the hostname */
+  arg = strrchr(hostname,':');
+  if (arg) {
+    port = PG_REQUEST_PORT + atoi(arg+1);
+    *arg = 0;
+  }
+  /* Only a display? Use default server */
+  if (!*hostname)
+    hostname = PG_REQUEST_SERVER;
+   
 #ifdef UCLINUX
   /* get the host info.
    * gethostbyname() and gethostbyaddr() not working in uClinux.
@@ -615,8 +626,8 @@ void pgInit(int argc, char **argv)
   tmp = 1;
   setsockopt(fd,6 /*PROTO_TCP*/,TCP_NODELAY,(void *)&tmp,sizeof(tmp));
    
-  server_addr.sin_family = AF_INET;                 /* host byte order */
-  server_addr.sin_port = htons(PG_REQUEST_PORT);    /* short, network byte order */
+  server_addr.sin_family = AF_INET;         /* host byte order */
+  server_addr.sin_port = htons(port);       /* short, network byte order */
 #ifdef UCLINUX
   server_addr.sin_addr = srv_addr;
 #else
