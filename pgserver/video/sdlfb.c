@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.40 2002/02/03 00:56:55 micahjd Exp $
+/* $Id: sdlfb.c,v 1.41 2002/02/03 08:31:55 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -555,9 +555,11 @@ pgcolor sdlfb_color_untint(pgcolor c) {
   return mkcolor(r,g,b);
 }
 hwrcolor sdlfb_tint_pgtohwr(pgcolor c) {
+  if (c & PGCF_MASK) return def_color_pgtohwr(c);
   return def_color_pgtohwr(sdlfb_color_tint(c));
 }
 hwrcolor sdlfb_tint_hwrtopg(pgcolor c) {
+  if (c & PGCF_MASK) return def_color_hwrtopg(c);
   return sdlfb_color_untint(def_color_hwrtopg(c));
 }
 #endif

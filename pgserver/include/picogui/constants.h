@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.126 2002/01/30 12:03:15 micahjd Exp $
+/* $Id: constants.h,v 1.127 2002/02/03 08:31:54 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -1021,6 +1021,9 @@ typedef unsigned long pghandle;
 					    * color has already been multiplied by the alpha channel
 					    * then divided by 128.
 					    */  
+
+#define PGCF_MASK             (0xFF000000) /* Mask of all color flags */
+
 /******************** pgcolors */
 
 /* Standard HTML colors */
