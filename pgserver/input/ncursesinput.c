@@ -1,4 +1,4 @@
-/* $Id: ncursesinput.c,v 1.20 2002/01/22 12:25:08 micahjd Exp $
+/* $Id: ncursesinput.c,v 1.21 2002/01/26 01:04:17 lonetech Exp $
  *
  * ncursesinput.h - input driver for ncurses
  * 
@@ -25,15 +25,16 @@
  * 
  */
 
+#include <curses.h>
+/* ncurses defines bool */
+#define NO_BOOL
+
 #include <pgserver/common.h>
 
 #include <pgserver/input.h>
 #include <pgserver/widget.h>
 #include <pgserver/pgnet.h>
 #include <pgserver/appmgr.h>
-
-#include <curses.h>
-
 
 /******************************************** Implementations */
 
