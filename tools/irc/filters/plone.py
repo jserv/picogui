@@ -35,13 +35,13 @@ while True:
         break
     log += line + "\n"
 
-ciaMessage = "%s {green}%s{normal}: %s" % (dirName, author, log)
+ciaMessage = "%s {green}%s{white}: %s" % (dirName, author, log)
 if tag:
-    ciaMessage = "[tag={yellow}%s{normal}] %s" % (tag, ciaMessage)
+    ciaMessage = "[tag={yellow}%s{white}] %s" % (tag, ciaMessage)
 
 s = smtplib.SMTP()
 s.connect()
 s.sendmail(returnAddress, toAddress,
-           "From: %s\nTo: %s\nSubject: Announce %s\n\n{black}{reverse}%s" % \
+           "From: %s\nTo: %s\nSubject: Announce %s\n\n{black}{reverse}{white}%s" % \
            (returnAddress, toAddress, projectName, ciaMessage))
 s.close()
