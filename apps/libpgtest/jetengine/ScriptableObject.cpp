@@ -30,6 +30,8 @@ ScriptableObject::ScriptableObject(PythonInterpreter *py_) {
   PyThreadState_Swap(py->mainThreadState);
   _Py_NewReference(this);
   dict = PyDict_New();
+  if (!dict)
+    throw PythonException();
   PyThreadState_Swap(NULL);
   PyEval_ReleaseLock();
 }
@@ -139,6 +141,7 @@ PyObject *ScriptableObject::PyGetAttr(PyObject * PyObj, char *attr) {
   PyObject *o;
 
   o = PyDict_GetItemString(my->dict,attr);
+  Py_INCREF(o);
 
   return o;
 }

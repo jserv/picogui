@@ -8,7 +8,7 @@ class input:
         # Move the ship and camera in reaction to the mouse position
         if t.dev == 'mouse':
             if t.name == 'down':
-                self.lastClick = (t.x, t.y, camera.yaw, camera.pitch)
+                self.lastClick = (t.x, t.y, 0,0)
             if t.name == 'move' and t.buttons:
                 camera.yaw = float(t.x - self.lastClick[0] + self.lastClick[2])
                 camera.pitch = float(t.y - self.lastClick[1] + self.lastClick[3])
