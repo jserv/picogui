@@ -1,4 +1,4 @@
-/* $Id: clientlib.h,v 1.14 2002/01/06 01:28:45 micahjd Exp $
+/* $Id: clientlib.h,v 1.15 2002/02/13 19:06:55 micahjd Exp $
  *
  * clientlib.h - definitions used only within the client library code itself
  *
@@ -32,14 +32,20 @@
 #ifndef _CLIENTLIB_H
 #define _CLIENTLIB_H
 
+
 /* System includes */
 #include <sys/types.h>
 #ifndef __NetBSD__
-#include <netinet/tcp.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/time.h>
 #include <sys/socket.h>
-#include <sys/time.h>  /* for time_t type (used in timeval structure) */
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <netinet/tcp.h>
 #include <sys/stat.h>
 #else
+#include <sys/types.h>
 #include <sys/time.h>  /* for time_t type (used in timeval structure) */
 #include <sys/stat.h>
 #include <netinet/tcp.h>
