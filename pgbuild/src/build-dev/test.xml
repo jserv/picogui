@@ -1,7 +1,26 @@
-<pgbuild title="Test configuration file" root="packages">
-  <package name="test">
-    <version name="1.234">
-       <a href="http://google.com"/>
-    </version>
-  </package>
+<?testing merging="of"?>
+<?testing processing="instructions"?>
+
+<pgbuild title="Test configuration file">
+  <packages>
+    <!-- Add a new package with multiple versions -->
+    <package name="testpkg">
+      <version name="1.234">
+        <a href="trunk/nonexistant/testpkg-1.234">
+          <site name="picogui-svn"/>
+        </a>
+      </version>
+      <version name="2.56">
+        <a href="trunk/nonexistant/testpkg-2.56">
+          <site name="picogui-svn"/>
+        </a>
+      </version>
+    </package>
+  </packages>
+  <sites>
+    <!-- Add a new site -->
+    <site name="picogui-releases">
+      <a href="another test site"/>
+    </site>
+  </sites>  
 </pgbuild>

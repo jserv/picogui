@@ -73,7 +73,9 @@ def mergeElements(root):
                     child.dom.insertBefore(last, child.dom.childNodes[0])
                 else:
                     child.dom.appendChild(last)
-            root.removeChild(old)
+            print "Before: %s" % default.xpath("/pgbuild/packages")
+            old.dom.parentNode.removeChild(old.dom)
+            print " After: %s" % default.xpath("/pgbuild/packages")
         d[sig] = child
     del d
 
@@ -178,8 +180,8 @@ class Tree(PGBuild.Node.XML.Document):
             if newNode.nodeType == newNode.PROCESSING_INSTRUCTION_NODE:
                 # Delete any existing instruction with the same name
                 for oldNode in self.childNodes:
-                    if oldNode.nodeType == newNode.nodeType and oldNOde.nodeName == newNode.nodeName:
-                        self.removeChild(oldNode)
+                    if oldNode.nodeType == newNode.nodeType and oldNode.nodeName == newNode.nodeName:
+                        self.dom.removeChild(oldNode.dom)
                 # The reason for messing with parentNode is explained below
                 # in the main appending code.
                 newNode.parentNode = None
