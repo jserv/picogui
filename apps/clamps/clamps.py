@@ -144,7 +144,7 @@ class clampsInterface:
         self.pathGo.text = "Go"
         self.pathGo.side = "right"
         self.app.link(self.pathUpdate, self.pathGo, "activate")
-        #self.app.link(self.pathView, self.pathGo, "activate")
+        self.app.link(self.pathUpdate, self.pathView, "activate")
 
     def redraw(self):
         #Set the pathView location
@@ -178,7 +178,7 @@ class clampsInterface:
         self.app.server.update()
 
     def pathUpdate(self, ev, button):
-        newURL = self.app.server.getstring(self.pathView.text)[:-1]
+        newURL = self.app.server.getstring(self.pathView.text).data
         URLList = string.split(newURL, '://', 1)
         self.fsi = self.fsa.getFilesystem(URLList[0])
         self.fsi.setPath(URLList[1])
