@@ -8,6 +8,8 @@ multicompile = 1
 
 description = ''' PicoGUI client Library '''
 
+license = ''' GNU LGPL '''
+
 depends = [ 'picoguiserver' ]
 
 runtime = [

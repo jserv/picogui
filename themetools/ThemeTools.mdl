@@ -5,6 +5,8 @@ from Bee.Autoconf import compile, install, clean
 native = 1
 multicompile = 1
 
+license = ''' GNU GPL '''
+
 depends = [ 'picoguiserver' ]
 
 def prepare (module, platform, project):
