@@ -37,8 +37,6 @@ class Widget(object):
         pname = name.lower().replace('_', ' ')
         if pname in _propnames:
             self.server.set(self.handle, pname, value)
-            # do I need to run self.server.update()?
-            # self.server.update()
         else:
             self.__dict__[name] = value
 
