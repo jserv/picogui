@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.11 2000/06/10 00:38:15 micahjd Exp $
+/* $Id: label.c,v 1.12 2000/06/10 08:28:27 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -63,7 +63,7 @@ void text(struct divnode *d) {
   align(d,DATA->align,&w,&h,&x,&y);
 
   if (!DATA->transparent)
-    grop_rect(&d->grop,0,0,d->w,d->h,DATA->bg);
+    grop_rect(&d->grop,-1,-1,-1,-1,DATA->bg);
 
   grop_text(&d->grop,x,y,DATA->font,DATA->fg,DATA->text);
 }
@@ -176,6 +176,12 @@ g_error label_set(struct widget *self,int property, glob data) {
     }
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
+    break;
+
+  case WP_SCROLL:
+    self->in->div->ty = -data;
+    self->in->div->flags |= DIVNODE_SCROLL_ONLY;
+    self->dt->flags |= DIVTREE_NEED_REDRAW;
     break;
 
   default:

@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.14 2000/06/10 05:39:40 micahjd Exp $
+/* $Id: scroll.c,v 1.15 2000/06/10 08:28:27 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -41,6 +41,9 @@ struct scrolldata {
 		       the point that was clicked */
   int release_delta;
   int value;
+  handle binding;  /* If nonzero, this widget's WP_SCROLL property will
+		      be set in response to scrollbar movement instead of
+		      an event being sent back to the client */
 };
 #define DATA ((struct scrolldata *)(self->data))
 
@@ -61,6 +64,22 @@ void scrollbar(struct divnode *d) {
   addelement(d,&current_theme[E_SCROLLIND_BORDER],&x,&y,&w,&h);
   addelement(d,&current_theme[E_SCROLLIND_FILL],&x,&y,&w,&h);
   addelement(d,&current_theme[E_SCROLLIND_OVERLAY],&x,&y,&w,&h);
+}
+
+/* When the value changes, send an event */
+void scrollevent(struct widget *self) {
+  struct widget *w;
+
+  if (DATA->binding) {
+    /* Send to a widget */
+    if (rdhandle((void **)&w,TYPE_WIDGET,-1,DATA->binding)
+	.type==ERRT_NONE && w) 
+      widget_set(w,WP_SCROLL,DATA->value);
+  }
+  else {
+    /* Send to a client */
+    post_event(WE_ACTIVATE,self,DATA->value);
+  }
 }
 
 /* When value changes, update the grop coordinates */
@@ -143,6 +162,8 @@ void scroll_remove(struct widget *self) {
 }
 
 g_error scroll_set(struct widget *self,int property, glob data) {
+  struct widget *w;
+
   switch (property) {
 
   case WP_VALUE:
@@ -153,6 +174,21 @@ g_error scroll_set(struct widget *self,int property, glob data) {
   case WP_SIZE:
     DATA->res = data;
     scrollupdate(self);
+    break;
+
+  case WP_BIND:
+    if (!data) {
+      DATA->binding = 0;
+      break;
+    }
+
+    if (rdhandle((void **)&w,TYPE_WIDGET,-1,data).type!=ERRT_NONE || !w) 
+      return mkerror(ERRT_HANDLE,"WP_BIND invalid widget handle (scroll)");
+    /* Do a test run to see if the widget supports WP_SCROLL */
+    if (widget_set(w,WP_SCROLL,DATA->value).type!=ERRT_NONE)
+      return mkerror(ERRT_BADPARAM,
+		   "Argument to WP_BIND does not support WP_SCROLL property");
+    DATA->binding = (handle) data;
     break;
 
   default:
@@ -208,7 +244,7 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
       if (DATA->value < 0) 
 	DATA->value =   0;
       
-      post_event(WE_ACTIVATE,self,DATA->value);
+      scrollevent(self);
     }
   case TRIGGER_RELEASE:
     DATA->on=0;
@@ -225,7 +261,7 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
     if (DATA->value > DATA->res) DATA->value = DATA->res;
     if (DATA->value < 0) DATA->value =   0;
 
-    post_event(WE_ACTIVATE,self,DATA->value);
+    scrollevent(self);
     break;
 
   }

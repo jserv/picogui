@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.16 2000/06/10 00:31:36 micahjd Exp $
+/* $Id: divtree.h,v 1.17 2000/06/10 08:28:27 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -126,19 +126,21 @@ struct divnode {
   /* Widget that owns it, used for updating widget 'where' pointers
      on deleting a widget */
   struct widget *owner;
-
-   /* Absolute coordinates of the node on the screen.  This is usually
-    * calculated by various flags using split, but if no such flags are used
-    * the coordinates can be specified absolutely, however this is normally
-    * not reccomended (but could be useful for constructs such as popup menus)
-    */
-   int x,y;
-   
-   /* Width and height, of course */
-   int w,h;
-   
-   /* Coordinates to translate the grop's by, for scrolling */
-   int tx,ty;
+  
+  /* Absolute coordinates of the node on the screen.  This is usually
+   * calculated by various flags using split, but if no such flags are used
+   * the coordinates can be specified absolutely, however this is normally
+   * not reccomended (but could be useful for constructs such as popup menus)
+   */
+  int x,y;
+  
+  /* Width and height, of course */
+  int w,h;
+  
+  /* Coordinates to translate the grop's by, for scrolling */
+  int tx,ty;
+  /* Scrolling coordinates as of last redraw */
+  int otx,oty;
 };
    
 /* flags used in divnode.flags */
@@ -155,6 +157,7 @@ struct divnode {
 #define DIVNODE_SPLIT_IGNORE   (1<<10) /* Don't bother the nodes' positions */
 #define DIVNODE_SPLIT_EXPAND   (1<<11) /* Expand div to all available space */
 #define DIVNODE_PROPAGATE_REDRAW (1<<12) /* redraw spreads through next also*/
+#define DIVNODE_SCROLL_ONLY     (1<<13)  /* Only tx/ty changed */
 
 /* Values for the 'side' parameter */
 

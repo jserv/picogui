@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.22 2000/06/10 00:31:36 micahjd Exp $
+/* $Id: widget.c,v 1.23 2000/06/10 08:28:27 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -165,6 +165,7 @@ void widget_remove(struct widget *w) {
 
 g_error inline widget_set(struct widget *w, int property, glob data) {
   if (w && w->def->set) return (*w->def->set)(w,property,data);
+  return mkerror(ERRT_INTERNAL,"Widget is not settable?");
 }
 
 glob inline widget_get(struct widget *w, int property) {

@@ -1,4 +1,4 @@
-/* $Id: hardware.c,v 1.13 2000/06/09 20:52:39 micahjd Exp $
+/* $Id: hardware.c,v 1.14 2000/06/10 08:28:27 micahjd Exp $
  *
  * hardware.c - SDL "hardware" layer
  * Anything that makes any kind of assumptions about the display hardware
@@ -544,7 +544,7 @@ void hwr_blit(struct cliprect *clip, int lgop,
   if (w<=0) return;
   if (h<=0) return;
 
-  if (w>(src->w-src_x) || h>(src->h-src_y)) {
+  if (src && (w>(src->w-src_x) || h>(src->h-src_y))) {
     int i,j;
 
     /* Do a tiled blit */
@@ -585,64 +585,79 @@ void hwr_blit(struct cliprect *clip, int lgop,
     screenb.bits = screen->pixels;
   }
 
-  /* Now that the coords are clipped, set up pointers */
-  s_of = src->w;
-  d_of = dest->w;
-  s = src->bits + src_x + src_y*s_of;
-  d = dest->bits + dest_x + dest_y*d_of;
-
+  /* Use the seperate backwards blitter if we are:
+     1. Blitting to and from the same bitmap
+     2. destination lower than the source
+  */
+  if (src==dest && dest_y>dest_x) {
+    /* Backwards */
+    
+    s_of = -src->w;
+    d_of = -dest->w;
+    s = src->bits + src_x - (src_y+h)*s_of;
+    d = dest->bits + dest_x - (dest_y+h)*d_of;
+  }    
+  else {
+    /* Forwards */
+    
+    /* Now that the coords are clipped, set up pointers */
+    s_of = src->w;
+    d_of = dest->w;
+    s = src->bits + src_x + src_y*s_of;
+    d = dest->bits + dest_x + dest_y*d_of;
+  }
+    
   /* Now the actual blitter code depends on the LGOP */
   switch (lgop) {
-
+    
   case LGOP_NONE:
     for (;h;h--,s+=s_of,d+=d_of)
       memcpy(d,s,w*HWR_PIXELW);
     break;
-
+    
   case LGOP_OR:
     for (sl=s,dl=d;h;h--,s=(sl+=s_of),d=(dl+=d_of))
       for (i=w;i;i--,d++,s++)
 	*d |= *s;
     break;
-
+    
   case LGOP_AND:
     for (sl=s,dl=d;h;h--,s=(sl+=s_of),d=(dl+=d_of))
       for (i=w;i;i--,d++,s++)
 	*d &= *s;
     break;
-
+    
   case LGOP_XOR:
     for (sl=s,dl=d;h;h--,s=(sl+=s_of),d=(dl+=d_of))
       for (i=w;i;i--,d++,s++)
 	*d ^= *s;
     break;
-
+    
   case LGOP_INVERT:
     for (sl=s,dl=d;h;h--,s=(sl+=s_of),d=(dl+=d_of))
       for (i=w;i;i--,d++,s++)
 	*d = (*s) ^ HWR_BPPMASK;
     break;
-
+    
   case LGOP_INVERT_OR:
     for (sl=s,dl=d;h;h--,s=(sl+=s_of),d=(dl+=d_of))
       for (i=w;i;i--,d++,s++)
 	*d |= (*s) ^ HWR_BPPMASK;
     break;
-
+    
   case LGOP_INVERT_AND:
     for (sl=s,dl=d;h;h--,s=(sl+=s_of),d=(dl+=d_of))
       for (i=w;i;i--,d++,s++)
 	*d &= (*s) ^ HWR_BPPMASK;
     break;
-
+    
   case LGOP_INVERT_XOR:
     for (sl=s,dl=d;h;h--,s=(sl+=s_of),d=(dl+=d_of))
       for (i=w;i;i--,d++,s++)
 	*d ^= (*s) ^ HWR_BPPMASK;
     break;
-
-  }  
-
+  }
+  
   if (scrbuf) SDL_UnlockSurface(screen);
 }
 
@@ -663,6 +678,11 @@ void hwr_chrblit(struct cliprect *clip, unsigned char *chardat,int dest_x,
   int flag=0;
   int xpix,xmin,xmax,clipping;
   unsigned char ch;
+
+  /* Is it at all in the clipping rect? */
+  if (dest_x>clip->x2 || dest_y>clip->y2 || (dest_x+w)<clip->x || 
+      (dest_y+h)<clip->y) return;
+
   extendrect(clip);
 
   /* Find the width of the source data in bytes */
@@ -686,6 +706,7 @@ void hwr_chrblit(struct cliprect *clip, unsigned char *chardat,int dest_x,
       hc = clip->y-dest_y; /* Do it this way so skewing doesn't mess up when
 			     clipping */
       destline = (dest += hc * HWR_WIDTH);
+      chardat += hc*bw;
     }
     if (clip->y2<(dest_y+h))
       h = clip->y2-dest_y+1;

@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.7 2000/04/29 03:17:34 micahjd Exp $
+/* $Id: grop.c,v 1.8 2000/06/10 08:28:27 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -40,35 +40,83 @@ void grop_render(struct divnode *div) {
   struct cliprect clip;
   struct fontdesc *fd;
   struct bitmap *bit;
-  int x,y,w,h;
+  int x,y,w,h,ydif;
   char *str;
 
   if (!div) return;
   list = div->grop;
 
-  /* TODO: Implement proper scrolling by blitting, then setting clip
-     rectangle to the small strip that needs redraw
-   TODO: Other redraw types, like new gropnodes only, and scrolled.
-  
-   */
+  if ((div->flags & DIVNODE_SCROLL_ONLY) && 
+      !(div->flags & DIVNODE_NEED_REDRAW)) {
 
-  clip.x = div->x;
-  clip.y = div->y;
-  clip.x2 = div->x+div->w-1;
-  clip.y2 = div->y+div->h-1;
+    /* Scroll-only redraw */
+    if (div->ty != div->oty) {
+      /* Vertical */
+      
+      /* Shift the existing image, and draw the strip along the edge */
+      if (div->ty < div->oty) {
+	/* Go up */
+
+	ydif = div->oty-div->ty;
+	hwr_blit(NULL,LGOP_NONE,NULL,div->x,div->y+ydif,NULL,
+		 div->x,div->y,div->w,div->h-ydif);
+	clip.x = div->x;
+	clip.x2 = div->x+div->w-1;
+	clip.y = div->y+div->h-1-ydif;
+	clip.y2 = div->y+div->h-1;
+      }
+      else {
+	/* Go down */
+	
+	ydif = div->ty-div->oty;
+	hwr_blit(NULL,LGOP_NONE,NULL,div->x,div->y,NULL,
+		 div->x,div->y+ydif,div->w,div->h-ydif);
+	clip.x = div->x;
+	clip.x2 = div->x+div->w-1;
+	clip.y = div->x;
+	clip.y2 = div->x+ydif;
+      }
+      
+    }
+    else {
+      /* XXX - HORIZONTAL SCROLLING NOT IMPLEMENTED YET!!! */
+      return;
+    }
+  }
+  else {
+
+    /* Full redraw */
+    clip.x = div->x;
+    clip.y = div->y;
+    clip.x2 = div->x+div->w-1;
+    clip.y2 = div->y+div->h-1;
+  }
+
+  div->otx = div->tx;
+  div->oty = div->ty;
 
   while (list) {
-    x = list->x+div->x+div->tx;
-    y = list->y+div->y+div->ty;
-    w = list->w;
-    h = list->h;
+    if (list->w==-1 && list->h==-1) {
+      /* -1,-1 is the magical code that causes the grop to fill
+	 the entire divnode, and not scroll */
+      x = div->x;
+      y = div->y;
+      w = div->w;
+      h = div->h;
+    }
+    else {
+      x = list->x+div->x+div->tx;
+      y = list->y+div->y+div->ty;
+      w = list->w;
+      h = list->h;
+    }
 
     switch (list->type) {
     case GROP_PIXEL:
       hwr_pixel(&clip,x,y,list->param.c);
       break;
     case GROP_LINE:
-      hwr_line(&clip,x,y,w+div->x+div->tx,h+div->y+div->ty,list->param.c);
+      hwr_line(&clip,x,y,w+x,h+y,list->param.c);
       break;
     case GROP_RECT:
       hwr_rect(&clip,x,y,w,h,list->param.c);
