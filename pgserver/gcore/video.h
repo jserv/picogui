@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.6 2000/04/29 03:17:34 micahjd Exp $
+/* $Id: video.h,v 1.7 2000/06/01 23:11:42 micahjd Exp $
  *
  * video.h - generic hardware defines (common to all drivers)
  *
@@ -111,6 +111,16 @@ void hwrbit_free(struct bitmap *b);
 
 /* Converts a color from the portable format */
 devcolort cnvcolor(unsigned long c);
+
+/* Colors */
+#define white mkcolor(255,255,255)
+#define black mkcolor(0,0,0)
+#define gray  mkcolor(127,127,127)
+
+/* Sizes */
+#define HWG_BUTTON 22
+#define HWG_MARGIN 2
+#define HWG_SCROLL 10
 
 #endif /* __GUWI_HARDWARE */
 

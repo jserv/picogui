@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.13 2000/05/28 16:59:22 micahjd Exp $
+/* $Id: widget.h,v 1.14 2000/06/01 23:11:42 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -160,6 +160,7 @@ DEF_STATICWIDGET_PROTO(label)      /* Text, resizes to fit */
 DEF_STATICWIDGET_PROTO(indicator)
 DEF_STATICWIDGET_PROTO(bitmap)
 DEF_WIDGET_PROTO(button)
+DEF_WIDGET_PROTO(panel)
 
 /* Types of widgets (in the same order they are in the table in widget.c) */
 #define WIDGET_TOOLBAR    0
@@ -168,7 +169,8 @@ DEF_WIDGET_PROTO(button)
 #define WIDGET_INDICATOR  3
 #define WIDGET_BITMAP     4
 #define WIDGET_BUTTON     5
-#define WIDGETMAX         5    /* For error checking */
+#define WIDGET_PANEL      6
+#define WIDGETMAX         6    /* For error checking */
      
 /* Constants for properties */
 #define WP_SIZE        1

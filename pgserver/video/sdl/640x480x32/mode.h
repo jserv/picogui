@@ -1,4 +1,4 @@
-/* $Id: mode.h,v 1.5 2000/04/27 03:27:36 micahjd Exp $
+/* $Id: mode.h,v 1.6 2000/06/01 23:11:42 micahjd Exp $
  *
  * Definitions for 640x480x32 mode
  *
@@ -54,47 +54,5 @@ typedef Uint32 * devbmpt;
 #define getblue(c) ((c)&0xFF)
 /* Same thing, but for a grayscale v between 0 and m */
 #define mkgray(v,m) mkcolor(v*255/m,v*255/m,v*255/m)
-
-
-/* Generic colors */
-#define black   0x00000000
-#define white   0x00FFFFFF
-#define gray    0x00808080
-#define dkgray  0x00404040
-#define ltgray  0x00B0B0B0
-
-/* Bevel colors */
-#define bevmid  0x007080A0
-#define bevnw   0x008090A0
-#define bevse   0x006070A0
-
-/* panel */
-#define panelmid  0x00C0D8E8
-#define paneledge 0x00000000
-
-/* title bar */
-#define titlebg   0x00003000
-
-/* indicator */
-#define ind_b1     0x00B0B0B0
-#define ind_b2     0x00000000
-#define ind_b3     0x008080FF
-#define ind_midon  0x000000FF
-#define ind_midoff 0x00FFFFFF
-
-/* button */
-#define btn_b1     0x00000000
-#define btn_b2     0x00585858
-#define btn_on     0x009090B0
-#define btn_off    0x00B0B0B0
-#define btn_over   0x00FFFFB0
-
-/* Hardware-customized Widget Geometry */
-#define HWG_BUTTON  32
-#define HWG_MARGIN  4
-#define HWG_SCROLL  16
-#define HWG_SPACER  3
-#define HWG_POPUPW  300
-#define HWG_POPUPH  200
 
 /* The End */
