@@ -1,4 +1,4 @@
-/* $Id: ez328.c,v 1.8 2001/02/28 00:19:07 micahjd Exp $
+/* $Id: ez328.c,v 1.9 2001/03/12 17:25:44 pney Exp $
  *
  * ez328.c - Driver for the 68EZ328's (aka Motorola Dragonball EZ)
  *           built-in LCD controller. It assumes the LCD parameters
@@ -54,7 +54,7 @@ g_error ez328_init(int xres,int yres,int bpp,unsigned long flags) {
    LRRA   = 0;
    LPXCD  = 0;
    LPICF  = 0x0A;   /* =1010 = 16 grey 4 bits */
-   LPOLCF = 0x00;
+   LPOLCF = 0x01;   /* 1 -> inverse video */
 
    LCKCON = 0x81;
    PCPDEN = 0xff00;     /* LCD pins */
