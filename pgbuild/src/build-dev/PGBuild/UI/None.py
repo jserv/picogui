@@ -200,6 +200,9 @@ class Interface(object):
             for name in self.config.listEval("invocation/option[@name='merge']/item/text()"):
                 self.config.packages.findPackageVersion(name).merge(mergeTask)
 
+        # Run SCons tasks
+        PGBuild.SConsGlue.run(self.config)
+
         # Interface cleanup- options that dump to stdout and don't use any UI features
         #                    should be placed after this line!
         self.cleanup()

@@ -16,10 +16,12 @@ body {
   border: 1px solid #8CBBAC;
 }  
 
-.providerBox {
-  float: right;
-  margin: 0em;
-  padding: 0em;
+.footer {
+  background: white;
+  border-top: 1px solid black;
+  margin: 2em 0em 0em 0em;
+  padding: 1em;
+  text-align: center;
 }
 
 a {

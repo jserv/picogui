@@ -26,6 +26,8 @@ _svn_id = "$Id$"
 
 import SCons.Defaults
 import SCons.Script.SConscript
+import SCons.Job
+import SCons.Taskmaster
 import os
 
 # Acceptable names for an SCons script, in order of preference
@@ -38,6 +40,12 @@ def startup(config):
        """
     SCons.Node.FS.default_fs.set_toplevel_dir(config.eval('bootstrap/path[@name="root"]/text()'))
     SCons.Defaults._default_env = Environment(config)
+
+def run(config):
+    print SCons.Script.SConscript.default_targets
+    taskmaster = SCons.Taskmaster.Taskmaster(nodes, task_class, calc, order)
+    jobs = SCons.Job.Jobs(ssoptions.get('num_jobs'), taskmaster)
+    jobs.run()
 
 def loadScript(name, progress):
     """Load one SCons script"""
