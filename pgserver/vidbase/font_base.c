@@ -1,4 +1,4 @@
-/* $Id: font_base.c,v 1.6 2002/11/04 03:40:34 micahjd Exp $
+/* $Id: font_base.c,v 1.7 2002/11/05 21:30:31 micahjd Exp $
  *
  * font_base.c - Handles multiple font backends, and provides default
  *               implementations of fontlib functions
@@ -45,6 +45,9 @@ void font_register_defaults(struct fontlib *f);
 struct fontengine fontengine_list[] = {
 #ifdef CONFIG_FONTENGINE_FREETYPE
   {"freetype", &freetype_regfunc },
+#endif
+#ifdef CONFIG_FONTENGINE_XFT
+  {"xft", &xft_regfunc },
 #endif
 #ifdef CONFIG_FONTENGINE_BDF
   {"bdf", &bdf_regfunc },

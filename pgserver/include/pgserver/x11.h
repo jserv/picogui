@@ -1,4 +1,4 @@
-/* $Id: x11.h,v 1.3 2002/11/04 12:11:32 micahjd Exp $
+/* $Id: x11.h,v 1.4 2002/11/05 21:30:30 micahjd Exp $
  *
  * x11.h - Header shared by all the x11 driver components in picogui
  *
@@ -35,8 +35,13 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
+
 #ifdef __SVR4
 #include <X11/Sunkeysym.h>
+#endif
+
+#ifdef CONFIG_FONTENGINE_XFT
+#include <X11/Xft/Xft.h>
 #endif
 
 
@@ -44,17 +49,20 @@
 
 /* The new data type used for hwrbitmap.
  * This must be able to represent top-level windows as well as
- * offscreen bitmaps, therefore most of the fields here are optional.
+ * offscreen bitmaps.
  */
 struct x11bitmap {
-  Drawable d;                    /* This will always be an x11 drawable */
+  /* Basic functionality */
+  Drawable d;                    /* This can be a Pixmap or a Window */
   struct groprender *rend;       /* gropnode rendering info used by picogui */
   s16 w,h;                       /* Width and height */
-  struct x11bitmap *frontbuffer; /* If this is a backbuffer, this is the associated front buffer */
-  struct divtree *dt;            /* The corresponding divtree if this is a window */
-  struct x11bitmap *next_window; /* Linked list of windows */
+
+  /* Windows */
   unsigned int is_window:1;      /* Flag indicating if this is a window */
   unsigned int is_mapped:1;      /* Is the window mapped yet? */
+  struct divtree *dt;            /* The corresponding divtree if this is a window */
+  struct x11bitmap *next_window; /* Linked list of windows */
+  struct x11bitmap *frontbuffer; /* If this is a backbuffer, this is the associated front buffer */
 };
 
 /* Convenience macro to cast a hwrbitmap to x11bitmap */
@@ -84,6 +92,7 @@ extern struct x11bitmap *x11_window_list;
 /* A region specifying the entire display */
 Region x11_display_region;
 
+
 /******************************************************** Shared utilities */
 
 /* Redisplay the area inside the given expose region */
@@ -98,7 +107,7 @@ g_error x11_new_backbuffer(struct x11bitmap **backbuffer, struct x11bitmap *fron
 /* Create a new generic window */
 g_error x11_create_window(hwrbitmap *hbmp);
 
-/* Return the shared window used in non-rootless mode, creating it if it doens't exist */
+/* Return the shared window used in non-rootless mode, creating it if it doesn't exist */
 hwrbitmap x11_monolithic_window(void);
 
 /* Update the title and size of the monolithic window if necessary */
