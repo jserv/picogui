@@ -1,4 +1,4 @@
-/* $Id: sdl.c,v 1.15 2001/02/14 05:13:19 micahjd Exp $
+/* $Id: sdl.c,v 1.16 2001/02/15 03:37:07 micahjd Exp $
  *
  * sdl.c - video driver wrapper for SDL.
  *
@@ -132,6 +132,10 @@ hwrcolor sdl_getpixel(int x,int y) {
   }
 }
 
+#ifndef min
+#define min(a,b) (((a)<(b))?(a):(b))
+#endif
+
 void sdl_update(int x,int y,int w,int h) {
   SDL_UpdateRect(sdl_vidsurf,x,y,w,h);
 }
@@ -152,7 +156,7 @@ void sdl_blit(struct stdbitmap *src,int src_x,int src_y,
     /* Do a tiled blit */
     for (i=0;i<w;i+=src->w)
       for (j=0;j<h;j+=src->h)
-        sdl_blit(src,0,0,dest_x+i,dest_y+j,src->w,src->h,lgop);
+        sdl_blit(src,0,0,dest_x+i,dest_y+j,min(src->w,w-i),min(src->h,h-j),lgop);
 
     return;
   }

@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.17 2001/02/14 05:13:19 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.18 2001/02/15 03:37:07 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -898,8 +898,7 @@ void def_blit(struct stdbitmap *srcbit,int src_x,int src_y,
 	}
 
 	(*vid->pixel)(dest_x+i,dest_y,s);
-	}
-
+     }
 }
 
 /* Another scary blit for desperate situations */
