@@ -1,6 +1,6 @@
 /*
  * input.c - Input layer for SDL
- * $Revision: 1.2 $
+ * $Revision: 1.3 $
  * 
  * Creates a seperate thread that waits on the SDL events and sends
  * them over to widget.c
@@ -27,7 +27,9 @@
 #define WINDOWS
 #endif
 
+int btnstate;
 extern SDL_Surface *screen;
+
 #ifndef WINDOWS
 int threadfunc(void *p);
 SDL_Thread *thread;
@@ -73,17 +75,17 @@ void windows_inputpoll_hack(void) {
     case SDL_MOUSEMOTION:
       if ((evt.motion.x==ox) && (evt.motion.y==oy)) break;
       dispatch_pointing(TRIGGER_MOVE,ox = evt.motion.x,
-			oy = evt.motion.y,evt.motion.state);
+			oy = evt.motion.y,btnstate=evt.motion.state);
       break;
 
     case SDL_MOUSEBUTTONDOWN:
       dispatch_pointing(TRIGGER_DOWN,evt.button.x,
-			evt.button.y,SDL_GetMouseState(NULL,NULL));
+			evt.button.y,btnstate |= 1<<(evt.button.button-1));
       break;
 
     case SDL_MOUSEBUTTONUP:
       dispatch_pointing(TRIGGER_UP,evt.button.x,
-			evt.button.y,SDL_GetMouseState(NULL,NULL));
+			evt.button.y,btnstate &= ~(1<<(evt.button.button-1)));
       break;
 
     case SDL_QUIT:
