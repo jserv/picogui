@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.38 2001/11/15 06:22:27 micahjd Exp $
+/* $Id: font.c,v 1.39 2001/11/17 10:08:48 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -125,7 +125,7 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
 	   }	   
 
 	   if (w>0 && ( (!clip) || (sy >= clip->y1 && sy <= clip->y2) ))
-	     VID(slab) (dest,*x,fd->hline+(*y),cel_w,fd->hline_c,lgop);
+	     VID(slab) (dest,*x,fd->hline+(*y),cel_w,col,lgop);
 	 }	 
 	 break;
 	 
@@ -163,7 +163,7 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
        case 270:
 	 /* underline, overline, strikeout */
 	 if (fd->hline>=0)
-	   VID(slab) (dest,(mx)+fd->hline,my,cel_w,fd->hline_c,lgop);
+	   VID(slab) (dest,(mx)+fd->hline,my,cel_w,col,lgop);
 	 
 	 /* The actual character */
 	 i=0;
@@ -333,15 +333,10 @@ g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
    /* Initialize the fd */
    memset(fd,0,sizeof(struct fontdesc));
    fd->hline = -1;
-   fd->hline_c = VID(color_pgtohwr) (0x000000);
    fd->style = flags;
    fd->decoder = &decode_ascii;
    
    if (!(flags & PG_FSTYLE_FLUSH)) fd->margin = 2;
-   if (flags & PG_FSTYLE_GRAYLINE) {
-      fd->hline_c = VID(color_pgtohwr) (0x808080);
-      flags |= PG_FSTYLE_UNDERLINE;
-   }
    
    /* Normally having no fonts compiled in is a very bad thing.
     * If the video driver doesn't need them, though, as in the case of

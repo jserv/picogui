@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.100 2001/11/16 00:35:42 micahjd Exp $
+/* $Id: constants.h,v 1.101 2001/11/17 10:08:48 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -165,7 +165,7 @@
 #define PG_FSTYLE_ITALIC       (1<<9)    //!< Use or simulate an italic version of the font
 #define PG_FSTYLE_UNDERLINE    (1<<10)   //!< Underlined text
 #define PG_FSTYLE_STRIKEOUT    (1<<11)   //!< Strikeout, a line through the middle of the text
-#define PG_FSTYLE_GRAYLINE     (1<<12)   //!< A faint underline
+#define PG_FSTYLE_GRAYLINE     (1<<12)   //!< deprecated
 #define PG_FSTYLE_FLUSH        (1<<14)   //!< Disable the margin that PicoGUI puts around text
 #define PG_FSTYLE_DOUBLEWIDTH  (1<<15)   //!< Add extra space between characters
 #define PG_FSTYLE_ITALIC2      (1<<16)   //!< Twice the slant of the default italic

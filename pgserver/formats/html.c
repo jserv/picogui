@@ -1,4 +1,4 @@
-/* $Id: html.c,v 1.11 2001/11/17 09:21:17 micahjd Exp $
+/* $Id: html.c,v 1.12 2001/11/17 10:08:48 micahjd Exp $
  *
  * html.c - Use the textbox_document inferface to load HTML markup
  *
@@ -93,10 +93,10 @@
 /* Font constants. These should probably be incorporated into the theme
  * system at some point.
  */
-#define HTML_BIG_DELTA    5    /* Amount to change font for <big> */
-#define HTML_SMALL_DELTA  -5   /* Amount to change font for <small> */
-
-const int heading_fonts[] = { 10,5,0,0,0,0 };
+#define HTML_BIG_DELTA    5                      /* Amount to change font for <big> */
+#define HTML_SMALL_DELTA  -5                     /* Amount to change font for <small> */
+#define LINK_COLOR        0x0000FF
+const int heading_fonts[] = { 10,5,0,0,0,0 };    /* Delta font for H1 through H6 */
 
 /*************************************** Definitions */
 
@@ -459,6 +459,23 @@ g_error html_tag_hr(struct html_parse *hp, struct html_tag_params *tag) {
   return text_insert_line_div(hp->c,div);
 }
 
+/* FIXME: Right now these look like links but aren't really links
+ */
+g_error html_tag_a(struct html_parse *hp, struct html_tag_params *tag) {
+  g_error e;
+
+  e = text_format_modifyfont(hp->c,PG_FSTYLE_UNDERLINE,0,0);
+  errorcheck;
+  hp->c->f_top->color = VID(color_pgtohwr)(LINK_COLOR);
+  return sucess;
+}
+g_error html_tag_end_a(struct html_parse *hp, struct html_tag_params *tag) {
+  g_error e;
+  
+  e = html_tag_unformat(hp,tag);
+  errorcheck;
+  return sucess;
+}
 
 /*************************************** HTML tag table */
 
@@ -506,6 +523,8 @@ struct html_taghandler {
   { "h6",      &html_tag_h },
   { "/h6",     &html_tag_end_h },
   { "hr",      &html_tag_hr },
+  { "a",       &html_tag_a },
+  { "/a",      &html_tag_end_a },
 
   { NULL, NULL }
 };
