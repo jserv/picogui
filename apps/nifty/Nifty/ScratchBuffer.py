@@ -1,6 +1,6 @@
-from Buffer import Buffer
+from Buffer import TextBuffer
 
-class ScratchBuffer(Buffer):
+class ScratchBuffer(TextBuffer):
     "A buffer to hold temporary stuff"
 
     default_name = '__scratch__'

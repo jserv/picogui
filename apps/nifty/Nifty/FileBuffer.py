@@ -1,7 +1,7 @@
-from Buffer import Buffer
+from Buffer import TextBuffer
 import os
 
-class FileBuffer(Buffer):
+class FileBuffer(TextBuffer):
     "Represents a file"
 
     def __init__(self, path=''):
@@ -14,10 +14,10 @@ class FileBuffer(Buffer):
         else:
             print 'New file'
             text = ''
-        Buffer.__init__(self, name=path, text=text)
+        TextBuffer.__init__(self, name=path, text=text)
 
     def notify_changed(self, ev):
-        Buffer.notify_changed(self, ev)
+        TextBuffer.notify_changed(self, ev)
         self.changed = True
         self.change_name('*' + self.path)
 

@@ -1,19 +1,19 @@
-from Buffer import Buffer
+from Buffer import TextBuffer
 
-class DebugBuffer(Buffer):
+class DebugBuffer(TextBuffer):
     "A buffer to redirect stderr to"
 
     def __init__(self, frame):
         self.frame = frame
         import sys
         self.stderr = sys.stderr
-        Buffer.__init__(self, '__debug__', 'Debugging information (sys.stderr):\n')
+        TextBuffer.__init__(self, '__debug__', 'Debugging information (sys.stderr):\n')
 
     def save(self):
         print 'cannot save a DebugBuffer'
 
     def add_observer(self, o):
-        Buffer.add_observer(self, o)
+        TextBuffer.add_observer(self, o)
         o.readonly = 1
         o.insertmode = 'append'
 
