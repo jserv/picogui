@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.3 2002/10/11 15:40:18 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.4 2002/10/31 11:21:23 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -160,18 +160,8 @@ void term_char(struct widget *self,u8 c) {
         DATA->current.crsrx = 0;	/* "magic" wrapping */
         DATA->current.crsry++;
 	if (DATA->current.crsry >= DATA->bufferh) {  /* Scroll vertically */
-          DATA->current.crsry = DATA->bufferh-1;
-
-	  pgstring_chrcpy(DATA->buffer, DATA->buffer, 0, DATA->bufferw, 
-			  DATA->buffer->num_chars - DATA->bufferw);
-          term_clearbuf(self,0,DATA->bufferh-1,DATA->bufferw);
-
-          /* Two methods here - just redraw the screen or try a scroll blit */
-
-	  term_updrect(self,0,0,DATA->bufferw,DATA->bufferh);
-
-          //self->in->div->flags |= DIVNODE_SCROLL_ONLY;
-          //self->in->div->oty = DATA->celh;
+	  DATA->current.crsry = DATA->bufferh-1;
+	  term_scroll(self,DATA->current.scroll_top,DATA->current.scroll_bottom,-1);
 	}
       }
       term_plot(self,DATA->current.crsrx++,DATA->current.crsry,c);

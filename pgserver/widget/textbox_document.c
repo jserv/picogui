@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.51 2002/10/30 05:53:25 micahjd Exp $
+/* $Id: textbox_document.c,v 1.52 2002/10/31 11:21:23 micahjd Exp $
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and
@@ -144,18 +144,27 @@ g_error document_insert_char(struct textbox_document *doc, u32 ch, void *metadat
 
   /* Insert us the paragraph! */
   if (ch == '\n' || ch == '\r') {
-    int was_visible = doc->crsr->visible;
-
-    e = textbox_new_par_div(&doc->crsr->par->next, &doc->crsr->par->div->next,
-			    doc->crsr->par->background);
-    errorcheck;
+    struct paragraph *oldpar, *newpar;
+    struct pgstr_iterator i;
+    
+    /* Force an immediate cursor hide, since soon the cursor will be replaced */
     paragraph_hide_cursor(doc->crsr);
-    doc->crsr->par->next->prev = doc->crsr->par;
-    doc->crsr->par->next->doc = doc;
-    doc->crsr->par->div->owner->dt->flags |= DIVTREE_NEED_RESIZE;
-    doc->crsr = &doc->crsr->par->next->cursor;
-    if (was_visible)
-      paragraph_show_cursor(doc->crsr);
+
+    /* Create a new paragraph, linked into the paragraph list and divtree */
+    e = document_insert_paragraph(doc);
+    errorcheck;
+    oldpar = doc->crsr->par;
+    newpar = oldpar->next;
+
+    /* Split the section of the paragraph after the cursor into the new paragraph */
+    pgstring_seek(newpar->content, &i, 0, PGSEEK_SET);
+    e = pgstring_move(newpar->content,oldpar->content,
+		      &i,&oldpar->cursor.iterator,-1);
+    errorcheck;
+
+    /* Set the cursor at the beginning of the new paragraph */
+    doc->crsr = &newpar->cursor;
+    paragraph_seekcursor(doc->crsr,0,PGSEEK_SET);
   }
   
   /* Normal character */
@@ -332,6 +341,37 @@ void document_backspace_char(struct textbox_document *doc) {
 void document_bounded_seek(struct textbox_document *doc, s32 offset, int whence) {
   document_seek(doc,offset,whence);
   document_seek(doc,-document_eof(doc),PGSEEK_CUR);
+}
+
+/* Delete the paragraph the cursor is on */
+void document_delete_paragraph(struct textbox_document *doc) {
+  struct paragraph *dead;
+
+  dead = doc->crsr->par;
+  dead->prev->next = dead->next;
+  dead->next->prev = dead->prev;
+  dead->div->owner->dt->flags |= DIVTREE_NEED_RESIZE;
+
+  paragraph_delete(dead);
+}
+
+/* Insert a new paragraph after the one the cursor is on.
+ */
+g_error document_insert_paragraph(struct textbox_document *doc) {
+  struct paragraph *oldpar = doc->crsr->par, *newpar;
+  struct pgstr_iterator i;
+  g_error e;
+  
+  e = textbox_new_par_div(&newpar, &oldpar->div->next, oldpar->background);
+  errorcheck;
+
+  newpar->next = oldpar->next;
+  newpar->prev = oldpar;
+  oldpar->next = newpar;
+  newpar->doc = doc;
+  oldpar->div->owner->dt->flags |= DIVTREE_NEED_RESIZE;
+
+  return success;
 }
 
 

@@ -1,4 +1,4 @@
-/* $Id: terminal_textgrid.c,v 1.6 2002/10/30 05:09:13 micahjd Exp $
+/* $Id: terminal_textgrid.c,v 1.7 2002/10/31 11:21:23 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -284,23 +284,29 @@ void term_clearbuf(struct widget *self,int fromx,int fromy,int chars) {
 /* Copy a rectangle between two text buffers */
 void textblit(struct pgstring *src,struct pgstring *dest,int src_x,int src_y,int src_w,
 	      int dest_x,int dest_y,int dest_w,int w,int h) {
-  int src_chr,dest_chr;
+  struct pgstr_iterator src_i,dest_i;
 
   /* Top-down blit */
-  if (dest_y < src_y) {
-    src_chr  = src_x + src_y * src_w;
-    dest_chr = dest_x + dest_y * dest_w;
+  if (src!=dest || dest_y < src_y) {
+    pgstring_seek(src,&src_i,src_x + src_y * src_w,PGSEEK_SET);
+    pgstring_seek(dest,&dest_i,dest_x + dest_y * dest_w,PGSEEK_SET);
     
-    for (;h>0;h--,src_chr+=src_w,dest_chr+=dest_w)
-      pgstring_chrcpy(dest,src,dest_chr,src_chr,w);
+    for (;h>0;h--) {
+      pgstring_copy(dest,src,&dest_i,&src_i,w);
+      pgstring_seek(src,&src_i,src_w,PGSEEK_CUR);
+      pgstring_seek(dest,&dest_i,dest_w,PGSEEK_CUR);
+    }
   }
   /* Bottom-up blit */
   else {
-    src_chr  = src_x + (src_y + h - 1) * src_w;
-    dest_chr = dest_x + (dest_y + h - 1) * dest_w;
+    pgstring_seek(src,&src_i,src_x + (src_y + h - 1) * src_w,PGSEEK_SET);
+    pgstring_seek(dest,&dest_i,dest_x + (dest_y + h - 1) * dest_w,PGSEEK_SET);
  
-    for (;h>0;h--,src_chr-=src_w,dest_chr-=dest_w)
-      pgstring_chrcpy(dest,src,dest_chr,src_chr,w);
+    for (;h>0;h--) {
+      pgstring_copy(dest,src,&dest_i,&src_i,w);
+      pgstring_seek(src,&src_i,-src_w,PGSEEK_CUR);
+      pgstring_seek(dest,&dest_i,-dest_w,PGSEEK_CUR);
+    }
   }
 }
 

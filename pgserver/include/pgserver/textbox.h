@@ -1,4 +1,4 @@
-/* $Id: textbox.h,v 1.18 2002/10/30 05:09:12 micahjd Exp $
+/* $Id: textbox.h,v 1.19 2002/10/31 11:21:22 micahjd Exp $
  *
  * textbox.h - Interface definitions for the textbox widget. This allows
  *             the main textbox widget functions and the text format loaders
@@ -102,6 +102,11 @@ struct paragraph *document_get_div_par(struct divnode *div);
 /* Seek the cursor to the mouse location */
 void document_mouseseek(struct textbox_document *doc, struct trigparam_mouse *m);
 
+/* Delete the paragraph the cursor is on */
+void document_delete_paragraph(struct textbox_document *doc);
+
+/* Insert a new paragraph after the one the cursor is on */
+g_error document_insert_paragraph(struct textbox_document *doc);
 
 /************************* Text format loaders */
 

@@ -1,4 +1,4 @@
-/* $Id: pgstring.c,v 1.11 2002/10/30 05:09:12 micahjd Exp $
+/* $Id: pgstring.c,v 1.12 2002/10/31 11:21:21 micahjd Exp $
  *
  * pgstring.c - String data type to handle various encodings
  *
@@ -283,22 +283,52 @@ u32 pgstring_encoded_length(struct pgstring *str, u32 ch) {
 }
 
 /* Copy a block of characters to another location within the string.
- * This may not work as you expect on formats that use variable length encodings.
+ * The destination string is resized to accompany this copy if necessary.
+ * If num_chars is -1, copy as many characters as possible.
  */
-void pgstring_chrcpy(struct pgstring *deststr, struct pgstring *srcstr,
-		     u32 dest_chr, u32  src_chr, u32 num_chars) {
-  struct pgstr_iterator dest,src;
+g_error pgstring_copy(struct pgstring *deststr, struct pgstring *srcstr, struct pgstr_iterator *dest,
+		      struct pgstr_iterator *src, s32 num_chars) {
+  g_error e;
+  int num_bytes;
 
   /* FIXME: This is cheesy, need to support UTF-8 and textbox encodings.
-   *        as-is this is just enough for the terminal.
+   *        as-is this is just enough for the terminal encodings and ascii
    */
 
-  pgstring_seek(srcstr,&src,src_chr,PGSEEK_SET);
-  pgstring_seek(deststr,&dest,dest_chr,PGSEEK_SET);
-  num_chars *= pgstring_encoded_length(deststr,' ');
-  if (dest.offset + num_chars > deststr->num_bytes)
-    num_chars = deststr->num_bytes - num_chars - dest.offset;
-  memmove(deststr->buffer + dest.offset,srcstr->buffer + src.offset,num_chars);
+  num_bytes = num_chars * pgstring_encoded_length(deststr,' ');
+ 
+  if (src->offset + num_bytes > srcstr->num_bytes)
+    num_chars = -1;
+  if (num_chars < 0)
+    num_bytes = srcstr->num_bytes - src->offset;
+
+  if (num_bytes + dest->offset > deststr->num_bytes) {
+    e = pgstring_resize(deststr,num_bytes + dest->offset);
+    errorcheck;
+    deststr->num_bytes = num_bytes + dest->offset;
+    deststr->num_chars = deststr->num_bytes / pgstring_encoded_length(deststr,' ');
+  }
+  
+  memmove(deststr->buffer + dest->offset,srcstr->buffer + src->offset,num_bytes);
+
+  return success;
+}
+
+/* Like copy, but the source characters are deleted */
+g_error pgstring_move(struct pgstring *dest, struct pgstring *src, struct pgstr_iterator *dest_i,
+		      struct pgstr_iterator *src_i, s32 num_chars) {
+  g_error e;
+  
+  e =  pgstring_copy(dest,src,dest_i,src_i,num_chars);
+  errorcheck;
+
+  while ( (num_chars > 0 && (num_chars--)) ||
+	  (num_chars < 0 && !pgstring_eof(src,src_i)) ) {
+    e = pgstring_delete_char(src,src_i);
+    errorcheck;
+  }
+
+  return success;
 }
 
 /* Comparison function for pgstring iterators. Returns:

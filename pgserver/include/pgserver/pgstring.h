@@ -1,4 +1,4 @@
-/* $Id: pgstring.h,v 1.5 2002/10/30 05:09:12 micahjd Exp $
+/* $Id: pgstring.h,v 1.6 2002/10/31 11:21:21 micahjd Exp $
  *
  * pgstring.h - String data type to handle various encodings
  *
@@ -153,10 +153,15 @@ u32 pgstring_decode_meta(struct pgstring *str, struct pgstr_iterator *p, void **
 u32 pgstring_encoded_length(struct pgstring *str, u32 ch);
 
 /* Copy a block of characters to another location within the string.
- * This may not work as you expect on formats that use variable length encodings.
- * The dest and src strings may be the same. They _must_ be in the same format.
+ * The destination string is resized to accompany this copy if necessary.
+ * If num_chars is -1, copy as many characters as possible.
  */
-void pgstring_chrcpy(struct pgstring *dest, struct pgstring *src, u32 dest_chr, u32  src_chr, u32 num_chars);
+g_error pgstring_copy(struct pgstring *dest, struct pgstring *src, struct pgstr_iterator *dest_i,
+		      struct pgstr_iterator *src_i, s32 num_chars);
+
+/* Like copy, but the source characters are deleted */
+g_error pgstring_move(struct pgstring *dest, struct pgstring *src, struct pgstr_iterator *dest_i,
+		      struct pgstr_iterator *src_i, s32 num_chars);
 
 /* Insert a character before the insertion point p, resizing the string as necessary.
  * After this operation, the insertion point will point after the newly inserted character.
