@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.35 2001/03/30 10:13:09 micahjd Exp $
+/* $Id: dispatch.c,v 1.36 2001/03/30 23:34:08 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -911,10 +911,10 @@ g_error rqh_getmode(int owner, struct pgrequest *req,
   /* Send a PG_RESPONSE_DATA back */
   rsp.type = htons(PG_RESPONSE_DATA);
   rsp.id = htons(req->id);
-  rsp.size = htonl(sizeof(data));
+  rsp.size = htonl(sizeof(mi));
   
   *fatal |= send_response(owner,&rsp,sizeof(rsp));  
-  *fatal |= send_response(owner,&data,sizeof(data));  
+  *fatal |= send_response(owner,&mi,sizeof(mi));  
   return ERRT_NOREPLY;
 }
 

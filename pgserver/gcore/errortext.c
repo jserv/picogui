@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.22 2001/03/22 00:20:37 micahjd Exp $
+/* $Id: errortext.c,v 1.23 2001/03/30 23:34:08 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -187,7 +187,7 @@ static const char *errors[] = {
   /* 10 */  NULL,
   /* 11 */  "Nice try... Bad ALIGN value for label",
   /* 12 */  "Your label font is nowhere to be seen...",
-  /* 13 */  "Strings, labels, everywhere. Your handle not ever found.",
+  /* 13 */  "Bad handle for widget text property",
   /* 14 */  NULL,
   /* 15 */  NULL,
   /* 16 */  NULL,

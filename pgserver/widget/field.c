@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.21 2001/03/17 04:16:36 micahjd Exp $
+/* $Id: field.c,v 1.22 2001/03/30 23:34:08 micahjd Exp $
  *
  * Single-line no-frills text editing box
  *
@@ -169,11 +169,26 @@ g_error field_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-    /* FIXME: PG_WP_TEXT
-       case PG_WP_TEXT:
+   case PG_WP_TEXT:
+     /* Copy the provided data into our private buffer */
 
-       break;
-    */
+     if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,data)) || !str) 
+       return mkerror(PG_ERRT_HANDLE,13);
+      
+     /* Need resize? */
+     DATA->bufuse = strlen(str) + 1;
+     if (DATA->bufsize < DATA->bufuse) {
+	DATA->bufsize = DATA->bufuse + FIELDBUF_ALLOCSTEP;
+	e = g_realloc((void *)&DATA->buffer,DATA->bufsize);
+	errorcheck;
+	e = rehandle(DATA->hbuffer,DATA->buffer);
+	errorcheck;
+     }
+     
+     /* Update text */
+     strcpy(DATA->buffer,str);
+     div_setstate(self->in->div,self->in->div->state);
+     break;
 
    default:
      return mkerror(ERRT_PASS,0);

@@ -53,12 +53,11 @@ DOCUMENTATION!
 PicoGUI Bugs
 -------------------------------
 
-- panel bar dragging sometimes segfaults
-- charblit_v rotation
 - scrolling
 - FIXMEs
 - retest all video drivers
 - tiled blit() src_x and src_y ignored in most drivers
 - pgGetText of non-text handles crashes server
-- video applet & depth switching crashes/incompletenesses
 - memory leak (doesn't delete app_info)
+- Deleting a handle returned from WP_TEXT of a field crashes the server. Need
+  a way to mark a handle as readable by app but not deletable.

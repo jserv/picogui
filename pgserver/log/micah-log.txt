@@ -1,3 +1,14 @@
+2001-03-30    Micah Dowty <micahjd@users.sourceforge.net>
+
+Still don't have bit depth changing working correctly, but there are a lot
+of little things I had to fix here and there...
+Happy Friday!
+
+      * widget/popup_nobar.c: Resurrected the no-panelbar support from some
+        backups when I realized it wasn't in CVS
+
+      * widget/field.c: Fixed bug in cursor positioning when PG_WP_TEXT is set
+
 2001-03-29    Micah Dowty <micahjd@users.sourceforge.net>
 
 Ugh. Spent the last 3 days installing a network for some jerk who doesn't
