@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.14 2000/10/19 01:21:24 micahjd Exp $
+/* $Id: popup.c,v 1.15 2000/11/05 01:09:46 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -29,6 +29,7 @@
  */
 
 #include <pgserver/widget.h>
+#include <pgserver/appmgr.h>
 
 /* We have a /special/ function to create a popup widget from scratch. */
 g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
@@ -46,9 +47,20 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   (*wgt)->isroot = 1;  /* This widget has no siblings, so no point going
 			  outside it anyway */
 
-  /* Positioning, centering, and clipping */
-  if (((signed short)x)==-1) x=(vid->xres>>1)-(w>>1); /*-1 centers */ 
-  if (((signed short)y)==-1) y=(vid->yres>>1)-(h>>1);
+  /* Special positioning codes */
+
+  if (((signed short)x) == PG_POPUP_CENTER) {
+    x=(vid->xres>>1)-(w>>1);
+    y=(vid->yres>>1)-(h>>1);
+  }
+
+  if (((signed short)x) == PG_POPUP_ATCURSOR) {
+    x = pointer->x;
+    y = pointer->y;
+    (*wgt)->in->div->state = PGTH_O_POPUP_MENU;
+  }
+
+  /* Clipping and things */
   (*wgt)->in->div->x = x-margin;
   (*wgt)->in->div->y = y-margin;
   (*wgt)->in->div->w = w+(margin<<1);

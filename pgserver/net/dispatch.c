@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.13 2000/11/04 22:33:47 micahjd Exp $
+/* $Id: dispatch.c,v 1.14 2000/11/05 01:09:46 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -618,7 +618,7 @@ g_error rqh_setpayload(int owner, struct pgrequest *req,
   g_error e;
   reqarg(setpayload);
   
-  e = handle_payload(&ppayload,owner,arg->h);
+  e = handle_payload(&ppayload,owner,ntohl(arg->h));
   errorcheck;
   
   *ppayload = arg->payload;
@@ -632,7 +632,7 @@ g_error rqh_getpayload(int owner, struct pgrequest *req,
   g_error e;
   reqarg(handlestruct);
   
-  e = handle_payload(&ppayload,owner,arg->h);
+  e = handle_payload(&ppayload,owner,ntohl(arg->h));
   errorcheck;
   
   *ret = *ppayload;
@@ -697,11 +697,11 @@ g_error dlgbtn(int owner, struct widget *tb, handle htb,
   e = handle_payload(&ppayload,owner,h);
   errorcheck;
   *ppayload = payload;
-  e = widget_set(w,PG_WP_TEXT,theme_lookup(PGTH_O_POPUP,textproperty));
+  e = widget_set(w,PG_WP_TEXT,theme_lookup(PGTH_O_POPUP_MESSAGEDLG,textproperty));
   errorcheck;
   e = widget_set(w,PG_WP_SIDE,PG_S_RIGHT);
   errorcheck;
-  e = widget_set(w,PG_WP_HOTKEY,theme_lookup(PGTH_O_POPUP,key));
+  e = widget_set(w,PG_WP_HOTKEY,theme_lookup(PGTH_O_POPUP_MESSAGEDLG,key));
   errorcheck;
 }
 
@@ -731,12 +731,13 @@ g_error rqh_mkmsgdlg(int owner, struct pgrequest *req,
   /* Account for doohickeys */
   bh += theme_lookup(PGTH_O_TOOLBAR,PGTH_P_HEIGHT) << 1;
   /* Any additions the theme may have */
-  bw += theme_lookup(PGTH_O_POPUP,PGTH_P_WIDTH);
-  bh += theme_lookup(PGTH_O_POPUP,PGTH_P_HEIGHT);
+  bw += theme_lookup(PGTH_O_POPUP_MESSAGEDLG,PGTH_P_WIDTH);
+  bh += theme_lookup(PGTH_O_POPUP_MESSAGEDLG,PGTH_P_HEIGHT);
 
   /* The popup box itself */
   e = create_popup(-1,-1,bw,bh,&w,owner);
   errorcheck;
+  w->in->div->state = PGTH_O_POPUP_MESSAGEDLG;
   e = mkhandle(&h,PG_TYPE_WIDGET,owner,w);
   errorcheck;
   *ret = h;

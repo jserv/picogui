@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.10 2000/11/04 22:50:03 micahjd Exp $
+/* $Id: memtheme.c,v 1.11 2000/11/05 01:09:46 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -87,6 +87,8 @@ unsigned short thobj_ancestry[PGTH_ONUM] = {
   /* 34 PGTH_O_ZOOMBTN               */ PGTH_O_BASE_PANELBTN,
   /* 35 PGTH_O_ZOOMBTN_ON            */ PGTH_O_ZOOMBTN_HILIGHT,
   /* 36 PGTH_O_ZOOMBTN_HILIGHT       */ PGTH_O_ZOOMBTN,
+  /* 37 PGTH_O_POPUP_MENU            */ PGTH_O_POPUP,
+  /* 38 PGTH_O_POPUP_MESSAGEDLG      */ PGTH_O_POPUP,
 };
 
 struct pgmemtheme *memtheme;

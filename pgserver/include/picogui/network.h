@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.8 2000/10/29 19:48:06 micahjd Exp $
+/* $Id: network.h,v 1.9 2000/11/05 01:09:46 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -201,8 +201,8 @@ struct pgreqd_register {
   /* Followed by optional APPSPECs */
 };
 struct pgreqd_mkpopup {
-  unsigned short x;
-  unsigned short y;
+  unsigned short x; /* can be a PG_POPUP_* constant */
+  unsigned short y; 
   unsigned short w;
   unsigned short h;
 };
