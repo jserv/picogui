@@ -153,8 +153,10 @@ class Application(Widget.Widget):
 
             try:
                 self.dispatch_events()
-            except StopApplication:
-                break
+            except StopApplication, ret:
+                if ret.args:
+                    return ret.args[0]
+                return
 
     def dispatch_events(self):
         # XXX DANGER for thread-safety
@@ -166,8 +168,11 @@ class Application(Widget.Widget):
         for ev in events:
             try:
                 self._event_registry.dispatch(ev)
-            except SystemExit:
-                raise StopApplication
+            except SystemExit, e:
+                if e.args:
+                    raise StopApplication, e.args[0]
+                else:
+                    raise StopApplication
             except EventHandled:
                 continue
             if ev.widget is self and ev.name in ('close', 'stop'):
