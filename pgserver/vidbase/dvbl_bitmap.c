@@ -1,4 +1,4 @@
-/* $Id: dvbl_bitmap.c,v 1.4 2002/07/26 11:11:37 micahjd Exp $
+/* $Id: dvbl_bitmap.c,v 1.5 2002/07/26 14:26:34 micahjd Exp $
  *
  * dvbl_bitmap.c - This file is part of the Default Video Base Library,
  *                 providing the basic video functionality in picogui but
@@ -579,7 +579,84 @@ g_error def_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm) {
   shm->pitch       = htons(b->pitch);
   shm->width       = htons(b->w);
 
-  /* It's the other VBLs' and drivers' responsibility to fill in the rest */
+  /* The rest of this is kind of a set of heuristics for guessing the format...
+   * the other VBLs can always override this when it's not enough.
+   */
+
+  if (b->bpp < 8) {
+    /* Grayscale if less than 8bpp 
+     */
+    shm->format = htonl(PG_BITFORMAT_GRAYSCALE);
+  }
+  else if (b->bpp == 32 && size >= 4 && (*(u32*)shmaddr & PGCF_ALPHA)) {
+    /* Is this an ARGB image? 
+     */
+    shm->format       = htonl(PG_BITFORMAT_TRUECOLOR | PG_BITFORMAT_ALPHA);
+    shm->red_mask     = htonl(0x00FF0000);
+    shm->green_mask   = htonl(0x0000FF00);
+    shm->blue_mask    = htonl(0x000000FF);
+    shm->alpha_mask   = htonl(0x7F000000);
+    shm->red_shift    = htons(16);
+    shm->green_shift  = htons(8);
+    shm->alpha_shift  = htons(24);
+    shm->red_length   = htons(8);
+    shm->green_length = htons(8);
+    shm->blue_length  = htons(8);
+    shm->alpha_length = htons(7);
+  }
+  else if (b->bpp == 16) {
+    /* Assume 5-6-5 color in 16bpp mode
+     */
+    shm->format       = htonl(PG_BITFORMAT_TRUECOLOR);
+    shm->red_mask     = htonl(0x0000F800);
+    shm->green_mask   = htonl(0x000007E0);
+    shm->blue_mask    = htonl(0x0000001F);
+    shm->red_shift    = htons(11);
+    shm->green_shift  = htons(5);
+    shm->red_length   = htons(5);
+    shm->green_length = htons(6);
+    shm->blue_length  = htons(5);
+  }
+  else if (b->bpp >= 24) {
+    shm->format       = htonl(PG_BITFORMAT_TRUECOLOR);
+    shm->red_mask     = htonl(0x00FF0000);
+    shm->green_mask   = htonl(0x0000FF00);
+    shm->blue_mask    = htonl(0x000000FF);
+    shm->red_shift    = htons(16);
+    shm->green_shift  = htons(8);
+    shm->red_length   = htons(8);
+    shm->green_length = htons(8);
+    shm->blue_length  = htons(8);
+  }
+  else if (b->bpp == 8) { 
+    /* A few different choices in 8bpp mode.. 
+     */
+#ifdef CONFIG_PAL8_222
+    shm->format       = htonl(PG_BITFORMAT_TRUECOLOR);
+    shm->red_mask     = htonl(0x00000030);
+    shm->green_mask   = htonl(0x0000000C);
+    shm->blue_mask    = htonl(0x00000003);
+    shm->red_shift    = htons(4);
+    shm->green_shift  = htons(2);
+    shm->red_length   = htons(2);
+    shm->green_length = htons(2);
+    shm->blue_length  = htons(2);
+#endif
+#ifdef CONFIG_PAL8_233
+    shm->format       = htonl(PG_BITFORMAT_TRUECOLOR);
+    shm->red_mask     = htonl(0x000000C0);
+    shm->green_mask   = htonl(0x00000038);
+    shm->blue_mask    = htonl(0x00000007);
+    shm->red_shift    = htons(6);
+    shm->green_shift  = htons(3);
+    shm->red_length   = htons(2);
+    shm->green_length = htons(3);
+    shm->blue_length  = htons(3);
+#endif
+#ifdef CONFIG_PAL8_CUSTOM
+    shm->format       = htonl(PG_BITFORMAT_INDEXED);
+#endif
+  }
 
   return success;
 }
