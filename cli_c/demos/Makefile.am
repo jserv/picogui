@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.7 2001/08/17 01:13:47 micahjd Exp $
+# $Id: Makefile.am,v 1.8 2001/09/07 03:18:09 micahjd Exp $
 
 noinst_PROGRAMS = \
 	abstest 		\
@@ -16,8 +16,9 @@ noinst_PROGRAMS = \
 	offscreen               \
 	scrsaver	        \
 	dialogdemo              \
-	animbutton       \
-	galaxy
+	animbutton              \
+	galaxy                  \
+	bouncyball
 
 noinst_SCRIPTS = Demo.app
 
