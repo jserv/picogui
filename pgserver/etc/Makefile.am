@@ -11,6 +11,8 @@ pgserver.conf: gen-pgserver-conf $(srcdir)/pgserver.conf.in
 	  | sed "s/#.*//g" \
 	> pgserver.conf
 
+gen-pgserver-conf.c: ../include/pgserver/autoconf.h
+
 gen-pgserver-conf: gen-pgserver-conf.c
 	$(CC_FOR_BUILD) $< -o $@ -I../include -I$(srcdir)/../gcore
 
