@@ -6,15 +6,20 @@
 # See http://navi.picogui.org/svn/picogui/trunk/tools/irc/cia.html
 # for more information on what the CIA bot is and how it works.
 #
-# This script should be called from your repository's post-commit
-# hook with the repository and revision as arguments. For example,
-# you could copy this script into your repository's "hooks" directory
-# and add something like the following to the "post-commit" script,
-# also in the repository's "hooks" directory:
+# To use the CIA bot in your Subversion repository...
 #
-#   REPOS="$1"
-#   REV="$2"
-#   $REPOS/hooks/ciabot_svn.sh "$REPOS" "$REV"&
+# 1. Customize the parameters below, specifically the ones under
+#    the "Project information" section
+#
+# 2. This script should be called from your repository's post-commit
+#    hook with the repository and revision as arguments. For example,
+#    you could copy this script into your repository's "hooks" directory
+#    and add something like the following to the "post-commit" script,
+#    also in the repository's "hooks" directory:
+#
+#      REPOS="$1"
+#      REV="$2"
+#      $REPOS/hooks/ciabot_svn.sh "$REPOS" "$REV"&
 #
 # Note that this version of the script requires python. If you can't
 # get python on your subversion server, you'll need to remove
@@ -31,8 +36,8 @@ sendmail_command="/usr/sbin/sendmail -t"
 
 # Commit format
 log_message_lines="6"
-basedir_color="{normal}"
-revision_color="{normal}"
+basedir_color="{light blue}"
+revision_color="{yellow}"
 author_color="{green}"
 
 ##### Below this line you shouldn't have to change anything unless you
@@ -64,3 +69,4 @@ author=`svnlook author -r "$REV" "$REPOS"`
    svnlook log -r "$REV" "$REPOS" | head -n $log_message_lines
 ) | $sendmail_command
 
+### The End ###
