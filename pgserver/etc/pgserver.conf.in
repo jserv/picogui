@@ -7,5 +7,8 @@ cursorhide = 10
 backlightoff = 300
 sleep = 1800
 
+[sound]
+keyclick = 1
+
 . /var/pgserver.dynconf
 #end
