@@ -33,6 +33,7 @@ EXTRA_libwidget_a_SOURCES = \
     textbox_document.c \
     textbox_paragraph.c \
     pgstr_textbuffers.c \
+    field.c \
     panel.c
 
 libwidget_a_LIBADD       = $(WIDGET:%.c=%.o)

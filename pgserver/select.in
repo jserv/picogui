@@ -29,10 +29,11 @@ add_if_true  canvas.c              $CONFIG_WIDGET_CANVAS
 add_if_true  panel_nobar.c         $CONFIG_NOPANELBAR
 add_if_false panel.c               $CONFIG_NOPANELBAR
 add_if_false panelbar.c            $CONFIG_NOPANELBAR
-add_if_true textbox_frontend.c     $CONFIG_WIDGET_TEXTBOX
-add_if_true textbox_document.c     $CONFIG_WIDGET_TEXTBOX
-add_if_true textbox_paragraph.c    $CONFIG_WIDGET_TEXTBOX
-add_if_true pgstr_textbuffers.c    $CONFIG_WIDGET_TEXTBOX
+add_if_true  textbox_frontend.c    $CONFIG_WIDGET_TEXTBOX
+add_if_true  textbox_document.c    $CONFIG_WIDGET_TEXTBOX
+add_if_true  textbox_paragraph.c   $CONFIG_WIDGET_TEXTBOX
+add_if_true  pgstr_textbuffers.c   $CONFIG_WIDGET_TEXTBOX
+add_if_true  field.c               $CONFIG_WIDGET_TEXTBOX
 
 close_section
 

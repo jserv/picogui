@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.5 2002/09/25 15:26:08 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.6 2002/09/27 02:59:27 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -49,6 +49,7 @@ struct textboxdata {
 
   unsigned int focus : 1;
   unsigned int flash_on : 1;
+  unsigned int multiline : 1;
 };
 #define DATA WIDGET_DATA(0,textboxdata)
 
@@ -58,6 +59,9 @@ struct textboxdata {
 /* Get a pgstring for the current text format */
 g_error textbox_getformat(struct widget *self, struct pgstring **fmt);
 
+/* Find keys to ignore */
+int textbox_ignorekey(struct widget *self, int key);
+
 /********************************************** standard widget functions */
 
 /* Set up divnodes */
@@ -65,6 +69,7 @@ g_error textbox_install(struct widget *self) {
   g_error e;
 
   WIDGET_ALLOC_DATA(0,textboxdata)
+  DATA->multiline = 1;
 
   e = newdiv(&self->in,self);
   errorcheck;
@@ -107,6 +112,9 @@ g_error textbox_set(struct widget *self,int property, glob data) {
 
   switch (property) {
 
+  case PG_WP_MULTILINE:
+    DATA->multiline = data;
+
   case PG_WP_TEXTFORMAT:
     DATA->textformat = data;
     break;
@@ -132,6 +140,9 @@ glob textbox_get(struct widget *self,int property) {
   struct pgstring *fmt;
 
   switch (property) {
+
+  case PG_WP_MULTILINE:
+    return DATA->multiline;
 
   case PG_WP_TEXTFORMAT:
     return DATA->textformat;
@@ -208,11 +219,17 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
     break;
 
   case PG_TRIGGER_KEYUP:
+    if (textbox_ignorekey(self,param->kbd.key))
+      return;
+
     if (param->kbd.flags & PG_KF_FOCUSED)
       param->kbd.consume++;
     return;   /* Skip update */
 
   case PG_TRIGGER_KEYDOWN:
+    if (textbox_ignorekey(self,param->kbd.key))
+      return;
+
     if (param->kbd.flags & PG_KF_FOCUSED) {
       param->kbd.consume++;
       switch (param->kbd.key) {
@@ -247,6 +264,9 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
     break;
 
   case PG_TRIGGER_CHAR:
+    if (textbox_ignorekey(self,param->kbd.key))
+      return;
+
     if (param->kbd.flags & PG_KF_FOCUSED) {
       param->kbd.consume++;
       if (param->kbd.key == PGKEY_BACKSPACE) {
@@ -256,6 +276,9 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
       }
       else if (param->kbd.key == PGKEY_DELETE) {
 	document_delete_char(DATA->doc);
+      }
+      else if (param->kbd.key == PGKEY_RETURN && !DATA->multiline) {
+	post_event(PG_WE_ACTIVATE,self,0,0,NULL);
       }
       else {
 	document_insert_char(DATA->doc, param->kbd.key, NULL);
@@ -293,6 +316,21 @@ g_error textbox_getformat(struct widget *self, struct pgstring **fmt) {
   if (iserror(rdhandle((void**)fmt,PG_TYPE_PGSTRING,-1,h)))
     return mkerror(PG_ERRT_BADPARAM, 61);  /* Bad textformat handle */
   return success;
+}
+
+/* Find keys to ignore */
+int textbox_ignorekey(struct widget *self, int key) {
+  /* Ignore some keys in single-line mode: */
+  if (!DATA->multiline)
+    switch (key) {
+    case PGKEY_TAB:
+    case PGKEY_UP:
+    case PGKEY_DOWN:
+    case PGKEY_ESCAPE:
+      return 1;
+    }
+
+  return 0;
 }
 
 /* The End */

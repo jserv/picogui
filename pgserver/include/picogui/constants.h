@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.151 2002/09/25 15:26:07 micahjd Exp $
+/* $Id: constants.h,v 1.152 2002/09/27 02:59:27 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -941,6 +941,7 @@ typedef unsigned long pghandle;
 #define PG_WP_HEIGHT          54  /* A read only property for all widgets (use PG_WP_SIZE to change the size). Always in pixels */
 #define PG_WP_SPACING         55  /* Override the normal spacing between buttons */
 #define PG_WP_MINIMUM         56  /* Used by the panelbar widget to set minimum size */
+#define PG_WP_MULTILINE       57  /* Turn this off on the textbox widget to get a single line textbox */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0
