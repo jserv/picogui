@@ -1,4 +1,4 @@
-/* $Id: hotspot.c,v 1.17 2002/01/16 19:47:25 lonetech Exp $
+/* $Id: hotspot.c,v 1.18 2002/01/28 08:33:20 micahjd Exp $
  *
  * hotspot.c - This is an interface for managing hotspots.
  *             The divtree is scanned for hotspot divnodes.
@@ -46,6 +46,15 @@ struct hotspot *hotspotlist;
  * Returns nonzero if a > b
  */
 int hotspot_compare(struct hotspot *a, struct hotspot *b) {
+  /* If the two hotspots are in different containers, 
+   * give the containers priority
+   */
+  if (a->div && a->div->owner && a->div->owner->container &&
+      b->div && b->div->owner && b->div->owner->container &&
+      a->div->owner->container != b->div->owner->container) {
+    return 0;
+  }
+
   if (a->y == b->y) {
     if (a->x > b->x)
       return 1;

@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.71 2002/01/21 08:17:28 micahjd Exp $
+/* $Id: div.c,v 1.72 2002/01/28 08:33:20 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -376,7 +376,7 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
    if (!n)
      return 0;
 
-   if (n->flags & DIVNODE_NEED_RECALC) {
+   if ( (n->flags & DIVNODE_NEED_RECALC) && !(n->flags & DIVNODE_UNDERCONSTRUCTION) ) {
      
      /* Split the rectangle */
      divnode_split(n,&divrect,&nextrect);
