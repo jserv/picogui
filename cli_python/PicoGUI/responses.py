@@ -133,6 +133,10 @@ def get(connection):
 	id, obj = handler(response)
 	if hasattr(obj, 'additional_data_wanted'):
 		obj.setData(safe_read(obj.additional_data_wanted))
+	try:
+		connection.last_id = id
+	except:
+		pass
 	return id, obj
 
 def next(connection):
