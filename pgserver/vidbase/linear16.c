@@ -1,11 +1,7 @@
-/* $Id: linear16.c,v 1.10 2002/02/03 18:50:23 micahjd Exp $
+/* $Id: linear16.c,v 1.11 2002/02/04 23:11:45 micahjd Exp $
  *
  * Video Base Library:
- * linear16.c - For 16bpp linear framebuffers (5-6-5 RGB mapping)
- *
- * BIG FAT WARNING:
- * This is just a stub that only implements pixel() getpixel() and the color
- * conversions. A fast linear16 is on the way, but this will substitute for now.
+ * linear16.c - For 16bpp linear framebuffers
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -170,7 +166,7 @@ void linear16_blit(hwrbitmap dest,
    * on a tile boundary, instead of tiling a bitmap section */
 #define TILEBLITLOOP                                                      \
    while (h) {                                                            \
-      for (;sh && h;sh--,h--,src_line+=srcbit->pitch,dst+=offset_dst) {   \
+      for (;sh && h;sh--,h--,src_line+=(srcbit->pitch>>1),dst+=offset_dst) { \
 	 src = src_line + src_x;                                          \
 	 swm = (swp < w) ? swp : w;                                       \
 	 for (dw=w;dw;) {                                                 \
