@@ -1,4 +1,4 @@
-/* $Id: demo.c,v 1.9 2000/09/23 01:03:02 micahjd Exp $
+/* $Id: demo.c,v 1.10 2000/09/23 05:53:20 micahjd Exp $
  *
  * demo.c -   source file for testing PicoGUI
  *
@@ -28,6 +28,28 @@
 
 #include <picogui.h>
 
+/*** Widget variables */
+
+pghandle wLabel,wIndicator;
+
+/*** Event handlers */
+
+void btnHello(short event,pghandle from,long param) {
+  static int i=0;
+
+  pgReplaceTextFmt(wLabel,"Hello World\n#%d",++i);
+  pgSetWidget(wIndicator,PG_WP_VALUE,i,0);
+  pgUpdate();
+}
+
+void myDebugEvtHandler(short event,pghandle from,long param) {
+  printf("Received event in myDebugEvtHandler: "
+	 "#%d from 0x%08X, param = 0x%08X\n",
+	 event,from,param);
+}
+
+/*** Main program */
+
 int main(int argc, char *argv[])
 {
   pghandle wToolbar,wBox,wText;
@@ -36,8 +58,8 @@ int main(int argc, char *argv[])
 
   /**** Register our application */
 
-  pgRegisterApp(PG_APP_NORMAL,"foo",
-		PG_APPSPEC_WIDTH,100,
+  pgRegisterApp(PG_APP_NORMAL,"app-foo!",
+		PG_APPSPEC_WIDTH,200,
 		PG_APPSPEC_SIDE,PG_S_LEFT,0);
 
   /**** First level of widgets */
@@ -49,6 +71,32 @@ int main(int argc, char *argv[])
   pgSetWidget(0,
 	      PG_WP_SIZE,100,
 	      PG_WP_BORDERCOLOR,0x000000,
+	      0);
+
+  /* Make a nifty little click meter */
+  wIndicator = pgNewWidget(PG_WIDGET_INDICATOR,0,0);
+  pgSetWidget(0,
+	      PG_WP_SIDE,PG_S_LEFT,
+	      0);
+  pgNewWidget(PG_WIDGET_LABEL,0,0);
+  pgSetWidget(0,
+	      PG_WP_SIDE,PG_S_TOP,    /* Place the widget at the top of the remaining space */
+	      PG_WP_ALIGN,PG_A_LEFT,  /* Put the text at the left side of the widget */
+	      PG_WP_TEXT,pgNewString("100 clicks"),
+	      0);
+  pgNewWidget(PG_WIDGET_LABEL,0,0);
+  pgSetWidget(0,
+	      PG_WP_SIDE,PG_S_BOTTOM,
+	      PG_WP_ALIGN,PG_A_LEFT,
+	      PG_WP_TEXT,pgNewString("0 clicks"),
+	      0);
+  
+  /* Label widget to put text in later */
+  wLabel = pgNewWidget(PG_WIDGET_LABEL,0,0);
+  pgSetWidget(0,
+	      PG_WP_TEXT,pgNewString("Foo..."),
+	      PG_WP_FONT,pgNewFont("Utopia",0,0),
+	      PG_WP_SIDE,PG_S_ALL,    /* Expand to remaining space */
 	      0);
 
   /**** Widgets inside the toolbar */
@@ -66,10 +114,13 @@ int main(int argc, char *argv[])
 	      0);
 
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
-  pgSetWidget(0,
+  pgSetWidget(PGDEFAULT,             /* PGDEFAULT is the same as
+					using 0 here (see client_c.h) */
 	      PG_WP_ALIGN,PG_A_LEFT,
 	      PG_WP_TEXT,pgNewString("Hello, World!"),
 	      0);
+  /* this button gets an event handler */
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnHello);
 
   /**** Text inside the box */
   
@@ -93,6 +144,10 @@ int main(int argc, char *argv[])
   pgSetWidget(0,
 	      PG_WP_BIND,wText,
 	      0);
+
+  /**** Add a handler that catches everything and prints it */
+
+  pgBind(PGBIND_ANY,PGBIND_ANY,&myDebugEvtHandler);
 
   /**** Run it! ****/
   pgEventLoop();

@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.8 2000/09/23 01:51:31 micahjd Exp $
+/* $Id: client_c.h,v 1.9 2000/09/23 05:53:20 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -28,10 +28,22 @@
 #ifndef _H_PG_CLI_C
 #define _H_PG_CLI_C
 
-/******************** Client-specific constants */
+/******************** Client-specific constants and data types */
 
 /* A wildcard value for pgBind */
 #define PGBIND_ANY      -1
+
+/* A wildcard value for pgNewFont */
+#define PGFONT_ANY      0
+
+/* A more verbose way of using the default widget or rship (widget
+   relationship) in PicoGUI function calls. Just using 0 is
+   perfectly acceptable, but this can make your code easier to
+   read. */
+#define PGDEFAULT       0
+
+/* event handler used in pgBind */
+typedef void (*pgevthandler)(short event,pghandle from,long param);
 
 /******************** Administration */
 
@@ -75,6 +87,16 @@ void pgFlushRequests(void);
  */
 void pgUpdate(void);
 
+/* Attatch an event handler to a widget and/or event. A NULL
+ * widget uses the default, as usual. Either the handle or the
+ * event (or both!) can be the wildcard PGBIND_ANY to match all
+ * handles/events. If a handler with these properties already
+ * exists, it is not removed. If the widget a handler refers to
+ * is deleted, the handler is deleted however.
+ */
+void pgBind(pghandle widgetkey,unsigned short eventkey,
+	    pgevthandler handler);
+
 /******************** Objects */
 
 /* Delete any object that has a handle */
@@ -115,19 +137,31 @@ pghandle pgNewPopupAt(int x,int y,int width,int height);
  */
 void pgSetWidget(pghandle widget, ...);
 
-/* Attatch an event handler to a widget and/or event. A NULL
- * widget uses the default, as usual. Either the handle or the
- * event (or both!) can be the wildcard PGBIND_ANY to match all
- * handles/events. If a handler with these properties already
- * exists, it is not removed. If the widget a handler refers to
- * is deleted, the handler is deleted however.
- */
-void pgBind(pghandle widgetkey,unsigned short eventkey,
-	    void (*handler)(unsigned short event,pghandle from,
-			    unsigned long param));
+/* Return a widget property. */
+long pgGetWidget(pghandle widget,short property);
 
 /* Create a new string object */
 pghandle pgNewString(const char *str);
+
+/* Deletes the widget's previous text, and
+ * sets the widget's text to a newly allocated
+ * string object.
+ *
+ * This is the preferred way of setting or
+ * changing the text of a button, label, or other
+ * widget that takes a PG_WP_TEXT property.
+ */
+void pgReplaceText(pghandle widget,const char *str);
+
+/* Like pgReplaceText, but supports printf-style
+ * text formatting */
+void pgReplaceTextFmt(pghandle widget,const char *fmt, ...);
+
+/* Create a new font object based on the given
+   parameters. Any of them can be 0 (or PGFONT_ANY)
+   to ignore that parameter.
+*/
+pghandle pgNewFont(const char *name,short size,unsigned long style);
 
 /******************** Program flow */
 

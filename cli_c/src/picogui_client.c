@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.8 2000/09/22 18:04:28 pney Exp $
+/* $Id: picogui_client.c,v 1.9 2000/09/23 05:53:20 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -34,14 +34,14 @@
 #include <netdb.h>
 #include <stdio.h>    /* for fprintf() */
 #include <malloc.h>
-#include <string.h>   /* for memcpy() */
+#include <string.h>   /* for memcpy(), memset(), strcpy() */
 #include <stdarg.h>   /* needed for pgRegisterApp and pgSetWidget */
 
 /* PicoGUI */
 #include <picogui.h>            /* Basic PicoGUI include */
 #include <picogui/network.h>    /* Network interface to the server */
 
-#define DEBUG
+//#define DEBUG
 
 /* Default server */
 #define PG_REQUEST_SERVER       "localhost"
@@ -53,17 +53,26 @@
  */
 #define PG_REQBUFSIZE           512
 
+/* A node in the list of event handlers set with pgBind */
+struct _pghandlernode {
+  pghandle widgetkey;
+  short eventkey;
+  pgevthandler handler;
+  struct _pghandlernode *next;
+};  
+
 /* Global vars for the client lib */
 int _pgsockfd;                  /* Socket fd to the pgserver */
 short _pgrequestid;             /* Request ID to detect errors */
 short _pgdefault_rship;         /* Default relationship and widget */
-short _pgdefault_widget;        /*    when 0 is used */
+pghandle _pgdefault_widget;        /*    when 0 is used */
 unsigned char _pgeventloop_on;  /* Boolean - is event loop running? */
 unsigned char _pgreqbuffer[PG_REQBUFSIZE];  /* Buffer of request packets */
 short _pgreqbuffer_size;        /* # of bytes in reqbuffer */
 short _pgreqbuffer_count;       /* # of packets in reqbuffer */
 void (*_pgerrhandler)(unsigned short errortype,const char *msg);
                                 /* Error handler */
+struct _pghandlernode *_pghandlerlist;  /* List of pgBind event handlers */
 
 /* Structure for a retrieved and validated response code,
    the data collected by _pg_flushpackets is stored here. */
@@ -92,20 +101,6 @@ struct {
   } e;  /* e for extra? ;-) */
 } _pg_return;
 
-/* Structure to define a singly linked list for Bind entries. */
-struct pgbindlist {
-  pghandle widgetkey;        /* Store the widget handel */
-  unsigned short eventkey;   /* Store the event */
-  unsigned long *fctkey;     /* Store the pointer to the associated function */
-  struct pgbindlist *next;   /* Pointer to the next widget/event pair */
-};
-
-/* Variable to old the first Bind entrie of the list
- * Used in 'pgEventLoop()' to look for matching widget/event pair. (TODO...)
- */
-struct pgbindlist *top;
-    
-
 #define clienterr(msg)        (*_pgerrhandler)(PG_ERRT_CLIENT,msg)
 
 /**** Internal functions */
@@ -127,6 +122,9 @@ void _pg_add_request(short reqtype,void *data,unsigned long datasize);
  * (handling errors if necessary)
  */
 void _pg_getresponse(void);
+
+/* atexit() handler */
+void _pg_cleanup(void);
 
 /******************* Internal functions */
 
@@ -307,14 +305,36 @@ void _pg_getresponse(void) {
       clienterr("Unexpected response type");
   }
   
+#ifdef DEBUG
   if(rsp_id && (rsp_id != _pgrequestid)) {
     /* ID mismatch. This shouldn't happen, but if it does it's probably
-       not serious. Maybe turn this on with a DEBUG flag?
+       not serious.
     */
     printf("PicoGUI - incorrect packet ID (%i -> %i)\n",_pgrequestid,rsp_id);
   }
+#endif
 }
 
+/* Free memory, etc. */
+void _pg_cleanup(void) {
+  struct _pghandlernode *n,*condemn;
+
+  /* This also has the effect of freeing its data memory.
+   * Call twice in case the first call returned a DATA packet.
+   * (the second call does nothing but free memory) */
+  pgFlushRequests();
+  pgFlushRequests();
+
+  close(_pgsockfd);
+
+  /* Delete the handler list */
+  n = _pghandlerlist;
+  while (n) {
+    condemn = n;
+    n = n->next;
+    free(condemn);
+  }
+}
 
 /******************* API functions */
 
@@ -331,6 +351,9 @@ void pgInit(int argc, char **argv)
 
   /* Set default error handler */
   pgSetErrorHandler(&_pg_defaulterr);
+
+  /* atexit() handler */
+  atexit(&_pg_cleanup);
 
   /* Should use a getopt-based system here to process various args, leaving
      the extras for the client app to process. But this is ok temporarily.
@@ -455,6 +478,10 @@ void pgFlushRequests(void) {
    bound to.
 */
 void pgEventLoop(void) {
+  struct _pghandlernode *n;
+  short event;
+  pghandle from;
+  long param;
 
   _pgeventloop_on = 1;
 
@@ -466,22 +493,55 @@ void pgEventLoop(void) {
     _pg_add_request(PGREQ_WAIT,NULL,0);
     pgFlushRequests();
     
-    /* look in the linked list of Bind entries to see if a function is
-     * attached to the incomming event
-     * TODO....
-     */
+    /* Save the event (a handler might call pgFlushRequests and overwrite it) */
+    event = _pg_return.e.event.event;
+    from = _pg_return.e.event.from;
+    param = _pg_return.e.event.param;
 
-printf("-------------------------------> We got the EVENT: %i\n", _pg_return.e.event.event);
-printf("                                  From the WIDGET: %i\n", _pg_return.e.event.from);
-
-
-
-    /* FIXME: see the information on pgBind in client_c.h
-     *   The event loop should look in a linked list of Bind entries
-     *   and call any functions that match.
-     */
+    /* Search the handler list, executing the applicable ones */
+    n = _pghandlerlist;
+    while (n) {
+      if ( (((signed long)n->widgetkey)==PGBIND_ANY || n->widgetkey==from) &&
+	   (((signed short)n->eventkey)==PGBIND_ANY || n->eventkey==event) )
+	(*n->handler)(event,from,param);
+      n = n->next;
+    }
   }
 
+}
+
+/* Add the specified handler to the list */
+void pgBind(pghandle widgetkey,unsigned short eventkey,
+	    pgevthandler handler) {
+  struct _pghandlernode *n;
+
+  /* Default widget? */
+  if (!widgetkey) 
+    widgetkey = _pgdefault_widget;
+
+  /* Make sure this _exact_ node doesn't already exist */
+  n = _pghandlerlist;
+  while (n) {
+    if (n->widgetkey==widgetkey &&
+	n->eventkey==eventkey &&
+	n->handler==handler)
+      return;
+    n = n->next;
+  }
+
+  /* Allocate a new hander node */
+  if (!(n = _pg_malloc(sizeof(struct _pghandlernode))))
+    return;
+  
+  n->widgetkey = widgetkey;
+  n->eventkey = eventkey;
+  n->handler = handler;
+
+  /* Add it at the beginning of the list (order doesn't
+   * matter, and this is faster and smaller */
+
+  n->next = _pghandlerlist;
+  _pghandlerlist = n;
 }
 
 /******* The simple functions that don't need args or return values */
@@ -504,11 +564,29 @@ void pgLeaveContext(void) {
 
 void pgDelete(pghandle object) {
   struct pgreqd_handlestruct arg;
+  struct _pghandlernode *n,*condemn = NULL;
+  
+  /* Ignore if the object is 0 */
+  if (!object) return;
+
   arg.h = htonl(object);
   _pg_add_request(PGREQ_FREE,&arg,sizeof(arg));
 
-  /* FIXME: Look for this deleted object in the list of event
-     handlers. Free it to prevent memory leaks. */
+  /* Delete handlers that rely on this widget */
+  if (_pghandlerlist->widgetkey == object) {
+    condemn = _pghandlerlist;
+    _pghandlerlist = condemn->next;
+    free(condemn);
+  }
+  n = _pghandlerlist;
+  while (n->next) {
+    if (n->next->widgetkey == object) {
+      condemn = n->next;
+      n->next = condemn->next;
+      free(condemn);
+    }
+    n = n->next;
+  }
 }
 
 /* Register application. The type and name are required.
@@ -562,55 +640,22 @@ pghandle pgRegisterApp(short int type,const char *name, ...) {
   return _pg_return.e.retdata;
 }
 
-struct pgbindlist *pgBindAdd(struct pgbindlist *bind) {
-  static struct pgbindlist *last = NULL;       /* start with null link */
-  short int ret = 0;
-  
-  if(!last) {
-    last = bind;                       /* first pair in the list.    */
-    ret = 1;                           /* Then return the pointer to */
-  }                                    /* the first item.            */
-  else last->next = bind;              
-  bind->next = NULL;
-  last = bind;
-  if(ret) return last;
-  return NULL;
-}
-
-
 void  pgSetWidget(pghandle widget, ...) {
   va_list v;
   struct pgreqd_set arg;
   short *spec;
   int numspecs,i;
-  struct pgbindlist *new;
 
   /* Set defaults values */
   arg.widget = htonl(widget ? widget : _pgdefault_widget);
   arg.dummy = 0;
 
-  for(va_start(v,widget);i;) {
+  for(va_start(v,widget);i;){
     i = va_arg(v,short);
-    if(i) {
-      if(i > PG_WPMAX) {                          /* the properties is an event */
-        new = malloc(sizeof(struct pgbindlist));  /* allocate memory to save it */
-	new->widgetkey = widget;
-	new->eventkey = i;
-	new->fctkey = va_arg(v,long);
-	new->next = NULL;
-	pgBindAdd(new);
-	
-	/* FIXME: retrieve the address of the first item of the list */
-	
-printf("-------------------------------> Insert: WIDGET: %i\n",widget);
-printf("                                          EVENT: %i\n",i);
-printf("                               FUNCTION ADDRESS: %i\n",new->fctkey);
-      }
-      else {
-        arg.property = htons(i);
-        arg.glob = htonl(va_arg(v,long));
-        _pg_add_request(PGREQ_SET,&arg,sizeof(arg));
-      }
+    if(i){
+      arg.property = htons(i);
+      arg.glob = htonl(va_arg(v,long));
+      _pg_add_request(PGREQ_SET,&arg,sizeof(arg));
     }
   }
   va_end(v);
@@ -661,6 +706,22 @@ pghandle pgNewPopupAt(int x,int y,int width,int height) {
   return _pg_return.e.retdata;
 }
 
+pghandle pgNewFont(const char *name,short size,unsigned long style) {
+  struct pgreqd_mkfont arg;
+  memset(&arg,0,sizeof(arg));
+
+  strcpy(arg.name,name);
+  arg.style = style;
+  arg.size = size;
+  _pg_add_request(PGREQ_MKFONT,&arg,sizeof(arg));
+
+  /* Because we need a result now, flush the buffer */
+  pgFlushRequests();
+
+  /* Return the new handle */
+  return _pg_return.e.retdata;
+}
+
 pghandle pgNewPopup(int width,int height) {
   /* Tell the server to center it */
   return pgNewPopupAt(-1,-1,width,height);
@@ -681,5 +742,70 @@ pghandle pgNewString(const char* str) {
   return _pg_return.e.retdata;
 }
 
+long pgGetWidget(pghandle widget,short property) {
+  struct pgreqd_get arg;
+  arg.widget = htonl(widget ? widget : _pgdefault_widget);
+  arg.property = htons(property);
+  arg.dummy = 0;
+  _pg_add_request(PGREQ_GET,&arg,sizeof(arg));
+
+  /* Because we need a result now, flush the buffer */
+  pgFlushRequests();
+
+  /* Return the property */
+  return _pg_return.e.retdata;
+}
+
+/* Get and delete the previous text, and set the
+   text to a new string made with the given text */
+void pgReplaceText(pghandle widget,const char *str) {
+  pghandle oldtext;
+
+  if (!widget) widget = _pgdefault_widget;
+
+  oldtext = pgGetWidget(widget,PG_WP_TEXT);
+  pgSetWidget(widget,PG_WP_TEXT,pgNewString(str),0);
+  pgDelete(oldtext);
+}
+
+/* Like pgReplaceText, but supports printf-style
+ * text formatting */
+void pgReplaceTextFmt(pghandle widget,const char *fmt, ...) {
+  /* This is adapted from the example code
+     in Linux's printf manpage */
+
+  /* Guess we need no more than 100 bytes. */
+  int n, size = 100;
+  char *p;
+  va_list ap;
+  if (!(p = _pg_malloc(size)))
+    return;
+  while (1) {
+    /* Try to print in the allocated space. */
+    va_start(ap, fmt);
+    n = vsnprintf (p, size, fmt, ap);
+    va_end(ap);
+    /* If that worked, return the string. */
+    if (n > -1 && n < size)
+      break;
+    /* Else try again with more space. */
+    if (n > -1)    /* glibc 2.1 */
+      size = n+1; /* precisely what is needed */
+    else           /* glibc 2.0 */
+      size *= 2;  /* twice the old size */
+
+    free(p);     /* Don't depend on realloc here.
+		    In ucLinux, realloc is not available
+		    so it is implemented by allocating
+		    a new buffer and copying the data.
+		    We don't need the old data so this
+		    is more efficient. */    
+    if (!(p = _pg_malloc(size)))
+      return;
+  }
+
+  pgReplaceText(widget,p);
+  free(p);
+}
 
 /* The End */
