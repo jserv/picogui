@@ -19,7 +19,8 @@ runtime = [
 
 def prepare (module, platform, project):
     command = [
-        "../configure --prefix=/",
+        "../configure",
+        "--prefix=%s" % module.path ['prefix'],
         "--enable-bee",
         "--enable-unix-sockets ",
         "--with-pgserver=%s" % project ['module/picoguiserver'].path ['dfl']
