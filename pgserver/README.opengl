@@ -18,19 +18,26 @@ Required PicoGUI components:
 In addition, you will need some TrueType fonts installed. By default it
 will search for them in /usr/share/fonts. 
 
+If you're interested in embedding pgserver within a game, take a look at the
+demo and info in apps/libpgtest.
+
 WARNING: By default it will try to load all fonts it finds in /usr/share/fonts.
          Since the ftgl driver doesn't load on demand, it will try to stick
          them all in your card's video memory at initialization. When in doubt,
          point this at the picogui recommended font distribution.
 
+--- Config options
+
 An example command line for testing the sdlgl driver:
 
-  ./pgserver -v sdlgl --font_engine=ftgl --font-ftgl.path=../fonts
+  ./pgserver -v sdlgl --font_engine=ftgl --font-ftgl.path=../fonts --dragsolid
 
 For more information on the supported options, see README.configfile.
 Also, it's possible to use OpenGL commands inside themes. Take a look
 at the gl_cube theme for an example. Note that for OpenGL themes to compile,
 you need to configure themetools with ./configure --enable-opengl.
+
+--- Magic keys
 
 The sdlgl driver supports several config file options, documented in
 the README.configfile. It also adds several keyboard commands you can
