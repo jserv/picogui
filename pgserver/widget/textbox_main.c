@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.23 2002/01/06 09:23:00 micahjd Exp $
+/* $Id: textbox_main.c,v 1.24 2002/01/08 12:25:06 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -145,6 +145,10 @@ g_error textbox_set(struct widget *self,int property, glob data) {
     /* If we're autoscrolling, scroll to the new cursor position */
     if (DATA->autoscroll && DATA->c.c_line) 
       scroll_to_divnode(DATA->c.c_line);
+
+    /* FIXME: For editing we'll want to draw only the new text */
+    self->in->div->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+    self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
   case PG_WP_AUTOSCROLL:

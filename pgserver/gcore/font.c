@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.44 2002/01/06 09:22:57 micahjd Exp $
+/* $Id: font.c,v 1.45 2002/01/08 12:25:06 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -296,13 +296,6 @@ void sizetext(struct fontdesc *fd, s16 *w, s16 *h, char *txt) {
   char *original_txt = txt;
 
   if (!(fd && txt && w && h)) return;
-
-  /* No text, no size */
-  if (!*txt) {
-    *w = 0;
-    *h = 0;
-    return;
-  }
 
   *w = fd->margin << 1;
   *h = (*w) + fd->font->h + fd->interline_space;
