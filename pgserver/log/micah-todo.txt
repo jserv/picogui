@@ -11,19 +11,19 @@ pgl (PicoGui Launcher)
 
 ucLinux/m68k port
 
-Portable development hardware
-
 Port WabaVM and to PicoGUI, write wrapper classes
 
 speedup options: pointers vs handles. etc
 
 -- development
 
-A good configuration system a la 'make menuconfig'
-
 demo disk
 
+help for menuconfig
+
 -- graphics
+
+Test mode for video subsystem
 
 gropnode coordinate systems
 
@@ -53,7 +53,7 @@ abstract comm interface: TCP/IP, unix sockets, SHM, signals...
 text layout engine
 
 DOCUMENTATION!
-
+    (ESPECIALLY CLIENT LIB!)
 
 
 PicoGUI Bugs
@@ -63,3 +63,4 @@ ucLinux memory bugs (possible same root cause as htree problems?)
 
 panel bar dragging leaves extra sprites behind sometimes
 
+Tiled blits are messed up in most drivers?

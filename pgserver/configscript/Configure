@@ -81,7 +81,7 @@ function endmenu () {
 #       help variable
 #
 function help () {
-  if [ -f Documentation/Configure.help ]
+  if [ -f config.help ]
   then
      #first escape regexp special characters in the argument:
      var=$(echo "$1"|sed 's/[][\/.^$*]/\\&/g')
@@ -93,7 +93,7 @@ ${var}:\\
 			/^#/b
 			/^[^ 	]/q
 			p
-		    }" Documentation/Configure.help)
+		    }" config.help)
      if [ -z "$text" ]
      then
 	  echo; echo "  Sorry, no help available for this option yet.";echo
@@ -102,7 +102,7 @@ ${var}:\\
      fi
   else
      echo;
-     echo "  Can't access the file Documentation/Configure.help which"
+     echo "  Can't access the file config.help which"
      echo "  should contain the help texts."
      echo
   fi

@@ -1,3 +1,15 @@
+---- Wednesday, February 14
+
+Brandon informed me that pgBind is crufty, and so I add support for
+rebinding and unbinding things and it now works just as client_c.h says it
+will.
+
+I need to write some real docs, especially for the client lib...
+
+To fix tiled blits (and for a nice background) I put together a simple
+background theme using the nifty tile from Propaganda
++ themetools/examples/bg_graywaves.ths
+
 ---- Tuesday, February 13
 
 There's something wrong with the tile blits... (in all video drivers?)
@@ -5,6 +17,8 @@ There's something wrong with the tile blits... (in all video drivers?)
 Anyway, wrote a remote input driver (mouse only) for gpm
 + apps/pgremote/gpmremote.c
 
+Replaced the Makefile.cfg system with a nifty one using Menuconfig (from
+Linux)
 
 ---- Monday, February 12
 
