@@ -149,5 +149,6 @@
       <version name="0.45">
         <a href="picogui-0.45.tar.gz"><site name="picogui-releases"/></a>
       </version>
+    </package>
   </packages>
 </pgbuild>
