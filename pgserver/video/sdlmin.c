@@ -1,4 +1,4 @@
-/* $Id: sdlmin.c,v 1.3 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: sdlmin.c,v 1.4 2000/09/03 23:40:59 micahjd Exp $
  *
  * sdlmin.c - video driver wrapper for SDL.
  *            this 'min' version defines only the
@@ -34,6 +34,8 @@
  * 
  * 
  */
+
+#ifdef DRIVER_SDLMIN
 
 #include <pgserver/video.h>
 #include <SDL.h>
@@ -271,4 +273,5 @@ g_error sdlmin_regfunc(struct vidlib *v) {
   return sucess;
 }
 
+#endif /* DRIVER_SDLMIN */
 /* The End */

@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: fontdef.pl,v 1.2 2000/04/24 02:38:36 micahjd Exp $
+# $Id: fontdef.pl,v 1.3 2000/09/03 23:40:59 micahjd Exp $
 #
 # This reads in .fi files, and creates the static linked list
 # of font styles.  It also uses cnvfont to load the .fdf files
@@ -27,7 +27,7 @@
 #
 #
 
-print "#include <font.h>\n\n";
+print "#include <pgserver/font.h>\n#define NULL 0\n\n";
 
 foreach $file (@ARGV) {
     open FIFILE,$file or die $!;

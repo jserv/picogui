@@ -1,4 +1,4 @@
-/* $Id: svga.c,v 1.6 2000/09/03 21:44:02 micahjd Exp $
+/* $Id: svga.c,v 1.7 2000/09/03 23:40:59 micahjd Exp $
  *
  * svga.c - video driver for (S)VGA cards, via vgagl and svgalib
  *
@@ -24,6 +24,8 @@
  * 
  * 
  */
+
+#ifdef DRIVER_SVGA
 
 #include <pgserver/video.h>
 #include <pgserver/input.h>
@@ -264,4 +266,5 @@ g_error svga_regfunc(struct vidlib *v) {
   return sucess;
 }
 
+#endif /* DRIVER_SVGA */
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: svgainput.c,v 1.1 2000/09/03 21:44:02 micahjd Exp $
+/* $Id: svgainput.c,v 1.2 2000/09/03 23:40:59 micahjd Exp $
  *
  * svgainput.h - input driver for SVGAlib
  *
@@ -24,6 +24,8 @@
  * 
  * 
  */
+
+#ifdef DRIVER_SVGAINPUT
 
 #include <pgserver/input.h>
 #include <pgserver/widget.h>
@@ -63,4 +65,5 @@ g_error svgainput_regfunc(struct inlib *i) {
   return sucess;
 }
 
+#endif /* DRIVER_SVGAINPUT */
 /* The End */

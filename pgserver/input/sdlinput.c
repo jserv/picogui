@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.4 2000/09/03 21:44:02 micahjd Exp $
+/* $Id: sdlinput.c,v 1.5 2000/09/03 23:40:59 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -24,6 +24,8 @@
  * 
  * 
  */
+
+#ifdef DRIVER_SDLINPUT
 
 #include <pgserver/input.h>
 #include <pgserver/widget.h>
@@ -145,4 +147,5 @@ g_error sdlinput_regfunc(struct inlib *i) {
   return sucess;
 }
 
+#endif /* DRIVER_SDLINPUT */
 /* The End */

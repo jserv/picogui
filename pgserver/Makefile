@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.26 2000/09/03 21:44:01 micahjd Exp $
+# $Id: Makefile,v 1.27 2000/09/03 23:38:42 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -23,7 +23,7 @@
 #
 #
 
-######## Add new source and header files for the core in this section
+######## Add new source and header files here
 
 BINNAME = pgserver
 
@@ -34,9 +34,8 @@ SRC := widget/bitmap.c widget/indicator.c widget/label.c \
        widget/panel.c widget/default_theme.c widget/popup.c widget/box.c \
        widget/field.c gcore/timer.c gcore/errortext.c gcore/video.c \
        gcore/input.c gcore/driverinfo.c gcore/pgmain.c net/request.c \
-       net/dispatch.c net/eventq.c \
-       video/svga.c input/svgainput.c
-#       video/sdlmin.c video/sdl.c input/sdlinput.c \
+       net/dispatch.c net/eventq.c video/svga.c input/svgainput.c \
+       video/sdlmin.c video/sdl.c input/sdlinput.c
 
 HDR := include/pgserver/*.h
 
@@ -51,11 +50,11 @@ LDFLAGS :=
 GCC := gcc
 STRIP := strip
 
-######## Load options from .config and add source files for modules
+######## Load options from Makefile.cfg
 
 ### Config parsing
 
-include .config
+include Makefile.cfg
 
 # Target platform
 ifeq ($(strip $(PLATFORM)),windows)
@@ -65,56 +64,24 @@ ifeq ($(strip $(PLATFORM)),windows)
 	LDFLAGS := $(LDFLAGS) -lwsock32
 endif
 
-# Set debugging variables
-ifeq ($(strip $(DEBUG)),tiny)
-	CFLAGS := $(CFLAGS) -DTINY_MESSAGES
-endif
-ifeq ($(strip $(DEBUG)),efence)
-        # ElectricFence debugging
-	LDFLAGS := $(LDFLAGS) -lefence
-	CFLAGS := $(CFLAGS) -DDEBUG # These are helpful
-endif
-ifeq ($(strip $(DEBUG)),gprof)
-        # Profiling with gprof - no debug statements during profiling!
-	CFLAGS := $(CFLAGS) -pg
-	LDFLAGS := $(LDFLAGS) -pg
-endif
-ifeq ($(strip $(DEBUG)),gcov)
-        # Profiling with gcov (debug statements on, why not?)
-	CFLAGS := $(CFLAGS) -DDEBUG -fprofile-arcs -ftest-coverage
-endif
-ifeq ($(strip $(DEBUG)),src)
-        # Only debug statements
-	CFLAGS := $(CFLAGS) -DDEBUG
-endif
+# Extra compiler flags needed by drivers
 
-# Select fonts
-ifeq ($(strip $(FONTSET)),all)
-	FONTS := font/*.fi
-endif
-ifeq ($(strip $(FONTSET)),minimal)
-	FONTS := font/helvetica.fi
-endif
-ifeq ($(strip $(FONTSET)),fixed)
-	FONTS := font/helvetica.fi font/console.fi
-endif
-ifeq ($(strip $(FONTSET)),standard)
-	FONTS := font/helvetica.fi font/console.fi font/times.fi font/tiny.fi
-endif
-
-# Set any necessary flags peculiar to a hardware library
-#ifeq ($(strip $(VIDLIB)),sdl)
-        # Which sdl-config?
+ifneq ($(findstring DRIVER_SDL,$(DRV)),)
+        # Use sdl-config
 	SDLCONFIG := sdl-config
 	ifeq ($(strip $(PLATFORM)),windows)
 		SDLCONFIG := i386-mingw32-sdl-config
 	endif
 
         # Libraries and includes for SDL
-#	CFLAGS := $(CFLAGS) $(shell $(SDLCONFIG) --cflags) 
-#	LDFLAGS := $(LDFLAGS) $(shell $(SDLCONFIG) --libs)
+	CFLAGS := $(CFLAGS) $(shell $(SDLCONFIG) --cflags) 
+	LDFLAGS := $(LDFLAGS) $(shell $(SDLCONFIG) --libs)
+endif
+ifneq ($(findstring DRIVER_SVGA,$(DRV)),)
 	LDFLAGS := $(LDFLAGS) -lvgagl -lvga
+endif
 
+# Generate a list of object files
 OBJ := $(SRC:.c=.o) font/fontdata.o
 
 ### Rules
@@ -124,12 +91,6 @@ all : $(BINNAME)
 clean:
 	rm -f $(BINNAME) *.da *.bb *.bbg debug/* $(OBJ) core 
 
-.config :
-	script/config.pl
-
-config :
-	script/config.pl
-
 $(BINNAME): $(OBJ) $(HDR)
 	$(GCC) -o $(BINNAME) $(OBJ) $(LDFLAGS)
 ifeq ($(strip $(STRIPBIN)),yes)
@@ -138,13 +99,13 @@ endif
 
 # Oodles of scripts to convert the .fdf and .fi files into
 # an object file
-font/fontdata.o : font/*.fdf font/*.fi .config script/fontdef.pl
+font/fontdata.o : font/*.fdf font/*.fi Makefile.cfg script/fontdef.pl
 	script/fontdef.pl $(FONTS) > fonts.tmp.c
 	$(GCC) -o font/fontdata.o fonts.tmp.c $(CFLAGS)
 	rm -f fonts.tmp.c
 
-%.o : %.c $(HDR) .config
-	$(GCC) -o $@ $< $(CFLAGS)
+%.o : %.c $(HDR) Makefile.cfg
+	$(GCC) -o $@ $< $(CFLAGS) $(DRV)
 
 ### The End ###
 

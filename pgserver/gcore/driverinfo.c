@@ -1,4 +1,4 @@
-/* $Id: driverinfo.c,v 1.3 2000/09/03 21:44:02 micahjd Exp $
+/* $Id: driverinfo.c,v 1.4 2000/09/03 23:38:42 micahjd Exp $
  *
  * driverinfo.c - has a static array with information about
  *                installed drivers
@@ -35,9 +35,15 @@
  * and so on...
  */
 struct vidinfo videodrivers[] = {
-  //  {"sdl",&sdl_regfunc},             
+#ifdef DRIVER_SDL
+  {"sdl",&sdl_regfunc},
+#endif
+#ifdef DRIVER_SVGA             
   {"svga",&svga_regfunc},
-  //  {"sdlmin",&sdl_regfunc},
+#endif
+#ifdef DRIVER_SDLMIN
+  {"sdlmin",&sdl_regfunc},
+#endif
 
   /* End */ {NULL,NULL}
 };
@@ -47,8 +53,12 @@ struct vidinfo videodrivers[] = {
  * specified, no input. Order does not matter
  */
 struct inputinfo inputdrivers[] = {
-  //  {"sdlinput",&sdlinput_regfunc},
+#ifdef DRIVER_SDLINPUT
+  {"sdlinput",&sdlinput_regfunc},
+#endif
+#ifdef DRIVER_SVGAINPUT
   {"svgainput",&svgainput_regfunc},
+#endif
 
   /* End */ {NULL,NULL}
 };

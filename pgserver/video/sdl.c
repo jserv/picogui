@@ -1,4 +1,4 @@
-/* $Id: sdl.c,v 1.4 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: sdl.c,v 1.5 2000/09/03 23:40:59 micahjd Exp $
  *
  * sdl.c - video driver wrapper for SDL.
  *
@@ -24,6 +24,8 @@
  * 
  * 
  */
+
+#ifdef DRIVER_SDL
 
 #include <pgserver/video.h>
 #include <pgserver/input.h>
@@ -570,4 +572,5 @@ g_error sdl_regfunc(struct vidlib *v) {
   return sucess;
 }
 
+#endif /* DRIVER_SDL */
 /* The End */
