@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.46 2000/10/29 02:54:19 micahjd Exp $
+/* $Id: widget.c,v 1.47 2000/11/04 04:22:05 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -46,7 +46,7 @@ DEF_STATICWIDGET_TABLE(background)
 
 /* These are needed to determine which widget is under the pointing
    device, keep track of status */
-struct divnode *divmatch;
+struct divnode *div_under_crsr;
 struct widget *under;
 struct widget *prev_under;
 int prev_btn;
@@ -377,14 +377,14 @@ void request_focus(struct widget *self) {
    Recursive. On first call, div should be set
    to dts->top->head
    NULL if nothing found.
-   divmatch should be set to NULL ahead of time, afterwards it is the
+   div_under_crsr should be set to NULL ahead of time, afterwards it is the
    result.
 */
 void widgetunder(int x,int y,struct divnode *div) {
   if (!div) return;
   if (div->x<=x && div->y<=y && (div->x+div->w)>x && (div->y+div->h)>y
       && div->owner && div->build && div->owner->trigger_mask)
-    divmatch = div;
+    div_under_crsr = div;
   widgetunder(x,y,div->next);
   widgetunder(x,y,div->div);
 }
@@ -403,6 +403,7 @@ int send_trigger(struct widget *w, long type,
 void dispatch_pointing(long type,int x,int y,int btn) {
   union trigparam param;
   int i;
+  memset(&param,0,sizeof(param));
 
   param.mouse.x = x;
   param.mouse.y = y;
@@ -458,10 +459,10 @@ void dispatch_pointing(long type,int x,int y,int btn) {
     return;   /* Without a valid tree, pointer events are meaningless */
   }
 
-  divmatch = NULL;
+  div_under_crsr = NULL;
   widgetunder(x,y,dts->top->head);
-  if (divmatch) {
-    under = divmatch->owner;
+  if (div_under_crsr) {
+    under = div_under_crsr->owner;
 
     if ((type == TRIGGER_UP || !btn) && capture && (capture!=under)) {
       send_trigger(capture,TRIGGER_RELEASE,&param);
@@ -527,7 +528,7 @@ void dispatch_key(long type,int key,int mods) {
       guru("GURU MEDITATION #%08X\n\nCongratulations!\n"
 	   "    Either you have read the source code or\n"
 	   "    you have very persistantly banged your\n"
-	   "    head on the keyboard ;-)",divmatch);
+	   "    head on the keyboard ;-)",div_under_crsr);
       return;
 
     case PGKEY_b:           /* CTRL-ALT-b blanks the screen */

@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.4 2000/10/19 01:21:23 micahjd Exp $
+/* $Id: widget.h,v 1.5 2000/11/04 04:22:05 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -75,6 +75,10 @@ union trigparam {
   struct {
     int x,y,btn;  /* Current mouse status */
     int chbtn;    /* Changed buttons */
+
+    /* Relative to a particular divnode */
+    struct divnode *div;
+    int divx,divy;
   } mouse;
   struct {
     int key;
@@ -283,6 +287,9 @@ void dispatch_key(long type,int key,int mods);
    The param is passed directly
  */
 void dispatch_direct(char *name,long param);
+
+/* The divnode currently occupied by the pointing device */
+extern struct divnode *div_under_crsr;
 
 #endif /* __WIDGET_H */
 

@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.33 2000/11/04 02:13:06 micahjd Exp $
+/* $Id: panel.c,v 1.34 2000/11/04 04:22:05 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -28,8 +28,6 @@
 #include <pgserver/widget.h>
 #include <pgserver/video.h>
 #include <pgserver/timer.h>
-
-#define PANELBAR_SIZE 15
 
 #define DRAG_DELAY    20   /* Min. # of milliseconds between
 			      updates while dragging */
@@ -225,8 +223,8 @@ glob panel_get(struct widget *self,int property) {
 
 void panel_trigger(struct widget *self,long type,union trigparam *param) {
   unsigned long tick;
-  g_error e;
   int tmpover;
+  g_error e;
 
   switch (type) {
 
@@ -270,9 +268,6 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
       DATA->grab_offset = PANELBAR_DIV->x + PANELBAR_DIV->w - 1 - param->mouse.x;
       break;
     }
-
-    /* Ignore if it's not in the panelbar */
-    if (DATA->grab_offset<0) return;
 
     DATA->osplit = self->in->split;
     DATA->on = 1;
@@ -333,19 +328,14 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
 
     if (abs(self->in->split - DATA->osplit) < MINDRAGLEN) {
       /* This was a click, not a drag */
+      DATA->over = 0;
 
-      if (DATA->osplit > 0) {
+      if (DATA->osplit > 0)
 	/* Roll up the panel */
 	self->in->split = 0;
-
-	DATA->over = 0;
-      }
-      else {
+      else
 	/* Unroll the panel */
 	self->in->split = DATA->unrolled;
-
-	DATA->over = 0;
-      }
     }
     else {
       
@@ -355,6 +345,8 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
 	DATA->unrolled = self->in->split;
       else
 	self->in->split = 0;
+
+      DATA->over = 1;
     }
 
     /* Do a recalc, because we just changed everything's size */
@@ -367,13 +359,9 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     break;
 
   case TRIGGER_MOVE:
-    /* We're not dragging the bar, but see if the mouse is 
-       entering or exiting the bar */
-    tmpover = (param->mouse.x >= PANELBAR_DIV->x &&
-	       param->mouse.y >= PANELBAR_DIV->y &&
-	       param->mouse.x < (PANELBAR_DIV->x+PANELBAR_DIV->w) &&
-	       param->mouse.y < (PANELBAR_DIV->y+PANELBAR_DIV->h));
-    if (tmpover == DATA->over) return;
+    /* Handle entering/exiting the node */
+    tmpover = div_under_crsr == PANELBAR_DIV;
+    if (DATA->over == tmpover) return;
     DATA->over = tmpover;
     break;
     
