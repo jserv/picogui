@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.37 2000/11/04 07:03:42 micahjd Exp $
+/* $Id: button.c,v 1.38 2000/11/04 23:46:22 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -350,7 +350,6 @@ void resize_button(struct widget *self) {
       (self->in->flags & PG_S_BOTTOM)) {
 
     /* Vertical */
-    bp.h += m<<1;
     if (bp.h > h)
       self->in->split = bp.h;
     else
