@@ -374,7 +374,7 @@ int launchMenu(struct pgEvent *evt){
   }
 
   // Add the standard options
-  insertion_point = pgNewWidget(PG_WIDGET_MENUITEM, 0,0);
+  pgNewWidget(PG_WIDGET_MENUITEM, 0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT, pgNewString("Preferences..."),
 	      0);
