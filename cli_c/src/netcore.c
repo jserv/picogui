@@ -1,9 +1,9 @@
-/* $Id: netcore.c,v 1.19 2001/11/01 18:32:44 epchristi Exp $
+/* $Id: netcore.c,v 1.20 2001/11/13 01:09:54 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * Thread-safe code added by RidgeRun Inc.
  * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
@@ -54,6 +54,8 @@ unsigned char _pgeventloop_on;  /* Boolean - is event loop running? */
 unsigned char _pgreqbuffer[PG_REQBUFSIZE];  /* Buffer of request packets */
 short _pgreqbuffer_size;        /* # of bytes in reqbuffer */
 short _pgreqbuffer_count;       /* # of packets in reqbuffer */
+short _pgreqbuffer_lasttype;    /* Type of last packet, indication of what return
+				 * packet should be sent */
 void (*_pgerrhandler)(unsigned short errortype,const char *msg);
                                 /* Error handler */
 struct _pghandlernode *_pghandlerlist;  /* List of pgBind event handlers */
@@ -126,6 +128,15 @@ int _pg_recvtimeout(short *rsptype) {
      if (FD_ISSET(_pgsockfd, &readfds))   /* Got data from server */
 	return _pg_recv(rsptype,sizeof(short));
 	
+     /* If we get this far, it's not a return packet- it's either a pgIdle timeout or a
+      * user-defined file descriptor added with pgCustomizeSelect. This code below needs
+      * to safely suspend the event loop, call the appropriate handlers, then kickstart it
+      * with a new 'wait' packet. This is only possible if we are currently waiting on a
+      * response from the 'wait' packet. If it's something else, this will clobber the 
+      * packet's return value and get the event loop out of sync. This is why
+      * _pg_recvtimeout should only be used in event waits.
+      */
+
      /* We'll need these */
      waitreq.id = ++_pgrequestid;
      unwaitreq.id = ++_pgrequestid;
@@ -288,11 +299,11 @@ void _pg_add_request(short reqtype,void *data,unsigned long datasize) {
     // Flush the buffer if the event loop is *not* started
     //
     if ( !_pgeventloop_on )
-       _pg_getresponse();
+       _pg_getresponse(0);
 
     sem_post(&_pgreqbufferSem);
 #else    
-    _pg_getresponse();
+    _pg_getresponse(0);
 #endif
     
     return;
@@ -317,6 +328,7 @@ void _pg_add_request(short reqtype,void *data,unsigned long datasize) {
   newhdr = (struct pgrequest *) (_pgreqbuffer + _pgreqbuffer_size);
   _pgreqbuffer_count++;
   _pgreqbuffer_size += sizeof(struct pgrequest);
+  _pgreqbuffer_lasttype = reqtype;
   newhdr->type = htons(reqtype);
 #ifdef ENABLE_THREADING_SUPPORT
   newhdr->id = id;
@@ -345,7 +357,7 @@ void _pg_add_request(short reqtype,void *data,unsigned long datasize) {
   
 }
 
-void _pg_getresponse(void) {
+void _pg_getresponse(int eventwait) {
   short rsp_id = 0;
   
   /* Read the response type. This is where the client spends almost
@@ -354,12 +366,14 @@ void _pg_getresponse(void) {
    */
 
 #ifdef ENABLE_THREADING_SUPPORT
-  if ( (_pgidle_period.tv_sec + _pgidle_period.tv_usec) || (_pgselect_handler != &select) ) {
+  if ( eventwait && ( (_pgidle_period.tv_sec + _pgidle_period.tv_usec) || 
+		      (_pgselect_handler != &select) ) ) {
 #else     
-  if ( ((_pgidle_period.tv_sec + _pgidle_period.tv_usec)&&!_pgidle_lock) || (_pgselect_handler != &select) ) {
+  if ( eventwait && ( ((_pgidle_period.tv_sec + _pgidle_period.tv_usec)&&!_pgidle_lock) ||
+		      (_pgselect_handler != &select) ) ) {
 #endif       
      
-     /* Use the interruptable wait */
+     /* Use the interruptable wait (only for event waits!) */
      if (_pg_recvtimeout(&_pg_return.type))
        return;
   }
@@ -807,7 +821,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.19 2001/11/01 18:32:44 epchristi Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.20 2001/11/13 01:09:54 micahjd Exp $\n");
 	exit(1);
       }
 
@@ -1066,8 +1080,11 @@ void pgFlushRequests(void) {
     //
     // Flush the buffer if the event loop is *not* started
     //
-    if ( !_pgeventloop_on )
-       _pg_getresponse();
+    if ( !_pgeventloop_on ) {
+      /* Need a response packet back... If the last packet added to the buffer was a 'wait',
+       * flag _pg_getresponse that it's ok to run idle handlers and select handlers. */
+      _pg_getresponse(_pgreqbuffer_lasttype == PGREQ_WAIT);
+    }
 
   }  // End if _pgreqbuffer_count > 0
 
@@ -1116,8 +1133,9 @@ void pgFlushRequests(void) {
   /* Reset buffer */
   _pgreqbuffer_size = _pgreqbuffer_count = 0;
 
-  /* Need a response packet back... */
-  _pg_getresponse();
+  /* Need a response packet back... If the last packet added to the buffer was a 'wait',
+   * flag _pg_getresponse that it's ok to run idle handlers and select handlers. */
+  _pg_getresponse(_pgreqbuffer_lasttype == PGREQ_WAIT);
 }
 #endif // ENABLE_THREADING_SUPPORT
 
@@ -1265,7 +1283,7 @@ struct pgEvent *pgGetEvent(void) {
   /* Wait for a new event */
   do {
      _pg_add_request(PGREQ_WAIT,NULL,0, -1, 1);
-     _pg_getresponse();
+     _pg_getresponse(1);
   } while (_pg_return.type != PG_RESPONSE_EVENT);
 
   return &_pg_return.e.event;

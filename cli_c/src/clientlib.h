@@ -1,4 +1,4 @@
-/* $Id: clientlib.h,v 1.11 2001/11/01 18:32:44 epchristi Exp $
+/* $Id: clientlib.h,v 1.12 2001/11/13 01:09:54 micahjd Exp $
  *
  * clientlib.h - definitions used only within the client library code itself
  *
@@ -134,6 +134,8 @@ extern unsigned char _pgeventloop_on;  /* Boolean - is event loop running? */
 extern unsigned char _pgreqbuffer[PG_REQBUFSIZE];  /* Buffer of request packets */
 extern short _pgreqbuffer_size;        /* # of bytes in reqbuffer */
 extern short _pgreqbuffer_count;       /* # of packets in reqbuffer */
+extern short _pgreqbuffer_lasttype;    /* Type of last packet, indication of what return
+					* packet should be sent */
 extern void (*_pgerrhandler)(unsigned short errortype,const char *msg); /* Error handler */
 extern struct _pghandlernode *_pghandlerlist;  /* List of pgBind event handlers */
 
@@ -176,8 +178,12 @@ void _pg_add_request(short reqtype,void *data,unsigned long datasize);
 
 /* Receive a response packet and store its contents in _pg_return
  * (handling errors if necessary)
+ *
+ * If 'eventloop' is nonzero, this is waiting for a response from the
+ * 'wait' packet and it's ok to use _pg_recvtimeout to process client-defined
+ * things.
  */
-void _pg_getresponse(void);
+void _pg_getresponse(int eventwait);
 
 /* Get rid of a pgmemdata structure when done with it */
 void _pg_free_memdata(struct pgmemdata memdat);
