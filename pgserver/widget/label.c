@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.47 2002/01/16 19:47:27 lonetech Exp $
+/* $Id: label.c,v 1.48 2002/01/19 23:47:02 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -34,10 +34,6 @@ struct labeldata {
   handle text,font;
   short int align,direction;
   u8 transparent, alignset;
-  int y;
-  u8 yanchorset;
-  int x;
-  u8 xanchorset;
   u8 colorset;
   pgcolor color;
 };
@@ -87,14 +83,6 @@ void build_label(struct gropctxt *c,unsigned short state,struct widget *self) {
      y+=h;
   }
 
-  //
-  // Override y anchor placement
-  //
-  if ( DATA->yanchorset )
-     y = DATA->y;
-  if ( DATA->xanchorset )
-     x = DATA->x;
-  
   addgropsz(c,PG_GROP_TEXT,x,y,w,h);
   c->current->param[0] = DATA->text;
 }
@@ -175,16 +163,6 @@ g_error label_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
     
-  case PG_WP_ABSOLUTEY:
-     DATA->yanchorset = 1;
-     DATA->y = (int)data;
-     break;
-
-  case PG_WP_ABSOLUTEX:
-     DATA->xanchorset = 1;
-     DATA->x = (int)data;
-     break;
-     
   case PG_WP_HILIGHTED:
     if ( data ) {
       
