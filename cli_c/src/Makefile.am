@@ -12,6 +12,7 @@ libpgui_la_SOURCES = \
 	stddialog.c \
 	dlg_datepicker.c \
 	dlg_fontpicker.c \
+	dlg_filepicker.c \
 	$(PLATFORM)
 
 EXTRA_libpgui_la_SOURCES = platform.c

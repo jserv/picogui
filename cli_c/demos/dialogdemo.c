@@ -13,7 +13,17 @@
 pghandle wDate;
 int year,month,day;
 
-pghandle wInputBtn,wFontBtn;
+pghandle wInputBtn,wFontBtn,wFileOpenBtn;
+
+/******************* File open dialog */
+
+int btnFileOpen(struct pgEvent *evt) {
+  const char *str;
+
+  str = pgFilePicker(NULL,NULL,NULL,PG_FILEOPEN,"Open a File");
+  if (str)
+    pgReplaceText(wFileOpenBtn,str);
+}
 
 /******************* Font picker */
 
@@ -172,14 +182,13 @@ int main(int argc,char **argv) {
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnInput,NULL);
 
-  /* Text input */
-  wFontBtn = pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  /* File open */
+  wFileOpenBtn = pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgNewString("pgFontPicker: Select a font"),
+	      PG_WP_TEXT,pgNewString("pgFilePicker: Open a file"),
 	      PG_WP_SIDE,PG_S_TOP,
 	      0);
-  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnFont,NULL);
-
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnFileOpen,NULL);
 
   pgEventLoop();
   return 0;
