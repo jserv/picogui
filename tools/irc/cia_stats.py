@@ -59,13 +59,13 @@ for heading in ('project','mtbc') + statSubdirs:
         boldOpen = "<b>"
         boldClose = "</b>"
         if sortDirection == "A":
-            linkURL = "?sort=%s_D" % heading
+            linkURL = "cia_stats.cgi?sort=%s_D" % heading
         else:
-            linkURL = "?sort=%s_A" % heading
+            linkURL = "cia_stats.cgi?sort=%s_A" % heading
     else:
         # This isn't the current sort key. Default to ascending sort.
         boldOpen = boldClose = ""
-        linkURL = "?sort=%s_A" % heading
+        linkURL = "cia_stats.cgi?sort=%s_A" % heading
 
     print '<th><a href="%s">%s%s%s</a></th>' % (linkURL, boldOpen, statHeadings[heading], boldClose),
 print "</tr>"
