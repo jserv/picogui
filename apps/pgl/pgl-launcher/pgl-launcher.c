@@ -251,13 +251,15 @@ void loadPreferences(void){
 }
 
 int recieveMessage(struct pgEvent *evt){
-  pglMessage *inMessage;
+  pglMessage *inMessage, *inMessageTmp;
   char *data;
   
   pgEnterContext();
 
-  inMessage = (pglMessage *)evt->e.data.pointer;
-  inMessage = (pglMessage *)alignMessageData(inMessage);
+  inMessageTmp = (pglMessage *)evt->e.data.pointer;
+  inMessage = malloc(evt->e.data.size);
+  memcpy(inMessage, inMessageTmp, evt->e.data.size);
+  inMessage = pglDecodeMessage(inMessage);
   switch(inMessage->messageType){
   case PGL_LOADPREFS:
     loadPreferences();
@@ -269,6 +271,8 @@ int recieveMessage(struct pgEvent *evt){
     toolbarResponse = strdup(data);
     break;
   }
+
+  free(inMessage);
 
   pgLeaveContext();
 
