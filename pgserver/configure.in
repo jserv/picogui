@@ -277,6 +277,14 @@ AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_FONTENGINE_FREETYPE, [
     DRIVER_LIBS="$DRIVER_LIBS `freetype-config --libs` -lm"
 ])
 
+dnl check for freetype2
+dnl (ttfgl driver doesn't do gamma correction)
+AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_FONTENGINE_TTFGL, [
+    AC_CHECK_LIB(freetype, FT_Init_FreeType,, AC_MSG_WARN([can't find libfreetype]))
+    CFLAGS="$CFLAGS `freetype-config --cflags`"
+    DRIVER_LIBS="$DRIVER_LIBS `freetype-config --libs`"
+])
+
 # More compiler flags...
 
 AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_LINK_STATIC, [

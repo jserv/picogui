@@ -87,6 +87,7 @@ add_if_true font_bdf.c           $CONFIG_FONTENGINE_BDF
 add_if_true font_freetype.c      $CONFIG_FONTENGINE_FREETYPE
 add_if_true font_textmode.c      $CONFIG_FONTENGINE_TEXTMODE
 add_if_true font_xft.c           $CONFIG_FONTENGINE_XFT
+add_if_true font_ttfgl.c         $CONFIG_FONTENGINE_TTFGL
 
 close_section
 

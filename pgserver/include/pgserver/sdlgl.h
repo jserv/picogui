@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.23 2002/11/08 01:25:37 micahjd Exp $
+/* $Id: sdlgl.h,v 1.24 2002/11/21 11:37:29 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -43,7 +43,6 @@
 #include <pgserver/debug.h>
 
 #include <SDL/SDL.h>
-#include <SDL/SDL_ttf.h>
 
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
