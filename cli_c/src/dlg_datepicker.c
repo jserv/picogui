@@ -1,4 +1,4 @@
-/* $Id: dlg_datepicker.c,v 1.1 2001/07/30 04:42:06 micahjd Exp $
+/* $Id: dlg_datepicker.c,v 1.2 2001/07/30 05:42:40 micahjd Exp $
  *
  * dlg_datepicker.c - Implementation of the pgDatePicker() function. Display
  *                    a date on a calendar, and allow the user to select a
@@ -53,7 +53,7 @@ const char *weekdays[] = {
  */
 void datepicker_drawmonth(pghandle canvas, pghandle title, 
 			  int year,int month,int day,
-			  pghandle fHeading, pghandle fDay,
+			  pghandle fHeading,
 			  int *firstday, int *numdays) {
 
   char tmpstr[3];
@@ -61,25 +61,26 @@ void datepicker_drawmonth(pghandle canvas, pghandle title,
   time_t just_then;
   int i, first_weekday, x,y;
   pgcontext gc;
+  pgcolor fg;
 
   /* clear our month context */
   pgLeaveContext();
   pgEnterContext();
 
   /* Set up the canvas. This makes a 7x7 grid, each square at least
-   * large enough to hold "00 ", and sets the background and foreground
+   * large enough to hold "000", and sets the background and foreground
    * equal to that of a box widget. 
    */
   pgWriteCmd(canvas,PGCANVAS_NUKE,0);
   gc = pgNewCanvasContext(canvas,PGFX_PERSISTENT);
   pgEnterContext();
-  pgSizeText(&x,&y,PGDEFAULT,pgNewString("00 "));
+  pgSizeText(&x,&y,PGDEFAULT,pgNewString("000"));
   pgLeaveContext();
   pgWriteCmd(canvas,PGCANVAS_GRIDSIZE,2,x,y);
   pgSetMapping(gc,0,0,7,7,PG_MAP_SCALE);
   pgSetColor(gc,pgThemeLookup(PGTH_O_BOX,PGTH_P_BGCOLOR));
   pgRect(gc,0,0,7,7);
-  pgSetColor(gc,pgThemeLookup(PGTH_O_BOX,PGTH_P_FGCOLOR));
+  pgSetColor(gc,fg = pgThemeLookup(PGTH_O_BOX,PGTH_P_FGCOLOR));
 
   /* Draw the headings */
   pgSetFont(gc,fHeading);
@@ -111,10 +112,13 @@ void datepicker_drawmonth(pghandle canvas, pghandle title,
   for (i=1;i<=*numdays;i++) {
     sprintf(tmpstr,"%d",i);
     
+    /* Hilight the selected day */
     if (day==i) {
-      pgSetFont(gc,fDay);
+      pgSetFont(gc,fHeading);
+      pgSetColor(gc,0xFF0000);
       pgText(gc,x,y,pgNewString(tmpstr));
       pgSetFont(gc,PGDEFAULT);
+      pgSetColor(gc,fg);
     }
     else
       pgText(gc,x,y,pgNewString(tmpstr));
@@ -142,7 +146,7 @@ int pgDatePicker(int *year, int *month, int *day, const char *title) {
   struct tm *now;
   time_t just_now;
   pghandle wMonths[12];       /* Month selector widgets, indexed by payload */
-  pghandle fHeading, fDay;
+  pghandle fHeading;
   int firstday,numdays;
   int retval = 0;
 
@@ -150,8 +154,6 @@ int pgDatePicker(int *year, int *month, int *day, const char *title) {
 
   /* Allocate fonts */
   fHeading = pgNewFont(NULL,0,PG_FSTYLE_BOLD | PG_FSTYLE_DEFAULT);
-  fDay = pgNewFont(NULL,0,PG_FSTYLE_UNDERLINE | PG_FSTYLE_DEFAULT | 
-		   PG_FSTYLE_BOLD);
 
   /********** Container Widgets */
 
@@ -173,6 +175,11 @@ int pgDatePicker(int *year, int *month, int *day, const char *title) {
 	      PG_WP_TRANSPARENT,1,
 	      0);
 
+  wButtonBar = pgNewWidget(PG_WIDGET_TOOLBAR,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_BOTTOM,
+	      0);
+
   pgNewWidget(PG_WIDGET_BOX,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_ALL,
@@ -189,11 +196,18 @@ int pgDatePicker(int *year, int *month, int *day, const char *title) {
 
   wProgress = pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
-	      PG_WP_SIDE,PG_S_LEFT,
+	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_TEXT,pgNewString(">"),
 	      0);
 
-  wOk = pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  wTitle = pgNewWidget(PG_WIDGET_LABEL,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_ALL,
+	      0);
+
+  /********** Buttons */
+
+  wOk = pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wButtonBar);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("Ok"),
 	      PG_WP_HOTKEY,PGKEY_RETURN,
@@ -205,11 +219,6 @@ int pgDatePicker(int *year, int *month, int *day, const char *title) {
 	      PG_WP_TEXT,pgNewString("Cancel"),
 	      PG_WP_HOTKEY,PGKEY_ESCAPE,
 	      PG_WP_SIDE,PG_S_RIGHT,
-	      0);
-
-  wTitle = pgNewWidget(PG_WIDGET_LABEL,0,0);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_SIDE,PG_S_ALL,
 	      0);
 
   /********** Months */
@@ -240,7 +249,7 @@ int pgDatePicker(int *year, int *month, int *day, const char *title) {
 
   /* Draw the months in a separate context */
   pgEnterContext();
-  datepicker_drawmonth(wCalendar,wTitle, *year,*month,*day,fHeading,fDay,
+  datepicker_drawmonth(wCalendar,wTitle, *year,*month,*day,fHeading,
 		       &firstday,&numdays);
 
   for (;;) {
@@ -293,7 +302,7 @@ int pgDatePicker(int *year, int *month, int *day, const char *title) {
     /* Change month or year */
     datepicker_drawmonth(wCalendar,wTitle, 
 			 *year,*month,*day,
-			 fHeading,fDay,&firstday,&numdays);
+			 fHeading,&firstday,&numdays);
   }
 
   /* 2 contexts, one for the month and one for the dialog */
