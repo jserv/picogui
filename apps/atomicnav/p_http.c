@@ -1,4 +1,4 @@
-/* $Id: p_http.c,v 1.8 2002/02/06 21:10:53 bornet Exp $
+/* $Id: p_http.c,v 1.9 2002/02/06 21:15:09 bornet Exp $
  *
  * p_http.c - Local disk access for the Atomic Navigator web browser
  *
@@ -57,7 +57,7 @@ struct http_data {
   int fd;
   struct hostent *he;
   struct sockaddr_in server_addr;
-  FILE *out, *in;
+  FILE *out;
   char *buffer;
   char *headerline;
   unsigned long buffer_size;
@@ -79,6 +79,32 @@ void p_http_header(struct url *u, const char *name, const char *value) {
     if (strcmp(value,u->name))
       browserwin_command(u->browser->wApp, "URL", value);
   }
+}
+
+char *my_fgets( char *s, int size, int fd) {
+  /* similar to fgets(), but using a int file descriptor, and not the buffered FILE type */
+  int i;
+
+  i = 0;
+
+  /* read the input file */
+  /* remark : test size - 1 because we leave a place for the '\0' terminal */ 
+  while(( i < size - 1 ) && ( read(fd,s+i, 1) == 1 ) && ( s[i] != '\n' )) {
+
+    i++;
+
+  }
+
+  if(( i == 0 ) && s[i] != '\n' ) {
+    /* noting readed */
+    return NULL;
+  }
+
+  /* put the '\0' terminal */
+  s[i + 1] = 0;
+
+  return s;
+
 }
 
 /********************************* Methods */
@@ -162,10 +188,10 @@ void p_http_connect(struct url *u) {
       url_setstatus(u,URL_STATUS_ERROR);
       return;
   }
-  hd->in = fdopen(hd->fd,"r");
+
   for (;;) {
     /* Get one header line */
-    if (!fgets(hd->headerline, HEADER_LINE_BUFFER, hd->in)) {
+    if (!my_fgets(hd->headerline, HEADER_LINE_BUFFER, hd->fd)) {
       browserwin_errormsg(u->browser, "The HTTP headers are incomplete");
       url_setstatus(u,URL_STATUS_ERROR);
       return;
@@ -225,8 +251,6 @@ void p_http_stop(struct url *u) {
   if (hd) {
     if (hd->out)
       fclose(hd->out);
-    if (hd->in)
-      fclose(hd->in);
     if (hd->fd)
       close(hd->fd);
     if (hd->buffer)
