@@ -3,10 +3,10 @@
 <sources>
 
   <!-- pgbuild uses the concept of 'sites' to keep all the URIs in
-    -- one place, and to make mirroring as easy as possible.
-    --
-    -- Site names can not contain slashes, since the slash is used
-    -- to separate site names from a suffix in <sitepath>
+     - one place, and to make mirroring as easy as possible.
+     -
+     - Site names can not contain slashes, since the slash is used
+     - to separate site names from a suffix in <sitepath>
     -->
   <sites>
 
@@ -32,8 +32,8 @@
     <!-- Releases, hosted by sourceforge -->
     <site name="picogui-releases">
       <!-- Anywhere that <uri> can be used, we can also use <sitepath>.
-        -- A site path is syntactically equivalent to a UNIX relative path,
-        -- but the first 'directory' in that path is a site name. 
+         - A site path is syntactically equivalent to a UNIX relative path,
+         - but the first 'directory' in that path is a site name. 
         -->
       <sitepath>sourceforge-download/pgui</sitepath>
     </site>
@@ -41,20 +41,20 @@
   </sites>
 
   <!-- Packages are groups of files that are conditionally downloaded,
-    -- then independently updated. Packages can be comprised of any
-    -- number of versions- this lets you provide packages of the latest
-    -- development code in addition to all releases. Each version always
-    -- has a single download location, relative to a site. Mirrors are
-    -- described using the site definitions above.
-    -- 
-    -- Package names can not contain dashes, since a dash separates
-    -- package name and version in pgbuild's working copy.
+     - then independently updated. Packages can be comprised of any
+     - number of versions- this lets you provide packages of the latest
+     - development code in addition to all releases. Each version always
+     - has a single download location, relative to a site. Mirrors are
+     - described using the site definitions above.
+     - 
+     - Package names can not contain dashes, since a dash separates
+     - package name and version in pgbuild's working copy.
     -->
   <packages>
     
     <!-- The source code for pgbuild. This is included in the initial download
-      -- of pgbuild for obvious reasons, but it is also a package, so it can
-      -- be automatically updated just like any other package.
+       - of pgbuild for obvious reasons, but it is also a package, so it can
+       - be automatically updated just like any other package.
       -->
     <package name="build">
       <version name="dev">
@@ -63,23 +63,23 @@
       </version>
 
       <!-- The <require/> tag forces pgbuild to keep this package installed
-        -- and to keep its configuration database loaded. Here it is used since
-        -- pgbuild needs itself for the build process :)
+         - and to keep its configuration database loaded. Here it is used since
+         - pgbuild needs itself for the build process :)
         -->
       <require/>
     </package>
 
     <!-- The default configuration files for pgbuild are in a separate package,
-      -- for a couple reasons:
-      --
-      --   1. If you use pgbuild in a separate project, you can specify your own
-      --      site for the conf package's source, while leaving build pointing
-      --      at PicoGUI's site. This way you continue to recieve automatic updates
-      --      to pgbuild itself.
-      --
-      --   2. If the configuration files are being updated frequently, only a small
-      --      conf package has to be downloaded, rather than a possibly much larger
-      --      package if conf is combined with the pgbuild source.
+       - for a couple reasons:
+       -
+       -   1. If you use pgbuild in a separate project, you can specify your own
+       -      site for the conf package's source, while leaving build pointing
+       -      at PicoGUI's site. This way you continue to recieve automatic updates
+       -      to pgbuild itself.
+       -
+       -   2. If the configuration files are being updated frequently, only a small
+       -      conf package has to be downloaded, rather than a possibly much larger
+       -      package if conf is combined with the pgbuild source.
       -->
     <package name="conf">
       <version name="dev">
@@ -88,7 +88,7 @@
       </version>
 
       <!-- The require tag is needed here because the conf package's configuration
-        -- is the starting point from which all other packages can be loaded.
+         - is the starting point from which all other packages can be loaded.
         -->
       <require/>
     </package>
