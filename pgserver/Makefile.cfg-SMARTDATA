@@ -1,4 +1,4 @@
-# $Id: Makefile.cfg-SMARTDATA,v 1.4 2001/02/07 15:08:06 pney Exp $
+# $Id: Makefile.cfg-SMARTDATA,v 1.5 2001/02/08 14:56:22 pney Exp $
 #
 # This file has compile-time options for PicoGUI, including
 # which fonts and drivers are to be compiled in.
@@ -13,13 +13,16 @@
 #
 # -- Micah Dowty <micahjd@users.sourceforge.net>
 #
+# SmartData version
+# -- Philippe Ney <philippe.ney@smartdata.ch>
+#
 
 ######################################## Compile settings
 
 #### Target system (uncomment only one)
 #PLATFORM = linux
 #PLATFORM = windows
-PLATFORM = uclinux
+PLATFORM = uclinux				
 
 #### Arch system (uncomment only one or none)
 #ARCH = i386
@@ -53,34 +56,50 @@ CFLAGS := $(CFLAGS) -DDEBUG
 ######################################## Fonts
 
 #### Uncomment any number of the following
-FONTS := $(FONTS) font/helvetica8.fi
-#FONTS := $(FONTS) font/console8.fi  
-FONTS := $(FONTS) font/courier12.fi  
-#FONTS := $(FONTS) font/times10.fi    
-FONTS := $(FONTS) font/utopia25.fi
+#FONTS := $(FONTS) font/helvetica10.fi       # Default variable font
+#FONTS := $(FONTS) font/clean12.fi           # Default fixed font
+#FONTS := $(FONTS) font/lucida10.fi         # Alternate default variable font
+
+#FONTS := $(FONTS) font/clean6.fi           # Tiny! Good for terminals
+#FONTS := $(FONTS) font/console8.fi         # thick 8x8 terminal font
+FONTS := $(FONTS) font/courier12.fi        # Fixed width with bold
+FONTS := $(FONTS) font/helvetica8.fi       # Smaller version of helvetica
+#FONTS := $(FONTS) font/times10.fi          # Variable width with bold
+FONTS := $(FONTS) font/utopia25.fi         # Big!
 
 ######################################## Drivers
 
-ifeq ($(strip $(PLATFORM)),uclinux)
-  #### SMARTDATA video drivers collection
-#  DRV := $(DRV) -DDRIVER_EZ328_CHIPSLICE
-  #### selects one driver (uncomment only one of them)
-#  DRV := $(DRV) -DDRIVER_EZ328_CHIPSLICE_V0_2_CITIZEN_G3243H
-  DRV := $(DRV) -DDRIVER_NULL
-else
-  #### Video drivers. Uncomment any number of them.
-  DRV := $(DRV) -DDRIVER_SDL # SDL driver
-  #DRV := $(DRV) -DDRIVER_SDLMIN # Debugging only!
-  #DRV := $(DRV) -DDRIVER_SVGA # SVGAlib driver
-endif
+###   ifeq ($(strip $(PLATFORM)),uclinux)
+###     #### SMARTDATA video drivers collection
+###   #  DRV := $(DRV) -DDRIVER_EZ328_CHIPSLICE
+###     #### selects one driver (uncomment only one of them)
+###   #  DRV := $(DRV) -DDRIVER_EZ328_CHIPSLICE_V0_2_CITIZEN_G3243H
+###     DRV := $(DRV) -DDRIVER_NULL
+###   else
+###     #### Video drivers. Uncomment any number of them.
+###     DRV := $(DRV) -DDRIVER_SDL # SDL driver
+###     #DRV := $(DRV) -DDRIVER_SDLMIN # Debugging only!
+###     #DRV := $(DRV) -DDRIVER_SVGA # SVGAlib driver
+###   endif
+
+
+#DRV := $(DRV) -DDRIVER_EZ328      # Generic 68EZ328 LCD driver
+DRV := $(DRV) -DDRIVER_NULL       # Dummy driver, produces no output
+#DRV := $(DRV) -DDRIVER_FBDEV      # Driver for /dev/fb* framebuffer
+#DRV := $(DRV) -DDRIVER_SDLFB      # For testing the linear VFBs 
+#DRV := $(DRV) -DDRIVER_SDL        # SDL driver
+#DRV := $(DRV) -DDRIVER_SVGAFB     # SVGAlib driver with linear framebuffer
+#DRV := $(DRV) -DDRIVER_SVGAGL     # SVGAlib with vgagl (crufty but compatible)
+#DRV := $(DRV) -DDRIVER_NCURSES    # PicoGUI can do text mode too!
 
 ifeq ($(strip $(PLATFORM)),uclinux)
 else
   #### Input drivers. Uncomment any number of
   #### the following. Note that most video drivers
   #### will not link without a matching input driver
-#  DRV := $(DRV) -DDRIVER_SDLINPUT # For the SDL driver
-  #DRV := $(DRV) -DDRIVER_SVGAINPUT # For the SVGA driver
+#  DRV := $(DRV) -DDRIVER_SDLINPUT     # For the SDL driver
+#  DRV := $(DRV) -DDRIVER_SVGAINPUT    # For the SVGA driver
+#  DRV := $(DRV) -DDRIVER_NCURSESINPUT # For the ncurses driver and fbdev driver
 endif
 
 ### The End ###
