@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.21 2002/02/11 20:46:06 micahjd Exp $
+/* $Id: pgnet.h,v 1.22 2002/03/26 04:13:14 instinc Exp $
  *
  * pgnet.h - definitions and stuff for the picogui server
  *           networking code. Most of the interesting code
@@ -92,7 +92,7 @@ void net_release(void);
 void net_iteration(void); /* This is called in a loop as long
 			     as PicoGUI is running */
 
-void post_event(int event,struct widget *from,long param,int owner,char *data);
+void post_event(int event,struct widget *from,s32 param,int owner,char *data);
 int send_response(int to,const void *data,size_t len);
 
 /********* Buffers needed by each connection (packet and event) */

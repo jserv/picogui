@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.24 2002/01/16 19:47:25 lonetech Exp $
+/* $Id: handle.h,v 1.25 2002/03/26 04:13:14 instinc Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -91,7 +91,7 @@ g_error rdhandlep(void ***p,unsigned char reqtype,int owner,handle h);
 /* Gets a pointer to the handle's payload, stores it in the variable
  * pointed to by pppayload
  */
-g_error handle_payload(unsigned long **pppayload,int owner,handle h);
+g_error handle_payload(u32 **pppayload,int owner,handle h);
 
 /* Given a pointer to an object, returns its handle.  Returns 0 if
    there is no matching handle. Places the owner in 'owner' if not null.

@@ -1,4 +1,4 @@
-/* $Id: g_malloc.h,v 1.11 2002/02/20 19:58:03 lonetech Exp $
+/* $Id: g_malloc.h,v 1.12 2002/03/26 04:13:14 instinc Exp $
  *
  * g_malloc.h - malloc wrapper providing error handling
  *
@@ -58,16 +58,16 @@ g_error g_realloc(void **p,size_t s);
 
 #ifdef DEBUG_KEYS
 /* Memory allocation statistics, for CTRL-ALT-M */
-extern long num_grops;    /* Number of gropnodes */
-extern long num_divs;     /* Number of divnodes */
-extern long num_widgets;  /* Number of widgets */
-extern long num_handles;  /* Number of handles */
-extern long memref;       /* Total allocations */
-extern long grop_zombie_count;  /* borrowed from grop.c */
+extern s32 num_grops;    /* Number of gropnodes */
+extern s32 num_divs;     /* Number of divnodes */
+extern s32 num_widgets;  /* Number of widgets */
+extern s32 num_handles;  /* Number of handles */
+extern s32 memref;       /* Total allocations */
+extern s32 grop_zombie_count;  /* borrowed from grop.c */
 #endif
 
 #ifdef DEBUG_ANY
-extern long memamt;       /* Bytes of memory total */
+extern s32 memamt;       /* Bytes of memory total */
 #endif
 
 #ifdef DEBUG_MEMORY

@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.26 2002/03/03 11:21:11 micahjd Exp $
+/* $Id: pgmain.c,v 1.27 2002/03/26 04:12:43 instinc Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -58,7 +58,7 @@ volatile u8 use_tpcal = 0;                 /* Run tpcal before running the sessi
 volatile u8 sessionmgr_secondary = 0;      /* Need to run session manager after tpcal */
 volatile u8 sessionmgr_start = 0;          /* Start the session manager at the next iteration */
 
-extern long memref;
+extern s32 memref;
 struct dtstack *dts;
 
 #ifdef UCLINUX
