@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.10 2000/10/15 19:20:33 micahjd Exp $
+/* $Id: constants.h,v 1.11 2000/10/16 01:44:31 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -173,8 +173,8 @@ typedef unsigned long pghandle;
 #define PGTH_O_BUTTON_HILIGHT      4    /* Button, hilighted when mouse is over */
 #define PGTH_O_BUTTON_ON           5    /* Button, mouse is pressed */
 #define PGTH_O_TOOLBAR             6    /* The toolbar widget */
-#define PGTH_O_SCROLL              7    /* The non-movable part of a scrollbar widget */
-#define PGTH_O_THUMB               8    /* The thumb (movable part of a scrollbar) */
+#define PGTH_O_SCROLL              7    /* The scrollbar widget */
+#define PGTH_O_SCROLL_HILIGHT      8    /* Scroll, when mouse is over it */
 #define PGTH_O_INDICATOR           9    /* The indicator widget */
 #define PGTH_O_PANEL               10   /* The background portion of a panel */
 #define PGTH_O_PANELBAR            11   /* The draggable titlebar of a panel */
@@ -187,10 +187,12 @@ typedef unsigned long pghandle;
 #define PGTH_O_LABEL               17   /* The label widget */
 #define PGTH_O_FIELD               18   /* The field widget */
 #define PGTH_O_BITMAP              19   /* The bitmap widget */
+#define PGTH_O_SCROLL_ON           20   /* Scroll, when mouse is down */
+#define PGTH_O_LABEL_SCROLL        21   /* A label, when bound to a scrollbar */
 
 /* If you add a themeobject, be sure to increment this and add
    an inheritance entry in theme/thobjtab.c */
-#define PGTH_ONUM                  20
+#define PGTH_ONUM                  22
 
 /*** Loaders */
 
@@ -314,6 +316,9 @@ typedef unsigned long pghandle;
 #define PG_GROP_TILEBITMAP 0x0050
 
 #define PG_GROPPARAMS(x)   (((x)>>4)&0x0F)
+
+/* Grop flags */
+#define PG_GROPF_TRANSLATE 0x0001  /* Apply the divnode's tx,ty */
 
 /* Video mode flags */
 #define PG_VID_FULLSCREEN     0x0001

@@ -59,5 +59,20 @@ object indicator {
   };
 }
 
+object scroll {
+  overlay = fillstyle {
+    Rect(x,y,w,h,ColorConv(0x000000));
+  };
+  bgfill = fillstyle {
+    Rect(x,y,w,h,ColorConv(0x808080));
+  };
+}
+
+object label.scroll {
+  bgfill = fillstyle {
+    Rect(x,y,w,h,ColorConv(0xe7e7e7));
+  };
+}
+
 object background bitmap1 = LoadBitmap("data/aq_screenbg.pnm");
 object panelbar bitmap1 = LoadBitmap("data/aq_blue.pnm");
