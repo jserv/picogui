@@ -1,4 +1,4 @@
-/* $Id: vncserver.c,v 1.11 2003/01/20 02:41:11 micahjd Exp $
+/* $Id: vncserver.c,v 1.12 2003/01/20 02:43:15 micahjd Exp $
  *
  * vncserver.c - Video driver that runs a VNC server and processes
  *               input events for multiple clients, using the
@@ -112,7 +112,7 @@ g_error vncserver_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
    /* Process configuration variables */
    vncserver_screeninfo->rfbPort            = get_param_int("video-vncserver", "port", 5900);
    vncserver_screeninfo->rfbMaxClientWait   = get_param_int("video-vncserver", "wait", 20000);
-   vncserver_screeninfo->rfbAuthPasswdData  = get_param_str("video-vncserver", "password-file", NULL);
+   vncserver_screeninfo->rfbAuthPasswdData  = (char*) get_param_str("video-vncserver", "password-file", NULL);
    vncserver_screeninfo->rfbDeferUpdateTime = get_param_int("video-vncserver", "defer-update", 1);
    vncserver_screeninfo->desktopName        = get_param_str("video-vncserver", "name", "PicoGUI VNC Server");
    vncserver_screeninfo->rfbAlwaysShared    = get_param_int("video-vncserver", "always-shared", 0);
