@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.21 2001/04/11 16:42:10 micahjd Exp $
+# $Id: Makefile,v 1.22 2001/04/13 05:03:05 micahjd Exp $
 #
 # C client library (libpgui) makefile
 #
@@ -37,7 +37,7 @@ RPATH := /usr/lib
 HPATH := /usr/include
 
 # The source files to link into the library
-SRC := src/netcore.c src/api.c
+SRC := src/netcore.c src/api.c src/pgfx.c src/pgfx_canvas.c
 
 # Demo program files (each .c is a self-contained demo proggie)
 DEMOSRC := demos/demo.c demos/themedemo.c demos/msgdialog.c \

@@ -1,10 +1,10 @@
-/* $Id: picogui.h,v 1.8 2001/04/13 05:03:06 micahjd Exp $
+/* $Id: pgfx_canvas.c,v 1.1 2001/04/13 05:03:06 micahjd Exp $
  *
- * picogui.h - Include file for your average PicoGUI client using the
- *             C client library
- *
+ * picogui/pgfx_canvas.c - lib functions and registration for canvas
+ *                         drawing through the PGFX interface
+ * 
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,16 +20,18 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
  * 
- * Contributors: Philippe Ney <philippe.ney@smartdata.ch>
+ * Contributors: 
  * 
  * 
  * 
  */
 
-#include <picogui/constants.h>   /* PicoGUI client/server shared constants */
-#include <picogui/network.h>     /* Client/server shared data structures */
-#include <picogui/client_c.h>    /* Client API */
-#include <picogui/canvas.h>      /* Canvas widget low-level interface */
-#include <picogui/pgfx.h>        /* PGFX abstract graphics interface
+#include <picogui.h>
+
+/******************************* Primitives */
+
+/******************************* Registration */
+
+
 
 /* The End */

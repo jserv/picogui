@@ -1,10 +1,12 @@
-/* $Id: picogui.h,v 1.8 2001/04/13 05:03:06 micahjd Exp $
+/* $Id: pgfx.c,v 1.1 2001/04/13 05:03:06 micahjd Exp $
  *
- * picogui.h - Include file for your average PicoGUI client using the
- *             C client library
+ * picogui/pgfx.c - PGFX general-purpose utility functions
+ * 
+ * This is a thin wrapper providing a set of primitives that can render to
+ * a canvas (persistant or immediate mode) and other fast graphics interfaces
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,16 +22,26 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
  * 
- * Contributors: Philippe Ney <philippe.ney@smartdata.ch>
+ * Contributors: 
  * 
  * 
  * 
  */
 
-#include <picogui/constants.h>   /* PicoGUI client/server shared constants */
-#include <picogui/network.h>     /* Client/server shared data structures */
-#include <picogui/client_c.h>    /* Client API */
-#include <picogui/canvas.h>      /* Canvas widget low-level interface */
-#include <picogui/pgfx.h>        /* PGFX abstract graphics interface
+#include <picogui.h>
+
+void pgMoveto(pgcontext c, pgu x, pgu y) {
+   c->cx = x;
+   c->cy = y;
+}
+
+pgprim  pgLineto(pgcontext c, pgu x, pgu y) {
+   pgLine(c,c->cx,c->cy,x,y);
+   pgMoveto(c,x,y);
+}
+
+void pgDeleteContext(pgcontext c) {
+   free(c);
+}
 
 /* The End */
