@@ -1,4 +1,4 @@
-# $Id: Makefile.cfg-SMARTDATA,v 1.5 2001/02/08 14:56:22 pney Exp $
+# $Id: Makefile.cfg-SMARTDATA,v 1.6 2001/02/13 14:02:28 pney Exp $
 #
 # This file has compile-time options for PicoGUI, including
 # which fonts and drivers are to be compiled in.
@@ -22,7 +22,7 @@
 #### Target system (uncomment only one)
 #PLATFORM = linux
 #PLATFORM = windows
-PLATFORM = uclinux				
+PLATFORM = uclinux
 
 #### Arch system (uncomment only one or none)
 #ARCH = i386
@@ -83,8 +83,8 @@ FONTS := $(FONTS) font/utopia25.fi         # Big!
 ###   endif
 
 
-#DRV := $(DRV) -DDRIVER_EZ328      # Generic 68EZ328 LCD driver
-DRV := $(DRV) -DDRIVER_NULL       # Dummy driver, produces no output
+DRV := $(DRV) -DDRIVER_EZ328      # Generic 68EZ328 LCD driver
+#DRV := $(DRV) -DDRIVER_NULL       # Dummy driver, produces no output
 #DRV := $(DRV) -DDRIVER_FBDEV      # Driver for /dev/fb* framebuffer
 #DRV := $(DRV) -DDRIVER_SDLFB      # For testing the linear VFBs 
 #DRV := $(DRV) -DDRIVER_SDL        # SDL driver
