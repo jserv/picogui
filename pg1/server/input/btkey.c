@@ -135,6 +135,15 @@ int btkey_fd_activate(int fd)
   /* Read 2 bytes. The first indicates it the key has been pressed
      or released, and the second one give the character */
   cc = read(fd, curkey, 2 * sizeof(int));
+
+  if (cc < 2 * sizeof(int)) {
+    /* incorrect reading, maybe end of file on fifo, so close it and
+       open again */
+    close (btkey_fd);
+    btkey_fd = open(BTKEY_FIFO_PATH, O_RDONLY);
+    return 1;
+  }
+
   pressed = curkey[0];
   key = curkey[1];
   
