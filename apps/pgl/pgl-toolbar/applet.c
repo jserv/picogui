@@ -1,36 +1,62 @@
+/* 
+ * applet.c -  PGL applet utility functions
+ *
+ * PicoGUI small and efficient client/server GUI
+ * Copyright (C) 2000,2001 Daniel Jackson <carpman@voidptr.org>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * Contributors:
+ * 
+ * 
+ * 
+ */
 
 #include <stdlib.h>
+#include <netinet/in.h>
 #include <picogui.h>
 
 #include "applet.h"
 
-struct pgmemdata pglBuildMessage(pglMessageType type, char *senderName, char *key, char *data){
+struct pgmemdata pglBuildMessage(unsigned short type, char *senderName, char *key, char *data){
   unsigned short messageSize = sizeof(pglMessage)+(strlen(senderName)+1)+(strlen(key)+1)+(strlen(data)+1);
   pglMessage *newMessage = malloc(messageSize);
 
-  newMessage->messageType = type;
-  newMessage->senderLen = strlen(senderName);
-  newMessage->keyLen = strlen(key);
-  newMessage->dataLen = strlen(data);
-  newMessage->data = ((char *)newMessage) + sizeof(pglMessage);
+  newMessage->messageType = htons(type);
+  newMessage->senderLen = htons(strlen(senderName));
+  newMessage->keyLen = htons(strlen(key));
+  newMessage->dataLen = htons(strlen(data));
   strcpy(&newMessage->data[0], senderName);
   strcpy(&newMessage->data[strlen(senderName)+1], key);
   strcpy(&newMessage->data[(strlen(senderName)+strlen(key))+2], data);
   return pgFromTempMemory(newMessage, messageSize);
 }
 
-pglMessage *alignMessageData(pglMessage *message){
- 
-  message->data = (char *)message + sizeof(pglMessage);
+pglMessage *pglDecodeMessage(pglMessage *message){
+  
+  message->messageType = ntohs(message->messageType);
+  message->senderLen = ntohs(message->senderLen);
+  message->keyLen = ntohs(message->keyLen);
+  message->dataLen = ntohs(message->dataLen);
+
   return message;
 }
 
 char *pglGetMessageData(pglMessage *message, unsigned short offset){
-  char *data;
 
-  data = (char *)strdup(&message->data[offset]);
-
-  return data;
+  return &message->data[offset];
 }
 
 
