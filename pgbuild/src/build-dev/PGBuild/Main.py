@@ -188,11 +188,8 @@ class PackageXML:
         return self.xml.getvalue()
         
 
-def boot(config, bootstrap):
-    """Initialize the configuration tree from a Bootstrap object- This takes
-       care of mounting all the configuration files required to get us started,
-       and stores the bootstrap object's information in the config tree.
-       """
+def boot(config, bootstrap, argv):
+    """Performs initial setup of PGBuild's configuration tree"""
 
     # Mount in an XML representation of the bootstrap object
     config.mount(BootstrapXML(bootstrap))
@@ -229,6 +226,13 @@ def boot(config, bootstrap):
     # Mount the local configuration directory
     config.dirMount(bootstrap.paths['localConf'])
 
+    # Parse user options. This is only meaningful on UNIXes, but should fail
+    # uneventfully on other platforms.
+    config.dirMount(os.path.expanduser("~/.pgbuild"))
+    
+    # Parse command line options into the <invocation> section
+    parseCommandLine(config, argv)
+    
 
 def main(bootstrap, argv):
     """The entry point called by build.py. Most of the work is done by run(),
@@ -248,15 +252,8 @@ def main(bootstrap, argv):
             # Inner try - Exception rewriting
             try:
             
-                # Load the options passed to us by build.py into the <bootstrap> section
-                boot(config, bootstrap)
-
-                # Parse user options. This is only meaningful on UNIXes, but should fail
-                # uneventfully on other platforms.
-                config.dirMount(os.path.expanduser("~/.pgbuild"))
-
-                # Parse command line options into the <invocation> section
-                parseCommandLine(config, argv)
+                # Set up the configuration tree
+                boot(config, bootstrap, argv)
                 
                 # Load a UI module and run it
                 ui = PGBuild.UI.find(config.eval("invocation/option[@name='ui']/text()")).Interface(config)
