@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.14 2001/01/15 01:09:14 micahjd Exp $
+/* $Id: terminal.c,v 1.15 2001/01/15 05:24:28 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -229,7 +229,7 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
 
   /* Background (solid color or bitmap) */
   addgrop(c,DATA->bitmap ? PG_GROP_BITMAP : PG_GROP_RECT,c->x,c->y,c->w,c->h);
-  c->current->param[0] = DATA->bitmap;
+  c->current->param[0] = DATA->bitmap ? DATA->bitmap : textcolors[0];
   c->current->param[1] = PG_LGOP_NONE;
   c->current->param[2] = 0;
   c->current->param[3] = 0;
@@ -238,7 +238,7 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
   /* Incremental grop for the background */
   addgrop(c,DATA->bitmap ? PG_GROP_BITMAP : PG_GROP_RECT,0,0,0,0);
   c->current->flags   |= PG_GROPF_INCREMENTAL;
-  c->current->param[0] = DATA->bitmap;
+  c->current->param[0] = DATA->bg->param[0];
   c->current->param[1] = PG_LGOP_NONE;
   c->current->param[2] = 0;
   c->current->param[3] = 0;

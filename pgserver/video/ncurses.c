@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.6 2001/01/15 04:18:27 micahjd Exp $
+/* $Id: ncurses.c,v 1.7 2001/01/15 05:24:26 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -182,7 +182,7 @@ void ncurses_close(void) {
 }
 
 void ncurses_pixel(int x,int y,hwrcolor c) {
-   mvaddch(y,x,ncurses_screen[x + vid->xres * y] = (c & (~A_CHARTEXT)) | ' ');
+   mvaddch(y,x,ncurses_screen[x + vid->xres * y] = c);
 }
 
 hwrcolor ncurses_getpixel(int x,int y) {
@@ -247,9 +247,10 @@ hwrcolor ncurses_color_pgtohwr(pgcolor c) {
    if ((c & 0xFF0000) > 0x400000) sc |= 32;
    if ((c & 0x00FF00) > 0x004000) sc |= 16;
    if ((c & 0x0000FF) > 0x000040) sc |= 8;
-   return COLOR_PAIR(sc) | ( ((c&0xFF0000) > 0xA00000) || 
+   return ((COLOR_PAIR(sc) | ( ((c&0xFF0000) > 0xA00000) || 
 			     ((c&0x00FF00) > 0x00A000) || 
-			     ((c&0x0000FF) > 0x0000A0) ? A_BOLD : 0);
+			     ((c&0x0000FF) > 0x0000A0) ? A_BOLD : 0)) 
+	   & (~A_CHARTEXT)) | ' ';
 }
 
 pgcolor ncurses_color_hwrtopg(hwrcolor c) {
