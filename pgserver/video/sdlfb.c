@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.25 2001/09/09 18:17:24 micahjd Exp $
+/* $Id: sdlfb.c,v 1.26 2001/09/09 21:07:55 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -351,7 +351,10 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   FB_MEM += bpp * sdlfb_display_x / 8 + FB_BPL * sdlfb_display_y;
 
   /* tint and grayscale conversion */
-  if (!sdlfb_emucolors) {
+#if defined(CONFIG_SDLEMU_COLOR) || defined(CONFIG_SDLEMU_BLIT)
+  if (!sdlfb_emucolors) 
+#endif
+    {
     vid->color_pgtohwr = &sdlfb_tint_pgtohwr;
     vid->color_hwrtopg = &sdlfb_tint_hwrtopg;
   }
