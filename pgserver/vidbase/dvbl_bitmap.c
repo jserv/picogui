@@ -1,4 +1,4 @@
-/* $Id: dvbl_bitmap.c,v 1.6 2002/08/07 06:00:57 micahjd Exp $
+/* $Id: dvbl_bitmap.c,v 1.7 2002/09/28 10:06:44 micahjd Exp $
  *
  * dvbl_bitmap.c - This file is part of the Default Video Base Library,
  *                 providing the basic video functionality in picogui but
@@ -258,8 +258,15 @@ void def_bitmap_free(struct stdbitmap *bmp) {
 
 g_error def_bitmap_getsize(hwrbitmap b,s16 *w,s16 *h) {
    struct stdbitmap *bmp = (struct stdbitmap *) b;
-   *w = bmp->w;
-   *h = bmp->h;
+   if (bmp) {
+     *w = bmp->w;
+     *h = bmp->h;
+   }
+   else {
+     *w = vid->xres;
+     *h = vid->yres;
+   }
+
    return success;
 }
 
@@ -466,9 +473,6 @@ void def_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 	      s16 src_x, s16 src_y, s16 lgop) {
    int i;
    s16 bw,bh;
-   
-   if(!src)
-	   return;
 
    (*vid->bitmap_getsize)(src,&bw,&bh);
 
