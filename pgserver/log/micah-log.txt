@@ -19,7 +19,10 @@ to reference that container by name and create a root widget inside it.
 		* include/picogui/constants.h: Added the PG_WP_PUBLICBOX
 		
 		* net/dispatch.c, widget/widget.c: Implemented the PG_WP_PUBLICBOX flag
-		
+
+		* cli_c/src/netcore.c: Added the --pgapplet parameter to make any
+		  program an applet
+
 
 2001-08-05    Micah Dowty <micahjd@users.sourceforge.net>
 

@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.10 2001/08/09 10:57:01 micahjd Exp $
+/* $Id: netcore.c,v 1.11 2001/08/09 18:26:16 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -504,6 +504,7 @@ void pgInit(int argc, char **argv)
   struct sockaddr_un server_addr; 
 #endif
   const char *hostname;
+  const char *appletparam = NULL;
   int fd,i,j,args_to_shift;
   char *arg;
   volatile int tmp;
@@ -544,7 +545,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.10 2001/08/09 10:57:01 micahjd Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.11 2001/08/09 18:26:16 micahjd Exp $\n");
 	exit(1);
       }
 
@@ -554,7 +555,7 @@ void pgInit(int argc, char **argv)
 	 */
 
 	args_to_shift = 2;
-	_pg_appletbox = atol(argv[i+1]);
+	appletparam = argv[i+1];
       }
       
       else {
@@ -664,6 +665,15 @@ void pgInit(int argc, char **argv)
 			 s2 = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
 													  PGTH_P_STRING_PGUICOMPAT)),   
 			 pgMessageDialog(copys1,s2,0);
+  }
+
+  /* Set up applet handle */
+  if (appletparam) {
+    /* Is it a number or widget name? */
+    if (isdigit(*appletparam))
+      _pg_appletbox = atol(appletparam);
+    else
+      _pg_appletbox = pgFindWidget(appletparam);
   }
 }
 
