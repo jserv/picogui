@@ -59,6 +59,13 @@ reload (from file) all themes passed on the command line.
 
       * Makefile: Added widget/flatbutton.c to project
 
+      * cli_c/include/picogui/constants.h: Synchronized to server
+      
+      * cli_c/demos/demo.c: Added a flatbutton widget
+
+      * theme/memtheme.c: Revised flatbutton inheritance defaults so the
+        defaults will work most of the time
+
 2001-04-03    Micah Dowty <micahjd@users.sourceforge.net>
 
 Got linux booting on the Nino ok, but the framebuffer doesn't work.
