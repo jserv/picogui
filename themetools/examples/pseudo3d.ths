@@ -1,9 +1,9 @@
-/* $Id: pseudo3d.ths,v 1.10 2002/01/15 02:30:32 micahjd Exp $
+/* $Id: pseudo3d.ths,v 1.11 2002/08/23 13:08:36 micahjd Exp $
  *
  * Theme with simple (and boring?) grey 3d-ish hilights
  * But hey, it works on a 16-color display!
  *
- * Version 1.11
+ * Version 1.12
  *
  * Micah Dowty
  */
@@ -39,7 +39,7 @@ object base.interactive {
     Bar(x+1,y+1,1,h-2);
     SetColor(shadowcolor);
     Slab(x+1,y+h-2,w-2,1);
-    Bar(x+w-2,y+1,1,h-2);
+    Bar(x+w-2,y+1,1,h-1);
     x = x + offset;
     y = y + offset;
   };
@@ -71,7 +71,7 @@ object base.container {
     Bar(x,y,1,h-1);
     SetColor(shadowcolor);
     Slab(x,y+h-1,w-1,1);
-    Bar(x+w-1,y,1,h-1);
+    Bar(x+w-1,y,1,h);
     x = x+2; y = y+2;
     w = w-4; h = h-4;
   };
