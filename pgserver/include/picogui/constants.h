@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.66 2001/08/01 11:05:30 micahjd Exp $
+/* $Id: constants.h,v 1.67 2001/08/01 13:46:42 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -169,6 +169,27 @@
 #define PG_FSTYLE_FLUSH        (1<<14)   //!< Disable the margin that PicoGUI puts around text
 #define PG_FSTYLE_DOUBLEWIDTH  (1<<15)   //!< Add extra space between characters
 #define PG_FSTYLE_ITALIC2      (1<<16)   //!< Twice the slant of the default italic
+
+//! \}
+
+/*!
+ * \defgroup fontrep Font representations
+ * 
+ * These flags can be returned by pgGetFontStyle, indicating supported
+ * methods of graphically representing a font.
+ *
+ * Currently this can only indicate whether a font has built-in bold, italic,
+ * or bolditalic bitmaps, but in the future could be used to indicate whether
+ * a style is bitmapped or scalable.
+ * 
+ * \{
+ */
+
+#define PG_FR_BITMAP_NORMAL        (1<<0)    //!< Normal bitmapped font
+#define PG_FR_BITMAP_BOLD          (1<<1)    //!< Bitmapped font with bold
+#define PG_FR_BITMAP_ITALIC        (1<<2)    //!< Bitmapped font with italic
+#define PG_FR_BITMAP_BOLDITALIC    (1<<3)    //!< Bitmapped font with bold and italic
+#define PG_FR_SCALABLE             (1<<4)    //!< Wishful thinking :)
 
 //! \}
 

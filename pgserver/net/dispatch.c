@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.51 2001/08/01 12:12:02 micahjd Exp $
+/* $Id: dispatch.c,v 1.52 2001/08/01 13:46:42 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -933,6 +933,49 @@ g_error rqh_chcontext(int owner, struct pgrequest *req,
   reqarg(chcontext);
 
   return handle_chcontext(ntohl(arg->handle),owner,ntohs(arg->delta));
+}
+
+g_error rqh_getfstyle(int owner, struct pgrequest *req,
+		      void *data, unsigned long *ret, int *fatal) {
+  struct pgresponse_data rsp;
+  struct pgdata_getfstyle gfs;
+  g_error e;
+  int i;
+  u16 fontrep;
+  struct fontstyle_node *n;
+  reqarg(getfstyle);
+  memset(&gfs,0,sizeof(gfs));
+
+  /* Iterate to the selected font style */
+  for (i=ntohs(arg->index),n=fontstyles;i&&n;i--,n=n->next);
+
+  /* If it's good, return the info. Otherwise, name[0] stays zero */
+  if (n) {
+
+    /* Put together representation flags */
+    fontrep = 0;
+    if (n->normal)
+      fontrep |= PG_FR_BITMAP_NORMAL;
+    if (n->bold)
+      fontrep |= PG_FR_BITMAP_BOLD;
+    if (n->italic)
+      fontrep |= PG_FR_BITMAP_ITALIC;
+    if (n->bolditalic)
+      fontrep |= PG_FR_BITMAP_BOLDITALIC;
+
+    strcpy(gfs.name,n->name);
+    gfs.size = htons(n->size);
+    gfs.fontrep = htons(fontrep);
+    gfs.flags = htonl(n->flags);
+  }
+
+  /* Send a PG_RESPONSE_DATA back */
+  rsp.type = htons(PG_RESPONSE_DATA);
+  rsp.id = htons(req->id);
+  rsp.size = htonl(sizeof(gfs));
+  *fatal |= send_response(owner,&rsp,sizeof(rsp));  
+  *fatal |= send_response(owner,&gfs,sizeof(gfs));  
+  return ERRT_NOREPLY;
 }
 
 /* The End */

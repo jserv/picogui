@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.36 2001/08/01 11:20:27 micahjd Exp $
+/* $Id: network.h,v 1.37 2001/08/01 13:46:42 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -137,8 +137,9 @@ struct pghello {
 #define PGREQ_SETINACTIVE  38  /* set milliseconds of inactivity |  struct */
 #define PGREQ_DRIVERMSG    39  /* Send a message to all drivers  |  struct */
 #define PGREQ_LOADDRIVER   40  /* Load input/misc (not video)    |   chars */
+#define PGREQ_GETFSTYLE    41  /* Get info on a font style       |  struct */
 
-#define PGREQ_UNDEF        41  /* types > this will be truncated. return error */
+#define PGREQ_UNDEF        42  /* types > this will be truncated. return error */
 
 /******* Request data structures */
 
@@ -273,7 +274,24 @@ struct pgreqd_drivermsg {
 struct pgreqd_chcontext {
   u32 handle;
   s16 delta;   /* Add this value to the context, may be negative */
-  s16 dummy;
+  u16 dummy;
+};
+struct pgreqd_getfstyle {
+  /* The index of a font style, in the order that it has been
+   * compiled/loaded into pgserver. Starts with zero, increment it until
+   * an invalid font style is returned 
+   */
+  u16 index;
+  u16 dummy;
+};
+struct pgdata_getfstyle {
+  /* This is returned by getfstyle.
+   * If name[0] is 0, the font style index was invalid
+   */
+  char name[40];          /* Name of the font family */
+  unsigned short size;    /* Height in pixels (for bitmapped fonts) */
+  unsigned short fontrep; /* PG_FR_* flags for font representation */
+  unsigned long  flags;   /* PG_FSTYLE_* flags for font style itself */
 };
 
 /* A structure for encapsulating commands, for example in canvas, within

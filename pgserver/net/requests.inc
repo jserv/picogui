@@ -42,6 +42,7 @@ RQH(getinactive)
 RQH(setinactive)
 RQH(drivermsg)
 RQH(loaddriver)
+RQH(getfstyle)
 RQH(undef)
 
 /* The End */
