@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.16 2001/10/19 22:09:09 micahjd Exp $
+/* $Id: textbox_main.c,v 1.17 2001/10/19 23:02:32 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -55,13 +55,21 @@ g_error textbox_install(struct widget *self) {
    errorcheck;
    self->in->flags |= PG_S_TOP;
    self->out = &self->in->next;
-   e = newdiv(&self->in->div,self);    /* 1st line */
+   e = newdiv(&self->in->div,self);    /* Background fill
+					* We could just put the 1st line here
+					* but that would break scrolling and
+					* other code that depends on the whole
+					* widget being contained within
+					* in->div. */
    errorcheck;
-   self->in->div->flags |= PG_S_TOP;
    self->in->div->build = &build_bgfill_only;
    self->in->div->state = PGTH_O_TEXTBOX;
+   self->in->div->flags |= PG_S_ALL;
+   e = newdiv(&self->in->div->div,self);  /* 1st line */
+   errorcheck;
+   self->in->div->div->flags |= PG_S_TOP;
    memset(&DATA->c,0,sizeof(DATA->c)); /* Set up cursor */
-   DATA->c.head = self->in->div;
+   DATA->c.head = self->in->div->div;
    DATA->c.widget = self;
 
    /**** Editing doesn't work yet 
