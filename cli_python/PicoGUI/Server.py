@@ -147,7 +147,8 @@ constants = {
         'sizemode':			(6, {
             'pixel':	(0, {}),
             'percent':	(1<<2, {}),
-            'cntfrac':	(1<<15, {}),
+            'cntfrac':	(1<<15, {}),               # Container fraction
+            'container fraction':  (1<<15, {}),    # Less stupidly named version of the same
         }),
         'text':				(7, _getString),
         'font':				(8, _getFont),
