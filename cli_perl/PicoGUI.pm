@@ -1,6 +1,9 @@
-# $Id: PicoGUI.pm,v 1.32 2000/08/27 06:00:59 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.33 2000/09/23 07:06:03 micahjd Exp $
 #
 # PicoGUI client module for Perl
+#
+# Note: This library is very slow and incomplete. If you intend to 
+# use it for anything, bug me (micah) to fix it.
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -202,7 +205,7 @@ use Socket;
 	  );
 
 $MAGIC     = 0x31415926;
-$PROTOVER  = 1;
+$PROTOVER  = 2;
 
 @ERRT = qw( NONE MEMORY IO NETOWRK BADPARAM HANDLE INTERNAL BUSY );
 
@@ -418,8 +421,8 @@ sub _init {
     $magic==$MAGIC or 
 	croak "PicoGUI - incorrect magic number ($MAGIC -> $magic)\n";
 
-    # TODO: fix this
-    $protover==$PROTOVER or croak "PicoGUI - protocol version not supported\n"; 
+    $protover>=$PROTOVER or warn "PicoGUI - client is newer than the server. \n".
+	"You might experiance compatibility problems."; 
 }
 
 # Close the connection on exit
@@ -539,7 +542,8 @@ sub _themeset {
     _request(14,pack('Nnnnn',@_));
 }
 sub _register {
-    _request(15,pack('Nnnnnnnnnnn',@_));
+    # This is broken: FIXME
+    _request(15,pack('Nnn',@_));
     _flushpackets();
 }
 sub _mkpopup {
@@ -639,21 +643,22 @@ sub RegisterApp {
     my ($name,$type,$side,$sidemask,$w,$h,$minw,$maxw,$minh,$maxh);
     my $self = {-root => 1};
 
+    # FIXME: This is very broken
+
     $name = $args{-name};
     $type = $args{-type} ? $APPTYPE{$args{-type}} : $APPTYPE{'normal'};
-    $side = $args{-side} ? $SIDE{$args{-side}} : $SIDE{'top'};
-    $sidemask = defined($args{-sidemask}) ? $args{-sidemask} : 0xFFFF;
-    $w = defined($args{-width}) ? $args{-width} : 0;
-    $h = defined($args{-height}) ? $args{-height} : 0;
-    $minw = defined($args{-minw}) ? $args{-minw} : 0;
-    $maxw = defined($args{-maxw}) ? $args{-maxw} : 0;
-    $minh = defined($args{-minh}) ? $args{-minh} : 0;
-    $maxh = defined($args{-maxh}) ? $args{-maxh} : 0;
+#    $side = $args{-side} ? $SIDE{$args{-side}} : $SIDE{'top'};
+#    $sidemask = defined($args{-sidemask}) ? $args{-sidemask} : 0xFFFF;
+#    $w = defined($args{-width}) ? $args{-width} : 0;
+#    $h = defined($args{-height}) ? $args{-height} : 0;
+#    $minw = defined($args{-minw}) ? $args{-minw} : 0;
+#    $maxw = defined($args{-maxw}) ? $args{-maxw} : 0;
+#    $minh = defined($args{-minh}) ? $args{-minh} : 0;
+#    $maxh = defined($args{-maxh}) ? $args{-maxh} : 0;
 
     # Bless thy self and get on with it...
     bless $self;
-    $self->{'h'} = _register($name,$type,$side,$sidemask,$w,$h,$minw,
-			     $maxw,$minh,$maxh);
+    $self->{'h'} = _register($name,$type);
 
     # Default is inside this widget
     $default_rship = $RSHIPS{-inside};
