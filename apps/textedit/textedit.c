@@ -48,7 +48,7 @@ int evtBtn (struct pgEvent *evt)
 
 
 int main(int argc, char **argv) {
-    pghandle scroll, vbox, vbox2, wToolbar;
+    pghandle vbox, vbox2, wToolbar;
 
     pgInit(argc,argv);
     pgRegisterApp(PG_APP_NORMAL,"Textedit Demo",0);
@@ -70,9 +70,7 @@ int main(int argc, char **argv) {
 		 0);
 
     /* first edit box */
-    scroll = pgNewWidget (PG_WIDGET_SCROLL, PG_DERIVE_INSIDE, vbox);
-    edit = pgNewWidget (PG_WIDGET_TEXTEDIT, 0, 0); 
-    pgSetWidget (scroll, PG_WP_BIND, edit, 0);
+    edit = pgNewWidget (PG_WIDGET_TEXTEDIT, PG_DERIVE_INSIDE, vbox); 
     pgSetWidget (edit,
 		 PG_WP_FONT, pgNewFont (NULL, 12, PG_FSTYLE_BOLD),
 		 PG_WP_TEXT, pgNewString ("Howdy!"),
@@ -80,9 +78,7 @@ int main(int argc, char **argv) {
 		 0);
 
     /* second edit box */
-    scroll = pgNewWidget (PG_WIDGET_SCROLL, PG_DERIVE_INSIDE, vbox2);
-    edit = pgNewWidget(PG_WIDGET_TEXTEDIT, 0, 0); 
-    pgSetWidget (scroll, PG_WP_BIND, edit, 0);
+    edit = pgNewWidget(PG_WIDGET_TEXTEDIT, PG_DERIVE_INSIDE, vbox2); 
     pgSetWidget (edit,
 		 PG_WP_FONT, pgNewFont (NULL, 24, PG_FSTYLE_BOLD),
 		 PG_WP_TEXT, pgNewString ("Howdy!"),
