@@ -1,4 +1,4 @@
-/* $Id: signals.c,v 1.5 2002/01/23 15:15:51 gobry Exp $
+/* $Id: signals.c,v 1.6 2002/02/02 18:39:56 sbarnes Exp $
  *
  * signal.c - Handle some fatal and not-so-fatal signals gracefully
  *            The SIGSEGV handling et cetera was inspired by SDL's
@@ -50,7 +50,9 @@ static int pgserver_signals[] = {
   SIGINT,
   /* Extra signals */
   SIGUSR1,
+#ifdef SIGUNUSED
   SIGUNUSED,
+#endif
   0
 };
 
