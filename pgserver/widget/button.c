@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.92 2002/01/22 23:08:22 micahjd Exp $
+/* $Id: button.c,v 1.93 2002/01/28 09:53:50 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -248,6 +248,12 @@ g_error button_set(struct widget *self,int property, glob data) {
 
   case PG_WP_EXTDEVENTS:
     DATA->extdevents = data;
+
+    /* Go ahead and set the hotspot flag */
+    if (data & PG_EXEV_NO_HOTSPOT)
+      self->in->div->flags &= ~DIVNODE_HOTSPOT;
+    else
+      self->in->div->flags |= DIVNODE_HOTSPOT;
     break;
 
   case PG_WP_ON:

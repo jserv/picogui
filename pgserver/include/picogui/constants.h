@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.124 2002/01/22 23:08:22 micahjd Exp $
+/* $Id: constants.h,v 1.125 2002/01/28 09:53:49 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -918,15 +918,16 @@ typedef unsigned long pghandle;
 				  uses PGTH_O_POPUP_MENU) */
 
 /* Constants for PG_WP_EXTDEVENTS, to enable extra events */
-#define PG_EXEV_PNTR_UP   0x0001
-#define PG_EXEV_PNTR_DOWN 0x0002
-#define PG_EXEV_NOCLICK   0x0004  /* (ignore clicks) in buttons */
-#define PG_EXEV_PNTR_MOVE 0x0008
-#define PG_EXEV_KEY       0x0010  /* Raw key events KEYUP and KEYDOWN */
-#define PG_EXEV_CHAR      0x0020  /* Processed characters */
-#define PG_EXEV_TOGGLE    0x0040  /* Clicks toggle the button's state */
-#define PG_EXEV_EXCLUSIVE 0x0080  /* Button is mutually exclusive */
-#define PG_EXEV_FOCUS     0x0100  /* We want to receive PG_WE_FOCUS */
+#define PG_EXEV_PNTR_UP    0x0001
+#define PG_EXEV_PNTR_DOWN  0x0002
+#define PG_EXEV_NOCLICK    0x0004  /* (ignore clicks) in buttons */
+#define PG_EXEV_PNTR_MOVE  0x0008
+#define PG_EXEV_KEY        0x0010  /* Raw key events KEYUP and KEYDOWN */
+#define PG_EXEV_CHAR       0x0020  /* Processed characters */
+#define PG_EXEV_TOGGLE     0x0040  /* Clicks toggle the button's state */
+#define PG_EXEV_EXCLUSIVE  0x0080  /* Button is mutually exclusive */
+#define PG_EXEV_FOCUS      0x0100  /* We want to receive PG_WE_FOCUS */
+#define PG_EXEV_NO_HOTSPOT 0x0200  /* Disable hotspot navigation for this button */
 
 /* Constants for PG_WP_DIRECTION */
 #define PG_DIR_HORIZONTAL     0
