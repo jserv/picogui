@@ -516,11 +516,11 @@ quoted appropriately. For example:
 - default
   Style for the default font. The style format used is name:size:flags, with
   all sections optional, same as cli_python.
-  Defaults to "Helmet:12" (included in the PicoGUI font distrobution)
+  Defaults to "Bitstream Vera Sans:10" (included in the PicoGUI font distrobution)
 
 - default_fixed
   Style for the default fixed width font.
-  Defaults to "Clean:12" (included in the PicoGUI font distrobution)
+  Defaults to "Bitstream Vera Sans Mono:10" (included in the PicoGUI font distrobution)
 
 - minimum_size
   Force all fonts to be at least this big
@@ -609,11 +609,11 @@ quoted appropriately. For example:
 
 - default_fixed_face
   Face name to use for the default fixed-width font
-  Defaults to "Nimbus Mono L" (included in the picogui fonts package)
+  Defaults to "Bitstream Vera Sans Mono" (included in the picogui fonts package)
 
 - default_face
   Face name to use for the default variable-width font
-  Defaults to "Helmet" (included in the picogui fonts package)
+  Defaults to "Bitstream Vera Sans" (included in the picogui fonts package)
 
 - no_hinting
   Disables font hinting, usually makes small fonts look fuzzy

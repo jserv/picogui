@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.37 2003/03/10 23:48:10 micahjd Exp $
+/* $Id: font.h,v 1.38 2003/04/25 16:10:39 micahjd Exp $
  *
  * font.h - Common structures for defining fonts, and an interface
  *          for specific font engines to attach to
@@ -159,6 +159,9 @@ struct fontlib {
   /*   Return the metrics associated with a font descriptor
    */
   void (*getmetrics)(struct font_descriptor *fd, struct font_metrics *m);
+
+  /* Optionally process driver messages */
+  void (*message)(u32 message, u32 param, u32 *ret);
 };
 
 

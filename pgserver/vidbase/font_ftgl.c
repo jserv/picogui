@@ -1,4 +1,4 @@
-/* $Id: font_ftgl.c,v 1.11 2003/03/10 23:48:22 micahjd Exp $
+/* $Id: font_ftgl.c,v 1.12 2003/04/25 16:10:41 micahjd Exp $
  *
  * font_ftgl.c - Font engine that uses OpenGL textures prepared with SDL_ttf.
  *                This engine is very minimalistic compared to the freetype engine:
@@ -229,9 +229,9 @@ g_error ftgl_create(struct font_descriptor *self, const struct font_style *fs) {
   /* If they asked for a default font, give it to them */
   if (!s.name || !*s.name || (s.style & PG_FSTYLE_DEFAULT)) {
     if (s.style & PG_FSTYLE_FIXED)
-      s.name = get_param_str(CFGSECTION,"default_fixed_face","Nimbus Mono L");
+      s.name = get_param_str(CFGSECTION,"default_fixed_face","Bitstream Vera Sans Mono");
     else
-      s.name = get_param_str(CFGSECTION,"default_face","Helmet");
+      s.name = get_param_str(CFGSECTION,"default_face","Bitstream Vera Sans");
   }     
 
   /* If they asked for the default size, give it to them */
