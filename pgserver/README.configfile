@@ -400,38 +400,6 @@ quoted appropriately. For example:
 - fullscreen
   Set to 1 to enable fullscreen mode
 
-- unit_rotate
-  Parameter should be four space-separated floating point numbers. The first
-  is the rotation, in degrees. The rest are a vector specifying the axis to
-  rotate around. Rotation is performed before scaling or translating
-  (performed while the origin is at the center and each edge is one unit away)
-
-- unit_scale
-  Parameter is a vector (3 space separated floating point numbers) to scale by.
-  Performed after rotation, before translation.
-  (performed while the origin is at the center and each edge is one unit away)
-
-- unit_translate
-  Parameter is a vector (3 space separated floating point numbers) to translate by.
-  Performed after rotation and translation.
-  (performed while the origin is at the center and each edge is one unit away)
-
-- pixel_rotate
-  Parameter should be four space-separated floating point numbers. The first
-  is the rotation, in degrees. The rest are a vector specifying the axis to
-  rotate around. Rotation is performed before scaling or translating
-  (performed in pixel coordinates)
-
-- pixel_scale
-  Parameter is a vector (3 space separated floating point numbers) to scale by.
-  Performed after rotation, before translation.
-  (performed in pixel coordinates)
-
-- pixel_translate
-  Parameter is a vector (3 space separated floating point numbers) to translate by.
-  Performed after rotation and translation.
-  (performed in pixel coordinates)
-
 - texture_filtering
   This may be "linear" or "nearest". Defaults to "linear". Note that font textures
   always use linear filtering and mipmapping.

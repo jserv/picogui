@@ -1,4 +1,4 @@
-/* $Id: sdlgl_init.c,v 1.1 2002/03/03 05:42:26 micahjd Exp $
+/* $Id: sdlgl_init.c,v 1.2 2002/03/03 05:46:50 micahjd Exp $
  *
  * sdlgl_init.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has initialization, shutdown, and registration.
@@ -126,35 +126,7 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   gluPerspective(GL_FOV,1,GL_MINDEPTH,GL_MAXDEPTH);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-
-  /* Apply the transformations that should be done while
-   * the origin is in the center and each edge is one unit from the origin.
-   */
-  
-  sscanf(get_param_str(GL_SECTION,"unit_rotate","0 0 0 0"), "%f %f %f %f", &a,&x,&y,&z);
-  glRotatef(a,x,y,z);
-
-  sscanf(get_param_str(GL_SECTION,"unit_scale","1 1 1"), "%f %f %f", &x,&y,&z);
-  glScalef(x,y,z);
-
-  sscanf(get_param_str(GL_SECTION,"unit_translate","0 0 0"), "%f %f %f", &x,&y,&z);
-  glTranslatef(x,y,z);
-
-  /* Now convert to pixel coordinates */
   gl_matrix_pixelcoord();
-
-  /* Apply the transformations that should be done in pixels
-   */
-  
-  sscanf(get_param_str(GL_SECTION,"pixel_rotate","0 0 0 0"), "%f %f %f %f", &a,&x,&y,&z);
-  glRotatef(a,x,y,z);
-
-  sscanf(get_param_str(GL_SECTION,"pixel_scale","1 1 1"), "%f %f %f", &x,&y,&z);
-  glScalef(x,y,z);
-
-  sscanf(get_param_str(GL_SECTION,"pixel_translate","0 0 0"), "%f %f %f", &x,&y,&z);
-  glTranslatef(x,y,z);
-
 
   /* Remove normal picogui fonts */
   gl_global.old_fonts = fontstyles;
