@@ -30,7 +30,7 @@ void startup(void) {
   pgContextUpdate(gc);
 
   /* Set the font */
-  myfont = pgNewFont(NULL,100,PG_FSTYLE_BOLD);
+  myfont = pgNewFont(NULL,40,PG_FSTYLE_BOLD);
   pgSetFont(gc,myfont);
 
   /* Allocate the string once */
@@ -56,6 +56,8 @@ void animate(void) {
 /************************ Screensaver engine */
 
 int main(int argc, char **argv) {
+  pghandle inFilter;
+   
   pgInit(argc,argv);
 
   /* Keep running the screensaver */
@@ -67,8 +69,7 @@ int main(int argc, char **argv) {
 					 
     /* Grab the I/O devices */
     pgRegisterOwner(PG_OWN_DISPLAY);
-    pgRegisterOwner(PG_OWN_KEYBOARD);
-    pgRegisterOwner(PG_OWN_POINTER);
+    inFilter = pgNewInFilter(0,-1L,-1L);
     gc = pgNewBitmapContext(0);
     mi = *pgGetVideoMode();
 					 
@@ -81,8 +82,7 @@ int main(int argc, char **argv) {
 					 
     /* Give up the I/O devices */
     pgDeleteContext(gc);
-    pgUnregisterOwner(PG_OWN_POINTER);
-    pgUnregisterOwner(PG_OWN_KEYBOARD);
+    pgDelete(inFilter);
     pgUnregisterOwner(PG_OWN_DISPLAY);					 
   }
 }
