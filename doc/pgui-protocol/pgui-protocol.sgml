@@ -850,27 +850,21 @@ server returned data : <structfield>pgresponse_ret.data</>
   </sect2>
 
   <sect2 id="pgreq-mkbitmap">
-   <title>PGREQ_MKBITMAP - Create a bitmap</title> 
+   <title>PGREQ_MKBITMAP - Load a bitmap</title> 
    <programlisting>
 type                 : PGREQ_MKBITMAP (3)
-client lib equivalent: pgCreateBitmap
-additional data      : <link linkend="pgreqdnewbitmap">struct pgreqd_newbitmap</>
+client lib equivalent: pgLoadBitmap
+additional data      : image data
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
 server returned data : <structfield>pgresponse_ret.data</>
    </programlisting>
    <para>
-	Create a new bitmap object.  The handle to the bitmap will be returned
-	in the <structfield>pgresponse_ret.data</>
-   </para>
-   <figure id="pgreqdnewbitmap"><title>struct pgreqd_newbitmap</><programlisting>
-struct pgreqd_newbitmap {
-  u16 width;
-  u16 height;
-};
-   </programlisting></figure>
-   <para>
-	Where <structfield>width</> and <structfield>height</> for the new
-	image are specified in pixels.
+	Load a bitmap in any format supported by pgserver. The contents of the
+        PNG, PNM, JPEG, BMP, etc. is just dumped into the packet and sent to pgserver.
+        The format and size is autodetected, the bitmap converted to the video
+        driver's format, and a handle to the bitmap returned
+	in the <structfield>pgresponse_ret.data</>. If the format is one not supported
+        by pgserver, an error will be returned.
    </para>
   </sect2>
 
@@ -1079,26 +1073,25 @@ struct pgreqd_mkwidget {
    <title>PGREQ_NEWBITMAP - Create a blank bitmap</>
    <programlisting>
 type                 : PGREQ_NEWBITMAP (35)
-client lib equivalent: pgNewbitmap()
+client lib equivalent: pgCreateBitmap()
 additional data      : <link linkend="pgreqdnewbitmap">struct pgreqd_newbitmap</>
-                       image data
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
 server returned data : <structfield>pgresponse_ret.data</>
    </programlisting>
    <para>
-	Create a new bitmap object from existing data.  This request is
-	similar to <link linkend="pgreq-mkbitmap"><constant>PGREQ_MKBITMAP</></>
-	with the difference that the initial image data is provided. The
+	Create a blank bitmap object of the specified size. The
 	handle to the new bitmap will be returned in
 	<structfield>pgresponse_ret.data</>
    </para>
+   <figure id="pgreqdnewbitmap"><title>struct pgreqd_newbitmap</><programlisting>
+struct pgreqd_newbitmap {
+  u16 width;
+  u16 height;
+};
+   </programlisting></figure>
    <para>
-	The image data <emphasis>must</> follow immediately after the
-	<structname>pgrequest</> and <structname>pgreqd_newbitmap</>
-	structures.  The data is sent as found in the image file, that is
-	JPEG, GIF, PNG, BMP, etc.
-   </para>
-   <para>
+	Where <structfield>width</> and <structfield>height</> for the new
+	image are specified in pixels.
    </para>
   </sect2>
 
