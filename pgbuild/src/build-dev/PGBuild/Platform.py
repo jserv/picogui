@@ -142,19 +142,8 @@ def determinePlatform():
     if os.name == 'posix':
         # On POSIX systems, we can get most of our info from uname
         uname = os.uname()
-
-        # Heuristics to detect the standard library in use
-        libC = None
-        try:
-            import dl
-            libc = dl.open("libc.so.6")
-            x.call("gnu_get_libc_version")
-            toolchain = "gnu"
-        except:
-            pass
         return Platform(operatingSystem=uname[0].lower(),
-                        architecture=uname[4].lower(),
-                        libc=libC)
+                        architecture=uname[4].lower())
 
     else:
         # All other systems, we can only provide the OS name python gives us
