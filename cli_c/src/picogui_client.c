@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.54 2001/02/15 02:24:48 micahjd Exp $
+/* $Id: picogui_client.c,v 1.55 2001/03/07 18:26:07 pney Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -28,6 +28,10 @@
 
 /******************* Definitions and includes */
 
+#ifdef UCLINUX
+#  include "platform.c"  /* for emulation of 'vsnprintf' */
+#endif
+
 /* System includes */
 #include <netinet/tcp.h>
 #include <sys/socket.h>
@@ -39,7 +43,11 @@
 #include <netdb.h>
 #include <stdio.h>    /* for fprintf() */
 #include <malloc.h>
-#include <alloca.h>
+
+#ifndef UCLINUX
+#  include <alloca.h> /* for uClinux 'alloca' is in malloc.h */
+#endif
+
 #include <string.h>   /* for memcpy(), memset(), strcpy() */
 #include <stdarg.h>   /* needed for pgRegisterApp and pgSetWidget */
 #include <stdlib.h>   /* for getenv() */
@@ -560,7 +568,10 @@ void pgInit(int argc, char **argv)
   int fd,i,j,args_to_shift;
   char *arg;
   volatile int tmp;
-   
+#ifdef UCLINUX  
+  struct in_addr srv_addr;
+#endif
+
   /* Get the app's name */
   _pg_appname = argv[0];
 
@@ -591,7 +602,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: picogui_client.c,v 1.54 2001/02/15 02:24:48 micahjd Exp $\n");
+	fprintf(stderr,"$Id: picogui_client.c,v 1.55 2001/03/07 18:26:07 pney Exp $\n");
 	exit(1);
       }
       
@@ -610,10 +621,32 @@ void pgInit(int argc, char **argv)
   /* Some programs might rely on this? */
   argv[argc] = NULL;
 
+#ifdef UCLINUX
+  /* get the host info.
+   * gethostbyname() and gethostbyaddr() not working in uClinux.
+   * Using inet_aton()
+   * I let the two first in the case of... or for the future.
+   */
+  if ((he=gethostbyname(hostname)) != NULL) {
+    srv_addr = *((struct in_addr *)he->h_addr);
+  }
+  else if ((he=gethostbyaddr(hostname,strlen(hostname),AF_INET)) != NULL) {
+    srv_addr = *((struct in_addr *)he->h_addr);
+  }
+  else if (inet_aton(hostname, &srv_addr)) {
+  }
+  else {
+    clienterr("Error resolving server hostname");
+    return;
+  }
+#else
   if ((he=gethostbyname(hostname)) == NULL) {  /* get the host info */
     clienterr("Error resolving server hostname");
     return;
   }
+#endif
+
+
 
   if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
     clienterr("socket error");
@@ -626,7 +659,11 @@ void pgInit(int argc, char **argv)
    
   server_addr.sin_family = AF_INET;                 /* host byte order */
   server_addr.sin_port = htons(PG_REQUEST_PORT);    /* short, network byte order */
+#ifdef UCLINUX
+  server_addr.sin_addr = srv_addr;
+#else
   server_addr.sin_addr = *((struct in_addr *)he->h_addr);
+#endif
   bzero(&(server_addr.sin_zero), 8);                /* zero the rest of the struct */
 
   if (connect(fd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1) {
