@@ -588,10 +588,21 @@ struct pgreqd_get {
    <title>PGREQ_GETFSTYLE - Get information on a font</>
    <programlisting>
 type                 : PGREQ_GETFSTYLE
-client lib equivalent: 
-additional data      : 
+client lib equivalent: pgGetFontStyle()
+additional data      : struct pgreqd_getfstyle
    </programlisting>
    <para>
+	Get information about a font style
+   </para>
+   <figure><title>struct pgreqd_getfstyle</><programlisting>
+struct pgreqd_getfstyle {
+  u16 index;
+  u16 dummy;
+};
+   </programlisting></figure>
+   <para>
+	The <structfield>index</> is a zero-based index to select a font style
+	in the order that the were compiled or loaded into pgserver.
    </para>
   </sect2>
 
@@ -599,10 +610,11 @@ additional data      :
    <title>PGREQ_GETINACTIVE - Get miliseconds of inactivity</>
    <programlisting>
 type                 : PGREQ_GETINACTIVE
-client lib equivalent: 
-additional data      : 
+client lib equivalent: pgGetInactivity()
+additional data      : none
    </programlisting>
    <para>
+	Get the number of miliseconds of inactivity.
    </para>
   </sect2>
 
@@ -726,10 +738,12 @@ struct pgreqd_in_point {
    <title>PGREQ_LOADDRIVER - Load input/misc driver</>
    <programlisting>
 type                 : PGREQ_LOADDRIVER
-client lib equivalent: 
-additional data      : 
+client lib equivalent: pgLoadDriver()
+additional data      : data
    </programlisting>
    <para>
+	Load a named driver.  The name is specified as the
+	<structfield>data</> argument.
    </para>
   </sect2>
 
@@ -753,7 +767,6 @@ additional data      : data
 type                 : PGREQ_MKBITMAP
 client lib equivalent: pgCreateBitmap
 additional data      : struct pgreqd_newbitmap
-                       image data
    </programlisting>
    <para>
 	Create a new bitmap object.
@@ -767,12 +780,6 @@ struct pgreqd_newbitmap {
    <para>
 	Where <structfield>width</> and <structfield>height</> for the new
 	image are specified in pixels.
-   </para>
-   <para>
-	The image data <emphasis>must</> follow immediately after the
-	<structname>pgrequest</> and <structname>pgreqd_newbitmap</>
-	structures.  The data is sent as found in the image file, that is
-	JPEG, GIF, PNG, BMP, etc.
    </para>
   </sect2>
 
@@ -949,9 +956,22 @@ struct pgreqd_mkwidget {
    <title>PGREQ_NEWBITMAP - Create a blank bitmap</>
    <programlisting>
 type                 : PGREQ_NEWBITMAP
-client lib equivalent: 
-additional data      : 
+client lib equivalent: pgNewbitmap()
+additional data      : struct pgreqd_newbitmap
+                       image data
    </programlisting>
+   <para>
+	Create a new bitmap object from existing data.  This request is
+	similar to <constant>PGREQ_MKBITMAP</>
+	(<xref linkend="pgreq-mkbitmap">) with the difference that the
+	initial image data is provided.
+   </para>
+   <para>
+	The image data <emphasis>must</> follow immediately after the
+	<structname>pgrequest</> and <structname>pgreqd_newbitmap</>
+	structures.  The data is sent as found in the image file, that is
+	JPEG, GIF, PNG, BMP, etc.
+   </para>
    <para>
    </para>
   </sect2>
@@ -1125,10 +1145,20 @@ struct pgreqd_set {
    <title>PGREQ_SETINACTIVE - Set miliseconds of inactivity</>
    <programlisting>
 type                 : PGREQ_SETINACTIVE
-client lib equivalent: 
-additional data      : 
+client lib equivalent: pgSetInactivity()
+additional data      : struct pgreqd_setinactive
    </programlisting>
    <para>
+	Set the number of milisecond of inactivity.
+   </para>
+   <figure><title>struct pgreqd_setinactive</><programlisting>
+struct pgreqd_setinactive {
+  u32 time;
+};
+   </programlisting></figure>
+   <para>
+	Where <structfield>time</> is the number of miliseconds to use as
+	timer delta.
    </para>
   </sect2>
 
@@ -1254,10 +1284,16 @@ struct pgreqd_setpayload {
    <title>PGREQ_SIZEBITMAP - Find the size of a bitmap</>
    <programlisting>
 type                 : PGREQ_SIZEBITMAP
-client lib equivalent: 
-additional data      : 
+client lib equivalent: pgSizeBitmap()
+additional data      : struct pgreqd_handlestruct
    </programlisting>
    <para>
+	Find the width and height of a bitmap matching the provided handle
+	of a valid PicoGUI bitmap object.
+   </para>
+   <para>
+	See <xref linkend="pgreqdhandlestruct"> for the
+	<structname>pgreqd_handlestruct</> structure format.
    </para>
   </sect2>
 
@@ -1287,10 +1323,26 @@ struct pgreqd_sizetext {
    <title>PGREQ_THLOOKUP - Perform a theme lookup</>
    <programlisting>
 type                 : PGREQ_THLOOKUP
-client lib equivalent: 
-additional data      : 
+client lib equivalent: pgThemeLookup()
+additional data      : struct pgreqd_thlookup
    </programlisting>
    <para>
+	Retrieve a theme property.
+   </para>
+   <figure><title>struct pgreqd_thlookup</><programlisting>
+truct pgreqd_thlookup {
+  u16 object;
+  u16 property;
+};
+   </programlisting></figure>
+   <para>
+	The <structfield>object</> is a <constant>PGTH_O_*</> theme object
+	constant (see <xref linkend="pgthotypes"> for a complete listing).
+   </para>
+   <para>
+	The <structfield>property</> is a <constant>PGTH_P_*</> theme
+	property constant (see <xref linkend="pgthptypes"> for a complete
+	listing).
    </para>
   </sect2>
 
@@ -1298,11 +1350,44 @@ additional data      :
    <title>PGREQ_TRAVERSEWGT - Find widgets after this one</>
    <programlisting>
 type                 : PGREQ_TRAVERSEWGT
-client lib equivalent: 
-additional data      : 
+client lib equivalent: pgTraverseWidget()
+additional data      : struct pgreqd_traversewgt
    </programlisting>
    <para>
+	Finds a widget in relation to another widget.
    </para>
+   <figure><title>struct pgreqd_traversewgt</><programlisting>
+struct pgreqd_traversewgt {
+  u32 widget;
+  u16 direction;
+  u16 count;
+};  
+   </programlisting></figure>
+   <para>
+	The <structfield>widget</> is the handle of the widget referenced.
+   </para>
+   <para>
+	The <structfield>direction</> is the direction to traverse
+	specified with a <constant>PG_TRAVERSE_*</> constant (see
+	<xref linkend="pgtraversetypes"> for a complete listing).
+   </para>
+   <para>
+	The <structfield>count</> is the number of steps to take in that
+	direction.
+   </para>
+   <table frame=none pgwide=1 id="pgtraversetypes"><title>PG_TRAVERSE values</>
+   <tgroup cols=3 align=left>
+   <colspec colwidth="45*">
+   <colspec colwidth="10*">
+   <colspec colwidth="45*">
+   <tbody>
+   <row><entry>PG_TRAVERSE_CHILDREN</><entry>1</><entry>Starting with this widget's first child, traverse forward</></>
+   <row><entry>PG_TRAVERSE_FORWARD</><entry>2</><entry></></>
+   <row><entry>PG_TRAVERSE_BACKWARD</><entry>3</><entry>Going backwards is much slower than going forward right now</></>
+   <row><entry>PG_TRAVERSE_CONTAINER</><entry>4</><entry><structfield>count</> is the number of container levels to traverse up</></>
+   </tbody>
+   </tgroup>
+   </table>
   </sect2>
 
   <sect2 id="pgreq-unregowner">
@@ -1912,9 +1997,176 @@ additional data      : pgreqd_handlestruct
   </tbody>
   </table>
  </appendix>
+ 
+ <appendix>
+  <title>Theme Constants</title>
+  <sect1 id="pgthotypes"><title>Theme Object Types</>
+  <table pgwide=1 frame=none><title>PGTH_O values</>
+  <tgroup cols=3 align=left>
+  <colspec colwidth="45*">
+  <colspec colwidth="10*">
+  <colspec colwidth="45*">
+  <tbody>
+  <row><entry>PGTH_O_DEFAULT</><entry>0</><entry>Every theme object inherits this</></>
+  <row><entry>PGTH_O_BASE_INTERACTIVE</><entry>1</><entry>Base for interactive widgets</></>
+  <row><entry>PGTH_O_BASE_CONTAINER</><entry>2</><entry>Base for containers like toolbars</></>
+  <row><entry>PGTH_O_BUTTON</><entry>3</><entry>The button widget</></>
+  <row><entry>PGTH_O_BUTTON_HILIGHT</><entry>4</><entry>Button, hilighted when mouse is over</></>
+  <row><entry>PGTH_O_BUTTON_ON</><entry>5</><entry>Button, mouse is pressed</></>
+  <row><entry>PGTH_O_TOOLBAR</><entry>6</><entry>The toolbar widget</></>
+  <row><entry>PGTH_O_SCROLL</><entry>7</><entry>The scrollbar widget</></>
+  <row><entry>PGTH_O_SCROLL_HILIGHT</><entry>8</><entry>Scroll, when mouse is over it</></>
+  <row><entry>PGTH_O_INDICATOR</><entry>9</><entry>The indicator widget</></>
+  <row><entry>PGTH_O_PANEL</><entry>10</><entry>The background portion of a panel</></>
+  <row><entry>PGTH_O_PANELBAR</><entry>11</><entry>The draggable titlebar of a panel</></>
+  <row><entry>PGTH_O_POPUP</><entry>12</><entry>Popup window</></>
+  <row><entry>PGTH_O_BACKGROUND</><entry>13</><entry>Background widget bitmap</></>
+  <row><entry>PGTH_O_BASE_DISPLAY</><entry>14</><entry>Base for widgets that mostly display stuff</></>
+  <row><entry>PGTH_O_BASE_TLCONTAINER</><entry>15</><entry>Top-level containers like popups, panels</></>
+  <row><entry>PGTH_O_THEMEINFO</><entry>16</><entry>Information about the theme that should be loaded into memory, like the name</></>
+  <row><entry>PGTH_O_LABEL</><entry>17</><entry>The label widget</></>
+  <row><entry>PGTH_O_FIELD</><entry>18</><entry>The field widget</></>
+  <row><entry>PGTH_O_BITMAP</><entry>19</><entry>The bitmap widget</></>
+  <row><entry>PGTH_O_SCROLL_ON</><entry>20</><entry>Scroll, when mouse is down</></>
+  <row><entry>PGTH_O_LABEL_SCROLL</><entry>21</><entry>A label, when bound to a scrollbar</></>
+  <row><entry>PGTH_O_PANELBAR_HILIGHT</><entry>22</><entry>A panelbar, when mouse is inside it</></>
+  <row><entry>PGTH_O_PANELBAR_ON</><entry>23</><entry>A panelbar, when mouse is down</></>
+  <row><entry>PGTH_O_BOX</><entry>24</><entry>The box widget</></>
+  <row><entry>PGTH_O_LABEL_DLGTITLE</><entry>25</><entry>A label, used for a dialog box title</></>
+  <row><entry>PGTH_O_LABEL_DLGTEXT</><entry>26</><entry>A label, used for the body of a dialog</></>
+  <row><entry>PGTH_O_CLOSEBTN</><entry>27</><entry>A panelbar close button</></>
+  <row><entry>PGTH_O_CLOSEBTN_ON</><entry>28</><entry>A panelbar close button, mouse down</></>
+  <row><entry>PGTH_O_CLOSEBTN_HILIGHT</><entry>29</><entry>A panelbar close button, mouse over</></>
+  <row><entry>PGTH_O_BASE_PANELBTN</><entry>30</><entry>Base for a panelbar button</></>
+  <row><entry>PGTH_O_ROTATEBTN</><entry>31</><entry>A panelbar rotate button</></>
+  <row><entry>PGTH_O_ROTATEBTN_ON</><entry>32</><entry>A panelbar rotate button, mouse down</></>
+  <row><entry>PGTH_O_ROTATEBTN_HILIGHT</><entry>33</><entry>A panelbar rotate button, mouse over</></>
+  <row><entry>PGTH_O_ZOOMBTN</><entry>34</><entry>A panelbar zoom button</></>
+  <row><entry>PGTH_O_ZOOMBTN_ON</><entry>35</><entry>A panelbar zoom button, mouse down</></>
+  <row><entry>PGTH_O_ZOOMBTN_HILIGHT</><entry>36</><entry>A panelbar zoom button, mouse over</></>
+  <row><entry>PGTH_O_POPUP_MENU</><entry>37</><entry>A popup menu</></>
+  <row><entry>PGTH_O_POPUP_MESSAGEDLG</><entry>38</><entry>A message dialog</></>
+  <row><entry>PGTH_O_MENUITEM</><entry>39</><entry>Item in a popup menu (customized button)</></>
+  <row><entry>PGTH_O_MENUITEM_HILIGHT</><entry>40</><entry>menuitem with the mouse over it</></>
+  <row><entry>PGTH_O_CHECKBOX</><entry>41</><entry>Check box (customized button)</></>
+  <row><entry>PGTH_O_CHECKBOX_HILIGHT</><entry>42</><entry>checkbox with mouse over it</></>
+  <row><entry>PGTH_O_CHECKBOX_ON</><entry>43</><entry>checkbox when on</></>
+  <row><entry>PGTH_O_FLATBUTTON</><entry>44</><entry>Flat button (customized button)</></>
+  <row><entry>PGTH_O_FLATBUTTON_HILIGHT</><entry>45</><entry>flatbutton with mouse over it</></>
+  <row><entry>PGTH_O_FLATBUTTON_ON</><entry>46</><entry>flatbutton with mouse down</></>
+  <row><entry>PGTH_O_LISTITEM</><entry>47</><entry>Listitem (customized button)</></>
+  <row><entry>PGTH_O_LISTITEM_HILIGHT</><entry>48</><entry>Listitem with mouse over it</></>
+  <row><entry>PGTH_O_LISTITEM_ON</><entry>49</><entry>Selected listitem</></>
+  <row><entry>PGTH_O_CHECKBOX_ON_NOHILIGHT</><entry>50</><entry>checkbox when on but not hilighted</></>
+  <row><entry>PGTH_O_SUBMENUITEM</><entry>51</><entry>Submenuitem</></>
+  <row><entry>PGTH_O_SUBMENUITEM_HILIGHT</><entry>52</><entry>Hilighted submenuitem</></>
+  <row><entry>PGTH_O_RADIOBUTTON</><entry>53</><entry>Radio button (cust. button)</></>
+  <row><entry>PGTH_O_RADIOBUTTON_HILIGHT</><entry>54</><entry>Radio button (cust. button)</></>
+  <row><entry>PGTH_O_RADIOBUTTON_ON</><entry>55</><entry>Radio button (cust. button)</></>
+  <row><entry>PGTH_O_RADIOBUTTON_ON_NOHILIGHT</><entry>56</><entry>Radio button (cust. button)</></>
+  <row><entry>PGTH_O_TEXTBOX</><entry>57</><entry>Textbox widget</></>
+  <row><entry>PGTH_O_TERMINAL</><entry>58</><entry>Terminal widget</></>
+  <row><entry>PGTH_O_LIST</><entry>59</><entry>RidgeRun's list box widget</></>
+  <row><entry>PGTH_O_MENUBUTTON</><entry>60</><entry>DSPLinux Application Menu</></>
+  <row><entry>PGTH_O_MENUBUTTON_ON</><entry>61</><entry>DSPLinux Application Menu</></>
+  <row><entry>PGTH_O_MENUBUTTON_HILIGHT</><entry>62</><entry>DSPLinux Application Menu</></>
+  <row><entry>PGTH_O_LABEL_HILIGHT</><entry>63</><entry>Label hilight or select - See PG_WP_HILIGHTED</></>
+  <row><entry>PGTH_O_BOX_HILIGHT</><entry>64</><entry>Box hilight or select - See PG_WP_HILIGHTED</></>
+  <row><entry>PGTH_O_INDICATOR_H</><entry>65</><entry>Horizontal indicator</></>
+  <row><entry>PGTH_O_INDICATOR_V</><entry>66</><entry>Vertical indicator</></>
+  </tbody>
+  </tgroup>
+  </table>
+  </sect1>
+  <sect1 id="pgthptypes"><title>Theme Property Types</>
+  <table pgwide=1 frame=none><title>PGTH_P values</>
+  <tgroup cols=3 align=left>
+  <colspec colwidth="45*">
+  <colspec colwidth="10*">
+  <colspec colwidth="45*">
+  <tbody>
+  <row><entry>PGTH_P_BGCOLOR</><entry>1</><entry>Default background color</></>
+  <row><entry>PGTH_P_FGCOLOR</><entry>2</><entry>Default foreground color</></>
+  <row><entry>PGTH_P_BGFILL</><entry>3</><entry>Background fillstyle</></>
+  <row><entry>PGTH_P_OVERLAY</><entry>4</><entry>Fillstyle for scroll thumbs, the filled portion of an indicator</></>
+  <row><entry>PGTH_P_FONT</><entry>5</><entry>A widget's main font</></>
+  <row><entry>PGTH_P_NAME</><entry>6</><entry>Name of the theme object, themes can be searched by this</></>
+  <row><entry>PGTH_P_WIDTH</><entry>7</><entry>Reccomended width</></>
+  <row><entry>PGTH_P_HEIGHT</><entry>8</><entry>Reccomended height</></>
+  <row><entry>PGTH_P_MARGIN</><entry>9</><entry>The border in some objects</></>
+  <row><entry>PGTH_P_HILIGHTCOLOR</><entry>10</><entry>Color for hilighting an object</></>
+  <row><entry>PGTH_P_SHADOWCOLOR</><entry>11</><entry>Color for shading an object</></>
+  <row><entry>PGTH_P_OFFSET</><entry>12</><entry>An amount to displace something by</></>
+  <row><entry>PGTH_P_ALIGN</><entry>13</><entry>How to position an object's contents</></>
+  <row><entry>PGTH_P_BITMAPSIDE</><entry>14</><entry>Bitmap side relative to text (button)</></>
+  <row><entry>PGTH_P_BITMAPMARGIN</><entry>15</><entry>Spacing between bitmap and text</></>
+  <row><entry>PGTH_P_BITMAP1</><entry>16</><entry>Generic bitmap property for theme use</></>
+  <row><entry>PGTH_P_BITMAP2</><entry>17</><entry>Generic bitmap property for theme use</></>
+  <row><entry>PGTH_P_BITMAP3</><entry>18</><entry>Generic bitmap property for theme use</></>
+  <row><entry>PGTH_P_BITMAP4</><entry>19</><entry>Generic bitmap property for theme use</></>
+  <row><entry>PGTH_P_SPACING</><entry>20</><entry>Distance between similar widgets</></>
+  <row><entry>PGTH_P_TEXT</><entry>21</><entry>Text caption for something like a button</></>
+  <row><entry>PGTH_P_SIDE</><entry>22</><entry>Side for a widget or subwidget</></>
+  <row><entry>PGTH_P_BACKDROP</><entry>23</><entry>Fillstyle on the screen behind a popup</></>
+  <row><entry>PGTH_P_WIDGETBITMAP</><entry>24</><entry>Bitmap for something like a button</></>
+  <row><entry>PGTH_P_WIDGETBITMASK</><entry>25</><entry>Bitmask for something like a button</></>
+  <row><entry>PGTH_P_CURSORBITMAP</><entry>26</><entry>Bitmap for the (mouse) pointer</></>
+  <row><entry>PGTH_P_CURSORBITMASK</><entry>27</><entry>Bitmask for the (mouse) pointer</></>
+  <row><entry>PGTH_P_HIDEHOTKEYS</><entry>28</><entry>Set to a PG_HHK_* constant</></>
+  <row><entry>PGTH_P_ATTR_DEFAULT</><entry>29</><entry>Default attribute for the terminal</></>
+  <row><entry>PGTH_P_ATTR_CURSOR</><entry>30</><entry>Default attribute for the terminal</></>
+  <row><entry>PGTH_P_TEXTCOLORS</><entry>31</><entry>Text color pallete for the terminal</></>
+  <row><entry>PGTH_P_TIME_ON</><entry>32</><entry>Milliseconds on for flashing cursor</></>
+  <row><entry>PGTH_P_TIME_OFF</><entry>33</><entry>Milliseconds off for flashing cursor</></>
+  <row><entry>PGTH_P_TIME_DELAY</><entry>34</><entry>Milliseconds to wait before flashing</></>
+  <row><entry>PGTH_P_PARENT</><entry>35</><entry>Overrides the default theme inheritance</></>
+  <row><entry>PGTH_P_STRING_OK</><entry>501</><entry>String property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_STRING_OK</><entry>501</><entry>String property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_STRING_CANCEL</><entry>502</><entry>String property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_STRING_YES</><entry>503</><entry>String property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_STRING_NO</><entry>504</><entry>String property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_STRING_SEGFAULT</><entry>505</><entry>String property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_STRING_MATHERR</><entry>506</><entry>String property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_STRING_PGUIERR</><entry>507</><entry>String property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_STRING_PGUIWARN</><entry>508</><entry>String property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_STRING_PGUIERRDLG</><entry>509</><entry>String property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_STRING_PGUICOMPAT</><entry>510</><entry>String property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_ICON_OK</><entry>1000</><entry>Icon property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_ICON_OK_MASK</><entry>1001</><entry>Icon property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_ICON_CANCEL</><entry>1002</><entry>Icon property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_ICON_CANCEL_MASK</><entry>1003</><entry>Icon property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_ICON_YES</><entry>1004</><entry>Icon property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_ICON_YES_MASK</><entry>1005</><entry>Icon property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_ICON_NO</><entry>1006</><entry>Icon property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_ICON_NO_MASK</><entry>1007</><entry>Icon property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_ICON_ERROR</><entry>1008</><entry>Icon property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_ICON_ERROR_MASK</><entry>1009</><entry>Icon property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_ICON_MESSAGE</><entry>1010</><entry>Icon property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_ICON_MESSAGE_MASK</><entry>1011</><entry>Icon property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_ICON_QUESTION</><entry>1012</><entry>Icon property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_ICON_QUESTION_MASK</><entry>1013</><entry>Icon property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_ICON_WARNING</><entry>1014</><entry>Icon property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_ICON_WARNING_MASK</><entry>1015</><entry>Icon property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_HOTKEY_OK</><entry>1501</><entry>Hotkey property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_HOTKEY_CANCEL</><entry>1502</><entry>Hotkey property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_HOTKEY_YES</><entry>1503</><entry>Hotkey property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_HOTKEY_NO</><entry>1504</><entry>Hotkey property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_HOTKEY_UP</><entry>1505</><entry>Hotkey property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_HOTKEY_DOWN</><entry>1506</><entry>Hotkey property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_HOTKEY_LEFT</><entry>1507</><entry>Hotkey property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_HOTKEY_RIGHT</><entry>1508</><entry>Hotkey property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_HOTKEY_ACTIVATE</><entry>1509</><entry>Hotkey property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_HOTKEY_NEXT</><entry>1510</><entry>Hotkey property (usually in PGTH_O_DEFAULT)</></>
+  <row><entry>PGTH_P_USER</><entry>10000</><entry>Application-defined theme property start range</></>
+  <row><entry>PGTH_P_THEMEAUTO</><entry>20000</><entry>Automatically allocated properties used only by the theme start range</></>
+  </tbody>
+  </tgroup>
+  </table>
+  </sect1>
+ </appendix>
 
  <appendix>
-  <title>Driver Messages Types</title>
+  <title>Driver Messages Constants</title>
   <sect1 id="pgdmtypes"><title>Generic Driver Message Types</>
    <table pgwide=1 frame=none><title>PGDM values</>
    <tgroup cols=3 align=left>
