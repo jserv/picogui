@@ -1,3 +1,33 @@
+---- Thursday, February 1
+
+Finished updating the client code for pgEvent.
+Turns out some casual changes I made in the client code (changing a couple
+small malloc() calls to alloca()) reveals a memory corruption bug in
+pgMenuFromString. Also found an logic error that sometimes prevented
+setwidget from having any effect.
+
+It's ready to put on CVS now, hope this big change doesn't aggrivate people
+(myself included) too much but I think it's for the best.
+
+---- Wednesday, January 31
+
+Brandon seems to be good at finding things I overlook :)
+On his request I added a much-needed 'extra' pointer for passing arbitrary
+data to event handlers.
+
+Since an extra parameter to the events would break things anyway, (and at
+this stage I'm much more interested in making a clean interface than
+preserving compatibility with old junk) I did a small overhaul of the
+client's event processing. Now the client lib decodes event parameters,
+(using the new EVENTCODING constants) and packages it into a neat little
+pgEvent structure.
+
+Yay, today the ucSimm came in! Thank you Pascal!
+
+Pascal gave me a pointer to Smartdata's neat project for expanding and
+porting Waba. Also suggested a fourth option (in that list below) as making
+a wrapper that emulates a subset of the AWT, to run small 'normal java' apps.
+
 ---- Tuesday, January 30
 
 I was just taking a look through the Wabasoft web site. Unfortunately, the

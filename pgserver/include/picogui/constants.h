@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.34 2001/01/20 09:52:00 micahjd Exp $
+/* $Id: constants.h,v 1.35 2001/02/02 07:11:57 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -477,32 +477,41 @@ typedef unsigned long pghandle;
 
 /******************** Events */
 
+/* Events can return various types of data that the client library
+ * will separate out for the app. To indicate a type of encoding, the
+ * PG_WE_* constant is logically or'ed with one of these: */
+
+#define PG_EVENTCODING_PARAM    0x000   /* Just a 32-bit parameter */
+#define PG_EVENTCODING_XY       0x100   /* X,Y coordinates packed into param */
+#define PG_EVENTCODING_PNTR     0x200   /* Mouse parameters (x,y,btn,chbtn) */
+#define PG_EVENTCODING_DATA     0x300   /* Arbitrary data block */
+#define PG_EVENTCODING_KBD      0x400   /* Keyboard params */
+
+#define PG_EVENTCODINGMASK      0xF00
+
 /* Widget events */
-#define PG_WE_ACTIVATE    1     /* Gets focus (or for a non-focusing widget such
+#define PG_WE_ACTIVATE    0x001 /* Gets focus (or for a non-focusing widget such
 			           as a button, it has been clicked/selected  */
-#define PG_WE_DEACTIVATE  2     /* Lost focus */
-#define PG_WE_CLOSE       3     /* A top-level widget has closed */
-#define PG_WE_PNTR_DOWN   4     /* The "mouse" button is now down */
-#define PG_WE_PNTR_UP     5     /* The "mouse" button is now up */
-#define PG_WE_DATA        6     /* Widget is streaming data to the app */
-#define PG_WE_RESIZE      7     /* For terminal widgets, passes size in chars packed
-				 * 16 bits for width and 16 for height: 0xWWWWHHHH */
-#define PG_WE_BUILD       8     /* Sent from a canvas, expects client to rebuild
-				 * the groplist. Size is passed as above
-				 * in pixels: 0xWWWWHHHH */
-#define PG_WE_PNTR_MOVE   9     /* The "mouse" moved */
-#define PG_WE_KBD_CHAR    10    /* A focused keyboard character recieved */
-#define PG_WE_KBD_KEYUP   11    /* A focused raw keyup event */
-#define PG_WE_KBD_KEYDOWN 12    /* A focused raw keydown event */
+#define PG_WE_DEACTIVATE  0x002 /* Lost focus */
+#define PG_WE_CLOSE       0x003 /* A top-level widget has closed */
+#define PG_WE_PNTR_DOWN   0x204 /* The "mouse" button is now down */
+#define PG_WE_PNTR_UP     0x205 /* The "mouse" button is now up */
+#define PG_WE_DATA        0x306 /* Widget is streaming data to the app */
+#define PG_WE_RESIZE      0x107 /* For terminal widgets */
+#define PG_WE_BUILD       0x108 /* Sent from a canvas, clients can rebuild groplist */
+#define PG_WE_PNTR_MOVE   0x209 /* The "mouse" moved */
+#define PG_WE_KBD_CHAR    0x40A /* A focused keyboard character recieved */
+#define PG_WE_KBD_KEYUP   0x40B /* A focused raw keyup event */
+#define PG_WE_KBD_KEYDOWN 0x40C /* A focused raw keydown event */
 
 /* Non-widget events */
-#define PG_NWE_KBD_CHAR    10   /* These are sent if the client has captured the */
-#define PG_NWE_KBD_KEYUP   11   /* keyboard (or pointing device ) */
-#define PG_NWE_KBD_KEYDOWN 12
-#define PG_NWE_PNTR_MOVE   13
-#define PG_NWE_PNTR_UP     14
-#define PG_NWE_PNTR_DOWN   15
-#define PG_NWE_BGCLICK     16   /* The user clicked the background widget */
+#define PG_NWE_KBD_CHAR    0x140A /* These are sent if the client has captured the */
+#define PG_NWE_KBD_KEYUP   0x140B /* keyboard (or pointing device ) */
+#define PG_NWE_KBD_KEYDOWN 0x140C
+#define PG_NWE_PNTR_MOVE   0x1209
+#define PG_NWE_PNTR_UP     0x1205
+#define PG_NWE_PNTR_DOWN   0x1204
+#define PG_NWE_BGCLICK     0x120D /* The user clicked the background widget */
 
 #endif /* __H_PG_CONSTANTS */
 /* The End */
