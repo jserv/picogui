@@ -54,7 +54,7 @@ Testing
 EOF
 
 # Load a bitmap from a file
-$bits = NewBitmap(-file => '/home/micah/images/tux.color.pnm');
+$bits = NewBitmap(-file => '../images/other/tux.pnm');
 
 # Make a sequence of widgets in a panel
 $holder = NewWidget(-type => panel,
