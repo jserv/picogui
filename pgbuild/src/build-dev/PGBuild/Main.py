@@ -73,7 +73,7 @@ def parseCommandLine(config, argv):
     ############# Configuration management
 
     configGroup = parser.add_option_group("Configuration Management")
-    configGroup.add_option("-t", "--dump-tree", dest="treeDumpFile",
+    configGroup.add_option("--dump-tree", dest="treeDumpFile",
                            help="Dumps the configuration tree to FILE.", metavar="FILE")
     configGroup.add_option("--retest-mirrors", dest="retestMirrors", action="store_true",
                            help="Re-runs any mirror speed tests, ignoring saved results.")
@@ -83,7 +83,7 @@ def parseCommandLine(config, argv):
     packageGroup = parser.add_option_group("Package Management")
     packageGroup.add_option("--nuke", dest="nuke", action="store_true",
                             help="Unconditionally deletes local copies of all non-bootstrap packages.")
-    packageGroup.add_option("--merge", dest="merge", action="append", metavar="PACKAGE",
+    packageGroup.add_option("-m", "--merge", dest="merge", action="append", metavar="PACKAGE",
                             help="Forcibly updates the specified package and merges its configuration.")
 
     config.mount(OptionsXML(parser.parse_args(argv[1:])))
