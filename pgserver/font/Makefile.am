@@ -9,6 +9,7 @@ libfont_a_SOURCES = fonts.c
 FDF_FILES = \
         clean12.bdf \
         clean6.bdf \
+        clean8.bdf \
         console8.bdf \
         courier12.bdf \
         courier12b.bdf \
@@ -31,6 +32,7 @@ FDF_FILES = \
 FI_FILES = \
         clean12.fi \
         clean6.fi \
+        clean8.fi \
         console8.fi \
         courier12.fi \
         fixed13ja.fi \

@@ -129,6 +129,9 @@ FONT_LUCIDA10
       
 FONT_CLEAN6
       Smaller version of CLEAN12, makes a good terminal font
+
+FONT_CLEAN8
+      A bit bigger than CLEAN6, better readable terminal font
       
       
 FONT_CONSOLE8
