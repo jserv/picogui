@@ -1,4 +1,4 @@
-# $Id: Makefile.cfg.sample,v 1.8 2001/01/05 00:41:22 micahjd Exp $
+# $Id: Makefile.cfg.sample,v 1.9 2001/01/07 04:00:11 micahjd Exp $
 #
 # This file has compile-time options for PicoGUI, including
 # which fonts and drivers are to be compiled in.
@@ -37,7 +37,7 @@ CFLAGS := $(CFLAGS) -DDEBUG_KEYS           # CTRL-ALT-* debugging keys
 #CFLAGS := $(CFLAGS) -DDEBUG_VIDEO         # Video debugging
 #CFLAGS := $(CFLAGS) -DDEBUG_THEME         # Theme debugging
 #CFLAGS := $(CFLAGS) -DDEBUG_NET           # Net/request debugging
-#CFLAGS := $(CFLAGS) -DBOTHERSOME_TERMINAL # Terminal reports unknown escapes
+CFLAGS := $(CFLAGS) -DBOTHERSOME_TERMINAL # Terminal reports unknown escapes
 
 #### Optimization
 CFLAGS := $(CFLAGS) -O3
@@ -56,11 +56,12 @@ CFLAGS := $(CFLAGS) -O3
 
 #### Uncomment any number of the following
 FONTS := $(FONTS) font/helvetica.fi
-FONTS := $(FONTS) font/console.fi  
-FONTS := $(FONTS) font/courier.fi  
-FONTS := $(FONTS) font/times.fi    
+FONTS := $(FONTS) font/clean.fi  
+#FONTS := $(FONTS) font/console.fi  
+#FONTS := $(FONTS) font/courier.fi  
+#FONTS := $(FONTS) font/times.fi    
 #FONTS := $(FONTS) font/tiny.fi     
-FONTS := $(FONTS) font/utopia.fi
+#FONTS := $(FONTS) font/utopia.fi
 
 ######################################## Drivers
 
