@@ -1,4 +1,4 @@
-/* $Id: platform.c,v 1.7 2001/04/04 18:44:39 pney Exp $
+/* $Id: platform.c,v 1.8 2001/05/08 09:11:19 gobry Exp $
  *
  * platforms.c - Contains platform-dependant stuff
  *
@@ -183,11 +183,6 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args) {
 }
 
 #endif
-
-/* CLEANUP ***********************************************************************************/
-
-/* needed for compatibility with uclinux compiler (m68k-pic-coff-gcc) */
-void _cleanup() {}
 
 /* REALLOC ***********************************************************************************/
 
