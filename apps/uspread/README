@@ -1,0 +1,55 @@
+uSpread:
+========
+
+uSpread is a micro spread sheet application developed for
+PicoGUI (http://pgui.sourceforge.net/).
+
+It should run on any supported platform but the design
+is more biased towards handheld devices ;)
+
+It basically reads CSV (comma seperated format) files, but:
+
+* first row is used as column headers that don't scroll, also sets max columns
+* second row is used as column widths
+* there should be no extra linefeeds at the end of file
+
+
+Authors:
+========
+Tasnim Ahmed <tasnim@users.sourceforge.net>
+
+
+Contributors:
+=============
+Everyone related to development of PicoGUI
+Tom Dyas <tdyas@vger.rutgers.edu>
+
+
+Copyrights:
+===========
+* Copyright (C) 2001 by Tasnim Ahmed <tasnim@users.sourceforge.net>
+
+PicoGUI
+* Copyright (C) 2000,2001 by Micah Dowty <micahjd@users.sourceforge.net>
+
+String Parsing Utility Functions
+* Copyright (C) 1999 by Tom Dyas <tdyas@vger.rutgers.edu>
+
+
+License:
+========
+This Program is distributed under the terms of the GNU General Public
+License.
+
+See COPYING in PicoGUI's apps folder.
+
+
+ChangeLog: (major only, for minor ones look at my developer log)
+==========
+
+* 20010814 : memory fixes, etc.
+
+* 20010812 : New, Open, Quit: menus functional
+
+* 20010810 : project started
+
