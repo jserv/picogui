@@ -44,7 +44,7 @@ if [ -e /tmp/lastlog-$projectname ]; then
                 rm $tmpfile
         fi
 else
-        cat $tmpfile | /usr/sbin/sendmail
+        cat $tmpfile | /usr/sbin/sendmail -t
         mv $tmpfile /tmp/lastlog-$projectname
 fi
 
