@@ -1,6 +1,9 @@
-/* $Id: themec.h,v 1.13 2002/02/02 19:14:41 lonetech Exp $
+/* $Id: themec.h,v 1.14 2002/10/04 17:24:48 micahjd Exp $
  *
  * themec.h - definitions used internally in the theme compiler
+ *
+ * MAGIC compiler
+ * Magic Algorithm for General Interface Configurability
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
