@@ -1,0 +1,37 @@
+WCLOCK TODO LIST
+================
+
+ 1 read home time zone via TZ
+
+ 2 handle GMT and local time correctly, whether system time is relative
+   to local time or UTC
+
+ 3 show time for each zone as vertical text with hour and minutes
+
+ 4 have following menus:
+   - Zone by time zone abbreviation
+   - Zone by city name
+   - Zone by country
+   - Zone by GMT diff
+
+ 5 for each zone, remember the country, city and abbreviation, and
+   restore it correctly when jumping back and forth
+
+ 6 support wheel mouse (buttons 4 & 5)
+
+ 7 support more colors
+
+ 8 better support low-bpp modes
+
+ 9 center canvas (put in box if screen size allows it)
+
+10 have a menu or button to flash the current zone (useful for tiny
+   zones)
+
+11 support arrow keys
+
+12 allow to set time so as to pretend being in any location at any time
+
+13 show day/night illumination
+
+[end]

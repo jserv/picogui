@@ -1,0 +1,47 @@
+wclock
+======
+wclock (AKA WorldClock) displays (almost) all time zones on a world
+map. This is a PicoGUI application (http://pgui.sourceforge.net/).
+
+Currently it should only compile on unix, because the build of some
+map-related files require shell-script features in the Makefile.
+
+It should run one day on handheld devices, but it has been currently
+only tested on PC. Some more work is needed regarding display size,
+color depth and speed for handhelds. See TODO.
+
+History of the project
+======================
+- Implemented on Amiga (long ago). Special ad-hoc maps compression.
+- Re-implemented as a Java applet.
+- Re-implemented on PicoGUI.
+
+Authors
+=======
+Pascal Bauermeister <bauermeister@users.sourceforge.net>
+
+Contributors
+============
+Does the TODO list inspire you ?  don't hesitate to contribute !
+
+Copyrights
+==========
+wclock:
+ Copyright (C) 2002 by Pascal Bauermeister <bauermeister@users.sourceforge.net>
+
+PicoGUI:
+ Copyright (C) 2000,2002 by Micah Dowty <micahjd@users.sourceforge.net>
+
+License
+=======
+This Program is distributed under the terms of the GNU General Public
+License.
+
+See COPYING in PicoGUI's apps folder.
+
+History
+=======
+See ChangeLog
+
+
+[end]
