@@ -126,7 +126,7 @@ char *resGetProperty(resResource *resource, char *section, char *property){
     //Do some interesting stuff here.
     break;
   case RES_APPCONF:
-    return resGetACProperty(resource, section, property);
+    return (char *)resGetACProperty(resource, section, property);
     break;
   default:
     break;
@@ -145,7 +145,7 @@ void *resGetResource(resResource *resource, char *section, char *property, int *
     //Do some interesting stuff here.
     break;
   case RES_APPCONF:
-    if(pathName = resGetACProperty(resource, section, property)){
+    if(pathName = (char *)resGetACProperty(resource, section, property)){
       fd = open(pathName, O_RDONLY);
       fstat(fd, &st);
       propertyData = mmap(0, st.st_size, PROT_READ, MAP_SHARED, fd, 0);

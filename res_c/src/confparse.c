@@ -203,7 +203,7 @@ int sub_configfile_parse(const char *filename, struct cfg_section **section) {
   return 1;
 }
 
-int configfile_parse(const char *filename) {
+int configfile_parse(char *filename) {
   struct cfg_section *section = NULL;
   return sub_configfile_parse(filename, &section);
 }
@@ -234,12 +234,11 @@ void configfile_free(void) {
   sections = NULL;
 }
 
-int set_param_str(const char *section, const char *key,
-		  const char *value) {
+int set_param_str(char *section, char *key, char *value) {
   return configfile_set(configfile_makesection(section),key,value);
 }
 
-int get_param_int(const char *section, const char* key, int def) {
+int get_param_int(char *section, char* key, int def) {
   const char *strval;
   strval = get_param_str(section,key,NULL);
   if (strval)
@@ -247,8 +246,7 @@ int get_param_int(const char *section, const char* key, int def) {
   return def;
 }
 
-char *get_param_str(const char *section, const char* key, 
-		    const char *def) {
+char *get_param_str(char *section, char* key, char *def) {
   struct cfg_section *sect;
   struct cfg_item *p;
 
@@ -265,7 +263,7 @@ char *get_param_str(const char *section, const char* key,
   return def;
 }
 
-char **get_section_params(const char *section, int *count){
+char **get_section_params(char *section, int *count){
   struct cfg_section *sect;
   struct cfg_item *p;
   int paramCount = 0;
@@ -301,7 +299,7 @@ char **get_section_params(const char *section, int *count){
   }
 }
 
-int configfile_write(const char *filename){
+int configfile_write(char *filename){
   FILE *outputFile = NULL;
   struct cfg_section *thisSection;
   struct cfg_item *thisItem;

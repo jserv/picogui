@@ -46,18 +46,17 @@ struct cfg_section {
 
 struct cfg_section *sections;
 
-int configfile_parse(const char *filename);
+int configfile_parse(char *filename);
 void configfile_free(void);
 
-int set_param_str(const char *section, const char *key, const char *value);
+int set_param_str(char *section, char *key, char *value);
 
-int get_param_int(const char *section, const char *key, int def); 
-char *get_param_str(const char *section, const char* key, 
-			  const char *def); 
+int get_param_int(char *section, char *key, int def); 
+char *get_param_str(char *section, char* key, char *def); 
 
-char **get_section_params(const char *section, int *count);
+char **get_section_params(char *section, int *count);
 
-int configfile_write(const char *filename);
+int configfile_write(char *filename);
 
 //---------Config parsing--------------------------------
 char *resCGetACProperty(resResource *resource, char *section, char *property);
