@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.21 2001/06/25 00:48:50 micahjd Exp $
+/* $Id: indicator.c,v 1.22 2001/07/06 07:13:04 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -92,7 +92,8 @@ g_error indicator_set(struct widget *self,int property, glob data) {
     if (data > 100) data = 100;
     if (data < 0) data = 0;
     VALUE = (int) data;
-    div_setstate(self->in->div,PGTH_O_INDICATOR,1);
+    self->in->flags |= DIVNODE_NEED_RECALC;
+    self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
   default:
