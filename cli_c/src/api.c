@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.49 2003/01/01 03:42:54 micahjd Exp $
+/* $Id: api.c,v 1.50 2003/01/24 22:23:23 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -55,6 +55,13 @@ int pgEnterContext(void) {
 void pgLeaveContext(void) {
   _pg_add_request(PGREQ_RMCONTEXT,NULL,0);
 }  
+
+void pgSetContext(int id) {
+	struct pgreqd_setcontext arg;
+	arg.context = htonl(id);
+
+	_pg_add_request(PGREQ_SETCONTEXT, &arg, sizeof(arg));
+}
 
 void pgDeleteHandleContext(int id) {
   struct pgreqd_rmcontext arg;

@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.93 2003/01/01 03:42:53 micahjd Exp $
+/* $Id: client_c.h,v 1.94 2003/01/24 22:23:22 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -1473,6 +1473,13 @@ void pgLeaveContext(void);
  * \sa pgEnterContext
  */
 void pgDeleteHandleContext(int id);
+
+/*!
+ * \brief Set the context ID used when creating new handles
+ *
+ * \sa pgDeleteHandleContext, pgEnterContext, pgLeaveContext
+ */
+void pgSetContext(int id);
 
 //! \}
 
