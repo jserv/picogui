@@ -1,4 +1,4 @@
-/* $Id: tsinput.c,v 1.9 2001/05/24 15:57:20 pney Exp $
+/* $Id: tsinput.c,v 1.10 2001/05/25 10:23:02 pney Exp $
  *
  * tsinput.c - input driver for touch screen
  *
@@ -77,7 +77,7 @@ printf("Going to sleep mode\n");
 //    wait((int *)0);
 //    printf("ok, child finished. Now going on...\n");
 
-  rm_sleep (RM_WAKE_ON_BUTTON);
+  rm_sleep(RM_WAKE_ON_BUTTON);
 
     /*
      * the hit to wake up the ChipSlice isn't catch by the tsinput driver.
@@ -98,10 +98,6 @@ void tsinput_poll(void) {
 
     switch(pen_info.event) {
     case EV_PEN_UP:
-      if(pen_info.x > 350) {
-        tsinput_sleep();
-	break;
-      }
       dispatch_pointing(TRIGGER_UP,pen_info.x,pen_info.y,0);
       gettimeofday(&lastEvent,NULL);
       iIsPenUp = 1;
@@ -114,7 +110,7 @@ void tsinput_poll(void) {
       break;
       
     case EV_PEN_MOVE:
-      dispatch_pointing(TRIGGER_MOVE,pen_info.x,pen_info.y,0);
+      dispatch_pointing(TRIGGER_MOVE,pen_info.x,pen_info.y,1);
       gettimeofday(&lastEvent,NULL);
       iIsPenUp = 0;
       break;
