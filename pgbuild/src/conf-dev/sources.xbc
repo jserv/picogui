@@ -43,11 +43,105 @@
 -->
 <pgbuild title="PicoGUI sources list">
 
-  <!-- 
-    pgbuild uses the concept of 'sites' to keep all the URIs in
-    one place, and to make mirroring as easy as possible.
-  -->
+  <!--==================================================== Packages -->
+
+  <packages>
+    <!--
+      Packages are groups of files that are conditionally downloaded,
+      then independently updated. Packages can be comprised of any
+      number of versions- this lets you provide packages of the latest
+      development code in addition to all releases. Each version always
+      has a single download location, relative to a site. Mirrors are
+      described using the site definitions above.
+         
+      Package names can not contain dashes, since a dash separates
+      package name and version in pgbuild's working copy.
+
+      Package names -are- allowed to contain slashes. They can be used
+      to separate packages into a directory hierarchy. Note that the
+      package names always use forward slashes, they are converted to the
+      local OS's path separator by PGBuild.
+
+      The optional <description> tag can be used in frontends to provide
+      help for a package. The <require> tag forces the package to be loaded-
+      it should only be used for packages necessary to bootstrap the build
+      system itself.
+    -->
+    
+    <package name="build">
+      <description>
+        <summary>The source code for PGBuild itself.</summary>
+        <detail>
+          This is included in the initial download of PGBuild for obvious reasons, but it is
+          also a package. This makes it easy to keep PGBuild up to date without any special
+          cases.
+        </detail>
+      </description>
+      <require/>
+      <versiongroup name="picogui-versions" path="pgbuild/src/build-dev"/>
+    </package>
+
+    <package name="conf">
+      <description>
+        <summary>The default configuration files for PGBuild.</summary>
+        <detail>
+          These are in a separate package to make updates faster, and
+          to make it easier to use PGBuild in other projects.
+        </detail>
+      </description>
+      <require/>
+      <versiongroup name="picogui-versions" path="pgbuild/src/conf-dev"/>
+    </package>
+
+    <package name="pg1/server">
+      <description>
+        <summary>PicoGUI Server.</summary>
+        <detail>
+          In the PicoGUI 1.x architecture, the server is the component that manages
+          and contains drivers, widgets, and all subsystems except the client and client
+          library.
+        </detail>
+      </description>
+      <versiongroup name="picogui-versions" path="pg1/server"/>
+    </package>
+
+    <package name="pg1/foo">
+      <versiongroup name="picogui-versions" path="pg1/foo"/>
+    </package>
+
+    <package name="legacy/picogui">
+      <description>
+        <summary>PicoGUI legacy packages.</summary>
+        <detail>
+          This package is for older versions of PicoGUI, before PGBuild support was added.
+          These are currently here mainly to test PGBuild's support for software packages
+          in .tar.gz format with autoconf/automake build systems.
+        </detail>
+      </description>
+      <version name="0.42">
+        <a href="picogui-0.42.tar.gz"><site name="picogui-releases"/></a>
+      </version>
+      <version name="0.43">
+        <a href="picogui-0.43.tar.gz"><site name="picogui-releases"/></a>
+      </version>
+      <version name="0.44">
+        <a href="picogui-0.44.tar.gz"><site name="picogui-releases"/></a>
+      </version>
+      <version name="0.45">
+        <a href="picogui-0.45.tar.gz"><site name="picogui-releases"/></a>
+      </version>
+    </package>
+
+  </packages>
+
+  <!--==================================================== Sites -->
+
   <sites>
+    <!-- 
+      Sites are a convenience to make it easier to manage mirror lists.
+      Anywhere an <a> tag can appear, a <site> tag can be included
+      within it to make that link relative to a site.
+    -->
 
     <!-- Subversion repository, hosted on navi -->
     <site name="picogui-svn">
@@ -84,110 +178,33 @@
 
   </sites>
 
-  <!--==================================================== Packages -->
+  <!--==================================================== Version Groups -->
 
-  <packages>
-    <!--
-      Packages are groups of files that are conditionally downloaded,
-      then independently updated. Packages can be comprised of any
-      number of versions- this lets you provide packages of the latest
-      development code in addition to all releases. Each version always
-      has a single download location, relative to a site. Mirrors are
-      described using the site definitions above.
-         
-      Package names can not contain dashes, since a dash separates
-      package name and version in pgbuild's working copy.
+  <versiongroups>
+    <!-- 
+       Version groups are a convenience for managing large sets of packages
+       that are usually released under a single version number, and stored
+       in the same relative location for each version release.
+       Package definitions can use a tag of the form:
+          <versiongroup name="Name" path="Path">
+       to refer to a version group defined here. The 'path' attribute will be
+       joined to all URIs specified by the version group.
 
-      Package names -are- allowed to contain slashes. They can be used
-      to separate packages into a directory hierarchy. Note that the
-      package names always use forward slashes, they are converted to the
-      local OS's path separator by PGBuild.
-
-      The optional <description> tag can be used in frontends to provide
-      help for a package. The <require> tag forces the package to be loaded-
-      it should only be used for packages necessary to bootstrap the build
-      system itself.
+       Note that <version> tags in the <versiongroup> are processed just like
+       <version> tags in the package itself, so you can nest versiongroups.
     -->
-    
-    <package name="build">
-      <description>
-        <summary>The source code for PGBuild itself.</summary>
-        <detail>
-          This is included in the initial download of PGBuild for obvious reasons, but it is
-          also a package. This makes it easy to keep PGBuild up to date without any special
-          cases.
-        </detail>
-      </description>
-      <require/>
+
+    <!--
+      Group for all packages following the shared PicoGUI version numbering scheme.
+      This doesn't include sources from before the SVN migration-
+      those are in the 'legacy' package.
+    -->
+    <versiongroup name="picogui-versions">
       <version name="dev">
-         <a href="trunk/pgbuild/src/build-dev" ><site name="picogui-svn" /></a>
+         <a href="trunk"><site name="picogui-svn" /></a>
       </version>
-    </package>
+    </versiongroup>
 
-    <package name="conf">
-      <description>
-        <summary>The default configuration files for PGBuild.</summary>
-        <detail>
-          These are in a separate package to make updates faster, and
-          to make it easier to use PGBuild in other projects.
-        </detail>
-      </description>
-      <require/>
-      <version name="dev">
-         <a href="trunk/pgbuild/src/conf-dev" ><site name="picogui-svn" /></a>
-      </version>
-    </package>
+  </versiongroups>
 
-    <package name="legacy/picogui">
-      <description>
-        <summary>PicoGUI legacy packages.</summary>
-        <detail>
-          This package is for older versions of PicoGUI, before PGBuild support was added.
-          These are currently here mainly to test PGBuild's support for software packages
-          in .tar.gz format with autoconf/automake build systems.
-        </detail>
-      </description>
-      <version name="0.42">
-        <a href="picogui-0.42.tar.gz"><site name="picogui-releases"/></a>
-      </version>
-      <version name="0.43">
-        <a href="picogui-0.43.tar.gz"><site name="picogui-releases"/></a>
-      </version>
-      <version name="0.44">
-        <a href="picogui-0.44.tar.gz"><site name="picogui-releases"/></a>
-      </version>
-      <version name="0.45">
-        <a href="picogui-0.45.tar.gz"><site name="picogui-releases"/></a>
-      </version>
-    </package>
-
-    <package name="pg1/server">
-      <description>
-        <summary>PicoGUI Server.</summary>
-        <detail>
-          In the PicoGUI 1.x architecture, the server is the component that manages
-          and contains drivers, widgets, and all subsystems except the client and client
-          library.
-        </detail>
-      </description>
-      <version name="dev">
-        <a href="trunk/pg1/server"><site name="picogui-svn"/></a>
-      </version>
-    </package>
-
-    <package name="pg1/server">
-      <description>
-        <summary>PicoGUI Server.</summary>
-        <detail>
-          In the PicoGUI 1.x architecture, the server is the component that manages
-          and contains drivers, widgets, and all subsystems except the client and client
-          library.
-        </detail>
-      </description>
-      <version name="dev">
-        <a href="trunk/pg1/server"><site name="picogui-svn"/></a>
-      </version>
-    </package>
-
-  </packages>
 </pgbuild>

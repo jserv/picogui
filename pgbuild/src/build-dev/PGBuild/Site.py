@@ -51,10 +51,17 @@ class Location(object):
        that location and reference to the <a> tag for its host.
        Includes methods to perform speed testing.
        """
-    def __init__(self, config, absoluteURI, host):
+    def __init__(self, config, absoluteURI, hostTag):
         self.config = config
         self.absoluteURI = absoluteURI
-        self.host = host
+        self.hostTag = hostTag
+
+    def append(self, paths):
+        """Append a list of paths to the URI. This is where paths appended via
+           <packagegroup> tags eventually end up.
+           """
+        for path in paths:
+            self.absoluteURI = urljoin(self.absoluteURI, path)
 
     def testSpeed(self):
 	"""Try to retrieve the first few kilobytes of the URL, measuring
@@ -76,7 +83,7 @@ class Location(object):
             raise
         except:
             speed = 0
-        PGBuild.XMLUtil.setChildData(self.host, 'speed', speed)
+        PGBuild.XMLUtil.setChildData(self.hostTag, 'speed', speed)
 
     def getSpeed(self, progress):
         """Return the speed of this Location's host. This will be loaded
@@ -87,7 +94,7 @@ class Location(object):
         needTest = 0
 
         # If we have no <speed> tag in the host, we definitely need to test
-        if not self.host.getElementsByTagName('speed'):
+        if not self.hostTag.getElementsByTagName('speed'):
             needTest = 1
 
         # Are we being forced to retest?
@@ -101,12 +108,12 @@ class Location(object):
             progress.showTaskHeading()
             self.testSpeed()
             server = urlparse.urlparse(self.absoluteURI)[1]
-            speed = float(PGBuild.XMLUtil.getChildData(self.host, 'speed'))
+            speed = float(PGBuild.XMLUtil.getChildData(self.hostTag, 'speed'))
             if speed > 0:
                 progress.report("tested", "%7.2f KB/s from %s" % (speed/1000, server))
             else:
                 progress.warning("unable to download from %s" % server)
-        return float(PGBuild.XMLUtil.getChildData(self.host, 'speed'))
+        return float(PGBuild.XMLUtil.getChildData(self.hostTag, 'speed'))
 
 
 def expand(config, tags):
@@ -125,18 +132,21 @@ def expand(config, tags):
             # Join our path onto the end of each result as we append it to our results
             for resolvedResult in resolvedResults:
                 results.append(Location(config, urljoin(resolvedResult.absoluteURI, href),
-                                        resolvedResult.host))
+                                        resolvedResult.hostTag))
         else:
             # This is an absolute link- just add it to our results
             results.append(Location(config, href, tag))
     return results
             
 
-def resolve(config, tags, progress):
+def resolve(config, tags, progress, appendPaths=[]):
     """Given a list of <a> tags, expand them into absolute URIs
        and pick the fastest mirror. Returns a Location.
+       appendPaths gives a list of paths to be appended to each URI before use.
        """
     mirrors = expand(config, tags)
+    for mirror in mirrors:
+        mirror.append(appendPaths)
     def speedSort(a,b):
         return cmp(b.getSpeed(progress),a.getSpeed(progress))
     mirrors.sort(speedSort)

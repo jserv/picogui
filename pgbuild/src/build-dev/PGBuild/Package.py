@@ -34,15 +34,18 @@ class PackageVersion(object):
        on the local copy.
        """
 
-    def __init__(self, package, configNode):
+    def __init__(self, package, configNode, appendPaths=[]):
+        """package is the Package instance this belongs to,
+           configNode is the DOM node for our <version> tag,
+           appendPaths is a list of paths that should be appended to our URI,
+             as specified in <versiongroup> tags.
+           """
         self.config = package.config
         self.package = package
         self.configNode = configNode
         self.name = configNode.attributes['name'].value
         self.repository = None
-
-        # The local path for this package
-        #self.path = os.path.join(config.eval('bootstrap/path[@name="packages"]/text()'), self.name)
+        self.appendPaths = appendPaths
 
     def __str__(self):
         """Returns a name of the form packagename-version"""
@@ -51,7 +54,7 @@ class PackageVersion(object):
     def findMirror(self, progress):
         """Find the fastest mirror for this package version. Returns a PGBuild.Site.Location"""
         task = progress.task("Finding the fastest mirror for %s" % self)
-        return PGBuild.Site.resolve(self.config, self.configNode.getElementsByTagName('a'), task)
+        return PGBuild.Site.resolve(self.config, self.configNode.getElementsByTagName('a'), task, self.appendPaths)
 
     def getRepository(self, progress):
         """Get a Repository class for the fastest mirror of this package version"""
@@ -96,11 +99,28 @@ class Package(object):
             raise PGBuild.Errors.ConfigError("Can't find a package with the name '%s'" % self.name)
         self.configNode = self.configNode[0]
 
-        # Load each version of this package
         self.versions = {}
-        versionNodes = self.configNode.getElementsByTagName('version')
-        for versionNode in versionNodes:
-            self.versions[versionNode.attributes['name'].value] = PackageVersion(self, versionNode)
+        self._loadVersions(self.configNode)
+
+    def _loadVersions(self, node, paths=[]):
+        """Load <version> tags from the given DOM node, recursively loading <versiongroup>s"""
+        for versionNode in node.getElementsByTagName('version'):
+            self.versions[versionNode.attributes['name'].value] = PackageVersion(self, versionNode, paths)
+        for groupNode in node.getElementsByTagName('versiongroup'):
+            try:
+                groupName = groupNode.attributes['name'].value
+            except KeyError:
+                raise PGBuild.Errors.ConfigError("Found a <versiongroup> tag with no 'name' attribute in package %s" % self.name)
+            try:
+                groupPath = [groupNode.attributes['path'].value]
+            except KeyError:
+                groupPath = []
+            groupNode = self.config.xpath('versiongroups/versiongroup[@name="%s"]' % groupName)
+            if len(groupNode) > 1:
+                raise PGBuild.Errors.ConfigError("More than one version group with the name '%s'" % groupName)
+            if len(groupNode) == 0:
+                raise PGBuild.Errors.ConfigError("Can't find a version group with the name '%s'" % groupName)
+            self._loadVersions(groupNode[0], paths + groupPath)
 
     def findVersion(self, version=None):
         """Find a particular version of thie package. If the given version
