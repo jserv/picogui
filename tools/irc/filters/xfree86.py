@@ -26,7 +26,7 @@ while True:
     line = body.readline()
     if not line:
         break
-    if line.strip() == "Log Message:":
+    if line.strip() == "Log message:":
         break
 while True:
     line = body.readline().strip()
