@@ -6,20 +6,56 @@ array set pg_request "
 	mkbitmap	3
 	mkfont		4
 	mkstring	5
+	free		6
 	set		7
+	get		8
+	mktheme		9
+	mkcursor	10
+	mkinfliter	11
+	getresource	12
 	wait		13
+	mkfillstyle	14
 	register	15
 	mkpopup		16
+	sizetext	17
+	batch		18
+	regowner	19
+	unregowner	20
 	setmode		21
 	getmode		22
 	mkcontext	23
 	rmcontext	24
+	focus		25
 	getstring	26
+	dub		27
+	setpayload	28
+	getpayload	29
+	chcontext	30
+	writeto		31
+	updatepart	32
+	mkarray		33
+	render		34
+	newbitmap	35
 	thlookup	36
+	getinactive	37
+	setinactive	38
+	drivermsg	39
+	loaddriver	40
+	getfstyle	41
+	findwidget	42
 	checkevent	43
+	sizebitmap	44
+	appmsg		45
 	createwidget	46
+	attachwidget	47
+	findthobj	48
+	traverswgt	49
+	mktemplate	50
+	setcontext	51
+	getcontext	52
+	infligersend	53
+	mkshmbitmap	54
 "
-# --- From here down is complete and formated properly
 array set pg_response "
 	error	1
 	ret	2

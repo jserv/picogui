@@ -75,18 +75,16 @@ proc pgUpdate {} {
 	array set ret [pgGetResponse]
 	return $ret(data)
 }
-proc pgNewPopupAt {x y width height} {
-	global pg_request defaultparent pg_widget
-	send_packet [pack_pgrequest 1 4 $pg_request(createwidget)]
-	send_packet [binary format "SS" $pg_widget(popup) 0]
-	array set ret [pgGetResponse]
-	if {$defaultparent == 0} {
-		set defaultparent $ret(data)
-	}
-	return $ret(data)
-}
 proc pgNewPopup {width height} {
-	return [pgNewPopupAt -1 -1 $width $height]
+	global defaultparent
+	set id [pgCreateWidget popup]
+	if {$defaultparent == 0} {
+		set defaultparent $id
+	}
+	return id
+}
+proc pgNewPopupAt {x y width height} {
+	return [pgNewPopup $width $height]
 }
 proc pgNewString {text} {
 	global pg_request
