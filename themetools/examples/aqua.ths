@@ -1,4 +1,4 @@
-/* $Id: aqua.ths,v 1.30 2001/08/29 17:06:49 micahjd Exp $
+/* $Id: aqua.ths,v 1.31 2001/09/02 17:23:18 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
@@ -56,7 +56,9 @@ object button {
     // Center
     SetSrc(12,10,34,1);
     Tilebitmap(x+12,y+10,w-24,h-20,bitmap1);
-  };
+
+    SetSrc(0,0,0,0);  
+  };  
   height = 20;
   width  = 21;   // Tiny buttons get a cute sphere shape :)
   margin = 8;
