@@ -21,11 +21,11 @@ uname=`id -un`
 lineno=`echo "$message" | grep -n "Log Message:" | awk -F: ' { print $1 } '`
 message=`echo "$message" | sed "1,${lineno}d"`
                                                                                                                                    
-cat &lt;&lt;EOF | /usr/sbin/sendmail
+cat &lt;&lt;EOF | /usr/sbin/sendmail -t
 From: commits@autopackage.org
 To: commits@picogui.org
 Content-Type: text/plain;
-Subject: Announce channelname
+Subject: Announce <i>channelname</i>
                                                                                                                                    
 cvs commit by $uname: $message
 EOF
