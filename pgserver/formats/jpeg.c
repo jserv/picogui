@@ -1,4 +1,4 @@
-/* $Id: jpeg.c,v 1.3 2001/08/13 02:59:11 micahjd Exp $
+/* $Id: jpeg.c,v 1.4 2001/09/18 17:11:30 micahjd Exp $
  *
  * jpeg.c - Functions to convert any of the jpeg formats 
  *
@@ -264,14 +264,14 @@ g_error jpeg_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
       }
 
       /* Convert to hwrcolor */
-      hc = VID(color_pgtohwr) (mkcolor(r,g,b));
+      hc = (*vid->color_pgtohwr) (mkcolor(r,g,b));
 
       /* Get the video driver to set the pixel.
        * This is slower than the funky loop used in the pnm loader,
        * but since JPEG decompression is slow anyway it doesn't really
        * matter as much.
        */
-      VID(pixel) (*bmp,x,y,hc,PG_LGOP_NONE);
+      (*vid->pixel) (*bmp,x,y,hc,PG_LGOP_NONE);
     }
     y++;
   }
