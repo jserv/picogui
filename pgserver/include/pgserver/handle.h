@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.20 2001/11/13 05:10:21 sbarnes Exp $
+/* $Id: handle.h,v 1.21 2001/11/14 00:41:49 bornet Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -40,7 +40,7 @@
 
 /* Data type of a handle ID */
 typedef u32 handle;
-#define HANDLE_BITS     32
+#define HANDLE_BITS     30
 
 #ifndef CONFIG_LINUX_MIPS
 #define HANDLE_SIZE     (1<<HANDLE_BITS)
