@@ -7,6 +7,10 @@ class EventHandled(Exception):
     handlers to process this event"""
     pass
 
+class StopApplication(Exception):
+    """flag the event handler to stop"""
+    pass
+
 class InternalEvent(events.Event):
     def __init__(self, name, widget, attrs):
         self.__dict__.update(attrs)
@@ -135,7 +139,10 @@ class Application(Widget.Widget):
                 # otherwise, just get one single event and dispatch it
                 self.poll_next_event()
 
-            self.dispatch_events()
+            try:
+                self.dispatch_events()
+            except StopApplication:
+                break
 
     def dispatch_events(self):
         # XXX DANGER for thread-safety
@@ -150,7 +157,7 @@ class Application(Widget.Widget):
             except EventHandled:
                 continue
             if ev.widget is self and ev.name in ('close', 'stop'):
-                return
+                raise StopApplication
 
     def eventPoll(self):
         self.server.update()
