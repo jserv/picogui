@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.10 2000/10/10 00:22:33 micahjd Exp $
+/* $Id: constants.h,v 1.11 2000/10/19 01:21:23 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -145,6 +145,7 @@ typedef unsigned long pghandle;
 #define PG_TYPE_FONTDESC   3
 #define PG_TYPE_STRING     4
 #define PG_TYPE_THEME      5
+#define PG_TYPE_FILLSTYLE  6
 
 /******************** Theme constants */
 
@@ -172,21 +173,29 @@ typedef unsigned long pghandle;
 #define PGTH_O_BUTTON_HILIGHT      4    /* Button, hilighted when mouse is over */
 #define PGTH_O_BUTTON_ON           5    /* Button, mouse is pressed */
 #define PGTH_O_TOOLBAR             6    /* The toolbar widget */
-#define PGTH_O_SCROLL              7    /* The non-movable part of a scrollbar widget */
-#define PGTH_O_SCROLL_THUMB        8    /* The thumb (movable part of a scrollbar) */
+#define PGTH_O_SCROLL              7    /* The scrollbar widget */
+#define PGTH_O_SCROLL_HILIGHT      8    /* Scroll, when mouse is over it */
 #define PGTH_O_INDICATOR           9    /* The indicator widget */
 #define PGTH_O_PANEL               10   /* The background portion of a panel */
-#define PGTH_O_PANEL_BAR           11   /* The draggable titlebar of a panel */
+#define PGTH_O_PANELBAR            11   /* The draggable titlebar of a panel */
 #define PGTH_O_POPUP               12   /* Popup window */
 #define PGTH_O_BACKGROUND          13   /* Background widget bitmap */
-#define PGTH_O_BASE_STATIC         14   /* Base for widgets that just display info */
-#define PGTH_O_BASE_TLCONTAINER    15   /* Top-level containers like popups and panels */ 
+#define PGTH_O_BASE_DISPLAY        14   /* Base for widgets that mostly display stuff */
+#define PGTH_O_BASE_TLCONTAINER    15   /* Top-level containers like popups, panels */ 
 #define PGTH_O_THEMEINFO           16   /* Information about the theme that should be
 					   loaded into memory, like the name */
+#define PGTH_O_LABEL               17   /* The label widget */
+#define PGTH_O_FIELD               18   /* The field widget */
+#define PGTH_O_BITMAP              19   /* The bitmap widget */
+#define PGTH_O_SCROLL_ON           20   /* Scroll, when mouse is down */
+#define PGTH_O_LABEL_SCROLL        21   /* A label, when bound to a scrollbar */
+#define PGTH_O_PANELBAR_HILIGHT    22   /* A panelbar, when mouse is inside it */
+#define PGTH_O_PANELBAR_ON         23   /* A panelbar, when mouse is down */
+#define PGTH_O_BOX                 24   /* The box widget */
 
 /* If you add a themeobject, be sure to increment this and add
    an inheritance entry in theme/thobjtab.c */
-#define PGTH_ONUM                  16
+#define PGTH_ONUM                  25
 
 /*** Loaders */
 
@@ -198,8 +207,15 @@ typedef unsigned long pghandle;
 				    from. This request packet is executed, and the
 				    return code stored in 'data'. Errors cause an error
 				    in loading the theme. */
+#define PGTH_LOAD_COPY       2   /* Data is a theme object and property to copy the
+				    value of */
 
 /*** Property IDs */
+
+/* The descriptions here are only guidelines. Many of these properties
+   are not used by the server itself, merely assigned IDs for the
+   use of the themes themselves (fillstyles, for example)
+*/
 
 /*                               Handle?
         Name              ID     | Data type   Description */
@@ -210,6 +226,20 @@ typedef unsigned long pghandle;
 #define PGTH_P_OVERLAY    4   /* H fillstyle   Fill style applied last  */
 #define PGTH_P_FONT       5   /* H fontdesc    A widget's main font     */
 #define PGTH_P_NAME       6   /* H string      Name of something, like a theme */
+#define PGTH_P_WIDTH      7   /*   int         Reccomended width */
+#define PGTH_P_HEIGHT     8   /*   int         Reccomended width */
+#define PGTH_P_MARGIN     9   /*   int         The border in some objects */
+#define PGTH_P_HILIGHTCOLOR 10/*   pgcolor     Color for hilighting an object */
+#define PGTH_P_SHADOWCOLOR 11 /*   pgcolor     Color for shading an object */
+#define PGTH_P_OFFSET     12  /*   int         an amount to displace something by */
+#define PGTH_P_ALIGN      13  /*   alignment   How to position an object's contents */
+#define PGTH_P_BITMAPSIDE 14  /*   side        Bitmap side relative to text (button) */
+#define PGTH_P_BITMAPMARGIN 15/*   int         Spacing between bitmap and text */
+#define PGTH_P_BITMAP1    16  /* H bitmap      Generic bitmap property for theme use */
+#define PGTH_P_BITMAP2    17  /* H bitmap      Generic bitmap property for theme use */
+#define PGTH_P_BITMAP3    18  /* H bitmap      Generic bitmap property for theme use */
+#define PGTH_P_BITMAP4    19  /* H bitmap      Generic bitmap property for theme use */
+#define PGTH_P_SPACING    20  /*   int         Distance between similar widgets */
 
 /*** Tag IDs */
 
@@ -222,26 +252,86 @@ typedef unsigned long pghandle;
 #define PGTH_TAG_URL           3
 #define PGTH_TAG_README        4
 
+/*** Fillstyle opcodes */
+
+/* Bits:  7 6 5 4 3 2 1 0
+          
+          1 L L L L L L L    Short numeric literal
+	  0 1 G G G G G G    Build gropnode
+	  0 0 1 C C C C C    Command code
+          0 0 0 1 V V V V    Retrieve variable
+	  0 0 0 0 V V V V    Set variable 
+
+   L - numeric literal
+   G - gropnode type
+   V - variable offset
+   C - command code constant
+*/
+
+/* Simple opcodes (or'ed with data) */
+#define PGTH_OPSIMPLE_LITERAL    0x80
+#define PGTH_OPSIMPLE_GROP       0x40
+#define PGTH_OPSIMPLE_CMDCODE    0x20
+#define PGTH_OPSIMPLE_GET        0x10
+#define PGTH_OPSIMPLE_SET        0x00
+
+/* Command codes */
+#define PGTH_OPCMD_LONGLITERAL   0x20  /* Followed by a 4-byte literal */
+#define PGTH_OPCMD_PLUS          0x21
+#define PGTH_OPCMD_MINUS         0x22
+#define PGTH_OPCMD_MULTIPLY      0x23
+#define PGTH_OPCMD_DIVIDE        0x24
+#define PGTH_OPCMD_SHIFTL        0x25
+#define PGTH_OPCMD_SHIFTR        0x26
+#define PGTH_OPCMD_OR            0x27
+#define PGTH_OPCMD_AND           0x28
+#define PGTH_OPCMD_LONGGROP      0x29  /* Followed by a 2-byte grop code */
+#define PGTH_OPCMD_LONGGET       0x2A  /* Followed by a 1-byte var offset */
+#define PGTH_OPCMD_LONGSET       0x2B  /* Followed by a 1-byte var offset */
+#define PGTH_OPCMD_PROPERTY      0x2C  /* Followed by 2-byte object code and 2-byte property code */
+#define PGTH_OPCMD_LOCALPROP     0x2D  /* Followed by 2-byte property code */
+#define PGTH_OPCMD_COLOR         0x2E  /* Convert pgcolor to hwrcolor */
+#define PGTH_OPCMD_COLORADD      0x2F  /* Convert pgcolor to hwrcolor */
+#define PGTH_OPCMD_COLORSUB      0x30  
+#define PGTH_OPCMD_COLORMULT     0x31
+#define PGTH_OPCMD_COLORDIV      0x32
+#define PGTH_OPCMD_QUESTIONCOLON 0x33  /* The ?: operator from C */
+#define PGTH_OPCMD_EQ            0x34  /* Comparison operators */
+#define PGTH_OPCMD_LT            0x35
+#define PGTH_OPCMD_GT            0x36
+#define PGTH_OPCMD_LOGICAL_OR    0x37  /* Logical operators */
+#define PGTH_OPCMD_LOGICAL_AND   0x38
+#define PGTH_OPCMD_LOGICAL_NOT   0x39
+
+
 /******************** Video */
 
 /* Gropnode types (gropnodes are a single element in a metafile-like
  * structure to hold GRaphics OPerations)
+ *
+ * Bits 4-7 indicate the number of parameters (in addition to
+ * the standard x,y,w,h.
  */
-#define PG_GROP_NULL       0	/* Doesn't do anything - for temporarily
-				 * turning something off, or for disabling
-				 * unused features while keeping the grop
-				 * node order constant */
-#define PG_GROP_PIXEL      1	
-#define PG_GROP_LINE   	   2
-#define PG_GROP_RECT	   3
-#define PG_GROP_FRAME      4
-#define PG_GROP_SLAB       5
-#define PG_GROP_BAR        6
-#define PG_GROP_DIM        7
-#define PG_GROP_TEXT       8
-#define PG_GROP_BITMAP     9
-#define PG_GROP_GRADIENT   10
-#define PG_GROPMAX         10
+#define PG_GROP_NULL       0x0000	/* Doesn't do anything - for temporarily
+					 * turning something off, or for disabling
+					 * unused features while keeping the grop
+					 * node order constant */
+#define PG_GROP_PIXEL      0x0010
+#define PG_GROP_LINE   	   0x0011
+#define PG_GROP_RECT	   0x0012
+#define PG_GROP_FRAME      0x0013
+#define PG_GROP_SLAB       0x0014
+#define PG_GROP_BAR        0x0015
+#define PG_GROP_DIM        0x0001
+#define PG_GROP_TEXT       0x0030
+#define PG_GROP_BITMAP     0x0040
+#define PG_GROP_GRADIENT   0x0041
+#define PG_GROP_TILEBITMAP 0x0050
+
+#define PG_GROPPARAMS(x)   (((x)>>4)&0x0F)
+
+/* Grop flags */
+#define PG_GROPF_TRANSLATE 0x0001  /* Apply the divnode's tx,ty */
 
 /* Video mode flags */
 #define PG_VID_FULLSCREEN     0x0001
@@ -275,11 +365,12 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_INDICATOR  3
 #define PG_WIDGET_BITMAP     4
 #define PG_WIDGET_BUTTON     5
-#define PG_WIDGET_PANEL      6
-#define PG_WIDGET_POPUP      7
+#define PG_WIDGET_PANEL      6     /* Internal use only! */
+#define PG_WIDGET_POPUP      7     /* Internal use only! */
 #define PG_WIDGET_BOX        8
 #define PG_WIDGET_FIELD      9
-#define PG_WIDGETMAX         9    /* For error checking */
+#define PG_WIDGET_BACKGROUND 10    /* Internal use only! */
+#define PG_WIDGETMAX         10    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1

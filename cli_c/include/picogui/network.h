@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.6 2000/10/10 00:22:33 micahjd Exp $
+/* $Id: network.h,v 1.7 2000/10/19 01:21:23 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -91,7 +91,7 @@ struct pghello {
 #define PGREQ_PING         0      /* Simply returns if server is ok |   none  */
 #define PGREQ_UPDATE       1      /* Call update()                  |   none  */
 #define PGREQ_MKWIDGET     2      /* Makes a widget, returns handle |  struct */
-#define PGREQ_MKBITMAP     3      /* Makes a bitmap, returns handle |  struct */
+#define PGREQ_MKBITMAP     3      /* Makes a bitmap, returns handle |  data   */
 #define PGREQ_MKFONT       4      /* Makes a fontdesc, ret's handle |  struct */
 #define PGREQ_MKSTRING     5      /* Makes a string, returns handle |  chars  */
 #define PGREQ_FREE         6      /* Frees a handle                 |  handle */
@@ -102,7 +102,7 @@ struct pghello {
 #define PGREQ_IN_POINT     11     /* Dispatch pointing device input |  struct */
 #define PGREQ_IN_DIRECT    12     /* Dispatch direct input          |  struct */
 #define PGREQ_WAIT         13     /* Wait for an event              |  none   */
-#define PGREQ_UNUSED1      14     /* Obsolete (will be replaced with another request) */
+#define PGREQ_MKFILLSTYLE  14     /* Load a fill style,return handle|  fillstyle */
 #define PGREQ_REGISTER     15     /* Register a new application     |  struct */
 #define PGREQ_MKPOPUP      16     /* Create a popup root widget     |  struct */
 #define PGREQ_SIZETEXT     17     /* Find the size of text          |  struct */
@@ -117,7 +117,7 @@ struct pghello {
 #define PGREQ_GETSTRING    26     /* Returns a RESPONSE_DATA        |  handle */
 #define PGREQ_UNUSED2      27     /* Obsolete (will be replaced with another request) */
 #define PGREQ_SETPAYLOAD   28     /* Sets an object's payload       |  struct */
-#define PGREQ_GETPAYLOAD   29     /* Sets an object's payload       |  handle */
+#define PGREQ_GETPAYLOAD   29     /* Gets an object's payload       |  handle */
 
 #define PGREQ_UNDEF        30     /* types > this will be truncated. return error */
 
