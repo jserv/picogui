@@ -1,12 +1,15 @@
 include ../Makefile.rules
 
-BINNAME = lcdclock
-SRC     = $(wildcard *.c)
-OBJ     = $(patsubst %.c,%.o,$(SRC))
+BINNAME = lcdclock lcdnet
 LDFLAGS +=
 
-$(BINNAME): $(SRC) $(OBJ)
-	$(CC) -o $@ $(LDFLAGS) $(OBJ)
+all: $(BINNAME)
+
+lcdclock: lcdclock.c lcdclock.o
+	$(CC) -o $@ $(LDFLAGS) lcdclock.o
+
+lcdnet: lcdnet.c lcdnet.o
+	$(CC) -o $@ $(LDFLAGS) lcdnet.o
 
 .c.o:
 	$(CC) $(CFLAGS) $(INCLUDE) -c $<
