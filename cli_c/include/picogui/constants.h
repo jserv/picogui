@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.8 2000/09/23 00:28:00 micahjd Exp $
+/* $Id: constants.h,v 1.9 2000/09/29 05:47:47 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -129,6 +129,7 @@
 #define PG_ERRT_HANDLE   0x0500
 #define PG_ERRT_INTERNAL 0x0600
 #define PG_ERRT_BUSY     0x0700
+#define PG_ERRT_FILEFMT  0x0800
 
 /* Reserved for client-side errors (not used by the server) */
 #define PG_ERRT_CLIENT   0x8000
@@ -143,52 +144,83 @@ typedef unsigned long pghandle;
 #define PG_TYPE_WIDGET     2
 #define PG_TYPE_FONTDESC   3
 #define PG_TYPE_STRING     4
+#define PG_TYPE_THEME      5
 
-/******************** Themes (DO NOT USE- this will change!) */
+/******************** Theme constants */
 
-/* Types applicable to elements */
-#define PG_ELEM_NULL       0
-#define PG_ELEM_FLAT       1   /* Uses c1. Depending on x,y,w,h it can be
-			       a rectangle, slab, bar, or frame. */
-#define PG_ELEM_GRADIENT   2   /* Uses c1,c2,angle,translucent */
+/* Theme objects. These don't have to correspond to widgets or anything
+ * else in PicoGUI.  A widget can have more than one theme object, or
+ * theme objects can be used for things that aren't widgets, etc...
+ *
+ * A theme object is just a category to place a list of properties in,
+ * but theme objects inherit properties from other theme objects
+ * according to a built in hierarchy
+ *
+ * As a naming convention, these constants should start with PG_THO_ and
+ * after that use underscores to represent subclassing. Bases are omitted
+ * from names (otherwise they would be much longer, and if extra bases
+ * were added the names would become misleading) so they don't strictly
+ * follow the inheritance flow. The theme compiler uses '.' to subclass
+ * (for us C weenies) so what is PGTH_O_FOO_MUMBLE is foo.mumble
+ * in the theme compiler.
+ */
 
-/* Element states */
-#define PG_STATE_ALL       255
-#define PG_STATE_NORMAL    0
-#define PG_STATE_HILIGHT   1
-#define PG_STATE_ACTIVATE  2
-#define PG_STATENUM        3
+#define PGTH_O_DEFAULT             0    /* Every theme object inherits this */
+#define PGTH_O_BASE_INTERACTIVE    1    /* Base for interactive widgets */
+#define PGTH_O_BASE_CONTAINER      2    /* Base for containers like toolbars */
+#define PGTH_O_BUTTON              3    /* The button widget */
+#define PGTH_O_BUTTON_HILIGHT      4    /* Button, hilighted when mouse is over */
+#define PGTH_O_BUTTON_ON           5    /* Button, mouse is pressed */
+#define PGTH_O_TOOLBAR             6    /* The toolbar widget */
+#define PGTH_O_SCROLL              7    /* The non-movable part of a scrollbar widget */
+#define PGTH_O_SCROLL_THUMB        8    /* The thumb (movable part of a scrollbar) */
+#define PGTH_O_INDICATOR           9    /* The indicator widget */
+#define PGTH_O_PANEL               10   /* The background portion of a panel */
+#define PGTH_O_PANEL_BAR           11   /* The draggable titlebar of a panel */
+#define PGTH_O_POPUP               12   /* Popup window */
+#define PGTH_O_BACKGROUND          13   /* Background widget bitmap */
+#define PGTH_O_BASE_STATIC         14   /* Base for widgets that just display info */
+#define PGTH_O_BASE_TLCONTAINER    15   /* Top-level containers like popups and panels */ 
+#define PGTH_O_THEMEINFO           16   /* Information about the theme that should be
+					   loaded into memory, like the name */
 
-/* The theme structure (new elements must be added at the end) */
+/* If you add a themeobject, be sure to increment this and add
+   an inheritance entry in theme/thobjtab.c */
+#define PGTH_ONUM                  16
 
-#define PG_E_BUTTON_BORDER     0
-#define PG_E_BUTTON_FILL       1
-#define PG_E_BUTTON_OVERLAY    2
-#define PG_E_TOOLBAR_BORDER    3
-#define PG_E_TOOLBAR_FILL      4
-#define PG_E_SCROLLBAR_BORDER  5
-#define PG_E_SCROLLBAR_FILL    6
-#define PG_E_SCROLLIND_BORDER  7
-#define PG_E_SCROLLIND_FILL    8
-#define PG_E_SCROLLIND_OVERLAY 9
-#define PG_E_INDICATOR_BORDER  10
-#define PG_E_INDICATOR_FILL    11
-#define PG_E_INDICATOR_OVERLAY 12
-#define PG_E_PANEL_BORDER      13
-#define PG_E_PANEL_FILL        14
-#define PG_E_PANELBAR_BORDER   15
-#define PG_E_PANELBAR_FILL     16
-#define PG_E_POPUP_BORDER      17
-#define PG_E_POPUP_FILL        18
+/*** Loaders */
 
-#define PG_E_NUM 19
+/* Property loaders perform some type of transformation 
+   on the data value at load-time. */
 
-#define PG_EPARAM_WIDTH        1
-#define PG_EPARAM_TYPE         2
-#define PG_EPARAM_C1           3
-#define PG_EPARAM_C2           4
-#define PG_EPARAM_ANGLE        5
-#define PG_EPARAM_TRANSLUCENT  6
+#define PGTH_LOAD_NONE       0   /* Leave data as-is */
+#define PGTH_LOAD_REQUEST    1   /* Treat data as a file-offset to load a request packet
+				    from. This request packet is executed, and the
+				    return code stored in 'data'. Errors cause an error
+				    in loading the theme. */
+
+/*** Property IDs */
+
+/*                               Handle?
+        Name              ID     | Data type   Description */
+
+#define PGTH_P_BGCOLOR    1   /*   pgcolor     Default background color */
+#define PGTH_P_FGCOLOR    2   /*   pgcolor     Default foreground color */
+#define PGTH_P_BGFILL     3   /* H fillstyle   Background fill style    */
+#define PGTH_P_OVERLAY    4   /* H fillstyle   Fill style applied last  */
+#define PGTH_P_FONT       5   /* H fontdesc    A widget's main font     */
+#define PGTH_P_NAME       6   /* H string      Name of something, like a theme */
+
+/*** Tag IDs */
+
+/* The name of the theme is not stored in a tag (because it is helpful
+   to have the name of themes so the themes in use can be listed and
+   manipulated) */
+
+#define PGTH_TAG_AUTHOR        1
+#define PGTH_TAG_AUTHOREMAIL   2
+#define PGTH_TAG_URL           3
+#define PGTH_TAG_README        4
 
 /******************** Video */
 

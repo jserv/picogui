@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.4 2000/09/21 05:57:54 micahjd Exp $
+/* $Id: network.h,v 1.5 2000/09/29 05:47:47 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -97,14 +97,12 @@ struct pghello {
 #define PGREQ_FREE         6      /* Frees a handle                 |  handle */
 #define PGREQ_SET          7      /* Set a widget param             |  struct */
 #define PGREQ_GET          8      /* Get a widget param, return it  |  struct */
-#define PGREQ_SETBG        9      /* bequeath a new background bmp  |  handle
-				     DO NOT USE - theme subsystem _will_ change */
+#define PGREQ_MKTHEME      9      /* Load a compiled theme          |  theme  */
 #define PGREQ_IN_KEY       10     /* Dispatch keyboard input        |  struct */
 #define PGREQ_IN_POINT     11     /* Dispatch pointing device input |  struct */
 #define PGREQ_IN_DIRECT    12     /* Dispatch direct input          |  struct */
 #define PGREQ_WAIT         13     /* Wait for an event              |  none   */
-#define PGREQ_THEMESET     14     /* Set an element in the theme    |  struct 
-				     DO NOT USE - theme subsystem _will_ change */
+#define PGREQ_UNUSED1      14     /* Obsolete (will be replaced with another request) */
 #define PGREQ_REGISTER     15     /* Register a new application     |  struct */
 #define PGREQ_MKPOPUP      16     /* Create a popup root widget     |  struct */
 #define PGREQ_SIZETEXT     17     /* Find the size of text          |  struct */
@@ -117,7 +115,7 @@ struct pghello {
 #define PGREQ_RMCONTEXT    24     /* Cleans up and kills the context|  none */
 #define PGREQ_FOCUS        25     /* Force focus to specified widget|  handle */
 #define PGREQ_GETSTRING    26     /* Returns a RESPONSE_DATA        |  handle */
-#define PGREQ_RESTORETHEME 27     /* Restore theme defaults         |  none   */
+#define PGREQ_UNUSED2      27     /* Obsolete (will be replaced with another request) */
 #define PGREQ_SETPAYLOAD   28     /* Sets an object's payload       |  struct */
 #define PGREQ_GETPAYLOAD   29     /* Sets an object's payload       |  handle */
 
