@@ -226,10 +226,8 @@ int redraw(struct pgEvent *evt)
 	pgWriteCmd(evt->from,PGCANVAS_NUKE,0);
 	
 	/*Background*/
+	pgWriteCmd(evt->from,PGCANVAS_GROP,2,PG_GROP_SETCOLOR,BACKGROUND_COLOR);
 	pgWriteCmd(evt->from,PGCANVAS_GROP,5,PG_GROP_RECT,0,0,evt->e.size.w,evt->e.size.h);
-	pgWriteCmd(evt->from,PGCANVAS_SETGROP,1,BACKGROUND_COLOR);
-	pgWriteCmd(evt->from,PGCANVAS_COLORCONV,1,1);
-
 
 	/*Board*/
 	for(i=0;i<21;i++)
@@ -237,13 +235,10 @@ int redraw(struct pgEvent *evt)
 	if(i==10) i++;
 	for(j=0;j<10;j++)
 	{
-		pgWriteCmd(evt->from,PGCANVAS_GROP,5,\
-		PG_GROP_RECT,i*x+1,j*y+1,x-1\
-		,y-1);
 		
-		pgWriteCmd(evt->from,PGCANVAS_SETGROP,\
-		1,color_picker(j,i));
-		pgWriteCmd(evt->from,PGCANVAS_COLORCONV,1,1);
+		pgWriteCmd(evt->from,PGCANVAS_GROP,2,PG_GROP_SETCOLOR,color_picker(j,i));
+		pgWriteCmd(evt->from,PGCANVAS_GROP,5,
+					  PG_GROP_RECT,i*x+1,j*y+1,x-1,y-1);
 	}
 	}
 	pgWriteCmd(evt->from,PGCANVAS_REDRAW,0);
