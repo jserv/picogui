@@ -155,7 +155,8 @@ class Application(Widget.Widget):
                 # so instead:
                 queued = None
                 while not queued:
-                    self.send(self, 'idle')
+                    idle = InternalEvent('idle', self, {})
+                    self._event_registry.dispatch(idle)
                     time.sleep(self.idle_delay / 1000.0)
                     queued = self.server.checkevent()
                 self.poll_next_event()
