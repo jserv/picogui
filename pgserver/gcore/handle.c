@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.26 2001/01/13 02:16:08 micahjd Exp $
+/* $Id: handle.c,v 1.27 2001/01/30 03:34:21 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -33,7 +33,7 @@
 #include <pgserver/pgnet.h>
 
 #define NIL &sentinel
-struct handlenode sentinel = {0,0,0,0,0,NULL,NIL,NIL,NIL,NIL};
+struct handlenode const sentinel = {0,0,0,0,0,0,NULL,NIL,NIL,NIL};
 
 struct handlenode *htree = NIL;
 
@@ -395,7 +395,7 @@ g_error handle_group(int owner,handle from, handle to) {
   if (!(f && t && from && to)) return mkerror(PG_ERRT_HANDLE,92);
   if (owner>=0 && ((t->owner != owner) || (f->owner !=owner))) 
     return mkerror(PG_ERRT_HANDLE,27);
-  t->group = f;
+  t->group = f->id;
   return sucess;
 }
 
@@ -424,7 +424,7 @@ g_error rdhandle(void **p,unsigned char reqtype,int owner,handle h) {
    be rearranged by deletion
 */
 int r_handle_cleanup(struct handlenode *n,int owner,int context,
-		     struct handlenode *group) {
+		     handle group) {
   struct handlenode ncopy;
 
   if ((!n) || (n==NIL)) return 0;
@@ -440,7 +440,7 @@ int r_handle_cleanup(struct handlenode *n,int owner,int context,
     object_free(&ncopy);
 
     /* See if this node had any group members that need to be expunged */
-    while (r_handle_cleanup(htree,-1,-1,n));
+    while (r_handle_cleanup(htree,-1,-1,ncopy.id));
 
     return 1;
   }
@@ -450,7 +450,7 @@ int r_handle_cleanup(struct handlenode *n,int owner,int context,
   return 0;
 }
 void handle_cleanup(int owner,int context) {
-  while (r_handle_cleanup(htree,owner,context,NULL));
+  while (r_handle_cleanup(htree,owner,context,0));
 }
 
 /* Deletes the handle, and if HFLAG_NFREE is not set it frees the object */
@@ -475,7 +475,7 @@ g_error handle_free(int owner,handle h) {
   object_free(&ncopy);
 
   /* See if this node had any group members that need to be expunged */
-  while (r_handle_cleanup(htree,-1,-1,n));
+  while (r_handle_cleanup(htree,-1,-1,ncopy.id));
 
   return sucess;
 }

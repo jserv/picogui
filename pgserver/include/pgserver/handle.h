@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.7 2001/01/13 02:16:09 micahjd Exp $
+/* $Id: handle.h,v 1.8 2001/01/30 03:34:21 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -58,6 +58,7 @@ struct handlenode {
    
   handle id;
    
+  handle group;           /* Parent of this handle group */
   short int owner;        /* the connection that owns this handle */
   unsigned char type;     /* Most of this represents the data type
 			   * that this handle points to. Upper 2 bits
@@ -68,7 +69,6 @@ struct handlenode {
   /* 32-bit fields */
   unsigned long int payload;   /* Client-definable data */
   void *obj;
-  struct handlenode *group;  /* Parent of this handle group */
   struct handlenode *left,*right,*parent;  /* For the red-black tree */
 };
 
