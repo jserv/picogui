@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.128 2002/02/04 16:20:37 gobry Exp $
+/* $Id: constants.h,v 1.129 2002/02/08 15:20:16 instinc Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -158,8 +158,8 @@
 #define PG_FSTYLE_DEFAULT      (1<<1)    //!< The default font in its category, fixed or proportional.
 #define PG_FSTYLE_SYMBOL       (1<<2)    //!< Font contains nonstandard chars and will not be chosen unless specifically requested
 #define PG_FSTYLE_SUBSET       (1<<3)    //!< Font does not contain all the ASCII chars before 127, and shouldn't be used unless requested
-#define PG_FSTYLE_EXTENDED     (1<<4)    //!< (deprecated) Contains international characters above 127 
-#define PG_FSTYLE_IBMEXTEND    (1<<5)    //!< (deprecated) Has IBM-PC extended characters
+#define PG_FSTYLE_ENCODING_ISOLATIN1  (1<<4)  //!< ISO Latin-1 encoding
+#define PG_FSTYLE_ENCODING_IBM        (1<<5)  //!< IBM-PC extended characters
 #define PG_FSTYLE_DOUBLESPACE  (1<<7)    //!< Add extra space between lines
 #define PG_FSTYLE_BOLD         (1<<8)    //!< Use or simulate a bold version of the font
 #define PG_FSTYLE_ITALIC       (1<<9)    //!< Use or simulate an italic version of the font
@@ -169,8 +169,6 @@
 #define PG_FSTYLE_FLUSH        (1<<14)   //!< Disable the margin that PicoGUI puts around text
 #define PG_FSTYLE_DOUBLEWIDTH  (1<<15)   //!< Add extra space between characters
 #define PG_FSTYLE_ITALIC2      (1<<16)   //!< Twice the slant of the default italic
-#define PG_FSTYLE_ENCODING_ISOLATIN1  (1<<4)  //!< ISO Latin-1 encoding
-#define PG_FSTYLE_ENCODING_IBM        (1<<5)  //!< IBM-PC extended characters
 #define PG_FSTYLE_ENCODING_UNICODE    (1<<17) //!< Unicode encoding
 
 #define PG_FSTYLE_ENCODING_MASK       (PG_FSTYLE_ENCODING_ISOLATIN1|\
