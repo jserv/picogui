@@ -1,8 +1,15 @@
 SRC = pgboard.c
+BINNAME = pgboard
+EXAMPLE = examples/us_qwerty
 
-pterm: $(SRC)
-	gcc -o pgboard $(SRC) -lpgui -g
+all: $(BINNAME) $(EXAMPLE).kb
+
+$(BINNAME): $(SRC)
+	gcc -o $(BINNAME) $(SRC) -lpgui -g
+
+$(EXAMPLE).kb: $(EXAMPLE).kbs
+	perl kbcompile.pl < $(EXAMPLE).kbs > $(EXAMPLE).kb
 
 clean:
-	rm -f pgboard *.o
+	rm -f $(BINNAME) *.o examples/*.kb
 
