@@ -37,7 +37,7 @@
 #include "transform.h"
 #include "calth.h"
 
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
 #define DBG(x) printf x
 #else
@@ -145,9 +145,6 @@ POINT GetTarget(int n)
       pcp = 0;
       break;
     }
-
-  DBG((__FUNCTION__ " %d = (%d,%d)\n",n,p.x,p.y));
-
   return p;
 }
 
@@ -165,6 +162,7 @@ void showTransformations(void)
   CalcTransformationCoefficientsBest(&cps.center, &tc, total_targets);
   sprintf(str, "COEFFv1 %d %d %d %d %d %d %d",
 	 tc.a, tc.b, tc.c, tc.d, tc.e, tc.f, tc.s);
+  DBG(("%s\n",str));
 
   /* Send a new calibration to pgserver's calibration input filter */
   memset(&trig,0,sizeof(trig));
@@ -179,8 +177,6 @@ void showTransformations(void)
 }
 
 void DrawTarget(POINT p, unsigned long int c) {
-  DBG((__FUNCTION__" (%d,%d)\n",p.x, p.y));
-
   pgWriteCmd(wCanvas, PGCANVAS_GROP, 2, PG_GROP_SETCOLOR, c);
   pgWriteCmd(wCanvas, PGCANVAS_EXECFILL, 6, calth, TARGET, p.x, p.y, 1, 1);
   pgWriteCmd(wCanvas, PGCANVAS_REDRAW, 0);
@@ -201,8 +197,6 @@ int evtBuild(struct pgEvent *evt) {
 
 int evtDrawTarget(struct pgEvent *evt) {
   DrawTarget(current_target_location, 0xD0D0D0);
-
-  DBG((__FUNCTION__" current_target=%d (%d,%d)\n",current_target,xext,yext));
 
   if (current_target != total_targets) {
     /* draw new target at current location */
@@ -240,12 +234,16 @@ int tpcalInFilter(struct pgEvent *evt) {
     hit.x = pcp->device.x = penposition.x;
     hit.y = pcp->device.y = penposition.y;
     target=current_target++;
+
+    DBG((__FUNCTION__ " screen(%d,%d) device(%d,%d)\n",pcp->screen.x,pcp->screen.y,
+	 pcp->device.x,pcp->device.y));
     
     if(!CalcTransformationCoefficientsBest(&cps.center, &tc, current_target))
       {
-	DBG(("Current target: %d\n", current_target));
 	hit=pentoscreen(hit, &tc);
+	DBG((__FUNCTION__ " hit(%d,%d)\n",hit.x,hit.y));
 	coord_logicalize(hit);
+	DBG((__FUNCTION__ " locigalized hit(%d,%d)\n",hit.x,hit.y));
 	hit.x-=xoffs;
 	hit.y-=yoffs;
 	DrawTarget(hit, 0x808080);
