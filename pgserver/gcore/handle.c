@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.13 2000/08/27 05:54:27 micahjd Exp $
+/* $Id: handle.c,v 1.14 2000/09/03 18:28:07 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -30,6 +30,7 @@
 #include <g_malloc.h>
 #include <handle.h>
 #include <widget.h>
+#include <pgnet.h>
 
 #define NIL &sentinel
 struct handlenode sentinel = {0,0,0,NIL,NIL,0};

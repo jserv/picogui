@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.25 2000/08/27 05:54:27 micahjd Exp $
+/* $Id: request.c,v 1.1 2000/09/03 18:28:07 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -254,7 +254,7 @@ int send_response(int to,const void *data,size_t len) {
 }
 
 /* Bind the socket and start listening */
-g_error req_init(void) {
+g_error net_init(void) {
   struct sockaddr_in server_sockaddr;
   volatile int true = 1;
 #ifdef WINDOWS
@@ -300,7 +300,7 @@ g_error req_init(void) {
   return sucess;
 }
 
-void req_free(void) {
+void net_release(void) {
   int i;
   struct conbuf *p,*condemn=NULL;
 
@@ -327,7 +327,7 @@ void req_free(void) {
 }
 
 /* Yay, a big select loop! */
-void reqproc(void) {
+void net_iteration(void) {
   int fd;
   int len;
   struct sockaddr_in ec;

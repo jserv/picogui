@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.23 2000/09/03 17:32:21 micahjd Exp $
+# $Id: Makefile,v 1.24 2000/09/03 18:28:06 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -33,15 +33,17 @@ SRC := widget/bitmap.c widget/indicator.c widget/label.c \
        gcore/handle.c gcore/g_error.c appmgr/global.c widget/button.c \
        widget/panel.c widget/default_theme.c widget/popup.c widget/box.c \
        widget/field.c gcore/timer.c gcore/errortext.c gcore/video.c \
-       gcore/input.c gcore/driverinfo.c \
-       video/sdlmin.c video/sdl.c input/sdlinput.c
-#       video/svga.c
+       gcore/input.c gcore/driverinfo.c gcore/pgmain.c net/request.c \
+       net/dispatch.c net/eventq.c \
+       video/sdlmin.c video/sdl.c input/sdlinput.c \
+       video/svga.c
 
 HDR := widget/widget.h gcore/divtree.h gcore/g_malloc.h \
        gcore/font.h gcore/handle.h gcore/g_error.h gcore/video.h \
-       appmgr/appmgr.h gcore/input.h widget/theme.h gcore/timer.h
+       appmgr/appmgr.h gcore/input.h widget/theme.h gcore/timer.h \
+       gcore/input.h gcore/pgmain.h net/pgnet.h
 
-CFLAGS := -Iwidget -Igcore -Iappmgr
+CFLAGS := -Iwidget -Igcore -Iappmgr -Inet
 
 ######## Flags and Tools
 
@@ -71,21 +73,21 @@ ifeq ($(strip $(DEBUG)),tiny)
 	CFLAGS := $(CFLAGS) -DTINY_MESSAGES
 endif
 ifeq ($(strip $(DEBUG)),efence)
-	# ElectricFence debugging
+        # ElectricFence debugging
 	LDFLAGS := $(LDFLAGS) -lefence
 	CFLAGS := $(CFLAGS) -DDEBUG # These are helpful
 endif
 ifeq ($(strip $(DEBUG)),gprof)
-	# Profiling with gprof - no debug statements during profiling!
+        # Profiling with gprof - no debug statements during profiling!
 	CFLAGS := $(CFLAGS) -pg
 	LDFLAGS := $(LDFLAGS) -pg
 endif
 ifeq ($(strip $(DEBUG)),gcov)
-	# Profiling with gcov (debug statements on, why not?)
+        # Profiling with gcov (debug statements on, why not?)
 	CFLAGS := $(CFLAGS) -DDEBUG -fprofile-arcs -ftest-coverage
 endif
 ifeq ($(strip $(DEBUG)),src)
-	# Only debug statements
+        # Only debug statements
 	CFLAGS := $(CFLAGS) -DDEBUG
 endif
 
@@ -105,23 +107,16 @@ endif
 
 # Set any necessary flags peculiar to a hardware library
 #ifeq ($(strip $(VIDLIB)),sdl)
-	# Which sdl-config?
+        # Which sdl-config?
 	SDLCONFIG := sdl-config
 	ifeq ($(strip $(PLATFORM)),windows)
 		SDLCONFIG := i386-mingw32-sdl-config
 	endif
 
-	# Libraries and includes for SDL
+        # Libraries and includes for SDL
 	CFLAGS := $(CFLAGS) $(shell $(SDLCONFIG) --cflags) 
 	LDFLAGS := $(LDFLAGS) $(shell $(SDLCONFIG) --libs)
-
-#	LDFLAGS := $(LDFLAGS) -lvgagl -lvga
-
-# Network-specific source files
-SRC := $(SRC) net/$(NET)/request.c net/$(NET)/mainloop.c \
-       net/$(NET)/eventq.c net/$(NET)/dispatch.c
-CFLAGS := $(CFLAGS) -Inet/$(NET)
-HDR := $(HDR) net/$(NET)/pgnet.h
+	LDFLAGS := $(LDFLAGS) -lvgagl -lvga
 
 OBJ := $(SRC:.c=.o) font/fontdata.o
 

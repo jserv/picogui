@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.15 2000/09/02 17:19:15 micahjd Exp $
+/* $Id: pgnet.h,v 1.1 2000/09/03 18:28:07 micahjd Exp $
  *
  * pgnet.h - header for all PicoGUI networking stuff (request/packet/event...)
  *
@@ -57,10 +57,6 @@
 #include <errno.h>
 #endif
 
-/* Stuff related to the main loop */
-extern volatile int in_shutdown;
-void request_quit(void);
-
 /* Which clients are waiting for events */
 extern fd_set evtwait;
 
@@ -115,15 +111,14 @@ int dispatch_packet(int from,struct uipkt_request *req,void *data);
 
 /********* Functions provided by request.c */
 
-g_error req_init(void);
-void req_free(void);
-void reqproc(void);
+g_error net_init(void);   /* Subsystem init and shutdown for network */
+void net_release(void);
+
+void net_iteration(void); /* This is called in a loop as long
+			     as PicoGUI is running */
+
 void post_event(int event,struct widget *from,long param,int owner);
 int send_response(int to,const void *data,size_t len);
-
-/********* Functions provided by mainloop.c */
-
-void request_quit(void);
 
 /********* Buffers needed by each connection (packet and event) */
 

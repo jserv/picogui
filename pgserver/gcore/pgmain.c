@@ -1,6 +1,8 @@
-/* $Id: mainloop.c,v 1.21 2000/09/03 16:48:30 micahjd Exp $
+/* $Id: pgmain.c,v 1.1 2000/09/03 18:28:07 micahjd Exp $
  *
- * mainloop.c - initializes and shuts down everything, main loop
+ * pgmain.c - Processes command line, initializes and shuts down
+ *            subsystems, and invokes the net subsystem for the
+ *            main loop.
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -25,10 +27,11 @@
  * 
  */
 
+#include <pgnet.h>
+#include <pgmain.h>
 #include <video.h>
 #include <divtree.h>
 #include <handle.h>
-#include <pgnet.h>
 #include <g_error.h>
 #include <appmgr.h>
 #include <input.h>
@@ -36,7 +39,6 @@
 
 #if defined(__WIN32__) || defined(WIN32)
 #define WINDOWS
-#include <SDL.h> /* Currently we need this for windoze event processing */
 #include <process.h>
 #else
 #include <unistd.h>
@@ -53,10 +55,9 @@ struct dtstack *dts;
 #ifndef WINDOWS
 pid_t my_pid;
 void sigterm_handler(int x);
-#else
-void windows_inputpoll_hack(void);
 #endif
 
+/********** And it all starts here... **********/
 int main(int argc, char **argv) {
   int argi=1;
   const char *arg;
@@ -80,7 +81,7 @@ int main(int argc, char **argv) {
 	
       default:   /* Catches -, -h, --help, etc... */
 	puts("\nPicoGUI server (http://pgui.sourceforge.net)\n"
-	     "$Id: mainloop.c,v 1.21 2000/09/03 16:48:30 micahjd Exp $\n\n"
+	     "$Id: pgmain.c,v 1.1 2000/09/03 18:28:07 micahjd Exp $\n\n"
 	     "pgserver [-h] [--] [session manager prog]\n\n"
 	     "\t-h: Displays this usage screen\n"
 	     "\nIf a session manager program is specified, it will be run when PicoGUI\n"
@@ -100,7 +101,7 @@ int main(int argc, char **argv) {
 
   /* Subsystem initialization and error check */
   if (iserror(prerror(dts_new()))) exit(1);
-  if (iserror(prerror(req_init()))) exit(1);
+  if (iserror(prerror(net_init()))) exit(1);
   if (iserror(prerror(appmgr_init()))) exit(1);
   if (iserror(prerror(timer_init()))) exit(1);
 
@@ -138,12 +139,8 @@ int main(int argc, char **argv) {
 
   /*************************************** Main loop */
 
-  while (proceed) {
-    reqproc();
-#ifdef WINDOWS
-    windows_inputpoll_hack();
-#endif
-  }
+  while (proceed)
+    net_iteration();
 
   /*************************************** cleanup time */
   in_shutdown = 1;
@@ -151,7 +148,7 @@ int main(int argc, char **argv) {
   cleanup_inlib();
   handle_cleanup(-1,-1);
   dts_free();
-  req_free();
+  net_release();
   appmgr_free();
   if (vid)
     (*vid->close)();

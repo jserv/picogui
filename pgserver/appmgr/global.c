@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.15 2000/08/27 05:54:27 micahjd Exp $
+/* $Id: global.c,v 1.16 2000/09/03 18:28:07 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -32,6 +32,7 @@
 #include <font.h>
 #include <g_malloc.h>
 #include <appmgr.h>
+#include <theme.h>
 
 struct app_info *applist;
 handle defaultfont;

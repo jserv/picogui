@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: config.pl,v 1.10 2000/09/02 22:33:34 micahjd Exp $
+# $Id: config.pl,v 1.11 2000/09/03 18:28:07 micahjd Exp $
 #
 # Configuration options for PicoGUI.
 # This creates the .config file that Makefile uses.
@@ -30,7 +30,6 @@
 
 %optdesc = (
 	    'DEBUG' => 'Debugging option',
-	    'NET' => 'Network type',
 	    'FONTSET' => 'Font set',
 	    'STRIPBIN' => 'Strip binary',
 	    'PLATFORM' => 'Target platform'
@@ -38,7 +37,6 @@
 
 %opts = (
 	 'DEBUG' => 'none',
-	 'NET' => 'socket',
 	 'FONTSET' => 'all',
 	 'STRIPBIN' => 'no',
 	 'PLATFORM' => 'linux'
@@ -51,7 +49,6 @@
 	               'efence=ElectricFence malloc debug:'.
 	               'gcov=Coverage analysis:'.
 	               'gprof=Profiling',
-	    'NET' => 'socket=Unix-style TCP sockets',
 	    'FONTSET' => 'all=All fonts:'.
 	                 'minimal=Helvetica:'.
 	                 'fixed=Helvetica, Console:'.

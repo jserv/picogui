@@ -1,4 +1,4 @@
-/* $Id: eventq.c,v 1.6 2000/08/13 04:10:19 micahjd Exp $
+/* $Id: eventq.c,v 1.1 2000/09/03 18:28:07 micahjd Exp $
  *
  * eventq.c - This implements the post_event function that the widgets
  *            use to send events to the client.  It stores these in a
