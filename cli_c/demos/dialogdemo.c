@@ -18,15 +18,20 @@ pghandle wInputBtn;
 /******************* String input */
 
 int btnInput(struct pgEvent *evt) {
-  const char *str;
+  pghandle str;
 
   str = pgInputDialog("Input Test",
 		      "What... is the air-speed velocity of\n"
                       "an unladen swallow?",
-                      pgGetString(pgGetWidget(wInputBtn,PG_WP_TEXT)));
+                      pgGetWidget(wInputBtn,PG_WP_TEXT));
 
-  if (str)
-    pgReplaceText(wInputBtn,str);
+  if (str) {
+    /* Normally we would use pgReplaceText, but we already have a
+     * handle so we can save a step. */
+    
+    pgDelete(pgGetWidget(wInputBtn,PG_WP_TEXT));
+    pgSetWidget(wInputBtn,PG_WP_TEXT,str,0);
+  }
 }
 
 /******************* Date picker */

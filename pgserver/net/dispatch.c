@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.50 2001/08/01 11:05:30 micahjd Exp $
+/* $Id: dispatch.c,v 1.51 2001/08/01 12:12:02 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -916,12 +916,14 @@ g_error rqh_loaddriver(int owner, struct pgrequest *req,
 
 g_error rqh_dup(int owner, struct pgrequest *req,
 		void *data, unsigned long *ret, int *fatal) {
+  handle h;
   g_error e;
   reqarg(handlestruct);
 
-  e = handle_dup((handle *) ret,owner,ntohl(arg->h));
+  e = handle_dup(&h,owner,ntohl(arg->h));
   errorcheck;
-  *ret = htonl(*ret);
+
+  *ret = h;
   return sucess;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: stddialog.c,v 1.3 2001/08/01 11:20:27 micahjd Exp $
+/* $Id: stddialog.c,v 1.4 2001/08/01 12:12:02 micahjd Exp $
  *
  * stddialog.c - Various preconstructed dialog boxes the application
  *               may use. These are implemented 100% client-side using
@@ -184,10 +184,10 @@ int pgMenuFromArray(pghandle *items,int numitems) {
 }
 
 /* Like a messge dialog, with an input field */
-const char *pgInputDialog(const char *title, const char *message,
-			  const char *deftxt) {
+pghandle pgInputDialog(const char *title, const char *message,
+		       pghandle deftxt) {
   pghandle wToolbar,wField,wOk,wCancel,from;
-  const char *str = NULL;
+  pghandle str = 0;
 
   /* New context for us! */
   pgEnterContext();
@@ -202,15 +202,17 @@ const char *pgInputDialog(const char *title, const char *message,
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_BOTTOM,
 	      0);
-  wField = pgNewWidget(PG_WIDGET_FIELD,0,0);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_SIDE,PG_S_BOTTOM,
-	      PG_WP_TEXT,pgNewString(deftxt),
-	      0);
   pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_ALL,
 	      PG_WP_TEXT,pgNewString(message),
+	      0);
+  wField = pgNewWidget(PG_WIDGET_FIELD,PG_DERIVE_INSIDE,wField);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_BOTTOM,
+	      PG_WP_SIDE,PG_S_ALL,
+	      /* Only set the property if nonzero */
+	      deftxt ? PG_WP_TEXT : 0,deftxt,
 	      0);
 
   /* buttons */
@@ -236,7 +238,12 @@ const char *pgInputDialog(const char *title, const char *message,
   for (;;) {
     from = pgGetEvent()->from;
     if (from == wOk) {
-      str = pgGetString(pgGetWidget(wField,PG_WP_TEXT));
+      /* Make a copy, because the one used in PG_WP_TEXT is deleted
+       * automatically by the field widget on deletion. 
+       */
+      str = pgDup(pgGetWidget(wField,PG_WP_TEXT));
+      /* Send it back up to the caller's context */
+      pgChangeContext(str,-1);
       break;
     }
     else if (from == wCancel)
