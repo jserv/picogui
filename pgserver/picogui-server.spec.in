@@ -49,6 +49,7 @@ install -D -m 0644 ../PicoGUIServer.mdl $RPM_BUILD_ROOT%{module}/PicoGUIServer.m
 
 %files @RPM_PLATFORM@
 %{prefix}/bin/*
+%{prefix}/etc/*
 
 %files mdl
 %{module}/*
