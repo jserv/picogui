@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.4 2000/12/31 17:12:29 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.5 2001/01/08 05:09:58 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -34,6 +34,7 @@
  */
 
 #include <pgserver/video.h>
+#include <pgserver/font.h>
 
 g_error def_setmode(int xres,int yres,int bpp,unsigned long flags) {
   return mkerror(PG_ERRT_BADPARAM,72);
@@ -815,6 +816,27 @@ void def_sprite_show(struct sprite *spr) {
 	}
 	(*vid->update)(d.x,d.y,d.w,d.h);
      }
+*/
+
+   /**** A very similar debuggative cruft to test text clipping ****/
+  /*
+    {
+      struct cliprect cr;
+      struct fontdesc fd;
+
+      memset(&fd,0,sizeof(fd));
+      fd.fs = fontstyles;
+      fd.font = fd.fs->normal;
+      fd.hline = -1;
+ 
+      cr.x1 = 100;
+      cr.y1 = 100;
+      cr.x2 = 150;
+      cr.y2 = 150;
+      (*vid->rect)(cr.x1,cr.y1,cr.x2-cr.x1+1,cr.y2-cr.y1+1,(*vid->color_pgtohwr)(0x004000));
+      outtext(&fd,spr->x,spr->y,(*vid->color_pgtohwr)(0xFFFF80),"Hello,\nWorld!",&cr);
+      (*vid->update)(0,0,vid->xres,vid->yres);
+    }
 */
    
 }

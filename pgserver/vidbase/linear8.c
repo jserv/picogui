@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.4 2000/12/31 17:12:29 micahjd Exp $
+/* $Id: linear8.c,v 1.5 2001/01/08 05:09:58 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -248,41 +248,89 @@ void linear8_scrollblit(int src_x,int src_y,
 void linear8_charblit(unsigned char *chardat,int dest_x,
 		      int dest_y,int w,int h,int lines,
 		      hwrcolor c,struct cliprect *clip) {
+  char *dest,*destline;
   int bw = w;
-  int iw,i;
+  int iw;
+  int hc;
   int olines = lines;
+  int bit;
+  int flag=0;
+  int xpix,xmin,xmax,clipping;
   unsigned char ch;
-  unsigned char *dest = LINE(dest_y) + dest_x;
-  int offset;
+
+  /* Is it at all in the clipping rect? */
+  if (dest_x>clip->x2 || dest_y>clip->y2 || (dest_x+w)<clip->x1 || 
+      (dest_y+h)<clip->y1) return;
 
   /* Find the width of the source data in bytes */
   if (bw & 7) bw += 8;
   bw = bw >> 3;
   bw &= 0x1F;
+  xmin = 0;
+  xmax = w;
+  clipping = 0;      /* This is set if we are being clipped,
+			otherwise we can use a tight, fast loop */
 
-  /* Calculate line offset */
-  offset =  vid->fb_bpl - (bw << 3);
+  destline = dest = LINE(dest_y) + dest_x;
+  hc = 0;
 
-  for (i=0;h;h--,i++,dest+=offset) {
-    /* Skewing */
-    if (olines && lines==i) {
-      lines += olines;
-      dest--;
+  /* Do vertical clipping ahead of time (it does not require a special case) */
+  if (clip) {
+    if (clip->y1>dest_y) {
+      hc = clip->y1-dest_y; /* Do it this way so skewing doesn't mess up when clipping */
+      destline = (dest += hc * vid->fb_bpl);
+      chardat += hc*bw;
     }
-    for (iw=bw;iw;iw--) {
-      ch = *(chardat++);
-      
-      if (ch&0x80) *dest = c; dest++;
-      if (ch&0x40) *dest = c; dest++;
-      if (ch&0x20) *dest = c; dest++;
-      if (ch&0x10) *dest = c; dest++;
-      if (ch&0x08) *dest = c; dest++;
-      if (ch&0x04) *dest = c; dest++;
-      if (ch&0x02) *dest = c; dest++;
-      if (ch&0x01) *dest = c; dest++;
+    if (clip->y2<(dest_y+h))
+      h = clip->y2-dest_y+1;
+    
+    /* Setup for horizontal clipping (if so, set a special case) */
+    if (clip->x1>dest_x) {
+      xmin = clip->x1-dest_x;
+      clipping = 1;
+    }
+    if (clip->x2<(dest_x+w)) {
+      xmax = clip->x2-dest_x+1;
+      clipping = 1;
     }
   }
-}   
+
+  /* Decide which loop to use */
+  if (olines || clipping) {
+    /* Slower loop, taking skewing and clipping into account */
+    
+    for (;hc<h;hc++,destline=(dest+=vid->fb_bpl)) {
+      if (olines && lines==hc) {
+	lines += olines;
+	dest--;
+	flag=1;
+      }
+      for (iw=bw,xpix=0;iw;iw--)
+	for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,destline++,xpix++)
+	  if (ch&0x80 && xpix>=xmin && xpix<xmax) *destline = c; 
+      if (flag) {
+	xmax++;
+	flag=0;
+      }
+    }
+  }
+  else {
+    /* Tight, unrolled loop, works only for normal case */
+    
+    for (;hc<h;hc++,destline=(dest+=vid->fb_bpl))
+      for (iw=bw;iw;iw--) {
+	ch = *(chardat++);
+	if (ch&0x80) *destline = c; destline++; 
+	if (ch&0x40) *destline = c; destline++; 
+	if (ch&0x20) *destline = c; destline++; 
+	if (ch&0x10) *destline = c; destline++; 
+	if (ch&0x08) *destline = c; destline++; 
+	if (ch&0x04) *destline = c; destline++; 
+	if (ch&0x02) *destline = c; destline++; 
+	if (ch&0x01) *destline = c; destline++; 
+      }
+  }
+}
 
 /* Like charblit, but rotate 90 degrees anticlockwise whilst displaying */
 void linear8_charblit_v(unsigned char *chardat,int dest_x,

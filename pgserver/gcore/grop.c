@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.30 2001/01/07 09:18:06 micahjd Exp $
+/* $Id: grop.c,v 1.31 2001/01/08 05:09:57 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -92,9 +92,8 @@ void grop_render(struct divnode *div) {
 		     div->w,div->h+ydif,PG_LGOP_NONE);
       }
 
-      x = div->y+div->h-1+ydif;
-      if (x>cy1)
-	cy1 = x;
+      if (cr.y2>cy1)
+	cy1 = cr.y2;
     }
     else if (ydif>0) {
       /* Go down */
@@ -111,12 +110,16 @@ void grop_render(struct divnode *div) {
 			   div->w,div->h-ydif);
       }      
 
-      x = div->y+ydif-1;
-      if (x<cx2)
-	cx2 = x;
+      if (cr.y1<cx2)
+	cx2 = cr.y1;
     }
     else
       return;
+
+    #ifdef DEBUG_VIDEO
+    /* Illustrate the clipping rect */
+    (*vid->rect)(cx1,cy1,cx2-cx1+1,cy2-cy1+1,(*vid->color_pgtohwr)(0x00FF00));
+    #endif
   }
 
   div->otx = div->tx;
@@ -282,6 +285,17 @@ void grop_render(struct divnode *div) {
 	  /* ... and fall through to default */
        }
        
+       /* Text clipping is handled by the charblit, but we can
+	* go ahead and handle a few cases on the string level */
+    case PG_GROP_TEXT:
+      if (x>cx2 || y>cy2)
+	goto skip_this_node;
+      break;
+    case PG_GROP_TEXTV:
+      if (y<cy1)
+	goto skip_this_node;
+      break;
+
        /* Default clipping just truncates */
      default:
        if (x<cx1) {
@@ -304,7 +318,7 @@ void grop_render(struct divnode *div) {
 
     #ifdef DEBUG_VIDEO
     /* Illustrate the grop extents */
-    (*vid->frame)(x,y,w,h,(*vid->color_pgtohwr)(0x00FF00));
+    //    (*vid->rect)(x,y,w,h,(*vid->color_pgtohwr)(0x00FF00));
     #endif
 
     /* If this is incremental, do the sprite protection and double-buffer
