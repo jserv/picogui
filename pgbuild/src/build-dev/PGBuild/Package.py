@@ -201,12 +201,30 @@ class PackageList(object):
         task = progress.task("Deleting local copies of all non-bootstrap packages")
         locals = self.getLocalPackages()
         boots  = self.getBootstrapPackages()
-        basePath = self.config.eval("bootstrap/path[@name='packages']/text()")
         for package in locals:
             if not package in boots:
-                task.showTaskHeading()
-                shutil.rmtree(os.path.join(basePath, package))
-                task.report("removed", package)
+                self.removeLocalCopy(package, task)
+
+    def removeLocalCopy(self, package, progress):
+        """Given a package name, deletes the local copy"""
+        # This could take a while, show the heading now
+        progress.showTaskHeading()
+
+        basePath = self.config.eval("bootstrap/path[@name='packages']/text()")
+        pkgPath = os.path.join(basePath, package)
+        shutil.rmtree(pkgPath)
+        progress.report("removed", "package %s" % package)
+
+        # Remove as many empty directories above the package as we can
+        splitPath = pkgPath.split(os.sep)
+        try:
+            while True:
+                del splitPath[-1]
+                dirPath = os.sep.join(splitPath)
+                os.rmdir(dirPath)
+                progress.report("removed", "empty directory %s" % dirPath)
+        except OSError:
+            pass
     
 ### The End ###
         
