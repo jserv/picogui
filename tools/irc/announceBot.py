@@ -37,14 +37,13 @@ if botID > 1:
 # List of channels we're in. These will be autojoined by the
 # AccountManager. We update this and save it when we get a mail
 # for joining or parting a channel.
+print channelFile
 f = open(channelFile)
 channelList = {}
 for line in f.readlines():
     line = line.strip()
-    match = re.compile(' (.*?)$').search(line); 
-    if match is not None and int(match.group(1)) == botID:
-        print line
-        channelList[line.split(' ')[0]] = 1
+    print line
+    channelList[line] = 1
 f.close()
 
 print channelList.keys();
