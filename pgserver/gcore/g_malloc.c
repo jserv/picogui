@@ -1,6 +1,10 @@
-/* $Id: g_malloc.c,v 1.2 2000/04/24 02:38:36 micahjd Exp $
+
+/* $Id: g_malloc.c,v 1.3 2000/07/30 21:29:17 micahjd Exp $
  *
  * g_malloc.c - malloc wrapper providing error handling
+ *
+ * During debugging, tacks on a size_t to the beginning of all allocated memory,
+ * and keeps track of memory usage
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -70,6 +74,33 @@ void g_free(void *p) {
 #endif
 
   free(p);
+}
+
+g_error g_realloc(void **p,size_t s) {
+#ifdef DEBUG
+  size_t from;
+#endif
+
+  if (!p) return mkerror(ERRT_BADPARAM,"p==NULL in g_realloc");
+
+#ifdef DEBUG
+  ((size_t*)(*p))--;    /* Get the _real_ pointer so realloc will like us */
+  memamt -= (from = *((size_t*)(*p)));  /* Store original size */
+  *p = realloc(*p,s+sizeof(size_t));
+#else
+  *p = realloc(*p,s);
+#endif
+  if (!(*p)) return mkerror(ERRT_MEMORY,"Reallocation error");
+
+#ifdef DEBUG
+  *(((size_t *)(*p))++) = s;
+  memamt += s;
+
+  printf("* [%d -> %d] #%d (%d)\n",from,s,memref,memamt);
+#endif
+
+  return sucess;
+
 }
 
 /* The End */

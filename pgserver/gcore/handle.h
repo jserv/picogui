@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.5 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: handle.h,v 1.6 2000/07/30 21:29:17 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -86,6 +86,9 @@ void handle_cleanup(int owner);
    handle to the destination handle.  The destination's ownership is
    retained, and the source becomes invalid */
 g_error handle_bequeath(handle dest, handle src, int srcowner);
+
+/* Changes the object pointer of a handle */
+g_error rehandle(handle h, void *obj);
 
 #endif /* __HANDLE_H */
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: g_malloc.h,v 1.2 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: g_malloc.h,v 1.3 2000/07/30 21:29:17 micahjd Exp $
  *
  * g_malloc.h - malloc wrapper providing error handling
  *
@@ -33,6 +33,7 @@
 
 g_error g_malloc(void **p,size_t s);
 void g_free(void *p);
+g_error g_realloc(void **p,size_t s);
 
 #endif /* __H_GMALLOC */
 /* The End */

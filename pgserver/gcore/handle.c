@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.6 2000/06/07 06:15:47 micahjd Exp $
+/* $Id: handle.c,v 1.7 2000/07/30 21:29:17 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -463,6 +463,15 @@ handle r_hlookup(struct handlenode *n,void *obj,int *owner) {
 handle hlookup(void *obj,int *owner) {
   return r_hlookup(htree,obj,owner);
 }
+
+/* Changes the object pointer of a handle */
+g_error rehandle(handle h, void *obj) {
+  struct handlenode *hn = htree_find(h);
+  if (!hn) return mkerror(ERRT_HANDLE,"rehandle() - invalid handle");
+  hn->obj = obj;
+  return sucess;
+}
+
 
 /* The End */
 
