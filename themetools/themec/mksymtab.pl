@@ -1,4 +1,4 @@
-# $Id: mksymtab.pl,v 1.6 2000/10/10 00:49:06 micahjd Exp $
+# $Id: mksymtab.pl,v 1.7 2000/10/13 20:26:06 micahjd Exp $
 #
 # mksymtab.pl - convert the constant definitions in constants.h
 #               into a symbol table to compile into the theme
@@ -46,6 +46,7 @@ while (<>) {
 
     next if (!/^\#define\s*(PG\S+)/);
     $n = $1;
+    next if ($n =~ /\(/);
 
     # All values can be used as-is as a numerical constant
     print "\t{NUMBER,\"$n\",$n},\n";
