@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.22 2001/12/29 21:33:26 micahjd Exp $
+/* $Id: render.c,v 1.23 2002/01/05 06:29:56 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -410,49 +410,96 @@ void gropnode_translate(struct groprender *r, struct gropnode *n) {
 
 /****************************************************** gropnode_map */
 
+/* Utility to scale and translate a gropnode */
+void gropnode_scaletranslate(struct groprender *r, struct gropnode *n,
+			     struct fractionpair *scale, struct pair *trans) {
+  if(n->type==PG_GROP_FPOLYGON) {
+
+    /**** FIXME: Polygons can't yet be scaled.
+     *           the below code doesn't work because it would modify
+     *           the polygon's array permanently every time it's drawn
+  
+    s32* arr;
+    int i;
+    if (iserror(rdhandle((void**)&arr,PG_TYPE_ARRAY,-1,
+			 n->param[0])) || !arr) break;
+    for(i=1;i<=arr[0];i+=2) {
+      arr[i  ] = arr[i  ] * scale->x.n / scale->x.d + trans->x;
+      arr[i+1] = arr[i+1] * scale->y.n / scale->y.d + trans->y;
+    }
+    n->r.x = n->r.x * scale->x.n / scale->x.d;
+    n->r.y = n->r.y * scale->y.n / scale->y.d;
+
+    */
+  } 
+  else {
+    n->r.x = n->r.x * scale->x.n / scale->x.d + trans->x;
+    n->r.y = n->r.y * scale->y.n / scale->y.d + trans->y;
+    if (n->type != PG_GROP_TEXT) {
+      if (n->type != PG_GROP_BAR)
+	n->r.w = n->r.w * scale->x.n / scale->x.d;
+      if (n->type != PG_GROP_SLAB)
+	n->r.h = n->r.h * scale->y.n / scale->y.d;
+    }
+  }
+}
+
 /* NOTE: When new mapping types are added, add input mappings
  * to canvas.c! */
 
 void gropnode_map(struct groprender *r, struct gropnode *n) {
+  struct fractionpair scale;
+  struct pair trans;
 
-   /* FIXME: Fix negative (or otherwise bad) src values */
-   
-   switch (r->maptype) {
-    case PG_MAP_NONE:
-      break;
-       
-   case PG_MAP_SCALE:
-     if(n->type==PG_GROP_FPOLYGON) {
-       s32* arr;
-       int i;
-       if (iserror(rdhandle((void**)&arr,PG_TYPE_ARRAY,-1,
-			    n->param[0])) || !arr) break;
-       for(i=1;i<=arr[0];i+=2) {
-	 arr[i  ] = arr[i  ] * r->output_rect.w / r->map.w;
-	 arr[i+1] = arr[i+1] * r->output_rect.h / r->map.h;
-       }
-       n->r.x = n->r.x * r->output_rect.w / r->map.w;
-       n->r.y = n->r.y * r->output_rect.h / r->map.h;
-     } 
-     else {
-       n->r.x = n->r.x * r->output_rect.w / r->map.w;
-       n->r.y = n->r.y * r->output_rect.h / r->map.h;
-       if (n->type != PG_GROP_TEXT) {
-	 if (n->type != PG_GROP_BAR)
-	   n->r.w = n->r.w * r->output_rect.w / r->map.w;
-	 if (n->type != PG_GROP_SLAB)
-	   n->r.h = n->r.h * r->output_rect.h / r->map.h;
-       }
-     }
-     return;
-       
-   }
+  switch (r->maptype) {
+  case PG_MAP_NONE:
+    break;
 
-   /* Add mapping offset */
-   n->r.x += r->offset.x;
-   n->r.y += r->offset.y;
-   n->r.w += r->offset.w;
-   n->r.h += r->offset.h;
+    /* Simple scaling, stretch the virtual canvas to
+     * the entire physical canvas.
+     */
+  case PG_MAP_SCALE:
+    trans.x = r->map.x;
+    trans.y = r->map.y;
+    scale.x.n = r->output_rect.w;
+    scale.x.d = r->map.w;
+    scale.y.n = r->output_rect.h;
+    scale.y.d = r->map.h;
+    gropnode_scaletranslate(r,n,&scale,&trans);
+    break;
+
+    /* This mapping preserves the virtual canvas's aspect
+     * ratio and centers it within the actual canvas.
+     * Determine which scale parameter will be smaller,
+     * and assign that scale to both axes.
+     */
+  case PG_MAP_SQUARESCALE:
+    if (r->output_rect.w * r->map.h - r->output_rect.h * r->map.w > 0) {
+      /* Center horizontally */
+      scale.x.n = r->output_rect.h;
+      scale.x.d = r->map.h;
+      trans.x = (r->output_rect.w - r->map.w * r->output_rect.h / r->map.h) >> 1;
+      trans.y = 0;
+    }
+    else {
+      /* Center vertically */
+      scale.x.n = r->output_rect.w;
+      scale.x.d = r->map.w;
+      trans.x = 0;
+      trans.y = (r->output_rect.h - r->map.h * r->output_rect.w / r->map.w) >> 1;
+    }
+    scale.y = scale.x;
+    gropnode_scaletranslate(r,n,&scale,&trans);
+    break;
+
+    
+  }
+
+  /* Add mapping offset */
+  n->r.x += r->offset.x;
+  n->r.y += r->offset.y;
+  n->r.w += r->offset.w;
+  n->r.h += r->offset.h;
 }
 
 /****************************************************** gropnode_clip */

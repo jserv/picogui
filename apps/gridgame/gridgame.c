@@ -70,9 +70,9 @@ static void drawboard(void)
   pgWriteCmd(canvas, PGCANVAS_DEFAULTFLAGS, 1, 0);
   /* Scaling */
   pgWriteCmd(canvas, PGCANVAS_INPUTMAPPING, 5, 0, 0,
-      game->width*SCALE, game->height*SCALE, PG_MAP_SCALE);
+      game->width*SCALE, game->height*SCALE, PG_MAP_SQUARESCALE);
   pgWriteCmd(canvas, PGCANVAS_GROP, 6, PG_GROP_SETMAPPING, 0, 0,
-      game->width*SCALE, game->height*SCALE, PG_MAP_SCALE);
+      game->width*SCALE, game->height*SCALE, PG_MAP_SQUARESCALE);
   pgWriteCmd(canvas, PGCANVAS_GROPFLAGS, 1, PG_GROPF_UNIVERSAL);
   /* Board */
   /* full board themes */

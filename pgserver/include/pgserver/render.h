@@ -1,4 +1,4 @@
-/* $Id: render.h,v 1.8 2001/10/20 10:38:38 micahjd Exp $
+/* $Id: render.h,v 1.9 2002/01/05 06:29:56 micahjd Exp $
  *
  * render.h - data structures and functions for rendering and manipulating
  *            gropnodes (Graphics Operation nodes)
@@ -53,8 +53,14 @@ extern int display_owner;
 			       * more space is really neaded the primitive
 			       * should be split up somehow. */
 
+struct fraction {
+   int n,d;
+};
 struct pair {
    s16 x,y;
+};
+struct fractionpair {
+   struct fraction x,y;
 };
 struct quad {
    s16 x1,y1,x2,y2;

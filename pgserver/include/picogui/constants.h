@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.106 2001/12/30 22:11:09 micahjd Exp $
+/* $Id: constants.h,v 1.107 2002/01/05 06:29:56 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -691,8 +691,7 @@ typedef unsigned long pghandle;
  * to the real size
  */
 #define PG_MAP_SCALE          1      
-#define PG_MAP_ASPECTSCALE    2      //!< Like PG_MAP_SCALE, but constrain the aspect ratio
-
+#define PG_MAP_SQUARESCALE    2      //!< Like PG_MAP_SCALE, but constrain the aspect ratio
 
 //! \}
 
