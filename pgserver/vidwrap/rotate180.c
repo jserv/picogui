@@ -1,4 +1,4 @@
-/* $Id: rotate180.c,v 1.7 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: rotate180.c,v 1.8 2002/03/15 14:57:03 micahjd Exp $
  *
  * rotate180.c - Video wrapper to rotate the screen 180 degrees
  *
@@ -103,6 +103,11 @@ void rotate180_blit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
    (*vid->bitmap_getsize)(src,&bw,&bh);
+
+   /* Avoid divide by zero in case of an empty source bitmap */
+   if (!(bw && bh))
+     return;
+   
    sx2 = bw-(w%bw)-src_x;
    sy2 = bh-(h%bh)-src_y;
    
