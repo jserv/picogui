@@ -36,6 +36,14 @@ multiple locations:
     using a less drastic workaround for the bug, but it caused
     an annoying delay at startup.
 
+  - tarfile.py
+    v0.6.6
+
+    The tarfile module is a pure python implementation of 'tar', used
+    to portably extract packages distributed in .tar.bz2 and .tar.gz files.
+    Note that this module will be built in with Python 2.3, but we include
+    it to stay compatible with Python 2.2.
+
   - PGBuild
     dev
 
