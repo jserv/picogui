@@ -11,10 +11,7 @@ YEAR=`date --date="1 day ago" +%Y`
 MONTH=`date --date="1 day ago" +%m`
 DAY=`date --date="1 day ago" +%d`
 
-# cd to todays log files
-cd /usr/local/log/nirvana/$YEAR/$MONTH/$DAY
-
-grep -i $PROJECT.sourceforge.net access_log >> /home/groups/$PROJECT/log/access_log
+grep -i /$PROJECT.sourceforge.net /usr/local/log/*/$YEAR/$MONTH/$DAY/access_log >> /home/groups/$PROJECT/log/access_log
 
 cd /home/groups/$PROJECT/scripts
 /usr/local/bin/webalizer -c /home/groups/$PROJECT/scripts/webalizer.conf > webalize.msg 2>&1

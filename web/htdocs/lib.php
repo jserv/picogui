@@ -49,7 +49,7 @@ function beginpage($name) {
 
 echo "<html><head><title>PicoGUI - (${name})</title></head>\n";
 ?>
-<body bgcolor="#000000" text="#FFFFFF">
+<body bgcolor="#000000" text="#000000">
 <table cellpadding=5 cellspacing=5><tr>
 <td valign=top width=230>
 <a href="logoinfo.php">
@@ -65,33 +65,33 @@ alt="PicoGUI Logo" border=0>
      <a href="http://sourceforge.net/projects/pgui/">
      <img src="/gfx/sf.png" border=0 width=45 height=45></a>
      </td></tr><tr><td align=center>
-     <font size="-1">SF Summary<br>Page</font></td></tr></table>
+     <font size="-1" color="#C0C0C0">SF Summary<br>Page</font></td></tr></table>
      
    </td><td align=left valign=center>
      <table><tr><td align=center>
      <a href="news.php">
      <img src="/gfx/news.png" border=0 width=45 height=45></a>
      </td></tr><tr><td align=center>
-     <font size="-1">News</font></td></tr></table>
+     <font size="-1" color="#C0C0C0">News</font></td></tr></table>
      
    </td><td align=left valign=center>
      <table><tr><td align=center>
      <a href="scrshots.php">
      <img src="/gfx/scrshot.png" border=0 width=45 height=45></a>
      </td></tr><tr><td align=center>
-     <font size="-1">Screenshots</font></td></tr></table>
+     <font size="-1" color="#C0C0C0">Screenshots</font></td></tr></table>
 
    </td><td align=left valign=center>
      <table><tr><td align=center>
      <a href="vfaq.php">
      <img src="/gfx/vfaq.png" border=0 width=45 height=45></a>
      </td></tr><tr><td align=center>
-     <font size="-1">Virtual<br>FAQ</font></td></tr></table>
+     <font size="-1" color="#C0C0C0">Virtual<br>FAQ</font></td></tr></table>
 
    </td><td align=left valign=center>
      
      <table><tr><td align=center>
-     <font size="-1">
+     <font size="-1" color="#C0C0C0">
      Hosted by: <br>
      <A href="http://sourceforge.net">
      <img src="http://sourceforge.net/sflogo.php?group_id=4764&type=1"
@@ -167,11 +167,11 @@ function box($title) {
  <tr bgcolor="#000080"><td><font color="#FFFFFF">
 <?php echo $title; ?>
  </font></td></tr>
- <tr bgcolor="#BBCCDD"><td><font color="#000000">
-<?php
+ <tr bgcolor="#BBCCDD"><td>
+ <?php
 }
 function endbox() {
-   echo "</font></td><tr></table></td><tr></table><p>\n";
+   echo "</td><tr></table></td><tr></table><p>\n";
 }
 # The End
 ?>

@@ -1,0 +1,5 @@
+Well, as you might have seen from the recent screenshots, PicoGUI's popup
+menus and panelbars work! Therse were the two biggest gaps that needed
+filling before PicoGUI can actually run things. Now it should be possible to
+build a toolbar for launching and monitoring applications. Of course without
+a multiline text editor the usefulness is limited, but we're getting there!

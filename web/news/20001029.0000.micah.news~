@@ -1,0 +1,5 @@
+I added a tiny sprite engine to generalize the process of overlaying stuff
+on top of the screen. This is now used for dragging (such as the panelbar)
+and the mouse cursor. Now that PicoGUI can draw its own mouse cursor, I was
+able to finish the SVGAlib driver. It needs more optimization, but it works-
+so, I'll try to put it on a disk with a kernel :)

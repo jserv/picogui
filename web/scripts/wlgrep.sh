@@ -3,8 +3,8 @@
 PROJECT="pgui"
 EMAIL="micahjd@users.sourceforge.net"
 
-for i in `find /usr/local/log/nirvana/2000/ -name access_log`; do
-  grep -i $PROJECT.sourceforge.net $i >> /home/groups/$PROJECT/log/access_log;
+for i in `find /usr/local/log/ -name access_log`; do
+  grep -i /$PROJECT.sourceforge.net $i >> /home/groups/$PROJECT/log/access_log;
 done
 
 /usr/local/bin/webalizer -i -c /home/groups/$PROJECT/scripts/webalizer.conf > webalize.msg

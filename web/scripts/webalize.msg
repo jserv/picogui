@@ -1,11 +1,10 @@
 Webalizer V1.30-05 (Linux 2.2.16-urw3) English
-Using logfile /home/groups/webqcat/log/access_log
-Creating output in /home/groups/webqcat/htdocs/webalizer
-Hostname for reports is 'webqcat.sourceforge.net'
+Using logfile /home/groups/pgui/log/access_log
+Creating output in /home/groups/pgui/htdocs/webalizer
+Hostname for reports is 'pgui.sourceforge.net'
 Reading history file... webalizer.hist
-Generating report for September 2000
 Generating report for October 2000
 Generating report for November 2000
 Generating summary report
 Saving history information...
-6508 records (1718 ignored) in 3.14 seconds, 2072/sec
+5357 records (3613 ignored) in 1.45 seconds, 3694/sec
