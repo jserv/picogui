@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.17 2000/06/09 01:53:39 micahjd Exp $
+/* $Id: button.c,v 1.18 2000/06/09 07:11:16 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -38,23 +38,22 @@
 struct btndata {
   int on,over;
   int x,y;
+  int dxt;    /* X of the text, relative to the x above */
+  int dyt;    /* Ditto, for the text's Y */
   handle bitmap,bitmask,text,font;
   int align;
+  devcolort textcolor;
 };
 #define DATA ((struct btndata *)(self->data))
 
-/* Grop structure:
-   Node#  Type  Purpose
-   --------------------
-   0    element Fill     (fill's x,y,w,h have no effect)
-   1    element Border
-   2    bit/txt Mask
-   3    bit/txt Item
-   4    element Overlay
-*/
+void resizebutton(struct widget *self);
+
 void bitbutton(struct divnode *d) {
-  int ex,ey,ew,eh,x,y,w,h;
-  struct bitmap *bit;
+  int ex,ey,ew,eh,x,y,txt_h;
+  int w=0,h=0; /* Size of the bitmap and text combined */
+  struct bitmap *bit=NULL,*bitmask=NULL;
+  char *text=NULL;
+  struct fontdesc *fd=NULL;
   struct widget *self = d->owner;
 
   ex=ey=0; ew=d->w; eh=d->h;
@@ -62,29 +61,66 @@ void bitbutton(struct divnode *d) {
   addelement(d,&current_theme[E_BUTTON_BORDER],&ex,&ey,&ew,&eh);
   addelement(d,&current_theme[E_BUTTON_FILL],&ex,&ey,&ew,&eh);
 
-  /* We need at least the main bitmap for alignment.  The mask
-     bitmap is optional, but without it what's the point... */
-  if (DATA->bitmap && (rdhandle((void **) &bit,TYPE_BITMAP,-1,
-      DATA->bitmap).type==ERRT_NONE) && bit) {
-    w = bit->w;
-    h = bit->h;
-    align(d,DATA->align,&w,&h,&x,&y);
+  /* Dereference the handles */
+  rdhandle((void **) &bit,TYPE_BITMAP,-1,DATA->bitmap);
+  rdhandle((void **) &bitmask,TYPE_BITMAP,-1,DATA->bitmask);
+  rdhandle((void **) &text,TYPE_STRING,-1,DATA->text);
+  rdhandle((void **) &fd,TYPE_FONTDESC,-1,DATA->font);
 
-    /* AND the mask, then OR the bitmap. Yay for transparency effects! */
-    DATA->x = x;
-    DATA->y = y;
-    if (DATA->on) {
-      x+=ON_OFFSET;
-      y+=ON_OFFSET;
+  /* Find the total width and height */
+  if (text) {
+    sizetext(fd,&w,&h,text);
+    txt_h = h;
+  }
+  if (bit) {
+    w += bit->w;
+    if (bit->h>h) h = bit->h;
+  }
+  if (bit && text)
+    w += HWG_MARGIN;
+
+  /* Align, and save the upper-left coord for later */
+  align(d,DATA->align,&w,&h,&x,&y);
+
+  /* If the text is bigger than the bitmap, center the bitmap in the text */
+  if (bit && bit->h<txt_h)
+      y-=(DATA->dyt=(bit->h>>1)-(txt_h>>1));
+
+  DATA->x = x;
+  DATA->y = y;
+
+  /* AND the mask, then OR the bitmap. Yay for transparency effects! */
+  if (DATA->on) {
+    x+=ON_OFFSET;
+    y+=ON_OFFSET;
+  }
+  if (DATA->bitmask)
+    grop_bitmap(&d->grop,x,y,bitmask->w,bitmask->h,DATA->bitmask,LGOP_AND);
+  else
+    grop_null(&d->grop);
+  if (DATA->bitmap)
+    grop_bitmap(&d->grop,x,y,bit->w,bit->h,DATA->bitmap,LGOP_OR);
+  else
+    grop_null(&d->grop);
+
+  /* Put the text to the right of the bitmap, and vertically center them
+   * independently
+   */
+  if (DATA->text) {
+    if (bit) {
+      x+=(DATA->dxt=bit->w+HWG_MARGIN);
+      /* If the bitmap is bigger, center the text relative to the bitmap */
+      if (bit->h>txt_h) 
+	DATA->dyt=(bit->h>>1)-(txt_h>>1);
+      y+=DATA->dyt;
     }
-    grop_bitmap(&d->grop,x,y,w,h,DATA->bitmask,LGOP_AND);
-    grop_bitmap(&d->grop,x,y,w,h,DATA->bitmap,LGOP_OR);
+    else
+      DATA->dxt = DATA->dyt = 0;
+    grop_text(&d->grop,x,y,DATA->font,DATA->textcolor,DATA->text);
   }
-  else {
+  else
     grop_null(&d->grop);
-    grop_null(&d->grop);
-  }
-
+  
   addelement(d,&current_theme[E_BUTTON_OVERLAY],&ex,&ey,&ew,&eh);
 }
 
@@ -98,15 +134,21 @@ g_error button_install(struct widget *self) {
   if (e.type != ERRT_NONE) return e;
   memset(self->data,0,sizeof(struct btndata));
 
+  DATA->font = defaultfont;
+  DATA->align = A_CENTER;
+
+  /* Main split */
   e = newdiv(&self->in,self);
   if (e.type != ERRT_NONE) return e;
   self->in->flags |= S_LEFT;
   self->in->split = HWG_BUTTON;
 
+  /* Visible node */
   e = newdiv(&self->in->div,self);
   if (e.type != ERRT_NONE) return e;
   self->in->div->on_recalc = &bitbutton;
 
+  /* Spacer (between buttons) */
   e = newdiv(&self->in->next,self);
   if (e.type != ERRT_NONE) return e;
   self->in->next->flags |= S_LEFT;
@@ -128,6 +170,9 @@ void button_remove(struct widget *self) {
 g_error button_set(struct widget *self,int property, glob data) {
   g_error e;
   struct bitmap *bit;
+  char *str;
+  struct fontdesc *fd;
+  int psplit;
 
   switch (property) {
 
@@ -139,6 +184,7 @@ g_error button_set(struct widget *self,int property, glob data) {
       DIVNODE_PROPAGATE_RECALC;
     self->in->next->flags &= SIDEMASK;
     self->in->next->flags |= ((sidet)data);
+    resizebutton(self);
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
@@ -150,9 +196,19 @@ g_error button_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
+  case WP_COLOR:
+    DATA->textcolor = cnvcolor(data);
+    self->in->flags |= DIVNODE_NEED_RECALC;
+    self->dt->flags |= DIVTREE_NEED_RECALC;
+    break;
+
   case WP_BITMAP:
     if (rdhandle((void **)&bit,TYPE_BITMAP,-1,data).type==ERRT_NONE && bit) {
       DATA->bitmap = (handle) data;
+      psplit = self->in->split;
+      resizebutton(self);
+      if (self->in->split != psplit)
+	self->in->flags |= DIVNODE_PROPAGATE_RECALC;
       self->in->flags |= DIVNODE_NEED_RECALC;
       self->dt->flags |= DIVTREE_NEED_RECALC;
     }
@@ -166,6 +222,30 @@ g_error button_set(struct widget *self,int property, glob data) {
       self->dt->flags |= DIVTREE_NEED_RECALC;
     }
     else return mkerror(ERRT_HANDLE,"WP_BITMAP invalid bitmap mask handle");
+    break;
+
+  case WP_FONT:
+    if (rdhandle((void **)&fd,TYPE_FONTDESC,-1,data).type!=ERRT_NONE || !fd) 
+      return mkerror(ERRT_HANDLE,"WP_FONT invalid font handle (button)");
+    DATA->font = (handle) data;
+    psplit = self->in->split;
+    resizebutton(self);
+    if (self->in->split != psplit)
+      self->in->flags |= DIVNODE_PROPAGATE_RECALC;
+    self->in->flags |= DIVNODE_NEED_RECALC;
+    self->dt->flags |= DIVTREE_NEED_RECALC;
+    break;
+
+  case WP_TEXT:
+    if (rdhandle((void **)&str,TYPE_STRING,-1,data).type!=ERRT_NONE || !str) 
+      return mkerror(ERRT_HANDLE,"WP_TEXT invalid string handle (button)");
+    DATA->text = (handle) data;
+    psplit = self->in->split;
+    resizebutton(self);
+    if (self->in->split != psplit)
+      self->in->flags |= DIVNODE_PROPAGATE_RECALC;
+    self->in->flags |= DIVNODE_NEED_RECALC;
+    self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
   default:
@@ -192,7 +272,7 @@ glob button_get(struct widget *self,int property) {
 }
 
 void button_trigger(struct widget *self,long type,union trigparam *param) {
-  int event=-1;
+  int event=-1,state,x,y;
 
   /* Figure out the button's new state */
   switch (type) {
@@ -239,66 +319,79 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
      require recreating grop-lists.
      Redraws don't spread to other nodes, and they are very fast.
   */
+  x = DATA->x;
+  y = DATA->y;
   if (DATA->on && DATA->over) {
-    applystate(self->in->div->grop,
-	       &current_theme[E_BUTTON_BORDER],
-	       STATE_ACTIVATE);
-    applystate(self->in->div->grop->next,
-	       &current_theme[E_BUTTON_FILL],
-	       STATE_ACTIVATE);
-
-    self->in->div->grop->next->next->x = DATA->x + ON_OFFSET;
-    self->in->div->grop->next->next->next->x = DATA->x + ON_OFFSET;
-    self->in->div->grop->next->next->y = DATA->y + ON_OFFSET;
-    self->in->div->grop->next->next->next->y = DATA->y + ON_OFFSET;
-
-    applystate(self->in->div->grop->next->next->next->next,
-	       &current_theme[E_BUTTON_OVERLAY],
-	       STATE_ACTIVATE);
+    state = STATE_ACTIVATE;
+    x += ON_OFFSET;
+    y += ON_OFFSET;
   }
-  else if (DATA->over) {
-    applystate(self->in->div->grop,
-	       &current_theme[E_BUTTON_BORDER],
-	       STATE_HILIGHT);
-    applystate(self->in->div->grop->next,
-	       &current_theme[E_BUTTON_FILL],
-	       STATE_HILIGHT);
-
-    self->in->div->grop->next->next->x = DATA->x;
-    self->in->div->grop->next->next->next->x = DATA->x;
-    self->in->div->grop->next->next->y = DATA->y;
-    self->in->div->grop->next->next->next->y = DATA->y;
-
-    applystate(self->in->div->grop->next->next->next->next,
-	       &current_theme[E_BUTTON_OVERLAY],
-	       STATE_HILIGHT);
-  }
-  else {
-    applystate(self->in->div->grop,
-	       &current_theme[E_BUTTON_BORDER],
-	       STATE_NORMAL);
-    applystate(self->in->div->grop->next,
-	       &current_theme[E_BUTTON_FILL],
-	       STATE_NORMAL);
-
-    self->in->div->grop->next->next->x = DATA->x;
-    self->in->div->grop->next->next->next->x = DATA->x;
-    self->in->div->grop->next->next->y = DATA->y;
-    self->in->div->grop->next->next->next->y = DATA->y;
-
-    applystate(self->in->div->grop->next->next->next->next,
-	       &current_theme[E_BUTTON_OVERLAY],
-	       STATE_NORMAL);
-  }
-
-  self->in->div->flags |= DIVNODE_NEED_REDRAW;
-  self->dt->flags |= DIVTREE_NEED_REDRAW;   
+  else if (DATA->over)
+    state = STATE_HILIGHT;
+  else
+    state = STATE_NORMAL;
+  applystate(self->in->div->grop,
+	     &current_theme[E_BUTTON_BORDER],state);
+  applystate(self->in->div->grop->next,
+	     &current_theme[E_BUTTON_FILL],state);
+  applystate(self->in->div->grop->next->next->next->next->next,
+	     &current_theme[E_BUTTON_OVERLAY],state);
+  self->in->div->grop->next->next->x = x;
+  self->in->div->grop->next->next->next->x = x;
+  self->in->div->grop->next->next->y = y;
+  self->in->div->grop->next->next->next->y = y;
+  self->in->div->grop->next->next->next->next->x = x+DATA->dxt;
+  self->in->div->grop->next->next->next->next->y = y+DATA->dyt;
 
   /* Update, THEN send the event. */
 
+  self->in->div->flags |= DIVNODE_NEED_REDRAW;
+  self->dt->flags |= DIVTREE_NEED_REDRAW;   
   if (self->dt==dts->top) update();
   if (event>=0)
     post_event(WE_ACTIVATE,self,event);
+}
+
+/* HWG_BUTTON is the minimum size (either dimension) for a button.
+   This function resizes if the text or bitmap goes over that minimum.
+*/
+void resizebutton(struct widget *self) {
+  int w=0,h=0; /* Size of the bitmap and text combined */
+  struct bitmap *bit=NULL,*bitmask=NULL;
+  char *text=NULL;
+  struct fontdesc *fd=NULL;
+
+  /* Dereference the handles */
+  rdhandle((void **) &bit,TYPE_BITMAP,-1,DATA->bitmap);
+  rdhandle((void **) &bitmask,TYPE_BITMAP,-1,DATA->bitmask);
+  rdhandle((void **) &text,TYPE_STRING,-1,DATA->text);
+  rdhandle((void **) &fd,TYPE_FONTDESC,-1,DATA->font);
+
+  /* Find the total width and height */
+  if (text)
+    sizetext(fd,&w,&h,text);
+  if (bit) {
+    w += bit->w;
+    if (bit->h>h) h = bit->h;
+  }
+  if (bit && text)
+    w += HWG_MARGIN;
+
+  /* Set split to w or h depending on split orientation */
+  if ((self->in->flags & DIVNODE_SPLIT_TOP) ||
+      (self->in->flags & DIVNODE_SPLIT_BOTTOM))
+    self->in->split = h;
+  else if ((self->in->flags & DIVNODE_SPLIT_LEFT) ||
+	   (self->in->flags & DIVNODE_SPLIT_RIGHT))
+    self->in->split = w;
+
+  /* HWG_BUTTON is the minimum */
+  if (self->in->split < HWG_BUTTON)
+    self->in->split = HWG_BUTTON;
+  else {
+    /* If we're going over the limit anyway, add some margin */
+    self->in->split += HWG_MARGIN<<1;
+  }
 }
 
 /* The End */
