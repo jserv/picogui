@@ -15,7 +15,7 @@ class Frame(object):
         self._box = self.addWidget('Box')
         self._box.side = 'All'
 
-        self.python_ns = {'frame': self, '__name__': title}
+        self.python_ns = {'frame': self, '__name__': '__nifty__'}
         exec 'from Nifty import FileBuffer, ScratchBuffer, Subprocess, keybindings' in self.python_ns
 
         Nifty.config.exec_config_file('init.py', self.python_ns)
@@ -93,6 +93,9 @@ class Frame(object):
 
     def link(self, *args):
         self._app.link(*args)
+
+    def send(self, *args):
+        self._app.send(*args)
 
     def poll(self, handler, fd, mask='r'):
         self._app.server.poll(handler,fd,mask)

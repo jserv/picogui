@@ -25,8 +25,11 @@ class Buffer(object):
             if o is not but:
                 self.update_observer(o)
 
+    def update_from(self, o):
+        self.text = o.text
+
     def notify_changed(self, ev):
-        self.text = ev.widget.text
+        self.update_from(ev.widget)
         self.update_all_observers_but(ev.widget)
 
     def add_observer(self, o):
