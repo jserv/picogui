@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.8 2000/10/19 01:21:23 micahjd Exp $
+/* $Id: dispatch.c,v 1.9 2000/10/29 19:48:06 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -59,7 +59,7 @@ DEF_REQHANDLER(mkcontext)
 DEF_REQHANDLER(rmcontext)
 DEF_REQHANDLER(focus)
 DEF_REQHANDLER(getstring)
-DEF_REQHANDLER(undef)
+DEF_REQHANDLER(mkmsgdlg)
 DEF_REQHANDLER(setpayload)
 DEF_REQHANDLER(getpayload)
 DEF_REQHANDLER(undef)
@@ -91,7 +91,7 @@ g_error (*rqhtab[])(int,struct pgrequest*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(rmcontext)
   TAB_REQHANDLER(focus)
   TAB_REQHANDLER(getstring)
-  TAB_REQHANDLER(undef)
+  TAB_REQHANDLER(mkmsgdlg)
   TAB_REQHANDLER(setpayload)
   TAB_REQHANDLER(getpayload)
   TAB_REQHANDLER(undef)
@@ -682,7 +682,56 @@ g_error rqh_mkfillstyle(int owner, struct pgrequest *req,
   return sucess;
 }
 
+/* Little internal helper function for mkmsgdlg */
+g_error dlgbtn(int owner, struct widget *tb, handle htb,
+	       unsigned long payload, char *text) {
+  g_error e;
+  handle h;
+  unsigned long *ppayload;
+  struct widget *w;
 
+  e = widget_derive(&w,PG_WIDGET_BUTTON,tb,htb,PG_DERIVE_INSIDE,owner);
+  errorcheck;
+  e = mkhandle(&h,PG_TYPE_WIDGET,owner,w);
+  errorcheck;
+  e = handle_payload(&ppayload,owner,h);
+  errorcheck;
+  *ppayload = payload;
+  e = mkhandle(&h,PG_TYPE_STRING | HFLAG_NFREE,owner,text);
+  errorcheck;
+  e = widget_set(w,PG_WP_TEXT,h);
+  errorcheck;
+  e = widget_set(w,PG_WP_SIDE,PG_S_RIGHT);
+  errorcheck;
+}
+
+g_error rqh_mkmsgdlg(int owner, struct pgrequest *req,
+		     void *data, unsigned long *ret, int *fatal) {
+  g_error e;
+  handle h,htb;
+  struct widget *w,*tb;
+  reqarg(mkmsgdlg);
+
+  /* The popup box itself */
+  e = create_popup(-1,-1,250,150,&w,owner);
+  errorcheck;
+  e = mkhandle(&h,PG_TYPE_WIDGET,owner,w);
+  errorcheck;
+  *ret = h;
+
+  /* Button toolbar */
+  e = widget_derive(&tb,PG_WIDGET_TOOLBAR,w,h,PG_DERIVE_INSIDE,owner);
+  errorcheck;
+  e = mkhandle(&htb,PG_TYPE_WIDGET,owner,tb);
+  errorcheck;
+  e = widget_set(tb,PG_WP_SIDE,PG_S_BOTTOM);
+  errorcheck;
+
+  /* Buttons */
+  dlgbtn(owner,tb,htb,1,"Make it so!");
+
+  return sucess;
+}
 
 /* The End */
 
