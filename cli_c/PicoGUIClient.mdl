@@ -16,7 +16,9 @@ runtime = [
     SharedRuntime ('library', 'PicoGUI client shared library',
                    content = ['lib/libpgui.so.0.0.0',
                               'lib/libpgui.so.0',
-                              'lib/libpgui.so'])
+                              'lib/libpgui.so'],
+
+                   depends = [ 'picoguiserver/install' ])
     ]
 
 def prepare (module, platform, project):

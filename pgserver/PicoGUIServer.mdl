@@ -35,7 +35,9 @@ runtime = [
             Runtime ('install', 'Install PicoGUI Server',
                      content = [ 'bin/pgserver'],
                      depends = [ 'resourcemanager/install',
-                                 'kernel/video'],
+                                 'kernel/video',
+                                 ('libjpeg/library', ~ S ('platform/m68k-pic-coff'))
+                                 ],
                      help = "Install the PicoGUI Server" ),
 
             Runtime ('start', 'Run PicoGUI Server',
