@@ -217,8 +217,8 @@ array set pg_wp "
 	hotkey				19
 	extdevents			20
 	direction			21
-	absolutx			22
-	absoluty			23
+	absolutex			22
+	absolutey			23
 	on				24
 	thobj				25
 	name				26

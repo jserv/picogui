@@ -75,16 +75,30 @@ proc pgUpdate {} {
 	array set ret [pgGetResponse]
 	return $ret(data)
 }
-proc pgNewPopup {width height} {
-	global defaultparent
+proc pgNewPopup {{width 0} {height 0}} {
+	global defaultparent pg_wp
 	set id [pgCreateWidget popup]
+	if { $width > 0 } {
+		pgSetWidget $id $pg_wp(width) $width
+	}
+	if { $height > 0 } {
+		pgSetWidget $id $pg_wp(height) $height
+	}
 	if {$defaultparent == 0} {
 		set defaultparent $id
 	}
-	return id
+	return $id
 }
 proc pgNewPopupAt {x y width height} {
-	return [pgNewPopup $width $height]
+	global pg_wp
+	set id [pgNewPopup $width $height]
+	if { $x > -1 } {
+		pgSetWidget $id $pg_wp(absolutex) $x
+	}
+	if { $y > -1 } {
+		pgSetWidget $id $pg_wp(absolutey) $y
+	}
+	return $id
 }
 proc pgNewString {text} {
 	global pg_request
