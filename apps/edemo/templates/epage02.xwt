@@ -5,7 +5,7 @@
 	<box transparent="1">
 		<box transparent="1" sizemode="percent" size="5" side="left"/>
 		<box transparent="1" sizemode="percent" size="4" side="right"/>
-		<textbox readonly="1" text_src="data/themes.text" side="all"/>
+		<textbox readonly="1" text_src="data/themes.txt" side="all"/>
 	</box>
 
 	<box transparent="1" sizemode="pixel" size="15"/>
