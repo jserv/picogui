@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.16 2002/04/01 12:38:05 micahjd Exp $
+/* $Id: linear16.c,v 1.17 2002/09/29 12:21:04 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -241,7 +241,7 @@ void linear16_blit(hwrbitmap dest,
 #else
        while (h) {
 	  for (;sh && h;sh--,h--,src_line+=srcbit->pitch>>1,dst+=offset_dst) {
-	     src = src_line + src_x;
+	     src = src_line + ((src_x*srcbit->bpp)>>4);
 	     swm = (swp < w) ? swp : w;
 	     for (dw=w;dw;) {
 		__memcpy(dst,src,swm<<1);
@@ -289,7 +289,7 @@ void linear16_blit(hwrbitmap dest,
     u16 *src;
 
     /* Only needed for normal blits */
-    src = ((u16*)srcbit->bits) + src_x + src_y*(srcbit->pitch>>1);
+    src = ((u16*)srcbit->bits) + ((src_x*srcbit->bpp)>>4) + src_y*(srcbit->pitch>>1);
     offset_src = (srcbit->pitch>>1) - ((w*srcbit->bpp)>>4);
 
     switch (lgop) {
