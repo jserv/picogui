@@ -1,0 +1,7 @@
+object default {
+  name = "Really huge alpha blended stress test";
+  cursorbitmap = LoadBitmap("data/ring_doodads.png");
+  cursorbitmask = 0;
+  crsrhotspot.x = 400;
+  crsrhotspot.y = 300;
+}

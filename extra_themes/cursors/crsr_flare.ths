@@ -1,0 +1,7 @@
+object default {
+  name = "Completely useless lens flare cursor";
+  cursorbitmap = LoadBitmap("data/flare.png");
+  cursorbitmask = 0;
+  crsrhotspot.x = 220;
+  crsrhotspot.y = 220;
+}
