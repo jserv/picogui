@@ -75,7 +75,7 @@ class PackageVersion(object):
         """Using the current bootstrap configuration and package build platform,
            get the binary path for this package."""
         return os.path.join(ctx.config.eval('bootstrap/path[@name="bin"]/text()'),
-                            str(self.package.getHostPlatform()),
+                            str(self.package.getHostPlatform(ctx)),
                             self.getPathName())
 
     def update(self, ctx):
