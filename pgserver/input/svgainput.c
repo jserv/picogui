@@ -1,4 +1,4 @@
-/* $Id: svgainput.c,v 1.6 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: svgainput.c,v 1.7 2000/10/21 17:58:27 micahjd Exp $
  *
  * svgainput.h - input driver for SVGAlib
  *
@@ -30,23 +30,209 @@
 #include <pgserver/input.h>
 #include <pgserver/widget.h>
 #include <pgserver/pgnet.h>
+#include <picogui/constants.h>
 
 #include <vga.h>
+#include <vgakeyboard.h>
+#include <linux/kd.h>
+#include <linux/keyboard.h>
 
 /* Yes, this is a hack, but it's more efficient this way.
    Note to the authors of SVGAlib: why hide these vars?
+   Oh well, at least I read some of the SVGAlib source code ;-)
 */
 extern int __svgalib_mouse_fd;
 extern int __svgalib_kbd_fd;
 
+/* Keyboard maps (from SDL_svgaevents.c -- see below) */
+#define NUM_VGAKEYMAPS	(1<<KG_CAPSSHIFT)
+static short svgainput_vga_keymap[NUM_VGAKEYMAPS][NR_KEYS];
+void svgainput_initkeymaps(void);
+/* NOTE: this table maps SCANCODE_* constants to PGKEY_*
+   constants! Rebuild if either are changed!  */
+short svgainput_keymap[128] = {
+  0x0000,0x001B,0x0031,0x0032,0x0033,0x0034,0x0035,0x0036,
+  0x0037,0x0038,0x0039,0x0030,0x002D,0x003D,0x0008,0x0009,
+  0x0071,0x0077,0x0065,0x0072,0x0074,0x0079,0x0075,0x0069,
+  0x006F,0x0070,0x005B,0x005D,0x000D,0x0132,0x0061,0x0073,
+  0x0064,0x0066,0x0067,0x0068,0x006A,0x006B,0x006C,0x003B,
+  0x0027,0x0060,0x0130,0x005C,0x007A,0x0078,0x0063,0x0076,
+  0x0062,0x006E,0x006D,0x002C,0x002E,0x002F,0x012F,0x010C,
+  0x0134,0x0020,0x012D,0x011A,0x011B,0x011C,0x011D,0x011E,
+  0x011F,0x0120,0x0121,0x0122,0x0123,0x012C,0x012E,0x0107,
+  0x0108,0x0109,0x010D,0x0104,0x0105,0x0106,0x010E,0x0101,
+  0x0102,0x0103,0x0100,0x010A,0x0000,0x0000,0x003C,0x0124,
+  0x0125,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+  0x010F,0x0131,0x010B,0x013C,0x0133,0x013E,0x0116,0x0111,
+  0x0118,0x0114,0x0113,0x0117,0x0112,0x0119,0x0115,0x007F,
+  0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0013,
+  0x0000,0x0000,0x0000,0x0000,0x0000,0x0137,0x0138,0x013F
+};
+
+/* Current modifier state (in PGKEY values) */
+int svgainput_mod;
+
+/* Called by SVGAlib */
+void svgainput_kbdhandler(int scancode,int press);
+
+/******************************************** Keyboard handler */
+/* Where indicated, code has been used from SDL (www.libsdl.org) */
+
+/* Initialize the keymaps. Almost all of this is from
+   SDL_svgaevents.c in SDL.
+   Duplicates the kernel's keymapping code, so it's kinda
+   yucky but it's the only way I know of to get both raw
+   and mapped keys at the same time like PicoGUI requires.
+                    FIXME if possible!
+*/
+void svgainput_initkeymaps(void) {
+  struct kbentry entry;
+  int map, i;
+  
+  /* Load all the keysym mappings */
+  for ( map=0; map<NUM_VGAKEYMAPS; ++map ) {
+    memset(svgainput_vga_keymap[map], 0, NR_KEYS*sizeof(unsigned short));
+    for ( i=0; i<NR_KEYS; ++i ) {
+      entry.kb_table = map;
+      entry.kb_index = i;
+      if ( ioctl(__svgalib_kbd_fd, KDGKBENT, &entry) == 0 ) {
+	/* The "Enter" key is a special case */
+	if ( entry.kb_value == K_ENTER ) {
+	  entry.kb_value = K(KT_ASCII,13);
+	}
+	/* Handle numpad specially as well */
+	if ( KTYP(entry.kb_value) == KT_PAD ) {
+	  switch ( entry.kb_value ) {
+	  case K_P0:
+	  case K_P1:
+	  case K_P2:
+	  case K_P3:
+	  case K_P4:
+	  case K_P5:
+	  case K_P6:
+	  case K_P7:
+	  case K_P8:
+	  case K_P9:
+	    svgainput_vga_keymap[map][i]=entry.kb_value;
+	    svgainput_vga_keymap[map][i]+= '0';
+	    break;
+	  case K_PPLUS:
+	    svgainput_vga_keymap[map][i]=K(KT_ASCII,'+');
+	    break;
+	  case K_PMINUS:
+	    svgainput_vga_keymap[map][i]=K(KT_ASCII,'-');
+	    break;
+	  case K_PSTAR:
+	    svgainput_vga_keymap[map][i]=K(KT_ASCII,'*');
+	    break;
+	  case K_PSLASH:
+	    svgainput_vga_keymap[map][i]=K(KT_ASCII,'/');
+	    break;
+	  case K_PENTER:
+	    svgainput_vga_keymap[map][i]=K(KT_ASCII,'\r');
+	    break;
+	  case K_PCOMMA:
+	    svgainput_vga_keymap[map][i]=K(KT_ASCII,',');
+	    break;
+	  case K_PDOT:
+	    svgainput_vga_keymap[map][i]=K(KT_ASCII,'.');
+	    break;
+	  default:
+	    break;
+	  }
+	}
+	/* Do the normal key translation */
+	if ( (KTYP(entry.kb_value) == KT_LATIN) ||
+	     (KTYP(entry.kb_value) == KT_ASCII) ||
+	     (KTYP(entry.kb_value) == KT_LETTER) ) {
+	  svgainput_vga_keymap[map][i] = entry.kb_value;
+	}
+      }
+    }
+  }
+}
+
+/* Keyboard handler called by SVGAlib */
+void svgainput_kbdhandler(int scancode,int press) {
+  int x;
+  static short previouskey = 0;
+
+  /******* Handle modifiers */
+
+  switch (scancode) {
+  case SCANCODE_LEFTSHIFT:    x = PGMOD_LSHIFT;  break;
+  case SCANCODE_RIGHTSHIFT:   x = PGMOD_RSHIFT;  break;
+  case SCANCODE_LEFTCONTROL:  x = PGMOD_LCTRL;   break;
+  case SCANCODE_RIGHTCONTROL: x = PGMOD_RCTRL;   break;
+  case SCANCODE_LEFTALT:      x = PGMOD_LALT;    break;
+  case SCANCODE_RIGHTALT:     x = PGMOD_RALT;    break;
+  case SCANCODE_NUMLOCK:      x = PGMOD_NUM;     break;
+  case SCANCODE_CAPSLOCK:     x = PGMOD_CAPS;    break;
+  default:                    x = 0;
+  }
+  if (press)
+    svgainput_mod |= x;
+  else
+    svgainput_mod &= ~x;
+    
+  /******* Handle ascii character events */
+
+  if (press) {
+    short map=0,c=0;
+
+    /* Convert out modifier flags to a map number 
+     * (this code adapted from SDL_svgaevents.c)   */
+
+    if (svgainput_mod & PGMOD_SHIFT) map |= 1 << KG_SHIFT;
+    if (svgainput_mod & PGMOD_CTRL)  map |= 1 << KG_CTRL;
+    if (svgainput_mod & PGMOD_ALT)   map |= 1 << KG_ALT;
+    if (svgainput_mod & PGMOD_MODE)  map |= 1 << KG_ALTGR;
+    if ((KTYP(svgainput_vga_keymap[map][scancode]) == KT_LETTER)
+	&&(svgainput_mod&PGMOD_CAPS)) map ^= 1 << KG_SHIFT;
+
+    /* Lookup the ascii/unicode value in the tables */
+    
+    if (KTYP(svgainput_vga_keymap[map][scancode]) == KT_PAD) {
+      if (svgainput_mod & PGMOD_NUM)
+	c = KVAL(svgainput_vga_keymap[map][scancode]);
+    }
+    else
+      c = KVAL(svgainput_vga_keymap[map][scancode]);
+
+
+#ifdef DEBUG
+    guru("Translated key: %c (%d) (mods: %d)",c,c,svgainput_mod);
+#endif
+
+    if (c)
+      dispatch_key(TRIGGER_CHAR,c,svgainput_mod);
+  }
+
+  /******* Handle raw key press/release events */
+  
+  /* Suppress autorepeat on raw events */
+  if (press && scancode==previouskey) return;
+  
+  /* Dispatch to the rest of PicoGUI */
+  if (press) {
+    previouskey = scancode;
+    dispatch_key(TRIGGER_KEYDOWN,svgainput_keymap[scancode],svgainput_mod);
+  }
+  else {
+    previouskey = 0;
+    dispatch_key(TRIGGER_KEYUP,svgainput_keymap[scancode],svgainput_mod);
+  }
+}
+
 /******************************************** Implementations */
 
+/* Enable keyboard and mouse support */
 g_error svgainput_init(void) {
-
   if (keyboard_init()==-1)
     return mkerror(PG_ERRT_IO,73);
   vga_setmousesupport(1);
-
+  keyboard_seteventhandler(&svgainput_kbdhandler);
+  svgainput_initkeymaps();
   return sucess;
 }
  
@@ -54,6 +240,7 @@ void svgainput_close(void) {
   keyboard_close();
 }
 
+/* watch SVGAlib's file handles */
 void svgainput_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
   if ((*n) < (__svgalib_mouse_fd+1)) *n = __svgalib_mouse_fd+1;
   if ((*n) < (__svgalib_kbd_fd+1)) *n = __svgalib_kbd_fd+1;
@@ -61,34 +248,24 @@ void svgainput_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
   FD_SET(__svgalib_kbd_fd,readfds);
 }
 
+/* Pass on any fd activity to SVGAlib's *_update() functions */
 int svgainput_fd_activate(int fd) {
-  if (fd==__svgalib_mouse_fd) {
+  if (fd==__svgalib_mouse_fd)
     mouse_update();
-  }
-  else if (fd==__svgalib_kbd_fd) {
+  else if (fd==__svgalib_kbd_fd)
     keyboard_update();
-    dispatch_key(TRIGGER_KEYDOWN,PGKEY_u,PGMOD_CTRL|PGMOD_ALT);
-  }
   else 
     return 0;
   return 1;
 }
 
-void svgainput_poll(void) {
-#ifdef DEBUG
-  //  guru("svgainput_poll()");
-#endif
-}
-
 /******************************************** Driver registration */
 
 g_error svgainput_regfunc(struct inlib *i) {
-  //  i->init = &svgainput_init;
-  //  i->close = &svgainput_close;
-  //  i->fd_init = &svgainput_fd_init;
-  //  i->fd_activate = &svgainput_fd_activate;
-  i->poll = &svgainput_poll;
-
+  i->init = &svgainput_init;
+  i->close = &svgainput_close;
+  i->fd_init = &svgainput_fd_init;
+  i->fd_activate = &svgainput_fd_activate;
   return sucess;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: svga.c,v 1.11 2000/10/19 01:21:24 micahjd Exp $
+/* $Id: svga.c,v 1.12 2000/10/21 17:58:29 micahjd Exp $
  *
  * svga.c - video driver for (S)VGA cards, via vgagl and svgalib
  *
@@ -50,7 +50,7 @@ g_error svga_init(int xres,int yres,int bpp,unsigned long flags) {
      PicoGUI compliant...
   */
 
-#define VGA_MODE G640x480x16M
+#define VGA_MODE G640x480x256
 
   /* In a GUI environment, we don't want VC switches,
      plus they usually crash on my system anyway,
@@ -133,6 +133,9 @@ void svga_clip_off(void) {
 void svga_blit(struct stdbitmap *src,int src_x,int src_y,
 		 struct stdbitmap *dest,int dest_x,int dest_y,
 		 int w,int h,int lgop) {
+
+  return;
+
   if (lgop==PG_LGOP_NULL) return;
   if (w<=0) return;
   if (h<=0) return;
