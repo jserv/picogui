@@ -1,4 +1,5 @@
-SUBDIRS = pgboard pterm fieldtest vrcalc omnibar pgtuxphone
+SUBDIRS = pgboard pterm fieldtest vrcalc omnibar pgtuxphone blackout \
+	  battleship galaxy imgview dialogdemo scribble canvastst
 
 if ENABLE_BEE
 
