@@ -1,4 +1,4 @@
-/* $Id: paragraph.h,v 1.8 2003/01/01 03:43:00 micahjd Exp $
+/* $Id: paragraph.h,v 1.9 2003/01/21 04:10:37 micahjd Exp $
  *
  * paragraph.h - Build upon the text storage capabilities of pgstring, adding word
  *               wrapping, formatting, and UI.
@@ -108,7 +108,7 @@ struct paragraph_cursor {
   /* The location this cursor was most recently rendered
    * at, in absolute logical coordinates. 
    */
-  struct rect last_rect;
+  struct pgrect last_rect;
 
   unsigned int visible : 1;
 };

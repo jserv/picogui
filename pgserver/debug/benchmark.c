@@ -1,4 +1,4 @@
-/* $Id: benchmark.c,v 1.11 2003/01/01 03:42:57 micahjd Exp $
+/* $Id: benchmark.c,v 1.12 2003/01/21 04:10:35 micahjd Exp $
  *
  * benchmark.c - Run benchmarks on vidlib functions
  *
@@ -125,7 +125,7 @@ void bench_multiblit_32_32(struct benchmark_param *b) {
 }
 
 void bench_rotateblit_0(struct benchmark_param *b) {
-  struct quad clip;
+  struct pgquad clip;
   clip.x1 = 0;
   clip.y1 = 0;
   clip.x2 = b->w-1;
@@ -135,7 +135,7 @@ void bench_rotateblit_0(struct benchmark_param *b) {
 }
 
 void bench_rotateblit_90(struct benchmark_param *b) {
-  struct quad clip;
+  struct pgquad clip;
   clip.x1 = 0;
   clip.y1 = 0;
   clip.x2 = b->w-1;
@@ -145,7 +145,7 @@ void bench_rotateblit_90(struct benchmark_param *b) {
 }
 
 void bench_rotateblit_180(struct benchmark_param *b) {
-  struct quad clip;
+  struct pgquad clip;
   clip.x1 = 0;
   clip.y1 = 0;
   clip.x2 = b->w-1;
@@ -155,7 +155,7 @@ void bench_rotateblit_180(struct benchmark_param *b) {
 }
 
 void bench_rotateblit_270(struct benchmark_param *b) {
-  struct quad clip;
+  struct pgquad clip;
   clip.x1 = 0;
   clip.y1 = 0;
   clip.x2 = b->w-1;
@@ -194,7 +194,7 @@ void bench_blur_16(struct benchmark_param *b) {
 }
 
 void bench_charblit_0(struct benchmark_param *b) {
-  struct quad clip;
+  struct pgquad clip;
   clip.x1 = 0;
   clip.y1 = 0;
   clip.x2 = b->w-1;
@@ -204,7 +204,7 @@ void bench_charblit_0(struct benchmark_param *b) {
 }
 
 void bench_charblit_90(struct benchmark_param *b) {
-  struct quad clip;
+  struct pgquad clip;
   clip.x1 = 0;
   clip.y1 = 0;
   clip.x2 = b->w-1;
@@ -214,7 +214,7 @@ void bench_charblit_90(struct benchmark_param *b) {
 }
 
 void bench_charblit_180(struct benchmark_param *b) {
-  struct quad clip;
+  struct pgquad clip;
   clip.x1 = 0;
   clip.y1 = 0;
   clip.x2 = b->w-1;
@@ -224,7 +224,7 @@ void bench_charblit_180(struct benchmark_param *b) {
 }
 
 void bench_charblit_270(struct benchmark_param *b) {
-  struct quad clip;
+  struct pgquad clip;
   clip.x1 = 0;
   clip.y1 = 0;
   clip.x2 = b->w-1;
@@ -235,7 +235,7 @@ void bench_charblit_270(struct benchmark_param *b) {
 
 #ifdef CONFIG_FONTENGINE_FREETYPE
 void bench_alpha_charblit_0(struct benchmark_param *b) {
-  struct quad clip;
+  struct pgquad clip;
   clip.x1 = 0;
   clip.y1 = 0;
   clip.x2 = b->w-1;
@@ -245,7 +245,7 @@ void bench_alpha_charblit_0(struct benchmark_param *b) {
 }
 
 void bench_alpha_charblit_90(struct benchmark_param *b) {
-  struct quad clip;
+  struct pgquad clip;
   clip.x1 = 0;
   clip.y1 = 0;
   clip.x2 = b->w-1;
@@ -255,7 +255,7 @@ void bench_alpha_charblit_90(struct benchmark_param *b) {
 }
 
 void bench_alpha_charblit_180(struct benchmark_param *b) {
-  struct quad clip;
+  struct pgquad clip;
   clip.x1 = 0;
   clip.y1 = 0;
   clip.x2 = b->w-1;
@@ -265,7 +265,7 @@ void bench_alpha_charblit_180(struct benchmark_param *b) {
 }
 
 void bench_alpha_charblit_270(struct benchmark_param *b) {
-  struct quad clip;
+  struct pgquad clip;
   clip.x1 = 0;
   clip.y1 = 0;
   clip.x2 = b->w-1;

@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.38 2003/01/01 03:42:58 micahjd Exp $
+/* $Id: g_error.c,v 1.39 2003/01/21 04:10:36 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -87,7 +87,7 @@ void guru(const char *fmt, ...) {
   char *p,*pline;
   char c;
   va_list ap;
-  struct quad screenclip;
+  struct pgquad screenclip;
   static int semaphore = 0;
    
   if (!vid) return;

@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.36 2003/01/01 03:43:07 micahjd Exp $
+/* $Id: rotate90.c,v 1.37 2003/01/21 04:10:40 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -33,8 +33,8 @@
 #include <pgserver/appmgr.h>
 #include <pgserver/render.h>
 
-struct quad *rotate90_rotateclip(struct quad *clip) {
-  static struct quad cr;
+struct pgquad *rotate90_rotateclip(struct pgquad *clip) {
+  static struct pgquad cr;
   if (clip) {
     cr.x1 = clip->y1;
     cr.y1 = vid->yres-1-clip->x2;
@@ -138,7 +138,7 @@ void rotate90_blit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
 }
 void rotate90_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y,
 			 hwrbitmap src, s16 src_x, s16 src_y, s16 src_w, s16 src_h,
-			 struct quad *clip, s16 angle, s16 lgop) {
+			 struct pgquad *clip, s16 angle, s16 lgop) {
   s16 dw,dh;
   s16 bw,bh;
   vid->bitmap_getsize(dest,&dw,&dh);
@@ -224,7 +224,7 @@ void rotate90_multiblit(hwrbitmap dest,s16 dest_x,s16 dest_y,
 
 void rotate90_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
 		       s16 w,s16 h,s16 lines,s16 angle,hwrcolor c,
-		       struct quad *clip, s16 lgop, int pitch) {
+		       struct pgquad *clip, s16 lgop, int pitch) {
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
    
@@ -240,7 +240,7 @@ void rotate90_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
 #ifdef CONFIG_FONTENGINE_FREETYPE
 void rotate90_alpha_charblit(hwrbitmap dest,u8 *chardat, s16 dest_x,s16 dest_y,s16 w,s16 h,
 			     int char_pitch, u8 *gammatable, s16 angle,hwrcolor c,
-			     struct quad *clip, s16 lgop) {
+			     struct pgquad *clip, s16 lgop) {
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
    

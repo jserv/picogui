@@ -1,4 +1,4 @@
-/* $Id: x11.h,v 1.14 2003/01/01 03:43:01 micahjd Exp $
+/* $Id: x11.h,v 1.15 2003/01/21 04:10:38 micahjd Exp $
  *
  * x11.h - Header shared by all the x11 driver components in picogui
  *
@@ -203,16 +203,16 @@ void x11_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
 		   hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 xo, s16 yo, s16 lgop);
 g_error x11_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm);
 void x11_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
-		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
+		  s16 lines, s16 angle, hwrcolor c, struct pgquad *clip,
 		  s16 lgop, int char_pitch);
 void x11_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 			int char_pitch, u8 *gammatable, s16 angle, hwrcolor c,
-			struct quad *clip, s16 lgop);
+			struct pgquad *clip, s16 lgop);
 void x11_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius);
 void x11_fpolygon(hwrbitmap dest, s32* array, s16 xoff, s16 yoff , hwrcolor c, s16 lgop);
 void x11_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y,
 		    hwrbitmap src, s16 src_x, s16 src_y, s16 src_w, s16 src_h,
-		    struct quad *clip, s16 angle, s16 lgop);
+		    struct pgquad *clip, s16 angle, s16 lgop);
 void x11_gradient(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,s16 angle,
 		  pgcolor c1, pgcolor c2, s16 lgop);
 void x11_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,

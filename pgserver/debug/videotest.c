@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.38 2003/01/01 03:42:57 micahjd Exp $
+/* $Id: videotest.c,v 1.39 2003/01/21 04:10:36 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -40,7 +40,7 @@ void testpat_line(void) {
   struct font_metrics m;
   int patx,paty,patw;
   int i;
-  struct quad clip = {0,0,vid->xres-1,vid->yres-1};
+  struct pgquad clip = {0,0,vid->xres-1,vid->yres-1};
    
   rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
   fd->lib->getmetrics(fd,&m);
@@ -108,7 +108,7 @@ void testpat_color(void) {
   int y=0;
   int h;
   struct font_metrics m;
-  struct quad clip = {0,0,vid->xres-1,vid->yres-1};
+  struct pgquad clip = {0,0,vid->xres-1,vid->yres-1};
    
   rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
   fd->lib->getmetrics(fd,&m);
@@ -172,7 +172,7 @@ void testpat_unblit(void) {
   int i;
   hwrbitmap bit;
   char buf[20];
-  struct quad clip = {0,0,vid->xres-1,vid->yres-1};
+  struct pgquad clip = {0,0,vid->xres-1,vid->yres-1};
    
   rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
    
@@ -278,10 +278,10 @@ void testpat_stipple(void) {
 void testpat_text(void) {
   hwrcolor bg = VID(color_pgtohwr) (0xFFFFFF);
   struct font_descriptor *fd;
-  struct pair p;
+  struct pgpair p;
   u8 c;
   struct font_metrics m;
-  struct quad clip = {0,0,vid->xres-1,vid->yres-1};   
+  struct pgquad clip = {0,0,vid->xres-1,vid->yres-1};   
 
   rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
   fd->lib->getmetrics(fd,&m);

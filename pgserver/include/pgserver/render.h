@@ -1,4 +1,4 @@
-/* $Id: render.h,v 1.18 2003/01/01 03:43:00 micahjd Exp $
+/* $Id: render.h,v 1.19 2003/01/21 04:10:38 micahjd Exp $
  *
  * render.h - data structures and functions for rendering and manipulating
  *            gropnodes (Graphics Operation nodes)
@@ -61,24 +61,24 @@ extern int disable_output;
 struct gropnode {
    u32 param[NUMGROPPARAMS];
    u16 type,flags;
-   struct rect r;
+   struct pgrect r;
    struct gropnode *next;   
 };
 
 /* Structure to hold all state info while rendering one groplist */
 struct groprender {
-   struct rect output_rect; /* Size of output device (divnode, etc) */
-   struct rect orig;        /* Original rect of current gropnode */
-   struct pair translation; /* Applied only to grops with PG_GROPF_TRANSLATE */
-   struct pair scroll;      /* Delta translation from last redraw */
-   struct rect csrc;        /* Additional src_x,src_y offsets from clipping */
+   struct pgrect output_rect; /* Size of output device (divnode, etc) */
+   struct pgrect orig;        /* Original rect of current gropnode */
+   struct pgpair translation; /* Applied only to grops with PG_GROPF_TRANSLATE */
+   struct pgpair scroll;      /* Delta translation from last redraw */
+   struct pgrect csrc;        /* Additional src_x,src_y offsets from clipping */
    hwrbitmap output;        /* Bitmap to render to */
-   struct quad orig_clip;   /* Original clipping rectangle, before any
+   struct pgquad orig_clip;   /* Original clipping rectangle, before any
 			     * PG_GROP_SETCLIP nodes modify it */
   
    /* Params that can be set with nonvisual gropnodes */
-   struct rect offset, src, map;
-   struct quad clip;
+   struct pgrect offset, src, map;
+   struct pgquad clip;
    u8 maptype;
    hwrcolor color;     /* Used for all primitives */
    s16 lgop;
@@ -97,7 +97,7 @@ struct gropctxt {
   struct gropnode **headpp;   /* Head of groplist */
   struct gropnode *current;   /* Current position */
   u32 n;                      /* Numerical position in gropnode list */
-  struct rect r;              /* Current coordinates */
+  struct pgrect r;              /* Current coordinates */
   struct divnode *owner;      /* Optional */
   /* These are applied to new gropnodes */
   u16 defaultgropflags;
@@ -130,7 +130,7 @@ void align(struct gropctxt *d,alignt align,s16 *w,s16 *h,s16 *x,s16 *y);
  *
  * If 'clip' is non-NULL, override the usual clipping rectangle with this one.
  */
-void grop_render(struct divnode *div, struct quad *clip);
+void grop_render(struct divnode *div, struct pgquad *clip);
 
 /* The below functions are steps used within the rendering process. Not
  * really useful by themselves, but this should help divide the monstrosity
@@ -146,9 +146,9 @@ void gropnode_draw(struct groprender *r, struct gropnode *n);
 
 /***************** geometry functions */
 
-void quad_intersect(struct quad *dest, struct quad *src);
-struct quad *rect_to_quad(struct rect *rect);
-struct pair *xy_to_pair(s16 x, s16 y);
+void quad_intersect(struct pgquad *dest, struct pgquad *src);
+struct pgquad *rect_to_quad(struct pgrect *rect);
+struct pgpair *xy_to_pair(s16 x, s16 y);
 
 #endif /* __RENDER_H */
 

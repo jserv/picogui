@@ -1,4 +1,4 @@
-/* $Id: dvbl_sprite.c,v 1.6 2003/01/01 03:43:05 micahjd Exp $
+/* $Id: dvbl_sprite.c,v 1.7 2003/01/21 04:10:38 micahjd Exp $
  *
  * dvbl_sprite.c - This file is part of the Default Video Base Library,
  *                 providing the basic video functionality in picogui but
@@ -39,8 +39,8 @@
 #include <pgserver/divtree.h>
 
 void def_sprite_hide_above(struct sprite *spr);
-int def_sprite_test_overlap(struct sprite *spr,  struct quad *r);
-struct quad *def_sprite_quad(struct sprite *spr);
+int def_sprite_test_overlap(struct sprite *spr,  struct pgquad *r);
+struct pgquad *def_sprite_quad(struct sprite *spr);
 
 /******************************************** Public functions */
 
@@ -129,7 +129,7 @@ void def_sprite_show(struct sprite *spr) {
 }
 
 void def_sprite_hide(struct sprite *spr) {
-  static struct quad cr;
+  static struct pgquad cr;
   struct divtree *dt;
 
   if (disable_output)
@@ -194,7 +194,7 @@ void def_sprite_hideall(void) {
 }
 
 /* Hide necessary sprites in a given area */
-void def_sprite_protectarea(struct quad *in,struct sprite *from) {
+void def_sprite_protectarea(struct pgquad *in,struct sprite *from) {
    /* Base case: from is null */
    if (!from) return;
 
@@ -212,7 +212,7 @@ void def_sprite_protectarea(struct quad *in,struct sprite *from) {
  */
 void def_sprite_hide_above(struct sprite *spr) {
   struct sprite *s;
-  struct quad *q = def_sprite_quad(spr);
+  struct pgquad *q = def_sprite_quad(spr);
 
   for (s=spr->next;s;s=s->next)
     /* FIXME: IT shouldn't be necessary to hide the sprites that don't overlap,
@@ -227,17 +227,17 @@ void def_sprite_hide_above(struct sprite *spr) {
 
 /* Test whether a sprite overlaps the given rectangle
  */
-int def_sprite_test_overlap(struct sprite *spr,  struct quad *r) {
+int def_sprite_test_overlap(struct sprite *spr,  struct pgquad *r) {
   return ((spr->x+spr->w) >= r->x1) &&
     ((spr->y+spr->h) >= r->y1) &&
     (spr->x <= r->x2) &&
     (spr->y <= r->y2);
 }
 
-/* Convert a sprite's position to a struct quad, for temporary use
+/* Convert a sprite's position to a struct pgquad, for temporary use
  */
-struct quad *def_sprite_quad(struct sprite *spr) {
-  static struct quad cr;
+struct pgquad *def_sprite_quad(struct sprite *spr) {
+  static struct pgquad cr;
   cr.x1 = spr->x;
   cr.y1 = spr->y;
   cr.x2 = spr->x+spr->w-1;

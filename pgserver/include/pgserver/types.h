@@ -1,4 +1,4 @@
-/* $Id: types.h,v 1.5 2003/01/01 03:43:01 micahjd Exp $
+/* $Id: types.h,v 1.6 2003/01/21 04:10:38 micahjd Exp $
  *
  * pgserver/types.h - Common types used throughout pgserver
  *                    (but only in pgserver)
@@ -35,7 +35,7 @@ struct fraction {
   int n,d;
 };
 
-struct pair {
+struct pgpair {
   s16 x,y;
 };
 
@@ -47,11 +47,11 @@ struct fractionpair {
   struct fraction x,y;
 };
 
-struct quad {
+struct pgquad {
   s16 x1,y1,x2,y2;
 };
 
-struct rect {
+struct pgrect {
   s16 x,y,w,h;
 };
 

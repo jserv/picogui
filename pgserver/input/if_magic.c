@@ -1,4 +1,4 @@
-/* $Id: if_magic.c,v 1.15 2003/01/01 03:43:03 micahjd Exp $
+/* $Id: if_magic.c,v 1.16 2003/01/21 04:10:38 micahjd Exp $
  *
  * if_magic.c - Trap magic debug keys
  *
@@ -88,7 +88,7 @@ g_error debug_bitmaps(const void **pobj, void *extra) {
   s16 w,h;
   int has_alpha, i;
   struct font_descriptor *df=NULL;
-  struct quad screenclip;
+  struct pgquad screenclip;
   struct font_metrics m;
   hwrbitmap debugwin;
   s16 lxres,lyres;

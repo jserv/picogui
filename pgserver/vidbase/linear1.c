@@ -1,4 +1,4 @@
-/* $Id: linear1.c,v 1.26 2003/01/01 03:43:05 micahjd Exp $
+/* $Id: linear1.c,v 1.27 2003/01/21 04:10:39 micahjd Exp $
  *
  * Video Base Library:
  * linear1.c - For 1-bit packed pixel devices (most black and white displays)
@@ -392,7 +392,7 @@ void linear1_blit(hwrbitmap dest,
 }
    
 void linear1_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
-		      s16 lines, s16 angle, hwrcolor c, struct quad *clip,
+		      s16 lines, s16 angle, hwrcolor c, struct pgquad *clip,
 		      s16 lgop, int char_pitch) {
    struct stdbitmap src;
    

@@ -1,4 +1,4 @@
-/* $Id: font_xft.c,v 1.8 2003/01/01 03:43:05 micahjd Exp $
+/* $Id: font_xft.c,v 1.9 2003/01/21 04:10:39 micahjd Exp $
  *
  * font_xft.c - Font engine for X implemented using Xft
  *
@@ -43,9 +43,9 @@ struct xft_fontdesc {
 #define DATA ((struct xft_fontdesc *)self->data)
 
 /* Utility function to do the setup work before Xft rendering */
-void xft_draw_setup(hwrbitmap dest, hwrcolor col, struct quad *clip, XftColor *xftc);
+void xft_draw_setup(hwrbitmap dest, hwrcolor col, struct pgquad *clip, XftColor *xftc);
 
-void xft_measure_char(struct font_descriptor *self, struct pair *position,
+void xft_measure_char(struct font_descriptor *self, struct pgpair *position,
 		      int ch, s16 angle);
 void xft_measure_string(struct font_descriptor *fd, const struct pgstring *str,
 			s16 angle, s16 *w, s16 *h);
@@ -72,8 +72,8 @@ void xft_engine_shutdown(void) {
   XftDrawDestroy(xft_draw);
 }
 
-void xft_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
-		   hwrcolor col, int ch, struct quad *clip, s16 lgop, s16 angle) {
+void xft_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pgpair *position,
+		   hwrcolor col, int ch, struct pgquad *clip, s16 lgop, s16 angle) {
   u32 ch32 = ch;
   XftColor xftc;
 
@@ -85,7 +85,7 @@ void xft_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *po
   xft_measure_char(self,position,ch,angle);
 }
 
-void xft_measure_char(struct font_descriptor *self, struct pair *position,
+void xft_measure_char(struct font_descriptor *self, struct pgpair *position,
 		      int ch, s16 angle) {
   XGlyphInfo xgi;
   u32 ch32 = ch;
@@ -135,7 +135,7 @@ void xft_getmetrics(struct font_descriptor *self, struct font_metrics *m) {
 /********************************** Internal utilities ***/
 
 /* Utility function to do the setup work before Xft rendering */
-void xft_draw_setup(hwrbitmap dest, hwrcolor col, struct quad *clip, XftColor *xftc) {
+void xft_draw_setup(hwrbitmap dest, hwrcolor col, struct pgquad *clip, XftColor *xftc) {
   Region r;
   XRectangle rect;
   pgcolor pgc;

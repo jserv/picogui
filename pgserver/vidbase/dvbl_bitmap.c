@@ -1,4 +1,4 @@
-/* $Id: dvbl_bitmap.c,v 1.18 2003/01/01 03:43:05 micahjd Exp $
+/* $Id: dvbl_bitmap.c,v 1.19 2003/01/21 04:10:38 micahjd Exp $
  *
  * dvbl_bitmap.c - This file is part of the Default Video Base Library,
  *                 providing the basic video functionality in picogui but
@@ -112,7 +112,7 @@ g_error def_bitmap_load(hwrbitmap *bmp,const u8 *data,u32 datalen) {
  */
 void def_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y,
 		    hwrbitmap src, s16 src_x, s16 src_y, s16 src_w, s16 src_h,
-		    struct quad *clip, s16 angle, s16 lgop) {
+		    struct pgquad *clip, s16 angle, s16 lgop) {
   int i,j,sx,sy,dx,dy;
   int a,b,c,d;   /* Rotation matrix */
 

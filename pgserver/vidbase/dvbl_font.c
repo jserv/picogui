@@ -1,4 +1,4 @@
-/* $Id: dvbl_font.c,v 1.11 2003/01/01 03:43:05 micahjd Exp $
+/* $Id: dvbl_font.c,v 1.12 2003/01/21 04:10:38 micahjd Exp $
  *
  * dvbl_font.c - Low level implementations for font rendering
  *
@@ -37,7 +37,7 @@
 
 
 void def_charblit_0(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
-		    s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
+		    s16 w,s16 h,s16 lines, hwrcolor c,struct pgquad *clip,
 		    s16 lgop, int char_pitch) {
   int iw,hc,x;
   int olines = lines;
@@ -99,7 +99,7 @@ void def_charblit_0(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
  * subtle "smudging" bug noted in linear8.c
  */
 void def_charblit_90(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
-		     s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
+		     s16 w,s16 h,s16 lines, hwrcolor c,struct pgquad *clip,
 		     s16 lgop, int char_pitch) {
   int iw,hc,y;
   int olines = lines;
@@ -156,7 +156,7 @@ void def_charblit_90(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 }
 
 void def_charblit_180(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
-		      s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
+		      s16 w,s16 h,s16 lines, hwrcolor c,struct pgquad *clip,
 		      s16 lgop, int char_pitch) {
   int iw,hc,x;
   int olines = lines;
@@ -213,7 +213,7 @@ void def_charblit_180(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 }
 
 void def_charblit_270(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
-		     s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
+		     s16 w,s16 h,s16 lines, hwrcolor c,struct pgquad *clip,
 		     s16 lgop, int char_pitch) {
   int iw,hc,y;
   int olines = lines;
@@ -271,11 +271,11 @@ void def_charblit_270(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 
 /* A meta-charblit to select the appropriate function based on angle */
 void def_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
-		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
+		  s16 lines, s16 angle, hwrcolor c, struct pgquad *clip,
 		  s16 lgop, int char_pitch) {
 
    void (*p)(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
-	     s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,s16 lgop,int char_pitch);
+	     s16 w,s16 h,s16 lines, hwrcolor c,struct pgquad *clip,s16 lgop,int char_pitch);
    
    switch (angle) {
     case 0:   p = &def_charblit_0;   break;
@@ -293,7 +293,7 @@ void def_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
 #ifdef CONFIG_FONTENGINE_FREETYPE
 void def_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 			int char_pitch, u8 *gammatable, s16 angle, hwrcolor c,
-			struct quad *clip, s16 lgop) {
+			struct pgquad *clip, s16 lgop) {
   int i,j,xp,yp;
   u8 *l;
   s16 r,g,b;

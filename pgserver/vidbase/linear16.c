@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.37 2003/01/01 03:43:05 micahjd Exp $
+/* $Id: linear16.c,v 1.38 2003/01/21 04:10:39 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -614,7 +614,7 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
  */
 void linear16_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y,
 			 hwrbitmap src, s16 src_x, s16 src_y, s16 src_w, s16 src_h,
-			 struct quad *clip, s16 angle, s16 lgop) {
+			 struct pgquad *clip, s16 angle, s16 lgop) {
   int i,j;
   int ac,bd;  /* Rotation matrix */
   u16 *s, *pixeldest, *linedest;
@@ -739,7 +739,7 @@ void linear16_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y,
 
 
 void linear16_charblit_0(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
-			 s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
+			 s16 w,s16 h,s16 lines, hwrcolor c,struct pgquad *clip,
 			 int char_pitch) {
   int iw,hc;
   int olines = lines;
@@ -830,7 +830,7 @@ void linear16_charblit_0(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 }
 
 void linear16_charblit_90(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
-			  s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
+			  s16 w,s16 h,s16 lines, hwrcolor c,struct pgquad *clip,
 			  int char_pitch) {
   int iw,hc;
   int olines = lines;
@@ -921,7 +921,7 @@ void linear16_charblit_90(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 }
 
 void linear16_charblit_180(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
-			   s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
+			   s16 w,s16 h,s16 lines, hwrcolor c,struct pgquad *clip,
 			   int char_pitch) {
   int iw,hc,x;
   int olines = lines;
@@ -1012,7 +1012,7 @@ void linear16_charblit_180(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 }
 
 void linear16_charblit_270(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
-			   s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
+			   s16 w,s16 h,s16 lines, hwrcolor c,struct pgquad *clip,
 			   int char_pitch) {
   int iw,hc,y;
   int olines = lines;
@@ -1104,11 +1104,11 @@ void linear16_charblit_270(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 
 /* A meta-charblit to select the appropriate function based on angle */
 void linear16_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
-		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
+		  s16 lines, s16 angle, hwrcolor c, struct pgquad *clip,
 		  s16 lgop, int char_pitch) {
 
    void (*p)(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
-	     s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,int char_pitch);
+	     s16 w,s16 h,s16 lines, hwrcolor c,struct pgquad *clip,int char_pitch);
    
    if (!FB_ISNORMAL(dest,lgop)) {
      def_charblit(dest,chardat,x,y,w,h,lines,angle,c,clip,lgop,char_pitch);
@@ -1137,7 +1137,7 @@ static u8 linear16_null_gammatable[256];
  */
 void linear16_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 src_w, s16 src_h,
 			     int char_pitch, u8 *gammatable, s16 angle, hwrcolor c,
-			     struct quad *clip, s16 lgop) {
+			     struct pgquad *clip, s16 lgop) {
   int i,j;
   int ac,bd;  /* Rotation matrix */
   u16 *pixeldest, *linedest;

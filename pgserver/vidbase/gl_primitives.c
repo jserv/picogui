@@ -1,4 +1,4 @@
-/* $Id: gl_primitives.c,v 1.6 2003/01/01 03:43:05 micahjd Exp $
+/* $Id: gl_primitives.c,v 1.7 2003/01/21 04:10:39 micahjd Exp $
  *
  * gl_primitives.c - OpenGL driver for picogui
  *                   Implement standard picogui primitives using OpenGL
@@ -295,7 +295,7 @@ void gl_sprite_update(struct sprite *spr) {
   gl_global.need_update++;
 }
 
-void gl_sprite_protectarea(struct quad *in,struct sprite *from) { 
+void gl_sprite_protectarea(struct pgquad *in,struct sprite *from) { 
   /* No need to protect for sprites */
 }
 

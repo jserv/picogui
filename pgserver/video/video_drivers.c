@@ -1,4 +1,4 @@
-/* $Id: video_drivers.c,v 1.15 2003/01/01 03:43:07 micahjd Exp $
+/* $Id: video_drivers.c,v 1.16 2003/01/21 04:10:40 micahjd Exp $
  *
  * video_drivers.c - handles loading/switching video drivers and modes
  *
@@ -521,7 +521,7 @@ g_error bitmap_rotate(hwrbitmap *pbit, s16 angle) {
   s16 old_w,old_h;
   s16 new_w,new_h;
   s16 new_x,new_y;
-  struct quad clip;
+  struct pgquad clip;
 
   old = *pbit;  
   e = vid->bitmap_getsize(old,&old_w,&old_h);

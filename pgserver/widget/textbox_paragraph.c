@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.27 2003/01/01 03:43:09 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.28 2003/01/21 04:10:40 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -176,7 +176,7 @@ void paragraph_render(struct groprender *r, struct gropnode *n) {
   struct paragraph *par;
   struct pgstr_iterator p;
   u32 ch;
-  struct pair xy;
+  struct pgpair xy;
   struct paragraph_metadata *meta;
   struct paragraph_line *line;
   struct paragraph_formatting fmt;
@@ -301,8 +301,8 @@ void paragraph_render_inc(struct groprender *r, struct gropnode *n) {
 void paragraph_movecursor(struct paragraph_cursor *crsr,
 			  struct paragraph *par, int x, int y) {
   int i;
-  struct pair line_xy = {0,0};
-  struct pair ch_size;
+  struct pgpair line_xy = {0,0};
+  struct pgpair ch_size;
   int cache_valid = 1;
   struct paragraph_formatting fmt;
   u32 ch;
@@ -452,7 +452,7 @@ g_error paragraph_wrap_line(struct paragraph *par, struct paragraph_line **line,
 			    int *cache_valid, int force) {
   struct paragraph_metadata *meta;
   g_error e;
-  struct pair xy;
+  struct pgpair xy;
   u32 ch;
   int spaces;
   int old_height;
@@ -674,12 +674,12 @@ void paragraph_rerender_line(struct groprender *r, struct gropnode *n,
 			     s16 *y, struct pgstr_iterator *skip_to, int *nchars) {
   u32 ch;
   s16 old_x;
-  struct pair xy;
+  struct pgpair xy;
   int i = line->char_width;
   struct paragraph_metadata *meta;
   struct pgstr_iterator p = line->cache.iterator;
   struct paragraph_formatting fmt = line->cache.fmt;
-  struct quad clip;
+  struct pgquad clip;
   int draw_cursor;
 
   xy.x = n->r.x;

@@ -1,4 +1,4 @@
-/* $Id: textedit_frontend.c,v 1.17 2003/01/01 03:43:09 micahjd Exp $
+/* $Id: textedit_frontend.c,v 1.18 2003/01/21 04:10:40 micahjd Exp $
  *
  * textedit.c - Multi-line text widget. By Chuck Groom,
  * cgroom@bluemug.com, Blue Mug, Inc, July 2002. Intended to be
@@ -611,7 +611,7 @@ void textedit_draw_str ( struct widget * self,
                          s16 y,
                          u8 highlight) {
     s16 w, h;
-    struct pair t;
+    struct pgpair t;
     size_t k;
     TEXTEDIT_UCHAR ch;
 
@@ -657,7 +657,7 @@ void textedit_str_size ( struct widget *self,
                          s16 * w,
                          s16 * h ) {
     int ch;
-    struct pair p;
+    struct pgpair p;
     struct font_metrics m;
 
     DATA->fd->lib->getmetrics(DATA->fd,&m);  

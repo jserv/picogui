@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.34 2003/01/01 03:43:06 micahjd Exp $
+/* $Id: linear8.c,v 1.35 2003/01/21 04:10:39 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -171,7 +171,7 @@ void linear8_gradient(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,s16 angle,
  */
 void linear8_charblit_v(hwrbitmap dest,u8 *chardat,s16 dest_x,
 			s16 dest_y,s16 w,s16 h,s16 lines,
-			hwrcolor c,struct quad *clip, int char_pitch) {
+			hwrcolor c,struct pgquad *clip, int char_pitch) {
   u8 *dst,*destline;
   s16 iw;
   s16 hc;
@@ -259,7 +259,7 @@ void linear8_charblit_v(hwrbitmap dest,u8 *chardat,s16 dest_x,
  */
 void linear8_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,
 		      s16 dest_y,s16 w,s16 h,s16 lines,s16 angle,
-		      hwrcolor c,struct quad *clip,
+		      hwrcolor c,struct pgquad *clip,
 		      s16 lgop, int char_pitch) {
   u8 *dst,*destline;
   s16 iw,hc,olines,bit,flag,xpix,xmin,xmax,clipping;

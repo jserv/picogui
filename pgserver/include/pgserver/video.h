@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.119 2003/01/20 17:12:13 thierrythevoz Exp $
+/* $Id: video.h,v 1.120 2003/01/21 04:10:38 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -33,9 +33,9 @@
 #include <pgserver/pgstring.h>
 
 struct fontdesc;
-struct quad;
-struct rect;
-struct pair;
+struct pgquad;
+struct pgrect;
+struct pgpair;
 struct groprender;
 struct gropnode;
 struct divtree;
@@ -498,7 +498,7 @@ struct vidlib {
    */
   void (*rotateblit)(hwrbitmap dest, s16 dest_x, s16 dest_y,
 		     hwrbitmap src, s16 src_x, s16 src_y, s16 src_w, s16 src_h,
-		     struct quad *clip, s16 angle, s16 lgop);
+		     struct pgquad *clip, s16 angle, s16 lgop);
  
   void (*ellipse) (hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
   void (*fellipse) (hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
@@ -653,7 +653,7 @@ struct vidlib {
    * 
    * Default implementation: Calls sprite_hide for sprites in the area
    */
-  void (*sprite_protectarea)(struct quad *in,struct sprite *from);
+  void (*sprite_protectarea)(struct pgquad *in,struct sprite *from);
 
 
   /******************************************** Text/fonts */
@@ -671,7 +671,7 @@ struct vidlib {
    * Default implementation: pixel(). Need I say more?
    */
   void (*charblit)(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
-		   s16 lines, s16 angle, hwrcolor c, struct quad *clip,
+		   s16 lines, s16 angle, hwrcolor c, struct pgquad *clip,
 		   s16 lgop, int char_pitch);
 
 #ifdef CONFIG_FONTENGINE_FREETYPE
@@ -685,7 +685,7 @@ struct vidlib {
    */
   void (*alpha_charblit)(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 			 int char_pitch, u8 *gammatable, s16 angle, hwrcolor c,
-			 struct quad *clip, s16 lgop);
+			 struct pgquad *clip, s16 lgop);
 #endif
 };
 
@@ -766,17 +766,17 @@ void def_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 void def_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
 		   hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 xo, s16 yo, s16 lgop);
 void def_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
-		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
+		  s16 lines, s16 angle, hwrcolor c, struct pgquad *clip,
 		  s16 lgop, int char_pitch);
 void def_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 			int char_pitch, u8 *gammatable, s16 angle, hwrcolor c,
-			struct quad *clip, s16 lgop);
+			struct pgquad *clip, s16 lgop);
 void def_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 		    s16 src_x, s16 src_y, s16 lgop);
 void def_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y,
 		    hwrbitmap src, s16 src_x, s16 src_y, s16 src_w, s16 src_h,
-		    struct quad *clip, s16 angle, s16 lgop);
-void def_sprite_protectarea(struct quad *in,struct sprite *from);
+		    struct pgquad *clip, s16 angle, s16 lgop);
+void def_sprite_protectarea(struct pgquad *in,struct sprite *from);
 g_error def_bitmap_loadxbm(hwrbitmap *bmp,const u8 *data, s16 w, s16 h,
 			   hwrcolor fg, hwrcolor bg);
 struct fontglyph const *def_font_getglyph(struct fontdesc *fd, int ch);

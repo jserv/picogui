@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.52 2003/01/01 03:43:07 micahjd Exp $
+/* $Id: sdlfb.c,v 1.53 2003/01/21 04:10:39 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -74,7 +74,7 @@ s16 sdlsdc_x,sdlsdc_y;
 s16 sdlsdc_w,sdlsdc_h;
  /* variables */
 hwrcolor sdlsdc_hfg,sdlsdc_hbg;
-struct pair sdlsdc_c;
+struct pgpair sdlsdc_c;
 struct stdbitmap sdlsdc_bits;
 
 #endif

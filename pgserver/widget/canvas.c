@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.53 2003/01/18 07:50:36 micahjd Exp $
+/* $Id: canvas.c,v 1.54 2003/01/21 04:10:40 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -36,7 +36,7 @@ void canvas_command(struct widget *self, u16 command,
 
 struct canvasdata {
   struct gropctxt ctx;
-  struct rect input_map;
+  struct pgrect input_map;
   u8 input_maptype;
   handle lastfont;
   s16 gridw,gridh;

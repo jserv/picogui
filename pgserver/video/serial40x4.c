@@ -1,4 +1,4 @@
-/* $Id: serial40x4.c,v 1.17 2003/01/01 03:43:07 micahjd Exp $
+/* $Id: serial40x4.c,v 1.18 2003/01/21 04:10:39 micahjd Exp $
  *
  * serial40x4.c - PicoGUI video driver for a serial wall-mounted
  *                40x4 character LCD I put together about a year ago.
@@ -334,7 +334,7 @@ void serial40x4_update(hwrbitmap d,s16 x,s16 y,s16 w,s16 h) {
 
 void serial40x4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,
 		      s16 dest_y,s16 w,s16 h,s16 lines,s16 angle,
-		      hwrcolor c,struct quad *clip,s16 lgop) {
+		      hwrcolor c,struct pgquad *clip,s16 lgop) {
   struct stdbitmap chbit;
 
    if (clip && (dest_x<clip->x1 || dest_y<clip->y1 ||

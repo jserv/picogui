@@ -1,4 +1,4 @@
-/* $Id: font_bdf.c,v 1.6 2003/01/01 03:43:05 micahjd Exp $
+/* $Id: font_bdf.c,v 1.7 2003/01/21 04:10:38 micahjd Exp $
  *
  * font_bdf.c - Font engine that uses fonts compiled into pgserver,
  *              converted from BDF fonts at compile-time.
@@ -52,8 +52,8 @@ struct bdf_fontglyph const *bdf_getglyph(struct bdf_fontdesc *fd, int ch);
 
 /********************************** Implementations ***/
 
-void bdf_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
-		   hwrcolor col, int ch, struct quad *clip, s16 lgop, s16 angle) {
+void bdf_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pgpair *position,
+		   hwrcolor col, int ch, struct pgquad *clip, s16 lgop, s16 angle) {
   int i,j;
   s16 cel_w; /* Total width of this character cel */
   struct bdf_fontglyph const *g;
@@ -184,7 +184,7 @@ void bdf_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *po
   }
 }
 
-void bdf_measure_char(struct font_descriptor *self, struct pair *position,
+void bdf_measure_char(struct font_descriptor *self, struct pgpair *position,
 		      int ch, s16 angle) {
   int w = bdf_getglyph(DATA,ch)->dwidth + DATA->boldw + DATA->interchar_space;
   switch (angle) {

@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.49 2003/01/01 03:43:00 micahjd Exp $
+/* $Id: divtree.h,v 1.50 2003/01/21 04:10:37 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -70,7 +70,7 @@ struct divtree {
 
   /* To support rootless and multihead modes, each divtree has its own rendering information */
   hwrbitmap display;
-  struct rect update_rect;
+  struct pgrect update_rect;
 
   struct divtree *next;
 };
@@ -113,14 +113,14 @@ struct divnode {
    * the coordinates can be specified absolutely, however this is normally
    * not reccomended (but could be useful for constructs such as popup menus)
    */
-  struct rect r;
+  struct pgrect r;
 
   /* Calculated size. Normally the same as the size above, but:
    *  - The position will be different if DIVNODE_DIVSCROLL is on
    *  - The size will be different if one of the DIVNODE_EXTEND_* flags
    *    are turned on.
    */
-  struct rect calc;
+  struct pgrect calc;
 
   /* The preferred width and height as calculated by the widget itself.
    * This is taken as a minimum size when the divnode contains other divnodes,
@@ -133,10 +133,10 @@ struct divnode {
   struct sizepair child;
 	
   /* Coordinates to translate the grop's by, for scrolling */
-  struct pair translation;
+  struct pgpair translation;
 
   /* Scrolling coordinates as of last redraw */
-  struct pair old_translation;
+  struct pgpair old_translation;
 
   s16 split;   /* Depending on flags, the pixels or percent to split at */
 
@@ -261,8 +261,8 @@ typedef unsigned short int sidet;
 void divnode_recalc(struct divnode **pn, struct divnode *parent);
 
 /* Split a divnode into two rectangles according to its flags */
-void divnode_split(struct divnode *n,struct rect *div,
-		   struct rect *next);
+void divnode_split(struct divnode *n,struct pgrect *div,
+		   struct pgrect *next);
 void divnode_redraw(struct divnode *n,int all);
 g_error newdiv(struct divnode **p,struct widget *owner);
 void r_divnode_free(struct divnode *n);

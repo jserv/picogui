@@ -1,4 +1,4 @@
-/* $Id: gl.h,v 1.5 2003/01/01 03:43:00 micahjd Exp $
+/* $Id: gl.h,v 1.6 2003/01/21 04:10:37 micahjd Exp $
  *
  * gl.h - Components defined and used by the OpenGL VBL for PicoGUI
  *
@@ -237,7 +237,7 @@ int gl_update_hook(void);
 void gl_sprite_show(struct sprite *spr);
 void gl_sprite_hide(struct sprite *spr);
 void gl_sprite_update(struct sprite *spr);
-void gl_sprite_protectarea(struct quad *in,struct sprite *from);
+void gl_sprite_protectarea(struct pgquad *in,struct sprite *from);
 void gl_continuous_poll(void); 
 int gl_grop_render_presetup_hook(struct divnode **div, struct gropnode ***listp,
 				    struct groprender *rend);

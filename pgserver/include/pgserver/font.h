@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.35 2003/01/01 03:43:00 micahjd Exp $
+/* $Id: font.h,v 1.36 2003/01/21 04:10:37 micahjd Exp $
  *
  * font.h - Common structures for defining fonts, and an interface
  *          for specific font engines to attach to
@@ -90,8 +90,8 @@ g_error font_find_engine(struct fontengine **fe, const char *name);
 
 /********************************** Default implementations ***/
 
-void def_draw_string(struct font_descriptor *fd, hwrbitmap dest, struct pair *position,
-		     hwrcolor col, const struct pgstring *str, struct quad *clip,
+void def_draw_string(struct font_descriptor *fd, hwrbitmap dest, struct pgpair *position,
+		     hwrcolor col, const struct pgstring *str, struct pgquad *clip,
 		     s16 lgop, s16 angle);
 
 void def_measure_string(struct font_descriptor *fd, const struct pgstring *str,
@@ -118,14 +118,14 @@ struct fontlib {
    *   at the top-left of the character cel. The font is in a
    *   driver-defined format.
    */
-  void (*draw_char)(struct font_descriptor *fd, hwrbitmap dest, struct pair *position,
-		    hwrcolor col, int ch, struct quad *clip, s16 lgop, s16 angle);
+  void (*draw_char)(struct font_descriptor *fd, hwrbitmap dest, struct pgpair *position,
+		    hwrcolor col, int ch, struct pgquad *clip, s16 lgop, s16 angle);
   
   /*   Measure the size of a character. This is defined to be a function that
    *   has the same side effect on 'position' as draw_char without
    *   actually drawing anything.
    */
-  void (*measure_char)(struct font_descriptor *fd, struct pair *position,
+  void (*measure_char)(struct font_descriptor *fd, struct pgpair *position,
 		       int ch, s16 angle);
   
   /*   Draw a string to the screen at the given position
@@ -133,8 +133,8 @@ struct fontlib {
    *   at the top-left of the first character cel. The font is in a
    *   driver-defined format.
    */
-  void (*draw_string)(struct font_descriptor *fd, hwrbitmap dest, struct pair *position,
-		      hwrcolor col, const struct pgstring *str, struct quad *clip,
+  void (*draw_string)(struct font_descriptor *fd, hwrbitmap dest, struct pgpair *position,
+		      hwrcolor col, const struct pgstring *str, struct pgquad *clip,
 		      s16 lgop, s16 angle);
   
   /*   Measure the size of a string.

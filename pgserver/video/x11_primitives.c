@@ -1,4 +1,4 @@
-/* $Id: x11_primitives.c,v 1.16 2003/01/01 03:43:07 micahjd Exp $
+/* $Id: x11_primitives.c,v 1.17 2003/01/21 04:10:40 micahjd Exp $
  *
  * x11_primitives.c - Implementation of picogui primitives on top of the
  *                    X window system.
@@ -313,7 +313,7 @@ void x11_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
 }
 
 void x11_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
-		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
+		  s16 lines, s16 angle, hwrcolor c, struct pgquad *clip,
 		  s16 lgop, int char_pitch) {
   if (use_shm1(dest))
     XB(dest)->lib->charblit(&XB(dest)->sb,chardat,x,y,w,h,lines,angle,c,clip,lgop,char_pitch);
@@ -324,7 +324,7 @@ void x11_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 #ifdef CONFIG_FONTENGINE_FREETYPE
 void x11_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 			int char_pitch, u8 *gammatable, s16 angle, hwrcolor c,
-			struct quad *clip, s16 lgop) {
+			struct pgquad *clip, s16 lgop) {
   if (use_shm1(dest))
     XB(dest)->lib->alpha_charblit(&XB(dest)->sb,chardat,x,y,w,h,char_pitch,gammatable,
 				  angle,c,clip,lgop);
@@ -369,7 +369,7 @@ void x11_fpolygon(hwrbitmap dest, s32* array, s16 xoff, s16 yoff , hwrcolor c, s
 
 void x11_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y,
 		    hwrbitmap src, s16 src_x, s16 src_y, s16 src_w, s16 src_h,
-		    struct quad *clip, s16 angle, s16 lgop) {
+		    struct pgquad *clip, s16 angle, s16 lgop) {
   if (use_shm2(dest,src))
     XB(dest)->lib->rotateblit(&XB(dest)->sb,dest_x,dest_y,&XB(src)->sb,src_x,src_y,
 			      src_w,src_h,clip,angle,lgop);

@@ -1,4 +1,4 @@
-/* $Id: gl_util.c,v 1.12 2003/01/01 03:43:05 micahjd Exp $
+/* $Id: gl_util.c,v 1.13 2003/01/21 04:10:39 micahjd Exp $
  *
  * gl_util.c - OpenGL driver for picogui
  *             This file has utilities shared by multiple components of the driver.
@@ -287,8 +287,8 @@ void gl_osd_printf(const char *fmt, ...) {
   char buf[256];
   va_list v;
   s16 w,h;
-  struct pair xy;
-  struct quad clip;
+  struct pgpair xy;
+  struct pgquad clip;
   struct font_style fs;
 
   /* Load a font for the OSD */

@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.104 2003/01/01 03:42:58 micahjd Exp $
+/* $Id: div.c,v 1.105 2003/01/21 04:10:36 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -78,8 +78,8 @@ void divnode_divscroll(struct divnode *n) {
 /* Split a divnode into two rectangles, according to the
  * supplied divnode flags and 'split' value.
  */
-void divnode_split(struct divnode *n, struct rect *divrect,
-		   struct rect *nextrect) {
+void divnode_split(struct divnode *n, struct pgrect *divrect,
+		   struct pgrect *nextrect) {
   s16 split = n->split;
 #ifdef CONFIG_WIDGET_POPUP
   int popupclip = 0;
@@ -367,8 +367,8 @@ void divnode_split(struct divnode *n, struct rect *divrect,
  */
 void divnode_recalc(struct divnode **pn, struct divnode *parent) {
    struct divnode *n = *pn;
-   struct rect divrect, nextrect;
-   struct rect old_divrect, old_nextrect;
+   struct pgrect divrect, nextrect;
+   struct pgrect old_divrect, old_nextrect;
 
    if (!n)
      return;

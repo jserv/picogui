@@ -1,4 +1,4 @@
-/* $Id: font_textmode.c,v 1.2 2003/01/01 03:43:05 micahjd Exp $
+/* $Id: font_textmode.c,v 1.3 2003/01/21 04:10:39 micahjd Exp $
  *
  * font_textmode.c - Font rendering in text mode, for ncurses and LCD drivers
  *
@@ -28,9 +28,9 @@
 #include <pgserver/common.h>
 #include <pgserver/font.h>
 
-void textmode_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
-			hwrcolor col, int ch, struct quad *clip, s16 lgop, s16 angle);
-void textmode_measure_char(struct font_descriptor *self, struct pair *position,
+void textmode_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pgpair *position,
+			hwrcolor col, int ch, struct pgquad *clip, s16 lgop, s16 angle);
+void textmode_measure_char(struct font_descriptor *self, struct pgpair *position,
 			   int ch, s16 angle);
 g_error textmode_create(struct font_descriptor *self, const struct font_style *fs);
 void textmode_destroy(struct font_descriptor *self);
@@ -40,8 +40,8 @@ hwrcolor textmode_rgb_to_colorcode(hwrcolor c);
 
 /********************************** Implementations ***/
 
-void textmode_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
-		   hwrcolor col, int ch, struct quad *clip, s16 lgop, s16 angle) {
+void textmode_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pgpair *position,
+		   hwrcolor col, int ch, struct pgquad *clip, s16 lgop, s16 angle) {
   hwrcolor oc, c;
 
   /* Make sure we're within clip */
@@ -70,7 +70,7 @@ void textmode_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pai
   textmode_measure_char(self,position,ch,angle);
 }
 
-void textmode_measure_char(struct font_descriptor *self, struct pair *position,
+void textmode_measure_char(struct font_descriptor *self, struct pgpair *position,
 		      int ch, s16 angle) {
   switch (angle) {
   case 0:

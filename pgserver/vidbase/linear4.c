@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.33 2003/01/01 03:43:06 micahjd Exp $
+/* $Id: linear4.c,v 1.34 2003/01/21 04:10:39 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -350,7 +350,7 @@ void linear4_rect(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,hwrcolor c,s16 lgop) {
 }
 
 void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s16 h,
-		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
+		  s16 lines, s16 angle, hwrcolor c, struct pgquad *clip,
 		  s16 lgop, int char_pitch) {
   int iw,hc,x;
   int olines = lines;

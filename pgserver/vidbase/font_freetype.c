@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.37 2003/01/01 03:43:05 micahjd Exp $
+/* $Id: font_freetype.c,v 1.38 2003/01/21 04:10:38 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -73,7 +73,7 @@ FTC_ImageCache     ft_image_cache;
 FTC_CMapCache      ft_cmap_cache;
 
 /* x,y pair in 26.6 fixed point */
-struct pair26_6 {
+struct pgpair26_6 {
   s32 x,y;
 };
 
@@ -85,8 +85,8 @@ void ft_get_descriptor_face(struct font_descriptor *self, FT_Face *aface);
 static FT_Error ft_face_requester(FTC_FaceID face_id, FT_Library library,
 				  FT_Pointer request_data, FT_Face *aface );
 void ft_load_image(struct font_descriptor *self, int ch, FT_Glyph *g);
-void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair26_6 *position,
-			   hwrcolor col, int ch, struct quad *clip, s16 lgop, s16 angle);
+void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pgpair26_6 *position,
+			   hwrcolor col, int ch, struct pgquad *clip, s16 lgop, s16 angle);
 void ft_font_listing(void);
 void ft_style_print(const struct font_style *fs);
 void ft_style_scan(struct font_style *fs, const char *str);
@@ -276,9 +276,9 @@ int ft_face_scan_list(const char *file, const char *path) {
 /************************************************* Rendering ***/
 
 /* Wrapper for ft_subpixel_draw_char, rounding to whole pixels */
-void freetype_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
-		   hwrcolor col, int ch, struct quad *clip, s16 lgop, s16 angle) {
-  struct pair26_6 subpos;
+void freetype_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pgpair *position,
+		   hwrcolor col, int ch, struct pgquad *clip, s16 lgop, s16 angle) {
+  struct pgpair26_6 subpos;
   subpos.x = ((s32)position->x) << 6;
   subpos.y = ((s32)position->y) << 6;
   ft_subpixel_draw_char(self,dest,&subpos,col,ch,clip,lgop,angle);
@@ -287,8 +287,8 @@ void freetype_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pai
 }
 
 /* Guts of freetype_draw_char, using subpixel units */
-void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair26_6 *position,
-			   hwrcolor col, int ch, struct quad *clip, s16 lgop, s16 angle) {
+void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pgpair26_6 *position,
+			   hwrcolor col, int ch, struct pgquad *clip, s16 lgop, s16 angle) {
   int x,y,i,j;
   FT_Glyph g;
   FT_BitmapGlyph bg;
@@ -404,12 +404,12 @@ void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct 
 
 /* Our own version of draw_string that handles subpixel pen movement 
  */
-void freetype_draw_string(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
-			  hwrcolor col, const struct pgstring *str, struct quad *clip,
+void freetype_draw_string(struct font_descriptor *self, hwrbitmap dest, struct pgpair *position,
+			  hwrcolor col, const struct pgstring *str, struct pgquad *clip,
 			  s16 lgop, s16 angle) {
   struct pgstr_iterator p;
   int margin,lh,b,ch;
-  struct pair26_6 subpos;
+  struct pgpair26_6 subpos;
 
   pgstring_seek(str,&p,0,PGSEEK_SET);
   subpos.x = ((s32)position->x) << 6;
@@ -634,7 +634,7 @@ void ft_load_image(struct font_descriptor *self, int ch, FT_Glyph *g) {
 
 /************************************************* Metrics ***/
 
-void freetype_measure_char(struct font_descriptor *self, struct pair *position,
+void freetype_measure_char(struct font_descriptor *self, struct pgpair *position,
 		      int ch, s16 angle) {
   FT_Glyph g;
   ft_load_image(self,ch,&g);

@@ -1,4 +1,4 @@
-/* $Id: vgaplan4.c,v 1.6 2002/10/23 02:09:07 micahjd Exp $
+/* $Id: vgaplan4.c,v 1.7 2003/01/21 04:10:39 micahjd Exp $
  *
  * Video Base Library:
  * vgaplan4.c - For VGA compatible 4bpp access, based on linear1.c
@@ -1007,7 +1007,7 @@ vgaplan4_do_charblit(hwrbitmap dest,s16 x, s16 y,s16 w,s16 h,u8 *src,int pitch)
    */
 local void 
 vgaplan4_charblit(hwrbitmap dest,u8 *chardat,s16 x,s16 y,s16 w,s16 h,
-		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
+		  s16 lines, s16 angle, hwrcolor c, struct pgquad *clip,
 		  s16 lgop, int pitch) {
    /* Pass rotated or skewed blits on somewhere else. Also skip charblits
     * with LGOPs above PG_LGOP_MULTIPLY. If there's clipping involved,

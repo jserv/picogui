@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.49 2003/01/17 08:19:12 bornet Exp $
+/* $Id: render.c,v 1.50 2003/01/21 04:10:36 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -57,7 +57,7 @@ void gropnode_rect_clip(struct groprender *r, struct gropnode *n);
  * performs pre-render housekeeping, processes flags, and renders each node
  */
 
-void grop_render(struct divnode *div, struct quad *clip) {
+void grop_render(struct divnode *div, struct pgquad *clip) {
   struct gropnode **listp = &div->grop;
   struct gropnode node;
   u8 incflag;
@@ -190,7 +190,7 @@ void grop_render(struct divnode *div, struct quad *clip) {
      * is usually small compared to the whole
      */
     if (incflag) {
-      struct quad lcr;
+      struct pgquad lcr;
       if (node.type == PG_GROP_LINE) {
 	/* Lines are "special" */
 	int xx,yy,xx2,yy2;
@@ -263,7 +263,7 @@ void grop_render(struct divnode *div, struct quad *clip) {
 /* Truncate the given clipping rectangle to include only the new
  * areas to draw when the specified scroll is processed
  */
-void scroll_clip(struct quad *clip, struct pair *scroll) {
+void scroll_clip(struct pgquad *clip, struct pgpair *scroll) {
   s16 i;
 
   /* Scroll the region up */
@@ -311,7 +311,7 @@ void groplist_scroll(struct groprender *r, struct divnode *div) {
     /* First, reproduce the truncated clipping rectangle used by the 
      * head scrolling node.
      */
-    struct quad trclip;
+    struct pgquad trclip;
 
     trclip = *rect_to_quad(&div->divscroll->calc);
     scroll_clip(&trclip,&r->scroll);
@@ -463,7 +463,7 @@ void gropnode_translate(struct groprender *r, struct gropnode *n) {
 
 /* Utility to scale and translate a gropnode */
 void gropnode_scaletranslate(struct groprender *r, struct gropnode *n,
-			     struct fractionpair *scale, struct pair *trans) {
+			     struct fractionpair *scale, struct pgpair *trans) {
   if(n->type==PG_GROP_FPOLYGON) {
 
     /**** FIXME: Polygons can't yet be scaled.
@@ -500,7 +500,7 @@ void gropnode_scaletranslate(struct groprender *r, struct gropnode *n,
 
 void gropnode_map(struct groprender *r, struct gropnode *n) {
   struct fractionpair scale;
-  struct pair trans;
+  struct pgpair trans;
 
   switch (r->maptype) {
   case PG_MAP_NONE:
@@ -763,7 +763,7 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
   s16 bw,bh;
   hwrcolor c;
   struct font_descriptor *fd;
-  struct rect clipsrc;
+  struct pgrect clipsrc;
 
   /* Normally get color from r->color, but if this gropnode has 
      PG_GROPF_COLORED get a hwrcolor from the grop's param[0] */
@@ -978,15 +978,15 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 
 /****************************************************** geometry */
 
-void quad_intersect(struct quad *dest, struct quad *src) {
+void quad_intersect(struct pgquad *dest, struct pgquad *src) {
   dest->x1 = max(dest->x1, src->x1);
   dest->y1 = max(dest->y1, src->y1);
   dest->x2 = min(dest->x2, src->x2);
   dest->y2 = min(dest->y2, src->y2);
 }
 
-struct quad *rect_to_quad(struct rect *rect) {
-  static struct quad q;
+struct pgquad *rect_to_quad(struct pgrect *rect) {
+  static struct pgquad q;
   q.x1 = rect->x;
   q.y1 = rect->y;
   q.x2 = rect->x + rect->w - 1;
@@ -994,8 +994,8 @@ struct quad *rect_to_quad(struct rect *rect) {
   return &q;
 }
 
-struct pair *xy_to_pair(s16 x, s16 y) {
-  static struct pair p;
+struct pgpair *xy_to_pair(s16 x, s16 y) {
+  static struct pgpair p;
   p.x = x;
   p.y = y;
   return &p;
