@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.54 2002/10/31 19:40:42 micahjd Exp $
+/* $Id: textbox_document.c,v 1.55 2002/10/31 20:33:56 micahjd Exp $
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and
@@ -72,6 +72,7 @@ g_error document_new(struct textbox_document **doc, struct divnode *container_di
   memset(*doc, 0, sizeof(struct textbox_document));
   (*doc)->container_div = container_div;
   (*doc)->multiline = 1;
+  (*doc)->autoscroll = 1;
 
   /* Initialize the paragraps */
   return document_nuke(*doc);

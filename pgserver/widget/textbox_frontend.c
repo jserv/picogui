@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.28 2002/10/31 11:45:44 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.29 2002/10/31 20:33:58 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -124,6 +124,11 @@ g_error textbox_set(struct widget *self,int property, glob data) {
 
   switch (property) {
 
+  case PG_WP_AUTOSCROLL:
+    DATA->doc->autoscroll = data;
+    paragraph_show_cursor(DATA->doc->crsr);   /* Scroll to the cursor now */
+    break;
+
   case PG_WP_READONLY:
     DATA->readonly = data;
     paragraph_hide_cursor(DATA->doc->crsr);
@@ -193,6 +198,9 @@ glob textbox_get(struct widget *self,int property) {
   struct pgstring *fmt;
 
   switch (property) {
+
+  case PG_WP_AUTOSCROLL:
+    return DATA->doc->autoscroll;
 
   case PG_WP_READONLY:
     return DATA->readonly;

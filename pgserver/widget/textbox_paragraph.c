@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.19 2002/10/31 19:40:42 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.20 2002/10/31 20:33:59 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -117,7 +117,7 @@ g_error paragraph_new(struct paragraph **par, struct divnode *div) {
   e = g_malloc((void**)&(*par)->lines,sizeof(struct paragraph_line));
   errorcheck;
   memset((*par)->lines,0,sizeof(struct paragraph_line));
- 
+
   /* Give it default formatting */
   e = rdhandle((void**)&(*par)->lines->cache.fmt.fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
   errorcheck;
@@ -141,18 +141,19 @@ g_error paragraph_new(struct paragraph **par, struct divnode *div) {
 void paragraph_delete(struct paragraph *par) {
   struct paragraph_line *p, *dead;
 
+  par->div->owner->dt->flags |= DIVTREE_NEED_RESIZE;
+
   /* Unlink this from the divtree */
   if (par->prev)
     par->prev->div->next = par->div->next;
   par->div->next = NULL;
   r_divnode_free(par->div);
-  
+
   /* Unlink this from the list */
   if (par->prev)
     par->prev->next = par->next;
   if (par->next)
     par->next->prev = par->prev;
-  par->div->owner->dt->flags |= DIVTREE_NEED_RESIZE;
 
   /* Delete linked list of lines */
   p = par->lines;
@@ -195,7 +196,7 @@ void paragraph_render(struct groprender *r, struct gropnode *n) {
   fmt = line->cache.fmt;
 
   //  DBG("Normal render\n");
-  
+
   /* Line rendering loop */
   while (line) {
     line->wrap_need_render = 0;
@@ -237,7 +238,7 @@ void paragraph_render(struct groprender *r, struct gropnode *n) {
        */
       if ((!line->next) && par->cursor.visible &&
 	  !pgstring_iteratorcmp(par->content, &p, &par->cursor.iterator))
-	  paragraph_render_cursor(r,&par->cursor,xy.x,xy.y,fmt.fd);
+	paragraph_render_cursor(r,&par->cursor,xy.x,xy.y,fmt.fd);
 
       /* Next line */
       xy.y += line->height;
@@ -273,7 +274,7 @@ void paragraph_render_inc(struct groprender *r, struct gropnode *n) {
     if (!line)
       return;
   }
-  
+
   /* Render the portion of this line including and after the change */
   paragraph_rerender_line(r,n,par,line,&y,&par->last_change.start,&par->last_change.nchars);
   y += line->height;
@@ -410,6 +411,8 @@ void paragraph_show_cursor(struct paragraph_cursor *crsr) {
     crsr->visible = 1;
     paragraph_update_cursor(crsr);
   }
+
+  /* Just like the terminal widget, have the scrolling track the cursor */
 }
 
 /******************************************************** Internal Methods **/
@@ -476,7 +479,7 @@ g_error paragraph_wrap_line(struct paragraph *par, struct paragraph_line **line,
 	spaces++;
       fd->lib->measure_char(fd,&xy,ch,0);
       (*line)->char_width++;
-      
+
       /* Over our limit yet? */
       if (xy.x >= par->width && spaces) {
 
@@ -484,17 +487,17 @@ g_error paragraph_wrap_line(struct paragraph *par, struct paragraph_line **line,
 	pgstring_seek(par->content,&i,-1,PGSEEK_CUR);
 	for (;;) {
 	  ch = paragraph_decode_meta(par, &i, (void**)&meta);
-	  
+
 	  /* Reapply font changes in reverse order */
 	  if (meta && meta->type == PAR_META_FONT) {
 	    fd = meta->u.fd;
 	    break;
 	  }
-	  
+
 	  /* Keep going until we hit a space */
 	  if (isspace(ch))
 	    break;
-	  
+
 	  /* Reverse our previous step */
 	  (*line)->char_width--;
 	  pgstring_seek(par->content,&i,-2,PGSEEK_CUR);
@@ -519,7 +522,7 @@ g_error paragraph_wrap_line(struct paragraph *par, struct paragraph_line **line,
 	 */
 	(*line)->next->wrapped = 0;
 	(*line)->next->cache.valid = 0;
-	
+
 	/* Also make a note that this line needs redrawing now */
 	(*line)->wrap_need_render = 1;
 
@@ -538,14 +541,15 @@ g_error paragraph_wrap_line(struct paragraph *par, struct paragraph_line **line,
   /* FIXME: This doesn't test whether anything's changed, see above FIXME */
   (*line)->wrap_need_render = 1;
 
-  /* All done. If there were more lines after this, delete them all */
+  /* All done. If there were more lines after this, delete them all.
+   */
   deadline = *line;
   *line = (*line)->next;
   deadline->next = NULL;
   while (*line) {
     deadline = *line;
     *line = (*line)->next;
-    
+
     /* Delete the height the line we're about to delete had */
     par->height -= deadline->height;
 

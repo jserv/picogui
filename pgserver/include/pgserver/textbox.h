@@ -1,4 +1,4 @@
-/* $Id: textbox.h,v 1.20 2002/10/31 11:45:44 micahjd Exp $
+/* $Id: textbox.h,v 1.21 2002/10/31 20:33:55 micahjd Exp $
  *
  * textbox.h - Interface definitions for the textbox widget. This allows
  *             the main textbox widget functions and the text format loaders
@@ -43,6 +43,7 @@ struct textbox_document {
   /* Owner-settable options */
   int password;                   /* Character to use for password hiding, if nonzero */
   unsigned int multiline : 1;
+  unsigned int autoscroll : 1;
 };
 
 /******************************************************** Public Methods **/
