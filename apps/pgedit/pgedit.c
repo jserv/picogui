@@ -1,4 +1,4 @@
-/* Demonstrate the textbox widget's editing capabilities */
+y/* Demonstrate the textbox widget's editing capabilities */
 
 #include <picogui.h>
 #include <stdio.h>
@@ -75,8 +75,8 @@ int main(int argc, char **argv) {
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&evtSave,NULL);
  
   wText = pgNewWidget(PG_WIDGET_TEXTBOX, PG_DERIVE_INSIDE, app);
-  pgSetWidget(PGDEFAULT, PG_WP_SIDE,PG_S_ALL,
-	      PG_WP_TRIGGERMASK, 0x67fd,  /* not all constants are defined */
+  pgSetWidget(PGDEFAULT, 
+	      PG_WP_SIDE,PG_S_ALL,
 	      0);
 
   pgNewWidget(PG_WIDGET_SCROLL,PG_DERIVE_BEFORE,wText);
