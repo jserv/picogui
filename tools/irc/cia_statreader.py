@@ -1,10 +1,11 @@
 #
-# Simple python module for processing CIA stats
+# Simple disorganized python module for processing CIA stats
 #
 
 import os
 
 statDir = "/home/commits/stats"
+mtbcSubdir = 'mtbc'
 channelFile = "/home/commits/channels.list"
 
 # List out the subdirs explicitly so we can set the order-
@@ -20,16 +21,23 @@ statHeadings = {
     'weekly': 'this week',
     'end-of-day': 'yesterday',
     'daily': 'today',
+    'mtbc': 'MTBC',
     }
 
 # Projects we want to hide from stat lists
 hiddenProjects = ('stats', 'test')
 
+def loadInt(f):
+    f = open(f)
+    count = int(f.read().strip())
+    f.close()
+    return count
+
 def readStats():
     """Stats are automatically read into the module on import,
        this can be called separately to refresh them.
        """
-    global projects, channels, projectCounts
+    global projects, channels, projectCounts, projectMTBC, totalMTBC
 
     # Add all projects that we aren't excempting from stats
     projects = []
@@ -47,7 +55,7 @@ def readStats():
         counts = {}
         for subdir in statSubdirs:
             try:
-                counts[subdir] = int(open(os.path.join(statDir, subdir, project)).read().strip())
+                counts[subdir] = loadInt(os.path.join(statDir, subdir, project))
             except IOError:
                 counts[subdir] = 0
         projectCounts[project] = counts
@@ -57,5 +65,20 @@ def readStats():
         return cmp(projectCounts[b][statSubdirs[0]],
                    projectCounts[a][statSubdirs[0]])
     projects.sort(countSort)
+
+    # Calculate the Mean Time Between Commits, total and per-project
+    totalSamples = 0
+    totalTime = 0
+    projectMTBC = {}
+    for project in projects:
+        try:
+            projectSamples = loadInt(os.path.join(statDir, mtbcSubdir, project + '.numSamples'))
+            projectTime = loadInt(os.path.join(statDir, mtbcSubdir, project + '.totalTime'))
+            projectMTBC[project] = projectTime * 1.0 / projectSamples
+            totalSamples += projectSamples
+            totalTime += projectTime
+        except IOError:
+            projectMTBC[project] = None
+    totalMTBC = totalTime * 1.0 / totalSamples
 
 readStats()

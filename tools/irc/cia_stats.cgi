@@ -34,7 +34,7 @@ print """Content-type: text/html
 
 # Project table heading
 print "<tr>",
-for heading in ('project',) + statSubdirs:
+for heading in ('project','mtbc') + statSubdirs:
     print '<th>%s</th>' % statHeadings[heading],
 print "</tr>"
 
@@ -47,7 +47,18 @@ for project in projects:
 
 # Project table contents
 for project in projects:
-    print "<tr><td>%s</td>" % project,
+    # Format the MTBC a little
+    mtbc = projectMTBC[project]
+    if not mtbc:
+        mtbc = ''
+    elif mtbc > 7200:
+        mtbc = "%.1fh" % (mtbc / 3600)
+    elif mtbc > 120:
+        mtbc = "%.1fm" % (mtbc / 60)
+    else:
+        mtbc = "%.1fs" % mtbc
+    
+    print "<tr><td>%s</td><td>%s</td>" % (project, mtbc),
     for statIndex in xrange(len(statSubdirs)):
         count = projectCounts[project][statSubdirs[statIndex]]
         if count:
