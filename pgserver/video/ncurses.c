@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.28 2002/03/26 03:46:04 instinc Exp $
+/* $Id: ncurses.c,v 1.29 2002/09/28 09:30:44 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -250,7 +250,7 @@ hwrcolor ncurses_color_pgtohwr(pgcolor c) {
 
 extern void def_sprite_show(struct sprite *spr);
 void ncurses_sprite_show(struct sprite *spr) {
-   if (spr==cursor) {
+   if (spr==cursor_get_default()->sprite) {
       spr->visible = 0;
     
 #ifdef DRIVER_GPM

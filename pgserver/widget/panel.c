@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.83 2002/09/28 08:14:31 micahjd Exp $
+/* $Id: panel.c,v 1.84 2002/09/28 09:30:44 micahjd Exp $
  *
  * panel.c - Resizable container with decorations. It uses a panelbar for resizing purposes,
  *           and optionally supplies some standard buttons for the panel.
@@ -192,6 +192,8 @@ g_error panel_install(struct widget *self) {
 		    self->dt,self->container,self->owner);
   errorcheck;
   e = widget_attach(bar,self->dt,&self->in->div->div,0,self->owner);
+  errorcheck;
+  e = widget_set(bar,PG_WP_BIND,self->h);
   errorcheck;
 
   /* This draws the panel background  */
