@@ -9,34 +9,50 @@ README.yuv Contributors:
 What is YUV ?
 ------------- 
 
-Y, U, V (also called Y, Pr/Gr, Pb/Gb) is the HDTV standard for
-supplying a video signal to a TV. This is how composite cables send
-the video signal, for standard video or even progressive signals.
+YUV is the standard for supplying a video signal to a TV. It is common
+denominator for most TV standards, using a lot of variants, such as:
+
+  - YIQ:
+    NTSC takes U & V component, rotates them by 33 degree, then
+    renames them I & Q (in phase, in quadrature), hence "YIQ". NTSC
+    stands for "National Television System Committee".
+
+  - YUV:
+    PAL takes U & V and inverts V's phase every second line. PAL
+    stands for "Phase Alternation Line".
+
+  - YDrDb:
+    SECAM is using a different color matrix and transmits Red and Blue
+    alternately on separated FM carriers. SECAM stands, in French, for
+    "Sequentiel Couleur A Memoire".
 
 The theory of YUV encoding is beyond the scope of this README, but
-here is, in short the difference between RGB and YUV: While RGB
+here is, in short, the difference between RGB and YUV: While RGB
 describes a pixel by its red, green and blue chroma components, YUV
-describes a pixel as follows:
+describes a pixel by its luminance and two chrominance components, as
+follows:
 
-  - Y: pixel luma
-  - U: blue chroma
-  - V: red chroma
+  Name Role            Formula                              Range
+  ---- --------------- ------------------------------------ -----------
+  - Y  luma            0.299 * R  + 0.587 * G  + 0.114 * B  [   0..255]
+  - U  'blue' chroma   0.492 * ( B - Y )                    [-112..112]
+  - V  'red' chroma    0.877 * ( R - Y )                    [-157..157]
 
-When only Y is transmitted, the image can be seen in greyscales. This
+When only Y is transmitted, the image can be seen in monochrome. This
 is a reminiscence of the b/w television.
 
-When we talk about YUV, there are three distinct aspects to consider:
+When we talk about color encoding, there are three distinct aspects to
+consider:
 
   - The electrical signal, made by the encoder, carried by the wires.
-  - The digital stream format as well as the file format.
+  - The digital stream format, as well as the file format.
   - The memory representation, subject to different organisations,
     that can save (or not) memory, and ease (or not) graphical
     operations, and reduce (or not) the complexity of the encoder.
 
-
 While RGB is commonly used in the computer world, YUV encoding is very
 much used in the world of video devices (digital cams, DVD players,
-set-top-boxes, etc), and some graphical engines support YUV natively.
+set-top-boxes, etc). Some graphical engines support YUV natively.
 
 
 YUV and the linux framebuffer

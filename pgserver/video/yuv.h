@@ -1,4 +1,4 @@
-/* $Id: yuv.h,v 1.1 2002/03/27 10:38:51 bauermeister Exp $
+/* $Id: yuv.h,v 1.2 2002/05/06 13:06:13 bauermeister Exp $
  *
  * yuv.h - Some general-purpose YUV stuff
  * 
@@ -22,7 +22,6 @@
  * Contributors:
  * 
  *  Pascal Bauermeister <pascal.bauermeister@smartdata.ch>
- *  rgb_to_ycbcr() courtesy David Coupe <david_coupe@ch.ibm.com>
  *
  */
 
