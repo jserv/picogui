@@ -46,7 +46,7 @@ runtime = [
                             ~ S ('module/picoguiapps/pgboard_run_us_qwerty_bitmap') &
                             ~ S ('module/picoguiapps/pgboard_run_us_qwerty') )
                           ],
-              content = [ 'etc/rm.d/picoguiapps' ]),
+              content = [ 'etc/rm.d/pgboard' ]),
     Runtime ( 'pgboard_run_us_qwerty', 'Run PGBoard with US QWERTY keymap',
               depends = [ 'picoguiserver/server',
                           'picoguiapps/us_qwerty',
@@ -56,7 +56,7 @@ runtime = [
                             ~ S ('module/picoguiapps/pgboard_run_us_qwerty_bitmap') &
                             ~ S ('module/picoguiapps/pgboard_run_us_qwerty') )
                           ],
-              content = [ 'etc/rm.d/picoguiapps' ]),
+              content = [ 'etc/rm.d/pgboard' ]),
     Runtime ( 'pgboard_run_us_qwerty_bitmap', 'Run PGBoard with US QWERTY keymap (Bitmap 240x80)',
               depends = [ 'picoguiserver/server',
                           'picoguiapps/us_qwerty_bitmap',
@@ -66,7 +66,7 @@ runtime = [
                             ~ S ('module/picoguiapps/pgboard_run_us_qwerty') &
                             ~ S ('module/picoguiapps/pgboard_run_ch_qwertz') )
                           ],
-              content = [ 'etc/rm.d/picoguiapps' ]),
+              content = [ 'etc/rm.d/pgboard' ]),
     Runtime ( 'pgboard_run_ch_qwertz', 'Run PGBoard with CH QWERTZ keymap',
               depends = [ 'picoguiserver/server',
                           'picoguiapps/ch_qwertz',
@@ -76,7 +76,7 @@ runtime = [
                             ~ S ('module/picoguiapps/pgboard_run_us_qwerty') &
                             ~ S ('module/picoguiapps/pgboard_run_us_qwerty_bitmap') )
                           ],
-              content = [ 'etc/rm.d/picoguiapps' ]),
+              content = [ 'etc/rm.d/pgboard' ]),
     Runtime ( 'pgboard_cmds', 'Virtual Keyboard Tester',
               content = [ 'bin/pgboard_cmds' ],
               help = "Test application to send commands to the Virtual Keyboard" ),
@@ -109,6 +109,8 @@ runtime = [
               help = "Scribble Pad" )
     ]
 
+
+
 def prepare (module, platform, project):
 
     command = "../configure"
@@ -136,7 +138,21 @@ def prepare (module, platform, project):
     sequence ("rm -f config.status",
               "test ! -f ../autogen.sh || (cd .. ; ./autogen.sh || true)",
               command)
- 
+    return
+
+
+def install (module, platform, project):
+    sequence ("make install prefix=%s" % module.path ['frz'])
+
+    # try to install the mdl file in the root of the frozen directory
+    mdl = module.file
+    if os.path.isfile (mdl):
+        installfile (mdl, module.path ['r_frz'])
+
+    # generate the RM file
+    file = os.path.join (module.path ['frz'], 'etc', 'rm.d', 'pgboard')
+    makedirs (os.path.dirname (file))
+
     # Determine pgboard keymap file
     pgboard_arg = ""
 
@@ -146,12 +162,8 @@ def prepare (module, platform, project):
         pgboard_arg = "%s/share/pgboard/us_qwerty_scalable.kb" % prefix
     elif project.value ['module/picoguiapps/pgboard_run_us_qwerty_bitmap'] :
         pgboard_arg = "%s/share/pgboard/us_qwerty_240.kb" % prefix
-    elif project.value ['module/picoguiapps/pgboard_run_ch_qwerty'] :
+    elif project.value ['module/picoguiapps/pgboard_run_ch_qwertz'] :
         pgboard_arg = "%s/share/pgboard/ch_qwertz_scalable.kb" % prefix
-        
-    # generate the RM file
-    file = os.path.join (module.path ['frz'], 'etc', 'rm.d', 'picoguiapps')
-    makedirs (os.path.dirname (file))
 
     fd = open (file, 'w')
     fd.write ('''
@@ -164,5 +176,4 @@ announce = 1
 blocked  = 0
     ''' % (prefix, pgboard_arg) )
     fd.close ()
-
     return
