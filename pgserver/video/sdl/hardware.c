@@ -1,6 +1,6 @@
 /*
  * hardware.c - SDL "hardware" layer
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * 
  * Emulate display hardware using SDL
  *
@@ -322,20 +322,20 @@ void hwr_chrblit(struct cliprect *clip, unsigned char *chardat,int dest_x,
   destline = dest =(devbmpt)screen->pixels+dest_x+dest_y*HWR_WIDTH;
   hc = 0;
 
-  # Do vertical clipping ahead of time
+  /* Do vertical clipping ahead of time */
   if (clip) {
-    if (clip.y>dest_y) {
-      hc = clip.y-dest_y; /* Do it this way so skewing doesn't mess up when
+    if (clip->y>dest_y) {
+      hc = clip->y-dest_y; /* Do it this way so skewing doesn't mess up when
 			     clipping */
       destline = (dest += hc * HWR_WIDTH);
     }
-    if (clip.y2<(dest_y+h))
-      h -= (dest_y+h-clip.y2);
+    if (clip->y2<(dest_y+h))
+      h -= (dest_y+h-clip->y2);
   }
 
   /* FINISH HORIZONTAL CLIPPING HERE!!! */
 
-  # Nice enigmatic loop, taking skewing and clipping into account
+  /* Nice enigmatic loop, taking skewing and clipping into account */
   for (;hc<h;hc++,destline=(dest+=HWR_WIDTH)) {
     if (olines && lines==hc) {
       lines += olines;
