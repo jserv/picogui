@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.28 2001/06/25 00:48:50 micahjd Exp $
+/* $Id: widget.h,v 1.29 2001/07/10 09:21:13 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -357,6 +357,12 @@ void resizewidget(struct widget *w);
 
 /* Call the resizewidget() function on all widgets with handles */
 void resizeall(void);
+
+/* Check for global hotkeys, like those used to move between widgets.
+ * If the key pressed was a global hotkey, it should be processed and this
+ * function should return nonzero.
+ */
+u8 global_hotkey(u32 keycode, u32 type);
 
 #endif /* __WIDGET_H */
 

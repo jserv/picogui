@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.82 2001/06/30 08:54:05 micahjd Exp $
+/* $Id: widget.c,v 1.83 2001/07/10 09:21:13 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -29,6 +29,7 @@
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <pgserver/pgnet.h>
+#include <pgserver/hotspot.h>
 
 /* Table of widgets */
 #ifdef RUNTIME_FUNCPTR
@@ -870,6 +871,9 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
   /* Ignore CHAR events for keys modified by anything other than shift */
   if (type == TRIGGER_CHAR && (mods & ~PGMOD_SHIFT)) return;
 
+  /* Process global hotkeys */
+  suppress |= global_hotkey(keycode,type);
+
   /* Iterate through the hotkey-owning widgets if there's a KEYDOWN */
   p = dts->top->hkwidgets;
   while (p) {
@@ -914,6 +918,50 @@ void resizeall(void) {
   
   for (tree=dts->top;tree;tree=tree->next)
     divresize_recursive(tree->head);
+}
+
+/* Check for global hotkeys, like those used to move between widgets.
+ * If the key pressed was a global hotkey, it should be processed and this
+ * function should return nonzero.
+ */
+u8 global_hotkey(u32 keycode, u32 type) {
+  switch (keycode) {
+
+  case PGKEY_TAB:
+    if (type == TRIGGER_KEYDOWN)
+      hotspot_traverse(HOTSPOT_NEXT);
+    return 1;
+
+  case PGKEY_UP:
+    if (type == TRIGGER_KEYDOWN)
+      hotspot_traverse(HOTSPOT_UP);
+    return 1;
+
+  case PGKEY_DOWN:
+    if (type == TRIGGER_KEYDOWN)
+      hotspot_traverse(HOTSPOT_DOWN);
+    return 1;
+
+  case PGKEY_LEFT:
+    if (type == TRIGGER_KEYDOWN)
+      hotspot_traverse(HOTSPOT_LEFT);
+    return 1;
+
+  case PGKEY_RIGHT:
+    if (type == TRIGGER_KEYDOWN)
+      hotspot_traverse(HOTSPOT_RIGHT);
+    return 1;
+
+  default:
+    /* Shift-tab */
+    if ((keycode & 0xFFFF) == PGKEY_TAB && (keycode & (PGMOD_SHIFT<<16))) {
+      if (type == TRIGGER_KEYDOWN)
+	hotspot_traverse(HOTSPOT_PREV);
+      return 1;
+    }
+
+  }
+  return 0;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: appmgr.h,v 1.14 2001/06/28 21:06:44 micahjd Exp $
+/* $Id: appmgr.h,v 1.15 2001/07/10 09:21:13 micahjd Exp $
  *
  * appmgr.h - All the window-manager-ish functionality, except we don't
  * do windows (X windows, that is?)
@@ -60,7 +60,7 @@ struct app_info {
 /* Global objects */
 extern handle defaultfont;
 extern struct app_info *applist;
-struct sprite *cursor;
+extern struct sprite *cursor;
 extern hwrbitmap defaultcursor_bitmap,defaultcursor_bitmask;
 extern handle htbboundary;       /* The last toolbar, represents the boundary between
 				    toolbars and application panels */

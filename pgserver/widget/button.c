@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.62 2001/06/25 00:48:50 micahjd Exp $
+/* $Id: button.c,v 1.63 2001/07/10 09:21:13 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -158,6 +158,7 @@ g_error button_install(struct widget *self) {
   errorcheck;
   self->in->div->build = &build_button;
   self->in->div->state = DATA->state;
+  self->in->div->flags |= DIVNODE_HOTSPOT;
 
   self->trigger_mask = TRIGGER_ENTER | TRIGGER_LEAVE | TRIGGER_HOTKEY |
     TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_DIRECT;

@@ -1,3 +1,43 @@
+2001-07-09    Micah Dowty <micahjd@users.sourceforge.net>
+
+Continuing work on focusing. I'm adding a 'hotspot' interface that allows
+PicoGUI to define a list of hotspot coordinates (gathered from the divtree)
+generate a graph, and traverse that graph as the user moves through the
+hotspots with the arrow keys.
+
+      * include/pgserver/hotspot.h: Defined the interface for adding,
+        managing, and traversing the hotspots
+
+		* gcore/hotspot.c: Implementing the Y-X sorting hotspot algorithm
+
+		* gcore/div.c: Free the hotspot list when divtrees are pushed/popped
+		  or when divnodes are recalculated
+		  
+		* widget/widget.c: Added the global_hotkey() function for handling things
+		  like tab and arrow keys
+
+		* input/sdlinput.c: Added automatic warping when the PicoGUI
+		  cursor is moved.
+
+2001-07-08    Micah Dowty <micahjd@users.sourceforge.net>
+
+I'm having a Birthday LAN party on Friday the 13th, so I need to get as much
+done for Smartdata as possible.
+I'm starting with what Pascal calls the 'meta-input driver'. Pascal's on
+vacation, but I've asked Philippe for some clarification on it. I can go
+ahead and start with some of the parts I understand.
+Starting with focusing.
+-
+I experimented with different algorithms to determine, given a starting
+widget and a direction, which widget the cursor should end up at. I decided
+on a simple Y-X sorting algorithm. Divnodes that should be selectable with
+the keyboard should have a 'hotspot' flag set. When the screen is updated
+and recalcs have taken place, these hotspots will stored and sorted, then
+used for cursor movement.
+
+      * include/pgserver/divtree.h: Added DIVNODE_HOTSPOT
+
+
 2001-07-06    Micah Dowty <micahjd@users.sourceforge.net>
 
 Finishing up the theme indexer.

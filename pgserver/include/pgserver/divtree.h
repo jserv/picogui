@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.18 2001/06/25 00:48:50 micahjd Exp $
+/* $Id: divtree.h,v 1.19 2001/07/10 09:21:13 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -166,6 +166,12 @@ struct divnode {
 					  * to the divnode and this flag is
 					  * cleared. Should usually be combined
 					  * with DIVNODE_SPLIT_IGNORE */
+#define DIVNODE_HOTSPOT         (1<<20)  /* This divnode is a hotspot that can be
+					    selected with the arrow keys. All
+					    divnodes with this flag get sorted,
+					    then the owner widget's flags are set
+					    correctly to allow movement
+					    between them */
 
 /* Side value macros and stuff */
 typedef unsigned short int sidet;

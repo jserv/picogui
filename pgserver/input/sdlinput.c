@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.16 2001/07/10 08:10:13 micahjd Exp $
+/* $Id: sdlinput.c,v 1.17 2001/07/10 09:21:13 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -81,13 +81,25 @@ void sdlinput_poll(void) {
     break;
     
   case SDL_MOUSEBUTTONDOWN:
-    dispatch_pointing(TRIGGER_DOWN,evt.button.x,
-		      evt.button.y,btnstate |= 1<<(evt.button.button-1));
+    /* Also auto-warp for button clicks */
+    if (evt.button.x!=cursor->x ||
+	evt.button.y!=cursor->y)
+      SDL_WarpMouse(cursor->x,
+		    cursor->y);
+
+    dispatch_pointing(TRIGGER_DOWN,cursor->x,
+		      cursor->y,btnstate |= 1<<(evt.button.button-1));
     break;
     
   case SDL_MOUSEBUTTONUP:
-    dispatch_pointing(TRIGGER_UP,evt.button.x,
-		      evt.button.y,btnstate &= ~(1<<(evt.button.button-1)));
+    /* Also auto-warp for button clicks */
+    if (evt.button.x!=cursor->x ||
+	evt.button.y!=cursor->y)
+      SDL_WarpMouse(cursor->x,
+		    cursor->y);
+
+    dispatch_pointing(TRIGGER_UP,cursor->x,
+		      cursor->y,btnstate &= ~(1<<(evt.button.button-1)));
     break;
     
   case SDL_KEYDOWN:

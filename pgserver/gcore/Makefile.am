@@ -15,7 +15,8 @@ libgcore_a_SOURCES = \
 	video.c 	    \
 	input.c 	    \
 	driverinfo.c \
-	configfile.c
+	configfile.c \
+	hotspot.c
 
 EXTRA_DIST = inputdrivers.inc videodrivers.inc defaulttext.inc
 

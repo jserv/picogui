@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.40 2001/06/25 00:48:50 micahjd Exp $
+/* $Id: div.c,v 1.41 2001/07/10 09:21:12 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -402,6 +402,9 @@ void r_dtupdate(struct divtree *dt) {
     divnode_recalc(dt->head);
     /* If we recalc, at least one divnode will need redraw */
     dt->flags |= DIVTREE_NEED_REDRAW;
+
+    /* The hotspot graph is now invalid */
+    hotspot_free();
   }
   if (dt->flags &(DIVTREE_NEED_REDRAW|DIVTREE_ALL_REDRAW)) {
 #ifdef DEBUG_VIDEO
@@ -457,6 +460,9 @@ g_error dts_push(void) {
   t->next = dts->top;
   dts->top = t;
 
+  /* The hotspot graph is invalid */
+  hotspot_free();
+  
   return sucess;
 }
 
@@ -474,6 +480,7 @@ void dts_pop(struct divtree *dt) {
      guru("In dts_pop(): This shouldn't happen!");
 #endif
    
+  hotspot_free();
   reset_widget_pointers();
   *p = (*p)->next;
   divtree_free(dt);

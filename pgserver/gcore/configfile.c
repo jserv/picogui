@@ -1,7 +1,7 @@
-/* $Id: configfile.c,v 1.2 2001/07/05 04:36:46 micahjd Exp $
+/* $Id: configfile.c,v 1.3 2001/07/10 09:21:12 micahjd Exp $
  *
- * pgserver/configfile.c - Utilities for loading, storing, and retrieving
- *                         configuration options
+ * configfile.c - Utilities for loading, storing, and retrieving
+ *                configuration options
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>

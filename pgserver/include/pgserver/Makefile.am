@@ -18,7 +18,9 @@ noinst_HEADERS = \
 	theme.h 	\
 	timer.h 	\
 	video.h 	\
-	widget.h
+	widget.h \
+	configfile.h \
+	hotspot.h
 
 CONFIG_CLEAN_FILES = autoconf.h
 
