@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.22 2000/08/07 22:39:45 micahjd Exp $
+/* $Id: panel.c,v 1.23 2000/08/09 02:48:51 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -202,6 +202,8 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
   case TRIGGER_LEAVE:
     /* If we're dragging, the mouse didn't REALLY leave */
     if (DATA->on) return;
+
+    if (!DATA->over) return;  /* Don't bother redrawing */
 
     DATA->over=0;
     break;
