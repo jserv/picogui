@@ -1,4 +1,4 @@
-/* $Id: demo.c,v 1.6 2000/09/22 01:07:44 micahjd Exp $
+/* $Id: demo.c,v 1.7 2000/09/22 11:06:40 micahjd Exp $
  *
  * demo.c -   source file for testing PicoGUI
  *
@@ -30,61 +30,72 @@
 
 int main(int argc, char *argv[])
 {
-  pghandle tb,app;
-  pghandle w1,w2;
-  pghandle t1,t2,t3,t4;
-  
+  pghandle wToolbar,wBox,wText;
+
   pgInit(argc,argv);
 
-  /* just for testing... (normally an app
-   * only has one pgRegisterApp call) */
-/*  pgRegisterApp(PG_APP_NORMAL,"foo",
+  /**** Register our application */
+
+  pgRegisterApp(PG_APP_NORMAL,"foo",
 		PG_APPSPEC_WIDTH,100,
-		PG_APPSPEC_SIDE,PG_S_LEFT,
-		0);
-*/
+		PG_APPSPEC_SIDE,PG_S_LEFT,0);
 
-  t1 = pgNewString(" 1 ");
-  t2 = pgNewString(" 2 ");
-  t3 = pgNewString(" 3 ");
-  t4 = pgNewString("Mobile internet appliances\n"
-		   "will likely be the smart merge\n"
-		   "of computer power, multimedia,\n"
-		   "Internet, wireless telecommunication\n"
-		   "technology and fashion; this is the\n"
-		   "reason why this market is to be\n"
-		   "considered as one of the major fast\n"
-		   "growing markets at the beginning\n"
-		   "of this millennium.\n");
+  /**** First level of widgets */
 
-  tb = pgRegisterApp(PG_APP_TOOLBAR,"Demo app",0);
+  /* A normal (non-standalone) toolbar */
+  wToolbar = pgNewWidget(PG_WIDGET_TOOLBAR,0,0);
 
-  app = pgRegisterApp(PG_APP_NORMAL,"foo",
-		       PG_APPSPEC_WIDTH,100,
-		       PG_APPSPEC_SIDE,PG_S_LEFT,0);
+  wBox = pgNewWidget(PG_WIDGET_BOX,0,0);
+  pgSetWidget(0,
+	      PG_WP_SIZE,100,
+	      PG_WP_BORDERCOLOR,0x000000,
+	      0);
 
-printf("------------------------>>> 1\n");
+  /**** Widgets inside the toolbar */
 
-  w1 = pgNewWidget(PG_WIDGET_BUTTON,0,tb);
-  pgSetWidget(w1,PG_WP_ALIGN,PG_A_LEFT,PG_WP_TEXT,t1,0);
-  w1 = pgNewWidget(PG_WIDGET_BUTTON,0,tb);
-  pgSetWidget(w1,PG_WP_ALIGN,PG_A_LEFT,PG_WP_TEXT,t2,0);
-  w1 = pgNewWidget(PG_WIDGET_BUTTON,0,tb);
-  pgSetWidget(w1,PG_WP_ALIGN,PG_A_LEFT,PG_WP_TEXT,t3,0);
+  pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
+  pgSetWidget(0,
+	      PG_WP_ALIGN,PG_A_LEFT,
+	      PG_WP_TEXT,pgNewString("1"),
+	      0);
 
-printf("------------------------>>> 2\n");
+  pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(0,
+	      PG_WP_ALIGN,PG_A_LEFT,
+	      PG_WP_TEXT,pgNewString("2"),
+	      0);
 
-  w1 = pgNewWidget(PG_WIDGET_BOX,0,app);
-  pgSetWidget(w1,PG_WP_SIZE,100,PG_WP_BORDERCOLOR,0x000000,0);
-printf("------------------------>>> 3\n");
-  w2 = pgNewWidget(PG_WIDGET_LABEL,0,w1);
-  pgSetWidget(w2,PG_WP_TEXT,t4,0);
-printf("------------------------>>> 4\n");
-/*  w1 = pgNewWidget(PG_WIDGET_SCROLL,0,0);
-  pgSetWidget(w1,PG_WP_BIND,w2,0);
-*/
+  pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(0,
+	      PG_WP_ALIGN,PG_A_LEFT,
+	      PG_WP_TEXT,pgNewString("Hello, World!"),
+	      0);
+
+  /**** Text inside the box */
+  
+  wText = pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_INSIDE,wBox);
+  pgSetWidget(0,
+	      PG_WP_SIDE,PG_S_ALL,
+	      PG_WP_TEXT,pgNewString(
+                 "Mobile internet appliances\n"
+		 "will likely be the smart merge\n"
+		 "of computer power, multimedia,\n"
+		 "Internet, wireless telecommunication\n"
+		 "technology and fashion; this is the\n"
+		 "reason why this market is to be\n"
+		 "considered as one of the major fast\n"
+		 "growing markets at the beginning\n"
+		 "of this millennium.\n"),
+	      0);
+
+  /* Add a scrollbar */
+  pgNewWidget(PG_WIDGET_SCROLL,PG_DERIVE_BEFORE,wText);
+  pgSetWidget(0,
+	      PG_WP_BIND,wText,
+	      0);
+
+  /**** Run it! ****/
   pgEventLoop();
-
   return 0;
 }
 

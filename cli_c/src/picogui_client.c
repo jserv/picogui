@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.6 2000/09/21 17:34:38 pney Exp $
+/* $Id: picogui_client.c,v 1.7 2000/09/22 11:06:40 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -56,8 +56,8 @@
 /* Global vars for the client lib */
 int _pgsockfd;                  /* Socket fd to the pgserver */
 short _pgrequestid;             /* Request ID to detect errors */
-short _pgdefault_rship;         /* Default relationship and parent */
-short _pgdefault_parent;        /*   for new widgets */
+short _pgdefault_rship;         /* Default relationship and widget */
+short _pgdefault_widget;        /*    when 0 is used */
 unsigned char _pgeventloop_on;  /* Boolean - is event loop running? */
 unsigned char _pgreqbuffer[PG_REQBUFSIZE];  /* Buffer of request packets */
 short _pgreqbuffer_size;        /* # of bytes in reqbuffer */
@@ -103,7 +103,7 @@ int _pg_recv(void *data,unsigned long datasize);
 /* Malloc wrapper. Reports errors */
 void *_pg_malloc(size_t size);
 
-/* Default error handler */
+/* Default error handler (this should never be called directly) */
 void _pg_defaulterr(unsigned short errortype,const char *msg);
 
 /* Put a request into the queue */
@@ -542,7 +542,7 @@ pghandle pgRegisterApp(short int type,const char *name, ...) {
 
   /* Default is inside this widget */
   _pgdefault_rship = PG_DERIVE_INSIDE;
-  _pgdefault_parent = _pg_return.e.retdata;
+  _pgdefault_widget = _pg_return.e.retdata;
   
   /* Return the new handle */
   return _pg_return.e.retdata;
@@ -555,7 +555,7 @@ void  pgSetWidget(pghandle widget, ...) {
   int numspecs,i;
 
   /* Set defaults values */
-  arg.widget = htonl(widget);
+  arg.widget = htonl(widget ? widget : _pgdefault_widget);
   arg.dummy = 0;
 
   for(va_start(v,widget);i;){
@@ -572,15 +572,14 @@ void  pgSetWidget(pghandle widget, ...) {
 pghandle pgNewWidget(short int type,short int rship,pghandle parent) {
   struct pgreqd_mkwidget arg;
 
-  if((type < PG_WIDGET_TOOLBAR)||(type > PG_WIDGETMAX))
-    _pg_defaulterr(PG_ERRT_BADPARAM,"Undefined widget type\n");
+  /* We don't need to validate the type here, the server does that. */
     
   arg.type = htons(type);
 
   /* Default placement is after the previous widget
    * (Unless is was a special widget, like a root widget)
    * Passing 0 for 'rship' and 'parent' to get the defaults? */
-  arg.parent = htonl(parent ? parent : _pgdefault_parent);
+  arg.parent = htonl(parent ? parent : _pgdefault_widget);
   arg.rship  = htons(rship  ? rship  : _pgdefault_rship);
 
   _pg_add_request(PGREQ_MKWIDGET,&arg,sizeof(arg));
@@ -589,8 +588,8 @@ pghandle pgNewWidget(short int type,short int rship,pghandle parent) {
   pgFlushRequests();
 
   /* Default is inside this widget */
-  _pgdefault_rship = PG_DERIVE_INSIDE;
-  _pgdefault_parent = _pg_return.e.retdata;
+  _pgdefault_rship = PG_DERIVE_AFTER;
+  _pgdefault_widget = _pg_return.e.retdata;
   
   /* Return the new handle */
   return _pg_return.e.retdata;
@@ -609,7 +608,7 @@ pghandle pgNewPopupAt(int x,int y,int width,int height) {
 
   /* Default is inside this widget */
   _pgdefault_rship = PG_DERIVE_INSIDE;
-  _pgdefault_parent = _pg_return.e.retdata;
+  _pgdefault_widget = _pg_return.e.retdata;
   
   /* Return the new handle */
   return _pg_return.e.retdata;
@@ -623,10 +622,10 @@ pghandle pgNewPopup(int width,int height) {
 pghandle pgNewString(const char* str) {
   if (!str) return 0;
 
-  /* FIXME: sizeof(str) seems to return 4 in every case ???
-   *        this way is maybe not the best one, but it's ok by now
+  /* Passing the NULL terminator to the server is redundant.
+   * no need for a +1 on that strlen...
    */
-  _pg_add_request(PGREQ_MKSTRING,(void *) str,strlen(str)*sizeof(char));
+  _pg_add_request(PGREQ_MKSTRING,(void *) str,strlen(str));
 
   /* Because we need a result now, flush the buffer */
   pgFlushRequests();
