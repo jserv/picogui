@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.59 2002/09/21 02:51:38 micahjd Exp $
+/* $Id: scroll.c,v 1.60 2002/09/21 02:55:08 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -138,7 +138,7 @@ void build_scroll(struct gropctxt *c,u16 state,struct widget *self) {
      * coordinates.
      *
      * Note that it may be possible for the layout engine to oscillate
-     * between scrollbar visible and hidden states. We use the 'lock'
+     * between scrollbar states. We use the 'lock'
      * variable here to prevent infinite recursion in that case.
      */
     if (lock)
