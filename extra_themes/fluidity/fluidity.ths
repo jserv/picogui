@@ -124,7 +124,7 @@ object background {
 
 /********************************** Panels */
 
-=object panel {
+object panel {
   margin = 0;
 }
 
@@ -246,6 +246,95 @@ object button.on bitmap1 = LoadBitmap("data/button_bright_small.png");
 
 /********************************** Scroll */
 
+object scroll width = 14;
 
+object scroll.v {
+  bitmap1 = LoadBitmap("data/scrollbar_v.png");
+  bitmap2 = LoadBitmap("data/scrollthumb_v.png");
+
+  bgfill = fillstyle {
+    /* Limit the minimum size */
+    h = h<22 ? 22 : h;
+
+    /* Standard background */
+    Bitmap(x,y,w,h,bDarkInterlace);
+    
+    /* Alpha blended bar the scroll thumb slides on */
+    SetLgop(PG_LGOP_ALPHA);
+    SetSrc(0,0,8,10);
+    Bitmap(x+4,y+4,8,10,bitmap1);
+    SetSrc(0,10,8,1);
+    Tilebitmap(x+4,y+14,8,h-29,bitmap1);
+    SetSrc(0,11,8,11);
+    Bitmap(x+4,y+h-15,8,11,bitmap1);
+    SetLgop(PG_LGOP_NONE);
+    SetSrc(0,0,0,0);
+  };
+
+  overlay = fillstyle {
+    /* Limit the minimum size */
+    h = h<15 ? 15 : h;
+
+    /* Scrollbar thumb, stretched vertically */
+    SetLgop(PG_LGOP_ALPHA);
+    SetSrc(0,0,14,6);
+    Bitmap(x+1,y,14,6,bitmap2);
+    SetSrc(0,6,14,1);
+    Tilebitmap(x+1,y+6,14,h-13,bitmap2);
+    SetSrc(0,7,14,7);
+    Bitmap(x+1,y+h-8,14,7,bitmap2);
+    SetLgop(PG_LGOP_NONE);
+    SetSrc(0,0,0,0);
+  };
+}
+
+object scroll.h {
+  bitmap1 = LoadBitmap("data/scrollbar_h.png");
+  bitmap2 = LoadBitmap("data/scrollthumb_h.png");
+
+  bgfill = fillstyle {
+    /* Limit the minimum size */
+    w = w<22 ? 22 : w;
+
+    /* Standard background */
+    Bitmap(x,y,w,h,bDarkInterlace);
+    
+    /* Alpha blended bar the scroll thumb slides on */
+    SetLgop(PG_LGOP_ALPHA);
+    SetSrc(0,0,10,8);
+    Bitmap(x+4,y+4,10,8,bitmap1);
+    SetSrc(10,0,1,8);
+    Tilebitmap(x+14,y+4,w-29,8,bitmap1);
+    SetSrc(11,0,11,8);
+    Bitmap(x+w-15,y+4,11,8,bitmap1);
+    SetLgop(PG_LGOP_NONE);
+    SetSrc(0,0,0,0);
+  };
+
+  overlay = fillstyle {
+    /* Limit the minimum size */
+    w = w<15 ? 15 : w;
+
+    /* Scrollbar thumb, stretched horizontally */
+    SetLgop(PG_LGOP_ALPHA);
+    SetSrc(0,0,6,14);
+    Bitmap(x,y+1,6,14,bitmap2);
+    SetSrc(6,0,1,14);
+    Tilebitmap(x+6,y+1,w-13,14,bitmap2);
+    SetSrc(7,0,7,14);
+    Bitmap(x+w-8,y+1,7,14,bitmap2);
+    SetLgop(PG_LGOP_NONE);
+    SetSrc(0,0,0,0);
+  };
+}
+
+object scroll.v.on bitmap2 = LoadBitmap("data/scrollthumb_v_bright.png");
+object scroll.h.on bitmap2 = LoadBitmap("data/scrollthumb_h_bright.png");
+
+/********************************** Scroll */
+
+object menuitem {
+  align = PG_A_LEFT;
+}
 
 /* The End */
