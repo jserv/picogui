@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.31 2002/02/20 20:27:30 lonetech Exp $
+/* $Id: textbox_document.c,v 1.32 2002/02/21 14:46:31 pney Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -32,6 +32,7 @@
 #include <pgserver/font.h>
 #include <pgserver/textbox.h>
 #include <string.h>
+#include <limits.h>           /* for INT_MAX definition portability... */
 
 /************************* Supported format loaders */
 
