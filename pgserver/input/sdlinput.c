@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.33 2002/02/11 19:39:23 micahjd Exp $
+/* $Id: sdlinput.c,v 1.34 2002/02/24 14:57:45 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -84,139 +84,130 @@ extern u16 sdlfb_scale;
 void sdlinput_poll(void) {
   SDL_Event evt;
   int ox=-1,oy=-1;
-  static int btnstate=0;
   s16 cursorx,cursory;
+  int newx, newy;
+  static int btnstate = 0;
+  static int oldx = -1, oldy = -1;
+  int pgx, pgy;
 
-  if (!SDL_PollEvent(&evt)) return;
+  while (SDL_PollEvent(&evt)) {
 
 #ifdef CONFIG_SDLSKIN
-  /* check hotspot map */
-  {
-    int i;
-    for (i=0;i<sdlinput_mapsize;i++)
-      if (evt.button.x >= sdlinput_map[i].x1 &&
-	  evt.button.y >= sdlinput_map[i].y1 &&
-	  evt.button.x <= sdlinput_map[i].x2 &&
-	  evt.button.y <= sdlinput_map[i].y2) {
-	
-	/* FIXME: This doesn't handle modifiers or anything
-	 * fancy like that yet. It would also be nice to have some specialized
-	 * button codes, like power or backlight.
-	 */
-	if (evt.type == SDL_MOUSEBUTTONDOWN) {
+    /* check hotspot map */
+    {
+      int i;
+      for (i=0;i<sdlinput_mapsize;i++)
+	if (evt.button.x >= sdlinput_map[i].x1 &&
+	    evt.button.y >= sdlinput_map[i].y1 &&
+	    evt.button.x <= sdlinput_map[i].x2 &&
+	    evt.button.y <= sdlinput_map[i].y2) {
+	  
+	  /* FIXME: This doesn't handle modifiers or anything
+	   * fancy like that yet. It would also be nice to have some specialized
+	   * button codes, like power or backlight.
+	   */
+	  if (evt.type == SDL_MOUSEBUTTONDOWN) {
 	  /* Not a weird key? */
-	  if (sdlinput_map[i].key < 128)
-	    dispatch_key(TRIGGER_CHAR, sdlinput_map[i].key, 0);
-	  dispatch_key(TRIGGER_KEYDOWN, sdlinput_map[i].key, 0);
+	    if (sdlinput_map[i].key < 128)
+	      dispatch_key(TRIGGER_CHAR, sdlinput_map[i].key, 0);
+	    dispatch_key(TRIGGER_KEYDOWN, sdlinput_map[i].key, 0);
+	  }
+	  else if (evt.type == SDL_MOUSEBUTTONUP)
+	    dispatch_key(TRIGGER_KEYUP, sdlinput_map[i].key, 0);
+	  
+	  return;
 	}
-	else if (evt.type == SDL_MOUSEBUTTONUP)
-	  dispatch_key(TRIGGER_KEYUP, sdlinput_map[i].key, 0);
-       
-	return;
-      }
-  }
+    }
 #endif
-
-  /* Get the physical position of PicoGUI's cursor */
-  cursorx = cursor->x;
-  cursory = cursor->y;
-  VID(coord_physicalize)(&cursorx,&cursory);
-  cursorx *= sdlfb_scale;
-  cursory *= sdlfb_scale;
-  cursorx += sdlfb_display_x;
-  cursory += sdlfb_display_y;
-
-  switch (evt.type) {
     
-  case SDL_MOUSEMOTION:
-    /* If SDL's old mouse position doesn't jive with our cursor position,
-     * warp the mouse and try again.
-     */
-    if (sdlinput_autowarp && sdlfb_scale==1)
-      if ((evt.motion.x-evt.motion.xrel)!=cursorx ||
+    /* Get the physical position of PicoGUI's cursor */
+    cursorx = cursor->x;
+    cursory = cursor->y;
+    VID(coord_physicalize)(&cursorx,&cursory);
+    cursorx *= sdlfb_scale;
+    cursory *= sdlfb_scale;
+    cursorx += sdlfb_display_x;
+    cursory += sdlfb_display_y;
+    
+    if (!sdlinput_nomouse) {
+      
+      /* Process changes in the mouse position. We were using SDL's mouse events for this, but
+       * that tends to create mouse 'lag' due to the buffering of events. This method should
+       * always use the most up-to-date mouse data even if we're behind in the queue of events.
+       */
+      
+      SDL_GetMouseState(&newx, &newy);
+      
+      /* Calculate the transformed coordinates we'll give picogui */
+      pgx = (-sdlfb_display_x + newx) / sdlfb_scale;
+      pgy = (-sdlfb_display_y + newy) / sdlfb_scale;
+      
+      /* Mouse moved? */
+      if (newx != oldx || newy != oldy) {
+	
+	/* If SDL's old mouse position doesn't jive with our cursor position,
+	 * warp the mouse and try again.
+	 */
+	/*
+	  if (sdlinput_autowarp && sdlfb_scale==1)
+	  if ((evt.motion.x-evt.motion.xrel)!=cursorx ||
 	  (evt.motion.y-evt.motion.yrel)!=cursory) {
-	SDL_WarpMouse(cursorx,
-		      cursory);
+	  SDL_WarpMouse(cursorx,
+	  cursory);
+	  break;
+	  }
+	*/
+	
+	if (sdlinput_upmove || btnstate)
+	  dispatch_pointing(TRIGGER_MOVE, pgx, pgy, btnstate);
+	if (sdlinput_pgcursor)
+	  drivermessage(PGDM_CURSORVISIBLE,1,NULL);
+      }
+      
+      switch (evt.type) {
+	
+      case SDL_MOUSEBUTTONDOWN:
+	if (sdlinput_foldbuttons)
+	  evt.button.button = evt.button.button!=0;
+	dispatch_pointing(TRIGGER_DOWN,
+			  pgx, pgy,btnstate |= 1<<(evt.button.button-1));
+	break;
+	
+      case SDL_MOUSEBUTTONUP:      
+	if (sdlinput_foldbuttons)
+	  evt.button.button = evt.button.button!=0;
+	dispatch_pointing(TRIGGER_UP,
+			  pgx, pgy,btnstate &= ~(1<<(evt.button.button-1)));
 	break;
       }
-
-    if (sdlinput_foldbuttons)
-      evt.motion.state = evt.motion.state!=0;
-
-    if ((evt.motion.x==ox) && (evt.motion.y==oy)) break;
-    if ( (sdlinput_upmove || evt.motion.state) && !sdlinput_nomouse)
-      dispatch_pointing(TRIGGER_MOVE,
-			(-sdlfb_display_x + (ox = evt.motion.x)) / sdlfb_scale,
-			(-sdlfb_display_y + (oy = evt.motion.y)) / sdlfb_scale,
-			btnstate=evt.motion.state);
-    if (sdlinput_pgcursor)
-      drivermessage(PGDM_CURSORVISIBLE,1,NULL);
-    break;
-    
-  case SDL_MOUSEBUTTONDOWN:
-    /* Also auto-warp for button clicks */
-    if (sdlinput_autowarp && sdlfb_scale==1)
-      if (evt.button.x!=cursorx ||
-	  evt.button.y!=cursory)
-	SDL_WarpMouse(cursorx,cursory);
-
-    if (sdlinput_foldbuttons)
-      evt.button.button = evt.button.button!=0;
-
-    if (!sdlinput_nomouse)
-      dispatch_pointing(TRIGGER_DOWN,
-			(-sdlfb_display_x + 
-			 (sdlinput_autowarp ? cursorx : evt.button.x))
-			/sdlfb_scale,
-			(-sdlfb_display_y + 
-			 (sdlinput_autowarp ? cursory : evt.button.y))
-			/sdlfb_scale,
-			btnstate |= 1<<(evt.button.button-1));
-    break;
-    
-  case SDL_MOUSEBUTTONUP:
-    /* Also auto-warp for button clicks */
-    if (sdlinput_autowarp && sdlfb_scale==1)
-      if (evt.button.x!=cursorx ||
-	  evt.button.y!=cursory)
-	SDL_WarpMouse(cursorx,
-		      cursory);
-
-    if (sdlinput_foldbuttons)
-      evt.button.button = evt.button.button!=0;
-
-    if (!sdlinput_nomouse)    
-      dispatch_pointing(TRIGGER_UP,
-			(-sdlfb_display_x + 
-			 (sdlinput_autowarp ? cursorx : evt.button.x))
-			/sdlfb_scale,
-			(-sdlfb_display_y + 
-			 (sdlinput_autowarp ? cursory : evt.button.y))
-			/sdlfb_scale,
-			btnstate &= ~(1<<(evt.button.button-1)));
-    break;
-    
-  case SDL_KEYDOWN:
-    if (!sdlinput_nokeyboard) {
-      if (evt.key.keysym.unicode)
-	dispatch_key(TRIGGER_CHAR,evt.key.keysym.unicode,evt.key.keysym.mod);
-      dispatch_key(TRIGGER_KEYDOWN,evt.key.keysym.sym,evt.key.keysym.mod);
-    }
-    break;
-    
-  case SDL_KEYUP:
-    if (!sdlinput_nokeyboard)
-      dispatch_key(TRIGGER_KEYUP,evt.key.keysym.sym,evt.key.keysym.mod);
-    break;
       
-  case SDL_QUIT:
-    request_quit();
-    break;
-
-  case SDL_VIDEORESIZE:
-    video_setmode(evt.resize.w,evt.resize.h,vid->bpp,PG_FM_SET,vid->flags);
-    update(NULL,1);
-    break;
+      oldx = newx;
+      oldy = newy;
+    }
+    
+    switch (evt.type) {
+    case SDL_KEYDOWN:
+      if (!sdlinput_nokeyboard) {
+	if (evt.key.keysym.unicode)
+	  dispatch_key(TRIGGER_CHAR,evt.key.keysym.unicode,evt.key.keysym.mod);
+	dispatch_key(TRIGGER_KEYDOWN,evt.key.keysym.sym,evt.key.keysym.mod);
+      }
+      break;
+      
+    case SDL_KEYUP:
+      if (!sdlinput_nokeyboard)
+	dispatch_key(TRIGGER_KEYUP,evt.key.keysym.sym,evt.key.keysym.mod);
+      break;
+      
+    case SDL_QUIT:
+      request_quit();
+      break;
+      
+    case SDL_VIDEORESIZE:
+      video_setmode(evt.resize.w,evt.resize.h,vid->bpp,PG_FM_SET,vid->flags);
+      update(NULL,1);
+      break;
+    }
   }
 }
 
@@ -287,12 +278,6 @@ void sdlinput_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
   timeout->tv_usec = POLL_USEC;
 }
 
-/* Check the input queue */
-int sdlinput_ispending(void) {
-  sdlinput_poll();
-  return SDL_PollEvent(NULL);
-}
-
 #ifdef CONFIG_SDLSKIN
 void sdlinput_close(void) {
   if (sdlinput_map)
@@ -307,7 +292,6 @@ g_error sdlinput_regfunc(struct inlib *i) {
   i->init = &sdlinput_init;
   i->poll = &sdlinput_poll;
   i->fd_init = &sdlinput_fd_init;
-  i->ispending = &sdlinput_ispending;
 #ifdef CONFIG_SDLSKIN
   i->close = &sdlinput_close;
 #endif
