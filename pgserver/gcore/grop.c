@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.11 2000/06/10 14:15:56 micahjd Exp $
+/* $Id: grop.c,v 1.12 2000/06/10 21:26:42 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -121,11 +121,12 @@ void grop_render(struct divnode *div) {
 	  ERRT_NONE || !str) break;
       if (rdhandle((void**)&fd,TYPE_FONTDESC,-1,list->param.text.fd).type != 
 	  ERRT_NONE || !fd) break;
+
       outtext(&clip,fd,x,y,list->param.text.col,str);
       break;
     case GROP_BITMAP:
-      if (rdhandle((void**)&bit,TYPE_BITMAP,-1,list->param.bitmap.bitmap).type != 
-	  ERRT_NONE || !bit) break;
+      if (rdhandle((void**)&bit,TYPE_BITMAP,-1,list->param.bitmap.bitmap)
+	  .type != ERRT_NONE || !bit) break;
       hwr_blit(&clip,list->param.bitmap.lgop,bit,0,0,NULL,x,y,w,h);
       break;
     case GROP_GRADIENT:
@@ -313,6 +314,7 @@ g_error grop_dim(struct gropnode **headpp) {
   e = g_malloc((void **) &n,sizeof(struct gropnode));
   if (e.type != ERRT_NONE) return e;
   n->type = GROP_DIM;
+  n->x = n->y = n->w = n->h = 0;
   grop_addnode(headpp,n);
   return sucess;
 }
@@ -343,6 +345,7 @@ g_error grop_slab(struct gropnode **headpp,
   n->x = x;
   n->y = y;
   n->w = w;
+  n->h = 1;
   n->param.c = c;
   grop_addnode(headpp,n);
   return sucess;
@@ -358,6 +361,7 @@ g_error grop_bar(struct gropnode **headpp,
   n->x = x;
   n->y = y;
   n->h = h;
+  n->w = 1;
   n->param.c = c;
   grop_addnode(headpp,n);
   return sucess;
@@ -372,6 +376,7 @@ g_error grop_text(struct gropnode **headpp,
   n->type = GROP_TEXT;
   n->x = x;
   n->y = y;
+  n->w = n->h = 0;
   n->param.text.string = str;
   n->param.text.fd = fd;
   n->param.text.col = col;
@@ -422,6 +427,7 @@ g_error grop_null(struct gropnode **headpp) {
   e = g_malloc((void **) &n,sizeof(struct gropnode));
   if (e.type != ERRT_NONE) return e;
   n->type = GROP_NULL;
+  n->x = n->y = n->w = n->h = 0;
   grop_addnode(headpp,n);
   return sucess;
 }
