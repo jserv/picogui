@@ -96,18 +96,16 @@ class AnnounceServer(LineReceiver):
 
         project = project.replace("-ports", "-src") # freebsd specific hack
 	if command == "Announce":
-            # if we are the first bot, we send to the main channels
-            if botID == 1:
-                # Now we'll try to send the message to #commits, #only-commits, #<project>, and #<project>-commits.
-                # No big deal if any of them fails becase we're not joined to that channel.
-                try:
-                    groups['only-commits'].sendText(irc_colors.boldify(project + ": ") + message)
-                except KeyError:
-                    pass
-                try:
-                    groups['commits'].sendText(irc_colors.boldify(project + ": ") + message)
-                except KeyError:
-                    pass
+            # Now we'll try to send the message to #commits, #only-commits, #<project>, and #<project>-commits.
+            # No big deal if any of them fails becase we're not joined to that channel.
+            try:
+                groups['only-commits'].sendText(irc_colors.boldify(project + ": ") + message)
+            except KeyError:
+                pass
+            try:
+                groups['commits'].sendText(irc_colors.boldify(project + ": ") + message)
+            except KeyError:
+                pass
                 
             try:
                 groups[project].sendText(message)
