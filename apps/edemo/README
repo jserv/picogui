@@ -1,0 +1,27 @@
+This is a little demo app for PicoGUI.
+
+The idea is stolen from pgdemo.py: parse the template pages in the
+"templates" directory and display them in a box widget.
+
+Furthermore there are some special widgets names which enable you to
+simply embed some action in the displayed page.
+
+So far I stole canvastst, chaos_fire, dialogdemo, menudemo, pterm, and
+themebar embedding them in the pages.
+
+Just try it out and look for the widgets named EDH* in the templates
+files. The list of names is in special.c.
+
+Before running it compile the themes and put some picogui application
+under the directory "apps". Also put some themes under the "*themes"
+directories:
+
+bgthemes     <- bg_*.th themes
+cursorthemes <- crsr_*.th themes
+fullthemes   <- aqua.th, nifty3d.th, ...
+miscthemes   <- mod_*.th themes
+
+It should be easy to study the code and extend it. I tried to keep it
+simple.
+ 
+Daniele Pizzoni <tsho@ascensit.com>, <auouo@tin.it>

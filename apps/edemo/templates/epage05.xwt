@@ -1,0 +1,29 @@
+<box side="all">
+
+	<label align="left" text="Menus" font="Helvetica:24:bold"/>
+
+	<box transparent="1">
+		<box transparent="1" sizemode="percent" size="5" side="left"/>
+		<box transparent="1" sizemode="percent" size="4" side="right"/>
+		<textbox readonly="1" text_src="data/menus.txt" side="all"/>
+	</box>
+
+	<box transparent="1" sizemode="pixel" size="15"/>
+
+	<box transparent="0" side="all">
+
+		<box transparent="1">
+			<label align="right" side="left" sizemode="percent" size="30">
+				 Sample menubar: 
+			</label>
+
+			<box transparent="0">
+				<box name="EDHMenu" transparent="0" />
+				<terminal/>
+			</box>
+
+		</box>
+	</box>
+
+</box>
+

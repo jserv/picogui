@@ -1,0 +1,87 @@
+<box side="all">
+
+	<label align="left" font="Helvetica:24:bold">Themes</label>
+
+	<box transparent="1">
+		<box transparent="1" sizemode="percent" size="5" side="left"/>
+		<box transparent="1" sizemode="percent" size="4" side="right"/>
+		<textbox readonly="1" text_src="data/themes.text" side="all"/>
+	</box>
+
+	<box transparent="1" sizemode="pixel" size="15"/>
+
+	<box transparent="1">
+	<box transparent="0">
+
+		<box transparent="1" side="bottom">
+			<box transparent="1">
+    		   	<button side="right" name="EDHThemeDefault" text="Reset Default theme" />
+			</box>
+		</box>
+
+
+	<box sizemode="percent" size="50" side="left" transparent="1">
+
+		<box transparent="1" sizemode="percent" size="50" >
+
+			<label align="right" side="left" sizemode="percent" size="30">
+				Full themes: 
+			</label>
+
+			<box>
+			   	<box name="EDHThemeList1" margin="0" />
+			</box>
+
+		</box>
+
+		<box transparent="1" sizemode="pixel" size="7"/>
+
+		<box transparent="1" sizemode="percent" size="100">
+
+			<label align="right" side="left" sizemode="percent" size="30">
+				Cursor themes: 
+			</label>
+
+			<box>
+		    	<box name="EDHThemeList2" margin="0"/>
+			</box>
+
+		</box>
+
+	</box>
+	
+	<box sizemode="percent" size="100" side="all" transparent="1">
+
+		<box transparent="1" sizemode="percent" size="50">
+
+			<label align="right" side="left" sizemode="percent" size="30">
+				 Misc themes: 
+			</label>
+
+			<box>
+		    	<box name="EDHThemeList3" margin="0" transparent="1"/>
+			</box>
+
+		</box>
+
+		<box transparent="1" sizemode="pixel" size="7"/>
+
+		<box transparent="1" sizemode="percent" size="100">
+
+			<label align="right" side="left" sizemode="percent" size="30">
+				 Background themes: 
+			</label>
+
+			<box>
+		    	<box name="EDHThemeList4" margin="0" transparent="1"/>
+			</box>
+
+		</box>
+
+
+	</box>
+
+
+	</box>
+	</box>
+</box>

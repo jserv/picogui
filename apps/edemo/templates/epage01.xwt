@@ -1,0 +1,90 @@
+<box side="all">
+
+	<label align="left" text="Widgets" font="Helvetica:24:bold"/>
+
+	<box transparent="1">
+		<box transparent="1" sizemode="percent" size="5" side="left"/>
+		<box transparent="1" sizemode="percent" size="4" side="right"/>
+		<textbox readonly="1" text="PicoGUI currently has 34 widgets" side="all"/>
+	</box>
+
+	<box side="all" transparent="1">
+		<tabpage text="Small widgets">
+
+		<box transparent="1">
+			<label align="right" side="left" sizemode="percent" size="30" text="Buttons in a toolbar: "/>
+	    <toolbar>
+            	<button text="Default"/>
+       		<button text="Disabled" disabled="1"/>
+               	<button text="Toggle" extdevents="toggle" />
+            </toolbar>
+         </box>	
+
+         <box transparent="1">
+            <label align="right" side="left" sizemode="percent" size="30" text="Field: "/>
+            <field text="You can type here"/>
+         </box>
+
+         <box transparent="1">
+            <label align="right" side="left" sizemode="percent" size="30" text="Horizontal indicator: "/>
+	    <box transparent="1" margin="0">
+                <toolbar side="left" sizemode="percent" size="30">
+                    <button name="EDHIndicatorDown" sizemode="percent" size="50" text="Down"/>
+                    <button name="EDHIndicatorUp" side="all" text="Up"/>
+                </toolbar>
+                <indicator side="all" name="EDHIndicatorBar" value="30"/>
+	    </box>
+         </box>
+
+      </tabpage>
+
+      <tabpage text="Big widgets">
+
+	<box sizemode="percent" size="60" side="left" transparent="1" margin="0">
+
+	    <box side="top" sizemode="percent" size="50">
+	        <label text="Textbox inside a scrollbox"/>
+			<box side="all">
+	    		<scrollbox margin="0">
+	        		<textbox text="You can type multiple lines here" side="all" />
+                </scrollbox>
+			</box>
+	    </box>
+
+		<box side="bottom" sizemode="percent" size="100" margin="0">
+    	   	<label side="top">Canvas widget</label>
+			<box side="all">
+				<canvas  name="EDHCanvas1" sizemode="pixel" size="900"/>
+			</box>
+		</box>
+	</box>
+
+	<box>
+	     <box sizemode="percent" size="70">
+	         <label text="Terminal widget (restricted shell)"/>
+	         <terminal name="EDHTerminal" side="left"/>
+	     </box>
+
+	    <box side="all">
+                <label text="Bitmap inside a scrollbox"/>
+	        <box>
+	        <scrollbox transparent="1">
+                    <label bitmap_src="../data/dustpuppy.pnm" />
+                </scrollbox>
+	        </box>
+            </box>
+
+<!-- very slow!
+             <box>
+		 <label>Canvas widget</label>
+                 <canvas  name="EDHCanvas2"/>
+             </box>
+-->
+
+        </box>
+
+
+      </tabpage>
+
+   </box>
+</box>

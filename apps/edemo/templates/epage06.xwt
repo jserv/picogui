@@ -1,0 +1,44 @@
+<box side="all">
+
+	<label align="left" font="Helvetica:24:bold">Window Management</label>
+
+	<box transparent="1">
+		<box transparent="1" sizemode="percent" size="5" side="left"/>
+		<box transparent="1" sizemode="percent" size="4" side="right"/>
+		<textbox readonly="1" text_src="data/win.txt" side="all"/>
+	</box>
+
+	<box transparent="1" sizemode="pixel" size="15"/>
+
+	<box transparent="1" side="all">
+	<box transparent="0" side="all">
+
+		<box transparent="1" side="bottom">
+			<box transparent="1">
+    		   	<button name="EDHAppbarKillall" side="right" text="Kill all" />
+			</box>
+		</box>
+
+
+	<box sizemode="percent" size="100" transparent="1">
+
+		<box transparent="1" >
+
+			<label align="right" side="left" sizemode="percent" size="30">
+				Sample Applications: 
+			</label>
+
+			<box>
+			   	<box name="EDHAppbar" margin="0" />
+			</box>
+
+		</box>
+
+
+	</box>
+
+
+
+	</box>
+	</box>
+</box>

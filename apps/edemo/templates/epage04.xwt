@@ -1,0 +1,164 @@
+<box side="all">
+
+    <label align="left" text="Fonts" font="Helvetica:24:bold"/>
+
+	<box transparent="1">
+		<box transparent="1" sizemode="percent" size="5" side="left"/>
+		<box transparent="1" sizemode="percent" size="4" side="right"/>
+		<textbox readonly="1" side="all" text="PicoGUI has good bitmap font support"/>
+	</box>
+
+	<box transparent="1" sizemode="pixel" size="15"/>
+
+    <box side="all" transparent="1" margin="0">
+		<tabpage text="Normal">
+
+		    <label align="left" font="Clean:6" text="Clean 6"/>
+	    	<label align="left" font="Clean:12" text="Clean 12"/>
+
+		    <label align="left" font="Console:8" text="Console 8"/>
+
+		    <label align="left" font="Courier:12" text="Courier 12"/>
+
+		    <label align="left" font="Helvetica:8" text="Helvetica 8"/>
+		    <label align="left" font="Helvetica:10" text="Helvetica 10"/>
+	    	<label align="left" font="Helvetica:12" text="Helvetica 12"/>
+		    <label align="left" font="Helvetica:14" text="Helvetica 14"/>
+		    <label align="left" font="Helvetica:18" text="Helvetica 18"/>
+	    	<label align="left" font="Helvetica:24" text="Helvetica 24"/>
+
+		    <label align="left" font="Lucida:10" text="Lucida 10"/>
+
+		    <label align="left" font="Times:10" text="Times 10"/>
+
+	    	<label align="left" font="Utopia:25" text="Utopia 25"/>
+
+		</tabpage>
+
+		<tabpage text="Bold">
+
+		    <label align="left" font="Clean:6:bold" text="Clean 6 bold"/>
+	    	<label align="left" font="Clean:12:bold" text="Clean 12 bold"/>
+
+		    <label align="left" font="Console:8:bold" text="Console 8 bold"/>
+
+		    <label align="left" font="Courier:12:bold" text="Courier 12 bold"/>
+
+		    <label align="left" font="Helvetica:8:bold" text="Helvetica 8 bold"/>
+		    <label align="left" font="Helvetica:10:bold" text="Helvetica 10 bold"/>
+	    	<label align="left" font="Helvetica:12:bold" text="Helvetica 12 bold"/>
+		    <label align="left" font="Helvetica:14:bold" text="Helvetica 14 bold"/>
+		    <label align="left" font="Helvetica:18:bold" text="Helvetica 18 bold"/>
+	    	<label align="left" font="Helvetica:24:bold" text="Helvetica 24 bold"/>
+
+		    <label align="left" font="Lucida:10:bold" text="Lucida 10 bold"/>
+
+		    <label align="left" font="Times:10:bold" text="Times 10 bold"/>
+
+	    	<label align="left" font="Utopia:25:bold" text="Utopia 25 bold"/>
+
+		</tabpage>
+
+		<tabpage text="Italic">
+
+		    <label align="left" font="Clean:6:italic" text="Clean 6 italic"/>
+	    	<label align="left" font="Clean:12:italic" text="Clean 12 italic"/>
+
+		    <label align="left" font="Console:8:italic" text="Console 8 italic"/>
+
+		    <label align="left" font="Courier:12:italic" text="Courier 12 italic"/>
+
+		    <label align="left" font="Helvetica:8:italic" text="Helvetica 8 italic"/>
+		    <label align="left" font="Helvetica:10:italic" text="Helvetica 10 italic"/>
+	    	<label align="left" font="Helvetica:12:italic" text="Helvetica 12 italic"/>
+		    <label align="left" font="Helvetica:14:italic" text="Helvetica 14 italic"/>
+		    <label align="left" font="Helvetica:18:italic" text="Helvetica 18 italic"/>
+	    	<label align="left" font="Helvetica:24:italic" text="Helvetica 24 italic"/>
+
+		    <label align="left" font="Lucida:10:italic" text="Lucida 10 italic"/>
+
+		    <label align="left" font="Times:10:italic" text="Times 10 italic"/>
+
+	    	<label align="left" font="Utopia:25:italic" text="Utopia 25 italic"/>
+
+		</tabpage>
+
+		<tabpage text="Double Italic">
+
+		    <label align="left" font="Clean:6:italic2" text="Clean 6 italic2"/>
+	    	<label align="left" font="Clean:12:italic2" text="Clean 12 italic2"/>
+
+		    <label align="left" font="Console:8:italic2" text="Console 8 italic2"/>
+
+		    <label align="left" font="Courier:12:italic2" text="Courier 12 italic2"/>
+
+		    <label align="left" font="Helvetica:8:italic2" text="Helvetica 8 italic2"/>
+		    <label align="left" font="Helvetica:10:italic2" text="Helvetica 10 italic2"/>
+	    	<label align="left" font="Helvetica:12:italic2" text="Helvetica 12 italic2"/>
+		    <label align="left" font="Helvetica:14:italic2" text="Helvetica 14 italic2"/>
+		    <label align="left" font="Helvetica:18:italic2" text="Helvetica 18 italic2"/>
+	    	<label align="left" font="Helvetica:24:italic2" text="Helvetica 24 italic2"/>
+
+		    <label align="left" font="Lucida:10:italic2" text="Lucida 10 italic2"/>
+
+		    <label align="left" font="Times:10:italic2" text="Times 10 italic2"/>
+
+	    	<label align="left" font="Utopia:25:italic2" text="Utopia 25 italic2"/>
+
+		</tabpage>
+
+
+		<tabpage text="Underline">
+
+		    <label align="left" font="Clean:6:underline" text="Clean 6 underline"/>
+	    	<label align="left" font="Clean:12:underline" text="Clean 12 underline"/>
+
+		    <label align="left" font="Console:8:underline" text="Console 8 underline"/>
+
+		    <label align="left" font="Courier:12:underline" text="Courier 12 underline"/>
+
+		    <label align="left" font="Helvetica:8:underline" text="Helvetica 8 underline"/>
+		    <label align="left" font="Helvetica:10:underline" text="Helvetica 10 underline"/>
+	    	<label align="left" font="Helvetica:12:underline" text="Helvetica 12 underline"/>
+		    <label align="left" font="Helvetica:14:underline" text="Helvetica 14 underline"/>
+		    <label align="left" font="Helvetica:18:underline" text="Helvetica 18 underline"/>
+	    	<label align="left" font="Helvetica:24:underline" text="Helvetica 24 underline"/>
+
+		    <label align="left" font="Lucida:10:underline" text="Lucida 10 underline"/>
+
+		    <label align="left" font="Times:10:underline" text="Times 10 underline"/>
+
+	    	<label align="left" font="Utopia:25:underline" text="Utopia 25 underline"/>
+
+		</tabpage>
+
+		<tabpage text="Strikeout">
+
+		    <label align="left" font="Clean:6:strikeout" text="Clean 6 strikeout"/>
+	    	<label align="left" font="Clean:12:strikeout" text="Clean 12 strikeout"/>
+
+		    <label align="left" font="Console:8:strikeout" text="Console 8 strikeout"/>
+
+		    <label align="left" font="Courier:12:strikeout" text="Courier 12 strikeout"/>
+
+		    <label align="left" font="Helvetica:8:strikeout" text="Helvetica 8 strikeout"/>
+		    <label align="left" font="Helvetica:10:strikeout" text="Helvetica 10 strikeout"/>
+	    	<label align="left" font="Helvetica:12:strikeout" text="Helvetica 12 strikeout"/>
+		    <label align="left" font="Helvetica:14:strikeout" text="Helvetica 14 strikeout"/>
+		    <label align="left" font="Helvetica:18:strikeout" text="Helvetica 18 strikeout"/>
+	    	<label align="left" font="Helvetica:24:strikeout" text="Helvetica 24 strikeout"/>
+
+		    <label align="left" font="Lucida:10:strikeout" text="Lucida 10 strikeout"/>
+
+		    <label align="left" font="Times:10:strikeout" text="Times 10 strikeout"/>
+
+	    	<label align="left" font="Utopia:25:strikeout" text="Utopia 25 strikeout"/>
+
+		</tabpage>
+
+
+
+	</box>
+
+</box>
+

@@ -1,0 +1,18 @@
+<!-- edemo main xml template -->
+
+<application text="PicoGUI Demo" name="EDemo">
+
+    <!-- the bottom navigation toolbar -->
+    <toolbar name="EDNavBar" side="bottom">
+        <button name="EDNext"  side="right" text="Next"/>
+	<button name="EDPrev"  side="right" text="Previous"/>
+        <label  name="EDLabel" side="all"   text="Page %02d of %02d" font=":0:bold"/>
+    </toolbar>
+
+    <!-- fancy side decoration -->
+    <label side="left" sizemode="percent" size="20" bitmap_src="../data/kscreensaver.png"/>
+
+    <!-- here go the pages -->
+    <box name="EDBox" side="all" transparent="1" margin="0" />
+
+</application>

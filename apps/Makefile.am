@@ -9,7 +9,7 @@ else
 SUBDIRS = pgboard pterm fieldtest vrcalc omnibar pgtuxphone blackout gridgame \
 	  battleship galaxy imgview dialogdemo scribble canvastst bouncyball \
 	  atomicnav tpcal pgl hello picomail pgmon wclock pqw canvastiles \
-	  connectfour textedit msgdemo
+	  connectfour textedit msgdemo edemo
 
 endif
 
