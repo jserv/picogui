@@ -135,6 +135,7 @@ class AnnounceClient(protocol.Protocol):
                 # This limits the length of the maximum message, mainly to prevent DOS'ing the bot too badly
                 for l in lines:
                     self.transport.write(l)
+                    time.sleep(1) # sleep for one second between each line
 
             # Send allowed control commands
             elif subjectFields[0] in allowedControlCommands:
