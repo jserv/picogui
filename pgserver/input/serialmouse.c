@@ -1,4 +1,4 @@
-/* $Id: serialmouse.c,v 1.5 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: serialmouse.c,v 1.6 2002/01/08 14:37:30 micahjd Exp $
  *
  * serialmouse.c - input driver for serial mice.
  *
@@ -89,16 +89,27 @@ struct termios options;
 int serialmouse_fd_activate(int fd) {
   u8 buttons;
   s8 dx,dy;
-  u8 packet[3];
+  static u8 packet[3];
+  static int pos;
   s16 cursorx,cursory;
 
   if (fd != mouse_fd)
     return 0;
 
   /* Read a correctly-aligned mouse packet. If the first byte isn't 0x40,
-   * it isn't correctly aligned. The mouse packet is 4 bytes long.
+   * it isn't correctly aligned. The mouse packet is 3 or 4 bytes long.
+   * On fast machines, we can't read a whole packet at once, so we have
+   * to maintain the state in a static variable.
    */
   
+  if (read(mouse_fd,packet+pos,1) != 1)
+    return 1;
+  if (!(packet[0] & 0x40))
+    return 1;
+  if (pos++ < 2)
+    return 1;
+  pos = 0;
+   
   if (!read(mouse_fd,packet,1))
     return 1;
   if (!(packet[0] & 0x40))
