@@ -1,4 +1,4 @@
-/* $Id: lcdmono.ths,v 1.15 2002/01/15 07:45:42 micahjd Exp $
+/* $Id: lcdmono.ths,v 1.16 2002/02/02 17:09:54 lonetech Exp $
  *
  * Monochrome theme for LCDs. Rounded buttons and dialogs, a background
  * that looks good on a handheld, and handheld-friendly key mappings
@@ -7,6 +7,8 @@
  *
  * Micah Dowty
  */
+
+object terminal font = Font(NULL, 0, PG_FSTYLE_FIXED);
 
 object default {
   name = "LCD Classic (Monochrome) v1.01";
