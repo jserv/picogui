@@ -1,4 +1,4 @@
-/* $Id: pseudo3d.ths,v 1.2 2000/11/11 09:36:11 micahjd Exp $
+/* $Id: pseudo3d.ths,v 1.3 2000/11/11 16:54:30 micahjd Exp $
  *
  * Theme with simple (and boring?) grey 3d-ish hilights
  * But hey, it works on a 16-color display!
@@ -79,20 +79,42 @@ object button {
   width = 20;
 }
 
-/* Well, but not for panelbuttons */
+/* Special stuff for panelbuttons */
 object base.panelbtn {
   width = Copy(panelbar::width);
   height = Copy(panelbar::width);
   spacing = 0;
 }
-
-/* Separate the buttons a bit */
-object closebtn side = PG_S_LEFT;
-object rotatebtn side = PG_S_RIGHT;
-object zoombtn side = PG_S_RIGHT;
+object closebtn  {
+  widgetbitmap = LoadBitmap("data/tiny_x.pnm");
+  side = PG_S_LEFT;
+}
+object rotatebtn {
+  widgetbitmap = LoadBitmap("data/tiny_arrow.pnm");
+  side = PG_S_RIGHT;
+}
+object zoombtn {
+  widgetbitmap = LoadBitmap("data/tiny_expand.pnm");
+  side = PG_S_RIGHT;
+}
 
 /* Button click effects! */
 object button.on {
+  hilightcolor = Copy(button::shadowcolor);
+  shadowcolor = Copy(button::hilightcolor);
+  offset = 1;
+}
+object closebtn.on {
+  hilightcolor = Copy(button::shadowcolor);
+  shadowcolor = Copy(button::hilightcolor);
+  offset = 1;
+}
+object zoombtn.on {
+  hilightcolor = Copy(button::shadowcolor);
+  shadowcolor = Copy(button::hilightcolor);
+  offset = 1;
+}
+object rotatebtn.on {
   hilightcolor = Copy(button::shadowcolor);
   shadowcolor = Copy(button::hilightcolor);
   offset = 1;
@@ -124,6 +146,7 @@ object background bgcolor = 0x008080;
 object menuitem {
   bgfill = Copy(default::bgfill);
   spacing = 0;
+  align = PG_A_LEFT;
 }
 object menuitem.hilight {
   bgcolor = Copy(menuitem::fgcolor);
