@@ -110,7 +110,7 @@ g_error paragraph_new(struct paragraph **par, struct divnode *div) {
   /* Make an empty string 
    * FIXME: This should start with ASCII and move up to UTF8 or UCS-16 when necessary, to improve speed
    */
-  e = pgstring_new(&(*par)->content,PGSTR_ENCODE_UTF8,0,NULL);
+  e = pgstring_new(&(*par)->content,PGSTR_ENCODE_ASCII,0,NULL);
   errorcheck;
 
   /* Create the first line */ 
