@@ -1,6 +1,6 @@
-/* $Id: svga.c,v 1.19 2000/12/17 05:53:50 micahjd Exp $
+/* $Id: svgagl.c,v 1.1 2000/12/31 22:13:03 micahjd Exp $
  *
- * svga.c - video driver for (S)VGA cards, via vgagl and svgalib
+ * svgagl.c - video driver for (S)VGA cards, via vgagl and svgalib
  * 
  * This driver supports 8,16,24, and 32 bit color at any resolution.
  *
@@ -27,7 +27,7 @@
  * 
  */
 
-#ifdef DRIVER_SVGA
+#ifdef DRIVER_SVGAGL
 
 #include <pgserver/video.h>
 #include <pgserver/input.h>
@@ -37,16 +37,16 @@
 
 // #define DOUBLEBUFFER
 
-GraphicsContext *svga_virtual,*svga_physical;
+GraphicsContext *svgagl_virtual,*svgagl_physical;
 
 /* Scanline buffer for LGOP blitting */
-unsigned char *svga_buf;
+unsigned char *svgagl_buf;
 
 /******************************************** Implementations */
 
 #define dist(a,b) (((a)>(b))?((a)-(b)):((b)-(a)))
 
-int svga_closest_mode(int xres,int yres,int bpp) {
+int svgagl_closest_mode(int xres,int yres,int bpp) {
    int i,x,xbpp;
    int best = -1;
    unsigned int best_xresd = -1;
@@ -84,7 +84,7 @@ int svga_closest_mode(int xres,int yres,int bpp) {
    return best;
 }
 
-g_error svga_init(int xres,int yres,int bpp,unsigned long flags) {
+g_error svgagl_init(int xres,int yres,int bpp,unsigned long flags) {
   g_error e;
   int mode;
    
@@ -97,7 +97,7 @@ g_error svga_init(int xres,int yres,int bpp,unsigned long flags) {
   vga_init();
 
   /* Find a good mode */
-  mode = svga_closest_mode(xres,yres,bpp);
+  mode = svgagl_closest_mode(xres,yres,bpp);
    
   /* Load a main input driver. Do this before setting
    * video mode, so that the mouse is initialized
@@ -108,13 +108,13 @@ g_error svga_init(int xres,int yres,int bpp,unsigned long flags) {
 
   vga_setmode(mode);
   gl_setcontextvga(mode);
-  svga_physical = gl_allocatecontext();
-  gl_getcontext(svga_physical);
+  svgagl_physical = gl_allocatecontext();
+  gl_getcontext(svgagl_physical);
 
 #ifdef DOUBLEBUFFER
   gl_setcontextvgavirtual(mode);
-  svga_virtual = gl_allocatecontext();
-  gl_getcontext(svga_virtual);
+  svgagl_virtual = gl_allocatecontext();
+  gl_getcontext(svgagl_virtual);
 #endif
 
   gl_setrgbpalette();
@@ -127,51 +127,51 @@ g_error svga_init(int xres,int yres,int bpp,unsigned long flags) {
   vid->bpp  = BITSPERPIXEL;
   
   /* Allocate scanline buffer */
-   e = g_malloc((void**)&svga_buf,WIDTH*BYTESPERPIXEL);
+   e = g_malloc((void**)&svgagl_buf,WIDTH*BYTESPERPIXEL);
   errorcheck;
 
   return sucess;
 }
 
-void svga_close(void) {
+void svgagl_close(void) {
   /* Take out input driver */
   unload_inlib(inlib_main);
 
-  g_free(svga_buf);
+  g_free(svgagl_buf);
   gl_clearscreen(0);
   vga_setmode(0);
 }
 
-void svga_pixel(int x,int y,hwrcolor c) {
+void svgagl_pixel(int x,int y,hwrcolor c) {
 #ifdef DOUBLEBUFFER
   add_updarea(x,y,1,1);
 #endif
   gl_setpixel(x,y,c);
 }
 
-hwrcolor svga_getpixel(int x,int y) {
+hwrcolor svgagl_getpixel(int x,int y) {
   return gl_getpixel(x,y);
 }
 
-void svga_update(void) {
+void svgagl_update(void) {
 #ifdef DOUBLEBUFFER
-  gl_setcontext(svga_physical);
+  gl_setcontext(svgagl_physical);
   gl_disableclipping();
-  gl_copyboxfromcontext(svga_virtual,upd_x,upd_y,upd_w,upd_h,upd_x,upd_y);
-  gl_setcontext(svga_virtual);
+  gl_copyboxfromcontext(svgagl_virtual,upd_x,upd_y,upd_w,upd_h,upd_x,upd_y);
+  gl_setcontext(svgagl_virtual);
   upd_x = upd_y = upd_w = upd_h = 0;
 #endif
 }
 
-void svga_blit(struct stdbitmap *src,int src_x,int src_y,
+void svgagl_blit(struct stdbitmap *src,int src_x,int src_y,
 		 int dest_x,int dest_y,
 		 int w,int h,int lgop) {
   
   if (!src) {
     /* Screen-to-screen copy */
     for (;h;h--,dest_y++,src_y++) {
-      gl_getbox(src_x,src_y,w,1,svga_buf);
-      gl_putbox(dest_x,dest_y,w,1,svga_buf);
+      gl_getbox(src_x,src_y,w,1,svgagl_buf);
+      gl_putbox(dest_x,dest_y,w,1,svgagl_buf);
     }
     return;
   }
@@ -181,7 +181,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
     /* Do a tiled blit */
     for (i=0;i<w;i+=src->w)
       for (j=0;j<h;j+=src->h)
-        svga_blit(src,src_x,src_y,dest_x+i,dest_y+j,src->w,src->h,lgop);
+        svgagl_blit(src,src_x,src_y,dest_x+i,dest_y+j,src->w,src->h,lgop);
     return;
   }
 
@@ -204,28 +204,28 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
       
     case PG_LGOP_OR:
       for (;h;h--,dest_y++,s+=lo) {
-        gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
+        gl_getbox(dest_x,dest_y,w,1,b=svgagl_buf);
         for (iw=bytew;iw;iw--)
           *(b++) |= *(s++);
-        gl_putbox(dest_x,dest_y,w,1,svga_buf);
+        gl_putbox(dest_x,dest_y,w,1,svgagl_buf);
       }
       break;
       
     case PG_LGOP_AND:
       for (;h;h--,dest_y++,s+=lo) {
-        gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
+        gl_getbox(dest_x,dest_y,w,1,b=svgagl_buf);
         for (iw=bytew;iw;iw--)
           *(b++) &= *(s++);
-        gl_putbox(dest_x,dest_y,w,1,svga_buf);
+        gl_putbox(dest_x,dest_y,w,1,svgagl_buf);
       }
       break;
       
     case PG_LGOP_XOR:
       for (;h;h--,dest_y++,s+=lo) {
-        gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
+        gl_getbox(dest_x,dest_y,w,1,b=svgagl_buf);
         for (iw=bytew;iw;iw--)
           *(b++) ^= *(s++);
-        gl_putbox(dest_x,dest_y,w,1,svga_buf);
+        gl_putbox(dest_x,dest_y,w,1,svgagl_buf);
       }
       break;
       
@@ -233,34 +233,34 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
       for (;h;h--,dest_y++,s+=lo) {
         for (iw=bytew;iw;iw--)
           *(b++) = *(s++);
-        gl_putbox(dest_x,dest_y,w,1,svga_buf);
+        gl_putbox(dest_x,dest_y,w,1,svgagl_buf);
       }
       break;
       
     case PG_LGOP_INVERT_OR:
       for (;h;h--,dest_y++,s+=lo) {
-        gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
+        gl_getbox(dest_x,dest_y,w,1,b=svgagl_buf);
         for (iw=bytew;iw;iw--)
           *(b++) |= *(s++);
-        gl_putbox(dest_x,dest_y,w,1,svga_buf);
+        gl_putbox(dest_x,dest_y,w,1,svgagl_buf);
       }
       break;
       
     case PG_LGOP_INVERT_AND:
       for (;h;h--,dest_y++,s+=lo) {
-        gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
+        gl_getbox(dest_x,dest_y,w,1,b=svgagl_buf);
         for (iw=bytew;iw;iw--)
           *(b++) &= *(s++);
-        gl_putbox(dest_x,dest_y,w,1,svga_buf);
+        gl_putbox(dest_x,dest_y,w,1,svgagl_buf);
       }
       break;
       
     case PG_LGOP_INVERT_XOR:
       for (;h;h--,dest_y++,s+=lo) {
-        gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
+        gl_getbox(dest_x,dest_y,w,1,b=svgagl_buf);
         for (iw=bytew;iw;iw--)
           *(b++) ^= *(s++);
-        gl_putbox(dest_x,dest_y,w,1,svga_buf);
+        gl_putbox(dest_x,dest_y,w,1,svgagl_buf);
       }
       break;
     }
@@ -268,7 +268,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
   }
 }
 
-void svga_unblit(int src_x,int src_y,
+void svgagl_unblit(int src_x,int src_y,
 		 struct stdbitmap *dest,int dest_x,int dest_y,
 		 int w,int h) {
 
@@ -279,18 +279,18 @@ void svga_unblit(int src_x,int src_y,
     gl_getbox(src_x,src_y,dest->w,dest->h,dest->bits);
 }
 
-void svga_rect(int x,int y,int w,int h,hwrcolor c) {
+void svgagl_rect(int x,int y,int w,int h,hwrcolor c) {
 #ifdef DOUBLEBUFFER
   add_updarea(x,y,w,h);
 #endif
   gl_fillbox(x,y,w,h,c);
 }
 
-hwrcolor svga_color_pgtohwr(pgcolor c) {
+hwrcolor svgagl_color_pgtohwr(pgcolor c) {
   return gl_rgbcolor(getred(c),getgreen(c),getblue(c));
 }
 
-void svga_charblit(unsigned char *chardat,int dest_x,
+void svgagl_charblit(unsigned char *chardat,int dest_x,
 		   int dest_y,int w,int h,int lines,
 		   hwrcolor c) {
   int bw = w;
@@ -333,22 +333,22 @@ void svga_charblit(unsigned char *chardat,int dest_x,
 /******************************************** Driver registration */
 
 /* This func. is passed to registervid */
-g_error svga_regfunc(struct vidlib *v) {
+g_error svgagl_regfunc(struct vidlib *v) {
   setvbl_default(v);
 
-  v->init = &svga_init;
-  v->close = &svga_close;
-  v->pixel = &svga_pixel;
-  v->getpixel = &svga_getpixel;
-  v->update = &svga_update;
-  v->blit = &svga_blit;
-  v->unblit = &svga_unblit;
-  v->rect = &svga_rect;
-  v->color_pgtohwr = &svga_color_pgtohwr;
-  v->charblit = &svga_charblit;
+  v->init = &svgagl_init;
+  v->close = &svgagl_close;
+  v->pixel = &svgagl_pixel;
+  v->getpixel = &svgagl_getpixel;
+  v->update = &svgagl_update;
+  v->blit = &svgagl_blit;
+  v->unblit = &svgagl_unblit;
+  v->rect = &svgagl_rect;
+  v->color_pgtohwr = &svgagl_color_pgtohwr;
+  v->charblit = &svgagl_charblit;
 
   return sucess;
 }
 
-#endif /* DRIVER_SVGA */
+#endif /* DRIVER_SVGAGL */
 /* The End */
