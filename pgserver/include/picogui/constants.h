@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.144 2002/05/22 10:01:20 micahjd Exp $
+/* $Id: constants.h,v 1.145 2002/06/12 14:34:05 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -995,6 +995,13 @@ typedef unsigned long pghandle;
 #define PG_NWE_BGCLICK     0x120D /* The user clicked the background widget */
 #define PG_NWE_PNTR_RAW    0x1101 /* Raw coordinates, for tpcal or games */
 #define PG_NWE_CALIB_PENPOS 0x1301 /* Raw 32-bit coordinates, for tpcal */
+#define PG_NWE_THEME_INSERTED 0x1001  /* A theme has been inserted into the theme system, 
+				       * the parameter is the handle of that theme */
+#define PG_NWE_THEME_REMOVED  0x1002  /* A theme has been removed the theme system, 
+				       * the parameter is the handle of that theme.
+				       * (Note that the handle will be invalid now, but it is
+				       * provided for comparison if needed.) */
+
 
 /* 'Triggers' are the notation used to describe events passing between input drivers
  * and widgets. These constants are used in input filters, and in specifying trigger masks

@@ -1,4 +1,4 @@
-/* $Id: eventq.c,v 1.21 2002/04/15 02:40:31 micahjd Exp $
+/* $Id: eventq.c,v 1.22 2002/06/12 14:34:05 micahjd Exp $
  *
  * eventq.c - This implements the post_event function that the widgets
  *            use to send events to the client.  It stores these in a
@@ -166,11 +166,15 @@ int check_event(int owner) {
   return cb->in - cb->out; 
 }
 
+/* Post an event to every client */
+void post_event_global(int event, struct widget *from, s32 param, char *data) {
+  struct conbuf *cb;
+  
+  for (cb=conbufs;cb;cb=cb->next)
+    post_event(event,from,param,cb->owner,data);
+}
+
 /* The End */
-
-
-
-
 
 
 

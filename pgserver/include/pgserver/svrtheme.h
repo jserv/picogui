@@ -1,4 +1,4 @@
-/* $Id: svrtheme.h,v 1.11 2002/03/26 02:33:41 instinc Exp $
+/* $Id: svrtheme.h,v 1.12 2002/06/12 14:34:05 micahjd Exp $
  * 
  * svrtheme.h - functions and data structures for themes, used
  *              only in the server
@@ -44,6 +44,9 @@ struct pgmemtheme {
 
   /* Immediately following this header is an array of theme objects */
   unsigned short num_thobj;  /* Number of objects in the array */
+
+  /* The handle the theme was assigned on loading */
+  handle h;
 };
 
 /* Macro for a theme's thobj list */

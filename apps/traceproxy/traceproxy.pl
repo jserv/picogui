@@ -48,13 +48,17 @@
 	      0x40B,'kbd_keyup',
 	      0x40C,'kbd_keydown',
 	      0x301,'appmsg',
+	      0x140A,'nwe_kbd_char',
 	      0x140B,'nwe_kbd_keyup',
 	      0x140C,'nwe_kbd_keyup',
 	      0x1209,'nwe_pntr_move',
 	      0x1205,'nwe_pntr_up',
 	      0x1204,'nwe_pntr_down',
 	      0x120D,'nwe_bgclick',
-	      0x1101,'nwe_pntr_raw');
+	      0x1101,'nwe_pntr_raw',
+	      0x1301,'nwe_calib_penpos',
+	      0x1001,'nwe_theme_inserted',
+	      0x1002,'nwe_theme_removed');
 
 
 if (!$ARGV[0]) {
