@@ -121,7 +121,7 @@ void notmove(struct board *it, int param)
 #endif
 
   /* try for a random good spot 100 times */
-  while(tester != 100)
+  while(tester != 20)
   {
     spot = rand() % 7;
     if(paramcheck(param,spot) == -1)

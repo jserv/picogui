@@ -33,13 +33,6 @@
 
 void ai5(struct board *it);
 
-int gentrap(struct board *it);
-int gentrapwin(struct board *it);
-int gentraplose(struct board *it);
-
-int spotwin(struct board *it, int x, int y, int player);
-int gmask(struct board *it, int maskx, int masky, int x, int y);
-int maskout(int mask, int val);
 void prandmove(struct board *it);
 
 #endif /* __AI5_H__ */

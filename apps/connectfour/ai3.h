@@ -29,6 +29,7 @@
 #include "connectfour.h"
 
 void ai3(struct board *it);
+
 int nextmovelose(struct board *it,int param);
 void notmove(struct board *it, int param);
 int paramcheck(int param, int test);
