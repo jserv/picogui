@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.47 2002/10/24 03:00:52 micahjd Exp $
+/* $Id: pgmain.c,v 1.48 2002/10/27 19:02:56 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -780,7 +780,7 @@ void request_quit(void) {
 g_error reload_initial_themes(void) {
   /* If we're still initializing, don't need to do this */
   if (in_init)
-    return;
+    return success;
 
   return load_themefile_list(themefiles);
 }
