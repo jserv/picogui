@@ -255,7 +255,6 @@ def SConscript(*ls, **kw):
                     # where the SConstruct and SConscript files might be
                     # in different Repositories.  For now, cross that
                     # bridge when someone comes to it.
-                    print f
                     ldir = default_fs.Dir(f.dir.get_path(sd))
                     try:
                         default_fs.chdir(ldir, change_os_dir=sconscript_chdir)
