@@ -1,3 +1,49 @@
+---- Tuesday, January 30
+
+I was just taking a look through the Wabasoft web site. Unfortunately, the
+iMacs here have no floppy disks so I have to wait till I get home to peruse
+the source code, but this is looking very cool. Looks like there will be
+three methods of developing client programs for PicoGUI
+
+1. C, using the cli_C client library
+2. Java, using the WabaVM and a Waba version of the native PicoGUI client API
+3. Java, using the WabaVM and an emulation of waba's UI classes
+
+Since the Waba classes have sockets it would be possible to write the entire
+client lib in Java, but it's probably worth adding code to the VM itself to
+speed it all up. Option 1 gives the best performance and flexibility but
+limited portability, option 2 gives good portability (any platform running
+PicoGUI) and flexibility but limits you to apps made specifically for
+PicoGUI, and option 3 limits flexibility somewhat but lets you run apps
+designed for the Palm or Windows CE devices too! This is pretty neat!
+
+In fact, if all clients were written in Java and some sort of multitasking
+could be added to the VM itself, it would indeed by _possible_ to integrate
+Waba and pgserver into one binary and go without an operating system at
+all... replacing ucLinux with a bare-bones filesystem and memory manager.
+This seems closer to what the Kaffe and PocketLinux projects are working on,
+but this would run on CPUs less than 75mhz ;-)
+
+But, of course, that's an extreme. Though it is possible...
+
+Now working on fixing that annoying "disappearing terminal" bug. Oddly
+enough, seems to work right when debugging is on :)
+It's not specifically a PicoGUI bug, it's an IPC thing. The child process is
+dying before it sucessfully exec()'s the shell.
+
+Ah... With the clean6 font I added yesterday I can get 125x75 on my laptop's
+640x480 screen!
+
+Fixed the terminal. Root cause of it all was I was using the return value of
+read() to determine when the shell exits instead of using SIGCHLD like I'm
+supposed to. Also fixed a bug in the resizing. (both client and server side)
+
+Terminal still needs command line switches to change font, or run an
+alternate program.
+
+Added the above mentioned command line options, plus one to pause on exit
+(ignore SIGCHLD)
+
 ---- Monday, January 29
 
 Yay! I found the handle bug! After adding tons of debuggative cruft to

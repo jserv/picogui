@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.17 2001/01/26 09:00:08 micahjd Exp $
+/* $Id: terminal.c,v 1.18 2001/01/31 03:54:16 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -220,9 +220,6 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
       DATA->bufferw = neww;
       DATA->bufferh = newh;
       DATA->buffersize = newbuffer_size;
-
-      /* Notify the application */
-      post_event(PG_WE_RESIZE,self,(neww << 16) | newh,0,NULL);
     }
   }
 
@@ -266,6 +263,9 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
   DATA->inc = c->current;
   DATA->x = c->x;
   DATA->y = c->y;
+
+  /* Notify the application */
+  post_event(PG_WE_RESIZE,self,(neww << 16) | newh,0,NULL);
 }
 
 g_error terminal_install(struct widget *self) {

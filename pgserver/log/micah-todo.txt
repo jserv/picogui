@@ -1,34 +1,66 @@
 PicoGUI Todo List
 -------------------------------
 
+-- ucLinux
+
 ucLinux/m68k port
 
-gropnode coordinate systems
+Get WabaVM code, (http://www.wabasoft.com/download4.html) figure out how to
+write a PicoGUI client library
+Start with porting client library into the Waba VM, write class libraries to
+emulate waba.fx and waba.ui using PicoGUI.
+This gives a developer three choices:
+ - C and native PicoGUI API
+ - Java and native PicoGUI API
+ - Java and Waba compatibility API
+
 speedup options: pointers vs handles. etc
 
+-- development
+
+A good configuration system a la 'make menuconfig'
+
+demo disk
+
+-- graphics
+
+gropnode coordinate systems
+
 Fix svgagl video driver
+
 Eliminate old sdl driver
+
 Other VBLs
+
 Fix svgalib ctrl-C and other bucky bits
 
-Finish terminal widget: vt100, optimization
+Finish terminal widget: vt100, smarter incremental updates
 terminal theme support
 
-abastract comm interface: TCP/IP, unix sockets, SHM, signals...
+compressed bitmaps, more bitmap formats
 
-compressed bitmaps
 gropheap
-demo disk
+
 app placement
+
 icons / bitmap buttons in theme
+
+-- subsystems
+
+abstract comm interface: TCP/IP, unix sockets, SHM, signals...
+
 text layout engine
+
+DOCUMENTATION!
+
+
 
 PicoGUI Bugs
 -------------------------------
 
 ucLinux memory bugs (possible same root cause as htree problems?)
-Handle tree!
-Client-side event oddness (fixed, but would be nice to have a faster solution)
+
+Terminal disappears on launch most of the time
 
 panel bar dragging leaves extra sprites behind sometimes
 
