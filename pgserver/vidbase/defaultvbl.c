@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.86 2002/03/29 20:09:25 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.87 2002/04/01 12:38:05 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -1981,6 +1981,16 @@ void def_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
   int g1,g2,g3;
   int b1,b2,b3;
   hwrcolor c;
+  s16 imgw, imgh;
+
+  /* Don't blur the edge pixel on the screen. 
+   * Yeah, I'm a wimp for not making it wrap around :P
+   */
+  vid->bitmap_getsize(dest,&imgw,&imgh);
+  if (x<=0) x = 1;
+  if (h<=0) y = 1;
+  if (x+w>=imgw) w = imgw-x-1;
+  if (y+h>=imgh) h = imgh-y-1;
 
   /* Repeat the same basic 3x3 blur to get more blurrring. Each iteration
    * covers 2 additional pixels, therefore one extra radius unit.
@@ -2000,7 +2010,7 @@ void def_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
       g3 = getgreen(c);
       b3 = getblue(c);
 
-      for (i=1;i<w-2;i++) {
+      for (i=0;i<w;i++) {
 	c = vid->color_hwrtopg(vid->getpixel(dest,x+i+1,y+j));
 
 	r1 = r2;
@@ -2021,7 +2031,7 @@ void def_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
     }
 
     /* Vertical blur */
-    for (i=1;i<w-2;i++) {
+    for (i=0;i<w;i++) {
 
       /* Throughout the blur we keep our 3-pixel buffer full, but at the beginning we need to prime it */
       c = vid->color_hwrtopg(vid->getpixel(dest,x+i,y));

@@ -1,4 +1,4 @@
-/* $Id: pgmain.h,v 1.8 2002/01/18 00:27:11 micahjd Exp $
+/* $Id: pgmain.h,v 1.9 2002/04/01 12:38:05 micahjd Exp $
  *
  * pgmain.h - just a few things related to the main loop
  *
@@ -28,6 +28,15 @@
 #ifndef _H_PGMAIN
 #define _H_PGMAIN
 
+#include <pgserver/handle.h>
+
+/* For storing theme files to load later */
+struct themefilenode {
+  char *name;
+  handle h;
+  struct themefilenode *next;
+};
+
 /* Variables indicating pgserver's status, they may be affected by signals
  */
 extern volatile u8 mainloop_proceed;
@@ -54,6 +63,9 @@ void rqhtab_init(void);
 /* This is called whenever video is reloaded at a higher color depth
  * to reload all themes passed on the command line */
 g_error reload_initial_themes(void);
+
+/* This loads a list of theme files into pgserver */
+g_error load_themefile_list(struct themefilenode *list);
 
 #endif /* _H_PGMAIN */
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.15 2002/03/31 17:16:04 micahjd Exp $
+/* $Id: linear16.c,v 1.16 2002/04/01 12:38:05 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -343,9 +343,19 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
   int i, skip, fallback, stride;
   register int p0,p1,p2;   /* 3-pixel buffer for blurring */
   register u16 *p, *stop;
+  s16 imgw, imgh;
+
+  /* Don't blur the edge pixel on the screen. 
+   * Yeah, I'm a wimp for not making it wrap around :P
+   */
+  vid->bitmap_getsize(dest,&imgw,&imgh);
+  if (x<=0) x = 1;
+  if (h<=0) y = 1;
+  if (x+w>=imgw) w = imgw-x-1;
+  if (y+h>=imgh) h = imgh-y-1;
 
   stride = FB_BPL>>1;
-  skip = stride - w - 2;
+  skip = stride - w;
   fallback = stride * h - 1;
 
   while (radius--) {
@@ -353,12 +363,11 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
     /* Horizontal blur */
     i = h;
     p = PIXELADDR(x,y);
-    p1 = *p;
-    p++;
+    p1 = p[-1];
     p2 = *p;
     while (i--) {
-      stop = p+w-2;
-      while (p++ < stop) {
+      stop = p+w;
+      while (++p < stop) {
 
 	/* Shift the buffer */
 	p0 = p1;
@@ -387,8 +396,7 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
     /* Vertical blur */
     i = w;
     p = PIXELADDR(x,y);
-    p1 = *p;
-    p += stride;
+    p1 = p[-stride];
     p2 = *p;
     while (i--) {
       stop = p+fallback;
@@ -431,6 +439,10 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
  * bitshifts and ands, no division. Since the blur is linear rather than
  * the ideal gaussian curve, there's some interlacing to make the effect
  * a little closer.
+ * Another limitation of this blur is that it does not do any bounds checking
+ * explicitely, so it will not let the radius extend past the top or bottom of
+ * the image (sides are ok, they will wrap) and the diameter can't be larger
+ * than the image width.
  */
 void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
   int log_diameter, diameter, i, j;
@@ -439,12 +451,27 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
   int skip, stride, fallback, bpl, strideradius;
   u16 *p, *stop;
   u16 color;
+  s16 imgw, imgh;
 
-  diameter = radius << 1;
+  /* This algorithm is more intense than the usual one, so cut the radius in half */
+  diameter = radius;
 
   /* This algorithm doesn't work with a radius of 1 */
   if (diameter <= 2)
     diameter = 4;
+
+  /* And the diameter can't be wider than the image, to avoid reading past the end */
+  vid->bitmap_getsize(dest,&imgw,&imgh);
+  if (diameter == imgw)
+    diameter = imgw;
+
+  /* Don't let the radius overlap the top/bottom */
+  if (y<=radius) {
+    h-=radius+1-y;
+    y=radius+1;
+  }
+  if (h+y+radius>=imgh)
+    h = imgh-y-radius-1;
 
   /* Find out the next highest power of two from radius, and the log of that */
   for (i=0,j=diameter;j!=1;i++)
@@ -462,20 +489,20 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
   }
   radius = diameter>>1;
 
+  /* Set up the various loop increments */
   bpl = FB_BPL;
   stride = bpl>>1;
-  skip = stride - w + diameter;
+  skip = stride - w;
   strideradius = stride * radius;
-  fallback = stride*(h-diameter);
+  fallback = stride*h;
 
   /* Horizontal blur, even fields */
-
-  p = PIXELADDR(x+radius,y);
+  p = PIXELADDR(x,y);
   j = h;
-  r = g = b = 0;
+  r=g=b=0;
   while (j--) {
-    stop = p+w-diameter;
-    for (;p<stop;p+=2) {
+    stop = p+w;
+    for (;p<stop;p++) {
 
       /* Add the new pixel into the buffer */
       color = p[radius];
@@ -499,11 +526,10 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
 
   /* Horizontal blur, odd fields */
 
-  p = PIXELADDR(x+radius,y);
+  p = PIXELADDR(x,y);
   j = h;
-  r = g = b = 0;
   while (j--) {
-    stop = p+w-diameter;
+    stop = p+w;
     p++;
     for (;p<stop;p+=2) {
 
@@ -529,9 +555,8 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
 
   /* Vertical blur, even fields */
 
-  p = PIXELADDR(x,y+radius);
+  p = PIXELADDR(x,y);
   j = w;
-  r = g = b = 0;
   while (j--) {
     stop = p+fallback;
     for (;p<stop;p+=bpl) {
@@ -558,9 +583,8 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
 
   /* Vertical blur, odd fields */
 
-  p = PIXELADDR(x,y+radius);
+  p = PIXELADDR(x,y);
   j = w;
-  r = g = b = 0;
   while (j--) {
     stop = p+fallback;
     p += stride;
@@ -585,8 +609,6 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
     }
     p = stop - fallback + 1;
   }
-
-
 
 }
 #endif /* CONFIG_FASTER_BLUR */

@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.30 2002/03/29 20:09:22 micahjd Exp $
+/* $Id: pgmain.c,v 1.31 2002/04/01 12:38:05 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -66,13 +66,7 @@ extern char *optarg;
 extern int optind;
 #endif /* UCLINUX */
 
-/* For storing theme files to load later */
-struct themefilenode {
-  char *name;
-  handle h;
-  struct themefilenode *next;
-};
-
+/* List of themes managed by pgserver */
 struct themefilenode *themefiles;
 
 /* Fork off a process specified in a config variable, 
@@ -532,7 +526,7 @@ int main(int argc, char **argv) {
       reload_hotkeys();
 
     /* Load us some themes */
-    if (iserror(prerror(reload_initial_themes())))
+    if (iserror(load_themefile_list(themefiles)))
       return 1;
 
 #endif /* WINDOWS */
@@ -645,6 +639,15 @@ void request_quit(void) {
 /* This is called whenever video is reloaded at a higher color depth
  * to reload all themes passed on the command line */
 g_error reload_initial_themes(void) {
+   /* If we're still initializing, don't need to do this */
+   if (in_init)
+     return;
+
+   return load_themefile_list(themefiles);
+}
+
+/* This loads a list of theme files into pgserver */
+g_error load_themefile_list(struct themefilenode *list) {
    struct themefilenode *p;
    g_error e;
    unsigned char *themebuf;
@@ -655,7 +658,7 @@ g_error reload_initial_themes(void) {
    /* See if we have a theme directory... */
    themedir = get_param_str("pgserver","themedir",NULL);
 
-   for (p=themefiles;p;p=p->next) {
+   for (p=list;p;p=p->next) {
       char *filename;
       char pathbuffer[1024];
 
