@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.10 2000/11/19 04:47:20 micahjd Exp $
+/* $Id: network.h,v 1.11 2000/12/12 00:55:53 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -88,40 +88,41 @@ struct pghello {
 /******* Request handlers */
 
 /* Constants for request handlers                                 args  */
-#define PGREQ_PING         0      /* Simply returns if server is ok |   none  */
-#define PGREQ_UPDATE       1      /* Call update()                  |   none  */
-#define PGREQ_MKWIDGET     2      /* Makes a widget, returns handle |  struct */
-#define PGREQ_MKBITMAP     3      /* Makes a bitmap, returns handle |  data   */
-#define PGREQ_MKFONT       4      /* Makes a fontdesc, ret's handle |  struct */
-#define PGREQ_MKSTRING     5      /* Makes a string, returns handle |  chars  */
-#define PGREQ_FREE         6      /* Frees a handle                 |  handle */
-#define PGREQ_SET          7      /* Set a widget param             |  struct */
-#define PGREQ_GET          8      /* Get a widget param, return it  |  struct */
-#define PGREQ_MKTHEME      9      /* Load a compiled theme          |  theme  */
-#define PGREQ_IN_KEY       10     /* Dispatch keyboard input        |  struct */
-#define PGREQ_IN_POINT     11     /* Dispatch pointing device input |  struct */
-#define PGREQ_IN_DIRECT    12     /* Dispatch direct input          |  struct */
-#define PGREQ_WAIT         13     /* Wait for an event              |  none   */
-#define PGREQ_MKFILLSTYLE  14     /* Load a fill style,return handle|  fillstyle */
-#define PGREQ_REGISTER     15     /* Register a new application     |  struct */
-#define PGREQ_MKPOPUP      16     /* Create a popup root widget     |  struct */
-#define PGREQ_SIZETEXT     17     /* Find the size of text          |  struct */
-#define PGREQ_BATCH        18     /* Executes many requests         |  requests */
-#define PGREQ_GRABKBD      19     /* Become the keyboard owner      |  none */
-#define PGREQ_GRABPNTR     20     /* Own the pointing device        |  none */
-#define PGREQ_GIVEKBD      21     /* Give the keyboard back         |  none */
-#define PGREQ_GIVEPNTR     22     /* Give the pointing device back  |  none */
-#define PGREQ_MKCONTEXT    23     /* Enters a new context           |  none */
-#define PGREQ_RMCONTEXT    24     /* Cleans up and kills the context|  none */
-#define PGREQ_FOCUS        25     /* Force focus to specified widget|  handle */
-#define PGREQ_GETSTRING    26     /* Returns a RESPONSE_DATA        |  handle */
-#define PGREQ_MKMSGDLG     27     /* Creates a message dialog box   |  struct */
-#define PGREQ_SETPAYLOAD   28     /* Sets an object's payload       |  struct */
-#define PGREQ_GETPAYLOAD   29     /* Gets an object's payload       |  handle */
-#define PGREQ_MKMENU       30     /* Creates a simple popup menu    |  handle[] */
-#define PGREQ_WRITETO      31     /* Stream data to a widget        |  handle + data */
+#define PGREQ_PING         0   /* Simply returns if server is ok |   none  */
+#define PGREQ_UPDATE       1   /* Call update()                  |   none  */
+#define PGREQ_MKWIDGET     2   /* Makes a widget, returns handle |  struct */
+#define PGREQ_MKBITMAP     3   /* Makes a bitmap, returns handle |  data   */
+#define PGREQ_MKFONT       4   /* Makes a fontdesc, ret's handle |  struct */
+#define PGREQ_MKSTRING     5   /* Makes a string, returns handle |  chars  */
+#define PGREQ_FREE         6   /* Frees a handle                 |  handle */
+#define PGREQ_SET          7   /* Set a widget param             |  struct */
+#define PGREQ_GET          8   /* Get a widget param, return it  |  struct */
+#define PGREQ_MKTHEME      9   /* Load a compiled theme          |  theme  */
+#define PGREQ_IN_KEY       10  /* Dispatch keyboard input        |  struct */
+#define PGREQ_IN_POINT     11  /* Dispatch pointing device input |  struct */
+#define PGREQ_IN_DIRECT    12  /* Dispatch direct input          |  struct */
+#define PGREQ_WAIT         13  /* Wait for an event              |  none   */
+#define PGREQ_MKFILLSTYLE  14  /* Load a fill style,return handle|  fillstyle */
+#define PGREQ_REGISTER     15  /* Register a new application     |  struct */
+#define PGREQ_MKPOPUP      16  /* Create a popup root widget     |  struct */
+#define PGREQ_SIZETEXT     17  /* Find the size of text          |  struct */
+#define PGREQ_BATCH        18  /* Executes many requests         |  requests */
+#define PGREQ_GRABKBD      19  /* Become the keyboard owner      |  none */
+#define PGREQ_GRABPNTR     20  /* Own the pointing device        |  none */
+#define PGREQ_GIVEKBD      21  /* Give the keyboard back         |  none */
+#define PGREQ_GIVEPNTR     22  /* Give the pointing device back  |  none */
+#define PGREQ_MKCONTEXT    23  /* Enters a new context           |  none */
+#define PGREQ_RMCONTEXT    24  /* Cleans up and kills the context|  none */
+#define PGREQ_FOCUS        25  /* Force focus to specified widget|  handle */
+#define PGREQ_GETSTRING    26  /* Returns a RESPONSE_DATA        |  handle */
+#define PGREQ_MKMSGDLG     27  /* Creates a message dialog box   |  struct */
+#define PGREQ_SETPAYLOAD   28  /* Sets an object's payload       |  struct */
+#define PGREQ_GETPAYLOAD   29  /* Gets an object's payload       |  handle */
+#define PGREQ_MKMENU       30  /* Creates a simple popup menu    |  handle[] */
+#define PGREQ_WRITETO      31  /* Stream data to a widget        |  handle + data */
+#define PGREQ_UPDATEPART   32  /* Updates subtree defined by wgt |  handle */
 
-#define PGREQ_UNDEF        32     /* types > this will be truncated. return error */
+#define PGREQ_UNDEF        33     /* types > this will be truncated. return error */
 
 /******* Request data structures */
 

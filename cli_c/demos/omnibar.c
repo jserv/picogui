@@ -1,4 +1,4 @@
-/* $Id: omnibar.c,v 1.5 2000/11/19 06:16:38 micahjd Exp $
+/* $Id: omnibar.c,v 1.6 2000/12/12 00:55:53 micahjd Exp $
  * 
  * omnibar.c - hopefully this will grow into a general interface
  *             for starting and manipulating applications, but
@@ -144,6 +144,7 @@ void sysIdle(void) {
   ct = ctime(&now);
   ct[strlen(ct)-1] = 0;  /* Strip newline */
   pgReplaceText(wClock,ct);
+  pgSubUpdate(wClock);
 
   /* Get CPU load */
   f = fopen("/proc/stat","r");
@@ -155,6 +156,8 @@ void sysIdle(void) {
   pgSetWidget(wLoad,PG_WP_VALUE, (crun-ocrun) * 100 / (ctotal-octotal),0);
   ocrun = crun;
   octotal = ctotal;
+  pgSubUpdate(wLoad);
+
 }
 
 /********* Main program */
@@ -195,7 +198,7 @@ int main(int argc, char **argv) {
   wLoadbox = pgNewWidget(PG_WIDGET_BOX,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_RIGHT,
-	      PG_WP_SIZE,70,
+	      PG_WP_SIZE,200,
 	      0);
 
   pgNewWidget(PG_WIDGET_LABEL,0,0);
@@ -214,13 +217,13 @@ int main(int argc, char **argv) {
 	      PG_WP_FONT,fntLabel,
 	      0);
 
-  pgNewWidget(PG_WIDGET_INDICATOR,0,0);
+  wLoad = pgNewWidget(PG_WIDGET_INDICATOR,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_ALL,
 	      0);  
 
   /* Run it. */
-  pgSetIdle(1000,&sysIdle);
+  pgSetIdle(50,&sysIdle);
   pgEventLoop();
    
   return 0;

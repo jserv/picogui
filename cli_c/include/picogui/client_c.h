@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.25 2000/11/19 04:47:20 micahjd Exp $
+/* $Id: client_c.h,v 1.26 2000/12/12 00:55:53 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -119,14 +119,22 @@ void pgFlushRequests(void);
 /* Update the screen. 
  *
  * If your application is pgEventLoop (or pgGetEvent) based,
- * this is handled automatically. Normally this is only used
- * for animation of some sort.
+ * this is handled automatically.
  *
- * Use it sparingly: only things that have
- * been changed get recalculated, but drawing unfinished 
- * popups or applications to the screen is a Bad Thing (tm)
+ * Do not use this for animation, use pgSubUpdate() instead
  */
 void pgUpdate(void);
+
+/* Update a subsection of the screen
+ *
+ * The given widget and all other
+ * widgets contained within it. The section is redrawn independantly and
+ * immediately. (This command does flush the buffers)
+ *
+ * This can be used for animation (changing widget parameters without
+ * user input)
+ */
+void pgSubUpdate(pghandle widget);
 
 /* Attatch an event handler to a widget and/or event. A NULL
  * widget uses the default, as usual. Either the handle or the

@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.31 2000/11/19 06:16:38 micahjd Exp $
+/* $Id: picogui_client.c,v 1.32 2000/12/12 00:55:53 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -137,6 +137,9 @@ void _pg_free_memdata(struct pgmemdata memdat);
 /* Format a message in a dynamically allocated buffer */
 char * _pg_dynformat(const char *fmt,va_list ap);
 
+/* Idle handler */
+void _pg_idle(void);
+
 /******************* Internal functions */
 
 /* Send data to the server, checking and reporting errors */
@@ -192,8 +195,9 @@ int _pg_recvtimeout(void *data,unsigned long datasize) {
 #endif
 	
 	/* Run the idle handler, reset the event loop, then try again */
-	(*_pgidle_handler)();
-	pgUpdate();          /* Clear the pipes... */
+	_pg_idle();
+
+	/* Clear the pipes... */
 	pgFlushRequests();
 	_pg_send(&waitreq,sizeof(waitreq));  /* Kickstart the event loop */
      }
@@ -436,6 +440,18 @@ char * _pg_dynformat(const char *fmt,va_list ap) {
   return p;
 }
 
+/* Idle handler */
+void _pg_idle(void) {
+  static unsigned char idle_lock = 0;
+
+  if (idle_lock) return;
+  idle_lock++;
+
+  if (_pgidle_handler)
+    (*_pgidle_handler)();
+
+  idle_lock = 0;
+}
 
 /******************* API functions */
 
@@ -610,8 +626,7 @@ void pgEventLoop(void) {
   while (_pgeventloop_on) {
 
     /* Run the idle handler here too */
-    if (_pgidle_handler)
-      (*_pgidle_handler)();
+    _pg_idle();
 
     /* Good practice to update before waiting on the user
        (and, unless doing animation of some sort, nowhere else) */
@@ -651,8 +666,7 @@ void pgExitEventLoop(void) { _pgeventloop_on=0; }
 pghandle pgGetEvent(unsigned short *event, unsigned long *param) {
 
   /* Run the idle handler here too */
-  if (_pgidle_handler)
-    (*_pgidle_handler)();
+  _pg_idle();
 
   /* Update before waiting for the user */
   pgUpdate();
@@ -791,6 +805,14 @@ unsigned long pgGetPayload(pghandle object) {
   _pg_add_request(PGREQ_GETPAYLOAD,&object,sizeof(object));
   pgFlushRequests();
   return _pg_return.e.retdata;
+}
+
+
+void pgSubUpdate(pghandle widget) {
+  struct pgreqd_handlestruct arg;
+  arg.h = htonl(widget ? widget : _pgdefault_widget);
+  _pg_add_request(PGREQ_UPDATEPART,&arg,sizeof(arg));
+  pgFlushRequests();
 }
 
 void pgDelete(pghandle object) {
