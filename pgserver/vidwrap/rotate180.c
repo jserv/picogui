@@ -1,4 +1,4 @@
-/* $Id: rotate180.c,v 1.12 2002/10/07 03:31:16 micahjd Exp $
+/* $Id: rotate180.c,v 1.13 2002/10/07 10:21:58 micahjd Exp $
  *
  * rotate180.c - Video wrapper to rotate the screen 180 degrees
  *
@@ -178,9 +178,7 @@ g_error rotate180_bitmap_loadxbm(hwrbitmap *bmp,
    g_error e;
    e = (*vid->bitmap_loadxbm)(bmp,data,w,h,fg,bg);
    errorcheck;
-   e = (*vid->bitmap_rotate90)(bmp);
-   errorcheck;
-   return (*vid->bitmap_rotate90)(bmp);
+   return bitmap_rotate(bmp,180);
 }
 #endif
 
@@ -188,18 +186,13 @@ g_error rotate180_bitmap_load(hwrbitmap *bmp,const u8 *data,u32 datalen) {
    g_error e;
    e = (*vid->bitmap_load)(bmp,data,datalen);
    errorcheck;
-   e = (*vid->bitmap_rotate90)(bmp);
-   errorcheck;
-   return (*vid->bitmap_rotate90)(bmp);
+   return bitmap_rotate(bmp,180);
 }
 
 /* Rotate all loaded bitmaps when this mode is entered/exited */
 
 g_error rotate180_entermode(void) {
-   g_error e;
-   e = bitmap_iterate(vid->bitmap_rotate90);
-   errorcheck;
-   return bitmap_iterate(vid->bitmap_rotate90);
+   return bitmap_rotate_all(180);
 }
 
 void rotate180_coord_keyrotate(int *k) {

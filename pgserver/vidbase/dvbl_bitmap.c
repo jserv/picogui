@@ -1,4 +1,4 @@
-/* $Id: dvbl_bitmap.c,v 1.8 2002/10/07 03:31:16 micahjd Exp $
+/* $Id: dvbl_bitmap.c,v 1.9 2002/10/07 10:21:58 micahjd Exp $
  *
  * dvbl_bitmap.c - This file is part of the Default Video Base Library,
  *                 providing the basic video functionality in picogui but
@@ -105,101 +105,67 @@ g_error def_bitmap_load(hwrbitmap *bmp,const u8 *data,u32 datalen) {
    return mkerror(PG_ERRT_BADPARAM,8); /* Format not recognized by any loaders */
 }
 
-/* 90 degree anticlockwise rotation */
-g_error def_bitmap_rotate90(hwrbitmap *b) {
-   struct stdbitmap *destbit,*srcbit = (struct stdbitmap *) (*b);
-   u8 *src,*srcline,*dest;
-   int oshift,shift,mask;
-   int shiftset  = 8-srcbit->bpp;
-   int subpixel  = ((8/srcbit->bpp)-1);
-   int subpixel2 = ((1<<srcbit->bpp)-1);
-   g_error e;
-   int h,i,x,y;
-   hwrcolor c;
-   
-   /* New bitmap with width/height reversed */
-   e = (*vid->bitmap_new)(&destbit,srcbit->h,srcbit->w,srcbit->bpp);
-   errorcheck;
-   
-   src = srcline = srcbit->bits;
-   for (h=srcbit->h,x=y=0;h;h--,y++,src=srcline+=srcbit->pitch) {
+/* This code is pretty general, if you want it to handle any angle
+ * it would just need to use a fixed point rotation matrix instead of integer.
+ * As it is, that's probably not needed since without proper blending it
+ * would look crappy :)
+ *
+ * Oh, and this code is also really slow, since it uses the dreaded pixel()...
+ */
+void def_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y, s16 w, s16 h,
+		    hwrbitmap src, s16 src_x, s16 src_y,
+		    s16 angle, s16 lgop) {
+  int i,j,sx,sy,dx,dy;
+  int a,b,c,d;   /* Rotation matrix */
 
-      /* Per-line mask calculations for <8bpp destination blits */
-      if (srcbit->bpp<8) {
-	 shift = (subpixel-(y&subpixel)) * srcbit->bpp;
-	 mask  = subpixel2<<shift;
-      }
-      
-      for (oshift=shiftset,i=srcbit->w,x=0;i;i--,x++) {
-	 
-	 /* Read in a pixel */
-	 switch (srcbit->bpp) {
-	  case 1:
-	  case 2:
-	  case 4:
-	    c = ((*src) >> oshift) & subpixel2;
-	    if (!oshift) {
-	       oshift = shiftset;
-	       src++;
-	    }
-	    else
-	      oshift -= srcbit->bpp;
-	    break; 
-	    
-	  case 8:
-	    c = *(src++);
-	    break;
-	    
-	  case 16:
-	    c = *(((u16*)src)++);
-	    break;
-	    
-	  case 24:
-	    c = src[2] | (src[1]<<8) | (src[0]<<16);
-	    src += 3;
-	    break;
-	    
-	  case 32:
-	    c = *(((u32*)src)++);
-	    break;     
-	 }
-	 
-	 /* Plot the pixel */
-	 dest = destbit->bits + ((y*srcbit->bpp)>>3) + 
-	   (srcbit->w-1-x)*destbit->pitch;
-	 switch (srcbit->bpp) {
-	  case 1:
-	  case 2:
-	  case 4:
-	    *dest &= ~mask;
-	    *dest |= (c << shift) & mask;
-	    break; 
-	    
-	  case 8:
-	    *dest = c;
-	    break;
-	    
-	  case 16:
-	    *((u16*)dest) = c;
-	    break;
-	    
-	  case 24:
-	    *(dest++) = (u8) c;
-	    *(dest++) = (u8) (c >> 8);
-	    *dest     = (u8) (c >> 16);
-	    break;
-	    
-	  case 32:
-	    *((u32*)dest) = c;
-	    break;     
-	 }	
-      }   
-   }
-   
-   /* Clean up */
-   *b = (hwrbitmap) destbit;
-   (*vid->bitmap_free)(srcbit);
-   return success;
+  /* Normalize the angle */
+  angle %= 360;
+  if (angle<0) angle += 360;
+
+  switch (angle) {
+
+    /* 0 angle falls through to normal blit */
+  case 0:
+    vid->blit(dest,dest_x,dest_y,w,h,src,src_x,src_y,lgop);
+    return;
+
+  case 90:
+    /*   x       y        */
+    a =  0; b =  1; /* x' */
+    c = -1; d =  0; /* y' */
+    break;
+
+  case 180:
+    /*   x       y        */
+    a = -1; b =  0; /* x' */
+    c =  0; d = -1; /* y' */
+    break;
+
+  case 270:
+    /*   x       y        */
+    a =  0; b = -1; /* x' */
+    c =  1; d =  0; /* y' */
+    break;
+
+  default:
+    return;   /* Can't handle this angle! */
+  }
+
+  for (j=h;j;j--) {
+    sx = src_x;
+    dx = dest_x;
+    sy = src_y;
+    dy = dest_y;
+    for (i=w;i;i--) {
+      vid->pixel(dest,dx,dy,vid->getpixel(src,sx,sy),PG_LGOP_NONE);
+      sx++;
+      dx += a;
+      dy += c;
+    }
+    src_y++;
+    dest_x += b;
+    dest_y += d;
+  }
 }
 
 g_error def_bitmap_new(hwrbitmap *b, s16 w,s16 h,u16 bpp) {

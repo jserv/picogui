@@ -1,4 +1,4 @@
-/* $Id: video_drivers.c,v 1.3 2002/07/03 22:03:31 micahjd Exp $
+/* $Id: video_drivers.c,v 1.4 2002/10/07 10:21:58 micahjd Exp $
  *
  * video_drivers.c - handles loading/switching video drivers and modes
  *
@@ -166,7 +166,7 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
    oldbpp = vid->bpp;
    converting_mode = (bpp != vid->bpp);
    if (converting_mode) {
-      e = bitmap_iterate(vid->bitmap_modeunconvert);
+      e = bitmap_iterate((handle_iterator)vid->bitmap_modeunconvert, NULL);
       errorcheck;
       e = handle_iterate(PG_TYPE_PALETTE,(handle_iterator)array_hwrtopg, NULL);
       errorcheck;
@@ -405,7 +405,7 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
 
    /* Convert to the new color depth if necessary */
    if (converting_mode) {
-      e = bitmap_iterate(vid->bitmap_modeconvert);
+      e = bitmap_iterate((handle_iterator)vid->bitmap_modeconvert, NULL);
       errorcheck;
       e = handle_iterate(PG_TYPE_PALETTE,(handle_iterator)array_pgtohwr, NULL);
       errorcheck;
@@ -520,21 +520,84 @@ void realize_updareas(void) {
    lock = 0;
 }
 
-g_error bitmap_iterate(g_error (*iterator)(hwrbitmap *pbit)) {   
-   
-   /* Rotate all bitmaps with handles, and all sprite backbuffers */
-   struct sprite *spr;
-   g_error e;
-   
-   e = handle_iterate(PG_TYPE_BITMAP,(handle_iterator) iterator, NULL);
-   errorcheck;
-   
-   for (spr=spritelist;spr;spr=spr->next) {
-      e = (*iterator)(&spr->backbuffer);
-      errorcheck;
-   }
-      
-   return success;
+/* Rotate an existing bitmap by the given angle, reallocating it.
+ * (angle is not modified, it is a pointer so this can be used with bitmap_iterate)
+ */
+g_error bitmap_rotate(hwrbitmap *pbit, s16 angle) {
+  hwrbitmap old,new;
+  g_error e;
+  s16 old_w,old_h;
+  s16 new_w,new_h;
+  s16 x,y;
+
+  old = *pbit;  
+  e = vid->bitmap_getsize(old,&old_w,&old_h);
+  errorcheck;
+
+  if (angle==90 || angle==270) {
+    new_w = old_h;
+    new_h = old_w;
+  }
+  else {
+    new_w = old_w;
+    new_h = old_h;
+  }
+
+  switch (angle) {
+  case 0:
+    x = 0;
+    y = 0;
+    break;
+  case 90:
+    x = 0;
+    y = new_h - 1;
+    break;
+  case 180:
+    x = new_w - 1;
+    y = new_h - 1;
+    break;
+  case 270:
+    x = new_w - 1;
+    y = 0;
+    break;
+  }
+  
+  e = vid->bitmap_new(&new,new_w,new_h,old->bpp);
+  errorcheck;
+
+  vid->rotateblit(new,x,y,old_w,old_h,old,0,0,angle,PG_LGOP_NONE);
+  *pbit = new;
+
+  vid->bitmap_free(old);
+  return success;
+}
+
+
+/* Run the given function on _all_ bitmaps */
+g_error bitmap_iterate(handle_iterator iterator, void *extra) {
+  struct sprite *spr;
+  g_error e;
+  
+  /* All bitmaps with handles */
+  e = handle_iterate(PG_TYPE_BITMAP,iterator, extra);
+  errorcheck;
+  
+  /* All sprite backbuffers */
+  for (spr=spritelist;spr;spr=spr->next) {
+    e = (*iterator)((const void**) &spr->backbuffer,extra);
+    errorcheck;
+  }
+  return success;
+}
+
+/* Adapter that lets us use bitmap_rotate as an interator */
+g_error bitmap_rotate_iterator(hwrbitmap *pbit, s16 *angle) {
+  return bitmap_rotate(pbit,*angle);
+}
+
+/* Rotate _all_ loaded bitmaps by the given angle */
+g_error bitmap_rotate_all(s16 angle) {
+  return bitmap_iterate((handle_iterator) bitmap_rotate_iterator,&angle);
 }
 
 /* Iterators for converting between pgcolor and hwrcolor arrays */

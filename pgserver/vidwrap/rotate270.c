@@ -1,4 +1,4 @@
-/* $Id: rotate270.c,v 1.13 2002/10/07 03:31:16 micahjd Exp $
+/* $Id: rotate270.c,v 1.14 2002/10/07 10:21:58 micahjd Exp $
  *
  * rotate270.c - Video wrapper to rotate the screen 270 degrees
  *
@@ -187,11 +187,7 @@ g_error rotate270_bitmap_loadxbm(hwrbitmap *bmp,
    g_error e;
    e = (*vid->bitmap_loadxbm)(bmp,data,w,h,fg,bg);
    errorcheck;
-   e = (*vid->bitmap_rotate90)(bmp);
-   errorcheck;
-   e = (*vid->bitmap_rotate90)(bmp);
-   errorcheck;
-   return (*vid->bitmap_rotate90)(bmp);
+   return bitmap_rotate(bmp,270);
 }
 #endif
 
@@ -199,11 +195,7 @@ g_error rotate270_bitmap_load(hwrbitmap *bmp,const u8 *data,u32 datalen) {
    g_error e;
    e = (*vid->bitmap_load)(bmp,data,datalen);
    errorcheck;
-   e = (*vid->bitmap_rotate90)(bmp);
-   errorcheck;
-   e = (*vid->bitmap_rotate90)(bmp);
-   errorcheck;
-   return (*vid->bitmap_rotate90)(bmp);
+   return bitmap_rotate(bmp,270);
 }
 
 g_error rotate270_bitmap_getsize(hwrbitmap bmp,s16 *w,s16 *h) {
@@ -213,26 +205,11 @@ g_error rotate270_bitmap_getsize(hwrbitmap bmp,s16 *w,s16 *h) {
 /* Rotate all loaded bitmaps when this mode is entered/exited */
 
 g_error rotate270_entermode(void) {
-   g_error e;
-   e = bitmap_iterate(vid->bitmap_rotate90);
-   errorcheck;
-   e = bitmap_iterate(vid->bitmap_rotate90);
-   errorcheck;
-   return bitmap_iterate(vid->bitmap_rotate90);
+   return bitmap_rotate_all(270);
 }
 
 g_error rotate270_exitmode(void) {
-   g_error e;
-   
-   /* Rotate 3 more times to get back to normal.
-    * This is slower, but maybe saves memory? */
-   e = rotate270_entermode();
-   errorcheck;
-   e = rotate270_entermode();
-   errorcheck;
-   e = rotate270_entermode();
-   errorcheck;
-   return success;
+   return bitmap_rotate_all(90);
 }
 
 void rotate270_coord_keyrotate(int *k) {

@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.26 2002/10/07 03:31:16 micahjd Exp $
+/* $Id: rotate90.c,v 1.27 2002/10/07 10:21:58 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -236,7 +236,7 @@ g_error rotate90_bitmap_loadxbm(hwrbitmap *bmp,
    g_error e;
    e = (*vid->bitmap_loadxbm)(bmp,data,w,h,fg,bg);
    errorcheck;
-   return (*vid->bitmap_rotate90)(bmp);
+   return bitmap_rotate(bmp,90);
 }
 #endif
 
@@ -244,7 +244,7 @@ g_error rotate90_bitmap_load(hwrbitmap *bmp,const u8 *data,u32 datalen) {
    g_error e;
    e = (*vid->bitmap_load)(bmp,data,datalen);
    errorcheck;
-   return (*vid->bitmap_rotate90)(bmp);
+   return bitmap_rotate(bmp,90);
 }
 
 g_error rotate90_bitmap_getsize(hwrbitmap bmp,s16 *w,s16 *h) {
@@ -254,21 +254,11 @@ g_error rotate90_bitmap_getsize(hwrbitmap bmp,s16 *w,s16 *h) {
 /* Rotate all loaded bitmaps when this mode is entered/exited */
 
 g_error rotate90_entermode(void) {
-   return bitmap_iterate(vid->bitmap_rotate90);
+   return bitmap_rotate_all(90);
 }
 
 g_error rotate90_exitmode(void) {
-   g_error e;
-   
-   /* Rotate 3 more times to get back to normal.
-    * This is slower, but maybe saves memory? */
-   e = rotate90_entermode();
-   errorcheck;
-   e = rotate90_entermode();
-   errorcheck;
-   e = rotate90_entermode();
-   errorcheck;
-   return success;
+   return bitmap_rotate_all(270);
 }
 
 void rotate90_coord_keyrotate(int *k) {

@@ -1,4 +1,4 @@
-/* $Id: dvbl_init.c,v 1.5 2002/10/07 03:31:16 micahjd Exp $
+/* $Id: dvbl_init.c,v 1.6 2002/10/07 10:21:58 micahjd Exp $
  *
  * dvbl_init.c - This file is part of the Default Video Base Library,
  *               providing the basic video functionality in picogui but
@@ -130,7 +130,7 @@ void setvbl_default(struct vidlib *vid) {
   vid->blit = &def_blit;
   vid->coord_logicalize = &def_coord_logicalize;
   vid->coord_physicalize = &def_coord_logicalize;
-  vid->bitmap_rotate90 = &def_bitmap_rotate90;
+  vid->rotateblit = &def_rotateblit;
   vid->entermode = &def_enterexitmode;
   vid->exitmode = &def_enterexitmode;
   vid->bitmap_modeconvert = &def_bitmap_modeconvert;

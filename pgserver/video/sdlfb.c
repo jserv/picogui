@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.45 2002/04/03 16:56:49 micahjd Exp $
+/* $Id: sdlfb.c,v 1.46 2002/10/07 10:21:58 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -610,11 +610,11 @@ void sdlfb_message(u32 message, u32 param, u32 *ret) {
      * Go through the same procedure we use when changing color
      * depth in order to make everything re-convert their colors
      */
-    bitmap_iterate(vid->bitmap_modeunconvert);
+    bitmap_iterate((handle_iterator) vid->bitmap_modeunconvert, NULL);
     sdlfb_tint = strtol(get_param_str("video-sdlfb",
 				      param ? "backlight_tint" : "tint",
 				      "FFFFFF"),NULL,16);
-    bitmap_iterate(vid->bitmap_modeconvert);
+    bitmap_iterate((handle_iterator) vid->bitmap_modeconvert, NULL);
     reload_initial_themes();
     break;
 #endif

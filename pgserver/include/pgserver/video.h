@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.93 2002/10/07 03:31:16 micahjd Exp $
+/* $Id: video.h,v 1.94 2002/10/07 10:21:57 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -442,6 +442,19 @@ struct vidlib {
   void (*charblit)(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 		   s16 lines, s16 angle, hwrcolor c, struct quad *clip,
 		   s16 lgop);
+
+  /* Reccomended on platforms that are usually rotated
+   *   Rotate a bitmap while copying. The source and destination
+   *   coordinates both refer to the _original_ top-left of the bitmap.
+   *   This does not handle tiling, and currently only handles angles
+   *   that are a multiple of 90 degrees.
+   *
+   * Default implementation: Assumes linear bitmap, has code for
+   *                         all common bit depths
+   */
+  void (*rotateblit)(hwrbitmap dest, s16 dest_x, s16 dest_y, s16 w, s16 h,
+		     hwrbitmap src, s16 src_x, s16 src_y,
+		     s16 angle, s16 lgop);
  
   void (*ellipse) (hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
   void (*fellipse) (hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
@@ -476,14 +489,6 @@ struct vidlib {
   /* Load a bitmap, detecting the appropriate format */
   g_error (*bitmap_load)(hwrbitmap *bmp,const u8 *data,u32 datalen);
 
-  /* Optional
-   *   Rotates a bitmap by 90 degrees anticlockwise
-   *
-   * Default implementation: Assumes linear bitmap, has code for
-   *                         all common bit depths
-   */
-  g_error (*bitmap_rotate90)(hwrbitmap *bmp);
-   
   /* Optional
    *   Allocates an empty bitmap
    *
@@ -694,6 +699,9 @@ void def_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 		  s16 lgop);
 void def_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 		    s16 src_x, s16 src_y, s16 lgop);
+void def_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y, s16 w, s16 h,
+		    hwrbitmap src, s16 src_x, s16 src_y,
+		    s16 angle, s16 lgop);
 void def_sprite_protectarea(struct quad *in,struct sprite *from);
 g_error def_bitmap_loadxbm(hwrbitmap *bmp,const u8 *data, s16 w, s16 h,
 			   hwrcolor fg, hwrcolor bg);
@@ -731,7 +739,6 @@ void def_sprite_hide(struct sprite *spr);
 void def_sprite_update(struct sprite *spr);
 void def_sprite_hideall(void);
 void def_sprite_showall(void);
-g_error def_bitmap_rotate90(hwrbitmap *bmp);
 g_error def_bitmap_modeconvert(hwrbitmap *bmp);
 g_error def_bitmap_modeunconvert(hwrbitmap *bmp);
 g_error def_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend);
@@ -797,10 +804,15 @@ g_error png_load(hwrbitmap *bmp, const u8 *data, u32 datalen);
 bool gif_detect(const u8 *data, u32 datalen);
 g_error gif_load(hwrbitmap *bmp, const u8 *data, u32 datalen);
 
-/* Runs the supplied function for all loaded bitmaps
- * (a superset of handle_iterate's results)
+/* Rotate an existing bitmap by the given angle, reallocating it.
  */
-g_error bitmap_iterate(g_error (*iterator)(hwrbitmap *pbit));
+g_error bitmap_rotate(hwrbitmap *pbit, s16 angle);
+
+/* Run the given function on _all_ bitmaps */
+g_error bitmap_iterate(handle_iterator iterator, void *extra);
+
+/* Rotate _all_ loaded bitmaps by the given angle */
+g_error bitmap_rotate_all(s16 angle);
 
 /************** Debugging */
 void videotest_run(s16 number);
