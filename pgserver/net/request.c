@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.43 2002/02/02 20:52:51 lonetech Exp $
+/* $Id: request.c,v 1.44 2002/02/18 07:27:50 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -538,10 +538,6 @@ void net_iteration(void) {
 	      break;	/* out of the while() */
 	    n = n->next;
 	  }
-#ifdef DEBUG_NET
-	  if(!n)
-	    guru("No input driver accepted data from fd %d", fd);
-#endif
 	}
       }
   }
