@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.2 2001/05/01 01:12:24 micahjd Exp $
+/* $Id: pgmain.c,v 1.3 2001/05/29 20:39:10 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -424,9 +424,11 @@ int main(int argc, char **argv) {
 #ifdef CONFIG_VIDEOTEST   /* Video test mode */
     if (videotest_on==1)
        videotest_run(videotest_mode);
-    if (videotest_on==2)
+    if (videotest_on==2) {
        videotest_benchmark();
-     
+       proceed = 0;       /* Don't bother with running a server :) */
+    }
+       
   /* initial update */
   if (!videotest_on)    /* If we have a test pattern, leave that up */
 #endif   
