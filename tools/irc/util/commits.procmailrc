@@ -1,6 +1,7 @@
 VERBOSE=on
 PMDIR=$HOME/.procmail
 LOGFILE=$PMDIR/log
+UMASK=033
 
 # Log all incoming messages
 :0 c
