@@ -1,4 +1,4 @@
-/* $Id: scribble.c,v 1.2 2001/10/14 01:17:09 micahjd Exp $
+/* $Id: scribble.c,v 1.3 2001/10/15 02:59:39 micahjd Exp $
  *
  * scribble.c - Simple paint program
  *
@@ -243,7 +243,7 @@ int evtClose(struct pgEvent *evt) {
 
   case PG_MSGBTN_YES:      /* Save */
     evtBtnSave(evt);
-    break;
+    return 0;
   }
   return 1;                /* Shouldn't get here */
 }
