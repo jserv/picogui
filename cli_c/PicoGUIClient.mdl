@@ -8,7 +8,7 @@ multicompile = 1
 
 description = ''' PicoGUI client Library '''
 
-depends = [ 'resourcemanager', 'picoguiserver' ]
+depends = [ 'picoguiserver' ]
 
 runtime = [
     SharedRuntime ('library', 'PicoGUI client shared library',
