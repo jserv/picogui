@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.11 2000/05/06 06:39:13 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.12 2000/05/28 16:57:20 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -26,11 +26,10 @@
 #
 package PicoGUI;
 use Carp;
-require Exporter;
 @ISA       = qw(Exporter);
 @EXPORT    = qw(NewWidget %ServerInfo Update NewString
-		NewFont NewBitmap delete MakeBackground RestoreBackground
-		EventWait SendPoint SendKey ThemeSet);
+		NewFont NewBitmap delete SetBackground RestoreBackground
+		SendPoint SendKey ThemeSet RegisterApp EventLoop);
 
 ################################ Constants
 
@@ -160,7 +159,22 @@ require Exporter;
 	   'flat' => 1,
 	   'gradient' => 2
 	   );
-	   
+
+%APPTYPE = (
+	    'normal' => 1,
+	    'default' => 1,
+	    'toolbar' => 2
+	    );
+
+%EVENT = (
+	  '-onactivate' => 1,
+	  '-ondeactivate' => 2,
+	  '-onclick' => 1,
+	  '-onchange' => 1,
+	  '-onfocus' => 1,
+	  '-onunfocus' => 2,
+	  '-onblur' => 2
+	  );
 
 $MAGIC     = 0x31415926;
 $PROTOVER  = 1;
@@ -172,6 +186,9 @@ $PROTOVER  = 1;
 # Open a connection to the server, parsing PicoGUI commandline options
 # if they are present
 sub _init {
+
+    $default_rship = $default_parent = 0;
+
     # Default options
     %options = (
 	'server' => 'localhost',
@@ -312,8 +329,39 @@ sub _wait {
 sub _themeset {
     _request(14,pack('Nnnnn',@_));
 }
+sub _register {
+    _request(15,pack('a40nnnnnnnnnnn',@_));
+}
 
 ######### Public functions
+
+sub RegisterApp {
+    my %args = @_;
+    my ($name,$type,$side,$sidemask,$w,$h,$minw,$maxw,$minh,$maxh);
+    my $self = {-root => 1};
+
+    $name = $args{-name};
+    $type = $args{-type} ? $APPTYPE{$args{-type}} : $APPTYPE{'normal'};
+    $side = $args{-side} ? $SIDE{$args{-side}} : $SIDE{'top'};
+    $sidemask = defined($args{-sidemask}) ? $args{-sidemask} : 0xFFFF;
+    $w = defined($args{-w}) ? $args{-w} : -1;
+    $h = defined($args{-h}) ? $args{-h} : -1;
+    $minw = defined($args{-minw}) ? $args{-minw} : -1;
+    $maxw = defined($args{-maxw}) ? $args{-maxw} : -1;
+    $minh = defined($args{-minh}) ? $args{-minh} : -1;
+    $maxh = defined($args{-maxh}) ? $args{-maxh} : -1;
+
+    # Bless thy self and get on with it...
+    bless $self;
+    $self->{'h'} = _register($name,$type,$side,$sidemask,$w,$h,$minw,
+			     $maxw,$minh,$maxh);
+
+    # Default is inside this widget
+    $default_rship = $RSHIPS{-inside};
+    $default_parent = $self->{'h'};
+
+    return $self;
+}
 
 sub GetHandle {
     my $self = shift;
@@ -325,7 +373,7 @@ sub delete {
     _free($self->{'h'});
 }
 
-sub MakeBackground {
+sub SetBackground {
     my $self = shift;
     _setbg($self->{'h'});
 }
@@ -339,14 +387,22 @@ sub SetWidget {
     my %args = @_;
     my $prop;
     foreach (keys %args) {
-	$prop = $WPROP{$_};
 	$arg = $args{$_};
-	$arg = $ALIGN{$arg} if (/align/);
-	$arg = $SIDE{$arg} if (/side/);
-	$arg = $arg->GetHandle() if (/text/ or /bitmap/ or
-		/font/ or /bitmask/);
-	croak "Undefined property" if (!defined $prop);
-	_set($self->GetHandle(),$arg,$prop);
+
+	if ($EVENT{$_}) {
+	    # We are just setting an event binding to be used in the main loop
+	    $bindings{$self->{'h'}.':'.$EVENT{$_}} = $arg;
+	}
+	else {
+	    # Setting a widget property that is passed on to the server
+	    $prop = $WPROP{$_};
+	    $arg = $ALIGN{$arg} if (/align/);
+	    $arg = $SIDE{$arg} if (/side/);
+	    $arg = $arg->GetHandle() if (/text/ or /bitmap/ or
+					 /font/ or /bitmask/);
+	    croak "Undefined property" if (!defined $prop);
+	    _set($self->GetHandle(),$arg,$prop);
+	}
     }
 }
 
@@ -384,7 +440,12 @@ sub NewWidget {
     my %set_arg;
     my ($type,$typenam,$rship,$parent,$h);
     $type = undef;
-    $rship = $parent = 0;
+
+    # Default placement is after the previous widget
+    # (Unless is was a special widget, like a root widget)
+    $rship = $default_rship;
+    $parent = $default_parent;
+
     foreach (keys %args) {
 	if ($_ eq '-type') {
 	    $typenam = $args{$_}; 
@@ -408,6 +469,10 @@ sub NewWidget {
     $self->{'type'} = $typenam;
 
     $self->SetWidget(%set_arg);
+
+    # Default is after this widget
+    $default_rship = $RSHIPS{-after};
+    $default_parent = $h;
 
     return $self;
 }
@@ -456,8 +521,22 @@ sub NewBitmap {
     return $self;
 }
 
-sub EventWait {
-    _wait();
+# This is called after the app finishes it's initialization.
+# It waits for events, and dispatches them to the functions they're
+# bound to.
+sub EventLoop {
+    my ($event,$from,$param,$r);
+
+    # Good place for an update...  (probably the first update)
+    Update();
+
+    while (1) {     # This never returns
+	($event, $from, $param) = _wait();
+	
+	# Call the code reference
+	$r = $bindings{$from.':'.$event};
+	&$r($param) if (defined $r);
+    }
 }
 
 sub SendKey {
