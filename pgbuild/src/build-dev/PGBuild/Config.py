@@ -1,9 +1,7 @@
 """ PGBuild.Config
 
 Implements PGBuild's configuration tree, formed from multiple XML
-documents with one extra restriction placed on them: Any elements
-with the same parent, name, and attributes, are treated as equal.
-They will be merged, with child nodes appended.
+documents with some extra rules and a 'mount point' system.
 
 The configuration document is based on PGBuild.Node.XML, so its
 elements are both SCons nodes and XML DOM elements. The configuration
@@ -11,6 +9,23 @@ document is created by 'mounting' XML files. A read-only mount will
 have no further effect after its contents are read and merged with
 the config document. A read-write mount will be used to save a
 modified configuration document.
+
+The extra rules imposed on the XML:
+
+1. Any elements with the same parent, name, and attributes, are
+   treated as equal. They will be merged, with child nodes appended.
+
+2. In merging child nodes, order is preserved
+
+3. Python attributes from the second of the two nodes are preserved
+   when merging. This means that metadata like the 'mdoc' attribute
+   is overwritten on new mounts. So, a read-write mount merely has
+   to mention an element to claim ownership of it when it comes time
+   so save changes.
+
+4. To keep the DOM tidy, text elements have leading and trailing
+   whitespace stripped. Empty text nodes are then removed.
+
 """
 # 
 # PicoGUI Build System
@@ -35,15 +50,43 @@ import PGBuild.Node.XML
 import PGBuild.Errors
 import re
 
-def areElementsEqual(self, a, b):
-    """Compare two elements based on our config system's restrictions"""
-    pass
+def getElementSig(x):
+    """Return a string signature that can be used to compare two elements"""
+    return repr([x.nodeName, x.parentNode, x.getAttrDict()])
 
-def merge(element):
+def mergeElements(root):
     """Merge all identical elements under the given one,
        as defined in this module's document string.
        """
-    pass
+    # Make a dictionary of signatures to (relatively) efficiently
+    # determine whether any of our children are duplicates.
+    d = {}
+    for child in root.childNodes:
+        sig = getElementSig(child)
+        if d.has_key(sig):
+            # This is a duplicate! Prepend all the children from
+            # the first one, and delete it.
+            old = d[sig]
+#            while old.childNodes:
+#                last = old.lastChild
+#                if child.childNodes:
+#                    child.insertBefore(last, child.childNodes[0])
+#                else:
+#                    child.appendChild(last)
+        d[sig] = child
+    del d
+
+    # After all the merging at this level, traverse depth-first
+    for child in root.childNodes:
+        mergeElements(child)
+
+def stripElements(root):
+    """Recursively trim whitespace from text elements"""
+    for child in root.childNodes:
+        if child.nodeType == child.TEXT_NODE:
+            child.dom.data = child.data.strip()
+        else:
+            stripElements(child)
 
 class DefaultDocument:
     """Default contents of the config tree, passable to
@@ -98,6 +141,8 @@ class Tree(PGBuild.Node.XML.Document):
            """
         mdoc = MountedDocument(file, mode)
         dom = PGBuild.Node.XML.Document(file)
+        stripElements(dom)
+        dom.normalize()
 
         selfPgb = self.xpath("/pgbuild")[0]
 
@@ -142,7 +187,7 @@ class Tree(PGBuild.Node.XML.Document):
 
             # Multiple matches? Try merging the tree first
             if len(matches) > 1:
-                merge(self)
+                mergeElements(self)
                 # Still multiple matches? We can't continue
                 if len(selfPgb.xpath(mountPath)) > 1:
                     raise PGBuild.Errors.UserError("Ambiguous mount point")
@@ -174,13 +219,19 @@ class Tree(PGBuild.Node.XML.Document):
 
         # Now that we have the source and destination resolved, we can
         # implement the mount by appending all the children of domPgb
-        # to mountElement. Then, let merge() sort out the rest.
+        # to mountElement. Then, let mergeElements() sort out the rest.
         for child in domPgb.childNodes:
             # Clear the parentNode to keep minidom from exploding
-            # when it tries to remove the node from the original DOM
+            # when it tries to remove the node from the original DOM.
+            # Note that it's important for parentNode to be valid in
+            # the config tree for areElementsEqual() to be accurate.
+            # The original DOM will not be strictly correct, but
+            # its semantics will still make sense- elements in the
+            # original DOM below the root will have a parentNode
+            # pointing to the mount point.
             child.parentNode = None
             mountElement.appendChild(child)
-        merge(self)
+        mergeElements(self)
                     
 default = Tree()
 

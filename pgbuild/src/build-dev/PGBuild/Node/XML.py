@@ -66,6 +66,9 @@ class NodeWrapper:
     def __init__(self, wrapped):
         self.wrapped = wrapped
 
+    def __len__(self):
+        return len(self.wrapped)
+
     def __getitem__(self, pos):
         # This wrapper also makes it easy to trace DOM usage for debugging :)
         #print "%s[%s]" % (self.wrapped, pos)
@@ -90,8 +93,10 @@ class Element(SCons.Node.Node):
             if not hasattr(self, attr):
                 if _needsWrapper(getattr(self.dom, attr)):
                     setattr(self, attr, NodeWrapper(getattr(self.dom, attr)))
-                else:
-                    setattr(self, attr, _getNode(getattr(self.dom, attr)))
+
+    def __getattr__(self, attr):
+        """Redirect undefined attribute requests to the DOM object"""
+        return _getNode(getattr(self.dom, attr))
 
     def __str__(self):
         """A somewhat more helpful string representation for XML tags"""
@@ -117,6 +122,17 @@ class Element(SCons.Node.Node):
     def xpath(self, path):
         # Pass this off to the separate XPath implementation class
         return default_xpath.parse(self, path)
+
+    def getAttrDict(self):
+        """A utility to construct a python dictionary from the
+           attribute name/value pairs in dom.attributes.
+           """
+        d = {}
+        if not self.dom.attributes:
+            return None
+        for key in self.dom.attributes.keys():
+            d[key] = self.dom.attributes[key].value
+        return d
 
 class Document(Element):
     """Read in a File node and generate a DOM
