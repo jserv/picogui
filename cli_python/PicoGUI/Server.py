@@ -292,8 +292,6 @@ constants = {
         }),
         'scroll y':			(18, {
         }),
-        'scroll':			(17, {	# for backwards compatibility
-        }),
         'hotkey':			(19, {
         }),
         'extdevents':			(20, {	# for buttons, a mask of extra events to send
@@ -342,15 +340,16 @@ constants = {
         }),
         'auto orientation':		(40, {	# automatically reorient child widgets when side changes
         }),
-        'thobj button':			(41, {	# these four theme properties set the theme objects used for the
+        'thobj button':			(41, 	# these four theme properties set the theme objects used for the
                                               	# three possible states of the button widget.
-        }),
-        'thobj button hilight':		(42, {
-        }),
-        'thobj button on':		(43, {
-        }),
-        'thobj button on nohilight':	(44, {
-        }),
+            _thobj_consts),
+
+        'thobj button hilight':		(42, 
+            _thobj_consts),
+        'thobj button on':		(43, 
+            _thobj_consts),
+        'thobj button on nohilight':	(44, 
+            _thobj_consts),
         'panelbar label':		(45, {	# more read-only panelbar properties to get the built-in panelbar widgets
         }),
         'panelbar close':		(46, {
@@ -392,8 +391,8 @@ constants = {
             'prepend':	   (2, {}),	# Add to the beginning
             'atcursor':	   (3, {}),	# Add at the current cursor
         }),
-        'type':				(61, {
-        }),
+        'type':				(61,
+            _wtype_consts),
     },
     'traversewidget': {
         'children':	(1, {}),	# starting with first child, traverse forward
