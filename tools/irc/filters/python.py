@@ -22,8 +22,12 @@ author = message['from']
 
 # The body is the set of non-blank lines starting after "Log Message:"
 log = ""
-while body.readline().strip() != "Log Message:":
-    pass
+while True:
+    line = body.readline()
+    if not line:
+        sys.exit(0)
+    if line.strip() == "Log Message:":
+        break
 while True:
     line = body.readline().strip()
     if not line:
