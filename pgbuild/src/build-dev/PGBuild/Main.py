@@ -72,6 +72,8 @@ class OptionParser(optik.OptionParser):
 
         self.add_option("--platform", action="platform",
                         help="Shows the detected platform and exits.")
+        self.add_option("--scons-version", action="sconsVersion",
+                        help="Shows the version of SCons in use and exits.")
 
         ############# Build options
         
@@ -134,6 +136,11 @@ class OptionParser(optik.OptionParser):
             file = sys.stdout
         file.write("%s\n" % PGBuild.platform)
 
+    def print_scons_version(self, file=None):
+        # This mirrors the SCons built-in print_version and print_help
+        if file is None:
+            file = sys.stdout
+        file.write("%s\n" % PGBuild.sconsVersion)
 
 
 class HelpFormatter(optik.IndentedHelpFormatter):
@@ -155,18 +162,20 @@ class HelpFormatter(optik.IndentedHelpFormatter):
 class Option(optik.Option):
     """Subclass optik's Option in order to add new action types"""
 
-    ACTIONS = optik.Option.ACTIONS + ("uncount", "platform")
+    ACTIONS = optik.Option.ACTIONS + ("uncount", "platform", "sconsVersion")
     STORE_ACTIONS = optik.Option.STORE_ACTIONS + ("uncount",)
     
     def take_action(self, action, dest, opt, value, values, parser):
         if action == "uncount":
             setattr(values, dest, values.ensure_value(dest, 0) - 1)
-
         elif action == "platform":
             # This mirrors the built-in SCons actions "version" and "help"
             parser.print_platform()
             sys.exit(0)
-
+        elif action == "sconsVersion":
+            # This mirrors the built-in SCons actions "version" and "help"
+            parser.print_scons_version()
+            sys.exit(0)
         else:
             optik.Option.take_action(self, action, dest, opt, value, values, parser)
 

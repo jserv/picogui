@@ -24,6 +24,7 @@ _svn_id = "$Id$"
 
 import PGBuild.Version
 import PGBuild.Platform
+import SCons
 
 # This section defines the name of the package, and the current version.
 # The 'release' below should be set to a version number for releases,
@@ -34,6 +35,7 @@ description = "configuration and build tool"
 release = None
 version = PGBuild.Version.determineVersion()
 platform = PGBuild.Platform.determinePlatform()
+sconsVersion = SCons.__version__
 
 about = "%s %s\nVersion %s on %s" % (name, description, version, platform)
 
