@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.27 2001/01/05 06:41:39 micahjd Exp $
+/* $Id: client_c.h,v 1.28 2001/01/05 09:28:20 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -152,6 +152,9 @@ void pgBind(pghandle widgetkey,unsigned short eventkey,
 
 /* Delete any object that has a handle */
 void pgDelete(pghandle object);
+
+/* Give a widget the keyboard focus */
+void pgFocus(pghandle widget);
 
 /* Register application. The type and name are required.
  * Optional specifications (PG_APPSPEC_*) are specified 

@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.36 2001/01/05 06:41:40 micahjd Exp $
+/* $Id: picogui_client.c,v 1.37 2001/01/05 09:28:21 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -513,7 +513,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: picogui_client.c,v 1.36 2001/01/05 06:41:40 micahjd Exp $\n");
+	fprintf(stderr,"$Id: picogui_client.c,v 1.37 2001/01/05 09:28:21 micahjd Exp $\n");
 	exit(1);
       }
       
@@ -881,6 +881,12 @@ void pgSubUpdate(pghandle widget) {
   arg.h = htonl(widget ? widget : _pgdefault_widget);
   _pg_add_request(PGREQ_UPDATEPART,&arg,sizeof(arg));
   pgFlushRequests();
+}
+
+void pgFocus(pghandle widget) {
+  struct pgreqd_handlestruct arg;
+  arg.h = htonl(widget ? widget : _pgdefault_widget);
+  _pg_add_request(PGREQ_FOCUS,&arg,sizeof(arg));
 }
 
 void pgDelete(pghandle object) {
