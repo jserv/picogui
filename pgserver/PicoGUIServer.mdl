@@ -1,4 +1,6 @@
 # -*- python -*-
+#
+# $Id: PicoGUIServer.mdl,v 1.55 2003/01/22 13:47:37 bornet Exp $
 
 import os, string
 from Bee.Autoconf import compile, install, clean, configure, flags
@@ -19,15 +21,18 @@ license = ''' GNU GPL '''
 prefix = '/usr'
 
 depends = [
-    'resourcemanager', 'kernel', 'processmanager',
+    'kernel', 'processmanager',
     ('libjpeg', ~S ('platform/m68k-pic-coff')),
     ('busybox', S ('platform/ppc-linux')),
     ]
 
 asserts = [
-    (S ('module/picoguiserver/start') & S ('platform/m68k-pic-coff')) >> S ('module/pocketapps/bioscall'),
-    (S ('module/picoguiserver/start') & S ('platform/m68k-pic-coff')) >> S ('module/pocketapps/initenv'),
-    (S ('module/picoguiserver/start') & S ('platform/ppc-linux/redwood4')) >> S ('module/ibm-dcr'),
+    (S ('module/picoguiserver/start') & S ('platform/m68k-pic-coff'))
+    >> S ('module/pocketapps/bioscall'),
+    (S ('module/picoguiserver/start') & S ('platform/m68k-pic-coff'))
+    >> S ('module/pocketapps/initenv'),
+    (S ('module/picoguiserver/start') & S ('platform/ppc-linux/redwood4'))
+    >> S ('module/ibm-dcr'),
     ]
 
 runtime = [
@@ -67,8 +72,7 @@ def prepare (module, platform, project):
         "--with-profile=%s" % profile,
         "--enable-bee",
         "--with-extra-ipath=%s/include" % project ['module/kernel'].path ['dfl'],
-        "--with-extra-cflags='%s'" % cflags,
-        "--with-extra-libs='%s'" % libs,
+        "--with-pm-cflags='%s'" % cflags,
         ]
 
     if not platform.native:

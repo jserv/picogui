@@ -1,8 +1,8 @@
-INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include $(DRIVER_CFLAGS) @RM_CFLAGS@ @PM_CFLAGS@
+INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include $(DRIVER_CFLAGS)
 
 noinst_LTLIBRARIES = libinput.la
 
-LIBS   = @LIBS@ @RM_LIBS@
+LIBS   = @LIBS@
 
 libinput_la_SOURCES =		\
 	input_drivers.c		\

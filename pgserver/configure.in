@@ -30,18 +30,13 @@ AC_ARG_WITH(extra-libs,
   LIBS="$LIBS `echo ${withval} | sed 's/:/ /g' `")
 
 dnl
-dnl Use this to enable the PocketBee ResourceManager
+dnl Check if we have processmanager or not
 dnl 
-BEE_MODULE(rm)
-BEE_MODULE(pm)
-
-if test "${RM_PREFIX}" != "" ; then
-  RM_LIBS="${RM_LDFLAGS} -lrm"
-
-  AC_SUBST(RM_LIBS)
-  AC_DEFINE(RM_ENABLED)
-fi
-
+AC_ARG_WITH(pm-cflags,
+[  --with-pm-cflags=<pm cflags>   To specify Process Manager cflags],[
+  AC_DEFINE(PM_ENABLED)
+  DRIVER_CFLAGS="$DRIVER_CFLAGS ${withval}"
+])
 
 dnl normalize the path somehow
 CONFIG_FILE=$with_profile

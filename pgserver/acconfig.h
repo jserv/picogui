@@ -1,3 +1,3 @@
-/* Enable/disable Smartdata Resource Manager */
-#undef RM_ENABLED
+/* Enable/disable Smartdata Process Manager */
+#undef PM_ENABLED
 
