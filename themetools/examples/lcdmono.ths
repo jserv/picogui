@@ -1,12 +1,16 @@
-/* $Id: lcdmono.ths,v 1.9 2001/04/29 17:29:06 micahjd Exp $
+/* $Id: lcdmono.ths,v 1.10 2001/07/05 07:53:59 micahjd Exp $
  *
  * Monochrome theme for LCDs. Rounded buttons and dialogs, a background
  * that looks good on a handheld, and handheld-friendly key mappings
+ *
+ * Version 1.0
  *
  * Micah Dowty
  */
 
 object default {
+   name = "LCD Classic (Monochrome)";
+
    bgcolor = 0xFFFFFF;
    fgcolor = 0x000000;
    spacing = 0;

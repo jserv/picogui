@@ -1,13 +1,17 @@
-/* $Id: aqua.ths,v 1.28 2001/04/29 17:29:06 micahjd Exp $
+/* $Id: aqua.ths,v 1.29 2001/07/05 07:53:59 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
+ *
+ * Version 1.0
  *
  * Micah Dowty
  */
 
 /* The stripey background */
 object default {
+  name = "PicoAqua";
+
   bgfill = fillstyle {
     Bitmap(x,y,w,h,bitmap1);
   };

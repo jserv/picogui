@@ -1,12 +1,16 @@
-/* $Id: ncurses_color.ths,v 1.4 2001/04/29 17:29:06 micahjd Exp $
+/* $Id: ncurses_color.ths,v 1.5 2001/07/05 07:53:59 micahjd Exp $
  *
  * PicoGUI theme for the ncurses video driver.
  * Nice colorful buttons and things, as provided by programs like dialog
+ *
+ * Version 1.0
  *
  * Micah Dowty
  */
 
 object default {
+   name = "Color ncurses (Text mode)";
+
    bgfill = fillstyle {
       SetColor(bgcolor);
       Rect(x,y,w,h);

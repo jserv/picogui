@@ -1,12 +1,15 @@
-/* $Id: crsr_bwsphere.ths,v 1.1 2001/06/25 00:50:38 micahjd Exp $
+/* $Id: crsr_bwsphere.ths,v 1.2 2001/07/05 07:53:59 micahjd Exp $
  *
  * Large black&white sphere. Not a useful cursor, but good for testing blit
  * performance in linear1.
+ *
+ * Version 1.0 
  *
  * Micah Dowty
  */
  
 object default {
+   name = "Monochrome Sphere Cursor";
    cursorbitmap = LoadBitmap("data/bwsphere.pbm");
    cursorbitmask = LoadBitmap("data/bwsphere_mask.pbm");
 }

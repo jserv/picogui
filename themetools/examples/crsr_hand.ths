@@ -1,11 +1,14 @@
-/* $Id: crsr_hand.ths,v 1.1 2001/02/13 05:11:34 micahjd Exp $
+/* $Id: crsr_hand.ths,v 1.2 2001/07/05 07:53:59 micahjd Exp $
  *
  * The hand cursor, formerly PicoGUI's default
+ *
+ * Version 1.0
  *
  * Micah Dowty
  */
  
 object default {
+   name = "Classic Hand Cursor";
    cursorbitmap = LoadBitmap("data/hand.pnm");
    cursorbitmask = LoadBitmap("data/hand_mask.pnm");
 }

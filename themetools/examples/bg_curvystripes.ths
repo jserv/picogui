@@ -1,6 +1,10 @@
 /* Background theme-
  * Gradient-heavy stripey things
+ *
+ * Version 1.0
  */
+
+obj default name = "Curvystripes Background";
 
 object background {
 

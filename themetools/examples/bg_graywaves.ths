@@ -1,6 +1,10 @@
 /* Background theme-
  * That nifty tile from the Propaganda collection, tiled
+ *
+ * Version 1.0
  */
+
+obj default name = "Graywaves Background";
 
 object background {
    bitmap1 = LoadBitmap("data/vol5_10a.pnm");

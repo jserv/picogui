@@ -1,10 +1,14 @@
-/* $Id: classic256.ths,v 1.6 2001/04/29 17:29:06 micahjd Exp $
+/* $Id: classic256.ths,v 1.7 2001/07/05 07:53:59 micahjd Exp $
  *
  * PicoGUI theme, modeled after the original 256-color
  * theme used in the old theme system.
  *
+ * Version 1.0
+ *
  * Micah Dowty
  */
+
+obj default name = "PicoGUI Classic (256 color)";
 
 object background {
   bgfill = fillstyle {

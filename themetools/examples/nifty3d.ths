@@ -1,14 +1,17 @@
-/* $Id: nifty3d.ths,v 1.5 2001/04/29 17:29:06 micahjd Exp $
+/* $Id: nifty3d.ths,v 1.6 2001/07/05 07:53:59 micahjd Exp $
  *
  * This theme's pretty darn cpu-intensive, but it
  * demonstrates the neat things that can be done with
  * fillstyles and gradients.
  * Uses much less memory than Aqua, but probably not faster.
  *
+ * Version 1.0
+ *
  * Micah Dowty
  */
 
 object default {
+  name = "Nifty 3D";
 
   /* This generates a beveled surface, based on 'bgcolor'.
      The amount of shading is determined by 'hilightcolor'

@@ -1,12 +1,16 @@
-/* $Id: pseudo3d.ths,v 1.6 2001/04/29 17:29:06 micahjd Exp $
+/* $Id: pseudo3d.ths,v 1.7 2001/07/05 07:53:59 micahjd Exp $
  *
  * Theme with simple (and boring?) grey 3d-ish hilights
  * But hey, it works on a 16-color display!
+ *
+ * Version 1.0
  *
  * Micah Dowty
  */
 
 object default {
+  name = "Pseudo-3D (16 color)";
+
   /* Simple fill */
   bgfill = fillstyle {
     SetColor(bgcolor);

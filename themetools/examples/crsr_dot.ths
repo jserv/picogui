@@ -1,12 +1,15 @@
-/* $Id: crsr_dot.ths,v 1.1 2001/05/13 04:15:15 micahjd Exp $
+/* $Id: crsr_dot.ths,v 1.2 2001/07/05 07:53:59 micahjd Exp $
  *
  * Single pixel, good for very low resolution displays like
  * ncurses or serial40x4
+ *
+ * Version 1.0
  *
  * Micah Dowty
  */
  
 object default {
+   name = "Single Pixel Cursor";
    cursorbitmap = LoadBitmap("data/black_pixel.pnm");
    cursorbitmask = Copy(default::cursorbitmap);
 }
