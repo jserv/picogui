@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.7 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: request.c,v 1.8 2000/04/29 19:21:26 micahjd Exp $
  *
  * request.c - this connection is for sending requests to the server
  *             and passing return values back to the client
@@ -33,6 +33,7 @@
 #include <widget.h>
 #include <appmgr.h>
 #include <widget.h>
+#include <theme.h>
 
 /* #define NONBLOCKING */
 
@@ -57,6 +58,7 @@ DEF_REQHANDLER(in_key)
 DEF_REQHANDLER(in_point)
 DEF_REQHANDLER(in_direct)
 DEF_REQHANDLER(wait)
+DEF_REQHANDLER(themeset)
 DEF_REQHANDLER(undef)
 g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(ping)
@@ -73,6 +75,7 @@ g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(in_point)
   TAB_REQHANDLER(in_direct)
   TAB_REQHANDLER(wait)
+  TAB_REQHANDLER(themeset)
   TAB_REQHANDLER(undef)
 };
 
@@ -558,6 +561,27 @@ g_error rqh_in_point(int owner, struct uipkt_request *req,
     return mkerror(ERRT_BADPARAM,"rqhd_in_point too small");
   dispatch_pointing(ntohl(arg->type),ntohs(arg->x),ntohs(arg->y),
 		    ntohs(arg->btn));
+  return sucess;
+}
+
+g_error rqh_themeset(int owner, struct uipkt_request *req,
+		     void *data, unsigned long *ret, int *fatal) {
+  struct rqhd_themeset *arg = (struct rqhd_themeset *) data;
+  if (req->size < sizeof(struct rqhd_themeset)) 
+    return mkerror(ERRT_BADPARAM,"rqhd_themeset too small");
+
+  /* Don't worry about errors here.  If they try to set a nonexistant
+     theme, its no big deal.  Just means that the theme is a later
+     version than this widget set.
+  */
+  
+  themeset(ntohs(arg->element),ntohs(arg->state),ntohs(arg->param),
+	   ntohl(arg->value));
+
+  /* Do a global recalc (Yikes!) */
+  dts->top->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+  dts->top->flags |= DIVTREE_NEED_RECALC;
+
   return sucess;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: theme.h,v 1.2 2000/04/29 17:51:59 micahjd Exp $
+/* $Id: theme.h,v 1.3 2000/04/29 19:21:26 micahjd Exp $
  *
  * theme.h - This defines the structures and functions for themes,
  * parameters defining the way widgets are drawn that are reconfigurable
@@ -49,6 +49,8 @@
 #define STATE_HILIGHT   1
 #define STATE_ACTIVATE  2
 
+#define STATE_NUM       3
+
 struct element {
   /* Delta values from the divnode's size */
   int x,y,w,h;
@@ -71,6 +73,16 @@ struct element {
 
 #define E_NUM 5
 
+#define EPARAM_X            1
+#define EPARAM_Y            2
+#define EPARAM_W            3
+#define EPARAM_H            4 
+#define EPARAM_TYPE         5
+#define EPARAM_C1           6
+#define EPARAM_C2           7
+#define EPARAM_ANGLE        8
+#define EPARAM_TRANSLUCENT  9
+
 extern struct element current_theme[E_NUM];
 
 /**** Functions for themes */
@@ -82,6 +94,9 @@ void addelement(struct gropnode **headpp,struct element *el,
 
 /* Apply a state to an existing gropnode */
 void applystate(struct gropnode *n,struct element *el,int state);
+
+/* This is how theme elements are stored in a portable way */
+void themeset(int element,int state,int param,unsigned long value);
 
 #endif /* __WIDGET_H */
 

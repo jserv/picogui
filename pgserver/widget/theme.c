@@ -1,4 +1,4 @@
-/* $Id: theme.c,v 1.2 2000/04/29 17:51:59 micahjd Exp $
+/* $Id: theme.c,v 1.3 2000/04/29 19:21:26 micahjd Exp $
  *
  * theme.h - This defines the structures and functions for themes,
  * parameters defining the way widgets are drawn that are reconfigurable
@@ -75,7 +75,7 @@ struct element current_theme[E_NUM] = {
     0,0,0,0,
     ELEM_GRADIENT,
     {
-      {0x7080A0,0x203040,90,0},
+      {0x7080A0,0x102030,85,0},
       {0,0,0,0},
       {0,0,0,0}
     }
@@ -124,6 +124,45 @@ void applystate(struct gropnode *n,struct element *el,int state) {
   n->param.gradient.c2 = el->state[state].c2;
   n->param.gradient.angle = el->state[state].angle;
   n->param.gradient.translucent = el->state[state].translucent;
+}
+
+void themeset(int element,int state,int param,unsigned long value) {
+  struct element *el;
+  if ((element<0) || (element>=E_NUM)) return;
+  el = &current_theme[element];
+  switch (param) {
+  case EPARAM_X:
+    el->x = value;
+    break;
+  case EPARAM_Y:
+    el->y = value;
+    break;
+  case EPARAM_W:
+    el->w = value;
+    break;
+  case EPARAM_H:
+    el->h = value;
+    break;
+  case EPARAM_TYPE:
+    el->type = value;
+    break;
+  case EPARAM_C1:
+    if ((state<STATE_NUM) && (state>=0))
+      el->state[state].c1 = cnvcolor(value);
+    break;
+  case EPARAM_C2:
+    if ((state<STATE_NUM) && (state>=0))
+      el->state[state].c2 = cnvcolor(value);
+    break;
+  case EPARAM_ANGLE:
+    if ((state<STATE_NUM) && (state>=0))
+      el->state[state].angle = value;
+    break;
+  case EPARAM_TRANSLUCENT:
+    if ((state<STATE_NUM) && (state>=0))
+      el->state[state].translucent = value;
+    break;
+  }  
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.7 2000/04/29 17:51:59 micahjd Exp $
+/* $Id: panel.c,v 1.8 2000/04/29 19:21:26 micahjd Exp $
  *
  * panel.c - simple container widget
  *
@@ -78,9 +78,7 @@ g_error panel_set(struct widget *self,int property, glob data) {
     if ((data != S_LEFT) && (data != S_RIGHT) && (data != S_TOP) &&
 	(data != S_BOTTOM)) return mkerror(ERRT_BADPARAM,
 	"WP_SIDE param is not a valid side value (panel)");
-    self->in->next->flags &= SIDEMASK;
     self->in->flags &= SIDEMASK;
-    self->in->next->flags |= ((sidet)data);
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
       DIVNODE_PROPAGATE_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
