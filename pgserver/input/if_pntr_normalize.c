@@ -1,4 +1,4 @@
-/* $Id: if_pntr_normalize.c,v 1.3 2002/07/04 22:10:02 micahjd Exp $
+/* $Id: if_pntr_normalize.c,v 1.4 2002/07/28 04:23:38 micahjd Exp $
  *
  * if_pntr_normalize.c - Convert the various pointer events to a standard form
  *
@@ -72,19 +72,12 @@ void infilter_pntr_normalize_handler(struct infilter *self, u32 trigger, union t
     newbtn = param->mouse.btn;
     oldbtn = param->mouse.cursor->prev_buttons;
     
-    if (param->mouse.x != x || param->mouse.y != y) {
-      trigger = PG_TRIGGER_MOVE;
-      infilter_send(self,trigger,param);
-    }
-    if (newbtn & ~oldbtn) {
+    if (newbtn & ~oldbtn)
       trigger = PG_TRIGGER_DOWN;
-      infilter_send(self,trigger,param);
-    }
-    else if (oldbtn & ~newbtn) {
+    else if (oldbtn & ~newbtn)
       trigger = PG_TRIGGER_UP;
-      infilter_send(self,trigger,param);
-    }
-    return;
+    else
+      trigger = PG_TRIGGER_MOVE;
   }
 
   /* If we're moving the cursor and this isn't a MOVE event, generate one
@@ -92,16 +85,24 @@ void infilter_pntr_normalize_handler(struct infilter *self, u32 trigger, union t
   if ((param->mouse.x != x || param->mouse.y != y) && trigger!=PG_TRIGGER_MOVE)
     infilter_send(self,PG_TRIGGER_MOVE,param);
 
+  /* If it's a move event with a button down, send a drag event */
+  if (param->mouse.btn && trigger==PG_TRIGGER_MOVE)
+    infilter_send(self,PG_TRIGGER_DRAG,param);
+
   /* Detect changes in buttons, and store that along with the event
    */
   param->mouse.chbtn = param->mouse.btn ^ param->mouse.cursor->prev_buttons;
   param->mouse.cursor->prev_buttons = param->mouse.btn;
+
+  /* Resend it (we might have changed the trigger type) */
+  infilter_send(self,trigger,param);
 }
 
 struct infilter infilter_pntr_normalize = {
   accept_trigs: PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_MOVE | PG_TRIGGER_PNTR_STATUS |
-                PG_TRIGGER_PNTR_RELATIVE | PG_TRIGGER_SCROLLWHEEL,
-  absorb_trigs: PG_TRIGGER_PNTR_STATUS | PG_TRIGGER_PNTR_RELATIVE,
+                PG_TRIGGER_PNTR_RELATIVE,
+  absorb_trigs: PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_MOVE | PG_TRIGGER_PNTR_STATUS |
+                PG_TRIGGER_PNTR_RELATIVE,
   handler: &infilter_pntr_normalize_handler,
 };
 

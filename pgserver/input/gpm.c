@@ -1,4 +1,4 @@
-/* $Id: gpm.c,v 1.5 2002/07/03 22:03:29 micahjd Exp $
+/* $Id: gpm.c,v 1.6 2002/07/28 04:23:38 micahjd Exp $
  *
  * gpm.c - input driver for gpm
  * 
@@ -39,62 +39,15 @@
 Gpm_Event gpm_last_event;
 struct cursor *gpm_cursor;
 
-/* the stupid gpm server scales down the input for text mode,
- * so we either have to deal with darn slow input or choppy
- * scaling cruft. */
-#define SCALEHACK 2
-
 /******************************************** Implementations */
 
 int gpm_fd_activate(int fd) {
    Gpm_Event evt;
-   static int savedbtn = 0;
    
    /* Mouse activity? */
    if (fd==gpm_fd && Gpm_GetEvent(&evt) > 0) {
-	 int trigger;
-
-	 /* Generate our own coordinates and fit it within the
-	  * video driver's screen resolution */
-	 if (vid->xres>200) {    /* For stupid scale hack */
-	    evt.x = cursor->x + (evt.dx << SCALEHACK);
-	    evt.y = cursor->y + (evt.dy << SCALEHACK);
-	    gpm_mx = vid->xres;
-	    gpm_my = vid->yres;
-	    Gpm_FitEvent(&evt);
-	 }
-
-	 /* Maybe movement outside of window or on another VT */
-	 if ((evt.type & (GPM_MOVE|GPM_DRAG)) && 
-	     (evt.x==gpm_last_event.x) &&
-	     (evt.y==gpm_last_event.y))
-	   return 1;
-	 
 	 gpm_last_event = evt;
-	 
-	 switch (evt.type & (GPM_MOVE | GPM_DRAG | GPM_UP | GPM_DOWN)) {
-	    
-	  case GPM_MOVE:
-	  case GPM_DRAG:
-	    trigger = PG_TRIGGER_MOVE;
-	    savedbtn = evt.buttons;
-	    break;
-	    
-	  case GPM_UP:
-	    trigger = PG_TRIGGER_UP;
-	    evt.buttons = savedbtn &= ~evt.buttons;
-	    break;
-	    
-	  case GPM_DOWN:
-	    trigger = PG_TRIGGER_DOWN;
-	    savedbtn = evt.buttons;
-	    break;
-	    
-	  default:
-	    return 1;
-	 }
-
-	 infilter_send_pointing(trigger,evt.x,evt.y,
+	 infilter_send_pointing(PG_TRIGGER_PNTR_RELATIVE,evt.dx,evt.dy,
 				((evt.buttons>>2)&1) ||
 				((evt.buttons<<2)&4) ||
 				(evt.buttons&2),gpm_cursor);
