@@ -1,4 +1,4 @@
-/* $Id: themec.h,v 1.5 2000/09/25 19:41:19 micahjd Exp $
+/* $Id: themec.h,v 1.6 2000/09/26 00:46:14 micahjd Exp $
  *
  * themec.h - definitions used internally in the theme compiler
  *
@@ -58,12 +58,16 @@ struct propnode {
   unsigned long data;
   unsigned long loader;
   unsigned short propid;
+  unsigned long *link_from;  /* If non-null, this location in the
+				theme heap is set to this property's
+				offset from the beginning of the heap */
   struct propnode *next;
 };
 
 struct objectnode {
   unsigned short id;
   struct propnode *proplist;
+  unsigned long num_prop;
   struct objectnode *next;
 };
 
