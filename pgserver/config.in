@@ -22,9 +22,9 @@ if [ "$CONFIG_LINUX_GENERIC" = "y" ]; then
 fi
 
 bool 'Use UNIX sockets instead of TCP/IP'   CONFIG_UNIX_SOCKET
-bool 'Optimize for size'    CONFIG_OPTIMIZE_SIZE
-bool 'Optimize for speed'   CONFIG_OPTIMIZE_SPEED
-bool 'Maximum speed optimization (Breaks on some architectures!)'   CONFIG_MAX_OPTIMIZE
+bool 'Optimize for size (-Os)'              CONFIG_OPTIMIZE_SIZE
+bool 'Optimize for speed (-O2)'             CONFIG_OPTIMIZE_SPEED
+bool 'Maximum speed optimization (-O3, Breaks on some architectures!)'   CONFIG_MAX_OPTIMIZE
 bool 'Statically link'      CONFIG_LINK_STATIC
 int  'Maximum number of zombie gropnodes'     CONFIG_MAX_ZOMBIEGROPS
 endmenu
