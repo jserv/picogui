@@ -580,6 +580,7 @@ object terminal {
 object indicator {
   width = 15;
   margin = 0;
+  fgcolor = 0xb0b5df;
 }
 
 object indicator.h {
@@ -593,6 +594,8 @@ object indicator.h {
   };
     
   overlay = fillstyle {
+    SetColor(widget::PG_WP_COLOR);
+    Rect(x-w,y+(h-13)/2,w*2,11);
     SetLgop(PG_LGOP_ALPHA);
     Bitmap(x-w,y+(h-15)/2,w*2,15,bitmap2);
     SetLgop(PG_LGOP_NONE);
@@ -610,8 +613,10 @@ object indicator.v {
   };
     
   overlay = fillstyle {
+    SetColor(widget::PG_WP_COLOR);
+    Rect(x+(w-13)/2,y-h,11,h*2);
     SetLgop(PG_LGOP_ALPHA);
-    Bitmap(x+(w-15)/2,y-h,15,h*2,bitmap1);
+    Bitmap(x+(w-15)/2,y-h,15,h*2,bitmap2);
     SetLgop(PG_LGOP_NONE);
   };
 }
