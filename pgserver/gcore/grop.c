@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.24 2000/11/12 04:03:21 micahjd Exp $
+/* $Id: grop.c,v 1.25 2000/11/12 20:06:53 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -195,6 +195,9 @@ g_error addgrop(struct gropctxt *ctx, int type,int x,
   /* This will probably soon be changed to a heap-based
      system for allocating gropnodes 
   */
+#ifdef DEBUG
+  num_grops++;
+#endif
   e = g_malloc((void**)&node,sizeof(struct gropnode));
   errorcheck;
   node->type = type;
@@ -226,6 +229,9 @@ void grop_free(struct gropnode **headpp) {
     condemn = p;
     p = p->next;
     g_free(condemn);
+#ifdef DEBUG
+  num_grops--;
+#endif
   }
   *headpp = NULL;
 }

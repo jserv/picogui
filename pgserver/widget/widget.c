@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.51 2000/11/05 21:07:24 micahjd Exp $
+/* $Id: widget.c,v 1.52 2000/11/12 20:06:54 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -76,6 +76,9 @@ g_error widget_create(struct widget **w,int type,
   if ((type > PG_WIDGETMAX) || (!dt) || (!where)) return 
       mkerror(PG_ERRT_BADPARAM,20);
 
+#ifdef DEBUG
+  num_widgets++;
+#endif
   e = g_malloc((void **)w,sizeof(struct widget));
   errorcheck;
   memset(*w,0,sizeof(struct widget));
@@ -234,7 +237,10 @@ void widget_remove(struct widget *w) {
       w->dt->flags |= DIVTREE_NEED_RECALC;
     }   
   }
-  
+
+#ifdef DEBUG
+  num_widgets--;
+#endif
   g_free(w);
 }
 
@@ -514,7 +520,7 @@ void dispatch_key(long type,int key,int mods) {
 
   long keycode = (mods<<16) | key;     /* Combines mods and the key */
   
-  /* First, process magic keys */
+  /* First, process magic 'double bucky' keys */
   if (type==TRIGGER_KEYDOWN &&
       (mods & PGMOD_CTRL) &&
       (mods & PGMOD_ALT)) {
@@ -532,6 +538,20 @@ void dispatch_key(long type,int key,int mods) {
 	   "    Either you have read the source code or\n"
 	   "    you have very persistantly banged your\n"
 	   "    head on the keyboard ;-)",div_under_crsr);
+      return;
+
+    case PGKEY_m:           /* CTRL-ALT-m displays a memory profile */
+      guru("Memory Profile\n\n"
+	   "Total memory use: %d bytes in %d allocations\n\n"
+	   "%d bytes in %d gropnodes\n"
+	   "%d bytes in %d divnodes\n"
+	   "%d bytes in %d widgets\n"
+	   "%d bytes in %d handle nodes",
+	   memamt,memref,
+	   num_grops*sizeof(struct gropnode),num_grops,
+	   num_divs*sizeof(struct divnode),num_divs,
+	   num_widgets*sizeof(struct widget),num_widgets,
+	   num_handles*sizeof(struct handlenode),num_handles);
       return;
 
     case PGKEY_b:           /* CTRL-ALT-b blanks the screen */

@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.28 2000/11/04 07:50:42 micahjd Exp $
+/* $Id: div.c,v 1.29 2000/11/12 20:06:53 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -230,6 +230,9 @@ void divnode_redraw(struct divnode *n,int all) {
 /* Allocate an empty divnode */
 g_error newdiv(struct divnode **p,struct widget *owner) {
   g_error e;
+#ifdef DEBUG
+  num_divs++;
+#endif
   e = g_malloc((void **)p,sizeof(struct divnode));
   errorcheck;
   memset(*p,0,sizeof(struct divnode));
@@ -264,6 +267,9 @@ void r_divnode_free(struct divnode *n) {
   r_divnode_free(n->next);
   r_divnode_free(n->div);
   grop_free(&n->grop);
+#ifdef DEBUG
+  num_divs--;
+#endif
   g_free(n);
 }
 
