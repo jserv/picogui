@@ -1,6 +1,6 @@
 # Application class
 
-import Widget, Server, events, time, infilter, template
+import Widget, Server, events, time, infilter, template, struct
 
 class EventHandled(Exception):
     """raise this from an event handler when you don't want other
@@ -152,6 +152,17 @@ class Application(Widget.Widget):
     def shutdown(self):
         self.server.close_connection()
 
+    def getVideoMode(self):
+	mi = struct.unpack('!LHHHHHxx', self.server.getmode().data)
+	return { 'flags': mi[0],
+		 'xres': mi[1],
+		 'yres': mi[2],
+		 'lxres': mi[3],
+		 'lyres': mi[4],
+		 'bpp': mi[5] }
+
+
+        
 class ToolbarApp(Application):
     _type = 2
 

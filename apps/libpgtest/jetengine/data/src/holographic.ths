@@ -201,15 +201,13 @@ object button {
   panelMargin = 2;
   bgcolor = 0x8091fc;
   alpha = 0x20000000;
-}
-object button.hilight alpha = 0x60000000;
 
-object background {
   cursorbitmap = LoadBitmap("crosshair.png");
   cursorbitmask = 0;
   crsrhotspot.x = 22; 
   crsrhotspot.y = 22;
 }
+object button.hilight alpha = 0x60000000;
 
 object field {
   bgfill = Copy(default::fEmptyPanel);
@@ -226,6 +224,20 @@ object panel {
 }
 
 object panelbar {
-  parent = PGTH_O_BUTTON;
-  bgfill = Copy(default::fWetPanel);
+  bgfill = Copy(default::fGlowPanel);
+  lowerBevel = 12;
+  height = 28;
+  width = 28;
+  margin = 2;
+  panelMargin = 2;
+  bgcolor = 0xcad1f9;
 }
+
+object base.panelbtn {
+  spacing = 2;
+  side = PG_S_RIGHT;
+}
+
+object closebtn text = "Close";
+object rotatebtn text = "Rotate";
+object zoombtn width = 0;
