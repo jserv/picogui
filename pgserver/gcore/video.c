@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.32 2001/03/22 00:20:38 micahjd Exp $
+/* $Id: video.c,v 1.33 2001/03/23 00:35:05 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -31,6 +31,7 @@
 #include <pgserver/video.h>
 #include <pgserver/input.h>
 #include <pgserver/divtree.h>
+#include <pgserver/widget.h>
 
 /******************************************** Utils */
 
@@ -211,11 +212,19 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
    
    /* Resize the root divnodes of all divtrees in the dtstack */
    if (dts)   /* (if this is in early init, dtstack isn't here yet) */
-     for (tree=dts->root;tree;tree=tree->next) {
+     for (tree=dts->top;tree;tree=tree->next) {
 	tree->head->w = vid->lxres;
 	tree->head->h = vid->lyres;
 	tree->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
-	tree->flags |= DIVTREE_NEED_RECALC;
+	tree->flags |= DIVTREE_NEED_RECALC | DIVTREE_ALL_REDRAW;
+	
+	/* More work for us if this is a popup layer... 
+	 * Need to reclip the popup so it doesn't go off the
+	 * edge of the screen.
+	 */
+	if (tree->head->next && tree->head->next->owner &&
+	    tree->head->next->owner->type == PG_WIDGET_POPUP)
+	  clip_popup(tree->head->next->div);
      }
 
    return VID(entermode)();

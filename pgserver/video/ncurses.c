@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.15 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: ncurses.c,v 1.16 2001/03/23 00:35:05 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -136,7 +136,7 @@ struct fontstyle_node ncurses_font_style = {
         
 /******************************************** Implementations */
 
-g_error ncurses_init(int xres,int yres,int bpp,unsigned long flags) {
+g_error ncurses_init(void) {
    chtype rgbmap[] = { COLOR_BLACK, COLOR_BLUE, COLOR_GREEN, COLOR_CYAN, 
 	COLOR_RED, COLOR_MAGENTA, COLOR_YELLOW, COLOR_WHITE };
    int f,b;

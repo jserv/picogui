@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.36 2001/03/22 00:20:37 micahjd Exp $
+/* $Id: global.c,v 1.37 2001/03/23 00:35:03 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -163,6 +163,8 @@ void appmgr_free(void) {
   }
   
   /* Free the mouse cursor */
+  (*vid->bitmap_free)(defaultcursor_bitmap);
+  (*vid->bitmap_free)(defaultcursor_bitmask);
   free_sprite(cursor);
   cursor = NULL;
 }

@@ -1,5 +1,4 @@
-
-/* $Id: panel.c,v 1.55 2001/03/22 00:20:38 micahjd Exp $
+/* $Id: panel.c,v 1.56 2001/03/23 00:35:05 micahjd Exp $
  *
  * panel.c - Holder for applications
  *

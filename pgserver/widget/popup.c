@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.28 2001/03/19 05:59:28 micahjd Exp $
+/* $Id: popup.c,v 1.29 2001/03/23 00:35:05 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -31,6 +31,21 @@
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <pgserver/appmgr.h>
+
+/* Clipping for popup boxes. Mainly used in create_popup, but it is
+ * also called when switching video modes */
+void clip_popup(struct divnode *div) {
+  if (div->x+div->w >= vid->lxres)
+    div->x = vid->lxres - div->w - div->split;
+  if (div->y+div->h >= vid->lyres)
+    div->y = vid->lyres - div->h - div->split;
+  if (div->x <0) div->x = 0;
+  if (div->y <0) div->y = 0;
+  if (div->x+div->w >= vid->lxres)
+    div->w = vid->lxres-div->x-1;
+  if (div->y+div->h >= vid->lyres)
+    div->h = vid->lyres-div->y-1;
+}
 
 /* We have a /special/ function to create a popup widget from scratch. */
 g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
@@ -85,21 +100,13 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
     (*wgt)->in->state = PGTH_O_POPUP_MENU;
   }
 
-  /* Clipping and things */
+  /* Set the position and size */
   (*wgt)->in->div->x = x-margin;
   (*wgt)->in->div->y = y-margin;
   (*wgt)->in->div->w = w+(margin<<1);
   (*wgt)->in->div->h = h+(margin<<1);
-  if ((*wgt)->in->div->x+(*wgt)->in->div->w >= vid->lxres)
-    (*wgt)->in->div->x = vid->lxres - (*wgt)->in->div->w - margin;
-  if ((*wgt)->in->div->y+(*wgt)->in->div->h >= vid->lyres)
-    (*wgt)->in->div->y = vid->lyres - (*wgt)->in->div->h - margin;
-  if ((*wgt)->in->div->x <0) (*wgt)->in->div->x = 0;
-  if ((*wgt)->in->div->y <0) (*wgt)->in->div->y = 0;
-  if ((*wgt)->in->div->x+(*wgt)->in->div->w >= vid->lxres)
-    (*wgt)->in->div->w = vid->lxres-(*wgt)->in->div->x-1;
-  if ((*wgt)->in->div->y+(*wgt)->in->div->h >= vid->lyres)
-    (*wgt)->in->div->h = vid->lyres-(*wgt)->in->div->y-1;
+   
+  clip_popup((*wgt)->in->div);
 
   /* Yahoo! */
   return sucess;

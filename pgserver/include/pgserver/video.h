@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.31 2001/03/22 00:20:38 micahjd Exp $
+/* $Id: video.h,v 1.32 2001/03/23 00:35:05 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -342,12 +342,22 @@ struct vidlib {
 		   hwrcolor c,struct cliprect *clip);
      
   /* Optional
-   *   Like charblit, but rotates the character 90 degrees counterclockwise
+   *   Like charblit, but rotates the character 90 degrees anticlockwise
    *   for displaying vertical text.
    *
    * Default implementation: pixel()...
    */
   void (*charblit_v)(unsigned char *chardat,int dest_x,
+		     int dest_y,int w,int h,int lines,
+		     hwrcolor c,struct cliprect *clip);
+
+  /* Optional
+   *   Like charblit, but rotates the character 180 degrees anticlockwise
+   *   for upside-down text. Only used when rotating vertical text so far.
+   * 
+   * Default implementation: pixel()...
+   */
+  void (*charblit_u)(unsigned char *chardat,int dest_x,
 		     int dest_y,int w,int h,int lines,
 		     hwrcolor c,struct cliprect *clip);
 

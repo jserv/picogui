@@ -23,8 +23,6 @@ help for menuconfig
 
 -- graphics
 
-Test mode for video subsystem
-
 gropnode coordinate systems
 
 linear1,2,4,16,24,32...
@@ -55,7 +53,9 @@ DOCUMENTATION!
 PicoGUI Bugs
 -------------------------------
 
-ucLinux memory bugs (possible same root cause as htree problems?)
-
-panel bar dragging leaves extra sprites behind sometimes
+- panel bar dragging sometimes segfaults
+- charblit_v rotation
+- scrolling
+- FIXMEs
+- retest all video drivers
 

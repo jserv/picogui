@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.12 2001/03/07 04:10:13 micahjd Exp $
+/* $Id: divtree.h,v 1.13 2001/03/23 00:35:05 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -105,7 +105,7 @@ struct divnode {
   s16 otx,oty;
 
   u16 flags;
-  u16 split;   /* Depending on flags, the pixels or percent to split at */
+  s16 split;   /* Depending on flags, the pixels or percent to split at */
 
   /* The divnode's state - indicates which theme object to get parameters from */
   u16 state;

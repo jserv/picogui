@@ -1,3 +1,35 @@
+2001-03-22    Micah Dowty <micahjd@users.sourceforge.net>
+
+Happy Friday! (my last day of school before spring break)
+I'm cleaning up the aftermath of yesterday's hasty rotation coding. This
+includes fixing remaining bugs, and integrating the changes into video
+drivers other than sdlfb and ez328.
+
+      * gcore/video.c: A small bug in the root divnode resizing loop prevented
+        layers other than the bottom one from updating. Now the screen can be
+	resized/rotated while a menu or dialog is onscreen.
+	
+      * widget/popup.c: Separated popup clipping code into the new
+        clip_popup() function
+
+      * include/pgserver/widget.h: Added clip_popup()
+      
+      * gcore/video.c: Added code to clip any onscreen popups so they don't
+        redraw past the edge of the screen and segfault
+	
+      * include/pgserver/divtree.h: Changed the 'split' variable to a signed
+        16-bit integer to avoid problems with wrap-around
+
+      * video/ncurses.c: Removed mode parameters from it's init function
+      
+      * video/null.c: Removed params from init, added a dummy setmode()
+
+      * appmgr/global.c: Fixed memory leak. Default cursor bitmaps were not
+        getting freed on shutdown
+
+      * include/pgserver/video.h: Added charblit_u function for upside-down
+        text blits (rotated charblit_v)
+
 2001-03-21    Micah Dowty <micahjd@users.sourceforge.net>
 
 Shortly after committing the rotation code with runtime mode switching, I
