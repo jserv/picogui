@@ -146,7 +146,8 @@ int piecedrop(struct pgEvent *evt)
     return 0;
   
   loc = (evt->e.pntr.x-1) / 10;
-  putpiece(loc,HUMAN,evt->extra);
+  if(putpiece(loc,HUMAN,evt->extra) == -1)
+    return 0;
   
   loc = wincheck(evt->extra);
   if(loc == 1) catsgame();
@@ -160,6 +161,7 @@ int piecedrop(struct pgEvent *evt)
   if(loc == 1) catsgame();
   else if(loc)
     lose((loc / 10)%10,loc%10,loc/100);
+  return 0;
 }
 
 
