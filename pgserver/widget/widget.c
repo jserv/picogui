@@ -1,7 +1,7 @@
 /*
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
- * $Revision: 1.11 $
+ * $Revision: 1.12 $
  *
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -68,7 +68,7 @@ g_error widget_create(struct widget **w,int type,struct dtstack *ds,
     return mkerror(ERRT_INTERNAL,
 		   "widget_create Widget I/O pointers nonexistant");
 
-  dt->head->flags |= DIVNODE_NEED_RECALC;
+  dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
   dt->flags |= DIVTREE_NEED_RECALC;
   return sucess;
 }

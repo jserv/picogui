@@ -152,7 +152,8 @@ void divnode_recalc(struct divnode *n) {
 	div, only propagate to next if our changes affected other nodes. 
       */
      if (n->div) {
-       n->div->flags |= DIVNODE_NEED_RECALC;
+       n->div->flags |= DIVNODE_NEED_RECALC | 
+	 (n->flags & DIVNODE_PROPAGATE_RECALC);
        if (n->div->on_recalc) {
 	 grop_free(&n->div->grop);
 	 (*n->div->on_recalc)(n->div);
