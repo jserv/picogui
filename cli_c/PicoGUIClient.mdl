@@ -1,6 +1,6 @@
 # -*- python -*-
 
-from beeconfig import compile, install, clean
+from beeconfig import compile, install, distrib, clean
 
 multicompile = 1
 
