@@ -190,7 +190,7 @@ class ListTask(UserTask):
         return not not self.listPath
 
     def execute(self):
-        self.ctx.ui.list(self.listPath)
+        self.ctx.ui.list(self.ctx, self.listPath)
 
 ################### Primary task list
 #
