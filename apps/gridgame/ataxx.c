@@ -1,13 +1,22 @@
 #include <stdlib.h>
 #include "gridgame.h"
 
-static currentplayer=1;
+static currentplayer;
+
+static void showplayer(void)
+ {
+  char str[]="Player X to move";
+
+  str[7]='0'+currentplayer;
+  ggstatusline(str);
+ }
 
 static void ataxx_init(void)
  {
   gridpos p={0,0};
   squarestatus s={1, PIECE, 0};
 
+  currentplayer=1;
   ggset(p, s);
   p.x=p.y=6;
   ggset(p, s);
@@ -15,6 +24,7 @@ static void ataxx_init(void)
   ggset(p, s);
   p.x=6; p.y=0;
   ggset(p, s);
+  showplayer();
  }
 
 static void ataxx_drag(int x1, int y1, int x2, int y2)
@@ -52,6 +62,7 @@ static void ataxx_drag(int x1, int y1, int x2, int y2)
   if(abs(fp.x-tp.x)<2 && abs(fp.y-tp.y)<2)
     ggmove(fp, fp, ts);	/* keep original piece if short move */
   currentplayer^=3;
+  showplayer();
  }
 
 static const char * const themes[]={"checkers.th", "checkers.th", NULL};

@@ -2,7 +2,21 @@
 #include "gridgame.h"
 #include "overflow.h"
 
-static currentplayer=1;
+static currentplayer;
+
+static void showplayer(void)
+ {
+  char str[]="Player X to move";
+
+  str[7]='0'+currentplayer;
+  ggstatusline(str);
+ }
+
+static void overflow_init(void)
+ {
+  currentplayer=1;
+  showplayer();
+ }
 
 static int recursiveflow(gridpos p)
  {
@@ -63,7 +77,10 @@ static void overflow_drag(int x1, int y1, int x2, int y2)
   if(s.player&&s.player!=currentplayer)
     return;
   if(recursiveflow(p))
+   {
     currentplayer^=3;
+    showplayer();
+   }
  }
 
 static const char * const themes[]={"checkers.th", "overflow.th", NULL};
@@ -76,6 +93,7 @@ static struct gridgame overflow = {
   height: 8,
   players: 2,
   drag: overflow_drag,
+  init: overflow_init,
 };
 
 struct gridgame *register_overflow(void)

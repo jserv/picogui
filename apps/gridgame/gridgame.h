@@ -38,4 +38,5 @@ void ggset(gridpos pos, squarestatus status);
 gridpos findselected(void);
 /* Gets the status of a square (player and brick type) */
 squarestatus gggetstatus(gridpos square);
-
+/* Displays a status string */
+void ggstatusline(const char *msg);

@@ -10,12 +10,17 @@ static struct gridgame **games=NULL, *game=NULL;
 static int currentgame, totalgames=0, thobj=0;
 static int bgfill, bgevenodd[2], doredraw;
 static int player[MAXPLAYERS];
-static pghandle toolbar, canvas, app, theme=0;
+static pghandle toolbar, canvas, app, statuslabel;
 static squarestatus *squares=NULL;
 static gridpos lastselected={-1,-1};
 #define SQ(pos) (squares[game->height*((pos).y)+((pos).x)])
 
 /* Grid game support functions declared in gridgame.h */
+
+void ggstatusline(const char *msg)
+ {
+  pgReplaceText(statuslabel, msg);
+ }
 
 static void redraw(void)
  {
@@ -227,6 +232,7 @@ int main(int argc, char *argv[])
     pgSetWidget(PGDEFAULT, PG_WP_TEXT, pgNewString(games[i]->name), 0);
     pgBind(PGDEFAULT, PG_WE_ACTIVATE, evtNewGame, (void*)i);
    }
+  statuslabel=pgNewWidget(PG_WIDGET_LABEL, 0, 0);
 
   /* Start game engine */
   selectgame(0);
