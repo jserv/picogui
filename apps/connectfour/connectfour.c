@@ -76,7 +76,7 @@ int NewGame(struct pgEvent *evt)
 {
   int ail;
   board *gee;
-  switch(ail = pgMenuFromString("Skill Level One|Skill Level Two|Skill Level Three|Skill Level Four"))
+  switch(ail = pgMenuFromString("Skill Level One|Skill Level Two|Skill Level Three|Skill Level Four|Skill Level Five"))
     {
     case 1:
       pgReplaceTextFmt(info,"Skill Level One");
@@ -89,6 +89,12 @@ int NewGame(struct pgEvent *evt)
       break;
     case 4:
       pgReplaceTextFmt(info,"Skill Level Four");
+      break;
+    case 5:
+      pgReplaceTextFmt(info,"Skill Level Five");
+      break;
+    case 6:
+      pgReplaceTextFmt(info,"Skill Level Six");
       break;
     default:
       return;

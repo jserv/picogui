@@ -1,8 +1,8 @@
 /*
- * Filename:  ai4.h
+ * Filename:  ai5.h
  * Author:    Brandon Smith
- * Date:      April 2, 2002
- * Purpose:   the fourth graduation of the AI
+ * Date:      April 3, 2002
+ * Purpose:   Header FILE (go josh)
  *
  * Copyright (C) 2002 Brandon Smith <lottabs2@yahoo.com> 
  *
@@ -26,15 +26,11 @@
 
 
 
-#ifndef __AI4_H__
-#define __AI4_H__
+#ifndef __AI5_H__
+#define __AI5_H__
 
 #include "connectfour.h"
 
-void ai4(struct board *it);
+void ai5(struct board *it);
 
-int linetrap(struct board *it);
-int linetrapwin(struct board *it);
-int linetraplose(struct board *it);
-
-#endif /* __AI4_H__ */
+#endif /* __AI5_H__ */
