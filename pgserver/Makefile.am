@@ -1,8 +1,8 @@
 SUBDIRS = \
-	etc include \
+	include \
 	widget appmgr debug gcore net \
 	vidbase theme video os vidwrap \
-	input font formats \
+	input font formats etc \
 	.
 
 DIST_SUBDIRS = configscript $(SUBDIRS)
