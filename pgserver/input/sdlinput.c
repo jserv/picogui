@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.10 2000/12/12 00:51:47 micahjd Exp $
+/* $Id: sdlinput.c,v 1.11 2001/01/05 03:18:52 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -58,7 +58,6 @@
 void sdlinput_poll(void) {
   SDL_Event evt;
   int ox=-1,oy=-1;
-  static int prevsym=-1;
   static int btnstate=0;
 
   if (!SDL_PollEvent(&evt)) return;
@@ -84,22 +83,16 @@ void sdlinput_poll(void) {
   case SDL_KEYDOWN:
     if (evt.key.keysym.unicode)
       dispatch_key(TRIGGER_CHAR,evt.key.keysym.unicode,evt.key.keysym.mod);
-    
-    /* Make this ignore repeat */
-    if (prevsym!=evt.key.keysym.sym)
-      dispatch_key(TRIGGER_KEYDOWN,prevsym=evt.key.keysym.sym,
-		   evt.key.keysym.mod);
+    dispatch_key(TRIGGER_KEYDOWN,evt.key.keysym.sym,evt.key.keysym.mod);
     break;
     
   case SDL_KEYUP:
-    prevsym = -1;
-      dispatch_key(TRIGGER_KEYUP,evt.key.keysym.sym,evt.key.keysym.mod);
-      break;
+    dispatch_key(TRIGGER_KEYUP,evt.key.keysym.sym,evt.key.keysym.mod);
+    break;
       
   case SDL_QUIT:
-      request_quit();
-      break;
-
+    request_quit();
+    break;
   }
 }
 

@@ -1,4 +1,4 @@
-/* $Id: eventq.c,v 1.5 2000/12/17 05:53:50 micahjd Exp $
+/* $Id: eventq.c,v 1.6 2001/01/05 03:18:53 micahjd Exp $
  *
  * eventq.c - This implements the post_event function that the widgets
  *            use to send events to the client.  It stores these in a
@@ -72,10 +72,16 @@ void post_event(int event,struct widget *from,long param,int owner) {
     if ((++cb->in) >= (cb->q+EVENTQ_LEN))   /* Wrap around */
       cb->in = cb->q;
     
+    if (cb->in == cb->out) {
+      /* If the event queue overflows, keep only the newest items */
+
+      if ((++cb->out) >= (cb->q+EVENTQ_LEN))   /* Wrap around */
+	cb->out = cb->q;
+
 #ifdef DEBUG_NET
-    if (cb->in == cb->out)
       printf("*** Event queue overflow!\n");
 #endif
+    }
   }
 }
 

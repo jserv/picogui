@@ -1,4 +1,4 @@
-/* $Id: svgainput.c,v 1.14 2000/12/31 17:05:58 micahjd Exp $
+/* $Id: svgainput.c,v 1.15 2001/01/05 03:18:52 micahjd Exp $
  *
  * svgainput.h - input driver for SVGAlib
  *
@@ -273,18 +273,8 @@ void svgainput_kbdhandler(int scancode,int press) {
 
   /******* Handle raw key press/release events */
   
-  /* Suppress autorepeat on raw events */
-  if (press && scancode==previouskey) return;
-  
   /* Dispatch to the rest of PicoGUI */
-  if (press) {
-    previouskey = scancode;
-    dispatch_key(TRIGGER_KEYDOWN,svgainput_keymap[scancode],svgainput_mod);
-  }
-  else {
-    previouskey = 0;
-    dispatch_key(TRIGGER_KEYUP,svgainput_keymap[scancode],svgainput_mod);
-  }
+  dispatch_key(press ? TRIGGER_KEYDOWN : TRIGGER_KEYUP,svgainput_keymap[scancode],svgainput_mod);
 }
 
 /******************************************** Mouse handler */

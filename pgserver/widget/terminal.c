@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.6 2001/01/05 02:11:09 micahjd Exp $
+/* $Id: terminal.c,v 1.7 2001/01/05 03:18:53 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -357,7 +357,8 @@ void terminal_trigger(struct widget *self,long type,union trigparam *param) {
      
    case TRIGGER_KEYDOWN:
      /* Handle control characters that CHAR doesn't map */
-     if (param->kbd.mods & (PGMOD_CTRL | PGMOD_ALT))
+     if ((param->kbd.key > 255) || 
+	 (param->kbd.mods & (PGMOD_CTRL | PGMOD_ALT)))
        kbd_event(self,param->kbd.key,param->kbd.mods);
      return;
       
@@ -404,36 +405,41 @@ void kbd_event(struct widget *self, int pgkey,int mods) {
 
   /* Not sure that this is 100% correct, and I know it's not complete... */
 
-  switch (pgkey) {
-
-  case PGKEY_RETURN:        rtn = "\n";       break;
-
-  case PGKEY_UP:            rtn = "\033[A";   break;
-  case PGKEY_DOWN:          rtn = "\033[B";   break;
-  case PGKEY_RIGHT:         rtn = "\033[C";   break;
-  case PGKEY_LEFT:          rtn = "\033[D";   break;
-  case PGKEY_HOME:          rtn = "\033[1~";  break;
-  case PGKEY_INSERT:        rtn = "\033[2~";  break;
-  case PGKEY_DELETE:        rtn = "\033[3~";  break;
-  case PGKEY_END:           rtn = "\033[4~";  break;
-  case PGKEY_PAGEUP:        rtn = "\033[5~";  break;
-  case PGKEY_PAGEDOWN:      rtn = "\033[6~";  break;
-
-  case PGKEY_F1:            rtn = "\033OP";  break;
-  case PGKEY_F2:            rtn = "\033OQ";  break;
-  case PGKEY_F3:            rtn = "\033OR";  break;
-  case PGKEY_F4:            rtn = "\033OS";  break;
-
-  case PGKEY_F5:            rtn = "\033[15~";break;
-  case PGKEY_F6:            rtn = "\033[17~";break;
-  case PGKEY_F7:            rtn = "\033[18~";break;
-  case PGKEY_F8:            rtn = "\033[19~";break;
-  case PGKEY_F9:            rtn = "\033[20~";break;
-  case PGKEY_F10:           rtn = "\033[21~";break;
-  case PGKEY_F11:           rtn = "\033[23~";break;
-  case PGKEY_F12:           rtn = "\033[24~";break;
-
-  default:
+  if (pgkey > 255)
+    switch (pgkey) {
+      
+    case PGKEY_RETURN:        rtn = "\n";       break;
+      
+    case PGKEY_UP:            rtn = "\033[A";   break;
+    case PGKEY_DOWN:          rtn = "\033[B";   break;
+    case PGKEY_RIGHT:         rtn = "\033[C";   break;
+    case PGKEY_LEFT:          rtn = "\033[D";   break;
+    case PGKEY_HOME:          rtn = "\033[1~";  break;
+    case PGKEY_INSERT:        rtn = "\033[2~";  break;
+    case PGKEY_DELETE:        rtn = "\033[3~";  break;
+    case PGKEY_END:           rtn = "\033[4~";  break;
+    case PGKEY_PAGEUP:        rtn = "\033[5~";  break;
+    case PGKEY_PAGEDOWN:      rtn = "\033[6~";  break;
+      
+    case PGKEY_F1:            rtn = "\033OP";  break;
+    case PGKEY_F2:            rtn = "\033OQ";  break;
+    case PGKEY_F3:            rtn = "\033OR";  break;
+    case PGKEY_F4:            rtn = "\033OS";  break;
+      
+    case PGKEY_F5:            rtn = "\033[15~";break;
+    case PGKEY_F6:            rtn = "\033[17~";break;
+    case PGKEY_F7:            rtn = "\033[18~";break;
+    case PGKEY_F8:            rtn = "\033[19~";break;
+    case PGKEY_F9:            rtn = "\033[20~";break;
+    case PGKEY_F10:           rtn = "\033[21~";break;
+    case PGKEY_F11:           rtn = "\033[23~";break;
+    case PGKEY_F12:           rtn = "\033[24~";break;
+      
+    default:
+      return;
+    }
+    
+  else {
     /**** Send an untranslated key */
     post_event(PG_WE_ACTIVATE,self,pgkey,0);
     return;
