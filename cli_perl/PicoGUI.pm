@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.26 2000/08/05 03:40:38 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.27 2000/08/05 06:23:03 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -356,6 +356,18 @@ $PROTOVER  = 1;
 	    MODE			0x4000
 	    );
 
+%LGOP = (
+	 'null' => 0,
+	 'none' => 1,
+	 'or' => 2,
+	 'and' => 3,
+	 'xor' => 4,
+	 'invert' => 5,
+	 'invert_or' => 6,
+	 'invert_and' => 7,
+	 'invert_xor' => 8
+	 );
+
 ################################ Code
 
 # Open a connection to the server, parsing PicoGUI commandline options
@@ -704,6 +716,7 @@ sub SetWidget {
 	    $prop = $WPROP{$_};
 	    $arg = $ALIGN{$arg} if (/align/);
 	    $arg = $SIDE{$arg} if (/side/);
+	    $arg = $LGOP{$arg} if (/lgop/);
 	    $arg = $arg->GetHandle() if (/text/ or /bitmap/ or
 					 /font/ or /bitmask/ or /bind/);
 	    croak "Undefined property" if (!defined $prop);
@@ -863,7 +876,6 @@ sub NewBitmap {
 # It waits for events, and dispatches them to the functions they're
 # bound to.
 sub EventLoop {
-    my ($event,$from,$param,$r);
     $eventloop_on = 1;
 
     # Good place for an update...  (probably the first update)
