@@ -75,7 +75,7 @@ def prepare (module, platform, project):
 
     command = ["../configure",
                "--with-profile=%s" % profile,
-               "--with-prefix=%s" % platform.toolchain,
+               "--prefix=%s" % module.path ['prefix'],
                "--enable-bee",
                "--with-extra-ipath=%s/include" % project ['module/kernel'].path ['dfl'],
                "--with-rm=%s" % project ['module/resourcemanager'].path ['dfl'],
@@ -83,7 +83,7 @@ def prepare (module, platform, project):
 
     if not platform.native:
         command = command + [
-            "--prefix=%s" % module.path ['prefix'],
+            "--with-prefix=%s" % platform.toolchain,
             "--host=%s" % platform.platform,
         ]
         
