@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.48 2003/01/01 03:42:59 micahjd Exp $
+/* $Id: render.c,v 1.49 2003/01/17 08:19:12 bornet Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -879,10 +879,9 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
   case PG_GROP_ROTATEBITMAP:
     if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
 			 n->param[0])) || !bit) break;
-    if (r->angle == 90 || r->angle==270)
-      VID(bitmap_getsize) (bit,&bh,&bw);
-    else
-      VID(bitmap_getsize) (bit,&bw,&bh);
+
+    /* get the size of the _source_ bitmap */
+    VID(bitmap_getsize) (bit,&bw,&bh);
      
     /* Source rect clipping */
     clipsrc = r->src;
