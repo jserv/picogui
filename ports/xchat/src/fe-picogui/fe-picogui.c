@@ -81,23 +81,15 @@ static int
 evtPassFocus(struct pgEvent *evt)
 {
 	int i;
+	union pg_client_trigger trig;
 
 	pgFocus((pghandle)evt->extra);
-	switch(evt->type)
-	{
-	    case PG_WE_DATA:
-		/* hope they don't send things with mods.. */
-		for(i=0;i<evt->e.data.size;i++)
-			pgSendKeyInput(PG_TRIGGER_CHAR,
-					evt->e.data.pointer[i], 0);
-		break;
-	    case PG_WE_KBD_CHAR:
-#if 0
-	    case PG_WE_KBD_KEYUP:
-	    case PG_WE_KBD_KEYDOWN:
-#endif		/* I suspect those may cause shiftlocks... */
-		pgSendKeyInput(evt->type, evt->e.kbd.key, evt->e.kbd.mods);
-		break;
+
+	/* hope they don't send things with mods.. */
+	for(i=0;i<evt->e.data.size;i++) {
+		trig.content.type = PG_TRIGGER_CHAR;
+		trig.content.u.kbd.key = evt->e.data.pointer[i];
+		pgInFilterSend(&trig);
 	}
 	return 1;
 }

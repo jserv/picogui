@@ -16,6 +16,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <picogui.h>
+#include <picogui/theme.h>
+
 #include <netinet/in.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -29,8 +32,6 @@
 #include "../common/cfgfiles.h"
 #include "../common/fe.h"
 
-#include <picogui.h>
-#include <picogui/theme.h>
 #include "fe-picogui.h"
 
 int ircterm=PGTH_O_TERMINAL;
