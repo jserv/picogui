@@ -1,4 +1,4 @@
-/* $Id: paragraph.h,v 1.5 2002/10/30 05:09:12 micahjd Exp $
+/* $Id: paragraph.h,v 1.6 2002/10/31 19:40:42 micahjd Exp $
  *
  * paragraph.h - Build upon the text storage capabilities of pgstring, adding word
  *               wrapping, formatting, and UI.
@@ -182,6 +182,9 @@ g_error paragraph_insert_char(struct paragraph_cursor *crsr, u32 ch,
 /* Hide/show the cursor */
 void paragraph_hide_cursor(struct paragraph_cursor *crsr);
 void paragraph_show_cursor(struct paragraph_cursor *crsr);
+
+/* Set this cursor as the last change location, for incremental redraws */
+void paragraph_set_last_change(struct paragraph_cursor *crsr);
 
 #endif /* __PARAGRAPH_H */
 /* The End */

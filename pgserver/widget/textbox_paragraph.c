@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.18 2002/10/31 11:45:44 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.19 2002/10/31 19:40:42 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -447,7 +447,7 @@ g_error paragraph_wrap_line(struct paragraph *par, struct paragraph_line **line,
   }
 
   DBG("In paragraph_wrap_line, line %p, wrapped=%d, valid=%d, force=%d\n",
-	 (*line),(*line)->wrapped,(*line)->cache.valid,force);
+      (*line),(*line)->wrapped,(*line)->cache.valid,force);
 
   /* Reset this line */
   old_char_width = (*line)->char_width;
@@ -560,12 +560,6 @@ g_error paragraph_wrap(struct paragraph *par, int force) {
   struct paragraph_line *line;
   int valid = 1;
   g_error e;
-
-  /* If there's no text, don't worry about the wrapping 
-   * (we don't insert or delete the first line)
-   */
-  if (!par->content->num_chars)
-    return success;
 
   /* Wrap each line until done */
   line = par->lines;

@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.53 2002/10/31 11:45:44 micahjd Exp $
+/* $Id: textbox_document.c,v 1.54 2002/10/31 19:40:42 micahjd Exp $
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and
@@ -161,6 +161,7 @@ g_error document_insert_char(struct textbox_document *doc, u32 ch, void *metadat
     e = pgstring_move(newpar->content,oldpar->content,
 		      &i,&oldpar->cursor.iterator,-1);
     errorcheck;
+    paragraph_wrap(oldpar,1);
 
     /* Set the cursor at the beginning of the new paragraph */
     doc->crsr = &newpar->cursor;
@@ -363,9 +364,12 @@ g_error document_insert_paragraph(struct textbox_document *doc) {
   e = textbox_new_par_div(&newpar, &oldpar->div->next, oldpar->background);
   errorcheck;
 
+  if (oldpar->next)
+    oldpar->next->prev = newpar;
   newpar->next = oldpar->next;
   newpar->prev = oldpar;
   oldpar->next = newpar;
+
   newpar->doc = doc;
   oldpar->div->owner->dt->flags |= DIVTREE_NEED_RESIZE;
 
