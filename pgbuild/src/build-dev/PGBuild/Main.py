@@ -27,7 +27,7 @@ import PGBuild.Package
 import PGBuild.GUI
 import PGBuild.CommandLine.Options
 import PGBuild.Config
-import os, re, shutil
+import os, re, shutil, sys
 
 
 def boot(config, bootstrap):
@@ -92,6 +92,15 @@ def main(bootstrap, argv):
          - Initializing the GUI module
          - Exception catching
        """
+
+    # Check for a suitable version of python- currently we require version 2.2 or
+    # later, mostly for compatibility with the various modules we need.
+    # This doesn't use anything fancy to report a version problem, to increase
+    # the chance of this working correctly if we get a really old version of python.
+    if sys.hexversion < 0x020200F0:
+        print "This version of Python is too old. At least verison 2.2 is required."
+        return
+
     config = PGBuild.Config.Tree()
     try:
         # Load the options passed to use by build.py into the <bootstrap> section

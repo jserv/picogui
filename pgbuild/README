@@ -2,6 +2,12 @@ This is the top-level directory for PicoGUI's build system.
 The only thing specific to PicoGUI is the default list of packages, so feel
 free to use this in other projects if it's helpful.
 
+The only requirement the build system itself has is Python 2.2 or newer.
+All other necessary software is either included in this package, or can be
+automatically installed ifn ecessary.
+
+Files and directories included within:
+
   build
     (Python script)
     Convenient build system entry point for operating systems that support
