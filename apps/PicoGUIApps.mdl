@@ -12,7 +12,9 @@ Provides the PicoGUI demonstration applications
 
 prefix = '/'
 
-depends = [ 'picoguiclient',
+depends = [ 'picoguiclient' ]
+
+asserts = [ 'picoguiclient',
 
             (S ('module/picoguiapps/pgboard_run_us_qwerty') |
              S ('module/picoguiapps/pgboard_run_us_qwerty_bitmap') |
