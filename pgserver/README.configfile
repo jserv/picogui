@@ -411,21 +411,6 @@ quoted appropriately. For example:
 - osd_fontsize
   Font size to render the onscreen display in
 
-- font_path
-  This is the directory to search for TrueType fonts. It's searched recursively,
-  and all files ending with .ttf will be loaded.
-  *NOT IMPLEMENTED YET*
-  Defaults to /usr/share/fonts/truetype
-
-- font
-  There's no real font loading system yet, it just loads one .ttf font. This is that font.
-
-- font_resolution
-  This is the size (in points) that the truetype fonts are rendered
-  into textures at. Sizes above this can still be output, but the result will be fuzzy. 
-  It is usually most efficient for this to be a power of two.
-  Defaults to 32
-
 - antialias
   With this option on, all lines and polygons in picogui are antialiased. It makes things
   look a LOT better when the camera controls are used or when anything has a scale or rotation
@@ -598,6 +583,47 @@ quoted appropriately. For example:
   If this is nonzero, create a background window to hold a
   background widget and toolbar apps.
   Default is off
+
+[font-ftgl]
+
+- default_size
+  Height in pixels used for the default fonts
+
+- path
+  Path to recursively search for fonts to load.
+  WARNING: These fonts are not loaded on demand like in the freetype
+           engine, they are loaded into your video card right away.
+           Don't give this a huge directory full of fonts.
+  Defaults to /usr/share/fonts
+
+- default_fixed_face
+  Face name to use for the default fixed-width font
+  Defaults to "Nimbus Mono L" (included in the picogui fonts package)
+
+- default_face
+  Face name to use for the default variable-width font
+  Defaults to "Helmet" (included in the picogui fonts package)
+
+- no_hinting
+  Disables font hinting, usually makes small fonts look fuzzy
+  Defaults off
+
+- no_bitmap
+  Disables bitmapped representations stored in a font. These are
+  often not antialiased and look worse than freetype's usual output.
+  Defaults on
+
+- force_autohint
+  Forces the use of the freetype autohinter instead of the font's
+  builtin hinting. On most fonts this is a dramatic improvement
+  at small sizes, but for fonts with proper hinting this will
+  make them look worse.
+  Defaults on
+
+- sizes
+  Whitespace-separated list of sizes, in pixels, to generate fonts
+  at, in addition to the default size.
+  Defaults to "32"
 
 --- The End ---
 
