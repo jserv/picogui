@@ -1,6 +1,6 @@
-""" PGBuild.CommandLine
+""" PGBuild.CommandLine.Output
 
-Utilities for interacting with the user via a command line interface.
+Utilities for outputting meaningful progress information on the command line
 """
 # 
 # PicoGUI Build System

@@ -182,12 +182,12 @@ class Tree(PGBuild.XMLUtil.Document):
        """
     def __init__(self, title="Merged configuration tree", rootName="pgbuild"):
         class DefaultXML:
+            def __init__(self, title, rootName):
+                self.title = title
+                self.rootName = rootName
             def get_contents(self):
                 return '<?xml version="1.0" ?><%s title="%s"/>' % (self.rootName, self.title)
-        d = DefaultXML()
-        d.rootName = rootName
-        d.title = title
-        PGBuild.XMLUtil.Document.__init__(self, d)
+        PGBuild.XMLUtil.Document.__init__(self, DefaultXML(title, rootName))
         self.rootName = rootName
         self.title = title
         self.mounts = []
@@ -348,8 +348,7 @@ class Tree(PGBuild.XMLUtil.Document):
         # Mount in an XML representation of the bootstrap object
         self.mount(BootstrapXML(bootstrap))
 
-        # Try to make sure all our paths exist- in case pgbuild is distributed in an
-        # archive format that can't handle empty directories properly.
+        # Try to make sure all our bootstrap paths exist
         for path in bootstrap.paths.values():
             try:
                 os.makedirs(path)
@@ -369,8 +368,5 @@ class Tree(PGBuild.XMLUtil.Document):
         # Mount our config directories
         self.dirMount(bootstrap.paths['confPackage'])
         self.dirMount(bootstrap.paths['localConf'])
-
-                
-default = Tree()
 
 ### The End ###

@@ -101,9 +101,9 @@ class Document(minidom.Document):
        it easier to subclass an XML document.
        """
     def __init__(self, input):
-        try:
+        if hasattr(input, 'get_contents'):
             dom = minidom.parseString(input.get_contents())
-        except AttributeError:
+        else:
             dom = minidom.parse(input)
                 
         # Copy the attributes from the loaded DOM object into ourselves, being

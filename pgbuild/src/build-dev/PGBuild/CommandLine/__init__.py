@@ -1,8 +1,6 @@
-""" PGBuild.Main
+""" PGBuild.CommandLine
 
-Frontend for PGBuild- provides command line processing and functions for
-carrying out high-level tasks. This module's main() is invoked by build.py
-as soon as it creates a Bootstrap object with vital path and package names.
+Utilities for interacting with the user via a command line interface.
 """
 # 
 # PicoGUI Build System
@@ -21,19 +19,9 @@ as soon as it creates a Bootstrap object with vital path and package names.
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
-# 
+#
 
-import PGBuild.CommandLine.Options
-import PGBuild.Config
-
-def main(bootstrap, argv):
-    """The entry point called by build.py"""
-    config = PGBuild.Config.Tree()
-    try:
-        config.boot(bootstrap)
-        PGBuild.CommandLine.Options.parse(config, argv)
-    finally:
-        config.commit()
+# Nothing here yet, just make it a module
 
 ### The End ###
         
