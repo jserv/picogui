@@ -104,6 +104,10 @@ if [ "$DRIVER_R3912TS" = "y" ]; then
 fi
 bool 'Agenda VR3 touchscreen input driver'             DRIVER_VR3TS
 bool 'TuxScreen touchscreen input driver'              DRIVER_TUXTS
+if [ "$DRIVER_TUXTS" = "y" ]; then
+   bool '  Sound FX support via /dev/wheaties (EXPERIMENTAL)'  DRIVER_TUXTS_WHEATIES
+fi
+
 bool 'TTY keyboard input driver (TuxScreen, fb)'       DRIVER_TTYKB
 bool 'Serial mouse input driver'                       DRIVER_SERIALMOUSE
 endmenu
@@ -129,6 +133,7 @@ bool 'Disable panelbar'                       CONFIG_NOPANELBAR
 bool 'Solid panel dragging'                   CONFIG_DRAGSOLID
 int  'Maximum number of zombie gropnodes'     CONFIG_MAX_ZOMBIEGROPS
 bool 'Support for Alpha key'                  CONFIG_KEY_ALPHA
+bool 'Play the "short beep" sound on button press (hack)' CONFIG_BUTTON_BEEP
 endmenu
 
 mainmenu_option next_comment

@@ -167,6 +167,60 @@ void tuxts_message(u32 message, u32 param) {
     ioctl(fd,67,param);
     break;
 
+#ifdef DRIVER_TUXTS_WHEATIES
+    /* Super-experimental /dev/wheaties support. This will probably change
+     * soon, I just wanted my Tuxscreen to make noise :)
+     */
+  case PGDM_SOUNDFX:
+    {
+      /* Map PicoGUI sound effects to the DSP's codes
+       * (documented at http://cosmic.censoft.com/dspspec.html)
+       */
+
+      int dspfd;
+      u8 *dspcode;
+      int code_len;
+      u8 dsp_flash[] = { 0xA3, 0x44, 0x00, 0x08, 0xA8 };
+      u8 dsp_tone[]  = { 0x42, 0x01, 0x00 };
+
+      switch (param) {
+
+      case PG_SND_SHORTBEEP:
+	dspcode = dsp_tone;
+	code_len = sizeof(dsp_tone);
+	dsp_tone[2] = 0x09;
+	break;
+
+      case PG_SND_BEEP:
+	dspcode = dsp_tone;
+	code_len = sizeof(dsp_tone);
+	dsp_tone[2] = 0x02;
+	break;
+
+      case PG_SND_ALARM:
+	dspcode = dsp_tone;
+	code_len = sizeof(dsp_tone);
+	dsp_tone[2] = 0x01;
+	break;
+
+      case PG_SND_VISUALBELL:
+	dspcode = dsp_flash;
+	code_len = sizeof(dsp_flash);
+	break;
+
+      default:
+	return;
+      }
+
+      /* Write the code to /dev/wheaties */
+      dspfd = open("/dev/wheaties", O_RDWR);
+      if (dspfd) {
+	write(dspfd, dspcode, code_len);
+	close(dspfd);
+      }
+    }
+#endif /* DRIVER_TUXTS_WHEATIES */
+
   }
 }
  

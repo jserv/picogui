@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.77 2001/09/03 01:20:34 micahjd Exp $
+/* $Id: button.c,v 1.78 2001/10/19 23:35:01 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -445,8 +445,13 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
   if (event>=0) {
     if (DATA->event)
       (*DATA->event)(DATA->extra,self);
-    else
+    else {
+#ifdef CONFIG_BUTTON_BEEP
+      /* Little compile-time hack to make the button beep */
+      drivermessage(PGDM_SOUNDFX,PG_SND_SHORTBEEP);
+#endif
       post_event(PG_WE_ACTIVATE,self,event,0,NULL);
+    }
   }
 }
 
