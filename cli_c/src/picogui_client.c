@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.27 2000/11/12 08:26:23 micahjd Exp $
+/* $Id: picogui_client.c,v 1.28 2000/11/12 08:32:41 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -490,10 +490,11 @@ void pgInit(int argc, char **argv)
     clienterr("server has bad magic number");
     return;
   }
-  if(ServerInfo.protover < PG_PROTOCOL_VER) {
-    puts("Warning: PicoGUI server is older than the client. \n"
-	 "         you may experience compatibility problems");
-  }
+  if(ServerInfo.protover < PG_PROTOCOL_VER)
+    pgMessageDialog("PicoGUI Warning",
+		    "The PicoGUI server is newer (higher protocol\n"
+		    "version) than this application. you may experience\n" 
+		    "compatibility problems.",0);
 }
 
 void pgSetErrorHandler(void (*handler)(unsigned short errortype,
