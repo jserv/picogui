@@ -33,41 +33,68 @@
 
 int directoryScan(char *path){
   int appCount = 0, appCopy = 0;
-  char *appname, *binpath;
+  char architecture[] = "Application";  //DJ: For now.
+  char *appname, *binpath, *appicon;
   char absPath[1024];              //DJ: THIS MUST BE FIXED!!!
   struct dirent *dent;
   DIR *d;
 
   d = opendir(path);
 
-  while(dent = readdir(d)){
-    sprintf(absPath, "%s/%s/app.conf", path, dent->d_name);
-    if(configfile_parse(absPath)){
-      appCount++;
-      configfile_free();
-    }
-  }
-
-  if(appCount > 0){
-    gAppList = (struct pgllApp *)malloc((sizeof(struct pgllApp)*appCount));
-    rewinddir(d);
-    while(dent = readdir(d)){
+  if(d){
+    while((dent = readdir(d))){
       sprintf(absPath, "%s/%s/app.conf", path, dent->d_name);
       if(configfile_parse(absPath)){
-	binpath = get_param_str("Application", "binpath", NULL);
-	appname = get_param_str("Application", "appname", NULL);
-	gAppList[appCopy].appPath = malloc(strlen(binpath)+1);
-	gAppList[appCopy].appName = malloc(strlen(appname)+1);
-	strcpy(gAppList[appCopy].appPath, binpath);
-	strcpy(gAppList[appCopy].appName, appname);
-	appCopy++;
+	printf("Got one config.\n");
+	appCount++;
 	configfile_free();
       }
     }
-    return gAppCount = appCount;
-  }else{
-    return 0;
+    
+    if(appCount > 0){
+      printf("Parsing configs\n");
+      gAppList = (struct pgllApp *)malloc((sizeof(struct pgllApp)*appCount));
+      rewinddir(d);
+      while((dent = readdir(d))){
+	sprintf(absPath, "%s/%s/app.conf", path, dent->d_name);
+	if(configfile_parse(absPath)){
+	  if((binpath = get_param_str(architecture, "binpath", NULL))){
+	    gAppList[appCopy].appPath = (char *)malloc(strlen(binpath)+1);
+	    strcpy(gAppList[appCopy].appPath, binpath);
+	  }else{
+	    gAppList[appCopy].appPath = NULL;
+	  }
+	  if((appname = get_param_str(architecture, "appname", NULL))){
+	    gAppList[appCopy].appName = (char *)malloc(strlen(appname)+1);
+	    strcpy(gAppList[appCopy].appName, appname);
+	  }else{
+	    gAppList[appCopy].appName = NULL;
+	  }
+	  if((appicon = get_param_str(architecture, "iconpath", NULL))){
+	    gAppList[appCopy].appIcon = (char *)malloc(strlen(appicon)+1);
+	    strcpy(gAppList[appCopy].appIcon, appname);
+	  }else{
+	    gAppList[appCopy].appIcon = NULL;
+	  }
+	  appCopy++;
+	  configfile_free();
+	}
+      }
+      return gAppCount = appCount;
+    }else{
+      return 0;
+    }
   }
+}
+
+int runApp(char *appPath){
+  
+  printf("Would execute %s\n", appPath);
+
+  if(!vfork())
+    execl(appPath, NULL);
+  
+  return 1;
 }
 
 int addItem(struct pgEvent *evt){return 0;}
@@ -90,6 +117,9 @@ int launchMenu(struct pgEvent *evt){
 
   item = pgMenuFromArray(items, gAppCount);
 
+  if(item)
+    runApp(gAppList[item-1].appPath);
+
   pgLeaveContext();
  
   return 1;
@@ -100,7 +130,7 @@ int main(int argc, char **argv){
 
   pgInit(argc, argv);
 
-  directoryScan("apps");
+  directoryScan("/usr/local/apps");
 
   pglBar = pgFindWidget("PGL-AppletBar");
   if(!pglBar){
