@@ -275,7 +275,7 @@ proc pgRegisterApp {title type} {
 	if {$defaultparent == 0} {
 		set defaultparent $ret(data)
 	}
-	return ret(data)
+	return $ret(data)
 }
 proc pgBind {itemid eventid script} {
 	global binds
