@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.5 2002/03/03 18:26:42 micahjd Exp $
+/* $Id: sdlgl_util.c,v 1.6 2002/03/03 18:59:19 micahjd Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.
@@ -159,16 +159,25 @@ void gl_frame(void) {
   float interval;
   int i = 0;
 
+  gl_global.allow_update = 1;
+
+  /***************** Background grid */
+
   if (gl_global.grid)
     gl_render_grid();
+
+  /***************** Divtrees */
 
   /* Redraw the whole frame */
   for (p=dts->top;p;p=p->next)
     p->flags |= DIVTREE_ALL_REDRAW;
-  gl_global.allow_update = 1;
-  update(NULL,1);
-  gl_global.allow_update = 0;
-  gl_global.need_update = 0;
+  update(NULL,0);
+
+  /***************** Sprites */
+
+  vid->sprite_showall();
+
+  /***************** Onscreen display */
 
   /* FPS calculations */
   now = getticks();
@@ -182,7 +191,6 @@ void gl_frame(void) {
 
   gl_process_camera_keys();
 
-  /* Sprites were done in update(), now do the onscreen display */
 
   if (gl_global.showfps)
     gl_osd_printf(&i,"FPS: %.2f",gl_global.fps);
@@ -199,6 +207,10 @@ void gl_frame(void) {
   if (gl_global.grid)
     gl_osd_printf(&i,"Grid enabled");
 
+  /***************** Done */
+
+  gl_global.allow_update = 0;
+  gl_global.need_update = 0;
   SDL_GL_SwapBuffers();
 }
 

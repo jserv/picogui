@@ -1,4 +1,4 @@
-/* $Id: sdlgl_camera.c,v 1.1 2002/03/03 05:42:26 micahjd Exp $
+/* $Id: sdlgl_camera.c,v 1.2 2002/03/03 18:59:19 micahjd Exp $
  *
  * sdlgl_camera.c - OpenGL driver for picogui, using SDL for portability.
  *                  This file traps keyboard and mouse input for camera control
@@ -44,6 +44,7 @@ int sdlgl_key_event_hook(u32 *type, s16 *key, s16 *mods) {
 	gl_global.camera_mode = SDLGL_CAMERAMODE_NONE;
       else
 	gl_global.camera_mode = SDLGL_CAMERAMODE_TRANSLATE;
+      gl_global.need_update++;
       return 1;
 
     case PGKEY_e:
@@ -51,22 +52,26 @@ int sdlgl_key_event_hook(u32 *type, s16 *key, s16 *mods) {
 	gl_global.camera_mode = SDLGL_CAMERAMODE_NONE;
       else
 	gl_global.camera_mode = SDLGL_CAMERAMODE_ROTATE;
+      gl_global.need_update++;
       return 1;
 
     case PGKEY_r:
       gl_global.camera_mode = SDLGL_CAMERAMODE_NONE;
       glLoadIdentity();
       gl_matrix_pixelcoord();
+      gl_global.need_update++;
       return 1;
 
       /* Misc flags */
 
     case PGKEY_f:
       gl_global.showfps = !gl_global.showfps;
+      gl_global.need_update++;
       return 1;
 
     case PGKEY_g:
       gl_global.grid = !gl_global.grid;
+      gl_global.need_update++;
       return 1;
 
     default:
@@ -89,6 +94,7 @@ int sdlgl_key_event_hook(u32 *type, s16 *key, s16 *mods) {
     case PGKEY_SPACE:
     case PGKEY_RETURN:
       gl_global.camera_mode = SDLGL_CAMERAMODE_NONE;
+      gl_global.need_update++;
     }
 
     /* Trap events */

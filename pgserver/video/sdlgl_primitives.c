@@ -1,4 +1,4 @@
-/* $Id: sdlgl_primitives.c,v 1.6 2002/03/03 18:26:42 micahjd Exp $
+/* $Id: sdlgl_primitives.c,v 1.7 2002/03/03 18:59:19 micahjd Exp $
  *
  * sdlgl_primitives.c - OpenGL driver for picogui, using SDL for portability.
  *                      Implement standard picogui primitives using OpenGL
@@ -412,6 +412,15 @@ void sdlgl_sprite_update(struct sprite *spr) {
 
 void sdlgl_sprite_protectarea(struct quad *in,struct sprite *from) { 
   /* No need to protect for sprites */
+}
+
+int sdlgl_grop_render_presetup_hook(struct divnode **div, struct gropnode ***listp,
+				    struct groprender *rend) {
+
+  /* Don't bother with incremental or scroll-only gropnodes */
+  (*div)->flags |= DIVNODE_NEED_REDRAW;
+
+  return 0;
 }
 
 /* The End */
