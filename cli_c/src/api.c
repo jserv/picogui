@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.5 2001/04/11 16:42:10 micahjd Exp $
+/* $Id: api.c,v 1.6 2001/04/18 01:09:35 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -279,8 +279,8 @@ pghandle pgRegisterApp(short int type,const char *name, ...) {
   int numspecs,i;
   
   /* First just count the number of APPSPECs we have */
-  for (va_start(v,name),numspecs=0;va_arg(v,short);
-       va_arg(v,short),numspecs++);
+  for (va_start(v,name),numspecs=0;va_arg(v,long);
+       va_arg(v,long),numspecs++);
   va_end(ap);
 
   /* Allocate */
@@ -296,7 +296,7 @@ pghandle pgRegisterApp(short int type,const char *name, ...) {
 
   /* Fill in the optional APPSPEC params */
   for (va_start(v,name),i=numspecs<<1;i;
-       i--,*(spec++)=htons(va_arg(v,short)));
+       i--,*(spec++)=htons(va_arg(v,long)));
   va_end(ap);
 
   _pg_add_request(PGREQ_REGISTER,arg,sizeof(struct pgreqd_register)+numspecs*4);
@@ -324,7 +324,7 @@ void  pgSetWidget(pghandle widget, ...) {
 
   va_start(v,widget);
   for (;;) {
-    i = va_arg(v,short);
+    i = (int) va_arg(v,long);
     if (!i) break;
     arg.property = htons(i);
     arg.glob = htonl(va_arg(v,long));
@@ -667,7 +667,7 @@ void pgWriteCmd(pghandle widget,short command,short numparams, ...) {
       
    va_start(v,numparams);
    for (;numparams;numparams--) {
-      *params = htonl(va_arg(v,signed long));
+      *params = htonl(va_arg(v,long));
       params++;
    }
    va_end(V);
