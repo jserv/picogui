@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.44 2000/12/17 05:53:50 micahjd Exp $
+/* $Id: panel.c,v 1.45 2000/12/31 23:18:18 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -390,7 +390,8 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     /* Update the screen now, so we have an up-to-date picture
        of the panelbar stored in DATA->bar */
     themeify_panel(self);
-    update(NULL,0);
+    (*vid->sprite_hideall)();   /* This line combined with the zero flag on */
+    update(NULL,0);             /*  the next gets a clean spriteless grab */
 
     /* Allocate the new sprite */
     if(iserror(new_sprite(&DATA->s,BARDIV->w,BARDIV->h)))

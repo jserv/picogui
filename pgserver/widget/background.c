@@ -1,4 +1,4 @@
-/* $Id: background.c,v 1.2 2000/10/19 01:21:24 micahjd Exp $
+/* $Id: background.c,v 1.3 2000/12/31 23:18:18 micahjd Exp $
  *
  * background.c - an internal widget for drawing the screen background
  *
@@ -33,8 +33,8 @@ void build_background(struct gropctxt *c,unsigned short state,struct widget *sel
      to the screen, not the clipping rectangle imposed by the divnode. */  
   c->x = -self->in->x;
   c->y = -self->in->y;
-  c->w += self->in->x;
-  c->h += self->in->y;
+  c->w = vid->xres;
+  c->h = vid->yres;
 
   /* As normal... */
   exec_fillstyle(c,state,PGTH_P_BGFILL);

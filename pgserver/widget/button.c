@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.45 2000/12/12 00:51:47 micahjd Exp $
+/* $Id: button.c,v 1.46 2000/12/31 23:18:18 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -34,8 +34,8 @@ struct btndata {
 
   /* Hooks for embedding a button in another widget */
   int state,state_on,state_hilight;
-  void *extra;
-  void (*event)(void *extra,struct widget *button);
+  struct widget *extra;  /* the owner of a customized button */
+  void (*event)(struct widget *extra,struct widget *button);
 
   /* Mask of extended (other than ACTIVATE) events to send */
   int extdevents;
@@ -47,7 +47,7 @@ void resize_button(struct widget *self);
 /* Customizes the button's appearance
    (used by other widgets that embed buttons in themeselves) */
 void customize_button(struct widget *self,int state,int state_on,int state_hilight,
-		      void *extra, void (*event)(void *extra,struct widget *button)) {
+		      void *extra, void (*event)(struct widget *extra,struct widget *button)) {
   self->in->div->state = DATA->state = state;
   DATA->state_on = state_on;
   DATA->state_hilight = state_hilight;
@@ -159,7 +159,7 @@ void button_remove(struct widget *self) {
 
 g_error button_set(struct widget *self,int property, glob data) {
   g_error e;
-  struct bitmap *bit;
+  hwrbitmap bit;
   char *str;
   struct fontdesc *fd;
   int psplit;

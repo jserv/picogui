@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.23 2000/12/12 00:51:47 micahjd Exp $
+/* $Id: bitmap.c,v 1.24 2000/12/31 23:18:18 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -34,7 +34,7 @@ struct bitmapdata {
 #define DATA ((struct bitmapdata *)(self->data))
 
 void build_bitmap(struct gropctxt *c,unsigned short state,struct widget *self) {
-  struct bitmap *bit;
+  hwrbitmap bit;
   int x,y,w,h;
 
   if (!DATA->transparent)
@@ -99,7 +99,7 @@ void bitmap_remove(struct widget *self) {
 }
 
 g_error bitmap_set(struct widget *self,int property, glob data) {
-  struct bitmap *bit;
+  hwrbitmap bit;
   int psplit;
 
   switch (property) {
@@ -191,7 +191,7 @@ glob bitmap_get(struct widget *self,int property) {
 }
  
 void resizebitmap(struct widget *self) {
-  struct bitmap *bit;
+  hwrbitmap bit;
   int w,h;
  
   if (iserror(rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,DATA->bitmap)))
