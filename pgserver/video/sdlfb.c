@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.16 2001/07/05 04:36:46 micahjd Exp $
+/* $Id: sdlfb.c,v 1.17 2001/07/11 08:18:02 micahjd Exp $
  *
  * sdlfb.c - Video driver for SDL using a linear framebuffer.
  *           This will soon replace sdl.c, but only after the
@@ -295,11 +295,27 @@ pgcolor sdlfbemu_color_hwrtopg(hwrcolor c) {
 }
 #endif
 
+void sdlfb_message(u32 message, u32 param) {
+  switch (message) {
+
+  case PGDM_SOUNDFX:
+    /* This should be done using SDL's audio functions, this is
+     * just a little kludge */
+    {
+      char beep[2] = "\a";
+      write(1,beep,2);
+    }
+    break;
+
+  }
+}
+
 g_error sdlfb_regfunc(struct vidlib *v) {
   v->init = &sdlfb_init;
   v->setmode = &sdlfb_setmode; 
   v->close = &sdlfb_close;
   v->update = &sdlfb_update;    
+  v->message = &sdlfb_message;
   return sucess;
 }
 

@@ -79,6 +79,16 @@ quoted appropriately. For example:
   A program or shell command to run whenever pgserver starts up. pgserver
   will exit when the last client disconnects
 
+[sound]
+
+- click
+  Make a click sound whenever the pointing device is clicked
+  (If a loaded driver supports PG_SND_KEYCLICK)
+  
+- keyclick
+  Make a click whenever a key is pressed
+  (Also uses PG_SND_KEYCLICK)
+
 [timers]
 
 - cursorhide

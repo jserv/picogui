@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.13 2001/07/11 07:38:20 micahjd Exp $
+/* $Id: timer.c,v 1.14 2001/07/11 08:18:02 micahjd Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -204,8 +204,6 @@ void inactivity_check(void) {
     then = 0;
     return;
   }
-
-  printf("%d is now, but %d was then\n",now,then);
 
   if ( now >= timer_cursorhide && then < timer_cursorhide )
     drivermessage(PGDM_CURSORVISIBLE,0);

@@ -1,6 +1,6 @@
 2001-07-10    Micah Dowty <micahjd@users.sourceforge.net>
 
-Fixing a few bugs...
+Fixing a few bugs, continuing on the meta-input features.
 
 	   * widget/scroll.c: Fixed the scrollbar drag bug pointed out by Philippe
 
@@ -37,7 +37,9 @@ Fixing a few bugs...
 		* gcore/timer.c: Added some system timeouts that send driver messages
 		  when activated: cursor hide, backlight off, and sleep mode.
 
-
+		* gcore/widget.c: Added support for those annoying clicking noises when
+		  you click or press a key. This is controlled by a config file
+		  entry.
 
 2001-07-09    Micah Dowty <micahjd@users.sourceforge.net>
 
