@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.45 2001/07/26 10:11:22 micahjd Exp $
+/* $Id: div.c,v 1.46 2001/07/30 05:10:53 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -52,9 +52,6 @@ void divnode_recalc(struct divnode *n) {
        s16 x,y,w,h,margin;
 
        n->flags &= ~DIVNODE_SPLIT_POPUP;   /* Clear flag */
-
-       /* By default turn on the DIVNODE_POPUP_NONTOOLBAR flag */
-       n->div->flags |= DIVNODE_POPUP_NONTOOLBAR;
 
        /* Get size */
        x = n->div->x;
