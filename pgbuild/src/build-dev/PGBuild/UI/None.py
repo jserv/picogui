@@ -145,16 +145,14 @@ class Interface:
     def run(self):
         """Examine the provided configuration and take the specified actions"""
 
-        import PGBuild.Site
-        t = self.progress.task("Debuggative cruft")
-        pkg = self.config.packages.findPackageVersion('picogui')
-        pkg.merge(t)
+        # Handle --nuke command line option
+        if self.config.eval("invocation/option[@name='nuke']/text()"):
+            self.config.packages.nuke(self.progress)
 
+        # Handle --dump-tree command line option
         treeDumpFile = self.config.eval("invocation/option[@name='treeDumpFile']/text()")
         if treeDumpFile:
-            f = open(treeDumpFile, "w")
-            f.write(self.config.toprettyxml())
-            f.close()
+            self.config.dump(treeDumpFile, self.progress)
 
     def exception(self, exc_info):
         """This is called when PGBuild.Main catches an exception. The default implementation

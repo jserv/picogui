@@ -45,15 +45,6 @@ multiple locations:
     it to stay compatible with Python 2.2.
     See http://www.gustaebel.de/lars/tarfile/
 
-  - maplist.py
-    v0.9
-
-    The maplist module is a container that works like a dictionary but
-    preserves the ordering of elements, and provides some Set behavior.
-    The set operations provided by this module are required by the package
-    management code.
-    See http://www.scriptfoundry.com/modules/maplist/
-
   - PGBuild
     dev
 

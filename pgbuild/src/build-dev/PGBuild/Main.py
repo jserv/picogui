@@ -68,6 +68,11 @@ def parseCommandLine(config, argv):
     configGroup.add_option("--retest-mirrors", dest="retestMirrors", action="store_true",
                            help="re-run any mirror speed tests, ignoring saved results")
 
+    ############# Package management
+
+    packageGroup = parser.add_option_group("Package Management")
+    packageGroup.add_option("--nuke", dest="nuke", action="store_true",
+                            help="unconditionally delete local copies of all non-bootstrap packages")
 
     config.mount(OptionsXML(parser.parse_args(argv[1:])))
 

@@ -21,7 +21,7 @@ Objects to support package manipulation.
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
-import os
+import os, shutil
 import PGBuild.Errors
 import PGBuild.Site
 import PGBuild.Repository
@@ -245,6 +245,37 @@ class PackageList:
         else:
             return pkg.findVersion()
 
+    def isPackage(self, name, version=None):
+        """Test whether the given package (with or without version) exists in the configuration"""
+        try:
+            self.findPackageVersion(name, version)
+            return 1
+        except:
+            return 0
+
+    def getLocalPackages(self):
+        """Retrieve a list of all packages with local copies"""
+        # Make sure each directory in this list is actually a package
+        return filter(self.isPackage, os.listdir(self.config.eval("bootstrap/path[@name='packages']/text()")))
+
+    def getBootstrapPackages(self):
+        """Retrieve a list of all packages mentioned in the <bootstrap> section.
+           These packages are essential for PGBuild's operation and should not be deleted.
+           """
+        return self.config.eval("bootstrap/package/text()")
+
+    def nuke(self, progress):
+        """Delete local copies of all non-bootstrap packages"""
+        task = progress.task("Deleting local copies of all non-bootstrap packages")
+        locals = self.getLocalPackages()
+        boots  = self.getBootstrapPackages()
+        basePath = self.config.eval("bootstrap/path[@name='packages']/text()")
+        for package in locals:
+            if not package in boots:
+                task.showTaskHeading()
+                shutil.rmtree(os.path.join(basePath, package))
+                task.report("removed", package)
+    
 ### The End ###
         
     
