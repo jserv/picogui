@@ -1,0 +1,41 @@
+Brainstorming for Om and pg2
+
+Om consists of:
+
+   * a specification for how objects can interact, the Abstract Protocol
+
+   * specifications for a set of Concrete Protocols that map the abstract protocol to a language or IPC mechanism
+
+   * a specification for a module description file format, to specify the protocol a module implements, and other module metadata
+
+   * a set of adaptors to convert between protocols
+
+   * a compile-time tool for connecting modules via an automatically generated chain of adaptors
+
+   * a specification for a minimal standard library, including marshalling and capabilities
+
+   * implementations of this standard library in at least one protocol
+
+The object model defined in the Abstract Protocol document will be similar to python- objects have attributes stored in a dictionary. This could pose a huge penalty for accessing member variables in compiled languages. Solution: in these languages, an object's implementation can use member variables stored in a struct, class, or equivalent, as long as they are 'marked up' by attributes containing references to the actual member variables.
+
+A good paradigm for observers is essential to Om.  What does 'good' mean in this case? It must be fine-grained enough to give useful results. Since everything can be represented as an object, an observer mechanism that works on objects should be fine. It must be efficient in a client-server environment, meaning the number of round trips should be optimized. An easy way to do this is to send the new data whenever a change is made.
+
+My current thinking is to use an observer model based on common source code control systems. You can 'check out' an object, and receive a local copy. (probably this could optionally be a shallow copy or deep copy) When the original object changes, the local copy changes. You can add hook functions as attributes to the local copy, to act on changes. Just like in a source code control system, object updates could be performed by sending only modified portions of the object. The local copies are always read-only, so a checkout from another object in the same address space wouldn't require a copy.
+
+Inheritance could be handled like in python, by copying a class' attributes then overriding some. Inheritance across address space boundaries brings up some concerns. Most objects can migrate across the address space boundary, but for portability and security, code can not. So, methods called from the parent object will have to access all member variables over an IPC protocol. Not only would this be slow, but it would break the optimization mentioned above, where member variables are stored in a class or struct and referenced.
+
+There is no way to get around the speed problem, but it definitely needs to work correctly. Consider a Widget class in one of the pg2 modules, and a subclass of it in an application running in a different process. To create that subclass, a call to the Widget class' constructor has to be made over IPC.
+
+One solution for the optimization breakage is to redefine the optimization a bit. Instead of making the attributes reference the 'real' members in a struct or class, let the attributes remain authoritative but intelligently cache certain members in a struct/class.
+
+This could be combined with the observer paradigm. An object 'checks out' certain attributes into a struct. When those attributes change, the struct is updated. If the struct is changed, it must be committed.
+
+Hmm, this is sounding a bit like a more generic network transparent JetCOW
+
+How do we minimize the overhead of having to commit changes to member variables?
+Commit infrequently?
+
+What about conflicts? Are these just another type of race condition that must be guarded against specially for each particular object?
+
+That's too complicated. Something similar to Python's slots would be better. Objects could have a mandatory constructor that could, among other things, associate locations in a struct with attributes. Once associated, only that particular data type can be stored, and the association can not be broken. So, what if a subclass wants to reassociate a parent class' attribute?  Maybe the C and C++ protocols could use attribute associations to buold subclasses in structs that contain the parent classes, just like in C++.
+
