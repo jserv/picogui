@@ -1,4 +1,4 @@
-/* $Id: toolbar.c,v 1.9 2000/10/19 01:21:24 micahjd Exp $
+/* $Id: toolbar.c,v 1.10 2000/11/13 01:20:37 micahjd Exp $
  *
  * toolbar.c - container widget for buttons
  *
@@ -26,6 +26,7 @@
  */
 
 #include <pgserver/widget.h>
+#include <pgserver/appmgr.h>
 
 void resize_toolbar(struct widget *self) {
   int m = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
@@ -62,8 +63,24 @@ g_error toolbar_install(struct widget *self) {
 }
 
 void toolbar_remove(struct widget *self) {
-  if (!in_shutdown)
-    r_divnode_free(self->in);
+
+  if (in_shutdown) return;
+
+  /* If this widget is the htbboundary, set it to the previous
+     widget instead. To do this we have to iterate through the
+     divtree. */
+  if (wtbboundary == self) {
+    struct divnode *p = dts->root->head;
+    while (p) {
+      if ((&p->next == self->where) && p->owner) {
+	htbboundary = hlookup(p->owner,NULL);
+	break;
+      }
+      p = p->next;
+    }
+  }
+
+  r_divnode_free(self->in);
 }
 
 g_error toolbar_set(struct widget *self,int property, glob data) {

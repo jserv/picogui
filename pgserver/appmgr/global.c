@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.26 2000/11/12 19:41:09 micahjd Exp $
+/* $Id: global.c,v 1.27 2000/11/13 01:20:25 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -43,6 +43,10 @@ struct sprite *pointer;
 handle string_ok,string_cancel,string_yes,string_no;
 handle htbboundary;       /* The last toolbar, represents the boundary between
 			     toolbars and application panels */
+struct widget *wtbboundary;  /* htbboundary, dereferenced. Only used for comparison
+				when deleting a toolbar. Do not rely on the
+				validity of this pointer, dereferencing it could
+				cause a segfault! */
 
 g_error appmgr_init(void) {
   hwrbitmap bgbits;
@@ -125,7 +129,8 @@ void appmgr_unregowner(int owner) {
 
 g_error appmgr_register(struct app_info *i) {
   struct app_info *dest;
-  struct widget *w,*wtbboundary;
+  struct widget *w;
+  struct divnode *p;
   g_error e;
 
   /* Dereference the toolbar boundary */
@@ -146,6 +151,7 @@ g_error appmgr_register(struct app_info *i) {
     e = mkhandle(&i->rootw,PG_TYPE_WIDGET,i->owner,w);
     errorcheck;    
     htbboundary = i->rootw;
+    wtbboundary = w;
 
     /* Size specs are ignored for the toolbar.
        They won't be moved by the appmgr, so sidemask has no effect.
@@ -157,11 +163,8 @@ g_error appmgr_register(struct app_info *i) {
     break;
 
   case PG_APP_NORMAL:
-    /* Use a panel, create it after the toolbars */
-    if (wtbboundary)
-      e = widget_derive(&w,PG_WIDGET_PANEL,wtbboundary,htbboundary,PG_DERIVE_AFTER,i->owner);
-    else
-      e = widget_create(&w,PG_WIDGET_PANEL,dts->root,&dts->root->head->next,0,i->owner);
+    /* Put the new app right before the background widget */
+    e = widget_derive(&w,PG_WIDGET_PANEL,bgwidget,hbgwidget,PG_DERIVE_BEFORE,i->owner);
     errorcheck;
     e = mkhandle(&i->rootw,PG_TYPE_WIDGET,i->owner,w);
     errorcheck;    

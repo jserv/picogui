@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.41 2000/11/12 19:41:16 micahjd Exp $
+/* $Id: panel.c,v 1.42 2000/11/13 01:20:37 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -158,7 +158,6 @@ void panelbtn_rotate(struct widget *self,struct widget *button) {
 
 void panelbtn_zoom(struct widget *self,struct widget *button) {
   struct divnode **where;
-  struct widget *wtbboundary;
   
   /* This requires a bit of black magic, but fear not, it's not
      as bad as widget.c ;-) */
