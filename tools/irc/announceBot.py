@@ -12,7 +12,7 @@ secondsBetweenLines = 2
 from twisted.im import basechat, baseaccount, ircsupport 
 from twisted.internet.protocol import Factory
 from twisted.internet.app import Application
-import twisted.internet.reactor
+from twisted.internet import reactor
 from twisted.protocols.basic import LineReceiver
 import time, irc_colors, glob, sys, re, os
 
