@@ -1,4 +1,4 @@
-/* $Id: eventq.c,v 1.3 2000/06/07 06:15:47 micahjd Exp $
+/* $Id: eventq.c,v 1.4 2000/06/10 01:15:45 micahjd Exp $
  *
  * eventq.c - This implements the post_event function that the widgets
  *            use to send events to the client.  It stores these in a
@@ -43,12 +43,17 @@ void post_event(int event,struct widget *from,long param) {
   /* Is the owner already waiting for an event? */
   if (FD_ISSET(owner,&evtwait)) {
     struct response_event rsp;
+
+    FD_CLR(owner,&evtwait);
+#ifdef DEBUG
+    printf("Client (#%d) removed from waiting list\n",owner);
+#endif
+
     rsp.type = htons(RESPONSE_EVENT);
     rsp.event = htons(event);
     rsp.from = htonl(hfrom);
     rsp.param = htonl(param);
     send(owner,&rsp,sizeof(rsp),0);
-    FD_CLR(owner,&evtwait);
     return;
   }
 

@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.5 2000/06/10 00:31:36 micahjd Exp $
+/* $Id: dispatch.c,v 1.6 2000/06/10 01:15:45 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -355,6 +355,9 @@ g_error rqh_wait(int owner, struct uipkt_request *req,
 		 void *data, unsigned long *ret, int *fatal) {
   
   FD_SET(owner,&evtwait);
+#ifdef DEBUG
+    printf("Client (#%d) added to waiting list\n",owner);
+#endif
   return sucess;
 }
 
