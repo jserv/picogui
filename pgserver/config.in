@@ -233,6 +233,9 @@ if [ "$CONFIG_WIDGET_BUTTON" = "y" ]; then
   bool '  Menuitem'                           CONFIG_WIDGET_MENUITEM 
   bool '  Radiobutton'                        CONFIG_WIDGET_RADIOBUTTON
   bool '  Submenuitem'                        CONFIG_WIDGET_SUBMENUITEM
+  if [ "$CONFIG_WIDGET_SUBMENUITEM" = "y" ]; then
+    bool '    Left/Right Navigation Support'  CONFIG_SUBMENU_NAVIGATION
+  fi
 fi
 bool 'Canvas'                                 CONFIG_WIDGET_CANVAS
 bool 'Dialogbox'                              CONFIG_WIDGET_DIALOGBOX
