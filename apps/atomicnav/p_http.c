@@ -1,4 +1,4 @@
-/* $Id: p_http.c,v 1.3 2002/01/07 19:25:50 micahjd Exp $
+/* $Id: p_http.c,v 1.4 2002/01/08 11:36:06 micahjd Exp $
  *
  * p_http.c - Local disk access for the Atomic Navigator web browser
  *
@@ -47,16 +47,44 @@
 #include "url.h"
 #include "protocol.h"
 #include "browserwin.h"
+#include "debug.h"
+
+/* Some tweakables.. */
+#define DEFAULT_PAGE_BUFFER    10240  /* This will grow as needed */
+#define HEADER_LINE_BUFFER     2048   /* Needs to be big enough to hold a cookie */
+#define GROW_PAGE_BUFFER       4096   /* Grow by the read amount plus this */
 
 struct http_data {
   int fd;
   struct hostent *he;
   struct sockaddr_in server_addr;
-  FILE *out;
+  FILE *out, *in;
+  char *buffer;
+  char *headerline;
+  unsigned long buffer_size;
 };
+
+/********************************* Utilities */
+
+/* Process one HTTP header */
+void p_http_header(struct url *u, const char *name, const char *value) {
+  DBG("%s: %s\n",name,value);
+
+  if (!strcmp(name,"Content-Type") && !u->type) 
+    u->type = strdup(value);
+
+  else if (!strcmp(name,"Content-Length"))
+    u->size = atoi(value);
+
+  else if (!strcmp(name,"Location"))
+    browserwin_command(u->browser->wApp, "URL", value);
+}
+
+/********************************* Methods */
 
 void p_http_connect(struct url *u) {
   struct http_data *hd;
+  char *p;
 
   /* Create our http_data */
   hd = malloc(sizeof(struct http_data));
@@ -103,18 +131,75 @@ void p_http_connect(struct url *u) {
   }    
   hd->out = fdopen(hd->fd,"w");
 
-  /* Send HTTP headers */
+  /* Send HTTP headers */\
   url_setstatus(u,URL_STATUS_WRITE);
   fprintf(hd->out,
 	  "GET %s HTTP/1.0\r\n"
 	  "User-Agent: %s\r\n"
 	  "\r\n",
 	  u->path,
-	  BROWSER_TITLE);
+	  USER_AGENT);
   fflush(hd->out);
 
-  /* Ready to receive response, leave that to the select loop */
+  /* Receive HTTP headers with buffered I/O */
   url_setstatus(u,URL_STATUS_READ);
+  hd->headerline = malloc(HEADER_LINE_BUFFER);
+  if (!hd->headerline) {
+      browserwin_errormsg(u->browser, "The HTTP headers are incomplete");
+      url_setstatus(u,URL_STATUS_ERROR);
+      return;
+  }
+  hd->in = fdopen(hd->fd,"r");
+  do {
+    /* Get one header line */
+    if (!fgets(hd->headerline, HEADER_LINE_BUFFER, hd->in)) {
+      browserwin_errormsg(u->browser, "The HTTP headers are incomplete");
+      url_setstatus(u,URL_STATUS_ERROR);
+      return;
+    }
+
+    /* The fgets separates lines with \n, but there might be a stray \r
+     * at the end since most web servers send \r\n
+     */
+    if (p = strchr(hd->headerline,'\r'))
+      *p = 0;
+    if (p = strchr(hd->headerline,'\n'))
+      *p = 0;
+    
+    /* Separate into name and value */
+    p = strchr(hd->headerline,':');
+    if (p) {
+      *p = 0;
+      p++;
+      /* There should be a space after the colon, if so chop if off */
+      if (*p == ' ')
+	p++;
+    }
+    else 
+      p = "";
+    
+    p_http_header(u,hd->headerline,p);
+
+  } while (*hd->headerline);
+  free(hd->headerline);
+  hd->headerline = NULL;
+
+  /* Allocate our initial buffer. If we didn't get a content-size header,
+   * use a hardcoded default size.
+   */
+  if (u->size)
+    hd->buffer_size = u->size;
+  else
+    hd->buffer_size = DEFAULT_PAGE_BUFFER;
+  hd->buffer = malloc(hd->buffer_size);
+  if (!hd->buffer) {
+    browserwin_errormsg(u->browser, "Unable to allocate memory to hold the web page");
+    url_setstatus(u,URL_STATUS_ERROR);
+    return;
+  }    
+  DBG("malloc'ed %d bytes for page buffer\n", hd->buffer_size);
+
+  /* Yay, start reading the page's content asynchronously */
   url_activate(u);
 }
 
@@ -125,8 +210,14 @@ void p_http_stop(struct url *u) {
   if (hd) {
     if (hd->out)
       fclose(hd->out);
+    if (hd->in)
+      fclose(hd->in);
     if (hd->fd)
       close(hd->fd);
+    if (hd->buffer)
+      free(hd->buffer);
+    if (hd->headerline)
+      free(hd->headerline);
     
     free(hd);
     hd = NULL;
@@ -152,27 +243,46 @@ void p_http_fd_init(struct url *u, int *n, fd_set *readfds, fd_set *writefds, fd
 }
 
 void p_http_fd_activate(struct url *u, fd_set *readfds, fd_set *writefds, fd_set *exceptfds) {
-  /*
+  struct http_data *hd = (struct http_data *) u->extra;
+  size_t n_available;
+  size_t n_read;
 
-  size_t s;
-  size_t chunk;
+  if (FD_ISSET(hd->fd,readfds)) {
 
-  if (FD_ISSET(u->fd,readfds)) {
-    s = read(u->fd,u->data + u->size_received, u->size - u->size_received);
-    if (!s) {
-      browserwin_errormsg(u->browser,"Error reading from http");
+    /* Check how much data is actually available */
+    ioctl(hd->fd, FIONREAD, &n_available);
+    if (n_available <= 0) {
+      /* Done */
+      
+      url_deactivate(u);
+      u->data = pgFromMemory(hd->buffer, u->bytes_received);
+      url_setstatus(u, URL_STATUS_DONE);
+      return;
+    }
+
+    /* Will we need more space to read this? */
+    if (u->bytes_received + n_available > hd->buffer_size) {
+      hd->buffer_size = u->bytes_received + n_available + GROW_PAGE_BUFFER;
+      hd->buffer = realloc(hd->buffer, hd->buffer_size);
+      if (!hd->buffer) {
+	browserwin_errormsg(u->browser,"Can't increase page buffer size");
+	url_setstatus(u,URL_STATUS_ERROR);
+	url_deactivate(u);
+      }
+      DBG("resized page buffer to %d\n",hd->buffer_size);
+    }
+
+    n_read = read(hd->fd,hd->buffer + u->bytes_received, n_available);
+    if (!n_read) {
+      browserwin_errormsg(u->browser,"Error reading from web server");
       url_setstatus(u,URL_STATUS_ERROR);
       url_deactivate(u);
     }
-    if (s > 0)
-      u->size_received += s;
-    if (u->size_received == u->size) {
-      url_setstatus(u, URL_STATUS_DONE);
-      url_deactivate(u);
-    }
+    if (n_read > 0)
+      u->bytes_received += n_read;
+
     url_progress(u);
   }
-  */
 }
 
 struct protocol p_http = {

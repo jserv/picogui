@@ -1,4 +1,4 @@
-/* $Id: browserwin.c,v 1.6 2002/01/07 19:25:50 micahjd Exp $
+/* $Id: browserwin.c,v 1.7 2002/01/08 11:36:06 micahjd Exp $
  *
  * browserwin.c - User interface for a browser window in Atomic Navigator
  *
@@ -27,6 +27,7 @@
 
 #include <picogui.h>
 #include <malloc.h>
+#include <string.h>
 #include "browserwin.h"
 #include "url.h"
 #include "protocol.h"
@@ -44,6 +45,9 @@ const char *status_names[] = {
   "Using cached copy.",
 };
 
+/* Internal function to set the URL */
+void browserwin_seturl(struct browserwin *w, const char *url);
+
 /********************************* GUI Events */
 
 int btnGo(struct pgEvent *evt) {
@@ -60,16 +64,46 @@ int btnStop(struct pgEvent *evt) {
     url_delete(w->page);
     w->page = NULL;
   }
+  return 0;
 }
 
 int btnBack(struct pgEvent *evt) {
   struct browserwin *w = (struct browserwin *) evt->extra;
 
+  return 0;
 }
 
 int btnForward(struct pgEvent *evt) {
   struct browserwin *w = (struct browserwin *) evt->extra;
 
+  return 0;
+}
+
+int evtMessage(struct pgEvent *evt) {
+  struct browserwin *w = (struct browserwin *) evt->extra;
+  char *command, *param;
+  
+  /* Separate message into command and parameter by the first space */
+  command = strdup(evt->e.data.pointer);
+  param = strchr(command,' ');
+  if (param) {
+    *param = 0;
+    param++;
+  }
+  else
+    param = "";
+
+  if (!strcmp(command, "URL")) {
+    browserwin_seturl(w,param);
+    pgEnterContext();
+    pgSetWidget(w->wURL,
+		PG_WP_TEXT,pgNewString(param),
+		0);
+    pgLeaveContext();
+  }
+
+  free(command);
+  return 0;
 }
 
 /********************************* Callbacks */
@@ -86,6 +120,8 @@ void pageStatus(struct url *u) {
 		PG_WP_TEXT,page,
 		0);
   }
+
+  pgUpdate();
 }
 
 void pageProgress(struct url *u) {
@@ -117,6 +153,7 @@ struct browserwin *browserwin_new(void) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_NAME,pgNewString(BROWSER_NAME),
 	      0);
+  pgBind(PGDEFAULT,PG_WE_APPMSG,evtMessage,(void*) w);
   
   w->wNavTB = pgNewWidget(PG_WIDGET_TOOLBAR,0,0);
   pgSetWidget(PGDEFAULT,
@@ -250,6 +287,16 @@ void browserwin_errormsg(struct browserwin *w, const char *msg) {
 	      0);
 }
 
+/* By passing messages using pgAppMessage, we will only receive them when we're
+ * in pgEventLoop. This is important for many things, including URL loading.
+ * We don't want to be loading a new URL while we're still parsing the first
+ * one, for example. This gets pgserver to do the queueing for us :)
+ */
+void browserwin_command(pghandle w, const char *command, const char *param) {
+  char *buf = malloc( strlen(param) + strlen(command) + 5 );
+  sprintf(buf,"%s %s",command,param);
+  pgAppMessage(w, pgFromTempMemory(buf, strlen(buf)));
+}
 
 /* The End */
 

@@ -1,4 +1,4 @@
-/* $Id: url.h,v 1.5 2002/01/07 19:25:50 micahjd Exp $
+/* $Id: url.h,v 1.6 2002/01/08 11:36:06 micahjd Exp $
  *
  * url.h - framework for parsing and retrieving URLs
  *
@@ -67,13 +67,12 @@ struct url {
   /* Progress. -1 for unknown, or a number between 0 and 100 */
   int progress;
 
-  /* By the time status is URL_STATUS_READ we'd like to know the
-   * content type and size
+  /* By the time status is URL_STATUS_DONE these fields should
+   * be filled in, reflecting the completed page. Usually 'size' will
+   * also be available during loading so that progress can be estimated.
    */
   char *type;
   unsigned long size;
-
-  /* When this process is done, the URL's data will be here */
   struct pgmemdata data;
 
   /* Amount of data read so far */

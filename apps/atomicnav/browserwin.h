@@ -1,4 +1,4 @@
-/* $Id: browserwin.h,v 1.3 2002/01/07 06:28:08 micahjd Exp $
+/* $Id: browserwin.h,v 1.4 2002/01/08 11:36:06 micahjd Exp $
  *
  * browserwin.h - User interface for a browser window in Atomic Navigator
  *
@@ -35,6 +35,7 @@
 
 #define BROWSER_TITLE "Atomic Navigator"
 #define BROWSER_NAME  "atomicnav.browserwin"
+#define USER_AGENT    "AtomicNavigator/0.0 (PicoGUI)"
 
 /********************************* Structure */
 
@@ -71,8 +72,8 @@ struct browserwin {
 
 struct browserwin *browserwin_new(void);
 void browserwin_showstatus(struct browserwin *w, struct url *u);
-void browserwin_seturl(struct browserwin *w, const char *url);
 void browserwin_errormsg(struct browserwin *w, const char *msg);
+void browserwin_command(pghandle w, const char *command, const char *param);
 
 #endif /* __H_BROWSERWIN */
 

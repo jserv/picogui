@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.2 2002/01/07 06:28:08 micahjd Exp $
+/* $Id: main.c,v 1.3 2002/01/08 11:36:06 micahjd Exp $
  *
  * main.c - Initialization and event loop for Atomic Navigator
  *
@@ -38,12 +38,29 @@ int selectHandler(int n, fd_set *readfds, fd_set *writefds,
 void selectBH(int result, fd_set *readfds);
 
 int main(int argc, char **argv) {
+  pghandle win;
+  int run_eventloop = 0;
   pgInit(argc,argv);
 
-  browserwin_new();
+  /* Find the browser window */
+  win = pgFindWidget(BROWSER_NAME);
 
-  pgCustomizeSelect(selectHandler, selectBH);
-  pgEventLoop();
+  /* Need to create a new one? */
+  if (!win) {
+    win = browserwin_new()->wApp;
+    run_eventloop = 1;
+  }
+
+  /* Send a URL if one was specified on the command line */
+  if (argv[1])
+    browserwin_command(win, "URL", argv[1]);
+  
+  if (run_eventloop) {
+    pgCustomizeSelect(selectHandler, selectBH);
+    pgEventLoop();
+  }
+  else
+    pgFlushRequests();
 }
 
 /* Call fd_init on all activated URLs */

@@ -1,4 +1,4 @@
-/* $Id: url.c,v 1.4 2002/01/07 19:25:50 micahjd Exp $
+/* $Id: url.c,v 1.5 2002/01/08 11:36:06 micahjd Exp $
  *
  * url.c - framework for parsing and retrieving URLs
  *
@@ -194,9 +194,11 @@ void url_deactivate(struct url *u) {
 
 /* Update progress indicators associated with the URL */
 void url_progress(struct url *u) {
-  if (u->size > 0)
+  if (u->status == URL_STATUS_DONE)  
+    u->progress = 100;
+  else if (u->size > 0)
     u->progress = u->bytes_received * 100 / u->size;
-  else
+  else 
     u->progress = -1;
   if (u->progress_change)
     u->progress_change(u);
