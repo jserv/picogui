@@ -15,6 +15,7 @@ class FlatLand : public ScriptableObject {
   
  private:
   PGTexture *ground;
+  float x;
 };
 
 #endif /* _H_FLATLAND */

@@ -6,4 +6,8 @@
 	<label color="white" side="bottom" font=":20:bold">
 		JetEngine - PicoGUI and Python embedding demo
 	</label>
+	<box side="left">
+		<label>Velocity</label>
+		<scroll name="VelocitySlider"/>
+	</box>
 </application>

@@ -6,7 +6,8 @@
 
 FlatLand::FlatLand() {
   ground = new PGTexture("jetengine/grass");
-  setAttr("x",0.0f);
+  setAttr("velocity",0.0f);
+  x = 0;
 }
 
 FlatLand::~FlatLand() {
@@ -14,6 +15,10 @@ FlatLand::~FlatLand() {
 }
 
 void FlatLand::draw() {
+  /* Update the position using our velocity attribute */
+  x += getAttrFloat("velocity");
+
+  /* Simple gradient sky */
   glBegin(GL_QUADS);
   glColor3f(0.851, 0.886, 0.918);
   glVertex3f(-1000, 0, -1000);
@@ -23,7 +28,7 @@ void FlatLand::draw() {
   glVertex3f(-1000, 500,-1000);
   glEnd();
   
-  float x = getAttrFloat("x");
+  /* Our ground plane, using 'x' as a bias for the v texture coordinates */
   glEnable(GL_TEXTURE_2D);
   ground->bind();
   glBegin(GL_QUADS);

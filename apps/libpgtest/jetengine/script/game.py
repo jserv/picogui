@@ -5,11 +5,16 @@ print "Imporing python module"
 def thread():
     print "Starting python thread..."
 
-    app = PicoGUI.TemplateApp(open("data/hud.wt").read())
-    app.server.update()
+    # Load our widget template, importing widgets from it
+    app = PicoGUI.TemplateApp(open("data/hud.wt").read(),[
+        'VelocitySlider'
+        ])
 
-    while 1:
-        world.x += 0.1;
-        time.sleep(0.1);
+    # Event handler for the velocity slider
+    def velocityChange(ev, widget):
+        world.velocity = widget.value / 10000.0
+    app.link(velocityChange,app.VelocitySlider,'activate')
     
+    app.run()
+
     print "Python thread ending"
