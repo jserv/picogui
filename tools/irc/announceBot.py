@@ -85,8 +85,10 @@ class AccountManager (baseaccount.AccountManager):
     def logonCallback(self, acct):
         print "Logged on OK"
         if password != "":
+            print "Sending OPER line"
             acct.client.sendLine("OPER "+botNick+" "+password) # identify to freenode
-            time.sleep(10) # so it won't count towards our limit as much
+            ##time.sleep(10) # so it won't count towards our limit as much
+            print "Sending SILENCE line"
             acct.client.sendLine("SILENCE +*@*") # as we don't accept commands via IRC, silence incoming messages to make it more DoS resistant
 
         for chan in channelList:
