@@ -40,6 +40,7 @@ static int tmr_list_count;
 static GSList *se_list;			  /* socket event list */
 static int se_list_count;
 static pghandle pgEmptyString, pgPlusHTML;
+static short int output_type=PG_WIDGET_TERMINAL;
 
 static int
 fieldActivate(struct pgEvent *evt)
@@ -107,7 +108,6 @@ void
 fe_new_window (struct session *sess)
 {
 	char buf[512];
-	short int output_type=PG_WIDGET_TERMINAL;
 	pghandle scroll, rightbox;
 
 	sess->gui = malloc(sizeof(struct session_gui));
@@ -157,7 +157,8 @@ fe_new_window (struct session *sess)
 			/* make the terminal widget pass focus to the input */
 			pgBind(0, PG_WE_DATA, evtPassFocus,
 					(void*)sess->gui->input);
-			pgSetWidget(0, PG_WP_SIDE, PG_S_ALL, 0);
+			pgSetWidget(0, PG_WP_SIDE, PG_S_ALL,
+					PG_WP_AUTOSCROLL, 1, 0);
 			if(prefs.max_lines)
 				pgSetWidget(0, PG_WP_LINES, prefs.max_lines, 0);
 			/* hide cursor */
@@ -315,6 +316,10 @@ fe_args (int argc, char *argv[])
 			puts (VERSION);
 			return 0;
 		}
+		if (!strcasecmp (argv[1], "--textbox"))
+			output_type=PG_WIDGET_TEXTBOX;
+		if (!strcasecmp (argv[1], "--terminal"))
+			output_type=PG_WIDGET_TERMINAL;
 	}
 	return 1;
 }
