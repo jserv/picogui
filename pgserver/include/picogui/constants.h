@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.183 2003/03/23 02:36:39 lalo Exp $
+/* $Id: constants.h,v 1.184 2003/03/25 01:26:14 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -1153,8 +1153,6 @@ typedef unsigned long pghandle;
  * under which a key event is received.
  */
 #define PG_KF_FOCUSED           (1<<0)  /* The widget receiving the event is focused */
-#define PG_KF_CHILD_FOCUSED     (1<<1)  /* Any child widget of this one is focused */
-#define PG_KF_CONTAINER_FOCUSED (1<<2)  /* Any container of this widget is focused */
 #define PG_KF_ALWAYS            (1<<3)  /* This is always on */
 #define PG_KF_APP_TOPMOST       (1<<4)  /* Set if the widget's app is top in "z-order" */
 

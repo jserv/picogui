@@ -1,4 +1,4 @@
-/* $Id: if_key_dispatch.c,v 1.5 2003/03/10 23:48:19 micahjd Exp $
+/* $Id: if_key_dispatch.c,v 1.6 2003/03/25 01:26:14 micahjd Exp $
  *
  * if_key_dispatch.c - Send key events to widgets
  *
@@ -65,14 +65,12 @@ void infilter_key_dispatch_handler(struct infilter *self, u32 trigger, union tri
   /*
    *  Now for the fun part... propagating this event to all the widgets.
    *  It will eventually end up at all the widgets, but the order is
-   *  important. What seemed to make the most sense for PicoGUI was:
+   *  important.
    *
-   *   1. focused widget
-   *   2. focused widget's children
-   *   3. focused widget's ancestors (within one root widget)
-   *   4. all popup widgets and their children, from top to bottom
-   *   5. all root widgets and their children, in decreasing pseudo-z-order
-   *   6. all widgets (to handle unattached widgets)
+   *   1. all popup widgets and their children, from top to bottom
+   *   2. all root widgets and their children, in decreasing pseudo-z-order
+   *   3. all widgets (to handle unattached widgets)
+   *   4. focused widget
    *
    *  Since PicoGUI doesn't have a real z-order for root widgets, the
    *  order will determined by how recently the root widget had a 
@@ -85,44 +83,10 @@ void infilter_key_dispatch_handler(struct infilter *self, u32 trigger, union tri
   param->kbd.flags = PG_KF_ALWAYS;
   handle_iterate(PG_TYPE_WIDGET,send_trigger_iterator,&data);
 
-  if (kbdfocus) {
-    kflags = PG_KF_ALWAYS;
-
-    /* Is the focused widget in the topmost app?
-     */
-    app = appmgr_findapp(kbdfocus);
-    if (app && (*app)==applist)
-      kflags |= PG_KF_APP_TOPMOST;
-
-    /* 1. focused widget 
-     */
-    param->kbd.flags = kflags | PG_KF_FOCUSED;
-    send_trigger(kbdfocus,trigger,param);
-    if (param->kbd.consume > 0)
-      return;
-    
-    /* 2. focused widget's children
-     */
-    param->kbd.flags = kflags | PG_KF_CONTAINER_FOCUSED;
-    r_send_trigger(widget_traverse(kbdfocus,PG_TRAVERSE_CHILDREN,0),
-		   trigger, param, &param->kbd.consume, 1);
-    if (param->kbd.consume > 0)
-      return;    
-    
-    /* 3. focused widget's ancestors
-     */
-    p = kbdfocus;
-    param->kbd.flags = kflags | PG_KF_CHILD_FOCUSED;
-    while ((p = widget_traverse(p, PG_TRAVERSE_CONTAINER, 1))) {
-      send_trigger(p,trigger,param);
-      if (param->kbd.consume > 0)
-	return;
-    }
-  }
-
-  /* 4. Popup widgets and their children
+  /* 1. Popup widgets and their children
    */
   param->kbd.flags = PG_KF_ALWAYS;  
+  param->kbd.consume = 0;
   for (dt=dts->top;dt && dt!=dts->root;dt=dt->next) {
     if (dt->head->next)
       r_send_trigger(dt->head->next->owner, trigger, param, &param->kbd.consume, 0);
@@ -130,7 +94,7 @@ void infilter_key_dispatch_handler(struct infilter *self, u32 trigger, union tri
       return;    
   }
 
-  /* 5. Other root widgets and their children 
+  /* 2. Other root widgets and their children 
    */
   param->kbd.flags = PG_KF_ALWAYS | PG_KF_APP_TOPMOST;
   for (ap=applist;ap;ap=ap->next) {
@@ -144,7 +108,7 @@ void infilter_key_dispatch_handler(struct infilter *self, u32 trigger, union tri
     param->kbd.flags &= ~PG_KF_APP_TOPMOST;
   }
 
-  /* 6. Any widget
+  /* 3. Any widget
    */
   data.param = param;
   data.type = trigger;
@@ -153,6 +117,23 @@ void infilter_key_dispatch_handler(struct infilter *self, u32 trigger, union tri
   if (param->kbd.consume > 0)
     return;
     
+  if (kbdfocus) {
+    kflags = PG_KF_ALWAYS;
+
+    /* Is the focused widget in the topmost app?
+     */
+    app = appmgr_findapp(kbdfocus);
+    if (app && (*app)==applist)
+      kflags |= PG_KF_APP_TOPMOST;
+
+    /* 4. focused widget 
+     */
+    param->kbd.flags = kflags | PG_KF_FOCUSED;
+    send_trigger(kbdfocus,trigger,param);
+    if (param->kbd.consume > 0)
+      return;
+  }
+
   /* If none of the widgets have consumed the event, pass it on */
   if (!param->kbd.consume)
     infilter_send(self,trigger,param);
