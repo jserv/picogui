@@ -27,11 +27,7 @@ Test mode for video subsystem
 
 gropnode coordinate systems
 
-Fix svgagl video driver
-
-Eliminate old sdl driver
-
-Other VBLs
+linear1,2,4,16,24,32...
 
 Fix svgalib ctrl-C and other bucky bits
 
@@ -63,4 +59,3 @@ ucLinux memory bugs (possible same root cause as htree problems?)
 
 panel bar dragging leaves extra sprites behind sometimes
 
-Tiled blits are messed up in most drivers?

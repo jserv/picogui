@@ -10,6 +10,8 @@ To fix tiled blits (and for a nice background) I put together a simple
 background theme using the nifty tile from Propaganda
 + themetools/examples/bg_graywaves.ths
 
+Fixed tiled blits in the old sdl driver and linear8
+
 ---- Tuesday, February 13
 
 There's something wrong with the tile blits... (in all video drivers?)
