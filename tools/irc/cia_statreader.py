@@ -102,4 +102,84 @@ def readLatestCommands(n=20):
     f.close()
     return results
 
+def htmlifyColorTags(message):
+    """Utility to properly convert message color tags into <span> tags with class attributes."""
+    # We have to parse the message from the beginning and keep a list of
+    # active colors, since our color tag format allows things like {red}ecky{green}foo{normal}
+
+    insideTags = []
+    outputMessage = ""
+    import irc_colors
+
+    class ColorState:
+        fgColor = None
+        bgColor = None
+        bold = False
+        underline = False
+
+    parsedState = ColorState()
+    htmlState = ColorState()
+    
+    while message:
+        nextSquiggly = message.find("{")
+        if nextSquiggly != 0:
+            # Normal text.
+            
+            if htmlState != parsedState:
+                # Now figure out how to change our HTML state to match our parsed color tag state.
+                # We might be smarter about this later, for now just close all the tags we're in
+                # and open new ones.
+                while insideTags:
+                    outputMessage += "</%s>" % insideTags.pop()
+                if parsedState.bgColor:
+                    outputMessage += '<span class="bgColor-%s">' % parsedState.bgColor
+                    insideTags.append('span')
+                if parsedState.fgColor:
+                    outputMessage += '<span class="fgColor-%s">' % parsedState.fgColor
+                    insideTags.append('span')
+                if parsedState.bold:
+                    outputMessage += '<b>'
+                    insideTags.append('b')
+                if parsedState.underline:
+                    outputMessage += '<u>'
+                    insideTags.append('u')
+                htmlState = parsedState
+
+            if nextSquiggly > 0:
+                outputMessage += message[:nextSquiggly]
+                message = message[nextSquiggly:]
+            else:
+                outputMessage += message
+                message = ''
+        else:
+            tagEnd = message.find("}")
+            if tagEnd < 1:
+                # Unclosed tag, just dump the rest of the message
+                return outputMessage + message
+            tag = message[1:tagEnd]
+
+            # Chomp up the color tag
+            message = message[len(tag)+2:]
+
+            # We have a tag, see if it's something we recognize
+            if tag == "bold":
+                parsedState.bold = True
+            elif tag == "underline":
+                parsedState.underline = True
+            elif tag == "reverse":
+                (parsedState.fgColor, parsedState.bgColor) = (parsedState.bgColor, parsedState.fgColor)
+            elif tag == "normal":
+                parsedState = ColorState()
+            elif tag in irc_colors.COLORS.keys():
+                parsedState.fgColor = tag
+            else:
+                # Unrecognized tag- output it unmodified
+                outputMessage += "{" + tag + "}"
+                continue
+
+    # Make sure all our tags are closed
+    while insideTags:
+        outputMessage += "</%s>" % insideTags.pop()
+    return outputMessage
+
 readStats()

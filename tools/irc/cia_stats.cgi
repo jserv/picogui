@@ -115,7 +115,9 @@ print """
 """
 for command in readLatestCommands():
     if command[0] == "Announce":
-        print "<li><b>%s</b>: %s</li>" % (command[1], command[2])
+        projectName = command[1]
+        messageLine = htmlifyColorTags(command[2])
+        print "<li><b>%s</b>: %s</li>" % (projectName, messageLine)
 print """
     </ul>
   </div>
