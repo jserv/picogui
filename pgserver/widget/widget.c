@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.69 2001/03/29 20:38:04 micahjd Exp $
+/* $Id: widget.c,v 1.70 2001/03/31 01:05:41 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -612,6 +612,33 @@ void dispatch_pointing(long type,int x,int y,int btn) {
     send_trigger(capture,TRIGGER_DRAG,&param);
 }
 
+#ifdef DEBUG_KEYS
+   /* Utility function and vars to implement CTRL-ALT-P
+    * bitmap debug hotkey */
+   
+int db_x,db_y,db_h;
+   
+g_error debug_bitmaps(void **pobj) {
+   hwrbitmap bmp = (hwrbitmap) *pobj;
+   int w,h;
+   
+   VID(bitmap_getsize) (bmp,&w,&h);
+   if (h>db_h)
+     db_h = h;
+   if (db_x+10+w>vid->lxres) {
+     db_x = 0;
+     db_y += db_h+8;
+   }
+   
+   VID(rect) (db_x+3,db_y+38,w+4,h+4,VID(color_pgtohwr)(0xFFFFFF));
+   VID(rect) (db_x+4,db_y+39,w+2,h+2,VID(color_pgtohwr)(0x000000));
+   VID(blit) (bmp,0,0,db_x+5,db_y+40,w,h,PG_LGOP_NONE);
+
+   db_x += w+8;
+   return sucess;
+}
+#endif
+   
 void dispatch_key(long type,int key,int mods) {
   struct widget *p;
   union trigparam param;
@@ -703,6 +730,14 @@ void dispatch_key(long type,int key,int mods) {
       VID(update) (0,0,vid->lxres,vid->lyres);
       return;
 
+    case PGKEY_p:           /* CTRL-ALT-p shows all loaded bitmaps */
+      guru("Table of loaded bitmaps:");
+      /* Reset evil globals :) */
+      db_x = db_y = db_h = 0;
+      handle_iterate(PG_TYPE_BITMAP,&debug_bitmaps);
+      VID(update) (0,0,vid->lxres,vid->lyres);
+      return;
+       
 #endif /* DEBUG_KEYS */
 
     }
