@@ -1,0 +1,16 @@
+cli_lua for PicoGUI v0.5 
+(Hope it's half way to release 1)
+Same LICENSE as Lua (BSD like)
+
+pico.lua needs luasocket. conv.lua needs lbitlib.
+Both can be found at www.lua.org
+
+Included i386 Linux binary 'sol'
+(my compilation of luasocket/lbitlib/lua4.0)
+
+To test, run ./sol -f demo.lua
+
+------------------
+Howard Fan Hongjian
+Oct, 2002
+fanhow@hotpop.com
