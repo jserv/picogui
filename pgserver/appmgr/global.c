@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.27 2000/11/13 01:20:25 micahjd Exp $
+/* $Id: global.c,v 1.28 2001/01/29 00:22:33 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -55,10 +55,18 @@ g_error appmgr_init(void) {
 
   applist = NULL;  /* No apps yet! */
 
+#ifdef DEBUG_INIT
+   printf("Init: appmgr: default font\n");
+#endif
+
   /* Allocate default font */
   e = findfont(&defaultfont,-1,NULL,0,PG_FSTYLE_DEFAULT);
   errorcheck;
 
+#ifdef DEBUG_INIT
+   printf("Init: appmgr: bg widget\n");
+#endif
+   
   /* Make the background widget */
   e = widget_create(&bgwidget,PG_WIDGET_BACKGROUND,dts->root,
 		    &dts->root->head->next,0,-1);
@@ -66,14 +74,25 @@ g_error appmgr_init(void) {
   e = mkhandle(&hbgwidget,PG_TYPE_WIDGET,-1,bgwidget);   
   errorcheck;
 
+#ifdef DEBUG_INIT
+   printf("Init: appmgr: pointer sprite\n");
+#endif
+   
   /* Create the pointer sprite */
   e = new_sprite(&pointer,19,22);
   errorcheck;
+#ifdef DEBUG_INIT
+   printf("Init: appmgr: pointer sprite bitmaps\n");
+#endif
   e = (*vid->bitmap_loadpnm)(&pointer->bitmap,cursor_bits,cursor_len);
   errorcheck;
   e = (*vid->bitmap_loadpnm)(&pointer->mask,cursor_mask_bits,cursor_mask_len);
   errorcheck;
 
+#ifdef DEBUG_INIT
+   printf("Init: appmgr: strings\n");
+#endif
+   
   /* Default strings */
   e = mkhandle(&string_ok,PG_TYPE_STRING | HFLAG_NFREE,-1,"Ok");
   errorcheck;

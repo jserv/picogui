@@ -1,4 +1,4 @@
-# $Id: Makefile.cfg.sample,v 1.15 2001/01/26 09:00:05 micahjd Exp $
+# $Id: Makefile.cfg.sample,v 1.16 2001/01/29 00:22:32 micahjd Exp $
 #
 # This file has compile-time options for PicoGUI, including
 # which fonts and drivers are to be compiled in.
@@ -39,6 +39,7 @@ CFLAGS := $(CFLAGS) -DDEBUG_KEYS           # CTRL-ALT-* debugging keys
 #CFLAGS := $(CFLAGS) -DDEBUG_THEME         # Theme debugging
 #CFLAGS := $(CFLAGS) -DDEBUG_NET           # Net/request debugging
 CFLAGS := $(CFLAGS) -DBOTHERSOME_TERMINAL # Terminal reports unknown escapes
+#CFLAGS := $(CFLAGS) -DDEBUG_INIT          # Debug initialization sequence
 
 #### Optimization
 CFLAGS := $(CFLAGS) -O3
@@ -75,7 +76,8 @@ DRV := $(DRV) -DDRIVER_SDLFB      # For testing the linear VFBs
 DRV := $(DRV) -DDRIVER_SDL        # SDL driver
 DRV := $(DRV) -DDRIVER_SVGAFB     # SVGAlib driver with linear framebuffer
 DRV := $(DRV) -DDRIVER_SVGAGL     # SVGAlib with vgagl (crufty but compatible)
-DRV := $(DRV) -DDRIVER_NCURSES    # PicoGUI can do text mode too!
+#DRV := $(DRV) -DDRIVER_EZ328      # Generic 68EZ328 LCD driver
+#DRV := $(DRV) -DDRIVER_NCURSES    # PicoGUI can do text mode too!
 #DRV := $(DRV) -DDRIVER_NULL       # Dummy driver, produces no output
 
 #### Input drivers. Uncomment any number of
@@ -83,6 +85,6 @@ DRV := $(DRV) -DDRIVER_NCURSES    # PicoGUI can do text mode too!
 #### will not link without a matching input driver
 DRV := $(DRV) -DDRIVER_SDLINPUT     # For the SDL driver
 DRV := $(DRV) -DDRIVER_SVGAINPUT    # For the SVGA driver
-DRV := $(DRV) -DDRIVER_NCURSESINPUT # For the ncurses driver
+DRV := $(DRV) -DDRIVER_NCURSESINPUT # For the ncurses driver and fbdev driver
 
 ### The End ###

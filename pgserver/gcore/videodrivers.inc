@@ -32,6 +32,10 @@
 #  endif
 #endif
 
+#ifdef DRIVER_EZ328
+  DRV("ez328",&ez328_regfunc)
+#endif
+
 #ifdef DRIVER_NCURSES
   DRV("ncurses",&ncurses_regfunc)
 #endif   

@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.22 2001/01/26 11:18:16 micahjd Exp $
+/* $Id: pgmain.c,v 1.23 2001/01/29 00:22:33 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -82,6 +82,10 @@ int main(int argc, char **argv) {
    
   /*************************************** Command-line processing */
 
+#ifdef DEBUG_INIT
+   printf("Init: processing command line\n");
+#endif
+   
   {  /* Restrict the scope of these vars so they go away after
 	initialization is done with them */
 
@@ -230,6 +234,11 @@ int main(int argc, char **argv) {
       
     }
 
+#ifdef DEBUG_INIT
+     printf("Init: loading video drivers\n");
+#endif
+
+     
 #endif /* WINDOWS */
      
     if (viddriver) {
@@ -247,7 +256,7 @@ int main(int argc, char **argv) {
 	if (!iserror(
 		     load_vidlib(p->regfunc,vidw,vidh,vidd,vidf)
 		     ))
-	  /* Yay, found one that works */
+	   /* Yay, found one that works */
 	  break;
 	p++;
       }
@@ -258,17 +267,32 @@ int main(int argc, char **argv) {
       }
     }
 
-
     /* Subsystem initialization and error check */
 
+#ifdef DEBUG_INIT
+   printf("Init: divtree\n");
+#endif
     if (iserror(prerror(dts_new())))     return 1;
+#ifdef DEBUG_INIT
+   printf("Init: net\n");
+#endif
     if (iserror(prerror(net_init())))    return 1;
+#ifdef DEBUG_INIT
+   printf("Init: appmgr\n");
+#endif
     if (iserror(prerror(appmgr_init()))) return 1;
+#ifdef DEBUG_INIT
+   printf("Init: timer\n");
+#endif
     if (iserror(prerror(timer_init())))  return 1;
 
 #ifndef WINDOWS   /* This is also broke for windoze */
 
     /* Load theme files and free linked list memory */
+
+#ifdef DEBUG_INIT
+   printf("Init: loading themes\n");
+#endif
 
     p = head;
     while (p) {
@@ -298,6 +322,10 @@ int main(int argc, char **argv) {
   }
 
   /*************************************** More Initialization */
+
+#ifdef DEBUG_INIT
+   printf("Init: signal handler and subprocess\n");
+#endif
 
 #ifndef WINDOWS
   /* Signal handler (it's usually good to have a way to exit!) */
@@ -337,6 +365,11 @@ int main(int argc, char **argv) {
 
   /*************************************** Main loop */
 
+#ifdef DEBUG_INIT
+  printf("Initialization done");
+  guru("Initialization done");
+#endif
+     
   while (proceed)
     net_iteration();
 

@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.10 2001/01/24 03:06:08 micahjd Exp $
+/* $Id: pgnet.h,v 1.11 2001/01/29 00:22:33 micahjd Exp $
  *
  * pgnet.h - definitions and stuff for the picogui server
  *           networking code. Most of the interesting code
@@ -68,6 +68,18 @@
 extern fd_set evtwait;
 
 #define REQUEST_BACKLOG 10  /* Should be high enough? */
+
+/* No translation needed here */
+#ifdef UCLINUX
+#undef ntohl
+#undef ntohs
+#undef htonl
+#undef htons
+#define ntohl(x) (x)
+#define ntohs(x) (x)
+#define htonl(x) (x)
+#define htons(x) (x)
+#endif
 
 /********* Functions provided by dispatch.c */
 

@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.13 2001/01/15 09:42:51 micahjd Exp $
+/* $Id: g_error.c,v 1.14 2001/01/29 00:22:33 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -94,7 +94,7 @@ void guru(const char *fmt, ...) {
 				      deadcomp_width,deadcomp_height,
 				      (*vid->color_pgtohwr)(0xFFFF80),
 				      (*vid->color_pgtohwr)(0x000000)))) {
-    (*vid->blit)(icon,0,0,10,10,deadcomp_width,deadcomp_height,PG_LGOP_NONE);
+    (*vid->blit)(icon,0,0,5,5,deadcomp_width,deadcomp_height,PG_LGOP_NONE);
     (*vid->bitmap_free)(icon);
   }
 
@@ -104,7 +104,7 @@ void guru(const char *fmt, ...) {
   vsnprintf(msgbuf,256,fmt,ap);
   va_end(ap);
 
-  outtext(df,20+deadcomp_width,10,(*vid->color_pgtohwr)(0xFFFFFF),msgbuf,
+  outtext(df,10+deadcomp_width,5,(*vid->color_pgtohwr)(0xFFFFFF),msgbuf,
 	  &screenclip);
   (*vid->update)(0,0,vid->xres,vid->yres);
 }

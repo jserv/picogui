@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.49 2001/01/26 11:18:13 micahjd Exp $
+# $Id: Makefile,v 1.50 2001/01/29 00:22:32 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -65,6 +65,7 @@ SRC := \
     \
     video/svgagl.c \
     video/ez328_chipslice_lcd.c \
+    video/ez328.c \
     video/sdl.c \
     video/svgafb.c \
     video/sdlfb.c \
