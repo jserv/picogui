@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.38 2001/08/01 14:39:25 micahjd Exp $
+/* $Id: network.h,v 1.39 2001/08/09 09:00:46 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -30,7 +30,7 @@
 #define _H_PG_NETWORK
 
 #define PG_REQUEST_PORT    30450
-#define PG_PROTOCOL_VER    0x0006      /* Increment this whenever changes are made */
+#define PG_PROTOCOL_VER    0x0007      /* Increment this whenever changes are made */
 #define PG_REQUEST_MAGIC   0x31415926
 
 #ifndef PGSERVER
@@ -138,8 +138,9 @@ struct pghello {
 #define PGREQ_DRIVERMSG    39  /* Send a message to all drivers  |  struct */
 #define PGREQ_LOADDRIVER   40  /* Load input/misc (not video)    |   chars */
 #define PGREQ_GETFSTYLE    41  /* Get info on a font style       |  struct */
+#define PGREQ_FINDWIDGET   42  /* Get widget handle by name      |   chars */
 
-#define PGREQ_UNDEF        42  /* types > this will be truncated. return error */
+#define PGREQ_UNDEF        43  /* types > this will be truncated. return error */
 
 /******* Request data structures */
 

@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.62 2001/08/06 07:50:06 micahjd Exp $
+/* $Id: client_c.h,v 1.63 2001/08/09 09:00:45 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -1050,6 +1050,22 @@ void pgWriteCmd(pghandle widget,short command,short numparams, ...);
  * \sa pgWriteCmd, pgNewBitmapContext, pgRegisterOwner
  */
 void pgRender(pghandle bitmap,short groptype, ...);
+
+/*!
+ * \brief Search for a widget by its PG_WP_NAME property
+ *
+ * \param key The name to search for
+ * \return The handle of the found widget, or zero if no widget matches
+ *         the supplied name
+ *
+ * Every widget can be given a name by setting it's PG_WP_NAME property
+ * to a string handle. This function can search for a widget's handle based
+ * on this name. Note that this function will search all widgets, even those
+ * not owned by this application.
+ *
+ * \sa PG_WP_NAME, pgSetWidget
+ */
+pghandle pgFindWidget(const char *key);
 
 //! \}
 

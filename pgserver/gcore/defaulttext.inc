@@ -23,7 +23,7 @@
 /* 15 */  "No",
 /* 16 */  "Segmentation Fault",
 /* 17 */  "Bad scrollbar binding handle",
-/* 18 */  NULL,
+/* 18 */  "Bad handle for widget name property",
 /* 19 */  "Floating Point Exception or Divide by Zero",
 /* 20 */  "The widget you seek to create cannot exist",
 /* 21 */  "Unable to open error message file",

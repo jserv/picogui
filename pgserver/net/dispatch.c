@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.52 2001/08/01 13:46:42 micahjd Exp $
+/* $Id: dispatch.c,v 1.53 2001/08/09 09:00:46 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -976,6 +976,35 @@ g_error rqh_getfstyle(int owner, struct pgrequest *req,
   *fatal |= send_response(owner,&rsp,sizeof(rsp));  
   *fatal |= send_response(owner,&gfs,sizeof(gfs));  
   return ERRT_NOREPLY;
+}
+
+/* Communication between rqh_findwidget and iterator */
+handle rqh_findwidget_result;
+const char *rqh_findwidget_string;
+u32 rqh_findwidget_len;
+/* Iterator function for rqh_findwidget() */
+g_error rqh_findwidget_iterate(void **p) {
+  struct widget *w = (struct widget *) (*p);
+  const char *str;
+  if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,w->name)) || !str)
+    return sucess;
+  if (!strncmp(rqh_findwidget_string,str,rqh_findwidget_len))
+    rqh_findwidget_result = hlookup(w,NULL);
+  return sucess;
+}
+/* Find a widget by name 
+ *
+ * FIXME: modify handle_iterate so we don't need to use global variables
+ *        and hlookup() here.
+ */
+g_error rqh_findwidget(int owner, struct pgrequest *req,
+		       void *data, unsigned long *ret, int *fatal) {
+  rqh_findwidget_result = 0;
+  rqh_findwidget_string = (const char *) data;
+  rqh_findwidget_len = req->size;
+  handle_iterate(PG_TYPE_WIDGET,&rqh_findwidget_iterate);
+  *ret = rqh_findwidget_result;
+  return sucess;
 }
 
 /* The End */

@@ -1,3 +1,21 @@
+2001-08-08    Micah Dowty <micahjd@users.sourceforge.net>
+
+I'm starting Applet support, for PGL, today. An application should be able
+to create a named public container, and another application should be able
+to reference that container by name and create a root widget inside it.
+
+      * widget/scroll.c: Fixed the segfault bug that Olivier found.
+		
+		* include/picogui/constants.h: Adding the PG_WP_NAME property
+		
+		* widget/widget.c: Implmenting the PG_WP_NAME property for all widgets
+
+		* include/picogui/network.h: Adding PGREQ_FINDWIDGET
+		
+		* net/dispatch.c: Implemented PGREQ_FINDWIDGET
+		
+		
+
 2001-08-05    Micah Dowty <micahjd@users.sourceforge.net>
 
 The last thing I think I need to finish up for the standard dialogs to be

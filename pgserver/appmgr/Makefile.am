@@ -5,3 +5,4 @@ noinst_LIBRARIES = libappmgr.a
 libappmgr_a_SOURCES = global.c
 
 
+

@@ -43,6 +43,7 @@ RQH(setinactive)
 RQH(drivermsg)
 RQH(loaddriver)
 RQH(getfstyle)
-RQH(undef)
+RQH(findwidget)
+RQH(undef)        /* undef must be last */
 
 /* The End */
