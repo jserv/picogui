@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.16 2002/01/21 13:56:37 micahjd Exp $
+/* $Id: main.c,v 1.17 2002/03/30 20:43:55 instinc Exp $
  *
  * main.c - PicoGUI Terminal (the 'p' is silent :)
  *          This handles the PicoGUI init and events
@@ -208,10 +208,10 @@ int main(int argc, char **argv) {
   pgFocus(PGDEFAULT);
   
   /* Scroll bar */
-  pgNewWidget(PG_WIDGET_SCROLL,PG_DERIVE_BEFORE,wTerminal);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_BIND,wTerminal,
-	      0);
+//  pgNewWidget(PG_WIDGET_SCROLL,PG_DERIVE_BEFORE,wTerminal);
+//  pgSetWidget(PGDEFAULT,
+//	      PG_WP_BIND,wTerminal,
+//	      0);
 
   /*** Start up subprocess */
 
