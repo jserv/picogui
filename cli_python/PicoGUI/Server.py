@@ -160,10 +160,10 @@ constants = {
         }),
         'margin':			(29, {	# for boxes, overrides the default margin
         }),
-        'textformat':			(30, {	# for the textbox, defines a format for text. fourcc format,
+        'textformat':			(30, 	# for the textbox, defines a format for text. fourcc format,
                                                 # with optional preceeding '+' to prevent erasing existing data,
                                                 # just append at the cursor position/
-        }),
+        _getString),
         'triggermask':			(31, {	# mask of extra triggers accepted (self->trigger_mask)
         }),
         'hilighted':			(32, {	# widget property to hilight a widget and all it's children
@@ -235,11 +235,11 @@ def resolve_constant(name, namespace=constants, server=None):
             value |= v
         return value, ns
     try:
-        name = name.lower()
+        lname = name.lower()
     except AttributeError:
         # never mind, not a string
         return name, namespace
-    r = namespace.get(name, (name, namespace))
+    r = namespace.get(lname, (name, namespace))
     if type(r) == type(()) and len(r) == 2:
         if r[1]:
             return r
