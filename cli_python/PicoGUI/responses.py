@@ -44,7 +44,7 @@ _error_types = {
 def _error(args):
 	id = args[2]
 	errt = args[0]
-	return id, _error_types[errt](args[1])
+	return id, _error_types[errt](id, args[1])
 
 # returns (pgresponse_ret)
 
