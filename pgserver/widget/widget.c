@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.221 2003/04/10 13:20:32 lalo Exp $
+/* $Id: widget.c,v 1.222 2003/04/10 14:36:30 lalo Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -738,7 +738,6 @@ void widget_set_numcursors(struct widget *self, int num, struct cursor *crsr) {
   param.mouse.btn = crsr->prev_buttons;
   param.mouse.chbtn = 0;
   param.mouse.cursor = crsr;
-  printf("%d\n", param.mouse.btn);
 
   if (self->numcursors && !num)
     send_trigger(self,PG_TRIGGER_LEAVE,&param);

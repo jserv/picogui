@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.187 2003/04/10 13:20:29 lalo Exp $
+/* $Id: constants.h,v 1.188 2003/04/10 14:36:29 lalo Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -1072,8 +1072,8 @@ typedef unsigned long pghandle;
 #define PG_WE_PNTR_UP      0x205 /* The "mouse" button is now up */
 #define PG_WE_PNTR_RELEASE 0x206 /* The "mouse" button was released outside
 				  * the widget */
-#define PG_WE_PNTR_ENTER   0X207 /* The pointer is over the widget */
-#define PG_WE_PNTR_LEAVE   0X208 /* The pointer is not over the widget */
+#define PG_WE_PNTR_ENTER   0x207 /* The pointer is over the widget */
+#define PG_WE_PNTR_LEAVE   0x208 /* The pointer is not over the widget */
 #define PG_WE_DATA        0x306 /* Widget is streaming data to the app */
 #define PG_WE_TITLECHANGE 0x307 /* Used by the terminal widget to send window title changes */
 #define PG_WE_RESIZE      0x107 /* For terminal widgets */
