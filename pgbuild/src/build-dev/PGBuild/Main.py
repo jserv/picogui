@@ -27,8 +27,8 @@ as soon as it creates a Bootstrap object with vital path and package names.
 # later, mostly for compatibility with the various modules we need.
 # This doesn't use anything fancy to report a version problem, to increase
 # the chance of this working correctly if we get a really old version of python.
+import sys
 if sys.hexversion < 0x020200F0:
-    import sys
     print "This version of Python is too old. At least verison 2.2 is required."
     sys.exit(1)
 
@@ -36,7 +36,7 @@ import PGBuild.Package
 import PGBuild.UI
 import PGBuild.CommandLine.Options
 import PGBuild.Config
-import os, re, shutil, sys
+import os, re, shutil
 
 
 def boot(config, bootstrap):

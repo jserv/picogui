@@ -61,25 +61,12 @@ class Location:
            """
         try:
             bytes = 0
-            # Make two downloads- a tiny one and a somewhat larger one.
-            # We use the first one to guess the connection time and subtract
-            # that from the second one's time.
             startTime = time.time()
             url = urllib2.urlopen(self.absoluteURI)
-            url.read(1)
-            url.close()
-            connectTime = time.time() - startTime
-            startTime = time.time()
-            url = urllib2.urlopen(self.absoluteURI)
-            bytes += len(url.read(32000))
+            bytes += len(url.read(64000))
             url.close()
             dlTime = time.time() - startTime
-            if connectTime < dlTime:
-                speed = bytes / (dlTime-connectTime)
-            else:
-                # We took a long time to connect the first time,
-                # but this shouldn't give us a negative speed result.
-                speed = bytes / dlTime
+            speed = bytes / dlTime
         except IOError:
             speed = 0
         PGBuild.XMLUtil.setChildData(self.host, 'speed', speed)
