@@ -129,7 +129,10 @@ def get(connection):
 	response = struct.unpack(format, safe_read(resp_size))
 	id, obj = handler(response)
 	if hasattr(obj, 'additional_data_wanted'):
-		obj.setData(safe_read(obj.additional_data_wanted))
+		if obj.additional_data_wanted:
+			obj.setData(safe_read(obj.additional_data_wanted))
+		else:
+			obj.setData('')
 	try:
 		connection.last_id = id
 	except:
