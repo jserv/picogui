@@ -11,7 +11,8 @@ from twisted.protocols.basic import LineReceiver
 
 accounts = [
     ircsupport.IRCAccount("IRC", 1,
-        "pgAnnounceBot",    # nickname
+        # Lalo's joke: A brainless entity created to keep an eye on subversion                 
+	"CIA",              # nickname
         "",                 # passwd
         "irc.freenode.net", # irc server
         6667,               # port
