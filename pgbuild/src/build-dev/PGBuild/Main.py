@@ -76,10 +76,14 @@ class OptionParser(optik.OptionParser):
         buildGroup.add_option("--ignore-errors", dest="ignoreErrors", action="store_true",
                               help="Ignores errors from build actions.")
         buildGroup.add_option("-j", "--jobs", dest="numJobs", default=1,
-                              help="Sets the number of jobs that may run concurrently.")
+                              help="Sets the number of jobs that may run concurrently.") 
         buildGroup.add_option("-k", "--keep-going", dest="keepGoing", action="store_true",
                               help="Keeps going when a target can't be built.")
-         
+        buildGroup.add_option("-n", "--no-build", dest="noBuild", action="store_true",
+                              help="Skips any attempt at building targets. Usually this is used " +
+                              "along with options like --dump-tree when you want to inhibit the " +
+                              "normal build process.")
+        
         ############# Configuration management
 
         configGroup = self.add_option_group("Configuration Management")

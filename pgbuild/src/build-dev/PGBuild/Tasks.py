@@ -52,12 +52,6 @@ class Task(object):
            """
         pass
 
-    def preventAutoBuild(self):
-        """Return true if this task should prevent automatically building
-           the default targets if no explicit targets have been specified.
-           """
-        return False
-
 class UserTask(Task):
     """A task that is designed to be triggered by user actions"""
     pass
@@ -126,9 +120,6 @@ class NukeTask(UserTask):
     def execute(self):
         self.config.packages.nuke(self.progress)
 
-    def preventAutoBuild(self):
-        return True
-
 class MergeAllTask(UserTask):
     """Handle --merge-all command line option"""
     def isActive(self):
@@ -156,23 +147,12 @@ class MergeTask(UserTask):
 
 class BuildSystemRunTask(UserTask):
     """Invoke the build system to build targets"""
+    def isActive(self):
+        return not self.config.eval("invocation/option[@name='noBuild']/text()")
     def execute(self):
-        # The build task is always active, but it only takes action if:
-        #  ... the user explicitly specified targets
-        #  ... or, all pending and completed tasks' preventAutoBuild() members return False
-        # Note that this logic would generally go in isActive(), but since this depends
-        # on having all other tasks already sorted into pending or inactive, we have to do
-        # it here.
-        enabled = True
-        for task in self.taskList.pending + self.taskList.completed:
-            if task.preventAutoBuild():
-                enabled = False
-        if self.config.listEval('invocation/target/text()'):
-            enabled = True
-        if enabled:
-            if not self.ui.buildSystem.run(self.progress):
-                import PGBuild.Errors
-                raise PGBuild.Errors.ExternalError("No targets to build")
+        if not self.ui.buildSystem.run(self.progress):
+            import PGBuild.Errors
+            raise PGBuild.Errors.ExternalError("No targets to build")
 
 class CleanupUITask(InternalTask):
     """Call the UI's cleanup() method to, if applicable, put us back in plain text mode"""
@@ -190,9 +170,6 @@ class DumpTreeTask(UserTask):
     def execute(self):
         self.config.dump(self.dumpFile, self.progress)
 
-    def preventAutoBuild(self):
-        return True
-
 class ListTask(UserTask):
     """Handle --list command line option"""
     def init(self):
@@ -203,9 +180,6 @@ class ListTask(UserTask):
 
     def execute(self):
         self.ui.list(self.listPath)
-
-    def preventAutoBuild(self):
-        return True
 
 ################### Primary task list
 #
