@@ -21,9 +21,15 @@ prefix = '/usr'
 depends = [
     'resourcemanager', 'kernel', 'processmanager',
     ('libjpeg', S ('platform/ppc-linux') | S ('platform/native-linux')),
-    ('busybox', S ('platform/ppc-linux'))
+    ('busybox', S ('platform/ppc-linux')),
     ]
-    
+
+asserts = [
+    (S ('module/picoguiserver/start') & S ('platform/m68k-pic-coff')) >> S ('module/pocketapps/bioscall'),
+    (S ('module/picoguiserver/start') & S ('platform/m68k-pic-coff')) >> S ('module/pocketapps/initenv'),
+    (S ('module/picoguiserver/start') & S ('platform/ppc-linux')) >> S ('module/ibm-dcr'),
+    ]
+
 runtime = [
 
             Runtime ('install', 'Install PicoGUI Server',
@@ -37,11 +43,9 @@ runtime = [
                      content = [ '/etc/rm.d/picoguiserver',
                                  'bin/picogui-launcher.sh' ],
                      
-                     depends = [ 'picoguiserver/install', 'processmanager/start', 'resourcemanager/start',
-                                 (S ('module/picoguiserver/start') & S ('platform/m68k-pic-coff')) >> S ('module/pocketapps/bioscall'),
-                                 (S ('module/picoguiserver/start') & S ('platform/m68k-pic-coff')) >> S ('module/pocketapps/initenv'),
-                                 (S ('module/picoguiserver/start') & S ('platform/ppc-linux')) >> S ('module/ibm-dcr'),
-                                 ],
+                     depends = [ 'picoguiserver/install',
+                                 'processmanager/start',
+                                 'resourcemanager/start', ],
 
                      rcscript = "\n# launch pgserver\npicogui-launcher.sh\n",
                      
