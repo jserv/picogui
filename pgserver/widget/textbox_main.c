@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.7 2001/10/07 07:01:25 micahjd Exp $
+/* $Id: textbox_main.c,v 1.8 2001/10/13 20:43:37 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -63,9 +63,12 @@ g_error textbox_install(struct widget *self) {
    memset(&DATA->c,0,sizeof(DATA->c)); /* Set up cursor */
    DATA->c.head = self->in->div;
    DATA->c.widget = self;
+
+   /**** Editing doesn't work yet 
    self->trigger_mask = TRIGGER_UP | TRIGGER_ACTIVATE | TRIGGER_CHAR |
      TRIGGER_DEACTIVATE | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_TIMER
      | TRIGGER_MOVE;
+   */
 
    /* Add some demo text */
 
@@ -192,8 +195,8 @@ void textbox_trigger(struct widget *self,long type,union trigparam *param) {
       }
       break;
     }
-    break;
-    
+    break;    
+
   }
 }
    
