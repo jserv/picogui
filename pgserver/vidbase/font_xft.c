@@ -1,4 +1,4 @@
-/* $Id: font_xft.c,v 1.5 2002/11/06 03:00:23 micahjd Exp $
+/* $Id: font_xft.c,v 1.6 2002/11/06 06:40:32 micahjd Exp $
  *
  * font_xft.c - Font engine for X implemented using Xft
  *
@@ -76,52 +76,6 @@ void xft_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *po
 		  position->y + DATA->f->ascent, &ch32, 1);
 
   xft_measure_char(self,position,ch,angle);
-}
-
-void xft_draw_string(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
-		     hwrcolor col, const struct pgstring *str, struct quad *clip,
-		     s16 lgop, s16 angle) {
-  XftColor xftc;
-  s16 w,h;
-  struct font_metrics m;
-
-  switch (str->flags & PGSTR_ENCODE_MASK) {
-  case PGSTR_ENCODE_ASCII:
-  case PGSTR_ENCODE_UTF8:
-    break;
-  default:
-    def_draw_string(self,dest,position,col,str,clip,lgop,angle);
-    return;
-  }
-  
-  xft_draw_setup(dest,col,clip,&xftc);
-  
-  xft_getmetrics(self,&m);
-  position->x += m.margin;
-  position->y += m.margin;
-
-  XftDrawStringUtf8(xft_draw, &xftc, DATA->f, position->x,
-		    position->y + DATA->f->ascent, str->buffer, str->num_chars);
-}
-
-void xft_measure_string(struct font_descriptor *self, const struct pgstring *str,
-			s16 angle, s16 *w, s16 *h) {
-  XGlyphInfo xgi;
-  struct font_metrics m;
-  xft_getmetrics(self,&m);
-
-  switch (str->flags & PGSTR_ENCODE_MASK) {
-  case PGSTR_ENCODE_ASCII:
-  case PGSTR_ENCODE_UTF8:
-    break;
-  default:
-    def_measure_string(self,str,angle,w,h);
-    return;
-  }
-
-  XftTextExtentsUtf8(x11_display,DATA->f,str->buffer,str->num_chars,&xgi);
-  *w = xgi.xOff + m.margin*2;
-  *h = xgi.yOff + m.margin*2 + m.ascent + m.descent;
 }
 
 void xft_measure_char(struct font_descriptor *self, struct pair *position,
@@ -215,8 +169,6 @@ g_error xft_regfunc(struct fontlib *f) {
   f->destroy = &xft_destroy;
   f->getstyle = &xft_getstyle;
   f->getmetrics = &xft_getmetrics;
-  f->draw_string = &xft_draw_string;
-  f->measure_string = &xft_measure_string;
   return success;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: dialogbox.c,v 1.4 2002/10/07 07:08:09 micahjd Exp $
+/* $Id: dialogbox.c,v 1.5 2002/11/06 06:40:32 micahjd Exp $
  *
  * dialogbox.c - The dialogbox is a type of popup widget that is always
  *               automatically sized, and has a title
@@ -30,6 +30,7 @@
 #include <pgserver/widget.h>
 
 struct dialogboxdata {
+  struct divnode **title_location;   /* Insertion point for adding the title */
   struct widget *title;
   handle htitle;
 };
@@ -42,23 +43,12 @@ g_error dialogbox_install(struct widget *self) {
   popup_install(self);
   WIDGET_ALLOC_DATA(1,dialogboxdata)
 
-  /* Create a label widget for our DATA->title, attached to our former child attachment point */
-  e = widget_create(&DATA->title, &DATA->htitle, PG_WIDGET_LABEL,
-		    self->dt, self->container, self->owner);
-  errorcheck;
-  e = widget_attach(DATA->title, self->dt, self->sub, self->h);
-  errorcheck;
-  e = widget_set(DATA->title, PG_WP_SIDE, PG_S_TOP);
-  errorcheck;
-  e = widget_set(DATA->title, PG_WP_TRANSPARENT, 0);
-  errorcheck;
-  e = widget_set(DATA->title, PG_WP_THOBJ, PGTH_O_LABEL_DLGTITLE);
-  errorcheck;
+  DATA->title_location = self->sub;
 
   /* Make a divnode after the title to act as an insertion point for child widgets */
-  e = newdiv(DATA->title->out, self);
+  e = newdiv(self->sub, self);
   errorcheck;
-  interior = *DATA->title->out;
+  interior = *self->sub;
   interior->flags |= PG_S_ALL;
   self->sub = &interior->div;
 
@@ -66,7 +56,8 @@ g_error dialogbox_install(struct widget *self) {
 }
 
 void dialogbox_remove(struct widget *self) {
-  handle_free(self->owner, DATA->htitle);
+  if (DATA->title)
+    handle_free(self->owner, DATA->htitle);
   popup_remove(self);
   g_free(DATA);
 }
@@ -75,10 +66,40 @@ void dialogbox_resize(struct widget *self) {
 }
 
 g_error dialogbox_set(struct widget *self,int property, glob data) {
+  g_error e;
+
   switch (property) {
   
   case PG_WP_TEXT:
-    return widget_set(DATA->title, PG_WP_TEXT, data);
+    /* If we're rootless, just set the window title */
+    if (VID(is_rootless)()) {
+      struct pgstring *str;
+      e = rdhandle((void**)&str, PG_TYPE_PGSTRING, self->owner, data);
+      errorcheck;
+      VID(window_set_title)(self->dt->display, str);
+    }
+
+    /* Otherwise, we'll use our own title widget */
+    else {
+      /* Need to create the title? */
+      if (!DATA->title) {
+	e = widget_create(&DATA->title, &DATA->htitle, PG_WIDGET_LABEL,
+			  self->dt, self->container, self->owner);
+	errorcheck;
+	e = widget_attach(DATA->title, self->dt, DATA->title_location, self->h);
+	errorcheck;
+	e = widget_set(DATA->title, PG_WP_SIDE, PG_S_TOP);
+	errorcheck;
+	e = widget_set(DATA->title, PG_WP_TRANSPARENT, 0);
+	errorcheck;
+	e = widget_set(DATA->title, PG_WP_THOBJ, PGTH_O_LABEL_DLGTITLE);
+	errorcheck;
+      }			
+      
+      /* Set the title */
+      e = widget_set(DATA->title, PG_WP_TEXT, data);
+    }
+    break;
 
   default:
     return mkerror(ERRT_PASS,0);

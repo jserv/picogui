@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.26 2002/11/06 02:42:14 micahjd Exp $
+/* $Id: x11input.c,v 1.27 2002/11/06 06:40:32 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -106,10 +106,12 @@ int x11input_fd_activate(int fd) {
 	if (!xb)
 	  break;
 	
-	/* If the window has just changed size, hold off on the expose */
-	x11_window_get_size((hwrbitmap)xb,&w,&h);
-	if (w!=xb->w || h!=xb->h)
+	if (VID(is_rootless)()) {
+	  /* If the window has just changed size, hold off on the expose */
+	  x11_window_get_size((hwrbitmap)xb,&w,&h);
+	  if (w!=xb->w || h!=xb->h)
 	  break;
+	}
 	
 	x11_expose(xb,expose_region);
 	XDestroyRegion(expose_region);
@@ -227,14 +229,8 @@ int x11input_fd_activate(int fd) {
 
   /* Handle the last of whatever resize events were queued */
   if (need_resize) {
-    if (VID(is_rootless)) {
-      if ((xb = x11_get_window(resizing_window)))
-	x11_acknowledge_resize((hwrbitmap)xb, new_width, new_height);
-    }
-    else {
-      video_setmode(new_width, new_height, vid->bpp, PG_FM_ON,0); 
-      update(NULL,1);
-    }
+    if ((xb = x11_get_window(resizing_window)))
+      x11_acknowledge_resize((hwrbitmap)xb, new_width, new_height);
   }
   return 1;
 }

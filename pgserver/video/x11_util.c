@@ -1,4 +1,4 @@
-/* $Id: x11_util.c,v 1.10 2002/11/06 03:00:24 micahjd Exp $
+/* $Id: x11_util.c,v 1.11 2002/11/06 06:40:32 micahjd Exp $
  *
  * x11_util.c - Utility functions for picogui's driver for the X window system
  *
@@ -379,9 +379,12 @@ void x11_monolithic_window_update(void) {
   if (vid->display) {
     x11_internal_window_resize(vid->display, vid->xres, vid->yres);
     title[sizeof(title)-1] = 0;
+
     snprintf(title,sizeof(title)-1,get_param_str("video-x11","caption","PicoGUI (X11@%dx%dx%d)"),
 	     vid->xres,vid->yres,vid->bpp);
-    x11_window_set_title(vid->display,pgstring_tmpwrap(title));
+    XStoreName(x11_display, XB(vid->display)->frontbuffer ? 
+	       XB(vid->display)->frontbuffer->d : XB(vid->display)->d,
+	       title);
   }  
 }
 
@@ -427,6 +430,10 @@ void x11_acknowledge_resize(hwrbitmap window, int w, int h) {
       XB(window)->dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC | DIVNODE_NEED_REBUILD;
       XB(window)->dt->flags |= DIVTREE_NEED_RECALC | DIVTREE_ALL_REDRAW;
     }
+
+    /* If this is monolithic mode, we need to set the video mode to match */
+    if ((!VID(is_rootless)()) && (vid->xres!=w || vid->yres!=h))
+      video_setmode(w, h, vid->bpp, PG_FM_ON,0); 
 
     update(NULL,1);
   }

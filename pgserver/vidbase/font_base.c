@@ -1,4 +1,4 @@
-/* $Id: font_base.c,v 1.7 2002/11/05 21:30:31 micahjd Exp $
+/* $Id: font_base.c,v 1.8 2002/11/06 06:40:32 micahjd Exp $
  *
  * font_base.c - Handles multiple font backends, and provides default
  *               implementations of fontlib functions
@@ -212,7 +212,7 @@ void def_measure_string(struct font_descriptor *fd, const struct pgstring *str,
   fd->lib->getmetrics(fd,&m);
 
   *w = m.margin << 1;
-  *h = (*w) + m.lineheight;
+  *h = (*w) + m.ascent + m.descent;
   
   while ((ch = pgstring_decode(str,&p))) {
     if (ch=='\n') {
