@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.29 2000/08/03 04:32:46 micahjd Exp $
+/* $Id: widget.c,v 1.30 2000/08/04 07:31:49 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -117,6 +117,10 @@ void widget_remove(struct widget *w) {
   struct divnode *sub_end;  
   handle hw;
 
+#ifdef DEBUG
+  printf("widget_remove(0x%08X)\n",w);
+#endif
+
   /* If this widget has a hotkey, see if we're in the hkwidgets list */
   if (w->hotkey) {
     if (w==hkwidgets) {
@@ -142,12 +146,6 @@ void widget_remove(struct widget *w) {
     if (w==capture) capture = NULL;
     if (w==kbdfocus) kbdfocus = NULL;
 
-#ifdef DEBUG
-    printf("widget_remove():  w      = 0x%08X\n",w);
-    printf("widget_remove():  w->sub = 0x%08X\n",w->sub);
-    printf("widget_remove(): *w->sub = 0x%08X\n",*w->sub);
-#endif
-
     /* Remove inner widgets if it can be done safely
        (only remove if they have handles) */
     while (w->sub && *w->sub) {    
@@ -155,32 +153,46 @@ void widget_remove(struct widget *w) {
 	handle_free(-1,hw);
       else
 	break;
-
-#ifdef DEBUG
-    printf("widget_remove(): loop  w      = 0x%08X\n",w);
-    printf("widget_remove(): loop  w->sub = 0x%08X\n",w->sub);
-    printf("widget_remove(): loop  *w->sub = 0x%08X\n",*w->sub);
-#endif
     }
     
     if (w->sub && *w->sub) {    
-      /* More pointer mangling...  :)  
-       * If this widget has other widgets inside of it,
-       * we will need to insert the 'sub' list */
+      /* More pointer mangling...  :) If this widget has other 
+	 widgets inside of it, we will need to insert the 'sub'
+	 list. This is a desperate attempt to not segfault. */
+
+#ifdef DEBUG
+      printf("************** Relocating sub list. w=0x%08X\n",w);
+#endif
       
       sub_end = *w->sub;
-      while (sub_end->next) sub_end = sub_end->next;
-      if (w->where) *w->where = *w->sub;
-      if (w->sub && *w->sub && (*w->sub)->owner)
-	(*w->sub)->owner->where = w->where;
-      if (w->out) sub_end->next = *w->out;
-      if (w->out && *w->out && (*w->out)->owner)
-	(*w->out)->owner->where = &sub_end->next;
+      while (sub_end->next) 
+	sub_end = sub_end->next;
+
+      //      if (w->where) 
+      *w->where = *w->sub;
+
+	//      if (w->sub && *w->sub && (*w->sub)->owner)
+      (*w->sub)->owner->where = w->where;
+	
+      if (w->out) {
+	sub_end->next = *w->out;
+	if (*w->out && (*w->out)->owner)
+	  (*w->out)->owner->where = &sub_end->next;
+      }     
+      else
+	sub_end->next = NULL;
+
+      //      if (w->out && *w->out && (*w->out)->owner)
+
     }
     else {
-      if (w->where && w->out) *w->where = *w->out;
-      if (w->out && *w->out && (*w->out)->owner)
-	(*w->out)->owner->where = w->where;
+      if (w->out) {
+	*w->where = *w->out;
+       	if (*w->out && (*w->out)->owner)
+	  (*w->out)->owner->where = w->where;
+      }
+      else
+	*w->where = NULL;
     }
     
     /* If we don't break this link, then deleting
