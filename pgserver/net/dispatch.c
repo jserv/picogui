@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.38 2001/06/25 00:48:50 micahjd Exp $
+/* $Id: dispatch.c,v 1.39 2001/06/26 11:31:27 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -173,7 +173,6 @@ g_error rqh_mkbitmap(int owner, struct pgrequest *req,
   hwrbitmap bmp;
   handle h;
   g_error e;
-  int w;
   
   e = VID(bitmap_load) (&bmp,data,req->size);
   errorcheck;
@@ -520,6 +519,12 @@ g_error rqh_regowner(int owner, struct pgrequest *req,
 	return mkerror(PG_ERRT_BUSY,98);
       sysevent_owner = owner;
       break;
+
+    case PG_OWN_DISPLAY:
+      if (display_owner)
+	return mkerror(PG_ERRT_BUSY,10);
+      display_owner = owner;
+      break;
       
     default:
       return mkerror(PG_ERRT_BADPARAM,99);
@@ -552,6 +557,12 @@ g_error rqh_unregowner(int owner, struct pgrequest *req,
       if (sysevent_owner==owner)
 	sysevent_owner = 0;
       break;
+
+    case PG_OWN_DISPLAY:
+      if (display_owner==owner)
+	display_owner = 0;
+      break;
+
    }
    return sucess;
 #endif
@@ -883,6 +894,89 @@ g_error rqh_getmode(int owner, struct pgrequest *req,
   *fatal |= send_response(owner,&rsp,sizeof(rsp));  
   *fatal |= send_response(owner,&mi,sizeof(mi));  
   return ERRT_NOREPLY;
+}
+
+g_error rqh_render(int owner, struct pgrequest *req,
+		   void *data, unsigned long *ret, int *fatal) {
+  g_error e;
+  hwrbitmap dest;
+  struct groprender *rend;
+  struct gropnode grop;
+  int numparams,i;
+  u32 *params;
+  reqarg(render);
+
+  /* First, validate the destination bitmap */
+  if (!arg->dest) {
+    /* The client wants to draw directly to vid->display.
+     * To do this it must register for exclusive use of the display. */
+
+    if (owner != display_owner)
+      return mkerror(PG_ERRT_BUSY,9);   /* Not the display owner */
+    dest = vid->display;
+  }
+  else {
+    /* Validate the bitmap handle */
+
+    e = rdhandle((void **) &dest,PG_TYPE_BITMAP,owner,ntohl(arg->dest));
+    errorcheck;
+  }
+
+  /* Retrieve the groprender, allocating one if necessary */
+  VID(bitmap_get_groprender)(dest,&rend);
+
+  /* Construct a gropnode from the supplied parameters */
+  memset(&grop,0,sizeof(grop));
+  grop.type = ntohl(arg->groptype);
+  numparams = (req->size - sizeof(struct pgreqd_render))>>2;
+  params = (u32*) (((u8*)data) + sizeof(struct pgreqd_render));
+  if (PG_GROP_IS_UNPOSITIONED(grop.type)) {
+    if (numparams > NUMGROPPARAMS)
+      numparams = NUMGROPPARAMS;
+    for (i=0;i<numparams;i++)
+      grop.param[i] = ntohl(params[i]);
+  }
+  else {
+    if (numparams<4)
+      return mkerror(PG_ERRT_BADPARAM,57);   /* not enough args */
+    if (numparams > (NUMGROPPARAMS+4))
+      numparams = NUMGROPPARAMS+4;
+    grop.r.x = ntohl(params[0]);
+    grop.r.y = ntohl(params[1]);
+    grop.r.w = ntohl(params[2]);
+    grop.r.h = ntohl(params[3]);
+    for (i=4;i<numparams;i++)
+      grop.param[i-4] = ntohl(params[i]);
+  }
+
+  /* Take care of nonvisual nodes */
+  if (PG_GROP_IS_NONVISUAL(grop.type)) {
+    gropnode_nonvisual(rend,&grop);
+    return sucess;
+  }
+
+  /* Similar steps as the 'main' rendering loop in render.c */
+  gropnode_map(rend,&grop);
+  gropnode_clip(rend,&grop);
+  gropnode_draw(rend,&grop);
+
+  return sucess;
+}
+
+g_error rqh_newbitmap(int owner, struct pgrequest *req,
+		   void *data, unsigned long *ret, int *fatal) {
+  hwrbitmap bmp;
+  handle h;
+  g_error e;
+  reqarg(newbitmap);
+  
+  e = VID(bitmap_new) (&bmp,ntohs(arg->width),ntohs(arg->height));
+  errorcheck;
+  e = mkhandle(&h,PG_TYPE_BITMAP,owner,bmp);
+  errorcheck;
+  
+  *ret = h;
+  return sucess;
 }
 
 /* The End */

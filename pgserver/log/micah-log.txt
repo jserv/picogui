@@ -1,3 +1,87 @@
+2001-06-25    Micah Dowty <micahjd@users.sourceforge.net>
+
+Got a new plan document from Pascal. Next project (instead of localization)
+is offscreen drawing. I have already implmented the necessary infrastructure
+for this in the most recent video driver overhaul, but the canvas widget,
+rendering engine, and PGFX code still needs to be written.
+A little brainstorming on the interface between the client and the bitmap...
+In normal canvas widget drawing, the gropnode is sent via pgWriteCmd to the
+canvas widget. The gropnodes are stored in the canvas widget's divnode, then
+executed all at once in the rendering engine. Rendering state is stored by
+the rendering engine in a groprender struct.
+There is no use for a persistent mode when rendering to an offscreen bitmap,
+everything should be rendered immediately. But, state from nonvisual
+gropnodes still needs to be stored. This could be done with a groprender
+structure attached to the bitmap itself. The only problem I see with this is
+that the groprender structure was designed for short-term use, so it
+contains a pointer to the font descriptor rather than a handle. This could
+be fixed at the expense of making text rendering slightly slower. Another
+possibility could be to make a variation of the canvas widget that outputs
+to a bitmap. Sort of an 'offscreen canvas'. The whole concept of an
+invisible widget is a little weird though, and I don't think a canvas should
+be used.
+I think I'll modify the render state structure and skip the canvas widget. I
+think the canvas widget is well suited to manipulating vector drawings but
+doesn't really have a place in offscreen drawing.
+Another variable here is how the blit from offscreen bitmap to screen will be
+done. It would be easy to just use a bitmap widget. But to make this more
+efficient, the bitmap should keep a list of 'dirty' areas for the bitmap
+widget to blit.
+
+      * include/pgserver/render.h: Modified groprender to use a font handle
+		  rather than a font pointer
+
+		* include/pgserver/video.h: Added a pointer for a groprender structure
+		
+		* vidbase/defaultvbl.c: Added code to allocate/free the groprender
+		
+		* include/picogui/network.c: Added the PGREQ_RENDER request, for
+		  immediately rendering a gropnode to a specified bitmap.
+		  
+		* net/dispatch.c: Starting implementation of PGREQ_RENDER
+
+		* vidbase/defaultvbl.c: Adding the bitmap_get_groprender() vidlib
+		  function to retrieve/create the groprender context associated with
+		  a bitmap
+		  
+		* gcore/render.c: Slight reorganization to make the code fully reusable
+		  in PGREQ_RENDER
+		  
+		* include/picogui/constants.h: Added PG_OWN_DISPLAY constant
+		
+		* net/dispatch.c: Added code for registering and unregistering
+		  exclusive display access
+		  
+		* gcore/errortext.c: Error messages related to PG_OWN_DISPLAY
+
+		* gcore/render.c: Disable normal rendering when an app has exclusive
+		  display access.
+		  
+		* cli_c/include/client_c.h: Adding pgRender API function as a frontend
+		  to PGREQ_RENDER
+
+		* cli_c/src/api.c: Implementation of pgRender
+		
+		* net/request.c: Added code to release the display when the app exits
+		
+		* include/picogui/*.h: Synchronized header files between server and
+		  client. Some of Shane's polygon code was on the client side and not
+		  the server, which caused a little confusion. The correct procedure is
+		  to make interface changes at the server side, then copy the includes
+		  to the client as needed.
+		  
+		* cli_c/demos/offscreen.c: Writing a small testbed for offscreen
+		  rendering.
+		  
+		* include/picogui/network.c: Adding the PGREQ_NEWBITMAP request to
+		  create an empty bitmap
+		  
+		* net/dispatch.c: Implementation of PGREQ_NEWBITMAP
+		
+		* cli_c/src/api.c: Client-side pgCreateBitmap function
+		
+		* cli_c/src/pgfx_bitmap.c: Added a PGFX interface to pgRender
+		
 2001-06-24    Micah Dowty <micahjd@users.sourceforge.net>
 
 Polishing up the resize code...

@@ -34,6 +34,9 @@ RQH(getpayload)
 RQH(mkmenu)
 RQH(writeto)
 RQH(updatepart)
+RQH(undef)        /* Shane's mkarray code goes here */
+RQH(render)
+RQH(newbitmap)
 RQH(undef)
 
 /* The End */

@@ -53,7 +53,7 @@ FONT_UTOPIA25=y
 #
 # Video Drivers
 #
-DRIVER_FBDEV=y
+# DRIVER_FBDEV is not set
 DRIVER_SDLFB=y
 # CONFIG_SDLEMU_NONE is not set
 CONFIG_SDLEMU_BLIT=y

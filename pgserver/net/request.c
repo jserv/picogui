@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.20 2001/02/23 04:44:47 micahjd Exp $
+/* $Id: request.c,v 1.21 2001/06/26 11:31:27 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -78,6 +78,8 @@ void closefd(int fd) {
     pointer_owner = 0;
   if (sysevent_owner==fd)
     sysevent_owner = 0;
+  if (display_owner==fd)
+    display_owner = 0;
 
 #ifdef DEBUG_NET 
   printf("Close. fd = %d\n",fd);

@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.42 2001/06/05 18:15:57 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.43 2001/06/26 11:31:27 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -38,6 +38,7 @@
 #include <pgserver/video.h>
 #include <pgserver/font.h>
 #include <pgserver/render.h>
+#include <pgserver/appmgr.h>    /* for defaultfont */
 
 /******* Table of available bitmap formats */
 
@@ -936,6 +937,7 @@ g_error def_bitmap_new(hwrbitmap *b, s16 w,s16 h) {
   g_error e;
   struct stdbitmap **bmp = (struct stdbitmap **) b;
   int lw;
+  u32 size;
    
   /* The bitmap and the header can be allocated seperately,
      but usually it is sufficient to make them one big
@@ -947,13 +949,15 @@ g_error def_bitmap_new(hwrbitmap *b, s16 w,s16 h) {
   if ((vid->bpp<8) && (lw & 7))
      lw += 8;
   lw >>= 3;
+
   /* The +1 is to make blits for < 8bpp simpler. Shouldn't really
    * be necessary, though. FIXME */
-  e = g_malloc((void **) bmp,sizeof(struct stdbitmap) + (lw * h) + 1);
-  errorcheck;
+  size = sizeof(struct stdbitmap) + (lw * h) + 1;
 
+  e = g_malloc((void **) bmp,size);
+  errorcheck;
+  memset(*bmp,0,size);
   (*bmp)->pitch = lw;
-  (*bmp)->freebits = 0;
   (*bmp)->bits = ((unsigned char *)(*bmp)) + 
     sizeof(struct stdbitmap);
   (*bmp)->w = w;
@@ -964,7 +968,10 @@ g_error def_bitmap_new(hwrbitmap *b, s16 w,s16 h) {
 
 void def_bitmap_free(struct stdbitmap *bmp) {
   if (!bmp) return;
-  if (bmp->freebits) g_free(bmp->bits);
+  if (bmp->rend)
+    g_free(bmp->rend);
+  if (bmp->freebits)
+    g_free(bmp->bits);
   g_free(bmp);
 }
 
@@ -1368,6 +1375,32 @@ g_error def_bitmap_modeunconvert(struct stdbitmap **bmp) {
    (*vid->bitmap_free)(srcbit);
    return sucess;
 }
+
+g_error def_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
+  struct stdbitmap *b = (struct stdbitmap *) bmp;
+  g_error e;
+
+  if (b->rend) {
+    *rend = b->rend;
+    return;
+  }
+
+  /* ack... we need to make a new context */
+
+  e = g_malloc((void **) rend,sizeof(struct groprender));
+  errorcheck;
+  b->rend = *rend;
+  memset(*rend,0,sizeof(struct groprender));
+  (*rend)->lgop = PG_LGOP_NONE;
+  (*rend)->output = bmp;
+  (*rend)->hfont = defaultfont;
+  (*rend)->clip.x2 = b->w - 1;
+  (*rend)->clip.y2 = b->h - 1;
+  (*rend)->output_rect.x = b->w;
+  (*rend)->output_rect.y = b->h;
+
+  return sucess;
+}
    
 /* Load our driver functions into a vidlib */
 void setvbl_default(struct vidlib *vid) {
@@ -1404,6 +1437,7 @@ void setvbl_default(struct vidlib *vid) {
   vid->exitmode = &def_enterexitmode;
   vid->bitmap_modeconvert = &def_bitmap_modeconvert;
   vid->bitmap_modeunconvert = &def_bitmap_modeunconvert;
+  vid->bitmap_get_groprender = &def_bitmap_get_groprender;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.42 2001/06/06 06:06:01 uid25538 Exp $
+/* $Id: video.h,v 1.43 2001/06/26 11:31:27 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -62,9 +62,10 @@ typedef struct stdbitmap *hwrbitmap;
    (should be sufficient for most drivers)
 */
 struct stdbitmap {
-  u8  *bits;    /* actual format depends on bpp */
+  u8  *bits;                 /* actual format depends on bpp */
+  struct groprender *rend;   /* State for offscreen rendering */
   s16 w,h;
-  u16 pitch;       /* Spacing between lines, in bytes */
+  u16 pitch;                 /* Spacing between lines, in bytes */
   /* Should 'bits' be freed also when bitmap is freed? */
   u16 freebits;    
 };  /* NOTE: Allocating freebits as u16 is overkill, but this struct
@@ -374,6 +375,14 @@ struct vidlib {
    */
   g_error (*bitmap_modeunconvert)(hwrbitmap *bmp);
    
+  /* Optional
+   *   Return the groprender structure associated with the bitmap,
+   *   and if one does not yet exist, create it.
+   *
+   * Default implementation: stdbitmap
+   */
+  g_error (*bitmap_get_groprender)(hwrbitmap bmp, struct groprender **rend);
+
   /***************** Sprites */
 
   /* Optional

@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.56 2001/05/31 07:15:15 micahjd Exp $
+/* $Id: constants.h,v 1.57 2001/06/26 11:31:27 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -88,6 +88,7 @@
 #define PG_OWN_KEYBOARD      1    //!< Exclusive access to the keyboard
 #define PG_OWN_POINTER       2    //!< Exclusive access to the pointer
 #define PG_OWN_SYSEVENTS     3    //!< Recieve system events like app open/close, click on background, etc.
+#define PG_OWN_DISPLAY       4    //!< Exclusive access to the display via pgRender
 
 //! \}
 
@@ -535,7 +536,8 @@ typedef unsigned long pghandle;
 #define PG_GROP_PIXEL      0x40
 #define PG_GROP_LINE   	   0x50
 #define PG_GROP_ELLIPSE    0x60 
-#define PG_GROP_FELLIPSE   0x70 
+#define PG_GROP_FELLIPSE   0x70
+#define PG_GROP_FPOLYGON   0x90 
 #define PG_GROP_TEXT       0x04   //!< Param: string 
 #define PG_GROP_BITMAP     0x14   //!< Param: bitmap 
 #define PG_GROP_TILEBITMAP 0x24   //!< Param: bitmap 

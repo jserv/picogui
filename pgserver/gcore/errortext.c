@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.23 2001/03/30 23:34:08 micahjd Exp $
+/* $Id: errortext.c,v 1.24 2001/06/26 11:31:27 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -183,8 +183,8 @@ static const char *errors[] = {
   /* 6  */  "Invalid widget property",
   /* 7  */  "Indicator with negative size not render well. Invert space-time and try again",
   /* 8  */  "Bitmap format not recognized by any active loaders",
-  /* 9  */  NULL,
-  /* 10 */  NULL,
+  /* 9  */  "Cannot render to the display without registering exclusive access",
+  /* 10 */  "Another application already has exclusive access to the display",
   /* 11 */  "Nice try... Bad ALIGN value for label",
   /* 12 */  "Your label font is nowhere to be seen...",
   /* 13 */  "Bad handle for widget text property",

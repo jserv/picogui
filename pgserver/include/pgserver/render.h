@@ -1,4 +1,4 @@
-/* $Id: render.h,v 1.2 2001/05/01 23:13:17 micahjd Exp $
+/* $Id: render.h,v 1.3 2001/06/26 11:31:27 micahjd Exp $
  *
  * render.h - data structures and functions for rendering and manipulating
  *            gropnodes (Graphics Operation nodes)
@@ -33,6 +33,12 @@
 #include <pgserver/g_error.h>
 #include <pgserver/video.h>
 #include <pgserver/font.h>
+
+/* If nonzero, this is the ID of the client that has exclusive display
+ * access. It is allowed to render directly to vid->display, and normal
+ * rendering should be disabled.
+ */
+extern int display_owner;
 
 /* The maximum number of parameters a gropnode could need (client
  * doesn't depend on this number. only for memory allocation purposes!)
@@ -82,7 +88,7 @@ struct groprender {
    bool fill;          /* Currently only used for text */
    hwrcolor bg;
    s16 angle;
-   struct fontdesc *font;
+   handle hfont;
 };
 
 /***************** grop contexts */

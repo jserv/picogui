@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.6 2001/06/06 03:21:11 micahjd Exp $
+/* $Id: render.c,v 1.7 2001/06/26 11:31:27 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -34,6 +34,8 @@
 #include <pgserver/render.h>
 #include <pgserver/appmgr.h>    /* for defaultfont */
 
+int display_owner;
+
 /****************************************************** grop_render */
 
 /* This renders a divnode's groplist to the screen
@@ -49,11 +51,15 @@ void grop_render(struct divnode *div) {
    u8 incflag;
    struct groprender rend;
 
+   /* Don't render if an app has exclusive display access */
+   if (display_owner)
+     return;
+
    /* default render values */
    memset(&rend,0,sizeof(rend));
    rend.lgop = PG_LGOP_NONE;
    rend.output = vid->display;
-   rdhandle((void**)&rend.font,PG_TYPE_FONTDESC,-1,defaultfont);
+   rend.hfont = defaultfont;
    
    /* Transfer over some numbers from the divnode */   
    rend.clip.x1 = div->x;
@@ -129,21 +135,10 @@ void grop_render(struct divnode *div) {
 	 node.r.y += rend.translation.y;
       }
       
-      /* Add mapping offset */
-      node.r.x += rend.offset.x;
-      node.r.y += rend.offset.y;
-      node.r.w += rend.offset.w;
-      node.r.h += rend.offset.h;
-
-      /* Save node's coordinates before clipping */
-      rend.orig = node.r;
-      
       /* Clip clip! */
       gropnode_clip(&rend,&node);
 
       /* Anything to do? */
-      if ((node.r.w <= 0 || node.r.h <= 0) && node.type!=PG_GROP_LINE)
-	goto skip_this_node;
       if (node.type == PG_GROP_NOP)
 	goto skip_this_node;
 
@@ -298,7 +293,7 @@ void gropnode_nonvisual(struct groprender *r, struct gropnode *n) {
       break;
 
     case PG_GROP_SETFONT:
-      rdhandle((void**)&r->font,PG_TYPE_FONTDESC,-1,n->param[0]);
+      r->hfont = n->param[0];
       break;
       
     case PG_GROP_SETMAPPING:
@@ -320,7 +315,7 @@ void gropnode_map(struct groprender *r, struct gropnode *n) {
    
    switch (r->maptype) {
     case PG_MAP_NONE:
-      return;
+      break;
     
     case PG_MAP_SCALE:
       n->r.x = n->r.x * r->output_rect.x / r->map.w;
@@ -331,9 +326,15 @@ void gropnode_map(struct groprender *r, struct gropnode *n) {
 	 if (n->type != PG_GROP_SLAB)
 	   n->r.h = n->r.h * r->output_rect.y / r->map.h;
       }
-      return;
+      break;
       
    }
+
+   /* Add mapping offset */
+   n->r.x += r->offset.x;
+   n->r.y += r->offset.y;
+   n->r.w += r->offset.w;
+   n->r.h += r->offset.h;
 }
 
 /****************************************************** gropnode_clip */
@@ -344,6 +345,10 @@ void gropnode_clip(struct groprender *r, struct gropnode *n) {
      *   2. scrolling needs to be able to update any arbitrary
      *      slice of an area
      */
+
+   /* Save node's coordinates before clipping */
+   r->orig = n->r;    
+
    r->csrc.x = 0;
    r->csrc.y = 0;
    switch (n->type) {
@@ -501,6 +506,9 @@ void gropnode_clip(struct groprender *r, struct gropnode *n) {
 	n->r.h = r->clip.y2-n->r.y+1;
    }
 
+   if ((n->r.w <= 0 || n->r.h <= 0) && n->type!=PG_GROP_LINE)
+     goto skip_this_node;
+
    return;
    skip_this_node:
    n->type = PG_GROP_NOP;
@@ -513,6 +521,7 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
    hwrbitmap bit;
    s16 bw,bh;
    hwrcolor c;
+   struct fontdesc *fd;
 
    /* Normally get color from r->color, but if this gropnode has 
       PG_GROPF_COLORED get a hwrcolor from the grop's param[0] */
@@ -586,7 +595,9 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
     case PG_GROP_TEXT:
       if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,
 			   n->param[0])) || !str) break;
-      outtext(vid->display,r->font,n->r.x,n->r.y,c,str,&r->clip,
+      if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
+			   r->hfont)) || !fd) break;
+      outtext(vid->display,fd,n->r.x,n->r.y,c,str,&r->clip,
 	      r->fill,r->bg,r->lgop,r->angle);
       break;
 
@@ -595,6 +606,8 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
     case PG_GROP_TEXTGRID:
       if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,
 			    n->param[0])) || !str) break;
+      if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
+			   r->hfont)) || !fd) break;
 	{
 	   int buffersz,bufferw,bufferh;
 	   int celw,celh,charw,charh,offset;
@@ -603,8 +616,8 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 	   
 	   /* Should be fine for fixed width fonts
 	    * and pseudo-acceptable for others? */
-	   celw      = r->font->font->vwtab['W'];  
-	   celh      = r->font->font->h;
+	   celw      = fd->font->vwtab['W'];  
+	   celh      = fd->font->h;
 	   
 	   bufferw   = n->param[1];
 	   buffersz  = strlen(str) - n->param[2];
@@ -635,9 +648,9 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
  if ((*str) != ' ')
  */
 		VID(charblit) (r->output,
-			       (((unsigned char *)r->font->font->bitmaps)+
-				r->font->font->trtab[*str]),
-			       n->r.x,n->r.y,r->font->font->vwtab[*str],
+			       (((unsigned char *)fd->font->bitmaps)+
+				fd->font->trtab[*str]),
+			       n->r.x,n->r.y,fd->font->vwtab[*str],
 			       celh,0,0,textcolors[attr & 0x0F],NULL,
 			       (attr & 0xF0)!=0,textcolors[attr>>4],r->lgop);
 	     }
