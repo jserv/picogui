@@ -119,7 +119,7 @@ def loadScriptDir(ctx, dir):
     import os
     import SCons.Node
     ctx.fs.chdir(dir)
-    SCons.Node.FS.default_fs.set_SConstruct_dir(dir)
+    ctx.fs.set_SConstruct_dir(dir)
     for name in scriptNames:
         fObject = dir.File(name)
         if fObject.exists():

@@ -95,7 +95,7 @@ class BuildSystemInitTask(InternalTask):
     """Invoke the build system to build targets"""
     def execute(self):
         import PGBuild.Build
-        self.ctx.ui.buildSystem = PGBuild.Build.System(self.ctx)
+        self.ctx.buildSystem = PGBuild.Build.System(self.ctx)
 
 class MergeBootstrapTask(InternalTask):
     def execute(self):
@@ -145,7 +145,7 @@ class BuildSystemRunTask(UserTask):
     def isActive(self):
         return not self.ctx.config.eval("invocation/option[@name='noBuild']/text()")
     def execute(self):
-        if not self.ctx.ui.buildSystem.run(self.ctx):
+        if not self.ctx.buildSystem.run(self.ctx):
             import PGBuild.Errors
             raise PGBuild.Errors.ExternalError("No targets to build")
 

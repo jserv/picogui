@@ -73,7 +73,7 @@ class PackageVersion(object):
         return local
 
     def getBinaryPath(self, ctx):
-        """Get the binary path for this package"""
+        """Get the binary path for this package, optionally ensuring that it exists"""
         return ctx.paths['bin'].Dir(str(self.package.getHostPlatform(ctx))).Dir(self.getPathName())
 
     def update(self, ctx):
