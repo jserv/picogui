@@ -4,6 +4,13 @@ Continuing work on focusing. I'm adding a 'hotspot' interface that allows
 PicoGUI to define a list of hotspot coordinates (gathered from the divtree)
 generate a graph, and traverse that graph as the user moves through the
 hotspots with the arrow keys.
+-
+I've got this hotspot stuff mostly working. Still a few known bugs:
+ - Moving in, then out, of a field widget locks up PicoGUI
+ - The hotspot mechanism absorbs TAB and the arrow keys even if something else
+   needs them instead
+ - Some widgets like scroll bars and panelbars still can't be keyboard
+   activated
 
       * include/pgserver/hotspot.h: Defined the interface for adding,
         managing, and traversing the hotspots
@@ -18,6 +25,26 @@ hotspots with the arrow keys.
 
 		* input/sdlinput.c: Added automatic warping when the PicoGUI
 		  cursor is moved.
+		  
+		* gcore/hotspot.c: When a hotspot is selected, the widget underneath
+		  is focused if possible
+		  
+		* widget/field.c: Field now has a hotspot
+		
+		* widget/button.c: When the button is focused (which can only happen
+		  by hotspots) the spacebar activates it.
+
+		* widget/popup.c: Added the escape hotkey for exiting the popup box
+
+		* widget/terminal.c: Added hotspot
+		
+		* widget/scroll.c: Added hotspot
+		
+		* net/dispatch.c: Fixed the pgSubUpdate() bug that makes the clock
+		  not always update correctly.
+
+		* widget/button.c: Added a TRIGGER_DEACTIVATE handler to the button
+		  widget so menu buttons don't get stuck down when the layer changes
 
 2001-07-08    Micah Dowty <micahjd@users.sourceforge.net>
 

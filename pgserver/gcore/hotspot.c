@@ -1,4 +1,4 @@
-/* $Id: hotspot.c,v 1.1 2001/07/10 09:21:12 micahjd Exp $
+/* $Id: hotspot.c,v 1.2 2001/07/10 11:46:53 micahjd Exp $
  *
  * hotspot.c - This is an interface for managing hotspots.
  *             The divtree is scanned for hotspot divnodes.
@@ -34,6 +34,7 @@
 #include <pgserver/divtree.h>
 #include <pgserver/appmgr.h>
 #include <pgserver/hotspot.h>
+#include <pgserver/widget.h>
 
 struct hotspot *hotspotlist;
 
@@ -253,10 +254,10 @@ void hotspot_traverse(short direction) {
 
   /* If the closest node isn't really that close, just warp to
    * that closest node. Otherwise, traverse. */
-  if ( (cursor->x <= p->x+2) &&
-       (cursor->x >= p->x-2) &&
-       (cursor->y <= p->y+2) &&
-       (cursor->y >= p->y-2) ) {
+  if ( (cursor->x <= p->x+5) &&
+       (cursor->x >= p->x-5) &&
+       (cursor->y <= p->y+5) &&
+       (cursor->y >= p->y-5) ) {
   
     /* traverse */
     p = p->graph[direction];
@@ -266,6 +267,10 @@ void hotspot_traverse(short direction) {
 
   /* move the cursor */
   dispatch_pointing(PG_TRIGGER_MOVE,p->x,p->y,0);
+
+  /* focus the widget under the cursor*/
+  if (under)
+    request_focus(under);
 }
 
 /* The End */

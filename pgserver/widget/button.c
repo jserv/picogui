@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.63 2001/07/10 09:21:13 micahjd Exp $
+/* $Id: button.c,v 1.64 2001/07/10 11:46:53 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -161,7 +161,8 @@ g_error button_install(struct widget *self) {
   self->in->div->flags |= DIVNODE_HOTSPOT;
 
   self->trigger_mask = TRIGGER_ENTER | TRIGGER_LEAVE | TRIGGER_HOTKEY |
-    TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_DIRECT;
+    TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_DIRECT |
+    TRIGGER_KEYUP | TRIGGER_KEYDOWN | TRIGGER_DEACTIVATE;
 
   self->out = &self->in->next;
   self->sub = &self->in->div->div;
@@ -284,7 +285,11 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
   case TRIGGER_LEAVE:
     DATA->over=0;
     break;
-    
+   
+  case TRIGGER_KEYDOWN:
+    if (param->kbd.key != PGKEY_SPACE)
+      return;
+    param->mouse.chbtn = 1;
   case TRIGGER_DOWN:
     if (DATA->extdevents & PG_EXEV_PNTR_DOWN)
       post_event(PG_WE_PNTR_DOWN,self,param->mouse.chbtn,0,NULL);
@@ -294,6 +299,10 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
       return;
     break;
 
+  case TRIGGER_KEYUP:
+    if (param->kbd.key != PGKEY_SPACE)
+      return;
+    param->mouse.chbtn = 1;
   case TRIGGER_UP:
     if (DATA->extdevents & PG_EXEV_PNTR_UP)
       post_event(PG_WE_PNTR_UP,self,param->mouse.chbtn,0,NULL);
@@ -309,11 +318,20 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     break;
 
   case TRIGGER_RELEASE:
-    if (param->mouse.chbtn==1)
+    if (param->mouse.chbtn==1 && !(DATA->extdevents & PG_EXEV_TOGGLE))
       DATA->on=0;
     else
       return;
     break;
+
+    /* When the widget is forcibly defocused, go ahead and un-push it */
+  case TRIGGER_DEACTIVATE:
+    if (DATA->on && !(DATA->extdevents & PG_EXEV_TOGGLE)) {
+      DATA->on = 0;
+      break;
+    }
+    else
+      return;
 
   case TRIGGER_HOTKEY:
   case TRIGGER_DIRECT:

@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.36 2001/06/25 00:48:50 micahjd Exp $
+/* $Id: scroll.c,v 1.37 2001/07/10 11:46:53 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -135,6 +135,7 @@ g_error scroll_install(struct widget *self) {
   errorcheck;
   self->in->div->build = &build_scroll;
   self->in->div->state = PGTH_O_SCROLL;
+  self->in->div->flags |= DIVNODE_HOTSPOT;
   self->out = &self->in->next;
   self->trigger_mask = TRIGGER_DRAG | TRIGGER_ENTER | TRIGGER_LEAVE |
     TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_TIMER;

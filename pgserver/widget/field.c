@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.28 2001/06/25 00:48:50 micahjd Exp $
+/* $Id: field.c,v 1.29 2001/07/10 11:46:53 micahjd Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -133,6 +133,7 @@ g_error field_install(struct widget *self) {
   errorcheck;
   self->in->div->build = &build_field;
   self->in->div->state = PGTH_O_FIELD;
+  self->in->div->flags |= DIVNODE_HOTSPOT;
 
   self->trigger_mask = TRIGGER_UP | TRIGGER_ACTIVATE | TRIGGER_CHAR |
     TRIGGER_DEACTIVATE | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_TIMER;

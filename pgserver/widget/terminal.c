@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.27 2001/06/25 00:48:50 micahjd Exp $
+/* $Id: terminal.c,v 1.28 2001/07/10 11:46:53 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -312,6 +312,7 @@ g_error terminal_install(struct widget *self) {
   e = newdiv(&self->in->div,self);
   errorcheck;
   self->in->div->build = &build_terminal;
+  self->in->div->flags |= DIVNODE_HOTSPOT;
 
   self->trigger_mask = TRIGGER_STREAM | TRIGGER_CHAR | TRIGGER_DOWN |
      TRIGGER_UP | TRIGGER_RELEASE | TRIGGER_ACTIVATE | TRIGGER_DEACTIVATE |

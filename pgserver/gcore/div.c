@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.41 2001/07/10 09:21:12 micahjd Exp $
+/* $Id: div.c,v 1.42 2001/07/10 11:46:53 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -462,7 +462,8 @@ g_error dts_push(void) {
 
   /* The hotspot graph is invalid */
   hotspot_free();
-  
+  request_focus(NULL);
+
   return sucess;
 }
 
@@ -481,6 +482,7 @@ void dts_pop(struct divtree *dt) {
 #endif
    
   hotspot_free();
+  request_focus(NULL);
   reset_widget_pointers();
   *p = (*p)->next;
   divtree_free(dt);
