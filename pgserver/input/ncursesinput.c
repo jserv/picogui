@@ -1,4 +1,4 @@
-/* $Id: ncursesinput.c,v 1.7 2001/01/15 21:45:30 micahjd Exp $
+/* $Id: ncursesinput.c,v 1.8 2001/01/20 09:04:49 micahjd Exp $
  *
  * ncursesinput.h - input driver for ncurses
  * 
@@ -33,6 +33,7 @@
 #include <pgserver/input.h>
 #include <pgserver/widget.h>
 #include <pgserver/pgnet.h>
+#include <pgserver/appmgr.h>
 
 #include <curses.h>
 #include <gpm.h>
@@ -122,6 +123,14 @@ int ncursesinput_fd_activate(int fd) {
       if (Gpm_GetEvent(&evt) > 0) {
 	 int trigger;
 
+	 /* Generate our own coordinates and fit it within the
+	  * video driver's screen resolution */
+	 evt.x = pointer->x + evt.dx;
+	 evt.y = pointer->y + evt.dy;
+	 gpm_mx = vid->xres;
+	 gpm_my = vid->yres;
+	 Gpm_FitEvent(&evt);
+	 
 	 /* Maybe movement outside of window or on another VT */
 	 if ((evt.type & (GPM_MOVE|GPM_DRAG)) && 
 	     (evt.x==ncurses_last_event.x) &&
@@ -156,8 +165,6 @@ int ncursesinput_fd_activate(int fd) {
 			   ((evt.buttons>>2)&1) ||
 			   ((evt.buttons<<2)&4) ||
 			   (evt.buttons&2));
-
-	 GPM_DRAWPOINTER(&ncurses_last_event);
       }
       
    /* Pass on the event if necessary */
@@ -177,7 +184,16 @@ void ncursesinput_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
 g_error ncursesinput_init(void) {
    Gpm_Connect my_gpm;
 
-   /* Make getch nonblocking */
+   /* Initialize ncurses, possibly also for a video driver's benefit... */
+   initscr(); 
+   start_color();
+   raw(); 
+   meta(stdscr, TRUE);
+   noecho();
+   nonl();
+   intrflush(stdscr, FALSE);
+   keypad(stdscr, TRUE);
+   curs_set(0);   
    nodelay(stdscr,1);
 
    /* Connect to GPM */
@@ -194,6 +210,7 @@ g_error ncursesinput_init(void) {
 
 void ncursesinput_close(void) {
    while (Gpm_Close());
+   clear(); refresh(); endwin();
 }
 
 /******************************************** Driver registration */

@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.11 2001/01/15 09:24:01 micahjd Exp $
+/* $Id: ncurses.c,v 1.12 2001/01/20 09:04:50 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -143,17 +143,11 @@ g_error ncurses_init(int xres,int yres,int bpp,unsigned long flags) {
    g_error e;
    unsigned long size;
    unsigned long *p;
-   
-   /* Initialize ncurses */
-   initscr(); 
-   start_color();
-   raw(); 
-   meta(stdscr, TRUE);
-   noecho();
-   nonl();
-   intrflush(stdscr, FALSE);
-   keypad(stdscr, TRUE);
-   curs_set(0);
+
+   /* Load the ncursesinput driver, and let it initialize
+    * ncurses and gpm for us. */
+   e = load_inlib(&ncursesinput_regfunc,&inlib_main);
+   errorcheck;
    
    /* Set colors */
    for (b=0;b<8;b++)
@@ -171,8 +165,7 @@ g_error ncurses_init(int xres,int yres,int bpp,unsigned long flags) {
    for (p=ncurses_screen,size=vid->xres*vid->yres;size;size--,p++)
      *p = ' ';
    
-   /* Load a main input driver */
-   return load_inlib(&ncursesinput_regfunc,&inlib_main);
+   return sucess;
 }
 
 void ncurses_close(void) {
@@ -180,8 +173,6 @@ void ncurses_close(void) {
    unload_inlib(inlib_main);
 
    g_free(ncurses_screen);
-
-   clear(); refresh(); endwin();
 }
 
 void ncurses_pixel(int x,int y,hwrcolor c) {
@@ -275,9 +266,13 @@ hwrcolor ncurses_color_pgtohwr(pgcolor c) {
 /**** A hack to turn off the picogui sprite cursor */
 
 void ncurses_sprite_show(struct sprite *spr) {
-   if (spr==pointer)
-     spr->visible = 0;
-
+   if (spr==pointer) {
+      spr->visible = 0;
+    
+      /* Do it ourselves */
+      GPM_DRAWPOINTER(&ncurses_last_event);
+   }
+      
    def_sprite_show(spr);
 }
 
