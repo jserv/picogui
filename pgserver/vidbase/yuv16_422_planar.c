@@ -1,4 +1,4 @@
-/* $Id: yuv16_422_planar.c,v 1.3 2003/03/10 23:48:23 micahjd Exp $
+/* $Id: yuv16_422_planar.c,v 1.4 2003/04/11 10:20:02 cgrigis Exp $
  *
  * Video Base Library:
  * yuv16_422_planar.c - For 16bpp YUV 422 planar framebuffer
@@ -71,7 +71,12 @@ pgcolor yuv16_422_planar_color_hwrtopg(hwrcolor c)
 hwrcolor yuv16_422_planar_color_pgtohwr(pgcolor c)
 {
   /* hwrcolor is in RGB until very hardware access */
-  return c;
+  /* Check if alpha flag is enabled */
+  if (c & PGCF_ALPHA)
+    return c;
+  /* If not, set the alpha value to 0x7f */
+  else
+    return (c | PGCF_MASK) & ~PGCF_ALPHA;
 }
 
 /************************************************** Minimum functionality */
@@ -105,6 +110,7 @@ void yuv16_422_planar_pixel(hwrbitmap dest,
     unsigned long r = getred(c);
     unsigned long g = getgreen(c);
     unsigned long b = getblue(c);
+    unsigned long a = getalpha(c);
 
     size_t offset = (dstbit->pitch)*y + x;
     
@@ -116,7 +122,18 @@ void yuv16_422_planar_pixel(hwrbitmap dest,
       int y, cb, cr;
       
       yuv16_rgb_shadow_buffer[offset] = c;
-      rgb_to_ycbcr(r, g, b, &y, &cb, &cr);
+      
+      /*
+       * Alpha is null...We're transparent
+       */
+      if (!a)
+	{
+	  y = 0;
+	  cb = 0;
+	  cr = 0;
+	}
+      else
+	rgb_to_ycbcr(r, g, b, &y, &cb, &cr);
       *dst_y = (char)y;
       *dst_uv++ = (char)cb;
       *dst_uv = (char)cr;
