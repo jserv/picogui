@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.146 2002/06/17 20:02:20 micahjd Exp $
+/* $Id: constants.h,v 1.147 2002/07/03 22:03:29 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -85,9 +85,6 @@
 #define PG_APPSPEC_MINHEIGHT 7    //!< Minimum allowed height
 #define PG_APPSPEC_MAXHEIGHT 8    //!< Maximum allowed height
 
-#define PG_OWN_KEYBOARD      1    //!< Exclusive access to the keyboard
-#define PG_OWN_POINTER       2    //!< Exclusive access to the pointer
-#define PG_OWN_SYSEVENTS     3    //!< Recieve system events like app open/close, click on background, etc.
 #define PG_OWN_DISPLAY       4    //!< Exclusive access to the display via pgRender
 
 //! \}
@@ -252,9 +249,11 @@ typedef unsigned long pghandle;
 #define PG_TYPE_ARRAY      7    //!< Created by pgNewArray()
 #define PG_TYPE_DRIVER     8    //!< Created by pgLoadDriver()
 #define PG_TYPE_PALETTE    9    //!< An array of pgcolors, transformed into hwrcolors
-#define PG_TYPE_GROP       10   //!< A graphical operation (used by the canvas widget)
 #define PG_TYPE_WT         11   //!< Created by pgLoadWidgetTemplate
 #define PG_TYPE_INFILTER   12   //!< One filter in the input filter chain
+#define PG_TYPE_CURSOR     13   //!< Cursor object, used with input filters
+
+/* Also add new handle types to the debug code in handle.c, r_handle_dump() */
 
 #define PG_TYPEMASK        0x1F
 
@@ -464,6 +463,8 @@ typedef unsigned long pghandle;
 #define PGTH_P_XOFFSET       36  //!< General purpose
 #define PGTH_P_YOFFSET       37  //!< General purpose
 #define PGTH_P_TICKS         38  //!< The time in millisecond ticks (use with caution)
+#define PGTH_P_CRSRHOTSPOT_X 39  //!< Hotspot X position on the mouse cursor
+#define PGTH_P_CRSRHOTSPOT_Y 40  //!< Hotspot Y position on the mouse cursor
 
 #define PGTH_P_ICON_OK            1000   //!< Icon property (usually in PGTH_O_DEFAULT)
 #define PGTH_P_ICON_OK_MASK       1001   //!< Icon property (usually in PGTH_O_DEFAULT)
@@ -778,18 +779,12 @@ typedef unsigned long pghandle;
  * \{
  */
 
-#define PGDM_CURSORVISIBLE    1   //!< Turn the cursor on/off 
 #define PGDM_BACKLIGHT        2   //!< Turn the backlight on/off
 #define PGDM_SOUNDFX          3   //!< Parameter is a PG_SND_* constant
 #define PGDM_POWER            4   //!< Enter the power mode, PG_POWER_*
 #define PGDM_SDC_CHAR         5   //!< Send a character to the secondary display channel
 #define PGDM_BRIGHTNESS       6   //!< Set display brightness, 0x00-0xFF
 #define PGDM_CONTRAST         7   //!< Set display contrast, 0x00-0xFF
-#define PGDM_INPUT_RAW        8   //!< Send PG_NWE_PNTR_RAW from the specified widget
-#define PGDM_INPUT_SETCAL     9   //!< Param is a handle to a new calibration string
-#define PGDM_CURSORBLKEN     10   //!< Cursor blanking on/off
-#define PGDM_INPUT_CALEN     11   //!< Turn calibration mode on/off
-#define PGDM_CURSORWARP      12   //!< Internal message, notify drivers of a cursor warp
 #define PGDM_SIGNAL          13   //!< Internal message, sends SIGUSR1/2 to drivers (param is signal)
 #define PGDM_READY           14   //!< Notify the drivers that the server is completely up
 
@@ -988,29 +983,21 @@ typedef unsigned long pghandle;
 #define PG_WE_APPMSG      0x301 /* Messages from another application */
 
 /* Non-widget events */
-#define PG_NWE_KBD_CHAR    0x140A /* These are sent if the client has captured the */
-#define PG_NWE_KBD_KEYUP   0x140B /* keyboard (or pointing device ) */
-#define PG_NWE_KBD_KEYDOWN 0x140C
-#define PG_NWE_PNTR_MOVE   0x1209
-#define PG_NWE_PNTR_UP     0x1205
-#define PG_NWE_PNTR_DOWN   0x1204
-#define PG_NWE_BGCLICK     0x120D /* The user clicked the background widget */
-#define PG_NWE_PNTR_RAW    0x1101 /* Raw coordinates, for tpcal or games */
-#define PG_NWE_CALIB_PENPOS 0x1301 /* Raw 32-bit coordinates, for tpcal */
 #define PG_NWE_THEME_INSERTED 0x1001  /* A theme has been inserted into the theme system, 
 				       * the parameter is the handle of that theme */
 #define PG_NWE_THEME_REMOVED  0x1002  /* A theme has been removed the theme system, 
 				       * the parameter is the handle of that theme.
 				       * (Note that the handle will be invalid now, but it is
 				       * provided for comparison if needed.) */
-
+#define PG_NWE_INFILTER       0x1302  /* An incoming trigger for a client-side input filter.
+				       * the data in this case is a pg_client_trigger union */
 
 /* 'Triggers' are the notation used to describe events passing between input drivers
  * and widgets. These constants are used in input filters, and in specifying trigger masks
  * for the widgets.
  */
 #define PG_TRIGGER_TIMER         (1<<0)  /* Timer event from install_timer */
-#define PG_TRIGGER_UNUSED_1      (1<<1)
+#define PG_TRIGGER_PNTR_RELATIVE (1<<1)  /* Specify relative mouse motion and the current button status */
 #define PG_TRIGGER_DIRECT        (1<<2)  /* A trigger sent explicitely */
 #define PG_TRIGGER_ACTIVATE      (1<<3)  /* Sent when it receives focus */
 #define PG_TRIGGER_DEACTIVATE    (1<<4)  /* Losing focus */
@@ -1027,14 +1014,30 @@ typedef unsigned long pghandle;
 #define PG_TRIGGER_STREAM        (1<<15) /* Incoming packet (from WRITETO) */
 #define PG_TRIGGER_KEY_START     (1<<16) /* Sent at the beginning of key propagation */
 #define PG_TRIGGER_NONTOOLBAR    (1<<17) /* Not really a trigger, but widgets can put this
-				       * in their trigger mask to request placement in
-				       * the nontoolbar area when applicable */
+				          * in their trigger mask to request placement in
+				          * the nontoolbar area when applicable */
 #define PG_TRIGGER_PNTR_STATUS   (1<<18) /* A driver can send this trigger with the current
-				       * status of the mouse to have the input filters
-				       * automatically extrapolate other events. */
+				          * status of the mouse to have the input filters
+				          * automatically extrapolate other events. */
 #define PG_TRIGGER_KEY           (1<<19) /* A driver can send this with a key code when
-				       * the exact state of the key is unknown, to have
-				       * KEYUP, KEYDOWN, and CHAR events generated. */
+				          * the exact state of the key is unknown, to have
+				          * KEYUP, KEYDOWN, and CHAR events generated. */
+#define PG_TRIGGER_SCROLLWHEEL   (1<<20) /* The x,y coordinates passed with this are signed scroll
+					  * wheel values */
+#define PG_TRIGGER_TOUCHSCREEN   (1<<21) /* A touchscreen event to be processed by infilter_touchscreen */
+#define PG_TRIGGER_TS_CALIBRATE  (1<<22) /* Store the touchscreen calibration given in this event */
+
+/* List of triggers that use the mouse parameters 
+ */
+#define PG_TRIGGERS_MOUSE        (PG_TRIGGER_PNTR_RELATIVE | PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_MOVE |\
+                                  PG_TRIGGER_DRAG | PG_TRIGGER_PNTR_STATUS | PG_TRIGGER_SCROLLWHEEL | PG_TRIGGER_RELEASE |\
+                                  PG_TRIGGER_TOUCHSCREEN | PG_TRIGGER_TS_CALIBRATE)
+
+/* list of triggers that use keyboard parameters
+ */
+#define PG_TRIGGERS_KEY          (PG_TRIGGER_KEYUP | PG_TRIGGER_KEYDOWN | PG_TRIGGER_CHAR | PG_TRIGGER_KEY_START |\
+                                  PG_TRIGGER_KEY )
+
 
 /* Note on PG_TRIGGER_RELEASE:  This is when the mouse was pressed inside
    the widget, then released elsewhere.  */
@@ -1118,16 +1121,32 @@ typedef unsigned long pghandle;
 #define PGRES_STRING_PGUIERRDLG         9
 #define PGRES_STRING_PGUICOMPAT         10
 #define PGRES_DEFAULT_TEXTCOLORS        11
-#define PGRES_INFILTER_KEY_NORMALIZE    12
-#define PGRES_INFILTER_PNTR_NORMALIZE   13
-#define PGRES_INFILTER_TOUCHSCREEN      14
-#define PGRES_INFILTER_KEY_PREPROCESS   15
-#define PGRES_INFILTER_PNTR_PREPROCESS  16
-#define PGRES_INFILTER_KEY_MAGIC        17
-#define PGRES_INFILTER_KEY_DISPATCH     18
-#define PGRES_INFILTER_PNTR_DISPATCH    19
+#define PGRES_INFILTER_TOUCHSCREEN      12
+#define PGRES_INFILTER_KEY_PREPROCESS   13   /* The _PREPROCESS filters convert to
+					      * logical coordinates and do any extra
+					      * preprocessing before dispatch
+					      */
+#define PGRES_INFILTER_PNTR_PREPROCESS  14
+#define PGRES_INFILTER_MAGIC            15
+#define PGRES_INFILTER_KEY_DISPATCH     16   /* The _DISPATCH filters only send events
+					      * to the widgets. Any unused events
+					      * pass through them.
+					      */
+#define PGRES_INFILTER_PNTR_DISPATCH    17
+#define PGRES_DEFAULT_CURSORBITMAP      18
+#define PGRES_DEFAULT_CURSORBITMASK     19
+#define PGRES_BACKGROUND_WIDGET         20
+#define PGRES_INFILTER_HOTSPOT          21   /* Recieves global hotspot keys after
+					      * the dispatch, and sends more events
+					      * back into the front of the pipe.
+					      */
+#define PGRES_INFILTER_KEY_ALPHA        22   /* Processes PGKEY_ALPHA */
+#define PGRES_INFILTER_PNTR_NORMALIZE   23   /* Runs before PGRES_INFILTER_PNTR_PREPROCESS,
+					      * handles PNTR_STATUS et al before the touchscreen
+					      * calibrator gets to the events.
+					      */
 
-#define PGRES_NUM                       20   /* Total number of resources */
+#define PGRES_NUM                       24   /* Total number of resources */
 
 //! \}
 

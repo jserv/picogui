@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.63 2002/05/22 09:26:31 micahjd Exp $
+/* $Id: global.c,v 1.64 2002/07/03 22:03:28 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -74,9 +74,6 @@ unsigned char const cursor_mask_bits[] = {
 struct app_info *applist;
 handle res[PGRES_NUM];
 struct widget *bgwidget;
-handle hbgwidget;
-struct sprite *cursor;
-hwrbitmap defaultcursor_bitmap,defaultcursor_bitmask;
 handle htbboundary;       /* The last toolbar, represents the boundary between
 			     toolbars and application panels */
 struct widget *wtbboundary;  /* htbboundary, dereferenced. Only used for comparison
@@ -87,6 +84,7 @@ struct widget *wtbboundary;  /* htbboundary, dereferenced. Only used for compari
 
 g_error appmgr_init(void) {
   g_error e;
+  hwrbitmap defaultcursor_bitmap, defaultcursor_bitmask;
 
   applist = NULL;  /* No apps yet! */
 
@@ -108,7 +106,7 @@ g_error appmgr_init(void) {
   e = widget_attach(bgwidget, dts->root, &dts->root->head->next,0,-1);
   errorcheck;
   
-  e = mkhandle(&hbgwidget,PG_TYPE_WIDGET,-1,bgwidget);   
+  e = mkhandle(&res[PGRES_BACKGROUND_WIDGET],PG_TYPE_WIDGET,-1,bgwidget);   
   errorcheck;
 
   /* Turn off the background's DIVNODE_UNDERCONSTRUCTION flags
@@ -146,17 +144,12 @@ g_error appmgr_init(void) {
    printf("Init: appmgr: cursor sprite\n");
 #endif
 
-  /* Allocate the sprite */
-  e = new_sprite(&cursor,cursor_width,cursor_height);
+  /* Make handles */
+  e = mkhandle(&res[PGRES_DEFAULT_CURSORBITMAP],PG_TYPE_BITMAP,-1,defaultcursor_bitmap);
+  errorcheck;
+  e = mkhandle(&res[PGRES_DEFAULT_CURSORBITMASK],PG_TYPE_BITMAP,-1,defaultcursor_bitmask);
   errorcheck;
 
-  /* Sprite defaults to the center of the display */
-  cursor->x = vid->lxres >> 1;
-  cursor->y = vid->lyres >> 1;
-   
-  /* Load bitmaps */
-  appmgr_loadcursor(PGTH_O_DEFAULT);
-   
 #ifdef DEBUG_INIT
    printf("Init: appmgr: strings\n");
 #endif
@@ -210,12 +203,6 @@ void appmgr_free(void) {
     n = n->next;
     g_free(condemn);
   }
-  
-  /* Free the mouse cursor */
-  (*vid->bitmap_free)(defaultcursor_bitmap);
-  (*vid->bitmap_free)(defaultcursor_bitmask);
-  free_sprite(cursor);
-  cursor = NULL;
 }
 
 /* Unregisters applications owned by a given connection */
@@ -297,7 +284,7 @@ g_error appmgr_register(struct app_info *i) {
 
   case PG_APP_NORMAL:
     /* Put the new app right before the background widget */
-    e = widget_derive(&w,PG_WIDGET_PANEL,bgwidget,hbgwidget,
+    e = widget_derive(&w,PG_WIDGET_PANEL,bgwidget,res[PGRES_BACKGROUND_WIDGET],
 		      PG_DERIVE_BEFORE,i->owner);
     errorcheck;
     e = mkhandle(&i->rootw,PG_TYPE_WIDGET,i->owner,w);
@@ -344,53 +331,6 @@ g_error appmgr_register(struct app_info *i) {
   applist = dest;
 
   return success;
-}
-
-/* Load the mouse cursor specified by the given theme object */
-void appmgr_loadcursor(int thobj) {
-   hwrbitmap *bitmap,*mask;
-   s16 w,h;
-   bool redisplay;
-   
-   /* Load the cursor bitmaps, using the default if there is a problem */
-   
-   if (iserror(rdhandlep((void***)&bitmap,PG_TYPE_BITMAP,-1,
-			 theme_lookup(thobj,PGTH_P_CURSORBITMAP))) || !bitmap) {
-     bitmap = &defaultcursor_bitmap;
-     mask = &defaultcursor_bitmask;
-   }
-   else {
-     mask = NULL;
-     rdhandlep((void***)&mask,PG_TYPE_BITMAP,-1,
-	       theme_lookup(thobj,PGTH_P_CURSORBITMASK));
-   }     
-
-   VID(bitmap_getsize) (*bitmap,&w,&h);
-  
-   /* Insert the new bitmaps, resize the sprite if necessary */
-
-   redisplay = cursor->onscreen;
-   if (redisplay)
-     VID(sprite_hide) (cursor);
-
-   if ( (w!=cursor->w) || (h!=cursor->h) ) {
-      cursor->w = w;
-      cursor->h = h;
-      VID(bitmap_free) (cursor->backbuffer);
-      VID(bitmap_new) (&cursor->backbuffer,w,h,vid->bpp);
-   }
-   
-   cursor->bitmap = bitmap;
-   cursor->mask = mask;
-   
-   /* If the cursor has an alpha channel, set the LGOP accordingly */
-   if (w && h && (VID(getpixel)(*bitmap,0,0) & PGCF_ALPHA))
-     cursor->lgop = PG_LGOP_ALPHA;
-   else
-     cursor->lgop = PG_LGOP_NONE;
-
-   if (redisplay)
-     VID(sprite_show)(cursor);
 }
 	
 /* Return a pointer to a divnode specifying the non-toolbar area that

@@ -121,19 +121,23 @@ quoted appropriately. For example:
 [timers]
 
 - cursorhide
-  Inactivity time before hiding the cursor, in 1/10 seconds
-  Default is infinite
+  Inactivity time before hiding the cursor for hotkey navigation, in 1/10 seconds
+  Set this to 0 for "infinite"
+  Default is 50 (5 seconds)
 
 - backlightoff
   Inactivity time before turning off the backlight, in 1/10 seconds
+  Set this to 0 for "infinite"
   Default is infinite  
 
 - sleep
   Inactivity time before sleep mode, in 1/10 seconds
+  Set this to 0 for "infinite"
   Default is infinite
 
 - vidblank
   Inactivity time before blanking the display, in 1/10 seconds
+  Set this to 0 for "infinite"
   Default is infinite
 
 [video-x11]
@@ -167,10 +171,6 @@ quoted appropriately. For example:
   This is on my default
 
 [input-x11]
-
-- autowarp
-  Automatically detect PicoGUI pointer warping and warp the X cursor.
-  This is on by default.
 
 - xcursor
   Display the normal X cursor.
@@ -261,10 +261,6 @@ quoted appropriately. For example:
 
 [input-sdlinput]
 
-- autowarp
-  Automatically detect PicoGUI pointer warping and pass it on to SDL.
-  This is on by default.
-
 - sdlcursor
   Display the cursor provided by SDL
 
@@ -338,17 +334,7 @@ quoted appropriately. For example:
 - multiplier
   A value to multiply delta movement by. Defaults to 2.
 
-[input-tuxts]
-
-- showcursor
-  Set to 1 to show the cursor on any touchscreen activity. Helpful if you're
-  not sure about the calibration.
-
 [input-ucb1x00]
-
-- showcursor
-  Set to 1 to show the cursor on any touchscreen activity. Helpful if you're
-  not sure about the calibration.
 
 - pressure
   The minimum pen pressure to detect a tap

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <ctype.h>
 #include <picogui.h>
 #include "commands.h"
 
@@ -15,14 +16,7 @@ void spawn_process (const char *command)
     }
 }
 
-int tapped (struct pgEvent * evt)
-{
-  spawn_process((const char*)evt->extra);
-
-  return 1;
-}
-
-int pgboard (struct pgEvent * evt)
+void pgboard ()
 {
   static int pgboard_on = 0;
 
@@ -34,36 +28,52 @@ int pgboard (struct pgEvent * evt)
     spawn_process(commands[6]);
     pgboard_on = 1;
   }
-
-  return 1;
 }
 
-void addbutton(const int key, const int num)
+int tap_filter (struct pgEvent * evt)
 {
-  pgCreateWidget(PG_WIDGET_BUTTON);
-  pgSetWidget(PGDEFAULT,
-	       PG_WP_HOTKEY, key,
-	       0);
-  pgBind(PGDEFAULT, PGBIND_ANY, &tapped, commands[num]);
+  union pg_client_trigger *trig = evt->e.data.trigger;
+
+  /* We should have a PG_TRIGGER_CHAR event now, print out the character value
+   */
+  switch (trig->content.u.kbd.key) {
+  case PGKEY_F1:
+    spawn_process(commands[0]);
+    break;
+  case PGKEY_F2:
+    spawn_process(commands[1]);
+    break;
+  case PGKEY_F3:
+    spawn_process(commands[2]);
+    break;
+  case PGKEY_F4:
+    spawn_process(commands[3]);
+    break;
+  case PGKEY_F5:
+    spawn_process(commands[4]);
+    break;
+  case PGKEY_F6:
+    spawn_process(commands[5]);
+    break;
+  case PGKEY_F7:
+    pgboard();
+    break;
+  default:
+    pgInFilterSend(trig);
+    break;
+  }
+
+  return 0;
 }
 
 int main(int argc,char **argv) {
   
   pgInit(argc,argv);
 
-  addbutton(PGKEY_F1, 0);
-  addbutton(PGKEY_F2, 1);
-  addbutton(PGKEY_F3, 2);
-  addbutton(PGKEY_F4, 3);
-  addbutton(PGKEY_F5, 4);
-  addbutton(PGKEY_F6, 5);
+  pgNewInFilter(pgGetServerRes(PGRES_INFILTER_KEY_PREPROCESS),
+		PG_TRIGGER_KEYDOWN, PG_TRIGGER_KEYDOWN);
 
-  /* pgboard - start/kill */
-  pgCreateWidget(PG_WIDGET_BUTTON);
-  pgSetWidget(PGDEFAULT,
-	       PG_WP_HOTKEY, PGKEY_F7,
-	       0);
-  pgBind(PGDEFAULT, PGBIND_ANY, &pgboard, NULL);
+  pgBind(PGBIND_ANY, PG_NWE_INFILTER, tap_filter, NULL);
 
   pgEventLoop();
   return 0;

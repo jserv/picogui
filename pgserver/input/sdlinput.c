@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.38 2002/05/22 10:01:20 micahjd Exp $
+/* $Id: sdlinput.c,v 1.39 2002/07/03 22:03:30 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -57,12 +57,13 @@
 #define POLL_USEC 100
 
 /* Options from the config file */
-u8 sdlinput_autowarp;
-u8 sdlinput_pgcursor;
 u8 sdlinput_foldbuttons;
 u8 sdlinput_upmove;
 u8 sdlinput_nomouse;
 u8 sdlinput_nokeyboard;
+
+/* A cursor, if we have one */
+struct cursor *sdlinput_cursor;
 
 /* Munge coordinates for skin support */
 #ifdef CONFIG_SDLSKIN
@@ -84,10 +85,8 @@ extern u16 sdlfb_scale;
 void sdlinput_poll(void) {
   SDL_Event evt;
   int ox=-1,oy=-1;
-  s16 cursorx,cursory;
   int newx, newy;
   static int btnstate = 0;
-  static int oldx = -1, oldy = -1;
   int pgx, pgy;
 
   while (SDL_PollEvent(&evt)) {
@@ -106,28 +105,13 @@ void sdlinput_poll(void) {
 	   * fancy like that yet. It would also be nice to have some specialized
 	   * button codes, like power or backlight.
 	   */
-	  if (evt.type == SDL_MOUSEBUTTONDOWN) {
-	  /* Not a weird key? */
-	    if (sdlinput_map[i].key < 128)
-	      dispatch_key(PG_TRIGGER_CHAR, sdlinput_map[i].key, 0);
-	    dispatch_key(PG_TRIGGER_KEYDOWN, sdlinput_map[i].key, 0);
-	  }
-	  else if (evt.type == SDL_MOUSEBUTTONUP)
-	    dispatch_key(PG_TRIGGER_KEYUP, sdlinput_map[i].key, 0);
+	  if (evt.type == SDL_MOUSEBUTTONDOWN)
+	    infilter_send_key(PG_TRIGGER_KEY,sdlinput_map[i].key,0);
 	  
 	  return;
 	}
     }
 #endif
-    
-    /* Get the physical position of PicoGUI's cursor */
-    cursorx = cursor->x;
-    cursory = cursor->y;
-    VID(coord_physicalize)(&cursorx,&cursory);
-    cursorx *= sdlfb_scale;
-    cursory *= sdlfb_scale;
-    cursorx += sdlfb_display_x;
-    cursory += sdlfb_display_y;
     
     if (!sdlinput_nomouse) {
       
@@ -142,61 +126,40 @@ void sdlinput_poll(void) {
       pgx = (-sdlfb_display_x + newx) / sdlfb_scale;
       pgy = (-sdlfb_display_y + newy) / sdlfb_scale;
       
-      /* Mouse moved? */
-      if (newx != oldx || newy != oldy) {
-	
-	/* If SDL's old mouse position doesn't jive with our cursor position,
-	 * warp the mouse and try again.
-	 */
-	/*
-	  if (sdlinput_autowarp && sdlfb_scale==1)
-	  if ((evt.motion.x-evt.motion.xrel)!=cursorx ||
-	  (evt.motion.y-evt.motion.yrel)!=cursory) {
-	  SDL_WarpMouse(cursorx,
-	  cursory);
-	  break;
-	  }
-	*/
-	
-	if (sdlinput_upmove || btnstate)
-	  dispatch_pointing(PG_TRIGGER_MOVE, pgx, pgy, btnstate);
-	if (sdlinput_pgcursor)
-	  drivermessage(PGDM_CURSORVISIBLE,1,NULL);
-      }
+      /* The mouse might have moved... the input filters will sort it out */
+      if (sdlinput_upmove || btnstate)
+	infilter_send_pointing(PG_TRIGGER_MOVE, pgx, pgy, btnstate, sdlinput_cursor);
       
       switch (evt.type) {
 	
       case SDL_MOUSEBUTTONDOWN:
 	if (sdlinput_foldbuttons)
 	  evt.button.button = evt.button.button!=0;
-	dispatch_pointing(PG_TRIGGER_DOWN,
-			  pgx, pgy,btnstate |= 1<<(evt.button.button-1));
+	infilter_send_pointing(PG_TRIGGER_DOWN, pgx, pgy, 
+			       btnstate |= 1<<(evt.button.button-1), sdlinput_cursor);
 	break;
 	
       case SDL_MOUSEBUTTONUP:      
 	if (sdlinput_foldbuttons)
 	  evt.button.button = evt.button.button!=0;
-	dispatch_pointing(PG_TRIGGER_UP,
-			  pgx, pgy,btnstate &= ~(1<<(evt.button.button-1)));
+	infilter_send_pointing(PG_TRIGGER_UP, pgx, pgy,
+			       btnstate &= ~(1<<(evt.button.button-1)), sdlinput_cursor);
 	break;
       }
-      
-      oldx = newx;
-      oldy = newy;
     }
     
     switch (evt.type) {
     case SDL_KEYDOWN:
       if (!sdlinput_nokeyboard) {
 	if (evt.key.keysym.unicode)
-	  dispatch_key(PG_TRIGGER_CHAR,evt.key.keysym.unicode,evt.key.keysym.mod);
-	dispatch_key(PG_TRIGGER_KEYDOWN,evt.key.keysym.sym,evt.key.keysym.mod);
+	  infilter_send_key(PG_TRIGGER_CHAR,evt.key.keysym.unicode,evt.key.keysym.mod);
+	infilter_send_key(PG_TRIGGER_KEYDOWN,evt.key.keysym.sym,evt.key.keysym.mod);
       }
       break;
       
     case SDL_KEYUP:
       if (!sdlinput_nokeyboard)
-	dispatch_key(PG_TRIGGER_KEYUP,evt.key.keysym.sym,evt.key.keysym.mod);
+	infilter_send_key(PG_TRIGGER_KEYUP,evt.key.keysym.sym,evt.key.keysym.mod);
       break;
       
     case SDL_QUIT:
@@ -212,8 +175,13 @@ void sdlinput_poll(void) {
 }
 
 g_error sdlinput_init(void) {
-  sdlinput_autowarp = get_param_int("input-sdlinput","autowarp",1);
-  sdlinput_pgcursor = get_param_int("input-sdlinput","pgcursor",1);
+  g_error e;
+
+  if (get_param_int("input-sdlinput","pgcursor",1)) {
+    e = cursor_new(&sdlinput_cursor,NULL,-1);
+    errorcheck;
+  }
+
   sdlinput_foldbuttons = get_param_int("input-sdlinput","foldbuttons",0);
   sdlinput_upmove = get_param_int("input-sdlinput","upmove",1);
   sdlinput_nomouse = get_param_int("input-sdlinput","nomouse",0);
@@ -285,13 +253,15 @@ void sdlinput_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
   }
 }
 
-#ifdef CONFIG_SDLSKIN
 void sdlinput_close(void) {
+  if (sdlinput_cursor)
+    pointer_free(-1,sdlinput_cursor);
+#ifdef CONFIG_SDLSKIN
   if (sdlinput_map)
     g_free(sdlinput_map);
   sdlinput_mapsize = 0;
-}
 #endif
+}
 
 /******************************************** Driver registration */
 
@@ -299,9 +269,7 @@ g_error sdlinput_regfunc(struct inlib *i) {
   i->init = &sdlinput_init;
   i->poll = &sdlinput_poll;
   i->fd_init = &sdlinput_fd_init;
-#ifdef CONFIG_SDLSKIN
   i->close = &sdlinput_close;
-#endif
 
   return success;
 }

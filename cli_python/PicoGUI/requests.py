@@ -70,6 +70,9 @@ def free(obj_id, id=None):
 def get(widget_id, property, id=None):
 	return request(8, pack('LHxx', widget_id, property), id=id)
 
+def getcontext(id=None):
+	return request(52, id=id)
+
 def getfstyle(index, id=None):
 	return request(41, pack('Hxx', index), id=id)
 	
@@ -88,11 +91,13 @@ def getresource(res_id, id=None):
 def getstring(obj_id, id=None):
 	return request(26, pack('L', obj_id), id=id)
 	
-def inputkey(type, key, mods, id=None):
-	return request(10, pack('LHH', type, keys,mods), id=id)
-	
-def inputpoint(type, x, y, btn, id=None):
-	return request(11,  pack('LHHHxx', type, x,  y, btn), id=id)
+# How should this work? It should be extensible, and leave fields
+# untouched when the client doesn't know about them. Maybe an
+# associative array?
+# --Micah
+#
+#def infiltersend( id=None):
+#	return request(53,  , id=id)
 	
 def loaddriver(name,  id=None):
 	return request(40, name + '\x00', id=id)
@@ -105,12 +110,18 @@ def mkbitmap(image, id=None):
 	
 def mkcontext(id=None):
 	return request(23, id=id)
+
+def mkcursor(id=None):
+	return request(10, id=id)
 	
 def mkfillstyle(id=None):
 	return request(14, id=id)
 
 def mkfont(name, style, size, id=None):
 	return request(4, pack('40sLHxx', name, style, size), id=id)
+
+def mkinfilter(insert_after, accept_trigs, absorb_trigs, id=None):
+	return request(11, pack('LLL', insert_after, accept_trigs, absorb_trigs), id=id)
 
 def mkpopup(x, y, width, height, id=None):
 	return request(16, pack('HHHH', x, y, width, height), id=id)
@@ -141,6 +152,9 @@ def rmcontext(id=None):
 
 def set(widget_id, property, value, id=None):
 	return request(7, pack('LLHxx', widget_id, value, property), id=id)
+
+def setcontext(context_id, id=None):
+	return request(51, pack('L', context_id), id=id)
 
 def setinactive(time, id=None):
 	return request(38, pack('L', time), id=id)

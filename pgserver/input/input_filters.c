@@ -1,4 +1,4 @@
-/* $Id: input_filters.c,v 1.1 2002/05/22 09:26:32 micahjd Exp $
+/* $Id: input_filters.c,v 1.2 2002/07/03 22:03:30 micahjd Exp $
  *
  * input_filters.c - Abstract input filter interface
  *
@@ -29,6 +29,11 @@
 #include <pgserver/input.h>
 #include <pgserver/appmgr.h>
 
+#ifdef DEBUG_EVENT
+#define DEBUG_FILE
+#endif
+#include <pgserver/debug.h>
+
 /* Head of the input filter list */
 struct infilter *infilter_list;
 
@@ -42,20 +47,46 @@ struct infilter *infilter_list;
 void infilter_send(struct infilter *from, u32 trigger, union trigparam *param) {
   struct infilter *to;
 
-  do {
+  while (1) {
     /* Find the destination */
     to = from ? from->next : infilter_list;
-    
+
+#ifdef DEBUG_INFILTER_CHAIN
+    if (!from) {
+      DBG("********************************* BEGIN FILTER CHAIN ***\n");
+    }
+    DBG("Sending trigger type 0x%08X from infilter %p to infilter %p:\n",trigger,from,to);
+    DBG("\ttrigparam union is at %p, contains:\n",param);
+    DBG("\tmouse:\n");
+    DBG("\t\tx = %d\n",param->mouse.x);
+    DBG("\t\ty = %d\n",param->mouse.y);
+    DBG("\t\tbtn = 0x%08X\n",param->mouse.btn);
+    DBG("\t\tchbtn = 0x%08X\n",param->mouse.chbtn);
+    DBG("\t\tpressure = %d\n",param->mouse.pressure);
+    DBG("\t\tcursor = %p\n",param->mouse.cursor);
+    DBG("\tkbd:\n");
+    DBG("\t\tkey = %d\n",param->kbd.key);
+    DBG("\t\tmods = 0x%04X\n",param->kbd.mods);
+    DBG("\t\tflags = 0x%04X\n",param->kbd.flags);
+    DBG("\t\tconsume = %d\n",param->kbd.consume);
+    DBG("\tstream:\n");
+    DBG("\t\tsize = %d\n",param->stream.size);
+    DBG("\t\tdata = %p\n",param->stream.data);
+#endif
+
+    /* Has the event reached the end of the filter chain? */
+    if (!to)
+      return;
+
     /* Accept triggers */
     if (to->accept_trigs & trigger)
-      to->handler(trigger,param);
+      to->handler(to,trigger,param);
     
     /* Pass triggers */
     if (to->absorb_trigs & trigger)
       return;
     from = to;
-
-  } while (from);
+  }
 }
 
 g_error infilter_insert(struct infilter **insertion, handle *h, int owner,
@@ -86,14 +117,43 @@ void infilter_delete(struct infilter *node) {
   g_free(node);
 }
 
+void infilter_send_key(u32 trigger, int key, int mods) {
+  union trigparam p;
+  memset(&p,0,sizeof(p));
+  p.kbd.key = key;
+  p.kbd.mods = mods;
+  infilter_send(NULL,trigger,&p);
+}
+
+void infilter_send_pointing(u32 trigger, int x, int y, 
+			    int btn, struct cursor *cursor) {
+  union trigparam p;
+  memset(&p,0,sizeof(p));
+  p.mouse.x = x;
+  p.mouse.y = y;
+  p.mouse.btn = btn;
+  p.mouse.cursor = cursor;
+  infilter_send(NULL,trigger,&p);
+}
+
+void infilter_send_touchscreen(int x, int y, int pressure, int btn) {
+  union trigparam p;
+  memset(&p,0,sizeof(p));
+  p.mouse.x = x;
+  p.mouse.y = y;
+  p.mouse.pressure = pressure;
+  p.mouse.btn = btn;
+  infilter_send(NULL,PG_TRIGGER_TOUCHSCREEN,&p);
+}
+
 /******************************************** Registration */
   
 /* The built-in input filters' template structures
  * (executed in the order shown below)
  */
 
-/* Clean up and standardize input from the drivers */
-extern struct infilter infilter_key_normalize, infilter_pntr_normalize;
+/* Handle PNTR_STATUS events and stuff before the touchscreen processing */
+extern struct infilter infilter_pntr_normalize;
 
 /* Touchscreen calibration and filtering */
 extern struct infilter infilter_touchscreen;
@@ -103,48 +163,60 @@ extern struct infilter infilter_touchscreen;
 extern struct infilter infilter_key_preprocess, infilter_pntr_preprocess;
 
 /* Handling magic CTRL-ALT-* keys */
-extern struct infilter infilter_key_magic;
+extern struct infilter infilter_magic;
+
+/* Optional input filter for managing the "alpha" key on some numeric keypads */
+extern struct infilter infilter_key_alpha;
 
 /* Send the input where it needs to go */
 extern struct infilter infilter_key_dispatch, infilter_pntr_dispatch;
+
+/* Process global navigation keys used for hotspots */
+extern struct infilter infilter_hotspot;
 
 /* Instantiate all of the build-in input filters. */
 g_error infilter_init(void) {
   g_error e;
   int i;
   struct infilter *filters[] = {
-    &infilter_key_normalize,
     &infilter_pntr_normalize,
 #ifdef CONFIG_TOUCHSCREEN
     &infilter_touchscreen,
 #endif
     &infilter_key_preprocess,
     &infilter_pntr_preprocess,
-#ifdef DEBUG_KEYS
-    &infilter_key_magic,
+#ifdef CONFIG_KEY_ALPHA
+    &infilter_key_alpha,
 #endif
+    &infilter_magic,
     &infilter_key_dispatch,
     &infilter_pntr_dispatch,
+    &infilter_hotspot,
   };
   int filter_res[] = {
-    PGRES_INFILTER_KEY_NORMALIZE,
     PGRES_INFILTER_PNTR_NORMALIZE,
 #ifdef CONFIG_TOUCHSCREEN
     PGRES_INFILTER_TOUCHSCREEN,
 #endif
     PGRES_INFILTER_KEY_PREPROCESS,
     PGRES_INFILTER_PNTR_PREPROCESS,
-#ifdef DEBUG_KEYS
-    PGRES_INFILTER_KEY_MAGIC,
+    PGRES_INFILTER_MAGIC,
+#ifdef CONFIG_KEY_ALPHA
+    PGRES_INFILTER_KEY_ALPHA,
 #endif
     PGRES_INFILTER_KEY_DISPATCH,
     PGRES_INFILTER_PNTR_DISPATCH,
+    PGRES_INFILTER_HOTSPOT,
   };
 
   for (i=(sizeof(filters)/sizeof(filters[0]))-1;i>=0;i--) {
     e = infilter_insert(&infilter_list, &res[filter_res[i]],-1, filters[i]);
     errorcheck;
   }
+
+  /* Load them into any active cursors */
+  e = cursor_retheme();
+  errorcheck;
 
   return success;
 }

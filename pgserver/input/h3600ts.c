@@ -1,4 +1,4 @@
-/* $Id: h3600ts.c,v 1.2 2002/05/22 10:01:20 micahjd Exp $
+/* $Id: h3600ts.c,v 1.3 2002/07/03 22:03:29 micahjd Exp $
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -73,7 +73,7 @@ int h3600ts_fd_activate(int fd) {
   }
 
   btnstate = ev.pressure;
-  dispatch_pointing(action,x,y,btnstate);
+  infilter_send_pointing(PG_TRIGGER_PNTR_STATUS,x,y,btnstate,NULL);
   
   return 1;
 }

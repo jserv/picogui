@@ -1,4 +1,4 @@
-/* $Id: ps2mouse.c,v 1.2 2002/05/22 10:01:20 micahjd Exp $
+/* $Id: ps2mouse.c,v 1.3 2002/07/03 22:03:30 micahjd Exp $
  *
  * ps2mouse.c - Driver for PS/2 compatible mouse devices, including input core
  *              drivers that emulate PS/2 mice.
@@ -47,6 +47,7 @@
 
 int ps2_fd;
 int ps2_packetlen;
+struct cursor *ps2_cursor;
 
 /* From GPM's headers/defines.h */
 
@@ -113,12 +114,10 @@ static int write_to_mouse(int fd, unsigned char *data, size_t len)
 /* Most of this is borrowed from the serialmouse driver
  */
 int ps2mouse_fd_activate(int fd) {
-  static int oldbuttons = 0;
   u8 buttons;
   s8 dx,dy,dz;
   static u8 packet[3];
   static int pos;
-  s16 cursorx,cursory;
 
   if (fd != ps2_fd)
     return 0;
@@ -137,11 +136,6 @@ int ps2mouse_fd_activate(int fd) {
     return 1;
   pos = 0;
    
-  /* Get the cursor position in physical coordinates */
-  cursorx = cursor->x;
-  cursory = cursor->y;
-  VID(coord_physicalize)(&cursorx,&cursory);
-
   /* Decode the packet (dx/dy ripped from GPM) */
   
   buttons = packet[0] & 7;
@@ -168,36 +162,8 @@ int ps2mouse_fd_activate(int fd) {
   else
     dz = 0;
 
-  /* Process X and Y motion */
-  cursorx=cursorx+dx;
-  cursory=cursory+dy;
-  if (cursorx >= vid->xres)       /* Use physical screen size */
-    cursorx=vid->xres-1;
-  if (cursory >= vid->yres)
-    cursory=vid->yres-1;
-  if (cursorx < 0)cursorx=0;
-  if (cursory < 0)cursory=0;
-  
-  /* FIXME: for now, map Z axis to buttons, like X does. This should be fixed */
-  if (dz > 0) {
-    dispatch_pointing(PG_TRIGGER_DOWN,cursorx,cursory,buttons | 8);
-    dispatch_pointing(PG_TRIGGER_UP,cursorx,cursory,buttons | 8);
-  }
-  if (dz < 0) {
-    dispatch_pointing(PG_TRIGGER_DOWN,cursorx,cursory,buttons | 16);
-    dispatch_pointing(PG_TRIGGER_UP,cursorx,cursory,buttons | 16);
-  }
-
-  /* Process buttons */
-  if (buttons & ~oldbuttons)
-    dispatch_pointing(PG_TRIGGER_DOWN,cursorx,cursory,buttons);
-  if (oldbuttons & ~buttons)
-    dispatch_pointing(PG_TRIGGER_UP,cursorx,cursory,buttons);
-  oldbuttons = buttons;
-
-  /* Process motion */
-  if((dx!=0)||(dy!=0))
-    dispatch_pointing(PG_TRIGGER_MOVE,cursorx,cursory,buttons);
+  infilter_send_pointing(PG_TRIGGER_PNTR_RELATIVE, dx, dy, buttons, ps2_cursor);
+  infilter_send_pointing(PG_TRIGGER_SCROLLWHEEL, 0, dz, 0, ps2_cursor);
   
   return 1;
 }
@@ -210,6 +176,7 @@ g_error ps2mouse_init(void) {
   int id;
   int noinit = get_param_int("input-ps2mouse","noinit",0);
   int flags;
+  g_error e;
 
   if (noinit)
     flags = O_RDONLY | O_NDELAY;
@@ -282,6 +249,9 @@ g_error ps2mouse_init(void) {
     ps2_packetlen = 3;
   }    
 
+  e = cursor_new(&ps2_cursor,NULL,-1);
+  errorcheck;
+
   return success;
 }
 
@@ -294,6 +264,7 @@ void ps2mouse_fd_init(int *n,fd_set *readfds,struct
 }
 
 void ps2mouse_close(void){
+  pointer_free(-1,ps2_cursor);
   close(ps2_fd);
 }
 

@@ -1,20 +1,26 @@
 CFLAGS = -g -O2 -lpgui
-GCC = gcc
+CC = gcc
 
-all : sdlremote gpmremote serialremote svgaremote
+targets : sdlremote infilter_uppercase infilter_circle
 
 serialremote : serialremote.c
-	$(GCC) -o serialremote serialremote.c $(CFLAGS)
+	$(CC) -o serialremote serialremote.c $(CFLAGS)
 
 gpmremote : gpmremote.c
-	$(GCC) -o gpmremote gpmremote.c $(CFLAGS) -lgpm
+	$(CC) -o gpmremote gpmremote.c $(CFLAGS) -lgpm
 
 svgaremote : svgaremote.c
-	$(GCC) -o svgaremote svgaremote.c $(CFLAGS) -lvga -lvgagl
+	$(CC) -o svgaremote svgaremote.c $(CFLAGS) -lvga -lvgagl
 
 sdlremote : sdlremote.c
-	$(GCC) -o sdlremote sdlremote.c $(CFLAGS) $(shell sdl-config --cflags --libs)
+	$(CC) -o sdlremote sdlremote.c $(CFLAGS) $(shell sdl-config --cflags --libs)
+
+infilter_uppercase: infilter_uppercase.c
+	$(CC) -o infilter_uppercase infilter_uppercase.c $(CFLAGS)
+
+infilter_circle: infilter_circle.c
+	$(CC) -o infilter_circle infilter_circle.c $(CFLAGS) -lm
 
 clean:
-	rm -f sdlremote gpmremote serialremote *.o
+	rm -f sdlremote gpmremote serialremote svgaremote infilter_uppercase infilter_circle *.o
 

@@ -1,4 +1,4 @@
-/* $Id: gpm.c,v 1.4 2002/05/22 10:01:20 micahjd Exp $
+/* $Id: gpm.c,v 1.5 2002/07/03 22:03:29 micahjd Exp $
  *
  * gpm.c - input driver for gpm
  * 
@@ -37,6 +37,7 @@
 #include <gpm.h>
 
 Gpm_Event gpm_last_event;
+struct cursor *gpm_cursor;
 
 /* the stupid gpm server scales down the input for text mode,
  * so we either have to deal with darn slow input or choppy
@@ -93,10 +94,10 @@ int gpm_fd_activate(int fd) {
 	    return 1;
 	 }
 
-	 dispatch_pointing(trigger,evt.x,evt.y,
-			   ((evt.buttons>>2)&1) ||
-			   ((evt.buttons<<2)&4) ||
-			   (evt.buttons&2));
+	 infilter_send_pointing(trigger,evt.x,evt.y,
+				((evt.buttons>>2)&1) ||
+				((evt.buttons<<2)&4) ||
+				(evt.buttons&2),gpm_cursor);
 	 return 1;
       }
       
@@ -123,12 +124,13 @@ g_error gpm_init(void) {
    if (Gpm_Open(&my_gpm,0) == -1)
      return mkerror(PG_ERRT_IO,74);
    gpm_zerobased = 1;
-   
-   return success;
+
+   return cursor_new(&gpm_cursor, NULL, -1);
 }
 
 void gpm_close(void) {
-   while (Gpm_Close());
+  pointer_free(-1,gpm_cursor);
+  while (Gpm_Close());
 }
 
 /******************************************** Driver registration */

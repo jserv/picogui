@@ -1,4 +1,4 @@
-/* $Id: rotate270.c,v 1.8 2002/04/12 17:28:12 micahjd Exp $
+/* $Id: rotate270.c,v 1.9 2002/07/03 22:03:32 micahjd Exp $
  *
  * rotate270.c - Video wrapper to rotate the screen 270 degrees
  *
@@ -66,13 +66,13 @@ void rotate270_fellipse(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,
    (*vid->bitmap_getsize)(dest,&dx,&dy);
    (*vid->fellipse)(dest,dx-y-h,x,h,w,c,lgop);
 }
-void rotate270_coord_logicalize(s16 *x,s16 *y) {
-   s16 ty = *y;
+void rotate270_coord_logicalize(int *x,int *y) {
+   int ty = *y;
    *y = vid->xres-1-*x;
    *x = ty;
 }
-void rotate270_coord_physicalize(s16 *x,s16 *y) {
-   s16 ty = *y;
+void rotate270_coord_physicalize(int *x,int *y) {
+   int ty = *y;
    *y = *x;
    *x = vid->xres-1-ty;
 }

@@ -1,4 +1,4 @@
-/* $Id: cursor.c,v 1.1 2002/05/24 05:43:19 micahjd Exp $
+/* $Id: cursor.c,v 1.2 2002/07/03 22:03:29 micahjd Exp $
  *
  * cursor.c - Cursor abstraction and multiplexing layer 
  *
@@ -33,26 +33,47 @@
 /* List of all cursors */
 struct cursor *cursor_list;
 
-void r_cursor_widgetunder(struct cursor *crsr, struct divnode *div);
-void cursor_change_under(struct cursor *crsr, struct divnode *old_under);
+void cursor_widgetunder(struct cursor *crsr);
+void r_cursor_widgetunder(struct cursor *crsr, struct divnode *div, int x, int y);
+void cursor_change_under(struct cursor *crsr, handle old_under);
 void cursor_list_remove(struct cursor *crsr);
 void cursor_update_widget(struct widget *w, u8 new_numcursors); 
 
 /****************************** Public cursor methods ***/
 
-g_error cursor_new(struct cursor **crsr) {
+g_error cursor_new(struct cursor **crsr, handle *h, int owner) {
   g_error e;
+  struct cursor *c;
+  handle c_h;
 
   /* Allocate cursor */
-  e = g_malloc((void**)crsr, sizeof(struct cursor));
+  e = g_malloc((void**)&c, sizeof(struct cursor));
   errorcheck;
-  memset(*crsr,0,sizeof(struct cursor));
+  memset(c,0,sizeof(struct cursor));
 
-  /* We save the sprite allocation until later when we set the theme... */
+  /* Default at the screen center */
+  cursor_getposition(NULL,&c->x, &c->y);
 
   /* Add to list */
-  (*crsr)->next = cursor_list;
-  cursor_list = *crsr;
+  c->next = cursor_list;
+  cursor_list = c;
+
+  /* Allocate the sprite */
+  e = cursor_set_theme(c, PGTH_O_DEFAULT);
+  errorcheck;
+
+  /* Give the cursor a handle. We always use pointers to
+   * reference cursors internal to pgserver, but when passing
+   * events to and from a client we must refer to the cursor
+   * using only this handle.
+   */
+  e = mkhandle(&c_h, PG_TYPE_CURSOR, owner, c);
+  errorcheck;
+
+  if (crsr)
+    *crsr = c;
+  if (h)
+    *h = c_h;
 
   return success;
 }
@@ -60,8 +81,7 @@ g_error cursor_new(struct cursor **crsr) {
 
 void cursor_delete(struct cursor *crsr) {
   cursor_hide(crsr);
-  if (crsr->sprite)
-    free_sprite(crsr->sprite);
+  free_sprite(crsr->sprite);
   cursor_list_remove(crsr);
   g_free(crsr);
 }
@@ -78,6 +98,8 @@ g_error cursor_set_theme(struct cursor *crsr, int thobj) {
   s16 w,h;
   bool redisplay;
   g_error e;
+
+  crsr->thobj = thobj;
   
   /* Read the cursor bitmap and bitmask. Note that if the cursor is rectangular
    * or it uses an alpha channel the mask will be NULL.
@@ -90,6 +112,15 @@ g_error cursor_set_theme(struct cursor *crsr, int thobj) {
   e = rdhandlep((void***)&mask,PG_TYPE_BITMAP,-1,theme_lookup(thobj,PGTH_P_CURSORBITMASK));
   errorcheck;
 
+  if (crsr->sprite && bitmap==crsr->sprite->bitmap && mask==crsr->sprite->mask)
+    return success;
+
+  /* If there's no bitmap yet, it's early in init and the default cursor
+   * hasn't been created yet. Skip this all.
+   */
+  if (!bitmap)
+    return success;
+
   VID(bitmap_getsize) (*bitmap,&w,&h);
   
   /* Insert the new bitmaps, resize/create the sprite if necessary */
@@ -98,30 +129,31 @@ g_error cursor_set_theme(struct cursor *crsr, int thobj) {
   if (redisplay)
     VID(sprite_hide) (crsr->sprite);
 
+  /* Update the hotspot before cursor_move */
+  crsr->hotspot_x = theme_lookup(thobj,PGTH_P_CRSRHOTSPOT_X);
+  crsr->hotspot_y = theme_lookup(thobj,PGTH_P_CRSRHOTSPOT_Y);
+
   if (!crsr->sprite) {
     int x,y;
+    /* Get the default position */
+    cursor_getposition(crsr,&x,&y);
 
     /* Create a new sprite (default hidden, as per description in input.h) */
-
     e = new_sprite(&crsr->sprite,w,h);
     errorcheck;
-    VID(sprite_hide) (crsr->sprite);
-
-    /* Also move it to the default position 
-     * (returned by cursor_getposition when there's no sprite yet) 
-     */
-    cursor_getposition(crsr,&x,&y);
+    crsr->sprite->visible = 0;
+    
+    /* Set the bitmap up, and move it */
+    crsr->sprite->bitmap = bitmap;
+    crsr->sprite->mask = mask;
     cursor_move(crsr, x,y);
   }
   else {
-    int new_hotspot_x, new_hotspot_y;
 
     /* Since we're not creating a new sprite, we might need to move the hotspot
      */
-    new_hotspot_x = theme_lookup(thobj,PGTH_P_CRSRHOTSPOT_X);
-    new_hotspot_y = theme_lookup(thobj,PGTH_P_CRSRHOTSPOT_Y);
-    crsr->sprite->x += crsr->hotspot_x - new_hotspot_x;
-    crsr->sprite->y += crsr->hotspot_y - new_hotspot_y;
+    crsr->sprite->x = crsr->x - crsr->hotspot_x;
+    crsr->sprite->y = crsr->y - crsr->hotspot_y;
 
     if ( (w!=crsr->sprite->w) || (h!=crsr->sprite->h) ) {
       /* Resize an existing sprite 
@@ -132,11 +164,11 @@ g_error cursor_set_theme(struct cursor *crsr, int thobj) {
       crsr->sprite->w = w;
       crsr->sprite->h = h;
     }
+
+    crsr->sprite->bitmap = bitmap;
+    crsr->sprite->mask = mask;
   }    
 
-  crsr->sprite->bitmap = bitmap;
-  crsr->sprite->mask = mask;
-  
   /* If the cursor has an alpha channel, set the LGOP accordingly */
   if (w && h && (VID(getpixel)(*bitmap,0,0) & PGCF_ALPHA))
     crsr->sprite->lgop = PG_LGOP_ALPHA;
@@ -145,6 +177,11 @@ g_error cursor_set_theme(struct cursor *crsr, int thobj) {
   
   if (redisplay)
     VID(sprite_show)(crsr->sprite);
+  
+  /* Whether it was onscreen or not, show it at the next convenient opportunity */
+  crsr->sprite->visible = 1;
+
+  return success;
 }
 
 
@@ -152,9 +189,16 @@ g_error cursor_set_theme(struct cursor *crsr, int thobj) {
  * is hovering over, and if necessary sending enter/leave events.
  */
 void cursor_move(struct cursor *crsr, int x, int y) {
-  struct divnode *old_under = crsr->under;
-  if (!crsr->sprite)
-    return;
+  handle old_under = crsr->ctx.widget_under;
+
+  /* clip to the screen edge */
+  if (x<0)           x = 0;
+  if (y<0)           y = 0;
+  if (x>=vid->lxres) x = vid->lxres-1;
+  if (y>=vid->lyres) y = vid->lyres-1;
+
+  crsr->x = x;
+  crsr->y = y;
 
   /* Move the cursor to the head of the activity list */
   if (crsr != cursor_list) {
@@ -171,59 +215,40 @@ void cursor_move(struct cursor *crsr, int x, int y) {
   crsr->sprite->x = x - crsr->hotspot_x;
   crsr->sprite->y = y - crsr->hotspot_y;
 
-  if (crsr->sprite->visible) {
-    /* Update the widget under the cursor, and if necessary,
-     * send out enter/leave events.
-     */
-    r_cursor_widgetunder(crsr,dts->top->head);
-    cursor_change_under(crsr,old_under);
-    
-    VID(sprite_update) (crsr->sprite);
-  }
-}
-
-
-void cursor_getposition(struct cursor *crsr, int *x, int *y) {
-  /* If crsr is NULL, get the default sprite */
-  if (!crsr)
-    crsr = cursor_get_default();
-
-  /* If there's no sprite yet, return the default position 
+  /* Update the widget under the cursor, and if necessary,
+   * send out enter/leave events.
    */
-  if (!crsr || !crsr->sprite) {
-    *x = vid->lxres >> 1;
-    *y = vid->lyres >> 1;
-    return;
-  }
-
-  *x = crsr->sprite->x + crsr->hotspot_x;
-  *y = crsr->sprite->y + crsr->hotspot_y;
+  cursor_widgetunder(crsr);
+  cursor_change_under(crsr,old_under);
+  
+  VID(sprite_update) (crsr->sprite);
 }
 
 
 /* Hide/show the cursor, also keeping track of mouse entering and leaving
  */
 void cursor_hide(struct cursor *crsr) {
-  struct divnode *old_under = crsr->under;
+  handle old_under = crsr->ctx.widget_under;
 
-  if ((!crsr->sprite) || (!crsr->sprite->visible))
+  if (!crsr->sprite->visible)
     return;
 
+  crsr->sprite->visible = 0;
   VID(sprite_hide)(crsr->sprite);
-  crsr->under = NULL;
-  crsr->deepest_div = NULL;
+  memset(&crsr->ctx,0,sizeof(crsr->ctx));
 
   cursor_change_under(crsr,old_under);
 }
 
 
 void cursor_show(struct cursor *crsr) {
-  if ((!crsr->sprite) || crsr->sprite->visible)
+  if (crsr->sprite->visible)
     return;
   
-  r_cursor_widgetunder(crsr,dts->top->head);
-  cursor_change_under(crsr,NULL);  
+  cursor_widgetunder(crsr);
+  cursor_change_under(crsr,0);
 
+  crsr->sprite->visible = 1;
   VID(sprite_show)(crsr->sprite);
 }
 
@@ -235,21 +260,102 @@ struct cursor *cursor_get_default(void) {
 }
 
 
+/* Re-evaluate the widget under every cursor and send out events
+ */
+void cursor_update_hover(void) {
+  handle old_under;
+  struct cursor *crsr;
+
+  for (crsr=cursor_list;crsr;crsr=crsr->next) {
+    old_under = crsr->ctx.widget_under;
+    cursor_widgetunder(crsr);
+    cursor_change_under(crsr,old_under);
+  }
+}
+
+
+/* Reload all cursor theme objects if necessary
+ */
+g_error cursor_retheme(void) {
+  struct cursor *p;
+  g_error e;
+
+  for (p=cursor_list;p;p=p->next) {
+    e = cursor_set_theme(p, p->thobj);
+    errorcheck;
+  }
+   
+  return success;
+}
+
+void cursor_getposition(struct cursor *crsr, int *x, int *y) {
+  if (!crsr)
+    crsr = cursor_get_default();
+  if (!crsr) {
+    /* Start cursors out near the top-left corner */
+    *x = 16;
+    *y = 16;
+  }
+  else {
+    *x = crsr->x;
+    *y = crsr->y;
+  }
+}
+
+
 /****************************** Private cursor utility methods ***/
 
+void cursor_widgetunder(struct cursor *crsr) {
+  int x,y;
+  struct divnode *div = dts->top->head;
+  cursor_getposition(crsr, &x, &y);
+
+  /* If there are popups and they're all in the nontoolbar area,
+   * we can pass toolbar's events through to the bottom layer in the dtstack
+   */
+  if (popup_toolbar_passthrough()) {
+    struct divnode *ntb = appmgr_nontoolbar_area();
+    
+    if (x < ntb->x ||
+	y < ntb->y ||
+	x >= ntb->x+ntb->w ||
+	y >= ntb->y+ntb->h) {
+      
+      /* Get a widget from the bottom layer, with the toolbars */
+      div = dts->root->head;
+    }
+  }
+ 
+  /* recursively determine the widget/divnode under the cursor */
+  crsr->ctx.div_under = NULL;
+  crsr->ctx.deepest_div = NULL;
+  r_cursor_widgetunder(crsr,div,x,y);
+
+  /* Save the widget associated with the divnode we're under */
+  if (crsr->ctx.div_under) {
+    crsr->ctx.widget_under = hlookup(crsr->ctx.div_under->owner,NULL);
+
+    /* Also change the cursor theme */
+    cursor_set_theme(crsr, widget_get(crsr->ctx.div_under->owner,PG_WP_THOBJ));
+  }
+  else {
+    crsr->ctx.widget_under = 0;
+
+    /* Default cursor theme */
+    cursor_set_theme(crsr, PGTH_O_DEFAULT);
+  }
+}
 
 /* Recursively determine which divnode (belonging to an interactive widget)
  * is under the cursor at this time.
  */
-void r_cursor_widgetunder(struct cursor *crsr, struct divnode *div) {
-  int x,y;
+void r_cursor_widgetunder(struct cursor *crsr, struct divnode *div,int x,int y) {
 
   if (!div) return;
 
   /* Check whether the cursor is in this divnode...
    * this is made complex by scrolling, if it is in use.
    */
-  cursor_getposition(crsr, &x, &y);
   if ( ((!((div->flags & DIVNODE_DIVSCROLL) && div->divscroll)) ||
 	( div->divscroll->calcx<=x && div->divscroll->calcy<=y &&
 	  (div->divscroll->calcx+div->divscroll->calcw)>x &&
@@ -262,27 +368,37 @@ void r_cursor_widgetunder(struct cursor *crsr, struct divnode *div) {
      * is visible, store it in crsr->under
      */
     if (div->owner && div->owner->trigger_mask && (div->grop || div->build))
-      crsr->under = div;
-    
+      crsr->ctx.div_under = div;
+
+
     /* Always store the deepest match in here */
-    crsr->deepest_div = div;
+    crsr->ctx.deepest_div = div;
 
     /* Check this divnode's children */
-    r_cursor_widgetunder(crsr,div->next);
-    r_cursor_widgetunder(crsr,div->div);
+    r_cursor_widgetunder(crsr,div->next,x,y);
+    r_cursor_widgetunder(crsr,div->div,x,y);
   }
 }
 
 
 /* When the node under the cursor changes, notify the owning widget.
  */
-void cursor_change_under(struct cursor *crsr, struct divnode *old_under) {
-  if (crsr->under != old_under)
+void cursor_change_under(struct cursor *crsr, handle old_under) {
+  struct widget *new_w, *old_w;
+
+  new_w = NULL;
+  if (crsr->sprite->visible)
+    rdhandle((void**)&new_w, PG_TYPE_WIDGET, -1, crsr->ctx.widget_under);
+  old_w = NULL;
+  rdhandle((void**)&old_w, PG_TYPE_WIDGET, -1, old_under);
+
+  if (new_w == old_w)
     return;
-  if (crsr->under)
-    widget_set_numcursors(crsr->under->owner,crsr->under->owner->numcursors+1);
-  if (old_under)
-    widget_set_numcursors(old_under->owner,old_under->owner->numcursors-1);
+
+  if (new_w)
+    widget_set_numcursors(new_w,new_w->numcursors+1);
+  if (old_w)
+    widget_set_numcursors(old_w,old_w->numcursors-1);
 }
 
 

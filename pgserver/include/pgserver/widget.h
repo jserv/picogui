@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.62 2002/05/22 10:01:20 micahjd Exp $
+/* $Id: widget.h,v 1.63 2002/07/03 22:03:29 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -105,6 +105,9 @@ struct widget {
    
   /* Defines the type of widget */
   u8 type;
+
+  /* Number of mouse cursors over this widget */
+  u8 numcursors;
 
   /* If not null, the widget is contained within this widget (a toolbar,
    * panel, etc...
@@ -220,8 +223,6 @@ DEF_WIDGET_PROTO(panelbar)
 DEF_WIDGET_PROTO(simplemenu)
     
 /* Set to the client # if a client has taken over the system resource */
-extern int keyboard_owner;
-extern int pointer_owner;
 extern int sysevent_owner;
 
 /******* These functions define the 'public' methods for widgets */
@@ -242,66 +243,6 @@ glob widget_get(struct widget *w, int property);
 */
 void redraw_bg(struct widget *self);
 
-/*
-   Set a timer.  At the time, in ticks, specified by 'time',
-   the widget will recieve a PG_TRIGGER_TIMER
-*/
-void install_timer(struct widget *self,u32 interval);
-
-/* This is called by the timer subsystem.  It triggers the
-   timer and uninstalls it from the linked list of timers.
-
-   It is assumed that this is triggering the timer at the
-   beginning of the timerwidgets list
-*/
-void trigger_timer(void);
-
-/*
-  Request focus for a widget.  Usually called in response to a click, or 
-  a hotkey.  Sends PG_TRIGGER_ACTIVATE and PG_TRIGGER_DEACTIVATE, and sets kbdfocus
-*/
-void request_focus(struct widget *self);
-
-/**** These are entry points for the various input drivers. */
-
-/* Reset pointers for the pointing device when a layer is popped */
-void reset_widget_pointers(void);
-
-/* This is a pointing device event.
-   The trigger parameter is a struct pointing_trigger.
-   x and y here are absolute coords. The divtree is traversed to find the
-   node at those coords.
-
-   btn specifies the buttons down on the pointing device. Bit 0 is the
-   first mouse button, bit 1 is the second, etc.
-   Pointing device events should only be sent here for MOVE, UP, DOWN.
-*/
-void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn);
-
-/* Update which widget/divnode the mouse is inside, etc, when the divtree changes */
-void update_pointing(void);
-
-/* This dispatches a key.  It is first checked against the global
-   key owner table, and if not found there it is sent to the currently 
-   focused widget.  The key is passed as the trigger param.
-*/
-void dispatch_key(u32 type,s16 key,s16 mods);
-  
-/* The divnode currently occupied by the pointing device - this will always
- * be a visible divnode owned by an interactive widget */
-extern struct divnode *div_under_crsr;
-/* This will be the deepest (in the divtree) divnode containing the
- * pointer, even if it is not visible or owned by an interactive widget */
-extern struct divnode *deepest_div_under_crsr;
-
-/* Other status variables */
-/* These are needed to determine which widget is under the pointing
-   device, keep track of status */
-extern struct widget *under;
-extern struct widget *lastclicked;    /* Most recently clicked widget */
-extern struct widget *capture;
-extern struct widget *kbdfocus;
-
 /* Clips a popup's main divnode to fit on the screen,
  * used when changing video modes */
 void clip_popup(struct divnode *div);
@@ -316,34 +257,8 @@ void resizewidget(struct widget *w);
 /* Call the resizewidget() function on all widgets with handles */
 void resizeall(void);
 
-/* Check for global hotkeys, like those used to move between widgets.
- * Widgets that can be focused (this includes widgets with hotspots)
- * should send unused keys here.
- */
-void global_hotkey(u16 key,u16 mods, u32 type);
-
-/* Reloads global hotkey settings from the theme when it changes */
-void reload_hotkeys(void);
-extern u16 hotkey_left, hotkey_right, hotkey_up, hotkey_down;
-extern u16 hotkey_activate, hotkey_next;
-
 /* Traverse to other widgets in a given direction (PG_TRAVERSE_*) */
 struct widget *widget_traverse(struct widget *w, int direction, int count);
-
-/* sends a trigger to a widget,
- * returns nonzero if the trigger was accepted.
- */
-int send_trigger(struct widget *w, s32 type, union trigparam *param);
-
-/* Sends a trigger to all of a widget's children,
- * stopping if *stop > 0. Always traverses to the child and the panelbar,
- * only traverses forward for the top level if 'forward' is nonzero.
- */
-void r_send_trigger(struct widget *w, s32 type, union trigparam *param,
-		    u16 *stop, int forward);
-
-/* Invokes the spirits of guru() and stdout for debuggativity */
-void magic_button(s16 key);
 
 /* Set flags to rebuild a widget on the next update,
  * Assumes that w->in->div is the visible divnode.
@@ -356,6 +271,11 @@ void set_widget_rebuild(struct widget *w);
  */
 void r_widget_setcontainer(struct widget *w, handle oldcontainer,
 			   handle container, struct divtree *dt);
+
+/* Set the number of cursors occupying the widget, and send any appropriate
+ * triggers due to the change.
+ */
+void widget_set_numcursors(struct widget *self, int num);
 
 #endif /* __WIDGET_H */
 

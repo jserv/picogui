@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.183 2002/05/22 10:01:22 micahjd Exp $
+/* $Id: widget.c,v 1.184 2002/07/03 22:03:32 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -93,31 +93,6 @@ DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,94))
 
 DEF_STATICWIDGET_TABLE(simplemenu)
 };
-
-/* These are needed to determine which widget is under the pointing
-   device, keep track of status */
-struct divnode *div_under_crsr, *deepest_div_under_crsr;
-struct widget *under;
-struct widget *lastclicked;
-struct widget *prev_under;
-int prev_btn;
-struct widget *capture;
-struct widget *kbdfocus;
-int capturebtn;           /* Button that is holding the capture */
-s16 last_char_key;        /* Key for the last character event received */
-s16 last_pressed_key;     /* Key for the last keydown even received */
-
-/* Sorted (chronological order) list of widgets
-   with timers
-*/
-struct widget *timerwidgets;
-
-/* Set to the client # if a client has taken over the resource */
-int keyboard_owner;
-int pointer_owner;
-int sysevent_owner;
-   
-int timerlock = 0;
 
 /* To save space, instead of checking whether the divtree is valid every time
  * we have to set a divtree flag, assign unattached widgets a fake divtree
@@ -237,14 +212,6 @@ g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **wher
 
     /* Take off all the unnecessary divscroll flags */
     r_div_unscroll(w->in);
-
-    /* If we just detached the widget under the mouse, tell it the mouse is gone */
-    if (div_under_crsr && div_under_crsr->owner && 
-	div_under_crsr->owner->dt==&fakedt) {
-      union trigparam param;
-      memset(&param,0,sizeof(param));
-      send_trigger(div_under_crsr->owner,PG_TRIGGER_LEAVE,&param);
-    }
   }
   
   /* Add the widget to the divtree */
@@ -311,26 +278,6 @@ g_error widget_derive(struct widget **w,
   }
 }
 
-/* Used internally */
-void remove_from_timerlist(struct widget *w) {
-  if (timerwidgets) {
-    if (w==timerwidgets) {
-      timerwidgets = w->tnext;
-    }
-    else {
-      struct widget *p = timerwidgets;
-      while (p->tnext)
-	if (p->tnext == w) {
-	  /* Take us out */
-	  p->tnext = w->tnext;
-	  break;
-	}
-	else
-	  p = p->tnext;
-    }
-  }
-}
-
 void widget_remove(struct widget *w) {
   struct divnode *sub_end;  
   handle hw;
@@ -338,14 +285,7 @@ void widget_remove(struct widget *w) {
   DBG("%p\n",w);
 
   /* Get out of the timer list */
-  remove_from_timerlist(w);
-  
-  /* Get rid of any pointers we have to it */
-  if (w==under) under = NULL;
-  if (w==lastclicked) lastclicked = NULL;
-  if (w==prev_under) prev_under = NULL;
-  if (w==capture) capture = NULL;
-  if (w==kbdfocus) kbdfocus = NULL;
+  remove_timer(w);
   
   /* Remove inner widgets if it can be done safely
      (only remove if they have handles) */
@@ -429,6 +369,7 @@ void widget_remove(struct widget *w) {
 g_error inline widget_set(struct widget *w, int property, glob data) {
    g_error e;
    char *str;
+   struct divnode *maindiv = w->in->div ? w->in->div : w->in;
    
    if (!(w && w->def->set))
      return mkerror(PG_ERRT_BADPARAM,23);   /* Bad widget in widget_set */
@@ -529,13 +470,13 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
 	data = 0;
       if (data > w->in->cw-w->in->w)
 	data = w->in->cw-w->in->w;
-      if (w->in->div->tx != -data) {
-	w->in->div->tx = -data;
-	w->in->div->flags |= DIVNODE_SCROLL_ONLY;
+      if (maindiv->tx != -data) {
+	maindiv->tx = -data;
+	maindiv->flags |= DIVNODE_SCROLL_ONLY;
 	w->dt->flags |= DIVTREE_NEED_REDRAW;
 	hotspot_free();
       }
-      w->in->div->flags |= DIVNODE_DIVSCROLL | DIVNODE_EXTEND_HEIGHT;
+      maindiv->flags |= DIVNODE_DIVSCROLL | DIVNODE_EXTEND_HEIGHT;
       break;
 
     case PG_WP_SCROLL_Y:
@@ -543,14 +484,14 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
 	data = w->in->ch-w->in->h;
       if (data < 0)
 	data = 0;
-      DBG("PG_WP_SCROLL_Y: ty = %d, data = %d\n",w->in->div->ty, (int)data);
-      if (w->in->div->ty != -data) {
-	w->in->div->ty = -data;
-	w->in->div->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_NEED_RECALC;
+      DBG("PG_WP_SCROLL_Y: ty = %d, data = %d\n",maindiv->ty, (int)data);
+      if (maindiv->ty != -data) {
+	maindiv->ty = -data;
+	maindiv->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_NEED_RECALC;
 	w->dt->flags |= DIVTREE_NEED_REDRAW;
 	hotspot_free();
       }
-      w->in->div->flags |= DIVNODE_DIVSCROLL | DIVNODE_EXTEND_HEIGHT;
+      maindiv->flags |= DIVNODE_DIVSCROLL | DIVNODE_EXTEND_HEIGHT;
       break;
 
     case PG_WP_NAME:
@@ -568,7 +509,7 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
      break;
 
    case PG_WP_THOBJ:
-     w->in->div->state = data;
+     maindiv->state = data;
      resizewidget(w);
      w->in->flags |= DIVNODE_NEED_RECALC;
      w->dt->flags |= DIVTREE_NEED_RECALC;
@@ -604,6 +545,8 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
 }
 
 glob widget_get(struct widget *w, int property) {
+   struct divnode *maindiv = w->in->div ? w->in->div : w->in;
+  
    if (!(w && w->def->get))
      return 0;
    
@@ -613,25 +556,25 @@ glob widget_get(struct widget *w, int property) {
    case PG_WP_ABSOLUTEX:      /* Absolute coordinates */
      activate_client_divnodes(w->owner);
      divtree_size_and_calc(w->dt);
-     return w->in->div->x;
+     return maindiv->x;
    case PG_WP_ABSOLUTEY:
      activate_client_divnodes(w->owner);
      divtree_size_and_calc(w->dt);
-     return w->in->div->y;
+     return maindiv->y;
 
    case PG_WP_WIDTH:          /* Real width and height */
      activate_client_divnodes(w->owner);
      divtree_size_and_calc(w->dt);
-     return w->in->div->calcw;
+     return maindiv->calcw;
    case PG_WP_HEIGHT:
      activate_client_divnodes(w->owner);
      divtree_size_and_calc(w->dt);
-     return w->in->div->calch;
+     return maindiv->calch;
      
    case PG_WP_SCROLL_X:
-     return -w->in->div->tx;
+     return -maindiv->tx;
    case PG_WP_SCROLL_Y:
-     return -w->in->div->ty;
+     return -maindiv->ty;
      
    case PG_WP_SIDE:
      return w->in->flags & (~SIDEMASK);
@@ -646,7 +589,7 @@ glob widget_get(struct widget *w, int property) {
      return w->publicbox;
 
    case PG_WP_STATE:
-     return w->in->div->state;
+     return maindiv->state;
      
    case PG_WP_BIND:
      return w->scrollbind;
@@ -656,11 +599,11 @@ glob widget_get(struct widget *w, int property) {
 
    case PG_WP_PREFERRED_W:
      resizewidget(w);
-     return max(w->in->div->pw, w->in->div->cw);
+     return max(maindiv->pw, maindiv->cw);
 
    case PG_WP_PREFERRED_H:
      resizewidget(w);
-     return max(w->in->div->ph, w->in->div->ch);
+     return max(maindiv->ph, maindiv->ch);
 
    case PG_WP_AUTO_ORIENTATION:
      return w->auto_orientation;
@@ -692,544 +635,6 @@ void redraw_bg(struct widget *self) {
   if ( container->dt ) container->dt->flags |= DIVTREE_NEED_REDRAW;
 }
 
-/***** Trigger stuff **/
-
-/* This is called to reinit the cursor handling when a layer is
-   popped from the dtstack
-*/
-void reset_widget_pointers(void) {
-  lastclicked = under = prev_under = capture = NULL;
-}
-
-/*
-   Set a timer.  At the time, in ticks, specified by 'time',
-   the widget will recieve a PG_TRIGGER_TIMER
-*/
-void install_timer(struct widget *self,u32 interval) {
-  struct widget *w;
-
-  /* Remove old links */
-  remove_from_timerlist(self);
-
-  self->time = getticks() + interval;
-
-  /* Stick it in the sorted timerwidgets list */
-  if (timerwidgets && (timerwidgets->time < self->time)) {
-    /* Find a place to insert it */
-
-    w = timerwidgets;
-    while (w->tnext && (w->tnext->time < self->time)) 
-      w = w->tnext;
-
-    /* Stick it in! */
-    self->tnext = w->tnext;
-    w->tnext = self;
-  }
-  else {
-    /* The list is empty, or the new timer needs to go
-       before everything else in the list */
-
-    self->tnext = timerwidgets;
-    timerwidgets = self;
-  }
-}
-
-/* Trigger and remove the next timer trigger */
-void inline trigger_timer(void) {
-  struct widget *w;
-
-
-  /* Verify that the trigger is actually due.
-   * The trigger might have been modified between
-   * now and when it was set.
-   */
-  if (timerwidgets && getticks()>=timerwidgets->time) {
-    /* Good. Take it off and trigger it */
-    w = timerwidgets;
-    timerwidgets = timerwidgets->tnext;
-
-    send_trigger(w,PG_TRIGGER_TIMER,NULL);
-  };
-}
-
-/*
-  A widget has requested focus... Send out the ACTIVATE and DEACTIVATE
-  triggers, and update necessary vars
-*/
-void request_focus(struct widget *self) {
-  /* Already focused? */
-  if (kbdfocus==self) return;
-
-  /* Deactivate the old widget, activate the new */
-  send_trigger(kbdfocus,PG_TRIGGER_DEACTIVATE,NULL);
-  kbdfocus = self;
-  appmgr_focus(appmgr_findapp(self));
-  send_trigger(self,PG_TRIGGER_ACTIVATE,NULL);
-
-  /* If the cursor isn't already within this widget, scroll it in
-   * and warp the cursor to it. This is important for
-   * correct navigation with hotspots.
-   */
-  if (self != under && self) {
-    s16 px,py;
-
-    /* Scroll in */
-    scroll_to_divnode(self->in->div);
-    
-    /* Pointer warp */
-    divnode_hotspot_position(self->in->div,&px,&py);
-    VID(coord_physicalize)(&px,&py);
-    dispatch_pointing(PG_TRIGGER_MOVE,px,py,0);
-    drivermessage(PGDM_CURSORVISIBLE,1,NULL);
-  }
-}
-
-/*
-   Finds the topmost interactive widget under the (x,y) coords.
-   Recursive. On first call, div should be set
-   to dts->top->head
-   NULL if nothing found.
-   div_under_crsr should be set to NULL ahead of time, afterwards it is the
-   result.
-*/
-void widgetunder(int x,int y,struct divnode *div) {
-  if (!div) return;
-  if ( ((!((div->flags & DIVNODE_DIVSCROLL) && div->divscroll)) ||
-	( div->divscroll->calcx<=x && div->divscroll->calcy<=y &&
-	  (div->divscroll->calcx+div->divscroll->calcw)>x &&
-	  (div->divscroll->calcy+div->divscroll->calch)>y )) &&
-       div->x<=x && div->y<=y && (div->x+div->w)>x && (div->y+div->h)>y) {
-
-    /* The cursor is inside this divnode */
-    
-    /* If this divnode has an interactive widget as its owner, and it
-     * is visible, store it in div_under_crsr */
-    if (div->owner && div->owner->trigger_mask && (div->grop || div->build))
-      div_under_crsr = div;
-
-    /* Always store the deepest match in here */
-    deepest_div_under_crsr = div;
-
-    /* Check this divnode's children */
-    widgetunder(x,y,div->next);
-    widgetunder(x,y,div->div);
-  }
-}
-
-/* Internal function that sends a trigger to a widget if it accepts it. */
-int send_trigger(struct widget *w, s32 type,
-			 union trigparam *param) {
-  if (w && w->def && w->def->trigger &&
-      (w->trigger_mask & type)) {
-    (*w->def->trigger)(w,type,param);
-    return 1;
-  }
-  return 0;
-}
-
-/* Sends a trigger to all of a widget's children */
-void r_send_trigger(struct widget *w, s32 type,
-		    union trigparam *param, u16 *stop,int forward) {
-  struct widget *bar;
-  
-  if (!w || (*stop) > 0)
-    return;
-  send_trigger(w,type,param);
-  
-  /* Also traverse the panelbar if there is one */
-  if (!iserror(rdhandle((void**)&bar, PG_TYPE_WIDGET, w->owner, 
-			widget_get(w,PG_WP_PANELBAR))) && bar) {
-    r_send_trigger(bar, type, param, stop,0);
-    if ((*stop) > 0)
-      return;
-  }
-  
-  r_send_trigger(widget_traverse(w,PG_TRAVERSE_CHILDREN,0),type,param,stop,1);
-  if (forward)
-    r_send_trigger(widget_traverse(w,PG_TRAVERSE_FORWARD,1),type,param,stop,1);
-}
-
-void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
-  union trigparam param;
-  s16 physx,physy;
-  memset(&param,0,sizeof(param));
-
-  if (disable_input)
-    return;
-
-  /* See if the video driver wants it instead */
-  if (vid->pointing_event_hook(&type, &x, &y, &btn))
-    return;
-
-  inactivity_reset();
-
-  if (type == PG_TRIGGER_DOWN &&
-      get_param_int("sound","click",0))
-    drivermessage(PGDM_SOUNDFX,PG_SND_KEYCLICK,NULL);
-
-  /* Convert coordinates from physical to logical */
-  physx = x;
-  physy = y;
-  VID(coord_logicalize) (&x,&y);
-
-  /* If this is a button up/down event and we're not already at the
-   * specified coordinates, move there. This is almost completely unnecessary
-   * for mice, but a must with touchscreens!
-   */
-  if ( (type == PG_TRIGGER_DOWN || type == PG_TRIGGER_UP) &&
-       (x != cursor->x || y != cursor->y) )
-    dispatch_pointing(PG_TRIGGER_MOVE,physx,physy,prev_btn);
-   
-  param.mouse.x = x;
-  param.mouse.y = y;
-  param.mouse.btn = btn;
-  param.mouse.chbtn = btn ^ prev_btn;
-  prev_btn = btn;
-
-#ifdef DEBUG_EVENT
-  printf("Pointing event: 0x%08X (%d,%d) %d\n",type,x,y,btn);
-#endif
-
-  /* Update the cursor */
-  cursor->x = x;
-  cursor->y = y;
-  if (!events_pending())
-    VID(sprite_update) (cursor);
-
-  /* Selfish apps that don't like using widgets can just steal the pointing
-     device for themselves.  Probably not something a word processor would
-     want to do.  Probably for games.
-  */
-  if (pointer_owner) {
-    int evt=0;
-    switch (type) {
-    case PG_TRIGGER_MOVE:
-      evt = PG_NWE_PNTR_MOVE;
-      break;
-    case PG_TRIGGER_UP:
-      evt = PG_NWE_PNTR_UP;
-      break;
-    case PG_TRIGGER_DOWN:
-      evt = PG_NWE_PNTR_DOWN;
-      break;
-    }
-    if (evt)
-      /* Squeeze all the mouse params into a long, as follows.
-	 Note that if PicoGUI is to support screens bigger than
-	 4096x4096 this won't work!
-	 
-	 Bits 31-28:  buttons
-	 Bits 27-24:  changed buttons
-	 Bits 23-12:  Y
-	 Bits 11-0 :  X
-      */
-      post_event(evt,NULL,
-		 (param.mouse.btn << 28) |
-		 (param.mouse.chbtn << 24) |
-		 (param.mouse.y << 12) |
-		 param.mouse.x,
-		 pointer_owner,NULL);
-    return;
-  }
-
-  if (!(dts && dts->top && dts->top->head)) {
-#ifdef DEBUG_EVENT
-    printf("Pointer event with invalid tree\n");
-#endif
-    return;   /* Without a valid tree, pointer events are meaningless */
-  }
-
-  div_under_crsr = NULL;
-  deepest_div_under_crsr = NULL;
-  
-  /* If we need to worry about toolbars under the popup boxes, pass events
-     occurring in the toolbar area to the root divtree */
-  if (popup_toolbar_passthrough()) {
-    struct divnode *ntb = appmgr_nontoolbar_area();
-
-    if (x < ntb->x ||
-	y < ntb->y ||
-	x >= ntb->x+ntb->w ||
-	y >= ntb->y+ntb->h) {
-      
-      /* Get a widget from the bottom layer, with the toolbars */
-      widgetunder(x,y,dts->root->head);
-    }
-    else
-      widgetunder(x,y,dts->top->head);
-  }
-  else
-    widgetunder(x,y,dts->top->head);
-
-  if (div_under_crsr) {
-    int release_captured = 0;
-
-    under = div_under_crsr->owner;
-    
-    /* Keep track of the most recently clicked widget */
-    if (type==PG_TRIGGER_DOWN) {
-      lastclicked = under;
-      
-      /* Also, allow clicks to focus applications */
-      appmgr_focus(appmgr_findapp(under));
-    }
-
-    if ((!(btn & capturebtn)) && capture && (capture!=under)) {
-      release_captured = send_trigger(capture,PG_TRIGGER_RELEASE,&param);
-      capture = NULL;
-    }
-
-    /* First send the 'raw' event, then handle the cooked ones. */
-    if (!release_captured)
-      send_trigger(under,type,&param);
-
-    if (type==PG_TRIGGER_DOWN && !capture) {
-      capture = under;
-      capturebtn = param.mouse.chbtn;
-    }
-
-  }
-  else {
-    under = NULL;
-    if ((!(btn & capturebtn)) && capture) {
-      send_trigger(capture,PG_TRIGGER_RELEASE,&param);
-      capture = NULL;
-    }
-  }
-
-  if (under!=prev_under) {
-    /* Mouse has moved over a different widget */
-    send_trigger(under,PG_TRIGGER_ENTER,&param);
-    send_trigger(prev_under,PG_TRIGGER_LEAVE,&param);
-    prev_under = under;
-  }
-
-  /* If a captured widget accepts PG_TRIGGER_DRAG, send it even when the
-     mouse is outside its divnodes. */
-  if (type == PG_TRIGGER_MOVE && capture)
-    send_trigger(capture,PG_TRIGGER_DRAG,&param);
-}
-
-/* Update which widget/divnode the mouse is inside, etc, when the divtree changes */
-void update_pointing(void) {
-  /* For now the easiest way to do this is send a fake mouse 
-   * move event to the current location 
-   */
-  s16 x = cursor->x;
-  s16 y = cursor->y;
-  VID(coord_physicalize) (&x,&y);
-  dispatch_pointing(PG_TRIGGER_MOVE,x,y,prev_btn);
-}
-
-/* Iterator for dispatching a key to all widgets */
-struct send_trigger_iterator_data {
-  union trigparam *param;
-  u32 type;
-};
-g_error send_trigger_iterator(void **obj, void *extra) {
-  struct send_trigger_iterator_data *data = (struct send_trigger_iterator_data *) extra;
-  struct widget *w = *((struct widget **) obj);
-
-  if (!data->param->kbd.consume)
-    send_trigger(w, data->type, data->param);
-
-  return success;
-}
-
-
-void dispatch_key(u32 type,s16 key,s16 mods) {
-  struct widget *p;
-  struct app_info **app;
-  struct app_info *ap;
-  union trigparam param;
-  s32 keycode = (mods<<16) | key;     /* Combines mods and the key */
-  int kflags;
-  struct divtree *dt;
-
-#ifdef DEBUG_INPUT
-  printf(__FUNCTION__": type = %d, key = %d, mods = %d\n", type, key, mods);
-#endif
-
-  if (disable_input)
-    return;
-
-  /* See if the video driver wants it instead */
-  if (vid->key_event_hook(&type, &key, &mods))
-    return;
-
-  inactivity_reset();
-
-  /* For rotating arrow keys along with the rest of PicoGUI */
-  VID(coord_keyrotate)(&key);
-
-  if (type == PG_TRIGGER_KEYDOWN &&
-      get_param_int("sound","keyclick",0))
-    drivermessage(PGDM_SOUNDFX,PG_SND_KEYCLICK,NULL);
-
-  /* First, process magic 'double bucky' keys */
-  if (type==PG_TRIGGER_KEYDOWN && (mods & PGMOD_CTRL) && (mods & PGMOD_ALT))
-    magic_button(key);
-
-#ifdef DEBUG_EVENT
-  printf("Keyboard event: 0x%08X (#%d, '%c') mod:0x%08X\n",type,key,key,mods);
-#endif
-
-  /* The user can optionally double-press escape to suspend the device */
-#ifdef CONFIG_SUSPEND_DBLESC
-  if (last_pressed_key==PGKEY_ESCAPE && type==PG_TRIGGER_KEYDOWN && key==PGKEY_ESCAPE)
-    drivermessage(PGDM_POWER, PG_POWER_SLEEP, NULL);
-#endif
-
-  /* Store the last character event sent */
-  switch (type) {
-  case PG_TRIGGER_CHAR:
-    last_char_key = key;
-    break;
-  case PG_TRIGGER_KEYDOWN:
-    last_pressed_key = key;
-    break;
-  }
-
-  /* If the keyboard has been captured by a client, redirect everything
-     to them.  This would seem a bit selfish of the client to want ALL
-     keyboard input, but programs like games and kiosks are traditionally
-     very selfish and always dislike however the operating system or GUI
-     might handle the hardware.
-     Well, I guess this is for games, then.
-  */
-  if (keyboard_owner) {
-    int evt=0;
-    switch (type) {
-    case PG_TRIGGER_CHAR:
-      evt = PG_NWE_KBD_CHAR;
-      break;
-    case PG_TRIGGER_KEYUP:
-      evt = PG_NWE_KBD_KEYUP;
-      break;
-    case PG_TRIGGER_KEYDOWN:
-      evt = PG_NWE_KBD_KEYDOWN;
-      break;
-    }
-    if (evt)
-      /* Pack the mods into the high word and the key into the
-	 low word.
-      */
-      post_event(evt,NULL,(type==PG_TRIGGER_CHAR) ? key : keycode,keyboard_owner,NULL);
-    return;
-  }
-
-  /* Ignore CHAR events for keys modified by ALT or CTRL */
-  if (type == PG_TRIGGER_CHAR && (mods & (PGMOD_ALT | PGMOD_CTRL))) return;
-
-  /* This event gets propagated until 'consume' is > 0 */
-  param.kbd.key     = key;
-  param.kbd.mods    = mods;
-  param.kbd.consume = 0;
-  param.kbd.flags   = 0;
-
-  /*
-   *  Now for the fun part... propagating this event to all the widgets.
-   *  It will eventually end up at all the widgets, but the order is
-   *  important. What seemed to make the most sense for PicoGUI was:
-   *
-   *   1. focused widget
-   *   2. focused widget's children
-   *   3. focused widget's ancestors (within one root widget)
-   *   4. all popup widgets and their children, from top to bottom
-   *   5. all root widgets and their children, in decreasing pseudo-z-order
-   *   6. all widgets (to handle unattached widgets)
-   *
-   *  Since PicoGUI doesn't have a real z-order for root widgets, the
-   *  order will determined by how recently the root widget had a 
-   *  focused child widget. 
-   */
-
-  /* Let widgets know we're starting a new propagation */
-  {
-    struct send_trigger_iterator_data data;
-    data.param = &param;
-    data.type = PG_TRIGGER_KEY_START;
-    param.kbd.flags = PG_KF_ALWAYS;
-    handle_iterate(PG_TYPE_WIDGET,send_trigger_iterator,&data);
-  }
-
-  if (kbdfocus) {
-    kflags = PG_KF_ALWAYS;
-
-    /* Is the focused widget in the topmost app?
-     */
-    app = appmgr_findapp(kbdfocus);
-    if (app && (*app)==applist)
-      kflags |= PG_KF_APP_TOPMOST;
-
-    /* 1. focused widget 
-     */
-    param.kbd.flags = kflags | PG_KF_FOCUSED;
-    send_trigger(kbdfocus,type,&param);
-    if (param.kbd.consume > 0)
-      return;
-    
-    /* 2. focused widget's children
-     */
-    param.kbd.flags = kflags | PG_KF_CONTAINER_FOCUSED;
-    r_send_trigger(widget_traverse(kbdfocus,PG_TRAVERSE_CHILDREN,0),
-		   type, &param, &param.kbd.consume, 1);
-    if (param.kbd.consume > 0)
-      return;    
-    
-    /* 3. focused widget's ancestors
-     */
-    p = kbdfocus;
-    param.kbd.flags = kflags | PG_KF_CHILD_FOCUSED;
-    while ((p = widget_traverse(p, PG_TRAVERSE_CONTAINER, 1))) {
-      send_trigger(p,type,&param);
-      if (param.kbd.consume > 0)
-	return;
-    }
-  }
-
-  /* 4. Popup widgets and their children
-   */
-  param.kbd.flags = PG_KF_ALWAYS;  
-  for (dt=dts->top;dt && dt!=dts->root;dt=dt->next) {
-    if (dt->head->next)
-      r_send_trigger(dt->head->next->owner, type, &param, &param.kbd.consume, 0);
-    if (param.kbd.consume > 0)
-      return;    
-  }
-
-  /* 5. Other root widgets and their children 
-   */
-  param.kbd.flags = PG_KF_ALWAYS | PG_KF_APP_TOPMOST;
-  for (ap=applist;ap;ap=ap->next) {
-    if (iserror(rdhandle((void**)&p,PG_TYPE_WIDGET,ap->owner,ap->rootw)))
-      continue;
-
-    r_send_trigger(p, type, &param, &param.kbd.consume, 0);
-    if (param.kbd.consume > 0)
-      return;
-
-    param.kbd.flags &= ~PG_KF_APP_TOPMOST;
-  }
-
-  /* 6. Any widget
-   */
-  {
-    struct send_trigger_iterator_data data;
-    data.param = &param;
-    data.type = type;
-    param.kbd.flags = PG_KF_ALWAYS;
-    handle_iterate(PG_TYPE_WIDGET,send_trigger_iterator,&data);
-    if (param.kbd.consume > 0)
-      return;
-  }
-    
-  /* If none of the widgets have consumed the event, 
-   * give the global hotkeys a chance
-   */
-  global_hotkey(key,mods,type);
-}
- 
 void resizewidget(struct widget *w) {
   /* FIXME: only resize when the size actually changes? 
    */
@@ -1250,80 +655,6 @@ void resizeall(void) {
   
   for (tree=dts->top;tree;tree=tree->next)
     tree->flags |= DIVTREE_NEED_RESIZE;
-}
-
-/* Global hotkeys, and a function to load them */
-u16 hotkey_left, hotkey_right, hotkey_up, hotkey_down;
-u16 hotkey_activate, hotkey_next;
-void reload_hotkeys(void) {
-  hotkey_left     = theme_lookup(PGTH_O_DEFAULT,PGTH_P_HOTKEY_LEFT);
-  hotkey_right    = theme_lookup(PGTH_O_DEFAULT,PGTH_P_HOTKEY_RIGHT);
-  hotkey_up       = theme_lookup(PGTH_O_DEFAULT,PGTH_P_HOTKEY_UP);
-  hotkey_down     = theme_lookup(PGTH_O_DEFAULT,PGTH_P_HOTKEY_DOWN);
-  hotkey_activate = theme_lookup(PGTH_O_DEFAULT,PGTH_P_HOTKEY_ACTIVATE);
-  hotkey_next     = theme_lookup(PGTH_O_DEFAULT,PGTH_P_HOTKEY_NEXT);
-}
-
-/* Check for global hotkeys, like those used to move between widgets.
- * Widgets that can be focused (this includes widgets with hotspots)
- * should send unused keys here.
- */
-void global_hotkey(u16 key,u16 mods, u32 type) {
-
-#ifdef DEBUG_INPUT
-   printf(__FUNCTION__": Enter\n");
-#endif
-  if (type == PG_TRIGGER_KEYDOWN) {
-
-#ifdef DEBUG_INPUT
-     printf(__FUNCTION__": type == PG_TRIGGER_KEYDOWN\n");
-#endif
-    if (!(mods & ~(PGMOD_CAPS|PGMOD_NUM))) {
-      /* Key down, no modifiers */
-
-      if (key == hotkey_next)
-	hotspot_traverse(HOTSPOT_NEXT);
-      else if (key == hotkey_up)
-	hotspot_traverse(HOTSPOT_UP);
-      else if (key == hotkey_down)
-	hotspot_traverse(HOTSPOT_DOWN);
-      else if (key == hotkey_left)
-	hotspot_traverse(HOTSPOT_LEFT);
-      else if (key == hotkey_right)
-	hotspot_traverse(HOTSPOT_RIGHT);
-
-      else if (key == PGKEY_ALPHA) {
-	/* Nifty table for looking up the next alpha character. To find the
-	 * next character in the rotation, look up the first occurance of the
-	 * existing character, and the next character in the string is the
-	 * character to replace it with.
-	 */
-	const char *alphatab = errortext(mkerror(0,3));  /* Error 3 is the table */
-	const char *p;
-
-	if (last_char_key > 255)
-	  return;
-	p = strchr(alphatab,last_char_key);
-	if (!p)
-	  return;
-	p++;
-
-	/* The new character is in '*p' now. Simulate a backspace and the
-	 * new character.
-	 */
-	dispatch_key(PG_TRIGGER_CHAR,PGKEY_BACKSPACE,0);
-	dispatch_key(PG_TRIGGER_CHAR,*p,0);
-      }
-
-    }
-    
-    else if (!(mods & ~(PGMOD_CAPS|PGMOD_NUM|PGMOD_SHIFT))) {
-      /* Key down with shift */
-
-      if (key == hotkey_next)
-	hotspot_traverse(HOTSPOT_PREV);
-    }
-  } 
 }
 
 /* Traverse to other widgets in a given direction (PG_TRAVERSE_*) */
@@ -1413,14 +744,32 @@ struct widget *widget_traverse(struct widget *w, int direction, int count) {
 }
 
 
-
 /* Set flags to rebuild a widget on the next update,
- * Assumes that w->in->div is the visible divnode.
  */
 void set_widget_rebuild(struct widget *w) {
-  w->in->div->flags |= DIVNODE_NEED_REBUILD;
+  struct divnode *maindiv = w->in->div ? w->in->div : w->in;
+
+  maindiv->flags |= DIVNODE_NEED_REBUILD;
   w->dt->flags |= DIVTREE_NEED_RECALC;
 }
+
+/* Set the number of cursors occupying the widget, and send any appropriate
+ * triggers due to the change.
+ */
+void widget_set_numcursors(struct widget *self, int num) {
+  /* Don't let our puny little u8 roll over if something else fucks up */
+  if (num < 0)
+    num = 0;
+
+  if (self->numcursors && !num)
+    send_trigger(self,PG_TRIGGER_LEAVE,NULL);
+
+  if (!self->numcursors && num)
+    send_trigger(self,PG_TRIGGER_ENTER,NULL);  
+
+  self->numcursors = num;
+}
+
 /* The End */
 
 

@@ -396,14 +396,14 @@ static int ttykb_fd_activate(int fd)
 
                 /* Is it printable */
                 if ( (curkey >= 0x20) && (curkey <= 0x7e) ) 
-                        dispatch_key(PG_TRIGGER_CHAR, mappedKey, 0);
+                        infilter_send_key(PG_TRIGGER_CHAR, mappedKey, 0);
 
                 /* FIXME: PG_TRIGGER_KEYUP is not implemented yet, but we
                  * at least need this so that hotkeys work correctly. 
                  * This needs to respond to a few keys PG_TRIGGER_CHAR 
                  * does not, like the arrow keys */
-                dispatch_key(PG_TRIGGER_KEYDOWN, mappedKey, 0);
-                dispatch_key(PG_TRIGGER_KEYUP, mappedKey, 0);
+                infilter_send_key(PG_TRIGGER_KEYDOWN, mappedKey, 0);
+                infilter_send_key(PG_TRIGGER_KEYUP, mappedKey, 0);
 
                 return 1;
         } /* end if */

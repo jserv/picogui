@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.33 2002/06/17 20:02:18 micahjd Exp $
+/* $Id: netcore.c,v 1.34 2002/07/03 22:03:26 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -574,6 +574,7 @@ void _pg_getresponse(int eventwait) {
 	 
 	 /* Transfer extra data */
        case PG_EVENTCODING_DATA:   
+
 	 _pg_return.e.event.e.data.size = pg_ev.param;      
 	 if (!(_pg_return.e.event.e.data.pointer = 
 	       _pg_malloc(_pg_return.e.event.e.data.size+1)))
@@ -583,7 +584,20 @@ void _pg_getresponse(int eventwait) {
 	   return;
 	 /* Add a null terminator */
 	 ((char *)_pg_return.e.event.e.data.pointer)
-	     [_pg_return.e.event.e.data.size] = 0;
+	   [_pg_return.e.event.e.data.size] = 0;
+
+	 /* If this was a valid PG_NWE_INFILTER event, stick the data in its place */
+	 if (pg_ev.param == sizeof(union pg_client_trigger) && 
+	     _pg_return.e.event.type == PG_NWE_INFILTER) {
+	   int i;
+
+	   _pg_return.e.event.e.data.trigger = (union pg_client_trigger*) _pg_return.e.event.e.data.pointer;
+	   
+	   for (i=0;i<(sizeof(_pg_return.e.event.e.data.trigger->array)/
+		       sizeof(_pg_return.e.event.e.data.trigger->array[0]));i++)
+	     _pg_return.e.event.e.data.trigger->array[i] = ntohl(_pg_return.e.event.e.data.trigger->array[i]);
+	 }
+
 	 break;
 
 	 /* Decode keyboard event */
@@ -852,7 +866,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.33 2002/06/17 20:02:18 micahjd Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.34 2002/07/03 22:03:26 micahjd Exp $\n");
 	exit(1);
       }
 

@@ -22,12 +22,13 @@ $(DOCNAME).rtf: $(DOCNAME).sgml
 	db2rtf $(DOCNAME).sgml
 
 $(DOCNAME).html: $(DOCNAME).sgml
-	db2html --nochunks $(DOCNAME).sgml | grep -v "output is pgui-protocol" | egrep -v "^Using catalogs:" | egrep -v "^Using stylesheet:" | egrep -v "Working on:" > $(DOCNAME).html
-	rm -rf $(DOCNAME).junk
+	db2html --nochunks $(DOCNAME).sgml
+	mv $(DOCNAME)/$(DOCNAME).html .
+	rm -rf $(DOCNAME) $(DOCNAME).junk
 
 html: $(DOCNAME).sgml
 	db2html $(DOCNAME).sgml
 	rm -rf $(DOCNAME).junk
 
 clean:
-	rm -rf *.pdf *.dvi *.rtf *.ps *.html $(DOCNAME)
+	rm -rf *.pdf *.dvi *.rtf *.ps *.html $(DOCNAME) $(DOCNAME).junk

@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.86 2002/05/22 09:26:30 micahjd Exp $
+/* $Id: client_c.h,v 1.87 2002/07/03 22:03:25 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -129,6 +129,9 @@ struct pgEvent {
 	 /*! Allocated and freed by the client library. It is only valid
 	  * until the event handler returns or the client calls pgGetEvent */
 	 char *pointer; 
+
+	 //! Client-side representation of a pgserver trigger, for client-side input filters
+	 union pg_client_trigger *trigger;
       } data;
       
    } e;
@@ -476,49 +479,6 @@ void pgRegisterOwner(int resource);
 void pgUnregisterOwner(int resource);
 
 /*!
- * \brief Simulate keyboard input remotely
- * 
- * \param type A PG_TRIGGER_* constant (see below)
- * \param key Either a PGKEY_* constant or an ASCII/Unicode value (see below)
- * \param mods Always a set of zero or more PGMOD_* constants or'ed together
- * 
- * This function can be used by networked input drivers or otherwise to simulate
- * keyboard input. To effectively do so, the client needs to send three types
- * of triggers:
- * 
- *  - PG_TRIGGER_KEYDOWN when the key is pressed, setting \p key to the PGKEY_* constant
- *    for the key
- *  - PG_TRIGGER_KEYUP when the key is released, also using a PGKEY_* constant
- *  - PG_TRIGGER_CHAR when the key is pressed, only if it is translatable to an Ascii/Unicode value.
- *    \p key should be set to this translated value taking all modifiers into account. This trigger
- *    may be repeated to implement keyboard autorepeat.
- * 
- * \sa pgSendPointerInput
- */
-void pgSendKeyInput(u32 type,u16 key,
-		    u16 mods);
-
-/*!
- * \brief Simulate pointing device input remotely
- * 
- * \param type A PG_TRIGGER_* constant (see below)
- * \param x Horizontal coordinate of the pointing device, in the physical coordinate system. Not affected by rotation.
- * \param y Vertical coordinate
- * \param btn Bitmask of currently pressed mouse buttons. The left button is the least significant bit.
- *
- * This function can be used by networked input drivers or otherwise to simulate pointing device input.
- * The following are legal trigger types:
- * 
- *  - PG_TRIGGER_UP: Mouse button or stylus up
- *  - PG_TRIGGER_DOWN: Mouse button or stylus down
- *  - PG_TRIGGER_MOVE: Mouse movement or mouse/stylus dragging
- * 
- * \sa pgSendKeyInput
- */
-void pgSendPointerInput(u32 type, u16 x, u16 y,
-			u16 btn);
-
-/*!
  * \brief Change video mode at runtime
  * 
  * \param xres New horizontal resolution
@@ -806,6 +766,36 @@ pghandle pgTraverseWidget(pghandle widget, int direction, int count);
  * \sa pgNewPopupAt
  */
 pghandle pgNewPopup(int width,int height);
+
+/*!
+ * \brief Create a cursor that can be used for input filters
+ * \returns A handle to the cursor
+ *
+ * \sa pgInFilterSend
+ */
+pghandle pgNewCursor(void);
+
+/*!
+ * \brief Create a new client-side input filter
+ *
+ * \param insert_after This is the handle of the input filter to insert the new one after, or 0 to make this the first
+ * \param accept_trigs Mask of PG_TRIGGER_* constants for triggers to send in a PG_NWE_INFILTER event
+ * \param absorb_trigs Specifies a mask of triggers to prevent from automatically passing on to the next filter
+ *
+ * \returns A handle to the new input filter
+ *
+ * \sa pgNewCursor, pgInFilterSend
+ */
+pghandle pgNewInFilter(pghandle insert_after, u32 accept_trigs, u32 absorb_trigs);
+
+/*!
+ * \brief Send an event back from a client-side input filter
+ *
+ * \param trig Client-side trigger union, representing the event
+ *
+ * \sa pgNewCursor, pgNewInFilter
+ */
+void pgInFilterSend(union pg_client_trigger *trig);
 
 /*!
  * \brief Create a popup box at the specified position

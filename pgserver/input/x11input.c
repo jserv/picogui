@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.14 2002/05/22 10:01:20 micahjd Exp $
+/* $Id: x11input.c,v 1.15 2002/07/03 22:03:31 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -48,7 +48,7 @@ int x11_fd;                  /* X display's file descriptor */
 void (*x11_expose)(Region r);
 
 /* Some config options */
-int x11input_pgcursor;
+struct cursor *x11input_pgcursor;
 
 /* Keyboard translation utilities */
 void x11_translate_key(Display *display, XKeyEvent *xkey, KeyCode kc,
@@ -61,6 +61,8 @@ static s16 MISC_keymap[256];
 /******************************* Implementations */
 
 g_error x11input_init(null) {
+  g_error e;
+
   /* Get a file descriptor for the X11 display */
   if (!xdisplay)
     return mkerror(PG_ERRT_BADPARAM,36);   /* No matching video driver */
@@ -69,7 +71,10 @@ g_error x11input_init(null) {
   x11input_init_keymap();
   
   /* Store other config options */
-  x11input_pgcursor = get_param_int("input-x11","pgcursor",0);
+  if (get_param_int("input-x11","pgcursor",0)) {
+    e = cursor_new(&x11input_pgcursor,NULL,-1);
+    errorcheck;
+  }
 
   return success;
 }
@@ -127,24 +132,20 @@ int x11input_fd_activate(int fd) {
        */
 
     case MotionNotify:
-      dispatch_pointing(PG_TRIGGER_MOVE,ev.xmotion.x, ev.xmotion.y, 
-			ev.xmotion.state >> 8);
-      if (x11input_pgcursor)
-	drivermessage(PGDM_CURSORVISIBLE,1,NULL);
+      infilter_send_pointing(PG_TRIGGER_MOVE,ev.xmotion.x, ev.xmotion.y, 
+			     ev.xmotion.state >> 8, x11input_pgcursor);
       break;
 
     case ButtonPress:
-      dispatch_pointing(PG_TRIGGER_DOWN,ev.xbutton.x, ev.xbutton.y,
-			(ev.xbutton.state >> 8) | (1 << (ev.xbutton.button-1)));
-      if (x11input_pgcursor)
-	drivermessage(PGDM_CURSORVISIBLE,1,NULL);
+      infilter_send_pointing(G_TRIGGER_DOWN,ev.xbutton.x, ev.xbutton.y,
+			     (ev.xbutton.state >> 8) | (1 << (ev.xbutton.button-1)),
+			     x11input_pgcursor);
       break;
 
     case ButtonRelease:
-      dispatch_pointing(PG_TRIGGER_UP,ev.xbutton.x, ev.xbutton.y,
-			(ev.xbutton.state >> 8) & (~(1 << (ev.xbutton.button-1))));
-      if (x11input_pgcursor)
-	drivermessage(PGDM_CURSORVISIBLE,1,NULL);
+      infilter_send_pointing(PG_TRIGGER_UP,ev.xbutton.x, ev.xbutton.y,
+			     (ev.xbutton.state >> 8) & (~(1 << (ev.xbutton.button-1))),
+			     x11input_pgcursor);
       break;
 
       /****************** Keyboard events
@@ -158,20 +159,20 @@ int x11input_fd_activate(int fd) {
     case KeyPress:
       x11_translate_key(xdisplay, &ev.xkey, ev.xkey.keycode, &sym, &mod, &chr);
       if (sym)
-	dispatch_key(PG_TRIGGER_KEYDOWN,sym,mod);
+	infilter_send_key(PG_TRIGGER_KEYDOWN,sym,mod);
       if (chr)
-	dispatch_key(PG_TRIGGER_CHAR,chr,mod);
+	infilter_send_key(PG_TRIGGER_CHAR,chr,mod);
       break;
 
     case KeyRelease:
       x11_translate_key(xdisplay, &ev.xkey, ev.xkey.keycode, &sym, &mod, &chr);
       if (x11_key_repeat(xdisplay, &ev)) {
 	if (chr)
-	  dispatch_key(PG_TRIGGER_CHAR,chr,mod);
+	  infilter_send_key(PG_TRIGGER_CHAR,chr,mod);
       }
       else {
 	if (sym)
-	  dispatch_key(PG_TRIGGER_KEYUP,sym,mod);
+	  infilter_send_key(PG_TRIGGER_KEYUP,sym,mod);
       }
       break;
 

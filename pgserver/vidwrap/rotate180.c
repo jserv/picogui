@@ -1,4 +1,4 @@
-/* $Id: rotate180.c,v 1.8 2002/03/15 14:57:03 micahjd Exp $
+/* $Id: rotate180.c,v 1.9 2002/07/03 22:03:32 micahjd Exp $
  *
  * rotate180.c - Video wrapper to rotate the screen 180 degrees
  *
@@ -67,7 +67,7 @@ void rotate180_fellipse(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,
    (*vid->bitmap_getsize)(dest,&dx,&dy);
    (*vid->fellipse)(dest,dx-x-w,dy-y-h,w,h,c,lgop);
 }
-void rotate180_coord_logicalize(s16 *x,s16 *y) {
+void rotate180_coord_logicalize(int *x,int *y) {
    *x = vid->xres-1-*x;
    *y = vid->yres-1-*y;
 }

@@ -1,0 +1,15 @@
+/* An example of how to do context-sensitive cursors */
+
+object default {
+  name = "Context-sensitive arrow cursor example";
+  cursorbitmap = LoadBitmap("data/goldcursor_small.png");
+  cursorbitmask = 0;
+}
+
+object background {
+  cursorbitmap = LoadBitmap("data/pg_initials_small.png");
+  crsrhotspot.x = 16;
+  crsrhotspot.y = 16;
+}
+
+object button cursorbitmap = LoadBitmap("data/goldcursor_small_bright.png");

@@ -1,4 +1,4 @@
-/* $Id: hotspot.h,v 1.5 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: hotspot.h,v 1.6 2002/07/03 22:03:29 micahjd Exp $
  *
  * pgserver/hotspot.h - This is an interface for managing hotspots.
  *                      The divtree is scanned for hotspot divnodes.
@@ -64,6 +64,9 @@ struct hotspot {
 /* Delete all hotspots */
 void hotspot_free(void);
 
+/* Hide the hotspot navigation cursor */
+void hotspot_hide(void);
+
 /* Add a new hotspot to the list, don't reconfigure graph */
 g_error hotspot_add(s16 x, s16 y, struct divnode *div);
 
@@ -95,7 +98,12 @@ void hotspot_traverse(short direction);
 void scroll_to_divnode(struct divnode *div);
 
 /* Return a preferred position for a hotspot within the specified divnode */
-void divnode_hotspot_position(struct divnode *div, s16 *hx, s16 *hy);
+void divnode_hotspot_position(struct divnode *div, int *hx, int *hy);
+
+/* Reloads global hotkey settings from the theme when it changes */
+void reload_hotkeys(void);
+extern u16 hotkey_left, hotkey_right, hotkey_up, hotkey_down;
+extern u16 hotkey_activate, hotkey_next;
 
 #endif /* __H_HOTSPOT */
 

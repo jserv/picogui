@@ -1,4 +1,4 @@
-/* $Id: tuxclient.c,v 1.3 2001/11/16 12:06:56 micahjd Exp $
+/* $Id: tuxclient.c,v 1.4 2002/07/03 22:03:25 micahjd Exp $
  *
  * tuxclient.c - Network interface to tuxphone
  *
@@ -88,6 +88,7 @@ void phone_dial(int fd, const char *number) {
 void phone_get_event(int fd) {
   static PKT_EVENT evt;
   static int hook_s = 1, hook_h = 1;
+  static union pg_client_trigger trig;
 
   recv(fd,&evt,sizeof(evt),0);
   if (ntohs(evt.header.opcode) == OPCODE_CLIENT_EVENT)
@@ -136,14 +137,18 @@ void phone_get_event(int fd) {
 
       /* Convert on-hook dialing into keyboard events */      
     case ONHOOK_DIAL_EVENT:
+      trig.content.u.kbd.key = evt.ohdial.key;
       if (ntohs(evt.ohdial.state)) {
 	/* Press */
-	pgSendKeyInput(PG_TRIGGER_KEYDOWN,evt.ohdial.key,0);
-	pgSendKeyInput(PG_TRIGGER_CHAR,evt.ohdial.key,0);
+	trig.content.type = PG_TRIGGER_KEYDOWN;
+	pgInFilterSend(&trig);
+	trig.content.type = PG_TRIGGER_CHAR;
+	pgInFilterSend(&trig);
       }
       else {
 	/* Release */
-	pgSendKeyInput(PG_TRIGGER_KEYUP,evt.ohdial.key,0);
+	trig.content.type = PG_TRIGGER_KEYDOWN;
+	pgInFilterSend(&trig);
       }
       break;
       

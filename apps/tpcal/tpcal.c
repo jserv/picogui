@@ -21,6 +21,8 @@
  *      converted to use picoGui libraries.
  *    Yann Vernier <yann@algonet.se> -
  *      pgserver changes to make tpcal useful, various other changes
+ *    Micah Dowty <micahjd@users.sourceforge.net>
+ *      updates for Input Filters support
  *     
  */
 #include <stdio.h>
@@ -155,6 +157,7 @@ POINT GetTarget(int n)
 void showTransformations(void)
 {
   char str[256];
+  union pg_client_trigger trig;
 
 #if 0
   CalcTransformationCoefficientsSimple(&cps, &tc);
@@ -171,7 +174,12 @@ void showTransformations(void)
   sprintf(str, "COEFFv1 %d %d %d %d %d %d %d",
 	 tc.a, tc.b, tc.c, tc.d, tc.e, tc.f, tc.s);
   DBG(("%s\n", str));
-  pgDriverMessage(PGDM_INPUT_SETCAL, pgNewString(str));
+
+  /* Send a new calibration to pgserver's calibration input filter */
+  memset(&trig,0,sizeof(trig));
+  trig.content.type = PG_TRIGGER_TS_CALIBRATE;
+  trig.content.u.mouse.ts_calibration = pgNewString(str);
+  pgInFilterSend(&trig);
 
   pgMessageDialogFmt("Done!",0,
 		     "You completed calibration!\n\n" 
@@ -215,62 +223,49 @@ int evtDrawTarget(struct pgEvent *evt) {
   return 0;
 }
 
-int evtPenUp(struct pgEvent *evt) {
-  if(current_target == total_targets) {
-    pgUnregisterOwner(PG_OWN_POINTER);
-    pgDriverMessage(PGDM_INPUT_CALEN, 0);
-    pgBind(PGBIND_ANY,PG_NWE_PNTR_DOWN,NULL,NULL);
-    pgBind(PGBIND_ANY,PG_NWE_PNTR_UP,NULL,NULL);
-    showTransformations();
-  }
-  return 0;
-}
-
-int evtPenPos(struct pgEvent *evt) {
-  struct penposdata {s32 x, y; unsigned char r;} *data=
-    (struct penposdata*)evt->e.data.pointer;
-
-  if(evt->e.data.size!=9)
-   {
-    fprintf(stderr, "Penpos packet size %ld, expected 9\n", evt->e.data.size);
-    pgDriverMessage(PGDM_INPUT_CALEN, 0);
-    exit(1);
-   }
-  penposition.x=htonl(data->x);
-  penposition.y=htonl(data->y);
-  rotation=((unsigned char*)evt->e.data.pointer)[8];
-  return 0;
-}
-
-int evtPenDown(struct pgEvent *evt) {
+int tpcalInFilter(struct pgEvent *evt) {
+  union pg_client_trigger *trig = evt->e.data.trigger;
   POINT hit;
   int target;
 
-  DBG((__FUNCTION__ " (x=%d,y=%d)\n",penposition.x,penposition.y));
+  penposition.x = trig->content.u.mouse.x;
+  penposition.y = trig->content.u.mouse.y;
 
-  if (pcp == 0)
-    return 0;
+  switch (trig->content.type) {
 
-  pcp->screen.x = current_target_location.x + xoffs;
-  pcp->screen.y = current_target_location.y + yoffs;
-  pcp->screen=coord_physicalize(pcp->screen);
-  hit.x = pcp->device.x = penposition.x;
-  hit.y = pcp->device.y = penposition.y;
-  target=current_target++;
+  case PG_TRIGGER_UP:
+    if(current_target == total_targets)
+      showTransformations();
+    break;
 
-  if(!CalcTransformationCoefficientsBest(&cps.center, &tc, current_target))
-   {
-    DBG(("Current target: %d\n", current_target));
-    hit=pentoscreen(hit, &tc);
-    coord_logicalize(hit);
-    hit.x-=xoffs;
-    hit.y-=yoffs;
-    DrawTarget(hit, 0x808080);
-   }
-  DrawTarget(current_target_location, 0xD0D0D0);
+  case PG_TRIGGER_DOWN:
 
-  evtDrawTarget(evt);
-
+    DBG((__FUNCTION__ " (x=%d,y=%d)\n",penposition.x,penposition.y));
+    
+    if (pcp == 0)
+      return 0;
+    
+    pcp->screen.x = current_target_location.x + xoffs;
+    pcp->screen.y = current_target_location.y + yoffs;
+    pcp->screen=coord_physicalize(pcp->screen);
+    hit.x = pcp->device.x = penposition.x;
+    hit.y = pcp->device.y = penposition.y;
+    target=current_target++;
+    
+    if(!CalcTransformationCoefficientsBest(&cps.center, &tc, current_target))
+      {
+	DBG(("Current target: %d\n", current_target));
+	hit=pentoscreen(hit, &tc);
+	coord_logicalize(hit);
+	hit.x-=xoffs;
+	hit.y-=yoffs;
+	DrawTarget(hit, 0x808080);
+      }
+    DrawTarget(current_target_location, 0xD0D0D0);
+    
+    evtDrawTarget(evt);
+    
+  }
   return 0;
 }
 
@@ -286,6 +281,39 @@ int main(int argc, char *argv[])
   physicalresolution.x=mi.xres;
   physicalresolution.y=mi.yres;
 
+  /* Figure out the server's rotation
+   */
+  rotation = mi.flags & PG_VID_ROTATEMASK;
+  switch (mi.flags & PG_VID_ROTBASEMASK) {
+
+  case PG_VID_ROTBASE90:
+    switch (rotation) {
+    case 0:                rotation = PG_VID_ROTATE90;  break;
+    case PG_VID_ROTATE90:  rotation = PG_VID_ROTATE180; break;
+    case PG_VID_ROTATE180: rotation = PG_VID_ROTATE270; break;
+    case PG_VID_ROTATE270: rotation = 0;                break;
+    }
+    break;
+
+  case PG_VID_ROTBASE180:
+    switch (rotation) {
+    case 0:                rotation = PG_VID_ROTATE180; break;
+    case PG_VID_ROTATE90:  rotation = PG_VID_ROTATE270; break;
+    case PG_VID_ROTATE180: rotation = 0;                break;
+    case PG_VID_ROTATE270: rotation = PG_VID_ROTATE90;  break;
+    }
+    break;
+
+  case PG_VID_ROTBASE270:
+    switch (rotation) {
+    case 0:                rotation = PG_VID_ROTATE270; break;
+    case PG_VID_ROTATE90:  rotation = 0;                break;
+    case PG_VID_ROTATE180: rotation = PG_VID_ROTATE90;  break;
+    case PG_VID_ROTATE270: rotation = PG_VID_ROTATE180; break;
+    }
+    break;
+  }
+
   pgNewPopup(mi.lxres, mi.lyres);
 
   pgLoadTheme(pgFromFile("calth.th"));
@@ -293,11 +321,16 @@ int main(int argc, char *argv[])
   wCanvas = pgNewWidget(PG_WIDGET_CANVAS,0,0);
   pgSetWidget(0, PG_WP_THOBJ, calth, 0);
   pgBind(PGDEFAULT,PG_WE_BUILD,&evtBuild,NULL);
-  pgBind(PGBIND_ANY,PG_NWE_PNTR_DOWN,&evtPenDown,NULL);
-  pgBind(PGBIND_ANY,PG_NWE_PNTR_UP,&evtPenUp,NULL);
-  pgBind(PGBIND_ANY,PG_NWE_CALIB_PENPOS,&evtPenPos,NULL);
-  pgRegisterOwner(PG_OWN_POINTER);
-  pgDriverMessage(PGDM_INPUT_CALEN, 1);
+
+  /* Set up an input filter to recieve events before they get to the
+   * touchscreen calibration input filter.
+   * This filter gets a copy of mouse up/down events, and all
+   * mouse-related events are absorbed.
+   */
+  pgNewInFilter(pgGetServerRes(PGRES_INFILTER_PNTR_NORMALIZE),
+		PG_TRIGGER_UP | PG_TRIGGER_DOWN,
+		PG_TRIGGERS_MOUSE);
+  pgBind(PGBIND_ANY, PG_NWE_INFILTER, tpcalInFilter, NULL);
 
   pgEventLoop();
 

@@ -1,4 +1,4 @@
-/* $Id: sdlgl_init.c,v 1.12 2002/03/26 03:12:35 instinc Exp $
+/* $Id: sdlgl_init.c,v 1.13 2002/07/03 22:03:31 micahjd Exp $
  *
  * sdlgl_init.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has initialization, shutdown, and registration.
@@ -67,6 +67,10 @@ g_error sdlgl_init(void) {
   }
 
   sscanf(get_param_str(GL_SECTION,"fps_interval","0.25"),"%f",&gl_global.fps_interval);
+
+  /* Load our input filter */
+  e = infilter_insert(&infilter_list, &gl_global.h_infilter, -1, &infilter_sdlgl);
+  errorcheck;
   
   /* Load a main input driver */
   return load_inlib(&sdlinput_regfunc,&inlib_main);
@@ -153,6 +157,9 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
 void sdlgl_close(void) {
   struct fontstyle_node *f;
 
+  if (gl_global.h_infilter)
+    handle_free(-1,gl_global.h_infilter);
+
   if (gl_global.display_rend) {
     g_free(gl_global.display_rend);
     gl_global.display_rend = NULL;
@@ -217,8 +224,6 @@ g_error sdlgl_regfunc(struct vidlib *v) {
   v->bitmap_new = &sdlgl_bitmap_new;
   v->bitmap_free = &sdlgl_bitmap_free;
   v->blit = &sdlgl_blit;
-  v->key_event_hook = &sdlgl_key_event_hook;
-  v->pointing_event_hook = &sdlgl_pointing_event_hook;
   v->update_hook = &sdlgl_update_hook;
   v->sprite_show = &sdlgl_sprite_show;
   v->sprite_hide = &sdlgl_sprite_hide;

@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.36 2002/05/22 09:26:31 micahjd Exp $
+/* $Id: pgmain.c,v 1.37 2002/07/03 22:03:28 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -34,7 +34,6 @@
 #include <pgserver/input.h>
 #include <pgserver/widget.h>
 #include <pgserver/configfile.h>
-#include <pgserver/touchscreen.h>
 #include <pgserver/timer.h>
 #include <pgserver/hotspot.h>
 
@@ -51,12 +50,12 @@
 extern char **environ;
 #endif
 
-volatile u8 mainloop_proceed = 1;
-volatile u8 in_init = 1;
-volatile u8 use_sessionmgmt = 0;           /* Using session manager, exit after last client */
-volatile u8 use_tpcal = 0;                 /* Run tpcal before running the session manager */
-volatile u8 sessionmgr_secondary = 0;      /* Need to run session manager after tpcal */
-volatile u8 sessionmgr_start = 0;          /* Start the session manager at the next iteration */
+int mainloop_proceed = 1;
+int in_init = 1;
+int use_sessionmgmt = 0;           /* Using session manager, exit after last client */
+int use_tpcal = 0;                 /* Run tpcal before running the session manager */
+int sessionmgr_secondary = 0;      /* Need to run session manager after tpcal */
+int sessionmgr_start = 0;          /* Start the session manager at the next iteration */
 
 extern s32 memref;
 struct dtstack *dts;
@@ -439,6 +438,16 @@ int main(int argc, char **argv) {
        }
      } 
 
+     /* Input filters should be initialized before video drivers,
+      * since some video drivers may need to set up their own input
+      * filters. (sdlgl, particularly.)
+      * Since the input filters are pretty simple, this shouldn't hurt anything.
+      */
+#ifdef DEBUG_INIT
+   printf("Init: infilter\n");
+#endif
+    if (iserror(prerror(infilter_init())))  return 1;
+
     /* Before loading the video driver, load the palette */
 #ifdef CONFIG_PAL8_CUSTOM
      if (iserror(prerror(load_custom_palette(get_param_str("pgserver","palette",NULL)))))
@@ -517,10 +526,6 @@ int main(int argc, char **argv) {
    printf("Init: timer\n");
 #endif
     if (iserror(prerror(timer_init())))  return 1;
-#ifdef DEBUG_INIT
-   printf("Init: infilter\n");
-#endif
-    if (iserror(prerror(infilter_init())))  return 1;
 
 #ifndef WINDOWS   /* This is also broke for windoze */
 
@@ -560,8 +565,8 @@ int main(int argc, char **argv) {
 
   /* Need to calibrate touchscreen? */
 #ifdef CONFIG_TOUCHSCREEN
-  if (!touchscreen_calibrated)
-    use_tpcal = 1;
+  if (prerror(touchscreen_init(&use_tpcal)))
+    return 1;
 #endif
 
   /* Start the first child process, either tpcal or the session manager */
@@ -615,7 +620,9 @@ int main(int argc, char **argv) {
 	    g_free(((struct stdbitmap *)vid->display)->rend);
      VID(close) ();
   }
-  cleanup_inlib();
+  cleanup_inlib();   /* Cleanup inlib after video drivers, since video drivers may
+		      * delete inlibs they've loaded automatically.
+		      */
   configfile_free();
   errorload(NULL);
 

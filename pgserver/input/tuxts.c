@@ -14,7 +14,6 @@
 #include <unistd.h>
  
 #include <pgserver/input.h>
-#include <pgserver/widget.h>    /* for dispatch_pointing */
 #include <pgserver/pgnet.h>
 #include <pgserver/configfile.h>
 
@@ -25,8 +24,6 @@ static const char *DEVICE_FILE_NAME = "/dev/ucb1200-ts";
 /* file descriptor for touch panel */
 static int fd = -1;
 static int PEN_DOWN;
-/* show the cursor on any touchscreen activity */
-static int showcursor;
 
 g_error tuxts_init(void)
 {
@@ -70,9 +67,6 @@ g_error tuxts_init(void)
 #endif
   ioctl(fd,64,1);		/* turn on the backlight */
 
-  /* Store config for later */
-  showcursor = get_param_int("input-tuxts","showcursor",0);
-
   return success;
 }
 
@@ -107,24 +101,20 @@ void tuxts_poll(void) {
   b = data[0];
 
   if(b>0) {
-    /* Show the cursor if 'showcursor' is on */
-    if (showcursor)
-      drivermessage(PGDM_CURSORVISIBLE,1,NULL);
-
     if(PEN_DOWN) {
-      dispatch_pointing(PG_TRIGGER_MOVE,x,y,1);
+      infilter_send_pointing(PG_TRIGGER_MOVE,x,y,1,NULL);
 #ifdef DEBUG_EVENT
       printf("Pen Move\n");
 #endif
     } else {
-      dispatch_pointing(PG_TRIGGER_DOWN,x,y,1);
+      infilter_send_pointing(PG_TRIGGER_DOWN,x,y,1,NULL);
       PEN_DOWN = 1;
 #ifdef DEBUG_EVENT
       printf("Pen Down\n");
 #endif
     }
   } else {
-    dispatch_pointing(PG_TRIGGER_UP,x,y,0);
+    infilter_send_pointing(PG_TRIGGER_UP,x,y,0,NULL);
 #ifdef DEBUG_EVENT
     printf("Pen Up\n");
 #endif

@@ -1,4 +1,4 @@
-/* $Id: ncursesinput.c,v 1.22 2002/05/22 10:01:20 micahjd Exp $
+/* $Id: ncursesinput.c,v 1.23 2002/07/03 22:03:30 micahjd Exp $
  *
  * ncursesinput.h - input driver for ncurses
  * 
@@ -40,7 +40,7 @@
 
 /* a shortcut to make the mapping junk smaller */
 void ncursesinput_sendkey(int key) {
-   dispatch_key(PG_TRIGGER_KEYDOWN,key,0);
+   infilter_send_key(PG_TRIGGER_KEYDOWN,key,0);
 }
 
 int ncursesinput_fd_activate(int fd) {
@@ -72,13 +72,13 @@ int ncursesinput_fd_activate(int fd) {
 	 if (ch==KEY_SUSPEND)
 	   ch = PGKEY_z;
 	 
-	 dispatch_key(PG_TRIGGER_KEYDOWN,ch,mods);
+	 infilter_send_key(PG_TRIGGER_KEYDOWN,ch,mods);
 	 break;
 	 
 	 /**** Keys that must be mapped */
 	 
-       case KEY_SUSPEND:      dispatch_key(PG_TRIGGER_KEYDOWN,PGKEY_z,PGMOD_CTRL); break;
-       case KEY_BACKSPACE:    dispatch_key(PG_TRIGGER_CHAR,'\b',0); break;
+       case KEY_SUSPEND:      infilter_send_key(PG_TRIGGER_KEYDOWN,PGKEY_z,PGMOD_CTRL); break;
+       case KEY_BACKSPACE:    infilter_send_key(PG_TRIGGER_CHAR,'\b',0); break;
        case KEY_UP:           ncursesinput_sendkey(PGKEY_UP); break;
        case KEY_DOWN:         ncursesinput_sendkey(PGKEY_DOWN); break;
        case KEY_LEFT:         ncursesinput_sendkey(PGKEY_LEFT); break;
@@ -105,16 +105,16 @@ int ncursesinput_fd_activate(int fd) {
        case '\t':
        case '\r':	/* control characters NOT to be sent as Ctrl+letter */
 	 ncursesinput_sendkey(ch);
-	 dispatch_key(PG_TRIGGER_CHAR, ch, 0);
+	 infilter_send_key(PG_TRIGGER_CHAR, ch, 0);
 	 break;
 	 
        default:     /* Normal key */
 	 
 	 /* Check for ctrl */
 	 if (ch < ' ')
-	   dispatch_key(PG_TRIGGER_KEYDOWN,ch+PGKEY_a-1,PGMOD_CTRL);
+	   infilter_send_key(PG_TRIGGER_KEYDOWN,ch+PGKEY_a-1,PGMOD_CTRL);
 	 else
-	   dispatch_key(PG_TRIGGER_CHAR,ch,0);
+	   infilter_send_key(PG_TRIGGER_CHAR,ch,0);
       }
    }
    

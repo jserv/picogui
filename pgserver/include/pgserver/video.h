@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.85 2002/04/03 16:56:49 micahjd Exp $
+/* $Id: video.h,v 1.86 2002/07/03 22:03:29 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -179,14 +179,14 @@ struct vidlib {
    * 
    * Default implementation: does nothing
    */
-  void (*coord_logicalize)(s16 *x,s16 *y);
+  void (*coord_logicalize)(int *x,int *y);
 
   /* Optional
    *   Converts logical coordinates back to physical
    *
    * Default implementation: does nothing
    */
-  void (*coord_physicalize)(s16 *x,s16 *y);
+  void (*coord_physicalize)(int *x,int *y);
 
   /* Optional
    *   For video wrappers, rotate keypads along with the display
@@ -277,18 +277,6 @@ struct vidlib {
   void (*font_outchar_hook)(hwrbitmap *dest, struct fontdesc **fd,
 			    s16 *x,s16 *y,hwrcolor *col,int *c,
 			    struct quad **clip, s16 *lgop, s16 *angle);
-
-  /* Optional
-   *   Called for every incoming key event. Return 1 to prevent normal
-   *   key processing.
-   */
-  int (*key_event_hook)(u32 *type, s16 *key, s16 *mods);
-
-  /* Optional
-   *   Called for every incoming pointing event. Return 1 to prevent normal
-   *   processing.
-   */
-  int (*pointing_event_hook)(u32 *type, s16 *x, s16 *y, s16 *btn);
 
   /* Optional
    *   Called at the beginning of grop_render, before anything has been set up.
@@ -635,7 +623,7 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags);
 g_error new_sprite(struct sprite **ps,s16 w,s16 h);
 void free_sprite(struct sprite *s);
 
-/* Sprite vars */
+/* All sprites onscreen, sorted from back to front. */
 extern struct sprite *spritelist;
 
 /* Helper functions for keeping an update region, used
@@ -690,14 +678,14 @@ void def_coord_keyrotate(s16 *k);
 void rotate90_coord_keyrotate(s16 *k);
 void rotate180_coord_keyrotate(s16 *k);
 void rotate270_coord_keyrotate(s16 *k);
-void def_coord_physicalize(s16 *x, s16 *y);
-void rotate90_coord_physicalize(s16 *x, s16 *y);
-void rotate180_coord_physicalize(s16 *x, s16 *y);
-void rotate270_coord_physicalize(s16 *x, s16 *y);
-void def_coord_logicalize(s16 *x, s16 *y);
-void rotate90_coord_logicalize(s16 *x, s16 *y);
-void rotate180_coord_logicalize(s16 *x, s16 *y);
-void rotate270_coord_logicalize(s16 *x, s16 *y);
+void def_coord_physicalize(int *x, int *y);
+void rotate90_coord_physicalize(int *x, int *y);
+void rotate180_coord_physicalize(int *x, int *y);
+void rotate270_coord_physicalize(int *x, int *y);
+void def_coord_logicalize(int *x, int *y);
+void rotate90_coord_logicalize(int *x, int *y);
+void rotate180_coord_logicalize(int *x, int *y);
+void rotate270_coord_logicalize(int *x, int *y);
 void linear32_pixel(hwrbitmap dest, s16 x, s16 y, hwrcolor c, s16 lgop);
 hwrcolor linear32_getpixel(hwrbitmap src, s16 x, s16 y);
 void linear32_slab(hwrbitmap dest, s16 x, s16 y, s16 w, hwrcolor c, s16 lgop);

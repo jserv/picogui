@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.42 2002/05/17 20:06:11 micahjd Exp $
+/* $Id: divtree.h,v 1.43 2002/07/03 22:03:29 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -55,9 +55,14 @@ struct dtstack {
 /* The One True Stack */
 extern struct dtstack *dts;
 
+/* A tree of divnodes, and metadata associated with them */
 struct divtree {
-  struct divnode *head;
-  unsigned short int flags;
+  struct divnode *head;           /* Head of the divnode tree */
+  unsigned short int flags;       /* DIVTREE_* flags */
+
+  handle focus;                   /* Handle to the focused widget in this divtree */
+  struct cursor *hotspot_cursor;  /* Hotspot cursor for this divtree, if it exists */
+
   struct divtree *next;
 };
 

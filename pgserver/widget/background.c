@@ -1,4 +1,4 @@
-/* $Id: background.c,v 1.13 2002/05/22 10:01:21 micahjd Exp $
+/* $Id: background.c,v 1.14 2002/07/03 22:03:32 micahjd Exp $
  *
  * background.c - an internal widget for drawing the screen background
  *
@@ -67,8 +67,9 @@ glob background_get(struct widget *self,int property) {
 }
 
 void background_trigger(struct widget *self,s32 type,union trigparam *param) {
-  if (sysevent_owner)
-     post_event(PG_NWE_BGCLICK,NULL,param->mouse.chbtn,sysevent_owner,NULL);
+  /* FIXME: add a way for apps to be notified of background clicks, like the
+   *        old 'sysevent' ownership but less crufty.
+   */
 }
 
 void background_resize(struct widget *self) {

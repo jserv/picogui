@@ -1,4 +1,4 @@
-/* $Id: appmgr.h,v 1.20 2002/05/22 09:26:32 micahjd Exp $
+/* $Id: appmgr.h,v 1.21 2002/07/03 22:03:29 micahjd Exp $
  *
  * appmgr.h - All the window-manager-ish functionality, except we don't
  * do windows (X windows, that is?)
@@ -60,8 +60,6 @@ struct app_info {
 /* Global objects */
 extern handle res[PGRES_NUM];
 extern struct app_info *applist;
-extern struct sprite *cursor;
-extern hwrbitmap defaultcursor_bitmap,defaultcursor_bitmask;
 extern handle htbboundary;       /* The last toolbar, represents the boundary between
 				    toolbars and application panels */
 extern struct widget *wtbboundary;  /* htbboundary, dereferenced. Only used for comparison
@@ -82,9 +80,6 @@ g_error appmgr_register(struct app_info *i);
 
 /* Unregisters applications owned by a given connection */
 void appmgr_unregowner(int owner);
-
-/* Load the mouse cursor specified by the given theme object */
-void appmgr_loadcursor(int thobj);
 
 /* Return a pointer to a divnode specifying the non-toolbar area that
  * applications and popup boxes may normally inhabit. */

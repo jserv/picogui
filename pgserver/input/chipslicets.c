@@ -1,4 +1,4 @@
-/* $Id: chipslicets.c,v 1.13 2002/05/22 10:01:20 micahjd Exp $
+/* $Id: chipslicets.c,v 1.14 2002/07/03 22:03:29 micahjd Exp $
  *
  * chipslicets.c - input driver for touch screen
  *
@@ -110,15 +110,11 @@ static int chipslicets_fd_activate(int fd)
 
     switch(pen_info.event) {
     case EV_PEN_UP:
-      dispatch_pointing(PG_TRIGGER_UP,pen_info.x,pen_info.y,0);
-      drivermessage(PGDM_CURSORVISIBLE,1,NULL);
-      drivermessage(PGDM_CURSORBLKEN,1,NULL);
+      infilter_send_pointing(PG_TRIGGER_UP,pen_info.x,pen_info.y,0,NULL);
       break;
       
     case EV_PEN_DOWN:
-      dispatch_pointing(PG_TRIGGER_DOWN,pen_info.x,pen_info.y,1);
-      drivermessage(PGDM_CURSORVISIBLE,1,NULL);
-      drivermessage(PGDM_CURSORBLKEN,0,NULL);
+      infilter_send_pointing(PG_TRIGGER_DOWN,pen_info.x,pen_info.y,1,NULL);
       break;
       
     case EV_PEN_MOVE:
@@ -126,8 +122,7 @@ static int chipslicets_fd_activate(int fd)
        * don't display pointing device when move for speed reason 
        * this may certainly change in the future
        */
-      dispatch_pointing(PG_TRIGGER_MOVE,pen_info.x,pen_info.y,1);
-      drivermessage(PGDM_CURSORVISIBLE,1,NULL);
+      infilter_send_pointing(PG_TRIGGER_MOVE,pen_info.x,pen_info.y,1,NULL);
       break;
 
     default:

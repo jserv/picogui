@@ -1,7 +1,7 @@
 # Generated automatically from Makefile.in by configure.
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -62,14 +62,14 @@ host_triplet = i686-pc-linux-gnu
 AR = ar
 CC = gcc
 CC_FOR_BUILD = gcc
-CONFIG_FILE = /home/philippe/SourceForge_dev/pc/pgserver/profile.user
+CONFIG_FILE = /home/micah/sf/pgui/pgserver/profile.user
 CPP = gcc -E
 DEBUGGING =  videotest.c
-DRIVER =  sdlfb.c
+DRIVER =  sdlfb.c null.c nullfb.c fbdev.c scrshot.c
 DRIVER_CFLAGS =  -I/usr/include/SDL -D_REENTRANT
-DRIVER_LIBS =  -L/usr/lib -Wl,-rpath,/usr/lib -lSDL -lpthread
-FORMATS =  pnm.c bmp.c
-INPUT =  sdlinput.c
+DRIVER_LIBS =  -L/usr/lib -lSDL -lpthread -lm -lz -lpng
+FORMATS =  pnm.c jpeg.c bmp.c html.c png.c gif.c
+INPUT =  sdlinput.c ttykb.c serialmouse.c ps2mouse.c ps2mouse.c rawttykb.c if_client_adaptor.c
 LIB_OS = 
 LXDIALOG = lxdialog
 MAKEINFO = makeinfo
@@ -85,11 +85,11 @@ RPM_PLATFORM = i686-pc-linux-gnu
 RPM_PREFIX = /usr/local
 SDL_CFLAGS = -I/usr/include/SDL -D_REENTRANT
 SDL_CONFIG = /usr/bin/sdl-config
-SDL_LIBS = -L/usr/lib -Wl,-rpath,/usr/lib -lSDL -lpthread
+SDL_LIBS = -L/usr/lib -lSDL -lpthread
 VERSION = 0.0
-VIDBASE =  linear1.c linear2.c linear4.c linear8.c linear16.c linear24.c linear32.c slowvbl.c dvbl_primitives.c
-VIDWRAP = 
-WIDGET =  terminal.c canvas.c panel_nobar.c
+VIDBASE =  linear1.c linear2.c linear4.c linear8.c linear16.c linear24.c linear32.c slowvbl.c dvbl_dither.c visibone2.c dvbl_primitives.c
+VIDWRAP =  rotate90.c rotate180.c rotate270.c
+WIDGET =  terminal.c canvas.c panel.c panelbar.c
 
 SUBDIRS =  	include 	widget appmgr debug gcore net 	vidbase theme video os vidwrap 	input font formats etc 	profiles 	.
 
@@ -119,7 +119,7 @@ PROGRAMS =  $(bin_PROGRAMS)
 DEFS = -DHAVE_CONFIG_H -I. -I$(srcdir) -I.
 CPPFLAGS = 
 LDFLAGS = 
-LIBS = 
+LIBS = -lpng -ljpeg  -ljpeg
 pgserver_OBJECTS =  pgmain.o
 pgserver_DEPENDENCIES =  gcore/libgcore.a widget/libwidget.a \
 appmgr/libappmgr.a net/libnet.a theme/libtheme.a debug/libdebug.a \
@@ -138,7 +138,7 @@ mkinstalldirs picogui-server.spec.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 DEP_FILES =  .deps/pgmain.P
 SOURCES = $(pgserver_SOURCES)
@@ -273,7 +273,7 @@ maintainer-clean-recursive:
 	dot_seen=no; \
 	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
 	  rev="$$subdir $$rev"; \
-	  test "$$subdir" = "." && dot_seen=yes; \
+	  test "$$subdir" != "." || dot_seen=yes; \
 	done; \
 	test "$$dot_seen" = "no" && rev=". $$rev"; \
 	target=`echo $@ | sed s/-recursive//`; \
@@ -315,7 +315,7 @@ TAGS: tags-recursive $(HEADERS) $(SOURCES) config.h.in $(TAGS_DEPENDENCIES) $(LI
 	  awk '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
 	test -z "$(ETAGS_ARGS)config.h.in$$unique$(LISP)$$tags" \
-	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags config.h.in $$unique $(LISP) -o $$here/TAGS)
+	  || (cd $(srcdir) && etags -o $$here/TAGS $(ETAGS_ARGS) $$tags config.h.in $$unique $(LISP))
 
 mostlyclean-tags:
 
@@ -513,8 +513,10 @@ maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 .PHONY: config menuconfig
 
+# Note that this did read $(SHELL) instead of bash, but since Configure really does
+# require the bash shell this is better.
 config:
-	$(SHELL) $(top_srcdir)/configscript/Configure \
+	bash $(top_srcdir)/configscript/Configure \
 		$(top_srcdir)/config.in $(CONFIG_FILE)
 	@mv -f $(CONFIG_FILE) $(CONFIG_FILE).old
 	@rm -f .config.h && mv .config $(CONFIG_FILE)
@@ -522,7 +524,7 @@ config:
 	@echo "type make to build the program"
 
 menuconfig: configscript/lxdialog/lxdialog
-	$(SHELL) $(top_srcdir)/configscript/Menuconfig \
+	bash $(top_srcdir)/configscript/Menuconfig \
 		$(top_srcdir)/config.in $(CONFIG_FILE)
 	@rm -f .config.h
 	@test -f .config && \

@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.28 2002/02/05 15:46:34 cgrigis Exp $
+/* $Id: pgboard.c,v 1.29 2002/07/03 22:03:25 micahjd Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -280,6 +280,7 @@ void selectPattern (unsigned short pattern)
 
 int evtMouse(struct pgEvent *evt) {
   struct key_entry *clickkey = NULL;
+  static union pg_client_trigger trig;
 
   /* Ignore all but left mouse button */
   if (evt->e.pntr.chbtn != 1 && evt->type != PG_WE_PNTR_RELEASE)
@@ -293,10 +294,18 @@ int evtMouse(struct pgEvent *evt) {
     keydown = clickkey;
 
     if (clickkey) {
-      if (clickkey->key)
-	pgSendKeyInput(PG_TRIGGER_CHAR,clickkey->key,clickkey->mods);
-      if (clickkey->pgkey)
-	pgSendKeyInput(PG_TRIGGER_KEYDOWN,clickkey->pgkey,clickkey->mods);
+      if (clickkey->key) {
+	trig.content.type = PG_TRIGGER_CHAR;
+	trig.content.u.kbd.key = clickkey->key;
+	trig.content.u.kbd.mods = clickkey->mods;
+	pgInFilterSend(&trig);
+      }
+      if (clickkey->pgkey) {
+	trig.content.type = PG_TRIGGER_KEYDOWN;
+	trig.content.u.kbd.key = clickkey->pgkey;
+	trig.content.u.kbd.mods = clickkey->mods;
+	pgInFilterSend(&trig);
+      }
       pgFlushRequests ();
     }
   }
@@ -308,8 +317,12 @@ int evtMouse(struct pgEvent *evt) {
     }
     else
       if (clickkey) {
-	if (clickkey->pgkey)
-	  pgSendKeyInput(PG_TRIGGER_KEYUP,clickkey->pgkey,clickkey->mods);
+	if (clickkey->pgkey) {
+	  trig.content.type = PG_TRIGGER_KEYUP;
+	  trig.content.u.kbd.key = clickkey->pgkey;
+	  trig.content.u.kbd.mods = clickkey->mods;
+	  pgInFilterSend(&trig);
+	}
 	pgFlushRequests ();
 	if (clickkey->pattern) {
 	  selectPattern (clickkey->pattern);

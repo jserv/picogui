@@ -1,4 +1,4 @@
-/* $Id: adc7843.c,v 1.5 2002/05/22 10:01:20 micahjd Exp $
+/* $Id: adc7843.c,v 1.6 2002/07/03 22:03:29 micahjd Exp $
  *
  * adc7843.c - input driver for adc7843.c touch screen found on the Psion 5mx
  *             Other touch screens using the same data format should
@@ -60,15 +60,6 @@ static struct cal *cal = NULL;
 
 int adc7843_fd;
 
-/* 
- * For keeping track of the coordinates so we know them to
- * be send with a PG_TRIGGER_UP event...
- */
-int ox, oy;
-
-/* Keep track of the pen state... Down or not (up)... */
-bool down;
-
 struct tpanel_sample {
 	u16 state;
 	u16 x;
@@ -97,7 +88,6 @@ void adc7843_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
 
 int adc7843_fd_activate(int fd) {
    struct tpanel_sample ts;
-   static u8 state;
    char buffer[6];
    int trigger, x, y;
 
@@ -127,39 +117,7 @@ int adc7843_fd_activate(int fd) {
    x = ( ( ts.x - cal->min_x ) * cal->x_res / ( cal->max_x - cal->min_x ) );
    y = ( ( ts.y - cal->min_y ) * cal->y_res / ( cal->max_y - cal->min_y ) );
    
-   /* What type of pointer event? */
-   if (ts.state) {
-      if (down)
- 	     trigger = PG_TRIGGER_MOVE;
-      else
-	     trigger = PG_TRIGGER_DOWN;
-   }
-   else {
-      if (down)
-	     trigger = PG_TRIGGER_UP;
-      else
-	return 1;
-   }
-   
-   /* If we got this far, accept the new state and send the event */
-   state = (trigger != PG_TRIGGER_UP);
-
-   
-   if (ts.state)
-       down = true;
-   else
-       down = false;
-
-   if ( trigger == PG_TRIGGER_UP )
-      dispatch_pointing(trigger,ox,oy,state);
-   else
-      dispatch_pointing(trigger,x,y,state);
-
-   /* Save the current coordinates... */
-   ox = x;
-   oy = y;
-   
-   
+   infilter_send_pointing(PG_TRIGGER_PNTR_STATUS,x,y,ts.state,NULL);
    return 1;
 }
    

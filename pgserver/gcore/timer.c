@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.23 2002/05/22 10:01:19 micahjd Exp $
+/* $Id: timer.c,v 1.24 2002/07/03 22:03:29 micahjd Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -49,8 +49,6 @@ u32 timer_cursorhide;
 u32 timer_backlightoff;
 u32 timer_sleep;
 u32 timer_vidblank;
-
-extern int cursor_blanking_enabled;
 
 /* Internal function to send driver messages after periods of inactivity
  * specified in the configuration file
@@ -211,10 +209,10 @@ void inactivity_set(u32 t) {
  * makes sense to not do a config lookup each time they're used
  */
 void inactivity_init(void) {
-  timer_cursorhide    = get_param_int("timers","cursorhide",0xFFFFFFF);
-  timer_backlightoff  = get_param_int("timers","backlightoff",0xFFFFFFF);
-  timer_sleep         = get_param_int("timers","sleep",0xFFFFFFF);
-  timer_vidblank      = get_param_int("timers","vidblank",0xFFFFFFF);
+  timer_cursorhide    = get_param_int("timers","cursorhide",50);
+  timer_backlightoff  = get_param_int("timers","backlightoff",0);
+  timer_sleep         = get_param_int("timers","sleep",0);
+  timer_vidblank      = get_param_int("timers","vidblank",0);
 }
 
 void inactivity_check(void) {
@@ -228,18 +226,17 @@ void inactivity_check(void) {
     return;
   }
 
-  if ( now >= timer_cursorhide &&
-       then < timer_cursorhide &&
-       cursor_blanking_enabled)
-    drivermessage(PGDM_CURSORVISIBLE,0,NULL);
+  if ( timer_cursorhide && now >= timer_cursorhide && then < timer_cursorhide) {
+    hotspot_hide();
+  }
 
-  if ( now >= timer_backlightoff && then < timer_backlightoff )
+  if ( timer_backlightoff && now >= timer_backlightoff && then < timer_backlightoff )
     drivermessage(PGDM_BACKLIGHT,0,NULL);
 
-  if ( now >= timer_sleep && then < timer_sleep )
+  if ( timer_sleep && now >= timer_sleep && then < timer_sleep )
     drivermessage(PGDM_POWER,PG_POWER_SLEEP,NULL);
 
-  if ( now >= timer_vidblank && then < timer_vidblank )
+  if ( timer_vidblank && now >= timer_vidblank && then < timer_vidblank )
     drivermessage(PGDM_POWER,PG_POWER_VIDBLANK,NULL);
 
   then = now;

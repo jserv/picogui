@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.66 2002/06/14 02:42:34 micahjd Exp $
+/* $Id: memtheme.c,v 1.67 2002/07/03 22:03:31 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -256,6 +256,8 @@ u32 theme_lookup(u16 object, u16 property) {
   case PGTH_P_TIME_OFF:         return 125;
   case PGTH_P_TIME_DELAY:       return 500;
   case PGTH_P_TICKS:            return getticks();
+  case PGTH_P_CURSORBITMAP:     return res[PGRES_DEFAULT_CURSORBITMAP];
+  case PGTH_P_CURSORBITMASK:    return res[PGRES_DEFAULT_CURSORBITMASK];
 
   default:
     return 0;       /* Couldn't hurt? */
@@ -703,8 +705,8 @@ g_error theme_load(handle *h,int owner,char *themefile,
 
       }
 
-  /* Reload the mouse cursor */
-  appmgr_loadcursor(PGTH_O_DEFAULT);
+  /* Reload the mouse cursors */
+  cursor_retheme();
 
   /* Reload global hotkeys from the theme */
   reload_hotkeys();
@@ -737,7 +739,7 @@ void theme_remove(struct pgmemtheme *th) {
   }
 
   /* Reload the mouse cursor */
-  appmgr_loadcursor(PGTH_O_DEFAULT);
+  cursor_retheme();
   
   /* Set flags for an update due to loading/unloading the theme */
   theme_divtree_update(th);

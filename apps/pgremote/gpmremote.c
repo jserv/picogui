@@ -1,4 +1,4 @@
-/* $Id: gpmremote.c,v 1.1 2001/02/14 01:42:51 micahjd Exp $
+/* $Id: gpmremote.c,v 1.2 2002/07/03 22:03:25 micahjd Exp $
  * 
  * gpmremote.c - A mouse-only remote input driver using gpm
  *
@@ -34,12 +34,15 @@
 int main(int argc, char **argv) {
    Gpm_Connect my_gpm;
    Gpm_Event evt;
-   int trigger;
    int cx=0,cy=0;  /* Cursor */
    int savedbtn=0;
+   static union pg_client_trigger trig;
    
    /* Don't need an app, but a connection would be nice... */
    pgInit(argc,argv); 
+
+   /* Create a new cursor for this input device */
+   trig.content.u.mouse.cursor_handle = pgNewCursor();
   
    /* Connect to GPM */
    my_gpm.eventMask = GPM_MOVE | GPM_DRAG | GPM_UP | GPM_DOWN;
@@ -87,17 +90,17 @@ int main(int argc, char **argv) {
 	 
        case GPM_MOVE:
        case GPM_DRAG:
-	 trigger = PG_TRIGGER_MOVE;
+	 trig.content.type = PG_TRIGGER_MOVE;
 	 savedbtn = evt.buttons;
 	 break;
 	 
        case GPM_UP:
-	 trigger = PG_TRIGGER_UP;
+	 trig.content.type = PG_TRIGGER_UP;
 	 evt.buttons = savedbtn &= ~evt.buttons;
 	 break;
 	 
        case GPM_DOWN:
-	 trigger = PG_TRIGGER_DOWN;
+	 trig.content.type = PG_TRIGGER_DOWN;
 	 savedbtn = evt.buttons;
 	 break;
 	 
@@ -105,10 +108,12 @@ int main(int argc, char **argv) {
 	 return 1;
       }
 
-      pgSendPointerInput(trigger,evt.x,evt.y,
-			 ((evt.buttons>>2)&1) ||
-			 ((evt.buttons<<2)&4) ||
-			 (evt.buttons&2));
+      trig.content.u.mouse.x = evt.x;
+      trig.content.u.mouse.y = evt.y;
+      trig.content.u.mouse.btn = ((evt.buttons>>2)&1) ||
+	                         ((evt.buttons<<2)&4) ||
+                                 (evt.buttons&2);
+      pgInFilterSend(&trig);
       pgFlushRequests();
    }
 

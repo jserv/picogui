@@ -1,4 +1,4 @@
-/* $Id: zaurus.c,v 1.5 2002/05/22 10:01:20 micahjd Exp $
+/* $Id: zaurus.c,v 1.6 2002/07/03 22:03:31 micahjd Exp $
  *
  * zaurus.c - Input driver for the Sharp Zaurus SL-5000. This includes a
  *            simple touchscreen driver, and some extras to handle sound
@@ -75,46 +75,14 @@ void zaurus_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
 
 int zaurus_ts_fd_activate(int fd) {
    tsEvent ts;
-   static u8 state = 0;
-   int trigger, x, y;
    
    /* Read raw data from the driver */
    if (fd!=zaurus_ts_fd)
      return 0;
    if (read(zaurus_ts_fd,&ts,sizeof(ts)) < sizeof(ts))
      return 1;
-   x = ts.x;
-   y = ts.y;
 
-   /* Filter the sample, skipping one if necessary */
-   if (touchscreen_filter(&x, &y, ts.pressure))
-     return 1;
-
-   /* Convert to screen coordinates */
-   touchscreen_pentoscreen(&x, &y);
-
-   /* What type of pointer event?
-    *
-    * NOTE: As far as i can tell, the pressure value isn't very useful. It's zero when
-    * there's no contact, and somewhere around 550 when there is, without much actual variation
-    * depending on pressure. So here we just treat it as a boolean.
-    */
-   if (ts.pressure) {
-      if (state)
-	trigger = PG_TRIGGER_MOVE;
-      else
-	trigger = PG_TRIGGER_DOWN;
-   }
-   else {
-      if (state)
-	trigger = PG_TRIGGER_UP;
-      else
-	return 1;
-   }
-   
-   /* If we got this far, accept the new state and send the event */
-   state = (trigger != PG_TRIGGER_UP);
-   dispatch_pointing(trigger,x,y,state);
+   infilter_send_touchscreen(ts.x,ts.y,ts.pressure,ts.pressure != 0);
    
    return 1;
 }
@@ -162,9 +130,6 @@ void zaurus_message(u32 message, u32 param, u32 *ret) {
 
     }
     break;
-
-  default:
-    touchscreen_message(message,param,ret);
   }
 }
    

@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.57 2002/06/14 02:42:33 micahjd Exp $
+/* $Id: handle.c,v 1.58 2002/07/03 22:03:28 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -378,6 +378,12 @@ void object_free(struct handlenode *n) {
     case PG_TYPE_WT:
       wt_free((struct pgmemwt *)n->obj);
       break;
+    case PG_TYPE_INFILTER:
+      infilter_delete((struct infilter *)n->obj);
+      break;
+    case PG_TYPE_CURSOR:
+      cursor_delete((struct cursor *)n->obj);
+      break;
     default:
       g_free(n->obj);
     }
@@ -397,7 +403,7 @@ void r_handle_dump(struct handlenode *n,int level) {
    int i;
    static char *typenames[] = {
      "BITMAP","WIDGET","FONTDESC","STRING","THEME","FILLSTYLE",
-     "ARRAY", "DRIVER", "PALETTE"
+     "ARRAY", "DRIVER", "PALETTE", "WT", "INFILTER", "CURSOR"
    };
    
    if (!n) return;
@@ -410,6 +416,8 @@ void r_handle_dump(struct handlenode *n,int level) {
 	  n->type & PG_TYPEMASK,typenames[(n->type & PG_TYPEMASK)-1]);
    if ((n->type & PG_TYPEMASK) == PG_TYPE_STRING)
      printf(" = \"%s\"\n",(char*)n->obj);
+   else if ((n->type & PG_TYPEMASK) == PG_TYPE_WIDGET)
+     printf(" numcursors %d\n", ((struct widget *)n->obj)->numcursors);
    else
      printf("\n");
    r_handle_dump(n->right,level+1);
@@ -760,6 +768,12 @@ void handle_setmapping(handle *table, int num_entries) {
   handle_mapping = table;
   handle_mapping_len = num_entries;
 }
+
+/* Look up the handle associated with the pointer, and delete it safely */
+g_error pointer_free(int owner, void *ptr) {
+  return handle_free(owner, hlookup(ptr,NULL));
+}
+
 
 /* The End */
 

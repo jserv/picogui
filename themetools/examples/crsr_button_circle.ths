@@ -1,0 +1,11 @@
+object default {
+  name = "Circle-arrow cursor over interactive widgets";
+  cursorbitmap = LoadBitmap("data/crsr_arrowcircle.png");
+  cursorbitmask = 0;
+  crsrhotspot.x = 41;
+  crsrhotspot.y = 40;
+}
+
+object button {
+  cursorbitmap = LoadBitmap("data/crsr_arrowcircle_red.png");
+}

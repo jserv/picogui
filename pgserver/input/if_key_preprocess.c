@@ -1,4 +1,4 @@
-/* $Id: if_key_preprocess.c,v 1.1 2002/05/22 09:26:32 micahjd Exp $
+/* $Id: if_key_preprocess.c,v 1.2 2002/07/03 22:03:30 micahjd Exp $
  *
  * if_key_preprocess.c - Perform various processing on keys before dispatch
  *
@@ -28,13 +28,34 @@
 #include <pgserver/common.h>
 #include <pgserver/input.h>
 
-void infilter_key_preprocess_handler(u32 trigger, union trigparam *param) {
+void infilter_key_preprocess_handler(struct infilter *self, u32 trigger, union trigparam *param) {
 
+  /* Rotate key events
+   */
+  VID(coord_keyrotate)(&param->kbd.key);
+
+  /* Map PG_TRIGGER_KEY to a set of CHAR, KEYUP, and KEYDOWN triggers
+   */
+  if (trigger == PG_TRIGGER_KEY) {
+    if (param->kbd.key < 256)
+      infilter_send(self, PG_TRIGGER_CHAR, param);
+    infilter_send(self, PG_TRIGGER_KEYDOWN, param);
+    infilter_send(self, PG_TRIGGER_KEYUP, param);
+    return;
+  }
+
+  /* Don't allow CHAR events that have CTRL or ALT modifiers set
+   */
+  if (trigger == PG_TRIGGER_CHAR && (param->kbd.mods & (PGMOD_CTRL | PGMOD_ALT)))
+    return;
+
+  /* Pass on other events */
+  infilter_send(self,trigger,param);
 }
 
 struct infilter infilter_key_preprocess = {
-  accept_trigs: 0,
-  absorb_trigs: 0,
+  accept_trigs: PG_TRIGGER_KEY | PG_TRIGGER_CHAR | PG_TRIGGER_KEYUP | PG_TRIGGER_KEYDOWN,
+  absorb_trigs: PG_TRIGGER_KEY | PG_TRIGGER_CHAR | PG_TRIGGER_KEYUP | PG_TRIGGER_KEYDOWN,
   handler: &infilter_key_preprocess_handler,
 };
 

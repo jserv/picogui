@@ -1,4 +1,4 @@
-/* $Id: video_drivers.c,v 1.2 2002/05/22 09:26:33 micahjd Exp $
+/* $Id: video_drivers.c,v 1.3 2002/07/03 22:03:31 micahjd Exp $
  *
  * video_drivers.c - handles loading/switching video drivers and modes
  *
@@ -63,9 +63,6 @@ unsigned char trigtab[] = {
   0xFC,0xFC,0xFD,0xFE,0xFE,0xFF,0xFF,0xFF,0xFF,0xFF,
   0xFF
 };
-
-/* Cursor blanking ctrl */
-int cursor_blanking_enabled = 1;
 
 /* Sprite helper functions */
 g_error new_sprite(struct sprite **ps,s16 w,s16 h) {
@@ -525,22 +522,13 @@ void realize_updareas(void) {
 
 g_error bitmap_iterate(g_error (*iterator)(hwrbitmap *pbit)) {   
    
-   /* Rotate all bitmaps with handles, the default cursor,
-    * and all sprite backbuffers */
+   /* Rotate all bitmaps with handles, and all sprite backbuffers */
    struct sprite *spr;
    g_error e;
    
    e = handle_iterate(PG_TYPE_BITMAP,(handle_iterator) iterator, NULL);
    errorcheck;
    
-   if (defaultcursor_bitmap) {           /* If we are rotating by default
-					  * this might be during init
-					  * before cursor is alloc'd */
-      e = (*iterator)(&defaultcursor_bitmap);
-      errorcheck;
-      e = (*iterator)(&defaultcursor_bitmask);
-      errorcheck;
-   }
    for (spr=spritelist;spr;spr=spr->next) {
       e = (*iterator)(&spr->backbuffer);
       errorcheck;
@@ -600,23 +588,6 @@ void drivermessage(u32 message, u32 param, u32 *ret) {
     if (p->message)
       (*p->message)(message,param,ret);
     p = p->next;
-  }
-
-  /* Some stuff we can handle here */
-  switch (message) {
-
-  case PGDM_CURSORVISIBLE:
-    cursor->visible = (param != 0);
-    if (cursor->visible)
-      VID(sprite_show)(cursor);
-    else
-      VID(sprite_hide)(cursor);
-    realize_updareas();
-    break;
-
-  case PGDM_CURSORBLKEN:
-    cursor_blanking_enabled = (param != 0);
-    break;
   }
 }
 

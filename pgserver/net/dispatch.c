@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.99 2002/05/22 10:01:20 micahjd Exp $
+/* $Id: dispatch.c,v 1.100 2002/07/03 22:03:31 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -39,9 +39,6 @@
 #include <pgserver/pgnet.h>
 #include <pgserver/input.h>
 #include <pgserver/svrwt.h>
-#ifdef CONFIG_TOUCHSCREEN
-#include <pgserver/touchscreen.h>
-#endif
 
 #include <stdlib.h>	/* alloca */
 #include <string.h>	/* strncmp */
@@ -150,10 +147,6 @@ g_error rqh_update(int owner, struct pgrequest *req,
 
   /* The layout engine's entry point */
   update(NULL,1);
-
-  /* Update which widget the mouse is over */
-  if (dts->top->flags & DIVTREE_NEED_RECALC)
-    update_pointing();
 
   return success;
 }
@@ -361,29 +354,6 @@ g_error rqh_get(int owner, struct pgrequest *req,
 g_error rqh_undef(int owner, struct pgrequest *req,
 		   void *data, u32 *ret, int *fatal) {
   return mkerror(PG_ERRT_BADPARAM,62);
-}
-
-g_error rqh_in_key(int owner, struct pgrequest *req,
-		   void *data, u32 *ret, int *fatal) {
-#ifdef CONFIG_NOREMOTEINPUT
-  return mkerror(PG_ERRT_BADPARAM,104);
-#else
-  reqarg(in_key);
-  dispatch_key(ntohl(arg->type),(int) ntohs(arg->key),ntohs(arg->mods));
-  return success;
-#endif
-}
-
-g_error rqh_in_point(int owner, struct pgrequest *req,
-		     void *data, u32 *ret, int *fatal) {
-#ifdef CONFIG_NOREMOTEINPUT
-  return mkerror(PG_ERRT_BADPARAM,104);
-#else  
-  reqarg(in_point);
-  dispatch_pointing(ntohl(arg->type),ntohs(arg->x),ntohs(arg->y),
-		    ntohs(arg->btn));
-  return success;
-#endif
 }
 
 g_error rqh_wait(int owner, struct pgrequest *req,
@@ -625,24 +595,6 @@ g_error rqh_regowner(int owner, struct pgrequest *req,
    
    switch (ntohs(arg->res)) {
       
-    case PG_OWN_KEYBOARD:
-      if (keyboard_owner)
-	return mkerror(PG_ERRT_BUSY,65);
-      keyboard_owner = owner;
-      break;
-
-    case PG_OWN_POINTER:
-      if (pointer_owner)
-	return mkerror(PG_ERRT_BUSY,66);
-      pointer_owner = owner;
-      break;
-      
-    case PG_OWN_SYSEVENTS:
-      if (sysevent_owner)
-	return mkerror(PG_ERRT_BUSY,98);
-      sysevent_owner = owner;
-      break;
-
     case PG_OWN_DISPLAY:
       if (display_owner)
 	return mkerror(PG_ERRT_BUSY,10);
@@ -666,26 +618,6 @@ g_error rqh_unregowner(int owner, struct pgrequest *req,
    
    switch (ntohs(arg->res)) {
       
-    case PG_OWN_KEYBOARD:
-      if (keyboard_owner==owner)
-	keyboard_owner = 0;
-      break;
-
-    case PG_OWN_POINTER:
-      if (pointer_owner==owner)
-       {
-#ifdef CONFIG_TOUCHSCREEN
-	touchscreen_calibrated = 1;
-#endif
-	pointer_owner = 0;
-       }
-      break;
-      
-    case PG_OWN_SYSEVENTS:
-      if (sysevent_owner==owner)
-	sysevent_owner = 0;
-      break;
-
     case PG_OWN_DISPLAY:
       if (display_owner==owner) {
 	struct divtree *p;
@@ -901,9 +833,10 @@ g_error rqh_getmode(int owner, struct pgrequest *req,
   struct pgmodeinfo mi;
   u32 flags = vid->flags;
 
-#if defined(CONFIG_ROTATIONBASE_CLIENT)
-  /* Rotation base flags are generated on-the-fly */
-
+  /* Let the client see rotation base too
+   * (needed for touchscreen calibrators or other programs that access
+   * input or video hardware at a low level)
+   */
 # if defined(CONFIG_ROTATIONBASE_90)
   flags |= PG_VID_ROTBASE90;
 # elif defined(CONFIG_ROTATIONBASE_180)
@@ -911,7 +844,6 @@ g_error rqh_getmode(int owner, struct pgrequest *req,
 # elif defined(CONFIG_ROTATIONBASE_270)
   flags |= PG_VID_ROTBASE270;
 # endif
-#endif /* CONFIG_ROTATIONBASE_CLIENT */
 
   /* Fill in the data structure */
   mi.flags = htonl(flags);
@@ -1303,6 +1235,75 @@ g_error rqh_getresource(int owner, struct pgrequest *req,
   *ret = res[ntohl(arg->id)];
 
   return success;
+}
+
+g_error rqh_mkcursor(int owner, struct pgrequest *req,
+		     void *data, u32 *ret, int *fatal) {
+  handle h;
+  g_error e;
+  
+
+#ifdef CONFIG_NOREMOTEINPUT
+  return mkerror(PG_ERRT_BADPARAM,104);     /* Remote input devices have been disabled */
+#else
+  e = cursor_new(NULL,&h,owner);
+  errorcheck;
+
+  *ret = h;
+
+  return success;
+#endif
+}
+
+g_error rqh_setcontext(int owner, struct pgrequest *req,
+		       void *data, u32 *ret, int *fatal) {
+  struct conbuf *cb = find_conbuf(owner);
+  reqarg(setcontext);
+  if (!cb) return mkerror(PG_ERRT_INTERNAL,69);
+
+  cb->context = ntohl(arg->context);
+
+  return success;
+}
+
+g_error rqh_getcontext(int owner, struct pgrequest *req,
+		       void *data, u32 *ret, int *fatal) {
+  struct conbuf *cb = find_conbuf(owner);
+  if (!cb) return mkerror(PG_ERRT_INTERNAL,69);
+
+  *ret = cb->context;
+
+  return success;
+}
+
+g_error rqh_mkinfilter(int owner, struct pgrequest *req,
+		       void *data, u32 *ret, int *fatal) {
+  g_error e;
+  handle h;
+  reqarg(mkinfilter);
+
+#ifdef CONFIG_NOREMOTEINPUT
+  return mkerror(PG_ERRT_BADPARAM,104);     /* Remote input devices have been disabled */
+#else
+  e = infilter_client_create(ntohl(arg->insert_after), ntohl(arg->accept_trigs),
+			     ntohl(arg->absorb_trigs), &h, owner);
+  errorcheck;
+  *ret = h;
+
+  return success;
+#endif
+}
+
+g_error rqh_infiltersend(int owner, struct pgrequest *req,
+			 void *data, u32 *ret, int *fatal) {
+  g_error e;
+  reqarg(infiltersend);
+
+#ifdef CONFIG_NOREMOTEINPUT
+  return mkerror(PG_ERRT_BADPARAM,104);     /* Remote input devices have been disabled */
+#else
+  return infilter_client_send(&arg->trig);
+#endif
 }
 
 /* The End */

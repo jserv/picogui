@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.22 2002/01/30 12:03:16 micahjd Exp $
+/* $Id: rotate90.c,v 1.23 2002/07/03 22:03:32 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -66,13 +66,13 @@ void rotate90_fellipse(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,
    (*vid->bitmap_getsize)(dest,&dx,&dy);
    (*vid->fellipse)(dest,y,dy-x-w,h,w,c,lgop);
 }
-void rotate90_coord_logicalize(s16 *x,s16 *y) {
-   s16 tx = *x;
+void rotate90_coord_logicalize(int *x,int *y) {
+   int tx = *x;
    *x = vid->yres-1-*y;
    *y = tx;
 }
-void rotate90_coord_physicalize(s16 *x,s16 *y) {
-   s16 tx = *x;
+void rotate90_coord_physicalize(int *x,int *y) {
+   int tx = *x;
    *x = *y;
    *y = vid->yres-1-tx;
 }

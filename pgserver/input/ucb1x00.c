@@ -15,7 +15,6 @@
 #include <unistd.h>
  
 #include <pgserver/input.h>
-#include <pgserver/widget.h>    /* for dispatch_pointing */
 #include <pgserver/pgnet.h>
 #include <pgserver/configfile.h>
 
@@ -29,17 +28,12 @@ static const char *DEVICE_FILE_NAME = "/dev/ucb1x00-ts";
 /* file descriptor for touch panel */
 static int fd = -1;
 
-/* show the cursor on any touchscreen activity */
-static int showcursor;
 static int pressure_tolerance;
 
 g_error ucb1x00_init(void)
 {
   g_error e;
   
-  e=touchscreen_init();
-  errorcheck;
-
   /*
    * open up the touch-panel device.
    * Return the fd if successful, or negative if unsuccessful.
@@ -51,7 +45,6 @@ g_error ucb1x00_init(void)
   }
 	
   /* Store config for later */
-  showcursor = get_param_int("input-ucb1x00","showcursor",0);
   pressure_tolerance = get_param_int("input-ucb1x00","pressure",100);
   
   return success;
@@ -64,45 +57,6 @@ void ucb1x00_close(void)
     close(fd);
   fd = -1;
 }
-
-/* Internal function to handle filtering and dispatching a packet */
-void ucb1x00_packet(int x, int y, int pressure) {
-  static u8 state = 0;
-  int trigger;
-  
-  /* Quantize the pressure */
-  pressure = pressure > pressure_tolerance;
-  
-  /* Filter the sample, skipping one if necessary */
-  if (touchscreen_filter(&x, &y, pressure))
-    return 1;
-  
-  /* Convert to screen coordinates */
-  touchscreen_pentoscreen(&x, &y);
-  
-  /* What type of pointer event?
-   */
-  if (pressure) {
-    if (state)
-      trigger = PG_TRIGGER_MOVE;
-    else
-      trigger = PG_TRIGGER_DOWN;
-  }
-  else {
-    if (state)
-      trigger = PG_TRIGGER_UP;
-    else
-      return 1;
-  }
-
-  if (showcursor)
-    drivermessage(PGDM_CURSORVISIBLE,1,NULL);
-   
-  /* If we got this far, accept the new state and send the event */
-  state = (trigger != PG_TRIGGER_UP);
-  dispatch_pointing(trigger,x,y,state);
-}
-
 
 int ucb1x00_fd_activate(int active_fd) {
   struct {
@@ -122,8 +76,9 @@ int ucb1x00_fd_activate(int active_fd) {
   /* No data yet - (shouldnt ever actaully call this)*/
   if (bytes_read == 0)
     return 0;
-
-  ucb1x00_packet(ts_data.x, ts_data.y, ts_data.pressure);
+  
+  infilter_send_touchscreen(ts_data.x, ts_data.y, ts_data.pressure, 
+			    ts_data.pressure > pressure_tolerance);
 
   return 1;
 }
@@ -158,9 +113,6 @@ void ucb1x00_message(u32 message, u32 param, u32 *ret) {
   case PGDM_CONTRAST:
     ioctl(fd,67,param);
     break;
-    
-  default:
-    touchscreen_message(message,param,ret);
   }
 }
 

@@ -1,4 +1,4 @@
-/* $Id: remorakb.c,v 1.12 2002/05/22 10:01:20 micahjd Exp $
+/* $Id: remorakb.c,v 1.13 2002/07/03 22:03:30 micahjd Exp $
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -918,23 +918,23 @@ static int kb_fd_activate(int fd)
     /*
      * Send it up !
      */
-    dispatch_key(pg_type, pg_code, pg_mods);
+    infilter_send_key(pg_type, pg_code, pg_mods);
     if(pg_type==PG_TRIGGER_CHAR) {
       switch(pg_code) {
       case ' ':
-	dispatch_key(PG_TRIGGER_KEYDOWN, PGKEY_SPACE, pg_mods);
-	dispatch_key(PG_TRIGGER_KEYUP, PGKEY_SPACE, pg_mods);
+	infilter_send_key(PG_TRIGGER_KEYDOWN, PGKEY_SPACE, pg_mods);
+	infilter_send_key(PG_TRIGGER_KEYUP, PGKEY_SPACE, pg_mods);
 	break;
       case '\r':
-	dispatch_key(PG_TRIGGER_KEYDOWN, PGKEY_RETURN, pg_mods);
-	dispatch_key(PG_TRIGGER_KEYUP, PGKEY_RETURN, pg_mods);
+	infilter_send_key(PG_TRIGGER_KEYDOWN, PGKEY_RETURN, pg_mods);
+	infilter_send_key(PG_TRIGGER_KEYUP, PGKEY_RETURN, pg_mods);
 	break;
       }
     }
     else {
       switch(pg_code) {
       case PGKEY_ESCAPE:
-	dispatch_key(PG_TRIGGER_KEYUP, PGKEY_ESCAPE, pg_mods);
+	infilter_send_key(PG_TRIGGER_KEYUP, PGKEY_ESCAPE, pg_mods);
 	break;
       }
     }

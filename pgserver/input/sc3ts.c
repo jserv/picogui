@@ -1,4 +1,4 @@
-/* $Id: sc3ts.c,v 1.3 2002/05/22 10:01:20 micahjd Exp $
+/* $Id: sc3ts.c,v 1.4 2002/07/03 22:03:30 micahjd Exp $
  *
  * sc3ts.c - input driver for sc3 compatible touch screens
  *
@@ -42,7 +42,6 @@
 #include <sys/termios.h>
 
 int sc3_fd;
-int btnstate;
 struct termios options;
 
 struct sc3_event {
@@ -92,34 +91,14 @@ int sc3_fd_activate(int fd) {
   }
 #endif    
   
-  touchscreen_pentoscreen(&cursorx, &cursory);
-
-  if ((buttons!=0)&&(btnstate==0)){
-    dispatch_pointing(PG_TRIGGER_DOWN,cursorx,cursory,buttons);
-    btnstate=1;
-  }
-  if ((buttons==0)&&(btnstate==1)){
-    dispatch_pointing(PG_TRIGGER_UP,cursorx,cursory,buttons);
-    btnstate=0;
-  }
-  if(buttons)
-    dispatch_pointing(PG_TRIGGER_MOVE,cursorx,cursory,buttons);
+  infilter_send_touchscreen(cursorx,cursory,pressure,pressure);
   
   return 1;
 }
 
 g_error sc3_init(void) {
-
-  g_error ret;
-
-  ret=touchscreen_init();
-  if(ret!=success)
-	  return ret;
-
- 
-
- sc3_fd = open(get_param_str("input-sc3ts","device","/dev/ttyS1"),
-	    O_RDONLY | O_NOCTTY | O_NDELAY);
+  sc3_fd = open(get_param_str("input-sc3ts","device","/dev/ttyS1"),
+		O_RDONLY | O_NOCTTY | O_NDELAY);
 
   if(sc3_fd < 0)
     return mkerror(PG_ERRT_IO,43);   /* Error opening sc3 device */
@@ -161,7 +140,8 @@ g_error sc3_regfunc(struct inlib *i) {
   i->init = &sc3_init;
   i->fd_activate = &sc3_fd_activate;
   i->fd_init = &sc3_fd_init;
-  i->message = &touchscreen_message;
   i->close = &sc3_close;
   return success;
 }
+
+/* The End */

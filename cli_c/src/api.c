@@ -1,8 +1,17 @@
-/* $Id: api.c,v 1.43 2002/05/22 09:26:31 micahjd Exp $
+/* $Id: api.c,v 1.44 2002/07/03 22:03:26 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
  *                 to provide the interface described in client_c.h
+ *
+ *      BIG FAT WARNING!
+ *        I'm pissed off at this library... it needs rewriting REALLY badly!
+ *        It's not just the ENABLE_THREADING_SUPPORT crap, but the whole thing
+ *        is a mess.. no support for multiple servers, too much code duplication
+ *        in the individual API handlers.. it's a fucking mess.
+ *        </rant>
+ *      -- Micah
+ *
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -367,35 +376,6 @@ void pgSetVideoMode(u16 xres, u16 yres,
 #endif  
 }
 
-void pgSendKeyInput(u32 type, u16 key,
-		    u16 mods) {
-  struct pgreqd_in_key arg;
-  arg.type = htonl(type);
-  arg.key  = htons(key);
-  arg.mods = htons(mods);
-#ifdef ENABLE_THREADING_SUPPORT
-  _pg_add_request(PGREQ_IN_KEY,&arg,sizeof(arg), -1, 0);
-#else  
-  _pg_add_request(PGREQ_IN_KEY,&arg,sizeof(arg));
-#endif  
-}
-
-/* Also used by networked input devices, but to send pointing device events */
-void pgSendPointerInput(u32 type, u16 x, u16 y,
-			u16 btn) {
-  struct pgreqd_in_point arg;
-  arg.type = htonl(type);
-  arg.x  = htons(x);
-  arg.y  = htons(y);
-  arg.btn = htons(btn);
-  arg.dummy = 0;
-#ifdef ENABLE_THREADING_SUPPORT
-  _pg_add_request(PGREQ_IN_POINT,&arg,sizeof(arg), -1, 0);
-#else  
-  _pg_add_request(PGREQ_IN_POINT,&arg,sizeof(arg));
-#endif  
-}
-
 u32 pgGetPayload(pghandle object) {
   object = htonl(object);
 #ifdef ENABLE_THREADING_SUPPORT
@@ -453,6 +433,22 @@ u32 pgGetInactivity(void) {
 }
 #else
   _pg_add_request(PGREQ_GETINACTIVE,NULL,0);
+  pgFlushRequests();
+  return _pg_return.e.retdata;
+#endif  
+}
+
+pghandle pgNewCursor(void) {
+#ifdef ENABLE_THREADING_SUPPORT
+{
+  pgClientReturnData retData;
+  sem_init(&retData.sem, 0, 0);
+  _pg_add_request(PGREQ_MKCURSOR,NULL,0, (unsigned int)&retData, 1);
+  sem_wait(&retData.sem);
+  return retData.ret.e.retdata;
+}
+#else
+  _pg_add_request(PGREQ_MKCURSOR,NULL,0);
   pgFlushRequests();
   return _pg_return.e.retdata;
 #endif  
@@ -541,7 +537,8 @@ pghandle pgRegisterApp(s16 type,const char *name, ...) {
     for (va_start(v,name),numspecs=0;va_arg(v,s32);
 	 va_arg(v,s32),numspecs++);
     va_end(v);
-    
+    #define PGDM_INPUT_RAW        8   //!< Send PG_NWE_PNTR_RAW from the specified widget
+
     /* Allocate */
     if (!(arg = alloca(sizeof(struct pgreqd_register)+numspecs*4)))
       return;
@@ -639,6 +636,38 @@ pghandle pgCreateWidget(s16 type) {
 #endif  
 }
 
+pghandle pgNewInFilter(pghandle insert_after, u32 accept_trigs, u32 absorb_trigs) {
+   struct pgreqd_mkinfilter arg;
+
+   arg.insert_after = htonl(insert_after);
+   arg.accept_trigs = htonl(accept_trigs);
+   arg.absorb_trigs = htonl(absorb_trigs);
+
+#ifdef ENABLE_THREADING_SUPPORT  
+{
+  pgClientReturnData retData;
+  sem_init(&retData.sem, 0, 0);
+  _pg_add_request(PGREQ_MKINFILTER,&arg,sizeof(arg), (unsigned int)&retData, 1);
+  sem_wait(&retData.sem);
+  _pgdefault_rship = PG_DERIVE_AFTER;
+  _pgdefault_widget = retData.ret.e.retdata;
+  return retData.ret.e.retdata;
+}
+#else
+  _pg_add_request(PGREQ_MKINFILTER,&arg,sizeof(arg));
+
+  /* Because we need a result now, flush the buffer */
+  pgFlushRequests();
+
+  /* Default is inside this widget */
+  _pgdefault_rship = PG_DERIVE_AFTER;
+  _pgdefault_widget = _pg_return.e.retdata;
+  
+  /* Return the new handle */
+  return _pg_return.e.retdata;
+#endif  
+}
+
 void pgAttachWidget(pghandle parent, s16 rship, pghandle widget) {
 
    struct pgreqd_attachwidget arg;
@@ -654,6 +683,23 @@ void pgAttachWidget(pghandle parent, s16 rship, pghandle widget) {
 #endif  
    
 }
+
+
+void pgInFilterSend(union pg_client_trigger *trig) {
+  struct pgreqd_infiltersend arg;
+  int i;
+
+  /* Convert byte order */
+  for (i=0;i<(sizeof(arg.trig.array)/sizeof(arg.trig.array[0]));i++)
+    arg.trig.array[i] = htonl(trig->array[i]);
+
+#ifdef ENABLE_THREADING_SUPPORT
+  _pg_add_request(PGREQ_INFILTERSEND,&arg,sizeof(arg), -1, 0);
+#else  
+  _pg_add_request(PGREQ_INFILTERSEND,&arg,sizeof(arg));
+#endif    
+}
+
 
 pghandle pgNewWidget(s16 type, s16 rship,pghandle parent) {
   struct pgreqd_mkwidget arg;

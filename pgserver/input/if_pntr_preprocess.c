@@ -1,4 +1,4 @@
-/* $Id: if_pntr_preprocess.c,v 1.1 2002/05/22 09:26:32 micahjd Exp $
+/* $Id: if_pntr_preprocess.c,v 1.2 2002/07/03 22:03:30 micahjd Exp $
  *
  * if_pntr_preprocess.c - Various processing on mouse pointer events before dispatch
  *
@@ -28,12 +28,18 @@
 #include <pgserver/common.h>
 #include <pgserver/input.h>
 
-void infilter_pntr_preprocess_handler(u32 trigger, union trigparam *param) {
+void infilter_pntr_preprocess_handler(struct infilter *self, u32 trigger, union trigparam *param) {
 
+  /* Convert the event to logical coordinates if necessary
+   */
+  if (!param->mouse.is_logical) {
+    VID(coord_logicalize)(&param->mouse.x, &param->mouse.y);
+    param->mouse.is_logical = 1;
+  }
 }
 
 struct infilter infilter_pntr_preprocess = {
-  accept_trigs: 0,
+  accept_trigs: PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_MOVE | PG_TRIGGER_SCROLLWHEEL,
   absorb_trigs: 0,
   handler: &infilter_pntr_preprocess_handler,
 };

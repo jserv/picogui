@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.31 2002/06/14 02:42:33 micahjd Exp $
+/* $Id: handle.h,v 1.32 2002/07/03 22:03:29 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -110,6 +110,9 @@ handle hlookup(void *obj,int *owner);
  * Owner = -1, don't care
  */
 g_error handle_free(int owner,handle h);
+
+/* Look up the handle associated with the pointer, and delete it safely */
+g_error pointer_free(int owner, void *ptr);
 
 /* Deletes all handles from a specified owner (-1 for all handles) 
   that are in a context equal to 'context' (or -1 for all contexts)

@@ -1,4 +1,4 @@
-/* $Id: mgl2input.c,v 1.2 2002/05/22 10:01:20 micahjd Exp $
+/* $Id: mgl2input.c,v 1.3 2002/07/03 22:03:30 micahjd Exp $
  *
  * mgl2input.c - input driver for MGL2
  *
@@ -75,7 +75,7 @@ static int mx, my, mv, mbtn;
      my = vk_y; \
    } \
  } \
- dispatch_pointing((state), mx, my, (btn)); \
+ infilter_send_pointing((state), mx, my, (btn),NULL); \
 }
 
 void mgl2input_poll(void) {
@@ -100,37 +100,37 @@ void mgl2input_poll(void) {
     mx -= mv;
     if (mx < 0)
       mx = 0;
-    dispatch_pointing(PG_TRIGGER_MOVE, mx, my, 1);
+    infilter_send_pointing(PG_TRIGGER_MOVE, mx, my, 1,NULL);
     break;
   case MK_F2:
   case MK_DOWN:
     my += mv;
     if (my > SCREEN_HEIGHT)
       my = SCREEN_HEIGHT;
-    dispatch_pointing(PG_TRIGGER_MOVE, mx, my, 1);
+    infilter_send_pointing(PG_TRIGGER_MOVE, mx, my, 1,NULL);
     break;
   case MK_F3:
   case MK_UP:
     my -= mv;
     if (my < 0)
       my = 0;
-    dispatch_pointing(PG_TRIGGER_MOVE, mx, my, 1);
+    infilter_send_pointing(PG_TRIGGER_MOVE, mx, my, 1,NULL);
     break;
   case MK_F4:
   case MK_RIGHT:
     mx += mv;
     if (mx > SCREEN_WIDTH)
       mx = SCREEN_WIDTH;
-    dispatch_pointing(PG_TRIGGER_MOVE, mx, my, 1);
+    infilter_send_pointing(PG_TRIGGER_MOVE, mx, my, 1,NULL);
     break;
   case MK_F5:
     /*  case 0x20: */
     if (mbtn == 0) {
-      dispatch_pointing(PG_TRIGGER_DOWN, mx, my, 1);
+      infilter_send_pointing(PG_TRIGGER_DOWN, mx, my, 1,NULL);
       get_key(-1);
       mbtn = 1;
     } else {
-      dispatch_pointing(PG_TRIGGER_UP, mx, my, 0);
+      infilter_send_pointing(PG_TRIGGER_UP, mx, my, 0,NULL);
       get_key(-1);
       mbtn = 0;
     }
@@ -152,9 +152,9 @@ void mgl2input_poll(void) {
     else if (key & MGL_SKM_ALT)
       modkey = PGMOD_ALT;
 
-    dispatch_key(PG_TRIGGER_CHAR, key & ~MGL_SKM_MASK, modkey);
+    infilter_send_key(PG_TRIGGER_CHAR, key & ~MGL_SKM_MASK, modkey);
 #else
-    dispatch_key(PG_TRIGGER_CHAR, key, modkey);
+    infilter_send_key(PG_TRIGGER_CHAR, key, modkey);
 #endif
     break;
   }

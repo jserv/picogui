@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.85 2002/05/17 20:06:10 micahjd Exp $
+/* $Id: div.c,v 1.86 2002/07/03 22:03:28 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -106,7 +106,7 @@ void divnode_split(struct divnode *n, struct rect *divrect,
 
   /* Process as a popup box size */
   else if (n->flags & DIVNODE_SPLIT_POPUP) {
-    s16 x,y,w,h,margin,i;
+    int x,y,w,h,margin,i;
 
     n->flags &= ~DIVNODE_SPLIT_POPUP;   /* Clear flag */
 
@@ -160,7 +160,11 @@ void divnode_split(struct divnode *n, struct rect *divrect,
 	  snap = NULL;
       }
       else {
-	snap = lastclicked;
+	struct cursor *c;
+	c = cursor_get_default();
+	if ((!c) || iserror(rdhandle((void**)&snap,
+				     PG_TYPE_WIDGET, -1, c->ctx.widget_last_clicked)))
+	  snap = NULL;
       }
 
       /* This is a menu, allow it to overlap toolbars */
@@ -180,8 +184,7 @@ void divnode_split(struct divnode *n, struct rect *divrect,
       }
       else {
 	/* exactly at the cursor */
-	x = cursor->x;
-	y = cursor->y;
+	cursor_getposition(NULL,&x,&y);
       } 
     }
     
@@ -689,8 +692,10 @@ g_error divtree_new(struct divtree **dt) {
 
 /* Delete a divtree */
 void divtree_free(struct divtree *dt) {
-  r_divnode_free(dt->head);
-  g_free(dt);
+  r_divnode_free(dt->head);               /* Delete the tree of divnodes */
+  if (dt->hotspot_cursor)
+    pointer_free(-1,dt->hotspot_cursor);  /* Delete the hotspot cursor   */
+  g_free(dt);                             /* Delete the divtree */
 }
 
 /* Delete a divnode recursively */
@@ -759,6 +764,9 @@ void divtree_size_and_calc(struct divtree *dt) {
 
     /* The hotspot graph is now invalid */
     hotspot_free();
+
+    /* Update which widgets are under the cursors */
+    cursor_update_hover();
   }
 }
 
@@ -842,7 +850,7 @@ g_error dts_push(void) {
 
   /* The hotspot graph is invalid */
   hotspot_free();
-  request_focus(NULL);
+  hotspot_hide();
 
   return success;
 }
@@ -862,8 +870,6 @@ void dts_pop(struct divtree *dt) {
 #endif
    
   hotspot_free();
-  request_focus(NULL);
-  reset_widget_pointers();
   *p = (*p)->next;
   divtree_free(dt);
 }

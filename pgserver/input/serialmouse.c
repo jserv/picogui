@@ -1,4 +1,4 @@
-/* $Id: serialmouse.c,v 1.8 2002/05/22 10:01:20 micahjd Exp $
+/* $Id: serialmouse.c,v 1.9 2002/07/03 22:03:30 micahjd Exp $
  *
  * serialmouse.c - input driver for serial mice.
  *
@@ -82,16 +82,15 @@
 #include <sys/termios.h>
 
 int mouse_fd;
-int btnstate;
 int multiplier;
 struct termios options;
+struct cursor *serialmouse_cursor;
 
 int serialmouse_fd_activate(int fd) {
   u8 buttons;
   s8 dx,dy;
   static u8 packet[3];
   static int pos;
-  s16 cursorx,cursory;
 
   if (fd != mouse_fd)
     return 0;
@@ -110,11 +109,6 @@ int serialmouse_fd_activate(int fd) {
     return 1;
   pos = 0;
    
-  /* Get the cursor position in physical coordinates */
-  cursorx = cursor->x;
-  cursory = cursor->y;
-  VID(coord_physicalize)(&cursorx,&cursory);
-  
   buttons = ((packet[0] & 0x20) >> 5) | ((packet[0] & 0x10) >> 2);
   dx = ((packet[0] & 0x03) << 6) | (packet[1] & 0x3F);
   dy = ((packet[0] & 0x0C) << 4) | (packet[2] & 0x3F);
@@ -131,31 +125,13 @@ int serialmouse_fd_activate(int fd) {
   }
 #endif    
   
-  cursorx=cursorx+multiplier*dx;
-  cursory=cursory+multiplier*dy;
-  if (cursorx >= vid->xres)       /* Use physical screen size */
-    cursorx=vid->xres-1;
-  if (cursory >= vid->yres)
-    cursory=vid->yres-1;
-  if (cursorx < 0)cursorx=0;
-  if (cursory < 0)cursory=0;
-  
-  if ((buttons!=0)&&(btnstate==0)){
-    
-    dispatch_pointing(PG_TRIGGER_DOWN,cursorx,cursory,buttons);
-    btnstate=1;}
-  if ((buttons==0)&&(btnstate==1)){
-    
-    dispatch_pointing(PG_TRIGGER_UP,cursorx,cursory,buttons);
-    btnstate=0;
-  }
-  if((dx!=0)||(dy!=0))
-    dispatch_pointing(PG_TRIGGER_MOVE,cursorx,cursory,buttons);
-  
+  infilter_send_pointing(PG_TRIGGER_PNTR_RELATIVE, multiplier*dx, 
+			 multiplier*dy, buttons, serialmouse_cursor);  
   return 1;
 }
 
 g_error serialmouse_init(void) {
+  g_error e;
 
   multiplier = get_param_int("input-serialmouse","multiplier",2);
 
@@ -183,6 +159,10 @@ g_error serialmouse_init(void) {
   options.c_oflag &= ~OPOST;
                                                               
   tcsetattr(mouse_fd, TCSANOW, &options); /* set parameters */
+
+  e = cursor_new(&serialmouse_cursor,NULL,-1);
+  errorcheck;
+
   return success;
 }
 
@@ -195,6 +175,7 @@ void serialmouse_fd_init(int *n,fd_set *readfds,struct
 }
 
 void serialmouse_close(void){
+  pointer_free(-1,serialmouse_cursor);
   close(mouse_fd);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: pgmain.h,v 1.10 2002/05/20 19:18:38 micahjd Exp $
+/* $Id: pgmain.h,v 1.11 2002/07/03 22:03:29 micahjd Exp $
  *
  * pgmain.h - just a few things related to the main loop
  *
@@ -39,12 +39,12 @@ struct themefilenode {
 
 /* Variables indicating pgserver's status, they may be affected by signals
  */
-extern volatile u8 mainloop_proceed;
-extern volatile u8 in_init;
-extern volatile u8 use_sessionmgmt;           /* Using session manager, exit after last client */
-extern volatile u8 use_tpcal;                 /* Run tpcal before running the session manager */
-extern volatile u8 sessionmgr_secondary;      /* Need to run session manager after tpcal */
-extern volatile u8 sessionmgr_start;          /* Start the session manager at the next iteration */
+extern volatile int mainloop_proceed;
+extern volatile int in_init;
+extern volatile int use_sessionmgmt;           /* Using session manager, exit after last client */
+extern volatile int use_tpcal;                 /* Run tpcal before running the session manager */
+extern volatile int sessionmgr_secondary;      /* Need to run session manager after tpcal */
+extern volatile int sessionmgr_start;          /* Start the session manager at the next iteration */
 
 /* Call request_quit to exit pgserver cleanly */
 void request_quit(void);

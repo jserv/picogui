@@ -1,4 +1,4 @@
-/* $Id: jsdev.c,v 1.4 2002/05/22 10:01:20 micahjd Exp $
+/* $Id: jsdev.c,v 1.5 2002/07/03 22:03:30 micahjd Exp $
  *
  * jsdev.c - Driver for cursor control and key input using a joystick,
  *           reads from the linux joystick device. Note that all joystick 
@@ -97,10 +97,11 @@ int jsdev_cursorvx, jsdev_cursorvy;
 /* Time unit for velocity, in microseconds */
 long jsdev_polltime;
 
+struct cursor *js_cursor;
+
 int jsdev_fd_activate(int fd) {
   struct js_event js;
   int i;
-  s16 cursorx,cursory;
 
   if (fd != jsdev_fd)
     return 0;
@@ -118,12 +119,12 @@ int jsdev_fd_activate(int fd) {
       if (js.value) {
 	/* press */
 	if (jsdev_buttons[js.number].key < 128)
-	  dispatch_key(PG_TRIGGER_CHAR, jsdev_buttons[js.number].key, 0);
-	dispatch_key(PG_TRIGGER_KEYDOWN, jsdev_buttons[js.number].key, 0);
+	  infilter_send_key(PG_TRIGGER_CHAR, jsdev_buttons[js.number].key, 0);
+	infilter_send_key(PG_TRIGGER_KEYDOWN, jsdev_buttons[js.number].key, 0);
       }
       else {
 	/* Release */
-	dispatch_key(PG_TRIGGER_KEYUP, jsdev_buttons[js.number].key, 0);
+	infilter_send_key(PG_TRIGGER_KEYUP, jsdev_buttons[js.number].key, 0);
       }
       break;
 
@@ -133,8 +134,8 @@ int jsdev_fd_activate(int fd) {
       cursory = cursor->y;
       VID(coord_physicalize)(&cursorx,&cursory);
 
-      dispatch_pointing(js.value ? PG_TRIGGER_DOWN : PG_TRIGGER_UP,
-			cursorx,cursory,jsdev_buttons[js.number].mousebutton);	
+      infilter_send_pointing(js.value ? PG_TRIGGER_DOWN : PG_TRIGGER_UP,
+			     cursorx,cursory,jsdev_buttons[js.number].mousebutton,js_cursor);	
       break;
 
     }
@@ -152,12 +153,12 @@ int jsdev_fd_activate(int fd) {
 	if (newstate && !map->state) {
 	  /* press */
 	  if (map->key < 128)
-	    dispatch_key(PG_TRIGGER_CHAR, map->key, 0);
-	  dispatch_key(PG_TRIGGER_KEYDOWN, map->key, 0);
+	    infilter_send_key(PG_TRIGGER_CHAR, map->key, 0);
+	  infilter_send_key(PG_TRIGGER_KEYDOWN, map->key, 0);
 	}
 	else if (map->state && !newstate) {
 	  /* Release */
-	  dispatch_key(PG_TRIGGER_KEYUP, map->key, 0);
+	  infilter_send_key(PG_TRIGGER_KEYUP, map->key, 0);
 	}
 	map->state = newstate;
       }
@@ -292,7 +293,7 @@ g_error jsdev_init(void) {
     jsdev_buttons[i].mousebutton = get_param_int("input-jsdev",buf,1);
   }    
 
-  return success;
+  return cursor_new(&js_cursor,NULL,-1);
 }
 
 void jsdev_fd_init(int *n,fd_set *readfds,struct
@@ -316,6 +317,7 @@ void jsdev_close(void){
   if (jsdev_axes)
     g_free(jsdev_axes);
   close(jsdev_fd);
+  pointer_free(-1,js_cursor);
 }
 
 void jsdev_poll(void) {
@@ -340,7 +342,7 @@ void jsdev_poll(void) {
     if (cursory < 0)cursory=0;
    
     /* Move the cursor */
-    dispatch_pointing(PG_TRIGGER_MOVE,cursorx,cursory,0);
+    infilter_send_pointing(PG_TRIGGER_MOVE,cursorx,cursory,0,js_cursor);
   }
 }
 

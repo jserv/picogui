@@ -1,4 +1,4 @@
-/* $Id: sdlremote.c,v 1.6 2001/08/30 03:50:35 micahjd Exp $
+/* $Id: sdlremote.c,v 1.7 2002/07/03 22:03:25 micahjd Exp $
  * 
  * sdlremote.c - pgremote is a networked PicoGUI input driver.
  *               This uses SDL, so hopefully it is fairly portable.
@@ -38,12 +38,17 @@ int main(int argc, char **argv) {
    SDL_Surface *surf;
    SDL_Event evt;
    struct pgmodeinfo mi;
-   int ox=0,oy=0,btnstate=0;
    int scale = 1;
-   
+   int ox=0,oy=0,btnstate=0;
+   static union pg_client_trigger trig;
+   pghandle cursor;
+
    /* Don't need an app, but a connection would be nice... */
    pgInit(argc,argv); 
    mi = *pgGetVideoMode();
+
+   /* Create a cursor for this input device */
+   cursor = pgNewCursor();
 
    /* If the server is especially low resolution, magnify it */
    if (mi.xres < 300 || mi.yres < 300) {
@@ -80,44 +85,66 @@ int main(int argc, char **argv) {
 	 evt.motion.y /= scale;
 	 
 	 /* Skip false moves (like dragging outside the window edge)
-	  * and ignore moves we can't keep up with */
-	 if ((evt.motion.x==ox) && (evt.motion.y==oy)) break;
-	 if (SDL_PollEvent(NULL)) break;
+	  * and ignore moves we can't keep up with 
+	  */
+	 if ((evt.motion.x==ox) && (evt.motion.y==oy)) 
+	   break;
+	 if (SDL_PollEvent(NULL)) 
+	   break;
 
-         pgSendPointerInput(PG_TRIGGER_MOVE,ox = evt.motion.x,
-			   oy = evt.motion.y,btnstate=evt.motion.state);
-	 pgDriverMessage(PGDM_CURSORVISIBLE,1);
+	 trig.content.type        = PG_TRIGGER_MOVE;
+	 trig.content.u.mouse.x   = ox = evt.motion.x;
+	 trig.content.u.mouse.y   = oy = evt.motion.y;
+	 trig.content.u.mouse.btn = btnstate = evt.motion.state;
+	 trig.content.u.mouse.cursor_handle = cursor;
+
+	 pgInFilterSend(&trig);
 	 break;
 	 
        case SDL_MOUSEBUTTONDOWN:
 	 evt.button.x /= scale;
 	 evt.button.y /= scale;
 	 
-	 pgSendPointerInput(PG_TRIGGER_DOWN,evt.button.x,
-			    evt.button.y,btnstate |= 1<<(evt.button.button-1));
-	 pgDriverMessage(PGDM_CURSORVISIBLE,1);
+	 trig.content.type        = PG_TRIGGER_DOWN;
+	 trig.content.u.mouse.x   = ox = evt.button.x;
+	 trig.content.u.mouse.y   = oy = evt.button.y;
+	 trig.content.u.mouse.btn = btnstate |= 1 << (evt.button.button-1);
+	 trig.content.u.mouse.cursor_handle = cursor;
+
+	 pgInFilterSend(&trig);
 	 break;
 	 
        case SDL_MOUSEBUTTONUP:
 	 evt.button.x /= scale;
 	 evt.button.y /= scale;
 
-	 pgSendPointerInput(PG_TRIGGER_UP,evt.button.x,
-			    evt.button.y,btnstate &= ~(1<<(evt.button.button-1)));
-	 pgDriverMessage(PGDM_CURSORVISIBLE,1);
+	 trig.content.type        = PG_TRIGGER_UP;
+	 trig.content.u.mouse.x   = ox = evt.button.x;
+	 trig.content.u.mouse.y   = oy = evt.button.y;
+	 trig.content.u.mouse.btn = btnstate &= ~(1 << (evt.button.button-1));
+	 trig.content.u.mouse.cursor_handle = cursor;
+
+	 pgInFilterSend(&trig);
 	 break;
 	 
        case SDL_KEYDOWN:
-	 if (evt.key.keysym.unicode)
-	   pgSendKeyInput(PG_TRIGGER_CHAR,evt.key.keysym.unicode,
-			  evt.key.keysym.mod);
-	 pgSendKeyInput(PG_TRIGGER_KEYDOWN,evt.key.keysym.sym,
-			evt.key.keysym.mod);
+	 if (evt.key.keysym.unicode) {
+	   trig.content.type       = PG_TRIGGER_CHAR;
+	   trig.content.u.kbd.key  = evt.key.keysym.unicode;
+	   trig.content.u.kbd.mods = evt.key.keysym.mod;
+	   pgInFilterSend(&trig);
+	 }
+	 trig.content.type       = PG_TRIGGER_KEYDOWN;
+	 trig.content.u.kbd.key  = evt.key.keysym.sym;
+	 trig.content.u.kbd.mods = evt.key.keysym.mod;
+	 pgInFilterSend(&trig);
 	 break;
 	 
        case SDL_KEYUP:
-	 pgSendKeyInput(PG_TRIGGER_KEYUP,evt.key.keysym.sym,
-			evt.key.keysym.mod);
+	 trig.content.type       = PG_TRIGGER_KEYUP;
+	 trig.content.u.kbd.key  = evt.key.keysym.sym;
+	 trig.content.u.kbd.mods = evt.key.keysym.mod;
+	 pgInFilterSend(&trig);
 	 break;
 	 
        case SDL_QUIT:

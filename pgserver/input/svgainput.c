@@ -1,4 +1,4 @@
-/* $Id: svgainput.c,v 1.22 2002/05/22 10:01:20 micahjd Exp $
+/* $Id: svgainput.c,v 1.23 2002/07/03 22:03:30 micahjd Exp $
  *
  * svgainput.h - input driver for SVGAlib
  *
@@ -46,6 +46,8 @@ extern int __svgalib_kbd_fd;
 extern void (*__svgalib_mouse_eventhandler)(int, int, int, int, int, int, int);
 
 void (*default_svgalib_mousehandler)(int, int, int, int, int, int, int);
+
+struct cursor *svga_cursor;
 
 /******************************************** Keyboard handler */
 /* Where indicated, code has been used from SDL (www.libsdl.org) */
@@ -224,16 +226,16 @@ void svgainput_kbdhandler(int scancode,int press) {
 	  previouskey = 0;
 	  b &= scancode == SCANCODE_REMOVE ? ~2 : ~1;
 	}
-	dispatch_pointing(press ? PG_TRIGGER_DOWN : PG_TRIGGER_UP,
-			  cursor->x,cursor->y,b);	
+	infilter_send_pointing(press ? PG_TRIGGER_DOWN : PG_TRIGGER_UP,
+			       cursor->x,cursor->y,b,svga_cursor);
 	return;
      }
      else
        goto nomousekey;
 
-     dispatch_pointing(PG_TRIGGER_MOVE,
-		       cursor->x+((e-w)<<scale),
-		       cursor->y+((s-n)<<scale),b);
+	  infilter_send_pointing(PG_TRIGGER_MOVE,
+				 cursor->x+((e-w)<<scale),
+				 cursor->y+((s-n)<<scale),b,svga_cursor);
      mouse_setposition(cursor->x,cursor->y);
      return;
   }
@@ -269,13 +271,13 @@ void svgainput_kbdhandler(int scancode,int press) {
 #endif
 
     if (c)
-      dispatch_key(PG_TRIGGER_CHAR,c,svgainput_mod);
+      infilter_send_key(PG_TRIGGER_CHAR,c,svgainput_mod);
   }
 
   /******* Handle raw key press/release events */
   
   /* Dispatch to the rest of PicoGUI */
-  dispatch_key(press ? PG_TRIGGER_KEYDOWN : PG_TRIGGER_KEYUP,svgainput_keymap[scancode],svgainput_mod);
+  infilter_send_key(press ? PG_TRIGGER_KEYDOWN : PG_TRIGGER_KEYUP,svgainput_keymap[scancode],svgainput_mod);
 }
 
 /******************************************** Mouse handler */
@@ -309,10 +311,10 @@ void svgainput_mousehandler(int button,int dx,int dy,int dz,
   prevbutton = button;
 
   /* Dispatch to PicoGUI */
-  dispatch_pointing(trigger,x,y,
-		    ((button>>2)&1) ||
-		    ((button<<2)&4) ||
-		    (button&2));
+  infilter_send_pointing(trigger,x,y,
+			 ((button>>2)&1) ||
+			 ((button<<2)&4) ||
+			 (button&2),svga_cursor);
 }
 
 /******************************************** Implementations */
@@ -326,12 +328,13 @@ g_error svgainput_init(void) {
   keyboard_seteventhandler(&svgainput_kbdhandler);
   default_svgalib_mousehandler = __svgalib_mouse_eventhandler;
   mouse_seteventhandler(&svgainput_mousehandler);
-  return success;
+  return cursor_new(&svga_cursor,NULL,-1);
 }
  
 void svgainput_close(void) {
   ioctl(__svgalib_kbd_fd,KDSETLED,0);   /* Turn off the lights */
   keyboard_close();
+  pointer_free(-1,svga_cursor);
 }
 
 /* watch SVGAlib's file handles */

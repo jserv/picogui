@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.112 2002/05/22 10:01:21 micahjd Exp $
+/* $Id: button.c,v 1.113 2002/07/03 22:03:32 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -29,6 +29,7 @@
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <pgserver/appmgr.h>
+#include <pgserver/hotspot.h>
 
 struct btndata {
   unsigned int on : 1;
@@ -528,7 +529,6 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
     tp = *param;
     param = &tp;
     param->mouse.chbtn = 1;
-    lastclicked = self;
   case PG_TRIGGER_DOWN:
     if (DATA->extdevents & PG_EXEV_PNTR_DOWN)
       post_event(PG_WE_PNTR_DOWN,self,param->mouse.chbtn,0,NULL);

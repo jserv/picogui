@@ -1,4 +1,4 @@
-/* $Id: palmaxts.c,v 1.6 2002/05/22 10:01:20 micahjd Exp $
+/* $Id: palmaxts.c,v 1.7 2002/07/03 22:03:30 micahjd Exp $
  *
  * palmaxts.c - input driver for Palmax touchscreens.
  *
@@ -80,7 +80,6 @@
 #include <sys/termios.h>
 
 int palmaxts_fd;
-int btnstate;
 struct termios options;
 
 int palmaxts_fd_activate(int fd) {
@@ -114,41 +113,14 @@ int palmaxts_fd_activate(int fd) {
 	return 1;	/* malformed */
     }
 
-  if(packet[1]!=0xfe)
-    {
-      buttons = 1;
-      cursorx = (packet[1]>>6|(s16)packet[2]<<2);
-      cursory = (packet[3]>>6|(s16)packet[4]<<2);
-      touchscreen_pentoscreen(&cursorx, &cursory);
-    }
-  else
-    {
-      buttons = 0;
-    }
-  
-  if ((buttons!=0)&&(btnstate==0)){
-    dispatch_pointing(PG_TRIGGER_DOWN,cursorx,cursory,buttons);
-    btnstate=1;
-  }
-  if ((buttons==0)&&(btnstate==1)){
-    dispatch_pointing(PG_TRIGGER_UP,cursorx,cursory,buttons);
-    btnstate=0;
-  }
-  if(buttons)
-    dispatch_pointing(PG_TRIGGER_MOVE,cursorx,cursory,buttons);
-  
+  infilter_send_touchscreen((packet[1]>>6|(s16)packet[2]<<2),
+			    (packet[3]>>6|(s16)packet[4]<<2),
+			    0,
+			    packet[1]!=0xFE);
   return 1;
 }
 
 g_error palmaxts_init(void) {
-  g_error ret;
-
-  ret=touchscreen_init();
-  if(ret!=success)
-	  return ret;
-
-  btnstate=0;
-
   palmaxts_fd = open(get_param_str("input-palmaxts","device","/dev/ttyS0"),
 	    O_RDONLY | O_NOCTTY | O_NDELAY);
 
@@ -192,7 +164,6 @@ g_error palmaxts_regfunc(struct inlib *i) {
   i->init = &palmaxts_init;
   i->fd_activate = &palmaxts_fd_activate;
   i->fd_init = &palmaxts_fd_init;
-  i->message = &touchscreen_message;
   i->close = &palmaxts_close;
   return success;
 }

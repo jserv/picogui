@@ -3,7 +3,7 @@
 <book id="PicoGUI.Protocol">
  <bookinfo>
   <title>PicoGUI Protocol</title>
-  <subtitle>Version 16</>
+  <subtitle>Version 18</>
 
   <authorgroup>
    <author>
@@ -177,7 +177,7 @@ struct pghello {
 	The <structfield>protover</structfield> identifies the protocol
 	version in use.	The version number is incremented every time a
 	change is made to the protocol specifications.  At the time of
-	writing this document the latest value was <constant>16</constant>.
+	writing this document the latest value was <constant>18</constant>.
    </para>
   </sect2>
  </sect1>
@@ -587,6 +587,22 @@ struct pgreqd_get {
    </para>
   </sect2>
 
+  <sect2 id="pgreq-getcontext">
+   <title>PGREQ_GETCONTEXT - Get the app's current handle context</>
+   <programlisting>
+type                 : PGREQ_GETCONTEXT (52)
+client lib equivalent: pgGetContext()
+additional data      : none
+server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : <structfield>pgresponse_ret.data</>
+   </programlisting>
+   <para>
+	Every handle created by a PicoGUI is given a numerical "context" ID, that usually
+	works much like variable scopes in C. This function lets you get the
+	ID that new handles in an app are created at.
+   </para>
+  </sect2>
+
   <sect2 id="pgreq-getfstyle">
    <title>PGREQ_GETFSTYLE - Get information on a font</>
    <programlisting>
@@ -734,7 +750,7 @@ struct pgreqd_getresource {
 };
    </programlisting></figure>
    <para>
-        The <structfield>id</> is a <constant>PGRES_*</> constant identifying the resource
+        The <structfield>id</> is a <link linkend="pgres">PGRES_*</> constant identifying the resource
 	to retrieve. The value returned should not change over the duration of the client's
         connection, so it is safe for the client libarary to cache the server resources.
    </para>
@@ -756,85 +772,67 @@ server returned data : string
    </para>
   </sect2>
 
-  <sect2 id="pgreq-in-key">
-   <title>PGREQ_IN_KEY - Dispatch keyboard input</title> 
+  <sect2 id="pgreq-infiltersend">
+   <title>PGREQ_INFILTERSEND - Send a trigger to an input filter</>
    <programlisting>
-type                 : PGREQ_IN_KEY (10)
-client lib equivalent: pgDispatchEvent()
-additional data      : <link linkend="pgreqdinkey">struct pgreqd_in_key</>
+type                 : PGREQ_INFILTERSEND (53)
+client lib equivalent: pgInFilterSend()
+additional data      : <link linkend="pgreqdinfiltersend">struct pgreqd_infiltersend</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
 server returned data : none
    </programlisting>
    <para>
-	Dispatch a keyboard input.
+        Send a trigger to an input filter. This may be used to resend a trigger
+	after it's processed by a client-side input filter, or you could use to create
+	a new trigger to write client-side input drivers.
    </para>
-   <figure id="pgreqdinkey"><title>struct pgreqd_in_key</><programlisting>
-struct pgreqd_in_key {
-  u32 type;
-  u16 key;
-  u16 mods;
+   <figure id="pgreqdinfiltersend"><title>struct pgreqd_infiltersend</><programlisting>
+struct pgreqd_infiltersend {
+  union pg_client_trigger trig;
 };
    </programlisting></figure>
    <para>
-	The <structfield>type</> is a TRIGGER_* constant (see
-	<xref linkend="triggertypes"> for a complete listing).
+        The <link linkend="pgclienttrigger">pg_client_trigger</> union is the
+	same one passed from server to client when a client-side input filter recieves
+	a trigger. For forward compatibility with changes in the server, the client must
+	preserve the entire structure when passing it forward in the input filter chain, even
+	if it doesn't know about all the members. This is the reason for the <structfield>array</>
+	field in the union. When the client is creating a new trigger, all unused fields should be
+	set to zero. If <structfield>infilter_from</> is zero, it will be sent to the first filter
+	in the chain, as if it came from a driver.
    </para>
-   <para>
-	The <structfield>mods</> is a bitmask of the currently active
-	modifiers (see <xref linkend="pgmod"> for a complete
-	listing).
-   </para>
-   <para>
-	The <structfield>key</> value varies depending on the type of event
-	generated.
-   </para>
-   <para>
-	When generating a PG_TRIGGER_CHAR, <structfield>key</> is a unicode
-	UTF-16 character.
-   </para>
-   <para>
-	When generating a PG_TRIGGER_KEYUP or PG_TRIGGER_KEYDOWN event, the
-	value is a PGKEY (see <xref linkend="pgkeys"> for a complete
-	listing).
-   </para>
-   <para>
-	<emphasis>IMPORTANT NOTE:</> this protocol packet will change in the
-	next version and will be incompatible.
-   </para>
-  </sect2>
+   <figure id="pgclienttrigger"><title>union pg_client_trigger</><programlisting>
+/* A client-side representation of triggers, used for client-side input filters
+ * and event handling. The whole structure can be viewed as a 64-byte packet of
+ * 16 u32 variables, so that more trigger types can be added without disrupting
+ * the client libraries or the protocol.
+ */
+union pg_client_trigger {
+  u32 array[16];
+  struct {
+    u32 infilter_from;           /* Handle of input filter this is generated by */
+    u32 type;                    /* PG_TRIGGER_* constant                       */
+    union {                      /* Type-dependent data (must be 14 or less vars each) */
+      
+      struct {
+	u32 x,y,btn,pressure;    /* Current status */
+	u32 chbtn;               /* Changed buttons */
+	u32 cursor_handle;
+	u32 is_logical;          /* Nonzero if events are in logical coordinates */
+	u32 ts_calibration;      /* Handle of a calibration string for the touchscreen */
+      } mouse;
 
-  <sect2 id="pgreq-in-point">
-   <title>PGREQ_IN_POINT - Dispatch a pointing device input</title> 
-   <programlisting>
-type                 : PGREQ_IN_POINT (11)
-client lib equivalent: pgDispatchEvent()
-additional data      : <link linkend="pgreqdinpoint">struct pgreqd_in_point</>
-server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
-server returned data : none
-   </programlisting>
-   <para>
- 	Dispatch a pointing device input
-   </para>
-   <figure id="pgreqdinpoint"><title>struct pgreqd_in_point</><programlisting>
-struct pgreqd_in_point {
-  u32 type;
-  u16 x;
-  u16 y;
-  u16 btn;
-  u16 dummy;
+      struct {
+	u32 key;                 /* PGKEY_* constant */
+	u32 mods;                /* PGMOD_* constant */
+	u32 flags;               /* PG_KF_* constants */
+	u32 consume;             /* Consume event during widget propagation */
+      } kbd;
+
+    } u;
+  } content;
 };
    </programlisting></figure>
-   <para>
-	The <structfield>type</> is a TRIGGER_* constant (see
-	<xref linkend="triggertypes"> for a complete listing).
-   </para>
-   <para>
-	The <structfield>x</> and <structfield>y</> are the absolute
-	coordinates of the pointer.
-   </para>
-   <para>
-	The <structfield>btn</> is a bitmask of the buttons state.
-   </para>
   </sect2>
 
   <sect2 id="pgreq-loaddriver">
@@ -877,7 +875,7 @@ server returned data : <structfield>pgresponse_ret.data</>
    <title>PGREQ_MKBITMAP - Load a bitmap</title> 
    <programlisting>
 type                 : PGREQ_MKBITMAP (3)
-client lib equivalent: pgLoadBitmap
+client lib equivalent: pgLoadBitmap()
 additional data      : image data
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
 server returned data : <structfield>pgresponse_ret.data</>
@@ -910,6 +908,26 @@ server returned data : <structfield>pgresponse_ret.data</>
 	that context are deleted. No memory is used by creating a context,
 	and they can be nested a very large number of times. An ID number
         for the newly entered context is returned.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-mkcursor">
+   <title>PGREQ_MKCURSOR - Make a new cursor, return the handle</>
+   <programlisting>
+type                 : PGREQ_MKCURSOR (10)
+client lib equivalent: pgNewCursor()
+additional data      : none
+server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : <structfield>pgresponse_ret.data</>
+   </programlisting>
+   <para>
+	Create a new cursor object.
+   </para>
+   <para>
+        PicoGUI drivers or input filters that need a visual representation of
+        the pointing device position should create a cursor object, and pass
+	it along with triggers they send. This cursor creates a sprite independent
+	of any other cursors that may be active.
    </para>
   </sect2>
 
@@ -968,6 +986,44 @@ struct pgreqd_mkfont {
    <para>
 	The <structfield>size</> or height in pixels of the font to search
 	for, or zero for any.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-mkinfilter">
+   <title>PGREQ_MKINFILTER - Create a client-side input filter</title>
+   <programlisting>
+type                 : PGREQ_MKINFILTER (11)
+client lib equivalent: pgNewInFilter()
+additional data      : <link linkend="pgreqdmkinfilter">struct pgreqd_mkinfilter</>
+server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : <structfield>pgresponse_ret.data</>
+   </programlisting>
+   <para>
+        Create a client-side input filter, that can intercept and/or modify
+	the server's "triggers" used to send events from drivers to widgets.
+   </para>
+   <figure id="pgreqdmkinfilter"><title>struct pgreqd_mkinfilter</><programlisting>
+struct pgreqd_mkinfilter {
+  u32 insert_after;        /* Handle of the filter to insert this one after, or 0
+			    * for this filter to be the first in the chain.
+			    */
+  u32 accept_trigs;        /* Mask of triggers that this filter should accept */
+  u32 absorb_trigs;        /* Mask of triggers not to automatically pass on   */
+};
+   </programlisting></figure>
+   <para>
+        The <structfield>insert_after</> field is the handle of the input filter
+	to insert this one after. If you want it to be the first filter in the
+	chain, this should be zero. You can get handles to the server's built-in
+	filters using <link linkend="pgreq-getresource">PGREQ_GETRESOURCE</>.
+   </para>
+   <para>
+        The <structfield>accept_trigs</> and <structfield>absorb_trigs</> are,
+	respectively, masks of which triggers to process in this filter and which
+	triggers to prevent from passing on to the next trigger. Note that these
+	two masks are independent of each other, and you can still manually pass
+	on triggers using <link linkend="pgreq-infiltersend">PGREQ_INFILTERSEND</>
+	regardless of the setting in <structfield>absorb_trigs</>.
    </para>
   </sect2>
 
@@ -1143,7 +1199,8 @@ server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
 server returned data : <structfield>pgresponse_ret.data</>
    </programlisting>
    <para>
-	Create a root window of an application.  The handle to the root window
+	Create a root widget of an application, and registers the application
+	in the server's list of running apps.  The handle to the root widget
 	created will be returned in the <structfield>pgresponse_ret.data</>
    </para>
    <figure id="pgreqdregister"><title>struct pgreqd_register</><programlisting>
@@ -1306,6 +1363,30 @@ struct pgreqd_set {
    <para>
 	The <structfield>property</> is a property identifier (see
 	<xref linkend="propertytypes"> for a complete listing).
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-setcontext">
+   <title>PGREQ_SETCONTEXT - Set the app's current handle context</>
+   <programlisting>
+type                 : PGREQ_SETCONTEXT (51)
+client lib equivalent: pgSetContext()
+additional data      : <link linkend="pgreqdsetcontext">struct pgreqd_setcontext</>
+server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : none
+   </programlisting>
+   <para>
+	Every handle created by a PicoGUI is given a numerical "context" ID, that usually
+	works much like variable scopes in C. This function lets you manipulate the
+	ID that new handles in an app are created at.
+   </para>
+   <figure id="pgreqdsetcontext"><title>struct pgreqd_setcontext</><programlisting>
+struct pgreqd_setcontext {
+  u32 context;
+};
+   </programlisting></figure>
+   <para>
+	Where <structfield>context</> is the new initial handle context ID for this client.
    </para>
   </sect2>
 
@@ -2107,8 +2188,8 @@ chbtn = (<structfield>pgresponse_event.param</> &gt;&gt; 28) &amp; 0xF;
   <row><entry>PGREQ_SET</><entry>7</><entry>Set a widget param</></>
   <row><entry>PGREQ_GET</><entry>8</><entry>Get a widget param, return it</></>
   <row><entry>PGREQ_MKTHEME</><entry>9</><entry>Load a compiled theme</></>
-  <row><entry>PGREQ_IN_KEY</><entry>10</><entry>Dispatch keyboard input</></>
-  <row><entry>PGREQ_IN_POINT</><entry>11</><entry>Dispatch pointing device input</></>
+  <row><entry>PGREQ_MKCURSOR</><entry>10</><entry>Make a cursor, return handle</></>
+  <row><entry>PGREQ_MKINFILTER</><entry>11</><entry>Make an input filter, return handle</></>
   <row><entry>PGREQ_GETRESOURCE</><entry>12</><entry>Get a handle to a server-owned resource</></>
   <row><entry>PGREQ_WAIT</><entry>13</><entry>Wait for an event</></>
   <row><entry>PGREQ_MKFILLSTYLE</><entry>14</><entry>Load a fill style, return handle</></>
@@ -2146,7 +2227,11 @@ chbtn = (<structfield>pgresponse_event.param</> &gt;&gt; 28) &amp; 0xF;
   <row><entry>PGREQ_CREATEWIDGET</><entry>46</><entry>Create widget</></>
   <row><entry>PGREQ_ATTACHWIDGET</><entry>47</><entry>Attach widget</></>
   <row><entry>PGREQ_FINDTHOBJ</><entry>48</><entry>Find theme object by name</></>
-  <row><entry>PGREQ_TRAVERSEWGT</><entry>49</><entry>Find widgets after this one</></>
+  <row><entry>PGREQ_TRAVERSEWGT</><entry>49</><entry>Find widgets relative to a specified widget</></>
+  <row><entry>PGREQ_MKTEMPLATE</><entry>50</><entry>Load a widget template, return the handle</></>
+  <row><entry>PGREQ_SETCONTEXT</><entry>51</><entry>Set the app's current handle context</></>
+  <row><entry>PGREQ_GETCONTEXT</><entry>52</><entry>Get the app's current handle context</></>
+  <row><entry>PGREQ_INFILTERSEND</><entry>53</><entry>Send a trigger to an input filter</></>
   </tbody></tgroup></table>
  </appendix>
 
@@ -2705,18 +2790,12 @@ chbtn = (<structfield>pgresponse_event.param</> &gt;&gt; 28) &amp; 0xF;
    <colspec colwidth="10*">
    <colspec colwidth="45*">
    <tbody>
-   <row><entry>PGDM_CURSORVISIBLE</><entry>1</><entry>Turn the cursor on/off</></>
    <row><entry>PGDM_BACKLIGHT</><entry>2</><entry>Turn the backlight on/off</></>
    <row><entry>PGDM_SOUNDFX</><entry>3</><entry>Parameter is a PG_SND_* constant</></>
    <row><entry>PGDM_POWER</><entry>4</><entry>Enter the power mode, PG_POWER_*</></>
    <row><entry>PGDM_SDC_CHAR</><entry>5</><entry>Send a character to the secondary display channel</></>
    <row><entry>PGDM_BRIGHTNESS</><entry>6</><entry>Set display brightness, 0x00-0xFF</></>
    <row><entry>PGDM_CONTRAST</><entry>7</><entry>Set display contrast, 0x00-0xFF</></>
-   <row><entry>PGDM_INPUT_RAW</><entry>8</><entry>Send PG_NWE_PNTR_RAW from the specified widget</></>
-   <row><entry>PGDM_INPUT_SETCAL</><entry>9</><entry>Param is a handle to a new calibration string</></>
-   <row><entry>PGDM_CURSORBLKEN</><entry>10</><entry>Cursor blanking on/off</></>
-   <row><entry>PGDM_INPUT_CALEN</><entry>11</><entry>Turn calibration mode on/off</></>
-   <row><entry>PGDM_CURSORWARP</><entry>12</><entry>Internal message, notify drivers of a cursor warp</></>
    <row><entry>PGDM_SIGNAL</><entry>13</><entry>Internal message, sends SIGUSR1/2 to drivers (param is signal)</></>
    <row><entry>PGDM_READY</><entry>14</><entry>Notify the drivers that the server is completely up</></>
    </tbody>
@@ -2760,15 +2839,9 @@ chbtn = (<structfield>pgresponse_event.param</> &gt;&gt; 28) &amp; 0xF;
    <colspec colwidth="10*">
    <colspec colwidth="45*">
    <tbody>
-   <row><entry>PG_NWE_KBD_CHAR</><entry>0x140A</><entry>sent if the client has captured the keyboard</></>
-   <row><entry>PG_NWE_KBD_KEYUP</><entry>0x140B</><entry>sent if the client has captured the keyboard</></>
-   <row><entry>PG_NWE_KBD_KEYDOWN</><entry>0x140C</><entry>sent if the client has captured the keyboard</></>
-   <row><entry>PG_NWE_PNTR_MOVE</><entry>0x1209</><entry>sent if the client has captured the pointing device</></>
-   <row><entry>PG_NWE_PNTR_UP</><entry>0x1205</><entry>sent if the client has captured the pointing device</></>
-   <row><entry>PG_NWE_PNTR_DOWN</><entry>0x1204</><entry>sent if the client has captured the pointing device</></>
-   <row><entry>PG_NWE_BGCLICK</><entry>0x120D</><entry>The user clicked the background widget</></>
-   <row><entry>PG_NWE_PNTR_RAW</><entry>0x1101</><entry>Raw coordinates, for tpcal or games</></>
-   <row><entry>PG_NWE_CALIB_PENPOS</><entry>0x1301</><entry>Raw 32-bit coordinates, for tpcal</></>
+   <row><entry>PG_NWE_THEME_INSERTED</><entry>0x1001</><entry>This notifies all clients when a theme is inserted, so they can reevaluate theme properties they're using. The parameter passed with this event is a handle to the theme.</></>
+   <row><entry>PG_NWE_THEME_REMOVED</><entry>0x1002</><entry>This notifies all clients when a theme is removed, so they can reevaluate theme properties they're using. The parameter passed with this event is a handle to the theme. Note that at the time this event is sent, the handle will be invalid, but it is provided for comparison purposes if needed.</></>
+   <row><entry>PG_NWE_INFILTER</><entry>0x1302</><entry>Carries an event from pgserver to a client-side input filter. The data along with this event is a <link linkend="pgclienttrigger">union pg_client_trigger</></></>
    </tbody>
    </tgroup>
    </table>
@@ -2796,14 +2869,18 @@ chbtn = (<structfield>pgresponse_event.param</> &gt;&gt; 28) &amp; 0xF;
    <row><entry>PGRES_STRING_PGUIERRDLG</><entry>9</><entry>"An error of type %s occurred in %s:\n\n%s\n\nTerminate the application?"</></>
    <row><entry>PGRES_STRING_PGUICOMPAT</><entry>10</><entry>"This PicoGUI application uses a newer protocol than the server.You may experience compatibility problems."</></>
    <row><entry>PGRES_DEFAULT_TEXTCOLORS</><entry>11</><entry>The server's default terminal palette</></>
-   <row><entry>PGRES_INFILTER_KEY_NORMALIZE</><entry>12</><entry>Input filter for standardizing keys recieved from the driver</></>
-   <row><entry>PGRES_INFILTER_PNTR_NORMALIZE</><entry>13</><entry>Input filter for standardizing keys recieved from the pointing device</></>
-   <row><entry>PGRES_INFILTER_TOUCHSCREEN</><entry>14</><entry>Input filter for touchscreen calibration and filtering</></>
-   <row><entry>PGRES_INFILTER_KEY_PREPROCESS</><entry>15</><entry>Input filter for performing extra processing on keys before dispatching them</></>
-   <row><entry>PGRES_INFILTER_PNTR_PREPROCESS</><entry>16</><entry>Input filter for performing extra processing on pointing events before dispatching them</></>
-   <row><entry>PGRES_INFILTER_KEY_MAGIC</><entry>17</><entry>Input filter for handling CTRL-ALT-* debug keys</></>
-   <row><entry>PGRES_INFILTER_KEY_DISPATCH</><entry>18</><entry>Input filter for dispatching key events</></>
-   <row><entry>PGRES_INFILTER_PNTR_DISPATCH</><entry>19</><entry>Input filter for dispatching pointing events</></>
+   <row><entry>PGRES_INFILTER_TOUCHSCREEN</><entry>12</><entry>Input filter for touchscreen calibration and filtering</></>
+   <row><entry>PGRES_INFILTER_KEY_PREPROCESS</><entry>13</><entry>Input filter for performing extra processing on keys before dispatching them</></>
+   <row><entry>PGRES_INFILTER_PNTR_PREPROCESS</><entry>14</><entry>Input filter to do coordinate conversion on pointing events, and other processing if applicable</></>
+   <row><entry>PGRES_INFILTER_MAGIC</><entry>15</><entry>Input filter for handling CTRL-ALT-* debug keys</></>
+   <row><entry>PGRES_INFILTER_KEY_DISPATCH</><entry>16</><entry>Input filter for dispatching key events</></>
+   <row><entry>PGRES_INFILTER_PNTR_DISPATCH</><entry>17</><entry>Input filter for dispatching pointing events</></>
+   <row><entry>PGRES_DEFAULT_CURSORBITMAP</><entry>18</><entry>The bitmap for the default cursor</></>
+   <row><entry>PGRES_DEFAULT_CURSORBITMASK</><entry>19</><entry>The bitmask for the default cursor</></>
+   <row><entry>PGRES_BACKGROUND_WIDGET</><entry>20</><entry>The server-owned widget that takes up leftover space</></>
+   <row><entry>PGRES_INFILTER_HOTSPOT</><entry>21</><entry>Input filter to manage global hotspot-navigation keys</></>
+   <row><entry>PGRES_INFILTER_KEY_ALPHA</><entry>22</><entry>Input filter that manages PGKEY_ALPHA</></>
+   <row><entry>PGRES_INFILTER_PNTR_NORMALIZE</><entry>23</><entry>Input filter to convert all pointing events to a standard form</></>
    </tbody>
    </tgroup>
    </table>

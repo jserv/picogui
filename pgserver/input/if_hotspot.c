@@ -1,11 +1,8 @@
-/* $Id: hotspot.c,v 1.24 2002/02/25 04:05:21 micahjd Exp $
+/* $Id: if_hotspot.c,v 1.2 2002/07/03 22:03:30 micahjd Exp $
  *
- * hotspot.c - This is an interface for managing hotspots.
- *             The divtree is scanned for hotspot divnodes.
- *             Their position is saved in a graph so it is easy
- *             to, for example, find which hotspot is to the left
- *             of a specified hotspot. This makes navigation with
- *             only arrow keys possible.
+ * if_hotspot.c - Use arrow keys to navigate around the screen.
+ *                Besides the actual input filter, this has utilities to build the
+ *                hotspot graph, scroll lists of widgets, and more.
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -30,48 +27,77 @@
  * 
  */
 
-#include <string.h>
 #include <pgserver/common.h>
+#include <pgserver/input.h>
+#include <pgserver/hotspot.h>   /* Defines the interface for our utilities */
 #include <pgserver/divtree.h>
-#include <pgserver/appmgr.h>
-#include <pgserver/hotspot.h>
 #include <pgserver/widget.h>
 #include <pgserver/video.h>
 
 struct hotspot *hotspotlist;
+int hotspot_compare(struct hotspot *a, struct hotspot *b);
 
-/******************** Private functions */
+/******************************************* Input filter ******/
 
-/* Sorts first by Y, then by X.
- *
- * Returns nonzero if a > b
- */
-int hotspot_compare(struct hotspot *a, struct hotspot *b) {
-  if (a->y == b->y) {
-    if (a->x == b->x) {
+void infilter_hotspot_handler(struct infilter *self, u32 trigger, union trigparam *param) {
+  int consume = 0;
 
-      /* These two hotspots are at the same spot. This will happen
-       * at the edges of a scrolling container. By always returning
-       * 1 (and this placing them in order of insertion) it should
-       * make things work correctly for vertical lists at least.
-       */
-      return 1;
+  /* Traverse the hotspot graph using keys defined in the theme
+   */
+
+  if (!(param->kbd.mods & ~(PGMOD_CAPS|PGMOD_NUM))) {
+    /* Key down, no modifiers */
     
+    if (param->kbd.key == hotkey_next) {
+      consume = 1;
+      if (trigger==PG_TRIGGER_KEYDOWN)
+	hotspot_traverse(HOTSPOT_NEXT);
     }
-    else if (a->x > b->x)
-      return 1;
-    else
-      return 0;
+    else if (param->kbd.key == hotkey_up) {
+      consume = 1;
+      if (trigger==PG_TRIGGER_KEYDOWN)
+	hotspot_traverse(HOTSPOT_UP);
+    }
+    else if (param->kbd.key == hotkey_down) {
+      consume = 1;
+      if (trigger==PG_TRIGGER_KEYDOWN)
+	hotspot_traverse(HOTSPOT_DOWN);
+    }
+    else if (param->kbd.key == hotkey_left) {
+      consume = 1;
+      if (trigger==PG_TRIGGER_KEYDOWN)
+	hotspot_traverse(HOTSPOT_LEFT);
+    } 
+    else if (param->kbd.key == hotkey_right) {
+      consume = 1;
+      if (trigger==PG_TRIGGER_KEYDOWN)
+	hotspot_traverse(HOTSPOT_RIGHT);    
+    }
   }
-  else {
-    if (a->y > b->y)
-      return 1;
-    else
-      return 0;
+  
+  else if (!(param->kbd.mods & ~(PGMOD_CAPS|PGMOD_NUM|PGMOD_SHIFT))) {
+    /* Key down with shift */
+    
+    if (param->kbd.key == hotkey_next) {
+      consume = 1;
+      if (trigger==PG_TRIGGER_KEYDOWN)
+	hotspot_traverse(HOTSPOT_PREV);
+    }
   }
+    
+  /* Pass it on if we didn't use it */
+  if (!consume)
+    infilter_send(self,trigger,param);
 }
 
-/******************** Public functions */
+struct infilter infilter_hotspot = {
+  accept_trigs: PG_TRIGGER_KEYDOWN | PG_TRIGGER_KEYUP,
+  absorb_trigs: PG_TRIGGER_KEYDOWN | PG_TRIGGER_KEYUP,
+  handler: &infilter_hotspot_handler,
+};
+
+
+/******************************************* Public hotspot utilities ******/
 
 /* Delete all hotspots */
 void hotspot_free(void) {
@@ -81,6 +107,12 @@ void hotspot_free(void) {
     hotspotlist = hotspotlist->next;
     g_free(condemn);
   }
+}
+
+/* Hide the hotspot navigation cursor */
+void hotspot_hide(void) { 
+  if (dts->top->hotspot_cursor)
+    cursor_hide(dts->top->hotspot_cursor);
 }
 
 /* Add a new hotspot to the list with an insertion sort */
@@ -110,7 +142,7 @@ g_error hotspot_add(s16 x, s16 y, struct divnode *div) {
 
 /* Recursively add hotspots for all applicable divnodes */
 g_error hotspot_build(struct divnode *n, struct divnode *ntb) {
-  s16 x,y;
+  int x,y;
   g_error e;
 
   if (!n) return success;
@@ -261,6 +293,7 @@ void hotspot_graph(void) {
  */
 void hotspot_traverse(short direction) {
   struct hotspot *p;
+  int x,y;
 
   /* rebuild the graph */
   if (!hotspotlist) {
@@ -270,24 +303,27 @@ void hotspot_traverse(short direction) {
     hotspot_graph();
   }
 
-  /* Find the current node */
-  p = hotspot_closest(cursor->x,cursor->y);
+  /* Create the hotspotnav cursor if it doesn't exist */
+  if (!dts->top->hotspot_cursor)
+    if (iserror(cursor_new(&dts->top->hotspot_cursor,NULL,-1)))
+      return;
+
+  /* Find the current node 
+   */
+  cursor_getposition(dts->top->hotspot_cursor,&x,&y);
+  p = hotspot_closest(x,y);
   if (!p)
     return;
 
   /* If the closest node isn't really that close, just warp to
-   * that closest node. Otherwise, traverse. */
-  if ( (!p->div &&
-	((cursor->x <= p->x+5) &&        /* no divnode, use a radius of 5 */ 
-	(cursor->x >= p->x-5) &&
-	(cursor->y <= p->y+5) &&
-	(cursor->y >= p->y-5))) ||
-       (p->div &&                        /* use divnode as a border */
-	(cursor->x < p->div->x + p->div->w) &&
-	(cursor->x >= p->div->x) &&
-	(cursor->y < p->div->y + p->div->h) &&
-	(cursor->y >= p->div->y))) {
-  
+   * that closest node. Otherwise, traverse. 
+   *
+   * NOTE: We used to test whether the hotspot cursor was within
+   * the same divnode as the hotspot, but now that the hotspot cursor
+   * is separate from all driver-controlled cursors we can do an
+   * exact match.
+   */
+  if (x==p->x && y==p->y) {
     /* traverse */
     p = p->graph[direction];
     if (!p)
@@ -297,21 +333,11 @@ void hotspot_traverse(short direction) {
   /* Make sure the divnode is scrolled in and focused now */
   if (p->div) {
     request_focus(p->div->owner);
+    /* request_focus will warp the cursor for us */
   }
   else {
-    /* If it's not a divnode hotspot, just move the mouse to it.
-     * If we're actually focusing the widget, that code will handle
-     * pointer warping, etc. Otherwise we need to do a simple pointer 
-     * warp here.
-     */
-
-    s16 px,py;
-    px = p->x;
-    py = p->y;
-    VID(coord_physicalize)(&px,&py);
-    dispatch_pointing(PG_TRIGGER_MOVE,px,py,0);
-    drivermessage(PGDM_CURSORWARP,0,NULL);
-    drivermessage(PGDM_CURSORVISIBLE,1,NULL);
+    /* Warp the hotspot cursor to the new hotspot location */
+    cursor_move(dts->top->hotspot_cursor,p->x,p->y);
   }
 }
 
@@ -352,7 +378,7 @@ void scroll_to_divnode(struct divnode *div) {
 }
 
 /* Return a preferred position for a hotspot within the specified divnode */
-void divnode_hotspot_position(struct divnode *div, s16 *hx, s16 *hy) {
+void divnode_hotspot_position(struct divnode *div, int *hx, int *hy) {
 
   /* FIXME: Get a smarter way to find the hotspot. For example, account for
    * different optimum positioning in different types of widgets, etc. */
@@ -365,8 +391,51 @@ void divnode_hotspot_position(struct divnode *div, s16 *hx, s16 *hy) {
     *hy = div->y;
 }
 
-/* The End */
 
+/* Global hotkeys, and a function to load them */
+u16 hotkey_left, hotkey_right, hotkey_up, hotkey_down;
+u16 hotkey_activate, hotkey_next;
+void reload_hotkeys(void) {
+  hotkey_left     = theme_lookup(PGTH_O_DEFAULT,PGTH_P_HOTKEY_LEFT);
+  hotkey_right    = theme_lookup(PGTH_O_DEFAULT,PGTH_P_HOTKEY_RIGHT);
+  hotkey_up       = theme_lookup(PGTH_O_DEFAULT,PGTH_P_HOTKEY_UP);
+  hotkey_down     = theme_lookup(PGTH_O_DEFAULT,PGTH_P_HOTKEY_DOWN);
+  hotkey_activate = theme_lookup(PGTH_O_DEFAULT,PGTH_P_HOTKEY_ACTIVATE);
+  hotkey_next     = theme_lookup(PGTH_O_DEFAULT,PGTH_P_HOTKEY_NEXT);
+}
+
+/******************************************* Private utilities ******/
+
+/* Sorts first by Y, then by X.
+ *
+ * Returns nonzero if a > b
+ */
+int hotspot_compare(struct hotspot *a, struct hotspot *b) {
+  if (a->y == b->y) {
+    if (a->x == b->x) {
+
+      /* These two hotspots are at the same spot. This will happen
+       * at the edges of a scrolling container. By always returning
+       * 1 (and this placing them in order of insertion) it should
+       * make things work correctly for vertical lists at least.
+       */
+      return 1;
+    
+    }
+    else if (a->x > b->x)
+      return 1;
+    else
+      return 0;
+  }
+  else {
+    if (a->y > b->y)
+      return 1;
+    else
+      return 0;
+  }
+}
+
+/* The End */
 
 
 

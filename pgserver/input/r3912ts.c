@@ -1,4 +1,4 @@
-/* $Id: r3912ts.c,v 1.8 2002/05/22 10:01:20 micahjd Exp $
+/* $Id: r3912ts.c,v 1.9 2002/07/03 22:03:30 micahjd Exp $
  *
  * r3912ts.c - input driver for r3912 touch screen found on the VTech Helio
  *             and others. Other touch screens using the same data format should
@@ -48,10 +48,6 @@ struct tpanel_sample {
 /******************************************** Implementations */
 
 g_error r3912ts_init(void) {
-   g_error e;
-
-   e=touchscreen_init();
-   errorcheck;
    r3912ts_fd = open("/dev/tpanel",O_NONBLOCK);
    if (r3912ts_fd <= 0)
      return mkerror(PG_ERRT_IO, 74);
@@ -71,8 +67,6 @@ void r3912ts_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
 
 int r3912ts_fd_activate(int fd) {
    struct tpanel_sample ts;
-   static u8 state = 0;
-   int trigger, x, y;
    
    /* Read raw data from the driver */
    if (fd!=r3912ts_fd)
@@ -80,28 +74,7 @@ int r3912ts_fd_activate(int fd) {
    if (read(r3912ts_fd,&ts,sizeof(ts)) < sizeof(ts))
      return 1;
    
-   /* Convert to screen coordinates */
-   x = ts.x;
-   y = ts.y;
-   touchscreen_pentoscreen(&x, &y);
-
-   /* What type of pointer event? */
-   if (ts.state) {
-      if (state)
-	trigger = PG_TRIGGER_MOVE;
-      else
-	trigger = PG_TRIGGER_DOWN;
-   }
-   else {
-      if (state)
-	trigger = PG_TRIGGER_UP;
-      else
-	return 1;
-   }
-   
-   /* If we got this far, accept the new state and send the event */
-   state = (trigger != PG_TRIGGER_UP);
-   dispatch_pointing(trigger,x,y,state);
+   infilter_send_touchscreen(ts.x.ts.y,ts.state);
    
    return 1;
 }
@@ -111,7 +84,6 @@ int r3912ts_fd_activate(int fd) {
 g_error r3912ts_regfunc(struct inlib *i) {
   i->init = &r3912ts_init;
   i->close = &r3912ts_close;
-  i->message = &touchscreen_message;
   i->fd_activate = &r3912ts_fd_activate;
   i->fd_init = &r3912ts_fd_init;
   return success;

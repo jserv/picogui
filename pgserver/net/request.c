@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.48 2002/05/20 19:18:38 micahjd Exp $
+/* $Id: request.c,v 1.49 2002/07/03 22:03:31 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -36,9 +36,6 @@
 #include <pgserver/pgnet.h>
 #include <pgserver/input.h>
 #include <pgserver/configfile.h>
-#ifdef CONFIG_TOUCHSCREEN
-#include <pgserver/touchscreen.h>
-#endif
 #ifndef CONFIG_UNIX_SOCKET
 #include <netinet/tcp.h>
 #else
@@ -87,18 +84,7 @@ void closefd(int fd) {
   if (use_sessionmgmt && !numclients)
     request_quit();
   
-  /* Give up captured input devices */
-  if (keyboard_owner==fd)
-    keyboard_owner = 0;
-  if (pointer_owner==fd)
-   {
-    pointer_owner = 0;
-#ifdef CONFIG_TOUCHSCREEN
-    touchscreen_calibrated = 1;
-#endif
-   }
-  if (sysevent_owner==fd)
-    sysevent_owner = 0;
+  /* Give up captured devices */
   if (display_owner==fd) {
     struct divtree *p;
     

@@ -1,4 +1,4 @@
-/* $Id: svgaremote.c,v 1.3 2002/01/06 09:22:56 micahjd Exp $
+/* $Id: svgaremote.c,v 1.4 2002/07/03 22:03:25 micahjd Exp $
  *
  * svgaremote.c - This is the svgainput driver for pgserver, hacked up to
  *                work as a good networked input driver
@@ -45,6 +45,9 @@ void (*default_svgalib_mousehandler)(int, int, int, int, int, int, int);
 
 /* Current cursor position... */
 int cursor_x,cursor_y;
+
+/* PicoGUI cursor for this driver */
+pghandle pgcursor;
 
 /******************************************** Keyboard handler */
 /* Where indicated, code has been used from SDL (www.libsdl.org) */
@@ -165,6 +168,7 @@ void svgainput_initkeymaps(void) {
 void svgainput_kbdhandler(int scancode,int press) {
   short x=0,led=0;
   static short previouskey = 0;
+  union pg_client_trigger trig;
 
   /******* Handle modifiers */
 
@@ -208,6 +212,7 @@ void svgainput_kbdhandler(int scancode,int press) {
   if (kbdmouse) {
      static char n=0,e=0,s=0,w=0,b=0;
      int scale = (svgainput_mod & PGMOD_SHIFT) ? 0 : 2;
+     memset(&trig,0,sizeof(trig));
 
           if (scancode == SCANCODE_CURSORBLOCKUP)    n = press;
      else if (scancode == SCANCODE_CURSORBLOCKRIGHT) e = press;
@@ -223,17 +228,25 @@ void svgainput_kbdhandler(int scancode,int press) {
 	  previouskey = 0;
 	  b &= scancode == SCANCODE_REMOVE ? ~2 : ~1;
 	}
-	pgSendPointerInput(press ? PG_TRIGGER_DOWN : PG_TRIGGER_UP,
-			  cursor_x,cursor_y,b);	
+
+	trig.content.type = press ? PG_TRIGGER_DOWN : PG_TRIGGER_UP;
+	trig.content.u.mouse.x = cursor_x;
+	trig.content.u.mouse.y = cursor_y;
+	trig.content.u.mouse.btn = b;
+	pgInFilterSend(&trig);
+
 	pgFlushRequests();
 	return;
      }
      else
        goto nomousekey;
+     
+     trig.content.type = PG_TRIGGER_MOVE;
+     trig.content.u.mouse.x = cursor_x += ((e-w)<<scale);
+     trig.content.u.mouse.y = cursor_y += ((s-n)<<scale);
+     trig.content.u.mouse.btn = b;
+     pgInFilterSend(&trig);
 
-     pgSendPointerInput(PG_TRIGGER_MOVE,
-		       cursor_x+=((e-w)<<scale),
-		       cursor_y+=((s-n)<<scale),b);
      mouse_setposition(cursor_x,cursor_y);
      pgFlushRequests();
      return;
@@ -269,14 +282,23 @@ void svgainput_kbdhandler(int scancode,int press) {
     //    guru("Translated key: %c (%d) (mods: %d)",c,c,svgainput_mod);
 #endif
 
-    if (c)
-      pgSendKeyInput(PG_TRIGGER_CHAR,c,svgainput_mod);
+    if (c) {
+      memset(&trig,0,sizeof(trig));
+      trig.content.type = PG_TRIGGER_CHAR;
+      trig.content.u.kbd.key = c;
+      trig.content.u.kbd.mods = svgainput_mod;
+      pgInFilterSend(&trig);
+    }
   }
 
   /******* Handle raw key press/release events */
   
   /* Dispatch to the rest of PicoGUI */
-  pgSendKeyInput(press ? PG_TRIGGER_KEYDOWN : PG_TRIGGER_KEYUP,svgainput_keymap[scancode],svgainput_mod);
+  memset(&trig,0,sizeof(trig));
+  trig.content.type = press ? PG_TRIGGER_KEYDOWN : PG_TRIGGER_KEYUP;
+  trig.content.u.kbd.key = svgainput_keymap[scancode];
+  trig.content.u.kbd.mods = svgainput_mod;
+  pgInFilterSend(&trig);
   pgFlushRequests();
 }
 
@@ -286,6 +308,7 @@ void svgainput_mousehandler(int button,int dx,int dy,int dz,
 			    int drx,int dry,int drz) {
   int x,y,trigger;
   static int prevbutton = 0;
+  static union pg_client_trigger trig;
   
   /* This is ugly, but better than the alternative... */
   (*default_svgalib_mousehandler)(button,dx,dy,dz,drx,dry,drz);
@@ -303,18 +326,21 @@ void svgainput_mousehandler(int button,int dx,int dy,int dz,
 
   /* So, what just happened? */
   if (button & (~prevbutton))
-    trigger = PG_TRIGGER_DOWN;
+    trig.content.type = PG_TRIGGER_DOWN;
   else if (prevbutton & (~button))
-    trigger = PG_TRIGGER_UP;
+    trig.content.type = PG_TRIGGER_UP;
   else
-    trigger = PG_TRIGGER_MOVE;      
+    trig.content.type = PG_TRIGGER_MOVE;      
   prevbutton = button;
 
   /* Dispatch to PicoGUI */
-  pgSendPointerInput(trigger,cursor_x=x,cursor_y=y,
-		    ((button>>2)&1) ||
-		    ((button<<2)&4) ||
-		    (button&2));
+  trig.content.u.mouse.x = cursor_x = x;
+  trig.content.u.mouse.y = cursor_y = y;
+  trig.content.u.mouse.btn = ((button>>2)&1) ||
+                             ((button<<2)&4) ||
+		             (button&2);
+  trig.content.u.mouse.cursor_handle = pgcursor;
+  pgInFilterSend(&trig);
   pgFlushRequests();
 }
 
@@ -374,6 +400,8 @@ int main(int argc,char **argv) {
    int n;
    fd_set readfd;
    pgInit(argc,argv);
+
+   pgcursor = pgNewCursor();
 
    vga_init();
    vga_setmode(G320x200x256);  /* FIXME: get actual resolution */

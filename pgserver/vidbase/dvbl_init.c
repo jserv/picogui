@@ -1,4 +1,4 @@
-/* $Id: dvbl_init.c,v 1.1 2002/04/03 08:08:41 micahjd Exp $
+/* $Id: dvbl_init.c,v 1.2 2002/07/03 22:03:31 micahjd Exp $
  *
  * dvbl_init.c - This file is part of the Default Video Base Library,
  *               providing the basic video functionality in picogui but
@@ -56,7 +56,7 @@ g_error def_enterexitmode(void) {
 void def_update(s16 x,s16 y,s16 w,s16 h) {
 }
 
-void def_coord_logicalize(s16 *x,s16 *y) {
+void def_coord_logicalize(int *x,int *y) {
 }
 
 void def_coord_keyrotate(s16 *k) {
@@ -73,14 +73,6 @@ void def_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
 void def_font_outchar_hook(hwrbitmap *dest, struct fontdesc **fd,
 			   s16 *x,s16 *y,hwrcolor *col,int *c,
 			   struct quad **clip, s16 *lgop, s16 *angle) {
-}
-
-int def_key_event_hook(u32 *type, s16 *key, s16 *mods) {
-  return 0;
-}
-
-int def_pointing_event_hook(u32 *type, s16 *x, s16 *y, s16 *btn) {
-  return 0;
 }
 
 int def_grop_render_presetup_hook(struct divnode **div, struct gropnode ***listp,
@@ -149,8 +141,6 @@ void setvbl_default(struct vidlib *vid) {
   vid->font_sizetext_hook = &def_font_sizetext_hook;
   vid->font_outtext_hook = &def_font_outtext_hook;
   vid->font_outchar_hook = &def_font_outchar_hook;
-  vid->key_event_hook = &def_key_event_hook;
-  vid->pointing_event_hook = &def_pointing_event_hook;
   vid->grop_render_presetup_hook = &def_grop_render_presetup_hook;
   vid->grop_render_postsetup_hook = &def_grop_render_presetup_hook;
   vid->grop_render_end_hook = &def_grop_render_end_hook; 

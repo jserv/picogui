@@ -192,18 +192,39 @@ int ttykb_fd_activate(int fd)
 			key = get_escaped_key(fd);
 		else
 			key = keymap[curkey];
-		
+
 		if ( key != 0 ) {
 		  if ( key <= 255 ) // Don't send PG_TRIGGER_CHAR for function-keys
-		  	dispatch_key(PG_TRIGGER_CHAR,key,0);
+		  	infilter_send_key(PG_TRIGGER_CHAR,key,0);
 
 		  /* FIXME: PG_TRIGGER_KEYUP is not implemented yet, but we at
 		   * least need this so that hotkeys work correctly. This
 		   * needs to respond to a few keys PG_TRIGGER_CHAR does not,
 		   * like the arrow keys */
-		  dispatch_key(PG_TRIGGER_KEYDOWN,key,0);
-		  dispatch_key(PG_TRIGGER_KEYUP,key,0);
+		  infilter_send_key(PG_TRIGGER_KEYDOWN,key,0);
+		  infilter_send_key(PG_TRIGGER_KEYUP,key,0);
 		}
+
+		else if ( curkey < 32 ) {
+		  /* control-something: emulate it */
+		  key = keymap[curkey + 64];
+#ifdef DEBUG_EVENT
+		  printf("ttykb: Got control-%c\n", key);
+#endif    
+		  infilter_send_key(PG_TRIGGER_KEYDOWN,PGKEY_LCTRL,0);
+		  infilter_send_key(PG_TRIGGER_KEYDOWN,key,PGMOD_LCTRL);
+		  infilter_send_key(PG_TRIGGER_CHAR,key,PGMOD_LCTRL);
+		  infilter_send_key(PG_TRIGGER_KEYUP,key,PGMOD_LCTRL);
+		  infilter_send_key(PG_TRIGGER_KEYUP,PGKEY_LCTRL,0);
+#ifdef DEBUG_EVENT
+		  printf("ttykb: Processing finished\n");
+#endif    
+		}
+		else
+#ifdef DEBUG_EVENT
+		  printf("ttykb: Got something weird: %i\n", curkey);
+#endif    
+		
 		return 1;		/* keypress*/
 	}
 	if ((cc < 0) && (errno != EINTR) && (errno != EAGAIN)) {

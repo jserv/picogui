@@ -96,7 +96,6 @@ close_section
 
 open_section INPUT
 
-add_if_true touchscreen.c  $CONFIG_TOUCHSCREEN
 add_if_true sdlinput.c     $DRIVER_SDLINPUT
 add_if_true svgainput.c    $DRIVER_SVGAINPUT
 add_if_true ncursesinput.c $DRIVER_NCURSESINPUT
@@ -126,6 +125,9 @@ add_if_true ps2mouse.c     $DRIVER_PS2MOUSE
 add_if_true jsdev.c        $DRIVER_JSDEV
 add_if_true rrttykb.c      $DRIVER_RRTTYKB
 add_if_true rawttykb.c     $DRIVER_RAWTTYKB
+add_if_true if_touchscreen.c $CONFIG_TOUCHSCREEN
+add_if_false if_client_adaptor.c $CONFIG_NOREMOTEINPUT
+add_if_true if_key_alpha.c $CONFIG_KEY_ALPHA
 
 close_section
 

@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.12 2002/03/06 11:38:46 micahjd Exp $
+/* $Id: sdlgl.h,v 1.13 2002/07/03 22:03:29 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -206,9 +206,15 @@ struct sdlgl_data {
 
   /* save the old font list so we can restore it on exit */
   struct fontstyle_node *old_fonts;
+  
+  /* Handle to sdlgl's input filter */
+  handle h_infilter;
 };
 
 extern struct sdlgl_data gl_global;
+
+/* This is the input filter sdlgl uses to handle camera control events */
+extern struct infilter infilter_sdlgl;
 
 /************************************************** Functions */
 
@@ -239,8 +245,6 @@ void gl_continuous_init(int *n,fd_set *readfds,struct timeval *timeout);
 g_error gl_continuous_regfunc(struct inlib *i);
 void gl_osd_printf(int *y, const char *fmt, ...);
 void gl_matrix_pixelcoord(void);
-int sdlgl_key_event_hook(u32 *type, s16 *key, s16 *mods);
-int sdlgl_pointing_event_hook(u32 *type, s16 *x, s16 *y, s16 *btn);
 void gl_process_camera_keys(void);
 void gl_render_grid(void);
 g_error gl_load_font_style(struct gl_fontload *fl,TTF_Font *ttf, struct font **ppf, int style);

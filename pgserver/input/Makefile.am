@@ -5,17 +5,18 @@ noinst_LIBRARIES = libinput.a
 CFLAGS = @CFLAGS@ @RM_CFLAGS@
 LIBS   = @LIBS@ @RM_LIBS@
 
-libinput_a_SOURCES = \
-	input_drivers.c \
-	input_filters.c \
-	if_key_dispatch.c \
-	if_key_magic.c \
-	if_key_normalize.c \
-	if_key_preprocess.c \
-	if_pntr_dispatch.c \
-	if_pntr_normalize.c \
-	if_pntr_preprocess.c \
-	if_touchscreen.c \
+libinput_a_SOURCES =		\
+	input_drivers.c		\
+	input_filters.c		\
+	input_util.c		\
+	cursor.c		\
+	if_pntr_normalize.c	\
+	if_key_dispatch.c	\
+	if_magic.c		\
+	if_hotspot.c		\
+	if_key_preprocess.c	\
+	if_pntr_dispatch.c	\
+	if_pntr_preprocess.c	\
 	$(INPUT)
 
 EXTRA_libinput_a_SOURCES = \
@@ -29,7 +30,7 @@ EXTRA_libinput_a_SOURCES = \
 	vr3ts.c \
 	h3600ts.c \
 	rrts.c \
-	rr_sim.c \	
+	rr_sim.c \
 	tuxts.c \
 	ucb1x00.c \
 	ttykb.c \
@@ -44,7 +45,10 @@ EXTRA_libinput_a_SOURCES = \
 	ps2mouse.c \
 	jsdev.c \
 	rrttykb.c \
-	rawttykb.c
+	rawttykb.c \
+	if_touchscreen.c \
+	if_client_adaptor.c \
+	if_key_alpha.c
 
 libinput_a_LIBADD       = $(INPUT:%.c=%.o)
 libinput_a_DEPENDENCIES = $(INPUT:%.c=%.o)
