@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.23 2001/10/07 07:48:08 micahjd Exp $
+/* $Id: linear8.c,v 1.24 2001/10/07 08:47:26 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -387,8 +387,10 @@ void linear8_tileblit(hwrbitmap dest,
   while (dest_h)
      for (src_line=src_top,sh=src_h;sh && dest_h;
 	  sh--,dest_h--,src_line+=srcbit->pitch,dest_line+=FB_BPL)
-       for (dst=dest_line,dw=dest_w;dw>0;dw-=sw,dst+=sw)
-	 __memcpy(dest,src_line,sw = (src_w < dw ? src_w : dw));
+       for (dst=dest_line,dw=dest_w;dw>0;dw-=sw,dst+=sw) {
+	 sw = (src_w < dw ? src_w : dw);
+	 memcpy(dst,src_line,sw);
+       }
 }
 
 /* Ugh. Evil but necessary... I suppose... */
@@ -509,6 +511,7 @@ void linear8_blit(hwrbitmap dest,
     swp = srcbit->w - src_x;
 
     switch (lgop) {
+
     case PG_LGOP_NONE:  
        while (h) {
 	  for (;sh && h;sh--,h--,src_line+=srcbit->pitch,dst+=offset_dst) {
@@ -526,6 +529,7 @@ void linear8_blit(hwrbitmap dest,
 	  src_line = srcbit->bits;
        }
        break;
+
     case PG_LGOP_OR:         TILEBLITLOOP(|=);                   break;
     case PG_LGOP_AND:        TILEBLITLOOP(&=);                   break;
     case PG_LGOP_XOR:        TILEBLITLOOP(^=);                   break;

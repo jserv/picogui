@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.13 2001/10/07 07:55:32 micahjd Exp $
+/* $Id: fillstyle.c,v 1.14 2001/10/07 08:47:26 micahjd Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -45,7 +45,6 @@ int fsstkpos;  /* position in the stack */
 #define NEXTLONG       ((unsigned long)( (unsigned long)(p[0])<<24 |\
                         (unsigned long)(p[1])<<16 | (unsigned long)\
                         (p[2])<<8 | (unsigned short)(p[3]) ))
-
 
 /* Little utility functions */
 
