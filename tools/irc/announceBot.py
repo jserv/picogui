@@ -30,7 +30,7 @@ socketName = socketName + "." + str(botID);
 channelFile = channelFile + "." + str(botID);
 
 # Lalo's joke: A brainless entity created to keep an eye on subversion                 
-botNick = "TD"
+botNick = "CIA"
 if botID > 1:
     botNick = botNick + str(botID)  
 
