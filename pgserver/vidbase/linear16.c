@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.25 2002/10/16 22:33:41 micahjd Exp $
+/* $Id: linear16.c,v 1.26 2002/10/16 23:12:17 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -806,6 +806,10 @@ void linear16_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 src_
   linedest = PIXELADDR(x,y);
   offset_src = char_pitch - src_w;
   src = chardat + src_x + src_y * char_pitch;
+  c = vid->color_hwrtopg(c);
+  nr = getred(c);
+  ng = getgreen(c);
+  nb = getblue(c);
 
   /* Blitter loop, moving the source as normal,
    * but using the rotation matrix above to move the destination
@@ -821,21 +825,18 @@ void linear16_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 src_
       or = (oc&0xF800)>>8;
       og = (oc&0x07E0)>>3;
       ob = (oc&0x001F)<<3;
-      nr = (c&0xF800)>>8;
-      ng = (c&0x07E0)>>3;
-      nb = (c&0x001F)<<3;
-      r = FAST_MUL_8x8(nr | (nr>>5),a_) + FAST_MUL_8x8(or | (or>>5),a);
-      g = FAST_MUL_8x8(ng | (nr>>6),a_) + FAST_MUL_8x8(og | (og>>5),a);
-      b = FAST_MUL_8x8(nb | (nr>>5),a_) + FAST_MUL_8x8(ob | (ob>>5),a);
+      r = FAST_MUL_8x8(nr,a_) + FAST_MUL_8x8(or | (or>>5),a);
+      g = FAST_MUL_8x8(ng,a_) + FAST_MUL_8x8(og | (og>>5),a);
+      b = FAST_MUL_8x8(nb,a_) + FAST_MUL_8x8(ob | (ob>>5),a);
       *pixeldest = (((r << 8) & 0xF800) |
 		    ((g << 3) & 0x07E0) |
 		    ((b >> 3) & 0x001F));
 #else
       /* Fallback blending */
       oc = vid->color_hwrtopg(*pixeldest);
-      r = FAST_MUL_8x8(getred(c),a_)   + FAST_MUL_8x8(getred(oc),a);
-      g = FAST_MUL_8x8(getgreen(c),a_) + FAST_MUL_8x8(getgreen(oc),a);
-      b = FAST_MUL_8x8(getblue(c),a_)  + FAST_MUL_8x8(getblue(oc),a);
+      r = FAST_MUL_8x8(nr,a_)   + FAST_MUL_8x8(getred(oc),a);
+      g = FAST_MUL_8x8(ng,a_) + FAST_MUL_8x8(getgreen(oc),a);
+      b = FAST_MUL_8x8(nb,a_)  + FAST_MUL_8x8(getblue(oc),a);
       *pixeldest = vid->color_pgtohwr(mkcolor(r,g,b));
 #endif
       pixeldest += ac;
