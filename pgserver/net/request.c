@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.56 2002/11/23 12:23:35 micahjd Exp $
+/* $Id: request.c,v 1.57 2002/12/09 20:55:35 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -76,8 +76,6 @@ int numclients = 0;
 
 /* Close a connection and clean up */
 void closefd(int fd) {
-  struct conbuf *p,*condemn=NULL;
-
   /* Last client left */
   --numclients;
   if (get_param_str("pgserver","session",NULL) && !numclients)
@@ -107,6 +105,48 @@ void closefd(int fd) {
   appmgr_unregowner(fd);
 
   /* Free the connection buffers */
+  request_client_destroy(fd);
+
+  update(NULL,1);
+}
+
+void newfd(int fd) {
+  struct pghello hi;
+  memset(&hi,0,sizeof(hi));
+
+  numclients++;
+
+  /* Allocate connection buffers */
+  if (iserror(request_client_create(fd))) {
+    closefd(fd);
+    return;
+  }
+
+  /* Say Hi!  Send a structure with information about the server */
+  hi.magic         = htonl(PG_REQUEST_MAGIC);
+  hi.protover      = htons(PG_PROTOCOL_VER);
+  hi.serverversion = htons(PGSERVER_VERSION_NUMBER);
+  if (send_response(fd,&hi,sizeof(hi))) closefd(fd);
+}
+
+g_error request_client_create(int fd) {
+  struct conbuf *mybuf;
+  g_error e;
+
+  e = g_malloc((void **)&mybuf,sizeof(struct conbuf));
+  errorcheck;
+  memset(mybuf,0,sizeof(struct conbuf));
+  mybuf->owner = fd;
+  mybuf->in = mybuf->out = mybuf->q;
+  mybuf->next = conbufs;
+  conbufs = mybuf;
+
+  return success;
+}
+
+g_error request_client_destroy(int fd) {
+  struct conbuf *p,*condemn=NULL;
+
   if (conbufs && conbufs->owner==fd) {
     condemn = conbufs;
     conbufs = conbufs->next;
@@ -125,7 +165,7 @@ void closefd(int fd) {
   }
   if (condemn) {
     int i;
-
+    
     /* Delete data associated with ring buffer nodes */
     for (i=0;i<EVENTQ_LEN;i++)
       if (condemn->q[i].data)
@@ -138,34 +178,8 @@ void closefd(int fd) {
     /* Delete connection buffer */
     g_free(condemn);
   }
-
-  update(NULL,1);
-}
-
-void newfd(int fd) {
-  struct pghello hi;
-  struct conbuf *mybuf;
-  memset(&hi,0,sizeof(hi));
-
-  numclients++;
-
-  /* Allocate connection buffers */
-  if (iserror(prerror(g_malloc((void **)&mybuf,
-			       sizeof(struct conbuf))))) {
-    closefd(fd);
-    return;
-  }
-  memset(mybuf,0,sizeof(struct conbuf));
-  mybuf->owner = fd;
-  mybuf->in = mybuf->out = mybuf->q;
-  mybuf->next = conbufs;
-  conbufs = mybuf;
-
-  /* Say Hi!  Send a structure with information about the server */
-  hi.magic         = htonl(PG_REQUEST_MAGIC);
-  hi.protover      = htons(PG_PROTOCOL_VER);
-  hi.serverversion = htons(PGSERVER_VERSION_NUMBER);
-  if (send_response(fd,&hi,sizeof(hi))) closefd(fd);
+  
+  return success;
 }
 
 void readfd(int from) {

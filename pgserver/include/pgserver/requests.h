@@ -1,4 +1,4 @@
-/* $Id: requests.h,v 1.2 2002/11/20 22:23:27 micahjd Exp $
+/* $Id: requests.h,v 1.3 2002/12/09 20:55:35 micahjd Exp $
  *
  * requests.h - The interface to request packet handlers, used to
  *              implement the client/server protocol, themes, and WTs
@@ -74,6 +74,10 @@ struct request_data {
  * the caller must call g_free on r->out.data at some point.
  */
 g_error request_exec(struct request_data *r);
+
+/* Functions to create/destroy connection buffers for a specified client ID */
+g_error request_client_create(int client);
+g_error request_client_destroy(int client);
 
 #endif /* __H_REQUESTS */
 /* The End */

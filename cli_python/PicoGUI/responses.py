@@ -111,13 +111,13 @@ def get(connection):
 	else:
 		raise TypeError('Connection object supports neither read() nor recv()')
 	def safe_read(len, read=read):
-		try:
+#		try:
 			return read(len)
-		except:
-			import sys
-			# fetch the exception object, so that we may know what went wrong
-			corpse = 'Exception during read from pgserver', sys.exc_info()[1]
-			raise Dead(*corpse)
+#		except:
+#			import sys
+#			# fetch the exception object, so that we may know what went wrong
+#orpse = 'Exception during read from pgserver', sys.exc_info()[1]
+#			raise Dead(*corpse)
 	type_num, = struct.unpack('!H', safe_read(2))
 	try:
 		handler, format = _formats[type_num]

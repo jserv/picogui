@@ -134,20 +134,30 @@ class Application(Widget.Widget):
             else:
                 # otherwise, just get one single event and dispatch it
                 self.poll_next_event()
-            
-            # XXX DANGER for thread-safety
-            # (could lose events - when we decide to go thread-safe this operation
-            # needs to be wrapped in a semaphore)
-            events = self._event_stack
-            self._event_stack = []
-            # XXX /DANGER
-            for ev in events:
-                try:
-                    self._event_registry.dispatch(ev)
-                except EventHandled:
-                    continue
+
+            self.dispatch_events()
+
+    def dispatch_events(self):
+        # XXX DANGER for thread-safety
+        # (could lose events - when we decide to go thread-safe this operation
+        # needs to be wrapped in a semaphore)
+        events = self._event_stack
+        self._event_stack = []
+        # XXX /DANGER
+        for ev in events:
+            try:
+                self._event_registry.dispatch(ev)
+            except EventHandled:
+                continue
             if ev.widget is self and ev.name in ('close', 'stop'):
-                    return
+                return
+
+    def eventPoll(self):
+        self.server.update()
+        queued = self.server.checkevent()
+        for i in range(queued):
+            self.poll_next_event()
+        self.dispatch_events()
 
     def shutdown(self):
         self.server.close_connection()
