@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.70 2001/03/31 01:05:41 micahjd Exp $
+/* $Id: widget.c,v 1.71 2001/03/31 01:17:00 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -623,11 +623,27 @@ g_error debug_bitmaps(void **pobj) {
    int w,h;
    
    VID(bitmap_getsize) (bmp,&w,&h);
-   if (h>db_h)
-     db_h = h;
    if (db_x+10+w>vid->lxres) {
      db_x = 0;
      db_y += db_h+8;
+     db_h = 0;
+   }
+   if (h>db_h)
+     db_h = h;
+   
+   if (db_y+45+h>vid->lyres) {
+      struct fontdesc *df=NULL;
+      struct cliprect screenclip;
+      screenclip.x1 = screenclip.y1 = 0;
+      screenclip.x2 = vid->lxres-1;
+      screenclip.y2 = vid->lyres-1;
+      rdhandle((void**)&df,PG_TYPE_FONTDESC,-1,defaultfont);
+
+      outtext(df,10,vid->lyres-15,VID(color_pgtohwr) (0xFF8080),
+	      "Too many bitmaps for this screen. Change video mode and try again",
+	      &screenclip);
+
+      return sucess;   /* Lies! :) */
    }
    
    VID(rect) (db_x+3,db_y+38,w+4,h+4,VID(color_pgtohwr)(0xFFFFFF));

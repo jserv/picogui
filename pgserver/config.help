@@ -56,6 +56,7 @@ DEBUG_KEYS
       CTRL-ALT-Y : Clear the screen, refresh the back-buffer
       CTRL-ALT-B : Black screen
       CTRL-ALT-U : Blue screen
+      CTRL-ALT-P : Display all loaded bitmaps
       
       With or without this option CTRL-ALT-/ exits the server
       
