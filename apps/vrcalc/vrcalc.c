@@ -287,6 +287,7 @@ int btnDelete(struct pgEvent *evt) {
     currentStack->stack=0;
     currentStack->op_stack=0;
     currentStack->old=0;
+    openp=0;
   }
   return 0;
 }
