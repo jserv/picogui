@@ -5,6 +5,8 @@
 #include "imap.h"
 #include "configfile.h"
 
+#define CONFIG_FILE "/.picomail.conf"
+
 pghandle wBox, *wRow, wHead, wHBox;
 int dc, dr;
 
@@ -23,19 +25,19 @@ int getList(struct pgEvent *evt) {
 int main(int argc, char *argv[])
 {
    char *home, *conffile;
-   char conffilename[] = "/.picomail.conf";
 
    pghandle wToolbar, wScroll, wItem;
 
    home = getenv("HOME");
-   strcpy( conffile, home );
-   strcat( conffile, conffilename );
+   conffile = malloc( strlen(home) + strlen(CONFIG_FILE) + 1);
+   if (home && conffile) {
+       strcpy( conffile, home );
+       strcat( conffile, CONFIG_FILE );
 
-   if(configfile_parse(conffile)){
-
+       if(!configfile_parse(conffile))
+           exit(1);
+       free(conffile);
    }
-   else
-       exit(1);
    
    pgInit(argc,argv);
    pgRegisterApp(PG_APP_NORMAL,"PicoMail",0);
