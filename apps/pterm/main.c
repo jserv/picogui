@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.11 2001/10/24 19:57:53 micahjd Exp $
+/* $Id: main.c,v 1.12 2001/10/24 20:45:37 micahjd Exp $
  *
  * main.c - PicoGUI Terminal (the 'p' is silent :)
  *          This handles the PicoGUI init and events
@@ -48,8 +48,6 @@ pghandle wTerminal;         /* Widgets */
 
 /* Recieves data from the pgBind association */
 int termInput(struct pgEvent *evt) {
-   write(1,evt->e.data.pointer,evt->e.data.size);
-   
    /* Write the input character to the subprocess */
    write(ptyfd,evt->e.data.pointer,evt->e.data.size);
    return 0;
