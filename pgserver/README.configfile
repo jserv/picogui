@@ -142,6 +142,12 @@ quoted appropriately. For example:
   (requires 'Skin support' config option)
   This is used instead of 'tint' when the backlight is turned on.
 
+- simbits
+  (requires 'Skin support' config option)
+  Set to a nonzero number to force all new colors to this simulated color
+  depth. Does not affect the actual framebuffer depth or the background
+  or tint color.
+
 [video-scrshot]
 
 - file
@@ -166,12 +172,6 @@ quoted appropriately. For example:
 - pgcursor
   If this is nonzero, the PicoGUI cursor is shown whenever the mouse is moved.
   This is on by default.
-
-- translate_x
-  Add this value to the X coordinate before dispatching an event
-
-- translate_y
-  Add this value to the Y coordinate before dispatching an event
 
 - upmove
   If nonzero, send 'move' events when the mouse button is up

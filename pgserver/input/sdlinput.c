@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.20 2001/08/12 22:35:15 micahjd Exp $
+/* $Id: sdlinput.c,v 1.21 2001/08/13 06:16:05 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -58,9 +58,17 @@ u8 sdlinput_autowarp;
 u8 sdlinput_pgcursor;
 u8 sdlinput_foldbuttons;
 u8 sdlinput_upmove;
-s16 sdlinput_translate_x;
-s16 sdlinput_translate_y;
 
+/* Munge coordinates for skin support */
+#ifdef CONFIG_SDLSKIN
+extern s16 sdlfb_display_x;
+extern s16 sdlfb_display_y;
+extern u16 sdlfb_scale;
+#else
+#define sdlfb_display_x 0
+#define sdlfb_display_y 0
+#define sdlfb_scale     1
+#endif
 
 /******************************************** Implementations */
 
@@ -76,8 +84,10 @@ void sdlinput_poll(void) {
   cursorx = cursor->x;
   cursory = cursor->y;
   VID(coord_physicalize)(&cursorx,&cursory);
-  cursorx -= sdlinput_translate_x;
-  cursory -= sdlinput_translate_y;
+  cursorx *= sdlfb_scale;
+  cursory *= sdlfb_scale;
+  cursorx += sdlfb_display_x;
+  cursory += sdlfb_display_y;
 
   switch (evt.type) {
     
@@ -93,11 +103,14 @@ void sdlinput_poll(void) {
 	break;
       }
 
+    if (sdlinput_foldbuttons)
+      evt.motion.state = evt.motion.state!=0;
+
     if ((evt.motion.x==ox) && (evt.motion.y==oy)) break;
     if (sdlinput_upmove || evt.motion.state)
       dispatch_pointing(TRIGGER_MOVE,
-			sdlinput_translate_x + (ox = evt.motion.x),
-			sdlinput_translate_y + (oy = evt.motion.y),
+			(-sdlfb_display_x + (ox = evt.motion.x)) / sdlfb_scale,
+			(-sdlfb_display_y + (oy = evt.motion.y)) / sdlfb_scale,
 			btnstate=evt.motion.state);
     if (sdlinput_pgcursor)
       drivermessage(PGDM_CURSORVISIBLE,1);
@@ -110,11 +123,16 @@ void sdlinput_poll(void) {
 	  evt.button.y!=cursory)
 	SDL_WarpMouse(cursorx,cursory);
 
+    if (sdlinput_foldbuttons)
+      evt.button.button = evt.button.button!=0;
+
     dispatch_pointing(TRIGGER_DOWN,
-		      sdlinput_translate_x + 
-		      (sdlinput_autowarp ? cursorx : evt.button.x),
-		      sdlinput_translate_y + 
-		      (sdlinput_autowarp ? cursory : evt.button.y),
+		      (-sdlfb_display_x + 
+		      (sdlinput_autowarp ? cursorx : evt.button.x))
+		      /sdlfb_scale,
+		      (-sdlfb_display_y + 
+		      (sdlinput_autowarp ? cursory : evt.button.y))
+		      /sdlfb_scale,
 		      btnstate |= 1<<(evt.button.button-1));
     break;
     
@@ -125,12 +143,17 @@ void sdlinput_poll(void) {
 	  evt.button.y!=cursory)
 	SDL_WarpMouse(cursorx,
 		      cursory);
+
+    if (sdlinput_foldbuttons)
+      evt.button.button = evt.button.button!=0;
     
     dispatch_pointing(TRIGGER_UP,
-		      sdlinput_translate_x + 
-		      (sdlinput_autowarp ? cursorx : evt.button.x),
-		      sdlinput_translate_y + 
-		      (sdlinput_autowarp ? cursory : evt.button.y),
+		      (-sdlfb_display_x + 
+		      (sdlinput_autowarp ? cursorx : evt.button.x))
+		      /sdlfb_scale,
+		      (-sdlfb_display_y + 
+		      (sdlinput_autowarp ? cursory : evt.button.y))
+		      /sdlfb_scale,
 		      btnstate &= ~(1<<(evt.button.button-1)));
     break;
     
@@ -160,8 +183,6 @@ g_error sdlinput_init(void) {
   sdlinput_pgcursor = get_param_int("input-sdlinput","pgcursor",1);
   sdlinput_foldbuttons = get_param_int("input-sdlinput","foldbuttons",0);
   sdlinput_upmove = get_param_int("input-sdlinput","upmove",1);
-  sdlinput_translate_x = get_param_int("input-sdlinput","translate_x",0);
-  sdlinput_translate_y = get_param_int("input-sdlinput","translate_y",0);
   SDL_ShowCursor(get_param_int("input-sdlinput","sdlcursor",0));
 
   SDL_EnableUNICODE(1);

@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.23 2001/08/13 03:27:50 micahjd Exp $
+/* $Id: sdlfb.c,v 1.24 2001/08/13 06:16:05 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -49,10 +49,12 @@ int sdlfb_emucolors;
 pgcolor sdlfb_tint;
 s16 sdlfb_display_x;
 s16 sdlfb_display_y;
+u16 sdlfb_simbits;
+u16 sdlfb_scale;
 #endif
 
-#ifdef CONFIG_SDLEMU_BLIT
-void *sdlfb_backbuffer;
+#if defined(CONFIG_SDLEMU_BLIT) || defined(CONFIG_SDLSKIN)
+u8 *sdlfb_backbuffer;
 #endif
 
 /* Macros to easily access the members of vid->display */
@@ -118,6 +120,8 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
     fbh = i;
     sdlflags &= ~SDL_RESIZABLE;
   }
+  sdlfb_simbits = get_param_int("video-sdlfb","simbits",0);
+  sdlfb_scale = get_param_int("video-sdlfb","scale",1);
 
 #ifdef CONFIG_SDLEMU_BLIT
    /* Make screen divisible by a byte */
@@ -312,17 +316,33 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
 
   /* Load initial tint */
   sdlfb_tint = strtol(get_param_str("video-sdlfb","tint","FFFFFF"),NULL,16);
-  if (sdlfb_tint != 0xFFFFFF) {
+
+  /* tint and grayscale conversion */
+  if (!sdlfb_emucolors) {
     vid->color_pgtohwr = &sdlfb_tint_pgtohwr;
     vid->color_hwrtopg = &sdlfb_tint_hwrtopg;
   }
-#endif
+
+  /* Can't scale and use blit color emulation at the same time */
+  if (sdlfb_backbuffer)
+    sdlfb_scale = 1;
+  
+  /* If we're scaling, set up a backbuffer */
+  if (sdlfb_scale != 1) {
+    g_error e;
+    FB_BPL = (vid->xres * vid->bpp) >> 3;
+    e = g_malloc((void**)&FB_MEM,FB_BPL * vid->yres);    
+    errorcheck;
+    sdlfb_backbuffer = FB_MEM;
+  }
+  
+#endif /* CONFIG_SDLSKIN */
    
   return sucess; 
 }
    
 void sdlfb_close(void) {
-#ifdef CONFIG_SDLEMU_BLIT
+#if defined(CONFIG_SDLEMU_BLIT) || defined(CONFIG_SDLSKIN)
   /* Free backbuffer */
    if (sdlfb_backbuffer)
      g_free(sdlfb_backbuffer);
@@ -341,36 +361,75 @@ void sdlfb_update(s16 x,s16 y,s16 w,s16 h) {
    y += sdlfb_display_y;
 #endif
 
-#ifdef CONFIG_SDLEMU_BLIT
-   /* Do we need to convert and blit to the SDL buffer? */
-   if (sdlfb_backbuffer) {
-      unsigned char *src;
-      unsigned char *dest;
-      unsigned char *srcline;
-      unsigned char *destline;
-      int i,bw,j;
-      int maxshift = 8 - vid->bpp;
-      int shift;
-      unsigned char c, mask = (1<<vid->bpp) - 1;
+#ifdef CONFIG_SDLSKIN
+   if (sdlfb_scale != 1 && sdlfb_backbuffer) {
+     u8 *src;
+     u8 *dest;
+     u8 *srcline;
+     u8 *destline;
+     int i,j,si,sj,pxw;
+     
+     /* Calculations */
+     srcline = src = sdlfb_backbuffer + 
+       (((x-sdlfb_display_x) * vid->bpp) >> 3) + (y-sdlfb_display_y)*FB_BPL;
+     destline = dest = sdl_vidsurf->pixels + 
+       (((((x-sdlfb_display_x)*sdlfb_scale)+sdlfb_display_x)*vid->bpp)>>3) + 
+       (((y-sdlfb_display_y)*sdlfb_scale)+sdlfb_display_y)*sdl_vidsurf->pitch;
+     pxw = vid->bpp >> 3;
 
-      /* Align it to a byte boundary (simplifies blit) */
-      i = (8/vid->bpp) - 1;
-      w += (x&i) + i;
-      w &= ~i;
-      x &= ~i;
-      
-      /* Calculations */
-      srcline = src = sdlfb_backbuffer + ((x * vid->bpp) >> 3) +y*FB_BPL;
-      destline = dest = sdl_vidsurf->pixels + x + y*sdl_vidsurf->pitch;
-      bw = (w * vid->bpp) >> 3;
-      
-      /* Slow but it works (this is debug code, after all...) */
-      for (j=h;j;j--,src=srcline+=FB_BPL,dest=destline+=sdl_vidsurf->pitch)
-	for (i=bw;i;i--,src++)
-	  for (shift=maxshift,c=*src;shift>=0;shift-=vid->bpp)
-	    *(dest++) = (c >> shift) & mask;
+     /* Crufty little scale blit */
+     for (j=h;j;j--,srcline+=FB_BPL)
+       for (sj=sdlfb_scale;sj;sj--,dest=destline+=sdl_vidsurf->pitch) {
+	 src = srcline;
+	 for (i=w;i;i--,src+=pxw)
+	   for (si=sdlfb_scale;si;si--,dest+=pxw)
+	     memcpy(dest,src,pxw);
+       }
+     
+     /* Munge coordinates */
+     x = (x-sdlfb_display_x)*sdlfb_scale + sdlfb_display_x;
+     y = (y-sdlfb_display_y)*sdlfb_scale + sdlfb_display_y;
+     w *= sdlfb_scale;
+     h *= sdlfb_scale;
    }
+   else
 #endif
+
+   /* If we have both sdlemu_blit and skin support, scaling overrides
+    * color emulation.
+    */
+   {
+#ifdef CONFIG_SDLEMU_BLIT
+     /* Do we need to convert and blit to the SDL buffer? */
+     if (sdlfb_backbuffer) {
+       u8 *src;
+       u8 *dest;
+       u8 *srcline;
+       u8 *destline;
+       int i,bw,j;
+       int maxshift = 8 - vid->bpp;
+       int shift;
+       u8 c, mask = (1<<vid->bpp) - 1;
+       
+       /* Align it to a byte boundary (simplifies blit) */
+       i = (8/vid->bpp) - 1;
+       w += (x&i) + i;
+       w &= ~i;
+       x &= ~i;
+       
+       /* Calculations */
+       srcline = src = sdlfb_backbuffer + ((x * vid->bpp) >> 3) +y*FB_BPL;
+       destline = dest = sdl_vidsurf->pixels + x + y*sdl_vidsurf->pitch;
+       bw = (w * vid->bpp) >> 3;
+       
+       /* Slow but it works (this is debug code, after all...) */
+       for (j=h;j;j--,src=srcline+=FB_BPL,dest=destline+=sdl_vidsurf->pitch)
+	 for (i=bw;i;i--,src++)
+	   for (shift=maxshift,c=*src;shift>=0;shift-=vid->bpp)
+	     *(dest++) = (c >> shift) & mask;
+     }
+#endif
+   }
 
    /* Always let SDL update the front buffer */
    SDL_UpdateRect(sdl_vidsurf,x,y,w,h);
@@ -381,17 +440,29 @@ void sdlfb_update(s16 x,s16 y,s16 w,s16 h) {
 pgcolor sdlfb_color_tint(pgcolor c) {
   u16 r,g,b;
 
-  if (sdlfb_tint == 0xFFFFFF)
-    return c;
-  
-  r  = getred(c);
-  g  = getgreen(c);
-  b  = getblue(c);
-  r *= getred(sdlfb_tint);
-  g *= getgreen(sdlfb_tint);
-  b *= getblue(sdlfb_tint);
+  if (sdlfb_simbits) {
+    int realbpp;
+    realbpp = vid->bpp;
+    vid->bpp = sdlfb_simbits;
+    c = def_color_hwrtopg(def_color_pgtohwr(c));
+    vid->bpp = realbpp;
+  }
 
-  return mkcolor(r>>8,g>>8,b>>8);
+  if (sdlfb_tint != 0xFFFFFF) {
+    /* Actual tinting */
+    r  = getred(c);
+    g  = getgreen(c);
+    b  = getblue(c);
+    r *= getred(sdlfb_tint);
+    g *= getgreen(sdlfb_tint);
+    b *= getblue(sdlfb_tint);
+    r >>= 8;
+    g >>= 8;
+    b >>= 8;
+    c = mkcolor(r,g,b);
+  }
+
+  return c;
 }
 pgcolor sdlfb_color_untint(pgcolor c) {
   u16 r,g,b;
@@ -442,7 +513,7 @@ hwrcolor sdlfbemu_color_pgtohwr(pgcolor c) {
 }
 
 pgcolor sdlfbemu_color_hwrtopg(hwrcolor c) {
-   unsigned char gray = c * 255/sdlfb_emucolors;
+   u8 gray = c * 255/sdlfb_emucolors;
    return mkcolor(gray,gray,gray);
 }
 #endif
