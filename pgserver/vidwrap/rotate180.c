@@ -1,4 +1,4 @@
-/* $Id: rotate180.c,v 1.17 2002/10/09 17:27:13 micahjd Exp $
+/* $Id: rotate180.c,v 1.18 2002/10/10 08:19:26 micahjd Exp $
  *
  * rotate180.c - Video wrapper to rotate the screen 180 degrees
  *
@@ -149,7 +149,7 @@ void rotate180_scrollblit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
    (*vid->bitmap_getsize)(dest,&dx,&dy);
    (*vid->bitmap_getsize)(src,&bw,&bh);   
    (*vid->scrollblit)(dest,dx-dest_x-w,dy-dest_y-h,w,h,
-		      src,src_x,src_y,lgop);
+		      src,bw-w-src_x,bh-h-src_y,lgop);
 }
 void rotate180_multiblit(hwrbitmap dest,s16 dest_x,s16 dest_y,
 			 s16 dest_w,s16 dest_h,

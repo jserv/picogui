@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.21 2002/10/07 05:52:45 micahjd Exp $
+/* $Id: linear16.c,v 1.22 2002/10/10 08:19:26 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -30,6 +30,7 @@
 
 #include <pgserver/inlstring.h>    /* inline-assembly __memcpy */
 #include <pgserver/video.h>
+#include <pgserver/render.h>
 #include <pgserver/autoconf.h>
 
 #include <stdlib.h> /* For alloca */
@@ -549,6 +550,134 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
 }
 #endif /* CONFIG_FASTER_BLUR */
 
+/* This should be helpful for running SDL apps on a rotated display :)
+ */
+void linear16_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y,
+			 hwrbitmap src, s16 src_x, s16 src_y, s16 src_w, s16 src_h,
+			 struct quad *clip, s16 angle, s16 lgop) {
+  int i,j;
+  int ac,bd;  /* Rotation matrix */
+  u16 *s, *pixeldest, *linedest;
+  struct stdbitmap *srcbit = (struct stdbitmap *) src;
+  int offset_src;
+
+  /* We don't handle anything funky */
+  if (!FB_ISNORMAL(dest,lgop)) {
+    def_rotateblit(dest,dest_x,dest_y,src,src_x,src_y,src_w,src_h,clip,angle,lgop);
+    return;
+  }
+
+  /* For each angle, set the rotation matrix. (premultiplied with pitch,
+   * columns added together) Also handle clipping here.
+   *
+   * FIXME: The only difference between these blocks of code are sign
+   * and x/y changes, this could be factored out into a common clipping
+   * function that takes pointers to the x/y variables and signs
+   */
+  switch (angle) {
+
+  case 0:
+    ac = 1;
+    bd = FB_BPL>>1;
+
+    if ((i = clip->x1 - dest_x) > 0) {
+      src_x += i;
+      src_w -= i;
+      dest_x = clip->x1;
+    }
+    if ((i = clip->y1 - dest_y) > 0) {
+      src_y += i;
+      src_h -= i;
+      dest_y = clip->y1;
+    }
+    if ((i = dest_x + src_w - 1 - clip->x2) > 0)
+      src_w -= i;
+    if ((i = dest_y + src_h - 1 - clip->y2) > 0)
+      src_h -= i;
+    break;
+
+  case 90:
+    ac = -(FB_BPL>>1);
+    bd = 1;
+
+    if ((i = clip->x1 - dest_x) > 0) {
+      src_y += i;
+      src_h -= i;
+      dest_x = clip->x1;
+    }
+    if ((i = dest_y - clip->y2) > 0) {
+      src_x += i;
+      src_w -= i;
+      dest_y = clip->y2;
+    }
+    if ((i = dest_x + src_h - 1 - clip->x2) > 0)
+      src_h -= i;
+    if ((i = clip->y1 - dest_y + src_w - 1) > 0)
+      src_w -= i;
+    break;
+
+  case 180:
+    ac = -1;
+    bd = -(FB_BPL>>1);
+
+    if ((i = dest_x - clip->x2) > 0) {
+      src_x += i;
+      src_w -= i;
+      dest_x = clip->x2;
+    }
+    if ((i = dest_y - clip->y2) > 0) {
+      src_y += i;
+      src_h -= i;
+      dest_y = clip->y2;
+    }
+    if ((i = clip->x1 - dest_x + src_w - 1) > 0)
+      src_w -= i;
+    if ((i = clip->y1 - dest_y + src_h - 1) > 0)
+      src_h -= i;
+    break;
+
+  case 270:
+    ac = FB_BPL>>1;
+    bd = -1;
+
+    if ((i = dest_x - clip->x2) > 0) {
+      src_y += i;
+      src_h -= i;
+      dest_x = clip->x2;
+    }
+    if ((i = clip->y1 - dest_y) > 0) {
+      src_x += i;
+      src_w -= i;
+      dest_y = clip->y1;
+    }
+    if ((i = clip->x1 - dest_x + src_h - 1) > 0)
+      src_h -= i;
+    if ((i = dest_y + src_w - 1 - clip->y2) > 0)
+      src_w -= i;
+    break;
+
+  default:
+    return;   /* Can't handle this angle! */
+  }
+
+  /* Initial source and destination positions. */
+  linedest = PIXELADDR(dest_x,dest_y);
+  s = ((u16*)srcbit->bits) + src_x + src_y*(srcbit->pitch>>1);
+  offset_src = (srcbit->pitch>>1) - src_w;
+
+  /* Blitter loop, moving the source as normal,
+   * but using the rotation matrix above to move the destination.
+   */
+  for (j=src_h;j;j--,s+=offset_src) {
+    for (i=src_w,pixeldest=linedest;i;i--,s++) {
+      *pixeldest = *s;
+      pixeldest += ac;
+    }
+    linedest += bd;
+  }
+}
+
+
 /*********************************************** Registration */
 
 /* Load our driver functions into a vidlib */
@@ -561,7 +690,7 @@ void setvbl_linear16(struct vidlib *vid) {
   vid->slab           = &linear16_slab;
   vid->blit           = &linear16_blit;
   vid->scrollblit     = &linear16_scrollblit;
-
+  vid->rotateblit     = &linear16_rotateblit;
 #if defined(CONFIG_FAST_BLUR) || defined(CONFIG_FASTER_BLUR)
   vid->blur = &linear16_blur;
 #endif

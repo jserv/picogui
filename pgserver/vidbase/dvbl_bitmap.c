@@ -1,4 +1,4 @@
-/* $Id: dvbl_bitmap.c,v 1.12 2002/10/09 17:27:12 micahjd Exp $
+/* $Id: dvbl_bitmap.c,v 1.13 2002/10/10 08:19:26 micahjd Exp $
  *
  * dvbl_bitmap.c - This file is part of the Default Video Base Library,
  *                 providing the basic video functionality in picogui but
@@ -120,10 +120,6 @@ void def_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y,
   int i,j,sx,sy,dx,dy;
   int a,b,c,d;   /* Rotation matrix */
 
-  /* Normalize the angle */
-  angle %= 360;
-  if (angle<0) angle += 360;
-
   /* For each angle, set the rotation matrix */
   switch (angle) {
   case 0:
@@ -154,8 +150,8 @@ void def_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y,
     return;   /* Can't handle this angle! */
   }
 
-  /* Blitter loop, moving the destination as normal,
-   * but using the rotation matrix above to move the source.
+  /* Blitter loop, moving the source as normal,
+   * but using the rotation matrix above to move the destination.
    */
   for (j=src_h,sy=src_y;j;j--,sy++) {
     dx = dest_x;

@@ -17,7 +17,7 @@
 
 # identifier tables (FIXME: load these from constants.h)
 @requests = qw( ping update mkwidget mkbitmap mkfont mkstring free set get
-		mktheme in_key in_point in_direct wait mkfillstyle register
+		mktheme mkcursor mkinfilter getresource wait mkfillstyle register
 		mkpopup sizetext batch regowner unregowner setmode getmode
 		mkcontext rmcontext focus getstring dup setpayload getpayload
 		chconect writeto updatepart mkarray render newbitmap thlookup

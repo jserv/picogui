@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.41 2002/10/09 17:27:11 micahjd Exp $
+/* $Id: render.c,v 1.42 2002/10/10 08:19:26 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -418,6 +418,8 @@ void gropnode_nonvisual(struct groprender *r, struct gropnode *n) {
       
   case PG_GROP_SETANGLE:
     r->angle = n->param[0];
+    r->angle %= 360;
+    if (r->angle<0) r->angle += 360;
     break;
       
   case PG_GROP_SETSRC:
