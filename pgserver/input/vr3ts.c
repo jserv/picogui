@@ -1,4 +1,4 @@
-/* $Id: vr3ts.c,v 1.3 2001/08/10 23:09:23 sbarnes Exp $
+/* $Id: vr3ts.c,v 1.4 2001/08/10 23:42:32 sbarnes Exp $
  *
  * vr3ts.c - input driver for the Agenda VR3. This contains code from
  *           Agenda's xfree86 patch along with the framework from
@@ -350,6 +350,7 @@ int vr3ts_fd_activate(int fd) {
        dispatch_key(TRIGGER_KEYUP,PGKEY_F7,0);
        break;
      }
+     state = (trigger != TRIGGER_UP);
      return 1; // We don't need to dispatch any pointer info
    }
    /* If we got this far, accept the new state and send the event */
