@@ -1,4 +1,3 @@
-# Generated automatically from Makefile.in by configure.
 # Makefile.in generated automatically by automake 1.4-p4 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
@@ -12,44 +11,45 @@
 # PARTICULAR PURPOSE.
 
 
-SHELL = /bin/sh
+SHELL = @SHELL@
 
-srcdir = .
-top_srcdir = ../..
-prefix = /usr/local
-exec_prefix = ${prefix}
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
 
-bindir = ${exec_prefix}/bin
-sbindir = ${exec_prefix}/sbin
-libexecdir = ${exec_prefix}/libexec
-datadir = ${prefix}/share
-sysconfdir = ${prefix}/etc
-sharedstatedir = ${prefix}/com
-localstatedir = ${prefix}/var
-libdir = ${exec_prefix}/lib
-infodir = ${prefix}/info
-mandir = ${prefix}/man
-includedir = ${prefix}/include
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
 oldincludedir = /usr/include
 
 DESTDIR =
 
-pkgdatadir = $(datadir)/picogui-apps
-pkglibdir = $(libdir)/picogui-apps
-pkgincludedir = $(includedir)/picogui-apps
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
 
 top_builddir = ../..
 
-ACLOCAL = aclocal -I macros
-AUTOCONF = autoconf
-AUTOMAKE = automake
-AUTOHEADER = autoheader
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
 
-INSTALL = /usr/bin/install -c
-INSTALL_PROGRAM = ${INSTALL} $(AM_INSTALL_PROGRAM_FLAGS)
-INSTALL_DATA = ${INSTALL} -m 644
-INSTALL_SCRIPT = ${INSTALL_PROGRAM}
-transform = s,x,x,
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+transform = @program_transform_name@
 
 NORMAL_INSTALL = :
 PRE_INSTALL = :
@@ -57,60 +57,61 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-host_alias = i586-pc-linux-gnu
-host_triplet = i586-pc-linux-gnu
-AR = ar
+host_alias = @host_alias@
+host_triplet = @host@
+AR = @AR@
 AS = @AS@
-CC = gcc
-CC_FOR_BUILD = gcc
-CPP = gcc -E
+CC = @CC@
+CC_FOR_BUILD = @CC_FOR_BUILD@
+CPP = @CPP@
 DLLTOOL = @DLLTOOL@
-ECHO = echo
-EXEEXT = 
-LIBTOOL = $(SHELL) $(top_builddir)/libtool
-LIB_OS = 
-LN_S = ln -s
-MAKEINFO = makeinfo
-MINUS_RPM_PLATFORM = -i586-pc-linux-gnu
-NM = nm
+ECHO = @ECHO@
+EXEEXT = @EXEEXT@
+LIBTOOL = @LIBTOOL@
+LIB_OS = @LIB_OS@
+LN_S = @LN_S@
+MAKEINFO = @MAKEINFO@
+MINUS_RPM_PLATFORM = @MINUS_RPM_PLATFORM@
+NM = @NM@
 OBJDUMP = @OBJDUMP@
-OBJEXT = o
-PACKAGE = picogui-apps
-PICOGUI_CFLAGS = 
-PICOGUI_LDFLAGS = 
-PICOGUI_LIBS = -lpgui
-PICOGUI_LOCATION = /usr/local
-PLATFORM = 
-RANLIB = ranlib
-RPM_CONFIGURE = ./configure 
-RPM_PLATFORM = i586-pc-linux-gnu
-RPM_PREFIX = /usr/local
-RPM_REQUIRE_MDL = picogui-apps-mdl = 0.5
-RPM_ROOT = /usr/local
-STRIP = strip
-VERSION = 0.5
+OBJEXT = @OBJEXT@
+PACKAGE = @PACKAGE@
+PICOGUI_CFLAGS = @PICOGUI_CFLAGS@
+PICOGUI_LDFLAGS = @PICOGUI_LDFLAGS@
+PICOGUI_LIBS = @PICOGUI_LIBS@
+PICOGUI_LOCATION = @PICOGUI_LOCATION@
+PLATFORM = @PLATFORM@
+RANLIB = @RANLIB@
+RPM_CONFIGURE = @RPM_CONFIGURE@
+RPM_PLATFORM = @RPM_PLATFORM@
+RPM_PREFIX = @RPM_PREFIX@
+RPM_REQUIRE_MDL = @RPM_REQUIRE_MDL@
+RPM_ROOT = @RPM_ROOT@
+STRIP = @STRIP@
+VERSION = @VERSION@
 
-bin_PROGRAMS = pgl-clock 
-pgl_clock_SOURCES = pgl-clock.c applet.c 
+bin_PROGRAMS = pgl-toolbar 
+pgl_toolbar_SOURCES = pgl-toolbar.c applet.c configfile.c 
 
-LDFLAGS =  
-LDADD = -lpgui
+LDFLAGS =  @PICOGUI_LDFLAGS@
+LDADD = @PICOGUI_LIBS@
 
-CFLAGS =  
+CFLAGS = @CFLAGS@ @PICOGUI_CFLAGS@
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../../config.h
 CONFIG_CLEAN_FILES = 
-bin_PROGRAMS =  pgl-clock$(EXEEXT)
+bin_PROGRAMS =  pgl-toolbar$(EXEEXT)
 PROGRAMS =  $(bin_PROGRAMS)
 
 
-DEFS = -DHAVE_CONFIG_H -I. -I$(srcdir) -I../..
-CPPFLAGS = 
-LIBS = 
-pgl_clock_OBJECTS =  pgl-clock.$(OBJEXT) applet.$(OBJEXT)
-pgl_clock_LDADD = $(LDADD)
-pgl_clock_DEPENDENCIES = 
-pgl_clock_LDFLAGS = 
+DEFS = @DEFS@ -I. -I$(srcdir) -I../..
+CPPFLAGS = @CPPFLAGS@
+LIBS = @LIBS@
+pgl_toolbar_OBJECTS =  pgl-toolbar.$(OBJEXT) applet.$(OBJEXT) \
+configfile.$(OBJEXT)
+pgl_toolbar_LDADD = $(LDADD)
+pgl_toolbar_DEPENDENCIES = 
+pgl_toolbar_LDFLAGS = 
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -122,15 +123,15 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP_ENV = --best
-DEP_FILES =  .deps/applet.P .deps/pgl-clock.P
-SOURCES = $(pgl_clock_SOURCES)
-OBJECTS = $(pgl_clock_OBJECTS)
+DEP_FILES =  .deps/applet.P .deps/configfile.P .deps/pgl-toolbar.P
+SOURCES = $(pgl_toolbar_SOURCES)
+OBJECTS = $(pgl_toolbar_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .lo .o .obj .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu pgl/pgl-clock/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu pgl/pgl-toolbar/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
@@ -200,9 +201,9 @@ distclean-libtool:
 
 maintainer-clean-libtool:
 
-pgl-clock$(EXEEXT): $(pgl_clock_OBJECTS) $(pgl_clock_DEPENDENCIES)
-	@rm -f pgl-clock$(EXEEXT)
-	$(LINK) $(pgl_clock_LDFLAGS) $(pgl_clock_OBJECTS) $(pgl_clock_LDADD) $(LIBS)
+pgl-toolbar$(EXEEXT): $(pgl_toolbar_OBJECTS) $(pgl_toolbar_DEPENDENCIES)
+	@rm -f pgl-toolbar$(EXEEXT)
+	$(LINK) $(pgl_toolbar_LDFLAGS) $(pgl_toolbar_OBJECTS) $(pgl_toolbar_LDADD) $(LIBS)
 
 tags: TAGS
 
@@ -235,14 +236,14 @@ maintainer-clean-tags:
 
 distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 
-subdir = pgl/pgl-clock
+subdir = pgl/pgl-toolbar
 
 distdir: $(DISTFILES)
 	here=`cd $(top_builddir) && pwd`; \
 	top_distdir=`cd $(top_distdir) && pwd`; \
 	distdir=`cd $(distdir) && pwd`; \
 	cd $(top_srcdir) \
-	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu pgl/pgl-clock/Makefile
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu pgl/pgl-toolbar/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
