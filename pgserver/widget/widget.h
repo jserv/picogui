@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.21 2000/06/10 08:28:27 micahjd Exp $
+/* $Id: widget.h,v 1.22 2000/06/10 10:17:37 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -196,7 +196,8 @@ DEF_STATICWIDGET_PROTO(popup)
 #define WP_VALUE       14
 #define WP_BITMASK     15
 #define WP_BIND        16
-#define WP_SCROLL      17
+#define WP_SCROLL      17    /* Scroll bar binds here on scrollable widgets */
+#define WP_VIRTUALH    18    /* Basically, the maximum vertical scroll */
 
 /* Constants for SIZEMODE */
 #define SZMODE_PIXEL         0

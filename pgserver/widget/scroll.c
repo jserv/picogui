@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.15 2000/06/10 08:28:27 micahjd Exp $
+/* $Id: scroll.c,v 1.16 2000/06/10 10:17:37 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -50,6 +50,12 @@ struct scrolldata {
 void scrollbar(struct divnode *d) {
   int x,y,w,h;
   struct widget *self = d->owner;
+  struct widget *wgt;
+  
+  /* Size ourselves to fit the widget we are bound to */
+  if (rdhandle((void **)&wgt,TYPE_WIDGET,-1,DATA->binding)
+      .type==ERRT_NONE && wgt) 
+    DATA->res = widget_get(wgt,WP_VIRTUALH) - wgt->in->h;
 
   /* Background for the whole bar */
   x=y=0; w=d->w; h=d->h;
@@ -184,11 +190,13 @@ g_error scroll_set(struct widget *self,int property, glob data) {
 
     if (rdhandle((void **)&w,TYPE_WIDGET,-1,data).type!=ERRT_NONE || !w) 
       return mkerror(ERRT_HANDLE,"WP_BIND invalid widget handle (scroll)");
+
     /* Do a test run to see if the widget supports WP_SCROLL */
     if (widget_set(w,WP_SCROLL,DATA->value).type!=ERRT_NONE)
       return mkerror(ERRT_BADPARAM,
 		   "Argument to WP_BIND does not support WP_SCROLL property");
     DATA->binding = (handle) data;
+
     break;
 
   default:
@@ -255,7 +263,7 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
     if (!DATA->on) return;
     /* Button 1 is being dragged through our widget. */
     DATA->value = (param->mouse.y - self->in->div->y - 
-		   DATA->grab_offset) * 100 /
+		   DATA->grab_offset) * DATA->res /
       (self->in->div->h - (self->in->div->h>>HEIGHT_DIV));
 
     if (DATA->value > DATA->res) DATA->value = DATA->res;

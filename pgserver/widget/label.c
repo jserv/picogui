@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.12 2000/06/10 08:28:27 micahjd Exp $
+/* $Id: label.c,v 1.13 2000/06/10 10:17:37 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -193,6 +193,9 @@ g_error label_set(struct widget *self,int property, glob data) {
 glob label_get(struct widget *self,int property) {
   g_error e;
   handle h;
+  int tw,th;
+  char *str;
+  struct fontdesc *fd;
 
   switch (property) {
 
@@ -216,6 +219,17 @@ glob label_get(struct widget *self,int property) {
 
   case WP_TEXT:
     return (glob) DATA->text;
+
+  case WP_SCROLL:
+    return -self->in->div->ty;
+
+  case WP_VIRTUALH:
+    if (rdhandle((void**)&str,TYPE_STRING,-1,DATA->text).type != 
+	ERRT_NONE || !str) break;
+    if (rdhandle((void**)&fd,TYPE_FONTDESC,-1,DATA->font).type != 
+	ERRT_NONE || !fd) break;
+    sizetext(fd,&tw,&th,str);
+    return th;
 
   default:
     return 0;

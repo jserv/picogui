@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.9 2000/06/10 08:48:06 micahjd Exp $
+/* $Id: grop.c,v 1.10 2000/06/10 10:17:37 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -155,6 +155,94 @@ void grop_render(struct divnode *div) {
     list = list->next;
   }
 }
+
+#if 0 /* THIS IS UNTESTED */
+
+/* Calculate a bounding box for all the nodes in a groplist */
+void grop_getextent(struct gropnode *head,int *x1,int *y1,int *x2,int *y2) {
+  int nx1,ny1,nx2,ny2,w,h,newbox,notfirst;   /* Extent of one node */
+  struct gropnode *p;
+  char *str;
+  struct fontdesc *fd;
+
+  p = head;
+  *x1 = *y1 = *x2 = *y2 = notfirst = 0;
+
+  while (p) {
+    newbox=0;
+    switch (p->type) {
+    
+    case GROP_PIXEL:
+      nx1 = nx2 = p->x;
+      ny1 = ny2 = p->y;
+      newbox=1;
+      break;
+
+    case GROP_LINE:
+    case GROP_RECT:
+    case GROP_BITMAP:
+    case GROP_GRADIENT:
+    case GROP_FRAME:
+      nx1 = p->x;
+      ny1 = p->y;
+      nx2 = p->x+p->w-1;
+      ny2 = p->y+p->h-1;
+      newbox=1;
+      break;
+
+    case GROP_SLAB:
+      nx1 = p->x;
+      nx2 = p->x+p->w-1;
+      ny1 = ny2 = p->y;
+      newbox=1;
+      break;
+
+    case GROP_BAR:
+      ny1 = p->y;
+      ny2 = p->y+p->h-1;
+      nx1 = nx2 = p->x;
+      newbox=1;
+      break;
+
+    case GROP_TEXT:
+      /* Yuk. Dereference the handles, then run sizetext on it */
+
+      if (rdhandle((void**)&str,TYPE_STRING,-1,p->param.text.string).type != 
+	  ERRT_NONE || !str) break;
+      if (rdhandle((void**)&fd,TYPE_FONTDESC,-1,p->param.text.fd).type != 
+	  ERRT_NONE || !fd) break;
+      sizetext(fd,&w,&h,str);
+      nx1 = p->x;
+      ny1 = p->y;
+      nx2 = p->x+w-1;
+      ny2 = p->y+h-1;
+      newbox=1;
+      break;
+
+    }
+    p = p->next;
+
+    if (newbox) {
+      if (notfirst) {
+	/* Assimilate the bounding box */
+	if (nx1<*x1) *x1 = nx1;
+	if (ny1<*y1) *y1 = ny1;
+	if (nx2>*x2) *x2 = nx2;
+	if (ny2>*y2) *y2 = ny2;
+      }
+      else {
+	/* First one */
+	*x1 = nx1;
+	*x2 = nx2;
+	*y1 = ny1;
+	*y2 = ny2;
+	notfirst=1;
+      }
+    }
+  }
+}
+
+#endif
 
 /* Given a pointer to the groplist head pointer, this will add a new node to
    the groplist. Also sets the 'next' pointer to NULL.
