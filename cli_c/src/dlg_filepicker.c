@@ -1,4 +1,4 @@
-/* $Id: dlg_filepicker.c,v 1.3 2001/08/03 14:56:11 micahjd Exp $
+/* $Id: dlg_filepicker.c,v 1.4 2001/08/03 16:08:03 bauermeister Exp $
  *
  * dlg_filepicker.c - Display a dialog box the user can use to select
  *                    a file to open or save. It is customizable with flags
@@ -44,6 +44,7 @@
 #include <dirent.h>
 #include <sys/stat.h>   /* stat() */
 #include <unistd.h>
+#include <ctype.h>
 
 /* This is the size of the buffer files are returned in */
 #define FILEMAX 512
