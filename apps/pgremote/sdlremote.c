@@ -1,4 +1,4 @@
-/* $Id: sdlremote.c,v 1.5 2001/05/31 22:53:41 micahjd Exp $
+/* $Id: sdlremote.c,v 1.6 2001/08/30 03:50:35 micahjd Exp $
  * 
  * sdlremote.c - pgremote is a networked PicoGUI input driver.
  *               This uses SDL, so hopefully it is fairly portable.
@@ -86,6 +86,7 @@ int main(int argc, char **argv) {
 
          pgSendPointerInput(PG_TRIGGER_MOVE,ox = evt.motion.x,
 			   oy = evt.motion.y,btnstate=evt.motion.state);
+	 pgDriverMessage(PGDM_CURSORVISIBLE,1);
 	 break;
 	 
        case SDL_MOUSEBUTTONDOWN:
@@ -94,6 +95,7 @@ int main(int argc, char **argv) {
 	 
 	 pgSendPointerInput(PG_TRIGGER_DOWN,evt.button.x,
 			    evt.button.y,btnstate |= 1<<(evt.button.button-1));
+	 pgDriverMessage(PGDM_CURSORVISIBLE,1);
 	 break;
 	 
        case SDL_MOUSEBUTTONUP:
@@ -102,6 +104,7 @@ int main(int argc, char **argv) {
 
 	 pgSendPointerInput(PG_TRIGGER_UP,evt.button.x,
 			    evt.button.y,btnstate &= ~(1<<(evt.button.button-1)));
+	 pgDriverMessage(PGDM_CURSORVISIBLE,1);
 	 break;
 	 
        case SDL_KEYDOWN:
