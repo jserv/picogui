@@ -1,4 +1,4 @@
-/* $Id: gl_util.c,v 1.6 2002/12/01 19:35:51 micahjd Exp $
+/* $Id: gl_util.c,v 1.7 2002/12/03 02:54:54 micahjd Exp $
  *
  * gl_util.c - OpenGL driver for picogui
  *             This file has utilities shared by multiple components of the driver.
@@ -260,6 +260,9 @@ void gl_frame_setup(void) {
   glDisable(GL_LIGHTING);
   glDisable(GL_SMOOTH);
   glDisable(GL_TEXTURE_2D);
+
+  /* We have no idea what the current texture is now */
+  gl_global.current_texture = -1;
 }
 
 void gl_frame_cleanup(void) {
