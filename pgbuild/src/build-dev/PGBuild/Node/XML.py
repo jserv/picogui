@@ -27,6 +27,25 @@ import SCons.Node
 import PGBuild.XML.dom.minidom
 import dmutil.xsl.xpath
 
+def _needsWrapper(x):
+    if type(x)==type([]) or isinstance(x, PGBuild.XML.dom.minidom.NodeList):
+        return 1
+    if callable(x):
+        return 1
+
+def _getNode(x):
+    if isinstance(x, PGBuild.XML.dom.Node):
+        if not hasattr(x, 'node'):
+            # Create an Element() class if it hasn't been done
+            Element(x)
+        return x.node
+    if type(x)==type([]) or isinstance(x, PGBuild.XML.dom.minidom.NodeList):
+        out = []
+        for item in x:
+            out.append(_getNode(item))
+        return out
+    return x
+    
 class XPathParser:
     """Utility class to abstract the XPath implementation in use.
        Normally you should call the xpath() member of an Element
@@ -47,24 +66,14 @@ class NodeWrapper:
     def __init__(self, wrapped):
         self.wrapped = wrapped
 
-    def unwrap(self, x):
-        if isinstance(x, PGBuild.XML.dom.Node):
-            if not hasattr(x, 'node'):
-                # Create an Element() class if it hasn't been done
-                Element(x)
-            return x.node
-        if type(x)==type([]) or isinstance(x, PGBuild.XML.dom.minidom.NodeList):
-            out = []
-            for item in x:
-                out.append(self.unwrap(item))
-            return out
-        return x
-    
     def __getitem__(self, pos):
-        return self.unwrap(self.wrapped[pos])
+        # This wrapper also makes it easy to trace DOM usage for debugging :)
+        #print "%s[%s]" % (self.wrapped, pos)
+        return _getNode(self.wrapped[pos])
 
     def __call__(self, *args, **kwargs):
-        return self.unwrap(self.wrapped(*args, **kwargs))
+        #print "%s( *%s, **%s)" % (self.wrapped, args, kwargs)
+        return _getNode(self.wrapped(*args, **kwargs))
 
 class Element(SCons.Node.Node):
     """An SCons node wrapper around a DOM element object.
@@ -79,7 +88,10 @@ class Element(SCons.Node.Node):
         # Install wrapper objects that let us access the DOM methods easily
         for attr in dir(self.dom):
             if not hasattr(self, attr):
-                setattr(self, attr, NodeWrapper(getattr(self.dom, attr)))
+                if _needsWrapper(getattr(self.dom, attr)):
+                    setattr(self, attr, NodeWrapper(getattr(self.dom, attr)))
+                else:
+                    setattr(self, attr, _getNode(getattr(self.dom, attr)))
 
     def __str__(self):
         """A somewhat more helpful string representation for XML tags"""
