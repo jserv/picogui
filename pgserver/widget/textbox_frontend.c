@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.43 2003/03/23 02:36:39 lalo Exp $
+/* $Id: textbox_frontend.c,v 1.44 2003/03/23 23:26:22 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -256,11 +256,11 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
     /* Receive streamed data from client */ 
   case PG_TRIGGER_STREAM:
     
-    e = pgstring_new(&str, PGSTR_ENCODE_UTF8, param->stream.size, param->stream.data);
-    errorcheck;
-    textbox_write(self,str);
-    pgstring_delete(str);
-    paragraph_scroll_to_cursor(DATA->doc->crsr);
+    if (!iserror(pgstring_new(&str, PGSTR_ENCODE_UTF8, param->stream.size, param->stream.data))) {
+      textbox_write(self,str);
+      pgstring_delete(str);
+      paragraph_scroll_to_cursor(DATA->doc->crsr);
+    }
     return;
 
      /* Update visual appearance to reflect focus or lack of focus */

@@ -1,4 +1,4 @@
-/* $Id: gl_init.c,v 1.6 2003/03/10 23:48:23 micahjd Exp $
+/* $Id: gl_init.c,v 1.7 2003/03/23 23:26:21 micahjd Exp $
  *
  * sdlgl_init.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has initialization, shutdown, and registration.
@@ -135,8 +135,6 @@ void setvbl_gl(struct vidlib *v) {
   v->bitmap_getshm = &gl_bitmap_getshm;
   v->multiblit = &gl_multiblit;
   v->blur = &gl_blur;
-
-  return success;
 }
 
 /* The End */
