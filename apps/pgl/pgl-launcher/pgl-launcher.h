@@ -30,5 +30,3 @@ struct pgllApp{
   char *appIcon;
 };
 
-struct pgllApp *gAppList;
-int gAppCount;
