@@ -1,4 +1,4 @@
-/* $Id: version.h,v 1.3 2003/01/01 03:43:02 micahjd Exp $
+/* $Id: version.h,v 1.4 2003/01/23 03:47:57 micahjd Exp $
  * 
  * version.h - Define the version of the picogui server
  *
@@ -34,8 +34,8 @@
  * The client should not rely on this to know what version of pgserver it
  * has connected to, it should use the version returned in the pghello packet!
  */
-#define PGSERVER_VERSION_NUMBER PGVERSION(0,44,0)
-#define PGSERVER_VERSION_STRING "pre-0.44 CVS"
+#define PGSERVER_VERSION_NUMBER PGVERSION(0,44,1)
+#define PGSERVER_VERSION_STRING "0.44"
 
 #endif /* __WT_H */
 
