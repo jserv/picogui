@@ -1,4 +1,4 @@
-/* $Id: sdlgl_init.c,v 1.14 2002/08/19 06:00:15 micahjd Exp $
+/* $Id: sdlgl_init.c,v 1.15 2002/08/19 12:35:02 micahjd Exp $
  *
  * sdlgl_init.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has initialization, shutdown, and registration.
@@ -142,7 +142,7 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
     e = gl_fontload_init(&fl);
     errorcheck;
 
-    e = gl_load_font(fl,"/usr/share/fonts/truetype/openoffice/helmetb.ttf");  
+    e = gl_load_font(fl,get_param_str("video-sdlgl","font","/usr/share/fonts/truetype/openoffice/helmetb.ttf"));
     errorcheck;
 
     gl_fontload_finish(fl);

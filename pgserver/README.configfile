@@ -417,7 +417,11 @@ quoted appropriately. For example:
 - font_path
   This is the directory to search for TrueType fonts. It's searched recursively,
   and all files ending with .ttf will be loaded.
+  *NOT IMPLEMENTED YET*
   Defaults to /usr/share/fonts/truetype
+
+- font
+  There's no real font loading system yet, it just loads one .ttf font. This is that font.
 
 - font_resolution
   This is the size (in points) that the truetype fonts are rendered

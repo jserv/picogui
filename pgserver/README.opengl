@@ -15,7 +15,9 @@ Required PicoGUI components:
 
 In addition, you will need some TrueType fonts installed. By default it
 will search for them in /usr/share/fonts/truetype. I have been using the
-fonts in the "ttf-openoffice" Debian package.
+fonts in the "ttf-openoffice" Debian package. There's no real font indexing
+support yet, it only supports one font. You can set this with the
+video-sdlgl.font config option
 
 The sdlgl driver supports several config file options, documented in
 the README.configfile. It also adds several keyboard commands you can
