@@ -1,0 +1,84 @@
+/* $Id: flat16.ths,v 1.1 2000/11/14 05:05:20 micahjd Exp $
+ *
+ * Mostly flat, but with a little hilight animation
+ *
+ * Micah Dowty
+ */
+
+object default {
+  /* Simple fill */
+  bgfill = fillstyle {
+    Rect(x,y,w,h,ColorConv(bgcolor));
+  };
+
+  bgcolor = 0xC0C0C0;
+  hilightcolor = 0xFFFFFF;
+  shadowcolor = 0x808080;
+
+  /* Some consistant spacings and margins */
+  spacing = 0;
+  margin = 1;
+  height = 13;
+  width = 13;
+}
+
+/* hilighting */
+object button.hilight fgcolor = 0x0000FF;
+
+/* Special overlay for indicators */
+object indicator overlay = fillstyle {
+  Rect(x,y,w,h,ColorConv(0x000080));
+};
+
+/* Special stuff for panelbuttons */
+object closebtn bgfill = fillstyle {
+    var fg;
+    fg = ColorConv(fgcolor);
+    Rect(x,y,w,h,ColorConv(bgcolor));
+    Line(x+2,y+2,w-4,h-4,fg);
+    Line(x+2+w-4,y+2,4-w,h-4,fg);
+};
+object rotatebtn bgfill = fillstyle {
+    var fg;
+    fg = ColorConv(fgcolor);
+    Rect(x,y,w,h,ColorConv(bgcolor));
+    Slab(x+2,y+(h>>1),w-4,1,fg);
+    Line(x+2+w-4,y+2,4-w,h-4,fg);
+};  
+object zoombtn bgfill = fillstyle {
+    var fg;
+    fg = ColorConv(fgcolor);
+    Rect(x,y,w,h,ColorConv(bgcolor));
+    Slab(x+2,y+(h>>1),w-4,1,fg);
+    Frame(x+3,y+3,w-6,h-6,fg);
+};  
+
+object closebtn.hilight fgcolor = Copy(button.hilight::fgcolor);
+object rotatebtn.hilight fgcolor = Copy(button.hilight::fgcolor);
+object zoombtn.hilight fgcolor = Copy(button.hilight::fgcolor);
+object menuitem.hilight fgcolor = Copy(button.hilight::fgcolor);
+
+/* Panelbars */
+object panelbar {
+  fgcolor = 0xFFFFFF;
+  bgcolor = 0x000080;
+}
+
+/* Dialog box title, just like a panelbar */
+object label.dlgtitle {
+  fgcolor = Copy(panelbar::fgcolor);
+  bgcolor = Copy(panelbar::bgcolor);
+}
+
+/* A "Dark Cyan" background */
+object background bgcolor = 0x008080;
+
+/* Size tweaks */
+object popup {
+  bgfill = 0;
+  width = 5;
+  height = 5;
+}
+object scroll width = 8;
+
+/* The End */
