@@ -1,4 +1,4 @@
-/* $Id: omnibar-helio.c,v 1.3 2001/09/27 16:18:36 micahjd Exp $
+/* $Id: omnibar-helio.c,v 1.4 2001/09/27 16:39:17 micahjd Exp $
  * 
  * omnibar-helio.c - omnibar, hacked up a bit to look good on Helio
  *
@@ -31,7 +31,14 @@
 
 #include <time.h>        /* For clock */
 
-#include <sys/malloc.h>      /* Dynamic memory is used for the array */
+
+/* FIXME: Check for Mac OS X using autoconf */
+#if (defined(__APPLE__) && defined(__MACH__)) // Mac OS X and Darwin 
+#include <sys/types.h>
+#include <sys/malloc.h>
+#else
+#include <malloc.h>
+#endif
 
 #include <stdio.h>       /* file IO for getting CPU load */
 

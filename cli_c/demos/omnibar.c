@@ -1,4 +1,4 @@
-/* $Id: omnibar.c,v 1.13 2001/09/27 16:18:36 micahjd Exp $
+/* $Id: omnibar.c,v 1.14 2001/09/27 16:39:17 micahjd Exp $
  * 
  * omnibar.c - hopefully this will grow into a general interface
  *             for starting and manipulating applications, but
@@ -33,7 +33,13 @@
 
 #include <time.h>        /* For clock */
 
-#include <sys/malloc.h>      /* Dynamic memory is used for the array */
+/* FIXME: Check for Mac OS X using autoconf */
+#if (defined(__APPLE__) && defined(__MACH__)) // Mac OS X and Darwin 
+#include <sys/types.h>
+#include <sys/malloc.h>
+#else
+#include <malloc.h>
+#endif
 
 #include <stdio.h>       /* file IO for getting CPU load */
 
