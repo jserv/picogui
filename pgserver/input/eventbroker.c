@@ -1,4 +1,4 @@
-/* $Id: eventbroker.c,v 1.1 2001/11/09 17:31:06 pney Exp $
+/* $Id: eventbroker.c,v 1.2 2001/11/12 00:59:25 bauermeister Exp $
  *
  * eventbroker.c - input driver to manage driver messages
  *
@@ -32,105 +32,220 @@
 #ifdef DRIVER_EVENTBROKER
 
 #include <unistd.h>
-
-#include <fcntl.h>     /* File control definitions (provide O_RDONLY) */
+#include <stdio.h>
+#include <fcntl.h>
 #include <linux/kd.h>  /* for KIOCSOUND and KDMKTONE */
 
 #include <pgserver/input.h>
 #include <pgserver/pgnet.h>
 #include <pgserver/configfile.h>
+#include <pgserver/timer.h>
 
-#include <rm_client.h>
+#include <rm_client.h> /* to access the PocketBee ResourceManager */
 
 
-/******************************************** Implementations */
+#define LOCAL_DEBUG 0
+#define LOCAL_TRACE 0
 
-void eventbroker_fd_activate(int fd) {
+/* ------------------------------------------------------------------------- */
+
+#if LOCAL_DEBUG
+# define DPRINTF(x...) printf(__FILE__": " x)
+# define WARNF(x...)   printf(__FILE__": " x)
+#else
+# define DPRINTF(x...)
+# define WARNF(x...)   printf(__FILE__": " x)
+# undef LOCAL_TRACE
+# define LOCAL_TRACE 0
+#endif
+
+#if LOCAL_TRACE
+# define TRACEF(x...)  printf(__FILE__": " x)
+#else
+# define TRACEF(x...)
+#endif
+
+/* ------------------------------------------------------------------------- */
+
+static int shortbeep_freq;
+static int shortbeep_len;
+static int keyclick_freq;
+static int keyclick_len;
+  
+/* ------------------------------------------------------------------------- */
+/*                     Resource Manager events handling                      */
+/* ------------------------------------------------------------------------- */
+
+void rm_event_callback (RMStateEvent ev)
+{
+  TRACEF(">>> rm_event_callback\n");
+  switch(ev) {
+
+  case RM_ST_CPU_RUNNING:
+    /* The RM said the system went up: reset the timers, so that we won't
+     * get a PG_POWER_SLEEP too soon !
+     */
+    DPRINTF("Got RM_ST_CPU_RUNNING event from the RM\n"); 
+    inactivity_reset();
+    break;
+
+  default:
+    fprintf(stderr, "%s: received unexpected event from the RM: %d\n",
+	    __FILE__, ev);
+  }
+
 }
 
-static g_error eventbroker_init(void) {
+/* ------------------------------------------------------------------------- */
+/*                      PicoGUI input events handling                        */
+/* ------------------------------------------------------------------------- */
 
-}
+/* Well, for now we are no real input driver, just a one-day-so-called 
+ * 'generic driver', so we provide nothing like:
+ *    static void eventbroker_fd_init(int *, fd_set *, struct timeval *)
+ *    int eventbroker_fd_activate(int)
+ */
 
-static void eventbroker_fd_init(int *n,
-				fd_set *readfds,
-				struct timeval *timeout) {
-}
+/* ------------------------------------------------------------------------- */
+/*                      PicoGUI driver messages handling                     */
+/* ------------------------------------------------------------------------- */
 
-static void eventbroker_close(void){
-}
+/* Process messages comming from PicoGui */
+void eventbroker_message(u32 message, u32 param, u32 *ret)
+{
 
+  TRACEF(">>> eventbroker_message\n");
 
+  DPRINTF("message=%d param=%d\n", message, param);
 
-/* message between driver to provide sound (for exemple) */
-void eventbroker_message(u32 message, u32 param, u32 *ret) {
-
-  int snd_type;
-  *ret = 0;
+  if(ret) *ret = 0;
 
   switch (message) {
 
-#ifdef DRIVER_CHIPSLICE_SND
+  case PGDM_BACKLIGHT:
+    switch(param) {
+    }
+    break;
+
   /* sound support through /dev/tty2 implemented in drivers/char/vt.c */
-  case PGDM_SOUNDFX:
+  case PGDM_SOUNDFX: {
+    int freq=0, len;
 
     switch(param) {
-
     case PG_SND_SHORTBEEP:
-      snd_type = KDMKTONE;
+      DPRINTF("PG_SND_SHORTBEEP\n");
+      freq = shortbeep_freq;
+      len = shortbeep_len;
       break;
-
     case PG_SND_KEYCLICK:
-      snd_type = KDMKTONE;
+      DPRINTF("PG_SND_KEYCLICK\n");
+      freq = keyclick_freq;
+      len = keyclick_len;
       break;
-
     default:
       break;
-    }
+    } /* switch(param) */
 
-# if defined(CONFIG_XCOPILOT) || defined(CONFIG_SOFT_CHIPSLICE)
-    printf("beep\n");
-
-# elif defined(CONFIG_CHIPSLICE)
-    {
-      int snd_freq = get_param_int("input-eventbroker","snd_frequency",8000);
-      int snd_leng = get_param_int("input-eventbroker","snd_length",50);
-      int fd = 0;
-
-      /* if no frequency defined, get_param_int return 5000.
-       * if no length defined, get_param_int return 300.
-       */
-
+    if(freq) {
       /* open virtual terminal read only */
-      fd = open("/dev/tty2",O_RDONLY);
+      int fd = open("/dev/tty2",O_RDONLY);
 
       if(fd < 1) {
-	printf("/dev/tty2: open error\n");
-	return;
+	fprintf(stderr, "cannot open /dev/tty2 for KDMKTONE\n");
+	break;
       }
-      ioctl(fd,snd_type,(snd_freq + (snd_leng << 16)));
+      ioctl(fd, KDMKTONE, (freq&0xffff) | ((len&0xffff) << 16) );
       close(fd);
     }
-# endif /* defined(CONFIG_XCOPILOT) || defined(CONFIG_SOFT_CHIPSLICE) */
-#endif /* DRIVER_CHIPSLICE_SND */
+    break; /* PGDM_SOUNDFX */
+  }
+
+  case PGDM_POWER:
+    switch(param) {
+    case PG_POWER_SLEEP:
+      DPRINTF("PG_POWER_SLEEP => rm_emit(RM_EV_IDLE)\n");
+      rm_emit(RM_EV_IDLE);
+      break;
+    case PG_POWER_OFF:
+    case PG_POWER_VIDBLANK:
+    case PG_POWER_FULL:
+    }
+    break; /* PGDM_POWER */
 
   default:
     break;
-  }
+  } /* switch(message) */
   return;
 }
 
+/* ------------------------------------------------------------------------- */
+/*                             Un/initializations                            */
+/* ------------------------------------------------------------------------- */
 
+static g_error eventbroker_init(void)
+{
+  TRACEF(">>> g_error eventbroker_init\n");
 
-/******************************************** Driver registration */
+  /* get our params */
+  shortbeep_freq  = get_param_int("eventbroker", "shortbeep_freq", 8000);
+  shortbeep_len   = get_param_int("eventbroker", "shortbeep_len",    50);
+  keyclick_freq   = get_param_int("eventbroker", "keyclick_freq", 16000);
+  keyclick_len    = get_param_int("eventbroker", "keyclick_len",     30);
+
+  /* init the Ressources Manager */
+  rm_init();
+
+  /* set the rm event handlers */
+  rm_set_event_callback(rm_event_callback);
+
+#if !LOCAL_DEBUG
+  rm_register(RM_ST_CPU_RUNNING);
+#else
+  DPRINTF("registering to all RM events\n");
+  {
+    int i;
+    for(__RM_ST_INITIAL__ +1; i<__RM_LAST_EVENT__; ++i)
+      rm_register(i);
+  }
+#endif
+}
+
+/* ------------------------------------------------------------------------- */
+
+static void eventbroker_close(void)
+{
+  TRACEF(">>> void eventbroker_close\n");
+
+#if !LOCAL_DEBUG
+  rm_unregister(RM_ST_CPU_RUNNING);
+#else
+  DPRINTF("unregistering from all RM events\n");
+  {
+    int i;
+    for(__RM_ST_INITIAL__ +1; i<__RM_LAST_EVENT__; ++i)
+      rm_unregister(i);
+  }
+#endif
+
+  /* Disconnects the client from the Resource Manager */
+  rm_exit ();
+}
+
+/* ------------------------------------------------------------------------- */
+/*                          Driver registration                              */
+/* ------------------------------------------------------------------------- */
+
 g_error eventbroker_regfunc(struct inlib *i) {
+  TRACEF(">>> eventbroker_regfunc\n");
   i->init = &eventbroker_init;
-  i->fd_activate = &eventbroker_fd_activate;
-  i->fd_init = &eventbroker_fd_init;
   i->close = &eventbroker_close;
+  i->fd_activate = 0;
+  i->fd_init = 0;
+  i->message = &eventbroker_message;
   return sucess;
 }
 
+/* ------------------------------------------------------------------------- */
 #endif /* DRIVER_EVENTBROKER */
 
 /* The End */
