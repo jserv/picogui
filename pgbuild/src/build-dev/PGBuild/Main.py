@@ -132,7 +132,7 @@ class OptionsXML(object):
                 self.marshall(value)
                 self.xml.write('</option>')
         for arg in self.args:
-            self.xml.write('<target name="%s">%s</target>' % (arg, self.args[arg]))
+            self.xml.write('<target name="%s">%s</target>' % (arg, arg))
         self.xml.write('</pgbuild>')
 
     def marshall(self, value):
