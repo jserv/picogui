@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.1 2000/09/09 08:05:08 micahjd Exp $
+/* $Id: client_c.h,v 1.2 2000/09/15 18:10:48 pney Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -19,7 +19,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
- * Contributors:
+ * Contributors: Philippe Ney <philippe.ney@smartdata.ch>
  * 
  * 
  * 
@@ -27,6 +27,16 @@
 
 #ifndef _H_PG_CLI_C
 #define _H_PG_CLI_C
+
+
+/********************* Include files *********************/
+#include <stdio.h> 
+#include <stdlib.h> 
+#include <errno.h> 
+#include <string.h>
+
+#include "network.h"
+
 
 /******************** Administration */
 
@@ -92,6 +102,24 @@ void pgEventLoop(void);
  */
 void pgEnterContext(void);
 void pgLeaveContext(void);
+
+
+/* Flushes the buffer of packets
+ */
+long _flushpackets(const void *in_pgr,int pgr_len,
+                   const void *in_data,int data_len,
+		   struct pgreturn *in_pgret);
+
+/* Like send, but with some error checking stuff.  Returns nonzero
+ * on error.
+ */
+int send_response(int to,const void *data,int len);
+
+void Update();
+void _wait();
+void _mkpopup(short in_x,short in_y,short in_w,short in_h);
+void NewPopup(short in_x,short in_y,short in_w,short in_h);
+
 
 #endif /* __H_PG_CLI_C */
 /* The End */

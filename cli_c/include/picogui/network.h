@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.1 2000/09/09 05:09:19 micahjd Exp $
+/* $Id: network.h,v 1.2 2000/09/15 18:10:48 pney Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -20,7 +20,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
- * Contributors:
+ * Contributors: Philippe Ney <philippe.ney@smartdata.ch>
  * 
  * 
  * 
@@ -29,11 +29,31 @@
 #ifndef _H_PG_NETWORK
 #define _H_PG_NETWORK
 
+
+/********************* Include files *********************/
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <netdb.h>
+
+
+/********************* Definitions *********************/
+#define PG_REQUEST_SERVER  "localhost"
 #define PG_REQUEST_PORT    30450
 #define PG_PROTOCOL_VER    0x0001
 #define PG_REQUEST_MAGIC   0x31415926
 
+
 /******* Packet structures */
+
+/* return structure for the flushpacket function */
+struct pgreturn {
+  unsigned short s1;
+  unsigned short s2;
+  unsigned long l1;
+  unsigned long l2;
+  char* data;
+};
 
 /* Request, the only packet ever sent from client to server */
 struct pgrequest {

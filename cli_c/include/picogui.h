@@ -1,4 +1,4 @@
-/* $Id: picogui.h,v 1.1 2000/09/09 08:05:07 micahjd Exp $
+/* $Id: picogui.h,v 1.2 2000/09/15 18:10:48 pney Exp $
  *
  * picogui.h - Include file for your average PicoGUI client using the
  *             C client library
@@ -20,7 +20,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
- * Contributors:
+ * Contributors: Philippe Ney <philippe.ney@smartdata.ch>
  * 
  * 
  * 
@@ -28,5 +28,17 @@
 
 #include <picogui/constants.h>
 #include <picogui/client_c.h>
+
+
+/******************* Global variables *********************/
+int sockfd;
+
+short id;
+struct pgreturn pgret;
+short default_rship;
+short default_parent;
+short eventloop_on;
+
+
 
 /* The End */

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.2 2000/09/09 07:14:46 micahjd Exp $
+# $Id: Makefile,v 1.3 2000/09/15 18:10:48 pney Exp $
 #
 # C client library (libpgui) makefile
 #
@@ -30,12 +30,12 @@
 LIBNAME = libpgui
 
 # The source files to link into the library
-SRC := 
+SRC := src/picogui.c
 
 # Demo program files (each .c is a self-contained demo proggie)
-DEMOSRC := 
+DEMOSRC := demos/demo.c
 
-HDR := include/picogui/*.h
+HDR := include/*.h include/picogui/*.h
 
 CFLAGS := -Iinclude
 
