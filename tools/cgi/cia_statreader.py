@@ -106,21 +106,32 @@ def readStats():
 
 def readLatestCommands(n=20):
     """Read the n latest commands, returning a list of (command, project, message) tuples"""
-    f = open(commandLog)
+    try:
+        f = open(commandLog)
+    except IOError:
+        return []
     
     # Go to the end, and read backwards for n+1 newlines
-    f.seek(-1,2)
-    for i in xrange(n+1):
-        while f.read(1) != "\n":
+    try:
+        f.seek(-1,2)
+        for i in xrange(n+1):
+            while f.read(1) != "\n":
+                f.seek(-2,1)
             f.seek(-2,1)
-        f.seek(-2,1)
-    f.readline()
+        f.readline()
+    except:
+        # The file isn't long enough.. just use what's there
+        pass
             
     # Parse up some lines
     results = []
     for i in xrange(n):
-        line = f.readline().strip()
-        results.append(line.split(" ", 2))
+        line = f.readline()
+        if not line:
+            break
+        line = line.strip()
+        if line:
+            results.append(line.split(" ", 2))
     f.close()
     return results
 
