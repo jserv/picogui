@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.40 2002/02/11 19:39:23 micahjd Exp $
+/* $Id: divtree.h,v 1.41 2002/03/03 19:23:30 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -240,6 +240,9 @@ struct divnode {
 					   */ 
 #define DIVNODE_FORCE_CHILD_RECALC (1<<30) /* Normally child divnodes are only recalc'ed if 
 					    * the size changes. This forces it.
+					    */
+#define DIVNODE_ANIMATED          (1<<31)  /* this divnode is to be periodically rebuilt because
+					    * it's groplist depends on time.
 					    */
 
 /* Side value macros and stuff */

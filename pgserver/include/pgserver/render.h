@@ -1,4 +1,4 @@
-/* $Id: render.h,v 1.12 2002/01/18 09:32:13 micahjd Exp $
+/* $Id: render.h,v 1.13 2002/03/03 19:23:30 micahjd Exp $
  *
  * render.h - data structures and functions for rendering and manipulating
  *            gropnodes (Graphics Operation nodes)
@@ -114,6 +114,7 @@ struct gropctxt {
   struct gropnode *current;   /* Current position */
   u32 n;                      /* Numerical position in gropnode list */
   s16 x,y,w,h;                /* Current coordinates */
+  struct divnode *owner;      /* Optional */
   /* These are applied to new gropnodes */
   u16 defaultgropflags;
 };

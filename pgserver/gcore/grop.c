@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.51 2002/02/02 20:52:51 lonetech Exp $
+/* $Id: grop.c,v 1.52 2002/03/03 19:23:30 micahjd Exp $
  *
  * grop.c - grop-list management
  *
@@ -197,6 +197,7 @@ void gropctxt_init(struct gropctxt *ctx, struct divnode *div) {
    }
   ctx->w = div->w;
   ctx->h = div->h;
+  ctx->owner = div;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.20 2002/01/24 02:40:27 lonetech Exp $
+/* $Id: fillstyle.c,v 1.21 2002/03/03 19:23:30 micahjd Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -278,6 +278,10 @@ g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
 	fsb = NEXTSHORT;
 	p += 2;
 	fsstack[fsstkpos++] = theme_lookup(fsa,fsb);
+
+	/* If it depends on time, turn on the animated flag in the divnode */
+	if (fsb==PGTH_P_TICKS && ctx->owner)
+	  ctx->owner->flags |= DIVNODE_ANIMATED;
 	break;
 
       case PGTH_OPCMD_LOCALPROP:
@@ -289,6 +293,10 @@ g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
 	 printf("Local theme lookup, property %ld\n",fsa);
 #endif
 	 fsstack[fsstkpos++] = theme_lookup(state,fsa);
+
+	/* If it depends on time, turn on the animated flag in the divnode */
+	if (fsa==PGTH_P_TICKS && ctx->owner)
+	  ctx->owner->flags |= DIVNODE_ANIMATED;
 	break;
 
       case PGTH_OPCMD_PLUS:
