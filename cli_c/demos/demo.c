@@ -1,4 +1,4 @@
-/* $Id: demo.c,v 1.21 2001/09/08 22:23:22 micahjd Exp $
+/* $Id: demo.c,v 1.22 2001/09/27 16:48:01 micahjd Exp $
  *
  * demo.c -   source file for testing PicoGUI
  *
@@ -116,6 +116,7 @@ int main(int argc, char *argv[])
 	      PG_WP_TEXT,pgNewString("Foo..."),
 	      PG_WP_FONT,pgNewFont("Utopia",0,0),
 	      PG_WP_SIDE,PG_S_ALL,    /* Expand to remaining space */
+	      PG_WP_TRANSPARENT,0,
 	      0);
 
   /**** Widgets inside the toolbar */
