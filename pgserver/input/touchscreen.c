@@ -90,7 +90,9 @@ void touchscreen_message(u32 message, u32 param, u32 *ret)
 				if(!calib_file)
 				{
 					/* report faulty driver */
+#ifdef DEBUG_INPUT
 					fputs("Touchscreen driver didn't call touchscreen_init()!\n", stderr);
+#endif
 					touchscreen_init();
 				}
 				fp=fopen(calib_file, "w");
