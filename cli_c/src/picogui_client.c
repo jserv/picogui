@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.3 2000/09/16 07:21:23 micahjd Exp $
+/* $Id: picogui_client.c,v 1.4 2000/09/20 17:25:21 pney Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -203,7 +203,7 @@ void _pg_getresponse(void) {
       /* Error */
       struct pgresponse_err pg_err;
       char *msg;
-      
+
       /* Read the rest of the error (already have response type) */
       pg_err.type = _pg_return.type;
       if (_pg_recv(((char*)&pg_err)+sizeof(_pg_return.type),
@@ -238,6 +238,22 @@ void _pg_getresponse(void) {
     }
     break;
 
+  case PG_RESPONSE_EVENT:
+    {
+      /* Event */
+      struct pgresponse_event pg_ev;
+
+      /* Read the rest of the event (already have response type) */
+      pg_ev.type = _pg_return.type;
+      if (_pg_recv(((char*)&pg_ev)+sizeof(_pg_return.type),
+		   sizeof(pg_ev)-sizeof(_pg_return.type)))
+	return;
+      _pg_return.e.event.event = ntohs(pg_ev.event);
+      _pg_return.e.event.from = ntohl(pg_ev.from);      
+      _pg_return.e.event.param = ntohl(pg_ev.param);      
+    }
+    break;
+
   case PG_RESPONSE_DATA:
     {
       /* Something larger- return it in a dynamically allocated buffer */
@@ -258,7 +274,7 @@ void _pg_getresponse(void) {
     break;
 
   default:
-    clienterr("Unexpected response type");
+      clienterr("Unexpected response type");
   }
   
   if(rsp_id && (rsp_id != _pgrequestid)) {
@@ -271,6 +287,66 @@ void _pg_getresponse(void) {
 
 
 /******************* API functions */
+
+/* Open a connection to the server, parsing PicoGUI commandline options
+  if they are present
+*/  
+void pgInit(int argc, char **argv)
+{
+  int /*sockfd,*/ numbytes;
+  struct pghello ServerInfo;
+  struct hostent *he;
+  struct sockaddr_in server_addr; /* connector's address information */
+  const char *hostname;
+
+  /* Set default error handler */
+  pgSetErrorHandler(&_pg_defaulterr);
+
+  /* Should use a getopt-based system here to process various args, leaving
+     the extras for the client app to process. But this is ok temporarily.
+  */
+  if (argc != 2)
+    hostname = PG_REQUEST_SERVER;
+  else
+    hostname = argv[1];
+
+  if ((he=gethostbyname(hostname)) == NULL) {  /* get the host info */
+    clienterr("Error resolving server hostname");
+    return;
+  }
+
+  if ((_pgsockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+    clienterr("socket error");
+    return;
+  }
+
+  server_addr.sin_family = AF_INET;                 /* host byte order */
+  server_addr.sin_port = htons(PG_REQUEST_PORT);    /* short, network byte order */
+  server_addr.sin_addr = *((struct in_addr *)he->h_addr);
+  bzero(&(server_addr.sin_zero), 8);                /* zero the rest of the struct */
+
+  if (connect(_pgsockfd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1) {
+    clienterr("Error connecting to server");
+    return;
+  }
+
+  /* Receive the hello packet and convert byte order */
+  if (_pg_recv(&ServerInfo,sizeof(ServerInfo)))
+    return;
+  ServerInfo.magic = ntohl(ServerInfo.magic);
+  ServerInfo.protover = ntohs(ServerInfo.protover);
+  ServerInfo.dummy = ntohs(ServerInfo.dummy);
+  
+  /* Validate it */
+  if(ServerInfo.magic != PG_REQUEST_MAGIC) {
+    clienterr("server has bad magic number");
+    return;
+  }
+  if(ServerInfo.protover < PG_PROTOCOL_VER) {
+    puts("Warning: PicoGUI server is older than the client. \n"
+	 "         you may experience compatibility problems");
+  }
+}
 
 void pgSetErrorHandler(void (*handler)(unsigned short errortype,
 				       const char *msg)) {
@@ -345,67 +421,6 @@ void pgFlushRequests(void) {
   _pg_getresponse();
 }
 
-/* Open a connection to the server, parsing PicoGUI commandline options
-  if they are present
-*/  
-void pgInit(int argc, char **argv)
-{
-  int /*sockfd,*/ numbytes;
-  struct pghello ServerInfo;
-  struct hostent *he;
-  struct sockaddr_in server_addr; /* connector's address information */
-  const char *hostname;
-
-  /* Set default error handler */
-  pgSetErrorHandler(&_pg_defaulterr);
-
-  /* Should use a getopt-based system here to process various args, leaving
-     the extras for the client app to process. But this is ok temporarily.
-  */
-  if (argc != 2)
-    hostname = PG_REQUEST_SERVER;
-  else
-    hostname = argv[1];
-
-  if ((he=gethostbyname(hostname)) == NULL) {  /* get the host info */
-    clienterr("Error resolving server hostname");
-    return;
-  }
-
-  if ((_pgsockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-    clienterr("socket error");
-    return;
-  }
-
-  server_addr.sin_family = AF_INET;                 /* host byte order */
-  server_addr.sin_port = htons(PG_REQUEST_PORT);    /* short, network byte order */
-  server_addr.sin_addr = *((struct in_addr *)he->h_addr);
-  bzero(&(server_addr.sin_zero), 8);                /* zero the rest of the struct */
-
-  if (connect(_pgsockfd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1) {
-    clienterr("Error connecting to server");
-    return;
-  }
-
-  /* Receive the hello packet and convert byte order */
-  if (_pg_recv(&ServerInfo,sizeof(ServerInfo)))
-    return;
-  ServerInfo.magic = ntohl(ServerInfo.magic);
-  ServerInfo.protover = ntohs(ServerInfo.protover);
-  ServerInfo.dummy = ntohs(ServerInfo.dummy);
-  
-  /* Validate it */
-
-  if(ServerInfo.magic != PG_REQUEST_MAGIC) {
-    clienterr("server has bad magic number");
-    return;
-  }
-  if(ServerInfo.protover < PG_PROTOCOL_VER) {
-    puts("Warning: PicoGUI server is older than the client. \n"
-	 "         you may experience compatibility problems");
-  }
-}
-
 /* This is called after the app finishes it's initialization.
    It waits for events, and dispatches them to the functions they're
    bound to.
@@ -467,9 +482,77 @@ void pgDelete(pghandle object) {
      handlers. Free it to prevent memory leaks. */
 }
 
-pghandle pgNewPopup(int width,int height) {
-  /* Tell the server to center it */
-  pgNewPopupAt(-1,-1,width,height);
+/* Register application. Defining side, dimension and type of it.
+ * Dimension is interpreted regarding the side.
+ */
+pghandle pgRegisterApp(int side,int dim,int type) {
+  if((side == PG_S_LEFT)||(side == PG_S_RIGHT))
+    return pgRegisterAppWith(side,dim,0,type,"",0xFFFF,0,0,0,0);
+  else
+    return pgRegisterAppWith(side,0,dim,type,"",0xFFFF,0,0,0,0);
+}
+			   
+
+/* Register application. Full definition.
+ */
+pghandle pgRegisterAppWith(int side,int width,int height,int type,
+                           char* name,int sidemask,int minWidth,
+		           int maxWidth,int minHeight,int maxHeight) {
+  struct pgreqd_register arg;
+  arg.name = htonl(pgNewString(name));
+  arg.type = htons(type);
+  arg.side = htons(side);
+  arg.sidemask = htons(sidemask);
+  arg.w = htons(width);
+  arg.h = htons(height);
+  arg.minw = htons(minWidth);
+  arg.maxw = htons(maxWidth);
+  arg.minh = htons(minHeight);
+  arg.maxh = htons(maxHeight);
+/*  arg.dummy = htons;  */       /* FIXME: What's that ??? */
+
+  _pg_add_request(PGREQ_REGISTER,&arg,sizeof(arg));
+
+  /* Because we need a result now, flush the buffer */
+  pgFlushRequests();
+
+  /* Default is inside this widget */
+  _pgdefault_rship = PG_DERIVE_INSIDE;
+  _pgdefault_parent = _pg_return.e.retdata;
+  
+  /* Return the new handle */
+  return _pg_return.e.retdata;
+}
+
+pghandle pgNewWidget(short int type,short int rship,pghandle parent) {
+  struct pgreqd_mkwidget arg;
+
+  if((type < PG_WIDGET_TOOLBAR)||(type > PG_WIDGETMAX))
+    _pg_defaulterr(PG_ERRT_BADPARAM,"Undefined widget type\n");
+    
+  arg.type = htons(type);
+
+  /* Default placement is after the previous widget
+   * (Unless is was a special widget, like a root widget)
+   */
+  arg.parent = htonl(_pgdefault_parent);
+  arg.rship = htons(_pgdefault_rship);
+  
+  /* Passing 0 for 'rship' and 'parent' to get the defaults */
+  if(parent) arg.parent = htonl(parent);
+  if(rship)  arg.rship = htons(rship);
+
+  _pg_add_request(PGREQ_MKWIDGET,&arg,sizeof(arg));
+
+  /* Because we need a result now, flush the buffer */
+  pgFlushRequests();
+
+  /* Default is inside this widget */
+  _pgdefault_rship = PG_DERIVE_INSIDE;
+  _pgdefault_parent = _pg_return.e.retdata;
+  
+  /* Return the new handle */
+  return _pg_return.e.retdata;
 }
 
 pghandle pgNewPopupAt(int x,int y,int width,int height) {
@@ -490,5 +573,21 @@ pghandle pgNewPopupAt(int x,int y,int width,int height) {
   /* Return the new handle */
   return _pg_return.e.retdata;
 }
+
+pghandle pgNewPopup(int width,int height) {
+  /* Tell the server to center it */
+  return pgNewPopupAt(-1,-1,width,height);
+}
+
+pghandle pgNewString(const char* str) {
+  _pg_add_request(PGREQ_MKSTRING,str,sizeof(str));
+
+  /* Because we need a result now, flush the buffer */
+  pgFlushRequests();
+
+  /* Return the new handle */
+  return _pg_return.e.retdata;
+}
+
 
 /* The End */

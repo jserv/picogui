@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.4 2000/09/16 07:21:20 micahjd Exp $
+/* $Id: client_c.h,v 1.5 2000/09/20 17:25:21 pney Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -79,6 +79,18 @@ void pgUpdate(void);
 
 /* Delete any object that has a handle */
 void pgDelete(pghandle object);
+
+/* Register application. Defining side, dimension and type of it.
+ * Dimension is interpreted regarding the side.
+ */
+pghandle pgResgisterApp(int side,int dim,int type);
+
+/* Register application. Full definition.
+ */
+pghandle pgResgisterAppWith(int side,int width,int height,int type,
+                            char* name,int sidemask,int minWidth,
+		            int maxWidth,int minHeight,int maxHeight);
+
 
 /* Creates a new widget, derived from a parent widget
  * using the spefified relationship (PG_DERIVE_* constant)

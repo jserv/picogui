@@ -1,4 +1,4 @@
-/* $Id: demo.c,v 1.2 2000/09/16 07:04:41 micahjd Exp $
+/* $Id: demo.c,v 1.3 2000/09/20 17:25:20 pney Exp $
  *
  * demo.c -   source file for testing PicoGUI
  *
@@ -30,9 +30,13 @@
 
 int main(int argc, char *argv[])
 {
+
   pgInit(argc,argv);
 
-  pgNewPopupAt(20,20,10,50);
+  pgRegisterApp(PG_S_BOTTOM,30,PG_APP_TOOLBAR);
+  pgRegisterApp(PG_S_BOTTOM,30,PG_APP_TOOLBAR);
+  pgNewWidget(PG_WIDGET_BUTTON,0,0);
+/*  pgNewPopupAt(20,20,10,50);  */
   pgEventLoop();
 
   return 0;
