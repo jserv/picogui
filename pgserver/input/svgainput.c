@@ -1,4 +1,4 @@
-/* $Id: svgainput.c,v 1.7 2000/10/21 17:58:27 micahjd Exp $
+/* $Id: svgainput.c,v 1.8 2000/10/21 18:14:25 micahjd Exp $
  *
  * svgainput.h - input driver for SVGAlib
  *
@@ -154,27 +154,43 @@ void svgainput_initkeymaps(void) {
 
 /* Keyboard handler called by SVGAlib */
 void svgainput_kbdhandler(int scancode,int press) {
-  int x;
+  short x=0,led=0;
   static short previouskey = 0;
 
   /******* Handle modifiers */
 
   switch (scancode) {
+    /* locks 
+     * FIXME: what do do with scroll lock? */
+
+  case SCANCODE_NUMLOCK:
+    if (!press) break;
+    svgainput_mod ^= PGMOD_NUM;
+    goto updatelights;
+  case SCANCODE_CAPSLOCK:
+    if (!press) break;
+    svgainput_mod ^= PGMOD_CAPS;
+  updatelights:
+
+    /* Update the keyboard LEDs */
+    if (svgainput_mod & PGMOD_CAPS)  led |= LED_CAP;
+    if (svgainput_mod & PGMOD_NUM)   led |= LED_NUM;
+    ioctl(__svgalib_kbd_fd,KDSETLED,led);
+    break;
+    
+    /* normal modifiers */
   case SCANCODE_LEFTSHIFT:    x = PGMOD_LSHIFT;  break;
   case SCANCODE_RIGHTSHIFT:   x = PGMOD_RSHIFT;  break;
   case SCANCODE_LEFTCONTROL:  x = PGMOD_LCTRL;   break;
   case SCANCODE_RIGHTCONTROL: x = PGMOD_RCTRL;   break;
   case SCANCODE_LEFTALT:      x = PGMOD_LALT;    break;
   case SCANCODE_RIGHTALT:     x = PGMOD_RALT;    break;
-  case SCANCODE_NUMLOCK:      x = PGMOD_NUM;     break;
-  case SCANCODE_CAPSLOCK:     x = PGMOD_CAPS;    break;
-  default:                    x = 0;
   }
   if (press)
     svgainput_mod |= x;
   else
     svgainput_mod &= ~x;
-    
+
   /******* Handle ascii character events */
 
   if (press) {
