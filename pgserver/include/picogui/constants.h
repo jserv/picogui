@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.108 2002/01/05 12:52:04 micahjd Exp $
+/* $Id: constants.h,v 1.109 2002/01/05 16:52:08 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -499,6 +499,12 @@ typedef unsigned long pghandle;
 #define PGTH_P_HOTKEY_RIGHT       1508   //!< Hotkey property (usually in PGTH_O_DEFAULT) 
 #define PGTH_P_HOTKEY_ACTIVATE    1509   //!< Hotkey property (usually in PGTH_O_DEFAULT) 
 #define PGTH_P_HOTKEY_NEXT        1510   //!< Hotkey property (usually in PGTH_O_DEFAULT) 
+
+//! Application-defined theme properties start here
+#define PGTH_P_USER               10000
+
+//! Automatically allocated properties used only by the theme start here
+#define PGTH_P_THEMEAUTO          20000
 
 #define PG_HHK_NONE          0           //!< Do not hide any buttons
 #define PG_HHK_RETURN_ESCAPE 1           //!< Hide buttons hotkeyed to return or escape
