@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.2 2001/10/02 08:47:50 micahjd Exp $
+/* $Id: textbox_document.c,v 1.3 2001/10/02 09:00:47 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -43,17 +43,26 @@ g_error text_format_add(struct textbox_cursor *c, struct formatnode *f) {
 
 /* Add a node to change the text color */
 g_error text_format_color(struct textbox_cursor *c, pgcolor color) {
-  return sucess;
+  struct formatnode *fn;
+  g_error e;
+
+  /* Empty formatnode */
+  e = g_malloc((void**) &fn,sizeof(struct formatnode));
+  errorcheck;
+  memset(fn,0,sizeof(struct formatnode));
+
+  /* Same font, new color */
+  if (c->f_top)
+    fn->fontdef = c->f_top->fontdef;
+  fn->color = VID(color_pgtohwr)(color);
+
+  return text_format_add(c,fn);
 }
 
 /* Add a node to change the font completely */
 g_error text_format_font(struct textbox_cursor *c, handle font) {
   struct formatnode *fn;
-  struct fontdef *fd;
-  const char *font_name = NULL;
   g_error e;
-  int font_size = 0;
-  u32 font_flags = 0;
 
   /* Empty formatnode */
   e = g_malloc((void**) &fn,sizeof(struct formatnode));

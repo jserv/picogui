@@ -1,4 +1,4 @@
-/* $Id: textbox.h,v 1.2 2001/10/02 08:47:50 micahjd Exp $
+/* $Id: textbox.h,v 1.3 2001/10/02 09:00:47 micahjd Exp $
  *
  * textbox.h - Interface definitions for the textbox widget. This allows
  *             the main textbox widget functions and the text format loaders
@@ -39,7 +39,7 @@
 struct formatnode {
   handle fontdef;            /* Font definition for this formatting */
   int font_refcnt;           /* Number of divnodes using the font */
-  pgcolor color;             /* Text foreground color */
+  hwrcolor color;            /* Text foreground color */
   struct formatnode *next;
 };
 
