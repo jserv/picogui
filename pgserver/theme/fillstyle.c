@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.10 2001/03/17 04:16:35 micahjd Exp $
+/* $Id: fillstyle.c,v 1.11 2001/03/21 02:21:33 micahjd Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -46,8 +46,8 @@ int fsstkpos;  /* position in the stack */
 
 #else
 
-#define NEXTLONG ntohl(*(((unsigned long*)p)++))
-#define NEXTSHORT ntohs(*(((unsigned short*)p)++))
+#define NEXTLONG ntohl(*((unsigned long*)p))
+#define NEXTSHORT ntohs(*((unsigned short*)p))
 
 #endif /* UCLINUX */
 
@@ -136,12 +136,14 @@ g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
 	if ((plimit-p)<4)
 	  return mkerror(PG_ERRT_BADPARAM,91);  /* Truncated opcode */
 	 fsstack[fsstkpos++] = NEXTLONG;
+	 p += 4;
 	 break;
 
       case PGTH_OPCMD_LONGGROP:
 	if ((plimit-p)<2)
 	  return mkerror(PG_ERRT_BADPARAM,91);  /* Truncated opcode */
 	e = fsgrop(ctx,NEXTSHORT);
+	p += 2;
 	errorcheck;
 	break;
 
@@ -163,7 +165,9 @@ g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
 	if ((plimit-p)<4)
 	  return mkerror(PG_ERRT_BADPARAM,91);  /* Truncated opcode */
 	fsa = NEXTSHORT;
+	p += 2;
 	fsb = NEXTSHORT;
+	p += 2;
 	fsstack[fsstkpos++] = theme_lookup(fsa,fsb);
 	break;
 
@@ -171,6 +175,7 @@ g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
 	if ((plimit-p)<2)
 	  return mkerror(PG_ERRT_BADPARAM,91);  /* Truncated opcode */
 	 fsa = NEXTSHORT;
+	 p += 2;
 #ifdef DEBUG_THEME
 	 printf("Local theme lookup, property %d\n",fsa);
 #endif
