@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.28 2002/10/17 01:22:24 micahjd Exp $
+/* $Id: linear16.c,v 1.29 2002/10/17 01:58:36 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -261,9 +261,14 @@ void linear16_scrollblit(hwrbitmap dest,
   s16 offset_src;
   u16 *src;
   
-  if ((dst_x < src_x) || (dst_y < src_y) || (!FB_ISNORMAL(dest,lgop))) {
-     def_blit(dest,dst_x,dst_y,w,h,sbit,src_x,src_y,lgop);
-     return;
+  if ((dst_x < src_x) || (dst_y < src_y)) {
+    vid->blit(dest,dst_x,dst_y,w,h,sbit,src_x,src_y,lgop);
+    return;
+  }
+
+  if (!FB_ISNORMAL(dest,lgop)) {
+    def_scrollblit(dest,dst_x,dst_y,w,h,sbit,src_x,src_y,lgop);
+    return;
   }
 
   /* This blit starts at the lower-right, moves right-to-left, bottom-to-top */
