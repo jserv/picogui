@@ -71,18 +71,3 @@ configscript/lxdialog/lxdialog:
 distclean-local:
 	(cd configscript && $(MAKE) $(AM_MAKEFLAGS) distclean)
 
-
-if ENABLE_BEE
-
-dist-hook: @PACKAGE@.spec
-	cp -a $(srcdir)/PicoGUIServer.mdl $(distdir)
-	cp -a @PACKAGE@.spec $(distdir)/@PACKAGE@.spec
-
-@RPM_MAKE_FRAG@
-
-else
-
-dist-hook:
-	@echo "nothing to add"
-
-endif

@@ -1,8 +1,7 @@
-INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include $(DRIVER_CFLAGS)
+INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include $(DRIVER_CFLAGS) @RM_CFLAGS@ @PM_CFLAGS@
 
 noinst_LIBRARIES = libinput.a
 
-CFLAGS = @CFLAGS@ @RM_CFLAGS@
 LIBS   = @LIBS@ @RM_LIBS@
 
 libinput_a_SOURCES =		\

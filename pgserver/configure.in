@@ -32,20 +32,15 @@ AC_ARG_WITH(extra-libs,
 dnl
 dnl Use this to enable the PocketBee ResourceManager
 dnl 
-AC_ARG_WITH(rm,
-[  --with-rm=<prefix>       Enable and specify path to PocketBee ResourceManager],
-[
-  RM_CFLAGS="-I ${withval}/include"
-  RM_LIBS="-L ${withval}/lib -lrm"
-  AC_DEFINE(RM_ENABLED)
-],[
-  RM_CFLAGS=""
-  RM_LIBS=""
-]
-)
+BEE_MODULE(rm)
+BEE_MODULE(pm)
 
-AC_SUBST(RM_CFLAGS)
-AC_SUBST(RM_LIBS)
+if test "${RM_PREFIX}" != "" ; then
+  RM_LIBS="${RM_LDFLAGS} -lrm"
+
+  AC_SUBST(RM_LIBS)
+  AC_DEFINE(RM_ENABLED)
+fi
 
 
 dnl normalize the path somehow
@@ -344,15 +339,6 @@ AC_FUNC_MMAP
 AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(gettimeofday select socket strerror strspn strtol)
-
-
-dnl for integration in the bee compilation system
-AM_BEE_RPMPROFILE
-
-AC_ARG_ENABLE(bee, 
-[  --enable-bee     use the bee building system])
-
-AM_CONDITIONAL(ENABLE_BEE, test "${enable_bee}" = "yes")
 
 
 AC_OUTPUT(

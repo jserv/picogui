@@ -19,7 +19,7 @@ license = ''' GNU GPL '''
 prefix = '/usr'
 
 depends = [
-    'resourcemanager', 'kernel',
+    'resourcemanager', 'kernel', 'processmanager',
     ('libjpeg', S ('platform/ppc-linux') | S ('platform/native-linux')),
     ('busybox', S ('platform/ppc-linux'))
     ]
@@ -38,7 +38,7 @@ runtime = [
                      content = [ '/etc/rm.d/picoguiserver',
                                  'bin/picogui-launcher.sh' ],
                      
-                     depends = [ 'picoguiserver/install', 'resourcemanager/start',
+                     depends = [ 'picoguiserver/install', 'processmanager/start', 'resourcemanager/start',
                                  (S ('module/picoguiserver/start') & S ('platform/m68k-pic-coff')) >> S ('module/pocketapps/bioscall'),
                                  (S ('module/picoguiserver/start') & S ('platform/m68k-pic-coff')) >> S ('module/pocketapps/initenv'),
                                  (S ('module/picoguiserver/start') & S ('platform/ppc-linux')) >> S ('module/ibm-dcr'),
@@ -61,6 +61,7 @@ def prepare (module, platform, project):
                "--enable-bee",
                "--with-extra-ipath=%s/include" % project ['module/kernel'].path ['dfl'],
                "--with-rm=%s" % project ['module/resourcemanager'].path ['dfl'],
+               "--with-pm=%s" % project ['module/processmanager'].path ['dfl'],
                ]
 
     if not platform.native:
@@ -165,7 +166,7 @@ then
 fi
 
 # start pgserver
-rm_task unblock picogui-server
+pm_tell unblock picogui-server
 ''')
 
     elif platform.platform == 'ppc-linux':
@@ -181,8 +182,7 @@ then
 fi
 
 # start pgserver
-sleep 2   # maybe necessary ?
-rm_task unblock picogui-server
+pm_tell unblock picogui-server
 ''')
 
     else:

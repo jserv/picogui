@@ -1,4 +1,4 @@
-/* $Id: eventbroker.c,v 1.11 2002/05/31 09:41:19 gobry Exp $
+/* $Id: eventbroker.c,v 1.12 2002/09/19 07:45:10 gobry Exp $
  *
  * eventbroker.c - input driver to manage driver messages
  *
@@ -46,7 +46,8 @@
 #include <pgserver/timer.h>
 
 #ifdef RM_ENABLED
-# include <rm_client.h> /* to access the PocketBee ResourceManager */
+# include <rm_client.h> /* to access the PocketBee Resource Manager */
+# include <pm_client.h> /* to access the PocketBee Process Manager */
 #endif /* RM_ENABLED */
 
 #define LOCAL_DEBUG 0
@@ -159,7 +160,7 @@ void eventbroker_message(u32 message, u32 param, u32 *ret)
        Resource Manager about that */
   case PGDM_READY:
 #ifdef RM_ENABLED
-    rm_monitor_ready ();
+    pm_ready ();
 #endif /* RM_ENABLED */
     break;
 
