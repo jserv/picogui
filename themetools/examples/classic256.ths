@@ -1,0 +1,23 @@
+/* $Id: classic256.ths,v 1.1 2000/10/17 04:18:19 micahjd Exp $
+ *
+ * PicoGUI theme, modeled after the original 256-color
+ * theme used in the old theme system.
+ *
+ * Micah Dowty
+ */
+
+/* Most of the buttons keep the default rectangular fill.
+   Improve the color scheme a bit.
+*/
+
+object button         bgcolor = 0xC0E0FF;
+object button.hilight bgcolor = 0xC0C0FF;
+object button.on      bgcolor = 0x808080;
+object toolbar        bgcolor = 0xC0C0C0;
+//object scroll         bgcolor = 0x808080;
+object scroll         bgcolor = 0xFFFFC0;
+object scroll.hilight bgcolor = 0xC0E0FF;
+object scroll.on      bgcolor = 0xC0C0FF;
+//object indicator      bgcolor = 0x404080;
+object indicator      bgcolor = 0x8080FF;
+
