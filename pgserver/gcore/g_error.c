@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.25 2001/11/25 02:47:35 micahjd Exp $
+/* $Id: g_error.c,v 1.26 2001/12/12 22:54:14 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -79,7 +79,7 @@ const u8 deadcomp_bits[] = {
 
 void guru(const char *fmt, ...) {
   struct fontdesc *df=NULL;
-  char msgbuf[256];  /* Cruftee! */
+  char msgbuf[512];  /* Cruftee! */
   char *p,*pline;
   char c;
   va_list ap;
@@ -121,7 +121,7 @@ void guru(const char *fmt, ...) {
      
   /* Format and print message */
   va_start(ap,fmt);
-  vsnprintf(msgbuf,256,fmt,ap);
+  vsnprintf(msgbuf,512,fmt,ap);
   va_end(ap);
 
   outtext(vid->display,df,10+deadcomp_width,5,VID(color_pgtohwr) (0xFFFFFF),

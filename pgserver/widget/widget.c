@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.125 2001/12/12 03:49:17 epchristi Exp $
+/* $Id: widget.c,v 1.126 2001/12/12 22:54:14 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -441,7 +441,7 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
 	data = w->in->ch-w->in->h;
       if (w->in->div->ty != -data) {
 	w->in->div->ty = -data;
-	w->in->div->flags |= DIVNODE_SCROLL_ONLY;
+	w->in->div->flags |= (DIVNODE_SCROLL_ONLY | DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC);
 	w->dt->flags |= DIVTREE_NEED_REDRAW;
 	hotspot_free();
       }
@@ -679,7 +679,6 @@ void request_focus(struct widget *self) {
     divnode_hotspot_position(self->in->div,&px,&py);
     VID(coord_physicalize)(&px,&py);
     dispatch_pointing(PG_TRIGGER_MOVE,px,py,0);
-    drivermessage(PGDM_CURSORWARP,0,NULL);
   }
 }
 
@@ -1022,6 +1021,22 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
       return;
     
 #ifdef DEBUG_KEYS           /* The rest only work in debug mode */
+
+    case PGKEY_d:           /* CTRL-ALT-d lists all debugging commands */
+      guru("Someone set up us the bomb!\n"
+	   "All your divnode are belong to us!\n"
+	   "\n"
+	   "Debugging keys:\n"
+	   "  CTRL-ALT-H: Handle tree dump to stdout\n"
+	   "  CTRL-ALT-S: String dump to stdout\n"
+	   "  CTRL-ALT-T: Divtree dump to stdout\n"
+	   "  CTRL-ALT-M: Memory use profile\n"
+	   "  CTRL-ALT-B: Black screen\n"
+	   "  CTRL-ALT-Y: Unsynchronize screen buffers\n"
+	   "  CTRL-ALT-U: Blue screen\n"
+	   "  CTRL-ALT-P: Bitmap dump to video display\n"
+	   );
+      return;
 
     case PGKEY_h:           /* CTRL-ALT-h dumps the handle tree */
       handle_dump();
