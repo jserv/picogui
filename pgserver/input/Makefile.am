@@ -28,6 +28,8 @@ EXTRA_libinput_a_SOURCES = \
 	eventbroker.c \
 	vr3ts.c \
 	h3600ts.c \
+	rrts.c \
+	rr_sim.c \	
 	tuxts.c \
 	ucb1x00.c \
 	ttykb.c \
@@ -41,6 +43,7 @@ EXTRA_libinput_a_SOURCES = \
         ericsson_cb.c \
 	ps2mouse.c \
 	jsdev.c \
+	rrttykb.c \
 	rawttykb.c
 
 libinput_a_LIBADD       = $(INPUT:%.c=%.o)
