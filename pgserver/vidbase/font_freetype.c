@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.9 2002/10/13 13:26:16 micahjd Exp $
+/* $Id: font_freetype.c,v 1.10 2002/10/13 13:31:34 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -114,10 +114,6 @@ g_error freetype_engine_init(void) {
   ft_facelist = NULL;
   ft_face_scan(get_param_str(CFGSECTION,"path","/usr/share/fonts"));
   
-  for (f=ft_facelist;f;f=f->next)
-    printf("Indexed font file \"%s\" with family \"%s\", style %d\n",
-	   f->file_path,f->fs.name,f->fs.style);
-
   if (!ft_facelist)
     return mkerror(PG_ERRT_IO,66);  /* Can't find fonts */
 
@@ -461,11 +457,6 @@ int ft_fontcmp(const struct ft_face_id *f, const struct font_style *fs) {
     result |= FCMP_DEFAULT;
   if ((f->fs.style&PG_FSTYLE_STYLE_MASK)==(fs->style&PG_FSTYLE_STYLE_MASK)) 
     result |= FCMP_STYLE;
-
-  /*
-  printf("Comparing potential %s:%d:%d to requested %s:%d:%d, closeness %d\n",
-	 f->fs.name,f->fs.size,f->fs.style,fs->name,fs->size,fs->style,result);
-  */
 
   return result;
 }
