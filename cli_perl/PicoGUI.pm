@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.24 2000/08/02 04:43:49 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.25 2000/08/03 04:34:03 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -27,7 +27,7 @@
 package PicoGUI;
 use Carp;
 @ISA       = qw(Exporter);
-@EXPORT    = qw(NewWidget %ServerInfo Update NewString
+@EXPORT    = qw(NewWidget %ServerInfo Update NewString RestoreTheme
 		NewFont NewBitmap delete SetBackground RestoreBackground
 		SendPoint SendKey ThemeSet RegisterApp EventLoop NewPopup
 		GetTextSize GrabKeyboard GrabPointingDevice GiveKeyboard
@@ -138,6 +138,7 @@ use Carp;
 	    );
 
 %STATE = (
+	  'all' => 255,
 	  'normal' => 0,
 	  'hilight' => 1,
 	  'hilighted' => 1,
@@ -438,7 +439,9 @@ sub _getstring {
     _request(26,pack('N',@_));
     _flushpackets();
 }
-
+sub RestoreTheme {
+    _request(27);
+}
 
 ######### Public functions
 
@@ -517,7 +520,9 @@ sub focus {
 
 sub GetString {
     my $self = shift;
-    _getstring($self->{'h'});
+    $_ = _getstring($self->{'h'});
+    chop;
+    return $_; 
 }
 
 sub SetBackground {
@@ -736,12 +741,51 @@ sub SendPoint {
 sub ThemeSet {
     my %arg = @_;
     my $wgt,$el,$st,$par,$x,$v;
+    my @prefices;
 
     foreach $x (keys %arg) {
-	($wgt,$el,$st,$par) = split /\./,$x;
 	$v = $arg{$x};
-	$v = $VALUES{$v} if (defined $VALUES{$v});
-	_themeset($v,$ELEMENT{$wgt.".".$el},$STATE{$st},$PARAM{$par});
+	$x =~ s/^-//;
+	
+	if ($x eq 'file') {
+	    open THEMEF,$v or croak "Error opening theme file";
+	    while (<THEMEF>) {
+
+		s/#.*//;
+		next if (!/\S/);
+		if (/\}/) {
+		    pop @prefices;
+		}
+		elsif (/(\w+)\W*\{/) {
+		    push @prefices, $1;
+		}
+		elsif (/\s*(\S+)\s*=\s*(\S+)/) {
+		    $th = (join('.',@prefices).(@prefices?'.':'').$1);
+		    $v = eval($2);
+		    ThemeSet($th => $v);
+		}
+	    }
+	    close THEMEF;
+	}
+	elsif ($x eq 'background') {
+	    if ($v eq 'default' or $v eq 'none' or $v eq 'restore') {
+		RestoreBackground();
+	    }
+	    else {
+		NewBitmap(-file => $v)->SetBackground();
+	    }
+	}
+	else {
+	    ($wgt,$el,$st,$par) = split /\./,$x;
+	    if (!defined $par) {
+		# If the state is ommitted, assume 'all'
+		$par = $st;
+		$st = 'all';
+	    }
+
+	    $v = $VALUES{$v} if (defined $VALUES{$v});
+	    _themeset($v,$ELEMENT{$wgt.".".$el},$STATE{$st},$PARAM{$par});
+	}
     }
 }
 
