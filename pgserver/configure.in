@@ -32,9 +32,8 @@ AC_ARG_WITH(extra-libs,
 dnl
 dnl Use this to enable the PocketBee ResourceManager
 dnl 
-dnl Commented out by Micah until this is fixed to build properly without PocketBee
-dnl BEE_MODULE(rm)
-dnl BEE_MODULE(pm)
+BEE_MODULE(rm)
+BEE_MODULE(pm)
 
 if test "${RM_PREFIX}" != "" ; then
   RM_LIBS="${RM_LDFLAGS} -lrm"

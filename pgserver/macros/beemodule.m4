@@ -3,7 +3,7 @@ dnl
 dnl Add a --with-<module>=... configuration option and create
 dnl <module>_CFLAGS and <module>_LDFLAGS accordingly.
 dnl
-dnl $Id: beemodule.m4,v 1.1 2002/09/19 07:45:10 gobry Exp $
+dnl $Id: beemodule.m4,v 1.2 2002/09/24 07:18:10 gobry Exp $
 
 
 AC_DEFUN(BEE_MODULE, [
@@ -28,7 +28,6 @@ indir([upper_$1])_PREFIX="${withval}"
 ], 
 
 AC_MSG_RESULT([unspecified])
-AC_MSG_ERROR([please specify the location of $1])
 )
 
 AC_SUBST(indir([upper_$1])_CFLAGS)
