@@ -1,7 +1,4 @@
 /*
- *   "$Id: gx11.c,v 1.28 2003/02/21 17:26:07 crowbert Exp $";
- */
-/*
   Crossfire client, a client program for the crossfire program.
 
   Copyright (C) 2001 Mark Wedel & Crossfire Development Team
@@ -583,10 +580,16 @@ int keyboard_handler (struct pgEvent *evt)
   case Playing:
     if (trig->content.u.kbd.key == PGKEY_QUOTE)
       {
-	pgWriteData (info_widget, command_colorcmd);
-	cpl.input_state = Command_Mode;
-	cpl.no_echo=FALSE;
+	if (trig->content.type == PG_TRIGGER_CHAR)
+	  {
+	    pgWriteData (info_widget, command_colorcmd);
+	    cpl.input_state = Command_Mode;
+	    cpl.no_echo=FALSE;
+	  }
+	return;
       }
+    if (trig->content.type != PG_TRIGGER_KEYDOWN)
+      return;
     /* de-translate uppercase chars */
     if (trig->content.u.kbd.key > PGKEY_AT && trig->content.u.kbd.key < PGKEY_LEFTBRACKET)
       {
@@ -910,6 +913,7 @@ void pg_graphic_draw_map (int redraw)
 	  if (!redraw && !cell->need_update) continue;
 
 	  /* First, we need to black out this space. */
+	  pgSetLgop (map_context, PG_LGOP_NONE);
 	  pgSetColor (map_context, 0);
 	  pgRect (map_context,
 		    x * image_size, y * image_size, image_size, image_size);
@@ -925,9 +929,15 @@ void pg_graphic_draw_map (int redraw)
 		     cell->tails[1].face, images[cell->tails[1].face].handle,
 		     cell->tails[2].face, images[cell->tails[2].face].handle);
 
+	  pgSetLgop (map_context, PG_LGOP_ALPHA);
+
+	  i = &images[cell->heads[0].face];
+	  pgBitmap (map_context, x * image_size, y * image_size,
+		    i->width, i->height, i->handle);
+
 	  /* actually, we don't do tails - no need, until we start supporting
 	   * shading and fogging */
-	  for (layer=0; layer<MAXLAYERS; layer++)
+	  for (layer=1; layer<MAXLAYERS; layer++)
 	    if (cell->heads[layer].face)
 	      {
 		i = &images[cell->heads[layer].face];
@@ -1185,6 +1195,8 @@ void load_defaults ()
   allocate_map ( &the_map, FOG_MAP_SIZE, FOG_MAP_SIZE);
   pl_pos.x= the_map.x / 2;
   pl_pos.y= the_map.y / 2;
+  use_config[CONFIG_SOUND] = FALSE;
+  use_config[CONFIG_CACHE] = TRUE;
 }
 
 void save_defaults ()
@@ -1319,7 +1331,6 @@ int init_windows (int argc, char **argv)
   pgSetWidget (PGDEFAULT,
 	       PG_WP_SIDE, PG_S_TOP,
 	       0);
-  pgNewWidget (PG_WIDGET_LABEL, PG_DERIVE_INSIDE, PGDEFAULT);
   hp_indicator = pgNewWidget (PG_WIDGET_INDICATOR, PG_DERIVE_INSIDE, PGDEFAULT);
   pgSetWidget (PGDEFAULT,
 	       PG_WP_SIDE, PG_S_LEFT,
@@ -1467,7 +1478,6 @@ int main (int argc, char **argv)
   load_defaults (); 
   strcpy (VERSION_INFO, "PicoGUI Client " VERSION);
   want_skill_exp=1;
-  use_config[CONFIG_SOUND] = FALSE;
   if (init_windows (argc, argv))
     {
       fprintf (stderr,"Failure to init windows.\n");
