@@ -134,6 +134,7 @@ class AnnounceServer(LineReceiver):
             accounts[0].client.leave(project)
             try:
                 del channelList[project]
+                del groups[project]
             except KeyError:
                 pass
 
