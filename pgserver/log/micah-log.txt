@@ -1,3 +1,16 @@
+2001-08-11    Micah Dowty <micahjd@users.sourceforge.net>
+
+Writing a couple more test applets that will be used in PGL. I'm waiting on
+some info from Pascal before starting the rest of PGL.
+
+      * apps/pgl/applets/pgl-backlight.c: Wrote a simple backlight on/off
+        button applet
+
+      * apps/pgl/applets/pgl-cpu.c: Copied a CPU monitor mostly from omnibar
+		
+		* apps/pgl/applets/pgl-battery-helio.c: Converted omnibar-helio's
+		  battery monitor to an applet
+
 2001-08-10    Micah Dowty <micahjd@users.sourceforge.net>
 
 I don't have the specs for PGL itself yet, but I'm sure writing PGL applets
