@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.19 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: pgnet.h,v 1.20 2002/02/02 16:41:18 lonetech Exp $
  *
  * pgnet.h - definitions and stuff for the picogui server
  *           networking code. Most of the interesting code
@@ -182,7 +182,7 @@ extern g_error (*rqhtab[])(int,struct pgrequest*,void*,u32*,int*);
 
 /* Nonzero when the main program is waiting for network/user input 
    in a select() call */
-extern unsigned char req_in_select;
+extern volatile unsigned char req_in_select;
 
 #endif /* __H_PGNET */
 /* The End */
