@@ -5,6 +5,8 @@ from Minibuffer import Minibuffer
 class Frame(object):
     "A window"
 
+    history_limit = 23 # completely arbitrary
+
     def __init__(self, title):
         self._boxes = []
         self._app = PicoGUI.Application(title)

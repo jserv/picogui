@@ -22,6 +22,8 @@ class Minibuffer(object):
         except ValueError:
             pass
         self._history.append(st)
+        if len(self._history) > self._frame.history_limit:
+            del self._history[0]
 
     def history_index(self):
         st = self._field.text
@@ -49,7 +51,6 @@ class Minibuffer(object):
 
     def _key_handler(self, ev):
         if ev.hasMod('ctrl'):
-            print repr(ev)
             if ev.char == 'p':
                 if not self._history:
                     # empty history
