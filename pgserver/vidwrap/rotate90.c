@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.16 2001/07/12 03:00:25 micahjd Exp $
+/* $Id: rotate90.c,v 1.17 2001/10/09 05:15:26 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -115,7 +115,7 @@ void rotate90_tileblit(hwrbitmap dest,s16 dest_x,s16 dest_y,
 }
 void rotate90_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
 		       s16 w,s16 h,s16 lines,s16 angle,hwrcolor c,
-		       struct quad *clip,bool fill, hwrcolor bg, s16 lgop) {
+		       struct quad *clip, s16 lgop) {
    struct quad cr;
    struct quad *crp;
    s16 dx,dy;
@@ -136,8 +136,8 @@ void rotate90_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
    angle %= 360;
    if (angle<0) angle += 360;
    
-   (*vid->charblit)(dest,chardat,dest_y,dy-1-dest_x,w,h,lines,angle,c,crp,
-		      fill,bg,lgop);
+   (*vid->charblit)(dest,chardat,dest_y,dy-1-dest_x,w,h,
+		    lines,angle,c,crp,lgop);
 }
 
 /******* Bitmap rotation */

@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.23 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: g_error.c,v 1.24 2001/10/09 05:15:26 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -119,7 +119,7 @@ void guru(const char *fmt, ...) {
   va_end(ap);
 
   outtext(vid->display,df,10+deadcomp_width,5,VID(color_pgtohwr) (0xFFFFFF),
-	  msgbuf, &screenclip, 0,0,PG_LGOP_NONE,0);
+	  msgbuf, &screenclip,PG_LGOP_NONE,0);
   VID(update) (0,0,vid->lxres,vid->lyres);
 
 #ifdef CONFIG_STDERR_GURU

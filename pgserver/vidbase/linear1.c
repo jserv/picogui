@@ -1,4 +1,4 @@
-/* $Id: linear1.c,v 1.16 2001/06/06 03:21:11 micahjd Exp $
+/* $Id: linear1.c,v 1.17 2001/10/09 05:15:26 micahjd Exp $
  *
  * Video Base Library:
  * linear1.c - For 1-bit packed pixel devices (most black and white displays)
@@ -388,37 +388,25 @@ void linear1_blit(hwrbitmap dest,
 }
    
 void linear1_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
-		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
-		  bool fill, hwrcolor bg, s16 lgop) {
+		      s16 lines, s16 angle, hwrcolor c, struct quad *clip,
+		      s16 lgop) {
    struct stdbitmap src;
    
-   /* Look-up table for blit LGOP, given original LGOP, color, and fill */
+   /* Look-up table for blit LGOP, given original LGOP and color */
    const u8 lgoptab[] = {
-      /* First line for each lgop is fill=0, second line is fill=1 */
       
       /*                         black               white */
       /* PG_LGOP_NULL       */   PG_LGOP_NULL      , PG_LGOP_NULL,
-	                         PG_LGOP_NULL      , PG_LGOP_NULL,
       /* PG_LGOP_NONE       */   PG_LGOP_INVERT_AND, PG_LGOP_OR,
-	                         PG_LGOP_INVERT    , PG_LGOP_NONE,
       /* PG_LGOP_OR         */   PG_LGOP_NULL      , PG_LGOP_OR,
-	                         PG_LGOP_INVERT_OR , PG_LGOP_OR,
       /* PG_LGOP_AND        */   PG_LGOP_INVERT_AND, PG_LGOP_NULL,
-	                         PG_LGOP_INVERT_AND, PG_LGOP_AND,
       /* PG_LGOP_XOR        */   PG_LGOP_NULL      , PG_LGOP_XOR,
-	                         PG_LGOP_INVERT_XOR, PG_LGOP_XOR,
       /* PG_LGOP_INVERT     */   PG_LGOP_OR        , PG_LGOP_INVERT_AND,
-	                         PG_LGOP_NONE      , PG_LGOP_INVERT,
       /* PG_LGOP_INVERT_OR  */   PG_LGOP_OR        , PG_LGOP_NULL,
-	                         PG_LGOP_OR        , PG_LGOP_INVERT_OR,
       /* PG_LGOP_INVERT_AND */   PG_LGOP_NULL      , PG_LGOP_INVERT_AND,
-	                         PG_LGOP_AND       , PG_LGOP_INVERT_AND,
       /* PG_LGOP_INVERT_XOR */   PG_LGOP_XOR       , PG_LGOP_NULL,
-	                         PG_LGOP_XOR       , PG_LGOP_INVERT_XOR,
       /* PG_LGOP_ADD        */   PG_LGOP_NULL      , PG_LGOP_OR,
-	                         PG_LGOP_INVERT_OR , PG_LGOP_OR,
       /* PG_LGOP_SUBTRACT   */   PG_LGOP_NULL      , PG_LGOP_INVERT_AND,
-	                         PG_LGOP_AND       , PG_LGOP_INVERT_AND,
       /* PG_LGOP_MULTIPLY   */   PG_LGOP_INVERT_AND, PG_LGOP_NULL,
 	                         PG_LGOP_INVERT_AND, PG_LGOP_AND,
    };
@@ -429,16 +417,10 @@ void linear1_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
    if (angle || lines || (lgop>PG_LGOP_MULTIPLY) ||
        (clip && (x<clip->x1 || y<clip->y1 || 
 		 (x+w)>=clip->x2 || (y+h)>=clip->y2))) {
-      def_charblit(dest,chardat,x,y,w,h,lines,angle,c,clip,fill,bg,lgop);
+      def_charblit(dest,chardat,x,y,w,h,lines,angle,c,clip,lgop);
       return;
    }
 
-   /* Don't even blit if the background is the same color */
-   if (fill && c==bg) {
-      def_rect(dest,x,y,w,h,c,lgop);
-      return;
-   }
-   
    /* Package the character data */
    src.bits = chardat;
    src.w = w;
@@ -450,7 +432,7 @@ void linear1_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
 
    /* Look up a blit LGOP from the table */
    linear1_blit(dest,x,y,w,h,(hwrbitmap) &src,0,0,
-		lgoptab[c | (fill<<1) | (lgop<<2)]);
+		lgoptab[c | (lgop<<1)]);
 }
 
 /*********************************************** Registration */

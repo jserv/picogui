@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.12 2001/09/03 00:28:39 micahjd Exp $
+/* $Id: render.c,v 1.13 2001/10/09 05:15:26 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -660,7 +660,7 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
       if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
 			   r->hfont)) || !fd) break;
       outtext(vid->display,fd,n->r.x,n->r.y,c,str,&r->clip,
-	      r->fill,r->bg,r->lgop,r->angle);
+	      r->lgop,r->angle);
       break;
 
       /* The workhorse of the terminal widget. 4 params: buffer handle,
@@ -703,8 +703,13 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 	     for (n->r.x=r->orig.x,i=charw;i;i--,str++) {
 		attr = *(str++);
 
-		outchar(r->output, fd, &n->r.x, &n->r.y, textcolors[attr & 0x0F],
-			*str, NULL, (attr & 0xF0)!=0,textcolors[attr>>4], r->lgop, 0);
+		/* Background color */
+		if ((attr & 0xF0)!=0)
+		  VID(rect)(r->output,n->r.x,n->r.y,celw,celh,
+			    textcolors[attr>>4],r->lgop); 
+
+		outchar(r->output, fd, &n->r.x, &n->r.y, 
+			textcolors[attr & 0x0F],*str, NULL,r->lgop, 0);
 	     }
 	   
 	}

@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.49 2001/09/15 03:18:13 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.50 2001/10/09 05:15:26 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -607,7 +607,7 @@ void def_gradient(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,s16 angle,
 
 void def_charblit_0(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 		    s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
-		    bool fill, hwrcolor bg, s16 lgop) {
+		    s16 lgop) {
   int bw = w;
   int iw,hc,x;
   int olines = lines;
@@ -654,9 +654,6 @@ void def_charblit_0(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
       for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,x++,xpix++) {
 	 if (ch&0x80 && xpix>=xmin && xpix<xmax) 
 	   (*vid->pixel) (dest,x,dest_y,c,lgop);
-	 else
-	   if (fill)
-	     (*vid->pixel) (dest,x,dest_y,bg,lgop);
       }
     if (flag) {
       xmax++;
@@ -672,7 +669,7 @@ void def_charblit_0(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
  */
 void def_charblit_90(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 		     s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
-		     bool fill, hwrcolor bg, s16 lgop) {
+		     s16 lgop) {
   int bw = w;
   int iw,hc,y;
   int olines = lines;
@@ -719,9 +716,6 @@ void def_charblit_90(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
       for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,y--,xpix++) {
 	 if (ch&0x80 && xpix>=xmin && xpix<xmax) 
 	   (*vid->pixel) (dest,dest_x,y,c,lgop);
-	 else
-	   if (fill)
-	     (*vid->pixel) (dest,dest_x,y,bg,lgop);
       }
     if (flag) {
       xmax++;
@@ -732,7 +726,7 @@ void def_charblit_90(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 
 void def_charblit_180(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 		      s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
-		      bool fill, hwrcolor bg, s16 lgop) {
+		      s16 lgop) {
   int bw = w;
   int iw,hc,x;
   int olines = lines;
@@ -779,9 +773,6 @@ void def_charblit_180(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
       for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,x--,xpix++) {
 	 if (ch&0x80 && xpix>=xmin && xpix<xmax) 
 	   (*vid->pixel) (dest,x,dest_y,c,lgop); 
-	 else
-	   if (fill)
-	     (*vid->pixel) (dest,x,dest_y,bg,lgop);
       }
     if (flag) {
       xmax++;
@@ -794,11 +785,10 @@ void def_charblit_180(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 /* A meta-charblit to select the appropriate function based on angle */
 void def_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
 		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
-		  bool fill, hwrcolor bg, s16 lgop) {
+		  s16 lgop) {
 
    void (*p)(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
-	     s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
-	     bool fill, hwrcolor bg, s16 lgop);
+	     s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,s16 lgop);
    
    switch (angle) {
     case 0:   p = &def_charblit_0;   break;
@@ -808,7 +798,7 @@ void def_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
       return;
    }
 
-   (*p)(dest,chardat,x,y,w,h,lines,c,clip,fill,bg,lgop);
+   (*p)(dest,chardat,x,y,w,h,lines,c,clip,lgop);
 }
 
 #ifdef CONFIG_FORMAT_XBM

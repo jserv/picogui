@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.51 2001/09/15 03:18:13 micahjd Exp $
+/* $Id: video.h,v 1.52 2001/10/09 05:15:26 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -318,14 +318,11 @@ struct vidlib {
    *   Although in the future arbitrary rotation may be supported, currently
    *   'angle' must be a PG_DIR_* constant (measured in degrees)
    *
-   *   If 'fill' is nonzero, '0' bits in the character are filled in the
-   *   color 'bg'
-   *
    * Default implementation: pixel(). Need I say more?
    */
   void (*charblit)(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 		   s16 lines, s16 angle, hwrcolor c, struct quad *clip,
-		   bool fill, hwrcolor bg, s16 lgop);
+		   s16 lgop);
  
   void (*ellipse) (hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
   void (*fellipse) (hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
@@ -531,7 +528,7 @@ void def_tileblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
 		  hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 lgop);
 void def_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
-		  bool fill, hwrcolor bg, s16 lgop);
+		  s16 lgop);
 void def_sprite_protectarea(struct quad *in,struct sprite *from);
 g_error def_bitmap_loadxbm(hwrbitmap *bmp,const u8 *data, s16 w, s16 h,
 			   hwrcolor fg, hwrcolor bg);

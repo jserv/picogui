@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.118 2001/10/09 02:06:30 micahjd Exp $
+/* $Id: widget.c,v 1.119 2001/10/09 05:15:26 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -817,7 +817,7 @@ g_error debug_bitmaps(void **pobj) {
 
       outtext(vid->display,df,10,vid->lyres-15,VID(color_pgtohwr) (0xFFFF00),
 	      "Too many bitmaps for this screen. Change video mode and try again",
-	      &screenclip,0,0,PG_LGOP_NONE,0);
+	      &screenclip,PG_LGOP_NONE,0);
 
       return sucess;   /* Lies! :) */
    }

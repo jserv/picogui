@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.24 2001/10/07 08:47:26 micahjd Exp $
+/* $Id: linear8.c,v 1.25 2001/10/09 05:15:26 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -260,15 +260,14 @@ void linear8_charblit_v(hwrbitmap dest,u8 *chardat,s16 dest_x,
  */
 void linear8_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,
 		      s16 dest_y,s16 w,s16 h,s16 lines,s16 angle,
-		      hwrcolor c,struct quad *clip,bool fill, hwrcolor bg,
+		      hwrcolor c,struct quad *clip,
 		      s16 lgop) {
   u8 *dst,*destline;
   s16 bw,iw,hc,olines,bit,flag,xpix,xmin,xmax,clipping;
   u8 ch;
 
-  if ((lgop != PG_LGOP_NONE) || fill || (angle && (angle != 90))) {
-     def_charblit(dest,chardat,dest_x,dest_y,w,h,lines,angle,c,clip,fill,
-		  bg,lgop);
+  if ((lgop != PG_LGOP_NONE) || (angle && (angle != 90))) {
+    def_charblit(dest,chardat,dest_x,dest_y,w,h,lines,angle,c,clip,lgop);
      return;
   }
   

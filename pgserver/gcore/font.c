@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.29 2001/10/08 05:13:04 micahjd Exp $
+/* $Id: font.c,v 1.30 2001/10/09 05:15:26 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -68,7 +68,7 @@ struct fontglyph const *font_getglyph(struct fontdesc *fd, u8 c) {
 /* Outputs a character. It also updates (*x,*y) as a cursor position. */
 void outchar(hwrbitmap dest, struct fontdesc *fd,
 	     s16 *x, s16 *y,hwrcolor col,unsigned char c,struct quad *clip,
-	     bool fill, hwrcolor bg, s16 lgop, s16 angle) {
+	     s16 lgop, s16 angle) {
    int i,j;
    s16 cel_w; /* Total width of this character cel */
    struct fontglyph const *g = font_getglyph(fd,c);
@@ -121,12 +121,12 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
 	 if (fd->skew) 
 	   i = fd->italicw;
 	 VID(charblit) (dest,glyph,(mx)+i,my,g->w,g->h,fd->skew,angle,col,
-			clip,fill,bg,lgop);
+			clip,lgop);
 	 
 	 /* bold */
 	 for (i++,j=0;j<fd->boldw;i++,j++)
 	   VID(charblit) (dest,glyph,(mx)+i,my,g->w,g->h,fd->skew,angle,col,
-			  clip,fill,bg,lgop);
+			  clip,lgop);
 	 break;
 	 
        case 90:
@@ -142,12 +142,12 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
 	 if (fd->skew) 
 	   i = fd->italicw;
 	 VID(charblit) (dest,glyph,mx,(my)-i,g->w,g->h,fd->skew,angle,col,
-			clip,fill,bg,lgop);
+			clip,lgop);
 	 
 	 /* bold */
 	 for (i++,j=0;j<fd->boldw;i++,j++)
 	   VID(charblit) (dest,glyph,mx,(my)-i,g->w,g->h,fd->skew,angle,col,
-			  clip,fill,bg,lgop);
+			  clip,lgop);
 	 break;
 	 
        case 180:
@@ -163,12 +163,12 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
 	 if (fd->skew) 
 	   i = fd->italicw;
 	 VID(charblit) (dest,glyph,(mx)-i,my,g->w,g->h,fd->skew,angle,col,
-			clip,fill,bg,lgop);
+			clip,lgop);
 	 
 	 /* bold */
 	 for (i++,j=0;j<fd->boldw;i++,j++)
 	   VID(charblit) (dest,glyph,(mx)-i,my,g->w,g->h,fd->skew,angle,col,
-			  clip,fill,bg,lgop);
+			  clip,lgop);
 	 break;
 	 
        case 270:
@@ -181,19 +181,16 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
 	 if (fd->skew) 
 	   i = fd->italicw;
 	 VID(charblit) (dest,glyph,mx,(my)+i,g->w,g->h,fd->skew,angle,col,
-			clip,fill,bg,lgop);
+			clip,lgop);
 	 
 	 /* bold */
 	 for (i++,j=0;j<fd->boldw;i++,j++)
 	   VID(charblit) (dest,glyph,mx,(my)+i,g->w,g->h,fd->skew,angle,col,
-			  clip,fill,bg,lgop);
+			  clip,lgop);
 	 break;
 	 
       }
    }
-   /* We need to fill anyway? */
-   else if (fill)
-     VID(rect) (dest,mx,my,cel_w,fd->font->ascent+fd->font->descent,bg,lgop);
    
    switch (angle) {
 
@@ -227,7 +224,7 @@ void outchar_fake(struct fontdesc *fd, s16 *x,unsigned char c) {
  */
 void outtext(hwrbitmap dest, struct fontdesc *fd,
 	     s16 x,s16 y,hwrcolor col,char *txt,struct quad *clip,
-	     bool fill, hwrcolor bg, s16 lgop, s16 angle) {
+	     s16 lgop, s16 angle) {
    int b;
    
    switch (angle) {
@@ -284,7 +281,7 @@ void outtext(hwrbitmap dest, struct fontdesc *fd,
 	   
 	}
       else
-	outchar(dest,fd,&x,&y,col,(unsigned char) *txt,clip,fill,bg,lgop,angle);
+	outchar(dest,fd,&x,&y,col,(unsigned char) *txt,clip,lgop,angle);
       txt++;
    }
 }

@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.16 2001/09/01 23:12:10 micahjd Exp $
+/* $Id: videotest.c,v 1.17 2001/10/09 05:15:26 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -70,9 +70,9 @@ void testpat_line(void) {
    
    /* Horizontal and vertical text labels along the inside of the lines */
    outtext(vid->display,fd,7,7,fg,"PicoGUI Video Test Pattern #1",NULL,
-	   0,0,PG_LGOP_NONE,0);
+	   PG_LGOP_NONE,0);
    outtext(vid->display,fd,7,vid->lyres-8,fg,
-	   "PicoGUI Video Test Pattern #1",NULL,0,0,PG_LGOP_NONE,90);
+	   "PicoGUI Video Test Pattern #1",NULL,PG_LGOP_NONE,90);
 
    /* Center the test pattern bounding box */
    patw = ((vid->lxres<vid->lyres)?vid->lxres:vid->lyres) -
@@ -97,7 +97,7 @@ void testpat_line(void) {
    }
    outtext(vid->display,fd,(vid->lxres-fd->fs->normal->h)>>1,
 	   (vid->lyres-fd->fs->normal->h)>>1,
-	   fg,"1",NULL,0,0,PG_LGOP_NONE,0);
+	   fg,"1",NULL,PG_LGOP_NONE,0);
 }
 
 /************ Color test pattern */
@@ -116,37 +116,37 @@ void testpat_color(void) {
    /* Background */
    VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,bg,PG_LGOP_NONE);
    
-   outtext(vid->display,fd,0,y,fg,"Black -> White",NULL,0,0,PG_LGOP_NONE,0);
+   outtext(vid->display,fd,0,y,fg,"Black -> White",NULL,PG_LGOP_NONE,0);
    y+=h;
    VID(gradient) (vid->display,0,y,vid->lxres,h*2,0,0x000000,0xFFFFFF,
 		  PG_LGOP_NONE);
    y+=2*h;
 
-   outtext(vid->display,fd,0,y,fg,"White -> Black",NULL,0,0,PG_LGOP_NONE,0);
+   outtext(vid->display,fd,0,y,fg,"White -> Black",NULL,PG_LGOP_NONE,0);
    y+=h;
    VID(gradient) (vid->display,0,y,vid->lxres,h*2,0,0xFFFFFF,0x000000,
 		  PG_LGOP_NONE);
    y+=2*h;
 
-   outtext(vid->display,fd,0,y,fg,"Black -> Red",NULL,0,0,PG_LGOP_NONE,0);
+   outtext(vid->display,fd,0,y,fg,"Black -> Red",NULL,PG_LGOP_NONE,0);
    y+=h;
    VID(gradient) (vid->display,0,y,vid->lxres,h*2,0,0x000000,0xFF0000,
 		  PG_LGOP_NONE);
    y+=2*h;
    
-   outtext(vid->display,fd,0,y,fg,"Black -> Green",NULL,0,0,PG_LGOP_NONE,0);
+   outtext(vid->display,fd,0,y,fg,"Black -> Green",NULL,PG_LGOP_NONE,0);
    y+=h;
    VID(gradient) (vid->display,0,y,vid->lxres,h*2,0,0x000000,0x00FF00,
 		  PG_LGOP_NONE);
    y+=2*h;
    
-   outtext(vid->display,fd,0,y,fg,"Black -> Blue",NULL,0,0,PG_LGOP_NONE,0);
+   outtext(vid->display,fd,0,y,fg,"Black -> Blue",NULL,PG_LGOP_NONE,0);
    y+=h;
    VID(gradient) (vid->display,0,y,vid->lxres,h*2,0,0x000000,0x0000FF,
 		  PG_LGOP_NONE);
    y+=2*h;
 
-   outtext(vid->display,fd,0,y,fg,"Blue -> Red",NULL,0,0,PG_LGOP_NONE,0);
+   outtext(vid->display,fd,0,y,fg,"Blue -> Red",NULL,PG_LGOP_NONE,0);
    y+=h;
    VID(gradient) (vid->display,0,y,vid->lxres,h*2,0,0x0000FF,0xFF0000,
 		  PG_LGOP_NONE);
@@ -196,7 +196,7 @@ void testpat_unblit(void) {
 	VID(line) (vid->display,patx+i,paty+patw,patx+patw,paty+i,
 		   fg, PG_LGOP_NONE);
       sprintf(buf,"%d/%d",patx&7,patw);
-      outtext(vid->display,fd,patx+2,paty+2,fg,buf,NULL,0,0,PG_LGOP_NONE,0);
+      outtext(vid->display,fd,patx+2,paty+2,fg,buf,NULL,PG_LGOP_NONE,0);
       
       /* Blit the bounding box */
       VID(bitmap_new) (&bit,patw+1,patw+1);
@@ -289,7 +289,7 @@ void testpat_text(void) {
 	return;
       if (c>'~')
 	c = ' ';
-      outchar(vid->display,fd,&x,&y,0,c++,NULL,0,0,PG_LGOP_NONE,0);
+      outchar(vid->display,fd,&x,&y,0,c++,NULL,PG_LGOP_NONE,0);
    }
 }
    

@@ -1,4 +1,4 @@
-/* $Id: render.h,v 1.6 2001/10/06 01:39:57 micahjd Exp $
+/* $Id: render.h,v 1.7 2001/10/09 05:15:26 micahjd Exp $
  *
  * render.h - data structures and functions for rendering and manipulating
  *            gropnodes (Graphics Operation nodes)
@@ -85,8 +85,6 @@ struct groprender {
    u8 maptype;
    hwrcolor color;     /* Used for all primitives */
    s16 lgop;
-   bool fill;          /* Currently only used for text */
-   hwrcolor bg;
    s16 angle;
    handle hfont;
 };
