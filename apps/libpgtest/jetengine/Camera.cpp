@@ -4,7 +4,6 @@
 #include "Camera.h"
 
 Camera::Camera(PythonInterpreter *py) : ScriptableObject(py) {
-  glViewport(0, 0, 640, 480);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   gluPerspective(50, 640.0/480.0, 1, 10000);

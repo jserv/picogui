@@ -1,5 +1,6 @@
-import PicoGUI, math
+import PicoGUI, math, time
 
+print "Python module imported"
 
 class input:
     lastClick = (0,0,0,0)
@@ -10,7 +11,7 @@ class input:
             if t.name == 'down':
                 self.lastClick = (t.x, t.y, 0,0)
             if t.name == 'move' and t.buttons:
-                camera.yaw = float(t.x - self.lastClick[0] + self.lastClick[2])
+                camera.yaw = -float(t.x - self.lastClick[0] + self.lastClick[2])
                 camera.pitch = float(t.y - self.lastClick[1] + self.lastClick[3])
         
 def velocityChange(ev, widget):
@@ -25,6 +26,7 @@ def velocityChange(ev, widget):
 
 
 def thread():
+    print "Starting game thread"
 
     # Load our widget template, importing widgets from it
     app = PicoGUI.TemplateApp(open("data/hud.wt").read(),[
@@ -44,4 +46,12 @@ def thread():
     app.link(input().handler, app.addInfilter(
         app.server.getresource('infilter pntr dispatch')))
 
-    app.run()
+    # FIXME: This time.sleep seems to keep the two threads from
+    #        fighting over the python lock a bunch and being slow
+    #        for the first several seconds of execution.
+    print "Unnecessary delay"
+    time.sleep(1)
+
+    print "Running"
+    app.run();
+
