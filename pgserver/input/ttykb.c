@@ -91,7 +91,7 @@ f_key f_keymap[] = { // Keymap for function keys
  * that allows non-blocking I/O, and put the terminal into
  * character mode.
  */
-g_error ttykb_init(null)
+g_error ttykb_init(void)
 {
 	struct termios	new;
 

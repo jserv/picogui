@@ -116,6 +116,7 @@ add_if_true zaurus.c       $DRIVER_ZAURUS
 add_if_true ericsson_cb.c  $DRIVER_ERICSSON_CHATBOARD
 add_if_true ps2mouse.c     $DRIVER_PS2MOUSE
 add_if_true jsdev.c        $DRIVER_JSDEV
+add_if_true rawttykb.c     $DRIVER_RAWTTYKB
 
 close_section
 

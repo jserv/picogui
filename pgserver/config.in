@@ -140,7 +140,8 @@ if [ "$DRIVER_TUXTS" = "y" ]; then
    bool '  Sound FX support via /dev/wheaties (EXPERIMENTAL)'  DRIVER_TUXTS_WHEATIES
 fi
 bool 'New-Style TuxScreen touchscreen input driver'     DRIVER_UCB1X00
-bool 'TTY keyboard input driver (TuxScreen, fb)'        DRIVER_TTYKB
+bool 'TTY keyboard driver (framebuffer, other terminals)'  DRIVER_TTYKB
+bool 'Rawmode TTY keyboard driver (linux console)'      DRIVER_RAWTTYKB
 bool 'Remora keyboard (Chipslice)'                      DRIVER_REMORAKB
 bool 'Serial mouse input driver'                        DRIVER_SERIALMOUSE
 bool 'MGL2 input driver'                                DRIVER_MGL2INPUT

@@ -97,4 +97,8 @@
   DRV("jsdev", &jsdev_regfunc)
 #endif
 
+#ifdef DRIVER_RAWTTYKB
+  DRV("rawttykb", &rawttykb_regfunc)
+#endif
+
 /* The End */
