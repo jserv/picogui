@@ -1,4 +1,4 @@
-/* $Id: jpeg.c,v 1.10 2002/02/02 21:53:32 micahjd Exp $
+/* $Id: jpeg.c,v 1.11 2002/03/26 04:20:59 instinc Exp $
  *
  * jpeg.c - Functions to convert any of the jpeg formats 
  *
@@ -116,7 +116,7 @@ boolean pgui_jpeg_fill_input_buffer (j_decompress_ptr cinfo)
 }
 
 
-void pgui_jpeg_skip_input_data (j_decompress_ptr cinfo, long num_bytes)
+void pgui_jpeg_skip_input_data (j_decompress_ptr cinfo, s32 num_bytes)
 {
   pgui_jpeg_src_ptr src = (pgui_jpeg_src_ptr) cinfo->src;
 
@@ -125,8 +125,8 @@ void pgui_jpeg_skip_input_data (j_decompress_ptr cinfo, long num_bytes)
    * any trouble anyway --- large skips are infrequent.
    */
   if (num_bytes > 0) {
-    while (num_bytes > (long) src->pub.bytes_in_buffer) {
-      num_bytes -= (long) src->pub.bytes_in_buffer;
+    while (num_bytes > (s32) src->pub.bytes_in_buffer) {
+      num_bytes -= (s32) src->pub.bytes_in_buffer;
       (void) pgui_jpeg_fill_input_buffer(cinfo);
       /* note we assume that fill_input_buffer will never return FALSE,
        * so suspension need not be handled.

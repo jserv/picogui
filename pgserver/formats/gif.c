@@ -1,4 +1,4 @@
-/* $Id: gif.c,v 1.4 2002/01/30 12:40:35 micahjd Exp $
+/* $Id: gif.c,v 1.5 2002/03/26 04:20:59 instinc Exp $
  *
  * gif.c - Read only GIF loader based on libungif
  *
@@ -189,8 +189,8 @@ typedef struct GifFilePrivateType {
 	CrntCode,				  /* Current algorithm code. */
 	StackPtr,		         /* For character stack (see below). */
 	CrntShiftState;		        /* Number of bits in CrntShiftDWord. */
-    unsigned long CrntShiftDWord;     /* For bytes decomposition into codes. */
-    unsigned long PixelCount;		       /* Number of pixels in image. */
+    u32 CrntShiftDWord; 	      /* For bytes decomposition into codes. */
+    u32 PixelCount;		               /* Number of pixels in image. */
     GifByteType Buf[256];	       /* Compressed input is buffered here. */
     GifByteType Stack[LZ_MAX_CODE];	 /* Decoded pixels are stacked here. */
     GifByteType Suffix[LZ_MAX_CODE+1];	       /* So we can trace the codes. */
@@ -396,8 +396,8 @@ int DGifGetImageDesc(GifFileType *GifFile)
 
     GifFile->ImageCount++;
 
-    Private->PixelCount = (long) GifFile->Image.Width *
-			    (long) GifFile->Image.Height;
+    Private->PixelCount = (s32) GifFile->Image.Width *
+			    (s32) GifFile->Image.Height;
 
     DGifSetupDecompress(GifFile);  /* Reset decompress algorithm parameters. */
 
@@ -835,7 +835,7 @@ static int DGifDecompressInput(GifFilePrivateType *Private, int *Code)
 	    return GIF_ERROR;
 	}
 	Private->CrntShiftDWord |=
-		((unsigned long) NextByte) << Private->CrntShiftState;
+		((u32) NextByte) << Private->CrntShiftState;
 	Private->CrntShiftState += 8;
     }
     *Code = Private->CrntShiftDWord & CodeMasks[Private->RunningBits];
