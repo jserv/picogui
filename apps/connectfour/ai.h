@@ -1,8 +1,8 @@
 /*
- * Filename:  
+ * Filename:  ai.h
  * Author:    Brandon Smith
- * Date:      
- * Purpose:   
+ * Date:      April 1, 2002
+ * Purpose:   A header file for the main AI file
  *
  * Copyright (C) 2002 Brandon Smith <lottabs2@yahoo.com> 
  *
@@ -23,6 +23,15 @@
  *
  */
 
+#ifndef __AI_H__
+#define __AI_H__
+
+#include "connectfour.h"
+#include "rules.h"
 
 
+void aicall(struct board *it);
+void randommove(struct board *it);
+
+#endif  /* __AI_H__ */
 

@@ -1,8 +1,8 @@
 /*
- * Filename:  ai.c
+ * Filename:  
  * Author:    Brandon Smith
- * Date:      March  23, 2002
- * Purpose:   the main AI functions
+ * Date:      
+ * Purpose:   
  *
  * Copyright (C) 2002 Brandon Smith <lottabs2@yahoo.com> 
  *
@@ -23,35 +23,12 @@
  *
  */
 
-#include <stdlib.h>
-#include <time.h>
-#include <stdio.h>
 
-#include "connectfour.h"
+#include "ai1.h"
 #include "ai.h"
-#include "rules.h"
 
 
-void aicall(struct board *it)
+void ai1(struct board *it)
 {
-  switch(it -> ailevel)
-    {
-    case 1:
-      ai1(it);
-      break;
-      /*case 2:
-      ai2(it);
-      break;
-    case 3:
-      ai3(it);
-      break;
-    case 4:
-      ai4(it);
-      break;
-     */}
-}
-
-void randommove(struct board *it)
-{
-  while(putpiece(rand()%7,COMP,it) < 0);
+  randommove(it);
 }

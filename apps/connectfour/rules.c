@@ -30,5 +30,35 @@
 
 int wincheck(struct board *foo)
 {
-  int i, j, total;
+  int x, y;
+
+  //zero slope
+  for(x=0;x<4;x++)
+    for(y=0;y<6;y++)
+     if(foo->grid[x][y] == foo->grid[x+1][y] && foo->grid[x][y] == foo->grid[x+2][y] &&
+	 foo->grid[x][y] == foo->grid[x+3][y] && foo->grid[x][y] != 0)
+	return 100 + x*10 + y;
+  
+  //no slope
+  for(x=0;x<7;x++)
+    for(y=0;y<3;y++)
+      if(foo->grid[x][y] == foo->grid[x][y+1] && foo->grid[x][y] == foo->grid[x][y+2] &&
+	 foo->grid[x][y] == foo->grid[x][y+3] && foo->grid[x][y] != 0)
+	return 200 + x*10 + y;
+  
+  //positive slope
+  for(x=0;x<4;x++)
+    for(y=0;y<3;y++)
+      if(foo->grid[x][y] == foo->grid[x+1][y+1] && foo->grid[x][y] == foo->grid[x+2][y+2] &&
+	 foo->grid[x][y] == foo->grid[x+3][y+3] && foo->grid[x][y] != 0)
+	return 300 + x*10 + y;
+  
+  //negative slope
+  for(x=0;x<4;x++)
+    for(y=3;y<6;y++)
+      if(foo->grid[x][y] == foo->grid[x+1][y-1] && foo->grid[x][y] == foo->grid[x+2][y-2] &&
+	 foo->grid[x][y] == foo->grid[x+3][y-3] && foo->grid[x][y] != 0)
+	return 400 + x*10 +y;
+
+  return 0;
 }

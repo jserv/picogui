@@ -28,20 +28,21 @@
 #define __CONNECTFOUR_H__
 
 #include <picogui.h>
-#include "ai.h"
 
-#define COMP -1;
-#define HUMAN 1;
+#define COMP -1
+#define HUMAN 1
 
 /* Event Handlers */
 int NewGame(struct pgEvent *evt);
 int piecedrop(struct pgEvent *evt);
+int dummy(struct pgEvent *evt);
 
 /* Non-Event stuff */
 int redraw();
-int putpiece(int,int,struct pgEvent *evt);
 void drawpiece(int x, int y, int type);
 void win(int x, int y, int direction);
+void lose(int x, int y, int direction);
+
 
 typedef struct board
 {
@@ -56,11 +57,13 @@ typedef struct board
 
   int grid[7][6];
 
-  /* Store the pointer for the AI's structure stuff */
-  /* aidata *info;
-   */
+  /* Stores the AI level */
+
+  int ailevel;
 
 }board;
+
+int putpiece(int location,int type,struct board *foot);
 
 #endif /* __CONNECTFOUR_H__ */
 

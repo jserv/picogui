@@ -42,6 +42,7 @@ int main(int argc, char **argv)
 { 
   pghandle bar;
  
+  srand(time(NULL));
   pgInit(argc,argv);
   pgRegisterApp(PG_APP_NORMAL,"Connect Four",0);
    
@@ -73,16 +74,18 @@ int main(int argc, char **argv)
 /* New Game and AI setter */
 int NewGame(struct pgEvent *evt)
 {
-  switch(pgMenuFromString("Skill Level One|Skill Level Two|Skill Level Three|Skill Level Four"))
+  int ail;
+  board *gee;
+  switch(ail = pgMenuFromString("Skill Level One"/*|Skill Level Two|Skill Level Three|Skill Level Four"*/))
     {
     case 1:
-      pgReplaceTextFmt(info,"Skill level One");
+      pgReplaceTextFmt(info,"Skill Level One");
       break;
     case 2:
-      pgReplaceTextFmt(info,"Skill level Two");
+      pgReplaceTextFmt(info,"Skill Level Two");
       break;
     case 3:
-      pgReplaceTextFmt(info,"Skill level Three");
+      pgReplaceTextFmt(info,"Skill Level Three");
       break;
     case 4:
       pgReplaceTextFmt(info,"Skill Level Four");
@@ -92,6 +95,8 @@ int NewGame(struct pgEvent *evt)
   evt -> extra = malloc(sizeof(board));
   memset(evt -> extra,0,sizeof(board)); 
   pgBind(canvas,PG_WE_PNTR_DOWN,&piecedrop,evt->extra);
+  gee =  evt -> extra;
+  gee -> ailevel = ail;
   redraw(); 
   return 0;
 }
@@ -126,6 +131,7 @@ int piecedrop(struct pgEvent *evt)
  
   /* store the location of the click */
   int loc;
+
   fprintf(stderr,"Clickski at x = %d y = %d\n",evt -> e.pntr.x, evt -> e.pntr.y);
   
   //make sure it is properly formatted
@@ -133,36 +139,40 @@ int piecedrop(struct pgEvent *evt)
     return 0;
   
   loc = (evt->e.pntr.x-1) / 10;
+  putpiece(loc,HUMAN,evt->extra);
   
-  fprintf(stderr,"%d\n",loc);
-
-  /*if(evt->e.pntr.btn == 1)
-    drawpiece(loc,(evt->e.pntr.y-1) / 10,-1);
-  else
-    drawpiece(loc,(evt->e.pntr.y-1) / 10,1);
-  */
-  return putpiece(loc,1,evt);
+  loc = wincheck(evt->extra);
+  if(loc)
+    {
+      win((loc / 10)%10,loc%10,loc/100);
+      return 0;
+    }
+ aicall(evt->extra);
+  loc = wincheck(evt->extra);
+  if(loc)
+    lose((loc / 10)%10,loc%10,loc/100);
 }
 
 
 /****
      non-event stuff
 */
-				       
-int putpiece(int location, int type, struct pgEvent *evt)
+
+int putpiece(int location, int type, struct board *foot)
 {
-  board *foo = evt->extra;
   int i = 0;
 
+  fprintf(stderr,"%d  :  %d\n",location,type);
   //find the next available spot on the board to fill
-  if(foo->grid[location][5] == 0)
-     while(foo->grid[location][i]!=0) i++;
+  if(foot->grid[location][5] == 0)
+     while(foot->grid[location][i]!=0) i++;
   else
     return -1;
   
   fprintf(stderr,"%d\n",i);
-  foo->grid[location][i] = 1;
+  foot->grid[location][i] = type;
   drawpiece(location,i,type);
+  fprintf(stderr,"returning %d\n");
   return i;
 }
 
@@ -171,14 +181,26 @@ void drawpiece(int x, int y, int type)
   //actually draw the dern thing.
   if(type<0)
     pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_FELLIPSE,2+(x*10),2+((5-y)*10),8,8);
-  else
+  else 
     pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_ELLIPSE,2+(x*10),2+((5-y)*10),8,8);
-
+  
   pgWriteCmd(canvas,PGCANVAS_GROPFLAGS,1,PG_GROPF_PSEUDOINCREMENTAL);
   pgWriteCmd(canvas,PGCANVAS_INCREMENTAL,0);
 }
 
 void win(int x, int y, int direction)
 {
-  
+  pgReplaceTextFmt(info,"Game Over...  You Won");
+  pgBind(canvas,PG_WE_PNTR_DOWN,&dummy,NULL);
+}
+
+void lose(int x, int y, int direction)
+{
+  pgReplaceTextFmt(info,"Game Over... You Lose");
+  pgBind(canvas,PG_WE_PNTR_DOWN,&dummy,NULL);
+}
+
+int dummy(struct pgEvent *evt)
+{
+  return 0;
 }
