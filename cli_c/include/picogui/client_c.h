@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.3 2000/09/16 07:04:41 micahjd Exp $
+/* $Id: client_c.h,v 1.4 2000/09/16 07:21:20 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -29,6 +29,9 @@
 #define _H_PG_CLI_C
 
 /******************** Client-specific constants */
+
+/* A wildcard value for pgBind */
+#define PGBIND_ANY      -1
 
 /******************** Administration */
 

@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.2 2000/09/16 07:04:41 micahjd Exp $
+/* $Id: picogui_client.c,v 1.3 2000/09/16 07:21:23 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -421,9 +421,10 @@ void pgEventLoop(void) {
     _pg_add_request(PGREQ_WAIT,NULL,0);
     pgFlushRequests();
     
-    /* FIXME: use a linked list to look up a function 
-       to match the 'from' handle
-    */
+    /* FIXME: see the information on pgBind in client_c.h
+     *   The event loop should look in a linked list of Bind entries
+     *   and call any functions that match.
+     */
 
 /*    ($event, $from, $param) = _wait();
 	
