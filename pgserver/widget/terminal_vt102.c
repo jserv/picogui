@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.13 2003/03/23 09:24:20 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.14 2003/03/23 09:28:52 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -295,7 +295,7 @@ void term_csi(struct widget *self, u8 c) {
     /* @ - Insert the indicated # of blank characters */
   case '@':
     DBG("Insert %d blank characters\n", DATA->csiargs[0]);
-    term_insert(DATA->csiargs[0]);
+    term_insert(self, DATA->csiargs[0]);
     break;
 
     /* A - Move cursor up */
