@@ -1,0 +1,12 @@
+Future client libraries:
+=========================
+
+C++
+----
+
+(unwritten)
+
+cli_c2
+-------
+
+(unwritten)

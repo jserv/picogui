@@ -1,0 +1,75 @@
+Programming for PicoGUI
+========================
+
+PicoGUI's widget model
+-----------------------
+
+(unwritten)
+
+Annotated examples, at least in C and Python
+---------------------------------------------
+
+Hello World
+............
+
+(unwritten)
+
+Widget overview
+................
+
+(unwritten)
+
+Memory management
+..................
+
+(unwritten)
+
+Layout
+.......
+
+(unwritten)
+
+Managing events
+................
+
+(unwritten)
+
+Widget templates
+.................
+
+(unwritten)
+
+Themes
+.......
+
+(unwritten)
+
+Bitmaps
+........
+
+(unwritten)
+
+Fonts
+......
+
+(unwritten)
+
+Drawing on canvases and bitmaps
+................................
+
+(unwritten)
+
+Shared memory
+..............
+
+(unwritten)
+
+Input filters
+..............
+
+(unwritten)
+
+Where to get more information
+------------------------------
+
+(unwritten)

@@ -1,0 +1,12 @@
+Python client library
+======================
+
+Examples
+---------
+
+(unwritten)
+
+Reference
+----------
+
+(unwritten)

@@ -1,0 +1,1080 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.3.1: http://docutils.sourceforge.net/" />
+<title>The PicoGUI 1.0 Book</title>
+<meta name="author" content="Lalo Martins &lt;lalo&#64;laranja.org&gt;" />
+<meta name="author" content="Micah Dowty &lt;micahjd&#64;users.sourceforge.net&gt;" />
+<meta name="date" content="2003-08-27" />
+<meta name="copyright" content="(C) 2003, Lalo Martins &lt;lalo&#64;laranja.org&gt; and Micah Dowty &lt;micahjd&#64;users.sourceforge.net&gt;. Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free Documentation License, Version 1.1 or any later version published by the Free Software Foundation; with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.  A copy of the license is included in the section entitled GNU Free Documentation License." />
+<link rel="stylesheet" href="pgbook.css" type="text/css" />
+</head>
+<body>
+<div class="document" id="the-picogui-1-0-book">
+<h1 class="title">The PicoGUI 1.0 Book</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Author:</th>
+<td>Lalo Martins &lt;lalo&#64;laranja.org&gt;</td></tr>
+<tr><th class="docinfo-name">Author:</th>
+<td>Micah Dowty &lt;micahjd&#64;users.sourceforge.net&gt;</td></tr>
+<tr><th class="docinfo-name">Contact:</th>
+<td><a class="first last reference" href="http://picogui.org/">http://picogui.org/</a></td></tr>
+<tr><th class="docinfo-name">Status:</th>
+<td>draft</td></tr>
+<tr><th class="docinfo-name">Version:</th>
+<td>1.41</td></tr>
+<tr><th class="docinfo-name">Date:</th>
+<td>2003-08-27</td></tr>
+<tr><th class="docinfo-name">Copyright:</th>
+<td>(C) 2003, Lalo Martins &lt;<a class="reference" href="mailto:lalo&#64;laranja.org">lalo&#64;laranja.org</a>&gt; and Micah Dowty &lt;<a class="reference" href="mailto:micahjd&#64;users.sourceforge.net">micahjd&#64;users.sourceforge.net</a>&gt;.
+Permission is granted to copy, distribute and/or modify this
+document under the terms of the GNU Free Documentation License,
+Version 1.1 or any later version published by the Free Software
+Foundation; with no Invariant Sections, no Front-Cover Texts, and
+no Back-Cover Texts.  A copy of the license is included in the
+section entitled <a class="reference" href="#gnu-free-documentation-license">GNU Free Documentation License</a>.</td></tr>
+</tbody>
+</table>
+<div class="contents topic" id="contents">
+<p class="topic-title"><a name="contents">Contents</a></p>
+<ul class="auto-toc simple">
+<li><a class="reference" href="#motivation-for-picogui" id="id11" name="id11">1   Motivation for PicoGUI</a></li>
+<li><a class="reference" href="#the-big-picture-overview-of-picogui-s-architecture" id="id12" name="id12">2   The big picture - overview of PicoGUI's architecture</a></li>
+<li><a class="reference" href="#tutorial" id="id13" name="id13">3   Tutorial</a><ul class="auto-toc">
+<li><a class="reference" href="#using-picogui" id="id14" name="id14">3.1   Using PicoGUI</a><ul class="auto-toc">
+<li><a class="reference" href="#obtaining-a-source-distribution" id="id15" name="id15">3.1.1   Obtaining a source distribution</a></li>
+<li><a class="reference" href="#compile-time-configuration" id="id16" name="id16">3.1.2   Compile-time configuration</a></li>
+<li><a class="reference" href="#themes" id="id17" name="id17">3.1.3   Themes</a></li>
+<li><a class="reference" href="#runtime-configuration" id="id18" name="id18">3.1.4   Runtime configuration</a></li>
+<li><a class="reference" href="#client-libraries" id="id19" name="id19">3.1.5   Client libraries</a></li>
+<li><a class="reference" href="#applications" id="id20" name="id20">3.1.6   Applications</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#programming-for-picogui" id="id21" name="id21">3.2   Programming for PicoGUI</a><ul class="auto-toc">
+<li><a class="reference" href="#picogui-s-widget-model" id="id22" name="id22">3.2.1   PicoGUI's widget model</a></li>
+<li><a class="reference" href="#annotated-examples-at-least-in-c-and-python" id="id23" name="id23">3.2.2   Annotated examples, at least in C and Python</a><ul class="auto-toc">
+<li><a class="reference" href="#hello-world" id="id24" name="id24">3.2.2.1   Hello World</a></li>
+<li><a class="reference" href="#widget-overview" id="id25" name="id25">3.2.2.2   Widget overview</a></li>
+<li><a class="reference" href="#memory-management" id="id26" name="id26">3.2.2.3   Memory management</a></li>
+<li><a class="reference" href="#layout" id="id27" name="id27">3.2.2.4   Layout</a></li>
+<li><a class="reference" href="#managing-events" id="id28" name="id28">3.2.2.5   Managing events</a></li>
+<li><a class="reference" href="#widget-templates" id="id29" name="id29">3.2.2.6   Widget templates</a></li>
+<li><a class="reference" href="#id1" id="id30" name="id30">3.2.2.7   Themes</a></li>
+<li><a class="reference" href="#bitmaps" id="id31" name="id31">3.2.2.8   Bitmaps</a></li>
+<li><a class="reference" href="#fonts" id="id32" name="id32">3.2.2.9   Fonts</a></li>
+<li><a class="reference" href="#drawing-on-canvases-and-bitmaps" id="id33" name="id33">3.2.2.10   Drawing on canvases and bitmaps</a></li>
+<li><a class="reference" href="#shared-memory" id="id34" name="id34">3.2.2.11   Shared memory</a></li>
+<li><a class="reference" href="#input-filters" id="id35" name="id35">3.2.2.12   Input filters</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#where-to-get-more-information" id="id36" name="id36">3.2.3   Where to get more information</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference" href="#the-picogui-protocol" id="id37" name="id37">4   The PicoGUI protocol</a><ul class="auto-toc">
+<li><a class="reference" href="#comparison-to-other-systems" id="id38" name="id38">4.1   Comparison to other systems</a><ul class="auto-toc">
+<li><a class="reference" href="#the-x-window-system" id="id39" name="id39">4.1.1   The X window system</a></li>
+<li><a class="reference" href="#fresco" id="id40" name="id40">4.1.2   Fresco</a></li>
+<li><a class="reference" href="#qt" id="id41" name="id41">4.1.3   Qt</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#widget-layer" id="id42" name="id42">4.2   Widget layer</a><ul class="auto-toc">
+<li><a class="reference" href="#reference-for-all-widget-properties-commands-and-events" id="id43" name="id43">4.2.1   Reference for all widget properties, commands, and events</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#request-layer" id="id44" name="id44">4.3   Request layer</a><ul class="auto-toc">
+<li><a class="reference" href="#reference-for-requests-and-responses-from-pgui-protocol-document" id="id45" name="id45">4.3.1   Reference for requests and responses (from pgui-protocol document</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#transport-layer" id="id46" name="id46">4.4   Transport layer</a><ul class="auto-toc">
+<li><a class="reference" href="#current-tcp-ip-transport" id="id47" name="id47">4.4.1   Current TCP/IP transport</a></li>
+<li><a class="reference" href="#libpgserver-transport" id="id48" name="id48">4.4.2   libpgserver transport</a></li>
+<li><a class="reference" href="#future-transports" id="id49" name="id49">4.4.3   Future transports:</a><ul class="auto-toc">
+<li><a class="reference" href="#enhanced-tcp-ip-transport-with-fewer-round-trips" id="id50" name="id50">4.4.3.1   Enhanced TCP/IP transport with fewer round-trips</a></li>
+<li><a class="reference" href="#shared-memory-and-semaphores" id="id51" name="id51">4.4.3.2   Shared memory and semaphores</a></li>
+<li><a class="reference" href="#corba" id="id52" name="id52">4.4.3.3   CORBA</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference" href="#id2" id="id53" name="id53">5   Client libraries</a><ul class="auto-toc">
+<li><a class="reference" href="#theory-of-client-library-design" id="id54" name="id54">5.1   Theory of client library design</a></li>
+<li><a class="reference" href="#c-client-library" id="id55" name="id55">5.2   C client library</a><ul class="auto-toc">
+<li><a class="reference" href="#examples" id="id56" name="id56">5.2.1   Examples</a></li>
+<li><a class="reference" href="#reference" id="id57" name="id57">5.2.2   Reference</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#python-client-library" id="id58" name="id58">5.3   Python client library</a><ul class="auto-toc">
+<li><a class="reference" href="#id3" id="id59" name="id59">5.3.1   Examples</a></li>
+<li><a class="reference" href="#id4" id="id60" name="id60">5.3.2   Reference</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#waba-lua-tcl-perl" id="id61" name="id61">5.4   waba, lua, tcl, perl...</a></li>
+<li><a class="reference" href="#future-client-libraries" id="id62" name="id62">5.5   Future client libraries:</a><ul class="auto-toc">
+<li><a class="reference" href="#c" id="id63" name="id63">5.5.1   C++</a></li>
+<li><a class="reference" href="#cli-c2" id="id64" name="id64">5.5.2   cli_c2</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference" href="#the-server" id="id65" name="id65">6   The Server</a><ul class="auto-toc">
+<li><a class="reference" href="#coding-conventions" id="id66" name="id66">6.1   Coding conventions</a></li>
+<li><a class="reference" href="#theory-of-pgserver-s-layout-and-rendering" id="id67" name="id67">6.2   Theory of pgserver's layout and rendering</a><ul class="auto-toc">
+<li><a class="reference" href="#the-divtree" id="id68" name="id68">6.2.1   The divtree</a></li>
+<li><a class="reference" href="#gropnodes-and-groplists" id="id69" name="id69">6.2.2   gropnodes and groplists</a></li>
+<li><a class="reference" href="#abstract-video-interface" id="id70" name="id70">6.2.3   Abstract video interface</a></li>
+<li><a class="reference" href="#the-role-of-themes" id="id71" name="id71">6.2.4   The role of themes</a></li>
+<li><a class="reference" href="#picogui-from-the-widget-s-point-of-view" id="id72" name="id72">6.2.5   PicoGUI from the widget's point of view</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#source-tree-organization" id="id73" name="id73">6.3   Source tree organization</a></li>
+<li><a class="reference" href="#widgets" id="id74" name="id74">6.4   Widgets</a><ul class="auto-toc">
+<li><a class="reference" href="#widget-object-model-and-subclassing" id="id75" name="id75">6.4.1   Widget object model and subclassing</a></li>
+<li><a class="reference" href="#overview-of-how-all-existing-widgets-are-implemented" id="id76" name="id76">6.4.2   Overview of how all existing widgets are implemented</a></li>
+<li><a class="reference" href="#how-to-write-new-widgets" id="id77" name="id77">6.4.3   How to write new widgets</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#video" id="id78" name="id78">6.5   Video</a><ul class="auto-toc">
+<li><a class="reference" href="#intro-to-video-drivers-video-wrappers-and-video-base-libraries" id="id79" name="id79">6.5.1   Intro to video drivers, video wrappers, and video base libraries</a><ul class="auto-toc">
+<li><a class="reference" href="#rotation-support" id="id80" name="id80">6.5.1.1   Rotation support</a></li>
+<li><a class="reference" href="#rootless-support" id="id81" name="id81">6.5.1.2   Rootless support</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#overview-of-existing-video-drivers-and-video-base-libraries" id="id82" name="id82">6.5.2   Overview of existing video drivers and video base libraries</a></li>
+<li><a class="reference" href="#how-to-write-new-video-drivers-and-vbls" id="id83" name="id83">6.5.3   How to write new video drivers and VBLs</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#id5" id="id84" name="id84">6.6   Input filters</a><ul class="auto-toc">
+<li><a class="reference" href="#writing-server-side-input-filters-and-input-drivers" id="id85" name="id85">6.6.1   Writing server-side input filters and input drivers</a></li>
+<li><a class="reference" href="#client-side-input-filters-and-input-drivers" id="id86" name="id86">6.6.2   Client side input filters and input drivers</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#application-manager" id="id87" name="id87">6.7   Application manager</a><ul class="auto-toc">
+<li><a class="reference" href="#how-the-app-manager-communicates-with-the-application-and-with-widgets" id="id88" name="id88">6.7.1   How the app manager communicates with the application and with widgets</a></li>
+<li><a class="reference" href="#current-app-managers" id="id89" name="id89">6.7.2   Current app managers</a></li>
+<li><a class="reference" href="#ideas-for-future-app-managers" id="id90" name="id90">6.7.3   Ideas for future app managers</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#network-layer" id="id91" name="id91">6.8   Network layer</a><ul class="auto-toc">
+<li><a class="reference" href="#overview-of-data-flow-from-an-application-to-an-internal-call" id="id92" name="id92">6.8.1   Overview of data flow from an application to an internal call</a></li>
+<li><a class="reference" href="#tcp-ip-interface" id="id93" name="id93">6.8.2   TCP/IP interface</a></li>
+<li><a class="reference" href="#the-server-s-main-loop" id="id94" name="id94">6.8.3   The server's main loop</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#id6" id="id95" name="id95">6.9   Memory management</a><ul class="auto-toc">
+<li><a class="reference" href="#handles" id="id96" name="id96">6.9.1   Handles</a></li>
+<li><a class="reference" href="#the-memory-debugger" id="id97" name="id97">6.9.2   The memory debugger</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#debugging" id="id98" name="id98">6.10   Debugging</a><ul class="auto-toc">
+<li><a class="reference" href="#exception-handling-in-pgserver" id="id99" name="id99">6.10.1   Exception handling in pgserver</a></li>
+<li><a class="reference" href="#compile-time-debug-options" id="id100" name="id100">6.10.2   Compile-time debug options</a></li>
+<li><a class="reference" href="#magic-keys" id="id101" name="id101">6.10.3   Magic keys</a></li>
+<li><a class="reference" href="#guru-and-dbg" id="id102" name="id102">6.10.4   guru() and DBG()</a></li>
+<li><a class="reference" href="#benchmarking" id="id103" name="id103">6.10.5   Benchmarking</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#text" id="id104" name="id104">6.11   Text</a><ul class="auto-toc">
+<li><a class="reference" href="#id7" id="id105" name="id105">6.11.1   Fonts</a><ul class="auto-toc">
+<li><a class="reference" href="#common-interface-for-font-engines" id="id106" name="id106">6.11.1.1   Common interface for font engines</a></li>
+<li><a class="reference" href="#the-built-in-bdf-engine" id="id107" name="id107">6.11.1.2   The built-in BDF engine</a></li>
+<li><a class="reference" href="#the-freetype-engine" id="id108" name="id108">6.11.1.3   The freetype engine</a></li>
+<li><a class="reference" href="#support-for-text-mode-video-devices" id="id109" name="id109">6.11.1.4   Support for text-mode video devices</a></li>
+<li><a class="reference" href="#support-for-opengl" id="id110" name="id110">6.11.1.5   Support for OpenGL</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#pgstring" id="id111" name="id111">6.11.2   pgstring</a><ul class="auto-toc">
+<li><a class="reference" href="#unicode-support" id="id112" name="id112">6.11.2.1   Unicode support</a></li>
+<li><a class="reference" href="#encodings" id="id113" name="id113">6.11.2.2   Encodings</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference" href="#format-loaders" id="id114" name="id114">6.12   Format loaders</a><ul class="auto-toc">
+<li><a class="reference" href="#image-formats" id="id115" name="id115">6.12.1   Image formats</a><ul class="auto-toc">
+<li><a class="reference" href="#image-format-loader-interface" id="id116" name="id116">6.12.1.1   Image format loader interface</a></li>
+<li><a class="reference" href="#existing-image-format-loaders" id="id117" name="id117">6.12.1.2   Existing image format loaders</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#text-formats" id="id118" name="id118">6.12.2   Text formats</a><ul class="auto-toc">
+<li><a class="reference" href="#text-format-loader-interface" id="id119" name="id119">6.12.2.1   Text format loader interface</a></li>
+<li><a class="reference" href="#existing-test-format-loaders" id="id120" name="id120">6.12.2.2   Existing test format loaders</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference" href="#configuration-management" id="id121" name="id121">6.13   Configuration management</a><ul class="auto-toc">
+<li><a class="reference" href="#id8" id="id122" name="id122">6.13.1   Compile-time configuration</a></li>
+<li><a class="reference" href="#runtime-config-variables" id="id123" name="id123">6.13.2   Runtime config variables</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#operating-system-interface" id="id124" name="id124">6.14   Operating system interface</a><ul class="auto-toc">
+<li><a class="reference" href="#timers" id="id125" name="id125">6.14.1   Timers</a></li>
+<li><a class="reference" href="#networking" id="id126" name="id126">6.14.2   Networking</a></li>
+<li><a class="reference" href="#filesystem" id="id127" name="id127">6.14.3   Filesystem</a></li>
+<li><a class="reference" href="#id9" id="id128" name="id128">6.14.4   Shared memory</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#theme-system" id="id129" name="id129">6.15   Theme system</a><ul class="auto-toc">
+<li><a class="reference" href="#theory-behind-picogui-themes" id="id130" name="id130">6.15.1   Theory behind PicoGUI themes</a></li>
+<li><a class="reference" href="#the-theme-file-format" id="id131" name="id131">6.15.2   The theme file format</a></li>
+<li><a class="reference" href="#in-memory-representation-of-themes" id="id132" name="id132">6.15.3   In-memory representation of themes</a></li>
+<li><a class="reference" href="#themes-from-the-widget-s-point-of-view" id="id133" name="id133">6.15.4   Themes from the widget's point of view</a></li>
+<li><a class="reference" href="#theme-compiler" id="id134" name="id134">6.15.5   Theme compiler</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#id10" id="id135" name="id135">6.16   Widget templates</a><ul class="auto-toc">
+<li><a class="reference" href="#theory-behind-widget-templates" id="id136" name="id136">6.16.1   Theory behind widget templates</a></li>
+<li><a class="reference" href="#binary-wt-file-format" id="id137" name="id137">6.16.2   Binary WT file format</a></li>
+<li><a class="reference" href="#in-memory-representations" id="id138" name="id138">6.16.3   In-memory representations</a></li>
+<li><a class="reference" href="#loading-wts" id="id139" name="id139">6.16.4   Loading WTs</a></li>
+<li><a class="reference" href="#instantiating-wts" id="id140" name="id140">6.16.5   Instantiating WTs</a></li>
+<li><a class="reference" href="#xml-widget-templates" id="id141" name="id141">6.16.6   XML widget templates</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference" href="#gnu-free-documentation-license" id="id142" name="id142">7   GNU Free Documentation License</a><ul class="auto-toc">
+<li><a class="reference" href="#preamble" id="id143" name="id143">7.1   PREAMBLE</a></li>
+<li><a class="reference" href="#applicability-and-definitions" id="id144" name="id144">7.2   APPLICABILITY AND DEFINITIONS</a></li>
+<li><a class="reference" href="#verbatim-copying" id="id145" name="id145">7.3   VERBATIM COPYING</a></li>
+<li><a class="reference" href="#copying-in-quantity" id="id146" name="id146">7.4   COPYING IN QUANTITY</a></li>
+<li><a class="reference" href="#modifications" id="id147" name="id147">7.5   MODIFICATIONS</a></li>
+<li><a class="reference" href="#combining-documents" id="id148" name="id148">7.6   COMBINING DOCUMENTS</a></li>
+<li><a class="reference" href="#collections-of-documents" id="id149" name="id149">7.7   COLLECTIONS OF DOCUMENTS</a></li>
+<li><a class="reference" href="#aggregation-with-independent-works" id="id150" name="id150">7.8   AGGREGATION WITH INDEPENDENT WORKS</a></li>
+<li><a class="reference" href="#translation" id="id151" name="id151">7.9   TRANSLATION</a></li>
+<li><a class="reference" href="#termination" id="id152" name="id152">7.10   TERMINATION</a></li>
+<li><a class="reference" href="#future-revisions-of-this-license" id="id153" name="id153">7.11   FUTURE REVISIONS OF THIS LICENSE</a></li>
+<li><a class="reference" href="#addendum-how-to-use-this-license-for-your-documents" id="id154" name="id154">7.12   ADDENDUM: How to use this License for your documents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="motivation-for-picogui">
+<h1><a class="toc-backref" href="#id11" name="motivation-for-picogui">1   Motivation for PicoGUI</a></h1>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="the-big-picture-overview-of-picogui-s-architecture">
+<h1><a class="toc-backref" href="#id12" name="the-big-picture-overview-of-picogui-s-architecture">2   The big picture - overview of PicoGUI's architecture</a></h1>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="tutorial">
+<h1><a class="toc-backref" href="#id13" name="tutorial">3   Tutorial</a></h1>
+<div class="section" id="using-picogui">
+<h2><a class="toc-backref" href="#id14" name="using-picogui">3.1   Using PicoGUI</a></h2>
+<div class="section" id="obtaining-a-source-distribution">
+<h3><a class="toc-backref" href="#id15" name="obtaining-a-source-distribution">3.1.1   Obtaining a source distribution</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="compile-time-configuration">
+<h3><a class="toc-backref" href="#id16" name="compile-time-configuration">3.1.2   Compile-time configuration</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="themes">
+<h3><a class="toc-backref" href="#id17" name="themes">3.1.3   Themes</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="runtime-configuration">
+<h3><a class="toc-backref" href="#id18" name="runtime-configuration">3.1.4   Runtime configuration</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="client-libraries">
+<h3><a class="toc-backref" href="#id19" name="client-libraries">3.1.5   Client libraries</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="applications">
+<h3><a class="toc-backref" href="#id20" name="applications">3.1.6   Applications</a></h3>
+<p>(unwritten)</p>
+</div>
+</div>
+<div class="section" id="programming-for-picogui">
+<h2><a class="toc-backref" href="#id21" name="programming-for-picogui">3.2   Programming for PicoGUI</a></h2>
+<div class="section" id="picogui-s-widget-model">
+<h3><a class="toc-backref" href="#id22" name="picogui-s-widget-model">3.2.1   PicoGUI's widget model</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="annotated-examples-at-least-in-c-and-python">
+<h3><a class="toc-backref" href="#id23" name="annotated-examples-at-least-in-c-and-python">3.2.2   Annotated examples, at least in C and Python</a></h3>
+<div class="section" id="hello-world">
+<h4><a class="toc-backref" href="#id24" name="hello-world">3.2.2.1   Hello World</a></h4>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="widget-overview">
+<h4><a class="toc-backref" href="#id25" name="widget-overview">3.2.2.2   Widget overview</a></h4>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="memory-management">
+<h4><a class="toc-backref" href="#id26" name="memory-management">3.2.2.3   Memory management</a></h4>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="layout">
+<h4><a class="toc-backref" href="#id27" name="layout">3.2.2.4   Layout</a></h4>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="managing-events">
+<h4><a class="toc-backref" href="#id28" name="managing-events">3.2.2.5   Managing events</a></h4>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="widget-templates">
+<h4><a class="toc-backref" href="#id29" name="widget-templates">3.2.2.6   Widget templates</a></h4>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="id1">
+<h4><a class="toc-backref" href="#id30" name="id1">3.2.2.7   Themes</a></h4>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="bitmaps">
+<h4><a class="toc-backref" href="#id31" name="bitmaps">3.2.2.8   Bitmaps</a></h4>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="fonts">
+<h4><a class="toc-backref" href="#id32" name="fonts">3.2.2.9   Fonts</a></h4>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="drawing-on-canvases-and-bitmaps">
+<h4><a class="toc-backref" href="#id33" name="drawing-on-canvases-and-bitmaps">3.2.2.10   Drawing on canvases and bitmaps</a></h4>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="shared-memory">
+<h4><a class="toc-backref" href="#id34" name="shared-memory">3.2.2.11   Shared memory</a></h4>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="input-filters">
+<h4><a class="toc-backref" href="#id35" name="input-filters">3.2.2.12   Input filters</a></h4>
+<p>(unwritten)</p>
+</div>
+</div>
+<div class="section" id="where-to-get-more-information">
+<h3><a class="toc-backref" href="#id36" name="where-to-get-more-information">3.2.3   Where to get more information</a></h3>
+<p>(unwritten)</p>
+</div>
+</div>
+</div>
+<div class="section" id="the-picogui-protocol">
+<h1><a class="toc-backref" href="#id37" name="the-picogui-protocol">4   The PicoGUI protocol</a></h1>
+<div class="section" id="comparison-to-other-systems">
+<h2><a class="toc-backref" href="#id38" name="comparison-to-other-systems">4.1   Comparison to other systems</a></h2>
+<div class="section" id="the-x-window-system">
+<h3><a class="toc-backref" href="#id39" name="the-x-window-system">4.1.1   The X window system</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="fresco">
+<h3><a class="toc-backref" href="#id40" name="fresco">4.1.2   Fresco</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="qt">
+<h3><a class="toc-backref" href="#id41" name="qt">4.1.3   Qt</a></h3>
+<p>(unwritten)</p>
+</div>
+</div>
+<div class="section" id="widget-layer">
+<h2><a class="toc-backref" href="#id42" name="widget-layer">4.2   Widget layer</a></h2>
+<div class="section" id="reference-for-all-widget-properties-commands-and-events">
+<h3><a class="toc-backref" href="#id43" name="reference-for-all-widget-properties-commands-and-events">4.2.1   Reference for all widget properties, commands, and events</a></h3>
+<p>(unwritten)</p>
+</div>
+</div>
+<div class="section" id="request-layer">
+<h2><a class="toc-backref" href="#id44" name="request-layer">4.3   Request layer</a></h2>
+<div class="section" id="reference-for-requests-and-responses-from-pgui-protocol-document">
+<h3><a class="toc-backref" href="#id45" name="reference-for-requests-and-responses-from-pgui-protocol-document">4.3.1   Reference for requests and responses (from pgui-protocol document</a></h3>
+<p>(unwritten)</p>
+</div>
+</div>
+<div class="section" id="transport-layer">
+<h2><a class="toc-backref" href="#id46" name="transport-layer">4.4   Transport layer</a></h2>
+<div class="section" id="current-tcp-ip-transport">
+<h3><a class="toc-backref" href="#id47" name="current-tcp-ip-transport">4.4.1   Current TCP/IP transport</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="libpgserver-transport">
+<h3><a class="toc-backref" href="#id48" name="libpgserver-transport">4.4.2   libpgserver transport</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="future-transports">
+<h3><a class="toc-backref" href="#id49" name="future-transports">4.4.3   Future transports:</a></h3>
+<div class="section" id="enhanced-tcp-ip-transport-with-fewer-round-trips">
+<h4><a class="toc-backref" href="#id50" name="enhanced-tcp-ip-transport-with-fewer-round-trips">4.4.3.1   Enhanced TCP/IP transport with fewer round-trips</a></h4>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="shared-memory-and-semaphores">
+<h4><a class="toc-backref" href="#id51" name="shared-memory-and-semaphores">4.4.3.2   Shared memory and semaphores</a></h4>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="corba">
+<h4><a class="toc-backref" href="#id52" name="corba">4.4.3.3   CORBA</a></h4>
+<p>(unwritten)</p>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="id2">
+<h1><a class="toc-backref" href="#id53" name="id2">5   Client libraries</a></h1>
+<div class="section" id="theory-of-client-library-design">
+<h2><a class="toc-backref" href="#id54" name="theory-of-client-library-design">5.1   Theory of client library design</a></h2>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="c-client-library">
+<h2><a class="toc-backref" href="#id55" name="c-client-library">5.2   C client library</a></h2>
+<div class="section" id="examples">
+<h3><a class="toc-backref" href="#id56" name="examples">5.2.1   Examples</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="reference">
+<h3><a class="toc-backref" href="#id57" name="reference">5.2.2   Reference</a></h3>
+<p>(unwritten)</p>
+</div>
+</div>
+<div class="section" id="python-client-library">
+<h2><a class="toc-backref" href="#id58" name="python-client-library">5.3   Python client library</a></h2>
+<div class="section" id="id3">
+<h3><a class="toc-backref" href="#id59" name="id3">5.3.1   Examples</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="id4">
+<h3><a class="toc-backref" href="#id60" name="id4">5.3.2   Reference</a></h3>
+<p>(unwritten)</p>
+</div>
+</div>
+<div class="section" id="waba-lua-tcl-perl">
+<h2><a class="toc-backref" href="#id61" name="waba-lua-tcl-perl">5.4   waba, lua, tcl, perl...</a></h2>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="future-client-libraries">
+<h2><a class="toc-backref" href="#id62" name="future-client-libraries">5.5   Future client libraries:</a></h2>
+<div class="section" id="c">
+<h3><a class="toc-backref" href="#id63" name="c">5.5.1   C++</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="cli-c2">
+<h3><a class="toc-backref" href="#id64" name="cli-c2">5.5.2   cli_c2</a></h3>
+<p>(unwritten)</p>
+</div>
+</div>
+</div>
+<div class="section" id="the-server">
+<h1><a class="toc-backref" href="#id65" name="the-server">6   The Server</a></h1>
+<div class="section" id="coding-conventions">
+<h2><a class="toc-backref" href="#id66" name="coding-conventions">6.1   Coding conventions</a></h2>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="theory-of-pgserver-s-layout-and-rendering">
+<h2><a class="toc-backref" href="#id67" name="theory-of-pgserver-s-layout-and-rendering">6.2   Theory of pgserver's layout and rendering</a></h2>
+<div class="section" id="the-divtree">
+<h3><a class="toc-backref" href="#id68" name="the-divtree">6.2.1   The divtree</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="gropnodes-and-groplists">
+<h3><a class="toc-backref" href="#id69" name="gropnodes-and-groplists">6.2.2   gropnodes and groplists</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="abstract-video-interface">
+<h3><a class="toc-backref" href="#id70" name="abstract-video-interface">6.2.3   Abstract video interface</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="the-role-of-themes">
+<h3><a class="toc-backref" href="#id71" name="the-role-of-themes">6.2.4   The role of themes</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="picogui-from-the-widget-s-point-of-view">
+<h3><a class="toc-backref" href="#id72" name="picogui-from-the-widget-s-point-of-view">6.2.5   PicoGUI from the widget's point of view</a></h3>
+<p>(unwritten)</p>
+</div>
+</div>
+<div class="section" id="source-tree-organization">
+<h2><a class="toc-backref" href="#id73" name="source-tree-organization">6.3   Source tree organization</a></h2>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="widgets">
+<h2><a class="toc-backref" href="#id74" name="widgets">6.4   Widgets</a></h2>
+<div class="section" id="widget-object-model-and-subclassing">
+<h3><a class="toc-backref" href="#id75" name="widget-object-model-and-subclassing">6.4.1   Widget object model and subclassing</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="overview-of-how-all-existing-widgets-are-implemented">
+<h3><a class="toc-backref" href="#id76" name="overview-of-how-all-existing-widgets-are-implemented">6.4.2   Overview of how all existing widgets are implemented</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="how-to-write-new-widgets">
+<h3><a class="toc-backref" href="#id77" name="how-to-write-new-widgets">6.4.3   How to write new widgets</a></h3>
+<p>(unwritten)</p>
+</div>
+</div>
+<div class="section" id="video">
+<h2><a class="toc-backref" href="#id78" name="video">6.5   Video</a></h2>
+<div class="section" id="intro-to-video-drivers-video-wrappers-and-video-base-libraries">
+<h3><a class="toc-backref" href="#id79" name="intro-to-video-drivers-video-wrappers-and-video-base-libraries">6.5.1   Intro to video drivers, video wrappers, and video base libraries</a></h3>
+<div class="section" id="rotation-support">
+<h4><a class="toc-backref" href="#id80" name="rotation-support">6.5.1.1   Rotation support</a></h4>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="rootless-support">
+<h4><a class="toc-backref" href="#id81" name="rootless-support">6.5.1.2   Rootless support</a></h4>
+<p>(unwritten)</p>
+</div>
+</div>
+<div class="section" id="overview-of-existing-video-drivers-and-video-base-libraries">
+<h3><a class="toc-backref" href="#id82" name="overview-of-existing-video-drivers-and-video-base-libraries">6.5.2   Overview of existing video drivers and video base libraries</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="how-to-write-new-video-drivers-and-vbls">
+<h3><a class="toc-backref" href="#id83" name="how-to-write-new-video-drivers-and-vbls">6.5.3   How to write new video drivers and VBLs</a></h3>
+<p>(unwritten)</p>
+</div>
+</div>
+<div class="section" id="id5">
+<h2><a class="toc-backref" href="#id84" name="id5">6.6   Input filters</a></h2>
+<div class="section" id="writing-server-side-input-filters-and-input-drivers">
+<h3><a class="toc-backref" href="#id85" name="writing-server-side-input-filters-and-input-drivers">6.6.1   Writing server-side input filters and input drivers</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="client-side-input-filters-and-input-drivers">
+<h3><a class="toc-backref" href="#id86" name="client-side-input-filters-and-input-drivers">6.6.2   Client side input filters and input drivers</a></h3>
+<p>(unwritten)</p>
+</div>
+</div>
+<div class="section" id="application-manager">
+<h2><a class="toc-backref" href="#id87" name="application-manager">6.7   Application manager</a></h2>
+<div class="section" id="how-the-app-manager-communicates-with-the-application-and-with-widgets">
+<h3><a class="toc-backref" href="#id88" name="how-the-app-manager-communicates-with-the-application-and-with-widgets">6.7.1   How the app manager communicates with the application and with widgets</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="current-app-managers">
+<h3><a class="toc-backref" href="#id89" name="current-app-managers">6.7.2   Current app managers</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="ideas-for-future-app-managers">
+<h3><a class="toc-backref" href="#id90" name="ideas-for-future-app-managers">6.7.3   Ideas for future app managers</a></h3>
+<p>(unwritten)</p>
+</div>
+</div>
+<div class="section" id="network-layer">
+<h2><a class="toc-backref" href="#id91" name="network-layer">6.8   Network layer</a></h2>
+<div class="section" id="overview-of-data-flow-from-an-application-to-an-internal-call">
+<h3><a class="toc-backref" href="#id92" name="overview-of-data-flow-from-an-application-to-an-internal-call">6.8.1   Overview of data flow from an application to an internal call</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="tcp-ip-interface">
+<h3><a class="toc-backref" href="#id93" name="tcp-ip-interface">6.8.2   TCP/IP interface</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="the-server-s-main-loop">
+<h3><a class="toc-backref" href="#id94" name="the-server-s-main-loop">6.8.3   The server's main loop</a></h3>
+<p>(unwritten)</p>
+</div>
+</div>
+<div class="section" id="id6">
+<h2><a class="toc-backref" href="#id95" name="id6">6.9   Memory management</a></h2>
+<div class="section" id="handles">
+<h3><a class="toc-backref" href="#id96" name="handles">6.9.1   Handles</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="the-memory-debugger">
+<h3><a class="toc-backref" href="#id97" name="the-memory-debugger">6.9.2   The memory debugger</a></h3>
+<p>(unwritten)</p>
+</div>
+</div>
+<div class="section" id="debugging">
+<h2><a class="toc-backref" href="#id98" name="debugging">6.10   Debugging</a></h2>
+<div class="section" id="exception-handling-in-pgserver">
+<h3><a class="toc-backref" href="#id99" name="exception-handling-in-pgserver">6.10.1   Exception handling in pgserver</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="compile-time-debug-options">
+<h3><a class="toc-backref" href="#id100" name="compile-time-debug-options">6.10.2   Compile-time debug options</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="magic-keys">
+<h3><a class="toc-backref" href="#id101" name="magic-keys">6.10.3   Magic keys</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="guru-and-dbg">
+<h3><a class="toc-backref" href="#id102" name="guru-and-dbg">6.10.4   guru() and DBG()</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="benchmarking">
+<h3><a class="toc-backref" href="#id103" name="benchmarking">6.10.5   Benchmarking</a></h3>
+<p>(unwritten)</p>
+</div>
+</div>
+<div class="section" id="text">
+<h2><a class="toc-backref" href="#id104" name="text">6.11   Text</a></h2>
+<div class="section" id="id7">
+<h3><a class="toc-backref" href="#id105" name="id7">6.11.1   Fonts</a></h3>
+<div class="section" id="common-interface-for-font-engines">
+<h4><a class="toc-backref" href="#id106" name="common-interface-for-font-engines">6.11.1.1   Common interface for font engines</a></h4>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="the-built-in-bdf-engine">
+<h4><a class="toc-backref" href="#id107" name="the-built-in-bdf-engine">6.11.1.2   The built-in BDF engine</a></h4>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="the-freetype-engine">
+<h4><a class="toc-backref" href="#id108" name="the-freetype-engine">6.11.1.3   The freetype engine</a></h4>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="support-for-text-mode-video-devices">
+<h4><a class="toc-backref" href="#id109" name="support-for-text-mode-video-devices">6.11.1.4   Support for text-mode video devices</a></h4>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="support-for-opengl">
+<h4><a class="toc-backref" href="#id110" name="support-for-opengl">6.11.1.5   Support for OpenGL</a></h4>
+<p>(unwritten)</p>
+</div>
+</div>
+<div class="section" id="pgstring">
+<h3><a class="toc-backref" href="#id111" name="pgstring">6.11.2   pgstring</a></h3>
+<div class="section" id="unicode-support">
+<h4><a class="toc-backref" href="#id112" name="unicode-support">6.11.2.1   Unicode support</a></h4>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="encodings">
+<h4><a class="toc-backref" href="#id113" name="encodings">6.11.2.2   Encodings</a></h4>
+<p>(unwritten)</p>
+</div>
+</div>
+</div>
+<div class="section" id="format-loaders">
+<h2><a class="toc-backref" href="#id114" name="format-loaders">6.12   Format loaders</a></h2>
+<div class="section" id="image-formats">
+<h3><a class="toc-backref" href="#id115" name="image-formats">6.12.1   Image formats</a></h3>
+<div class="section" id="image-format-loader-interface">
+<h4><a class="toc-backref" href="#id116" name="image-format-loader-interface">6.12.1.1   Image format loader interface</a></h4>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="existing-image-format-loaders">
+<h4><a class="toc-backref" href="#id117" name="existing-image-format-loaders">6.12.1.2   Existing image format loaders</a></h4>
+<p>(unwritten)</p>
+</div>
+</div>
+<div class="section" id="text-formats">
+<h3><a class="toc-backref" href="#id118" name="text-formats">6.12.2   Text formats</a></h3>
+<div class="section" id="text-format-loader-interface">
+<h4><a class="toc-backref" href="#id119" name="text-format-loader-interface">6.12.2.1   Text format loader interface</a></h4>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="existing-test-format-loaders">
+<h4><a class="toc-backref" href="#id120" name="existing-test-format-loaders">6.12.2.2   Existing test format loaders</a></h4>
+<p>(unwritten)</p>
+</div>
+</div>
+</div>
+<div class="section" id="configuration-management">
+<h2><a class="toc-backref" href="#id121" name="configuration-management">6.13   Configuration management</a></h2>
+<div class="section" id="id8">
+<h3><a class="toc-backref" href="#id122" name="id8">6.13.1   Compile-time configuration</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="runtime-config-variables">
+<h3><a class="toc-backref" href="#id123" name="runtime-config-variables">6.13.2   Runtime config variables</a></h3>
+<p>(unwritten)</p>
+</div>
+</div>
+<div class="section" id="operating-system-interface">
+<h2><a class="toc-backref" href="#id124" name="operating-system-interface">6.14   Operating system interface</a></h2>
+<div class="section" id="timers">
+<h3><a class="toc-backref" href="#id125" name="timers">6.14.1   Timers</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="networking">
+<h3><a class="toc-backref" href="#id126" name="networking">6.14.2   Networking</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="filesystem">
+<h3><a class="toc-backref" href="#id127" name="filesystem">6.14.3   Filesystem</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="id9">
+<h3><a class="toc-backref" href="#id128" name="id9">6.14.4   Shared memory</a></h3>
+<p>(unwritten)</p>
+</div>
+</div>
+<div class="section" id="theme-system">
+<h2><a class="toc-backref" href="#id129" name="theme-system">6.15   Theme system</a></h2>
+<div class="section" id="theory-behind-picogui-themes">
+<h3><a class="toc-backref" href="#id130" name="theory-behind-picogui-themes">6.15.1   Theory behind PicoGUI themes</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="the-theme-file-format">
+<h3><a class="toc-backref" href="#id131" name="the-theme-file-format">6.15.2   The theme file format</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="in-memory-representation-of-themes">
+<h3><a class="toc-backref" href="#id132" name="in-memory-representation-of-themes">6.15.3   In-memory representation of themes</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="themes-from-the-widget-s-point-of-view">
+<h3><a class="toc-backref" href="#id133" name="themes-from-the-widget-s-point-of-view">6.15.4   Themes from the widget's point of view</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="theme-compiler">
+<h3><a class="toc-backref" href="#id134" name="theme-compiler">6.15.5   Theme compiler</a></h3>
+<p>(unwritten)</p>
+</div>
+</div>
+<div class="section" id="id10">
+<h2><a class="toc-backref" href="#id135" name="id10">6.16   Widget templates</a></h2>
+<div class="section" id="theory-behind-widget-templates">
+<h3><a class="toc-backref" href="#id136" name="theory-behind-widget-templates">6.16.1   Theory behind widget templates</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="binary-wt-file-format">
+<h3><a class="toc-backref" href="#id137" name="binary-wt-file-format">6.16.2   Binary WT file format</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="in-memory-representations">
+<h3><a class="toc-backref" href="#id138" name="in-memory-representations">6.16.3   In-memory representations</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="loading-wts">
+<h3><a class="toc-backref" href="#id139" name="loading-wts">6.16.4   Loading WTs</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="instantiating-wts">
+<h3><a class="toc-backref" href="#id140" name="instantiating-wts">6.16.5   Instantiating WTs</a></h3>
+<p>(unwritten)</p>
+</div>
+<div class="section" id="xml-widget-templates">
+<h3><a class="toc-backref" href="#id141" name="xml-widget-templates">6.16.6   XML widget templates</a></h3>
+<p>(unwritten)</p>
+</div>
+</div>
+</div>
+<div class="section" id="gnu-free-documentation-license">
+<h1><a class="toc-backref" href="#id142" name="gnu-free-documentation-license">7   GNU Free Documentation License</a></h1>
+<pre class="line-block">
+Version 1.1, March 2000
+
+Copyright (C) 2000  Free Software Foundation, Inc.
+59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+Everyone is permitted to copy and distribute verbatim copies
+of this license document, but changing it is not allowed.
+</pre>
+<div class="section" id="preamble">
+<h2><a class="toc-backref" href="#id143" name="preamble">7.1   PREAMBLE</a></h2>
+<p>The purpose of this License is to make a manual, textbook, or other
+written document &quot;free&quot; in the sense of freedom: to assure everyone
+the effective freedom to copy and redistribute it, with or without
+modifying it, either commercially or noncommercially.  Secondarily,
+this License preserves for the author and publisher a way to get
+credit for their work, while not being considered responsible for
+modifications made by others.</p>
+<p>This License is a kind of &quot;copyleft&quot;, which means that derivative
+works of the document must themselves be free in the same sense.  It
+complements the GNU General Public License, which is a copyleft
+license designed for free software.</p>
+<p>We have designed this License in order to use it for manuals for free
+software, because free software needs free documentation: a free
+program should come with manuals providing the same freedoms that the
+software does.  But this License is not limited to software manuals;
+it can be used for any textual work, regardless of subject matter or
+whether it is published as a printed book.  We recommend this License
+principally for works whose purpose is instruction or reference.</p>
+</div>
+<div class="section" id="applicability-and-definitions">
+<h2><a class="toc-backref" href="#id144" name="applicability-and-definitions">7.2   APPLICABILITY AND DEFINITIONS</a></h2>
+<p>This License applies to any manual or other work that contains a
+notice placed by the copyright holder saying it can be distributed
+under the terms of this License.  The &quot;Document&quot;, below, refers to any
+such manual or work.  Any member of the public is a licensee, and is
+addressed as &quot;you&quot;.</p>
+<p>A &quot;Modified Version&quot; of the Document means any work containing the
+Document or a portion of it, either copied verbatim, or with
+modifications and/or translated into another language.</p>
+<p>A &quot;Secondary Section&quot; is a named appendix or a front-matter section of
+the Document that deals exclusively with the relationship of the
+publishers or authors of the Document to the Document's overall subject
+(or to related matters) and contains nothing that could fall directly
+within that overall subject.  (For example, if the Document is in part a
+textbook of mathematics, a Secondary Section may not explain any
+mathematics.)  The relationship could be a matter of historical
+connection with the subject or with related matters, or of legal,
+commercial, philosophical, ethical or political position regarding
+them.</p>
+<p>The &quot;Invariant Sections&quot; are certain Secondary Sections whose titles
+are designated, as being those of Invariant Sections, in the notice
+that says that the Document is released under this License.</p>
+<p>The &quot;Cover Texts&quot; are certain short passages of text that are listed,
+as Front-Cover Texts or Back-Cover Texts, in the notice that says that
+the Document is released under this License.</p>
+<p>A &quot;Transparent&quot; copy of the Document means a machine-readable copy,
+represented in a format whose specification is available to the
+general public, whose contents can be viewed and edited directly and
+straightforwardly with generic text editors or (for images composed of
+pixels) generic paint programs or (for drawings) some widely available
+drawing editor, and that is suitable for input to text formatters or
+for automatic translation to a variety of formats suitable for input
+to text formatters.  A copy made in an otherwise Transparent file
+format whose markup has been designed to thwart or discourage
+subsequent modification by readers is not Transparent.  A copy that is
+not &quot;Transparent&quot; is called &quot;Opaque&quot;.</p>
+<p>Examples of suitable formats for Transparent copies include plain
+ASCII without markup, Texinfo input format, LaTeX input format, SGML
+or XML using a publicly available DTD, and standard-conforming simple
+HTML designed for human modification.  Opaque formats include
+PostScript, PDF, proprietary formats that can be read and edited only
+by proprietary word processors, SGML or XML for which the DTD and/or
+processing tools are not generally available, and the
+machine-generated HTML produced by some word processors for output
+purposes only.</p>
+<p>The &quot;Title Page&quot; means, for a printed book, the title page itself,
+plus such following pages as are needed to hold, legibly, the material
+this License requires to appear in the title page.  For works in
+formats which do not have any title page as such, &quot;Title Page&quot; means
+the text near the most prominent appearance of the work's title,
+preceding the beginning of the body of the text.</p>
+</div>
+<div class="section" id="verbatim-copying">
+<h2><a class="toc-backref" href="#id145" name="verbatim-copying">7.3   VERBATIM COPYING</a></h2>
+<p>You may copy and distribute the Document in any medium, either
+commercially or noncommercially, provided that this License, the
+copyright notices, and the license notice saying this License applies
+to the Document are reproduced in all copies, and that you add no other
+conditions whatsoever to those of this License.  You may not use
+technical measures to obstruct or control the reading or further
+copying of the copies you make or distribute.  However, you may accept
+compensation in exchange for copies.  If you distribute a large enough
+number of copies you must also follow the conditions in section 3.</p>
+<p>You may also lend copies, under the same conditions stated above, and
+you may publicly display copies.</p>
+</div>
+<div class="section" id="copying-in-quantity">
+<h2><a class="toc-backref" href="#id146" name="copying-in-quantity">7.4   COPYING IN QUANTITY</a></h2>
+<p>If you publish printed copies of the Document numbering more than 100,
+and the Document's license notice requires Cover Texts, you must enclose
+the copies in covers that carry, clearly and legibly, all these Cover
+Texts: Front-Cover Texts on the front cover, and Back-Cover Texts on
+the back cover.  Both covers must also clearly and legibly identify
+you as the publisher of these copies.  The front cover must present
+the full title with all words of the title equally prominent and
+visible.  You may add other material on the covers in addition.
+Copying with changes limited to the covers, as long as they preserve
+the title of the Document and satisfy these conditions, can be treated
+as verbatim copying in other respects.</p>
+<p>If the required texts for either cover are too voluminous to fit
+legibly, you should put the first ones listed (as many as fit
+reasonably) on the actual cover, and continue the rest onto adjacent
+pages.</p>
+<p>If you publish or distribute Opaque copies of the Document numbering
+more than 100, you must either include a machine-readable Transparent
+copy along with each Opaque copy, or state in or with each Opaque copy
+a publicly-accessible computer-network location containing a complete
+Transparent copy of the Document, free of added material, which the
+general network-using public has access to download anonymously at no
+charge using public-standard network protocols.  If you use the latter
+option, you must take reasonably prudent steps, when you begin
+distribution of Opaque copies in quantity, to ensure that this
+Transparent copy will remain thus accessible at the stated location
+until at least one year after the last time you distribute an Opaque
+copy (directly or through your agents or retailers) of that edition to
+the public.</p>
+<p>It is requested, but not required, that you contact the authors of the
+Document well before redistributing any large number of copies, to give
+them a chance to provide you with an updated version of the Document.</p>
+</div>
+<div class="section" id="modifications">
+<h2><a class="toc-backref" href="#id147" name="modifications">7.5   MODIFICATIONS</a></h2>
+<p>You may copy and distribute a Modified Version of the Document under
+the conditions of sections 2 and 3 above, provided that you release
+the Modified Version under precisely this License, with the Modified
+Version filling the role of the Document, thus licensing distribution
+and modification of the Modified Version to whoever possesses a copy
+of it.  In addition, you must do these things in the Modified Version:</p>
+<ol class="upperalpha simple">
+<li>Use in the Title Page (and on the covers, if any) a title distinct
+from that of the Document, and from those of previous versions
+(which should, if there were any, be listed in the History section
+of the Document).  You may use the same title as a previous version
+if the original publisher of that version gives permission.</li>
+<li>List on the Title Page, as authors, one or more persons or entities
+responsible for authorship of the modifications in the Modified
+Version, together with at least five of the principal authors of the
+Document (all of its principal authors, if it has less than five).</li>
+<li>State on the Title page the name of the publisher of the
+Modified Version, as the publisher.</li>
+<li>Preserve all the copyright notices of the Document.</li>
+<li>Add an appropriate copyright notice for your modifications
+adjacent to the other copyright notices.</li>
+<li>Include, immediately after the copyright notices, a license notice
+giving the public permission to use the Modified Version under the
+terms of this License, in the form shown in the Addendum below.</li>
+<li>Preserve in that license notice the full lists of Invariant Sections
+and required Cover Texts given in the Document's license notice.</li>
+<li>Include an unaltered copy of this License.</li>
+<li>Preserve the section entitled &quot;History&quot;, and its title, and add to
+it an item stating at least the title, year, new authors, and
+publisher of the Modified Version as given on the Title Page.  If
+there is no section entitled &quot;History&quot; in the Document, create one
+stating the title, year, authors, and publisher of the Document as
+given on its Title Page, then add an item describing the Modified
+Version as stated in the previous sentence.</li>
+<li>Preserve the network location, if any, given in the Document for
+public access to a Transparent copy of the Document, and likewise
+the network locations given in the Document for previous versions
+it was based on.  These may be placed in the &quot;History&quot; section.
+You may omit a network location for a work that was published at
+least four years before the Document itself, or if the original
+publisher of the version it refers to gives permission.</li>
+<li>In any section entitled &quot;Acknowledgments&quot; or &quot;Dedications&quot;,
+preserve the section's title, and preserve in the section all the
+substance and tone of each of the contributor acknowledgments
+and/or dedications given therein.</li>
+<li>Preserve all the Invariant Sections of the Document,
+unaltered in their text and in their titles.  Section numbers
+or the equivalent are not considered part of the section titles.</li>
+<li>Delete any section entitled &quot;Endorsements&quot;.  Such a section
+may not be included in the Modified Version.</li>
+<li>Do not retitle any existing section as &quot;Endorsements&quot;
+or to conflict in title with any Invariant Section.</li>
+</ol>
+<p>If the Modified Version includes new front-matter sections or
+appendices that qualify as Secondary Sections and contain no material
+copied from the Document, you may at your option designate some or all
+of these sections as invariant.  To do this, add their titles to the
+list of Invariant Sections in the Modified Version's license notice.
+These titles must be distinct from any other section titles.</p>
+<p>You may add a section entitled &quot;Endorsements&quot;, provided it contains
+nothing but endorsements of your Modified Version by various
+parties---for example, statements of peer review or that the text has
+been approved by an organization as the authoritative definition of a
+standard.</p>
+<p>You may add a passage of up to five words as a Front-Cover Text, and a
+passage of up to 25 words as a Back-Cover Text, to the end of the list
+of Cover Texts in the Modified Version.  Only one passage of
+Front-Cover Text and one of Back-Cover Text may be added by (or
+through arrangements made by) any one entity.  If the Document already
+includes a cover text for the same cover, previously added by you or
+by arrangement made by the same entity you are acting on behalf of,
+you may not add another; but you may replace the old one, on explicit
+permission from the previous publisher that added the old one.</p>
+<p>The author(s) and publisher(s) of the Document do not by this License
+give permission to use their names for publicity for or to assert or
+imply endorsement of any Modified Version.</p>
+</div>
+<div class="section" id="combining-documents">
+<h2><a class="toc-backref" href="#id148" name="combining-documents">7.6   COMBINING DOCUMENTS</a></h2>
+<p>You may combine the Document with other documents released under this
+License, under the terms defined in section 4 above for modified
+versions, provided that you include in the combination all of the
+Invariant Sections of all of the original documents, unmodified, and
+list them all as Invariant Sections of your combined work in its
+license notice.</p>
+<p>The combined work need only contain one copy of this License, and
+multiple identical Invariant Sections may be replaced with a single
+copy.  If there are multiple Invariant Sections with the same name but
+different contents, make the title of each such section unique by
+adding at the end of it, in parentheses, the name of the original
+author or publisher of that section if known, or else a unique number.
+Make the same adjustment to the section titles in the list of
+Invariant Sections in the license notice of the combined work.</p>
+<p>In the combination, you must combine any sections entitled &quot;History&quot;
+in the various original documents, forming one section entitled
+&quot;History&quot;; likewise combine any sections entitled &quot;Acknowledgments&quot;,
+and any sections entitled &quot;Dedications&quot;.  You must delete all sections
+entitled &quot;Endorsements.&quot;</p>
+</div>
+<div class="section" id="collections-of-documents">
+<h2><a class="toc-backref" href="#id149" name="collections-of-documents">7.7   COLLECTIONS OF DOCUMENTS</a></h2>
+<p>You may make a collection consisting of the Document and other documents
+released under this License, and replace the individual copies of this
+License in the various documents with a single copy that is included in
+the collection, provided that you follow the rules of this License for
+verbatim copying of each of the documents in all other respects.</p>
+<p>You may extract a single document from such a collection, and distribute
+it individually under this License, provided you insert a copy of this
+License into the extracted document, and follow this License in all
+other respects regarding verbatim copying of that document.</p>
+</div>
+<div class="section" id="aggregation-with-independent-works">
+<h2><a class="toc-backref" href="#id150" name="aggregation-with-independent-works">7.8   AGGREGATION WITH INDEPENDENT WORKS</a></h2>
+<p>A compilation of the Document or its derivatives with other separate
+and independent documents or works, in or on a volume of a storage or
+distribution medium, does not as a whole count as a Modified Version
+of the Document, provided no compilation copyright is claimed for the
+compilation.  Such a compilation is called an &quot;aggregate&quot;, and this
+License does not apply to the other self-contained works thus compiled
+with the Document, on account of their being thus compiled, if they
+are not themselves derivative works of the Document.</p>
+<p>If the Cover Text requirement of section 3 is applicable to these
+copies of the Document, then if the Document is less than one quarter
+of the entire aggregate, the Document's Cover Texts may be placed on
+covers that surround only the Document within the aggregate.
+Otherwise they must appear on covers around the whole aggregate.</p>
+</div>
+<div class="section" id="translation">
+<h2><a class="toc-backref" href="#id151" name="translation">7.9   TRANSLATION</a></h2>
+<p>Translation is considered a kind of modification, so you may
+distribute translations of the Document under the terms of section 4.
+Replacing Invariant Sections with translations requires special
+permission from their copyright holders, but you may include
+translations of some or all Invariant Sections in addition to the
+original versions of these Invariant Sections.  You may include a
+translation of this License provided that you also include the
+original English version of this License.  In case of a disagreement
+between the translation and the original English version of this
+License, the original English version will prevail.</p>
+</div>
+<div class="section" id="termination">
+<h2><a class="toc-backref" href="#id152" name="termination">7.10   TERMINATION</a></h2>
+<p>You may not copy, modify, sublicense, or distribute the Document except
+as expressly provided for under this License.  Any other attempt to
+copy, modify, sublicense or distribute the Document is void, and will
+automatically terminate your rights under this License.  However,
+parties who have received copies, or rights, from you under this
+License will not have their licenses terminated so long as such
+parties remain in full compliance.</p>
+</div>
+<div class="section" id="future-revisions-of-this-license">
+<h2><a class="toc-backref" href="#id153" name="future-revisions-of-this-license">7.11   FUTURE REVISIONS OF THIS LICENSE</a></h2>
+<p>The Free Software Foundation may publish new, revised versions
+of the GNU Free Documentation License from time to time.  Such new
+versions will be similar in spirit to the present version, but may
+differ in detail to address new problems or concerns.  See
+<a class="reference" href="http://www.gnu.org/copyleft/">http://www.gnu.org/copyleft/</a>.</p>
+<p>Each version of the License is given a distinguishing version number.
+If the Document specifies that a particular numbered version of this
+License &quot;or any later version&quot; applies to it, you have the option of
+following the terms and conditions either of that specified version or
+of any later version that has been published (not as a draft) by the
+Free Software Foundation.  If the Document does not specify a version
+number of this License, you may choose any version ever published (not
+as a draft) by the Free Software Foundation.</p>
+</div>
+<div class="section" id="addendum-how-to-use-this-license-for-your-documents">
+<h2><a class="toc-backref" href="#id154" name="addendum-how-to-use-this-license-for-your-documents">7.12   ADDENDUM: How to use this License for your documents</a></h2>
+<p>To use this License in a document you have written, include a copy of
+the License in the document and put the following copyright and
+license notices just after the title page:</p>
+<pre class="line-block">
+Copyright (C)  <tt class="literal"><span class="pre">year</span></tt>  <tt class="literal"><span class="pre">your</span> <span class="pre">name</span></tt>.
+Permission is granted to copy, distribute and/or modify this
+document under the terms of the GNU Free Documentation License,
+Version 1.1 or any later version published by the Free Software
+Foundation; with the Invariant Sections being <tt class="literal"><span class="pre">list</span> <span class="pre">their</span> <span class="pre">titles</span></tt>,
+with the Front-Cover Texts being <tt class="literal"><span class="pre">list</span></tt>, and with the Back-Cover
+Texts being <tt class="literal"><span class="pre">list</span></tt>.  A copy of the license is included in the
+section entitled &quot;GNU Free Documentation License&quot;.
+</pre>
+<p>If you have no Invariant Sections, write &quot;with no Invariant Sections&quot;
+instead of saying which ones are invariant.  If you have no
+Front-Cover Texts, write &quot;no Front-Cover Texts&quot; instead of
+&quot;Front-Cover Texts being <tt class="literal"><span class="pre">list</span></tt>&quot;; likewise for Back-Cover Texts.</p>
+<p>If your document contains nontrivial examples of program code, we
+recommend releasing these examples in parallel under your choice of
+free software license, such as the GNU General Public License,
+to permit their use in free software.</p>
+</div>
+</div>
+</div>
+</body>
+</html>

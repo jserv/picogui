@@ -1,0 +1,12 @@
+C client library
+=================
+
+Examples
+---------
+
+(unwritten)
+
+Reference
+----------
+
+(unwritten)

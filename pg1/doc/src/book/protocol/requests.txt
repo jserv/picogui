@@ -1,0 +1,7 @@
+Request layer
+==============
+
+Reference for requests and responses (from pgui-protocol document
+------------------------------------------------------------------
+
+(unwritten)

@@ -1,0 +1,22 @@
+Operating system interface
+===========================
+
+Timers
+-------
+
+(unwritten)
+
+Networking
+-----------
+
+(unwritten)
+
+Filesystem
+-----------
+
+(unwritten)
+
+Shared memory
+--------------
+
+(unwritten)

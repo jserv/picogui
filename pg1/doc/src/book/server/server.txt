@@ -1,0 +1,34 @@
+The Server
+***********
+.. include:: conventions.txt
+
+.. include:: theory.txt
+
+.. include:: srctree.txt
+
+.. include:: widgets.txt
+
+.. include:: video.txt
+
+.. include:: infilters.txt
+
+.. include:: appmgr.txt
+
+.. include:: network.txt
+
+.. include:: memory.txt
+
+.. include:: debugging.txt
+
+.. include:: text.txt
+
+.. include:: formats.txt
+
+.. include:: config.txt
+
+.. include:: os.txt
+
+.. include:: themes.txt
+
+.. include:: wt.txt
+

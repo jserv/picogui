@@ -1,0 +1,4 @@
+Theory of client library design
+================================
+
+(unwritten)

@@ -1,0 +1,28 @@
+Format loaders
+===============
+
+Image formats
+--------------
+
+Image format loader interface
+..............................
+
+(unwritten)
+
+Existing image format loaders
+..............................
+
+(unwritten)
+
+Text formats
+-------------
+
+Text format loader interface
+.............................
+
+(unwritten)
+
+Existing test format loaders
+.............................
+
+(unwritten)

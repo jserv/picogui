@@ -1,0 +1,10 @@
+The PicoGUI protocol
+*********************
+.. include:: comparison.txt
+
+.. include:: widgets.txt
+
+.. include:: requests.txt
+
+.. include:: transport.txt
+

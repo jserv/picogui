@@ -1,0 +1,4 @@
+The big picture - overview of PicoGUI's architecture
+*****************************************************
+
+(unwritten)

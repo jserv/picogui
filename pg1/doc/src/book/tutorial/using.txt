@@ -1,0 +1,32 @@
+Using PicoGUI
+==============
+
+Obtaining a source distribution
+--------------------------------
+
+(unwritten)
+
+Compile-time configuration
+---------------------------
+
+(unwritten)
+
+Themes
+-------
+
+(unwritten)
+
+Runtime configuration
+----------------------
+
+(unwritten)
+
+Client libraries
+-----------------
+
+(unwritten)
+
+Applications
+-------------
+
+(unwritten)

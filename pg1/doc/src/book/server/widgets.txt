@@ -1,0 +1,17 @@
+Widgets
+========
+
+Widget object model and subclassing
+------------------------------------
+
+(unwritten)
+
+Overview of how all existing widgets are implemented
+-----------------------------------------------------
+
+(unwritten)
+
+How to write new widgets
+-------------------------
+
+(unwritten)

@@ -1,0 +1,27 @@
+Debugging
+==========
+
+Exception handling in pgserver
+-------------------------------
+
+(unwritten)
+
+Compile-time debug options
+---------------------------
+
+(unwritten)
+
+Magic keys
+-----------
+
+(unwritten)
+
+guru() and DBG()
+-----------------
+
+(unwritten)
+
+Benchmarking
+-------------
+
+(unwritten)

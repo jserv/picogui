@@ -1,0 +1,30 @@
+Transport layer
+================
+
+Current TCP/IP transport
+-------------------------
+
+(unwritten)
+
+libpgserver transport
+----------------------
+
+(unwritten)
+
+Future transports:
+-------------------
+
+Enhanced TCP/IP transport with fewer round-trips
+.................................................
+
+(unwritten)
+
+Shared memory and semaphores
+.............................
+
+(unwritten)
+
+CORBA
+......
+
+(unwritten)

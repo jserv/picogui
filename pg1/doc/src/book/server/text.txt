@@ -1,0 +1,43 @@
+Text
+=====
+
+Fonts
+------
+
+Common interface for font engines
+..................................
+
+(unwritten)
+
+The built-in BDF engine
+........................
+
+(unwritten)
+
+The freetype engine
+....................
+
+(unwritten)
+
+Support for text-mode video devices
+....................................
+
+(unwritten)
+
+Support for OpenGL
+...................
+
+(unwritten)
+
+pgstring
+---------
+
+Unicode support
+................
+
+(unwritten)
+
+Encodings
+..........
+
+(unwritten)

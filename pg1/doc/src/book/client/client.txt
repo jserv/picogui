@@ -1,0 +1,12 @@
+Client libraries
+*****************
+.. include:: theory.txt
+
+.. include:: c.txt
+
+.. include:: python.txt
+
+.. include:: others.txt
+
+.. include:: future.txt
+

@@ -1,0 +1,17 @@
+Application manager
+====================
+
+How the app manager communicates with the application and with widgets
+-----------------------------------------------------------------------
+
+(unwritten)
+
+Current app managers
+---------------------
+
+(unwritten)
+
+Ideas for future app managers
+------------------------------
+
+(unwritten)

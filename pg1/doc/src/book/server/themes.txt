@@ -1,0 +1,27 @@
+Theme system
+=============
+
+Theory behind PicoGUI themes
+-----------------------------
+
+(unwritten)
+
+The theme file format
+----------------------
+
+(unwritten)
+
+In-memory representation of themes
+-----------------------------------
+
+(unwritten)
+
+Themes from the widget's point of view
+---------------------------------------
+
+(unwritten)
+
+Theme compiler
+---------------
+
+(unwritten)

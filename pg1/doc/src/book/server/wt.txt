@@ -1,0 +1,32 @@
+Widget templates
+=================
+
+Theory behind widget templates
+-------------------------------
+
+(unwritten)
+
+Binary WT file format
+----------------------
+
+(unwritten)
+
+In-memory representations
+--------------------------
+
+(unwritten)
+
+Loading WTs
+------------
+
+(unwritten)
+
+Instantiating WTs
+------------------
+
+(unwritten)
+
+XML widget templates
+---------------------
+
+(unwritten)

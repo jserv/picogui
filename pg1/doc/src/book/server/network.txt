@@ -1,0 +1,17 @@
+Network layer
+==============
+
+Overview of data flow from an application to an internal call
+--------------------------------------------------------------
+
+(unwritten)
+
+TCP/IP interface
+-----------------
+
+(unwritten)
+
+The server's main loop
+-----------------------
+
+(unwritten)

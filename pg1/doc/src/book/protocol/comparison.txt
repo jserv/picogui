@@ -1,0 +1,17 @@
+Comparison to other systems
+============================
+
+The X window system
+--------------------
+
+(unwritten)
+
+Fresco
+-------
+
+(unwritten)
+
+Qt
+---
+
+(unwritten)

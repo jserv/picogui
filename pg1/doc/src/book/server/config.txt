@@ -1,0 +1,12 @@
+Configuration management
+=========================
+
+Compile-time configuration
+---------------------------
+
+(unwritten)
+
+Runtime config variables
+-------------------------
+
+(unwritten)

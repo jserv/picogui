@@ -1,0 +1,25 @@
+Video
+======
+
+Intro to video drivers, video wrappers, and video base libraries
+-----------------------------------------------------------------
+
+Rotation support
+.................
+
+(unwritten)
+
+Rootless support
+.................
+
+(unwritten)
+
+Overview of existing video drivers and video base libraries
+------------------------------------------------------------
+
+(unwritten)
+
+How to write new video drivers and VBLs
+----------------------------------------
+
+(unwritten)

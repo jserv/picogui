@@ -1,0 +1,27 @@
+Theory of pgserver's layout and rendering
+==========================================
+
+The divtree
+------------
+
+(unwritten)
+
+gropnodes and groplists
+------------------------
+
+(unwritten)
+
+Abstract video interface
+-------------------------
+
+(unwritten)
+
+The role of themes
+-------------------
+
+(unwritten)
+
+PicoGUI from the widget's point of view
+----------------------------------------
+
+(unwritten)
