@@ -1,4 +1,4 @@
-/* $Id: ncursesinput.c,v 1.3 2001/01/15 04:18:27 micahjd Exp $
+/* $Id: ncursesinput.c,v 1.4 2001/01/15 07:50:22 micahjd Exp $
  *
  * ncursesinput.h - input driver for ncurses
  * 
@@ -41,6 +41,11 @@ Gpm_Event ncurses_last_event;
 
 /******************************************** Implementations */
 
+/* a shortcut to make the mapping junk smaller */
+void ncursesinput_sendkey(int key) {
+   dispatch_key(TRIGGER_KEYDOWN,key,0);
+}
+
 int ncursesinput_fd_activate(int fd) {
    int ch;
    Gpm_Event evt;
@@ -52,6 +57,32 @@ int ncursesinput_fd_activate(int fd) {
 	 
        case ERR:    /* Nothing yet */
 	 break;
+
+	 /**** Keys that must be mapped */
+	 
+       case KEY_BACKSPACE:    ncursesinput_sendkey('\b'); break;
+       case KEY_UP:           ncursesinput_sendkey(PGKEY_UP); break;
+       case KEY_DOWN:         ncursesinput_sendkey(PGKEY_DOWN); break;
+       case KEY_LEFT:         ncursesinput_sendkey(PGKEY_LEFT); break;
+       case KEY_RIGHT:        ncursesinput_sendkey(PGKEY_RIGHT); break;
+       case KEY_HOME:         ncursesinput_sendkey(PGKEY_HOME); break;
+       case KEY_IC:           ncursesinput_sendkey(PGKEY_INSERT); break;
+       case KEY_DC:           ncursesinput_sendkey(PGKEY_DELETE); break;
+       case KEY_PPAGE:        ncursesinput_sendkey(PGKEY_PAGEUP); break;
+       case KEY_NPAGE:        ncursesinput_sendkey(PGKEY_PAGEDOWN); break;
+	 
+       case KEY_F(1):         ncursesinput_sendkey(PGKEY_F1); break;
+       case KEY_F(2):         ncursesinput_sendkey(PGKEY_F2); break;
+       case KEY_F(3):         ncursesinput_sendkey(PGKEY_F3); break;
+       case KEY_F(4):         ncursesinput_sendkey(PGKEY_F4); break;
+       case KEY_F(5):         ncursesinput_sendkey(PGKEY_F5); break;
+       case KEY_F(6):         ncursesinput_sendkey(PGKEY_F6); break;
+       case KEY_F(7):         ncursesinput_sendkey(PGKEY_F7); break;
+       case KEY_F(8):         ncursesinput_sendkey(PGKEY_F8); break;
+       case KEY_F(9):         ncursesinput_sendkey(PGKEY_F9); break;
+       case KEY_F(10):        ncursesinput_sendkey(PGKEY_F10); break;
+       case KEY_F(11):        ncursesinput_sendkey(PGKEY_F11); break;
+       case KEY_F(12):        ncursesinput_sendkey(PGKEY_F12); break;
 	 
        default:     /* Normal key */
 	 dispatch_key(TRIGGER_CHAR,ch,0);
@@ -91,6 +122,8 @@ int ncursesinput_fd_activate(int fd) {
 			   ((evt.buttons>>2)&1) ||
 			   ((evt.buttons<<2)&4) ||
 			   (evt.buttons&2));
+
+	 GPM_DRAWPOINTER(&ncurses_last_event);
       }
       
    /* Pass on the event if necessary */

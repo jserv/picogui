@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.8 2001/01/15 06:12:03 micahjd Exp $
+/* $Id: ncurses.c,v 1.9 2001/01/15 07:50:23 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -33,6 +33,7 @@
 
 #include <pgserver/video.h>
 #include <pgserver/input.h>
+#include <pgserver/appmgr.h>
 
 #include <curses.h>
 #include <gpm.h>
@@ -196,15 +197,6 @@ void ncurses_update(int x,int y,int w,int h) {
    GPM_DRAWPOINTER(&ncurses_last_event);
 }
 
-void ncurses_blit(struct stdbitmap *src,int src_x,int src_y,
-		 int dest_x,int dest_y,
-		 int w,int h,int lgop) {
-}
-void ncurses_unblit(int src_x,int src_y,
-		struct stdbitmap *dest,int dest_x,int dest_y,
-		int w,int h) {
-}
-
 /**** Hack the normal font rendering a bit so we use regular text */
 
 void ncurses_font_newdesc(struct fontdesc *fd) {
@@ -253,8 +245,13 @@ hwrcolor ncurses_color_pgtohwr(pgcolor c) {
 	   & (~A_CHARTEXT)) | ' ';
 }
 
-pgcolor ncurses_color_hwrtopg(hwrcolor c) {
-   return c;
+/**** A hack to turn off the picogui sprite cursor */
+
+void ncurses_sprite_show(struct sprite *spr) {
+   if (spr==pointer)
+     spr->visible = 0;
+
+   def_sprite_show(spr);
 }
 
 /******************************************** Driver registration */
@@ -268,15 +265,13 @@ g_error ncurses_regfunc(struct vidlib *v) {
    v->pixel = &ncurses_pixel;
    v->getpixel = &ncurses_getpixel;
    v->update = &ncurses_update;  
-   v->blit = &ncurses_blit;
-   v->unblit = &ncurses_unblit;
+   v->color_pgtohwr = &ncurses_color_pgtohwr;
    
    v->font_newdesc = &ncurses_font_newdesc;
    v->charblit = &ncurses_charblit;
    v->charblit_v = &ncurses_charblit;
-   
-   v->color_pgtohwr = &ncurses_color_pgtohwr;
-   v->color_hwrtopg = &ncurses_color_hwrtopg;
+
+   v->sprite_show = &ncurses_sprite_show;
    
    return sucess;
 }

@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.16 2001/01/14 23:03:11 micahjd Exp $
+/* $Id: video.h,v 1.17 2001/01/15 07:50:21 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -246,17 +246,21 @@ struct vidlib {
    */
   void (*dim)(int x,int y,int w,int h);
 
-  /* Required (The alternative, pixel(), is just too scary)
+  /* Very Reccomended
    *   Blits a bitmap to screen, optionally using lgop.
    *   If w and/or h is bigger than the source bitmap, it
    *   should tile.
+   * 
+   * Default implementation: pixel!
    */
   void (*blit)(hwrbitmap src,int src_x,int src_y,
 	       int dest_x,int dest_y,
 	       int w,int h,int lgop);
 
-  /* Required (Same reason as blit)
+  /* Very Reccomended
    *   Blits a chunk of the screen back to a bitmap
+   *
+   * Default implementation: pixel!
    */
   void (*unblit)(int src_x,int src_y,
 		 hwrbitmap dest,int dest_x,int dest_y,
@@ -494,6 +498,12 @@ void def_sprite_update(struct sprite *spr);
 void def_sprite_showall(void);
 void def_sprite_hideall(void);
 void def_sprite_protectarea(struct cliprect *in,struct sprite *from);
+void def_blit(hwrbitmap src,int src_x,int src_y,
+	      int dest_x,int dest_y,
+	      int w,int h,int lgop);
+void def_unblit(int src_x,int src_y,
+		hwrbitmap dest,int dest_x,int dest_y,
+		int w,int h);
 
 /************** Registration functions for Video Base Libraries */
 void setvbl_default(struct vidlib *vid);

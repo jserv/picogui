@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.8 2001/01/14 19:41:06 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.9 2001/01/15 07:50:23 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -812,6 +812,106 @@ void def_tileblit(struct stdbitmap *src,
 		   min(dest_h-j,src_h),PG_LGOP_NONE);
 }
 
+/* Scary blit... Very bad for normal screens, but then again so is most of this
+ * VBL. Could be helpful on odd devices like ncurses or some LCDs */
+void def_blit(struct stdbitmap *srcbit,int src_x,int src_y,
+	      int dest_x, int dest_y,
+	      int w, int h, int lgop) {
+   struct stdbitmap screen;
+   int i;
+   char *src;
+   int src_offset;
+   hwrcolor c,s;
+   
+   /* Screen-to-screen blit */
+   if (!srcbit) {
+      srcbit = &screen;
+      screen.bits = NULL;
+      screen.w = vid->xres;
+      screen.h = vid->yres;
+   }
+   
+   src_offset = (srcbit->w - w) * vid->bpp >> 3;
+   
+   for (src=srcbit->bits;h;h--,src_y++,dest_y++,src+=src_offset)
+     for (i=0;i<w;i++) {
+	if (lgop!=PG_LGOP_NONE)
+	  s = (*vid->getpixel)(dest_x+i,dest_y);
+
+	if (srcbit->bits)
+	  switch (vid->bpp) {
+	   case 8:
+	     c = *(src++);
+	     break;
+	     
+	   case 16:
+	     c = *(((unsigned short *)src)++);
+	     break;
+	     
+	   case 24:
+	     c = (*(src++)) | ((*(src++))<<8) | ((*(src++))<<16);
+	     break;
+	     
+	   case 32:
+	     c = *(((unsigned long *)src)++);
+	     break;     
+	  }
+	else
+	  c = (*vid->getpixel)(src_x+i,src_y);
+
+	switch (lgop) {
+	 case PG_LGOP_NONE:       s  = c;  break;
+	 case PG_LGOP_OR:         s |= c;  break;
+	 case PG_LGOP_AND:        s &= c;  break;
+	 case PG_LGOP_XOR:        s ^= c;  break;
+	 case PG_LGOP_INVERT:     s  = c ^ 0xFFFFFFFF;  break;
+	 case PG_LGOP_INVERT_OR:  s |= c ^ 0xFFFFFFFF;  break;
+	 case PG_LGOP_INVERT_AND: s &= c ^ 0xFFFFFFFF;  break;
+	 case PG_LGOP_INVERT_XOR: s ^= c ^ 0xFFFFFFFF;  break;
+	}
+
+	(*vid->pixel)(dest_x+i,dest_y,s);
+	}
+
+}
+
+/* Another scary blit for desperate situations */
+void def_unblit(int src_x,int src_y,
+		struct stdbitmap *destbit,int dest_x,int dest_y,
+		int w,int h) {
+   int i;
+   char *dest = destbit->bits;
+   int dest_offset = (destbit->w - w) * vid->bpp >> 3;
+   hwrcolor c;
+   
+   for (;h;h--,src_y++,dest+=dest_offset)
+     for (i=0;i<w;i++) {
+	c = (*vid->getpixel)(src_x+i,src_y);
+
+	switch (vid->bpp) {
+	 
+	 case 8:
+	   *(dest++) = c;
+	   break;
+	   
+	 case 16:
+	   *(((unsigned short *)dest)++) = c;
+	   break;
+	   
+	 case 24:
+	   *(dest++) = (unsigned char) c;
+	   *(dest++) = (unsigned char) (c >> 8);
+	   *(dest++) = (unsigned char) (c >> 16);
+	   break;
+	   	 
+	 case 32:
+	   *(((unsigned long *)dest)++) = c;
+	   break;
+	   
+	}
+     }
+}
+
 void def_sprite_show(struct sprite *spr) {
 
   if (spr->onscreen || !spr->visible) return;
@@ -1028,6 +1128,8 @@ void setvbl_default(struct vidlib *vid) {
   vid->sprite_showall = &def_sprite_showall;
   vid->sprite_hideall = &def_sprite_hideall;
   vid->sprite_protectarea = &def_sprite_protectarea;
+  vid->blit = &def_blit;
+  vid->unblit = &def_unblit;
 }
 
 /* The End */
