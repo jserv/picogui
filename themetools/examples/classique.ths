@@ -1,4 +1,4 @@
-/* $Id: classique.ths,v 1.1 2002/03/11 02:32:57 micahjd Exp $
+/* $Id: classique.ths,v 1.2 2002/09/06 12:32:16 micahjd Exp $
  *
  * It's not classic, it's classique!
  *
@@ -261,9 +261,8 @@ object panelbar {
 
 /* Dialog box title, just like a panelbar */
 object label.dlgtitle {
-  margin = 6;
   bgfill = fillstyle {
-    var stripex, stripew;
+//    var stripex, stripew;
 
     /* Normal bevel */
     SetColor(0x000000);
@@ -277,6 +276,7 @@ object label.dlgtitle {
     Slab(x+1,y+h-2,w-2,1);
     Bar(x+w-2,y+1,1,h-2);
     
+/* Stripeys look rather cluttered in popups...
     stripew = w>>3;
     stripex = 3;
     SetSrc(0,0,1,12);
@@ -293,6 +293,7 @@ object label.dlgtitle {
     Tilebitmap(stripex+1,y+4,stripew-2,12,bitmap1);
     SetSrc(2,0,1,12);
     Bitmap(stripex+stripew-1,y+4,1,12,bitmap1);
+*/
   };
   bgcolor = Copy(panelbar::bgcolor);
   bitmap1 = Copy(panelbar::bitmap1);
