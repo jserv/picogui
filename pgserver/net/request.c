@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.40 2002/02/02 11:10:26 lonetech Exp $
+/* $Id: request.c,v 1.41 2002/02/02 15:06:01 lonetech Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -57,7 +57,7 @@ int s = 0;
 
 /* Nonzero when the main program is waiting for network/user input 
    in a select() call */
-unsigned char req_in_select;
+volatile unsigned char req_in_select;
 
 /* File descriptors of all open connections */
 fd_set con;
@@ -495,60 +495,54 @@ void net_iteration(void) {
 	printf("WSAGetLastError() = %d\n",WSAGetLastError());
 #endif
 #endif
-	goto requestloop_finish;
       }
-
-      /* Make it non-blocking */
-      ioctl(fd,FIONBIO,&argh);
+      else {
+	/* Make it non-blocking */
+	ioctl(fd,FIONBIO,&argh);
       
-      /* Save it for later */
-      FD_SET(fd,&con);
-      if ((fd+1)>con_n) con_n = fd+1;
+	/* Save it for later */
+	FD_SET(fd,&con);
+	if ((fd+1)>con_n) con_n = fd+1;
 
 #ifdef DEBUG_NET
-      printf("Accepted. fd = %d, con_n = %d\n",fd,con_n);
+	printf("Accepted. fd = %d, con_n = %d\n",fd,con_n);
 #endif
       
-      newfd(fd);
-
-      goto requestloop_finish;
+	newfd(fd);
+      }
     }
-    else {
-      /* An existing connection needs attention */
-      for (fd=0;fd<con_n;fd++)
-	if (FD_ISSET(fd,&rfds)) {
-	  if (FD_ISSET(fd,&con)) {
-	    
-	    /* Well, we're not waiting now! */
-	    FD_CLR(fd,&evtwait);
-	    
+
+    /* An existing connection needs attention */
+    for (fd=0;fd<con_n;fd++)
+      if (FD_ISSET(fd,&rfds)) {
+	if (FD_ISSET(fd,&con)) {
+	  
+	  /* Well, we're not waiting now! */
+	  FD_CLR(fd,&evtwait);
+	  
 #ifdef DEBUG_NET
-	    printf("Incoming. fd = %d\n",fd);
+	  printf("Incoming. fd = %d\n",fd);
 #endif
-	    
-	    readfd(fd);
-	    goto requestloop_finish;
-	  }
-	  else {
-	    /* This was not from a connection, but
-	       from an input driver */
-	    
-	    n = inlib_list;
-	    while (n) {
-	      if (n->fd_activate && (*n->fd_activate)(fd))
-		break;
-	      n = n->next;
-	    }
-#ifdef DEBUG_NET
-	    if(!n)
-	      guru("No input driver accepted data from fd %d", fd);
-#endif
-	  }
+	  
+	  readfd(fd);
 	}
-    }
+	else {
+	  /* This was not from a connection, but
+	     from an input driver */
+	  
+	  n = inlib_list;
+	  while (n) {
+	    if (n->fd_activate && (*n->fd_activate)(fd))
+	      break;	/* out of the while() */
+	    n = n->next;
+	  }
+#ifdef DEBUG_NET
+	  if(!n)
+	    guru("No input driver accepted data from fd %d", fd);
+#endif
+	}
+      }
   }
-  
- requestloop_finish:
   
   /* Poll the input drivers */
   n = inlib_list;
