@@ -1,4 +1,4 @@
-/* $Id: magicbutton.c,v 1.5 2002/02/02 20:52:51 lonetech Exp $
+/* $Id: magicbutton.c,v 1.6 2002/02/04 13:26:16 micahjd Exp $
  *
  * magicbutton.c - CTRL-ALT-foo is magical
  *
@@ -228,6 +228,18 @@ void hotspot_draw(struct hotspot *spot) {
       gropnode_draw(&r,&n);
     }      
 
+  /* If there's a scroll container, mark it with a frame */
+  if (spot->div && spot->div->divscroll) {
+      r.color = VID(color_pgtohwr)(0xFF0000);
+      n.type = PG_GROP_FRAME;
+      n.r.x = spot->div->divscroll->calcx;
+      n.r.y = spot->div->divscroll->calcy;
+      n.r.w = spot->div->divscroll->calcw;
+      n.r.h = spot->div->divscroll->calch;
+      gropnode_clip(&r,&n);
+      gropnode_draw(&r,&n);
+  }
+  
   /* Every hotspot gets a red crosshairs 
    */
   r.color = VID(color_pgtohwr)(0xFF0000);

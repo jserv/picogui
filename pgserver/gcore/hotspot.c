@@ -1,4 +1,4 @@
-/* $Id: hotspot.c,v 1.21 2002/02/03 19:34:36 micahjd Exp $
+/* $Id: hotspot.c,v 1.22 2002/02/04 13:26:16 micahjd Exp $
  *
  * hotspot.c - This is an interface for managing hotspots.
  *             The divtree is scanned for hotspot divnodes.
@@ -47,38 +47,18 @@ struct hotspot *hotspotlist;
  * Returns nonzero if a > b
  */
 int hotspot_compare(struct hotspot *a, struct hotspot *b) {
-  /* If the two hotspots are in different containers, 
-   * give the containers priority
-   */
-  if (a->div && a->div->owner && a->div->owner->container &&
-      b->div && b->div->owner && b->div->owner->container &&
-      a->div->owner->container != b->div->owner->container) {
-
-    /* Make temporary hotspots for the container */
-    struct hotspot ca, cb;
-    struct widget *wca, *wcb;
-    
-    /* First, we need to be able to read both containers.. */
-    if (!iserror(rdhandle((void**)&wca,PG_TYPE_WIDGET,-1,a->div->owner->container)) &&
-	!iserror(rdhandle((void**)&wcb,PG_TYPE_WIDGET,-1,b->div->owner->container))) {
-      
-      ca.div = NULL;
-      cb.div = NULL;
-      divnode_hotspot_position(wca->in->div, &ca.x, &ca.y);
-      divnode_hotspot_position(wcb->in->div, &cb.x, &cb.y);
-
-
-      /* Sort by container first.
-       * This doesn't become recursive, since we have both hotspot's div parameter
-       * set to NULL. We could easily make it recursive, but that wouldn't make the
-       * hotspots any less confusing
-       */
-      return hotspot_compare(&ca,&cb);
-    }
-  }
-
   if (a->y == b->y) {
-    if (a->x > b->x)
+    if (a->x == b->x) {
+
+      /* These two hotspots are at the same spot. This will happen
+       * at the edges of a scrolling container. By always returning
+       * 1 (and this placing them in order of insertion) it should
+       * make things work correctly for vertical lists at least.
+       */
+      return 1;
+    
+    }
+    else if (a->x > b->x)
       return 1;
     else
       return 0;
@@ -142,6 +122,16 @@ g_error hotspot_build(struct divnode *n, struct divnode *ntb) {
 
     /* Find a good place within the node for the hotspot */
     divnode_hotspot_position(n,&x,&y);
+
+    /* Scrolled? Clip to the scrolling container. */
+    if (n->divscroll) {
+      if (x < n->divscroll->calcx) x = n->divscroll->calcx;
+      if (y < n->divscroll->calcy) y = n->divscroll->calcy;
+      if (x > n->divscroll->calcx + n->divscroll->calcw - 1)
+	x = n->divscroll->calcx + n->divscroll->calcw - 1;
+      if (y > n->divscroll->calcy + n->divscroll->calch - 1)
+	y = n->divscroll->calcy + n->divscroll->calch - 1;
+    }
 
     /* Give the hotspot both an actual hotspot position and the divnode */
     e = hotspot_add(x,y,n);
