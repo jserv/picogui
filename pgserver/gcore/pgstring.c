@@ -1,4 +1,4 @@
-/* $Id: pgstring.c,v 1.12 2002/10/31 11:21:21 micahjd Exp $
+/* $Id: pgstring.c,v 1.13 2002/11/03 23:18:46 micahjd Exp $
  *
  * pgstring.c - String data type to handle various encodings
  *
@@ -191,10 +191,10 @@ g_error pgstring_dup(struct pgstring **dest, struct pgstring *src) {
 g_error pgstring_convert(struct pgstring **dest, int encoding, struct pgstring *src) {
   g_error e;
   struct pgstr_iterator i;
-  pgstring_seek(*dest,&i,0,PGSEEK_SET);
 
   e = pgstring_new(dest, encoding, 0, NULL);
   errorcheck;
+  pgstring_seek(*dest,&i,0,PGSEEK_SET);
   e = pgstring_insert_string(*dest,&i,src);
   errorcheck;
 

@@ -1,4 +1,4 @@
-/* $Id: posix.c,v 1.4 2002/11/03 23:00:51 micahjd Exp $
+/* $Id: posix.c,v 1.5 2002/11/03 23:18:46 micahjd Exp $
  *
  * posix.c - Implementation of OS-specific functions for POSIX-compatible systems
  *
@@ -60,7 +60,7 @@ g_error os_init(void) {
 }
 
 void os_shutdown(void) {
-
+  /* Nothing to do here... */
 }
 
 /* Present a g_error message to the user */
