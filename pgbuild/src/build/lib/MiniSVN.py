@@ -35,16 +35,27 @@ class DownloaderPool:
         self.numSleeping = 0
         self.threads = []
         self.running = 1
-
+        self.pollInterval = 0.1
+        
         # Create and start all threads
         for i in xrange(numThreads):
             thread = DownloaderThread(self)
             self.threads.append(thread)
             thread.start()
 
-        # Wait for all threads to quit
+        # Wait for all threads to quit. We should be able to just use join() here, but
+        # that will also block a KeyboardInterrupt until after the threads finish.
+        try:
+            while self.running:
+                time.sleep(self.pollInterval)
+        except KeyboardInterrupt:
+            self.running = 0
+            for thread in self.threads:
+                thread.join()
+            raise KeyboardInterrupt
         for thread in self.threads:
             thread.join()
+            
 
 class DownloaderThread(threading.Thread):
     def __init__(self, pool):
@@ -65,7 +76,7 @@ class DownloaderThread(threading.Thread):
                 if self.pool.numSleeping == len(self.pool.threads)-1:
                     break
                 self.pool.numSleeping += 1
-                time.sleep(0.1)
+                time.sleep(self.pool.pollInterval)
                 self.pool.numSleeping -= 1
                 continue
             self.pool.queueSem.release()
