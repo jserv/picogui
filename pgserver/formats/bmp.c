@@ -1,4 +1,4 @@
-/* $Id: bmp.c,v 1.7 2002/01/16 19:47:25 lonetech Exp $
+/* $Id: bmp.c,v 1.8 2002/01/16 22:37:58 lonetech Exp $
  *
  * bmp.c - Functions to detect and load files compatible with the Windows BMP
  *         file format. This format is good for palettized images and/or
@@ -98,7 +98,7 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   u32 offset,compression,numcolors;
   int x,y,shift,mask,index;
   u8 byte;
-  pgcolor c;
+  pgcolor c, c2;
   const u8 *linebegin;
   u32 *colortable;
 
@@ -135,12 +135,10 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
       if(bpp!=8)
 	return mkerror(PG_ERRT_BADPARAM,42);      /* Unsupported BMP format */
       break;
-#if 0
     case 2:	/* 4-bit RLE */
       if(bpp!=4)
 	return mkerror(PG_ERRT_BADPARAM,42);      /* Unsupported BMP format */
       break;
-#endif
     default:
       return mkerror(PG_ERRT_BADPARAM,42);      /* Unsupported BMP format */
    }
@@ -227,6 +225,7 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
       break;
     
     case 1:	/* 8-bit RLE */
+    case 2:	/* 4-bit RLE */
       datalen=offset+ihdr->image_size;
       c=LITTLE_LONG(colortable[0]);
       for(y=0;y<h;y++)
@@ -241,17 +240,23 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 	rle_c=*(rasterdata++);
 	if(rle_n)	/* RLE pixels */
 	 {
-	  c = LITTLE_LONG(colortable[rle_c]);
+	  if(compression=1)	/* 8-bit */
+	    c = c2 = LITTLE_LONG(colortable[rle_c]);
+	  else			/* 4-bit */
+	   {
+	    c = LITTLE_LONG(colortable[rle_c>>4]);
+	    c2 = LITTLE_LONG(colortable[rle_c&0xf]);
+	   }
 	  while(rle_n--)
 	   {
 	    if(x==w)
 	     {
 	      x=0;
 	      y--;
-	      if(y<0)
-		return mkerror(PG_ERRT_BADPARAM,68);    /* RLE data corrupt */
 	     }
-	    (*vid->pixel) (*hbmp,x++,y,(*vid->color_pgtohwr)(c),PG_LGOP_NONE);
+	    if(y<0)
+	      return mkerror(PG_ERRT_BADPARAM,41);    /* Too few lines */
+	    (*vid->pixel) (*hbmp,x++,y,(*vid->color_pgtohwr)(rle_n&1?c2:c),PG_LGOP_NONE);
 	   }
 	 }
 	else
@@ -260,68 +265,66 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 	    case 0:	/* end of line */
 	      y--;
 	      if(y<-1)
-		return mkerror(PG_ERRT_BADPARAM,68); /* RLE data corrupt */
+		return mkerror(PG_ERRT_BADPARAM,41); /* Too few lines */
 	      x=0;
 	      break;
 	    case 1:	/* end of bitmap ... */
 	      return success;
 	    case 2:	/* delta */
 	      if(rasterdata+2>data+datalen)
-		return mkerror(PG_ERRT_BADPARAM,68); /* RLE data corrupt */
+		return mkerror(PG_ERRT_BADPARAM,41); /* RLE data cut short */
 	      x+=*(rasterdata++);
 	      if(x>w)
-		return mkerror(PG_ERRT_BADPARAM,68); /* RLE data corrupt */
+		return mkerror(PG_ERRT_BADPARAM,41); /* Too few columns */
 	      y-=*(rasterdata++);
 	      if(y<0)
-		return mkerror(PG_ERRT_BADPARAM,68); /* RLE data corrupt */
+		return mkerror(PG_ERRT_BADPARAM,41); /* Too few lines */
 	      break;
-	    default:	/* shift uncompressed pixels */
+	    default:	/* rle_c uncompressed pixels */
 	      if(rasterdata+((rle_c+1)&0x1fe)>data+datalen)
-		return mkerror(PG_ERRT_BADPARAM,68);  /* RLE data corrupt */
-	      rle_n=rle_c&1;	/* for alignment */
+		return mkerror(PG_ERRT_BADPARAM,41); /* RLE data cut short */
+	      rle_n=rle_c&1;		/* for alignment */
+	      if(compression==2)	/* 4-bit */
+		rle_n^=(rle_c>>1)&1;
+	      c2=0;
 	      while(rle_c--)
 	       {
 		if(x==w)
 		 {
 		  x=0;
 		  y--;
-		  if(y<0)
-		    return mkerror(PG_ERRT_BADPARAM,68); /* RLE data corrupt */
 		 }
-		index=*(rasterdata++);
-		c = LITTLE_LONG(colortable[index]);
+		if(y<0)
+		  return mkerror(PG_ERRT_BADPARAM,41); /* Too few lines */
+		if(!c2)
+		 {
+		  index=*(rasterdata++);	/* read another byte */
+		  c2=compression;		/* pixels per byte */
+		 }
+		switch(compression+c2)
+		 {
+		  case 2:	/* 1 8-bit pixel */
+		    c = LITTLE_LONG(colortable[index]);
+		    break;
+		  case 3:	/* 2nd 4-bit pixel */
+		    c = LITTLE_LONG(colortable[index&0xf]);
+		    break;
+		  case 4:	/* 1st 4-bit pixel */
+		    c = LITTLE_LONG(colortable[index>>4]);
+		    break;
+		 }
 		(*vid->pixel) (*hbmp,x++,y,(*vid->color_pgtohwr)(c),
 			       PG_LGOP_NONE);
+		c2--;
 	       }
 	      rasterdata+=rle_n;	/* alignment */
 	      break;
 	   }
        }
-      return mkerror(PG_ERRT_BADPARAM,68);      /* RLE data corrupt */
-      
-#if 0
-    case 2:	/* 4-bit RLE */
-      datalen=offset+ihdr->image_size;
-      c=LITTLE_LONG(colortable[0]);
-      for(y=0;y<h;y++)
-	for(x=0;x<w;x++)
-	  (*vid->pixel) (*hbmp,x,y,(*vid->color_pgtohwr)(c),PG_LGOP_NONE);
-      x=0;
-      y=h-1;
-      while(rasterdata+1<data+datalen)
-       {
-	unsigned char rle_n, rle_c;
-	rle_n=*(rasterdata++);
-	rle_c=*(rasterdata++);
-       }
-      return mkerror(PG_ERRT_BADPARAM,68);      /* RLE data corrupt */
-#endif
+      return mkerror(PG_ERRT_BADPARAM,41);      /* RLE data cut short */
   }
-    
+      
   return success;
 }
 
 /* The End */
-
-
-
