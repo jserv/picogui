@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 #
 # This script is used to configure the Linux kernel.
 #
@@ -56,7 +56,9 @@
 # better string handling, but alas, bash is the only scripting language
 # that I can be reasonable sure everybody has on their linux machine.
 #
-[ -z "$BASH" ] && { echo "Configure requires bash" 1>&2; exit 1; }
+
+# Commented out by Micah. This fails on Mac OS X even with bash installed
+#[ -z "$BASH" ] && { echo "Configure requires bash" 1>&2; exit 1; }
 
 # Disable filename globbing once and for all.
 # Enable function cacheing.

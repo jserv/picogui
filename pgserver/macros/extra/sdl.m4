@@ -140,6 +140,10 @@ int main (int argc, char *argv[])
           AC_TRY_LINK([
 #include <stdio.h>
 #include "SDL.h"
+
+/* This line is necessary to keep this from barfing on Win32 and MacOS */
+#undef main
+
 ],      [ return 0; ],
         [ echo "*** The test program compiled, but did not run. This usually means"
           echo "*** that the run-time linker is not finding SDL or finding the wrong"
