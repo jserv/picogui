@@ -1,0 +1,217 @@
+---- Monday, January 29
+
+Yay! I found the handle bug! After adding tons of debuggative cruft to
+handle.c and wading through the log files, it hit me!
+
+This is the scenario:
+
+1. An auxiliary handle for a theme is created. A fillstyle, for example.
+2. That handle is grouped with the theme's handle
+3. The theme is forced to relocate to another node by htree_delete
+4. The group pointer on the fillstyle is invalid
+5. Another handle is allocated in its place eventually
+6. That new handle is deleted, triggering a group delete of the fillstyle or
+   other auxiliary data
+   
+This can be very simply solved by making the handlenode "personality
+transplant" code update group pointers.
+I'll change this on a fresh copy of the code- i added so many debugging
+#ifdefs to handle.c that I'll look through the diff but probably just delete
+it all.
+
+This relocating behavior might be a bit troublesome for my idea of a "null
+handle" system for ucLinux. Since ucLinux has no real memory protection
+anyway, it couldn't hurt just to let the app have a pointer to the
+handlenode. You still need the nodes themselves for memory management. I
+suppose that in this situation I will need to store the nodes in a linked
+list instead of the htree.
+
+A few more things come to me... After a quick grep, I made sure no code
+directly uses the group pointer but handle.c. This means it's impossible
+that this bug could cause the ucLinux wierdness, but it does mean that I can
+fix this whole mess by using a handle ID instead of a pointer. I'm not sure
+why I used a pointer in the first place, maybe I thought I might have to use
+the handle's data rather than just compare it.
+
+The handle verification really should have picked up on this, but now that I
+understand my false assumption-- a particular pointer will always be the
+same handle-- I realize that my verification code had the same problem!
+
+Yep, the only changes I made in this copy were setting freed memory to a known
+value and the handle verification, niether of which are important or useful
+now. I'm reverting my code to the CVS...
+
+Added the above fix to handle.[ch] and it works great! The little torture-test
+program ("Dialog box of doom!") that would always crash now runs to infinity
+and beyond!
+
+---- Friday and weekend, January 26-28
+
+Working on the ucLinux port. Got NFS set up on Kiwi with a 115k PPP link.
+Better than the 9600 baud connection, but I can't wait for ethernet :)
+
+PicoGUI runs on ucLinux, but has intermittant problems I think are related
+to memory segments. (bss vs data vs text) Hacked together a quick LCD driver
+for Kiwi, display works! Theme loader always crashes, so haven't experimented
+with themes and fonts made for tiny screens.
+
+---- Thursday, January 25
+
+Trying the handle test framework again...
+Added the debug flag DEBUG_HANDLEVERIFY, that implements a linked list to
+'check up on' the htree.
+
+With the guru events and handle verification on, still no errors when the
+handle tree goes dead.
+On the bright side, with all debugging commands on I used grep to pinpoint
+the spot when extra memory is freed. Looks like a problem with contexts-
+when the dialog box context is freed (normally deleting only widgets and a
+string) it spontaneously deleted a few fillstyles!
+This is easy to detect because the memory counters drop lower than they would
+normally.
+Now to take those addresses and do a stack backtrace or something...
+
+---- Tuesday, January 23
+
+Taking a little diversion to do canvas event handling. Starting the
+"Blackout" application to test this.
+
++ apps/blackout
++ apps/blackout/blackout.c
++ apps/blackout/Makefile
+
+Blackout is working nicely.
+I think I'll try something a little more complicated and a lot more
+nostalgic and try to port BrickHit to PicoGUI! (BrickHit is an old
+pong/breakout style game I wrote in True BASIC when I was little :) I don't
+remember the exact scoring rules, but it should be close enough.
+
++ apps/brickhit
++ apps/brickhit/brickhit.c
++ apps/brickhit/Makefile
+
+Oops, my 'make clean' accidentaly deleted the debug directory before I had a
+chance to commit it...
+Well, it wasn't working right anyway. I need to write something that deletes
+and adds completely randomly (but keeps the tree size within some limits)
+
+---- Monday, January 22
+
+This morning Pascal offered to give me a ucSimm they never use. I think I'll
+take him up on that!
+
+Starting a test framework for the handle system
+
++ debug
++ debug/handletest.c
++ debug/Makefile
+
+---- Friday and weekend, January 19-21
+
+Got canvas working for animation!
+Still have a race condition in the client library, and that handle bug.
+It's on CVS, but I forgot to do a cvs update on Trinity...
+
+I'm itching to do the 68EZ328 port. Kiwi is hooked up and pingable, but I
+can only get serial line speeds so development work is painful.
+
+---- Thursday, January 18
+
+Added pgWriteCmd to client.
+Starting test program for canvas widget:
+
++ demos/canvastest.c
+
+---- Wednesday, January 17
+
+Period today was cut short by english oral, but I finished a preliminary
+picogui/canvas.h header. It's mainly documentation- there are only 16 lines
+or so of actual code.
+
+Working on client side:
++ include/picogui/canvas.h
+
+---- Tuesday, January 16
+
+Starting the canvas widget!
++ widget/canvas.c
+
+Adding a header file with command structures
++ include/picogui/canvas.h
+
+---- Weekend, January 13-15
+
+More video driver improvements, including the crazy ncurses driver.
+Made some web updates and sent a status newsletter on the mailing list.
+
+---- Friday, January 12
+
+Happy Friday!
+
+Just got paged blits working. linear8 runs nicely on my VESA 1.2 laptop
+screen now though it's not as fast as the unstable vgagl driver. (paged
+framebuffers force doublebuffering on)
+Replaced many for loops in linear8 with the inline-asm __mem* functions
+
+Fixed a subtle but possibly disasterous error in handle.c; this could be the
+source of the handle tree problems I've been having lately. There is one
+special case in htree_delete() in which it must copy the 'identity' of a
+handle node from one to another. When I added the 'group' field to the
+handle node, I forgot to add a line to copy it. (I added a warning in
+handle.h to this effect; hopefully this won't happen again.)
+The outcome of all this is that a handle's group can be randomly reassigned
+to another handle's group. When one handle is deleted, others might randomly
+disappear. This is consistant with observed behavior.
+
+I don't, however, think this is the only problem... Sometimes handles would
+appear to swap pointers with each other, or do other strange things. <insert
+sound of plane crash>
+Unless I find something really obvious I'll make a testbed program I can use
+to evaluate the handle functions seperately.
+
+Yep, verified that handles still have problems.
+
+Added a command line switch for double-buffering
+
+Modified svgagl library to support runtime doublebuffering, and removed a
+few archaic crufty bits.
+
+---- Thursday, January 11
+
+Using the paged blit from vgagl. Also converting existing code to use
+inlined assembler string functions (memcpy et al) if possible.
++ pgserver/include/inlstring.h
+
+---- Wednesday, January 10
+
+Implementing paged double-buffer blits, so svgafb works on nonlinear devices
+(like my 640x480 mode!)
+Paged blit is only slightly functional so far, but it's started...
+
+Added some simple but very effective optimizations to textgrid, like not
+calling outchar for spaces!
+
+---- Tuesday, January 9
+
+Fixed bugs in linear8 driver and scrolling (grop.c)
+Compiles under windows now but doesn't accept connections correctly
+
+Today Brandon falls in love with the framebuffer device. If only I had Vesa
+2.0 on Trinity!
+
+---- Monday, January 8
+
+video/linear8.c:
+fixed small bugs in text blit, implemented clipping in the vertical text
+blit. Still working on a very subtle bug in clipping x1 in the vertical blit.
+
+Thank goodness for editor backups. *.c and *.o are so similar!
+
+Brandon ran PicoGUI on his laptop for the first time. Notes:
+	- sdl driver works, but exhibits odd
+	  translucent artifacts around cursor
+	- sdlfb driver works fine for the most part but colors are messed up
+I think both of these are due to the window manager or X mapping my colors
+strangely. Need to figure out how to get direct palette access
+
+--- The / Beginning --- (of this log...) ---

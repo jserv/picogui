@@ -1,0 +1,34 @@
+PicoGUI Todo List
+-------------------------------
+
+ucLinux/m68k port
+
+gropnode coordinate systems
+speedup options: pointers vs handles. etc
+
+Fix svgagl video driver
+Eliminate old sdl driver
+Other VBLs
+Fix svgalib ctrl-C and other bucky bits
+
+Finish terminal widget: vt100, optimization
+terminal theme support
+
+abastract comm interface: TCP/IP, unix sockets, SHM, signals...
+
+compressed bitmaps
+gropheap
+demo disk
+app placement
+icons / bitmap buttons in theme
+text layout engine
+
+PicoGUI Bugs
+-------------------------------
+
+ucLinux memory bugs (possible same root cause as htree problems?)
+Handle tree!
+Client-side event oddness (fixed, but would be nice to have a faster solution)
+
+panel bar dragging leaves extra sprites behind sometimes
+
