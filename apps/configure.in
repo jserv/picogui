@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl
-dnl $Id: configure.in,v 1.16 2002/01/09 16:44:31 carpman Exp $
+dnl $Id: configure.in,v 1.17 2002/01/09 20:04:59 carpman Exp $
 dnl
 
 AC_INIT(pgboard/pgboard.c)
@@ -123,6 +123,7 @@ AC_OUTPUT(
 	scribble/Makefile
 	tpcal/Makefile
 	atomicnav/Makefile
+	pgl/Makefile
 	pgl/pgl-toolbar/Makefile
 	pgl/pgl-launcher/Makefile
 	pgl/pgl-clock/Makefile
