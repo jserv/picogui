@@ -2202,6 +2202,14 @@ constant_PG_WP_S(char *name, int len, int arg)
 	}
     case 'I':
 	return constant_PG_WP_SI(name, len, arg);
+    case 'T':
+	if (strEQ(name + 7, "TATE")) {	/* PG_WP_S removed */
+#ifdef PG_WP_STATE
+	    return PG_WP_STATE;
+#else
+	    goto not_there;
+#endif
+	}
     }
     errno = EINVAL;
     return 0;
@@ -9238,6 +9246,17 @@ pgMenuFromArray(...)
     OUTPUT:
         RETVAL
 
+void
+pgSetWidget(widget, ...)
+        pghandle widget
+    CODE:
+        {
+	   int i;
+	   if (!(items&1))
+	     croak("pgSetWidget called with an odd number of parameters");
+	   for (i=1;i<items;i+=2)
+	     pgSetWidget(widget,SvIV(ST(i)),SvIV(ST(i+1)));
+	}
 
 int
 pgMessageDialog(title,text,flags=0)

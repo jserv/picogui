@@ -629,6 +629,7 @@ our %EXPORT_TAGS = ( 'all' => [ qw(
 	PG_WP_LGOP
 	PG_WP_ON
 	PG_WP_SCROLL
+	PG_WP_STATE
 	PG_WP_SIDE
 	PG_WP_SIZE
 	PG_WP_SIZEMODE
@@ -672,6 +673,7 @@ our %EXPORT_TAGS = ( 'all' => [ qw(
 	pgExitEventLoop
 	pgFraction
 	pgMenuFromArray
+	pgSetWidget
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );

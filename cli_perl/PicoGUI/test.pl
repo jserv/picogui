@@ -43,7 +43,9 @@ pgLeaveContext();
 pgEnterContext();
 $popup = pgNewPopup(160,100);
 pgNewWidget(PG_WIDGET_LABEL); 
-pgReplaceText(PGDEFAULT,"pgGetEvent() Test");
+pgSetWidget(PGDEFAULT, 
+	    PG_WP_TEXT, pgNewString("pgGetEvent() Test"),
+	    PG_WP_STATE, PGTH_O_LABEL_DLGTITLE);
 
 $toolbar = pgNewWidget(PG_WIDGET_TOOLBAR);
 pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,$toolbar);
