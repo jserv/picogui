@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.155 2002/02/02 21:34:19 lonetech Exp $
+/* $Id: widget.c,v 1.156 2002/02/04 03:02:07 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -951,6 +951,7 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
   long keycode = (mods<<16) | key;     /* Combines mods and the key */
   int kflags;
   struct divtree *dt;
+  struct widget *bar;
 
 #ifdef DEBUG_INPUT
   printf(__FUNCTION__": type = %d, key = %d, mods = %d\n", type, key, mods);
@@ -1094,6 +1095,15 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
     if (param.kbd.consume > 0)
       return;
     
+    /* Also traverse the panelbar if there is one */
+    if (!iserror(rdhandle((void**)&bar, PG_TYPE_WIDGET, ap->owner, 
+			  widget_get(p,PG_WP_PANELBAR))) && bar) {
+      r_send_trigger(widget_traverse(bar,PG_TRAVERSE_CHILDREN,0), type, 
+		     &param, &param.kbd.consume);
+      if (param.kbd.consume > 0)
+	return;
+    }
+
     r_send_trigger(widget_traverse(p,PG_TRAVERSE_CHILDREN,0), type, 
 		   &param, &param.kbd.consume);
     if (param.kbd.consume > 0)
