@@ -67,6 +67,7 @@ comment 'Input Drivers'
 bool 'SDL input driver'                    DRIVER_SDLINPUT
 bool 'SVGAlib input driver'                DRIVER_SVGAINPUT
 bool 'Ncurses/GPM input driver (also for framebuffer)' DRIVER_NCURSESINPUT
+bool 'Touchscreen input driver'            DRIVER_TSINPUT
 endmenu
 
 mainmenu_option next_comment
