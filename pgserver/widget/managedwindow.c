@@ -1,4 +1,4 @@
-/* $Id: managedwindow.c,v 1.1 2002/10/23 06:17:26 micahjd Exp $
+/* $Id: managedwindow.c,v 1.2 2002/10/23 16:13:34 micahjd Exp $
  *
  * managedwindow.c - A root widget representing a window managed by a host GUI
  *
@@ -48,7 +48,7 @@ g_error managedwindow_install(struct widget *self) {
   /* Take up the entire size of the divtree root */
   e = newdiv(&self->in,self);
   errorcheck;
-  self->in->build = &build_bgonly;
+  self->in->build = &build_bgfill_only;
   self->in->state = PGTH_O_MANAGEDWINDOW;
 
   self->out = &self->in->next;

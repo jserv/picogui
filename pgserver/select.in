@@ -181,3 +181,12 @@ open_section FONT
 add_if_true bdf_fonts.c $CONFIG_FONTENGINE_BDF
 
 close_section
+
+# Application management
+open_section APPMGR
+
+add_if_true panel.c             $CONFIG_APPMGR_PANEL
+add_if_true null.c              $CONFIG_APPMGR_NULL
+add_if_true managed_rootless.c  $CONFIG_APPMGR_MANAGED_ROOTLESS
+
+close_section

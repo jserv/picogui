@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.72 2002/10/07 07:08:08 micahjd Exp $
+/* $Id: widget.h,v 1.73 2002/10/23 16:13:34 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -244,6 +244,7 @@ DEF_WIDGET_PROTO(dialogbox)
 DEF_WIDGET_PROTO(messagedialog) 
 DEF_WIDGET_PROTO(scrollbox)
 DEF_WIDGET_PROTO(textedit)
+DEF_WIDGET_PROTO(managedwindow)
   
 /* Set to the client # if a client has taken over the system resource */
 extern int sysevent_owner;

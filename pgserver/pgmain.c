@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.45 2002/10/23 02:09:02 micahjd Exp $
+/* $Id: pgmain.c,v 1.46 2002/10/23 16:13:33 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -319,18 +319,96 @@ int main(int argc, char **argv) {
 	}
 #endif
 
-	puts("\nOptional widgets:"
-#ifdef CONFIG_WIDGET_TERMINAL
-	     " terminal"
+	puts("\n         Widgets:"
+#ifdef CONFIG_WIDGET_BACKGROUND
+	     " background"
+#endif
+#ifdef CONFIG_WIDGET_BOX
+	     " box"
+#endif
+#ifdef CONFIG_WIDGET_BUTTON
+	     " button"
+#endif
+#ifdef CONFIG_WIDGET_CHECKBOX
+	     " checkbox"
+#endif
+#ifdef CONFIG_WIDGET_FLATBUTTON
+	     " flatbutton"
+#endif
+#ifdef CONFIG_WIDGET_LABEL
+	     " label"
+#endif
+#ifdef CONFIG_WIDGET_LISTITEM
+	     " listitem"
+#endif
+#ifdef CONFIG_WIDGET_MENUITEM
+	     " menuitem"
+#endif
+#ifdef CONFIG_WIDGET_RADIOBUTTON
+	     " radiobutton"
+#endif
+#ifdef CONFIG_WIDGET_SUBMENUITEM
+	     " submenuitem"
 #endif
 #ifdef CONFIG_WIDGET_CANVAS
 	     " canvas"
 #endif
+#ifdef CONFIG_WIDGET_DIALOGBOX
+	     " dialogbox"
+#endif
+#ifdef CONFIG_WIDGET_MESSAGEDIALOG
+	     " messagedialog"
+#endif
+#ifdef CONFIG_WIDGET_INDICATOR
+	     " indicator"
+#endif
+#ifdef CONFIG_WIDGET_MANAGEDWINDOW
+	     " managedwindow"
+#endif
+#ifdef CONFIG_WIDGET_PANELBAR
+	     " panelbar"
+#endif
+#ifdef CONFIG_WIDGET_PANEL
+	     " panel"
+#endif
+#ifdef CONFIG_WIDGET_POPUP
+	     " popup"
+#endif
+#ifdef CONFIG_WIDGET_SCROLL
+	     " scroll"
+#endif
+#ifdef CONFIG_WIDGET_SCROLLBOX
+	     " scrollbox"
+#endif
+#ifdef CONFIG_WIDGET_SIMPLEMENU
+	     " simplemenu"
+#endif
+#ifdef CONFIG_WIDGET_TERMINAL
+	     " terminal"
+#endif
 #ifdef CONFIG_WIDGET_TEXTBOX
 	     " textbox"
 #endif
+#ifdef CONFIG_WIDGET_FIELD
+	     " field"
+#endif
 #ifdef CONFIG_WIDGET_TEXTEDIT
-	     " tetedit"
+	     " textedit"
+#endif
+#ifdef CONFIG_WIDGET_TOOLBAR
+	     " toolbar"
+#endif
+	     );
+
+	puts("    App Managers:"
+#ifdef CONFIG_APPMGR_MANAGED_ROOTLESS
+	     " managed_rootless"
+#endif
+#ifdef CONFIG_APPMGR_PANEL
+	     " panel"
+#endif
+#ifdef CONFIG_APPMGR_NULL
+	     " null"
 #endif
 	     );
 

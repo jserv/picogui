@@ -275,12 +275,12 @@ endmenu
 
 mainmenu_option next_comment
 comment 'Application Management'
-bool 'Managed Rootless app manager (not implemented)'    CONFIG_APPMGR_MANAGED_ROOTLESS
+bool 'Managed Rootless app manager'           CONFIG_APPMGR_MANAGED_ROOTLESS
 bool 'Panel app manager'                      CONFIG_APPMGR_PANEL
 if [ "$CONFIG_APPMGR_PANEL" = "y" ]; then
   bool '  Support for solid panel dragging'   CONFIG_DRAGSOLID
 fi
-bool 'Null app manager (not implemented)'     CONFIG_APPMGR_NULL
+bool 'Null app manager'                       CONFIG_APPMGR_NULL
 endmenu
 
 mainmenu_option next_comment
