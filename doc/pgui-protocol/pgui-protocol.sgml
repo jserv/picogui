@@ -263,6 +263,25 @@ struct pgrequest {
 
   <!--................................................................-->
 
+  <sect2 id="pgreq-batch">
+   <title>PGREQ_BATCH - Batch multiple requests</title> 
+   <programlisting>
+type                 : PGREQ_BATCH
+client lib equivalent: none
+additional data      : requests
+   </programlisting>
+   <para>
+	This request allows to send a batch of multiple requests that will
+	be executed in sequence.  If any command fails, its error code is
+	returned and the other commands are ignored.  Only the return value
+	fromt he last command is saved.
+   </para>
+   <para>
+	The <structfield>size</> of this request must be set to the sum of
+	all the requests combined.
+   </para>
+  </sect2>
+
   <sect2 id="pgreq-createwidget">
    <title>PGREQ_CREATEWIDGET - Create a widget</title> 
    <programlisting>
@@ -346,13 +365,13 @@ additional data      : struct pgreqd_in_key
    <para>
 	Dispatch a keyboard input.
    </para>
-   <programlisting>
+   <figure><title>struct pgreqd_in_key</><programlisting>
 struct pgreqd_in_key {
   u32 type;
   u16 key;
   u16 mods;
 };
-   </programlisting>
+   </programlisting></figure>
    <para>
 	The <structfield>type</> is a TRIGGER_* constant (see
 	<xref linkend="triggertypes"> for a complete listing).
@@ -391,7 +410,7 @@ additional data      : struct pgreqd_in_point
    <para>
  	Dispatch a pointing device input
    </para>
-   <programlisting>
+   <figure><title>struct pgreqd_in_point</><programlisting>
 struct pgreqd_in_point {
   u32 type;
   u16 x;
@@ -399,7 +418,7 @@ struct pgreqd_in_point {
   u16 btn;
   u16 dummy;
 };
-   </programlisting>
+   </programlisting></figure>
    <para>
 	The <structfield>type</> is a TRIGGER_* constant (see
 	<xref linkend="triggertypes"> for a complete listing).
@@ -424,12 +443,12 @@ additional data      : struct pgreqd_newbitmap
    <para>
 	Create a new bitmap object.
    </para>
-   <programlisting>
+   <figure><title>struct pgreqd_newbitmap</><programlisting>
 struct pgreqd_newbitmap {
   u16 width;
   u16 height;
 };
-   </programlisting>
+   </programlisting></figure>
    <para>
 	Where <structfield>width</> and <structfield>height</> for the new
 	image are specified in pixels.
@@ -439,6 +458,20 @@ struct pgreqd_newbitmap {
 	<structname>pgrequest</> and <structname>pgreqd_newbitmap</>
 	structures.  The data is sent as found in the image file, that is
 	JPEG, GIF, PNG, BMP, etc.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-mkfillstyle">
+   <title>PGREQ_MKFILLSTYLE - Load a fill style</title>
+   <programlisting>
+type                 : PGREQ_MKFILLSTYLE
+client lib equivalent: none
+additional data      : raw fillstyle bytecode
+   </programlisting>
+   <para>
+	This request is used by the compiled theme and should not be used by
+	the client.  More information about raw fillstyle bytecode can be
+	found in <filename>pgserver/include/picogui/theme.h</>
    </para>
   </sect2>
 
@@ -452,14 +485,14 @@ additional data      : pgreqd_mkfont
    <para>
 	Create a new font object using the specified font name and properties.
    </para>
-   <programlisting>
+   <figure><title>struct pgreqd_mkfont</><programlisting>
 struct pgreqd_mkfont {
   char name[40];
   u32 style;
   u16 size;
   u16 dummy;
 };	
-   </programlisting>
+   </programlisting></figure>
    <para>
 	Where <structfield>name</> is the name of the font to search for. It
 	is possible to specify no specific font name by using 
@@ -504,6 +537,33 @@ additional data      : compiled theme data
    </para>
   </sect2>
 
+  <sect2 id="pgreq-mkwait">
+   <title>PGREQ_MKWAIT - Wait for an event</title> 
+   <programlisting>
+type                 : PGREQ_MKWAIT
+client lib equivalent: pgEvent()
+additional data      : none
+   </programlisting>
+   <para>
+	Indicate to the server that the client is waiting for an event, if
+	any event is available it will be sent as a response immediately,
+	otherwise the client is placed in a waiting queue.
+   </para>
+   <para>
+	If any request is received by the server after a 
+	<constant>PGREQ_MKWAIT</>, the client will be removed from the wait
+	queue and the new request wil be processed. In the event where the
+	new request would be a <constant>PGREQ_MKWAIT</>, the client is sent
+	back in the waiting queue after discarding the previous request.
+   </para>
+   <para>
+ 	<emphasis>IMPORTANT NOTE:</> The behaviour of this request will
+	change in a future implementation of this protocol, the client should
+	for now restrict itself from sending any other request after a
+	<constant>PGREQ_MKWAIT</> is sent.
+   </para>
+  </sect2>
+
   <sect2 id="pgreq-mkwidget">
    <title>PGREQ_MKWIDGET - Make a new widget</title> 
    <programlisting>
@@ -514,13 +574,13 @@ additional data      : struct pgreqd_mkwidget()
    <para>
 	Create a new widget, derived from a parent widget.
    </para>
-   <programlisting>
+   <figure><title>struct pgreqd_mkwidget</><programlisting>
 struct pgreqd_mkwidget {
   u16 rship;
   u16 type;
   u32 parent;
 };
-   </programlisting>
+   </programlisting></figure>
    <para>
 	The <structfield>rship</> is a <constant>PG_DERIVE_*</> constant
 	indicating the new widget's relationship to it's parent
@@ -547,6 +607,87 @@ additional data      : none
    </para>
   </sect2>
 
+  <sect2 id="pgreq-mkpopup">
+   <title>PGREQ_MKPOPUP - Create a Popup root widget</title>
+   <programlisting>
+type                 : PGREQ_MKPOPUP
+client lib equivalent: pgNewPopup() and pgNewPopupAt()
+additional data      : struct pgreqd_mkpopup
+   </programlisting>
+   <para>
+	Create a popup root widget.
+   </para>
+   <figure><title>struct pgreqd_mkpopup</><programlisting>
+struct pgreqd_mkpopup {
+  u16 x;
+  u16 y;
+  u16 w;
+  u16 h;
+};	
+   </programlisting></figure>
+   <para>
+	The <structfield>x</> and <structfield>y</> are absolute coordinate
+	of the top left corner of the root widget to create.  They may be
+	set to a <constant>PG_POPUP_*</> constant.
+   </para>
+   <para>
+	The <structfield>w</> and <structfield>h</> are respectively the
+	width and height of the root widget. It is preferable to set those
+	value to 0 to have them automatically computed, the application should
+	assume as little as possible about the physical screen properties.
+   </para>
+   <table frame=none pgwide=1><title>PG_POPUP values</title>
+   <tgroup cols=3 align=left>
+   <colspec colwidth="45*">
+   <colspec colwidth="10*">
+   <colspec colwidth="45*">
+   <tbody>
+   <row><entry>PG_POPUP_CENTER</><entry>-1</><entry>Centered on screen</></>
+   <row><entry>PG_POPUP_ATCURSOR</><entry>-2</><entry>At the pointing device's
+   cursor. If the cursor is over a button or menuitem, the popup snaps to its
+   edge automatically</></>
+   </tbody>
+   </tgroup>
+   </table>
+  </sect2>
+
+  <sect2 id="pgreq-register">
+   <title>PGREQ_REGISTER - Register an application</title> 
+   <programlisting>
+type                 : PGREQ_REGISTER
+client lib equivalent: pgRegisterApp()
+additional data      : struct pgreqd_register
+   </programlisting>
+   <para>
+	Create a root window of an application.
+   </para>
+   <figure><title>struct pgreqd_register</><programlisting>
+struct pgreqd_register {
+  u32 name;
+  u16 type;
+  u16 dummy;
+};
+   </programlisting></figure>
+   <para>
+	The <structfield>name</> is the handle of the string to use as the
+	application name.  If applicable, it will be displayed in its panelbar.
+   </para>
+   <para>
+	The <structfield>type</> is a <constant>PG_APP_*</> constant.
+   </para>
+   <table frame=none><title>PG_APP values</title>
+   <tgroup cols=2 align=left>
+   <colspec colwidth="45*">
+   <colspec colwidth="10*">
+   <colspec colwidth="45*">
+   <tbody>
+   <row><entry>PG_APP_NORMAL</><entry>1</><entry>Normal application assigned a resizeable window</></>
+   <row><entry>PG_APP_TOOLBAR</><entry>2</><entry>Toolbar application using a fixed width window without panelbar</></>
+   </tbody>
+   </tgroup>
+   </table>
+  </sect2>
+
   <sect2 id="pgreq-set">
    <title>PGREQ_SET - Set a widget's properties</title> 
    <programlisting>
@@ -557,14 +698,14 @@ additional data      : struct pgreqd_set
    <para>
 	Set the properties of a widget.
    </para>
-   <programlisting>
+   <figure><title>struct pgreqd_set</><programlisting>
 struct pgreqd_set {
   u32 widget;
   u32 glob;
   u16 property;
   u16 dummy;
 };	
-   </programlisting>
+   </programlisting></figure>
    <para>
 	The <structfield>widget</> is the handle of the widget for which the
 	propertie needs to be set.
@@ -575,6 +716,28 @@ struct pgreqd_set {
    <para>
 	The <structfield>property</> is a property identifier (see
 	<xref linkend="propertytypes"> for a complete listing).
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-sizetext">
+   <title>PGREQ_SIZETEXT - Find the size of text</title> 
+   <programlisting>
+type                 : PGREQ_SIZETEXT
+client lib equivalent: pgSizeText()
+additional data      : struct pgreqd_sizetext
+   </programlisting>
+   <para>
+	Measure the length and height of a string of text.
+   </para>
+   <figure><title>struct pgreqd_sizetext</><programlisting>
+struct pgreqd_sizetext {
+  u32 text;
+  u32 font;
+};
+   </programlisting></figure>
+   <para>
+	Where <structfield>text</> and <structfield>font</> are handles of the
+	string and font to use respectively.
    </para>
   </sect2>
 
@@ -592,52 +755,8 @@ additional data      : none
    </para>
   </sect2>
 
-<!--
-  <sect2 id="pgreq-update">
-   <title></title> 
-   <programlisting>
-type                 : 
-client lib equivalent: 
-additional data      : 
-   </programlisting>
-   <para>
-   </para>
-  </sect2>
-
-  <sect2 id="pgreq-update">
-   <title></title> 
-   <programlisting>
-type                 : 
-client lib equivalent: 
-additional data      : 
-   </programlisting>
-   <para>
-   </para>
-  </sect2>
-
-  <sect2 id="pgreq-update">
-   <title></title> 
-   <programlisting>
-type                 : 
-client lib equivalent: 
-additional data      : 
-   </programlisting>
-   <para>
-   </para>
-  </sect2>
-
-  <sect2 id="pgreq-update">
-   <title></title> 
-   <programlisting>
-type                 : 
-client lib equivalent: 
-additional data      : 
-   </programlisting>
-   <para>
-   </para>
-  </sect2>
--->
  </sect1>
+
  <sect1 id="responses">
   <title>Server Responses</title>
   <para>
