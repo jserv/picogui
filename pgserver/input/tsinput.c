@@ -1,4 +1,4 @@
-/* $Id: tsinput.c,v 1.22 2001/10/22 13:46:08 pney Exp $
+/* $Id: tsinput.c,v 1.23 2001/10/22 15:25:43 pney Exp $
  *
  * tsinput.c - input driver for touch screen
  *
@@ -325,7 +325,7 @@ void tsinput_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
 /* message between driver to provide sound (for exemple) */
 void tsinput_message(u32 message, u32 param) {
 
-  int snd_type,snd_freq,snd_leng;
+  int snd_type;
 
   switch (message) {
 
@@ -337,14 +337,10 @@ void tsinput_message(u32 message, u32 param) {
 
     case PG_SND_SHORTBEEP:
       snd_type = KDMKTONE;
-      snd_freq = 5000;
-      snd_leng = 300;
       break;
 
     case PG_SND_KEYCLICK:
       snd_type = KDMKTONE;
-      snd_freq = 5000;
-      snd_leng = 300;
       break;
 
     default:
@@ -356,7 +352,13 @@ void tsinput_message(u32 message, u32 param) {
 
 # elif defined(CONFIG_CHIPSLICE)
     {
+      int snd_freq = get_param_int("sound","frequency",8000);
+      int snd_leng = get_param_int("sound","length",50);
       int fd = 0;
+
+      /* if no frequency defined, get_param_int return 5000.
+       * if no length defined, get_param_int return 300.
+       */
 
       /* open virtual terminal read only */
       fd = open("/dev/tty2",O_RDONLY);
