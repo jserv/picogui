@@ -57,6 +57,8 @@ try:
 except:
     pass
 
+print password
+
 connected = 0 # false
 
 accounts = [
