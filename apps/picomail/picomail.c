@@ -21,28 +21,11 @@ int getList(struct pgEvent *evt) {
    return 0;
 }
 
-int tryMe(struct pgEvent *evt) {
-	pghandle wItem;
-             
-    wItem = pgNewWidget(PG_WIDGET_LISTITEM,
-                        row ? PGDEFAULT : PG_DERIVE_INSIDE,
-                        row ? PGDEFAULT : wBox);
-        
-    pgReplaceTextFmt(wItem,"[%d] %s - (%s)",row, "Title", "Sender");
-    row++;
-   return 0;
-}
-
 void
 addheader( char * sender, char * title, int msg )
 {
     pghandle wItem;
     
-//  	   pgMessageDialog (
-//	       "PicoMail", 
-//	       "Loading a message header...",
-//	       PG_MSGBTN_OK );
-//	       
     wItem = pgNewWidget(PG_WIDGET_LISTITEM,
                         row ? PGDEFAULT : PG_DERIVE_INSIDE,
                         row ? PGDEFAULT : wBox);
@@ -102,15 +85,6 @@ int main(int argc, char *argv[])
                PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
                0);
    pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&getList,NULL);
-
-   pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
-   pgSetWidget(PGDEFAULT,
-               PG_WP_TEXT,pgNewString("Try me!"),
-               PG_WP_SIDE,PG_S_LEFT,
-               PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
-               0);
-   pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&tryMe,NULL);
-
 
    pgBind(PGBIND_ANY,PG_WE_CLOSE,&closeboxHandler,NULL);
 

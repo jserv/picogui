@@ -172,6 +172,7 @@ int
 imap_login()
 {
     char *command;
+    command = malloc(512);
     sprintf(command, "LOGIN %s %s", get_param_str( "imap", "username", "guest" ),
                                     get_param_str( "imap", "password", "guest" ) );
     docmd( command, &donothing);
@@ -190,7 +191,7 @@ void
 imap_init()
 {
     char *command;
-    
+    command = malloc(512);
     printf("Connection to IMAP...\n");
     imapfp = tcp_connect( get_param_str( "imap", "server", "127.0.0.1" ),
                       get_param_int( "imap", "port", 143 ) );
@@ -227,7 +228,6 @@ imap_getlist()
     command = malloc(64);
     printf("imap_getlist\n");
     check_connection();
-    messages=2;
     sprintf( command, "FETCH %d:%d FULL", 1, messages );
     docmd(command, &doheader);
 }
@@ -241,6 +241,9 @@ imap_getmesg( int mesg )
 {
     char *header;
     char *text;
+
+    header = malloc(512);
+    text = malloc(512);
 
     sprintf( header, "FETCH %d RFC822.HEADER", mesg );
     sprintf( text, "FETCH %d RFC822.TEXT", mesg );
