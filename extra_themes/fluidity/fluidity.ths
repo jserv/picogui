@@ -122,7 +122,7 @@ object default {
 
 object background {
   bgfill = Copy(default::fBitmap);
-  bitmap1 = LoadBitmap("data/electric_silk_2.jpeg");
+  bitmap1 = LoadBitmap("data/background.jpeg");
 }
 
 /********************************** Panels */
