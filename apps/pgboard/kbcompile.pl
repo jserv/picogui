@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: kbcompile.pl,v 1.12 2001/12/16 22:40:42 micahjd Exp $
+# $Id: kbcompile.pl,v 1.13 2002/06/17 09:14:59 lalo Exp $
 #
 # This script converts a .kbs keyboard definition source to the .kb
 # binary representation as defined in kbfile.h
@@ -31,7 +31,7 @@
 #
 #
 
-$formatver = 3;
+$formatver = 4;
 
 # Default path to PicoGUI
 my $PG_PATH = "/usr/local";
@@ -121,8 +121,17 @@ print $file_prefix.$checksum.$file_data;
 ###################### Functions called in the keyboard description
 
 sub newpattern {
+    # for "normal" (key) patterns
     $pattern = ++$pattern_num;
     push @pattern_list,$pattern;
+}
+
+sub execpattern {
+    my ($cmd) = @_;
+    newpattern;
+    $key_count{$pattern} = 0;
+    $pat_table{$pattern} = $cmd;
+    $req_count{$pattern} = 1; #PGKB_REQUEST_EXEC
 }
 
 sub canvas {

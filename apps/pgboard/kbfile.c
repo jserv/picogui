@@ -1,4 +1,4 @@
-/* $Id: kbfile.c,v 1.10 2002/01/06 09:22:56 micahjd Exp $
+/* $Id: kbfile.c,v 1.11 2002/06/17 09:14:59 lalo Exp $
   *
   * kbfile.c - Functions to validate and load patterns from a keyboard file
   * 
@@ -82,6 +82,8 @@ unsigned char * kb_validate(FILE *f, struct mem_pattern ** user_pat) {
    /* Check file version */
    if (hdr.file_ver > PGKB_FORMATVERSION)
      return NULL;
+   if (hdr.file_ver < PGKB_MINFORMATVERSION)
+     return NULL;
    
    /* Measure file length, compare it */
    fseek(f,0,SEEK_END);
@@ -160,78 +162,100 @@ int kb_loadpatterns (unsigned char * file_buffer)
        current_pat->canvasdata_len = pat_hdr.canvasdata_len;
        current_pat->num_keys = pat_hdr.num_keys;
 
-       /* Read canvas data */
-       current_pat->canvas_buffer = (char *) malloc (current_pat->canvasdata_len);
-       if (!current_pat->canvas_buffer)
-	 return 1;
-       memcpy (current_pat->canvas_buffer, file_buffer, current_pat->canvasdata_len * sizeof (char));
-       file_buffer += current_pat->canvasdata_len * sizeof (char);
-
-       /* Read requests */
-       for ( ;pat_hdr.num_requests > 0; pat_hdr.num_requests--)
+       if (current_pat->num_keys > 0)
 	 {
-	   struct request_header kbrqh;
-	   struct pgrequest req;
-	   char * req_buf;
-	   pghandle result;
+	   current_pat->ptype = PGKB_REQUEST_NORMAL;
 
-	   /* Read request header */
-	   memcpy (&kbrqh, file_buffer, sizeof (kbrqh));
-	   file_buffer += sizeof (kbrqh);
-
-	   /* Byte-swap data */
-	   kbrqh.canvasdata_offset = ntohl (kbrqh.canvasdata_offset);
-
-	   /* Validate offset */
-	   if (kbrqh.canvasdata_offset > (pat_hdr.canvasdata_len - 4))
+	   /* Read canvas data */
+	   current_pat->canvas_buffer = (char *) malloc (current_pat->canvasdata_len);
+	   if (!current_pat->canvas_buffer)
 	     return 1;
+	   memcpy (current_pat->canvas_buffer, file_buffer, current_pat->canvasdata_len * sizeof (char));
+	   file_buffer += current_pat->canvasdata_len * sizeof (char);
 
-	   /* Read request */
-	   memcpy (&req, file_buffer, sizeof (req));
-	   file_buffer += sizeof (req);
+	   /* Read requests */
+	   for ( ;pat_hdr.num_requests > 0; pat_hdr.num_requests--)
+	     {
+	       struct request_header kbrqh;
+	       struct pgrequest req;
+	       char * req_buf;
+	       pghandle result;
 
-	   /* Byte-swap data */
-	   req.type = ntohs (req.type);
-	   req.size = ntohl (req.size);
+	       /* Read request header */
+	       memcpy (&kbrqh, file_buffer, sizeof (kbrqh));
+	       file_buffer += sizeof (kbrqh);
 
-	   /* Read request data */
-	   req_buf = (char *) file_buffer;
-	   file_buffer += req.size;
+	       /* Byte-swap data */
+	       kbrqh.canvasdata_offset = ntohl (kbrqh.canvasdata_offset);
 
-	   /* Evaluate request */
-	   result = pgEvalRequest (req.type, req_buf, req.size);
+	       /* Validate offset */
+	       if (kbrqh.canvasdata_offset > (pat_hdr.canvasdata_len - 4))
+		 return 1;
+
+	       /* Read request */
+	       memcpy (&req, file_buffer, sizeof (req));
+	       file_buffer += sizeof (req);
+
+	       /* Byte-swap data */
+	       req.type = ntohs (req.type);
+	       req.size = ntohl (req.size);
+
+	       /* Read request data */
+	       req_buf = (char *) file_buffer;
+	       file_buffer += req.size;
+
+	       /* Evaluate request */
+	       result = pgEvalRequest (req.type, req_buf, req.size);
 	   
-	   /* Link request to canvas data */
-	   *( (unsigned long *) 
-	      (current_pat->canvas_buffer + kbrqh.canvasdata_offset) 
-	      ) = htonl (result);
+	       /* Link request to canvas data */
+	       *( (unsigned long *) 
+		  (current_pat->canvas_buffer + kbrqh.canvasdata_offset) 
+		  ) = htonl (result);
+	     }
+
+	   /* Read keys */
+	   current_pat->keys = (struct key_entry *)
+	     malloc (pat_hdr.num_keys * sizeof (struct key_entry));
+	   if (!current_pat->keys)
+	     return 1;
+	   memcpy (current_pat->keys, file_buffer, pat_hdr.num_keys * sizeof (struct key_entry));
+	   file_buffer += pat_hdr.num_keys * sizeof (struct key_entry);
+
+	   /* Byte-swap key data */
+	   current_key = current_pat->keys;
+	   for ( ;pat_hdr.num_keys > 0; pat_hdr.num_keys--)
+	     {
+	       current_key->x       = ntohs (current_key->x);
+	       current_key->y       = ntohs (current_key->y);
+	       current_key->w       = ntohs (current_key->w);
+	       current_key->h       = ntohs (current_key->h);
+	       current_key->flags   = ntohl (current_key->flags);
+	       current_key->key     = ntohs (current_key->key);
+	       current_key->pgkey   = ntohs (current_key->pgkey);
+	       current_key->mods    = ntohs (current_key->mods);
+	       current_key->pattern = ntohs (current_key->pattern);
+	   
+	       current_key++;
+	     }
+
 	 }
-
-       /* Read keys */
-       current_pat->keys = (struct key_entry *)
-	 malloc (pat_hdr.num_keys * sizeof (struct key_entry));
-       if (!current_pat->keys)
-	 return 1;
-       memcpy (current_pat->keys, file_buffer, pat_hdr.num_keys * sizeof (struct key_entry));
-       file_buffer += pat_hdr.num_keys * sizeof (struct key_entry);
-
-       /* Byte-swap key data */
-       current_key = current_pat->keys;
-       for ( ;pat_hdr.num_keys > 0; pat_hdr.num_keys--)
+       else if (pat_hdr.num_requests = PGKB_REQUEST_EXEC)
 	 {
-	   current_key->x       = ntohs (current_key->x);
-	   current_key->y       = ntohs (current_key->y);
-	   current_key->w       = ntohs (current_key->w);
-	   current_key->h       = ntohs (current_key->h);
-	   current_key->flags   = ntohl (current_key->flags);
-	   current_key->key     = ntohs (current_key->key);
-	   current_key->pgkey   = ntohs (current_key->pgkey);
-	   current_key->mods    = ntohs (current_key->mods);
-	   current_key->pattern = ntohs (current_key->pattern);
-	   
-	   current_key++;
+	   current_pat->ptype = PGKB_REQUEST_EXEC;
+	   /* Read raw data */
+	   current_pat->canvas_buffer = (char *) malloc (current_pat->canvasdata_len + 2);
+	   if (!current_pat->canvas_buffer)
+	     return 1;
+	   memcpy (current_pat->canvas_buffer, file_buffer, current_pat->canvasdata_len * sizeof (char));
+	   file_buffer += current_pat->canvasdata_len * sizeof (char);
+	   /* FIXME: does this work on all platforms pgui runs on? */
+	   current_pat->canvas_buffer[current_pat->canvasdata_len] = '&';
+	   current_pat->canvas_buffer[current_pat->canvasdata_len + 1] = 0;
 	 }
-
+       else
+	 {
+	   return 1;
+	 }
        current_pat++;
      }
 
@@ -247,22 +271,30 @@ void kb_selectpattern (unsigned short pattern_num, pghandle canvas)
 
   if (pattern_num < pat.num_patterns)
     {
-      /* Manage context */
-      if (inContext)
-	{
-	  pgLeaveContext ();
-	}
-      else
-	{
-	  inContext = 1;
-	}
-      pgEnterContext ();
-
       current_pat = pattern_data + pattern_num;
-      pgWriteData (canvas, pgFromMemory (current_pat->canvas_buffer, 
-					 current_pat->canvasdata_len));
-      pgWriteCmd (canvas, PGCANVAS_REDRAW, 0);
-      pgSubUpdate (canvas);
+
+      if (current_pat->ptype == PGKB_REQUEST_NORMAL)
+	{
+	  /* Manage context */
+	  if (inContext)
+	    {
+	      pgLeaveContext ();
+	    }
+	  else
+	    {
+	      inContext = 1;
+	    }
+	  pgEnterContext ();
+
+	  pgWriteData (canvas, pgFromMemory (current_pat->canvas_buffer, 
+					     current_pat->canvasdata_len));
+	  pgWriteCmd (canvas, PGCANVAS_REDRAW, 0);
+	  pgSubUpdate (canvas);
+	}
+      else if (current_pat->ptype = PGKB_REQUEST_EXEC)
+	{
+	  system (current_pat->canvas_buffer);
+	}
     }
 }
 

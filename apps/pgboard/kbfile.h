@@ -1,4 +1,4 @@
-/* $Id: kbfile.h,v 1.7 2002/01/06 09:22:56 micahjd Exp $
+/* $Id: kbfile.h,v 1.8 2002/06/17 09:14:59 lalo Exp $
   *
   * kbfile.h - Definition of the PicoGUI keyboard file format 
   * 
@@ -27,7 +27,16 @@
 
 /************** File format */
 
-#define PGKB_FORMATVERSION  0x0003
+#define PGKB_FORMATVERSION 4
+
+/* if you make changes that may break backwards-compatibility, make this
+ * equal to PGKB_FORMATVERSION
+ *
+ * pgboard compiled for your version will then refuse to load files with
+ * FORMATVERSION lower than this
+ */
+
+#define PGKB_MINFORMATVERSION 0
 
 /* A keyboard file is made of a header then one or more patterns:
  * (The first pattern in the file is taken as the default)
@@ -56,7 +65,7 @@ struct keyboard_header {
 };
 
 /*
- * Every pattern includes a pattern header, a block of canvas command data,
+ * A "normal" pattern includes a pattern header, a block of canvas command data,
  * a table of requests to load, and a table of keys
  * 
  * - pattern header
@@ -66,6 +75,12 @@ struct keyboard_header {
  * - key table
  *   ...
  * 
+ *
+ * A special pattern has 0 keys in the pattern header, and num_requests is
+ * instead a constant with the pattern type. Instead of the canvas data
+ * it has the raw data corresponding to the pattern data
+ * (eg a string for EXEC patterns)
+ *
  */
 
 struct pattern_header {
@@ -73,6 +88,9 @@ struct pattern_header {
    unsigned short num_requests;
    unsigned short num_keys;
 };
+
+#define PGKB_REQUEST_NORMAL	 0
+#define PGKB_REQUEST_EXEC	 1
 
 /* Every request consists of the following request header, followed by a
  * standard PicoGUI request packet */
@@ -93,10 +111,18 @@ struct key_entry {
    unsigned short pattern;          /* Pattern to jump to */
 };
 
+/* The special pattern header defines the kind of pattern this is */
+
+struct special_pattern_header {
+   unsigned long ptype;
+   unsigned long data_len;
+};
+
 /************** Keyboard loading functions and in-memory representation */
 
 struct pattern_info
 {
+  unsigned short ptype;
   unsigned long canvasdata_len;
   char * canvas_buffer;
   unsigned short num_keys;
