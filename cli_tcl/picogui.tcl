@@ -50,6 +50,7 @@ array set pg_request {\
 	wait		13\
 	register	15\
 	mkpopup		16\
+	setmode		21\
 	getmode		22\
 	mkcontext	23\
 	rmcontext	24\
@@ -77,7 +78,17 @@ array set pg_th_o {\
 array set pg_fstyle {\
 	bold 256
 }
-
+array set pg_fm {\
+	set	0\
+	on	1\
+	off	2\
+	toggle	3\
+}
+array set pg_vid {\
+	rotate90	0x4\
+	rotate180	0x8\
+	rotate270	0x10\
+}
 set connection 0
 set defaultparent 0
 set defaultrship $pg_derive(inside)
@@ -119,6 +130,13 @@ proc send_packet {packet} {
 	global connection
 	puts -nonewline $connection $packet
 	flush $connection
+}
+proc pgSetVideoMode {xres yres bpp flagmode flags} {
+	global pg_request
+	send_packet [pack_pgrequest 1 12 $pg_request(setmode)]
+	send_packet [binary format "SSSSI" $xres $yres $bpp $flagmode $flags]
+	array set ret [pgGetResponse]
+	return $ret(data)
 }
 proc pgGetVideoMode {} {
 	global pg_request
