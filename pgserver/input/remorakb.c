@@ -1,4 +1,4 @@
-/* $Id: remorakb.c,v 1.1 2001/11/02 19:30:15 bauermeister Exp $
+/* $Id: remorakb.c,v 1.2 2001/11/06 09:15:48 bauermeister Exp $
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -50,7 +50,7 @@
 /*****************************************************************************/
 
 #define DEBUG 1
-#define TRACE 1 // 0
+#define TRACE 0
 
 /* ------------------------------------------------------------------------- */
 
@@ -412,7 +412,7 @@ static const HwKeyDef key_def_table[] = {
   /*da       */ { 0x1ce3, ALPH('a')              , ALPH('A'), NONE           },
   /*dw       */ { 0x1de2, ALPH('w')              , ALPH('W'), NONE           },
   /*dNUM2    */ { 0x1ee1, CHAR('2')              , CHAR('@'), PGKEY_F2       },
-  /*dDEL     */ { 0x1fe0, PGKEY_DELETE           , MOD_SHIFT, PGKEY_BACKSPACE},
+  /*dDEL     */ { 0x1fe0, PGKEY_DELETE           , MOD_SHIFT, CHAR(8)        },
   /*dc       */ { 0x21de, ALPH('c')              , ALPH('C'), NONE           },
   /*dx       */ { 0x22dd, ALPH('x')              , ALPH('X'), NONE           },
   /*dd       */ { 0x23dc, ALPH('d')              , ALPH('D'), NONE           },
@@ -461,7 +461,7 @@ static const HwKeyDef key_def_table[] = {
   /*dBKSLASH */ { 0x5da2, CHAR('\\')             , CHAR('|'), NONE           },
   /*dLEFT    */ { 0x5ea1, PGKEY_LEFT             , MOD_SHIFT, IGN(Show)      },
   /*dDOWN    */ { 0x609f, PGKEY_DOWN             , MOD_SHIFT, PGKEY_PAGEDOWN },
-  /*dBKSPACE */ { 0x6699, PGKEY_BACKSPACE        , MOD_SHIFT, NONE           },
+  /*dBKSPACE */ { 0x6699, CHAR(PGKEY_BACKSPACE)  , MOD_SHIFT, NONE           },
   /*dCMD     */ { 0x6798, SPECIALKEY(SPd_CMD)                                },
   /*uFN      */ { 0x827d, SPECIALKEY(SPu_FN)                                 },
   /*uDONE    */ { 0x837c, DEADKEY                                            },
@@ -910,11 +910,12 @@ static g_error kb_init(void)
   kb_fd = open(device, O_RDONLY | O_NOCTTY | O_NDELAY);
 
   if(kb_fd < 0)
-    return mkerror(PG_ERRT_IO,43);     /* Error opening kb device */
+    return mkerror(PG_ERRT_IO,73);     /* Error opening kb device */
 
   tcgetattr(kb_fd, &saved_options);    /* Backup copy */
   tcgetattr(kb_fd, &options);          /* Work copy that will be modified */
 
+  /* uart settings */
   cfsetispeed(&options, B9600);        /* 9600 baud rates */
   options.c_cflag |= (CLOCAL | CREAD); /* Enable rx and set the local mode */
   options.c_cflag &= ~PARENB;          /* None parity */
@@ -924,7 +925,7 @@ static g_error kb_init(void)
   options.c_cflag &= ~CRTSCTS;         /* Disable hardware flow control */
   options.c_iflag &= ~(IXON | IXOFF | IXANY); /* Disable sw flow control */
 
-  /* Set raw input and output */
+  /* driver settings for raw input and output */
   options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
   options.c_oflag &= ~OPOST;
 
@@ -946,13 +947,10 @@ static g_error kb_init(void)
 
 static void kb_fd_init(int *n, fd_set *readfds, struct timeval *timeout)
 {
-  TRACEF((">>> kb_fd_init()\n"));
   if ((*n)<(kb_fd+1))
     *n = kb_fd+1;
   if (kb_fd>0)
     FD_SET(kb_fd, readfds);
-  TRACEF(("  > kb_fd_init: kb_fd=%d, *n=%d, *readfds=%d\n",
-          kb_fd, *n, *readfds));
 }
 
 /*****************************************************************************/
