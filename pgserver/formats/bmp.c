@@ -1,4 +1,4 @@
-/* $Id: bmp.c,v 1.2 2001/09/18 17:11:30 micahjd Exp $
+/* $Id: bmp.c,v 1.3 2001/09/18 17:14:11 micahjd Exp $
  *
  * bmp.c - Functions to detect and load files compatible with the Windows BMP
  *         file format. This format is good for palettized images and/or
@@ -173,7 +173,6 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 	    shift = 8-bpp;
 	    byte = *(rasterdata++);
 	  }
-	  printf("byte = 0x%02X, shift = %d, mask = 0x%02X\n",byte,shift,mask);
 	  index = (byte>>shift) & mask;
 	  shift -= bpp;
 	  if (index < numcolors)
@@ -204,7 +203,8 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
       break;
 
     default:
-      printf("Compressed!\n");
+      
+      /* FIXME: Implement compressed BMP files */
 
     }      
       
