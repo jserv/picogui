@@ -56,8 +56,8 @@
 # define TRACE(x...)
 #endif
 
-static	int btkey_fd;	/* File descriptor for incoming bt keys */
-static	struct termios old;	/* original terminal modes */
+int btkey_fd;	/* File descriptor for incoming bt keys */
+struct termios old;	/* original terminal modes */
 
 /*
  * Open the FIFO.
