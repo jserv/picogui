@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.11 2001/05/29 20:33:32 micahjd Exp $
+/* $Id: videotest.c,v 1.12 2001/05/29 21:02:18 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -32,7 +32,7 @@
 #include <pgserver/appmgr.h>
 #include <time.h>               /* For benchmarking */
 
-#define NUM_PATTERNS    4
+#define NUM_PATTERNS    5
 #define TEST_DURATION   2      /* Length of each benchmark run, in seconds */
 
 /************ Line test pattern */
@@ -241,6 +241,26 @@ void testpat_slab(void) {
    }
 }
 
+/************ Stipple rectangle test pattern */
+
+void testpat_stipple(void) {
+   hwrcolor colors[4];
+   int i;
+   int w = vid->lxres/4;
+   int h = vid->lyres/4;
+   
+   colors[0] = VID(color_pgtohwr) (0x000000);
+   colors[1] = VID(color_pgtohwr) (0xFF0000);
+   colors[2] = VID(color_pgtohwr) (0x00FF00);
+   colors[3] = VID(color_pgtohwr) (0x0000FF);
+
+   for (i=0;i<4;i++)
+     VID(rect) (vid->display,i*w,0,w,vid->lyres,colors[i],PG_LGOP_NONE);
+
+   for (i=0;i<4;i++)
+     VID(rect) (vid->display,0,i*h,vid->lxres,h,colors[i],PG_LGOP_STIPPLE);
+}
+
 /************ Front-end */
 
 void videotest_help(void) {
@@ -249,6 +269,7 @@ void videotest_help(void) {
    	"\t2\tColor test pattern\n"
 	"\t3\tBlit/unblit test pattern\n"
 	"\t4\tSlab alignment test pattern\n"
+	"\t5\tStippled rectangle test pattern\n"
 	"\t99\tAll tests\n"
 	"\tnegative value: repeat test in a loop\n"
 	);
@@ -268,6 +289,9 @@ static void videotest_run_one(int number,int update) {
     break;
   case 4:
     testpat_slab();
+    break;
+  case 5:
+    testpat_stipple();
     break;
   default:
     printf("Unknown video test mode");

@@ -16,6 +16,10 @@ I'm starting with linear1 according to Pascal's priority list.
 	
       * debug/videotest.c: Fixed stupid bug that reportes 1.6 billion frames
         per second for test #1. (didn't initialize frames counter)
+	
+      * pgmain.c: Small fix so pgserver exits after benchmark mode
+      
+      * debug/videotest.c: Added the stipple rectangle video test mode (#5)
 
 
 2001-05-14    Micah Dowty <micahjd@users.sourceforge.net>
