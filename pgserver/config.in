@@ -9,6 +9,7 @@ choice 'Platform' \
 	 Windows			WINDOWS" Linux
 if [ "$UCLINUX" = "y" ]; then
     bool 'ChipSlice Platform'         CONFIG_CHIPSLICE
+    bool 'Xcopilot Platform'          CONFIG_XCOPILOT
     bool 'm68k asm optimization (not implemented)' ASM_68000
 fi
 if [ "$UCLINUX" != "y" ]; then
