@@ -1,5 +1,5 @@
 CFLAGS = -lpgui -g -O2
-PROGS  = pgl-clock testapp
+PROGS  = testapp pgl-clock pgl-backlight
 
 all: $(PROGS)
 

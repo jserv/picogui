@@ -1,4 +1,4 @@
-/* $Id: gremlin.c,v 1.3 2001/04/10 02:43:20 micahjd Exp $
+/* $Id: gremlin.c,v 1.4 2001/08/11 23:16:35 micahjd Exp $
  * 
  * gremlin.c - This is similar to the PalmOS app with the similar name. It
  *             sends random (but repeatable) input events to the server in an
@@ -137,10 +137,16 @@ int main(int argc, char **argv) {
 	 pgSendKeyInput(PG_TRIGGER_CHAR,'n',0);
 	 pgUpdate();
       }
-      if ((rand()%100) < 6) {
-	 pgSendKeyInput(PG_TRIGGER_KEYDOWN,PGKEY_RETURN,0);
+      if ((rand()%100) < 30) {
+	 pgSendKeyInput(PG_TRIGGER_KEYDOWN,PGKEY_TAB,0);
 	 pgUpdate();
-	 pgSendKeyInput(PG_TRIGGER_KEYUP,PGKEY_RETURN,0);
+	 pgSendKeyInput(PG_TRIGGER_KEYUP,PGKEY_TAB,0);
+	 pgUpdate();
+      }
+      if ((rand()%100) < 5) {
+	 pgSendKeyInput(PG_TRIGGER_KEYDOWN,PGKEY_SPACE,0);
+	 pgUpdate();
+	 pgSendKeyInput(PG_TRIGGER_KEYUP,PGKEY_SPACE,0);
 	 pgUpdate();
       }
 
