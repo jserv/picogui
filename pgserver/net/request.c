@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.52 2002/11/03 04:54:24 micahjd Exp $
+/* $Id: request.c,v 1.53 2002/11/19 13:16:11 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -33,6 +33,7 @@
 #include <pgserver/pgnet.h>
 #include <picogui/version.h>
 #include <pgserver/input.h>
+#include <pgserver/requests.h>
 #include <pgserver/configfile.h>
 #ifndef CONFIG_UNIX_SOCKET
 #include <netinet/tcp.h>
@@ -311,18 +312,38 @@ void readfd(int from) {
       }
       else {
 	/* Yahoo, got a complete packet! */
-	if (dispatch_packet(from,&buf->req,buf->data))
-	  closefd(from);
+	struct request_data r;
+	memset(&r,0,sizeof(r));
+	r.in.req = &buf->req;
+	r.in.data = buf->data;
+	r.in.owner = from;
+	request_exec(&r);
+
+	if (r.out.block) {
+	  /* Put this client on the waitlist */
+	  FD_SET(from, &evtwait);
+	}
 	else {
-	  /* Reset the structure for another packet */
-	  g_free(buf->data_dyn);
-	  buf->data_dyn = NULL;
-	  buf->data_size = buf->header_size = 0;
-	  buf->data = NULL;
+	  /* Send the response request_exec returned, closing the connection
+	   * if there is any error sending it.
+	   */
+	  if (send_response(from,&r.out.response,r.out.response_len)) 
+	    closefd(from);
+	  else {
+	    if (r.out.response_data && 
+		send_response(from,&r.out.response_data,r.out.response_data_len))
+	      closefd(from);
+	    else {
+	      /* Reset the structure for another packet */
+	      g_free(buf->data_dyn);
+	      buf->data_dyn = NULL;
+	      buf->data_size = buf->header_size = 0;
+	      buf->data = NULL;
+	    }
+	  }
 	}
       }
     }  
- 
   }
 }
 

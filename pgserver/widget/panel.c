@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.89 2002/11/15 12:53:12 micahjd Exp $
+/* $Id: panel.c,v 1.90 2002/11/19 13:16:11 micahjd Exp $
  *
  * panel.c - Resizable container with decorations. It uses a panelbar for resizing purposes,
  *           and optionally supplies some standard buttons for the panel.
@@ -52,7 +52,7 @@ struct paneldata {
  * course we're in a callback triggered by that button.
  */
 g_error panel_std_button(handle *h, struct widget *self, int thobj, int thobj_on, int thobj_hilight, int exev,
-			 int (*callback)(int event, struct widget *from, s32 param, int owner, char *data)) {
+			 int (*callback)(int event, struct widget *from, s32 param, int owner, const u8 *data)) {
   struct widget *w, *bar;
   g_error e;
 
@@ -78,7 +78,7 @@ g_error panel_std_button(handle *h, struct widget *self, int thobj, int thobj_on
 
 /**** Callbacks */
 
-int panel_close_callback(int event, struct widget *from, s32 param, int owner, char *data) {
+int panel_close_callback(int event, struct widget *from, s32 param, int owner, const u8 *data) {
   struct widget *p;
   p = from->callback_owner;
   if (p && event==PG_WE_ACTIVATE) {
@@ -90,7 +90,7 @@ int panel_close_callback(int event, struct widget *from, s32 param, int owner, c
   return 1; /* Absorb event */
 }
 
-int panel_rotate_callback(int event, struct widget *from, s32 param, int owner, char *data) {
+int panel_rotate_callback(int event, struct widget *from, s32 param, int owner, const u8 *data) {
   struct widget *p;
   p = from->callback_owner;
   if (p && event==PG_WE_ACTIVATE) {
@@ -107,7 +107,7 @@ int panel_rotate_callback(int event, struct widget *from, s32 param, int owner, 
   return 1; /* Absorb event */
 }
 
-int panel_zoom_callback(int event, struct widget *from, s32 param, int owner, char *data) {
+int panel_zoom_callback(int event, struct widget *from, s32 param, int owner, const u8 *data) {
   struct widget *p;
   p = from->callback_owner;
   if (p && event==PG_WE_ACTIVATE) {

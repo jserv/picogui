@@ -1,4 +1,4 @@
-/* $Id: wt.c,v 1.3 2002/11/11 03:08:21 micahjd Exp $
+/* $Id: wt.c,v 1.4 2002/11/19 13:16:11 micahjd Exp $
  * 
  * wt.c - Loading and instantiation of PicoGUI's Widget Templates
  *
@@ -29,9 +29,10 @@
 #include <pgserver/handle.h>
 #include <pgserver/widget.h>
 #include <pgserver/svrwt.h>
+#include <pgserver/requests.h>
 #include <picogui/wt.h>
 
-g_error wt_load(handle *wt, int owner, u8 *template, u32 template_len) {
+g_error wt_load(handle *wt, int owner, const u8 *template, u32 template_len) {
   struct pgwt_header *hdr;
   u32 file_crc32, valid_crc32;
   struct pgmemwt *memwt;
@@ -104,11 +105,8 @@ g_error wt_load(handle *wt, int owner, u8 *template, u32 template_len) {
   }
 
   /* Point the loaded widget template at the per-instance requests
-   *
-   * Note that the "+ 1" is necessary for the automatic null-termination
-   * in picogui packets.
    */
-  e = g_malloc((void**) &memwt->requests, template_len + 1);
+  e = g_malloc((void**) &memwt->requests, template_len);
   if (iserror(e)) {
     handle_free(owner,*wt);
     return e;
@@ -121,7 +119,7 @@ g_error wt_load(handle *wt, int owner, u8 *template, u32 template_len) {
 
 g_error wt_instantiate(handle *instance, struct pgmemwt *wt, handle wt_h, int owner) {
   int requests_len;
-  u8 *requests;
+  const u8 *requests;
   g_error e;
 
   /* This is just a matter of running the per-instance requests.
@@ -154,17 +152,16 @@ void wt_free(struct pgmemwt *wt) {
   g_free(wt);
 }
 
-g_error wt_run_requests(handle group, int owner, u8 **requests, int *requests_len, 
+g_error wt_run_requests(handle group, int owner, const u8 **requests, int *requests_len, 
 			handle *htable, int num_handles, int num_requests) {
   struct pgrequest *preq;
   struct pgrequest req;
-  void *data;
-  u8 null_save;
-  u32 ret;
-  int fatal, padding;
+  struct request_data r;
+  int padding;
   g_error e;
 
   while (num_requests--) {
+    memset(&r,0,sizeof(r));
 
     /* Extract a request header */
     preq = (struct pgrequest *) *requests;
@@ -173,39 +170,34 @@ g_error wt_run_requests(handle group, int owner, u8 **requests, int *requests_le
     if (*requests_len < 0)
       return mkerror(PG_ERRT_FILEFMT, 115);    /* Incomplete request */
 
-    /* Convert header byte order. Note that we can't do this in-place as usual, 
-     * since the request data must be preserved for future instantiations.
+    /* We need to copy the request header, since request_exec will
+     * swap its byte order in-place and we need to keep this copy
+     * preserved for future instantiations
      */
-    req.type = ntohs(preq->type);
-    req.id   = ntohl(preq->id);
-    req.size = ntohl(preq->size);
-    
+    req = *preq;
+    r.in.req = &req;
+    r.in.owner = owner;
+
     /* Get the associated data */
-    data = (void*) *requests;
+    r.in.data = (void*) *requests;
     *requests += req.size;
     *requests_len -= req.size;
     if (*requests_len < 0)
       return mkerror(PG_ERRT_FILEFMT, 115);    /* Incomplete request */
     
-    /* Truncate undefined requests*/
-    if (req.type > PGREQ_UNDEF) req.type = PGREQ_UNDEF;
-
     /* Set our handle mapping table */
     handle_setmapping(htable, num_handles);
 
     /* Dispatch the request, with a temporary null-termination */
-    null_save = **requests;
-    **requests = 0;
-    e = (*rqhtab[req.type])(owner, &req, data, &ret, &fatal);
-    **requests = null_save;
+    e = request_exec(&r);
     errorcheck;
 
     /* Group the resulting handle so it's freed when we are */
-    handle_group(owner,group,ret,owner);
+    handle_group(owner,group,r.out.ret,owner);
 
     /* Now stick the return value in the handle table if we need to */
     if (req.id < num_handles)
-      htable[req.id] = ret;
+      htable[req.id] = r.out.ret;
 
     /* The next packet is padded to a 32-bit boundary */
     if (requests_len) {

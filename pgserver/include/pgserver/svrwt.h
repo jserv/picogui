@@ -1,4 +1,4 @@
-/* $Id: svrwt.h,v 1.1 2002/04/07 01:26:17 micahjd Exp $
+/* $Id: svrwt.h,v 1.2 2002/11/19 13:16:11 micahjd Exp $
  * 
  * svrwt.h - Server-side in-memory representation of widget templates
  *
@@ -50,12 +50,12 @@ struct pgmemwt {
 };
 
 /* High-level functions to manage widget templates */
-g_error wt_load(handle *wt, int owner, u8 *template, u32 template_len);
+g_error wt_load(handle *wt, int owner, const u8 *template, u32 template_len);
 g_error wt_instantiate(handle *instance, struct pgmemwt *wt, handle wt_h, int owner);
 void wt_free(struct pgmemwt *wt);
 
 /* Run a block of requests, using the given handle table */
-g_error wt_run_requests(handle group, int owner, u8 **requests, int *requests_len, 
+g_error wt_run_requests(handle group, int owner, const u8 **requests, int *requests_len, 
 			handle *htable, int num_handles, int num_requests);
 
 /* Zlib's CRC-32 algorithm */

@@ -1,4 +1,4 @@
-/* $Id: g_error.h,v 1.16 2002/09/23 22:51:26 micahjd Exp $
+/* $Id: g_error.h,v 1.17 2002/11/19 13:16:11 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -34,10 +34,6 @@
 typedef unsigned int g_error;
 
 /* Used internally, so not in picogui/constants.h */
-#define ERRT_NOREPLY  0xF000 /* This special error type sends
-				no reply packet- assumes that
-				no reply is needed or that one
-				will be sent seperately */
 #define ERRT_PASS     0xF100 /* Returned from a widget's set/get to
 			      * let the generic handler handle it */
 

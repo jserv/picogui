@@ -15,8 +15,9 @@ libgcore_la_SOURCES = \
 	configfile.c     \
 	pgstring.c       \
 	globals.c        \
-	init.c
+	init.c           \
+	requests.c
 
-EXTRA_DIST = inputdrivers.inc videodrivers.inc defaulttext.inc
+EXTRA_DIST = inputdrivers.inc videodrivers.inc defaulttext.inc requests.inc
 
-libgcore_la_DEPENDENCIES = inputdrivers.inc videodrivers.inc defaulttext.inc
+libgcore_la_DEPENDENCIES = inputdrivers.inc videodrivers.inc defaulttext.inc requests.inc

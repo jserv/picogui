@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.78 2002/11/15 12:53:11 micahjd Exp $
+/* $Id: widget.h,v 1.79 2002/11/19 13:16:11 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -175,7 +175,7 @@ struct widget {
    * from the widget. If the callback returns false, the widget is passed
    * on to the client normally, if it returns true the event is absorbed.
    */
-  int (*callback)(int event, struct widget *from, s32 param, int owner, char *data);
+  int (*callback)(int event, struct widget *from, s32 param, int owner, const u8 *data);
   struct widget *callback_owner;
 };
 

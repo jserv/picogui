@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.77 2002/11/15 12:53:12 micahjd Exp $
+/* $Id: memtheme.c,v 1.78 2002/11/19 13:16:11 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -34,7 +34,7 @@
 #include <pgserver/timer.h>
 #include <pgserver/svrtheme.h>
 #include <pgserver/divtree.h>
-#include <pgserver/pgnet.h>
+#include <pgserver/requests.h>
 #include <pgserver/pgstring.h>
 #include <pgserver/configfile.h>
 #include <pgserver/os.h>
@@ -473,7 +473,7 @@ void theme_divtree_update(struct pgmemtheme *th) {
   }
 }
 
-g_error theme_load(handle *h,int owner,char *themefile,
+g_error theme_load(handle *h,int owner,const u8 *themefile,
 		   u32 themefile_len) {
   g_error e;
   struct pgtheme_header *hdr;
@@ -487,7 +487,7 @@ g_error theme_load(handle *h,int owner,char *themefile,
   struct pgtheme_thobj *thop;
   struct pgmemtheme_thobj *mthop,*thobjarray;
   u32 themefile_remaining = themefile_len;
-  char *themefile_start = themefile;
+  const char *themefile_start = themefile;
   struct pgtheme_prop *propp;
   struct pgmemtheme_prop *mpropp;
   struct pgmemtheme *th;
@@ -641,9 +641,8 @@ g_error theme_load(handle *h,int owner,char *themefile,
       switch (mpropp->loader = ntohs(propp->loader)) {
 
       case PGTH_LOAD_REQUEST: {
-	struct pgrequest *req;
-	void *data;
-	int fatal;
+	struct request_data r;
+	memset(&r,0,sizeof(r));
 	
 	/* Validate offset, and load pointers */
 	if (mpropp->data >= (themefile_len-sizeof(struct pgrequest))) {
@@ -655,21 +654,18 @@ g_error theme_load(handle *h,int owner,char *themefile,
 	   return mkerror(PG_ERRT_FILEFMT,100); /* not aligned */
 	}
 
-	req = (struct pgrequest *) (themefile_start + mpropp->data);
-	req->type = ntohs(req->type);
-	req->size = ntohl(req->size);
-	data = (void *) (req+1);
-	if (req->type>PGREQ_UNDEF) req->type = PGREQ_UNDEF;
+	r.in.req  = (struct pgrequest *) (themefile_start + mpropp->data);
+	r.in.data = (void *) (r.in.req+1);
+	r.in.owner = owner;
 
-#ifdef DEBUG_THEME
-	printf("Theme request loader executing: type = %d, size = %d\n",req->type,req->size);
-#endif
-	
 	/* Dispatch the request packet */
-	if (iserror(e = (*rqhtab[req->type])(owner,req,data,&mpropp->data,&fatal))) {
+	if (iserror(e = request_exec(&r))) {
 	  handle_free(owner,*h);
 	  return e;
 	}
+	if (r.out.free_response_data)
+	  g_free(r.out.response_data);
+	mpropp->data = r.out.ret;
 
 	/* Group the handle so it is cleaned up at the same time */
 	handle_group(owner,*h,mpropp->data,-1);

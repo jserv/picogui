@@ -1,4 +1,4 @@
-/* $Id: svrtheme.h,v 1.14 2002/11/03 04:54:24 micahjd Exp $
+/* $Id: svrtheme.h,v 1.15 2002/11/19 13:16:11 micahjd Exp $
  * 
  * svrtheme.h - functions and data structures for themes, used
  *              only in the server
@@ -96,7 +96,7 @@ struct pgmemtheme_prop *find_prop(struct pgmemtheme_thobj *tho,unsigned short id
 u32 theme_lookup(u16 object, u16 property);
 
 /* Load a theme into memory from a compiled theme heap */
-g_error theme_load(handle *h,int owner,char *themefile,
+g_error theme_load(handle *h,int owner,const u8 *themefile,
 		   u32 themefile_len);
 
 /* Remove a theme from memory */

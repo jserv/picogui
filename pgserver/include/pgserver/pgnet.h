@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.27 2002/11/03 04:54:24 micahjd Exp $
+/* $Id: pgnet.h,v 1.28 2002/11/19 13:16:11 micahjd Exp $
  *
  * pgnet.h - Server-side networking interface common to all transports
  *
@@ -65,22 +65,6 @@ extern fd_set evtwait;
 
 #define REQUEST_BACKLOG 10  /* Should be high enough? */
 
-/* No translation needed here */
-/*  #ifdef UCLINUX */
-/*  #undef ntohl */
-/*  #undef ntohs */
-/*  #undef htonl */
-/*  #undef htons */
-/*  #define ntohl(x) (x) */
-/*  #define ntohs(x) (x) */
-/*  #define htonl(x) (x) */
-/*  #define htons(x) (x) */
-/*  #endif */
-
-
-/********* Functions provided by dispatch.c */
-
-int dispatch_packet(int from,struct pgrequest *req,void *data);
 
 /********* Functions provided by request.c */
 
@@ -90,7 +74,7 @@ void net_release(void);
 void net_iteration(void); /* This is called in a loop as long
 			     as PicoGUI is running */
 
-void post_event(int event,struct widget *from,s32 param,int owner,char *data);
+void post_event(int event,struct widget *from,s32 param,int owner,const char *data);
 
 /* Post an event to every client */
 void post_event_global(int event, struct widget *from, s32 param, char *data);
@@ -168,23 +152,6 @@ struct event *get_event(int owner,int remove);
 
 /* Returns the number of pending events for a particular connection */
 int check_event(int owner);
-
-/* All incoming packets are passed to a reqhandler
-   owner, req, and data are from the incoming packet.
-   The returned error code and 'ret' are used to
-   synthesize a return packet.  Normally g_errors are
-   just passed back to the client.  If it is a serious
-   error that requires the connection to be closed
-   (or if the client requested a connection close!)
-   fatal can be set to one.
-*/
-/* Make a declaration for a handler */
-#define DEF_REQHANDLER(n) g_error rqh_##n(int owner, struct pgrequest *req, void *data, u32 *ret, int *fatal);
-/* Make a handler table entry */
-#define TAB_REQHANDLER(n) &rqh_##n ,
-
-/* Request handler table */
-extern g_error (*rqhtab[])(int,struct pgrequest*,void*,u32*,int*);
 
 /* Nonzero when the main program is waiting for network/user input 
    in a select() call */
