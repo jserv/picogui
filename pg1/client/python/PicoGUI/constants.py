@@ -493,7 +493,7 @@ _constants = {
                 _default:	    (0, _stop), # so you can use None
             }),
             'setcolor':		  (0x07, _stop),
-            'setfont':		  (0x17, _stop),
+            'setfont':		  (0x17, _getFont),
             'setlgop':		  (0x27, {
                 'null':		    (0, _stop),
                 'none':		    (1, _stop),
