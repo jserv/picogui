@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.20 2000/12/17 05:53:50 micahjd Exp $
+/* $Id: dispatch.c,v 1.21 2000/12/31 17:10:27 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -210,7 +210,7 @@ g_error rqh_mkwidget(int owner, struct pgrequest *req,
 
 g_error rqh_mkbitmap(int owner, struct pgrequest *req,
 		   void *data, unsigned long *ret, int *fatal) {
-  struct bitmap *bmp;
+  hwrbitmap bmp;
   handle h;
   g_error e;
   int w;

@@ -1,4 +1,4 @@
-/* $Id: svgainput.c,v 1.13 2000/12/17 05:53:50 micahjd Exp $
+/* $Id: svgainput.c,v 1.14 2000/12/31 17:05:58 micahjd Exp $
  *
  * svgainput.h - input driver for SVGAlib
  *
@@ -339,6 +339,7 @@ g_error svgainput_init(void) {
 }
  
 void svgainput_close(void) {
+  ioctl(__svgalib_kbd_fd,KDSETLED,0);   /* Turn off the lights */
   keyboard_close();
 }
 

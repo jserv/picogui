@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.3 2000/12/17 05:53:50 micahjd Exp $
+/* $Id: linear8.c,v 1.4 2000/12/31 17:12:29 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -246,8 +246,8 @@ void linear8_scrollblit(int src_x,int src_y,
 /* Blit from 1bpp packed character to the screen,
  * leaving zeroed pixels transparent */
 void linear8_charblit(unsigned char *chardat,int dest_x,
-		  int dest_y,int w,int h,int lines,
-		  hwrcolor c) {
+		      int dest_y,int w,int h,int lines,
+		      hwrcolor c,struct cliprect *clip) {
   int bw = w;
   int iw,i;
   int olines = lines;
@@ -287,7 +287,7 @@ void linear8_charblit(unsigned char *chardat,int dest_x,
 /* Like charblit, but rotate 90 degrees anticlockwise whilst displaying */
 void linear8_charblit_v(unsigned char *chardat,int dest_x,
 		  int dest_y,int w,int h,int lines,
-		  hwrcolor c) {
+		  hwrcolor c,struct cliprect *clip) {
   int bw = w;
   int iw,i;
   int olines = lines;
@@ -370,9 +370,9 @@ void linear8_blit(struct stdbitmap *srcbit,int src_x,int src_y,
 		  int dest_x, int dest_y,
 		  int w, int h, int lgop) {
   struct stdbitmap screen;
-  unsigned char *src,*dest;
-  int i,offset_src,offset_dest;
-
+  unsigned char *dest;
+  int i,offset_dest;
+  
   /* Screen-to-screen blit */
   if (!srcbit) {
     srcbit = &screen;
@@ -381,10 +381,8 @@ void linear8_blit(struct stdbitmap *srcbit,int src_x,int src_y,
     screen.h = vid->yres;
   }
 
-  /* A few calculations */
-  src = srcbit->bits + src_x + src_y*srcbit->w;
+  /* Calculations needed by both normal and tiled blits */
   dest = LINE(dest_y) + dest_x;
-  offset_src = srcbit->w - w;
   offset_dest = vid->fb_bpl - w;
 
   /* The following little macro mess is to repeat the
@@ -395,26 +393,79 @@ void linear8_blit(struct stdbitmap *srcbit,int src_x,int src_y,
      You still have to admit that this blitter is _much_ better
      written than the one on the old SDL driver...
 
-     This loop does as much as possible 32 bits at a time
+     The loop does as much as possible 32 bits at a time
   */
 
-#define BLITLOOP(op,xtra32,xtra8) \
+  /* Normal blit loop */
+#define BLITLOOP(op,xtra32,xtra8)                                   \
     for (;h;h--,src+=offset_src,dest+=offset_dest) {                \
-      for (i=w>>2;i;i--,src+=4,dest+=4)                  \
+      for (i=w>>2;i;i--,src+=4,dest+=4)                             \
 	*((unsigned long *)dest) op *((unsigned long *)src) xtra32; \
       for (i=w&3;i;i--,src++,dest++)                                \
 	*dest op *src xtra8;                                        \
     }
 
-  switch (lgop) {
-  case PG_LGOP_NONE:       BLITLOOP(= ,,);                   break;
-  case PG_LGOP_OR:         BLITLOOP(|=,,);                   break;
-  case PG_LGOP_AND:        BLITLOOP(&=,,);                   break;
-  case PG_LGOP_XOR:        BLITLOOP(^=,,);                   break;
-  case PG_LGOP_INVERT:     BLITLOOP(= ,^ 0xFFFFFFFF,^ 0xFF); break;
-  case PG_LGOP_INVERT_OR:  BLITLOOP(|=,^ 0xFFFFFFFF,^ 0xFF); break;
-  case PG_LGOP_INVERT_AND: BLITLOOP(&=,^ 0xFFFFFFFF,^ 0xFF); break;
-  case PG_LGOP_INVERT_XOR: BLITLOOP(^=,^ 0xFFFFFFFF,^ 0xFF); break;
+  /* Tiled blit loop - similar to tileblit() but always restarts the bitmap
+   * on a tile boundary, instead of tiling a bitmap section */
+#define TILEBLITLOOP(op,xtra32,xtra8)                                     \
+   while (h) {                                                            \
+      for (;sh && h;sh--,h--,src_line+=srcbit->w,dest+=offset_dest) {     \
+	 src = src_line + src_x;                                          \
+	 swm = (swp < w) ? swp : w;                                       \
+	 for (dw=w;dw;) {                                                 \
+	    for (sw=swm>>2;sw;sw--,dw-=4,src+=4,dest+=4)                  \
+	      *((unsigned long *)dest) op *((unsigned long *)src) xtra32; \
+	    for (sw=swm&3;sw;sw--,src++,dest++,dw--)                      \
+	      *dest op *src xtra8;                                        \
+	    src = src_line;                                               \
+	    swm = (srcbit->w < dw) ? srcbit->w : dw;                      \
+	 }                                                                \
+      }                                                                   \
+      sh = srcbit->h;                                                     \
+      src_line = srcbit->bits;                                            \
+   }
+   
+  /* Is this a normal or tiled blit? */
+  if (w>(srcbit->w-src_x) || h>(srcbit->h-src_y)) {   /* Tiled */
+    unsigned char *src,*src_line;
+    int dw,sh,swm,sw,swp;
+     
+    /* A few calculations for tiled blits */
+    src_x %= srcbit->w;
+    src_y %= srcbit->h;
+    src_line = srcbit->bits + src_y * srcbit->w; 
+    sh = srcbit->h - src_y;
+    swp = srcbit->w - src_x;
+
+    switch (lgop) {
+    case PG_LGOP_NONE:       TILEBLITLOOP(= ,,);                   break;
+    case PG_LGOP_OR:         TILEBLITLOOP(|=,,);                   break;
+    case PG_LGOP_AND:        TILEBLITLOOP(&=,,);                   break;
+    case PG_LGOP_XOR:        TILEBLITLOOP(^=,,);                   break;
+    case PG_LGOP_INVERT:     TILEBLITLOOP(= ,^ 0xFFFFFFFF,^ 0xFF); break;
+    case PG_LGOP_INVERT_OR:  TILEBLITLOOP(|=,^ 0xFFFFFFFF,^ 0xFF); break;
+    case PG_LGOP_INVERT_AND: TILEBLITLOOP(&=,^ 0xFFFFFFFF,^ 0xFF); break;
+    case PG_LGOP_INVERT_XOR: TILEBLITLOOP(^=,^ 0xFFFFFFFF,^ 0xFF); break;
+    }
+  }
+  else {                                        /* Normal */
+    int offset_src;
+    unsigned char *src;
+
+    /* Only needed for normal blits */
+    src = srcbit->bits + src_x + src_y*srcbit->w;
+    offset_src = srcbit->w - w;
+
+    switch (lgop) {
+    case PG_LGOP_NONE:       BLITLOOP(= ,,);                   break;
+    case PG_LGOP_OR:         BLITLOOP(|=,,);                   break;
+    case PG_LGOP_AND:        BLITLOOP(&=,,);                   break;
+    case PG_LGOP_XOR:        BLITLOOP(^=,,);                   break;
+    case PG_LGOP_INVERT:     BLITLOOP(= ,^ 0xFFFFFFFF,^ 0xFF); break;
+    case PG_LGOP_INVERT_OR:  BLITLOOP(|=,^ 0xFFFFFFFF,^ 0xFF); break;
+    case PG_LGOP_INVERT_AND: BLITLOOP(&=,^ 0xFFFFFFFF,^ 0xFF); break;
+    case PG_LGOP_INVERT_XOR: BLITLOOP(^=,^ 0xFFFFFFFF,^ 0xFF); break;
+    }
   }
 }
 
@@ -443,21 +494,21 @@ void linear8_unblit(int src_x,int src_y,
 /* Load our driver functions into a vidlib */
 void setvbl_linear8(struct vidlib *vid) {
   /* We take the default for these */
-  vid->setmode        = &def_setmode;
-  vid->close          = &emulate_dos;
-  vid->update         = &emulate_dos;
-  vid->frame          = &def_frame;
-  vid->bitmap_loadxbm = &def_bitmap_loadxbm;
-  vid->bitmap_loadpnm = &def_bitmap_loadpnm;
-  vid->bitmap_new     = &def_bitmap_new;
-  vid->bitmap_free    = &def_bitmap_free;
-  vid->bitmap_getsize = &def_bitmap_getsize;
-  vid->sprite_show    = &def_sprite_show;
-  vid->sprite_hide    = &def_sprite_hide;
-  vid->sprite_update  = &def_sprite_update;
-  vid->sprite_showall = &def_sprite_showall;
-  vid->sprite_hideall = &def_sprite_hideall;
-
+  vid->setmode            = &def_setmode;
+  vid->close              = &emulate_dos;
+  vid->update             = &def_update;
+  vid->bitmap_loadxbm     = &def_bitmap_loadxbm;
+  vid->bitmap_loadpnm     = &def_bitmap_loadpnm;
+  vid->bitmap_new         = &def_bitmap_new;
+  vid->bitmap_free        = &def_bitmap_free;
+  vid->bitmap_getsize     = &def_bitmap_getsize;
+  vid->sprite_show        = &def_sprite_show;
+  vid->sprite_hide        = &def_sprite_hide;
+  vid->sprite_update      = &def_sprite_update;
+  vid->sprite_showall     = &def_sprite_showall;
+  vid->sprite_hideall     = &def_sprite_hideall;
+  vid->sprite_protectarea = &def_sprite_protectarea;
+   
   /* In this linear8 driver, replacing the default version */
   vid->color_pgtohwr  = &linear8_color_pgtohwr;
   vid->color_hwrtopg  = &linear8_color_hwrtopg;

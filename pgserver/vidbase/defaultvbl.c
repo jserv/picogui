@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.3 2000/12/17 05:53:50 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.4 2000/12/31 17:12:29 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -40,6 +40,9 @@ g_error def_setmode(int xres,int yres,int bpp,unsigned long flags) {
 }
 
 void emulate_dos(void) {
+}
+
+void def_update(int x,int y,int w,int h) {
 }
 
 hwrcolor def_color_pgtohwr(pgcolor c) {
@@ -319,13 +322,6 @@ void def_gradient(int x,int y,int w,int h,int angle,
   }
 }
 
-void def_frame(int x,int y,int w,int h,hwrcolor c) {
-  (*vid->slab)(x,y,w,c);
-  (*vid->slab)(x,y+h-1,w,c);
-  (*vid->bar)(x,y+1,h-2,c);
-  (*vid->bar)(x+w-1,y+1,h-2,c);
-}
-
 void def_dim(int x,int y,int w,int h) {
   int i,xx;
 
@@ -353,7 +349,7 @@ void def_scrollblit(int src_x,int src_y,
 
 void def_charblit(unsigned char *chardat,int dest_x,
 		  int dest_y,int w,int h,int lines,
-		  hwrcolor c) {
+		  hwrcolor c,struct cliprect *clip) {
   int bw = w;
   int iw,bit,x,i;
   int olines = lines;
@@ -379,7 +375,7 @@ void def_charblit(unsigned char *chardat,int dest_x,
 
 void def_charblit_v(unsigned char *chardat,int dest_x,
 		  int dest_y,int w,int h,int lines,
-		  hwrcolor c) {
+		  hwrcolor c,struct cliprect *clip) {
   int bw = w;
   int iw,bit,y,i;
   int olines = lines;
@@ -731,6 +727,8 @@ void def_tileblit(struct stdbitmap *src,
 
 void def_sprite_show(struct sprite *spr) {
 
+  if (spr->onscreen || !spr->visible) return;
+   
   /* Clip to a divnode */
   if (spr->clip_to) {
     if (spr->x < spr->clip_to->x) spr->x = spr->clip_to->x;
@@ -743,11 +741,23 @@ void def_sprite_show(struct sprite *spr) {
     spr->ow = spr->w; spr->oh = spr->h;
   }
   else {
-    /* Clip width and height to screen edge */
+    /* Clip to screen edge, cursor style. For correct mouse cursor
+     * functionality and for sanity. 
+     */
+    if (spr->x<0) 
+       spr->x = 0;
+    else if (spr->x>(vid->xres-1))
+       spr->x = vid->xres-1;
+     
+    if (spr->y<0)
+       spr->y = 0;
+    else if (spr->y>(vid->yres-1))
+       spr->y = vid->yres-1;
+    
     spr->ow = vid->xres - spr->x;
     if (spr->ow > spr->w) spr->ow = spr->w;
     spr->oh = vid->yres - spr->y;
-    if (spr->oh > spr->h) spr->oh = spr->h;
+    if (spr->oh > spr->h) spr->oh = spr->h;     
   }
 
   /* Update coordinates */
@@ -769,53 +779,84 @@ void def_sprite_show(struct sprite *spr) {
 		 spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_NONE);
 
   add_updarea(spr->x,spr->y,spr->ow,spr->oh);
+
+  spr->onscreen = 1;
+   
+   /**** Debuggative Cruft - something I used to test line clipping ****/
+/*
+    {
+	int xp[] = {
+	   55,-5,-55,5,30,0,-30,0
+	};
+	int yp[] = {
+	   5,55,-5,-55,0,-30,0,30
+	};
+	struct divnode d;
+	struct gropnode g;
+	int i;
+	memset(&d,0,sizeof(d));
+	memset(&g,0,sizeof(g));
+	d.x = 100;
+	d.y = 100;
+	d.w = 93;
+	d.h = 72;
+	d.grop = &g;
+	g.type = PG_GROP_LINE;
+	g.param[0] = (*vid->color_pgtohwr)(0xFFFF00);
+	(*vid->rect)(d.x,d.y,d.w,d.h,(*vid->color_pgtohwr)(0x004000));
+	g.x = spr->x-d.x;
+	g.y = spr->y-d.y;
+	for (i=0;i<8;i++) {
+	   g.x += g.w; 
+	   g.y += g.h;
+	   g.w = xp[i];
+	   g.h = yp[i];
+	   grop_render(&d);
+	}
+	(*vid->update)(d.x,d.y,d.w,d.h);
+     }
+*/
+   
 }
 
 void def_sprite_hide(struct sprite *spr) {
-  if (spr->ox == -1) return;
+  static struct cliprect cr;
+   
+  if ( (!spr->onscreen) ||
+       (spr->ox == -1) )
+     return;
 
+  cr.x1 = spr->x;
+  cr.y1 = spr->y;
+  cr.x2 = spr->x+spr->w-1;
+  cr.y2 = spr->y+spr->h-1;
+   
+  /* Protect that area of the screen */
+  def_sprite_protectarea(&cr,spr->next);
+   
   /* Put back the old image */
   (*vid->blit)(spr->backbuffer,0,0,
 	       spr->ox,spr->oy,spr->ow,spr->oh,PG_LGOP_NONE);
   add_updarea(spr->ox,spr->oy,spr->ow,spr->oh);
+
+  spr->onscreen = 0;
 }
 
 void def_sprite_update(struct sprite *spr) {
-  if (sprites_hidden) return;
-
-  if (spr->next) {
-    (*vid->sprite_hideall)();
-    (*vid->sprite_showall)();
-  }
-  else {
-    /* Special case for the topmost sprite.
-       Could optimize every case to redraw only the
-       necessary cases, but in 99% of the cases this
-       gets the job done. */
-    (*vid->sprite_hide)(spr);
-    (*vid->sprite_show)(spr);
-  }
+  (*vid->sprite_hide)(spr);
+  (*vid->sprite_show)(spr);
 
   /* Redraw */
-  if (upd_w) {
-#ifdef DEBUG_VIDEO
-    /* Show update rectangles */
-    //    (*vid->frame)(upd_x,upd_y,upd_w,upd_h,(*vid->color_pgtohwr)(0xFF0000));
-#endif
-    (*vid->update)(upd_x,upd_y,upd_w,upd_h);
-    upd_x = upd_y = upd_w = upd_h = 0;
-  } 
+  realize_updareas();
 }
 
 /* Traverse first -> last, showing sprites */
 void def_sprite_showall(void) {
   struct sprite *p = spritelist;
-  if (!sprites_hidden) return;
   while (p) {
     (*vid->sprite_show)(p);
     p = p->next;
   }
-  sprites_hidden = 0;
 }
 
 /* Traverse last -> first, hiding sprites */
@@ -825,9 +866,23 @@ void r_spritehide(struct sprite *s) {
   (*vid->sprite_hide)(s);
 }
 void def_sprite_hideall(void) {
-  if (sprites_hidden) return;
-  sprites_hidden = 1;
   r_spritehide(spritelist);
+}
+
+/* Hide necessary sprites in a given area */
+void def_sprite_protectarea(struct cliprect *in,struct sprite *from) {
+   /* Base case: from is null */
+   if (!from) return;
+
+   /* Load this all on the stack so we go backwards */
+   def_sprite_protectarea(in,from->next);
+   
+   /* Hide this sprite if necessary */
+   if ( ((from->x+from->w) >= in->x1) &&
+        ((from->y+from->h) >= in->y1) &&
+        (from->x <= in->x2) &&
+        (from->y <= in->y2) )
+     (*vid->sprite_hide)(from);
 }
 
 /* Load our driver functions into a vidlib */
@@ -840,13 +895,12 @@ void setvbl_default(struct vidlib *vid) {
   vid->addpixel = &def_addpixel;
   vid->subpixel = &def_subpixel;
   vid->clear = &def_clear;
-  vid->update = &emulate_dos;
+  vid->update = &def_update;
   vid->slab = &def_slab;
   vid->bar = &def_bar;
   vid->line = &def_line;
   vid->rect = &def_rect;
   vid->gradient = &def_gradient;
-  vid->frame = &def_frame;
   vid->dim = &def_dim;
   vid->scrollblit = &def_scrollblit;
   vid->charblit = &def_charblit;
@@ -862,6 +916,7 @@ void setvbl_default(struct vidlib *vid) {
   vid->sprite_update = &def_sprite_update;
   vid->sprite_showall = &def_sprite_showall;
   vid->sprite_hideall = &def_sprite_hideall;
+  vid->sprite_protectarea = &def_sprite_protectarea;
 }
 
 /* The End */
