@@ -51,6 +51,8 @@ for project in projects:
     mtbc = projectMTBC[project]
     if not mtbc:
         mtbc = ''
+    elif mtbc > 172800:
+        mtbc = "%.1fd" % (mtbc / 86400)
     elif mtbc > 7200:
         mtbc = "%.1fh" % (mtbc / 3600)
     elif mtbc > 120:
