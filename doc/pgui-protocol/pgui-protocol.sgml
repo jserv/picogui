@@ -3,7 +3,7 @@
 <book id="PicoGUI.Protocol">
  <bookinfo>
   <title>PicoGUI Protocol</title>
-  <subtitle>Version 20</>
+  <subtitle>Version 21</>
 
   <authorgroup>
    <author>
@@ -19,6 +19,7 @@
 
   <copyright>
    <year>2002</year>
+   <year>2003</year>
    <holder>Dave Poirier</holder>
   </copyright>
 
@@ -1792,9 +1793,35 @@ server returned data : depends of the event type
   </sect2>
 
   <sect2 id="pgreq-writeto">
+   <title>PGREQ_WRITECMD - Send a command to a widget </>
+   <programlisting>
+type                 : PGREQ_WRITECMD (31)
+client lib equivalent: pgWriteCmd()
+additional data      : <link linkend="pgreqdhandlestruct">struct pgreqd_handlestruct</>
+                       data
+server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : none
+   </programlisting>
+   <para>
+	Write a widget-defined command to a widget. For example,
+	this can be used to send commands to a terminal, textbox or
+	canvas widget.
+   </para>
+   <para>
+        The first 32 bits of the data are the command code; after that, follows
+	a number of 16-bit arguments to that command. The meaning of the command
+	and arguments is defined by the widget.
+   </para>
+   <para>
+	See <xref linkend="pgreqdhandlestruct"> for the
+	<constant>pgreqd_handlestruct</> format.
+   </para>
+  </sect2>
+
+  <sect2 id="pgreq-writeto">
    <title>PGREQ_WRITETO - Write data to a widget </>
    <programlisting>
-type                 : PGREQ_WRITETO (31)
+type                 : PGREQ_WRITEDATA (55)
 client lib equivalent: pgWriteData()
 additional data      : <link linkend="pgreqdhandlestruct">struct pgreqd_handlestruct</>
                        data
@@ -1803,8 +1830,7 @@ server returned data : none
    </programlisting>
    <para>
 	Write a chunk of widget-defined data to a widget. For example, this
-	can be used to send text to a terminal widget or commands to a canvas
-	widget.
+	can be used to send text to a textbox widget.
    </para>
    <para>
 	See <xref linkend="pgreqdhandlestruct"> for the
@@ -2202,6 +2228,20 @@ chbtn = (<structfield>pgresponse_event.param</> &gt;&gt; 28) &amp; 0xF;
   <row><entry>PG_WP_PASSWORD</><entry>50</><entry></></>
   <row><entry>PG_WP_HOTKEY_FLAGS</><entry>51</><entry>Keyboard event flags for the hotkey (PG_KF_*)</></>
   <row><entry>PG_WP_HOTKEY_CONSUME</><entry>52</><entry>Flag indicating whether to consume the key event when a hotkey comes in</></>
+  <row><entry>PG_WP_WIDTH</><entry>53</><entry>A read only property for all widgets (use PG_WP_SIZE to change the size). Always in pixels</></>
+  <row><entry>PG_WP_HEIGHT</><entry>54</><entry>A read only property for all widgets (use PG_WP_SIZE to change the size). Always in pixels</></>
+  <row><entry>PG_WP_SPACING</><entry>55</><entry>Override the normal spacing between buttons</></>
+  <row><entry>PG_WP_MINIMUM</><entry>56</><entry>Used by the panelbar widget to set minimum size</></>
+  <row><entry>PG_WP_MULTILINE</><entry>57</><entry>Turn this off on the textbox widget to get a single line textbox</></>
+  <row><entry>PG_WP_SELECTION</><entry>58</><entry>Selected text in the textedit widget</></>
+  <row><entry>PG_WP_READONLY</><entry>59</><entry></></>
+  <row><entry>PG_WP_INSERTMODE</><entry>60</><entry>Set to a PG_INSERT_* constant, for textbox widget</></>
+  <row><entry>PG_WP_TYPE</><entry>61</><entry>Return the type of the widget (PG_WIDGET_*)</></>
+  <row><entry>PG_WP_TAB</><entry>62</><entry>The tab associated with a tabpage widget</></>
+  <row><entry>PG_WP_TAB_BAR</><entry>63</><entry>The tab bar associated with a tabpage widget</></>
+  <row><entry>PG_WP_POPUP_IS_MENU</><entry>64</><entry>Popup is menu flag</></>
+  <row><entry>PG_WP_POPUP_IS_SUBMENU</><entry>65</><entry>Popup is submenu flag</></>
+  <row><entry>PG_WP_CURSOR_POSITION</><entry>66</><entry>Textbox cursor position</></>
   </tbody></tgroup></table>
  </appendix>
 
@@ -2253,7 +2293,7 @@ chbtn = (<structfield>pgresponse_event.param</> &gt;&gt; 28) &amp; 0xF;
   <row><entry>PGREQ_SETPAYLOAD</><entry>28</><entry>Set an object's payload</></>
   <row><entry>PGREQ_GETPAYLOAD</><entry>29</><entry>Get an object's payload</></>
   <row><entry>PGREQ_CHCONTEXT</><entry>30</><entry>Change a handle's context</></>
-  <row><entry>PGREQ_WRITETO</><entry>31</><entry>Stream data to a widget</></>
+  <row><entry>PGREQ_WRITECMD</><entry>31</><entry>Send a command to a widget</></>
   <row><entry>PGREQ_UPDATEPART</><entry>32</><entry>Update subtree defined by wgt</></>
   <row><entry>PGREQ_MKARRAY</><entry>33</><entry>Make a array, return handle</></>  
   <row><entry>PGREQ_RENDER</><entry>34</><entry>Render gropnode(s) to a bitmap</></>
@@ -2277,6 +2317,7 @@ chbtn = (<structfield>pgresponse_event.param</> &gt;&gt; 28) &amp; 0xF;
   <row><entry>PGREQ_GETCONTEXT</><entry>52</><entry>Get the app's current handle context</></>
   <row><entry>PGREQ_INFILTERSEND</><entry>53</><entry>Send a trigger to an input filter</></>
   <row><entry>PGREQ_MKSHMBITMAP</><entry>54</><entry>Convert a picogui bitmap to a shared memory segment</></>
+  <row><entry>PGREQ_WRITEDATA</><entry>55</><entry>Stream data to a widget</></>
   </tbody></tgroup></table>
  </appendix>
 
@@ -2865,6 +2906,7 @@ chbtn = (<structfield>pgresponse_event.param</> &gt;&gt; 28) &amp; 0xF;
    <row><entry>PG_WE_DEACTIVATE</><entry>0x002</><entry>Sent when the user clicks outside the active popup</></>
    <row><entry>PG_WE_CLOSE</><entry>0x003</><entry>A top-level widget has closed</></>
    <row><entry>PG_WE_FOCUS</><entry>0x004</><entry>Sent when a button is focused, only if it has PG_EXEV_FOCUS. The field widget always sends this.</></>
+  <row><entry>PG_WE_CHANGED</><entry>0x005</><entry>Sent by the textbox when its contents change (but only after a delay)</></>
    <row><entry>PG_WE_PNTR_DOWN</><entry>0x204</><entry>The "mouse" button is now down</></>
    <row><entry>PG_WE_PNTR_UP</><entry>0x205</><entry>The "mouse" button is now up</></>
    <row><entry>PG_WE_PNTR_RELEASE</><entry>0x206</><entry>The "mouse" button was released outside the widget</></>
