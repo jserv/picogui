@@ -38,6 +38,9 @@ print """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
    <div class="dateBox">
       %s
    </div>
+   <div class="providerBox">
+      <a href="/"><img src="/images/web/navi64.png" border="0" width="64" height="39" alt="Navi"/></a>
+   </div>
    <div class="title">
       <a href="http://navi.picogui.org/svn/picogui/trunk/tools/irc/cia.html">CIA bot</a> statistics
    </div>
