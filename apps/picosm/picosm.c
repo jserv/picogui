@@ -90,6 +90,8 @@ int evtLogin(struct pgEvent *evt){
   /* Advance focus to the password field if the username field is nonempty */
   if (pgGetString(pgGetWidget(interface->wLogin,PG_WP_TEXT))[0])
     pgFocus(interface->wPasswd);
+
+  return 1;
 }
 
 int evtReboot(struct pgEvent *evt){
