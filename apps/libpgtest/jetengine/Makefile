@@ -5,7 +5,8 @@ OBJS = \
 	PGTexture.o		\
 	ScriptableObject.o	\
 	PythonInterpreter.o	\
-	FlatLand.o
+	FlatLand.o		\
+	Ship.o
 
 HEADERS = \
 	EmbeddedPGserver.h	\
@@ -14,7 +15,8 @@ HEADERS = \
 	PGTexture.h		\
 	ScriptableObject.h	\
 	PythonInterpreter.h	\
-	FlatLand.h
+	FlatLand.h		\
+	Ship.h
 
 BIN = jetengine
 

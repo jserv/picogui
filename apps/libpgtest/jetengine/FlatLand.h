@@ -15,7 +15,7 @@ class FlatLand : public ScriptableObject {
   void animate(float seconds);
 
  private:
-  PGTexture *ground;
+  PGTexture *groundTexture;
   float x;
 };
 

@@ -1,9 +1,12 @@
 import PicoGUI
 
-print "Imporing python module"
+
+def inputHandler(t, sender):
+    if t.dev == 'mouse' and t.name == 'move':
+        ship.yaw = t.x
+        
 
 def thread():
-    print "Starting python thread..."
 
     # Load our widget template, importing widgets from it
     app = PicoGUI.TemplateApp(open("data/hud.wt").read(),[
@@ -22,11 +25,7 @@ def thread():
     # This adds a filter that recieves all events and absorbs none,
     # placed immediately after the input filter that dispatches pointing
     # events to picogui widgets.
-    def myfilter(t, sender):
-        print (t.dev, t.name, t.sender, t.__dict__)
-    app.link(myfilter, app.addInfilter(
+    app.link(inputHandler, app.addInfilter(
         app.server.getresource('infilter pntr dispatch')))
 
     app.run()
-
-    print "Python thread ending"

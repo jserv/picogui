@@ -6,9 +6,8 @@
 #include "EmbeddedPGserver.h"
 #include "PythonThread.h"
 #include "PythonInterpreter.h"
-#include "PGTexture.h"
 #include "FlatLand.h"
-#include "ScriptableObject.h"
+#include "Ship.h"
 
 
 int main(int argc, char **argv) {
@@ -17,10 +16,12 @@ int main(int argc, char **argv) {
     EmbeddedPGserver pgserver(argc, argv);
     PythonThread pythread;
     FlatLand world;
+    Ship ship;
     u32 old_ticks, new_ticks;
     float frame_time;
 
     pythread.addObject("world",&world);
+    pythread.addObject("ship",&ship);
     pythread.run();
 
     glViewport(0, 0, 640, 480);
@@ -28,8 +29,6 @@ int main(int argc, char **argv) {
     glLoadIdentity();
     gluPerspective(50, 640.0/480.0, 1, 10000);
     glMatrixMode(GL_MODELVIEW);
-
-    PGTexture ship("jetengine/ship");
 
     old_ticks = SDL_GetTicks();
     while (pgserver.mainloopIsRunning()) {
@@ -46,27 +45,8 @@ int main(int argc, char **argv) {
       glTranslatef(0,-20,-5);
 
       world.draw();
+      ship.draw();
       world.animate(frame_time);
-
-      /* Ship */
-      glTranslatef(0,12,-30);
-      glEnable(GL_TEXTURE_2D);
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glBlendEquation(GL_FUNC_ADD);
-      ship.bind();
-      glColor3f(1,1,1);
-      glBegin(GL_QUADS);
-      glTexCoord2f(0,0);
-      glVertex3f(-10,5, -10);
-      glTexCoord2f(1,0);
-      glVertex3f(10,5, -10);
-      glTexCoord2f(1,1);
-      glVertex3f(10,0,10);
-      glTexCoord2f(0,1);
-      glVertex3f(-10,0,10);
-      glEnd();
-      glDisable(GL_TEXTURE_2D);
 
       pgserver.mainloopIteration();
     }  

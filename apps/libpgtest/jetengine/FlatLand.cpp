@@ -5,13 +5,13 @@
 #include "PGTexture.h"
 
 FlatLand::FlatLand() {
-  ground = new PGTexture("jetengine/grass");
+  groundTexture = new PGTexture("jetengine/grass");
   setAttr("velocity",0.0f);
   x = 0;
 }
 
 FlatLand::~FlatLand() {
-  delete ground;
+  delete groundTexture;
 }
 
 void FlatLand::animate(float seconds) {
@@ -32,7 +32,7 @@ void FlatLand::draw() {
   
   /* Our ground plane, using 'x' as a bias for the v texture coordinates */
   glEnable(GL_TEXTURE_2D);
-  ground->bind();
+  groundTexture->bind();
   glBegin(GL_QUADS);
   glColor3f(0.8,0.8,0.8);
   glTexCoord2f(0,x);
