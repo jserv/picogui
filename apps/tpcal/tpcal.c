@@ -175,6 +175,7 @@ void showTransformations(void)
 		     "You completed calibration!\n\n" 
 		     "%s",str);
 #endif
+  pgFlushRequests();
   exit(0);
 }
 
