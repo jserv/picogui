@@ -1,26 +1,27 @@
-/* $Id: client_c.h,v 1.39 2001/03/30 23:34:34 micahjd Exp $
+/* $Id: client_c.h,v 1.40 2001/04/11 16:42:10 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  * 
- * This program is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
  * 
- * Contributors: Philippe Ney <philippe.ney@smartdata.ch>
+ * Contributors: 
  * 
+ *  Philippe Ney <philippe.ney@smartdata.ch>
  * 
  * 
  */
