@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.53 2001/02/15 02:03:36 micahjd Exp $
+/* $Id: picogui_client.c,v 1.54 2001/02/15 02:24:48 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -42,6 +42,7 @@
 #include <alloca.h>
 #include <string.h>   /* for memcpy(), memset(), strcpy() */
 #include <stdarg.h>   /* needed for pgRegisterApp and pgSetWidget */
+#include <stdlib.h>   /* for getenv() */
 
 /* PicoGUI */
 #include <picogui.h>            /* Basic PicoGUI include */
@@ -568,7 +569,8 @@ void pgInit(int argc, char **argv)
   _pgselect_handler = &select;
 
   /* Default tunables */
-  if (!(hostname = getenv("pgserver")))
+  hostname = getenv("pgserver");
+  if ((!hostname) || (!*hostname))
      hostname = PG_REQUEST_SERVER;
 
   /* Handle arguments we recognize, Leave others for the app */
@@ -589,7 +591,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: picogui_client.c,v 1.53 2001/02/15 02:03:36 micahjd Exp $\n");
+	fprintf(stderr,"$Id: picogui_client.c,v 1.54 2001/02/15 02:24:48 micahjd Exp $\n");
 	exit(1);
       }
       
@@ -772,9 +774,11 @@ void pgEventLoop(void) {
     num = 0;
     while (n) {
       if ( (((signed long)n->widgetkey)==PGBIND_ANY || n->widgetkey==evt.from) &&
-	   (((signed short)n->eventkey)==PGBIND_ANY || n->eventkey==evt.type) )
+	   (((signed short)n->eventkey)==PGBIND_ANY || n->eventkey==evt.type) ) {
+	 evt.extra = n->extra;
 	 if ((*n->handler)(&evt))
 	   goto skiphandlers;
+      }
 
        n = n->next;
     }
