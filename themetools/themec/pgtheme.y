@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.24 2000/10/19 01:40:33 micahjd Exp $
+/* $Id: pgtheme.y,v 1.25 2000/11/04 23:03:30 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -219,22 +219,23 @@ propertyval:  constexp          { $$.data = $1; $$.loader = PGTH_LOAD_NONE; $$.l
 	   |  STRING {
   unsigned char *buf;
   struct pgrequest *req;
+  int len = strlen($1);
 
   /* Allocate the buffer */
-  if (!(buf = malloc(sizeof(struct pgrequest)+strlen($1))))
+  if (!(buf = malloc(sizeof(struct pgrequest)+len)))
     yyerror("memory allocation error");
 
   /* Reserve space for the request header */
   req = (struct pgrequest *) buf;
   memset(req,0,sizeof(struct pgrequest));
   req->type = htons(PGREQ_MKSTRING);
-  req->size = htonl(strlen($1));
+  req->size = htonl(len);
 
   /* copy string and discard original */
-  memcpy(buf+sizeof(struct pgrequest),$1,strlen($1));
+  memcpy(buf+sizeof(struct pgrequest),$1,len);
   free($1);
 
-  $$.ldnode = newloader(buf,(sizeof(struct pgrequest)+strlen($1)));
+  $$.ldnode = newloader(buf,(sizeof(struct pgrequest)+len));
   $$.loader = PGTH_LOAD_REQUEST;
 }
            ;
