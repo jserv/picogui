@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.52 2001/08/05 10:50:52 micahjd Exp $
+/* $Id: div.c,v 1.53 2001/08/30 02:52:33 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -79,7 +79,7 @@ void divnode_recalc(struct divnode *n) {
 
      /* Process as a popup box size */
      if (n->flags & DIVNODE_SPLIT_POPUP) {
-       s16 x,y,w,h,margin;
+       s16 x,y,w,h,margin,i;
 
        n->flags &= ~DIVNODE_SPLIT_POPUP;   /* Clear flag */
 
@@ -105,6 +105,14 @@ void divnode_recalc(struct divnode *n) {
 	 w = max(n->div->cw,n->div->pw) - (margin<<1);
        if (!h)
 	 h = max(n->div->ch,n->div->ph) - (margin<<1);
+
+       /* The width and height specified in the theme are minimum values */
+       i = theme_lookup(n->owner->in->div->state,PGTH_P_WIDTH);
+       if (w<i)
+	 w = i;
+       i = theme_lookup(n->owner->in->div->state,PGTH_P_HEIGHT);
+       if (h<i)
+	 h = i;
 
        /* Special positioning codes */
 
