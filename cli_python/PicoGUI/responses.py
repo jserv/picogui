@@ -53,16 +53,10 @@ def _return(args):
 
 # events (pgresponse_event)
 
-class Event(object):
-	"""A PicoGUI Event.
-	"""
-	def __init__(self, evtype, evfrom, param):
-		self.type = evtype
-		self.evfrom = evfrom
-		self.param = param
+import events
 
 def _event(args):
-	return None, Event(*args)
+	return None, events.Event(*args)
 
 # big data (pgresponse_data)
 
@@ -100,7 +94,7 @@ _formats = (
 	None,				# types start at one
 	(_error,	'HHxxL'),	# errt, msglen, id
 	(_return,	'xxLL'),	# id, data
-	(_event,	'HLL'),		# event, from, param
+	(_event,	'HLL'),		# event type, from, param
 	(_data,		'xxLL'),	# id, size
 )
 

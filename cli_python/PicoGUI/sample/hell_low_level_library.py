@@ -39,7 +39,7 @@ def event_loop(connection):
   while 1:
     connection.send(requests.wait())
     ev = responses.next(pg_in)
-    if isinstance(ev, responses.Event) and ev.type == 3: # PG_WE_CLOSE
+    if isinstance(ev, responses.Event) and ev.name == 'close':
       return
 
 if __name__ == '__main__':
