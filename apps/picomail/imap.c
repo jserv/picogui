@@ -23,11 +23,16 @@ FILE *imapfp;
 /* How many messages in the folder? */
 int messages = 0;
 
+int connectionLocked = false;
+
 /* Counter for the command id... */
 int cmd;
 char cmdchar = 'A';
 
-
+char * imapCurrentHeader;
+char * imapCurrentMessage;
+int imapCurrentHeaderAlloc,
+	imapCurrentMessageAlloc;
 
 
 /* Reads a line from the fp. */
@@ -172,6 +177,20 @@ doheader( char * line )
     return SUCCESS;
 }
 
+int
+domessage( char * line )
+{
+	if (imapCurrentMessageAlloc < (strlen(line)+strlen(imapCurrentMessage) +3) )
+	{
+		imapCurrentMessageAlloc = strlen(line) + strlen(imapCurrentMessage) + 1024;
+		imapCurrentMessage = realloc(imapCurrentMessage, imapCurrentMessageAlloc);
+	}
+	strcat(imapCurrentMessage, line);
+	strcat(imapCurrentMessage, "\n");
+
+	return SUCCESS;
+}
+
 
 /* Login to the IMAP server... */
 int
@@ -242,7 +261,7 @@ imap_getlist()
 
 
 /* Get a message from server... */
-void
+char *
 imap_getmesg( int mesg )
 {
     char *header;
@@ -250,6 +269,12 @@ imap_getmesg( int mesg )
 
     header = malloc(512);
     text = malloc(512);
+    
+    imapCurrentMessageAlloc = 4048;
+    imapCurrentMessage = malloc ( imapCurrentMessageAlloc );
+
+    imapCurrentHeaderAlloc = 4048;
+    imapCurrentHeader = malloc( imapCurrentHeaderAlloc );
 
     sprintf( header, "FETCH %d RFC822.HEADER", mesg );
     sprintf( text, "FETCH %d RFC822.TEXT", mesg );
@@ -257,6 +282,9 @@ imap_getmesg( int mesg )
     check_connection();
     docmd( header, &donothing );
     docmd( text, &donothing );
+
+    printf("GETMESSAGEMESSAGE: %s\n", imapCurrentMessage);
+    return imapCurrentMessage;
 }
 
 

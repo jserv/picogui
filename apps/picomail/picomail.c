@@ -7,7 +7,7 @@
 
 #define CONFIG_FILE "/.picomail.conf"
 
-pghandle wBox, picomailapp,mesgviewer, messagebox;
+pghandle wBox,lastItem, picomailapp,mesgviewer, messagebox;
 int row;
 int selectedMessage = -1;
 
@@ -31,11 +31,16 @@ int deleteMessage(struct pgEvent *evt) {
 }
 
 int readMessage(struct pgEvent *evt) {
+	char *message;
+	
 	if (selectedMessage>0)
 	{
         pgSetWidget(mesgviewer,PG_WP_SIZE,0x7FFF,0);
         pgSetWidget(picomailapp,PG_WP_SIZE,0,0);
-		imap_getmesg(selectedMessage);
+	message = imap_getmesg(selectedMessage);
+        pgSetWidget(messagebox,
+              PG_WP_TEXT,pgNewString(message),
+                 0);
 	}
 	else
   	   pgMessageDialog (
@@ -60,14 +65,12 @@ int setSelected( struct pgEvent *evt ) {
 void
 addheader( char * sender, char * title, int msg )
 {
-    pghandle wItem;
-    
-    wItem = pgNewWidget(PG_WIDGET_LISTITEM,
+    lastItem = pgNewWidget(PG_WIDGET_LISTITEM,
                         row ? PGDEFAULT : PG_DERIVE_INSIDE,
-                        row ? PGDEFAULT : wBox);
+                        row ? lastItem : wBox);
         
-    pgReplaceTextFmt(wItem,"[%d] %s - (%s)",msg, title, sender);
-    pgBind( wItem, PG_WE_ACTIVATE, &setSelected, (void *)(msg) );
+    pgReplaceTextFmt(lastItem,"[%d] %s - (%s)",msg, title, sender);
+    pgBind( lastItem, PG_WE_ACTIVATE, &setSelected, (void *)(msg) );
     pgEventPoll();
 
     row++;
@@ -154,10 +157,9 @@ int main(int argc, char *argv[])
    		msgbox = pgNewWidget(PG_WIDGET_BOX,0,0);
    		pgSetWidget(msgbox,PG_WP_SIDE,PG_S_ALL,0);
 		pgSetWidget(msgscroll,PG_WP_BIND,msgbox,0);
-        messagebox = pgNewWidget(PG_WIDGET_TEXTBOX,0,0);
-        pgSetWidget(msgscroll, PG_WP_BIND,messagebox, 0);
+        messagebox = pgNewWidget(PG_WIDGET_TEXTBOX,PG_DERIVE_INSIDE,PGDEFAULT);
+//        pgSetWidget(msgscroll, PG_WP_BIND,messagebox, 0);
         pgSetWidget(messagebox,
-              PG_WP_TEXT,pgNewString("Email!"),
               PG_WP_TEXT,pgNewString("Hier is uw bericht!"),
                  0);
 
