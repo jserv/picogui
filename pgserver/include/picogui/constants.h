@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.154 2002/09/28 04:06:55 micahjd Exp $
+/* $Id: constants.h,v 1.155 2002/09/28 20:01:04 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -862,11 +862,11 @@ typedef unsigned long pghandle;
 					  */
 #define PG_WIDGET_BITMAP          PG_WIDGET_LABEL
 #define PG_WIDGET_BUTTON          5
-#define PG_WIDGET_PANEL           6     /* Internal use only! */
-#define PG_WIDGET_POPUP           7     /* Internal use only! */
+#define PG_WIDGET_PANEL           6  
+#define PG_WIDGET_POPUP           7  
 #define PG_WIDGET_BOX             8
 #define PG_WIDGET_FIELD           9
-#define PG_WIDGET_BACKGROUND      10    /* Internal use only! */
+#define PG_WIDGET_BACKGROUND      10 
 #define PG_WIDGET_MENUITEM        11    /* A variation on button */
 #define PG_WIDGET_TERMINAL        12    /* A full terminal emulator */
 #define PG_WIDGET_CANVAS          13

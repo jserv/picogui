@@ -3,7 +3,7 @@
 <book id="PicoGUI.Protocol">
  <bookinfo>
   <title>PicoGUI Protocol</title>
-  <subtitle>Version 19</>
+  <subtitle>Version 20</>
 
   <authorgroup>
    <author>
@@ -126,6 +126,29 @@
 	The server may be running on a different host as long as the client is
 	able to determine the IP address on which the server is running.
   </para>
+  <sect2 id="tcprecommendations">
+   <title>Recommendations for TCP/IP communication</title>
+   <para>
+        When possible, respect the $PGSERVER environment variable. It uses the
+        X-like syntax of hostname:display, but both halves are optional. For
+        example, on a computer named "menchi", the following are all equal:
+        menchi:0, menchi, :0, localhost, localhost:0, or an empty $PGSERVER.
+   </para>
+   <para>
+        To decrease latency to pgserver, disable the operating system's TCP
+        delays if they exist. On Linux, there is a TCP_NODELAY option for
+        setsockopt() that can be used to disable its "tinygram prevention".
+        This sacrifices throughput for latency, but in cases where the client
+        is waiting for a server response this increases the client's throughput.
+   </para>
+   <para>
+        To increase throughput to pgserver by decreasing network overhead,
+        groups of requests can be combined in 
+        <link linkend="pgreq-batch">batch requests</>. Since the server only
+        sends one return packet for the entire group of requests, it's good
+        for processing large numbers of requests that don't have a useful
+        return value.
+  </sect2>
  </sect1>
 
 <!--..............................................................-->
@@ -178,7 +201,7 @@ struct pghello {
 	The <structfield>protover</structfield> identifies the protocol
 	version in use.	The version number is incremented every time a
 	change is made to the protocol specifications.  At the time of
-	writing this document the latest value was <constant>19</constant>.
+	writing this document the latest value was <constant>20</constant>.
    </para>
   </sect2>
  </sect1>
@@ -1030,59 +1053,6 @@ struct pgreqd_mkinfilter {
 	on triggers using <link linkend="pgreq-infiltersend">PGREQ_INFILTERSEND</>
 	regardless of the setting in <structfield>absorb_trigs</>.
    </para>
-  </sect2>
-
-  <sect2 id="pgreq-mkpopup">
-   <title>PGREQ_MKPOPUP - Create a Popup root widget</title>
-   <programlisting>
-type                 : PGREQ_MKPOPUP (16)
-client lib equivalent: pgNewPopup() and pgNewPopupAt()
-additional data      : <link linkend="pgreqdmkpopup">struct pgreqd_mkpopup</>
-server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
-server returned data : <structfield>pgresponse_ret.data</>
-   </programlisting>
-   <para>
-	Create a popup root widget, the handle will be returned in
-	<structfield>pgresponse_ret.data</>
-   </para>
-   <figure id="pgreqdmkpopup"><title>struct pgreqd_mkpopup</><programlisting>
-struct pgreqd_mkpopup {
-  u16 x;
-  u16 y;
-  u16 w;
-  u16 h;
-};	
-   </programlisting></figure>
-   <para>
-	The <structfield>x</> and <structfield>y</> are absolute coordinate
-	of the top left corner of the root widget to create.  They may be
-	set to a <constant>PG_POPUP_*</> constant.
-   </para>
-   <para>
-	The <structfield>w</> and <structfield>h</> are respectively the
-	width and height of the root widget. It is preferable to set those
-	value to 0 to have them automatically computed, the application should
-	assume as little as possible about the physical screen properties.
-   </para>
-   <table frame=none pgwide=1><title>PG_POPUP values</title>
-   <tgroup cols=3 align=left>
-   <colspec colwidth="45*">
-   <colspec colwidth="10*">
-   <colspec colwidth="45*">
-   <tbody>
-   <row><entry>PG_POPUP_CENTER</><entry>-1</><entry>Centered on screen</></>
-   <row><entry>PG_POPUP_ATCURSOR</><entry>-2</><entry>At the pointing device's
-   cursor. If the cursor is over a button or menuitem, the popup snaps to its
-   edge automatically. This also chooses the PGTH_O_POPUP_MENU theme object
-   for the popup.</></>
-   <row><entry>PG_POPUP_ATEVENT</><entry>-3</><entry>Snaps the popup to the
-   widget that most recently sent an event to the client. This usually has
-   the same effect as PG_POPUP_ATCURSOR, but this will work even when the mouse
-   is not the originator of the event. This also chooses the PGTH_O_POPUP_MENU
-   theme object for the popup.</></>
-   </tbody>
-   </tgroup>
-   </table>
   </sect2>
 
   <sect2 id="pgreq-mkshmbitmap">
@@ -2330,13 +2300,12 @@ chbtn = (<structfield>pgresponse_event.param</> &gt;&gt; 28) &amp; 0xF;
   <row><entry>PG_WIDGET_LABEL</><entry>1</><entry></></>
   <row><entry>PG_WIDGET_SCROLL</><entry>2</><entry></></>
   <row><entry>PG_WIDGET_INDICATOR</><entry>3</><entry></></>
-  <row><entry>PG_WIDGET_BITMAP</><entry>4</><entry></></>
   <row><entry>PG_WIDGET_BUTTON</><entry>5</><entry></></>
-  <row><entry>PG_WIDGET_PANEL</><entry>6</><entry>Can't be used to create a new widget with PGREQ_MKWIDGET but can be returned after a PGREQ_REGISTERAPP</></>
-  <row><entry>PG_WIDGET_POPUP</><entry>7</><entry>Can't be used to create a new widget with PGREQ_MKWIDGET, use PGREQ_MKPOPUP instead.</></>
+  <row><entry>PG_WIDGET_PANEL</><entry>6</><entry></></>
+  <row><entry>PG_WIDGET_POPUP</><entry>7</><entry></></>
   <row><entry>PG_WIDGET_BOX</><entry>8</><entry></></>
   <row><entry>PG_WIDGET_FIELD</><entry>9</><entry></></>
-  <row><entry>PG_WIDGET_BACKGROUND</><entry>10</><entry>pgserver internal use only!</></>
+  <row><entry>PG_WIDGET_BACKGROUND</><entry>10</><entry></></>
   <row><entry>PG_WIDGET_MENUITEM</><entry>11</><entry>A variation on button</></>
   <row><entry>PG_WIDGET_TERMINAL</><entry>12</><entry>A full terminal emulator</></>
   <row><entry>PG_WIDGET_CANVAS</><entry>13</><entry></></>
@@ -2347,6 +2316,10 @@ chbtn = (<structfield>pgresponse_event.param</> &gt;&gt; 28) &amp; 0xF;
   <row><entry>PG_WIDGET_RADIOBUTTON</><entry>18</><entry>Like a check box, but exclusive</></>
   <row><entry>PG_WIDGET_TEXTBOX</><entry>19</><entry>Client-side text layout</></>
   <row><entry>PG_WIDGET_PANELBAR</><entry>20</><entry>Draggable bar and container</></>
+  <row><entry>PG_WIDGET_SIMPLEMENU</><entry>21</><entry>Popup-menu with only text items in it</></>
+  <row><entry>PG_WIDGET_DIALOGBOX</><entry>22</><entry>Popup box with standard dialog titlebar</></>
+  <row><entry>PG_WIDGET_MESSAGEDIALOG</><entry>23</><entry>Dialogbox that displays a message to the user</></>
+  <row><entry>PG_WIDGET_SCROLLBOX</><entry>24</><entry>Container with built-in horizontal and vertical scrolling</></>
   </tbody>
   </tgroup>
   </table>
