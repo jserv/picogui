@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.95 2002/04/15 01:05:12 micahjd Exp $
+/* $Id: dispatch.c,v 1.96 2002/04/15 08:59:46 pney Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -901,15 +901,17 @@ g_error rqh_getmode(int owner, struct pgrequest *req,
   struct pgmodeinfo mi;
   u32 flags = vid->flags;
 
+#if defined(CONFIG_ROTATIONBASE_CLIENT)
   /* Rotation base flags are generated on-the-fly */
 
-#if defined(CONFIG_ROTATIONBASE_90)
+# if defined(CONFIG_ROTATIONBASE_90)
   flags |= PG_VID_ROTBASE90;
-#elif defined(CONFIG_ROTATIONBASE_180)
+# elif defined(CONFIG_ROTATIONBASE_180)
   flags |= PG_VID_ROTBASE180;
-#elif defined(CONFIG_ROTATIONBASE_270)
+# elif defined(CONFIG_ROTATIONBASE_270)
   flags |= PG_VID_ROTBASE270;
-#endif
+# endif
+#endif /* CONFIG_ROTATIONBASE_CLIENT */
 
   /* Fill in the data structure */
   mi.flags = htonl(flags);

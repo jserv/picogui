@@ -417,3 +417,9 @@ DRIVER_SDLGL
       To use this you'll need a hardware-accelerated OpenGL implementation,
       SDL, the SDL_ttf library, and the sdlinput driver. See README.opengl
       for more information.
+
+CONFIG_ROTATIONBASE_CLIENT
+      When this is set, the client could have access to the base rotation
+      of the server through the flags of the pgmodeinfo structure returned
+      by the client function:
+      struct pgmodeinfo *pgGetVideoMode(void);

@@ -208,6 +208,7 @@ choice 'Base rotation angle' \
 	 270			CONFIG_ROTATIONBASE_270" 0
 bool 'Base rotation doesnt affect arrow keys'      CONFIG_ROTATIONBASE_NOKEYS
 bool 'Base rotation doesnt affect pointing device' CONFIG_ROTATIONBASE_NOPOINTING
+bool 'Base rotation availlable from client'        CONFIG_ROTATIONBASE_CLIENT
 endmenu
 
 mainmenu_option next_comment
