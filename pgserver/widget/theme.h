@@ -1,4 +1,4 @@
-/* $Id: theme.h,v 1.9 2000/06/09 01:53:39 micahjd Exp $
+/* $Id: theme.h,v 1.10 2000/06/10 14:15:57 micahjd Exp $
  *
  * theme.h - This defines the structures and functions for themes,
  * parameters defining the way widgets are drawn that are reconfigurable
@@ -90,9 +90,8 @@ struct element {
 #define E_PANELBAR_FILL     16
 #define E_POPUP_BORDER      17
 #define E_POPUP_FILL        18
-#define E_TEXTENTRY_BORDER  19
 
-#define E_NUM 20
+#define E_NUM 19
 
 #define EPARAM_WIDTH        1
 #define EPARAM_TYPE         2

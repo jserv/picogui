@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.10 2000/06/10 10:17:37 micahjd Exp $
+/* $Id: grop.c,v 1.11 2000/06/10 14:15:56 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -37,7 +37,7 @@
  */
 void grop_render(struct divnode *div) {
   struct gropnode *list;
-  struct cliprect clip;
+  struct cliprect clip = {div->x,div->y,div->x+div->w-1,div->y+div->h-1};
   struct fontdesc *fd;
   struct bitmap *bit;
   int x,y,w,h,ydif;
@@ -49,47 +49,30 @@ void grop_render(struct divnode *div) {
   if ((div->flags & DIVNODE_SCROLL_ONLY) && 
       !(div->flags & DIVNODE_NEED_REDRAW)) {
 
-    /* Scroll-only redraw */
-    if (div->ty != div->oty) {
-      /* Vertical */
-      
-      /* Shift the existing image, and draw the strip along the edge */
-      if (div->ty < div->oty) {
-	/* Go up */
+    /**** Scroll-only redraw */
 
-	ydif = div->oty-div->ty;
-	hwr_blit(NULL,LGOP_NONE,NULL,div->x,div->y+ydif,NULL,
-		 div->x,div->y,div->w,div->h-ydif);
-	clip.x = div->x;
-	clip.x2 = div->x+div->w-1;
-	clip.y = div->y+div->h-1-ydif;
-	clip.y2 = div->y+div->h-1;
-      }
-      else {
-	/* Go down */
-	
-	ydif = div->ty-div->oty;
-	hwr_blit(NULL,LGOP_NONE,NULL,div->x,div->y,NULL,
-		 div->x,div->y+ydif,div->w,div->h-ydif);
-	clip.x = div->x;
-	clip.x2 = div->x+div->w-1;
-	clip.y = div->x;
-	clip.y2 = div->x+ydif-1;
-      }
-      
+    /* Get deltas now to prevent a race condition? */
+    ydif = div->ty-div->oty;
+
+    /* Shift the existing image, and draw the strip along the edge */
+    if (ydif<0) {
+      /* Go up */
+
+      hwr_blit(NULL,LGOP_NONE,NULL,div->x,div->y-ydif,NULL,
+	       div->x,div->y,div->w,div->h+ydif);
+      x = div->y+div->h-1+ydif;
+      if (x>clip.y) clip.y = x;
     }
-    else {
-      /* XXX - HORIZONTAL SCROLLING NOT IMPLEMENTED YET!!! */
+    else if (ydif>0) {
+      /* Go down */
+
+      hwr_blit(NULL,LGOP_NONE,NULL,div->x,div->y,NULL,
+	       div->x,div->y+ydif,div->w,div->h-ydif);
+      x = div->y+ydif-1;
+      if (x<clip.y2) clip.y2 = x;
+    }
+    else
       return;
-    }
-  }
-  else {
-
-    /* Full redraw */
-    clip.x = div->x;
-    clip.y = div->y;
-    clip.x2 = div->x+div->w-1;
-    clip.y2 = div->y+div->h-1;
   }
 
   div->otx = div->tx;

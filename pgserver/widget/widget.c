@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.23 2000/06/10 08:28:27 micahjd Exp $
+/* $Id: widget.c,v 1.24 2000/06/10 14:15:57 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -43,6 +43,7 @@ DEF_STATICWIDGET_TABLE(bitmap)
 DEF_WIDGET_TABLE(button)
 DEF_WIDGET_TABLE(panel)
 DEF_STATICWIDGET_TABLE(popup)
+DEF_STATICWIDGET_TABLE(box)
 };
 
 /* These are needed to determine which widget is under the pointing

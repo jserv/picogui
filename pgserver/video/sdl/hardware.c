@@ -1,4 +1,4 @@
-/* $Id: hardware.c,v 1.15 2000/06/10 08:48:06 micahjd Exp $
+/* $Id: hardware.c,v 1.16 2000/06/10 14:15:56 micahjd Exp $
  *
  * hardware.c - SDL "hardware" layer
  * Anything that makes any kind of assumptions about the display hardware
@@ -589,7 +589,7 @@ void hwr_blit(struct cliprect *clip, int lgop,
      1. Blitting to and from the same bitmap
      2. destination lower than the source
   */
-  if (src==dest && dest_y>dest_x) {
+  if (src==dest && dest_y>src_y) {
     /* Backwards */
     
     s_of = -src->w;
