@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.31 2001/10/09 06:00:29 micahjd Exp $
+/* $Id: terminal.c,v 1.32 2001/10/12 06:20:44 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -31,22 +31,6 @@
 #include <pgserver/render.h>
 #include <ctype.h>
 
-/* Default text attribute */
-//#define ATTR_DEFAULT 0x07   /* Standard console look */
-#define ATTR_DEFAULT 0xF0     /* Black on white */
-
-/* Cursor attribute */
-//#define ATTR_CURSOR  0xA0    /* Green (doesn't work in 1bpp) */
-//#define ATTR_CURSOR  0xF0    /* Bright white */
-#define ATTR_CURSOR    0x10    /* Dark blue */
-
-/* On and off times in milliseconds */
-#define FLASHTIME_ON   250
-#define FLASHTIME_OFF  125
-
-/* Inactivity time before cursor flashes */
-#define CURSOR_WAIT    500
-
 /* Size of buffer for VT102 escape codes */
 #define ESCAPEBUF_SIZE 32
 
@@ -78,8 +62,7 @@ struct termdata {
   int num_csiargs;
 
   /* Background */
-  struct gropnode *bg,*bginc;
-  handle bitmap;
+  struct gropnode *bg,*bginc,*bgsrc;
 
   /* The incremental gropnode */
   struct gropnode *inc;
@@ -100,6 +83,10 @@ struct termdata {
 
   /* Handling an escape code? */
   unsigned int escapemode : 1;
+
+  /* Theme settings */
+  u8 attr_default, attr_cursor;
+  u32 flashtime_on,flashtime_off,cursor_wait;
 };
 #define DATA ((struct termdata *)(self->data))
 
@@ -145,15 +132,58 @@ void textblit(char *src,char *dest,int src_x,int src_y,int src_w,
 
 /********************************************** Widget functions */
 
+void load_terminal_theme(struct widget *self) {
+  handle f;
+
+  /* Load theme parameters */
+  DATA->attr_default = theme_lookup(self->in->div->state,PGTH_P_ATTR_DEFAULT);
+  DATA->attr_cursor = theme_lookup(self->in->div->state,PGTH_P_ATTR_CURSOR);
+  DATA->flashtime_on = theme_lookup(self->in->div->state,PGTH_P_TIME_ON);
+  DATA->flashtime_off = theme_lookup(self->in->div->state,PGTH_P_TIME_OFF);
+  DATA->cursor_wait = theme_lookup(self->in->div->state,PGTH_P_TIME_DELAY);
+  
+  /* Allow setting the font in the theme or with PG_WP_FONT, but default
+   * to our fixed-width font instead of the global defaultfont
+   */
+  f = theme_lookup(self->in->div->state,PGTH_P_FONT);
+  if (DATA->font == DATA->deffont && f != defaultfont)
+    DATA->font = f;
+}
+
 /* Preferred size, 80*25 characters */
 void terminal_resize(struct widget *self) {
    self->in->div->pw = DATA->celw * 80;
    self->in->div->ph = DATA->celh * 25;
+   load_terminal_theme(self);
 }
    
 void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self) {
   struct fontdesc *fd;
   int neww,newh;
+  struct gropnode *grid;
+  pghandle bitmap = theme_lookup(self->in->div->state,PGTH_P_BITMAP1);
+  pghandle htextcolors = theme_lookup(self->in->div->state,PGTH_P_TEXTCOLORS);
+  u32 *textcolors;
+  g_error e;
+
+  /* Get a pointer to the text palette */
+  e = rdhandle((void**)&textcolors,PG_TYPE_PALETTE,-1,htextcolors);
+  if (iserror(e)) {
+    /* Maybe it's not a palette yet? */
+    if (e==mkerror(PG_ERRT_HANDLE,28)) {   /* Wrong type? */
+      e = array_palettize(htextcolors,-1);
+      if (iserror(e))
+	return;
+      e = rdhandle((void**)&textcolors,PG_TYPE_PALETTE,-1,htextcolors);
+    }
+    if (iserror(e) || textcolors[0]<16) {
+      /* Try the default textcolors */
+      e = rdhandle((void**)&textcolors,PG_TYPE_PALETTE,-1,default_textcolors);
+      if (iserror(e) || textcolors[0]<16)
+	return;
+    }
+  }
+  textcolors++;
 
   /************** Size calculations */
 
@@ -225,7 +255,7 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
       
       /* Free the old buffer and update the handle */
       g_free(DATA->buffer);
-      rehandle(DATA->hbuffer,DATA->buffer = newbuffer);
+      rehandle(DATA->hbuffer,DATA->buffer = newbuffer,PG_TYPE_STRING);
       
       /* Update the rest of our data */
       DATA->bufferw = neww;
@@ -239,19 +269,21 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
   /* Set font */
   addgrop(c,PG_GROP_SETFONT);
   c->current->param[0] = DATA->font;
-  addgrop(c,PG_GROP_SETFONT);
-  c->current->param[0] = DATA->font;
-  c->current->flags   |= PG_GROPF_INCREMENTAL;
+  c->current->flags   |= PG_GROPF_UNIVERSAL;
    
+  /* Set source position */
+  addgrop(c,PG_GROP_SETSRC);
+  c->current->flags |= PG_GROPF_UNIVERSAL;
+  DATA->bgsrc = c->current;
+
   /* Background (solid color or bitmap) */
-  addgropsz(c,DATA->bitmap ? PG_GROP_BITMAP : PG_GROP_RECT,c->x,c->y,c->w,c->h);
+  addgropsz(c,bitmap ? PG_GROP_BITMAP : PG_GROP_RECT,c->x,c->y,c->w,c->h);
   c->current->flags   |= PG_GROPF_COLORED;
-  c->current->param[0] = DATA->bitmap ? DATA->bitmap : 
-    textcolors[ATTR_DEFAULT>>4];
+  c->current->param[0] = bitmap ? bitmap : textcolors[0];
   DATA->bg = c->current;
 
   /* Incremental grop for the background */
-  addgropsz(c,DATA->bitmap ? PG_GROP_BITMAP : PG_GROP_RECT,0,0,0,0);
+  addgropsz(c,bitmap ? PG_GROP_BITMAP : PG_GROP_RECT,0,0,0,0);
   c->current->flags   |= PG_GROPF_INCREMENTAL | PG_GROPF_COLORED;
   c->current->param[0] = DATA->bg->param[0];
   DATA->bginc = c->current;
@@ -265,13 +297,15 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
   /* Non-incremental text grid */   
   addgropsz(c,PG_GROP_TEXTGRID,c->x,c->y,c->w,c->h);
   c->current->param[0] = DATA->hbuffer;
-  c->current->param[1] = DATA->bufferw;
-  c->current->param[2] = 0;
+  c->current->param[1] = DATA->bufferw << 16;
+  c->current->param[2] = htextcolors;
+  grid = c->current;
 
   /* Incremental grop for the text grid */
   addgrop(c,PG_GROP_TEXTGRID);
   c->current->flags   |= PG_GROPF_INCREMENTAL;
   c->current->param[0] = DATA->hbuffer;
+  c->current->param[2] = grid->param[2];
   DATA->inc = c->current;
   DATA->x = c->x;
   DATA->y = c->y;
@@ -282,13 +316,28 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
 
 g_error terminal_install(struct widget *self) {
   g_error e;
+
+  /* Make divnodes */
+  e = newdiv(&self->in,self);
+  errorcheck;
+  self->in->flags |= PG_S_ALL;
+  self->in->split = 0;
+  self->out = &self->in->next;
+  e = newdiv(&self->in->div,self);
+  errorcheck;
+  self->in->div->state = PGTH_O_TERMINAL;
+  self->in->div->build = &build_terminal;
+  self->in->div->flags |= DIVNODE_HOTSPOT;
    
   e = g_malloc(&self->data,sizeof(struct termdata));
   errorcheck;
   memset(self->data,0,sizeof(struct termdata));
 
-  DATA->attr_under_crsr = ATTR_DEFAULT;
-  DATA->attr = ATTR_DEFAULT;
+  /* Get initial theme info */
+  load_terminal_theme(self);
+
+  DATA->attr_under_crsr = DATA->attr_default;
+  DATA->attr = DATA->attr_default;
    
   DATA->bufferw = 80;
   DATA->bufferh = 25;
@@ -308,16 +357,6 @@ g_error terminal_install(struct widget *self) {
   errorcheck;
   DATA->font = DATA->deffont;
    
-  e = newdiv(&self->in,self);
-  errorcheck;
-  self->in->flags |= PG_S_ALL;
-  self->in->split = 0;
-  self->out = &self->in->next;
-  e = newdiv(&self->in->div,self);
-  errorcheck;
-  self->in->div->build = &build_terminal;
-  self->in->div->flags |= DIVNODE_HOTSPOT;
-
   self->trigger_mask = TRIGGER_STREAM | TRIGGER_CHAR | TRIGGER_DOWN |
      TRIGGER_UP | TRIGGER_RELEASE | TRIGGER_ACTIVATE | TRIGGER_DEACTIVATE |
      TRIGGER_TIMER | TRIGGER_KEYDOWN;
@@ -345,14 +384,6 @@ g_error terminal_set(struct widget *self,int property, glob data) {
     if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,data)) || !fd) 
       return mkerror(PG_ERRT_HANDLE,12);
     DATA->font = (handle) data;
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
-    break;
-
-  case PG_WP_BITMAP:
-    if (iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)) || !bit)
-      return mkerror(PG_ERRT_HANDLE,4);
-    DATA->bitmap = data;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -444,10 +475,11 @@ void terminal_trigger(struct widget *self,long type,union trigparam *param) {
       if (!DATA->focus) return;
       
       /* Reset timer */
-      install_timer(self,(DATA->cursor_on ? FLASHTIME_ON : FLASHTIME_OFF ));
+      install_timer(self,(DATA->cursor_on ? 
+			  DATA->flashtime_on : DATA->flashtime_off ));
 
       /* Flash the cursor if it should be active */
-      if (getticks() > (DATA->update_time + CURSOR_WAIT))
+      if (getticks() > (DATA->update_time + DATA->cursor_wait))
 	term_setcursor(self,!DATA->cursor_on);
       else {
 	/* Make sure the cursor is on */
@@ -552,12 +584,12 @@ void term_realize(struct widget *self) {
    
    /* If this is more than one line, load the buffer width */
    if (DATA->updh > 1)
-     DATA->inc->param[1] = DATA->bufferw;
+     DATA->inc->param[1] = DATA->bufferw << 16;
    else
-     DATA->inc->param[1] = DATA->updw;
+     DATA->inc->param[1] = DATA->updw << 16;
       
    /* Set the buffer offset */
-   DATA->inc->param[2] = (DATA->updx + DATA->updy * DATA->bufferw) << 1;
+   DATA->inc->param[1] |= (DATA->updx + DATA->updy * DATA->bufferw) << 1;
    
 /*
    guru("Incremental terminal update:\nx = %d\ny = %d\nw = %d\nh = %d"
@@ -571,8 +603,8 @@ void term_realize(struct widget *self) {
    DATA->bginc->r.y = DATA->inc->r.y = DATA->y + DATA->updy * DATA->celh;
    DATA->bginc->r.w = DATA->inc->r.w = DATA->updw * DATA->celw;
    DATA->bginc->r.h = DATA->inc->r.h = DATA->updh * DATA->celh;
-   DATA->bginc->param[1] = DATA->bginc->r.x;
-   DATA->bginc->param[2] = DATA->bginc->r.y;
+   DATA->bgsrc->r.x = DATA->bginc->r.x;
+   DATA->bgsrc->r.y = DATA->bginc->r.y;
 
    /* Set the incremental update flag */
    self->in->div->flags |= DIVNODE_INCREMENTAL;
@@ -789,7 +821,7 @@ void term_setcursor(struct widget *self,int flag) {
    if (flag)
      /* Show cursor */
      DATA->attr_under_crsr = term_chattr(self,DATA->crsrx,
-					 DATA->crsry,ATTR_CURSOR);
+					 DATA->crsry,DATA->attr_cursor);
    else
      /* Hide cursor */
      term_chattr(self,DATA->crsrx,DATA->crsry,DATA->attr_under_crsr);
@@ -815,8 +847,8 @@ void term_clearbuf(struct widget *self,int fromx,int fromy,int chars) {
    /* Clear the buffer: set attribute bytes to ATTR_DEFAULT
     * and character bytes to blanks */
    for (p=DATA->buffer+offset,i=size;i;i-=2) {
-      *(p++) = DATA->attr;
-      *(p++) = ' ';
+     *(p++) = DATA->attr;
+     *(p++) = ' ';
    }
 
    /* Add update rectangle for the effected lines */
@@ -834,7 +866,7 @@ void term_ecma48sgr(struct widget *self) {
 
       /* 0 - reset to normal */
     case 0:
-      DATA->attr = ATTR_DEFAULT;
+      DATA->attr = DATA->attr_default;
       break;
 
       /* 1 - bold */
@@ -881,12 +913,12 @@ void term_ecma48sgr(struct widget *self) {
 
       /* 38 - set default foreground, underline on */
     case 38:
-      DATA->attr = (DATA->attr & 0xF0) | ((ATTR_DEFAULT & 0x0F) | 0x08);
+      DATA->attr = (DATA->attr & 0xF0) | ((DATA->attr_default & 0x0F) | 0x08);
       break;
 
       /* 39 - set default foreground, underline off */
     case 39:
-      DATA->attr = (DATA->attr & 0xF0) | (ATTR_DEFAULT & 0x0F);
+      DATA->attr = (DATA->attr & 0xF0) | (DATA->attr_default & 0x0F);
       break;
 
       /* 40 through 47 - background colors */
@@ -901,7 +933,7 @@ void term_ecma48sgr(struct widget *self) {
 
       /* 49 - default background */
     case 49:
-      DATA->attr = (DATA->attr & 0x0F) | (ATTR_DEFAULT & 0xF0);
+      DATA->attr = (DATA->attr & 0x0F) | (DATA->attr_default & 0xF0);
       break;
 
 #ifdef BOTHERSOME_TERMINAL

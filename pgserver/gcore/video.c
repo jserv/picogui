@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.42 2001/10/08 04:02:39 micahjd Exp $
+/* $Id: video.c,v 1.43 2001/10/12 06:20:44 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -44,8 +44,6 @@ s16 upd_x;
 s16 upd_y;
 s16 upd_w;
 s16 upd_h;
-hwrcolor textcolors[16];   /* Table for converting 16 text colors
-			      to hardware colors */
 
 /* Statically allocated memory that the driver can use for vid->display */
 struct stdbitmap static_display;
@@ -153,7 +151,7 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
    g_error e;
    struct divtree *tree;
    struct sprite *spr;
-   u8 i,converting_mode,oldbpp;
+   u8 converting_mode,oldbpp;
 
    /* Must be done first */
    if (vidwrap->exitmode) {
@@ -166,6 +164,8 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
    converting_mode = (bpp != vid->bpp);
    if (converting_mode) {
       e = bitmap_iterate(vid->bitmap_modeunconvert);
+      errorcheck;
+      e = handle_iterate(PG_TYPE_PALETTE,&array_hwrtopg);
       errorcheck;
    }
       
@@ -207,17 +207,44 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
    vidwrap_static = vidlib_static;
    vidwrap = &vidwrap_static;
    
-   /* Generate text colors table */
-   for (i=0;i<16;i++)
-     textcolors[i] = VID(color_pgtohwr) 
-        ( (i & 0x08) ?
-	(((i & 0x04) ? 0xFF0000 : 0) |
-	 ((i & 0x02) ? 0x00FF00 : 0) |
-	 ((i & 0x01) ? 0x0000FF : 0)) :
-	(((i & 0x04) ? 0x800000 : 0) |
-	 ((i & 0x02) ? 0x008000 : 0) |
-	 ((i & 0x01) ? 0x000080 : 0)) );
+   {
+     /* Generate text colors table */
 
+     u32 *tc;
+     int i;
+
+     /* Allocate space for textcolors if we haven't already */
+     if (!default_textcolors) {
+       u32 *ptr;
+       e = g_malloc((void**)&ptr,sizeof(u32)*17);
+       errorcheck;
+       ptr[0] = 16;
+       e = mkhandle(&default_textcolors,PG_TYPE_PALETTE,-1,(void*)ptr);
+       errorcheck;
+     }
+
+     e = rdhandle((void **) &tc, PG_TYPE_PALETTE, -1, default_textcolors);
+     errorcheck;
+      
+     /* VGA 16-color palette */
+     for (i=0;i<tc[0];i++)
+       tc[i+1] = ( (i & 0x08) ?
+		   (((i & 0x04) ? 0xFF0000 : 0) |
+		    ((i & 0x02) ? 0x00FF00 : 0) |
+		    ((i & 0x01) ? 0x0000FF : 0)) :
+		   (((i & 0x04) ? 0x800000 : 0) |
+		    ((i & 0x02) ? 0x008000 : 0) |
+		    ((i & 0x01) ? 0x000080 : 0)) );
+     
+     /* If we won't be doing it anyway later, go ahead and
+      * convert these to hwrcolors
+      */
+     if (!converting_mode) {
+       e = array_pgtohwr(&tc);
+       errorcheck;
+     }
+   }
+     
    /* Add wrapper libraries if necessary */
    
 #ifdef CONFIG_ROTATE
@@ -262,6 +289,8 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
    /* Convert to the new color depth if necessary */
    if (converting_mode) {
       e = bitmap_iterate(vid->bitmap_modeconvert);
+      errorcheck;
+      e = handle_iterate(PG_TYPE_PALETTE,&array_pgtohwr);
       errorcheck;
    }
    
@@ -383,6 +412,39 @@ g_error bitmap_iterate(g_error (*iterator)(hwrbitmap *pbit)) {
    }
       
    return sucess;
+}
+
+/* Iterators for converting between pgcolor and hwrcolor arrays */
+g_error array_pgtohwr(u32 **array) {
+  u32 *p  = (*array)+1;
+  u32 len = **array;
+  for (;len;len--,p++)
+    *p = VID(color_pgtohwr)(*p);
+  return sucess;
+}
+g_error array_hwrtopg(u32 **array) {
+  u32 *p  = (*array)+1;
+  u32 len = **array;
+  for (;len;len--,p++)
+    *p = VID(color_hwrtopg)(*p);
+  return sucess;
+}
+
+/* Convert a handle from array to palette */
+g_error array_palettize(handle h, int owner) {
+  g_error e;
+  u32 *arr;
+
+  /* If it is a palette already, we're done */
+  if (iserror(rdhandle((void**) &arr, PG_TYPE_ARRAY, owner, h)))
+    return rdhandle((void**) &arr, PG_TYPE_PALETTE, owner, h);
+  
+  /* Convert data */
+  e = array_pgtohwr(&arr);
+  errorcheck;
+
+  /* Convert type */
+  return rehandle(h,(void*) arr, PG_TYPE_PALETTE);
 }
 
 /* Send the message to all loaded drivers */

@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.17 2001/10/04 09:37:44 micahjd Exp $
+/* $Id: handle.h,v 1.18 2001/10/12 06:20:44 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -60,10 +60,10 @@ struct handlenode {
    
   handle group;           /* Parent of this handle group */
   short int owner;        /* the connection that owns this handle */
-  unsigned char type;     /* Most of this represents the data type
+  u8 type;                /* Most of this represents the data type
 			   * that this handle points to. Upper 2 bits
 			   * are for HFLAGs */
-  signed char context;    /* Would usually be a short- trying char to
+  s8 context;             /* Would usually be a short- trying char to
 			   * make this structure pack better */
 
   /* 32-bit fields */
@@ -114,7 +114,7 @@ void handle_cleanup(int owner,int context);
 g_error handle_bequeath(handle dest, handle src, int srcowner);
 
 /* Changes the object pointer of a handle */
-g_error rehandle(handle h, void *obj);
+g_error rehandle(handle h, void *obj, u8 type);
 
 /* Add handle to another handle's group so they are freed at the same time */
 g_error handle_group(int owner,handle from, handle to);

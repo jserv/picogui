@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.39 2001/10/06 20:25:41 micahjd Exp $
+/* $Id: memtheme.c,v 1.40 2001/10/12 06:20:44 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -108,7 +108,8 @@ unsigned short thobj_ancestry[PGTH_ONUM] = {
   /* 54 PGTH_O_RADIOBUTTON_HILIGHT   */ PGTH_O_CHECKBOX_HILIGHT,
   /* 55 PGTH_O_RADIOBUTTON_ON        */ PGTH_O_CHECKBOX_ON,
   /* 56 PGTH_O_RADIOBUTTON_ON_NOHILIGHT */ PGTH_O_CHECKBOX_ON_NOHILIGHT,
-  /* 57 PGTH_O_TEXTBOX               */ PGTH_O_BASE_DISPLAY
+  /* 57 PGTH_O_TEXTBOX               */ PGTH_O_BASE_DISPLAY,
+  /* 58 PGTH_O_TERMINAL              */ PGTH_O_BASE_DISPLAY,
 };
 
 struct pgmemtheme *memtheme;
@@ -215,6 +216,12 @@ unsigned long theme_lookup(unsigned short object,
   case PGTH_P_HOTKEY_RIGHT:     return PGKEY_RIGHT;
   case PGTH_P_HOTKEY_ACTIVATE:  return PGKEY_SPACE;
   case PGTH_P_HOTKEY_NEXT:      return PGKEY_TAB;
+  case PGTH_P_ATTR_DEFAULT:     return 0x07;
+  case PGTH_P_ATTR_CURSOR:      return 0xF0;
+  case PGTH_P_TEXTCOLORS:       return default_textcolors;
+  case PGTH_P_TIME_ON:          return 250;
+  case PGTH_P_TIME_OFF:         return 125;
+  case PGTH_P_TIME_DELAY:       return 500;
 
   default:
     return 0;       /* Couldn't hurt? */

@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.62 2001/10/10 00:49:44 micahjd Exp $
+/* $Id: dispatch.c,v 1.63 2001/10/12 06:20:44 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -1104,7 +1104,7 @@ g_error rqh_mkarray(int owner, struct pgrequest *req,
 
   /* Swap the data as we copy it */
   for (i=1;i<=buf[0];i++,data+=4)
-    buf[i] = *(u32*)data;
+    buf[i] = ntohl(*(u32*)data);
 
   e = mkhandle(&h,PG_TYPE_ARRAY,owner,buf);
   errorcheck;

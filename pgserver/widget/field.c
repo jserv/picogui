@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.33 2001/09/02 19:20:26 micahjd Exp $
+/* $Id: field.c,v 1.34 2001/10/12 06:20:44 micahjd Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -186,7 +186,7 @@ g_error field_set(struct widget *self,int property, glob data) {
 	DATA->bufsize = DATA->bufuse + FIELDBUF_ALLOCSTEP;
 	e = g_realloc((void *)&DATA->buffer,DATA->bufsize);
 	errorcheck;
-	e = rehandle(DATA->hbuffer,DATA->buffer);
+	e = rehandle(DATA->hbuffer,DATA->buffer,PG_TYPE_STRING);
 	errorcheck;
      }
      
@@ -361,7 +361,7 @@ g_error bufcheck_grow(struct widget *self) {
   e = g_realloc((void *)&DATA->buffer,DATA->bufsize);
   errorcheck;
 
-  return rehandle(DATA->hbuffer,DATA->buffer);
+  return rehandle(DATA->hbuffer,DATA->buffer,PG_TYPE_STRING);
 }
 
 /* If there's too much wasted space, shrink the buffer */
@@ -375,9 +375,7 @@ g_error bufcheck_shrink(struct widget *self) {
   e = g_realloc((void *)&DATA->buffer,DATA->bufsize);
   errorcheck;
 
-  /* Possible race condition here? */
-
-  return rehandle(DATA->hbuffer,DATA->buffer);
+  return rehandle(DATA->hbuffer,DATA->buffer,PG_TYPE_STRING);
 }
 
 void field_resize(struct widget *self) { 

@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.44 2001/08/01 11:05:30 micahjd Exp $
+/* $Id: handle.c,v 1.45 2001/10/12 06:20:44 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -636,10 +636,12 @@ handle hlookup(void *obj,int *owner) {
 }
 
 /* Changes the object pointer of a handle */
-g_error rehandle(handle h, void *obj) {
+g_error rehandle(handle h, void *obj, u8 type) {
   struct handlenode *hn = htree_find(h);
   if (!hn) return mkerror(PG_ERRT_HANDLE,26);
   hn->obj = obj;
+  hn->type &= ~PG_TYPEMASK;
+  hn->type |= type;
   return sucess;
 }
 

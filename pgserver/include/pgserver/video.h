@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.52 2001/10/09 05:15:26 micahjd Exp $
+/* $Id: video.h,v 1.53 2001/10/12 06:20:44 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -499,8 +499,12 @@ extern s16 upd_h;
 void add_updarea(s16 x,s16 y,s16 w,s16 h);
 void realize_updareas(void);
 
-hwrcolor textcolors[16];   /* Table for converting 16 text colors
-			      to hardware colors */
+/* Iterator functions to convert between pgcolor arrays and hwrcolor arrays */
+g_error array_pgtohwr(u32 **array);
+g_error array_hwrtopg(u32 **array);
+
+/* Convert a array to a palette */
+g_error array_palettize(handle h, int owner);
 
 /* Generic functions from the default VBL. Drivers will usually choose to
  * only process the most commonly used options, to save code space. When

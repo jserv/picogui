@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.91 2001/10/09 02:06:29 micahjd Exp $
+/* $Id: constants.h,v 1.92 2001/10/12 06:20:44 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -244,8 +244,10 @@ typedef unsigned long pghandle;
 #define PG_TYPE_STRING     4    //!< Created by pgNewString()
 #define PG_TYPE_THEME      5    //!< Created by pgLoadTheme()
 #define PG_TYPE_FILLSTYLE  6    //!< Used internally to store a theme's fillstyles
-#define PG_TYPE_ARRAY      7
+#define PG_TYPE_ARRAY      7    //!< Created by pgNewArray()
 #define PG_TYPE_DRIVER     8    //!< Created by pgLoadDriver()
+#define PG_TYPE_PALETTE    9    //!< An array of pgcolors, transformed into hwrcolors
+
 
 #define PG_TYPEMASK        0x1F
 
@@ -343,9 +345,10 @@ typedef unsigned long pghandle;
 #define PGTH_O_RADIOBUTTON_ON        55   //!< Radio button (cust. button)
 #define PGTH_O_RADIOBUTTON_ON_NOHILIGHT 56 //!< Radio button (cust. button)
 #define PGTH_O_TEXTBOX               57   //!< Textbox widget
+#define PGTH_O_TERMINAL              58   //!< Terminal widget
 
 //! If you add a themeobject, be sure to increment this and add an inheritance entry in theme/memtheme.c
-#define PGTH_ONUM                    58
+#define PGTH_ONUM                    59
 
 //! \}
 
@@ -422,6 +425,12 @@ typedef unsigned long pghandle;
 #define PGTH_P_CURSORBITMAP  26  //!< Bitmap for the (mouse) pointer 
 #define PGTH_P_CURSORBITMASK 27  //!< Bitmask for the (mouse) pointer 
 #define PGTH_P_HIDEHOTKEYS   28  //!< Set to a PG_HHK_* constant
+#define PGTH_P_ATTR_DEFAULT  29  //!< Default attribute for the terminal
+#define PGTH_P_ATTR_CURSOR   30  //!< Default attribute for the terminal
+#define PGTH_P_TEXTCOLORS    31  //!< Text color pallete for the terminal
+#define PGTH_P_TIME_ON       32  //!< Milliseconds on for flashing cursor
+#define PGTH_P_TIME_OFF      33  //!< Milliseconds off for flashing cursor
+#define PGTH_P_TIME_DELAY    34  //!< Milliseconds to wait before flashing
 
 #define PGTH_P_STRING_OK          501    //!< String property (usually in PGTH_O_DEFAULT)
 #define PGTH_P_STRING_CANCEL      502    //!< String property (usually in PGTH_O_DEFAULT)

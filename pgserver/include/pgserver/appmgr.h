@@ -1,4 +1,4 @@
-/* $Id: appmgr.h,v 1.16 2001/07/24 12:43:09 micahjd Exp $
+/* $Id: appmgr.h,v 1.17 2001/10/12 06:20:44 micahjd Exp $
  *
  * appmgr.h - All the window-manager-ish functionality, except we don't
  * do windows (X windows, that is?)
@@ -78,6 +78,7 @@ extern handle string_pguierr;
 extern handle string_pguiwarn;
 extern handle string_pguierrdlg;
 extern handle string_pguicompat;
+extern handle default_textcolors;
 
 /* Init & Free */
 g_error appmgr_init(void);

@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.13 2001/10/09 05:15:26 micahjd Exp $
+/* $Id: render.c,v 1.14 2001/10/12 06:20:44 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -663,8 +663,11 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 	      r->lgop,r->angle);
       break;
 
-      /* The workhorse of the terminal widget. 4 params: buffer handle,
-       * font handle, buffer width, and buffer offset */
+      /* The workhorse of the terminal widget. 3 params:
+       * 1. buffer handle,
+       * 2. buffer width and offset (0xWWWWOOOO)
+       * 3. handle to textcolors array
+       */
     case PG_GROP_TEXTGRID:
       if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,
 			    n->param[0])) || !str) break;
@@ -676,15 +679,23 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 	   int i;
 	   unsigned char attr;
 	   struct fontglyph *glyph;
+	   u32 *textcolors;
+
+	   /* Read textcolors parameter */
+	   if (iserror(rdhandle((void**)&textcolors,PG_TYPE_PALETTE,-1,
+				n->param[2])) || !textcolors) break;
+	   if (textcolors[0] < 16)    /* Make sure it's big enough */
+	     break;
+	   textcolors++;              /* Skip length entry */
 	   
 	   /* Should be fine for fixed width fonts
 	    * and pseudo-acceptable for others? */
 	   celw      = fd->font->w;  
 	   celh      = fd->font->h;
 	   
-	   bufferw   = n->param[1];
-	   buffersz  = strlen(str) - n->param[2];
-	   str      += n->param[2];
+	   bufferw   = n->param[1] >> 16;
+	   buffersz  = strlen(str) - (n->param[1] & 0xFFFF);
+	   str      += n->param[1] & 0xFFFF;
 	   bufferh   = (buffersz / bufferw) >> 1;
 	   if (buffersz<=0) return;
 	   
@@ -709,7 +720,8 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 			    textcolors[attr>>4],r->lgop); 
 
 		outchar(r->output, fd, &n->r.x, &n->r.y, 
-			textcolors[attr & 0x0F],*str, NULL,r->lgop, 0);
+			textcolors[attr & 0x0F],
+			*str, NULL,r->lgop, 0);
 	     }
 	   
 	}
