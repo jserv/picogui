@@ -10,7 +10,7 @@ from twisted.im import basechat, baseaccount, ircsupport
 from twisted.internet.protocol import Factory
 from twisted.internet.app import Application
 from twisted.protocols.basic import LineReceiver
-import time
+import time, irc_colors
 
 accounts = [
     ircsupport.IRCAccount("IRC", 1,
