@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: widgetfoundry.py,v 1.10 2003/01/01 03:42:53 micahjd Exp $
+# $Id: widgetfoundry.py,v 1.11 2003/03/19 22:19:02 lalo Exp $
 #
 # widgetfoundry.py - Main module for the Widget Foundry WT editor
 #
@@ -107,6 +107,7 @@ class PropertyBox:
 class CommandLine(InteractiveConsole):
     def __init__(self, main):
         # Redirect stdout and stderr to our own write() function
+        main.app.PythonConsole.write = main.app.PythonConsole.stream
         sys.stdout = main.app.PythonConsole
         sys.stderr = main.app.PythonConsole
         
@@ -157,7 +158,7 @@ class XWTView:
         self.update()
 
     def update(self):
-        self.main.app.XWTViewer.write(self.main.workArea.root.toXWT())
+        self.main.app.XWTViewer.stream(self.main.workArea.root.toXWT())
 
 
 if __name__ == '__main__':
