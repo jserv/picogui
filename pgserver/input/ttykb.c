@@ -70,16 +70,25 @@ static int keymap[128] = {		/* The keymap */
   PGKEY_RIGHTBRACE,PGKEY_TILDE,PGKEY_BACKSPACE		/* 125 */
 };	
 
+/*
+ * Some codes for F-keys seem to differ, depending on wether we are reading a
+ * /dev/tty from within X or from a text console ...
+ */
 f_key f_keymap[] = { // Keymap for function keys
 		   { "[A", PGKEY_UP },
 		   { "[B", PGKEY_DOWN },
 		   { "[C", PGKEY_RIGHT },
 		   { "[D", PGKEY_LEFT },
-		   { "[[A", PGKEY_F1 },
-		   { "[[B", PGKEY_F2 },
-		   { "[[C", PGKEY_F3 },
-		   { "[[D", PGKEY_F4 },
-		   { "[[E", PGKEY_F5 },
+ 		   { "OP", PGKEY_F1 },     /* Within X */
+		   { "[[A", PGKEY_F1 },    /* Text console */
+ 		   { "OQ", PGKEY_F2 },     /* Within X */
+		   { "[[B", PGKEY_F2 },    /* Text console */
+ 		   { "OR", PGKEY_F3 },     /* Within X */
+		   { "[[C", PGKEY_F3 },    /* Text console */
+ 		   { "OS", PGKEY_F4 },     /* Within X */
+		   { "[[D", PGKEY_F4 },    /* Text console */
+ 		   { "[15~", PGKEY_F5 },   /* Within X */
+		   { "[[E", PGKEY_F5 },    /* Text console */
 		   { "[17~", PGKEY_F6 },
 		   { "[18~", PGKEY_F7 },
 		   { "[19~", PGKEY_F8 },
