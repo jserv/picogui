@@ -50,7 +50,7 @@ config:
 	@echo
 	@echo "type make to build the program"
 
-menuconfig:
+menuconfig: configscript/lxdialog/lxdialog
 	sh $(top_srcdir)/configscript/Menuconfig \
 		$(top_srcdir)/config.in $(CONFIG_FILE)
 	@rm -f .config.h
@@ -59,4 +59,6 @@ menuconfig:
 	@echo
 	@echo "type make to build the program"
 
+configscript/lxdialog/lxdialog:
+	@(cd configscript/lxdialog && $(MAKE) $(AM_MAKEFLAGS) all)
 
