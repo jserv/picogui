@@ -66,9 +66,18 @@ object indicator {
 object scroll {
   bitmap2 = LoadBitmap("data/aq_thumb_v.pnm");
   overlay = fillstyle {
+
+    /* Make a minimum height 
+     * FIXME: With real if/else conditionals this would
+     * be _much_ nicer
+     */
+    var z;
+    z = h<10 ? 10-h : 0;
+    h = h>10 ? h : 10;
+    y = z ? y-z : y;
+
     Bitmap(x,y,10,5,scroll::bitmap2,PG_LGOP_NONE,0,0);
-    //    Tilebitmap(x,y+5,10,h-10,scroll::bitmap2,0,5,10,10);
-    Tilebitmap(x,y+5,10,h-10,scroll::bitmap2,0,5,h<30?5:10,10);   /* testing ?: */
+    Tilebitmap(x,y+5,10,h-10,scroll::bitmap2,0,5,10,10);
     Bitmap(x,y+h-5,10,5,scroll::bitmap2,PG_LGOP_NONE,0,17);
   };
   width = 13;

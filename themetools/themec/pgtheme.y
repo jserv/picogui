@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.22 2000/10/16 22:57:41 micahjd Exp $
+/* $Id: pgtheme.y,v 1.23 2000/10/17 01:44:08 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -84,6 +84,8 @@
 %token CLASS EQUAL NOT LTEQ GTEQ
 
 %right '?' ':'
+%left OR
+%left AND
 %left '|'
 %left '&'
 %left EQUAL NOT LTEQ GTEQ '<' '>'
@@ -400,11 +402,14 @@ fsexp: '(' fsexp ')'    { $$ = $2; }
      | fsexp '|' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_OR)); }
      | fsexp '&' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_AND)); }
      | fsexp EQUAL fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_EQ)); }
-     | fsexp NOT fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_NOT)); }
-     | fsexp GTEQ fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_GTEQ)); }
-     | fsexp LTEQ fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_LTEQ)); }
      | fsexp '<' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_LT)); }
      | fsexp '>' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_GT)); }
+     | fsexp AND fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_LOGICAL_AND)); }
+     | fsexp OR fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_LOGICAL_OR)); }
+     | fsexp '!' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_LOGICAL_NOT)); }
+     | fsexp NOT fsexp  { $$ = fsnodecat(fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_EQ)),fsnewnode(PGTH_OPCMD_LOGICAL_NOT)); }
+     | fsexp LTEQ fsexp  { $$ = fsnodecat(fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_GT)),fsnewnode(PGTH_OPCMD_LOGICAL_NOT)); }
+     | fsexp GTEQ fsexp  { $$ = fsnodecat(fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_LT)),fsnewnode(PGTH_OPCMD_LOGICAL_NOT)); }
      | fsexp SHIFTL fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_SHIFTL)); }
      | fsexp SHIFTR fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_SHIFTR)); }
      | NUMBER              { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = $1; }     

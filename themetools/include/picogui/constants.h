@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.14 2000/10/16 22:57:41 micahjd Exp $
+/* $Id: constants.h,v 1.15 2000/10/17 01:44:08 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -297,11 +297,11 @@ typedef unsigned long pghandle;
 #define PGTH_OPCMD_COLORDIV      0x32
 #define PGTH_OPCMD_QUESTIONCOLON 0x33  /* The ?: operator from C */
 #define PGTH_OPCMD_EQ            0x34  /* Comparison operators */
-#define PGTH_OPCMD_NOT           0x35
-#define PGTH_OPCMD_LT            0x36
-#define PGTH_OPCMD_GT            0x37
-#define PGTH_OPCMD_LTEQ          0x38
-#define PGTH_OPCMD_GTEQ          0x39
+#define PGTH_OPCMD_LT            0x35
+#define PGTH_OPCMD_GT            0x36
+#define PGTH_OPCMD_LOGICAL_OR    0x37  /* Logical operators */
+#define PGTH_OPCMD_LOGICAL_AND   0x38
+#define PGTH_OPCMD_LOGICAL_NOT   0x39
 
 
 /******************** Video */
