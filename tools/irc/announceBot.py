@@ -90,6 +90,7 @@ class AccountManager (baseaccount.AccountManager):
             acct.client.sendLine("SILENCE +*@*") # as we don't accept commands via IRC, silence incoming messages to make it more DoS resistant
 
         for chan in channelList:
+            print "Joining "+chan
             acct.client.join(chan)
 
         connected = 1 # true
