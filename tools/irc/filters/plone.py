@@ -18,7 +18,8 @@ if message['subject'].strip().lower().find("re") == 0:
 dirName = message['subject'].split(" ")[1]
 
 # Use the from address as the author
-author = message['from']
+# since everyone is <user>@users.sf.net, print just the username
+author = message['from'].split('@')[0] + '>'
 
 # The body is the set of non-blank lines starting after "Log Message:"
 log = ""
@@ -26,7 +27,7 @@ line = ""
 tag = ""
 while line != "Log Message:":
     if line.startswith("Tag:"):
-        tag = line[4:]
+        tag = line[4:].strip()
     line = body.readline().strip()
 while True:
     line = body.readline().strip()
