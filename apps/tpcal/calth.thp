@@ -1,0 +1,18 @@
+prop center, scale, message;
+
+obj "tpcal" {
+  bgfill = fillstyle {
+      SetColor(bgcolor);
+      Rect(x,y,w,h);
+      SetColor(fgcolor);
+      Text(x+30, y+30, w-60, h-60, message);
+    };
+  target = fillstyle {
+      Frame(x-center, y-center, center*2+1, center*2+1);
+      Bar(x, y-scale, 1, scale*2+1);
+      Slab(x-scale, y, scale*2+1, 1);
+    };
+  center = 3;
+  scale = 9;
+  message = "Please tap the target.";
+}

@@ -19,6 +19,8 @@
  * Contributors:
  *    Eric Christianson, RidgeRun, Inc. -
  *      converted to use picoGui libraries.
+ *    Yann Vernier <yann@algonet.se> -
+ *      pgserver changes to make tpcal useful, various other changes
  *     
  */
 #include <stdio.h>
@@ -31,6 +33,7 @@
 
 #include <picogui.h>
 #include "transform.h"
+#include "calth.h"
 
 #define DEBUG
 #ifdef DEBUG
@@ -50,7 +53,7 @@ static int current_target = 0;
 const int inset = 10;
 
 pghandle  wCanvas;
-pghandle  wStatusLabel;
+int calth;
 
 POINT coord_logicalize(POINT pp)
  {
@@ -167,7 +170,7 @@ void showTransformations(void)
   CalcTransformationCoefficientsBest(&cps.center, &tc, total_targets);
   sprintf(str, "COEFFv1 %d %d %d %d %d %d %d",
 	 tc.a, tc.b, tc.c, tc.d, tc.e, tc.f, tc.s);
-  puts(str);
+  DBG(("%s\n", str));
   pgDriverMessage(PGDM_INPUT_SETCAL, pgNewString(str));
 
   pgMessageDialogFmt("Done!",0,
@@ -179,45 +182,28 @@ void showTransformations(void)
  }
 
 void DrawTarget(POINT p, unsigned long int c) {
-  const int center = 3;
-  const int scale = 9;
-  pgcontext gc;
-
   DBG((__FUNCTION__" (%d,%d)\n",p.x, p.y));
 
-  /* I wanted to use a label to update new coordinates, didn't get this working yet. */
-  pgReplaceTextFmt(wStatusLabel,"Please touch the center of the target (%d,%d)",p.x,p.y);
-
-  gc = pgNewCanvasContext(wCanvas,PGFX_PERSISTENT);
-
-  pgSetColor(gc,c);        /* An 'X' across the canvas */
-  pgFrame(gc,p.x-center,p.y-center,center*2+1,center*2+1);
-
-  pgMoveTo(gc,p.x,p.y-scale);
-  pgLineTo(gc,p.x,p.y+scale);
-
-  pgMoveTo(gc,p.x-scale,p.y);
-  pgLineTo(gc,p.x+scale,p.y);
-
-  /* Draw it */
-  pgContextUpdate(gc);  
-  pgDeleteContext(gc);                                 
-
+  pgWriteCmd(wCanvas, PGCANVAS_GROP, 2, PG_GROP_SETCOLOR, c);
+  pgWriteCmd(wCanvas, PGCANVAS_EXECFILL, 6, calth, TARGET, p.x, p.y, 1, 1);
+  pgWriteCmd(wCanvas, PGCANVAS_REDRAW, 0);
+  pgSubUpdate(wCanvas);
 }
 
-/* Redraw the game board */
-int evtDrawTarget(struct pgEvent *evt) {
+int evtBuild(struct pgEvent *evt) {
+  xext = evt->e.size.w;
+  yext = evt->e.size.h;
+  xoffs = pgGetWidget(evt->from, PG_WP_ABSOLUTEX);
+  yoffs = pgGetWidget(evt->from, PG_WP_ABSOLUTEY);
+  pgWriteCmd(wCanvas, PGCANVAS_EXECFILL, 6, calth, PGTH_P_BGFILL,
+      0, 0, xext, yext);
+  current_target_location = GetTarget(current_target);
+  DrawTarget(current_target_location, 0x000000);
+  return 0;
+}
 
-  CalcTransformationCoefficientsBest(&cps.center, &tc, total_targets);
-  if(evt->type==PG_WE_BUILD) {
-    xext = evt->e.size.w;
-    yext = evt->e.size.h;
-    xoffs = pgGetWidget(evt->from, PG_WP_ABSOLUTEX);
-    yoffs = pgGetWidget(evt->from, PG_WP_ABSOLUTEY);
-  } else {
-    /* erase the old target */
-    DrawTarget(current_target_location, 0xD0D0D0);
-  }
+int evtDrawTarget(struct pgEvent *evt) {
+  DrawTarget(current_target_location, 0xD0D0D0);
 
   DBG((__FUNCTION__" current_target=%d (%d,%d)\n",current_target,xext,yext));
 
@@ -226,9 +212,7 @@ int evtDrawTarget(struct pgEvent *evt) {
     current_target_location = GetTarget(current_target);
     DrawTarget(current_target_location, 0x000000);
   }
-
   return 0;
-
 }
 
 int evtPenUp(struct pgEvent *evt) {
@@ -292,7 +276,6 @@ int evtPenDown(struct pgEvent *evt) {
 
 int main(int argc, char *argv[]) 
 {
-  pghandle fntLabel;
   struct pgmodeinfo mi;
 
   srandom(time(NULL));
@@ -303,26 +286,18 @@ int main(int argc, char *argv[])
   physicalresolution.x=mi.xres;
   physicalresolution.y=mi.yres;
 
-  pgRegisterApp(PG_APP_NORMAL,"Please touch the center of the target.",0);
+  pgNewPopup(mi.xres, mi.yres);
 
-  fntLabel = pgNewFont(NULL,10,PG_FSTYLE_FIXED);
+  pgLoadTheme(pgFromFile("calth.th"));
+  calth = pgFindThemeObject("tpcal");
   wCanvas = pgNewWidget(PG_WIDGET_CANVAS,0,0);
-  pgBind(PGDEFAULT,PG_WE_BUILD,&evtDrawTarget,NULL);
+  pgSetWidget(0, PG_WP_THOBJ, calth, 0);
+  pgBind(PGDEFAULT,PG_WE_BUILD,&evtBuild,NULL);
   pgBind(PGBIND_ANY,PG_NWE_PNTR_DOWN,&evtPenDown,NULL);
   pgBind(PGBIND_ANY,PG_NWE_PNTR_UP,&evtPenUp,NULL);
   pgBind(PGBIND_ANY,PG_NWE_CALIB_PENPOS,&evtPenPos,NULL);
   pgRegisterOwner(PG_OWN_POINTER);
   pgDriverMessage(PGDM_INPUT_CALEN, 1);
-
-  /* couldn't figure out how to attach the label to the app bar, and have it replace text */
-  wStatusLabel = pgNewWidget(PG_WIDGET_LABEL,0,0);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgNewString("Please touch the center of the target"),
-	      PG_WP_SIDE,PG_S_ALL,
-	      PG_WP_TRANSPARENT,0,
-	      PG_WP_ALIGN,PG_A_CENTER,
-	      PG_WP_FONT,fntLabel,
-	      0);
 
   pgEventLoop();
 
