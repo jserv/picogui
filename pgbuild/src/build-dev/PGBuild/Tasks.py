@@ -58,6 +58,13 @@ class Task(object):
            """
         return False
 
+class UserTask(Task):
+    """A task that is designed to be triggered by user actions"""
+    pass
+
+class InternalTask(Task):
+    """The opposite of a UserTask"""
+    pass
 
 class TaskList(object):
     def __init__(self, ui, tasks=[]):
@@ -95,13 +102,13 @@ class TaskList(object):
 
 ################### Tasks
 
-class BuildSystemInitTask(Task):
+class BuildSystemInitTask(InternalTask):
     """Invoke the build system to build targets"""
     def execute(self):
         import PGBuild.Build
         self.ui.buildSystem = PGBuild.Build.System(self.config)
 
-class MergeBootstrapTask(Task):
+class MergeBootstrapTask(InternalTask):
     def execute(self):
         """Merge the bootstrap packages. This performs everything
            except the actual configuration mount, since we had to do that
@@ -111,7 +118,7 @@ class MergeBootstrapTask(Task):
         for package in self.config.packages.getBootstrapPackages():
             self.config.packages.findPackageVersion(package).merge(bootMergeTask, False)
 
-class NukeTask(Task):
+class NukeTask(UserTask):
     """Handle --nuke command line option"""
     def isActive(self):
         return self.config.eval("invocation/option[@name='nuke']/text()")
@@ -119,7 +126,10 @@ class NukeTask(Task):
     def execute(self):
         self.config.packages.nuke(self.progress)
 
-class MergeAllTask(Task):
+    def preventAutoBuild(self):
+        return True
+
+class MergeAllTask(UserTask):
     """Handle --merge-all command line option"""
     def isActive(self):
         return self.config.eval("invocation/option[@name='mergeAll']/text()")
@@ -131,7 +141,7 @@ class MergeAllTask(Task):
         for name in packages:
             self.config.packages.findPackageVersion(name).merge(mergeTask)
 
-class MergeTask(Task):
+class MergeTask(UserTask):
     """Handle --merge command line option"""
     def init(self):
         self.mergeList = self.config.listEval("invocation/option[@name='merge']/item/text()")
@@ -144,7 +154,7 @@ class MergeTask(Task):
         for name in self.mergeList:
             self.config.packages.findPackageVersion(name).merge(mergeTask)
 
-class BuildSystemRunTask(Task):
+class BuildSystemRunTask(UserTask):
     """Invoke the build system to build targets"""
     def execute(self):
         # The build task is always active, but it only takes action if:
@@ -160,14 +170,16 @@ class BuildSystemRunTask(Task):
         if self.config.listEval('invocation/target/text()'):
             enabled = True
         if enabled:
-            self.ui.buildSystem.run(self.progress)
+            if not self.ui.buildSystem.run(self.progress):
+                import PGBuild.Errors
+                raise PGBuild.Errors.ExternalError("No targets to build")
 
-class CleanupUITask(Task):
+class CleanupUITask(InternalTask):
     """Call the UI's cleanup() method to, if applicable, put us back in plain text mode"""
     def execute(self):
         self.ui.cleanup()
 
-class DumpTreeTask(Task):
+class DumpTreeTask(UserTask):
     """Handle --dump-tree command line option"""
     def init(self):
         self.dumpFile = self.config.eval("invocation/option[@name='treeDumpFile']/text()")
@@ -181,7 +193,7 @@ class DumpTreeTask(Task):
     def preventAutoBuild(self):
         return True
 
-class ListTask(Task):
+class ListTask(UserTask):
     """Handle --list command line option"""
     def init(self):
         self.listPath = self.config.eval("invocation/option[@name='listPath']/text()")

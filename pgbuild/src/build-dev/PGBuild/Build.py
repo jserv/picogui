@@ -144,6 +144,9 @@ class System(object):
         self.invocationTargets = self.config.listEval('invocation/target/text()')
 
     def run(self, progress):
+        """Actually builds the targets we selected during initialization. Returns
+           True if any targets were built.
+           """
         import SCons.Node
         import SCons.Job
         import SCons.Taskmaster
@@ -181,8 +184,7 @@ class System(object):
             nodes = []
     
         if not nodes:
-            import PGBuild.Errors
-            raise PGBuild.Errors.ExternalError("No targets to build")
+            return False
 
         # Link our task class back to us, for progress reporting
         self.task_class.buildSystem = self
@@ -195,6 +197,7 @@ class System(object):
         # This sets up several job threads to run tasks concurrently
         jobs = SCons.Job.Jobs(self.config.intEval("invocation/option[@name='numJobs']/text()"), taskmaster)
         jobs.run()
+        return True
 
 ### The End ###
         

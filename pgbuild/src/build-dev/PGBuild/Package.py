@@ -279,9 +279,13 @@ class PackageList(object):
         task = progress.task("Deleting local copies of all non-bootstrap packages")
         locals = self.getLocalPackages()
         boots  = self.getBootstrapPackages()
+        removedPackages = 0
         for package in locals:
             if not package in boots:
                 self.removeLocalCopy(package, task)
+                removedPackages += 1
+        if not removedPackages:
+            task.message("No packages to remove")
 
     def removeLocalCopy(self, package, progress):
         """Given a package name, deletes the local copy"""
