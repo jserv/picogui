@@ -1,0 +1,2675 @@
+%!PS-Adobe-2.0
+%%Creator: dot version 1.9 (Fri May 23 02:39:49 MDT 2003)
+%%For: (micah) Micah Dowty,,,
+%%Title: L0
+%%Pages: (atend)
+%%BoundingBox: 35 35 3520 613
+%%EndComments
+save
+%%BeginProlog
+/DotDict 200 dict def
+DotDict begin
+
+/setupLatin1 {
+mark
+/EncodingVector 256 array def
+ EncodingVector 0
+
+ISOLatin1Encoding 0 255 getinterval putinterval
+
+EncodingVector
+  dup 306 /AE
+  dup 301 /Aacute
+  dup 302 /Acircumflex
+  dup 304 /Adieresis
+  dup 300 /Agrave
+  dup 305 /Aring
+  dup 303 /Atilde
+  dup 307 /Ccedilla
+  dup 311 /Eacute
+  dup 312 /Ecircumflex
+  dup 313 /Edieresis
+  dup 310 /Egrave
+  dup 315 /Iacute
+  dup 316 /Icircumflex
+  dup 317 /Idieresis
+  dup 314 /Igrave
+  dup 334 /Udieresis
+  dup 335 /Yacute
+  dup 376 /thorn
+  dup 337 /germandbls
+  dup 341 /aacute
+  dup 342 /acircumflex
+  dup 344 /adieresis
+  dup 346 /ae
+  dup 340 /agrave
+  dup 345 /aring
+  dup 347 /ccedilla
+  dup 351 /eacute
+  dup 352 /ecircumflex
+  dup 353 /edieresis
+  dup 350 /egrave
+  dup 355 /iacute
+  dup 356 /icircumflex
+  dup 357 /idieresis
+  dup 354 /igrave
+  dup 360 /dcroat
+  dup 361 /ntilde
+  dup 363 /oacute
+  dup 364 /ocircumflex
+  dup 366 /odieresis
+  dup 362 /ograve
+  dup 365 /otilde
+  dup 370 /oslash
+  dup 372 /uacute
+  dup 373 /ucircumflex
+  dup 374 /udieresis
+  dup 371 /ugrave
+  dup 375 /yacute
+  dup 377 /ydieresis  
+
+% Set up ISO Latin 1 character encoding
+/starnetISO {
+        dup dup findfont dup length dict begin
+        { 1 index /FID ne { def }{ pop pop } ifelse
+        } forall
+        /Encoding EncodingVector def
+        currentdict end definefont
+} def
+/Times-Roman starnetISO def
+/Times-Italic starnetISO def
+/Times-Bold starnetISO def
+/Times-BoldItalic starnetISO def
+/Helvetica starnetISO def
+/Helvetica-Oblique starnetISO def
+/Helvetica-Bold starnetISO def
+/Helvetica-BoldOblique starnetISO def
+/Courier starnetISO def
+/Courier-Oblique starnetISO def
+/Courier-Bold starnetISO def
+/Courier-BoldOblique starnetISO def
+cleartomark
+} bind def
+
+%%BeginResource: procset
+/coord-font-family /Times-Roman def
+/default-font-family /Times-Roman def
+/coordfont coord-font-family findfont 8 scalefont def
+
+/InvScaleFactor 1.0 def
+/set_scale {
+	dup 1 exch div /InvScaleFactor exch def
+	dup scale
+} bind def
+
+% styles
+/solid { [] 0 setdash } bind def
+/dashed { [9 InvScaleFactor mul dup ] 0 setdash } bind def
+/dotted { [1 InvScaleFactor mul 6 InvScaleFactor mul] 0 setdash } bind def
+/invis {/fill {newpath} def /stroke {newpath} def /show {pop newpath} def} bind def
+/bold { 2 setlinewidth } bind def
+/filled { } bind def
+/unfilled { } bind def
+/rounded { } bind def
+/diagonals { } bind def
+
+% hooks for setting color 
+/nodecolor { sethsbcolor } bind def
+/edgecolor { sethsbcolor } bind def
+/graphcolor { sethsbcolor } bind def
+/nopcolor {pop pop pop} bind def
+
+/beginpage {	% i j npages
+	/npages exch def
+	/j exch def
+	/i exch def
+	/str 10 string def
+	npages 1 gt {
+		gsave
+			coordfont setfont
+			0 0 moveto
+			(\() show i str cvs show (,) show j str cvs show (\)) show
+		grestore
+	} if
+} bind def
+
+/set_font {
+	findfont exch
+	scalefont setfont
+} def
+
+% draw aligned label in bounding box aligned to current point
+/alignedtext {			% width adj text
+	/text exch def
+	/adj exch def
+	/width exch def
+	gsave
+		width 0 gt {
+			text stringwidth pop adj mul 0 rmoveto
+		} if
+		[] 0 setdash
+		text show
+	grestore
+} def
+
+/boxprim {				% xcorner ycorner xsize ysize
+		4 2 roll
+		moveto
+		2 copy
+		exch 0 rlineto
+		0 exch rlineto
+		pop neg 0 rlineto
+		closepath
+} bind def
+
+/ellipse_path {
+	/ry exch def
+	/rx exch def
+	/y exch def
+	/x exch def
+	matrix currentmatrix
+	newpath
+	x y translate
+	rx ry scale
+	0 0 1 0 360 arc
+	setmatrix
+} bind def
+
+/endpage { showpage } bind def
+
+/layercolorseq
+	[	% layer color sequence - darkest to lightest
+		[0 0 0]
+		[.2 .8 .8]
+		[.4 .8 .8]
+		[.6 .8 .8]
+		[.8 .8 .8]
+	]
+def
+
+/layerlen layercolorseq length def
+
+/setlayer {/maxlayer exch def /curlayer exch def
+	layercolorseq curlayer 1 sub layerlen mod get
+	aload pop sethsbcolor
+	/nodecolor {nopcolor} def
+	/edgecolor {nopcolor} def
+	/graphcolor {nopcolor} def
+} bind def
+
+/onlayer { curlayer ne {invis} if } def
+
+/onlayers {
+	/myupper exch def
+	/mylower exch def
+	curlayer mylower lt
+	curlayer myupper gt
+	or
+	{invis} if
+} def
+
+/curlayer 0 def
+
+%%EndResource
+%%EndProlog
+%%BeginSetup
+14 default-font-family set_font
+1 setmiterlimit
+% /arrowlength 10 def
+% /arrowwidth 5 def
+
+% make sure pdfmark is harmless for PS-interpreters other than Distiller
+/pdfmark where {pop} {userdict /pdfmark /cleartomark load put} ifelse
+% make '<<' and '>>' safe on PS Level 1 devices
+/languagelevel where {pop languagelevel}{1} ifelse
+2 lt {
+    userdict (<<) cvn ([) cvn load put
+    userdict (>>) cvn ([) cvn load put
+} if
+
+%%EndSetup
+%%Page: 1 1
+%%PageBoundingBox: 36 36 3520 613
+%%PageOrientation: Portrait
+gsave
+35 35 3485 578 boxprim clip newpath
+36 36 translate
+0 0 1 beginpage
+0 0 translate 0 rotate
+0.000 0.000 0.000 graphcolor
+14.00 /Times-Roman set_font
+gsave 10 dict begin
+18.00 /Times-Roman set_font
+1741 27 moveto 0 -0.5 () alignedtext
+1741 6 moveto 304 -0.5 (PicoGUI Theme Object Hierarchy) alignedtext
+end grestore
+
+%	DEFAULT
+gsave 10 dict begin
+newpath 2857 90 moveto
+2795 90 lineto
+2795 54 lineto
+2857 54 lineto
+closepath
+stroke
+gsave 10 dict begin
+2826 67 moveto 49 -0.5 (default) alignedtext
+end grestore
+end grestore
+
+%	BASE_INTERACTIVE
+gsave 10 dict begin
+newpath 1800 162 moveto
+1684 162 lineto
+1684 126 lineto
+1800 126 lineto
+closepath
+stroke
+gsave 10 dict begin
+1742 139 moveto 103 -0.5 (base.interactive) alignedtext
+end grestore
+end grestore
+
+%	BASE_INTERACTIVE -> DEFAULT
+newpath 1800 140 moveto
+1995 127 2619 86 2785 75 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2785 77 moveto
+2795 74 lineto
+2785 73 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	BASE_CONTAINER
+gsave 10 dict begin
+newpath 2386 162 moveto
+2278 162 lineto
+2278 126 lineto
+2386 126 lineto
+closepath
+stroke
+gsave 10 dict begin
+2332 139 moveto 95 -0.5 (base.container) alignedtext
+end grestore
+end grestore
+
+%	BASE_CONTAINER -> DEFAULT
+newpath 2386 136 moveto
+2486 122 2698 90 2786 77 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2785 80 moveto
+2795 76 lineto
+2785 75 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	BUTTON
+gsave 10 dict begin
+newpath 681 234 moveto
+623 234 lineto
+623 198 lineto
+681 198 lineto
+closepath
+stroke
+gsave 10 dict begin
+652 211 moveto 45 -0.5 (button) alignedtext
+end grestore
+end grestore
+
+%	BUTTON -> BASE_INTERACTIVE
+newpath 681 214 moveto
+825 205 1461 162 1674 149 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1674 151 moveto
+1684 148 lineto
+1674 147 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	BUTTON_HILIGHT
+gsave 10 dict begin
+newpath 335 306 moveto
+231 306 lineto
+231 270 lineto
+335 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+283 283 moveto 91 -0.5 (button.hilight) alignedtext
+end grestore
+end grestore
+
+%	BUTTON_HILIGHT -> BUTTON
+newpath 335 278 moveto
+410 264 546 237 613 224 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 614 226 moveto
+623 222 lineto
+613 222 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	BUTTON_ON
+gsave 10 dict begin
+newpath 138 378 moveto
+60 378 lineto
+60 342 lineto
+138 342 lineto
+closepath
+stroke
+gsave 10 dict begin
+99 355 moveto 65 -0.5 (button.on) alignedtext
+end grestore
+end grestore
+
+%	BUTTON_ON -> BUTTON_HILIGHT
+newpath 138 345 moveto
+164 335 199 321 228 310 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 229 312 moveto
+237 306 lineto
+227 308 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	TOOLBAR
+gsave 10 dict begin
+newpath 2239 234 moveto
+2177 234 lineto
+2177 198 lineto
+2239 198 lineto
+closepath
+stroke
+gsave 10 dict begin
+2208 211 moveto 48 -0.5 (toolbar) alignedtext
+end grestore
+end grestore
+
+%	TOOLBAR -> BASE_CONTAINER
+newpath 2239 198 moveto
+2255 189 2275 177 2293 167 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2294 169 moveto
+2301 162 lineto
+2291 165 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	SCROLL
+gsave 10 dict begin
+newpath 1081 234 moveto
+1027 234 lineto
+1027 198 lineto
+1081 198 lineto
+closepath
+stroke
+gsave 10 dict begin
+1054 211 moveto 35 -0.5 (scroll) alignedtext
+end grestore
+end grestore
+
+%	SCROLL -> BASE_INTERACTIVE
+newpath 1081 213 moveto
+1181 203 1527 167 1675 151 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1674 154 moveto
+1684 150 lineto
+1674 149 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	SCROLL_HILIGHT
+gsave 10 dict begin
+newpath 932 306 moveto
+838 306 lineto
+838 270 lineto
+932 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+885 283 moveto 81 -0.5 (scroll.hilight) alignedtext
+end grestore
+end grestore
+
+%	SCROLL_HILIGHT -> SCROLL
+newpath 928 270 moveto
+956 258 992 243 1019 231 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1019 234 moveto
+1027 228 lineto
+1017 229 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	INDICATOR
+gsave 10 dict begin
+newpath 2534 234 moveto
+2460 234 lineto
+2460 198 lineto
+2534 198 lineto
+closepath
+stroke
+gsave 10 dict begin
+2497 211 moveto 60 -0.5 (indicator) alignedtext
+end grestore
+end grestore
+
+%	BASE_DISPLAY
+gsave 10 dict begin
+newpath 2873 162 moveto
+2779 162 lineto
+2779 126 lineto
+2873 126 lineto
+closepath
+stroke
+gsave 10 dict begin
+2826 139 moveto 80 -0.5 (base.display) alignedtext
+end grestore
+end grestore
+
+%	INDICATOR -> BASE_DISPLAY
+newpath 2534 210 moveto
+2587 201 2686 183 2769 162 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2770 164 moveto
+2779 159 lineto
+2769 159 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	PANEL
+gsave 10 dict begin
+newpath 3149 234 moveto
+3095 234 lineto
+3095 198 lineto
+3149 198 lineto
+closepath
+stroke
+gsave 10 dict begin
+3122 211 moveto 37 -0.5 (panel) alignedtext
+end grestore
+end grestore
+
+%	BASE_TLCONTAINER
+gsave 10 dict begin
+newpath 3009 162 moveto
+2891 162 lineto
+2891 126 lineto
+3009 126 lineto
+closepath
+stroke
+gsave 10 dict begin
+2950 139 moveto 104 -0.5 (base.tlcontainer) alignedtext
+end grestore
+end grestore
+
+%	PANEL -> BASE_TLCONTAINER
+newpath 3095 205 moveto
+3070 194 3033 179 3003 166 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 3003 163 moveto
+2993 162 lineto
+3001 168 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	PANELBAR
+gsave 10 dict begin
+newpath 1472 234 moveto
+1398 234 lineto
+1398 198 lineto
+1472 198 lineto
+closepath
+stroke
+gsave 10 dict begin
+1435 211 moveto 60 -0.5 (panelbar) alignedtext
+end grestore
+end grestore
+
+%	PANELBAR -> BASE_INTERACTIVE
+newpath 1472 207 moveto
+1522 196 1613 174 1675 160 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1675 163 moveto
+1684 158 lineto
+1674 158 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	POPUP
+gsave 10 dict begin
+newpath 3306 234 moveto
+3248 234 lineto
+3248 198 lineto
+3306 198 lineto
+closepath
+stroke
+gsave 10 dict begin
+3277 211 moveto 44 -0.5 (popup) alignedtext
+end grestore
+end grestore
+
+%	POPUP -> BASE_TLCONTAINER
+newpath 3248 210 moveto
+3199 201 3102 182 3019 162 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 3019 160 moveto
+3009 160 lineto
+3018 164 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	BACKGROUND
+gsave 10 dict begin
+newpath 2761 162 moveto
+2665 162 lineto
+2665 126 lineto
+2761 126 lineto
+closepath
+stroke
+gsave 10 dict begin
+2713 139 moveto 83 -0.5 (background) alignedtext
+end grestore
+end grestore
+
+%	BACKGROUND -> DEFAULT
+newpath 2742 126 moveto
+2756 117 2775 105 2790 95 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2791 97 moveto
+2798 90 lineto
+2788 93 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	BASE_DISPLAY -> DEFAULT
+newpath 2826 126 moveto
+2826 118 2826 109 2826 100 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2829 100 moveto
+2826 90 lineto
+2824 100 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	BASE_TLCONTAINER -> DEFAULT
+newpath 2919 126 moveto
+2903 117 2883 105 2865 95 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2867 93 moveto
+2857 90 lineto
+2864 97 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	THEMEINFO
+gsave 10 dict begin
+newpath 3111 162 moveto
+3027 162 lineto
+3027 126 lineto
+3111 126 lineto
+closepath
+stroke
+gsave 10 dict begin
+3069 139 moveto 71 -0.5 (themeinfo) alignedtext
+end grestore
+end grestore
+
+%	THEMEINFO -> DEFAULT
+newpath 3027 129 moveto
+3024 128 3021 127 3018 126 curveto
+2965 109 2905 93 2866 82 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2867 80 moveto
+2857 80 lineto
+2866 85 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	LABEL
+gsave 10 dict begin
+newpath 2743 234 moveto
+2689 234 lineto
+2689 198 lineto
+2743 198 lineto
+closepath
+stroke
+gsave 10 dict begin
+2716 211 moveto 32 -0.5 (label) alignedtext
+end grestore
+end grestore
+
+%	LABEL -> BASE_DISPLAY
+newpath 2743 198 moveto
+2757 189 2775 177 2790 167 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2791 169 moveto
+2798 162 lineto
+2788 165 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	FIELD
+gsave 10 dict begin
+newpath 2815 234 moveto
+2761 234 lineto
+2761 198 lineto
+2815 198 lineto
+closepath
+stroke
+gsave 10 dict begin
+2788 211 moveto 31 -0.5 (field) alignedtext
+end grestore
+end grestore
+
+%	FIELD -> BASE_DISPLAY
+newpath 2798 198 moveto
+2803 190 2808 180 2812 171 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2814 172 moveto
+2817 162 lineto
+2810 170 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	BITMAP
+gsave 10 dict begin
+newpath 2895 234 moveto
+2833 234 lineto
+2833 198 lineto
+2895 198 lineto
+closepath
+stroke
+gsave 10 dict begin
+2864 211 moveto 48 -0.5 (bitmap) alignedtext
+end grestore
+end grestore
+
+%	BITMAP -> BASE_DISPLAY
+newpath 2854 198 moveto
+2849 190 2844 180 2840 171 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2842 170 moveto
+2835 162 lineto
+2838 172 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	SCROLL_ON
+gsave 10 dict begin
+newpath 904 378 moveto
+836 378 lineto
+836 342 lineto
+904 342 lineto
+closepath
+stroke
+gsave 10 dict begin
+870 355 moveto 55 -0.5 (scroll.on) alignedtext
+end grestore
+end grestore
+
+%	SCROLL_ON -> SCROLL_HILIGHT
+newpath 874 342 moveto
+875 334 877 324 879 316 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 881 316 moveto
+881 306 lineto
+877 315 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	LABEL_SCROLL
+gsave 10 dict begin
+newpath 2641 306 moveto
+2557 306 lineto
+2557 270 lineto
+2641 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+2599 283 moveto 70 -0.5 (label.scroll) alignedtext
+end grestore
+end grestore
+
+%	LABEL_SCROLL -> LABEL
+newpath 2629 270 moveto
+2644 261 2664 248 2681 238 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2682 240 moveto
+2689 233 lineto
+2679 236 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	PANELBAR_HILIGHT
+gsave 10 dict begin
+newpath 1298 306 moveto
+1178 306 lineto
+1178 270 lineto
+1298 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+1238 283 moveto 106 -0.5 (panelbar.hilight) alignedtext
+end grestore
+end grestore
+
+%	PANELBAR_HILIGHT -> PANELBAR
+newpath 1287 270 moveto
+1318 259 1358 244 1388 233 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1389 235 moveto
+1398 230 lineto
+1388 230 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	PANELBAR_ON
+gsave 10 dict begin
+newpath 1262 378 moveto
+1170 378 lineto
+1170 342 lineto
+1262 342 lineto
+closepath
+stroke
+gsave 10 dict begin
+1216 355 moveto 79 -0.5 (panelbar.on) alignedtext
+end grestore
+end grestore
+
+%	PANELBAR_ON -> PANELBAR_HILIGHT
+newpath 1222 342 moveto
+1224 334 1227 324 1230 315 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1232 316 moveto
+1233 306 lineto
+1227 315 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	BOX
+gsave 10 dict begin
+newpath 2319 234 moveto
+2265 234 lineto
+2265 198 lineto
+2319 198 lineto
+closepath
+stroke
+gsave 10 dict begin
+2292 211 moveto 25 -0.5 (box) alignedtext
+end grestore
+end grestore
+
+%	BOX -> BASE_CONTAINER
+newpath 2302 198 moveto
+2307 190 2312 180 2317 170 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2319 172 moveto
+2322 162 lineto
+2315 169 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	LABEL_DLGTITLE
+gsave 10 dict begin
+newpath 2753 306 moveto
+2659 306 lineto
+2659 270 lineto
+2753 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+2706 283 moveto 81 -0.5 (label.dlgtitle) alignedtext
+end grestore
+end grestore
+
+%	LABEL_DLGTITLE -> LABEL
+newpath 2709 270 moveto
+2710 262 2711 252 2712 244 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2714 244 moveto
+2713 234 lineto
+2710 244 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	LABEL_DLGTEXT
+gsave 10 dict begin
+newpath 2865 306 moveto
+2771 306 lineto
+2771 270 lineto
+2865 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+2818 283 moveto 81 -0.5 (label.dlgtext) alignedtext
+end grestore
+end grestore
+
+%	LABEL_DLGTEXT -> LABEL
+newpath 2792 270 moveto
+2779 261 2763 249 2749 239 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2751 237 moveto
+2741 234 lineto
+2748 241 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	CLOSEBTN
+gsave 10 dict begin
+newpath 470 378 moveto
+402 378 lineto
+402 342 lineto
+470 342 lineto
+closepath
+stroke
+gsave 10 dict begin
+436 355 moveto 55 -0.5 (closebtn) alignedtext
+end grestore
+end grestore
+
+%	BASE_PANELBTN
+gsave 10 dict begin
+newpath 582 306 moveto
+476 306 lineto
+476 270 lineto
+582 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+529 283 moveto 92 -0.5 (base.panelbtn) alignedtext
+end grestore
+end grestore
+
+%	CLOSEBTN -> BASE_PANELBTN
+newpath 459 342 moveto
+471 333 486 322 499 312 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 500 314 moveto
+506 306 lineto
+497 311 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	CLOSEBTN_ON
+gsave 10 dict begin
+newpath 411 522 moveto
+323 522 lineto
+323 486 lineto
+411 486 lineto
+closepath
+stroke
+gsave 10 dict begin
+367 499 moveto 75 -0.5 (closebtn.on) alignedtext
+end grestore
+end grestore
+
+%	CLOSEBTN_HILIGHT
+gsave 10 dict begin
+newpath 424 450 moveto
+310 450 lineto
+310 414 lineto
+424 414 lineto
+closepath
+stroke
+gsave 10 dict begin
+367 427 moveto 101 -0.5 (closebtn.hilight) alignedtext
+end grestore
+end grestore
+
+%	CLOSEBTN_ON -> CLOSEBTN_HILIGHT
+newpath 367 486 moveto
+367 478 367 469 367 460 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 370 460 moveto
+367 450 lineto
+365 460 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	CLOSEBTN_HILIGHT -> CLOSEBTN
+newpath 384 414 moveto
+393 405 403 394 412 385 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 414 387 moveto
+419 378 lineto
+410 383 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	BASE_PANELBTN -> BUTTON
+newpath 560 270 moveto
+576 261 597 248 615 238 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 616 240 moveto
+623 233 lineto
+613 236 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	ROTATEBTN
+gsave 10 dict begin
+newpath 564 378 moveto
+488 378 lineto
+488 342 lineto
+564 342 lineto
+closepath
+stroke
+gsave 10 dict begin
+526 355 moveto 62 -0.5 (rotatebtn) alignedtext
+end grestore
+end grestore
+
+%	ROTATEBTN -> BASE_PANELBTN
+newpath 527 342 moveto
+528 334 528 325 528 316 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 531 316 moveto
+528 306 lineto
+526 316 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	ROTATEBTN_ON
+gsave 10 dict begin
+newpath 550 522 moveto
+456 522 lineto
+456 486 lineto
+550 486 lineto
+closepath
+stroke
+gsave 10 dict begin
+503 499 moveto 81 -0.5 (rotatebtn.on) alignedtext
+end grestore
+end grestore
+
+%	ROTATEBTN_HILIGHT
+gsave 10 dict begin
+newpath 564 450 moveto
+442 450 lineto
+442 414 lineto
+564 414 lineto
+closepath
+stroke
+gsave 10 dict begin
+503 427 moveto 108 -0.5 (rotatebtn.hilight) alignedtext
+end grestore
+end grestore
+
+%	ROTATEBTN_ON -> ROTATEBTN_HILIGHT
+newpath 503 486 moveto
+503 478 503 469 503 460 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 506 460 moveto
+503 450 lineto
+501 460 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	ROTATEBTN_HILIGHT -> ROTATEBTN
+newpath 509 414 moveto
+512 406 515 396 517 387 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 519 388 moveto
+520 378 lineto
+514 387 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	ZOOMBTN
+gsave 10 dict begin
+newpath 656 378 moveto
+582 378 lineto
+582 342 lineto
+656 342 lineto
+closepath
+stroke
+gsave 10 dict begin
+619 355 moveto 61 -0.5 (zoombtn) alignedtext
+end grestore
+end grestore
+
+%	ZOOMBTN -> BASE_PANELBTN
+newpath 596 342 moveto
+585 333 571 322 559 312 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 560 310 moveto
+551 306 lineto
+558 314 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	ZOOMBTN_ON
+gsave 10 dict begin
+newpath 689 522 moveto
+595 522 lineto
+595 486 lineto
+689 486 lineto
+closepath
+stroke
+gsave 10 dict begin
+642 499 moveto 80 -0.5 (zoombtn.on) alignedtext
+end grestore
+end grestore
+
+%	ZOOMBTN_HILIGHT
+gsave 10 dict begin
+newpath 702 450 moveto
+582 450 lineto
+582 414 lineto
+702 414 lineto
+closepath
+stroke
+gsave 10 dict begin
+642 427 moveto 107 -0.5 (zoombtn.hilight) alignedtext
+end grestore
+end grestore
+
+%	ZOOMBTN_ON -> ZOOMBTN_HILIGHT
+newpath 642 486 moveto
+642 478 642 469 642 460 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 645 460 moveto
+642 450 lineto
+640 460 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	ZOOMBTN_HILIGHT -> ZOOMBTN
+newpath 636 414 moveto
+633 406 630 396 628 387 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 631 387 moveto
+625 378 lineto
+626 388 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	POPUP_MENU
+gsave 10 dict begin
+newpath 3327 306 moveto
+3227 306 lineto
+3227 270 lineto
+3327 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+3277 283 moveto 86 -0.5 (popup.menu) alignedtext
+end grestore
+end grestore
+
+%	POPUP_MENU -> POPUP
+newpath 3277 270 moveto
+3277 262 3277 253 3277 244 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 3280 244 moveto
+3277 234 lineto
+3275 244 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	POPUP_MESSAGEDLG
+gsave 10 dict begin
+newpath 3483 306 moveto
+3345 306 lineto
+3345 270 lineto
+3483 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+3414 283 moveto 124 -0.5 (popup.messagedlg) alignedtext
+end grestore
+end grestore
+
+%	POPUP_MESSAGEDLG -> POPUP
+newpath 3379 270 moveto
+3360 259 3334 247 3314 235 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 3316 233 moveto
+3306 231 lineto
+3314 238 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	MENUITEM
+gsave 10 dict begin
+newpath 1784 234 moveto
+1700 234 lineto
+1700 198 lineto
+1784 198 lineto
+closepath
+stroke
+gsave 10 dict begin
+1742 211 moveto 70 -0.5 (menuitem) alignedtext
+end grestore
+end grestore
+
+%	MENUITEM -> BASE_INTERACTIVE
+newpath 1742 198 moveto
+1742 190 1742 181 1742 172 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1745 172 moveto
+1742 162 lineto
+1740 172 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	MENUITEM_HILIGHT
+gsave 10 dict begin
+newpath 1693 306 moveto
+1563 306 lineto
+1563 270 lineto
+1693 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+1628 283 moveto 116 -0.5 (menuitem.hilight) alignedtext
+end grestore
+end grestore
+
+%	MENUITEM_HILIGHT -> MENUITEM
+newpath 1657 270 moveto
+1672 261 1691 249 1706 239 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1707 241 moveto
+1714 234 lineto
+1704 237 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	CHECKBOX
+gsave 10 dict begin
+newpath 1949 234 moveto
+1871 234 lineto
+1871 198 lineto
+1949 198 lineto
+closepath
+stroke
+gsave 10 dict begin
+1910 211 moveto 65 -0.5 (checkbox) alignedtext
+end grestore
+end grestore
+
+%	CHECKBOX -> BASE_INTERACTIVE
+newpath 1871 199 moveto
+1848 189 1818 176 1793 166 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1794 164 moveto
+1784 162 lineto
+1792 168 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	CHECKBOX_HILIGHT
+gsave 10 dict begin
+newpath 2041 306 moveto
+1917 306 lineto
+1917 270 lineto
+2041 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+1979 283 moveto 111 -0.5 (checkbox.hilight) alignedtext
+end grestore
+end grestore
+
+%	CHECKBOX_HILIGHT -> CHECKBOX
+newpath 1962 270 moveto
+1953 261 1943 250 1934 241 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1936 239 moveto
+1927 234 lineto
+1932 243 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	CHECKBOX_ON
+gsave 10 dict begin
+newpath 2072 378 moveto
+1974 378 lineto
+1974 342 lineto
+2072 342 lineto
+closepath
+stroke
+gsave 10 dict begin
+2023 355 moveto 85 -0.5 (checkbox.on) alignedtext
+end grestore
+end grestore
+
+%	CHECKBOX_ON -> CHECKBOX_HILIGHT
+newpath 2012 342 moveto
+2007 334 2001 323 1995 314 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1997 313 moveto
+1990 306 lineto
+1993 316 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	FLATBUTTON
+gsave 10 dict begin
+newpath 3213 162 moveto
+3129 162 lineto
+3129 126 lineto
+3213 126 lineto
+closepath
+stroke
+gsave 10 dict begin
+3171 139 moveto 70 -0.5 (flatbutton) alignedtext
+end grestore
+end grestore
+
+%	FLATBUTTON -> DEFAULT
+newpath 3129 128 moveto
+3126 128 3123 127 3120 126 curveto
+3030 101 2922 85 2865 77 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2867 75 moveto
+2857 76 lineto
+2867 80 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	FLATBUTTON_HILIGHT
+gsave 10 dict begin
+newpath 286 378 moveto
+156 378 lineto
+156 342 lineto
+286 342 lineto
+closepath
+stroke
+gsave 10 dict begin
+221 355 moveto 116 -0.5 (flatbutton.hilight) alignedtext
+end grestore
+end grestore
+
+%	FLATBUTTON_HILIGHT -> BUTTON_HILIGHT
+newpath 237 342 moveto
+244 333 253 323 261 313 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 263 315 moveto
+268 306 lineto
+259 311 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	FLATBUTTON_ON
+gsave 10 dict begin
+newpath 102 450 moveto
+0 450 lineto
+0 414 lineto
+102 414 lineto
+closepath
+stroke
+gsave 10 dict begin
+51 427 moveto 89 -0.5 (flatbutton.on) alignedtext
+end grestore
+end grestore
+
+%	FLATBUTTON_ON -> BUTTON_ON
+newpath 63 414 moveto
+68 406 76 395 82 386 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 84 388 moveto
+87 378 lineto
+80 385 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	LISTITEM
+gsave 10 dict begin
+newpath 1773 306 moveto
+1711 306 lineto
+1711 270 lineto
+1773 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+1742 283 moveto 49 -0.5 (listitem) alignedtext
+end grestore
+end grestore
+
+%	LISTITEM -> MENUITEM
+newpath 1742 270 moveto
+1742 262 1742 253 1742 244 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1745 244 moveto
+1742 234 lineto
+1740 244 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	LISTITEM_HILIGHT
+gsave 10 dict begin
+newpath 1956 378 moveto
+1848 378 lineto
+1848 342 lineto
+1956 342 lineto
+closepath
+stroke
+gsave 10 dict begin
+1902 355 moveto 95 -0.5 (listitem.hilight) alignedtext
+end grestore
+end grestore
+
+%	LISTITEM_HILIGHT -> LISTITEM
+newpath 1862 342 moveto
+1837 331 1805 317 1781 306 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1783 304 moveto
+1773 302 lineto
+1781 309 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	LISTITEM_ON
+gsave 10 dict begin
+newpath 1658 378 moveto
+1576 378 lineto
+1576 342 lineto
+1658 342 lineto
+closepath
+stroke
+gsave 10 dict begin
+1617 355 moveto 69 -0.5 (listitem.on) alignedtext
+end grestore
+end grestore
+
+%	LISTITEM_ON -> MENUITEM_HILIGHT
+newpath 1620 342 moveto
+1621 334 1623 324 1624 316 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1626 316 moveto
+1625 306 lineto
+1622 316 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	CHECKBOX_ON_NOHILIGHT
+gsave 10 dict begin
+newpath 2026 450 moveto
+1864 450 lineto
+1864 414 lineto
+2026 414 lineto
+closepath
+stroke
+gsave 10 dict begin
+1945 427 moveto 148 -0.5 (checkbox.on.nohilight) alignedtext
+end grestore
+end grestore
+
+%	CHECKBOX_ON_NOHILIGHT -> CHECKBOX_ON
+newpath 1965 414 moveto
+1975 405 1986 394 1997 384 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1998 386 moveto
+2004 378 lineto
+1995 383 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	SUBMENUITEM
+gsave 10 dict begin
+newpath 1899 306 moveto
+1791 306 lineto
+1791 270 lineto
+1899 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+1845 283 moveto 94 -0.5 (submenuitem) alignedtext
+end grestore
+end grestore
+
+%	SUBMENUITEM -> MENUITEM
+newpath 1819 270 moveto
+1806 261 1789 249 1775 239 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1777 237 moveto
+1767 234 lineto
+1774 241 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	SUBMENUITEM_HILIGHT
+gsave 10 dict begin
+newpath 1830 378 moveto
+1676 378 lineto
+1676 342 lineto
+1830 342 lineto
+closepath
+stroke
+gsave 10 dict begin
+1753 355 moveto 140 -0.5 (submenuitem.hilight) alignedtext
+end grestore
+end grestore
+
+%	SUBMENUITEM_HILIGHT -> MENUITEM_HILIGHT
+newpath 1721 342 moveto
+1705 333 1685 321 1667 311 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1669 309 moveto
+1659 306 lineto
+1666 313 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	RADIOBUTTON
+gsave 10 dict begin
+newpath 2153 306 moveto
+2059 306 lineto
+2059 270 lineto
+2153 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+2106 283 moveto 80 -0.5 (radiobutton) alignedtext
+end grestore
+end grestore
+
+%	RADIOBUTTON -> CHECKBOX
+newpath 2059 271 moveto
+2030 260 1992 246 1958 234 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1959 232 moveto
+1949 231 lineto
+1958 237 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	RADIOBUTTON_HILIGHT
+gsave 10 dict begin
+newpath 2230 378 moveto
+2090 378 lineto
+2090 342 lineto
+2230 342 lineto
+closepath
+stroke
+gsave 10 dict begin
+2160 355 moveto 126 -0.5 (radiobutton.hilight) alignedtext
+end grestore
+end grestore
+
+%	RADIOBUTTON_HILIGHT -> CHECKBOX_HILIGHT
+newpath 2114 342 moveto
+2090 332 2059 320 2033 309 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2034 307 moveto
+2024 306 lineto
+2033 312 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	RADIOBUTTON_ON
+gsave 10 dict begin
+newpath 2158 450 moveto
+2044 450 lineto
+2044 414 lineto
+2158 414 lineto
+closepath
+stroke
+gsave 10 dict begin
+2101 427 moveto 100 -0.5 (radiobutton.on) alignedtext
+end grestore
+end grestore
+
+%	RADIOBUTTON_ON -> CHECKBOX_ON
+newpath 2081 414 moveto
+2071 405 2060 394 2049 384 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2051 383 moveto
+2042 378 lineto
+2048 386 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	RADIOBUTTON_ON_NOHILIGHT
+gsave 10 dict begin
+newpath 2033 522 moveto
+1857 522 lineto
+1857 486 lineto
+2033 486 lineto
+closepath
+stroke
+gsave 10 dict begin
+1945 499 moveto 163 -0.5 (radiobutton.on.nohilight) alignedtext
+end grestore
+end grestore
+
+%	RADIOBUTTON_ON_NOHILIGHT -> CHECKBOX_ON_NOHILIGHT
+newpath 1945 486 moveto
+1945 478 1945 469 1945 460 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1948 460 moveto
+1945 450 lineto
+1943 460 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	TEXTBOX
+gsave 10 dict begin
+newpath 2977 234 moveto
+2913 234 lineto
+2913 198 lineto
+2977 198 lineto
+closepath
+stroke
+gsave 10 dict begin
+2945 211 moveto 51 -0.5 (textbox) alignedtext
+end grestore
+end grestore
+
+%	TEXTBOX -> BASE_DISPLAY
+newpath 2915 198 moveto
+2900 189 2881 177 2864 167 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2866 165 moveto
+2856 162 lineto
+2863 169 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	TERMINAL
+gsave 10 dict begin
+newpath 3067 234 moveto
+2995 234 lineto
+2995 198 lineto
+3067 198 lineto
+closepath
+stroke
+gsave 10 dict begin
+3031 211 moveto 58 -0.5 (terminal) alignedtext
+end grestore
+end grestore
+
+%	TERMINAL -> BASE_DISPLAY
+newpath 2995 201 moveto
+2992 200 2989 199 2986 198 curveto
+2951 185 2913 173 2882 162 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2883 160 moveto
+2873 159 lineto
+2882 165 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	LIST
+gsave 10 dict begin
+newpath 2021 234 moveto
+1967 234 lineto
+1967 198 lineto
+2021 198 lineto
+closepath
+stroke
+gsave 10 dict begin
+1994 211 moveto 19 -0.5 (list) alignedtext
+end grestore
+end grestore
+
+%	LIST -> BASE_INTERACTIVE
+newpath 1967 202 moveto
+1964 200 1961 199 1958 198 curveto
+1909 179 1852 166 1809 157 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1810 155 moveto
+1800 155 lineto
+1809 160 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	MENUBUTTON
+gsave 10 dict begin
+newpath 701 306 moveto
+603 306 lineto
+603 270 lineto
+701 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+652 283 moveto 85 -0.5 (menubutton) alignedtext
+end grestore
+end grestore
+
+%	MENUBUTTON -> BUTTON
+newpath 652 270 moveto
+652 262 652 253 652 244 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 655 244 moveto
+652 234 lineto
+650 244 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	MENUBUTTON_ON
+gsave 10 dict begin
+newpath 838 450 moveto
+720 450 lineto
+720 414 lineto
+838 414 lineto
+closepath
+stroke
+gsave 10 dict begin
+779 427 moveto 105 -0.5 (menubutton.on) alignedtext
+end grestore
+end grestore
+
+%	MENUBUTTON_HILIGHT
+gsave 10 dict begin
+newpath 818 378 moveto
+674 378 lineto
+674 342 lineto
+818 342 lineto
+closepath
+stroke
+gsave 10 dict begin
+746 355 moveto 131 -0.5 (menubutton.hilight) alignedtext
+end grestore
+end grestore
+
+%	MENUBUTTON_ON -> MENUBUTTON_HILIGHT
+newpath 771 414 moveto
+767 406 762 396 758 387 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 760 386 moveto
+754 378 lineto
+756 388 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	MENUBUTTON_HILIGHT -> MENUBUTTON
+newpath 722 342 moveto
+710 333 695 322 682 312 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 684 311 moveto
+675 306 lineto
+681 314 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	LABEL_HILIGHT
+gsave 10 dict begin
+newpath 2975 306 moveto
+2883 306 lineto
+2883 270 lineto
+2975 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+2929 283 moveto 78 -0.5 (label.hilight) alignedtext
+end grestore
+end grestore
+
+%	LABEL_HILIGHT -> LABEL
+newpath 2883 273 moveto
+2880 272 2877 271 2874 270 curveto
+2821 253 2805 254 2752 234 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2753 232 moveto
+2743 230 lineto
+2751 236 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	BOX_HILIGHT
+gsave 10 dict begin
+newpath 2335 306 moveto
+2249 306 lineto
+2249 270 lineto
+2335 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+2292 283 moveto 72 -0.5 (box.hilight) alignedtext
+end grestore
+end grestore
+
+%	BOX_HILIGHT -> BOX
+newpath 2292 270 moveto
+2292 262 2292 253 2292 244 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2295 244 moveto
+2292 234 lineto
+2290 244 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	INDICATOR_H
+gsave 10 dict begin
+newpath 2437 306 moveto
+2353 306 lineto
+2353 270 lineto
+2437 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+2395 283 moveto 71 -0.5 (indicator.h) alignedtext
+end grestore
+end grestore
+
+%	INDICATOR_H -> INDICATOR
+newpath 2421 270 moveto
+2434 261 2450 249 2464 239 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2465 241 moveto
+2472 234 lineto
+2462 237 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	INDICATOR_V
+gsave 10 dict begin
+newpath 2539 306 moveto
+2455 306 lineto
+2455 270 lineto
+2539 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+2497 283 moveto 71 -0.5 (indicator.v) alignedtext
+end grestore
+end grestore
+
+%	INDICATOR_V -> INDICATOR
+newpath 2497 270 moveto
+2497 262 2497 253 2497 244 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2500 244 moveto
+2497 234 lineto
+2495 244 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	SCROLL_H
+gsave 10 dict begin
+newpath 1033 306 moveto
+973 306 lineto
+973 270 lineto
+1033 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+1003 283 moveto 46 -0.5 (scroll.h) alignedtext
+end grestore
+end grestore
+
+%	SCROLL_H -> SCROLL
+newpath 1016 270 moveto
+1022 262 1030 251 1036 242 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1038 244 moveto
+1041 234 lineto
+1034 241 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	SCROLL_V
+gsave 10 dict begin
+newpath 1123 306 moveto
+1063 306 lineto
+1063 270 lineto
+1123 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+1093 283 moveto 46 -0.5 (scroll.v) alignedtext
+end grestore
+end grestore
+
+%	SCROLL_V -> SCROLL
+newpath 1083 270 moveto
+1078 262 1073 252 1069 243 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1071 242 moveto
+1064 234 lineto
+1067 244 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	SCROLL_H_ON
+gsave 10 dict begin
+newpath 1015 450 moveto
+935 450 lineto
+935 414 lineto
+1015 414 lineto
+closepath
+stroke
+gsave 10 dict begin
+975 427 moveto 66 -0.5 (scroll.h.on) alignedtext
+end grestore
+end grestore
+
+%	SCROLL_H_HILIGHT
+gsave 10 dict begin
+newpath 1028 378 moveto
+922 378 lineto
+922 342 lineto
+1028 342 lineto
+closepath
+stroke
+gsave 10 dict begin
+975 355 moveto 93 -0.5 (scroll.h.hilight) alignedtext
+end grestore
+end grestore
+
+%	SCROLL_H_ON -> SCROLL_H_HILIGHT
+newpath 975 414 moveto
+975 406 975 397 975 388 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 978 388 moveto
+975 378 lineto
+973 388 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	SCROLL_H_HILIGHT -> SCROLL_H
+newpath 982 342 moveto
+985 334 989 324 993 315 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 995 316 moveto
+996 306 lineto
+990 315 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	SCROLL_V_ON
+gsave 10 dict begin
+newpath 1139 450 moveto
+1059 450 lineto
+1059 414 lineto
+1139 414 lineto
+closepath
+stroke
+gsave 10 dict begin
+1099 427 moveto 66 -0.5 (scroll.v.on) alignedtext
+end grestore
+end grestore
+
+%	SCROLL_V_HILIGHT
+gsave 10 dict begin
+newpath 1152 378 moveto
+1046 378 lineto
+1046 342 lineto
+1152 342 lineto
+closepath
+stroke
+gsave 10 dict begin
+1099 355 moveto 93 -0.5 (scroll.v.hilight) alignedtext
+end grestore
+end grestore
+
+%	SCROLL_V_ON -> SCROLL_V_HILIGHT
+newpath 1099 414 moveto
+1099 406 1099 397 1099 388 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1102 388 moveto
+1099 378 lineto
+1097 388 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	SCROLL_V_HILIGHT -> SCROLL_V
+newpath 1097 342 moveto
+1096 334 1096 325 1095 316 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1098 316 moveto
+1095 306 lineto
+1093 316 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	PANELBAR_H
+gsave 10 dict begin
+newpath 1404 306 moveto
+1320 306 lineto
+1320 270 lineto
+1404 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+1362 283 moveto 71 -0.5 (panelbar.h) alignedtext
+end grestore
+end grestore
+
+%	PANELBAR_H -> PANELBAR
+newpath 1380 270 moveto
+1389 261 1400 250 1410 241 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1412 243 moveto
+1417 234 lineto
+1408 239 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	PANELBAR_V
+gsave 10 dict begin
+newpath 1523 306 moveto
+1439 306 lineto
+1439 270 lineto
+1523 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+1481 283 moveto 71 -0.5 (panelbar.v) alignedtext
+end grestore
+end grestore
+
+%	PANELBAR_V -> PANELBAR
+newpath 1469 270 moveto
+1464 262 1457 251 1451 242 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1453 241 moveto
+1446 234 lineto
+1449 244 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	PANELBAR_H_ON
+gsave 10 dict begin
+newpath 1397 450 moveto
+1293 450 lineto
+1293 414 lineto
+1397 414 lineto
+closepath
+stroke
+gsave 10 dict begin
+1345 427 moveto 90 -0.5 (panelbar.h.on) alignedtext
+end grestore
+end grestore
+
+%	PANELBAR_H_HILIGHT
+gsave 10 dict begin
+newpath 1410 378 moveto
+1280 378 lineto
+1280 342 lineto
+1410 342 lineto
+closepath
+stroke
+gsave 10 dict begin
+1345 355 moveto 117 -0.5 (panelbar.h.hilight) alignedtext
+end grestore
+end grestore
+
+%	PANELBAR_H_ON -> PANELBAR_H_HILIGHT
+newpath 1345 414 moveto
+1345 406 1345 397 1345 388 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1348 388 moveto
+1345 378 lineto
+1343 388 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	PANELBAR_H_HILIGHT -> PANELBAR_H
+newpath 1349 342 moveto
+1351 334 1353 324 1356 315 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1358 316 moveto
+1358 306 lineto
+1353 315 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	PANELBAR_V_ON
+gsave 10 dict begin
+newpath 1545 450 moveto
+1441 450 lineto
+1441 414 lineto
+1545 414 lineto
+closepath
+stroke
+gsave 10 dict begin
+1493 427 moveto 90 -0.5 (panelbar.v.on) alignedtext
+end grestore
+end grestore
+
+%	PANELBAR_V_HILIGHT
+gsave 10 dict begin
+newpath 1558 378 moveto
+1428 378 lineto
+1428 342 lineto
+1558 342 lineto
+closepath
+stroke
+gsave 10 dict begin
+1493 355 moveto 117 -0.5 (panelbar.v.hilight) alignedtext
+end grestore
+end grestore
+
+%	PANELBAR_V_ON -> PANELBAR_V_HILIGHT
+newpath 1493 414 moveto
+1493 406 1493 397 1493 388 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1496 388 moveto
+1493 378 lineto
+1491 388 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	PANELBAR_V_HILIGHT -> PANELBAR_V
+newpath 1490 342 moveto
+1489 334 1487 324 1486 316 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 1488 315 moveto
+1484 306 lineto
+1484 316 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	TEXTEDIT
+gsave 10 dict begin
+newpath 3057 306 moveto
+2993 306 lineto
+2993 270 lineto
+3057 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+3025 283 moveto 50 -0.5 (textedit) alignedtext
+end grestore
+end grestore
+
+%	TEXTEDIT -> TEXTBOX
+newpath 3005 270 moveto
+2995 261 2983 250 2972 240 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2974 239 moveto
+2965 234 lineto
+2971 242 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	MANAGEDWINDOW
+gsave 10 dict begin
+newpath 3209 306 moveto
+3075 306 lineto
+3075 270 lineto
+3209 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+3142 283 moveto 120 -0.5 (managedwindow) alignedtext
+end grestore
+end grestore
+
+%	MANAGEDWINDOW -> PANEL
+newpath 3137 270 moveto
+3135 262 3132 252 3130 243 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 3133 243 moveto
+3127 234 lineto
+3128 244 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	TAB_PAGE
+gsave 10 dict begin
+newpath 2405 234 moveto
+2337 234 lineto
+2337 198 lineto
+2405 198 lineto
+closepath
+stroke
+gsave 10 dict begin
+2371 211 moveto 55 -0.5 (tab.page) alignedtext
+end grestore
+end grestore
+
+%	TAB_PAGE -> BASE_CONTAINER
+newpath 2361 198 moveto
+2356 190 2351 180 2347 171 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2349 170 moveto
+2342 162 lineto
+2345 172 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	TAB_BAR
+gsave 10 dict begin
+newpath 2231 306 moveto
+2171 306 lineto
+2171 270 lineto
+2231 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+2201 283 moveto 46 -0.5 (tab.bar) alignedtext
+end grestore
+end grestore
+
+%	TAB_BAR -> TOOLBAR
+newpath 2203 270 moveto
+2204 262 2204 253 2205 244 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 2207 244 moveto
+2206 234 lineto
+2203 244 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	TAB
+gsave 10 dict begin
+newpath 773 306 moveto
+719 306 lineto
+719 270 lineto
+773 270 lineto
+closepath
+stroke
+gsave 10 dict begin
+746 283 moveto 21 -0.5 (tab) alignedtext
+end grestore
+end grestore
+
+%	TAB -> BUTTON
+newpath 722 270 moveto
+710 261 695 250 682 240 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 684 239 moveto
+675 234 lineto
+681 242 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	TAB_HILIGHT
+gsave 10 dict begin
+newpath 384 378 moveto
+304 378 lineto
+304 342 lineto
+384 342 lineto
+closepath
+stroke
+gsave 10 dict begin
+344 355 moveto 67 -0.5 (tab.hilight) alignedtext
+end grestore
+end grestore
+
+%	TAB_HILIGHT -> BUTTON_HILIGHT
+newpath 329 342 moveto
+322 333 313 323 305 313 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 307 311 moveto
+298 306 lineto
+303 315 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	TAB_ON
+gsave 10 dict begin
+newpath 174 450 moveto
+120 450 lineto
+120 414 lineto
+174 414 lineto
+closepath
+stroke
+gsave 10 dict begin
+147 427 moveto 41 -0.5 (tab.on) alignedtext
+end grestore
+end grestore
+
+%	TAB_ON -> BUTTON_ON
+newpath 135 414 moveto
+130 406 122 395 116 386 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 118 385 moveto
+111 378 lineto
+114 388 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+
+%	TAB_ON_NOHILIGHT
+gsave 10 dict begin
+newpath 206 522 moveto
+88 522 lineto
+88 486 lineto
+206 486 lineto
+closepath
+stroke
+gsave 10 dict begin
+147 499 moveto 104 -0.5 (tab.on.nohilight) alignedtext
+end grestore
+end grestore
+
+%	TAB_ON_NOHILIGHT -> TAB_ON
+newpath 147 486 moveto
+147 478 147 469 147 460 curveto
+stroke
+gsave 10 dict begin
+solid
+0.000 0.000 0.000 edgecolor
+newpath 150 460 moveto
+147 450 lineto
+145 460 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+end grestore
+endpage
+grestore
+%%PageTrailer
+%%EndPage: 1
