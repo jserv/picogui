@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.42 2001/09/10 18:02:19 micahjd Exp $
+/* $Id: network.h,v 1.43 2001/10/03 19:53:53 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -30,7 +30,7 @@
 #define _H_PG_NETWORK
 
 #define PG_REQUEST_PORT    30450
-#define PG_PROTOCOL_VER    0x0009      /* Increment this whenever changes are made */
+#define PG_PROTOCOL_VER    0x000A      /* Increment this whenever changes are made */
 #define PG_REQUEST_MAGIC   0x31415926
 
 #ifndef PGSERVER
@@ -75,7 +75,7 @@ struct pgresponse_event {
   u16 event;
   u32 from;
   u32 param;
-  /* If event == PG_WE_DATA, 'param' bytes of data follow */
+  /* If we're using PG_EVENTCODING_DATA */
 };
 
 #define PG_RESPONSE_DATA 4

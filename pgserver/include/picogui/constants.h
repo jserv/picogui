@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.86 2001/09/18 21:51:50 micahjd Exp $
+/* $Id: constants.h,v 1.87 2001/10/03 19:53:53 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -849,7 +849,6 @@ typedef unsigned long pghandle;
 #define PG_EVENTCODING_PNTR     0x200   /* Mouse parameters (x,y,btn,chbtn) */
 #define PG_EVENTCODING_DATA     0x300   /* Arbitrary data block */
 #define PG_EVENTCODING_KBD      0x400   /* Keyboard params */
-
 #define PG_EVENTCODINGMASK      0xF00
 
 /* Widget events */
@@ -868,6 +867,7 @@ typedef unsigned long pghandle;
 #define PG_WE_KBD_CHAR    0x40A /* A focused keyboard character recieved */
 #define PG_WE_KBD_KEYUP   0x40B /* A focused raw keyup event */
 #define PG_WE_KBD_KEYDOWN 0x40C /* A focused raw keydown event */
+#define PG_WE_APPMSG      0x301 /* Messages from another application */
 
 /* Non-widget events */
 #define PG_NWE_KBD_CHAR    0x140A /* These are sent if the client has captured the */

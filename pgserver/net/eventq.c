@@ -1,4 +1,4 @@
-/* $Id: eventq.c,v 1.12 2001/09/06 23:42:10 micahjd Exp $
+/* $Id: eventq.c,v 1.13 2001/10/03 19:53:53 micahjd Exp $
  *
  * eventq.c - This implements the post_event function that the widgets
  *            use to send events to the client.  It stores these in a
@@ -38,8 +38,8 @@
    sent from the widget.
    If owner is nonzero, it will be sent as a global event.
 
-   Normally data is NULL. To send a data event, set event to PG_WE_DATA,
-   put the size in param, and point data at your cargo.
+   Normally data is NULL. To send a data event, set event to something using
+   PG_EVENTCODING_DATA, put the size in param, and point data at your cargo.
 */
 void post_event(int event,struct widget *from,long param,int owner,char *data) {
   handle hfrom;
@@ -63,7 +63,7 @@ void post_event(int event,struct widget *from,long param,int owner,char *data) {
     rsp.from = htonl(hfrom);
     rsp.param = htonl(param);
     send(owner,&rsp,sizeof(rsp),0);
-    if (event==PG_WE_DATA)
+    if ((event & PG_EVENTCODINGMASK) == PG_EVENTCODING_DATA)
       send(owner,data,param,0);
   }
   else {
