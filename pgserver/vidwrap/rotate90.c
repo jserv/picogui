@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.1 2001/03/18 18:52:05 micahjd Exp $
+/* $Id: rotate90.c,v 1.2 2001/03/19 02:08:30 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -28,6 +28,13 @@
 #include <pgserver/common.h>
 #include <pgserver/video.h>
 
+/******* Wrapper functions */
+
+
+/******* Registration */
+
+void vidwrap_rotate90(struct vidlib *vid) {
+}
 
 /* The End */
 
