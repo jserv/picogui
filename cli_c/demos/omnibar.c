@@ -1,4 +1,4 @@
-/* $Id: omnibar.c,v 1.4 2000/11/19 04:47:20 micahjd Exp $
+/* $Id: omnibar.c,v 1.5 2000/11/19 06:16:38 micahjd Exp $
  * 
  * omnibar.c - hopefully this will grow into a general interface
  *             for starting and manipulating applications, but
@@ -27,8 +27,6 @@
  * 
  */
 
-#include <picogui.h>
-
 #include <sys/types.h>   /* For making directory listings */
 #include <dirent.h>
 #include <sys/stat.h>
@@ -37,7 +35,11 @@
 
 #include <malloc.h>      /* Dynamic memory is used for the array */
 
-pghandle wClock;
+#include <stdio.h>       /* file IO for getting CPU load */
+
+#include <picogui.h>
+
+pghandle wClock,wLoad;
 
 /********* Event handlers */
 
@@ -130,15 +132,44 @@ int btnSysMenu(short event,pghandle from,long param) {
 /* Called to update the clock and system load indicators */
 void sysIdle(void) {
   time_t now;
+  char *ct;
+  char buf[50];
+  FILE *f;
+  unsigned long cpu_user,cpu_nice,cpu_sys,cpu_idle;
+  unsigned long crun,ctotal;
+  static unsigned long ocrun = 0,octotal = 1;
+
+  /* Get time */
   time(&now);
-  pgReplaceText(wClock,ctime(&now));
+  ct = ctime(&now);
+  ct[strlen(ct)-1] = 0;  /* Strip newline */
+  pgReplaceText(wClock,ct);
+
+  /* Get CPU load */
+  f = fopen("/proc/stat","r");
+  fgets(buf,50,f);
+  fclose(f);
+  sscanf(buf,"cpu %lu %lu %lu %lu",&cpu_user,&cpu_nice,&cpu_sys,&cpu_idle);  
+  crun = cpu_user + cpu_sys;
+  ctotal = crun + cpu_nice + cpu_idle;
+  pgSetWidget(wLoad,PG_WP_VALUE, (crun-ocrun) * 100 / (ctotal-octotal),0);
+  ocrun = crun;
+  octotal = ctotal;
 }
 
 /********* Main program */
 
 int main(int argc, char **argv) {
+  pghandle wLoadbox,fntLabel,fntLabelBold;
+
   pgInit(argc,argv);
   pgRegisterApp(PG_APP_TOOLBAR,"OmniBar",0);
+
+  /* A font for our labels */
+  fntLabel = pgNewFont(NULL,10,PG_FSTYLE_FIXED);
+  fntLabelBold = pgNewFont("Times",10,PG_FSTYLE_BOLD);
+
+  /* Top-level widgets */
 
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
@@ -157,16 +188,36 @@ int main(int argc, char **argv) {
   wClock = pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_RIGHT,
-	      PG_WP_FONT,pgNewFont(NULL,10,PG_FSTYLE_FIXED),
+	      PG_WP_FONT,fntLabel,
 	      PG_WP_TRANSPARENT,0,
+	      0);
+
+  wLoadbox = pgNewWidget(PG_WIDGET_BOX,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_RIGHT,
+	      PG_WP_SIZE,70,
 	      0);
 
   pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("Welcome to PicoGUI (preview release)"),
 	      PG_WP_SIDE,PG_S_RIGHT,
-	      PG_WP_FONT,pgNewFont("Times",10,PG_FSTYLE_BOLD),
+	      PG_WP_FONT,fntLabelBold,
 	      0);
+
+  /* Inside the load box */
+
+  pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_INSIDE,wLoadbox);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString("CPU"),
+	      PG_WP_SIDE,PG_S_RIGHT,
+	      PG_WP_FONT,fntLabel,
+	      0);
+
+  pgNewWidget(PG_WIDGET_INDICATOR,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_ALL,
+	      0);  
 
   /* Run it. */
   pgSetIdle(1000,&sysIdle);

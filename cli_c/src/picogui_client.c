@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.30 2000/11/19 04:47:20 micahjd Exp $
+/* $Id: picogui_client.c,v 1.31 2000/11/19 06:16:38 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -533,8 +533,9 @@ const char *pgErrortypeString(unsigned short errortype) {
 /* Sets an idle handler using nonblocking IO. See details in client_c.h */
 pgidlehandler pgSetIdle(long t,pgidlehandler handler) {
    pgidlehandler previous = _pgidle_handler;
-   _pgidle_handler = handler;
    if (!handler) t = 0;
+   if (!t) handler = 0;
+   _pgidle_handler = handler;
    _pgidle_period.tv_sec = t / 1000;
    _pgidle_period.tv_usec = (t % 1000) * 1000;
    return previous;
@@ -607,6 +608,11 @@ void pgEventLoop(void) {
   _pgeventloop_on = 1;
 
   while (_pgeventloop_on) {
+
+    /* Run the idle handler here too */
+    if (_pgidle_handler)
+      (*_pgidle_handler)();
+
     /* Good practice to update before waiting on the user
        (and, unless doing animation of some sort, nowhere else) */
     pgUpdate();
@@ -643,6 +649,11 @@ void pgEventLoop(void) {
 void pgExitEventLoop(void) { _pgeventloop_on=0; }
 
 pghandle pgGetEvent(unsigned short *event, unsigned long *param) {
+
+  /* Run the idle handler here too */
+  if (_pgidle_handler)
+    (*_pgidle_handler)();
+
   /* Update before waiting for the user */
   pgUpdate();
 
@@ -651,6 +662,7 @@ pghandle pgGetEvent(unsigned short *event, unsigned long *param) {
   pgFlushRequests();
   if (event) *event = _pg_return.e.event.event;
   if (param) *param = _pg_return.e.event.param;
+
   return _pg_return.e.event.from;
 }
 
