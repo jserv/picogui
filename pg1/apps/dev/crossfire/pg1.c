@@ -20,6 +20,7 @@
   The author can be reached via e-mail to crossfire-devel@real-time.com
 */
 
+#include <time.h>
 #include <picogui.h>
 /* always include our local headers after the system headers are included */
 #include "client.h"
@@ -28,26 +29,24 @@
 
 bool is_textmode = FALSE;
 int map_widget_size;
-pghandle info_widget, map_widget, title_label,
+pghandle info_widget, map_widget, map_image, title_label,
   hp_indicator, sp_indicator, gr_indicator, food_indicator,
-  hp_label, sp_label, gr_label, food_label,
-  resistances_tb, stats_pane, stats_tb,
+  hp_label, sp_label, gr_label, food_label, cmd_input, nrof_input,
+  resistances_tb, stats_pane, stats_tb, fire_label, item_label,
   default_look_title, temp_look_title,
-  weight_label, look_label;
+  weight_label, look_label, look_closeb;
 pgcontext map_context;
 
 
 #define MAX_LIST_ITEMS		1023
-struct list_item
-{
-  pghandle item, weight;
-} inv_items[MAX_LIST_ITEMS + 1], look_items[MAX_LIST_ITEMS + 1];
+pghandle inv_items[MAX_LIST_ITEMS + 1], look_items[MAX_LIST_ITEMS + 1];
 
 
 struct Map the_map;
 PlayerPosition pl_pos;
-item *looking_at = NULL;
+item *looking_at = NULL, *mouse_looking = NULL;
 uint32 weight_limit;
+uint16 info_width = 50;
 
 static struct pgmemdata colorcmd[] = {
   /* these have to be all of the same len (13), so they follow a strict format:
@@ -83,6 +82,8 @@ struct image_data
   u16 height;
   pghandle handle;
 } images[MAXIMAGENUM];
+
+u8 redraw_needed=FALSE, redraw_delay=FALSE;
 
 void draw_info (const char *str, int color);
 
@@ -124,6 +125,16 @@ draw_prompt (const char *str)
  *****************************************************************************/
 
 
+void ui_get_nrof ()
+{
+  pghandle s = pgGetWidget (nrof_input, PG_WP_TEXT);
+  cpl.count = strtol (pgGetString (s), NULL, 10);
+
+  pgWriteCmd (nrof_input, PGCANVAS_NUKE, 0);
+  pgFocus (info_widget);
+}
+
+
 void open_container (item *op) 
 {
   looking_at = op;
@@ -131,6 +142,9 @@ void open_container (item *op)
   temp_look_title = pgNewString (op->d_name);
   pgSetWidget (look_label,
 	       PG_WP_TEXT, temp_look_title,
+	       0);
+  pgSetWidget (look_closeb,
+	       PG_WP_DISABLED, 0,
 	       0);
 }
 
@@ -148,7 +162,17 @@ void close_container (item *op)
       pgSetWidget (look_label,
 		   PG_WP_TEXT, default_look_title,
 		   0);
+      pgSetWidget (look_closeb,
+		   PG_WP_DISABLED, 1,
+		   0);
     }
+}
+
+
+int ui_close_container (struct pgEvent *evt)
+{
+  close_container (looking_at);
+  return 1;
 }
 
 
@@ -161,12 +185,114 @@ void set_weight_limit (uint32 wlim)
 int item_click_handler (struct pgEvent *evt)
 {
   item *it = evt->extra;
-  printf ("Yay, a click on `%s' with buttons %d, %d (%x)!\n",
-	  it->d_name, evt->e.pntr.btn, evt->e.pntr.chbtn, evt->e.param);
+
+  pgSetWidget (evt->from,
+	       PG_WP_EXTDEVENTS, 0,
+	       0);
+  if (it->env == cpl.ob)
+    switch (pgMenuFromString (it->locked ?
+			      "Examine|Unlock|Apply|Mark" :
+			      "Examine|Lock|Apply|Mark|Drop"))
+      {
+      case 1:
+	client_send_examine (it->tag);     
+	break;
+      case 2:
+	toggle_locked (it);
+	break;
+      case 3:
+	client_send_apply (it->tag);
+	break;
+      case 4:
+	send_mark_obj (it);
+	break;
+      case 5:
+	cpl.count = 0;
+	ui_get_nrof ();
+	client_send_move (looking_at->tag, it->tag, cpl.count);
+	break;
+      }
+  else
+    switch (pgMenuFromString ("Examine|Apply|Get"))
+      {
+      case 1:
+	client_send_examine (it->tag);     
+	break;
+      case 2:
+	client_send_apply (it->tag);
+	break;
+      case 3:
+	ui_get_nrof ();
+	client_send_move (cpl.ob->tag, it->tag, cpl.count);
+	break;
+      }
+  pgSetWidget (evt->from,
+	       PG_WP_EXTDEVENTS, PG_EXEV_PNTR_MOVE,
+	       0);
+  item_leave_handler (evt);
+  return 0;
 }
 
 
-void draw_list (item *op, struct list_item *items)
+int item_enter_handler (struct pgEvent *evt)
+{
+  item *it = evt->extra;
+  char buff[MAX_BUF];
+  pghandle old_s;
+
+  if (pgGetWidget (stats_pane, PG_WP_SIDE) & (PG_S_LEFT | PG_S_RIGHT))
+    {
+      /* vertical */
+      if (it->weight > 0)
+	snprintf (buff, MAX_BUF, "%s\n%s\nweights %6.1f",
+		  it->d_name, it->flags,
+	      it->nrof * it->weight);
+      else
+	snprintf (buff, MAX_BUF, "%s\n%s",
+		  it->d_name, it->flags);
+    }
+  else
+    {
+      if (it->weight > 0)
+	snprintf (buff, MAX_BUF, "%s%s  -  w%6.1f",
+		  it->d_name, it->flags,
+	      it->nrof * it->weight);
+      else
+	snprintf (buff, MAX_BUF, "%s%s",
+		  it->d_name, it->flags);
+    }
+  buff[MAX_BUF-1] = '\0';
+  old_s = pgGetWidget (item_label, PG_WP_TEXT);
+  pgSetWidget (item_label,
+	       PG_WP_TEXT, pgNewString (buff),
+	       PG_WP_IMAGE, images[it->face].handle,
+	       0);
+  pgDelete (old_s);
+  mouse_looking = it;
+  return 0;
+}
+
+
+int item_leave_handler (struct pgEvent *evt)
+{
+  item *it = evt->extra;
+  pghandle old_s;
+
+  if (mouse_looking == it || !mouse_looking)
+    {
+      mouse_looking = NULL;
+      old_s = pgGetWidget (item_label, PG_WP_TEXT);
+      pgSetWidget (item_label,
+		   PG_WP_TEXT, 0,
+		   PG_WP_IMAGE, 0,
+		   0);
+      pgDelete (old_s);
+    }
+  return 1;
+}
+
+
+void draw_list (item *op, pghandle *items)
 {
   item *i;
   int index = 1;
@@ -178,38 +304,41 @@ void draw_list (item *op, struct list_item *items)
     {
       if (index == MAX_LIST_ITEMS)
 	{
-	  items[index].item = pgNewWidget (PG_WIDGET_LABEL, PG_DERIVE_AFTER, items[index-1].item);
-	  pgSetWidget (items[index].item,
+	  items[index] = pgNewWidget (PG_WIDGET_LABEL, PG_DERIVE_AFTER, items[index-1]);
+	  pgSetWidget (items[index],
 		       PG_WP_TEXT, pgNewString (" (and more)"),
 		       0);
 	  break;
 	}
 
-      if (!items[index].item)
+      if (!items[index])
 	{
-	  items[index].item = pgNewWidget (PG_WIDGET_MENUITEM, derive, items[index-1].item);
-	  pgSetWidget (items[index].item,
+	  items[index] = pgNewWidget (PG_WIDGET_MENUITEM, derive, items[index-1]);
+	  pgSetWidget (items[index],
 		       PG_WP_ALIGN, PG_A_LEFT,
-		       PG_WP_EXTDEVENTS, PG_EXEV_PNTR_UP,
-		       0);
-	  pgBind (items[index].item, PG_WE_PNTR_UP, &item_click_handler, i);
-	  items[index].weight = pgNewWidget (PG_WIDGET_LABEL, PG_DERIVE_INSIDE, PGDEFAULT);
-	  pgSetWidget (items[index].weight,
-		       PG_WP_ALIGN, PG_A_RIGHT,
-		       PG_WP_SIDE, PG_S_RIGHT,
+		       PG_WP_EXTDEVENTS, PG_EXEV_PNTR_MOVE,
 		       0);
 	}
 
       fprintf (stderr, "drawing item: %s (%d - %04x)\n",
 	       i->d_name, i->face, images[i->face].handle);
-      snprintf (buff, MAX_BUF, "%s %s", i->d_name, i->flags);
-      buff[MAX_BUF-1] = '\0';
-      old_s = pgGetWidget (items[index].item, PG_WP_TEXT);
-      pgSetWidget (items[index].item,
+      if (i->nrof > 1)
+	{
+	  snprintf (buff, MAX_BUF, "(%d)", i->nrof);
+	  buff[MAX_BUF-1] = '\0';
+	}
+      else
+	buff[0] = '\0';
+      old_s = pgGetWidget (items[index], PG_WP_TEXT);
+      pgSetWidget (items[index],
 		   PG_WP_TEXT, pgNewString (buff),
 		   PG_WP_IMAGE, images[i->face].handle,
 		   0);
       pgDelete (old_s);
+
+      pgBind (items[index], PG_WE_ACTIVATE, &item_click_handler, i);
+      pgBind (items[index], PG_WE_PNTR_ENTER, &item_enter_handler, i);
+      pgBind (items[index], PG_WE_PNTR_LEAVE, &item_leave_handler, i);
 
       if (i->weight < 0)
 	buff[0] = '\0';
@@ -218,31 +347,22 @@ void draw_list (item *op, struct list_item *items)
 	  snprintf (buff, MAX_BUF, "%6.1f" ,i->nrof * i->weight);
 	  buff[MAX_BUF-1] = '\0';
 	}
-      old_s = pgGetWidget (items[index].weight, PG_WP_TEXT);
-      pgSetWidget (items[index].weight,
-		   PG_WP_TEXT, pgNewString (buff),
-		   0);
-      pgDelete (old_s);
 
       derive = PG_DERIVE_AFTER;
     }
 
   /* delete menuitems that became unused due to the list shrinking */
-  while (index <= MAX_LIST_ITEMS && items[index].item)
+  while (index <= MAX_LIST_ITEMS && items[index])
     {
-      pgDelete (pgGetWidget (items[index].item, PG_WP_TEXT));
-      pgDelete (items[index].item);
-      items[index].item = 0;
-
-      pgDelete (pgGetWidget (items[index].weight, PG_WP_TEXT));
-      pgDelete (items[index].weight);
-      items[index].weight = 0;
+      pgDelete (pgGetWidget (items[index], PG_WP_TEXT));
+      pgDelete (items[index]);
+      items[index] = 0;
 
       index++;
     }
 
   op->inv_updated = 0;
-  pgSubUpdate (items[0].item);
+  pgUpdate ();
 }
 
 
@@ -256,7 +376,7 @@ void draw_lists ()
     {
       recorded_weight_limit = weight_limit;
 
-      snprintf (buff, MAX_BUF, "Carrying:  %6.1f/%d", cpl.ob->weight, weight_limit);
+      snprintf (buff, MAX_BUF, "%6.1f/%d", cpl.ob->weight, weight_limit);
       buff[MAX_BUF-1] = '\0';
       old_s = pgGetWidget (weight_label, PG_WP_TEXT);
       pgSetWidget (weight_label,
@@ -283,10 +403,38 @@ void draw_lists ()
 
 void draw_info (const char *str, int color)
 {
+  size_t len;
+  char *slice;
   color &= NDI_COLOR_MASK;
   pgWriteData (info_widget, colorcmd[color]);
-  pgWriteData (info_widget, pgFromMemory (str, strlen (str)));
-  pgWriteData (info_widget, pg_crlf);
+  while (str)
+    {
+      len = strlen (str);
+      slice = (char *)str;
+      if (len > info_width)
+	{
+	  len = info_width;
+	  while (len && slice[len] != ' ' && slice[len] != '(')
+	    len--;
+	  if (len)
+	    {
+	      /* yay, managed to find a good point for wrapping */
+	      str += len;
+	      if (slice[len] == ' ')
+		str++;
+	    }
+	  else
+	    {
+	      /* sigh, wrap at right margin */
+	      len = info_width;
+	      str += len;
+	    }
+	}
+      else
+	str = NULL;
+      pgWriteData (info_widget, pgFromMemory (slice, len));
+      pgWriteData (info_widget, pg_crlf);
+    }
   pgSubUpdate (info_widget);
 }
 
@@ -302,6 +450,17 @@ void draw_color_info (int colr, const char *buf){
   }
 }
 
+
+int get_info_width ()
+{
+  return info_width;
+}
+
+
+int pg_resize_info (struct pgEvent *evt)
+{
+  info_width = evt->e.size.w;
+}
 
 
 /***********************************************************************
@@ -322,6 +481,16 @@ void draw_stats (int redraw)
   float weap_sp;
   char buff[MAX_BUF];
   pghandle old_s;
+  static time_t last_update = 0;
+  time_t now = time (NULL);
+
+  if (now == last_update)
+    {
+      /* max one update per second */
+      return;
+    }
+
+  last_update = now;
 
   /* title: player title and level */
   snprintf (buff, MAX_BUF, "Crossfire %.240s (%d)", cpl.title, cpl.stats.level);
@@ -331,7 +500,6 @@ void draw_stats (int redraw)
 	       PG_WP_TEXT, pgNewString (buff),
 	       0);
   pgDelete (old_s);
-  pgSubUpdate (title_label);
 
   /* stats */
   sprintf (buff,"S:%d  D:%d  Co:%d  I:%d  W:%d  P:%d  Ch:%d\nXP:%d(%d)  ",
@@ -353,14 +521,18 @@ void draw_stats (int redraw)
       pgWriteData (stats_tb, pgFromMemory (buff, l));
     }
   weap_sp = (float) cpl.stats.speed / ((float)cpl.stats.weapon_sp);
-  l = sprintf (buff, "\n%s\nWc:%d  Dam:%d  Ac:%d  Speed:%3.2f (weapon:%1.2f)\n",
-	       cpl.range, cpl.stats.wc, cpl.stats.dam, cpl.stats.ac,
+  l = sprintf (buff, "\nWc:%d  Dam:%d  Ac:%d  Speed:%3.2f (weapon:%1.2f)",
+	       cpl.stats.wc, cpl.stats.dam, cpl.stats.ac,
 	       (float)cpl.stats.speed/FLOAT_MULTF, weap_sp);
   pgWriteData (stats_tb, pgFromMemory (buff, l));
   pgSetWidget (stats_tb,
 	       PG_WP_READONLY, 1,
 	       0);
-  pgSubUpdate (stats_tb);
+
+  /* range/skill */
+  pgSetWidget (fire_label,
+	       PG_WP_TEXT, pgNewString (cpl.range),
+	       0);
 
   /* vitals */
   sprintf (buff,"HP: %d/%d", cpl.stats.hp, cpl.stats.maxhp);
@@ -369,7 +541,6 @@ void draw_stats (int redraw)
 	       PG_WP_TEXT, pgNewString (buff),
 	       0);
   pgDelete (old_s);
-  pgSubUpdate (hp_label);
 
   sprintf (buff,"SP: %d/%d", cpl.stats.sp, cpl.stats.maxsp);
   old_s = pgGetWidget (sp_label, PG_WP_TEXT);
@@ -377,7 +548,6 @@ void draw_stats (int redraw)
 	       PG_WP_TEXT, pgNewString (buff),
 	       0);
   pgDelete (old_s);
-  pgSubUpdate (sp_label);
 
   sprintf (buff,"Gr: %d/%d", cpl.stats.grace, cpl.stats.maxgrace);
   old_s = pgGetWidget (gr_label, PG_WP_TEXT);
@@ -385,7 +555,6 @@ void draw_stats (int redraw)
 	       PG_WP_TEXT, pgNewString (buff),
 	       0);
   pgDelete (old_s);
-  pgSubUpdate (gr_label);
 
   sprintf (buff,"Food: %d", cpl.stats.food);
   old_s = pgGetWidget (food_label, PG_WP_TEXT);
@@ -393,7 +562,8 @@ void draw_stats (int redraw)
 	       PG_WP_TEXT, pgNewString (buff),
 	       0);
   pgDelete (old_s);
-  pgSubUpdate (food_label);
+
+  pgUpdate ();
 }
 
 
@@ -439,6 +609,16 @@ void draw_message_window (int redraw)
   int i, l;
   char buff[MAX_BUF];
   pghandle old_s;
+  static time_t last_update = 0;
+  time_t now = time (NULL);
+
+  if (now == last_update)
+    {
+      /* max one update per second */
+      return;
+    }
+
+  last_update = now;
 
   /* indicators */
   draw_indicator (hp_indicator, (cpl.stats.hp * 100) / cpl.stats.maxhp);
@@ -490,63 +670,39 @@ void unbind_key (char *params)
 }
 
 
-void pg_input_string (union pg_client_trigger *trig, void action (char*))
+int start_input_line (struct pgEvent *evt)
 {
-  static char *text = NULL;
-  static char buff[2] = {0, 0};
-  static size_t tsize = 0, tlen = 0;
-  static struct pgmemdata backspace = {"\b \b", 3, 0};
+  pgSetWidget (cmd_input,
+	       PG_WP_PASSWORD, cpl.no_echo,
+	       0);
+}
 
-  if (trig->content.type != PG_TRIGGER_CHAR)
-    return;
 
-  if (trig->content.u.kbd.key == PGKEY_RETURN)
+int finish_input_line (struct pgEvent *evt)
+{
+  char *text;
+  u8 reset = TRUE;
+
+  text = pgGetString (pgGetWidget (cmd_input, PG_WP_TEXT));
+  switch (cpl.input_state) {
+  case Reply_Many:
+    reset = strlen (text);
+    send_reply (text);
+    break;
+
+  case Command_Mode:
+    extended_command (text);
+    break;
+
+  default:
+    fprintf (stderr,"BUG: focus in command field but invalid input state: %d\n", cpl.input_state);
+  }
+  if (reset)
     {
-      if (tlen)
-	{
-	  text[tlen] = '\0';
-	  action (text);
-	  if (!cpl.no_echo)
-	    pgWriteData (info_widget, pg_crlf);
-	  pgUpdate ();
-	}
-      else
-	action ("");
-      if (tsize)
-	{
-	  free (text);
-	  tsize = tlen = 0;
-	  text = NULL;
-	}
+      pgWriteCmd (cmd_input, PGCANVAS_NUKE, 0);
+      pgFocus (info_widget);
       cpl.input_state = Playing;
-      return;
     }
-  if (trig->content.u.kbd.key == PGKEY_BACKSPACE)
-    {
-      if (tlen)
-	{
-	  tlen--;
-	  if (!cpl.no_echo)
-	    pgWriteData (info_widget, backspace);
-	}
-      return;
-    }
-  if (tlen + 1 >= tsize)
-    {
-      tsize = tsize ? tsize << 1 : 64;
-      text = realloc (text, tsize);
-      if (text==NULL)
-	{
-	  fprintf (stderr, "out of memory\n");
-	  exit (13);
-	}
-    }
-  if (!cpl.no_echo)
-    {
-      buff[0] = trig->content.u.kbd.key & 0x7f;
-      pgWriteData (info_widget, pgFromMemory (buff, 1));
-    }
-  text[tlen++] = trig->content.u.kbd.key;
 }
 
 
@@ -588,6 +744,20 @@ int keyboard_handler (struct pgEvent *evt)
 	  }
 	return;
       }
+    if (trig->content.type == PG_TRIGGER_KEYUP)
+      {
+      if (cpl.run_on && (trig->content.u.kbd.key == PGKEY_LCTRL
+			 || trig->content.u.kbd.key == PGKEY_LCTRL))
+	{
+	  cpl.run_on = 0;
+	  clear_run ();
+	}
+      if (cpl.fire_on)
+	{
+	  cpl.fire_on = 0;
+	  clear_fire ();
+	}
+      }
     if (trig->content.type != PG_TRIGGER_KEYDOWN)
       return;
     /* de-translate uppercase chars */
@@ -599,41 +769,146 @@ int keyboard_handler (struct pgEvent *evt)
     /* hack: should use keybindings instead */
     switch (trig->content.u.kbd.key)
       {
+      case PGKEY_LSHIFT:
+      case PGKEY_RSHIFT:
+	cpl.fire_on=1;
+	break;
+      case PGKEY_LCTRL:
+      case PGKEY_RCTRL:
+	cpl.run_on=1;
+	break;
       case PGKEY_y:
-	extended_command ("northwest");
-	pgUpdate ();
+	if (trig->content.u.kbd.mods & PGMOD_SHIFT)
+	  fire_dir (8);
+	else if (trig->content.u.kbd.mods & PGMOD_CTRL)
+	  run_dir (8);
+	else
+	  extended_command ("northwest");
 	break;
       case PGKEY_u:
-	extended_command ("north");
-	pgUpdate ();
+	if (trig->content.u.kbd.mods & PGMOD_SHIFT)
+	  fire_dir (1);
+	else if (trig->content.u.kbd.mods & PGMOD_CTRL)
+	  run_dir (1);
+	else
+	  extended_command ("north");
 	break;
       case PGKEY_i:
-	extended_command ("northeast");
-	pgUpdate ();
+	if (trig->content.u.kbd.mods & PGMOD_SHIFT)
+	  fire_dir (2);
+	else if (trig->content.u.kbd.mods & PGMOD_CTRL)
+	  run_dir (2);
+	else
+	  extended_command ("northeast");
 	break;
       case PGKEY_h:
-	extended_command ("west");
-	pgUpdate ();
+	if (trig->content.u.kbd.mods & PGMOD_SHIFT)
+	  fire_dir (7);
+	else if (trig->content.u.kbd.mods & PGMOD_CTRL)
+	  run_dir (7);
+	else
+	  extended_command ("west");
 	break;
       case PGKEY_k:
-	extended_command ("east");
-	pgUpdate ();
+	if (trig->content.u.kbd.mods & PGMOD_SHIFT)
+	  fire_dir (3);
+	else if (trig->content.u.kbd.mods & PGMOD_CTRL)
+	  run_dir (3);
+	else
+	  extended_command ("east");
 	break;
       case PGKEY_n:
-	extended_command ("southwest");
-	pgUpdate ();
+	if (trig->content.u.kbd.mods & PGMOD_SHIFT)
+	  fire_dir (6);
+	else if (trig->content.u.kbd.mods & PGMOD_CTRL)
+	  run_dir (6);
+	else
+	  extended_command ("southwest");
 	break;
       case PGKEY_m:
-	extended_command ("south");
-	pgUpdate ();
+	if (trig->content.u.kbd.mods & PGMOD_SHIFT)
+	  fire_dir (5);
+	else if (trig->content.u.kbd.mods & PGMOD_CTRL)
+	  run_dir (5);
+	else
+	  extended_command ("south");
 	break;
       case PGKEY_COMMA:
-	extended_command ("southeast");
-	pgUpdate ();
+	if (trig->content.u.kbd.mods & PGMOD_SHIFT)
+	  fire_dir (4);
+	else if (trig->content.u.kbd.mods & PGMOD_CTRL)
+	  run_dir (4);
+	else
+	  extended_command ("southeast");
 	break;
       case PGKEY_a:
 	extended_command ("apply");
-	pgUpdate ();
+	break;
+      case PGKEY_z:
+	ui_get_nrof ();
+	extended_command ("get");
+	break;
+      case PGKEY_s:
+	extended_command ("search");
+	break;
+      case PGKEY_d:
+	extended_command ("disarm");
+	break;
+      case PGKEY_AT:
+	extended_command ("apply zombie's corpse");
+	break;
+      case PGKEY_EXCLAIM:
+	extended_command ("apply food");
+	break;
+      case PGKEY_TAB:
+	extended_command ("rotatespells 1");
+	break;
+      case PGKEY_1:
+	if (trig->content.u.kbd.mods & PGMOD_SHIFT)
+	  {
+	    extended_command ("apply food");
+	    break;
+	  }
+	if (trig->content.u.kbd.mods & PGMOD_CTRL)
+	  {
+	    extended_command ("apply booze");
+	    break;
+	  }
+      case PGKEY_2:
+	if (trig->content.u.kbd.mods & PGMOD_SHIFT)
+	  {
+	    extended_command ("apply zombie's corpse");
+	    break;
+	  }
+      case PGKEY_3:
+	if (trig->content.u.kbd.mods & PGMOD_SHIFT)
+	  {
+	    extended_command ("apply bird");
+	    break;
+	  }
+      case PGKEY_4:
+	if (trig->content.u.kbd.mods & PGMOD_SHIFT)
+	  {
+	    extended_command ("apply haggis");
+	    break;
+	  }
+      case PGKEY_5:
+	if (trig->content.u.kbd.mods & PGMOD_SHIFT)
+	  {
+	    extended_command ("apply waybread");
+	    break;
+	  }
+      case PGKEY_6:
+      case PGKEY_7:
+      case PGKEY_8:
+      case PGKEY_9:
+      case PGKEY_0:
+	/*
+	pgFocus (nrof_input);
+	trig->content.u.kbd.divtree = 0;
+	pgInFilterSend(trig);
+	*/
+	pgWriteData (nrof_input, pgFromMemory (&trig->content.u.kbd.key, 1));
 	break;
       default:
 	printf("K %s (%d), mods %x\n", pgKeyName (trig->content.u.kbd.key), trig->content.u.kbd.key,
@@ -650,14 +925,16 @@ int keyboard_handler (struct pgEvent *evt)
     break;
 
   case Reply_Many:
-    pg_input_string (trig, send_reply);
+    pgFocus (cmd_input);
+    pgInFilterSend(trig);
     break;
 
   case Configure_Keys:
     break;
 
   case Command_Mode:
-    pg_input_string (trig, extended_command);
+    pgFocus (cmd_input);
+    pgInFilterSend(trig);
     break;
 
   case Metaserver_Select:
@@ -700,6 +977,8 @@ int create_and_rescale_image_from_data (Cache_Entry *ce, int pixmap_num, uint8 *
   images[pixmap_num].width = width;
   images[pixmap_num].height = height;
   images[pixmap_num].handle = image;
+
+  redraw_needed=TRUE;
 
   return 0;
 }
@@ -910,9 +1189,10 @@ void pg_graphic_draw_map (int redraw)
 	  cell = &the_map.cells[mx][my];
 
 	  /* Don't need to touch this space */
-	  if (!redraw && !cell->need_update) continue;
+	  if (!(redraw || cell->need_update || cell->cleared)) continue;
 
 	  /* First, we need to black out this space. */
+	  /* this code needs to change if we're to support fog of war. */
 	  pgSetLgop (map_context, PG_LGOP_NONE);
 	  pgSetColor (map_context, 0);
 	  pgRect (map_context,
@@ -928,6 +1208,9 @@ void pg_graphic_draw_map (int redraw)
 		     cell->tails[0].face, images[cell->tails[0].face].handle,
 		     cell->tails[1].face, images[cell->tails[1].face].handle,
 		     cell->tails[2].face, images[cell->tails[2].face].handle);
+
+	  if (cell->cleared)
+	    continue;
 
 	  pgSetLgop (map_context, PG_LGOP_ALPHA);
 
@@ -953,14 +1236,24 @@ void pg_graphic_draw_map (int redraw)
 
 void display_map_doneupdate (int redraw)
 {
-  fprintf (stderr, ">>> called void display_map_doneupdate ()\n");
+  fprintf (stderr, ">>> called void display_map_doneupdate (%d)\n", redraw_needed);
 
-  if (is_textmode)
-    pg_text_draw_map (redraw);
-  else
-    pg_graphic_draw_map (redraw);
-
-  pgSubUpdate (map_widget);
+  if (!redraw_delay)
+    {
+      if (is_textmode)
+	pg_text_draw_map (redraw || redraw_needed);
+      else
+	pg_graphic_draw_map (redraw || redraw_needed);
+      
+      redraw_needed = FALSE;
+      /* hack: this forces the update to happen
+	 (otherwise pgserver doesn't know the map widget has changed)
+      */
+      pgSetWidget (map_widget,
+		   PG_WP_IMAGE, map_image,
+		   0);
+      pgSubUpdate (map_widget);
+    }
 }
 
 
@@ -989,6 +1282,68 @@ void display_map_startupdate ()
 void resize_map_window (int x, int y)
 {
   fprintf (stderr, ">>> called void resize_map_window ()\n");
+  redraw_needed = TRUE;
+  pgSetColor (map_context, 0);
+  pgRect (map_context, 0, 0,
+	  use_config[CONFIG_MAPWIDTH] * (is_textmode ? 2 : image_size),
+	  use_config[CONFIG_MAPHEIGHT] * (is_textmode ? 1 : image_size));
+  redraw_delay = FALSE;
+}
+
+
+int pg_resize_map_window (struct pgEvent *evt)
+{
+  u16 width, height;
+  static u16 last_width=0, last_height=0;
+  pghandle newbm;
+
+  /* Did the size of the map change? */
+  if (evt)
+    {
+      width = evt->e.size.w / image_size;
+      height = evt->e.size.h / image_size;
+    }
+  else
+    {
+      width = pgGetWidget (map_widget, PG_WP_WIDTH);
+      height = pgGetWidget (map_widget, PG_WP_HEIGHT);
+    }
+  if (width > MAP_MAX_SIZE)
+    width = MAP_MAX_SIZE;
+  if (height > MAP_MAX_SIZE)
+    height = MAP_MAX_SIZE;
+  /* ignore very small changes in height, because those are usually caused
+     by changes in the indicators */
+  if (width != last_width || height - last_height > 1 || height - last_height < -1)
+    {
+      fprintf (stderr, "resizing map image: %dx%d (was %dx%d)\n",
+	       width, height, last_width, last_height);
+      use_config[CONFIG_MAPWIDTH] = last_width = width;
+      use_config[CONFIG_MAPHEIGHT] = last_height = height;
+      newbm = pgCreateBitmap(use_config[CONFIG_MAPWIDTH] * (is_textmode ? 2 : image_size),
+			     use_config[CONFIG_MAPHEIGHT] * (is_textmode ? 1 : image_size));
+      pgSetWidget (map_widget,
+		   PG_WP_IMAGE, newbm,
+		   0);
+      pgDelete (map_image);
+      map_image = newbm;
+      pgDeleteContext (map_context);
+      map_context = pgNewBitmapContext (map_image);
+
+      /*
+      for( x= 0; x < use_config[CONFIG_MAPWIDTH]; x++)
+	for(y = 0; y < use_config[CONFIG_MAPHEIGHT]; y++)
+	  {
+	    mx = x + pl_pos.x;
+	    my = y + pl_pos.y;
+	    the_map.cells[mx][my];
+	  }
+      */
+      /* wonder if it's ok to do this... probably not ;-) */
+      cs_print_string(csocket.fd,
+		      "setup mapsize %dx%d", use_config[CONFIG_MAPWIDTH], use_config[CONFIG_MAPHEIGHT]);
+      redraw_delay = TRUE; /* skip next update, since we know it will be invalid */
+    }
 }
 
 
@@ -1059,12 +1414,6 @@ void set_show_weight (char *s)
 void set_map_darkness (int x, int y, uint8 darkness)
 {
   fprintf (stderr, ">>> called void set_map_darkness ()\n");
-}
-
-
-int get_info_width ()
-{
-  return 50;
 }
 
 
@@ -1236,6 +1585,11 @@ void save_defaults ()
 }
 
 
+void ui_ignore_error (u16 errortype, const char *msg)
+{
+}
+
+
 /* init_windows:  This initiliazes all the windows - it is an
  * interface routine.  The command line arguments are passed to
  * this function to interpert.  Note that it is not in fact
@@ -1247,7 +1601,7 @@ void save_defaults ()
 
 int init_windows (int argc, char **argv)
 {
-  pghandle main_pane, info_pane, inv_pane, map_image, vitals_box, input_filter, bar, it;
+  pghandle item_pane, info_pane, look_pane, vitals_box, indi_box, input_filter, bar, it;
   int h, t_w, t_h;
   struct pgmemdata lf;
 
@@ -1255,12 +1609,31 @@ int init_windows (int argc, char **argv)
   pgInit (argc,argv);
   if (argc > 1)
     server = argv[1];
-  pgRegisterApp (PG_APP_NORMAL,"Crossfire Client",0);
+  title_label = pgRegisterApp (PG_APP_NORMAL,"Crossfire Client",0);
+  it = pgNewBitmap (pgFromFile ("/usr/local/share/crossfire-client/16x16.png"));
+  pgSetWidget (PGDEFAULT,
+	       PG_WP_IMAGE, it,
+	       0);
+  pgFlushRequests ();
+  pgSetErrorHandler(&ui_ignore_error);
+  /* try to set window size, only works with rootless appmgr */
+  pgSetWidget (PGDEFAULT,
+	       PG_WP_WIDTH, 800,
+	       PG_WP_HEIGHT, 600,
+	       0);
+  pgFlushRequests ();
+  pgSetErrorHandler(NULL);
 
-  title_label = pgGetWidget (PGDEFAULT, PG_WP_PANELBAR_LABEL);
+  item_pane = pgNewWidget (PG_WIDGET_BOX, PG_DERIVE_INSIDE, PGDEFAULT);
+  pgSetWidget (PGDEFAULT,
+	       PG_WP_SIDE, PG_S_LEFT,
+	       PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
+	       PG_WP_SIZE, is_textmode ? 10 : image_size + 60, /* enough for nrof */
+	       0);
 
-  info_pane = pgNewWidget (PG_WIDGET_PANEL, PG_DERIVE_INSIDE, PGDEFAULT);
+  info_pane = pgNewWidget (PG_WIDGET_PANEL, PG_DERIVE_AFTER, PGDEFAULT);
   pgDelete (pgGetWidget (PGDEFAULT, PG_WP_PANELBAR_CLOSE));
+  pgDelete (pgGetWidget (PGDEFAULT, PG_WP_PANELBAR_ZOOM));
   bar = pgGetWidget (info_pane, PG_WP_PANELBAR);
   h = pgGetWidget (bar, PG_WP_HEIGHT);
   is_textmode = h == 1;
@@ -1279,14 +1652,21 @@ int init_windows (int argc, char **argv)
 	       PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
 	       PG_WP_SIZE, 50,
 	       0);
-  info_widget = pgNewWidget (PG_WIDGET_TERMINAL, PG_DERIVE_INSIDE, info_pane);
+  cmd_input = pgNewWidget (PG_WIDGET_FIELD, PG_DERIVE_INSIDE, info_pane);
+  pgSetWidget (PGDEFAULT,
+	       PG_WP_SIDE,PG_S_BOTTOM,
+	       0);
+  pgBind (cmd_input, PG_WE_FOCUS, start_input_line, NULL);
+  pgBind (cmd_input, PG_WE_ACTIVATE, finish_input_line, NULL);
+  info_widget = pgNewWidget (PG_WIDGET_TERMINAL, PG_DERIVE_AFTER, PGDEFAULT);
   pgSetWidget (info_widget,
 	       PG_WP_SIDE,PG_S_ALL,
 	       0);
+  pgBind (info_widget, PG_WE_RESIZE, pg_resize_info, NULL);
   /* measure the desired width of the info terminal */
   if (!is_textmode)
     {
-      it = pgNewString ("#################################################");
+      it = pgNewString ("##################################################");
       pgSizeText (&t_w, &t_h,
 		  pgGetWidget (info_widget, PG_WP_FONT), it);
       pgDelete (it);
@@ -1296,38 +1676,46 @@ int init_windows (int argc, char **argv)
 		   0);
     }
 
-  main_pane = pgNewWidget (PG_WIDGET_PANEL, PG_DERIVE_AFTER, info_pane);
+  stats_pane = pgNewWidget (PG_WIDGET_PANEL, PG_DERIVE_AFTER, info_pane);
   pgDelete (pgGetWidget (PGDEFAULT, PG_WP_PANELBAR_CLOSE));
-  pgSetWidget (PGDEFAULT,
-	       PG_WP_SIDE, PG_S_RIGHT,
-	       PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
-	       PG_WP_SIZE, is_textmode ? 40 : (use_config[CONFIG_MAPHEIGHT] * image_size) + h,
-	       0);
-  stats_pane = pgNewWidget (PG_WIDGET_PANEL, PG_DERIVE_INSIDE, main_pane);
-  pgDelete (pgGetWidget (PGDEFAULT, PG_WP_PANELBAR_CLOSE));
+  pgDelete (pgGetWidget (PGDEFAULT, PG_WP_PANELBAR_ZOOM));
+  fire_label = pgGetWidget (stats_pane, PG_WP_PANELBAR_LABEL);
   pgSetWidget (PGDEFAULT,
 	       PG_WP_SIDE, PG_S_TOP,
 	       PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
-	       PG_WP_SIZE, is_textmode ? 5 : 100,
+	       PG_WP_SIZE, is_textmode ? 5 : image_size + 90,
+	       0);
+  pgSetWidget (fire_label,
+	       PG_WP_SIDE, PG_S_LEFT,
 	       0);
   stats_tb = pgNewWidget (PG_WIDGET_TEXTBOX, PG_DERIVE_INSIDE, PGDEFAULT);
   pgSetWidget (PGDEFAULT,
 	       PG_WP_TEXT, pgNewString ("Stats come here, eventually"),
 	       PG_WP_READONLY, 1,
 	       0);
-
-  map_widget = pgNewWidget (PG_WIDGET_LABEL, PG_DERIVE_AFTER, stats_pane);
-  map_image = pgCreateBitmap(use_config[CONFIG_MAPWIDTH] * (is_textmode ? 2 : image_size),
-			     use_config[CONFIG_MAPHEIGHT] * (is_textmode ? 1 : image_size));
+  item_label = pgNewWidget (PG_WIDGET_LABEL, PG_DERIVE_AFTER, PGDEFAULT);
   pgSetWidget (PGDEFAULT,
-	       PG_WP_SIDE, PG_S_TOP,
-	       PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
-	       PG_WP_SIZE, map_widget_size,
-	       PG_WP_IMAGE, map_image,
-	       PG_WP_TRANSPARENT, 0,
+	       PG_WP_SIDE, PG_S_ALL,
 	       0);
 
-  vitals_box = pgNewWidget (PG_WIDGET_BOX, PG_DERIVE_AFTER, map_widget);
+  map_widget = pgNewWidget (PG_WIDGET_LABEL, PG_DERIVE_AFTER, stats_pane);
+  map_image = pgCreateBitmap(0, 0); /* the real one will be created later,
+				       as soon as we know how much space we have */
+  map_context = pgNewBitmapContext (map_image);
+  pgSetWidget (PGDEFAULT,
+	       PG_WP_SIDE, PG_S_ALL,
+	       PG_WP_IMAGE, map_image,
+	       PG_WP_IMAGESIDE, PG_S_TOP,
+	       PG_WP_TRANSPARENT, 0,
+	       PG_WP_EXTDEVENTS, PG_EXEV_RESIZE,
+	       0);
+  pgBind (map_widget, PG_WE_RESIZE, pg_resize_map_window, NULL);
+
+  vitals_box = pgNewWidget (PG_WIDGET_BOX, PG_DERIVE_BEFORE, map_widget);
+  pgSetWidget (PGDEFAULT,
+	       PG_WP_SIDE, PG_S_BOTTOM,
+	       0);
+  indi_box = pgNewWidget (PG_WIDGET_BOX, PG_DERIVE_INSIDE, vitals_box);
   pgSetWidget (PGDEFAULT,
 	       PG_WP_SIDE, PG_S_TOP,
 	       0);
@@ -1357,7 +1745,10 @@ int init_windows (int argc, char **argv)
 	       PG_WP_TEXT, pgNewString ("0"),
 	       PG_WP_COLOR, 0,
 	       0);
-  vitals_box = pgNewWidget (PG_WIDGET_BOX, PG_DERIVE_AFTER, vitals_box);
+  indi_box = pgNewWidget (PG_WIDGET_BOX, PG_DERIVE_AFTER, indi_box);
+  pgSetWidget (PGDEFAULT,
+	       PG_WP_SIDE, PG_S_TOP,
+	       0);
   sp_indicator = pgNewWidget (PG_WIDGET_INDICATOR, PG_DERIVE_INSIDE, PGDEFAULT);
   pgSetWidget (PGDEFAULT,
 	       PG_WP_SIDE, PG_S_LEFT,
@@ -1384,50 +1775,62 @@ int init_windows (int argc, char **argv)
 	       PG_WP_TEXT, pgNewString ("0/0"),
 	       PG_WP_COLOR, 0,
 	       0);
-  resistances_tb = pgNewWidget (PG_WIDGET_TEXTBOX, PG_DERIVE_AFTER, vitals_box);
-  pgWriteData (resistances_tb, pgFromMemory ("Resistances come here, eventually", 33));
+  resistances_tb = pgNewWidget (PG_WIDGET_TEXTBOX, PG_DERIVE_AFTER, indi_box);
+  pgWriteData (resistances_tb, pgFromMemory ("Resistances come here, eventually", 34));
   pgSetWidget (PGDEFAULT,
 	       PG_WP_READONLY, 1,
 	       PG_WP_INSERTMODE, PG_INSERT_APPEND,
+	       PG_WP_SIDE, PG_S_TOP,
 	       0);
 
 
-  inv_pane = pgNewWidget (PG_WIDGET_PANEL, PG_DERIVE_AFTER, main_pane);
-  pgDelete (pgGetWidget (PGDEFAULT, PG_WP_PANELBAR_CLOSE));
+  look_pane = pgNewWidget (PG_WIDGET_PANEL, PG_DERIVE_INSIDE, item_pane);
+  pgDelete (pgGetWidget (PGDEFAULT, PG_WP_PANELBAR_ZOOM));
+  pgDelete (pgGetWidget (PGDEFAULT, PG_WP_PANELBAR_ROTATE));
+  pgSetWidget (PGDEFAULT,
+	       PG_WP_SIDE, PG_S_BOTTOM,
+	       PG_WP_SIZEMODE, PG_SZMODE_PERCENT,
+	       PG_WP_SIZE, 25,
+	       0);
+  weight_label = pgNewWidget (PG_WIDGET_LABEL, PG_DERIVE_AFTER, PGDEFAULT);
   pgSetWidget (PGDEFAULT,
 	       PG_WP_SIDE, PG_S_TOP,
-	       PG_WP_SIZEMODE, PG_SZMODE_PERCENT,
-	       PG_WP_SIZE, 75,
-	       0);
-  weight_label = pgNewWidget (PG_WIDGET_LABEL, PG_DERIVE_INSIDE, PGDEFAULT);
-  pgSetWidget (PGDEFAULT,
-	       PG_WP_TEXT, pgNewString ("Carrying:"),
+	       PG_WP_TEXT, pgNewString ("0/0"),
 	       PG_WP_TRANSPARENT, 0,
 	       0);
+  nrof_input = pgNewWidget (PG_WIDGET_FIELD, PG_DERIVE_AFTER, weight_label);
+  pgSetWidget (PGDEFAULT,
+	       PG_WP_SIDE, PG_S_BOTTOM,
+	       PG_WP_INSERTMODE, PG_INSERT_APPEND,
+	       0);
   temp_look_title = 0;
-  look_label = pgGetWidget (inv_pane, PG_WP_PANELBAR_LABEL);
+  look_label = pgGetWidget (look_pane, PG_WP_PANELBAR_LABEL);
   default_look_title = pgNewString ("You see:");
   pgSetWidget (look_label,
 	       PG_WP_TEXT, default_look_title,
 	       0);
-  look_items[0].item = pgNewWidget (PG_WIDGET_SCROLLBOX, PG_DERIVE_AFTER, inv_pane);
-  inv_items[0].item = pgNewWidget (PG_WIDGET_SCROLLBOX, PG_DERIVE_AFTER, weight_label);
+  look_closeb = pgGetWidget (look_pane, PG_WP_PANELBAR_CLOSE);
+  pgSetWidget (look_closeb,
+	       PG_WP_DISABLED, 1,
+	       0);
+  pgBind (look_pane, PG_WE_CLOSE, ui_close_container, NULL);
+  look_items[0] = pgNewWidget (PG_WIDGET_SCROLLBOX, PG_DERIVE_INSIDE, look_pane);
+  inv_items[0] = pgNewWidget (PG_WIDGET_SCROLLBOX, PG_DERIVE_AFTER, nrof_input);
   looking_at = cpl.below;
-  memset (inv_items + 1, 0, MAX_LIST_ITEMS * sizeof (struct list_item));
-  memset (look_items + 1, 0, MAX_LIST_ITEMS * sizeof (struct list_item));
+  memset (inv_items + 1, 0, MAX_LIST_ITEMS * sizeof (pghandle));
+  memset (look_items + 1, 0, MAX_LIST_ITEMS * sizeof (pghandle));
 
   pgUpdate (); /* so that the terminal widget realizes itself and we may clear it  */
   pgWriteData (info_widget, colorcmd[0]);
   pgWriteData (info_widget, pgFromMemory ("\033[20h\033[2J", 9));
 
-  map_context = pgNewBitmapContext (map_image);
-  pgSetColor (map_context, 0);
-  pgRect (map_context, 0, 0,
-	  use_config[CONFIG_MAPWIDTH] * (is_textmode ? 2 : image_size),
-	  use_config[CONFIG_MAPHEIGHT] * (is_textmode ? 1 : image_size));
+  /* disable the vitals box from autoresizing, because it flickers the map */
+  pgSetWidget (vitals_box,
+	       PG_WP_SIZE, pgGetWidget (vitals_box, PG_WP_HEIGHT),
+	       0);
 
   input_filter = pgNewInFilter (pgGetServerRes (PGRES_INFILTER_KEY_PREPROCESS),
-				PG_TRIGGER_CHAR | PG_TRIGGER_KEYDOWN, PG_TRIGGERS_KEY);
+				PG_TRIGGERS_KEY, PG_TRIGGERS_KEY);
 
   pgBind (input_filter, PGBIND_ANY, &keyboard_handler, NULL);
 
@@ -1453,7 +1856,8 @@ int mySelect (int n, fd_set *readfds, fd_set *writefds,
 }
 
 /* Bottom-half for the select, allowed to make PicoGUI calls */
-void mySelectBH (int result, fd_set *readfds)
+void mySelectBH (int result, fd_set *readfds, fd_set *writefds,
+		 fd_set *exceptfds)
 {
   if (csocket.fd==-1)
     return;
