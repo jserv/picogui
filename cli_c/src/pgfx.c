@@ -1,4 +1,4 @@
-/* $Id: pgfx.c,v 1.3 2001/05/16 00:45:32 micahjd Exp $
+/* $Id: pgfx.c,v 1.4 2001/05/31 06:53:19 micahjd Exp $
  *
  * picogui/pgfx.c - PGFX general-purpose utility functions
  * 
@@ -30,14 +30,14 @@
 
 #include "clientlib.h"
 
-void pgMoveto(pgcontext c, pgu x, pgu y) {
+void pgMoveTo(pgcontext c, pgu x, pgu y) {
    c->cx = x;
    c->cy = y;
 }
 
-pgprim  pgLineto(pgcontext c, pgu x, pgu y) {
+pgprim  pgLineTo(pgcontext c, pgu x, pgu y) {
    pgLine(c,c->cx,c->cy,x,y);
-   pgMoveto(c,x,y);
+   pgMoveTo(c,x,y);
 }
 
 void pgDeleteContext(pgcontext c) {

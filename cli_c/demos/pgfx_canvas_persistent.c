@@ -23,8 +23,11 @@ int main(int argc,char **argv) {
    /* Some good ol'fashioned drawing */
 
    pgSetColor(gc,0x000000);        /* An 'X' across the canvas */
-   pgLine(gc,0,0,100,100);
-   pgLine(gc,100,0,0,100);
+   pgMoveTo(gc,1,1);
+   pgLineTo(gc,99,99);             /* test moveto and lineto */
+   pgLineTo(gc,99,1);
+   pgLineTo(gc,1,99);
+   pgLineTo(gc,1,1);
    pgSetColor(gc,0x000080);        /* Blue text */
    pgText(gc,50,10,pgNewString("Hello,\nWorld!"));   
    pgSetColor(gc,0xFFFFFF);        /* Gradient thingy */
