@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.7 2001/10/14 09:21:59 micahjd Exp $
+/* $Id: textbox_document.c,v 1.8 2001/10/17 05:25:01 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -134,7 +134,7 @@ g_error text_insert_wordbreak(struct textbox_cursor *c) {
   g_error e;
 
   /* Make sure we're in a position where a word break would matter */
-  if (c->c_line && c->c_div) {
+  if (c->c_line && c->c_div && c->c_gctx.current) {
 
     /* New divnode, clear grop context */
     e = newdiv(&c->c_div->next,c->widget);
@@ -175,7 +175,8 @@ g_error text_insert_linebreak(struct textbox_cursor *c) {
 
 /* Insert text with the current formatting at the cursor. This will not
  * generate breaking spaces. */
-g_error text_insert_string(struct textbox_cursor *c, const char *str) {
+g_error text_insert_string(struct textbox_cursor *c, const char *str,
+			   u32 hflag) {
   g_error e;
   struct fontdesc *fd;
   s16 tw,th;
@@ -222,10 +223,10 @@ g_error text_insert_string(struct textbox_cursor *c, const char *str) {
     e = rdhandle((void**) &fd,PG_TYPE_FONTDESC,-1,defaultfont);
   errorcheck;
   sizetext(fd,&tw,&th,str);
-  th = fd->font->ascent + fd->font->descent;
+  th = fd->font->ascent + fd->font->descent + fd->interline_space + fd->margin;
   
   /* Add a text gropnode at the cursor */
-  e = mkhandle(&hstr,PG_TYPE_STRING,c->widget->owner,str);
+  e = mkhandle(&hstr,PG_TYPE_STRING | hflag,c->widget->owner,str);
   errorcheck;
   addgropsz(&c->c_gctx,PG_GROP_TEXT,c->c_gx,c->c_gy,1,1);
   c->c_gctx.current->param[0] = hstr;
@@ -309,7 +310,7 @@ g_error text_load(struct textbox_cursor *c, const char *fmt_code,
 		  const u8 *data, u32 datalen) {
   struct txtformat *f = text_formats;
 
-  while (f && strncmp(f->name,fmt_code,4))
+  while (f->name && strncmp(f->name,fmt_code,4))
     f++;
 
   if (!f)

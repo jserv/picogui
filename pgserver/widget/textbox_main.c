@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.9 2001/10/14 09:21:59 micahjd Exp $
+/* $Id: textbox_main.c,v 1.10 2001/10/17 05:25:01 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -74,8 +74,9 @@ g_error textbox_install(struct widget *self) {
 
    { 
      const char *t = 
-       "Hello, World!<P>"
-       "<B><i>This</i></B> is a <u>test...</u> foo!";
+       "Hello, World!<P>\n"
+       "<B><i>This</i></B> is a <u>test...</u> foo<b>!</b> \n"
+       "--&nbsp;&nbsp;&foo;&nbsp;-- N&iacute;ft&egrave;&eacute;";
      
      text_load(&DATA->c,"HTML",t,strlen(t));
    }
@@ -174,7 +175,7 @@ void textbox_trigger(struct widget *self,long type,union trigparam *param) {
 	  break;
 	str[0] = param->kbd.key;
 	str[1] = 0;
-	text_insert_string(&DATA->c,str);
+	text_insert_string(&DATA->c,str,0);
 	if (param->kbd.key == PGKEY_SPACE)
 	  text_insert_wordbreak(&DATA->c);
       }

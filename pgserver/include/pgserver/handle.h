@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.18 2001/10/12 06:20:44 micahjd Exp $
+/* $Id: handle.h,v 1.19 2001/10/17 05:25:01 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -38,14 +38,10 @@
 			        handle is destroyed (free'd in a method
 			        depending on the data type */
 
-/* Data type of a handle ID 
- * This is server-specific handle stuff,
- * the clients store handles in a long for
- * compatibility's sake.
- */
-typedef u16 handle;
-#define HANDLE_BITS     16
-#define HANDLE_SIZE (1<<HANDLE_BITS)
+/* Data type of a handle ID */
+typedef u32 handle;
+#define HANDLE_BITS     32
+#define HANDLE_SIZE     (1<<HANDLE_BITS)
 
 struct handlenode {
    /* 

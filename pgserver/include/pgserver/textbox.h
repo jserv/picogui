@@ -1,4 +1,4 @@
-/* $Id: textbox.h,v 1.6 2001/10/14 09:21:59 micahjd Exp $
+/* $Id: textbox.h,v 1.7 2001/10/17 05:25:01 micahjd Exp $
  *
  * textbox.h - Interface definitions for the textbox widget. This allows
  *             the main textbox widget functions and the text format loaders
@@ -80,8 +80,13 @@ g_error text_insert_wordbreak(struct textbox_cursor *c);
 /* Begin a new paragraph at the cursor */
 g_error text_insert_linebreak(struct textbox_cursor *c);
 /* Insert text with the current formatting at the cursor. This will not
- * generate breaking spaces. */
-g_error text_insert_string(struct textbox_cursor *c, const char *str);
+ * generate breaking spaces. 
+ *
+ * hflag is or'ed with the handle flags on the string, so if it is a constant
+ * string hflag needs to be HFLAG_NFREE
+ */
+g_error text_insert_string(struct textbox_cursor *c, const char *str,
+			   u32 hflag);
 
 /************************* Editing */
 
