@@ -960,8 +960,8 @@ typedef unsigned long pghandle;
 #define PG_WP_ABSOLUTEX   22    /* read-only, relative to screen */
 #define PG_WP_ABSOLUTEY   23
 #define PG_WP_ON          24    /* on-off state of button/checkbox/etc */
-#define PG_WP_STATE       PG_WP_THOBJ    /* Deprecated! Use PG_WP_THOBJ instead */
 #define PG_WP_THOBJ       25    /* Set a widget's theme object */
+#define PG_WP_STATE       PG_WP_THOBJ    /* Deprecated! Use PG_WP_THOBJ instead */
 #define PG_WP_NAME        26    /* A widget's name (for named containers, etc) */
 #define PG_WP_PUBLICBOX   27    /* Set to 1 to allow other apps to make widgets
 				 * in this container */

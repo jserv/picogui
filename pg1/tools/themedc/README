@@ -1,0 +1,7 @@
+To create the symbol table required by themedc, use
+
+cat /usr/local/include/picogui/constants.h /usr/local/include/picogui/network.h | python2.2 pgsymtab.py > pgsymbols.py
+
+Then you can de-compile themes with
+
+./themedc my_theme.th > my_theme.ths
