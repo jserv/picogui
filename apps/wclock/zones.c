@@ -19,7 +19,7 @@
    Author: Pascal Bauermeister
    Contributors:
 
-   $Id: zones.c,v 1.1 2002/04/29 23:35:24 bauermeister Exp $
+   $Id: zones.c,v 1.2 2002/05/02 20:24:35 bauermeister Exp $
 */
 
 #include "wclock.h"
@@ -48,6 +48,8 @@ typedef struct {
 
 static ZoneDef zone_def[NB_ZONES];
 static int WIDTH, HEIGHT;
+
+static pghandle timebar_txt_handle[NB_ZONES];
 
 int needs_pgfx_update = 0;
 
@@ -175,6 +177,7 @@ init_zones()
   TRACEF(">>>init_zones()\n");
 
   for(i=0; i<NB_ZONES; ++i) {
+    timebar_txt_handle[i] = 0;
     index = register_zone(index, &zone_def[i]);
     DPRINTF("Zone %d: h=%d m=%d dm=%d ix=%d\n", 
 	   i,
@@ -346,6 +349,7 @@ draw_timebar(int gmt_h, int current_nr, int with_text)
   for(i=0; i<NB_ZONES-1; ) {
     int next = index;
     int is_current;
+    pghandle pgstr;
     pos = end_pos;
 
     is_current = (index == current_nr);
@@ -373,10 +377,13 @@ draw_timebar(int gmt_h, int current_nr, int with_text)
       //pgSetAngle(gfx_context, 90);
       //pgText(gfx_context, pos-1, HEIGHT+TIMEBAR_HEIGHT-3, pgNewString(buf));
       alt = !alt;
-      pgText(gfx_context, pos-2, HEIGHT-1 + alt*7, pgNewString(buf));
+
+      if(timebar_txt_handle[i]) pgDelete(timebar_txt_handle[i]);
+      pgstr = timebar_txt_handle[i] = pgNewString(buf);
+      pgText(gfx_context, pos-2, HEIGHT-1 + alt*7, pgstr);
       if(is_current) {
-	pgText(gfx_context, pos-1, HEIGHT-1 + alt*7, pgNewString(buf));
-      }
+	pgText(gfx_context, pos-1, HEIGHT-1 + alt*7, pgstr);
+	}
       pgSetAngle(gfx_context, 0);
     }
     index = next;
