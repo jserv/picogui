@@ -179,7 +179,7 @@ class Interface(object):
 
         # Set up the build environment
         import PGBuild.Build
-        PGBuild.Build.startup(self.config)
+        buildSys = PGBuild.Build.System(self.config)
 
         # Handle --nuke command line option
         if self.config.eval("invocation/option[@name='nuke']/text()"):
@@ -199,7 +199,7 @@ class Interface(object):
                 self.config.packages.findPackageVersion(name).merge(mergeTask)
 
         # Run SCons tasks
-        PGBuild.Build.run(self.config, self.progress)
+        buildSys.run(self.progress)
 
         # Interface cleanup- options that dump to stdout and don't use any UI features
         #                    should be placed after this line!

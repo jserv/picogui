@@ -25,65 +25,8 @@ SConscripts, and build targets.
 #
 _svn_id = "$Id$"
 
-import SCons.Defaults
-import SCons.Script.SConscript
-import SCons.Job
-import SCons.Taskmaster
-import PGBuild.Errors
-import os
-
 # Acceptable names for an SCons script, in order of preference
 scriptNames = ['SConscript', 'Sconscript', 'sconscript']
-
-
-def startup(config):
-    """Initialize SCons defaults. This should be called
-       after the config tree has been booted and filled with command line options.
-       """
-    SCons.Node.FS.default_fs.set_toplevel_dir(config.eval('bootstrap/path[@name="root"]/text()'))
-    SCons.Defaults._default_env = Environment(config)
-
-def run(config, progress):
-    # Code to specify targets would go here
-    targets = None
-    if not targets:
-        targets = SCons.Script.SConscript.default_targets
-    
-    # Convert our list of targets to nodes. The targets may be originally specified
-    # as nodes, filenames, or aliases.
-    target_top = SCons.Node.FS.default_fs.Entry("src/hello-dev")
-    print target_top
-    def Entry(x, top=target_top):
-        if isinstance(x, SCons.Node.Node):
-            node = x
-        else:
-            node = SCons.Node.Alias.default_ans.lookup(x)
-            if node is None:
-                node = SCons.Node.FS.default_fs.Entry(x,
-                                                      directory = top,
-                                                      create = 1)
-        if top and not node.is_under(top):
-            if isinstance(node, SCons.Node.FS.Dir) and top.is_under(node):
-                node = top
-            else:
-                node = None
-        return node
-    if targets:
-        nodes = filter(lambda x: x is not None, map(Entry, targets))
-    else:
-        nodes = []
-
-    if nodes:
-        progress.message("Building targets:" + " ".join(map(lambda x:(" " + str(x)), nodes)))
-    else:
-        raise PGBuild.Errors.ExternalError("No targets to build")
-
-    # Create a taskmaster using a list of target nodes
-    taskmaster = SCons.Taskmaster.Taskmaster(nodes)
-
-    # This sets up several job threads to run tasks concurrently
-    jobs = SCons.Job.Jobs(int(config.eval("invocation/option[@name='numJobs']/text()")), taskmaster)
-    jobs.run()
 
 def loadScript(name, progress):
     """Load one SCons script"""
@@ -95,6 +38,7 @@ def loadScript(name, progress):
 
 def loadScriptDir(dir, progress):
     """Look for a script in the given directory and run it if it's found"""
+    import os
     for name in scriptNames:
         path = os.path.join(dir, name)
         if os.path.isfile(path):
@@ -103,9 +47,75 @@ def loadScriptDir(dir, progress):
 
 def Environment(config):
     """Factory to create an SCons environment from a PGBuild configuration"""
+    import SCons.Environment
     env = SCons.Environment.Environment()
     env.config = config
     return env
+
+class System(object):
+    """Object encapsulating high-level control for the build system.
+       This object should be created after the config tree has been
+       bootstrapped and filled with command line options.
+       """
+
+    def __init__(self, config):
+        self.config = config
+
+        # Initialize SCons
+        import SCons.Node
+        import SCons.Defaults
+        import SCons.Script
+        SCons.Node.FS.default_fs.set_toplevel_dir(config.eval('bootstrap/path[@name="root"]/text()'))
+        self.defaultEnv = SCons.Defaults._default_env = Environment(config)
+
+        # Set default targets
+        self.targets = SCons.Script.SConscript.default_targets
+
+        # If targets were specified on the command line, run those instead
+        invocationTargets = config.listEval('invocation/target/text()')
+        if invocationTargets:
+            self.targets = invocationTargets
+
+    def run(self, progress):
+        import SCons.Node
+        import SCons.Taskmaster
+        import SCons.Job
+        
+        # Convert our list of targets to nodes. The targets may be originally specified
+        # as nodes, filenames, or aliases.
+        target_top = None
+        def Entry(x, top=target_top):
+            if isinstance(x, SCons.Node.Node):
+                node = x
+            else:
+                node = SCons.Node.Alias.default_ans.lookup(x)
+                if node is None:
+                    node = SCons.Node.FS.default_fs.Entry(x,
+                                                          directory = top,
+                                                          create = 1)
+            if top and not node.is_under(top):
+                if isinstance(node, SCons.Node.FS.Dir) and top.is_under(node):
+                    node = top
+                else:
+                    node = None
+            return node
+        if self.targets:
+            nodes = filter(lambda x: x is not None, map(Entry, self.targets))
+        else:
+            nodes = []
+    
+        if nodes:
+            progress.message("Building targets:" + " ".join(map(lambda x:(" " + str(x)), nodes)))
+        else:
+            import PGBuild.Errors
+            raise PGBuild.Errors.ExternalError("No targets to build")
+
+        # Create a taskmaster using a list of target nodes
+        taskmaster = SCons.Taskmaster.Taskmaster(nodes)
+
+        # This sets up several job threads to run tasks concurrently
+        jobs = SCons.Job.Jobs(int(self.config.eval("invocation/option[@name='numJobs']/text()")), taskmaster)
+        jobs.run()
 
 ### The End ###
         
