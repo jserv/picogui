@@ -1,4 +1,4 @@
-/* $Id: x11_util.c,v 1.11 2002/11/06 06:40:32 micahjd Exp $
+/* $Id: x11_util.c,v 1.12 2002/11/06 09:44:27 micahjd Exp $
  *
  * x11_util.c - Utility functions for picogui's driver for the X window system
  *
@@ -246,6 +246,10 @@ void x11_internal_window_resize(hwrbitmap window, int w, int h) {
   XEvent ev;
   struct x11bitmap *xb = XB(window)->frontbuffer ? XB(window)->frontbuffer : XB(window);
 
+  /* Can't have a zero size, X will throw an error */
+  if (!w) w = 1;
+  if (!h) h = 1;
+  
   /* Resize the window */
   wc.width = w;
   wc.height = h;

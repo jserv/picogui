@@ -1,4 +1,4 @@
-/* $Id: managedwindow.c,v 1.8 2002/11/06 09:28:39 micahjd Exp $
+/* $Id: managedwindow.c,v 1.9 2002/11/06 09:44:27 micahjd Exp $
  *
  * managedwindow.c - A root widget representing a window managed by a host GUI
  *
@@ -32,6 +32,8 @@ struct managedwindowdata {
   struct divtree *my_dt;
   handle text;            /* Stored handle to the text, so we can get PG_WP_TEXT later */
 
+  /* These values are used to detect whether the window should automatically resize */
+  int last_w, last_h;
   unsigned int already_sized : 1;
 };
 #define WIDGET_SUBCLASS 0
@@ -144,9 +146,16 @@ glob managedwindow_get(struct widget *self,int property) {
 }
 
 void managedwindow_resize(struct widget *self) {
-  if (self->in->child.w && self->in->child.h && !DATA->already_sized) {
-    s16 w = self->in->child.w;
-    s16 h = self->in->child.h;
+  s16 w,h;
+  VID(window_get_size)(DATA->my_dt->display,&w,&h);
+
+  /* Detect whether the size has been changed by some
+   * external force (the user probably) since the last time
+   */
+  if (self->in->child.w && self->in->child.h && 
+      ((!DATA->already_sized) || (w==DATA->last_w && h==DATA->last_h))) {
+    w = self->in->child.w;
+    h = self->in->child.h;
 
     /* Make sure the window size is reasonable */
     if (w < 8)
@@ -160,6 +169,8 @@ void managedwindow_resize(struct widget *self) {
 
     VID(window_set_size)(DATA->my_dt->display,w,h);
     DATA->already_sized = 1;
+    DATA->last_w = w;
+    DATA->last_h = h;
   }
 }
 
