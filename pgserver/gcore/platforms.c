@@ -1,4 +1,4 @@
-/* $Id: platforms.c,v 1.4 2001/02/17 05:18:40 micahjd Exp $
+/* $Id: platforms.c,v 1.5 2001/06/04 17:29:08 pney Exp $
  *
  * platforms.c - groups some platforms dependant functions 
  *
@@ -33,31 +33,31 @@
 #include <malloc.h>
 
 /* needed for compatibility with uclinux compiler (m68k-pic-coff-gcc) */
-void _cleanup() {}
+//void _cleanup() {}
 
 /* code for realloc, note provided in the libc.a of uclinux */ 
-void* realloc(void* ptr, size_t size)
-{
-  void* new;
-  size_t* old;
+//void* realloc(void* ptr, size_t size)
+//{
+//  void* new;
+//  size_t* old;
 
-  if (ptr == NULL)
-    return malloc(size);
+//  if (ptr == NULL)
+//    return malloc(size);
 
-  old =  (size_t*) ptr;
+//  old =  (size_t*) ptr;
 
-  if (old[-1] > size)
-    return ptr;  /* old size is bigger the new size */
+//  if (old[-1] > size)
+//    return ptr;  /* old size is bigger the new size */
 
 
-  new = malloc(size);
-  if (new)
-    memcpy(new, ptr, old[-1]);
+//  new = malloc(size);
+//  if (new)
+//    memcpy(new, ptr, old[-1]);
 
-  free(ptr);
+//  free(ptr);
 
-  return new;
-}
+//  return new;
+//}
 
 /* htonl, htons, ntohl, ntohs not provided in the libc.a of uclinux */
 #ifdef BIG_ENDIAN
