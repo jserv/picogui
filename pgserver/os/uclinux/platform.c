@@ -1,4 +1,4 @@
-/* $Id: platform.c,v 1.6 2001/04/04 18:35:51 pney Exp $
+/* $Id: platform.c,v 1.7 2001/04/04 18:44:39 pney Exp $
  *
  * platforms.c - Contains platform-dependant stuff
  *
@@ -36,14 +36,13 @@
 #include "vnsprintf.c"
 #else
 
-/* We do a quick'n'dirty hack her instead of including the 'real' vsnprintf code
- * (that would make us need _ctype and _ctmp
-*/
 
 #include <stdarg.h>
 #include <linux/types.h>
 #include <linux/string.h>
 
+
+/* The hack of vsnprintf is now clean */
 
 /* Define G_VA_COPY() to do the right thing for copying va_list variables.
  * va_list is a pointer.
