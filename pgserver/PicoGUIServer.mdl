@@ -42,7 +42,7 @@ sleep 2\n
 
 
 def prepare (module, platform, project):
-    profile = "../SMARTDATA-%s.config" % platform.feature ['variant']
+    profile = "../profiles/profile.SMARTDATA-m68k-pic-coff-%s" % platform.feature ['variant']
     
     command = ("../configure --prefix=%s --with-profile=%s --with-prefix --host=%s " +
                "--with-extra-ipath=%s/include:%s/include --with-extra-libs=%s/lib/librm.a " +
