@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.14 2001/01/10 03:30:32 micahjd Exp $
+/* $Id: request.c,v 1.15 2001/01/10 12:46:44 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -344,7 +344,9 @@ void net_iteration(void) {
   fd_set rfds;
   struct timeval tv;
   struct inlib *n;   /* For iterating input drivers */
+#ifndef WINDOWS
   sigset_t sigmask;
+#endif
 
   /* Get ready to select() the socket itself and all open connections */
   FD_ZERO(&rfds);

@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.18 2001/01/10 12:12:31 micahjd Exp $
+/* $Id: pgmain.c,v 1.19 2001/01/10 12:46:44 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -64,6 +64,10 @@ struct themefilenode {
 
 /********** And it all starts here... **********/
 int main(int argc, char **argv) {
+#ifdef WINDOWS
+  /* Fake it */
+  int optind = 0;
+#endif
   
 #ifndef WINDOWS
   my_pid = getpid();
@@ -75,7 +79,9 @@ int main(int argc, char **argv) {
 	initialization is done with them */
 
     int c,fd;
+#ifndef WINDOWS
     struct stat st;
+#endif
     unsigned char *themebuf;
     struct themefilenode *head = NULL,*tail = NULL,*p;
     handle h;
@@ -86,8 +92,7 @@ int main(int argc, char **argv) {
     /* Drivers */
     g_error (*viddriver)(struct vidlib *v) = NULL;
     
-    /* Note: command line args don't work in windows (yet?) */
-#ifndef WINDOWS 
+#ifndef WINDOWS    /* Command line processing is broke in windoze */
 
     while (1) {
 
@@ -249,6 +254,8 @@ int main(int argc, char **argv) {
     if (iserror(prerror(appmgr_init()))) return 1;
     if (iserror(prerror(timer_init())))  return 1;
 
+#ifndef WINDOWS   /* This is also broke for windoze */
+
     /* Load theme files and free linked list memory */
 
     p = head;
@@ -273,6 +280,8 @@ int main(int argc, char **argv) {
 			    not generated with g_malloc, but instead strdup() */
       g_free(tail);
     }
+
+#endif /* WINDOWS */
 
   }
 

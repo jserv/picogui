@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.5 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: input.h,v 1.6 2001/01/10 12:46:44 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -28,8 +28,17 @@
 #ifndef __H_INPUT
 #define __H_INPUT
 
+#if defined(__WIN32__) || defined(WIN32)
+#ifndef WINDOWS
+#define WINDOWS
+#endif
+#include <winsock2.h>
+#define EAGAIN WSAEWOULDBLOCK
+#define ioctl ioctlsocket
+#else
 #include <sys/time.h>    /* For timeval */
 #include <sys/types.h>   /* For fd_set */
+#endif
 
 #include <pgserver/g_error.h>
 

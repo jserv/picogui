@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.8 2001/01/10 12:12:31 micahjd Exp $
+/* $Id: pgnet.h,v 1.9 2001/01/10 12:46:44 micahjd Exp $
  *
  * pgnet.h - definitions and stuff for the picogui server
  *           networking code. Most of the interesting code
@@ -43,12 +43,12 @@
 #include <pgserver/widget.h>
 
 #if defined(__WIN32__) || defined(WIN32)
+#ifndef WINDOWS
 #define WINDOWS
-#ifdef WINDOWS
+#endif
 #include <winsock2.h>
 #define EAGAIN WSAEWOULDBLOCK
 #define ioctl ioctlsocket
-#endif
 #else
 #include <fcntl.h>
 #include <sys/types.h>

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.41 2001/01/10 12:12:28 micahjd Exp $
+# $Id: Makefile,v 1.42 2001/01/10 12:46:41 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -104,7 +104,7 @@ ifeq ($(strip $(PLATFORM)),windows)
 	GCC := i386-mingw32-$(GCC)
 	STRIP := i386-mingw32-$(STRIP)
 	BINNAME := $(BINNAME).exe
-	LDFLAGS := $(LDFLAGS) -lwsock32
+	LDFLAGS := $(LDFLAGS) -lwsock32 -lwinmm
 else
         # -g on all but windows. Too slow on windows
         CFLAGS := $(CFLAGS) -g

@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.8 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: timer.c,v 1.9 2001/01/10 12:46:44 micahjd Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -48,33 +48,24 @@
 #ifdef WINDOWS
 /**************** Windows */
 
-void windows_inputpoll_hack(void);
-
 static DWORD first_tick;
 static UINT ntimer;
 
 static void CALLBACK HandleAlarm(UINT uID,  UINT uMsg, DWORD dwUser,
 				 DWORD dw1, DWORD dw2) {
-  windows_inputpoll_hack();
   trigger_timer();
 }
 
 g_error timer_init(void) {
-  MMRESULT result;
-
   /* Get a reference point for getticks */
   first_tick = timeGetTime();
   
   /* Set timer resolution */
-  result = timeBeginPeriod(TIMERINTERVAL);
-  if ( result != TIMERR_NOERROR ) 
-    return mkerror(PG_ERRT_IO,"Can't set timer resolution");
+  timeBeginPeriod(TIMERINTERVAL);
 
   /* Start up the repeating timer, just like
      the sigalrm handler for linux... */
   ntimer = timeSetEvent(TIMERINTERVAL,1,HandleAlarm,0,TIME_PERIODIC);
-  if (!ntimer)
-    return mkerror(PG_ERRT_IO,"Can't set timer event");
   
   return sucess;
 }
