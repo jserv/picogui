@@ -23,7 +23,21 @@ pgMessageDialog("PicoGUI test","Hello!\nThis is a simple dialog");
 print "Dialog returned: ".
       pgMessageDialog("Perl Module","This is a test!\nHello, world",
 			       PG_MSGBTN_OK | PG_MSGBTN_CANCEL)."\n";
-			       
+
+# Menu from string
+pgMenuFromString("This|is|a\nTest");
+# Menu from array of handles
+pgEnterContext();
+pgMenuFromArray(pgNewString("Submenus:\n"),
+                pgNewString("Programs"),
+	        pgNewString("Secrets"),
+	        pgNewString("Junk"),
+                pgNewString("Options"));
+pgMenuFromArray(pgNewString("A"),
+                pgNewString("B"),
+	        pgNewString("C"));
+pgLeaveContext();
+
 ##### Popup box to test pgGetEvent
 
 pgEnterContext();

@@ -670,6 +670,8 @@ our %EXPORT_TAGS = ( 'all' => [ qw(
 	pgBind
 	pgEventLoop
 	pgExitEventLoop
+	pgFraction
+	pgMenuFromArray
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );

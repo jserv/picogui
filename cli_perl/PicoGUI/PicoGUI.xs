@@ -9214,7 +9214,6 @@ pgGetEvent()
     	{
 	   struct pgEvent *evt;	   
 	   evt = pgGetEvent();
-	   XSprePUSH;
 	   PUSH_EVT(evt);
 	}
 
@@ -9225,6 +9224,20 @@ pgBind(widgetkey,eventkey,handler)
         SV * handler
     CODE:
         pgBind(widgetkey,eventkey,&cliperl_evthandler,newSVsv(handler));
+
+int
+pgMenuFromArray(...)
+    CODE:
+        {
+	   pghandle *ph = alloca(sizeof(pghandle) * items);
+	   int i;
+	   for (i=0;i<items;i++)
+	     ph[i] = SvIV(ST(i));
+	   RETVAL = pgMenuFromArray(ph,items);
+	}
+    OUTPUT:
+        RETVAL
+
 
 int
 pgMessageDialog(title,text,flags=0)
@@ -9349,4 +9362,14 @@ pgEventLoop()
 
 void
 pgExitEventLoop()
+
+int
+pgFraction(n,d)
+        int n
+        int d
+    CODE:
+        RETVAL = pgFraction(n,d);
+  OUTPUT:
+        RETVAL
+
 
