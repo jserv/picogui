@@ -1,0 +1,158 @@
+#
+# PicoGUI theme
+# Wavy Insomnia
+#
+# Micah Dowty
+#
+# Funky background, thin borders, and slight
+# gradient effects. Light and crispy.
+#
+#
+
+background = "vol5_10a.pnm"
+
+popup {    
+  border {
+    width = 2
+    type = gradient  
+    c1 = 0x8080C0  
+    c2 = 0x000000  
+    angle = 45  
+  }  
+  # Yellow! Yay!  
+  fill {  
+    type = gradient  
+    c1 = 0xFFFF80  
+    c2 = 0xFFFFFF  
+    angle = 260  
+  }  
+}  
+
+# Cool blue gradient at a slight angle, with a
+# thin border at an angle
+toolbar {  
+  border {  
+    width = 1
+    type = gradient  
+    c1 = 0x404060  
+    c2 = 0xA0A0C0  
+    angle = 165
+  }  
+  fill {  
+    width = 0  
+    type = gradient  
+    c1 = 0x404060  
+    c2 = 0xA0A0C0  
+    angle = 92  
+  }  
+}  
+
+button {  
+  # Thin dark border with a small hilight  
+  border {  
+    width = 1  
+    type = gradient  
+    c1 = 0x000000  
+    c2 = 0x606060  
+    angle = 10  
+  }  
+  fill {  	
+    width = 0  
+    type = gradient  
+    c1 = 0xC0D0F0  
+    c2 = 0x405060  
+    angle = 240  
+    active.angle = 24 
+  }
+  overlay {
+    width = 2
+    type = gradient
+    angle = 270
+    trans = light
+    normal.c1 = 0x000000
+    normal.c2 = 0x000000
+    hilighted.c1 = 0x505000
+    hilighted.c2 = 0x000000
+    active.c1 = 0x505000
+    active.c2 = 0x000000
+  }
+}
+
+scrollbar {	
+  border {	
+    width = 0
+    type = null
+  }
+  fill {
+    width = 0
+    type = gradient
+    c1 = 0xFFFFFF
+    c2 = 0x404040
+    normal.c2 = 0x808080
+    angle = 0
+  }
+}
+
+scrollind {
+  border {
+    width = 1
+    type = gradient
+    c1 = 0x80B080
+    c2 = 0x000000
+    angle = 45
+    active.angle = 225
+  }
+  fill {
+    width = 0
+    type = gradient
+    c1 = 0xD0F0D0
+    c2 = 0x203020
+    angle = 185
+  }
+  overlay {
+    width = 1
+    type = gradient
+    c1 = 0x000000
+    c2 = 0x000000
+    angle = 270
+    trans = light
+    hilighted.c1 = 0x505000
+    active.c1 = 0x505000
+  }
+}
+
+panel {  
+  border {  
+    width = 2
+    type = gradient  
+    c1 = 0x405060  
+    c2 = 0xA0B0C0  
+    angle = 165
+  }  
+  fill {  
+    width = 0  
+    type = gradient  
+    c1 = 0x405060  
+    c2 = 0xA0B0C0  
+    angle = 84 
+  }  
+}  
+
+panelbar {  
+  border {  
+    width = 1
+    type = flat 
+    c = 0x000000  
+  }  
+  fill {  
+    width = 0  
+    type = gradient  
+    c1 = 0xFFFF80  
+    normal.c1 = 0x8080FF  
+    c2 = 0x405060  
+    angle = 90
+    active.angle = 94
+  }  
+}  
+
+### The End ###
