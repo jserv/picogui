@@ -5,11 +5,9 @@
 #
 # Target System
 #
-CONFIG_LINUX_GENERIC=y
-# UCLINUX is not set
-# CONFIG_LINUX_MIPS is not set
-# WINDOWS is not set
-# ASM_INTEL is not set
+CONFIG_OS_POSIX=y
+# CONFIG_OS_WINDOWS is not set
+# CONFIG_OS_UCLINUX is not set
 # CONFIG_UNIX_SOCKET is not set
 # CONFIG_OPTIMIZE_SIZE is not set
 CONFIG_OPTIMIZE_SPEED=y
@@ -199,6 +197,12 @@ CONFIG_WIDGET_TOOLBAR=y
 CONFIG_APPMGR_PANEL=y
 CONFIG_DRAGSOLID=y
 # CONFIG_APPMGR_NULL is not set
+
+#
+# Client/Server Networking
+#
+# CONFIG_NET_TCPIP is not set
+# CONFIG_NET_LIBPGSERVER is not set
 
 #
 # File Formats
