@@ -1,4 +1,4 @@
-/* $Id: bitmapengine.ths,v 1.1 2001/08/28 02:18:42 micahjd Exp $
+/* $Id: bitmapengine.ths,v 1.2 2002/01/15 02:30:32 micahjd Exp $
  *
  * This is not a single look for PicoGUI, but more of a library to easily
  * create 100% bitmapped themes. The source bitmap is given in the bitmap1
@@ -161,6 +161,7 @@ object panelbar {
     SetColor(0xC0C0C0);
     Frame(x,y,w,h);
   };
+  margin = 0;
   width = 20;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: flat16.ths,v 1.4 2001/07/05 07:53:59 micahjd Exp $
+/* $Id: flat16.ths,v 1.5 2002/01/15 02:30:32 micahjd Exp $
  *
  * Mostly flat, but with a little hilight animation
  *
@@ -92,6 +92,7 @@ object menuitem.hilight fgcolor = Copy(button.hilight::fgcolor);
 object panelbar {
   fgcolor = 0xFFFFFF;
   bgcolor = 0x000080;
+  margin = 1;
 }
 
 /* Dialog box title, just like a panelbar */

@@ -1,4 +1,4 @@
-/* $Id: aqua.ths,v 1.34 2002/01/07 08:36:08 micahjd Exp $
+/* $Id: aqua.ths,v 1.35 2002/01/15 02:30:32 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
@@ -243,6 +243,7 @@ object background bitmap1 = LoadBitmap("data/aq_screenbg.pnm");
 /* Interactive titlebar */
 object panel margin = 5;
 object panelbar {
+  margin = 0;
   bitmap1 = LoadBitmap("data/aq_title_wht_v.pnm");
   bitmap2 = LoadBitmap("data/aq_title_wht_h.pnm");
   bgfill = fillstyle {

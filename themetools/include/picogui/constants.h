@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.51 2002/01/14 07:52:39 micahjd Exp $
+/* $Id: constants.h,v 1.52 2002/01/15 02:30:32 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -73,8 +73,7 @@
 
 #define PG_APP_NORMAL   1     //!< Normal application for pgRegisterApp
 #define PG_APP_TOOLBAR  2     //!< Toolbar application for pgRegisterApp
-#define PG_APP_MENUBAR  3     //!< RidgeRun application for pgRegisterApp
-#define PG_APPMAX       3     //!< Current maximum value used in PG_APP_* constants
+#define PG_APPMAX       2     //!< Current maximum value used in PG_APP_* constants
 
 #define PG_APPSPEC_SIDE      1    //!< Force the app to a specified side
 #define PG_APPSPEC_SIDEMASK  2    //!< A bitmask of acceptable sides for an application
@@ -841,7 +840,8 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_SUBMENUITEM 17    /* Menuitem with a submenu arrow */
 #define PG_WIDGET_RADIOBUTTON 18    /* Like a check box, but exclusive */
 #define PG_WIDGET_TEXTBOX     19    /* Client-side text layout */
-#define PG_WIDGETMAX          19    /* For error checking */
+#define PG_WIDGET_PANELBAR    20    /* Draggable bar and container */
+#define PG_WIDGETMAX          20    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1
@@ -884,10 +884,13 @@ typedef unsigned long pghandle;
 #define PG_WP_HILIGHTED   32    /* Widget property to hilight a widget and all it's children */
 #define PG_WP_SELECTED    33    /* List property to select a row. */
 #define PG_WP_SELECTED_HANDLE 34 /* List property to return a handle to the selected row */
-#define PG_WP_AUTOSCROLL  35    /* For the textbox, scroll to any new text that's inserted */
+#define PG_WP_AUTOSCROLL  35    /* For the textbox or terminal, scroll to any new
+				 * text that's inserted */
 #define PG_WP_LINES       36    /* Height, in lines */
 #define PG_WP_PREFERRED_W 37    /* Read only (for now) properties to get any widget's preferred size */
 #define PG_WP_PREFERRED_H 38
+#define PG_WP_PANELBAR    39    /* Read-only property for panels returns a handle
+				 * to its embedded panelbar widget */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0
