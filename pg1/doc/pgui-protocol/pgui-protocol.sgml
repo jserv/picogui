@@ -1786,7 +1786,7 @@ server returned data : depends of the event type
    </para>
   </sect2>
 
-  <sect2 id="pgreq-writeto">
+  <sect2 id="pgreq-writecmd">
    <title>PGREQ_WRITECMD - Send a command to a widget </>
    <programlisting>
 type                 : PGREQ_WRITECMD (31)
