@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.19 2002/11/04 08:36:25 micahjd Exp $
+/* $Id: x11input.c,v 1.20 2002/11/04 10:29:34 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -98,7 +98,7 @@ int x11input_fd_activate(int fd) {
 
       /* If this is the last contiguous expose event, go ahead and draw */
       if (!ev.xexpose.count) {
-	x11_expose(expose_region);
+	x11_expose(ev.xexpose.window,expose_region);
 	XDestroyRegion(expose_region);
 	expose_region = XCreateRegion();
       }

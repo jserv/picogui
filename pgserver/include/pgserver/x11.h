@@ -1,4 +1,4 @@
-/* $Id: x11.h,v 1.1 2002/11/04 08:36:25 micahjd Exp $
+/* $Id: x11.h,v 1.2 2002/11/04 10:29:33 micahjd Exp $
  *
  * x11.h - Header shared by all the x11 driver components in picogui
  *
@@ -47,12 +47,15 @@
  * offscreen bitmaps, therefore most of the fields here are optional.
  */
 struct x11bitmap {
-  Drawable d;                /* This will always be an x11 drawable */
-  struct groprender *rend;   /* gropnode rendering info used by picogui */
-  s16 w,h;                   /* Width and height */
-  hwrbitmap frontbuffer;     /* If this is a backbuffer, this is the associated front buffer */
-  Region display_region;     /* A region specifying the entire bitmap */
-  struct divtree *dt;        /* The corresponding divtree if this is a window */
+  Drawable d;                    /* This will always be an x11 drawable */
+  struct groprender *rend;       /* gropnode rendering info used by picogui */
+  s16 w,h;                       /* Width and height */
+  struct x11bitmap *frontbuffer; /* If this is a backbuffer, this is the associated front buffer */
+  Region display_region;         /* A region specifying the entire bitmap */
+  struct divtree *dt;            /* The corresponding divtree if this is a window */
+  struct x11bitmap *next_window; /* Linked list of windows */
+  unsigned int is_window:1;      /* Flag indicating if this is a window */
+  unsigned int is_mapped:1;      /* Is the window mapped yet? */
 };
 
 /* Convenience macro to cast a hwrbitmap to x11bitmap */
@@ -76,12 +79,33 @@ extern GC x11_gctab[PG_LGOPMAX+1];
 /* The window used by x11_window_debug */
 extern hwrbitmap x11_debug_window;
 
+/* A list of all allocated windows */
+extern struct x11bitmap *x11_window_list;
+
 
 /******************************************************** Shared utilities */
 
 /* Redisplay the area inside the given expose region */
-void x11_expose(Region r);
+void x11_expose(Window w, Region r);
+
+/* Generate a table of GCs for each lgop */
 void x11_gc_setup(Drawable d);
+
+/* Create a backbuffer for double-buffering the given surface */
+g_error x11_new_backbuffer(struct x11bitmap **backbuffer, struct x11bitmap *frontbuffer);
+
+/* Create a new generic window */
+g_error x11_create_window(hwrbitmap *hbmp);
+
+/* Return the shared window used in non-rootless mode, creating it if it doens't exist */
+hwrbitmap x11_monolithic_window(void);
+
+/* Update the title and size of the monolithic window if necessary */
+void x11_monolithic_window_update(void);
+
+/* Map an X Window to the associated picogui x11bitmap */
+struct x11bitmap *x11_get_window(Window w);
+
 
 /******************************************************** Primitives */
 

@@ -1,4 +1,4 @@
-/* $Id: x11_util.c,v 1.1 2002/11/04 08:36:25 micahjd Exp $
+/* $Id: x11_util.c,v 1.2 2002/11/04 10:29:34 micahjd Exp $
  *
  * x11_util.c - Utility functions for picogui's driver for the X window system
  *
@@ -77,6 +77,10 @@ g_error x11_bitmap_new(hwrbitmap *bmp,s16 w,s16 h,u16 bpp) {
   (*pxb)->w = w;
   (*pxb)->h = h;
 
+  /* X doesn't like 0 dimensions */
+  if (!w) w = 1;
+  if (!h) h = 1;
+
   /* Allocate a corresponding X pixmap */
   (*pxb)->d  = XCreatePixmap(x11_display,RootWindow(x11_display, 0),w,h,vid->bpp);
 
@@ -84,9 +88,20 @@ g_error x11_bitmap_new(hwrbitmap *bmp,s16 w,s16 h,u16 bpp) {
 }
 
 void x11_bitmap_free(hwrbitmap bmp) {
+  if (XB(bmp)->frontbuffer)
+    x11_bitmap_free((hwrbitmap) XB(bmp)->frontbuffer);
+
   if (XB(bmp)->rend)
     g_free(XB(bmp)->rend);
-  XFreePixmap(x11_display,XB(bmp)->d);
+
+  if (XB(bmp)->display_region)
+    XDestroyRegion(XB(bmp)->display_region);
+  
+  if (XB(bmp)->is_window)
+    XDestroyWindow(x11_display,XB(bmp)->d);
+  else
+    XFreePixmap(x11_display,XB(bmp)->d);
+  
   g_free(bmp);
 }
 
@@ -106,44 +121,142 @@ int x11_is_rootless(void) {
 }
 
 hwrbitmap x11_window_debug(void) {
-  if (!x11_debug_window) {
-    /* FIXME: There's nothing we can do with an error here */
-    x11_window_new(&x11_debug_window,NULL);
-    x11_window_set_title(x11_debug_window,pgstring_tmpwrap("PicoGUI Debug Window"));
+  if (VID(is_rootless)()) {
+    if (!x11_debug_window) {
+      /* FIXME: There's nothing we can do with an error here */
+      x11_window_new(&x11_debug_window,NULL);
+      x11_window_set_title(x11_debug_window,pgstring_tmpwrap("PicoGUI Debug Window"));
+      x11_window_set_size(x11_debug_window,640,480);
+    }
+    return x11_debug_window;
   }
-  return x11_debug_window;
+  return x11_monolithic_window();
 }
+  
 
 hwrbitmap x11_window_fullscreen(void) {
-  /* FIXME: Implement me */
-  return x11_window_debug();
+  if (VID(is_rootless)()) {
+    /* FIXME: Implement me */
+    return x11_window_debug();
+  }
+  return x11_monolithic_window();
 }
 
 g_error x11_window_new(hwrbitmap *hbmp, struct divtree *dt) {
+  g_error e;
+
+  /* In rootless mode, create a special window */
+  if (VID(is_rootless)()) {
+    e = x11_create_window(hbmp);
+    errorcheck;
+  }
+
+  /* In monolithic mode, everybody uses the same window */
+  else
+    *hbmp = x11_monolithic_window();
+
+  XB(*hbmp)->dt = dt;
+  return success;
+}
+
+g_error x11_create_window(hwrbitmap *hbmp) {
   struct x11bitmap *xb;
-  XEvent ev;
   int black;
-  XRectangle rect;
   g_error e;
 
   e = g_malloc((void**)&xb, sizeof(struct x11bitmap));
   errorcheck;
   memset(xb,0,sizeof(struct x11bitmap));
+  xb->is_window = 1;
 
   black = BlackPixel(x11_display, DefaultScreen(x11_display));
 
-  /* Create the window */
+  /* Create the window.
+   * The size and everything else will be configured in x11_window_set_size()
+   */
   xb->d = XCreateSimpleWindow(x11_display, DefaultRootWindow(x11_display),
-			      0, 0, vid->xres, vid->yres, 0, black, black);
-  
-  /* Map the window, waiting for the MapNotify event */
-  XSelectInput(x11_display, xb->d, StructureNotifyMask);  
-  XMapWindow(x11_display, xb->d);
-  do {
-    XNextEvent(x11_display, &ev);
-  } while (ev.type != MapNotify);
-  
+			      0, 0, 1, 1, 0, black, black);
+  xb->w = xb->h = 0;
+
+  /* Optionally double-buffer this window */
+  if (get_param_int("video-x11","doublebuffer",1)) {
+    e = x11_new_backbuffer(&xb, xb);
+    errorcheck;
+  }
+
+  xb->next_window = x11_window_list;
+  x11_window_list = xb;
+
+  *hbmp = (hwrbitmap) xb;
+  return success;
+}
+
+void x11_window_free(hwrbitmap window) {
+  struct x11bitmap **b;
+
+  if (VID(is_rootless)()) {
+    /* Remove it from the window list */
+    for (b=&x11_window_list;*b;b=&(*b)->next_window)
+      if (*b == XB(window)) {
+	*b = (*b)->next_window;
+	break;
+      }
+
+    x11_bitmap_free(window);
+  }      
+}
+
+void x11_window_set_title(hwrbitmap window, const struct pgstring *title) {
+  struct x11bitmap *xb = XB(window)->frontbuffer ? XB(window)->frontbuffer : XB(window);
+  XStoreName(x11_display, xb->d, title->buffer);
+}
+
+void x11_window_set_position(hwrbitmap window, s16 x, s16 y) {
+  struct x11bitmap *xb = XB(window)->frontbuffer ? XB(window)->frontbuffer : XB(window);
+  XWindowChanges wc;
+
+  wc.x = x;
+  wc.y = y;
+  XConfigureWindow(x11_display, xb->d, CWX | CWY, &wc);
+}
+
+void x11_window_set_size(hwrbitmap window, s16 w, s16 h) {
+  struct x11bitmap *xb = XB(window)->frontbuffer ? XB(window)->frontbuffer : XB(window);
+  XWindowChanges wc;
+  XEvent ev;
+  XRectangle rect;
+
+  /* Resize the window */
+  wc.width = w;
+  wc.height = h;
+  XConfigureWindow(x11_display, xb->d, CWWidth | CWHeight, &wc);
+
+  xb->w = w;
+  xb->h = h;
+
+  /* Resize the backbuffer if we're using one */
+  if (XB(window)->frontbuffer) {
+    XFreePixmap(x11_display, XB(window)->d);
+    XB(window)->w = w;
+    XB(window)->h = h;
+    if (XB(window)->rend)
+      g_free(XB(window)->rend);
+    XB(window)->d = XCreatePixmap(x11_display, xb->d, w, h, vid->bpp);
+  }
+
+  if (!xb->is_mapped) {
+    /* Map the window, waiting for the MapNotify event */
+    XSelectInput(x11_display, xb->d, StructureNotifyMask);  
+    XMapWindow(x11_display, xb->d);
+    do {
+      XNextEvent(x11_display, &ev);
+    } while (ev.type != MapNotify);
+    xb->is_mapped = 1;
+  }
+
   /* Create the display_region */
+  if (xb->display_region)
+    XDestroyRegion(xb->display_region);
   xb->display_region = XCreateRegion();
   rect.x = rect.y = 0;
   rect.width = vid->xres;
@@ -157,35 +270,24 @@ g_error x11_window_new(hwrbitmap *hbmp, struct divtree *dt) {
   XAutoRepeatOn(x11_display);
 
   XFlush(x11_display);
-
-  *hbmp = (hwrbitmap) xb;
-  return success;
-}
-
-void x11_window_free(hwrbitmap window) {
-  XDestroyRegion(XB(window)->display_region);
-  if (XB(window)->rend)
-    g_free(XB(window)->rend);
-}
-
-void x11_window_set_title(hwrbitmap window, const struct pgstring *title) {
-  struct pgstring *s;
-  if (!iserror(pgstring_convert(&s,PGSTR_ENCODE_UTF8,title))) {
-    XStoreName(x11_display, XB(window)->d, s->buffer);
-    pgstring_delete(s);
-  }
-}
-
-void x11_window_set_position(hwrbitmap window, s16 x, s16 y) {
-}
-
-void x11_window_set_size(hwrbitmap window, s16 w, s16 h) {
 }
 
 void x11_window_get_position(hwrbitmap window, s16 *x, s16 *y) {
+  struct x11bitmap *xb = XB(window)->frontbuffer ? XB(window)->frontbuffer : XB(window);
+  int ix,iy,iw,ih,border,depth;
+  Window root;
+  XGetGeometry(x11_display, xb->d, &root, &ix, &iy, &iw, &ih, &border, &depth);
+  *x = ix;
+  *y = iy;
 }
 
 void x11_window_get_size(hwrbitmap window, s16 *w, s16 *h) {
+  struct x11bitmap *xb = XB(window)->frontbuffer ? XB(window)->frontbuffer : XB(window);
+  int ix,iy,iw,ih,border,depth;
+  Window root;
+  XGetGeometry(x11_display, xb->d, &root, &ix, &iy, &iw, &ih, &border, &depth);
+  *w = iw;
+  *h = ih;
 }
 
 void x11_gc_setup(Drawable d) {
@@ -220,7 +322,85 @@ void x11_gc_setup(Drawable d) {
 				    x11_stipple_width,x11_stipple_height));
 }
 
-void x11_expose(Region r) {
+void x11_expose(Window w, Region r) {
+  struct x11bitmap *xb = x11_get_window(w);
+  if (!xb) 
+    return;
+
+  if (xb->frontbuffer) {
+    /* Double-buffered expose update */
+    XSetRegion(x11_display,x11_gctab[PG_LGOP_NONE],r);
+    XCopyArea(x11_display,xb->d,xb->frontbuffer->d,
+	      x11_gctab[PG_LGOP_NONE],0,0,xb->w,xb->h,0,0);
+    XSetRegion(x11_display,x11_gctab[PG_LGOP_NONE],xb->frontbuffer->display_region);
+  }
+  else {
+    /* Ugly non-double-buffered expose update */
+
+    struct divtree *p;
+    int i;
+    
+    for (i=0;i<=PG_LGOPMAX;i++)
+      if (x11_gctab[i])
+	XSetRegion(x11_display,x11_gctab[i],r);
+    
+    for (p=dts->top;p;p=p->next)
+      if (p->display == (hwrbitmap)xb)
+	p->flags |= DIVTREE_ALL_REDRAW;
+    update(NULL,1);
+
+    for (i=0;i<=PG_LGOPMAX;i++)
+      if (x11_gctab[i])
+	XSetRegion(x11_display,x11_gctab[i],xb->display_region);
+  }
+}
+
+/* Create a backbuffer for double-buffering the given surface */
+g_error x11_new_backbuffer(struct x11bitmap **backbuffer, struct x11bitmap *frontbuffer) {
+  g_error e;
+
+  e = VID(bitmap_new)((hwrbitmap*)backbuffer, frontbuffer->w, frontbuffer->h, vid->bpp);
+  errorcheck;
+
+  (*backbuffer)->frontbuffer = frontbuffer;
+  return success;
+}
+
+/* Return the shared window used in non-rootless mode, creating it if it doens't exist */
+hwrbitmap x11_monolithic_window(void) {
+  if (!vid->display) {
+    /* FIXME: Can't deal with an error here */
+    x11_create_window(&vid->display);
+    x11_monolithic_window_update();
+  }
+  return vid->display;
+}
+
+/* Update the title and size of the monolithic window if necessary */
+void x11_monolithic_window_update(void) {
+  char title[256];
+
+  if (vid->display) {
+    x11_window_set_size(vid->display, vid->xres, vid->yres);
+    title[sizeof(title)-1] = 0;
+    snprintf(title,sizeof(title)-1,get_param_str("video-x11","caption","PicoGUI (X11@%dx%dx%d)"),
+	     vid->xres,vid->yres,vid->bpp);
+    x11_window_set_title(vid->display,pgstring_tmpwrap(title));
+  }  
+}
+
+/* Map an X Window to the associated picogui x11bitmap */
+struct x11bitmap *x11_get_window(Window w) {
+  struct x11bitmap *b;
+
+  for (b=x11_window_list;b;b=b->next_window) {
+    if (b->d == w)
+      return b;
+    if (b->frontbuffer && b->frontbuffer->d == w)
+      return b;
+  }
+  
+  return NULL;
 }
 
 /* The End */

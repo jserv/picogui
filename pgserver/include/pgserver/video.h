@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.110 2002/11/04 08:36:25 micahjd Exp $
+/* $Id: video.h,v 1.111 2002/11/04 10:29:33 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers

@@ -1,4 +1,4 @@
-/* $Id: x11_init.c,v 1.1 2002/11/04 08:36:25 micahjd Exp $
+/* $Id: x11_init.c,v 1.2 2002/11/04 10:29:34 micahjd Exp $
  *
  * x11_init.c - Initialization for picogui'x driver for the X window system
  *
@@ -45,10 +45,16 @@ const u8 x11_stipple_bits[] = {0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa};
 /* The window used by x11_window_debug */
 hwrbitmap x11_debug_window;
 
+/* A list of all allocated windows */
+struct x11bitmap *x11_window_list;
+
 
 /******************************************************** Initialization */
 
 g_error x11_init(void) {
+  int x,y,w,h,border,depth;
+  Window root;
+
   /* Connect to the default X server */
   x11_display = XOpenDisplay(NULL);
   if (!x11_display)
@@ -56,26 +62,32 @@ g_error x11_init(void) {
 
   x11_fd = ConnectionNumber(x11_display);
   vid->bpp  = DefaultDepth(x11_display,0);
-
+  vid->display = NULL;
   x11_gc_setup(RootWindow(x11_display, 0));
   
-  vid->xres = vid->yres = 500;
-
-  vid->display = VID(window_debug)();
+  /* Get the display size */
+  XGetGeometry(x11_display, RootWindow(x11_display, 0), &root,
+	       &x, &y, &w, &h, &border, &depth);
+  vid->xres = w;
+  vid->yres = h;
 
   /* Load the matching input driver */
   return load_inlib(&x11input_regfunc,&inlib_main);
 }
 
-/* Create a window */
 g_error x11_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
-
+  if (xres) vid->xres = xres;
+  if (yres) vid->yres = yres;
+  x11_monolithic_window_update();
   return success;
 }
 
 void x11_close(void) {
+  /* Clean up after the monolithic window and the debug window */
+  if (vid->display)
+    x11_bitmap_free(vid->display);
   if (x11_debug_window)
-    VID(window_free)(x11_debug_window);
+    x11_bitmap_free(x11_debug_window);
 
   unload_inlib(inlib_main);   /* Take out our input driver */
   XCloseDisplay(x11_display);

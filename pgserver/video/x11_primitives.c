@@ -1,4 +1,4 @@
-/* $Id: x11_primitives.c,v 1.1 2002/11/04 08:36:25 micahjd Exp $
+/* $Id: x11_primitives.c,v 1.2 2002/11/04 10:29:34 micahjd Exp $
  *
  * x11_primitives.c - Implementation of picogui primitives on top of the
  *                    X window system.
@@ -138,7 +138,12 @@ void x11_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
   XCopyArea(x11_display,XB(src)->d,XB(dest)->d,g,src_x,src_y,w,h,x,y);
 }
 
-void x11_update(hwrbitmap display,s16 x,s16 y,s16 w,s16 h) {
+void x11_update(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h) {
+  /* Double-buffered? */
+  if (XB(dest)->frontbuffer)
+    XCopyArea(x11_display, XB(dest)->d, XB(XB(dest)->frontbuffer)->d,
+	      x11_gctab[PG_LGOP_NONE],x,y,w,h,x,y);
+
   XFlush(x11_display);
 }
 
