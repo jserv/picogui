@@ -538,11 +538,11 @@ quoted appropriately. For example:
 - default
   Style for the default font. The style format used is name:size:flags, with
   all sections optional, same as cli_python.
-  Defaults to "Helmet:14" (included in the OpenOffice fonts)
+  Defaults to "Helmet:12" (included in the PicoGUI font distrobution)
 
 - default_fixed
   Style for the default fixed width font.
-  Defaults to "Nimbus Mono L:12:bold" (included in the Ghostscript fonts)
+  Defaults to "Clean:12" (included in the PicoGUI font distrobution)
 
 - minimum_size
   Force all fonts to be at least this big

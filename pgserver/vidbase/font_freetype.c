@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.22 2002/10/16 11:54:41 micahjd Exp $
+/* $Id: font_freetype.c,v 1.23 2002/10/16 11:57:48 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -133,8 +133,8 @@ g_error freetype_engine_init(void) {
     ft_glyph_flags |= ftc_image_flag_autohinted;
 
   /* Default font and sizing config */
-  ft_style_scan(&ft_default_fs,get_param_str(CFGSECTION,"default","Helmet:14"));
-  ft_style_scan(&ft_default_fixed_fs,get_param_str(CFGSECTION,"default_fixed","Nimbus Mono L:12:bold"));
+  ft_style_scan(&ft_default_fs,get_param_str(CFGSECTION,"default","Helmet:12"));
+  ft_style_scan(&ft_default_fixed_fs,get_param_str(CFGSECTION,"default_fixed","Clean:12"));
   ft_minimum_size = get_param_int(CFGSECTION,"minimum_size",5);
 
   /* Gamma config/initialization */
