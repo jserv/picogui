@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.3 2001/10/02 09:00:47 micahjd Exp $
+/* $Id: textbox_main.c,v 1.4 2001/10/06 01:39:57 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -50,7 +50,7 @@ g_error textbox_install(struct widget *self) {
 
    /* Add some demo text */
    
-   text_format_font_flags(&crsr,PG_FSTYLE_FLUSH,0);
+   text_format_modifyfont(&crsr,PG_FSTYLE_FLUSH,0,0);
    text_insert_string(&crsr,"Hello ");
    text_insert_wordbreak(&crsr);
    text_format_color(&crsr,0xFFFF00);
@@ -58,10 +58,10 @@ g_error textbox_install(struct widget *self) {
    text_insert_linebreak(&crsr);
    text_insert_string(&crsr,"This ");
    text_insert_wordbreak(&crsr);
-   text_format_font_flags(&crsr,PG_FSTYLE_BOLD,0);
+   text_format_modifyfont(&crsr,PG_FSTYLE_BOLD,0,10);
    text_format_color(&crsr,0xFF0000);
    text_insert_string(&crsr,"is ");
-   text_format_font_flags(&crsr,PG_FSTYLE_ITALIC,PG_FSTYLE_BOLD);
+   text_format_modifyfont(&crsr,PG_FSTYLE_ITALIC,PG_FSTYLE_BOLD,-20);
    text_insert_wordbreak(&crsr);
    text_insert_string(&crsr,"nifty. ");
 

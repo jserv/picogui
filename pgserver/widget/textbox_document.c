@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.3 2001/10/02 09:00:47 micahjd Exp $
+/* $Id: textbox_document.c,v 1.4 2001/10/06 01:39:57 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -77,8 +77,9 @@ g_error text_format_font(struct textbox_cursor *c, handle font) {
   return text_format_add(c,fn);
 }
 
-/* Add a node to change font flag(s) */
-g_error text_format_font_flags(struct textbox_cursor *c,u32 on, u32 off) {
+/* Add a node to change font flag(s) and/or size */
+g_error text_format_modifyfont(struct textbox_cursor *c,
+			       u32 flags_on, u32 flags_off,s16 size_delta) {
   struct fontdesc *fd;
   const char *font_name = NULL;
   g_error e;
@@ -96,20 +97,15 @@ g_error text_format_font_flags(struct textbox_cursor *c,u32 on, u32 off) {
     font_style = fd->style;
   }
 
-  /* Change flags */
-  font_style |= on;
-  font_style &= ~off;
+  font_style |= flags_on;
+  font_style &= ~flags_off;
+  font_size += size_delta;
 
   /* New font */
   e = findfont(&font,c->widget->owner,font_name,font_size,font_style);
   errorcheck;
 
   return text_format_font(c,font);
-}
-
-/* Add a node to change font size relative to the current size */
-g_error text_format_font_addsize(struct textbox_cursor *c,int size) {
-  return sucess;
 }
 
 /* Remove the topmost layer of formatting */
@@ -242,6 +238,38 @@ void text_delete_prev(struct textbox_cursor *c) {
 
 /* Combine gropnodes when possible to reduce memory consumption */
 g_error text_compact(struct textbox_cursor *c) {
+  return sucess;
+}
+
+/* Show the caret at the current cursor position */
+g_error text_caret_on(struct textbox_cursor *c) {
+  g_error e;
+
+  /* is the caret not at the right place? */
+  if (c->caret != &c->c_div->grop) {
+
+    /* Delete old caret? */
+    if (c->caret && *c->caret) {
+      struct gropnode *condemn; 
+      condemn = *c->caret;
+      *c->caret = (*c->caret)->next;
+      gropnode_free(condemn);
+    }
+
+    /* Allocate new caret */
+    c->caret = &c->c_div->grop;
+    e = gropnode_alloc(c->caret);
+    errorcheck;
+    //    (*c->caret)
+  }
+
+  /* Make the caret visible */
+
+  return sucess;
+}
+
+/* Hide the caret at the current cursor position */
+g_error text_caret_off(struct textbox_cursor *c) {
   return sucess;
 }
 

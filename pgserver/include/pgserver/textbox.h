@@ -1,4 +1,4 @@
-/* $Id: textbox.h,v 1.3 2001/10/02 09:00:47 micahjd Exp $
+/* $Id: textbox.h,v 1.4 2001/10/06 01:39:57 micahjd Exp $
  *
  * textbox.h - Interface definitions for the textbox widget. This allows
  *             the main textbox widget functions and the text format loaders
@@ -53,6 +53,7 @@ struct textbox_cursor {
   s16 c_gx, c_gy;            /* Cursor location within gropnode */
   struct formatnode *f_top;  /* Top of formatting stack */
   struct formatnode *f_used; /* Formats not on stack with refcnt != 0 */
+  struct gropnode **caret;   /* Gropnode for the caret, if it is on */
 };
 
 /************************* Formatting */
@@ -64,9 +65,8 @@ g_error text_format_color(struct textbox_cursor *c, pgcolor color);
 /* Add a node to change the font completely */
 g_error text_format_font(struct textbox_cursor *c, handle font);
 /* Add a node to change font flag(s) */
-g_error text_format_font_flags(struct textbox_cursor *c,u32 on, u32 off);
-/* Add a node to change font size relative to the current size */
-g_error text_format_font_addsize(struct textbox_cursor *c,int size);
+g_error text_format_modifyfont(struct textbox_cursor *c,
+			       u32 flags_on, u32 flags_off,s16 size_delta);
 /* Remove the topmost layer of formatting */
 void text_unformat_top(struct textbox_cursor *c);
 /* Remove all formatting */
@@ -81,13 +81,19 @@ g_error text_insert_linebreak(struct textbox_cursor *c);
 /* Insert text with the current formatting at the cursor. This will not
  * generate breaking spaces. */
 g_error text_insert_string(struct textbox_cursor *c, const char *str);
+
+/************************* Editing */
+
 /* Delete the character or other object after the cursor */
 void text_delete_next(struct textbox_cursor *c);
 /* Delete the character or other object before the cursor */
 void text_delete_prev(struct textbox_cursor *c);
 /* Combine gropnodes when possible to reduce memory consumption */
 g_error text_compact(struct textbox_cursor *c);
-
+/* Show the caret at the current cursor position */
+g_error text_caret_on(struct textbox_cursor *c);
+/* Hide the caret at the current cursor position */
+g_error text_caret_off(struct textbox_cursor *c);
 
 #endif /* __H_TEXTBOX */   
 
