@@ -1,4 +1,4 @@
-/* $Id: textedit_frontend.c,v 1.12 2002/10/29 22:23:54 cgroom Exp $
+/* $Id: textedit_frontend.c,v 1.13 2002/10/30 01:53:59 cgroom Exp $
  *
  * textedit.c - Multi-line text widget. By Chuck Groom,
  * cgroom@bluemug.com, Blue Mug, Inc, July 2002. Intended to be
@@ -196,7 +196,7 @@ void textedit_build ( struct gropctxt *c,
     s16 w, h, tw;
     g_error e;
 
-    w = self->in->div->r.w -10;
+    w = self->in->div->r.w;
     h = self->in->div->r.h;
 
     /* Set scrollbar properties */
@@ -311,22 +311,15 @@ g_error textedit_set ( struct widget *self,
         }
         break;
     case PG_WP_SCROLL_Y:
-#if 0
-        printf("PG_WP_SCROLL_Y %d\n", 
-               DATA->scroll_lock);
-        if (DATA->scroll_lock) {
-            DATA->scroll_lock--;
-        } else {
-            if (self->in->div->r.h) {
-                struct divnode * p_node;
-                struct widget * parent;
-                p_node = divnode_findparent(self->dt->head, self->in);
-                parent = p_node->owner;
-                text_backend_set_v_top(DATA, 
-                                       MAX(0, (((u32) data) * DATA->v_height)/100 - DATA->height));
-            }
+        if (self->in->div->r.h) {
+            struct divnode * p_node;
+            struct widget * parent;
+            int res;
+            p_node = divnode_findparent(self->dt->head, self->in);
+            parent = p_node->owner;
+            res = widget_get(parent, PG_WP_SIZE);
+            text_backend_set_v_top(DATA, ((u32) data * DATA->v_height) / res);
         }
-#endif
         break;
     }
     return success;
@@ -493,15 +486,16 @@ void textedit_trigger ( struct widget *self,
  * This is bad, wicked, naughty, and in all ways reprehensible. 
  */
 struct scrolldata {
-    int horizontal;
-    int on,over;
-    int res;        /* Scroll bar's resolution - maximum value */
-    int grab_offset;  /* The difference from the top of the indicator to
-                         the point that was clicked */
-    int release_delta;
-    int value,old_value;
-    u32 wait_tick;
-    int thumbscale;
+  int horizontal;
+  int on,over;
+  int res;        /* Scroll bar's resolution - maximum value */
+  int grab_offset;  /* The difference from the top of the indicator to
+		       the point that was clicked */
+  int release_delta;
+  int value,old_value;
+  u32 wait_tick;
+  int thumbscale;
+  int thumbsize;
 };
 
 
@@ -512,11 +506,11 @@ void textedit_scrollevent( struct widget *self ) {
     struct scrolldata * p_data;
     s16 oldres;
 
- p_node = divnode_findparent(self->dt->head, self->in);
+    p_node = divnode_findparent(self->dt->head, self->in);
     parent = p_node->owner;
-    p_data = (struct scrolldata *) (parent->data);
-    value = (p_data->res * DATA->v_y_top) / DATA->v_height;
+    p_data = ((struct scrolldata *)(parent->data[0])) ;
     height = MAX(DATA->height, DATA->v_height);
+    value =  (DATA->v_y_top * p_data->res) / height;
 
     if ((parent->type == PG_WIDGET_SCROLL) &&
         ((self->in->div->preferred.h != height) ||
@@ -525,66 +519,13 @@ void textedit_scrollevent( struct widget *self ) {
         if (parent->in) {
             p_data->value = value;
             if (p_data->res)
-                parent->in->div->translation.y = p_data->value * p_data->thumbscale / p_data->res;
+                parent->in->div->translation.y = (DATA->v_y_top * DATA->height) / height;
             parent->in->div->flags |= DIVNODE_NEED_REDRAW;
             parent->dt->flags |= DIVTREE_NEED_REDRAW;
         }
         self->dt->flags |= DIVTREE_NEED_RESIZE;
         post_event(PG_WE_ACTIVATE,parent,0,0,NULL);
     }
-/* IN DEVEL -- ignore */
-#if 0
-    /* Must prevent reentrancy to avoid an infinite
-     * recursion when widget_set() is called */
-    
-    if (DATA->scroll_lock) 
-        return;
-    DATA->scroll_lock = 1;
-
-    p_node = divnode_findparent(self->dt->head, self->in);
-    parent = p_node->owner;
-    p_data = ((struct scrolldata *)(parent->data[0])) ;
-    height = MAX(DATA->height, DATA->v_height);
-
-    parent->in->div->flags |= DIVNODE_NEED_REDRAW;
-    parent->dt->flags |= DIVTREE_NEED_REDRAW;
-    self->in->flags |= DIVTREE_NEED_REDRAW;
-    
-    printf(" ** %d %d %d\n", 
-           self->in->div->preferred.h,
-           self->in->child.h,
-           self->in->r.h);
-
-    self->in->div->preferred.h = height;
-    divtree_size_and_calc(self->dt);
-    divtree_size_and_calc(parent->dt);
-
-    printf(" (** %d %d %d\n", 
-           self->in->div->preferred.h,
-           self->in->child.h,
-           self->in->r.h);
-
-    set_widget_rebuild(parent);
-
-/* Other in devel segment... also ignore ... */
-
-    p_node = divnode_findparent(self->dt->head, self->in);
-    parent = p_node->owner;
-    p_data = ((struct scrolldata *)(parent->data[0])) ;
-    height = MAX(DATA->height, DATA->v_height);
-
-    p_data->ext_res = 100;
-    p_data->ext_thumbsize = (DATA->height * 100) / height;
-    if (height <= DATA->height)
-        p_data->value = 0;
-    else
-        p_data->value = (DATA->v_y_top * 100) / (height - DATA->height);
-    
-    set_widget_rebuild(parent);
-    post_event(PG_WE_ACTIVATE,parent,0,0,NULL);
-
-    DATA->scroll_lock = 0;
-#endif /* 0 */
 }
 
 
