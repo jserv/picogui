@@ -1,8 +1,6 @@
 """ PGBuild.Package
 
-SCons node to represent a package that will be automatically downloaded
-and updated from a Repository, containing a config file that directs
-dependencies and compile time options.
+Objects to support package manipulation.
 """
 # 
 # PicoGUI Build System
@@ -23,11 +21,178 @@ dependencies and compile time options.
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
-def Package:
-    """The package object should be constructed in the package list config file"""
-    def __init__(name, repositories):
+import os
+import PGBuild.Errors
+
+
+class PackageVersion:
+    """A single version of a package, representing a local copy and a repository.
+       Supports updating the local copy from the repository, and performing builds
+       on the local copy.
+       """
+
+    def __init__(self, package, name):
+        # The local path for this package
+        self.path = os.path.join(config.eval('bootstrap/path[@name="packages"]/text()'), self.name)
+
+
+def decomposeVersion(version):
+    """Utility for version number manipulation- separate a version number into
+       groups of numbers, punctuation, and letters.
+       """
+    groups = [""]
+
+    def categorize(char):
+        if char.isalpha():
+            return 0
+        if char.isdigit():
+            return 1
+        if char.isspace():
+            return 2
+        return 3
+    
+    for char in version:
+        if len(groups[-1]) == 0 or categorize(char) == categorize(groups[-1][-1]):
+            groups[-1] = groups[-1] + char
+        else:
+            groups.append(char)
+
+    # Convert numeric parts of the version to numbers
+    for i in xrange(len(groups)):
+        try:
+            groups[i] = int(groups[i])
+        except ValueError:
+            pass
+    return groups
+            
+
+def compareVersion(a,b):
+    """Try to compare two versions, determining which is newer"""
+    a = decomposeVersion(a)
+    b = decomposeVersion(b)
+    if len(a) < len(b):
+        return 1
+    if len(a) > len(b):
+        return -1
+    for i in xrange(len(a)):
+        if a[i] < b[i]:
+            return 1
+        if a[i] > b[i]:
+            return -1
+    return 0
+
+        
+class VersionSpec:
+    """A specification for one or more versions of a package.
+
+       FIXME: For now this only supports simple version names, but
+              this is the place to add support for version lists and
+              ranges.
+    """
+    def __init__(self, specString):
+        self.specString = specString
+
+    def match(self, version):
+        """Return true if the given version name matches this spec"""
+        if version == self.specString:
+            return 1
+        else:
+            return 0
+
+    def compareMatch(self, a, b):
+        """Given two versions that match the spec, compare their quality.
+           For now this just makes an attempt at figuring out which version is newer.
+           """
+        return compareVersion(a,b)
+        
+        
+class Package:
+    """A package object, initialized from the configuration tree.
+       Holds details common to all package versions.
+       """
+    
+    def __init__(self, config, name):
+        self.config = config
+        self.versions = {}
         self.name = name
-        self.repository = repository
+        
+        # Save the root of the package configuration
+        self.configNode = config.xpath('packages/package[@name="%s"]' % self.name)
+        if len(self.configNode) > 1:
+            raise PGConfig.Errors.ConfigError("More than one package with the name '%s'" % self.name)
+        if len(self.configNode) == 0:
+            raise PGConfig.Errors.ConfigError("Can't find a package with the name '%s'" % self.name)
+        self.configNode = self.configNode[0]
+
+    def findVersion(self, version):
+        """Find a particular version of thie package. If the given version
+           isn't already a VersionSpec it is converted to one.
+           """
+        if not isinstance(version, VersionSpec):
+            version = VersionSpec(version)
+
+    def getVersionNode(self, packageNode):
+        """Given a package node, return the version node that
+           best matches our version spec."""
+        packageName = packageNode.attributes['name'].value
+        versions = packageNode.getElementsByTagName('version')
+
+        # Get a list of package versions that match according to self.match()
+        matches = []
+        for version in versions:
+            if self.match(version.attributes['name'].value):
+                matches.append(version)
+
+        # FIXME: we don't support ambiguous version specs yet.
+        #        Eventually there should be a good way to determine which version is 'better'
+        #        and pick that one.
+        if len(matches) > 1:
+            raise PGConfig.Errors.ConfigError(
+                "Ambiguous version specification '%s' for package '%s', not supported yet" %
+                (self.specString, packageName))
+        
+        if len(matches) == 0:
+            raise PGConfig.Errors.ConfigError(
+                "Can't find version '%s' of package '%s'" %
+                (self.specString, packageName))
+        return matches[0]
+
+
+def splitPackageName(name):
+    """Split a package name into a (name,version) tuple. If there
+       is no version specified, version will be None."""
+    l = name.split("-",1)
+    if len(l) < 2:
+        l.append(None)
+    return l
+
+
+class PackageList:
+    """Represents all the packages specified in a given configuration tree,
+       and performs lookups on packages and package versions.
+       """
+    def __init__(self, config):
+        self.packages = {}
+        self.config = config
+
+    def findPackage(self, name, version=None):
+        """The name given here may or may not contain a version. Either way,
+           if a version is specified in the 'version' parameter it overrides
+           any version from the 'name'.
+           """
+        
+        (name, nameVersion) = splitPackageName(name)
+        if version == None:
+            version = nameVersion
+
+        if not self.packages.has_key(name):
+            self.packages[name] = Package(self.config, name)
+        package = self.packages[name]
+
+        if version == None:
+            return package
+        else:
+            return package.findVersion(version)
 
 ### The End ###
         

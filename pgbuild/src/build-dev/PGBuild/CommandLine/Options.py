@@ -24,7 +24,33 @@ into the config database.
 
 import optik
 import PGBuild
-import PGBuild.Config
+
+
+def parse(config, argv):
+    """Entry point for PGBuild command line parsing
+         config: configuration tree to put results in
+           argv: list of command line arguments
+    """
+
+    parser = optik.OptionParser(formatter=HelpFormatter(),
+                                usage="%prog [options] [targets] ...",
+                                version=PGBuild.version,
+                                option_class=Option)
+
+    ############# General options
+
+    parser.add_option("-v", "--verbose", action="count", dest="verbosity", default=1,
+                      help="report progress in more detail")    
+    parser.add_option("-q", "--quiet", action="uncount", dest="verbosity", default=1,
+                      help="report progress in less detail")    
+
+    ############# Configuration management
+
+    configGroup = parser.add_option_group("Configuration Management")
+    configGroup.add_option("-t", "--dump-tree", dest="treeDumpFile",
+                           help="dump the configuration tree to FILE", metavar="FILE")
+
+    config.mount(OptionsXML(parser.parse_args(argv[1:])))
 
 
 class HelpFormatter(optik.IndentedHelpFormatter):
@@ -71,34 +97,6 @@ class OptionsXML:
             xml += '\t<target name="%s">%s</target>\n' % (arg, self.args[arg])                    
         xml += '</pgbuild>\n'
         return xml
-
-
-def parse(config, argv):
-    """Entry point for PGBuild command line parsing
-         config: configuration tree to put results in
-           argv: list of command line arguments
-    """
-
-    parser = optik.OptionParser(formatter=HelpFormatter(),
-                                usage="%prog [options] [targets] ...",
-                                version=PGBuild.version,
-                                option_class=Option)
-
-    ############# General options
-
-    parser.add_option("-v", "--verbose", action="count", dest="verbosity", default=1,
-                      help="report progress in more detail")    
-    parser.add_option("-q", "--quiet", action="uncount", dest="verbosity", default=1,
-                      help="report progress in less detail")    
-
-    ############# Configuration management
-
-    configGroup = parser.add_option_group("Configuration Management")
-    configGroup.add_option("-t", "--dump-tree", dest="treeDumpFile",
-                           help="dump the configuration tree to FILE", metavar="FILE")
-
-    config.mount(OptionsXML(parser.parse_args(argv[1:])))
-
 
 ### The End ###
         

@@ -25,6 +25,10 @@ class InternalError(Exception):
     def __init__(self, args=None):
         self.args = args
 
+class ConfigError(Exception):
+    def __init__(self, args=None):
+        self.args = args
+
 class UserError(Exception):
     def __init__(self, args=None):
         self.args = args
