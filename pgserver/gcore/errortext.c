@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.28 2001/07/03 10:13:32 micahjd Exp $
+/* $Id: errortext.c,v 1.29 2001/07/03 10:33:30 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -105,7 +105,7 @@ g_error errorload(const char *filename) {
 
   while (fgets(line,LINESIZE,f)) {
     n = strtol(line,&p);           /* Error code */
-    if (p==line)                   /* skip blank lines or comments */
+    if (!n || p==line)             /* skip blank lines or comments */
       continue;
     if (n>num_loaded_errors)       /* Store maximum error code */
       num_loaded_errors = n;
@@ -123,12 +123,13 @@ g_error errorload(const char *filename) {
   if (iserror(e))
     fclose(f);
   errorcheck;
+  memset(loaded_errors,0,totalsize + sizeof(char*)*num_loaded_errors);
   errorheap = ((char*)loaded_errors) + sizeof(char*)*num_loaded_errors;
 
   /* Now read in the file for real */
   while (fgets(line,LINESIZE,f)) {
     n = strtol(line,&p);           /* Error code */
-    if (p==line)                   /* skip blank lines or comments */
+    if (!n || p==line)             /* skip blank lines or comments */
       continue;
     loaded_errors[n-1] = errorheap;/* Store string pointer */
     while (p && isspace(*p)) {     /* Skip whitespace */

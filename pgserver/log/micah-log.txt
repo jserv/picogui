@@ -9,6 +9,9 @@ internationalized messages.
 		  			
 		* pgmain.c: -e command line option
 
+		* gcore/errortext.c: Fixed segfault on comment or blank line.
+		  (I think the manpage for strtol() is wrong...)
+
 2001-06-29    Micah Dowty <micahjd@users.sourceforge.net>
 
 Ugh. There's a bug somewhere causing the client to use the wrong messages.
