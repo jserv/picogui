@@ -66,6 +66,11 @@ class Application(Widget.Widget):
         self._event_stack = []
         self._infilter_registry = {}
 
+    def panelbar(self):
+        handle = self.__getattr__('panelbar')
+        if handle:
+            return Widget.Widget(self.server, handle, self)
+
     def createWidget(self, wtype):
         'convenience method to create an unparented widget'
         new_id = self.server.createWidget(wtype)
