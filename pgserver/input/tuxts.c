@@ -19,12 +19,6 @@
 
 #define POLL_USEC                500
  
-/*
- *  * timeout for pointing display, backlight
- */
-#define POINTING_IDLE_MAX_SEC      1
-#define BACKLIGHT_IDLE_MAX_SEC    120
-
 static const char *DEVICE_FILE_NAME = "/dev/ucb1200-ts";
 static const char *_file_ = __FILE__;
 static const char *PG_TS_ENV_NAME = "PG_TS_CALIBRATION";
@@ -32,9 +26,6 @@ static const char *PG_TS_ENV_NAME = "PG_TS_CALIBRATION";
 /* file descriptor for touch panel */
 static int fd = -1;
 static int PEN_DOWN = 0;
-static int BACKLIGHT_ON = 1;
-static int CURSOR_SHOWN = 0;
-static struct timeval lastEvent;
 
 g_error tuxts_init(void)
 {
@@ -77,8 +68,6 @@ g_error tuxts_init(void)
 	ioctl(fd,17);		/* print driver paramaters */
 #endif
 	ioctl(fd,64,1);		/* turn on the backlight */
-	
-	gettimeofday(&lastEvent,NULL);
 
 	return sucess;
 }
@@ -104,30 +93,9 @@ void tuxts_poll(void)
        
 	bytes_read = read(fd, data, 4 * sizeof(short));
 	
-	if (bytes_read != (4 * sizeof(short))) {
-	  	struct timeval lastIdle;
-		int delay_sec;
-		     
-		gettimeofday(&lastIdle,NULL);
-		delay_sec = lastIdle.tv_sec - lastEvent.tv_sec;
-	
-/*		if((delay_sec > POINTING_IDLE_MAX_SEC) && CURSOR_SHOWN) {
-			VID(sprite_hide) (cursor);
-			CURSOR_SHOWN = 0;
-		}
-*/		
-		if((delay_sec > BACKLIGHT_IDLE_MAX_SEC) && BACKLIGHT_ON) {
-			ioctl(fd, 64, 0);
-			BACKLIGHT_ON = 0;
-		}
-		
-		return;
-	}
-
-	if(!BACKLIGHT_ON) { 
-		ioctl(fd, 64, 1);
-		BACKLIGHT_ON = 1;
-	}
+	/* No data yet */
+	if (bytes_read != (4 * sizeof(short)))
+	  return;
 	
 	x = data[1];
 	y = data[2];
@@ -136,16 +104,11 @@ void tuxts_poll(void)
 	if(b>0) {
 		if(PEN_DOWN) {
 			dispatch_pointing(TRIGGER_MOVE,x,y,1);
-			VID(sprite_hide) (cursor);
-			CURSOR_SHOWN = 0;
 #ifdef DEBUG_EVENT
 			printf("Pen Move\n");
 #endif
 		} else {
-			if(!BACKLIGHT_ON) { 
-				ioctl(fd, 64, 1);
-				BACKLIGHT_ON = 1;
-			} else dispatch_pointing(TRIGGER_DOWN,x,y,1);
+		        dispatch_pointing(TRIGGER_DOWN,x,y,1);
 #ifdef DEBUG_EVENT
 			printf("Pen Down\n");
 #endif
@@ -156,21 +119,28 @@ void tuxts_poll(void)
 #ifdef DEBUG_EVENT
 		printf("Pen Up\n");
 #endif
-		VID(sprite_show) (cursor);
-		CURSOR_SHOWN = 1;
 		PEN_DOWN = 0;
 	}
 
 #ifdef DEBUG_EVENT
 	printf("%d,%d,%d\n", x, y, b);
 #endif	
-	gettimeofday(&lastEvent,NULL);
 }
 
 /* Polling time for the input driver */
 void tuxts_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
 	timeout->tv_sec = 0;
 	timeout->tv_usec = POLL_USEC;
+}
+
+void tuxts_message(u32 message, u32 param) {
+  switch (message) {
+
+    /* Allow control of the backlight from anywhere */
+  case PGDM_BACKLIGHT:
+	ioctl(fd,64,param!=0);
+	break;
+  }
 }
  
 /******************************************** Driver registration */
@@ -180,6 +150,7 @@ g_error tuxts_regfunc(struct inlib *i) {
 	i->close = &tuxts_close;
 	i->poll = &tuxts_poll;
 	i->fd_init = &tuxts_fd_init;
+	i->message = &tuxts_message;
 	return sucess;
 }
 
