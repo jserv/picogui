@@ -74,6 +74,35 @@ if test "$unix_sockets_enabled" = "yes" ; then
 	CFLAGS="$CFLAGS -DCONFIG_UNIX_SOCKET"
 fi
 
+dnl Check for user-specified pgserver installation path
+PGSERVER_CFLAGS=""
+PGSERVER_LDFLAGS=""
+
+AC_ARG_WITH(pgserver,
+	[  --with-pgserver=...        prefix of the pgserver installation path],
+	PGSERVER_CFLAGS="-I${withval}/include")
+
+dnl Check that we can compile with the specified paths
+dnl 1.- save the old flags
+old_CFLAGS="${CFLAGS}"
+
+dnl 2.- set the flags for our tests
+CFLAGS="${PGSERVER_CFLAGS}"
+
+dnl 3.- try to compile some significant test
+AC_TRY_LINK(
+	[#include <picogui/network.h>], 
+	[ struct pgrequest dummy; ],, 
+	AC_MSG_ERROR([cannot link a test picogui program.])
+)
+
+dnl 4.- restore everything
+CFLAGS="${old_CFLAGS}"
+
+dnl 5.- ...and export our symbol
+AC_SUBST(PGSERVER_CFLAGS)
+
+
 AC_OUTPUT(
 	Makefile
 	picogui-client.spec
