@@ -177,10 +177,16 @@ fe_print_text (struct session *sess, char *text)
 	unsigned char *newtext = malloc (len + 1024);
 	pghandle pgstr, textbox = ((struct fe_pg_gui *)sess->gui)->textbox;
 
+	newtext[0] = 0;
+	if(text[i]!=3)
+	{
+		strcpy(newtext, "<font>");
+		j=6;
+		color=1;
+	}
 	if (prefs.timestamp)
 	{
-		newtext[0] = 0;
-		j += timecat (newtext);
+		j += timecat (newtext+j);
 	}
 	while (i < len)
 	{
@@ -202,9 +208,12 @@ fe_print_text (struct session *sess, char *text)
 			break;
 		case 3:
 			i++;
-			color = FALSE;
-			strcpy(&newtext[j], "</font>");
-			j += strlen(newtext+j);
+			if(color)
+			{
+				color = FALSE;
+				strcpy(&newtext[j], "</font>");
+				j += strlen(newtext+j);
+			}
 			if (!isdigit (text[i]) && color)
 				continue;
 			k = 0;
@@ -221,7 +230,9 @@ fe_print_text (struct session *sess, char *text)
 					num[k] = 0;
 					if (k == 0)
 					{
-						;	/*already reset color*/
+						color=TRUE;
+						strcpy(&newtext[j], "<font>");
+						j += strlen(newtext+j);
 					} else
 					{
 						if (comma)
@@ -235,6 +246,8 @@ fe_print_text (struct session *sess, char *text)
 					switch (text[i])
 					{
 					case ',':
+						if(comma)
+							goto jump;
 						comma = TRUE;
 						break;
 					default:
