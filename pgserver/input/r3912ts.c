@@ -1,4 +1,4 @@
-/* $Id: r3912ts.c,v 1.9 2002/07/03 22:03:30 micahjd Exp $
+/* $Id: r3912ts.c,v 1.10 2002/11/07 23:04:06 micahjd Exp $
  *
  * r3912ts.c - input driver for r3912 touch screen found on the VTech Helio
  *             and others. Other touch screens using the same data format should
@@ -32,54 +32,48 @@
 
 #include <pgserver/common.h>
 #include <pgserver/input.h>
-#include <pgserver/widget.h>    /* For sending events */
-#include <pgserver/touchscreen.h>
-
-#include <stdio.h>              /* For reading the device */
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 int r3912ts_fd;
 
-struct tpanel_sample {
-	unsigned short state;
-	unsigned short x;
-	unsigned short y;
+struct r3912_sample {
+  u16 state;
+  u16 x;
+  u16 y;
 };
 
-/******************************************** Implementations */
-
 g_error r3912ts_init(void) {
-   r3912ts_fd = open("/dev/tpanel",O_NONBLOCK);
-   if (r3912ts_fd <= 0)
-     return mkerror(PG_ERRT_IO, 74);
-   
-   return success;
+  r3912ts_fd = open("/dev/tpanel",O_NONBLOCK);
+  if (r3912ts_fd <= 0)
+    return mkerror(PG_ERRT_IO, 74);
+ 
+  return success;
 }
 
 void r3912ts_close(void) {
-   close(r3912ts_fd);
+  close(r3912ts_fd);
 }
-   
+
 void r3912ts_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
-   if ((*n)<(r3912ts_fd+1))
-     *n = r3912ts_fd+1;
-   FD_SET(r3912ts_fd,readfds);
+  if ((*n)<(r3912ts_fd+1))
+    *n = r3912ts_fd+1;
+  FD_SET(r3912ts_fd,readfds);
 }
 
 int r3912ts_fd_activate(int fd) {
-   struct tpanel_sample ts;
-   
-   /* Read raw data from the driver */
-   if (fd!=r3912ts_fd)
-     return 0;
-   if (read(r3912ts_fd,&ts,sizeof(ts)) < sizeof(ts))
-     return 1;
-   
-   infilter_send_touchscreen(ts.x.ts.y,ts.state);
-   
-   return 1;
+  struct r3912_sample ts;
+  
+  /* Read raw data from the driver */
+  if (fd!=r3912ts_fd)
+    return 0;
+  if (read(r3912ts_fd,&ts,sizeof(ts)) < sizeof(ts))
+    return 1;
+  
+  infilter_send_touchscreen(ts.x, ts.y, ts.state, ts.state);
+  return 1;
 }
-   
-/******************************************** Driver registration */
 
 g_error r3912ts_regfunc(struct inlib *i) {
   i->init = &r3912ts_init;

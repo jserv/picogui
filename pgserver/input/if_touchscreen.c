@@ -1,4 +1,4 @@
-/* $Id: if_touchscreen.c,v 1.8 2002/11/03 04:54:24 micahjd Exp $
+/* $Id: if_touchscreen.c,v 1.9 2002/11/07 23:04:06 micahjd Exp $
  *
  * if_touchscreen.c - Touchscreen calibration and filtering
  *
@@ -109,11 +109,11 @@ struct infilter infilter_touchscreen = {
 
 g_error touchscreen_init(void) {
   int calwidth, calheight, values;
-  g_error
+  g_error e;
 
-  calib_file=get_param_str("pgserver", "pointercal", "/etc/pointercal");
-  calwidth=get_param_int("pgserver", "calwidth", 640);
-  calheight=get_param_int("pgserver", "calheight", 480);
+  calib_file = get_param_str("pgserver", "pointercal", "/etc/pointercal");
+  calwidth   = get_param_int("pgserver", "calwidth", 640);
+  calheight  = get_param_int("pgserver", "calheight", 480);
   touchscreen_cal_load(&ts_global_cal, calib_file);
 
   /* Trigger running the tpcal app if we don't have a valid configuration */

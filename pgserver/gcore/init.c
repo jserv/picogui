@@ -1,4 +1,4 @@
-/* $Id: init.c,v 1.7 2002/11/06 01:19:59 micahjd Exp $
+/* $Id: init.c,v 1.8 2002/11/07 23:04:05 micahjd Exp $
  *
  * init.c - High level pgserver initialization and shutdown
  *
@@ -116,7 +116,7 @@ g_error pgserver_init(int flags, int argc, char **argv) {
    * app as a child process if needed 
    */
   DBG("touchscreen calibration");
-  e = touchscreen_init(void);
+  e = touchscreen_init();
   errorcheck;
 #endif
   
