@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.12 2001/10/05 20:14:50 micahjd Exp $
+/* $Id: fbdev.c,v 1.13 2001/10/07 08:52:07 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -209,6 +209,9 @@ g_error fbdev_init(void) {
 }
 
 void fbdev_close(void) {
+   /* Clear the screen before leaving */
+   VID(rect)(vid->display,0,0,vid->lxres,vid->lyres,0,PG_LGOP_NONE);
+
    munmap(FB_MEM,fbdev_mapsize);
    close(fbdev_fd);
    
