@@ -1,0 +1,195 @@
+
+LINUX
+     Select the platform to compile PicoGUI for. Supported so far:
+     
+     Linux:
+      This might work with other POSIX-ish OSes but it has only been
+      tested with Linux.
+     
+     uClinux:
+      uClinux is a derivative of the standard Linux kernel, modified
+      to operate on CPUs without a memory management unit. So far
+      this port is specifically aimed at the Motorola 68k architecture.
+
+     Windows:
+      This is for cross-compiling to Windows using the mingw32-gcc
+      compiler and SDL.
+
+
+CONFIG_STRIP
+      This removes the debugging symbols from the binary. If you are
+      an end user or you are producing the final binary for an
+      embedded system, it's safe to turn this on. On most platforms
+      the binary size is reduced quite a bit. 
+      
+      
+ASM_INTEL
+      This enables intel-specific assembly language optimizations
+      where implemented
+      
+
+CONFIG_NO_OPTIMIZE
+      Turns off the compiler's optimization. This speeds up the
+      compilation a bit, and may make debugging easier. Do not use
+      for a final binary!
+
+
+CONFIG_EFENCE
+      Uses the Electric Fence malloc debugging library, which helps
+      detect buffer overflows by padding allocated memory with a
+      buffer zone that sets off a segfault.
+
+
+CONFIG_GCOV
+      Produces output that can be used by gcov to analyze how many
+      times each line of code is run
+      
+      
+CONFIG_GPROF
+      Produces output that can be used by gprof to profile the execution
+      time and other details of the code
+      
+      
+DEBUG_KEYS
+      This enables the CTRL-ALT-* debugging keys. Some important ones:
+      
+      CTRL-ALT-M : print memory information
+      CTRL-ALT-Y : Clear the screen, refresh the back-buffer
+      CTRL-ALT-B : Black screen
+      CTRL-ALT-U : Blue screen
+      
+      With or without this option CTRL-ALT-/ exits the server
+      
+      
+BOTHERSOME_TERMINAL
+      This causes the terminal to print all unknown escape codes to
+      stdout
+
+
+DEBUG_WIDGET
+      Enables debuggative cruft in the widget subsystem
+      
+
+DEBUG_EVENT
+      Enables event-related debugging, good for testing input drivers
+      
+      
+DEBUG_VIDEO
+      Enables video-related debugging. (slow!)
+      In the null driver this turns on bounds-checking
+      for pixel accesses
+      
+      
+DEBUG_THEME
+      Theme subsystem debugging, including a trace of
+      fillstyle execution
+      
+      
+DEBUG_NET
+      Network-related debugging, including connections
+      and the waiting list
+
+
+DEBUG_INIT
+      Prints a marker at each stage in initialization and shows a guru
+      screen upon init completion
+      
+      
+FONT_HELVETICA10
+      A nice simple 10-pixel font. This is the default
+      variable-width font.
+      
+      
+FONT_CLEAN12
+      12-pixel high fixed-width font. Default fixed-width
+      
+      
+FONT_LUCIDA10
+      Similar to helvetica10, but there is more spacing between letters
+      
+      
+FONT_CLEAN6
+      Smaller version of CLEAN12, makes a good terminal font
+      
+      
+FONT_CONSOLE8
+      Thick 8x8 console font
+      
+      
+FONT_COURIER12
+      Another fixed width font, with bold
+      
+    
+FONT_HELVETICA8
+      A smaller version of Helvetica
+      
+      
+FONT_TIMES10
+      Characters are smaller than Helvetica, includes a bold version
+      
+      
+FONT_UTOPIA25
+      Huge font!
+      
+    
+DRIVER_FBDEV
+      A driver for the Linux framebuffer, /dev/fb0
+      This uses the linear VBL.
+      It does not by default load an input driver, but it is compatible
+      with ncursesinput.
+      
+      
+DRIVER_SDLFB
+      A driver for SDL based on the linear VBLs
+      Requires the sdlinput driver
+      
+      
+DRIVER_SDL
+      Old SDL driver based on defaultvbl. After linear* is done, this
+      will die
+      
+      
+DRIVER_SVGAFB
+      Linear framebuffer driver using svgalib and the linear VBLs.
+      On paged display hardware (Vesa 1.x) it forces double-
+      buffering and handles paging in the blit.
+      Requires the svgainput driver.
+      
+      
+DRIVER_SVGAGL
+      Vgagl-based driver for svgalib. Faster on paged hardware than
+      svgafb. Requires svgainput
+      
+      
+DRIVER_EZ328
+      Driver to directly control the LCD controller in the Motorola
+      68EZ328 "Dragonball EZ" CPU. Uses the linear VBLs <= 4bpp.
+      If no parameters are specified, uses what the LCD controller
+      is already initialized to.
+      
+      
+DRIVER_NCURSES
+      Crazy driver to use PicoGUI in text mode. Requires ncursesinput,
+      but needs no fonts.
+      
+    
+DRIVER_NULL
+      Produces no actual output, but if DEBUG_VIDEO is on it performs
+      bounds-checking on calls to pixel() and getpixel()
+      
+      
+DRIVER_SDLINPUT
+      Input driver for the SDL event system
+      
+      
+DRIVER_SVGAINPUT
+      Driver for svgalib's mouse and raw keyboard
+      
+      
+DRIVER_NCURSESINPUT
+      Uses ncurses for keyboard input and gpm for mouse
+      
+      
+CONFIG_VIDEOTEST
+      This adds command line options to invoke a video driver test
+      mode, including a test pattern and a stress test.
