@@ -1,3 +1,12 @@
+2001-05-03    Micah Dowty <micahjd@users.sourceforge.net>
+
+I think I'll get this keyboard working, then write some docs. The server
+seems to be holding up fine with the new gropnode engine.
+
+      * client_c.h, src/api.c: Added the pgEvalRequest call to the client
+      
+      * client_c.h, src/api.c: Added the pgFromTempMemory call
+
 2001-05-01    Micah Dowty <micahjd@users.sourceforge.net>
 
 Fixing server bugs. Noticed a couple issues with the 'make install' in
