@@ -225,7 +225,6 @@ bool 'Disable panelbar on app panels'         CONFIG_NOPANELBAR
 bool 'Support for solid panel dragging'       CONFIG_DRAGSOLID
 int  'Maximum number of zombie gropnodes'     CONFIG_MAX_ZOMBIEGROPS
 bool 'Play the "short beep" sound on button press (hack)' CONFIG_BUTTON_BEEP
-bool 'Suspend on double-press of escape'      CONFIG_SUSPEND_DBLESC
 endmenu
 
 mainmenu_option next_comment
