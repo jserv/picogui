@@ -5,7 +5,7 @@ AC_DEFUN(AM_PGUI_CONFIG, [
 for config in [$2] ; do
   _pgui_config_done="n"
 
-  if source [$1] && eval "test \"\${$config}\" = \"y\"" ; then
+  if . [$1] && eval "test \"\${$config}\" = \"y\"" ; then
      _pgui_config_done="y"
 
     ifelse([$3], , :, [$3])

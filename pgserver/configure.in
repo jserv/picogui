@@ -52,7 +52,7 @@ AC_SUBST(CONFIG_FILE)
 
 
 dnl Use the configuration file to determine the requested files
-eval `source $CONFIG_FILE && source ${srcdir}/select.in`
+eval `. $CONFIG_FILE && . ${srcdir}/select.in`
 
 if test $? != "0" ; then
   AC_MSG_ERROR([problem while parsing configuration])
