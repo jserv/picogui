@@ -17,22 +17,8 @@ from twisted.protocols.basic import LineReceiver
 from twisted.python import log
 import time, irc_colors, glob, sys, re, os
 
-# Figure out what our botID is.
-# This is necessary because there we may wish to have multiple bots dealing with a limited number of channels
-# That lets us get around limits some IRC networks have on the number of channels you can join
-socketsCurrentlyInExistance = glob.glob(socketName + ".*");
-lastSockID = 0;
-
-# this algorithm could lead to fragmentation in an environment where many bots are connecting and disconnecting
-for socket in socketsCurrentlyInExistance:
-    lastSockID = re.compile('.*\.(.*)$').search(socket).group(1);
-botID = int(lastSockID) + 1;
-print "botID = " + str(botID)
-socketName = socketName + "." + str(botID);
-channelFile = channelFile + "." + str(botID);
-
 # Lalo's joke: A brainless entity created to keep an eye on subversion                 
-botNick = "CIA"
+botNick = "MI5"
 
 # List of channels we're in. These will be autojoined by the
 # AccountManager. We update this and save it when we get a mail

@@ -17,7 +17,7 @@ commandLog = os.path.join(baseDir, "commands.log")
 statsDir = os.path.join(baseDir, "stats")
 urlDir = os.path.join(baseDir, "urls")
 statsSubdirs = ("forever", "daily", "weekly", "monthly")
-socketBaseName = "/tmp/announceBot.socket"
+socketName = "/tmp/announceBot.socket"
 
 # Allowed commands, split up into those with content and those without
 allowedTextCommands = ("Announce", "SendToChannels")
@@ -181,32 +181,6 @@ if __name__ == '__main__':
             if subjectFields[1][0] == "#":
                 subjectFields[1] = subjectFields[1][1:]
             
-            # now locate the right socket for the given channel
-            import glob
-            channelFilesCurrentlyInExistance = glob.glob(channelFile + ".*");
-            channelFilesCurrentlyInExistance.sort()
-            socketName = socketBaseName
-            lastBotID = "1"
-            for cf in channelFilesCurrentlyInExistance:
-                lastBotNumberOfChannels = 0
-                f = open(cf)
-                channelList = {}
-                lastBotID = re.compile('.*\.(.*)$').search(cf).group(1)
-                for line in f.readlines():
-                    line = line.strip()
-                    lastBotNumberOfChannels = lastBotNumberOfChannels + 1
-                    if line == subjectFields[1]:
-                        # we have found the channel, ie a bot is already present in it
-                        socketName = socketBaseName + "." + lastBotID
-                        #print "found socket = " + socketName
-                f.close()
-
-            # we did not find the channel, ie we want to join it
-            if socketName == socketBaseName:
-                # we always choose the last bot to be started for joining channels
-                socketName = socketBaseName + "." + lastBotID;
-                #print "socketName is " + socketName
-
             # convert the message into the lines to send to the socket, and log it
             # This limits the length of the maximum message, mainly to prevent DOS'ing the bot too badly
             lines = []
@@ -217,24 +191,12 @@ if __name__ == '__main__':
                     # Log the message before we colorize it, so it can be used in places other than IRC.
                     logCommand(commandLine)
                     lines.append(applyColorTags(commandLine))
-
-#            if subjectFields[0] == "JoinChannel" and lastBotNumberOfChannels >= 20:
-#                print "Sorry, CIA is currently at the freenode-imposed limit of twenty channels per bot."
-#                print "Please ask the maintainer to allocate a new copy of CIA to the network."
-#                sys.exit(1)
                 
             # now launch the client
             f = AnnounceClientFactory()
             reactor.connectUNIX(socketName, f)
             reactor.run()
             
-            # if we were not the first bot, AND this was not a Join/Part request (which should only go to the last bot)
-            # we need to send it to the first bot as well so things appear in #commits
-            if socketName != socketBaseName + ".1" and subjectFields[0] == "Announce":
-                socketName = socketBaseName + ".1"
-                f = AnnounceClientFactory()
-                reactor.connectUNIX(socketName, f)
-                reactor.run()
         except IndexError:
             # this command does not relate to a channel
             pass
