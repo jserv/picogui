@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.28 2002/02/03 08:31:55 micahjd Exp $
+/* $Id: fbdev.c,v 1.29 2002/02/23 11:13:06 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -97,6 +97,13 @@ static unsigned short vr_lcd_intensity[16] = {
 static short fbdev_saved_r[16];
 static short fbdev_saved_g[16];
 static short fbdev_saved_b[16];
+
+/* If this is non-null, we're doing double buffering and this is the
+ * real screen while vid->display is the backbuffer.
+ */
+hwrbitmap screen_buffer;
+
+void fbdev_doublebuffer_update(s16 x,s16 y,s16 w,s16 h);
 
 /**************************************** Color conversion */
 
@@ -448,10 +455,36 @@ g_error fbdev_init(void) {
    }
 #endif /* CONFIG_FB_VT */
 
+   /* Optionally set up double-buffering */
+   if (get_param_int("video-fbdev","doublebuffer",0)) {
+     g_error e;
+     
+     screen_buffer = vid->display;
+     ((struct stdbitmap *)screen_buffer)->w   = vid->xres;
+     ((struct stdbitmap *)screen_buffer)->h   = vid->yres;
+     ((struct stdbitmap *)screen_buffer)->bpp = vid->bpp;
+
+     e = VID(bitmap_new)(&vid->display, vid->xres, vid->yres, vid->bpp);
+     errorcheck;
+     vid->update = fbdev_doublebuffer_update;
+   }
+   else {
+     screen_buffer = NULL;
+     vid->update = def_update;
+   }
+
    return success;
 }
 
 void fbdev_close(void) {
+   /* Shut down double-buffer */
+   if (screen_buffer) {
+     VID(bitmap_free)(vid->display);
+     vid->display = screen_buffer;
+     screen_buffer = NULL;
+     vid->update = def_update;
+   }
+
    /* Clear the screen before leaving */
    VID(rect)(vid->display,0,0,vid->lxres,vid->lyres,0,PG_LGOP_NONE);
 
@@ -505,6 +538,10 @@ void fbdev_close(void) {
 
    close(fbdev_fd);
    close(ttyfd);
+}
+
+void fbdev_doublebuffer_update(s16 x,s16 y,s16 w,s16 h) {
+  vid->blit(screen_buffer, x,y,w,h, vid->display, x,y, PG_LGOP_NONE);
 }
 
 g_error fbdev_regfunc(struct vidlib *v) {
