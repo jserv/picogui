@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.29 2001/01/13 07:11:46 micahjd Exp $
+/* $Id: client_c.h,v 1.30 2001/01/19 06:36:59 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -261,6 +261,12 @@ unsigned long pgGetPayload(pghandle object);
  * (for example, a terminal widget)
  */
 void pgWriteData(pghandle widget,struct pgmemdata data);
+
+/* Wrapper around pgWriteData to send a command, for example
+ * to a canvas widget. Widget, command, and param number must be followed
+ * by the specified number of commands
+ */
+void pgWriteCmd(pghandle widget,short command,short numparams, ...);
 
 /* Opposite of pgWriteData - set's up an event handler for data coming
  * from the widget.

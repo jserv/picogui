@@ -1,4 +1,4 @@
-/* $Id: picogui.h,v 1.4 2000/10/10 00:22:33 micahjd Exp $
+/* $Id: picogui.h,v 1.5 2001/01/19 06:36:59 micahjd Exp $
  *
  * picogui.h - Include file for your average PicoGUI client using the
  *             C client library
@@ -28,5 +28,6 @@
 
 #include <picogui/constants.h>
 #include <picogui/client_c.h>
+#include <picogui/canvas.h>
 
 /* The End */

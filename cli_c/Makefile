@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.14 2001/01/03 10:45:54 micahjd Exp $
+# $Id: Makefile,v 1.15 2001/01/19 06:36:59 micahjd Exp $
 #
 # C client library (libpgui) makefile
 #
@@ -41,7 +41,7 @@ SRC := src/picogui_client.c
 # Demo program files (each .c is a self-contained demo proggie)
 DEMOSRC := demos/demo.c demos/themedemo.c demos/msgdialog.c \
            demos/imgview.c demos/menutest.c demos/omnibar.c \
-           demos/fieldtest.c demos/calc.c
+           demos/fieldtest.c demos/calc.c demos/canvastst.c
 
 HDR := include/*.h include/picogui/*.h
 
@@ -101,6 +101,8 @@ demos : $(DEMOBIN)
 	ln -fs msgdialog "demos/Message Dialog Demo.app"
 	ln -fs menutest "demos/Menu Test.app"
 	ln -fs calc "demos/Calculator.app"
+	ln -fs canvastst "demos/Canvas Test.app"
+	ln -fs ../../apps/pterm/pterm "demos/Terminal (pterm).app"
 
 # Demo object files (each one to a seperate binary)
 % : %.c $(HDR) $(LIBNAME).la

@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.12 2001/01/05 06:41:39 micahjd Exp $
+/* $Id: network.h,v 1.13 2001/01/19 06:36:59 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -223,6 +223,15 @@ struct pgreqd_mkmsgdlg {
   unsigned long title;
   unsigned long text;
   unsigned long flags;
+};
+
+
+/* A structure for encapsulating commands, for example in canvas, within
+ * a RQH_WRITETO */
+struct pgcommand {
+   unsigned short command;
+   unsigned short numparams;
+   /* Followed by numparams * signed long */
 };
 
 #endif /* __H_PG_NETWORK */

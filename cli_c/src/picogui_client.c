@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.40 2001/01/13 07:42:02 micahjd Exp $
+/* $Id: picogui_client.c,v 1.41 2001/01/19 06:36:59 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -37,6 +37,7 @@
 #include <netdb.h>
 #include <stdio.h>    /* for fprintf() */
 #include <malloc.h>
+#include <alloca.h>
 #include <string.h>   /* for memcpy(), memset(), strcpy() */
 #include <stdarg.h>   /* needed for pgRegisterApp and pgSetWidget */
 
@@ -515,7 +516,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: picogui_client.c,v 1.40 2001/01/13 07:42:02 micahjd Exp $\n");
+	fprintf(stderr,"$Id: picogui_client.c,v 1.41 2001/01/19 06:36:59 micahjd Exp $\n");
 	exit(1);
       }
       
@@ -1282,6 +1283,35 @@ void pgWriteData(pghandle widget,struct pgmemdata data) {
 
   _pg_free_memdata(data);
   free(buf);
+}
+
+/* Wrapper around pgWriteData to send a command, for example
+ * to a canvas widget. Widget, command, and param number must be followed
+ * by the specified number of commands
+ */
+void pgWriteCmd(pghandle widget,short command,short numparams, ...) {
+   struct pgcommand *hdr;
+   signed long *params;
+   unsigned long bufsize;
+   char *buf;
+   va_list v;
+   
+   bufsize = numparams * sizeof(signed long) + sizeof(struct pgcommand);
+   buf = alloca(bufsize);
+   hdr = (struct pgcommand *) buf;
+   params = (signed long *) (buf + sizeof(struct pgcommand));
+   
+   hdr->command = htons(command);
+   hdr->numparams = htons(numparams);
+      
+   va_start(v,numparams);
+   for (;numparams;numparams--) {
+      *params = htonl(va_arg(v,signed long));
+      params++;
+   }
+   va_end(V);
+   
+   pgWriteData(widget,pgFromMemory(buf,bufsize));
 }
 
 /* The End */
