@@ -46,6 +46,7 @@ install -D -m 0644 PicoGUIApps.mdl $RPM_BUILD_ROOT%{bee_prefix}/PicoGUIApps.mdl
 
 %files @RPM_PLATFORM@
 %{plt_prefix}/bin/*
+%{plt_prefix}/lib/*
 %{plt_prefix}/share/pgboard/*
 
 %files mdl

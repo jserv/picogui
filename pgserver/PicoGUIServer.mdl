@@ -1,6 +1,6 @@
 # -*- python -*-
 
-from beeconfig import compile, install, clean
+from beeconfig import compile, distrib, install, clean
 
 multicompile     = 1
 platform_variant = 1

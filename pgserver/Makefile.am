@@ -72,8 +72,7 @@ distclean-local:
 if ENABLE_BEE
 
 dist-hook: @PACKAGE@.spec
-	for file in PicoGUIServer.mdl SMARTDATA-soft.config SMARTDATA-vz.config ; do \
-	  cp -a $(srcdir)/$${file} $(distdir)/$${file} ; done
+	cp -a $(srcdir)/PicoGUIServer.mdl $(distdir)
 	cp -a @PACKAGE@.spec $(distdir)/@PACKAGE@.spec
 
 @RPM_MAKE_FRAG@
