@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.4 2002/10/13 03:54:19 micahjd Exp $
+/* $Id: font_freetype.c,v 1.5 2002/10/13 07:46:50 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -38,6 +38,13 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+#ifdef CONFIG_FREETYPE_GAMMA
+#include <math.h>
+float ft_gamma;
+u8 ft_gamma_table[256];
+void ft_build_gamma_table(u8 *table, float gamma);
+void ft_apply_gamma_table(u8 *table, FT_Bitmap *b);
+#endif
 
 struct freetype_fontdesc {
   FT_Face face;
@@ -47,15 +54,30 @@ struct freetype_fontdesc {
 #define DATA ((struct freetype_fontdesc *)self->data)
 
 
-FT_Library ft_lib;
-FT_Face    ft_facelist;   /* Linked list, via generic.data */
-FT_Int32   ft_glyph_flags;
-int        ft_default_size;
-int        ft_minimum_size;
-int        ft_dpi;
+FT_Library  ft_lib;
+FT_Face     ft_facelist;   /* Linked list, via generic.data */
+FT_Int32    ft_glyph_flags;
+const char* ft_default_name;
+int         ft_default_size;
+int         ft_minimum_size;
+int         ft_dpi;
+
+/* Various bits turned on for matches in fontcmp.  The order
+ * of these bits defines the priority of the various
+ * attributes
+ */
+#define FCMP_FIXEDVAR (1<<12)
+#define FCMP_SIZE(x)  ((0xFF-(x&0xFF))<<3)   /* This macro is passed the
+						difference in size between the
+						request and the actual font */
+#define FCMP_NAME     (1<<2)
+#define FCMP_DEFAULT  (1<<1)
+#define FCMP_STYLE    (1<<0)
 
 void ft_face_scan(const char *directory);
 void ft_face_load(const char *file);
+int ft_fontcmp(FT_Face f, const struct font_style *fs);
+void ft_get_face_style(FT_Face f, struct font_style *fs);
 
 /********************************** Implementations ***/
 
@@ -82,9 +104,15 @@ g_error freetype_engine_init(void) {
     ft_glyph_flags |= FT_LOAD_NO_AUTOHINT;
 
   ft_default_size = get_param_int("font-freetype","default_size",12);
+  ft_default_name = get_param_str("font-freetype","default_name",NULL);
   ft_minimum_size = get_param_int("font-freetype","minimum_size",5);
   ft_dpi = get_param_int("font-freetype","dpi",72);
-  
+
+#ifdef CONFIG_FREETYPE_GAMMA
+  ft_gamma = atof(get_param_str("font-freetype","gamma","1.5"));
+  ft_build_gamma_table(ft_gamma_table,ft_gamma);
+#endif
+
   return success;
 }
 
@@ -110,6 +138,9 @@ void freetype_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pai
   FT_Load_Char(DATA->face,ch, FT_LOAD_RENDER | ft_glyph_flags);
 
   b = DATA->face->glyph->bitmap;
+#ifdef CONFIG_FREETYPE_GAMMA
+  ft_apply_gamma_table(ft_gamma_table,&b);
+#endif
 
   /* PicoGUI's character origin is at the top-left of the bounding box.
    * Add the ascent to reach the baseline, then subtract the bitmap origin
@@ -136,29 +167,36 @@ void freetype_measure_char(struct font_descriptor *self, struct pair *position,
 g_error freetype_create(struct font_descriptor *self, const struct font_style *fs) {
   g_error e;
   int size;
+  struct font_style defaultfs;
+  int r, closeness = -1;
+  FT_Face closest, f;
 
   e = g_malloc((void**)&self->data,sizeof(struct freetype_fontdesc));
   errorcheck;
 
-  /* Pick the closest font face */
-  DATA->face = ft_facelist;
-  DATA->face = (FT_Face) DATA->face->generic.data;
-  DATA->face = (FT_Face) DATA->face->generic.data;
-  DATA->face = (FT_Face) DATA->face->generic.data;
-  DATA->face = (FT_Face) DATA->face->generic.data;
-  DATA->face = (FT_Face) DATA->face->generic.data;
-  DATA->face = (FT_Face) DATA->face->generic.data;
-  DATA->face = (FT_Face) DATA->face->generic.data;
+  if (!fs) {
+    fs = &defaultfs;
+    defaultfs.name = ft_default_name;
+    defaultfs.size = 0;
+    defaultfs.style = PG_FSTYLE_DEFAULT;
+    defaultfs.representation = 0;
+  }
 
-  if (fs)
-    DATA->flags = fs->style;
+  /* Pick the closest font face */
+  for (f=ft_facelist;f;f=(FT_Face)f->generic.data) {
+    r = ft_fontcmp(f,fs);
+    if (r > closeness) {
+      closeness = r;
+      closest = f;
+    }
+  }
+  DATA->face = closest;
 
   /* Set the size */
-  size = ft_default_size;
-  if (fs)
-    size = fs->size;
+  size = fs->size ? fs->size : ft_default_size;
   if (size < ft_minimum_size)
     size = ft_minimum_size;
+  DATA->flags = fs->style;
   FT_New_Size(DATA->face,&DATA->size);
   FT_Activate_Size(DATA->size);
   FT_Set_Char_Size(DATA->face,0,size*64,ft_dpi,ft_dpi);
@@ -298,7 +336,7 @@ void freetype_measure_string(struct font_descriptor *self, const struct pgstring
   self->lib->getmetrics(self,&m);
 
   original_x = x = m.margin << 7;
-  y = x + DATA->size->metrics.height;
+  y = x + DATA->size->metrics.height + DATA->size->metrics.descender;
 
   while ((ch = pgstring_decode(str,&p))) {
     if (ch=='\n') {
@@ -326,9 +364,27 @@ void freetype_measure_string(struct font_descriptor *self, const struct pgstring
 }
 
 void freetype_getstyle(int i, struct font_style *fs) {
+  FT_Face f;
+  memset(fs,0,sizeof(*fs));
+
+  /* Iterate to the face they asked about */
+  for (f=ft_facelist;f && i>0;i--,f=(FT_Face)f->generic.data);
+  if (!f) return;
+
+  ft_get_face_style(f,fs);
 }
 
+
 /********************************** Internal utilities ***/
+
+void ft_get_face_style(FT_Face f, struct font_style *fs) {
+  fs->name = f->family_name;
+  fs->size = f->height;
+  if (f->style_flags & FT_STYLE_FLAG_ITALIC)    fs->style |= PG_FSTYLE_ITALIC;
+  if (f->style_flags & FT_STYLE_FLAG_BOLD)      fs->style |= PG_FSTYLE_BOLD;
+  if (f->face_flags & FT_FACE_FLAG_SCALABLE)    fs->representation |= PG_FR_SCALABLE;
+  if (f->face_flags & FT_FACE_FLAG_FIXED_WIDTH) fs->style |= PG_FSTYLE_FIXED;
+}
 
 /* Recursively scan for fonts
  */
@@ -376,6 +432,62 @@ void ft_face_load(const char *file) {
   face->generic.data = ft_facelist;
   ft_facelist = face;
 }
+
+/* Gauge the closeness between a face and a requested style
+ */
+int ft_fontcmp(FT_Face f, const struct font_style *fs) {
+  int result;
+  int szdif;
+  struct font_style f_fs;
+
+  memset(&f_fs,0,sizeof(f_fs));
+  ft_get_face_style(f,&f_fs);
+
+  if (fs->size) { 
+    szdif = abs(f_fs.size - fs->size);
+    result = FCMP_SIZE(szdif);
+  }    
+  else {
+    result = 0;
+  }
+
+  if (fs->name && (!strcasecmp(f_fs.name,fs->name)))
+    result |= FCMP_NAME;
+  if ((f_fs.style&PG_FSTYLE_FIXED)==(fs->style&PG_FSTYLE_FIXED))
+    result |= FCMP_FIXEDVAR;
+  if ((f_fs.style&PG_FSTYLE_DEFAULT) && (fs->style&PG_FSTYLE_DEFAULT)) 
+    result |= FCMP_DEFAULT;
+  if ((f_fs.style&(PG_FSTYLE_BOLD|PG_FSTYLE_ITALIC)) && 
+      (fs->style&(PG_FSTYLE_BOLD|PG_FSTYLE_ITALIC))) 
+    result |= FCMP_STYLE;
+
+  /*
+  printf("Comparing potential %s:%d:%d to requested %s:%d:%d, closeness %d\n",
+	 f_fs.name,f_fs.size,f_fs.style,fs->name,fs->size,fs->style,result);
+  */
+
+  return result;
+}
+
+#ifdef CONFIG_FREETYPE_GAMMA
+void ft_build_gamma_table(u8 *table, float gamma) {
+  int i;
+  for (i=0;i<256;i++) {
+    table[i] = 255 * pow(i/255.0, 1/gamma);
+    printf("gamma %d => %d\n",i,table[i]);
+  }
+}
+
+void ft_apply_gamma_table(u8 *table, FT_Bitmap *b) {
+  u8 *l,*p;
+  int i,j;
+
+  l = b->buffer;
+  for (j=0;j<b->rows;j++,l+=b->pitch)
+    for (i=0,p=l;i<b->width;i++,p++)
+      *p = table[*p];
+}
+#endif /* CONFIG_FREETYPE_GAMMA */
 
 /********************************** Registration ***/
 

@@ -266,6 +266,11 @@ AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_FONTENGINE_FREETYPE, [
     DRIVER_LIBS="$DRIVER_LIBS `freetype-config --libs`"
 ])
 
+dnl Gamma correction needs math lib for pow()
+AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_FREETYPE_GAMMA, [
+    DRIVER_LIBS="$DRIVER_LIBS -lm"
+])
+
 # More compiler flags...
 
 AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_LINK_STATIC, [

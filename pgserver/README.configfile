@@ -514,7 +514,9 @@ quoted appropriately. For example:
 [font-freetype]
 
 - path
-  The path to search for TrueType and Type1 font files
+  The path to search for TrueType and Type1 font files.
+  This must be a directory name. It will attempt to load all files
+  under this directory.
   Defaults to /usr/share/fonts
 
 - no_hinting
@@ -538,6 +540,10 @@ quoted appropriately. For example:
   is better than the autohinter.
   Defaults off
 
+- default_name
+  Family name of the default font
+  Defaults to NULL
+
 - default_size
   Size (in pixels) of the default font.
   Defaults to 12
@@ -550,6 +556,11 @@ quoted appropriately. For example:
   The DPI to use for setting font sizes. Normally this is 72 so fonts
   are measured in pixels, but this can be modified to scale all screen fonts.
   Defaults to 72
+
+- gamma
+  Set the gamma correction for antialiased rendering.
+  Requires gamma correction support compiled in
+  Defaults to 1.5
 
 --- The End ---
 
