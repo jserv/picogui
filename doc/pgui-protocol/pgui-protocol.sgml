@@ -3,7 +3,7 @@
 <book id="PicoGUI.Protocol">
  <bookinfo>
   <title>PicoGUI Protocol</title>
-  <subtitle>Version 15</>
+  <subtitle>Version 16</>
 
   <authorgroup>
    <author>
@@ -177,7 +177,7 @@ struct pghello {
 	The <structfield>protover</structfield> identifies the protocol
 	version in use.	The version number is incremented every time a
 	change is made to the protocol specifications.  At the time of
-	writing this document the latest value was <constant>15</constant>.
+	writing this document the latest value was <constant>16</constant>.
    </para>
   </sect2>
  </sect1>
