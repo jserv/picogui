@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.45 2002/01/22 12:25:09 micahjd Exp $
+/* $Id: popup.c,v 1.46 2002/01/22 15:14:34 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -163,7 +163,7 @@ g_error popup_install(struct widget *self) {
   self->out = &self->in->next;
   self->sub = &self->in->div->div;
   
-  self->trigger_mask = TRIGGER_DOWN;
+  self->trigger_mask = TRIGGER_DOWN | TRIGGER_KEYUP | TRIGGER_KEYDOWN | TRIGGER_CHAR;
 
   return success;
 }
@@ -208,16 +208,28 @@ glob popup_get(struct widget *self,int property) {
   return 0;
 }
 
+/* The DEACTIVATE event can be sent by a click outside the popup, or by pressing escape
+ */
 void popup_trigger(struct widget *self,long type,union trigparam *param) {
 
-#warning fix this popup_trigger hotkey stuff too
+  switch (type) {
 
-  /* The DEACTIVATE event can be sent by a click outside the popup, or by the
-     close hotkey */
+  case TRIGGER_KEYUP:
+  case TRIGGER_KEYDOWN:
+  case TRIGGER_CHAR:
+    if (param->kbd.key != PGKEY_ESCAPE)
+      return;
+    param->kbd.consume++;
+    if (type != TRIGGER_KEYUP)
+      return;
+    break;
 
-  if (type==TRIGGER_DOWN && div_under_crsr != self->in)
-    return;
-  
+  case TRIGGER_DOWN:
+    if (div_under_crsr != self->in)
+      return;
+
+  }
+
   post_event(PG_WE_DEACTIVATE,self,0,0,NULL);
 }
 
