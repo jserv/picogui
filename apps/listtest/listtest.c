@@ -1,8 +1,7 @@
 /*
  *
- * listtest.c - Test program for list widget
+ * listtest.c - Test program for list widget for PicoGUI
  *
- * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2001 RidgeRun Inc.
  *
  * This program is free software; you can redistribute it and/or
