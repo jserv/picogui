@@ -1,0 +1,17 @@
+/* $Id: be_aquagreen.ths,v 1.1 2001/08/28 02:18:42 micahjd Exp $
+ *
+ * An example for the BitmapEngine: Just like the Aqua theme, but in green
+ *
+ * bitmapengine.th must be loaded prior to this one.
+ *
+ * Version 1.0
+ *
+ * Micah Dowty
+ */
+
+object default {
+  name = "Aqua Green (BitmapEngine)";
+  bitmap1 = LoadBitmap("data/be_aquagreen.jpeg");
+}
+
+/* The End */

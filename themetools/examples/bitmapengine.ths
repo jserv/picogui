@@ -1,0 +1,219 @@
+/* $Id: bitmapengine.ths,v 1.1 2001/08/28 02:18:42 micahjd Exp $
+ *
+ * This is not a single look for PicoGUI, but more of a library to easily
+ * create 100% bitmapped themes. The source bitmap is given in the bitmap1
+ * property of the default theme object. This theme will provide fillstyles
+ * and sizing data for other theme objects using bitmap1 as a 'skin' to define
+ * the theme's look.
+ *
+ * Themes beginning with 'be_' are BitmapEngine themes, and they must have
+ * this theme loaded first.
+ *
+ * Version 1.0
+ *
+ * Micah Dowty
+ */
+
+/* The stripey background */
+object default {
+  bgfill = fillstyle {
+    SetSrc(113,114,64,64);
+    Tilebitmap(x,y,w,h,bitmap1);
+    SetSrc(0,0,0,0);
+  };
+  margin = 0;
+}
+
+object background {
+  bgfill = fillstyle {
+    SetSrc(113,25,80,80);
+    Tilebitmap(x,y,w,h,bitmap1);
+    SetSrc(0,0,0,0);
+  };
+  margin = 0;
+}
+
+object button {
+  bgfill = fillstyle {
+    var bit, xoff, yoff;
+
+    // The button is made of 9 separate 9x9 pixel tiles. The four corners
+    // are blitted to the four corners of the destination button, and each
+    // edge (including the center) is tiled within the available space.
+
+    // Load parameters
+    bit = bitmap1;
+    xoff = offset;
+    yoff = bitmap2;     /* Yes, this doesn't quite make sense. Too bad there
+			 * isn't an offset2 parameter yet, or a way for themes
+			 * themselves to define new parameters.
+			 */
+
+    // Top-left corner
+    SetSrc(xoff,yoff,0,0);
+    Bitmap(x,y,9,9,bit);
+    // Top-right corner
+    SetSrc(xoff+18,yoff,0,0);
+    Bitmap(x+w-10,y,10,9,bit);
+    // Top edge
+    SetSrc(xoff+9,yoff,9,9);
+    Tilebitmap(x+9,y,w-18,9,bit);
+    // Bottom-left corner
+    SetSrc(xoff,yoff+18,0,0);
+    Bitmap(x,y+h-10,9,10,bit);
+    // Bottom-right corner
+    SetSrc(xoff+18,yoff+18,0,0);
+    Bitmap(x+w-10,y+h-10,10,10,bit);
+    // Bottom edge
+    SetSrc(xoff+9,yoff+18,9,10);
+    Tilebitmap(x+9,y+h-10,w-18,10,bit);
+    // Left edge
+    SetSrc(xoff,yoff+9,9,9);
+    Tilebitmap(x,y+9,9,h-18,bit);
+    // Right edge
+    SetSrc(xoff+18,yoff+9,10,9);
+    Tilebitmap(x+w-10,y+9,10,h-18,bit);
+    // Center edge
+    SetSrc(xoff+9,yoff+9,9,9);
+    Tilebitmap(x+9,y+9,w-18,h-18,bit);
+
+    SetSrc(0,0,0,0);
+  };
+  height = 20;
+  width  = 21;
+  margin = 8;
+  spacing = 2;
+
+  offset = 3;    // X coordinate of default image
+  bitmap2 = 86;  // Y coordinate of default image (see above)
+}
+obj button.hilight offset = 38;
+obj button.on offset = 73;
+
+object flatbutton {
+  margin = 6;
+  spacing = 1;
+}
+   
+object base.display {
+  bgfill = Copy(button::bgfill);
+  offset = 71;
+  bitmap2 = 199;
+}
+
+object indicator {
+  /* Same overlay as scroll bar */
+  overlay = Copy(scroll::overlay);
+  width = 14;
+  margin = 0;
+}
+
+/* Nice scrollbar thumb (doubles as indicator overlay) */
+object scroll {
+  overlay = fillstyle {
+    /* This would all be much nicer with real if/else conditionals */
+    var hz,bmp;
+    hz = w>h;
+    bmp = hz ? scroll::bitmap3 : scroll::bitmap2;
+
+     SetSrc(0,0,0,0);    /* Because the rendering engine is not
+			  * reset before drawing an overlay */
+     Bitmap(x,y,hz?5:10,hz?10:5,bmp);
+     SetSrc(hz?5:0,hz?0:5,10,10);
+     Tilebitmap(x+(hz?5:0),y+(hz?0:5),hz?w-10:10,hz?10:h-10,bmp);
+     SetSrc(hz?17:0,hz?0:17,0,0);
+     Bitmap(hz?x+w-5:x,hz?y:y+h-5,hz?5:10,hz?10:5,bmp);
+  };
+  width = 13;
+  margin = 0;
+
+  /* A simple background for the thumb to slide in */
+  bgfill = fillstyle {
+    Bitmap(x,y,13,20,scroll::bitmap1);
+    SetSrc(0,20,13,5);
+    Tilebitmap(x,y+20,13,h-40,scroll::bitmap1);
+    SetSrc(0,25,0,0);
+    Bitmap(x,y+h-20,13,20,scroll::bitmap1);
+
+    /* Don't quite go all the way to the top/bottom */
+    y = y+4;
+    h = h-8;
+    /* Center the thumb */
+    x = x+2;
+  };
+}
+
+object label margin = 8;
+
+/* Use a simple scrollbar-safe background when the label scrolls */
+object label.scroll {
+  bgfill = fillstyle {
+    SetColor(0xE7E7E7);
+    Rect(x,y,w,h);
+  };
+}
+
+/* Interactive titlebar */
+object panel margin = 10;
+object panelbar {
+  bgfill = fillstyle {
+    Bitmap(x,y,w,h,h>w ? bitmap1 : bitmap2);
+    SetColor(0xC0C0C0);
+    Frame(x,y,w,h);
+  };
+  width = 20;
+}
+
+/* Panelbar buttons */
+object base.panelbtn {
+  width = 20;
+  height = 20;
+  spacing = 0;
+  margin = 0;
+  bgfill = Copy(default::bgfill);
+} 
+
+object box {
+  height = 30;
+  margin = 3;
+  bgfill = Copy(base.display::bgfill);     // Use the same nifty box
+  bitmap2 = Copy(base.display::bitmap2);
+  offset = Copy(base.display::offset);
+}
+
+object toolbar {
+  bgfill = Copy(button::bgfill);
+  offset = 200;
+  bitmap2 = 25;
+  margin = 5;
+}
+
+object popup {
+  bgfill = Copy(button::bgfill);
+  offset = 200;
+  bitmap2 = 62;
+  margin = 5;
+}
+
+object menuitem {
+  align = PG_A_LEFT;
+  spacing = 0;
+  height = 15;
+}
+
+/* Check boxes */
+object checkbox {
+   bgfill = fillstyle {
+     SetSrc(offset,167,0,0);
+     Bitmap(x+1,y+((h-21)>>1)-1,19,21,bitmap1);
+     x = x + 24;
+   };
+   align = PG_A_LEFT;
+   margin = 12;
+   spacing = 5;
+   offset = 3;
+}
+obj checkbox.hilight offset = 30;
+obj checkbox.on offset = 57;
+
+/* The End */
