@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.20 2001/07/29 23:14:15 micahjd Exp $
+/* $Id: canvas.c,v 1.21 2001/08/13 18:53:30 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -327,7 +327,7 @@ void canvas_command(struct widget *self, unsigned short command,
       if (numparams>NUMGROPPARAMS) numparams = NUMGROPPARAMS;
       for (i=0;i<numparams;i++)
         CTX->current->param[i] = params[i];
-      if (params[0]==PG_GROP_SETCOLOR || 
+      if (CTX->current->type==PG_GROP_SETCOLOR || 
 	  (CTX->current->flags & PG_GROPF_COLORED))
 	CTX->current->param[0] = VID(color_pgtohwr) 
 	  (CTX->current->param[0]);
