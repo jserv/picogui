@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.7 2000/04/24 02:55:11 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.8 2000/04/29 22:03:49 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -30,7 +30,7 @@ require Exporter;
 @ISA       = qw(Exporter);
 @EXPORT    = qw(NewWidget %ServerInfo Update NewString
 		NewFont NewBitmap delete MakeBackground RestoreBackground
-		EventWait SendPoint SendKey);
+		EventWait SendPoint SendKey ThemeSet);
 
 ################################ Constants
 
@@ -106,6 +106,53 @@ require Exporter;
 	  '-value' => 14,
 	  '-bitmask' => 15
 	  );
+
+%ELEMENT = (
+	    'button.border' => 0,
+	    'button.fill' => 1,
+	    'button.overlay' => 2,
+	    'toolbar.border' => 3,
+	    'toolbar.fill' => 4
+	    );
+
+%STATE = (
+	  'normal' => 0,
+	  'hilight' => 1,
+	  'hilighted' => 1,
+	  'activate' => 2,
+	  'activated' => 2,
+	  'active' => 2
+	  );
+	   
+%PARAM = (
+	  'x' => 1,
+	  'y' => 2,
+	  'w' => 3,
+	  'h' => 4,
+	  'type' => 5,
+	  'c' => 6,
+	  'c1' => 6,
+	  'c2' => 7,
+	  'a' => 8,
+	  'angle' => 8,
+	  'translucent' => 9,
+	  'trans' => 9,
+	  't' => 9
+	  );
+
+%VALUES = (
+	   'solid' => 0,
+	   'dark' => -1,
+	   'darken' => -1,
+	   'bright' => 1,
+	   'brighten' => 1,
+	   'light' => 1,
+	   'none' => 0,
+	   'null' => 0,
+	   'flat' => 1,
+	   'gradient' => 2
+	   );
+	   
 
 $MAGIC     = 0x31415926;
 $PROTOVER  = 1;
@@ -248,11 +295,14 @@ sub _in_key {
 sub _in_point {
     _request(11,pack('Nnnnn',@_));
 }
-#sub _in_direct {
-#    _request(12);
-#}
+sub _in_direct {
+    _request(12);
+}
 sub _wait {
     _request(13);
+}
+sub _themeset {
+    _request(14,pack('Nnnnn',@_));
 }
 
 ######### Public functions
@@ -410,6 +460,18 @@ sub SendKey {
 sub SendPoint {
     my ($type,$x,$y,$btn) = @_;
     _in_point($type,$x,$y,$btn);
+}
+
+sub ThemeSet {
+    my %arg = @_;
+    my $wgt,$el,$st,$par,$x,$v;
+
+    foreach $x (keys %arg) {
+	($wgt,$el,$st,$par) = split /\./,$x;
+	$v = $arg{$x};
+	$v = $VALUES{$v} if (defined $VALUES{$v});
+	_themeset($v,$ELEMENT{$wgt.".".$el},$STATE{$st},$PARAM{$par});
+    }
 }
 
 _init();

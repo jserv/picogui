@@ -10,15 +10,15 @@
 #
 use PicoGUI;
 
-$panel = NewWidget(-type => panel);
+$panel = NewWidget(-type => panel,-bgcolor => 0x00FF00);
 
 while (1) {
-    for ($i=0;$i<50;$i++) {
+    for ($i=0;$i<150;$i++) {
 	$panel->SetWidget(-size => $i);
 	Update();
     }
-    for ($i=0;$i<50;$i++) {
-	$panel->SetWidget(-size => (50-$i));
+    for ($i=0;$i<150;$i++) {
+	$panel->SetWidget(-size => (150-$i));
 	Update();
     }
 }

@@ -1,0 +1,82 @@
+button.border.normal.x = 2
+button.border.normal.y = 2
+button.border.normal.w = -4
+button.border.normal.h = -4
+button.border.normal.type = gradient
+
+button.border.normal.c1 = 0x7080A0
+button.border.normal.c2 = 0x000000
+button.border.normal.angle = 45
+button.border.normal.trans = none
+
+button.border.hilighted.c1 = 0x7080A0
+button.border.hilighted.c2 = 0x000000
+button.border.hilighted.angle = 45
+button.border.hilighted.trans = none
+
+button.border.active.c1 = 0x7080A0
+button.border.active.c2 = 0x000000
+button.border.active.angle = 225
+button.border.active.trans = none
+
+button.fill.normal.x = 0
+button.fill.normal.y = 0
+button.fill.normal.w = 0
+button.fill.normal.h = 0
+button.fill.normal.type = gradient
+
+button.fill.normal.c1 = 0x8090B0
+button.fill.normal.c2 = 0x000000
+button.fill.normal.angle = 240
+button.fill.normal.trans = none
+
+button.fill.hilighted.c1 = 0x8090B0
+button.fill.hilighted.c2 = 0x000000
+button.fill.hilighted.angle = 240
+button.fill.hilighted.trans = none
+
+button.fill.active.c1 = 0x8090B0
+button.fill.active.c2 = 0x000000
+button.fill.active.angle = 240
+button.fill.active.trans = none
+
+button.overlay.normal.x = 2
+button.overlay.normal.y = 2
+button.overlay.normal.w = -4
+button.overlay.normal.h = -4
+button.overlay.normal.type = gradient
+
+button.overlay.normal.c1 = 0x000000
+button.overlay.normal.c2 = 0x000000
+button.overlay.normal.angle = 270
+button.overlay.normal.trans = light
+
+button.overlay.hilighted.c1 = 0x505000
+button.overlay.hilighted.c2 = 0x000000
+button.overlay.hilighted.angle = 270
+button.overlay.hilighted.trans = light
+
+button.overlay.active.c1 = 0x505000
+button.overlay.active.c2 = 0x000000
+button.overlay.active.angle = 270
+button.overlay.active.trans = light
+
+toolbar.border.normal.x = 1
+toolbar.border.normal.y = 1
+toolbar.border.normal.w = -2
+toolbar.border.normal.h = -2
+toolbar.border.normal.type = flat
+toolbar.border.normal.c = 0x000000
+
+toolbar.fill.normal.x = 0
+toolbar.fill.normal.y = 0
+toolbar.fill.normal.w = 0
+toolbar.fill.normal.h = 0
+toolbar.fill.normal.type = gradient
+toolbar.fill.normal.c1 = 0x7080A0
+toolbar.fill.normal.c2 = 0x102030
+toolbar.fill.normal.angle = 85
+toolbar.fill.normal.trans = none
+
+
+
