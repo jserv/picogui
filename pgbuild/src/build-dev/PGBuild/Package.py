@@ -80,7 +80,7 @@ class PackageVersion(object):
 
     def merge(self, progress):
         """Make sure a package is up to date, then load in configuration and build targets from it"""
-        mergeTask = progress.task("Merging configuration from package %s" % self)
+        mergeTask = progress.task("Updating package %s and merging configuration" % self)
         self.update(mergeTask)
         self.config.dirMount(self.getLocalPath(), mergeTask.task("Mounting config files"))
         PGBuild.SConsGlue.loadScriptDir(self.getLocalPath(), mergeTask.task("Loading SCons scripts"))
