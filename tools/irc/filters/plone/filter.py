@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-import sys, email, smtplib, re
+import sys, email, smtplib
 from StringIO import StringIO
 
-returnAddress = "perl_commits@picogui.org"
+returnAddress = "plone_commits@picogui.org"
 toAddress = "commits@picogui.org"
-projectName = "perl"
-logFile = "/home/perl_commits/mail.log"
+projectName = "plone"
+logFile = "/home/plone_commits/mail.log"
 
 message = email.message_from_file(sys.stdin)
 body = StringIO(message.get_payload())
@@ -17,21 +17,23 @@ open(logFile, "a").write(str(message))
 if message['subject'].strip().lower().find("re") == 0:
     sys.exit(0)
 
-# First line gives us changeset number and author:
-changeFields = body.readline().strip().split(" ")
-csNum = changeFields[1]
-author = changeFields[3]
+# Directory name is the first token in the subject
+dirName = message['subject'].split(" ")[0]
 
-# Read the log until we hit a heading (line that doesn't start with whitespace)
+# Use the from address as the author
+author = message['from']
+
+# The body is the set of non-blank lines starting after "Log Message:"
 log = ""
-body.readline()
+while body.readline().strip() != "Log Message:":
+    pass
 while True:
-    line = body.readline()
-    if not re.match('\s', line[0]):
+    line = body.readline().strip()
+    if not line:
         break
-    log += line.strip() + " "
+    log += line + "\n"
 
-ciaMessage = "Changeset %s by {green}%s{normal}: %s" % (csNum, author, log)
+ciaMessage = "%s {green}%s{normal}: %s" % (dirName, author, log)
 
 s = smtplib.SMTP()
 s.connect()
