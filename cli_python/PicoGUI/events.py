@@ -1,4 +1,3 @@
-import struct
 from responses import ProtocolError
 
 class ParameterError(ProtocolError):

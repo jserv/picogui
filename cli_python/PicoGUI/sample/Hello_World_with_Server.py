@@ -25,5 +25,5 @@ if __name__ == '__main__':
     else: display = 0
     if len(argv) > 1: address = argv[1]
     else: address = 'localhost'
-    c = test(address, port)
+    c = test(address, display)
     event_loop(c)
