@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.8 2000/04/27 00:17:32 micahjd Exp $
+/* $Id: divtree.h,v 1.9 2000/04/29 03:17:34 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -118,6 +118,12 @@ union grop_param {
     int lgop;
   } bitmap;
 
+  /* Gradient */
+  struct {
+    devcolort c1,c2;
+    int angle,translucent;
+  } gradient;
+
   /* colors */
   devcolort c;
 };
@@ -213,6 +219,7 @@ struct gropnode {
 #define GROP_DIM        7
 #define GROP_TEXT       8
 #define GROP_BITMAP     9
+#define GROP_GRADIENT   10
 
 /***************** grop functions */
 
@@ -236,6 +243,9 @@ g_error grop_text(struct gropnode **headpp,
 		  int x, int y, handle fd, devcolort col, handle str);
 g_error grop_bitmap(struct gropnode **headpp,
 		    int x, int y, int w, int h, handle b, int lgop);
+g_error grop_gradient(struct gropnode **headpp,
+		      int x, int y, int w, int h, devcolort c1, devcolort c2,
+		      int angle,int translucent);
 g_error grop_null(struct gropnode **headpp);
 
 void align(struct divnode *d,alignt align,int *w,int *h,int *x,int *y);

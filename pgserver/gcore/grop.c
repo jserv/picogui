@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.6 2000/04/29 02:40:59 micahjd Exp $
+/* $Id: grop.c,v 1.7 2000/04/29 03:17:34 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -43,8 +43,6 @@ void grop_render(struct divnode *div) {
   int x,y,w,h;
   char *str;
 
-  static int angle=0;
-
   if (!div) return;
   list = div->grop;
 
@@ -73,8 +71,7 @@ void grop_render(struct divnode *div) {
       hwr_line(&clip,x,y,w+div->x+div->tx,h+div->y+div->ty,list->param.c);
       break;
     case GROP_RECT:
-      //      hwr_rect(&clip,x,y,w,h,list->param.c);
-      hwr_gradient(NULL,x,y,w,h,list->param.c,0x000000,angle++);
+      hwr_rect(&clip,x,y,w,h,list->param.c);
       break;
     case GROP_DIM:
       hwr_dim(&clip);
@@ -99,6 +96,12 @@ void grop_render(struct divnode *div) {
       if (rdhandle((void**)&bit,TYPE_BITMAP,-1,list->param.bitmap.bitmap).type != 
 	  ERRT_NONE || !bit) break;
       hwr_blit(&clip,list->param.bitmap.lgop,bit,0,0,NULL,x,y,w,h);
+      break;
+    case GROP_GRADIENT:
+      /* Gradients are fun! */
+      hwr_gradient(&clip,x,y,w,h,list->param.gradient.c1,
+		   list->param.gradient.c2,list->param.gradient.angle,
+		   list->param.gradient.translucent);      
       break;
     }
     list = list->next;
@@ -270,6 +273,26 @@ g_error grop_bitmap(struct gropnode **headpp,
   n->h = h;
   n->param.bitmap.bitmap = b;
   n->param.bitmap.lgop = lgop;
+  grop_addnode(headpp,n);
+  return sucess;
+}
+
+g_error grop_gradient(struct gropnode **headpp,
+		      int x, int y, int w, int h, devcolort c1, devcolort c2,
+		      int angle,int translucent) {
+  struct gropnode *n;
+  g_error e;
+  e = g_malloc((void **) &n,sizeof(struct gropnode));
+  if (e.type != ERRT_NONE) return e;
+  n->type = GROP_GRADIENT;
+  n->x = x;
+  n->y = y;
+  n->w = w;
+  n->h = h;
+  n->param.gradient.c1 = c1;
+  n->param.gradient.c2 = c2;
+  n->param.gradient.angle = angle;
+  n->param.gradient.translucent = translucent;
   grop_addnode(headpp,n);
   return sucess;
 }

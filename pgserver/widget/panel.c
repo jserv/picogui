@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.5 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: panel.c,v 1.6 2000/04/29 03:17:34 micahjd Exp $
  *
  * panel.c - simple container widget
  *
@@ -32,6 +32,7 @@
 /* param.c - color */
 void fill(struct divnode *d) {
   grop_rect(&d->grop,0,0,d->w,d->h,d->param.c);
+  grop_gradient(&d->grop,0,0,d->w,d->h,0x000000,0xFFFFFF,85,-1);
 }
 
 /* Pointers, pointers, and more pointers. What's the point?

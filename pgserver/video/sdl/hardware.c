@@ -1,4 +1,4 @@
-/* $Id: hardware.c,v 1.9 2000/04/29 02:40:59 micahjd Exp $
+/* $Id: hardware.c,v 1.10 2000/04/29 03:17:34 micahjd Exp $
  *
  * hardware.c - SDL "hardware" layer
  * Anything that makes any kind of assumptions about the display hardware
@@ -280,6 +280,11 @@ unsigned char trigtab[] = {
    two colors.
 
    The angle is expressed in degrees.
+   If translucent is positive it will add the gradient to the existing
+   pixels. If negative, it will subtract.  If it is zero, it performs
+   a normal overwrite operation.
+   If translucent is nonzero and the hardware does not support translucent
+   gradients, the call should (probably?) be ignored.
 
    This implementation is based on the function:
      color = y*sin(angle) + x*sin(angle)
@@ -291,7 +296,7 @@ unsigned char trigtab[] = {
    Wow, algebra and trigonometry are useful for something!  ;-)
 */
 void hwr_gradient(struct cliprect *clip,int x,int y,int w,int h,
-		  devcolort c1,devcolort c2,int angle) {
+		  devcolort c1,devcolort c2,int angle,int translucent) {
   /* Lotsa vars! */
   long r_vs,g_vs,b_vs,r_sa,g_sa,b_sa,r_ca,g_ca,b_ca,r_ica,g_ica,b_ica;
   long r_vsc,g_vsc,b_vsc,r_vss,g_vss,b_vss,sc_d;
@@ -387,14 +392,57 @@ void hwr_gradient(struct cliprect *clip,int x,int y,int w,int h,
 
   /* Finally, the loop! */
 
-  for (;h;h--,r_sa+=r_vss,g_sa+=g_vss,b_sa+=b_vss,p+=line_offset)
-    for (r_ca=r_ica,g_ca=g_ica,b_ca=b_ica,i=w;i;
-	 i--,r_ca+=r_vsc,g_ca+=g_vsc,b_ca+=b_vsc) {
-      r = (r_ca+r_sa) >> 8;
-      g = (g_ca+g_sa) >> 8;
-      b = (b_ca+b_sa) >> 8;
-      *(p++) = mkcolor(r,g,b);
-    }
+  if (translucent==0) {
+    for (;h;h--,r_sa+=r_vss,g_sa+=g_vss,b_sa+=b_vss,p+=line_offset)
+      for (r_ca=r_ica,g_ca=g_ica,b_ca=b_ica,i=w;i;
+	   i--,r_ca+=r_vsc,g_ca+=g_vsc,b_ca+=b_vsc) {
+	r = (r_ca+r_sa) >> 8;
+	g = (g_ca+g_sa) >> 8;
+	b = (b_ca+b_sa) >> 8;
+	*(p++) = mkcolor(r,g,b);
+      }
+  }
+  else if (translucent>0) {
+    for (;h;h--,r_sa+=r_vss,g_sa+=g_vss,b_sa+=b_vss,p+=line_offset)
+      for (r_ca=r_ica,g_ca=g_ica,b_ca=b_ica,i=w;i;
+	   i--,r_ca+=r_vsc,g_ca+=g_vsc,b_ca+=b_vsc) {
+
+	r = getred(*p);
+	g = getgreen(*p);
+	b = getblue(*p);
+
+	r += (r_ca+r_sa) >> 8;
+	g += (g_ca+g_sa) >> 8;
+	b += (b_ca+b_sa) >> 8;
+
+	if (r>255) r=255;
+	if (g>255) g=255;
+	if (b>255) b=255;
+
+	*(p++) = mkcolor(r,g,b);
+      }
+  }
+  else {
+    for (;h;h--,r_sa+=r_vss,g_sa+=g_vss,b_sa+=b_vss,p+=line_offset)
+      for (r_ca=r_ica,g_ca=g_ica,b_ca=b_ica,i=w;i;
+	   i--,r_ca+=r_vsc,g_ca+=g_vsc,b_ca+=b_vsc) {
+
+	r = getred(*p);
+	g = getgreen(*p);
+	b = getblue(*p);
+
+	r -= (r_ca+r_sa) >> 8;
+	g -= (g_ca+g_sa) >> 8;
+	b -= (b_ca+b_sa) >> 8;
+
+	if (r<0) r=0;
+	if (g<0) g=0;
+	if (b<0) b=0;
+
+	*(p++) = mkcolor(r,g,b);
+      }
+  }
+
   
   SDL_UnlockSurface(screen);
 }
@@ -948,13 +996,3 @@ devcolort cnvcolor(unsigned long int c) {
 }
 
 /* The End */
-
-
-
-
-
-
-
-
-
-
