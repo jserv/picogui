@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.24 2002/10/29 08:15:46 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.25 2002/10/29 23:20:55 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -311,8 +311,13 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
     break;
 
   case PG_TRIGGER_CHAR:
-    if (param->kbd.key == PGKEY_RETURN && !DATA->doc->multiline)
+    if (!(param->kbd.flags & PG_KF_FOCUSED))
+      return;
+
+    if (param->kbd.key == PGKEY_RETURN && !DATA->doc->multiline) {
+      param->kbd.consume++;      
       post_event(PG_WE_ACTIVATE,self,0,0,NULL);
+    }
 
     if (textbox_ignorekey(self,param->kbd.key))
       return;
