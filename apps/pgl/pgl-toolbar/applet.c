@@ -28,7 +28,7 @@
 #include <netinet/in.h>
 #include <picogui.h>
 
-#include "applet.h"
+#include <picogui/applet.h>
 
 struct pgmemdata pglBuildMessage(unsigned short type, char *senderName, char *key, char *data){
   unsigned short messageSize = sizeof(pglMessage)+(strlen(senderName)+1)+(strlen(key)+1)+(strlen(data)+1);
