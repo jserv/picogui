@@ -273,15 +273,17 @@
 					* (for celphones and similar devices) */
 
 /**
- * The following are used only by the BTKEY input driver, to signal when
- * a device has appeared or disappeared.
+ * The following are used only by the BTKEY input driver, to signal
+ * various device-related events.
  */
-#define PG_KBD_CONNECTED         323
-#define PG_KBD_NOT_CONNECTED     324
-#define PG_PHONE_CONNECTED       325
-#define PG_PHONE_NOT_CONNECTED   326
+#define PG_KBD_CONNECTED                  323
+#define PG_KBD_NOT_CONNECTED              324
+#define PG_PHONE_CONNECTED                325
+#define PG_PHONE_NOT_CONNECTED            326
+#define PG_PHONE_KEY_FORWARDING_ENABLED   327
+#define PG_PHONE_KEY_FORWARDING_DISABLED  328
 
-#define PGKEY_MAX                326
+#define PGKEY_MAX                         328
 
 /* Modifier keys (also from SDL) */
 #define PGMOD_LSHIFT  0x0001
