@@ -32,7 +32,7 @@ def _getSize(s, server):
     # Also, allow "None" to indicate automatic sizing,
     # represented in the server by -1.
     if s == None:
-        return 0xFFFF, _getSize
+        return 0xFFFFFFFF, _getSize
     fraction = string.split(str(s),'/')
     if len(fraction) > 1:
         return (int(fraction[0])<<8) | int(fraction[1]), _getSize

@@ -1,5 +1,4 @@
-import PicoGUI
-import string
+import PicoGUI, string, sys
 
 
 class PropertyList:
@@ -13,6 +12,35 @@ class PropertyList:
         self.add('size')
         self.add('text')
         self.add('name')
+        self.add('sizemode')
+        self.add('align')
+        self.add('bitmap')
+        self.add('bitmask')
+        self.add('bitmapside')
+        self.add('margin')
+        self.add('extdevents')
+        self.add('on')
+        self.add('disabled')
+        self.add('thobj')
+        self.add('thobj button')
+        self.add('thobj button hilight')
+        self.add('thobj button on')
+        self.add('thobj button on nohilight')
+        self.add('hotkey')
+        self.add('hotkey flags')
+        self.add('hotkey consume')
+        self.add('transparent')
+        self.add('color')
+        self.add('direction')
+        self.add('lgop')
+        self.add('spacing')
+        self.add('scroll x')
+        self.add('scroll y')
+        self.add('publicbox')
+        self.add('bind')
+        self.add('triggermask')
+        self.add('hilighted')
+        self.add('auto orientation')
 
     def add(self, property):
         self.list.append(PropertyEdit(self,property))
@@ -22,6 +50,8 @@ class PropertyEdit:
     def __init__(self, propertyList, property):
         self.plist = propertyList
         self.property = property
+        self.widget = self.plist.widget
+        self.app = self.plist.app
 
         if len(self.plist.list) == 0:
             self.box = self.plist.container.addWidget('box','inside')
@@ -34,7 +64,7 @@ class PropertyEdit:
         self.checkbox = self.box.addWidget('checkbox','inside')
         self.checkbox.text = string.capitalize(property)
         self.checkbox.side = 'all'
-        self.plist.app.link(self._show_hide, self.checkbox, 'activate')
+        self.app.link(self._show_hide, self.checkbox, 'activate')
 
     def show(self):
         self.settingsBox = self.box.addWidget('box','inside')
@@ -43,11 +73,14 @@ class PropertyEdit:
 
         self.editWidget = self.settingsBox.addWidget('field','inside')
         self.editWidget.side = 'top'
-        self.plist.app.link(self._modify, self.editWidget, 'activate')
+        self.editWidget.text = repr(self.widget.server.get(self.widget.handle, self.property))
+        self.app.link(self._modify, self.editWidget, 'activate')
 
     def hide(self):
-        self.plist.app.delWidget(self.settingsBox)
-        self.plist.app.delWidget(self.editWidget)
+        self.app.delWidget(self.settingsBox)
+        self.app.delWidget(self.editWidget)
+        if hasattr(self,'errorLabel'):
+            self.app.delWidget(self.errorLabel)
 
     def _show_hide(self, ev, widget):
         if widget.on:
@@ -56,5 +89,18 @@ class PropertyEdit:
             self.hide()
 
     def _modify(self, ev, widget):
-        self.plist.widget.server.set(self.plist.widget.handle, self.property,
-                                     widget.server.getstring(widget.text).data)
+        # Delete a stale error notice if we have one
+        if hasattr(self,'errorLabel'):
+                self.app.delWidget(self.errorLabel)
+
+        # If we have an exception setting the property,
+        # slap an invalid warning on this property
+        self.value = widget.server.getstring(widget.text).data
+        try:
+            self.widget.server.set(self.widget.handle, self.property, self.value)
+            self.valid = 1
+        except:
+            self.errorLabel = self.settingsBox.addWidget('label','inside')
+            self.errorLabel.side = 'bottom'
+            self.errorLabel.text = 'Invalid Value'
+            self.valid = 0
