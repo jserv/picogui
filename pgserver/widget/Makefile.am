@@ -22,6 +22,7 @@ libwidget_a_SOURCES = \
     textbox_main.c \
     textbox_document.c \
     panelbar.c \
+    simplemenu.c \
     $(WIDGET)
 
 EXTRA_libwidget_a_SOURCES = \

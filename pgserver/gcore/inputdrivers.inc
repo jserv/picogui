@@ -89,4 +89,8 @@
   DRV("ericsson_chatboard", &ericsson_cb_regfunc)
 #endif
 
+#ifdef DRIVER_PS2MOUSE
+  DRV("ps2mouse", &ps2mouse_regfunc)
+#endif
+
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.166 2002/03/01 21:17:13 micahjd Exp $
+/* $Id: widget.c,v 1.167 2002/03/22 21:01:46 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -88,6 +88,8 @@ DEF_WIDGET_TABLE(panelbar)
 #else
 DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,94))
 #endif
+
+DEF_STATICWIDGET_TABLE(simplemenu)
 };
 
 /* These are needed to determine which widget is under the pointing
