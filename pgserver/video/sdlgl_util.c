@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.17 2002/09/19 22:34:27 micahjd Exp $
+/* $Id: sdlgl_util.c,v 1.18 2002/09/19 22:57:10 micahjd Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.
@@ -358,6 +358,8 @@ void gl_make_texture(struct glbitmap *glb) {
     
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,gl_global.texture_filtering);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,gl_global.texture_filtering);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP);
     
     /* We have to round up to the nearest power of two...
      * FIXME: this is wasteful. We need a way to pack multiple
@@ -370,17 +372,12 @@ void gl_make_texture(struct glbitmap *glb) {
     glb->tx2 = ((float)glb->sb->w) / ((float)glb->tw);
     glb->ty2 = ((float)glb->sb->h) / ((float)glb->th);
     
-    /* Paste our image into it.
-     * Note that the linear filtering depends on the value of the pixel adjacent to
-     * the one being rendered as well, so to minimize rendering artifacts we copy
-     * strips of the original bitmap to the sides of the new texture.
+    /* Copy the image to a temporary bitmap.
+     * Duplicate edges if we have room, to simulate texture clamping there.
      */
-    
     if (iserror(vid->bitmap_new(&tmpbit, glb->tw, glb->th, vid->bpp))) return;
-    
-    /* Texture itself */
     vid->blit(tmpbit, 0,0, glb->sb->w, glb->sb->h, (hwrbitmap)glb, 0,0, PG_LGOP_NONE);
-    
+
     /* Left and right edges */
     if (glb->tw > glb->sb->w) {
       vid->blit(tmpbit, glb->sb->w,0, 1, glb->sb->h, (hwrbitmap)glb, glb->sb->w-1,0, PG_LGOP_NONE);
@@ -399,7 +396,7 @@ void gl_make_texture(struct glbitmap *glb) {
 		glb->sb->w-1,glb->sb->h-1, PG_LGOP_NONE);
       vid->blit(tmpbit, glb->tw-1,glb->th-1, 1,1, (hwrbitmap)glb, 0,0, PG_LGOP_NONE);
     }
-    
+
     /* Now convert the alpha channel in our temporary bitmap. Any colors with the
      * PGCF_ALPHA flag need to have their alpha channels shifted over one bit,
      * other pixels get an alpha of 0xFF. Note that the original bitmap will still
