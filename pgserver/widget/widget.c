@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.168 2002/03/26 03:47:20 instinc Exp $
+/* $Id: widget.c,v 1.169 2002/03/26 17:09:24 instinc Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -159,7 +159,7 @@ g_error widget_create(struct widget **w, int type, struct divtree *dt, handle co
       /* This widget is not supported, return the error code we
        * conveniently crammed into the 'remove' field */
       g_free(*w);
-      return (g_error) (s32) (*w)->def->remove;
+      return (g_error) (long) (*w)->def->remove;
   }
 
   //
