@@ -281,6 +281,30 @@ object button {
 
 object button.on bitmap1 = LoadBitmap("data/button_bright_small.png");
 
+object checkbox {
+  width = 18;
+  height = 18;
+  spacing = 0;
+  align = PG_A_LEFT;
+
+  bgfill = fillstyle {
+    Bitmap(x,y,w,h,bDarkInterlace);
+    Bitmap(x,y,18,18,bitmap1);
+    x = x + 20;
+  };
+
+  bitmap1 = LoadBitmap("data/checkbox_off.png");
+}
+
+object checkbox.on bitmap1 = LoadBitmap("data/checkbox_on.png");
+object radiobutton bitmap1 = LoadBitmap("data/radiobutton_off.png");
+object radiobutton.on bitmap1 = LoadBitmap("data/radiobutton_on.png");
+
+object checkbox.on.nohilight parent = PGTH_O_CHECKBOX_ON;
+object checkbox.hilight parent = PGTH_O_CHECKBOX;
+object radiobutton.on.nohilight parent = PGTH_O_RADIOBUTTON_ON;
+object radiobutton.hilight parent = PGTH_O_RADIOBUTTON;
+
 /********************************** Scroll */
 
 object scroll width = 14;
