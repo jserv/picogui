@@ -1,4 +1,4 @@
-/* $Id: linear1.c,v 1.9 2001/05/29 22:31:23 micahjd Exp $
+/* $Id: linear1.c,v 1.10 2001/05/30 20:56:46 micahjd Exp $
  *
  * Video Base Library:
  * linear1.c - For 1-bit packed pixel devices (most black and white displays)
@@ -47,7 +47,7 @@ unsigned const char notmask1[]  = { 0x7F, 0xBF, 0xDF, 0xEF,
 unsigned const char pxlmask1[]  = { 0x80, 0x40, 0x20, 0x10,
                                     0x08, 0x04, 0x02, 0x01 };
 unsigned const char slabmask1[] = { 0xFF, 0x7F, 0x3F, 0x1F,
-                                    0x0F, 0x07, 0x03, 0x01 };
+                                    0x0F, 0x07, 0x03, 0x01, 0x00 };
 
 /************************************************** Minimum functionality */
 
@@ -105,9 +105,10 @@ void linear1_slab_stipple(hwrbitmap dest,s16 x,s16 y,s16 w,hwrcolor c) {
      return;
    
    /* Full bytes */
+   c &= stipple;
    for (bw = w >> 3;bw;bw--,p++) {
       *p &= ~stipple;
-      *p |= c & stipple;
+      *p |= c;
    }
    
    if (remainder = (w&7)) {                /* Partial byte afterwards */
@@ -264,6 +265,63 @@ void linear1_line(hwrbitmap dest, s16 x1,s16 yy1,s16 x2,s16 yy2,hwrcolor c,
   }
 }
 
+void linear1_blit(hwrbitmap dest,
+		  s16 dst_x, s16 dst_y,s16 w, s16 h,
+		  hwrbitmap sbit,s16 src_x,s16 src_y,
+		  s16 lgop) {
+   u8 *src, *srcline, *dst, *dstline, mask, pb;
+   struct stdbitmap *srcbit = (struct stdbitmap *) sbit;
+   int bw,tp,shift,rshift;
+   int i;
+
+   if (dest == vid->display) {
+      def_blit(dest,dst_x,dst_y,w,h,sbit,src_x,src_y,lgop);
+      return;
+   }
+      
+   /* Blit calculations */ 
+   src = srcline = srcbit->bits + src_x + src_y*srcbit->pitch;
+   dst = dstline = PIXELBYTE(dst_x,dst_y);
+   shift = (src_x & 7) - (dst_x & 7);         /* Relative byte alignment */
+   if (shift<0)                               /* Make it positive */
+     shift += 8;
+   rshift = 8-shift;                          /* Reverse */
+   bw = (w-shift)>>3;                         /* Byte width */
+   tp = (w-shift)&7;                          /* Trailing pixels */
+   pb = 0;                                    /* Previous byte */
+
+   if ((rshift+w)<=8) {                       /* Completely within one byte */
+      mask = slabmask1[rshift];
+      mask &= ~slabmask1[rshift+w];
+      for (;h;h--,src+=srcbit->pitch,dst+=FB_BPL) {
+	 *dst &= ~mask;
+	 *dst |= mask & ((*src) >> rshift);
+      }
+   }
+   else {                                     /* Blit in three sections */
+      while (h) {
+	 if (shift) {                         /* Leading partial byte */
+	    *dst &= ~slabmask1[rshift];
+	    *dst |= ((pb << shift) | ((*src) >> rshift)) & slabmask1[rshift];
+	    dst++;
+	 }
+	 pb = *src;
+	 for (src++,i=bw;i>0;i--,src++,dst++) { /* Whole bytes */
+	    *dst = (pb << shift) | ((*src) >> rshift);
+	    pb = *src;
+	 }
+	 if (tp) {                            /* Trailing partial byte */
+	    *dst &= slabmask1[tp];
+	    *dst |= (pb << shift) | ((*src) >> rshift) & ~slabmask1[tp];
+	 }
+	 h--;
+	 src=srcline+=srcbit->pitch;
+	 dst=dstline+=FB_BPL;
+	 pb = src[-1];
+      }
+   }
+}
+
 /*********************************************** Registration */
 
 /* Load our driver functions into a vidlib */
@@ -275,6 +333,7 @@ void setvbl_linear1(struct vidlib *vid) {
    vid->slab           = &linear1_slab;
    vid->bar            = &linear1_bar;
    vid->line           = &linear1_line;
+//   vid->blit           = &linear1_blit;
 }
 
 /* The End */
