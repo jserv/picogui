@@ -56,8 +56,8 @@ class DiskChart:
         write('<img width="%s" height="%s" src="%s"/>' %
               (self.page.width, self.page.height, self.page.linkURL({
             'image': 'disk_chart',
-            'percentsUsed': "+".join(map(str, self.getPercentsUsed())),
-            'percentsFree': "+".join(map(str, self.getPercentsFree())),
+            'percentsUsed': "+".join(map(lambda x: "%0.2f" % x, self.getPercentsUsed())),
+            'percentsFree': "+".join(map(lambda x: "%0.2f" % x, self.getPercentsFree())),
             })))
         
     def outputLegend(self, write):
