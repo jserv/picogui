@@ -2,5 +2,5 @@
 0 0 * * * rm /home/commits/stats/end-of-day/*; mv /home/commits/stats/daily/* /home/commits/stats/end-of-day/
 0 0 1 * * rm /home/commits/stats/monthly/*
 0 0 * * 0 rm /home/commits/stats/weekly/*
-0 0 * * * /usr/sbin/logrotate -s /home/commits/logrotate.state /home/commits/tools/irc/util/logrotate.conf
+0 * * * * /usr/sbin/logrotate -s /home/commits/logrotate.state /home/commits/tools/irc/util/logrotate.conf
 
