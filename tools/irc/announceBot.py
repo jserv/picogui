@@ -75,7 +75,8 @@ class AnnounceServer(LineReceiver):
             (command, project, message) = line.split(" ", 2)
         except ValueError:
             (command, project) = line.split(" ", 2)
-        
+
+        project = project.replace("-ports", "-src") # freebsd specific hack
 	if command == "Announce":
             # if we are the first bot, we send to the main channels
             if botID == 1:
