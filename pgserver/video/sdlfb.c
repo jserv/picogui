@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.21 2001/08/13 00:05:38 micahjd Exp $
+/* $Id: sdlfb.c,v 1.22 2001/08/13 03:04:45 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -118,6 +118,12 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
     fbh = i;
     sdlflags &= ~SDL_RESIZABLE;
   }
+
+#ifdef CONFIG_SDLEMU_BLIT
+   /* Make screen divisible by a byte */
+  if (bpp && bpp<8)
+     fbw &= ~((8/bpp)-1);
+#endif
 #endif
 
 #ifdef CONFIG_SDLEMU_BLIT
@@ -246,12 +252,12 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
      g_error e;
      
      vid->bpp = bpp;
-     FB_BPL = (vid->xres * bpp) >> 3;
+     FB_BPL = (fbw * bpp) >> 3;
      /* The +1 allows blits some margin to read unnecessary bytes.
       * Keeps linear1's blit from triggering electric fence when the
       * cursor is put in the bottom-right corner ;-)
       */
-     e = g_malloc((void**)&FB_MEM,(FB_BPL * vid->yres) + 1);
+     e = g_malloc((void**)&FB_MEM,(FB_BPL * fbh) + 1);
      errorcheck;
      sdlfb_backbuffer = FB_MEM;
   }
@@ -269,21 +275,12 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   SDL_WM_SetCaption(str,NULL);
 
 #ifdef CONFIG_SDLSKIN
-  /* Offset vid->display to the specified position */
-  sdlfb_display_x = get_param_int("video-sdlfb","display_x",0);
-  sdlfb_display_y = get_param_int("video-sdlfb","display_y",0);
-  if (!sdlfb_backbuffer) {
-    FB_MEM += bpp * sdlfb_display_x / 8;
-    FB_MEM += FB_BPL * sdlfb_display_y;
-  }
-
   /* Install the skin background */
   if (s = get_param_str("video-sdlfb","background",NULL)) {
     FILE *f;
     char *mem;
     unsigned long len;
     hwrbitmap bg;
-    struct stdbitmap dest;
 
     f = fopen(s,"rb");
     if (f) {
@@ -297,24 +294,21 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
 	 * in the current video mode's format.
 	 */
 	if (!iserror(VID(bitmap_load) (&bg,mem,len))) {
-	  /* Construct a destination bitmap for the raw SDL
-	   * framebuffer (vid->display is just the section that the
-	   * rest of PicoGUI can use) and blit the background. It
-	   * will tile if the background is smaller than the framebuffer.
-	   */
-	  memset(&dest,0,sizeof(dest));
-	  dest.bits  = sdl_vidsurf->pixels;
-	  dest.w     = fbw;
-	  dest.h     = fbh;
-	  dest.pitch = sdl_vidsurf->pitch;
-	  VID(blit) (&dest,0,0,fbw,fbh,bg,0,0,PG_LGOP_NONE);
+	  VID(blit) (vid->display,0,0,fbw,fbh,bg,0,0,PG_LGOP_NONE);
 	  VID(bitmap_free) (bg);
+	  sdlfb_update(0,0,fbw,fbh);
 	}
 	g_free(mem);
       }
       fclose(f);
     }
   }
+
+  /* Offset vid->display to the specified position */
+  sdlfb_display_x = get_param_int("video-sdlfb","display_x",0);
+  sdlfb_display_y = get_param_int("video-sdlfb","display_y",0);
+  FB_MEM += bpp * sdlfb_display_x / 8;
+  FB_MEM += FB_BPL * sdlfb_display_y;
 
   /* Load initial tint */
   sdlfb_tint = strtol(get_param_str("video-sdlfb","tint","FFFFFF"),NULL,16);
@@ -342,9 +336,14 @@ void sdlfb_update(s16 x,s16 y,s16 w,s16 h) {
    printf("sdlfb_update(%d,%d,%d,%d)\n",x,y,w,h);
 #endif
 
+#ifdef CONFIG_SDLSKIN
+   x += sdlfb_display_x;
+   y += sdlfb_display_y;
+#endif
+
 #ifdef CONFIG_SDLEMU_BLIT
    /* Do we need to convert and blit to the SDL buffer? */
-   if (FB_MEM != sdl_vidsurf->pixels) {
+   if (sdlfb_backbuffer) {
       unsigned char *src;
       unsigned char *dest;
       unsigned char *srcline;
@@ -360,8 +359,8 @@ void sdlfb_update(s16 x,s16 y,s16 w,s16 h) {
       x &= ~7;
       
       /* Calculations */
-      srcline = src = FB_MEM + ((x * vid->bpp) >> 3) +y*FB_BPL;
-      destline = dest = sdl_vidsurf->pixels + x + y*vid->xres;
+      srcline = src = sdlfb_backbuffer + ((x * vid->bpp) >> 3) +y*FB_BPL;
+      destline = dest = sdl_vidsurf->pixels + x + y*sdl_vidsurf->pitch;
       bw = (w * vid->bpp) >> 3;
       
       /* Slow but it works (this is debug code, after all...) */
@@ -373,11 +372,7 @@ void sdlfb_update(s16 x,s16 y,s16 w,s16 h) {
 #endif
 
    /* Always let SDL update the front buffer */
-#ifdef CONFIG_SDLSKIN
-   SDL_UpdateRect(sdl_vidsurf,x+sdlfb_display_x,y+sdlfb_display_y,w,h);
-#else
    SDL_UpdateRect(sdl_vidsurf,x,y,w,h);
-#endif
 }
 
 #ifdef CONFIG_SDLSKIN
@@ -491,3 +486,8 @@ g_error sdlfb_regfunc(struct vidlib *v) {
 }
 
 /* The End */
+
+
+
+
+
