@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.29 2000/11/18 06:50:17 micahjd Exp $
+/* $Id: picogui_client.c,v 1.30 2000/11/19 04:47:20 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -1145,6 +1145,25 @@ int pgMenuFromArray(pghandle *items,int numitems) {
 
   /* Return event */
   return pgGetPayload(pgGetEvent(NULL,NULL));
+}
+
+/* Write data to a widget.
+ * (for example, a terminal widget)
+ */
+void pgWriteTo(pghandle widget,struct pgmemdata data) {
+  unsigned long *buf;
+
+  /* FIXME: Shouln't be recopying this... */
+
+  if (!data.pointer) return;
+  if (!(buf = _pg_malloc(data.size+4))) return;
+  *buf = htonl(widget ? widget : _pgdefault_widget);
+  memcpy(buf+1,data.pointer,data.size);
+
+  _pg_add_request(PGREQ_WRITETO,buf,data.size+4);
+
+  _pg_free_memdata(data);
+  free(buf);
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.24 2000/11/18 06:50:16 micahjd Exp $
+/* $Id: client_c.h,v 1.25 2000/11/19 04:47:20 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -225,6 +225,11 @@ pghandle pgLoadTheme(struct pgmemdata obj);
  */
 void pgSetPayload(pghandle object,unsigned long payload);
 unsigned long pgGetPayload(pghandle object);
+
+/* Write data to a widget.
+ * (for example, a terminal widget)
+ */
+void pgWriteTo(pghandle widget,struct pgmemdata data);
 
 /******************** Data loading */
 

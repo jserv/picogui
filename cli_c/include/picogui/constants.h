@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.20 2000/11/05 19:50:49 micahjd Exp $
+/* $Id: constants.h,v 1.21 2000/11/19 04:47:20 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -236,29 +236,31 @@ typedef unsigned long pghandle;
 /*                               Handle?
         Name              ID     | Data type   Description */
 
-#define PGTH_P_BGCOLOR    1   /*   pgcolor     Default background color */
-#define PGTH_P_FGCOLOR    2   /*   pgcolor     Default foreground color */
-#define PGTH_P_BGFILL     3   /* H fillstyle   Background fill style    */
-#define PGTH_P_OVERLAY    4   /* H fillstyle   Fill style applied last  */
-#define PGTH_P_FONT       5   /* H fontdesc    A widget's main font     */
-#define PGTH_P_NAME       6   /* H string      Name of something, like a theme */
-#define PGTH_P_WIDTH      7   /*   int         Reccomended width */
-#define PGTH_P_HEIGHT     8   /*   int         Reccomended width */
-#define PGTH_P_MARGIN     9   /*   int         The border in some objects */
-#define PGTH_P_HILIGHTCOLOR 10/*   pgcolor     Color for hilighting an object */
-#define PGTH_P_SHADOWCOLOR 11 /*   pgcolor     Color for shading an object */
-#define PGTH_P_OFFSET     12  /*   int         an amount to displace something by */
-#define PGTH_P_ALIGN      13  /*   alignment   How to position an object's contents */
-#define PGTH_P_BITMAPSIDE 14  /*   side        Bitmap side relative to text (button) */
-#define PGTH_P_BITMAPMARGIN 15/*   int         Spacing between bitmap and text */
-#define PGTH_P_BITMAP1    16  /* H bitmap      Generic bitmap property for theme use */
-#define PGTH_P_BITMAP2    17  /* H bitmap      Generic bitmap property for theme use */
-#define PGTH_P_BITMAP3    18  /* H bitmap      Generic bitmap property for theme use */
-#define PGTH_P_BITMAP4    19  /* H bitmap      Generic bitmap property for theme use */
-#define PGTH_P_SPACING    20  /*   int         Distance between similar widgets */
-#define PGTH_P_TEXT       21  /* H string      Text caption for something like a button */
-#define PGTH_P_SIDE       22  /*   int         Side for a widget or subwidget */
-#define PGTH_P_BACKDROP   23  /* H fillstyle   Fillstyle on the screen behind a popup */
+#define PGTH_P_BGCOLOR       1   /*   pgcolor     Default background color */
+#define PGTH_P_FGCOLOR       2   /*   pgcolor     Default foreground color */
+#define PGTH_P_BGFILL        3   /* H fillstyle   Background fill style    */
+#define PGTH_P_OVERLAY       4   /* H fillstyle   Fill style applied last  */
+#define PGTH_P_FONT          5   /* H fontdesc    A widget's main font     */
+#define PGTH_P_NAME          6   /* H string      Name of something, like a theme */
+#define PGTH_P_WIDTH         7   /*   int         Reccomended width */
+#define PGTH_P_HEIGHT        8   /*   int         Reccomended width */
+#define PGTH_P_MARGIN        9   /*   int         The border in some objects */
+#define PGTH_P_HILIGHTCOLOR  10  /*   pgcolor     Color for hilighting an object */
+#define PGTH_P_SHADOWCOLOR   11  /*   pgcolor     Color for shading an object */
+#define PGTH_P_OFFSET        12  /*   int         an amount to displace something by */
+#define PGTH_P_ALIGN         13  /*   alignment   How to position an object's contents */
+#define PGTH_P_BITMAPSIDE    14  /*   side        Bitmap side relative to text (button) */
+#define PGTH_P_BITMAPMARGIN  15  /*   int         Spacing between bitmap and text */
+#define PGTH_P_BITMAP1       16  /* H bitmap      Generic bitmap property for theme use */
+#define PGTH_P_BITMAP2       17  /* H bitmap      Generic bitmap property for theme use */
+#define PGTH_P_BITMAP3       18  /* H bitmap      Generic bitmap property for theme use */
+#define PGTH_P_BITMAP4       19  /* H bitmap      Generic bitmap property for theme use */
+#define PGTH_P_SPACING       20  /*   int         Distance between similar widgets */
+#define PGTH_P_TEXT          21  /* H string      Text caption for something like a button */
+#define PGTH_P_SIDE          22  /*   int         Side for a widget or subwidget */
+#define PGTH_P_BACKDROP      23  /* H fillstyle   Fillstyle on the screen behind a popup */
+#define PGTH_P_WIDGETBITMAP  24  /* H bitmap      Bitmap for something like a button */
+#define PGTH_P_WIDGETBITMASK 25  /* H bitmap      Bitmask for something like a button */
 
 /* String properties (usually part of PGTH_O_DEFAULT) */
 #define PGTH_P_STRING_OK             501
@@ -363,6 +365,7 @@ typedef unsigned long pghandle;
 #define PG_GROP_GRADIENT   0x0041
 #define PG_GROP_TILEBITMAP 0x0050
 #define PG_GROP_TEXTV      0x0031
+#define PG_GROP_TEXTGRID   0x0042
 
 #define PG_GROPPARAMS(x)   (((x)>>4)&0x0F)
 
@@ -407,7 +410,8 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_FIELD      9
 #define PG_WIDGET_BACKGROUND 10    /* Internal use only! */
 #define PG_WIDGET_MENUITEM   11    /* A variation on button */
-#define PG_WIDGETMAX         11    /* For error checking */
+#define PG_WIDGET_TERMINAL   12    /* A full terminal emulator */
+#define PG_WIDGETMAX         12    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1

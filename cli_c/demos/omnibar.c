@@ -1,4 +1,4 @@
-/* $Id: omnibar.c,v 1.3 2000/11/18 06:50:16 micahjd Exp $
+/* $Id: omnibar.c,v 1.4 2000/11/19 04:47:20 micahjd Exp $
  * 
  * omnibar.c - hopefully this will grow into a general interface
  *             for starting and manipulating applications, but
@@ -32,6 +32,8 @@
 #include <sys/types.h>   /* For making directory listings */
 #include <dirent.h>
 #include <sys/stat.h>
+
+#include <time.h>        /* For clock */
 
 #include <malloc.h>      /* Dynamic memory is used for the array */
 
@@ -127,16 +129,16 @@ int btnSysMenu(short event,pghandle from,long param) {
 
 /* Called to update the clock and system load indicators */
 void sysIdle(void) {
-   static int n = 0;
-   pgReplaceTextFmt(wClock,"[%d]",++n);
+  time_t now;
+  time(&now);
+  pgReplaceText(wClock,ctime(&now));
 }
 
 /********* Main program */
 
 int main(int argc, char **argv) {
   pgInit(argc,argv);
-  pgRegisterApp(PG_APP_TOOLBAR,"OmniBar",
-		PG_APPSPEC_SIDE,PG_S_BOTTOM,0);
+  pgRegisterApp(PG_APP_TOOLBAR,"OmniBar",0);
 
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
