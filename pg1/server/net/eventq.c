@@ -34,6 +34,10 @@
 #include <pgserver/common.h>
 #include <pgserver/pgnet.h>
 
+#if defined(DEBUG_NET) || defined(DEBUG_EVENT)
+#  include <stdio.h>
+#endif
+
 /* Either the originating widget or the owner must be specified.
    If only 'from' is nonzero, the owner will be looked up, and the event
    sent from the widget.

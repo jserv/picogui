@@ -50,6 +50,10 @@
 #define CONFIG_MAXPACKETSZ 6000000
 #endif
 
+#if defined(DEBUG_NET) || defined(DEBUG_EVENT)
+#  include <stdio.h>
+#endif
+
 /* Socket */
 int s = 0;
 
