@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.27 2001/02/23 04:44:47 micahjd Exp $
+/* $Id: pgmain.c,v 1.28 2001/03/08 01:22:22 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -131,52 +131,74 @@ int main(int argc, char **argv) {
 #ifdef CONFIG_TEXT
       case 'l':        /* List */
 
-	puts("\nVideo drivers:");
+	printf("\n   Video drivers:");
 	{
 	  struct vidinfo *p = videodrivers;
 	  while (p->name) {
-	    printf("  %s",p->name);
+	    printf(" %s",p->name);
 	    p++;
 	  }
 	}
 
-	puts("\n\nInput drivers:");
+	printf("\n   Input drivers:");
 	{
 	  struct inputinfo *p = inputdrivers;
 	  while (p->name) {
-	    printf("  %s",p->name);
+	    printf(" %s",p->name);
 	    p++;
 	  }
 	}
 	
-	puts("\n\nFonts:");
+	printf("\n           Fonts:");
 	{
 	  struct fontstyle_node *p = fontstyles;
-	  puts("  Name              Size Normal Bold Italic BoldItalic Fixed Default\n");
 	  while (p) {
-	    printf("  %-18s%4d   %c     %c     %c        %c        %c      %c\n",
-		   p->name,p->size,
-		   p->normal ? '*' : ' ',
-		   p->bold ? '*' : ' ',
-		   p->italic ? '*' : ' ',
-		   p->bolditalic ? '*' : ' ',
-		   (p->flags & PG_FSTYLE_FIXED) ? '*' : ' ',
-		   (p->flags & PG_FSTYLE_DEFAULT) ? '*' : ' ');
-
-	    p = p->next;
+	     printf(" %s%d[",p->name,p->size);
+	     if (p->normal)
+	       printf("n");
+	     if (p->bold)
+	       printf("b");
+	     if (p->italic)
+	       printf("i");
+	     if (p->bolditalic)
+	       printf("I");
+	     if (p->flags & PG_FSTYLE_FIXED)
+	       printf("f");
+	     if (p->flags & PG_FSTYLE_DEFAULT)
+	       printf("d");
+	     printf("]");
+	     p = p->next;
 	  }
 	}
 
-	puts("\n\nOptional widgets:\n  "
+	puts("\nOptional widgets:"
 #ifdef CONFIG_WIDGET_TERMINAL
-	     "Terminal  "
+	     " Terminal"
 #endif
 #ifdef CONFIG_WIDGET_CANVAS
-	     "Canvas  "
+	     " Canvas  "
 #endif
 	     );
-	     
-	puts("");
+
+	printf("  Bitmap formats:");
+	{
+	   struct bitformat *p = bitmap_formats;
+	   char name[5] = {0,0,0,0,0};
+	   while (p->name[0]) {
+	      memcpy(name,p->name,4);
+	      printf(" %s[",name);
+	      if (p->detect)
+		printf("d");
+	      if (p->load)
+		printf("l");
+	      if (p->save)
+		printf("s");
+	      printf("]");
+	      p++;
+	   }
+	}
+	   
+	puts("\n");
 	exit(1);
 #endif
 

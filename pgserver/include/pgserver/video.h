@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.24 2001/03/01 02:23:11 micahjd Exp $
+/* $Id: video.h,v 1.25 2001/03/08 01:22:22 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -56,12 +56,23 @@ typedef struct stdbitmap *hwrbitmap;
    (should be sufficient for most drivers)
 */
 struct stdbitmap {
-  unsigned char *bits;    /* actual format depends on bpp */
-  short int w,h;
-  short int pitch;       /* Spacing between lines, in bytes */
-  short int freebits;    /* Should 'bits' be freed also when bitmap is freed? */
+  u8  *bits;    /* actual format depends on bpp */
+  s16 w,h;
+  u16 pitch;       /* Spacing between lines, in bytes */
+
+  /* Should 'bits' be freed also when bitmap is freed? */
+  unsigned int freebits : 1;    
 };
 
+/* A group of functions to deal with one bitmap format */
+struct bitformat {
+  char name[4];     /* fourcc for the format name */
+
+  int (*detect)(u8 *data, u32 datalen);
+  g_error (*load)(struct stdbitmap **bmp, u8 *data, u32 datalen);
+  g_error (*save)(struct stdbitmap *bmp, u8 **data, u32 *datalen);
+};
+   
 /* A sprite node, overlaid on the actual picture */
 struct sprite {
   hwrbitmap bitmap,mask,backbuffer;
@@ -326,17 +337,14 @@ struct vidlib {
    * Default implementation: uses stdbitmap structure
    */
 
-  /* XBM 1-bit data */
-  g_error (*bitmap_loadxbm)(hwrbitmap *bmp,
-			    unsigned char *data,
-			    int w,int h,
-			    hwrcolor fg,
-			    hwrcolor bg);
-
-  /* PNM 8/16/24-bit portable graphics */
-  g_error (*bitmap_loadpnm)(hwrbitmap *bmp,
-			    unsigned char *data,
-			    unsigned long datalen);
+#ifdef CONFIG_FORMAT_XBM
+  /* XBM 1-bit data (used internally) */
+  g_error (*bitmap_loadxbm)(hwrbitmap *bmp,u8 *data, s16 w, s16 h,
+			    hwrcolor fg,hwrcolor bg);
+#endif
+   
+  /* Load a bitmap, detecting the appropriate format */
+  g_error (*bitmap_load)(hwrbitmap *bmp,u8 *data,u32 datalen);
 
   /* Optional
    *   Allocates an empty bitmap
@@ -422,17 +430,6 @@ int ascread(unsigned char **dat,unsigned long *datlen);
 g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
 		    int xres,int yres,int bpp,unsigned long flags);
 
-/* Registration functions */
-g_error sdlfb_regfunc(struct vidlib *v);
-g_error sdl_regfunc(struct vidlib *v);
-g_error svgagl_regfunc(struct vidlib *v);
-g_error svgafb_regfunc(struct vidlib *v);
-g_error chipslice_video_regfunc(struct vidlib *v);
-g_error ez328_regfunc(struct vidlib *v);
-g_error ncurses_regfunc(struct vidlib *v);
-g_error null_regfunc(struct vidlib *v);
-g_error fbdev_regfunc(struct vidlib *v);
-
 /* List of installed video drivers */
 struct vidinfo {
   char *name;
@@ -509,6 +506,18 @@ void def_unblit(int src_x,int src_y,
 		hwrbitmap dest,int dest_x,int dest_y,
 		int w,int h);
 
+/************* Registration functions for video drivers */
+
+g_error sdlfb_regfunc(struct vidlib *v);
+g_error sdl_regfunc(struct vidlib *v);
+g_error svgagl_regfunc(struct vidlib *v);
+g_error svgafb_regfunc(struct vidlib *v);
+g_error chipslice_video_regfunc(struct vidlib *v);
+g_error ez328_regfunc(struct vidlib *v);
+g_error ncurses_regfunc(struct vidlib *v);
+g_error null_regfunc(struct vidlib *v);
+g_error fbdev_regfunc(struct vidlib *v);
+
 /************** Registration functions for Video Base Libraries */
 void setvbl_default(struct vidlib *vid);
 void setvbl_linear1(struct vidlib *vid);
@@ -516,6 +525,12 @@ void setvbl_linear2(struct vidlib *vid);
 void setvbl_linear4(struct vidlib *vid);
 void setvbl_linear8(struct vidlib *vid);
 void setvbl_linear16(struct vidlib *vid);
+
+/************** Bitmap format functions */
+extern struct bitformat bitmap_formats[];
+
+int pnm_detect(u8 *data, u32 datalen);
+g_error pnm_load(struct stdbitmap **bmp, u8 *data, u32 datalen);
 
 /************** Debugging */
 void videotest_run(int number);

@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.20 2001/03/03 01:44:26 micahjd Exp $
+/* $Id: errortext.c,v 1.21 2001/03/08 01:22:22 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -182,7 +182,7 @@ static const char *errors[] = {
   /* 5  */  "PG_WP_BITMASK is invalid. No transparency for you!",
   /* 6  */  "Invalid widget property",
   /* 7  */  "Indicator with negative size not render well. Invert space-time and try again",
-  /* 8  */  NULL,
+  /* 8  */  "Bitmap format not recognized by any active loaders",
   /* 9  */  NULL,
   /* 10 */  NULL,
   /* 11 */  "Nice try... Bad ALIGN value for label",

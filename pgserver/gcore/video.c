@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.28 2001/02/28 00:19:07 micahjd Exp $
+/* $Id: video.c,v 1.29 2001/03/08 01:22:22 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -58,40 +58,6 @@ unsigned char trigtab[] = {
   0xFC,0xFC,0xFD,0xFE,0xFE,0xFF,0xFF,0xFF,0xFF,0xFF,
   0xFF
 };
-
-/* Little function to skip to the next value in an ASCII file */
-void ascskip(unsigned char **dat,unsigned long *datlen) {
-  while (*datlen) {
-    if (**dat == ' ' || **dat == '\t' || **dat == '\n' || **dat == '\r') {
-      (*dat)++;
-      (*datlen)--;
-    }
-    else if (**dat == '#') {
-      while ((*datlen) && (**dat != '\n') && (**dat != '\r')) {
-	(*dat)++;
-	(*datlen)--;
-      }
-    }
-    else
-      return;
-  }
-}
-
-/* Read a number from ascii data */
-int ascread(unsigned char **dat,unsigned long *datlen) {
-  char buf[10];
-  char *p = buf;
-  int buflen=9;
-  ascskip(dat,datlen);
-  while ((**dat != ' ') && (**dat != '\t') && (**dat != '\n') &&
-	 (**dat != '\r') && *datlen && buflen) {
-    *(p++) = *((*dat)++);
-    (*datlen)--;
-    buflen--;
-  }
-  *p = 0;
-  return atoi(buf);
-}
 
 /* Sprite helper functions */
 g_error new_sprite(struct sprite **ps,int w,int h) {

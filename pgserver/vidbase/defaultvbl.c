@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.23 2001/03/07 04:10:13 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.24 2001/03/08 01:22:23 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -37,6 +37,17 @@
 
 #include <pgserver/video.h>
 #include <pgserver/font.h>
+
+/******* Table of available bitmap formats */
+
+struct bitformat bitmap_formats[] = {
+
+#ifdef CONFIG_FORMAT_PNM
+     { {'P','N','M',0}, &pnm_detect, &pnm_load, NULL },
+#endif
+   
+     { {0,0,0,0}, NULL, NULL, NULL }
+};
 
 /******* no-op functions */
 
@@ -507,9 +518,7 @@ void def_charblit_v(unsigned char *chardat,int dest_x,
   }
 }
 
-/* Not sure this works in all cases. Needs
-   more testing...
-*/
+#ifdef CONFIG_FORMAT_XBM
 g_error def_bitmap_loadxbm(struct stdbitmap **bmp,
 			   unsigned char *data,
 			   int w,int h,
@@ -596,189 +605,18 @@ g_error def_bitmap_loadxbm(struct stdbitmap **bmp,
 
   return sucess;
 }
+#endif /* CONFIG_FORMAT_XBM */
 
-g_error def_bitmap_loadpnm(struct stdbitmap **bmp,
-			   unsigned char *data,
-			   unsigned long datalen) {
-  /* Convert from any of the pbmplus formats in binary or ascii */
-
-  char format;
-  int bin = 0;
-  int bpp;
-  int has_maxval=1;
-  int w,h,max;
-  int i,val,bit,r,g,b;
-  unsigned char *p,*pline;
-  int shiftset = 8-vid->bpp;
-  int oshift;
-  g_error e;
-  g_error efmt = mkerror(PG_ERRT_BADPARAM,48);
-  hwrcolor hc;
-
-  ascskip(&data,&datalen);
-  if (!datalen) return efmt;
-  if (*(data++) != 'P') return efmt; datalen--;
-  format = *(data++); datalen--;
-  /* This decides whether the format is ascii or binary, and if it's
-     PBM, PGM, or PPM. */
-  switch (format) {
-  case '4':
-    bin=1;
-  case '1':
-    bpp=1;
-    has_maxval=0;
-    break;
-  case '5':
-    bin=1;
-  case '2':
-    bpp=8;
-    break;
-  case '6':
-    bin=1;
-  case '3':
-    bpp=24;
-    break;
-  default:
-    return efmt;
-  }
-  w = ascread(&data,&datalen);
-  if (!datalen) return efmt;
-  if (!w) return efmt;
-  h = ascread(&data,&datalen);
-  if (!datalen) return efmt;
-  if (!h) return efmt;
-  if (has_maxval) {
-    max = ascread(&data,&datalen);
-    if (!datalen) return efmt;
-    if (!max) return efmt;
-  }  
-
-  /* One whitespace allowed before bitmap data */
-  data++; datalen--;
-
-  /* Check for a correct-sized data buffer */
-  if (datalen < ((((w*bpp)%8) ? (w*bpp+8) : (w*bpp))/8*h)) {
-    (*vid->bitmap_free)(*bmp);
-    return efmt;
-  }
-
-  /* Set up the bitmap */
-  e = (*vid->bitmap_new)((hwrbitmap *)bmp,w,h);
-  errorcheck;
-  pline = p = (*bmp)->bits;
-
-  /* Read in the values, convert colors, output them... */
-  for (;h>0;h--,p=pline+=(*bmp)->pitch) {
-    oshift=shiftset;
-    bit = 0;
-    for (i=0;i<w;i++) {
-      if (!bit)
-	if (bin)
-	  val = *(data++);
-	else
-	  val = ascread(&data,&datalen);
-
-      /* Read in the RGB values */
-      switch (bpp) {
-      
-      case 1:
-	if (val&0x80)
-	  r=g=b = 0;
-	else
-	  r=g=b = 255;
-	
-	/* Shift in bits, not bytes */
-	val = val<<1;
-	bit++;
-	if (bit==8) bit = 0;
-	break;
-
-      case 8:
-	/* grayscale... */
-	if (max==255)
-	  r=g=b = val;
-	else
-	  r=g=b = val * 255 / max;
-	break;
-
-      case 24:
-	if (max==255)
-	  r = val;
-	else
-	  r = val * 255 / max;
-
-	/* Read in the other 2 bytes */
-	if (bin)
-	  g = *(data++);
-	else
-	  g = ascread(&data,&datalen);
-	if (bin)
-	  b = *(data++);
-	else
-	  b = ascread(&data,&datalen);
-	if (max!=255) {
-	  g = g*255/max;
-	  b = b*255/max;
-	}
-	break;
-
-      }
-
-      /* Convert to hwrcolor */
-      hc = (*vid->color_pgtohwr)(mkcolor(r,g,b));
-
-      /* Output them in the device's bpp */
-      switch (vid->bpp) {
-
-      case 1:
-      case 2:
-      case 4:
-	if (oshift==shiftset)
-	   *p = hc << oshift;
-	else
-	   *p |= hc << oshift;
-	if (!oshift) {
-	  oshift = shiftset;
-	  p++;
-	}
-	 else
-	   oshift -= vid->bpp;
-	break;
-
-      case 8:
-	*(((unsigned char *)p)++) = hc;
-	break;
-	 
-      case 16:
-	*(((unsigned short *)p)++) = hc;
-	break;
-
-      case 24:
-	*(p++) = (unsigned char) hc;
-	*(p++) = (unsigned char) (hc >> 8);
-	*(p++) = (unsigned char) (hc >> 16);
-	break;
-
-      case 32:
-	*(((unsigned long *)p)++) = hc;
-	break;
-
-#if DEBUG_VIDEO
-	/* Probably not worth the error-checking time
-	   in non-debug versions, as it would be caught
-	   earlier (hopefully?)
-	*/
-
-      default:
-	printf("Converting to unsupported BPP\n");
-#endif
-	
-      }
-      
-    }
-  }
-  
-  return sucess;
+/* Try loading a bitmap using each available format */
+g_error def_bitmap_load(hwrbitmap *bmp,u8 *data,u32 datalen) {
+   struct bitformat *fmt = bitmap_formats;
+   
+   while (fmt->name[0]) {   /* Dummy record has empty name */
+      if (fmt->detect && fmt->load && (*fmt->detect)(data,datalen))
+	return (*fmt->load)(bmp,data,datalen);
+      fmt++;
+   }
+   return mkerror(PG_ERRT_BADPARAM,8); /* Format not recognized by any loaders */
 }
 
 g_error def_bitmap_new(struct stdbitmap **bmp,
@@ -1203,8 +1041,10 @@ void setvbl_default(struct vidlib *vid) {
   vid->charblit = &def_charblit;
   vid->charblit_v = &def_charblit_v;
   vid->tileblit = &def_tileblit;
+#ifdef CONFIG_FORMAT_XBM
   vid->bitmap_loadxbm = &def_bitmap_loadxbm;
-  vid->bitmap_loadpnm = &def_bitmap_loadpnm;
+#endif
+  vid->bitmap_load = &def_bitmap_load;
   vid->bitmap_new = &def_bitmap_new;
   vid->bitmap_free = &def_bitmap_free;
   vid->bitmap_getsize = &def_bitmap_getsize;

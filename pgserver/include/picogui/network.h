@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.19 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: network.h,v 1.20 2001/03/08 01:22:23 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -146,13 +146,6 @@ struct pgreqd_mkwidget {
   unsigned short rship;
   unsigned short type;
   unsigned long parent;
-};
-struct pgreqd_mkbitmap {
-  unsigned short w;       /* If these are 0, the following data is a */
-  unsigned short h;       /* pnm bitmap.  Otherwise, these are the dimensions
-			     of xbm data following it. */
-  unsigned long fg;       /* Foreground and background colors if this is a */
-  unsigned long bg;       /* xbm bitmap. */
 };
 struct pgreqd_mkfont {
   char name[40];

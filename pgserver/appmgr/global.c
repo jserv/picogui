@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.32 2001/03/01 02:23:10 micahjd Exp $
+/* $Id: global.c,v 1.33 2001/03/08 01:22:22 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -36,6 +36,8 @@
 
 /*** Simple arrow cursor in XBM format */
 
+/* XBM loader is needed! */
+#ifdef CONFIG_FORMAT_XBM
 #define cursor_width 8
 #define cursor_height 14
 unsigned char const cursor_bits[] = {
@@ -44,7 +46,7 @@ unsigned char const cursor_bits[] = {
 unsigned char const cursor_mask_bits[] = {
 0x01,0x03,0x07,0x0F,0x1F,0x3F,0x7F,0xFF,0xFF,0x3F,0x3F,0x7B,0x70,0x70
 };
-
+#endif
 
 struct app_info *applist;
 handle defaultfont;
@@ -90,6 +92,9 @@ g_error appmgr_init(void) {
    printf("Init: appmgr: cursor sprite bitmaps\n");
 #endif
 
+#ifdef CONFIG_FORMAT_XBM
+   /* Actually load the cursor */
+   
   /* Load the default mouse cursor bitmaps */
   e = (*vid->bitmap_loadxbm)(&defaultcursor_bitmap,cursor_bits,
 			     cursor_width,cursor_height,
@@ -102,6 +107,14 @@ g_error appmgr_init(void) {
 			     (*vid->color_pgtohwr)(0xFFFFFF));
   errorcheck;
 
+#else
+   /* Fake it */
+#define cursor_width  0
+#define cursor_height 0
+   (*vid->bitmap_new)(&defaultcursor_bitmap,0,0);
+   (*vid->bitmap_new)(&defaultcursor_bitmask,0,0);
+#endif
+   
 #ifdef DEBUG_INIT
    printf("Init: appmgr: cursor sprite\n");
 #endif

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.64 2001/03/03 04:19:31 micahjd Exp $
+# $Id: Makefile,v 1.65 2001/03/08 01:22:22 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -21,6 +21,11 @@
 #
 #
 # $Log: Makefile,v $
+# Revision 1.65  2001/03/08 01:22:22  micahjd
+# Added an infrastructure for automatically selecting a bitmap's format and
+# using the appropriate format. So far only the PNM loader is present, but
+# more formats can now be added.
+#
 # Revision 1.64  2001/03/03 04:19:31  micahjd
 # Fixed make error when no .config exists, updated configuration defaults
 #
@@ -185,6 +190,11 @@ ifneq ($(CONFIG_NOPANELBAR),)
     SRC := $(SRC) widget/panel_nobar.c
 else
     SRC := $(SRC) widget/panel.c
+endif
+
+# Bitmap formats
+ifneq ($(CONFIG_FORMAT_PNM),)
+    SRC := $(SRC) formats/pnm.c
 endif
 
 # These are lists used in macro-driven function tables

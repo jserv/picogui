@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.18 2001/02/23 04:44:47 micahjd Exp $
+/* $Id: g_error.c,v 1.19 2001/03/08 01:22:22 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -61,6 +61,8 @@ g_error prerror(g_error e) {
 /* graphical error/info screen, only in debug mode */
 #ifdef DEBUG_ANY
 
+/* Without the XBM loader, no nifty icon! */
+#ifdef CONFIG_FORMAT_XBM
 #define deadcomp_width 20
 #define deadcomp_height 28
 char const deadcomp_bits[] = {
@@ -72,11 +74,11 @@ char const deadcomp_bits[] = {
   0x01, 0x00, 0x08, 0x01, 0x00, 0x08, 0x19, 0xff, 0x08, 0x01, 0x00, 0x08, 
   0x03, 0x00, 0x0c, 0x02, 0x00, 0x04, 0x02, 0x00, 0x04, 0xfe, 0xff, 0x07, 
   };
+#endif
 
 void guru(const char *fmt, ...) {
   struct fontdesc *df=NULL;
-  hwrbitmap icon;
-  char msgbuf[256];
+  char msgbuf[256];  /* Cruftee! */
   va_list ap;
   struct cliprect screenclip;
    
@@ -88,18 +90,25 @@ void guru(const char *fmt, ...) {
   screenclip.x1 = screenclip.y1 = 0;
   screenclip.x2 = vid->xres-1;
   screenclip.y2 = vid->yres-1;
-   
+
+#ifdef CONFIG_FORMAT_XBM
   /* Icon (if this fails, no big deal) */
-  if (!iserror((*vid->bitmap_loadxbm)(&icon,deadcomp_bits,
-				      deadcomp_width,deadcomp_height,
-				      (*vid->color_pgtohwr)(0xFFFF80),
-				      (*vid->color_pgtohwr)(0x000000)))) {
-    (*vid->blit)(icon,0,0,5,5,deadcomp_width,deadcomp_height,PG_LGOP_NONE);
-    (*vid->bitmap_free)(icon);
+  {
+     hwrbitmap icon;
+     if (!iserror((*vid->bitmap_loadxbm)(&icon,deadcomp_bits,
+					 deadcomp_width,deadcomp_height,
+					 (*vid->color_pgtohwr)(0xFFFF80),
+					 (*vid->color_pgtohwr)(0x000000)))) {
+	(*vid->blit)(icon,0,0,5,5,deadcomp_width,deadcomp_height,PG_LGOP_NONE);
+	(*vid->bitmap_free)(icon);
+     }
   }
-
+#else
+   /* To appease the below code */
+# define deadcomp_width 0
+#endif
+     
   /* Format and print message */
-
   va_start(ap,fmt);
   vsnprintf(msgbuf,256,fmt,ap);
   va_end(ap);

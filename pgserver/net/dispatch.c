@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.30 2001/02/23 05:21:24 micahjd Exp $
+/* $Id: dispatch.c,v 1.31 2001/03/08 01:22:23 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -175,15 +175,8 @@ g_error rqh_mkbitmap(int owner, struct pgrequest *req,
   g_error e;
   int w;
   
-  /* The file format is autodetected. Formats that can't be detected
-     will have seperate functions for loading them (XBM for example) */
-
-  /* So far the only available type is PNM :) */
-
-  /* PNM */
-  e = (*vid->bitmap_loadpnm)(&bmp,data,req->size);
+  e = (*vid->bitmap_load)(&bmp,data,req->size);
   errorcheck;
-
   e = mkhandle(&h,PG_TYPE_BITMAP,owner,bmp);
   errorcheck;
   

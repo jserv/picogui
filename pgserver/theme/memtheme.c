@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.24 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: memtheme.c,v 1.25 2001/03/08 01:22:23 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -461,7 +461,7 @@ void theme_remove(struct pgmemtheme *th) {
   /* Unlink from the linked list */
   if (memtheme == th)
     memtheme = memtheme->next;
-  else {
+  else if (memtheme) {
     p = memtheme;
     while (p->next) {
       if (p->next == th) {

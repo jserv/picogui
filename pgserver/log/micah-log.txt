@@ -1,9 +1,29 @@
+---- Wednesday, March 7
+
+Adding flexible bitmap loading/saving
++ formats
++ formats/pnm.c
+
+Added bitmap formats to the -l display. Because it now shows more
+information than it used to, I made it more compact. Instead of a table for
+font properties, each font name has characters after it showing its flags.
+Newlines are no longer generously sprinkled throughout.
+
+Fixed bug in theme_remove (crashes if memtheme==NULL)
+which would make it segfault if its first theme load resulted in an error
+after the theme heap is allocated.
+
+Added support for any bit depth VBL in the fbdev driver
+
 ---- Tuesday, March 6
 
 Implemented PG_SZMODE_CNTFRACT. Added a PG_WP_TRANSPARENT to the box widget.
 Added a real grid to the calculator demo
 
 Made small adjustments to pseudo3d_modcolor.ths
+
+Fixed up defaultvbl blits a lot, aqua doesn't crash now.
+Fixed tile blits more, now aqua works in defaultvbl.
 
 ---- Friday, March 2
 

@@ -83,6 +83,12 @@ CONFIG_WIDGET_CANVAS=y
 # CONFIG_NOPANELBAR is not set
 
 #
+# Bitmap Formats
+#
+CONFIG_FORMAT_XBM=y
+CONFIG_FORMAT_PNM=y
+
+#
 # Security
 #
 # CONFIG_NOREMOTEINPUT is not set

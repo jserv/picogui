@@ -96,6 +96,12 @@ bool 'Disable panelbar'                       CONFIG_NOPANELBAR
 endmenu
 
 mainmenu_option next_comment
+comment 'Bitmap Formats'
+bool 'Internal XBM loader'                    CONFIG_FORMAT_XBM
+bool 'PNM: portable anymap'                   CONFIG_FORMAT_PNM
+endmenu
+
+mainmenu_option next_comment
 comment 'Security'
 bool 'Disable remote input devices'           CONFIG_NOREMOTEINPUT
 bool 'Disable exclusive resource access'      CONFIG_NOEXCLUSIVE
