@@ -1,4 +1,4 @@
-/* $Id: rotate180.c,v 1.10 2002/09/15 10:51:50 micahjd Exp $
+/* $Id: rotate180.c,v 1.11 2002/10/02 20:38:47 micahjd Exp $
  *
  * rotate180.c - Video wrapper to rotate the screen 180 degrees
  *
@@ -54,6 +54,12 @@ void rotate180_rect(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
    (*vid->rect)(dest,dx-x-w,dy-y-h,w,h,c,lgop);
+}
+void rotate180_blur(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,
+		   s16 radius) {
+   s16 dx,dy;
+   (*vid->bitmap_getsize)(dest,&dx,&dy);
+   (*vid->blur)(dest,dx-x-w,dy-y-h,w,h,radius);
 }
 void rotate180_ellipse(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,
 		       hwrcolor c,s16 lgop) {
@@ -209,6 +215,7 @@ void vidwrap_rotate180(struct vidlib *vid) {
    vid->bar = &rotate180_bar;
    vid->line = &rotate180_line;
    vid->rect = &rotate180_rect;
+   vid->blur = &rotate180_blur;
    vid->ellipse = &rotate180_ellipse;
    vid->fellipse = &rotate180_fellipse;
    vid->gradient = &rotate180_gradient;
