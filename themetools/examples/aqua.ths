@@ -1,4 +1,4 @@
-/* $Id: aqua.ths,v 1.25 2001/03/07 04:11:47 micahjd Exp $
+/* $Id: aqua.ths,v 1.26 2001/03/30 06:10:32 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
@@ -208,5 +208,17 @@ object menuitem {
   height = 20;
 }
 object menuitem.hilight bitmap1 = LoadBitmap("data/aq_menuselect.pnm");
+
+/* Check boxes */
+object checkbox {
+   bgfill = fillstyle {
+      Bitmap(x+1,y+((h-21)>>1)-1,19,21,bitmap1,PG_LGOP_NONE,0,0);
+      x = x + 24;
+   };
+   bitmap1 = LoadBitmap("data/aq_check.pnm");
+   align = PG_A_LEFT;
+   margin = 12;
+}
+object checkbox.on bitmap1 = LoadBitmap("data/aq_check_on.pnm");
 
 /* The End */
