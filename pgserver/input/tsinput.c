@@ -1,4 +1,4 @@
-/* $Id: tsinput.c,v 1.12 2001/06/01 10:43:36 pney Exp $
+/* $Id: tsinput.c,v 1.13 2001/06/01 16:09:45 pney Exp $
  *
  * tsinput.c - input driver for touch screen
  *
@@ -91,6 +91,10 @@ void tsinput_poll(void) {
 
     switch(pen_info.event) {
     case EV_PEN_UP:
+      if(pen_info.x > 350) {
+	tsinput_sleep();
+	break;
+      }
       dispatch_pointing(TRIGGER_UP,pen_info.x,pen_info.y,0);
       gettimeofday(&lastEvent,NULL);
       iIsPenUp = 1;
@@ -183,7 +187,7 @@ g_error tsinput_init(void) {
     ts_params.sample_ms      = 10;
     ts_params.follow_thrs    = 2;
     ts_params.mv_thrs        = 5;
-    ts_params.xy_swap        = 0;
+    ts_params.xy_swap        = 1;
 
 #ifdef CONFIG_XCOPILOT
     ts_params.y_max          = 159 + 66;  /* to allow scribble area */
