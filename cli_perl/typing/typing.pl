@@ -89,7 +89,7 @@ LeaveContext;
 ############################################################ Typing panel
 
 $typingpanel = RegisterApp(-side => top,-height => 350);
-$lessonname = NewWidget(-type => label,-font => $bigfont,
+$lessonname = NewWidget(-type => label,-font => NewFont("Utopia",25,grayline,italic),
 			-transparent => 1, -align => right);
 
 ############################################################ Lesson panel
