@@ -339,6 +339,30 @@ object scroll.h.on bitmap2 = LoadBitmap("data/scrollthumb_h_bright.png");
 
 object menuitem {
   align = PG_A_LEFT;
+  height = 18;
+  offset = -1;
+}
+
+object menuitem.hilight {
+  parent = PGTH_O_BASE_DISPLAY;
+  align = PG_A_LEFT;
+}
+
+/********************************** Label */
+
+object base.display {
+  bgfill = Copy(default::fExpand);
+  bitmap1 = LoadBitmap("data/blue_square.png");
+  width = 18;
+  height = 18;
+  srcw = 18;
+  srch = 18;
+  left_sz = 5;
+  right_sz = 5;
+  top_sz = 8;
+  bottom_sz = 9;
+  margin = 6;
+  offset = -1;
 }
 
 /* The End */
