@@ -1,4 +1,4 @@
-/* $Id: remorakb.c,v 1.2 2001/11/06 09:15:48 bauermeister Exp $
+/* $Id: remorakb.c,v 1.3 2001/11/09 19:49:17 bauermeister Exp $
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -37,6 +37,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/termios.h>
+#include <sys/ioctl.h>
 #include <asm/MC68VZ328.h>  /* for bus and port definition of DragonBall VZ */
 
 /*****************************************************************************/
@@ -370,7 +371,8 @@ typedef struct {
 /* special code values */
 #define NONE          0x0000
 #define QUALMASK      0xF000
-#define CODEMASK      0x0FFF
+#define CODEMASK      0x03FF
+#define KEYUPMASK     0x0800
 
 #define SPECIAL       0x8000
 #define SAME          0x9000
@@ -385,6 +387,7 @@ typedef struct {
 #define CHAR(x)       ( (x) | CHARKEY )
 #define COMP(x)       ( (x) | COMPOSE )
 #define ALPH(x)       ( (x) | ALPHKEY )
+#define UP(x)         ( (x) | KEYUPMASK )
 #define IGN(x)        NONE
 
 
@@ -483,7 +486,7 @@ static const HwKeyDef key_def_table[] = {
   /*uNUM4    */ { 0xa55a, DEADKEY                                            },
   /*uNUM3    */ { 0xa659, DEADKEY                                            },
   /*uUP      */ { 0xa857, DEADKEY                                            },
-  /*uLSPACE  */ { 0xa956, DEADKEY                                            },
+  /*uLSPACE  */ { 0xa956, UP(PGKEY_SPACE)        , SAME     , NONE           },
   /*uv       */ { 0xaa55, DEADKEY                                            },
   /*uf       */ { 0xab54, DEADKEY                                            },
   /*ut       */ { 0xac53, DEADKEY                                            },
@@ -520,7 +523,7 @@ static const HwKeyDef key_def_table[] = {
   /*uRSHIFT  */ { 0xd926, SPECIALKEY(SPu_RSHIFT)                             },
   /*uENTER   */ { 0xda25, DEADKEY                                            },
   /*uKET     */ { 0xdb24, DEADKEY                                            },
-  /*uRSPACE  */ { 0xdc23, DEADKEY                                            },
+  /*uRSPACE  */ { 0xdc23, UP(PGKEY_SPACE)        , SAME     , NONE           },
   /*uBKSLASH */ { 0xdd22, DEADKEY                                            },
   /*uLEFT    */ { 0xde21, DEADKEY                                            },
   /*uDOWN    */ { 0xe01f, DEADKEY                                            },
@@ -718,15 +721,21 @@ static int kb_fd_activate(int fd)
   TRACEF((">>> kb_fd_activate()\n"));
 
   /*
+   * is the fd mine ?
+   */
+  if(fd!=kb_fd)
+    return 0;
+
+  /*
    * Listen to port and receive an index in key_def_table
    */
-  index = kb_getkey_index(fd);
+  index = kb_getkey_index(kb_fd);
 
   /*
    * Invalid index or nothing
    */
   if(index==-1)
-    return 0;
+    return 1;
 
   /*
    * Valid index
@@ -736,6 +745,7 @@ static int kb_fd_activate(int fd)
     u32 pg_type = 0;
     u16 pg_code = 0;
     u16 pg_mods = 0;
+    int upkey = 0;
 
     /* modifiers */
     if(mod_ctr)
@@ -773,12 +783,12 @@ static int kb_fd_activate(int fd)
       
       /* we don't propagate special key press (maybe we should ?) */
       if(pg_code==0)
-        return 0;
+        return 1;
     }
 
     /* not a special key */
     else {
-      u16 code;
+      u16 code, rawcode;
       u16 qual;
 
       /* determine map page */
@@ -790,6 +800,7 @@ static int kb_fd_activate(int fd)
         code = def->code;
 
       /* split qualifier and code */
+      rawcode = code;
       qual = code & QUALMASK;
       code &= CODEMASK;
 
@@ -797,12 +808,14 @@ static int kb_fd_activate(int fd)
       if(qual==SAME) {
         /* exactly like basic page */
         code = def->code;
+	rawcode = code;
         qual = code & QUALMASK;
         code &= CODEMASK;
       }
       else if(qual==MOD_SHIFT) {
         /* exactly like basic page, plus a shift modifier */
         code = def->code;
+	rawcode = code;
         qual = code & QUALMASK;
         code &= CODEMASK;
         pg_mods |= PGMOD_SHIFT;
@@ -811,22 +824,26 @@ static int kb_fd_activate(int fd)
       if(mod_ctr && qual==ALPHKEY) {
         /* exactly like basic page, plus a ctrl modifier */
         code = def->code;
+	rawcode = code;
         qual = code & QUALMASK;
         code &= CODEMASK;
       }
       else if(mod_alt && qual==ALPHKEY) {
         /* exactly like basic page, plus an alt modifier */
         code = def->code;
+	rawcode = code;
         qual = code & QUALMASK;
         code &= CODEMASK;
       }
       else if(mod_caps && qual==ALPHKEY) {
         /* upper page, unless shifted (shift cancels caps) */
         code = mod_lsh||mod_rsh ? def->code : def->code_shift;
+	rawcode = code;
         qual = code & QUALMASK;
         code &= CODEMASK;
       }
 
+      upkey = (rawcode & KEYUPMASK) != 0;
 
       /* 
        * Interpret code
@@ -834,13 +851,13 @@ static int kb_fd_activate(int fd)
 
       /* a dead key => exit */
       if(code==NONE) {
-        return 0;
+        return 1;
       }
 
       /* a composition first key => remember accent and exit */
       if(qual==COMPOSE) {
         comp_char = code;
-        return 0;
+        return 1;
       }
 
       /* ctrl/alt + alpha key => lowercase key + modifiers */
@@ -870,7 +887,9 @@ static int kb_fd_activate(int fd)
       pg_code = code;
 
       /* char or key ? */
-      pg_type = (qual==CHARKEY||qual==ALPHKEY)? TRIGGER_CHAR: TRIGGER_KEYDOWN;
+      pg_type = (qual==CHARKEY||qual==ALPHKEY)
+	? TRIGGER_CHAR 
+	: (upkey ? TRIGGER_KEYUP : TRIGGER_KEYDOWN);
     }
     
 
@@ -878,7 +897,9 @@ static int kb_fd_activate(int fd)
     if(pg_type==TRIGGER_CHAR)
       DPRINTF(("CHAR, char:['%c'=%02x]", pg_code, pg_code));
     else {
-      DPRINTF(("KEYDOWN, key:[%02X=", pg_code));
+      DPRINTF(("%s, key:[%02X=",
+	       pg_type==TRIGGER_KEYUP ? "KEYUP" : "KEYDOWN",
+	       pg_code));
       print_pgkeyname(pg_code);
       DPRINTF(("]"));
     }
@@ -892,8 +913,21 @@ static int kb_fd_activate(int fd)
      */
     VID(sprite_show)(cursor);
     dispatch_key(pg_type, pg_code, pg_mods);
+    if(pg_type==TRIGGER_CHAR && pg_code==' ')
+      dispatch_key(TRIGGER_KEYDOWN, PGKEY_SPACE, pg_mods);
     return 1;
   }
+}
+
+/*****************************************************************************/
+
+static void set_rts(int fd, int active)
+{
+  int bits = TIOCM_CTS;
+  if(ioctl(fd, active ? TIOCMBIS : TIOCMBIC, &bits) < 0)
+    fprintf(stderr, "%s: Can't set RTS %s.\n",
+	    __FILE__, active ? "on" : "off");
+
 }
 
 /*****************************************************************************/
@@ -939,6 +973,8 @@ static g_error kb_init(void)
     UMISC2 |= 0x0008;       /* set uart2 to invert receive polarity */
   kb_init_mods();           /* init states*/
 
+  set_rts(kb_fd, 1);  
+
   TRACEF(("  > kb_init done\n"));
   return sucess;
 }
@@ -958,6 +994,7 @@ static void kb_fd_init(int *n, fd_set *readfds, struct timeval *timeout)
 static void kb_close(void)
 {
   TRACEF((">>> kb_close()\n"));
+  set_rts(kb_fd, 0);
   tcsetattr(kb_fd, TCSANOW, &saved_options);
   close(kb_fd);
 }
