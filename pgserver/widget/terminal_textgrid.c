@@ -1,4 +1,4 @@
-/* $Id: terminal_textgrid.c,v 1.2 2002/10/11 12:32:37 micahjd Exp $
+/* $Id: terminal_textgrid.c,v 1.3 2002/10/11 15:40:18 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -210,6 +210,8 @@ void term_updrect(struct widget *self,int x,int y,int w,int h) {
 /* Plot a character at an x,y position */
 void term_plot(struct widget *self,int x,int y,u8 c) {
   struct pgstr_iterator p = PGSTR_I_NULL;
+  if (x<0 || y<0 || x>=DATA->bufferw || y>=DATA->bufferw)
+    return;
   pgstring_seek(DATA->buffer, &p, x + y * DATA->bufferw);
   pgstring_encode_meta(DATA->buffer, &p, c, (void*)(u32) DATA->current.attr);
   term_updrect(self,x,y,1,1);
@@ -283,11 +285,49 @@ void textblit(struct pgstring *src,struct pgstring *dest,int src_x,int src_y,int
 	      int dest_x,int dest_y,int dest_w,int w,int h) {
   int src_chr,dest_chr;
 
-  src_chr  = src_x + src_y * src_w;
-  dest_chr = dest_x + dest_y * dest_w;
-  
-  for (;h;h--,src_chr+=src_w,dest_chr+=dest_w)
-    pgstring_chrcpy(dest,src,dest_chr,src_chr,w);
+  /* Top-down blit */
+  if (dest_y < src_y) {
+    src_chr  = src_x + src_y * src_w;
+    dest_chr = dest_x + dest_y * dest_w;
+    
+    for (;h>0;h--,src_chr+=src_w,dest_chr+=dest_w)
+      pgstring_chrcpy(dest,src,dest_chr,src_chr,w);
+  }
+  /* Bottom-up blit */
+  else {
+    src_chr  = src_x + (src_y + h - 1) * src_w;
+    dest_chr = dest_x + (dest_y + h - 1) * dest_w;
+ 
+    for (;h>0;h--,src_chr-=src_w,dest_chr-=dest_w)
+      pgstring_chrcpy(dest,src,dest_chr,src_chr,w);
+  }
+}
+
+/* Scroll the specified region up/down by some number of lines,
+ * clearing the newly exposed region. ('lines' is + for down, - for up)
+ */
+void term_scroll(struct widget *self, int top_y, int bottom_y, int lines) {
+
+  top_y = max(top_y, 0);
+  bottom_y = min(bottom_y, DATA->bufferh - 1);
+  if (bottom_y < top_y)
+    return;
+  if (max(lines,-lines) >= bottom_y - top_y)
+    return;
+
+  if (lines > 0) {
+    textblit(DATA->buffer, DATA->buffer, 0, top_y, DATA->bufferw, 
+	     0, top_y + lines, DATA->bufferw, DATA->bufferw, bottom_y - top_y + 1 - lines);    
+    term_clearbuf(self, 0, top_y, DATA->bufferw * lines);
+  }
+
+  else if (lines < 0) {
+    textblit(DATA->buffer, DATA->buffer, 0, top_y - lines, DATA->bufferw, 
+	     0, top_y, DATA->bufferw, DATA->bufferw, bottom_y - top_y + 1 + lines);
+    term_clearbuf(self, 0, bottom_y+1+lines, DATA->bufferw * -lines);
+  }
+
+  term_updrect(self,0,top_y,DATA->bufferw,bottom_y - top_y + 1);
 }
 
 /* The End */

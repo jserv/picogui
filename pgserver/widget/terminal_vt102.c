@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.2 2002/10/11 12:32:37 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.3 2002/10/11 15:40:18 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -34,6 +34,7 @@ void term_char_escapemode(struct widget *self,u8 c);
 void term_ecma48sgr(struct widget *self);
 void term_csi(struct widget *self, u8 c);
 void term_othercsi(struct widget *self,u8 c);
+void term_decset(struct widget *self,int n,int enable);
 int term_misc_code(struct widget *self,u8 c);
 
 /********************************************** Keyboard input */
@@ -155,7 +156,7 @@ void term_char(struct widget *self,u8 c) {
   /* Normal character */
   else
     {
-      if (DATA->current.crsrx >= DATA->bufferw) {
+      if (DATA->current.crsrx >= DATA->bufferw && !DATA->current.no_autowrap) {
         DATA->current.crsrx = 0;	/* "magic" wrapping */
         DATA->current.crsry++;
 	if (DATA->current.crsry >= DATA->bufferh) {  /* Scroll vertically */
@@ -187,16 +188,7 @@ void term_char(struct widget *self,u8 c) {
     DATA->current.crsry = 0;
   else if (DATA->current.crsry >= DATA->bufferh) {  /* Scroll vertically */
     DATA->current.crsry = DATA->bufferh-1;
-    pgstring_chrcpy(DATA->buffer, DATA->buffer, 0, DATA->bufferw, 
-		    DATA->buffer->num_chars - DATA->bufferw);
-    term_clearbuf(self,0,DATA->bufferh-1,DATA->bufferw);
-
-    /* Two methods here - just redraw the screen or try a scroll blit */
-
-    term_updrect(self,0,0,DATA->bufferw,DATA->bufferh);
-
-    //self->in->div->flags |= DIVNODE_SCROLL_ONLY;
-    //self->in->div->oty = DATA->celh;
+    term_scroll(self,DATA->current.scroll_top,DATA->current.scroll_bottom,-1);
   }
   
   term_setcursor(self,1);  /* Show cursor */
@@ -438,11 +430,6 @@ void term_othercsi(struct widget *self,u8 c) {
     DATA->current.crsrx = DATA->csiargs[0] - 1;
     break;
 
-    /* d - Set row */
-  case 'd':
-    DATA->current.crsry = DATA->csiargs[0] - 1;
-    break;
-
     /* H - Set row,column */
   case 'H':
     DATA->current.crsry = DATA->csiargs[0] - 1;
@@ -479,6 +466,47 @@ void term_othercsi(struct widget *self,u8 c) {
     }
     break;
 
+    /* L - Insert blank lines */
+  case 'L':
+    term_scroll(self,DATA->current.crsry,DATA->current.scroll_bottom,DATA->csiargs[0]);
+    break;
+
+    /* M - Delete lines */
+  case 'M':
+    term_scroll(self,DATA->current.crsry,DATA->current.scroll_bottom,-DATA->csiargs[0]);
+    break;
+
+    /* c - Identify as a VT102 terminal */
+  case 'c':
+    {
+      static const char *response = "\e[?6c";
+      post_event(PG_WE_DATA,self,strlen(response),0,(char*)response);
+    }
+    break;
+
+    /* d - Set row */
+  case 'd':
+    DATA->current.crsry = DATA->csiargs[0] - 1;
+    break;
+
+    /* f - Set row,column */
+  case 'f':
+    DATA->current.crsry = DATA->csiargs[0] - 1;
+    DATA->current.crsrx = DATA->csiargs[1] - 1;
+    break;
+
+    /* r - Set scrolling region */
+  case 'r':
+    if (DATA->num_csiargs == 2) {
+      DATA->current.scroll_top = DATA->csiargs[0] - 1;
+      DATA->current.scroll_bottom = DATA->csiargs[1] - 1;
+    }
+    else {
+      DATA->current.scroll_top = 0;
+      DATA->current.scroll_bottom = DATA->csiargs[0] - 1;
+    }
+    break;
+
     /* s - Save cursor position */
   case 's':
     DATA->current.savcrsry = DATA->current.crsry;
@@ -490,41 +518,16 @@ void term_othercsi(struct widget *self,u8 c) {
     DATA->current.crsry = DATA->current.savcrsry;
     DATA->current.crsrx = DATA->current.savcrsrx;
     break;
-
-    /* c - Identify as a VT102 terminal */
-  case 'c':
-    {
-      static const char *response = "\e[?6c";
-      post_event(PG_WE_DATA,self,strlen(response),0,(char*)response);
-    }
-    break;
-
+    
     /* l and h - DECSET/DECRST sequence */
   case 'h':  /* SET */
   case 'l':  /* RST */
-    switch (DATA->csiargs[0]) {
-
-      /* ESC [ ? 25 h - Cursor on/off */
-    case 25:
-      if (c=='h')
-	DATA->current.cursor_hidden = 0;
-      else {
-	DATA->current.cursor_hidden = 1;
-	term_setcursor(self,0);
-      }
-      break;
-
-    default:
-#ifdef BOTHERSOME_TERMINAL
-      printf("term: Unknown DECSET/DECRST number = %d\n",DATA->csiargs[0]);
-#endif
-      break;
-    }
+    term_decset(self,DATA->csiargs[0],c=='h');
     break;
 
   default:
 #ifdef BOTHERSOME_TERMINAL
-      printf("term: Unknown final character in CSI escape = %c\n",c);
+      printf("term: Unknown final character in CSI escape = %c (%d)\n",c,c);
 #endif
       break;
 
@@ -550,9 +553,105 @@ int term_misc_code(struct widget *self,u8 c) {
     case '8':
       memcpy(&DATA->saved,&DATA->saved,sizeof(DATA->current));
       return 1;
+
+      /* ESC c - reset */
+    case 'c':
+      /* Hmm.. what to do here? */
+      return 1;
+
+      /* ESC D - linefeed */
+    case 'D':
+      DATA->current.crsry++;
+      return 1;
+
+      /* ESC E - newline */
+    case 'E':
+      DATA->current.crsrx = 0;
+      return 1;
+
+      /* ESC H - set tabstop */
+    case 'H':
+      /* FIXME: Implement this */
+      return 1;
+
+      /* ESC M - reverse linefeed */
+    case 'M':
+      DATA->current.crsry--;
+      return 1;
+    }
+
+  /****** Two-character codes */
+
+  if (DATA->escbuf_pos == 2)
+    switch (DATA->escapebuf[0]) { 
+      /* ( - Set G0 character set */
+    case '(':
+      DATA->current.g[0] = c;
+      return 1;
+
+      /* ) - set G1 character set */
+    case ')':
+      DATA->current.g[1] = c;
+      return 1;
+
+      /* * - set G2 character set */
+    case '*':
+      DATA->current.g[2] = c;
+      return 1;
+
+      /* + - set G3 character set */
+    case '+':
+      DATA->current.g[3] = c;
+      return 1;
+
+    case '#':
+      /* #8 - DEC screen alignment test (fill screen with E's) */
+      if (c == '8') {
+	int i,j;
+	for (j=0;j<DATA->bufferh;j++)
+	  for (i=0;i<DATA->bufferw;i++)
+	    term_plot(self,i,j,'E');
+	return 1;
+      }
+      /* The rest of the codes starting with ESC # are for 
+       * double-height/width chars, not supported */
+      return 1;
+
     }
 
   return 0;
+}
+
+
+void term_decset(struct widget *self,int n,int enable) {
+  switch (n) {
+
+    /* ESC [ ? 3 h - 80/132 column mode */
+  case 3:
+    /* Ignore this */
+    break;
+    
+    /* ESC [ ? 7 h - Autowrap on/off */
+  case 7:
+    DATA->current.no_autowrap = !enable;
+    break;
+
+    /* ESC [ ? 25 h - Cursor on/off */
+  case 25:
+    if (enable)
+      DATA->current.cursor_hidden = 0;
+    else {
+      DATA->current.cursor_hidden = 1;
+      term_setcursor(self,0);
+    }
+    break;
+
+  default:
+#ifdef BOTHERSOME_TERMINAL
+    printf("term: Unknown DECSET/DECRST number = %d\n",DATA->csiargs[0]);
+#endif
+    break;
+  }
 }
 
 /* The End */

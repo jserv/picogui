@@ -1,4 +1,4 @@
-/* $Id: terminal_frontend.c,v 1.3 2002/10/11 11:58:45 micahjd Exp $
+/* $Id: terminal_frontend.c,v 1.4 2002/10/11 15:40:17 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -296,6 +296,10 @@ void build_terminal(struct gropctxt *c,u16 state,struct widget *self) {
   DATA->inc = c->current;
   DATA->x = c->r.x;
   DATA->y = c->r.y;
+
+  /* Default scrolling regions */
+  DATA->current.scroll_top = 0;
+  DATA->current.scroll_bottom = newh-1;
 
   /* Notify the application */
   post_event(PG_WE_RESIZE,self,(neww << 16) | newh,0,NULL);

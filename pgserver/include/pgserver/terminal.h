@@ -1,4 +1,4 @@
-/* $Id: terminal.h,v 1.1 2002/09/26 14:11:02 micahjd Exp $
+/* $Id: terminal.h,v 1.2 2002/10/11 15:40:17 micahjd Exp $
  *
  * terminal.h - Header file shared by components of the terminal emulator widget
  *
@@ -47,7 +47,10 @@ struct terminal_state {
   int crsrx,crsry;               /* Current cursor location */
   int savcrsrx, savcrsry;        /* Cursor location saved with ESC [ s */
   u8 attr;                       /* Default attribute for new characters */
+  int scroll_top, scroll_bottom; /* Scrolling region set with CSI r */
+  char g[4];                     /* Character set selections */
   unsigned int cursor_hidden:1;
+  unsigned int no_autowrap:1;
 };
 
 /* All internal data for the terminal widget, accessed with the DATA macro 
@@ -118,6 +121,11 @@ void term_setcursor(struct widget *self,int flag);
 
 /* Clear a chunk of buffer */
 void term_clearbuf(struct widget *self,int fromx,int fromy,int chars);
+
+/* Scroll the specified region up/down by some number of lines,
+ * clearing the newly exposed region. ('lines' is + for down, - for up)
+ */
+void term_scroll(struct widget *self, int top_y, int bottom_y, int lines);
 
 /* Copy a rectangle between two text buffers */
 void textblit(struct pgstring *src,struct pgstring *dest,
