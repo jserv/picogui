@@ -1,4 +1,4 @@
-/* $Id: panelbar.c,v 1.14 2002/10/11 11:58:44 micahjd Exp $
+/* $Id: panelbar.c,v 1.15 2002/10/17 02:24:47 micahjd Exp $
  *
  * panelbar.c - Container and draggable bar for resizing panels
  *
@@ -204,8 +204,6 @@ g_error panelbar_set(struct widget *self,int property, glob data) {
     e = rdhandle((void **)&w,PG_TYPE_WIDGET,self->owner,data);
     errorcheck;
     DATA->bindto = data;
-    /* FIXME: this should be in pixels */
-    DATA->unrolled = widget_get(w, PG_WP_SIZE);
     break;
 
   case PG_WP_MINIMUM:
@@ -265,6 +263,10 @@ void panelbar_trigger_sprite(struct widget *self,s32 type,union trigparam *param
     if (!iserror(rdhandle((void**)&boundwidget,PG_TYPE_WIDGET,self->owner,
 			  DATA->bindto)) && boundwidget) {
       DATA->oldsize = widget_get(boundwidget,PG_WP_SIZE);
+
+      /* If we're not rolled up, save this as the unrolled split */
+      if (DATA->oldsize > DATA->minimum)
+	DATA->unrolled = DATA->oldsize;
     }
 
     DATA->on = 1;
