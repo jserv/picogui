@@ -17,11 +17,14 @@ while {$imgnr<$NUMFRAMES} {
 }
 
 set dlg [pgDialog "Boing!"]
-set ok [pgNewButton "Ok"]
-pgSetSide $ok bottom
+set ok [pgCreateWidget button]
 set bmp [pgNewBitmap $img(0)]
+
+pgSetText $ok "Ok"
+pgSetSide $ok bottom
 pgSetSide $bmp all
-update
+pgAttach $ok inside $dlg
+pgAttach $bmp after $ok
 
 set i 0
 set d 1

@@ -87,6 +87,8 @@ proc pgNewPopup {{width 0} {height 0}} {
 	if {$defaultparent == 0} {
 		set defaultparent $id
 	}
+	set defaultparent $id
+	set defaultrship inside
 	return $id
 }
 proc pgNewPopupAt {x y width height} {
@@ -135,14 +137,19 @@ proc pgCreateWidget {type} {
 	send_packet [pack_pgrequest 1 4 $pg_request(createwidget)]
 	send_packet [binary format "SS" $pg_widget($type) 0]
 	array set ret [pgGetResponse]
-	set defaultparent $ret(data)
-	set defaultrship inside
 	return $ret(data)
 }
 proc pgSetWidget {widget property glob} {
 	global pg_request
 	send_packet [pack_pgrequest 1 12 $pg_request(set)]
 	send_packet [binary format "IISS" $widget $glob $property 0]
+	array set ret [pgGetResponse]
+	return $ret(data)
+}
+proc pgGetWidget {widget property} {
+	global pg_request
+	send_packet [pack_pgrequest 1 8 $pg_request(set)]
+	send_packet [binary format "ISS" $widget $property 0]
 	array set ret [pgGetResponse]
 	return $ret(data)
 }
@@ -290,8 +297,10 @@ proc pgBind {itemid eventid script} {
 }
 proc pgEventLoop {} {
 	global binds
+	pgUpdate
 	while {1} {
 		array set event [pgWaitEvent]
+		parray event
 		set indexes [array names binds]
 		if {[lsearch $indexes $event(from)] == -1} {
 			array set handlers $binds(any)
@@ -312,4 +321,17 @@ proc pgDialog { title } {
 	pgSetText $dlg $title
 	set defaultparent $dlg
 	return $dlg
+}
+proc pgCreateImage {w h} {
+	send_packet [pack_pgrequest 1 4 $pg_request(mkwidget)]
+	send_packet [binary format "SS" $w $h]
+	array set ret [pgGetResponse]
+	return $ret(data)
+}
+proc pgAttach {widget rship parent} {
+	global pg_request pg_derive
+	send_packet [pack_pgrequest 1 12 $pg_request(attachwidget)]
+	send_packet [binary format "IISS" $parent $widget $pg_derive($rship) 0]
+	array set ret [pgGetResponse]
+	return $ret(data)
 }

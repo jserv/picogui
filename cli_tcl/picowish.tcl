@@ -44,7 +44,14 @@ proc toplevel {name args} {
 	tk alias $name toplevelfunctions $name $id
 	mapfunction $name $name
 }
-
+proc getparent {name} {
+	set tree [split $name .]
+	set tree [join [lrange $tree 0 [expr [llength $tree]-2]] .]
+	if {$tree == ""} {
+		return "."
+	}
+	return $tree
+}
 #Initialization code, connect and create our first toplevel widget
 pgConnect localhost 0
 set id [pgRegisterApp "picowish" $pg_app(normal)]
@@ -55,7 +62,9 @@ tk alias . toplevelfunctions . $id
 #map the . function to the current namespace
 mapfunction . .
 
-while {1} {
-	pgUpdate
-}
-exit
+#just some sample test code
+set button [pgCreateWidget button]
+pgSetText $button "Hello"
+pgAttach $button inside $id
+
+pgEventLoop
