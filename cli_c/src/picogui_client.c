@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.23 2000/11/05 10:32:15 micahjd Exp $
+/* $Id: picogui_client.c,v 1.24 2000/11/05 18:20:35 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -276,6 +276,7 @@ void _pg_getresponse(void) {
   
   if(!_pgnonblocking_on) pf = &_pg_recv;
   else                   pf = &_pg_recvtimeout;
+
   /* Read the response type */
     if ((*pf)(&_pg_return.type,sizeof(_pg_return.type)))
       return;
@@ -354,10 +355,13 @@ void _pg_getresponse(void) {
       _pg_return.e.data.size = ntohl(pg_data.size);
       
       if (!(_pg_return.e.data.data = 
-	    _pg_malloc(_pg_return.e.data.size)))
+	    _pg_malloc(_pg_return.e.data.size+1)))
 	return;
       if ((*pf)(_pg_return.e.data.data,_pg_return.e.data.size))
 	return;
+
+      /* Add a null terminator */
+      ((char *)_pg_return.e.data.data)[_pg_return.e.data.size] = 0;
     }
     break;
 
@@ -959,6 +963,14 @@ long pgGetWidget(pghandle widget,short property) {
   return _pg_return.e.retdata;
 }
 
+/* Get the contents of a string handle. */
+char *pgGetString(pghandle string) {
+  string = htonl(string);
+  _pg_add_request(PGREQ_GETSTRING,&string,sizeof(pghandle));
+  pgFlushRequests();
+  return _pg_return.e.data.data;
+}
+
 /* Get and delete the previous text, and set the
    text to a new string made with the given text */
 void pgReplaceText(pghandle widget,const char *str) {
@@ -1060,19 +1072,39 @@ int pgMenuFromString(char *items) {
     _pg_add_request(PGREQ_MKSTRING,(void *) items,p-items);
     items = p+1;
     pgFlushRequests();
-    handletab[i++] = htonl(_pg_return.e.retdata);
+    handletab[i++] = _pg_return.e.retdata;
   } while (*p);
 
-  /* Build the menu */
-  _pg_add_request(PGREQ_MKMENU,handletab,4*i);
 
-  /* Run it */
-  ret = pgGetPayload(pgGetEvent(NULL,NULL));
+  ret = pgMenuFromArray(handletab,i);
 
-  /* Go away now */
+  free(handletab);
   pgLeaveContext();
 
   return ret;
+}
+
+/* This creates a menu from an array of string handles. 
+ * Same return values as pgMenuFromString above.
+ *
+ * Important note: pgMenuFromArray expects that a new
+ *                 context will be entered before the
+ *                 string handles are created.
+ *                 Therefore, it contains a call to
+ *                 pgLeaveContext() as part of its clean-up.
+ */
+int pgMenuFromArray(pghandle *items,int numitems) {
+  int i;
+  /* This function's a lot smaller than it sounds :) */
+
+  for (i=0;i<numitems;i++)         /* Swap bytes */
+    items[i] = htonl(items[i]);
+  _pg_add_request(PGREQ_MKMENU,items,4*numitems);
+  for (i=0;i<numitems;i++)         /* Unswap */
+    items[i] = ntohl(items[i]);
+
+  /* Return event */
+  return pgGetPayload(pgGetEvent(NULL,NULL));
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.21 2000/11/05 10:30:47 micahjd Exp $
+/* $Id: client_c.h,v 1.22 2000/11/05 18:20:35 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -174,6 +174,14 @@ pghandle pgNewBitmap(struct pgmemdata obj);
 /* Create a new string object */
 pghandle pgNewString(const char *str);
 
+/* Get the contents of a string handle.
+ *
+ * The dynamically allocated string is managed by PicoGUI,
+ * but never rely on its integrity after another PicoGUI
+ * function call. If you need it for a long time, copy it.
+ */
+char *pgGetString(pghandle string);
+
 /* Deletes the widget's previous text, and
  * sets the widget's text to a newly allocated
  * string object.
@@ -271,6 +279,17 @@ int pgMessageDialogFmt(const char *title,unsigned long flags,const char *fmt, ..
  * item, or 0 for cancel.
  */
 int pgMenuFromString(char *items);
+
+/* This creates a menu from an array of string handles. 
+ * Same return values as pgMenuFromString above.
+ *
+ * Important note: pgMenuFromArray does not perform context
+ *                 management automatically like pgMenuFromString.
+ *                 Before you start allocating strings,
+ *                 call pgEnterContext, and after pgMenuFromArray
+ *                 call pgLeaveContext.
+ */
+int pgMenuFromArray(pghandle *items,int numitems); 
 
 #endif /* __H_PG_CLI_C */
 /* The End */
