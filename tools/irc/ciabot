@@ -52,11 +52,12 @@ fi
 
 module=`echo $1 | cut -d/ -f1`
 
-if $includefilename; then
-	directory=`echo $1 | cut -d" " -f1`
-	filename=`echo $1 | cut -d" " -f2 | cut -d"," -f1`
-	module="$directory/$filename"
-fi
+## disabled, as it might cause repeated messages
+#if $includefilename; then
+#	directory=`echo $1 | cut -d" " -f1`
+#	filename=`echo $1 | cut -d" " -f2 | cut -d"," -f1`
+#	module="$directory/$filename"
+#fi
 
 # the /tmp directory often has its sticky bit set, so do things
 # in a private subdir so we can have shared state
