@@ -92,7 +92,7 @@ sub drawkey {
     $pat = $defaultpat if (!defined $pat);
     $h = 1 if (!defined $h);
 
-    if (defined $name) {
+    if (defined $name && $name ne "") {
 	text($x,$y,$name);
     }
 
