@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.52 2001/02/10 11:07:03 micahjd Exp $
+# $Id: Makefile,v 1.53 2001/02/13 05:56:36 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -86,9 +86,6 @@ SRC := \
 
 # These are lists used in macro-driven function tables
 INC := net/requests.inc gcore/inputdrivers.inc gcore/videodrivers.inc
-
-# Bitmaps
-INC := $(INC) appmgr/defaultcursor.inc
 
 HDR := include/pgserver/*.h include/picogui/*.h
 
