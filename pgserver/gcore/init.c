@@ -1,4 +1,4 @@
-/* $Id: init.c,v 1.5 2002/11/04 00:24:38 micahjd Exp $
+/* $Id: init.c,v 1.6 2002/11/04 10:40:15 micahjd Exp $
  *
  * init.c - High level pgserver initialization and shutdown
  *
@@ -92,8 +92,8 @@ g_error pgserver_init(int flags, int argc, char **argv) {
   e = video_init();
   errorcheck;
 
-  DBG("divtree");
-  e = dts_new();
+  DBG("app manager");
+  e = appmgr_init();
   errorcheck;
 
   DBG("network");
@@ -102,10 +102,6 @@ g_error pgserver_init(int flags, int argc, char **argv) {
 
   DBG("globals");
   e = globals_init();
-  errorcheck;
-
-  DBG("app manager");
-  e = appmgr_init();
   errorcheck;
 
   DBG("timers");

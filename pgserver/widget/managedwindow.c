@@ -1,4 +1,4 @@
-/* $Id: managedwindow.c,v 1.2 2002/10/23 16:13:34 micahjd Exp $
+/* $Id: managedwindow.c,v 1.3 2002/11/04 10:40:15 micahjd Exp $
  *
  * managedwindow.c - A root widget representing a window managed by a host GUI
  *
@@ -44,6 +44,8 @@ g_error managedwindow_install(struct widget *self) {
   e = dts_push();
   errorcheck;
   DATA->my_dt = dts->top;
+  
+  VID(window_set_size)(DATA->my_dt->display,512,384);
 
   /* Take up the entire size of the divtree root */
   e = newdiv(&self->in,self);

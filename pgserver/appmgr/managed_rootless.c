@@ -1,4 +1,4 @@
-/* $Id: managed_rootless.c,v 1.3 2002/10/24 03:32:40 micahjd Exp $
+/* $Id: managed_rootless.c,v 1.4 2002/11/04 10:40:14 micahjd Exp $
  *
  * managed_rootless.c - Application management for rootless modes 
  *                      managed by a host GUI
@@ -41,6 +41,9 @@ g_error appmgr_managed_rootless_init(void) {
   errorcheck;
   if (!VID(is_rootless)())
     return mkerror(PG_ERRT_BADPARAM,142);  /* Requires rootless mode */
+
+  e = dts_new();
+  errorcheck;
 
   return success;
 }

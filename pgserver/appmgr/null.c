@@ -1,4 +1,4 @@
-/* $Id: null.c,v 1.2 2002/10/24 03:00:53 micahjd Exp $
+/* $Id: null.c,v 1.3 2002/11/04 10:40:14 micahjd Exp $
  *
  * null.c - Simple noninteractive app management
  *
@@ -41,6 +41,9 @@ handle appmgr_null_tbboundary;
 g_error appmgr_null_init(void) {
   struct widget *bgwidget;
   g_error e;
+
+  e = dts_new();
+  errorcheck;
   
   /* Make the background widget */
   e = widget_create(&bgwidget,&res[PGRES_BACKGROUND_WIDGET],

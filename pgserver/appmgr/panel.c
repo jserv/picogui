@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.2 2002/10/24 03:00:53 micahjd Exp $
+/* $Id: panel.c,v 1.3 2002/11/04 10:40:14 micahjd Exp $
  *
  * panel.c - Traditional panel/panelbar application manager
  *
@@ -39,6 +39,9 @@ g_error appmgr_panel_init(void) {
   struct widget *bgwidget;
   g_error e;
   
+  e = dts_new();
+  errorcheck;
+
   /* Make the background widget */
   e = widget_create(&bgwidget,&res[PGRES_BACKGROUND_WIDGET],
 		    PG_WIDGET_BACKGROUND,dts->root, 0, -1);
