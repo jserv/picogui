@@ -269,11 +269,26 @@ class Request(object):
             args_resolved.append(r)
         return self.server.send_and_wait(self.handler,args_resolved)
 
+def noop(*a, **kw):
+    pass
+
 # the class itself
 
 class Server(object):
-    def __init__(self, address='localhost', display=0):
-        self._connection = network.sock(address, display)
+    def __init__(self, address='localhost', display=0, stream=None, stream_read=0):
+        if stream:
+            self._connection = stream
+            try:
+                self._write = self._connection.send
+            except AttributeError:
+                self._write = self._connection.write
+            self.close_connection = noop
+            self._wait = stream_read
+        else:
+            self._connection = network.sock(address, display)
+            self._write = self._connection.send
+            self.close_connection = self._connection.close
+            self._wait = 1
         self._strings = {}
         self._fonts = {}
         self._bitmaps = {}
@@ -285,8 +300,9 @@ class Server(object):
         # However, responses that don't have ids would break this, so it would be
         # a waste of time to implement it now.
         #print 'calling %s%s' % (handler.__name__, args)
-        self._connection.send(handler(*args))
-        return responses.next(self._connection)
+        self._write(handler(*args))
+        if self._wait:
+            return responses.next(self._connection)
 
     def getString(self, text):
         if not self._strings.has_key(text):
