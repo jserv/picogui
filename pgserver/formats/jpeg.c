@@ -1,4 +1,4 @@
-/* $Id: jpeg.c,v 1.9 2002/01/30 12:03:15 micahjd Exp $
+/* $Id: jpeg.c,v 1.10 2002/02/02 21:53:32 micahjd Exp $
  *
  * jpeg.c - Functions to convert any of the jpeg formats 
  *
@@ -254,17 +254,16 @@ g_error jpeg_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
     jpeg_read_scanlines(&cinfo, buffer, 1);
 
     /* process scanline */
-    for (i=0,x=0;i<scanline_bytes; i=i+3,x++) {
+    for (i=0,x=0;i<scanline_bytes;x++) {
 
       switch(cinfo.out_color_components) {
       case 3:
-	r = (*buffer)[i];
-	g = (*buffer)[i+1];
-	b = (*buffer)[i+2];
+	r = (*buffer)[i++];
+	g = (*buffer)[i++];
+	b = (*buffer)[i++];
 	break;
       default:
-	printf("ERROR: Non-supported jpeg color component\n");
-	exit(1);
+	r = g = b = (*buffer)[i++];
       }
 
       /* Convert to hwrcolor */
