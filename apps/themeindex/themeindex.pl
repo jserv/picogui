@@ -4,9 +4,9 @@
 #
 
 # Get a picture of the default theme for comparison
-system("pgserver -nc indexer.pgconf --video-scrshot.total=1 >/dev/null 2>/dev/null");
+system("pgserver -nc indexer.pgconf");
 system("mv themeshot0.ppm defaulttheme.ppm");
-
+sleep 1;  # wait for pgserver to close
 system("rm -f web/*");
 
 open HTML, ">web/index.php";
@@ -31,12 +31,13 @@ foreach $themefile (@ARGV) {
 	$filesize = -s $themefile;
 
 	# Run a test application on the theme	 
-	system("pgserver -nc indexer.pgconf -t $themefile >/dev/null 2>/dev/null");
-	open INFILE,"themename";
+	system("pgserver -nc indexer.pgconf -t $themefile");
+        sleep 1;  # wait for pgserver to close
+        open INFILE,"themename";
 	$themename = <INFILE>;
 	chomp $themename;
 	close INFILE;
-	print "$themename\n";
+	print "---- $themename\n";
 	
 	# Now we have a screenshot of the bare background and cursor in
 	# themeshot0.ppm and a screenshot of the app in themeshot1.ppm

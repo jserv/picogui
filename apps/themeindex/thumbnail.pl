@@ -25,4 +25,4 @@ pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("Label"),PG_WP_SIDE,PG_S_BOTTOM);
 pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,$t);
 pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("Button"));
 
-pgEventLoop();
+pgUpdate();
