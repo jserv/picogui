@@ -1,4 +1,4 @@
-/* $Id: os.h,v 1.4 2002/11/03 23:52:26 micahjd Exp $
+/* $Id: os.h,v 1.5 2002/11/04 00:04:04 micahjd Exp $
  *
  * os.h - Interface to OS-specific functions used by pgserver, independent
  *        of the actual OS in use. Functions that only exist in a particular
@@ -63,6 +63,13 @@ u32 os_get_timer(void);
  */
 g_error os_shm_alloc(u8 **shmaddr, u32 size, u32 *id, u32 *key, u32 pid);
 void os_shm_free(u8 *shmaddr, u32 id);
+
+/* Recursively scan through all files and directories in the given path,
+ * calling the callback for each file found. The callback is given the
+ * full path of the file, and the number of characters from the beginning
+ * of that file that make up the original path.
+ */
+void os_dir_scan(const char *dir, void (*callback)(const char *file, int pathlen));
 
 #endif /* __H_OS */
 

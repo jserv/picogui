@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.34 2002/10/30 05:09:13 micahjd Exp $
+/* $Id: font_freetype.c,v 1.35 2002/11/04 00:04:04 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -29,12 +29,6 @@
 #include <pgserver/common.h>
 #include <pgserver/font.h>
 #include <pgserver/configfile.h>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <dirent.h>
-#include <stdio.h>
 #include <math.h>
 
 #include <ft2build.h>
@@ -83,7 +77,6 @@ struct pair26_6 {
   s32 x,y;
 };
 
-void ft_face_scan(const char *directory, int base_len);
 int ft_face_scan_list(const char *file, const char *path);
 void ft_face_load(const char *file, int base_len);
 int ft_fontcmp(const struct ft_face_id *f, const struct font_style *fs);
@@ -149,7 +142,7 @@ g_error freetype_engine_init(void) {
   ft_facelist = NULL;
   path = get_param_str(CFGSECTION,"path","/usr/share/fonts");
   if (ft_face_scan_list(get_param_str(CFGSECTION,"scan_list",NULL),path))
-    ft_face_scan(path, strlen(path));
+    os_dir_scan(path, &ft_face_load);
   
   /* Dump scanned list if we're asked to */
   if (get_param_int(CFGSECTION,"dump_list",0)) {
@@ -192,42 +185,6 @@ static FT_Error ft_face_requester( FTC_FaceID   face_id,
 				   FT_Face     *aface ) {
   struct ft_face_id *f = (struct ft_face_id *) face_id;  
   return FT_New_Face( library, f->file_path, 0, aface );
-}
-
-/* Call ft_face_load for all fonts in a directory, recursively */
-void ft_face_scan(const char *directory, int base_len) {
-  DIR *d = opendir(directory);
-  struct dirent *dent;
-  char buf[NAME_MAX];
-  struct stat st;
-
-  if (!d)
-    return;
-
-  while ((dent = readdir(d))) {
-    /* Skip hidden files, "..", and "." */
-    if (dent->d_name[0] == '.')
-      continue;
-
-    /* Find the path of this entry */
-    buf[NAME_MAX-1] = 0;
-    strncpy(buf,directory,NAME_MAX-2);
-    strcat(buf,"/");
-    strncat(buf,dent->d_name,NAME_MAX-1-strlen(buf));
-
-    /* If it's a directory, recurse */
-    if (stat(buf,&st) < 0)
-      continue;
-    if (S_ISDIR(st.st_mode)) {
-      ft_face_scan(buf,base_len);
-      continue;
-    }
-
-    /* Otherwise, try to load it */
-    ft_face_load(buf,base_len);
-  }
-
-  closedir(d);
 }
 
 /* Store a ft_face_id for the specified font if it loads 

@@ -1,4 +1,4 @@
-/* $Id: posix.c,v 1.6 2002/11/03 23:52:26 micahjd Exp $
+/* $Id: posix.c,v 1.7 2002/11/04 00:04:04 micahjd Exp $
  *
  * posix.c - Implementation of OS-specific functions for POSIX-compatible systems
  *
@@ -36,6 +36,9 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <errno.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <stdio.h>
 extern char **environ;
 
 /* Return value of the last process to exit */
@@ -46,6 +49,9 @@ static struct timeval os_posix_first_tick;
 
 /* Value set with os_set_timer */
 u32 os_posix_timer;
+
+void r_os_dir_scan(const char *directory, int base_len, 
+		   void (*callback)(const char *file, int pathlen));
 
 
 /********************************************** Public OS interface */
@@ -175,6 +181,54 @@ void os_shm_free(u8 *shmaddr, u32 id) {
   /* Unmap this segment and remove the key itself */
   shmdt(shmaddr);
   shmctl(id, IPC_RMID, NULL);
+}
+
+/* Recursively scan through all files and directories in the given path,
+ * calling the callback for each file found. The callback is given the
+ * full path of the file, and the number of characters from the beginning
+ * of that file that make up the original path.
+ */
+void os_dir_scan(const char *dir, void (*callback)(const char *file, int pathlen)) {
+  r_os_dir_scan(dir,strlen(dir),callback);
+}
+
+
+/********************************************** Internal utilities */
+
+/* Recursive guts for os_dir_scan() */
+void r_os_dir_scan(const char *directory, int base_len, 
+		   void (*callback)(const char *file, int pathlen)) {
+  DIR *d = opendir(directory);
+  struct dirent *dent;
+  char buf[NAME_MAX];
+  struct stat st;
+  
+  if (!d)
+    return;
+  
+  while ((dent = readdir(d))) {
+    /* Skip hidden files, "..", and "." */
+    if (dent->d_name[0] == '.')
+      continue;
+    
+    /* Find the path of this entry */
+    buf[NAME_MAX-1] = 0;
+    strncpy(buf,directory,NAME_MAX-2);
+    strcat(buf,"/");
+    strncat(buf,dent->d_name,NAME_MAX-1-strlen(buf));
+    
+    /* If it's a directory, recurse */
+    if (stat(buf,&st) < 0)
+      continue;
+    if (S_ISDIR(st.st_mode)) {
+      r_os_dir_scan(buf,base_len,callback);
+      continue;
+    }
+    
+    (*callback)(buf,base_len);
+  }
+  
+  closedir(d);
 }
 
 /* The End */
