@@ -1,4 +1,4 @@
-/* $Id: video_drivers.c,v 1.17 2003/03/10 23:48:24 micahjd Exp $
+/* $Id: video_drivers.c,v 1.18 2003/03/23 10:13:49 micahjd Exp $
  *
  * video_drivers.c - handles loading/switching video drivers and modes
  *
@@ -288,6 +288,12 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
      u32 *tc;
      int i;
 
+     /* Default VGA 16-color palette, copied from the Linux console */
+     static const u32 default_palette[] = {
+       0x000000, 0x0000aa, 0x00aa00, 0x0055aa, 0xaa0000, 0xaa00aa, 0xaaaa00, 0xaaaaaa,
+       0x555555, 0x5555ff, 0x55ff55, 0x55ffff, 0xff5555, 0xff55ff, 0xffff55, 0xffffff,
+     };
+
      /* Allocate space for textcolors if we haven't already */
      if (!res[PGRES_DEFAULT_TEXTCOLORS]) {
        u32 *ptr;
@@ -301,19 +307,10 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
      e = rdhandle((void **) &tc, PG_TYPE_PALETTE, -1, res[PGRES_DEFAULT_TEXTCOLORS]);
      errorcheck;
       
-     /* VGA 16-color palette */
-     for (i=0;i<tc[0];i++)
-       tc[i+1] = ( (i & 0x08) ?
-		   (((i & 0x04) ? 0xFF0000 : 0) |
-		    ((i & 0x02) ? 0x00FF00 : 0) |
-		    ((i & 0x01) ? 0x0000FF : 0)) :
-		   (((i & 0x04) ? 0x800000 : 0) |
-		    ((i & 0x02) ? 0x008000 : 0) |
-		    ((i & 0x01) ? 0x000080 : 0)) );
+     /* Transcribe our static palette */
+     memcpy(tc+1, default_palette, sizeof(default_palette));
      
-     /* If we won't be doing it anyway later, go ahead and
-      * convert these to hwrcolors
-      */
+     /* If we won't be doing it anyway later, go ahead and convert these to hwrcolors */
      if (!converting_mode) {
        e = array_pgtohwr(&tc);
        errorcheck;
