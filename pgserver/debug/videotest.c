@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.25 2002/03/27 15:09:25 lonetech Exp $
+/* $Id: videotest.c,v 1.26 2002/03/31 17:16:04 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -33,7 +33,7 @@
 #include <time.h>               /* For benchmarking */
 #include <unistd.h>		/* sleep() */
 
-#define NUM_PATTERNS    7
+#define NUM_PATTERNS    8
 #define TEST_DURATION   2      /* Length of each benchmark run, in seconds */
 
 /************ Line test pattern */
@@ -318,6 +318,13 @@ void testpat_alpha() {
 }
 
 
+/************ blur */
+
+void testpat_blur() {
+  VID(blur) (vid->display, 0,0, vid->lxres, vid->lyres, 1);
+}
+
+
 /************ Front-end */
 
 void videotest_help(void) {
@@ -329,6 +336,7 @@ void videotest_help(void) {
 	"\t5\tStippled rectangle test pattern\n"
 	"\t6\tText test pattern\n"
 	"\t7\tAlpha channel test\n"
+	"\t8\tblur test\n"
 	"\t99\tAll tests\n"
 	"\tnegative value: repeat test in a loop\n"
 	);
@@ -357,6 +365,9 @@ static void videotest_run_one(int number,int update) {
     break;
   case 7:
     testpat_alpha();
+    break;
+  case 8:
+    testpat_blur();
     break;
 default:
     printf("Unknown video test mode");

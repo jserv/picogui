@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.14 2002/03/29 13:21:18 micahjd Exp $
+/* $Id: linear16.c,v 1.15 2002/03/31 17:16:04 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -31,6 +31,8 @@
 #include <pgserver/inlstring.h>    /* inline-assembly __memcpy */
 #include <pgserver/video.h>
 #include <pgserver/autoconf.h>
+
+#include <stdlib.h> /* For alloca */
 
 /* Macros to easily access the members of vid->display */
 #define FB_MEM     (((struct stdbitmap*)dest)->bits)
@@ -332,15 +334,267 @@ void linear16_blit(hwrbitmap dest,
   }
 }
 
+#ifdef CONFIG_FAST_BLUR
+/* This is the standard blurring algorithm, but with
+ * optimizations for 16-bit 5-6-5 framebuffers
+ */
+
+void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
+  int i, skip, fallback, stride;
+  register int p0,p1,p2;   /* 3-pixel buffer for blurring */
+  register u16 *p, *stop;
+
+  stride = FB_BPL>>1;
+  skip = stride - w - 2;
+  fallback = stride * h - 1;
+
+  while (radius--) {
+
+    /* Horizontal blur */
+    i = h;
+    p = PIXELADDR(x,y);
+    p1 = *p;
+    p++;
+    p2 = *p;
+    while (i--) {
+      stop = p+w-2;
+      while (p++ < stop) {
+
+	/* Shift the buffer */
+	p0 = p1;
+	p1 = p2;
+
+	/* Shift in the new pixel, expanding it to 32 bits */
+	p2 = p[1];
+	p2 = (p2&0x1F) | ((p2<<3)&0x3F00) | ((p2<<5)&0x1F0000);
+
+	/* Now we have room to add them all at once, without masking off
+	 * the individual color components
+	 */
+	p0 += p1 + p2;
+
+	/* Now squish it back into a 16-bit color, rolling the divide and shift
+	 * operations into one divide.
+	 */
+	*p = ((((p0 & 0xFF0000) / 96) & 0xF800) |
+	      (((p0 & 0x00FF00) / 24) & 0x07E0) |
+	      (((p0 & 0x0000FF) / 3 ) & 0x001F));
+
+      }
+      p += skip;
+    }
+
+    /* Vertical blur */
+    i = w;
+    p = PIXELADDR(x,y);
+    p1 = *p;
+    p += stride;
+    p2 = *p;
+    while (i--) {
+      stop = p+fallback;
+      while (p < stop) {
+	p += stride;
+
+	/* Shift the buffer */
+	p0 = p1;
+	p1 = p2;
+
+	/* Shift in the new pixel, expanding it to 32 bits */
+	p2 = p[stride];
+	p2 = (p2&0x1F) | ((p2<<3)&0x3F00) | ((p2<<5)&0x1F0000);
+
+	/* Now we have room to add them all at once, without masking off
+	 * the individual color components
+	 */
+	p0 += p1 + p2;
+
+	/* Now squish it back into a 16-bit color, rolling the divide and shift
+	 * operations into one divide.
+	 */
+	*p = ((((p0 & 0xFF0000) / 96) & 0xF800) |
+	      (((p0 & 0x00FF00) / 24) & 0x07E0) |
+	      (((p0 & 0x0000FF) / 3 ) & 0x001F));
+
+      }
+      p -= fallback;
+    }
+  }
+}
+#endif /* CONFIG_FAST_BLUR */
+
+
+#ifdef CONFIG_FASTER_BLUR
+/*
+ * This is a different algorigthm with longer buffers and no division.
+ * It forces the blur radius to be a power of two. It uses no buffer, just
+ * a set of accumulators. This way each pixel requires just a handful of
+ * bitshifts and ands, no division. Since the blur is linear rather than
+ * the ideal gaussian curve, there's some interlacing to make the effect
+ * a little closer.
+ */
+void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
+  int log_diameter, diameter, i, j;
+  int shiftsize;
+  int r,g,b;        /* Current color sums */
+  int skip, stride, fallback, bpl, strideradius;
+  u16 *p, *stop;
+  u16 color;
+
+  diameter = radius << 1;
+
+  /* This algorithm doesn't work with a radius of 1 */
+  if (diameter <= 2)
+    diameter = 4;
+
+  /* Find out the next highest power of two from radius, and the log of that */
+  for (i=0,j=diameter;j!=1;i++)
+    j >>= 1;
+
+  /* If that's the only bit set, the input was already
+   * a power of two and we can leave it alone
+   */
+  if (diameter == 1<<i)
+    log_diameter = i;
+  else {
+    /* Otherwise get the next power of two */
+    log_diameter = 1+i;
+    diameter = 1<<log_diameter;
+  }
+  radius = diameter>>1;
+
+  bpl = FB_BPL;
+  stride = bpl>>1;
+  skip = stride - w + diameter;
+  strideradius = stride * radius;
+  fallback = stride*(h-diameter);
+
+  /* Horizontal blur, even fields */
+
+  p = PIXELADDR(x+radius,y);
+  j = h;
+  r = g = b = 0;
+  while (j--) {
+    stop = p+w-diameter;
+    for (;p<stop;p+=2) {
+
+      /* Add the new pixel into the buffer */
+      color = p[radius];
+      r += color & 0xF800;
+      g += color & 0x07E0;
+      b += color & 0x001F;
+
+      /* Take the old one away */
+      color = p[-radius];
+      r -= color & 0xF800;
+      g -= color & 0x07E0;
+      b -= color & 0x001F;
+
+      /* Shift it into place */
+      *p = (((r >> log_diameter) & 0xF800) |
+	    ((g >> log_diameter) & 0x07E0) |
+	    ((b >> log_diameter) & 0x001F) );
+    }
+    p = stop + skip;
+  }
+
+  /* Horizontal blur, odd fields */
+
+  p = PIXELADDR(x+radius,y);
+  j = h;
+  r = g = b = 0;
+  while (j--) {
+    stop = p+w-diameter;
+    p++;
+    for (;p<stop;p+=2) {
+
+      /* Add the new pixel into the buffer */
+      color = p[radius];
+      r += color & 0xF800;
+      g += color & 0x07E0;
+      b += color & 0x001F;
+
+      /* Take the old one away */
+      color = p[-radius];
+      r -= color & 0xF800;
+      g -= color & 0x07E0;
+      b -= color & 0x001F;
+
+      /* Shift it into place */
+      *p = (((r >> log_diameter) & 0xF800) |
+	    ((g >> log_diameter) & 0x07E0) |
+	    ((b >> log_diameter) & 0x001F) );
+    }
+    p = stop + skip;
+  }
+
+  /* Vertical blur, even fields */
+
+  p = PIXELADDR(x,y+radius);
+  j = w;
+  r = g = b = 0;
+  while (j--) {
+    stop = p+fallback;
+    for (;p<stop;p+=bpl) {
+
+      /* Add the new pixel into the buffer */
+      color = p[strideradius];
+      r += color & 0xF800;
+      g += color & 0x07E0;
+      b += color & 0x001F;
+
+      /* Take the old one away */
+      color = p[-strideradius];
+      r -= color & 0xF800;
+      g -= color & 0x07E0;
+      b -= color & 0x001F;
+
+      /* Shift it into place */
+      *p = (((r >> log_diameter) & 0xF800) |
+	    ((g >> log_diameter) & 0x07E0) |
+	    ((b >> log_diameter) & 0x001F) );
+    }
+    p = stop - fallback + 1;
+  }
+
+  /* Vertical blur, odd fields */
+
+  p = PIXELADDR(x,y+radius);
+  j = w;
+  r = g = b = 0;
+  while (j--) {
+    stop = p+fallback;
+    p += stride;
+    for (;p<stop;p+=bpl) {
+
+      /* Add the new pixel into the buffer */
+      color = p[strideradius];
+      r += color & 0xF800;
+      g += color & 0x07E0;
+      b += color & 0x001F;
+
+      /* Take the old one away */
+      color = p[-strideradius];
+      r -= color & 0xF800;
+      g -= color & 0x07E0;
+      b -= color & 0x001F;
+
+      /* Shift it into place */
+      *p = (((r >> log_diameter) & 0xF800) |
+	    ((g >> log_diameter) & 0x07E0) |
+	    ((b >> log_diameter) & 0x001F) );
+    }
+    p = stop - fallback + 1;
+  }
+
+
+
+}
+#endif /* CONFIG_FASTER_BLUR */
 
 /*********************************************** Registration */
 
 /* Load our driver functions into a vidlib */
 void setvbl_linear16(struct vidlib *vid) {
-#ifdef CONFIG_FAST_ALPHA
-  u8 *p;
-  int a,c;
-#endif
 
   setvbl_default(vid);
    
@@ -349,12 +603,20 @@ void setvbl_linear16(struct vidlib *vid) {
   vid->slab           = &linear16_slab;
   vid->blit           = &linear16_blit;
 
+#if defined(CONFIG_FAST_BLUR) || defined(CONFIG_FASTER_BLUR)
+  vid->blur = &linear16_blur;
+#endif
+
 #ifdef CONFIG_FAST_ALPHA
   /* Initialize the alpha blending table */
-  p = alpha_table;
-  for (a=0;a<128;a++)
-    for (c=0;c<256;c++)
-      *(p++) = (c * (128-a)) >> 7;
+  {
+    u8 *p = alpha_table;
+    int a,c;
+    
+    for (a=0;a<128;a++)
+      for (c=0;c<256;c++)
+	*(p++) = (c * (128-a)) >> 7;
+  }
 #endif
 }
 
