@@ -470,7 +470,7 @@ quoted appropriately. For example:
   Axis is multiplied by this before becoming the pointer velocity, defaults to 1
 
 - axisN-divisor
-  Axis is divided by this before becoming the pointer velocity, defaults to 6000
+  Axis is divided by this before becoming the pointer velocity, defaults to 5000
 
 - buttonN-type
   N is the button number, and this specifies the mapping associated with the button:
