@@ -93,6 +93,7 @@ CONFIG_VBL_LINEAR16=y
 # CONFIG_ROTATE is not set
 # CONFIG_ROTATE180 is not set
 # CONFIG_ROTATE270 is not set
+CONFIG_ROTATIONBASE_90=y
 
 #
 # Widget Options
