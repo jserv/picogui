@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.10 2001/07/11 00:53:19 micahjd Exp $
+/* $Id: pgmain.c,v 1.11 2001/07/12 13:57:26 pney Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -397,7 +397,7 @@ int main(int argc, char **argv) {
     vidh = get_param_int("pgserver","height",0);
     vidd = get_param_int("pgserver","depth",0);
     vidf = get_param_int("pgserver","vidflags",0);
-    sscanf(get_param_str("pgserver","mode",""),"%dx%dx%d",&vidw,&vidh,&vidd);
+    sscanf(get_param_str("pgserver","mode",NULL),"%dx%dx%d",&vidw,&vidh,&vidd);
 
     /* Add rotation flags */
     switch (get_param_int("pgserver","rotate",0)) {
