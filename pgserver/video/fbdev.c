@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.3 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: fbdev.c,v 1.4 2001/03/08 01:20:14 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -60,6 +60,56 @@ g_error fbdev_init(int xres,int yres,int bpp,unsigned long flags) {
    vid->xres   = varinfo.xres;
    vid->yres   = varinfo.yres;
    vid->bpp    = varinfo.bits_per_pixel;
+
+   /* Load a VBL */
+   switch (vid->bpp) {
+      
+#ifdef CONFIG_VBL_LINEAR1
+    case 1:
+      setvbl_linear1(vid);
+      break;
+#endif
+      
+#ifdef CONFIG_VBL_LINEAR2
+    case 2:
+      setvbl_linear2(vid);
+      break;
+#endif
+      
+#ifdef CONFIG_VBL_LINEAR4
+    case 4:
+      setvbl_linear4(vid);
+      break;
+#endif
+      
+#ifdef CONFIG_VBL_LINEAR8
+    case 8:
+      setvbl_linear8(vid);
+      break;
+#endif
+      
+#ifdef CONFIG_VBL_LINEAR16
+    case 16:
+      setvbl_linear16(vid);
+      break;
+#endif
+
+#ifdef CONFIG_VBL_LINEAR24
+    case 24:
+      setvbl_linear24(vid);
+      break;
+#endif
+
+#ifdef CONFIG_VBL_LINEAR32
+    case 32:
+      setvbl_linear32(vid);
+      break;
+#endif
+
+    default:
+      close(fbdev_fd);
+      return mkerror(PG_ERRT_BADPARAM,101);   /* Unknown bpp */
+   }
    
    /* Map it */
    vid->fb_mem = mmap(0,fbdev_mapsize = fixinfo.smem_len,
@@ -100,7 +150,6 @@ void fbdev_close(void) {
 }
 
 g_error fbdev_regfunc(struct vidlib *v) {
-   setvbl_linear8(v);           /* Only 8bpp so far */
    v->init = &fbdev_init;
    v->close = &fbdev_close;
    return sucess;
