@@ -1,9 +1,10 @@
-/* $Id: sdlfb.c,v 1.17 2001/07/11 08:18:02 micahjd Exp $
+/* $Id: sdlfb.c,v 1.18 2001/08/12 21:08:58 micahjd Exp $
  *
- * sdlfb.c - Video driver for SDL using a linear framebuffer.
- *           This will soon replace sdl.c, but only after the
- *           linear* VBLs are well tested. Right now it's a testbed
- *           for those VBLs.
+ * sdlfb.c - This driver provides an interface between the linear VBLs
+ *           and a framebuffer provided by the SDL graphics library.
+ *           It can run on many output devices, but SDL is most often used
+ *           with the X window system. This SDL driver has facilities for
+ *           simulating embedded platforms: low-bpp emulation and Skins.
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -35,9 +36,19 @@
 
 #include <SDL.h>
 
+#ifdef CONFIG_SDLSKIN
+#include <stdio.h>        /* File I/O for loading skin bitmap */
+#endif
+
 SDL_Surface *sdl_vidsurf;
 #if defined(CONFIG_SDLEMU_COLOR) || defined(CONFIG_SDLEMU_BLIT)
 int sdlfb_emucolors;
+#endif
+
+#ifdef CONFIG_SDLSKIN
+pgcolor sdlfb_tint;
+s16 sdlfb_display_x;
+s16 sdlfb_display_y;
 #endif
 
 /* Macros to easily access the members of vid->display */
@@ -51,6 +62,8 @@ void sdlfb_close(void);
 void sdlfb_update(s16 x,s16 y,s16 w,s16 h);
 g_error sdlfb_regfunc(struct vidlib *v);
 g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags);
+hwrcolor sdlfb_tint_pgtohwr(pgcolor c);
+pgcolor sdlfb_color_tint(pgcolor c);
 
 g_error sdlfb_init(void) {
   /* Avoid freeing a nonexistant backbuffer in close() */
@@ -73,27 +86,46 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   char str[80];
   SDL_Color palette[256];
   int i;
-
-  /* Interpret flags */
-  if (get_param_int("video-sdlfb","fullscreen",0))
-    sdlflags |= SDL_FULLSCREEN;
+  s16 fbw,fbh;
+#ifdef CONFIG_SDLSKIN
+  char *s;
+#endif
 
 #ifdef CONFIG_SDLEMU_BLIT
    /* Make screen divisible by a byte */
   if (bpp && bpp<8)
      xres &= ~((8/bpp)-1);
+#endif
+  
+  fbw = xres;
+  fbh = yres;
 
+  /* Interpret flags */
+  if (get_param_int("video-sdlfb","fullscreen",0))
+    sdlflags |= SDL_FULLSCREEN;
+#ifdef CONFIG_SDLSKIN
+  if (i = get_param_int("video-sdlfb","width",0)) {
+    fbw = i;
+    sdlflags &= ~SDL_RESIZABLE;
+  }
+  if (i = get_param_int("video-sdlfb","height",0)) {
+    fbh = i;
+    sdlflags &= ~SDL_RESIZABLE;
+  }
+#endif
+
+#ifdef CONFIG_SDLEMU_BLIT
   /* Free the backbuffer */
   if (vid->bpp && (vid->bpp<8) && FB_MEM) {
      g_free(FB_MEM);
      FB_MEM = NULL;
   }
-#endif CONFIG_SDLEMU_BLIT
+#endif
    
   /* Set the video mode */
   if ((!sdl_vidsurf) || xres != vid->xres || 
       yres !=vid->yres || bpp != vid->bpp) {
-     sdl_vidsurf = SDL_SetVideoMode(xres,yres,(bpp && bpp<8) ? 8 : bpp,sdlflags);
+     sdl_vidsurf = SDL_SetVideoMode(fbw,fbh,(bpp && bpp<8) ? 8 : bpp,sdlflags);
      if (!sdl_vidsurf)
        return mkerror(PG_ERRT_IO,47);
   }
@@ -196,10 +228,11 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
       return mkerror(PG_ERRT_BADPARAM,101);   /* Unknown bpp */
   }
    
-  /* Save the actual video mode (might be different than what
-     was requested) */
-  vid->xres = sdl_vidsurf->w;
-  vid->yres = sdl_vidsurf->h;
+  /* Save the new video mode. Might not be the actual SDL video mode if we
+   * are using a skin.
+   */
+  vid->xres = xres;
+  vid->yres = yres;
    
 #ifdef CONFIG_SDLEMU_BLIT
   /* If we're blitting to a higher bpp, use another backbuffer */
@@ -227,6 +260,58 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   sprintf(str,get_param_str("video-sdlfb","caption","PicoGUI (sdl@%dx%dx%d)"),
 	  vid->xres,vid->yres,bpp);
   SDL_WM_SetCaption(str,NULL);
+
+#ifdef CONFIG_SDLSKIN
+  /* Offset vid->display to the specified position */
+  sdlfb_display_x = get_param_int("video-sdlfb","display_x",0);
+  sdlfb_display_y = get_param_int("video-sdlfb","display_y",0);
+  FB_MEM += bpp * sdlfb_display_x / 8;
+  FB_MEM += FB_BPL * sdlfb_display_y;
+
+  /* Install the skin background */
+  if (s = get_param_str("video-sdlfb","background",NULL)) {
+    FILE *f;
+    char *mem;
+    unsigned long len;
+    hwrbitmap bg;
+    struct stdbitmap dest;
+
+    f = fopen(s,"rb");
+    if (f) {
+      /* Read the bitmap from the file into a temporary buffer */
+      fseek(f,0,SEEK_END);
+      len = ftell(f);
+      rewind(f);
+      if (!iserror(g_malloc((void**)&mem,len))) {
+	fread(mem,len,1,f);
+	/* Tell the video engine to load the bitmap into memory
+	 * in the current video mode's format.
+	 */
+	if (!iserror(VID(bitmap_load) (&bg,mem,len))) {
+	  /* Construct a destination bitmap for the raw SDL
+	   * framebuffer (vid->display is just the section that the
+	   * rest of PicoGUI can use) and blit the background. It
+	   * will tile if the background is smaller than the framebuffer.
+	   */
+	  memset(&dest,0,sizeof(dest));
+	  dest.bits  = sdl_vidsurf->pixels;
+	  dest.w     = fbw;
+	  dest.h     = fbh;
+	  dest.pitch = sdl_vidsurf->pitch;
+	  VID(blit) (&dest,0,0,fbw,fbh,bg,0,0,PG_LGOP_NONE);
+	  VID(bitmap_free) (bg);
+	}
+	g_free(mem);
+      }
+      fclose(f);
+    }
+  }
+
+  /* Load initial tint */
+  sdlfb_tint = strtol(get_param_str("video-sdlfb","tint","FFFFFF"),NULL,16);
+  if (sdlfb_tint != 0xFFFFFF)
+    vid->color_pgtohwr = &sdlfb_tint_pgtohwr;
+#endif
    
   return sucess; 
 }
@@ -242,6 +327,11 @@ void sdlfb_close(void) {
 }
 
 void sdlfb_update(s16 x,s16 y,s16 w,s16 h) {
+#ifdef CONFIG_SDLSKIN
+  x += sdlfb_display_x;
+  y += sdlfb_display_y;
+#endif
+
 #ifdef DEBUG_VIDEO
    printf("sdlfb_update(%d,%d,%d,%d)\n",x,y,w,h);
 #endif
@@ -280,8 +370,34 @@ void sdlfb_update(s16 x,s16 y,s16 w,s16 h) {
    SDL_UpdateRect(sdl_vidsurf,x,y,w,h);
 }
 
+#ifdef CONFIG_SDLSKIN
+/* Add an optional tint, for making LCDs look realistic */
+pgcolor sdlfb_color_tint(pgcolor c) {
+  u16 r,g,b;
+
+  if (sdlfb_tint == 0xFFFFFF)
+    return c;
+  
+  r  = getred(c);
+  g  = getgreen(c);
+  b  = getblue(c);
+  r *= getred(sdlfb_tint);
+  g *= getgreen(sdlfb_tint);
+  b *= getblue(sdlfb_tint);
+
+  return mkcolor(r>>8,g>>8,b>>8);
+}
+hwrcolor sdlfb_tint_pgtohwr(pgcolor c) {
+  return def_color_pgtohwr(sdlfb_color_tint(c));
+}
+#endif
+
 #if defined(CONFIG_SDLEMU_COLOR) || defined(CONFIG_SDLEMU_BLIT)
 hwrcolor sdlfbemu_color_pgtohwr(pgcolor c) {
+#ifdef CONFIG_SDLSKIN
+   c = sdlfb_color_tint(c);
+#endif
+
    /* If this is black and white, be more conservative */
    if (sdlfb_emucolors==1)
      return (getred(c)+getgreen(c)+getblue(c))>0x80;
@@ -306,6 +422,15 @@ void sdlfb_message(u32 message, u32 param) {
       write(1,beep,2);
     }
     break;
+
+#ifdef CONFIG_SDLSKIN
+  case PGDM_BACKLIGHT:
+    /* Simulate the backlight by using an alternate tint color */
+    sdlfb_tint = strtol(get_param_str("video-sdlfb",
+				      param ? "backlight_tint" : "tint",
+				      "FFFFFF"),NULL,16);
+    break;
+#endif
 
   }
 }

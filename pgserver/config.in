@@ -72,7 +72,8 @@ if [ "$DRIVER_FBDEV" = "y" ]; then
 fi
 bool 'SDL framebuffer driver'              DRIVER_SDLFB
 if [ "$DRIVER_SDLFB" = "y" ]; then
-   choice 'SDL framebuffer low-bpp emulation' \
+   bool '  Skin support'          CONFIG_SDLSKIN
+   choice '  SDL framebuffer low-bpp emulation' \
    	"None                   CONFIG_SDLEMU_NONE \
 	 Blit	       		CONFIG_SDLEMU_BLIT \
 	 Color			CONFIG_SDLEMU_COLOR" None

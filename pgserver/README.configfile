@@ -109,6 +109,39 @@ quoted appropriately. For example:
 - fullscreen
   Set to 1 to enable fullscreen mode
 
+- scale
+  (requires 'Skin support' config option)
+  Set to a number greater than 1 to magnify the video
+
+- background
+  (requires 'Skin support' config option)
+  Load a bitmap into the framebuffer
+
+- width
+  (requires 'Skin support' config option)
+  Overrides the framebuffer width. The window is no longer resizeable.
+
+- height
+  (requires 'Skin support' config option)
+  Overrides the framebuffer height. The window is no longer resizeable.
+
+- display_x
+  (requires 'Skin support' config option)
+  Offset the display right by this amount within the framebuffer.
+
+- display_y
+  (requires 'Skin support' config option)
+  Offset the display down by this amount within the framebuffer.
+
+- tint
+  (requires 'Skin support' config option)
+  Multiply all colors by this color. This can be used to add a green or gray
+  tint to LCD screens.
+
+- backlight_tint
+  (requires 'Skin support' config option)
+  This is used instead of 'tint' when the backlight is turned on.
+
 [video-scrshot]
 
 - file
