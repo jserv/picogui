@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.14 2001/11/02 15:47:35 cgrigis Exp $
+/* $Id: pgboard.c,v 1.15 2001/11/02 20:54:16 micahjd Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -375,7 +375,7 @@ int main(int argc,char **argv) {
 	      PG_WP_SIDE,mpat->app_side,
 	      PG_WP_SIZE,mpat->app_size,
 	      PG_WP_SIZEMODE,mpat->app_sizemode,
-/* 	      PG_WP_TRANSPARENT,1, */
+	      PG_WP_TRANSPARENT,1,
 	      0);
 
   initKbdCanvas ();
