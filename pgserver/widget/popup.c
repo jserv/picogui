@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.53 2002/04/15 02:40:31 micahjd Exp $
+/* $Id: popup.c,v 1.54 2002/04/16 18:45:32 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -151,8 +151,20 @@ void build_popupbg(struct gropctxt *c,unsigned short state,struct widget *self) 
   c->w = self->in->div->w;
   c->h = self->in->div->h;
 
-  /* exec_fillstyle knows not to use the default rectangle fill on a backdrop */
-  exec_fillstyle(c,self->in->div->state,PGTH_P_BACKDROP);
+  if (theme_lookup(self->in->div->state,PGTH_P_BACKDROP)) {
+    /* exec_fillstyle knows not to use the default rectangle fill on a backdrop */
+    exec_fillstyle(c,self->in->div->state,PGTH_P_BACKDROP);
+  }
+  else {
+    /* Stick a no-op node in so that the backdrop is at least clickable. A divnode
+     * can only be clicked if it has trigger handlers and it either has a build function
+     * or a groplist. This is so that purely layout divnodes don't intercept events.
+     * An alternative to this no-op method would be to put a fake build handler in
+     * instead of deleting it altogether, but then we'd also have to turn on the raw build
+     * flag. IMHO this is a slightly cleaner solution.
+     */
+    addgrop(c,PG_GROP_NOP);
+  }
 
   /* Since the backdrop should only be rendered once, self-destruct this build handler */
   self->in->build = NULL;
