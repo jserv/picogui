@@ -1,4 +1,4 @@
-/* $Id: if_pntr_normalize.c,v 1.2 2002/07/03 22:03:30 micahjd Exp $
+/* $Id: if_pntr_normalize.c,v 1.3 2002/07/04 22:10:02 micahjd Exp $
  *
  * if_pntr_normalize.c - Convert the various pointer events to a standard form
  *
@@ -44,14 +44,16 @@ void infilter_pntr_normalize_handler(struct infilter *self, u32 trigger, union t
     param->mouse.cursor = cursor_global_invisible;
   }
 
+  /* Get physical cursor position for use later */
+  cursor_getposition(param->mouse.cursor, &x, &y);
+  if (!param->mouse.is_logical)
+    VID(coord_physicalize)(&x,&y);
+
   /* Convert relative motion to absolute motion.
    * We have to be careful about which coordinate system the input is in.
    */
   if (trigger==PG_TRIGGER_PNTR_RELATIVE) {
     trigger = PG_TRIGGER_PNTR_STATUS;
-    cursor_getposition(param->mouse.cursor, &x, &y);
-    if (!param->mouse.is_logical)
-      VID(coord_physicalize)(&x,&y);
     param->mouse.x += x;
     param->mouse.y += y;
     if (param->mouse.is_logical)
@@ -67,7 +69,6 @@ void infilter_pntr_normalize_handler(struct infilter *self, u32 trigger, union t
      * with the same trigparam structure, and just repassing it after changing
      * the type :)
      */
-    cursor_getposition(param->mouse.cursor, &x, &y);
     newbtn = param->mouse.btn;
     oldbtn = param->mouse.cursor->prev_buttons;
     
@@ -83,7 +84,13 @@ void infilter_pntr_normalize_handler(struct infilter *self, u32 trigger, union t
       trigger = PG_TRIGGER_UP;
       infilter_send(self,trigger,param);
     }
+    return;
   }
+
+  /* If we're moving the cursor and this isn't a MOVE event, generate one
+   */
+  if ((param->mouse.x != x || param->mouse.y != y) && trigger!=PG_TRIGGER_MOVE)
+    infilter_send(self,PG_TRIGGER_MOVE,param);
 
   /* Detect changes in buttons, and store that along with the event
    */
