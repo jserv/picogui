@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.217 2002/11/26 23:58:21 micahjd Exp $
+/* $Id: widget.c,v 1.218 2002/11/27 01:05:10 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -319,8 +319,6 @@ void widget_remove(struct widget *w) {
 
 g_error inline widget_set(struct widget *w, int property, glob data) {
    g_error e;
-   char *str;
-   struct divnode *maindiv = w->in->div ? w->in->div : w->in;
    
    if (!(w && w->def->set))
      return mkerror(PG_ERRT_BADPARAM,23);   /* Bad widget in widget_set */
@@ -330,151 +328,163 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
    if (errtype(e)!=ERRT_PASS)
      return e;
    
-   /* Otherwise provide some defaults */
-   switch (property) {
+   return widget_base_set(w,property,data);
+}
+
+glob widget_get(struct widget *w, int property) {  
+  if (!(w && w->def->get))
+    return 0;
+  return (*w->def->get)(w,property);
+}
+
+g_error widget_base_set(struct widget *w, int property, glob data) {
+  char *str;
+  struct divnode *maindiv = w->in->div ? w->in->div : w->in;
+
+  switch (property) {
     
-      /* Set the size, assuming initial split at w->in.
-       * Calls resize handler if it exists, and sets the
-       * appropriate flags.
-       */
-    case PG_WP_SIDE:
-      if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,2);
-      w->in->flags &= SIDEMASK;
-      w->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC;
-      resizewidget(w);
-      w->dt->flags |= DIVTREE_NEED_RECALC;
-      redraw_bg(w);
+    /* Set the size, assuming initial split at w->in.
+     * Calls resize handler if it exists, and sets the
+     * appropriate flags.
+     */
+  case PG_WP_SIDE:
+    if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,2);
+    w->in->flags &= SIDEMASK;
+    w->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC;
+    resizewidget(w);
+    w->dt->flags |= DIVTREE_NEED_RECALC;
+    redraw_bg(w);
 
-      if (w->auto_orientation) {
-	/* Set orientation on all child widgets */
+    if (w->auto_orientation) {
+      /* Set orientation on all child widgets */
 
-	struct widget *p;
-	p = widget_traverse(w, PG_TRAVERSE_CHILDREN, 0);
-	while (p) {
-	  switch (data) {
+      struct widget *p;
+      p = widget_traverse(w, PG_TRAVERSE_CHILDREN, 0);
+      while (p) {
+	switch (data) {
 
-	  case PG_S_LEFT:
-	  case PG_S_RIGHT:
+	case PG_S_LEFT:
+	case PG_S_RIGHT:
 	   
-	    if (w->auto_orientation & PG_AUTO_DIRECTION)
-	      widget_set(p, PG_WP_DIRECTION, PG_DIR_VERTICAL);
+	  if (w->auto_orientation & PG_AUTO_DIRECTION)
+	    widget_set(p, PG_WP_DIRECTION, PG_DIR_VERTICAL);
 
-	    if (w->auto_orientation & PG_AUTO_SIDE)
-	      switch (widget_get(p, PG_WP_SIDE)) {
+	  if (w->auto_orientation & PG_AUTO_SIDE)
+	    switch (widget_get(p, PG_WP_SIDE)) {
 		
-	      case PG_S_LEFT:
-		widget_set(p, PG_WP_SIDE, PG_S_TOP);
-		break;
+	    case PG_S_LEFT:
+	      widget_set(p, PG_WP_SIDE, PG_S_TOP);
+	      break;
 		
-	      case PG_S_RIGHT:
-		widget_set(p, PG_WP_SIDE, PG_S_BOTTOM);
-		break;
+	    case PG_S_RIGHT:
+	      widget_set(p, PG_WP_SIDE, PG_S_BOTTOM);
+	      break;
 		
-	      }
-	    break;
+	    }
+	  break;
 
-	  case PG_S_TOP:
-	  case PG_S_BOTTOM:
+	case PG_S_TOP:
+	case PG_S_BOTTOM:
 
-	    if (w->auto_orientation & PG_AUTO_DIRECTION)
-	      widget_set(p, PG_WP_DIRECTION, PG_DIR_HORIZONTAL);
+	  if (w->auto_orientation & PG_AUTO_DIRECTION)
+	    widget_set(p, PG_WP_DIRECTION, PG_DIR_HORIZONTAL);
 
-	    if (w->auto_orientation & PG_AUTO_SIDE)
-	      switch (widget_get(p, PG_WP_SIDE)) {
+	  if (w->auto_orientation & PG_AUTO_SIDE)
+	    switch (widget_get(p, PG_WP_SIDE)) {
 		
-	      case PG_S_TOP:
-		widget_set(p, PG_WP_SIDE, PG_S_LEFT);
-		break;
+	    case PG_S_TOP:
+	      widget_set(p, PG_WP_SIDE, PG_S_LEFT);
+	      break;
 		
-	      case PG_S_BOTTOM:
-		widget_set(p, PG_WP_SIDE, PG_S_RIGHT);
-		break;
+	    case PG_S_BOTTOM:
+	      widget_set(p, PG_WP_SIDE, PG_S_RIGHT);
+	      break;
 		
-	      }
-	    break;
+	    }
+	  break;
 
-	  }
-	  p = widget_traverse(p, PG_TRAVERSE_FORWARD,1);
 	}
+	p = widget_traverse(p, PG_TRAVERSE_FORWARD,1);
       }
-      break;
+    }
+    break;
 
-    case PG_WP_SIZE:
-      if (data<0) {
-	/* Automatic sizing */
-	w->in->flags |= DIVNODE_SIZE_AUTOSPLIT;
-	w->dt->flags |= DIVTREE_NEED_RESIZE;
-      }
-      else {
-	w->in->split = data;
-	w->in->flags &= ~DIVNODE_SIZE_AUTOSPLIT;     /* No auto resizing */
-      }
-      w->in->flags |= DIVNODE_NEED_RECALC;
-      w->dt->flags |= DIVTREE_NEED_RECALC;
-      redraw_bg(w);
-      break;
-
-    case PG_WP_SIZEMODE:
+  case PG_WP_SIZE:
+    if (data<0) {
+      /* Automatic sizing */
+      w->in->flags |= DIVNODE_SIZE_AUTOSPLIT;
+      w->dt->flags |= DIVTREE_NEED_RESIZE;
+    }
+    else {
+      w->in->split = data;
       w->in->flags &= ~DIVNODE_SIZE_AUTOSPLIT;     /* No auto resizing */
-      w->in->flags &= ~PG_SZMODEMASK;
-      w->in->flags |= data & PG_SZMODEMASK;
-      redraw_bg(w);
-      break;
+    }
+    w->in->flags |= DIVNODE_NEED_RECALC;
+    w->dt->flags |= DIVTREE_NEED_RECALC;
+    redraw_bg(w);
+    break;
+
+  case PG_WP_SIZEMODE:
+    w->in->flags &= ~DIVNODE_SIZE_AUTOSPLIT;     /* No auto resizing */
+    w->in->flags &= ~PG_SZMODEMASK;
+    w->in->flags |= data & PG_SZMODEMASK;
+    redraw_bg(w);
+    break;
       
-    case PG_WP_SCROLL_X:
-      if (data > w->in->child.w - w->in->r.w)
-	data = w->in->child.w - w->in->r.w;
-      if (data < 0)
-	data = 0;
-      if (maindiv->translation.x != -data) {
-	maindiv->translation.x = -data;
-	maindiv->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_NEED_RECALC;
-	w->dt->flags |= DIVTREE_NEED_REDRAW;
-	hotspot_free();
-      }
-      maindiv->flags |= DIVNODE_DIVSCROLL | DIVNODE_EXTEND_WIDTH;
-      break;
+  case PG_WP_SCROLL_X:
+    if (data > w->in->child.w - w->in->r.w)
+      data = w->in->child.w - w->in->r.w;
+    if (data < 0)
+      data = 0;
+    if (maindiv->translation.x != -data) {
+      maindiv->translation.x = -data;
+      maindiv->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_NEED_RECALC;
+      w->dt->flags |= DIVTREE_NEED_REDRAW;
+      hotspot_free();
+    }
+    maindiv->flags |= DIVNODE_DIVSCROLL | DIVNODE_EXTEND_WIDTH;
+    break;
 
-    case PG_WP_SCROLL_Y:
-      if (data > w->in->child.h - w->in->r.h)
-	data = w->in->child.h - w->in->r.h;
-      if (data < 0)
-	data = 0;
-      if (maindiv->translation.y != -data) {
-	maindiv->translation.y = -data;
-	maindiv->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_NEED_RECALC;
-	w->dt->flags |= DIVTREE_NEED_REDRAW;
-	hotspot_free();
-      }
-      maindiv->flags |= DIVNODE_DIVSCROLL | DIVNODE_EXTEND_HEIGHT;
-      break;
+  case PG_WP_SCROLL_Y:
+    if (data > w->in->child.h - w->in->r.h)
+      data = w->in->child.h - w->in->r.h;
+    if (data < 0)
+      data = 0;
+    if (maindiv->translation.y != -data) {
+      maindiv->translation.y = -data;
+      maindiv->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_NEED_RECALC;
+      w->dt->flags |= DIVTREE_NEED_REDRAW;
+      hotspot_free();
+    }
+    maindiv->flags |= DIVNODE_DIVSCROLL | DIVNODE_EXTEND_HEIGHT;
+    break;
 
-    case PG_WP_NAME:
-      if (iserror(rdhandle((void **)&str,PG_TYPE_PGSTRING,-1,data))) 
-	return mkerror(PG_ERRT_HANDLE,18);
-      w->name = handle_canonicalize((handle) data);
-      break;
+  case PG_WP_NAME:
+    if (iserror(rdhandle((void **)&str,PG_TYPE_PGSTRING,-1,data))) 
+      return mkerror(PG_ERRT_HANDLE,18);
+    w->name = handle_canonicalize((handle) data);
+    break;
 
-    case PG_WP_PUBLICBOX:
-      w->publicbox = data;
-      break;
+  case PG_WP_PUBLICBOX:
+    w->publicbox = data;
+    break;
 
-   case PG_WP_BIND:
-     w->scrollbind = data;
-     break;
+  case PG_WP_BIND:
+    w->scrollbind = data;
+    break;
 
-   case PG_WP_THOBJ:
-     maindiv->state = data;
-     resizewidget(w);
-     w->in->flags |= DIVNODE_NEED_RECALC;
-     w->dt->flags |= DIVTREE_NEED_RECALC;
-     break;
+  case PG_WP_THOBJ:
+    maindiv->state = data;
+    resizewidget(w);
+    w->in->flags |= DIVNODE_NEED_RECALC;
+    w->dt->flags |= DIVTREE_NEED_RECALC;
+    break;
 
-   case PG_WP_TRIGGERMASK:
-     w->trigger_mask = data;
-     break;
+  case PG_WP_TRIGGERMASK:
+    w->trigger_mask = data;
+    break;
      
-   case PG_WP_HILIGHTED:
+  case PG_WP_HILIGHTED:
     {
       struct widget *p;
       
@@ -489,20 +499,14 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
     }
     break;
 
-   case PG_WP_AUTO_ORIENTATION:
-     w->auto_orientation = data;
-     break;
+  case PG_WP_AUTO_ORIENTATION:
+    w->auto_orientation = data;
+    break;
 
-    default:
-      return mkerror(PG_ERRT_BADPARAM,6);   /* Unknown property */
-   }
-   return success;
-}
-
-glob widget_get(struct widget *w, int property) {  
-  if (!(w && w->def->get))
-    return 0;
-  return (*w->def->get)(w,property);
+  default:
+    return mkerror(PG_ERRT_BADPARAM,6);   /* Unknown property */
+  }
+  return success;
 }
 
 glob widget_base_get(struct widget *w, int property) {  

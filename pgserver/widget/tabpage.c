@@ -1,4 +1,4 @@
-/* $Id: tabpage.c,v 1.3 2002/11/26 23:58:21 micahjd Exp $
+/* $Id: tabpage.c,v 1.4 2002/11/27 01:05:10 micahjd Exp $
  *
  * tabpage.c - A page in a tabbed book. It can be inserted into any
  *             container and automatically link with other tab pages
@@ -51,11 +51,11 @@ void tabpage_resize(struct widget *self) {
 
 static void tabpage_show_hide(struct widget *self, int visible) {
   if (visible) {
-    widget_set(self, PG_WP_SIDE, PG_S_ALL);
+    widget_base_set(self, PG_WP_SIDE, PG_S_ALL);
   }
   else {
-    widget_set(self, PG_WP_SIDE, PG_S_TOP);
-    widget_set(self, PG_WP_SIZE, 0);
+    widget_base_set(self, PG_WP_SIDE, PG_S_TOP);
+    widget_base_set(self, PG_WP_SIZE, 0);
   }
 }
 
@@ -72,9 +72,9 @@ g_error tabpage_install(struct widget *self) {
   WIDGET_ALLOC_DATA(tabpagedata);
 
   /* Set custom defaults */
-  e = widget_set(self, PG_WP_THOBJ, PGTH_O_TAB_PAGE);
+  e = widget_base_set(self, PG_WP_THOBJ, PGTH_O_TAB_PAGE);
   errorcheck;
-  e = widget_set(self, PG_WP_SIZE, 0);
+  e = widget_base_set(self, PG_WP_SIZE, 0);
   errorcheck;
 
   /* Go ahead and create the tab. We will attach the tab

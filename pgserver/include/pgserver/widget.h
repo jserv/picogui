@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.79 2002/11/19 13:16:11 micahjd Exp $
+/* $Id: widget.h,v 1.80 2002/11/27 01:05:09 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -261,7 +261,8 @@ void widget_remove(struct widget *w);
 g_error widget_set(struct widget *w, int property, glob data);
 glob widget_get(struct widget *w, int property);
 
-/* Called by widgets that aren't subclasses, to process unhandled widget_get's */
+/* Common widget properties provided for all widgets are handled here */
+g_error widget_base_set(struct widget *w, int property, glob data);
 glob widget_base_get(struct widget *w, int property);
 
 /* This is used in transparent widgets - it propagates a redraw through
