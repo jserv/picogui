@@ -51,7 +51,7 @@ int nextmovewin(struct board *it)
     for(y=0;y<6;y++)
     {
       total = glook(it,x,y) + glook(it,x+1,y) + glook(it,x+2,y) + glook(it,x+3,y);
-      if(total == 3 || total == -3)
+      if(total == -3)
 	for(i=0;i<4;i++)
 	  if(glook(it,x+i,y) == 0 && glook(it,x+i,y-1) != 0)
 	    return x+i;
@@ -62,7 +62,7 @@ int nextmovewin(struct board *it)
     for(y=0;y<3;y++)
     {
       total = glook(it,x,y) + glook(it,x,y+1) + glook(it,x,y+2) + glook(it,x,y+3);
-      if(total == 3 || total == -3)
+      if(total == -3)
 	return x;
     }
   
@@ -71,7 +71,7 @@ int nextmovewin(struct board *it)
     for(y=0;y<3;y++)
     { 
       total = glook(it,x,y) + glook(it,x+1,y+1) + glook(it,x+2,y+2) + glook(it,x+3,y+3);
-      if(total == 3 || total == -3)
+      if(total == -3)
 	for(i=0;i<4;i++)
 	  if(glook(it,x+i,y+i) == 0 && glook(it,x+i,y+i-1) != 0)
 	    return x+i;
@@ -82,11 +82,54 @@ int nextmovewin(struct board *it)
     for(y=3;y<6;y++)
     {
       total = glook(it,x,y) + glook(it,x+1,y-1) + glook(it,x+2,y-2) + glook(it,x+3,y-3);
-      if(total == 3 || total == -3)
+      if(total == -3)
 	for(i=0;i<4;i++)
 	  if(glook(it,x+i,y-i) == 0 && glook(it,x+i,y-i-1) != 0)
 	    return x+i;
      }
+  
+  //zero slope
+  for(x=0;x<4;x++)
+    for(y=0;y<6;y++)
+    {
+      total = glook(it,x,y) + glook(it,x+1,y) + glook(it,x+2,y) + glook(it,x+3,y);
+      if(total == 3)
+	for(i=0;i<4;i++)
+	  if(glook(it,x+i,y) == 0 && glook(it,x+i,y-1) != 0)
+	    return x+i;
+    }
+
+  //no slope
+  for(x=0;x<7;x++)
+    for(y=0;y<3;y++)
+    {
+      total = glook(it,x,y) + glook(it,x,y+1) + glook(it,x,y+2) + glook(it,x,y+3);
+      if(total == 3)
+	return x;
+    }
+  
+  //positive slope
+  for(x=0;x<4;x++)
+    for(y=0;y<3;y++)
+    { 
+      total = glook(it,x,y) + glook(it,x+1,y+1) + glook(it,x+2,y+2) + glook(it,x+3,y+3);
+      if(total == 3)
+	for(i=0;i<4;i++)
+	  if(glook(it,x+i,y+i) == 0 && glook(it,x+i,y+i-1) != 0)
+	    return x+i;
+    }
+  
+  //negative slope
+  for(x=0;x<4;x++)
+    for(y=3;y<6;y++)
+    {
+      total = glook(it,x,y) + glook(it,x+1,y-1) + glook(it,x+2,y-2) + glook(it,x+3,y-3);
+      if(total == 3)
+	for(i=0;i<4;i++)
+	  if(glook(it,x+i,y-i) == 0 && glook(it,x+i,y-i-1) != 0)
+	    return x+i;
+    }
+  
   return -1;
 }
 
