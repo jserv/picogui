@@ -13,61 +13,7 @@
 
     <h1>Using it with CVS</h1>
 
-    <p>For CVS, save this script as "ciabot" in the CVSROOT module of your repository:</p>
-    <code><pre>
-
-#!/bin/bash
-message=`cat`
-uname=`id -un`
-lineno=`echo "$message" | grep -n "Log Message:" | awk -F: ' { print $1 } '`
-message=`echo "$message" | sed "1,${lineno}d"`
-
-projectname="<i><font color="#FF0000">project name</font></i>"
-tmpfile="/tmp/$RANDOM-$projectname"
-message=`echo "$message" | head -n 5`
-
-cat &lt;&lt;EOF >$tmpfile
-From: commits@<i><font color="#FF0000">project domain</font></i>
-To: commits@picogui.org
-Content-Type: text/plain;
-Subject: Announce $projectname
-
-commit by $uname: $message
-EOF
-
-if [ -e /tmp/lastlog-$projectname ]; then
-        if ! diff /tmp/lastlog-$projectname $tmpfile &>/dev/null; then
-                # there are differences, so this is a different commit
-                cat $tmpfile | /usr/sbin/sendmail -t
-                mv $tmpfile /tmp/lastlog-$projectname
-        else
-                # it's just cvs spamming us from another directory
-                rm $tmpfile
-        fi
-else
-        cat $tmpfile | /usr/sbin/sendmail -t
-        mv $tmpfile /tmp/lastlog-$projectname
-fi
-
-    </pre></code>
-
-    <p> Replace all the text in red with values applicable to your project. If your project has an IRC channel on freenode,
-        the project name should be the channel name without the leading "#" character. It will be used to prefix the output in #commits
-        as well. </p>
-
-    <p> This script strips out all the extra info CVS gives, then compares each log message to the last one sent so that
-        it doesn't spam the bot with the same message for every directory in the commit. It then emails the resulting message
-        off to the bot. This assumes you're using ssh authentication, otherwise the username will always return the same thing.</p>
-
-    <p> If you're using sourceforge and you experience problems with sending email to non-sourceforge domains, you may want
-        to try changing the email address from commits@picogui.org to an alias, cia@users.sf.net. Note that this could make
-        the commit messages much slower, depending on how fast sourceforge's mail server is feeling. </p>
-
-    <p> Now in the loginfo file from the CVSROOT module of your repository, place this line:</p>
-
-    <code>
-      ALL $CVSROOT/CVSROOT/ciabot
-    </code>
+    <p> Download the <a href="ciabot">ciabot</a> script and follow the instructions in the comments at the top of the file. </p>
 
     <h1> Using it with Subversion </h1>
 
