@@ -32,23 +32,23 @@ img {
 }
 
 a {
-  background: White;
-  border-style: dotted;
-  border-width: 1px; 
   color: #000080;
   text-decoration: none; 
-  border-color: #FFFFFF;
 }
 
 a:hover {
-  border-color: #000080;
+  text-decoration: underline; 
 }
 
 .heading {
   background: White;
   border-bottom: 1px solid Black;
-  padding: 0.5em;
+  padding: 0.5em 0.5em 0em 0.5em;
   margin: 0em 0em 2.0em 0em;
+}
+
+.headingTabs {
+  margin: 0.7em 0em 0em 0em;
 }
 
 .title {
@@ -81,13 +81,26 @@ a.section {
 }
 
 a.section:hover {
-  background: #dee7ec;
+  text-decoration: underline; 
+}
+
+a.headingTab {
+  background: #eef4eb;
+  border: 1px solid black;
+  border-bottom: #eef4eb 1px solid;
+  color: #000080;
+  margin: 1.5em 0.5em 0em 0.5em;
+  padding: 0em 0.5em;
+  text-decoration: none; 
+}
+
+a.headingTab:hover {
+  text-decoration: underline; 
 }
 
 
 div.sectionTop {
   background: #dee7ec;
-  border-bpttom: 1px solid Black;
   padding: 0.4em;
   margin: 0em 0em 0em 0em;
 }
@@ -106,20 +119,21 @@ div.commitBox {
   font-family: monospace;
   background: Black;
   color: #dbdbdb;
-  padding: 0.5em;
+  padding: 1em;
 }
 
 ul {
   line-height: 1.5em;
   list-style-name: square;
   margin-left: 2.0em;
-  padding:0;
+  padding: 0em;
+  margin: 0em 0em 0em 1.5em;
 }
 
 /* Most of this table formatting is modified from Plone's default CSS */
 
 table {
-    margin: 1em;
+    margin: 0em 0em 1em 0em;
 }
 
 table th {
