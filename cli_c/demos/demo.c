@@ -1,4 +1,4 @@
-/* $Id: demo.c,v 1.18 2001/02/02 07:42:06 micahjd Exp $
+/* $Id: demo.c,v 1.19 2001/03/30 04:39:06 micahjd Exp $
  *
  * demo.c -   source file for testing PicoGUI
  *
@@ -121,13 +121,19 @@ int main(int argc, char *argv[])
   /**** Widgets inside the toolbar */
 
   pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
-  pgSetWidget(0,PG_WP_TEXT,pgNewString("1"),0);
-
+  pgSetWidget(0,PG_WP_TEXT,pgNewString("Button"),0);
+   
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
-  pgSetWidget(0,PG_WP_TEXT,pgNewString("2"),0);
-
-  pgNewWidget(PG_WIDGET_BUTTON,0,0);
-  pgSetWidget(0,PG_WP_TEXT,pgNewString("3"),0);
+  pgSetWidget(0,
+	      PG_WP_TEXT,pgNewString("Toggle"),
+	      PG_WP_EXTDEVENTS,PG_EXEV_TOGGLE,
+	      0);
+   
+  pgNewWidget(PG_WIDGET_CHECKBOX,0,0);
+  pgSetWidget(0,
+	      PG_WP_TEXT,pgNewString("Checkski!"),
+	      PG_WP_SIDE,PG_S_LEFT, /* checkboxes default to vertical stacking */
+	      0);
 
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(0,
