@@ -1,4 +1,4 @@
-/* $Id: textbox.c,v 1.5 2001/09/23 01:57:42 micahjd Exp $
+/* $Id: textbox.c,v 1.6 2001/09/24 17:20:31 micahjd Exp $
  *
  * textbox.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities
@@ -157,7 +157,7 @@ g_error text_div(struct divnode **where, struct widget *self,
   (*where)->split = (*where)->pw;
  
   /* For debugging, show the extent of the divnode */
-  addgropsz(&ctx,PG_GROP_FRAME,0,0,(*where)->pw,(*where)->ph);
+  //  addgropsz(&ctx,PG_GROP_FRAME,0,0,(*where)->pw,(*where)->ph);
 
   return sucess;
 }

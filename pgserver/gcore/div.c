@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.57 2001/09/23 01:57:42 micahjd Exp $
+/* $Id: div.c,v 1.58 2001/09/24 17:20:31 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -420,7 +420,7 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
        }
        
        /* Otherwise, check whether there's extra room */
-       else if (n->nextline && (!n->next)) {
+       else if (n->nextline && n->nextline->div && (!n->next)) {
 	 struct divnode **p;
 	 s16 avw,avh;       /* Available width/height */
 	 
@@ -451,19 +451,25 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
 	   *p = NULL;
 	   r_set_nextline(n->next,n->nextline);
 	   
-	   /* If we just emptied the next line completely, that's a Bad
-	    * Thing. Try to transfer one node over from the line after that.
-	    * When this node recalcs, it should maintain proper flow between
-	    * lines.
-	    */
-	   
-	   if ((!n->nextline->div) && n->nextline->nextline && 
-	       n->nextline->nextline->div) {
-	     n->nextline->div = n->nextline->nextline->div;
-	     n->nextline->nextline->div = n->nextline->nextline->div->next;
-	     n->nextline->div->next = NULL;
-	     n->nextline->div->nextline = n->nextline->nextline;
-	     n->nextline->div->flags |= DIVNODE_NEED_RECALC;
+	   /* If we just emptied the next line, delete it */
+	   if (!n->nextline->div) {
+	     struct divnode *blankline = n->nextline;
+	     struct divnode **pp, *p;
+
+	     /* Link the divtree and nextline pointers around this node */
+	     p = divnode_findbranch(n->owner->in,n);
+	     if (p) {
+	       p->nextline = blankline->nextline;
+	       r_set_nextline(p->div,blankline->nextline);
+	     }
+	     pp = divnode_findpointer(n->owner->in,blankline);
+	     if (pp)
+	       *pp = blankline->next;
+	     blankline->nextline = NULL;
+	     blankline->next = NULL;
+
+	     /* Delete the blank line */
+	     r_divnode_free(blankline);
 	   }
 	   
 	   /* Recalculate preferred sizes. This is more processing than
@@ -966,11 +972,39 @@ struct divnode *r_divnode_findbranch(struct divnode *p,
     return x;
   if (x = r_divnode_findbranch(p->next,dest,branch))
     return x;
+
+  return NULL;
 }
 struct divnode *divnode_findbranch(struct divnode *tree,
 				   struct divnode *dest) {
   return r_divnode_findbranch(tree,dest,NULL);
 }
+
+/* Find a pointer to the supplied divnode pointer in the supplied tree.
+ * This is useful for deleting divnodes.
+ */
+struct divnode **divnode_findpointer(struct divnode *tree,
+				     struct divnode *dest) {
+  struct divnode **p;
+
+  if (!tree)
+    return NULL;
+
+  /* Check if one of tree's children is what we're looking for */
+  if (tree->div == dest)
+    return &tree->div;
+  if (tree->next == dest)
+    return &tree->next;
+
+  if (p = divnode_findpointer(tree->div,dest))
+    return p;
+  if (p = divnode_findpointer(tree->next,dest))
+    return p;
+    
+  return NULL;
+}
+
+
 
 /* The End */
 
