@@ -1,4 +1,4 @@
-/* $Id: s1d13806.c,v 1.1 2001/10/12 16:57:45 bauermeister Exp $
+/* $Id: s1d13806.c,v 1.2 2001/10/15 16:22:53 bauermeister Exp $
  *
  * s1d13806.c - use a Epson S1D13806 video chip with a M68VZ328
  *
@@ -39,7 +39,7 @@
 #include <asm/MC68VZ328.h>  /* for bus and port definition of DragonBall VZ */
 #include <asm/io.h>
 
-#include <pgserver/s1d13806.h>
+#include "s1d13806.h"
 
 
 /* Macros to easily access the members of vid->display */
