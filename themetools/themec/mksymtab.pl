@@ -1,4 +1,4 @@
-# $Id: mksymtab.pl,v 1.3 2000/09/25 03:18:45 micahjd Exp $
+# $Id: mksymtab.pl,v 1.4 2000/10/07 05:49:30 micahjd Exp $
 #
 # mksymtab.pl - convert the constant definitions in constants.h
 #               into a symbol table to compile into the theme
@@ -62,6 +62,13 @@ while (<>) {
 	$_ = $1;
 	tr/A-Z_/a-z./;
 	print "\t{PROPERTY,\"$_\",$n},\n";
+    }
+
+    # Translate gropnodes to fillstyle functions
+    if ($n =~ /^PG_GROP_(.*)/) {
+	$_ = $1;
+	tr/A-Z/a-z/;
+	print "\t{FSFUNC,\"$_\",$n},\n";
     }
 }
 

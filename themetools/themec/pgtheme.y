@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.7 2000/09/25 19:41:19 micahjd Exp $
+/* $Id: pgtheme.y,v 1.8 2000/10/07 05:49:30 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -57,13 +57,17 @@
 %type <prop>     stmt_list
 %type <prop>     compount_stmt
 %type <obj>      objectdef
+%type <propval>  fillstyle
 
    /* Reserved words */
-%token UNKNOWNSYM OBJ
+%token UNKNOWNSYM OBJ FILLSTYLE VAR FSVAR FSFUNC
 
-
+%left VARPLUS
+%left VARMULT
+%nonassoc VARPAREN
 %left '-' '+'
 %left '*' '/'
+%nonassoc CONSTPAREN
 
 %start unitlist
 
@@ -142,20 +146,65 @@ property: PROPERTY
         ;
 
 propertyval:  constexp          { $$.data = $1; $$.loader = PGTH_LOAD_NONE; }
+           |  fillstyle         { $$ = $1; }
            ;
 
 constexp: constexp '+' constexp { $$ = $1 + $3; }
         | constexp '-' constexp { $$ = $1 - $3; }
         | constexp '*' constexp { $$ = $1 * $3; }
-        | constexp '/' constexp { 
+        | constexp '/' constexp {
 	  if ($3 == 0)
 	    yyerror("Divide by zero");
 	  else
 	    $$ = $1 / $3; }
-        | '(' constexp ')' { $$ = $2; }
+        | '(' constexp ')' { $$ = $2; }  %prec CONSTPAREN
         | NUMBER
-	| UNKNOWNSYM            { $$ = 0; }
+	//	| UNKNOWNSYM            { $$ = 0; }
         ;
+
+    /* Fill-style things */
+
+fillstyle: FILLSTYLE  { yyerror("fillstyle requires parameters"); }
+         | FILLSTYLE '{' '}' { yyerror("empty fillstyle"); }
+         | FILLSTYLE '{' fsbody '}' {
+  $$.data = 0;
+  $$.loader = 0;
+}
+         ;
+
+fsbody: fsdecl_list fsstmt_list
+      | fsstmt_list
+      | fsdecl_list   { yyerror("fillstyle has no statements"); }
+      ;
+
+fsdecl_list: fsdecl
+           | fsdecl_list fsdecl
+           ;
+
+fsdecl: VAR fsvar_list ';'
+      ;
+
+fsvar_list: UNKNOWNSYM
+          | fsvar_list ',' UNKNOWNSYM
+          ;
+
+fsstmt_list: fsstmt
+           | fsstmt_list fsstmt
+	   ;
+
+fsstmt: FSVAR '=' fsexp ';'
+      | FSFUNC '(' fsarglist ')' ';'
+      ;
+
+fsarglist:
+         | fsarglist ',' fsexp
+         ;
+
+fsexp: '(' fsexp ')'    %prec VARPAREN
+     | fsexp '+' fsexp  %prec VARPLUS
+     | fsexp '*' fsexp  %prec VARMULT
+     | NUMBER {printf("DEBUG(%d)\n",$1);}
+     ;
 
 %%
 

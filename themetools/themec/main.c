@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.5 2000/09/25 19:41:19 micahjd Exp $
+/* $Id: main.c,v 1.6 2000/10/07 05:49:30 micahjd Exp $
  *
  * main.c - main() and some parser utility functions for
  *          the PicoGUI theme compiler.  The actual parsing
@@ -61,6 +61,7 @@ int main(int argc, char **argv) {
   do {
     yyparse();
   } while (!feof(yyin));
+  if (errors) return 1;
 
   /**** Back end */
   /* Process the parsed data */
@@ -85,7 +86,7 @@ int main(int argc, char **argv) {
 
   fwrite(themeheap,themeheap_size,1,stdout);
 
-  return (errors ? 1 : 0);
+  return 0;
 }
 
 /* Symbol table lookup, optionally putting the symbol's
@@ -100,8 +101,6 @@ int symlookup(const char *sym,unsigned long *value) {
     }
     n++;
   }
-  
-  yyerror("Unrecognized symbol");
   return UNKNOWNSYM;
 }
 
