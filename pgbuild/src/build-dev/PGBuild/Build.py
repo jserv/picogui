@@ -35,18 +35,19 @@ import sys
 # FIXME: move these to invocation options
 keep_going_on_error = False
 ignore_errors = False
+print_time = False
 exit_status = 0
 
 class BuildTask(SCons.Taskmaster.Task):
     """An SCons build task."""
     def display(self, message):
-        display('scons: ' + message)
+        self.progress.messsage('scons: ' + message)
 
     def execute(self):
         target = self.targets[0]
         if target.get_state() == SCons.Node.up_to_date:
             if self.top and target.has_builder():
-                display('scons: "%s" is up to date.' % str(target))
+                self.display('"%s" is up to date.' % str(target))
         elif target.has_builder() and not hasattr(target.builder, 'status'):
             if print_time:
                 start_time = time.time()
@@ -55,7 +56,7 @@ class BuildTask(SCons.Taskmaster.Task):
                 finish_time = time.time()
                 global command_time
                 command_time = command_time+finish_time-start_time
-                print "Command execution time: %f seconds"%(finish_time-start_time)
+                self.progress.message("Command execution time: %f seconds" % (finish_time-start_time))
 
     def do_failed(self, status=2):
         global exit_status
@@ -72,13 +73,14 @@ class BuildTask(SCons.Taskmaster.Task):
         t = self.targets[0]
         if self.top and not t.has_builder() and not t.side_effect:
             if not t.exists():
-                sys.stderr.write("scons: *** Do not know how to make target `%s'." % t)
+                s = "scons: *** Do not know how to make target `%s'." % t
                 if not keep_going_on_error:
-                    sys.stderr.write("  Stop.")
-                sys.stderr.write("\n")
+                    s += "  Stop."
+                s += "\n"
+                self.progress.error(s)
                 self.do_failed()
             else:
-                print "scons: Nothing to be done for `%s'." % t
+                self.progress.message("scons: Nothing to be done for `%s'." % t)
                 SCons.Taskmaster.Task.executed(self)
         else:
             SCons.Taskmaster.Task.executed(self)
@@ -102,25 +104,25 @@ class BuildTask(SCons.Taskmaster.Task):
         e = sys.exc_value
         status = 2
         if sys.exc_type == SCons.Errors.BuildError:
-            sys.stderr.write("scons: *** [%s] %s\n" % (e.node, e.errstr))
+            self.progress.error("[%s] %s" % (e.node, e.errstr))
             if e.errstr == 'Exception':
                 traceback.print_exception(e.args[0], e.args[1], e.args[2])
         elif sys.exc_type == SCons.Errors.UserError:
             # We aren't being called out of a user frame, so
             # don't try to walk the stack, just print the error.
-            sys.stderr.write("\nscons: *** %s\n" % e)
+            self.progress.error(e)
         elif sys.exc_type == SCons.Errors.StopError:
             s = str(e)
             if not keep_going_on_error:
                 s = s + '  Stop.'
-            sys.stderr.write("scons: *** %s\n" % s)
+            self.progress.error(s)
         elif sys.exc_type == SCons.Errors.ExplicitExit:
             status = e.status
-            sys.stderr.write("scons: *** [%s] Explicit exit, status %s\n" % (e.node, e.status))
+            self.progress.message("[%s] Explicit exit, status %s" % (e.node, e.status))
         else:
             if e is None:
                 e = sys.exc_type
-            sys.stderr.write("scons: *** %s\n" % e)
+            self.progress.error(e)
 
         self.do_failed(status)
 
@@ -205,11 +207,14 @@ class System(object):
         else:
             nodes = []
     
-        if nodes:
-            progress.message("Building targets: " + ", ".join(map(str, nodes)))
-        else:
+        if not nodes:
             import PGBuild.Errors
             raise PGBuild.Errors.ExternalError("No targets to build")
+
+        # Link our task class back to us, for progress reporting
+        self.task_class.buildSystem = self
+        self.task_class.progress = progress.task("Building targets: " + ", ".join(map(str, nodes)))
+        self.task_class.config = self.config
 
         # Create a taskmaster using a list of target nodes
         taskmaster = SCons.Taskmaster.Taskmaster(nodes, self.task_class)

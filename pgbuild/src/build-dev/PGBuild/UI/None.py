@@ -114,7 +114,7 @@ class Progress(object):
     
     def report(self, verb, noun, unimportance=1):
         if self._outputTest(unimportance):
-            self._report(verb, noun)
+            self._report(str(verb), str(noun))
 
     def task(self, name, unimportance=0):
         """Create a new Progress object representing a hierarchial task"""
@@ -126,7 +126,7 @@ class Progress(object):
 
     def warning(self, text, unimportance=1):
         if self._outputTest(unimportance):
-            self._warning(text)
+            self._warning(str(text))
 
     def _error(self, text):
         """Hook for displaying an error message"""
@@ -134,7 +134,7 @@ class Progress(object):
             
     def error(self, text, unimportance=-5):
         if self._outputTest(unimportance):
-            self._error(text)
+            self._error(str(text))
 
     def _message(self, text):
         """Hook for displaying a generic message"""
@@ -142,7 +142,7 @@ class Progress(object):
 
     def message(self, text, unimportance=1):
         if self._outputTest(unimportance):
-            self._message(text)
+            self._message(str(text))
 
 
 class Interface(object):

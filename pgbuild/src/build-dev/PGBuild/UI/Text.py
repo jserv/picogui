@@ -47,8 +47,8 @@ class Colorizer(object):
     def __init__(self):
         self.supported = 0
         try:
-            term = os.getenv('TERM')
-            if term in ('vt100', 'vt102', 'xterm', 'linux', 'Eterm'):
+            self.term = os.getenv('TERM')
+            if self.term in ('vt100', 'vt102', 'xterm', 'linux', 'Eterm'):
                 self.supported = 1
         except:
             pass
@@ -65,6 +65,13 @@ class Colorizer(object):
         sys.stdout.write(str)
         if color:
             self.set(('reset',))
+
+    def setTitle(self, title):
+        if self.term in ('xterm', 'Eterm'):
+            sys.stdout.write("\x1b]2;%s\x07" % title)
+
+    def cleanup(self):
+        self.setTitle(self.term)
         
 
 class Progress(PGBuild.UI.None.Progress):
@@ -82,6 +89,7 @@ class Progress(PGBuild.UI.None.Progress):
         self.color.write("-" * self.indentLevel, ('bold',))
         self.color.write(" %s..." % self.taskName, ('bold', 'cyan'))
         self.color.write("\n")
+        self.color.setTitle("%s - %s" % (PGBuild.name, self.taskName))
         
     def _report(self, verb, noun):
         self.color.write("%10s " % verb)
@@ -117,9 +125,15 @@ class Progress(PGBuild.UI.None.Progress):
     def _message(self, text):
         self._textBlock(text)
 
+    def cleanup(self):
+        self.color.cleanup()
+
 
 class Interface(PGBuild.UI.None.Interface):
     progressClass = Progress
+
+    def cleanup(self):
+        self.progress.cleanup()
 
 ### The End ###
         
