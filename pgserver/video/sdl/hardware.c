@@ -1,4 +1,4 @@
-/* $Id: hardware.c,v 1.12 2000/04/29 21:57:45 micahjd Exp $
+/* $Id: hardware.c,v 1.13 2000/06/09 20:52:39 micahjd Exp $
  *
  * hardware.c - SDL "hardware" layer
  * Anything that makes any kind of assumptions about the display hardware
@@ -34,6 +34,23 @@
 SDL_Surface *screen;
 struct bitmap screenb = {NULL, HWR_WIDTH, HWR_HEIGHT};
 struct cliprect screenclip = {0,0,HWR_WIDTH-1,HWR_HEIGHT-1};
+struct cliprect updaterect = {-1,-1,-1,-1};
+
+/* Extend updaterect to include a new clipping rectangle */
+void inline extendrect(struct cliprect *c) {
+  if (c) {
+    if (updaterect.x==-1)
+      updaterect = *c;
+    else {
+      if (c->x<updaterect.x) updaterect.x = c->x;
+      if (c->y<updaterect.y) updaterect.y = c->y;
+      if (c->x2>updaterect.x2) updaterect.x2 = c->x2;
+      if (c->y2>updaterect.y2) updaterect.y2 = c->y2;
+    }
+  }
+  else
+    updaterect = screenclip;
+}
 
 g_error hwr_init() {
   int i;
@@ -78,15 +95,21 @@ void hwr_release() {
 }
 
 void hwr_clear() {
+  updaterect = screenclip;
   SDL_FillRect(screen,NULL,0);
 }
 
 void hwr_update() {
-  SDL_UpdateRect(screen,0,0,0,0);  /* Real hardware will probably 
-				      double-buffer */
+  /* Blit only what has changed */
+  if (updaterect.x==-1) return;
+  SDL_UpdateRect(screen,updaterect.x,updaterect.y,
+		 updaterect.x2-updaterect.x+1,updaterect.y2-updaterect.y+1);
+  updaterect.x = -1;
 }
 
 void hwr_pixel(struct cliprect *clip,int x,int y,devcolort c) {
+  extendrect(clip);
+
   if (clip) {
     if (x<clip->x || y<clip->y || x>clip->x2 || y>clip->y2) return;
   }
@@ -98,6 +121,7 @@ void hwr_pixel(struct cliprect *clip,int x,int y,devcolort c) {
 
 void hwr_slab(struct cliprect *clip,int x,int y,int l,devcolort c) {
   devbmpt p;
+  extendrect(clip);
 
   if (l<=0) return;
   if (clip) {
@@ -120,6 +144,7 @@ void hwr_slab(struct cliprect *clip,int x,int y,int l,devcolort c) {
 
 void hwr_bar(struct cliprect *clip,int x,int y,int l,devcolort c) {
   devbmpt p;
+  extendrect(clip);
 
   if (l<=0) return;
   if (clip) {
@@ -147,6 +172,7 @@ void hwr_line(struct cliprect *clip,int x1,int y1,int x2,int y2,devcolort c) {
   int dx = x2-x1;
   int dy = y2-y1;
   int fraction;
+  extendrect(clip);
 
   /* Implementation of Bresenham's algorithm */
   
@@ -304,6 +330,7 @@ void hwr_gradient(struct cliprect *clip,int x,int y,int w,int h,
   devbmpt p;
   int r,g,b,i,s,c;
   int line_offset;
+  extendrect(clip);
 
   if ((c1==0) && (c2==0) && (translucent!=0)) return; 
   if ((translucent==0) && (c1==c2)) {
@@ -449,6 +476,7 @@ void hwr_gradient(struct cliprect *clip,int x,int y,int w,int h,
 
 void hwr_rect(struct cliprect *clip,int x,int y,int w,int h,devcolort c) {
   SDL_Rect r;
+  extendrect(clip);
 
   if (w<=0) return;
   if (h<=0) return;
@@ -476,6 +504,8 @@ void hwr_rect(struct cliprect *clip,int x,int y,int w,int h,devcolort c) {
 void hwr_dim(struct cliprect *clip) {
   devbmpt p,pl;
   int i,j;
+  extendrect(clip);
+
   SDL_LockSurface(screen);
 
   if (!clip) clip = &screenclip;
@@ -508,6 +538,7 @@ void hwr_blit(struct cliprect *clip, int lgop,
   devbmpt s,d,sl,dl;
   int i,scrbuf=0;
   int s_of,d_of; /* Pixel offset between lines */
+  extendrect(clip);
 
   if (lgop==LGOP_NULL) return;
   if (w<=0) return;
@@ -632,6 +663,7 @@ void hwr_chrblit(struct cliprect *clip, unsigned char *chardat,int dest_x,
   int flag=0;
   int xpix,xmin,xmax,clipping;
   unsigned char ch;
+  extendrect(clip);
 
   /* Find the width of the source data in bytes */
   if (bw & 7) bw += 8;
