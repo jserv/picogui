@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl
-dnl $Id: configure.in,v 1.18 2002/01/30 15:25:21 bornet Exp $
+dnl $Id: configure.in,v 1.19 2002/02/03 16:55:48 lonetech Exp $
 dnl
 
 AC_INIT(pgboard/pgboard.c)
@@ -104,6 +104,7 @@ AC_ARG_ENABLE(pocketbee,
 AC_OUTPUT(
 	Makefile
 	picogui-apps.spec
+	pgedit/Makefile
 	pterm/Makefile
 	pgboard/Makefile
 	pgboard/examples/Makefile
