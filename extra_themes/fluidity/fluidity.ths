@@ -23,7 +23,12 @@
  *
  * All graphics used here are original works also licensed under the GPL!
  *
- * Version 1.00
+ * Version 1.01
+ *
+ * Changelog:
+ *
+ *  1.01 - Decreased base.display margin
+ *  1.0  - First stable release
  *
  */ 
 
@@ -505,7 +510,7 @@ object base.display {
   right_sz = 5;
   top_sz = 8;
   bottom_sz = 9;
-  margin = 6;
+  margin = 3;
   offset = -1;
 }
 
