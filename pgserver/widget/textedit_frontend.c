@@ -1,4 +1,4 @@
-/* $Id: textedit_frontend.c,v 1.14 2002/11/06 09:08:04 micahjd Exp $
+/* $Id: textedit_frontend.c,v 1.15 2002/11/12 18:28:25 cgroom Exp $
  *
  * textedit.c - Multi-line text widget. By Chuck Groom,
  * cgroom@bluemug.com, Blue Mug, Inc, July 2002. Intended to be
@@ -165,7 +165,8 @@ g_error textedit_install(struct widget *self) {
     
     self->in->div->build = &textedit_build; 
     self->in->div->state = PGTH_O_TEXTEDIT;
-    self->in->div->flags = DIVNODE_HOTSPOT | DIVNODE_SPLIT_TOP;
+    self->in->div->flags = DIVNODE_SPLIT_EXPAND | DIVNODE_SIZE_AUTOSPLIT | 
+        DIVNODE_SIZE_RECURSIVE | DIVNODE_HOTSPOT; 
     self->trigger_mask = PG_TRIGGER_ACTIVATE |
         PG_TRIGGER_DEACTIVATE | PG_TRIGGER_DRAG |
         PG_TRIGGER_DOWN | PG_TRIGGER_RELEASE | 
@@ -180,28 +181,58 @@ g_error textedit_install(struct widget *self) {
 
     DATA->fg =        VID(color_pgtohwr) (TEXT_FG);
     DATA->bg =        VID(color_pgtohwr) (TEXT_BG);
-    DATA->highlight = VID(color_pgtohwr) (TEXT_HIGHLIGHT);
-           
+    DATA->highlight = VID(color_pgtohwr) (TEXT_HIGHLIGHT);           
     DATA->bit = NULL;
+    DATA->thumb_size = 0;
+    DATA->thumb_top = 0;
+    DATA->thumb_drag_start = 0;
+    DATA->scroll_lock = 0;
+
     e = text_backend_init(DATA);
     errorcheck;
+
+    self->in->div->flags |= PG_S_RIGHT;
+    self->in->div->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
+
+    e = newdiv(&self->in->div->div,self);
+    errorcheck;
+    self->in->div->div->build = &textedit_build_scroll;
+    self->in->div->div->state = PGTH_O_SCROLL;
+    self->out = &self->in->div->next;
 
     DATA->self = self;
     return success;
 }
 
+void textedit_build_scroll ( struct gropctxt *c,
+                             unsigned short state,
+                             struct widget *self ) {
+    self->in->div->div->r.w = theme_lookup(PGTH_O_SCROLL_V,PGTH_P_WIDTH);
+    self->in->div->div->r.x = self->in->div->preferred.w + self->in->div->r.x;
+    
+    exec_fillstyle(c,state,PGTH_P_BGFILL);
+        
+    c->defaultgropflags = PG_GROPF_TRANSLATE;
+    
+    if (DATA->thumb_size) {
+        c->r.w = theme_lookup(PGTH_O_SCROLL_V,PGTH_P_WIDTH);
+        c->r.h = DATA->thumb_size;
+        c->r.y = DATA->thumb_top;
+        exec_fillstyle(c,state,PGTH_P_OVERLAY);
+    } 
+}
 
 void textedit_build ( struct gropctxt *c,
                       unsigned short state,
                       struct widget *self ) {
     s16 w, h, tw;
     g_error e;
-
-    w = self->in->div->r.w;
+    
+    w = self->in->div->r.w - theme_lookup(PGTH_O_SCROLL_V,PGTH_P_WIDTH);
     h = self->in->div->r.h;
 
-    /* Set scrollbar properties */
     self->in->div->preferred.h = h;
+    self->in->div->preferred.w = w;
 
     if (!DATA->fd){
         /* FIXME: Theme lookup foreground, background colors, border */
@@ -246,7 +277,6 @@ void textedit_build ( struct gropctxt *c,
     e = text_backend_build( DATA, w, h);
 //    errorcheck;
 
-    DATA->scroll_lock = 0;
 //    return success;
 }
 
@@ -266,9 +296,8 @@ void textedit_remove(struct widget *self) {
 
 void textedit_resize(struct widget *self) { 
     // FIXME
-    self->in->div->preferred.w = self->in->div->r.w;
-    self->in->div->preferred.h = self->in->div->r.h;
-    printf("Resize*********\n");
+    //    self->in->div->preferred.w = self->in->div->r.w;
+    //    self->in->div->preferred.h = self->in->div->r.h;
 }
 
 
@@ -387,18 +416,64 @@ void textedit_trigger ( struct widget *self,
         if (!GET_FLAG(DATA->flags, TEXT_WIDGET_FOCUS))
              request_focus(self);
         if (!GET_FLAG(DATA->flags, TEXT_WIDGET_READONLY)) {
-            /* Move cursor. */
-            text_backend_cursor_move_xy ( DATA, 
-                                          param->mouse.x - self->in->div->r.x,
-                                          param->mouse.y - self->in->div->r.y);
-            grop_render(self->in->div, NULL);
+            if (param->mouse.x - self->in->div->r.x < DATA->width) {
+                /* Move cursor. */
+                DATA->thumb_drag_start = -1;
+                text_backend_cursor_move_xy ( DATA, 
+                                              param->mouse.x - self->in->div->r.x,
+                                              param->mouse.y - self->in->div->r.y);
+                grop_render(self->in->div, NULL);
+            } else {
+                text_backend_selection_unset(DATA);
+                /* In scrollbar region */
+                if ((param->mouse.y - self->in->div->r.y < DATA->thumb_top) ||
+                    (param->mouse.y - self->in->div->r.y >
+                     DATA->thumb_top + DATA->thumb_size)) {
+                    /* Page up or down */
+                    if (param->mouse.y - self->in->div->r.y < DATA->thumb_top)
+                        DATA->thumb_top -= DATA->thumb_size;
+                    else 
+                        DATA->thumb_top += DATA->thumb_size;
+                    DATA->thumb_top = MAX(0, MIN(DATA->thumb_top, 
+                                                 DATA->height - DATA->thumb_size));
+                    DATA->scroll_lock = 1;                
+                    text_backend_set_v_top(DATA, 
+                                           (DATA->v_height * DATA->thumb_top) / 
+                                           DATA->height);
+                    div_rebuild(self->in->div->div);
+                    update(NULL,1);
+                    DATA->scroll_lock = 0;
+                } else {
+                    DATA->thumb_drag_start = 
+                        (param->mouse.y - self->in->div->r.y) - 
+                        DATA->thumb_top;
+                }
+            }
         } 
         break;
     case PG_TRIGGER_DRAG:
         if (param->mouse.btn) {
-            text_backend_selection_xy( DATA,
-                                       param->mouse.x - self->in->div->r.x,
-                                       param->mouse.y - self->in->div->r.y );
+            if (DATA->thumb_drag_start < 0) {
+                text_backend_selection_xy( DATA,
+                                           param->mouse.x - self->in->div->r.x,
+                                           param->mouse.y - self->in->div->r.y );
+            } else {
+                DATA->thumb_top = param->mouse.y - 
+                    self->in->div->r.y -
+                    DATA->thumb_drag_start;
+                DATA->thumb_top = MAX(0, MIN(DATA->thumb_top, 
+                                             DATA->height - DATA->thumb_size));
+                DATA->thumb_drag_start = param->mouse.y -
+                    self->in->div->r.y -
+                    DATA->thumb_top;
+                DATA->scroll_lock = 1;                
+                text_backend_set_v_top(DATA, 
+                                       (DATA->v_height * DATA->thumb_top) / 
+                                       DATA->height);
+                div_rebuild(self->in->div->div);
+                update(NULL,1);
+                DATA->scroll_lock = 0;
+            }
         }
         return;
     case PG_TRIGGER_KEYUP:
@@ -483,50 +558,30 @@ void textedit_trigger ( struct widget *self,
     //update(NULL,1);
 }
 
-/* FIXME
- * This is bad, wicked, naughty, and in all ways reprehensible. 
- */
-struct scrolldata {
-  int horizontal;
-  int on,over;
-  int res;        /* Scroll bar's resolution - maximum value */
-  int grab_offset;  /* The difference from the top of the indicator to
-		       the point that was clicked */
-  int release_delta;
-  int value,old_value;
-  u32 wait_tick;
-  int thumbscale;
-  int thumbsize;
-};
-
-
 void textedit_scrollevent( struct widget *self ) {
-    int value, thumb, height;
-    struct divnode * p_node;
-    struct widget * parent;
-    struct scrolldata * p_data;
-    s16 oldres;
+    u16 thumb_size, thumb_top;
 
-    p_node = divnode_findparent(self->dt->head, self->in);
-    parent = p_node->owner;
-    p_data = ((struct scrolldata *)(parent->subclasses[0].data)) ;
-    height = MAX(DATA->height, DATA->v_height);
-    value =  (DATA->v_y_top * p_data->res) / height;
-
-    if ((parent->type == PG_WIDGET_SCROLL) &&
-        ((self->in->div->preferred.h != height) ||
-         p_data->value != value)) {
-        self->in->div->preferred.h = height;
-        if (parent->in) {
-            p_data->value = value;
-            if (p_data->res)
-                parent->in->div->translation.y = (DATA->v_y_top * DATA->height) / height;
-            parent->in->div->flags |= DIVNODE_NEED_REDRAW;
-            parent->dt->flags |= DIVTREE_NEED_REDRAW;
-        }
-        self->dt->flags |= DIVTREE_NEED_RESIZE;
-        post_event(PG_WE_ACTIVATE,parent,0,0,NULL);
+    if (DATA->scroll_lock)
+        return;
+    DATA->scroll_lock = 1;
+    
+    if (DATA->height < DATA->v_height) {
+        thumb_size = (DATA->height * self->in->div->div->r.h) / DATA->v_height;
+        thumb_top = (DATA->v_y_top * self->in->div->div->r.h) / 
+            (DATA->v_height);
+        if (thumb_top + thumb_size > DATA->height)
+            thumb_top = DATA->height - thumb_size;
+    } else {
+        thumb_size = 0;
+        thumb_top = 0;
     }
+    if ((thumb_size != DATA->thumb_size) || (thumb_top != DATA->thumb_top)) {
+        DATA->thumb_size = thumb_size;
+        DATA->thumb_top = thumb_top;
+        div_rebuild(self->in->div->div);
+        update(NULL,1);
+    }
+    DATA->scroll_lock = 0;
 }
 
 
@@ -568,7 +623,10 @@ void textedit_draw_str ( struct widget * self,
 	     *
 	     * Note to Chuck from Micah:
 	     *   Clipping should work... what's the problem specifically?
-	     */
+             *
+             * Re: server seg faults on drawing chars which are partially 
+             * off-screen
+             */
             if (t.y + h >= DATA->height)
                 continue;
 

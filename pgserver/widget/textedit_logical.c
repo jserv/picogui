@@ -1,4 +1,4 @@
-/* $Id: textedit_logical.c,v 1.12 2002/11/04 18:22:29 cgroom Exp $
+/* $Id: textedit_logical.c,v 1.13 2002/11/12 18:28:25 cgroom Exp $
  *
  * textedit_logical.c - Backend for multi-line text widget. This
  * defines the behavior of a generic wrapping text widget, and is not
@@ -886,6 +886,10 @@ g_error text_backend_store_selection ( text_widget * widget) {
     return success;
 }
 
+g_error text_backend_selection_unset ( text_widget * widget ) {
+    widget_unset_selection(widget);
+    return success;     
+}
 
 g_error text_backend_selection_dir ( text_widget * widget,
                                   cursor_direction dir ) {
