@@ -11,6 +11,7 @@ proc FromFile {filename} {
 
 if {[llength $argv] != 4} {
 	puts "Usage $argv0 inputfile outputfile replacestring arrayname"
+	exit 1
 }
 set input [lindex $argv 0]
 set output [lindex $argv 1]
@@ -19,25 +20,42 @@ set arrayname [lindex $argv 3]
 
 set fdata [split [FromFile $input] "\n"]
 set data ""
-set cut [string length "#define $search"]
-foreach line $fdata {
+set cut [string length "#define "]
+set scut [string length "$search"]
+set indx 0
+while {$indx < [llength $fdata]} {
+	set line [lindex $fdata $indx]
 	set start [string first "#define $search" $line]
 	if {$start ==0} {
 		set line [string range $line $cut end ]
 		set line [regsub -all " +" [regsub -all "\t+" $line " "] " "]
+		while {[string index $line end]=="\\"} {
+			incr indx
+			append line [string trim [lindex $fdata $indx]]
+		}
+		set line [join [split $line "\\"] ""]
 		set data [lappend data $line]
 	}
+	incr indx
 }
 foreach line $data {
 	set line [split $line]
-	set temp([string tolower [lindex $line 0]]) [lindex $line 1]
+	set [lindex $line 0] [lindex $line 1]
+	set indx [string range [lindex $line 0] $scut end]
+	set temp([string tolower $indx]) [lindex $line 1]
 }
 set out [open $output w]
 puts $out "array set $arrayname \""
+puts $search
 foreach line [lsort [array names temp]] {
 	puts -nonewline $out "\t$line\t"
-	if {[string first $search $temp($line)]==0} {
-		set temp($line) $temp([string tolower [string range $temp($line) [string length $search] end]])
+	if {[string first $search $temp($line)]!=-1} {
+		if {[info exists $temp($line)]} {
+			set temp($line) [format {$%s} $temp($line)]
+		}
+		set temp($line) [join [split $temp($line) "|"] "|$"]
+		set temp($line) [join [split $temp($line) "("] "($"]
+		set temp($line) [eval expr $temp($line)]
 	}
 	puts $out [format "%sexpr $temp($line)%s" {[} {]}]
 }
