@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.l,v 1.22 2001/04/29 17:29:06 micahjd Exp $
+/* $Id: pglex.l,v 1.1 2001/08/03 16:52:27 gobry Exp $
  *
  * pgtheme.l - lexer for processing PicoGUI theme source code
  *
@@ -27,7 +27,7 @@
  */
 
 #include "themec.h"
-#include "y.tab.h"
+#include "pgtheme.h"
 
 %}
 
