@@ -1,4 +1,4 @@
-/* $Id: sdl.c,v 1.9 2000/10/26 19:50:08 pney Exp $
+/* $Id: sdl.c,v 1.10 2000/10/29 01:45:35 micahjd Exp $
  *
  * sdl.c - video driver wrapper for SDL.
  *
@@ -180,7 +180,7 @@ void sdl_update(void) {
 }
 
 void sdl_blit(struct stdbitmap *src,int src_x,int src_y,
-		 struct stdbitmap *dest,int dest_x,int dest_y,
+		 int dest_x,int dest_y,
 		 int w,int h,int lgop) {
   struct stdbitmap screenb;
 
@@ -195,7 +195,7 @@ void sdl_blit(struct stdbitmap *src,int src_x,int src_y,
     /* Do a tiled blit */
     for (i=0;i<w;i+=src->w)
       for (j=0;j<h;j+=src->h)
-        sdl_blit(src,0,0,dest,dest_x+i,dest_y+j,src->w,src->h,lgop);
+        sdl_blit(src,0,0,dest_x+i,dest_y+j,src->w,src->h,lgop);
 
     return;
   }
@@ -221,16 +221,13 @@ void sdl_blit(struct stdbitmap *src,int src_x,int src_y,
   if (!src) {
     src = &screenb;
   }
-  if (!dest) {
-    dest = &screenb;
-    sdl_addarea(dest_x,dest_y,w,h);
-  }
+  sdl_addarea(dest_x,dest_y,w,h);
 
   /* set up pointers */
   s_of = src->w * vid->bpp / 8;
-  d_of = dest->w * vid->bpp / 8;
+  d_of = screenb.w * vid->bpp / 8;
   s = src->bits + src_x*vid->bpp/8 + src_y*s_of;
-  d = dest->bits + dest_x*vid->bpp/8 + dest_y*d_of;
+  d = screenb.bits + dest_x*vid->bpp/8 + dest_y*d_of;
   w = w*vid->bpp/8;
 
   /* Now the actual blitter code depends on the LGOP */
@@ -283,6 +280,37 @@ void sdl_blit(struct stdbitmap *src,int src_x,int src_y,
         *d ^= (*s) ^ 0xFFFFFF;
     break;
   }
+}
+
+void sdl_unblit(int src_x,int src_y,
+		struct stdbitmap *dest,int dest_x,int dest_y,
+		int w,int h) {
+  int i,j,s_of,d_of;
+  unsigned char *s,*sl,*d,*dl;
+
+  if ((src_x+w-1)>vid->clip_x2) w = vid->clip_x2-src_x+1;
+  if ((src_y+h-1)>vid->clip_y2) h = vid->clip_y2-src_y+1;
+  if (src_x<vid->clip_x1) {
+    w -= vid->clip_x1 - src_x;
+    dest_x += vid->clip_x1 - src_x;
+    src_x = vid->clip_x1;
+  }
+  if (src_y<vid->clip_y1) {
+    h -= vid->clip_y1 - src_y;
+    dest_y += vid->clip_y1 - src_y;
+    src_y = vid->clip_y1;
+  }
+  if (w<=0 || h<=0) return;
+
+  /* set up pointers */
+  s_of = vid->xres * vid->bpp / 8;
+  d_of = dest->w * vid->bpp / 8;
+  s = sdl_vidsurf->pixels + src_x*vid->bpp/8 + src_y*s_of;
+  d = dest->bits + dest_x*vid->bpp/8 + dest_y*d_of;
+  w = w*vid->bpp/8;
+
+  for (;h;h--,s+=s_of,d+=d_of)
+    memcpy(d,s,w);
 }
 
 void sdl_clip_set(int x1,int y1,int x2,int y2) {
@@ -590,6 +618,7 @@ g_error sdl_regfunc(struct vidlib *v) {
   v->getpixel = &sdl_getpixel;
   v->update = &sdl_update; /* Again not required, but good for SDL */
   v->blit = &sdl_blit;
+  v->unblit = &sdl_unblit;
   v->clip_set = &sdl_clip_set; /* If the underlying driver supports it,
 				     go for it. Simplifies this driver a lot. */
 

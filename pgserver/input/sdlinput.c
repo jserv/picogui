@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.8 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: sdlinput.c,v 1.9 2000/10/29 01:45:35 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -109,6 +109,7 @@ void sdlinput_poll(void) {
 }
 
 g_error sdlinput_init(void) {
+  SDL_ShowCursor(0);    /* Handle our own cursor */
   SDL_EnableUNICODE(1);
   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,SDL_DEFAULT_REPEAT_INTERVAL);
 #ifndef WINDOWS

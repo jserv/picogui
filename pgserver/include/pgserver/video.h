@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.5 2000/10/19 01:21:23 micahjd Exp $
+/* $Id: video.h,v 1.6 2000/10/29 01:45:35 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -43,12 +43,6 @@ typedef unsigned long pgcolor;
 #define getblue(pgc)   ((pgc)&0xFF)
 #define mkcolor(r,g,b) (((r)<<16)|((g)<<8)|(b))
 
-/* HACK ALERT!!!! This stuff needs to be integrated into the
-   themes... Save this for the theme overhaul. */
-#define HWG_BUTTON 22
-#define HWG_MARGIN 2
-#define HWG_SCROLL 10
-
 /* Hardware-specific bitmap */
 typedef void * hwrbitmap;
 
@@ -61,6 +55,17 @@ struct stdbitmap {
   int freebits;    /* Should 'bits' be freed also when bitmap is freed? */
 };
 
+/* A sprite node, overlaid on the actual picture */
+struct sprite {
+  hwrbitmap *bitmap, *mask, *backbuffer;
+  int x,y;   /* Current coordinates */
+  int ox,oy; /* Coordinates last time it was drawn */
+  int w,h;   /* Dimensions of all buffers */
+  struct divnode *clip_to;
+  struct sprite *next;
+};
+/* List of sprites to overlay */
+extern struct sprite *spritelist;
 
 /* This structure contains a pointer to each graphics function
    in use, forming a definition for a driver. Initially, all functions
@@ -230,14 +235,20 @@ struct vidlib {
   void (*dim)(void);
 
   /* Required (The alternative, pixel(), is just too scary)
-   *   Blits between two bitmaps (if src or dest is NULL,
-   *   it goes from/to the screen) optionally using lgop.
+   *   Blits a bitmap to screen, optionally using lgop.
    *   If w and/or h is bigger than the source bitmap, it
    *   should tile.
    */
   void (*blit)(hwrbitmap src,int src_x,int src_y,
-	       hwrbitmap dest,int dest_x,int dest_y,
+	       int dest_x,int dest_y,
 	       int w,int h,int lgop);
+
+  /* Required (Same reason as blit)
+   *   Blits a chunk of the screen back to a bitmap
+   */
+  void (*unblit)(int src_x,int src_y,
+		 hwrbitmap dest,int dest_x,int dest_y,
+		 int w,int h);
 
   /* Optional
    *   Does a bottom-up blit from an area on the screen
@@ -323,6 +334,38 @@ struct vidlib {
    */
   g_error (*bitmap_getsize)(hwrbitmap bmp,int *w,int *h);
 
+  /***************** Sprites */
+
+  /* Optional
+   *   Draws the bitmap
+   *
+   * Default implementation: uses blit, stores a backbuffer
+   */
+  void (*sprite_show)(struct sprite *spr);
+  
+  /* Optional
+   *   Undraws the bitmap
+   *
+   * Default implementation: blits the backbuffer back onto the screen
+   */
+  void (*sprite_hide)(struct sprite *spr);
+
+  /* Optional
+   *   Repositions a sprite after coordinate change
+   *
+   * Default implementation: redraws sprite stack as necessary,
+   *                         uses sprite_show and sprite_hide
+   */
+  void (*sprite_update)(struct sprite *spr);
+
+  /* Optional
+   *   Shows/hides all sprites in preparation for modifications
+   * 
+   * Default implementation: traverses list of sprites, calls show and hide
+   */
+  void (*sprite_hideall)(void);
+  void (*sprite_showall)(void);
+
 };
 
 /* Currently in-use video driver */
@@ -357,6 +400,10 @@ struct vidinfo {
 extern struct vidinfo videodrivers[];
 
 g_error (*find_videodriver(const char *name))(struct vidlib *v);
+
+/* Sprite helper functions */
+g_error new_sprite(struct sprite **ps,int w,int h);
+void free_sprite(struct sprite *s);
 
 #endif /* __H_VIDEO */
 

@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.25 2000/10/19 01:21:23 micahjd Exp $
+/* $Id: div.c,v 1.26 2000/10/29 01:45:34 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -273,7 +273,10 @@ void update(void) {
   dts->update_lock++;           /* at the same time !                   */
 
   if (dts->update_lock==1) {
+
+    (*vid->sprite_hideall)();
     r_dtupdate(dts->top);
+    (*vid->sprite_showall)();
     
     /* NOW we update the hardware */
     (*vid->update)();
@@ -284,6 +287,17 @@ void update(void) {
 #ifdef DEBUG
   printf("****************** Update\n");
 #endif
+}
+
+/* Like regular update, but don't turn sprites back on and don't update hardware */
+void update_nosprite(void) {
+  if (dts->update_lock) return; 
+  dts->update_lock++;
+  if (dts->update_lock==1) {
+    (*vid->sprite_hideall)();
+    r_dtupdate(dts->top);
+  }
+  dts->update_lock = 0;
 }
 
 /* Update the divtree's calculations and render (both only if necessary) */

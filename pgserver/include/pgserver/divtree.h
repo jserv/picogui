@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.4 2000/10/19 01:21:23 micahjd Exp $
+/* $Id: divtree.h,v 1.5 2000/10/29 01:45:35 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -194,6 +194,7 @@ void r_divnode_free(struct divnode *n);
 g_error divtree_new(struct divtree **dt);
 void divtree_free(struct divtree *dt);
 void update(void);
+void update_nosprite(void);
 void r_dtupdate(struct divtree *dt);
 g_error dts_new(void);
 void dts_free(void);

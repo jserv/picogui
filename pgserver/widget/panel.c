@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.30 2000/10/19 01:21:24 micahjd Exp $
+/* $Id: panel.c,v 1.31 2000/10/29 01:45:35 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -50,8 +50,6 @@ struct paneldata {
 		       and the point it was clicked */
   unsigned long wait_tick;    /* To limit the frame rate */
 
-  hwrbitmap bar,behindbar;
-
   /* Saved split value before a drag, used to
      calculate whether it should be interpreted as
      a click */
@@ -60,8 +58,8 @@ struct paneldata {
   /* The split value while the panel is unrolled */
   int unrolled;
 
-  /* Location and previous location for the bar */
-  int x,y,ox,oy;
+  /* Sprite for dragging the panelbar */
+  struct sprite *s;
 };
 #define DATA ((struct paneldata *)(self->data))
 
@@ -223,25 +221,22 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     /* Update the screen now, so we have an up-to-date picture
        of the panelbar stored in DATA->bar */
     themeify_panel(self);
-    update();
+    update_nosprite();
 
-    /* Lock the screen */
-    dts_push();
+    /* Allocate the new sprite */
+    if(iserror(new_sprite(&DATA->s,PANELBAR_DIV->w,PANELBAR_DIV->h)))
+      return;
+    if (iserror((*vid->bitmap_new)(&DATA->s->bitmap,PANELBAR_DIV->w,PANELBAR_DIV->h))) {
+      free_sprite(DATA->s);
+      return;
+    }
+    
+    /* Grab a bitmap of the panelbar to use as the sprite */
     (*vid->clip_off)();
-
-    /* Create a bitmap for the panelbar, and for
-       the stuff behind it */
-    DATA->bar = DATA->behindbar = NULL;
-    (*vid->bitmap_new)(&DATA->bar,PANELBAR_DIV->w,PANELBAR_DIV->h);
-    (*vid->bitmap_new)(&DATA->behindbar,PANELBAR_DIV->w,PANELBAR_DIV->h);
-
-    /* Grab a bitmap of the panelbar */
-    (*vid->blit)(NULL,PANELBAR_DIV->x,
-		 PANELBAR_DIV->y,DATA->bar,0,0,
-		 PANELBAR_DIV->w,PANELBAR_DIV->h,PG_LGOP_NONE);
-
-    /* Reset ox and oy */
-    DATA->ox = DATA->oy = -1;
+    (*vid->unblit)(DATA->s->x = PANELBAR_DIV->x,DATA->s->y = PANELBAR_DIV->y,
+		   DATA->s->bitmap,0,0,
+		   PANELBAR_DIV->w,PANELBAR_DIV->h);
+    DATA->s->clip_to = self->in;
 
     break;
 
@@ -307,11 +302,7 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
 
-    /* Unlock it */
-    dts_pop();
-
-    (*vid->bitmap_free)(DATA->bar);
-    (*vid->bitmap_free)(DATA->behindbar);
+    free_sprite(DATA->s);
 
     DATA->on = 0;
     break;
@@ -340,50 +331,25 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     /* Determine where to blit the bar to... */
     switch (self->in->flags & (~SIDEMASK)) {
     case PG_S_TOP:
-      DATA->x = PANELBAR_DIV->x;
-      DATA->y = param->mouse.y - DATA->grab_offset;
+      DATA->s->x = PANELBAR_DIV->x;
+      DATA->s->y = param->mouse.y - DATA->grab_offset;
       break;
     case PG_S_BOTTOM:
-      DATA->x = PANELBAR_DIV->x;
-      DATA->y = param->mouse.y + DATA->grab_offset - PANELBAR_DIV->h;
+      DATA->s->x = PANELBAR_DIV->x;
+      DATA->s->y = param->mouse.y + DATA->grab_offset - PANELBAR_DIV->h;
       break;
     case PG_S_LEFT:
-      DATA->y = PANELBAR_DIV->y;
-      DATA->x = param->mouse.x - DATA->grab_offset;
+      DATA->s->y = PANELBAR_DIV->y;
+      DATA->s->x = param->mouse.x - DATA->grab_offset;
       break;
     case PG_S_RIGHT:
-      DATA->y = PANELBAR_DIV->y;
-      DATA->x = param->mouse.x + DATA->grab_offset - PANELBAR_DIV->w;
+      DATA->s->y = PANELBAR_DIV->y;
+      DATA->s->x = param->mouse.x + DATA->grab_offset - PANELBAR_DIV->w;
       break;
     }
-    /* Clippin' stuff... Prevent segfaults and missing panelbars */
-    if (DATA->x < self->in->x) DATA->x = self->in->x;
-    if (DATA->y < self->in->y) DATA->y = self->in->y;
-    if (DATA->x+PANELBAR_DIV->w > self->in->x+self->in->w)
-      DATA->x = self->in->x + self->in->w - PANELBAR_DIV->w;
-    if (DATA->y+PANELBAR_DIV->h > self->in->y+self->in->h)
-      DATA->y = self->in->y + self->in->h - PANELBAR_DIV->h;
 
-    /* Put back the old image */
-    if (DATA->ox != -1)
-      (*vid->blit)(DATA->behindbar,0,0,NULL,
-		   DATA->ox,DATA->oy,PANELBAR_DIV->w,
-		   PANELBAR_DIV->h,PG_LGOP_NONE);
-    
-    /* Grab a new one */
-    DATA->ox = DATA->x; DATA->oy = DATA->y;
-    (*vid->blit)(NULL,DATA->ox,DATA->oy,DATA->behindbar,
-		 0,0,PANELBAR_DIV->w,PANELBAR_DIV->h,
-		 PG_LGOP_NONE);
-
-    /* Do a Bit Block Transfer (tm)   :-)  */
-    (*vid->blit)(DATA->bar,0,0,NULL,
-		 DATA->x,DATA->y,PANELBAR_DIV->w,
-		 PANELBAR_DIV->h,PG_LGOP_NONE);
-
-    /* Because we have this divtree to ourselves, do
-     * the hwr_update() directly. */
-    (*vid->update)();
+    /* Reposition sprite */
+    (*vid->sprite_update)(DATA->s);
 
     return;
 

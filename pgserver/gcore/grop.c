@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.20 2000/10/19 01:21:23 micahjd Exp $
+/* $Id: grop.c,v 1.21 2000/10/29 01:45:35 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -62,7 +62,7 @@ void grop_render(struct divnode *div) {
 
       if ((div->h+ydif)>0)
 	(*vid->blit)(NULL,div->x,div->y-ydif,
-		     NULL,div->x,div->y,
+		     div->x,div->y,
 		     div->w,div->h+ydif,PG_LGOP_NONE);
 
       x = div->y+div->h-1+ydif;
@@ -150,7 +150,7 @@ void grop_render(struct divnode *div) {
     case PG_GROP_BITMAP:
       if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
 			   list->param[0])) || !bit) break;
-      (*vid->blit)(bit,list->param[2],list->param[3],NULL,x,y,w,h,list->param[1]);
+      (*vid->blit)(bit,list->param[2],list->param[3],x,y,w,h,list->param[1]);
       break;
     case PG_GROP_TILEBITMAP:
       if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,

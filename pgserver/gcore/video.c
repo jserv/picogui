@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.12 2000/10/19 01:21:23 micahjd Exp $
+/* $Id: video.c,v 1.13 2000/10/29 01:45:35 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -29,12 +29,14 @@
 #include <pgserver/video.h>
 #include <pgserver/g_malloc.h>
 #include <pgserver/input.h>
+#include <pgserver/divtree.h>
 
 /******************************************** Utils */
 
 /* Vidlib vars */
 struct vidlib *vid;
 struct vidlib vidlib_static;
+struct sprite *spritelist;
 
 /* Trig table used in hwr_gradient (sin*256 for theta from 0 to 90) */
 unsigned char trigtab[] = {
@@ -416,7 +418,7 @@ void def_scrollblit(int src_x,int src_y,
   */
 
   for (src_y+=h-1,dest_y+=h-1;h;h--,src_y--,dest_y--)
-    (*vid->blit)(NULL,src_x,src_y,NULL,dest_x,dest_y,w,1,PG_LGOP_NONE);
+    (*vid->blit)(NULL,src_x,src_y,dest_x,dest_y,w,1,PG_LGOP_NONE);
 }
 
 void def_charblit(unsigned char *chardat,int dest_x,
@@ -771,8 +773,130 @@ void def_tileblit(struct stdbitmap *src,
   /* Do a tiled blit */
   for (i=0;i<dest_w;i+=src_w)
     for (j=0;j<dest_h;j+=src_h)
-      (*vid->blit)(src,src_x,src_y,NULL,dest_x+i,dest_y+j,min(dest_w-i,src_w),
+      (*vid->blit)(src,src_x,src_y,dest_x+i,dest_y+j,min(dest_w-i,src_w),
 		   min(dest_h-j,src_h),PG_LGOP_NONE);
+}
+
+void def_sprite_show(struct sprite *spr) {
+
+  /* Clip to a divnode */
+  if (spr->clip_to) {
+    if (spr->x < spr->clip_to->x) spr->x = spr->clip_to->x;
+    if (spr->y < spr->clip_to->y) spr->y = spr->clip_to->y;
+    if (spr->x+spr->w > spr->clip_to->x+spr->clip_to->w)
+      spr->x = spr->clip_to->x + spr->clip_to->w - spr->w;
+    if (spr->y+spr->h > spr->clip_to->y+spr->clip_to->h)
+      spr->y = spr->clip_to->y + spr->clip_to->h - spr->h;
+  }
+
+  /* no clipping (in the driver) for sprites */
+  (*vid->clip_off)();
+
+  /* Update coordinates */
+  spr->ox = spr->x; spr->oy = spr->y;
+  
+  /* Grab a new backbuffer */
+  (*vid->unblit)(spr->x,spr->y,spr->backbuffer,
+  	       0,0,spr->w,spr->h);
+  
+  /* Display the sprite */
+  if (spr->mask) {
+    (*vid->blit)(spr->mask,0,0,
+		 spr->x,spr->y,spr->w,spr->h,PG_LGOP_AND);
+    (*vid->blit)(spr->bitmap,0,0,
+		 spr->x,spr->y,spr->w,spr->h,PG_LGOP_OR);
+  }
+  else
+    (*vid->blit)(spr->bitmap,0,0,
+		 spr->x,spr->y,spr->w,spr->h,PG_LGOP_NONE);
+}
+
+void def_sprite_hide(struct sprite *spr) {
+  /* no clipping for sprites */
+  (*vid->clip_off)();
+
+  /* Put back the old image */
+  if (spr->ox != -1)
+  (*vid->blit)(spr->backbuffer,0,0,
+  spr->ox,spr->oy,spr->w,spr->h,PG_LGOP_NONE);
+}
+
+void def_sprite_update(struct sprite *spr) {
+  if (spr->next) {
+    (*vid->sprite_hideall)();
+    (*vid->sprite_showall)();
+  }
+  else {
+    /* Special case for the topmost sprite.
+       Could optimize every case to redraw only the
+       necessary cases, but in 99% of the cases this
+       gets the job done. */
+    (*vid->sprite_hide)(spr);
+    (*vid->sprite_show)(spr);
+  }
+
+  /* Redraw */
+  (*vid->update)();
+}
+
+/* Sprite helper functions */
+g_error new_sprite(struct sprite **ps,int w,int h) {
+  g_error e;
+  
+  e = g_malloc((void**)ps,sizeof(struct sprite));
+  errorcheck;
+  memset(*ps,0,sizeof(struct sprite));
+  (*ps)->ox = -1;
+  (*ps)->w = w;
+  (*ps)->h = h;
+  (*vid->bitmap_new)(&(*ps)->backbuffer,w,h);
+  (*ps)->next = spritelist;
+
+  spritelist = *ps;
+
+  return sucess;
+}
+
+void free_sprite(struct sprite *s) {
+  struct sprite *n;
+
+  /* Remove from the sprite list */
+  if (s==spritelist)
+    spritelist = s->next;
+  else {
+    n = spritelist;
+    while (n->next) {
+      if (n->next == s) {
+	n->next = s->next;
+	break;
+      }
+      n = n->next;
+    }
+  }
+
+  (*vid->bitmap_free)(s->bitmap);
+  (*vid->bitmap_free)(s->mask);
+  (*vid->bitmap_free)(s->backbuffer);
+  g_free(s);
+}
+
+/* Traverse first -> last, showing sprites */
+void def_sprite_showall(void) {
+  struct sprite *p = spritelist;
+  while (p) {
+    (*vid->sprite_show)(p);
+    p = p->next;
+  }
+}
+
+/* Traverse last -> first, hiding sprites */
+void r_spritehide(struct sprite *s) {
+  if (!s) return;
+  r_spritehide(s->next);
+  (*vid->sprite_hide)(s);
+}
+void def_sprite_hideall(void) {
+  r_spritehide(spritelist);
 }
 
 /******************************************** Vidlib admin functions */
@@ -819,6 +943,11 @@ g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
   vid->bitmap_new = &def_bitmap_new;
   vid->bitmap_free = &def_bitmap_free;
   vid->bitmap_getsize = &def_bitmap_getsize;
+  vid->sprite_show = &def_sprite_show;
+  vid->sprite_hide = &def_sprite_hide;
+  vid->sprite_update = &def_sprite_update;
+  vid->sprite_showall = &def_sprite_showall;
+  vid->sprite_hideall = &def_sprite_hideall;
   
   /* Device specifics */
   e = (*regfunc)(vid);

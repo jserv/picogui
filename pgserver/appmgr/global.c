@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.21 2000/10/19 01:21:23 micahjd Exp $
+/* $Id: global.c,v 1.22 2000/10/29 01:45:32 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -33,10 +33,13 @@
 #include <pgserver/g_malloc.h>
 #include <pgserver/appmgr.h>
 
+#include "defaultcursor.inc"
+
 struct app_info *applist;
 handle defaultfont;
 struct widget *bgwidget;
 handle hbgwidget;
+struct sprite *pointer;
 
 g_error appmgr_init(void) {
   hwrbitmap bgbits;
@@ -56,6 +59,14 @@ g_error appmgr_init(void) {
   e = mkhandle(&hbgwidget,PG_TYPE_WIDGET,-1,bgwidget);   
   errorcheck;
 
+  /* Create the pointer sprite */
+  e = new_sprite(&pointer,19,22);
+  errorcheck;
+  e = (*vid->bitmap_loadpnm)(&pointer->bitmap,cursor_bits,cursor_len);
+  errorcheck;
+  e = (*vid->bitmap_loadpnm)(&pointer->mask,cursor_mask_bits,cursor_mask_len);
+  errorcheck;
+
   return sucess;
 }
 
@@ -69,6 +80,10 @@ void appmgr_free(void) {
     n = n->next;
     g_free(condemn);
   }
+  
+  /* Free the mouse pointer */
+  free_sprite(pointer);
+  pointer = NULL;
 }
 
 /* Unregisters applications owned by a given connection */
