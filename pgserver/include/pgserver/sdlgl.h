@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.5 2002/03/03 14:48:00 micahjd Exp $
+/* $Id: sdlgl.h,v 1.6 2002/03/03 16:42:26 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -123,7 +123,8 @@ struct gl_glyph {
 #define GL_FONT_SPACING ((GL_FONT_TEX_POWER)+1)
 
 /* Macro to determine when to redirect drawing to linear32 */
-#define GL_LINEAR32(dest) (dest)
+#define GL_LINEAR32(dest) ((dest) && gl_invalidate_texture(dest))
+#define GL_LINEAR32_SRC(src) (src)
 
 /* Retrieve the associated stdbitmap for linear32 to operate on */
 #define STDB(dest) (((struct glbitmap*)(dest))->sb)
@@ -254,8 +255,7 @@ float gl_get_key_scale(void);
 void gl_fontstyle_free(struct fontstyle_node *fsn);
 void gl_font_free(struct font *f);
 void gl_showtexture(GLuint tex, int w, int h);
-hwrcolor sdlgl_color_pgtohwr(pgcolor c);
-pgcolor sdlgl_color_hwrtopg(hwrcolor c);
+int gl_invalidate_texture(hwrbitmap bit);
 
 #endif /* _H_SDLGL */
 

@@ -1,4 +1,4 @@
-/* $Id: sdlgl_init.c,v 1.4 2002/03/03 11:21:11 micahjd Exp $
+/* $Id: sdlgl_init.c,v 1.5 2002/03/03 16:42:26 micahjd Exp $
  *
  * sdlgl_init.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has initialization, shutdown, and registration.
@@ -119,6 +119,7 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   }
 
   /* Set up camera */
+  glViewport(0,0,vid->xres,vid->yres);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   gluPerspective(GL_FOV,1,GL_MINDEPTH,GL_MAXDEPTH);
@@ -127,7 +128,7 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   gl_matrix_pixelcoord();
 
   /* Set up fonts, if necessary */
-  if (!get_param_int(GL_SECTION,"standard_fonts",0)) {
+  if (!get_param_int(GL_SECTION,"standard_fonts",0) && !gl_global.old_fonts) {
     struct gl_fontload *fl;
 
     /* Remove normal picogui fonts */

@@ -1,4 +1,4 @@
-/* $Id: sdlgl_primitives.c,v 1.4 2002/03/03 14:48:00 micahjd Exp $
+/* $Id: sdlgl_primitives.c,v 1.5 2002/03/03 16:42:26 micahjd Exp $
  *
  * sdlgl_primitives.c - OpenGL driver for picogui, using SDL for portability.
  *                      Implement standard picogui primitives using OpenGL
@@ -252,13 +252,13 @@ void sdlgl_gradient(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,s16 angle,
 void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 		s16 src_x, s16 src_y, s16 lgop) {
 
-  if (GL_LINEAR32(dest) && GL_LINEAR32(src)) {
+  if (GL_LINEAR32(dest) && GL_LINEAR32_SRC(src)) {
     linear32_blit(STDB(dest),x,y,w,h,STDB(src),src_x,src_y,lgop);
     return;
   }
 
   /* Blitting from an offscreen bitmap to the screen? */
-  if (GL_LINEAR32(src)) {
+  if (GL_LINEAR32_SRC(src)) {
     struct glbitmap *glsrc = (struct glbitmap *) src;
     float tx1,ty1,tx2,ty2;
 
@@ -401,7 +401,7 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
     return;
   }
 
-  def_blit(dest,x,y,w,h,src,src_x,src_y,lgop);
+  /* FIXME: can't blit from screen back to bitmap. Is this desired, or even possible? */
 }
 
 /* The End */

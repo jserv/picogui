@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.3 2002/03/03 14:48:00 micahjd Exp $
+/* $Id: sdlgl_util.c,v 1.4 2002/03/03 16:42:26 micahjd Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.

@@ -1,4 +1,4 @@
-/* $Id: sdlgl_font.c,v 1.5 2002/03/03 14:07:50 micahjd Exp $
+/* $Id: sdlgl_font.c,v 1.6 2002/03/03 16:42:26 micahjd Exp $
  *
  * sdlgl_font.c - OpenGL driver for picogui, using SDL for portability.
  *                Replace PicoGUI's normal font rendering with TrueType
@@ -199,7 +199,7 @@ void sdlgl_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
 
   /* FIXME: No lgops for text yet, but i don't think anything actually
    *        uses those yet.
-   * FIXME: Can't render text to offscreen bitmaps yet.
+   * FIXME: Can't render text to offscreen bitmaps yet... that will be difficult
    */
 
   /* Set up blending and texturing */
@@ -213,7 +213,7 @@ void sdlgl_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
   glPushMatrix();
   glTranslatef(*x,*y,0);
   glScalef(scale,scale,scale);
-  glRotatef(*angle,0,0,1);
+  glRotatef(*angle,0,0,-1);
   glPushMatrix();
 
   while ((ch = (*fd)->decoder(txt))) {
