@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.82 2002/03/03 19:23:30 micahjd Exp $
+/* $Id: div.c,v 1.83 2002/03/03 20:05:29 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -611,14 +611,8 @@ void divnode_redraw(struct divnode *n,int all) {
 			     DIVNODE_INCREMENTAL) )) &&
 	!(n->flags & DIVNODE_UNDERCONSTRUCTION) ) { 
 
-     if (n->w && n->h) {
-
-       /* If it's animated, rebuild it too */
-       if (n->flags & DIVNODE_ANIMATED)
-	 div_rebuild(n);
-
+     if (n->w && n->h)
        grop_render(n);
-     }
 
      if (n->next && (n->flags & DIVNODE_PROPAGATE_REDRAW))
 	 n->next->flags |= DIVNODE_NEED_REDRAW | DIVNODE_PROPAGATE_REDRAW;

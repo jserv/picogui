@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.6 2002/03/03 18:59:19 micahjd Exp $
+/* $Id: sdlgl_util.c,v 1.7 2002/03/03 20:05:29 micahjd Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.
@@ -159,6 +159,7 @@ void gl_frame(void) {
   float interval;
   int i = 0;
 
+  gl_global.need_update = 0;
   gl_global.allow_update = 1;
 
   /***************** Background grid */
@@ -210,7 +211,6 @@ void gl_frame(void) {
   /***************** Done */
 
   gl_global.allow_update = 0;
-  gl_global.need_update = 0;
   SDL_GL_SwapBuffers();
 }
 
