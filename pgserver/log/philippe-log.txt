@@ -1,6 +1,17 @@
-2001-05-29    Philippe Ney <philippe.ney@smartdat.ch>
+2001-06-07    Philippe Ney <philippe.ney@smartdata.ch>
 
-Add a way to display/hide the cursor using sprite_hide from
+Cleaned platform dependant stuff
+
+	* gcore/platforms.c: erased file
+
+	* gcore/Makefile.am: erased platforms.c dependency
+
+	* os/uclinux/platform.c: add useful struff from gcore/platforms.c
+
+
+2001-05-29    Philippe Ney <philippe.ney@smartdata.ch>
+
+Added a way to display/hide the cursor using sprite_hide from
 vidbase/defaultvbl.c
 
 
