@@ -14,8 +14,6 @@ class BaseCompleter(object):
     def complete(self, text, *nslist):
         "return the text, filled up to where completion was possible"
         # it is important that all completion exceptions are silently ignored.
-        import sys
-        print >>sys.stderr, 'attempting completion:', self.__class__.__name__, repr(text)
         try:
             completer, fragment = self.parse(text)
             if completer is None:
@@ -25,10 +23,8 @@ class BaseCompleter(object):
                         if name.startswith(fragment):
                             completions.append(name)
                 if len(completions) == 0:
-                    print >>sys.stderr, 'nothing found'
                     return text
                 completions.sort()
-                print >>sys.stderr, 'found:', completions
                 largest = completions[0]
                 for name in completions[1:]:
                     if name.startswith(largest):
@@ -40,14 +36,12 @@ class BaseCompleter(object):
                         if largest[i] != name[i]:
                             largest = largest[:i]
                             break
-                print >>sys.stderr, 'largest common prefix:', repr(largest)
                 return text[:-len(fragment)] + largest
             else:
                 if fragment:
                     text = text[:-len(fragment)]
                 return (text + completer.complete(fragment, *nslist))
         except:
-            print >>sys.stderr, 'completion error'
             import traceback
             traceback.print_exc()
             return text
@@ -94,12 +88,10 @@ class PythonAttr(BaseCompleter):
         if (not id) or id.group() == text:
             return None, text
         # things start to get interesting
-        import sys
         if text[id.end()] == '.':
-            print >>sys.stderr, 'attribute of', id.group()
             return PythonAttr(id.group(), self._self), text[id.end()+1:]
         # something went wrong... must guess
-        [id for id in _python_identifiers.finditer(text)]
+        [id for id in _python_identifiers.finditer(text)] # leaves id pointing to the last match
         if id.end() == len(text):
             return None, id.group()
         else:
@@ -121,9 +113,7 @@ class PythonExpr(BaseCompleter):
         if (not id) or id.group() == text:
             return None, text
         # things start to get interesting
-        import sys
         if text[id.end()] == '.':
-            print >>sys.stderr, 'attribute of', id.group()
             return PythonAttr(id.group()), text[id.end()+1:]
         # something went wrong... must guess
         [id for id in _python_identifiers.finditer(text)]

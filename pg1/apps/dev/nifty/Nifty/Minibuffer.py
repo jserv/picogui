@@ -92,7 +92,6 @@ class Minibuffer(object):
                     # no buffers open
                     self.bind(buffer = None, workspace = None)
                 import sys
-                print >>sys.stderr, 'trying to complete'
                 self._field.text = Completer.python_stmt.complete(self._field.text,
                                                                   self._frame.python_ns,
                                                                   self.python_ns)
