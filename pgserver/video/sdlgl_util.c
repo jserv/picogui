@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.26 2002/11/23 02:01:41 micahjd Exp $
+/* $Id: sdlgl_util.c,v 1.27 2002/11/24 06:59:23 micahjd Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.
@@ -163,7 +163,28 @@ void gl_frame(void) {
   gl_global.need_update = 0;
   gl_global.allow_update = 1;
 
+  /* Push current modelview and projection matrices,
+   * Set up our perspective pixel-coordinates matrices.
+   */
+  glMatrixMode(GL_PROJECTION);
+  glPushMatrix();
+  glLoadIdentity();
+  gluPerspective(GL_FOV,1,GL_MINDEPTH,GL_MAXDEPTH*2);
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glLoadIdentity();
   gl_matrix_camera();
+
+  /* Make sure appropriate modes are set */
+  if (gl_global.antialias) {
+    glEnable(GL_POLYGON_SMOOTH);
+    glEnable(GL_LINE_SMOOTH);
+    glEnable(GL_BLEND);
+  }
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_LIGHTING);
+  glDisable(GL_SMOOTH);
+
 
   /***************** Background grid */
 
@@ -235,6 +256,20 @@ void gl_frame(void) {
 
   gl_global.allow_update = 0;
   SDL_GL_SwapBuffers();
+
+  /* Pop matrices */
+  glMatrixMode(GL_PROJECTION);
+  glPopMatrix();
+  glMatrixMode(GL_MODELVIEW);
+  glPopMatrix();
+
+  /* Restore sane defaults */
+  if (gl_global.antialias) {
+    glDisable(GL_POLYGON_SMOOTH);
+    glDisable(GL_LINE_SMOOTH);
+  }
+  glDisable(GL_BLEND);
+  glDisable(GL_TEXTURE_2D);
 }
 
 void gl_osd_printf(int *y, const char *fmt, ...) {
@@ -295,6 +330,8 @@ void gl_render_grid(void) {
   int i,j;
 
   /* Clear background */
+  glClearColor(0.0f, 0.4f, 0.0f, 0.0f);
+  glClearDepth(1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   /* Reset matrix */

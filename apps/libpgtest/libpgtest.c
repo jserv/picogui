@@ -17,6 +17,16 @@
 #include <stdio.h>                /* fopen() and friends */
 
 
+/******************************** Example main application *******/
+
+/* Initialization for our OpenGL scene */
+void scene_init(void) {
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluPerspective(45.0f, 1.0f, .5f ,150.0f);
+  glMatrixMode(GL_MODELVIEW);
+}
+
 /* The OpenGL scene we draw below the GUI */
 void scene(void) {
   static float xr,yr,zr;
@@ -33,12 +43,10 @@ void scene(void) {
 
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LEQUAL);
-  glDisable(GL_BLEND);
-  glDisable(GL_TEXTURE_2D);
   glEnable(GL_LIGHT1);
   glEnable(GL_LIGHTING);
   glColor3f(1,1,1);
-
+  
   glLoadIdentity();
   glTranslatef(0.0f,0.0f,-5.0f);
   glRotatef(xr,1.0f,0.0f,0.0f);
@@ -87,14 +95,10 @@ void scene(void) {
   glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f,  1.0f, -1.0f);
 
   glEnd();
-
-  /* pgserver normally runs with depth test and lighting off.
-   * It will set blending and texturing as needed.
-   */
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_LIGHTING);
 }
 
+
+/******************************** Example of pgserver embedding *******/
  
 /* Our main program, wrapped with exception handling */ 
 g_error protected_main(int argc, char **argv) {
@@ -150,6 +154,9 @@ g_error protected_main(int argc, char **argv) {
    */
   e = pgserver_init(PGINIT_NO_CONFIGFILE,argc,argv);
   errorcheck;
+
+  /* OpenGL init for our scene */
+  scene_init();
 
   /* Now we'll do a small test of pgserver, loading and displaying a widget
    * template. Note that normally this shouldn't need to call request_exec

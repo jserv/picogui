@@ -1,4 +1,4 @@
-/* $Id: sdlgl_init.c,v 1.22 2002/11/23 02:01:41 micahjd Exp $
+/* $Id: sdlgl_init.c,v 1.23 2002/11/24 06:59:23 micahjd Exp $
  *
  * sdlgl_init.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has initialization, shutdown, and registration.
@@ -108,26 +108,9 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
 
   /********** OpenGL setup */
 
-  /* Clear */
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glClearColor(0.0f, 0.4f, 0.0f, 0.0f);
-  glClearDepth(1.0);
-
   gl_global.antialias = get_param_int(GL_SECTION,"antialias",0);
-  if (gl_global.antialias) {
-    glEnable(GL_POLYGON_SMOOTH);
-    glEnable(GL_LINE_SMOOTH);
-    glEnable(GL_BLEND);
-  }
-
-  /* Set up camera */
   glViewport(0,0,xres,yres);
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluPerspective(GL_FOV,1,GL_MINDEPTH,GL_MAXDEPTH*2);
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-  gl_matrix_pixelcoord();
+  glClearDepth(1.0);
 
   return success; 
 }
