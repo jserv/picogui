@@ -1,4 +1,4 @@
-/* $Id: x11_init.c,v 1.4 2002/11/04 12:11:32 micahjd Exp $
+/* $Id: x11_init.c,v 1.5 2002/11/04 12:49:22 micahjd Exp $
  *
  * x11_init.c - Initialization for picogui'x driver for the X window system
  *
@@ -52,9 +52,6 @@ struct x11bitmap *x11_window_list;
 /******************************************************** Initialization */
 
 g_error x11_init(void) {
-  int x,y,w,h,border,depth;
-  Window root;
-  XRectangle rect;
 
   /* Connect to the default X server */
   x11_display = XOpenDisplay(NULL);
@@ -67,26 +64,37 @@ g_error x11_init(void) {
   vid->display = NULL;
   x11_gc_setup(RootWindow(x11_display, 0));
   
-  /* Get the display size */
-  XGetGeometry(x11_display, RootWindow(x11_display, 0), &root,
-	       &x, &y, &w, &h, &border, &depth);
-  vid->xres = w;
-  vid->yres = h;
-
-  /* Create the display_region */
-  x11_display_region = XCreateRegion();
-  rect.x = rect.y = 0;
-  rect.width = w;
-  rect.height = h;
-  XUnionRectWithRegion(&rect,x11_display_region,x11_display_region);
-
   /* Load the matching input driver */
   return load_inlib(&x11input_regfunc,&inlib_main);
 }
 
 g_error x11_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
-  if (xres) vid->xres = xres;
-  if (yres) vid->yres = yres;
+  int x,y,w,h,border,depth;
+  Window root;
+  XRectangle rect;
+
+  if (flags & PG_VID_ROOTLESS) {
+    /* Get the display size */
+    XGetGeometry(x11_display, RootWindow(x11_display, 0), &root,
+		 &x, &y, &w, &h, &border, &depth);
+    vid->xres = w;
+    vid->yres = h;
+  }
+  else {
+    /* Default to 640x480 */
+    if (!vid->xres) xres = 640;
+    if (!vid->yres) yres = 480;
+    if (xres) vid->xres = xres;
+    if (yres) vid->yres = yres;
+  }
+
+  /* Create the display_region */
+  x11_display_region = XCreateRegion();
+  rect.x = rect.y = 0;
+  rect.width = vid->xres;
+  rect.height = vid->yres;
+  XUnionRectWithRegion(&rect,x11_display_region,x11_display_region);
+
   x11_monolithic_window_update();
   return success;
 }
