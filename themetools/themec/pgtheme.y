@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.6 2000/09/25 19:04:33 micahjd Exp $
+/* $Id: pgtheme.y,v 1.7 2000/09/25 19:41:19 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -85,7 +85,7 @@ objectdef:  OBJ thobj compount_stmt      {
   $$ = malloc(sizeof(struct propnode));
   if ($$) {
     memset($$,0,sizeof(struct propnode));
-    $$->proplist = & $3;
+    $$->proplist = $3;
     $$->id       = $2;
     $$->next     = objectlist;
     objectlist   = $$;
@@ -122,7 +122,6 @@ stmt_list: statement               { $$ = $1; }
          | stmt_list statement     { 
   if ($2) {
     $2->next = $1; 
-    $2->count = $1->count + 1;
     $$ = $2; 
   }
   else       /* This handles skipping invalid statements

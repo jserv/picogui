@@ -1,4 +1,4 @@
-/* $Id: backend.c,v 1.1 2000/09/25 19:04:33 micahjd Exp $
+/* $Id: backend.c,v 1.2 2000/09/25 19:41:19 micahjd Exp $
  *
  * backend.c - convert the in-memory representation of the
  *             theme data to the actual compiled theme file
@@ -49,6 +49,8 @@ int compare_thobj(struct pgtheme_thobj *a,struct pgtheme_thobj *b);
 
 void backend(void) {
   struct objectnode *op;
+  struct propnode *pp;
+  long c;
   struct pgtheme_thobj *thop;
 
   /* Calculate the theme heap's size, and allocate it */
@@ -87,7 +89,16 @@ void backend(void) {
   thop = thobjarray;
   while (op) {
     thop->id = htons(op->id);
-    thop->num_prop = htons(op->proplist->count);
+
+    /* Count the properties */
+    c = 0;
+    pp = op->proplist;
+    while (pp) {
+      c++;
+      pp = pp->next;
+    }
+    thop->num_prop = htons(c);
+
     /* Link the property lists later */
 
     op = op->next;
@@ -98,19 +109,7 @@ void backend(void) {
      is required by the format so the server can use a 
      binary search on the arrays. */
   qsort(thobjarray,num_thobj,sizeof(struct pgtheme_thobj),
-	&compare_thobj);
-
-  /* Summary output */
-  fprintf(stderr,
-	  "Generated theme. Summary:\n"
-	  "\t    Objects: %d\n"
-	  "\t Properties: %d\n"
-	  "\t       Tags: %d\n"
-	  "\t   Tag Data: %d\n"
-	  "\tLoader Data: %d\n"
-	  "\t Total size: %d\n",
-	  num_thobj,num_totprop,num_tags,datasz_tags,
-	  datasz_loader,themeheap_size);
+  	&compare_thobj);
 }
 
 /********* Utility functions ********/

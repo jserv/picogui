@@ -1,4 +1,4 @@
-/* $Id: themec.h,v 1.4 2000/09/25 19:04:33 micahjd Exp $
+/* $Id: themec.h,v 1.5 2000/09/25 19:41:19 micahjd Exp $
  *
  * themec.h - definitions used internally in the theme compiler
  *
@@ -58,7 +58,6 @@ struct propnode {
   unsigned long data;
   unsigned long loader;
   unsigned short propid;
-  long count;
   struct propnode *next;
 };
 
@@ -75,6 +74,18 @@ extern unsigned long num_totprop;
 
 extern unsigned long datasz_loader;
 extern unsigned long datasz_tags;
+
+/*** Structures for the compiled code ***/
+
+/* The theme heap */
+
+extern unsigned long themeheap_size;
+extern unsigned char *themeheap;
+extern unsigned char *themeheap_p;   /* Current position */
+
+/* Important structures in the theme heap */
+extern struct pgtheme_header *themehdr;
+extern struct pgtheme_thobj  *thobjarray;
 
 /*** Parser utility functions ***/
 

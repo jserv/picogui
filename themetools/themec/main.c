@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.4 2000/09/25 19:04:33 micahjd Exp $
+/* $Id: main.c,v 1.5 2000/09/25 19:41:19 micahjd Exp $
  *
  * main.c - main() and some parser utility functions for
  *          the PicoGUI theme compiler.  The actual parsing
@@ -67,8 +67,23 @@ int main(int argc, char **argv) {
 
   backend();
   
+  /**** Summary info */
+
+  fprintf(stderr,
+	  "Generated theme. Summary:\n"
+	  "\t    Objects: %d\n"
+	  "\t Properties: %d\n"
+	  "\t       Tags: %d\n"
+	  "\t   Tag Data: %d\n"
+	  "\tLoader Data: %d\n"
+	  "\t Total size: %d\n",
+	  num_thobj,num_totprop,num_tags,datasz_tags,
+	  datasz_loader,themeheap_size);
+
   /**** Output */
   /* Write it to a file */
+
+  fwrite(themeheap,themeheap_size,1,stdout);
 
   return (errors ? 1 : 0);
 }
