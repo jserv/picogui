@@ -1,4 +1,4 @@
-/* $Id: common.h,v 1.7 2001/12/21 17:57:56 cgrigis Exp $
+/* $Id: common.h,v 1.8 2002/01/05 12:52:04 micahjd Exp $
  *
  * pgserver/common.h - things every file in pgserver should need,
  *                     including memory management, error handling,
@@ -38,6 +38,11 @@ typedef unsigned long    u32;
 typedef signed long      s32;
 #if !defined(bool) && !defined(NO_BOOL)
 typedef unsigned char    bool;
+#endif
+
+/* We'll need this if we don't already have it... */
+#ifndef max
+#define max(a,b) (((a) > (b)) ? (a) : (b))
 #endif
 
 #include <pgserver/autoconf.h>

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.133 2001/12/30 22:11:09 micahjd Exp $
+/* $Id: widget.c,v 1.134 2002/01/05 12:52:05 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -542,6 +542,14 @@ glob widget_get(struct widget *w, int property) {
 
    case PG_WP_TRIGGERMASK:
      return w->trigger_mask;
+
+   case PG_WP_PREFERRED_W:
+     resizewidget(w);
+     return max(w->in->div->pw, w->in->div->cw);
+
+   case PG_WP_PREFERRED_H:
+     resizewidget(w);
+     return max(w->in->div->ph, w->in->div->ch);
      
    default:
      return (*w->def->get)(w,property);

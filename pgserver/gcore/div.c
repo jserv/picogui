@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.65 2001/12/14 22:56:42 micahjd Exp $
+/* $Id: div.c,v 1.66 2002/01/05 12:52:04 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -29,11 +29,6 @@
 
 #include <pgserver/divtree.h>
 #include <pgserver/widget.h>
-
-/* We'll need this if we don't already have it... */
-#ifndef max
-#define max(a,b) (((a) > (b)) ? (a) : (b))
-#endif
 
 /* Check flags for divnode-level scrolling, and modify the
  * divnode's size if necessary. We must do this before
