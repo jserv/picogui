@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.50 2003/01/24 22:23:23 micahjd Exp $
+/* $Id: api.c,v 1.51 2003/02/07 18:27:19 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -48,6 +48,12 @@ void pgUpdate(void) {
 
 int pgEnterContext(void) {
   _pg_add_request(PGREQ_MKCONTEXT,NULL,0);
+  pgFlushRequests();
+  return _pg_return.e.retdata;
+}
+
+int pgGetContext(void) {
+  _pg_add_request(PGREQ_GETCONTEXT,NULL,0);
   pgFlushRequests();
   return _pg_return.e.retdata;
 }
