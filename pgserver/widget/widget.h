@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.24 2000/06/11 17:59:18 micahjd Exp $
+/* $Id: widget.h,v 1.25 2000/07/13 03:35:49 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -55,8 +55,7 @@ typedef long glob;
 
 /* Constants for a trigger type. One of these constants is used to identify
    a trigger when it happens, and they are combined to form a trigger mask */
-#define TRIGGER_KEY        (1<<0)  /* Any key, while focused */
-#define TRIGGER_GLOBALKEY  (1<<1)  /* A registered global key */
+#define TRIGGER_HOTKEY     (1<<1)  /* The registered 'hotkey' was pressed */
 #define TRIGGER_DIRECT     (1<<2)  /* A trigger sent explicitely */
 #define TRIGGER_ACTIVATE   (1<<3)  /* Sent when it receives focus */
 #define TRIGGER_DEACTIVATE (1<<4)  /* Losing focus */
@@ -82,6 +81,7 @@ union trigparam {
   } mouse;
   struct {
     int key;
+    int mods;
   } kbd;
 };
 
@@ -135,12 +135,26 @@ struct widget {
   void *data;
 
   /**** Used for management of triggers */
-  
+ 
+  /*
+   For any trigger to be accepted, it must be or'ed into 'trigger_mask'
+
+   A direct trigger is caused by a match with direct_trigger, and a hotkey
+   is triggered by a match with 'hotkey'   
+  */
+ 
   /* widget sets this to accept triggers.  TRIGGER_* constants or'ed
      together. */
   long trigger_mask;
+
   /* Name of an active direct trigger */
   char *direct_trigger;
+
+  /* Active hotkey */
+  long hotkey;
+
+  /* The widgets with assigned hotkeys are stored in a linked list */
+  struct widget *hknext;
 };
 
 /* Macros to help define widgets */
@@ -244,25 +258,6 @@ glob widget_get(struct widget *w, int property);
 */
 void redraw_bg(struct widget *self);
 
-/* Widget must set their trigger_mask to accept triggers.  This defines
-   parameters for some of the triggers.
-   
-   When the trigger_mask is set to accept pointing device triggers,
-   they are sent when pointing device activity is within a divnode owned
-   by this widget.
-
-   By default, no global keys are registered.  To register a key,
-   set the 'key_owners' element for the key to point to the widget.
-   Keys set to NULL in this array are passed on to the focused widget.
-   
-   For a direct trigger to be named, a trigger name must be stored in
-   the widget's 'direct_trigger' string. It should uniquely identify
-   the trigger, probably with the widget's title.
- */
-
-#define NUM_KEYS 256
-extern struct widget *key_owners[NUM_KEYS];
-
 /* 
    This function should be called by an interactive widget to allocate
    a hotkey.  Its value does not need to be displayed unless there is
@@ -270,6 +265,13 @@ extern struct widget *key_owners[NUM_KEYS];
    hotkey.
 */
 int find_hotkey(void);
+
+/* 
+   Set the current hotkey (from find_hotkey or otherwise)
+   Sets the 'hotkey' widget member, and adds to the hkwidgets list
+   if necessary
+*/
+void install_hotkey(struct widget *self,int key,int mods);
 
 /**** These are entry points for the various input drivers. */
 

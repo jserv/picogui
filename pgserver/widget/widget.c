@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.25 2000/06/11 17:59:18 micahjd Exp $
+/* $Id: widget.c,v 1.26 2000/07/13 03:35:49 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -31,8 +31,6 @@
 #include <g_malloc.h>
 #include <pgnet.h>
 
-struct widget *key_owners[NUM_KEYS];
-
 /* Table of widgets */
 struct widgetdef widgettab[] = {
 DEF_STATICWIDGET_TABLE(toolbar)
@@ -54,6 +52,9 @@ struct widget *prev_under;
 int prev_btn;
 struct widget *capture;
 struct widget *kbdfocus;
+
+/* Linked list of widgets with hotkeys */
+struct widget *hkwidgets;
 
 /* Set to the client # if a client has taken over the input device */
 int keyboard_owner;
@@ -114,12 +115,31 @@ void widget_remove(struct widget *w) {
   struct divnode *sub_end;  
   handle hw;
 
+  /* If this widget has a hotkey, see if we're in the hkwidgets list */
+  if (w->hotkey) {
+    if (w==hkwidgets) {
+      hkwidgets = w->hknext;
+    }
+    else {
+      struct widget *p = hkwidgets;
+      while (p->hknext)
+	if (p->hknext == w) {
+	  /* Take us out */
+	  p->hknext = w->hknext;
+	  break;
+	}
+	else
+	  p = p->hknext;
+    }
+  }
+
   if (!in_shutdown) {
     /* Get rid of any pointers we have to it */
     if (w==under) under = NULL;
     if (w==prev_under) prev_under = NULL;
     if (w==capture) capture = NULL;
-    
+    if (w==kbdfocus) kbdfocus = NULL;
+
     /* Remove inner widgets if it can be done safely
        (only remove if they have handles) */
     while (w->sub && *w->sub) {    
@@ -205,7 +225,24 @@ void reset_pointer(void) {
   under = prev_under = capture = NULL;
 }
 
+/*
+  FIXME: implement find_hotkey!
+*/
 int find_hotkey(void) {
+}
+
+/*
+  Installs or updates the hotkey for a widget
+*/
+void install_hotkey(struct widget *self,int key,int mods) {
+
+  if (!self->hotkey) {
+    /* Add to the hotkey widget list if this is our first hotkey */
+    self->hknext = hkwidgets;
+    hkwidgets = self;
+  }
+
+  self->hotkey = (mods<<16) | key;
 }
 
 /*
@@ -332,6 +369,15 @@ void dispatch_pointing(long type,int x,int y,int btn) {
 }
 
 void dispatch_key(long type,int key,int mods) {
+  struct widget *p;
+  union trigparam param;
+  int suppress = 0;    /* If a keycode is used by a hotkey, it is only passed
+			  to the hotkey owner for KEYDOWNs but other events
+			  for that keycode should not be sent to the focused
+			  widget */
+
+  long keycode = (mods<<16) | key;     /* Combines mods and the key */
+  
 #ifdef DEBUG
   printf("Keyboard event: 0x%08X (#%d, '%c') mod:0x%08X\n",type,key,key,mods);
 #endif
@@ -360,11 +406,30 @@ void dispatch_key(long type,int key,int mods) {
       /* Pack the mods into the high word and the key into the
 	 low word.
       */
-      post_event(evt,NULL,(mods<<16)|key,keyboard_owner);
+      post_event(evt,NULL,(type==TRIGGER_CHAR) ? key : keycode,keyboard_owner);
     return;
   }
 
+  /* Ignore CHAR events for keys modified by anything other than shift */
+  if (type == TRIGGER_CHAR && (mods & ~PGMOD_SHIFT)) return;
 
+  /* Iterate through the hotkey-owning widgets if there's a KEYDOWN */
+  p = hkwidgets;
+  while (p) {
+    if (p->hotkey == keycode) {
+      suppress = 1;
+      if (type = TRIGGER_KEYDOWN)
+	send_trigger(p,TRIGGER_HOTKEY,NULL);
+    }
+  }
+  if (suppress) return;
+
+  /* All other keypresses go to the focused widget (if any) */
+  if (kbdfocus) {
+    param.kbd.key = key;
+    param.kbd.mods = mods;
+    send_trigger(kbdfocus,type,&param);
+  }
 }
 
 void dispatch_direct(char *name,long param) {
