@@ -1,9 +1,38 @@
+2001-07-22    Micah Dowty <micahjd@users.sourceforge.net>
+
+I think I now have the keyboard interpreter, keyboard compiler, and one
+keyboard definition completed. The completed keyboard is a scalable QWERTY
+keyboard with separate patterns for shift, caps lock, control, symbols, and
+the numeric keypad. A bitmapped FITALY keyboard layout is also planned, and
+the pgboard application still needs a couple features:
+
+- Currently it is impossible to input text into popup boxes. I need to
+  discuss possible solutions to this on the mailing list
+
+- It would be nice to have some sort of auto-completion like on
+  Qt/Embedded's virtual keyboard
+
+      * widget/toolbar.c: Implemented PG_WP_TRANSPARENT to remove the border
+		  and suppress redrawing the background
+		  
+		* apps/pgboard/kboompile.pl: Finished up the new keyboard compiler
+		
+		* apps/pgboard/Makefile: The makefile now automatically compiles
+		  and .kbs files in the examples directory
+		  
+		* apps/pgboard/examples/us_qwerty_scalable.kbs: Wrote a nifty
+		  scalable QWERTY keyboard for the new Perl keyboard compiler
+
 2001-07-19    Micah Dowty <micahjd@users.sourceforge.net>
 
 Well, i would eventually like to write a sort of PicoGUI drawing program
 that can save a binary canvas command file. But, until then, I think I'll
 just write a better ASCII format for the keyboards and get on with writing
 them by hand.
+
+      * apps/pgboard/kbcompile.pl: Overhauling the keyboard compiler, making
+		  a system to define keyboards with perl scripts, saving the output
+		  of PGFX-like drawing commands to a binary chunk of canvas commands.
 
 2001-07-18    Micah Dowty <micahjd@users.sourceforge.net>
 

@@ -1,14 +1,15 @@
 SRC = pgboard.c kbfile.c
 BINNAME = pgboard
-EXAMPLE = examples/us_qwerty
 
-all: $(BINNAME) $(EXAMPLE).kb
+EXAMPLES = $(wildcard examples/*.kbs)
+
+all: $(BINNAME) $(EXAMPLES:.kbs=.kb)
 
 $(BINNAME): $(SRC)
 	gcc -o $(BINNAME) $(SRC) -lpgui -g
 
-$(EXAMPLE).kb: $(EXAMPLE).kbs kbcompile.pl
-	perl kbcompile.pl < $(EXAMPLE).kbs > $(EXAMPLE).kb
+%.kb : %.kbs kbcompile.pl
+	perl kbcompile.pl < $< > $@
 
 clean:
 	rm -f $(BINNAME) *.o examples/*.kb

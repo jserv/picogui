@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: kbcompile.pl,v 1.6 2001/07/19 09:06:38 micahjd Exp $
+# $Id: kbcompile.pl,v 1.7 2001/07/23 08:32:51 micahjd Exp $
 #
 # This script converts a .kbs keyboard definition source to the .kb
 # binary representation as defined in kbfile.h
@@ -31,7 +31,7 @@
 #
 #
 
-$formatver = 1;
+$formatver = 3;
 
 # Load a symbol table
 foreach $file (map {glob($_)} 
@@ -46,88 +46,28 @@ foreach $file (map {glob($_)}
 	        # Necessary to handle things like (1<<5) in the headers
 		$sym = $1;
 		$val = $2;
-		$val = eval($val) if ($val =~ /<</);
+		$val = eval($val) if ($val =~ /<</ or $val =~ /^0x/);
 		$symbols{$sym} = $val;
 	    }
       }
       close HFILE;
 }
 
-$options{'side'} = $symbols{'PG_S_BOTTOM'};
-$options{'size'} = 25;
-$options{'sizemode'} = $symbols{'PG_SZMODE_PERCENT'};
+$option{'side'} = $symbols{'PG_S_BOTTOM'};
+$option{'size'} = 0;
+$option{'sizemode'} = $symbols{'PG_SZMODE_NORMAL'};
 
 # Actual processing
 while (<>) {
-      # Ignore blanks and comments
-      s/#.*//;
-      next if (!/\S/);
-
-      # Switching sections?
-      if (/^\[([^\]]+)/) {
-      	 $pattern = $1;
-	 push @pattern_list,$pattern;
-	 next;
-      }
-      if (/^\:(\S+)/) {
-      	 $section = $1;
-	 next;
-      }
-
-      # Some braindead preprocessing
-      foreach $key (keys %symbols) {
-      	      s/$key/$symbols{$key}/ge;
-      }
-      s/(0x[0-9A-Fa-f]+)/eval($1)/ge;
-      s/\'(.)\'/ord($1)/ge;
-
-      # Miscellaneous options
-      if ((!$pattern) && /^\s*(\S+)\s*=\s*(\S+)/) {
-      	 $options{$1} = $2;
-	 next;
-      }
-
-      # An entry in the :pattern section.
-      if ($section eq 'pattern') {
-         s/\s//g;
-	 ($cmd,@param) = split(/,/,$_);
-	 # Find commands that need request loaders
-	 $pnum = 0;
-	 foreach (@param) {
-	   $pnum++;                 # This will be 1-based, accounts for pgcommand header
-	   next if (!/[\(\)\"]/);
-	   # This is a request of some sort. Find the binary offset to this position
-	   $offset = length($pat_table{$pattern}) + 4 * $pnum;
-	   # Schtick a keyboard request header on
-	   $req_table{$pattern} .= pack "N", $offset;
-	   $req_count{$pattern}++;
-	   
-	   # Format the request itself
-	   
-	   if (/^\"([^\"]*)\"/) {
-	      # String
-       	      $req_table{$pattern} .= pack("nnN",$symbols{'PGREQ_MKSTRING'},0,length($1)).$1;
-	   }
-	   else {
-	      die "Unknown request in: '$_'";
- 	   }
-	 }
-
-	 # Pack into a pgcommand structure
-	 $pat_table{$pattern} .= pack "n2N*", $cmd, scalar(@param), @param;
-	 next;
-      }
-
-      # An entry in the :keys section. Pack it into the
-      # key table in the current pattern
-      if ($section eq 'keys') {
-         s/\s//g;
-	 # Pack to a struct key_entry
-	 $key_table{$pattern} .= pack "n4Nn4", split(/,/,$_);
-	 $key_count{$pattern}++;
-      	 next;
-      }
+    last if (/^end$/);
+    # Symbol table substitution
+    foreach $key (keys %symbols) {
+	s/$key/$symbols{$key}/ge;
+    }
+    $file .= $_;
 }
+eval $file;
+die $@ if ($@);
 
 # Assemble data blocks for each pattern
 foreach $pattern (@pattern_list) {
@@ -139,7 +79,7 @@ foreach $pattern (@pattern_list) {
 
 # Assemble the patterns, name, and all header fields after the checksum
 $file_data = pack("n6",$formatver,scalar(@pattern_list),
-	          $options{'side'},$options{'size'},$options{'sizemode'},0
+	          $option{'side'},$option{'size'},$option{'sizemode'},0
 		  ).$pattern_data;
 
 # Assemble the chunk before the checksum (magic and length)
@@ -153,4 +93,185 @@ for ($i=0;$i<length($_);$i++) {
 $checksum = pack("N",$checksum);
 
 print $file_prefix.$checksum.$file_data;
+
+###################### Functions called in the keyboard description
+
+sub newpattern {
+    $pattern = ++$pattern_num;
+    push @pattern_list,$pattern;
+}
+
+sub canvas {
+    my ($cmd, @param) = @_;
+    $pat_table{$pattern} .= pack "n2N*", $cmd, scalar(@param), @param;
+}
+
+sub hotspot {
+    $key_table{$pattern} .= pack "n4Nn4", @_;
+    $key_count{$pattern}++;
+}
+
+sub key {
+    my ($x,$y,$w,$h,$k,$pk,$mod) = @_;
+    hotspot($x,$y,$w,$h,0,$k,$pk,$mod,0);
+}
+
+sub patlink {
+    my ($x,$y,$w,$h,$pat) = @_;
+    hotspot($x,$y,$w,$h,0,0,0,0,$pat);
+}
+
+sub request {
+    my ($pnum,$req,$data) = @_;
+
+    # Schtick a keyboard request header on
+    $req_table{$pattern} .= pack "N", length($pat_table{$pattern}) + 4 * $pnum;
+    $req_count{$pattern}++;
+	 
+    $req_table{$pattern} .= pack("nnN",$symbols{'PGREQ_'.$req},0,
+				 length($data)).$data;
+}
+
+sub loadfile {
+    my ($fname) = @_;
+    my $data;
+    open INFILE,$option{'path'}.$fname;
+    $data = join '', <INFILE>;
+    close INFILE;
+    return $data;
+}
+
+###################### Graphics primitives
+
+sub pixel {
+    my ($x,$y) = @_;
+    canvas($symbols{'PGCANVAS_GROP'},$symbols{'PG_GROP_PIXEL'},$x,$y,1,1);
+}
+
+sub line {
+    my ($x1,$y1,$x2,$y2) = @_;
+    canvas($symbols{'PGCANVAS_GROP'},$symbols{'PG_GROP_LINE'},
+	   $x1,$y1,$x2-$x1,$y2-$y1);
+}
+
+sub rect {
+    my ($x,$y,$w,$h) = @_;
+    canvas($symbols{'PGCANVAS_GROP'},$symbols{'PG_GROP_RECT'},
+	   $x,$y,$w,$h);
+}
+
+sub frame {
+    my ($x,$y,$w,$h) = @_;
+    canvas($symbols{'PGCANVAS_GROP'},$symbols{'PG_GROP_FRAME'},
+	   $x,$y,$w,$h);
+}
+
+sub bar {
+    my ($x,$y,$h) = @_;
+    canvas($symbols{'PGCANVAS_GROP'},$symbols{'PG_GROP_BAR'},
+	   $x,$y,1,$h);
+}
+
+sub slab {
+    my ($x,$y,$w) = @_;
+    canvas($symbols{'PGCANVAS_GROP'},$symbols{'PG_GROP_SLAB'},
+	   $x,$y,$w,1);
+}
+
+sub ellipse {
+    my ($x,$y,$w,$h) = @_;
+    canvas($symbols{'PGCANVAS_GROP'},$symbols{'PG_GROP_ELLIPSE'},
+	   $x,$y,$w,$h);
+}
+
+sub fellipse {
+    my ($x,$y,$w,$h) = @_;
+    canvas($symbols{'PGCANVAS_GROP'},$symbols{'PG_GROP_FELLIPSE'},
+	   $x,$y,$w,$h);
+}
+
+sub fpolygon {
+    my ($x,$y,$w,$h) = @_;
+    canvas($symbols{'PGCANVAS_GROP'},$symbols{'PG_GROP_FPOLYGON'},
+	   $x,$y,$w,$h);
+}
+
+sub text {
+    my ($x,$y,$s) = @_;
+    request(6,'MKSTRING',$s);
+    canvas($symbols{'PGCANVAS_GROP'},$symbols{'PG_GROP_TEXT'},
+	   $x,$y,1,1,0);
+}
+
+sub bitmap {
+    my ($x,$y,$w,$h,$bmp) = @_;
+    request(6,'MKBITMAP',$bmp);
+    canvas($symbols{'PGCANVAS_GROP'},$symbols{'PG_GROP_BITMAP'},
+	   $x,$y,$w,$h,0);
+}
+
+sub tilebitmap {
+    my ($x,$y,$w,$h,$bmp) = @_;
+    canvas($symbols{'PGCANVAS_GROP'},$symbols{'PG_GROP_TILEBITMAP'},
+	   $x,$y,$w,$h,$bmp);
+}
+
+sub gradient {
+    my ($x,$y,$w,$h,$angle,$c1,$c2) = @_;
+    canvas($symbols{'PGCANVAS_GROP'},$symbols{'PG_GROP_GRADIENT'},
+	   $x,$y,$w,$h,$angle,$c1,$c2);
+}
+
+sub setcolor {
+    my ($c) = @_;
+    canvas($symbols{'PGCANVAS_GROP'},$symbols{'PG_GROP_SETCOLOR'},
+	   $c);
+}
+
+sub setfont {
+    my ($f) = @_;
+    canvas($symbols{'PGCANVAS_GROP'},$symbols{'PG_GROP_SETFONT'},
+	   $f);
+}
+
+sub setlgop {
+    my ($l) = @_;
+    canvas($symbols{'PGCANVAS_GROP'},$symbols{'PG_GROP_SETLGOP'},
+	   $l);
+}
+
+sub setangle {
+    my ($a) = @_;
+    canvas($symbols{'PGCANVAS_GROP'},$symbols{'PG_GROP_SETANGLE'},
+	   $a);
+}
+
+sub setsrc {
+    my ($x,$y,$w,$h) = @_;
+    canvas($symbols{'PGCANVAS_GROP'},$symbols{'PG_GROP_SETSRC'},
+	   $x,$y,$w,$h);
+}
+
+sub setflags {
+    my ($f) = @_;
+    canvas($symbols{'PGCANVAS_DEFAULTFLAGS'},$f);
+}
+
+sub setmapping {
+    my ($x,$y,$w,$h,$type) = @_;
+    setflags($symbols{'PG_GROPF_UNIVERSAL'});
+    canvas($symbols{'PGCANVAS_GROP'},$symbols{'PG_GROP_SETMAPPING'},
+	   $x,$y,$w,$h,$type);
+    canvas($symbols{'PGCANVAS_INPUTMAPPING'},
+	   $x,$y,$w,$h,$type);
+    setflags(0);
+}
+
+sub clear {
+    canvas($symbols{'PGCANVAS_NUKE'});
+}
+
 ### The End ###
+
+
+
