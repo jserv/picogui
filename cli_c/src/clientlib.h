@@ -1,4 +1,4 @@
-/* $Id: clientlib.h,v 1.4 2001/04/11 16:42:10 micahjd Exp $
+/* $Id: clientlib.h,v 1.5 2001/06/07 23:41:00 micahjd Exp $
  *
  * clientlib.h - definitions used only within the client library code itself
  *

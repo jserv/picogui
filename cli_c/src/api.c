@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.9 2001/05/04 23:26:55 micahjd Exp $
+/* $Id: api.c,v 1.10 2001/06/07 23:41:00 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
