@@ -1,4 +1,11 @@
 2001-06-21    Pascal Bauermeister <pascal.bauermeister@smartdata.ch>
+	* SMARTDATA.config: removed
+	* SMARTDATA-vz.config: added
+	Renamed SMARTDATA.config to SMARTDATA-vz.config to ease the automatic
+	multi-platform builds.
+
+
+2001-06-21    Pascal Bauermeister <pascal.bauermeister@smartdata.ch>
 	* configure.in Makefile.am input/tsinput.c:
 	Removed hard-coded paths related to resource manager and uClinux. Now,
 	extra include paths and extra libraries can be added via configure
