@@ -25,6 +25,8 @@ class DebugBuffer(Buffer):
                 o.readonly = 0
                 o.write(text)
                 o.readonly = 1
+                if getattr(o, 'frame', None) is self.frame:
+                    self.frame.current = o
         else:
             self.frame.open(self)
             self.frame.current = -1
