@@ -1,4 +1,4 @@
-/* $Id: hotspot.c,v 1.23 2002/02/05 00:17:55 micahjd Exp $
+/* $Id: hotspot.c,v 1.24 2002/02/25 04:05:21 micahjd Exp $
  *
  * hotspot.c - This is an interface for managing hotspots.
  *             The divtree is scanned for hotspot divnodes.
@@ -311,6 +311,7 @@ void hotspot_traverse(short direction) {
     VID(coord_physicalize)(&px,&py);
     dispatch_pointing(PG_TRIGGER_MOVE,px,py,0);
     drivermessage(PGDM_CURSORWARP,0,NULL);
+    drivermessage(PGDM_CURSORVISIBLE,1,NULL);
   }
 }
 
