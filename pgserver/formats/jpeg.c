@@ -1,4 +1,4 @@
-/* $Id: jpeg.c,v 1.4 2001/09/18 17:11:30 micahjd Exp $
+/* $Id: jpeg.c,v 1.5 2001/10/07 07:03:28 micahjd Exp $
  *
  * jpeg.c - Functions to convert any of the jpeg formats 
  *
@@ -180,19 +180,22 @@ void jpeg_mem_src (j_decompress_ptr cinfo, unsigned char  *inbuf, int size)
 
 /**************************** Detect */
 
-/* Use the markers in jpeglib.h header as a 'magic number' */
 bool jpeg_detect(const u8 *data, u32 datalen) {
-  char jpegmagic[4] = { 0xFF, 0xD8, 0xFF, 0xE0 };
-
-  /* A JPEG must start with the values in jpegmagic[]
-   * and have "JFIF" 6 bytes into the file
+  char jfifmagic1[4] = { 0xFF, 0xD8, 0xFF, 0xE0 };
+  char jfifmagic2[]  = "JFIF";
+  char exifmagic1[4] = { 0xFF, 0xD8, 0xFF, 0xE1 };
+  char exifmagic2[]  = "Exif";
+  
+  /* Detect jfif (normal jpeg) and exif (digital camera jpeg) using the
+   * first 4 bytes, and a string 6 bytes into the file
    */
 
-  if (strncmp(jpegmagic,data,4))
-    return 0;
-  if (strncmp("JFIF",data+6,4))
-    return 0;
-  return 1;
+  if ((!strncmp(jfifmagic1,data,4)) && (!strncmp(jfifmagic2,data+6,4)))
+    return 1;
+  if ((!strncmp(exifmagic1,data,4)) && (!strncmp(exifmagic2,data+6,4)))
+    return 1;
+
+  return 0;
 }
 
 
