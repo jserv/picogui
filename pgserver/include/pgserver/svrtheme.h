@@ -1,4 +1,4 @@
-/* $Id: svrtheme.h,v 1.10 2002/02/12 23:54:36 micahjd Exp $
+/* $Id: svrtheme.h,v 1.11 2002/03/26 02:33:41 instinc Exp $
  * 
  * svrtheme.h - functions and data structures for themes, used
  *              only in the server
@@ -83,18 +83,17 @@ struct pgmemtheme_prop *find_prop(struct pgmemtheme_thobj *tho,unsigned short id
 
 /* Look for the given property, starting at 'object'
  * returns the property's 'data' member */
-unsigned long theme_lookup(unsigned short object,
-			   unsigned short property);
+u32 theme_lookup(u16 object, u16 property);
 
 /* Load a theme into memory from a compiled theme heap */
 g_error theme_load(handle *h,int owner,char *themefile,
-		   unsigned long themefile_len);
+		   u32 themefile_len);
 
 /* Remove a theme from memory */
 void theme_remove(struct pgmemtheme *th);
 
 /* Fillstyle checker- verifies that a fillstyle looks valid */
-g_error check_fillstyle(const unsigned char *fs, unsigned long fssize);
+g_error check_fillstyle(const unsigned char *fs, u32 fssize);
 
 /* Fillstyle interpreter- generates/refreshes a gropnode list */
 g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
