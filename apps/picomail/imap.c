@@ -127,8 +127,19 @@ check_ok()
 int
 mesgcount( char * line )
 {
+    int i = 0;
+    
     if ( strncmp( line+(strlen(line)-8), "EXISTS", 5 ) == 0 )
-        sscanf( line, "* %d EXISTS", &messages );
+    {
+        line += 2;
+        while ( ( ( line[i] >= '0' ) && (line[i] <='9') ) )
+            i++;
+
+        line[i] = '\0';
+        messages = atoi( line );
+        
+        printf( "Messages Count: %d\n", messages );
+    }
         
     return SUCCESS;
 }
