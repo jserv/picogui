@@ -76,6 +76,7 @@ class AnnounceServer(LineReceiver):
                     groups[channel].sendText(message)
                 except KeyError:
                     pass
+            time.sleep(1)
             
         elif command == "JoinChannel":
             accounts[0].client.join(project)

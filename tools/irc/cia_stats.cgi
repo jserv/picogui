@@ -25,7 +25,7 @@ print """Content-type: text/html
    <div class="subtitle">Because SF stats weren't pointless enough</div>
 </div>
 
-<div><span class="section">Number of messages posted per project</span></div>
+<div><span class="section">Number of commits posted per project</span></div>
 <div class="section">
   <div class="sectionTop"></div>
   <div class="row">

@@ -22,6 +22,7 @@ import re, time
 # Allowed commands, split up into those with content and those without
 allowedTextCommands = ("Announce", "SendToChannels")
 allowedControlCommands = ("JoinChannel", "PartChannel")
+statCountedCommands = ("Announce",)
 
 # Prohibited channels
 # List from http://www.freenode.net/drones.shtml
@@ -143,7 +144,8 @@ class AnnounceClient(protocol.Protocol):
             # Send allowed text commands
             elif subjectFields[0] in allowedTextCommands:
                 # Our lame little stat page
-                updateStats(subjectFields[1])
+                if subjectFields[0] in statCountedCommands:
+                    updateStats(subjectFields[1])
                 
                 # This limits the length of the maximum message, mainly to prevent DOS'ing the bot too badly
                 for line in message.split("\n")[:40]:
