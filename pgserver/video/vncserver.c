@@ -1,4 +1,4 @@
-/* $Id: vncserver.c,v 1.2 2003/01/19 07:36:08 micahjd Exp $
+/* $Id: vncserver.c,v 1.3 2003/01/19 08:15:05 micahjd Exp $
  *
  * vncserver.c - Video driver that runs a VNC server and processes
  *               input events for multiple clients, using the
@@ -29,6 +29,7 @@
 
 #include <pgserver/common.h>
 #include <pgserver/video.h>
+#include <pgserver/configfile.h>
 #include "libvncserver/rfb.h"
 
 /* Macros to easily access the members of vid->display */
@@ -87,6 +88,16 @@ g_error vncserver_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
    e = g_malloc((void**)&FB_MEM,(FB_BPL * vid->yres));
    errorcheck;
    vncserver_screeninfo->frameBuffer = FB_MEM;
+
+   /* Process configuration variables */
+   vncserver_screeninfo->rfbPort            = get_param_int("video-vncserver", "port", 5900);
+   vncserver_screeninfo->rfbMaxClientWait   = get_param_int("video-vncserver", "wait", 20000);
+   vncserver_screeninfo->rfbAuthPasswdData  = get_param_str("video-vncserver", "password-file", NULL);
+   vncserver_screeninfo->rfbDeferUpdateTime = get_param_int("video-vncserver", "defer-update", 40);
+   vncserver_screeninfo->desktopName        = get_param_str("video-vncserver", "name", "PicoGUI VNC Server");
+   vncserver_screeninfo->rfbAlwaysShared    = get_param_int("video-vncserver", "always-shared", 0);
+   vncserver_screeninfo->rfbNeverShared     = get_param_int("video-vncserver", "never-shared", 0);
+   vncserver_screeninfo->rfbDontDisconnect  = get_param_int("video-vncserver", "dont-disconnect", 0);
 
    /* Set up the RFB server */
    rfbInitServer(vncserver_screeninfo);

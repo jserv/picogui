@@ -632,5 +632,39 @@ quoted appropriately. For example:
   at, in addition to the default size.
   Defaults to "32"
 
+[video-vncserver]
+
+- port
+  TCP port number to run the VNC server on
+  Defaults to 5900
+
+- wait
+  Maximum number of milliseconds to wait for a client
+  Defaults to 20000
+
+- password-file
+  Filename to read an encrypted password from
+  Defaults to no password
+
+- defer-update
+  Maximum number of milliseconds to defer updates
+  Defaults to 40
+
+- name
+  Desktop name that will usually appear in a client's window title
+  Defaults to "PicoGUI VNC Server"
+
+- always-shared
+  Boolean, forces all clients to be shared
+  Defaults off
+
+- never-shared
+  Boolean, forces no clients to be shared
+  Defaults off
+
+- dont-disconnect
+  Boolean, don't disconnect existing shared clients if a nonshared client connects
+  Defaults off
+
 --- The End ---
 
