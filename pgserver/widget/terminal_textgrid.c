@@ -1,4 +1,4 @@
-/* $Id: terminal_textgrid.c,v 1.11 2003/03/10 23:48:27 micahjd Exp $
+/* $Id: terminal_textgrid.c,v 1.12 2003/03/23 09:24:20 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -338,5 +338,27 @@ void term_scroll(struct widget *self, int top_y, int bottom_y, int lines) {
 
   term_updrect(self,0,top_y,DATA->bufferw,bottom_y - top_y + 1);
 }
+
+/* Shift all the text at and after the cursor right by 'n' characters */
+void term_insert(struct widget *self, int n) {
+
+  /* Clamp to the amount of space not left of the cursor */
+  if (n > DATA->bufferw - DATA->current.crsrx)
+    n = DATA->bufferw - DATA->current.crsrx;
+
+  /* Shift the characters over */
+  textblit(DATA->buffer, DATA->buffer, 
+	   DATA->current.crsrx, DATA->current.crsry, DATA->bufferw,
+	   DATA->current.crsrx + DATA->csiargs[0], DATA->current.crsry, DATA->bufferw,
+	   n, 1);
+
+  /* Blank out the inserted characters */
+  term_clearbuf(self, DATA->current.crsrx, DATA->current.crsry, n);
+
+  /* Update this changed region of the screen */
+  term_updrect(self, DATA->current.crsrx, DATA->current.crsry,
+	       DATA->bufferw - DATA->current.crsrx, 1);
+}
+
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.12 2003/03/23 02:51:57 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.13 2003/03/23 09:24:20 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -136,18 +136,22 @@ void term_char(struct widget *self,u8 c) {
       
     case '\a':
       /* Ding! */
+      DBG("beep\n");
       drivermessage(PGDM_SOUNDFX,PG_SND_BEEP,NULL);
       return;
       
     case '\n':
+      DBG("newline\n");
       DATA->current.crsry++;
       break;
 
     case '\r':
+      DBG("carriage return\n");
       DATA->current.crsrx = 0;
       break;
       
     case '\t':
+      DBG("tab\n");
       if (DATA->current.crsrx >= DATA->bufferw) {
         DATA->current.crsrx = 8;	/* "magic" wrapping */
         DATA->current.crsry++;
@@ -158,9 +162,10 @@ void term_char(struct widget *self,u8 c) {
       break;
       
     case '\b':
+      DBG("backspace\n");
       if (!DATA->current.crsrx)  /* Can't backspace past the edge */
 	return;
-      term_plot(self,--DATA->current.crsrx,DATA->current.crsry,' ');
+      DATA->current.crsrx--;
       break;
     }
 
@@ -175,6 +180,7 @@ void term_char(struct widget *self,u8 c) {
 	  term_scroll(self,DATA->current.scroll_top,DATA->current.scroll_bottom,-1);
 	}
       }
+      DBG("character '%c' (%d)\n", c, c);
       term_plot(self,DATA->current.crsrx++,DATA->current.crsry,c);
     }
   
@@ -209,7 +215,7 @@ void term_char_escapemode(struct widget *self,u8 c) {
   /* Too much? */
   if (DATA->escbuf_pos >= ESCAPEBUF_SIZE) {
     DATA->escapemode = 0;
-#ifdef DEBUG_TERMINAL
+#ifdef DEBUG_FILE
     {
       u8 *p;
       
@@ -289,8 +295,7 @@ void term_csi(struct widget *self, u8 c) {
     /* @ - Insert the indicated # of blank characters */
   case '@':
     DBG("Insert %d blank characters\n", DATA->csiargs[0]);
-    for (i=0;i<DATA->csiargs[0];i++)
-      term_char(self,' ');
+    term_insert(DATA->csiargs[0]);
     break;
 
     /* A - Move cursor up */
@@ -399,7 +404,9 @@ void term_csi(struct widget *self, u8 c) {
     
     /* X - Erase characters */
   case 'X':
-    DBG("-UNIMPLEMENTED- erase %d characters\n", DATA->csiargs[0]);
+    DBG("erase %d characters\n", DATA->csiargs[0]);
+    for (i=0;i<DATA->csiargs[0];i++)
+      term_char(self,' ');
     break;
 
     /* a - Move cursor right */

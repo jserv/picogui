@@ -1,4 +1,4 @@
-/* $Id: terminal.h,v 1.4 2003/03/10 23:48:15 micahjd Exp $
+/* $Id: terminal.h,v 1.5 2003/03/23 09:24:20 micahjd Exp $
  *
  * terminal.h - Header file shared by components of the terminal emulator widget
  *
@@ -131,6 +131,9 @@ void term_scroll(struct widget *self, int top_y, int bottom_y, int lines);
 void textblit(struct pgstring *src,struct pgstring *dest,
 	      int src_x,int src_y,int src_w,
 	      int dest_x,int dest_y,int dest_w,int w,int h);
+
+/* Shift all the text at and after the cursor right by 'n' characters */
+void term_insert(struct widget *self, int n);
 
 
 /******************************************************** VT102 emulation **/
