@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.82 2002/09/28 06:25:06 micahjd Exp $
+/* $Id: panel.c,v 1.83 2002/09/28 08:14:31 micahjd Exp $
  *
  * panel.c - Resizable container with decorations. It uses a panelbar for resizing purposes,
  *           and optionally supplies some standard buttons for the panel.
@@ -62,8 +62,6 @@ g_error panel_std_button(handle *h, struct widget *self, int thobj, int thobj_on
 
   w = NULL;
   e = widget_derive(&w,h,PG_WIDGET_BUTTON,bar,DATA->hbar,PG_DERIVE_INSIDE,self->owner);
-  errorcheck;
-  e = mkhandle(h,PG_TYPE_WIDGET,self->owner,w);
   errorcheck;
 
   w->callback = callback;
