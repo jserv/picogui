@@ -6,4 +6,6 @@ include_HEADERS = \
 	constants.h \
 	network.h \
 	pgfx.h \
-	pgkeys.h
+	pgkeys.h \
+   theme.h
+	
