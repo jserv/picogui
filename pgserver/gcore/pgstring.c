@@ -1,4 +1,4 @@
-/* $Id: pgstring.c,v 1.13 2002/11/03 23:18:46 micahjd Exp $
+/* $Id: pgstring.c,v 1.14 2002/11/04 08:36:24 micahjd Exp $
  *
  * pgstring.c - String data type to handle various encodings
  *
@@ -183,12 +183,12 @@ int pgstring_print(const struct pgstring *str) {
 }
 
 /* Create an exact duplicate of an existing pgstring */
-g_error pgstring_dup(struct pgstring **dest, struct pgstring *src) {
+g_error pgstring_dup(struct pgstring **dest, const struct pgstring *src) {
   return pgstring_convert(dest, src->flags & PGSTR_ENCODE_MASK, src);
 }
 
 /* Convert one pgstring to a new encoding in a new pgstring */
-g_error pgstring_convert(struct pgstring **dest, int encoding, struct pgstring *src) {
+g_error pgstring_convert(struct pgstring **dest, int encoding, const struct pgstring *src) {
   g_error e;
   struct pgstr_iterator i;
 
@@ -390,7 +390,7 @@ g_error pgstring_insert_char(struct pgstring *str, struct pgstr_iterator *p, u32
 
 /* Insert one string inside another string before the insertion point p, resizing as necessary */
 g_error pgstring_insert_string(struct pgstring *str, struct pgstr_iterator *p, 
-			       struct pgstring *substring) {
+			       const struct pgstring *substring) {
   g_error e;
   struct pgstr_iterator sub_i;
   u32 ch;

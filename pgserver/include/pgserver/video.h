@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.109 2002/11/03 04:54:24 micahjd Exp $
+/* $Id: video.h,v 1.110 2002/11/04 08:36:25 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -293,7 +293,7 @@ struct vidlib {
    *
    * Default implementation: returns vid->display
    */
-  hwrbitmap (*window_new)(struct divtree *dt);
+  g_error (*window_new)(hwrbitmap *bmp, struct divtree *dt);
 
   /* Optional
    *   In a rootless driver, create a new window and return a hwrbitmap
@@ -308,7 +308,7 @@ struct vidlib {
    *
    * Default implementation: does nothing
    */
-  void (*window_set_title)(hwrbitmap window, struct pgstring *title);
+  void (*window_set_title)(hwrbitmap window, const struct pgstring *title);
 
   /* Optional
    *   Routines to get/set position and size for the window

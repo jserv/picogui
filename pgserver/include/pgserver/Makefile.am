@@ -34,7 +34,8 @@ include_HEADERS = \
 	font_bdf.h	\
 	init.h		\
 	os.h		\
-	os_posix.h
+	os_posix.h	\
+	x11.h
 
 CONFIG_CLEAN_FILES = autoconf.h
 

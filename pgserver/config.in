@@ -107,11 +107,6 @@ if [ "$DRIVER_SDLFB" = "y" ]; then
 	 Color			CONFIG_SDLEMU_COLOR" None
 fi
 bool 'X Window System driver (EXPERIMENTAL)' DRIVER_X11
-if [ "$DRIVER_X11" = "y" ]; then
-   bool '  Disable slow pixel/getpixel'                     CONFIG_X11_NOPIXEL
-   bool '  Disable slow blending LGOPs'                     CONFIG_X11_NOSLOWLGOP
-   bool '  Enable pgserver icon'                            CONFIG_X11_ICON
-fi
 bool 'SDL/OpenGL driver (EXPERIMENTAL, see README.opengl)'    DRIVER_SDLGL
 bool 'SVGAlib framebuffer driver'          DRIVER_SVGAFB
 bool 'Motorola 68EZ328 LCD driver'         DRIVER_EZ328

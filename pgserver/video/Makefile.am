@@ -18,7 +18,9 @@ EXTRA_libvideo_la_SOURCES = \
 	serial40x4.c \
 	scrshot.c  \
 	s1d13806.c \
-	x11.c      \
+	x11_init.c \
+	x11_util.c \
+	x11_primitives.c \
 	mgl2fb.c   \
 	sdlgl_bitmap.c \
 	sdlgl_camera.c \

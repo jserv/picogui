@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.98 2002/11/03 04:54:23 micahjd Exp $
+/* $Id: div.c,v 1.99 2002/11/04 08:36:24 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -497,7 +497,8 @@ g_error divtree_new(struct divtree **dt) {
   errorcheck;
   e = newdiv(&(*dt)->head,NULL);
   errorcheck;
-  (*dt)->display = VID(window_new)(*dt);
+  e = VID(window_new)(&(*dt)->display,*dt);
+  errorcheck;
 
   /* Default to lxres,lyres for this divtree's size.
    * In a rootless driver, this should be set by the driver when

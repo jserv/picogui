@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.18 2002/11/04 05:38:07 micahjd Exp $
+/* $Id: x11input.c,v 1.19 2002/11/04 08:36:25 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -33,22 +33,10 @@
 
 #include <pgserver/common.h>
 #include <pgserver/input.h>
-#include <pgserver/widget.h>
 #include <pgserver/configfile.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/keysym.h>
-#ifdef __SVR4
-#include <X11/Sunkeysym.h>
-#endif
+#include <pgserver/x11.h>
 
-/* Hooks for interfacing with the x11 video driver */
-extern Display *xdisplay;    /* X display from the x11.c driver */
-int x11_fd;                  /* X display's file descriptor */
-void (*x11_expose)(Region r);
-
-/* Some config options */
-struct cursor *x11input_pgcursor;
+int x11input_scroll_distance;
 
 /* Keyboard translation utilities */
 void x11_translate_key(Display *display, XKeyEvent *xkey, KeyCode kc,
@@ -58,27 +46,17 @@ void x11input_init_keymap(void);
 static s16 ODD_keymap[256];
 static s16 MISC_keymap[256];
 
-/* Distance the scroll wheel should move */
-int x11input_scroll_distance;
 
-
-/******************************* Implementations */
+/******************************************************** Public Methods */
 
 g_error x11input_init(null) {
   g_error e;
 
   /* Get a file descriptor for the X11 display */
-  if (!xdisplay)
+  if (!x11_display)
     return mkerror(PG_ERRT_BADPARAM,36);   /* No matching video driver */
-  x11_fd = ConnectionNumber(xdisplay);
   
   x11input_init_keymap();
-  
-  /* Store other config options */
-  if (get_param_int("input-x11","pgcursor",0)) {
-    e = cursor_new(&x11input_pgcursor,NULL,-1);
-    errorcheck;
-  }
   x11input_scroll_distance = get_param_int("input-x11","scroll_distance",20);
 
   return success;
@@ -101,8 +79,8 @@ int x11input_fd_activate(int fd) {
 
   if(fd != x11_fd) return 0;
 
-  for (i=XPending(xdisplay);i;i--) {
-    XNextEvent(xdisplay, &ev);
+  for (i=XPending(x11_display);i;i--) {
+    XNextEvent(x11_display, &ev);
     switch (ev.type) {
 
       /****************** Expose event 
@@ -120,7 +98,7 @@ int x11input_fd_activate(int fd) {
 
       /* If this is the last contiguous expose event, go ahead and draw */
       if (!ev.xexpose.count) {
-	(*x11_expose)(expose_region);
+	x11_expose(expose_region);
 	XDestroyRegion(expose_region);
 	expose_region = XCreateRegion();
       }
@@ -148,24 +126,24 @@ int x11input_fd_activate(int fd) {
 
     case MotionNotify:
       infilter_send_pointing(PG_TRIGGER_MOVE,ev.xmotion.x, ev.xmotion.y, 
-			     (ev.xmotion.state >> 8) & 0x07, x11input_pgcursor);
+			     (ev.xmotion.state >> 8) & 0x07, NULL);
       break;
 
     case ButtonPress:
       btn = (ev.xbutton.state >> 8) | (1 << (ev.xbutton.button-1));
       if (btn & 0x08)
-	infilter_send_pointing(PG_TRIGGER_SCROLLWHEEL,0,-x11input_scroll_distance,0,x11input_pgcursor);
+	infilter_send_pointing(PG_TRIGGER_SCROLLWHEEL,0,-x11input_scroll_distance,0,NULL);
       if (btn & 0x10)
-	infilter_send_pointing(PG_TRIGGER_SCROLLWHEEL,0,x11input_scroll_distance,0,x11input_pgcursor);
+	infilter_send_pointing(PG_TRIGGER_SCROLLWHEEL,0,x11input_scroll_distance,0,NULL);
 	
       infilter_send_pointing(PG_TRIGGER_DOWN,ev.xbutton.x, ev.xbutton.y,
-			     btn & 0x07, x11input_pgcursor);
+			     btn & 0x07, NULL);
       break;
 
     case ButtonRelease:
       infilter_send_pointing(PG_TRIGGER_UP,ev.xbutton.x, ev.xbutton.y,
 			     ((ev.xbutton.state >> 8) & (~(1 << (ev.xbutton.button-1)))) & 0x07,
-			     x11input_pgcursor);
+			     NULL);
       break;
 
       /****************** Keyboard events
@@ -177,7 +155,7 @@ int x11input_fd_activate(int fd) {
        */
 
     case KeyPress:
-      x11_translate_key(xdisplay, &ev.xkey, ev.xkey.keycode, &sym, &mod, &chr);
+      x11_translate_key(x11_display, &ev.xkey, ev.xkey.keycode, &sym, &mod, &chr);
       if (sym)
 	infilter_send_key(PG_TRIGGER_KEYDOWN,sym,mod);
       if (chr)
@@ -185,8 +163,8 @@ int x11input_fd_activate(int fd) {
       break;
 
     case KeyRelease:
-      x11_translate_key(xdisplay, &ev.xkey, ev.xkey.keycode, &sym, &mod, &chr);
-      if (x11_key_repeat(xdisplay, &ev)) {
+      x11_translate_key(x11_display, &ev.xkey, ev.xkey.keycode, &sym, &mod, &chr);
+      if (x11_key_repeat(x11_display, &ev)) {
 	if (chr)
 	  infilter_send_key(PG_TRIGGER_CHAR,chr,mod);
       }
@@ -201,7 +179,8 @@ int x11input_fd_activate(int fd) {
   return 1;
 }
 
-/******************************* Utilities */
+
+/******************************************************** Internal Utilities */
 
 /* Check to see if this is a repeated key.
  * This code was borrowed from SDL, which borrowed it from GII :)
@@ -459,7 +438,8 @@ void x11input_init_keymap(void) {
   MISC_keymap[XK_Hyper_R&0xFF] = PGKEY_MENU;       /* Windows "Menu" key */
 }
 
-/******************************* Registration */
+
+/******************************************************** Registration */
 
 g_error x11input_regfunc(struct inlib *i) {
   i->init = &x11input_init;

@@ -1,4 +1,4 @@
-/* $Id: dvbl_init.c,v 1.11 2002/10/23 02:09:06 micahjd Exp $
+/* $Id: dvbl_init.c,v 1.12 2002/11/04 08:36:25 micahjd Exp $
  *
  * dvbl_init.c - This file is part of the Default Video Base Library,
  *               providing the basic video functionality in picogui but
@@ -88,14 +88,15 @@ hwrbitmap def_window_fullscreen(void) {
   return vid->display;
 }
 
-hwrbitmap def_window_new(struct divtree *dt) {
-  return vid->display;
+g_error def_window_new(hwrbitmap *hbmp, struct divtree *dt) {
+  *hbmp = vid->display;
+  return success;
 }
 
 void def_window_free(hwrbitmap window) {
 }
 
-void def_window_set_title(hwrbitmap window, struct pgstring *title) {
+void def_window_set_title(hwrbitmap window, const struct pgstring *title) {
 }
 
 void def_window_set_position(hwrbitmap window, s16 x, s16 y) {

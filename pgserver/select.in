@@ -103,7 +103,9 @@ add_if_true serial40x4.c         $DRIVER_SERIAL40X4
 add_if_true scrshot.c            $DRIVER_SCRSHOT
 add_if_true s1d13806.c           $DRIVER_S1D13806
 add_if_true sed133x.c            $DRIVER_SED133X
-add_if_true x11.c                $DRIVER_X11
+add_if_true x11_util.c           $DRIVER_X11
+add_if_true x11_init.c           $DRIVER_X11
+add_if_true x11_primitives.c     $DRIVER_X11
 add_if_true mgl2fb.c             $DRIVER_MGL2FB
 add_if_true sdlgl_bitmap.c       $DRIVER_SDLGL
 add_if_true sdlgl_camera.c       $DRIVER_SDLGL

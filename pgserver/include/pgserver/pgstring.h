@@ -1,4 +1,4 @@
-/* $Id: pgstring.h,v 1.6 2002/10/31 11:21:21 micahjd Exp $
+/* $Id: pgstring.h,v 1.7 2002/11/04 08:36:25 micahjd Exp $
  *
  * pgstring.h - String data type to handle various encodings
  *
@@ -117,10 +117,10 @@ const struct pgstring *pgstring_tmpwrap(const char *cstring);
 int pgstring_print(const struct pgstring *str);
 
 /* Create an exact duplicate of an existing pgstring */
-g_error pgstring_dup(struct pgstring **dest, struct pgstring *src);
+g_error pgstring_dup(struct pgstring **dest, const struct pgstring *src);
 
 /* Convert one pgstring to a new encoding in a new pgstring */
-g_error pgstring_convert(struct pgstring **dest, int encoding, struct pgstring *src);
+g_error pgstring_convert(struct pgstring **dest, int encoding, const struct pgstring *src);
 
 /* An implementation of strcmp() for pgstrings */
 int pgstring_cmp(const struct pgstring *a, const struct pgstring *b);
@@ -170,7 +170,7 @@ g_error pgstring_insert_char(struct pgstring *str, struct pgstr_iterator *p, u32
 
 /* Insert one string inside another string before the insertion point p, resizing as necessary */
 g_error pgstring_insert_string(struct pgstring *str, struct pgstr_iterator *p, 
-			       struct pgstring *substring);
+			       const struct pgstring *substring);
 
 /* Delete the character pointed to by the insertion point p. The insertion point will
  * now point to the character after the one deleted, or it will be NULL if that was the
