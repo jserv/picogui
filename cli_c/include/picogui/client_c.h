@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.95 2003/02/07 18:27:18 micahjd Exp $
+/* $Id: client_c.h,v 1.96 2003/03/14 15:20:43 cgrigis Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -547,6 +547,31 @@ void pgDriverMessage(u32 message, u32 param);
  * event on behalf of the \p dest widget.
  */
 void pgAppMessage(pghandle dest, struct pgmemdata data);
+
+/*!
+ * \brief Send a message to a widget owned by any application, and wait
+ *        for an answer
+ *
+ * \param dest Handle of the destination widget
+ * \param data A pgmemdata structure containing the data, as returned by a pgFrom* function
+ *
+ * \returns Returns a pointer to the answer message. This will have to
+ *          be freed by the calling application.
+ *
+ * The \p data parameter is sent as the \p data in a PG_WE_APPMSG
+ * event on behalf of the \p dest widget.
+ *
+ * This call acts very similarly to \p pgAppMessage, except that the
+ * calling client is blocked until the remote widget has sent an
+ * answer message. The answer is application specific.
+ *
+ * NOTE:
+ * The data is assumed to be a structure whose very first field
+ * is of type \p pghandle. This field will be used by pgSyncAppMessage
+ * to store the widget handle to which the receiver will send
+ * the answer.
+ */
+void * pgSyncAppMessage (pghandle dest, struct pgmemdata data);
 
 /*! 
  * \brief Evaluate a PicoGUI request packet

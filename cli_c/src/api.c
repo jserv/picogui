@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.51 2003/02/07 18:27:19 micahjd Exp $
+/* $Id: api.c,v 1.52 2003/03/14 15:20:45 cgrigis Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -952,5 +952,60 @@ void pgAppMessage(pghandle dest, struct pgmemdata data) {
   _pg_free_memdata(data);
   free(buf);
 }
+
+/*
+ * Handler for the answer messages sent in response to a 
+ * pgSyncAppMessage call.
+ * When a widget is bound to this handler, the extra parameter
+ * given is the address of a pointer where the answer
+ * message must be copied.
+ */
+static int syncmsg_handler (struct pgEvent * evt)
+{
+  void ** panswer = (void **) evt->extra;
+
+#ifdef DEBUG  
+  DBG ("received APPMSG from 0x%08x\n", evt->from);
+  DBG ("extra = 0x%08x\n", evt->extra);
+#endif
+
+  if (evt->e.data.size > 0) {
+    * panswer = _pg_malloc (evt->e.data.size);
+    if (* panswer == NULL) return 0;
+    memcpy (* panswer, evt->e.data.pointer, evt->e.data.size);
+  }
+  
+  return 1;
+}
+
+void * pgSyncAppMessage (pghandle dest, struct pgmemdata data)
+{
+  pghandle source;
+  void * answer;
+
+  if (data.size < sizeof (pghandle)) return NULL;
+  
+  source = pgCreateWidget (PG_WIDGET_LABEL);
+
+#ifdef DEBUG  
+  DBG ("binding 0x%08x with extra = 0x%08x\n", source, & answer);
+#endif
+  pgBind (source, PG_WE_APPMSG, syncmsg_handler, & answer);
+      
+  * ((pghandle *) data.pointer) = source;
+
+  pgAppMessage (dest, data);
+  
+  answer = NULL;
+  do {
+    struct pgEvent evt = * pgGetEvent ();
+    pgDispatchEvent (& evt);
+  } while (! answer);
+
+  pgDelete (source);
+
+  return answer;
+}
+
 
 /* The End */
