@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.10 2002/10/27 21:38:20 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.11 2002/10/28 00:33:15 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -280,6 +280,7 @@ void paragraph_movecursor(struct paragraph_cursor *crsr,
 			  struct paragraph *par, int x, int y) {
   int i;
   struct pair line_xy = {0,0};
+  struct pair ch_size;
   int cache_valid = 1;
   struct paragraph_formatting fmt;
   u32 ch;
@@ -319,12 +320,14 @@ void paragraph_movecursor(struct paragraph_cursor *crsr,
       ch = pgstring_decode_meta(par->content, &crsr->iterator, (void**) &meta);
       if (meta)
 	paragraph_apply_metadata(meta,&fmt);
-      fmt.fd->lib->measure_char(fmt.fd,&line_xy,ch,0);
-      if (line_xy.x > x) {
+      ch_size.x = 0;
+      fmt.fd->lib->measure_char(fmt.fd,&ch_size,ch,0);
+      if (line_xy.x+(ch_size.x>>1) > x) {
 	/* We just passed the character that was clicked */
 	pgstring_seek(par->content, &crsr->iterator, -1);
 	break;
       }
+      line_xy.x += ch_size.x;
     }
 
     /* If we reached the end of the line and the last character was a space,
