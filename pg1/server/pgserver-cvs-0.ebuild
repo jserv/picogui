@@ -1,7 +1,7 @@
 # Copyright 1999-2003 Gentoo Technologies, Inc.
 # Distributed under the terms of the GNU General Public License v2
 
-IUSE="fbcon gpm jpeg ncurses opengl png sdl svga truetype X"
+IUSE="fbcon gpm jpeg ncurses opengl png sdl svga truetype X directfb"
 
 # ECVS_TOP_DIR="${PORTAGE_TMPDIR}"
 ECVS_SERVER="cvs.sf.net:/cvsroot/pgui"
@@ -29,6 +29,8 @@ DEPEND="gpm? ( sys-libs/gpm )
 	png? ( media-libs/libpng )
 	sdl? ( media-libs/libsdl )
 	X? ( virtual/x11 )
+	directfb? ( dev-libs/DirectFB )
+	truetype? ( >=media-libs/freetype-2.1 )
 	dev-util/cvs"
 # do we support this?
 #	sdl? ( truetype? ( media-libs/sdl-ttf ) )

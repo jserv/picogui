@@ -113,7 +113,7 @@ if [ "$DRIVER_SDLFB" = "y" ]; then
 	 Color			CONFIG_SDLEMU_COLOR" None
 fi
 bool 'X Window System driver'              DRIVER_X11
-bool 'DirectFB driver'                     DRIVER_DIRECTFB
+bool 'DirectFB driver (INCOMPLETE)'        DRIVER_DIRECTFB
 bool 'SDL OpenGL driver'                   DRIVER_SDLGL
 bool 'Embedded OpenGL context driver'      DRIVER_GLCONTEXT
 bool 'VNC Remote Framebuffer server (GPL)' DRIVER_VNCSERVER

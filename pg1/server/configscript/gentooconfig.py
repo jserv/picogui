@@ -1,9 +1,6 @@
 # script that generates profile.user from USE variables
 # edit gentooconfig_deps.py to define how that happens
 
-print '''WARNING: this script is not yet finished.  It may seriously hose
-your configuration.  Please save backups before trying it.'''
-
 import re, portage, os
 usedefaults = [item.split()[0] for item in portage.usedefaults]
 
