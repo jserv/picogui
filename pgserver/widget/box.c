@@ -1,4 +1,4 @@
-/* $Id: box.c,v 1.25 2002/05/20 19:18:38 micahjd Exp $
+/* $Id: box.c,v 1.26 2002/09/25 15:26:08 micahjd Exp $
  *
  * box.c - Generic container for holding a group of widgets. It's sizing and
  *         appearance are defined by the theme.
@@ -29,12 +29,15 @@
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 
-#define MARGIN_OVERRIDE ((long)self->data)
+struct boxdata {
+  int margin_override;
+};
+#define DATA WIDGET_DATA(0,boxdata)
 
 void box_resize(struct widget *self) {
    int m;
    
-   if (!MARGIN_OVERRIDE) {
+   if (!DATA->margin_override) {
 
      /* Transparent boxen have the same margin as a button
       * (necessary for grids to look good) */
@@ -50,6 +53,8 @@ void box_resize(struct widget *self) {
 g_error box_install(struct widget *self) {
   g_error e;
 
+  WIDGET_ALLOC_DATA(0,boxdata)
+
   e = newdiv(&self->in,self);
   errorcheck;
   self->in->flags |= PG_S_TOP;
@@ -60,7 +65,7 @@ g_error box_install(struct widget *self) {
   self->in->div->build = &build_bgfill_only;
   self->in->div->state = PGTH_O_BOX;
 
-  MARGIN_OVERRIDE = 0;
+  DATA->margin_override = 0;
   
   self->out = &self->in->next;
   self->sub = &self->in->div->div;
@@ -70,6 +75,7 @@ g_error box_install(struct widget *self) {
 
 void box_remove(struct widget *self) {
   r_divnode_free(self->in);
+  g_free(DATA);
 }
 
 g_error box_set(struct widget *self,int property, glob data) {
@@ -81,7 +87,7 @@ g_error box_set(struct widget *self,int property, glob data) {
     
   case PG_WP_MARGIN:
     self->in->div->split = data;
-    MARGIN_OVERRIDE = 1;       /* Prevent automatic setting of margins */
+    DATA->margin_override = 1;       /* Prevent automatic setting of margins */
     break;
     
   case PG_WP_HILIGHTED:

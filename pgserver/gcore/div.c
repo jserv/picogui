@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.87 2002/09/15 10:51:47 micahjd Exp $
+/* $Id: div.c,v 1.88 2002/09/25 15:26:07 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -299,13 +299,6 @@ void divnode_split(struct divnode *n, struct rect *divrect,
   /* Create a border of 'split' pixels between the 'div' node and
    * this node, if a 'next' exists it is the same as this node. */
   else if (n->flags & DIVNODE_SPLIT_BORDER) {
-    if ((split*2)>n->h || (split*2)>n->w) {
-      if (n->h>n->w)
-	split = n->w/2;
-      else
-	split = n->h/2;
-    }
-    
     divrect->x = n->calcx+split;
     divrect->y = n->calcy+split;
     divrect->w = n->w-split*2;

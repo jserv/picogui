@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.67 2002/07/28 17:06:49 micahjd Exp $
+/* $Id: network.h,v 1.68 2002/09/25 15:26:08 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -35,7 +35,7 @@
 #endif
 
 #define PG_REQUEST_PORT    30450
-#define PG_PROTOCOL_VER    19     /* Increment this whenever changes are made */
+#define PG_PROTOCOL_VER    20     /* Increment this whenever changes are made */
 #define PG_REQUEST_MAGIC   0x31415926
 
 #include <picogui/types.h>
@@ -147,7 +147,7 @@ union pg_client_trigger {
 #define PGREQ_WAIT         13  /* Wait for an event              |  none   */
 #define PGREQ_MKFILLSTYLE  14  /* Load a fill style,return handle|  fillstyle */
 #define PGREQ_REGISTER     15  /* Register a new application     |  struct */
-#define PGREQ_MKPOPUP      16  /* Create a popup root widget     |  struct */
+#define PGREQ_UNUSED_1     16 
 #define PGREQ_SIZETEXT     17  /* Find the size of text          |  struct */
 #define PGREQ_BATCH        18  /* Executes many requests         |  requests */
 #define PGREQ_REGOWNER     19  /* Get exclusive privileges       |  struct */
@@ -280,12 +280,6 @@ struct pgreqd_setmode {
   u16 bpp;       /* Zero to leave alone */
   u16 flagmode;  /* A PG_FM_* constant */
   u32 flags;     /* Merged with existing flags according to flagmode */
-};
-struct pgreqd_mkpopup {
-  u16 x; /* can be a PG_POPUP_* constant */
-  u16 y; 
-  u16 w;
-  u16 h;
 };
 struct pgreqd_sizetext {
   u32 text;  /* Handle to text and to font */

@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.66 2002/09/15 10:51:45 micahjd Exp $
+/* $Id: global.c,v 1.67 2002/09/25 15:26:07 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -274,9 +274,15 @@ g_error appmgr_register(struct app_info *i) {
     w->isroot = 1;
 
 #ifndef CONFIG_NOPANELBAR
-    /* bind the embedded panelbar to the panel. It's rather messy to do this here,
+    /* FIXME: bind the embedded panelbar to the panel. It's rather messy to do this here,
      * but there's no good way to do it in panel_install because the panel has
      * no handle at that point.
+     * 
+     * Possible solution: assign the widget a handle during creation, before
+     *                    calling it's 'install' function. This was avoided
+     *                    earlier so that it would be possible to have widgets
+     *                    with no handle, but now that the input filter system
+     *                    depends on widgets having handles, this isn't an issue.
      */
     e = rdhandle((void**) &w, PG_TYPE_WIDGET,i->owner,widget_get(w,PG_WP_PANELBAR));
     errorcheck;

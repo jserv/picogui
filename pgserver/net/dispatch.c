@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.103 2002/09/15 10:51:49 micahjd Exp $
+/* $Id: dispatch.c,v 1.104 2002/09/25 15:26:08 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -156,16 +156,6 @@ g_error rqh_mkwidget(int owner, struct pgrequest *req,
   g_error e,etmp;
   reqarg(mkwidget);
 
-  /* Don't allow direct creation of 'special' widgets that must
-     be created by other means (app registration, popup boxes)
-  */
-  switch (ntohs(arg->type)) {
-  case PG_WIDGET_PANEL:
-  case PG_WIDGET_POPUP:
-  case PG_WIDGET_BACKGROUND:
-    return mkerror(PG_ERRT_BADPARAM,58);
-  }
-
   etmp = rdhandle((void**) &parent,PG_TYPE_WIDGET,owner,xh=ntohl(arg->parent));
   if (iserror(etmp)) {
     if (ntohs(arg->rship) == PG_DERIVE_INSIDE) {
@@ -203,16 +193,6 @@ g_error rqh_createwidget(int owner, struct pgrequest *req,
   handle h;
   g_error e;
   reqarg(createwidget);
-
-  /* Don't allow direct creation of 'special' widgets that must
-     be created by other means (app registration, popup boxes)
-  */
-  switch (ntohs(arg->type)) {
-  case PG_WIDGET_PANEL:
-  case PG_WIDGET_POPUP:
-  case PG_WIDGET_BACKGROUND:
-    return mkerror(PG_ERRT_BADPARAM,58);
-  }
 
   e = widget_create(&w, ntohs(arg->type), NULL, 0, owner);
   errorcheck;
@@ -478,25 +458,6 @@ g_error rqh_register(int owner, struct pgrequest *req,
   *ret = i.rootw;
 
   return e;
-}
-
-g_error rqh_mkpopup(int owner, struct pgrequest *req,
-		  void *data, u32 *ret, int *fatal) {
-  struct widget *w;
-  handle h;
-  g_error e;
-  reqarg(mkpopup);
-
-  e = create_popup((s16)ntohs(arg->x),(s16)ntohs(arg->y),
-		   (s16)ntohs(arg->w),(s16)ntohs(arg->h),&w,owner);
-  errorcheck;
-
-  e = mkhandle(&h,PG_TYPE_WIDGET,owner,w);
-  errorcheck;
-  
-  *ret = h;
-
-  return success;
 }
 
 g_error rqh_sizetext(int owner, struct pgrequest *req,
@@ -1341,7 +1302,7 @@ g_error rqh_mkshmbitmap(int owner, struct pgrequest *req,
   e = rdhandle((void**) &bmp,PG_TYPE_BITMAP,owner,ntohl(arg->bitmap));
   errorcheck;
   if (!bmp)
-    return mkerror(PG_ERRT_HANDLE,93);   /* Null bitmap in mkshmbitmap */
+    return mkerror(PG_ERRT_HANDLE,3);   /* Null bitmap in mkshmbitmap */
 
   /* This is implemented as a vidlib function since it depends 
    * on the bitmap format 

@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.32 2002/05/20 19:18:38 micahjd Exp $
+/* $Id: indicator.c,v 1.33 2002/09/25 15:26:08 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -28,7 +28,10 @@
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 
-#define VALUE ((long)self->data)
+struct indicatordata {
+  long value;
+};
+#define DATA WIDGET_DATA(0,indicatordata)
 
 void build_indicator(struct gropctxt *c,u16 state,struct widget *self) {
   /* Set orientation */
@@ -42,10 +45,10 @@ void build_indicator(struct gropctxt *c,u16 state,struct widget *self) {
   /* Within the remaining space, figure out where the indicator is
      hilighted. */
   if (c->w > c->h)
-    c->w = c->w*VALUE/100;
+    c->w = c->w*DATA->value/100;
   else {
     int t;
-    t = c->h*(100-VALUE)/100;
+    t = c->h*(100-DATA->value)/100;
     c->y += t;
     c->h -= t;
   }
@@ -74,6 +77,8 @@ void indicator_resize(struct widget *self) {
 g_error indicator_install(struct widget *self) {
   g_error e;
 
+  WIDGET_ALLOC_DATA(0,indicatordata)
+
   e = newdiv(&self->in,self);
   errorcheck;
   self->in->flags |= PG_S_TOP;
@@ -88,6 +93,7 @@ g_error indicator_install(struct widget *self) {
 
 void indicator_remove(struct widget *self) {
   r_divnode_free(self->in);
+  g_free(DATA);
 }
 
 g_error indicator_set(struct widget *self,int property, glob data) {
@@ -96,7 +102,7 @@ g_error indicator_set(struct widget *self,int property, glob data) {
   case PG_WP_VALUE:
     if (data > 100) data = 100;
     if (data < 0) data = 0;
-    self->data = (void*) data;
+    DATA->value = data;
     set_widget_rebuild(self);
     break;
 
@@ -110,7 +116,7 @@ glob indicator_get(struct widget *self,int property) {
   switch (property) {
 
   case PG_WP_VALUE:
-    return VALUE;
+    return DATA->value;
 
   }
   return 0;

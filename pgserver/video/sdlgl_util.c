@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.19 2002/09/23 22:51:26 micahjd Exp $
+/* $Id: sdlgl_util.c,v 1.20 2002/09/25 15:26:08 micahjd Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.
@@ -347,7 +347,7 @@ void gl_make_texture(struct glbitmap *glb) {
    * code just updates volatile bitmaps every blit, limiting the maximum number of updates per second.
    */
   if (glb->volatilesb && getticks()>glb->last_update_time+30) {
-    gl_invalidate_texture(glb);
+    gl_invalidate_texture((hwrbitmap)glb);
     glb->last_update_time = getticks();
   }
 

@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.58 2002/07/28 17:06:49 micahjd Exp $
+/* $Id: popup.c,v 1.59 2002/09/25 15:26:08 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -71,45 +71,6 @@ void clip_popup(struct divnode *div) {
     div->h = div->calch = ntb.y+ntb.h - div->calcy;
 }
 
-/* We have a /special/ function to create a popup widget from scratch. */
-g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
-  g_error e;
-
-  /* Freeze the existing layer and make a new one */
-  e = dts_push();
-  errorcheck;
-  
-  /* Add the new popup widget - a simple theme-enabled container widget */
-  e = widget_create(wgt,PG_WIDGET_POPUP,dts->top, 0, owner);
-  errorcheck;
-  
-  e = widget_attach(*wgt,dts->top,&dts->top->head->next,0,owner);  
-  errorcheck;
-
-  (*wgt)->isroot = 1;  /* This widget has no siblings, so no point going
-			  outside it anyway */
-
-  /* Give it a menu theme if it's position is PG_POPUP_ATCURSOR or _ATEVENT */
-  if (x==PG_POPUP_ATCURSOR || x==PG_POPUP_ATEVENT) {
-    (*wgt)->in->div->state = PGTH_O_POPUP_MENU;
-    (*wgt)->in->state = PGTH_O_POPUP_MENU;
-  }
-
-  /* Get margin value */
-  (*wgt)->in->div->split = theme_lookup((*wgt)->in->div->state,PGTH_P_MARGIN);
-
-  /* Set the position and size verbatim, let the
-   * layout engine sort things out */
-
-  (*wgt)->in->div->calcx = x;
-  (*wgt)->in->div->calcy = y;
-  (*wgt)->in->div->calcw = w;
-  (*wgt)->in->div->calch = h;
-   
-  /* Yahoo! */
-  return success;
-}
-
 void build_popupbg(struct gropctxt *c,unsigned short state,struct widget *self) {
   struct divnode *ntb;
 
@@ -160,6 +121,9 @@ void build_popupbg(struct gropctxt *c,unsigned short state,struct widget *self) 
 }
 
 void build_popup(struct gropctxt *c,unsigned short state,struct widget *self) {
+  /* Get margin value */
+  self->in->div->split = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
+
   /* Rebuild the backdrop first.. 
    * Normally this would be done automatically, but we skip the automatic call
    * because the popup's size hasn't been calculated yet.
@@ -172,9 +136,17 @@ void build_popup(struct gropctxt *c,unsigned short state,struct widget *self) {
 g_error popup_install(struct widget *self) {
   g_error e;
 
+  /* Before freezing the current layer, make sure it's up to date */
+  activate_client_divnodes(self->owner);
+  update(NULL,1);
+
+  /* Freeze the existing layer and make a new one */
+  e = dts_push();
+  errorcheck;
+
   /* This is positioned absolutely, so don't bother with the layout engine,
-     let create_popup position it.
-  */
+   * let create_popup position it.
+   */
   e = newdiv(&self->in,self);
   self->in->build = &build_popupbg;
   errorcheck;
@@ -192,6 +164,23 @@ g_error popup_install(struct widget *self) {
   self->sub = &self->in->div->div;
   
   self->trigger_mask = PG_TRIGGER_DOWN | PG_TRIGGER_KEYUP | PG_TRIGGER_KEYDOWN | PG_TRIGGER_CHAR;
+
+  /* Attach ourselves as a root widget in the new divtree */
+  e = widget_attach(self,dts->top,&dts->top->head->next,0,self->owner);  
+  errorcheck;
+  self->isroot = 1;
+
+  /* The client now has to set the position using widget properties before the
+   * widget is first processed by the layout engine. There's no problem with races
+   * here, because of DIVNODE_UNDERCONSTRUCTION flags.
+   *
+   * Set some defaults: automatic sizing, and centered
+   */
+
+  self->in->div->calcx = PG_POPUP_CENTER;
+  self->in->div->calcy = PG_POPUP_CENTER;
+  self->in->div->calcw = 0;
+  self->in->div->calch = 0;
 
   return success;
 }
@@ -224,13 +213,63 @@ void popup_remove(struct widget *self) {
 }
 
 g_error popup_set(struct widget *self,int property, glob data) {
-  /* Because the layer(s) under a popup are 'frozen' it can't be moved
-     after it is created.  Therefore, there isn't anything to change.
-  */
-  return mkerror(ERRT_PASS,0);
+  /* If the popup has already been 'frozen' by the layout engine,
+   * give an error.
+   */
+  if (!(self->in->flags & DIVNODE_SPLIT_POPUP))
+    switch (property) {
+    case PG_WP_ABSOLUTEX:
+    case PG_WP_ABSOLUTEY:
+    case PG_WP_WIDTH:
+    case PG_WP_HEIGHT:
+      return mkerror(PG_ERRT_BADPARAM,44);   /* Can't reposition the popup */
+    }
+
+  switch (property) {
+    
+  case PG_WP_ABSOLUTEX:
+    /* Give it a menu theme if it's position is PG_POPUP_ATCURSOR or _ATEVENT */
+    if (data==PG_POPUP_ATCURSOR || data==PG_POPUP_ATEVENT) {
+      self->in->div->state = PGTH_O_POPUP_MENU;
+      self->in->state = PGTH_O_POPUP_MENU;
+    }
+    self->in->div->calcx = data;
+    break;
+
+  case PG_WP_ABSOLUTEY:
+    self->in->div->calcy = data;
+    break;
+
+  case PG_WP_WIDTH:
+    self->in->div->calcw = data;
+    break;
+
+  case PG_WP_HEIGHT:
+    self->in->div->calch = data;
+    break;
+
+  default:
+    return mkerror(ERRT_PASS,0);
+  }
+  return success;
 }
 
 glob popup_get(struct widget *self,int property) {
+  switch (property) {
+
+  case PG_WP_ABSOLUTEX:
+    return self->in->div->calcx;
+
+  case PG_WP_ABSOLUTEY:
+    return self->in->div->calcy;
+
+  case PG_WP_WIDTH:
+    return self->in->div->calcw;
+
+  case PG_WP_HEIGHT:
+    return self->in->div->calch;
+
+  }
   return 0;
 }
 

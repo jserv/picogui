@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.65 2002/09/15 10:51:48 micahjd Exp $
+/* $Id: widget.h,v 1.66 2002/09/25 15:26:07 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -56,6 +56,11 @@ typedef long glob;
    how a widget acts and what it does.
 */
 struct widgetdef {
+  /* The number of classes this widget has subclassed. This is needed
+   * so that private data areas for each parent class can be allocated
+   */
+  int subclass_num;
+
   /* Things every widget should have */
   g_error (*install)(struct widget *self);
   void (*remove)(struct widget *self);
@@ -135,8 +140,12 @@ struct widget {
   /* The divtree this widget is part of */
   struct divtree *dt;
 
-  /* Widget's private data (Properties) */
-  void *data;
+  /* Widget's private data- This is an array of private data pointers,
+   * one for the widget itself and one for each widget it has subclassed.
+   * The data in the widget structure itself is considered data for an
+   * abstract "widget" base class.
+   */
+  void **data;
 
   /* The widget's optional name (string handle) */
   handle name;
@@ -174,14 +183,14 @@ struct widget {
 
 #else  /* ! RUNTIME_FUNCPTR */
 
-# define DEF_WIDGET_TABLE(n) \
-  {n##_install, n##_remove, n##_trigger, n##_set, n##_get, n##_resize},
+# define DEF_WIDGET_TABLE(s,n) \
+  {s, n##_install, n##_remove, n##_trigger, n##_set, n##_get, n##_resize},
 # define DEF_HYBRIDWIDGET_TABLE(n,m) \
-  {n##_install, m##_remove, m##_trigger, m##_set, m##_get, m##_resize},
-# define DEF_STATICWIDGET_TABLE(n) \
-  {n##_install, n##_remove, NULL, n##_set, n##_get, n##_resize},
+  {0, n##_install, m##_remove, m##_trigger, m##_set, m##_get, m##_resize},
+# define DEF_STATICWIDGET_TABLE(s,n) \
+  {s, n##_install, n##_remove, NULL, n##_set, n##_get, n##_resize},
 # define DEF_ERRORWIDGET_TABLE(s) \
-  {NULL, (void *) s, NULL, NULL, NULL, NULL},
+  {0, NULL, (void *) s, NULL, NULL, NULL, NULL},
 
 #endif  /* RUNTIME_FUNCPTR */
 #define DEF_WIDGET_PROTO(n) \
@@ -191,6 +200,16 @@ struct widget {
   g_error n##_set(struct widget *self, int property, glob data); \
   glob n##_get(struct widget *self, int property); \
   void n##_resize(struct widget *self);
+
+/* Macro used by widgets to access their private data through a DATA pointer.
+ * The parameters are: 
+ *  n - the subclass number for the widget
+ *  s - the name of the private structure
+ */
+#define WIDGET_DATA(n,s)       ((struct s *)(self->data[n]))
+#define WIDGET_ALLOC_DATA(n,s) e = g_malloc((void**)&self->data[n],sizeof(struct s));\
+                               errorcheck;\
+                               memset(DATA,0,sizeof(struct s));
 
 /* Widget prototypes */
 DEF_WIDGET_PROTO(toolbar)      /* A container for buttons */
@@ -216,7 +235,9 @@ DEF_WIDGET_PROTO(textbox)
 DEF_WIDGET_PROTO(list)
 DEF_WIDGET_PROTO(panelbar)
 DEF_WIDGET_PROTO(simplemenu)
-    
+DEF_WIDGET_PROTO(dialogbox)
+DEF_WIDGET_PROTO(messagedialog)
+   
 /* Set to the client # if a client has taken over the system resource */
 extern int sysevent_owner;
 

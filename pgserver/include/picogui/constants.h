@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.150 2002/09/15 10:51:48 micahjd Exp $
+/* $Id: constants.h,v 1.151 2002/09/25 15:26:07 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -466,6 +466,8 @@ typedef unsigned long pghandle;
 #define PGTH_P_CRSRHOTSPOT_X 39  //!< Hotspot X position on the mouse cursor
 #define PGTH_P_CRSRHOTSPOT_Y 40  //!< Hotspot Y position on the mouse cursor
 #define PGTH_P_CURSOR_WIDTH  41  //!< Width of the text editing cursor 
+#define PGTH_P_BORDER_SIZE   42  //!< Width of outer border on a panel widget
+#define PGTH_P_BORDER_FILL   43  //!< Fillstyle for the outer border
 
 #define PGTH_P_ICON_OK            1000   //!< Icon property (usually in PGTH_O_DEFAULT)
 #define PGTH_P_ICON_OK_MASK       1001   //!< Icon property (usually in PGTH_O_DEFAULT)
@@ -870,7 +872,9 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_TEXTBOX         19    /* Client-side text layout */
 #define PG_WIDGET_PANELBAR        20    /* Draggable bar and container */
 #define PG_WIDGET_SIMPLEMENU      21    /* create a simple menu from a string or array */
-#define PG_WIDGETMAX              22    /* For error checking */
+#define PG_WIDGET_DIALOGBOX       22    /* A popup with a standard title */
+#define PG_WIDGET_MESSAGEDIALOG   23    /* A popup that displays a message and gets a response */
+#define PG_WIDGETMAX              23    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1
@@ -936,7 +940,7 @@ typedef unsigned long pghandle;
 #define PG_WP_WIDTH           53  /* A read only property for all widgets (use PG_WP_SIZE to change the size). Always in pixels */
 #define PG_WP_HEIGHT          54  /* A read only property for all widgets (use PG_WP_SIZE to change the size). Always in pixels */
 #define PG_WP_SPACING         55  /* Override the normal spacing between buttons */
-
+#define PG_WP_MINIMUM         56  /* Used by the panelbar widget to set minimum size */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0

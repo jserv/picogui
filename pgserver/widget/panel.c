@@ -1,10 +1,12 @@
-/* $Id: panel.c,v 1.79 2002/07/28 17:06:49 micahjd Exp $
+/* $Id: panel.c,v 1.80 2002/09/25 15:26:08 micahjd Exp $
  *
- * panel.c - Holder for applications. It uses a panelbar for resizing purposes,
+ * panel.c - Resizable container with decorations. It uses a panelbar for resizing purposes,
  *           and optionally supplies some standard buttons for the panel.
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.
+ * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
  *  
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -37,7 +39,7 @@ struct paneldata {
   /* Child widgets */
   handle hrotate, hclose, hzoom, hbar, hlabel;
 };
-#define DATA ((struct paneldata *)(self->data))
+#define DATA WIDGET_DATA(0,paneldata)
 
 /**** Utilities */
 
@@ -138,21 +140,34 @@ int panel_zoom_callback(int event, struct widget *from, s32 param, int owner, ch
   }
   return 1; /* Absorb event */
 }
-  
+
+/* Draw the border.fill from our main theme object */
+void build_panel_border(struct gropctxt *c, u16 state, struct widget *self) {
+  exec_fillstyle(c,DATA->bg->state,PGTH_P_BORDER_FILL);
+}
+
 /**** Init */
 
 void panel_resize(struct widget *self) {
+  struct widget *bar = NULL;
+  rdhandle((void **) &bar, PG_TYPE_WIDGET, self->owner, DATA->hbar);
+
   DATA->bg->split = theme_lookup(DATA->bg->state,PGTH_P_MARGIN);
+  self->in->div->split = theme_lookup(DATA->bg->state,PGTH_P_BORDER_SIZE);
+
+  /* The minimum setting on the panelbar needs to leave room for the margin
+   * on both sides, and the panelbar width itself.
+   */
+  if (bar)
+    widget_set(bar, PG_WP_MINIMUM, widget_get(bar, PG_WP_SIZE) + 
+	       (self->in->div->split << 1));
 }
 
 g_error panel_install(struct widget *self) {
   struct widget *bar, *title;
   g_error e;
 
-  /* Allocate data structure */
-  e = g_malloc(&self->data,sizeof(struct paneldata));
-  errorcheck;
-  memset(self->data,0,sizeof(struct paneldata));
+  WIDGET_ALLOC_DATA(0,paneldata)
 
   /* This split determines the size of the main panel area */
   e = newdiv(&self->in,self);
@@ -160,11 +175,18 @@ g_error panel_install(struct widget *self) {
   self->in->flags &= ~(DIVNODE_SIZE_AUTOSPLIT | DIVNODE_SIZE_RECURSIVE);
   self->in->flags |= PG_S_TOP;
 
+  /* An optional border inside that main panel area */
+  e = newdiv(&self->in->div,self);
+  errorcheck;
+  self->in->div->flags &= ~(DIVNODE_SIZE_AUTOSPLIT | DIVNODE_SIZE_RECURSIVE);
+  self->in->div->flags |= DIVNODE_SPLIT_BORDER;
+  self->in->div->build = &build_panel_border;
+
   /* Create the panelbar widget */
   e = widget_create(&bar,PG_WIDGET_PANELBAR,
 		    self->dt,self->container,self->owner);
   errorcheck;
-  e = widget_attach(bar,self->dt,&self->in->div,0,self->owner);
+  e = widget_attach(bar,self->dt,&self->in->div->div,0,self->owner);
   errorcheck;
   e = mkhandle(&DATA->hbar,PG_TYPE_WIDGET,self->owner,bar);
   errorcheck;
@@ -226,7 +248,7 @@ g_error panel_install(struct widget *self) {
 
 void panel_remove(struct widget *self) {
   handle_free(-1, DATA->hbar);
-  g_free(self->data);
+  g_free(DATA);
   r_divnode_free(self->in);
 }
 

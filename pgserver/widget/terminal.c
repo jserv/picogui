@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.56 2002/09/15 10:51:50 micahjd Exp $
+/* $Id: terminal.c,v 1.57 2002/09/25 15:26:08 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -42,7 +42,7 @@
  * Same limit imposed by the linux console, should be fine */
 #define CSIARGS_SIZE   16
 
-struct termdata {
+struct terminaldata {
   /* Time of the last update, used with CURSOR_WAIT */
   u32 update_time;
 
@@ -103,7 +103,7 @@ struct termdata {
   u8 attr_default, attr_cursor;
   u32 flashtime_on,flashtime_off,cursor_wait;
 };
-#define DATA ((struct termdata *)(self->data))
+#define DATA WIDGET_DATA(0,terminaldata)
 
 /**** Internal functions */
 
@@ -341,9 +341,7 @@ g_error terminal_install(struct widget *self) {
   self->in->div->build = &build_terminal;
   self->in->div->flags |= DIVNODE_HOTSPOT;
    
-  e = g_malloc(&self->data,sizeof(struct termdata));
-  errorcheck;
-  memset(self->data,0,sizeof(struct termdata));
+  WIDGET_ALLOC_DATA(0,terminaldata);
 
   /* Get initial theme info */
   load_terminal_theme(self);
@@ -378,7 +376,7 @@ g_error terminal_install(struct widget *self) {
 void terminal_remove(struct widget *self) {
   handle_free(-1,DATA->hbuffer);   /* Free our system handles */
   handle_free(-1,DATA->deffont);
-  g_free(self->data);
+  g_free(DATA);
   r_divnode_free(self->in);
 }
 

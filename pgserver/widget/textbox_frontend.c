@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.4 2002/09/23 22:51:27 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.5 2002/09/25 15:26:08 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -50,7 +50,7 @@ struct textboxdata {
   unsigned int focus : 1;
   unsigned int flash_on : 1;
 };
-#define DATA ((struct textboxdata *)self->data)
+#define DATA WIDGET_DATA(0,textboxdata)
 
 #define FLASHTIME_ON   250
 #define FLASHTIME_OFF  150
@@ -64,9 +64,7 @@ g_error textbox_getformat(struct widget *self, struct pgstring **fmt);
 g_error textbox_install(struct widget *self) {
   g_error e;
 
-  e = g_malloc((void**) &self->data, sizeof(struct textboxdata));
-  errorcheck;
-  memset(self->data, 0, sizeof(struct textboxdata));
+  WIDGET_ALLOC_DATA(0,textboxdata)
 
   e = newdiv(&self->in,self);
   errorcheck;
@@ -95,7 +93,7 @@ g_error textbox_install(struct widget *self) {
 
 void textbox_remove(struct widget *self) {
   document_delete(DATA->doc);
-  g_free(self->data);
+  g_free(DATA);
   r_divnode_free(self->in);
 }
 

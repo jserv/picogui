@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.52 2002/05/20 21:10:48 micahjd Exp $
+/* $Id: label.c,v 1.53 2002/09/25 15:26:08 micahjd Exp $
  *
  * label.c - A customized button for displaying static text and/or bitmaps
  *
@@ -36,7 +36,7 @@ g_error label_install(struct widget *self) {
   errorcheck;
 
   /* Customize */
-  widget_set(self, PG_WP_THOBJ_BUTTON,              PGTH_O_LABEL);
+  widget_set(self, PG_WP_THOBJ_BUTTON, PGTH_O_LABEL);
 
   /* Make it inert */
   widget_set(self,PG_WP_EXTDEVENTS,PG_EXEV_NO_HOTSPOT);

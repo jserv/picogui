@@ -1,4 +1,4 @@
-/* $Id: background.c,v 1.14 2002/07/03 22:03:32 micahjd Exp $
+/* $Id: background.c,v 1.15 2002/09/25 15:26:08 micahjd Exp $
  *
  * background.c - an internal widget for drawing the screen background
  *
@@ -32,8 +32,8 @@ void build_background(struct gropctxt *c,unsigned short state,struct widget *sel
   
   /* Tweak the coordinates a bit so that the background is relative
      to the screen, not the clipping rectangle imposed by the divnode. */  
-  c->x = -self->in->x;
-  c->y = -self->in->y;
+  c->x = -self->in->div->x;
+  c->y = -self->in->div->y;
   c->w = vid->lxres;
   c->h = vid->lyres;
 
@@ -43,13 +43,18 @@ void build_background(struct gropctxt *c,unsigned short state,struct widget *sel
 
 g_error background_install(struct widget *self) {
   g_error e;
+
   e = newdiv(&self->in,self);
   errorcheck;
-  self->in->build = &build_background;
-  self->in->state = PGTH_O_BACKGROUND;
-  self->out = &self->in->next;
+  self->in->flags |= PG_S_ALL;
+
+  e = newdiv(&self->in->div,self);
+  errorcheck;
+  self->in->div->build = &build_background;
+  self->in->div->state = PGTH_O_BACKGROUND;
 
   self->trigger_mask = PG_TRIGGER_DOWN;
+  self->out = &self->in->next;
    
   return success;
 }
@@ -59,7 +64,7 @@ void background_remove(struct widget *self) {
 }
 
 g_error background_set(struct widget *self,int property, glob data) {
-  return success;
+  return mkerror(ERRT_PASS,0);
 }
 
 glob background_get(struct widget *self,int property) {

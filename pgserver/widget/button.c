@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.114 2002/09/15 10:51:50 micahjd Exp $
+/* $Id: button.c,v 1.115 2002/09/25 15:26:08 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -78,7 +78,7 @@ struct btndata {
    * and other flags*/
   int extdevents;
 };
-#define DATA ((struct btndata *)(self->data))
+#define DATA WIDGET_DATA(0,btndata)
 
 struct btnposition {
   /* Coordinates calculated in position_button */
@@ -205,9 +205,7 @@ void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
 g_error button_install(struct widget *self) {
   g_error e;
 
-  e = g_malloc(&self->data,sizeof(struct btndata));
-  errorcheck;
-  memset(self->data,0,sizeof(struct btndata));
+  WIDGET_ALLOC_DATA(0,btndata)
 
   DATA->theme_side = 1;
   DATA->bitmap_side = -1;
@@ -245,7 +243,7 @@ g_error button_install(struct widget *self) {
 }
 
 void button_remove(struct widget *self) {
-  g_free(self->data);
+  g_free(DATA);
   r_divnode_free(self->in);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.188 2002/09/17 22:50:20 micahjd Exp $
+/* $Id: widget.c,v 1.189 2002/09/25 15:26:08 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -40,6 +40,13 @@
 #endif
 #include <pgserver/debug.h>
 
+/* The macros here are just shortcuts for defining the list
+ * of implementations for each widget, and the subclass number.
+ * STATICWIDGET_TABLE assumes there is no trigger handler,
+ * and HYBRIDWIDGET_TABLE is used to override the initialization
+ * of an existing widget without fully subclassing it.
+ */
+
 /* Table of widgets */
 #ifdef RUNTIME_FUNCPTR
 struct widgetdef widgettab[PG_WIDGETMAX+1];
@@ -49,36 +56,36 @@ void widgettab_init(void) {
 struct widgetdef widgettab[] = {
 #endif
    
-DEF_STATICWIDGET_TABLE(toolbar)
+DEF_STATICWIDGET_TABLE(0,toolbar)
 DEF_HYBRIDWIDGET_TABLE(label,button)
-DEF_WIDGET_TABLE(scroll)
-DEF_STATICWIDGET_TABLE(indicator)
+DEF_WIDGET_TABLE(0,scroll)
+DEF_STATICWIDGET_TABLE(0,indicator)
 DEF_HYBRIDWIDGET_TABLE(label,button)    /* FIXME: This is here for binary compatibility temporarily,
 					 * since the bitmap widget has been deprecated.
 					 */
-DEF_WIDGET_TABLE(button)
-DEF_STATICWIDGET_TABLE(panel)
-DEF_WIDGET_TABLE(popup)
-DEF_STATICWIDGET_TABLE(box)
+DEF_WIDGET_TABLE(0,button)
+DEF_STATICWIDGET_TABLE(0,panel)
+DEF_WIDGET_TABLE(0,popup)
+DEF_STATICWIDGET_TABLE(0,box)
 
 /* More binary compatibility, replacing field widget with textbox */
 #ifdef CONFIG_WIDGET_TEXTBOX
-DEF_WIDGET_TABLE(textbox)
+DEF_WIDGET_TABLE(0,textbox)
 #else
 DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,98))
 #endif
 
-DEF_WIDGET_TABLE(background)
+DEF_WIDGET_TABLE(0,background)
 DEF_HYBRIDWIDGET_TABLE(menuitem,button)
 
 #ifdef CONFIG_WIDGET_TERMINAL
-DEF_WIDGET_TABLE(terminal)
+DEF_WIDGET_TABLE(0,terminal)
 #else
 DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,102))
 #endif
 
 #ifdef CONFIG_WIDGET_CANVAS
-DEF_WIDGET_TABLE(canvas)
+DEF_WIDGET_TABLE(0,canvas)
 #else
 DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,103))
 #endif
@@ -90,18 +97,20 @@ DEF_HYBRIDWIDGET_TABLE(submenuitem,button)
 DEF_HYBRIDWIDGET_TABLE(radiobutton,button)
 
 #ifdef CONFIG_WIDGET_TEXTBOX
-DEF_WIDGET_TABLE(textbox)
+DEF_WIDGET_TABLE(0,textbox)
 #else
 DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,98))
 #endif
 				     
 #ifndef CONFIG_NOPANELBAR
-DEF_WIDGET_TABLE(panelbar)
+DEF_WIDGET_TABLE(0,panelbar)
 #else
 DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,94))
 #endif
 
-DEF_STATICWIDGET_TABLE(simplemenu)
+DEF_WIDGET_TABLE(1,simplemenu)     /* Subclasses popup */
+DEF_WIDGET_TABLE(1,dialogbox)      /* Subclasses popup */
+DEF_STATICWIDGET_TABLE(2,messagedialog)  /* Subclasses dialogbox, popup */
 };
 
 /* To save space, instead of checking whether the divtree is valid every time
@@ -123,9 +132,8 @@ g_error widget_create(struct widget **w, int type, struct divtree *dt, handle co
    if (!dt)
      dt = &fakedt;
 
-   //
-   // Check the type.
-   //
+   /* Check the type.
+    */
    if ( type > PG_WIDGETMAX )
       return mkerror(PG_ERRT_BADPARAM, 20);
 
@@ -133,25 +141,27 @@ g_error widget_create(struct widget **w, int type, struct divtree *dt, handle co
   num_widgets++;
 #endif
 
-  //
-  // Allocate new widget memory and zero it out.
-  //
+  /* Allocate new widget memory and zero it out.
+   */
   e = g_malloc((void **)w, sizeof(struct widget));
   errorcheck;
   memset(*w, 0, sizeof(struct widget));
 
-  //
-  // Initialize the elements we can.  Since this widget is unattached.
-  //
+  /* Initialize the elements we can.  Since this widget is unattached.
+   */
   (*w)->owner = owner;
   (*w)->type = type;
   (*w)->def = widgettab + type;
   (*w)->dt = dt;
   (*w)->container = container;
 
-  //
-  // Manufacture an instance of the desired widget.
-  //
+  /* Allocate data pointers for this widget and everythign it's subclassed from */
+  e = g_malloc((void**)&(*w)->data, sizeof(void *) * ((*w)->def->subclass_num + 1));
+  errorcheck;
+
+  /* Initialize this instance of the widget. This install function should initialize
+   * the widget it's subclassed from first, if any
+   */
   if ((*w)->def->install) {
      (*(*w)->def->install)(*w);
   }
@@ -162,12 +172,8 @@ g_error widget_create(struct widget **w, int type, struct divtree *dt, handle co
       return (g_error) (long) (*w)->def->remove;
   }
 
-  //
-  // That is is for widget creation.
-  //
   return success;
-  
-}  // End of widget_create()
+}
 
 /* Recursive utilities to change the divtree and container of all widgets in a tree.
  * Sets the divtree to the given value, and sets the container only if the current
@@ -192,6 +198,9 @@ g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **wher
 
   DBG("widget %p, container %d, owner %d\n",w,container,owner);
   
+  if (w->isroot)
+    return mkerror(PG_ERRT_BADPARAM,58);  /* Root widgets can't be reattached */
+
   if (!dt)
     dt = &fakedt;
 
@@ -265,14 +274,16 @@ g_error widget_derive(struct widget **w,
         e = widget_create(w, type, parent->dt, hparent, owner);
         errorcheck;
      }
-     return widget_attach(*w, parent->dt,parent->sub,hparent,owner);
+     e = widget_attach(*w, parent->dt,parent->sub,hparent,owner);
+     break;
 
   case PG_DERIVE_AFTER:
      if ( *w == NULL ) {
         e = widget_create(w, type, parent->dt, parent->container, owner);
         errorcheck;
      }
-     return widget_attach(*w,parent->dt,parent->out,parent->container,owner);
+     e = widget_attach(*w,parent->dt,parent->out,parent->container,owner);
+     break;
 
   case PG_DERIVE_BEFORE:
   case PG_DERIVE_BEFORE_OLD:
@@ -280,12 +291,18 @@ g_error widget_derive(struct widget **w,
         e = widget_create(w, type, parent->dt, parent->container, owner);
         errorcheck;
      }
-     return widget_attach(*w,parent->dt,parent->where,parent->container,owner);
-   
+     e = widget_attach(*w,parent->dt,parent->where,parent->container,owner);
+     break;
+     
   default:
     return mkerror(PG_ERRT_BADPARAM,22);
 
   }
+  
+  /* Error checking code common to all cases */
+  if (iserror(e))
+    widget_remove(*w);
+  return e;
 }
 
 void widget_remove(struct widget *w) {
@@ -369,6 +386,9 @@ void widget_remove(struct widget *w) {
     w->dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC;
     w->dt->flags |= DIVTREE_NEED_RECALC;
   }   
+
+  /* Free the array of subclass data */
+  g_free(w->data);
 
 #ifdef DEBUG_KEYS
   num_widgets--;
@@ -639,7 +659,7 @@ void redraw_bg(struct widget *self) {
   */
 #ifndef CONFIG_NOPANELBAR
   if (container->type == PG_WIDGET_PANEL) /* Optimize for panels: don't redraw panelbar */
-    container->in->div->next->flags |= DIVNODE_NEED_REDRAW;
+    container->in->div->div->next->flags |= DIVNODE_NEED_REDRAW;
   else
 #endif
     container->in->flags |= DIVNODE_NEED_REDRAW;

@@ -19,6 +19,8 @@ libwidget_a_SOURCES = \
     radiobutton.c \
     panelbar.c \
     simplemenu.c \
+    dialogbox.c \
+    messagedialog.c \
     $(WIDGET)
 
 EXTRA_libwidget_a_SOURCES = \

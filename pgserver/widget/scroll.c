@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.61 2002/09/23 22:51:26 micahjd Exp $
+/* $Id: scroll.c,v 1.62 2002/09/25 15:26:08 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -67,7 +67,7 @@ struct scrolldata {
   u32 wait_tick;
   int thumbscale;
 };
-#define DATA ((struct scrolldata *)(self->data))
+#define DATA WIDGET_DATA(0,scrolldata)
 
 void scrollevent(struct widget *self);
 
@@ -217,9 +217,7 @@ void scroll_resize(struct widget *self) {
 g_error scroll_install(struct widget *self) {
   g_error e;
   
-  e = g_malloc(&self->data,sizeof(struct scrolldata));
-  errorcheck;
-  memset(self->data,0,sizeof(struct scrolldata));
+  WIDGET_ALLOC_DATA(0,scrolldata)
   DATA->res = 100;    /* By default, make it compatible with percent */
 
   e = newdiv(&self->in,self);
@@ -238,7 +236,7 @@ g_error scroll_install(struct widget *self) {
 }
 
 void scroll_remove(struct widget *self) {
-  g_free(self->data);
+  g_free(DATA);
   r_divnode_free(self->in);
 }
 

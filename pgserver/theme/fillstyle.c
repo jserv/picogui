@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.23 2002/03/27 15:09:25 lonetech Exp $
+/* $Id: fillstyle.c,v 1.24 2002/09/25 15:26:08 micahjd Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -186,7 +186,7 @@ g_error exec_fillstyle(struct gropctxt *ctx,u16 state,
   if (!fs) {
     
     /* When our best just isn't good enough... */
-    if (property == PGTH_P_BACKDROP)
+    if (property == PGTH_P_BACKDROP || property == PGTH_P_BORDER_FILL)
       return success;
 
     /* The default fillstyle, if no theme is loaded or no 

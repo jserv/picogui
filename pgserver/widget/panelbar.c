@@ -1,4 +1,4 @@
-/* $Id: panelbar.c,v 1.10 2002/09/15 10:51:50 micahjd Exp $
+/* $Id: panelbar.c,v 1.11 2002/09/25 15:26:08 micahjd Exp $
  *
  * panelbar.c - Container and draggable bar for resizing panels
  *
@@ -60,12 +60,13 @@ struct panelbardata {
   unsigned int on : 1;        /* Mouse is pressed on the widget */
   unsigned int over : 1;      /* Mouse is over the widget */
   unsigned int draglen;       /* Total drag length, used to discern between clicks and drags */
+  int minimum;                /* Minimum size you can set the bound widget to */
 
 #ifdef CONFIG_DRAGSOLID
   unsigned int solid : 1;
 #endif
 };
-#define DATA ((struct panelbardata *)(self->data))
+#define DATA WIDGET_DATA(0,panelbardata)
 
 void themeify_panelbar(struct widget *self,bool force);
 int panel_calcsplit(struct widget *self,int x,int y,int flags);  
@@ -138,15 +139,17 @@ void panelbar_resize(struct widget *self) {
   self->in->split = theme_lookup(self->in->div->state,PGTH_P_WIDTH);
   self->in->div->split = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
   self->in->div->pw = self->in->div->ph = self->in->split;
+
+  /* If the minimum hasn't been set yet, set it to our width */
+  if (!DATA->minimum)
+    DATA->minimum = self->in->split;
 }
 
 g_error panelbar_install(struct widget *self) {
   /* Divtree set up almost exactly like the box widget */
   g_error e;
 
-  e = g_malloc(&self->data,sizeof(struct panelbardata));
-  errorcheck;
-  memset(self->data,0,sizeof(struct panelbardata));
+  WIDGET_ALLOC_DATA(0,panelbardata)
 
   e = newdiv(&self->in,self);
   errorcheck;
@@ -185,7 +188,7 @@ void panelbar_remove(struct widget *self) {
     VID(bitmap_free) (DATA->sbit);
     DATA->sbit = NULL;
   }
-  g_free(self->data);
+  g_free(DATA);
   r_divnode_free(self->in);
 }
 
@@ -203,6 +206,10 @@ g_error panelbar_set(struct widget *self,int property, glob data) {
     DATA->unrolled = widget_get(w, PG_WP_SIZE);
     break;
 
+  case PG_WP_MINIMUM:
+    DATA->minimum = data;
+    break;
+
   default:
     return mkerror(ERRT_PASS,0);
   }
@@ -214,6 +221,9 @@ glob panelbar_get(struct widget *self,int property) {
 
   case PG_WP_BIND:
     return DATA->bindto;
+
+  case PG_WP_MINIMUM:
+    return DATA->minimum;
 
   }
   return 0;
@@ -319,9 +329,9 @@ void panelbar_trigger_sprite(struct widget *self,s32 type,union trigparam *param
 	DATA->over = 0;
 	
 	widget_set(boundwidget,PG_WP_SIZEMODE,PG_SZMODE_PIXEL);
-	if (DATA->oldsize > BARWIDTH)
+	if (DATA->oldsize > DATA->minimum)
 	  /* Roll up the panel */
-	  widget_set(boundwidget,PG_WP_SIZE,BARWIDTH);
+	  widget_set(boundwidget,PG_WP_SIZE,DATA->minimum);
 	else
 	  /* Unroll the panel */
 	  widget_set(boundwidget,PG_WP_SIZE,DATA->unrolled);
@@ -331,10 +341,10 @@ void panelbar_trigger_sprite(struct widget *self,s32 type,union trigparam *param
 
 	/* Save this as the new unrolled split,
 	 * Unless the user manually rolled up the panel */
-	if ((s-BARWIDTH) > MAXROLLUP) 
+	if ((s-DATA->minimum) > MAXROLLUP) 
 	  DATA->unrolled = s;
 	else
-	  s = BARWIDTH;
+	  s = DATA->minimum;
 	
 	widget_set(boundwidget,PG_WP_SIZEMODE,PG_SZMODE_PIXEL);
 	widget_set(boundwidget,PG_WP_SIZE,s);
@@ -439,9 +449,9 @@ void panelbar_trigger_solid(struct widget *self,s32 type,union trigparam *param)
 	DATA->over = 0;
 	
 	widget_set(boundwidget,PG_WP_SIZEMODE,PG_SZMODE_PIXEL);
-	if (DATA->oldsize > BARWIDTH)
+	if (DATA->oldsize > DATA->minimum)
 	  /* Roll up the panel */
-	  widget_set(boundwidget,PG_WP_SIZE,BARWIDTH);
+	  widget_set(boundwidget,PG_WP_SIZE,DATA->minimum);
 	else
 	  /* Unroll the panel */
 	  widget_set(boundwidget,PG_WP_SIZE,DATA->unrolled);
@@ -453,10 +463,10 @@ void panelbar_trigger_solid(struct widget *self,s32 type,union trigparam *param)
 
 	/* Save this as the new unrolled split,
 	 * Unless the user manually rolled up the panel */
-	if ((s-BARWIDTH) > MAXROLLUP) 
+	if ((s-DATA->minimum) > MAXROLLUP) 
 	  DATA->unrolled = s;
 	else
-	  s = BARWIDTH;
+	  s = DATA->minimum;
       }
     }
 
@@ -480,11 +490,11 @@ void panelbar_trigger_solid(struct widget *self,s32 type,union trigparam *param)
 	 s += boundwidget->in->split;
 
 	 /* FIXME: This isn't quite right, in solid dragging mode the panelbar
-	  * can get out of sync with the cursor when this s < BARWIDTH code
+	  * can get out of sync with the cursor when this s < DATA->minimum code
 	  * comes into effect.
 	  */
-	 if (s < BARWIDTH)
-	   s = BARWIDTH;
+	 if (s < DATA->minimum)
+	   s = DATA->minimum;
 	 else {
 	   DATA->x = param->mouse.x;
 	   DATA->y = param->mouse.y;
