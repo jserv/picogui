@@ -1,4 +1,4 @@
-/* $Id: ez328.c,v 1.19 2001/11/22 18:45:56 pney Exp $
+/* $Id: ez328.c,v 1.20 2001/11/22 19:39:44 pney Exp $
  *
  * ez328.c - Driver for the 68EZ328's (aka Motorola Dragonball EZ)
  *           built-in LCD controller. It assumes the LCD parameters
@@ -67,11 +67,6 @@ g_error ez328_init(void) {
   PCPDEN = 0xff;      //NPH - to disable pull-down what is wanted ??
 # endif
 
-
-
-
-  printf("-------------------------------------->>>>>>> V 0.6\n");
-
   LCKCON &= ~LCKCON_LCDON;  /* LCKCON - LCD is off */
   LXMAX  = 320;             /* width of the screen = 0x00140 */
   LYMAX  = 240 - 1;         /* height of screen is 'LYMAX+1' see DB specs */
@@ -83,9 +78,6 @@ g_error ez328_init(void) {
   PCPDEN |= 0xFF;           /* enable pull-down */
   PCSEL  &= 0x00;           /* PC as dedicated */
   LCKCON |= LCKCON_LCDON;   /* LCKCON - LCD is on */
-
-
-
 
   /* Save existing register settings */
   memcpy(ez328_saveregs,REGS_START,REGS_LEN);
