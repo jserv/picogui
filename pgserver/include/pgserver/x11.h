@@ -1,4 +1,4 @@
-/* $Id: x11.h,v 1.10 2002/11/07 04:48:56 micahjd Exp $
+/* $Id: x11.h,v 1.11 2002/11/07 07:59:55 micahjd Exp $
  *
  * x11.h - Header shared by all the x11 driver components in picogui
  *
@@ -58,8 +58,19 @@ struct x11bitmap {
    * like size and groprender context.
    */
   struct stdbitmap sb;
+
+  /* SHM information. If SHM support is enabled,
+   * we will use both traditional X primitives, and our own
+   * linear VBLs via SHM.
+   */
   s32 shm_key;
   XShmSegmentInfo shminfo;
+  struct vidlib *lib;            /* The primitives to use in SHM mode */
+  int using_shm;                 /* 1 if we're drawing using SHM, 0
+				  * if we're using plain X. Any time this
+				  * changes, we have to synchronize
+				  * ourself with the X server.
+				  */
 
   /* X server-side representation, either a pixmap or window */
   Drawable d;
@@ -104,6 +115,14 @@ extern Region x11_current_region;
 
 /* We're using SHM if nonzero */
 extern int x11_using_shm;
+
+/* VBLs for each color depth, or NULL if not available */
+#ifdef CONFIG_VBL_LINEAR16
+extern struct vidlib x11_vbl_linear16;
+#endif
+#ifdef CONFIG_VBL_LINEAR32
+extern struct vidlib x11_vbl_linear32;
+#endif
 
 
 /******************************************************** Shared utilities */
@@ -182,6 +201,21 @@ void x11_window_get_size(hwrbitmap window, s16 *w, s16 *h);
 void x11_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
 		   hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 xo, s16 yo, s16 lgop);
 g_error x11_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm);
+void x11_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
+		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
+		  s16 lgop, int char_pitch);
+void x11_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
+			int char_pitch, u8 *gammatable, s16 angle, hwrcolor c,
+			struct quad *clip, s16 lgop);
+void x11_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius);
+void x11_fpolygon(hwrbitmap dest, s32* array, s16 xoff, s16 yoff , hwrcolor c, s16 lgop);
+void x11_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y,
+		    hwrbitmap src, s16 src_x, s16 src_y, s16 src_w, s16 src_h,
+		    struct quad *clip, s16 angle, s16 lgop);
+void x11_gradient(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,s16 angle,
+		  pgcolor c1, pgcolor c2, s16 lgop);
+void x11_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
+		    s16 src_x, s16 src_y, s16 lgop);
 
 #endif /* __H_PGX11 */
 

@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.30 2002/11/07 00:44:57 micahjd Exp $
+/* $Id: x11input.c,v 1.31 2002/11/07 07:59:55 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -239,8 +239,17 @@ int x11input_fd_activate(int fd) {
 	if (ev.xclient.data.l[0] == XInternAtom(x11_display, "WM_DELETE_WINDOW", False)) {
 	  if (VID(is_rootless)) {
 	    xb = x11_get_window(ev.xclient.window);
-	    if (xb && xb->dt && xb->dt->head && xb->dt->head->next && xb->dt->head->next->owner)
-	      send_trigger(xb->dt->head->next->owner, PG_TRIGGER_CLOSE, NULL);
+
+	    if (xb == XB(x11_debug_window)) {
+	      /* If this is our debug window, just close it */
+	      XDestroyWindow(x11_display, ev.xclient.window);
+	      x11_debug_window = NULL;
+	    }
+	    else {
+	      /* It's a client window */
+	      if (xb && xb->dt && xb->dt->head && xb->dt->head->next && xb->dt->head->next->owner)
+		send_trigger(xb->dt->head->next->owner, PG_TRIGGER_CLOSE, NULL);
+	    }
 	  }
 	  else {
 	    mainloop_stop();

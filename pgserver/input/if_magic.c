@@ -1,4 +1,4 @@
-/* $Id: if_magic.c,v 1.10 2002/11/03 04:54:24 micahjd Exp $
+/* $Id: if_magic.c,v 1.11 2002/11/07 07:59:55 micahjd Exp $
  *
  * if_magic.c - Trap magic debug keys
  *
@@ -77,15 +77,18 @@ g_error debug_bitmaps(const void **pobj, void *extra) {
   struct font_descriptor *df=NULL;
   struct quad screenclip;
   struct font_metrics m;
+  hwrbitmap debugwin;
+  s16 lxres,lyres;
+  VID(bitmap_getsize)(VID(window_debug)(), &lxres, &lyres);
 
   screenclip.x1 = screenclip.y1 = 0;
-  screenclip.x2 = vid->lxres-1;
-  screenclip.y2 = vid->lyres-1;
+  screenclip.x2 = lxres-1;
+  screenclip.y2 = lyres-1;
   rdhandle((void**)&df,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
   df->lib->getmetrics(df,&m);
 
   VID(bitmap_getsize) (bmp,&w,&h);
-  if (data->db_x+10+w>vid->lxres) {
+  if (data->db_x+10+w>lxres) {
     data->db_x = 0;
     data->db_y += data->db_h+8;
     data->db_h = 0;
@@ -93,8 +96,8 @@ g_error debug_bitmaps(const void **pobj, void *extra) {
   if (h>data->db_h)
     data->db_h = h;
    
-  if (data->db_y+45+h>vid->lyres) {
-    df->lib->draw_string(df,VID(window_debug)(),xy_to_pair(10,vid->lyres-m.charcell.h*3),
+  if (data->db_y+45+h>lyres) {
+    df->lib->draw_string(df,VID(window_debug)(),xy_to_pair(10,lyres-m.charcell.h*3),
 			 VID(color_pgtohwr) (0xFFFF00),
 			 pgstring_tmpwrap("Too many bitmaps for this screen.\n"
 					  "Change video mode and try again"),
@@ -195,6 +198,8 @@ void div_dump(void) {
 void r_divnode_trace(struct divnode *div) {
   struct groprender r;
   struct gropnode n;
+  s16 lxres,lyres;
+  VID(bitmap_getsize)(VID(window_debug)(), &lxres, &lyres);
 
   if (!div)
     return;
@@ -211,8 +216,8 @@ void r_divnode_trace(struct divnode *div) {
   n.r = div->r;
   r.clip.x1 = 0;
   r.clip.y1 = 0;
-  r.clip.x2 = vid->lxres-1;
-  r.clip.y2 = vid->lyres-1;
+  r.clip.x2 = lxres-1;
+  r.clip.y2 = lyres-1;
 
   /* Green shading for leaf divnodes */
   if (!div->div && !div->next) {
@@ -239,7 +244,6 @@ void hotspot_draw(struct hotspot *spot) {
   struct groprender r;
   struct gropnode n;
   int i;
-
   /* How to represent all the directions we can traverse */
   const static struct {
     s16 x,y;
@@ -252,6 +256,8 @@ void hotspot_draw(struct hotspot *spot) {
     /* next  */ { 3, 0, 0x00FF00},
     /* prev  */ {-3, 0, 0x00FF00},
   };
+  s16 lxres,lyres;
+  VID(bitmap_getsize)(VID(window_debug)(), &lxres, &lyres);
 
   /* Set up rendering...
    */
@@ -260,8 +266,8 @@ void hotspot_draw(struct hotspot *spot) {
   r.output = VID(window_debug)();
   r.clip.x1 = 0;
   r.clip.y1 = 0;
-  r.clip.x2 = vid->lxres-1;
-  r.clip.y2 = vid->lyres-1;
+  r.clip.x2 = lxres-1;
+  r.clip.y2 = lyres-1;
   r.lgop = PG_LGOP_NONE;
 
   /* Draw arrows for all the directions in the graph
@@ -311,6 +317,9 @@ void hotspot_draw(struct hotspot *spot) {
 /********************************************** Debug/non-debug code ****/
    
 void magic_button(s16 key) {
+  s16 lxres,lyres;
+  VID(bitmap_getsize)(VID(window_debug)(), &lxres, &lyres);
+
   switch (key) {
     
   case PGKEY_SLASH:       /* CTRL-ALT-SLASH exits */
@@ -379,9 +388,9 @@ void magic_button(s16 key) {
     return;
     
   case PGKEY_b:           /* CTRL-ALT-b blanks the screen */
-    VID(rect)   (VID(window_debug)(), 0,0,vid->lxres,vid->lyres, 
+    VID(rect)   (VID(window_debug)(), 0,0,lxres,lyres, 
 		 VID(color_pgtohwr) (0),PG_LGOP_NONE);
-    VID(update) (VID(window_debug)(),0,0,vid->lxres,vid->lyres);
+    VID(update) (VID(window_debug)(),0,0,lxres,lyres);
     return;
     
   case PGKEY_y:           /* CTRL-ALT-y unsynchronizes the screen buffers */
@@ -402,9 +411,9 @@ void magic_button(s16 key) {
       
       struct divtree *p;
       /* Push through the black screen */
-      VID(rect)   (VID(window_debug)(), 0,0,vid->lxres,vid->lyres, 
+      VID(rect)   (VID(window_debug)(), 0,0,lxres,lyres, 
 		   VID(color_pgtohwr) (0),PG_LGOP_NONE);
-      VID(update) (VID(window_debug)(),0,0,vid->lxres,vid->lyres);
+      VID(update) (VID(window_debug)(),0,0,lxres,lyres);
       /* Force redrawing everything to the backbuffer */
       for (p=dts->top;p;p=p->next)
 	p->flags |= DIVTREE_ALL_REDRAW;
@@ -420,9 +429,9 @@ void magic_button(s16 key) {
     return;
     
   case PGKEY_u:           /* CTRL-ALT-u makes a blue screen */
-    VID(rect) (VID(window_debug)(),0,0,vid->lxres,vid->lyres,
+    VID(rect) (VID(window_debug)(),0,0,lxres,lyres,
 	       VID(color_pgtohwr) (0x0000FF), PG_LGOP_NONE);
-    VID(update) (VID(window_debug)(),0,0,vid->lxres,vid->lyres);
+    VID(update) (VID(window_debug)(),0,0,lxres,lyres);
     return;
     
   case PGKEY_p:           /* CTRL-ALT-p shows all loaded bitmaps */
@@ -432,13 +441,13 @@ void magic_button(s16 key) {
 
       guru("Table of loaded bitmaps:");
       handle_iterate(PG_TYPE_BITMAP,&debug_bitmaps,&data);
-      VID(update) (VID(window_debug)(),0,0,vid->lxres,vid->lyres);
+      VID(update) (VID(window_debug)(),0,0,lxres,lyres);
     }
     return;
     
   case PGKEY_o:           /* CTRL-ALT-o traces all divnodes */
     r_divnode_trace(dts->top->head);
-    VID(update) (VID(window_debug)(),0,0,vid->lxres,vid->lyres);
+    VID(update) (VID(window_debug)(),0,0,lxres,lyres);
     return;
 
   case PGKEY_a:           /* CTRL-ALT-a shows application info */
@@ -461,7 +470,7 @@ void magic_button(s16 key) {
       struct hotspot *p;
       for (p=hotspotlist;p;p=p->next)
 	hotspot_draw(p);
-      VID(update) (VID(window_debug)(),0,0,vid->lxres,vid->lyres);
+      VID(update) (VID(window_debug)(),0,0,lxres,lyres);
     }    
     return;
 
@@ -480,8 +489,8 @@ void magic_button(s16 key) {
 	/* Actual palette display */
 
 	i = 0;
-	celw = (vid->lxres-20) >> 4;
-	celh = (vid->lyres-70) >> 4;
+	celw = (lxres-20) >> 4;
+	celh = (lyres-70) >> 4;
 	if (celw < celh)
 	  celh = celw;
 	else
@@ -515,21 +524,21 @@ void magic_button(s16 key) {
 	/* Just some RGB gradients */
 
         y = 60;
-	VID(gradient)(VID(window_debug)(),10,y,vid->lxres-20,20,0,
+	VID(gradient)(VID(window_debug)(),10,y,lxres-20,20,0,
 		      0x000000,0xFFFFFF, PG_LGOP_NONE);
 	y += 30;
-	VID(gradient)(VID(window_debug)(),10,y,vid->lxres-20,20,0,
+	VID(gradient)(VID(window_debug)(),10,y,lxres-20,20,0,
 		      0x000000,0xFF0000, PG_LGOP_NONE);
 	y += 30;
-	VID(gradient)(VID(window_debug)(),10,y,vid->lxres-20,20,0,
+	VID(gradient)(VID(window_debug)(),10,y,lxres-20,20,0,
 		      0x000000,0x00FF00, PG_LGOP_NONE);
 	y += 30;
-	VID(gradient)(VID(window_debug)(),10,y,vid->lxres-20,20,0,
+	VID(gradient)(VID(window_debug)(),10,y,lxres-20,20,0,
 		      0x000000,0x0000FF, PG_LGOP_NONE);
 	y += 30;
       }
 
-      VID(update) (VID(window_debug)(),0,0,vid->lxres,vid->lyres);
+      VID(update) (VID(window_debug)(),0,0,lxres,lyres);
     }
     return;
 

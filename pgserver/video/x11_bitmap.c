@@ -1,4 +1,4 @@
-/* $Id: x11_bitmap.c,v 1.2 2002/11/07 04:48:56 micahjd Exp $
+/* $Id: x11_bitmap.c,v 1.3 2002/11/07 07:59:56 micahjd Exp $
  *
  * x11_bitmap.c - Utilities for dealing with bitmaps in X
  *
@@ -159,6 +159,22 @@ g_error x11_new_bitmap_pixmap(struct x11bitmap *xb) {
     xb->d = XShmCreatePixmap(x11_display, RootWindow(x11_display, x11_screen),
 			     xb->sb.bits,&xb->shminfo,xb->sb.w,xb->sb.h,
 			     DefaultDepth(x11_display,x11_screen));
+
+    /* Set the VBL used to draw to the SHM bitmap directly */
+    switch (xb->sb.bpp) {
+#ifdef CONFIG_VBL_LINEAR16
+    case 16:
+      xb->lib = &x11_vbl_linear16;
+      break;
+#endif
+#ifdef CONFIG_VBL_LINEAR32
+    case 32:
+      xb->lib = &x11_vbl_linear32;
+      break;
+#endif
+    default:
+      xb->lib = NULL;
+    }
   }
    
   else {

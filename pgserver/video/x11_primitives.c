@@ -1,4 +1,4 @@
-/* $Id: x11_primitives.c,v 1.8 2002/11/07 04:48:56 micahjd Exp $
+/* $Id: x11_primitives.c,v 1.9 2002/11/07 07:59:56 micahjd Exp $
  *
  * x11_primitives.c - Implementation of picogui primitives on top of the
  *                    X window system.
@@ -31,11 +31,56 @@
 #include <pgserver/configfile.h>
 
 
+/******************************************************** Utilities */
+
+/* Turn on or off SHM rendering, synchronizing if needed.
+ * Versions that work on one or two bitmaps at a time are provided.
+ * We only need to sync if we've been drawing using X primitives
+ * and we're about to use our own via SHM.
+ */
+static inline void set_shm1(hwrbitmap a, int shmflag) {
+  if(shmflag && !XB(a)->using_shm)
+    XSync(x11_display, False);
+  XB(a)->using_shm = shmflag;
+}
+static inline void set_shm2(hwrbitmap a, hwrbitmap b, int shmflag) {
+  if(shmflag && ((!XB(b)->using_shm) || (!XB(a)->using_shm)))
+    XSync(x11_display, False);
+  XB(a)->using_shm = shmflag;
+  XB(b)->using_shm = shmflag;
+}
+
+/* For functions that prefer SHM, this returns 1 if it's possible */
+static inline int use_shm1(hwrbitmap a) {
+  if (!XB(a)->lib) {
+    set_shm1(a, 0);
+    return 0;
+  }
+  set_shm1(a, 1);
+  return 1;
+}
+static inline int use_shm2(hwrbitmap a, hwrbitmap b) {
+  if (!(XB(a)->lib && XB(b)->lib)) {
+    set_shm2(a,b,0);
+    return 0;
+  }
+  set_shm2(a,b,1);
+  return 1;
+}
+
+
 /******************************************************** Primitives */
 
 void x11_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
-  GC g = x11_gctab[lgop];
+  GC g;
+  
+  /* Always use SHM if we can */
+  if (use_shm1(dest)) {
+    XB(dest)->lib->pixel(&XB(dest)->sb,x,y,c,lgop);
+    return;
+  }
 
+  g = x11_gctab[lgop];
   if (!g) {
     def_pixel(dest,x,y,c,lgop);
     return;
@@ -49,18 +94,14 @@ hwrcolor x11_getpixel(hwrbitmap src,s16 x,s16 y) {
   XImage *img;
   hwrcolor c;
 
-  /* XXXXXXXX */
-  //  return linear32_getpixel(&XB(src)->sb,x,y);
+  if (use_shm1(src))
+    return XB(src)->lib->getpixel(&XB(src)->sb,x,y);
 
 #ifdef CONFIG_X11_NOPIXEL
   return VID(color_pgtohwr)(0xFF0000);
 #else
-  /* This is really _really_ damn slow. Our goal is to never 
-   * have to actually use this function, but we need it for
-   * compatibility. I thought about caching the XImage to
-   * improve consecutive reads from the same drawable, but
-   * there's no good way to determine if the drawable's been
-   * modified since the last call.
+  /* Terribly slow method of getting a pixel...
+   * Hopefully we'll be using the SHM method instead.
    */
   img = XGetImage (x11_display, XB(src)->d, x, y, 1, 1, AllPlanes, ZPixmap);
   c = XGetPixel(img,0,0);
@@ -72,10 +113,12 @@ hwrcolor x11_getpixel(hwrbitmap src,s16 x,s16 y) {
 void x11_rect(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
   GC g = x11_gctab[lgop];
 
-  if (!g) {
-    def_rect(dest,x,y,w,h,c,lgop);
+  if (!g && use_shm1(dest)) {
+    XB(dest)->lib->rect(&XB(dest)->sb, x,y,w,h,c,lgop);
     return;
   }
+  
+  set_shm1(dest,0);
   XSetForeground(x11_display,g,c);
   XFillRectangle(x11_display,XB(dest)->d,g,x,y,w,h);
 }
@@ -83,10 +126,12 @@ void x11_rect(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
 void x11_line(hwrbitmap dest, s16 x1,s16 y1,s16 x2,s16 y2,hwrcolor c, s16 lgop) {
   GC g = x11_gctab[lgop];
 
-  if (!g) {
-    def_line(dest,x1,y1,x2,y2,c,lgop);
+  if (!g && use_shm1(dest)) {
+    XB(dest)->lib->line(&XB(dest)->sb, x1,y1,x2,y2,c,lgop);
     return;
   }
+
+  set_shm1(dest,0);
   XSetForeground(x11_display,g,c);
   XDrawLine(x11_display,XB(dest)->d,g,x1,y1,x2,y2);
 }
@@ -94,10 +139,12 @@ void x11_line(hwrbitmap dest, s16 x1,s16 y1,s16 x2,s16 y2,hwrcolor c, s16 lgop) 
 void x11_slab(hwrbitmap dest, s16 x,s16 y,s16 w, hwrcolor c, s16 lgop) {
   GC g = x11_gctab[lgop];
 
-  if (!g) {
-    def_slab(dest,x,y,w,c,lgop);
+  if (!g && use_shm1(dest)) {
+    XB(dest)->lib->slab(&XB(dest)->sb, x,y,w,c,lgop);
     return;
   }
+
+  set_shm1(dest,0);
   XSetForeground(x11_display,g,c);
   XFillRectangle(x11_display,XB(dest)->d,g,x,y,w,1);
 }
@@ -105,10 +152,12 @@ void x11_slab(hwrbitmap dest, s16 x,s16 y,s16 w, hwrcolor c, s16 lgop) {
 void x11_bar(hwrbitmap dest, s16 x,s16 y,s16 h, hwrcolor c, s16 lgop) {
   GC g = x11_gctab[lgop];
 
-  if (!g) {
-    def_bar(dest,x,y,h,c,lgop);
+  if (!g && use_shm1(dest)) {
+    XB(dest)->lib->bar(&XB(dest)->sb, x,y,h,c,lgop);
     return;
   }
+
+  set_shm1(dest,0);
   XSetForeground(x11_display,g,c);
   XFillRectangle(x11_display,XB(dest)->d,g,x,y,1,h);
 }
@@ -116,10 +165,12 @@ void x11_bar(hwrbitmap dest, s16 x,s16 y,s16 h, hwrcolor c, s16 lgop) {
 void x11_ellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
   GC g = x11_gctab[lgop];
 
-  if (!g) {
-    def_ellipse(dest,x,y,w,h,c,lgop);
+  if (!g && use_shm1(dest)) {
+    XB(dest)->lib->ellipse(&XB(dest)->sb, x,y,w,h,c,lgop);
     return;
   }
+
+  set_shm1(dest,0);
   XSetForeground(x11_display,g,c);
   XDrawArc(x11_display,XB(dest)->d,g,x,y,w-1,h-1,0,360*64);
 }
@@ -127,10 +178,12 @@ void x11_ellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
 void x11_fellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
   GC g = x11_gctab[lgop];
 
-  if (!g) {
-    def_fellipse(dest,x,y,w-1,h-1,c,lgop);
+  if (!g && use_shm1(dest)) {
+    XB(dest)->lib->fellipse(&XB(dest)->sb, x,y,w,h,c,lgop);
     return;
   }
+
+  set_shm1(dest,0);
   XSetForeground(x11_display,g,c);
   XFillArc(x11_display,XB(dest)->d,g,x,y,w-1,h-1,0,360*64);
 }
@@ -138,11 +191,13 @@ void x11_fellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) 
 void x11_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 	      s16 src_x, s16 src_y, s16 lgop) {
   GC g = x11_gctab[lgop];
-  if (!g) {
-    def_blit(dest,x,y,w,h,src,src_x,src_y,lgop);
+
+  if (!g && use_shm2(src,dest)) {
+    XB(dest)->lib->blit(&XB(dest)->sb, x,y,w,h, &XB(src)->sb, src_x,src_y,lgop);
     return;
   }
 
+  set_shm2(src,dest,0);
   XCopyArea(x11_display,XB(src)->d,XB(dest)->d,g,src_x,src_y,w,h,x,y);
 }
 
@@ -173,12 +228,96 @@ void x11_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
   /* Now if we got this far, this is probably a large background area that's
    * tiled with a complete pixmap, so it will be efficiently handled by X (we hope)
    */
+  set_shm1(dest,0);
   g = x11_gctab[lgop];
   XSetTile(x11_display,g,XB(src)->d);
   XSetTSOrigin(x11_display,g,x-xo,y-yo);
   XSetFillStyle(x11_display,g,FillTiled);
   x11_rect(dest,x,y,w,h,0,lgop);
   XSetFillStyle(x11_display,g,FillSolid);
+}
+
+void x11_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
+		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
+		  s16 lgop, int char_pitch) {
+  if (use_shm1(dest))
+    XB(dest)->lib->charblit(&XB(dest)->sb,chardat,x,y,w,h,lines,angle,c,clip,lgop,char_pitch);
+  else
+    def_charblit(dest,chardat,x,y,w,h,lines,angle,c,clip,lgop,char_pitch);
+}
+
+#ifdef CONFIG_FONTENGINE_FREETYPE
+void x11_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
+			int char_pitch, u8 *gammatable, s16 angle, hwrcolor c,
+			struct quad *clip, s16 lgop) {
+  if (use_shm1(dest))
+    XB(dest)->lib->alpha_charblit(&XB(dest)->sb,chardat,x,y,w,h,char_pitch,gammatable,
+				  angle,c,clip,lgop);
+  else
+    def_alpha_charblit(dest,chardat,x,y,w,h,char_pitch,gammatable,angle,c,clip,lgop);
+}
+#endif
+
+void x11_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
+  if (use_shm1(dest))
+    XB(dest)->lib->blur(&XB(dest)->sb,x,y,w,h,radius);
+  else
+    def_blur(dest,x,y,w,h,radius);
+}
+
+void x11_fpolygon(hwrbitmap dest, s32* array, s16 xoff, s16 yoff , hwrcolor c, s16 lgop) {
+  GC g = x11_gctab[lgop];
+  XPoint *points;
+  int npoints;
+  int i;
+
+  if (!g && use_shm1(dest)) {
+    XB(dest)->lib->fpolygon(&XB(dest)->sb, array,xoff,yoff,c,lgop);
+    return;
+  }
+
+  /* Convert our array into an XPoint array */
+  npoints = *(array++);
+  points = alloca(sizeof(XPoint)*npoints);
+  for (i=0;i<npoints;i++) {
+    points[i].x = *(array++);
+    points[i].y = *(array++);
+  }
+
+  set_shm1(dest,0);
+  XSetForeground(x11_display,g,c);
+  XFillPolygon(x11_display, XB(dest)->d, g, points, npoints, Complex, CoordModeOrigin);
+}
+
+void x11_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y,
+		    hwrbitmap src, s16 src_x, s16 src_y, s16 src_w, s16 src_h,
+		    struct quad *clip, s16 angle, s16 lgop) {
+  if (use_shm2(dest,src))
+    XB(dest)->lib->rotateblit(&XB(dest)->sb,dest_x,dest_y,&XB(src)->sb,src_x,src_y,
+			      src_w,src_h,clip,angle,lgop);
+  else
+    def_rotateblit(dest,dest_x,dest_y,src,src_x,src_y,src_w,src_h,clip,angle,lgop);
+}
+
+void x11_gradient(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,s16 angle,
+		  pgcolor c1, pgcolor c2, s16 lgop) {
+  if (use_shm1(dest))
+    XB(dest)->lib->gradient(&XB(dest)->sb,x,y,w,h,angle,c1,c2,lgop);
+  else
+    def_gradient(dest,x,y,w,h,angle,c1,c2,lgop);
+}
+
+void x11_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
+		    s16 src_x, s16 src_y, s16 lgop) {
+  GC g = x11_gctab[lgop];
+
+  if (!g && use_shm2(src,dest)) {
+    XB(dest)->lib->scrollblit(&XB(dest)->sb, x,y,w,h, &XB(src)->sb, src_x,src_y,lgop);
+    return;
+  }
+
+  set_shm2(src,dest,0);
+  XCopyArea(x11_display,XB(src)->d,XB(dest)->d,g,src_x,src_y,w,h,x,y);
 }
 
 /* The End */

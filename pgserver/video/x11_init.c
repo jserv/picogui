@@ -1,4 +1,4 @@
-/* $Id: x11_init.c,v 1.12 2002/11/07 04:48:56 micahjd Exp $
+/* $Id: x11_init.c,v 1.13 2002/11/07 07:59:56 micahjd Exp $
  *
  * x11_init.c - Initialization for picogui'x driver for the X window system
  *
@@ -57,6 +57,35 @@ Region x11_current_region;
 /* We're using SHM if nonzero */
 int x11_using_shm;
 
+/* VBLs for each color depth, or NULL if not available */
+#ifdef CONFIG_VBL_LINEAR16
+struct vidlib x11_vbl_linear16;
+#endif
+#ifdef CONFIG_VBL_LINEAR32
+struct vidlib x11_vbl_linear32;
+#endif
+
+
+/******************************************************** Error handler */
+
+/* Handle fatal X errors.
+ * Just shut down pgserver somewhat gracefully
+ */
+int x11_ioerrhandler(Display *d) {
+  pgserver_shutdown();
+  exit(1);
+}
+
+/* Handle X protocol errors.
+ * These shouldn't normally happen of course, but
+ * there's no reason they should be fatal.
+ */
+int x11_errhandler(Display *d, XErrorEvent *e) {
+  char buffer[256];
+  XGetErrorText(d, e->error_code, buffer, sizeof(buffer));
+  printf("*** PicoGUI - X protocol error: %s\n",buffer);
+}
+
 
 /******************************************************** Initialization */
 
@@ -69,6 +98,9 @@ g_error x11_init(void) {
   if (!x11_display)
     return mkerror(PG_ERRT_IO,46);   /* Error initializing video */
   x11_screen = DefaultScreen(x11_display);
+
+  XSetIOErrorHandler(&x11_ioerrhandler);
+  XSetErrorHandler(&x11_errhandler);
 
   x11_fd = ConnectionNumber(x11_display);
   vid->display = NULL;
@@ -88,6 +120,14 @@ g_error x11_init(void) {
   x11_using_shm = XShmQueryVersion(x11_display, &major, &minor, &pixmaps) && pixmaps;
   x11_using_shm = get_param_int("video-x11","shm",x11_using_shm);
   
+  /* Load up all the linear VBLs for use on SHM bitmaps later */
+#ifdef CONFIG_VBL_LINEAR16
+  setvbl_linear16(&x11_vbl_linear16);
+#endif
+#ifdef CONFIG_VBL_LINEAR32
+  setvbl_linear32(&x11_vbl_linear32);
+#endif
+
   /* Load the matching input driver */
   return load_inlib(&x11input_regfunc,&inlib_main);
 }
@@ -225,6 +265,15 @@ g_error x11_regfunc(struct vidlib *v) {
   v->window_get_size       = &x11_window_get_size;
   v->multiblit             = &x11_multiblit;
   v->bitmap_getshm         = &x11_bitmap_getshm;
+  v->charblit              = &x11_charblit;
+  v->blur                  = &x11_blur;
+  v->fpolygon              = &x11_fpolygon;
+  v->rotateblit            = &x11_rotateblit;
+  v->gradient              = &x11_gradient;
+  v->scrollblit            = &x11_scrollblit;
+#ifdef CONFIG_FONTENGINE_FREETYPE
+  v->alpha_charblit        = &x11_alpha_charblit;
+#endif
 
   return success;
 }
