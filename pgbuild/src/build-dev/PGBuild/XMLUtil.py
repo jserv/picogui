@@ -255,16 +255,15 @@ def getChildData(tag, childName):
 
 def setChildData(tag, childName, data):
     """Set the named child tag's data, creating the child if it doesn't exist"""
+    # Remove old children
+    for oldChild in tag.getElementsByTagName(childName):
+        tag.removeChild(oldChild)
     # Create the new child node
     doc = tag.ownerDocument
     child = doc.createElement(childName)
     child.appendChild(doc.createTextNode(str(data)))
-    # Remove old children
-    for oldChild in tag.getElementsByTagName(childName):
-        tag.removeChild(oldChild)
     # Insert the new child
     tag.appendChild(child)
-    
     
 ### The End ###
         

@@ -23,7 +23,7 @@ site speed and picking mirrors.
 #
 
 import PGBuild.Errors
-import urlparse
+import urlparse, urllib2, time, random
 
 
 def findSite(config, name):
@@ -56,9 +56,20 @@ class Location:
         self.host = host
 
     def testSpeed(self):
-        # FIXME: no speed test yet, just use a random number
-        import random
-        PGBuild.XMLUtil.setChildData(self.host, 'speed', random.random())
+	"""Try to retrieve the first few kilobytes of the URL, measuring
+           the speed. If the site is down, set the speed to zero.
+           """
+        try:
+            bytes = 0
+            startTime = time.time()
+            url = urllib2.urlopen(self.absoluteURI)
+            bytes += len(url.read(64000))
+            url.close()
+            endTime = time.time()
+            speed = bytes / (endTime - startTime)
+        except IOError:
+            speed = 0
+        PGBuild.XMLUtil.setChildData(self.host, 'speed', speed)
 
     def getSpeed(self, progress=None):
         """Return the speed of this Location's host. This will be loaded
@@ -66,7 +77,6 @@ class Location:
            and we're not forcing a retest, otherwise it will be tested
            using testSpeed().
            """
-
         needTest = 0
 
         # If we have no <speed> tag in the host, we definitely need to test
