@@ -1,4 +1,4 @@
-/* $Id: pgboard_api.c,v 1.9 2001/11/21 15:17:40 cgrigis Exp $
+/* $Id: pgboard_api.c,v 1.10 2001/11/23 15:11:26 cgrigis Exp $
  *
  * pgboard_api.c - high-level API to manipulate the PicoGUI virtual keyboard
  * 
@@ -215,8 +215,6 @@ void send_command (struct keyboard_command * cmd, int force)
 
       /* Flush PG_APPMSG requests */
       pgFlushRequests ();
-
-      usleep (300000);
     }
 }
 
