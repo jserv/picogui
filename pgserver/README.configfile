@@ -538,6 +538,18 @@ quoted appropriately. For example:
   is better than the autohinter.
   Defaults off
 
+- default_size
+  Size (in pixels) of the default font.
+  Defaults to 12
+
+- minimum_size
+  Force all fonts to be at least this big
+  Defaults to 5
+
+- dpi
+  The DPI to use for setting font sizes. Normally this is 72 so fonts
+  are measured in pixels, but this can be modified to scale all screen fonts.
+  Defaults to 72
 
 --- The End ---
 

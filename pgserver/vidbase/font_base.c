@@ -1,4 +1,4 @@
-/* $Id: font_base.c,v 1.3 2002/10/12 15:50:26 micahjd Exp $
+/* $Id: font_base.c,v 1.4 2002/10/13 03:54:19 micahjd Exp $
  *
  * font_base.c - Handles multiple font backends, and provides default
  *               implementations of fontlib functions
@@ -196,7 +196,6 @@ void def_draw_string(struct font_descriptor *fd, hwrbitmap dest, struct pair *po
   }
 }
  
-/* FIXME: doesn't handle angles properly */
 void def_measure_string(struct font_descriptor *fd, const struct pgstring *str,
 			s16 angle, s16 *w, s16 *h) {
   struct font_metrics m;

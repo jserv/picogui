@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.3 2002/10/12 19:53:49 micahjd Exp $
+/* $Id: font_freetype.c,v 1.4 2002/10/13 03:54:19 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -42,6 +42,7 @@
 struct freetype_fontdesc {
   FT_Face face;
   FT_Size size;
+  int flags;
 };
 #define DATA ((struct freetype_fontdesc *)self->data)
 
@@ -49,6 +50,9 @@ struct freetype_fontdesc {
 FT_Library ft_lib;
 FT_Face    ft_facelist;   /* Linked list, via generic.data */
 FT_Int32   ft_glyph_flags;
+int        ft_default_size;
+int        ft_minimum_size;
+int        ft_dpi;
 
 void ft_face_scan(const char *directory);
 void ft_face_load(const char *file);
@@ -76,6 +80,10 @@ g_error freetype_engine_init(void) {
     ft_glyph_flags |= FT_LOAD_FORCE_AUTOHINT;
   if (get_param_int("font-freetype","no_autohint",0))
     ft_glyph_flags |= FT_LOAD_NO_AUTOHINT;
+
+  ft_default_size = get_param_int("font-freetype","default_size",12);
+  ft_minimum_size = get_param_int("font-freetype","minimum_size",5);
+  ft_dpi = get_param_int("font-freetype","dpi",72);
   
   return success;
 }
@@ -103,7 +111,14 @@ void freetype_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pai
 
   b = DATA->face->glyph->bitmap;
 
-  VID(alpha_charblit)(dest,b.buffer,position->x,position->y,
+  /* PicoGUI's character origin is at the top-left of the bounding box.
+   * Add the ascent to reach the baseline, then subtract the bitmap origin
+   * from that.
+   */
+  VID(alpha_charblit)(dest,b.buffer,
+		      position->x + DATA->face->glyph->bitmap_left,
+		      position->y + (DATA->size->metrics.ascender >> 6) -
+		      DATA->face->glyph->bitmap_top,
 		      b.width,b.rows,b.pitch,angle,col,clip,lgop);
 
   position->x += DATA->face->glyph->advance.x >> 6;
@@ -120,19 +135,33 @@ void freetype_measure_char(struct font_descriptor *self, struct pair *position,
 
 g_error freetype_create(struct font_descriptor *self, const struct font_style *fs) {
   g_error e;
+  int size;
 
   e = g_malloc((void**)&self->data,sizeof(struct freetype_fontdesc));
   errorcheck;
 
   /* Pick the closest font face */
   DATA->face = ft_facelist;
+  DATA->face = (FT_Face) DATA->face->generic.data;
+  DATA->face = (FT_Face) DATA->face->generic.data;
+  DATA->face = (FT_Face) DATA->face->generic.data;
+  DATA->face = (FT_Face) DATA->face->generic.data;
+  DATA->face = (FT_Face) DATA->face->generic.data;
+  DATA->face = (FT_Face) DATA->face->generic.data;
+  DATA->face = (FT_Face) DATA->face->generic.data;
+
+  if (fs)
+    DATA->flags = fs->style;
 
   /* Set the size */
+  size = ft_default_size;
+  if (fs)
+    size = fs->size;
+  if (size < ft_minimum_size)
+    size = ft_minimum_size;
   FT_New_Size(DATA->face,&DATA->size);
-  if (fs) {
-    FT_Activate_Size(DATA->size);
-    FT_Set_Pixel_Sizes(DATA->face,0,fs->size);
-  }
+  FT_Activate_Size(DATA->size);
+  FT_Set_Char_Size(DATA->face,0,size*64,ft_dpi,ft_dpi);
 
   return success;
 }
@@ -151,11 +180,149 @@ void freetype_getmetrics(struct font_descriptor *self, struct font_metrics *m) {
   m->linegap = m->lineheight - m->ascent - m->descent;
   m->charcell.w = DATA->size->metrics.max_advance >> 6;
   m->charcell.h = m->ascent + m->descent;
-  m->margin = m->descent;
+
+  if (DATA->flags & PG_FSTYLE_FLUSH)
+    m->margin = 0;
+  else
+    m->margin = m->descent;
 }
 
+/* Our own version of draw_string that handles subpixel pen movement 
+ */
+void freetype_draw_string(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
+			  hwrcolor col, const struct pgstring *str, struct quad *clip,
+			  s16 lgop, s16 angle) {
+  struct font_metrics m;
+  struct pgstr_iterator p = PGSTR_I_NULL;
+  int x,y,margin,lh,b,ch;
+  self->lib->getmetrics(self,&m);
+
+  x = position->x * 64;
+  y = position->y * 64;
+  margin = m.margin * 64;
+  lh = DATA->size->metrics.height;
+
+  switch (angle) {
+    
+  case 0:
+    x += margin;
+    y += margin;
+    b = x;
+    break;
+    
+  case 90:
+    x += margin;
+    y -= margin;
+    b = y;
+    break;
+    
+  case 180:
+    x -= margin;
+    y -= margin;
+    b = x;
+    break;
+
+  case 270:
+    x -= margin;
+    y += margin;
+    b = y;
+    break;
+    
+  }
+  
+  while ((ch = pgstring_decode(str,&p))) {
+    if (ch=='\n')
+      switch (angle) {
+	
+      case 0:
+	y += lh;
+	x = b;
+	break;
+	
+      case 90:
+	x += lh;
+	y = b;
+	break;
+	
+      case 180:
+	y -= lh;
+	x = b;
+	break;
+	
+      case 270:
+	x -= lh;
+	y = b;
+	break;
+	
+      }
+    else if (ch!='\r') {
+      position->x = x>>6;
+      position->y = y>>6;
+      self->lib->draw_char(self,dest,position,col,ch,clip,lgop,angle);
+
+      /* Ignore the position modifications made by
+       * this, do our own in subpixel units 
+       */
+      switch (angle) {
+      case 0:
+	x += DATA->face->glyph->advance.x;
+	y += DATA->face->glyph->advance.y;
+	break;
+      case 90:
+	x += DATA->face->glyph->advance.y;
+	y -= DATA->face->glyph->advance.x;
+	break;
+      case 180:
+	x -= DATA->face->glyph->advance.x;
+	y -= DATA->face->glyph->advance.y;
+	break;
+      case 270:
+	x -= DATA->face->glyph->advance.y;
+	y += DATA->face->glyph->advance.x;
+	break;
+      }
+    }
+  }
+
+  position->x = x >> 6;
+  position->y = y >> 6;
+}
+
+/* Our own version of measure_string that handles subpixel pen movement 
+ */
 void freetype_measure_string(struct font_descriptor *self, const struct pgstring *str,
-			s16 angle, s16 *w, s16 *h) {
+			     s16 angle, s16 *w, s16 *h) {
+  struct font_metrics m;
+  int max_x = 0, ch, x, y, original_x;
+  struct pgstr_iterator p = PGSTR_I_NULL;
+  self->lib->getmetrics(self,&m);
+
+  original_x = x = m.margin << 7;
+  y = x + DATA->size->metrics.height;
+
+  while ((ch = pgstring_decode(str,&p))) {
+    if (ch=='\n') {
+      y += DATA->size->metrics.height;
+      if (x>max_x) max_x = x;
+      x = original_x;
+    }
+    else if (ch!='\r') {
+      FT_Activate_Size(DATA->size);
+      FT_Load_Char(DATA->face,ch, ft_glyph_flags);
+      x += DATA->face->glyph->advance.x;
+      y += DATA->face->glyph->advance.y;
+    }
+  }
+  if (x>max_x) max_x = x;
+
+  if (angle==90 || angle==270) {
+    *h = max_x >> 6;
+    *w = y >> 6;
+  }
+  else {
+    *w = max_x >> 6;
+    *h = y >> 6;
+  }
 }
 
 void freetype_getstyle(int i, struct font_style *fs) {
@@ -221,7 +388,8 @@ g_error freetype_regfunc(struct fontlib *f) {
   f->destroy = &freetype_destroy;
   f->getstyle = &freetype_getstyle;
   f->getmetrics = &freetype_getmetrics;
-  //  f->measure_string = &freetype_measure_string;
+  f->measure_string = &freetype_measure_string;
+  f->draw_string = &freetype_draw_string;
   return success;
 }
 

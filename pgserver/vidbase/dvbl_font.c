@@ -1,4 +1,4 @@
-/* $Id: dvbl_font.c,v 1.5 2002/10/12 19:53:49 micahjd Exp $
+/* $Id: dvbl_font.c,v 1.6 2002/10/13 03:54:19 micahjd Exp $
  *
  * dvbl_font.c - Low level implementations for font rendering
  *
@@ -312,7 +312,53 @@ void def_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
 void def_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 			int char_pitch, s16 angle, hwrcolor c,
 			struct quad *clip, s16 lgop) {
-  vid->charblit(dest,chardat,x,y,w,h,0,angle,c,clip,lgop);
+  int i,j,xp,yp;
+  u8 *l;
+  s16 r,g,b;
+  u8 a,a_;
+  hwrcolor oc;
+
+  /* This is going to suck anyway, so don't spend any effort doing clipping
+   * or rotation beforehand.
+   */
+
+  for (j=0;j<h;j++,chardat+=char_pitch)
+    for (i=0,l=chardat;i<w;i++,l++) {
+
+      switch (angle) {
+      case 0:
+	xp = x+i;
+	yp = y+j;
+	break;
+      case 90:
+	xp = x+j;
+	yp = y-i;
+	break;
+      case 180:
+	xp = x-i;
+	yp = y-j;
+	break;
+      case 270:
+	xp = x-j;
+	yp = y+i;
+	break;
+      }
+
+      if (clip)
+	if (x+i < clip->x1 || x+i > clip->x2 ||
+	    y+j < clip->y1 || y+j > clip->y2)
+	  continue;
+      
+      oc = vid->color_hwrtopg(vid->getpixel(dest,xp,yp));
+      a_ = *l;
+      a = 255-a_;
+
+      r = ((getred(c) * a_) >> 8) + ((getred(oc) * a) >> 8);
+      g = ((getgreen(c) * a_) >> 8) + ((getgreen(oc) * a) >> 8);
+      b = ((getblue(c) * a_) >> 8) + ((getblue(oc) * a) >> 8);
+      
+      vid->pixel(dest,xp,yp,vid->color_pgtohwr(mkcolor(r,g,b)),lgop);
+    }
 }
 #endif /* CONFIG_FONTENGINE_FREETYPE */
 
