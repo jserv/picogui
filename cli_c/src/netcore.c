@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.41 2003/01/01 03:42:54 micahjd Exp $
+/* $Id: netcore.c,v 1.42 2003/03/11 02:41:15 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -658,7 +658,7 @@ void pgInit(int argc, char **argv)
 	
 	else if (!strcmp(arg,"version")) {
 	  /* --pgversion : For now print CVS id */
-	  fprintf(stderr,"$Id: netcore.c,v 1.41 2003/01/01 03:42:54 micahjd Exp $\n");
+	  fprintf(stderr,"$Id: netcore.c,v 1.42 2003/03/11 02:41:15 micahjd Exp $\n");
 	  exit(1);
 	}
 	
@@ -927,12 +927,19 @@ void pgEventLoop(void) {
 }
 
 void pgDispatchEvent(struct pgEvent *evt) {
-  struct _pghandlernode *n;
+  struct _pghandlernode *n, *n_next;
   
   /* Search the handler list, executing the applicable ones */
   
   n = _pghandlerlist;
   while (n) {
+
+    /* FIXME: This keeps us from crashing if 'n' is deleted in
+     *        the handler, howerver it will still crash if the
+     *        node after n is deleted.
+     */
+    n_next = n->next;
+
     if ( (((s32)n->widgetkey)==PGBIND_ANY || 
 	  n->widgetkey==evt->from || 
 	  (evt->type & PG_NWE)) &&
@@ -947,7 +954,7 @@ void pgDispatchEvent(struct pgEvent *evt) {
 	return;
     }
     
-    n = n->next;
+    n = n_next;
   }
   
   /* Various default actions */
