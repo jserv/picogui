@@ -1,4 +1,4 @@
-/* $Id: nifty3d.ths,v 1.2 2000/11/12 03:56:10 micahjd Exp $
+/* $Id: nifty3d.ths,v 1.3 2000/11/12 04:19:45 micahjd Exp $
  *
  * This theme's pretty darn cpu-intensive, but it
  * demonstrates the neat things that can be done width
@@ -115,20 +115,19 @@ object label.dlgtitle {
 
 /* Menus */
 object menuitem {
+  bgfill = fillstyle {
+    Gradient(x,y,w,h,42,bgcolor,ColorSub(bgcolor,shadowcolor),0);
+  };
   spacing = 0;
-  hilightcolor = 0x101010;
+  shadowcolor = 0x505050;
+  align = PG_A_LEFT;
 }
-object menuitem.hilight {
-  bgcolor = Copy(button.hilight::bgcolor);
-  hilightcolor = Copy(button.hilight::hilightcolor);
-}
-object popup.menu {
-  margin = 2;
-}
+object menuitem.hilight bgcolor = Copy(button.hilight::bgcolor);
+object popup.menu margin = 2;
 
 /* A little 'fudge factor' for the dialogs */
 object popup.messagedlg {
-  width = 10;
+  width = 20;
   height = 30;
 }
 
