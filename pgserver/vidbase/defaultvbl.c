@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.10 2001/01/15 09:41:01 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.11 2001/02/07 07:28:08 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -522,23 +522,23 @@ g_error def_bitmap_loadxbm(struct stdbitmap **bmp,
 	   really freaky like that)
 	*/
       case 2:
-	*(p++) = (c&1) ? fg : bg;
+	*p = ((c&1) ? fg : bg) << 6;
 	c = c>>1;
 	bit++;
-	*(p++) |= ((c&1) ? fg : bg) << 2;	
+	*p |= ((c&1) ? fg : bg) << 4;	
 	c = c>>1;
 	bit++;
-	*(p++) |= ((c&1) ? fg : bg) << 4;	
+	*p |= ((c&1) ? fg : bg) << 2;	
 	c = c>>1;
 	bit++;
-	*(p++) |= ((c&1) ? fg : bg) << 6;	
+	*(p++) |= ((c&1) ? fg : bg);
 	break;
 
       case 4:
-	*(p++) = (c&1) ? fg : bg;
+	*p = ((c&1) ? fg : bg) << 4;
 	c = c>>1;
 	bit++;
-	*(p++) |= ((c&1) ? fg : bg) << 4;	
+	*(p++) |= ((c&1) ? fg : bg);	
 	break;
 
       case 8:
@@ -598,7 +598,7 @@ g_error def_bitmap_loadpnm(struct stdbitmap **bmp,
   int w,h,max;
   int i,val,bit,r,g,b;
   unsigned char *p;
-  int oshift = 0;
+  int oshift = 8-vid->bpp;
   g_error e;
   g_error efmt = mkerror(PG_ERRT_BADPARAM,48);
   hwrcolor hc;
@@ -717,20 +717,23 @@ g_error def_bitmap_loadpnm(struct stdbitmap **bmp,
       /* Output them in the device's bpp */
       switch (vid->bpp) {
 
+      case 1:
       case 2:
       case 4:
-      case 8:
 	if (oshift)
 	  *p |= hc << oshift;
 	else
 	  *p = hc;
-	oshift += vid->bpp;
-	if (oshift >= 8) {
-	  oshift = 0;
+	oshift -= vid->bpp;
+	if (!oshift) {
+	  oshift = 8 - vid->bpp;
 	  p++;
 	}
 	break;
 
+      case 8:
+	*(((unsigned char *)p)++) = hc;
+	 
       case 16:
 	*(((unsigned short *)p)++) = hc;
 	break;
@@ -822,6 +825,7 @@ void def_blit(struct stdbitmap *srcbit,int src_x,int src_y,
    char *src;
    int src_offset;
    hwrcolor c,s;
+   int oshift = 8-vid->bpp;
    
    /* Screen-to-screen blit */
    if (!srcbit) {
@@ -840,6 +844,18 @@ void def_blit(struct stdbitmap *srcbit,int src_x,int src_y,
 
 	if (srcbit->bits)
 	  switch (vid->bpp) {
+
+	   case 1:
+	   case 2:
+	   case 4:
+	     c = ((*src) >> oshift) & ((1<<vid->bpp)-1);
+	     oshift -= vid->bpp;
+	     if (!oshift) {
+		oshift = 8 - vid->bpp;
+		src++;
+	     }
+	     break; 
+	   
 	   case 8:
 	     c = *(src++);
 	     break;
@@ -883,13 +899,28 @@ void def_unblit(int src_x,int src_y,
    char *dest = destbit->bits;
    int dest_offset = (destbit->w - w) * vid->bpp >> 3;
    hwrcolor c;
+   int oshift = 8 - vid->bpp;
    
    for (;h;h--,src_y++,dest+=dest_offset)
      for (i=0;i<w;i++) {
 	c = (*vid->getpixel)(src_x+i,src_y);
 
 	switch (vid->bpp) {
-	 
+
+	 case 1:
+	 case 2:
+	 case 4:
+	   if (oshift)
+	     *dest |= c << oshift;
+	   else
+	     *dest = c;
+	   oshift -= vid->bpp;
+	   if (!oshift) {
+	      oshift = 8 - vid->bpp;
+	      dest++;
+	   }
+	   break;
+
 	 case 8:
 	   *(dest++) = c;
 	   break;

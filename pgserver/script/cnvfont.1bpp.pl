@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: cnvfont.1bpp.pl,v 1.3 2000/10/10 00:33:37 micahjd Exp $
+# $Id: cnvfont.1bpp.pl,v 1.4 2001/02/07 07:28:08 micahjd Exp $
 #
 # This program generates a file with the fdf font data converted
 # to 1bpp bitmap data, formatted for input by a C compiler.
@@ -92,7 +92,7 @@ while (<>) {
 }
 
 # Character translation table
-print "\nlong ${fntname}_tr[256] = {\n";
+print "\nlong const ${fntname}_tr[256] = {\n";
 $com = ',';
 for ($i=0;$i<256;$i++) {
     $com = ' ' if ($i==255);
@@ -108,7 +108,7 @@ print "};\n";
 
 # Variable width table
 if (!$fixed) {
-    print "\nunsigned char ${fntname}_vw[256] = {\n";
+    print "\nunsigned char const ${fntname}_vw[256] = {\n";
     $com = ',';
     for ($i=0;$i<256;$i++) {
 	$com = ' ' if ($i==255);
@@ -124,7 +124,7 @@ if (!$fixed) {
 }
 
 # Bitmap data
-print "\nunsigned char ${fntname}_bits[$size] = {\n";
+print "\nunsigned char const ${fntname}_bits[$size] = {\n";
 $com = ',';
 for ($i=0;$i<$num;$i++) {
     $com = ' ' if ($i==$num-1);
@@ -132,7 +132,7 @@ for ($i=0;$i<$num;$i++) {
 }
 print "};\n";
 
-print "\nstruct font $fntname = {\n\t";
+print "\nstruct font const $fntname = {\n\t";
 print "${fntname}_bits, $h, $hspace, $vspace, ${fntname}_vw, ${fntname}_tr";
 $hdrs = 256*5;
 print "\n};\n";

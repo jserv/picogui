@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.23 2001/01/29 00:22:33 micahjd Exp $
+/* $Id: pgmain.c,v 1.24 2001/02/07 07:28:08 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -330,8 +330,12 @@ int main(int argc, char **argv) {
 #ifndef WINDOWS
   /* Signal handler (it's usually good to have a way to exit!) */
   if (signal(SIGTERM,&sigterm_handler)==SIG_ERR) {
-    prerror(mkerror(PG_ERRT_INTERNAL,54));
-    exit(1);
+     prerror(mkerror(PG_ERRT_INTERNAL,54));
+     exit(1);
+  }
+  if (signal(SIGINT,&sigterm_handler)==SIG_ERR) {
+     prerror(mkerror(PG_ERRT_INTERNAL,54));
+     exit(1);
   }
 #endif
 
@@ -367,7 +371,7 @@ int main(int argc, char **argv) {
 
 #ifdef DEBUG_INIT
   printf("Initialization done");
-  guru("Initialization done");
+  guru("Initialization done!\n\n(This message brought to you\nby DEBUG_INIT)");
 #endif
      
   while (proceed)

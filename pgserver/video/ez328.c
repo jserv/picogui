@@ -1,4 +1,4 @@
-/* $Id: ez328.c,v 1.1 2001/01/29 00:22:34 micahjd Exp $
+/* $Id: ez328.c,v 1.2 2001/02/07 07:28:08 micahjd Exp $
  *
  * ez328.c - Driver for the 68EZ328's (aka Motorola Dragonball EZ)
  *           built-in LCD controller. It assumes the LCD parameters
@@ -36,39 +36,38 @@
 #include <pgserver/video.h>
 #include <asm/MC68EZ328.h>   /* Defines the CPU and peripheral's registers */
 
-/* Saved video memory, so we restore the boot logo when done */
-char *ez328_oldfb;
+/* Save all LCD registers, restore on exit */
+#define REGS_LEN     0x36
+#define REGS_START   ((void*)LSSA_ADDR)
+unsigned char *ez328_saveregs[REGS_LEN];
 
 g_error ez328_init(int xres,int yres,int bpp,unsigned long flags) {
    g_error e;
    
-   /* Get existing settings */
-   ez328_oldfb = LSSA;
-/*
-   vid->xres   = 240;
-   vid->yres   = 32;
-   vid->fb_bpl = 240;
-   vid->bpp    = 8;
-  */
-   vid->xres = 240;
-   vid->yres = 64;
-   vid->bpp = 8;
+   /* Save existing register settings */
+   memcpy(ez328_saveregs,REGS_START,REGS_LEN);
    
-   /* Allocate more video memory */
-   e = g_malloc((void **) &vid->fb_mem, 240*32+1);
+   vid->xres   = 240;
+   vid->yres   = 64;
+   vid->fb_bpl = 240;
+   vid->bpp    = bpp;
+   
+   /* Allocate video memory */
+   e = g_malloc((void **) &vid->fb_mem, 240*32);
    errorcheck;
-   /* We use the above margin of 1 byte to align if necessary.
-    * the video memory must start on a word boundary. */
-   if (((unsigned long)vid->fb_mem) & 1)
-     vid->fb_mem++;
-   LSSA = vid->fb_mem;
+   LSSA = (unsigned long) vid->fb_mem;
+
+   /* Invert the palette so that the and/or stuff
+    * works and the palette is consistant */
+   LPOLCF |= 1;
    
    return sucess;
 }
 
 void ez328_close(void) {
-   /* Restore previous image */
-   LSSA = ez328_oldfb;
+   /* Restore register settings, free video memory */
+   memcpy(REGS_START,ez328_saveregs,REGS_LEN);   
+   g_free(vid->fb_mem);
 }
 
 void ez328_pixel(int x,int y,hwrcolor c) {
@@ -102,7 +101,7 @@ hwrcolor ez328_getpixel(int x,int y) {
 }
 
 hwrcolor ez328_color_pgtohwr(pgcolor c) {
-   return 15 - (getred(c)+getgreen(c)+getblue(c))/48;
+   return (getred(c)+getgreen(c)+getblue(c))/48;
 }
    
 g_error ez328_regfunc(struct vidlib *v) {

@@ -1,4 +1,4 @@
-/* $Id: g_error.h,v 1.5 2000/12/17 05:53:50 micahjd Exp $
+/* $Id: g_error.h,v 1.6 2001/02/07 07:28:08 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -54,7 +54,7 @@ g_error prerror(g_error e);
 /* "Guru" error screen only available in debugging mode */
 #if defined(DEBUG_KEYS) | defined(DEBUG_WIDGET) | defined(DEBUG_EVENT) | \
     defined(DEBUG_VIDEO) | defined(DEBUG_THEME) | defined(DEBUG_NET) | \
-    defined(DEBUG_MEMORY)
+    defined(DEBUG_MEMORY) | defined(DEBUG_INIT)
 #define DEBUG_ANY
 void guru(const char *fmt, ...);
 #endif

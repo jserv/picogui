@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: fontdef.pl,v 1.6 2000/12/16 20:08:45 micahjd Exp $
+# $Id: fontdef.pl,v 1.7 2001/02/07 07:28:08 micahjd Exp $
 #
 # This reads in .fi files, and creates the static linked list
 # of font styles.  It also uses cnvfont to load the .fdf files
@@ -80,7 +80,7 @@ $link = 'NULL';
 $fnode = 0;
 foreach (sort @defs) {
     $fnode++;
-    print "struct fontstyle_node fsn$fnode = {\n";
+    print "struct fontstyle_node const fsn$fnode = {\n";
     s/###/$link/;
     print "$_ };\n";
     $link = "&fsn$fnode";
