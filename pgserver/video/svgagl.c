@@ -1,4 +1,4 @@
-/* $Id: svgagl.c,v 1.2 2001/01/13 02:16:09 micahjd Exp $
+/* $Id: svgagl.c,v 1.3 2001/01/14 18:42:14 micahjd Exp $
  *
  * svgagl.c - video driver for (S)VGA cards, via vgagl and svgalib
  * 
@@ -183,7 +183,7 @@ void svgagl_blit(struct stdbitmap *src,int src_x,int src_y,
   }
 
   if (lgop==PG_LGOP_NONE) {
-    gl_putboxpart(dest_x,dest_y,w,h,src->w,src->h,src->bits,src_x,src_y);
+    gl_putboxpart(dest_x,dest_y,w,h,src->w,h,src->bits,src_x,src_y);
   }
   else {
     unsigned char *s,*b;
@@ -282,11 +282,21 @@ hwrcolor svgagl_color_pgtohwr(pgcolor c) {
 
 void svgagl_charblit(unsigned char *chardat,int dest_x,
 		   int dest_y,int w,int h,int lines,
-		   hwrcolor c) {
+		   hwrcolor c, struct cliprect *clip) {
   int bw = w;
   int iw,bit,x,i;
   int olines = lines;
   unsigned char ch;
+
+  /* Is it at all in the clipping rect? */
+  if (clip && (dest_x>clip->x2 || dest_y>clip->y2 || (dest_x+w)<clip->x1 || 
+      (dest_y+h)<clip->y1)) return;
+
+  /* Need clipping turned on? */
+  if (clip) {
+    gl_enableclipping();
+    gl_setclippingwindow(clip->x1,clip->y1,clip->x2,clip->y2);
+  }
 
   /* If we're skewing, use the slower write. Otherwise use vgagl's built-in
    * font things */
@@ -318,6 +328,10 @@ void svgagl_charblit(unsigned char *chardat,int dest_x,
      gl_writen(dest_x,dest_y,1,&ch);
      
   }  
+
+  /* Need clipping turned off? */
+  if (clip)
+    gl_disableclipping();
 }
 
 /******************************************** Driver registration */
@@ -334,7 +348,7 @@ g_error svgagl_regfunc(struct vidlib *v) {
   v->unblit = &svgagl_unblit;
   v->rect = &svgagl_rect;
   v->color_pgtohwr = &svgagl_color_pgtohwr;
-  v->charblit = &svgagl_charblit;
+//  v->charblit = &svgagl_charblit;
 
   return sucess;
 }

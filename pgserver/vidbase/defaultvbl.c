@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.6 2001/01/10 03:48:46 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.7 2001/01/14 18:42:12 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -349,56 +349,135 @@ void def_scrollblit(int src_x,int src_y,
 }
 
 void def_charblit(unsigned char *chardat,int dest_x,
-		  int dest_y,int w,int h,int lines,
-		  hwrcolor c,struct cliprect *clip) {
+		      int dest_y,int w,int h,int lines,
+		      hwrcolor c,struct cliprect *clip) {
   int bw = w;
-  int iw,bit,x,i;
+  int iw,hc,x;
   int olines = lines;
+  int bit;
+  int flag=0;
+  int xpix,xmin,xmax,clipping;
   unsigned char ch;
+
+  /* Is it at all in the clipping rect? */
+  if (clip && (dest_x>clip->x2 || dest_y>clip->y2 || (dest_x+w)<clip->x1 || 
+      (dest_y+h)<clip->y1)) return;
 
   /* Find the width of the source data in bytes */
   if (bw & 7) bw += 8;
   bw = bw >> 3;
-  bw &= 0x1F;
+  xmin = 0;
+  xmax = w;
+  clipping = 0;      /* This is set if we are being clipped,
+			otherwise we can use a tight, fast loop */
 
-  for (i=0;i<h;i++,dest_y++) {
-    /* Skewing */
-    if (olines && lines==i) {
+  hc = 0;
+
+  /* Do vertical clipping ahead of time (it does not require a special case) */
+  if (clip) {
+    if (clip->y1>dest_y) {
+      hc = clip->y1-dest_y; /* Do it this way so skewing doesn't mess up when clipping */
+      dest_y += hc;
+      chardat += hc*bw;
+    }
+    if (clip->y2<(dest_y+h))
+      h = clip->y2-dest_y+1;
+    
+    /* Setup for horizontal clipping (if so, set a special case) */
+    if (clip->x1>dest_x) {
+      xmin = clip->x1-dest_x;
+      clipping = 1;
+    }
+    if (clip->x2<(dest_x+w)) {
+      xmax = clip->x2-dest_x+1;
+      clipping = 1;
+    }
+  }
+
+  for (;hc<h;hc++,dest_y++) {
+    if (olines && lines==hc) {
       lines += olines;
       dest_x--;
+      flag=1;
     }
-    for (x=dest_x,iw=bw;iw;iw--)
-      for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,x++)
-	if (ch&0x80) (*vid->pixel)(x,dest_y,c); 
+    for (x=dest_x,iw=bw,xpix=0;iw;iw--)
+      for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,x++,xpix++)
+	if (ch&0x80 && xpix>=xmin && xpix<xmax) 
+	  (*vid->pixel)(x,dest_y,c); 
+    if (flag) {
+      xmax++;
+      flag=0;
+    }
   }
 }
-   
 
+/* Like charblit, but rotate 90 degrees anticlockwise whilst displaying
+ *
+ * As this code was mostly copied from linear8, it probably has the same
+ * subtle "smudging" bug noted in linear8.c
+ */
 void def_charblit_v(unsigned char *chardat,int dest_x,
 		  int dest_y,int w,int h,int lines,
 		  hwrcolor c,struct cliprect *clip) {
   int bw = w;
-  int iw,bit,y,i;
+  int iw,hc,y;
   int olines = lines;
+  int bit;
+  int flag=0;
+  int xpix,xmin,xmax,clipping;
   unsigned char ch;
+
+  /* Is it at all in the clipping rect? */
+  if (clip && (dest_x>clip->x2 || (dest_y-w)>clip->y2 || (dest_x+h)<clip->x1 || 
+      dest_y<clip->y1)) return;
 
   /* Find the width of the source data in bytes */
   if (bw & 7) bw += 8;
   bw = bw >> 3;
-  bw &= 0x1F;
+  xmin = 0;
+  xmax = w;
+  clipping = 0;      /* This is set if we are being clipped,
+			otherwise we can use a tight, fast loop */
 
-  for (i=0;i<h;i++,dest_x++) {
-    /* Skewing */
-    if (olines && lines==i) {
+  hc = 0;
+
+  /* Do vertical clipping ahead of time (it does not require a special case) */
+  if (clip) {
+    if (clip->x1>dest_x) {
+      hc = clip->x1-dest_x; /* Do it this way so skewing doesn't mess up when clipping */
+      dest_x += hc;
+      chardat += hc*bw;
+    }
+    if (clip->x2<(dest_x+h-1))
+      h = clip->x2-dest_x+2;
+    
+    /* Setup for horizontal clipping (if so, set a special case) */
+    if (clip->y1>dest_y-w+1) {
+      xmax = 1+dest_y-clip->y1;
+      clipping = 1;
+    }
+    if (clip->y2<(dest_y)) {
+      xmin = dest_y-clip->y2;
+      clipping = 1;
+    }
+  }
+
+  for (;hc<h;hc++,dest_x++) {
+    if (olines && lines==hc) {
       lines += olines;
       dest_y++;
+      flag=1;
     }
-    for (y=dest_y,iw=bw;iw;iw--)
-      for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,y--)
-	if (ch&0x80) (*vid->pixel)(dest_x,y,c); 
+    for (iw=bw,y=dest_y,xpix=0;iw;iw--)
+      for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,y--,xpix++)
+	if (ch&0x80 && xpix>=xmin && xpix<xmax) 
+	  (*vid->pixel)(dest_x,y,c);
+    if (flag) {
+      xmax++;
+      flag=0;
+    }
   }
 }
-   
 
 /* Not sure this works in all cases. Needs
    more testing...
