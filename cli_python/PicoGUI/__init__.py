@@ -15,6 +15,7 @@
 import Server
 server = Server
 Server = server.Server
+WTFile = server.WTFile
 import Widget
 widget = Widget
 Widget = widget.Widget

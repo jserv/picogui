@@ -335,3 +335,14 @@ class Server(object):
             return Request(self, name)
         else:
             raise AttributeError(name)
+
+# support for writing to widget template files
+import wtfile
+
+class WTFile(Server):
+    def __init__(self):
+        stream = wtfile.stream()
+        Server.__init__(self, stream=stream, stream_read=1)
+
+    def dump(self):
+        return self._connection.dump()

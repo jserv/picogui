@@ -23,8 +23,9 @@ class stream(object):
     handle = self.next_handle
     self.next_handle += 1
     # 2 below is for PG_RESPONSE_RET
-    response = struct.pack('!HxxLL', 2, id, handle + 0x800000L)
+    response = struct.pack('!HxxLL', 2, handle, handle + 0x800000L)
     self.pending_responses += response
+    return handle
 
   def send(self, request):
     id = struct.unpack('!L', request[:idsize])
@@ -46,7 +47,7 @@ class stream(object):
 
   def dump(self):
     # dump to a string in PGwt format
-    s = PGwt
+    s = 'PGwt'
     # FIXME: len and checksum are for the whole file?
     flen = 0
     checksum = 0
