@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.6 2000/04/29 03:17:34 micahjd Exp $
+/* $Id: bitmap.c,v 1.7 2000/04/29 17:52:43 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -47,8 +47,6 @@ void bitmap(struct divnode *d) {
 	  &h,&x,&y);
     grop_bitmap(&d->grop,x,y,w,h,d->param.bitmap.bitmap,d->param.bitmap.lgop);
   }
-
-  grop_gradient(&d->grop,0,0,d->w,d->h,0x000000,0x808080,135,-1);
 }
 
 void resizebitmap(struct widget *self);

@@ -1,4 +1,4 @@
-/* $Id: hardware.c,v 1.10 2000/04/29 03:17:34 micahjd Exp $
+/* $Id: hardware.c,v 1.11 2000/04/29 17:51:59 micahjd Exp $
  *
  * hardware.c - SDL "hardware" layer
  * Anything that makes any kind of assumptions about the display hardware
@@ -390,15 +390,21 @@ void hwr_gradient(struct cliprect *clip,int x,int y,int w,int h,
   if (b_vss<0) b_sa  = -b_vss*h;
   if (b_vsc<0) b_ica = -b_vsc*w; 
 
+  if (r_v2<r_v1) r_v1 = r_v2;
+  if (g_v2<g_v1) g_v1 = g_v2;
+  if (b_v2<b_v1) b_v1 = b_v2;
+
   /* Finally, the loop! */
 
   if (translucent==0) {
     for (;h;h--,r_sa+=r_vss,g_sa+=g_vss,b_sa+=b_vss,p+=line_offset)
       for (r_ca=r_ica,g_ca=g_ica,b_ca=b_ica,i=w;i;
 	   i--,r_ca+=r_vsc,g_ca+=g_vsc,b_ca+=b_vsc) {
-	r = (r_ca+r_sa) >> 8;
-	g = (g_ca+g_sa) >> 8;
-	b = (b_ca+b_sa) >> 8;
+
+	r = r_v1 + ((r_ca+r_sa) >> 8);
+	g = g_v1 + ((g_ca+g_sa) >> 8);
+	b = b_v1 + ((b_ca+b_sa) >> 8);
+
 	*(p++) = mkcolor(r,g,b);
       }
   }
@@ -411,9 +417,9 @@ void hwr_gradient(struct cliprect *clip,int x,int y,int w,int h,
 	g = getgreen(*p);
 	b = getblue(*p);
 
-	r += (r_ca+r_sa) >> 8;
-	g += (g_ca+g_sa) >> 8;
-	b += (b_ca+b_sa) >> 8;
+	r += r_v1 + ((r_ca+r_sa) >> 8);
+	g += g_v1 + ((g_ca+g_sa) >> 8);
+	b += b_v1 + ((b_ca+b_sa) >> 8);
 
 	if (r>255) r=255;
 	if (g>255) g=255;
@@ -431,9 +437,9 @@ void hwr_gradient(struct cliprect *clip,int x,int y,int w,int h,
 	g = getgreen(*p);
 	b = getblue(*p);
 
-	r -= (r_ca+r_sa) >> 8;
-	g -= (g_ca+g_sa) >> 8;
-	b -= (b_ca+b_sa) >> 8;
+	r -= r_v1 + ((r_ca+r_sa) >> 8);
+	g -= g_v1 + ((g_ca+g_sa) >> 8);
+	b -= b_v1 + ((b_ca+b_sa) >> 8);
 
 	if (r<0) r=0;
 	if (g<0) g=0;

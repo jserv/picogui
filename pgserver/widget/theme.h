@@ -1,4 +1,4 @@
-/* $Id: theme.h,v 1.1 2000/04/29 07:29:02 micahjd Exp $
+/* $Id: theme.h,v 1.2 2000/04/29 17:51:59 micahjd Exp $
  *
  * theme.h - This defines the structures and functions for themes,
  * parameters defining the way widgets are drawn that are reconfigurable
@@ -61,26 +61,17 @@ struct element {
   } state[3];
 };
 
-/* The theme structure */
+/* The theme structure (new elements must be added at the end) */
 
-struct theme {
+#define E_BUTTON_BORDER     0
+#define E_BUTTON_FILL       1
+#define E_BUTTON_OVERLAY    2
+#define E_TOOLBAR_BORDER    3
+#define E_TOOLBAR_FILL      4
 
-  /* Button */
-  struct {
-    struct element border;
-    struct element fill;
-    struct element overlay;
-  } button;
+#define E_NUM 5
 
-  /* Toolbar */
-  /*  struct {
-    struct element border;
-    struct element fill;
-    } toolbar;*/
-
-};
-
-extern struct theme current_theme;
+extern struct element current_theme[E_NUM];
 
 /**** Functions for themes */
 

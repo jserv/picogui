@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.6 2000/04/29 03:17:34 micahjd Exp $
+/* $Id: panel.c,v 1.7 2000/04/29 17:51:59 micahjd Exp $
  *
  * panel.c - simple container widget
  *
@@ -28,11 +28,14 @@
 #include <widget.h>
 #include <divtree.h>
 #include <g_malloc.h>
+#include <theme.h>
 
-/* param.c - color */
-void fill(struct divnode *d) {
-  grop_rect(&d->grop,0,0,d->w,d->h,d->param.c);
-  grop_gradient(&d->grop,0,0,d->w,d->h,0x000000,0xFFFFFF,85,-1);
+void toolbar(struct divnode *d) {
+  int x,y,w,h;
+  x=y=0; w=d->w; h=d->h;
+
+  addelement(&d->grop,&current_theme[E_TOOLBAR_BORDER],&x,&y,&w,&h,1);
+  addelement(&d->grop,&current_theme[E_TOOLBAR_FILL],&x,&y,&w,&h,0);
 }
 
 /* Pointers, pointers, and more pointers. What's the point?
@@ -45,22 +48,15 @@ g_error panel_install(struct widget *self) {
   if (e.type != ERRT_NONE) return e;
   self->in->flags |= S_TOP;
   self->in->split = HWG_BUTTON+HWG_MARGIN*2;
-  e = newdiv(&self->in->next,self);
-  if (e.type != ERRT_NONE) return e;
-  self->in->next->flags |= S_TOP;
-  self->in->next->split = 1;
-  self->out = &self->in->next->next;
+  self->out = &self->in->next;
+
   e = newdiv(&self->in->div,self);
   if (e.type != ERRT_NONE) return e;
-  self->in->div->on_recalc = &fill;
+  self->in->div->on_recalc = &toolbar;
   self->in->div->param.c = panelmid;
   self->in->div->flags |= DIVNODE_SPLIT_BORDER;
   self->in->div->split = HWG_MARGIN;
   self->sub = &self->in->div->div;
-  e = newdiv(&self->in->next->div,self);
-  if (e.type != ERRT_NONE) return e;
-  self->in->next->div->on_recalc = &fill;
-  self->in->next->div->param.c = paneledge;
 
   return sucess;
 }
@@ -96,6 +92,7 @@ g_error panel_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
+    /*
   case WP_BORDERCOLOR:
     self->in->next->div->param.c = cnvcolor(data);
     self->in->next->flags |= DIVNODE_NEED_RECALC;
@@ -109,6 +106,7 @@ g_error panel_set(struct widget *self,int property, glob data) {
     self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
+    */
 
   case WP_SIZEMODE:
     if ((data != SZMODE_PIXEL) && (data != SZMODE_PERCENT)) return

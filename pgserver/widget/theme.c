@@ -1,4 +1,4 @@
-/* $Id: theme.c,v 1.1 2000/04/29 07:29:02 micahjd Exp $
+/* $Id: theme.c,v 1.2 2000/04/29 17:51:59 micahjd Exp $
  *
  * theme.h - This defines the structures and functions for themes,
  * parameters defining the way widgets are drawn that are reconfigurable
@@ -30,82 +30,57 @@
 #include <theme.h>
 
 /* This is initialized to the default theme */
-#if 0
-struct theme current_theme = {
 
-  /* Button */ {
+struct element current_theme[E_NUM] = {
 
-    /* border */ {
-      1,1,-2,-2,
-      ELEM_FLAT,
-      {
-	{black,black,0,0},
-	{black,black,0,0},
-	{black,black,0,0}
-      }
-    },
-
-    /* fill */ {
-      0,0,0,0,
-      ELEM_FLAT,
-      {
-	{ltgray,black,0,0},
-	{ltgray,black,0,0},
-	{0x8080FF,black,0,0}
-      }
-    },
-
-    /* overlay */ {
-      1,1,-2,-2,
-      ELEM_FLAT,
-      {
-	{gray,black,0,0},
-	{0xFFFF00,black,0,0},
-	{0xFFFF00,black,0,0}
-      }
+  /* button.border */ {
+    2,2,-4,-4,
+    ELEM_GRADIENT,
+    {
+      {0x7080A0,black,45,0},
+      {0x7080A0,black,45,0},
+      {0x7080A0,black,225,0}
     }
+  },
 
-  }
-
-};
-#endif
-
-struct theme current_theme = {
-
-  /* Button */ {
-
-    /* border */ {
-      2,2,-4,-4,
-      ELEM_GRADIENT,
-      {
-	{0x7080A0,black,45,0},
-	{0x7080A0,black,45,0},
-	{0x7080A0,black,225,0},
-      }
-    },
-
-    /* fill */ {
-      0,0,0,0,
-      ELEM_GRADIENT,
-      {
-	{0x8090B0,black,240,0},
-	{0x8090B0,black,240,0},
-	{0x8090B0,black,240,0},
-      }
-    },
-
-    /* overlay */ {
-      0,0,0,0,
-      ELEM_GRADIENT,
-      {
-	{black,black,270,1},
-	{0x505000,black,270,1},
-	{0x505000,black,270,1},
-      }
+  /* button.fill */ {
+    0,0,0,0,
+    ELEM_GRADIENT,
+    {
+      {0x8090B0,black,240,0},
+      {0x8090B0,black,240,0},
+      {0x8090B0,black,240,0}
     }
+  },
+  
+  /* button.overlay */ {
+    0,0,0,0,
+    ELEM_GRADIENT,
+    {
+      {black,black,270,1},
+      {0x505000,black,270,1},
+      {0x505000,black,270,1}
+    }
+  },
 
+  /* toolbar.border */ {
+    1,1,-2,-2,
+    ELEM_FLAT,
+    {
+      {black,black,270,0},
+    }
+  },
+
+  /* toolbar.fill */ {
+    0,0,0,0,
+    ELEM_GRADIENT,
+    {
+      {0x7080A0,0x203040,90,0},
+      {0,0,0,0},
+      {0,0,0,0}
+    }
   }
-
+  
 };
 
 

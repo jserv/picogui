@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.10 2000/04/29 07:29:02 micahjd Exp $
+/* $Id: button.c,v 1.11 2000/04/29 17:51:59 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -61,8 +61,8 @@ void bitbutton(struct divnode *d) {
 
   ex=ey=0; ew=d->w; eh=d->h;
 
-  addelement(&d->grop,&current_theme.button.border,&ex,&ey,&ew,&eh,1);
-  addelement(&d->grop,&current_theme.button.fill,&ex,&ey,&ew,&eh,0);
+  addelement(&d->grop,&current_theme[E_BUTTON_BORDER],&ex,&ey,&ew,&eh,1);
+  addelement(&d->grop,&current_theme[E_BUTTON_FILL],&ex,&ey,&ew,&eh,0);
 
   /* We need at least the main bitmap for alignment.  The mask
      bitmap is optional, but without it what's the point... */
@@ -87,7 +87,7 @@ void bitbutton(struct divnode *d) {
     grop_null(&d->grop);
   }
 
-  addelement(&d->grop,&current_theme.button.overlay,&ex,&ey,&ew,&eh,0);
+  addelement(&d->grop,&current_theme[E_BUTTON_OVERLAY],&ex,&ey,&ew,&eh,0);
 }
 
 /* Pointers, pointers, and more pointers. What's the point?
@@ -243,10 +243,10 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
   */
   if (DATA->on && DATA->over) {
     applystate(self->in->div->grop,
-	       &current_theme.button.border,
+	       &current_theme[E_BUTTON_BORDER],
 	       STATE_ACTIVATE);
     applystate(self->in->div->grop->next,
-	       &current_theme.button.fill,
+	       &current_theme[E_BUTTON_FILL],
 	       STATE_ACTIVATE);
 
     self->in->div->grop->next->next->x = DATA->x + ON_OFFSET;
@@ -255,15 +255,15 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     self->in->div->grop->next->next->next->y = DATA->y + ON_OFFSET;
 
     applystate(self->in->div->grop->next->next->next->next,
-	       &current_theme.button.overlay,
+	       &current_theme[E_BUTTON_OVERLAY],
 	       STATE_ACTIVATE);
   }
   else if (DATA->over) {
     applystate(self->in->div->grop,
-	       &current_theme.button.border,
+	       &current_theme[E_BUTTON_BORDER],
 	       STATE_HILIGHT);
     applystate(self->in->div->grop->next,
-	       &current_theme.button.fill,
+	       &current_theme[E_BUTTON_FILL],
 	       STATE_HILIGHT);
 
     self->in->div->grop->next->next->x = DATA->x;
@@ -272,15 +272,15 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     self->in->div->grop->next->next->next->y = DATA->y;
 
     applystate(self->in->div->grop->next->next->next->next,
-	       &current_theme.button.overlay,
+	       &current_theme[E_BUTTON_OVERLAY],
 	       STATE_HILIGHT);
   }
   else {
     applystate(self->in->div->grop,
-	       &current_theme.button.border,
+	       &current_theme[E_BUTTON_BORDER],
 	       STATE_NORMAL);
     applystate(self->in->div->grop->next,
-	       &current_theme.button.fill,
+	       &current_theme[E_BUTTON_FILL],
 	       STATE_NORMAL);
 
     self->in->div->grop->next->next->x = DATA->x;
@@ -289,7 +289,7 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     self->in->div->grop->next->next->next->y = DATA->y;
 
     applystate(self->in->div->grop->next->next->next->next,
-	       &current_theme.button.overlay,
+	       &current_theme[E_BUTTON_OVERLAY],
 	       STATE_NORMAL);
   }
 
@@ -298,5 +298,6 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
 }
 
 /* The End */
+
 
 
