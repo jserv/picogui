@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.12 2000/06/02 07:41:32 micahjd Exp $
+/* $Id: request.c,v 1.13 2000/06/02 22:31:48 micahjd Exp $
  *
  * request.c - this connection is for sending requests to the server
  *             and passing return values back to the client
@@ -34,6 +34,13 @@
 #include <appmgr.h>
 #include <widget.h>
 #include <theme.h>
+
+/* This is the size of the statically-allocated request buffer.
+   It should be big enough to hold your average request, but anything
+   too big for this buffer will be dynamically allocated.
+*/
+#define STATICBUF_SIZE 64
+unsigned char staticbuf[STATICBUF_SIZE];
 
 /* #define NONBLOCKING */
 
@@ -285,8 +292,12 @@ int reqproc(void) {
 #endif
 
 	  if (req.size) {
-	    if (prerror(g_malloc((void **) &data, req.size+1)
-			).type != ERRT_NONE) {
+	    if (req.size<STATICBUF_SIZE) {
+	      /* Use the static buffer */
+	      data = staticbuf;
+	    }
+	    else if (prerror(g_malloc((void **) &data, req.size+1)
+			     ).type != ERRT_NONE) {
 	      /* The request's size is too big. Be gone with this client,
 	       * either it thinks we have more memory than we do, in which
 	       * case its not much use anyway, or the packets are scrambled
@@ -295,7 +306,11 @@ int reqproc(void) {
 	      closefd(fd);
 	      return 1;
 	    }	  
-
+#ifdef DEBUG
+	    else {
+	      printf("Using dynamic request buffer\n");
+	    }
+#endif
 
 	    /* Attempt reading the packet content */
 	    remaining = req.size;
@@ -323,7 +338,7 @@ int reqproc(void) {
 
 	  rsp_ret.data = 0;
 	  e = (*rqhtab[req.type])(fd,&req,data,&rsp_ret.data,&fatal);
-	  g_free(data);
+	  if (data != staticbuf) g_free(data);
 
 	  /* Send an error packet if there was an error */
 	  if (e.type != ERRT_NONE) {
