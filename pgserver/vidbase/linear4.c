@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.23 2002/02/02 23:28:59 micahjd Exp $
+/* $Id: linear4.c,v 1.24 2002/07/09 08:52:24 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -24,8 +24,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
  * Contributors:
+ *
  *   Pascal Bauermeister <pascal.bauermeister@smartdata.ch>
- *   2001-03-23 180 degree rotation
+ *         2001-03-23  180 degree rotation
+ *
+ *   Daniel Potts <danielp@cse.unsw.edu.au>
+ *         2002-07-08  Rewrote charblit, improved text speed 3x
  * 
  */
 
@@ -45,7 +49,7 @@
  * lookup table might be implemented later if really needed.
  */
 #define LINE(y)        ((y)*FB_BPL+FB_MEM)
-#define PIXELBYTE(x,y) (((x)>>1)+LINE(y))
+#define PIXELBYTE(x,y) ((unsigned char *)(((x)>>1)+LINE(y)))
 
 /* The Psion uses a framebuffer with the high and low nibble reversed */
 #ifdef CONFIG_FB_PSION
@@ -64,21 +68,23 @@ unsigned const char slabmask4[] = { 0xFF, 0x0F, 0x00 };
 
 /************************************************** Minimum functionality */
 
-void linear4_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
-  char *p;
+inline void linear4_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
+  unsigned char *p;
   if (!FB_ISNORMAL(dest,lgop)) {
     def_pixel(dest,x,y,c,lgop);
     return;
   }
   p = PIXELBYTE(x,y);
-
-  *p &= notmask4[x&1];
-#ifdef SWAP_NYBBLES
-  *p |= (c & 15) << ((x&1)<<2);
-#else
-  *p |= (c & 15) << ((1-(x&1))<<2);
-#endif
+  
+  if (x&1) {
+	  *p = (*p&0xF0) | (c&0x0F);
+		  
+  } else {
+	  *p = (*p&0x0F)  | ((c&0x0F) << 4);
+  }
 }
+
+
 hwrcolor linear4_getpixel(hwrbitmap dest,s16 x,s16 y) {
   if (!FB_ISNORMAL(dest,PG_LGOP_NONE))
     return def_getpixel(dest,x,y);
@@ -124,14 +130,14 @@ void linear4_slab_stipple(hwrbitmap dest,s16 x,s16 y,s16 w,hwrcolor c) {
    }
    if (w<1)                                /* That it? */
      return;
-   
+
    /* Full bytes */
    c &= stipple;
    for (bw = w >> 1;bw;bw--,p++) {
       *p &= ~stipple;
       *p |= c;
    }
-   
+
    if ((remainder = (w&1))) {              /* Partial byte afterwards */
       mask = slabmask4[remainder];
       mask = (~mask) & stipple;
@@ -336,46 +342,49 @@ void linear4_rect(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,hwrcolor c,s16 lgop) {
    }
 }
 
-#if 0  /* FIXME! charblit is buggy! */
-/* Blit from 1bpp packed character to the screen,
- * leaving zeroed pixels transparent */
-void linear4_charblit(unsigned char *chardat,int dest_x,
-		      int dest_y,int w,int h,int lines,
-		      hwrcolor c,struct quad *clip) {
-  char *dest,*destline;
+void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s16 h,
+		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
+		  s16 lgop) {
   int bw = w;
-  int iw;
-  int hc;
+  int iw,hc,x;
   int olines = lines;
   int bit;
-  int flag=0;
-  int xpix,xmin,xmax,clipping;
+  int flag=0, clipping = 0;
+  int xpix,xmin,xmax;
   unsigned char ch;
+  char *destline;
+
+  if (!FB_ISNORMAL(dest,lgop) || angle || lines) { /* does "lines" matter */
+	  def_charblit(dest,chardat,dest_x,dest_y,w,h,lines,angle,c,clip,lgop);
+	  return;
+  }
+
 
   /* Is it at all in the clipping rect? */
   if (clip && (dest_x>clip->x2 || dest_y>clip->y2 || (dest_x+w)<clip->x1 || 
       (dest_y+h)<clip->y1)) return;
+
 
   /* Find the width of the source data in bytes */
   if (bw & 7) bw += 8;
   bw = bw >> 3;
   xmin = 0;
   xmax = w;
-  clipping = 0;      /* This is set if we are being clipped,
-			otherwise we can use a tight, fast loop */
-
-  destline = dest = PIXELBYTE(dest_x,dest_y);
   hc = 0;
 
   /* Do vertical clipping ahead of time (it does not require a special case) */
   if (clip) {
-    if (clip->y1>dest_y) {
-      hc = clip->y1-dest_y; /* Do it this way so skewing doesn't mess up when clipping */
-      destline = (dest += hc * FB_BPL);
-      chardat += hc*bw;
-    }
     if (clip->y2<(dest_y+h))
       h = clip->y2-dest_y+1;
+    if (clip->y1>dest_y) {
+      hc = clip->y1-dest_y; /* Do it this way so skewing doesn't mess up when clipping */
+      while (lines < hc && olines) {
+	lines += olines;
+	dest_x--;
+      }
+      dest_y += hc;
+      chardat += hc*bw;
+    }
     
     /* Setup for horizontal clipping (if so, set a special case) */
     if (clip->x1>dest_x) {
@@ -388,11 +397,13 @@ void linear4_charblit(unsigned char *chardat,int dest_x,
     }
   }
 
+  destline = PIXELBYTE(dest_x, dest_y);
+
   /* Decide which loop to use */
   if (olines || clipping) {
     /* Slower loop, taking skewing and clipping into account */
     
-    for (;hc<h;hc++,destline=(dest+=FB_BPL)) {
+    for (;hc<h;hc++,destline +=(FB_BPL-4)) {
       if (olines && lines==hc) {
 	lines += olines;
 	if ((--dest_x)&1)
@@ -420,38 +431,40 @@ void linear4_charblit(unsigned char *chardat,int dest_x,
 	flag=0;
       }
     }
+    return;
   }
-  else {
-    /* Tight, unrolled loop, works only for normal case.
-     * Two different loops, depending on whether the destination is byte-aligned */
-    
-    if (dest_x&1) 
-       for (;hc<h;hc++,destline=(dest+=FB_BPL))
-	 for (iw=bw;iw;iw--) {
-	    ch = *(chardat++);
-	    if (ch&0x80) {*destline &= 0xF0; *destline |= c;    } destline++; 
-	    if (ch&0x40) {*destline &= 0x0F; *destline |= c<<4; }
-	    if (ch&0x20) {*destline &= 0xF0; *destline |= c;    } destline++; 
-	    if (ch&0x10) {*destline &= 0x0F; *destline |= c<<4; }
-	    if (ch&0x08) {*destline &= 0xF0; *destline |= c;    } destline++; 
-	    if (ch&0x04) {*destline &= 0x0F; *destline |= c<<4; }
-	    if (ch&0x02) {*destline &= 0xF0; *destline |= c;    } destline++; 
-	    if (ch&0x01) {*destline &= 0x0F; *destline |= c<<4; }
-	 }
-     else
-       for (;hc<h;hc++,destline=(dest+=FB_BPL))
-	 for (iw=bw;iw;iw--) {
-	    ch = *(chardat++);
-	    if (ch&0x80) {*destline &= 0x0F; *destline |= c<<4; }
-	    if (ch&0x40) {*destline &= 0xF0; *destline |= c;    } destline++; 
-	    if (ch&0x20) {*destline &= 0x0F; *destline |= c<<4; }
-	    if (ch&0x10) {*destline &= 0xF0; *destline |= c;    } destline++; 
-	    if (ch&0x08) {*destline &= 0x0F; *destline |= c<<4; }
-	    if (ch&0x04) {*destline &= 0xF0; *destline |= c;    } destline++; 
-	    if (ch&0x02) {*destline &= 0x0F; *destline |= c<<4; }
-	    if (ch&0x01) {*destline &= 0xF0; *destline |= c;    } destline++; 
-	 }
+
+  if(dest_x&1) {
+	  for (;hc<h;hc++, destline +=(FB_BPL-4)) {
+		  for (iw=bw;iw;iw--) {
+			  ch = *(chardat++);
+			  if (ch&0x80) {*destline &= 0xF0; *destline |= c;    } destline++; 
+			  if (ch&0x40) {*destline &= 0x0F; *destline |= c<<4; }
+			  if (ch&0x20) {*destline &= 0xF0; *destline |= c;    } destline++; 
+			  if (ch&0x10) {*destline &= 0x0F; *destline |= c<<4; }
+			  if (ch&0x08) {*destline &= 0xF0; *destline |= c;    } destline++; 
+			  if (ch&0x04) {*destline &= 0x0F; *destline |= c<<4; }
+			  if (ch&0x02) {*destline &= 0xF0; *destline |= c;    } destline++; 
+			  if (ch&0x01) {*destline &= 0x0F; *destline |= c<<4; }
+		  }
+	  }
+  } else {
+	  for (;hc<h;hc++, destline +=(FB_BPL-4)) {
+		  for (iw=bw;iw;iw--) {
+			  ch = *(chardat++);
+			  if (ch&0x80) {*destline &= 0x0F; *destline |= c<<4; }
+			  if (ch&0x40) {*destline &= 0xF0; *destline |= c;    } destline++; 
+			  if (ch&0x20) {*destline &= 0x0F; *destline |= c<<4; }
+			  if (ch&0x10) {*destline &= 0xF0; *destline |= c;    } destline++; 
+			  if (ch&0x08) {*destline &= 0x0F; *destline |= c<<4; }
+			  if (ch&0x04) {*destline &= 0xF0; *destline |= c;    } destline++; 
+			  if (ch&0x02) {*destline &= 0x0F; *destline |= c<<4; }
+			  if (ch&0x01) {*destline &= 0xF0; *destline |= c;    } destline++; 
+		  }
+	  }
   }
+
+
 }
 #endif
 
@@ -607,6 +620,7 @@ void linear4_blit(hwrbitmap dest,
 void setvbl_linear4(struct vidlib *vid) {
   setvbl_default(vid);
 
+
   vid->pixel          = &linear4_pixel;
   vid->getpixel       = &linear4_getpixel;
   vid->slab           = &linear4_slab;
@@ -614,6 +628,7 @@ void setvbl_linear4(struct vidlib *vid) {
   vid->line           = &linear4_line;
   vid->rect           = &linear4_rect;
   vid->blit           = &linear4_blit;
+  vid->charblit	      = &linear4_charblit;
 }
 
 /* The End */
