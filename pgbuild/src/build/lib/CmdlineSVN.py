@@ -74,6 +74,14 @@ def collectProgress(file, progress):
     if file.close():
         raise ErrorReturnCode()
 
+def rmtree(path, progress):
+    if os.path.isdir(path):
+        for file in os.listdir(path):
+            rmtree(os.path.join(path, file), progress)
+        os.rmdir(path)
+    else:
+        os.unlink(path)
+
 
 # Since exceptions during import will be used to autodetect which Subversion
 # module to use, we want to cause an exception here if it looks like the
@@ -92,9 +100,13 @@ class SVNRepository:
             finished = 1
         finally:
             if not finished:
-                progress.warning("The Subversion download was interrupted!\n" +
-                                 "You might have to delete the working copy before trying again.\n" +
-                                 "Working copy:\n    " + destination)
+                # Remove the incomplete working copy.
+                # This should be safe to do, since having called download() implies that
+                # there wasn't a working copy to begin with, so there shouldn't be any
+                # changes that this will nuke. If we don't do this, another attempt to
+                # download() will fail, because svn can't currently resume checkouts.
+                progress.warning("Removing partial Subversion checkout")
+                rmtree(destination, progress)
 
     def isWorkingCopyPresent(self, destination):
         try:
