@@ -1,4 +1,5 @@
 To build PicoMail, type:
+./autogen.sh (in the apps directory)
 make
 
 You now have the picomail binary.

@@ -161,7 +161,8 @@ donothing( char * line )
 int
 doheader( char * line )
 {
-    addheader( "Sender", "Title", 0 );
+    if (strncmp(line,"* ", 2) == 0)
+        addheader( line, "Title", 0 );
     return SUCCESS;
 }
 

@@ -28,7 +28,7 @@ int tryMe(struct pgEvent *evt) {
                         row ? PGDEFAULT : PG_DERIVE_INSIDE,
                         row ? PGDEFAULT : wBox);
         
-    pgReplaceTextFmt(PGDEFAULT,"[%d] %s - (%s)",row, "Title", "Sender", wItem);
+    pgReplaceTextFmt(wItem,"[%d] %s - (%s)",row, "Title", "Sender");
     row++;
    return 0;
 }
@@ -47,7 +47,7 @@ addheader( char * sender, char * title, int msg )
                         row ? PGDEFAULT : PG_DERIVE_INSIDE,
                         row ? PGDEFAULT : wBox);
         
-    pgReplaceTextFmt(PGDEFAULT,"Blaa!", wItem);
+    pgReplaceTextFmt(wItem,"[%d] %s - (%s)",msg, title, sender);
 
     row++;
 }
