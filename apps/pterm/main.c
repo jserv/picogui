@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.10 2001/10/24 09:51:34 micahjd Exp $
+/* $Id: main.c,v 1.11 2001/10/24 19:57:53 micahjd Exp $
  *
  * main.c - PicoGUI Terminal (the 'p' is silent :)
  *          This handles the PicoGUI init and events
@@ -75,10 +75,6 @@ int termResize(struct pgEvent *evt) {
  * check for activity on our pty too */
 int mySelect(int n, fd_set *readfds, fd_set *writefds,
 	     fd_set *exceptfds, struct timeval *timeout) {
-  int result;
-  static unsigned long previous_update;
-  unsigned long this_update;
-  struct timeval now;
 
   /* Set up our fd */
   if ((ptyfd + 1) > n)
@@ -86,33 +82,38 @@ int mySelect(int n, fd_set *readfds, fd_set *writefds,
   FD_SET(ptyfd,readfds);
 
   /* Selectify things */
-  result = select(n,readfds,writefds,exceptfds,timeout);
+  return select(n,readfds,writefds,exceptfds,timeout);
+}
 
+/* Bottom-half for the select, allowed to make PicoGUI calls */
+void mySelectBH(int result, fd_set *readfds) {
+  static unsigned long previous_update;
+  unsigned long this_update;
+  struct timeval now;
+  int chars;
+  static char buf[BUFFERSIZE];
+  
   /* Is it for us? */
-  if (result>0 && FD_ISSET(ptyfd,readfds)) {
-   int chars;
-   static char buf[BUFFERSIZE];
+  if (result<=0 || !FD_ISSET(ptyfd,readfds)) 
+    return;
 
-   if ((chars = read(ptyfd,buf,BUFFERSIZE)) <= 0)
-       return result;
+  if ((chars = read(ptyfd,buf,BUFFERSIZE)) <= 0)
+    return;
        
-   /* Send it to the terminal */
-   pgWriteData(wTerminal,pgFromMemory(buf,chars));
-
-   /* Get the time */
-   gettimeofday(&now,NULL);
-   this_update = now.tv_sec*1000 + now.tv_usec/1000;
-
-   /* Only update if sufficient time has passed.
-    * This reduces wasted updates so scrolling junk is drawn
-    * all at once, not line by line */
-   if ((this_update - previous_update) >= UPDATE_PERIOD) {
-     pgSubUpdate(wTerminal);
-     previous_update = this_update;  /* Save time :) */
-   }
-
+  /* Send it to the terminal */
+  pgWriteData(wTerminal,pgFromMemory(buf,chars));
+  
+  /* Get the time */
+  gettimeofday(&now,NULL);
+  this_update = now.tv_sec*1000 + now.tv_usec/1000;
+  
+  /* Only update if sufficient time has passed.
+   * This reduces wasted updates so scrolling junk is drawn
+   * all at once, not line by line */
+  if ((this_update - previous_update) >= UPDATE_PERIOD) {
+    pgSubUpdate(wTerminal);
+    previous_update = this_update;  /* Save time :) */
   }
-  return result;
 }
 
 /****************************** Main Program ***/
@@ -179,7 +180,7 @@ int main(int argc, char **argv) {
      pgSetWidget(PGDEFAULT,PG_WP_FONT,
 		 pgNewFont(NULL,fontsize,PG_FSTYLE_FIXED),0);
   pgBind(PGDEFAULT,PG_WE_DATA,&termInput,NULL);      /* Input handler */
-  pgCustomizeSelect(&mySelect);                      /* select() wrapper for output */
+  pgCustomizeSelect(&mySelect,&mySelectBH);          /* select() wrapper for output */
   pgBind(PGDEFAULT,PG_WE_RESIZE,&termResize,NULL);   /* Resize handler */
   pgFocus(PGDEFAULT);
   
