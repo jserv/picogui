@@ -28,7 +28,8 @@ pgserver_LDADD = \
 	input/libinput.a	\
 	formats/libformats.a	\
 	@LIB_OS@		\
-	$(DRIVER_LIBS)		
+	$(DRIVER_LIBS)		\
+	@RM_LIBS@
 
 
 EXTRA_DIST = \

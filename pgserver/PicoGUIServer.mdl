@@ -1,6 +1,6 @@
 # -*- python -*-
 
-import os
+import os, string
 from Bee.Autoconf import compile, install, clean
 from Bee.Logic import S
 
@@ -74,23 +74,23 @@ rm_task unblock picogui-server
 def prepare (module, platform, project):
     profile = "../profiles/profile.SMARTDATA-%s" % \
               platform.fqn ()
-    
-    command = ("../configure --prefix=%s --with-profile=%s --with-prefix=%s --host=%s " +
-               "--with-extra-ipath=%s/include:%s/include --with-extra-libs=%s/lib/librm.a " +
-               "--enable-bee") % \
-              (module.path ['prefix'],
-               profile,
-               platform.toolchain,
-               platform.platform,
-               project ['module/kernel'].path ['dfl'],
-               project ['module/resourcemanager'].path ['dfl'],
-               project ['module/resourcemanager'].path ['dfl'])
+
+    command = ["../configure",
+               "--prefix=%s" % module.path ['prefix'],
+               "--with-profile=%s" % profile,
+               "--with-prefix=%s" % platform.toolchain,
+               "--host=%s" % platform.platform,
+               "--enable-bee",
+               "--with-extra-ipath=%s/include" % project ['module/kernel'].path ['dfl'],
+               "--with-rm=%s" % project ['module/resourcemanager'].path ['dfl'],
+               ]
 
     if platform.platform == "ppc-linux" :
         command += " --with-jpeg-dir=%s" % project ['module/libjpeg'].path ['dfl']
 
-    message ("running: %s" % command)
-    sequence ("test ! -f ../autogen.sh || (cd .. ; ./autogen.sh || true)", command)
+    message ("running: %s" % string.join (command))
+    sequence ("test ! -f ../autogen.sh || (cd .. ; ./autogen.sh || true)",
+              string.join (command))
     return
 
 def install (module, platform, project):

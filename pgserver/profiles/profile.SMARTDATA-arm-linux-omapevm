@@ -100,7 +100,8 @@ DRIVER_FBDEV=y
 # DRIVER_NCURSESINPUT is not set
 # DRIVER_GPM is not set
 # DRIVER_CHIPSLICETS is not set
-# DRIVER_EVENTBROKER is not set
+# DRIVER_RRTS is not set
+DRIVER_EVENTBROKER=y
 # DRIVER_VR3TS is not set
 # DRIVER_H3600TS is not set
 # DRIVER_TUXTS is not set

@@ -29,6 +29,25 @@ AC_ARG_WITH(extra-libs,
 [  --with-extra-libs=<extra libs>   To specify extra libraries],
   LIBS="$LIBS `echo ${withval} | sed 's/:/ /g' `")
 
+dnl
+dnl Use this to enable the PocketBee ResourceManager
+dnl 
+AC_ARG_WITH(rm,
+[  --with-rm=<prefix>       Enable and specify path to PocketBee ResourceManager],
+[
+  RM_CFLAGS="-I ${withval}/include"
+  RM_LIBS="-L ${withval}/lib -lrm"
+  AC_DEFINE(RM_ENABLED)
+],[
+  RM_CFLAGS=""
+  RM_LIBS=""
+]
+)
+
+AC_SUBST(RM_CFLAGS)
+AC_SUBST(RM_LIBS)
+
+
 dnl normalize the path somehow
 CONFIG_FILE=$with_profile
 CONFIG_FILE=`echo $CONFIG_FILE`

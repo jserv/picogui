@@ -1,4 +1,4 @@
-/* $Id: eventbroker.c,v 1.9 2002/03/01 08:08:26 bauermeister Exp $
+/* $Id: eventbroker.c,v 1.10 2002/05/14 14:38:03 cgrigis Exp $
  *
  * eventbroker.c - input driver to manage driver messages
  *
@@ -31,6 +31,10 @@
 
 #ifdef DRIVER_EVENTBROKER
 
+#ifdef HAVE_CONFIG_H
+#  include "config.h"
+#endif
+
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
@@ -41,9 +45,9 @@
 #include <pgserver/configfile.h>
 #include <pgserver/timer.h>
 
-#if defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE)
+#ifdef RM_ENABLED
 # include <rm_client.h> /* to access the PocketBee ResourceManager */
-#endif
+#endif /* RM_ENABLED */
 
 #define LOCAL_DEBUG 0
 #define LOCAL_TRACE 0
@@ -77,7 +81,7 @@ static int keyclick_len;
 /*                     Resource Manager events handling                      */
 /* ------------------------------------------------------------------------- */
 
-#if defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE)
+#ifdef RM_ENABLED
 
 void rm_event_callback (RMStateEvent ev)
 {
@@ -100,13 +104,13 @@ void rm_event_callback (RMStateEvent ev)
 
 }
 
-#endif /* defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE) */
+#endif /* RM_ENABLED */
 
 /* ------------------------------------------------------------------------- */
 /*                      PicoGUI input events handling                        */
 /* ------------------------------------------------------------------------- */
 
-#if defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE)
+#ifdef RM_ENABLED
 
 static int eventbroker_fd_activate(int fd)
 {
@@ -133,7 +137,7 @@ static void eventbroker_fd_init(int *n, fd_set *readfds,
     FD_SET(rm_fd, readfds);
 }
 
-#endif /* defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE) */
+#endif /* RM_ENABLED */
 
 /* ------------------------------------------------------------------------- */
 /*                      PicoGUI driver messages handling                     */
@@ -154,14 +158,14 @@ void eventbroker_message(u32 message, u32 param, u32 *ret)
     /* the server is up and running, we possibly need to warn the
        Resource Manager about that */
   case PGDM_READY:
-#if defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE)
+#ifdef RM_ENABLED
     rm_monitor_ready ();
-#endif /* defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE) */
+#endif /* RM_ENABLED */
     break;
 
 
   case PGDM_BACKLIGHT:
-#if defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE)
+#ifdef RM_ENABLED
     rm_backlight_ctrl(param ? RM_BACKLIGHT_ON : RM_BACKLIGHT_OFF);
 #endif
     break;
@@ -202,10 +206,10 @@ void eventbroker_message(u32 message, u32 param, u32 *ret)
   case PGDM_POWER:
     switch(param) {
     case PG_POWER_SLEEP:
-#if defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE)
+#ifdef RM_ENABLED
       DPRINTF("PG_POWER_SLEEP => rm_emit(RM_EV_IDLE)\n");
       rm_emit(RM_EV_IDLE);
-#endif /* defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE) */
+#endif /* RM_ENABLED */
       break;
     case PG_POWER_OFF:
     case PG_POWER_VIDBLANK:
@@ -233,7 +237,7 @@ static g_error eventbroker_init(void)
   keyclick_freq   = get_param_int("eventbroker", "keyclick_freq", 16000);
   keyclick_len    = get_param_int("eventbroker", "keyclick_len",     30);
 
-#if defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE)
+#ifdef RM_ENABLED
   /* init the Ressources Manager */
   rm_init();
 
@@ -250,7 +254,7 @@ static g_error eventbroker_init(void)
       rm_register(i);
   }
 # endif
-#endif /* defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE) */
+#endif /* RM_ENABLED */
   return success;
 }
 
@@ -260,7 +264,7 @@ static void eventbroker_close(void)
 {
   TRACEF(">>> void eventbroker_close\n");
 
-#if defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE)
+#ifdef RM_ENABLED
 # if !LOCAL_DEBUG
   rm_unregister(RM_ST_CPU_RUNNING);
 # else
@@ -274,7 +278,7 @@ static void eventbroker_close(void)
 
   /* Disconnects the client from the Resource Manager */
   rm_exit ();
-#endif /* defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE) */
+#endif /* RM_ENABLED */
 }
 
 /* ------------------------------------------------------------------------- */
@@ -285,10 +289,10 @@ g_error eventbroker_regfunc(struct inlib *i) {
   TRACEF(">>> eventbroker_regfunc\n");
   i->init = &eventbroker_init;
   i->close = &eventbroker_close;
-#if defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE)
+#ifdef RM_ENABLED
   i->fd_activate = &eventbroker_fd_activate;
   i->fd_init = &eventbroker_fd_init;
-#endif /* defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE) */
+#endif /* RM_ENABLED */
   i->message = &eventbroker_message;
   return success;
 }
