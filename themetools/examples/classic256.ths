@@ -1,4 +1,4 @@
-/* $Id: classic256.ths,v 1.3 2000/10/19 18:00:05 micahjd Exp $
+/* $Id: classic256.ths,v 1.4 2000/11/11 17:17:41 micahjd Exp $
  *
  * PicoGUI theme, modeled after the original 256-color
  * theme used in the old theme system.
@@ -60,5 +60,16 @@ object panel {
   margin = 0;
 }
 object box margin = 1;
+object base.panelbtn spacing = 0;
+object closebtn text = "X";
+object rotatebtn text = "\\";
+object zoombtn text = "<>";
+object menuitem {
+  bgfill = Copy(panel::bgfill);  /* flat fill */
+  bgcolor = Copy(popup.menu::bgcolor);
+  align = PG_A_LEFT;
+}
+object popup.menu margin = 1;
+object menuitem.hilight bgcolor = 0xC0C0FF;
 
 /* The End */
