@@ -92,6 +92,7 @@ getTimeStamp()
 void
 outputChar( unsigned char c )
 {
+  static union pg_client_trigger trig;
 /*      XEvent ev; */
     
 /*      Window focusWindow; */
@@ -118,7 +119,12 @@ outputChar( unsigned char c )
 /*  	XSendEvent( myDisplay, focusWindow, True, KeyReleaseMask, &ev ); */
 /*      } */
   printf("%c", c);fflush(NULL);
-  pgSendKeyInput(PG_TRIGGER_CHAR,c,0);
+/*    pgSendKeyInput(PG_TRIGGER_CHAR,c,0); */
+  trig.content.type       = PG_TRIGGER_CHAR;
+  trig.content.u.kbd.key  = c;
+  trig.content.u.kbd.mods = 0;
+  pgInFilterSend(&trig);
+  pgFlushRequests();
 }
 
 
