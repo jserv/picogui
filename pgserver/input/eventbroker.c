@@ -1,4 +1,4 @@
-/* $Id: eventbroker.c,v 1.14 2003/01/14 14:03:46 pney Exp $
+/* $Id: eventbroker.c,v 1.15 2003/01/21 14:34:09 pney Exp $
  *
  * eventbroker.c - input driver to manage driver messages
  *
@@ -45,10 +45,9 @@
 #include <pgserver/configfile.h>
 #include <pgserver/timer.h>
 
-#ifdef RM_ENABLED
-# include <rm_client.h> /* to access the PocketBee Resource Manager */
+#ifdef PM_ENABLED
 # include <pm_client.h> /* to access the PocketBee Process Manager */
-#endif /* RM_ENABLED */
+#endif /* PM_ENABLED */
 
 #define LOCAL_DEBUG 0
 #define LOCAL_TRACE 0
@@ -79,68 +78,6 @@ static int keyclick_freq;
 static int keyclick_len;
   
 /* ------------------------------------------------------------------------- */
-/*                     Resource Manager events handling                      */
-/* ------------------------------------------------------------------------- */
-
-#ifdef RM_ENABLED
-
-void rm_event_callback (RMStateEvent ev)
-{
-  TRACEF(">>> rm_event_callback\n");
-  switch(ev) {
-
-  case RM_ST_CPU_RUNNING:
-    /* The RM said the system went up: reset the timers, so that we won't
-     * get a PG_POWER_SLEEP too soon !
-     */
-    DPRINTF("Got RM_ST_CPU_RUNNING event from the RM "
-	    "=> calling inactivity_reset()\n"); 
-    inactivity_reset();
-    break;
-
-  default:
-    fprintf(stderr, "%s: received unexpected event from the RM: %d\n",
-	    __FILE__, ev);
-  }
-
-}
-
-#endif /* RM_ENABLED */
-
-/* ------------------------------------------------------------------------- */
-/*                      PicoGUI input events handling                        */
-/* ------------------------------------------------------------------------- */
-
-#ifdef RM_ENABLED
-
-static int eventbroker_fd_activate(int fd)
-{
-  int index;
-
-  /* is the fd mine ? */
-  if (fd != rm_fd) return 0;
-
-  /* run the RM event pump by 1 step */
-  rm_loop(1);
-
-  return 1;
-}
-
-
-static void eventbroker_fd_init(int *n, fd_set *readfds,
-				struct timeval *timeout)
-{
-  if (rm_fd <= 0) return;
-
-  /* register the RM's fd in the set of fd pgserver will watch */
-  if ((*n) < rm_fd + 1) *n = rm_fd + 1;
-
-  FD_SET(rm_fd, readfds);
-}
-
-#endif /* RM_ENABLED */
-
-/* ------------------------------------------------------------------------- */
 /*                      PicoGUI driver messages handling                     */
 /* ------------------------------------------------------------------------- */
 
@@ -159,20 +96,13 @@ void eventbroker_message(u32 message, u32 param, u32 *ret)
     /* the server is up and running, we possibly need to warn the
        Resource Manager about that */
   case PGDM_READY:
-#ifdef RM_ENABLED
+#ifdef PM_ENABLED
     pm_ready ();
-#endif /* RM_ENABLED */
+#endif /* PM_ENABLED */
     break;
 
 
   case PGDM_BACKLIGHT:
-#ifdef RM_ENABLED
-/* no more support for backlight now anywhere... */
-/*      rm_backlight_ctrl(param ? RM_BACKLIGHT_ON : RM_BACKLIGHT_OFF); */
-/* backlight support will maybe manager somewhere else in the future...
- * I don't erase the code, one never knows...
- */
-#endif
     break;
 
   /* sound support through /dev/tty2 implemented in drivers/char/vt.c */
@@ -211,10 +141,6 @@ void eventbroker_message(u32 message, u32 param, u32 *ret)
   case PGDM_POWER:
     switch(param) {
     case PG_POWER_SLEEP:
-#ifdef RM_ENABLED
-      DPRINTF("PG_POWER_SLEEP => rm_emit(RM_EV_IDLE)\n");
-      rm_emit(RM_EV_IDLE);
-#endif /* RM_ENABLED */
       break;
     case PG_POWER_OFF:
     case PG_POWER_VIDBLANK:
@@ -242,24 +168,6 @@ static g_error eventbroker_init(void)
   keyclick_freq   = get_param_int("eventbroker", "keyclick_freq", 16000);
   keyclick_len    = get_param_int("eventbroker", "keyclick_len",     30);
 
-#ifdef RM_ENABLED
-  /* init the Ressources Manager */
-  rm_init();
-
-  /* set the rm event handlers */
-  rm_event_callback_set(rm_event_callback);
-
-# if !LOCAL_DEBUG
-  rm_register(RM_ST_CPU_RUNNING);
-# else
-  DPRINTF("registering to all RM events\n");
-  {
-    int i;
-    for(__RM_ST_INITIAL__ +1; i<__RM_LAST_EVENT__; ++i)
-      rm_register(i);
-  }
-# endif
-#endif /* RM_ENABLED */
   return success;
 }
 
@@ -268,22 +176,6 @@ static g_error eventbroker_init(void)
 static void eventbroker_close(void)
 {
   TRACEF(">>> void eventbroker_close\n");
-
-#ifdef RM_ENABLED
-# if !LOCAL_DEBUG
-  rm_unregister(RM_ST_CPU_RUNNING);
-# else
-  DPRINTF("unregistering from all RM events\n");
-  {
-    int i;
-    for(__RM_ST_INITIAL__ +1; i<__RM_LAST_EVENT__; ++i)
-      rm_unregister(i);
-  }
-# endif
-
-  /* Disconnects the client from the Resource Manager */
-  rm_exit ();
-#endif /* RM_ENABLED */
 }
 
 /* ------------------------------------------------------------------------- */
@@ -294,10 +186,6 @@ g_error eventbroker_regfunc(struct inlib *i) {
   TRACEF(">>> eventbroker_regfunc\n");
   i->init = &eventbroker_init;
   i->close = &eventbroker_close;
-#ifdef RM_ENABLED
-  i->fd_activate = &eventbroker_fd_activate;
-  i->fd_init = &eventbroker_fd_init;
-#endif /* RM_ENABLED */
   i->message = &eventbroker_message;
   return success;
 }
