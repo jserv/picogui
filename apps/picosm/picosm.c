@@ -55,7 +55,16 @@ int evtLogon(struct pgEvent *evt){
   }
 
   pgMessageDialog("Error", "Login failed!", 0);
-  
+  pgEnterContext();
+  pgSetWidget(interface->wPasswd,
+	      PG_WP_TEXT, pgNewString(""),
+	      0);
+  pgSetWidget(interface->wLogin,
+	      PG_WP_TEXT, pgNewString(""),
+	      0);
+  pgFocus(interface->wLogin);
+  pgLeaveContext();
+
   if(salt)
     free(salt);
   free(login);
@@ -73,6 +82,11 @@ int evtClear(struct pgEvent *evt){
 	      PG_WP_TEXT, pgNewString(""),
 	      0);
   return 1;
+}
+
+int evtLogin(struct pgEvent *evt){
+  picosmUI *interface = (picosmUI *)evt->extra;
+  pgFocus(interface->wPasswd);
 }
 
 int evtReboot(struct pgEvent *evt){
@@ -136,7 +150,7 @@ picosmUI *buildUI(void){
 		0);
   }
 
-  //if(!(newUI->wLogin = pgFindWidget("PSMLogin"))){
+  if(!(newUI->wLogin = pgFindWidget("PSMLogin"))){
     newUI->wLogin = pgNewWidget(PG_WIDGET_FIELD, PG_DERIVE_INSIDE, 
 				newUI->wLoginBox);
     pgSetWidget(newUI->wLogin, 
@@ -145,7 +159,8 @@ picosmUI *buildUI(void){
 		PG_WP_SIZEMODE, PG_SZMODE_PERCENT,
 		PG_WP_SIZE, 70,
 		0);
-    //}
+    pgFocus(newUI->wLogin);
+  }
     
   if(!(newUI->wPasswdLabel = pgFindWidget("PSMPasswdLabel"))){
     newUI->wPasswdLabel = pgNewWidget(PG_WIDGET_LABEL, PG_DERIVE_INSIDE, 
@@ -158,7 +173,7 @@ picosmUI *buildUI(void){
 		0);
   }
 
-  //if(!(newUI->wPasswd = pgFindWidget("PSMPasswd"))){
+  if(!(newUI->wPasswd = pgFindWidget("PSMPasswd"))){
     newUI->wPasswd = pgNewWidget(PG_WIDGET_FIELD, PG_DERIVE_INSIDE, 
 				 newUI->wPasswdBox);
   
@@ -169,7 +184,7 @@ picosmUI *buildUI(void){
 		PG_WP_PASSWORD, '*',
 		PG_WP_SIZE, 70,
 		0);
-    //}
+  }
 
   if(!(newUI->wClear = pgFindWidget("PSMClear"))){
     newUI->wClear = pgNewWidget(PG_WIDGET_BUTTON, PG_DERIVE_INSIDE, 
@@ -189,7 +204,7 @@ picosmUI *buildUI(void){
 		PG_WP_NAME,pgNewString("PSMLogon"),
 		PG_WP_ALIGN, PG_A_CENTER,
 		PG_WP_SIDE, PG_S_RIGHT,
-		PG_WP_TEXT, pgNewString("Log on"),
+		PG_WP_TEXT, pgNewString("Log On"),
 		0);
   }
 
@@ -223,6 +238,8 @@ void bindUI(picosmUI *interface){
   pgBind(interface->wClear, PG_WE_ACTIVATE, &evtClear, interface);
   pgBind(interface->wReboot, PG_WE_ACTIVATE, &evtReboot, NULL);
   pgBind(interface->wPowerOff, PG_WE_ACTIVATE, &evtShutdown, NULL);
+  pgBind(interface->wLogin, PG_WE_ACTIVATE, &evtLogin, interface);
+  pgBind(interface->wPasswd, PG_WE_ACTIVATE, &evtLogon, interface);
 }
 
 int main(int argc, char **argv){
@@ -239,9 +256,6 @@ int main(int argc, char **argv){
   }
   interface = buildUI();
   bindUI(interface);
-
-  pgUpdate();
-  pgFocus(interface->wLoginBox);
 
   pgEventLoop();
   
