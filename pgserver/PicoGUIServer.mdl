@@ -16,7 +16,7 @@ graphical interface.
 
 depends = [
     'resourcemanager', 'kernel',
-    ('libjpeg', S ('platform/ppc-linux'))
+    ('libjpeg', S ('platform/ppc-linux') | S ('platform/native-linux'))
     ]
     
 runtime = [
