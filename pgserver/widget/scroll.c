@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.66 2002/09/28 10:58:10 micahjd Exp $
+/* $Id: scroll.c,v 1.67 2002/10/02 20:31:19 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -194,13 +194,13 @@ void scrollevent(struct widget *self) {
 
 void scroll_resize(struct widget *self) {
   if (DATA->horizontal) {
-    self->in->div->ph = 0;
-    self->in->split = self->in->div->pw = DATA->res ?
+    self->in->div->pw = 0;
+    self->in->split = self->in->div->ph = DATA->res ? 
       theme_lookup(self->in->div->state,PGTH_P_WIDTH) : 0;
   }
   else {
-    self->in->div->pw = 0;
-    self->in->split = self->in->div->ph = DATA->res ? 
+    self->in->div->ph = 0;
+    self->in->split = self->in->div->pw = DATA->res ?
       theme_lookup(self->in->div->state,PGTH_P_WIDTH) : 0;
   }
 }
