@@ -41,7 +41,40 @@ def sock(address=None, display=None):
 #FIXME: make this conditional; in case of import error, define a class based on select
 import select
 
-def poll_for(connection):
-    p = select.poll()
-    p.register(connection, select.POLLIN)
-    return p
+# A wrapper around select.poll that lets us use strings rather than bitmasks for register(),
+# so the user of this class doesn't have to know about the select module. This can't be a
+# subclass, since select.poll is a builtin.
+class poll_for:
+    def __init__(self, connection):
+        self._p = select.poll()
+        self.register(connection, 'r')
+
+    def register(self, file, modes):
+        eventmask = 0
+        for char in modes:
+            if char == 'w':
+                eventmask |= select.POLLOUT
+            elif char == 'r':
+                eventmask |= select.POLLIN
+            elif char == 'p':
+                eventmask |= select.POLLPRI
+        self._p.register(file, eventmask)
+
+    def unregister(self, file):
+        self._p.unregister(file)
+
+    def poll(self, timeout=None):
+        result = self._p.poll(timeout)
+        if result == None:
+            return None
+        for i in range(0, len(result)):
+            (fd,eventmask) = result[i]
+            modes = ''
+            if eventmask & select.POLLOUT:
+                modes += 'w'
+            if eventmask & select.POLLIN:
+                modes += 'r'
+            if eventmask & select.POLLPRI:
+                modes += 'p'
+            result[i] = (fd, modes)
+        return result

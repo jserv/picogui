@@ -92,6 +92,9 @@ class Frame(object):
     def link(self, *args):
         self._app.link(*args)
 
+    def poll(self, handler, fd, mask='r'):
+        self._app.server.poll(handler,fd,mask)
+
     def addWidget(self, *args):
         return self._app.addWidget(*args)
 

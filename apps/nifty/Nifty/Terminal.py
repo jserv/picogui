@@ -6,4 +6,4 @@ class Terminal(Workspace):
         Workspace.open(self, frame, page, buffer)
         frame.link(buffer.notify_changed, self, 'data')
         frame.link(buffer.handle_resize, self, 'resize')
-        frame.link(buffer.do_update, None, 'idle')
+        frame.poll(buffer.do_update, buffer._ptyfd)

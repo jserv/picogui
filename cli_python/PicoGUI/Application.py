@@ -59,7 +59,11 @@ class EventRegistry(object):
 
 class Application(Widget.Widget):
     _type = 1 # apptype parameter for the register request
-    idle_delay = 100 # 0.1 second - reasonably realtime. You can set to None if you don't want idle events.
+
+    # No idle events by default- if you want idle events, set
+    # this to a delay in seconds (floating point) between event polls.
+    # If this is None, a blocking event wait is performed rather than a poll.
+    idle_delay = None
     
     def __init__(self, title='', server=None, handle=0):
         if not server:
@@ -139,26 +143,26 @@ class Application(Widget.Widget):
 
     def run(self):
         while 1:
-
+            # Update the UI before waiting on the user
             self.server.update()
-
-            queued = self.server.checkevent()
-            if queued:
-                for i in range(queued):
+    
+            if self.idle_delay != None:
+                # Polling event loop
+                queued = self.server.checkevent()
+                if queued:
+                    for i in range(queued):
+                        self.poll_next_event()
+                else:
+                    queued = None
+                    while not queued:
+                        idle = InternalEvent('idle', self, {})
+                        self._event_registry.dispatch(idle)
+                        time.sleep(self.idle_delay)
+                        queued = self.server.checkevent()
                     self.poll_next_event()
-            else: #nothing queued - wait a bit more
-                # this should work, but doesn't
-##                 while not self._event_stack:
-##                     self.send(self, 'idle')
-##                     self.poll_next_event(self.idle_delay)
-##                     self.server.update()
-                # so instead:
-                queued = None
-                while not queued:
-                    idle = InternalEvent('idle', self, {})
-                    self._event_registry.dispatch(idle)
-                    time.sleep(self.idle_delay / 1000.0)
-                    queued = self.server.checkevent()
+
+            else:
+                # Blocking event loop
                 self.poll_next_event()
 
             try:

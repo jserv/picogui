@@ -35,6 +35,8 @@ class TerminalPage:
 	except:
 	    self._terminal.write("The terminal isn't supported on this operating system.\n\r")
 
+        app.server.poll(self.update, self._ptyfd)
+
     def terminalHandler(self, ev):
         os.write(self._ptyfd, ev.data)
 
@@ -48,14 +50,18 @@ class TerminalPage:
 	if self._app.current == self._position:
 	    self._app.text = self.tabpage.text
 
-    def update(self):
+    def update(self, fd, event):
         self.terminalRead()
         # expire this terminal if pid is finished
 	status = os.waitpid(self._ptypid, os.WNOHANG)
 	if status[0] != 0:
-	    self._app.delWidget(self.tabpage)
-	    self._app.destroy(self._position)
+            self.destroy()
 	    os.close(self._ptyfd)
+
+    def destroy(self):
+        self._app.server.poll(None, self._ptyfd)
+        self._app.delWidget(self.tabpage)
+        self._app.destroy(self._position)
 
     def terminalRead(self):
         if self._termProcess:
@@ -75,6 +81,7 @@ class TerminalPage:
     def setPosition(self, position):
         self._position = position
 
+
 class Config:
     def __init__(self, app, parent, relation):
         self._parent = parent
@@ -88,6 +95,7 @@ class Config:
 
     def activate(self, ev):
         self._app.text = "epterm config"
+
 
 class App(PicoGUI.Application):
     def __init__(self):
@@ -105,8 +113,6 @@ class App(PicoGUI.Application):
 	self._config = self._pages[-1].tabpage.addWidget('tabpage', 'after')
 	self._config.text = 'config'
 	self._configstuff = Config(self, self._config, 'inside')
-
-	self.link(self.update, self, 'idle')
 
     def addtab(self,ev):
         self.appendtab()
@@ -128,19 +134,7 @@ class App(PicoGUI.Application):
 	self._pages[-1].tabpage.text = 'tab!'
 	self._pages[-1].tabpage.on = 1
 
-    def update(self):
-    # def update(self, ev):
-	i = 0
-	while(i < len(self._pages)):
-	    self._pages[i].update()
-	    if(len(self._pages) == 0):
-	        sys.exit(0)
-	    i = i + 1
 
-f = App()
-while(1):
-    f.eventPoll()
-    f.update()
-    time.sleep(0.01)
-# f.idle_delay = 10
-# f.run()
+if __name__ == '__main__':
+    f = App()
+    f.run()

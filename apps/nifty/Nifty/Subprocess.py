@@ -57,7 +57,7 @@ class Subprocess(Buffer):
         if ev.x > 0 and ev.y > 0:
 	    fcntl.ioctl(self._ptyfd, termios.TIOCSWINSZ, struct.pack('4H', ev.y, ev.x, 0, 0))
 
-    def do_update(self, ev):
+    def do_update(self, fd, ev):
         if self._termProcess:
 	    try:
 	        text = os.read(self._ptyfd, 4096)
