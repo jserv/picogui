@@ -105,6 +105,9 @@ fi
 
 AC_SUBST(LXDIALOG)
 
+dnl explicitely set CFLAGS to empty, as it will be recreated during the analysis of 
+dnl the profile
+CFLAGS=""
 
 dnl ==================================================
 dnl Extra libraries depending on the selected profile
