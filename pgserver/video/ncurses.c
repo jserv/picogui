@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.29 2002/09/28 09:30:44 micahjd Exp $
+/* $Id: ncurses.c,v 1.30 2002/09/28 09:45:25 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -246,23 +246,6 @@ hwrcolor ncurses_color_pgtohwr(pgcolor c) {
    
 }
 
-/**** A hack to turn off the picogui sprite cursor */
-
-extern void def_sprite_show(struct sprite *spr);
-void ncurses_sprite_show(struct sprite *spr) {
-   if (spr==cursor_get_default()->sprite) {
-      spr->visible = 0;
-    
-#ifdef DRIVER_GPM
-      /* Do it ourselves */
-      if(gpm_last_event.type)
-         GPM_DRAWPOINTER(&gpm_last_event);
-#endif
-   }
-      
-   def_sprite_show(spr);
-}
-
 /******************************************** Driver registration */
 
 g_error ncurses_regfunc(struct vidlib *v) {
@@ -280,8 +263,6 @@ g_error ncurses_regfunc(struct vidlib *v) {
    v->font_getglyph = &ncurses_font_getglyph;
    v->charblit = &ncurses_charblit;
 
-   v->sprite_show = &ncurses_sprite_show;
-   
    return success;
 }
 
