@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.34 2002/07/03 22:03:26 micahjd Exp $
+/* $Id: netcore.c,v 1.35 2002/07/04 00:48:05 epchristi Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -105,6 +105,8 @@ int _pg_recv(void *data,u32 datasize) {
 int _pg_recvtimeout(s16 *rsptype) {
   struct timeval tv;
   fd_set readfds;
+  fd_set writefds;
+  fd_set exceptfds;
   int result;
   struct pgrequest waitreq;
   struct pgrequest unwaitreq;
@@ -120,12 +122,14 @@ int _pg_recvtimeout(s16 *rsptype) {
    
   while (1) {
      FD_ZERO(&readfds);
+     FD_ZERO(&writefds);
+     FD_ZERO(&exceptfds);
      FD_SET(_pgsockfd,&readfds);
      tv = _pgidle_period;
    
      /* don't care about writefds and exceptfds: */
 
-     result = (*_pgselect_handler)(_pgsockfd+1,&readfds,NULL,NULL,
+     result = (*_pgselect_handler)(_pgsockfd+1,&readfds,&writefds,&exceptfds,
 				   (tv.tv_sec + tv.tv_usec) ? &tv : NULL);
      if (result < 0)
        continue;
@@ -176,7 +180,7 @@ int _pg_recvtimeout(s16 *rsptype) {
 #else      
      /* At this point, it's safe to make PicoGUI API calls. */
      if (_pgselect_bottomhalf)
-       (*_pgselect_bottomhalf)(result,&readfds);
+       (*_pgselect_bottomhalf)(result,&readfds,&writefds,&exceptfds);
      _pg_idle();
      
      /* Clear the pipes... */
@@ -866,7 +870,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.34 2002/07/03 22:03:26 micahjd Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.35 2002/07/04 00:48:05 epchristi Exp $\n");
 	exit(1);
       }
 

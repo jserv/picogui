@@ -1,4 +1,4 @@
-/* $Id: picogui.h,v 1.15 2002/04/06 19:35:55 micahjd Exp $
+/* $Id: picogui.h,v 1.16 2002/07/04 00:48:05 epchristi Exp $
  *
  * picogui.h - Include file for your average PicoGUI client using the
  *             C client library
@@ -25,6 +25,9 @@
  * 
  * 
  */
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
 
 #include <picogui/constants.h>   /* PicoGUI client/server shared constants */
 #include <picogui/network.h>     /* Client/server shared data structures */
@@ -33,5 +36,9 @@
 #include <picogui/canvas.h>      /* Canvas widget low-level interface */
 #include <picogui/pgfx.h>        /* PGFX abstract graphics interface */
 #include <picogui/applet.h>	 /* PGL applet messaging system */
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 /* The End */

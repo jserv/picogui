@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.87 2002/07/03 22:03:25 micahjd Exp $
+/* $Id: client_c.h,v 1.88 2002/07/04 00:48:05 epchristi Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -206,7 +206,8 @@ typedef void (*pgidlehandler)(void);
 //! The event hander for pgCustomizeSelect
 typedef int (*pgselecthandler)(int n, fd_set *readfds, fd_set *writefds,
 			       fd_set *exceptfds, struct timeval *timeout);
-typedef void (*pgselectbh)(int result, fd_set *readfds);
+typedef void (*pgselectbh)(int result, fd_set *readfds, fd_set *writefds,
+			   fd_set *exceptfds);
 #endif
 //! Filter function for pgFilePicker()
 typedef int (*pgfilter)(const char *string,const char *pattern);
