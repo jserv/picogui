@@ -1,4 +1,4 @@
-/* $Id: sdlgl_bitmap.c,v 1.5 2002/08/19 06:00:15 micahjd Exp $
+/* $Id: sdlgl_bitmap.c,v 1.6 2002/11/08 01:25:37 micahjd Exp $
  *
  * sdlgl_bitmap.c - OpenGL driver for picogui, using SDL for portability
  *                  Functions to replace PicoGUI's normal bitmap data type
@@ -98,8 +98,6 @@ g_error sdlgl_bitmap_new(hwrbitmap *bmp,s16 w,s16 h,u16 bpp) {
 void sdlgl_bitmap_free(hwrbitmap bmp) {
   struct glbitmap *glb = (struct glbitmap *) bmp;
   def_bitmap_free(glb->sb);
-  if (glb->tile)
-    sdlgl_bitmap_free((hwrbitmap)glb->tile);
   if (glb->texture)
     glDeleteTextures(1,&glb->texture);
   g_free(glb);
@@ -110,11 +108,6 @@ void sdlgl_bitmap_free(hwrbitmap bmp) {
  */
 int gl_invalidate_texture(hwrbitmap bit) {
   struct glbitmap *glb = (struct glbitmap *) bit;
-
-  if (glb->tile) {
-    vid->bitmap_free((hwrbitmap) glb->tile);
-    glb->tile = NULL;
-  }
 
   if (glb->texture) {
     glDeleteTextures(1,&glb->texture);

@@ -1,6 +1,10 @@
-/* $Id: font_xft.c,v 1.6 2002/11/06 06:40:32 micahjd Exp $
+/* $Id: font_xft.c,v 1.7 2002/11/08 01:25:37 micahjd Exp $
  *
  * font_xft.c - Font engine for X implemented using Xft
+ *
+ *          This driver is still INCOMPLETE and EXPERIMENTAL!
+ *          There's probably no need to finsih this driver any
+ *          time soon, as the freetype font engine looks and works better.
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -51,6 +55,9 @@ void xft_getmetrics(struct font_descriptor *self, struct font_metrics *m);
 /********************************** Implementations ***/
 
 g_error xft_engine_init(void) {
+  if (!x11_display)
+    return mkerror(PG_ERRT_BADPARAM, 146);  /* Requires X */
+
   /* We use just one global Xft drawable, since all our
    * drawables will use the default pixel format and visual.
    */

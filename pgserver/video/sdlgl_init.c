@@ -1,4 +1,4 @@
-/* $Id: sdlgl_init.c,v 1.19 2002/11/04 04:11:58 micahjd Exp $
+/* $Id: sdlgl_init.c,v 1.20 2002/11/08 01:25:37 micahjd Exp $
  *
  * sdlgl_init.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has initialization, shutdown, and registration.
@@ -81,7 +81,6 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   char str[80];
   float a,x,y,z;
   g_error e;
-  struct font_style fs;
   int zoom = get_param_int(GL_SECTION,"zoom",1);
    
   /* Interpret flags */
@@ -129,12 +128,6 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   gl_matrix_pixelcoord();
-
-  /* Load a font for the OSD */
-  memset(&fs,0,sizeof(fs));
-  fs.size = get_param_int(GL_SECTION,"osd_fontsize",20);
-  e = font_descriptor_create(&gl_global.osd_font,&fs);
-  errorcheck;
 
   return success; 
 }
@@ -208,9 +201,10 @@ g_error sdlgl_regfunc(struct vidlib *v) {
   v->grop_render_postsetup_hook = &sdlgl_grop_render_postsetup_hook;
   v->grop_render_end_hook = &sdlgl_grop_render_end_hook;
   v->bitmap_getshm = &sdlgl_bitmap_getshm;
-  v->charblit = &sdlgl_charblit;
+  //  v->charblit = &sdlgl_charblit;
+  v->multiblit = &sdlgl_multiblit;
 #ifdef CONFIG_FONTENGINE_FREETYPE
-  v->alpha_charblit = &sdlgl_alpha_charblit;
+  //  v->alpha_charblit = &sdlgl_alpha_charblit;
 #endif
 
   return success;

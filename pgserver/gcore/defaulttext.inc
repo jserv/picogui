@@ -151,3 +151,4 @@
 /* 143 */ "Unknown application manager specified",
 /* 144 */ "Badly formed command line",
 /* 145 */ "Shared memory bitmaps are not supported with current settings",
+/* 146 */ "The Xft font engine requires using the X11 video driver",

@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.22 2002/11/04 04:11:58 micahjd Exp $
+/* $Id: sdlgl.h,v 1.23 2002/11/08 01:25:37 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -87,9 +87,6 @@ struct glbitmap {
   GLuint texture;
   float tx1,ty1,tx2,ty2;  /* Texture coordinates */
   int tw,th;              /* Texture size (power of two) */
-
-  /* If non-NULL, this is a cached tiled representation  */
-  struct glbitmap *tile;
 };
 
 /* Like X11 and most other high-level graphics APIs, there is a relatively
@@ -264,6 +261,8 @@ void sdlgl_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 void sdlgl_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 			  int char_pitch, u8 *gammatable, s16 angle, hwrcolor c,
 			  struct quad *clip, s16 lgop);
+void sdlgl_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
+		     hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 xo, s16 yo, s16 lgop);
 
 #endif /* _H_SDLGL */
 

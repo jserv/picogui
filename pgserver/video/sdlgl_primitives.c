@@ -1,4 +1,4 @@
-/* $Id: sdlgl_primitives.c,v 1.13 2002/11/04 04:11:58 micahjd Exp $
+/* $Id: sdlgl_primitives.c,v 1.14 2002/11/08 01:25:37 micahjd Exp $
  *
  * sdlgl_primitives.c - OpenGL driver for picogui, using SDL for portability.
  *                      Implement standard picogui primitives using OpenGL
@@ -236,42 +236,6 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
     struct glbitmap *glsrc = (struct glbitmap *) src;
     float tx1,ty1,tx2,ty2;
 
-    /* If we're tiling, create a cached tiled bitmap at the minimum
-     * size if necessary, and use that to reduce the number of separate
-     * quads we have to send to OpenGL
-     */
-    if ((w > glsrc->sb->w || h > glsrc->sb->h) && 
-	(glsrc->sb->w < GL_TILESIZE_MIN || glsrc->sb->h < GL_TILESIZE_MIN)) {
-      /* Create a pre-tiled image */
-      if (!glsrc->tile) {
-	int neww, newh;
-
-	/* Calculate new width and height of the pretiled texture. */
-	neww = glsrc->sb->w;
-	if (neww < GL_TILESIZE_MIN)
-	  neww = (GL_TILESIZE_IDEAL / glsrc->sb->w) * glsrc->sb->w;
-	newh = glsrc->sb->h;
-	if (newh < GL_TILESIZE_MIN)
-	  newh = (GL_TILESIZE_IDEAL / glsrc->sb->h) * glsrc->sb->h;
-
-	
-	DBG("Expand tile from %dx%d to %dx%d\n",
-	    glsrc->sb->w, glsrc->sb->h,neww,newh);	    
-
-	vid->bitmap_new( (hwrbitmap*)&glsrc->tile,neww,newh, vid->bpp );
-	def_blit((hwrbitmap)glsrc->tile,0,0,glsrc->tile->sb->w,
-		 glsrc->tile->sb->h,src,0,0,PG_LGOP_NONE);
-      }
-      glsrc = glsrc->tile;
-    }
-
-    /* If we still have to tile, let defaulvbl do it
-     */
-    if (w > glsrc->sb->w || h > glsrc->sb->h) {
-      def_blit(dest,x,y,w,h,(hwrbitmap) glsrc,src_x,src_y,lgop);
-      return;
-    }
-
     /* Make sure the bitmap has a corresponding texture */
     gl_make_texture(glsrc);
     
@@ -482,6 +446,49 @@ void sdlgl_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 
   /* FIXME: implement me! */
 }
 #endif /* CONFIG_FONTENGINE_FREETYPE */
+
+void sdlgl_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
+		     hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 xo, s16 yo, s16 lgop) {
+  s16 i,j;
+  int blit_x, blit_y, blit_w, blit_h, blit_src_x, blit_src_y;
+  int full_line_y = -1;
+
+  if (!(sw && sh)) return;
+
+  /* Split the tiled blit up into individual blits clipped against the destination.
+   * We do y clipping once per line, since only x coordinates change in the inner loop
+   */
+  
+  for (j=-yo;j<h;j+=sh) {
+    blit_y = y+j;
+    blit_h = sh;
+    blit_src_y = sy;
+    if (j<0) {
+      blit_y = y;
+      blit_h += j;
+      blit_src_y -= j;
+    }
+    if (blit_y + blit_h > y + h)
+      blit_h = y + h - blit_y;
+    
+    for (i=-xo;i<w;i+=sw) {
+      blit_x = x+i;
+      blit_w = sw;
+      blit_src_x = sx;
+      if (i<0) {
+	blit_x = x;
+	blit_w += i;
+	blit_src_x -= i;
+      }
+      if (blit_x + blit_w > x + w)
+	blit_w = x + w - blit_x;
+      
+      (*vid->blit) (dest,blit_x,blit_y,blit_w,blit_h,src,blit_src_x,blit_src_y,lgop);
+    }
+    if (blit_h == sh)
+      full_line_y = blit_y;
+  }
+}
 
 /* The End */
 
