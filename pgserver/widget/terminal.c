@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.4 2001/01/05 00:24:48 micahjd Exp $
+/* $Id: terminal.c,v 1.5 2001/01/05 00:41:23 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -482,6 +482,23 @@ void term_char(struct widget *self,char c) {
     /* Too much? */
     if (DATA->escbuf_pos >= ESCAPEBUF_SIZE) {
       DATA->escapemode = 0;
+#ifdef BOTHERSOME_TERMINAL
+      {
+	char *p;
+
+	/* Keep this from messing up the debug terminal! */
+	DATA->escapebuf[ESCAPEBUF_SIZE-1] = 0;
+	p = DATA->escapebuf;
+	while (*p) {
+	  if (*p == '\033')
+	    *p = '^';
+	  p++;
+	}
+
+	printf("term: buffer overflowed before escape was recognized\nterm: buffer = \"%s\"\n",
+	       DATA->escapebuf);
+      }
+#endif
       return;
     }
 
@@ -711,6 +728,11 @@ void term_ecma48sgr(struct widget *self) {
       DATA->attr = (DATA->attr & 0x0F) | (ATTR_DEFAULT & 0xF0);
       break;
 
+#ifdef BOTHERSOME_TERMINAL
+    default:
+      printf("term: Unknown ECMA-48 SGR number = %d\n",*arg);
+#endif
+
     }
 
 }
@@ -798,6 +820,11 @@ void term_othercsi(struct widget *self,char c) {
       term_clearbuf(self,DATA->crsrx,DATA->crsry,DATA->bufferw-DATA->crsrx);
     }
     break;
+
+#ifdef BOTHERSOME_TERMINAL
+    default:
+      printf("term: Unknown final character in CSI escape = %c\n",c);
+#endif
 
 
   }
