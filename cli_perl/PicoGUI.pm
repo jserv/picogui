@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.10 2000/05/05 22:34:08 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.11 2000/05/06 06:39:13 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -117,7 +117,10 @@ require Exporter;
 	    'scrollbar.fill' => 6,
 	    'scrollind.border' => 7,
 	    'scrollind.fill' => 8,
-	    'scrollind.overlay' => 9
+	    'scrollind.overlay' => 9,
+	    'indicator.border' => 10,
+	    'indicator.fill' => 11,
+	    'indicator.overlay' => 12
 	    );
 
 %STATE = (

@@ -75,6 +75,8 @@ scrollbar.border.normal.w = -2
 scrollbar.border.normal.h = -2
 scrollbar.border.normal.type = flat
 scrollbar.border.normal.c = 0x000000
+scrollbar.border.active.c = 0x000000
+scrollbar.border.hilighted.c = 0x000000
 
 scrollbar.fill.normal.x = 0
 scrollbar.fill.normal.y = 0
@@ -85,6 +87,14 @@ scrollbar.fill.normal.c1 = 0x70A0A0
 scrollbar.fill.normal.c2 = 0x103030
 scrollbar.fill.normal.angle = 4
 scrollbar.fill.normal.trans = none
+scrollbar.fill.active.c1 = 0x80B0D0
+scrollbar.fill.active.c2 = 0x103040
+scrollbar.fill.active.angle = 0
+scrollbar.fill.active.trans = none
+scrollbar.fill.hilighted.c1 = 0x80B0D0
+scrollbar.fill.hilighted.c2 = 0x103040
+scrollbar.fill.hilighted.angle = 0
+scrollbar.fill.hilighted.trans = none
 
 scrollind.border.normal.x = 1
 scrollind.border.normal.y = 1
@@ -139,6 +149,33 @@ scrollind.overlay.active.c1 = 0x505000
 scrollind.overlay.active.c2 = 0x000000
 scrollind.overlay.active.angle = 270
 scrollind.overlay.active.trans = light
+
+indicator.border.normal.x = 1
+indicator.border.normal.y = 1
+indicator.border.normal.w = -2
+indicator.border.normal.h = -2
+indicator.border.normal.type = flat
+indicator.border.normal.c = 0x000000
+
+indicator.fill.normal.x = 0
+indicator.fill.normal.y = 0
+indicator.fill.normal.w = 0
+indicator.fill.normal.h = 0
+indicator.fill.normal.type = gradient
+indicator.fill.normal.c1 = 0x8080F0
+indicator.fill.normal.c2 = 0x202020
+indicator.fill.normal.angle = 90
+indicator.fill.normal.trans = none
+
+indicator.overlay.normal.x = 0
+indicator.overlay.normal.y = 0
+indicator.overlay.normal.w = 0
+indicator.overlay.normal.h = 0
+indicator.overlay.normal.type = gradient
+indicator.overlay.normal.c1 = 0x000000
+indicator.overlay.normal.c2 = 0xD0D000
+indicator.overlay.normal.angle = 0
+indicator.overlay.normal.trans = light
 
 background = ../images/bg/darkblueswirl.pnm
 

@@ -28,6 +28,9 @@ while (1) {
     elsif ($from==$check->GetHandle()) {
 	$n+=5;
     }
+    elsif ($from==$sc->GetHandle()) {
+	$n = $param;
+    }
     
     $sc->SetWidget(-value => $n);
     $nstr = NewString($n."%");
