@@ -1,4 +1,4 @@
-/* $Id: lcdmono.ths,v 1.6 2001/04/16 08:21:56 micahjd Exp $
+/* $Id: lcdmono.ths,v 1.7 2001/04/18 01:10:21 micahjd Exp $
  *
  * Monochrome theme for LCDs
  *
@@ -19,11 +19,9 @@ object default {
    
    // font = Font("Helvetica",8,0);
    font = Font("Lucida",10,0);
-   height = 16;
+   height = 14;
    width = 14;
 }
-
-object toolbar margin = 1;
 
 object button {
    bgfill = fillstyle {
@@ -50,30 +48,42 @@ object button {
 }
 object button.on {
    fgcolor = 0xFFFFFF;
-   bgcolor = 0x404040;
+   bgcolor = 0x000000;
 }
+object menuitem align = PG_A_LEFT;
 object menuitem.hilight {
    fgcolor = 0xFFFFFF;
-   bgcolor = 0x404040;
+   bgcolor = 0x000000;
 }
 
-object indicator overlay = fillstyle {
-   Rect(x+1,y+1,w-2,h-2,ColorConv(0x404040));
-};
+object indicator {
+   overlay = fillstyle {
+      Rect(x+1,y+1,w-2,h-2,ColorConv(0x000000));
+   };
+   bgfill = fillstyle {
+      Frame(x,y,w,h,ColorConv(0x000000));
+      Rect(x+1,y+1,w-2,h-2,ColorConv(0xFFFFFF));
+   };
+}
 
 /* Nifty little logo background. I like PicoGUI's background capabilities
  * much better than the usual bitmap-or-nothing mentality... */
 object background {
    text = "PicoGUI";
    font = Font("Utopia",25,PG_FSTYLE_BOLD);
+   bitmap1 = LoadBitmap("data/gray_mono.pbm");
+   bitmap2 = LoadBitmap("data/bg_mono.pbm");
    bgfill = fillstyle {
-      var f;
+      var f,b;
       f = ColorConv(0x000000);
-      Rect(x,y,w,h,ColorConv(0xFFFFFF));
+      b = ColorConv(0xFFFFFF);
+      Bitmap(x,y,30,h,bitmap1,PG_LGOP_NONE,0,0);
+      Bitmap(x+34,y,w-34,h,bitmap2,PG_LGOP_NONE,0,0);
       Bar(x+30,y,1,h,f);
+      Bar(x+31,y,1,h,b);
       Bar(x+32,y,1,h,f);
       Bar(x+33,y,1,h,f);
-      Textv(x+3,y+h-4,1,1,text,font,f);
+      Textv(x+3,y+h-4,1,1,text,font,ColorConv(0xFFFFFF));
    };
 }
 
@@ -126,25 +136,48 @@ object label.dlgtitle {
       Pixel(x+w-1,y,1,1,bgc);
       Pixel(x,y+h-1,1,1,bgc);
    };
+   font = Font(NULL,10,PG_FSTYLE_BOLD);
 }
 
 object panelbar {
-   bgfill  = Copy(label.dlgtitle::bgfill);
+   bgfill = fillstyle {
+      var bgc;
+      bgc = ColorConv(0xFFFFFF);
+      
+      Frame(x,y,w,h,bgc);
+      Rect(x+1,y+1,w-2,h-2,ColorConv(bgcolor));
+      Pixel(x+1,y+1,1,1,bgc);
+      Pixel(x+w-2,y+h-2,1,1,bgc);
+      Pixel(x+w-2,y+1,1,1,bgc);
+      Pixel(x+1,y+h-2,1,1,bgc);
+   };
    bgcolor = 0x000000;
    fgcolor = 0xFFFFFF;
+   font = Font(NULL,10,PG_FSTYLE_BOLD);
+   width = 12;
 }
 object base.panelbtn {
-   bgfill  = Copy(label.dlgtitle::bgfill);
-   bgcolor = 0x303030;
-   fgcolor = 0xFFFFFF;
+   bgfill  = Copy(default::bgfill);
+   bgcolor = 0xFFFFFF;
+   fgcolor = 0x000000;
    spacing = 0;
    margin = 0;
    side = PG_S_RIGHT;
-   font = Font("Clean",6,PG_FSTYLE_FIXED | PG_FSTYLE_BOLD);
+   width = 12;
+   height = 12;
 }
-object closebtn  text = "X";
-object rotatebtn text = "/";
-object zoombtn   text = "-";
+object closebtn  {
+     widgetbitmap = LoadBitmap("data/mono_x.pbm");
+     side = PG_S_RIGHT;
+}
+object rotatebtn {
+     widgetbitmap = LoadBitmap("data/mono_rotate.pbm");
+     side = PG_S_LEFT;
+}
+object zoombtn {
+     widgetbitmap = LoadBitmap("data/mono_zoom.pbm");
+     side = PG_S_LEFT;
+}
 
 object scroll width = 8;
 
@@ -159,5 +192,13 @@ object checkbox {
    margin = 10;
 }
 object checkbox.on bitmap1 = LoadBitmap("data/lcd_check_checked.pnm");
+
+object toolbar {
+   bgfill = fillstyle {
+      Rect(x,y,w,h,ColorConv(bgcolor));
+      Slab(x,y+h-1,w,1,ColorConv(fgcolor));
+   };
+   margin = 2;
+}
 
 /* The End */
