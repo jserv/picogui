@@ -64,32 +64,32 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
 
   switch (property) {
 
-  case WP_BITMAP_SIDE:
+  case WP_SIDE:
     if ((data != S_LEFT) && (data != S_RIGHT) && (data != S_TOP) &&
 	(data != S_BOTTOM)) return mkerror(ERRT_BADPARAM,
-	"WP_BITMAP_SIDE param is not a valid side value");
+	"WP_SIDE param is not a valid side value (bitmap)");
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC;
     resizebitmap(self);
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_BITMAP_COLOR:
+  case WP_BGCOLOR:
     self->in->div->param.bitmap.fill = cnvcolor(data);
     self->in->div->param.bitmap.transparent = 0;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_BITMAP_TRANSPARENT:
+  case WP_TRANSPARENT:
     self->in->div->param.bitmap.transparent = (data != 0);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_BITMAP_ALIGN:
+  case WP_ALIGN:
     if (data > AMAX) return mkerror(ERRT_BADPARAM,
-		     "WP_BITMAP_ALIGN param is not a valid align value");
+		     "WP_ALIGN param is not a valid align value (bitmap)");
     if (data==A_ALL || self->in->div->param.bitmap.align==A_ALL) {
       self->in->div->param.bitmap.align = (alignt) data;
       resizebitmap(self);
@@ -101,15 +101,15 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_BITMAP_LGOP:
+  case WP_LGOP:
     if (data > LGOPMAX) return mkerror(ERRT_BADPARAM,
-		     "WP_BITMAP_LGOP param is not a valid lgop value");
+		     "WP_LGOP param is not a valid lgop value (bitmap)");
     self->in->div->param.bitmap.lgop = data;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_BITMAP_BITMAP:
+  case WP_BITMAP:
     if (!data) {
       self->in->flags |= DIVNODE_NEED_REDRAW;
       self->dt->flags |= DIVTREE_NEED_REDRAW;
@@ -120,9 +120,11 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
       self->in->flags |= DIVNODE_NEED_RECALC;
       self->dt->flags |= DIVTREE_NEED_RECALC;
     }
-    else return mkerror(ERRT_HANDLE,"WP_BITMAP_BITMAP invalid bitmap handle");
+    else return mkerror(ERRT_HANDLE,"WP_BITMAP invalid bitmap handle");
     break;
 
+  default:
+    return mkerror(ERRT_BADPARAM,"Invalid property for bitmap");
   }
 
   return sucess;
@@ -131,25 +133,25 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
 glob bitmap_get(struct widget *self,int property) {
   switch (property) {
 
-  case WP_BITMAP_SIDE:
+  case WP_SIDE:
     return self->in->flags & (~SIDEMASK);
 
-  case WP_BITMAP_COLOR:
+  case WP_COLOR:
     return self->in->div->param.bitmap.fill;
     
-  case WP_BITMAP_TRANSPARENT:
+  case WP_TRANSPARENT:
     return self->in->div->param.bitmap.transparent;
 
-  case WP_BITMAP_ALIGN:
+  case WP_ALIGN:
     return self->in->div->param.bitmap.align;
 
-  case WP_BITMAP_LGOP:
+  case WP_LGOP:
     return self->in->div->param.bitmap.lgop;
 
-  case WP_BITMAP_BITMAP:
+  case WP_BITMAP:
     return (glob) self->in->div->param.bitmap.bitmap;
-
   }
+  return 0;
 }
  
 void resizebitmap(struct widget *self) {

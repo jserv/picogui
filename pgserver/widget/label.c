@@ -76,54 +76,63 @@ g_error label_set(struct widget *self,int property, glob data) {
 
   switch (property) {
 
-  case WP_LABEL_SIDE:
+  case WP_SIDE:
     if ((data != S_LEFT) && (data != S_RIGHT) && (data != S_TOP) &&
 	(data != S_BOTTOM)) return mkerror(ERRT_BADPARAM,
-	"WP_LABEL_SIDE param is not a valid side value");
+	"WP_SIDE param is not a valid side value (label)");
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC;
     resizelabel(self);
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_LABEL_COLOR:
+  case WP_COLOR:
+    self->in->div->param.text.col = cnvcolor(data);
+    self->in->flags |= DIVNODE_NEED_RECALC;
+    self->dt->flags |= DIVTREE_NEED_RECALC;
+    break;
+
+  case WP_BGCOLOR:
     self->in->div->param.text.fill = cnvcolor(data);
     self->in->div->param.text.transparent = 0;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_LABEL_TRANSPARENT:
+  case WP_TRANSPARENT:
     self->in->div->param.text.transparent = (data != 0);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_LABEL_ALIGN:
+  case WP_ALIGN:
     if (data > AMAX) return mkerror(ERRT_BADPARAM,
-		     "WP_LABEL_ALIGN param is not a valid align value");
+		     "WP_ALIGN param is not a valid align value (label)");
     self->in->div->param.text.align = (alignt) data;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_LABEL_FONT:
+  case WP_FONT:
     if (rdhandle((void **)&fd,TYPE_FONTDESC,-1,data).type!=ERRT_NONE || !fd) 
-      return mkerror(ERRT_HANDLE,"WP_LABEL_FONT invalid font handle");
+      return mkerror(ERRT_HANDLE,"WP_FONT invalid font handle (label)");
     self->in->div->param.text.fd = (handle) data;
     resizelabel(self);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_LABEL_TEXT:
+  case WP_TEXT:
     if (rdhandle((void **)&str,TYPE_STRING,-1,data).type!=ERRT_NONE || !str) 
-      return mkerror(ERRT_HANDLE,"WP_LABEL_TEXT invalid string handle");
+      return mkerror(ERRT_HANDLE,"WP_TEXT invalid string handle (label)");
     self->in->div->param.text.string = (handle) data;
     resizelabel(self);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
+
+  default:
+    return mkerror(ERRT_BADPARAM,"Invalid property for label");
   }
   return sucess;
 }
@@ -134,23 +143,29 @@ glob label_get(struct widget *self,int property) {
 
   switch (property) {
 
-  case WP_LABEL_SIDE:
+  case WP_SIDE:
     return self->in->flags & (~SIDEMASK);
 
-  case WP_LABEL_COLOR:
+  case WP_BGCOLOR:
     return self->in->div->param.text.fill;
 
-  case WP_LABEL_TRANSPARENT:
+  case WP_COLOR:
+    return self->in->div->param.text.col;
+
+  case WP_TRANSPARENT:
     return self->in->div->param.text.transparent;
 
-  case WP_LABEL_ALIGN:
+  case WP_ALIGN:
     return self->in->div->param.text.align;
 
-  case WP_LABEL_FONT:
+  case WP_FONT:
     return (glob) self->in->div->param.text.fd;
 
-  case WP_LABEL_TEXT:
+  case WP_TEXT:
     return (glob) self->in->div->param.text.string;
+
+  default:
+    return 0;
   }
 }
  

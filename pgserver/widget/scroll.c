@@ -43,22 +43,26 @@ void scroll_remove(struct widget *self) {
 
 g_error scroll_set(struct widget *self,int property, glob data) {
   switch (property) {
-  case WP_SCROLL_VALUE:
+  case WP_VALUE:
     if (data > 100) data = 100;
     if (data < 0) data = 0;
     self->in->div->param.i = data;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
+
+  default:
+    return mkerror(ERRT_BADPARAM,"Invalid property for scroll");
   }
   return sucess;
 }
 
 glob scroll_get(struct widget *self,int property) {
   switch (property) {
-  case WP_SCROLL_VALUE:
+  case WP_VALUE:
     return self->in->div->param.i;
   }
+  return 0;
 }
 
 /* The End */

@@ -9,8 +9,6 @@
 
 #include <widget.h>
 
-#define INDICATOR_MARGIN 2
-
 void indicator(struct divnode *d) {
   int x,y,w,h,p;
   x = y = 0;
@@ -59,7 +57,7 @@ void indicator_remove(struct widget *self) {
 g_error indicator_set(struct widget *self,int property, glob data) {
   switch (property) {
 
-  case WP_INDICATOR_VALUE:
+  case WP_VALUE:
     if (data > 100) data = 100;
     if (data < 0) data = 0;
     self->in->div->param.i = (int) data;
@@ -67,22 +65,24 @@ g_error indicator_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_INDICATOR_WIDTH:
+  case WP_SIZE:
     if (data < 0) return mkerror(ERRT_BADPARAM,
-				 "WP_INDICATOR_WIDTH param is negative");
+				 "WP_SIZE param is negative (indicator)");
     self->in->split = (int) data;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_INDICATOR_SIDE:
+  case WP_SIDE:
     if ((data != S_LEFT) && (data != S_RIGHT) && (data != S_TOP) &&
 	(data != S_BOTTOM)) return mkerror(ERRT_BADPARAM,
-	"WP_INDICATOR_SIDE param is not a valid side value");
+	"WP_SIDE param is not a valid side value (indicator)");
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
 
+  default:
+    return mkerror(ERRT_BADPARAM,"Invalid property for indicator");
   }
   return sucess;
 }
@@ -90,16 +90,17 @@ g_error indicator_set(struct widget *self,int property, glob data) {
 glob indicator_get(struct widget *self,int property) {
   switch (property) {
 
-  case WP_INDICATOR_VALUE:
+  case WP_VALUE:
     return self->in->div->param.i;
 
-  case WP_INDICATOR_WIDTH:
+  case WP_SIZE:
     return self->in->split;
 
-  case WP_INDICATOR_SIDE:
+  case WP_SIDE:
     return self->in->flags & (~SIDEMASK);
 
   }
+  return 0;
 }
 
 /* The End */

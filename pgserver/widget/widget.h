@@ -116,39 +116,22 @@ DEF_STATICWIDGET_PROTO(bitmap)
 #define WIDGET_INDICATOR  3
 #define WIDGET_BITMAP     4
 #define WIDGETMAX         4    /* For error checking */
-
-/* Widget properties */
-#define WP_PANEL_SIZE	     0
-#define WP_PANEL_SIDE        1
-#define WP_PANEL_COLOR       2
-#define WP_PANEL_BORDERCOLOR 3
-#define WP_PANEL_BORDERSIZE  4
-#define WP_PANEL_SIZEMODE    5
-
-#define WP_LABEL_SIDE        0
-#define WP_LABEL_COLOR       1
-#define WP_LABEL_FONT        2
-#define WP_LABEL_TEXT        3
-#define WP_LABEL_ALIGN       4
-#define WP_LABEL_TRANSPARENT 5   /* zero to use color, nonzero to be
-				    transparent */
-
-#define WP_BITMAP_SIDE        0
-#define WP_BITMAP_COLOR       1
-#define WP_BITMAP_BITMAP      2   /* Call with NULL data to indicate that
-				     current bitmap's data has changed and
-				     needs to be redrawn (but not recalc'ed)
-				  */
-#define WP_BITMAP_LGOP        3
-#define WP_BITMAP_ALIGN       4
-#define WP_BITMAP_TRANSPARENT 5   /* zero to use color, nonzero to be
-				    transparent */
-
-#define WP_SCROLL_VALUE      0
-
-#define WP_INDICATOR_VALUE   0
-#define WP_INDICATOR_SIDE    1
-#define WP_INDICATOR_WIDTH   2
+     
+/* Constants for properties */
+#define WP_SIZE        1
+#define WP_SIDE        2
+#define WP_ALIGN       3
+#define WP_BGCOLOR     4
+#define WP_COLOR       5
+#define WP_SIZEMODE    6
+#define WP_TEXT        7
+#define WP_FONT        8
+#define WP_TRANSPARENT 9
+#define WP_BORDERCOLOR 10
+#define WP_BORDERSIZE  11
+#define WP_BITMAP      12
+#define WP_LGOP        13
+#define WP_VALUE       14
 
 /* Constants for SIZEMODE */
 #define SZMODE_PIXEL         0
