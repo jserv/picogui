@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.48 2002/10/27 19:02:56 micahjd Exp $
+/* $Id: pgmain.c,v 1.49 2002/11/01 02:39:17 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -114,6 +114,7 @@ void commandline_help(void) {
 #else
   puts("\n"
        "PicoGUI server (http://picogui.org)\n"
+       "Version 0.42 \"Shiny Foam Disk\"\n"
        "\n"
 #ifdef DEBUG_ANY
        "DEBUG MODE ON\n"
