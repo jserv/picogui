@@ -4,8 +4,6 @@
 #include "tcpclient.h"
 #include "configfile.h"
 
-#include "picomail.h"
-
 #define BUFFERSIZE 4048
 
 #define true 1

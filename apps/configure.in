@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl
-dnl $Id: configure.in,v 1.19 2002/02/03 16:55:48 lonetech Exp $
+dnl $Id: configure.in,v 1.20 2002/02/04 15:55:24 bornet Exp $
 dnl
 
 AC_INIT(pgboard/pgboard.c)
@@ -129,4 +129,5 @@ AC_OUTPUT(
 	pgl/pgl-launcher/Makefile
 	pgl/pgl-clock/Makefile
 	hello/Makefile
+	picomail/Makefile
 )
