@@ -23,7 +23,7 @@ class TerminalPage:
         
             (pid, fd) = pty.fork()
             if pid == 0:
-                os.execlp("sh", "sh", "--login")
+                os.execlp("bash", "bash", "--login")
             self._ptyfd = fd
             self._ptypid = pid
 
@@ -44,7 +44,9 @@ class TerminalPage:
 	    self._fcntl.ioctl(self._ptyfd, self._termios.TIOCSWINSZ, struct.pack('4H', ev.y, ev.x, 0, 0))
 
     def terminalTitleHandler(self, ev):
-        print "title changed: ",ev.data
+        self.tabpage.text = ev.data
+	if self._app.current == self._position:
+	    self._app.text = "epterm - " + self.tabpage.text
 
     def update(self):
         self.terminalRead()
@@ -64,6 +66,8 @@ class TerminalPage:
 
     def tabClicked(self, ev):
         self._terminal.focus()
+	self._app.text = "epterm - " + self.tabpage.text
+	self._app.current = self._position
 
     def setPosition(self, position):
         self._position = position
@@ -85,7 +89,9 @@ class App(PicoGUI.Application):
 	self._newtabhotkey.hotkey = 'f12'
 	self.link(self.addtab, self._newtabhotkey, 'activate')
 	self._pages.append(TerminalPage(self, 'inside', self, 0))
-	self._pages[-1].tabpage.text = 'tab!'
+	self._pages[-1].tabpage.text = 'terminal'
+
+	self._current = 0
 
 	self._config = self._pages[-1].tabpage.addWidget('tabpage', 'after')
 	self._config.text = 'config'
@@ -103,7 +109,10 @@ class App(PicoGUI.Application):
 	    while(i != len(self._pages)):
 	        self._pages[i].setPosition(i)
 	        i = i + 1
-	    self._pages[position].tabpage.on = 1
+	    if position > (len(self._pages) - 1):
+	        self._pages[position - 1].tabpage.on = 1
+	    else:
+	        self._pages[position].tabpage.on = 1
 
     def appendtab(self):
 	self._pages.append(TerminalPage(self._config,'before', self, len(self._pages)))
