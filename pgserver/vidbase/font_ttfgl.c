@@ -1,4 +1,4 @@
-/* $Id: font_ttfgl.c,v 1.1 2002/11/21 11:37:29 micahjd Exp $
+/* $Id: font_ttfgl.c,v 1.2 2002/11/21 12:43:40 micahjd Exp $
  *
  * font_ttfgl.c - Font engine that uses OpenGL textures prepared with SDL_ttf.
  *                This engine is very minimalistic compared to the freetype engine:
@@ -110,6 +110,11 @@ g_error ttfgl_engine_init(void) {
 }
 
 void ttfgl_engine_shutdown(void) {
+  while (ttfgl_font_list) {
+    struct ttfgl_font *f = ttfgl_font_list;
+    ttfgl_font_list = f->next;
+    g_free(f);
+  }
 }
 
 void ttfgl_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
@@ -125,9 +130,10 @@ void ttfgl_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *
 
   /* Rotate and scale in a matrix */
   glPushMatrix();
+  glTranslatef(position->x, position->y,0);
   glScalef(DATA->scale,DATA->scale,DATA->scale);
   glRotatef(angle,0,0,-1);
-  glTranslatef(position->x + g->x, position->y + g->y,0);
+  glTranslatef(g->x,g->y,0);
 
   glBindTexture(GL_TEXTURE_2D, g->texture);
   glBegin(GL_QUADS);
@@ -141,7 +147,7 @@ void ttfgl_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *
   glVertex2f(0,g->h);
   glEnd();
 
-  position->x += g->advance;
+  position->x += g->advance * DATA->scale + 0.5;
       
   /* Clean up */
   glPopMatrix();
@@ -153,23 +159,23 @@ void ttfgl_measure_char(struct font_descriptor *self, struct pair *position,
 		      int ch, s16 angle) {
   if (ch >= NUM_GLYPHS)
     return;
-  position->x += DATA->scale * DATA->font->glyphs[ch].advance;
+  position->x += DATA->font->glyphs[ch].advance * DATA->scale + 0.5;
 }
 
 g_error ttfgl_create(struct font_descriptor *self, const struct font_style *fs) {
   g_error e;
-  static struct font_style default_fs;
-  
-  if (!fs) {
-    fs = &default_fs;
-    default_fs.size = get_param_int("font-ttfgl","default_size",14);
-  }
+  int size;
+
+  if (fs && fs->size)
+    size = fs->size;
+  else
+    size = get_param_int("font-ttfgl","default_size",14);
 
   e = g_malloc((void**)&self->data, sizeof(struct ttfgl_data));
   errorcheck;
 
   DATA->font = ttfgl_font_list;
-  DATA->scale = ((float)fs->size) / ((float)DATA->font->style.size);
+  DATA->scale = ((float)size) / ((float)DATA->font->style.size);
 
   return success;
 }
@@ -237,7 +243,7 @@ g_error ttfgl_load_font(struct ttfgl_fontload *fl,const char *file) {
     int i;
     u8 *src,*dest;
 
-    FT_Load_Char(face, ch, FT_LOAD_RENDER);
+    FT_Load_Char(face, ch, FT_LOAD_RENDER | FT_LOAD_NO_BITMAP);
 
     /* Not enough space on this line? */
     if (fl->tx + face->glyph->bitmap.width + GL_FONT_SPACING > GL_FONT_TEX_SIZE) {
