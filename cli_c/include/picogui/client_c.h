@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.17 2000/11/05 01:07:55 micahjd Exp $
+/* $Id: client_c.h,v 1.18 2000/11/05 02:09:36 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -255,6 +255,9 @@ void pgLeaveContext(void);
  * answered, then return the answer.
  */
 int pgMessageDialog(const char *title,const char *text,unsigned long flags);
+
+/* Like pgMessageDialog, but uses printf-style formatting */
+int pgMessageDialogFmt(const char *title,unsigned long flags,const char *fmt, ...);
 
 #endif /* __H_PG_CLI_C */
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.19 2000/11/05 01:07:55 micahjd Exp $
+/* $Id: picogui_client.c,v 1.20 2000/11/05 02:09:39 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -81,6 +81,7 @@ struct _pghandlernode *_pghandlerlist;  /* List of pgBind event handlers */
 long _pgnonblocking_on;         /* To set a timeout in the pgEventLoop */
 typedef int (*wrapper_f)(void *data,unsigned long datasize);
                                 /* Pointer to IO wrappers */
+char *_pg_appname;              /* Name of the app's binary */
 
 /* Structure for a retrieved and validated response code,
    the data collected by _pg_flushpackets is stored here. */
@@ -135,8 +136,8 @@ void _pg_getresponse(void);
 /* Get rid of a pgmemdata structure when done with it */
 void _pg_free_memdata(struct pgmemdata memdat);
 
-/* atexit() handler */
-void _pg_cleanup(void);
+/* Format a message in a dynamically allocated buffer */
+char * _pg_dynformat(const char *fmt,va_list ap);
 
 /******************* Internal functions */
 
@@ -196,13 +197,28 @@ void *_pg_malloc(size_t size) {
   return p;
 }
 
-/* This one just prints to stderr and exits. Maybe in the future
-   (after messageboxes are implemented in an easy way) this will put
-   up a message box of death before exiting :)
-*/
+/* In most situations this will display an error dialog, giving
+ * the option to exit or continue. If it isn't even able to make
+ * a dialog box, it will print to stderr.
+ */
 void _pg_defaulterr(unsigned short errortype,const char *msg) {
-  fprintf(stderr,"*** PicoGUI ERROR (%s) : %s\n",pgErrortypeString(errortype),msg);
-  exit(errortype);
+  static unsigned char in_defaulterr = 0;
+
+  /* Are we unable to make a dialog? (no connection, or we already tried) */  
+  if (in_defaulterr || !_pgsockfd) {
+    fprintf(stderr,"*** PicoGUI ERROR (%s) : %s\n",pgErrortypeString(errortype),msg);
+    exit(errortype);
+  }
+
+  /* Try a dialog box */
+  in_defaulterr = 1;
+  if (PG_MSGBTN_YES ==
+      pgMessageDialogFmt("PicoGUI Error",PG_MSGBTN_YES | PG_MSGBTN_NO,
+			 "An error of type %s occurred"
+			 " in %s:\n\n%s\n\nTerminate the application?",
+			 pgErrortypeString(errortype),_pg_appname,msg))
+    exit(errortype);
+  in_defaulterr = 0;
 }
 
 /* Put a request into the queue */
@@ -359,33 +375,46 @@ void _pg_getresponse(void) {
 #endif
 }
 
-/* Free memory, etc. */
-void _pg_cleanup(void) {
-  struct _pghandlernode *n,*condemn;
-
-  /* This also has the effect of freeing its data memory.
-   * Call twice in case the first call returned a DATA packet.
-   * (the second call does nothing but free memory) */
-  pgFlushRequests();
-  pgFlushRequests();
-
-  close(_pgsockfd);
-
-  /* Delete the handler list */
-  n = _pghandlerlist;
-  while (n) {
-    condemn = n;
-    n = n->next;
-    free(condemn);
-  }
-}
-
 void _pg_free_memdata(struct pgmemdata memdat) {
   if (memdat.flags & PGMEMDAT_NEED_FREE)
     free(memdat.pointer);
   if (memdat.flags & PGMEMDAT_NEED_UNMAP)
     munmap(memdat.pointer,memdat.size);
 }
+
+/* Format a message in a dynamically allocated buffer */
+char * _pg_dynformat(const char *fmt,va_list ap) {
+  /* This is adapted from the example code
+     in Linux's printf manpage */
+
+  /* Guess we need no more than 100 bytes. */
+  int n, size = 100;
+  char *p;
+
+  p = _pg_malloc(size);
+  while (1) {
+    /* Try to print in the allocated space. */
+    n = vsnprintf (p, size, fmt, ap);
+    /* If that worked, return the string. */
+    if (n > -1 && n < size)
+      break;
+    /* Else try again with more space. */
+    if (n > -1)    /* glibc 2.1 */
+      size = n+1; /* precisely what is needed */
+    else           /* glibc 2.0 */
+      size *= 2;  /* twice the old size */
+
+    free(p);     /* Don't depend on realloc here.
+		    In ucLinux, realloc is not available
+		    so it is implemented by allocating
+		    a new buffer and copying the data.
+		    We don't need the old data so this
+		    is more efficient. */    
+    p = _pg_malloc(size);
+  }
+  return p;
+}
+
 
 /******************* API functions */
 
@@ -394,17 +423,18 @@ void _pg_free_memdata(struct pgmemdata memdat) {
 */  
 void pgInit(int argc, char **argv)
 {
-  int /*sockfd,*/ numbytes;
+  int  numbytes;
   struct pghello ServerInfo;
   struct hostent *he;
   struct sockaddr_in server_addr; /* connector's address information */
   const char *hostname;
+  int fd;
+
+  /* Get the app's name */
+  _pg_appname = argv[0];
 
   /* Set default error handler */
   pgSetErrorHandler(&_pg_defaulterr);
-
-  /* atexit() handler */
-  atexit(&_pg_cleanup);
 
   /* Set default to blocking receive state */
   pgSetnonblocking(0);
@@ -422,7 +452,7 @@ void pgInit(int argc, char **argv)
     return;
   }
 
-  if ((_pgsockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+  if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
     clienterr("socket error");
     return;
   }
@@ -432,10 +462,13 @@ void pgInit(int argc, char **argv)
   server_addr.sin_addr = *((struct in_addr *)he->h_addr);
   bzero(&(server_addr.sin_zero), 8);                /* zero the rest of the struct */
 
-  if (connect(_pgsockfd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1) {
+  if (connect(fd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1) {
     clienterr("Error connecting to server");
     return;
   }
+
+  /* We're connected */
+  _pgsockfd = fd;
 
   /* Receive the hello packet and convert byte order */
   if (_pg_recv(&ServerInfo,sizeof(ServerInfo)))
@@ -940,41 +973,28 @@ void pgReplaceText(pghandle widget,const char *str) {
 /* Like pgReplaceText, but supports printf-style
  * text formatting */
 void pgReplaceTextFmt(pghandle widget,const char *fmt, ...) {
-  /* This is adapted from the example code
-     in Linux's printf manpage */
-
-  /* Guess we need no more than 100 bytes. */
-  int n, size = 100;
   char *p;
   va_list ap;
-  if (!(p = _pg_malloc(size)))
-    return;
-  while (1) {
-    /* Try to print in the allocated space. */
-    va_start(ap, fmt);
-    n = vsnprintf (p, size, fmt, ap);
-    va_end(ap);
-    /* If that worked, return the string. */
-    if (n > -1 && n < size)
-      break;
-    /* Else try again with more space. */
-    if (n > -1)    /* glibc 2.1 */
-      size = n+1; /* precisely what is needed */
-    else           /* glibc 2.0 */
-      size *= 2;  /* twice the old size */
-
-    free(p);     /* Don't depend on realloc here.
-		    In ucLinux, realloc is not available
-		    so it is implemented by allocating
-		    a new buffer and copying the data.
-		    We don't need the old data so this
-		    is more efficient. */    
-    if (!(p = _pg_malloc(size)))
-      return;
-  }
-
+  
+  va_start(ap,fmt);
+  p = _pg_dynformat(fmt,ap);
   pgReplaceText(widget,p);
   free(p);
+  va_end(ap);
+}
+
+/* Like pgMessageDialog, but uses printf-style formatting */
+int pgMessageDialogFmt(const char *title,unsigned long flags,const char *fmt, ...) {
+  char *p;
+  int ret;
+  va_list ap;
+
+  va_start(ap,fmt);
+  p = _pg_dynformat(fmt,ap);
+  ret = pgMessageDialog(title,p,flags);
+  free(p);
+  va_end(ap);
+  return ret;
 }
 
 /* Create a message box, wait until it is
