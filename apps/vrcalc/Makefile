@@ -1,9 +1,22 @@
-BINNAME = vrcalc
-SRC     = vrcalc.c
+include ../Makefile.rules
 
-$(BINNAME): $(SRC)
-	gcc -o $(BINNAME) $(SRC) -lpgui -lm -g
+BINNAME = vrcalc
+SRC     = $(wildcard *.c)
+OBJ     = $(patsubst %.c,%.o,$(SRC))
+LDFLAGS += -lm
+
+$(BINNAME): $(SRC) $(OBJ)
+	$(CC) -o $@ $(LDFLAGS) $(OBJ)
+
+.c.o:
+	$(CC) $(CFLAGS) $(INCLUDE) -c $<
 
 clean:
 	rm -f $(BINNAME) *.o
 
+install:
+	cp $(BINNAME) $(PREFIX)/bin
+
+install-strip:
+	$(STRIP) $(BINNAME)
+	cp $(BINNAME) $(PREFIX)/bin

@@ -1,11 +1,22 @@
-SRC = main.c ptyfork.c
+include ../Makefile.rules
 
-pterm: $(SRC)
-	gcc -o pterm $(SRC) -lpgui -g
+BINNAME = pterm
+SRC     = $(wildcard *.c)
+OBJ     = $(patsubst %.c,%.o,$(SRC))
+LDFLAGS +=
 
-install:
-	install pterm /usr/local/bin/pterm
+$(BINNAME): $(SRC) $(OBJ)
+	$(CC) -o $@ $(LDFLAGS) $(OBJ)
+
+.c.o:
+	$(CC) $(CFLAGS) $(INCLUDE) -c $<
 
 clean:
-	rm -f pterm *.o
+	rm -f $(BINNAME) *.o
 
+install:
+	cp $(BINNAME) $(PREFIX)/bin
+
+install-strip:
+	$(STRIP) $(BINNAME)
+	cp $(BINNAME) $(PREFIX)/bin

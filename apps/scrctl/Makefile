@@ -1,6 +1,6 @@
 include ../Makefile.rules
 
-BINNAME = uspread
+BINNAME = scrctl
 SRC     = $(wildcard *.c)
 OBJ     = $(patsubst %.c,%.o,$(SRC))
 LDFLAGS +=
