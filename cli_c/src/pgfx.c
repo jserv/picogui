@@ -1,4 +1,4 @@
-/* $Id: pgfx.c,v 1.5 2001/05/31 07:32:52 micahjd Exp $
+/* $Id: pgfx.c,v 1.6 2001/06/25 00:49:41 micahjd Exp $
  *
  * picogui/pgfx.c - PGFX general-purpose utility functions
  * 
@@ -65,6 +65,9 @@ inline pgprim pgEllipse(pgcontext c,pgu x,pgu y,pgu w,pgu h) {
 inline pgprim pgFEllipse(pgcontext c,pgu x,pgu y,pgu w,pgu h) {
    return (*(c)->lib->fellipse)(c,x,y,w,h);
 }
+inline pgprim pgFPolygon(pgcontext c, pghandle array) { 
+   return (*(c)->lib->fpolygon)(c,array); 
+} 
 inline pgprim pgText(pgcontext c,pgu x,pgu y,pghandle string) {
    return (*(c)->lib->text)(c,x,y,string);
 }

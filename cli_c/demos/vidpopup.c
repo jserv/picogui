@@ -10,8 +10,7 @@ int main(int argc, char **argv) {
    char buf[20];
    
    pgInit(argc,argv);
-   /* FIXME: PicoGUI needs a way to automatically size popups */
-   wPopup = pgNewPopupAt(PG_POPUP_ATCURSOR,0,150,120);
+   wPopup = pgNewPopupAt(PG_POPUP_ATCURSOR,0,0,0);
 
    /******** Take care of such niceties... */
    

@@ -31,8 +31,11 @@ int main(int argc, char **argv) {
 	      0);
 
   pgNewWidget(PG_WIDGET_FIELD,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_ALL,
+	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&fieldActivate,NULL);
-   pgFocus(PGDEFAULT);
+  pgFocus(PGDEFAULT);
    
   /* Run it */
   pgEventLoop();

@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.10 2001/06/07 23:41:00 micahjd Exp $
+/* $Id: api.c,v 1.11 2001/06/25 00:49:41 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -403,6 +403,17 @@ pghandle pgNewPopupAt(int x,int y,int width,int height) {
   return _pg_return.e.retdata;
 }
 
+/* Just a little helper to make it easy to do dialog boxes correctly */
+pghandle pgDialogBox(const char *title) {
+  pgNewPopup(0,0);
+  pgNewWidget(PG_WIDGET_LABEL,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString(title),
+	      PG_WP_TRANSPARENT,0,
+	      PG_WP_STATE,PGTH_O_LABEL_DLGTITLE,
+	      0);
+}
+
 pghandle pgNewFont(const char *name,short size,unsigned long style) {
   struct pgreqd_mkfont arg;
   memset(&arg,0,sizeof(arg));
@@ -464,6 +475,12 @@ pghandle pgNewString(const char* str) {
   return _pg_return.e.retdata;
 }
 
+pghandle pgNewArray(short* dat, unsigned short size) {  
+  _pg_add_request(PGREQ_MKARRAY,(void *) dat, size);  
+  pgFlushRequests();  
+  return _pg_return.e.retdata;  
+}  
+  
 pghandle pgEvalRequest(short reqtype, void *data, unsigned long datasize) {
   _pg_add_request(reqtype,data,datasize);
   pgFlushRequests();

@@ -63,8 +63,9 @@ int btnCustomMenu(struct pgEvent *evt) {
   /* Do our own context management */
   pgEnterContext();
 
-  /* Create a popup menu (size it ourselves) */
-  pgNewPopupAt(PG_POPUP_ATCURSOR,0,180,340);
+  /* Create a popup menu at the cursor with automatic sizing */
+  pgNewPopupAt(PG_POPUP_ATCURSOR,PG_POPUP_ATCURSOR,
+	       PGDEFAULT,PGDEFAULT);
 
   /* Decorations! */
   pgNewWidget(PG_WIDGET_LABEL,0,0);
@@ -138,6 +139,102 @@ int btnCustomMenu(struct pgEvent *evt) {
   return 0;
 }
 
+/* Not really a menu, but still showing off popup boxen :) */
+int btnDialog(struct pgEvent *evt) {
+  int result;
+  pghandle wToolbar;
+  pgcontext gc;
+	
+  /* So we can easily clean up this mess later */
+  pgEnterContext();
+
+  /* Dialog box with title */
+  pgDialogBox("Nifty Custom Dialog Box of Doom!");
+
+  /* Make some widgets... */
+
+  wToolbar = pgNewWidget(PG_WIDGET_TOOLBAR,0,0);
+  pgSetWidget(PGDEFAULT,PG_WP_SIDE,PG_S_BOTTOM,0);
+
+  /* Bitmap image */
+  pgNewWidget(PG_WIDGET_BITMAP,0,0);
+  pgSetWidget(PGDEFAULT,
+	      /* Load a picture from the 'data' directory */
+	      PG_WP_BITMAP,pgNewBitmap(pgFromFile("demos/data/dustpuppy.pnm")),
+	      PG_WP_BITMASK,pgNewBitmap(pgFromFile("demos/data/dustpuppy_mask.pnm")),
+	      PG_WP_LGOP,PG_LGOP_OR,
+	      PG_WP_SIDE,PG_S_LEFT,
+	      0);
+	
+  /* Line drawing */
+  pgNewWidget(PG_WIDGET_CANVAS,0,0);                   /* Create a canvas */
+  pgSetWidget(PGDEFAULT,PG_WP_SIDE,PG_S_RIGHT,0);
+  gc = pgNewCanvasContext(PGDEFAULT,PGFX_PERSISTENT);  /* Get a PGFX context */
+  pgMoveTo(gc,50,0);                                   /* Draw a star */
+  pgLineTo(gc,75,100);
+  pgLineTo(gc,0,35);
+  pgLineTo(gc,100,35);
+  pgLineTo(gc,25,100);
+  pgLineTo(gc,50,0);	
+  pgSetLgop(gc,PG_LGOP_STIPPLE);
+  pgSetFont(gc,pgNewFont(NULL,20,PG_FSTYLE_UNDERLINE));
+  pgText(gc,10,110,pgNewString("canvas\nsizing\ntoo!"));
+  pgDeleteContext(gc);                                 /* Clean up */
+
+  pgNewWidget(PG_WIDGET_LABEL,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString("Hi, Everybody!\n\n"
+				     "PicoGUI finally supports real dialog\n"
+				     "boxes with automatic sizing of all\n"
+				     "containers! Now all it needs is auto\n"
+				     "word wrapping for this pesky 'text'\n"
+				     "stuff..."),
+	      0);
+				  
+  pgNewWidget(PG_WIDGET_CHECKBOX,0,0);
+  pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("I'm Impressed!"),0);
+
+  pgNewWidget(PG_WIDGET_CHECKBOX,0,0);
+  pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("I'm scared..."),0);
+
+  pgNewWidget(PG_WIDGET_CHECKBOX,0,0);
+  pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("Dust Puppy is cute :)"),0);
+  
+
+  /* Buttons that can exit the dialog have a return code stored in the payload */
+
+  pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString("Ok"),
+	      PG_WP_SIDE,PG_S_RIGHT,
+	      0);
+  pgSetPayload(PGDEFAULT,1);
+
+  pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString("Apply"),
+	      PG_WP_SIDE,PG_S_RIGHT,
+	      0);
+
+  pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString("Cancel"),
+	      PG_WP_SIDE,PG_S_LEFT,
+	      0);
+  pgSetPayload(PGDEFAULT,2);
+
+  /* Wait until a button with an associated payload (in this case a
+   * return value) is selected */
+  while (!(result = pgGetPayload(pgGetEvent()->from)));
+
+  pgMessageDialogFmt("Dialog Closed",0,"Result code #%d",result);
+
+  /* Free all this memory we used */
+  pgLeaveContext();
+
+  return 0;
+}
+
 int btnExit(struct pgEvent *evt) {
   exit(0);
 }
@@ -173,6 +270,13 @@ int main(int argc, char *argv[])
 	      PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
 	      0);
   pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&btnCustomMenu,NULL);
+
+  pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString("Dialog"),
+	      PG_WP_SIDE,PG_S_LEFT,
+	      0);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnDialog,NULL);
 
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,

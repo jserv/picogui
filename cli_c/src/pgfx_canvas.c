@@ -1,4 +1,4 @@
-/* $Id: pgfx_canvas.c,v 1.8 2001/05/31 07:32:52 micahjd Exp $
+/* $Id: pgfx_canvas.c,v 1.9 2001/06/25 00:49:41 micahjd Exp $
  *
  * picogui/pgfx_canvas.c - lib functions and registration for canvas
  *                         drawing through the PGFX interface
@@ -68,6 +68,10 @@ pgprim _pgfxcanvas_ellipse(pgcontext c, pgu x,  pgu y, pgu w,  pgu h) {
 pgprim _pgfxcanvas_fellipse(pgcontext c, pgu x,  pgu y, pgu w,  pgu h) { 
    pgWriteCmd(c->device,PGCANVAS_GROP,5,PG_GROP_FELLIPSE,x,y,w,h); 
    return 0; 
+} 
+ 
+pgprim _pgfxcanvas_fpolygon(pgcontext c, pghandle array) { 
+  pgWriteCmd(c->device,PGCANVAS_GROP,6,PG_GROP_FPOLYGON,1,1,1,1,array); 
 } 
  
 pgprim _pgfxcanvas_text(pgcontext c, pgu x,  pgu y,  pghandle string) {
@@ -152,6 +156,7 @@ pgcontext pgNewCanvasContext(pghandle canvas,short mode) {
    l.bar        = _pgfxcanvas_bar;
    l.ellipse    = _pgfxcanvas_ellipse; 
    l.fellipse   = _pgfxcanvas_fellipse; 
+   l.fpolygon   = _pgfxcanvas_fpolygon; 
    l.text       = _pgfxcanvas_text;
    l.bitmap     = _pgfxcanvas_bitmap;
    l.tilebitmap = _pgfxcanvas_tilebitmap;

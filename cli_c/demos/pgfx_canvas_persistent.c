@@ -5,7 +5,7 @@
 
 int main(int argc,char **argv) {
    pgcontext gc;
-   
+   short poly[]={1,1, 20,1, 20,20, 1,20,}; 
    /* Initialize PicoGUI, create an application with a canvas widget,
     * and get a PGFX context for the canvas */
    pgInit(argc,argv);
@@ -35,6 +35,7 @@ int main(int argc,char **argv) {
    pgFrame(gc,30,30,40,40);
    pgSetColor(gc,0xFFFF00);        /* Ellipses */
    pgFEllipse(gc,35,35,30,30);
+   pgFPolygon(gc,pgNewArray(poly,16)); 
    pgSetColor(gc,0x000000);
    pgEllipse(gc,35,35,30,30);
    pgSetColor(gc,0xFFFFFF);        /* XOR a stripe down the middle */

@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.48 2001/05/31 07:32:52 micahjd Exp $
+/* $Id: constants.h,v 1.49 2001/06/25 00:49:41 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -222,6 +222,7 @@ typedef unsigned long pghandle;
 #define PG_TYPE_STRING     4    //!< Created by pgNewString()
 #define PG_TYPE_THEME      5    //!< Created by pgLoadTheme()
 #define PG_TYPE_FILLSTYLE  6    //!< Used internally to store a theme's fillstyles
+#define PG_TYPE_ARRAY      7    //!< Created by pgNewArray() 
 
 //! \}
 
@@ -536,6 +537,7 @@ typedef unsigned long pghandle;
 #define PG_GROP_LINE   	   0x50
 #define PG_GROP_ELLIPSE    0x60 
 #define PG_GROP_FELLIPSE   0x70 
+#define PG_GROP_FPOLYGON   0x90 
 #define PG_GROP_TEXT       0x04   //!< Param: string 
 #define PG_GROP_BITMAP     0x14   //!< Param: bitmap 
 #define PG_GROP_TILEBITMAP 0x24   //!< Param: bitmap 

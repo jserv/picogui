@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.47 2001/05/17 04:46:36 micahjd Exp $
+/* $Id: client_c.h,v 1.48 2001/06/25 00:49:41 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -516,6 +516,11 @@ pghandle pgNewWidget(short int type,short int rship,
 /*!
  * \brief Create a popup box, centered on the screen
  * \returns A handle to the popup box root widget
+ *
+ * \p width and/or \p height can be PGDEFAULT (zero) to determine the size automatically. This
+ * is preferred because the app should assume as little as possible about physical
+ * screen coordinates.
+ *
  * \sa pgNewPopupAt
  */
 pghandle pgNewPopup(int width,int height);
@@ -524,6 +529,10 @@ pghandle pgNewPopup(int width,int height);
  * \brief Create a popup box at the specified position
  * \returns A handle to the popup box root widget
  *
+ * \p width and/or \p height can be PGDEFAULT (zero) to determine the size automatically. This
+ * is preferred because the app should assume as little as possible about physical
+ * screen coordinates.
+ *
  * \p x and/or \p y can be a PG_POPUP_* constant:
  *   - PG_POPUP_CENTER: Centered on the screen, same behavior as pgNewPopup
  *   - PG_POPUP_ATCURSOR: At the pointing device's cursor. If the cursor is over a button or menuitem, the popup snaps to its edge automatically
@@ -531,6 +540,19 @@ pghandle pgNewPopup(int width,int height);
  * \sa pgNewPopup
  */
 pghandle pgNewPopupAt(int x,int y,int width,int height);
+
+/*!
+ * \brief Create a dialog box with title
+ *
+ * This helpful function creates a centered, automatically sized dialog box
+ * equivalent to "pgNewPopup(PGDEFAULT,PGDEFAULT)" and creates a title widget
+ * with the given text.
+ *
+ * \returns A handle to the dialog box title widget
+ *
+ * \sa pgNewPopup, pgNewPopupAt
+ */
+pghandle pgDialogBox(const char *title);
 
 /*!
  * \brief Set widget properties
@@ -584,6 +606,17 @@ pghandle pgNewBitmap(struct pgmemdata obj);
 pghandle pgNewString(const char *str);
 
 /*!
+ * \brief Create a new array object  
+ * 
+ * \param dat The data to put in the array 
+ * \param size The size of the array (in bytes) 
+ * \returns A handle to the new array object 
+ * 
+ */ 
+ 
+pghandle pgNewArray(short* dat, unsigned short size);  
+ 
+/*! 
  * \brief Evaluate a PicoGUI request packet
  *
  * \param reqtype A PGREQ_* constant indicating the packet type

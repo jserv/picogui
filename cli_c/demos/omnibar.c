@@ -1,4 +1,4 @@
-/* $Id: omnibar.c,v 1.11 2001/04/25 13:58:32 gobry Exp $
+/* $Id: omnibar.c,v 1.12 2001/06/25 00:49:41 micahjd Exp $
  * 
  * omnibar.c - hopefully this will grow into a general interface
  *             for starting and manipulating applications, but
@@ -188,6 +188,7 @@ int main(int argc, char **argv) {
 	      0);
   pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&btnSysMenu,NULL);
 
+
   wClock = pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_RIGHT,
@@ -214,7 +215,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("CPU"),
 	      PG_WP_SIDE,PG_S_RIGHT,
-	      PG_WP_FONT,fntLabel,
+      	      PG_WP_FONT,fntLabel,
 	      0);
 
   wLoad = pgNewWidget(PG_WIDGET_INDICATOR,0,0);

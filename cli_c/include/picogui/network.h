@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.30 2001/05/16 04:22:56 micahjd Exp $
+/* $Id: network.h,v 1.31 2001/06/25 00:49:41 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -127,8 +127,9 @@ struct pghello {
 #define PGREQ_MKMENU       30  /* Creates a simple popup menu    |  handle[] */
 #define PGREQ_WRITETO      31  /* Stream data to a widget        |  handle + data */
 #define PGREQ_UPDATEPART   32  /* Updates subtree defined by wgt |  handle */
+#define PGREQ_MKARRAY      33  /* Makes a array, returns handle  |    data */  
 
-#define PGREQ_UNDEF        33     /* types > this will be truncated. return error */
+#define PGREQ_UNDEF        34     /* types > this will be truncated. return error */ 
 
 /******* Request data structures */
 
