@@ -1,4 +1,4 @@
-/* $Id: x11_window.c,v 1.7 2002/11/07 20:36:47 micahjd Exp $
+/* $Id: x11_window.c,v 1.8 2002/11/07 22:36:52 micahjd Exp $
  *
  * x11_util.c - Utility functions for picogui's driver for the X window system
  *
@@ -73,7 +73,6 @@ g_error x11_window_new(hwrbitmap *hbmp, struct divtree *dt) {
 
 g_error x11_create_window(hwrbitmap *hbmp) {
   struct x11bitmap *xb;
-  int bgcolor;
   g_error e;
   XSetWindowAttributes attr;
 
@@ -82,18 +81,14 @@ g_error x11_create_window(hwrbitmap *hbmp) {
   memset(xb,0,sizeof(struct x11bitmap));
   xb->is_window = 1;
 
-  bgcolor = VID(color_pgtohwr)(theme_lookup(PGTH_O_MANAGEDWINDOW,PGTH_P_BGCOLOR));
-
   /* Create the window.
    * The size and everything else will be configured in x11_internal_window_resize()
    */
-  xb->d = XCreateSimpleWindow(x11_display, RootWindow(x11_display, x11_screen),
-			      0, 0, 1, 1, 0, bgcolor, bgcolor);
+  xb->d = XCreateSimpleWindow(x11_display, RootWindow(x11_display, x11_screen),0,0,1,1,0,0,0);
   xb->sb.w = xb->sb.h = 0;
 
-  /* Set the bit gravity so X doesn't redraw any background */
-  attr.bit_gravity = StaticGravity;
-  XChangeWindowAttributes(x11_display, xb->d, CWBitGravity, &attr);
+  /* This prevents X from redrawing the window background at all */
+  XSetWindowBackgroundPixmap(x11_display, xb->d, None);
 
   /* Optionally double-buffer this window */
   if (get_param_int("video-x11","doublebuffer",1)) {
