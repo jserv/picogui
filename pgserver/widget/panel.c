@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.90 2002/11/19 13:16:11 micahjd Exp $
+/* $Id: panel.c,v 1.91 2002/12/03 16:09:59 micahjd Exp $
  *
  * panel.c - Resizable container with decorations. It uses a panelbar for resizing purposes,
  *           and optionally supplies some standard buttons for the panel.
@@ -219,6 +219,9 @@ g_error panel_install(struct widget *self) {
 		       &panel_close_callback);
   errorcheck;
 
+  /* Make sure we default to our minimum rolled-up size */
+  widget_set(self, PG_WP_SIZE, 0);
+
   return success;
 }
 
@@ -240,6 +243,15 @@ g_error panel_set(struct widget *self,int property, glob data) {
   struct app_info **app;
 
   switch (property) {
+
+  case PG_WP_SIZE:
+    /* Alias 0 to our minimum rolled-up size */
+    e = rdhandle((void **) &w, PG_TYPE_WIDGET, self->owner, DATA->hbar);
+    errorcheck;
+    if (data==0)
+      data = w->in->split;
+    widget_base_set(self,property,data);
+    break;
 
   case PG_WP_SIDE:
     e = rdhandle((void **) &w, PG_TYPE_WIDGET, self->owner, DATA->hbar);
