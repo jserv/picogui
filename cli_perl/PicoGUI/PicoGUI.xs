@@ -9255,7 +9255,7 @@ pgSetWidget(widget, ...)
 	   if (!(items&1))
 	     croak("pgSetWidget called with an odd number of parameters");
 	   for (i=1;i<items;i+=2)
-	     pgSetWidget(widget,SvIV(ST(i)),SvIV(ST(i+1)));
+	     pgSetWidget(widget,SvIV(ST(i)),SvIV(ST(i+1)),0);
 	}
 
 int

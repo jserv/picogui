@@ -43,15 +43,17 @@ pgLeaveContext();
 pgEnterContext();
 $popup = pgNewPopup(160,100);
 pgNewWidget(PG_WIDGET_LABEL); 
-pgSetWidget(PGDEFAULT, 
+pgSetWidget(PGDEFAULT,
 	    PG_WP_TEXT, pgNewString("pgGetEvent() Test"),
+	    PG_WP_TRANSPARENT,0,
 	    PG_WP_STATE, PGTH_O_LABEL_DLGTITLE);
 
 $toolbar = pgNewWidget(PG_WIDGET_TOOLBAR);
+pgSetWidget($toolbar,PG_WP_SIDE,PG_S_BOTTOM);
 pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,$toolbar);
-pgReplaceText(PGDEFAULT,"Thwamp!");
+pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("Thwamp!"),PG_WP_SIDE,PG_S_LEFT);
 pgNewWidget(PG_WIDGET_BUTTON);
-pgReplaceText(PGDEFAULT,"Quack!");
+pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("Quack!"),PG_WP_SIDE,PG_S_RIGHT);
 
 $wLabel = pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_AFTER,$toolbar);
 pgNewWidget(PG_WIDGET_CANVAS);
@@ -70,6 +72,7 @@ pgRegisterApp(PG_APP_NORMAL,"Perl PicoGUI test app");
 $toolbar = pgNewWidget(PG_WIDGET_TOOLBAR);
 $wLabel1 = pgNewWidget(PG_WIDGET_LABEL);
 $wLabel2 = pgNewWidget(PG_WIDGET_LABEL);
+pgSetWidget(PGDEFAULT,PG_WP_ALIGN,PG_A_SW,PG_WP_SIDE,PG_S_ALL);
 
 # Some buttons with their own handlers
 pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,$toolbar);
@@ -96,7 +99,7 @@ pgBind(PGDEFAULT,PGBIND_ANY,sub {
 # plus a generic handler, using the pgEvent it was passed  
 pgBind(PGBIND_ANY,PGBIND_ANY,sub {
     my %evt = @_;
-    my $text = "\n\n";
+    my $text = "";
     
     foreach (sort keys %evt) {
         $text .= "$_ = $evt{$_}\n";
