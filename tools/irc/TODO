@@ -11,8 +11,9 @@ RED:
  * Bounce if full (ie if there is only 1 bot running joined to 20 channels, rather than silently failing to join the 21st, bounce)
  * Allow the bot to register with NickServ so we don't have to keep re-opping it in #only-commits
  * Allow the bot to op itself on freenode (OPER)
- * BUG: python script doesn't strip dupes
+ * BUG: python filter script doesn't strip dupes
  * shell script to reboot multiple bots at once
 
 GREEN:
  * Look into MTBC calculation - is that really correct?
+ * Make BonsaiBot not suck
