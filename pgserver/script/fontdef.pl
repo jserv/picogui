@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: fontdef.pl,v 1.3 2000/09/03 23:40:59 micahjd Exp $
+# $Id: fontdef.pl,v 1.4 2000/09/09 22:56:15 micahjd Exp $
 #
 # This reads in .fi files, and creates the static linked list
 # of font styles.  It also uses cnvfont to load the .fdf files
@@ -41,7 +41,7 @@ foreach $file (@ARGV) {
     # Now we have all the params in memory
     
     $fiparam{'GEO'} = join(',',split(/\s/,$fiparam{'GEO'}));
-    $fiparam{'STYLE'} = join('|',map('FSTYLE_'.$_,
+    $fiparam{'STYLE'} = join('|',map('PG_FSTYLE_'.$_,
 				     split(/\s/,uc($fiparam{'STYLE'}))));
     $norm = $bold = $ital = $bital = 'NULL';
 

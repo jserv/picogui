@@ -1,4 +1,4 @@
-/* $Id: driverinfo.c,v 1.4 2000/09/03 23:38:42 micahjd Exp $
+/* $Id: driverinfo.c,v 1.5 2000/09/09 22:56:15 micahjd Exp $
  *
  * driverinfo.c - has a static array with information about
  *                installed drivers
@@ -42,7 +42,7 @@ struct vidinfo videodrivers[] = {
   {"svga",&svga_regfunc},
 #endif
 #ifdef DRIVER_SDLMIN
-  {"sdlmin",&sdl_regfunc},
+  {"sdlmin",&sdlmin_regfunc},
 #endif
 
   /* End */ {NULL,NULL}
