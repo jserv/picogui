@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.74 2002/01/22 12:25:09 micahjd Exp $
+/* $Id: panel.c,v 1.75 2002/01/27 14:13:18 micahjd Exp $
  *
  * panel.c - Holder for applications. It uses a panelbar for resizing purposes,
  *           and optionally supplies some standard buttons for the panel.
@@ -47,7 +47,7 @@ struct paneldata {
  * This means that we _must_ only refer to the buttons by their handle unless of
  * course we're in a callback triggered by that button.
  */
-g_error panel_std_button(handle *h, struct widget *self, int thobj, int thobj_on, int thobj_hilight,
+g_error panel_std_button(handle *h, struct widget *self, int thobj, int thobj_on, int thobj_hilight, int exev,
 			 int (*callback)(int event, struct widget *from, long param, int owner, char *data)) {
   struct widget *w, *bar;
   g_error e;
@@ -67,6 +67,7 @@ g_error panel_std_button(handle *h, struct widget *self, int thobj, int thobj_on
   widget_set(w, PG_WP_THOBJ_BUTTON_ON, thobj_on);
   widget_set(w, PG_WP_THOBJ_BUTTON_HILIGHT, thobj_hilight);
   widget_set(w, PG_WP_THOBJ_BUTTON_ON_NOHILIGHT, thobj_on);
+  widget_set(w, PG_WP_EXTDEVENTS, exev);
 
   return success;
 }
@@ -199,6 +200,7 @@ g_error panel_install(struct widget *self) {
 		       PGTH_O_ZOOMBTN,
 		       PGTH_O_ZOOMBTN_ON,
 		       PGTH_O_ZOOMBTN_HILIGHT,
+		       PG_EXEV_TOGGLE,
 		       &panel_zoom_callback);
   errorcheck;
 
@@ -206,6 +208,7 @@ g_error panel_install(struct widget *self) {
 		       PGTH_O_ROTATEBTN,
 		       PGTH_O_ROTATEBTN_ON,
 		       PGTH_O_ROTATEBTN_HILIGHT,
+		       0,
 		       &panel_rotate_callback);
   errorcheck;
 
@@ -213,6 +216,7 @@ g_error panel_install(struct widget *self) {
 		       PGTH_O_CLOSEBTN,
 		       PGTH_O_CLOSEBTN_ON,
 		       PGTH_O_CLOSEBTN_HILIGHT,
+		       0,
 		       &panel_close_callback);
   errorcheck;
 

@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.51 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: memtheme.c,v 1.52 2002/01/27 14:13:17 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -269,17 +269,30 @@ unsigned long theme_lookup(unsigned short object,
    the node's groplist */
 void div_rebuild(struct divnode *d) {
    struct gropctxt c;
-   
+   struct widget *w;
    if (!d->build) return;
+
+   /* Unless it's a raw build, clear the groplist. */
    if (!(d->owner && d->owner->rawbuild)) {
       grop_free(&d->grop);
       gropctxt_init(&c,d);
    }
+
    (*d->build)(&c,d->state,d->owner);
+
+   /* Unless this is a raw build, set redraw flags */
    if (!(d->owner && d->owner->rawbuild)) {
       d->flags |= DIVNODE_NEED_REDRAW;
       if (d->owner)
 	d->owner->dt->flags |= DIVTREE_NEED_REDRAW;
+   }
+
+   /* If this widget is bound to a scrollbar, get the scrollbar
+    * to update also.
+    */
+   if (d->owner && d->owner->scrollbind && d->owner->type!=PG_WIDGET_SCROLL && 
+       !iserror(rdhandle((void**)&w,PG_TYPE_WIDGET,d->owner->owner,d->owner->scrollbind))) {
+     div_rebuild(w->in->div);
    }
 }
 

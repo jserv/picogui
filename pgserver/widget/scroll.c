@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.49 2002/01/16 19:47:27 lonetech Exp $
+/* $Id: scroll.c,v 1.50 2002/01/27 14:13:18 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -30,6 +30,11 @@
 #include <pgserver/input.h>
 #include <pgserver/timer.h>
 
+#ifdef DEBUG_WIDGET
+#define DEBUG_FILE
+#endif
+#include <pgserver/debug.h>
+
 /* Minimum # of milliseconds between scrolls. This is used to limit the
    scroll bar's frame rate so it doesn't 'lag' behind the mouse */
 #define SCROLL_DELAY 50
@@ -54,18 +59,14 @@ struct scrolldata {
 };
 #define DATA ((struct scrolldata *)(self->data))
 
+void scrollevent(struct widget *self);
+
 /* When value changes, update the grop coordinates */
 void scrollupdate(struct widget *self) {
-  /* Error checking for res <= 0.
-   * FIXME: If res<=0 we should make the scroll bar disappear, because
-   * there is nothing to scroll.
-   */
-  if (DATA->res < 0)
-    DATA->res = 0;
-  if (DATA->res == 0)
-    return;
-
-  self->in->div->ty = DATA->value * DATA->thumbscale / DATA->res;
+  if (DATA->res <= 0)
+    self->in->div->ty = 0;
+  else
+    self->in->div->ty = DATA->value * DATA->thumbscale / DATA->res;
 
   self->in->div->flags |= DIVNODE_NEED_REDRAW;
   self->dt->flags |= DIVTREE_NEED_REDRAW;
@@ -75,18 +76,47 @@ void build_scroll(struct gropctxt *c,unsigned short state,struct widget *self) {
   struct widget *wgt;
   s16 oldres;
 
-  /* Size ourselves to fit the widget we are bound to */
+  /* Size ourselves to fit the widget we are bound to
+   */
   oldres = DATA->res;
   if (!iserror(rdhandle((void **)&wgt,PG_TYPE_WIDGET,-1,
-			self->scrollbind)) && wgt && wgt->in->div)
+			self->scrollbind)) && wgt && wgt->in->div) {
+
     DATA->res = wgt->in->div->h - wgt->in->div->calch;
-  if (DATA->res < 0)
-    DATA->res = 0;
-  if (DATA->value > DATA->res)
-    scroll_set(self,PG_WP_VALUE,DATA->res);
-  if ( (oldres && !DATA->res) ||
-       (DATA->res && !oldres) )
+
+    /* Bounds/sanity checking.. */
+    if (DATA->res < 0)
+      DATA->res = 0;
+    if (DATA->value > DATA->res) {
+      DATA->value = DATA->res;
+      scrollevent(self);
+    }
+
+    DBG("Resizing to res %d, div->h = %d, calch = %d, oldres = %d, value = %d, t = (%d,%d)\n",
+	DATA->res, wgt->in->div->h, wgt->in->div->calch,oldres, DATA->value,
+	self->in->div->tx, self->in->div->ty);
+  }
+
+  if ( (oldres==0) != (DATA->res==0) ) {
+    DBG("Scroll bar show/hide, residewidget()\n");
+
+    /* Jumpstart layout engine here to account for the change 
+     *
+     * Yeah, this code does appear to be a little magical..
+     * Here's a bit of a description- at this point in time, the layout
+     * engine will have already finished processing self->in. Since we're
+     * changing its split, we need to reset the calc flags and re-run
+     * the layout engine (divnode_recalc). This doesn't actually
+     * run the layout engine twice, since the flags will be reset correctly.
+     * Then, we need to restart div_rebuild (this function!) with the new
+     * coordinates.
+     */
     resizewidget(self);
+    self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+    divnode_recalc(&self->in,NULL);
+    div_rebuild(self->in->div);
+    return;
+  }
 
   /* Background for the bar */
   exec_fillstyle(c,state,PGTH_P_BGFILL);
@@ -105,6 +135,8 @@ void build_scroll(struct gropctxt *c,unsigned short state,struct widget *self) {
 void scrollevent(struct widget *self) {
   struct widget *w;
 
+  DBG("value = %d\n",DATA->value);
+
   if (self->scrollbind) {
     /* Send to a widget */
     if (!iserror(rdhandle((void **)&w,PG_TYPE_WIDGET,
@@ -122,14 +154,14 @@ void scroll_resize(struct widget *self) {
        (self->in->flags & PG_S_BOTTOM)) {
       
       self->in->div->pw = 0;
-      self->in->div->ph = DATA->res ? 
+      self->in->split = self->in->div->ph = DATA->res ? 
 	theme_lookup(PGTH_O_SCROLL,PGTH_P_WIDTH) : 0;
    }
    else if ((self->in->flags & PG_S_LEFT) ||
 	    (self->in->flags & PG_S_RIGHT)) {
       
       self->in->div->ph = 0;
-      self->in->div->pw = DATA->res ?
+      self->in->split = self->in->div->pw = DATA->res ?
 	theme_lookup(PGTH_O_SCROLL,PGTH_P_WIDTH) : 0;
    }
 }
@@ -149,6 +181,7 @@ g_error scroll_install(struct widget *self) {
   e = newdiv(&self->in,self);
   errorcheck;
   self->in->flags |= PG_S_RIGHT;
+  self->in->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
   e = newdiv(&self->in->div,self);
   errorcheck;
   self->in->div->build = &build_scroll;
@@ -172,20 +205,17 @@ g_error scroll_set(struct widget *self,int property, glob data) {
   switch (property) {
 
   case PG_WP_VALUE:
-   if (data < 0) {
-      data = 0;
-   }
-   DATA->value = data;
-   scrollevent(self);
-   scrollupdate(self);
-   div_setstate(self->in->div,self->in->div->state,1);
-   break;
-
+    DATA->value = data;
+    scrollevent(self);
+    scrollupdate(self);
+    div_setstate(self->in->div,self->in->div->state,1);
+    break;
+    
   case PG_WP_SIZE:
     DATA->res = data;
     scrollupdate(self);
     break;
-
+    
   case PG_WP_BIND:
     if (!data) {
       self->scrollbind = 0;
