@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.8 2000/04/29 22:03:49 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.9 2000/04/29 22:43:31 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -81,7 +81,7 @@ require Exporter;
 	   );
 
 %WTYPES = (
-	   'panel' => 0,
+	   'toolbar' => 0,
 	   'label' => 1,
 	   'scroll' => 2,
 	   'indicator' => 3,

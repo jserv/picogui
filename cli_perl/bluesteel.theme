@@ -78,5 +78,6 @@ toolbar.fill.normal.c2 = 0x102030
 toolbar.fill.normal.angle = 85
 toolbar.fill.normal.trans = none
 
+background = ../images/bg/darkblueswirl.pnm
 
 

@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use PicoGUI;
 
-$p = NewWidget(-type => panel);
+$p = NewWidget(-type => toolbar);
 $str = NewString("Click a button");
 $lbl = NewWidget(-type => label,-side => top,
 		 -text => $str,-before => $p,-bgcolor => 0,-color => 0xFFFFFF);

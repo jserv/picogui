@@ -10,7 +10,7 @@ foreach (keys %ServerInfo) {
 }
 
 # Make a widget and store it
-$p = NewWidget(-type => panel);
+$p = NewWidget(-type => toolbar);
 
 # Show it's handle
 print $p->GetHandle()."\n";
@@ -21,28 +21,28 @@ print $p->GetHandle()."\n";
 NewWidget(-type => scroll,
 	  -value => 50);
 
-# Make a panel with the side param
+# Make a toolbar with the side param
 # set
-$toppanel = NewWidget(-type => panel,
-	    -side => top);
+$topbar = NewWidget(-type => toolbar,
+	    -side => bottom);
 
-# Set the panel's color
-$p->SetWidget(-bgcolor => 0xE0E0C0);
-
-# Make a widget inside the panel
+# Make a widget inside the toolbar
 $tx = NewWidget(-type => label,
 		-inside => $p,
-		-text => NewString("Hi\nA\nB\nC\nD"),
-		-transparent => 1);
+		-text => NewString("This text brought you you by test.pl"),
+		-transparent => 1,-side => left);
+NewWidget(-type => button,-before => $tx,
+	  -bitmap => NewBitmap(-file=>'../images/button/check.pnm'),
+	  -bitmask => NewBitmap(-file=>'../images/button/check_mask.pnm'));
 
 # Combine some of these techniques and
-# make a text box thingy with a bold
+# make a text box thingy with a bold font
 $tbox = NewWidget(-type => label,
 		  -after => $p,
 		  -align => nw,
 		  -side => left,
-		  -bgcolor => 0x0000FF,
-		  -color => 0xFFFF00,
+		  -bgcolor => 0x000080,
+		  -color => 0xFFFFFF,
 		  -font => NewFont("",0,bold,grayline),
 		  -text => NewString(<<EOF));
 This is text!
@@ -56,12 +56,10 @@ EOF
 # Load a bitmap from a file
 $bits = NewBitmap(-file => '../images/other/tux.pnm');
 
-# Make a sequence of widgets in a panel
-$holder = NewWidget(-type => panel,
+# Make a sequence of widgets in a toolbar
+$holder = NewWidget(-type => toolbar,
 		    -side => top,
-		    -bgcolor => 0xFFFFFF,
 		    -after => $tbox,
-		    -size => 40
 		    );
 for ($i=0;$i<10;$i++) {
     NewWidget(-type => bitmap,
@@ -73,13 +71,9 @@ for ($i=0;$i<10;$i++) {
 
 # Buttons
 for ($i=0;$i<10;$i++) {
-	NewWidget(-type => button, -inside => $toppanel);
+	NewWidget(-type => button, -inside => $topbar);
 }
 
-Update(); <STDIN>;
-
-# Delete something
-$tx->delete;
 Update(); <STDIN>;
 
 
