@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.108 2002/10/12 14:46:35 micahjd Exp $
+/* $Id: dispatch.c,v 1.109 2002/10/12 19:53:48 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -1030,7 +1030,7 @@ g_error rqh_getfstyle(int owner, struct pgrequest *req,
   font_getstyle(ntohs(arg->index),&fs);
 
   if (fs.name)
-    strncpy(gfs.name,fs.name,sizeof(gfs.name));
+    strncpy(gfs.name,fs.name,sizeof(gfs.name)-1);
   gfs.size = htons(fs.size);
   gfs.fontrep = htons(fs.representation);
   gfs.flags = htonl(fs.style);

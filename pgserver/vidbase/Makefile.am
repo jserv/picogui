@@ -9,6 +9,7 @@ libvidbase_a_SOURCES = 	\
 	dvbl_init.c	\
 	dvbl_lgop.c	\
 	dvbl_sprite.c	\
+	dvbl_font.c	\
 	font_base.c	\
 	$(VIDBASE)
 

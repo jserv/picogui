@@ -1,4 +1,4 @@
-/* $Id: linear1.c,v 1.22 2002/10/07 03:31:16 micahjd Exp $
+/* $Id: linear1.c,v 1.23 2002/10/12 19:53:49 micahjd Exp $
  *
  * Video Base Library:
  * linear1.c - For 1-bit packed pixel devices (most black and white displays)
@@ -391,6 +391,7 @@ void linear1_blit(hwrbitmap dest,
    }
 }
    
+#ifdef CONFIG_FONTENGINE_BDF
 void linear1_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
 		      s16 lines, s16 angle, hwrcolor c, struct quad *clip,
 		      s16 lgop) {
@@ -439,6 +440,7 @@ void linear1_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
    linear1_blit(dest,x,y,w,h,(hwrbitmap) &src,0,0,
 		lgoptab[c | (lgop<<1)]);
 }
+#endif /* CONFIG_FONTENGINE_BDF */
 
 /*********************************************** Registration */
 
@@ -452,7 +454,9 @@ void setvbl_linear1(struct vidlib *vid) {
    vid->bar            = &linear1_bar;
    vid->line           = &linear1_line;
    vid->blit           = &linear1_blit;
+#ifdef CONFIG_FONTENGINE_BDF
    vid->charblit       = &linear1_charblit;
+#endif
 }
 
 /* The End */

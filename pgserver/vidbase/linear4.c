@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.28 2002/10/07 03:31:16 micahjd Exp $
+/* $Id: linear4.c,v 1.29 2002/10/12 19:53:49 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -349,6 +349,7 @@ void linear4_rect(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,hwrcolor c,s16 lgop) {
    }
 }
 
+#ifdef CONFIG_FONTENGINE_BDF
 void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s16 h,
 		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
 		  s16 lgop) {
@@ -503,6 +504,7 @@ void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s1
 	  }
   }
 }
+#endif /* CONFIG_FONTENGINE_BDF */
 
 
 /*
@@ -660,7 +662,9 @@ void setvbl_linear4(struct vidlib *vid) {
   vid->line           = &linear4_line;
   vid->rect           = &linear4_rect;
   vid->blit           = &linear4_blit;
+#ifdef CONFIG_FONTENGINE_BDF
   vid->charblit	      = &linear4_charblit;
+#endif
 }
 
 /* The End */

@@ -124,3 +124,4 @@
 /* 116 */ "Computer try to suck watermelon through straw, computer go boom.",
 /* 117 */ "Null widget in attachwidget",
 /* 118 */ "Server resource identifier out of range in GETRESOURCE",
+/* 119 */ "Error initializing the font engine",

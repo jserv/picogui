@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.30 2002/10/07 03:31:16 micahjd Exp $
+/* $Id: linear8.c,v 1.31 2002/10/12 19:53:49 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -163,6 +163,7 @@ void linear8_gradient(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,s16 angle,
 }
 #endif
 
+#ifdef CONFIG_FONTENGINE_BDF
 /* Like charblit, but rotate 90 degrees anticlockwise whilst displaying
  *
  * FIXME: There is still a subtle bug when clipping against the left side
@@ -355,6 +356,8 @@ void linear8_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,
       }
   }
 }
+#endif /* CONFIG_FONTENGINE_BDF */
+
 
 /* Ugh. Evil but necessary... I suppose... */
 void linear8_pixel(hwrbitmap dest, s16 x,s16 y,hwrcolor c,s16 lgop) {
@@ -434,7 +437,9 @@ void setvbl_linear8(struct vidlib *vid) {
 #ifndef CONFIG_DITHER_GRADIENTS
   vid->gradient       = &linear8_gradient;
 #endif
+#ifdef CONFIG_FONTENGINE_BDF
   vid->charblit       = &linear8_charblit;
+#endif
   vid->pixel          = &linear8_pixel;
   vid->getpixel       = &linear8_getpixel;
   vid->blit           = &linear8_blit;

@@ -1,4 +1,4 @@
-/* $Id: vgaplan4.c,v 1.3 2002/10/07 03:31:16 micahjd Exp $
+/* $Id: vgaplan4.c,v 1.4 2002/10/12 19:53:49 micahjd Exp $
  *
  * Video Base Library:
  * vgaplan4.c - For VGA compatible 4bpp access, based on linear1.c
@@ -934,6 +934,7 @@ local void vgaplan4_scrollblit(hwrbitmap dest,
       vgaplan4_screen_blitline(dest,dst_x,dst_y,w,sbit,src_x,src_y);
 }
 
+#ifdef CONFIG_FONTENGINE_BDF
 /* core of the charblit function
    it might be possible to generalize this enough to use it for
    planar blitting without alignedment contraints as well. */
@@ -1053,6 +1054,8 @@ vgaplan4_charblit(hwrbitmap dest,u8 *chardat,s16 x,s16 y,s16 w,s16 h,
    if (lgop!=PG_LGOP_NONE)
 	SET_FSDR(0x00);
 }
+#endif /* CONFIG_FONTENGINE_BDF */
+
 
 /********************************************** Misc stuff */
 
