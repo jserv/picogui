@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.29 2001/03/19 06:34:05 micahjd Exp $
+/* $Id: video.h,v 1.30 2001/03/20 00:46:43 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -356,6 +356,14 @@ struct vidlib {
   g_error (*bitmap_load)(hwrbitmap *bmp,u8 *data,u32 datalen);
 
   /* Optional
+   *   Rotates a bitmap by 90 degrees anticlockwise
+   *
+   * Default implementation: Assumes linear bitmap, has code for
+   *                         all common bit depths
+   */
+  g_error (*bitmap_rotate90)(hwrbitmap *bmp);
+   
+  /* Optional
    *   Allocates an empty bitmap
    *
    * Default implementation: g_malloc, of course!
@@ -520,6 +528,7 @@ void def_blit(hwrbitmap src,int src_x,int src_y,
 void def_unblit(int src_x,int src_y,
 		hwrbitmap dest,int dest_x,int dest_y,
 		int w,int h);
+g_error def_bitmap_rotate90(hwrbitmap *bmp);
 
 /************* Registration functions for video drivers */
 

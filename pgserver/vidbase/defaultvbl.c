@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.28 2001/03/19 06:34:05 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.29 2001/03/20 00:46:43 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -574,14 +574,14 @@ g_error def_bitmap_loadxbm(struct stdbitmap **bmp,
 
       case 24:
 	if (c&1) {
-	  *(p++) = (unsigned char) fg;
-	  *(p++) = (unsigned char) (fg >> 8);
-	  *(p++) = (unsigned char) (fg >> 16);
+	  *(p++) = (u8) fg;
+	  *(p++) = (u8) (fg >> 8);
+	  *(p++) = (u8) (fg >> 16);
 	}
 	else {
-	  *(p++) = (unsigned char) bg;
-	  *(p++) = (unsigned char) (bg >> 8);
-	  *(p++) = (unsigned char) (bg >> 16);
+	  *(p++) = (u8) bg;
+	  *(p++) = (u8) (bg >> 8);
+	  *(p++) = (u8) (bg >> 16);
 	}
 	break;
 
@@ -620,6 +620,103 @@ g_error def_bitmap_load(hwrbitmap *bmp,u8 *data,u32 datalen) {
       fmt++;
    }
    return mkerror(PG_ERRT_BADPARAM,8); /* Format not recognized by any loaders */
+}
+
+/* 90 degree anticlockwise rotation */
+g_error def_bitmap_rotate90(struct stdbitmap **bmp) {
+   struct stdbitmap *destbit,*srcbit;
+   u8 *src,*srcline,*dest;
+   u8 oshift,shift,mask;
+   u8 shiftset  = 8-vid->bpp;
+   u8 subpixel  = ((1<<(8/vid->bpp))-1);
+   u8 subpixel2 = ((1<<(1+vid->bpp))-1);
+   g_error e;
+   int h,i,x,y;
+   hwrcolor c;
+   
+   /* New bitmap with width/height reversed */
+   srcbit = *bmp;
+   e = (*vid->bitmap_new)(&destbit,srcbit->h,srcbit->w);
+   errorcheck;
+   
+   src = srcline = srcbit->bits;
+   for (h=srcbit->h,x=y=0;h;h--,y++,src=srcline+=srcbit->pitch) {
+
+      /* Per-line mask calculations for <8bpp destination blits */
+      if (vid->bpp<8) {
+	 shift = (subpixel-(y&subpixel)) * vid->bpp;
+	 mask  = subpixel2<<shift;
+      }
+      
+      for (oshift=shiftset,i=srcbit->w,x=0;i;i--,x++) {
+	 
+	 /* Read in a pixel */
+	 switch (vid->bpp) {
+	  case 1:
+	  case 2:
+	  case 4:
+	    c = ((*src) >> oshift) & ((1<<vid->bpp)-1);
+	    if (!oshift) {
+	       oshift = shiftset;
+	       src++;
+	    }
+	    else
+	      oshift -= vid->bpp;
+	    break; 
+	    
+	  case 8:
+	    c = *(src++);
+	    break;
+	    
+	  case 16:
+	    c = *(((u16*)src)++);
+	    break;
+	    
+	  case 24:
+	    c = (*(src++)) | ((*(src++))<<8) | ((*(src++))<<16);
+	    break;
+	    
+	  case 32:
+	    c = *(((u32*)src)++);
+	    break;     
+	 }
+	 
+	 /* Plot the pixel */
+	 dest = destbit->bits + ((y*vid->bpp)>>3) + 
+	   (srcbit->w-1-x)*destbit->pitch;
+	 switch (vid->bpp) {
+	  case 1:
+	  case 2:
+	  case 4:
+	    *dest &= ~mask;
+	    *dest |= (c & mask) << shift;
+	    break; 
+	    
+	  case 8:
+	    *dest = c;
+	    break;
+	    
+	  case 16:
+	    *((u16*)dest) = c;
+	    break;
+	    
+	  case 24:
+	    *(dest++) = (u8) c;
+	    *(dest++) = (u8) (c >> 8);
+	    *dest     = (u8) (c >> 16);
+	    break;
+	    
+	  case 32:
+	    *((u32*)dest) = c;
+	    break;     
+	 }	
+      }   
+   }
+   
+   /* Clean up */
+   *bmp = destbit;
+   (*vid->bitmap_free)(srcbit);
+   return sucess;
 }
 
 g_error def_bitmap_new(struct stdbitmap **bmp,
@@ -688,8 +785,8 @@ void def_blit(struct stdbitmap *srcbit,int src_x,int src_y,
    int i;
    char *src,*srcline;
    hwrcolor c,s;
-   int shiftset = 8-vid->bpp;
-   int oshift;
+   u8 shiftset = 8-vid->bpp;
+   u8 oshift;
    
    if (srcbit && (w>(srcbit->w-src_x) || h>(srcbit->h-src_y))) {
       int i,j;
@@ -1060,6 +1157,7 @@ void setvbl_default(struct vidlib *vid) {
   vid->blit = &def_blit;
   vid->unblit = &def_unblit;
   vid->coord_logicalize = &def_coord_logicalize;
+  vid->bitmap_rotate90 = &def_bitmap_rotate90;
 }
 
 /* The End */

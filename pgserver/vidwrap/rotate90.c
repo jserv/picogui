@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.4 2001/03/19 06:34:05 micahjd Exp $
+/* $Id: rotate90.c,v 1.5 2001/03/20 00:46:44 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -64,7 +64,7 @@ void rotate90_coord_logicalize(int *x,int *y) {
 
 void rotate90_gradient(int x,int y,int w,int h,int angle,
 		       pgcolor c1,pgcolor c2,int translucent) {
-//   (*vid->gradient)(X(x),Y(y),W(w),H(h),angle+90,c1,c2,translucent);
+   (*vid->gradient)(y,vid->yres-x-w,h,w,angle-90,c1,c2,translucent);
 }
 void rotate90_slab(int x,int y,int w,hwrcolor c) {
    (*vid->bar)(y,vid->yres-x-w,w,c);
@@ -77,13 +77,11 @@ void rotate90_line(int x1,int y1,int x2,int y2,hwrcolor c) {
 }
 void rotate90_blit(hwrbitmap src,int src_x,int src_y,
 		   int dest_x,int dest_y,int w,int h,int lgop) {
-   /* FIXME */
-   
-   VID(rect) (dest_x,dest_y,w,h,50);
+   (*vid->blit)(src,0,0,dest_y,vid->yres-dest_x-w,h,w,lgop);
 }
 void rotate90_unblit(int src_x,int src_y,hwrbitmap dest,int dest_x,
 		     int dest_y,int w,int h) {
-   /* FIXME */
+ //  (*vid->unblit)(src_y,vid->yres-src_x-w,dest,dest_y,dest_x,h,w);
 }
 void rotate90_scrollblit(int src_x,int src_y,int dest_x,int dest_y,
 			 int w,int h) {
@@ -114,9 +112,44 @@ void rotate90_charblit(unsigned char *chardat,int dest_x,int dest_y,
 void rotate90_charblit_v(unsigned char *chardat,int dest_x,int dest_y,
 		       int w,int h,int lines,hwrcolor c,
 		       struct cliprect *clip) {
-   /* FIXME */
+   struct cliprect cr;
+   struct cliprect *crp;
+   
+   if (clip) {
+      cr.x1 = clip->y1;
+      cr.y1 = vid->yres-1-clip->x2;
+      cr.x2 = clip->y2;
+      cr.y2 = vid->yres-1-clip->x1;
+      crp = &cr;
+   }
+   else
+     crp = NULL;
+   (*vid->charblit)(chardat,dest_y,vid->yres-1-dest_x,w,h,lines,c,crp);
 }
 
+/******* Bitmap rotation */
+
+/* Tack that rotation onto any bitmap loading */
+
+#ifdef CONFIG_FORMAT_XBM
+g_error rotate90_bitmap_loadxbm(struct stdbitmap **bmp,
+				unsigned char *data,
+				int w,int h,
+				hwrcolor fg,
+				hwrcolor bg) {
+   g_error e;
+   e = (*vid->bitmap_loadxbm)(bmp,data,w,h,fg,bg);
+   return (*vid->bitmap_rotate90)(bmp);
+}
+#endif
+
+g_error rotate90_bitmap_load(hwrbitmap *bmp,u8 *data,u32 datalen) {
+   g_error e;
+   e = (*vid->bitmap_load)(bmp,data,datalen);
+   errorcheck;
+   return (*vid->bitmap_rotate90)(bmp);
+}
+   
 /******* Registration */
 
 void vidwrap_rotate90(struct vidlib *vid) {
@@ -138,6 +171,8 @@ void vidwrap_rotate90(struct vidlib *vid) {
    vid->charblit = &rotate90_charblit;
    vid->charblit_v = &rotate90_charblit_v;
    vid->coord_logicalize = &rotate90_coord_logicalize;
+   vid->bitmap_loadxbm = &rotate90_bitmap_loadxbm;
+   vid->bitmap_load = &rotate90_bitmap_load;
 }
 
 /* The End */
