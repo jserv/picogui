@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.6 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: div.c,v 1.7 2000/05/06 06:42:21 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -172,10 +172,12 @@ void divnode_recalc(struct divnode *n) {
      if (n->div) {
        n->div->flags |= DIVNODE_NEED_RECALC | 
 	 (n->flags & DIVNODE_PROPAGATE_RECALC);
-       if (n->div->on_recalc) {
-	 n->div->grop_lock = 1;
-	 grop_free(&n->div->grop);
-	 (*n->div->on_recalc)(n->div);
+       if (n->div->on_recalc && (!n->div->grop_lock)) {
+	 n->div->grop_lock++;
+	 if (n->div->grop_lock==1) {
+	   grop_free(&n->div->grop);
+	   (*n->div->on_recalc)(n->div);
+	 }
 	 n->div->grop_lock = 0;
 #ifdef DEBUG
 	 printf("div: on_recalc(0x%X)\n",n->div);
@@ -189,10 +191,12 @@ void divnode_recalc(struct divnode *n) {
        
        if (n->next) {
 	 n->next->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
-	 if (n->next->on_recalc) {
-	   n->next->grop_lock = 1;
-	   grop_free(&n->next->grop);
-	   (*n->next->on_recalc)(n->next);
+	 if (n->next->on_recalc && (!n->div->grop_lock)) {
+	   n->next->grop_lock++;
+	   if (n->next->grop_lock==1) {
+	     grop_free(&n->next->grop);
+	     (*n->next->on_recalc)(n->next);
+	   }
 	   n->next->grop_lock = 0;
 #ifdef DEBUG
 	   printf("next: on_recalc(0x%X)\n",n->next);
@@ -270,10 +274,17 @@ void r_divnode_free(struct divnode *n) {
 
 /* Master update function, does everything necessary to redraw the screen */
 void update(struct dtstack *s) {
-  r_dtupdate(s->top);
+  if (s->update_lock) return;   /* Don't want multiple threads updating */
+  s->update_lock++;           /* at the same time !                   */
 
-  /* NOW we update the hardware */
-  hwr_update();
+  if (s->update_lock==1) {
+    r_dtupdate(s->top);
+    
+    /* NOW we update the hardware */
+    hwr_update();
+  }
+
+  s->update_lock = 0;
 }
 
 /* Update the divtree's calculations and render (both only if necessary) */

@@ -1,4 +1,4 @@
-/* $Id: theme.c,v 1.5 2000/05/05 22:28:07 micahjd Exp $
+/* $Id: theme.c,v 1.6 2000/05/06 06:42:21 micahjd Exp $
  *
  * theme.h - This defines the structures and functions for themes,
  * parameters defining the way widgets are drawn that are reconfigurable
@@ -125,6 +125,30 @@ struct element current_theme[E_NUM] = {
       {black,black,0,0},
       {black,black,0,0},
       {black,black,0,0}
+    }
+  },
+
+  /* indicator.border */ {
+    1,1,-2,-2,
+    ELEM_FLAT,
+    {
+      {black,black,0,0}
+    }
+  },
+
+  /* indicator.fill */ {
+    0,0,0,0,
+    ELEM_FLAT,
+    {
+      {dtc_toolbar,black,0,0}
+    }
+  },
+
+  /* indicator.overlay */ {
+    0,0,0,0,
+    ELEM_FLAT,
+    {
+      {dtc_btn,black,0,0}
     }
   },
 

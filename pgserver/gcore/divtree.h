@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.10 2000/04/29 07:29:02 micahjd Exp $
+/* $Id: divtree.h,v 1.11 2000/05/06 06:42:21 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -46,6 +46,8 @@ struct gropnode;
 struct dtstack {
   struct divtree *top;  /* The top of the stack, currently active tree */
   struct divtree *root;  /* The bottom of the stack, root tree */
+
+  int update_lock;
 };
 
 struct divtree {

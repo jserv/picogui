@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.12 2000/04/29 21:57:45 micahjd Exp $
+/* $Id: button.c,v 1.13 2000/05/06 06:42:21 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -232,7 +232,7 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
 
   /* If we're busy rebuilding the grop list, don't bother poking
      at the individual nodes */
-  if (self->in->div->grop_lock)
+  if (self->in->div->grop_lock || !self->in->div->grop)
     return;
 
   /* This code for updating the button's appearance modifies

@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.4 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: indicator.c,v 1.5 2000/05/06 06:42:21 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -26,26 +26,35 @@
  */
 
 #include <widget.h>
+#include <theme.h>
 
 void indicator(struct divnode *d) {
-  int x,y,w,h,p;
-  x = y = 0;
-  w = d->w;
-  h = d->h;
+  int x,y,w,h;
 
-  grop_frame(&d->grop,x,y,w,h,ind_b1); x++; y++; w-=2; h-=2;
-  grop_frame(&d->grop,x,y,w,h,ind_b2); x++; y++; w-=2; h-=2;
-  grop_frame(&d->grop,x,y,w,h,ind_b3); x++; y++; w-=2; h-=2;
+  /* Background for the whole bar */
+  x=y=0; w=d->w; h=d->h;
+  addelement(&d->grop,&current_theme[E_INDICATOR_BORDER],&x,&y,&w,&h,1);
+  addelement(&d->grop,&current_theme[E_INDICATOR_FILL],&x,&y,&w,&h,1);
 
-  if (w>h) {
-    p = w*d->param.i/100;
-    grop_rect(&d->grop,x,y,p,h,ind_midon);
-    grop_rect(&d->grop,x+p,y,w-p,h,ind_midoff);
-  }
+  /* Within the remaining space, figure out where the indicator is
+     hilighted. */
+  if (d->w > d->h)
+    w = w*d->param.i/100;
   else {
-    p = h*(100-d->param.i)/100;
-    grop_rect(&d->grop,x,y,w,p,ind_midoff);
-    grop_rect(&d->grop,x,y+p,w,h-p,ind_midon);
+    int t;
+    t = h*d->param.i/100;
+    y += t;
+    h -= t;
+  }
+
+  /* Add the hilight */
+  addelement(&d->grop,&current_theme[E_INDICATOR_OVERLAY],&x,&y,&w,&h,0);
+
+  /* If this is a vertical indicator, rotate the gradients */
+  if (d->h >= d->w) {
+    d->grop->param.gradient.angle += 270;
+    d->grop->next->param.gradient.angle += 270;
+    d->grop->next->next->param.gradient.angle += 270;
   }
 }
 
@@ -79,8 +88,22 @@ g_error indicator_set(struct widget *self,int property, glob data) {
     if (data > 100) data = 100;
     if (data < 0) data = 0;
     self->in->div->param.i = (int) data;
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
+
+    /* Modify the gropnode directly */
+    if (self->in->div->grop_lock || !self->in->div->grop)
+      break;
+    if (self->in->div->w >
+	self->in->div->h)
+      self->in->div->grop->next->next->w = 
+	self->in->div->grop->next->w *
+	self->in->div->param.i/100;
+    else
+      self->in->div->grop->next->next->h = 
+	self->in->div->grop->next->h * 
+	self->in->div->param.i/100;
+    
+    self->in->div->flags |= DIVNODE_NEED_REDRAW;
+    self->dt->flags |= DIVTREE_NEED_REDRAW;   
     break;
 
   case WP_SIZE:
@@ -99,7 +122,8 @@ g_error indicator_set(struct widget *self,int property, glob data) {
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
       DIVNODE_PROPAGATE_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
-
+    break;
+    
   default:
     return mkerror(ERRT_BADPARAM,"Invalid property for indicator");
   }
@@ -123,6 +147,11 @@ glob indicator_get(struct widget *self,int property) {
 }
 
 /* The End */
+
+
+
+
+
 
 
 
