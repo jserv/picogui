@@ -10,9 +10,6 @@ logFile = "/home/perl5/mail.log"
 message = email.message_from_file(sys.stdin)
 body = StringIO(message.get_payload())
 
-# Log the raw message for debugging
-open(logFile, "a").write(str(message))
-
 # If this appears to be a reply, ignore it
 if message['subject'].strip().lower().find("re") == 0:
     sys.exit(0)

@@ -12,7 +12,6 @@ import irc_colors
 
 baseDir = "/home/commits"
 channelFile = "/home/commits/channels.list"
-mailLog = os.path.join(baseDir, "mail.log")
 commandLog = os.path.join(baseDir, "commands.log")
 statsDir = os.path.join(baseDir, "stats")
 urlDir = os.path.join(baseDir, "urls")
@@ -184,11 +183,6 @@ if __name__ == '__main__':
 
     mailMsg  = email.message_from_file(sys.stdin)
     
-    # log it
-    f = open(mailLog, "a")
-    f.write(mailMsg.as_string())
-    f.close()
-
     subjectFields = mailMsg['Subject'].split(" ")
     message = mailMsg.get_payload()
     # Commands we process here

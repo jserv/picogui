@@ -2,6 +2,10 @@ VERBOSE=on
 PMDIR=$HOME/.procmail
 LOGFILE=$PMDIR/log
 
+# Log all incoming messages
+:0 c
+/home/commits/mail.log
+
 ###### Filters for mailing list commit messages
 
 :0
