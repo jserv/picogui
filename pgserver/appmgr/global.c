@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.61 2002/02/12 12:13:30 micahjd Exp $
+/* $Id: global.c,v 1.62 2002/03/28 11:51:24 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -161,6 +161,10 @@ g_error appmgr_init(void) {
   /* Allocate the sprite */
   e = new_sprite(&cursor,cursor_width,cursor_height);
   errorcheck;
+
+  /* Sprite defaults to the center of the display */
+  cursor->x = vid->lxres >> 1;
+  cursor->y = vid->lyres >> 1;
    
   /* Load bitmaps */
   appmgr_loadcursor(PGTH_O_DEFAULT);
