@@ -50,5 +50,4 @@ AC_OUTPUT(
 	themec/Makefile
 	pgbg/Makefile
 	themetools.spec
-	libpgwt/Makefile
 )
