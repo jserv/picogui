@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.36 2002/01/06 09:22:56 micahjd Exp $
+/* $Id: api.c,v 1.37 2002/01/14 07:52:38 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -892,6 +892,30 @@ long pgGetWidget(pghandle widget,short property) {
 #endif  
 }
 
+pghandle pgTraverseWidget(pghandle widget, int direction, int count) {
+  struct pgreqd_traversewgt arg;
+  arg.widget = htonl(widget ? widget : _pgdefault_widget);
+  arg.direction = htons(direction);
+  arg.count = htons(count);
+#ifdef ENABLE_THREADING_SUPPORT
+{
+  pgClientReturnData retData;
+  sem_init(&retData.sem, 0, 0);
+  _pg_add_request(PGREQ_TRAVERSEWGT,&arg,sizeof(arg), (unsigned int)&retData, 1);
+  sem_wait(&retData.sem);
+  return retData.ret.e.retdata;
+}
+#else  
+  _pg_add_request(PGREQ_TRAVERSEWGT,&arg,sizeof(arg));
+
+  /* Because we need a result now, flush the buffer */
+  pgFlushRequests();
+
+  /* Return the property */
+  return _pg_return.e.retdata;
+#endif
+}
+
 /* Measure a piece of text in a font, in pixels */
 void pgSizeText(int *w,int *h,pghandle font,pghandle text) {
   struct pgreqd_sizetext arg;
@@ -1238,47 +1262,5 @@ void pgAppMessage(pghandle dest, struct pgmemdata data) {
   _pg_free_memdata(data);
   free(buf);
 }
-
-void pgListInsertAt(pghandle list, pghandle widget, int position) {
-
-   pgWriteCmd(list, PGLIST_INSERT_AT, 2, widget, position);
-      
-}  // End of pgListInsertAt
-
-void pgListInsertWidget(pghandle list, pghandle widget, pghandle parent, int rship) {
-
-   if ( rship != PG_DERIVE_AFTER || rship != PG_DERIVE_BEFORE )
-      return;
-   
-   pgWriteCmd(list, PGLIST_INSERT_AT_PARENT, 3, widget, parent, rship);
-   
-}  // End of pgListInsertWidget
-
-void pgListRemoveAt(pghandle list, int position) {
-
-   pgWriteCmd(list, PGLIST_REMOVE_AT, 1, position);
-   
-}  // End of pgListRemoveAt
-
-void pgListRemove(pghandle list, pghandle widget) {
-
-   pgWriteCmd(list, PGLIST_REMOVE, 1, widget);
-   
-}  // End of pgListRemove
-
-
-void pgAddMenu(pghandle menubar, pghandle menu)
-{
-   pgWriteCmd(menubar, PGMENU_ADD, 1, menu);
-
-} // End of pgAddMenu
-
-void pgRemoveMenu(pghandle menubar, pghandle menu)
-{
-   pgWriteCmd(menubar, PGMENU_REMOVE, 1, menu);
-
-} // End of pgAddMenu
-
-
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.73 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: dispatch.c,v 1.74 2002/01/14 07:52:39 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -1205,11 +1205,24 @@ g_error rqh_findthobj(int owner, struct pgrequest *req,
 		      void *data, unsigned long *ret, int *fatal) {
   s16 id;
 
-  if (find_named_thobj((const char *) data, &id))
+  if (find_named_thobj(data, &id))
     *ret = id;
   else
     *ret = 0;
 
+  return success;
+}
+
+g_error rqh_traversewgt(int owner, struct pgrequest *req,
+		   void *data, unsigned long *ret, int *fatal) {
+  g_error e;
+  struct widget *w;
+  reqarg(traversewgt);
+
+  e = rdhandle((void**) &w,PG_TYPE_WIDGET,owner,ntohl(arg->widget));
+  errorcheck;
+  
+  *ret = hlookup(widget_traverse(w, ntohs(arg->direction), ntohs(arg->count)),NULL);
   return success;
 }
 

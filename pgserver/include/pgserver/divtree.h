@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.34 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: divtree.h,v 1.35 2002/01/14 07:52:38 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -276,6 +276,10 @@ struct divnode *divnode_findbranch(struct divnode *tree, struct divnode *dest);
  */
 struct divnode **divnode_findpointer(struct divnode *tree,
 				     struct divnode *dest);
+
+/* Find a divnode's parent */
+struct divnode *divnode_findparent(struct divnode *tree,
+				   struct divnode *dest);
 
 /* Little helper to rotate a side constant 90 degrees counterclockwise */
 int rotate_side(int s);

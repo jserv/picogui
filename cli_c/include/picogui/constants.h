@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.102 2002/01/08 17:18:16 cgrigis Exp $
+/* $Id: constants.h,v 1.103 2002/01/14 07:52:38 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -813,6 +813,12 @@ typedef unsigned long pghandle;
 #define PG_DERIVE_INSIDE      2
 #define PG_DERIVE_BEFORE      3
 
+/* Constants used in pgTraverseWidget */
+#define PG_TRAVERSE_CHILDREN  1    //!< Starting with this widget's first child, traverse forward
+#define PG_TRAVERSE_FORWARD   2
+#define PG_TRAVERSE_BACKWARD  3    //!< Going backwards is much slower than going forward right now
+#define PG_TRAVERSE_CONTAINER 4    //!< 'count' is the number of container levels to traverse up
+
 /* Types of widgets (in the same order they are
    in the table in widget.c) */
 #define PG_WIDGET_TOOLBAR     0
@@ -835,9 +841,7 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_SUBMENUITEM 17    /* Menuitem with a submenu arrow */
 #define PG_WIDGET_RADIOBUTTON 18    /* Like a check box, but exclusive */
 #define PG_WIDGET_TEXTBOX     19    /* Client-side text layout */
-#define PG_WIDGET_LIST        20    /* RidgeRun's list box widget */
-#define PG_WIDGET_MENUBAR     21
-#define PG_WIDGETMAX          21    /* For error checking */
+#define PG_WIDGETMAX          19    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1
@@ -956,8 +960,6 @@ typedef unsigned long pghandle;
 /* These are event constants used for networked input drivers. It is a subset
  * of the TRIGGER_* constants in the server, representing only those needed
  * for input drivers. */
-#define PG_TRIGGER_ACTIVATE   (1<<3)  /* Sent when it receives focus */
-#define PG_TRIGGER_DEACTIVATE (1<<4)  /* Losing focus */
 #define PG_TRIGGER_KEYUP      (1<<5)  /* Ignores autorepeat, etc. Raw key codes*/
 #define PG_TRIGGER_KEYDOWN    (1<<6)  /* Ditto. */
 #define PG_TRIGGER_UP         (1<<8)  /* Mouse up */

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.138 2002/01/08 03:29:34 lonetech Exp $
+/* $Id: widget.c,v 1.139 2002/01/14 07:52:39 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -79,7 +79,6 @@ DEF_HYBRIDWIDGET_TABLE(listitem,button)
 DEF_HYBRIDWIDGET_TABLE(submenuitem,button)
 DEF_HYBRIDWIDGET_TABLE(radiobutton,button)
 DEF_WIDGET_TABLE(textbox)
-DEF_WIDGET_TABLE(list)
 DEF_WIDGET_TABLE(menubar)
 };
 
@@ -1393,6 +1392,69 @@ void global_hotkey(u16 key,u16 mods, u32 type) {
     }
   } 
 }
+
+/* Traverse to other widgets in a given direction (PG_TRAVERSE_*) */
+struct widget *widget_traverse(struct widget *w, int direction, int count) {
+  struct widget *p;
+  struct divnode *d;
+  
+  if (!w)
+    return NULL;
+
+  switch (direction) {
+
+    /* Traverse to the first child, then go forward 
+     */
+  case PG_TRAVERSE_CHILDREN:
+    if (!*w->sub)
+      return NULL;
+    return widget_traverse((*w->sub)->owner,PG_TRAVERSE_FORWARD,count);
+
+    /* Go forward by 'count' widgets
+     */
+  case PG_TRAVERSE_FORWARD:
+    for (;w && count;count--) {
+      if (!*w->out)
+	return NULL;
+      w = (*w->out)->owner;
+    }
+    break;
+
+    /* Go up by 'count' container levels 
+     */
+  case PG_TRAVERSE_CONTAINER:
+    for (;w && count;count--) {
+      if (iserror(rdhandle((void**) &w, PG_TYPE_WIDGET, -1, w->container)))
+	return NULL;
+    }
+    break;
+
+    /* Traversing backwards is harder, since there's no 'parent' pointer in the divnode
+     */
+  case PG_TRAVERSE_BACKWARD:
+    for (;w && count;count--) {
+      /* Find a suitable subtree */
+      if (iserror(rdhandle((void**) &p, PG_TYPE_WIDGET, -1, w->container)))
+	return NULL;
+      if (p)
+	d = p->in;
+      else
+        d = w->dt->head;
+
+      /* Find parent divnode */
+      d = divnode_findparent(d, w->in);
+      if (!d)
+	return NULL;
+      if (d->next != w->in)   /* div child doesn't count */
+	return NULL;
+      w = d->owner;
+    }
+    break;
+  }
+
+  return w;
+}
+
 
 /* The End */
 

@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.67 2002/01/06 09:22:57 micahjd Exp $
+/* $Id: div.c,v 1.68 2002/01/14 07:52:38 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -1048,6 +1048,27 @@ struct divnode **divnode_findpointer(struct divnode *tree,
     
   return NULL;
 } 
+
+/* Find a divnode's parent */
+struct divnode *divnode_findparent(struct divnode *tree,
+				   struct divnode *dest) {
+  struct divnode *p;
+
+  if (!tree)
+    return NULL;
+
+  /* Check if one of tree's children is what we're looking for */
+  if (tree->div == dest || tree->next == dest)
+    return tree;
+
+  if (p = divnode_findparent(tree->div,dest))
+    return p;
+  if (p = divnode_findparent(tree->next,dest))
+    return p;
+    
+  return NULL;
+}
+
 
 /* The End */
 

@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.25 2002/01/06 09:23:00 micahjd Exp $
+/* $Id: network.h,v 1.26 2002/01/14 07:52:39 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -154,8 +154,9 @@ struct pghello {
 #define PGREQ_CREATEWIDGET 46  /* Create widget                  |  struct */
 #define PGREQ_ATTACHWIDGET 47  /* Attach widget                  |  struct */
 #define PGREQ_FINDTHOBJ    48  /* Find theme object by name      |   chars */
+#define PGREQ_TRAVERSEWGT  49  /* Find widgets after this one    | struct */
 
-#define PGREQ_UNDEF        49  /* types > this will be truncated. return error */
+#define PGREQ_UNDEF        50  /* types > this will be truncated. return error */
 
 /******* Request data structures */
 
@@ -310,6 +311,11 @@ struct pgreqd_getfstyle {
    */
   u16 index;
   u16 dummy;
+};
+struct pgreqd_traversewgt {
+  u32 widget;
+  u16 direction;                /* PG_TRAVERSE_* flag */
+  u16 count;
 };
 struct pgdata_getfstyle {
   /* This is returned by getfstyle.

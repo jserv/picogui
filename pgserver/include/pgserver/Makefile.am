@@ -15,7 +15,6 @@ noinst_HEADERS = \
 	pgnet.h 	\
 	render.h 	\
 	svrtheme.h 	\
-	theme.h 	\
 	timer.h 	\
 	video.h 	\
 	widget.h \

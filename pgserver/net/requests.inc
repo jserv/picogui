@@ -52,6 +52,7 @@ RQH(appmsg)
 RQH(createwidget)
 RQH(attachwidget)
 RQH(findthobj)
+RQH(traversewgt)
 RQH(undef)        /* undef must be last */
 
 /* The End */

@@ -3,5 +3,5 @@ noinst_HEADERS = \
 	constants.h \
 	network.h \
 	pgkeys.h \
-	theme.h \
-	list.h
+	theme.h
+	

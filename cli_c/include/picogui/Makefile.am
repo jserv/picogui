@@ -7,7 +7,6 @@ include_HEADERS = \
 	network.h \
 	pgfx.h \
 	pgkeys.h \
-   theme.h \
-	stddialog.h \
-	list.h \
-   menu.h
+        theme.h \
+	stddialog.h
+

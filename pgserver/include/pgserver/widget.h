@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.44 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: widget.h,v 1.45 2002/01/14 07:52:38 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -392,6 +392,8 @@ void reload_hotkeys(void);
 extern u16 hotkey_left, hotkey_right, hotkey_up, hotkey_down;
 extern u16 hotkey_activate, hotkey_next;
 
+/* Traverse to other widgets in a given direction (PG_TRAVERSE_*) */
+struct widget *widget_traverse(struct widget *w, int direction, int count);
 
 #endif /* __WIDGET_H */
 
