@@ -40,7 +40,7 @@ runtime = [
                                  (S ('module/picoguiserver/start') & S ('platform/m68k-pic-coff')) >> S ('module/pocketapps/initenv'),
                                  ],
 
-                     rcscript = 'picogui-launcher.sh',
+                     rcscript = "\n# launch pgserver\npicogui-launcher.sh\n",
                      
                      help = "Start the PicoGUI Server" )
             ]
