@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.3 2000/11/05 05:08:19 micahjd Exp $
+/* $Id: fillstyle.c,v 1.4 2000/11/11 18:32:07 micahjd Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -31,7 +31,7 @@
 #include <stdio.h>  /* for NULL */
 
 /* Stack for the interpreter */
-#define FSSTACKSIZE  16
+#define FSSTACKSIZE  32
 unsigned long fsstack[FSSTACKSIZE];
 int fsstkpos;  /* position in the stack */
 
