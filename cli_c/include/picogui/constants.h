@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.110 2002/01/21 09:46:28 cgrigis Exp $
+/* $Id: constants.h,v 1.111 2002/01/22 13:04:00 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -903,6 +903,7 @@ typedef unsigned long pghandle;
 #define PG_WP_PANELBAR_ZOOM   48
 #define PG_WP_BITMAPSIDE      49
 #define PG_WP_PASSWORD        50
+#define PG_WP_HOTKEY_FLAGS    51  /* Keyboard event flags for the hotkey (PG_KF_*) */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0
@@ -986,6 +987,14 @@ typedef unsigned long pghandle;
 #define PG_TRIGGER_MOVE       (1<<10) /* any mouse movement in node */
 #define PG_TRIGGER_CHAR       (1<<14) /* A processed ASCII/Unicode character */
 
+/* More flags used in PicoGUI's keyboard triggers to indicate the circumstances
+ * under which a key event is received.
+ */
+#define PG_KF_FOCUSED           (1<<0)  /* The widget receiving the event is focused */
+#define PG_KF_CHILD_FOCUSED     (1<<1)  /* Any child widget of this one is focused */
+#define PG_KF_CONTAINER_FOCUSED (1<<2)  /* Any container of this widget is focused */
+#define PG_KF_ALWAYS            (1<<3)  /* This is always on */
+#define PG_KF_APP_TOPMOST       (1<<4)  /* Set if the widget's app is top in "z-order" */
 
 //! \}
 #endif /* __H_PG_CONSTANTS */
