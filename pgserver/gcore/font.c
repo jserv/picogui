@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.49 2002/01/30 19:42:47 micahjd Exp $
+/* $Id: font.c,v 1.50 2002/01/31 15:25:59 pney Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -315,10 +315,11 @@ void sizetext(struct fontdesc *fd, s16 *w, s16 *h, const u8 *txt) {
       *w = fd->margin << 1;
     }
     else if (ch!='\r') {
-      if(fd->passwdc > 0) {    /* If the font is set to a password */
-	const u8 *u8_passwdc = &(fd->passwdc);
-	outchar_fake(fd,w,fd->decoder(&u8_passwdc));
-      }
+      if(fd->passwdc > 0)      /* If the font is set to a password */
+	/* We don't need to run the fd->decoder() here since fd->password
+	 * is a character code, not a string.
+	 */
+	outchar_fake(fd,w,fd->passwdc);
       else
 	outchar_fake(fd,w,ch);
     }
