@@ -569,6 +569,13 @@ quoted appropriately. For example:
   Requires gamma correction support compiled in
   Defaults to 0.75
 
+- gamma_light_dark_threshold
+  The threshold used to decide between light_gamma and dark_gamma.
+  This is a hack so we can do gamma correction on the glyph rather than
+  on the output, but it seems to work just fine :)
+  This value should be between 0 and 255.
+  Defaults to 128
+
 - max_faces
   Maximum number of font faces to keep in memory at once
   Defaults to the Freetype default

@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.7 2002/10/13 13:04:11 micahjd Exp $
+/* $Id: font_freetype.c,v 1.8 2002/10/13 13:12:30 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -45,6 +45,7 @@
 #include <math.h>
 u8 ft_light_gamma_table[256];
 u8 ft_dark_gamma_table[256];
+int ft_gamma_light_dark_threshold;     /* Premultiplied by 3 */
 void ft_build_gamma_table(u8 *table, float gamma);
 void ft_apply_gamma_table(u8 *table, FT_Bitmap *b);
 u8 *ft_pick_gamma_table(hwrcolor c);
@@ -140,6 +141,7 @@ g_error freetype_engine_init(void) {
 		       atof(get_param_str(CFGSECTION,"light_gamma","1.6")));
   ft_build_gamma_table(ft_dark_gamma_table,
 		       atof(get_param_str(CFGSECTION,"dark_gamma","0.75")));
+  ft_gamma_light_dark_threshold = 3*get_param_int(CFGSECTION,"gamma_light_dark_threshold",128);
 #endif
 
   return success;
@@ -394,7 +396,7 @@ void ft_apply_gamma_table(u8 *table, FT_Bitmap *b) {
 /* Use one table for light fonts, another for dark fonts */
 u8 *ft_pick_gamma_table(hwrcolor c) {
   pgcolor pgc = vid->color_hwrtopg(c);
-  if (getred(pgc)+getgreen(pgc)+getblue(pgc) > 382)
+  if (getred(pgc)+getgreen(pgc)+getblue(pgc) >= ft_gamma_light_dark_threshold)
     return ft_light_gamma_table;
   return ft_dark_gamma_table;
 }
