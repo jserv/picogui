@@ -47,9 +47,12 @@ def foldText(text, lineLength=120):
 
 
 class statPage:
+    allSections = ['table', 'totals', 'channels', 'recent']
+    defaultSections = allSections
+    
     def __init__(self, form=None):
         # Defaults
-        self.sections = ['table', 'totals', 'channels', 'recent']
+        self.sections = self.defaultSections
         self.sortKey = 'forever'
         self.sortDirection = 'D'
         self.recentLines = 20
@@ -85,22 +88,26 @@ class statPage:
         except KeyError:
             pass
 
-    def linkURL(self, formKeys={}):
+    def linkURL(self, formKeys={}, useExistingForm=True):
         """Create a link to ourselves, including possibly-modified form values"""
         # Copy form attributes to a dictionary we can modify
         mutableForm = {}
-        for key in self.form.keys():
-            mutableForm[key] = self.form[key].value
+        if useExistingForm:
+            for key in self.form.keys():
+                mutableForm[key] = self.form[key].value
         mutableForm.update(formKeys)
 
         # Figure out the name of this script so we can link to ourselves
         scriptName = os.getenv("REQUEST_URI").split("?")[0].split("/")[-1]
 
         # Stick together a new URL
-        attributes = []
-        for key in mutableForm:
-            attributes.append("%s=%s" % (key, mutableForm[key]))
-        return scriptName + "?" + "&".join(attributes)
+        if mutableForm:
+            attributes = []
+            for key in mutableForm:
+                attributes.append("%s=%s" % (key, mutableForm[key]))
+            return scriptName + "?" + "&".join(attributes)
+        else:
+            return scriptName
 
     def run(self):
         doc = StringIO()
@@ -157,8 +164,19 @@ class statPage:
                  <a href="http://navi.picogui.org/svn/picogui/trunk/tools/irc/cia.html">CIA bot</a> statistics
               </div>
               <div class="subtitle">Because SF stats weren't pointless enough</div>
-           </div>
-           """ % time.strftime("%c"))
+              <div class="headingTabs">
+              """ % time.strftime("%c"))
+
+        if self.sections != self.allSections: 
+            write('<a class="headingTab" href="%s">all sections</a>' % self.linkURL({'sections': ''}))
+        if self.form.keys():
+            write('<a class="headingTab" href="%s">defaults</a>' % self.linkURL({}, False))
+        if self.refresh:
+            write('<a class="headingTab" href="%s">refresh off</a>' % self.linkURL({'refresh': 0}))
+        else:
+            write('<a class="headingTab" href="%s">refresh on</a>' % self.linkURL({'refresh': 30}))
+
+        write("</div></div>")
 
     def section_table(self, write):
         self.begin_section(write, "table", "Number of commits posted per project")
