@@ -1,4 +1,4 @@
-/* $Id: aqua.ths,v 1.19 2000/11/04 05:56:04 micahjd Exp $
+/* $Id: aqua.ths,v 1.20 2000/11/04 07:50:37 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
@@ -136,19 +136,17 @@ object panelbar.hilight {
 }
 
 /* Panelbar buttons */
-object closebtn {
-  bitmap1 = LoadBitmap("data/aq_closebtn.pnm");
+object base.panelbtn {
   width = 20;
   height = 20;
+  spacing = 0;
   margin = 0;
-}
+  bgfill = Copy(default::bgfill);
+} 
+object closebtn bitmap1 = LoadBitmap("data/aq_closebtn.pnm");
 object closebtn.hilight bitmap1 = LoadBitmap("data/aq_closebtn_over.pnm");
-object closebtn.on {
-  bgfill = fillstyle {
-    Bitmap(x,y,w,h,closebtn.hilight::bitmap1,PG_LGOP_NONE,0,0);
-    Gradient(x,y,w,h,0,0x202020,0x202020,-1);
-  };
-}  
+object rotatebtn bitmap1 = LoadBitmap("data/aq_rotatebtn.pnm");
+object rotatebtn.hilight bitmap1 = LoadBitmap("data/aq_rotatebtn_over.pnm");
 
 object box {
   height = 30;
