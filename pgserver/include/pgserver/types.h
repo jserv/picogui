@@ -1,4 +1,4 @@
-/* $Id: common.h,v 1.10 2002/01/16 15:25:21 bauermeister Exp $
+/* $Id: types.h,v 1.1 2002/01/16 15:25:21 bauermeister Exp $
  *
  * pgserver/common.h - things every file in pgserver should need,
  *                     including memory management, error handling,
@@ -22,21 +22,49 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
  * Contributors:
- * 
- * 
+ *   Pascal Bauermeister  -- Copyright (C) 2002 SMARTDATA (SA)
  * 
  */
 
-#define PGSERVER
+#ifndef _H_PG_TYPES
+#define _H_PG_TYPES
 
+/******* Fixed-sized types */
+#include <asm/types.h>
 
-/* We'll need this if we don't already have it... */
-#ifndef max
-#define max(a,b) (((a) > (b)) ? (a) : (b))
+#ifndef u8
+# define u8 __u8
 #endif
 
-#include <pgserver/types.h>
-#include <pgserver/autoconf.h>
-#include <pgserver/g_error.h>
-#include <pgserver/g_malloc.h>
-/* The End */
+#ifndef s8
+# define s8 __s8
+#endif
+
+#ifndef u16
+# define u16 __u16
+#endif
+
+#ifndef s16
+# define s16 __s16
+#endif
+
+#ifndef u32
+# define u32 __u32
+#endif
+
+#ifndef s32
+# define s32 __s32
+#endif
+
+#if !defined(bool) && !defined(NO_BOOL)
+typedef unsigned char    bool;
+#endif
+
+
+#endif /* _H_PG_TYPES */
+
+/*
+   Local Variables:
+   c-file-style: "smartdata"
+   End:
+*/

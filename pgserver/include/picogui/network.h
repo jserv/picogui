@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.52 2002/01/14 07:52:39 micahjd Exp $
+/* $Id: network.h,v 1.53 2002/01/16 15:25:21 bauermeister Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -38,12 +38,7 @@
 					* are made */
 #define PG_REQUEST_MAGIC   0x31415926
 
-#ifndef PGSERVER
-typedef unsigned short u16;
-typedef unsigned long  u32;
-typedef signed short   s16;
-typedef signed long    s32;
-#endif
+#include <pgserver/types.h>
 
 /******* Packet structures */
 

@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.69 2002/01/16 03:56:56 micahjd Exp $
+/* $Id: video.h,v 1.70 2002/01/16 15:25:21 bauermeister Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -506,7 +506,7 @@ extern unsigned char trigtab[];
   want to change the mode use vid->setmode
 */
 g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
-		    s16 xres,s16 yres,s16 bpp,unsigned long flags);
+		    s16 xres,s16 yres,s16 bpp,u32 flags);
 
 /* List of installed video drivers */
 struct vidinfo {
