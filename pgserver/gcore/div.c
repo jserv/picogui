@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.63 2001/11/14 09:28:29 micahjd Exp $
+/* $Id: div.c,v 1.64 2001/11/14 10:32:36 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -367,8 +367,10 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
 	* visited. It's safest to just redo the whole recalc. If we keep the
 	* flags straight, the recalc will reset itself and traverse again.
 	*/
-       if (n->div && (n->div->w < max(n->div->pw,n->div->cw) || 
-		      n->div->h < max(n->div->ph,n->div->ch)) && 
+       if (n->div && ((n->div->w < max(n->div->pw,n->div->cw) &&
+		       (n->flags & (PG_S_LEFT | PG_S_RIGHT))) || 
+		      (n->div->h < max(n->div->ph,n->div->ch) &&
+		       (n->flags & (PG_S_TOP | PG_S_BOTTOM)))) && 
 	   ((!parent) || parent->div!=n)) {
 	 struct divnode *p;
 	 /* Send to the next line */
