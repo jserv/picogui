@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.64 2001/12/19 21:30:56 lonetech Exp $
+/* $Id: defaultvbl.c,v 1.65 2001/12/29 21:49:30 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -34,6 +34,12 @@
  */
 
 #include <pgserver/common.h>
+
+#ifdef DEBUG_VIDEO
+#define DEBUG_FILE
+#endif
+
+#include <pgserver/debug.h>
 
 #include <pgserver/video.h>
 #include <pgserver/font.h>
@@ -1437,9 +1443,9 @@ void def_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 }
 
 void def_sprite_show(struct sprite *spr) {
-#ifdef DEBUG_VIDEO
-   printf("def_sprite_show\n");
-#endif
+  static struct quad cr;
+
+  DBG("spr = 0x%08X\n",spr);
    
   if (spr->onscreen || !spr->visible || !vid->xres) return;
    
@@ -1476,6 +1482,14 @@ void def_sprite_show(struct sprite *spr) {
 
   /* Update coordinates */
   spr->ox = spr->x; spr->oy = spr->y;
+
+  cr.x1 = spr->x;
+  cr.y1 = spr->y;
+  cr.x2 = spr->x+spr->w-1;
+  cr.y2 = spr->y+spr->h-1;
+   
+  /* Protect that area of the screen */
+  def_sprite_protectarea(&cr,spr->next);
   
   /* Grab a new backbuffer */
   VID(blit) (spr->backbuffer,0,0,spr->ow,spr->oh,
@@ -1559,9 +1573,7 @@ void def_sprite_show(struct sprite *spr) {
 void def_sprite_hide(struct sprite *spr) {
   static struct quad cr;
 
-#ifdef DEBUG_VIDEO
-   printf("def_sprite_hide\n");
-#endif
+  DBG("spr = 0x%08X\n",spr);
    
   if ( (!spr->onscreen) ||
        (spr->ox == -1) )
@@ -1584,9 +1596,7 @@ void def_sprite_hide(struct sprite *spr) {
 }
 
 void def_sprite_update(struct sprite *spr) {
-#ifdef DEBUG_VIDEO
-   printf("def_sprite_update\n");
-#endif
+  DBG("spr = 0x%08X\n",spr);
    
   (*vid->sprite_hide) (spr);
   (*vid->sprite_show) (spr);
@@ -1599,11 +1609,9 @@ void def_sprite_update(struct sprite *spr) {
 void def_sprite_showall(void) {
   struct sprite *p = spritelist;
 
-#ifdef DEBUG_VIDEO
-   printf("def_sprite_showall\n");
-#endif
+  DBG("\n");
 
-   while (p) {
+  while (p) {
     (*vid->sprite_show) (p);
     p = p->next;
   }
@@ -1616,6 +1624,7 @@ void r_spritehide(struct sprite *s) {
   (*vid->sprite_hide) (s);
 }
 void def_sprite_hideall(void) {
+  DBG("\n");
   r_spritehide(spritelist);
 }
 
@@ -1624,9 +1633,7 @@ void def_sprite_protectarea(struct quad *in,struct sprite *from) {
    /* Base case: from is null */
    if (!from) return;
 
-#ifdef DEBUG_VIDEO
-   printf("def_sprite_protectarea\n");
-#endif
+   DBG("quad(%d %d %d %d)\n",in->x1,in->x1,in->y1,in->x2,in->y2);
 
    /* Load this all on the stack so we go backwards */
    def_sprite_protectarea(in,from->next);

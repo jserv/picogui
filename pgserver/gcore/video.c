@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.50 2001/12/14 22:56:43 micahjd Exp $
+/* $Id: video.c,v 1.51 2001/12/29 21:49:30 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -423,6 +423,21 @@ g_error (*find_videodriver(const char *name))(struct vidlib *v) {
 }
 
 void add_updarea(s16 x,s16 y,s16 w,s16 h) {
+
+  /* Clip to logical display */
+  if (x<0) {
+    w -= x;
+    x = 0;
+  }
+  if (y<0) {
+    h -= y;
+    y = 0;
+  }
+  if ((x+w)>vid->lxres)
+    w = vid->lxres-x;
+  if ((y+h)>vid->lyres)
+    h = vid->lyres-y;
+
   /* Is this a bogus update rectangle? */
   if (w<=0 || h<=0)
     return;

@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.32 2001/12/14 22:56:44 micahjd Exp $
+/* $Id: sdlfb.c,v 1.33 2001/12/29 21:49:30 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -388,9 +388,6 @@ void sdlfb_close(void) {
 }
 
 void sdlfb_update(s16 x,s16 y,s16 w,s16 h) {
-#ifdef DEBUG_VIDEO
-   printf("sdlfb_update(%d,%d,%d,%d)\n",x,y,w,h);
-#endif
 
 #ifdef CONFIG_SDLSKIN
    x += sdlfb_display_x;
