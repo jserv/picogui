@@ -1,4 +1,4 @@
-/* $Id: h3600ts.c,v 1.3 2002/07/03 22:03:29 micahjd Exp $
+/* $Id: h3600ts.c,v 1.4 2002/10/25 04:56:33 micahjd Exp $
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -51,8 +51,6 @@ typedef struct h3600_ts_event {
 int h3600ts_fd_activate(int fd) {
 
   TS_EVENT ev;
-  static unsigned short int x,y;
-  int action;
   
   if (fd != h3600ts_fd)
     return 0;
@@ -60,21 +58,8 @@ int h3600ts_fd_activate(int fd) {
   if (sizeof (ev) != read (fd, &ev, sizeof (ev)))
     return 0;
   
-  if(ev.pressure) {
-    if (!btnstate) {
-      action = PG_TRIGGER_DOWN;
-      x = ev.x; y = ev.y;
-    } else {
-      action = PG_TRIGGER_MOVE;
-      x = ev.x; y = ev.y;
-    }
-  } else {
-    action = PG_TRIGGER_UP;
-  }
-
-  btnstate = ev.pressure;
-  infilter_send_pointing(PG_TRIGGER_PNTR_STATUS,x,y,btnstate,NULL);
-  
+  infilter_send_pointing(PG_TRIGGER_PNTR_STATUS,
+			 ev.x,ev.y,ev.pressure,NULL);
   return 1;
 }
 
