@@ -72,8 +72,8 @@ class OptionParser(optik.OptionParser):
         configGroup.add_option("--retest-mirrors", dest="retestMirrors", action="store_true",
                                help="Re-runs any mirror speed tests, ignoring saved results.")
         configGroup.add_option("-l", "--list", dest="listPath", metavar="XPATH",
-                               help="Lists configuration data from the given path. " +
-                               'If you don\'t know how to use PGBuild\'s XPaths, try ".", "sites", or "packages".')
+                               help="Lists items from the given configuration path. " +
+                               'If you\'re unfamilair with PGBuild\'s XPaths, try "sites", or "packages".')
         
         ############# Package management
         
@@ -81,7 +81,9 @@ class OptionParser(optik.OptionParser):
         packageGroup.add_option("--nuke", dest="nuke", action="store_true",
                                 help="Unconditionally deletes local copies of all non-bootstrap packages.")
         packageGroup.add_option("-m", "--merge", dest="merge", action="append", metavar="PACKAGE",
-                                help="Forcibly updates the specified package and merges its configuration.")
+                                help="Updates the specified package and merges its configuration.")
+        packageGroup.add_option("--merge-all", dest="mergeAll", action="store_true",
+                                help="Updates and merges all available packages- could take a while.")
         
 
 class HelpFormatter(optik.IndentedHelpFormatter):

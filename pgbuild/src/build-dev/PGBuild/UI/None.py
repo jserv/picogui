@@ -180,10 +180,16 @@ class Interface(object):
         if self.config.eval("invocation/option[@name='nuke']/text()"):
             self.config.packages.nuke(self.progress)
 
-        # Handle --merge command line option
-        mergeTask = self.progress.task("Forcibly merging packages")
-        for name in self.config.listEval("invocation/option[@name='merge']/item/text()"):
-            self.config.packages.findPackageVersion(name).merge(mergeTask)
+        # Handle --merge-all command line option
+        if self.config.eval("invocation/option[@name='mergeAll']/text()"):
+            mergeTask = self.progress.task("Merging all packages")
+            for name in self.config.listEval("packages/package/@name"):
+                self.config.packages.findPackageVersion(name).merge(mergeTask)
+        else:
+            # Handle --merge command line option
+            mergeTask = self.progress.task("Merging user-specified packages")
+            for name in self.config.listEval("invocation/option[@name='merge']/item/text()"):
+                self.config.packages.findPackageVersion(name).merge(mergeTask)
 
         # Interface cleanup- options that dump to stdout and don't use any UI features
         #                    should be placed after this line!
@@ -230,27 +236,74 @@ class Interface(object):
     def list(self, listPath):
         """Guts of the --list command line option- list the contents of an XPath"""
         results = self.config.xpath(listPath)
-        for result in results:
-            self.listNode(result)
 
-    def listNode(self, node, indentLevel=0):
-        """For list(), this recursively lists one DOM node"""
-        indentString = "   " * indentLevel
-
-        if node.nodeType == node.ELEMENT_NODE:
+        # A little bit of voodoo-
+        # If we have only one result and that result has no name attribute,
+        # list all the children. If we have multiple results, just list
+        # those results. This means that paths like "packages" or
+        # "package/package[@name='foo']" both work.
+        if len(results) == 1:
             try:
-                # An element with a name, list it by name without recursion. Try to get a description.
-                try:
-                    description = self.config.xpath('description/summary/text()', node)[0].data
-                except IndexError:
-                    description = ""
-                print "%s%-25s %s" % (indentString, node.attributes['name'].value, description)
+                results[0].attributes['name']
             except KeyError:
-                # An element without a name, try to treat it as a container and recurse into its children
-                print "%s%s:" % (indentString, node.tagName)
-                for child in node.childNodes:
-                    self.listNode(child, indentLevel+1)
+                results = results[0].childNodes
+            
+        self.listNodes(results)
 
+    def listNodes(self, nodes):
+        """Given a list of DOM nodes, print a table with the node names and description summaries.
+           This is used to format the output of the --list and --search options.
+           """
+        # This converts the node list into a list of (name, description) tuples, to be passed
+        # to showTable(). This makes it easier to override in the other UIs.
+        table = []
+        for node in nodes:
+            if node.nodeType == node.ELEMENT_NODE:
+                try:
+                    # An element with a name, list it by name without recursion. Try to get a description.
+                    try:
+                        description = self.config.xpath('description/summary/text()', node)[0].data
+                    except IndexError:
+                        description = ""
+                    table.append((node.attributes['name'].value, description))
+                except KeyError:
+                    pass
+        table.sort()
+        if table:
+            self.showTable(table)
+        else:
+            self.progress.message("No results")
+
+    def showTable(self, table, write=sys.stdout.write):
+        """Display the supplied sequence of sequences as a table"""
+        columns = len(table[0])
+
+        # Find the maximum width of each column
+        maxWidths = [0] * columns
+        for row in table:
+            for col in xrange(columns):
+                if len(row[col]) > maxWidths[col]:
+                    maxWidths[col] = len(row[col])
+
+        # Create a format string for this table
+        separator = " : "
+        formatString = ""
+        for width in maxWidths:
+            formatString += "%%-%ds%s" % (width, separator)
+
+        # Output it using the generated format string
+        strippedSeparator = separator.strip()
+        for row in table:
+            # Format the row, then strip off excess whitespace or separators from the end
+            line = formatString % row
+            while True:
+                line = line.strip()
+                if line.endswith(strippedSeparator):
+                    line = line[:-len(strippedSeparator)]
+                else:
+                    break
+            write(line + "\n")
+            
 ### The End ###
         
     
