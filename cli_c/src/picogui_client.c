@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.43 2001/01/24 04:05:02 micahjd Exp $
+/* $Id: picogui_client.c,v 1.44 2001/01/24 04:07:34 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -46,7 +46,7 @@
 #include <picogui/network.h>    /* Network interface to the server */
 
 //#define DEBUG
-#define DEBUG_EVT
+//#define DEBUG_EVT
 
 /* Default server */
 #define PG_REQUEST_SERVER       "127.0.0.1"
@@ -561,7 +561,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: picogui_client.c,v 1.43 2001/01/24 04:05:02 micahjd Exp $\n");
+	fprintf(stderr,"$Id: picogui_client.c,v 1.44 2001/01/24 04:07:34 micahjd Exp $\n");
 	exit(1);
       }
       
