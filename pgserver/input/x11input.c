@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.28 2002/11/06 20:23:46 micahjd Exp $
+/* $Id: x11input.c,v 1.29 2002/11/06 22:22:38 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -64,6 +64,7 @@ g_error x11input_init(null) {
 }
 
 void x11input_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
+  XFlush(x11_display);
   if ((*n)<(x11_fd+1))
     *n = x11_fd+1;
   FD_SET(x11_fd,readfds);
