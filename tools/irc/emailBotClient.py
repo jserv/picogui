@@ -18,7 +18,7 @@ allowedTextCommands = ("Announce",)
 allowedControlCommands = ("JoinChannel", "PartChannel")
 
 # Prohibited channels
-badChannels = ("shell",)
+BadChannels = ("shell","123")
 
 
 def incrementProjectCommits(project):
@@ -49,6 +49,8 @@ class AnnounceClient(protocol.Protocol):
         # This limits the length of the maximum message, mainly to prevent DOS'ing the bot too badly
         messages = mailMsg.get_payload().split("\n")[:40]
         subjectFields[1] = subjectFields[1].lower()
+        if subjectFields[1][0] == "#":
+            subjectFields[1] = subjectFields[1:]
 
         if not subjectFields[1] in badChannels:
 
