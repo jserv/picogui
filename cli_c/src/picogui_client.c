@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.26 2000/11/12 02:51:28 micahjd Exp $
+/* $Id: picogui_client.c,v 1.27 2000/11/12 08:26:23 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -475,6 +475,9 @@ void pgInit(int argc, char **argv)
 
   /* We're connected */
   _pgsockfd = fd;
+
+  /* Don't let child processes inherit the connection */
+  fcntl(fd,F_SETFD,fcntl(fd,F_GETFD,0) | FD_CLOEXEC);
 
   /* Receive the hello packet and convert byte order */
   if (_pg_recv(&ServerInfo,sizeof(ServerInfo)))

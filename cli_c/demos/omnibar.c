@@ -1,4 +1,4 @@
-/* $Id: omnibar.c,v 1.1 2000/11/12 07:32:05 micahjd Exp $
+/* $Id: omnibar.c,v 1.2 2000/11/12 08:26:23 micahjd Exp $
  * 
  * omnibar.c - hopefully this will grow into a general interface
  *             for starting and manipulating applications, but
@@ -82,9 +82,7 @@ int btnAppMenu(short event,pghandle from,long param) {
     strcat(buf,".app");
     if (!fork()) {
       execv(buf,NULL);
-      perror("execvp");
-
-      //      pgMessageDialogFmt("Error",0,"There was an error starting the\nfollowing program:\n%s",buf);
+      pgMessageDialogFmt("Error",0,"There was an error starting the\nfollowing program:\n%s",buf);
       exit(1);
     }
   }
