@@ -46,7 +46,7 @@ $fontdir  = shift or ".";
 open CONFFILE, $conffile or die "Can't open $conffile: $!";
 while (<CONFFILE>) {
       next if (/#/);
-      if (/FONT_([^\s=]+)/) {
+      if (/FONT_([\w]+)/) {
       	 push @fontfiles, lc($1).".fi";
       }
 }
