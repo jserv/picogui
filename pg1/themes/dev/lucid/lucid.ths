@@ -1,4 +1,4 @@
-/* $Id: lucid.ths,v 1.5 2002/10/29 23:32:58 micahjd Exp $
+/* $Id$
  *
  * Lucid - A simple and clean solid color and thin outline theme, where
  *         most elements are translucent.
@@ -116,6 +116,38 @@ object button.on bgfill = fillstyle {
 };
 
 object flatbutton parent = PGTH_O_BUTTON;
+
+/* Check box things */
+object checkbox {
+   bgfill = fillstyle {
+      fTranslucent(x,y,w,h);
+      x = x + 10;
+   };
+   margin = 5;
+   align = PG_A_LEFT;
+}
+object checkbox.hilight fgcolor = 0x0000FF;
+object checkbox.on bgfill = fillstyle {
+   var q;
+   fTranslucent(x,y,w,h);
+   SetColor(fgcolor);
+   Line(x+8,0,-4,h);
+   Line(x+4,h,-4,0-(h/2));
+   x = x + 10;
+};
+
+object menuitem {
+  bgfill = Copy(default::bgfill);
+  align = PG_A_LEFT;
+}  
+
+object menuitem.hilight {
+  bgfill = Copy(default::fFramedTranslucent);
+}
+
+object listitem.hilight parent = PGTH_O_MENUITEM_HILIGHT;
+
+object listitem.on parent = PGTH_O_MENUITEM_HILIGHT;
 
 object panel {
   border.size = 10;
