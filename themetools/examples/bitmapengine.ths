@@ -1,4 +1,4 @@
-/* $Id: bitmapengine.ths,v 1.3 2002/02/09 00:17:32 micahjd Exp $
+/* $Id: bitmapengine.ths,v 1.4 2002/03/11 02:37:06 micahjd Exp $
  *
  * This is not a single look for PicoGUI, but more of a library to easily
  * create 100% bitmapped themes. The source bitmap is given in the bitmap1
@@ -26,6 +26,8 @@ prop srcx, srcy, srcw, srch;
 prop left_sz, right_sz, top_sz, bottom_sz;
 
 object default {
+
+  name = "BitmapEngine";
 
   /* Expand horizontally and vertically by tiling 
    */
