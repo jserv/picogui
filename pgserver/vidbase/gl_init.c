@@ -1,4 +1,4 @@
-/* $Id: gl_init.c,v 1.2 2002/11/25 06:43:00 micahjd Exp $
+/* $Id: gl_init.c,v 1.3 2002/11/25 08:44:31 micahjd Exp $
  *
  * sdlgl_init.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has initialization, shutdown, and registration.
@@ -77,7 +77,6 @@ void gl_close(void) {
     gl_global.display_rend = NULL;
   }
 
-  unload_inlib(inlib_main);   /* Take out our input driver */
   unload_inlib(gl_global.continuous_inlib);
 
   if (gl_global.osd_font)

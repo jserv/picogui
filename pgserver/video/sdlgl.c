@@ -1,4 +1,4 @@
-/* $Id: sdlgl.c,v 1.11 2002/11/25 05:48:52 micahjd Exp $
+/* $Id: sdlgl.c,v 1.12 2002/11/25 08:44:31 micahjd Exp $
  *
  * sdlgl.c - Video driver using SDL and the OpenGL VBL 
  *
@@ -86,6 +86,7 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
 void sdlgl_close(void) {
   gl_close();
   unload_inlib(inlib_main);   /* Take out our input driver */
+  inlib_main = NULL;
   SDL_Quit();
 }
 
