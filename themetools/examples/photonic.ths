@@ -1,4 +1,4 @@
-/* $Id: photonic.ths,v 1.1 2002/08/21 12:19:22 micahjd Exp $
+/* $Id: photonic.ths,v 1.2 2002/11/18 03:01:45 micahjd Exp $
  *
  * Inspired by QNX- It's a lot like pseudo3d, but with
  * subtle gradients, hilighting, and rounded edges
@@ -49,7 +49,7 @@ object base.interactive {
     Slab(x+2,y+2,w-5,1);
     Bar(x+2,y+2,1,h-5);
     SetColor(bottomright_inner_color);
-    Slab(x+2,y+h-3,w-5,1);
+    Slab(x+2,y+h-3,w-4,1);
     Bar(x+w-3,y+2,1,h-5);
     Gradient(x+3,y+3,w-6,h-6,90,gradient_top_color,gradient_bottom_color);
     x = x+offset;
@@ -72,7 +72,7 @@ object base.tlcontainer {
     Slab(x+2,y+2,w-5,1);
     Bar(x+2,y+2,1,h-5);
     SetColor(bottomright_inner_color);
-    Slab(x+2,y+h-3,w-5,1);
+    Slab(x+2,y+h-3,w-4,1);
     Bar(x+w-3,y+2,1,h-5);
     SetColor(bgcolor);
     Rect(x+3,y+3,w-6,h-6);
@@ -82,7 +82,7 @@ object base.tlcontainer {
 
 object button {
   height = 22;
-  spacing = 2;
+  spacing = 4;
   margin = 4;
 }
 object button.on {
@@ -120,5 +120,36 @@ object scroll {
     Rect(x+2,y+2,w-3,h-3);
   };
 }
+
+object base.display {
+  bgfill = fillstyle {
+    SetColor(0x000000);
+    Frame(x,y,w,h);
+    SetColor(bgcolor);
+    Rect(x+2,y+2,w-3,h-3);
+    SetColor(topleft_inner_color);
+    Slab(x+1,y+1,w-2,1);
+    Bar(x+1,y+1,1,h-2);
+  };
+  topleft_inner_color = 0xC0C0C0;
+  bgcolor = 0xFFFFFF;
+  margin = 4;
+  spacing = Copy(button::spacing);
+}
+
+object managedwindow {
+  bgfill = Copy(default::bgfill);
+}
+
+object menuitem {
+  bgfill = Copy(default::bgfill);
+  align = PG_A_LEFT;
+}  
+
+object menuitem.hilight {
+  bgcolor = 0xB0B0FF;
+}
+
+object listitem.on parent = PGTH_O_MENUITEM_HILIGHT;
 
 /* The End */
