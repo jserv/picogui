@@ -109,7 +109,7 @@
 #define HIT_COLOR 0xFF1F11
 #define MISS_COLOR 0xFFFFFF
 #define SHIP_COLOR 0xFFFF1F
-#define BACKGROUND_COLOR 0x11FFFF
+#define BACKGROUND_COLOR 0xFFFFFF
 
 typedef struct status
 {
@@ -137,9 +137,16 @@ int settings(struct pgEvent *evt);
 int clickski(struct pgEvent *evt);
 int clickski2(struct pgEvent *evt);
 int redraw(struct pgEvent *evt);
-int color_picker(int h, int w);
+void draw_spot(int x, int y, int type);
+void comp_draw_spot(int x, int y, int type);
 void aicall(void);
 void quoe(int x);
 void comp_ship_place(int size);
+
+void draw_miss(int x, int y);
+void draw_hit(int x, int y);
+void draw_ship(int x, int y, int side);
+void draw_hit_ship(int x, int y);
+
 
 #endif /* __BATTLESHIP_H__ */
