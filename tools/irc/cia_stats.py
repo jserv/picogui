@@ -54,7 +54,8 @@ class statPage:
         self.sortDirection = 'D'
         self.recentLines = 20
         self.refresh = None
-
+        self.css = "http://navi.picogui.org/svn/picogui/trunk/tools/css/cia_stats.css"
+        
         # Allow them to be overridden by CGI parameters
         self.form = form
         if form is not None:
@@ -68,11 +69,15 @@ class statPage:
         except KeyError:
             pass
         try:
-            self.recentLines = int(self.form['recentLines'].value)
+            self.sections = self.form['sections'].value.split("+")
         except KeyError:
             pass
         try:
-            self.sections = self.form['sections'].value.split("+")
+            self.css = self.form['css'].value
+        except KeyError:
+            pass
+        try:
+            self.recentLines = int(self.form['recentLines'].value)
         except KeyError:
             pass
         try:
@@ -130,9 +135,9 @@ class statPage:
            <head>
               <title>CIA bot statistics</title>
               <style type="text/css" media="all">
-                 @import url(http://navi.picogui.org/svn/picogui/trunk/tools/css/cia_stats.css);
+                 @import url(%s);
               </style>
-           """)
+           """ % self.css)
         if self.refresh is not None:
             write('<meta http-equiv="refresh" content="%d">' % self.refresh)
         write("""
