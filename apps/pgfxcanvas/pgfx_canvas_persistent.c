@@ -5,7 +5,7 @@
 
 int main(int argc,char **argv) {
    pgcontext gc;
-   short poly[]={1,1, 20,1, 20,20, 1,20,}; 
+   int poly[]={1,1, 20,1, 20,20, 1,20,}; 
    /* Initialize PicoGUI, create an application with a canvas widget,
     * and get a PGFX context for the canvas */
    pgInit(argc,argv);
