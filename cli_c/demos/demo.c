@@ -1,4 +1,4 @@
-/* $Id: demo.c,v 1.8 2000/09/22 18:04:23 pney Exp $
+/* $Id: demo.c,v 1.9 2000/09/23 01:03:02 micahjd Exp $
  *
  * demo.c -   source file for testing PicoGUI
  *
@@ -31,7 +31,6 @@
 int main(int argc, char *argv[])
 {
   pghandle wToolbar,wBox,wText;
-  pghandle bw;
 
   pgInit(argc,argv);
 
@@ -54,25 +53,22 @@ int main(int argc, char *argv[])
 
   /**** Widgets inside the toolbar */
 
-  bw = pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
-  pgSetWidget(bw,
+  pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
+  pgSetWidget(0,
 	      PG_WP_ALIGN,PG_A_LEFT,
 	      PG_WP_TEXT,pgNewString("1"),
-	      PG_WE_ACTIVATE,0x0000,
 	      0);
 
-  bw = pgNewWidget(PG_WIDGET_BUTTON,0,0);
-  pgSetWidget(bw,
+  pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(0,
 	      PG_WP_ALIGN,PG_A_LEFT,
 	      PG_WP_TEXT,pgNewString("2"),
-	      PG_WE_ACTIVATE,0x0001,
 	      0);
 
-  bw = pgNewWidget(PG_WIDGET_BUTTON,0,0);
-  pgSetWidget(bw,
+  pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(0,
 	      PG_WP_ALIGN,PG_A_LEFT,
 	      PG_WP_TEXT,pgNewString("Hello, World!"),
-	      PG_WE_ACTIVATE,0x0002,
 	      0);
 
   /**** Text inside the box */
