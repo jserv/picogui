@@ -129,8 +129,9 @@ class Repository(PGBuild.Repository.RepositoryBase):
     def download(self, destination, progress):
         finished = 0
         try:
-            collectProgress(openSvn('co "%s" "%s"' % (self.url, destination), progress),
-                            progress, destination)
+            if not collectProgress(openSvn('co "%s" "%s"' % (self.url, destination), progress),
+                                   progress, destination):
+                raise PGBuild.Errors.EnvironmentError("Subversion checkout didn't download any files")
             finished = 1
         finally:
             if not finished:
