@@ -1,4 +1,4 @@
-/* $Id: driverinfo.c,v 1.11 2001/01/14 23:03:11 micahjd Exp $
+/* $Id: driverinfo.c,v 1.12 2001/01/16 02:07:19 micahjd Exp $
  *
  * driverinfo.c - has a static array with information about
  *                installed drivers
@@ -61,6 +61,10 @@ struct vidinfo videodrivers[] = {
 #ifdef DRIVER_NCURSES
   {"ncurses",&ncurses_regfunc},
 #endif   
+
+#ifdef DRIVER_NULL
+  {"null",&null_regfunc},
+#endif DRIVER_NULL
    
   /* End */ {NULL,NULL}
 };
