@@ -16,10 +16,22 @@
 
 /* write a command to the sed133x chip, first the command code, then
    further data bytes */
+#if 0
 #define sed_command_l(cmd,dat,len) do { \
-	outb((cmd),sed133x_command_port); \
+	outb((cmd),(unsigned long)sed133x_command_port); \
 	outsb(sed133x_data_port,(dat),(len)); \
 } while (0)
+#else
+#define sed_command_l(cmd,dat,len) do { \
+	unsigned int i; \
+	/* volatile int j; for (j= 0; j < 100; j++) {} */\
+	outb((cmd),(unsigned long)sed133x_command_port); \
+	for (i=0; i < len;i++) { \
+		/* for (j=0; j < 100; j++) {} */\
+		outb((dat)[i],(unsigned long)sed133x_data_port); \
+	} \
+} while (0)
+#endif
 
 /* fill the memory area at the cursor position */ 
 #define sed_memset(dat,len) do { \
@@ -33,15 +45,16 @@
 #define sed_read_l(cmd,dat,len) do { \
 	unsigned int i; \
 	outb((cmd),sed133x_command_port); \
-	for (i=0; i < (len); i++) \
+	for (i=0; i < (len); i++) {\
 		(dat)[i] = inb(sed133x_command_port); \
+	} \
 } while (0)
 
 /* to fix flickering, you can only write after the rising edge of 
    bit 6 on the data port */
 #define sed_wait_ready() do {  \
-	while (!(inb_p(sed133x_data_port) & 0x40)); \
-	while ((inb_p(sed133x_data_port) & 0x40)); \
+	while (!(inb(sed133x_data_port) & 0x40)); \
+	while ((inb(sed133x_data_port) & 0x40)); \
 } while (0)
 
 /* start of the video memory area / end of character memory */

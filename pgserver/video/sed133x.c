@@ -1,4 +1,4 @@
-/* $Id: sed133x.c,v 1.2 2002/01/31 12:57:48 abergmann Exp $
+/* $Id: sed133x.c,v 1.3 2002/02/05 08:22:22 abergmann Exp $
  *
  * sed133x.c -- driver for Epson SED1330/SED1335/SED1336 based LC displays
  *
@@ -45,6 +45,8 @@
 #include <linux/kd.h>
 #include <fcntl.h>
 #include <sys/io.h> /* for iopl */
+#include <unistd.h>
+#include <sys/mman.h>
 #include <stdio.h>
 #include "sed133x.h"
 
@@ -55,13 +57,20 @@
 #define LINE(y)        ((y)*FB_BPL+FB_MEM)
 #define PIXELBYTE(x,y) (((x)>>3)+LINE(y))
 
+#ifdef __arm__
+/* define this for architectures using memory mapped i/o rather than
+   i/o mapped i/o.
+ */
+#define SED133X_MMAP_IO
+#endif
+
 #if 0
-/* FLICKER_FIX solves the problem flickering black pixels during 
+/* SED133X_FLICKER_FIX solves the problem flickering black pixels during 
    sed133x_update(). Unfortunately, there is a high price to pay:
    the driver gets so slow that you won't really want to update 
    the screen anyway ;-)
  */
-#define FLICKER_FIX
+#define SED133X_FLICKER_FIX
 #endif
 
 #if 0
@@ -75,11 +84,13 @@
 
 /****************************************** Data Structure Definitions */
 
-#define sed133x_data_port 0x240
-#define sed133x_command_port 0x241
-
+#ifdef SED133X_MMAP_IO
+static u8 *sed133x_data_port;
+#else
 /* set this to your hardware */
 #define sed133x_data_port    0x240
+#endif
+
 #define sed133x_command_port (sed133x_data_port+1)
 
 static int sed133x_xres = 320;
@@ -93,17 +104,31 @@ static int ttyfd;
 /**************************************************** Implementation */
 static g_error sed133x_init(void) {
     g_error e;
-    
-    if (iopl(3) == -1) {
-	printf("sed133x.c needs port access\n");
-	return PG_ERRT_IO;
+
+#ifdef SED133X_MMAP_IO
+    int fd;
+    fd = open("/dev/mem", O_RDWR | O_SYNC);
+    if (fd < 0) {
+	return mkerror(PG_ERRT_IO,110);
     }
+    sed133x_data_port = mmap(0, 2, (PROT_READ | PROT_WRITE), MAP_SHARED,
+		    		fd, 0x30000000UL);
+    if (sed133x_data_port == MAP_FAILED) {
+	return mkerror(PG_ERRT_IO,111);
+    }
+
+    close(fd);    
+#else
+    if (iopl(3) == -1) {
+	return mkerror(PG_ERRT_IO,112);
+    }
+#endif
+    
 
     vid->xres = sed133x_xres;
     vid->yres = sed133x_yres;
     vid->bpp = 1;
     FB_BPL = vid->xres >> 3;
-
 /* all the important setup should now be done be
    the kernel console driver, so we don't need to
    do it here. If you are not using the kernel
@@ -174,9 +199,9 @@ static g_error sed133x_init(void) {
 	const char *ttydev = get_param_str("video-sed133x","device", "/dev/tty");
 	ttyfd = open (ttydev, O_RDWR);
 	if (ttyfd<0)
-	    return PG_ERRT_IO;
+	    return mkerror(PG_ERRT_IO,113);
 	if (ioctl(ttyfd, KDSETMODE, KD_GRAPHICS) < 0) {
-	    return PG_ERRT_IO;
+	    return mkerror(PG_ERRT_IO,114);
 	}
     }
 #endif
@@ -191,26 +216,26 @@ static g_error sed133x_init(void) {
 /* Copy backbuffer to screen */
 static void sed133x_update(s16 x,s16 y,s16 w,s16 h)
 {
-#ifdef FLICKER_FIX
+#ifdef SED133X_FLICKER_FIX
 #define max_bytes 1
 #else
 #define max_bytes 0
 #endif
     u16 cursor = PIXELBYTE(x,y) - FB_MEM + SED133X_GFX_OFFSET;
-    int len = (w >> 3) + 2;
+    unsigned int len = (w >> 3) + 2;
     u8 *p;
     u8 inv_buffer[len+max_bytes];
     
     for (p = PIXELBYTE(x,y); h ; --h) {
-	int i;    
+	unsigned int i;    
 	for (i = 0; i < len+max_bytes; i++) 
 		inv_buffer[i] = ~p[i];
-#ifdef FLICKER_FIX
+#ifdef SED133X_FLICKER_FIX
 	for (i=0; i < len; i+=max_bytes) {
 		u16 tcursor = cursor + i;
 		sed_command (CSRW, tcursor);
         	sed_wait_ready();
-		command_l (MWRITE, inv_buffer+i, max_bytes);
+		sed_command_l (MWRITE, inv_buffer+i, max_bytes);
 	}
 #else
 	sed_command (CSRW, cursor);
