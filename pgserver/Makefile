@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.39 2000/12/16 20:08:44 micahjd Exp $
+# $Id: Makefile,v 1.40 2000/12/29 21:36:18 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -27,18 +27,56 @@
 
 BINNAME = pgserver
 
-SRC := widget/bitmap.c widget/indicator.c widget/label.c \
-       widget/toolbar.c widget/scroll.c widget/widget.c gcore/grop.c \
-       gcore/g_malloc.c gcore/div.c gcore/font.c \
-       gcore/handle.c gcore/g_error.c appmgr/global.c widget/button.c \
-       widget/panel.c widget/popup.c widget/box.c \
-       widget/field.c gcore/timer.c gcore/errortext.c gcore/video.c \
-       gcore/input.c gcore/driverinfo.c gcore/pgmain.c net/request.c \
-       net/dispatch.c net/eventq.c video/svga.c input/svgainput.c \
-       video/ez328_chipslice_lcd.c input/sdlinput.c vidbase/defaultvbl.c \
-       video/sdl.c theme/memtheme.c theme/fillstyle.c \
-       widget/background.c widget/menuitem.c widget/terminal.c \
-       video/sdlfb.c vidbase/linear8.c
+SRC := \
+    widget/bitmap.c \
+    widget/indicator.c \
+    widget/label.c \
+    widget/toolbar.c \
+    widget/scroll.c \
+    widget/widget.c \
+    widget/button.c \
+    widget/panel.c \
+    widget/popup.c \
+    widget/box.c \
+    widget/field.c \
+    widget/background.c \
+    widget/menuitem.c \
+    widget/terminal.c \
+    \
+    gcore/grop.c \
+    gcore/g_malloc.c \
+    gcore/div.c \
+    gcore/font.c \
+    gcore/handle.c \
+    gcore/g_error.c \
+    gcore/timer.c \
+    gcore/errortext.c \
+    gcore/video.c \
+    gcore/input.c \
+    gcore/driverinfo.c \
+    gcore/pgmain.c \
+    \
+    appmgr/global.c \
+    \
+    net/request.c \
+    net/dispatch.c \
+    net/eventq.c \
+    \
+    video/svgagl.c \
+    video/ez328_chipslice_lcd.c \
+    video/sdl.c \
+    video/svgafb.c \
+    video/sdlfb.c \
+    \
+    input/sdlinput.c \
+    input/svgainput.c \
+    \
+    vidbase/defaultvbl.c \
+    vidbase/linear8.c \
+    \
+    theme/memtheme.c \
+    theme/fillstyle.c \
+
 
 HDR := include/pgserver/*.h include/picogui/*.h
 
@@ -88,10 +126,14 @@ ifneq ($(findstring DRIVER_SDL,$(DRV)),)
 	CFLAGS := $(CFLAGS) $(shell $(SDLCONFIG) --cflags) 
 	LDFLAGS := $(LDFLAGS) $(shell $(SDLCONFIG) --libs)
 endif
-ifneq ($(findstring DRIVER_SVGA,$(DRV)),)
-	LDFLAGS := $(LDFLAGS) -lvgagl -lvga
+
+ifneq ($(findstring DRIVER_SVGAGL,$(DRV)),)
+	LDFLAGS := $(LDFLAGS) -lvga -lvgagl
 endif
 
+ifneq ($(findstring DRIVER_SVGAFB,$(DRV)),)
+        LDFLAGS := $(LDFLAGS) -lvga
+endif
 
 # Generate a list of object files
 OBJ := $(SRC:.c=.o) font/fontdata.o
@@ -130,6 +172,7 @@ info:
 	@echo "SRC      : [${SRC}]"
 	@echo "HEADER   : [${HDR}]"
 	@echo "CFLAGS   : [$(CFLAGS)]"
+	@echo "DRV      : [$(DRV)]"	
 	@echo "LDFLAGS  : [$(LDFLAGS)]"
 	@echo "PLATFORM : [${PLATFORM}]"
 
