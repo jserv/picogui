@@ -1,4 +1,4 @@
-/* $Id: stddialog.c,v 1.17 2002/10/24 15:55:12 micahjd Exp $
+/* $Id: stddialog.c,v 1.18 2002/11/04 13:18:27 micahjd Exp $
  *
  * stddialog.c - Various preconstructed dialog boxes the application
  *               may use. These are implemented 100% client-side using
@@ -30,19 +30,13 @@
 
 #include "clientlib.h"
 
-/* Just a little helper to make it easy to do dialog boxes correctly */
+/* This is now pretty much obsolete, since there's the dialogbox widget to do all the work */
 pghandle pgDialogBox(const char *title) {
   pghandle popupHandle;
 
-  /* Funny alternative :) */
-  //  return pgRegisterApp(PG_APP_NORMAL,title,0);
-
-  popupHandle = pgNewPopup(0,0);
-  pgNewWidget(PG_WIDGET_LABEL,0,0);
+  popupHandle = pgCreateWidget(PG_WIDGET_DIALOGBOX);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString(title),
-	      PG_WP_TRANSPARENT,0,
-	      PG_WP_STATE,PGTH_O_LABEL_DLGTITLE,
 	      0);
 
   /* return the newly created handle */
