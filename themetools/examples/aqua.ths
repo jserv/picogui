@@ -68,6 +68,8 @@ object scroll {
   };
 }
 
+object label margin = 5;
+
 object label.scroll {
   bgfill = fillstyle {
     Rect(x,y,w,h,ColorConv(0xe7e7e7));

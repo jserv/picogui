@@ -66,6 +66,17 @@ object panel bgfill = fillstyle {
 object base.display bgcolor = 0xE0E0E0;
 object themeinfo name = "Example theme";
 
+/* Background of a scrolling label needs to be something
+   that is the same at any vertical position */
+object label.scroll {
+  bgfill = fillstyle {
+    var q;
+    q = w/10;
+    Gradient(x,y,q,h,0,ColorDiv(bgcolor,0x020202),bgcolor,0);
+    Rect(x+q,y,w-q,h,ColorConv(bgcolor));
+  };
+}
+
 /* Button states */
 object button {
   bgcolor = 0x8080FF;
