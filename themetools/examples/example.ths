@@ -8,7 +8,7 @@ obj default bgfill = fillstyle {
 };
 
 obj button.on bgcolor = 5;
-object themeinfo name = "Example theme";
+object themeinfo name = "Example\n\"theme\"";
 
 object button {
     font = 0xFFFFFF;

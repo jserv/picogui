@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.l,v 1.10 2000/10/07 23:27:12 micahjd Exp $
+/* $Id: pgtheme.l,v 1.11 2000/10/07 23:50:28 micahjd Exp $
  *
  * pgtheme.l - lexer for processing PicoGUI theme source code
  *
@@ -51,12 +51,39 @@ h               { yylval.num = 3; return FSVAR; }
 
 [a-zA-Z_][a-zA-Z0-9_\.]* { return symlookup(yytext,&yylval.num); }
 [-+*/()=;{},\&\|]        { return yytext[0]; }
+
 \"([^\"\n\\]*(\\.)*)+[\"\n] { 
-  yylval.str = strdup(yytext+1);
-  if (yylval.str[yyleng-2] != '\"')
+  char *a,*b;
+
+  if (!(yylval.str = malloc(yyleng-1)))
+    yyerror("allocation error");
+  
+  a = yytext+1;
+  b = yylval.str;
+  while ((*a) && (*a)!='\"') {
+    if ((*a)=='\\') {
+      a++;
+      /* This handles all the single-character escapes, but
+	 not octal or hex codes. */
+      switch (*a) {
+      case 'n': *b = '\n'; break;
+      case 't': *b = '\t'; break;
+      case 'v': *b = '\v'; break;
+      case 'b': *b = '\b'; break;
+      case 'r': *b = '\r'; break;
+      case 'f': *b = '\f'; break;
+      case 'a': *b = '\a'; break;
+      default:  *b = *a;
+      }
+    }
+    else
+      *b = *a;
+    a++; b++;
+  }
+  if (!*a) 
     yyerror("unterminated string");
-  else
-    yylval.str[yyleng-2] = 0;
+  *b = 0;
+
   return STRING;
 }
 
