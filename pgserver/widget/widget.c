@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.187 2002/09/15 10:51:50 micahjd Exp $
+/* $Id: widget.c,v 1.188 2002/09/17 22:50:20 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -60,7 +60,14 @@ DEF_WIDGET_TABLE(button)
 DEF_STATICWIDGET_TABLE(panel)
 DEF_WIDGET_TABLE(popup)
 DEF_STATICWIDGET_TABLE(box)
-DEF_WIDGET_TABLE(textbox)               /* More binary compatibility, replacing field widget with textbox */
+
+/* More binary compatibility, replacing field widget with textbox */
+#ifdef CONFIG_WIDGET_TEXTBOX
+DEF_WIDGET_TABLE(textbox)
+#else
+DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,98))
+#endif
+
 DEF_WIDGET_TABLE(background)
 DEF_HYBRIDWIDGET_TABLE(menuitem,button)
 
@@ -81,8 +88,13 @@ DEF_HYBRIDWIDGET_TABLE(flatbutton,button)
 DEF_HYBRIDWIDGET_TABLE(listitem,button)
 DEF_HYBRIDWIDGET_TABLE(submenuitem,button)
 DEF_HYBRIDWIDGET_TABLE(radiobutton,button)
-DEF_WIDGET_TABLE(textbox)
 
+#ifdef CONFIG_WIDGET_TEXTBOX
+DEF_WIDGET_TABLE(textbox)
+#else
+DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,98))
+#endif
+				     
 #ifndef CONFIG_NOPANELBAR
 DEF_WIDGET_TABLE(panelbar)
 #else

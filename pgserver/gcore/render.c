@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.33 2002/09/15 10:51:47 micahjd Exp $
+/* $Id: render.c,v 1.34 2002/09/17 22:50:18 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -812,13 +812,14 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
      textgrid_render(r,n);
      break;      
 
+#ifdef CONFIG_WIDGET_TEXTBOX
    case PG_GROP_PARAGRAPH:
      paragraph_render(r,n);
      break;
-
    case PG_GROP_PARAGRAPH_INC:
      paragraph_render_inc(r,n);
      break;
+#endif
 
    case PG_GROP_BITMAP:
      if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,

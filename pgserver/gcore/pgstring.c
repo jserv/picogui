@@ -1,4 +1,4 @@
-/* $Id: pgstring.c,v 1.2 2002/09/15 10:51:47 micahjd Exp $
+/* $Id: pgstring.c,v 1.3 2002/09/17 22:50:18 micahjd Exp $
  *
  * pgstring.c - String data type to handle various encodings
  *
@@ -46,7 +46,11 @@ static const struct pgstr_format *pgstr_format_table[] = {
   &pgstrf_utf8,
   &pgstrf_term16,
   &pgstrf_term32,
+#ifdef CONFIG_WIDGET_TEXTBOX
   &pgstrf_textbuffers,
+#else
+  NULL,
+#endif
 };
 
 /* Memory management constants for pgstring insert/delete

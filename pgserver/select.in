@@ -27,6 +27,10 @@ add_if_true  canvas.c      $CONFIG_WIDGET_CANVAS
 add_if_true  panel_nobar.c $CONFIG_NOPANELBAR
 add_if_false panel.c       $CONFIG_NOPANELBAR
 add_if_false panelbar.c    $CONFIG_NOPANELBAR
+add_if_true textbox_frontend.c $CONFIG_WIDGET_TEXTBOX
+add_if_true textbox_document.c $CONFIG_WIDGET_TEXTBOX
+add_if_true textbox_paragraph.c $CONFIG_WIDGET_TEXTBOX
+add_if_true pgstr_textbuffers.c $CONFIG_WIDGET_TEXTBOX
 
 close_section
 
@@ -140,6 +144,7 @@ add_if_true bmp.c $CONFIG_FORMAT_BMP
 add_if_true html.c $CONFIG_FORMAT_HTML
 add_if_true png.c $CONFIG_FORMAT_PNG
 add_if_true gif.c $CONFIG_FORMAT_GIF
+add_if_true plaintext.c $CONFIG_WIDGET_TEXTBOX
 
 close_section
 

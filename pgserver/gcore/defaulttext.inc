@@ -103,7 +103,7 @@
 /* 95 */  "Error opening framebuffer device",
 /* 96 */  "Error mapping framebuffer device",
 /* 97 */  "Framebuffer ioctl error",
-/* 98 */  NULL,
+/* 98 */  "Support for the textbox widget was not compiled in to this server",
 /* 99 */  "Application attempting to own unknown system resource",
 /* 100 */ "Theme is not word-aligned (bug in theme compiler?)",
 /* 101 */ "Unsupported color depth",

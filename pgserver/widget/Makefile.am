@@ -17,9 +17,6 @@ libwidget_a_SOURCES = \
     flatbutton.c \
     listitem.c \
     radiobutton.c \
-    textbox_frontend.c \
-    textbox_document.c \
-    textbox_paragraph.c \
     panelbar.c \
     simplemenu.c \
     $(WIDGET)
@@ -28,6 +25,10 @@ EXTRA_libwidget_a_SOURCES = \
     terminal.c \
     canvas.c \
     panel_nobar.c \
+    textbox_frontend.c \
+    textbox_document.c \
+    textbox_paragraph.c \
+    pgstr_textbuffers.c \
     panel.c
 
 libwidget_a_LIBADD       = $(WIDGET:%.c=%.o)

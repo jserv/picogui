@@ -15,8 +15,7 @@ libgcore_a_SOURCES = \
 	driverinfo.c     \
 	configfile.c     \
 	signals.c	 \
-	pgstring.c	 \
-	pgstr_textbuffers.c
+	pgstring.c
 
 EXTRA_DIST = inputdrivers.inc videodrivers.inc defaulttext.inc
 

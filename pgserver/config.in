@@ -227,8 +227,9 @@ endmenu
 
 mainmenu_option next_comment
 comment 'Widget Options'
-bool 'Terminal widget (VT102 emulator)'       CONFIG_WIDGET_TERMINAL
-bool 'Canvas widget (for arbitrary graphics)' CONFIG_WIDGET_CANVAS
+bool 'Terminal widget - VT102 emulator'       CONFIG_WIDGET_TERMINAL
+bool 'Canvas widget - for arbitrary graphics' CONFIG_WIDGET_CANVAS
+bool 'Textbox widget - text editing with formatting' CONFIG_WIDGET_TEXTBOX
 bool 'Disable panelbar on app panels'         CONFIG_NOPANELBAR
 bool 'Support for solid panel dragging'       CONFIG_DRAGSOLID
 int  'Maximum number of zombie gropnodes'     CONFIG_MAX_ZOMBIEGROPS
