@@ -331,6 +331,7 @@ fe_init (void)
 	prefs.autodialog = 0;
 	prefs.lagometer = 0;
 	prefs.skipserverlist = 1;
+	palette_load();
 }
 
 static int

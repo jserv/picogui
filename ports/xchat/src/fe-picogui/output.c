@@ -16,17 +16,130 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <netinet/in.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
 #include "../common/xchat.h"
 #include "../common/xchatc.h"
+#include "../common/cfgfiles.h"
 #include "../common/fe.h"
 
 #include <picogui.h>
+#include <picogui/theme.h>
 #include "fe-picogui.h"
 
+#define TOTAL_COLORS 16
+
+static u32 colconv_rgb[TOTAL_COLORS] = { 0xcfcfcf, 0x000000, 0x0000cc,
+	0x00cc00, 0xdd0000, 0xaa0000, 0xbb00bb, 0xffaa00, 0xeedd22, 0x33de55,
+	0x00cccc, 0x33ddee, 0x0000ff, 0xee22ee, 0x777777, 0x999999 };
+static const char *colconv_termfg[TOTAL_COLORS] = { "22;30", "22;34", "22;32",
+	"22;36", "22;31", "22;35", "22;33", "22;37", "1;30", "1;34", "1;32",
+	"1;36", "1;31", "1;35", "1;33", "1;37" };
+static const char *colconv_termbg[TOTAL_COLORS] = { "25;40", "25;44", "25;42",
+	"25;46", "25;41", "25;45", "25;43", "25;47", "5;40", "5;44", "5;42",
+	"5;46", "5;41", "5;45", "5;43", "5;47" };
+
+void palette_load(void)
+{
+	int i, fh, res, red, green, blue;
+	struct stat st;
+	char prefname[256], *cfg;
+	static pghandle themehandle=0;
+
+	/* PicoGUI theme for terminal palette */
+	struct {
+		struct pgtheme_header hdr;
+		struct pgtheme_thobj obj;
+		struct pgtheme_prop def, palette;
+		struct pgrequest req;
+		u32 array[TOTAL_COLORS];
+	} termtheme = {
+		hdr: {
+			magic: {'P', 'G', 't', 'h'},
+		},
+	};
+
+	i=snprintf(prefname, sizeof prefname, "%s/palette.conf", get_xdir());
+	if(i>0&&i<sizeof prefname)
+	{
+		fh=open(prefname, O_RDONLY|OFLAGS);
+		if(fh>=0)
+		{
+			fstat(fh, &st);
+			cfg = malloc(st.st_size+1);
+			if(cfg!=NULL)
+			{
+				i=read(fh, cfg, st.st_size);
+				if(i>0) for(i=0; i<TOTAL_COLORS; i++)
+				{
+					snprintf(prefname, sizeof prefname,
+							"color_%d_red", i);
+					red=cfg_get_int(cfg, prefname);
+					snprintf(prefname, sizeof prefname,
+							"color_%d_grn", i);
+					green=cfg_get_int(cfg, prefname);
+					snprintf(prefname, sizeof prefname,
+							"color_%d_blu", i);
+					blue=cfg_get_int_with_result(cfg,
+							prefname, &res);
+					if(res)
+					{
+						colconv_rgb[i]=
+							((red&0xff00)<<8) |
+							(green&0xff00) |
+							(blue>>8);
+					}
+				}
+				free(cfg);
+			}
+			close(fh);
+		}
+	}
+	/* TODO: build terminal palette theme
+	 * implement bright color code in terminal widget - background? */
+	termtheme.hdr.file_len=htonl(sizeof termtheme);
+	termtheme.hdr.file_ver=htons(PGTH_FORMATVERSION);
+	termtheme.hdr.file_sum32=0;
+	termtheme.hdr.num_tags=0;
+	termtheme.hdr.num_thobj=htons(1);
+	termtheme.hdr.num_totprop=htons(2);
+	termtheme.obj.id=htons(PGTH_O_TERMINAL);
+	termtheme.obj.num_prop=htons(2);
+	termtheme.obj.proplist=htonl(sizeof(termtheme.hdr)+
+			sizeof(termtheme.obj));
+	termtheme.def.id=htons(PGTH_P_ATTR_DEFAULT);
+	termtheme.def.loader=htons(PGTH_LOAD_NONE);
+	termtheme.def.data=htonl(0x00000001);
+	termtheme.palette.id=htons(PGTH_P_TEXTCOLORS);
+	termtheme.palette.loader=htons(PGTH_LOAD_REQUEST);
+	termtheme.palette.data=htonl(sizeof(termtheme.hdr)+
+			sizeof(termtheme.obj)+sizeof(termtheme.def)+
+			sizeof(termtheme.palette));
+	termtheme.req.type=htons(PGREQ_MKARRAY);
+	termtheme.req.id=0;
+	termtheme.req.size=htonl(sizeof(termtheme.array));
+	for(i=0;i<TOTAL_COLORS;i++)
+		termtheme.array[i]=htonl(colconv_rgb[i]);
+	{	/* checksum the theme */
+		u32 sum, len;
+		unsigned char *p;
+		len=sizeof(termtheme);
+		sum=0;
+		p=(unsigned char *)&termtheme;
+		for (;len;len--,p++)
+			sum+=*p;
+		termtheme.hdr.file_sum32=htonl(sum);
+	}
+	if(themehandle)
+		pgDelete(themehandle);
+	themehandle=pgLoadTheme(pgFromMemory(&termtheme, sizeof(termtheme)));
+}
 
 static int
 get_stamp_str (time_t tim, char *dest, int size)
@@ -43,10 +156,6 @@ timecat (char *buf)
 	strcat (buf, stampbuf);
 	return strlen (stampbuf);
 }
-
-static int colconv_rgb[] = { 0xcfcfcf, 0x000000, 0x0000cc, 0x00cc00, 0xdd0000,
-	0xaa0000, 0xbb00bb, 0xffaa00, 0xeedd22, 0x33de55, 0x00cccc, 0x33ddee,
-	0x0000ff, 0xee22ee, 0x777777, 0x999999 };
 
 static void
 fe_print_text_textbox (struct session *sess, char *text)
@@ -257,9 +366,6 @@ jump:
 	free (newtext);
 }
 
-/*                            0  1  2  3  4  5  6  7   8   9   10 11  12  13  14 15 */
-static int colconv_ansi[] = { 0, 7, 4, 2, 1, 3, 5, 11, 13, 12, 6, 16, 14, 15, 10, 7 };
-
 static void
 fe_print_text_terminal (struct session *sess, char *text)
 {
@@ -305,30 +411,28 @@ fe_print_text_terminal (struct session *sess, char *text)
 					k++;
 				} else
 				{
-					int col, mirc;
+					int mirc;
+					const char *col;
 					color = TRUE;
 					num[k] = 0;
 					newtext[j++] = '\e';
 					newtext[j++] = '[';
 					if (k == 0)
 					{
+						if(comma)
+							newtext[j++] = '4';
+						else
+							newtext[j++] = '3';
+						newtext[j++] = '9';
 						newtext[j++] = 'm';
 					} else
 					{
-						if (comma)
-							col = 40;
-						else
-							col = 30;
 						mirc = atoi (num);
-						mirc = colconv_ansi[mirc];
-						if (mirc > 9)
-						{
-							mirc += 50;
-							sprintf ((char *) &newtext[j], "%dm", mirc + col);
-						} else
-						{
-							sprintf ((char *) &newtext[j], "%dm", mirc + col);
-						}
+						if (comma)
+							col = colconv_termbg[mirc];
+						else
+							col = colconv_termfg[mirc];
+						sprintf ((char *) &newtext[j], "%sm", col);
 						j += strlen (newtext+j);
 					}
 					if(text[i]==',' && !comma)
@@ -364,7 +468,10 @@ fe_print_text_terminal (struct session *sess, char *text)
 			}
 			j += strlen (newtext+j);
 			break;
+			/* NOTE: ISO 6429 redefines bold to mean bright text.
+			 * Therefore we cannot support bold here? */
 		case '\002':				  /* bold */
+#if 0
 			if (bold)
 			{
 				bold = FALSE;
@@ -375,6 +482,7 @@ fe_print_text_terminal (struct session *sess, char *text)
 				strcpy (&newtext[j], "\e[1m");
 			}
 			j += strlen (newtext+j);
+#endif
 			break;
 		case '\007':
 			if (!prefs.filterbeep)
@@ -410,6 +518,16 @@ fe_print_text_terminal (struct session *sess, char *text)
 	{
 		strcpy(newtext+j, "\e[m");
 		j+=3;
+	}
+
+	{
+		FILE *f;
+		f=fopen("outputlog", "a");
+		if(f)
+		{
+			fwrite(newtext, j, 1, f);
+			fclose(f);
+		}
 	}
 
 	pgWriteData(sess->gui->output, pgFromTempMemory(newtext,j));

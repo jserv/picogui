@@ -1,3 +1,5 @@
+void palette_load(void);
+
 struct uhmapping {
 	struct User *user;
 	pghandle handle;
