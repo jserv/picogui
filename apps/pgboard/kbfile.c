@@ -1,4 +1,4 @@
-/* $Id: kbfile.c,v 1.12 2002/06/18 09:12:54 lalo Exp $
+/* $Id: kbfile.c,v 1.13 2002/06/18 09:55:11 lalo Exp $
   *
   * kbfile.c - Functions to validate and load patterns from a keyboard file
   * 
@@ -264,13 +264,12 @@ int kb_loadpatterns (unsigned char * file_buffer)
 void spawn_process (const char *command)
      {
        pid_t pid;
-       static SHELL = "/bin/sh";
      
        pid = fork ();
        if (pid == 0)
          {
            /* This is the child process.  Execute the shell command. */
-           execl (SHELL, SHELL, "-c", command, NULL);
+           execl ("/bin/sh", "/bin/sh", "-c", command, NULL);
            _exit (EXIT_FAILURE);
          }
      }
