@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.70 2002/11/06 08:39:01 micahjd Exp $
+/* $Id: popup.c,v 1.71 2002/11/06 09:08:04 micahjd Exp $
  *
  * popup.c - A root widget for modal dialogs that display above the
  *           root divtree.
@@ -36,7 +36,8 @@
 struct popupdata {
   struct divtree *my_dt;
 };
-#define DATA WIDGET_DATA(0,popupdata)
+#define WIDGET_SUBCLASS 0
+#define DATA WIDGET_DATA(popupdata)
 
 void clip_popup(struct divnode *div) {
   struct divnode ntb;
@@ -134,7 +135,7 @@ void build_popup(struct gropctxt *c,unsigned short state,struct widget *self) {
 g_error popup_install(struct widget *self) {
   g_error e;
 
-  WIDGET_ALLOC_DATA(0,popupdata)
+  WIDGET_ALLOC_DATA(popupdata)
 
   /* Before freezing the current layer, make sure it's up to date */
   activate_client_divnodes(self->owner);

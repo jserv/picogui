@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.36 2002/10/11 12:01:34 micahjd Exp $
+/* $Id: indicator.c,v 1.37 2002/11/06 09:08:04 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -31,7 +31,8 @@
 struct indicatordata {
   long value;
 };
-#define DATA WIDGET_DATA(0,indicatordata)
+#define WIDGET_SUBCLASS 0
+#define DATA WIDGET_DATA(indicatordata)
 
 void build_indicator(struct gropctxt *c,u16 state,struct widget *self) {
   /* Set orientation */
@@ -77,7 +78,7 @@ void indicator_resize(struct widget *self) {
 g_error indicator_install(struct widget *self) {
   g_error e;
 
-  WIDGET_ALLOC_DATA(0,indicatordata)
+  WIDGET_ALLOC_DATA(indicatordata);
 
   e = newdiv(&self->in,self);
   errorcheck;

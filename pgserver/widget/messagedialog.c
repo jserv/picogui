@@ -1,4 +1,4 @@
-/* $Id: messagedialog.c,v 1.4 2002/10/07 07:08:09 micahjd Exp $
+/* $Id: messagedialog.c,v 1.5 2002/11/06 09:08:04 micahjd Exp $
  *
  * messagedialog.c - A type of dialog box that can display a message and get
  *                   a user's response to it.
@@ -33,12 +33,13 @@ struct messagedialogdata {
   struct widget *message, *toolbar;
   handle hmessage, htoolbar;
 };
-#define DATA WIDGET_DATA(2,messagedialogdata)
+#define WIDGET_SUBCLASS 2
+#define DATA WIDGET_DATA(messagedialogdata)
 
 g_error messagedialog_install(struct widget *self) {
   g_error e;
-  dialogbox_install(self);
-  WIDGET_ALLOC_DATA(2,messagedialogdata)
+  WIDGET_INSTALL_PARENT(PG_WIDGET_DIALOGBOX);
+  WIDGET_ALLOC_DATA(messagedialogdata);
 
   /* Create a toolbar widget attached to the bottom side */
   e = widget_create(&DATA->toolbar, &DATA->htoolbar, PG_WIDGET_TOOLBAR, self->dt, self->container, self->owner);
@@ -56,8 +57,8 @@ g_error messagedialog_install(struct widget *self) {
 
 void messagedialog_remove(struct widget *self) {
   handle_free(self->owner, DATA->htoolbar);
-  dialogbox_remove(self);
   g_free(DATA);
+  WIDGET_REMOVE_PARENT;
 }
 
 void messagedialog_resize(struct widget *self) {

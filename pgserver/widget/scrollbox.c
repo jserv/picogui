@@ -1,4 +1,4 @@
-/* $Id: scrollbox.c,v 1.6 2002/10/07 07:08:09 micahjd Exp $
+/* $Id: scrollbox.c,v 1.7 2002/11/06 09:08:04 micahjd Exp $
  *
  * scrollbox.c - A box widget that includes scrollbars. It also
  *               conglomerates properties and events as necessary
@@ -34,12 +34,13 @@ struct scrollboxdata {
   struct widget *scrollh, *scrollv, *box;
   handle hscrollh, hscrollv, hbox;
 };
-#define DATA WIDGET_DATA(0,scrollboxdata)
+#define WIDGET_SUBCLASS 0
+#define DATA WIDGET_DATA(scrollboxdata)
 
 g_error scrollbox_install(struct widget *self) {
   g_error e;
   struct divnode *interior;
-  WIDGET_ALLOC_DATA(0,scrollboxdata)
+  WIDGET_ALLOC_DATA(scrollboxdata);
 
   /* Main divnode */
   e = newdiv(&self->in, self);

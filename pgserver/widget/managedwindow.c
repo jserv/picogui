@@ -1,4 +1,4 @@
-/* $Id: managedwindow.c,v 1.6 2002/11/04 14:05:13 micahjd Exp $
+/* $Id: managedwindow.c,v 1.7 2002/11/06 09:08:04 micahjd Exp $
  *
  * managedwindow.c - A root widget representing a window managed by a host GUI
  *
@@ -34,13 +34,14 @@ struct managedwindowdata {
 
   unsigned int already_sized : 1;
 };
-#define DATA WIDGET_DATA(0,managedwindowdata)
+#define WIDGET_SUBCLASS 0
+#define DATA WIDGET_DATA(managedwindowdata)
 
 
 g_error managedwindow_install(struct widget *self) {
   g_error e;
 
-  WIDGET_ALLOC_DATA(0,managedwindowdata)
+  WIDGET_ALLOC_DATA(managedwindowdata);
 
   /* New divtree. This will cause the new window to be created in the host GUI */
   e = dts_push();

@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.87 2002/10/07 07:08:09 micahjd Exp $
+/* $Id: panel.c,v 1.88 2002/11/06 09:08:04 micahjd Exp $
  *
  * panel.c - Resizable container with decorations. It uses a panelbar for resizing purposes,
  *           and optionally supplies some standard buttons for the panel.
@@ -41,7 +41,8 @@ struct paneldata {
   int margin;
   unsigned int margin_override:1;
 };
-#define DATA WIDGET_DATA(0,paneldata)
+#define WIDGET_SUBCLASS 0
+#define DATA WIDGET_DATA(paneldata)
 
 /**** Utilities */
 
@@ -170,7 +171,7 @@ g_error panel_install(struct widget *self) {
   struct widget *bar, *title;
   g_error e;
 
-  WIDGET_ALLOC_DATA(0,paneldata)
+  WIDGET_ALLOC_DATA(paneldata);
 
   /* This split determines the size of the main panel area */
   e = newdiv(&self->in,self);

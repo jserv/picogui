@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.72 2002/11/03 22:44:48 micahjd Exp $
+/* $Id: scroll.c,v 1.73 2002/11/06 09:08:04 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -71,7 +71,8 @@ struct scrolldata {
   int thumbscale;
   int thumbsize;
 };
-#define DATA WIDGET_DATA(0,scrolldata)
+#define WIDGET_SUBCLASS 0
+#define DATA WIDGET_DATA(scrolldata)
 
 #ifndef MAX
 #define MAX(a, b)  (a > b ? a : b)
@@ -229,7 +230,7 @@ void scroll_resize(struct widget *self) {
 g_error scroll_install(struct widget *self) {
   g_error e;
   
-  WIDGET_ALLOC_DATA(0,scrolldata)
+  WIDGET_ALLOC_DATA(scrolldata);
   DATA->res = 100;    /* By default, make it compatible with percent */
 
   e = newdiv(&self->in,self);

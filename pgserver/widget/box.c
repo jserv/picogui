@@ -1,4 +1,4 @@
-/* $Id: box.c,v 1.27 2002/09/28 10:58:10 micahjd Exp $
+/* $Id: box.c,v 1.28 2002/11/06 09:08:04 micahjd Exp $
  *
  * box.c - Generic container for holding a group of widgets. It's sizing and
  *         appearance are defined by the theme.
@@ -32,7 +32,8 @@
 struct boxdata {
   int margin_override;
 };
-#define DATA WIDGET_DATA(0,boxdata)
+#define WIDGET_SUBCLASS 0
+#define DATA WIDGET_DATA(boxdata)
 
 void box_resize(struct widget *self) {
    int m;
@@ -53,7 +54,7 @@ void box_resize(struct widget *self) {
 g_error box_install(struct widget *self) {
   g_error e;
 
-  WIDGET_ALLOC_DATA(0,boxdata)
+  WIDGET_ALLOC_DATA(boxdata);
 
   e = newdiv(&self->in,self);
   errorcheck;

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.207 2002/11/04 14:05:14 micahjd Exp $
+/* $Id: widget.c,v 1.208 2002/11/06 09:08:04 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -82,7 +82,8 @@ g_error widget_create(struct widget **w, handle *h, int type,
   (*w)->container = container;
 
   /* Allocate data pointers for this widget and everythign it's subclassed from */
-  e = g_malloc((void**)&(*w)->data, sizeof(void *) * ((*w)->def->subclass_num + 1));
+  e = g_malloc((void**)&(*w)->subclasses, sizeof(struct widget_subclass) * 
+	       ((*w)->def->subclass_num + 1));
   errorcheck;
 
   /* Allocate a handle for this widget before calling install, so that it may
@@ -295,7 +296,7 @@ void widget_remove(struct widget *w) {
   if (w->def->remove) (*w->def->remove)(w);
   
   /* Free the array of subclass data */
-  g_free(w->data);
+  g_free(w->subclasses);
 
   /* Free the widget itself */
 #ifdef DEBUG_KEYS

@@ -1,4 +1,4 @@
-/* $Id: dialogbox.c,v 1.7 2002/11/06 08:39:00 micahjd Exp $
+/* $Id: dialogbox.c,v 1.8 2002/11/06 09:08:04 micahjd Exp $
  *
  * dialogbox.c - The dialogbox is a type of popup widget that is always
  *               automatically sized, and has a title
@@ -34,14 +34,15 @@ struct dialogboxdata {
   struct widget *title;
   handle htitle;
 };
-#define DATA WIDGET_DATA(1,dialogboxdata)
+#define WIDGET_SUBCLASS 1
+#define DATA WIDGET_DATA(dialogboxdata)
 
 g_error dialogbox_install(struct widget *self) {
   g_error e;
   struct divnode *interior;
 
-  popup_install(self);
-  WIDGET_ALLOC_DATA(1,dialogboxdata)
+  WIDGET_INSTALL_PARENT(PG_WIDGET_POPUP);
+  WIDGET_ALLOC_DATA(dialogboxdata);
 
   DATA->title_location = self->sub;
 
@@ -58,8 +59,8 @@ g_error dialogbox_install(struct widget *self) {
 void dialogbox_remove(struct widget *self) {
   if (DATA->title)
     handle_free(self->owner, DATA->htitle);
-  popup_remove(self);
   g_free(DATA);
+  WIDGET_REMOVE_PARENT;
 }
 
 void dialogbox_resize(struct widget *self) {

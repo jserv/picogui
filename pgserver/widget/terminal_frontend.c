@@ -1,4 +1,4 @@
-/* $Id: terminal_frontend.c,v 1.9 2002/11/03 22:44:48 micahjd Exp $
+/* $Id: terminal_frontend.c,v 1.10 2002/11/06 09:08:04 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -29,7 +29,8 @@
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <pgserver/terminal.h>
-#define DATA WIDGET_DATA(0,terminaldata)
+#define WIDGET_SUBCLASS 0
+#define DATA WIDGET_DATA(terminaldata)
 
 void load_terminal_theme(struct widget *self);
 void build_terminal(struct gropctxt *c,u16 state,struct widget *self);
@@ -53,7 +54,7 @@ g_error terminal_install(struct widget *self) {
   self->in->div->build = &build_terminal;
   self->in->div->flags |= DIVNODE_HOTSPOT;
    
-  WIDGET_ALLOC_DATA(0,terminaldata);
+  WIDGET_ALLOC_DATA(terminaldata);
 
   /* Get initial theme info */
   load_terminal_theme(self);

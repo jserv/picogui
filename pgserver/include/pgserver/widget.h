@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.75 2002/11/04 00:24:38 micahjd Exp $
+/* $Id: widget.h,v 1.76 2002/11/06 09:08:04 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -83,8 +83,6 @@ extern struct widgetdef widgettab[];
 
 /* Finally, and actual widget structure */
 struct widget {
-
-  /***** Bits */
    
   /* If this is a root widget, an unprivelidged app can only derive
      widgets inside it, not before or after it */
@@ -100,8 +98,6 @@ struct widget {
    */
   unsigned int auto_orientation : 1;
 
-  /***** 16/8-bit packed values */
-   
   /* Defines the type of widget */
   u8 type;
 
@@ -117,8 +113,6 @@ struct widget {
    * is a container.
    */
   handle activemutex;
-
-  /***** 32-bit values */
 
   /* Connection that created the widget.  Any handles the widget make
    * take on this owner
@@ -139,12 +133,14 @@ struct widget {
   /* The divtree this widget is part of */
   struct divtree *dt;
 
-  /* Widget's private data- This is an array of private data pointers,
-   * one for the widget itself and one for each widget it has subclassed.
-   * The data in the widget structure itself is considered data for an
-   * abstract "widget" base class.
+  /* Data associated with each class comprising this widget.
+   * Each class comprising this widget keeps information in the
+   * entry corresponding to its subclass number.
    */
-  void **data;
+  struct widget_subclass {
+    void *data;
+    struct widgetdef *def;
+  } *subclasses;
 
   /* The widget's optional name (string handle) */
   handle name;
@@ -192,13 +188,23 @@ struct widget {
 
 /* Macro used by widgets to access their private data through a DATA pointer.
  * The parameters are: 
- *  n - the subclass number for the widget
  *  s - the name of the private structure
+ *
+ * The macro WIDGET_SUBCLASS should be defined to be this widget's subclass number.
  */
-#define WIDGET_DATA(n,s)       ((struct s *)(self->data[n]))
-#define WIDGET_ALLOC_DATA(n,s) e = g_malloc((void**)&self->data[n],sizeof(struct s));\
-                               errorcheck;\
-                               memset(DATA,0,sizeof(struct s));
+#define WIDGET_DATA(s)       ((struct s *)(self->subclasses[WIDGET_SUBCLASS].data))
+#define WIDGET_ALLOC_DATA(s) e = g_malloc((void**)&self->subclasses[WIDGET_SUBCLASS].data,sizeof(struct s));\
+                             errorcheck;\
+                             memset(DATA,0,sizeof(struct s));
+
+/* Macros to facilitate inheritance and virtual functions in widgets.
+ *  n - The subclass number of this widget
+ *  t - The PG_WIDGET_* constant of the parent 
+ */
+#define WIDGET_PARENT              self->subclasses[(WIDGET_SUBCLASS)-1].def
+#define WIDGET_INSTALL_PARENT(t)   WIDGET_PARENT = &widgettab[t];\
+                                   WIDGET_PARENT->install(self);
+#define WIDGET_REMOVE_PARENT       WIDGET_PARENT->remove(self);
 
 /* Widget prototypes */
 DEF_WIDGET_PROTO(toolbar)      /* A container for buttons */

@@ -1,4 +1,4 @@
-/* $Id: terminal_textgrid.c,v 1.7 2002/10/31 11:21:23 micahjd Exp $
+/* $Id: terminal_textgrid.c,v 1.8 2002/11/06 09:08:04 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -28,7 +28,8 @@
 
 #include <pgserver/common.h>
 #include <pgserver/terminal.h>
-#define DATA WIDGET_DATA(0,terminaldata)
+#define WIDGET_SUBCLASS 0
+#define DATA WIDGET_DATA(terminaldata)
 
 
 /********************************************** Textgrid implementation */

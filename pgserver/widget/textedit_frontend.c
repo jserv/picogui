@@ -1,4 +1,4 @@
-/* $Id: textedit_frontend.c,v 1.13 2002/10/30 01:53:59 cgroom Exp $
+/* $Id: textedit_frontend.c,v 1.14 2002/11/06 09:08:04 micahjd Exp $
  *
  * textedit.c - Multi-line text widget. By Chuck Groom,
  * cgroom@bluemug.com, Blue Mug, Inc, July 2002. Intended to be
@@ -107,7 +107,8 @@
 #include <picogui/types.h>
 
 #include <pgserver/textedit.h>
-#define DATA WIDGET_DATA(0,texteditdata)
+#define WIDGET_SUBCLASS 0
+#define DATA WIDGET_DATA(texteditdata)
 #define CTX  (&DATA->ctx)
 
 /* Cursor properties (TBD: Theme these) */
@@ -150,7 +151,7 @@ static void textedit_draw_rect     ( struct widget *self,
 g_error textedit_install(struct widget *self) {
     g_error e;
 
-    WIDGET_ALLOC_DATA(0,texteditdata);
+    WIDGET_ALLOC_DATA(texteditdata);
 
     /* main split */
     e = newdiv(&self->in, self);  
@@ -508,7 +509,7 @@ void textedit_scrollevent( struct widget *self ) {
 
     p_node = divnode_findparent(self->dt->head, self->in);
     parent = p_node->owner;
-    p_data = ((struct scrolldata *)(parent->data[0])) ;
+    p_data = ((struct scrolldata *)(parent->subclasses[0].data)) ;
     height = MAX(DATA->height, DATA->v_height);
     value =  (DATA->v_y_top * p_data->res) / height;
 

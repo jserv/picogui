@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.4 2002/10/31 11:21:23 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.5 2002/11/06 09:08:04 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -28,7 +28,8 @@
 
 #include <pgserver/common.h>
 #include <pgserver/terminal.h>
-#define DATA WIDGET_DATA(0,terminaldata)
+#define WIDGET_SUBCLASS 0
+#define DATA WIDGET_DATA(terminaldata)
 
 void term_char_escapemode(struct widget *self,u8 c);
 void term_ecma48sgr(struct widget *self);

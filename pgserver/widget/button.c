@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.125 2002/10/28 20:30:41 micahjd Exp $
+/* $Id: button.c,v 1.126 2002/11/06 09:08:04 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -84,7 +84,8 @@ struct btndata {
    * and other flags*/
   int extdevents;
 };
-#define DATA WIDGET_DATA(0,btndata)
+#define WIDGET_SUBCLASS 0
+#define DATA WIDGET_DATA(btndata)
 
 struct btnposition {
   /* Coordinates calculated in position_button */
@@ -211,7 +212,7 @@ void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
 g_error button_install(struct widget *self) {
   g_error e;
 
-  WIDGET_ALLOC_DATA(0,btndata)
+  WIDGET_ALLOC_DATA(btndata);
 
   DATA->theme_side = 1;
   DATA->bitmap_side = -1;
@@ -577,11 +578,7 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
 				  box->activemutex))) && old) {
 
 	      /* Turn it off */
-	      ((struct btndata *)(old->data[widgettab[PG_WIDGET_BUTTON].subclass_num]))->on = 0;
-	      div_setstate(old->in->div,
-			   ((struct btndata *)(old->data[widgettab[PG_WIDGET_BUTTON].subclass_num]))->over ?
-			   ((struct btndata *)(old->data[widgettab[PG_WIDGET_BUTTON].subclass_num]))->state_hilight :
-			   ((struct btndata *)(old->data[widgettab[PG_WIDGET_BUTTON].subclass_num]))->state,0);
+	      widget_set(old,PG_WP_ON,0);
 	    }
 	    
 	    /* We're the new active widget */

@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.50 2002/10/12 14:46:35 micahjd Exp $
+/* $Id: canvas.c,v 1.51 2002/11/06 09:08:04 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -41,7 +41,8 @@ struct canvasdata {
   handle lastfont;
   s16 gridw,gridh;
 };   
-#define DATA WIDGET_DATA(0,canvasdata)
+#define WIDGET_SUBCLASS 0
+#define DATA WIDGET_DATA(canvasdata)
 #define CTX  (&DATA->ctx)
 
 /*********************************** Utility */
@@ -100,7 +101,7 @@ void build_canvas(struct gropctxt *c,
 g_error canvas_install(struct widget *self) {
    g_error e;
    
-   WIDGET_ALLOC_DATA(0,canvasdata)
+   WIDGET_ALLOC_DATA(canvasdata);
 
    DATA->gridw = DATA->gridh = 1;
    

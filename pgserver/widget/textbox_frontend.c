@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.32 2002/11/03 22:44:49 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.33 2002/11/06 09:08:04 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -58,7 +58,8 @@ struct textboxdata {
   unsigned int flash_on : 1;
   unsigned int readonly : 1;
 };
-#define DATA WIDGET_DATA(0,textboxdata)
+#define WIDGET_SUBCLASS 0
+#define DATA WIDGET_DATA(textboxdata)
 
 /* Get a pgstring for the current text format */
 g_error textbox_getformat(struct widget *self, struct pgstring **fmt);
@@ -74,7 +75,7 @@ void textbox_reset_inactivity(struct widget *self);
 g_error textbox_install(struct widget *self) {
   g_error e;
 
-  WIDGET_ALLOC_DATA(0,textboxdata)
+  WIDGET_ALLOC_DATA(textboxdata);
 
   e = newdiv(&self->in,self);
   errorcheck;

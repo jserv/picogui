@@ -1,4 +1,4 @@
-/* $Id: panelbar.c,v 1.17 2002/11/03 22:44:48 micahjd Exp $
+/* $Id: panelbar.c,v 1.18 2002/11/06 09:08:04 micahjd Exp $
  *
  * panelbar.c - Container and draggable bar for resizing panels
  *
@@ -66,7 +66,8 @@ struct panelbardata {
   unsigned int solid : 1;
 #endif
 };
-#define DATA WIDGET_DATA(0,panelbardata)
+#define WIDGET_SUBCLASS 0
+#define DATA WIDGET_DATA(panelbardata)
 
 void themeify_panelbar(struct widget *self,bool force);
 int panel_calcsplit(struct widget *self,int x,int y,int flags);  
@@ -151,7 +152,7 @@ g_error panelbar_install(struct widget *self) {
   /* Divtree set up almost exactly like the box widget */
   g_error e;
 
-  WIDGET_ALLOC_DATA(0,panelbardata)
+  WIDGET_ALLOC_DATA(panelbardata);
 
   e = newdiv(&self->in,self);
   errorcheck;
