@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.25 2002/01/20 09:56:16 micahjd Exp $
+/* $Id: fbdev.c,v 1.26 2002/02/01 19:11:48 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -358,6 +358,11 @@ g_error fbdev_init(void) {
       close(fbdev_fd);
       return mkerror(PG_ERRT_IO,96);       /* Error mapping framebuffer */
    }
+   
+#ifdef CONFIG_FB_PSION
+   /* Not sure why this is necessary on the Psion yet.. */
+   FB_MEM += 32;
+#endif
 
    /* Put the console into graphics-only mode */
 #ifndef CONFIG_FB_NOGRAPHICS
@@ -455,6 +460,11 @@ void fbdev_close(void) {
       colors.transp = NULL;
       ioctl(fbdev_fd, FBIOPUTCMAP, &colors);
    }
+
+#ifdef CONFIG_FB_PSION
+   /* Not sure why this is necessary on the Psion yet.. */
+   FB_MEM -= 32;
+#endif
 
    munmap(FB_MEM,fbdev_mapsize);
    

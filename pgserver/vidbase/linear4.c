@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.19 2002/01/30 12:03:16 micahjd Exp $
+/* $Id: linear4.c,v 1.20 2002/02/01 19:11:48 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -47,9 +47,20 @@
 #define LINE(y)        ((y)*FB_BPL+FB_MEM)
 #define PIXELBYTE(x,y) (((x)>>1)+LINE(y))
 
+/* The Psion uses a framebuffer with the high and low nibble reversed */
+#ifdef CONFIG_FB_PSION
+#define SWAP_NYBBLES
+#endif
+
 /* Table of masks used to isolate one pixel within a byte */
+#ifdef SWAP_NYBBLES
+unsigned const char notmask4[]  = { 0xF0, 0x0F };
+unsigned const char slabmask4[] = { 0xFF, 0xF0, 0x00 };
+#else
 unsigned const char notmask4[]  = { 0x0F, 0xF0 };
 unsigned const char slabmask4[] = { 0xFF, 0x0F, 0x00 };
+#endif
+
 
 /************************************************** Minimum functionality */
 
@@ -60,14 +71,23 @@ void linear4_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
     return;
   }
   p = PIXELBYTE(x,y);
+
   *p &= notmask4[x&1];
+#ifdef SWAP_NYBBLES
+  *p |= (c & 15) << ((x&1)<<2);
+#else
   *p |= (c & 15) << ((1-(x&1))<<2);
+#endif
 }
 hwrcolor linear4_getpixel(hwrbitmap dest,s16 x,s16 y) {
   if (!FB_ISNORMAL(dest,PG_LGOP_NONE))
     return def_getpixel(dest,x,y);
   
+#ifdef SWAP_NYBBLES
+  return ((*PIXELBYTE(x,y)) >> ((x&1)<<2)) & 0x0F;
+#else
   return ((*PIXELBYTE(x,y)) >> ((1-(x&1))<<2)) & 0x0F;
+#endif
 }
    
 /************************************************** Accelerated (?) primitives */
@@ -181,8 +201,12 @@ void linear4_bar(hwrbitmap dest,s16 x,s16 y,s16 h,hwrcolor c,s16 lgop) {
    /* Compute the masks ahead of time and reuse! */
    p = PIXELBYTE(x,y);
    mask = notmask4[x&1];
+#ifdef SWAP_NYBBLES
+   if (x&1) c <<= 4;
+#else
    if (!(x&1)) c <<= 4;
-   
+#endif
+
    for (;h;h--,p+=FB_BPL) {
       *p &= mask;
       *p |= c;
@@ -228,7 +252,11 @@ void linear4_line(hwrbitmap dest,s16 x1,s16 yy1,s16 x2,s16 yy2,
 
   p = FB_MEM + y1 + (x1>>1);
   *p &= notmask4[x1&1];
+#ifdef SWAP_NYBBLES
+  *p |= c << ((x1&1)<<2);
+#else
   *p |= c << ((1-(x1&1))<<2);
+#endif
 
   /* Major axis is horizontal */
   if (dx > dy) {
@@ -260,7 +288,11 @@ void linear4_line(hwrbitmap dest,s16 x1,s16 yy1,s16 x2,s16 yy2,
        
       p = FB_MEM + y1 + (x1>>1);
       *p &= notmask4[x1&1];
+#ifdef SWAP_NYBBLES
+      *p |= c << ((x1&1)<<2);
+#else
       *p |= c << ((1-(x1&1))<<2);
+#endif
     }
   }
 }
@@ -280,16 +312,26 @@ void linear4_rect(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,hwrcolor c,s16 lgop) {
    for (;h;h--,p=l+=FB_BPL) {
       w2 = w;
       if (x&1) {
+#ifdef SWAP_NYBBLES
 	 *p &= 0xF0;
+	 *p |= c<<4;
+#else
+	 *p &= 0x0F;
 	 *p |= c;
+#endif
 	 p++;
 	 w2--;
       }
       __memset(p,c | (c<<4),w2>>1);
       if (w2&1) {
 	 p  += (w2>>1);
+#ifdef SWAP_NYBBLES
 	 *p &= 0x0F;
+	 *p |= c;
+#else
+	 *p &= 0xF0;
 	 *p |= c << 4;
+#endif
       }
    }
 }
@@ -414,7 +456,7 @@ void linear4_charblit(unsigned char *chardat,int dest_x,
 #endif
 
 /*
- * This is a relatively complicated 1bpp packed-pixel blit that does
+ * This is a relatively complicated 4bpp packed-pixel blit that does
  * handle LGOPs but currently doesn't handle tiling by itself.
  * Note that it can read (but not modify) one byte past the boundary of the
  * bitmap, but this is alright.
@@ -493,7 +535,11 @@ void linear4_blit(hwrbitmap dest,
    switch (lgop) {
    
     case PG_LGOP_NONE:
+#ifdef SWAP_NYBBLES
+#define BLITCOPY(d,m)   *dst = (d & ~m) | (*dst & m)
+#else
 #define BLITCOPY(d,m)   *dst = (d & m) | (*dst & ~m)
+#endif
 #define BLITMAINCOPY(d) *dst = d
    BLITCORE
 #undef BLITMAINCOPY
@@ -501,7 +547,11 @@ void linear4_blit(hwrbitmap dest,
 	return;
 
     case PG_LGOP_OR:
+#ifdef SWAP_NYBBLES
+#define BLITCOPY(d,m)   *dst |= d & ~m
+#else
 #define BLITCOPY(d,m)   *dst |= d & m
+#endif
 #define BLITMAINCOPY(d) *dst |= d
    BLITCORE
 #undef BLITMAINCOPY
@@ -509,7 +559,11 @@ void linear4_blit(hwrbitmap dest,
 	return;
       
     case PG_LGOP_AND:
+#ifdef SWAP_NYBBLES
+#define BLITCOPY(d,m)   *dst &= d | m
+#else
 #define BLITCOPY(d,m)   *dst &= d | ~m
+#endif
 #define BLITMAINCOPY(d) *dst &= d
    BLITCORE
 #undef BLITMAINCOPY
@@ -517,7 +571,11 @@ void linear4_blit(hwrbitmap dest,
 	return;
       
     case PG_LGOP_XOR:
+#ifdef SWAP_NYBBLES
+#define BLITCOPY(d,m)   *dst ^= d & ~m
+#else
 #define BLITCOPY(d,m)   *dst ^= d & m
+#endif
 #define BLITMAINCOPY(d) *dst ^= d
    BLITCORE
 #undef BLITMAINCOPY
