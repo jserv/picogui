@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.60 2001/10/04 09:37:44 micahjd Exp $
+/* $Id: dispatch.c,v 1.61 2001/10/08 01:15:18 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -465,6 +465,7 @@ g_error rqh_batch(int owner, struct pgrequest *req,
   void *subdata;
   unsigned char null_save;
   g_error e;
+  int padding;
 
   while (remaining) {
     /* Extract a request header */
@@ -481,6 +482,7 @@ g_error rqh_batch(int owner, struct pgrequest *req,
 
     /* Extract the data */
     subdata = (void *) p;
+    /* The data is padded to a 32-bit boundary */
     p += subreq->size;
     remaining -= subreq->size;
     if (remaining<0)
@@ -501,6 +503,18 @@ g_error rqh_batch(int owner, struct pgrequest *req,
 
     /* Undo the null terminator */
     *p = null_save;
+
+    /* The next packet is padded to a 32-bit boundary */
+    if (remaining) {
+      padding = ((u32)(p - (u8*)data)) & 3;
+      if (padding) {
+	padding = 4-padding;
+	p += padding;
+	remaining -= padding;
+	if (remaining<0)
+	  remaining = 0;
+      }
+    }
   }
 
   return e;

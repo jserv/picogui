@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.14 2001/09/28 03:43:25 micahjd Exp $
+/* $Id: netcore.c,v 1.15 2001/10/08 01:14:33 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -217,6 +217,7 @@ void _pgsig(int sig) {
 /* Put a request into the queue */
 void _pg_add_request(short reqtype,void *data,unsigned long datasize) {
   struct pgrequest *newhdr;
+  int padding;
 
   /* If this will overflow the buffer, flush it and send this packet
    * individually. This has two possible uses:
@@ -245,6 +246,14 @@ void _pg_add_request(short reqtype,void *data,unsigned long datasize) {
     _pg_getresponse();
     return;
   } 
+
+  /* Pad the request buffer to a 32-bit boundary */
+  padding = _pgreqbuffer_size & 3;
+  if (padding) {
+    padding = 4-padding;
+    memset(_pgreqbuffer + _pgreqbuffer_size, 0, padding);
+    _pgreqbuffer_size += padding;
+  }
 
   /* Find a good place for the new header in the buffer and fill it in */
   newhdr = (struct pgrequest *) (_pgreqbuffer + _pgreqbuffer_size);
@@ -547,7 +556,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.14 2001/09/28 03:43:25 micahjd Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.15 2001/10/08 01:14:33 micahjd Exp $\n");
 	exit(1);
       }
 
