@@ -86,7 +86,13 @@ class Server(object):
             if resp_id == req_id:
                 self.lost_and_found.remove((resp_id, resp))
                 return resp
-        resp_id, resp = responses.get(self._connection)
+        try:
+            resp_id, resp = responses.get(self._connection)
+        except responses.Dead, corpse:
+            # pgserver exited, or network error
+            import sys
+            print >> sys.stderr, corpse
+            raise SystemExit
         if isinstance(resp, Exception):
             raise resp
         if resp_id == req_id:
