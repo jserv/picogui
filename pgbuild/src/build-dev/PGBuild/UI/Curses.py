@@ -108,21 +108,52 @@ class Window(object):
         self.win = curses.newwin(rect.h,rect.w,rect.y,rect.x)
         self.win.idlok(1)
         self.win.scrollok(1)
+
+    def addText(self, text, x=None, y=None):
+        """Add text at the given location. The text can be a string,
+           a (string, attribute) tuple, or a sequence of such tuples.
+           The "string" can also be an integer, to allow the use of
+           special character codes curses defines.
+           """
+        if x != None:
+            self.win.move(y,x)
+        try:
+            text[0]
+        except IndexError:
+            text = [text]
+        for item in text:
+            if type(item) == type(()):
+                self.win.attrset(item[1])
+                string = item[0]
+            else:
+                string = item
+            if type(string) == int:
+                self.win.addch(string)
+            else:
+                self.win.addstr(item)
+            self.win.attrset(0)
         
 
 class Heading(Window):
-    """Curses window providing a heading with left, right, or center justified
-       text and arbitrary background and foreground.
-       """
-    def __init__(self, rect, text, side='left', bgChar=None, sideMargin=10):
+    """Curses window providing a heading with left, right, or center justified text"""
+    def __init__(self, rect, text, side='left',
+                 bgChar=None, fgAttr=None, bgAttr=None, sideMargin=10):
+        if not bgAttr:
+            bgAttr = curses.color_pair(007) | curses.A_BOLD
+        if not fgAttr:
+            fgAttr = curses.color_pair(006) | curses.A_BOLD
+        if not bgChar:
+            bgChar = curses.ACS_HLINE
+            
         Window.__init__(self, rect)
         self.sideMargin = sideMargin
         text = " %s " % text
         textX = getattr(self,'align_%s' % side)(rect.w, len(text))
-        if not bgChar:
-            bgChar = curses.ACS_HLINE
+        self.win.attrset(bgAttr)
         self.win.hline(0,0,bgChar,rect.w)
+        self.win.attrset(fgAttr)
         self.win.addstr(0, textX, text)
+        self.win.attrset(0)
         self.win.refresh()
         
     def align_left(self, container, text):
@@ -138,9 +169,21 @@ class Heading(Window):
 class ScrollingWindow(Window):
     """Window that scrolls new text in from the bottom """
     def addLine(self, line):
-        self.win.move(self.rect.h-1, 0)
-        self.win.addstr(line + "\n")
+        self.addText(line)
+        self.addText("\n")
         self.win.refresh()
+
+    def textBlock(self, text, attribute=0, bullet="*"):
+        """Output a block of text in the given color attribute,
+           with an optional preceeding bullet.
+           """
+        formatted = []
+        for line in text.split("\n"):
+            formatted.append((" %s " % bullet, curses.A_BOLD))
+            formatted.append((line, attribute))
+            formatted.append("\n")
+            bullet = ' '
+        self.addLine(formatted[:-1])
 
 
 class TaskWindow(Window):
@@ -148,7 +191,7 @@ class TaskWindow(Window):
     def show(self, list):
         self.win.clear()
         for level in xrange(len(list)):
-            self.win.addstr(level, 1, "-"*(level+1) + " " + list[level])
+            self.addText(((" - ", curses.A_BOLD), list[level]), 0, level)
         self.win.refresh()
 
 class CursesWrangler(object):
@@ -156,10 +199,15 @@ class CursesWrangler(object):
     def __init__(self):
         try:
             self.stdscr = curses.initscr()
+            curses.start_color()
             curses.noecho()
             curses.cbreak()
             curses.curs_set(0)
             self.stdscr.keypad(1)
+            # Initialize all possible color pairs so we can specify
+            # foreground and background colors in octal.
+            for color in range(1,64):
+                curses.init_pair(color, color & 7, color >> 3) 
             signal.signal(signal.SIGWINCH, self.resize)
             self.resize()
         except:
@@ -181,9 +229,12 @@ class CursesWrangler(object):
     def layout(self):
         """Set up us our windows, called whenever the size changes"""
         remaining = Rect(0,0,self.width,self.height)
-        Heading(remaining.sliceTop(1), "%s version %s - Curses frontend" % (PGBuild.name, PGBuild.version), 'center', ' ')
+        Heading(remaining.sliceBottom(1), "%s version %s - Curses frontend" % (PGBuild.name, PGBuild.version),
+                'center', ' ', curses.color_pair(070), curses.color_pair(070))
         Heading(remaining.sliceTop(1), "Active Tasks")
-        self.taskWin = TaskWindow(remaining.sliceTop(remaining.h / 4))
+        self.taskWin = TaskWindow(remaining.sliceTop(self.height / 4))
+        Heading(remaining.sliceTop(1), "Messages")
+        self.messageWin = ScrollingWindow(remaining.sliceTop(self.height / 4))
         Heading(remaining.sliceTop(1), "Progress")
         self.reportWin = ScrollingWindow(remaining)
 
@@ -223,8 +274,20 @@ class Progress(PGBuild.UI.None.Progress):
         self.curses.cleanup()
 
     def _report(self, verb, noun):
-        self.curses.reportWin.addLine(noun)
+        self.curses.reportWin.addLine(( ("%10s" % verb,0),
+                                        (" : ", curses.A_BOLD),
+                                        (noun,0)
+                                        ))
         
+    def _warning(self, text):
+        self.curses.messageWin.textBlock("Warning:\n" + text, curses.color_pair(006) | curses.A_BOLD)
+            
+    def _error(self, text):
+        self.curses.messageWin.textBlock("Error:\n" + text, curses.color_pair(001) | curses.A_BOLD)
+
+    def _message(self, text):
+        self.curses.messageWin.textBlock(text)
+
 
 class Interface(PGBuild.UI.None.Interface):
     """PGBuild Interface implementation using our Curses-based progress reporter"""
