@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.2 2000/09/09 01:52:46 micahjd Exp $
+/* $Id: constants.h,v 1.3 2000/09/16 04:12:52 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -111,6 +111,9 @@
 #define PG_ERRT_HANDLE   0x0500
 #define PG_ERRT_INTERNAL 0x0600
 #define PG_ERRT_BUSY     0x0700
+
+/* Reserved for client-side errors (not used by the server) */
+#define PG_ERRT_CLIENT   0x8000
 
 /******************** Handles */
 
