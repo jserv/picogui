@@ -1,4 +1,4 @@
-/* $Id: lcdclock.c,v 1.1 2001/05/13 07:05:16 micahjd Exp $
+/* $Id: lcdclock.c,v 1.2 2001/07/12 08:10:03 micahjd Exp $
  * 
  * lcdclock.c - Clock application designed for use with a wall-mounted
  *              LCD (see README) but maybe with other uses
@@ -31,6 +31,10 @@
 
 pghandle wBigClock,wSmallClock;
 
+/* Ignore errors (we'll do anything but interrupt the clock!) */
+void ignore_errs(unsigned short type, const char *msg) {
+}
+
 void sysIdle(void) {
    time_t now;
    struct tm *ltime;
@@ -52,6 +56,7 @@ void sysIdle(void) {
 
 int main(int argc, char **argv) {
    pgInit(argc,argv);
+   pgSetErrorHandler(&ignore_errs);
    pgRegisterApp(PG_APP_NORMAL,"Clock",0);
    pgSetWidget(PGDEFAULT,
 	       PG_WP_SIDE,PG_S_LEFT,
