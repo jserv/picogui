@@ -93,6 +93,7 @@ void PythonThread::threadHandler(void) {
 }
 
 void PythonThread::addObject(char *name, PyObject *object) {
+  Py_INCREF(object);
   if (PyModule_AddObject(module, name, object)<0)
     throw PythonException();
 }

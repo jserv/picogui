@@ -18,18 +18,28 @@ class ScriptableObject : public PyObject {
   virtual ~ScriptableObject();
 
   /* Called from the Python thread when an attribute is set */
-  virtual void onAttrSet(char *name, PyObject *value);
+  virtual void onAttrSet(char *name, PyObject *value) {};
 
-  /* C++ interface */
+  /* C++ interface
+   * Provides convenience functions for several types, uses C++ exeptions
+   */
+  void setAttr(char *name, PyObject *value);
+  void setAttr(char *name, int value);
+  void setAttr(char *name, char *value);
+  void setAttr(char *name, float value);
   PyObject *getAttr(char *name);
-  int setAttr(char *name, PyObject *value);
-  
+  int getAttrInt(char *name);
+  char *getAttrStr(char *name);
+  float getAttrFloat(char *name);
+
  private:
-  /* Python dictionary shared between python and C++ threads */
+  /* Python dictionary shared between python and C++ interfaces */
   PyObject *dict;
   SDL_mutex *dict_mutex;
 
-  /* Python interface */
+  /* Python interface
+   * Thread-safe wrapper with no C++ exceptions, calls onAttrSet
+   */
   static PyObject *PyGetAttr(PyObject * PyObj, char *attr);
   static int PySetAttr(PyObject *PyObj, char *attr, PyObject *value);
   static void PyDestructor(PyObject *PyObj);

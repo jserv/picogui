@@ -4,7 +4,8 @@ OBJS = \
 	PythonThread.o		\
 	PGTexture.o		\
 	ScriptableObject.o	\
-	PythonInterpreter.o
+	PythonInterpreter.o	\
+	FlatLand.o
 
 HEADERS = \
 	EmbeddedPGserver.h	\
@@ -12,7 +13,8 @@ HEADERS = \
 	SimpleException.h	\
 	PGTexture.h		\
 	ScriptableObject.h	\
-	PythonInterpreter.h
+	PythonInterpreter.h	\
+	FlatLand.h
 
 BIN = jetengine
 

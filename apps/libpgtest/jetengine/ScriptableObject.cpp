@@ -1,7 +1,7 @@
 /* A base class that adds python scriptability. */
 
 #include "ScriptableObject.h"
-#include "PythonThread.h"
+#include "PythonInterpreter.h"
 
 PyTypeObject ScriptableObject::Type = {
 	PyObject_HEAD_INIT(&PyType_Type)
@@ -36,34 +36,82 @@ ScriptableObject::~ScriptableObject() {
   SDL_DestroyMutex(dict_mutex);
 }
 
-/* Called from the Python thread when an attribute is set */
-void ScriptableObject::onAttrSet(char *name, PyObject *value) {
-}
-
+/* C++ wrappers have exception handling */
 PyObject *ScriptableObject::getAttr(char *name) {
   PyObject *o;
   SDL_mutexP(dict_mutex);
   o = PyDict_GetItemString(dict,name);
   SDL_mutexV(dict_mutex);
+  if (!o)
+    throw PythonException();
   return o;
 }
 
-int ScriptableObject::setAttr(char *name, PyObject *value) {
+void ScriptableObject::setAttr(char *name, PyObject *value) {
   int r;
   SDL_mutexP(dict_mutex);
   r = PyDict_SetItemString(dict,name,value);
   SDL_mutexV(dict_mutex);
-  if (r>=0)
-    onAttrSet(name,value);
-  return r;
+  if (r<0)
+    throw PythonException();
 }
 
+/* Several convenience functions for set/getattr */
+void ScriptableObject::setAttr(char *name, int value) {
+  PyObject *o = Py_BuildValue("i",&value);
+  setAttr(name,o);
+  Py_DECREF(o);
+}
+
+void ScriptableObject::setAttr(char *name, char *value) {
+  PyObject *o = Py_BuildValue("s",&value);
+  setAttr(name,o);
+  Py_DECREF(o);
+}
+
+void ScriptableObject::setAttr(char *name, float value) {
+  PyObject *o = Py_BuildValue("f",&value);
+  setAttr(name,o);
+  Py_DECREF(o);
+}
+
+int ScriptableObject::getAttrInt(char *name) {
+  int i;
+  if (!PyArg_Parse(getAttr(name), "i", &i))
+    throw PythonException();
+  return i;
+}
+
+char *ScriptableObject::getAttrStr(char *name) {
+  char *s;
+  if (!PyArg_Parse(getAttr(name), "s", &s))
+    throw PythonException();
+  return s;
+}
+
+float ScriptableObject::getAttrFloat(char *name) {
+  return PyFloat_AsDouble(getAttr(name));
+}
+
+/* Python wrappers have no exception handling, and call our virtual methods */
 PyObject *ScriptableObject::PyGetAttr(PyObject * PyObj, char *attr) {
-  return ((ScriptableObject*) PyObj)->getAttr(attr);
+  ScriptableObject *my = (ScriptableObject*) PyObj;
+  PyObject *o;
+  SDL_mutexP(my->dict_mutex);
+  o = PyDict_GetItemString(my->dict,attr);
+  SDL_mutexV(my->dict_mutex);
+  return o;
 }
 
 int ScriptableObject::PySetAttr(PyObject *PyObj, char *attr, PyObject *value) {
-  return ((ScriptableObject*) PyObj)->setAttr(attr,value);
+  ScriptableObject *my = (ScriptableObject*) PyObj;
+  int r;
+  SDL_mutexP(my->dict_mutex);
+  r = PyDict_SetItemString(my->dict,attr,value);
+  SDL_mutexV(my->dict_mutex);
+  if (r>=0)
+    my->onAttrSet(attr,value);
+  return r;
 }
 
 void ScriptableObject::PyDestructor(PyObject *PyObj) {
