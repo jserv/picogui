@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.26 2001/09/07 00:23:53 micahjd Exp $
+/* $Id: api.c,v 1.27 2001/09/07 00:26:02 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -759,6 +759,7 @@ void pgChangeContext(pghandle object, short delta) {
 
 int pgCheckEvent(void) {
   _pg_add_request(PGREQ_CHECKEVENT,NULL,0);
+  pgFlushRequests();
   return _pg_return.e.retdata;
 }
 
