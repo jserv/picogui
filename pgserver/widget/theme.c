@@ -1,4 +1,4 @@
-/* $Id: theme.c,v 1.8 2000/06/02 22:02:46 micahjd Exp $
+/* $Id: theme.c,v 1.9 2000/08/03 02:24:02 micahjd Exp $
  *
  * theme.h - This defines the structures and functions for themes,
  * parameters defining the way widgets are drawn that are reconfigurable
@@ -30,6 +30,8 @@
 #include <theme.h>
 #include <divtree.h>
 #include <widget.h>
+
+struct element current_theme[E_NUM];
 
 /* Creates a gropnode representing an element.
  * Depending on the type and the size, create a gradient, rectangle,
@@ -120,6 +122,12 @@ void themeset(int element,int state,int param,unsigned long value) {
       el->state[state].translucent = value;
     break;
   }  
+}
+
+/* Restore defaults */
+void restoretheme(void) {
+  memcpy(&current_theme,&default_theme,sizeof(struct element)*E_NUM);
+  appmgr_setbg(-1,0);
 }
 
 /* The End */

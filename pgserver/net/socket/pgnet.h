@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.11 2000/08/02 03:23:16 micahjd Exp $
+/* $Id: pgnet.h,v 1.12 2000/08/03 02:24:02 micahjd Exp $
  *
  * pgnet.h - header for all PicoGUI networking stuff (request/packet/event...)
  *
@@ -198,35 +198,36 @@ struct event *get_event(int owner,int remove);
 #define TAB_REQHANDLER(n) &rqh_##n ,
 
 /* Constants for request handlers                                 args  */
-#define RQH_PING      0      /* Simply returns if server is ok |   none  */
-#define RQH_UPDATE    1      /* Call update()                  |   none  */
-#define RQH_MKWIDGET  2      /* Makes a widget, returns handle |  struct */
-#define RQH_MKBITMAP  3      /* Makes a bitmap, returns handle |  struct */
-#define RQH_MKFONT    4      /* Makes a fontdesc, ret's handle |  struct */
-#define RQH_MKSTRING  5      /* Makes a string, returns handle |  chars  */
-#define RQH_FREE      6      /* Frees a handle                 |  struct */
-#define RQH_SET       7      /* Set a widget param             |  struct */
-#define RQH_GET       8      /* Get a widget param, return it  |  struct */
-#define RQH_SETBG     9      /* bequeath a new background bmp  |  struct */
-#define RQH_IN_KEY    10     /* Dispatch keyboard input        |  struct */
-#define RQH_IN_POINT  11     /* Dispatch pointing device input |  struct */
-#define RQH_IN_DIRECT 12     /* Dispatch direct input          |  struct */
-#define RQH_WAIT      13     /* Wait for an event              |  none   */
-#define RQH_THEMESET  14     /* Set an element in the theme    |  struct */
-#define RQH_REGISTER  15     /* Register a new application     |  struct */
-#define RQH_MKPOPUP   16     /* Create a popup root widget     |  struct */
-#define RQH_SIZETEXT  17     /* Find the size of text          |  struct */
-#define RQH_BATCH     18     /* Executes many requests         |  requests */
-#define RQH_GRABKBD   19     /* Become the keyboard owner      |  none */
-#define RQH_GRABPNTR  20     /* Own the pointing device        |  none */
-#define RQH_GIVEKBD   21     /* Give the keyboard back         |  none */
-#define RQH_GIVEPNTR  22     /* Give the pointing device back  |  none */
-#define RQH_MKCONTEXT 23     /* Enters a new context           |  none */
-#define RQH_RMCONTEXT 24     /* Cleans up and kills the context|  none */
-#define RQH_FOCUS     25     /* Force focus to specified widget|  struct */
-#define RQH_GETSTRING 26     /* Returns a RESPONSE_DATA        |  struct */
+#define RQH_PING         0      /* Simply returns if server is ok |   none  */
+#define RQH_UPDATE       1      /* Call update()                  |   none  */
+#define RQH_MKWIDGET     2      /* Makes a widget, returns handle |  struct */
+#define RQH_MKBITMAP     3      /* Makes a bitmap, returns handle |  struct */
+#define RQH_MKFONT       4      /* Makes a fontdesc, ret's handle |  struct */
+#define RQH_MKSTRING     5      /* Makes a string, returns handle |  chars  */
+#define RQH_FREE         6      /* Frees a handle                 |  struct */
+#define RQH_SET          7      /* Set a widget param             |  struct */
+#define RQH_GET          8      /* Get a widget param, return it  |  struct */
+#define RQH_SETBG        9      /* bequeath a new background bmp  |  struct */
+#define RQH_IN_KEY       10     /* Dispatch keyboard input        |  struct */
+#define RQH_IN_POINT     11     /* Dispatch pointing device input |  struct */
+#define RQH_IN_DIRECT    12     /* Dispatch direct input          |  struct */
+#define RQH_WAIT         13     /* Wait for an event              |  none   */
+#define RQH_THEMESET     14     /* Set an element in the theme    |  struct */
+#define RQH_REGISTER     15     /* Register a new application     |  struct */
+#define RQH_MKPOPUP      16     /* Create a popup root widget     |  struct */
+#define RQH_SIZETEXT     17     /* Find the size of text          |  struct */
+#define RQH_BATCH        18     /* Executes many requests         |  requests */
+#define RQH_GRABKBD      19     /* Become the keyboard owner      |  none */
+#define RQH_GRABPNTR     20     /* Own the pointing device        |  none */
+#define RQH_GIVEKBD      21     /* Give the keyboard back         |  none */
+#define RQH_GIVEPNTR     22     /* Give the pointing device back  |  none */
+#define RQH_MKCONTEXT    23     /* Enters a new context           |  none */
+#define RQH_RMCONTEXT    24     /* Cleans up and kills the context|  none */
+#define RQH_FOCUS        25     /* Force focus to specified widget|  struct */
+#define RQH_GETSTRING    26     /* Returns a RESPONSE_DATA        |  struct */
+#define RQH_RESTORETHEME 27     /* Restore theme defaults         |  none   */
 
-#define RQH_UNDEF     27     /* types > this will be truncated. return error */
+#define RQH_UNDEF        28     /* types > this will be truncated. return error */
 
 /* Structures passed to request handlers as 'data'.
  * Dummy variables pad it to a multiple of 4 bytes (compiler likes it?)

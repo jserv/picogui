@@ -1,4 +1,4 @@
-/* $Id: theme.h,v 1.10 2000/06/10 14:15:57 micahjd Exp $
+/* $Id: theme.h,v 1.11 2000/08/03 02:24:02 micahjd Exp $
  *
  * theme.h - This defines the structures and functions for themes,
  * parameters defining the way widgets are drawn that are reconfigurable
@@ -100,6 +100,7 @@ struct element {
 #define EPARAM_ANGLE        5
 #define EPARAM_TRANSLUCENT  6
 
+extern struct element default_theme[E_NUM];
 extern struct element current_theme[E_NUM];
 
 /**** Functions for themes */
@@ -114,6 +115,9 @@ void applystate(struct gropnode *n,struct element *el,int state);
 
 /* This is how theme elements are stored in a portable way */
 void themeset(int element,int state,int param,unsigned long value);
+
+/* Restore all theme defaults */
+void restoretheme(void);
 
 #endif /* __WIDGET_H */
 

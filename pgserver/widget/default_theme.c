@@ -1,4 +1,4 @@
-/* $Id: default_theme.c,v 1.6 2000/06/07 07:35:29 micahjd Exp $
+/* $Id: default_theme.c,v 1.7 2000/08/03 02:24:02 micahjd Exp $
  *
  * default_theme.h - Theme table initialized with the default theme
  *
@@ -37,7 +37,7 @@
 #define EL_ACTIVE(c1,c2,c3) {0,ELEM_FLAT,{{c1},{c2},{c3}}}
 
 /* This is initialized to the default theme */
-struct element current_theme[E_NUM] = {
+struct element default_theme[E_NUM] = {
 
   /* 00 button.border */
   EL_FLAT(1,mkcolor(0,0,0)),

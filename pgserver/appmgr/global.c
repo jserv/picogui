@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.11 2000/08/02 05:22:49 micahjd Exp $
+/* $Id: global.c,v 1.12 2000/08/03 02:24:02 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -71,6 +71,9 @@ g_error appmgr_init(void) {
   g_error e;
 
   applist = NULL;  /* No apps yet! */
+
+  /* Default theme */
+  memcpy(&current_theme,&default_theme,sizeof(struct element)*E_NUM);
 
   /* Allocate default font */
   e = findfont(&defaultfont,-1,NULL,0,FSTYLE_DEFAULT);

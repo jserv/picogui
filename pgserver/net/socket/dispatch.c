@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.11 2000/08/02 05:22:49 micahjd Exp $
+/* $Id: dispatch.c,v 1.12 2000/08/03 02:24:02 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -59,6 +59,7 @@ DEF_REQHANDLER(mkcontext)
 DEF_REQHANDLER(rmcontext)
 DEF_REQHANDLER(focus)
 DEF_REQHANDLER(getstring)
+DEF_REQHANDLER(restoretheme)
 DEF_REQHANDLER(undef)
 g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(ping)
@@ -88,6 +89,7 @@ g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(rmcontext)
   TAB_REQHANDLER(focus)
   TAB_REQHANDLER(getstring)
+  TAB_REQHANDLER(restoretheme)
   TAB_REQHANDLER(undef)
 };
 
@@ -609,6 +611,11 @@ g_error rqh_getstring(int owner, struct uipkt_request *req,
   *fatal |= send_response(owner,&rsp,sizeof(rsp));  
   *fatal |= send_response(owner,string,size);  
   return mkerror(ERRT_NOREPLY,NULL);
+}
+
+g_error rqh_restoretheme(int owner, struct uipkt_request *req,
+			 void *data, unsigned long *ret, int *fatal) {
+  restoretheme();
 }
 
 /* The End */
