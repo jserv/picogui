@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.6 2003/01/01 03:43:09 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.7 2003/01/20 11:08:08 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -53,7 +53,7 @@ void kbd_event(struct widget *self, int pgkey,int mods) {
 
   /****** Modified key translations */
 
-  if (mods & PGMOD_CTRL)
+  if ((mods & PGMOD_CTRL) && pgkey >= PGKEY_a && pgkey <= PGKEY_z)
     pgkey -= PGKEY_a - 1;
 
   /****** Unmodified Key translation */
