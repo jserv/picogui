@@ -3,9 +3,9 @@
 #
 
 [pgserver]
-mode    = 96x96
+mode    = 96x96x32
 video   = scrshot
-session = thumbnail.pl 2> /dev/null
+session = perl thumbnail.pl 2> /dev/null
 
 [video-scrshot]
 file  = themeshot%d.ppm

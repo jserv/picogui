@@ -1,4 +1,4 @@
-/* $Id: nullfb.c,v 1.2 2001/07/05 06:17:57 micahjd Exp $
+/* $Id: nullfb.c,v 1.3 2001/07/06 08:51:46 micahjd Exp $
  *
  * nullfb.c - For testing and profiling. Uses linear* VBLs to generate a frame
  *            but does not blit the buffer to any actual hardware
@@ -50,11 +50,11 @@ g_error nullfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
    g_error e;
    
    /* Make screen divisible by a byte */
-   if (bpp && bpp<8)
+   if (bpp<8)
      xres &= ~((8/bpp)-1);
 
-   /* Free the backbuffer */
-   if (vid->bpp && (vid->bpp<8) && FB_MEM) {
+   /* Free the old buffer */
+   if (FB_MEM) {
       g_free(FB_MEM);
       FB_MEM = NULL;
    }

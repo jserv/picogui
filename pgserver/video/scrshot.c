@@ -1,4 +1,4 @@
-/* $Id: scrshot.c,v 1.2 2001/07/05 09:05:59 micahjd Exp $
+/* $Id: scrshot.c,v 1.3 2001/07/06 08:51:46 micahjd Exp $
  *
  * scrshot.c - Maintains a virtual framebuffer, taking screenshots on update
  *
@@ -46,6 +46,7 @@ g_error scrshot_init(void) {
    /* Default mode: 640x480 */
    if (!vid->xres) vid->xres = 640;
    if (!vid->yres) vid->yres = 480;
+   if (!vid->bpp)  vid->bpp  = 32;
 
    scrshot_frame = 0;
    scrshot_file = get_param_str("video-scrshot","file","pgshot%04d.ppm");
@@ -58,23 +59,81 @@ g_error scrshot_init(void) {
 g_error scrshot_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
    g_error e;
    
+   /* Make screen divisible by a byte */
+   if (bpp<8)
+     xres &= ~((8/bpp)-1);
+
+   /* Free the old buffer */
    if (FB_MEM) {
       g_free(FB_MEM);
       FB_MEM = NULL;
    }
    
-   setvbl_linear24(vid);   
+   /* Load a VBL */
+   switch (bpp) {
+      
+#ifdef CONFIG_VBL_LINEAR1
+    case 1:
+      setvbl_linear1(vid);
+      break;
+#endif
+      
+#ifdef CONFIG_VBL_LINEAR2
+    case 2:
+      setvbl_linear2(vid);
+      break;
+#endif
+      
+#ifdef CONFIG_VBL_LINEAR4
+    case 4:
+      setvbl_linear4(vid);
+      break;
+#endif
+      
+#ifdef CONFIG_VBL_LINEAR8
+    case 8:
+      setvbl_linear8(vid);
+      break;
+#endif
+      
+#ifdef CONFIG_VBL_LINEAR16
+    case 16:
+     setvbl_linear16(vid);
+     break;
+#endif
+
+#ifdef CONFIG_VBL_LINEAR24
+    case 24:
+      setvbl_linear24(vid);
+      break;
+#endif
+      
+#ifdef CONFIG_VBL_LINEAR32
+    case 32:
+      setvbl_linear32(vid);
+      break;
+#endif
+      
+    default:
+      nullfb_close();
+      return mkerror(PG_ERRT_BADPARAM,101);   /* Unknown bpp */
+   }
+   
    vid->xres = xres;
    vid->yres = yres;
-   vid->bpp = 24;
+   vid->bpp = bpp;
    
-   FB_BPL = vid->xres * 3;
-   e = g_malloc((void**)&FB_MEM,(FB_BPL * vid->yres));
+   FB_BPL = (vid->xres * bpp) >> 3;
+   /* The +1 allows blits some margin to read unnecessary bytes.
+    * Keeps linear1's blit from triggering electric fence when the
+    * cursor is put in the bottom-right corner ;-)
+    */
+   e = g_malloc((void**)&FB_MEM,(FB_BPL * vid->yres) + 1);
    errorcheck;
    
    return sucess; 
 }
-   
+      
 void scrshot_close(void) {
    /* Free backbuffer */
    if (FB_MEM)
@@ -84,6 +143,7 @@ void scrshot_close(void) {
 void scrshot_update(s16 x, s16 y, s16 w, s16 h) {
   char buf[256];    /* I hate static buffers... */
   FILE *f;
+  int x,y;
 
   if (scrshot_skip) {
     scrshot_skip--;
@@ -97,7 +157,17 @@ void scrshot_update(s16 x, s16 y, s16 w, s16 h) {
 	 buf,scrshot_total-scrshot_frame);
   sprintf(buf,"P6\n%d %d\n255\n",vid->xres,vid->yres);
   fputs(buf,f);
-  fwrite(FB_MEM,FB_BPL,vid->yres,f);
+
+  for (y=0;y<vid->yres;y++)
+    for (x=0;x<vid->xres;x++) {
+      pgcolor c;
+      
+      c = VID(color_hwrtopg)(VID(getpixel)(vid->display,x,y));
+      fputc(getred(c),f);
+      fputc(getgreen(c),f);
+      fputc(getblue(c),f);
+    }
+
   fclose(f);
 
   if (scrshot_total==scrshot_frame) {
