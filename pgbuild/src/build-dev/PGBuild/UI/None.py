@@ -188,7 +188,7 @@ class Interface(object):
             # Pretty-print ExternalErrors a bit, hiding the details that might scare people
             message = ""
             try:
-                message += exc_info[0].explanation + "\n"
+                message += exc_info[0].explanation + ",\n"
             except AttributeError:
                 pass
             try:
