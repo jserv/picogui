@@ -5,4 +5,4 @@
 # the convenience of point-and-click operating systems like Windows and MacOS.
 #
 import pgbuild
-pgbuild.main(['--gui'])
+pgbuild.main(['--gui=auto'])

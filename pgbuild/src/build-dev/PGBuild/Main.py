@@ -24,27 +24,10 @@ as soon as it creates a Bootstrap object with vital path and package names.
 # 
 
 import PGBuild.Package
+import PGBuild.GUI
 import PGBuild.CommandLine.Options
-import PGBuild.CommandLine.Output
 import PGBuild.Config
 import os, re, shutil
-
-def run(config, progress):
-    """Examine the provided configuration and take the specified actions"""
-
-    import PGBuild.Site
-    t = progress.task("Debuggative cruft")
-    p = config.packages.findPackage('picogui')
-    t.report('package', p)
-    v = p.findVersion()
-    t.report('version', v)
-    t.report('site', v.findMirror(t).absoluteURI)
-
-    treeDumpFile = config.eval("invocation/option[@name='treeDumpFile']/text()")
-    if treeDumpFile:
-        f = open(treeDumpFile, "w")
-        f.write(config.toprettyxml())
-        f.close()
 
 
 def boot(config, bootstrap):
@@ -117,12 +100,8 @@ def main(bootstrap, argv):
         # Parse command line options into the <invocation> section
         PGBuild.CommandLine.Options.parse(config, argv)
 
-        # Set up a progress reporter object at the specified verbosity
-        verbosity = int(config.eval("invocation/option[@name='verbosity']/text()"))
-        progress = PGBuild.CommandLine.Output.Progress(verbosity)
-
-        # Do everything else :)
-        run(config, progress)
+        # Load a GUI module and run it
+        PGBuild.GUI.find(config.eval("invocation/option[@name='gui']/text()")).Interface(config).run()
     finally:
         config.commit()
 

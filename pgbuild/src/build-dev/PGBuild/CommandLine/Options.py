@@ -43,6 +43,9 @@ def parse(config, argv):
                       help="report progress in more detail")    
     parser.add_option("-q", "--quiet", action="uncount", dest="verbosity", default=1,
                       help="report progress in less detail")    
+    parser.add_option("--gui", action="store", dest="gui", metavar="MODULE", default="none",
+                      help="enable the graphical front-end, using the specified module. Try "+
+                      "--gui=help to list the available modules")
 
     ############# Configuration management
 
