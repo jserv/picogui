@@ -1,5 +1,13 @@
 package provide picogui 0.4
 
+foreach name [array names pg_trigger s_*] {
+	set nname [string range $name 2 end]
+	set pg_triggers($nname) $pg_trigger($name)
+}
+foreach name [array names pg_s] {
+	set pg_s_rev($pg_s($name)) $name
+}
+
 set binds(any) "any {parray event} $pg_we(close) exit"
 
 set connection 0
@@ -24,7 +32,7 @@ proc pgGetResponse {} {
 	global pg_response pg_request connection pg_eventcoding
 	set data [read $connection 12]
 	binary scan $data "S" type
-	if { $type == $pg_response(error) } {
+	if { $type == $pg_response(err) } {
 		binary scan $data "SSSSI" ret(type) ret(errt) ret(msglen) \
 			ret(dummy) ret(id)
 		set ret(msg) [read $connection $ret(msglen)]

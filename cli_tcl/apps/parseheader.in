@@ -41,19 +41,32 @@ while {$indx < [llength $fdata]} {
 }
 foreach line $data {
 	set line [split $line]
-	set [lindex $line 0] [lindex $line 1]
 	set indx [string range [lindex $line 0] $scut end]
-	set temp([string tolower $indx]) [lindex $line 1]
+	set [lindex $line 0] [lindex $line 1]
+	set line [join [lrange $line 1 end]]
+	set i [string first "//" $line]
+	if {$i >=0} {
+		set line [string range $line 0 [expr $i -1]]
+	}
+	set i [string first "/*" $line]
+	if {$i >=0} {
+		set line [string range $line 0 [expr $i -1]]
+	}
+	set line [string trim $line]
+	if {[string index $indx 0]=="_"} {
+		set indx [string range $indx 1 end]
+	}
+	set temp([string tolower $indx]) $line
 }
 set out [open $output w]
 puts $out "array set $arrayname \""
-puts $search
 foreach line [lsort [array names temp]] {
 	puts -nonewline $out "\t$line\t"
+	if {[info exists $temp($line)]} {
+		set temp($line) [format {$%s} $temp($line)]
+	}
 	if {[string first $search $temp($line)]!=-1} {
-		if {[info exists $temp($line)]} {
-			set temp($line) [format {$%s} $temp($line)]
-		}
+		set temp($line) [join [split $temp($line) " "] ""]
 		set temp($line) [join [split $temp($line) "|"] "|$"]
 		set temp($line) [join [split $temp($line) "("] "($"]
 		set temp($line) [eval expr $temp($line)]
