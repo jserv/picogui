@@ -81,6 +81,7 @@ extern Bool SetFormatAndEncodings();
 extern Bool SendIncrementalFramebufferUpdateRequest();
 extern Bool SendFramebufferUpdateRequest(int x, int y, int w, int h,
 					 Bool incremental);
+void HidePointer(void);
 extern Bool SendPointerEvent(int x, int y, int buttonMask);
 extern Bool SendKeyEvent(CARD32 key, Bool down);
 extern Bool SendClientCutText(char *str, int len);

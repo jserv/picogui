@@ -52,8 +52,6 @@ Cursor  grabCursor;
 
 enum edge_enum edge = EDGE_EAST;
 int edge_width=1;
-int restingx=-1;
-int restingy=-1;
 int emulate_wheel=1;
 
 /*
@@ -360,12 +358,6 @@ Bool CreateXWindow(void)
 
     displayWidth = WidthOfScreen(DefaultScreenOfDisplay(dpy));
     displayHeight = HeightOfScreen(DefaultScreenOfDisplay(dpy));
-
-    if(restingy == -1)
-    {
-      restingy = mi.yres -2;
-      restingx = mi.xres -2;
-    }
 
     topLevelWidth=edge_width;
     topLevelHeight=edge_width;
@@ -710,7 +702,7 @@ HandleTopLevelEvent(XEvent *ev)
           
 	if(d)
 	{
-	  SendPointerEvent(restingx,restingy,0);
+	  HidePointer();
 	  XWarpPointer(dpy,None, warpWindow, 0,0,0,0, x, y);
 	  XUngrabKeyboard(dpy, CurrentTime);
 	  XUngrabPointer(dpy, CurrentTime);

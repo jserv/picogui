@@ -31,6 +31,7 @@
 #include <X11/Xutil.h>
 
 struct pgmodeinfo mi;
+static pghandle cursor = 0;
 
 int main(int argc, char **argv)
 {
@@ -49,9 +50,15 @@ int main(int argc, char **argv)
   return 0;
 }
 
-extern Bool SendPointerEvent(int x, int y, int buttonMask) {
+void HidePointer(void) {
+  if (cursor)
+    pgDelete(cursor);
+  cursor = 0;
+  pgUpdate();
+}
+
+Bool SendPointerEvent(int x, int y, int buttonMask) {
   static union pg_client_trigger trig;
-  static pghandle cursor = 0;
 
   if (!cursor)
     cursor = pgNewCursor();
@@ -61,6 +68,7 @@ extern Bool SendPointerEvent(int x, int y, int buttonMask) {
   trig.content.u.mouse.y = y;
   trig.content.u.mouse.btn = buttonMask;
   trig.content.u.mouse.cursor_handle = cursor;
+  trig.content.u.mouse.is_logical = 1;
 
   pgInFilterSend(&trig);
   pgFlushRequests();
