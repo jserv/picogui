@@ -20,6 +20,8 @@
  */
 
 #include <pgserver/common.h>
+#include <pgserver/configfile.h>
+#include <pgserver/widget.h>	/* vid, for screen size */
 #include <stdio.h>
 
 typedef struct
@@ -47,8 +49,8 @@ void touchscreen_pentoscreen(s16 *x, s16 *y)
 	if(tc.s && touchscreen_calibrated)
 	{
 		int m, n;
-		m=(tc.a**x+tc.b**y+tc.c)/tc.s;
-		n=(tc.d**x+tc.e**y+tc.f)/tc.s;
+		m=(tc.a**x+tc.b**y+tc.c)*vid->xres/tc.s;
+		n=(tc.d**x+tc.e**y+tc.f)*vid->yres/tc.s;
 		*x=m;
 		*y=n;
 	}
@@ -57,13 +59,25 @@ void touchscreen_pentoscreen(s16 *x, s16 *y)
 g_error touchscreen_init(void)
 {
 	FILE *fp=NULL;
+	int calwidth, calheight;
 
 	calib_file=get_param_str("pgserver", "pointercal", "/etc/pointercal");
+	calwidth=get_param_int("pgserver", "calwidth", 640);
+	calheight=get_param_int("pgserver", "calheight", 480);
 	fp=fopen(calib_file, "r");
 	if(fp!=NULL)
 	{
 		fscanf(fp, "%d %d %d %d %d %d %d", &tc.a, &tc.b, &tc.c,
 				&tc.d, &tc.e, &tc.f, &tc.s);
+		/* tc.s will normally be 65536, enough to cover the
+		 * inaccuracies of this scaling, I hope - otherwise
+		 * we need to scale it here */
+		tc.a/=calwidth;
+		tc.b/=calwidth;
+		tc.c/=calwidth;
+		tc.d/=calheight;
+		tc.e/=calheight;
+		tc.f/=calheight;
 		fclose(fp);
 	}
 	return success;
