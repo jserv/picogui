@@ -57,8 +57,15 @@ typedef struct _Node Node;
 
 Node* firstStack;
 Node* currentStack;
-char number[11];
-int count=0; //how many characters are there? (max: 10)
+
+#ifdef POCKETBEE
+/* Less precision with uClibm ... */
+#define NDIGITS 8
+#else
+#define NDIGITS 10
+#endif
+char number[NDIGITS + 1];
+int count=0; //how many characters are there? (max: NDIGITS)
 char sign=' ';
 int isResult = 0; // Flag indicating the current number is a result
 

@@ -106,7 +106,11 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+#ifdef POCKETBEE
+	      PG_WP_TEXT,pgNewString("Pi"),
+#else
 	      PG_WP_TEXT,pgNewString("^"),
+#endif
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnPower,&display);
 
@@ -170,7 +174,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
-	      PG_WP_TEXT,pgNewString("*"),
+	      PG_WP_TEXT,pgNewString("x"),
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnMultiply,&display);
 
@@ -259,7 +263,11 @@ int btnSecond(struct pgEvent *evt) {
     // show normal operations
     pgReplaceText(btn_del,"<-");
     pgReplaceText(btn_neg,"+/-");
+#ifdef POCKETBEE
+    pgReplaceText(btn_pow,"Pi");
+#else
     pgReplaceText(btn_pow,"^");
+#endif
   }
   return 0;
 }
@@ -321,7 +329,17 @@ int btnNegate(struct pgEvent *evt) {
 }
 int btnPower(struct pgEvent *evt) {
   if (!second)
+#ifdef POCKETBEE    
+    /* There seems to be some issues with pow() on uClibm, so let's use */
+    /* this key to display Pi! */
+    {
+      sprintf (number, "3.1415927");
+      pgReplaceText (display, number);
+      isResult = 1;
+    }
+#else
     return doOperation(POWER);
+#endif
   else {
     if (openp) {
       double answer;
@@ -358,7 +376,7 @@ int doNumber(char n) {
     return dec=0; // Used by the delete button to delete decimal point
   if (count==0)
     dec=0;
-  if (count!=10 && (!(dec && n=='.'))) {
+  if (count!=NDIGITS && (!(dec && n=='.'))) {
     if (n=='.')
       dec=1;
     number[count]=n;
@@ -443,7 +461,7 @@ int btnEquals(struct pgEvent *evt) {
     char * ans = pgGetString (pgGetWidget (display, PG_WP_TEXT));
 
     sign = ' ';
-    for (i = 0, j = 0; i < 12; i++)
+    for (i = 0, j = 0; i < NDIGITS + 2; i++)
       {
 	if (ans [i] == '-')
 	  {
@@ -506,14 +524,14 @@ int doOperation(enum op n) {
   // first push the number onto the stack
   currentStack->stack=pushNumber(currentStack->stack,temp * atof(number));
   count=0;
-  for (temp=0;temp<11;++temp)
+  for (temp=0;temp<NDIGITS+1;++temp)
     number[temp]='\0';
   number[0]='0';
   sign=' ';
   
   while (currentStack->op_stack && (order[n] <= order[currentStack->op_stack->value])) {
     //evaluate one level of the stack
-    char ans[12];
+    char ans[NDIGITS+2];
     int counter;
     double number1;
     double number2;
@@ -539,12 +557,12 @@ int doOperation(enum op n) {
     currentStack->stack=pushNumber(currentStack->stack,answer);
 
     // this mess of loops removes any trailing zeros (for a nicer display)
-    for (counter=0;counter<12;counter++)
+    for (counter=0;counter<NDIGITS+2;counter++)
       ans[counter]='\0';
-    snprintf(ans,12,"%.8f",answer);
-    for (counter=0;counter<12;counter++) {
+    snprintf(ans,NDIGITS+2,"%.8f",answer);
+    for (counter=0;counter<NDIGITS+2;counter++) {
       if (ans[counter]=='.') {
-	for (counter=11;counter>=0;counter--) {
+	for (counter=NDIGITS+1;counter>=0;counter--) {
 	  if (ans[counter]=='0') {
 	    ans[counter]='\0';
 	  } else {
@@ -598,7 +616,7 @@ oNode* popOp(oNode* stack, enum op *n) {
 }
 
 double evaluate(Node* stack) {
-  char ans[12];
+  char ans[NDIGITS+2];
   int counter;
   double answer;
   double number1;
@@ -628,17 +646,17 @@ double evaluate(Node* stack) {
 
   }
   // this mess of loops removes any trailing zeros (for a nicer display)
-  for (counter=0;counter<12;counter++)
+  for (counter=0;counter<NDIGITS+2;counter++)
     ans[counter]='\0';
 #ifdef POCKETBEE
   /* uClibc's libm has a lower precision */
-  snprintf(ans,12,"%.3f",answer + 0.0005);
+  snprintf(ans,NDIGITS+2,"%.3f",answer + 0.0005);
 #else
-  snprintf(ans,12,"%.8f",answer);
+  snprintf(ans,NDIGITS+2,"%.8f",answer);
 #endif
-  for (counter=0;counter<12;counter++) {
+  for (counter=0;counter<NDIGITS+2;counter++) {
     if (ans[counter]=='.') {
-      for (counter=11;counter>=0;counter--) {
+      for (counter=NDIGITS+1;counter>=0;counter--) {
 	if (ans[counter]=='0') {
 	  ans[counter]='\0';
 	} else {
