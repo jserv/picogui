@@ -1,4 +1,4 @@
-/* $Id: benchmark.c,v 1.4 2002/10/20 15:48:51 micahjd Exp $
+/* $Id: benchmark.c,v 1.5 2002/10/20 19:14:53 micahjd Exp $
  *
  * benchmark.c - Run benchmarks on vidlib functions
  *
@@ -230,6 +230,7 @@ void bench_charblit_270(struct benchmark_param *b) {
 		0,270,0,&clip,b->lgop,b->w>>3);
 }
 
+#ifdef CONFIG_FONTENGINE_FREETYPE
 void bench_alpha_charblit_0(struct benchmark_param *b) {
   struct quad clip;
   clip.x1 = 0;
@@ -269,7 +270,7 @@ void bench_alpha_charblit_270(struct benchmark_param *b) {
   VID(alpha_charblit)(vid->display,benchmark_char,vid->lxres-1,0,b->w,b->h,
 		128,benchmark_gamma,270,0,&clip,b->lgop);
 }
-
+#endif /* CONFIG_FONTENGINE_FREETYPE */
 
 /************************************************************ Frontend */
 
@@ -312,10 +313,13 @@ struct benchmark_test {
   { &bench_charblit_90,         1,1, "charblit (90 degrees)"        },
   { &bench_charblit_180,        1,1, "charblit (180 degrees)"       },
   { &bench_charblit_270,        1,1, "charblit (270 degrees)"       },
+
+#ifdef CONFIG_FONTENGINE_FREETYPE
   { &bench_alpha_charblit_0,    1,1, "alpha charblit (0 degrees)"   },
   { &bench_alpha_charblit_90,   1,1, "alpha charblit (90 degrees)"  },
   { &bench_alpha_charblit_180,  1,1, "alpha charblit (180 degrees)" },
   { &bench_alpha_charblit_270,  1,1, "alpha charblit (270 degrees)" },
+#endif
 
   { NULL,0,0,NULL }
 };
