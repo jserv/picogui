@@ -21,6 +21,9 @@ I'm starting with linear1 according to Pascal's priority list.
       
       * debug/videotest.c: Added the stipple rectangle video test mode (#5)
 
+      * vidbase/linear1.c: Wrote an accelerated slab() for PG_LGOP_STIPPLE,
+        which in turn makes stippled rectangles much faster. According to some
+	benchmarks on Yoshi, this increased the speed by about 3200%!
 
 2001-05-14    Micah Dowty <micahjd@users.sourceforge.net>
 

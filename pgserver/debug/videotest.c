@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.12 2001/05/29 21:02:18 micahjd Exp $
+/* $Id: videotest.c,v 1.13 2001/05/29 22:31:22 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -244,21 +244,21 @@ void testpat_slab(void) {
 /************ Stipple rectangle test pattern */
 
 void testpat_stipple(void) {
-   hwrcolor colors[4];
+   hwrcolor bg = VID(color_pgtohwr) (0xFFFFFF);
+   hwrcolor fg = VID(color_pgtohwr) (0x000000);
    int i;
-   int w = vid->lxres/4;
-   int h = vid->lyres/4;
-   
-   colors[0] = VID(color_pgtohwr) (0x000000);
-   colors[1] = VID(color_pgtohwr) (0xFF0000);
-   colors[2] = VID(color_pgtohwr) (0x00FF00);
-   colors[3] = VID(color_pgtohwr) (0x0000FF);
+   int h = vid->lyres/16;
 
-   for (i=0;i<4;i++)
-     VID(rect) (vid->display,i*w,0,w,vid->lyres,colors[i],PG_LGOP_NONE);
+   /* Background */
+   VID(rect) (vid->display,0,0,vid->lxres>>1,vid->lyres,bg,PG_LGOP_NONE);
+   VID(rect) (vid->display,vid->lxres>>1,0,vid->lxres>>1,vid->lyres,
+	      fg,PG_LGOP_NONE);
 
-   for (i=0;i<4;i++)
-     VID(rect) (vid->display,0,i*h,vid->lxres,h,colors[i],PG_LGOP_STIPPLE);
+   for (i=0;i<16;i++) {
+      VID(rect) (vid->display,i,i*h,
+		vid->lxres-(i<<1),h,i&1 ? fg:bg,PG_LGOP_STIPPLE);
+
+   }
 }
 
 /************ Front-end */

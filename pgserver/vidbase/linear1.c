@@ -1,4 +1,4 @@
-/* $Id: linear1.c,v 1.8 2001/05/29 20:33:35 micahjd Exp $
+/* $Id: linear1.c,v 1.9 2001/05/29 22:31:23 micahjd Exp $
  *
  * Video Base Library:
  * linear1.c - For 1-bit packed pixel devices (most black and white displays)
@@ -71,20 +71,72 @@ hwrcolor linear1_getpixel(hwrbitmap dest, s16 x,s16 y) {
    
 /*********************************************** Accelerated (?) primitives */
 
+/* 'Simple' horizontal line with stippling */
+void linear1_slab_stipple(hwrbitmap dest,s16 x,s16 y,s16 w,hwrcolor c) {
+   u8 *p;
+   u8 mask, remainder, stipple;
+   s16 bw;
+   
+   p = PIXELBYTE(x,y);
+   remainder = x&7;   
+   stipple = y&1 ? 0xAA : 0x55;
+   c = c ? 0xFF : 0x00;                    /* Expand color to 8 bits */
+   
+   /* If the slab is completely contained within one byte,
+    * use a different method */
+   if ( (remainder + w) < 8 ) {
+      mask  = slabmask1[remainder];        /* Isolate the necessary pixels */
+      mask &= ~slabmask1[remainder+w];
+      mask &= stipple;
+      *p &= ~mask;
+      *p |= c & mask;
+      return;
+   }
+   
+   if (remainder) {                        /* Draw the partial byte before */
+      mask = slabmask1[remainder];
+      mask &= stipple;
+      *p &= ~mask;
+      *p |= c & mask;
+      p++;
+      w-=8-remainder;
+   }
+   if (w<1)                                /* That it? */
+     return;
+   
+   /* Full bytes */
+   for (bw = w >> 3;bw;bw--,p++) {
+      *p &= ~stipple;
+      *p |= c & stipple;
+   }
+   
+   if (remainder = (w&7)) {                /* Partial byte afterwards */
+      mask = slabmask1[remainder];
+      mask = (~mask) & stipple;
+      *p &= ~mask;
+      *p |= c & mask;
+   }
+}
+
 /* 'Simple' horizontal line */
 void linear1_slab(hwrbitmap dest,s16 x,s16 y,s16 w,hwrcolor c,s16 lgop) {
    u8 *p;
    u8 mask, remainder;
    s16 bw;
    
-   if (lgop != PG_LGOP_NONE) {
+   if (lgop == PG_LGOP_NONE)
+     c = c ? 0xFF : 0x00;                    /* Expand color to 8 bits */
+   else if (lgop == PG_LGOP_STIPPLE) {
+      linear1_slab_stipple(dest,x,y,w,c);
+      return;
+   }
+   else {
       def_slab(dest,x,y,w,c,lgop);
       return;
    }
    
    p = PIXELBYTE(x,y);
    remainder = x&7;   
-   c = c ? 0xFF : 0x00;                    /* Expand color to 8 bits */
    
    /* If the slab is completely contained within one byte,
     * use a different method */
