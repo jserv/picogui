@@ -3,7 +3,7 @@
 # Configuration options for PicoGUI.
 # This creates the .config file that Makefile uses.
 # Requires the 'dialog' command.
-# $Revision: 1.1 $
+# $Revision: 1.2 $
 #
 # Micah Dowty <micah@homesoftware.com> 
 #
@@ -34,6 +34,7 @@
 	               'gprof=Profiling:'.
 	               'src=Source code DEBUG flag',
 	    'VID' => 'sdl 320x240x32=SDL driver @ 320x240, 32bpp:'.
+	             'sdl 640x480x32=SDL driver @ 640x480, 32bpp:'.
 	             'sdl 240x64x4=SDL driver @ 240x64, 16 grays',
 	    'NET' => 'socket=Unix-style TCP sockets',
 	    'FONTSET' => 'all=All fonts:'.
