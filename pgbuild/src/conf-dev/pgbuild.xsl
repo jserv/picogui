@@ -41,8 +41,11 @@
 
   <xsl:template match="package">
     <div class="row">
+      <xsl:attribute name="id">package--<xsl:value-of select="@name"/></xsl:attribute>
       <xsl:apply-templates select="require"/>
       <div class="item"><xsl:value-of select="@name"/></div>
+      <xsl:apply-templates select="description"/>
+      <span class="itemDetail">Versions</span>
       <div class="itemDetail">
         <xsl:apply-templates select="version">
           <xsl:sort select="@name"/>
@@ -80,7 +83,9 @@
 
   <xsl:template match="site">
     <div class="row">
+      <xsl:attribute name="id">site--<xsl:value-of select="@name"/></xsl:attribute>
       <div class="item"><xsl:value-of select="@name"/></div>
+      <span class="itemDetail">Mirrors</span>
       <div class="itemDetail">
         <ul>
           <xsl:apply-templates select="a">
@@ -91,14 +96,40 @@
     </div>
   </xsl:template>
 
+  <!--================================== Descriptions -->
+
+  <xsl:template match="description">
+    <span class="itemDetail">Description</span>
+    <div class="itemDetail">
+      <div class="row">
+        <em><xsl:value-of select="summary"/></em>
+        <xsl:value-of select="detail"/>
+      </div>
+    </div>
+  </xsl:template>
+
   <!--================================== Links -->
 
   <xsl:template match="a">
     <li>
-      <xsl:value-of select="@href"/>
-      <xsl:for-each select="site">
-        <em> @ </em><xsl:value-of select="@name"/>
-      </xsl:for-each>
+      <xsl:choose>
+        <xsl:when test="site">
+          <!-- Site link -->
+          <xsl:value-of select="@href"/>
+          <em> @ </em>
+          <a> 
+            <xsl:attribute name="href">#site--<xsl:value-of select="site/@name"/></xsl:attribute>
+            <xsl:value-of select="site/@name"/>
+          </a>
+        </xsl:when>
+        <xsl:otherwise>
+          <!-- Normal link -->
+          <a>
+            <xsl:attribute name="href"><xsl:value-of select="@href"/></xsl:attribute>
+            <xsl:value-of select="@href"/>
+          </a>
+        </xsl:otherwise>
+      </xsl:choose>
     </li>
   </xsl:template>
 

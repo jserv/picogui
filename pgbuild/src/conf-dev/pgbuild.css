@@ -8,6 +8,12 @@ body {
   padding: 0;
 }
 
+a {
+  text-decoration: none;
+  color: #436976;
+  background-color: transparent;
+}
+
 .heading {
   background: White;
   border-bottom: 1px solid Black;
@@ -34,7 +40,7 @@ div.sectionTop {
   background: #dee7ec;
   border-bpttom: 1px solid Black;
   padding: 0.4em;
-  margin: 0em;
+  margin: 0em 0em 1em 0em;
 }
 
 div.section {
@@ -58,14 +64,28 @@ span.itemTag {
 
 .item {
   font: 120% Bold;
+  margin-top: -1em;
+  margin-bottom: 1em;
 }
 
-.itemDetail {
-  margin: 0.5em;  
+span.itemDetail {
+  background: #f8f8ff;
+  border: 1px dotted #8CACBB;
+  border-bottom: #f8f8ff 1px solid;
+  color: #436976;
+  margin: 0em 1.5em 0em 1.5em;
+  padding: 0em 1.5em;
+} 
+
+div.itemDetail {
+  margin: 0em 0.5em 1em 0.5em;  
   border: 1px dotted #8CACBB;
   background: #f8f8ff;
 }
 
-li {
-  margin: 0.2em;
+ul {
+  line-height: 1.5em;
+  list-style-name: square;
+  margin-left: 2.0em;
+  padding:0;
 }
