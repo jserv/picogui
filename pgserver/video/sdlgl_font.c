@@ -1,4 +1,4 @@
-/* $Id: sdlgl_font.c,v 1.1 2002/03/03 05:42:26 micahjd Exp $
+/* $Id: sdlgl_font.c,v 1.2 2002/03/03 07:35:03 micahjd Exp $
  *
  * sdlgl_font.c - OpenGL driver for picogui, using SDL for portability.
  *                Replace PicoGUI's normal font rendering with TrueType
@@ -97,9 +97,8 @@ g_error gl_load_font_style(struct gl_fontload *fl,TTF_Font *ttf, struct font **p
   SDL_Surface *surf;
   static SDL_Color white = {0xFF,0xFF,0xFF,0};
   static SDL_Color black = {0x00,0x00,0x00,0};
-  u32 i;
-  u8 *p;
-  int font_antialias = get_param_int(GL_SECTION,"font_antialias",0);
+  int x,y;
+  u8 *src,*dest,*p;
 
   TTF_SetFontStyle(ttf, style);
 
@@ -126,32 +125,27 @@ g_error gl_load_font_style(struct gl_fontload *fl,TTF_Font *ttf, struct font **p
    */
   for (ch=0;ch<256;ch++) {
     TTF_GlyphMetrics(ttf, ch, &minx, &maxx, &miny, &maxy, &advance);
-    if (font_antialias)
-      surf = TTF_RenderGlyph_Shaded(ttf, ch, white,black);
-    else
-      surf = TTF_RenderGlyph_Solid(ttf, ch, black);
+    surf = TTF_RenderGlyph_Shaded(ttf, ch, white,black);
     
     /* Not enough space on this line? */
-    if (fl->tx+maxx-minx+GL_FONT_SPACING > GL_FONT_TEX_SIZE) {
+    if (fl->tx+surf->w+GL_FONT_SPACING > GL_FONT_TEX_SIZE) {
       fl->tx = 0;
       fl->ty += fl->tline+GL_FONT_SPACING;
     }
 
     /* Texture nonexistant or full? Make a new one */
-    if (!fl->texture || fl->ty+maxy-miny+1 > GL_FONT_TEX_SIZE)
+    if (!fl->texture || fl->ty+surf->h+1 > GL_FONT_TEX_SIZE)
       gl_fontload_storetexture(fl);
 
     /* Scale the glyph bitmap into the full range 0-255
      * while copying it into the right spot in our buffer
      */
-    p = (u8*) surf->pixels;
-    for (i=surf->pitch*surf->h;i;i--,p++)
-      *p = (*p)*255/4;
-      
-    /* Copy our new glyph at (fl->tx,fl->ty) */
-    glTexSubImage2D(GL_TEXTURE_2D, 0, fl->tx,fl->ty, surf->w, surf->h,
-		    GL_LUMINANCE, GL_UNSIGNED_BYTE, surf->pixels);
- 
+    src = (u8*) surf->pixels;
+    dest = fl->pixels + fl->tx + (fl->ty << GL_FONT_TEX_POWER);
+    for (y=0;y<surf->h;y++,dest+=GL_FONT_TEX_SIZE)
+      for (x=0,p=dest;x<surf->w;x++,p++,src++)
+	*p = (*src)*255/4;
+
     /* Save the texture data in the 'bitmaps' table */
     glg[ch].texture = fl->texture;
     glg[ch].tx1 = (float)fl->tx / (float)GL_FONT_TEX_SIZE;
@@ -271,20 +265,78 @@ void sdlgl_font_sizetext_hook(struct fontdesc *fd, s16 *w, s16 *h, const u8 *txt
 
 /* Convert the bitmap for a font into a texture, get a new texture */
 void gl_fontload_storetexture(struct gl_fontload *fl) {
-  glBindTexture(GL_TEXTURE_2D, fl->texture);
+  if ((fl->tx || fl->ty) && fl->texture) {
+    glBindTexture(GL_TEXTURE_2D, fl->texture);
   
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST_MIPMAP_LINEAR);
-  
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_INTENSITY4, GL_FONT_TEX_SIZE, GL_FONT_TEX_SIZE, 0, 
-	       GL_LUMINANCE, GL_UNSIGNED_BYTE, fl->pixels);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
+
+    gluBuild2DMipmaps(GL_TEXTURE_2D, GL_INTENSITY4, GL_FONT_TEX_SIZE, GL_FONT_TEX_SIZE,
+		      GL_LUMINANCE, GL_UNSIGNED_BYTE, fl->pixels);
+
+#if 0    /** Debuggative cruft **/
+    printf("Showing texture %d\n", fl->texture);
+    gl_lgop(PG_LGOP_NONE);
+    glDisable(GL_TEXTURE_2D);
+    glBegin(GL_QUADS);
+    gl_color(0x000080);
+    glVertex2f(0,0);
+    glVertex2f(10000,0);
+    glVertex2f(10000,10000);
+    glVertex2f(0,10000);
+    glEnd();
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, fl->texture);
+    glBegin(GL_QUADS);
+    gl_color(0xFFFFFF);
+    glNormal3f(0.0f,0.0f,1.0f);
+    glTexCoord2f(0,0);
+    glVertex2f(0,0);
+    glTexCoord2f(1,0);
+    glVertex2f(GL_FONT_TEX_SIZE,0);
+    glTexCoord2f(1,1);
+    glVertex2f(GL_FONT_TEX_SIZE,GL_FONT_TEX_SIZE);
+    glTexCoord2f(0,1);
+    glVertex2f(0,GL_FONT_TEX_SIZE);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+    SDL_GL_SwapBuffers();
+    usleep(100000);
+#endif
+  }
+
+  fl->tx = fl->ty = fl->tline = 0;
+  memset(fl->pixels,0,GL_FONT_TEX_SIZE * GL_FONT_TEX_SIZE);
+  glGenTextures(1,&fl->texture);
 }
  
-struct gl_fontload *gl_fontload_init() {
+g_error gl_fontload_init(struct gl_fontload **fl) {
+  g_error e;
+
+  e = g_malloc((void**) fl, sizeof(struct gl_fontload));
+  errorcheck;
+  memset(*fl,0,sizeof(struct gl_fontload));
+
+  /* The "pixels" pointer is an 8bpp bitmap holding the font texture
+   * as we assemble it. In gl_fontload_storetexture it gets converted into
+   * a texture and several mipmaps.
+   */
+  e = g_malloc((void**) &(*fl)->pixels, GL_FONT_TEX_SIZE*GL_FONT_TEX_SIZE);
+  errorcheck;
+
+  /* Prime the pump by clearing the texture buffer and getting a new texture ID */
+  gl_fontload_storetexture(*fl);
+
+  return success;
 }
 
 void gl_fontload_finish(struct gl_fontload *fl) {
-  
+  /* Store the last texture we were working on */
+  gl_fontload_storetexture(fl);
+
+  glDeleteTextures(1,&fl->texture);
+  g_free(fl->pixels);
+  g_free(fl);
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: sdlgl_init.c,v 1.2 2002/03/03 05:46:50 micahjd Exp $
+/* $Id: sdlgl_init.c,v 1.3 2002/03/03 07:35:04 micahjd Exp $
  *
  * sdlgl_init.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has initialization, shutdown, and registration.
@@ -118,9 +118,7 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
     glEnable(GL_BLEND);
   }
 
-  /* Set up camera so that we have 0,0 at the top-left,
-   * xres,yres at the bottom-right, but we want perspective
-   */
+  /* Set up camera */
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   gluPerspective(GL_FOV,1,GL_MINDEPTH,GL_MAXDEPTH);
@@ -128,16 +126,25 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   glLoadIdentity();
   gl_matrix_pixelcoord();
 
-  /* Remove normal picogui fonts */
-  gl_global.old_fonts = fontstyles;
-  //  fontstyles = NULL;
+  /* Set up fonts, if necessary */
+  if (!get_param_int(GL_SECTION,"standard_fonts",0)) {
+    struct gl_fontload *fl;
 
-  /* Load Truetype fonts */
-  //  gl_load_font("/usr/share/fonts/truetype/openoffice/timmonsr.ttf");  
+    /* Remove normal picogui fonts */
+    gl_global.old_fonts = fontstyles;
+    fontstyles = NULL;
+
+    e = gl_fontload_init(&fl);
+    errorcheck;
+
+    e = gl_load_font(fl,"/usr/share/fonts/truetype/openoffice/timmonsr.ttf");  
+    errorcheck;
+
+    gl_fontload_finish(fl);
+  }
 
   e = findfont(&gl_global.osd_font,-1,NULL,get_param_int(GL_SECTION,"osd_fontsize",20),0);
   errorcheck;
-
 
   return success; 
 }
@@ -155,8 +162,12 @@ void sdlgl_close(void) {
   if (gl_global.osd_font)
     handle_free(gl_global.osd_font,-1);
 
-  /* Put back normal fonts */
-  fontstyles = gl_global.old_fonts;
+  if (gl_global.old_fonts) {
+    /* Put back normal fonts */
+    fontstyles = gl_global.old_fonts;
+
+    /* FIXME: Delete our allocated fonts */
+  }
 
   TTF_Quit();
   SDL_Quit();

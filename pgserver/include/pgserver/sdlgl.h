@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.1 2002/03/03 05:42:26 micahjd Exp $
+/* $Id: sdlgl.h,v 1.2 2002/03/03 07:35:03 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -110,12 +110,16 @@ struct gl_glyph {
   float tx1,ty1,tx2,ty2;  /* Texture coordinates */
 };
 
+/* Power of two of our font texture's size */
+#define GL_FONT_TEX_POWER 9
+
 /* Size of the textures to use for font conversion, in pixels. MUST be a power of 2 */
-#define GL_FONT_TEX_SIZE 512
+#define GL_FONT_TEX_SIZE (1<<(GL_FONT_TEX_POWER))
+
 /* There must be sufficient spacing between characters so that even in the mipmapped
  * font textures, there is no bleeding of colors between characters. This should be
  * one greater than the power of two used in GL_FONT_TEX_SIZE */
-#define GL_FONT_SPACING 10
+#define GL_FONT_SPACING ((GL_FONT_TEX_POWER)+1)
 
 /* Macro to determine when to redirect drawing to linear32 */
 #define GL_LINEAR32(dest) (dest)
@@ -140,6 +144,15 @@ struct gl_fontload {
  * configfile section here.
  */
 #define GL_SECTION "video-sdlgl"
+
+/* This is a macro you can stick in for debugging to see what
+ * the last OpenGL error was.
+ */
+#ifdef DEBUG_FILE
+#define gl_errorcheck printf( "%s @ %d: %s\n", __FUNCTION__, __LINE__,gluErrorString(glGetError()))
+#else
+#define gl_errorcheck
+#endif
 
 /************************************************** Globals */
 
@@ -232,7 +245,7 @@ void sdlgl_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
 			     struct quad **clip, s16 *lgop, s16 *angle);
 void sdlgl_font_sizetext_hook(struct fontdesc *fd, s16 *w, s16 *h, const u8 *txt);
 void gl_fontload_storetexture(struct gl_fontload *fl);
-struct gl_fontload *gl_fontload_init();
+g_error gl_fontload_init(struct gl_fontload **fl);
 void gl_fontload_finish(struct gl_fontload *fl); 
 void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 		s16 src_x, s16 src_y, s16 lgop);
