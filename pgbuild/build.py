@@ -46,15 +46,11 @@ class Bootstrap:
         # Set the name of the two packages PGBuild requires for bootstrapping
         self.packages['build'] = "build-dev"
         self.packages['conf']  = "conf-dev"
-        
-        # Get paths for the bootstrap packages
-        self.paths['buildPackage'] = os.path.join(self.paths['packages'], self.packages['build'])
-        self.paths['confPackage']  = os.path.join(self.paths['packages'], self.packages['conf'])
 
 if __name__ == '__main__':
     # Use the Bootstrap class to locate our build package and call its Main
     boot = Bootstrap()
-    sys.path.insert(0, boot.paths['buildPackage'])
+    sys.path.insert(0, os.path.join(boot.paths['packages'], boot.packages['build']))
     import PGBuild.Main
     PGBuild.Main.main(boot, sys.argv)
 

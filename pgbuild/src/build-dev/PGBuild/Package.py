@@ -31,9 +31,12 @@ class PackageVersion:
        on the local copy.
        """
 
-    def __init__(self, package, name):
+    def __init__(self, package, configNode):
+        self.package = package
+        self.configNode = configNode
+
         # The local path for this package
-        self.path = os.path.join(config.eval('bootstrap/path[@name="packages"]/text()'), self.name)
+        #self.path = os.path.join(config.eval('bootstrap/path[@name="packages"]/text()'), self.name)
 
 
 def decomposeVersion(version):
@@ -92,6 +95,9 @@ class VersionSpec:
     def __init__(self, specString):
         self.specString = specString
 
+    def __str__(self):
+        return self.specString
+
     def match(self, version):
         """Return true if the given version name matches this spec"""
         if version == self.specString:
@@ -101,9 +107,18 @@ class VersionSpec:
 
     def compareMatch(self, a, b):
         """Given two versions that match the spec, compare their quality.
-           For now this just makes an attempt at figuring out which version is newer.
+           For now this just favors newer versions.
            """
         return compareVersion(a,b)
+
+    def matchList(self, list):
+        """Return all the matches in the given list, sorted using compareMatch"""
+        matches = []
+        for versionName in list:
+            if self.match(versionName):
+                matches.append(versionName)
+        matches.sort(self.compareMatch)
+        return matches
         
         
 class Package:
@@ -113,16 +128,21 @@ class Package:
     
     def __init__(self, config, name):
         self.config = config
-        self.versions = {}
         self.name = name
         
         # Save the root of the package configuration
         self.configNode = config.xpath('packages/package[@name="%s"]' % self.name)
         if len(self.configNode) > 1:
-            raise PGConfig.Errors.ConfigError("More than one package with the name '%s'" % self.name)
+            raise PGBuild.Errors.ConfigError("More than one package with the name '%s'" % self.name)
         if len(self.configNode) == 0:
-            raise PGConfig.Errors.ConfigError("Can't find a package with the name '%s'" % self.name)
+            raise PGBuild.Errors.ConfigError("Can't find a package with the name '%s'" % self.name)
         self.configNode = self.configNode[0]
+
+        # Load each version of this package
+        self.versions = {}
+        versionNodes = self.configNode.getElementsByTagName('version')
+        for versionNode in versionNodes:
+            self.versions[versionNode.attributes['name'].value] = PackageVersion(self, versionNode)
 
     def findVersion(self, version):
         """Find a particular version of thie package. If the given version
@@ -131,11 +151,19 @@ class Package:
         if not isinstance(version, VersionSpec):
             version = VersionSpec(version)
 
+        # Find all nodes that the VersionSpec matches-
+        # If there is more than one match, use the last one (they're sorted
+        # by a VersionSpec-defined quality factor).
+        matches = version.matchList(self.versions.keys())
+        if len(matches) == 0:
+            raise PGBuild.Errors.ConfigError(
+                "Can't find version '%s' of package '%s'" % (version, self.name))
+        return self.versions[matches[-1]]
+
     def getVersionNode(self, packageNode):
         """Given a package node, return the version node that
            best matches our version spec."""
         packageName = packageNode.attributes['name'].value
-        versions = packageNode.getElementsByTagName('version')
 
         # Get a list of package versions that match according to self.match()
         matches = []
@@ -147,14 +175,10 @@ class Package:
         #        Eventually there should be a good way to determine which version is 'better'
         #        and pick that one.
         if len(matches) > 1:
-            raise PGConfig.Errors.ConfigError(
+            raise PGBuild.Errors.ConfigError(
                 "Ambiguous version specification '%s' for package '%s', not supported yet" %
                 (self.specString, packageName))
         
-        if len(matches) == 0:
-            raise PGConfig.Errors.ConfigError(
-                "Can't find version '%s' of package '%s'" %
-                (self.specString, packageName))
         return matches[0]
 
 

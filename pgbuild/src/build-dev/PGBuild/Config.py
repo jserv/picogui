@@ -326,47 +326,4 @@ class Tree(PGBuild.XMLUtil.Document):
                                              self.rootName, minfo.attributes,
                                              comment)
                 
-    def boot(self, bootstrap):
-        """Initialize the configuration tree from a Bootstrap object"""
-
-        class BootstrapXML:
-            """An object that wraps a Bootstrap object, providing an XML document that
-               can be mounted into the configuration tree.
-               """
-            def __init__(self, bootstrap):
-                self.bootstrap = bootstrap
-
-            def get_contents(self):
-                xml = '<pgbuild title="Bootstrap Configuration" root="bootstrap">\n'                
-                for path in self.bootstrap.paths:
-                    xml += '\t<path name="%s">%s</path>\n' % (path, self.bootstrap.paths[path])
-                for package in self.bootstrap.packages:
-                    xml += '\t<package name="%s">%s</package>\n' % (package, self.bootstrap.packages[package])                    
-                xml += '</pgbuild>\n'
-                return xml
-
-        # Mount in an XML representation of the bootstrap object
-        self.mount(BootstrapXML(bootstrap))
-
-        # Try to make sure all our bootstrap paths exist
-        for path in bootstrap.paths.values():
-            try:
-                os.makedirs(path)
-            except OSError:
-                pass
-
-        # Copy skeleton local files from the conf package if they haven't been
-        # copied or manually created yet.
-        skelPath = os.path.join(bootstrap.paths['confPackage'], 'local')
-        for skelFile in os.listdir(skelPath):
-            if re.match(".*\.%s" % configFileExtension, skelFile):
-                if os.path.isfile(os.path.join(skelPath, skelFile)):
-                    if not os.path.isfile(os.path.join(bootstrap.paths['localConf'], skelFile)):
-                        shutil.copyfile(os.path.join(skelPath, skelFile),
-                                        os.path.join(bootstrap.paths['localConf'], skelFile))
-
-        # Mount our config directories
-        self.dirMount(bootstrap.paths['confPackage'])
-        self.dirMount(bootstrap.paths['localConf'])
-
 ### The End ###

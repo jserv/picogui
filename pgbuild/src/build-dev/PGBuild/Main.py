@@ -23,24 +23,76 @@ as soon as it creates a Bootstrap object with vital path and package names.
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
+import PGBuild.Package
+import PGBuild.CommandLine.Options
+import PGBuild.CommandLine.Output
+import PGBuild.Config
+import os, re
 
 def run(config, progress):
     """Examine the provided configuration and take the specified actions"""
 
-    progress.message("This is a normal message")
-    progress.message("This is an unimportant message",2)
-    progress.message("This is an important message",0)
-
-    t = progress.task("Unimportant task",1)
-    t.message("This is a normal message")
-    t.message("This is an unimportant message",2)
-    t.message("This is an important message",0)
+    print config.packages.findPackage('conf-dev')
 
     treeDumpFile = config.eval("invocation/option[@name='treeDumpFile']/text()")
     if treeDumpFile:
         f = open(treeDumpFile, "w")
         f.write(config.toprettyxml())
         f.close()
+
+
+def boot(config, bootstrap):
+    """Initialize the configuration tree from a Bootstrap object- This takes
+       care of mounting all the configuration files required to get us started,
+       and stores the bootstrap object's information in the config tree.
+       """
+
+    class BootstrapXML:
+        """An object that wraps a Bootstrap object, providing an XML document that
+           can be mounted into the configuration tree.
+           """
+        def __init__(self, bootstrap):
+            self.bootstrap = bootstrap
+
+        def get_contents(self):
+            xml = '<pgbuild title="Bootstrap Configuration" root="bootstrap">\n'                
+            for path in self.bootstrap.paths:
+                xml += '\t<path name="%s">%s</path>\n' % (path, self.bootstrap.paths[path])
+            for package in self.bootstrap.packages:
+                xml += '\t<package name="%s">%s</package>\n' % (package, self.bootstrap.packages[package])                    
+            xml += '</pgbuild>\n'
+            return xml
+
+    # Mount in an XML representation of the bootstrap object
+    config.mount(BootstrapXML(bootstrap))
+
+    # Try to make sure all our bootstrap paths exist
+    for path in bootstrap.paths.values():
+        try:
+            os.makedirs(path)
+        except OSError:
+            pass
+
+    # Copy skeleton local files from the conf package if they haven't been
+    # copied or manually created yet.
+    skelPath = os.path.join(os.path.join(bootstrap.paths['packages'],
+                                         bootstrap.packages['conf']), 'local')
+    for skelFile in os.listdir(skelPath):
+        if re.match(".*\.%s" % PGBuild.Config.configFileExtension, skelFile):
+            if os.path.isfile(os.path.join(skelPath, skelFile)):
+                if not os.path.isfile(os.path.join(bootstrap.paths['localConf'], skelFile)):
+                    shutil.copyfile(os.path.join(skelPath, skelFile),
+                                    os.path.join(bootstrap.paths['localConf'], skelFile))
+
+    # Initialize a package list for this config tree
+    config.packages = PGBuild.Package.PackageList(config)
+
+    # Read in configuration from the bootstrap packages
+    for package in bootstrap.packages.values():
+        config.dirMount(os.path.join(bootstrap.paths['packages'], package))
+
+    # Mount the local configuration directory
+    config.dirMount(bootstrap.paths['localConf'])
 
 
 def main(bootstrap, argv):
@@ -51,13 +103,10 @@ def main(bootstrap, argv):
          - Initializing the Progress object
          - Exception catching
        """
-    import PGBuild.CommandLine.Options
-    import PGBuild.CommandLine.Output
-    import PGBuild.Config
     config = PGBuild.Config.Tree()
     try:
         # Load the options passed to use by build.py into the <bootstrap> section
-        config.boot(bootstrap)
+        boot(config, bootstrap)
 
         # Parse command line options into the <invocation> section
         PGBuild.CommandLine.Options.parse(config, argv)
