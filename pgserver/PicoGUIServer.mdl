@@ -1,5 +1,6 @@
 # -*- python -*-
 
+import os
 from beeconfig import compile, distrib, install, clean
 
 multicompile     = 1
@@ -21,6 +22,9 @@ runtime = [
                      help = "Install the PicoGUI Server" ),
 
             Runtime ('server', 'Run PicoGUI Server',
+
+                     content = [ 'etc/rm.d/picoguiserver' ],
+                     
                      depends = [ 'picoguiserver/install',
                                  'pocketapps/bioscall',
                                  'resourcemanager/server',
@@ -45,8 +49,8 @@ then
 fi
 
 # start pgserver
-pgserver &
-sleep 5
+rm_task unblock picogui-server
+
 ''',
                      help = "Start the PicoGUI Server" )
             ]
@@ -76,5 +80,29 @@ def compile (module, platform, project):
     sequence ("make")
     return
 
+
+def install (module, platform, project):
+    sequence ("make install prefix=%s" % module.path ['frz'])
+
+    # try to install the mdl file in the root of the frozen directory
+    mdl = module.file
+    if os.path.isfile (mdl):
+        installfile (mdl, module.path ['r_frz'])
+
+    # generate the RM file
+    file = os.path.join (module.path ['frz'], 'etc', 'rm.d', 'picoguiserver')
+    makedirs (os.path.dirname (file))
+
+    fd = open (file, 'w')
+    fd.write ('''
+name = picogui-server
+argv = pgserver
+
+restart   = 0
+announce  = 1
+can-block = 1
+    ''')
+    fd.close ()
+    return
 
 

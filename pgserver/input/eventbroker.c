@@ -1,4 +1,4 @@
-/* $Id: eventbroker.c,v 1.7 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: eventbroker.c,v 1.8 2002/02/04 16:20:37 gobry Exp $
  *
  * eventbroker.c - input driver to manage driver messages
  *
@@ -150,6 +150,15 @@ void eventbroker_message(u32 message, u32 param, u32 *ret)
   if(ret) *ret = 0;
 
   switch (message) {
+
+    /* the server is up and running, we possibly need to warn the
+       Resource Manager about that */
+  case PGDM_READY:
+#if defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE)
+    rm_monitor_ready ();
+#endif /* defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE) */
+    break;
+
 
   case PGDM_BACKLIGHT:
     switch(param) {

@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.22 2002/01/18 09:32:13 micahjd Exp $
+/* $Id: pgmain.c,v 1.23 2002/02/04 16:20:37 gobry Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -595,7 +595,10 @@ int main(int argc, char **argv) {
   printf("Initialization done");
   guru("Initialization done!\n\n(This message brought to you\nby DEBUG_INIT)");
 #endif
-     
+
+  /* warn all the drivers (esp. the eventbroker) that we are ready */
+  drivermessage (PGDM_READY, 0, NULL);
+
   while (mainloop_proceed) {
     net_iteration();
 
