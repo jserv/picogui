@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.58 2001/04/08 01:01:42 micahjd Exp $
+/* $Id: button.c,v 1.59 2001/04/10 00:54:57 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -30,17 +30,26 @@
 #include <pgserver/appmgr.h>
 
 struct btndata {
-  u8 on,over,toggle;
-  handle bitmap,bitmask,text,font;
+   unsigned int on : 1;
+   unsigned int over : 1;
+   unsigned int toggle : 1;
 
-  /* Hooks for embedding a button in another widget */
-  int state,state_on,state_hilight;
-  struct widget *extra;  /* the owner of a customized button */
-  void (*event)(struct widget *extra,struct widget *button);
-
-  /* Mask of extended (other than ACTIVATE) events to send
-   * and other flags*/
-  int extdevents;
+   /* These keep track of when one of the parameters was customized by
+    * a theme (as opposed to the app) so it can be appropriately unloaded */
+   unsigned int theme_bitmap : 1;
+   unsigned int theme_bitmask : 1;
+   unsigned int theme_text : 1;
+   
+   handle bitmap,bitmask,text,font;
+   
+   /* Hooks for embedding a button in another widget */
+   int state,state_on,state_hilight;
+   struct widget *extra;  /* the owner of a customized button */
+   void (*event)(struct widget *extra,struct widget *button);
+   
+   /* Mask of extended (other than ACTIVATE) events to send
+    * and other flags*/
+   int extdevents;
 };
 #define DATA ((struct btndata *)(self->data))
 
@@ -170,32 +179,32 @@ g_error button_set(struct widget *self,int property, glob data) {
   switch (property) {
 
   case PG_WP_BITMAP:
-    if (!iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)) && bit) {
-      DATA->bitmap = (handle) data;
-      psplit = self->in->split;
-      resize_button(self);
-      if (self->in->split != psplit) {
-	redraw_bg(self);
-	self->in->flags |= DIVNODE_PROPAGATE_RECALC;
-      }
-      self->in->flags |= DIVNODE_NEED_RECALC;
-      self->dt->flags |= DIVTREE_NEED_RECALC;
+    if (iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)))
+       return mkerror(PG_ERRT_HANDLE,33);
+     
+    DATA->bitmap = (handle) data;
+    psplit = self->in->split;
+    resize_button(self);
+    if (self->in->split != psplit) {
+       redraw_bg(self);
+       self->in->flags |= DIVNODE_PROPAGATE_RECALC;
     }
-    else return mkerror(PG_ERRT_HANDLE,33);
+    self->in->flags |= DIVNODE_NEED_RECALC;
+    self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
   case PG_WP_BITMASK:
-    if (!iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)) && bit) {
-      DATA->bitmask = (handle) data;
-      self->in->flags |= DIVNODE_NEED_RECALC;
-      self->dt->flags |= DIVTREE_NEED_RECALC;
-    }
-    else return mkerror(PG_ERRT_HANDLE,34);
+    if (iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)))
+       return mkerror(PG_ERRT_HANDLE,34);
+
+    DATA->bitmask = (handle) data;
+    self->in->flags |= DIVNODE_NEED_RECALC;
+    self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
   case PG_WP_FONT:
-    if (!iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,data)) || !fd) 
-      return mkerror(PG_ERRT_HANDLE,35);
+    if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,data))) 
+	 return mkerror(PG_ERRT_HANDLE,35);
     DATA->font = (handle) data;
     psplit = self->in->split;
     resize_button(self);
@@ -208,8 +217,8 @@ g_error button_set(struct widget *self,int property, glob data) {
     break;
 
   case PG_WP_TEXT:
-    if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,data)) || !str) 
-      return mkerror(PG_ERRT_HANDLE,36);
+    if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,data))) 
+       return mkerror(PG_ERRT_HANDLE,36);
     DATA->text = (handle) data;
     psplit = self->in->split;
     resize_button(self);
@@ -357,12 +366,34 @@ void resize_button(struct widget *self) {
   lock = 1;
 
   /* Do theme updates */
+
   t = theme_lookup(DATA->state,PGTH_P_TEXT);
-  if (t) widget_set(self,PG_WP_TEXT,t);
+  if (t) {
+     widget_set(self,PG_WP_TEXT,t);
+     DATA->theme_text = 1;
+  }
+  else if (DATA->theme_text) {
+     widget_set(self,PG_WP_TEXT,0);
+     DATA->theme_text = 0;
+  }
   t = theme_lookup(DATA->state,PGTH_P_WIDGETBITMAP);
-  if (t) widget_set(self,PG_WP_BITMAP,t);
+  if (t) {
+     widget_set(self,PG_WP_BITMAP,t);
+     DATA->theme_bitmap = 1;
+  }
+  else if (DATA->theme_bitmap) {
+     widget_set(self,PG_WP_BITMAP,0);
+     DATA->theme_bitmap = 0;
+  }
   t = theme_lookup(DATA->state,PGTH_P_WIDGETBITMASK);
-  if (t) widget_set(self,PG_WP_BITMASK,t);
+  if (t) {
+     widget_set(self,PG_WP_BITMASK,t);
+     DATA->theme_bitmask = 1;
+  }
+  else if (DATA->theme_bitmask) {
+     widget_set(self,PG_WP_BITMASK,0);
+     DATA->theme_bitmask = 0;
+  }
    
   lock = 0;
    
@@ -411,15 +442,25 @@ void position_button(struct widget *self,struct btnposition *bp) {
   struct fontdesc *fd = NULL;
   char *text = NULL;
 
-  /* Dereference - if one of these fails we're probably busy unloading
-   * a theme, so it's safe to ignore
-   */
+  /* These shouldn't fail! If we're debugging, do some sanity checks */
+#ifdef DEBUG_KEYS
+  if (iserror(rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,DATA->bitmap)))
+     guru("Error dereferencing bitmap handle in position_button()\n0x%08X",
+	  DATA->bitmap);
+  if (iserror(rdhandle((void **) &bitmask,PG_TYPE_BITMAP,-1,DATA->bitmask)))
+     guru("Error dereferencing bitmask handle in position_button()\n0x%08X",
+	  DATA->bitmask);
+  if (iserror(rdhandle((void **) &text,PG_TYPE_STRING,-1,DATA->text)))
+     guru("Error dereferencing text handle in position_button()\n0x%08X",
+	  DATA->text);
+#else
   if (iserror(rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,DATA->bitmap)))
      return;
   if (iserror(rdhandle((void **) &bitmask,PG_TYPE_BITMAP,-1,DATA->bitmask)))
      return;
   if (iserror(rdhandle((void **) &text,PG_TYPE_STRING,-1,DATA->text)))
      return;
+#endif
   bp->font = DATA->font ? DATA->font : theme_lookup(self->in->div->state,PGTH_P_FONT);
   rdhandle((void **) &fd,PG_TYPE_FONTDESC,-1,bp->font);
 

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.74 2001/04/07 22:41:45 micahjd Exp $
+/* $Id: widget.c,v 1.75 2001/04/10 00:54:57 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -656,6 +656,39 @@ g_error debug_bitmaps(void **pobj) {
    db_x += w+8;
    return sucess;
 }
+   
+   /* Utility functions to implement CTRL-ALT-N gropnode dump */
+void r_grop_dump(struct divnode *div) {
+   struct gropnode *n;
+   int i;
+   
+   if (!div) return;
+   if (div->grop) {
+      printf("Divnode 0x%08X: ",div);
+      if (div->owner)
+	printf("Owned by widget 0x%08X, type %d\n",div->owner,div->owner->type);
+      else
+	printf("Unowned\n");
+      
+      for (n=div->grop;n;n=n->next) {
+	 printf("  Gropnode: type 0x%04X flags 0x%04X at (%d,%d,%d,%d) params: ",
+		n->type,n->flags,n->x,n->y,n->w,n->h);
+	 for (i=0;i<PG_GROPPARAMS(n->type);i++)
+	   printf("%d ",n->param[i]);
+	 printf("\n");
+      }
+   }
+   r_grop_dump(div->div);
+   r_grop_dump(div->next);
+}
+void grop_dump(void) {
+   struct divtree *dt;
+   printf("---------------- Begin grop tree dump\n");
+   for (dt=dts->top;dt;dt=dt->next)
+     r_grop_dump(dt->head);
+   printf("---------------- End grop tree dump\n");
+}
+     
 #endif
    
 void dispatch_key(long type,int key,int mods) {
@@ -681,6 +714,15 @@ void dispatch_key(long type,int key,int mods) {
     
 #ifdef DEBUG_KEYS           /* The rest only work in debug mode */
 
+    case PGKEY_h:           /* CTRL-ALT-h dumps the handle tree */
+      handle_dump();
+      return;
+
+    case PGKEY_n:           /* CTRL-ALT-n dumps all gropnodes */
+      grop_dump();
+      return;
+
+       
     case PGKEY_g:           /* Just for fun :) */
       guru("GURU MEDITATION #%08X\n\nCongratulations!\n"
 	   "    Either you have read the source code or\n"

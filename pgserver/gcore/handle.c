@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.35 2001/04/08 02:01:25 micahjd Exp $
+/* $Id: handle.c,v 1.36 2001/04/10 00:54:56 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -342,6 +342,10 @@ void object_free(struct handlenode *n) {
 #ifdef DEBUG_KEYS
   num_handles--;
 #endif
+#ifdef DEBUG_MEMORY
+  printf("Enter object free of handle 0x%08X, type %d\n",n->id,n->type &
+	 ~(HFLAG_RED|HFLAG_NFREE));
+#endif
   if (!(n->type & HFLAG_NFREE)) {
     switch (n->type & ~(HFLAG_RED|HFLAG_NFREE)) {
     case PG_TYPE_BITMAP:
@@ -357,9 +361,38 @@ void object_free(struct handlenode *n) {
       g_free(n->obj);
     }
   }
+#ifdef DEBUG_MEMORY
+  printf("Leave object free of handle 0x%08X, type %d\n",n->id,n->type &
+	 ~(HFLAG_RED|HFLAG_NFREE));
+#endif
 }
 
 /************ Public functions */
+
+#ifdef DEBUG_KEYS
+/* Dump the handle tree to stdout */
+void r_handle_dump(struct handlenode *n,int level) {
+   int i;
+   static char *typenames[] = {
+      "BITMAP","WIDGET","FONTDESC","STRING","THEME","FILLSTYLE"
+   };
+   
+   if (!n) return;
+   if (n==NIL) return;
+   r_handle_dump(n->left,level+1);
+   for (i=0;i<level;i++)
+     printf(" ");
+   printf("0x%04X : node 0x%08X obj 0x%08X grp 0x%04X pld 0x%08X own %d ctx %d red %d type %s\n",
+	  n->id,n,n->obj,n->group,n->payload,n->owner,n->context,
+	  n->type & HFLAG_RED,typenames[(n->type & ~(HFLAG_RED|HFLAG_NFREE))-1]);
+   r_handle_dump(n->right,level+1);
+}
+void handle_dump(void) {
+   printf("---------------- Begin handle tree dump\n");
+   r_handle_dump(htree,0);
+   printf("---------------- End handle tree dump\n");
+}
+#endif
 
 /* Allocates a new handle for obj */
 g_error mkhandle(handle *h,unsigned char type,int owner,void *obj) {
@@ -461,6 +494,11 @@ int r_handle_cleanup(struct handlenode *n,int owner,int context,
     /* Same sequence as handle_free()
        Remove from the handle tree BEFORE deleting the object itself */
 
+#ifdef DEBUG_MEMORY
+     printf("   handle cleanup 0x%08X: grp 0x%08X own %d ctx %d\n",
+	    n->id,group,owner,context);
+#endif
+     
     ncopy = *n;
     htree_delete(n);
     object_free(&ncopy);
@@ -477,9 +515,12 @@ int r_handle_cleanup(struct handlenode *n,int owner,int context,
 }
 void handle_cleanup(int owner,int context) {
 #ifdef DEBUG_MEMORY
-  printf("handle_cleanup(%d,%d)\n",owner,context);
+  printf("enter handle_cleanup(%d,%d)\n",owner,context);
 #endif
   while (r_handle_cleanup(htree,owner,context,0));
+#ifdef DEBUG_MEMORY
+  printf("leave handle_cleanup(%d,%d)\n",owner,context);
+#endif
 }
 
 /* Deletes the handle, and if HFLAG_NFREE is not set it frees the object */
@@ -517,6 +558,11 @@ g_error handle_bequeath(handle dest, handle src, int srcowner) {
   /* First, validate both handles */
   struct handlenode *s = htree_find(src);
   struct handlenode *d = htree_find(dest);
+
+#ifdef DEBUG_MEMORY
+  printf("handle_bequeath(0x%08X,0x%08X,%d)\n",dest,src,srcowner);
+#endif   
+
   if (!(src && s && dest && d)) return mkerror(PG_ERRT_HANDLE,29);
   if (srcowner>=0 && s->owner != srcowner) 
     return mkerror(PG_ERRT_HANDLE,27);

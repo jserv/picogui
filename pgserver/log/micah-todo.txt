@@ -62,5 +62,8 @@ PicoGUI Bugs
 - memory leak (doesn't delete app_info)
 - Deleting a handle returned from WP_TEXT of a field crashes the server. Need
   a way to mark a handle as readable by app but not deletable.
-- Fix ncurses bug in makefile
 - Themes aren't necessarily loaded back in the right order when increasing bpp
+- Crash on resizing panel sometimes
+
+* Need more testing for possibly-handle-related bugs. Make a program like
+'gremlins' using remote input?

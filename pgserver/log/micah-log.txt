@@ -1,3 +1,39 @@
+2001-04-09    Micah Dowty <micahjd@users.sourceforge.net>
+
+Compared the handle tree dumps, and the handle tree stays the same throughout!
+So, maybe it's not a nasty handle bug, but something else... Noticed that
+after the first theme load/unload cycle a few extra grops are present, but
+between cycles 8 and 9 no memory changes.
+
+Ha! Found some quite weird results in the gropnode dumps, and traced it to
+some bad handles in position_button. Found a bug in the code to allow themes
+to customize button bitmaps and text. Fixed this, (and some related bugs
+in button_set) and that fixed the gropnode problems, AND made the theme
+load/unload cycle bug go away!
+
+      * widget/widget.c: Added CTRL-ALT-N gropNode dump
+
+      * widget/button.c: Added sanity checking to position_button
+
+      * widget/button.c: Found _a_ bug... Fixed theme-controlled button
+        properties so they are correctly unloaded. This caused at least a few
+	extra-weird gropnodes and rdhandle failures.
+
+      * apps/gremlin/gremlin.c: Added a new debugging app, an automated tester
+        program a la "Gremlins" for PalmOS.
+
+2001-04-08    Micah Dowty <micahjd@users.sourceforge.net>
+
+I think the only way to figure out what's really happening is to add a debug
+key to do a full dump of the handle tree. Hey, it couldn't be _that_ big,
+could it?  ;-)
+
+      * widget/widget.c: Adding CTRL-ALT-H hotkey
+      
+      * gcore/handle.c: Added handle_dump call
+
+      * config.help: Added documentation for CTRL-ALT-H
+
 2001-04-07    Micah Dowty <micahjd@users.sourceforge.net>
 
 Fixing some bugs. The fraction sizing + themes bug reported by philippe is
