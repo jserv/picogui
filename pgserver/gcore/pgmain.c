@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.19 2001/01/10 12:46:44 micahjd Exp $
+/* $Id: pgmain.c,v 1.20 2001/01/10 13:09:24 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -66,7 +66,7 @@ struct themefilenode {
 int main(int argc, char **argv) {
 #ifdef WINDOWS
   /* Fake it */
-  int optind = 0;
+  int optind = 1;
 #endif
   
 #ifndef WINDOWS
