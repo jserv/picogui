@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.23 2001/05/13 06:36:42 micahjd Exp $
+/* $Id: font.c,v 1.24 2001/08/04 16:50:54 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -32,6 +32,7 @@
 #include <pgserver/font.h>
 #include <pgserver/video.h>
 #include <pgserver/appmgr.h>
+#include <pgserver/render.h>
 
 /* This defines how italic the generated italic is */
 #define DEFAULT_SKEW 3
@@ -73,9 +74,27 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
     
        case 0:
 	 /* underline, overline, strikeout */
-	 if (fd->hline>=0)
-	   VID(slab) (dest,*x,fd->hline+(*y),cel_w,fd->hline_c,lgop);
-	 
+	 if (fd->hline>=0) {
+	   /* We must clip this! */
+
+	   int sx,sy,w;
+	   sx = *x;
+	   sy = fd->hline+(*y);
+	   w  = cel_w;
+	   
+	   if (clip) {
+	     if (sx < clip->x1) {
+	       w -= clip->x1 - sx;
+	       sx = clip->x1;
+	     }
+	     if (sx+w >= clip->x2)
+	       w = clip->x2 - sx - 1;
+	   }	   
+
+	   if (w>0 && ( (!clip) || (sy >= clip->y1 && sy <= clip->y2) ))
+	     VID(slab) (dest,*x,fd->hline+(*y),cel_w,fd->hline_c,lgop);
+	 }	 
+
 	 /* The actual character */
 	 i=0;
 	 if (fd->skew) 
