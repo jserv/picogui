@@ -24,6 +24,9 @@
  * 
  */
 
+#ifndef _H_PG_APPLET
+#define _H_PG_APPLET
+
 #define PGL_STOREPREF 0
 #define PGL_GETPREF 1
 #define PGL_LOADPREFS 2
@@ -42,3 +45,5 @@ struct pgmemdata pglBuildMessage(unsigned short type, char *senderName, char *ke
 pglMessage *pglDecodeMessage(pglMessage *message);
 
 char *pglGetMessageData(pglMessage *message, unsigned short offset);
+
+#endif 
