@@ -37,7 +37,7 @@ svnadmin dump --incremental -r "$REV" "$REPOS" > /navi/backups/svn_auto/picogui-
 
 # IRC notification
 echo "`svnlook author -r $REV $REPOS`" committed revision $REV: "`svnlook log -r $REV $REPOS`" | \
-   mail -s "Announce picogui" commits@picogui.org&
+   head -n 1 | mail -s "Announce picogui" commits@picogui.org&
 
 # Send commit mail
 $REPOS/hooks/commit-email.pl --from "micah@navi.picogui.org" "$REPOS" "$REV" pgui-commits@lists.sourceforge.net&

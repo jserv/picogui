@@ -10,7 +10,7 @@
       It means you can sit in that channel and marvel in real time at all the free software
       being written all over the world.</p>
 
-    <h1>How do I use it?</h1>
+    <h1>Using it with CVS</h1>
 
     <p>For CVS, firstly place this script somewhere on the server:</p>
     <code><pre>
@@ -48,18 +48,30 @@ EOF
     <p> Note that Sourceforge's CVS server is only allowed to send mail to other sourceforge domains. You can use cia@users.sf.net
         instead of commits@picogui.org, and the mail should be forwarded. </p>
 
+    <h1> Using it with Subversion </h1>
+
+    <p>Place this script in hooks/post-commit under your repository directory: (This is the directory on the server containing the
+       repository database, not inside the repository itself) </p>
+
+    <code><pre>
+REPOS="$1"
+REV="$2"
+
+# IRC notification
+echo "`svnlook author -r $REV $REPOS`" committed revision $REV: "`svnlook log -r $REV $REPOS`" | \
+   head -n 1 | mail -s "Announce <i>channelname</i>" commits@picogui.org&
+    </pre></code>
+
+    <p>Substitute the name of your channel, without leading "#" character, for <i>channelname</i>. You can see an example of the
+    post-commit script used in the PicoGUI repository <a href="http://navi.picogui.org/svn/picogui/trunk/tools/svn/hooks/">here</a> </p>
+
     <h1>Controlling the bot</h1>
 
     <p> You can make the bot join your channel by sending an email to commits@picogui.org with the subject "JoinChannel [channel]".
         (Leave out the "#" beginning the channel name) You can make it leave your channel by sending a mail with the subject
         "PartChannel [channel]". </p> The email body will be ignored.
 
-    <h1> Does it work with subversion? </h1>
-
-    <p> Yes, but writing a script to send the right email is left as an excercise to the reader (the script on picogui.org talks
-      directly to the server via a socket, so don't try and copy it exactly) </p>
-
-    <h1> Source code? </h1>
+    <h1> Source code </h1>
 
     <p>
      <a href="http://navi.picogui.org/svn/picogui/trunk/tools/irc/announceBot.py">The bot</a>, 
