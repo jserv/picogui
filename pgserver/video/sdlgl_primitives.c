@@ -1,4 +1,4 @@
-/* $Id: sdlgl_primitives.c,v 1.5 2002/03/03 16:42:26 micahjd Exp $
+/* $Id: sdlgl_primitives.c,v 1.6 2002/03/03 18:26:42 micahjd Exp $
  *
  * sdlgl_primitives.c - OpenGL driver for picogui, using SDL for portability.
  *                      Implement standard picogui primitives using OpenGL
@@ -61,32 +61,6 @@ hwrcolor sdlgl_getpixel(hwrbitmap dest,s16 x,s16 y) {
   glReadPixels(x,y,1,1,GL_BLUE,GL_UNSIGNED_BYTE,&b);
   return mkcolor(r,g,b);
 }
-
-/*
- * This driver uses a game-like rendering approach of always drawing
- * onscreen displays before swapping the buffers. This almost always
- * means a lot of wasted drawing, but OpenGL is designed for that.
- */
-void sdlgl_update(s16 x, s16 y, s16 w, s16 h) {
-  int i = 0;
-
-  if (gl_global.showfps)
-    gl_osd_printf(&i,"FPS: %.2f",gl_global.fps);
-
-  switch (gl_global.camera_mode) {
-  case SDLGL_CAMERAMODE_TRANSLATE:
-    gl_osd_printf(&i,"Camera pan/zoom mode");
-    break;
-  case SDLGL_CAMERAMODE_ROTATE:
-    gl_osd_printf(&i,"Camera rotate mode");
-    break;
-  }
-
-  if (gl_global.grid)
-    gl_osd_printf(&i,"Grid enabled");
-
-  SDL_GL_SwapBuffers();
-};  
 
 void sdlgl_rect(hwrbitmap dest,s16 x,s16 y,s16 w, s16 h, hwrcolor c,s16 lgop) {
   if (GL_LINEAR32(dest)) {
@@ -402,6 +376,42 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
   }
 
   /* FIXME: can't blit from screen back to bitmap. Is this desired, or even possible? */
+}
+
+int sdlgl_update_hook(void) {
+  if (gl_global.allow_update)
+    return 0;
+  gl_global.need_update++;
+  return 1;
+}
+
+void sdlgl_sprite_show(struct sprite *spr) {
+  if (!gl_global.allow_update)
+    return;
+
+  /* Display the sprite */
+  if (spr->mask && *spr->mask) {
+    VID(blit) (vid->display,spr->x,spr->y,spr->w,spr->h,
+	       *spr->mask,0,0,PG_LGOP_AND);
+    VID(blit) (vid->display,spr->x,spr->y,spr->w,spr->h,
+	       *spr->bitmap,0,0,PG_LGOP_OR);
+  }
+  else
+    VID(blit) (vid->display,spr->x,spr->y,spr->w,spr->h,
+	       *spr->bitmap,0,0,spr->lgop);
+
+}
+
+void sdlgl_sprite_hide(struct sprite *spr) {
+  /* No need to erase sprites */
+}
+
+void sdlgl_sprite_update(struct sprite *spr) {
+  gl_global.need_update++;
+}
+
+void sdlgl_sprite_protectarea(struct quad *in,struct sprite *from) { 
+  /* No need to protect for sprites */
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.6 2002/03/03 16:42:26 micahjd Exp $
+/* $Id: sdlgl.h,v 1.7 2002/03/03 18:26:42 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -180,7 +180,7 @@ struct sdlgl_data {
   float fps_interval;
 
   /* Input library optionally loaded to make this driver continously redraw */
-  struct inlib *continuous;
+  struct inlib *continuous_inlib;
   
   /* Groprender structure for the display */
   struct groprender *display_rend;
@@ -198,6 +198,10 @@ struct sdlgl_data {
   int grid;
   int showfps;
   int antialias;
+  int allow_update;
+  int need_update;
+  int continuous;
+  int update_throttle;
   
   /* save the old font list so we can restore it on exit */
   struct fontstyle_node *old_fonts;
@@ -216,7 +220,6 @@ int gl_power2_round(int x);
 void gl_frame(void);
 void sdlgl_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop);
 hwrcolor sdlgl_getpixel(hwrbitmap dest,s16 x,s16 y);
-void sdlgl_update(s16 x, s16 y, s16 w, s16 h);
 void sdlgl_rect(hwrbitmap dest,s16 x,s16 y,s16 w, s16 h, hwrcolor c,s16 lgop);
 void sdlgl_slab(hwrbitmap dest,s16 x,s16 y,s16 w, hwrcolor c,s16 lgop);
 void sdlgl_bar(hwrbitmap dest,s16 x,s16 y,s16 h, hwrcolor c,s16 lgop);
@@ -256,6 +259,12 @@ void gl_fontstyle_free(struct fontstyle_node *fsn);
 void gl_font_free(struct font *f);
 void gl_showtexture(GLuint tex, int w, int h);
 int gl_invalidate_texture(hwrbitmap bit);
+int sdlgl_update_hook(void);
+void sdlgl_sprite_show(struct sprite *spr);
+void sdlgl_sprite_hide(struct sprite *spr);
+void sdlgl_sprite_update(struct sprite *spr);
+void sdlgl_sprite_protectarea(struct quad *in,struct sprite *from);
+void gl_continuous_poll(void); 
 
 #endif /* _H_SDLGL */
 

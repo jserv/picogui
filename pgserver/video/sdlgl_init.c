@@ -1,4 +1,4 @@
-/* $Id: sdlgl_init.c,v 1.5 2002/03/03 16:42:26 micahjd Exp $
+/* $Id: sdlgl_init.c,v 1.6 2002/03/03 18:26:42 micahjd Exp $
  *
  * sdlgl_init.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has initialization, shutdown, and registration.
@@ -54,11 +54,9 @@ g_error sdlgl_init(void) {
   sdlfb_scale     = 1;
 #endif
 
-  /* Optionally load the continuous-running "input driver" */
-  if (get_param_int(GL_SECTION,"continuous",0)) {
-    e = load_inlib(&gl_continuous_regfunc,&gl_global.continuous);
-    errorcheck;
-  }
+  /* Load an inlib to handle rendering continuously (or not) */
+  e = load_inlib(&gl_continuous_regfunc,&gl_global.continuous_inlib);
+  errorcheck;
 
   s = get_param_str(GL_SECTION,"texture_filtering","linear");
   if (!strcmp(s,"linear")) {
@@ -100,6 +98,8 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   snprintf(str,sizeof(str),get_param_str(GL_SECTION,"caption","PicoGUI (sdlgl@%dx%d)"),
 	   vid->xres,vid->yres,bpp);
   SDL_WM_SetCaption(str,NULL);
+
+  gl_global.continuous = get_param_int(GL_SECTION,"continuous",0);
 
   /********** OpenGL setup */
 
@@ -159,8 +159,7 @@ void sdlgl_close(void) {
   }
 
   unload_inlib(inlib_main);   /* Take out our input driver */
-  if (gl_global.continuous)
-    unload_inlib(gl_global.continuous);
+  unload_inlib(gl_global.continuous_inlib);
 
   if (gl_global.osd_font)
     handle_free(gl_global.osd_font,-1);
@@ -183,11 +182,19 @@ void sdlgl_close(void) {
 
 void gl_continuous_init(int *n,fd_set *readfds,struct timeval *timeout) {
   timeout->tv_sec = 0;
-  timeout->tv_usec = 0;
+  if (gl_global.continuous)
+    timeout->tv_usec = 0;
+  else
+    timeout->tv_usec = 1;
+}
+
+void gl_continuous_poll(void) {
+  if (gl_global.continuous || gl_global.need_update || gl_global.camera_mode)
+    gl_frame();
 }
 
 g_error gl_continuous_regfunc(struct inlib *i) {
-  i->poll = gl_frame;
+  i->poll = gl_continuous_poll;
   i->fd_init = gl_continuous_init;
   return success;
 }
@@ -200,7 +207,6 @@ g_error sdlgl_regfunc(struct vidlib *v) {
   v->close = &sdlgl_close;
   v->pixel = &sdlgl_pixel;
   v->getpixel = &sdlgl_getpixel;
-  v->update = &sdlgl_update;
   v->slab = &sdlgl_slab;
   v->bar = &sdlgl_bar;
   v->line = &sdlgl_line;
@@ -213,6 +219,11 @@ g_error sdlgl_regfunc(struct vidlib *v) {
   v->blit = &sdlgl_blit;
   v->key_event_hook = &sdlgl_key_event_hook;
   v->pointing_event_hook = &sdlgl_pointing_event_hook;
+  v->update_hook = &sdlgl_update_hook;
+  v->sprite_show = &sdlgl_sprite_show;
+  v->sprite_hide = &sdlgl_sprite_hide;
+  v->sprite_update = &sdlgl_sprite_update;
+  v->sprite_protectarea = &sdlgl_sprite_protectarea;
 
   if (!get_param_int(GL_SECTION,"standard_fonts",0)) {
     v->font_sizetext_hook = &sdlgl_font_sizetext_hook;

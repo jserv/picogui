@@ -405,7 +405,8 @@ quoted appropriately. For example:
   always use linear filtering and mipmapping.
 
 - continuous
-  Nonzero to update the screen continuously, rather than just when picogui calls for it
+  Normally the driver tries to determine when it's needed and only update the screen then.
+  This forces it to continually update.
 
 - fps_interval
   Floating point number indicating how many seconds between frames per second calculations.

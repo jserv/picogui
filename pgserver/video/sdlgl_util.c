@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.4 2002/03/03 16:42:26 micahjd Exp $
+/* $Id: sdlgl_util.c,v 1.5 2002/03/03 18:26:42 micahjd Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.
@@ -157,6 +157,7 @@ void gl_frame(void) {
   static u32 then = 0;
   u32 now;
   float interval;
+  int i = 0;
 
   if (gl_global.grid)
     gl_render_grid();
@@ -164,7 +165,10 @@ void gl_frame(void) {
   /* Redraw the whole frame */
   for (p=dts->top;p;p=p->next)
     p->flags |= DIVTREE_ALL_REDRAW;
+  gl_global.allow_update = 1;
   update(NULL,1);
+  gl_global.allow_update = 0;
+  gl_global.need_update = 0;
 
   /* FPS calculations */
   now = getticks();
@@ -177,6 +181,25 @@ void gl_frame(void) {
   }
 
   gl_process_camera_keys();
+
+  /* Sprites were done in update(), now do the onscreen display */
+
+  if (gl_global.showfps)
+    gl_osd_printf(&i,"FPS: %.2f",gl_global.fps);
+
+  switch (gl_global.camera_mode) {
+  case SDLGL_CAMERAMODE_TRANSLATE:
+    gl_osd_printf(&i,"Camera pan/zoom mode");
+    break;
+  case SDLGL_CAMERAMODE_ROTATE:
+    gl_osd_printf(&i,"Camera rotate mode");
+    break;
+  }
+
+  if (gl_global.grid)
+    gl_osd_printf(&i,"Grid enabled");
+
+  SDL_GL_SwapBuffers();
 }
 
 void gl_osd_printf(int *y, const char *fmt, ...) {

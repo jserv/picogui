@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.80 2002/02/11 19:39:22 micahjd Exp $
+/* $Id: div.c,v 1.81 2002/03/03 18:26:42 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -691,6 +691,9 @@ void r_divnode_free(struct divnode *n) {
 }
 
 void update(struct divnode *subtree,int show) {
+  if (VID(update_hook)())
+    return;
+
   if (subtree) {
     /* Subtree update */
     

@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.28 2002/02/02 20:52:51 lonetech Exp $
+/* $Id: render.c,v 1.29 2002/03/03 18:26:42 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -66,46 +66,56 @@ void grop_render(struct divnode *div) {
    rend.output = vid->display;
    rend.hfont = defaultfont;
    
-   /* Add in the divnode-level scrolling if necessary */
-   if ((div->flags & DIVNODE_DIVSCROLL) && div->divscroll) {
-     dtx = div->divscroll->tx;
-     dty = div->divscroll->ty;
-     div->x = div->calcx + dtx;
-     div->y = div->calcy + dty;
-   }
-   else {
-     dtx = 0;
-     dty = 0;
-   } 
-      
-   /* Transfer over some numbers from the divnode */   
-   rend.clip.x1 = div->x;
-   rend.clip.x2 = div->x+div->w-1;
-   rend.clip.y1 = div->y;
-   rend.clip.y2 = div->y+div->h-1;
-   rend.translation.x = div->tx;
-   rend.translation.y = div->ty;
-   rend.scroll.x = dtx - div->otx;
-   rend.scroll.y = dty - div->oty;
-   div->otx = dtx;
-   div->oty = dty;
-   rend.output_rect.x = div->x;
-   rend.output_rect.y = div->y;
-   rend.output_rect.w = div->w;
-   rend.output_rect.h = div->h;
+   /* Allow the video driver to override */
+   if (!VID(grop_render_presetup_hook)(&div,&listp,&rend)) {
 
-   /* Clip the clipping rectangle to the scrolling container */
-   if ((div->flags & DIVNODE_DIVSCROLL) && div->divscroll) {
-     if (rend.clip.x1 < div->divscroll->calcx)
-       rend.clip.x1 = div->divscroll->calcx;
-     if (rend.clip.x2 > (div->divscroll->calcx + div->divscroll->calcw - 1))
-       rend.clip.x2 = div->divscroll->calcx + div->divscroll->calcw - 1;
-     if (rend.clip.y1 < div->divscroll->calcy)
-       rend.clip.y1 = div->divscroll->calcy;
-     if (rend.clip.y2 > (div->divscroll->calcy + div->divscroll->calch - 1))
-       rend.clip.y2 = div->divscroll->calcy + div->divscroll->calch - 1;
-   }
-
+     /* Add in the divnode-level scrolling if necessary */
+     if ((div->flags & DIVNODE_DIVSCROLL) && div->divscroll) {
+       dtx = div->divscroll->tx;
+       dty = div->divscroll->ty;
+       div->x = div->calcx + dtx;
+       div->y = div->calcy + dty;
+     }
+     else {
+       dtx = 0;
+       dty = 0;
+     } 
+     
+     /* Transfer over some numbers from the divnode */   
+     rend.clip.x1 = div->x;
+     rend.clip.x2 = div->x+div->w-1;
+     rend.clip.y1 = div->y;
+     rend.clip.y2 = div->y+div->h-1;
+     rend.translation.x = div->tx;
+     rend.translation.y = div->ty;
+     rend.scroll.x = dtx - div->otx;
+     rend.scroll.y = dty - div->oty;
+     div->otx = dtx;
+     div->oty = dty;
+     rend.output_rect.x = div->x;
+     rend.output_rect.y = div->y;
+     rend.output_rect.w = div->w;
+     rend.output_rect.h = div->h;
+     
+     /* Clip the clipping rectangle to the scrolling container */
+     if ((div->flags & DIVNODE_DIVSCROLL) && div->divscroll) {
+       if (rend.clip.x1 < div->divscroll->calcx)
+	 rend.clip.x1 = div->divscroll->calcx;
+       if (rend.clip.x2 > (div->divscroll->calcx + div->divscroll->calcw - 1))
+	 rend.clip.x2 = div->divscroll->calcx + div->divscroll->calcw - 1;
+       if (rend.clip.y1 < div->divscroll->calcy)
+	 rend.clip.y1 = div->divscroll->calcy;
+       if (rend.clip.y2 > (div->divscroll->calcy + div->divscroll->calch - 1))
+	 rend.clip.y2 = div->divscroll->calcy + div->divscroll->calch - 1;
+     }
+     
+     /* Scrolling updates */
+     if ((div->flags & DIVNODE_SCROLL_ONLY) && 
+	 !(div->flags & DIVNODE_NEED_REDRAW))
+       groplist_scroll(&rend,div);
+   }     
+   
+   
    /* Munge our flags a bit. If this is incremental, and we didn't need
     * a full redraw anyway, look for the incremental divnode flag */
    if ((div->flags & DIVNODE_INCREMENTAL) && 
@@ -114,131 +124,137 @@ void grop_render(struct divnode *div) {
    else
      incflag = 0;
    
-   /* Scrolling updates */
-   if ((div->flags & DIVNODE_SCROLL_ONLY) && 
-       !(div->flags & DIVNODE_NEED_REDRAW))
-     groplist_scroll(&rend,div);
-   
    /* Get rid of any pesky sprites in the area. If this isn't incremental
     * go ahead and protect the whole divnode */
    if (!incflag) {
-      VID(sprite_protectarea) (&rend.clip,spritelist);
-      
-      /* "dirty" this region of the screen so the blits notice it */
-      add_updarea(rend.clip.x1,rend.clip.y1,rend.clip.x2-
-		  rend.clip.x1+1,rend.clip.y2-rend.clip.y1+1);
+     VID(sprite_protectarea) (&rend.clip,spritelist);
+     
+     /* "dirty" this region of the screen so the blits notice it */
+     add_updarea(rend.clip.x1,rend.clip.y1,rend.clip.x2-
+		 rend.clip.x1+1,rend.clip.y2-rend.clip.y1+1);
    }
 
    /* Store our clipping rectangle before any 
     * PG_GROP_SETCLIP's can modify it.
     */
    rend.orig_clip = rend.clip;
+   
+   /* Let the video driver know before we start drawing */
+   if (VID(grop_render_postsetup_hook)(&div,&listp,&rend))
+     return;
 
    /* Begin rendering loop! */
    while (*listp) {
+       
+     /* Skip if the incremental-ness isn't right,
+      * but not if it's pseudoincremental, transient, or universal */
+     if ( (( (*listp)->flags &  PG_GROPF_INCREMENTAL) != incflag) &&
+	  (!((*listp)->flags & (PG_GROPF_PSEUDOINCREMENTAL |
+				PG_GROPF_TRANSIENT |
+				PG_GROPF_UNIVERSAL))))
+       goto skip_this_node;
      
-      /* Skip if the incremental-ness isn't right,
-       * but not if it's pseudoincremental, transient, or universal */
-      if ( (( (*listp)->flags &  PG_GROPF_INCREMENTAL) != incflag) &&
-	   (!((*listp)->flags & (PG_GROPF_PSEUDOINCREMENTAL |
-				 PG_GROPF_TRANSIENT |
-				 PG_GROPF_UNIVERSAL))))
-	goto skip_this_node;
-      
-      /* Clear pseudoincremental flag */
-      (*listp)->flags &= ~PG_GROPF_PSEUDOINCREMENTAL;
- 
-      /* If this is a nonvisual gropnode, get it over with now! */
-      if (PG_GROP_IS_NONVISUAL((*listp)->type)) {
-	 gropnode_nonvisual(&rend,*listp);
-	 goto skip_this_node;
-      }	
-      
-      /* Make a local copy of the node so we can clip and transform its
-       * coordinates and twiddle its flags */
-      node = **listp;
+     /* Clear pseudoincremental flag */
+     (*listp)->flags &= ~PG_GROPF_PSEUDOINCREMENTAL;
+     
+     /* If this is a nonvisual gropnode, get it over with now! */
+     if (PG_GROP_IS_NONVISUAL((*listp)->type)) {
+       gropnode_nonvisual(&rend,*listp);
+       goto skip_this_node;
+     }	
+     
+     /* Make a local copy of the node so we can clip and transform its
+      * coordinates and twiddle its flags */
+     node = **listp;
+     
+     /* Let the video driver do its own transformations */
+     if (!VID(grop_render_node_hook)(&div,&listp,&rend,&node)) {
+       
+       /* Do the mappings now, before we scroll and add divnode coordinates.
+	* Mappings are always relative to the divnode, because they are often
+	* not measured in pixels while the divnodes are always in pixels */
+       gropnode_map(&rend,&node);
+       
+       /* Convert from divnode coordinates to screen coordinates */
+       gropnode_translate(&rend,&node);
+       
+       /* Clip clip! */
+       gropnode_clip(&rend,&node);
+     }     
 
-      /* Do the mappings now, before we scroll and add divnode coordinates.
-       * Mappings are always relative to the divnode, because they are often
-       * not measured in pixels while the divnodes are always in pixels */
-      gropnode_map(&rend,&node);
-      
-      /* Convert from divnode coordinates to screen coordinates */
-      gropnode_translate(&rend,&node);
-      
-      /* Clip clip! */
-      gropnode_clip(&rend,&node);
-
-      /* Anything to do? */
-      if (node.type == PG_GROP_NOP)
-	goto skip_this_node;
-
-      /* If this is incremental, do the sprite protection and double-buffer
-       * update rectangle things for each gropnode because the updated area
-       * is usually small compared to the whole
-       */
-      if (incflag) {
-	 struct quad lcr;
-	 if (node.type == PG_GROP_LINE) {
-	    /* Lines are "special" */
-	    int xx,yy,xx2,yy2;
-	    if (node.r.w<0) {
-	       xx2 = node.r.x;
-	       xx = node.r.x+node.r.w;
-	    }
-	    else {
-	       xx = node.r.x;
-	       xx2 = node.r.x+node.r.w;
-	    }
-	    if (node.r.h<0) {
-	       yy2 = node.r.y;
-	       yy = node.r.y+node.r.h;
-	    }
-	    else {
-	       yy = node.r.y;
-	       yy2 = node.r.y+node.r.h;
-	    }
-	    
-	    lcr.x1 = xx;
-	    lcr.y1 = yy;
-	    lcr.x2 = xx2;
-	    lcr.y2 = yy2;
-	    
-	    /* "dirty" this region of the screen so the blits notice it */
-	    add_updarea(xx,yy,xx2-xx+1,yy2-yy+1);
+     /* Anything to do? */
+     if (node.type == PG_GROP_NOP)
+       goto skip_this_node;
+     
+     /* If this is incremental, do the sprite protection and double-buffer
+      * update rectangle things for each gropnode because the updated area
+      * is usually small compared to the whole
+      */
+     if (incflag) {
+       struct quad lcr;
+       if (node.type == PG_GROP_LINE) {
+	 /* Lines are "special" */
+	 int xx,yy,xx2,yy2;
+	 if (node.r.w<0) {
+	   xx2 = node.r.x;
+	   xx = node.r.x+node.r.w;
 	 }
 	 else {
-	    lcr.x1 = node.r.x;
-	    lcr.y1 = node.r.y;
-	    lcr.x2 = node.r.x+node.r.w-1;
-	    lcr.y2 = node.r.y+node.r.h-1;
-	    
-	    /* "dirty" this region of the screen so the blits notice it */
-	    add_updarea(node.r.x,node.r.y,node.r.w,node.r.h);
+	   xx = node.r.x;
+	   xx2 = node.r.x+node.r.w;
+	 }
+	 if (node.r.h<0) {
+	   yy2 = node.r.y;
+	   yy = node.r.y+node.r.h;
+	 }
+	 else {
+	   yy = node.r.y;
+	   yy2 = node.r.y+node.r.h;
 	 }
 	 
-	 VID(sprite_protectarea) (&lcr,spritelist);	  
-      }
+	 lcr.x1 = xx;
+	 lcr.y1 = yy;
+	 lcr.x2 = xx2;
+	 lcr.y2 = yy2;
+	 
+	 /* "dirty" this region of the screen so the blits notice it */
+	 add_updarea(xx,yy,xx2-xx+1,yy2-yy+1);
+       }
+       else {
+	 lcr.x1 = node.r.x;
+	 lcr.y1 = node.r.y;
+	 lcr.x2 = node.r.x+node.r.w-1;
+	 lcr.y2 = node.r.y+node.r.h-1;
+	 
+	 /* "dirty" this region of the screen so the blits notice it */
+	 add_updarea(node.r.x,node.r.y,node.r.w,node.r.h);
+       }
+       
+       VID(sprite_protectarea) (&lcr,spritelist);	  
+     }
      
-      /* Draw the gropnode! */
-      gropnode_draw(&rend,&node);
+     /* Draw the gropnode! */
+     gropnode_draw(&rend,&node);
      
-      /* Jump here when done rendering */
-      skip_this_node:
+     /* Jump here when done rendering */
+   skip_this_node:
      
-      /* Delete the grop if it was transient */
-      if ((*listp)->flags & PG_GROPF_TRANSIENT) {
-	 struct gropnode *condemn;
-	 condemn = *listp;
-	 *listp = (*listp)->next;   /* close up the hole */
-	 gropnode_free(condemn);
-	 div->flags |= DIVNODE_GROPLIST_DIRTY;
-      }
-      else {
-	 /* Otherwise just move on */
-	 listp = &(*listp)->next;
-      }
+     /* Delete the grop if it was transient */
+     if ((*listp)->flags & PG_GROPF_TRANSIENT) {
+       struct gropnode *condemn;
+       condemn = *listp;
+       *listp = (*listp)->next;   /* close up the hole */
+       gropnode_free(condemn);
+       div->flags |= DIVNODE_GROPLIST_DIRTY;
+     }
+     else {
+       /* Otherwise just move on */
+       listp = &(*listp)->next;
+     }
    }
+
+   /* Let the video driver know we're done */
+   VID(grop_render_end_hook)(&div,&listp,&rend);
 }
 
 /****************************************************** groplist_scroll */

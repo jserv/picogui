@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.78 2002/03/01 21:17:12 micahjd Exp $
+/* $Id: video.h,v 1.79 2002/03/03 18:26:42 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -37,6 +37,7 @@ struct quad;
 struct rect;
 struct pair;
 struct groprender;
+struct gropnode;
 
 /* Hardware-specific color value */
 typedef u32 hwrcolor;
@@ -266,6 +267,38 @@ struct vidlib {
    *   processing.
    */
   int (*pointing_event_hook)(u32 *type, s16 *x, s16 *y, s16 *btn);
+
+  /* Optional
+   *   Called at the beginning of grop_render, before anything has been set up.
+   *   Abort setup if this returns nonzero
+   */
+  int (*grop_render_presetup_hook)(struct divnode **div, struct gropnode ***listp,
+				   struct groprender *rend);
+
+  /* Optional
+   *   Called at the beginning of grop_render, but after setup
+   *   Abort grop_render if this returns nonzero
+   */
+  int (*grop_render_postsetup_hook)(struct divnode **div, struct gropnode ***listp,
+				    struct groprender *rend);
+
+  /* Optional
+   *   Called at the end of grop_render
+   */
+  void (*grop_render_end_hook)(struct divnode **div, struct gropnode ***listp,
+			       struct groprender *rend);
+
+  /* Optional
+   *   Called before gropnode transformation but after flag testing.
+   *   Return nonzero to skip the normal gropnode transformation and clipping.
+   */
+  int (*grop_render_node_hook)(struct divnode **div, struct gropnode ***listp,
+			       struct groprender *rend, struct gropnode **node);
+
+  /* Optional
+   *   Called for any picogui update(). Return nonzero to abort the update
+   */
+  int (*update_hook)(void);
 
   /***************** Colors */
 

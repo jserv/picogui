@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.80 2002/03/01 21:17:13 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.81 2002/03/03 18:26:42 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -119,6 +119,24 @@ int def_key_event_hook(u32 *type, s16 *key, s16 *mods) {
 }
 
 int def_pointing_event_hook(u32 *type, s16 *x, s16 *y, s16 *btn) {
+  return 0;
+}
+
+int def_grop_render_presetup_hook(struct divnode **div, struct gropnode ***listp,
+				  struct groprender *rend) {
+  return 0;
+}
+
+void def_grop_render_end_hook(struct divnode **div, struct gropnode ***listp,
+			      struct groprender *rend) {
+}
+
+int def_grop_render_node_hook(struct divnode **div, struct gropnode ***listp,
+			      struct groprender *rend, struct gropnode **node) {
+  return 0;
+}
+
+int def_update_hook(void) {
   return 0;
 }
 
@@ -1998,6 +2016,11 @@ void setvbl_default(struct vidlib *vid) {
   vid->font_outchar_hook = &def_font_outchar_hook;
   vid->key_event_hook = &def_key_event_hook;
   vid->pointing_event_hook = &def_pointing_event_hook;
+  vid->grop_render_presetup_hook = &def_grop_render_presetup_hook;
+  vid->grop_render_postsetup_hook = &def_grop_render_presetup_hook;
+  vid->grop_render_end_hook = &def_grop_render_end_hook; 
+  vid->grop_render_node_hook = &def_grop_render_node_hook;
+  vid->update_hook = &def_update_hook;
 }
 
 /* The End */
