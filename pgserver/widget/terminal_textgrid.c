@@ -1,4 +1,4 @@
-/* $Id: terminal_textgrid.c,v 1.20 2003/03/26 02:49:34 micahjd Exp $
+/* $Id: terminal_textgrid.c,v 1.21 2003/03/26 10:25:43 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -132,13 +132,104 @@ void textgrid_render(struct groprender *r, struct gropnode *n) {
 	gropnode_draw(&br,&bn);
       }
 
-      if (ch != ' ')
-	fd->lib->draw_char(fd,r->output,xy_to_pair(n->r.x,n->r.y),
-			   textcolors[attr & 0x0F],
-			   ch, &r->clip,r->lgop, 0);
+      /* If the character has the high bit set, check whether it's a line drawing character.
+       * If not, and it's not blank, render it normally.
+       */
+      if ((!(ch & 0x80)) || !term_linedraw(r->output, n->r.x, n->r.y, 
+					   celw, celh, ch, textcolors[attr & 0x0F], r->lgop)) {
+	if (ch != ' ')
+	  fd->lib->draw_char(fd,r->output,xy_to_pair(n->r.x,n->r.y),
+			     textcolors[attr & 0x0F],
+			     ch, &r->clip,r->lgop, 0);
+      }
       n->r.x += celw;
     }
   }
+}
+
+/* Handle drawing line-drawing characters that were mapped into
+ * the character set where ISO Latin-1 normally is :)
+ * Return 1 if the character is handled by this function.
+ */
+int term_linedraw(hwrbitmap dest, int x, int y, int w, int h,
+		  unsigned char ch, hwrcolor color, int lgop) {
+  switch (ch) {
+
+  case 'a' | 0x80:   /* Stippled box */
+    VID(rect)(dest, x, y, w, h, color, PG_LGOP_STIPPLE);
+    return 1;
+
+  case 'j' | 0x80:   /* Bottom-right corner */
+    VID(slab)(dest, x, y+(h>>1), w>>1, color, lgop);
+    VID(bar)(dest, x+(w>>1), y, h>>1, color, lgop);
+    return 1;
+
+  case 'k' | 0x80:   /* Top-right corner */
+    VID(slab)(dest, x, y+(h>>1), w>>1, color, lgop);
+    VID(bar)(dest, x+(w>>1), y+(h>>1), h>>1, color, lgop);
+    return 1;
+
+  case 'l' | 0x80:   /* Top-left corner */
+    VID(slab)(dest, x+(w>>1), y+(h>>1), w>>1, color, lgop);
+    VID(bar)(dest, x+(w>>1), y+(h>>1), h>>1, color, lgop);
+    return 1;
+
+  case 'm' | 0x80:   /* Bottom-left corner */
+    VID(slab)(dest, x+(w>>1), y+(h>>1), w>>1, color, lgop);
+    VID(bar)(dest, x+(w>>1), y, h>>1, color, lgop);
+    return 1;
+
+  case 'n' | 0x80:   /* Cross */
+    VID(slab)(dest, x, y+(h>>1), w, color, lgop);
+    VID(bar)(dest, x+(w>>1), y, h, color, lgop);
+    return 1;
+
+  case 'o' | 0x80:   /* Top horizontal line */
+    VID(slab)(dest, x, y, w, color, lgop);
+    return 1;
+
+  case 'p' | 0x80:   /* Top-middle horizontal line */
+    VID(slab)(dest, x, y+(h>>2), w, color, lgop);
+    return 1;
+
+  case 'q' | 0x80:   /* Middle horizontal line */
+    VID(slab)(dest, x, y+(h>>1), w, color, lgop);
+    return 1;
+
+  case 'r' | 0x80:   /* Bottom-middle horizontal line */
+    VID(slab)(dest, x, y+(h>>1)+(h>>2), w, color, lgop);
+    return 1;
+
+  case 's' | 0x80:   /* Bottom horizontal line */
+    VID(slab)(dest, x, y+h-1, w, color, lgop);
+    return 1;
+
+  case 't' | 0x80:   /* Right tee */
+    VID(bar)(dest, x+(w>>1), y, h, color, lgop);
+    VID(slab)(dest, x+(w>>1), y+(h>>1), w, color, lgop);
+    return 1;
+
+  case 'u' | 0x80:   /* Left tee */
+    VID(bar)(dest, x+(w>>1), y, h, color, lgop);
+    VID(slab)(dest, x, y+(h>>1), w, color, lgop);
+    return 1;
+
+  case 'v' | 0x80:   /* Top tee */
+    VID(slab)(dest, x, y+(h>>1), w, color, lgop);
+    VID(bar)(dest, x+(w>>1), y, h>>1, color, lgop);
+    return 1;
+
+  case 'w' | 0x80:   /* Bottom tee */
+    VID(slab)(dest, x, y+(h>>1), w, color, lgop);
+    VID(bar)(dest, x+(w>>1), y+(h>>1), h>>1, color, lgop);
+    return 1;
+
+  case 'x' | 0x80:   /* Vertical line */
+    VID(bar)(dest, x+(w>>1), y, h, color, lgop);
+    return 1;
+
+  }
+  return 0;
 }
 
 

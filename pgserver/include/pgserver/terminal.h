@@ -1,4 +1,4 @@
-/* $Id: terminal.h,v 1.11 2003/03/26 09:47:07 micahjd Exp $
+/* $Id: terminal.h,v 1.12 2003/03/26 10:25:42 micahjd Exp $
  *
  * terminal.h - Header file shared by components of the terminal emulator widget
  *
@@ -52,6 +52,7 @@ struct terminal_state {
   u8 attr;                       /* Default attribute for new characters */
   int scroll_top, scroll_bottom; /* Scrolling region set with CSI r */
   char g[4];                     /* Character set selections */
+  char charset;                  /* Currently selected character set */
   unsigned int reverse_video:1;
   unsigned int cursor_hidden:1;
   unsigned int no_autowrap:1;
@@ -108,6 +109,13 @@ struct terminaldata {
  * engine to handle PG_GROP_TEXTGRID 
  */
 void textgrid_render(struct groprender *r, struct gropnode *n);
+
+/* Handle drawing line-drawing characters that were mapped into
+ * the character set where ISO Latin-1 normally is :)
+ * Return 1 if the character is handled by this function.
+ */
+int term_linedraw(hwrbitmap dest, int x, int y, int w, int h, 
+		  unsigned char ch, hwrcolor color, int lgop);
 
 /* Create an incremental gropnode for the update rectangle */
 void term_realize(struct widget *self);

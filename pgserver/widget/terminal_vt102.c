@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.28 2003/03/26 09:47:08 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.29 2003/03/26 10:25:43 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -226,6 +226,17 @@ void term_char(struct widget *self,u8 c) {
 	return;
       DATA->current.crsrx--;
       break;
+
+    case '\017':   /* SI, select the G0 character set */
+      DBG("Select G0 character set\n");
+      DATA->current.charset = DATA->current.g[0];
+      break;
+
+    case '\016':   /* SO, select the G1 character set */
+      DBG("Select G1 character set\n");
+      DATA->current.charset = DATA->current.g[1];
+      break;
+
     }
 
   /* Handling an escape code? */
@@ -247,6 +258,13 @@ void term_char(struct widget *self,u8 c) {
       DBG("character '%c' (%d)\n", c, c);
       if (DATA->current.insert_mode)
 	term_insert(self, 1);
+
+      /* Map the line drawing character set into the upper half of a byte
+       * not used by ASCII. This should work fine even if we're doing Unicode.
+       */
+      if (DATA->current.charset == '0')
+	c |= 0x80;
+
       term_plot(self,DATA->current.crsrx++,DATA->current.crsry,c);
     }
 
