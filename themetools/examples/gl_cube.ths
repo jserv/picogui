@@ -26,9 +26,11 @@ object background {
 
   /* Fillstyle */
   bgfill = fillstyle {
-    var s, ts, cube_z, t;
+    var s, ts, cube_z, t, u;
+    
     t = ticks;  /* Get the current time for the animations */
-
+    u = 1<<16;  /* Unit for specifying normals */
+    
     /*** Background */
 
     /* Water background */
@@ -37,16 +39,10 @@ object background {
     /* Use s as a temporary variable to compute the offset of the interlacing.
      * Scale it to slow it down, then keep it under 6 (height of our texture)
      * to avoid the whole texture disappearing later when things overflow.
-     *
-     * Since normally the sdlgl driver will reset blending functions to match the
-     * requested lgop at the beginning of each function, set a bogus lgop so we
-     * can control the blending ourselves.
      */
     s = t>>5;
     s = s-(s/6*6);
-    SetLgop(-1);
-    Gl_enable(GL_BLEND);
-    Gl_blendfunc(GL_ZERO,GL_SRC_COLOR);
+    SetLgop(PG_LGOP_MULTIPLY);
     Bitmap(x,y-s,w,h+s+s,tInterlace);
     
     /*** OpenGL Setup */
@@ -58,54 +54,68 @@ object background {
     Gl_pushmatrix();
     Gl_enable(GL_DEPTH_TEST);
     Gl_depthfunc(GL_LESS);
-    Gl_color(0xFFFFFF);
     Gl_bindtexture(tPanel);
     Gl_enable(GL_TEXTURE_2D);
     Gl_disable(GL_BLEND);
+    Gl_enable(GL_LIGHT1);
+    Gl_enable(GL_LIGHTING);
+    Gl_lightfv(GL_LIGHT1, GL_AMBIENT,1,0, 0x0A000,0x0A000,0x0A000);
+    Gl_lightfv(GL_LIGHT1, GL_DIFFUSE,1,0, 0x10000,0x10000,0x12000);
 
     /*** Transformations */
     
-    Gl_translatef(w<<15,h<<15,cube_z);              /* Float above the divnode */
-    Gl_rotatef(45,0,0,0, 1<<16,0,0);                /* Small vertical tilt */
-    Gl_rotatef(t>>4,t<<12,0,0, 0,1<<16,0);          /* Spin */
-    Gl_translatef(0-(s>>1),0-(s>>1),0-(s>>1));      /* Center the cube on the origin */
-    
+    Gl_translatef(w<<15,h<<15,cube_z);          /* Float above the divnode */
+
+    /* Set up the light relative to the cube's center.
+     * Hover it in front of the cube for nice shading effects.
+     */
+    Gl_lightfv(GL_LIGHT1, GL_POSITION,1,0, 0,0,w<<15);
+
+    Gl_rotatef(45,0,0,0, 1<<16,0,0);            /* Small vertical tilt */
+    Gl_rotatef(t>>4,t<<12,0,0, 0,1<<16,0);      /* Spin */
+    Gl_translatef(0-(s>>1),0-(s>>1),0-(s>>1));  /* Center on the origin */
+
     /*** Cube */
     
     Gl_begin(GL_QUADS);
     
     /* Right */
+    Gl_normal3f(u,0,0);
     Gl_texcoord2f(0,0);     Gl_vertex3f(s,0,0);
     Gl_texcoord2f(ts,0);    Gl_vertex3f(s,s,0);
     Gl_texcoord2f(ts,ts);   Gl_vertex3f(s,s,s);
     Gl_texcoord2f(0,ts);    Gl_vertex3f(s,0,s);
     
     /* Left */
+    Gl_normal3f(-u,0,0);
     Gl_texcoord2f(0,0);     Gl_vertex3f(0,0,0);
     Gl_texcoord2f(ts,0);    Gl_vertex3f(0,s,0);
     Gl_texcoord2f(ts,ts);   Gl_vertex3f(0,s,s);
     Gl_texcoord2f(0,ts);    Gl_vertex3f(0,0,s);
     
     /* Bottom */
+    Gl_normal3f(0,u,0);
     Gl_texcoord2f(0,0);     Gl_vertex3f(0,s,0);
     Gl_texcoord2f(ts,0);    Gl_vertex3f(s,s,0);
     Gl_texcoord2f(ts,ts);   Gl_vertex3f(s,s,s);
     Gl_texcoord2f(0,ts);    Gl_vertex3f(0,s,s);
     
     /* Top */
+    Gl_normal3f(0,-u,0);
     Gl_texcoord2f(0,0);     Gl_vertex3f(0,0,0);
     Gl_texcoord2f(ts,0);    Gl_vertex3f(s,0,0);
     Gl_texcoord2f(ts,ts);   Gl_vertex3f(s,0,s);
     Gl_texcoord2f(0,ts);    Gl_vertex3f(0,0,s);
     
     /* Front */
+    Gl_normal3f(0,0,-u);
     Gl_texcoord2f(0,0);     Gl_vertex3f(0,0,0);
     Gl_texcoord2f(ts,0);    Gl_vertex3f(s,0,0);
     Gl_texcoord2f(ts,ts);   Gl_vertex3f(s,s,0);
     Gl_texcoord2f(0,ts);    Gl_vertex3f(0,s,0);
     
     /* Back */
-    Gl_normal3f(0,s,0);
+    Gl_normal3f(0,0,u);
     Gl_texcoord2f(0,0);     Gl_vertex3f(0,0,s);
     Gl_texcoord2f(ts,0);    Gl_vertex3f(s,0,s);
     Gl_texcoord2f(ts,ts);   Gl_vertex3f(s,s,s);
@@ -117,6 +127,7 @@ object background {
     
     Gl_disable(GL_TEXTURE_2D);
     Gl_disable(GL_DEPTH_TEST);
+    Gl_disable(GL_LIGHTING);
     Gl_popmatrix();
   };
 }
