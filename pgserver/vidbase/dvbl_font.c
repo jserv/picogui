@@ -1,4 +1,4 @@
-/* $Id: dvbl_font.c,v 1.2 2002/08/23 04:25:48 micahjd Exp $
+/* $Id: dvbl_font.c,v 1.3 2002/10/03 06:50:01 micahjd Exp $
  *
  * dvbl_font.c - This file is part of the Default Video Base Library,
  *               providing the basic video functionality in picogui but
@@ -289,7 +289,7 @@ void def_charblit_270(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
       hc = dest_x-clip->x2; /* Do it this way so skewing doesn't mess up when clipping */
       while (lines < hc && olines) {
 	lines += olines;
-	dest_y++;
+	dest_y--;
       }
       dest_x -= hc;
       chardat += hc*bw;
@@ -305,7 +305,7 @@ void def_charblit_270(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
   for (;hc<h;hc++,dest_x--) {
     if (olines && lines==hc) {
       lines += olines;
-      dest_y++;
+      dest_y--;
       flag=1;
     }
     for (iw=bw,y=dest_y,xpix=0;iw;iw--)
