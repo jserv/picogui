@@ -27,11 +27,19 @@ import PGBuild
 import PGBuild.Config
 
 class HelpFormatter(optik.IndentedHelpFormatter):
-    """Custom help formatting, provides some extra information about
-       the program above the 'usage' line
+    """Custom help formatting- provides some extra information about
+       the program above the 'usage' line.
        """
+    def __init__ (self,
+                  indent_increment=3,
+                  max_help_position=40,
+                  width=80,
+                  short_first=1):
+        optik.IndentedHelpFormatter.__init__(
+            self, indent_increment, max_help_position, width, short_first)
+        
     def format_usage(self, usage):
-        return "%s\n\nusage: %s\n\n" % (PGBuild.about, usage)
+        return "%s\n\nusage: %s\n" % (PGBuild.about, usage)
     
 class OptionsXML:
     """Convert options from the supplied hash into XML, suitable
@@ -43,7 +51,9 @@ class OptionsXML:
     def get_contents(self):
         xml = '<pgbuild title="Command Line Options" root="invocation">\n'                
         for option in self.options.__dict__:
-            xml += '\t<option name="%s">%s</option>\n' % (option, getattr(self.options, option))
+            value = getattr(self.options, option)
+            if value != None:
+                xml += '\t<option name="%s">%s</option>\n' % (option, value)
         for arg in self.args:
             xml += '\t<target name="%s">%s</target>\n' % (arg, self.args[arg])                    
         xml += '</pgbuild>\n'
@@ -56,7 +66,13 @@ def parse(config, argv):
            argv: list of command line arguments
     """
 
-    parser = optik.OptionParser(formatter=HelpFormatter())
+    parser = optik.OptionParser(formatter=HelpFormatter(),
+                                usage="%prog [options] [targets] ...",
+                                version=PGBuild.version)
+
+    configGroup = parser.add_option_group("Configuration Management")
+    configGroup.add_option("-t", "--dump-tree", dest="treeDumpFile",
+                           help="Dump the configuration tree in XML Build Configuration format to FILE", metavar="FILE")
 
     config.mount(OptionsXML(parser.parse_args(argv[1:])))
 

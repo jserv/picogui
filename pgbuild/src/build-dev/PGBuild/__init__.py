@@ -22,10 +22,10 @@ The main package for the PGBuild configuration and build utility
 # 
 
 name = "PGBuild"
-url = "http://picogui.org"
+description = "configuration and build tool"
 version = "svn-dev"
 
-about = "%s (%s)\nVersion %s" % (name, url, version)
+about = "%s %s\nVersion %s" % (name, description, version)
 
 ### The End ###
         

@@ -23,15 +23,28 @@ as soon as it creates a Bootstrap object with vital path and package names.
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
-import PGBuild.CommandLine.Options
-import PGBuild.Config
+
+def run(config, progress):
+    """Examine the provided configuration and take the specified actions"""
+
+    for dumpFileNode in config.xpath("invocation/option[@name='treeDumpFile']/text()"):
+        f = open(dumpFileNode.data, "w")
+        f.write(config.toprettyxml())
+        f.close()
 
 def main(bootstrap, argv):
-    """The entry point called by build.py"""
+    """The entry point called by build.py. Initializes the config tree
+       and handles exceptions, letting run() do most of the work.
+       """
+    import PGBuild.CommandLine.Options
+    import PGBuild.CommandLine.Output
+    import PGBuild.Config
     config = PGBuild.Config.Tree()
+    progress = PGBuild.CommandLine.Output.Progress()
     try:
         config.boot(bootstrap)
         PGBuild.CommandLine.Options.parse(config, argv)
+        run(config, progress)
     finally:
         config.commit()
 
