@@ -33,10 +33,9 @@ name = "PGBuild"
 description = "configuration and build tool"
 release = None
 version = PGBuild.Version.determineVersion()
+platform = PGBuild.Platform.determinePlatform()
 
-about = "%s %s\nVersion %s" % (name, description, version)
-
-platform = PGBuild.Platform.guess()
+about = "%s %s\nVersion %s on %s" % (name, description, version, platform)
 
 ### The End ###
         

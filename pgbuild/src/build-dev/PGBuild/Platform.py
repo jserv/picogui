@@ -80,13 +80,13 @@ class Platform(object):
         return spec
 
 
-def evalPlatformAlias(config, name):
+def evalPlatformAlias(ctx, name):
     """Resolve a platform alias (recursively if necessary) to a Platform"""
     if name in platformAliases:
         # See if we have a matching invocation option
-        opt = config.eval("invocation/option[@name='%sPlatform']/text()" % name)
+        opt = ctx.config.eval("invocation/option[@name='%sPlatform']/text()" % name)
         if not opt:
-            opt = config.eval("sys/platform/text()")
+            opt = ctx.config.eval("sys/platform/text()")
         return parse(opt)
     
 
@@ -99,7 +99,7 @@ def parse(name):
     pass
 
 
-def guess():
+def determinePlatform():
     """Guess the current system's platform"""
     import os
     

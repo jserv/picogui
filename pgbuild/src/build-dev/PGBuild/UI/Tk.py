@@ -30,7 +30,7 @@ except ImportError:
     raise PGBuild.Errors.EnvironmentError("Tkinter doesn't seem to be installed")
 
 class Interface(PGBuild.UI.None.Interface):
-    def run(self):
+    def run(self, ctx):
         tkMessageBox.showerror(PGBuild.name,
                                "The tk UI is not implemented yet")
 

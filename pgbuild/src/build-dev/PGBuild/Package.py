@@ -36,7 +36,6 @@ class PackageVersion(object):
            appendPaths is a list of paths that should be appended to our URI,
              as specified in <versiongroup> tags.
            """
-        self.config = package.config
         self.package = package
         self.configNode = configNode
         self.name = configNode.attributes['name'].value
@@ -47,17 +46,17 @@ class PackageVersion(object):
         """Returns a name of the form packagename-version"""
         return "%s-%s" % (self.package.name, self.name)
 
-    def findMirror(self, progress):
+    def findMirror(self, ctx):
         """Find the fastest mirror for this package version. Returns a PGBuild.Site.Location"""
-        task = progress.task("Finding the fastest mirror for %s" % self)
+        ctx = ctx.task("Finding the fastest mirror for %s" % self)
         import PGBuild.Site
-        return PGBuild.Site.resolve(self.config, self.configNode.getElementsByTagName('a'), task, self.appendPaths)
+        return PGBuild.Site.resolve(ctx, self.configNode.getElementsByTagName('a'), self.appendPaths)
 
-    def getRepository(self, progress):
+    def getRepository(self, ctx):
         """Get a Repository class for the fastest mirror of this package version"""
         if not self.repository:
             import PGBuild.Repository
-            self.repository = PGBuild.Repository.open(self.config, self.findMirror(progress).absoluteURI)
+            self.repository = PGBuild.Repository.open(ctx, self.findMirror(ctx).absoluteURI)
         return self.repository
 
     def getPathName(self):
@@ -67,46 +66,46 @@ class PackageVersion(object):
            """
         return os.sep.join(str(self).split("/"))
 
-    def getLocalPath(self):
+    def getLocalPath(self, ctx):
         """Using the current bootstrap configuration, get the local path for this package"""
-        return os.path.join(self.config.eval('bootstrap/path[@name="packages"]/text()'),
+        return os.path.join(ctx.config.eval('bootstrap/path[@name="packages"]/text()'),
                             self.getPathName())
 
-    def getBinaryPath(self):
+    def getBinaryPath(self, ctx):
         """Using the current bootstrap configuration and package build platform,
            get the binary path for this package."""
-        return os.path.join(self.config.eval('bootstrap/path[@name="bin"]/text()'),
+        return os.path.join(ctx.config.eval('bootstrap/path[@name="bin"]/text()'),
                             str(self.package.getHostPlatform()),
                             self.getPathName())
 
-    def update(self, progress):
+    def update(self, ctx):
        """Update the package if possible. Return 1 if there was an update available, 0 if not."""
-       localPath = self.getLocalPath()
-       task = progress.task("Checking for updates in package %s" % self)
-       repo = self.getRepository(progress)
+       localPath = self.getLocalPath(ctx)
+       ctx = ctx.task("Checking for updates in package %s" % self)
+       repo = self.getRepository(ctx)
 
        # Since this could involve a lot of slow network activity, show our task heading now
-       task.showTaskHeading()
+       ctx.progress.showTaskHeading()
 
        # If we're updating a bootstrap package we have to do a little dance
        # so that our build system doesn't get hosed if the update fails.
-       if str(self) in self.package.list.getBootstrapPackages():
+       if str(self) in ctx.packages.getBootstrapPackages(ctx):
            splitLocalPath = os.path.split(localPath)
            tempPathNew = os.path.join(splitLocalPath[0], "temp_new_" + splitLocalPath[1])
            tempPathOld = os.path.join(splitLocalPath[0], "temp_old_" + splitLocalPath[1])
 
            # Since updating a bootstrap package is a big deal, check for updates first
            if repo.isUpdateAvailable(localPath):
-               task.message("Updating bootstrap package %s" % self)
-               isUpdated = repo.update(tempPathNew, task)
+               ctx.progress.message("Updating bootstrap package %s" % self)
+               isUpdated = repo.update(ctx, tempPathNew)
                if isUpdated:
                    if os.path.isdir(tempPathOld):
                        # An old temp directory is in the way
                        try:
                            shutil.rmtree(tempPathOld)
                        except OSError:
-                           progress.error(("There is an old temporary directory for package %s in the way.\n" +
-                                             "Please try to remove %s") % (self, tempPathOld))
+                           ctx.progress.error(("There is an old temporary directory for package %s in the way.\n" +
+                                               "Please try to remove %s") % (self, tempPathOld))
                    try:
                        os.rename(localPath, tempPathOld)
                        os.rename(tempPathNew, localPath)
@@ -114,48 +113,47 @@ class PackageVersion(object):
                        import PGBuild.Errors
                        raise PGBuild.Errors.EnvironmentError(
                            ("There was a problem renaming the %s package to install an update.\n" +
-                           "This will happen on Windows systems if you have a file open in that package.") % self)
+                            "This will happen on Windows systems if you have a file open in that package.") % self)
                    try:
                        shutil.rmtree(tempPathOld)
                    except OSError:
-                       progress.warning(("There was a problem removing the old version of %s after " +
-                                         "upgrading.\nPlease try to remove the directory %s") % (self, tempPathOld))
+                       ctx.progress.warning(("There was a problem removing the old version of %s after " +
+                                             "upgrading.\nPlease try to remove the directory %s") %
+                                            (self, tempPathOld))
            else:
                isUpdated = False
        else:
 
            # Not a bootstrap package, normal update
-           isUpdated = repo.update(localPath, task)
+           isUpdated = repo.update(ctx, localPath)
        return isUpdated
 
-    def merge(self, progress, performMount=True):
+    def merge(self, ctx, performMount=True):
         """Make sure a package is up to date, then load in configuration and build targets from it
            To handle bootstrap packages more efficiently, the actual config mounting can be disabled.
            """
-        mergeTask = progress.task("Merging configuration from package %s" % self)
+        ctx = ctx.task("Merging configuration from package %s" % self)
 
         # We only update a package if there's no local copy, or if the --update option was
         # specified. This avoids having to wait on a lot of network traffic for every single invocation.
-        if (not self.getRepository(mergeTask).isLocalCopyValid(self.getLocalPath())) or \
-           self.config.eval("invocation/option[@name='update']/text()"):
-            self.update(mergeTask)
+        if (not self.getRepository(ctx).isLocalCopyValid(ctx, self.getLocalPath(ctx))) or \
+               ctx.config.eval("invocation/option[@name='update']/text()"):
+            self.update(ctx)
         if performMount:
-            self.config.dirMount(self.getLocalPath(), mergeTask.task("Mounting config files"))
+            ctx.config.dirMount(ctx.task("Mounting config files"), self.getLocalPath(ctx))
         import PGBuild.Build
-        PGBuild.Build.loadScriptDir(self.getLocalPath(), mergeTask.task("Loading SCons scripts"))
+        PGBuild.Build.loadScriptDir(ctx.task("Loading SCons scripts"), self.getLocalPath(ctx))
 
         
 class Package(object):
     """A package object, initialized from the configuration tree.
        Holds details common to all package versions.
        """    
-    def __init__(self, list, name):
-        self.list = list
-        self.config = list.config
+    def __init__(self, ctx, name):
         self.name = name
         
         # Save the root of the package configuration
-        self.configNode = self.config.xpath('packages/package[@name="%s"]' % self.name)
+        self.configNode = ctx.config.xpath('packages/package[@name="%s"]' % self.name)
         if len(self.configNode) > 1:
             import PGBuild.Errors
             raise PGBuild.Errors.ConfigError("More than one package with the name '%s'" % self.name)
@@ -165,9 +163,9 @@ class Package(object):
         self.configNode = self.configNode[0]
 
         self.versions = {}
-        self._loadVersions(self.configNode)
+        self._loadVersions(ctx, self.configNode)
 
-    def _loadVersions(self, node, paths=[]):
+    def _loadVersions(self, ctx, node, paths=[]):
         """Load <version> tags from the given DOM node, recursively loading <versiongroup>s"""
         for versionNode in node.getElementsByTagName('version'):
             self.versions[versionNode.attributes['name'].value] = PackageVersion(self, versionNode, paths)
@@ -181,14 +179,14 @@ class Package(object):
                 groupPath = [groupNode.attributes['path'].value]
             except KeyError:
                 groupPath = []
-            groupNode = self.config.xpath('versiongroups/versiongroup[@name="%s"]' % groupName)
+            groupNode = ctx.config.xpath('versiongroups/versiongroup[@name="%s"]' % groupName)
             if len(groupNode) > 1:
                 import PGBuild.Errors
                 raise PGBuild.Errors.ConfigError("More than one version group with the name '%s'" % groupName)
             if len(groupNode) == 0:
                 import PGBuild.Errors
                 raise PGBuild.Errors.ConfigError("Can't find a version group with the name '%s'" % groupName)
-            self._loadVersions(groupNode[0], paths + groupPath)
+            self._loadVersions(ctx, groupNode[0], paths + groupPath)
 
     def findVersion(self, version=None):
         """Find a particular version of thie package. If the given version
@@ -208,12 +206,12 @@ class Package(object):
                 "Can't find version '%s' of package '%s'" % (version, self.name))
         return self.versions[matches[-1]]
 
-    def getHostPlatform(self):
+    def getHostPlatform(self, ctx):
         """Find the platform this package will be built to run on. This will first
            try the package's host platform, falling back on the default host.
            """
         import PGBuild.Platform
-        return PGBuild.Platform.parse(self.config.eval('hostPlatform',
+        return PGBuild.Platform.parse(ctx.config.eval('hostPlatform',
                                                        self.configNode) or "host")
 
 
@@ -230,11 +228,11 @@ class PackageList(object):
     """Represents all the packages specified in a given configuration tree,
        and performs lookups on packages and package versions.
        """
-    def __init__(self, config):
+    def __init__(self, ctx):
+        ctx.packages = self
         self.packages = {}
-        self.config = config
 
-    def findPackage(self, name, version=None):
+    def findPackage(self, ctx, name, version=None):
         """The name given here may or may not contain a version. Either way,
            if a version is specified in the 'version' parameter it overrides
            any version from the 'name'.
@@ -244,7 +242,7 @@ class PackageList(object):
             version = nameVersion
 
         if not self.packages.has_key(name):
-            self.packages[name] = Package(self, name)
+            self.packages[name] = Package(ctx, name)
         package = self.packages[name]
 
         if version == None:
@@ -252,68 +250,68 @@ class PackageList(object):
         else:
             return package.findVersion(version)
 
-    def findPackageVersion(self, name, version=None):
+    def findPackageVersion(self, ctx, name, version=None):
         """Like findPackage(), but if no version was specified, return the latest"""
-        pkg = self.findPackage(name, version)
+        pkg = self.findPackage(ctx, name, version)
         if isinstance(pkg, PackageVersion):
             return pkg
         else:
             return pkg.findVersion()
 
-    def isPackage(self, name, version=None):
+    def isPackage(self, ctx, name, version=None):
         """Test whether the given package (with or without version) exists in the configuration"""
         try:
-            self.findPackageVersion(name, version)
+            self.findPackageVersion(ctx, name, version)
             return 1
         except:
             return 0
 
-    def getLocalPackages(self):
+    def getLocalPackages(self, ctx):
         """Retrieve a list of all packages with local copies"""
         # Every directory in our package path is potentially a package-
         # check them against the config's pacage list using isPackage.
-        pkgDir = self.config.eval("bootstrap/path[@name='packages']/text()")
+        pkgDir = ctx.config.eval("bootstrap/path[@name='packages']/text()")
         pkgList = []
         def visit(arg, dirname, names):
            # Chop off the leading directory and convert from the OS's separator back to forward slashes
            pkgName = dirname[len(pkgDir)+1:]
            pkgName = "/".join(pkgName.split(os.sep))
-           if self.isPackage(pkgName):
+           if self.isPackage(ctx, pkgName):
               pkgList.append(pkgName)
               # If this is a package, don't descend into subdirectories
               while names:
                  del names[0]
-        os.path.walk(self.config.eval("bootstrap/path[@name='packages']/text()"), visit, None)
+        os.path.walk(ctx.config.eval("bootstrap/path[@name='packages']/text()"), visit, None)
         return pkgList
 
-    def getBootstrapPackages(self):
+    def getBootstrapPackages(self, ctx):
         """Retrieve a list of all packages mentioned in the <bootstrap> section.
            These packages are essential for PGBuild's operation and should not be deleted.
            """
-        return self.config.eval("bootstrap/package/text()")
+        return ctx.config.eval("bootstrap/package/text()")
 
-    def nuke(self, progress):
+    def nuke(self, ctx):
         """Delete local copies of all non-bootstrap packages"""
-        task = progress.task("Deleting local copies of all non-bootstrap packages")
-        locals = self.getLocalPackages()
-        boots  = self.getBootstrapPackages()
+        ctx = ctx.task("Deleting local copies of all non-bootstrap packages")
+        locals = self.getLocalPackages(ctx)
+        boots  = self.getBootstrapPackages(ctx)
         removedPackages = 0
         for package in locals:
             if not package in boots:
-                self.removeLocalCopy(package, task)
+                self.removeLocalCopy(ctx, package)
                 removedPackages += 1
         if not removedPackages:
-            task.message("No packages to remove")
+            ctx.progress.message("No packages to remove")
 
-    def removeLocalCopy(self, package, progress):
+    def removeLocalCopy(self, ctx, package):
         """Given a package name, deletes the local copy"""
         # This could take a while, show the heading now
-        progress.showTaskHeading()
+        ctx.progress.showTaskHeading()
 
-        basePath = self.config.eval("bootstrap/path[@name='packages']/text()")
+        basePath = ctx.config.eval("bootstrap/path[@name='packages']/text()")
         pkgPath = os.path.join(basePath, package)
         shutil.rmtree(pkgPath)
-        progress.report("removed", "package %s" % package)
+        ctx.progress.report("removed", "package %s" % package)
 
         # Remove as many empty directories above the package as we can
         splitPath = pkgPath.split(os.sep)
@@ -322,7 +320,7 @@ class PackageList(object):
                 del splitPath[-1]
                 dirPath = os.sep.join(splitPath)
                 os.rmdir(dirPath)
-                progress.report("removed", "empty directory %s" % dirPath)
+                ctx.progress.report("removed", "empty directory %s" % dirPath)
         except OSError:
             pass
     

@@ -132,8 +132,11 @@ class Progress(PGBuild.UI.None.Progress):
 class Interface(PGBuild.UI.None.Interface):
     progressClass = Progress
 
-    def cleanup(self):
-        self.progress.cleanup()
+    def cleanup(self, ctx):
+        try:
+            ctx.progress.cleanup()
+        except AttributeError:
+            pass
 
 ### The End ###
         

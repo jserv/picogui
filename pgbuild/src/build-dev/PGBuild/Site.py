@@ -23,13 +23,13 @@ site speed and picking mirrors.
 #
 _svn_id = "$Id$"
 
-def findSite(config, name):
+def findSite(ctx, name):
     """Look up a site name, returning a list of <a> tags.
        This can be passed a <site> tag or a simple name string.
        """
     if type(name) != str:
         name = name.attributes['name'].value
-    return config.xpath("sites/site[@name='%s']/a" % name)
+    return ctx.config.xpath("sites/site[@name='%s']/a" % name)
 
 
 def urljoin(a, b):
@@ -48,8 +48,7 @@ class Location(object):
        that location and reference to the <a> tag for its host.
        Includes methods to perform speed testing.
        """
-    def __init__(self, config, absoluteURI, hostTag):
-        self.config = config
+    def __init__(self, absoluteURI, hostTag):
         self.absoluteURI = absoluteURI
         self.hostTag = hostTag
 
@@ -83,7 +82,7 @@ class Location(object):
             speed = 0
         PGBuild.XMLUtil.setChildData(self.hostTag, 'speed', speed)
 
-    def getSpeed(self, progress):
+    def getSpeed(self, ctx):
         """Return the speed of this Location's host. This will be loaded
            from the configuration database if it has already been calculated
            and we're not forcing a retest, otherwise it will be tested
@@ -96,7 +95,7 @@ class Location(object):
             needTest = 1
 
         # Are we being forced to retest?
-        if self.config.eval("invocation/option[@name='retestMirrors']/text()"):
+        if ctx.config.eval("invocation/option[@name='retestMirrors']/text()"):
             # We only want to retest all the mirrors once each
             if not hasattr(self, 'retested'):
                 needTest = 1
@@ -109,13 +108,13 @@ class Location(object):
             server = urlparse.urlparse(self.absoluteURI)[1]
             speed = float(PGBuild.XMLUtil.getChildData(self.hostTag, 'speed'))
             if speed > 0:
-                progress.report("tested", "%7.2f KB/s from %s" % (speed/1000, server))
+                ctx.progress.report("tested", "%7.2f KB/s from %s" % (speed/1000, server))
             else:
-                progress.warning("unable to download from %s" % server)
+                ctx.progress.warning("unable to download from %s" % server)
         return float(PGBuild.XMLUtil.getChildData(self.hostTag, 'speed'))
 
 
-def expand(config, tags):
+def expand(ctx, tags):
     """Recursively resolve a list of <a> tags that may contain
        references to sites. Returns a list of Locations.
        """
@@ -128,23 +127,23 @@ def expand(config, tags):
             raise PGBuild.Errors.ConfigError("Found an <a> tag with more than one <site> tag inside")
         if sites:
             # This is a site-relative link. Find the site and expand it.
-            resolvedResults = expand(config, findSite(config, sites[0]))
+            resolvedResults = expand(ctx, findSite(ctx, sites[0]))
             # Join our path onto the end of each result as we append it to our results
             for resolvedResult in resolvedResults:
-                results.append(Location(config, urljoin(resolvedResult.absoluteURI, href),
+                results.append(Location(urljoin(resolvedResult.absoluteURI, href),
                                         resolvedResult.hostTag))
         else:
             # This is an absolute link- just add it to our results
-            results.append(Location(config, href, tag))
+            results.append(Location(href, tag))
     return results
             
 
-def resolve(config, tags, progress, appendPaths=[]):
+def resolve(ctx, tags, appendPaths=[]):
     """Given a list of <a> tags, expand them into absolute URIs
        and pick the fastest mirror. Returns a Location.
        appendPaths gives a list of paths to be appended to each URI before use.
        """
-    mirrors = expand(config, tags)
+    mirrors = expand(ctx, tags)
     for mirror in mirrors:
         mirror.append(appendPaths)
     def speedSort(a,b):

@@ -123,15 +123,14 @@ version = detectVersion()
 
 
 class Repository(PGBuild.Repository.RepositoryBase):
-    def __init__(self, config, url):
-        self.config = config
+    def __init__(self, ctx, url):
         self.url = url
 
-    def download(self, destination, progress):
+    def download(self, ctx, destination):
         finished = 0
         try:
-            if not collectProgress(openSvn('co "%s" "%s"' % (self.url, destination), progress),
-                                   progress, destination):
+            if not collectProgress(openSvn('co "%s" "%s"' % (self.url, destination), ctx.progress),
+                                   ctx.progress, destination):
                 raise PGBuild.Errors.EnvironmentError("The Subversion checkout didn't download any files.")
             finished = 1
         finally:
@@ -145,10 +144,10 @@ class Repository(PGBuild.Repository.RepositoryBase):
                 try:
                     shutil.rmtree(destination)
                 except:
-                    progress.warning(("Couldn't remove the partial Subversion checkout!\n" +
-                                      "Please try removing the directory %s") % destination)
+                    ctx.progress.warning(("Couldn't remove the partial Subversion checkout!\n" +
+                                          "Please try removing the directory %s") % destination)
 
-    def isWorkingCopyPresent(self, destination):
+    def isWorkingCopyPresent(self, ctx, destination):
         try:
             # Determine if the destination has a repository. This will fail if not.
             open(os.path.join(destination, os.path.join(".svn", "format"))).close()
@@ -156,29 +155,30 @@ class Repository(PGBuild.Repository.RepositoryBase):
         except IOError:
             return 0
         
-    def isUpdateAvailable(self, destination):
-        if not self.isWorkingCopyPresent(destination):
+    def isUpdateAvailable(self, ctx, destination):
+        if not self.isWorkingCopyPresent(ctx, destination):
             return 1
 
-        svn = openSvn('status --show-updates "%s"' % destination, progress)
+        svn = openSvn('status --show-updates "%s"' % destination, ctx.progress)
         # If we have any lines beginning with (ignoring whitespace) an asterisk,
         # we need to update something.
         while 1:
             line = svn.readline()
             if not line:
                 svn.close()
-                return 0
+                return False
             if line.lstrip()[0] == '*':
                 svn.close()
-                return 1
+                return True
             
-    def update(self, destination, progress):
+    def update(self, ctx, destination):
         """Update the package if possible. Return 1 if there was an update available, 0 if not."""
-        if self.isWorkingCopyPresent(destination):
-            return collectProgress(openSvn('up "%s"' % destination, progress), progress, destination) != 0
+        if self.isWorkingCopyPresent(ctx, destination):
+            return collectProgress(openSvn('up "%s"' % destination, progress),
+                                   ctx.progress, destination) != 0
         else:
             # No working copy- do a complete download
-            self.download(destination, progress)
+            self.download(ctx, destination)
             return 1
 
 ### The End ###

@@ -29,8 +29,7 @@ import os, tarfile, urllib2, shutil
 import PGBuild.Repository
 
 class Repository(PGBuild.Repository.RepositoryBase):
-    def __init__(self, config, url):
-        self.config = config
+    def __init__(self, ctx, url):
         self.url = url
 
         # Detect the type of compression, based on the file extension
@@ -41,23 +40,23 @@ class Repository(PGBuild.Repository.RepositoryBase):
         else:
             self.compression = ""
 
-    def getCompletenessFile(self, destination):
+    def getCompletenessFile(self, ctx, destination):
         """Get the name of a hidden file we use to mark a download as complete"""
         return os.path.join(destination, ".pgb-complete-download")
 
-    def setCompleteness(self, destination, value):
+    def setCompleteness(self, ctx, destination, value):
         if value:
-            open(self.getCompletenessFile(destination), "w").close()
+            open(self.getCompletenessFile(ctx, destination), "w").close()
         else:
             try:
-                os.unlink(self.getCompletenessFile(destination))
+                os.unlink(self.getCompletenessFile(ctx, destination))
             except OSError:
                 pass
 
-    def getCompleteness(self, destination):
-        return os.path.isfile(self.getCompletenessFile(destination))
+    def getCompleteness(self, ctx, destination):
+        return os.path.isfile(self.getCompletenessFile(ctx, destination))
 
-    def download(self, destination, progress):
+    def download(self, ctx, destination):
         downloadComplete = 0
         try:
             # Extract the file as we download it
@@ -76,27 +75,27 @@ class Repository(PGBuild.Repository.RepositoryBase):
                 relativeName = os.sep.join(file.name.split("/")[1:])
                 try:
                     tar._extract_member(file, os.path.join(destination, relativeName))
-                    progress.report("added", relativeName)
+                    ctx.progress.report("added", relativeName)
                 except EnvironmentError:
-                    progress.warning("EnvironmentError while extracting:\n%s" % relativeName, 2)
+                    ctx.progress.warning("EnvironmentError while extracting:\n%s" % relativeName, 2)
                 except tarfile.ExtractError:
-                    progress.warning("ExtractError while extracting:\n%s" % relativeName, 2)
+                    ctx.progress.warning("ExtractError while extracting:\n%s" % relativeName, 2)
             tar.close()
             urlFile.close()
             downloadComplete = 1
         finally:
             # If our download was terminated, make sure we don't incorrectly leave a completion flag
-            self.setCompleteness(destination, downloadComplete)
+            self.setCompleteness(ctx, destination, downloadComplete)
 
-    def isUpdateAvailable(self, destination):
+    def isUpdateAvailable(self, ctx, destination):
         # Since it's assumed Tar reporitories are for finalized releases, the only time we would
         # need an update is if we don't yet have a complete download of the archive.
-        return not self.getCompleteness(destination)
+        return not self.getCompleteness(ctx, destination)
             
-    def update(self, destination, progress):
+    def update(self, ctx, destination):
         """Update the package if possible. Return 1 if there was an update available, 0 if not."""
-        if self.isUpdateAvailable(destination):
-            self.download(destination, progress)
+        if self.isUpdateAvailable(ctx, destination):
+            self.download(ctx, destination)
             return 1
         return 0
 

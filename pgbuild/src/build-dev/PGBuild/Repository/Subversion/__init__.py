@@ -26,12 +26,12 @@ import PGBuild.Errors
 
 implementation = None
 
-def Repository(config, url):
+def Repository(ctx, url):
     """Repository factory function that automatically chooses an implementation module"""
     global implementation
     if not implementation:
         # Is an implementation being forced in the invocation options?
-        if config.eval("invocation/option[@name='forceMiniSVN']/text()"):
+        if ctx.config.eval("invocation/option[@name='forceMiniSVN']/text()"):
             import MiniSVN
             implementation = MiniSVN
 
@@ -47,6 +47,6 @@ def Repository(config, url):
                 except:
                     raise PGBuild.Errors.EnvironmentError("No working Subversion implementation found")
 
-    return implementation.Repository(config, url)
+    return implementation.Repository(ctx, url)
 
 ### The End ###

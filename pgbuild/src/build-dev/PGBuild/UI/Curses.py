@@ -390,14 +390,14 @@ class Interface(PGBuild.UI.None.Interface):
     """PGBuild Interface implementation using our Curses-based progress reporter"""
     progressClass = Progress
 
-    def run(self):
-        super(Interface, self).run()
+    def run(self, ctx):
+        PGBuild.UI.None.Interface.run(self, ctx)
         print "Done."
 
-    def cleanup(self):
-        self.progress.cleanup()
+    def cleanup(self, ctx):
+        ctx.progress.cleanup()
 
-    def exitWithError(self, message):
+    def exitWithError(self, ctx, message):
         """Exit with an error, ending the Curses environment
            and printing it using the Text UI
            """

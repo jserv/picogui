@@ -26,11 +26,11 @@ _svn_id = "$Id$"
 import PGBuild.UI.Text
 
 class Interface(PGBuild.UI.Text.Interface):
-    def run(self):
+    def run(self, ctx):
         text = "Available UI modules:\n\n"
         for module in PGBuild.UI.catalog:
             text += "%10s: %s\n" % module
-        self.progress.message(text[:-1])
+        ctx.progress.message(text[:-1])
         
 ### The End ###
         

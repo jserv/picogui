@@ -30,8 +30,7 @@ import pickle
 import PGBuild.Repository
 
 class Repository(PGBuild.Repository.RepositoryBase):
-    def __init__(self, config, url):
-        self.config = config
+    def __init__(self, ctx, url):
         self.url = url
         self.root = None
 
@@ -70,7 +69,7 @@ class Repository(PGBuild.Repository.RepositoryBase):
         propFile.close()
         return props
 
-    def download(self, destination, progress, numThreads=5):
+    def download(self, ctx, destination):
         self.connect()
         downloadComplete = 0
         try:
@@ -106,7 +105,7 @@ class Repository(PGBuild.Repository.RepositoryBase):
                     f.write(object.read())
                     f.close()
 
-                progress.report('added', objDest)
+                ctx.progress.report('added', objDest)
         
                 for child in object.getChildren():
                     # Find the part of the child's URL that was (presumably)
@@ -121,7 +120,7 @@ class Repository(PGBuild.Repository.RepositoryBase):
                 # next time we have the option to do an update, we will.
                 os.unlink(self.getPropertyFile(destination))
 
-    def isUpdateAvailable(self, destination):
+    def isUpdateAvailable(self, ctx, destination):
         self.connect()
         try:
             # DAV::version-name should have the latest revision that this subdirectory
@@ -138,12 +137,12 @@ class Repository(PGBuild.Repository.RepositoryBase):
             pass
         return 1
             
-    def update(self, destination, progress):
+    def update(self, ctx, destination):
         """Update the package if possible. Return 1 if there was an update available, 0 if not."""
         self.connect()
         if self.isUpdateAvailable(destination):
             # We can't update, just redownload the sources.
-            self.download(destination, progress)
+            self.download(ctx, destination)
             return 1
         return 0
 

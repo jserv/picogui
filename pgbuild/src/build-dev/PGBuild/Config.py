@@ -314,13 +314,15 @@ class Tree(PGBuild.XMLUtil.Document):
             self.normalize()
             mergeElements(self)
 
-    def dirMount(self, dir, progress=None):
+    def dirMount(self, ctx, dir):
         """Mount all config files in the given directory"""
         import glob, os
         for file in glob.glob(os.path.join(dir, "*.%s" % configFileExtension)):
             self.mount(file)
-            if progress:
-                progress.report("mounted", file)
+            try:
+                ctx.progress.report("mounted", file)
+            except AttributeError:
+                pass
 
     def commit(self):
         """Save changes to all config trees that include 'w' in their mode"""
@@ -338,12 +340,14 @@ class Tree(PGBuild.XMLUtil.Document):
                                              self.rootName, minfo.attributes,
                                              comment)
 
-    def dump(self, file, progress=None):
+    def dump(self, ctx, file):
         """Dump the full configuration tree to a file"""
         f = open(file, "w")
         f.write(self.toprettyxml())
         f.close()
-        if progress:        
-            progress.message("Configuration tree dumped to %s" % file)
+        try:
+            ctx.progress.message("Configuration tree dumped to %s" % file)
+        except AttributeError:
+            pass
                 
 ### The End ###

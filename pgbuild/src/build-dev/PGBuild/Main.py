@@ -54,8 +54,8 @@ class OptionParser(optik.OptionParser):
 
         # Please try to follow the following conventions when adding command line options:
         #
-        #   1. All options except the built-in --version and --help should be in a group,
-        #      unless you can think of a darn good reason why not.
+        #   1. Most options should be in a group. The built-in --help and --version won't be,
+        #      so any options that follow a similar pattern should not be in a group.
         #
         #   2. All options must have a help string, beginning with a verb in the Simple Present
         #      tense and ending in a period.
@@ -69,6 +69,9 @@ class OptionParser(optik.OptionParser):
         #   5. Options and groups should be listed in alphabetical order. If you want
         #      options to be listed together, that's what groups are for.
         #
+
+        self.add_option("--platform", action="platform",
+                        help="Shows the detected platform and exits.")
 
         ############# Build options
         
@@ -125,6 +128,13 @@ class OptionParser(optik.OptionParser):
         reportingGroup.add_option("-v", "--verbose", action="count", dest="verbosity", default=1,
                                   help="Reports progress in more detail.")    
 
+    def print_platform(self, file=None):
+        # This mirrors the SCons built-in print_version and print_help
+        if file is None:
+            file = sys.stdout
+        file.write("%s\n" % PGBuild.platform)
+
+
 
 class HelpFormatter(optik.IndentedHelpFormatter):
     """Custom help formatting- provides some extra information about
@@ -145,12 +155,18 @@ class HelpFormatter(optik.IndentedHelpFormatter):
 class Option(optik.Option):
     """Subclass optik's Option in order to add new action types"""
 
-    ACTIONS = optik.Option.ACTIONS + ("uncount",)
+    ACTIONS = optik.Option.ACTIONS + ("uncount", "platform")
     STORE_ACTIONS = optik.Option.STORE_ACTIONS + ("uncount",)
     
     def take_action(self, action, dest, opt, value, values, parser):
         if action == "uncount":
             setattr(values, dest, values.ensure_value(dest, 0) - 1)
+
+        elif action == "platform":
+            # This mirrors the built-in SCons actions "version" and "help"
+            parser.print_platform()
+            sys.exit(0)
+
         else:
             optik.Option.take_action(self, action, dest, opt, value, values, parser)
 
@@ -248,8 +264,40 @@ class PackageXML(xml.dom.minidom.Document):
                     pgbuild.appendChild(node)
 
 
-def boot(bootstrap, argv):
-    """Performs initial setup of PGBuild's configuration tree"""
+class Baton(object):
+    """This is inspired by Subversion: The Baton object is used to store all
+       context information that commonly needs to be sent to other
+       functions. It is named as such since it gets passed around a lot.
+       In the context of PGBuild, this is mainly for the config and progress
+       objects, but is good for holding references to any such pseudo-global
+       variables. This is better than actually using global variables, since
+       it's cleaner and allows deviating from global-like behavior when
+       necessary, as with the project object when starting a new task.
+       """
+    def modify(self, **kwargs):
+        """Modify named attributes in bulk using keyword args"""
+        self.__dict__.update(kwargs)
+    
+    def clone(self, **kwargs):
+        """Make a shallow copy of the baton so that it may be modified
+           for passing to subclasses. keyword args can be used to modify
+           the cloned baton.
+           """
+        import copy
+        miniMe = copy.copy(self)
+        miniMe.modify(**kwargs)
+        return miniMe
+
+    def task(self, name):
+        """Convenience function for starting a new task- clones the baton,
+           and replaces the progress object with subtask progress object
+           created using its task() function.
+           """
+        return self.clone(progress=self.progress.task(name))
+    
+
+def boot(ctx, bootstrap, argv):
+    """Performs initial setup of PGBuild's configuration tree."""
 
     # Parse the args as soon as possible- this ensures that getting output
     # from --help doesn't require initializing the config tree.
@@ -259,14 +307,14 @@ def boot(bootstrap, argv):
     # option parser runs as soon as possible
     import PGBuild.Package
     import PGBuild.Config
-    config = PGBuild.Config.Tree()
+    ctx.config = PGBuild.Config.Tree()
 
     # Mount in an XML representation of the bootstrap object
-    config.mount(BootstrapXML(bootstrap))
+    ctx.config.mount(BootstrapXML(bootstrap))
 
     # Mount an XML representation of the PGBuild package's attributes, including
     # the description and version of this build system
-    config.mount(PackageXML(PGBuild, "sys"))
+    ctx.config.mount(PackageXML(PGBuild, "sys"))
 
     # Try to make sure all our bootstrap paths exist
     for path in bootstrap.paths.values():
@@ -287,8 +335,8 @@ def boot(bootstrap, argv):
                     shutil.copyfile(os.path.join(skelPath, skelFile),
                                     os.path.join(bootstrap.paths['localConf'], skelFile))
 
-    # Initialize a package list for this config tree
-    config.packages = PGBuild.Package.PackageList(config)
+    # Initialize a package list
+    ctx.packages = PGBuild.Package.PackageList(ctx.config)
 
     # Read in configuration from the bootstrap packages
     # Alas, this has to be done in a separate step from actually merging the
@@ -296,18 +344,17 @@ def boot(bootstrap, argv):
     # We do the merge after the UI is set up, so that if the packages are updated
     # we can get progress reports.
     for package in bootstrap.packages.values():
-        config.dirMount(os.path.join(bootstrap.paths['packages'], package))
+        ctx.config.dirMount(ctx, os.path.join(bootstrap.paths['packages'], package))
 
     # Mount the local configuration directory
-    config.dirMount(bootstrap.paths['localConf'])
+    ctx.config.dirMount(ctx, bootstrap.paths['localConf'])
 
     # Parse user options. This is only meaningful on UNIXes, but should fail
     # uneventfully on other platforms.
-    config.dirMount(os.path.expanduser("~/.pgbuild"))
+    ctx.config.dirMount(ctx, os.path.expanduser("~/.pgbuild"))
     
     # Mount command line options
-    config.mount(OptionsXML(parsedArgs))
-    return config
+    ctx.config.mount(OptionsXML(parsedArgs))
 
 
 def main(bootstrap, argv):
@@ -320,8 +367,9 @@ def main(bootstrap, argv):
        """
     global exitStatus
 
-    config = None
-    ui = None
+    ctx = Baton()
+    ctx.config = None
+    ctx.ui = None
     # Outer try - cleanups
     try:
         # Middle try - UI exception handlers
@@ -329,27 +377,27 @@ def main(bootstrap, argv):
             # Inner try - Exception rewriting
             try:
 
-                # Set up the configuration tree
-                config = boot(bootstrap, argv)
+                # Set up the configuration tree and package list
+                boot(ctx, bootstrap, argv)
 
                 # Load a UI module and run it
                 import PGBuild.UI
-                ui = PGBuild.UI.find(config.eval("invocation/option[@name='ui']/text()")).Interface(config)
-                ui.run()
+                PGBuild.UI.find(ctx.config.eval("invocation/option[@name='ui']/text()")).Interface(ctx)
+                ctx.ui.run(ctx)
 
             except KeyboardInterrupt:
                 import PGBuild.Errors
                 raise PGBuild.Errors.InterruptError()
         except:
             # If we have a UI yet, try to let it handle the exception. Otherwise just reraise it.
-            if ui:
-                ui.exception(sys.exc_info())
+            if ctx.ui:
+                ctx.ui.exception(ctx, sys.exc_info())
                 exitStatus = 2
             else:
                 raise
     finally:
-        if config:
-            config.commit()
+        if ctx.config:
+            ctx.config.commit()
     sys.exit(exitStatus)
 
 ### The End ###

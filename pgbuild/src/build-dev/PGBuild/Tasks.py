@@ -28,11 +28,8 @@ _svn_id = "$Id$"
 
 class Task(object):
     """Base class for PGBuild tasks"""
-    def __init__(self, taskList):
-        self.taskList = taskList
-        self.config = taskList.config
-        self.progress = taskList.progress
-        self.ui = taskList.ui
+    def __init__(self, ctx):
+        self.ctx = ctx
         self.init()
 
     def init(self):
@@ -61,23 +58,21 @@ class InternalTask(Task):
     pass
 
 class TaskList(object):
-    def __init__(self, ui, tasks=[]):
-        self.config = ui.config
-        self.progress = ui.progress
-        self.ui = ui
+    def __init__(self, ctx, tasks=[]):
+        ctx.taskList = self
         self.all = []
         self.pending = []
         self.completed = []
         self.inactive = []
-        self.add(tasks)
+        self.add(ctx, tasks)
 
-    def add(self, tasks):
+    def add(self, ctx, tasks):
         if type(tasks) != type(()) and type(tasks) != type([]):
             tasks = [tasks]
         for task in tasks:
             # Allow passing classes rather than instances
             if callable(task):
-                task = task(self)
+                task = task(ctx)
             self.all.append(task)
             
             # We pop elements off the end of the pending list
@@ -100,7 +95,7 @@ class BuildSystemInitTask(InternalTask):
     """Invoke the build system to build targets"""
     def execute(self):
         import PGBuild.Build
-        self.ui.buildSystem = PGBuild.Build.System(self.config)
+        self.ctx.ui.buildSystem = PGBuild.Build.System(self.ctx)
 
 class MergeBootstrapTask(InternalTask):
     def execute(self):
@@ -108,78 +103,78 @@ class MergeBootstrapTask(InternalTask):
            except the actual configuration mount, since we had to do that
            during PGBuild.Main.boot()
            """
-        bootMergeTask = self.progress.task("Merging bootstrap packages")
-        for package in self.config.packages.getBootstrapPackages():
-            self.config.packages.findPackageVersion(package).merge(bootMergeTask, False)
+        ctx = self.ctx.task("Merging bootstrap packages")
+        for package in ctx.config.packages.getBootstrapPackages(ctx):
+            ctx.config.packages.findPackageVersion(ctx, package).merge(ctx, False)
 
 class NukeTask(UserTask):
     """Handle --nuke command line option"""
     def isActive(self):
-        return self.config.eval("invocation/option[@name='nuke']/text()")
+        return self.ctx.config.eval("invocation/option[@name='nuke']/text()")
 
     def execute(self):
-        self.config.packages.nuke(self.progress)
+        self.ctx.config.packages.nuke(self.ctx)
 
 class MergeAllTask(UserTask):
     """Handle --merge-all command line option"""
     def isActive(self):
-        return self.config.eval("invocation/option[@name='mergeAll']/text()")
+        return self.ctx.config.eval("invocation/option[@name='mergeAll']/text()")
 
     def execute(self):
-        mergeTask = self.progress.task("Merging all packages")
-        packages = self.config.listEval("packages/package/@name")
+        mergeTaskCtx = self.ctx.task("Merging all packages")
+        packages = self.ctx.config.listEval("packages/package/@name")
         packages.sort()
         for name in packages:
-            self.config.packages.findPackageVersion(name).merge(mergeTask)
+            self.ctx.packages.findPackageVersion(name).merge(mergeTaskCtx)
 
 class MergeTask(UserTask):
     """Handle --merge command line option"""
     def init(self):
-        self.mergeList = self.config.listEval("invocation/option[@name='merge']/item/text()")
+        self.mergeList = self.ctx.config.listEval("invocation/option[@name='merge']/item/text()")
 
     def isActive(self):
         return not not self.mergeList
 
     def execute(self):
-        mergeTask = self.progress.task("Merging user-specified packages")
+        mergeTaskCtx = self.ctx.task("Merging user-specified packages")
         for name in self.mergeList:
-            self.config.packages.findPackageVersion(name).merge(mergeTask)
+            self.ctx.config.packages.findPackageVersion(self.ctx, name).merge(mergeTaskCtx)
 
 class BuildSystemRunTask(UserTask):
     """Invoke the build system to build targets"""
     def isActive(self):
-        return not self.config.eval("invocation/option[@name='noBuild']/text()")
+        return not self.ctx.config.eval("invocation/option[@name='noBuild']/text()")
     def execute(self):
-        if not self.ui.buildSystem.run(self.progress):
+        if not self.ctx.ui.buildSystem.run(self.ctx):
             import PGBuild.Errors
             raise PGBuild.Errors.ExternalError("No targets to build")
 
 class CleanupUITask(InternalTask):
     """Call the UI's cleanup() method to, if applicable, put us back in plain text mode"""
     def execute(self):
-        self.ui.cleanup()
+        self.ctx.ui.cleanup(self.ctx)
 
 class DumpTreeTask(UserTask):
     """Handle --dump-tree command line option"""
     def init(self):
-        self.dumpFile = self.config.eval("invocation/option[@name='treeDumpFile']/text()")
+        self.dumpFile = self.ctx.config.eval("invocation/option[@name='treeDumpFile']/text()")
 
     def isActive(self):
         return not not self.dumpFile
 
     def execute(self):
-        self.config.dump(self.dumpFile, self.progress)
+        self.ctx.config.dump(self.ctx, self.dumpFiles)
 
 class ListTask(UserTask):
     """Handle --list command line option"""
     def init(self):
-        self.listPath = self.config.eval("invocation/option[@name='listPath']/text()")
+        self.listPath = self.ctx.config.eval("invocation/option[@name='listPath']/text()")
 
     def isActive(self):
         return not not self.listPath
 
     def execute(self):
-        self.ui.list(self.listPath)
+        self.ctx.ui.list(self.listPath)
 
 ################### Primary task list
 #

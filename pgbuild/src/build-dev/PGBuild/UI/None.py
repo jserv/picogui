@@ -153,38 +153,38 @@ class Interface(object):
     progressClass = Progress
     timeStampClass = TimeStamp
     
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, ctx):
+        ctx.ui = self
 
         # Set up a progress reporter object at the specified verbosity
-        self.verbosity = int(config.eval("invocation/option[@name='verbosity']/text()"))
-        self.progress = self.progressClass(self.verbosity)
+        self.verbosity = int(ctx.config.eval("invocation/option[@name='verbosity']/text()"))
+        ctx.progress = self.progressClass(self.verbosity)
 
-        self.progress.message("Using UI module %s" % self.__class__.__module__, 2)
+        ctx.progress.message("Using UI module %s" % self.__class__.__module__, 2)
 
-    def cleanup(self):
+    def cleanup(self, ctx):
         pass
 
-    def run(self):
+    def run(self, ctx):
         """Execute the UI. By default, this just executes
            all PGBuild Tasks according to invocation options.
            """
         import PGBuild.Tasks
-        PGBuild.Tasks.TaskList(self, PGBuild.Tasks.allTasks).run()
+        PGBuild.Tasks.TaskList(ctx, PGBuild.Tasks.allTasks).run()
         
-    def exitWithError(self, message):
-        self.progress.error(message)
-        self.cleanup()
+    def exitWithError(self, ctx, message):
+        ctx.progress.error(message)
+        self.cleanup(ctx)
         sys.exit(1)
 
-    def exception(self, exc_info):
+    def exception(self, ctx, exc_info):
         """This is called when PGBuild.Main catches an exception. This default
            implementation gives subclasses a chance to clean up, then tries to convert
            the exception into an error for the Progress class if it's one of our types.
            """
         import PGBuild.Errors
         if isinstance(exc_info[1], PGBuild.Errors.ExternalError) and not \
-               self.config.eval("invocation/option[@name='traceback']/text()"):
+               ctx.config.eval("invocation/option[@name='traceback']/text()"):
             # Pretty-print ExternalErrors a bit, hiding the details that might scare people
             message = ""
             try:
@@ -197,17 +197,17 @@ class Interface(object):
                 pass
             if not message:
                 message = str(exc_info[1])
-            self.exitWithError(message)
+            self.exitWithError(ctx, message)
         else:
-            self.cleanup()
-            self._exception(exc_info)
+            self.cleanup(ctx)
+            self._exception(ctx, exc_info)
 
-    def _exception(self, exc_info):
+    def _exception(self, ctx, exc_info):
         raise exc_info[0], exc_info[1], exc_info[2]
 
-    def list(self, listPath):
+    def list(self, ctx, listPath):
         """Guts of the --list command line option- list the contents of an XPath"""
-        results = self.config.xpath(listPath)
+        results = ctx.config.xpath(listPath)
 
         # A little bit of voodoo-
         # If we have only one result and that result has no name attribute,
@@ -220,9 +220,9 @@ class Interface(object):
             except KeyError:
                 results = results[0].childNodes
             
-        self.listNodes(results)
+        self.listNodes(ctx, results)
 
-    def listNodes(self, nodes):
+    def listNodes(self, ctx, nodes):
         """Given a list of DOM nodes, print a table with the node names and description summaries.
            This is used to format the output of the --list and --search options.
            """
@@ -234,7 +234,7 @@ class Interface(object):
                 try:
                     # An element with a name, list it by name without recursion. Try to get a description.
                     try:
-                        description = self.config.xpath('description/summary/text()', node)[0].data
+                        description = ctx.config.xpath('description/summary/text()', node)[0].data
                     except IndexError:
                         description = ""
                     table.append((node.attributes['name'].value, description))
@@ -242,11 +242,11 @@ class Interface(object):
                     pass
         table.sort()
         if table:
-            self.showTable(table)
+            self.showTable(ctx, table)
         else:
-            self.progress.message("No results")
+            ctx.progress.message("No results")
 
-    def showTable(self, table, write=sys.stdout.write):
+    def showTable(self, ctx, table, write=sys.stdout.write):
         """Display the supplied sequence of sequences as a table"""
         columns = len(table[0])
 
