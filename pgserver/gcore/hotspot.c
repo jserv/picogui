@@ -1,4 +1,4 @@
-/* $Id: hotspot.c,v 1.22 2002/02/04 13:26:16 micahjd Exp $
+/* $Id: hotspot.c,v 1.23 2002/02/05 00:17:55 micahjd Exp $
  *
  * hotspot.c - This is an interface for managing hotspots.
  *             The divtree is scanned for hotspot divnodes.
@@ -118,7 +118,8 @@ g_error hotspot_build(struct divnode *n, struct divnode *ntb) {
   /* shall this be a hotspot? */
   if ((n->flags & DIVNODE_HOTSPOT) && n->w>0 && n->h>0 &&
       ((!ntb) || n->x < ntb->x || n->y < ntb->y ||
-       n->x >= ntb->x+ntb->w || n->y >= ntb->y+ntb->h)) {
+       n->x >= ntb->x+ntb->w || n->y >= ntb->y+ntb->h) &&
+      ((!n->divscroll) || (n->divscroll->calcw && n->divscroll->calch))) {
 
     /* Find a good place within the node for the hotspot */
     divnode_hotspot_position(n,&x,&y);
