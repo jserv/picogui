@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.27 2002/01/06 09:22:56 micahjd Exp $
+/* $Id: netcore.c,v 1.28 2002/01/17 10:58:40 gobry Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -851,7 +851,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.27 2002/01/06 09:22:56 micahjd Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.28 2002/01/17 10:58:40 gobry Exp $\n");
 	exit(1);
       }
 
@@ -977,14 +977,15 @@ void pgInit(int argc, char **argv)
   }
 
   if((ServerInfo.protover < PG_PROTOCOL_VER) && enable_warning) {
-	 const char *s1, *copys1, *s2;
+	 const char *s1, *s2;
+	 char * copys1;
 	 
 	 /* We must copy the first string temporarily because the pgGetString
 	  * buffer is only valid until the next picogui call */
 	 s1 = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
 					PGTH_P_STRING_PGUIWARN));
 	 copys1 = alloca(strlen(s1)+1);
-	 strcpy(copys1,s1);
+	 strcpy(copys1, s1);
 	 s2 = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
 					PGTH_P_STRING_PGUICOMPAT)),   
 	   pgMessageDialog(copys1,s2,0);
