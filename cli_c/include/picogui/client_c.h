@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.16 2000/11/04 20:27:08 micahjd Exp $
+/* $Id: client_c.h,v 1.17 2000/11/05 01:07:55 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -27,6 +27,12 @@
 
 #ifndef _H_PG_CLI_C
 #define _H_PG_CLI_C
+
+/* Most picogui programs won't need stdio.h,
+   so we should define this if needed. */
+#ifndef NULL
+#define NULL ((void*)0)
+#endif
 
 /******************** Client-specific constants and data types */
 
@@ -187,6 +193,14 @@ pghandle pgNewFont(const char *name,short size,unsigned long style);
 /* Load a compiled theme file into the server */
 pghandle pgLoadTheme(struct pgmemdata obj);
 
+/* Get and set the 'payload', a app-defined chunk
+ * of data attatched to any object. Good for defining
+ * button return codes in a dialog, or even making
+ * a linked list of objects!
+ */
+void pgSetPayload(pghandle object,unsigned long payload);
+unsigned long pgGetPayload(pghandle object);
+
 /******************** Data loading */
 
 /* Data already loaded in memory */
@@ -219,6 +233,15 @@ struct pgmemdata pgFromFile(const char *file);
  */
 void pgEventLoop(void);
 void pgExitEventLoop(void);
+
+/* Wait for a single event, then return it. This is good
+ * for small dialog boxes, or other situations when pgBind and
+ * pgEventLoop are overkill.
+ *
+ * Returns the originating widget, and if the supplied pointers
+ * are non-NULL, it will return the event and parameter in them.
+ */
+pghandle pgGetEvent(unsigned short *event, unsigned long *param);
 
 /* PicoGUI uses a context system, similar to contexts in C.
  * Whenever the program leaves a context, all objects created

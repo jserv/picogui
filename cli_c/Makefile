@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.8 2000/11/04 19:42:43 micahjd Exp $
+# $Id: Makefile,v 1.9 2000/11/05 01:07:52 micahjd Exp $
 #
 # C client library (libpgui) makefile
 #
@@ -34,7 +34,7 @@ SRC := src/picogui_client.c
 
 # Demo program files (each .c is a self-contained demo proggie)
 DEMOSRC := demos/demo.c demos/themedemo.c demos/msgdialog.c \
-           demos/imgview.c
+           demos/imgview.c demos/menutest.c
 
 HDR := include/*.h include/picogui/*.h
 

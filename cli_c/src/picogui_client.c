@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.18 2000/11/04 22:38:15 micahjd Exp $
+/* $Id: picogui_client.c,v 1.19 2000/11/05 01:07:55 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -583,6 +583,18 @@ void pgEventLoop(void) {
 
 void pgExitEventLoop(void) { _pgeventloop_on=0; }
 
+pghandle pgGetEvent(unsigned short *event, unsigned long *param) {
+  /* Update before waiting for the user */
+  pgUpdate();
+
+  /* Wait for a new event */
+  _pg_add_request(PGREQ_WAIT,NULL,0);
+  pgFlushRequests();
+  if (event) *event = _pg_return.e.event.event;
+  if (param) *param = _pg_return.e.event.param;
+  return _pg_return.e.event.from;
+}
+
 /* Add the specified handler to the list */
 void pgBind(pghandle widgetkey,unsigned short eventkey,
 	    pgevthandler handler) {
@@ -686,6 +698,20 @@ struct pgmemdata pgFromFile(const char *file) {
 }
 
 /******* A little more complex ones, with args */
+
+void pgSetPayload(pghandle object,unsigned long payload) {
+  struct pgreqd_setpayload arg;
+  arg.h = htonl(object);
+  arg.payload = htonl(payload);
+  _pg_add_request(PGREQ_SETPAYLOAD,&arg,sizeof(arg));
+}
+
+unsigned long pgGetPayload(pghandle object) {
+  object = htonl(object);
+  _pg_add_request(PGREQ_GETPAYLOAD,&object,sizeof(object));
+  pgFlushRequests();
+  return _pg_return.e.retdata;
+}
 
 void pgDelete(pghandle object) {
   struct pgreqd_handlestruct arg;
@@ -849,7 +875,7 @@ pghandle pgNewFont(const char *name,short size,unsigned long style) {
 
 pghandle pgNewPopup(int width,int height) {
   /* Tell the server to center it */
-  return pgNewPopupAt(-1,-1,width,height);
+  return pgNewPopupAt(PG_POPUP_CENTER,-1,width,height);
 }
 
 pghandle pgNewBitmap(struct pgmemdata obj) {
@@ -968,18 +994,8 @@ int pgMessageDialog(const char *title,const char *text,unsigned long flags) {
   arg.flags = htonl(flags);
   _pg_add_request(PGREQ_MKMSGDLG,&arg,sizeof(arg));
 
-  /* Display it */
-  pgUpdate();
-
-  /* Wait for a new event */
-  _pg_add_request(PGREQ_WAIT,NULL,0);
-  pgFlushRequests();
-  from = _pg_return.e.event.from;
-  
-  /* Get the payload */
-  _pg_add_request(PGREQ_GETPAYLOAD,&from,sizeof(from));
-  pgFlushRequests();
-  ret = _pg_return.e.retdata;
+  /* Run it */
+  ret = pgGetPayload(pgGetEvent(NULL,NULL));
 
   /* Go away now */
   pgLeaveContext();
