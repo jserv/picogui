@@ -123,9 +123,6 @@ def mkfont(name, style, size, id=None):
 def mkinfilter(insert_after, accept_trigs, absorb_trigs, id=None):
 	return request(11, pack('LLL', insert_after, accept_trigs, absorb_trigs), id=id)
 
-def mkpopup(x, y, width, height, id=None):
-	return request(16, pack('HHHH', x, y, width, height), id=id)
-
 def mkstring(s, id=None):
 	return request(5, s + '\x00', id=id)
 

@@ -29,7 +29,7 @@ _wtype_consts = {
             'bitmap':		(4, {}),
             'button':		(5, {}),
             #'panel':		(6, {}),	# internal use only!
-            #'popup':		(7, {}),	# internal use only!
+            'popup':		(7, {}),
             'box':		(8, {}),
             'field':		(9, {}),
             #'background':	(10, {}),	# internal use only!
@@ -44,6 +44,8 @@ _wtype_consts = {
             'textbox':		(19, {}),	# client-side text layout
             'panelbar':		(20, {}),	# draggable bar and container
             'simplemenu':	(21, {}),	# create a simple menu from a string or array
+            'dialogbox':        (22, {}),       # a type of popup that is always autosized and has a title
+            'messagedialog':    (23, {}),       # a type of dialogbox that displays a message and gets feedback
     }
 
 constants = {
@@ -389,7 +391,6 @@ _requests_to_save = (
     requests.mkbitmap,
     requests.mkfillstyle,
     requests.mkfont,
-    requests.mkpopup,
     requests.mkstring,
     requests.mktheme,		# why?
     requests.mkwidget,		# ditto
