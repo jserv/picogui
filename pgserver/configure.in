@@ -121,8 +121,8 @@ AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_SDLFB, [
 
   AM_PATH_SDL(1.0.0, , AC_MSG_WARN(cannot find SDL))
 
-  DRIVER_CFLAGS="${SDL_CFLAGS}"
-  DRIVER_LIBS="${SDL_LIBS}" 
+  DRIVER_CFLAGS="$DRIVER_CFLAGS ${SDL_CFLAGS}"
+  DRIVER_LIBS="$DRIVER_LIBS ${SDL_LIBS}" 
 ])
 
 dnl jpeg
@@ -179,14 +179,14 @@ AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_SVGAGL, [
   AC_CHECK_LIB(vga, vga_init,, AC_MSG_ERROR([cannot find libvga]))
   AC_CHECK_LIB(vgagl, gl_clearscreen,, AC_MSG_WARN([can't find libvgagl]))
 
-  DRIVER_LIBS="-lvga -lvgagl"
+  DRIVER_LIBS="$DRIVER_LIBS -lvga -lvgagl"
 ])
 
 AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_SVGAFB, [
 
   AC_CHECK_LIB(vga, vga_init,, AC_MSG_WARN(cannot find libvga))
 
-  DRIVER_LIBS="-lvga"
+  DRIVER_LIBS="$DRIVER_LIBS -lvga"
 ])
 
 
@@ -196,7 +196,8 @@ AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_X11, [
 
   AC_CHECK_LIB(X11, XOpenDisplay,, AC_MSG_WARN([can't find libX11]))
 
-  DRIVER_LIBS="-L/usr/X11/lib -L/usr/X11R6/lib -lX11"
+  DRIVER_LIBS="$DRIVER_LIBS -lX11"
+  LDFLAGS="-L/usr/X11/lib -L/usr/X11R6/lib"
 ])
 
 dnl check for ncurses & gpm
@@ -205,25 +206,15 @@ AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_NCURSES, [
 
   AC_CHECK_LIB(ncurses, delscreen,, AC_MSG_WARN([can't find libncurses]))
 
-  DRIVER_LIBS="-lncurses"
+  DRIVER_LIBS="$DRIVER_LIBS -lncurses"
 ])
 
 AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_NCURSES, [
 
   AC_CHECK_LIB(gpm, Gpm_Open,, AC_MSG_WARN([can't find libgpm]))
 
-  DRIVER_LIBS="-lgpm"
+  DRIVER_LIBS="$DRIVER_LIBS -lgpm"
 ])
-
-dnl check for SDL_ttf
-
-AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_SDLACCEL_TTF, [
-
-  AC_CHECK_LIB(SDL_ttf, TTF_Init,, AC_MSG_WARN([can't find SDL_ttf]))
-
-  DRIVER_LIBS="-lSDL_ttf"
-])
-
 
 # More compiler flags...
 
