@@ -1,4 +1,4 @@
-/* $Id: lcdmono.ths,v 1.14 2001/08/13 20:10:45 micahjd Exp $
+/* $Id: lcdmono.ths,v 1.15 2002/01/15 07:45:42 micahjd Exp $
  *
  * Monochrome theme for LCDs. Rounded buttons and dialogs, a background
  * that looks good on a handheld, and handheld-friendly key mappings
@@ -166,6 +166,7 @@ object panelbar {
   fgcolor = 0xFFFFFF;
   font = Font(NULL,10,PG_FSTYLE_BOLD);
   width = 12;
+  margin = 0;
 }
 object base.panelbtn {
   bgfill  = Copy(default::bgfill);

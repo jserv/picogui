@@ -1,4 +1,4 @@
-/* $Id: nifty3d.ths,v 1.9 2001/11/15 02:11:20 micahjd Exp $
+/* $Id: nifty3d.ths,v 1.10 2002/01/15 07:45:42 micahjd Exp $
  *
  * This theme's pretty darn cpu-intensive, but it
  * demonstrates the neat things that can be done with
@@ -95,6 +95,7 @@ object background {
 object panelbar {
   bgcolor = 0x7898B3;
   width = 17;
+  margin = 0;
 }
 object base.panelbtn {
   width = Copy(panelbar::width);
