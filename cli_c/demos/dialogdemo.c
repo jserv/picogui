@@ -23,14 +23,13 @@ int btnDate(struct pgEvent *evt) {
 
 int btnQuote(struct pgEvent *evt) {
   pgMessageDialog("Quote",
-		  "There is a theory which states that if ever anyone\n"
-		  "discovers exactly what the Universe is for and why it is\n"
-		  "here, it will instantly disappear and be replaced by\n"
-		  "something even more bizarre and inexplicable.  There is\n"
-		  "another theory which states that this has already\n"
-		  "happened.\n"
-		  "\n"
-		  "-- Douglas Adams, \"The Hitchhiker's Guide to the Galaxy\"",
+		  "\"Andrew, I don't care if your\n"
+		  "sister put an ice cube down\n"
+		  "your underware she's a girl\n"
+		  "and girls will do that.\n"
+		  "That doesn't mean that you\n"
+		  "can hit her with the dog.\"\n\n" 
+		  "-Lt. Col Henry Blake,\n  MASH 4077",
 		  0);
 }
 
@@ -39,12 +38,14 @@ int btnConfirm(struct pgEvent *evt) {
 
   i = pgMessageDialog("Really???",
 		      "You just clicked a button.\n"
-		      "Are you sure you want to initiate nuclear fusion?",
+		      "Are you sure you want\n"
+		      "to initiate nuclear fusion?",
 		      PG_MSGBTN_YES | PG_MSGBTN_NO);
   
   if (i == PG_MSGBTN_YES)
     pgMessageDialogFmt("Boom!",0,
-		       "You have only %d hours until critical mass\n",
+		       "You have only %d\n"
+		       "hours until critical mass",
 		       time(NULL));
 }
 
@@ -56,7 +57,7 @@ int btnTarget(struct pgEvent *evt) {
   int i,x,w;
 
   pgEnterContext();
-  pgDialogBox("Custom Dialog Box");
+  pgDialogBox("Target");
   wTB = pgNewWidget(PG_WIDGET_TOOLBAR,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_BOTTOM,
@@ -93,60 +94,36 @@ int btnTarget(struct pgEvent *evt) {
 /******************* Main program */
 
 int main(int argc,char **argv) {
-  pghandle wApp;
   pgInit(argc,argv);
-  wApp = pgRegisterApp(PG_APP_NORMAL,"Standard Dialogs Demo",0);
+  pgRegisterApp(PG_APP_NORMAL,"Standard Dialogs",0);
 
   /* Custom dialog box */
-  pgNewWidget(PG_WIDGET_BOX,PG_DERIVE_INSIDE,wApp);
-  pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_INSIDE,0);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgNewString("pgDialogBox:"),
-	      PG_WP_SIDE,PG_S_LEFT,
-	      PG_WP_SIZEMODE,PG_SZMODE_PERCENT,
-	      PG_WP_SIZE,50,
-	      PG_WP_ALIGN,PG_A_RIGHT,
-	      0);
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgNewString("Target"),
+	      PG_WP_TEXT,pgNewString("pgDialogBox: Target"),
+	      PG_WP_SIDE,PG_S_TOP,
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnTarget,NULL);
 
   /* Message Dialog */
-  pgNewWidget(PG_WIDGET_BOX,PG_DERIVE_INSIDE,wApp);
-  pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_INSIDE,0);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgNewString("pgMessageDialog:"),
-	      PG_WP_SIDE,PG_S_LEFT,
-	      PG_WP_SIZEMODE,PG_SZMODE_PERCENT,
-	      PG_WP_SIZE,50,
-	      PG_WP_ALIGN,PG_A_RIGHT,
-	      0);
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgNewString("Quote"),
+	      PG_WP_TEXT,pgNewString("pgMessageDialog: Quote"),
+	      PG_WP_SIDE,PG_S_TOP,
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnQuote,NULL);
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgNewString("Confirm"),
+	      PG_WP_TEXT,pgNewString("pgMessageDialog: Confirm"),
+	      PG_WP_SIDE,PG_S_TOP,
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnConfirm,NULL);
 
   /* Date picker */
-  pgNewWidget(PG_WIDGET_BOX,PG_DERIVE_INSIDE,wApp);
-  pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_INSIDE,0);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgNewString("pgDatePicker:"),
-	      PG_WP_SIDE,PG_S_LEFT,
-	      PG_WP_SIZEMODE,PG_SZMODE_PERCENT,
-	      PG_WP_SIZE,50,
-	      PG_WP_ALIGN,PG_A_RIGHT,
-	      0);
   wDate = pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgNewString("Select a Date"),
+	      PG_WP_TEXT,pgNewString("pgDatePicker: Select a Date"),
+	      PG_WP_SIDE,PG_S_TOP,
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnDate,NULL);
 
