@@ -10,7 +10,7 @@ SUBDIRS =		\
 
 else
 
-SUBDIRS =
+SUBDIRS =               \
 	battleship	\
 	blackout	\
 	connectfour	\
@@ -21,7 +21,6 @@ SUBDIRS =
 	pqw		\
 	pterm		\
 	scribble	\
-	textedit	\
 	tpcal		\
 	vrcalc		\
 	wclock

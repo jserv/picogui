@@ -22,7 +22,7 @@ map.inc: world-grey.pnm
 	rm -f $@
 	echo "static int dims[] = {`head -3 $< | tail -1 | sed 's/ /,/g'`};" >> $@
 	echo "static unsigned char map[] = {" >> $@
-	od -vt x1 world-grey.pnm \
+	od -vt x1 $(top_srcdir)/working/wclock/world-grey.pnm \
 	| sed "s/^[^ ]*//g" \
 	| sed "s/\([^ ][^ ]\)/0x\1,/g" \
 	>> $@

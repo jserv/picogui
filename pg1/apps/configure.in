@@ -140,6 +140,16 @@ AC_ARG_ENABLE(pocketbee,
 )
 
 
+AC_ARG_ENABLE(non-working,
+     [  --enable-non-working    build dev and testing apps too],
+     [case "${enableval}" in
+       yes) buildall=true ;;
+       no)  buildall=false ;;
+       *) AC_MSG_ERROR(bad value ${enableval} for --build-everything) ;;
+     esac],[buildall=false]
+)
+AM_CONDITIONAL(WORKING_ONLY, test x$buildall != xtrue)
+
 AC_OUTPUT(
 	Makefile
 	picogui-apps.spec

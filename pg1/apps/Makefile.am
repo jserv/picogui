@@ -1,4 +1,8 @@
+if WORKING_ONLY
+SUBDIRS = working
+else
 SUBDIRS = dev test working
+endif
 
 if ENABLE_BEE
 
