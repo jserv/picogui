@@ -23,7 +23,7 @@ static inline void *
  __memcpy_conventional(void *to, const void *from, size_t n)
 {
   int dummy1;
-  long dummy2, dummy3;
+  s32 dummy2, dummy3;
     __asm__ __volatile__("cld\n\t"
     	    "cmpl $0,%%edx\n\t"
     	    "jle 2f\n\t"
@@ -44,7 +44,7 @@ static inline void *
 	    "movsw\n"
 	    "2:\n"
   :         "=d"(dummy1), "=D"(dummy2), "=S"(dummy3)   /* fake output */ 
-  :	    "0"(n), "1"((long) to), "2"((long) from)
+  :	    "0"(n), "1"((s32) to), "2"((s32) from)
   :	    "cx"/***rjr***, "dx", "di", "si"***/
   );
     return (to);
@@ -55,11 +55,11 @@ static inline void *
  __memcpyb(void *to, const void *from, size_t n)
 {
   int dummy1;
-  long dummy2, dummy3;
+  s32 dummy2, dummy3;
     __asm__ __volatile__("cld\n\t"
 	    "rep ; movsb\n\t"
   :         "=c"(dummy1), "=D"(dummy2), "=S"(dummy3) /* fake output */
-  :	    "0"(n), "1"((long) to), "2"((long) from)
+  :	    "0"(n), "1"((s32) to), "2"((s32) from)
 			 /***rjr***:	    "cx", "di", "si"***/
   );
     return (to);
@@ -79,7 +79,7 @@ static inline void *
 static inline void *
  __memsetlong(void *s, unsigned c, size_t count)
 {
-  long dummy1;
+  s32 dummy1;
   int dummy2;
     __asm__ __volatile__("cld\n\t"
 	    "rep\n\t"
@@ -95,7 +95,7 @@ static inline void *
  __memset(void *s, char c, size_t count)
 {
   int dummy1;
-  long dummy2;
+  s32 dummy2;
   int dummy3;
     __asm__ __volatile__(
 	       "cld\n\t"
@@ -131,12 +131,12 @@ static inline void *
 }
 
 static inline void *
- __memset2(void *s, short c, size_t count)
+ __memset2(void *s, s16 c, size_t count)
 /* count is in 16-bit pixels */
 /* s is assumed to be 16-bit aligned */
 {
   int dummy1;
-  long dummy2;
+  s32 dummy2;
   int dummy3;
     __asm__ __volatile__(
 	       "cld\n\t"
@@ -177,7 +177,7 @@ static inline void *
 /* count is in 24-bit pixels (3 bytes per pixel) */
 {
   int dummy1;
-  long dummy2;
+  s32 dummy2;
   int dummy3;
     __asm__ __volatile__(
 	       "cmpl $8,%%edx\n\t"
@@ -314,7 +314,7 @@ static inline void *
 			 "1:call __memcpyasm_regargs\n\t"
 			 "2:\n\t"
 			 :
-			 :"S"((long) dest), "d"((long) src), "c"((long) n)
+			 :"S"((s32) dest), "d"((s32) src), "c"((s32) n)
 			 :"ax", "0", "1", "2");
     return dest;
 }
