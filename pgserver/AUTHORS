@@ -51,6 +51,13 @@ P: 6FFD 306F EEC5 1B2C 3DD5  20F1 ED0A BCFF 1B19 F9DC
 D: Some improvements on 'pgboard', the virtual keyboard application
 S: Lausanne, Switzerland
 
+N: Chuck Groom
+E: cgroom@bluemug.com
+W: http://bluemug.com
+D: Textedit widget
+D: We do mobile consumer device software, hence the interest in PicoGUI
+S: Berkeley, CA, USA
+
 N: Daniel Jackson
 E: carpman@voidptr.org
 W: http://www.voidptr.org
@@ -66,23 +73,6 @@ D: Misc. stuff.
 D: Start C port of client _with_ Micah. Port on uClinux.
 S: Lausanne, Switzerland
 
-N: Brandon Smith
-E: lottabs2@yahoo.com
-W: http://dbyu.dyn.dhs.org
-D: Pseudo geek, Java client and BATTLESHIP!!!
-S: Denver Colorado
-I: lottabs2 on AIM
-I: ickysneeze on irc.openprojects.net
-
-N: Yann Vernier
-E: yann@algonet.se
-W: http://www.algonet.se/~yann/
-P: 9242 DC15 2502 FEAB E15F  84C6 D538 EC09 5380 5746
-D: Small bits here and there, Palmax mininotebook support
-S: (ask for current address)
-S: Stockholm, Sweden
-I: LoneTech on irc.undernet.org and irc.openprojects.net
-
 N: Dave Poirier
 E: instinc@users.sourceforge.net
 W: http://void-core.2y.net
@@ -92,14 +82,24 @@ S: Winnipeg, Canada
 I: UIN: 195360 on ICQ
 I: eks on irc.openprojects.net
 
-N: Chuck Groom
-E: cgroom@bluemug.com
-W: http://bluemug.com
-D: Textedit widget
-D: We do mobile consumer device software, hence the interest in PicoGUI
-S: Berkeley, CA, USA
+N: Brandon Smith
+E: lottabs2@yahoo.com
+W: http://dbyu.dyn.dhs.org
+D: Pseudo geek, Java client and BATTLESHIP!!!
+S: Denver Colorado
+I: lottabs2 on AIM
+I: ickysneeze on irc.openprojects.net
 
 N: E.Allen Soard
 E: esp@espsw.net
 D: Tcl Bindings for picogui
 S: Ridgecrest, CA, USA
+
+N: Yann Vernier
+E: yann@algonet.se
+W: http://www.algonet.se/~yann/
+P: 9242 DC15 2502 FEAB E15F  84C6 D538 EC09 5380 5746
+D: Small bits here and there, Palmax mininotebook support
+S: (ask for current address)
+S: Stockholm, Sweden
+I: LoneTech on irc.undernet.org and irc.openprojects.net
