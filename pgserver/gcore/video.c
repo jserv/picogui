@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.34 2001/04/05 03:32:25 micahjd Exp $
+/* $Id: video.c,v 1.35 2001/04/06 06:27:03 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -147,7 +147,7 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
    g_error e;
    struct divtree *tree;
    struct sprite *spr;
-   u8 i,converting_mode;
+   u8 i,converting_mode,oldbpp;
 
    /* Must be done first */
    if (vidwrap->exitmode) {
@@ -156,6 +156,7 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
    }
    
    /* If the new bpp is different, use modeconvert/modeunconvert */
+   oldbpp = vid->bpp;
    converting_mode = (bpp != vid->bpp);
    if (converting_mode) {
       e = bitmap_iterate(vid->bitmap_modeunconvert);
@@ -241,7 +242,22 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
       errorcheck;
    }
    
-   return VID(entermode)();
+   /* Done swtiching the mode, give the driver a shot at changing
+    * things around */
+   e = VID(entermode)();
+   errorcheck;
+   
+   /* Reload things when increasing color depth */
+   if (oldbpp < bpp) {
+    
+      /* Reload any themes the server is responsible for */
+      e = reload_initial_themes();
+      errorcheck;
+      
+      /* FIXME: notify all clients that they can reload here */    
+   }
+  
+   return sucess;
 }
 
 g_error (*find_videodriver(const char *name))(struct vidlib *v) {

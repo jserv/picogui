@@ -1,4 +1,4 @@
-/* $Id: pgmain.h,v 1.4 2001/02/17 05:18:40 micahjd Exp $
+/* $Id: pgmain.h,v 1.5 2001/04/06 06:27:04 micahjd Exp $
  *
  * pgmain.h - just a few things related to the main loop
  *
@@ -38,6 +38,10 @@ void widgettab_init(void);
 void drivertab_init(void);
 void rqhtab_init(void);
 #endif
+
+/* This is called whenever video is reloaded at a higher color depth
+ * to reload all themes passed on the command line */
+g_error reload_initial_themes(void);
 
 #endif /* _H_PGMAIN */
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.30 2001/03/23 23:10:19 micahjd Exp $
+/* $Id: pgmain.c,v 1.31 2001/04/06 06:27:03 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -63,8 +63,11 @@ void sigterm_handler(int x);
 /* For storing theme files to load later */
 struct themefilenode {
   char *name;
+  handle h;
   struct themefilenode *next;
 };
+
+struct themefilenode *themefiles;
 
 /********** And it all starts here... **********/
 int main(int argc, char **argv) {
@@ -101,7 +104,7 @@ int main(int argc, char **argv) {
     struct stat st;
 #endif
     unsigned char *themebuf;
-    struct themefilenode *head = NULL,*tail = NULL,*p;
+    struct themefilenode *tail = NULL,*p;
     handle h;
 
     /* Default video mode: 0x0x0 (driver chooses) */
@@ -235,15 +238,17 @@ int main(int argc, char **argv) {
 
       case 't':        /* Theme */
 	/* Themes have to be loaded later in the initialization process,
-	   so for now just store the filenames */
+	 * so for now just store the filenames.
+	 */
 	if (iserror(prerror(g_malloc((void**)&p,
 				     sizeof(struct themefilenode))))) return 1;
-	p->name = strdup(optarg);
+	p->name = optarg;  /* Optarg points inside argv so it
+			    * will stick around for a while */
 	p->next = NULL;
 	if (tail)
 	  tail->next = p;
 	else
-	  head = tail = p;
+	  themefiles = tail = p;
 	tail = p;
 	break;
 
@@ -355,15 +360,20 @@ int main(int argc, char **argv) {
 
 #ifndef WINDOWS   /* This is also broke for windoze */
 
-    /* Load theme files and free linked list memory */
+    /* Load theme files, keep the list around so they can be
+     * reloaded if necessary */
 
 #ifdef DEBUG_INIT
-   printf("Init: loading themes\n");
+    printf("Init: loading themes\n");
 #endif
 
-    p = head;
+    p = themefiles;
     while (p) {
 
+#ifdef DEBUG_INIT
+      printf("Init: loading theme '%s'\n",p->name);
+#endif
+      
       /* Load */
       if ((fd = open(p->name,O_RDONLY))<=0) {
 	perror(p->name);
@@ -373,15 +383,10 @@ int main(int argc, char **argv) {
       if (iserror(prerror(g_malloc((void**)&themebuf,st.st_size)))) return 1;
       read(fd,themebuf,st.st_size);
       close(fd);
-      if (iserror(prerror(theme_load(&h,-1,themebuf,st.st_size)))) return 1;
+      if (iserror(prerror(theme_load(&p->h,-1,themebuf,st.st_size)))) return 1;
       g_free(themebuf);
 
-      /* Free memory */
-      tail = p;
       p = p->next;
-      free(tail->name);  /* Must use the normal free() here because the pointer was
-			    not generated with g_malloc, but instead strdup() */
-      g_free(tail);
     }
 
 #endif /* WINDOWS */
@@ -448,7 +453,10 @@ int main(int argc, char **argv) {
     net_iteration();
 
   /*************************************** cleanup time */
-  in_shutdown = 1;
+
+  in_shutdown = 1;          /* Disables most individual cleanups in favor
+			     * of this bulk extinction of memory */
+
   timer_release();
   cleanup_inlib();
   handle_cleanup(-1,-1);
@@ -457,6 +465,18 @@ int main(int argc, char **argv) {
   appmgr_free();
   if (vid)
     VID(close) ();
+
+  {  /* Free the list of loaded theme files */
+     struct themefilenode *p,*condemn;
+     p = themefiles;
+     while (p) {
+	condemn = p;
+	p = p->next;
+	g_free(condemn);
+     }
+  }
+  
+  /* Check for memory leaks and, finally, exit */
   if (memref!=0) prerror(mkerror(PG_ERRT_MEMORY,56));
   exit(0);
 }
@@ -473,6 +493,38 @@ void request_quit(void) {
 #else
   kill(my_pid,SIGTERM);
 #endif
+}
+   
+/* This is called whenever video is reloaded at a higher color depth
+ * to reload all themes passed on the command line */
+g_error reload_initial_themes(void) {
+   struct themefilenode *p;
+   g_error e;
+   unsigned char *themebuf;
+   int fd;
+   struct stat st;
+   
+   for (p=themefiles;p;p=p->next) {
+      
+      /* Kill the previous load */
+      handle_free(-1,p->h);
+      
+      /* Load theme from file */
+      if ((fd = open(p->name,O_RDONLY))<=0)
+	 continue;     /* Maybe next time we will beink more sucessful, da? */
+      fstat(fd,&st);
+      e = g_malloc((void**)&themebuf,st.st_size);
+      errorcheck;
+      read(fd,themebuf,st.st_size);
+      close(fd);
+      e = theme_load(&p->h,-1,themebuf,st.st_size);
+      errorcheck;
+      
+      /* FIXME: Theme not loaded in the correct order */
+      
+      g_free(themebuf);
+   }
+   return sucess;
 }
 
 /* The End */

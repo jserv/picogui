@@ -1,3 +1,17 @@
+2001-04-05    Micah Dowty <micahjd@users.sourceforge.net>
+
+Adding the support necessary for the server to remember loaded themes so it
+can reload them when the driver changes.
+
+      * gcore/pgmain.c: Made the theme list a little more efficient, and
+        postponed deleting it until cleanup. Added reload_initial_themes()
+	to use this list to reload themes into memory
+	
+      * include/pgserver/pgmain.c: Added the reload_initial_themes() function
+        prototype
+	
+      * gcore/video.c: Added call to reload_initial_themes() when setting
+        the video mode
 
 2001-04-04    Micah Dowty <micahjd@users.sourceforge.net>
 
