@@ -1,4 +1,4 @@
-/* $Id: linear1.c,v 1.5 2001/04/12 05:45:32 bauermeister Exp $
+/* $Id: linear1.c,v 1.6 2001/04/12 20:09:37 bauermeister Exp $
  *
  * Video Base Library:
  * linear1.c - For 1-bit packed pixel devices (most black and white displays)
@@ -25,8 +25,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
  * Contributors:
- * 
- * 
+ *   Pascal Bauermeister <pascal.bauermeister@smartdata.ch>
+ *   2001-03-23 180 degree rotation
  * 
  */
 
@@ -130,11 +130,11 @@ hwrcolor linear1_getpixel_180(int x,int y) {
 }
 
 void linear1_slab_180(int x,int y,int w,hwrcolor c) {
-  return linear1_slab(XW180, Y180, w, c);
+  linear1_slab(XW180, Y180, w, c);
 }
 
 void linear1_bar_180(int x,int y,int h,hwrcolor c) {
-  return linear1_bar(X180, YH180, h, c);
+  linear1_bar(X180, YH180, h, c);
 }
 
 #ifdef CONFIG_ROTATE180

@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.10 2001/04/11 02:28:59 micahjd Exp $
+/* $Id: linear4.c,v 1.11 2001/04/12 20:09:37 bauermeister Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -24,8 +24,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
  * Contributors:
- * 
- * 
+ *   Pascal Bauermeister <pascal.bauermeister@smartdata.ch>
+ *   2001-03-23 180 degree rotation
  * 
  */
 
@@ -506,6 +506,80 @@ void linear4_unblit(int src_x,int src_y,
    }
 }
    
+/*********************************************** 180 deg stuff */
+
+#define X180     (vid->xres-1-x)
+#define Y180     (vid->yres-1-y)
+#define XW180    (vid->xres-x-w)
+#define YH180    (vid->yres-y-h)
+#define XX180(x) (vid->xres-1-x)
+#define YY180(y) (vid->yres-1-y)
+
+
+void linear4_pixel_180(int x,int y,hwrcolor c) {
+  linear4_pixel(X180, Y180, c);
+}
+
+hwrcolor linear4_getpixel_180(int x,int y) {
+  return linear4_getpixel(X180, Y180);
+}
+
+void linear4_slab_180(int x,int y,int w,hwrcolor c) {
+  linear4_slab(XW180, Y180, w, c);
+}
+
+void linear4_bar_180(int x,int y,int h,hwrcolor c) {
+  linear4_bar(X180, YH180, h, c);
+}
+
+void linear4_line_180(int x1,int y1,int x2,int y2,hwrcolor c) {
+  linear4_line(XX180(x1), YY180(y1), XX180(x2), YY180(y2), c);
+}
+
+void linear4_rect_180(int x,int y,int w,int h,hwrcolor c) {
+  linear4_rect(X180, Y180, w, h, c);
+}
+
+void linear4_charblit_180(unsigned char *chardat,
+			  int x, int y,int w,int h,int lines,
+			  hwrcolor c,struct cliprect *clip) {
+  linear4_charblit(chardat,
+		   X180, Y180, w,  h, lines, c, clip);
+}
+
+
+#ifdef CONFIG_ROTATE180
+# define LINEAR4_PIXEL      linear4_pixel_180
+# define LINEAR4_GETPIXEL   linear4_getpixel_180
+# define LINEAR4_SLAB       linear4_slab_180
+# define LINEAR4_BAR        linear4_bar_180
+# define LINEAR4_LINE       linear4_line_180
+# define LINEAR4_RECT       linear4_rect_180
+# define LINEAR4_GRADIENT   linear4_gradient_180
+# define LINEAR4_DIM        linear4_dim_180
+# define LINEAR4_SCROLLBLIT linear4_scrollblit_180
+# define LINEAR4_CHARBLIT   linear4_charblit_180
+# define LINEAR4_CHARBLIT_V linear4_charblit_v_180
+# define LINEAR4_TILEBLIT   linear4_tileblit_180
+# define LINEAR4_BLIT       linear4_blit_180
+# define LINEAR4_UNBLIT     linear4_unblit_180
+#else
+# define LINEAR4_PIXEL      linear4_pixel
+# define LINEAR4_GETPIXEL   linear4_getpixel
+# define LINEAR4_SLAB       linear4_slab
+# define LINEAR4_BAR        linear4_bar
+# define LINEAR4_LINE       linear4_line
+# define LINEAR4_RECT       linear4_rect
+# define LINEAR4_GRADIENT   linear4_gradient
+# define LINEAR4_DIM        linear4_dim
+# define LINEAR4_SCROLLBLIT linear4_scrollblit
+# define LINEAR4_CHARBLIT   linear4_charblit
+# define LINEAR4_CHARBLIT_V linear4_charblit_v
+# define LINEAR4_TILEBLIT   linear4_tileblit
+# define LINEAR4_BLIT       linear4_blit
+# define LINEAR4_UNBLIT     linear4_unblit
+#endif
+
 /************************************************** Registration */
 
 /* Load our driver functions into a vidlib */

@@ -1,4 +1,4 @@
-/* $Id: linear2.c,v 1.3 2001/04/11 02:28:59 micahjd Exp $
+/* $Id: linear2.c,v 1.4 2001/04/12 20:09:37 bauermeister Exp $
  *
  * Video Base Library:
  * linear2.c - For 1-bit packed pixel devices (most black and white displays)
@@ -25,8 +25,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
  * Contributors:
- * 
- * 
+ *   Pascal Bauermeister <pascal.bauermeister@smartdata.ch>
+ *   2001-03-23 180 degree rotation
  * 
  */
 
@@ -59,6 +59,66 @@ hwrcolor linear2_getpixel(int x,int y) {
 
 
    
+/*********************************************** 180 deg stuff */
+
+#define X180  (vid->xres-1-x)
+#define Y180  (vid->yres-1-y)
+#define XW180 (vid->xres-x-w)
+#define YH180 (vid->yres-y-h)
+
+
+void linear2_pixel_180(int x,int y,hwrcolor c) {
+  linear2_pixel(X180, Y180, c);
+}
+
+hwrcolor linear2_getpixel_180(int x,int y) {
+  return linear2_getpixel(X180, Y180);
+}
+
+/******** >>>>> waiting for accelerated primitives
+void linear2_slab_180(int x,int y,int w,hwrcolor c) {
+  linear2_slab(XW180, Y180, w, c);
+}
+
+void linear2_bar_180(int x,int y,int h,hwrcolor c) {
+  linear2_bar(X180, YH180, h, c);
+}
+
+>>>>> waiting for accelerated primitives <<<<< ********/
+
+
+#ifdef CONFIG_ROTATE180
+# define LINEAR2_PIXEL      linear2_pixel_180
+# define LINEAR2_GETPIXEL   linear2_getpixel_180
+# define LINEAR2_SLAB       linear2_slab_180
+# define LINEAR2_BAR        linear2_bar_180
+# define LINEAR2_LINE       linear2_line_180
+# define LINEAR2_RECT       linear2_rect_180
+# define LINEAR2_GRADIENT   linear2_gradient_180
+# define LINEAR2_DIM        linear2_dim_180
+# define LINEAR2_SCROLLBLIT linear2_scrollblit_180
+# define LINEAR2_CHARBLIT   linear2_charblit_180
+# define LINEAR2_CHARBLIT_V linear2_charblit_v_180
+# define LINEAR2_TILEBLIT   linear2_tileblit_180
+# define LINEAR2_BLIT       linear2_blit_180
+# define LINEAR2_UNBLIT     linear2_unblit_180
+#else
+# define LINEAR2_PIXEL      linear2_pixel
+# define LINEAR2_GETPIXEL   linear2_getpixel
+# define LINEAR2_SLAB       linear2_slab
+# define LINEAR2_BAR        linear2_bar
+# define LINEAR2_LINE       linear2_line
+# define LINEAR2_RECT       linear2_rect
+# define LINEAR2_GRADIENT   linear2_gradient
+# define LINEAR2_DIM        linear2_dim
+# define LINEAR2_SCROLLBLIT linear2_scrollblit
+# define LINEAR2_CHARBLIT   linear2_charblit
+# define LINEAR2_CHARBLIT_V linear2_charblit_v
+# define LINEAR2_TILEBLIT   linear2_tileblit
+# define LINEAR2_BLIT       linear2_blit
+# define LINEAR2_UNBLIT     linear2_unblit
+#endif
+
 /*********************************************** Registration */
 
 /* Load our driver functions into a vidlib */
