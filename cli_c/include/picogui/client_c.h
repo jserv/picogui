@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.30 2001/01/19 06:36:59 micahjd Exp $
+/* $Id: client_c.h,v 1.31 2001/01/20 09:36:18 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -35,6 +35,11 @@
 #endif
 
 /******************** Client-specific constants and data types */
+
+/* Extract the width or height from a compound parameter such as that
+ * passed to PG_WE_BUILD or PG_WE_RESIZE */
+#define PG_W            (param>>16)
+#define PG_H            (param&0xFFFF)
 
 /* A wildcard value for pgBind */
 #define PGBIND_ANY      -1

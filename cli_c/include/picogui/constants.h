@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.24 2001/01/19 06:36:59 micahjd Exp $
+/* $Id: constants.h,v 1.25 2001/01/20 09:36:18 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -162,7 +162,7 @@ typedef unsigned long pghandle;
  * but theme objects inherit properties from other theme objects
  * according to a built in hierarchy
  *
- * As a naming convention, these constants should start with PG_THO_ and
+ * As a naming convention, these constants should start with PGTH_O_ and
  * after that use underscores to represent subclassing. Bases are omitted
  * from names (otherwise they would be much longer, and if extra bases
  * were added the names would become misleading) so they don't strictly
@@ -352,7 +352,7 @@ typedef unsigned long pghandle;
  * structure to hold GRaphics OPerations)
  *
  * Bits 4-7 indicate the number of parameters (in addition to
- * the standard x,y,w,h.
+ * the standard x,y,w,h)
  */
 #define PG_GROP_NULL       0x0000	/* Doesn't do anything - for temporarily
 					 * turning something off, or for disabling
@@ -372,12 +372,15 @@ typedef unsigned long pghandle;
 #define PG_GROP_TEXTV      0x0031
 #define PG_GROP_TEXTGRID   0x0042
 
-#define PG_GROPPARAMS(x)   (((x)>>4)&0x0F)
+/* Find any gropnode's number of parameters */
+#define PG_GROPPARAMS(x)   ((x)>>4)
 
 /* Grop flags */
 #define PG_GROPF_TRANSLATE    (1<<0)  /* Apply the divnode's tx,ty */
 #define PG_GROPF_INCREMENTAL  (1<<1)  /* Defines nodes used for incremental
 				       * updates. Not rendered normally. */
+#define PG_GROPF_PSEUDOINCREMENTAL (1<<2)  /* Always rendered, but this flag
+					    * is cleared afterwards. */
 
 /* Video mode flags */
 #define PG_VID_FULLSCREEN     0x0001
@@ -464,6 +467,9 @@ typedef unsigned long pghandle;
 #define PG_EXEV_PNTR_UP   0x0001
 #define PG_EXEV_PNTR_DOWN 0x0002
 #define PG_EXEV_NOCLICK   0x0004  /* (ignore clicks) */
+#define PG_EXEV_PNTR_MOVE 0x0008
+#define PG_EXEV_KEY       0x0010  /* Raw key events KEYUP and KEYDOWN */
+#define PG_EXEV_CHAR      0x0020  /* Processed characters */
 
 /* Constants for PG_WP_DIRECTION */
 #define PG_DIR_HORIZONTAL 0
@@ -481,6 +487,13 @@ typedef unsigned long pghandle;
 #define PG_WE_DATA        6     /* Widget is streaming data to the app */
 #define PG_WE_RESIZE      7     /* For terminal widgets, passes size in chars packed
 				 * 16 bits for width and 16 for height: 0xWWWWHHHH */
+#define PG_WE_BUILD       8     /* Sent from a canvas, expects client to rebuild
+				 * the groplist. Size is passed as above
+				 * in pixels: 0xWWWWHHHH */
+#define PG_WE_PNTR_MOVE   9     /* The "mouse" moved */
+#define PG_WE_KBD_CHAR    10    /* A focused keyboard character recieved */
+#define PG_WE_KBD_KEYUP   11    /* A focused raw keyup event */
+#define PG_WE_KBD_KEYDOWN 12    /* A focused raw keydown event */
 
 /* Non-widget events */
 #define PG_NWE_KBD_CHAR    10   /* These are sent if the client has captured the */
