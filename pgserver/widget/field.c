@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.49 2002/02/01 10:50:32 pney Exp $
+/* $Id: field.c,v 1.50 2002/02/01 14:30:17 pney Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -78,10 +78,7 @@ void build_field(struct gropctxt *c,unsigned short state,struct widget *self) {
   
   if (DATA->font) {
     fd = &DATA->fd;
-    if(DATA->localfont)
-      hfd = DATA->localfont;
-    else
-      hfd = DATA->font;
+    hfd = DATA->localfont;
   }
   else {
     hfd = theme_lookup(state,PGTH_P_FONT);
