@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.15 2001/01/15 05:24:28 micahjd Exp $
+/* $Id: terminal.c,v 1.16 2001/01/19 06:27:54 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -296,7 +296,7 @@ g_error terminal_install(struct widget *self) {
 
   e = newdiv(&self->in,self);
   errorcheck;
-  self->in->flags |= PG_S_TOP;
+  self->in->flags |= PG_S_ALL;
   self->in->split = 0;
   self->out = &self->in->next;
   e = newdiv(&self->in->div,self);

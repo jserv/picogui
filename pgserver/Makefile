@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.46 2001/01/16 02:07:17 micahjd Exp $
+# $Id: Makefile,v 1.47 2001/01/19 06:27:53 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -42,6 +42,7 @@ SRC := \
     widget/background.c \
     widget/menuitem.c \
     widget/terminal.c \
+    widget/canvas.c \
     \
     gcore/grop.c \
     gcore/g_malloc.c \
