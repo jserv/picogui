@@ -74,12 +74,15 @@ def collectProgress(file, progress):
         raise ErrorReturnCode()
 
 def rmtree(path, progress):
-    if os.path.isdir(path):
-        for file in os.listdir(path):
-            rmtree(os.path.join(path, file), progress)
-        os.rmdir(path)
-    else:
-        os.unlink(path)
+    try:
+        if os.path.isdir(path):
+            for file in os.listdir(path):
+                rmtree(os.path.join(path, file), progress)
+            os.rmdir(path)
+        else:
+            os.unlink(path)
+    except OSError, IOError:
+        pass
 
 
 # Since exceptions during import will be used to autodetect which Subversion
