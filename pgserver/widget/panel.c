@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.23 2000/08/09 02:48:51 micahjd Exp $
+/* $Id: panel.c,v 1.24 2000/08/09 09:24:04 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -303,6 +303,8 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
       else {
 	/* Unroll the panel */
 	self->in->split = DATA->unrolled;
+
+	DATA->over = 0;
       }
     }
     else {
