@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.5 2000/05/05 22:28:07 micahjd Exp $
+/* $Id: scroll.c,v 1.6 2000/05/05 23:00:59 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -44,8 +44,31 @@ void scrollbar(struct divnode *d) {
   /* Add the indicator elements */
   addelement(&d->grop,&current_theme[E_SCROLLIND_BORDER],&x,&y,&w,&h,1);
   addelement(&d->grop,&current_theme[E_SCROLLIND_FILL],&x,&y,&w,&h,1);
-  addelement(&d->grop,&current_theme[E_SCROLLIND_OVERLAY],&x,&y,&w,&h,1);
+  addelement(&d->grop,&current_theme[E_SCROLLIND_OVERLAY],&x,&y,&w,&h,0);
 }
+
+/* When param.i changes, update the grop coordinates */
+void scrollupdate(struct widget *self) {
+  if (self->in->div->param.i > 100) self->in->div->param.i = 100;
+  if (self->in->div->param.i <   0) self->in->div->param.i =   0;
+
+  /* If we're busy rebuilding the grop list, don't bother poking
+     at the individual nodes */
+  if (self->in->div->grop_lock)
+    return;
+
+  self->in->div->grop->next->next->next->next->y = 
+    (self->in->div->grop->next->next->next->y = 
+     (self->in->div->grop->next->next->y = 
+      (self->in->div->param.i * (self->in->div->h - HWG_BUTTON) / 100)) + 
+     current_theme[E_SCROLLIND_BORDER].y) + 
+    current_theme[E_SCROLLIND_FILL].y;
+
+  self->in->div->flags |= DIVNODE_NEED_REDRAW;
+  self->dt->flags |= DIVTREE_NEED_REDRAW;   
+}
+
+
 
 /* Nice and simple, the oncalc does most of the work */
 g_error scroll_install(struct widget *self) {
@@ -60,6 +83,8 @@ g_error scroll_install(struct widget *self) {
   self->in->div->on_recalc = &scrollbar;
   self->out = &self->in->next;
 
+  self->trigger_mask = TRIGGER_MOVE;
+
   return sucess;
 }
 
@@ -70,11 +95,8 @@ void scroll_remove(struct widget *self) {
 g_error scroll_set(struct widget *self,int property, glob data) {
   switch (property) {
   case WP_VALUE:
-    if (data > 100) data = 100;
-    if (data < 0) data = 0;
     self->in->div->param.i = data;
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
+    scrollupdate(self);
     break;
 
   default:
@@ -91,4 +113,25 @@ glob scroll_get(struct widget *self,int property) {
   return 0;
 }
 
+void scroll_trigger(struct widget *self,long type,union trigparam *param) {
+
+  /* Figure out the button's new state */
+  switch (type) {
+
+  case TRIGGER_MOVE:
+    if (param->mouse.btn!=1) break;
+    /* Button 1 is being dragged through our widget. */
+    self->in->div->param.i = (param->mouse.y - self->in->div->y) * 100 /
+      (self->in->div->h - HWG_BUTTON);
+
+    scrollupdate(self);
+    post_event(WE_ACTIVATE,self,self->in->div->param.i);
+    break;
+    
+  }
+
+}
+
 /* The End */
+
+

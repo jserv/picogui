@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.14 2000/04/29 22:34:50 micahjd Exp $
+/* $Id: widget.c,v 1.15 2000/05/05 23:00:59 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -36,7 +36,7 @@ struct widget *key_owners[NUM_KEYS];
 struct widgetdef widgettab[] = {
 DEF_STATICWIDGET_TABLE(toolbar)
 DEF_STATICWIDGET_TABLE(label)
-DEF_STATICWIDGET_TABLE(scroll)
+DEF_WIDGET_TABLE(scroll)
 DEF_STATICWIDGET_TABLE(indicator)
 DEF_STATICWIDGET_TABLE(bitmap)
 DEF_WIDGET_TABLE(button)
