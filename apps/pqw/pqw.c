@@ -549,6 +549,16 @@ tap_key (int key)
       break;
     }
 }
+
+void pqwSendKeyInput (u32 type, u32 key, u32 mods)
+{
+  static union pg_client_trigger trig;
+  trig.content.type = type;
+  trig.content.u.kbd.key = key;
+  trig.content.u.kbd.mods = mods;
+  pgInFilterSend(&trig);
+}
+
 void
 hit_key (int key)
 {
@@ -563,10 +573,10 @@ hit_key (int key)
       mods |= PGMOD_SHIFT;
 /*		key += 'a' - 'A';*/
     }
-  pgSendKeyInput (PG_TRIGGER_KEYDOWN, key, mods);
+  pqwSendKeyInput (PG_TRIGGER_KEYDOWN, key, mods);
   if (!ctrl_key_ && !meta_key_ && key < 128)
-    pgSendKeyInput (PG_TRIGGER_CHAR, key, mods);
-  pgSendKeyInput (PG_TRIGGER_KEYUP, key, mods);
+    pqwSendKeyInput (PG_TRIGGER_CHAR, key, mods);
+  pqwSendKeyInput (PG_TRIGGER_KEYUP, key, mods);
 
   if (ctrl_key_ || meta_key_)
     {
