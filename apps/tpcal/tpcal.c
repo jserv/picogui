@@ -286,7 +286,7 @@ int main(int argc, char *argv[])
   physicalresolution.x=mi.xres;
   physicalresolution.y=mi.yres;
 
-  pgNewPopup(mi.xres, mi.yres);
+  pgNewPopup(mi.lxres, mi.lyres);
 
   pgLoadTheme(pgFromFile("calth.th"));
   calth = pgFindThemeObject("tpcal");
