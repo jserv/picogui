@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.24 2002/11/08 01:25:37 micahjd Exp $
+/* $Id: sdlgl_util.c,v 1.25 2002/11/21 15:12:48 micahjd Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.
@@ -249,6 +249,7 @@ void gl_osd_printf(int *y, const char *fmt, ...) {
   if (!gl_global.osd_font) {
     memset(&fs,0,sizeof(fs));
     fs.size = get_param_int(GL_SECTION,"osd_fontsize",20);
+    fs.style = PG_FSTYLE_BOLD;
     if (iserror(font_descriptor_create(&gl_global.osd_font,&fs)))
       return;
   }
@@ -268,8 +269,8 @@ void gl_osd_printf(int *y, const char *fmt, ...) {
   clip.y1 = 0;
   clip.x2 = vid->lxres-1;
   clip.y2 = vid->lyres-1;
-  xy.x = 7;
-  xy.y = 7+(*y);  
+  xy.x = 6;
+  xy.y = 6+(*y);  
   gl_global.osd_font->lib->draw_string(gl_global.osd_font,vid->display,
 				       &xy,0x000000,pgstring_tmpwrap(buf),
 				       &clip,PG_LGOP_NONE,0);
