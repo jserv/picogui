@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.18 2000/06/09 07:11:16 micahjd Exp $
+/* $Id: button.c,v 1.19 2000/06/09 21:54:34 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -48,7 +48,7 @@ struct btndata {
 
 void resizebutton(struct widget *self);
 
-void bitbutton(struct divnode *d) {
+void button(struct divnode *d) {
   int ex,ey,ew,eh,x,y,txt_h;
   int w=0,h=0; /* Size of the bitmap and text combined */
   struct bitmap *bit=NULL,*bitmask=NULL;
@@ -57,6 +57,10 @@ void bitbutton(struct divnode *d) {
   struct widget *self = d->owner;
 
   ex=ey=0; ew=d->w; eh=d->h;
+
+#ifdef DEBUG
+  printf("Button recalc\n");
+#endif
 
   addelement(d,&current_theme[E_BUTTON_BORDER],&ex,&ey,&ew,&eh);
   addelement(d,&current_theme[E_BUTTON_FILL],&ex,&ey,&ew,&eh);
@@ -146,7 +150,7 @@ g_error button_install(struct widget *self) {
   /* Visible node */
   e = newdiv(&self->in->div,self);
   if (e.type != ERRT_NONE) return e;
-  self->in->div->on_recalc = &bitbutton;
+  self->in->div->on_recalc = &button;
 
   /* Spacer (between buttons) */
   e = newdiv(&self->in->next,self);
@@ -361,11 +365,18 @@ void resizebutton(struct widget *self) {
   char *text=NULL;
   struct fontdesc *fd=NULL;
 
+  /* With S_ALL we'll get ignored anyway... */
+  if (self->in->flags & S_ALL) return;
+  
   /* Dereference the handles */
   rdhandle((void **) &bit,TYPE_BITMAP,-1,DATA->bitmap);
   rdhandle((void **) &bitmask,TYPE_BITMAP,-1,DATA->bitmask);
   rdhandle((void **) &text,TYPE_STRING,-1,DATA->text);
   rdhandle((void **) &fd,TYPE_FONTDESC,-1,DATA->font);
+
+#ifdef DEBUG
+  printf("Resize button.  Text: '%s'\n",text);
+#endif
 
   /* Find the total width and height */
   if (text)
@@ -378,11 +389,11 @@ void resizebutton(struct widget *self) {
     w += HWG_MARGIN;
 
   /* Set split to w or h depending on split orientation */
-  if ((self->in->flags & DIVNODE_SPLIT_TOP) ||
-      (self->in->flags & DIVNODE_SPLIT_BOTTOM))
+  if ((self->in->flags & S_TOP) ||
+      (self->in->flags & S_BOTTOM))
     self->in->split = h;
-  else if ((self->in->flags & DIVNODE_SPLIT_LEFT) ||
-	   (self->in->flags & DIVNODE_SPLIT_RIGHT))
+  else if ((self->in->flags & S_LEFT) ||
+	   (self->in->flags & S_RIGHT))
     self->in->split = w;
 
   /* HWG_BUTTON is the minimum */

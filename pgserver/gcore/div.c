@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.13 2000/06/08 00:15:57 micahjd Exp $
+/* $Id: div.c,v 1.14 2000/06/09 21:54:34 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -200,26 +200,21 @@ void divnode_recalc(struct divnode *n) {
 #endif
 	 n->div->flags |= DIVNODE_NEED_REDRAW;
        }
-       divnode_recalc(n->div);
      }
      
-     if (n->flags & DIVNODE_PROPAGATE_RECALC) {
-       
-       if (n->next) {
-	 n->next->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
-	 if (n->next->on_recalc && (!n->next->grop_lock)) {
-	   n->next->grop_lock++;
-	   if (n->next->grop_lock==1) {
-	     grop_free(&n->next->grop);
-	     (*n->next->on_recalc)(n->next);
-	   }
-	   n->next->grop_lock = 0;
-#ifdef DEBUG
-	   printf("next: on_recalc(0x%X)\n",n->next);
-#endif
-	   n->next->flags |= DIVNODE_NEED_REDRAW;
+     if ((n->flags & DIVNODE_PROPAGATE_RECALC) && n->next) {
+       n->next->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+       if (n->next->on_recalc && (!n->next->grop_lock)) {
+	 n->next->grop_lock++;
+	 if (n->next->grop_lock==1) {
+	   grop_free(&n->next->grop);
+	   (*n->next->on_recalc)(n->next);
 	 }
-	 divnode_recalc(n->next);
+	 n->next->grop_lock = 0;
+#ifdef DEBUG
+	 printf("next: on_recalc(0x%X)\n",n->next);
+#endif
+	 n->next->flags |= DIVNODE_NEED_REDRAW;
        }
      }
      
@@ -227,6 +222,8 @@ void divnode_recalc(struct divnode *n) {
      n->flags &= ~(DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC);
    }
 
+   /* A child node might need a recalc even if we aren't forcing one */
+   divnode_recalc(n->div);
    divnode_recalc(n->next);
 }
 

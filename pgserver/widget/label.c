@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.9 2000/06/09 01:53:39 micahjd Exp $
+/* $Id: label.c,v 1.10 2000/06/09 21:54:34 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -211,6 +211,9 @@ void resizelabel(struct widget *self) {
   struct fontdesc *fd;
   char *str;
 
+  /* With S_ALL we'll get ignored anyway... */
+  if (self->in->flags & S_ALL) return;
+
   if (rdhandle((void **)&fd,TYPE_FONTDESC,-1,DATA->font).
       type != ERRT_NONE || !fd) return;
   if (rdhandle((void **)&str,TYPE_STRING,-1,DATA->text).
@@ -218,11 +221,11 @@ void resizelabel(struct widget *self) {
   
   sizetext(fd,&w,&h,str);
   
-  if ((self->in->flags & DIVNODE_SPLIT_TOP) ||
-      (self->in->flags & DIVNODE_SPLIT_BOTTOM))
+  if ((self->in->flags & S_TOP) ||
+      (self->in->flags & S_BOTTOM))
     self->in->split = h;
-  else if ((self->in->flags & DIVNODE_SPLIT_LEFT) ||
-	   (self->in->flags & DIVNODE_SPLIT_RIGHT))
+  else if ((self->in->flags & S_LEFT) ||
+	   (self->in->flags & S_RIGHT))
     self->in->split = w;
 }
 
