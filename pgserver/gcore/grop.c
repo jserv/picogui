@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.31 2001/01/08 05:09:57 micahjd Exp $
+/* $Id: grop.c,v 1.32 2001/01/10 04:31:26 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -110,8 +110,8 @@ void grop_render(struct divnode *div) {
 			   div->w,div->h-ydif);
       }      
 
-      if (cr.y1<cx2)
-	cx2 = cr.y1;
+      if (cr.y1<cy2)
+	cy2 = cr.y1;
     }
     else
       return;
