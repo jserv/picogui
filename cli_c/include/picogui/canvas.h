@@ -1,4 +1,4 @@
-/* $Id: canvas.h,v 1.28 2001/07/28 10:44:50 micahjd Exp $
+/* $Id: canvas.h,v 1.29 2001/07/29 22:16:16 micahjd Exp $
  *
  * picogui/canvas.h - This defines the commands sent from the client to a
  *                    canvas widget (Via RQH_WRITETO)
@@ -228,6 +228,19 @@
  * \param 5. mapping type (PG_MAP_*)
  */
 #define PGCANVAS_INPUTMAPPING  13
+
+/*!
+ * \brief Set the preferred size per mapping unit
+ * 
+ * When using PG_MAP_SCALE, this is useful to set the
+ * preferred size of the virtual grid squares in the canvas.
+ * This is especially useful when using a canvas in a dialog
+ * box or other container.
+ *
+ * \param 1. w
+ * \param 2. h
+ */
+#define PGCANVAS_GRIDSIZE      14
 
 #endif /* __H_PG_CANVAS */
 /* The End */

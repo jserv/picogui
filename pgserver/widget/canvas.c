@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.18 2001/07/19 09:06:38 micahjd Exp $
+/* $Id: canvas.c,v 1.19 2001/07/29 22:16:16 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -38,6 +38,7 @@ struct canvasdata {
   struct rect input_map;
   u8 input_maptype;
   handle lastfont;
+  s16 gridw,gridh;
 };
    
 #define DATA ((struct canvasdata *)self->data)
@@ -76,6 +77,8 @@ g_error canvas_install(struct widget *self) {
    e = g_malloc((void**) &self->data,sizeof(struct canvasdata));
    errorcheck;
    memset(self->data,0,sizeof(struct canvasdata));
+
+   DATA->gridw = DATA->gridh = 1;
    
    /* Main split */
    e = newdiv(&self->in,self);
@@ -202,13 +205,13 @@ void canvas_extendbox(struct widget *self, struct gropnode *n) {
       PG_GROP_IS_UNPOSITIONED(n->type))
     return;
 
-  i = n->r.x;
+  i = n->r.x * DATA->gridw;
   if (i > self->in->div->pw) self->in->div->pw = i;
-  i += n->r.w;
+  i += n->r.w * DATA->gridw;
   if (i > self->in->div->pw) self->in->div->pw = i;
-  i = n->r.y;
+  i = n->r.y * DATA->gridh;
   if (i > self->in->div->ph) self->in->div->ph = i;
-  i += n->r.h;
+  i += n->r.h * DATA->gridh;
   if (i > self->in->div->ph) self->in->div->ph = i;
 }
 
@@ -373,7 +376,13 @@ void canvas_command(struct widget *self, unsigned short command,
       DATA->input_map.h   = params[3];
       DATA->input_maptype = params[4];
       break;
-      
+
+    case PGCANVAS_GRIDSIZE:
+      if (numparams<2) return;
+      DATA->gridw = params[0];
+      DATA->gridh = params[1];
+      break;
+
    }
 }
    
