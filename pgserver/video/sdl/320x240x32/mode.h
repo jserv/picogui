@@ -1,4 +1,4 @@
-/* $Id: mode.h,v 1.5 2000/04/27 03:27:36 micahjd Exp $
+/* $Id: mode.h,v 1.6 2000/04/29 07:29:02 micahjd Exp $
  *
  * Definitions for 320x240x32 mode. Not very practical for real applications,
  * but it's handy to use a less-than-full-screen mode for testing.
@@ -91,7 +91,7 @@ typedef Uint32 * devbmpt;
 #define btn_over   0x00FFFFB0
 
 /* Hardware-customized Widget Geometry */
-#define HWG_BUTTON  20
+#define HWG_BUTTON  25
 #define HWG_MARGIN  3
 #define HWG_SCROLL  8
 #define HWG_SPACER  2

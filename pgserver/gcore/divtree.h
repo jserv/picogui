@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.9 2000/04/29 03:17:34 micahjd Exp $
+/* $Id: divtree.h,v 1.10 2000/04/29 07:29:02 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -108,8 +108,8 @@ union div_param {
 union grop_param {
   /* Stuff for drawing text */
   struct {          /* This structure is used when on_recalc == &text */
-    handle string,fd;
     devcolort col;
+    handle string,fd;
   } text;
 
   /* Bitmaps */

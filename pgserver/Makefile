@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.7 2000/04/24 02:38:36 micahjd Exp $
+# $Id: Makefile,v 1.8 2000/04/29 07:29:02 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -29,7 +29,7 @@ BINNAME = pgserver
 
 SRC := widget/bitmap.c widget/indicator.c widget/label.c \
        widget/panel.c widget/scroll.c widget/widget.c gcore/grop.c \
-       gcore/g_malloc.c gcore/div.c gcore/font.c \
+       gcore/g_malloc.c gcore/div.c gcore/font.c widget/theme.c \
        gcore/handle.c gcore/g_error.c appmgr/global.c widget/button.c
 
 HDR := widget/widget.h gcore/divtree.h gcore/g_malloc.h \

@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.9 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: button.c,v 1.10 2000/04/29 07:29:02 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -30,6 +30,7 @@
 #include <font.h>
 #include <g_malloc.h>
 #include <appmgr.h>
+#include <theme.h>
 
 /* Button content offsetted in X and Y coords by this much when on */
 #define ON_OFFSET 1
@@ -47,20 +48,21 @@ struct btndata {
 /* Grop structure:
    Node#  Type  Purpose
    --------------------
-   0    rect    Background
-   1    bit/txt Mask
-   2    bit/txt Item
-   3    frame   Border
-   4    frame   Inner border
+   0    element Fill     (fill's x,y,w,h have no effect)
+   1    element Border
+   2    bit/txt Mask
+   3    bit/txt Item
+   4    element Overlay
 */
 void bitbutton(struct divnode *d) {
-  int x,y,w,h;
+  int ex,ey,ew,eh,x,y,w,h;
   struct bitmap *bit;
   struct widget *self = d->owner;
 
-  /* Fill color */
-  grop_rect(&d->grop,2,2,d->w-4,d->h-4,
-	    DATA->on ? btn_on : btn_off); x++; y++; w-=2; h-=2;
+  ex=ey=0; ew=d->w; eh=d->h;
+
+  addelement(&d->grop,&current_theme.button.border,&ex,&ey,&ew,&eh,1);
+  addelement(&d->grop,&current_theme.button.fill,&ex,&ey,&ew,&eh,0);
 
   /* We need at least the main bitmap for alignment.  The mask
      bitmap is optional, but without it what's the point... */
@@ -85,10 +87,7 @@ void bitbutton(struct divnode *d) {
     grop_null(&d->grop);
   }
 
-  /* The frame */
-  grop_frame(&d->grop,0,0,d->w,d->h,btn_b1);
-  grop_frame(&d->grop,1,1,d->w-2,d->h-2,
-	     DATA->over ? btn_over : btn_b2); x++; y++; w-=2; h-=2;
+  addelement(&d->grop,&current_theme.button.overlay,&ex,&ey,&ew,&eh,0);
 }
 
 /* Pointers, pointers, and more pointers. What's the point?
@@ -242,24 +241,58 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
      require recreating grop-lists.
      Redraws don't spread to other nodes, and they are very fast.
   */
-  if (DATA->on) {
-    self->in->div->grop->param.c = btn_on;
-    self->in->div->grop->next->x = DATA->x + ON_OFFSET;
+  if (DATA->on && DATA->over) {
+    applystate(self->in->div->grop,
+	       &current_theme.button.border,
+	       STATE_ACTIVATE);
+    applystate(self->in->div->grop->next,
+	       &current_theme.button.fill,
+	       STATE_ACTIVATE);
+
     self->in->div->grop->next->next->x = DATA->x + ON_OFFSET;
-    self->in->div->grop->next->y = DATA->y + ON_OFFSET;
+    self->in->div->grop->next->next->next->x = DATA->x + ON_OFFSET;
     self->in->div->grop->next->next->y = DATA->y + ON_OFFSET;
+    self->in->div->grop->next->next->next->y = DATA->y + ON_OFFSET;
+
+    applystate(self->in->div->grop->next->next->next->next,
+	       &current_theme.button.overlay,
+	       STATE_ACTIVATE);
+  }
+  else if (DATA->over) {
+    applystate(self->in->div->grop,
+	       &current_theme.button.border,
+	       STATE_HILIGHT);
+    applystate(self->in->div->grop->next,
+	       &current_theme.button.fill,
+	       STATE_HILIGHT);
+
+    self->in->div->grop->next->next->x = DATA->x;
+    self->in->div->grop->next->next->next->x = DATA->x;
+    self->in->div->grop->next->next->y = DATA->y;
+    self->in->div->grop->next->next->next->y = DATA->y;
+
+    applystate(self->in->div->grop->next->next->next->next,
+	       &current_theme.button.overlay,
+	       STATE_HILIGHT);
   }
   else {
-    self->in->div->grop->param.c = btn_off;
-    self->in->div->grop->next->x = DATA->x;
+    applystate(self->in->div->grop,
+	       &current_theme.button.border,
+	       STATE_NORMAL);
+    applystate(self->in->div->grop->next,
+	       &current_theme.button.fill,
+	       STATE_NORMAL);
+
     self->in->div->grop->next->next->x = DATA->x;
-    self->in->div->grop->next->y = DATA->y;
+    self->in->div->grop->next->next->next->x = DATA->x;
     self->in->div->grop->next->next->y = DATA->y;
+    self->in->div->grop->next->next->next->y = DATA->y;
+
+    applystate(self->in->div->grop->next->next->next->next,
+	       &current_theme.button.overlay,
+	       STATE_NORMAL);
   }
-  if (DATA->over)
-    self->in->div->grop->next->next->next->next->param.c = btn_over;
-  else
-    self->in->div->grop->next->next->next->next->param.c = btn_b2;
+
   self->in->div->flags |= DIVNODE_NEED_REDRAW;
   self->dt->flags |= DIVTREE_NEED_REDRAW;   
 }
