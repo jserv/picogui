@@ -145,14 +145,12 @@ class Progress:
 
     def message(self, text, unimportance=1, color=None):
         if self._outputTest(unimportance):
-            self.color.write("\n")
             bullet = '*'
             for line in text.split("\n"):
                 self.color.write(" %s " % bullet, ('bold',))
                 self.color.write(line, color)
                 self.color.write("\n")
                 bullet = ' '
-            self.color.write("\n")
 
 ### The End ###
         

@@ -23,7 +23,7 @@ site speed and picking mirrors.
 #
 
 import PGBuild.Errors
-import urlparse, urllib2, time, random
+import urlparse, urllib2, time, random, sys
 
 
 def findSite(config, name):
@@ -67,7 +67,13 @@ class Location:
             url.close()
             dlTime = time.time() - startTime
             speed = bytes / dlTime
-        except IOError:
+            
+            # If for any reason other than a user interrupt we can't test this mirror,
+            # set its speed to zero so we won't use it given a choice. This includes 404
+            # errors and other indications that the mirror isn't even functional.
+        except KeyboardInterrupt:
+            raise
+        except:
             speed = 0
         PGBuild.XMLUtil.setChildData(self.host, 'speed', speed)
 
@@ -97,7 +103,10 @@ class Location:
             if progress:
                 server = urlparse.urlparse(self.absoluteURI)[1]
                 speed = float(PGBuild.XMLUtil.getChildData(self.host, 'speed'))
-                progress.report("tested", "%7.2f KB/s from %s" % (speed/1000, server))
+                if speed > 0:
+                    progress.report("tested", "%7.2f KB/s from %s" % (speed/1000, server))
+                else:
+                    progress.warning("unable to download from %s" % server)
         return float(PGBuild.XMLUtil.getChildData(self.host, 'speed'))
 
 

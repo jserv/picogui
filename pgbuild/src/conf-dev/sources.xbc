@@ -56,15 +56,20 @@
 
     <!-- Sourceforge download mirrors -->
     <site name="sourceforge-download">
-      <!-- Multiple URIs can be used to specify mirror sites -->
+      <!-- 
+         Multiple URIs can be used to specify mirror sites 
+         Note that some of sourceforge's mirrors don't have a copy of picogui.
+         Those mirrors have been commented out here to avoid warnings every time
+         PGBuild searches for a mirror.
+      -->
       <a href="http://umn.dl.sourceforge.net/sourceforge" />
       <a href="http://twtelecom.dl.sourceforge.net/sourceforge" />
-      <a href="http://cesnet.dl.sourceforge.net/sourceforge" />
+      <!-- <a href="http://cesnet.dl.sourceforge.net/sourceforge" /> -->
       <a href="http://heanet.dl.sourceforge.net/sourceforge" />
-      <a href="http://flow.dl.sourceforge.net/sourceforge" />
+      <!-- <a href="http://flow.dl.sourceforge.net/sourceforge" /> -->
       <a href="http://easynews.dl.sourceforge.net/sourceforge" />
       <a href="http://aleron.dl.sourceforge.net/sourceforge" />
-      <a href="http://switch.dl.sourceforge.net/sourceforge" />
+      <!-- <a href="http://switch.dl.sourceforge.net/sourceforge" /> -->
       <a href="http://unc.dl.sourceforge.net/sourceforge" />
     </site>
 
