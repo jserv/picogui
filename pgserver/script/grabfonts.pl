@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: grabfonts.pl,v 1.2 2000/04/24 02:38:36 micahjd Exp $
+# $Id: grabfonts.pl,v 1.3 2000/08/06 03:35:10 micahjd Exp $
 #
 # This script uses fstobdf to grab fonts from a font server,
 # and munge them into fdf files
@@ -44,7 +44,7 @@ if (!$fstructname) {
 	($xfntname,$fsize,$fstructname) = @ARGV;
 }
 
-open BDFF,"fstobdf -fn $xfntname |";
+open BDFF,"fstobdf -s localhost:7100 -fn $xfntname |";
 
 print "# This font was converted from a BDF to FDF using fstobdf\n";
 print "# Please see comments below for notices regarding this font\n#\n";
