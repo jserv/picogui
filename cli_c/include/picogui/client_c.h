@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.55 2001/07/28 10:42:12 micahjd Exp $
+/* $Id: client_c.h,v 1.56 2001/07/31 02:29:37 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -43,7 +43,26 @@
  * separately, it is included with <tt>\#include <picogui.h></tt>
  */
 
+/*!
+ * \defgroup pgapi Core PicoGUI API
+ *
+ * These are the basic PicoGUI APIs used for connecting to the server
+ * and manipulating data within it. This does not include the PGFX and
+ * Standard Dialog modules.
+ *
+ * \{
+ */
+
 /******************** Client-specific constants and data types */
+
+/*!
+ * \defgroup constdata Constants and Data Types
+ *
+ * pgEvent and other data structures and constants specific to the client.
+ * These values are interpreted in the client library, not the server.
+ *
+ * \{
+ */
 
 /*!
  * \brief Generic PicoGUI event structure
@@ -170,7 +189,18 @@ struct pgmemdata {
 #define PGMEMDAT_NEED_FREE    0x0001   //!< pgmemdata should be free()'d when done
 #define PGMEMDAT_NEED_UNMAP   0x0002   //!< pgmemdata should be munmap()'d when done
 
+//! \}
+
 /******************** Administration */
+
+/*!
+ * \defgroup admin Administrative Functions
+ *
+ * Functions that affect the entire server, or the connection between client
+ * and server. Includes pgInit, error handling, and exclusive access
+ *
+ * \{
+ */
 
 /*!
  * \brief Initialize PicoGUI
@@ -472,7 +502,63 @@ struct pgmodeinfo *pgGetVideoMode(void);
  */
 void pgDriverMessage(unsigned long message, unsigned long param);
 
+/*! 
+ * \brief Evaluate a PicoGUI request packet
+ *
+ * \param reqtype A PGREQ_* constant indicating the packet type
+ * \param data Pointer to the raw packet data
+ * \param datasize Length of raw packet data
+ * 
+ * \returns Returns the request packet's return value, if any. If the request packet does not return a simple data type, the value is undefined.
+ * 
+ * This is a good way
+ * to reuse PicoGUI's serialization capabilities to load
+ * a generic binary object from file. It is advisable to
+ * validate the request's type first so you don't allow
+ * the input to do wierd things like change video mode
+ * or leave the current context. 
+ *
+ * The format of the data accepted by the request packet depends on the type of packet.
+ */
+pghandle pgEvalRequest(short reqtype, void *data, unsigned long datasize);
+
+/*!
+ * \brief Set the inactivity timer
+ *
+ * \param Inactivity timer value in milliseconds
+ *
+ * This sets the inactivity timer. Set it to zero periodically if you want
+ * to prevent screensavers or sleep modes from activating even if there is
+ * no user input.
+ *
+ * \sa pgGetInactivity
+ */
+void pgSetInactivity(unsigned long time);
+
+/*!
+ * \brief Get the inactivity timer
+ *
+ * \returns The inactivity timer value in milliseconds
+ *
+ * This timer is maintained by PicoGUI. It continually increments, but it is
+ * cleared whenever user input is recieved and it can be set by pgSetInactivity
+ * 
+ * \sa pgSetInactivity
+ */
+unsigned long pgGetInactivity(void);
+
+//! \}
+
 /******************** Objects */
+
+/*!
+ * \defgroup pgobjects Object Manipulation
+ *
+ * Functions for creating and manipulating handles and the objects they
+ * represent. Includes Applications, Widgets, and Strings.
+ *
+ * \{
+ */
 
 /*!
  * \brief Delete any object that has a handle 
@@ -632,30 +718,9 @@ pghandle pgNewString(const char *str);
  * \param size The size of the array (in bytes) 
  * \returns A handle to the new array object 
  * 
- */ 
- 
+ */  
 pghandle pgNewArray(short* dat, unsigned short size);  
  
-/*! 
- * \brief Evaluate a PicoGUI request packet
- *
- * \param reqtype A PGREQ_* constant indicating the packet type
- * \param data Pointer to the raw packet data
- * \param datasize Length of raw packet data
- * 
- * \returns Returns the request packet's return value, if any. If the request packet does not return a simple data type, the value is undefined.
- * 
- * This is a good way
- * to reuse PicoGUI's serialization capabilities to load
- * a generic binary object from file. It is advisable to
- * validate the request's type first so you don't allow
- * the input to do wierd things like change video mode
- * or leave the current context. 
- *
- * The format of the data accepted by the request packet depends on the type of packet.
- */
-pghandle pgEvalRequest(short reqtype, void *data, unsigned long datasize);
-
 /*!
  * \brief Get the contents of a string handle
  *
@@ -812,31 +877,6 @@ void pgSetPayload(pghandle object,unsigned long payload);
 unsigned long pgGetPayload(pghandle object);
 
 /*!
- * \brief Set the inactivity timer
- *
- * \param Inactivity timer value in milliseconds
- *
- * This sets the inactivity timer. Set it to zero periodically if you want
- * to prevent screensavers or sleep modes from activating even if there is
- * no user input.
- *
- * \sa pgGetInactivity
- */
-void pgSetInactivity(unsigned long time);
-
-/*!
- * \brief Get the inactivity timer
- *
- * \returns The inactivity timer value in milliseconds
- *
- * This timer is maintained by PicoGUI. It continually increments, but it is
- * cleared whenever user input is recieved and it can be set by pgSetInactivity
- * 
- * \sa pgSetInactivity
- */
-unsigned long pgGetInactivity(void);
-
-/*!
  * \brief Write data to a widget
  *
  * \param widget The handle of the widget to receive data
@@ -877,7 +917,18 @@ void pgWriteCmd(pghandle widget,short command,short numparams, ...);
  */
 void pgRender(pghandle bitmap,short groptype, ...);
 
+//! \}
+
 /******************** Data loading */
+
+/*!
+ * \defgroup dataload Data Loading functions
+ *
+ * The pgFrom*() functions specify various ways to reference data using
+ * the pgmemdata structure.
+ *
+ * \{
+ */
 
 /*!
  * \brief Refer to data loaded into memory
@@ -949,7 +1000,17 @@ struct pgmemdata pgFromStream(FILE *f, unsigned long length);
    hooks to make this work.
 */
 
+//! \}
+
 /******************** Program flow */
+
+/*!
+ * \defgroup progflow Program Flow
+ *
+ * Event loops and handle contexts
+ *
+ * \{
+ */
 
 /*!
  * \brief Event processing and dispatching loop
@@ -1026,6 +1087,10 @@ void pgEnterContext(void);
  * \sa pgEnterContext
  */
 void pgLeaveContext(void);
+
+//! \}
+
+//! \}
 
 #endif /* __H_PG_CLI_C */
 /* The End */
