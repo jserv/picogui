@@ -1,4 +1,4 @@
-/* $Id: pgfx.h,v 1.5 2001/04/29 17:29:49 micahjd Exp $
+/* $Id: pgfx.h,v 1.6 2001/05/10 03:05:36 micahjd Exp $
  *
  * picogui/pgfx.h - The PicoGUI abstract graphics interface
  * 
@@ -77,9 +77,14 @@ struct pgfx_lib {
    pgprim (*gradient)  (pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
 			pgu angle, pgcolor c1, pgcolor c2);
 
-   /* Support functions */
+   /* Nonvisual primitives */
    pgprim (*setcolor)(pgcontext c, pgcolor color);
-
+   pgprim (*setfont)(pgcontext c, pghandle font);
+   pgprim (*setlgop)(pgcontext c, short lgop);
+   pgprim (*setangle)(pgcontext c, pgu angle);              /* For text */
+   pgprim (*setsrc)(pgcontext c, pgu x,pgu y,pgu w,pgu h);  /* For bitmaps */
+   pgprim (*setmapping)(pgcontext c, pgu x,pgu y,pgu w,pgu h,short type);
+   
    /* Call to mark the device for updating. Because PGFX is
     * output-method-independant it is not necessary to call pgSubUpdate */
    void (*update)(pgcontext c);
@@ -102,6 +107,11 @@ struct pgfx_lib {
 #define pgTileBitmap(a,b,c,d,e,f)         (*(a)->lib->tilebitmap)(a,b,c,d,e,f)
 #define pgGradient(a,b,c,d,e,f,g,h)       (*(a)->lib->gradient)(a,b,c,d,e,f,g,h)
 #define pgSetColor(a,b)                   (*(a)->lib->setcolor)(a,b)
+#define pgSetFont(a,b)                    (*(a)->lib->setfont)(a,b)
+#define pgSetLgop(a,b)                    (*(a)->lib->setlgop)(a,b)
+#define pgSetAngle(a,b)                   (*(a)->lib->setangle)(a,b)
+#define pgSetSrc(a,b,c,d,e)               (*(a)->lib->setsrc)(a,b,c,d,e)
+#define pgSetMapping(a,b,c,d,e,f)         (*(a)->lib->setmapping)(a,b,c,d,e,f)
 #define pgContextUpdate(a)                (*(a)->lib->update)(a)
 
 /* Meta-primitives */

@@ -1,4 +1,4 @@
-/* $Id: pgfx_canvas.c,v 1.6 2001/04/29 17:29:49 micahjd Exp $
+/* $Id: pgfx_canvas.c,v 1.7 2001/05/10 03:05:36 micahjd Exp $
  *
  * picogui/pgfx_canvas.c - lib functions and registration for canvas
  *                         drawing through the PGFX interface
@@ -89,6 +89,32 @@ pgprim _pgfxcanvas_setcolor(pgcontext c, pgcolor color) {
    return 0;
 }
 
+pgprim _pgfxcanvas_setfont(pgcontext c, pghandle font) {
+   pgWriteCmd(c->device,PGCANVAS_GROP,2,PG_GROP_SETFONT,font);
+   return 0;
+}
+
+pgprim _pgfxcanvas_setlgop(pgcontext c, short lgop) {
+   pgWriteCmd(c->device,PGCANVAS_GROP,2,PG_GROP_SETLGOP,lgop);
+   return 0;
+}
+
+pgprim _pgfxcanvas_setangle(pgcontext c, pgu angle) {
+   pgWriteCmd(c->device,PGCANVAS_GROP,2,PG_GROP_SETANGLE,angle);
+   return 0;
+}
+
+pgprim _pgfxcanvas_setsrc(pgcontext c, pgu x,pgu y,pgu w,pgu h) {
+   pgWriteCmd(c->device,PGCANVAS_GROP,5,PG_GROP_SETSRC,x,y,w,h);
+   return 0;
+}
+
+pgprim _pgfxcanvas_setmapping(pgcontext c, 
+			      pgu x,pgu y,pgu w,pgu h,short type) {
+   pgWriteCmd(c->device,PGCANVAS_GROP,6,PG_GROP_SETMAPPING,x,y,w,h,type);
+   return 0;
+}
+
 void _pgfxcanvas_update(pgcontext c) {
    if (c->flags == PGFX_IMMEDIATE)
      pgWriteCmd(c->device,PGCANVAS_INCREMENTAL,0);
@@ -119,6 +145,11 @@ pgcontext pgNewCanvasContext(pghandle canvas,short mode) {
    l.tilebitmap = _pgfxcanvas_tilebitmap;
    l.gradient   = _pgfxcanvas_gradient;
    l.setcolor   = _pgfxcanvas_setcolor;
+   l.setfont    = _pgfxcanvas_setfont;
+   l.setlgop    = _pgfxcanvas_setlgop;
+   l.setangle   = _pgfxcanvas_setangle;
+   l.setsrc     = _pgfxcanvas_setsrc;
+   l.setmapping = _pgfxcanvas_setmapping;
    l.update     = _pgfxcanvas_update;
    
    ctx->lib = &l;

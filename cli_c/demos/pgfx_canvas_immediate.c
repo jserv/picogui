@@ -10,10 +10,10 @@ void animate(void) {
    /* Send 50 random rectangles, they all get rendered at once. This will
     * temporarily use 100 gropnodes, (1 for the rectangle, 1 for color)
     * but nothing is stored permanently */
-   for (i=0;i<50;i++) {
-      pgSetColor(gc,rand()%0xFFFFFF);
-      pgRect(gc, rand()%500, rand()%500, rand()%50, rand()%50);
-   }
+   pgSetMapping(gc,0,0,1000,1000,PG_MAP_SCALE);
+   pgSetLgop(gc,PG_LGOP_XOR);
+   pgSetColor(gc,rand()%0xFFFFFF);
+   pgRect(gc, rand()%1000, rand()%1000, rand()%100, rand()%100);
    pgContextUpdate(gc);
 }
 
