@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.74 2002/02/02 20:52:51 lonetech Exp $
+/* $Id: div.c,v 1.75 2002/02/06 06:35:55 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -374,11 +374,26 @@ void divnode_split(struct divnode *n, struct rect *divrect,
 int divnode_recalc(struct divnode **pn, struct divnode *parent) {
    struct divnode *n = *pn;
    struct rect divrect, nextrect;
+   struct rect old_divrect, old_nextrect;
 
    if (!n)
      return 0;
 
    if (n->flags & DIVNODE_NEED_RECALC) {
+
+     /* Save the old rectangles */
+     if (n->div) {
+       old_divrect.x = n->div->calcx;
+       old_divrect.y = n->div->calcy;
+       old_divrect.w = n->div->calcw;
+       old_divrect.h = n->div->calch;
+     }
+     if (n->next) {
+       old_nextrect.x = n->next->calcx;
+       old_nextrect.y = n->next->calcy;
+       old_nextrect.w = n->next->calcw;
+       old_nextrect.h = n->next->calch;
+     }     
      
      /* Split the rectangle */
      divnode_split(n,&divrect,&nextrect);
@@ -546,13 +561,14 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
      /* Recalc completed.  Propagate the changes- always propagate to
 	div, only propagate to next if our changes affected other nodes. 
      */
-     if (n->div) {
+     if (n->div && memcmp(&divrect,&old_divrect,sizeof(divrect))) {
        n->div->flags |= DIVNODE_NEED_RECALC | 
 	 (n->flags & DIVNODE_PROPAGATE_RECALC);
        divnode_divscroll(n->div);
        div_rebuild(n->div);
      }     
-     if ((n->flags & DIVNODE_PROPAGATE_RECALC) && n->next) {
+     if ((n->flags & DIVNODE_PROPAGATE_RECALC) && n->next &&
+	 memcmp(&nextrect,&old_nextrect,sizeof(nextrect))) {
        n->next->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
        divnode_divscroll(n->next);
        div_rebuild(n->next);
