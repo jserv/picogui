@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.80 2002/01/20 08:40:38 micahjd Exp $
+/* $Id: dispatch.c,v 1.81 2002/01/22 12:25:09 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -376,18 +376,6 @@ g_error rqh_in_point(int owner, struct pgrequest *req,
   reqarg(in_point);
   dispatch_pointing(ntohl(arg->type),ntohs(arg->x),ntohs(arg->y),
 		    ntohs(arg->btn));
-  return success;
-#endif
-}
-
-g_error rqh_in_direct(int owner, struct pgrequest *req,
-		   void *data, u32 *ret, int *fatal) {
-#ifdef CONFIG_NOREMOTEINPUT
-  return mkerror(PG_ERRT_BADPARAM,104);
-#else
-  reqarg(in_direct);
-  dispatch_direct(((char*)arg)+sizeof(struct pgreqd_in_direct),
-		  ntohl(arg->param));
   return success;
 #endif
 }

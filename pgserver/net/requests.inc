@@ -15,7 +15,7 @@ RQH(get)
 RQH(mktheme)
 RQH(in_key)
 RQH(in_point)
-RQH(in_direct)
+RQH(ping)        /* in_direct deprecated, replace this with the next new request */
 RQH(wait)
 RQH(mkfillstyle)
 RQH(register)

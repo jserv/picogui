@@ -1,4 +1,4 @@
-/* $Id: appmgr.h,v 1.18 2002/01/06 09:22:57 micahjd Exp $
+/* $Id: appmgr.h,v 1.19 2002/01/22 12:25:08 micahjd Exp $
  *
  * appmgr.h - All the window-manager-ish functionality, except we don't
  * do windows (X windows, that is?)
@@ -100,6 +100,12 @@ void appmgr_loadcursor(int thobj);
 /* Return a pointer to a divnode specifying the non-toolbar area that
  * applications and popup boxes may normally inhabit. */
 struct divnode *appmgr_nontoolbar_area(void);
+
+/* Given a widget, finds the app it belongs to */
+struct app_info **appmgr_findapp(struct widget *w);
+
+/* Focus the app by moving it to the front of the app list */
+void appmgr_focus(struct app_info **app);
 
 #endif /* __H_APPMGR */
 /* The End */

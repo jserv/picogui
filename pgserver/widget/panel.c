@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.73 2002/01/16 19:47:27 lonetech Exp $
+/* $Id: panel.c,v 1.74 2002/01/22 12:25:09 micahjd Exp $
  *
  * panel.c - Holder for applications. It uses a panelbar for resizing purposes,
  *           and optionally supplies some standard buttons for the panel.
@@ -231,6 +231,7 @@ void panel_remove(struct widget *self) {
 g_error panel_set(struct widget *self,int property, glob data) {
   struct widget *w;
   g_error e;
+  struct app_info **app;
 
   switch (property) {
 
@@ -255,6 +256,9 @@ g_error panel_set(struct widget *self,int property, glob data) {
   case PG_WP_TEXT:
     e = rdhandle((void **) &w, PG_TYPE_WIDGET, self->owner, DATA->hlabel);
     errorcheck;
+    app = appmgr_findapp(self);
+    if (app && *app)
+      (*app)->name = data;
     return widget_set(w,property,data);
 
   default:

@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.55 2002/01/19 08:11:53 micahjd Exp $
+/* $Id: global.c,v 1.56 2002/01/22 12:25:08 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -402,6 +402,39 @@ struct divnode *appmgr_nontoolbar_area(void) {
     return dts->root->head;
 
   return wtbboundary->in->next;
+}
+
+/* Given a widget, finds the app it belongs to */
+struct app_info **appmgr_findapp(struct widget *w) {
+  struct app_info **p = &applist;
+  struct widget *rootw;
+
+  /* Find the root widget */
+  while (w) {
+    if (w->isroot)
+      break;
+    w = widget_traverse(w, PG_TRAVERSE_CONTAINER, 1);
+  }
+  if (!w) return NULL;
+
+  /* Now find the app_info entry */
+  while (*p) {
+    if (!iserror(rdhandle((void**) &rootw, PG_TYPE_WIDGET, 
+			  (*p)->owner, (*p)->rootw)) && rootw==w)
+      return p;
+    p = &((*p)->next);
+  }
+  return NULL;
+}
+
+/* Focus the app by moving it to the front of the app list */
+void appmgr_focus(struct app_info **app) {
+  struct app_info *ap;
+  if (!app) return;
+  ap = *app;
+  *app = ap->next;
+  ap->next = applist;
+  applist = ap;
 }
 
 /* The End */

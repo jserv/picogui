@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.53 2002/01/16 15:25:21 bauermeister Exp $
+/* $Id: network.h,v 1.54 2002/01/22 12:25:08 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -112,7 +112,7 @@ struct pghello {
 #define PGREQ_MKTHEME      9   /* Load a compiled theme          |  theme  */
 #define PGREQ_IN_KEY       10  /* Dispatch keyboard input        |  struct */
 #define PGREQ_IN_POINT     11  /* Dispatch pointing device input |  struct */
-#define PGREQ_IN_DIRECT    12  /* Dispatch direct input          |  struct */
+#define PGREQ_DEPRECATED_1 12  /* Depreacated, replace this with a new entry */
 #define PGREQ_WAIT         13  /* Wait for an event              |  none   */
 #define PGREQ_MKFILLSTYLE  14  /* Load a fill style,return handle|  fillstyle */
 #define PGREQ_REGISTER     15  /* Register a new application     |  struct */
@@ -150,6 +150,8 @@ struct pghello {
 #define PGREQ_ATTACHWIDGET 47  /* Attach widget                  |  struct */
 #define PGREQ_FINDTHOBJ    48  /* Find theme object by name      |   chars */
 #define PGREQ_TRAVERSEWGT  49  /* Find widgets after this one    | struct */
+
+/* NOTE: Before adding new entries to the end, replace any deprecated entries above */
 
 #define PGREQ_UNDEF        50  /* types > this will be truncated. return error */
 

@@ -1,4 +1,4 @@
-/* $Id: ncursesinput.c,v 1.19 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: ncursesinput.c,v 1.20 2002/01/22 12:25:08 micahjd Exp $
  *
  * ncursesinput.h - input driver for ncurses
  * 
@@ -26,8 +26,6 @@
  */
 
 #include <pgserver/common.h>
-
-#ifdef DRIVER_NCURSESINPUT
 
 #include <pgserver/input.h>
 #include <pgserver/widget.h>
@@ -165,5 +163,4 @@ g_error ncursesinput_regfunc(struct inlib *i) {
    return success;
 }
 
-#endif /* DRIVER_NCURSESINPUT */
 /* The End */

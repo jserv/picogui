@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.89 2002/01/19 09:18:21 micahjd Exp $
+/* $Id: button.c,v 1.90 2002/01/22 12:25:09 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -50,6 +50,8 @@ struct btndata {
   
   /* Values set by PG_WP_THOBJ_BUTTON_* */
   int state,state_on,state_hilight,state_on_nohilight,bitmap_side;
+
+  int hotkey;
   
   /* Mask of extended (other than ACTIVATE) events to send
    * and other flags*/
@@ -173,7 +175,7 @@ g_error button_install(struct widget *self) {
   self->in->div->state = DATA->state;
   self->in->div->flags |= DIVNODE_HOTSPOT | DIVNODE_SPLIT_BORDER;
 
-  self->trigger_mask = TRIGGER_ENTER | TRIGGER_LEAVE | TRIGGER_HOTKEY |
+  self->trigger_mask = TRIGGER_ENTER | TRIGGER_LEAVE | TRIGGER_CHAR |
     TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_DIRECT |
     TRIGGER_KEYUP | TRIGGER_KEYDOWN | TRIGGER_DEACTIVATE | TRIGGER_ACTIVATE;
 
@@ -284,7 +286,20 @@ g_error button_set(struct widget *self,int property, glob data) {
     /* Remember that the side was set manually, then pass it on */
     DATA->theme_side = 0;
     return mkerror(ERRT_PASS,0);
-     
+
+  case PG_WP_HOTKEY:
+    /* Process PGTH_P_HIDEHOTKEYS if it is set */
+    switch (theme_lookup(widget_get(self,PG_WP_STATE),PGTH_P_HIDEHOTKEYS)) {
+      
+    case PG_HHK_RETURN_ESCAPE:
+      if (data == PGKEY_RETURN || data == PGKEY_ESCAPE)
+	widget_set(self,PG_WP_SIZE,0);
+      break;
+      
+    }
+    DATA->hotkey = data;
+    break;
+
   default:
     return mkerror(ERRT_PASS,0);
   }
@@ -312,9 +327,6 @@ glob button_get(struct widget *self,int property) {
   case PG_WP_TEXT:
     return (glob) DATA->text;
 
-  case PG_WP_HOTKEY:
-    return (glob) self->hotkey;
-     
   case PG_WP_ON:
     return (glob) DATA->on;
 
@@ -333,6 +345,9 @@ glob button_get(struct widget *self,int property) {
   case PG_WP_THOBJ_BUTTON_ON_NOHILIGHT:
     return (glob) DATA->state_on_nohilight;
 
+  case PG_WP_HOTKEY:
+    return (glob) DATA->hotkey;
+
   default:
     return 0;
   }
@@ -341,6 +356,7 @@ glob button_get(struct widget *self,int property) {
 void button_trigger(struct widget *self,long type,union trigparam *param) {
   int event=-1;
   struct widget *w;
+  union trigparam tp;
 
   /* If it's disabled, don't allow anything except
    * hilighting and global keys
@@ -360,14 +376,34 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     DATA->over=0;
     break;
    
+  case TRIGGER_CHAR:
+    if (param->kbd.key == hotkey_activate && (param->kbd.flags & PG_KF_FOCUSED))
+      param->kbd.consume++;
+    if (param->kbd.key == DATA->hotkey)
+      param->kbd.consume++;
+    return;
+    
   case TRIGGER_KEYDOWN:
-    if (param->kbd.key != hotkey_activate) {
-      global_hotkey(param->kbd.key,param->kbd.mods,type);
+    /* We want to consume the hotkey's KEYDOWN, but only act on KEYUP
+     */
+    if (param->kbd.key == DATA->hotkey) {
+      param->kbd.consume++;
       return;
     }
-    param->mouse.chbtn = 1;
+    
+    /* Do the fake mouseclick if it's focused and they pressed the activate key
+     */
+    if (param->kbd.key == hotkey_activate && (param->kbd.flags & PG_KF_FOCUSED))
+      param->kbd.consume++;
+    else
+      return;
+
     /* Fake a mouse click so popups stick to buttons
-     * when triggered by keyboard */
+     * when triggered by keyboard
+     */
+    tp = *param;
+    param = &tp;
+    param->mouse.chbtn = 1;
     lastclicked = self;
   case TRIGGER_DOWN:
     if (DATA->extdevents & PG_EXEV_PNTR_DOWN)
@@ -413,10 +449,46 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     break;
 
   case TRIGGER_KEYUP:
-    if (param->kbd.key != hotkey_activate) {
-      global_hotkey(param->kbd.key,param->kbd.mods,type);
+
+    /* Hotkey was pressed, simulate a keypress
+     */
+    if (param->kbd.key == DATA->hotkey) {
+      param->kbd.consume++;
+      
+      /* If it's a toggle button, go ahead and make it change state. Otherwise
+       * send the event and get out of here without redrawing anything
+       */
+      
+      if (DATA->extdevents & PG_EXEV_TOGGLE) {
+	union trigparam mytrig;
+	
+	/* Simulate a mouse press/release */
+	memset(&mytrig,0,sizeof(mytrig));
+	mytrig.mouse.chbtn = 1;
+	button_trigger(self,TRIGGER_DOWN,&mytrig);
+	button_trigger(self,TRIGGER_UP,&mytrig);
+      }
+      else {
+	/* No graphical interaction here, 
+	 * so just post the event and get on with it 
+	 */
+	post_event(PG_WE_ACTIVATE,self,2,0,NULL);
+      }
       return;
     }
+
+    /* Do the fake mouseclick if it's focused and they pressed the activate key
+     */
+    if (param->kbd.key == hotkey_activate && (param->kbd.flags & PG_KF_FOCUSED))
+      param->kbd.consume++;
+    else
+      return;
+
+    /* Fake a mouse click so popups stick to buttons
+     * when triggered by keyboard
+     */
+    tp = *param;
+    param = &tp;
     param->mouse.chbtn = 1;
   case TRIGGER_UP:
     if (DATA->extdevents & PG_EXEV_PNTR_UP)
@@ -458,29 +530,6 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
       post_event(PG_WE_FOCUS,self,1,0,NULL);
     return;
 
-  case TRIGGER_HOTKEY:
-  case TRIGGER_DIRECT:
-
-    /* If it's a toggle button, go ahead and make it change state. Otherwise
-     * send the event and get out of here without redrawing anything
-     */
-
-    if (DATA->extdevents & PG_EXEV_TOGGLE) {
-      union trigparam mytrig;
-      
-      /* Simulate a mouse press/release */
-      memset(&mytrig,0,sizeof(mytrig));
-      mytrig.mouse.chbtn = 1;
-      button_trigger(self,TRIGGER_DOWN,&mytrig);
-      button_trigger(self,TRIGGER_UP,&mytrig);
-    }
-    else {
-      /* No graphical interaction here, 
-       * so just post the event and get on with it 
-       */
-      post_event(PG_WE_ACTIVATE,self,2,0,NULL);
-      return;
-    }
   }
 
   /* Update subwidgets, update this widget, then send an event */

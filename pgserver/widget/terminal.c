@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.45 2002/01/16 19:47:27 lonetech Exp $
+/* $Id: terminal.c,v 1.46 2002/01/22 12:25:09 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -372,7 +372,7 @@ g_error terminal_install(struct widget *self) {
    
   self->trigger_mask = TRIGGER_STREAM | TRIGGER_CHAR | TRIGGER_DOWN |
      TRIGGER_UP | TRIGGER_RELEASE | TRIGGER_ACTIVATE | TRIGGER_DEACTIVATE |
-     TRIGGER_TIMER | TRIGGER_KEYDOWN;
+     TRIGGER_TIMER | TRIGGER_KEYDOWN | TRIGGER_KEYUP;
 
   return success;
 }
@@ -439,106 +439,122 @@ glob terminal_get(struct widget *self,int property) {
 }
 
 void terminal_trigger(struct widget *self,long type,union trigparam *param) {
-   term_rectprepare(self);   /* Changes must be enclosed
-			      * by term_rectprepare and term_realize */
-   
-   switch (type) {
-
+  term_rectprepare(self);   /* Changes must be enclosed
+			     * by term_rectprepare and term_realize */
+  
+  switch (type) {
+    
     /* When clicked, request keyboard focus */
-
-    case TRIGGER_DOWN:
-      if (param->mouse.chbtn==1)
-	DATA->on=1;
-      return;
+    
+  case TRIGGER_DOWN:
+    if (param->mouse.chbtn==1)
+      DATA->on=1;
+    return;
+    
+  case TRIGGER_UP:
+    if (DATA->on && param->mouse.chbtn==1) {
+      DATA->on=0;
+      request_focus(self);
+    }
+    return;
       
-    case TRIGGER_UP:
-      if (DATA->on && param->mouse.chbtn==1) {
-	 DATA->on=0;
-	 request_focus(self);
-      }
-      return;
+  case TRIGGER_RELEASE:
+    if (param->mouse.chbtn==1)
+      DATA->on=0;
+    return;
+    
+  case TRIGGER_STREAM:
+    /* Output each character */
+    for (;*param->stream.data;param->stream.data++)
+      term_char(self,*param->stream.data);
+    
+    /* If we're autoscrolling, make sure the new cursor position is scrolled in */
+    if (DATA->autoscroll) {
+      /* More trickery... we'd like to be able to use scroll_to_divnode() on this,
+       * but unfortunately the cursor isn't a divnode. It isn't even a gropnode,
+       * just a couple bytes set in the terminal's textgrid. So, here we manufacture
+       * a termporary divnode to feed to scroll_to_divnode.
+       */
       
-    case TRIGGER_RELEASE:
-      if (param->mouse.chbtn==1)
-	DATA->on=0;
-      return;
+      struct divnode fakediv = *self->in->div;
+      fakediv.x += DATA->x + DATA->celw * DATA->crsrx;
+      fakediv.y += DATA->y + DATA->celh * DATA->crsry;
+      fakediv.w  = DATA->celw;
+      fakediv.h  = DATA->celh;
       
-    case TRIGGER_STREAM:
-      /* Output each character */
-      for (;*param->stream.data;param->stream.data++)
-	term_char(self,*param->stream.data);
-      
-      /* If we're autoscrolling, make sure the new cursor position is scrolled in */
-      if (DATA->autoscroll) {
-	/* More trickery... we'd like to be able to use scroll_to_divnode() on this,
-	 * but unfortunately the cursor isn't a divnode. It isn't even a gropnode,
-	 * just a couple bytes set in the terminal's textgrid. So, here we manufacture
-	 * a termporary divnode to feed to scroll_to_divnode.
-	 */
-
-	struct divnode fakediv = *self->in->div;
-	fakediv.x += DATA->x + DATA->celw * DATA->crsrx;
-	fakediv.y += DATA->y + DATA->celh * DATA->crsry;
-	fakediv.w  = DATA->celw;
-	fakediv.h  = DATA->celh;
-	
 	scroll_to_divnode(&fakediv);
-      }
-
-      term_realize(self);  /* Realize rects, but don't do a full update */
-
-      /* Reset the cursor timer */
-      DATA->update_time = getticks();
+    }
+    
+    term_realize(self);  /* Realize rects, but don't do a full update */
+    
+    /* Reset the cursor timer */
+    DATA->update_time = getticks();
+    return;
+    
+  case TRIGGER_CHAR:
+    if (!(param->kbd.flags & PG_KF_FOCUSED))
       return;
-      
-   case TRIGGER_CHAR:
-     /* Normal ASCII-ish character */
-     kbd_event(self,param->kbd.key,param->kbd.mods);
-     return;
+    param->kbd.consume++;
+    
+    /* Normal ASCII-ish character */
+    kbd_event(self,param->kbd.key,param->kbd.mods);
+    /* Terminal always consumes normal characters */
+    return;
      
-   case TRIGGER_KEYDOWN:
-     /* Handle control characters that CHAR doesn't map */
-     if ((param->kbd.key > 255) || 
-	 (param->kbd.mods & (PGMOD_CTRL | PGMOD_ALT)))
-       kbd_event(self,param->kbd.key,param->kbd.mods);
-     return;
-      
-    case TRIGGER_DEACTIVATE:
-      DATA->focus = 0;
-      term_setcursor(self,1);  /* Show cursor */
-      break;    /* Update */
-      
-    case TRIGGER_ACTIVATE:
-      DATA->focus = 1;
-      /* No break; fall through to TRIGGER_TIMER to set up timer */
-      
-    case TRIGGER_TIMER:
-      if (!DATA->focus) return;
-      
-      /* Reset timer */
-      install_timer(self,(DATA->cursor_on ? 
-			  DATA->flashtime_off : DATA->flashtime_on ));
-
-      /* Flash the cursor if it should be active */
-      if (getticks() > (DATA->update_time + DATA->cursor_wait))
-	term_setcursor(self,!DATA->cursor_on);
-      else {
-	/* Make sure the cursor is on */
-	if (DATA->cursor_on)
-	  return;
-	else
-	  term_setcursor(self,1);
-      }
-
-      break;   /* Update */
-      
-   }
-   
-   /* If we used a break; above instead of a return we want an update
-    * right away for cursor blinking */
-   
-   term_realize(self);
-   update(self->in->div,1);
+  case TRIGGER_KEYDOWN:
+    if (!(param->kbd.flags & PG_KF_FOCUSED))
+      return;
+    param->kbd.consume++;
+    
+    /* Handle control characters that CHAR doesn't map */
+    if ((param->kbd.key > 255) || 
+	(param->kbd.mods & (PGMOD_CTRL | PGMOD_ALT))) {
+      kbd_event(self,param->kbd.key,param->kbd.mods);
+    }
+    return;
+    
+  case TRIGGER_KEYUP:
+    if (!(param->kbd.flags & PG_KF_FOCUSED))
+      return;
+    param->kbd.consume++;
+    return;
+    
+  case TRIGGER_DEACTIVATE:
+    DATA->focus = 0;
+    term_setcursor(self,1);  /* Show cursor */
+    break;    /* Update */
+    
+  case TRIGGER_ACTIVATE:
+    DATA->focus = 1;
+    /* No break; fall through to TRIGGER_TIMER to set up timer */
+    
+  case TRIGGER_TIMER:
+    if (!DATA->focus) return;
+    
+    /* Reset timer */
+    install_timer(self,(DATA->cursor_on ? 
+			DATA->flashtime_off : DATA->flashtime_on ));
+    
+    /* Flash the cursor if it should be active */
+    if (getticks() > (DATA->update_time + DATA->cursor_wait))
+      term_setcursor(self,!DATA->cursor_on);
+    else {
+      /* Make sure the cursor is on */
+      if (DATA->cursor_on)
+	return;
+      else
+	term_setcursor(self,1);
+    }
+    
+    break;   /* Update */
+    
+  }
+  
+  /* If we used a break; above instead of a return we want an update
+   * right away for cursor blinking */
+  
+  term_realize(self);
+  update(self->in->div,1);
 }
 
 /********************************************** Keyboard input functions */

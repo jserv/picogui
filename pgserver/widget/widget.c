@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.149 2002/01/22 02:37:29 micahjd Exp $
+/* $Id: widget.c,v 1.150 2002/01/22 12:25:09 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -299,9 +299,6 @@ void widget_remove(struct widget *w) {
   DBG("%p\n",w);
 
   if (!in_shutdown) {
-    /* Get us out of the hotkey list */
-    install_hotkey(w,0);
-
     /* Get out of the timer list */
     remove_from_timerlist(w);
 
@@ -492,19 +489,6 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
       redraw_bg(w);
       break;
       
-    case PG_WP_HOTKEY:
-      /* Process PGTH_P_HIDEHOTKEYS if it is set */
-      switch (theme_lookup(widget_get(w,PG_WP_STATE),PGTH_P_HIDEHOTKEYS)) {
-	
-      case PG_HHK_RETURN_ESCAPE:
-	if (data == PGKEY_RETURN || data == PGKEY_ESCAPE)
-	  widget_set(w,PG_WP_SIZE,0);
-	break;
-
-      }
-      install_hotkey(w,data);
-      break;
-
     case PG_WP_SCROLL_X:
       if (data < 0)
 	data = 0;
@@ -669,39 +653,6 @@ void reset_widget_pointers(void) {
 }
 
 /*
-  Installs or updates the hotkey for a widget
-*/
-void install_hotkey(struct widget *self,long hotkey) {
-
-  if ((!self->hotkey) && hotkey) {
-    /* Add to the hotkey widget list if this is our first hotkey */
-    self->hknext = self->dt->hkwidgets;
-    self->dt->hkwidgets = self;
-  }
-  else if (self->hotkey && (!hotkey)) {
-    /* Remove us from the list */
-    if (self->dt->hkwidgets) {
-      if (self==self->dt->hkwidgets) {
-	self->dt->hkwidgets = self->hknext;
-      }
-      else {
-	struct widget *p = self->dt->hkwidgets;
-	while (p->hknext)
-	  if (p->hknext == self) {
-	    /* Take us out */
-	    p->hknext = self->hknext;
-	    break;
-	  }
-	  else
-	    p = p->hknext;
-      }
-    }
-  }
-  
-  self->hotkey = hotkey;
-}
-
-/*
    Set a timer.  At the time, in ticks, specified by 'time',
    the widget will recieve a TRIGGER_TIMER
 */
@@ -763,6 +714,7 @@ void request_focus(struct widget *self) {
   /* Deactivate the old widget, activate the new */
   send_trigger(kbdfocus,TRIGGER_DEACTIVATE,NULL);
   kbdfocus = self;
+  appmgr_focus(appmgr_findapp(self));
   send_trigger(self,TRIGGER_ACTIVATE,NULL);
 
   /* If the cursor isn't already within this widget, scroll it in
@@ -822,20 +774,18 @@ int send_trigger(struct widget *w, long type,
     (*w->def->trigger)(w,type,param);
     return 1;
   }
-  else {
-    
-    /* Some default handlers */
-    switch (type) {
-
-    case TRIGGER_KEYDOWN:
-    case TRIGGER_KEYUP:
-    case TRIGGER_CHAR:
-      global_hotkey(param->kbd.key,param->kbd.mods,type);
-      return 1;
-
-    }
-  }
   return 0;
+}
+
+/* Sends a trigger to all of a widget's children */
+void r_send_trigger(struct widget *w, long type,
+		    union trigparam *param, u16 *stop) {
+  if (!w || (*stop) > 0)
+    return;
+  send_trigger(w,type,param);
+  
+  r_send_trigger(widget_traverse(w,PG_TRAVERSE_CHILDREN,0),type,param,stop);
+  r_send_trigger(widget_traverse(w,PG_TRAVERSE_FORWARD,1),type,param,stop);
 }
 
 void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
@@ -951,8 +901,12 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
     under = div_under_crsr->owner;
     
     /* Keep track of the most recently clicked widget */
-    if (type==TRIGGER_DOWN)
+    if (type==TRIGGER_DOWN) {
       lastclicked = under;
+      
+      /* Also, allow clicks to focus applications */
+      appmgr_focus(appmgr_findapp(under));
+    }
 
     if ((!(btn & capturebtn)) && capture && (capture!=under)) {
       release_captured = send_trigger(capture,TRIGGER_RELEASE,&param);
@@ -992,13 +946,12 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
 
 void dispatch_key(u32 type,s16 key,s16 mods) {
   struct widget *p;
+  struct app_info **app;
+  struct app_info *ap;
   union trigparam param;
-  int suppress = 0;    /* If a keycode is used by a hotkey, it is only passed
-			  to the hotkey owner for KEYDOWNs but other events
-			  for that keycode should not be sent to the focused
-			  widget */
-
   long keycode = (mods<<16) | key;     /* Combines mods and the key */
+  int kflags;
+  struct divtree *dt;
 
 #ifdef DEBUG_INPUT
   printf(__FUNCTION__": type = %d, key = %d, mods = %d\n", type, key, mods);
@@ -1059,44 +1012,98 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
   /* Ignore CHAR events for keys modified by ALT or CTRL */
   if (type == TRIGGER_CHAR && (mods & (PGMOD_ALT | PGMOD_CTRL))) return;
 
-  /* Iterate through the hotkey-owning widgets if there's a KEYUP */
-  p = dts->top->hkwidgets;
-  while (p) {
-    if (p->hotkey == keycode) {
-      suppress = 1;
-      /* FIXME?? : This has to be a KEYUP to avoid problems with a
-       * hotspot situation immediately following a hotkey situation.
-       * The hotkey picks up the KEYDOWN and the hotspot picks up the KEYUP
-       * for the same key
-       */
-      if (type == TRIGGER_KEYUP)
-	send_trigger(p,TRIGGER_HOTKEY,NULL);
-    }
-    p = p->hknext;
-  }
-  if (suppress) return;
+  /* This event gets propagated until 'consume' is > 0 */
+  param.kbd.key     = key;
+  param.kbd.mods    = mods;
+  param.kbd.consume = 0;
+  param.kbd.flags   = 0;
 
-  /* All other keypresses go to the focused widget (if any) */
-#ifdef DEBUG_INPUT
-  printf(__FUNCTION__": kbdfocus = 0x%x\n", kbdfocus);
-#endif
+  /*
+   *  Now for the fun part... propagating this event to all the widgets.
+   *  It will eventually end up at all the widgets, but the order is
+   *  important. What seemed to make the most sense for PicoGUI was:
+   *
+   *   1. focused widget
+   *   2. focused widget's children
+   *   3. focused widget's ancestors (within one root widget)
+   *   4. all popup widgets and their children, from top to bottom
+   *   5. all root widgets and their children, in decreasing pseudo-z-order
+   *
+   *  Since PicoGUI doesn't have a real z-order for root widgets, the
+   *  order will determined by how recently the root widget had a 
+   *  focused child widget. 
+   */
+
   if (kbdfocus) {
-    param.kbd.key = key;
-    param.kbd.mods = mods;
+    kflags = PG_KF_ALWAYS;
+
+    /* Is the focused widget in the topmost app?
+     */
+    app = appmgr_findapp(kbdfocus);
+    if (app && (*app)==applist)
+      kflags |= PG_KF_APP_TOPMOST;
+
+    /* 1. focused widget 
+     */
+    param.kbd.flags = kflags | PG_KF_FOCUSED;
     send_trigger(kbdfocus,type,&param);
+    if (param.kbd.consume > 0)
+      return;
+    
+    /* 2. focused widget's children
+     */
+    param.kbd.flags = kflags | PG_KF_CONTAINER_FOCUSED;
+    r_send_trigger(widget_traverse(kbdfocus, PG_TRAVERSE_CHILDREN,0),
+		   type, &param, &param.kbd.consume);
+    if (param.kbd.consume > 0)
+      return;    
+    
+    /* 3. focused widget's ancestors
+     */
+    p = kbdfocus;
+    param.kbd.flags = kflags | PG_KF_CHILD_FOCUSED;
+    while (p = widget_traverse(p, PG_TRAVERSE_CONTAINER, 1)) {
+      send_trigger(p,type,&param);
+      if (param.kbd.consume > 0)
+	return;
+    }
   }
-  /* Otherwise process global hotkeys here */
-  /* Process global hotkeys */
-  else
-    global_hotkey(key,mods,type);
-}
 
-void dispatch_direct(char *name,u32 param) {
-#ifdef DEBUG_EVENT
-  printf("Direct event: %s(0x%08X)\n",name,param);
-#endif
-}
+  /* 4. Popup widgets and their children
+   */
+  param.kbd.flags = PG_KF_ALWAYS;  
+  for (dt=dts->top;dt;dt=dt->next) {
+    if (dt->head->next)
+      r_send_trigger(dt->head->next->owner, type, &param, &param.kbd.consume);
+    if (param.kbd.consume > 0)
+      return;    
+  }
 
+  /* 5. Other root widgets and their children 
+   */
+  param.kbd.flags = PG_KF_ALWAYS | PG_KF_APP_TOPMOST;
+  for (ap=applist;ap;ap=ap->next) {
+    if (iserror(rdhandle((void**)&p,PG_TYPE_WIDGET,ap->owner,ap->rootw)))
+      continue;
+
+    send_trigger(p,type,&param);
+    if (param.kbd.consume > 0)
+      return;
+    
+    r_send_trigger(widget_traverse(p,PG_TRAVERSE_CHILDREN,0), type, 
+		   &param, &param.kbd.consume);
+    if (param.kbd.consume > 0)
+      return;
+
+    param.kbd.flags &= ~PG_KF_APP_TOPMOST;
+  }
+    
+  /* If none of the widgets have consumed the event, 
+   * give the global hotkeys a chance
+   */
+  global_hotkey(key,mods,type);
+}
+ 
 void resizewidget(struct widget *w) {
   (*w->def->resize)(w);
   w->dt->flags |= DIVTREE_NEED_RESIZE;

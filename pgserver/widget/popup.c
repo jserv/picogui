@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.44 2002/01/21 08:17:30 micahjd Exp $
+/* $Id: popup.c,v 1.45 2002/01/22 12:25:09 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -112,9 +112,6 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   (*wgt)->in->div->calcw = w;
   (*wgt)->in->div->calch = h;
    
-  /* Escape can close the popup box */
-  install_hotkey(*wgt,PGKEY_ESCAPE);
-
   /* Yahoo! */
   return success;
 }
@@ -166,7 +163,7 @@ g_error popup_install(struct widget *self) {
   self->out = &self->in->next;
   self->sub = &self->in->div->div;
   
-  self->trigger_mask = TRIGGER_DOWN | TRIGGER_HOTKEY;
+  self->trigger_mask = TRIGGER_DOWN;
 
   return success;
 }
@@ -212,6 +209,9 @@ glob popup_get(struct widget *self,int property) {
 }
 
 void popup_trigger(struct widget *self,long type,union trigparam *param) {
+
+#warning fix this popup_trigger hotkey stuff too
+
   /* The DEACTIVATE event can be sent by a click outside the popup, or by the
      close hotkey */
 

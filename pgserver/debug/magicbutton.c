@@ -1,4 +1,4 @@
-/* $Id: magicbutton.c,v 1.1 2002/01/22 02:37:29 micahjd Exp $
+/* $Id: magicbutton.c,v 1.2 2002/01/22 12:25:08 micahjd Exp $
  *
  * magicbutton.c - CTRL-ALT-foo is magical
  *
@@ -208,6 +208,7 @@ void magic_button(s16 key) {
 	 "  CTRL-ALT-U: Blue screen\n"
 	 "  CTRL-ALT-P: Bitmap dump to video display\n"
 	 "  CTRL-ALT-O: Trace all divnodes\n"
+	 "  CTRL-ALT-A: Application dump to stdout\n"
 	 );
     return;
     
@@ -311,6 +312,19 @@ void magic_button(s16 key) {
     r_divnode_trace(dts->top->head);
     VID(update) (0,0,vid->lxres,vid->lyres);
     return;
+
+  case PGKEY_a:           /* CTRL-ALT-a shows application info */
+    {
+      struct app_info *a;
+      const char *name;
+
+      for (a=applist;a;a=a->next) {
+	if (iserror(rdhandle((void**)&name,PG_TYPE_STRING,-1,a->name)))
+	  name = "(error reading handle)";
+	printf("app: '%s' type=%d owner=%d\n",name,a->type,a->owner);
+      }
+    }
+
     
 #endif /* DEBUG_KEYS */
     

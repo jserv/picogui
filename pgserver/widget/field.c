@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.42 2002/01/19 09:18:21 micahjd Exp $
+/* $Id: field.c,v 1.43 2002/01/22 12:25:09 micahjd Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -136,7 +136,8 @@ g_error field_install(struct widget *self) {
   self->in->div->flags |= DIVNODE_HOTSPOT;
 
   self->trigger_mask = TRIGGER_UP | TRIGGER_ACTIVATE | TRIGGER_CHAR |
-    TRIGGER_DEACTIVATE | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_TIMER;
+    TRIGGER_DEACTIVATE | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_TIMER |
+    TRIGGER_KEYUP | TRIGGER_KEYDOWN;
 
   return success;
 }
@@ -281,12 +282,16 @@ void field_trigger(struct widget *self,long type,union trigparam *param) {
     /* Keyboard input */
 
   case TRIGGER_CHAR:
+     if (!(param->kbd.flags & PG_KF_FOCUSED))
+       return;
     
     /* Misc. keys */
     switch (param->kbd.key) {
 
     case PGKEY_RETURN:
-      /* Pass on a return to the app */
+      /* Pass on a return to the app,
+       * But don't consume it! (we may need a hotkey later)
+       */
       post_event(PG_WE_ACTIVATE,self,0,0,NULL);
       return;
 
@@ -299,6 +304,7 @@ void field_trigger(struct widget *self,long type,union trigparam *param) {
     default:
     }
 
+    param->kbd.consume++;
 
     /* Backspace? */
     if (param->kbd.key == PGKEY_BACKSPACE) {
@@ -315,6 +321,24 @@ void field_trigger(struct widget *self,long type,union trigparam *param) {
     DATA->buffer[DATA->bufuse++] = 0;
     break;
 
+    /* We don't care about KEYUP and KEYDOWN,
+     * but we need to consume them.
+     */
+  case TRIGGER_KEYUP:
+  case TRIGGER_KEYDOWN:
+     if (!(param->kbd.flags & PG_KF_FOCUSED))
+       return;
+     switch (param->kbd.key) {
+     case PGKEY_TAB:
+     case PGKEY_ESCAPE:
+     case PGKEY_RETURN:
+       return;
+     }
+     if (param->kbd.key > 255)
+       return;
+     param->kbd.consume++;
+     return;
+     
   }
   
   /* Always redraw the field */

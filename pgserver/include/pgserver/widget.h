@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.48 2002/01/22 02:37:29 micahjd Exp $
+/* $Id: widget.h,v 1.49 2002/01/22 12:25:08 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -56,7 +56,7 @@ typedef long glob;
 /* Constants for a trigger type. One of these constants is used to identify
    a trigger when it happens, and they are combined to form a trigger mask */
 #define TRIGGER_TIMER      (1<<0)  /* Timer event from install_timer */
-#define TRIGGER_HOTKEY     (1<<1)  /* The registered 'hotkey' was pressed */
+#define TRIGGER_UNUSED_1   (1<<1)
 #define TRIGGER_DIRECT     (1<<2)  /* A trigger sent explicitely */
 #define TRIGGER_ACTIVATE   (1<<3)  /* Sent when it receives focus */
 #define TRIGGER_DEACTIVATE (1<<4)  /* Losing focus */
@@ -189,26 +189,9 @@ struct widget {
   /* This is the scroll bar bound to us, set with the PG_WP_BIND property. */
   handle scrollbind;
 
-  /* Used for management of triggers: */
- 
-  /*
-   For any trigger to be accepted, it must be or'ed into 'trigger_mask'
-
-   A direct trigger is caused by a match with direct_trigger, and a hotkey
-   is triggered by a match with 'hotkey'   
-  */
- 
   /* widget sets this to accept triggers.  TRIGGER_* constants or'ed
      together. */
   u32 trigger_mask;
-
-  /* Name of an active direct trigger */
-  char *direct_trigger;
-
-  /* Active hotkey */
-  u32 hotkey;
-  /* The widgets with assigned hotkeys are stored in a linked list */
-  struct widget *hknext;
 
   /* Time (in ticks) for a TRIGGER_TIMER */
   u32 time;
@@ -301,15 +284,6 @@ glob widget_get(struct widget *w, int property);
 */
 void redraw_bg(struct widget *self);
 
-/* 
-   Set the current hotkey (from find_hotkey or otherwise)
-   Sets the 'hotkey' widget member, and adds to the hkwidgets list
-   if necessary
-
-   If hotkey==0, the hotkey is unset
-*/
-void install_hotkey(struct widget *self,long hotkey);
-
 /*
    Set a timer.  At the time, in ticks, specified by 'time',
    the widget will recieve a TRIGGER_TIMER
@@ -352,11 +326,6 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn);
 */
 void dispatch_key(u32 type,s16 key,s16 mods);
   
-/* Dispatch a direct trigger to the widget with a matching direct_trigger.
-   The param is passed directly
- */
-void dispatch_direct(char *name,u32 param);
-
 /* The divnode currently occupied by the pointing device - this will always
  * be a visible divnode owned by an interactive widget */
 extern struct divnode *div_under_crsr;
@@ -400,8 +369,15 @@ extern u16 hotkey_activate, hotkey_next;
 /* Traverse to other widgets in a given direction (PG_TRAVERSE_*) */
 struct widget *widget_traverse(struct widget *w, int direction, int count);
 
-/* sends a trigger to a widget */
+/* sends a trigger to a widget,
+ * returns nonzero if the trigger was accepted.
+ */
 int send_trigger(struct widget *w, long type, union trigparam *param);
+
+/* Sends a trigger to all of a widget's children,
+ * stopping if *stop > 0.
+ */
+void r_send_trigger(struct widget *w, long type, union trigparam *param, u16 *stop);
 
 /* Invokes the spirits of guru() and stdout for debuggativity */
 void magic_button(s16 key);
