@@ -54,16 +54,19 @@ class stream(object):
   def dump(self):
     # dump to a string in PGwt format
     s = 'PGwt'
+    fmt = '!LLHHHH'
     s1 = s
+    flen = len(self.s) + struct.calcsize(fmt)
     version = 1
-    s1 += struct.pack('!LLHHHH', 0, 0, 1,
+    s1 += struct.pack(fmt, flen, 0, version,
                      self.num_global, self.num_instance, self.next_handle)
     s1 += self.s
     if zlib is None:
-      return s1
-    flen = len(s1)
-    checksum = zlib.crc32(s1)
-    s += struct.pack('!LLHHHH', flen, checksum, 1,
+      flen = 0
+      checksum = 0
+    else:
+      checksum = zlib.crc32(s1)
+    s += struct.pack(fmt, flen, checksum, version,
                      self.num_global, self.num_instance, self.next_handle)
     s += self.s
     return s
