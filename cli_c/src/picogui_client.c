@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.39 2001/01/13 07:29:25 micahjd Exp $
+/* $Id: picogui_client.c,v 1.40 2001/01/13 07:42:02 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -183,27 +183,25 @@ int _pg_recvtimeout(void *data,unsigned long datasize) {
      tv = _pgidle_period;
    
      /* don't care about writefds and exceptfds: */
-     (*_pgselect_handler)(_pgsockfd+1,&readfds,NULL,NULL,
-			  (tv.tv_sec + tv.tv_usec) ? &tv : NULL);
      
-     if (FD_ISSET(_pgsockfd, &readfds)) {
-#ifdef DEBUG
-//	printf("Something happened on socket!\n");
-#endif
-	return _pg_recv(data,datasize);
-     }
-     else {
-#ifdef DEBUG
-//	printf("Timed out.\n");
-#endif
-	
-	/* Run the idle handler, reset the event loop, then try again */
-	_pg_idle();
+     if ((*_pgselect_handler)(_pgsockfd+1,&readfds,NULL,NULL,
+			      (tv.tv_sec + tv.tv_usec) ? &tv : NULL) < 0)
+       continue;
 
-	/* Clear the pipes... */
-	pgFlushRequests();
-	_pg_send(&waitreq,sizeof(waitreq));  /* Kickstart the event loop */
-     }
+     /* Well, now we have something! */
+     
+     if (FD_ISSET(_pgsockfd, &readfds))    /* Got data from server */
+	return _pg_recv(data,datasize);
+     
+     /* At this point either it was a client-defined fd or a timeout.
+	Either way we need to kickstart the event loop. */
+
+     /* Run the idle handler, reset the event loop, then try again */
+     _pg_idle();
+     
+     /* Clear the pipes... */
+     pgFlushRequests();
+     _pg_send(&waitreq,sizeof(waitreq));  /* Kickstart the event loop */
   }
 }
    
@@ -517,7 +515,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: picogui_client.c,v 1.39 2001/01/13 07:29:25 micahjd Exp $\n");
+	fprintf(stderr,"$Id: picogui_client.c,v 1.40 2001/01/13 07:42:02 micahjd Exp $\n");
 	exit(1);
       }
       
