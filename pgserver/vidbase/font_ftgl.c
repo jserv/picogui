@@ -1,4 +1,4 @@
-/* $Id: font_ftgl.c,v 1.1 2002/11/21 15:18:02 micahjd Exp $
+/* $Id: font_ftgl.c,v 1.2 2002/11/21 15:39:47 micahjd Exp $
  *
  * font_ftgl.c - Font engine that uses OpenGL textures prepared with SDL_ttf.
  *                This engine is very minimalistic compared to the freetype engine:
@@ -65,10 +65,10 @@ struct ftgl_data {
 
 /* Texture and texture coordinates for a glyph */
 struct ftgl_glyph {
-  GLuint texture;
+  GLuint texture;          /* Texture page, shared with other glyphs */
   float tx1,ty1,tx2,ty2;   /* Texture coords */
   int x,y,w,h;             /* Character cel */
-  int advance;
+  int advance;             /* Escapement */
 };  
 
 struct ftgl_fontload {
@@ -87,6 +87,7 @@ struct ftgl_font {
 
 struct ftgl_font *ftgl_font_list = NULL;
 struct ftgl_fontload *ftgl_load;
+int ftgl_default_size;
 
 
 /********************************** Utility declarations ***/
@@ -103,6 +104,8 @@ void ftgl_load_callback(const char *file, int pathlen);
 
 g_error ftgl_engine_init(void) {
   g_error e;
+
+  ftgl_default_size = get_param_int(CFGSECTION,"default_size",14);
 
   e = ftgl_fontload_init(&ftgl_load);
   errorcheck;
@@ -189,14 +192,14 @@ g_error ftgl_create(struct font_descriptor *self, const struct font_style *fs) {
   /* If they asked for a default font, give it to them */
   if (!s.name || !*s.name || (s.style & PG_FSTYLE_DEFAULT)) {
     if (s.style & PG_FSTYLE_FIXED)
-      s.name = get_param_str(CFGSECTION,"default_face","Helmet");
-    else
       s.name = get_param_str(CFGSECTION,"default_fixed_face","Nimbus Mono L");
+    else
+      s.name = get_param_str(CFGSECTION,"default_face","Helmet");
   }     
 
   /* If they asked for the default size, give it to them */
   if (!s.size)
-    s.size = get_param_int(CFGSECTION,"default_size",14);
+    s.size = ftgl_default_size;
 
   e = g_malloc((void**)&self->data, sizeof(struct ftgl_data));
   errorcheck;
@@ -437,8 +440,14 @@ int ftgl_fontcmp(const struct ftgl_font *f, const struct font_style *fs) {
 }
 
 void ftgl_load_callback(const char *file, int pathlen) {
-  /* Load one of our fonts at all sizes */
-  ftgl_load_font(ftgl_load,file,14); 
+  const char *sizes = get_param_str(CFGSECTION,"sizes","32");
+
+  /* Always load it at the default size */
+  ftgl_load_font(ftgl_load, file, ftgl_default_size); 
+
+  /* Also load it at the sizes specified in the list here */
+  while (*sizes)
+    ftgl_load_font(ftgl_load, file, strtol(sizes,&sizes,10));
 }
 
 
