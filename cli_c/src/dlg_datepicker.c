@@ -1,4 +1,4 @@
-/* $Id: dlg_datepicker.c,v 1.4 2001/07/30 07:15:02 micahjd Exp $
+/* $Id: dlg_datepicker.c,v 1.5 2001/08/01 06:41:13 micahjd Exp $
  *
  * dlg_datepicker.c - Implementation of the pgDatePicker() function. Display
  *                    a date on a calendar, and allow the user to select a
@@ -32,6 +32,8 @@
  */
 
 #include "clientlib.h"
+
+#include <time.h>     /* Calendars need time */
 
 const char *months[] = {
   "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"
