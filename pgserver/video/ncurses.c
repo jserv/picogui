@@ -1,5 +1,5 @@
 
-/* $Id: ncurses.c,v 1.1 2001/01/14 23:03:11 micahjd Exp $
+/* $Id: ncurses.c,v 1.2 2001/01/14 23:32:48 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -111,7 +111,22 @@ static struct font ncurses_font = {
    /* vwtab = */ &ncurses_font_vwtab,
    /* trtab = */ &ncurses_font_trtab
 };
-     
+
+/* Bogus fontstyle node */
+static struct fontstyle_node ncurses_font_style = {
+   /* name = */ NULL,
+   /* size = */ 1,
+   /* flags = */ PG_FSTYLE_FIXED,
+   /* next = */ NULL,
+   /* normal = */ &ncurses_font,
+   /* bold = */ &ncurses_font,
+   /* italic = */ &ncurses_font,
+   /* bolditalic = */ &ncurses_font,
+   /* ulineh = */ 0,
+   /* slineh = */ 0,
+   /* boldw = */ 0
+};
+        
 /******************************************** Implementations */
 
 g_error ncurses_init(int xres,int yres,int bpp,unsigned long flags) {
@@ -176,6 +191,7 @@ void ncurses_font_newdesc(struct fontdesc *fd) {
    fd->margin = 0;
    fd->hline = -1;
    fd->italicw = 0;
+   fd->fs = &ncurses_font_style;
 }
 
 void ncurses_charblit(unsigned char *chardat,int dest_x,
