@@ -1,4 +1,4 @@
-/* $Id: stddialog.h,v 1.8 2001/08/03 10:40:52 micahjd Exp $
+/* $Id: stddialog.h,v 1.9 2001/08/03 12:54:59 micahjd Exp $
  *
  * picogui/stddialog.h - Various preconstructed dialog boxes the application
  *                       may use. These are implemented 100% client-side using
@@ -175,9 +175,6 @@ pghandle pgInputDialog(const char *title, const char *message,
  */
 pghandle pgFontPicker(const char *title);
 
-//! Filter function for pgFilePicker
-typedef int (*pgfilter)(const char *string,const char *pattern);
-
 /*!
  * \brief Select a file to load or save
  *
@@ -191,23 +188,10 @@ typedef int (*pgfilter)(const char *string,const char *pattern);
  *          pointer is guaranteed to be valid until the next call to
  *          pgFilePicker()
  *
+ * \sa pgfilter, PG_FILEOPEN, PG_FILESAVE
  */
 const char *pgFilePicker(pgfilter filefilter, const char *pattern,
 			 const char *deffile,int flags, const char *title);
-
-#define PG_FILE_SAVEBTN    (1<<0)  //!< Use a 'save' button instead of 'open'
-#define PG_FILE_MUSTEXIST  (1<<1)  //!< The chosen file must already exist
-#define PG_FILE_MUSTWRITE  (1<<2)  //!< The file must be writeable
-#define PG_FILE_MUSTREAD   (1<<3)  //!< The file must be readable
-#define PG_FILE_SHOWDOT    (1<<4)  //!< Show . and .. directories
-#define PG_FILE_SHOWHIDDEN (1<<5)  //!< Show hidden files
-#define PG_FILE_SHOWBAK    (1<<6)  //!< Show editor backups
-#define PG_FILE_SHOWDEV    (1<<7)  //!< Show device nodes (dangerous)
-
-//! Default flags for a file open dialog box
-#define PG_FILEOPEN        PG_FILE_MUSTREAD
-//! Default flags for a file save dialog box
-#define PG_FILESAVE        (PG_FILE_MUSTWRITE | PG_FILE_SAVEBTN)
 
 //! \}
 

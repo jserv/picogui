@@ -1,4 +1,4 @@
-/* $Id: dlg_filepicker.c,v 1.1 2001/08/03 10:40:52 micahjd Exp $
+/* $Id: dlg_filepicker.c,v 1.2 2001/08/03 12:54:59 micahjd Exp $
  *
  * dlg_filepicker.c - Display a dialog box the user can use to select
  *                    a file to open or save. It is customizable with flags
@@ -95,8 +95,73 @@ int filepicker_filter(struct filepickdata *dat, const char *name,
 void filepicker_fullpath(const char *file);
 void filepicker_setdir(struct filepickdata *dat);
 int  filepicker_compare(const void *a, const void *b);
+void filepicker_pathmenu(struct filepickdata *dat);
 
 /******************************** Utility functions */
+
+/* This is just like pgMenuFromString, except that we use
+ * '/' as the separator and the items are listed backwards,
+ * ending with a bare '/'. When the user chooses a path, 
+ * set the dialog's directory
+ */
+void filepicker_pathmenu(struct filepickdata *dat) {
+  char *p;
+  char *items = filepicker_dir;
+  pghandle str;
+  int ret;
+  int i;
+
+  /* Don't bother if we're already at root */
+  if (!items[1])
+    return;
+
+  /* Create the menu popup in its own context */
+  pgEnterContext();
+  pgNewPopupAt(PG_POPUP_ATCURSOR,PG_POPUP_ATCURSOR,0,0);
+  
+  i=0;
+  do {
+    /* Do a little fancy stuff to make the string handle.
+     * This is like pgNewString but we get to specify the 
+     * length instead of having strlen() do it for us.
+     */
+    if (!(p = strchr(items,'/'))) p = items + strlen(items);
+    if (p==items)
+      str = pgNewString("/");   /* Root directory */
+    else {
+      _pg_add_request(PGREQ_MKSTRING,(void *) items,p-items);
+      pgFlushRequests();
+      str = _pg_return.e.retdata;
+    }
+    items = p+1;
+
+    /* Ignore the last part, because that's the current directory */
+    if (*p) {
+
+      /* Create each menu item */
+      pgNewWidget(PG_WIDGET_MENUITEM,0,0);
+      pgSetWidget(PGDEFAULT,
+		  PG_WP_TEXT,str,
+		  PG_WP_SIDE,PG_S_BOTTOM,
+		  0);
+      
+      /* Payload is the index in filepicker_dir to set to zero
+       * if it is chosen */
+      i = items-filepicker_dir;
+      if (i>1)
+	i--;
+      pgSetPayload(PGDEFAULT,i);
+    }
+    
+  } while (*p);
+
+  /* Run the menu */
+  ret = pgGetPayload(pgGetEvent()->from);
+  pgLeaveContext();
+  if (ret)
+    filepicker_dir[ret] = 0;
+  filepicker_setdir(dat);
+}
 
 /* Sort the files, in a way that should make sense to users.
  * Directories always come before files. Case is ignored, punctuation
@@ -343,7 +408,7 @@ void filepicker_setdir(struct filepickdata *dat) {
 const char *pgFilePicker(pgfilter filefilter, const char *pattern,
 			 const char *deffile, int flags, const char *title) {
 
-  pghandle wButtons, wFile, wOk, wCancel, wUp, wHome, wRoot; 
+  pghandle wButtons, wFile, wOk, wCancel, wUp, wHome, sFileName; 
   struct pgEvent evt;
   char *p;
   struct filepickdata dat;
@@ -400,10 +465,14 @@ const char *pgFilePicker(pgfilter filefilter, const char *pattern,
   /* Make containers for the directory and file. They are ok without
    * containers, but it looks better putting them in toolbars.
    */
-  wFile = pgNewWidget(PG_WIDGET_TOOLBAR,0,0);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_SIDE,PG_S_BOTTOM,
-	      0);
+  if (dat.flags & PG_FILE_FIELD) {
+    wFile = pgNewWidget(PG_WIDGET_TOOLBAR,0,0);
+    pgSetWidget(PGDEFAULT,
+		PG_WP_SIDE,PG_S_BOTTOM,
+		0);
+  }
+  else
+    wFile = NULL;
   dat.wDirectory = pgNewWidget(PG_WIDGET_TOOLBAR,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_TOP,
@@ -416,18 +485,20 @@ const char *pgFilePicker(pgfilter filefilter, const char *pattern,
 	      0);
 
   /* Put the file and directory in their toolbars */
-
-  wFile = pgNewWidget(PG_WIDGET_FIELD,PG_DERIVE_INSIDE,wFile);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_SIDE,PG_S_ALL,
-	      0);
-  if (deffile)
-    pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString(deffile),0);
+  if (wFile) {
+    wFile = pgNewWidget(PG_WIDGET_FIELD,PG_DERIVE_INSIDE,wFile);
+    pgSetWidget(PGDEFAULT,
+		PG_WP_SIDE,PG_S_ALL,
+		0);
+    if (deffile)
+      pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString(deffile),0);
+  }
 
   dat.wDirectory = pgNewWidget(PG_WIDGET_BUTTON,
 			       PG_DERIVE_INSIDE,dat.wDirectory);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_ALL,
+	      PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
 	      0);
 
   /********** Widgets */
@@ -456,12 +527,6 @@ const char *pgFilePicker(pgfilter filefilter, const char *pattern,
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_TOP,
 	      PG_WP_TEXT,pgNewString("Home"),
-	      0);
-
-  wRoot = pgNewWidget(PG_WIDGET_BUTTON,0,0);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_SIDE,PG_S_TOP,
-	      PG_WP_TEXT,pgNewString("Root"),
 	      0);
 
   /********** Run the dialog */
@@ -496,10 +561,8 @@ const char *pgFilePicker(pgfilter filefilter, const char *pattern,
       filepicker_setdir(&dat);
     }
 
-    else if (evt.from==wRoot) {
-      strcpy(filepicker_dir,"/");
-      filepicker_setdir(&dat);
-    }
+    else if (evt.from==dat.wDirectory && evt.type==PG_WE_PNTR_DOWN)
+      filepicker_pathmenu(&dat);
 
     /* 'Tis a file we hope? */
     else if (pgGetPayload(evt.from)==FILETAG) {
@@ -515,17 +578,17 @@ const char *pgFilePicker(pgfilter filefilter, const char *pattern,
       else {
 	/* Select the file */
 	
-	pgSetWidget(wFile,PG_WP_TEXT,pgGetWidget(evt.from,PG_WP_TEXT),0);
+	sFileName = pgGetWidget(evt.from, PG_WP_TEXT);
+	if (wFile)
+	  pgSetWidget(wFile,PG_WP_TEXT,sFileName,0);
       }
     }
-
-    /* FIXME: Popup with directory choices when the 
-       directory name is clicked */
-
   }
 
   /* Put together a full path for the final file name */
-  filepicker_fullpath(pgGetString(pgGetWidget(wFile,PG_WP_TEXT)));
+  if (wFile)
+    sFileName = pgGetWidget(wFile,PG_WP_TEXT);
+  filepicker_fullpath(pgGetString(sFileName));
 
   /* FIXME: Validate file name */
 

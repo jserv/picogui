@@ -13,7 +13,17 @@
 pghandle wDate;
 int year,month,day;
 
-pghandle wInputBtn,wFontBtn,wFileOpenBtn;
+pghandle wInputBtn,wFontBtn,wFileOpenBtn,wFileSaveBtn;
+
+/******************* File save dialog */
+
+int btnFileSave(struct pgEvent *evt) {
+  const char *str;
+
+  str = pgFilePicker(NULL,NULL,NULL,PG_FILESAVE,"Save a File");
+  if (str)
+    pgReplaceText(wFileSaveBtn,str);
+}
 
 /******************* File open dialog */
 
@@ -189,6 +199,14 @@ int main(int argc,char **argv) {
 	      PG_WP_SIDE,PG_S_TOP,
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnFileOpen,NULL);
+
+  /* File save */
+  wFileSaveBtn = pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString("pgFilePicker: Save a file"),
+	      PG_WP_SIDE,PG_S_TOP,
+	      0);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnFileSave,NULL);
 
   pgEventLoop();
   return 0;
