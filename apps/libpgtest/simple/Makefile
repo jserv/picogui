@@ -1,5 +1,5 @@
 libpgtest: libpgtest.o gl_lucid.th lesson37.o
-	gcc -o libpgtest libpgtest.o lesson37.o -lpgserver
+	g++ -o libpgtest libpgtest.o lesson37.o -lpgserver
 
 libpgtest.o: libpgtest.c
 	gcc -c libpgtest.c
