@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.2 2001/03/16 04:10:03 micahjd Exp $
+/* $Id: api.c,v 1.3 2001/03/22 00:22:18 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -176,6 +176,18 @@ void pgUnregisterOwner(int resource) {
   struct pgreqd_regowner arg;
   arg.res = htons(resource);
   _pg_add_request(PGREQ_UNREGOWNER,&arg,sizeof(arg));
+}
+
+void pgSetVideoMode(unsigned short xres,unsigned short yres,
+		    unsigned short bpp,unsigned short flagmode,
+		    unsigned long flags) {
+  struct pgreqd_setmode arg;
+  arg.xres     = htons(xres);
+  arg.yres     = htons(yres);
+  arg.bpp      = htons(bpp);
+  arg.flagmode = htons(flagmode);
+  arg.flags    = htonl(flags);
+  _pg_add_request(PGREQ_SETMODE,&arg,sizeof(arg));
 }
 
 void pgSendKeyInput(unsigned long type,unsigned short key,

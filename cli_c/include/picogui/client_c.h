@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.37 2001/03/07 04:12:18 micahjd Exp $
+/* $Id: client_c.h,v 1.38 2001/03/22 00:22:17 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -231,6 +231,17 @@ void pgSendKeyInput(unsigned long type,unsigned short key,
 /* Also used by networked input devices, but to send pointing device events */
 void pgSendPointerInput(unsigned long type,unsigned short x,unsigned short y,
 			unsigned short btn);
+
+/* Change video mode at runtime
+ * xres and yres specify a new resolution, or 0 to not change it
+ * bpp specifies a new bit depth, 0 to not change it
+ * flagmode is a PG_FM_* constant specifying how to combine the specified
+ * flags with the existing flags. Flags contol extra driver features such
+ * as fullscreen mode and screen rotation.
+ */
+void pgSetVideoMode(unsigned short xres,unsigned short yres,
+		    unsigned short bpp,unsigned short flagmode,
+		    unsigned long flags);
 
 /******************** Objects */
 
