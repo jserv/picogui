@@ -1,4 +1,4 @@
-/* $Id: terminal_textgrid.c,v 1.4 2002/10/12 14:46:35 micahjd Exp $
+/* $Id: terminal_textgrid.c,v 1.5 2002/10/27 16:50:28 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -211,7 +211,7 @@ void term_updrect(struct widget *self,int x,int y,int w,int h) {
 /* Plot a character at an x,y position */
 void term_plot(struct widget *self,int x,int y,u8 c) {
   struct pgstr_iterator p = PGSTR_I_NULL;
-  if (x<0 || y<0 || x>=DATA->bufferw || y>=DATA->bufferw)
+  if (x<0 || y<0 || x>=DATA->bufferw || y>=DATA->bufferh)
     return;
   pgstring_seek(DATA->buffer, &p, x + y * DATA->bufferw);
   pgstring_encode_meta(DATA->buffer, &p, c, (void*)(u32) DATA->current.attr);
