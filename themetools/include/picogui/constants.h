@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.15 2000/10/17 01:44:08 micahjd Exp $
+/* $Id: constants.h,v 1.16 2000/10/31 01:48:09 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -192,10 +192,12 @@ typedef unsigned long pghandle;
 #define PGTH_O_PANELBAR_HILIGHT    22   /* A panelbar, when mouse is inside it */
 #define PGTH_O_PANELBAR_ON         23   /* A panelbar, when mouse is down */
 #define PGTH_O_BOX                 24   /* The box widget */
+#define PGTH_O_LABEL_DLGTITLE      25   /* A label, used for a dialog box title */
+#define PGTH_O_LABEL_DLGTEXT       26   /* A label, used for the body of a dialog */
 
 /* If you add a themeobject, be sure to increment this and add
    an inheritance entry in theme/thobjtab.c */
-#define PGTH_ONUM                  25
+#define PGTH_ONUM                  27
 
 /*** Loaders */
 
@@ -240,6 +242,14 @@ typedef unsigned long pghandle;
 #define PGTH_P_BITMAP3    18  /* H bitmap      Generic bitmap property for theme use */
 #define PGTH_P_BITMAP4    19  /* H bitmap      Generic bitmap property for theme use */
 #define PGTH_P_SPACING    20  /*   int         Distance between similar widgets */
+
+/* String properties (usually part of PGTH_O_DEFAULT) */
+#define PGTH_P_STRING_OK             501
+#define PGTH_P_STRING_CANCEL         502
+
+/* Icon properties (usually part of PGTH_O_DEFAULT) */
+#define PGTH_P_ICON_OK               1001
+#define PGTH_P_ICON_CANCEL           1002
 
 /*** Tag IDs */
 
@@ -396,6 +406,10 @@ typedef unsigned long pghandle;
 #define PG_SZMODE_PIXEL         0
 #define PG_SZMODE_PERCENT       (1<<2)    /* The DIVNODE_UNIT_PERCENT flag */
 #define PG_SZMODEMASK           (~PG_SZMODE_PERCENT)
+
+/* Constants for the message dialog box flags */
+#define PG_MSGBTN_OK      0x0001
+#define PG_MSGBTN_CANCEL  0x0002
 
 /******************** Events */
 
