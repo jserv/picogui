@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.95 2002/10/26 07:53:07 micahjd Exp $
+/* $Id: div.c,v 1.96 2002/10/27 17:26:04 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -525,6 +525,7 @@ void divtree_free(struct divtree *dt) {
 
   /* Delete the dt structure itself, and the associated handle */
   handle_free(-1,dt->h);
+  g_free(dt);
 }
 
 /* Delete a divnode recursively */

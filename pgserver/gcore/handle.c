@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.61 2002/10/12 14:46:34 micahjd Exp $
+/* $Id: handle.c,v 1.62 2002/10/27 17:26:09 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -364,38 +364,55 @@ void object_free(struct handlenode *n) {
 #endif
   if (!(n->type & HFLAG_NFREE)) {
     switch (n->type & PG_TYPEMASK) {
+
     case PG_TYPE_BITMAP:
       VID(bitmap_free) ((hwrbitmap)n->obj);
       break;
+
     case PG_TYPE_WIDGET:
       widget_remove((struct widget *)n->obj);
       break;
+
     case PG_TYPE_THEME:
       theme_remove((struct pgmemtheme *)n->obj);
       break;
+
     case PG_TYPE_DRIVER:
       unload_inlib((struct inlib *)n->obj);
       break;
+
     case PG_TYPE_WT:
       wt_free((struct pgmemwt *)n->obj);
       break;
+
     case PG_TYPE_INFILTER:
       infilter_delete((struct infilter *)n->obj);
       break;
+
     case PG_TYPE_CURSOR:
       cursor_delete((struct cursor *)n->obj);
       break;
+
     case PG_TYPE_PGSTRING:
       pgstring_delete((struct pgstring *)n->obj);
       break;
+
     case PG_TYPE_FONTDESC:
       font_descriptor_destroy((struct font_descriptor *)n->obj);
       break;
+
+    case PG_TYPE_DIVTREE:
+      /* We don't want to free the divtree itself here, it needs
+       * to be managed by the divtree stack.
+       */
+      break;
+
 #ifdef CONFIG_WIDGET_TEXTBOX
     case PG_TYPE_PARAGRAPH:
       paragraph_delete(((struct paragraph *)n->obj));
       break;
 #endif
+
     default:
       g_free(n->obj);
     }
