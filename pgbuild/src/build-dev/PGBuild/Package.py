@@ -67,20 +67,18 @@ class PackageVersion(object):
         return os.sep.join(str(self).split("/"))
 
     def getLocalPath(self, ctx):
-        """Using the current bootstrap configuration, get the local path for this package"""
-        return os.path.join(ctx.config.eval('bootstrap/path[@name="packages"]/text()'),
-                            self.getPathName())
+        """Get the local path for this package. This links the source and binary directories."""
+        local = ctx.paths['packages'].Dir(self.getPathName())
+        self.getBinaryPath(ctx).link(local, False)
+        return local
 
     def getBinaryPath(self, ctx):
-        """Using the current bootstrap configuration and package build platform,
-           get the binary path for this package."""
-        return os.path.join(ctx.config.eval('bootstrap/path[@name="bin"]/text()'),
-                            str(self.package.getHostPlatform(ctx)),
-                            self.getPathName())
+        """Get the binary path for this package"""
+        return ctx.paths['bin'].Dir(str(self.package.getHostPlatform(ctx))).Dir(self.getPathName())
 
     def update(self, ctx):
        """Update the package if possible. Return 1 if there was an update available, 0 if not."""
-       localPath = self.getLocalPath(ctx)
+       localPath = self.getLocalPath(ctx).abspath
        ctx = ctx.task("Checking for updates in package %s" % self)
        repo = self.getRepository(ctx)
 
@@ -136,13 +134,29 @@ class PackageVersion(object):
 
         # We only update a package if there's no local copy, or if the --update option was
         # specified. This avoids having to wait on a lot of network traffic for every single invocation.
-        if (not self.getRepository(ctx).isLocalCopyValid(ctx, self.getLocalPath(ctx))) or \
+        if (not self.getRepository(ctx).isLocalCopyValid(ctx, self.getLocalPath(ctx).abspath)) or \
                ctx.config.eval("invocation/option[@name='update']/text()"):
             self.update(ctx)
         if performMount:
             ctx.config.dirMount(ctx.task("Mounting config files"), self.getLocalPath(ctx))
         import PGBuild.Build
         PGBuild.Build.loadScriptDir(ctx.task("Loading SCons scripts"), self.getLocalPath(ctx))
+
+    def removeLocalCopy(self, ctx):
+        """Deletes the local copy if there is one"""
+        pkgPath = self.getLocalPath(ctx).abspath
+        shutil.rmtree(pkgPath)
+
+        # Remove as many empty directories above the package as we can
+        splitPath = pkgPath.split(os.sep)
+        try:
+            while True:
+                del splitPath[-1]
+                dirPath = os.sep.join(splitPath)
+                os.rmdir(dirPath)
+                ctx.progress.report("removed", "empty directory %s" % dirPath)
+        except OSError:
+            pass
 
         
 class Package(object):
@@ -270,7 +284,7 @@ class PackageList(object):
         """Retrieve a list of all packages with local copies"""
         # Every directory in our package path is potentially a package-
         # check them against the config's pacage list using isPackage.
-        pkgDir = ctx.config.eval("bootstrap/path[@name='packages']/text()")
+        pkgDir = ctx.paths['packages'].abspath
         pkgList = []
         def visit(arg, dirname, names):
            # Chop off the leading directory and convert from the OS's separator back to forward slashes
@@ -281,7 +295,7 @@ class PackageList(object):
               # If this is a package, don't descend into subdirectories
               while names:
                  del names[0]
-        os.path.walk(ctx.config.eval("bootstrap/path[@name='packages']/text()"), visit, None)
+        os.path.walk(pkgDir, visit, None)
         return pkgList
 
     def getBootstrapPackages(self, ctx):
@@ -298,31 +312,12 @@ class PackageList(object):
         removedPackages = 0
         for package in locals:
             if not package in boots:
-                self.removeLocalCopy(ctx, package)
+                ctx.progress.showTaskHeading()
+                self.findPackageVersion(ctx, package).removeLocalCopy(ctx)
+                ctx.progress.report("removed", "package %s" % package)
                 removedPackages += 1
         if not removedPackages:
             ctx.progress.message("No packages to remove")
-
-    def removeLocalCopy(self, ctx, package):
-        """Given a package name, deletes the local copy"""
-        # This could take a while, show the heading now
-        ctx.progress.showTaskHeading()
-
-        basePath = ctx.config.eval("bootstrap/path[@name='packages']/text()")
-        pkgPath = os.path.join(basePath, package)
-        shutil.rmtree(pkgPath)
-        ctx.progress.report("removed", "package %s" % package)
-
-        # Remove as many empty directories above the package as we can
-        splitPath = pkgPath.split(os.sep)
-        try:
-            while True:
-                del splitPath[-1]
-                dirPath = os.sep.join(splitPath)
-                os.rmdir(dirPath)
-                ctx.progress.report("removed", "empty directory %s" % dirPath)
-        except OSError:
-            pass
     
 ### The End ###
         

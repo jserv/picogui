@@ -46,7 +46,7 @@ import PGBuild.XMLUtil
 import xml.sax._exceptions
 import re, shutil, os, sys
 
-configFileExtension = "xbc"
+configFileExtension = ".xbc"
 
 def prependElements(src, dest):
     """Move all children from the 'src' into 'dest'.
@@ -317,12 +317,14 @@ class Tree(PGBuild.XMLUtil.Document):
     def dirMount(self, ctx, dir):
         """Mount all config files in the given directory"""
         import glob, os
-        for file in glob.glob(os.path.join(dir, "*.%s" % configFileExtension)):
-            self.mount(file)
-            try:
-                ctx.progress.report("mounted", file)
-            except AttributeError:
-                pass
+        for fName in os.listdir(dir.abspath):
+            if fName.endswith(configFileExtension):
+                fObject = dir.File(fName)
+                self.mount(fObject)
+                try:
+                    ctx.progress.report("mounted", file)
+                except AttributeError:
+                    pass
 
     def commit(self):
         """Save changes to all config trees that include 'w' in their mode"""

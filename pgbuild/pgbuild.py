@@ -2,7 +2,7 @@
 """ pgbuild.py
 
 Bootstrap pathnames and packagenames for PGBuild, can function as an entry
-point identically to 'build' for operating systems that don't support "#!" lines
+point identically to 'build' for operating systems that don't support '#!' lines
 """
 # 
 # PicoGUI Build System
@@ -36,11 +36,11 @@ class Bootstrap:
         # Store the path this script is in as the PGBuild root path
         self.paths['root'] = os.path.abspath(os.path.dirname(sys.argv[0]))
 
-        # Set the other important paths
-        self.paths['bin']       = os.path.join(self.paths['root'], 'bin')
-        self.paths['localConf'] = os.path.join(self.paths['root'], 'conf')
-        self.paths['packages']  = os.path.join(self.paths['root'], 'src')
-        
+        # Set the relative paths
+        self.paths['bin']       = 'bin'
+        self.paths['localConf'] = 'conf'
+        self.paths['packages']  = 'src'
+    
         # Set the name of the two packages PGBuild requires for bootstrapping
         self.packages['build'] = "build-dev"
         self.packages['conf']  = "conf-dev"

@@ -327,24 +327,31 @@ def boot(ctx, bootstrap, argv):
     # the description and version of this build system
     ctx.config.mount(PackageXML(PGBuild, "sys"))
 
-    # Try to make sure all our bootstrap paths exist
-    for path in bootstrap.paths.values():
+    # Initialize the SCons filesystem abstraction
+    import SCons.Node.FS
+    ctx.fs = SCons.Node.FS.default_fs
+    ctx.fs.set_toplevel_dir(bootstrap.paths['root'])
+
+    # Make a dictionary of bootstrap paths, converted into FS objects
+    # While we're at it, try to make sure they exist.
+    ctx.paths = {}
+    for path in bootstrap.paths:
+        ctx.paths[path] = ctx.fs.Dir(bootstrap.paths[path])
         try:
-            os.makedirs(path)
+            os.makedirs(ctx.paths[path].abspath)
         except OSError:
             pass
 
     # Copy skeleton local files from the conf package if they haven't been
     # copied or manually created yet.
-    skelPath = os.path.join(os.path.join(bootstrap.paths['packages'],
-                                         bootstrap.packages['conf']), 'local')
-    for skelFile in os.listdir(skelPath):
-        if re.match(".*\.%s" % PGBuild.Config.configFileExtension, skelFile):
-            if os.path.isfile(os.path.join(skelPath, skelFile)):
-                if not os.path.isfile(os.path.join(bootstrap.paths['localConf'], skelFile)):
-                    import shutil
-                    shutil.copyfile(os.path.join(skelPath, skelFile),
-                                    os.path.join(bootstrap.paths['localConf'], skelFile))
+    skelPath = ctx.paths['packages'].Dir(bootstrap.packages['conf']).Dir('local')
+    for fName in os.listdir(skelPath.abspath):
+        if re.match(".*\.%s" % PGBuild.Config.configFileExtension, fName):
+            skelFile = skelPath.File(fName)
+            localFile = ctx.paths['localConf'].File(fName)
+            if skelFile.exists() and not localFile.exists():
+                import shutil
+                shutil.copyfile(skelFile.abspath, localFile.abspath)
 
     # Initialize a package list
     ctx.packages = PGBuild.Package.PackageList(ctx.config)
@@ -355,14 +362,17 @@ def boot(ctx, bootstrap, argv):
     # We do the merge after the UI is set up, so that if the packages are updated
     # we can get progress reports.
     for package in bootstrap.packages.values():
-        ctx.config.dirMount(ctx, os.path.join(bootstrap.paths['packages'], package))
+        ctx.config.dirMount(ctx, ctx.paths['packages'].Dir(package))
 
     # Mount the local configuration directory
-    ctx.config.dirMount(ctx, bootstrap.paths['localConf'])
+    ctx.config.dirMount(ctx, ctx.paths['localConf'])
 
     # Parse user options. This is only meaningful on UNIXes, but should fail
     # uneventfully on other platforms.
-    ctx.config.dirMount(ctx, os.path.expanduser("~/.pgbuild"))
+    try:
+        ctx.config.dirMount(ctx, ctx.fs.Dir(os.path.expanduser("~/.pgbuild")))
+    except OSError:
+        pass
     
     # Mount command line options
     ctx.config.mount(OptionsXML(parsedArgs))

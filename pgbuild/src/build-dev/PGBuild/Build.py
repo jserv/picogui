@@ -105,23 +105,25 @@ class BuildTask(SCons.Taskmaster.Task):
 
 
 def loadScript(ctx, name):
-    """Load one SCons script"""
-    import SCons.Node
+    """Load one SCons script. Note that this doesn't set the current
+       SCons directory- that is handled in loadScriptDir()
+       """
     import SCons.Script
     ctx.progress.showTaskHeading()
-    d = SCons.Node.FS.default_fs.File(name).dir
-    SCons.Node.FS.default_fs.set_SConstruct_dir(d)
     SCons.Script.SConscript.SConscript(name)
     ctx.progress.report("loaded", name)
-
+    
 
 def loadScriptDir(ctx, dir):
     """Look for a script in the given directory and run it if it's found"""
     import os
+    import SCons.Node
+    ctx.fs.chdir(dir)
+    SCons.Node.FS.default_fs.set_SConstruct_dir(dir)
     for name in scriptNames:
-        path = os.path.join(dir, name)
-        if os.path.isfile(path):
-            loadScript(ctx, path)
+        fObject = dir.File(name)
+        if fObject.exists():
+            loadScript(ctx, fObject)
             break
 
 
@@ -143,7 +145,6 @@ class System(object):
         import SCons.Defaults
         import SCons.Script
         ctx.buildSystem = self
-        SCons.Node.FS.default_fs.set_toplevel_dir(ctx.config.eval('bootstrap/path[@name="root"]/text()'))
         self.defaultEnv = SCons.Defaults._default_env = Environment(ctx)
         self.processInvocationOptions(ctx)
 
