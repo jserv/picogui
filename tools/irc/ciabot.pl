@@ -18,7 +18,6 @@
 #
 #       ALL        $CVSROOT/CVSROOT/ciabot.pl %s $USER
 #
-# $Id: ciabot.pl,v 1.30 2003/06/21 23:08:04 pasky Exp $
 
 use strict;
 use vars qw ($project $from_email $dest_email $max_lines $sync_delay
@@ -112,6 +111,7 @@ while (<STDIN>) {
 
 $logmsg_lines = 0;
 while (<STDIN>) {
+  next unless ($_ and $_ ne "\n" and $_ ne "\r\n");
   $logmsg_lines++;
   last if ($logmsg_lines > $max_lines);
   $logmsg .= $_;
@@ -208,7 +208,7 @@ for ($i = 0; $i < @dir; $i++) {
 
   my (@cii) = split(/ /, $ci[$i]);
   $files += @cii;
-  if ($files == 1) { $file = $cii[0]; }
+  $file = $cii[0] if ($files == 1);
 }
 
 die "No files!" unless ($files > 0);
