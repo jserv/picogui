@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.71 2001/10/10 00:23:52 micahjd Exp $
+/* $Id: client_c.h,v 1.72 2001/10/24 19:39:58 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -194,6 +194,7 @@ typedef void (*pgidlehandler)(void);
 //! The event hander for pgCustomizeSelect
 typedef int (*pgselecthandler)(int n, fd_set *readfds, fd_set *writefds,
 			       fd_set *exceptfds, struct timeval *timeout);
+typedef void (*pgselectbh)(int result, fd_set *readfds);
 #endif
 //! Filter function for pgFilePicker()
 typedef int (*pgfilter)(const char *string,const char *pattern);
@@ -422,6 +423,11 @@ void pgBind(pghandle widgetkey,unsigned short eventkey,
  * This function allows you to specify a handler that acts as
  * a wrapper around the client library's calls to select(), so 
  * you can wait on your own file descriptors. 
+ *
+ * IMPORTANT: The select() handler can not make any PicoGUI calls, because the
+ * event queue is in an unknown state. The 'bottomhalf' function will be called
+ * shortly after the select handler returns, and it is allowed to make
+ * PicoGUI API calls.
  * 
  * To cancel this, call with a NULL handler and the select handle will be set
  * back to the standard select() system call.
@@ -431,7 +437,7 @@ void pgBind(pghandle widgetkey,unsigned short eventkey,
  * 
  * \sa pgSetIdle, pgEventLoop
  */
-void pgCustomizeSelect(pgselecthandler handler);
+void pgCustomizeSelect(pgselecthandler handler, pgselectbh bottomhalf);
 #endif
 
 /*!

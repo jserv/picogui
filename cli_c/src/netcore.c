@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.16 2001/10/24 17:04:01 micahjd Exp $
+/* $Id: netcore.c,v 1.17 2001/10/24 19:39:58 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -48,6 +48,7 @@ pgidlehandler _pgidle_handler;  /* Idle handler */
 unsigned char _pgidle_lock;     /* Already in idle handler? */
 char *_pg_appname;              /* Name of the app's binary */
 pgselecthandler _pgselect_handler;   /* Normally a pointer to select() */
+pgselectbh _pgselect_bottomhalf;     /* Select handler bottom-half */
 struct _pg_return_type _pg_return;   /* Response from _pg_flushpackets */
 
 /* If this is nonzero, the application should be created in this container
@@ -80,6 +81,7 @@ int _pg_recv(void *data,unsigned long datasize) {
 int _pg_recvtimeout(short *rsptype) {
   struct timeval tv;
   fd_set readfds;
+  int result;
   struct pgrequest waitreq;
   struct pgrequest unwaitreq;
   char cruft[sizeof(struct pgresponse_ret) - sizeof(short)];	/* Unused return packet */
@@ -98,9 +100,10 @@ int _pg_recvtimeout(short *rsptype) {
      tv = _pgidle_period;
    
      /* don't care about writefds and exceptfds: */
-     
-     if ((*_pgselect_handler)(_pgsockfd+1,&readfds,NULL,NULL,
-			      (tv.tv_sec + tv.tv_usec) ? &tv : NULL) < 0)
+
+     result = (*_pgselect_handler)(_pgsockfd+1,&readfds,NULL,NULL,
+				   (tv.tv_sec + tv.tv_usec) ? &tv : NULL);
+     if (result < 0)
        continue;
 
      /* Well, now we have something! */
@@ -129,7 +132,9 @@ int _pg_recvtimeout(short *rsptype) {
      /* At this point either it was a client-defined fd or a timeout.
 	Either way we need to kickstart the event loop. */
 
-     /* Run the idle handler, reset the event loop, then try again */
+     /* At this point, it's safe to make PicoGUI API calls. */
+     if (_pgselect_bottomhalf)
+       (*_pgselect_bottomhalf)(result,&readfds);
      _pg_idle();
      
      /* Clear the pipes... */
@@ -549,6 +554,7 @@ void pgInit(int argc, char **argv)
   /* Set default handlers */
   pgSetErrorHandler(&_pg_defaulterr);
   _pgselect_handler = &select;
+  _pgselect_bottomhalf = NULL;
   signal(SIGSEGV,&_pgsig);
   signal(SIGFPE,&_pgsig);
    
@@ -575,7 +581,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.16 2001/10/24 17:04:01 micahjd Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.17 2001/10/24 19:39:58 micahjd Exp $\n");
 	exit(1);
       }
 
@@ -941,11 +947,15 @@ void pgBind(pghandle widgetkey,unsigned short eventkey,
 }
 
 /* Set a custom handler instead of the usual select() */
-void pgCustomizeSelect(pgselecthandler handler) {
-  if (handler)
+void pgCustomizeSelect(pgselecthandler handler, pgselectbh bottomhalf) {
+  if (handler) {
     _pgselect_handler = handler;
-  else
+    _pgselect_bottomhalf = bottomhalf;
+  }
+  else {
     _pgselect_handler = &select;
+    _pgselect_bottomhalf = NULL;
+  }
 }
 
 /* The End */
