@@ -20,6 +20,7 @@ COLOUR_PREFIX = COLOR_PREFIX
 COLORS = { "black" : "01",
            "dark blue" : "02",
            "dark green" : "03",
+	   "green" : "03",
            "red" : "04",
            "brown" : "05",
            "purple" : "06",
