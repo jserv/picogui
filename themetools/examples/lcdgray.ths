@@ -1,0 +1,279 @@
+/* $Id: lcdgray.ths,v 1.1 2002/04/17 17:00:23 micahjd Exp $
+ *
+ * LCD16 - based on lcdmono but uses shading on grayscale screens
+ *
+ * This theme recommends the following pgserver options:
+ *  - pnm bitmaps
+ *  - Utopia25 font
+ *  - Helvetica8 font
+ *  - Clean6 font
+ *
+ * Micah Dowty/Simon Howard
+ */
+
+
+obj terminal {
+
+  font = Font("Clean", 12, PG_FSTYLE_FIXED);
+
+  /*
+   * 'textcolors' is an array of 16 pgcolor values to use as a palette.
+   * This one has darker colors than the default,
+   * and black and white are swapped.
+   */
+  textcolors = Array(0xFFFFFF,
+	             0x000080,
+		     0x008000,
+                     0x008080,
+                     0x800000,
+                     0x800080,
+                     0x808000,
+                     0x808080,
+                     0x000000,
+                     0x0000A0,
+                     0x00A000,
+                     0x00A0A0,
+                     0xA00000,
+                     0xA000A0,
+                     0xA0A000,
+                     0x000000);
+  
+  /* In color attributes, the high nibble is an index to the background
+   * color and the low nibble is an index to the foreground color.
+   * This sets up black text and a blue cursor. Note that the forground color
+   * for the cursor only shows if there is a character under it, and that
+   * a background color of 0 allows the bitmap to show through.
+   */
+  attr.default = 0x0F;
+  attr.cursor = 0x9E;
+}
+
+object default {
+  name = "Shaded LCD";
+
+  bgcolor = 0xFFFFFF;
+  fgcolor = 0x000000;
+  spacing = 0;
+  margin = 0;
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+  };
+
+  font = Font("Helvetica",8,0);
+  height = 14;
+  width = 14;
+
+  hotkey.ok      = PGKEY_RETURN;
+  hotkey.cancel  = PGKEY_ESCAPE;
+  hotkey.yes     = PGKEY_RETURN;
+  hotkey.no      = PGKEY_ESCAPE;
+}
+
+object button {
+  /* Rounded rectangle */
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x+1,y+1,w-2,h-2);
+    SetColor(0x000000);
+    Slab(x+4,y,w-8,1);
+    Slab(x+4,y+h-1,w-8,1);
+    Bar(x,y+4,1,h-8);
+    Bar(x+w-1,y+4,1,h-8);
+    Line(x,y+3,3,-3);
+    Line(x+w-1,y+3,-3,-3);
+    Line(x,y+h-4,3,3);
+    Line(x+w-1,y+h-4,-3,3);
+    Pixel(x+1,y+1,1,1);
+    Pixel(x+w-2,y+1,1,1);
+    Pixel(x+1,y+h-2,1,1);
+    Pixel(x+w-2,y+h-2,1,1);
+  };
+  spacing = 3;
+  margin = 4;
+}
+object button.on {
+  fgcolor = 0xFFFFFF;
+  bgcolor = 0x000000;
+}
+object menuitem align = PG_A_LEFT;
+object menuitem.hilight {
+  fgcolor = 0xFFFFFF;
+  bgcolor = 0x000000;
+}
+
+object indicator {
+  overlay = fillstyle {
+    SetColor(0x000000);
+    Rect(x+1,y+1,w-2,h-2);
+  };
+  bgfill = fillstyle {
+    SetColor(0x000000);
+    Frame(x,y,w,h);
+    SetColor(0xFFFFFF);
+    Rect(x+1,y+1,w-2,h-2);
+  };
+}
+
+/* Nifty little logo background. I like PicoGUI's background capabilities
+ * much better than the usual bitmap-or-nothing mentality... */
+object background {
+  text = "PicoGUI";
+  font = Font("Utopia",25,PG_FSTYLE_BOLD);
+  bgfill = fillstyle {
+    SetColor(0xFFFFFF);
+    Rect(x,y,33,h);
+    SetColor(0x707070);
+    Rect(x+34,y,w-34,h);
+    SetColor(0x000000);
+    Bar(x+30,y,1,h);
+    Bar(x+32,y,1,h);
+    Bar(x+33,y,1,h);
+    SetFont(font);
+    SetAngle(90);
+    Text(x+3,y+h-4,1,1,text);
+  };
+}
+
+object popup {
+  width = 5;
+  height = 5;
+  margin = 4;
+  //   bgcolor = 0xA0A0A0;
+   
+  bgfill = fillstyle {
+    /* Nifty hollow rounded rectangle thingy */
+
+    SetColor(0xFFFFFF);
+    Slab(x+1,y,w-2,1);
+    Slab(x+1,y+h-1,w-2,1);
+    Bar(x,y+1,1,h-2);
+    Bar(x+w-1,y+1,1,h-2);
+    Pixel(x+1,y+1,1,1);
+    Pixel(x+w-2,y+1,1,1);
+    Pixel(x+1,y+h-2,1,1);
+    Pixel(x+w-2,y+h-2,1,1);
+      
+    SetColor(0x000000);
+    Rect(x+2,y+1,w-4,2);
+    Rect(x+2,y+h-3,w-4,2);
+    Rect(x+1,y+2,2,h-4);
+    Rect(x+w-3,y+2,2,h-4);
+
+    SetColor(bgcolor);
+    Rect(x+3,y+3,w-6,h-6);
+
+    SetColor(0x000000);
+    Pixel(x+3,y+3,1,1);
+    Pixel(x+w-4,y+3,1,1);
+    Pixel(x+3,y+h-4,1,1);
+    Pixel(x+w-4,y+h-4,1,1);
+  };
+}
+
+object label.dlgtitle {
+  bgcolor = 0x000000;
+  fgcolor = 0xFFFFFF;
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+    SetColor(0xFFFFFF);
+    Pixel(x,y,1,1);
+    Pixel(x+w-1,y+h-1,1,1);
+    Pixel(x+w-1,y,1,1);
+    Pixel(x,y+h-1,1,1);
+  };
+  font = Copy(panelbar::font);
+}
+
+object panelbar {
+  bgfill = fillstyle {
+    SetColor(0xFFFFFF);
+    Frame(x,y,w,h);
+    SetColor(bgcolor);
+    Rect(x+1,y+1,w-2,h-2);
+    SetColor(0xFFFFFF);
+    Pixel(x+1,y+1,1,1);
+    Pixel(x+w-2,y+h-2,1,1);
+    Pixel(x+w-2,y+1,1,1);
+    Pixel(x+1,y+h-2,1,1);
+  };
+  bgcolor = 0x000000;
+  fgcolor = 0xFFFFFF;
+  width = 13;
+  margin = 0;
+}
+object base.panelbtn {
+  bgfill  = fillstyle {
+    Nop();
+  };
+  bgcolor = 0x000000;
+  fgcolor = 0xFFFFFF;
+  spacing = 1;
+  margin = 0;
+  side = PG_S_RIGHT;
+  width = 13;
+  height = 13;
+}
+object closebtn  {
+  widgetbitmap = LoadBitmap("data/mono_x.pbm");
+  side = PG_S_RIGHT;
+}
+object rotatebtn {
+  widgetbitmap = LoadBitmap("data/mono_rotate.pbm");
+  side = PG_S_LEFT;
+}
+object zoombtn {
+  widgetbitmap = LoadBitmap("data/mono_zoom.pbm");
+  side = PG_S_LEFT;
+}
+object zoombtn.hilight widgetbitmap = LoadBitmap("data/mono_zoom_on.pbm");
+
+object scroll {
+  width = 8;
+  bgfill = fillstyle {
+    SetColor(0xFFFFFF);
+    Rect(x,y,w,h);
+    SetColor(0x707070);
+    Rect(x+2,y+2,w-4,h-4);
+    SetColor(0x000000);
+  };
+  overlay = fillstyle {
+    var midline,sx,sw;
+
+    sx = x+1;
+    sw = w-2;
+    Rect(sx,y+1,sw,h-2);
+    midline = y+(h>>1);
+    SetColor(0xFFFFFF);
+    sx = sx+1;
+    sw = sw-2;
+    Slab(sx,midline,sw,1);
+    Slab(sx,midline+2,sw,1);
+    Slab(sx,midline-2,sw,1);
+  };
+}
+
+/* Check boxes */
+object checkbox {
+  bgfill = fillstyle {
+    Bitmap(x+1,y+((h-12)>>1)-1,11,11,bitmap1);
+    x = x + 15;
+  };
+  bitmap1 = LoadBitmap("data/lcd_check_unchecked.pnm");
+  align = PG_A_LEFT;
+  margin = 10;
+}
+object checkbox.on bitmap1 = LoadBitmap("data/lcd_check_checked.pnm");
+
+object toolbar {
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+    SetColor(fgcolor);
+    Slab(x,y+h-1,w,1);
+  };
+  margin = 2;
+}
+
+/* The End */
