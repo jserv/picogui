@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.8 2001/02/14 05:21:32 micahjd Exp $
+/* $Id: main.c,v 1.9 2001/10/08 02:14:07 micahjd Exp $
  *
  * main.c - PicoGUI Terminal (the 'p' is silent :)
  *          This handles the PicoGUI init and events
@@ -193,7 +193,8 @@ int main(int argc, char **argv) {
    
   /* Fork! */  
   if ( (childpid = ptyfork(&ptyfd)) < 0 ) {
-    pgMessageDialogFmt(argv[0],0,"Error acquiring pseudoterminal:\n%s",
+    pgMessageDialogFmt(argv[0] ? argv[0] : "Shell",
+		       0,"Error acquiring pseudoterminal:\n%s",
 		       strerror(errno));
     exit(1);
   }
