@@ -1,4 +1,4 @@
-/* $Id: input_util.c,v 1.5 2002/11/03 22:44:47 micahjd Exp $
+/* $Id: input_util.c,v 1.6 2002/11/25 19:43:11 micahjd Exp $
  *
  * input_util.c - Collection of utilities used by the input code
  *
@@ -100,10 +100,13 @@ void r_send_trigger(struct widget *w, s32 type,
 }
 
 /* Send a trigger that propagates to a widget's container until it's accepted */
-void send_propagating_trigger(struct widget *w, s32 type,
-			      union trigparam *param) {
+int send_propagating_trigger(struct widget *w, s32 type,
+			     union trigparam *param) {
   while (w && !send_trigger(w,type,param))
     w = widget_traverse(w,PG_TRAVERSE_CONTAINER,1);
+  if (w)
+    return 1;
+  return 0;
 }
 
 /* The End */

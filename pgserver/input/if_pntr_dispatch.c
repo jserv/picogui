@@ -1,4 +1,4 @@
-/* $Id: if_pntr_dispatch.c,v 1.6 2002/10/26 07:53:07 micahjd Exp $
+/* $Id: if_pntr_dispatch.c,v 1.7 2002/11/25 19:43:11 micahjd Exp $
  *
  * if_pntr_dispatch.c - Dispatch mouse pointer events to widgets
  *
@@ -32,6 +32,7 @@
 void infilter_pntr_dispatch_handler(struct infilter *self, u32 trigger, union trigparam *param) {
   struct widget *under;
   int release_captured = 0;
+  int accepted = 0;
 
   /* In order to dispatch a pointing event, it must have an associated cursor.
    * The normalize filter should have given us a cursor whether the driver had
@@ -79,7 +80,8 @@ void infilter_pntr_dispatch_handler(struct infilter *self, u32 trigger, union tr
     if ((!iserror(rdhandle((void**)&capture, PG_TYPE_WIDGET, -1,
 			   param->mouse.cursor->ctx.widget_capture))) && capture)
       release_captured = send_trigger(capture,PG_TRIGGER_RELEASE,param);
-    
+    accepted++;
+
     param->mouse.cursor->ctx.widget_capture = 0;
     param->mouse.cursor->ctx.capture_btn = 0;
   }
@@ -98,7 +100,7 @@ void infilter_pntr_dispatch_handler(struct infilter *self, u32 trigger, union tr
 
     /* First send the 'raw' event, then handle the cooked ones. */
     if (!release_captured)
-      send_propagating_trigger(under,trigger,param);
+      accepted += send_propagating_trigger(under,trigger,param);
     
     /* If the mouse is clicked in a widget, it 'captures' future MOVE and RELEASE events
      * until this button is released.
@@ -117,13 +119,17 @@ void infilter_pntr_dispatch_handler(struct infilter *self, u32 trigger, union tr
     
     if ((!iserror(rdhandle((void**)&capture, PG_TYPE_WIDGET, -1,
 			   param->mouse.cursor->ctx.widget_capture))) && capture)
-      send_trigger(capture,PG_TRIGGER_DRAG,param);
+      accepted += send_trigger(capture,PG_TRIGGER_DRAG,param);
   }
+
+  /* If nothing has accepted the event so far, pass it on */
+  if (!accepted)
+    infilter_send(self,trigger,param);
 }
 
 struct infilter infilter_pntr_dispatch = {
   accept_trigs: PG_TRIGGER_MOVE | PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_SCROLLWHEEL,
-  absorb_trigs: PG_TRIGGER_MOVE | PG_TRIGGER_UP | PG_TRIGGER_DOWN,
+  absorb_trigs: PG_TRIGGER_MOVE | PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_SCROLLWHEEL,
   handler: &infilter_pntr_dispatch_handler,
 };
 

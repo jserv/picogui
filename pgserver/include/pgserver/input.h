@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.49 2002/11/25 12:34:41 micahjd Exp $
+/* $Id: input.h,v 1.50 2002/11/25 19:43:11 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -396,8 +396,10 @@ int send_trigger(struct widget *w, s32 type, union trigparam *param);
 void r_send_trigger(struct widget *w, s32 type, union trigparam *param,
 		    int *stop, int forward);
 
-/* Send a trigger that propagates to a widget's container until it's accepted */
-void send_propagating_trigger(struct widget *w, s32 type, union trigparam *param);
+/* Send a trigger that propagates to a widget's container until it's accepted.
+ * Returns nonzero if the event is accepted
+ */
+int send_propagating_trigger(struct widget *w, s32 type, union trigparam *param);
 
 /*
  * Request focus for a widget.  Usually called in response to a click, or 
