@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.37 2001/07/10 11:46:53 micahjd Exp $
+/* $Id: scroll.c,v 1.38 2001/07/10 21:05:31 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -309,13 +309,12 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
   scrollupdate(self);
 
   /* Change State */
-  if (type != TRIGGER_DRAG)
-    if (DATA->on)
-      div_setstate(self->in->div,PGTH_O_SCROLL_ON,force);
-    else if (DATA->over)
-      div_setstate(self->in->div,PGTH_O_SCROLL_HILIGHT,force);
-    else
-      div_setstate(self->in->div,PGTH_O_SCROLL,force);
+  if (DATA->on)
+    div_setstate(self->in->div,PGTH_O_SCROLL_ON,force);
+  else if (DATA->over)
+    div_setstate(self->in->div,PGTH_O_SCROLL_HILIGHT,force);
+  else
+    div_setstate(self->in->div,PGTH_O_SCROLL,force);
 }
 
 /* The End */
