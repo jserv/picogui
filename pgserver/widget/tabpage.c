@@ -1,4 +1,4 @@
-/* $Id: tabpage.c,v 1.4 2002/11/27 01:05:10 micahjd Exp $
+/* $Id: tabpage.c,v 1.5 2002/12/16 04:43:13 micahjd Exp $
  *
  * tabpage.c - A page in a tabbed book. It can be inserted into any
  *             container and automatically link with other tab pages
@@ -62,6 +62,7 @@ static void tabpage_show_hide(struct widget *self, int visible) {
 /* Called when our tab button is selected or deselected */
 static int tabpage_tab_callback(int event, struct widget *from, s32 param, int owner, const u8 *data) {
   tabpage_show_hide(from->callback_owner, widget_get(from, PG_WP_ON));
+  post_event(PG_WE_ACTIVATE,from->callback_owner,0,0,NULL);
 }
 
 g_error tabpage_install(struct widget *self) {
