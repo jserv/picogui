@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.45 2001/10/29 23:57:55 micahjd Exp $
+/* $Id: video.c,v 1.46 2001/11/12 00:06:18 bauermeister Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -61,6 +61,9 @@ unsigned char trigtab[] = {
   0xFC,0xFC,0xFD,0xFE,0xFE,0xFF,0xFF,0xFF,0xFF,0xFF,
   0xFF
 };
+
+/* Cursor blanking ctrl */
+int cursor_blanking_enabled = 1;
 
 /* Sprite helper functions */
 g_error new_sprite(struct sprite **ps,s16 w,s16 h) {
@@ -487,7 +490,9 @@ void drivermessage(u32 message, u32 param, u32 *ret) {
     realize_updareas();
     break;
 
-
+  case PGDM_CURSORBLKEN:
+    cursor_blanking_enabled = (param != 0);
+    break;
   }
 }
 

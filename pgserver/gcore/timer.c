@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.16 2001/10/29 23:57:55 micahjd Exp $
+/* $Id: timer.c,v 1.17 2001/11/12 00:06:18 bauermeister Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -47,6 +47,8 @@ u32 timer_cursorhide;
 u32 timer_backlightoff;
 u32 timer_sleep;
 u32 timer_vidblank;
+
+extern int cursor_blanking_enabled;
 
 /* Internal function to send driver messages after periods of inactivity
  * specified in the configuration file
@@ -212,7 +214,9 @@ void inactivity_check(void) {
     return;
   }
 
-  if ( now >= timer_cursorhide && then < timer_cursorhide )
+  if ( now >= timer_cursorhide &&
+       then < timer_cursorhide &&
+       cursor_blanking_enabled)
     drivermessage(PGDM_CURSORVISIBLE,0,NULL);
 
   if ( now >= timer_backlightoff && then < timer_backlightoff )
