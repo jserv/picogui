@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.53 2002/02/11 19:39:23 micahjd Exp $
+/* $Id: widget.h,v 1.54 2002/02/14 13:05:14 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -55,23 +55,26 @@ typedef long glob;
 
 /* Constants for a trigger type. One of these constants is used to identify
    a trigger when it happens, and they are combined to form a trigger mask */
-#define TRIGGER_TIMER      (1<<0)  /* Timer event from install_timer */
-#define TRIGGER_UNUSED_1   (1<<1)
-#define TRIGGER_DIRECT     (1<<2)  /* A trigger sent explicitely */
-#define TRIGGER_ACTIVATE   (1<<3)  /* Sent when it receives focus */
-#define TRIGGER_DEACTIVATE (1<<4)  /* Losing focus */
-#define TRIGGER_KEYUP      (1<<5)  /* Ignores autorepeat, etc. Raw key codes*/
-#define TRIGGER_KEYDOWN    (1<<6)  /* Ditto. */
-#define TRIGGER_RELEASE    (1<<7)  /* Mouse up (see note) */
-#define TRIGGER_UP         (1<<8)  /* Mouse up in specified divnode */
-#define TRIGGER_DOWN       (1<<9)  /* Mouse down in divnode */
-#define TRIGGER_MOVE       (1<<10) /* Triggers on any mouse movement in node */
-#define TRIGGER_ENTER      (1<<11) /* Mouse moves inside widget */
-#define TRIGGER_LEAVE      (1<<12) /* Mouse moves outside widget */
-#define TRIGGER_DRAG       (1<<13) /* Mouse move when captured */
-#define TRIGGER_CHAR       (1<<14) /* A processed ASCII/Unicode character */
-#define TRIGGER_STREAM     (1<<15) /* Incoming packet (from WRITETO) */
-#define TRIGGER_KEY_START  (1<<16) /* Sent at the beginning of key propagation */
+#define TRIGGER_TIMER         (1<<0)  /* Timer event from install_timer */
+#define TRIGGER_UNUSED_1      (1<<1)
+#define TRIGGER_DIRECT        (1<<2)  /* A trigger sent explicitely */
+#define TRIGGER_ACTIVATE      (1<<3)  /* Sent when it receives focus */
+#define TRIGGER_DEACTIVATE    (1<<4)  /* Losing focus */
+#define TRIGGER_KEYUP         (1<<5)  /* Ignores autorepeat, etc. Raw key codes*/
+#define TRIGGER_KEYDOWN       (1<<6)  /* Ditto. */
+#define TRIGGER_RELEASE       (1<<7)  /* Mouse up (see note) */
+#define TRIGGER_UP            (1<<8)  /* Mouse up in specified divnode */
+#define TRIGGER_DOWN          (1<<9)  /* Mouse down in divnode */
+#define TRIGGER_MOVE          (1<<10) /* Triggers on any mouse movement in node */
+#define TRIGGER_ENTER         (1<<11) /* Mouse moves inside widget */
+#define TRIGGER_LEAVE         (1<<12) /* Mouse moves outside widget */
+#define TRIGGER_DRAG          (1<<13) /* Mouse move when captured */
+#define TRIGGER_CHAR          (1<<14) /* A processed ASCII/Unicode character */
+#define TRIGGER_STREAM        (1<<15) /* Incoming packet (from WRITETO) */
+#define TRIGGER_KEY_START     (1<<16) /* Sent at the beginning of key propagation */
+#define TRIGGER_NONTOOLBAR    (1<<17) /* Not really a trigger, but widgets can put this
+				       * in their trigger mask to request placement in
+				       * the nontoolbar area when applicable */
 
 /* Note on TRIGGER_RELEASE:  This is when the mouse was pressed inside
    the widget, then released elsewhere.  */

@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.52 2002/02/11 19:39:23 micahjd Exp $
+/* $Id: field.c,v 1.53 2002/02/14 13:05:14 micahjd Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -153,7 +153,7 @@ g_error field_install(struct widget *self) {
 
   self->trigger_mask = TRIGGER_UP | TRIGGER_ACTIVATE | TRIGGER_CHAR |
     TRIGGER_DEACTIVATE | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_TIMER |
-    TRIGGER_KEYUP | TRIGGER_KEYDOWN;
+    TRIGGER_KEYUP | TRIGGER_KEYDOWN | TRIGGER_NONTOOLBAR;
 
   return success;
 }

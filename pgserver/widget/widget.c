@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.161 2002/02/12 07:31:00 micahjd Exp $
+/* $Id: widget.c,v 1.162 2002/02/14 13:05:14 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -200,7 +200,7 @@ g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **wher
   
   /* If we just added a widget that can accept text input, and this is inside
    * a popup box, keep it in the nontoolbar area so keyboards still work */
-  if (w->trigger_mask & TRIGGER_CHAR && dt->head->next && dt->head->next->div && 
+  if ((w->trigger_mask & TRIGGER_NONTOOLBAR) && dt->head->next && dt->head->next->div && 
       dt->head->next->div->owner->type == PG_WIDGET_POPUP) {
     dt->head->next->div->flags |= DIVNODE_POPUP_NONTOOLBAR;
   }
