@@ -1,4 +1,4 @@
-/* $Id: hotspot.c,v 1.8 2001/09/02 19:45:22 micahjd Exp $
+/* $Id: hotspot.c,v 1.9 2001/09/03 00:28:39 micahjd Exp $
  *
  * hotspot.c - This is an interface for managing hotspots.
  *             The divtree is scanned for hotspot divnodes.
@@ -73,7 +73,7 @@ void hotspot_free(void) {
 }
 
 /* Add a new hotspot to the list with an insertion sort */
-g_error hotspot_add(s16 x, s16 y) {
+g_error hotspot_add(s16 x, s16 y, struct divnode *divscroll) {
   struct hotspot *newspot;
   g_error e;
   struct hotspot **where;
@@ -84,6 +84,7 @@ g_error hotspot_add(s16 x, s16 y) {
   memset(newspot,0,sizeof(struct hotspot));
   newspot->x = x;
   newspot->y = y;
+  newspot->divscroll = divscroll;
   
   /* Figure out where to add the node */
   where = &hotspotlist;
@@ -117,18 +118,15 @@ g_error hotspot_build(struct divnode *n, struct divnode *ntb) {
       y = n->y;
 
     /* If this is a scrolled divnode, see if it's not visible */
+
     if ((n->flags & DIVNODE_DIVSCROLL) && n->divscroll && 
 	(x < n->divscroll->calcx || y < n->divscroll->calcy ||
 	 x >= (n->divscroll->calcx+n->divscroll->calcw) || 
-	 y >= (n->divscroll->calcy+n->divscroll->calch))) {
-
-      /* FIXME: Scroll to currently invisible hotspots when they are selected */
-
-    } 
-    else { 
-      e = hotspot_add(x,y);
-      errorcheck;
-    }
+	 y >= (n->divscroll->calcy+n->divscroll->calch)))
+      e = hotspot_add(x,y,n->divscroll);
+    else
+      e = hotspot_add(x,y,NULL);
+    errorcheck;
   }
 
   /* Recursively add all divnodes */
@@ -281,9 +279,36 @@ void hotspot_traverse(short direction) {
       return;
   }
 
+  /* Must we scroll first? */
+  if (p->divscroll) {
+    s16 dx = 0,dy = 0;
+    struct divnode *ds = p->divscroll;
+
+    /* Figure out how much to scroll */
+    if (p->x < ds->calcx || p->x >= (ds->calcx + ds->calcw))
+      dx = p->x - cursor->x;
+    if (p->y < ds->calcy || p->y >= (ds->calcy + ds->calch))
+      dy = p->y - cursor->y;
+
+    /* Move cursor to the hotspot position, taking scroll into account */
+    px = p->x - dx;
+    py = p->y - dy;
+
+    /* Scroll, relative to current position */
+    if (dx)
+      widget_set(ds->owner,PG_WP_SCROLL_X,
+		 widget_get(ds->owner,PG_WP_SCROLL_X) + dx);
+    if (dy)
+      widget_set(ds->owner,PG_WP_SCROLL_Y,
+		 widget_get(ds->owner,PG_WP_SCROLL_Y) + dy);
+    update(NULL,1);
+  }
+  else {
+    /* Move cursor to the hotspot position */
+    px = p->x;
+    py = p->y;
+  }
   /* move the cursor */
-  px = p->x;
-  py = p->y;
   VID(coord_physicalize)(&px,&py);
   dispatch_pointing(PG_TRIGGER_MOVE,px,py,0);
 

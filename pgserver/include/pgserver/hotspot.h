@@ -1,4 +1,4 @@
-/* $Id: hotspot.h,v 1.2 2001/07/26 10:11:22 micahjd Exp $
+/* $Id: hotspot.h,v 1.3 2001/09/03 00:28:39 micahjd Exp $
  *
  * pgserver/hotspot.h - This is an interface for managing hotspots.
  *                      The divtree is scanned for hotspot divnodes.
@@ -48,6 +48,11 @@ struct hotspot {
   /* Position */
   s16 x,y;
 
+  /* If the hotspot is in a scrolled container and isn't currently visible,
+   * this is the scroll container.
+   */
+  struct divnode *divscroll;
+
   /* Links for the hotspot graph, indexed by direction */
   struct hotspot *graph[HOTSPOTMAX];
 
@@ -59,7 +64,7 @@ struct hotspot {
 void hotspot_free(void);
 
 /* Add a new hotspot to the list, don't reconfigure graph */
-g_error hotspot_add(s16 x, s16 y);
+g_error hotspot_add(s16 x, s16 y, struct divnode *divscroll);
 
 /* Recursively add hotspots for all applicable divnodes 
  * If 'ntb' is non-NULL, only add hotspots outside it.

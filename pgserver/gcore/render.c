@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.11 2001/09/01 23:12:10 micahjd Exp $
+/* $Id: render.c,v 1.12 2001/09/03 00:28:39 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -304,6 +304,8 @@ void groplist_scroll(struct groprender *r, struct divnode *div) {
 
     /* Prepare the whole area for drawing */
     VID(sprite_protectarea) (&r->clip,spritelist);
+    add_updarea(r->clip.x1,r->clip.y1,r->clip.x2-
+		r->clip.x1+1,r->clip.y2-r->clip.y1+1);
 
     /* Vertical scroll: blit up or down */
     if (r->scroll.y) {
