@@ -90,8 +90,11 @@ array set pg_vid {\
 	rotate270	0x10\
 }
 array set pg_we {\
-	activate 1
+	activate	1
+	close		3
 }
+
+set binds(any) {any "parray event"}
 set connection 0
 set defaultparent 0
 set defaultrship $pg_derive(inside)
@@ -345,7 +348,7 @@ proc pgBind {itemid eventid script} {
 	if {[lsearch $indexes $itemid] == -1} {
 		set handlers($eventid) $script
 	} else {
-		array set handlers [$binds($itemid)]
+		array set handlers $binds($itemid)
 		set handlers($eventid) $script
 	}
 	set binds($itemid) [array get handlers]
@@ -356,9 +359,15 @@ proc pgEventLoop {} {
 		array set event [pgWaitEvent]
 		set indexes [array names binds]
 		if {[lsearch $indexes $event(from)] == -1} {
-			continue
+			array set handlers $binds(any)
+		} else {
+			array set handlers $binds($event(from))
 		}
-		array set handlers $binds($event(from))
-		eval $handlers($event(event))
+		set indexes [array names handlers]
+		if {[lsearch $indexes $event(event)] == -1} {
+			eval $handlers(any)
+		} else {
+			eval $handlers($event(event))
+		}
 	}
 }
