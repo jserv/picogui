@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.39 2002/10/08 08:49:09 micahjd Exp $
+/* $Id: render.c,v 1.40 2002/10/09 03:26:34 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -56,216 +56,216 @@ void gropnode_rect_clip(struct groprender *r, struct gropnode *n);
  */
 
 void grop_render(struct divnode *div, struct quad *clip) {
-   struct gropnode **listp = &div->grop;
-   struct gropnode node;
-   u8 incflag;
-   struct groprender rend;
-   s16 dtx,dty;
+  struct gropnode **listp = &div->grop;
+  struct gropnode node;
+  u8 incflag;
+  struct groprender rend;
+  s16 dtx,dty;
 
-   /* Don't render if an app has exclusive display access */
-   if (display_owner || disable_output)
-     return;
+  /* Don't render if an app has exclusive display access */
+  if (display_owner || disable_output)
+    return;
 
-   /* default render values */
-   memset(&rend,0,sizeof(rend));
-   rend.lgop = PG_LGOP_NONE;
-   rend.output = vid->display;
-   rend.hfont = res[PGRES_DEFAULT_FONT];
+  /* default render values */
+  memset(&rend,0,sizeof(rend));
+  rend.lgop = PG_LGOP_NONE;
+  rend.output = vid->display;
+  rend.hfont = res[PGRES_DEFAULT_FONT];
    
-   /* Allow the video driver to override */
-   if (!VID(grop_render_presetup_hook)(&div,&listp,&rend)) {
+  /* Allow the video driver to override */
+  if (!VID(grop_render_presetup_hook)(&div,&listp,&rend)) {
 
-     /* Add in the divnode-level scrolling if necessary */
-     if ((div->flags & DIVNODE_DIVSCROLL) && div->divscroll) {
-       dtx = div->divscroll->tx;
-       dty = div->divscroll->ty;
-       div->x = div->calcx + dtx;
-       div->y = div->calcy + dty;
-     }
-     else {
-       dtx = 0;
-       dty = 0;
-     } 
+    /* Add in the divnode-level scrolling if necessary */
+    if ((div->flags & DIVNODE_DIVSCROLL) && div->divscroll) {
+      dtx = div->divscroll->tx;
+      dty = div->divscroll->ty;
+      div->x = div->calcx + dtx;
+      div->y = div->calcy + dty;
+    }
+    else {
+      dtx = 0;
+      dty = 0;
+    } 
      
-     /* Transfer over some numbers from the divnode */   
-     if (clip) {
-       rend.clip = *clip;
-     }
-     else {
-       rend.clip.x1 = div->x;
-       rend.clip.x2 = div->x+div->w-1;
-       rend.clip.y1 = div->y;
-       rend.clip.y2 = div->y+div->h-1;
-     }
-     rend.translation.x = div->tx;
-     rend.translation.y = div->ty;
-     rend.scroll.x = dtx - div->otx;
-     rend.scroll.y = dty - div->oty;
-     div->otx = dtx;
-     div->oty = dty;
-     rend.output_rect.x = div->x;
-     rend.output_rect.y = div->y;
-     rend.output_rect.w = div->w;
-     rend.output_rect.h = div->h;
+    /* Transfer over some numbers from the divnode */   
+    if (clip) {
+      rend.clip = *clip;
+    }
+    else {
+      rend.clip.x1 = div->x;
+      rend.clip.x2 = div->x+div->w-1;
+      rend.clip.y1 = div->y;
+      rend.clip.y2 = div->y+div->h-1;
+    }
+    rend.translation.x = div->tx;
+    rend.translation.y = div->ty;
+    rend.scroll.x = dtx - div->otx;
+    rend.scroll.y = dty - div->oty;
+    div->otx = dtx;
+    div->oty = dty;
+    rend.output_rect.x = div->x;
+    rend.output_rect.y = div->y;
+    rend.output_rect.w = div->w;
+    rend.output_rect.h = div->h;
      
-     /* Clip the clipping rectangle to the scrolling container */
-     if ((div->flags & DIVNODE_DIVSCROLL) && div->divscroll) {
-       if (rend.clip.x1 < div->divscroll->calcx)
-	 rend.clip.x1 = div->divscroll->calcx;
-       if (rend.clip.x2 > (div->divscroll->calcx + div->divscroll->calcw - 1))
-	 rend.clip.x2 = div->divscroll->calcx + div->divscroll->calcw - 1;
-       if (rend.clip.y1 < div->divscroll->calcy)
-	 rend.clip.y1 = div->divscroll->calcy;
-       if (rend.clip.y2 > (div->divscroll->calcy + div->divscroll->calch - 1))
-	 rend.clip.y2 = div->divscroll->calcy + div->divscroll->calch - 1;
-     }
+    /* Clip the clipping rectangle to the scrolling container */
+    if ((div->flags & DIVNODE_DIVSCROLL) && div->divscroll) {
+      if (rend.clip.x1 < div->divscroll->calcx)
+	rend.clip.x1 = div->divscroll->calcx;
+      if (rend.clip.x2 > (div->divscroll->calcx + div->divscroll->calcw - 1))
+	rend.clip.x2 = div->divscroll->calcx + div->divscroll->calcw - 1;
+      if (rend.clip.y1 < div->divscroll->calcy)
+	rend.clip.y1 = div->divscroll->calcy;
+      if (rend.clip.y2 > (div->divscroll->calcy + div->divscroll->calch - 1))
+	rend.clip.y2 = div->divscroll->calcy + div->divscroll->calch - 1;
+    }
      
-     /* Scrolling updates */
-     if ((div->flags & DIVNODE_SCROLL_ONLY) && 
-	 !(div->flags & DIVNODE_NEED_REDRAW))
-       groplist_scroll(&rend,div);
-   }     
+    /* Scrolling updates */
+    if ((div->flags & DIVNODE_SCROLL_ONLY) && 
+	!(div->flags & DIVNODE_NEED_REDRAW))
+      groplist_scroll(&rend,div);
+  }     
    
    
-   /* Munge our flags a bit. If this is incremental, and we didn't need
-    * a full redraw anyway, look for the incremental divnode flag */
-   if ((div->flags & DIVNODE_INCREMENTAL) && 
-       !(div->flags & DIVNODE_NEED_REDRAW))
-     incflag = PG_GROPF_INCREMENTAL;
-   else
-     incflag = 0;
+  /* Munge our flags a bit. If this is incremental, and we didn't need
+   * a full redraw anyway, look for the incremental divnode flag */
+  if ((div->flags & DIVNODE_INCREMENTAL) && 
+      !(div->flags & DIVNODE_NEED_REDRAW))
+    incflag = PG_GROPF_INCREMENTAL;
+  else
+    incflag = 0;
    
-   /* Get rid of any pesky sprites in the area. If this isn't incremental
-    * go ahead and protect the whole divnode */
-   if (!incflag) {
-     VID(sprite_protectarea) (&rend.clip,spritelist);
+  /* Get rid of any pesky sprites in the area. If this isn't incremental
+   * go ahead and protect the whole divnode */
+  if (!incflag) {
+    VID(sprite_protectarea) (&rend.clip,spritelist);
      
-     /* "dirty" this region of the screen so the blits notice it */
-     add_updarea(rend.clip.x1,rend.clip.y1,rend.clip.x2-
-		 rend.clip.x1+1,rend.clip.y2-rend.clip.y1+1);
-   }
+    /* "dirty" this region of the screen so the blits notice it */
+    add_updarea(rend.clip.x1,rend.clip.y1,rend.clip.x2-
+		rend.clip.x1+1,rend.clip.y2-rend.clip.y1+1);
+  }
 
-   /* Store our clipping rectangle before any 
-    * PG_GROP_SETCLIP's can modify it.
-    */
-   rend.orig_clip = rend.clip;
+  /* Store our clipping rectangle before any 
+   * PG_GROP_SETCLIP's can modify it.
+   */
+  rend.orig_clip = rend.clip;
    
-   /* Let the video driver know before we start drawing */
-   if (VID(grop_render_postsetup_hook)(&div,&listp,&rend))
-     return;
+  /* Let the video driver know before we start drawing */
+  if (VID(grop_render_postsetup_hook)(&div,&listp,&rend))
+    return;
 
-   /* Begin rendering loop! */
-   while (*listp) {
+  /* Begin rendering loop! */
+  while (*listp) {
        
-     /* Skip if the incremental-ness isn't right,
-      * but not if it's pseudoincremental, transient, or universal */
-     if ( (( (*listp)->flags &  PG_GROPF_INCREMENTAL) != incflag) &&
-	  (!((*listp)->flags & (PG_GROPF_PSEUDOINCREMENTAL |
-				PG_GROPF_TRANSIENT |
-				PG_GROPF_UNIVERSAL))))
-       goto skip_this_node;
+    /* Skip if the incremental-ness isn't right,
+     * but not if it's pseudoincremental, transient, or universal */
+    if ( (( (*listp)->flags &  PG_GROPF_INCREMENTAL) != incflag) &&
+	 (!((*listp)->flags & (PG_GROPF_PSEUDOINCREMENTAL |
+			       PG_GROPF_TRANSIENT |
+			       PG_GROPF_UNIVERSAL))))
+      goto skip_this_node;
      
-     /* Clear pseudoincremental flag */
-     (*listp)->flags &= ~PG_GROPF_PSEUDOINCREMENTAL;
+    /* Clear pseudoincremental flag */
+    (*listp)->flags &= ~PG_GROPF_PSEUDOINCREMENTAL;
      
-     /* If this is a nonvisual gropnode, get it over with now! */
-     if (PG_GROP_IS_NONVISUAL((*listp)->type)) {
-       gropnode_nonvisual(&rend,*listp);
-       goto skip_this_node;
-     }	
+    /* If this is a nonvisual gropnode, get it over with now! */
+    if (PG_GROP_IS_NONVISUAL((*listp)->type)) {
+      gropnode_nonvisual(&rend,*listp);
+      goto skip_this_node;
+    }	
      
-     /* Make a local copy of the node so we can clip and transform its
-      * coordinates and twiddle its flags */
-     node = **listp;
+    /* Make a local copy of the node so we can clip and transform its
+     * coordinates and twiddle its flags */
+    node = **listp;
      
-     /* Let the video driver do its own transformations */
-     if (!VID(grop_render_node_hook)(&div,&listp,&rend,&node)) {
+    /* Let the video driver do its own transformations */
+    if (!VID(grop_render_node_hook)(&div,&listp,&rend,&node)) {
        
-       /* Do the mappings now, before we scroll and add divnode coordinates.
-	* Mappings are always relative to the divnode, because they are often
-	* not measured in pixels while the divnodes are always in pixels */
-       gropnode_map(&rend,&node);
+      /* Do the mappings now, before we scroll and add divnode coordinates.
+       * Mappings are always relative to the divnode, because they are often
+       * not measured in pixels while the divnodes are always in pixels */
+      gropnode_map(&rend,&node);
        
-       /* Convert from divnode coordinates to screen coordinates */
-       gropnode_translate(&rend,&node);
+      /* Convert from divnode coordinates to screen coordinates */
+      gropnode_translate(&rend,&node);
        
-       /* Clip clip! */
-       gropnode_clip(&rend,&node);
-     }     
+      /* Clip clip! */
+      gropnode_clip(&rend,&node);
+    }     
 
-     /* Anything to do? */
-     if (node.type == PG_GROP_NOP)
-       goto skip_this_node;
+    /* Anything to do? */
+    if (node.type == PG_GROP_NOP)
+      goto skip_this_node;
      
-     /* If this is incremental, do the sprite protection and double-buffer
-      * update rectangle things for each gropnode because the updated area
-      * is usually small compared to the whole
-      */
-     if (incflag) {
-       struct quad lcr;
-       if (node.type == PG_GROP_LINE) {
-	 /* Lines are "special" */
-	 int xx,yy,xx2,yy2;
-	 if (node.r.w<0) {
-	   xx2 = node.r.x;
-	   xx = node.r.x+node.r.w;
-	 }
-	 else {
-	   xx = node.r.x;
-	   xx2 = node.r.x+node.r.w;
-	 }
-	 if (node.r.h<0) {
-	   yy2 = node.r.y;
-	   yy = node.r.y+node.r.h;
-	 }
-	 else {
-	   yy = node.r.y;
-	   yy2 = node.r.y+node.r.h;
-	 }
+    /* If this is incremental, do the sprite protection and double-buffer
+     * update rectangle things for each gropnode because the updated area
+     * is usually small compared to the whole
+     */
+    if (incflag) {
+      struct quad lcr;
+      if (node.type == PG_GROP_LINE) {
+	/* Lines are "special" */
+	int xx,yy,xx2,yy2;
+	if (node.r.w<0) {
+	  xx2 = node.r.x;
+	  xx = node.r.x+node.r.w;
+	}
+	else {
+	  xx = node.r.x;
+	  xx2 = node.r.x+node.r.w;
+	}
+	if (node.r.h<0) {
+	  yy2 = node.r.y;
+	  yy = node.r.y+node.r.h;
+	}
+	else {
+	  yy = node.r.y;
+	  yy2 = node.r.y+node.r.h;
+	}
 	 
-	 lcr.x1 = xx;
-	 lcr.y1 = yy;
-	 lcr.x2 = xx2;
-	 lcr.y2 = yy2;
+	lcr.x1 = xx;
+	lcr.y1 = yy;
+	lcr.x2 = xx2;
+	lcr.y2 = yy2;
 	 
-	 /* "dirty" this region of the screen so the blits notice it */
-	 add_updarea(xx,yy,xx2-xx+1,yy2-yy+1);
-       }
-       else {
-	 lcr.x1 = node.r.x;
-	 lcr.y1 = node.r.y;
-	 lcr.x2 = node.r.x+node.r.w-1;
-	 lcr.y2 = node.r.y+node.r.h-1;
+	/* "dirty" this region of the screen so the blits notice it */
+	add_updarea(xx,yy,xx2-xx+1,yy2-yy+1);
+      }
+      else {
+	lcr.x1 = node.r.x;
+	lcr.y1 = node.r.y;
+	lcr.x2 = node.r.x+node.r.w-1;
+	lcr.y2 = node.r.y+node.r.h-1;
 	 
-	 /* "dirty" this region of the screen so the blits notice it */
-	 add_updarea(node.r.x,node.r.y,node.r.w,node.r.h);
-       }
+	/* "dirty" this region of the screen so the blits notice it */
+	add_updarea(node.r.x,node.r.y,node.r.w,node.r.h);
+      }
        
-       VID(sprite_protectarea) (&lcr,spritelist);	  
-     }
+      VID(sprite_protectarea) (&lcr,spritelist);	  
+    }
      
-     /* Draw the gropnode! */
-     gropnode_draw(&rend,&node);
+    /* Draw the gropnode! */
+    gropnode_draw(&rend,&node);
      
-     /* Jump here when done rendering */
-   skip_this_node:
+    /* Jump here when done rendering */
+  skip_this_node:
      
-     /* Delete the grop if it was transient */
-     if ((*listp)->flags & PG_GROPF_TRANSIENT) {
-       struct gropnode *condemn;
-       condemn = *listp;
-       *listp = (*listp)->next;   /* close up the hole */
-       gropnode_free(condemn);
-       div->flags |= DIVNODE_GROPLIST_DIRTY;
-     }
-     else {
-       /* Otherwise just move on */
-       listp = &(*listp)->next;
-     }
-   }
+    /* Delete the grop if it was transient */
+    if ((*listp)->flags & PG_GROPF_TRANSIENT) {
+      struct gropnode *condemn;
+      condemn = *listp;
+      *listp = (*listp)->next;   /* close up the hole */
+      gropnode_free(condemn);
+      div->flags |= DIVNODE_GROPLIST_DIRTY;
+    }
+    else {
+      /* Otherwise just move on */
+      listp = &(*listp)->next;
+    }
+  }
 
-   /* Let the video driver know we're done */
-   VID(grop_render_end_hook)(&div,&listp,&rend);
+  /* Let the video driver know we're done */
+  VID(grop_render_end_hook)(&div,&listp,&rend);
 }
 
 /****************************************************** groplist_scroll */
@@ -406,64 +406,64 @@ void groplist_scroll(struct groprender *r, struct divnode *div) {
 /****************************************************** gropnode_nonvisual */
 
 void gropnode_nonvisual(struct groprender *r, struct gropnode *n) {
-   switch (n->type) {
+  switch (n->type) {
     
-    case PG_GROP_SETCOLOR:
-      r->color = n->param[0];
-      break;
+  case PG_GROP_SETCOLOR:
+    r->color = n->param[0];
+    break;
 
-    case PG_GROP_SETLGOP:
-      r->lgop = n->param[0];
-      break;
+  case PG_GROP_SETLGOP:
+    r->lgop = n->param[0];
+    break;
       
-    case PG_GROP_SETANGLE:
-      r->angle = n->param[0];
-      break;
+  case PG_GROP_SETANGLE:
+    r->angle = n->param[0];
+    break;
       
-    case PG_GROP_SETSRC:
-      r->src = n->r;
-      break;
+  case PG_GROP_SETSRC:
+    r->src = n->r;
+    break;
       
-    case PG_GROP_SETOFFSET:
-      r->offset = n->r;
-      break;
+  case PG_GROP_SETOFFSET:
+    r->offset = n->r;
+    break;
 
-    case PG_GROP_SETFONT:
-      r->hfont = n->param[0];
-      break;
+  case PG_GROP_SETFONT:
+    r->hfont = n->param[0];
+    break;
       
-    case PG_GROP_SETMAPPING:
-      r->map = n->r;
-      r->maptype = n->param[0];
-      break;
+  case PG_GROP_SETMAPPING:
+    r->map = n->r;
+    r->maptype = n->param[0];
+    break;
 
-    case PG_GROP_SETCLIP:
-      {
-	struct gropnode node;
+  case PG_GROP_SETCLIP:
+    {
+      struct gropnode node;
 
-	/* Reset the clipping rectangle */
-	r->clip = r->orig_clip;
+      /* Reset the clipping rectangle */
+      r->clip = r->orig_clip;
 	
-	/* Make a local copy of the SETCLIP to map, translate, and clip */
-	node = *n;
-	gropnode_map(r,&node);       /* Map in divnode coordinates */
-	gropnode_translate(r,&node); /* convert to logical coordinates */
-	gropnode_clip(r,&node);      /* Clip to divnode */
+      /* Make a local copy of the SETCLIP to map, translate, and clip */
+      node = *n;
+      gropnode_map(r,&node);       /* Map in divnode coordinates */
+      gropnode_translate(r,&node); /* convert to logical coordinates */
+      gropnode_clip(r,&node);      /* Clip to divnode */
 
-	/* This is our new clip */
-	r->clip.x1 = node.r.x;
-	r->clip.y1 = node.r.y;
-	r->clip.x2 = node.r.x + node.r.w - 1;
-	r->clip.y2 = node.r.y + node.r.h - 1;
-      }
-      break;
+      /* This is our new clip */
+      r->clip.x1 = node.r.x;
+      r->clip.y1 = node.r.y;
+      r->clip.x2 = node.r.x + node.r.w - 1;
+      r->clip.y2 = node.r.y + node.r.h - 1;
+    }
+    break;
 
-   default:
-     VID(grop_handler)(r,n);
-     break;
+  default:
+    VID(grop_handler)(r,n);
+    break;
 
 
-   }
+  }
 }
 
 /****************************************************** gropnode_translate */
@@ -489,16 +489,16 @@ void gropnode_scaletranslate(struct groprender *r, struct gropnode *n,
      *           the below code doesn't work because it would modify
      *           the polygon's array permanently every time it's drawn
   
-    s32* arr;
-    int i;
-    if (iserror(rdhandle((void**)&arr,PG_TYPE_ARRAY,-1,
-			 n->param[0])) || !arr) break;
-    for(i=1;i<=arr[0];i+=2) {
-      arr[i  ] = arr[i  ] * scale->x.n / scale->x.d + trans->x;
-      arr[i+1] = arr[i+1] * scale->y.n / scale->y.d + trans->y;
-    }
-    n->r.x = n->r.x * scale->x.n / scale->x.d;
-    n->r.y = n->r.y * scale->y.n / scale->y.d;
+     s32* arr;
+     int i;
+     if (iserror(rdhandle((void**)&arr,PG_TYPE_ARRAY,-1,
+     n->param[0])) || !arr) break;
+     for(i=1;i<=arr[0];i+=2) {
+     arr[i  ] = arr[i  ] * scale->x.n / scale->x.d + trans->x;
+     arr[i+1] = arr[i+1] * scale->y.n / scale->y.d + trans->y;
+     }
+     n->r.x = n->r.x * scale->x.n / scale->x.d;
+     n->r.y = n->r.y * scale->y.n / scale->y.d;
 
     */
   } 
@@ -582,14 +582,12 @@ void gropnode_map(struct groprender *r, struct gropnode *n) {
 /****************************************************** gropnode_clip */
 
 void gropnode_clip(struct groprender *r, struct gropnode *n) {
-  s16 bw,bh;
-  hwrbitmap bit;
   
   /* Save node's coordinates before clipping */
   r->orig = n->r;    
   
-  r->csrc.x = 0;
-  r->csrc.y = 0;
+  memset(&r->csrc,0,sizeof(r->csrc));
+
   switch (n->type) {
     
     /* Text clipping is handled by the charblit, but we can
@@ -620,36 +618,6 @@ void gropnode_clip(struct groprender *r, struct gropnode *n) {
       goto skip_this_node;
     break;
 
-    /* Also clip the source rectangle to the source bitmap in tilblits */
-  case PG_GROP_TILEBITMAP:
-    if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
-			 n->param[0])) || !bit) break;
-    VID(bitmap_getsize) (bit,&bw,&bh);
-    if (r->src.x < 0) r->src.x = 0;
-    if (r->src.y < 0) r->src.y = 0;
-    if (r->src.w > (bw - r->src.x)) r->src.w = bw - r->src.x;
-    if (r->src.h > (bh - r->src.y)) r->src.h = bh - r->src.y;
-    gropnode_rect_clip(r,n);
-    break;
-    
-    /* Clip to the source rectangle here too, but the rotation adds extra work */
-  case PG_GROP_ROTATEBITMAP:
-    if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
-			 n->param[0])) || !bit) break;
-    VID(bitmap_getsize) (bit,&bw,&bh);
-    if (r->angle == 90 || r->angle==270) {
-      s16 t;
-      t = bw;
-      bw = bh;
-      bh = t;
-    }
-    if (r->src.x < 0) r->src.x = 0;
-    if (r->src.y < 0) r->src.y = 0;
-    if (r->src.w > (bw - r->src.x)) r->src.w = bw - r->src.x;
-    if (r->src.h > (bh - r->src.y)) r->src.h = bh - r->src.y;
-    gropnode_rect_clip(r,n);
-    break;
-
   default:
     gropnode_rect_clip(r,n);
   }
@@ -661,7 +629,7 @@ void gropnode_clip(struct groprender *r, struct gropnode *n) {
  skip_this_node:
   n->type = PG_GROP_NOP;
 }
- 
+
 int gropnode_line_clip(struct groprender *r, struct gropnode *n) {  
   /* Is this line just completely out there? */
   if ( ((n->r.x<r->clip.x1) && ((n->r.x+n->r.w)<r->clip.x1)) ||
@@ -740,23 +708,23 @@ int gropnode_line_clip(struct groprender *r, struct gropnode *n) {
       n->r.w -= t * n->r.w / n->r.h;
       n->r.h = r->clip.y2-n->r.y;
     }
-	 
+    
     /* If the line's endpoints are no longer within the clipping
      * rectangle, it means the line never intersected it in the
      * first place */
-	 
+    
     if ( (n->r.x<r->clip.x1) || (n->r.x>r->clip.x2) || 
 	 (n->r.y<r->clip.y1) || (n->r.y>r->clip.y2) ||
 	 ((n->r.x+n->r.w)<r->clip.x1) || ((n->r.x+n->r.w)>r->clip.x2) ||
 	 ((n->r.y+n->r.h)<r->clip.y1) || ((n->r.y+n->r.h)>r->clip.y2) )
       return 1;
   }
-      
+  
   else {
     /* It's horizontal or vertical. Do a little prep, then
      * clip it like a normal rectangle
      */
-	 
+    
     if (n->r.w) {
       n->r.h=1;   
       if (n->r.w<0) {
@@ -776,10 +744,10 @@ int gropnode_line_clip(struct groprender *r, struct gropnode *n) {
       n->r.h++;
       n->type = PG_GROP_BAR;
     }
-	 
+    
     gropnode_rect_clip(r,n);
   }
-
+  
   return 0;
 }
 
@@ -793,201 +761,238 @@ void gropnode_rect_clip(struct groprender *r, struct gropnode *n) {
     n->r.y = r->clip.y1;
   }
   if ((n->r.x+n->r.w-1)>r->clip.x2)
-    n->r.w = r->clip.x2-n->r.x+1;
+    n->r.w -= r->csrc.w = n->r.w - (r->clip.x2-n->r.x+1);
   if ((n->r.y+n->r.h-1)>r->clip.y2)
-    n->r.h = r->clip.y2-n->r.y+1;
+    n->r.h -= r->csrc.h = n->r.h - (r->clip.y2-n->r.y+1);
 }
 
 /****************************************************** gropnode_draw */
 
 void gropnode_draw(struct groprender *r, struct gropnode *n) {
-   struct pgstring *str;
-   u32 *arr;
-   hwrbitmap bit;
-   s16 bw,bh;
-   hwrcolor c;
-   struct fontdesc *fd;
+  struct pgstring *str;
+  u32 *arr;
+  hwrbitmap bit;
+  s16 bw,bh;
+  hwrcolor c;
+  struct fontdesc *fd;
+  struct rect clipsrc;
 
-   /* Normally get color from r->color, but if this gropnode has 
-      PG_GROPF_COLORED get a hwrcolor from the grop's param[0] */
-   if (n->flags & PG_GROPF_COLORED)
-     c = n->param[0];
-   else
-     c = r->color;
+  /* Normally get color from r->color, but if this gropnode has 
+     PG_GROPF_COLORED get a hwrcolor from the grop's param[0] */
+  if (n->flags & PG_GROPF_COLORED)
+    c = n->param[0];
+  else
+    c = r->color;
    
-   switch (n->type) {
+  switch (n->type) {
 
-    case PG_GROP_PIXEL:
-      VID(pixel) (r->output,
-		  n->r.x,
-		  n->r.y,
-		  c,
-		  r->lgop);
-      break;
-      
-    case PG_GROP_LINE:
-      VID(line) (r->output,
-		 n->r.x,
-		 n->r.y,
-		 n->r.w+n->r.x,
-		 n->r.h+n->r.y,
-		 c,
-		 r->lgop);
-      break;
-
-    case PG_GROP_RECT:
-      VID(rect) (r->output,
-		 n->r.x,
-		 n->r.y,
-		 n->r.w,
-		 n->r.h,
-		 c,
-		 r->lgop);
-      break;
-   
-    case PG_GROP_FRAME:
-       
-       /* Bogacious clipping cruft for frames. A clipped frame is no
-	* longer a frame, so clip it as it is separated into slabs and bars */
-       if (r->orig.y>=r->clip.y1 && r->orig.y<=r->clip.y2 ) 
-	 VID(slab) (r->output,n->r.x,n->r.y,n->r.w,c,r->lgop);
-       if ((r->orig.y+r->orig.h-1)>=r->clip.y1 && (r->orig.y+r->orig.h-1)<=r->clip.y2)
-	 VID(slab) (r->output,n->r.x,n->r.y+n->r.h-1,n->r.w,c,r->lgop);
-       if (r->orig.x>=r->clip.x1 && r->orig.x<=r->clip.x2)
-	 VID(bar) (r->output,n->r.x,n->r.y,n->r.h,c,r->lgop);
-       if ((r->orig.x+r->orig.w-1)>=r->clip.x1 &&
-	   (r->orig.x+r->orig.w-1)<=r->clip.x2)
-	 VID(bar) (r->output,n->r.x+n->r.w-1,n->r.y,n->r.h,c,r->lgop);
-       break;
-       
-    case PG_GROP_SLAB:
-      VID(slab) (r->output,
-		 n->r.x,
-		 n->r.y,
-		 n->r.w,
-		 c,
-		 r->lgop);
-      break;
-      
-    case PG_GROP_BAR:
-      VID(bar) (r->output,
+  case PG_GROP_PIXEL:
+    VID(pixel) (r->output,
 		n->r.x,
 		n->r.y,
-		n->r.h,
 		c,
 		r->lgop);
-      break;
+    break;
       
-    case PG_GROP_TEXT:
-      if (iserror(rdhandle((void**)&str,PG_TYPE_PGSTRING,-1,
-			   n->param[0])) || !str) break;
-      if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
-			   r->hfont)) || !fd) break;
-      outtext(r->output,fd,n->r.x,n->r.y,c,str,&r->clip,
-	      r->lgop,r->angle);
-      break;
+  case PG_GROP_LINE:
+    VID(line) (r->output,
+	       n->r.x,
+	       n->r.y,
+	       n->r.w+n->r.x,
+	       n->r.h+n->r.y,
+	       c,
+	       r->lgop);
+    break;
+
+  case PG_GROP_RECT:
+    VID(rect) (r->output,
+	       n->r.x,
+	       n->r.y,
+	       n->r.w,
+	       n->r.h,
+	       c,
+	       r->lgop);
+    break;
+   
+  case PG_GROP_FRAME:
+       
+    /* Bogacious clipping cruft for frames. A clipped frame is no
+     * longer a frame, so clip it as it is separated into slabs and bars */
+    if (r->orig.y>=r->clip.y1 && r->orig.y<=r->clip.y2 ) 
+      VID(slab) (r->output,n->r.x,n->r.y,n->r.w,c,r->lgop);
+    if ((r->orig.y+r->orig.h-1)>=r->clip.y1 && (r->orig.y+r->orig.h-1)<=r->clip.y2)
+      VID(slab) (r->output,n->r.x,n->r.y+n->r.h-1,n->r.w,c,r->lgop);
+    if (r->orig.x>=r->clip.x1 && r->orig.x<=r->clip.x2)
+      VID(bar) (r->output,n->r.x,n->r.y,n->r.h,c,r->lgop);
+    if ((r->orig.x+r->orig.w-1)>=r->clip.x1 &&
+	(r->orig.x+r->orig.w-1)<=r->clip.x2)
+      VID(bar) (r->output,n->r.x+n->r.w-1,n->r.y,n->r.h,c,r->lgop);
+    break;
+       
+  case PG_GROP_SLAB:
+    VID(slab) (r->output,
+	       n->r.x,
+	       n->r.y,
+	       n->r.w,
+	       c,
+	       r->lgop);
+    break;
+      
+  case PG_GROP_BAR:
+    VID(bar) (r->output,
+	      n->r.x,
+	      n->r.y,
+	      n->r.h,
+	      c,
+	      r->lgop);
+    break;
+      
+  case PG_GROP_TEXT:
+    if (iserror(rdhandle((void**)&str,PG_TYPE_PGSTRING,-1,
+			 n->param[0])) || !str) break;
+    if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
+			 r->hfont)) || !fd) break;
+    outtext(r->output,fd,n->r.x,n->r.y,c,str,&r->clip,
+	    r->lgop,r->angle);
+    break;
 
 #ifdef CONFIG_WIDGET_TERMINAL
-   case PG_GROP_TEXTGRID:
-     textgrid_render(r,n);
-     break;      
+  case PG_GROP_TEXTGRID:
+    textgrid_render(r,n);
+    break;      
 #endif
 
 #ifdef CONFIG_WIDGET_TEXTBOX
-   case PG_GROP_PARAGRAPH:
-     paragraph_render(r,n);
-     break;
-   case PG_GROP_PARAGRAPH_INC:
-     paragraph_render_inc(r,n);
-     break;
+  case PG_GROP_PARAGRAPH:
+    paragraph_render(r,n);
+    break;
+  case PG_GROP_PARAGRAPH_INC:
+    paragraph_render_inc(r,n);
+    break;
 #endif
 
-   case PG_GROP_BITMAP:
-     if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
-			  n->param[0])) || !bit) break;
-     VID(bitmap_getsize) (bit,&bw,&bh);
-     VID(multiblit) (r->output,n->r.x,n->r.y,n->r.w,n->r.h,bit,
-		     0,0,bw,bh,(r->src.x+r->csrc.x)%bw,
-		     (r->src.y+r->csrc.y)%bh,r->lgop);     
-     break;
+  case PG_GROP_BITMAP:
+    if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
+			 n->param[0])) || !bit) break;
+    VID(bitmap_getsize) (bit,&bw,&bh);
+    VID(multiblit) (r->output,n->r.x,n->r.y,n->r.w,n->r.h,bit,
+		    0,0,bw,bh,(r->src.x+r->csrc.x)%bw,
+		    (r->src.y+r->csrc.y)%bh,r->lgop);     
+    break;
 
-   case PG_GROP_ROTATEBITMAP:
-     if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
-			  n->param[0])) || !bit) break;
-     VID(rotateblit) (r->output,n->r.x,n->r.y,n->r.w,n->r.h,bit,
-		      r->src.x,r->src.y,r->angle,r->lgop);     
-     break;
-   
-    case PG_GROP_BLUR:
-      VID(blur) (r->output,n->r.x,n->r.y,n->r.w,n->r.h,n->param[0]);
-      break;
-   
-    case PG_GROP_TILEBITMAP:
-      if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
-			   n->param[0])) || !bit) break;
-      VID(multiblit) (r->output,n->r.x,n->r.y,n->r.w,n->r.h,bit,
-		      r->src.x,r->src.y,r->src.w,r->src.h,
-		      r->csrc.x % r->src.w,r->csrc.y % r->src.h,r->lgop);     
-      break;
+  case PG_GROP_ROTATEBITMAP:
+    if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
+			 n->param[0])) || !bit) break;
+    VID(bitmap_getsize) (bit,&bw,&bh);
+    if (r->angle == 90 || r->angle==270) {
+      s16 t;
+      t = bw;
+      bw = bh;
+      bh = t;
+    }
+    gropnode_rect_clip(r,n);
+     
+    printf("src: %d,%d csrc: %d,%d,%d,%d\n",r->src.x,r->src.y,r->csrc.x,r->csrc.y,r->csrc.w,r->csrc.h);
+
+    clipsrc = r->src;
+    //    clipsrc.x += r->csrc.x;
+    //    clipsrc.y += r->csrc.y;
+    clipsrc.x = 0;
+    clipsrc.y = 0;
+
+    /* Source rect clipping */
+    /*
+      if (r->src.x < 0) r->src.x = 0;
+      if (r->src.y < 0) r->src.y = 0;
+      if (n->r.w > (bw - r->src.x)) n->r.w = bw - r->src.x;
+      if (n->r.h > (bh - r->src.y)) n->r.h = bh - r->src.y;
+    */
+
+    printf("rend: copying from %d,%d -> %d,%d,%d,%d at angle %d\n",clipsrc.x,clipsrc.y,n->r.x,n->r.y,n->r.w,n->r.h,r->angle);
+     
+    VID(rotateblit) (r->output,n->r.x,n->r.y,n->r.w,n->r.h,bit,
+		     clipsrc.x,clipsrc.y,r->angle,r->lgop);     
+    break;
+    
+  case PG_GROP_BLUR:
+    VID(blur) (r->output,n->r.x,n->r.y,n->r.w,n->r.h,n->param[0]);
+    break;
+     
+  case PG_GROP_TILEBITMAP:
+    if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
+			 n->param[0])) || !bit) break;
+
+    clipsrc = r->src;
+    VID(bitmap_getsize) (bit,&bw,&bh);
+    if (clipsrc.x < 0) clipsrc.x = 0;
+    if (clipsrc.y < 0) clipsrc.y = 0;
+    if (clipsrc.w > (bw - clipsrc.x)) clipsrc.w = bw - clipsrc.x;
+    if (clipsrc.h > (bh - clipsrc.y)) clipsrc.h = bh - clipsrc.y;
+    
+    VID(multiblit) (r->output,n->r.x,n->r.y,n->r.w,n->r.h,bit,
+		    clipsrc.x,clipsrc.y,clipsrc.w,clipsrc.h,
+		    r->csrc.x % clipsrc.w,r->csrc.y % clipsrc.h,r->lgop);     
+    break;
       
-    case PG_GROP_GRADIENT:
-      /* Gradients are fun! */
-      VID(gradient) (r->output,
-		     n->r.x,
-		     n->r.y,
-		     n->r.w,
-		     n->r.h,
-		     n->param[0],
-		     n->param[1],
-		     n->param[2],
-		     r->lgop);      
-      break;
-   case PG_GROP_ELLIPSE: 
-     VID(ellipse) (r->output, 
-           n->r.x, 
-           n->r.y, 
-           n->r.w, 
-           n->r.h, 
-           c, 
-           r->lgop 
-           ); 
-     break; 
-   case PG_GROP_FELLIPSE: 
-     VID(fellipse) (r->output, 
-            n->r.x, 
-            n->r.y, 
-            n->r.w, 
-            n->r.h, 
-            c, 
-            r->lgop 
-            ); 
-     break; 
+  case PG_GROP_GRADIENT:
+    /* Gradients are fun! */
+    VID(gradient) (r->output,
+		   n->r.x,
+		   n->r.y,
+		   n->r.w,
+		   n->r.h,
+		   n->param[0],
+		   n->param[1],
+		   n->param[2],
+		   r->lgop);      
+    break;
+  case PG_GROP_ELLIPSE: 
+    VID(ellipse) (r->output, 
+		  n->r.x, 
+		  n->r.y, 
+		  n->r.w, 
+		  n->r.h, 
+		  c, 
+		  r->lgop 
+		  ); 
+    break; 
+  case PG_GROP_FELLIPSE: 
+    VID(fellipse) (r->output, 
+		   n->r.x, 
+		   n->r.y, 
+		   n->r.w, 
+		   n->r.h, 
+		   c, 
+		   r->lgop 
+		   ); 
+    break; 
 
-   case PG_GROP_VIDUPDATE:
-     if (r->output == vid->display)
-       VID(update)(n->r.x,n->r.y,n->r.w,n->r.h);
-     break;
+  case PG_GROP_VIDUPDATE:
+    if (r->output == vid->display)
+      VID(update)(n->r.x,n->r.y,n->r.w,n->r.h);
+    break;
 	
-   case PG_GROP_FPOLYGON:
-     if (iserror(rdhandle((void**)&arr,PG_TYPE_ARRAY,-1,
-			  n->param[0])) || !arr) break;
-     VID(fpolygon) (r->output,
- 		    arr,
-		    n->r.x,
- 		    n->r.y,
-		    c,
-		    r->lgop
- 		    );
-     break;
+  case PG_GROP_FPOLYGON:
+    if (iserror(rdhandle((void**)&arr,PG_TYPE_ARRAY,-1,
+			 n->param[0])) || !arr) break;
+    VID(fpolygon) (r->output,
+		   arr,
+		   n->r.x,
+		   n->r.y,
+		   c,
+		   r->lgop
+		   );
+    break;
 
 
-   default:
-     VID(grop_handler)(r,n);
-     break;
+  default:
+    VID(grop_handler)(r,n);
+    break;
 		  
-   }
+  }
 }
 
 
 /* The End */
 
+  

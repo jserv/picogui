@@ -1,4 +1,4 @@
-/* $Id: render.h,v 1.14 2002/09/15 10:51:48 micahjd Exp $
+/* $Id: render.h,v 1.15 2002/10/09 03:26:34 micahjd Exp $
  *
  * render.h - data structures and functions for rendering and manipulating
  *            gropnodes (Graphics Operation nodes)
@@ -87,11 +87,11 @@ struct groprender {
    struct rect orig;        /* Original rect of current gropnode */
    struct pair translation; /* Applied only to grops with PG_GROPF_TRANSLATE */
    struct pair scroll;      /* Delta translation from last redraw */
-   struct pair csrc;        /* Additional src_x,src_y offsets from clipping */
+   struct rect csrc;        /* Additional src_x,src_y offsets from clipping */
    hwrbitmap output;        /* Bitmap to render to */
    struct quad orig_clip;   /* Original clipping rectangle, before any
 			     * PG_GROP_SETCLIP nodes modify it */
-
+  
    /* Params that can be set with nonvisual gropnodes */
    struct rect offset, src, map;
    struct quad clip;

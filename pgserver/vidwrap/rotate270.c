@@ -1,4 +1,4 @@
-/* $Id: rotate270.c,v 1.16 2002/10/08 11:03:30 micahjd Exp $
+/* $Id: rotate270.c,v 1.17 2002/10/09 03:26:34 micahjd Exp $
  *
  * rotate270.c - Video wrapper to rotate the screen 270 degrees
  *
@@ -130,8 +130,17 @@ void rotate270_rotateblit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
    (*vid->bitmap_getsize)(src,&bw,&bh);
+   
+   /* The dimensions of the blit on the source bitmap are different if we're
+    * rotating by an odd multiple of 90 degrees.
+    */
+   if (angle==90 || angle==270)
+     src_y = bh-src_y-h;
+   else
+     src_y = bw-src_y-h;
+
    (*vid->rotateblit)(dest,dx-dest_y-h,dest_x,h,w,
-		      src,bh-h-src_y,src_x,angle,lgop);
+		      src,src_y,src_x,angle,lgop);
 }
 void rotate270_scrollblit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
 		   hwrbitmap src,s16 src_x,s16 src_y,

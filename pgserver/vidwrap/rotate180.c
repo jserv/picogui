@@ -1,4 +1,4 @@
-/* $Id: rotate180.c,v 1.15 2002/10/08 11:03:30 micahjd Exp $
+/* $Id: rotate180.c,v 1.16 2002/10/09 03:26:34 micahjd Exp $
  *
  * rotate180.c - Video wrapper to rotate the screen 180 degrees
  *
@@ -125,8 +125,21 @@ void rotate180_rotateblit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
    (*vid->bitmap_getsize)(src,&bw,&bh);   
+
+   /* The dimensions of the blit on the source bitmap are different if we're
+    * rotating by an odd multiple of 90 degrees.
+    */
+   if (angle==90 || angle==270) {
+     src_x = bh-src_x-w;
+     src_y = bw-src_y-h;
+   }
+   else {
+     src_x = bw-src_x-w;
+     src_y = bh-src_y-h;
+   }   
+
    (*vid->rotateblit)(dest,dx-dest_x-w,dy-dest_y-h,w,h,
-		      src,bw-w-src_x,bh-h-src_y,angle,lgop);
+		      src,src_x,src_y,angle,lgop);
 }
 void rotate180_scrollblit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
 			  hwrbitmap src,s16 src_x,s16 src_y,
@@ -136,7 +149,7 @@ void rotate180_scrollblit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
    (*vid->bitmap_getsize)(dest,&dx,&dy);
    (*vid->bitmap_getsize)(src,&bw,&bh);   
    (*vid->scrollblit)(dest,dx-dest_x-w,dy-dest_y-h,w,h,
-		      src,bw-w-src_x,bh-h-src_y,lgop);
+		      src,src_x,src_y,lgop);
 }
 void rotate180_multiblit(hwrbitmap dest,s16 dest_x,s16 dest_y,
 			 s16 dest_w,s16 dest_h,
