@@ -27,7 +27,7 @@
 #include "ai1.h"
 #include "ai.h"
 
-//#define FUNCTION_DEBUG
+#define FUNCTION_DEBUG
 
 void ai2(struct board *it)
 {

@@ -30,8 +30,8 @@
 #include "ai3.h"
 #include "ai4.h"
 
-//#define FUNCTION_DEBUG
-//#define DEBUG
+#define FUNCTION_DEBUG
+#define DEBUG
 
 void ai4(struct board *it)
 {
@@ -75,7 +75,7 @@ int linetrap(struct board *it)
   int temp;
 
 #ifdef FUNCTION_DEBUG
-  fprintf(stderr,"linetrapwin called\n");
+  fprintf(stderr,"linetrap called\n");
 #endif
   
   temp = linetrapwin(it);

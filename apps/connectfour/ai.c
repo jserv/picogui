@@ -31,7 +31,7 @@
 #include "ai.h"
 #include "rules.h"
 
-//#define FUNCTION_DEBUG
+#define FUNCTION_DEBUG
 
 void aicall(struct board *it)
 {

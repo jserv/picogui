@@ -31,8 +31,8 @@
 #include "ai4.h"
 #include "ai5.h"
 
-//#define DEBUG
-//#define FUNCTION_DEBUG
+#define DEBUG
+#define FUNCTION_DEBUG
 
 void ai5(struct board *it)
 {
@@ -88,7 +88,7 @@ void ai5(struct board *it)
     return;
   }
 
-  randommove(it);
+  prandmove(it);
 }
 
 int gentrap(struct board *it)
@@ -112,8 +112,6 @@ int gentrapwin(struct board *it)
 #ifdef FUNCTION_DEBUG
   fprintf(stderr,"gentrapwin called\n");
 #endif
-
-  
 
   return -1;
 }
@@ -179,4 +177,19 @@ int maskout(int mask, int val)
   if(val >= mask)
     val++;
   return val;
+}
+
+void prandmove(struct board *it)
+{
+  int i = 0;
+
+#ifdef FUNCTION_DEBUG
+  fprintf(stderr,"prandmove called\n");
+#endif
+
+  while(++i < 5)
+    if(!(move(it,rand()%3 + it->aipref) < 0))
+      return;
+  
+  randommove(it);
 }

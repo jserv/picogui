@@ -64,6 +64,10 @@ typedef struct board
 
   int ailevel;
 
+  /* Stores the random move preference for AI levels 5 and up */
+  
+  int aipref;
+
 }board;
 
 int putpiece(int location,int type,struct board *foot);

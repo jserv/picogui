@@ -50,7 +50,7 @@ int main(int argc, char **argv)
   canvas  = pgNewWidget(PG_WIDGET_CANVAS,0,0);
   
   pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,bar);
-  pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("New Game"),
+  pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("Menu"),
 	      PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,0);
 
   pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&NewGame,NULL);
@@ -76,7 +76,7 @@ int NewGame(struct pgEvent *evt)
 {
   int ail;
   board *gee;
-  switch(ail = pgMenuFromString("Skill Level One|Skill Level Two|Skill Level Three|Skill Level Four|Skill Level Five"))
+  switch(ail = pgMenuFromString("Skill Level One|Skill Level Two|Skill Level Three|Skill Level Four|Skill Level Five|Quit"))
     {
     case 1:
       pgReplaceTextFmt(info,"Skill Level One");
@@ -94,6 +94,7 @@ int NewGame(struct pgEvent *evt)
       pgReplaceTextFmt(info,"Skill Level Five");
       break;
     case 6:
+      exit(0);
       pgReplaceTextFmt(info,"Skill Level Six");
       break;
     default:
@@ -106,6 +107,9 @@ int NewGame(struct pgEvent *evt)
   pgBind(canvas,PG_WE_PNTR_DOWN,&piecedrop,evt->extra);
   gee =  evt -> extra;
   gee -> ailevel = ail;
+  
+  if(ail > 4)
+    gee -> aipref = rand() % 3 + 1;
   redraw(); 
   return 0;
 }
