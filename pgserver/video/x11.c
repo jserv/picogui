@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.28 2002/07/03 22:03:31 micahjd Exp $
+/* $Id: x11.c,v 1.29 2002/08/15 02:19:53 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -98,9 +98,7 @@ void x11_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
   g = x11_gctab[PG_LGOP_NONE];
 #else
   if (!g) {
-#ifndef CONFIG_X11_NOSLOWLGOP
     def_pixel(dest,x,y,c,lgop);
-#endif
     return;
   }
 #endif
@@ -302,8 +300,12 @@ g_error x11_bitmap_new(hwrbitmap *bmp,s16 w,s16 h,u16 bpp) {
   (*pxb)->w = w;
   (*pxb)->h = h;
 
-  /* Allocate a corresponding X pixmap */
-  (*pxb)->d  = XCreatePixmap(xdisplay,x11_display.d,w,h,bpp);
+  /* Allocate a corresponding X pixmap 
+   * FIXME: This makes no attempt to handle alpha channels...
+   *        That would get really messy, as X doesn't support alpha
+   *        and emulation of alpha channels under X is tricky and usually slow.
+   */
+  (*pxb)->d  = XCreatePixmap(xdisplay,x11_display.d,w,h,vid->bpp);
 
 #ifdef CONFIG_X11_XFT
   /* Allocate an XftDraw */
@@ -627,6 +629,7 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   g_error e;
   Visual *xvisual;
   XRectangle rect;
+  int i;
 
   /* Default resolution is 640x480 
    */
@@ -697,6 +700,13 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   /* Set up graphics contexts for each LGOP that X can support directly 
    */
   x11_gctab[PG_LGOP_NONE]       = XCreateGC(xdisplay,x11_display.d,0,NULL);
+
+#ifdef CONFIG_X11_NOSLOWLGOP
+  /* Define all the unused LGOPs as PG_LGOP_NONE in this case */
+  for (i=0;i<=PG_LGOPMAX;i++)
+    x11_gctab[i] = x11_gctab[PG_LGOP_NONE];
+#endif
+
   x11_gctab[PG_LGOP_OR]         = XCreateGC(xdisplay,x11_display.d,0,NULL);
   x11_gctab[PG_LGOP_AND]        = XCreateGC(xdisplay,x11_display.d,0,NULL);
   x11_gctab[PG_LGOP_XOR]        = XCreateGC(xdisplay,x11_display.d,0,NULL);
