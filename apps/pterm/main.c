@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.1 2001/01/05 09:13:28 micahjd Exp $
+/* $Id: main.c,v 1.2 2001/01/05 09:30:14 micahjd Exp $
  *
  * main.c - PicoGUI Terminal (the 'p' is silent :)
  *          This handles the PicoGUI init and events
@@ -82,6 +82,7 @@ int main(int argc, char *argv[],char *envp[]) {
 	      PG_WP_SIDE,PG_S_ALL,
 	      0);
   pgBindData(PGDEFAULT,&termInput);
+  pgFocus(PGDEFAULT);
   
   /*** Start up subprocess */
   
