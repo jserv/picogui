@@ -38,6 +38,7 @@ bool 'Video debugging'                  DEBUG_VIDEO
 bool 'Theme debugging'                  DEBUG_THEME
 bool 'Client/server debugging'          DEBUG_NET
 bool 'Initialization debugging'         DEBUG_INIT
+bool 'Memory debugging'                 DEBUG_MEMORY
 endmenu
 
 mainmenu_option next_comment
