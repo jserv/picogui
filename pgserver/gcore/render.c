@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.40 2002/10/09 03:26:34 micahjd Exp $
+/* $Id: render.c,v 1.41 2002/10/09 17:27:11 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -612,7 +612,13 @@ void gropnode_clip(struct groprender *r, struct gropnode *n) {
     if (n->r.x>r->clip.x2 || n->r.y>r->clip.y2)
       goto skip_this_node;
     break;
-    
+
+    /* Handle rotateblit later, don't bother checking for
+     * easy cases because there are none :)
+     */
+  case PG_GROP_ROTATEBITMAP:
+    break;
+
   case PG_GROP_LINE:
     if (gropnode_line_clip(r,n))
       goto skip_this_node;
@@ -883,35 +889,23 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
   case PG_GROP_ROTATEBITMAP:
     if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
 			 n->param[0])) || !bit) break;
-    VID(bitmap_getsize) (bit,&bw,&bh);
-    if (r->angle == 90 || r->angle==270) {
-      s16 t;
-      t = bw;
-      bw = bh;
-      bh = t;
-    }
-    gropnode_rect_clip(r,n);
+    if (r->angle == 90 || r->angle==270)
+      VID(bitmap_getsize) (bit,&bh,&bw);
+    else
+      VID(bitmap_getsize) (bit,&bw,&bh);
      
-    printf("src: %d,%d csrc: %d,%d,%d,%d\n",r->src.x,r->src.y,r->csrc.x,r->csrc.y,r->csrc.w,r->csrc.h);
-
-    clipsrc = r->src;
-    //    clipsrc.x += r->csrc.x;
-    //    clipsrc.y += r->csrc.y;
-    clipsrc.x = 0;
-    clipsrc.y = 0;
-
     /* Source rect clipping */
-    /*
-      if (r->src.x < 0) r->src.x = 0;
-      if (r->src.y < 0) r->src.y = 0;
-      if (n->r.w > (bw - r->src.x)) n->r.w = bw - r->src.x;
-      if (n->r.h > (bh - r->src.y)) n->r.h = bh - r->src.y;
-    */
-
-    printf("rend: copying from %d,%d -> %d,%d,%d,%d at angle %d\n",clipsrc.x,clipsrc.y,n->r.x,n->r.y,n->r.w,n->r.h,r->angle);
-     
-    VID(rotateblit) (r->output,n->r.x,n->r.y,n->r.w,n->r.h,bit,
-		     clipsrc.x,clipsrc.y,r->angle,r->lgop);     
+    clipsrc = r->src;
+    if (clipsrc.x < 0) clipsrc.x = 0;
+    if (clipsrc.y < 0) clipsrc.y = 0;
+    if (clipsrc.w > (bw - clipsrc.x)) clipsrc.w = bw - clipsrc.x;
+    if (clipsrc.h > (bh - clipsrc.y)) clipsrc.h = bh - clipsrc.y;
+    if (clipsrc.w <= 0 || clipsrc.h <= 0)
+      break;
+    
+    VID(rotateblit) (r->output,n->r.x,n->r.y,
+		     bit,clipsrc.x,clipsrc.y,clipsrc.w,clipsrc.h,
+		     &r->clip,r->angle,r->lgop);     
     break;
     
   case PG_GROP_BLUR:
@@ -928,6 +922,8 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
     if (clipsrc.y < 0) clipsrc.y = 0;
     if (clipsrc.w > (bw - clipsrc.x)) clipsrc.w = bw - clipsrc.x;
     if (clipsrc.h > (bh - clipsrc.y)) clipsrc.h = bh - clipsrc.y;
+    if (n->r.w <= 0 || n->r.h <= 0)
+      break;
     
     VID(multiblit) (r->output,n->r.x,n->r.y,n->r.w,n->r.h,bit,
 		    clipsrc.x,clipsrc.y,clipsrc.w,clipsrc.h,

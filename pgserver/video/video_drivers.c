@@ -1,4 +1,4 @@
-/* $Id: video_drivers.c,v 1.6 2002/10/08 08:37:50 micahjd Exp $
+/* $Id: video_drivers.c,v 1.7 2002/10/09 17:27:13 micahjd Exp $
  *
  * video_drivers.c - handles loading/switching video drivers and modes
  *
@@ -528,24 +528,49 @@ g_error bitmap_rotate(hwrbitmap *pbit, s16 angle) {
   g_error e;
   s16 old_w,old_h;
   s16 new_w,new_h;
+  s16 new_x,new_y;
+  struct quad clip;
 
   old = *pbit;  
   e = vid->bitmap_getsize(old,&old_w,&old_h);
   errorcheck;
-  
-  if (angle==90 || angle==270) {
+
+  switch (angle) {
+  case 0:
+    return success;
+
+  case 90:
     new_w = old_h;
     new_h = old_w;
-  }
-  else {
+    new_x = 0;
+    new_y = new_h-1;
+    break;
+
+  case 180:
     new_w = old_w;
     new_h = old_h;
+    new_x = new_w-1;
+    new_y = new_h-1;
+    break;
+
+  case 270:
+    new_w = old_h;
+    new_h = old_w;
+    new_x = new_w-1;
+    new_y = 0;
+    break;
   }
+
+  clip.x1 = 0;
+  clip.y1 = 0;
+  clip.x2 = new_w-1;
+  clip.y2 = new_h-1;
 
   e = vid->bitmap_new(&new,new_w,new_h,old->bpp);
   errorcheck;
 
-  vid->rotateblit(new,0,0,new_w,new_h,old,0,0,angle,PG_LGOP_NONE);
+  vid->rotateblit(new,new_x,new_y,old,0,0,old_w,old_h,
+		  &clip,angle,PG_LGOP_NONE);
   *pbit = new;
 
   vid->bitmap_free(old);

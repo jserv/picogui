@@ -1,4 +1,4 @@
-/* $Id: rotate270.c,v 1.17 2002/10/09 03:26:34 micahjd Exp $
+/* $Id: rotate270.c,v 1.18 2002/10/09 17:27:15 micahjd Exp $
  *
  * rotate270.c - Video wrapper to rotate the screen 270 degrees
  *
@@ -32,6 +32,18 @@
 #include <pgserver/video.h>
 #include <pgserver/appmgr.h>
 #include <pgserver/render.h>
+
+struct quad *rotate270_rotateclip(struct quad *clip) {
+  static struct quad cr;
+  if (clip) {
+    cr.x1 = vid->xres - 1 - clip->y2;
+    cr.y1 = clip->x1;
+    cr.x2 = vid->xres - 1 - clip->y1;
+    cr.y2 = clip->x2;
+    return &cr;
+  }
+  return NULL;
+}
 
 /******* Simple wrapper functions */
 
@@ -123,24 +135,16 @@ void rotate270_blit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
    (*vid->blit)(dest,dx-dest_y-h,dest_x,h,w,
 		src,bw-h-src_y,src_x,lgop);
 }
-void rotate270_rotateblit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
-			  hwrbitmap src,s16 src_x,s16 src_y,
-			  s16 angle, s16 lgop) {
-   s16 bw,bh;
-   s16 dx,dy;
-   (*vid->bitmap_getsize)(dest,&dx,&dy);
-   (*vid->bitmap_getsize)(src,&bw,&bh);
-   
-   /* The dimensions of the blit on the source bitmap are different if we're
-    * rotating by an odd multiple of 90 degrees.
-    */
-   if (angle==90 || angle==270)
-     src_y = bh-src_y-h;
-   else
-     src_y = bw-src_y-h;
-
-   (*vid->rotateblit)(dest,dx-dest_y-h,dest_x,h,w,
-		      src,src_y,src_x,angle,lgop);
+void rotate270_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y,
+			  hwrbitmap src, s16 src_x, s16 src_y, s16 src_w, s16 src_h,
+			  struct quad *clip, s16 angle, s16 lgop) {
+  s16 dw,dh;
+  s16 bw,bh;
+  vid->bitmap_getsize(dest,&dw,&dh);
+  vid->bitmap_getsize(src,&bw,&bh);
+  vid->rotateblit(dest,dw-dest_y-1,dest_x,
+		  src,src_x,src_y,src_w,src_h,
+		  rotate270_rotateclip(clip),angle,lgop);
 }
 void rotate270_scrollblit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
 		   hwrbitmap src,s16 src_x,s16 src_y,
@@ -170,20 +174,8 @@ void rotate270_multiblit(hwrbitmap dest,s16 dest_x,s16 dest_y,
 void rotate270_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
 		       s16 w,s16 h,s16 lines,s16 angle,hwrcolor c,
 		       struct quad *clip, s16 lgop) {
-   struct quad cr;
-   struct quad *crp;
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
-
-   if (clip) {
-      cr.x1 = vid->xres - 1 - clip->y2;
-      cr.y1 = clip->x1;
-      cr.x2 = vid->xres - 1 - clip->y1;
-      cr.y2 = clip->x2;
-      crp = &cr;
-   }
-   else
-     crp = NULL;
 
    /* Rotate the text */
    angle += 270;
@@ -191,8 +183,7 @@ void rotate270_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
    if (angle<0) angle += 360;
    
    (*vid->charblit)(dest,chardat,dx-dest_y,dest_x,w,h,
-		    lines,angle,c,crp,lgop);
-
+		    lines,angle,c,rotate270_rotateclip(clip),lgop);
 }
 
 /******* Bitmap rotation */

@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.96 2002/10/09 03:26:34 micahjd Exp $
+/* $Id: video.h,v 1.97 2002/10/09 17:27:12 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -444,17 +444,22 @@ struct vidlib {
 		   s16 lgop);
 
   /* Reccomended on platforms that are usually rotated
-   *   Rotate a bitmap while copying. All coordinates including source x,y
-   *   are interpreted as if the bitmap is already rotated!
-   *   This does not handle tiling, the caller must assure to properly clip to
-   *   the source bitmap accounting for the rotation.
+   *   Copy a source rectangle (in the source bitmap's coordinates)
+   *   rotated to a new angle. The source x,y is always anchored at
+   *   the destination x,y and rotation is performed anticlockwise about
+   *   this point. This function is also responsible for clipping the rotated
+   *   bitmap into that rectangle. On most platforms this will only support
+   *   rotating by multiples of 90 degrees, but it may support arbitrary
+   *   rotation as well. Note that this function is _not_ responsible
+   *   for clipping the source rectangle, but since it is in normal
+   *   bitmap coordinates it shouldn't be hard for the caller to do that
+   *   if necessary.
    *
-   * Default implementation: Assumes linear bitmap, has code for
-   *                         all common bit depths
+   * Default implementation: pixel()
    */
-  void (*rotateblit)(hwrbitmap dest, s16 dest_x, s16 dest_y, s16 w, s16 h,
-		     hwrbitmap src, s16 src_x, s16 src_y,
-		     s16 angle, s16 lgop);
+  void (*rotateblit)(hwrbitmap dest, s16 dest_x, s16 dest_y,
+		     hwrbitmap src, s16 src_x, s16 src_y, s16 src_w, s16 src_h,
+		     struct quad *clip, s16 angle, s16 lgop);
  
   void (*ellipse) (hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
   void (*fellipse) (hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
@@ -699,9 +704,9 @@ void def_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 		  s16 lgop);
 void def_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 		    s16 src_x, s16 src_y, s16 lgop);
-void def_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y, s16 w, s16 h,
-		    hwrbitmap src, s16 src_x, s16 src_y,
-		    s16 angle, s16 lgop);
+void def_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y,
+		    hwrbitmap src, s16 src_x, s16 src_y, s16 src_w, s16 src_h,
+		    struct quad *clip, s16 angle, s16 lgop);
 void def_sprite_protectarea(struct quad *in,struct sprite *from);
 g_error def_bitmap_loadxbm(hwrbitmap *bmp,const u8 *data, s16 w, s16 h,
 			   hwrcolor fg, hwrcolor bg);
@@ -805,6 +810,7 @@ bool gif_detect(const u8 *data, u32 datalen);
 g_error gif_load(hwrbitmap *bmp, const u8 *data, u32 datalen);
 
 /* Rotate an existing bitmap by the given angle, reallocating it.
+ * Only supports angles 0,90,180,270
  */
 g_error bitmap_rotate(hwrbitmap *pbit, s16 angle);
 

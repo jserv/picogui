@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.30 2002/10/09 03:26:34 micahjd Exp $
+/* $Id: rotate90.c,v 1.31 2002/10/09 17:27:15 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -33,6 +33,18 @@
 #include <pgserver/appmgr.h>
 #include <pgserver/render.h>
 
+struct quad *rotate90_rotateclip(struct quad *clip) {
+  static struct quad cr;
+  if (clip) {
+    cr.x1 = clip->y1;
+    cr.y1 = vid->yres-1-clip->x2;
+    cr.x2 = clip->y2;
+    cr.y2 = vid->yres-1-clip->x1;
+    return &cr;
+  }
+  return NULL;
+}
+ 
 /******* Simple wrapper functions */
 
 void rotate90_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
@@ -116,32 +128,24 @@ void rotate90_line(hwrbitmap dest,s16 x1,s16 y1,s16 x2,
 void rotate90_blit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
 		   hwrbitmap src,s16 src_x,s16 src_y,
 		   s16 lgop) {
-   s16 bw,foo;
-   s16 dx,dy;
-   (*vid->bitmap_getsize)(dest,&dx,&dy);
-   (*vid->bitmap_getsize)(src,&foo,&bw);
-
-   (*vid->blit)(dest,dest_y,dy-dest_x-w,h,w,
-		src,src_y,bw-src_x-w,lgop);
-}
-void rotate90_rotateblit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
-			 hwrbitmap src,s16 src_x,s16 src_y,
-			 s16 angle, s16 lgop) {
    s16 bw,bh;
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
    (*vid->bitmap_getsize)(src,&bw,&bh);
 
-   /* The dimensions of the blit on the source bitmap are different if we're
-    * rotating by an odd multiple of 90 degrees.
-    */
-   if (angle==90 || angle==270)
-     src_x = bw-src_x-w;
-   else
-     src_x = bh-src_x-w;
-
-   (*vid->rotateblit)(dest,dest_y,dy-dest_x-w,h,w,
-		      src,src_y,src_x,angle,lgop);
+   (*vid->blit)(dest,dest_y,dy-dest_x-w,h,w,
+		src,src_y,bh-src_x-w,lgop);
+}
+void rotate90_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y,
+			 hwrbitmap src, s16 src_x, s16 src_y, s16 src_w, s16 src_h,
+			 struct quad *clip, s16 angle, s16 lgop) {
+  s16 dw,dh;
+  s16 bw,bh;
+  vid->bitmap_getsize(dest,&dw,&dh);
+  vid->bitmap_getsize(src,&bw,&bh);
+  vid->rotateblit(dest,dest_y,dh-dest_x-1,
+		  src,src_x,src_y,src_w,src_h,
+		  rotate90_rotateclip(clip),angle,lgop);
 }
 void rotate90_scrollblit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
 			 hwrbitmap src,s16 src_x,s16 src_y,
@@ -220,20 +224,8 @@ void rotate90_multiblit(hwrbitmap dest,s16 dest_x,s16 dest_y,
 void rotate90_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
 		       s16 w,s16 h,s16 lines,s16 angle,hwrcolor c,
 		       struct quad *clip, s16 lgop) {
-   struct quad cr;
-   struct quad *crp;
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
-   
-   if (clip) {
-      cr.x1 = clip->y1;
-      cr.y1 = vid->yres-1-clip->x2;
-      cr.x2 = clip->y2;
-      cr.y2 = vid->yres-1-clip->x1;
-      crp = &cr;
-   }
-   else
-     crp = NULL;
    
    /* Rotate the text */
    angle += 90;
@@ -241,7 +233,7 @@ void rotate90_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
    if (angle<0) angle += 360;
    
    (*vid->charblit)(dest,chardat,dest_y,dy-1-dest_x,w,h,
-		    lines,angle,c,crp,lgop);
+		    lines,angle,c,rotate90_rotateclip(clip),lgop);
 }
 
 /******* Bitmap rotation */

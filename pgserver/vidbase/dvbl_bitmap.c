@@ -1,4 +1,4 @@
-/* $Id: dvbl_bitmap.c,v 1.11 2002/10/09 03:26:34 micahjd Exp $
+/* $Id: dvbl_bitmap.c,v 1.12 2002/10/09 17:27:12 micahjd Exp $
  *
  * dvbl_bitmap.c - This file is part of the Default Video Base Library,
  *                 providing the basic video functionality in picogui but
@@ -111,50 +111,43 @@ g_error def_bitmap_load(hwrbitmap *bmp,const u8 *data,u32 datalen) {
  * would look crappy :)
  *
  * Oh, and this code is also really slow, since it uses the dreaded pixel()...
+ * It is necessary for compatibility, and should serve as a good base for
+ * an optimized version.
  */
-void def_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y, s16 w, s16 h,
-		    hwrbitmap src, s16 src_x, s16 src_y,
-		    s16 angle, s16 lgop) {
-  int i,j,sx,sy,dx,dy,isx,isy;
+void def_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y,
+		    hwrbitmap src, s16 src_x, s16 src_y, s16 src_w, s16 src_h,
+		    struct quad *clip, s16 angle, s16 lgop) {
+  int i,j,sx,sy,dx,dy;
   int a,b,c,d;   /* Rotation matrix */
-
-  printf("blit: copying from %d,%d -> %d,%d,%d,%d at angle %d\n",src_x,src_y,dest_x,dest_y,w,h,angle);
 
   /* Normalize the angle */
   angle %= 360;
   if (angle<0) angle += 360;
 
+  /* For each angle, set the rotation matrix */
   switch (angle) {
-
-    /* 0 angle falls through to normal blit */
   case 0:
-    vid->blit(dest,dest_x,dest_y,w,h,src,src_x,src_y,lgop);
-    return;
-
-    /* For each angle, set the rotation matrix */
+    /*   x       y        */
+    a =  1; b =  0; /* x' */
+    c =  0; d =  1; /* y' */
+    break;
 
   case 90:
     /*   x       y        */
-    a =  0; b = -1; /* x' */
-    c =  1; d =  0; /* y' */
-    isx = h-1 - src_y;
-    isy = src_x;
+    a =  0; b =  1; /* x' */
+    c = -1; d =  0; /* y' */
     break;
 
   case 180:
     /*   x       y        */
     a = -1; b =  0; /* x' */
     c =  0; d = -1; /* y' */
-    isx = w-1 - src_x;
-    isy = h-1 - src_y;
     break;
 
   case 270:
     /*   x       y        */
-    a =  0; b =  1; /* x' */
-    c = -1; d =  0; /* y' */
-    isx = src_y;
-    isy = w-1 - src_x;
+    a =  0; b = -1; /* x' */
+    c =  1; d =  0; /* y' */
     break;
 
   default:
@@ -164,20 +157,21 @@ void def_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y, s16 w, s16 h,
   /* Blitter loop, moving the destination as normal,
    * but using the rotation matrix above to move the source.
    */
-  for (j=h;j;j--) {
-    sx = isx;
+  for (j=src_h,sy=src_y;j;j--,sy++) {
     dx = dest_x;
-    sy = isy;
     dy = dest_y;
-    for (i=w;i;i--) {
-      vid->pixel(dest,dx,dy,vid->getpixel(src,sx,sy),PG_LGOP_NONE);
-      dx++;
-      sx += a;
-      sy += c;
+    for (i=src_w,sx=src_x;i;i--,sx++) {
+      /* Cheesyclip (tm)
+       * Hopefully the individual drivers will do this better...
+       */
+      if (dx >= clip->x1 && dx <= clip->x2 &&
+	  dy >= clip->y1 && dy <= clip->y2)
+	vid->pixel(dest,dx,dy,vid->getpixel(src,sx,sy),PG_LGOP_NONE);
+      dx += a;
+      dy += c;
     }
-    dest_y++;
-    isx += b;
-    isy += d;
+    dest_x += b;
+    dest_y += d;
   }
 }
 
