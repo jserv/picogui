@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.66 2003/03/10 23:48:07 micahjd Exp $
+/* $Id: handle.c,v 1.67 2003/03/23 22:54:39 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -773,6 +773,15 @@ g_error handle_dup(handle *dest, int owner, handle src) {
   case PG_TYPE_WT:
     e = wt_instantiate(dest, (struct pgmemwt *) n->obj, src, owner);
     errorcheck;
+    break;
+
+  case PG_TYPE_ARRAY:
+  case PG_TYPE_PALETTE:
+    e = g_malloc(&newobj, (((u32*)n->obj)[0] + 1) * sizeof(u32));
+    errorcheck;
+    e = mkhandle(dest,n->type & PG_TYPEMASK,owner,newobj);
+    errorcheck;
+    memcpy(newobj, n->obj, (((u32*)n->obj)[0] + 1) * sizeof(u32));
     break;
 
   default:
