@@ -235,7 +235,7 @@ int clickski(struct pgEvent *evt)
 	  redraw(evt);
 	  pgUpdate();
 	  pgBind(evt->from,PG_WE_PNTR_DOWN,&clickski2,NULL);
-	  pgMessageDialogFmt("BWAHAHAHA!",PG_MSGBTN_OK ,"YOU LOSE BY %d POINTS",17-aivalues.play_points);
+	  pgMessageDialogFmt("ERROR",PG_MSGBTN_OK ,"YOU NEED TO KEEP YOUR SHIPS");
 	  quoe(10);
 	  picked_color = 0;
 	}
