@@ -1,4 +1,4 @@
-/* $Id: video_drivers.c,v 1.18 2003/03/23 10:13:49 micahjd Exp $
+/* $Id: video_drivers.c,v 1.19 2003/03/23 21:19:54 micahjd Exp $
  *
  * video_drivers.c - handles loading/switching video drivers and modes
  *
@@ -290,8 +290,8 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
 
      /* Default VGA 16-color palette, copied from the Linux console */
      static const u32 default_palette[] = {
-       0x000000, 0x0000aa, 0x00aa00, 0x0055aa, 0xaa0000, 0xaa00aa, 0xaaaa00, 0xaaaaaa,
-       0x555555, 0x5555ff, 0x55ff55, 0x55ffff, 0xff5555, 0xff55ff, 0xffff55, 0xffffff,
+       0x000000, 0xaa0000, 0x00aa00, 0xaaaa00, 0x0000aa, 0xaa00aa, 0x00aaaa, 0xaaaaaa,
+       0x555555, 0xff5555, 0x55ff55, 0xffff55, 0x5555ff, 0xff55ff, 0x55ffff, 0xffffff,
      };
 
      /* Allocate space for textcolors if we haven't already */

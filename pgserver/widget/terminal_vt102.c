@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.15 2003/03/23 11:32:55 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.16 2003/03/23 21:19:55 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -572,13 +572,13 @@ void term_ecma48sgr(struct widget *self) {
       break;
       
       /* 30 through 37 - foreground colors */
-    case 30: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x00; break;  /* These are kinda funky, */
-    case 31: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x04; break;  /* because VT100 uses BGR */
-    case 32: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x02; break;  /* for the colors instead */
-    case 33: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x06; break;  /* of RGB */
-    case 34: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x01; break;
+    case 30: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x00; break;
+    case 31: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x01; break;
+    case 32: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x02; break;
+    case 33: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x03; break;
+    case 34: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x04; break;
     case 35: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x05; break;
-    case 36: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x03; break;
+    case 36: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x06; break;
     case 37: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x07; break;
 
       /* 38 - set default foreground, underline on */
@@ -593,12 +593,12 @@ void term_ecma48sgr(struct widget *self) {
 
       /* 40 through 47 - background colors */
     case 40: DATA->current.attr = (DATA->current.attr & 0x1F) | 0x00; break;
-    case 41: DATA->current.attr = (DATA->current.attr & 0x1F) | 0x40; break;
+    case 41: DATA->current.attr = (DATA->current.attr & 0x1F) | 0x10; break;
     case 42: DATA->current.attr = (DATA->current.attr & 0x1F) | 0x20; break;
-    case 43: DATA->current.attr = (DATA->current.attr & 0x1F) | 0x60; break;
-    case 44: DATA->current.attr = (DATA->current.attr & 0x1F) | 0x10; break;
+    case 43: DATA->current.attr = (DATA->current.attr & 0x1F) | 0x30; break;
+    case 44: DATA->current.attr = (DATA->current.attr & 0x1F) | 0x40; break;
     case 45: DATA->current.attr = (DATA->current.attr & 0x1F) | 0x50; break;
-    case 46: DATA->current.attr = (DATA->current.attr & 0x1F) | 0x30; break;
+    case 46: DATA->current.attr = (DATA->current.attr & 0x1F) | 0x60; break;
     case 47: DATA->current.attr = (DATA->current.attr & 0x1F) | 0x70; break;
 
       /* 49 - default background */
