@@ -1,4 +1,4 @@
-/* $Id: ericsson_cb.c,v 1.9 2002/05/22 10:01:20 micahjd Exp $
+/* $Id: ericsson_cb.c,v 1.10 2002/05/28 14:20:29 bornet Exp $
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -640,7 +640,6 @@ static int editting(void)
   case PG_WIDGET_LABEL:
   case PG_WIDGET_SCROLL:
   case PG_WIDGET_INDICATOR:
-  case PG_WIDGET_BITMAP:
   case PG_WIDGET_BUTTON:
   case PG_WIDGET_PANEL:
   case PG_WIDGET_POPUP:
