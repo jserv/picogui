@@ -106,7 +106,7 @@ class PgFillstyle:
     return res+self.source+'    }'
   def formula(self, value):
     if value[1] in ('int', 'literal', 'xsize', 'ysize', 'var',
-    	'bitmap'):
+    	'bitmap', 'string', 'font'):
       return str(value[0])
     elif value[1]=='direction':
       return lookup_constname('PG_DIR_', value[0])
@@ -160,30 +160,30 @@ class PgFillstyle:
       if not params:
 	self.source=self.source[:-2]
     if params:
+      arg=self.stack[-params:]
+      del self.stack[-params:]
       if gropcode == constants['PG_GROP_SETCOLOR']:
-	value=self.stack.pop()
-	self.assigntype(value,'color')
-	self.source=self.source+self.formula(value)
+	self.assigntype(arg[0],'color')
+      elif gropcode == constants['PG_GROP_SETANGLE']:
+	self.assigntype(arg[0],'direction')
+      elif gropcode == constants['PG_GROP_SETFONT']:
+        self.assigntype(arg[0],'font')
+      elif gropcode == constants['PG_GROP_TEXT']:
+        self.assigntype(arg[0],'string')
       elif gropcode == constants['PG_GROP_SETLGOP']:
-	value=self.stack.pop()
-	self.assigntype(value,'lgop')
-	self.source=self.source+self.formula(value)
+	self.assigntype(arg[0],'lgop')
       elif gropcode in (constants['PG_GROP_BITMAP'],
       		constants['PG_GROP_TILEBITMAP']):
-	value=self.stack.pop()
-	self.assigntype(value,'bitmap')
-	self.source=self.source+self.formula(value)
+	self.assigntype(arg[0],'bitmap')
       elif gropcode == constants['PG_GROP_GRADIENT']:
-	col2=self.stack.pop()
-	self.assigntype(col2,'color')
-	col1=self.stack.pop()
-	self.assigntype(col1,'color')
-	dir=self.stack.pop()
-	self.assigntype(dir,'direction')
-	self.source=self.source+self.formula(dir)+", "+self.formula(col1)+ \
-		", "+self.formula(col2)
+	self.assigntype(arg[0],'direction')
+	self.assigntype(arg[1],'color')
+	self.assigntype(arg[2],'color')
       else:
 	raise "Unimplemented gropnode %s"%lookup_constname('PG_GROP_', gropcode)
+      while len(arg):
+        self.source=self.source+self.formula(arg.pop(0))+', '
+      self.source=self.source[:-2]
     self.source=self.source+");\n"
     if not PG_GROP_IS_UNPOSITIONED(gropcode):
       self.stack.pop()		# H
@@ -208,9 +208,14 @@ class PgFillstyle:
       # TODO: proper naming of the vars
       opcode=ord(bytecode[p])
       p=p+1
+      # For debugging.
+      #print self.source,'stack:',self.stack,'\nvars:',self.localvars, \
+      #	'op:',opcode
       # This should handle variables reasonably well
       while len(self.stack)<len(self.localvars):
-	self.localvars.pop()
+        pop=self.localvars.pop()
+	if pop[1] != 'unref':
+	  raise "Referenced variable %s(%s) popped!"%(pop[0],pop[1])
       if len(self.stack)-3 == p and opcode==constants['PGTH_OPSIMPLE_LITERAL']:
 	self.localvars.append(["l%02d"%(len(self.localvars)-3), 'unref'])
         self.stack.append([0, 'literal'])
@@ -252,6 +257,14 @@ class PgFillstyle:
 	  fsb=self.stack.pop()
 	  fsa=self.stack.pop()
 	  self.stack.append(['>>', 'operator', fsa, fsb])
+	elif opcode == constants['PGTH_OPCMD_AND']:
+	  fsb=self.stack.pop()
+	  fsa=self.stack.pop()
+	  self.stack.append(['&', 'operator', fsa, fsb])
+	elif opcode == constants['PGTH_OPCMD_OR']:
+	  fsb=self.stack.pop()
+	  fsa=self.stack.pop()
+	  self.stack.append(['|', 'operator', fsa, fsb])
 	elif opcode == constants['PGTH_OPCMD_PLUS']:
 	  fsb=self.stack.pop()
 	  fsa=self.stack.pop()
@@ -309,6 +322,7 @@ class PgRequest:
     if self.type == constants['PGREQ_MKFONT']:
       (self.name, self.style, self.size) = unpack(PgReqFontFmt, \
       		themestr[p+PgReqLen:p+PgReqLen+PgReqFontLen])
+      self.name=self.name.split('\0',1)[0]
       return self
     elif self.type == constants['PGREQ_MKSTRING']:
       return themestr[p+PgReqLen:p+PgReqLen+size]
