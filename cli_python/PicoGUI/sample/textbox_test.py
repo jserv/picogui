@@ -67,7 +67,20 @@ wish you were here
 
 -- The End --"""
 
-def stream(ev, w):
+is_posting = None
+
+def h_char(ev, w):
+    print 'received %r' % ev
+    if is_posting:
+        print '(inserting)'
+        w.stream(ev.char)
+
+def h_keydown(ev, w):
+    print 'received %r' % ev
+
+def h_keyup(ev, w):
+    print 'received %r' % ev
+    global is_posting
     if ev.hasMod('ctrl'):
         if ev.char == 's':
             # stream
@@ -75,10 +88,30 @@ def stream(ev, w):
         elif ev.char == 'n':
             # nuke
             w.nuke()
+        elif ev.char == 'x':
+            if is_posting:
+                is_posting = None
+                w.extdevents = is_posting
+                print 'switched to server-side kbd handling'
+            else:
+                is_posting = 'kbd'
+                w.extdevents = is_posting
+                print 'switched to client-side kbd handling'
+        elif ev.char == 'k':
+            if is_posting:
+                is_posting = None
+                w.extdevents = is_posting
+                print 'switched to server-side kbd handling'
+            else:
+                is_posting = 'char'
+                w.extdevents = is_posting
+                print 'switched to client-side char handling'
         elif ev.char == ' ':
             print 'no status to display'
 
-app.link(stream, tb, 'kbd keyup')
+app.link(h_char, tb, 'kbd char')
+app.link(h_keyup, tb, 'kbd keyup')
+app.link(h_keydown, tb, 'kbd keydown')
 
 app.run()
 print "Testing text readback:\n\n\"" + tb.text
