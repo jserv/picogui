@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.9 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: widget.h,v 1.10 2000/04/29 22:34:50 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -149,7 +149,7 @@ struct widget {
   glob n##_get(struct widget *self, int property);
 
 /* Widget prototypes */
-DEF_STATICWIDGET_PROTO(panel)      /* A simple container widget */
+DEF_STATICWIDGET_PROTO(toolbar)      /* A simple container widget */
 DEF_STATICWIDGET_PROTO(scroll)
 DEF_STATICWIDGET_PROTO(label)      /* Text, resizes to fit */
 DEF_STATICWIDGET_PROTO(indicator)
@@ -157,7 +157,7 @@ DEF_STATICWIDGET_PROTO(bitmap)
 DEF_WIDGET_PROTO(button)
 
 /* Types of widgets (in the same order they are in the table in widget.c) */
-#define WIDGET_PANEL      0
+#define WIDGET_TOOLBAR    0
 #define WIDGET_LABEL      1
 #define WIDGET_SCROLL     2
 #define WIDGET_INDICATOR  3
