@@ -164,27 +164,6 @@ class Package:
                 "Can't find version '%s' of package '%s'" % (version, self.name))
         return self.versions[matches[-1]]
 
-    def getVersionNode(self, packageNode):
-        """Given a package node, return the version node that
-           best matches our version spec."""
-        packageName = packageNode.attributes['name'].value
-
-        # Get a list of package versions that match according to self.match()
-        matches = []
-        for version in versions:
-            if self.match(version.attributes['name'].value):
-                matches.append(version)
-
-        # FIXME: we don't support ambiguous version specs yet.
-        #        Eventually there should be a good way to determine which version is 'better'
-        #        and pick that one.
-        if len(matches) > 1:
-            raise PGBuild.Errors.ConfigError(
-                "Ambiguous version specification '%s' for package '%s', not supported yet" %
-                (self.specString, packageName))
-        
-        return matches[0]
-
 
 def splitPackageName(name):
     """Split a package name into a (name,version) tuple. If there
