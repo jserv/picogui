@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.13 2000/10/08 06:13:43 micahjd Exp $
+/* $Id: pgtheme.y,v 1.14 2000/10/08 09:00:50 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -79,22 +79,11 @@
    /* Reserved words */
 %token OBJ FILLSTYLE VAR SHIFTR SHIFTL
 
-%nonassoc CONSTPROMOTE
-
 %left '|'
 %left '&'
 %left SHIFTL SHIFTR
 %left '-' '+'
 %left '*' '/'
-%nonassoc CONSTPAREN
-
-    /* Reduces the stack space used by fillstyles */
-%left VAROR
-%left VARAND
-%left VARSHIFT
-%left VARPLUS
-%left VARMULT
-%nonassoc VARPAREN
 
 %start unitlist
 
@@ -210,7 +199,7 @@ constexp: constexp '+' constexp { $$ = $1 + $3; }
 	    yyerror("Divide by zero");
 	  else
 	    $$ = $1 / $3; }
-        | '(' constexp ')' { $$ = $2; }  %prec CONSTPAREN
+        | '(' constexp ')' { $$ = $2; }
         | NUMBER
 	//	| UNKNOWNSYM            { $$ = 0; }
         ;
@@ -220,11 +209,13 @@ constexp: constexp '+' constexp { $$ = $1 + $3; }
 fillstyle: FILLSTYLE  { yyerror("fillstyle requires parameters"); }
          | FILLSTYLE '{' '}' { yyerror("empty fillstyle"); }
          | FILLSTYLE '{' fsbody '}' {
-  struct fsnode *p = $3;
+  struct fsnode *p;
   unsigned char *buf,*bp;
   unsigned long bufsize=512;
   struct pgrequest *req;
   long t;
+
+  if (!$3) return;
 
   /* Allocate the fillstyle buffer */
   if (!(bp = buf = malloc(bufsize)))
@@ -236,7 +227,33 @@ fillstyle: FILLSTYLE  { yyerror("fillstyle requires parameters"); }
   memset(req,0,sizeof(struct pgrequest));
   req->type = htons(PGREQ_MKFILLSTYLE);
 
+  /* FIXME: Fix this optimizer later... */
+#if 0
+  /* Run an optimization pass through the opcode
+     list, using two symbols of lookahead */
+
+  p = $3;
+  before = &$3;
+  while (p->next) {    /* Loop through tokens */
+    while (p->next) {  /* Optimize completely */
+      la1 = p->next;
+      la2 = la1->next;
+      
+      /* two-symbol optimizations */
+      if (p->op == PGTH_OPCMD_LONGLITERAL &&
+	  p->param == 0 &&
+	  la1->op == PGTH_OPCMD_PLUS)
+	*before = p->next->next;      /* Skip 2 tokens */
+
+    }
+    p = p->next;
+    before = &p->next;
+  }
+#endif
+
   /* Transcribe the fsnodes into real opcodes */
+
+  p = $3;
   while (p) {
     
     /* Check buffer size */
@@ -351,17 +368,17 @@ fsarglist:                     { $$ = NULL; }
          | fsarglist ',' fsexp { $$ = fsnodecat($1,$3); }
          ;
 
-fsexp: '(' fsexp ')'    { $$ = $2; } %prec VARPAREN 
-     | fsexp '+' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_PLUS)); } %prec VARPLUS  
-     | fsexp '-' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_MINUS)); } %prec VARPLUS 
-     | fsexp '*' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_MULTIPLY)); } %prec VARMULT  
-     | fsexp '/' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_DIVIDE)); } %prec VARMULT  
-     | fsexp '|' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_OR)); } %prec VAROR  
-     | fsexp '&' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_AND)); } %prec VARAND  
-     | fsexp SHIFTL fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_SHIFTL)); } %prec VARSHIFT 
-     | fsexp SHIFTR fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_SHIFTR)); } %prec VARSHIFT 
-     | constexp            { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = $1; }          %prec CONSTPROMOTE     
-     | FSVAR            { $$ = fsnewnode(PGTH_OPCMD_LONGGET); $$->param = $1; }
+fsexp: '(' fsexp ')'    { $$ = $2; }
+     | fsexp '+' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_PLUS)); }
+     | fsexp '-' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_MINUS)); }
+     | fsexp '*' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_MULTIPLY)); }
+     | fsexp '/' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_DIVIDE)); }
+     | fsexp '|' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_OR)); }
+     | fsexp '&' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_AND)); }
+     | fsexp SHIFTL fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_SHIFTL)); }
+     | fsexp SHIFTR fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_SHIFTR)); }
+     | NUMBER              { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = $1; }     
+     | FSVAR               { $$ = fsnewnode(PGTH_OPCMD_LONGGET); $$->param = $1; }
      ;
 
 %%

@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.9 2000/10/08 06:13:43 micahjd Exp $
+/* $Id: main.c,v 1.10 2000/10/08 09:00:50 micahjd Exp $
  *
  * main.c - main() and some parser utility functions for
  *          the PicoGUI theme compiler.  The actual parsing
@@ -113,7 +113,7 @@ int symlookup(const char *sym,unsigned long *value) {
     }
     n++;
   }
-  if (value) *value = strdup(sym);
+  if (value) *value = (unsigned long) strdup(sym);
   return UNKNOWNSYM;
 }
 

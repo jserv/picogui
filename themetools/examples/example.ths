@@ -2,9 +2,12 @@
    theme file */
 
 obj default bgfill = fillstyle {
-  /*  var z;
-      x = 1; */
-  rect(1,2,(1+1+1+1+1+1+1)>>2,2);
+  var z,foo=2340;
+  var bar = 0x25;
+
+  x = 2+x;
+  Rect(1,2,(foo+1+1+1+1+1+1)>>2,2);
+  Null(bar);
 };
 
 obj button.on bgcolor = 5;
