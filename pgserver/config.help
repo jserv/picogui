@@ -370,3 +370,6 @@ CONFIG_X11_DEFAULTELLIPSE
       This is fast, however the result is usually a little different than
       that of the built in ellipse code. This option causes the driver
       to use the built-in ellipse functions rather than X.
+
+CONFIG_X11_CURSOR
+      Disable PicoGUI's cursor drawing, and allow X to draw the mouse cursor

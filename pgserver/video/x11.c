@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.6 2001/11/20 12:51:20 micahjd Exp $
+/* $Id: x11.c,v 1.7 2001/11/20 23:44:15 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -66,6 +66,8 @@ GC x11_gctab[PG_LGOPMAX+1];
 
 /* Hook for handling expose events from the input driver */
 void x11_expose(int x, int y, int w, int h);
+
+void x11_blankcursor(void);
 
 /******************************************** Implementations */
 
@@ -160,6 +162,10 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
   vid->display = (hwrbitmap) &x11_display;
 #endif
 
+#ifndef CONFIG_X11_CURSOR
+  x11_blankcursor();
+#endif
+
   /* Set the window title
    */
   sprintf(title,get_param_str("video-x11","caption","PicoGUI (X11@%dx%dx%d)"),
@@ -183,6 +189,25 @@ void x11_close(void) {
   XCloseDisplay(xdisplay);
   xdisplay = NULL;
 }
+
+#ifndef CONFIG_X11_CURSOR
+void x11_blankcursor(void) {
+  XColor black, white;
+  Pixmap p;
+  Cursor c;
+  GC g;
+
+  p = XCreatePixmap(xdisplay,x11_display.d,8,8,1);
+  g = XCreateGC(xdisplay,p,0,NULL);
+  XFillRectangle(xdisplay,p,g,0,0,8,8);
+
+  black.red = black.green = black.blue = 0x0000;
+  white.red = white.green = white.blue = 0xFFFF;
+
+  c = XCreatePixmapCursor(xdisplay,p,p,&black,&white,0,0);
+  XDefineCursor(xdisplay, x11_display.d, c);
+}
+#endif
 
 void x11_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
   struct x11bitmap *xb = (struct x11bitmap *) dest;
