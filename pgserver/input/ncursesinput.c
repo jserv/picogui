@@ -1,4 +1,4 @@
-/* $Id: ncursesinput.c,v 1.9 2001/01/20 09:31:11 micahjd Exp $
+/* $Id: ncursesinput.c,v 1.10 2001/01/20 22:00:30 micahjd Exp $
  *
  * ncursesinput.h - input driver for ncurses
  * 
@@ -133,15 +133,11 @@ int ncursesinput_fd_activate(int fd) {
 	 if (vid->xres>200) {    /* For stupid scale hack */
 	    evt.x = pointer->x + (evt.dx << SCALEHACK);
 	    evt.y = pointer->y + (evt.dy << SCALEHACK);
+	    gpm_mx = vid->xres;
+	    gpm_my = vid->yres;
+	    Gpm_FitEvent(&evt);
 	 }
-	 else {
-	    evt.x = pointer->x + evt.dx;
-	    evt.y = pointer->y + evt.dy;
-	 }
-	 gpm_mx = vid->xres;
-	 gpm_my = vid->yres;
-	 Gpm_FitEvent(&evt);
-	 
+
 	 /* Maybe movement outside of window or on another VT */
 	 if ((evt.type & (GPM_MOVE|GPM_DRAG)) && 
 	     (evt.x==ncurses_last_event.x) &&

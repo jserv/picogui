@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.34 2001/01/20 09:51:58 micahjd Exp $
+/* $Id: grop.c,v 1.35 2001/01/20 22:00:30 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -330,15 +330,45 @@ void grop_render(struct divnode *div) {
      */
     if (incflag) {
        struct cliprect lcr;
-       lcr.x1 = x;
-       lcr.y1 = y;
-       lcr.x2 = x+w-1;
-       lcr.y2 = y+h-1;
-       
-       (*vid->sprite_protectarea)(&lcr,spritelist);
-       
-       /* "dirty" this region of the screen so the blits notice it */
-       add_updarea(x,y,w,h);
+       if (type == PG_GROP_LINE) {
+	  /* Lines are "special" */
+	  int xx,yy,xx2,yy2;
+	  if (w<0) {
+	     xx2 = x;
+	     xx = x+w;
+	  }
+	  else {
+	     xx = x;
+	     xx2 = x+w;
+	  }
+	  if (h<0) {
+	     yy2 = y;
+	     yy = y+h;
+	  }
+	  else {
+	     yy = y;
+	     yy2 = y+h;
+	  }
+
+	  lcr.x1 = xx;
+	  lcr.y1 = yy;
+	  lcr.x2 = xx2;
+	  lcr.y2 = yy2;
+	  
+	  /* "dirty" this region of the screen so the blits notice it */
+	  add_updarea(xx,yy,xx2-xx+1,yy2-yy+1);
+       }
+       else {
+	  lcr.x1 = x;
+	  lcr.y1 = y;
+	  lcr.x2 = x+w-1;
+	  lcr.y2 = y+h-1;
+	  
+	  /* "dirty" this region of the screen so the blits notice it */
+	  add_updarea(x,y,w,h);
+       }
+
+     (*vid->sprite_protectarea)(&lcr,spritelist);	  
     }
      
     switch (type) {

@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.17 2001/01/20 09:52:00 micahjd Exp $
+/* $Id: memtheme.c,v 1.18 2001/01/20 22:00:30 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -184,17 +184,18 @@ unsigned long theme_lookup(unsigned short object,
 /* Given a divnode, it uses the 'build' member function to rebuild
    the node's groplist */
 void div_rebuild(struct divnode *d) {
-  struct gropctxt c;
-
-  if (!d->build) return;
-  grop_free(&d->grop);
-  gropctxt_init(&c,d);
-  (*d->build)(&c,d->state,d->owner);
-  if (!c.delayrend) {
-     d->flags |= DIVNODE_NEED_REDRAW;
-     if (d->owner)
-       d->owner->dt->flags |= DIVTREE_NEED_REDRAW;
-  }
+   struct gropctxt c;
+   
+   if (!d->build) return;
+   if (d->owner->type != PG_WIDGET_CANVAS)
+     grop_free(&d->grop);
+   gropctxt_init(&c,d);
+   (*d->build)(&c,d->state,d->owner);
+   if (!c.delayrend) {
+      d->flags |= DIVNODE_NEED_REDRAW;
+      if (d->owner)
+	d->owner->dt->flags |= DIVTREE_NEED_REDRAW;
+   }
 }
 
 /* Change a divnode's state, and update the necessary things. */
