@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.7 2000/10/15 03:46:13 micahjd Exp $
+/* $Id: constants.h,v 1.8 2000/10/15 15:37:06 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -174,22 +174,23 @@ typedef unsigned long pghandle;
 #define PGTH_O_BUTTON_ON           5    /* Button, mouse is pressed */
 #define PGTH_O_TOOLBAR             6    /* The toolbar widget */
 #define PGTH_O_SCROLL              7    /* The non-movable part of a scrollbar widget */
-#define PGTH_O_SCROLL_THUMB        8    /* The thumb (movable part of a scrollbar) */
+#define PGTH_O_THUMB               8    /* The thumb (movable part of a scrollbar) */
 #define PGTH_O_INDICATOR           9    /* The indicator widget */
 #define PGTH_O_PANEL               10   /* The background portion of a panel */
-#define PGTH_O_PANEL_BAR           11   /* The draggable titlebar of a panel */
+#define PGTH_O_PANELBAR            11   /* The draggable titlebar of a panel */
 #define PGTH_O_POPUP               12   /* Popup window */
 #define PGTH_O_BACKGROUND          13   /* Background widget bitmap */
-#define PGTH_O_BASE_TEXT           14   /* Base for widgets that mostly display text */
+#define PGTH_O_BASE_DISPLAY        14   /* Base for widgets that mostly display stuff */
 #define PGTH_O_BASE_TLCONTAINER    15   /* Top-level containers like popups, panels */ 
 #define PGTH_O_THEMEINFO           16   /* Information about the theme that should be
 					   loaded into memory, like the name */
 #define PGTH_O_LABEL               17   /* The label widget */
 #define PGTH_O_FIELD               18   /* The field widget */
+#define PGTH_O_BITMAP              19   /* The bitmap widget */
 
 /* If you add a themeobject, be sure to increment this and add
    an inheritance entry in theme/thobjtab.c */
-#define PGTH_ONUM                  19
+#define PGTH_ONUM                  20
 
 /*** Loaders */
 
@@ -224,6 +225,9 @@ typedef unsigned long pghandle;
 #define PGTH_P_HILIGHTCOLOR 10/*   pgcolor     Color for hilighting an object */
 #define PGTH_P_SHADOWCOLOR 11 /*   pgcolor     Color for shading an object */
 #define PGTH_P_OFFSET     12  /*   int         an amount to displace something by */
+#define PGTH_P_ALIGN      13  /*   alignment   How to position an object's contents */
+#define PGTH_P_BITMAPSIDE 14  /*   side        Bitmap side relative to text (button) */
+#define PGTH_P_BITMAPMARGIN 15/*   int         Spacing between bitmap and text */
 
 /*** Tag IDs */
 
@@ -338,11 +342,12 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_INDICATOR  3
 #define PG_WIDGET_BITMAP     4
 #define PG_WIDGET_BUTTON     5
-#define PG_WIDGET_PANEL      6
-#define PG_WIDGET_POPUP      7
+#define PG_WIDGET_PANEL      6     /* Internal use only! */
+#define PG_WIDGET_POPUP      7     /* Internal use only! */
 #define PG_WIDGET_BOX        8
 #define PG_WIDGET_FIELD      9
-#define PG_WIDGETMAX         9    /* For error checking */
+#define PG_WIDGET_BACKGROUND 10    /* Internal use only! */
+#define PG_WIDGETMAX         10    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1
