@@ -1,4 +1,4 @@
-/* $Id: if_pntr_normalize.c,v 1.8 2002/08/13 08:37:15 micahjd Exp $
+/* $Id: if_pntr_normalize.c,v 1.9 2002/08/22 15:48:38 micahjd Exp $
  *
  * if_pntr_normalize.c - Convert the various pointer events to a standard form
  *
@@ -92,8 +92,11 @@ void infilter_pntr_normalize_handler(struct infilter *self, u32 trigger, union t
 
   /* If we're moving the cursor and this isn't a MOVE event, generate one
    */
-  if ((param->mouse.x != x || param->mouse.y != y) && trigger!=PG_TRIGGER_MOVE)
-    infilter_send(self,PG_TRIGGER_MOVE,param);
+  if ((param->mouse.x != x || param->mouse.y != y) && trigger!=PG_TRIGGER_MOVE) {
+    union trigparam moveparam = *param;
+    moveparam.mouse.btn = param->mouse.cursor->prev_buttons;
+    infilter_send(self,PG_TRIGGER_MOVE,&moveparam);
+  }
 
   /* Detect changes in buttons, and store that along with the event
    */
