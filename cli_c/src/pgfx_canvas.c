@@ -1,4 +1,4 @@
-/* $Id: pgfx_canvas.c,v 1.2 2001/04/14 00:02:22 micahjd Exp $
+/* $Id: pgfx_canvas.c,v 1.3 2001/04/14 07:48:34 micahjd Exp $
  *
  * picogui/pgfx_canvas.c - lib functions and registration for canvas
  *                         drawing through the PGFX interface
@@ -28,46 +28,63 @@
 
 #include "clientlib.h"
 
+/******************************* Utilities */
+
+/* Keep track of gropnode sequence and manage flags */
+pgprim _pgfxcanvas_postprocess(pgcontext c) {
+   if (c->flags == PGFX_IMMEDIATE)
+     pgWriteCmd(c->device,PGCANVAS_GROPFLAGS,1,PG_GROPF_TRANSIENT);
+     
+   return c->sequence++;
+}
+
 /******************************* Generic primitives */
 
 pgprim _pgfxcanvas_pixel(pgcontext c, pgu x,  pgu y) {
    pgWriteCmd(c->device,PGCANVAS_GROP,5,PG_GROP_PIXEL,x,y,1,1);
    pgWriteCmd(c->device,PGCANVAS_SETGROP,1,c->color);
    pgWriteCmd(c->device,PGCANVAS_COLORCONV,1,1);
+   return _pgfxcanvas_postprocess(c);
 }
 
 pgprim _pgfxcanvas_line(pgcontext c, pgu x1, pgu y1, pgu x2, pgu y2) {
    pgWriteCmd(c->device,PGCANVAS_GROP,5,PG_GROP_LINE,x1,y1,x2-x1,y2-y1);
    pgWriteCmd(c->device,PGCANVAS_SETGROP,1,c->color);
    pgWriteCmd(c->device,PGCANVAS_COLORCONV,1,1);
+   return _pgfxcanvas_postprocess(c);
 }
 
 pgprim _pgfxcanvas_rect(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h) {
    pgWriteCmd(c->device,PGCANVAS_GROP,5,PG_GROP_RECT,x,y,w,h);
    pgWriteCmd(c->device,PGCANVAS_SETGROP,1,c->color);
    pgWriteCmd(c->device,PGCANVAS_COLORCONV,1,1);
+   return _pgfxcanvas_postprocess(c);
 }
 
 pgprim _pgfxcanvas_dim(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h) {
    pgWriteCmd(c->device,PGCANVAS_GROP,5,PG_GROP_DIM,x,y,w,h);
+   return _pgfxcanvas_postprocess(c);
 }
 
 pgprim _pgfxcanvas_frame(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h) {
    pgWriteCmd(c->device,PGCANVAS_GROP,5,PG_GROP_FRAME,x,y,w,h);
    pgWriteCmd(c->device,PGCANVAS_SETGROP,1,c->color);
    pgWriteCmd(c->device,PGCANVAS_COLORCONV,1,1);
+   return _pgfxcanvas_postprocess(c);
 }
 
 pgprim _pgfxcanvas_slab(pgcontext c, pgu x,  pgu y,  pgu w) {
    pgWriteCmd(c->device,PGCANVAS_GROP,5,PG_GROP_SLAB,x,y,w,1);
    pgWriteCmd(c->device,PGCANVAS_SETGROP,1,c->color);
    pgWriteCmd(c->device,PGCANVAS_COLORCONV,1,1);
+   return _pgfxcanvas_postprocess(c);
 }
 
 pgprim _pgfxcanvas_bar(pgcontext c, pgu x,  pgu y,  pgu h) {
    pgWriteCmd(c->device,PGCANVAS_GROP,5,PG_GROP_BAR,x,y,1,h);
    pgWriteCmd(c->device,PGCANVAS_SETGROP,1,c->color);
    pgWriteCmd(c->device,PGCANVAS_COLORCONV,1,1);
+   return _pgfxcanvas_postprocess(c);
 }
 
 pgprim _pgfxcanvas_text(pgcontext c, pgu x,  pgu y,  pghandle string,
@@ -75,6 +92,7 @@ pgprim _pgfxcanvas_text(pgcontext c, pgu x,  pgu y,  pghandle string,
    pgWriteCmd(c->device,PGCANVAS_GROP,5,PG_GROP_TEXT,x,y,1,1);
    pgWriteCmd(c->device,PGCANVAS_SETGROP,3,string,font,c->color);
    pgWriteCmd(c->device,PGCANVAS_COLORCONV,1,4);
+   return _pgfxcanvas_postprocess(c);
 }
 
 pgprim _pgfxcanvas_textv(pgcontext c, pgu x,  pgu y,  pghandle string,
@@ -82,12 +100,14 @@ pgprim _pgfxcanvas_textv(pgcontext c, pgu x,  pgu y,  pghandle string,
    pgWriteCmd(c->device,PGCANVAS_GROP,5,PG_GROP_TEXTV,x,y,1,1);
    pgWriteCmd(c->device,PGCANVAS_SETGROP,3,string,font,c->color);
    pgWriteCmd(c->device,PGCANVAS_COLORCONV,1,4);
+   return _pgfxcanvas_postprocess(c);
 }
 
 pgprim _pgfxcanvas_bitmap(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
 			  pghandle bitmap, pgu src_x, pgu src_y, short lgop) {
    pgWriteCmd(c->device,PGCANVAS_GROP,5,PG_GROP_BITMAP,x,y,w,h);
    pgWriteCmd(c->device,PGCANVAS_SETGROP,4,bitmap,lgop,src_x,src_y);
+   return _pgfxcanvas_postprocess(c);
 }
 
 pgprim _pgfxcanvas_tilebitmap(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
@@ -95,6 +115,7 @@ pgprim _pgfxcanvas_tilebitmap(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
 			      pgu src_w, pgu src_h) {
    pgWriteCmd(c->device,PGCANVAS_GROP,5,PG_GROP_TILEBITMAP,x,y,w,h);
    pgWriteCmd(c->device,PGCANVAS_SETGROP,5,bitmap,src_x,src_y,src_w,src_h);
+   return _pgfxcanvas_postprocess(c);
 }
 
 pgprim _pgfxcanvas_gradient(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
@@ -102,10 +123,16 @@ pgprim _pgfxcanvas_gradient(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
 			    short translucent) {
    pgWriteCmd(c->device,PGCANVAS_GROP,5,PG_GROP_GRADIENT,x,y,w,h);
    pgWriteCmd(c->device,PGCANVAS_SETGROP,4,angle,c1,c2,translucent);
+   return _pgfxcanvas_postprocess(c);
 }
 
-pgprim _pgfxcanvas_setcolor(pgcontext c, pgcolor color) {
+void _pgfxcanvas_setcolor(pgcontext c, pgcolor color) {
    c->color = color;
+}
+
+void _pgfxcanvas_update(pgcontext c) {
+   pgWriteCmd(c->device,PGCANVAS_INCREMENTAL,0);
+   pgSubUpdate(c->device);
 }
 
 /******************************* Registration */
@@ -131,6 +158,7 @@ pgcontext pgNewCanvasContext(pghandle canvas,short mode) {
    l.tilebitmap = _pgfxcanvas_tilebitmap;
    l.gradient   = _pgfxcanvas_gradient;
    l.setcolor   = _pgfxcanvas_setcolor;
+   l.update     = _pgfxcanvas_update;
    
    ctx->lib = &l;
    ctx->device = canvas ? canvas : _pgdefault_widget;

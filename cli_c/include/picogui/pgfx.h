@@ -1,4 +1,4 @@
-/* $Id: pgfx.h,v 1.2 2001/04/14 00:02:22 micahjd Exp $
+/* $Id: pgfx.h,v 1.3 2001/04/14 07:48:34 micahjd Exp $
  *
  * picogui/pgfx.h - The PicoGUI abstract graphics interface
  * 
@@ -47,6 +47,7 @@ typedef struct pgfx_context {
    pgcolor color;          /* Current color */
    pgu cx,cy;              /* Current position for moveto/lineto */
    unsigned long flags;    /* Depends on the lib */
+   int sequence;
 } *pgcontext;
 
 
@@ -83,6 +84,11 @@ struct pgfx_lib {
 
    /* Support functions */
    void (*setcolor)(pgcontext c, pgcolor color);
+
+   /* Call to mark the device for updating. Because PGFX is
+    * output-method-independant it is not necessary to call pgSubUpdate */
+   void (*update)(pgcontext c);
+   
    /* FIXME: add functions to manipulate grops after they're created */
 };
 
@@ -103,6 +109,7 @@ struct pgfx_lib {
 #define pgTilebitmap(a,b,c,d,e,f,g,h,i,j) (*(a)->lib->tilebitmap)(a,b,c,d,e,f,g,h,i,j)
 #define pgGradient(a,b,c,d,e,f,g,h,i)     (*(a)->lib->gradient)(a,b,c,d,e,f,g,h,i)
 #define pgSetcolor(a,b)                   (*(a)->lib->setcolor)(a,b)
+#define pgContextUpdate(a)                (*(a)->lib->update)(a)
 
 /* Meta-primitives */
 void    pgMoveto(pgcontext c, pgu x, pgu y);

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.23 2001/04/14 00:02:19 micahjd Exp $
+# $Id: Makefile,v 1.24 2001/04/14 07:48:34 micahjd Exp $
 #
 # C client library (libpgui) makefile
 #
@@ -44,7 +44,7 @@ DEMOSRC := demos/demo.c demos/themedemo.c demos/msgdialog.c \
            demos/imgview.c demos/menutest.c demos/omnibar.c \
            demos/fieldtest.c demos/calc.c demos/canvastst.c \
 	   demos/abstest.c demos/vidpopup.c \
-	   demos/pgfx_canvas_persistent.c
+	   demos/pgfx_canvas_persistent.c demos/pgfx_canvas_immediate.c
 
 HDR := include/*.h include/picogui/*.h
 

@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.38 2001/04/12 02:38:34 micahjd Exp $
+/* $Id: constants.h,v 1.39 2001/04/14 07:48:34 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -396,6 +396,8 @@ typedef unsigned long pghandle;
 				       * updates. Not rendered normally. */
 #define PG_GROPF_PSEUDOINCREMENTAL (1<<2)  /* Always rendered, but this flag
 					    * is cleared afterwards. */
+#define PG_GROPF_TRANSIENT    (1<<3)  /* Always render, delete after using
+				       * once */
 
 /* Video mode flags */
 #define PG_VID_FULLSCREEN     0x0001
