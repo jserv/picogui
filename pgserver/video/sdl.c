@@ -1,4 +1,4 @@
-/* $Id: sdl.c,v 1.8 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: sdl.c,v 1.9 2000/10/26 19:50:08 pney Exp $
  *
  * sdl.c - video driver wrapper for SDL.
  *
@@ -318,7 +318,13 @@ void sdl_rect(int x,int y,int w,int h,hwrcolor c) {
 }
 
 hwrcolor sdl_color_pgtohwr(pgcolor c) {
+#ifdef QUANTIZE_4COLOR
+  static unsigned char graytab[] = {0,85,170,255};
+  int gray = graytab[((getred(c)+getgreen(c)+getblue(c))/3)>>6];
+  return SDL_MapRGB(sdl_vidsurf->format,gray,gray,gray);
+#else
   return SDL_MapRGB(sdl_vidsurf->format,getred(c),getgreen(c),getblue(c));
+#endif /* QUANTIZE_4COLOR */
 }
 
 pgcolor sdl_color_hwrtopg(hwrcolor c) {
@@ -341,6 +347,10 @@ void sdl_gradient(int x,int y,int w,int h,int angle,
   int r,g,b,i,s,c;
   int line_offset;
   hwrcolor hc;
+#ifdef QUANTIZE_4COLOR
+  static unsigned char graytab[] = {0,85,170,255};
+  int gray;
+#endif /* QUANTIZE_4COLOR */
 
   if ((x+w-1)>vid->clip_x2) w = vid->clip_x2-x+1;
   if ((y+h-1)>vid->clip_y2) h = vid->clip_y2-y+1;
@@ -427,7 +437,12 @@ void sdl_gradient(int x,int y,int w,int h,int angle,
         r = r_v1 + ((r_ca+r_sa) >> 8);
         g = g_v1 + ((g_ca+g_sa) >> 8);
         b = b_v1 + ((b_ca+b_sa) >> 8);
+#ifdef QUANTIZE_4COLOR
+        gray = graytab[((r+g+b)/3)>>6];
+	hc = SDL_MapRGB(sdl_vidsurf->format,gray,gray,gray);
+#else
 	hc = SDL_MapRGB(sdl_vidsurf->format,r,g,b);
+#endif /* QUANTIZE_4COLOR */
 	
 	switch (vid->bpp) {
 	case 8:
@@ -479,7 +494,12 @@ void sdl_gradient(int x,int y,int w,int h,int angle,
 	if (r>255) r = 255;
 	if (g>255) g = 255;
 	if (b>255) b = 255;
+#ifdef QUANTIZE_4COLOR
+        gray = graytab[((r+g+b)/3)>>6];
+	hc = SDL_MapRGB(sdl_vidsurf->format,gray,gray,gray);
+#else
 	hc = SDL_MapRGB(sdl_vidsurf->format,r,g,b);
+#endif /* QUANTIZE_4COLOR */
 	
 	switch (vid->bpp) {
 	case 8:
@@ -531,7 +551,12 @@ void sdl_gradient(int x,int y,int w,int h,int angle,
 	if (r<0) r = 0;
 	if (g<0) g = 0;
 	if (b<0) b = 0;
+#ifdef QUANTIZE_4COLOR
+        gray = graytab[((r+g+b)/3)>>6];
+	hc = SDL_MapRGB(sdl_vidsurf->format,gray,gray,gray);
+#else
 	hc = SDL_MapRGB(sdl_vidsurf->format,r,g,b);
+#endif /* QUANTIZE_4COLOR */
 	
 	switch (vid->bpp) {
 	case 8:
