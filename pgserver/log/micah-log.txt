@@ -1,3 +1,15 @@
+2001-06-27    Micah Dowty <micahjd@users.sourceforge.net>
+
+After some email with Pascal, the internationalization problem has been better
+defined. The clients are to fend for themselves. Messages in the server should
+be combined with its error processing system, and that error table should be
+loadable. The client library should get it's only relevant message, the error
+dialog text, from the server the same way that "ok" and "cancel" are
+retrieved.
+
+      * gcore/errortext.c: Removing Brandon's haiku errors. (Sorry Brandon,
+		  I will reincarnate them as a 'translation' of the original errors)
+
 2001-06-25    Micah Dowty <micahjd@users.sourceforge.net>
 
 Got a new plan document from Pascal. Next project (instead of localization)

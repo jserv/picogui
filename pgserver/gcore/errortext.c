@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.24 2001/06/26 11:31:27 micahjd Exp $
+/* $Id: errortext.c,v 1.25 2001/06/28 04:24:56 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -54,126 +54,7 @@ const char *errortext(g_error e) {
 	return errors[(e & 0xFF)-1];
 }
 
-/* This is Brandon's table of Haiku error messages :)
- * Define CONFIG_HAIKU_BRANDON to activate
- */
-
-#ifdef CONFIG_HAIKU_BRANDON
-static const char *errors[] = {
-	/* 01 */ "A bit of a mess\nmapped to failure in SIDE\nParamater crash",
-	/* 02 */ "Alignment is hard\nScrewing up can be a fact\nYour bitmap at fault",
-	/* 03 */ "NO L-G-O-P\nOh please not \"X\"s for eyes\nI will have to guess",
-	/* 04 */ "Your PG_WP_BITMAP\nA lost droplet in the mist\nHas escaped its handle",
-	/* 05 */ "I can still see you\nAlthough you try hard to hide\nYour bitmask is bad",
-	/* 06 */ "Oh no, woe is me\nYour widget has a mistake\nProperties are bad",
-	/* 07 */ "I can't imagine\nExisting in negative space\nNeither your bitmap",
-	/* 08 */ "No Phenolthalene\nYou are not classy enough\nIndicator lost",
-	/* 09 */ "You are quite insane\nYour purple phenolthalene\nWill never exist",
-	/* 10 */ "A Labeled poorly\nSiding with aluminum\nIs now invalid",
-	/* 11 */ "Fuzzy math abounds\ntwo plus two is never six\nRealign your bits",
-	/* 12 */ "Searching for a search\nA null font is all I find\nI think I will crash",
-	/* 13 */ "I think I give up\nError too hard to handle\nFor it can't be found",
-	/* 14 */ "Property not found\nTo crash inevitable\nno way around it",
-	/* 15 */ "Toolbar has no side\nClient confusion abounds\nThe Server can't live",
-	/* 16 */ "I have no spare time\nTo start a new argument\nAnd neither do you",
-	/* 17 */ "Widgets are heavy\nAnd accelerate quickly\nGet a new handle",
-	/* 18 */ "No code is perfect\nYours is not an exception\nYou are bound to bind",
-	/* 19 */ "The scrollbar just broke\nI can't fix it without source\nopen and unbreak",
-	/* 20 */ "Darn Error Message\nYou know widget does not work\nYou figure it out",
-	/* 21 */ "A pointer mess up\nNo good pointer in our out\nI have to go pee",
-	/* 22 */ "Don't look for content\nIt will not be found in here\nI would look elsewhere",
-	/* 23 */ "The broken widget\nI saw fall into the heap\nWill never be found",
-	/* 24 */ "The bad error flashed\nPlease don't point that thing at me\nControl Alt backslash",
-	/* 25 */ "Something is leaking\nI smell stinky memory fumes\nPatch the leaky pipe",
-	/* 26 */ "Handles in the stream\nBut none have bitten for you\nYour bait must be bad",
-	/* 27 */ "You are the big cause\nGeneral Protection Fault\nSorry, no handle",
-	/* 28 */ "Bad news overwhelms\nI hope you can handle it\nAll has just been lost",
-	/* 29 */ "Perhaps I am dumb\nHowever it aint likley\nYou need to fix it",
-	/* 30 */ "Application bad\nMicrosoft worse FUD FUD FUD\nDon't give in to it",
-	/* 31 */ "Cute as a button\nWait, it doesn't exits yet\nProbably won't ever",
-	/* 32 */ "Crooked alignment\nI can't fix it without help\nAre you my mommy?",
-	/* 33 */ "Buttons lost, unfound\nBe happy, you know whats wrong\nI don't have a clue",
-	/* 34 */ "What is a bitmask?\nIf I had one, I would say\nI need one.  Get it?",
-	/* 35 */ "Buttons need fonts too\nGo to your local font bank\nThen, hug your button",
-	/* 36 */ "Can not handle stream\nPlease fix the button string\nThen recompile",
-	/* 37 */ "Buttons have feelings\nDon't start an arg it can't end\nYou will bewilder",
-	/* 38 */ "Panic! bad panel\nMaybe a fatal mistake\nFix and try again",
-	/* 39 */ "Panel property\nDon't touch for fear of lawyers.\nDefinistration",
-	/* 40 */ "Popup, hop on Pop\nWatch Pop pop, Laugh and don't stop\nDon't argue with Pop",
-	/* 41 */ "Box does not own deed\nIt isn't his property\nBad deeds cause box harm",
-	/* 42 */ "Don't fight for number\nBoxing is bad for you health\nSo, be smart, don't start",
-	/* 43 */ "Don't take the sides\nWithout them I have no shape\nI can't field a guess",
-	/* 44 */ "The text will not fit\nFor your field font is not good\nSide property strikes",
-	/* 45 */ "You should not have that\nIt is Airfield property\nYou invalid thief",
-	/* 46 */ "While viewing busted\nYou got a Nifty error\nCheers, DJ Doomsday",
-	/* 47 */ "Video error\nIt needs some resolution\nThis isn't my mode",
-	/* 48 */ "PNM Bitmap\nWas once a best friend now dead\nI don't want errors",
-	/* 49 */ "Set me up Scotty\nError in confinment beam\nOh NO, not again",
-	/* 50 */ "Caution, wet socket\nDry, clean and reinsert it\nShould work better then",
-	/* 51 */ "Caution, socket dry\nMoisten thouroughly, try it\nShould work better then",
-	/* 52 */ "Servers don't split tips\nOnly have one, it will serve\nDon't forget the tip",
-	/* 53 */ "All lines are busy\nCall again a bit later\nWe will listen then",
-	/* 54 */ "Signals bother me\nCan't handle them anymore\nBummer error huh?",
-	/* 55 */ "I am no Genie\nYour command is not my wish\nPlease type it again",
-	/* 56 */ "Memory can leak\nIt is caused by poor coding\nIn your case it did",
-	/* 57 */ "Structured time is good\nYou are very generous\nBut we must have more",
-	/* 58 */ "Creation is hard\nMistakes are bound to happen\nPlease fix your mistake",
-	/* 59 */ "NULL parents are bad\nThey can cause child abuse\nBut the server died",
-	/* 60 */ "Only use your root\nStay within your roots or else\nDon't take what's not yours",
-	/* 61 */ "XMB data\nToo small in natural size\nDon't test my patience",
-	/* 62 */ "Did you want something?\nYou know the right way to ask\nFrom now on, use it",
-	/* 63 */ "Request for header\nMissing some ingredience\nWhip up a new batch",
-	/* 64 */ "I need little bits\nYou have whole batches of bits\nGive me a full one",
-	/* 65 */ "Can not gain access\nForce other apps to play nice\nPlease remove keyboard",
-	/* 66 */ "Mouse eaten by cat\nPlease wait for the hungry app\nIt will be yours soon",
-	/* 67 */ "To give is devine\nBut only give what you own\nThe keyboard, not yours",
-	/* 68 */ "You won't see a point\nThe device does exist here\nBut it isn't yours",
-	/* 69 */ "Exercise is good\nMakes big man a bit buffer\nWe have no big man",
-	/* 70 */ "\"Context Underflow\"\nWhat exactly does that mean?\nGo look it up",
-	/* 71 */ "Caution, no input\nPossibly hanging by a\nNonexistant thread",
-	/* 72 */ "Video modes set\nTo change this to different res\nEdit the dot C file",
-	/* 73 */ "A Keyboard is good\nKnowledge of the keyboard, lost\nI will exit now",
-	/* 74 */ "Check your computer\nIt has no mice to be seen\nCheck the cat's stomach",
-	/* 75 */ "Drive the server nuts\nGive it a video driver\nSober ones work best",
-	/* 76 */ "Drivers for one car\nOnly use one at a time\nTwo drivers can crash",
-	/* 77 */ "Can't see video\nDriver error not stable\nLoad the right driver",
-	/* 78 */ "Video Drivers\nNone work for hire for you\nWrite your own driver",
-	/* 79 */ "Constants save the world\nGravity, is unknown to me\nSo is your constant",
-	/* 80 */ "The theme is broken\nSend it to the government\nIts Presidential",
-	/* 81 */ "Theme not long enough\nWait for it to regrow tail\nYank it off again",
-	/* 82 */ "Checksum has gone bad\nRecompile your gui theme\nGive it one more chance",
-	/* 83 */ "Theme now a victim\nFrench Revolution left it\nWithout attached head",
-	/* 84 */ "Theme suprise - not there\nNot FORD tough, broke before end\nEarly EOF",
-	/* 85 */ "Compile again\nI'll complain until it's fixed\nGet new compiler",
-	/* 86 */ "Offset cost of run\nCommon error in your themes\nGrab new compiler",
-	/* 87 */ "Theme broken, fix it\nThat way no more broken themes\nYou know how themes are",
-	/* 88 */ "Stack not filling right\nA possible underflow\nFillstyle problems",
-	/* 89 */ "Overflowed stack heap\nFlush, clean and try flush again\nOverflows can spill",
-	/* 90 */ "Out of my known range\nVariable locality\nRun home to daddy",
-	/* 91 */ "I got the first part\nThen a bad bad thing happened\nYou stopped instructing",
-	/* 92 */ "Handle gone mushy\nCan't lift own group anymore\nWe'll figure it out",
-	/* 93 */ "Take Charge for your stuff\nString handle not my problem\nIs NULL in getstring",
-	/* 94 */ "Packet is too big\nCan't open mouth wide enough\nMouthoc() has failed",
-     
-     /* The stuff brandon hasn't been to yet... */
-     
-     /* 95 */  "Error opening framebuffer device",
-     /* 96 */  "Error mapping framebuffer device",
-     /* 97 */  "Framebuffer ioctl error",
-     /* 98 */  "Another application is already registered for system events",
-     /* 99 */  "Application attempting to own unknown system resource",     
-     /* 100 */ "Theme is not word-aligned, use a newer version of themec",
-     /* 101 */ "Unsupported color depth",
-     /* 102 */ "Support for the terminal widget was not compiled in to this server",
-     /* 103 */ "Support for the canvas widget was not compiled in to this server",
-     /* 104 */ "Remote input devices have been disabled",
-     /* 105 */ "Exclusive resource access has been disabled",
-
-};
-#else 
-
-/* Micah's original error table */
-
+/* Builtin error table, can be overrided by translations */
 static const char *errors[] = {
   /* 1  */  "The parameter of a bitmap, PG_WP_SIDE, is not right",
   /* 2  */  "Unknown side specified for widget",
@@ -282,7 +163,6 @@ static const char *errors[] = {
   /* 105 */ "Exclusive resource access has been disabled",
 };
 
-#endif /* CONFIG_HAIKU_BRANDON */
 #endif /* !CONFIG_TEXT */
 
 /* The End */
