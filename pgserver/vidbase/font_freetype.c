@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.10 2002/10/13 13:31:34 micahjd Exp $
+/* $Id: font_freetype.c,v 1.11 2002/10/14 07:38:30 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -38,6 +38,9 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_CACHE_H
+#include FT_GLYPH_H
+#include FT_CACHE_CHARMAP_H
+#include FT_CACHE_IMAGE_H
 
 #define CFGSECTION "font-freetype"
 
@@ -61,6 +64,7 @@ struct freetype_fontdesc {
   struct ft_face_id *face;
   int size;
   int flags;
+  struct font_metrics metrics;
 };
 #define DATA ((struct freetype_fontdesc *)self->data)
 
@@ -71,7 +75,9 @@ const char*        ft_default_name;
 int                ft_default_size;
 int                ft_minimum_size;
 int                ft_dpi;
-FTC_Manager        ft_cache;
+FTC_Manager        ft_cache_manager;
+FTC_ImageCache     ft_image_cache;
+FTC_CMapCache      ft_cmap_cache;
 
 /* Various bits turned on for matches in fontcmp.  The order
  * of these bits defines the priority of the various
@@ -88,11 +94,11 @@ void ft_face_load(const char *file);
 int ft_fontcmp(const struct ft_face_id *f, const struct font_style *fs);
 void ft_get_face_style(FT_Face f, struct font_style *fs);
 void ft_get_descriptor_face(struct font_descriptor *self, FT_Face *aface);
-static FT_Error ft_face_requester( FTC_FaceID   face_id,
-				   FT_Library   library,
-				   FT_Pointer   request_data,
-				   FT_Face     *aface );
-
+static FT_Error ft_face_requester(FTC_FaceID face_id, FT_Library library,
+				  FT_Pointer request_data, FT_Face *aface );
+void ft_load_image(struct font_descriptor *self, int ch, FT_Glyph *g);
+void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
+			   hwrcolor col, int ch, struct quad *clip, s16 lgop, s16 angle);
 
 /************************************************* Initialization ***/
 
@@ -105,18 +111,29 @@ g_error freetype_engine_init(void) {
 
   /* Use Freetype's cache system */
   if (FTC_Manager_New(ft_lib,get_param_int(CFGSECTION,"max_faces",0),
-		      get_param_int(CFGSECTION,"max_faces",0),
-		      get_param_int(CFGSECTION,"max_faces",0),
-		      &ft_face_requester,NULL,&ft_cache))
+		      get_param_int(CFGSECTION,"max_sizes",0),
+		      get_param_int(CFGSECTION,"max_bytes",0),
+		      &ft_face_requester,NULL,&ft_cache_manager))
     return mkerror(PG_ERRT_IO,119);   /* Error initializing font engine */
 
-  /* Scan for available faces */
+  /* Image cache for storing glyphs */
+  if (FTC_ImageCache_New(ft_cache_manager,&ft_image_cache))
+    return mkerror(PG_ERRT_IO,119);   /* Error initializing font engine */
+
+  /* Character mapping cache */
+  if (FTC_CMapCache_New(ft_cache_manager,&ft_cmap_cache))
+    return mkerror(PG_ERRT_IO,119);   /* Error initializing font engine */
+
+  /* Scan for available faces 
+   * FIXME: This is slow, provide a way to store the scan results on disk
+   */
   ft_facelist = NULL;
   ft_face_scan(get_param_str(CFGSECTION,"path","/usr/share/fonts"));
   
   if (!ft_facelist)
     return mkerror(PG_ERRT_IO,66);  /* Can't find fonts */
 
+  /* Custom glyph flags */
   ft_glyph_flags = 0;
   if (get_param_int(CFGSECTION,"no_hinting",0))
     ft_glyph_flags |= FT_LOAD_NO_HINTING;
@@ -127,11 +144,13 @@ g_error freetype_engine_init(void) {
   if (get_param_int(CFGSECTION,"no_autohint",0))
     ft_glyph_flags |= FT_LOAD_NO_AUTOHINT;
 
+  /* Default font and sizing config */
   ft_default_size = get_param_int(CFGSECTION,"default_size",12);
   ft_default_name = get_param_str(CFGSECTION,"default_name","Helmet");
   ft_minimum_size = get_param_int(CFGSECTION,"minimum_size",5);
   ft_dpi = get_param_int(CFGSECTION,"dpi",72);
 
+  /* Gamma config/initialization */
 #ifdef CONFIG_FREETYPE_GAMMA
   ft_build_gamma_table(ft_light_gamma_table,
 		       atof(get_param_str(CFGSECTION,"light_gamma","1.6")));
@@ -155,7 +174,7 @@ void freetype_engine_shutdown(void) {
     g_free(condemn);
   }
 
-  FTC_Manager_Done(ft_cache);
+  FTC_Manager_Done(ft_cache_manager);
   FT_Done_FreeType(ft_lib);
 }
 
@@ -217,7 +236,7 @@ void ft_face_load(const char *file) {
     return;
 
   pfid->file_path = file;
-  if (FTC_Manager_Lookup_Face(ft_cache,(FTC_FaceID) pfid, &face)) {
+  if (FTC_Manager_Lookup_Face(ft_cache_manager,(FTC_FaceID) pfid, &face)) {
     g_free(pfid);
     return;
   }
@@ -240,32 +259,73 @@ void ft_face_load(const char *file) {
 
 /************************************************* Rendering ***/
 
+/* Wrapper for ft_subpixel_draw_char, rounding to whole pixels */
 void freetype_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
 		   hwrcolor col, int ch, struct quad *clip, s16 lgop, s16 angle) {
-  int i,j;
-  FT_Bitmap b;
-  FT_Face face;
+  position->x <<= 6;
+  position->y <<= 6;
+  ft_subpixel_draw_char(self,dest,position,col,ch,clip,lgop,angle);
+  position->x >>= 6;
+  position->y >>= 6;
+}
 
-  ft_get_descriptor_face(self,&face);
-  FT_Load_Char(face,ch, FT_LOAD_RENDER | ft_glyph_flags);
-
-  b = face->glyph->bitmap;
-#ifdef CONFIG_FREETYPE_GAMMA
-  ft_apply_gamma_table(ft_pick_gamma_table(col),&b);
-#endif
+/* Guts of freetype_draw_char, using subpixel units */
+void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
+			   hwrcolor col, int ch, struct quad *clip, s16 lgop, s16 angle) {
+  int x,y,i,j;
+  FT_Glyph g;
+  FT_BitmapGlyph bg;
+  ft_load_image(self,ch,&g);
+  bg = (FT_BitmapGlyph) g;
 
   /* PicoGUI's character origin is at the top-left of the bounding box.
    * Add the ascent to reach the baseline, then subtract the bitmap origin
    * from that.
    */
-  VID(alpha_charblit)(dest,b.buffer,
-		      position->x + face->glyph->bitmap_left,
-		      position->y + (face->size->metrics.ascender >> 6) -
-		      face->glyph->bitmap_top,
-		      b.width,b.rows,b.pitch,angle,col,clip,lgop);
+  x = position->x >> 6;
+  y = position->y >> 6;
+  i = bg->left;
+  j = DATA->metrics.ascent - bg->top;
+  switch (angle) {
+  case 0:
+    x += i;
+    y += j;
+    break;
+  case 90:
+    x += j;
+    y -= i;
+    break;
+  case 180:
+    x -= i;
+    y -= j;
+    break;
+  case 270:
+    x -= j;
+    y += i;
+    break;
+  }
+  
+  VID(alpha_charblit)(dest,bg->bitmap.buffer,x,y,bg->bitmap.width,
+		      bg->bitmap.rows,bg->bitmap.pitch,angle,col,clip,lgop);
 
-  position->x += face->glyph->advance.x >> 6;
-  position->y += face->glyph->advance.y >> 6;
+  switch (angle) {
+  case 0:
+    position->x += g->advance.x >> 10;
+    position->y += g->advance.y >> 10;
+    break;
+  case 90:
+    position->x += g->advance.y >> 10;
+    position->y -= g->advance.x >> 10;
+    break;
+  case 180:
+    position->x -= g->advance.x >> 10;
+    position->y -= g->advance.y >> 10;
+    break;
+  case 270:
+    position->x -= g->advance.y >> 10;
+    position->y += g->advance.x >> 10;
+    break;
+  }
 }
 
 /* Our own version of draw_string that handles subpixel pen movement 
@@ -273,45 +333,39 @@ void freetype_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pai
 void freetype_draw_string(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
 			  hwrcolor col, const struct pgstring *str, struct quad *clip,
 			  s16 lgop, s16 angle) {
-  struct font_metrics m;
   struct pgstr_iterator p = PGSTR_I_NULL;
-  int x,y,margin,lh,b,ch;
-  FT_Face face;
+  int margin,lh,b,ch;
 
-  self->lib->getmetrics(self,&m);
-  ft_get_descriptor_face(self,&face);
-
-  x = position->x * 64;
-  y = position->y * 64;
-  margin = m.margin * 64;
-  lh = face->size->metrics.height;
+  position->x <<= 6;
+  position->y <<= 6;
+  margin = DATA->metrics.margin << 6;
+  lh = DATA->metrics.lineheight << 6;
 
   switch (angle) {
     
   case 0:
-    x += margin;
-    y += margin;
-    b = x;
+    position->x += margin;
+    position->y += margin;
+    b = position->x;
     break;
     
   case 90:
-    x += margin;
-    y -= margin;
-    b = y;
+    position->x += margin;
+    position->y -= margin;
+    b = position->y;
     break;
     
   case 180:
-    x -= margin;
-    y -= margin;
-    b = x;
+    position->x -= margin;
+    position->y -= margin;
+    b = position->x;
     break;
 
   case 270:
-    x -= margin;
-    y += margin;
-    b = y;
+    position->x -= margin;
+    position->y += margin;
+    b = position->y;
     break;
-    
   }
   
   while ((ch = pgstring_decode(str,&p))) {
@@ -319,57 +373,33 @@ void freetype_draw_string(struct font_descriptor *self, hwrbitmap dest, struct p
       switch (angle) {
 	
       case 0:
-	y += lh;
-	x = b;
+	position->y += lh;
+	position->x = b;
 	break;
 	
       case 90:
-	x += lh;
-	y = b;
+	position->x += lh;
+	position->y = b;
 	break;
 	
       case 180:
-	y -= lh;
-	x = b;
+	position->y -= lh;
+	position->x = b;
 	break;
 	
       case 270:
-	x -= lh;
-	y = b;
+	position->x -= lh;
+	position->y = b;
 	break;
 	
       }
     else if (ch!='\r') {
-      position->x = x>>6;
-      position->y = y>>6;
-      self->lib->draw_char(self,dest,position,col,ch,clip,lgop,angle);
-
-      /* Ignore the position modifications made by
-       * this, do our own in subpixel units 
-       */
-      switch (angle) {
-      case 0:
-	x += face->glyph->advance.x;
-	y += face->glyph->advance.y;
-	break;
-      case 90:
-	x += face->glyph->advance.y;
-	y -= face->glyph->advance.x;
-	break;
-      case 180:
-	x -= face->glyph->advance.x;
-	y -= face->glyph->advance.y;
-	break;
-      case 270:
-	x -= face->glyph->advance.y;
-	y += face->glyph->advance.x;
-	break;
-      }
+      ft_subpixel_draw_char(self,dest,position,col,ch,clip,lgop,angle);
     }
   }
 
-  position->x = x >> 6;
-  position->y = y >> 6;
+  position->x >>= 6;
+  position->y >>= 6;
 }
 
 #ifdef CONFIG_FREETYPE_GAMMA
@@ -435,6 +465,22 @@ g_error freetype_create(struct font_descriptor *self, const struct font_style *f
     DATA->size = ft_minimum_size;
   DATA->flags = fs->style;
 
+  /* Store the font metrics now, since they'll be needed frequently */
+  ft_get_descriptor_face(self,&face);
+
+  DATA->metrics.ascent = face->size->metrics.ascender >> 6;
+  DATA->metrics.descent = (-face->size->metrics.descender) >> 6;
+  DATA->metrics.lineheight = face->size->metrics.height >> 6;
+  DATA->metrics.linegap = DATA->metrics.lineheight - 
+    DATA->metrics.ascent - DATA->metrics.descent;
+  DATA->metrics.charcell.w = face->size->metrics.max_advance >> 6;
+  DATA->metrics.charcell.h = DATA->metrics.ascent + DATA->metrics.descent;
+
+  if (DATA->flags & PG_FSTYLE_FLUSH)
+    DATA->metrics.margin = 0;
+  else
+    DATA->metrics.margin = DATA->metrics.descent;
+
   return success;
 }
 
@@ -462,81 +508,83 @@ int ft_fontcmp(const struct ft_face_id *f, const struct font_style *fs) {
 }
 
 void ft_get_descriptor_face(struct font_descriptor *self, FT_Face *aface) {
-  static struct font_descriptor *last_fd = NULL;
-  static FT_Face last_face = NULL;
   FTC_FontRec fr;
-
-  /* Optimize for consecutive calls with the same face */
-  if (self == last_fd) {
-    *aface =  last_face;
-    return;
-  }
 
   fr.face_id = DATA->face;
   fr.pix_width = 0;
   fr.pix_height = DATA->size;
-  FTC_Manager_Lookup_Size(ft_cache,&fr,aface,NULL);
-
-  /* It should be safe to store the face here since this is the
-   * only function that calls FTC_Manager_Lookup_Size
-   */
-  last_fd = self;
-  last_face = *aface;
+  FTC_Manager_Lookup_Size(ft_cache_manager,&fr,aface,NULL);
 }
 
- 
+void ft_load_image(struct font_descriptor *self, int ch, FT_Glyph *g) {
+  FTC_CMapDescRec cmapd;
+  FTC_ImageDesc imgd;
+
+  cmapd.face_id = (FTC_FaceID) DATA->face;
+  cmapd.type = FTC_CMAP_BY_INDEX;
+  cmapd.u.index = 0;
+
+  imgd.font.face_id = DATA->face;
+  imgd.font.pix_width = 0;
+  imgd.font.pix_height = DATA->size;
+  imgd.type = 0;
+
+  FTC_ImageCache_Lookup(ft_image_cache, &imgd,
+			FTC_CMapCache_Lookup(ft_cmap_cache, &cmapd, ch),
+			g, NULL);
+}
+
 /************************************************* Metrics ***/
 
 void freetype_measure_char(struct font_descriptor *self, struct pair *position,
 		      int ch, s16 angle) {
-  FT_Face face;
-  ft_get_descriptor_face(self,&face);
-  FT_Load_Char(face,ch, ft_glyph_flags);
-  position->x += face->glyph->advance.x >> 6;
-  position->y += face->glyph->advance.y >> 6;
+  FT_Glyph g;
+  ft_load_image(self,ch,&g);
+  switch (angle) {
+  case 0:
+    position->x += g->advance.x >> 16;
+    position->y += g->advance.y >> 16;
+    break;
+  case 90:
+    position->x += g->advance.y >> 16;
+    position->y -= g->advance.x >> 16;
+    break;
+  case 180:
+    position->x -= g->advance.x >> 16;
+    position->y -= g->advance.y >> 16;
+    break;
+  case 270:
+    position->x -= g->advance.y >> 16;
+    position->y += g->advance.x >> 16;
+    break;
+  }
 }
 
 void freetype_getmetrics(struct font_descriptor *self, struct font_metrics *m) {
-  FT_Face face;
-  ft_get_descriptor_face(self,&face);
-
-  m->ascent = face->size->metrics.ascender >> 6;
-  m->descent = (-face->size->metrics.descender) >> 6;
-  m->lineheight = face->size->metrics.height >> 6;
-  m->linegap = m->lineheight - m->ascent - m->descent;
-  m->charcell.w = face->size->metrics.max_advance >> 6;
-  m->charcell.h = m->ascent + m->descent;
-
-  if (DATA->flags & PG_FSTYLE_FLUSH)
-    m->margin = 0;
-  else
-    m->margin = m->descent;
+  memcpy(m,&DATA->metrics,sizeof(struct font_metrics));
 }
 
 /* Our own version of measure_string that handles subpixel pen movement 
  */
 void freetype_measure_string(struct font_descriptor *self, const struct pgstring *str,
 			     s16 angle, s16 *w, s16 *h) {
-  struct font_metrics m;
   int max_x = 0, ch, x, y, original_x;
   struct pgstr_iterator p = PGSTR_I_NULL;
-  FT_Face face;
-  self->lib->getmetrics(self,&m);
-  ft_get_descriptor_face(self,&face);
+  FT_Glyph g;
 
-  original_x = x = m.margin << 7;
-  y = x + face->size->metrics.height + face->size->metrics.descender;
+  original_x = x = DATA->metrics.margin << 7;
+  y = x + ((DATA->metrics.lineheight - DATA->metrics.descent) << 6);
 
   while ((ch = pgstring_decode(str,&p))) {
     if (ch=='\n') {
-      y += face->size->metrics.height;
+      y += DATA->metrics.lineheight;
       if (x>max_x) max_x = x;
       x = original_x;
     }
     else if (ch!='\r') {
-      FT_Load_Char(face,ch, ft_glyph_flags);
-      x += face->glyph->advance.x;
-      y += face->glyph->advance.y;
+      ft_load_image(self,ch,&g);
+      x += g->advance.x >> 10;
+      y += g->advance.y >> 10;
     }
   }
   if (x>max_x) max_x = x;
