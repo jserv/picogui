@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.20 2000/11/05 10:25:45 micahjd Exp $
+/* $Id: client_c.h,v 1.21 2000/11/05 10:30:47 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -266,7 +266,7 @@ int pgMessageDialogFmt(const char *title,unsigned long flags,const char *fmt, ..
 /* There are many ways to create a menu in PicoGUI
  * (at the lowest level, using pgNewPopupAt and the menuitem widget)
  *
- * This creates a static popup menu from a "\n"-separated list of
+ * This creates a static popup menu from a "|"-separated list of
  * menu items, and returns the number (starting with 1) of the chosen
  * item, or 0 for cancel.
  */

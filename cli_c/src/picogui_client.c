@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.22 2000/11/05 10:25:45 micahjd Exp $
+/* $Id: picogui_client.c,v 1.23 2000/11/05 10:32:15 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -1027,7 +1027,7 @@ int pgMessageDialog(const char *title,const char *text,unsigned long flags) {
 /* There are many ways to create a menu in PicoGUI
  * (at the lowest level, using pgNewPopupAt and the menuitem widget)
  *
- * This creates a static popup menu from a "\n"-separated list of
+ * This creates a static popup menu from a "|"-separated list of
  * menu items, and returns the number (starting with 1) of the chosen
  * item, or 0 for cancel.
  */
@@ -1056,7 +1056,7 @@ int pgMenuFromString(char *items) {
   /* Send over the strings individually, store handles */
   i = 0;
   do {
-    if (!(p = strchr(items,'\n'))) p = items + strlen(items);
+    if (!(p = strchr(items,'|'))) p = items + strlen(items);
     _pg_add_request(PGREQ_MKSTRING,(void *) items,p-items);
     items = p+1;
     pgFlushRequests();

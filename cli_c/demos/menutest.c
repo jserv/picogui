@@ -4,7 +4,7 @@
 
 int btnMenuFromString(short event,pghandle from,long param) {
   pgMessageDialogFmt("Menu results",0,"pgMenuFromString() returned %d",
-		     pgMenuFromString("Hello World!\nThis is a test...\n1\n2\n3"));
+		     pgMenuFromString("Hello World!|This is a test...|1\n2\n3"));
   return 0;
 }
 
