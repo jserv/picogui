@@ -1,4 +1,4 @@
-/* $Id: remorakb.c,v 1.7 2001/11/26 20:54:05 bauermeister Exp $
+/* $Id: remorakb.c,v 1.8 2001/11/28 13:47:47 bauermeister Exp $
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -407,9 +407,9 @@ typedef struct {
  * instead of 9'600) including the corrupt values.
  */
 static const HwKeyDef key_def_table[] = {
-  /*-----------+-------+-------------------------+---------+----------------*/
-  /*           |  hw   | code                    |shift    | fn             */
-  /*-----------+-------+-------------------------+---------+----------------*/
+  /*------------+-------+------------------------+----------+----------------*/
+  /*            |  hw   | code                   | shift    | fn             */
+  /*------------+-------+------------------------+----------+----------------*/
   /*dLSHIFT  */ { 0x00ed, SPECIALKEY(SPd_LSHIFT)                             },
   /*dFN      */ { 0x02fd, SPECIALKEY(SPd_FN)                                 },
   /*dDONE    */ { 0x03fc, NONE                   , NONE     , PGKEY_ESCAPE   },
@@ -465,7 +465,7 @@ static const HwKeyDef key_def_table[] = {
   /*dEQUAL   */ { 0x55aa, CHAR('=')              , CHAR('+'), COMP('~')      },
   /*dCAPSLOCK*/ { 0x58a7, SPECIALKEY(SPd_CAPSLOCK)                           },
   /*dRSHIFT  */ { 0x59a6, SPECIALKEY(SPd_RSHIFT)                             },
-  /*dENTER   */ { 0x5aa5, PGKEY_RETURN           , MOD_SHIFT, SAME           },
+  /*dENTER   */ { 0x5aa5, CHAR('\r')             , MOD_SHIFT, SAME           },
   /*dKET     */ { 0x5ba4, CHAR(']')              , CHAR('}'), IGN(Note)      },
   /*dRSPACE  */ { 0x5ca3, CHAR(' ')              , MOD_SHIFT, IGN(Find)      },
   /*dBKSLASH */ { 0x5da2, CHAR('\\')             , CHAR('|'), NONE           },
@@ -537,7 +537,7 @@ static const HwKeyDef key_def_table[] = {
   /*uBKSPACE */ { 0xe619, DEADKEY                                            },
   /*uCMD     */ { 0xe718, SPECIALKEY(SPu_CMD)                                },
   /*dLSHIFT  */ { 0xeda5, SPECIALKEY(SPd_LSHIFT)                             },
-  /*-----------+-------+-------------------------+---------+----------------*/
+  /*------------+-------+------------------------+----------+----------------*/
 };
 
 /* ------------------------------------------------------------------------- */
@@ -919,8 +919,12 @@ static int kb_fd_activate(int fd)
      * Send it up !
      */
     dispatch_key(pg_type, pg_code, pg_mods);
-    if(pg_type==TRIGGER_CHAR && pg_code==' ')
-      dispatch_key(TRIGGER_KEYDOWN, PGKEY_SPACE, pg_mods);
+    if(pg_type==TRIGGER_CHAR) {
+      switch(pg_code) {
+      case ' ':  dispatch_key(TRIGGER_KEYDOWN, PGKEY_SPACE, pg_mods); break;
+      case '\r': dispatch_key(TRIGGER_KEYDOWN, PGKEY_RETURN, pg_mods); break;
+      }
+    }
     drivermessage(PGDM_CURSORVISIBLE, pg_type!=TRIGGER_CHAR, NULL);
     drivermessage(PGDM_CURSORBLKEN, 0, NULL);
 
