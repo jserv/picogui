@@ -1,5 +1,5 @@
 SUBDIRS = \
-	include \
+	etc include \
 	widget appmgr debug gcore net \
 	vidbase theme video os vidwrap \
 	input font formats \

@@ -1,0 +1,5 @@
+[pgserver]
+@INPUTDRIVERS@
+depth = 1
+. /var/pgserver.dynconf
+#end
