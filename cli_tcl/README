@@ -6,3 +6,7 @@ pgui entercontext
 pgui leavecontext ?-id contextid?
 pgui update
 pgui waitevent
+
+pgwidget create type ?options?
+pgwidget attach widget before|inside|after parent
+pgwidget set -side

@@ -72,33 +72,6 @@ proc pgGetVideoMode {} {
 		res(lxres) res(lyres) res(bbp) res(dummy)
 	return [array get res]
 }
-proc pgNewPopup {{width 0} {height 0}} {
-	global defaultparent pg_wp
-	set id [pgCreateWidget popup]
-	if { $width > 0 } {
-		pgSetWidget $id $pg_wp(width) $width
-	}
-	if { $height > 0 } {
-		pgSetWidget $id $pg_wp(height) $height
-	}
-	if {$defaultparent == 0} {
-		set defaultparent $id
-	}
-	set defaultparent $id
-	set defaultrship inside
-	return $id
-}
-proc pgNewPopupAt {x y width height} {
-	global pg_wp
-	set id [pgNewPopup $width $height]
-	if { $x > -1 } {
-		pgSetWidget $id $pg_wp(absolutex) $x
-	}
-	if { $y > -1 } {
-		pgSetWidget $id $pg_wp(absolutey) $y
-	}
-	return $id
-}
 proc pgNewString {text} {
 	global pg_request
 	send_packet [pack_pgrequest \
@@ -111,13 +84,6 @@ proc pgGetString {textid} {
 	global pg_request
 	send_packet [pack_pgrequest 1 4 $pg_request(getstring)]
 	send_packet [binary format "I" $textid]
-	array set ret [pgGetResponse]
-	return $ret(data)
-}
-proc pgCreateWidget {type} {
-	global pg_request pg_derive pg_widget
-	send_packet [pack_pgrequest 1 4 $pg_request(createwidget)]
-	send_packet [binary format "SS" $pg_widget($type) 0]
 	array set ret [pgGetResponse]
 	return $ret(data)
 }
@@ -134,11 +100,6 @@ proc pgGetWidget {widget property} {
 	send_packet [binary format "ISS" $widget $property 0]
 	array set ret [pgGetResponse]
 	return $ret(data)
-}
-proc pgSetText { widget text} {
-	global pg_wp
-	set id [pgNewString $text]
-	pgSetWidget $widget $pg_wp(text) $id
 }
 proc pgThemeLookup {object property} {
 	global pg_request
@@ -168,13 +129,6 @@ proc isInteger {test} {
 proc pgSetBitmap {widget bitmap} {
 	global pg_wp
 	pgSetWidget $widget $pg_wp(bitmap) $bitmap
-}
-proc pgSetSide {widget side} {
-	global pg_wp pg_s
-	if { [isInteger $side] == 0 } {
-		set side $pg_s($side)
-	}
-	pgSetWidget $widget $pg_wp(side) $side
 }
 proc pgNewFont {name style size} {
 	global pg_request
@@ -235,19 +189,33 @@ proc pgEventLoop {} {
 		}
 	}
 }
-proc pgDialog { title } {
-	global pg_widget defaultparent defaltrship
-	set dlg [pgCreateWidget dialogbox]
-	pgSetText $dlg $title
-	set defaultparent $dlg
-	return $dlg
-}
-proc pgAttach {widget rship parent} {
-	global pg_request pg_derive
-	send_packet [pack_pgrequest 1 12 $pg_request(attachwidget)]
-	send_packet [binary format "IISS" $parent $widget $pg_derive($rship) 0]
-	array set ret [pgGetResponse]
-	return $ret(data)
+proc pgwidget {command arg1 args} {
+	global pg_request pg_widget pg_derive pg_wp pg_s
+	if {$command=="attach"} {
+		send_packet [pack_pgrequest 1 12 $pg_request(attachwidget)]
+		send_packet [binary format "IISS" [lindex $args 1] $arg1 \
+			$pg_derive([lindex $args 0]) 0]
+		array set ret [pgGetResponse]
+	} else {
+		array set aa $args
+	}
+	if {$command=="create"} {
+		send_packet [pack_pgrequest 1 4 $pg_request(createwidget)]
+		send_packet [binary format "SS" $pg_widget($arg1) 0]
+		array set ret [pgGetResponse]
+		return $ret(data)
+	} elseif {$command=="set"} {
+		foreach prop [array names aa] {
+			if {$prop=="-side"} {
+				pgSetWidget $arg1 $pg_wp(side) $pg_s($aa(-side))
+			} elseif {$prop=="-text"} {
+				set id [pgNewString $aa(-text)]
+				pgSetWidget $arg1 $pg_wp(text) $id
+			} else {
+				puts $prop
+			}
+		}
+	}
 }
 proc pgui {command args} {
 	global connection pg_request
@@ -308,6 +276,9 @@ proc pgui {command args} {
 		} else {
 			puts "unknown arguments for pgui createbitmap"
 		}
+	} else {
+		puts "Unknown command $command"
+		return 0
 	}
 	if {[info exists ret(data)]} {
 		return $ret(data)

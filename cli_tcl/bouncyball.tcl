@@ -18,18 +18,16 @@ while {$imgnr<$NUMFRAMES} {
 	set img($imgnr) [pgui createbitmap -name [format $imagebase $imgnr]]
 	incr imgnr
 }
-set dlg [pgCreateWidget dialogbox]
-set ok [pgCreateWidget button]
-set bmp [pgCreateWidget label]
+set dlg [pgwidget create dialogbox]
+set ok [pgwidget create button]
+set bmp [pgwidget create label]
 
-pgSetText $dlg "Boing"
-pgSetText $ok "Ok"
+pgwidget set $dlg -text "Boing!"
+pgwidget set $ok -side bottom -text "Ok"
+pgwidget set $bmp -side all
 
-pgSetSide $ok bottom
-pgSetSide $bmp all
-
-pgAttach $ok inside $dlg
-pgAttach $bmp after $ok
+pgwidget attach $ok inside $dlg
+pgwidget attach $bmp after $ok
 
 set i 0
 set d 1
@@ -51,4 +49,4 @@ while { 1 } {
 	}
 	incr i $d
 }
-pgui leave -id $context
+pgui leavecontext -id $context
