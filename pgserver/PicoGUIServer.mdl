@@ -39,6 +39,7 @@ runtime = [
                      depends = [ 'picoguiserver/install', 'resourcemanager/start',
                                  (S ('module/picoguiserver/start') & S ('platform/m68k-pic-coff')) >> S ('module/pocketapps/bioscall'),
                                  (S ('module/picoguiserver/start') & S ('platform/m68k-pic-coff')) >> S ('module/pocketapps/initenv'),
+                                 (S ('module/picoguiserver/start') & S ('platform/ppc-linux')) >> S ('module/ibm-dcr'),
                                  ],
 
                      rcscript = "\n# launch pgserver\npicogui-launcher.sh\n",
@@ -170,7 +171,13 @@ rm_task unblock picogui-server
 # Set the framebuffer device in 16bpp (YUV)
 echo "setting framebuffer device to 16bpp YUV ..."
 fbset -n -g 640 480 640 480 16 > /dev/null
-    
+
+# Set the PWM to a value where we have correct colors
+if [ -f /etc/pwm_default_value ]
+then
+    change_dcr -y 0x16 `cat /etc/pwm_default_value` > /dev/null
+fi
+
 # start pgserver
 sleep 2   # maybe necessary ?
 rm_task unblock picogui-server
