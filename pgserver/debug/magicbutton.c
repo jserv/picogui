@@ -1,4 +1,4 @@
-/* $Id: magicbutton.c,v 1.3 2002/01/28 08:50:52 lonetech Exp $
+/* $Id: magicbutton.c,v 1.4 2002/01/31 02:00:04 micahjd Exp $
  *
  * magicbutton.c - CTRL-ALT-foo is magical
  *
@@ -33,12 +33,12 @@
 #include <pgserver/font.h>
 #include <pgserver/appmgr.h>
 #include <pgserver/widget.h>
+#include <pgserver/hotspot.h>
 
 #ifdef DEBUG_KEYS
-   /* Utility function and vars to implement CTRL-ALT-P
-    * bitmap debug hotkey */
    
 int db_x,db_y,db_h;
+extern struct hotspot *hotspotlist;
    
 g_error debug_bitmaps(const void **pobj) {
    hwrbitmap bmp = (hwrbitmap) *pobj;
@@ -182,7 +182,70 @@ void r_divnode_trace(struct divnode *div) {
   r_divnode_trace(div->div);
   r_divnode_trace(div->next);
 } 
-     
+
+/* Graphically display a hotspot */
+void hotspot_draw(struct hotspot *spot) {
+  struct groprender r;
+  struct gropnode n;
+  int i;
+
+  /* How to represent all the directions we can traverse */
+  const static struct {
+    s16 x,y;
+    pgcolor c;
+  } directiontab[] = {
+    /* left  */ {-3, 0, 0xFFFF00},
+    /* right */ { 3, 0, 0xFFFF00},
+    /* up    */ { 0,-3, 0xFFFF00},
+    /* down  */ { 0, 3, 0xFFFF00},
+    /* next  */ { 3, 0, 0x00FF00},
+    /* prev  */ {-3, 0, 0x00FF00},
+  };
+
+  /* Set up rendering...
+   */
+  memset(&r,0,sizeof(r));
+  memset(&n,0,sizeof(n));
+  r.output = vid->display;
+  r.clip.x1 = 0;
+  r.clip.y1 = 0;
+  r.clip.x2 = vid->lxres-1;
+  r.clip.y2 = vid->lyres-1;
+  r.lgop = PG_LGOP_NONE;
+
+  /* Draw arrows for all the directions in the graph
+   */
+  for (i=0;i<=HOTSPOTMAX;i++)
+    if (spot->graph[i]) {
+      r.color = VID(color_pgtohwr)(directiontab[i].c);
+      n.type = PG_GROP_LINE;
+      n.r.x = spot->x + directiontab[i].x;
+      n.r.y = spot->y + directiontab[i].y;
+      n.r.w = spot->graph[i]->x - n.r.x;
+      n.r.h = spot->graph[i]->y - n.r.y;
+      gropnode_clip(&r,&n);
+      gropnode_draw(&r,&n);
+    }      
+
+  /* Every hotspot gets a red crosshairs 
+   */
+  r.color = VID(color_pgtohwr)(0xFF0000);
+  n.type = PG_GROP_LINE;
+  n.r.x = spot->x - 2;
+  n.r.y = spot->y;
+  n.r.w = 4;
+  n.r.h = 0;
+  gropnode_clip(&r,&n);
+  gropnode_draw(&r,&n);
+  n.type = PG_GROP_LINE;
+  n.r.x = spot->x;
+  n.r.y = spot->y - 2;
+  n.r.w = 0;
+  n.r.h = 4;
+  gropnode_clip(&r,&n);
+  gropnode_draw(&r,&n);
+}     
+
 #endif /* DEBUG_KEYS */
    
 void magic_button(s16 key) {
@@ -199,16 +262,17 @@ void magic_button(s16 key) {
 	 "All your divnode are belong to us!\n"
 	 "\n"
 	 "Debugging keys:\n"
-	 "  CTRL-ALT-H: Handle tree dump to stdout\n"
-	 "  CTRL-ALT-S: String dump to stdout\n"
-	 "  CTRL-ALT-T: Divtree dump to stdout\n"
-	 "  CTRL-ALT-M: Memory use profile\n"
-	 "  CTRL-ALT-B: Black screen\n"
-	 "  CTRL-ALT-Y: Unsynchronize screen buffers\n"
-	 "  CTRL-ALT-U: Blue screen\n"
-	 "  CTRL-ALT-P: Bitmap dump to video display\n"
-	 "  CTRL-ALT-O: Trace all divnodes\n"
-	 "  CTRL-ALT-A: Application dump to stdout\n"
+	 "  CTRL-ALT-H: [H]andle tree dump to stdout\n"
+	 "  CTRL-ALT-S: [S]tring dump to stdout\n"
+	 "  CTRL-ALT-T: Div[t]ree dump to stdout\n"
+	 "  CTRL-ALT-M: [M]emory use profile\n"
+	 "  CTRL-ALT-B: [B]lack screen\n"
+	 "  CTRL-ALT-Y: Uns[y]nchronize screen buffers\n"
+	 "  CTRL-ALT-U: Bl[u]e screen\n"
+	 "  CTRL-ALT-P: Bitma[p] dump to video display\n"
+	 "  CTRL-ALT-O: Divn[o]de outline\n"
+	 "  CTRL-ALT-A: [A]pplication dump to stdout\n"
+	 "  CTRL-ALT-R: Hotspot g[r]aph\n" 
 	 );
     return;
     
@@ -324,8 +388,17 @@ void magic_button(s16 key) {
 	printf("app: '%s' type=%d owner=%d\n",name,a->type,a->owner);
       }
     }
+    return;
 
-    
+  case PGKEY_r:           /* CTRL-ALT-r draws the hotspot graph */
+    {
+      struct hotspot *p;
+      for (p=hotspotlist;p;p=p->next)
+	hotspot_draw(p);
+      VID(update) (0,0,vid->lxres,vid->lyres);
+    }    
+    return;
+
 #endif /* DEBUG_KEYS */
     
   }
