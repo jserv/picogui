@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.27 2000/08/05 06:23:03 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.28 2000/08/07 19:46:07 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -650,12 +650,12 @@ sub RegisterApp {
     $type = $args{-type} ? $APPTYPE{$args{-type}} : $APPTYPE{'normal'};
     $side = $args{-side} ? $SIDE{$args{-side}} : $SIDE{'top'};
     $sidemask = defined($args{-sidemask}) ? $args{-sidemask} : 0xFFFF;
-    $w = defined($args{-w}) ? $args{-w} : -1;
-    $h = defined($args{-h}) ? $args{-h} : -1;
-    $minw = defined($args{-minw}) ? $args{-minw} : -1;
-    $maxw = defined($args{-maxw}) ? $args{-maxw} : -1;
-    $minh = defined($args{-minh}) ? $args{-minh} : -1;
-    $maxh = defined($args{-maxh}) ? $args{-maxh} : -1;
+    $w = defined($args{-width}) ? $args{-width} : 0;
+    $h = defined($args{-height}) ? $args{-height} : 0;
+    $minw = defined($args{-minw}) ? $args{-minw} : 0;
+    $maxw = defined($args{-maxw}) ? $args{-maxw} : 0;
+    $minh = defined($args{-minh}) ? $args{-minh} : 0;
+    $maxh = defined($args{-maxh}) ? $args{-maxh} : 0;
 
     # Bless thy self and get on with it...
     bless $self;
