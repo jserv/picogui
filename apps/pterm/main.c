@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.6 2001/02/02 07:44:03 micahjd Exp $
+/* $Id: main.c,v 1.7 2001/02/07 08:32:33 micahjd Exp $
  *
  * main.c - PicoGUI Terminal (the 'p' is silent :)
  *          This handles the PicoGUI init and events
@@ -63,7 +63,7 @@ int termResize(struct pgEvent *evt) {
    
   memset(&size,0,sizeof(size));
   size.ws_row = evt->e.size.h;
-  size.ws_col = evt->e.size.h;
+  size.ws_col = evt->e.size.w;
   ioctl(ptyfd,TIOCSWINSZ,(char *) &size);
 
   return 0;
@@ -139,9 +139,11 @@ int main(int argc, char **argv) {
   pgInit(argc,argv);
 
   /* Process arguments */
-   
-  argc--;                   /* Skip program name */
-  argv++;
+
+  if (argc) {
+     argc--;                /* Skip program name */
+     argv++;
+  }
   while (argc) {            /* Process switch(es) */
      if (**argv != '-')
        break;               /* Out of switches, rest is for subprocess */
