@@ -57,3 +57,4 @@ NewWidget(-type => button,-bitmap => $check,-bitmask => $checkmask,
 	  -onclick => sub {exit 0});
 
 EventLoop;
+

@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.20 2000/06/10 14:19:02 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.21 2000/07/11 23:12:29 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -30,7 +30,8 @@ use Carp;
 @EXPORT    = qw(NewWidget %ServerInfo Update NewString
 		NewFont NewBitmap delete SetBackground RestoreBackground
 		SendPoint SendKey ThemeSet RegisterApp EventLoop NewPopup
-		GetTextSize);
+		GetTextSize GrabKeyboard GrabPointingDevice GiveKeyboard
+		GivePointingDevice);
 
 ################################ Constants
 
@@ -183,13 +184,19 @@ use Carp;
 	  '-onchange' => 1,
 	  '-onfocus' => 1,
 	  '-onunfocus' => 2,
-	  '-onblur' => 2
+	  '-onblur' => 2,
+	  '-onchar' => 10,
+	  '-onkeyup' => 11,
+	  '-onkeydown' => 12,
+	  '-onpointermove' => 13,
+	  '-onpointerup' => 14,
+	  '-onpointerdown' => 15
 	  );
 
 $MAGIC     = 0x31415926;
 $PROTOVER  = 1;
 
-@ERRT = qw( NONE MEMORY IO NETOWRK BADPARAM HANDLE INTERNAL );
+@ERRT = qw( NONE MEMORY IO NETOWRK BADPARAM HANDLE INTERNAL BUSY );
 
 ################################ Code
 
@@ -371,6 +378,42 @@ sub _sizetext {
     _request(17,pack('NN',@_));
     _flushpackets();
 }
+sub GrabKeyboard {
+    my %args = @_;
+
+    _request(19);
+
+    # Register event handlers here
+    foreach (keys %args) {
+	if (defined $EVENT{$_}) {
+	    $bindings{'0:'.$EVENT{$_}} = $args{$_};
+	}
+	else {
+	    croak "Unknown event: $_";
+	}
+    }
+}
+sub GrabPointingDevice {
+    my %args = @_;
+    _request(20);
+
+    # Register event handlers here
+    foreach (keys %args) {
+	if (defined $EVENT{$_}) {
+	    $bindings{'0:'.$EVENT{$_}} = $args{$_};
+	}
+	else {
+	    croak "Unknown event: $_";
+	}
+    }
+}
+sub GiveKeyboard {
+    _request(21);
+}
+sub GivePointingDevice {
+    _request(22);
+}
+
 
 ######### Public functions
 
@@ -385,6 +428,14 @@ sub GetTextSize {
 sub NewPopup {
     my ($x,$y,$w,$h) = @_;
     my $self = {-root => 1};
+
+    # If there were only two args, it was width and height. 
+    # Just center it instead.
+    if (scalar(@_)<4) {
+	$w = $x;
+	$h = $y;
+	$x = $y = -1;
+    }
 
     bless $self;
     $self->{'h'} = _mkpopup($x,$y,$w,$h);
