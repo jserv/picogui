@@ -1,0 +1,9 @@
+These directories contain demos of embedding pgserver inside OpenGL games.
+Both require a pgserver compiled with the "libpgserver" option.
+
+simple - A very simple example of combining a PicoGUI UI with an
+         existing OpenGL program.
+
+jetengine - A more real-world example of a game combining python, C++,
+            and PicoGUI.
+
