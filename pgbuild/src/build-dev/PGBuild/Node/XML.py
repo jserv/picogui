@@ -34,8 +34,11 @@ class NodeWrapper:
 
     def unwrap(self, x):
         if isinstance(x, PGBuild.XML.dom.Node):
+            if not hasattr(x, 'node'):
+                # Create an Element() class if it hasn't been done
+                Element(x)
             return x.node
-        if isinstance(x, PGBuild.XML.dom.minidom.NodeList):
+        if type(x)==type([]) or isinstance(x, PGBuild.XML.dom.minidom.NodeList):
             out = []
             for item in x:
                 out.append(self.unwrap(item))
@@ -57,7 +60,6 @@ class Element(SCons.Node.Node):
         SCons.Node.Node.__init__(self)
         self.dom = dom
         dom.node = self
-        self.file = None
 
         # Install wrapper objects that let us access the DOM methods easily
         for attr in dir(self.dom):
@@ -66,10 +68,10 @@ class Element(SCons.Node.Node):
 
     def __str__(self):
         """A somewhat more helpful string representation for XML tags"""
-        return "<%s.%s %s in %s>" % (
+        return "<%s.%s %s>" % (
             self.__class__.__module__,
             self.__class__.__name__,
-            self.dom, self.file)
+            self.dom)
 
     def sconsign(self):
         pass
@@ -88,21 +90,16 @@ class Element(SCons.Node.Node):
         """This returns the data used for the content signature"""
         return self.toxml()
 
-    def domExpand(self):
-        """Recursively attach nodes to children in the DOM tree"""
-        for child in self.dom.childNodes:
-            node = Element(child)
-            node.file = self.file
-            node.domExpand()
-
 class Document(Element):
     """Read in a File node and generate a DOM
        tree populated with Element nodes.
        """
     def __init__(self, file):
-        Element.__init__(self, PGBuild.XML.dom.minidom.parseString(file.get_contents()))
-        self.file = file
-        self.domExpand()
+        if isinstance(file, SCons.Node.Node):
+            dom = PGBuild.XML.dom.minidom.parseString(file.get_contents())
+        else:
+            dom = PGBuild.XML.dom.minidom.parse(file)
+        Element.__init__(self, dom)
 
 ### The End ###
         

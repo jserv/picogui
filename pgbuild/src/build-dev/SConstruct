@@ -10,6 +10,7 @@ env = Environment()
 testFile = env.fs.Entry("test.xml")
 doc = PGBuild.Node.XML.Document(testFile)
 tag = doc.childNodes[0].getElementsByTagName("important")[0]
+print tag.toprettyxml()
 
 # Build a 'hello world'
 prog = env.Program('hello', 'hello.c')
