@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.29 2002/03/25 02:16:45 micahjd Exp $
+/* $Id: netcore.c,v 1.30 2002/03/26 16:27:27 instinc Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -48,16 +48,16 @@ static void *pgDispatchEvent(void *na);
 
 /* Global vars for the client lib */
 int _pgsockfd;                  /* Socket fd to the pgserver */
-short _pgrequestid;             /* Request ID to detect errors */
-short _pgdefault_rship;         /* Default relationship and widget */
+s16 _pgrequestid;             /* Request ID to detect errors */
+s16 _pgdefault_rship;         /* Default relationship and widget */
 pghandle _pgdefault_widget;        /*    when 0 is used */
 unsigned char _pgeventloop_on;  /* Boolean - is event loop running? */
 unsigned char _pgreqbuffer[PG_REQBUFSIZE];  /* Buffer of request packets */
-short _pgreqbuffer_size;        /* # of bytes in reqbuffer */
-short _pgreqbuffer_count;       /* # of packets in reqbuffer */
-short _pgreqbuffer_lasttype;    /* Type of last packet, indication of what return
+s16 _pgreqbuffer_size;        /* # of bytes in reqbuffer */
+s16 _pgreqbuffer_count;       /* # of packets in reqbuffer */
+s16 _pgreqbuffer_lasttype;    /* Type of last packet, indication of what return
 				 * packet should be sent */
-void (*_pgerrhandler)(unsigned short errortype,const char *msg);
+void (*_pgerrhandler)(u16 errortype,const char *msg);
                                 /* Error handler */
 struct _pghandlernode *_pghandlerlist;  /* List of pgBind event handlers */
 
@@ -77,7 +77,7 @@ pghandle _pg_appletbox;
 /******************* Internal functions */
 
 /* Send data to the server, checking and reporting errors */
-int _pg_send(void *data,unsigned long datasize) {
+int _pg_send(void *data,u32 datasize) {
   if (send(_pgsockfd,data,datasize,0)!=datasize) {
     clienterr("send error");
     return 1;
@@ -86,7 +86,7 @@ int _pg_send(void *data,unsigned long datasize) {
 }
 
 /* Receive... */
-int _pg_recv(void *data,unsigned long datasize) {
+int _pg_recv(void *data,u32 datasize) {
   while (1) {
     if (recv(_pgsockfd,data,datasize,0) >= 0) break;
     
@@ -102,13 +102,13 @@ int _pg_recv(void *data,unsigned long datasize) {
 
 /* Wait for a new event, recieves the type code. This is used 
  * when an idle handler or other interruption is needed */
-int _pg_recvtimeout(short *rsptype) {
+int _pg_recvtimeout(s16 *rsptype) {
   struct timeval tv;
   fd_set readfds;
   int result;
   struct pgrequest waitreq;
   struct pgrequest unwaitreq;
-  char cruft[sizeof(struct pgresponse_ret) - sizeof(short)];	/* Unused return packet */
+  char cruft[sizeof(struct pgresponse_ret) - sizeof(s16)];	/* Unused return packet */
    
   /* Set up a packet to send to put us back on the waiting list */
   waitreq.type = htons(PGREQ_WAIT);
@@ -133,7 +133,7 @@ int _pg_recvtimeout(short *rsptype) {
      /* Well, now we have something! */
 
      if (FD_ISSET(_pgsockfd, &readfds))   /* Got data from server */
-	return _pg_recv(rsptype,sizeof(short));
+	return _pg_recv(rsptype,sizeof(s16));
 	
      /* If we get this far, it's not a return packet- it's either a pgIdle timeout or a
       * user-defined file descriptor added with pgCustomizeSelect. This code below needs
@@ -159,7 +159,7 @@ int _pg_recvtimeout(short *rsptype) {
 #else
      _pg_send(&unwaitreq,sizeof(unwaitreq));
 #endif     
-     if (_pg_recv(rsptype,sizeof(short)))
+     if (_pg_recv(rsptype,sizeof(s16)))
        return 1;
      if ((*rsptype) == htons(PG_RESPONSE_EVENT))
        /* Important! We need to indicate to the caller that there's an extra
@@ -199,7 +199,7 @@ void *_pg_malloc(size_t size) {
  * the option to exit or continue. If it isn't even able to make
  * a dialog box, it will print to stderr.
  */
-void _pg_defaulterr(unsigned short errortype,const char *msg) {
+void _pg_defaulterr(u16 errortype,const char *msg) {
   static unsigned char in_defaulterr = 0;
   char *s1,*copys1,*s2,*copys2;
 		  
@@ -238,7 +238,7 @@ void _pg_defaulterr(unsigned short errortype,const char *msg) {
 /* Some 'user friendly' default sig handlers */
 void _pgsig(int sig) {
   char *a,*b;
-  short id;
+  s16 id;
   
   switch (sig) {
     
@@ -264,9 +264,9 @@ void _pgsig(int sig) {
 
 /* Put a request into the queue */
 #ifdef ENABLE_THREADING_SUPPORT
-void _pg_add_request(short reqtype,void *data,unsigned long datasize, unsigned int id, unsigned char flush) {
+void _pg_add_request(s16 reqtype,void *data,u32 datasize, unsigned int id, unsigned char flush) {
 #else   
-void _pg_add_request(short reqtype,void *data,unsigned long datasize) {
+void _pg_add_request(s16 reqtype,void *data,u32 datasize) {
 #endif
    
   struct pgrequest *newhdr;
@@ -368,7 +368,7 @@ void _pg_add_request(short reqtype,void *data,unsigned long datasize) {
 }
 
 void _pg_getresponse(int eventwait) {
-  short rsp_id = 0;
+  s16 rsp_id = 0;
   int extra_packet = 0;
 
   /* Read the response type. This is where the client spends almost
@@ -811,7 +811,7 @@ void pgInit(int argc, char **argv)
   struct sockaddr_un server_addr; 
 #endif
   const char *hostname;
-  unsigned short port = PG_REQUEST_PORT;
+  u16 port = PG_REQUEST_PORT;
   const char *appletparam = NULL;
   int fd,i,j,args_to_shift;
   char *arg;
@@ -855,7 +855,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.29 2002/03/25 02:16:45 micahjd Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.30 2002/03/26 16:27:27 instinc Exp $\n");
 	exit(1);
       }
 
@@ -1017,12 +1017,12 @@ void pgInit(int argc, char **argv)
    
 }
 
-void pgSetErrorHandler(void (*handler)(unsigned short errortype,
+void pgSetErrorHandler(void (*handler)(u16 errortype,
 				       const char *msg)) {
   _pgerrhandler = handler;
 }
 
-const char *pgErrortypeString(unsigned short errortype) {
+const char *pgErrortypeString(u16 errortype) {
   switch (errortype) {
   case PG_ERRT_MEMORY:     return "MEMORY";
   case PG_ERRT_IO:         return "IO";
@@ -1039,7 +1039,7 @@ const char *pgErrortypeString(unsigned short errortype) {
 }
 
 /* Sets an idle handler using nonblocking IO. See details in client_c.h */
-pgidlehandler pgSetIdle(long t,pgidlehandler handler) {
+pgidlehandler pgSetIdle(s32 t,pgidlehandler handler) {
    pgidlehandler previous = _pgidle_handler;
    if (!handler) t = 0;
    if (!t) handler = 0;
@@ -1190,8 +1190,8 @@ void *pgDispatchEvent(void *na) {
      n = _pghandlerlist;
      while (n) {
         
-       if ( (((signed long)n->widgetkey)==PGBIND_ANY || n->widgetkey==currentEvent->from) &&
-	         (((signed short)n->eventkey)==PGBIND_ANY || n->eventkey==currentEvent->type) ) {
+       if ( (((s32)n->widgetkey)==PGBIND_ANY || n->widgetkey==currentEvent->from) &&
+	         (((s16)n->eventkey)==PGBIND_ANY || n->eventkey==currentEvent->type) ) {
 
           //
           // Found an event.  Process it
@@ -1270,9 +1270,9 @@ void pgDispatchEvent(struct pgEvent *evt) {
   
   n = _pghandlerlist;
   while (n) {
-    if ( (((signed long)n->widgetkey)==PGBIND_ANY || 
+    if ( (((s32)n->widgetkey)==PGBIND_ANY || 
 	  n->widgetkey==evt->from) &&
-	 (((signed short)n->eventkey)==PGBIND_ANY || 
+	 (((s16)n->eventkey)==PGBIND_ANY || 
 	  n->eventkey==evt->type) ) {
       evt->extra = n->extra;
       
@@ -1337,7 +1337,7 @@ struct pgEvent *pgGetEvent(void) {
 #endif // ENABLE_THREADING_SUPPORT
  
 /* Add the specified handler to the list */
-void pgBind(pghandle widgetkey,short eventkey,
+void pgBind(pghandle widgetkey,s16 eventkey,
 	    pgevthandler handler, void *extra) {
    struct _pghandlernode *p,*n = NULL;
    

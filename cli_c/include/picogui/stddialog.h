@@ -1,4 +1,4 @@
-/* $Id: stddialog.h,v 1.12 2002/01/06 09:22:56 micahjd Exp $
+/* $Id: stddialog.h,v 1.13 2002/03/26 16:27:27 instinc Exp $
  *
  * picogui/stddialog.h - Various preconstructed dialog boxes the application
  *                       may use. These are implemented 100% client-side using
@@ -80,7 +80,7 @@ pghandle pgDialogBox(const char *title);
  * 
  * \sa pgMessageDialogFmt
  */
-int pgMessageDialog(const char *title,const char *text,unsigned long flags);
+int pgMessageDialog(const char *title,const char *text,u32 flags);
 
 /*!
  * \brief Create a message dialog box, with formatting
@@ -89,7 +89,7 @@ int pgMessageDialog(const char *title,const char *text,unsigned long flags);
  * 
  * \sa pgMessageDialog
  */
-int pgMessageDialogFmt(const char *title,unsigned long flags,const char *fmt, ...);
+int pgMessageDialogFmt(const char *title,u32 flags,const char *fmt, ...);
 
 /*! 
  * \brief Create a popup menu from a string

@@ -1,4 +1,4 @@
-/* $Id: dlg_fontpicker.c,v 1.6 2002/01/06 09:22:56 micahjd Exp $
+/* $Id: dlg_fontpicker.c,v 1.7 2002/03/26 16:27:27 instinc Exp $
  *
  * dlg_datepicker.c - Implementation of the pgFontPicker function, allowing
  *                    the user to choose any installed font
@@ -44,8 +44,8 @@
 /* Structure for saving font style info */
 struct fontpicker_node {
   char name[40];
-  unsigned short size;
-  unsigned long flags;
+  u16 size;
+  u32 flags;
   struct fontpicker_node *next;
 };
 
@@ -62,7 +62,7 @@ int fontpicker_compare(struct fontpicker_node *a, struct fontpicker_node *b) {
 }
 
 /* Little helper function to create a style button */
-void fontpicker_style(pghandle str, unsigned long style, short int rship,
+void fontpicker_style(pghandle str, u32 style, s16 rship,
 		      pghandle parent) {
   pgNewWidget(PG_WIDGET_BUTTON,rship,parent);
   pgSetWidget(PGDEFAULT,
@@ -83,10 +83,10 @@ pghandle pgFontPicker(const char *title) {
   char name[40];
   char buf[10];         /* For making the size into a string */
   char *s;
-  unsigned long flags, fontflags;
-  unsigned short size;
+  u32 flags, fontflags;
+  u16 size;
   struct pgEvent evt;
-  unsigned long id;
+  u32 id;
   struct fontpicker_node *fontlist = NULL;
   struct fontpicker_node *n, **where;
   int i;

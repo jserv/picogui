@@ -1,4 +1,4 @@
-/* $Id: clientlib.h,v 1.15 2002/02/13 19:06:55 micahjd Exp $
+/* $Id: clientlib.h,v 1.16 2002/03/26 16:27:27 instinc Exp $
  *
  * clientlib.h - definitions used only within the client library code itself
  *
@@ -105,7 +105,7 @@
 /* A node in the list of event handlers set with pgBind */
 struct _pghandlernode {
   pghandle widgetkey;
-  short eventkey;
+  s16 eventkey;
   pgevthandler handler;
   void *extra;
   struct _pghandlernode *next;
@@ -114,18 +114,18 @@ struct _pghandlernode {
 /* Structure for a retrieved and validated response code,
    the data collected by _pg_flushpackets is stored here. */
 struct _pg_return_type {
-  short type;
+  s16 type;
   union {
 
     /* if type == PG_RESPONSE_RET */
-    unsigned long retdata;
+    u32 retdata;
 
     /* if type == PG_RESPONSE_EVENT */
     struct pgEvent event;
 
     /* if type == PG_RESPONSE_DATA */
     struct {
-      unsigned long size;
+      u32 size;
       void *data;         /* Dynamically allocated - should be freed and
 			     set to NULL when done, or it will be freed
 			     next time flushpackets is called */
@@ -144,16 +144,16 @@ typedef struct ClientReturn {
 
 /* Global vars for the client lib */
 extern int _pgsockfd;                  /* Socket fd to the pgserver */
-extern short _pgrequestid;             /* Request ID to detect errors */
-extern short _pgdefault_rship;         /* Default relationship and widget */
+extern s16 _pgrequestid;             /* Request ID to detect errors */
+extern s16 _pgdefault_rship;         /* Default relationship and widget */
 extern pghandle _pgdefault_widget;        /*    when 0 is used */
 extern unsigned char _pgeventloop_on;  /* Boolean - is event loop running? */
 extern unsigned char _pgreqbuffer[PG_REQBUFSIZE];  /* Buffer of request packets */
-extern short _pgreqbuffer_size;        /* # of bytes in reqbuffer */
-extern short _pgreqbuffer_count;       /* # of packets in reqbuffer */
-extern short _pgreqbuffer_lasttype;    /* Type of last packet, indication of what return
+extern s16 _pgreqbuffer_size;        /* # of bytes in reqbuffer */
+extern s16 _pgreqbuffer_count;       /* # of packets in reqbuffer */
+extern s16 _pgreqbuffer_lasttype;    /* Type of last packet, indication of what return
 					* packet should be sent */
-extern void (*_pgerrhandler)(unsigned short errortype,const char *msg); /* Error handler */
+extern void (*_pgerrhandler)(u16 errortype,const char *msg); /* Error handler */
 extern struct _pghandlernode *_pghandlerlist;  /* List of pgBind event handlers */
 
 extern struct timeval _pgidle_period;  /* Period before calling idle handler */
@@ -173,24 +173,24 @@ extern pghandle _pg_appletbox;
 /**** Internal functions (netcore.c) */
 
 /* IO wrappers.  On error, they return nonzero and call clienterr() */
-int _pg_send(void *data,unsigned long datasize);
-int _pg_recv(void *data,unsigned long datasize);
+int _pg_send(void *data,u32 datasize);
+int _pg_recv(void *data,u32 datasize);
 
 /* Wait for a new event, recieves the type code. This is used 
  * when an idle handler or other interruption is needed */
-int _pg_recvtimeout(short *rsptype);
+int _pg_recvtimeout(s16 *rsptype);
 
 /* Malloc wrapper. Reports errors */
 void *_pg_malloc(size_t size);
 
 /* Default error handler (this should never be called directly) */
-void _pg_defaulterr(unsigned short errortype,const char *msg);
+void _pg_defaulterr(u16 errortype,const char *msg);
 
 /* Put a request into the queue */
 #ifdef ENABLE_THREADING_SUPPORT
-void _pg_add_request(short reqtype,void *data,unsigned long datasize, unsigned int id, unsigned char flush);
+void _pg_add_request(s16 reqtype,void *data, u32 datasize, unsigned int id, unsigned char flush);
 #else
-void _pg_add_request(short reqtype,void *data,unsigned long datasize);
+void _pg_add_request(s16 reqtype,void *data,u32 datasize);
 #endif
 
 /* Receive a response packet and store its contents in _pg_return

@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.81 2002/01/14 07:52:38 micahjd Exp $
+/* $Id: client_c.h,v 1.82 2002/03/26 16:27:24 instinc Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -90,7 +90,7 @@
  * \sa pgBind, pgGetEvent
  */
 struct pgEvent {
-   short type;      //!< Event type, a PG_WE_* or PG_NWE_* constant
+   s16 type;      //!< Event type, a PG_WE_* or PG_NWE_* constant
    pghandle from;   //!< The widget the event was recieved from (if applicable)
    void *extra;     //!< Extra data passed to the event handler via pgBind
    
@@ -98,34 +98,34 @@ struct pgEvent {
    union {
       
       //! The generic parameter. Currently unused.
-      unsigned long param;
+      u32 param;
       
       //! Width and height, for PG_WE_BUILD and PG_WE_RESIZE
       struct {
-	 short w;
-	 short h;
+	 s16 w;
+	 s16 h;
       } size;
 
       //! Modifiers and key, for keyboard events
       struct {
-	 short mods;  //!< PGMOD_* constants logically or'ed together
+	 s16 mods;  //!< PGMOD_* constants logically or'ed together
 	 /*! 
 	  * For PG_WE_KBD_CHAR, an ASCII/Unicode character. For 
 	  * PG_WE_KBD_KEYUP and PG_WE_KBD_KEYDOWN, it is a PGKEY_* constant
 	  */
-	 short key;
+	 s16 key;
       } kbd;
       
       //! Pointing device information, for PG_WE_PNTR_* and PG_NWE_PNTR_* events
       struct {
-	 short x,y;
-	 short btn;    //!< Bitmask of pressed buttons, left button is bit 0
-	 short chbtn;  //!< Bitmask of buttons changed since last event
+	 s16 x,y;
+	 s16 btn;    //!< Bitmask of pressed buttons, left button is bit 0
+	 s16 chbtn;  //!< Bitmask of buttons changed since last event
       } pntr;
       
       //! Streamed data, from the PG_WE_DATA event
       struct {
-	 unsigned long size;
+	 u32 size;
 	 /*! Allocated and freed by the client library. It is only valid
 	  * until the event handler returns or the client calls pgGetEvent */
 	 char *pointer; 
@@ -163,7 +163,7 @@ struct pgEvent {
  * These formats are video-driver dependant, and under normal circumstances
  * the high byte should always be zero.
  */
-typedef unsigned long pgcolor;
+typedef u32 pgcolor;
 
 /*! 
  * \brief Refer to the default widget handle
@@ -250,7 +250,7 @@ typedef int (*pgfilter)(const char *string,const char *pattern);
  */
 struct pgmemdata {
   void *pointer;       //!< when null, indicates error
-  unsigned long size;  //!< size in bytes of data block
+  u32 size;  //!< size in bytes of data block
   int flags;           //!< PGMEMDAT_* flags or'ed together
 };
 #define PGMEMDAT_NEED_FREE    0x0001   //!< pgmemdata should be free()'d when done
@@ -314,7 +314,7 @@ void pgInit(int argc, char **argv);
  *
  * \sa pgInit, pgErrortypeString
  */
-void pgSetErrorHandler(void (*handler)(unsigned short errortype,
+void pgSetErrorHandler(void (*handler)(u16 errortype,
 				       const char *msg));
 
 /*!
@@ -333,7 +333,7 @@ pghandle pgLoadDriver(const char *name);
  * 
  * \returns A pointer to the corresponding string constant
  */
-const char *pgErrortypeString(unsigned short errortype);
+const char *pgErrortypeString(u16 errortype);
 
 /*!
  * \brief Set a handler to be called periodically
@@ -353,7 +353,7 @@ const char *pgErrortypeString(unsigned short errortype);
  * 
  * \sa pgEventLoop
  */
-pgidlehandler pgSetIdle(long t,pgidlehandler handler); 
+pgidlehandler pgSetIdle(s32 t, pgidlehandler handler); 
 
 /*!
  * \brief Flush all unsent request packets to the server
@@ -421,7 +421,7 @@ void pgSubUpdate(pghandle widget);
  * 
  * \sa pgevthandler, pgEvent
  */
-void pgBind(pghandle widgetkey,short eventkey,
+void pgBind(pghandle widgetkey,s16 eventkey,
 	    pgevthandler handler,void *extra);
 
 #ifdef FD_SET
@@ -495,8 +495,8 @@ void pgUnregisterOwner(int resource);
  * 
  * \sa pgSendPointerInput
  */
-void pgSendKeyInput(unsigned long type,unsigned short key,
-		    unsigned short mods);
+void pgSendKeyInput(u32 type,u16 key,
+		    u16 mods);
 
 /*!
  * \brief Simulate pointing device input remotely
@@ -515,8 +515,8 @@ void pgSendKeyInput(unsigned long type,unsigned short key,
  * 
  * \sa pgSendKeyInput
  */
-void pgSendPointerInput(unsigned long type,unsigned short x,unsigned short y,
-			unsigned short btn);
+void pgSendPointerInput(u32 type, u16 x, u16 y,
+			u16 btn);
 
 /*!
  * \brief Change video mode at runtime
@@ -544,9 +544,9 @@ void pgSendPointerInput(unsigned long type,unsigned short x,unsigned short y,
  * 
  * \sa pgGetVideoMode
  */
-void pgSetVideoMode(unsigned short xres,unsigned short yres,
-		    unsigned short bpp,unsigned short flagmode,
-		    unsigned long flags);
+void pgSetVideoMode(u16 xres,u16 yres,
+		    u16 bpp,u16 flagmode,
+		    u32 flags);
 
 /*!
  * \brief Get information about the current video mode
@@ -574,7 +574,7 @@ struct pgmodeinfo *pgGetVideoMode(void);
  * This command can send 'extra' commands that may be hardware-specific,
  * like beeps, cursor blanking, and backlight control.
  */
-void pgDriverMessage(unsigned long message, unsigned long param);
+void pgDriverMessage(u32 message, u32 param);
 
 /*!
  * \brief Send a message to a widget owned by any application
@@ -605,7 +605,7 @@ void pgAppMessage(pghandle dest, struct pgmemdata data);
  *
  * The format of the data accepted by the request packet depends on the type of packet.
  */
-pghandle pgEvalRequest(short reqtype, void *data, unsigned long datasize);
+pghandle pgEvalRequest(s16 reqtype, void *data, u32 datasize);
 
 /*!
  * \brief Set the inactivity timer
@@ -618,7 +618,7 @@ pghandle pgEvalRequest(short reqtype, void *data, unsigned long datasize);
  *
  * \sa pgGetInactivity
  */
-void pgSetInactivity(unsigned long time);
+void pgSetInactivity(u32 time);
 
 /*!
  * \brief Get the inactivity timer
@@ -630,7 +630,7 @@ void pgSetInactivity(unsigned long time);
  * 
  * \sa pgSetInactivity
  */
-unsigned long pgGetInactivity(void);
+u32 pgGetInactivity(void);
 
 //! \}
 
@@ -689,7 +689,7 @@ return important_data;
  *
  * \sa pgEnterContext, pgLeaveContext
  */
-void pgChangeContext(pghandle object, short delta);
+void pgChangeContext(pghandle object, s16 delta);
 
 //!  Give a widget the keyboard focus 
 void pgFocus(pghandle widget);
@@ -722,7 +722,7 @@ pgSetWidget(PGDEFAULT,
  * 
  * \sa pgNewWidget, pgSetWidget, pgNewPopup, PG_APP_NORMAL, PG_APP_TOOLBAR
  */
-pghandle pgRegisterApp(short int type,const char *name, ...);
+pghandle pgRegisterApp(s16 type,const char *name, ...);
 
 /*!
  * \brief Create a new widget, derived from a parent widget
@@ -740,7 +740,7 @@ pghandle pgRegisterApp(short int type,const char *name, ...);
  *
  * \sa pgSetWidget
  */
-pghandle pgNewWidget(short int type,short int rship,
+pghandle pgNewWidget(s16 type,s16 rship,
 		     pghandle parent);
 
 /*!
@@ -754,7 +754,7 @@ pghandle pgNewWidget(short int type,short int rship,
  *
  * \sa pgAttachWidget, pgNewWidget
  */
-pghandle pgCreateWidget(short int type);
+pghandle pgCreateWidget(s16 type);
 
 /*!
  * \brief Attach a widget to a new parent
@@ -769,7 +769,7 @@ pghandle pgCreateWidget(short int type);
  *
  * \sa pgCreateWidget, pgDeleteWidget
  */
-void pgAttachWidget(pghandle parent, short int rship, pghandle widget);
+void pgAttachWidget(pghandle parent, s16 rship, pghandle widget);
 
 /*!
  * \brief Finds a widget in relation to another widget
@@ -844,7 +844,7 @@ void pgSetWidget(pghandle widget, ...);
  *
  * \sa pgSetWidget, pgNewWidget
  */
-long pgGetWidget(pghandle widget,short property);
+s32 pgGetWidget(pghandle widget,s16 property);
 
 /*!
  * \brief Create a new bitmap object from existing data
@@ -865,7 +865,7 @@ pghandle pgNewBitmap(struct pgmemdata obj);
  *
  * \sa pgNewBitmap
  */
-pghandle pgCreateBitmap(short width, short height);
+pghandle pgCreateBitmap(s16 width, s16 height);
 
 /*!
  * \brief Create a new string object 
@@ -885,7 +885,7 @@ pghandle pgNewString(const char *str);
  * \returns A handle to the new array object 
  * 
  */  
-pghandle pgNewArray(const long* dat, unsigned short size);  
+pghandle pgNewArray(const s32* dat, u16 size);  
  
 /*!
  * \brief Get the contents of a string handle
@@ -949,7 +949,7 @@ fFlush   = pgNewFont("Helvetica",0,PG_FSTYLE_FLUSH);             // Helvetica at
  * 
  * \sa pgNewString, pgDelete, pgEnterContext, pgLeaveContext, pgGetFontStyle
  */
-pghandle pgNewFont(const char *name,short size,unsigned long style);
+pghandle pgNewFont(const char *name,s16 size,u32 style);
 
 /*!
  * \brief Get information about a font style
@@ -972,10 +972,10 @@ pghandle pgNewFont(const char *name,short size,unsigned long style);
  * example:
  * \code
 char name[40];
-unsigned short size;
-unsigned short fontrep;
-unsigned long flags;
-short i;
+u16 size;
+u16 fontrep;
+u32 flags;
+s16 i;
 
 i = 0;
 while (pgGetFontStyle(i++, name, &size, &fontrep, &flags)) {
@@ -989,8 +989,8 @@ while (pgGetFontStyle(i++, name, &size, &fontrep, &flags)) {
  *
  * \sa pgNewFont
  */
-int pgGetFontStyle(short index, char *name, unsigned short *size,
-		   unsigned short *fontrep, unsigned long *flags);
+int pgGetFontStyle(s16 index, char *name, u16 *size,
+		   u16 *fontrep, u32 *flags);
 
 /*!
  * \brief Measure a string of text
@@ -1089,7 +1089,7 @@ pghandle pgDataString(struct pgmemdata obj);
  *
  * \sa pgLoadTheme
  */
-unsigned long pgThemeLookup(short object, short property);
+u32 pgThemeLookup(s16 object, s16 property);
 
 /*! 
  * \brief Set an object's payload
@@ -1109,7 +1109,7 @@ unsigned long pgThemeLookup(short object, short property);
  * 
  * \sa pgGetPayload, pgGetEvent
  */
-void pgSetPayload(pghandle object,unsigned long payload);
+void pgSetPayload(pghandle object,u32 payload);
 
 /*!
  * \brief Get an object's payload
@@ -1121,7 +1121,7 @@ void pgSetPayload(pghandle object,unsigned long payload);
  * 
  * \sa pgSetPayload
  */
-unsigned long pgGetPayload(pghandle object);
+u32 pgGetPayload(pghandle object);
 
 /*!
  * \brief Write data to a widget
@@ -1150,7 +1150,7 @@ void pgWriteData(pghandle widget,struct pgmemdata data);
  * 
  * \sa pgWriteData, PG_WIDGET_CANVAS, pgNewCanvasContext
  */
-void pgWriteCmd(pghandle widget,short command,short numparams, ...);
+void pgWriteCmd(pghandle widget,s16 command,s16 numparams, ...);
 
 /*!
  * \brief Render a gropnode to a bitmap
@@ -1162,7 +1162,7 @@ void pgWriteCmd(pghandle widget,short command,short numparams, ...);
  *
  * \sa pgWriteCmd, pgNewBitmapContext, pgRegisterOwner
  */
-void pgRender(pghandle bitmap,short groptype, ...);
+void pgRender(pghandle bitmap,s16 groptype, ...);
 
 /*!
  * \brief Search for a widget by its PG_WP_NAME property
@@ -1207,7 +1207,7 @@ pghandle pgFindWidget(const char *key);
  * 
  * \sa pgFromFile, pgFromStream, pgFromTempMemory
  */
-struct pgmemdata pgFromMemory(void *data,unsigned long length);
+struct pgmemdata pgFromMemory(void *data,u32 length);
 
 /*!
  * \brief Refer to data loaded into memory, free when done
@@ -1221,7 +1221,7 @@ struct pgmemdata pgFromMemory(void *data,unsigned long length);
  * 
  * \sa pgFromMemory, pgFromFile, pgFromStream
  */
-struct pgmemdata pgFromTempMemory(void *data,unsigned long length);
+struct pgmemdata pgFromTempMemory(void *data,u32 length);
 
 
 /*!
@@ -1249,7 +1249,7 @@ struct pgmemdata pgFromFile(const char *file);
  * 
  * \sa pgFromMemory, pgFromTempMemory, pgFromFile
  */
-struct pgmemdata pgFromStream(FILE *f, unsigned long length);
+struct pgmemdata pgFromStream(FILE *f, u32 length);
 
 /* TODO: Load from resource. Allow apps to package necessary bitmaps
    and things in a file, named after their binary but with a '.res'

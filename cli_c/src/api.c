@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.37 2002/01/14 07:52:38 micahjd Exp $
+/* $Id: api.c,v 1.38 2002/03/26 16:27:27 instinc Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -129,7 +129,7 @@ pghandle pgLoadTheme(struct pgmemdata obj) {
 #endif  
 }
 
-unsigned long pgThemeLookup(short object, short property) {
+u32 pgThemeLookup(s16 object, s16 property) {
   struct pgreqd_thlookup arg;
 
   arg.object = htons(object);
@@ -153,7 +153,7 @@ unsigned long pgThemeLookup(short object, short property) {
 /******* Data loading */
 
 /* Data already loaded in memory */
-struct pgmemdata pgFromMemory(void *data,unsigned long length) {
+struct pgmemdata pgFromMemory(void *data,u32 length) {
   static struct pgmemdata x;    /* Maybe make something like this
 				   global to use less memory? */
   x.pointer = data;
@@ -163,7 +163,7 @@ struct pgmemdata pgFromMemory(void *data,unsigned long length) {
 }
 
 /* Data already loaded in memory, need to free it */
-struct pgmemdata pgFromTempMemory(void *data,unsigned long length) {
+struct pgmemdata pgFromTempMemory(void *data,u32 length) {
   static struct pgmemdata x;    /* Maybe make something like this
 				   global to use less memory? */
   x.pointer = data;
@@ -256,7 +256,7 @@ struct pgmemdata pgFromFile(const char *file) {
 }
 
 /* Load from an already-opened stream */
-struct pgmemdata pgFromStream(FILE *f, unsigned long length) {
+struct pgmemdata pgFromStream(FILE *f, u32 length) {
    static struct pgmemdata x;
    
    x.size = length;
@@ -272,7 +272,7 @@ struct pgmemdata pgFromStream(FILE *f, unsigned long length) {
 
 /******* A little more complex ones, with args */
 
-void pgSetPayload(pghandle object,unsigned long payload) {
+void pgSetPayload(pghandle object,u32 payload) {
   struct pgreqd_setpayload arg;
   arg.h = htonl(object ? object : _pgdefault_widget);
   arg.payload = htonl(payload);
@@ -303,9 +303,9 @@ void pgUnregisterOwner(int resource) {
 #endif  
 }
 
-void pgSetVideoMode(unsigned short xres,unsigned short yres,
-		    unsigned short bpp,unsigned short flagmode,
-		    unsigned long flags) {
+void pgSetVideoMode(u16 xres, u16 yres,
+		    u16 bpp, u16 flagmode,
+		    u32 flags) {
   struct pgreqd_setmode arg;
   arg.xres     = htons(xres);
   arg.yres     = htons(yres);
@@ -319,8 +319,8 @@ void pgSetVideoMode(unsigned short xres,unsigned short yres,
 #endif  
 }
 
-void pgSendKeyInput(unsigned long type,unsigned short key,
-		    unsigned short mods) {
+void pgSendKeyInput(u32 type, u16 key,
+		    u16 mods) {
   struct pgreqd_in_key arg;
   arg.type = htonl(type);
   arg.key  = htons(key);
@@ -333,8 +333,8 @@ void pgSendKeyInput(unsigned long type,unsigned short key,
 }
 
 /* Also used by networked input devices, but to send pointing device events */
-void pgSendPointerInput(unsigned long type,unsigned short x,unsigned short y,
-			unsigned short btn) {
+void pgSendPointerInput(u32 type, u16 x, u16 y,
+			u16 btn) {
   struct pgreqd_in_point arg;
   arg.type = htonl(type);
   arg.x  = htons(x);
@@ -348,7 +348,7 @@ void pgSendPointerInput(unsigned long type,unsigned short x,unsigned short y,
 #endif  
 }
 
-unsigned long pgGetPayload(pghandle object) {
+u32 pgGetPayload(pghandle object) {
   object = htonl(object);
 #ifdef ENABLE_THREADING_SUPPORT
 {
@@ -365,7 +365,7 @@ unsigned long pgGetPayload(pghandle object) {
 #endif  
 }
 
-void pgSetInactivity(unsigned long time) {
+void pgSetInactivity(u32 time) {
   struct pgreqd_setinactive arg;
   arg.time = htonl(time);
 #ifdef ENABLE_THREADING_SUPPORT  
@@ -375,7 +375,7 @@ void pgSetInactivity(unsigned long time) {
 #endif  
 }
 
-unsigned long pgGetInactivity(void) {
+u32 pgGetInactivity(void) {
 #ifdef ENABLE_THREADING_SUPPORT
 {
   pgClientReturnData retData;
@@ -456,10 +456,10 @@ void pgDelete(pghandle object) {
  *                 0);
  *
  */
-pghandle pgRegisterApp(short int type,const char *name, ...) {
+pghandle pgRegisterApp(s16 type,const char *name, ...) {
   va_list v;
   struct pgreqd_register *arg;
-  short *spec;
+  s16 *spec;
   int numspecs,i;
   pghandle ret;
 
@@ -471,15 +471,15 @@ pghandle pgRegisterApp(short int type,const char *name, ...) {
     /* Normal app */
    
     /* First just count the number of APPSPECs we have */
-    for (va_start(v,name),numspecs=0;va_arg(v,long);
-	 va_arg(v,long),numspecs++);
+    for (va_start(v,name),numspecs=0;va_arg(v,s32);
+	 va_arg(v,s32),numspecs++);
     va_end(v);
     
     /* Allocate */
     if (!(arg = alloca(sizeof(struct pgreqd_register)+numspecs*4)))
       return;
     /* Move pointer */
-    spec = (short int *)(((char*)arg)+sizeof(struct pgreqd_register));
+    spec = (s16 *)(((char*)arg)+sizeof(struct pgreqd_register));
     
     /* Fill in the required params */
     arg->name = htonl(pgNewString(name));
@@ -488,7 +488,7 @@ pghandle pgRegisterApp(short int type,const char *name, ...) {
     
     /* Fill in the optional APPSPEC params */
     for (va_start(v,name),i=numspecs<<1;i;
-	 i--,*(spec++)=htons(va_arg(v,long)));
+	 i--,*(spec++)=htons(va_arg(v,s32)));
     va_end(v);
 
 #ifdef ENABLE_THREADING_SUPPORT
@@ -520,7 +520,7 @@ pghandle pgRegisterApp(short int type,const char *name, ...) {
 void  pgSetWidget(pghandle widget, ...) {
   va_list v;
   struct pgreqd_set arg;
-  short *spec;
+  s16 *spec;
   int numspecs,i;
 
   /* Set defaults values */
@@ -529,10 +529,10 @@ void  pgSetWidget(pghandle widget, ...) {
 
   va_start(v,widget);
   for (;;) {
-    i = (int) va_arg(v,long);
+    i = (int) va_arg(v,s32);
     if (!i) break;
     arg.property = htons(i);
-    arg.glob = htonl(va_arg(v,long));
+    arg.glob = htonl(va_arg(v,s32));
 #ifdef ENABLE_THREADING_SUPPORT    
     _pg_add_request(PGREQ_SET,&arg,sizeof(arg), -1, 0);
 #else    
@@ -542,7 +542,7 @@ void  pgSetWidget(pghandle widget, ...) {
   va_end(v);
 }
 
-pghandle pgCreateWidget(short int type) {
+pghandle pgCreateWidget(s16 type) {
    struct pgreqd_createwidget arg;
 
    arg.type = htons(type);
@@ -572,7 +572,7 @@ pghandle pgCreateWidget(short int type) {
 #endif  
 }
 
-void pgAttachWidget(pghandle parent, short int rship, pghandle widget) {
+void pgAttachWidget(pghandle parent, s16 rship, pghandle widget) {
 
    struct pgreqd_attachwidget arg;
 
@@ -588,7 +588,7 @@ void pgAttachWidget(pghandle parent, short int rship, pghandle widget) {
    
 }
 
-pghandle pgNewWidget(short int type,short int rship,pghandle parent) {
+pghandle pgNewWidget(s16 type, s16 rship,pghandle parent) {
   struct pgreqd_mkwidget arg;
 
   /* We don't need to validate the type here, the server does that. */
@@ -658,7 +658,7 @@ pghandle pgNewPopupAt(int x,int y,int width,int height) {
 #endif  
 }
 
-pghandle pgNewFont(const char *name,short size,unsigned long style) {
+pghandle pgNewFont(const char *name, s16 size, u32 style) {
   struct pgreqd_mkfont arg;
   memset(&arg,0,sizeof(arg));
 
@@ -726,7 +726,7 @@ pghandle pgNewBitmap(struct pgmemdata obj) {
   
 }
 
-pghandle pgCreateBitmap(short width, short height) {
+pghandle pgCreateBitmap(s16 width, s16 height) {
   struct pgreqd_newbitmap arg;
 
   arg.width = htons(width);
@@ -828,12 +828,12 @@ int pgFindThemeObject(const char* str) {
 #endif  
 }
 
-pghandle pgNewArray(const long* dat, unsigned short size) {  
-  unsigned short i;
-  long *swapped;
+pghandle pgNewArray(const s32* dat, u16 size) {  
+  u16 i;
+  s32 *swapped;
   
   /* Swap each entry first */
-  swapped = alloca(size * sizeof(long));
+  swapped = alloca(size * sizeof(s32));
   for (i=0;i<size;i++)
     swapped[i] = htonl(dat[i]);
 
@@ -841,18 +841,18 @@ pghandle pgNewArray(const long* dat, unsigned short size) {
 {
    pgClientReturnData retData;
    sem_init(&retData.sem, 0, 0);
-   _pg_add_request(PGREQ_MKARRAY,(void *) swapped, size * sizeof(long), (unsigned int)&retData, 1);
+   _pg_add_request(PGREQ_MKARRAY,(void *) swapped, size * sizeof(s32), (unsigned int)&retData, 1);
    sem_wait(&retData.sem);
     return retData.ret.e.retdata;
 }
 #else  
-  _pg_add_request(PGREQ_MKARRAY,(void *) swapped, size * sizeof(long));  
+  _pg_add_request(PGREQ_MKARRAY,(void *) swapped, size * sizeof(s32));  
   pgFlushRequests();  
   return _pg_return.e.retdata;
 #endif  
 }  
   
-pghandle pgEvalRequest(short reqtype, void *data, unsigned long datasize) {
+pghandle pgEvalRequest(s16 reqtype, void *data, u32 datasize) {
 #ifdef ENABLE_THREADING_SUPPORT
 {
    pgClientReturnData retData;
@@ -868,7 +868,7 @@ pghandle pgEvalRequest(short reqtype, void *data, unsigned long datasize) {
 #endif  
 }
 
-long pgGetWidget(pghandle widget,short property) {
+s32 pgGetWidget(pghandle widget, s16 property) {
   struct pgreqd_get arg;
   arg.widget = htonl(widget ? widget : _pgdefault_widget);
   arg.property = htons(property);
@@ -979,8 +979,8 @@ char *pgGetString(pghandle string) {
 #endif  
 }
 
-int pgGetFontStyle(short index, char *name, unsigned short *size,
-		   unsigned short *fontrep, unsigned long *flags) {
+int pgGetFontStyle(s16 index, char *name, u16 *size,
+		   u16 *fontrep, u32 *flags) {
   struct pgreqd_getfstyle arg;
   struct pgdata_getfstyle *gfs;
 
@@ -1040,7 +1040,7 @@ struct pgmodeinfo *pgGetVideoMode(void) {
   return mi;
 }
 
-void pgDriverMessage(unsigned long message, unsigned long param) {
+void pgDriverMessage(u32 message, u32 param) {
   struct pgreqd_drivermsg arg;
   arg.message = htonl(message);
   arg.param = htonl(param);
@@ -1082,7 +1082,7 @@ void pgReplaceTextFmt(pghandle widget,const char *fmt, ...) {
  * (for example, a terminal widget)
  */
 void pgWriteData(pghandle widget,struct pgmemdata data) {
-  unsigned long *buf;
+  u32 *buf;
 
   /* FIXME: Shouln't be recopying this... */
 
@@ -1103,24 +1103,24 @@ void pgWriteData(pghandle widget,struct pgmemdata data) {
  * to a canvas widget. Widget, command, and param number must be followed
  * by the specified number of commands
  */
-void pgWriteCmd(pghandle widget,short command,short numparams, ...) {
+void pgWriteCmd(pghandle widget,s16 command, s16 numparams, ...) {
    struct pgcommand *hdr;
-   signed long *params;
-   unsigned long bufsize;
+   s32 *params;
+   u32 bufsize;
    char *buf;
    va_list v;
    
-   bufsize = numparams * sizeof(signed long) + sizeof(struct pgcommand);
+   bufsize = numparams * sizeof(s32) + sizeof(struct pgcommand);
    buf = alloca(bufsize);
    hdr = (struct pgcommand *) buf;
-   params = (signed long *) (buf + sizeof(struct pgcommand));
+   params = (s32 *) (buf + sizeof(struct pgcommand));
    
    hdr->command = htons(command);
    hdr->numparams = htons(numparams);
       
    va_start(v,numparams);
    for (;numparams;numparams--) {
-      *params = htonl(va_arg(v,long));
+      *params = htonl(va_arg(v,s32));
       params++;
    }
    va_end(v);
@@ -1128,9 +1128,9 @@ void pgWriteCmd(pghandle widget,short command,short numparams, ...) {
    pgWriteData(widget,pgFromMemory(buf,bufsize));
 }
 
-void pgRender(pghandle bitmap,short groptype, ...) {
+void pgRender(pghandle bitmap, s16 groptype, ...) {
   struct pgreqd_render *arg;
-  unsigned long *params;
+  u32 *params;
   int size;
   int numparams;
   va_list v;
@@ -1141,7 +1141,7 @@ void pgRender(pghandle bitmap,short groptype, ...) {
     numparams += 4;
   size =  sizeof(struct pgreqd_render) + 4*numparams;
   arg = alloca(size);
-  params = (unsigned long *) (((unsigned char *)arg) + 
+  params = (u32 *) (((unsigned char *)arg) + 
 			      sizeof(struct pgreqd_render));
 
   /* Transcribe arguments */
@@ -1150,7 +1150,7 @@ void pgRender(pghandle bitmap,short groptype, ...) {
 
   va_start(v,groptype);
   for (;numparams;numparams--) {
-    *params = htonl(va_arg(v,long));
+    *params = htonl(va_arg(v,s32));
     params++;
   }
   va_end(v);
@@ -1203,7 +1203,7 @@ pghandle pgDup(pghandle object) {
 #endif  
 }
 
-void pgChangeContext(pghandle object, short delta) {
+void pgChangeContext(pghandle object, s16 delta) {
   struct pgreqd_chcontext arg;
   arg.handle = htonl(object);
   arg.delta  = htons(delta);
@@ -1244,7 +1244,7 @@ void pgEventPoll(void) {
 
 /* This is almost exacly like pgWriteData */
 void pgAppMessage(pghandle dest, struct pgmemdata data) {
-  unsigned long *buf;
+  u32 *buf;
 
   /* FIXME: Shouln't be recopying this... */
 

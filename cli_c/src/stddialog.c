@@ -1,4 +1,4 @@
-/* $Id: stddialog.c,v 1.12 2002/03/03 07:36:24 micahjd Exp $
+/* $Id: stddialog.c,v 1.13 2002/03/26 16:27:27 instinc Exp $
  *
  * stddialog.c - Various preconstructed dialog boxes the application
  *               may use. These are implemented 100% client-side using
@@ -53,7 +53,7 @@ pghandle pgDialogBox(const char *title) {
 }
 
 /* Like pgMessageDialog, but uses printf-style formatting */
-int pgMessageDialogFmt(const char *title,unsigned long flags,const char *fmt, ...) {
+int pgMessageDialogFmt(const char *title,u32 flags,const char *fmt, ...) {
   char *p;
   int ret;
   va_list ap;
@@ -68,7 +68,7 @@ int pgMessageDialogFmt(const char *title,unsigned long flags,const char *fmt, ..
 }
 
 /* Little internal helper function for the message dialog */
-void dlgbtn(pghandle tb,unsigned long payload,int textproperty,
+void dlgbtn(pghandle tb,u32 payload,int textproperty,
 	    int iconproperty,int key) {
 
   pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,tb);
@@ -101,8 +101,8 @@ void dlgicon(pghandle at,int prop) {
 /* Create a message box, wait until it is
  * answered, then return the answer.
  */
-int pgMessageDialog(const char *title,const char *text,unsigned long flags) {
-  unsigned long ret;
+int pgMessageDialog(const char *title,const char *text,u32 flags) {
+  u32 ret;
   pghandle wToolbar;
 
   /* New context for us! */
