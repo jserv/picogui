@@ -32,7 +32,12 @@ It's the imagery of technology
 Is what you get is what you see
 Don't worry your mind
 When you give it your best
-One two one two this is just a test"""
+One two one two this is just a test
+
+And now, for something completely different...
+The formal name is "All-purpose Humanoid Fighting Machine - Android Evangelion" (HANYOU HITOGATA KESSEN HEIKI - JINZOU NINGEN EVANGELION). 14 years of time and an astronomical amount of money were used to build the Evangelion in order to carry out the Instrumentality Project. Able to both deploy and neutralize an A. T. Field, it is the only fighting force that humans have to counter the Angels. It operates on electric power, and is limited to about 5 minutes of active time without external supply. Therefore it is normally supplied with electrical power through the umbilical cable. (The Evangelion Mass-Production Models from Eva-05 onward are equipped with the S2 engine and thus do not need this cable.) Originally the Eva do not have souls. For this reason, the soul of Yui Ikari was made to dwell in Eva-01. The name Evangelion is thought to derive from "Eve", wife of Adam in the Old Testament, and "Evangel", the Greek word for "gospel". Source: The End of Evangelion : Glossary contained within The End of Evangelion - Theatrical Program.
+
+The End... or is it?"""
 
 app.run()
 print "Testing text readback:\n\n\"" + app.server.getstring(tb.text)[:-1] + "\"\n";
