@@ -1,4 +1,4 @@
-/* $Id: input_filters.c,v 1.2 2002/07/03 22:03:30 micahjd Exp $
+/* $Id: input_filters.c,v 1.3 2002/08/07 06:00:56 micahjd Exp $
  *
  * input_filters.c - Abstract input filter interface
  *
@@ -179,10 +179,10 @@ g_error infilter_init(void) {
   g_error e;
   int i;
   struct infilter *filters[] = {
-    &infilter_pntr_normalize,
 #ifdef CONFIG_TOUCHSCREEN
     &infilter_touchscreen,
 #endif
+    &infilter_pntr_normalize,
     &infilter_key_preprocess,
     &infilter_pntr_preprocess,
 #ifdef CONFIG_KEY_ALPHA
@@ -194,10 +194,10 @@ g_error infilter_init(void) {
     &infilter_hotspot,
   };
   int filter_res[] = {
-    PGRES_INFILTER_PNTR_NORMALIZE,
 #ifdef CONFIG_TOUCHSCREEN
     PGRES_INFILTER_TOUCHSCREEN,
 #endif
+    PGRES_INFILTER_PNTR_NORMALIZE,
     PGRES_INFILTER_KEY_PREPROCESS,
     PGRES_INFILTER_PNTR_PREPROCESS,
     PGRES_INFILTER_MAGIC,

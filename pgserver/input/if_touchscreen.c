@@ -1,4 +1,4 @@
-/* $Id: if_touchscreen.c,v 1.2 2002/07/03 22:03:30 micahjd Exp $
+/* $Id: if_touchscreen.c,v 1.3 2002/08/07 06:00:56 micahjd Exp $
  *
  * if_touchscreen.c - Touchscreen calibration and filtering
  *
@@ -128,6 +128,7 @@ void touchscreen_cal_load(struct ts_calibration *tsc, const char *file) {
     {
       values=fscanf(fp, "%d %d %d %d %d %d %d %d %d", &tsc->a, &tsc->b,
 		    &tsc->c, &tsc->d, &tsc->e, &tsc->f, &tsc->s, &calwidth, &calheight);
+
       /* tsc->s will normally be 65536, enough to cover the
        * inaccuracies of this scaling, I hope - otherwise
        * we need to scale it here */
@@ -186,10 +187,12 @@ void touchscreen_cal_set(struct ts_calibration *tsc, handle cal_string, int save
 /* Transform from pen to screen coordinates using the given calibration 
  */
 void touchscreen_pentoscreen(struct ts_calibration *tsc, int *x, int *y) {
+  int m,n;
   if(tsc->valid && tsc->s) {
-    int m, n;
-    *x=(tsc->a**x+tsc->b**y+tsc->c)*vid->xres/tsc->s;
-    *y=(tsc->d**x+tsc->e**y+tsc->f)*vid->yres/tsc->s;
+    m = (tsc->a * (*x) + tsc->b * (*y) + tsc->c) * vid->xres / tsc->s;
+    n = (tsc->d * (*x) + tsc->e * (*y) + tsc->f) * vid->yres / tsc->s;
+    *x = m;
+    *y = n;
   }
 }
 

@@ -1,4 +1,4 @@
-/* $Id: dvbl_bitmap.c,v 1.5 2002/07/26 14:26:34 micahjd Exp $
+/* $Id: dvbl_bitmap.c,v 1.6 2002/08/07 06:00:57 micahjd Exp $
  *
  * dvbl_bitmap.c - This file is part of the Default Video Base Library,
  *                 providing the basic video functionality in picogui but
@@ -425,7 +425,7 @@ g_error def_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
 
   /* ack... we need to make a new context */
 
-  def_bitmap_getsize(bmp,&w,&h);
+  VID(bitmap_getsize)(bmp,&w,&h);
 
   e = g_malloc((void **) rend,sizeof(struct groprender));
   errorcheck;
