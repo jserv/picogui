@@ -1,3 +1,23 @@
+2001-05-14    Micah Dowty <micahjd@users.sourceforge.net>
+
+Starting to do documentation... Read most of the doxygen manual, seems like
+a good system. Configuring doxygen and starting to add documentation comments
+to cli_c.
+
+      * cli_c/Doxyfile: Added a Doxyfile!
+      
+      
+
+2001-05-12    Micah Dowty <micahjd@users.sourceforge.net>
+
+Wrote a video driver for my LCD wallclock, serial40x4
+
+      * video/serial40x4.c: New video driver, based on the ncurses driver
+
+      * gcore/handle.c: Trying to nail down a handle bug that has been
+        crashing my clock program. I think it's the same one I've been
+	bothered by for a long time. Found one piece of the bug in newhandle()
+
 2001-05-03    Micah Dowty <micahjd@users.sourceforge.net>
 
 Fixink a couple bugs, continuing from yesterday.
