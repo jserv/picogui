@@ -10,6 +10,14 @@ finish my top-priority-todo-items first.
       * cli_c/demos/pgfx_canvas_persistent.c - Small snippet to illustrate
         persistent mode with the canvas
 
+      * gcore/grop.c - Adding 'transient' gropnodes for immediate-mode
+        grop rendering. Adding a 'zombie list' to cache allocated gropnodes.
+	This should make both immediate mode and normal gropnode rendering
+	faster by eliminating almost all memory allocs
+	
+      * widget/widget.c - Added zombie grop stats to the memory debug
+        guru screen
+
 2001-04-12    Micah Dowty <micahjd@users.sourceforge.net>
 
 Starting the abstract graphics interface in the client.

@@ -1,4 +1,4 @@
-/* $Id: g_malloc.h,v 1.5 2001/02/17 05:18:40 micahjd Exp $
+/* $Id: g_malloc.h,v 1.6 2001/04/14 02:59:57 micahjd Exp $
  *
  * g_malloc.h - malloc wrapper providing error handling
  *
@@ -42,6 +42,7 @@ extern long num_divs;     /* Number of divnodes */
 extern long num_widgets;  /* Number of widgets */
 extern long num_handles;  /* Number of handles */
 extern long memref;       /* Total allocations */
+extern long grop_zombie_count;  /* borrowed from grop.c */
 #endif
 
 #ifdef DEBUG_ANY

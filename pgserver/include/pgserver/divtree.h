@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.14 2001/04/05 03:32:25 micahjd Exp $
+/* $Id: divtree.h,v 1.15 2001/04/14 02:59:56 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -183,6 +183,7 @@ g_error addgrop(struct gropctxt *ctx, int type,int x,int y,int w,int h);
 void grop_render(struct divnode *div);
 void grop_addnode(struct gropnode **headpp,struct gropnode *node);
 void grop_free(struct gropnode **headpp);
+void grop_kill_zombies(void);
 
 void align(struct gropctxt *d,alignt align,int *w,int *h,int *x,int *y);
 

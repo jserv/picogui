@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.76 2001/04/12 02:37:57 micahjd Exp $
+/* $Id: widget.c,v 1.77 2001/04/14 02:59:57 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -732,11 +732,13 @@ void dispatch_key(long type,int key,int mods) {
       guru("Memory Profile\n\n"
 	   "Total memory use: %d bytes in %d allocations\n\n"
 	   "%d bytes in %d gropnodes\n"
+	   "%d bytes in %d zombie gropnodes\n"
 	   "%d bytes in %d divnodes\n"
 	   "%d bytes in %d widgets\n"
 	   "%d bytes in %d handle nodes",
 	   memamt,memref,
 	   num_grops*sizeof(struct gropnode),num_grops,
+	   grop_zombie_count*sizeof(struct gropnode),grop_zombie_count,
 	   num_divs*sizeof(struct divnode),num_divs,
 	   num_widgets*sizeof(struct widget),num_widgets,
 	   num_handles*sizeof(struct handlenode),num_handles);

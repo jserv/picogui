@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.41 2001/03/17 04:16:34 micahjd Exp $
+/* $Id: grop.c,v 1.42 2001/04/14 02:59:52 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -35,6 +35,138 @@
 
 short int defaultgropflags;
 
+/******************* Zombie gropnode management */
+
+/* Maximum number of 'zombie' gropnodes to keep around */
+#define MAX_ZOMBIEGROPS   50
+
+/* This is a linked list of 'undead' gropnodes. When a gropnode is deleted,
+ * it goes here. When a new node is needed, the below functions
+ * look here first. The zombies get killed off if this list goes above
+ * the limit MAX_ZOMBIEGROPS
+ */
+struct gropnode *grop_zombie_list;   
+long grop_zombie_count;
+
+g_error gropnode_alloc(struct gropnode **n) {
+#ifdef DEBUG_KEYS
+   num_grops++;
+#endif
+
+   if (grop_zombie_list) {
+      /* re-use a zombie grop */
+      grop_zombie_count--;
+      *n = grop_zombie_list;
+      grop_zombie_list = (*n)->next;
+      return sucess;
+   }
+      
+  return g_malloc((void**)n,sizeof(struct gropnode));
+};
+
+void gropnode_free(struct gropnode *n) {
+#ifdef DEBUG_KEYS
+   num_grops--;
+#endif
+   
+   /* Can we just stick it in the zombie list? */
+   if (grop_zombie_count < MAX_ZOMBIEGROPS) {
+      n->next = grop_zombie_list;
+      grop_zombie_list = n;
+      grop_zombie_count++;
+      return;
+   }
+    
+   /* Do it the old-fasioned way */
+   g_free(n);
+}
+
+/* For cleanup time, delete all gropnodes in the zombie list */
+void grop_kill_zombies(void) {
+   struct gropnode *p, *condemn
+     ;
+   if (!grop_zombie_list) return;
+   p = grop_zombie_list;
+   while (p) {
+      condemn = p;
+      p = p->next;
+      g_free(condemn);
+   }
+   grop_zombie_list = NULL;
+   grop_zombie_count = 0;
+}
+
+/******************* Gropnode utilities */
+
+/* Add a new gropnode to the context. Caller fills in
+   all the grop's parameters afterwards. */
+g_error addgrop(struct gropctxt *ctx, int type,int x,
+		int y,int w,int h) {
+  struct gropnode *p,*node;
+  g_error e;
+
+  /* ctx == NULL is legal, used to disable actual output */
+  if (!ctx) return sucess;
+
+  e = gropnode_alloc(&node);
+  errorcheck;
+  node->type = type;
+  node->next = NULL;
+  node->flags = defaultgropflags;
+  node->x = x;
+  node->y = y;
+  node->w = w;
+  node->h = h;
+
+  if (!ctx->current)
+    *ctx->headpp = ctx->current = node;
+  else {
+    ctx->current->next = node;
+    ctx->current = node;
+  }
+
+  ctx->n++;   /* There goes another gropnode! */
+
+  return sucess;
+}
+
+/* Delete the whole list */
+void grop_free(struct gropnode **headpp) {
+  struct gropnode *p,*condemn;
+
+#ifdef DEBUG_MEMORY
+  static int lock = 0;
+  printf("-> grop_free(0x%08X = &0x%08X)\n",headpp,*headpp);
+  if (lock)
+    printf("     -- grop_free lock triggered --\n");
+  lock = 1;
+#endif
+
+  if ((!headpp)) return;
+  p = *headpp;
+  while (p) {
+    condemn = p;
+    p = p->next;
+    gropnode_free(condemn);
+  }
+  *headpp = NULL;
+
+#ifdef DEBUG_MEMORY
+  printf("<- grop_free()\n");
+  lock = 0;
+#endif
+}
+
+/* Set up a grop context for rendering to a divnode */
+void gropctxt_init(struct gropctxt *ctx, struct divnode *div) {
+  memset(ctx,0,sizeof(struct gropctxt));
+  ctx->headpp = &div->grop;
+  ctx->w = div->w;
+  ctx->h = div->h;
+}
+
+/******************* Gropnode rendering engine */
+ 
 /* This renders a divnode's groplist using the x,y,w,h,tx,ty from 
  * the divnode. The grop is translated by (x+tx,y+ty) and clipped to
  * x,y,w,h. 
@@ -144,9 +276,10 @@ void grop_render(struct divnode *div) {
    
   while (list) {
      
-    /* Handle incremental updates */
+    /* Skip if the incremental-ness isn't right,
+     * but not if it's pseudoincremental or transient */
     if (((list->flags & PG_GROPF_INCREMENTAL) != incflag) &&
-	(!(list->flags & PG_GROPF_PSEUDOINCREMENTAL)))
+	(!(list->flags & (PG_GROPF_PSEUDOINCREMENTAL | PG_GROPF_TRANSIENT))))
        goto skip_this_node;
      
     list->flags &= ~PG_GROPF_PSEUDOINCREMENTAL;
@@ -502,85 +635,22 @@ void grop_render(struct divnode *div) {
 		       list->param[3]);      
       break;
     }
+     
+    /* Jump here when done rendering */
   skip_this_node:
-    list = list->next;
+     
+    /* Delete the grop if it was transient */
+    if (list->flags & PG_GROPF_TRANSIENT) {
+       struct gropnode *condemn;
+       condemn = list;
+       list = list->next;
+       gropnode_free(list);
+    }
+    else {
+       /* Otherwise just move on */
+       list = list->next;
+    }
   }
-}
-
-/* Add a new gropnode to the context. Caller fills in
-   all the grop's parameters afterwards. */
-g_error addgrop(struct gropctxt *ctx, int type,int x,
-		int y,int w,int h) {
-  struct gropnode *p,*node;
-  g_error e;
-
-  /* ctx == NULL is legal, used to disable actual output */
-  if (!ctx) return sucess;
-
-  /* This will probably soon be changed to a heap-based
-     system for allocating gropnodes 
-  */
-#ifdef DEBUG_KEYS
-  num_grops++;
-#endif
-  e = g_malloc((void**)&node,sizeof(struct gropnode));
-  errorcheck;
-  node->type = type;
-  node->next = NULL;
-  node->flags = defaultgropflags;
-  node->x = x;
-  node->y = y;
-  node->w = w;
-  node->h = h;
-
-  if (!ctx->current)
-    *ctx->headpp = ctx->current = node;
-  else {
-    ctx->current->next = node;
-    ctx->current = node;
-  }
-
-  ctx->n++;   /* There goes another gropnode! */
-
-  return sucess;
-}
-
-/* Delete the whole list */
-void grop_free(struct gropnode **headpp) {
-  struct gropnode *p,*condemn;
-
-#ifdef DEBUG_MEMORY
-  static int lock = 0;
-  printf("-> grop_free(0x%08X = &0x%08X)\n",headpp,*headpp);
-  if (lock)
-    printf("     -- grop_free lock triggered --\n");
-  lock = 1;
-#endif
-
-  if ((!headpp)) return;
-  p = *headpp;
-  while (p) {
-    condemn = p;
-    p = p->next;
-    g_free(condemn);
-#ifdef DEBUG_KEYS
-  num_grops--;
-#endif
-  }
-  *headpp = NULL;
-
-#ifdef DEBUG_MEMORY
-  printf("<- grop_free()\n");
-  lock = 0;
-#endif
-}
-
-/* Set up a grop context for rendering to a divnode */
-void gropctxt_init(struct gropctxt *ctx, struct divnode *div) {
-  memset(ctx,0,sizeof(struct gropctxt));
-  ctx->headpp = &div->grop;
-  ctx->w = div->w;
-  ctx->h = div->h;
 }
 
 /* The End */
