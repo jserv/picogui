@@ -100,6 +100,26 @@ array set pg_app { \
 	normal	1\
 	toolbar	2\
 }
+array set pg_exev {\
+	pntr_up		1\
+	pntr_down	2\
+	pntr_noclick	4\
+	pntr_move	8\
+	key		16\
+	char		32\
+	toggle		64\
+	exclusive	128\
+	focus		256\
+	no_hotspot	512\
+}
+array set pg_eventcoding {\
+	param	0\
+	xy	256\
+	pntr	512\
+	data	768\
+	kbd	1024\
+	mask	3840\
+}
 array set pg_request {\
 	update		1\
 	mkwidget	2\
@@ -147,7 +167,7 @@ set defaultparent 0
 set defaultrship $pg_derive(inside)
 
 proc pgGetResponse {} {
-	global pg_response pg_request connection
+	global pg_response pg_request connection pg_eventcoding
 	set data [read $connection 12]
 	binary scan $data "S" type
 	if { $type == $pg_response(error) } {
@@ -158,6 +178,13 @@ proc pgGetResponse {} {
 		binary scan $data "SSII" ret(type) ret(dummy) ret(id) ret(data)
 	} elseif { $type == $pg_response(event) } {
 		binary scan $data "SSII" type ret(event) ret(from) ret(param)
+		if {[expr $ret(event) & $pg_eventcoding(pntr)]==$pg_eventcoding(pntr)} {
+			puts "pointer parameters"
+			set ret(x) [expr $ret(param) & 0xFFF]
+			set ret(y) [expr ($ret(param) >>12) & 0xFFF]
+			set ret(btn) [expr ($ret(param) >>24) & 0xF]
+			set ret(chbtn) [expr ($ret(param) >>28) & 0xF]
+		}
 	} elseif { $type == $pg_response(data) } {
 		binary scan $data "SSII" ret(type) ret(dummy) ret(id) ret(size)
 		set ret(data) [read $connection $ret(size)]
