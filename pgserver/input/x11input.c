@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.21 2002/11/04 11:44:29 micahjd Exp $
+/* $Id: x11input.c,v 1.22 2002/11/04 12:11:32 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -110,7 +110,11 @@ int x11input_fd_activate(int fd) {
       /****************** Resizing */
 
     case ConfigureNotify: 
-      if (!VID(is_rootless)) {
+      if (VID(is_rootless)) {
+	if ((xb = x11_get_window(ev.xmotion.window)))
+	  x11_acknowledge_resize((hwrbitmap)xb, ev.xconfigure.width, ev.xconfigure.height);
+      }
+      else {
 	video_setmode(ev.xconfigure.width, ev.xconfigure.height,
 		      vid->bpp, PG_FM_ON,0); 
 	update(NULL,1);

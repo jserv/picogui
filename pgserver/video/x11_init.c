@@ -1,4 +1,4 @@
-/* $Id: x11_init.c,v 1.3 2002/11/04 11:44:29 micahjd Exp $
+/* $Id: x11_init.c,v 1.4 2002/11/04 12:11:32 micahjd Exp $
  *
  * x11_init.c - Initialization for picogui'x driver for the X window system
  *
@@ -54,6 +54,7 @@ struct x11bitmap *x11_window_list;
 g_error x11_init(void) {
   int x,y,w,h,border,depth;
   Window root;
+  XRectangle rect;
 
   /* Connect to the default X server */
   x11_display = XOpenDisplay(NULL);
@@ -72,6 +73,13 @@ g_error x11_init(void) {
   vid->xres = w;
   vid->yres = h;
 
+  /* Create the display_region */
+  x11_display_region = XCreateRegion();
+  rect.x = rect.y = 0;
+  rect.width = w;
+  rect.height = h;
+  XUnionRectWithRegion(&rect,x11_display_region,x11_display_region);
+
   /* Load the matching input driver */
   return load_inlib(&x11input_regfunc,&inlib_main);
 }
@@ -89,6 +97,8 @@ void x11_close(void) {
     x11_bitmap_free(vid->display);
   if (x11_debug_window)
     x11_bitmap_free(x11_debug_window);
+
+  XDestroyRegion(x11_display_region);  
 
   unload_inlib(inlib_main);   /* Take out our input driver */
   XCloseDisplay(x11_display);

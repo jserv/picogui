@@ -1,4 +1,4 @@
-/* $Id: managedwindow.c,v 1.4 2002/11/04 11:44:30 micahjd Exp $
+/* $Id: managedwindow.c,v 1.5 2002/11/04 12:11:32 micahjd Exp $
  *
  * managedwindow.c - A root widget representing a window managed by a host GUI
  *
@@ -139,7 +139,6 @@ glob managedwindow_get(struct widget *self,int property) {
   }
   return widget_base_get(self,property);
 }
-
 
 void managedwindow_resize(struct widget *self) {
   if (self->in->child.w && self->in->child.h)

@@ -1,4 +1,4 @@
-/* $Id: x11_util.c,v 1.3 2002/11/04 11:44:29 micahjd Exp $
+/* $Id: x11_util.c,v 1.4 2002/11/04 12:11:32 micahjd Exp $
  *
  * x11_util.c - Utility functions for picogui's driver for the X window system
  *
@@ -94,9 +94,6 @@ void x11_bitmap_free(hwrbitmap bmp) {
   if (XB(bmp)->rend)
     g_free(XB(bmp)->rend);
 
-  if (XB(bmp)->display_region)
-    XDestroyRegion(XB(bmp)->display_region);
-  
   if (XB(bmp)->is_window)
     XDestroyWindow(x11_display,XB(bmp)->d);
   else
@@ -221,28 +218,14 @@ void x11_window_set_position(hwrbitmap window, s16 x, s16 y) {
 }
 
 void x11_window_set_size(hwrbitmap window, s16 w, s16 h) {
-  struct x11bitmap *xb = XB(window)->frontbuffer ? XB(window)->frontbuffer : XB(window);
   XWindowChanges wc;
   XEvent ev;
-  XRectangle rect;
+  struct x11bitmap *xb = XB(window)->frontbuffer ? XB(window)->frontbuffer : XB(window);
 
   /* Resize the window */
   wc.width = w;
   wc.height = h;
   XConfigureWindow(x11_display, xb->d, CWWidth | CWHeight, &wc);
-
-  xb->w = w;
-  xb->h = h;
-
-  /* Resize the backbuffer if we're using one */
-  if (XB(window)->frontbuffer) {
-    XFreePixmap(x11_display, XB(window)->d);
-    XB(window)->w = w;
-    XB(window)->h = h;
-    if (XB(window)->rend)
-      g_free(XB(window)->rend);
-    XB(window)->d = XCreatePixmap(x11_display, xb->d, w, h, vid->bpp);
-  }
 
   if (!xb->is_mapped) {
     /* Map the window, waiting for the MapNotify event */
@@ -254,28 +237,11 @@ void x11_window_set_size(hwrbitmap window, s16 w, s16 h) {
     xb->is_mapped = 1;
   }
 
-  /* Create the display_region */
-  if (xb->display_region)
-    XDestroyRegion(xb->display_region);
-  xb->display_region = XCreateRegion();
-  rect.x = rect.y = 0;
-  rect.width = w;
-  rect.height = h;
-  XUnionRectWithRegion(&rect,xb->display_region,xb->display_region);
-
   /* Set input event mask */
   XSelectInput(x11_display, xb->d,
 	       KeyPressMask | KeyReleaseMask | ExposureMask | ButtonMotionMask |
 	       ButtonPressMask | ButtonReleaseMask | PointerMotionMask | StructureNotifyMask);
   XAutoRepeatOn(x11_display);
-
-  /* Resize the divtree */
-  if (xb->dt) {
-    xb->dt->head->r.w = w;
-    xb->dt->head->r.h = h;
-    xb->dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC | DIVNODE_NEED_REBUILD;
-    xb->dt->flags |= DIVTREE_NEED_RECALC | DIVTREE_ALL_REDRAW;
-  }
 
   XFlush(x11_display);
 }
@@ -340,7 +306,7 @@ void x11_expose(Window w, Region r) {
     XSetRegion(x11_display,x11_gctab[PG_LGOP_NONE],r);
     XCopyArea(x11_display,xb->d,xb->frontbuffer->d,
 	      x11_gctab[PG_LGOP_NONE],0,0,xb->w,xb->h,0,0);
-    XSetRegion(x11_display,x11_gctab[PG_LGOP_NONE],xb->frontbuffer->display_region);
+    XSetRegion(x11_display,x11_gctab[PG_LGOP_NONE],x11_display_region);
   }
   else {
     /* Ugly non-double-buffered expose update */
@@ -359,7 +325,7 @@ void x11_expose(Window w, Region r) {
 
     for (i=0;i<=PG_LGOPMAX;i++)
       if (x11_gctab[i])
-	XSetRegion(x11_display,x11_gctab[i],xb->display_region);
+	XSetRegion(x11_display,x11_gctab[i],x11_display_region);
   }
 }
 
@@ -409,6 +375,39 @@ struct x11bitmap *x11_get_window(Window w) {
   }
   
   return NULL;
+}
+
+
+/* Called by x11input whenever a window's size changes, 
+ * even in response to x11_window_set_size 
+ */
+void x11_acknowledge_resize(hwrbitmap window, int w, int h) {
+  if (XB(window)->w != w || XB(window)->h != h) {
+    XB(window)->w = w;
+    XB(window)->h = h;
+    
+    /* Resize the backbuffer if we're using one */
+    if (XB(window)->frontbuffer) {
+      XFreePixmap(x11_display, XB(window)->d);
+      XB(window)->frontbuffer->w = w;
+      XB(window)->frontbuffer->h = h;
+      if (XB(window)->rend)
+	g_free(XB(window)->rend);
+      XB(window)->d = XCreatePixmap(x11_display, XB(window)->frontbuffer->d, w, h, vid->bpp);
+    }
+    
+    /* Resize the divtree */
+    if (XB(window)->dt) {
+      XB(window)->dt->head->r.w = w;
+      XB(window)->dt->head->r.h = h;
+      XB(window)->dt->head->calc.w = w;
+      XB(window)->dt->head->calc.h = h;
+      XB(window)->dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC | DIVNODE_NEED_REBUILD;
+      XB(window)->dt->flags |= DIVTREE_NEED_RECALC | DIVTREE_ALL_REDRAW;
+    }
+
+    update(NULL,1);
+  }
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: x11.h,v 1.2 2002/11/04 10:29:33 micahjd Exp $
+/* $Id: x11.h,v 1.3 2002/11/04 12:11:32 micahjd Exp $
  *
  * x11.h - Header shared by all the x11 driver components in picogui
  *
@@ -51,7 +51,6 @@ struct x11bitmap {
   struct groprender *rend;       /* gropnode rendering info used by picogui */
   s16 w,h;                       /* Width and height */
   struct x11bitmap *frontbuffer; /* If this is a backbuffer, this is the associated front buffer */
-  Region display_region;         /* A region specifying the entire bitmap */
   struct divtree *dt;            /* The corresponding divtree if this is a window */
   struct x11bitmap *next_window; /* Linked list of windows */
   unsigned int is_window:1;      /* Flag indicating if this is a window */
@@ -82,6 +81,8 @@ extern hwrbitmap x11_debug_window;
 /* A list of all allocated windows */
 extern struct x11bitmap *x11_window_list;
 
+/* A region specifying the entire display */
+Region x11_display_region;
 
 /******************************************************** Shared utilities */
 
@@ -105,6 +106,11 @@ void x11_monolithic_window_update(void);
 
 /* Map an X Window to the associated picogui x11bitmap */
 struct x11bitmap *x11_get_window(Window w);
+
+/* Called by x11input whenever a window's size changes, 
+ * even in response to x11_window_set_size 
+ */
+void x11_acknowledge_resize(hwrbitmap window, int w, int h);
 
 
 /******************************************************** Primitives */
