@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.15 2002/10/22 01:35:04 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.16 2002/10/22 14:04:41 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -206,6 +206,7 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
   case PG_TRIGGER_DEACTIVATE:
     DATA->focus = 0;
     DATA->flash_on = 0;
+    paragraph_hide_cursor(DATA->doc->crsr);
     break;
 
   case PG_TRIGGER_ACTIVATE:
