@@ -3,6 +3,7 @@ SUBDIRS = \
 	widget appmgr debug gcore net \
 	vidbase theme video os vidwrap \
 	input font formats etc \
+	profiles \
 	.
 
 DIST_SUBDIRS = configscript $(SUBDIRS)

@@ -1,6 +1,6 @@
 sysconf_DATA = pgserver.conf
 
-EXTRA_DIST = $(sysconf_DATA)
+EXTRA_DIST = $(sysconf_DATA) pgserver.conf.in
 
 noinst_PROGRAMS = gen-pgserver-conf
 gen_pgserver_conf_SOURCES = gen-pgserver-conf.c
