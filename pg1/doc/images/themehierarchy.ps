@@ -1,5 +1,5 @@
 %!PS-Adobe-2.0
-%%Creator: dot version 1.9 (Fri May 23 02:39:49 MDT 2003)
+%%Creator: dot version 1.8.9 (Wed Oct  2 09:41:21 MDT 2002)
 %%For: (micah) Micah Dowty,,,
 %%Title: L0
 %%Pages: (atend)
@@ -187,10 +187,8 @@ cleartomark
 	]
 def
 
-/layerlen layercolorseq length def
-
 /setlayer {/maxlayer exch def /curlayer exch def
-	layercolorseq curlayer 1 sub layerlen mod get
+	layercolorseq curlayer get
 	aload pop sethsbcolor
 	/nodecolor {nopcolor} def
 	/edgecolor {nopcolor} def
@@ -2673,3 +2671,8 @@ endpage
 grestore
 %%PageTrailer
 %%EndPage: 1
+%%Trailer
+%%Pages: 1
+end
+restore
+%%EOF
