@@ -385,5 +385,15 @@ quoted appropriately. For example:
   related, you can turn this off.
   Default: 1
 
+[video-sdlgl]
+
+- caption
+  Set the window caption when PicoGUI is run in a window. This is a printf
+  format string with 2 integer parameters: width and height.
+
+- fullscreen
+  Set to 1 to enable fullscreen mode
+
+
 --- The End ---
 

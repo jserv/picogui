@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.75 2002/02/23 05:42:28 micahjd Exp $
+/* $Id: video.h,v 1.76 2002/02/26 18:22:47 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -597,6 +597,7 @@ void rotate270_coord_logicalize(s16 *x, s16 *y);
 /************* Registration functions for video drivers */
 
 g_error sdlfb_regfunc(struct vidlib *v);
+g_error sdlgl_regfunc(struct vidlib *v);
 g_error svgagl_regfunc(struct vidlib *v);
 g_error svgafb_regfunc(struct vidlib *v);
 g_error chipslice_video_regfunc(struct vidlib *v);
