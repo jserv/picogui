@@ -8,7 +8,8 @@ choice 'Platform' \
 	 uClinux			UCLINUX \
 	 Windows			WINDOWS" Linux
 
-bool 'x86 asm optimization' ASM_INTEL
+bool 'ChipSlice Platform'               CONFIG_CHIPSLICE
+bool 'x86 asm optimization'             ASM_INTEL
 bool 'm68k asm optimization (not implemented)' ASM_68000
 endmenu
 
