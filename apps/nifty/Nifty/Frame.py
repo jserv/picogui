@@ -7,6 +7,7 @@ class Frame(object):
     "A window"
 
     history_limit = 23 # completely arbitrary
+    clipboard_limit = 23 # idem
 
     def __init__(self, title):
         self._pages = []
@@ -31,6 +32,8 @@ class Frame(object):
         sys.stdout = self.minibuffer
 
         sys.stderr = DebugBuffer(self)
+
+        self._clipboard = []
 
     def get_current(self):
         for page in self._pages:
@@ -109,6 +112,18 @@ class Frame(object):
 
     def workspaces(self):
         return [page.workspace for page in self._pages]
+
+    def copy(self, data):
+        self._clipboard.append(data)
+        if len(self._clipboard) > self.clipboard_limit:
+            self._clipboard = self._clipboard[-self.clipboard_limit:]
+
+    def paste(self, offset=1):
+        if not self._clipboard:
+            print 'nothing to paste'
+            return
+        offset = offset % len(self._clipboard)
+        return self._clipboard[-offset]
 
     def run(self):
         return self._app.run()

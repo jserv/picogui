@@ -88,3 +88,6 @@ class Minibuffer(object):
     def bind(__self, **kw):
         __self.python_ns.update(kw)
         # we use __self instead of self so that someone may bind the name 'self'
+
+    def focus(self):
+        self._field.focus()

@@ -4,6 +4,12 @@ default = {
       'C-s': 'frame.save()',
     },
     'A-space': 'print workspace.cursor_position',
+    'C-space': 'workspace.set_mark()',
+    'A-w': 'workspace.copy()',
+    'C-w': 'workspace.cut()',
+    'C-y': 'workspace.paste()',
+    'A-y': 'workspace.rotate_paste()',
+    'A-x': 'frame.minibuffer.focus()'
 }
 
 def _resolve(sequence, where=default):
