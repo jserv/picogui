@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.134 2002/01/05 12:52:05 micahjd Exp $
+/* $Id: widget.c,v 1.135 2002/01/06 01:13:27 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -865,6 +865,8 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
     widgetunder(x,y,dts->top->head);
 
   if (div_under_crsr) {
+    int release_captured = 0;
+
     under = div_under_crsr->owner;
     
     /* Keep track of the most recently clicked widget */
@@ -872,12 +874,13 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
       lastclicked = under;
 
     if ((!(btn & capturebtn)) && capture && (capture!=under)) {
-      send_trigger(capture,TRIGGER_RELEASE,&param);
+      release_captured = send_trigger(capture,TRIGGER_RELEASE,&param);
       capture = NULL;
     }
 
     /* First send the 'raw' event, then handle the cooked ones. */
-    send_trigger(under,type,&param);
+    if (!release_captured)
+      send_trigger(under,type,&param);
 
     if (type==TRIGGER_DOWN && !capture) {
       capture = under;

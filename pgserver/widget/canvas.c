@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.32 2002/01/05 06:29:56 micahjd Exp $
+/* $Id: canvas.c,v 1.33 2002/01/06 01:13:27 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -52,15 +52,12 @@ void canvas_inputmap(struct widget *self,s16 *x,s16 *y) {
     case PG_MAP_NONE:
       return;
       
+      /* self->in->div->w and self->in->div->h should never be zero here.
+       * if they are, it's a bug in the input dispatch.
+       */
     case PG_MAP_SCALE:
-      if (self->in->div->w)
-	*x = *x * DATA->input_map.w / self->in->div->w;
-      else
-	*x = 0;
-      if (self->in->div->h)
-	*y = *y * DATA->input_map.h / self->in->div->h;
-      else 
-	*y = 0;
+      *x = *x * DATA->input_map.w / self->in->div->w;
+      *y = *y * DATA->input_map.h / self->in->div->h;
       break;
 
    case PG_MAP_SQUARESCALE:
