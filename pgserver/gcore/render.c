@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.42 2002/10/10 08:19:26 micahjd Exp $
+/* $Id: render.c,v 1.43 2002/10/11 11:58:43 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -77,10 +77,10 @@ void grop_render(struct divnode *div, struct quad *clip) {
 
     /* Add in the divnode-level scrolling if necessary */
     if ((div->flags & DIVNODE_DIVSCROLL) && div->divscroll) {
-      dtx = div->divscroll->tx;
-      dty = div->divscroll->ty;
-      div->x = div->calcx + dtx;
-      div->y = div->calcy + dty;
+      dtx = div->divscroll->translation.x;
+      dty = div->divscroll->translation.y;
+      div->r.x = div->calc.x + dtx;
+      div->r.y = div->calc.y + dty;
     }
     else {
       dtx = 0;
@@ -88,37 +88,20 @@ void grop_render(struct divnode *div, struct quad *clip) {
     } 
      
     /* Transfer over some numbers from the divnode */   
-    if (clip) {
+    if (clip)
       rend.clip = *clip;
-    }
-    else {
-      rend.clip.x1 = div->x;
-      rend.clip.x2 = div->x+div->w-1;
-      rend.clip.y1 = div->y;
-      rend.clip.y2 = div->y+div->h-1;
-    }
-    rend.translation.x = div->tx;
-    rend.translation.y = div->ty;
-    rend.scroll.x = dtx - div->otx;
-    rend.scroll.y = dty - div->oty;
-    div->otx = dtx;
-    div->oty = dty;
-    rend.output_rect.x = div->x;
-    rend.output_rect.y = div->y;
-    rend.output_rect.w = div->w;
-    rend.output_rect.h = div->h;
+    else
+      rend.clip = *rect_to_quad(&div->r);
+    rend.translation = div->translation;
+    rend.scroll.x = dtx - div->old_translation.x;
+    rend.scroll.y = dty - div->old_translation.y;
+    div->old_translation.x = dtx;
+    div->old_translation.y = dty;
+    rend.output_rect = div->r;
      
     /* Clip the clipping rectangle to the scrolling container */
-    if ((div->flags & DIVNODE_DIVSCROLL) && div->divscroll) {
-      if (rend.clip.x1 < div->divscroll->calcx)
-	rend.clip.x1 = div->divscroll->calcx;
-      if (rend.clip.x2 > (div->divscroll->calcx + div->divscroll->calcw - 1))
-	rend.clip.x2 = div->divscroll->calcx + div->divscroll->calcw - 1;
-      if (rend.clip.y1 < div->divscroll->calcy)
-	rend.clip.y1 = div->divscroll->calcy;
-      if (rend.clip.y2 > (div->divscroll->calcy + div->divscroll->calch - 1))
-	rend.clip.y2 = div->divscroll->calcy + div->divscroll->calch - 1;
-    }
+    if ((div->flags & DIVNODE_DIVSCROLL) && div->divscroll)
+      quad_intersect(&rend.clip, rect_to_quad(&div->divscroll->calc));
      
     /* Scrolling updates */
     if ((div->flags & DIVNODE_SCROLL_ONLY) && 
@@ -325,21 +308,11 @@ void groplist_scroll(struct groprender *r, struct divnode *div) {
      */
     struct quad trclip;
 
-    trclip.x1 = div->divscroll->calcx;
-    trclip.y1 = div->divscroll->calcy;
-    trclip.x2 = trclip.x1 + div->divscroll->calcw - 1;
-    trclip.y2 = trclip.y1 + div->divscroll->calch - 1;
+    trclip = *rect_to_quad(&div->divscroll->calc);
     scroll_clip(&trclip,&r->scroll);
 
     /* Clip ourselves to this also */
-    if (r->clip.x1 < trclip.x1)
-      r->clip.x1 = trclip.x1;
-    if (r->clip.x2 > trclip.x2)
-      r->clip.x2 = trclip.x2;
-    if (r->clip.y1 < trclip.y1)
-      r->clip.y1 = trclip.y1;
-    if (r->clip.y2 > trclip.y2)
-      r->clip.y2 = trclip.y2;
+    quad_intersect(&r->clip,&trclip);
 
     return;
   }
@@ -990,7 +963,23 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
   }
 }
 
+/****************************************************** geometry */
 
+void quad_intersect(struct quad *dest, struct quad *src) {
+  dest->x1 = max(dest->x1, src->x1);
+  dest->y1 = max(dest->y1, src->y1);
+  dest->x2 = min(dest->x2, src->x2);
+  dest->y2 = min(dest->y2, src->y2);
+}
+
+struct quad *rect_to_quad(struct rect *rect) {
+  static struct quad q;
+  q.x1 = rect->x;
+  q.y1 = rect->y;
+  q.x2 = rect->x + rect->w - 1;
+  q.y2 = rect->y + rect->h - 1;
+  return &q;
+}
 /* The End */
 
   

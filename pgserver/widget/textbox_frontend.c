@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.10 2002/10/11 09:48:21 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.11 2002/10/11 11:58:45 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -208,8 +208,8 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
       paragraph_hide_cursor(DATA->doc->crsr);
       DATA->doc->crsr = &par->cursor;
       paragraph_movecursor(DATA->doc->crsr, par,
-			   param->mouse.x - par->div->div->x,
-			   param->mouse.y - par->div->div->y);
+			   param->mouse.x - par->div->div->r.x,
+			   param->mouse.y - par->div->div->r.y);
       paragraph_show_cursor(DATA->doc->crsr);
       request_focus(self);
     }

@@ -1,4 +1,4 @@
-/* $Id: if_hotspot.c,v 1.4 2002/09/28 10:58:10 micahjd Exp $
+/* $Id: if_hotspot.c,v 1.5 2002/10/11 11:58:44 micahjd Exp $
  *
  * if_hotspot.c - Use arrow keys to navigate around the screen.
  *                Besides the actual input filter, this has utilities to build the
@@ -148,22 +148,22 @@ g_error hotspot_build(struct divnode *n, struct divnode *ntb) {
   if (!n) return success;
   
   /* shall this be a hotspot? */
-  if ((n->flags & DIVNODE_HOTSPOT) && n->w>0 && n->h>0 &&
-      ((!ntb) || n->x < ntb->x || n->y < ntb->y ||
-       n->x >= ntb->x+ntb->w || n->y >= ntb->y+ntb->h) &&
-      ((!n->divscroll) || (n->divscroll->calcw && n->divscroll->calch))) {
+  if ((n->flags & DIVNODE_HOTSPOT) && n->r.w>0 && n->r.h>0 &&
+      ((!ntb) || n->r.x < ntb->r.x || n->r.y < ntb->r.y ||
+       n->r.x >= ntb->r.x+ntb->r.w || n->r.y >= ntb->r.y+ntb->r.h) &&
+      ((!n->divscroll) || (n->divscroll->calc.w && n->divscroll->calc.h))) {
 
     /* Find a good place within the node for the hotspot */
     divnode_hotspot_position(n,&x,&y);
 
     /* Scrolled? Clip to the scrolling container. */
     if (n->divscroll) {
-      if (x < n->divscroll->calcx) x = n->divscroll->calcx;
-      if (y < n->divscroll->calcy) y = n->divscroll->calcy;
-      if (x > n->divscroll->calcx + n->divscroll->calcw - 1)
-	x = n->divscroll->calcx + n->divscroll->calcw - 1;
-      if (y > n->divscroll->calcy + n->divscroll->calch - 1)
-	y = n->divscroll->calcy + n->divscroll->calch - 1;
+      if (x < n->divscroll->calc.x) x = n->divscroll->calc.x;
+      if (y < n->divscroll->calc.y) y = n->divscroll->calc.y;
+      if (x > n->divscroll->calc.x + n->divscroll->calc.w - 1)
+	x = n->divscroll->calc.x + n->divscroll->calc.w - 1;
+      if (y > n->divscroll->calc.y + n->divscroll->calc.h - 1)
+	y = n->divscroll->calc.y + n->divscroll->calc.h - 1;
     }
 
     /* Give the hotspot both an actual hotspot position and the divnode */
@@ -353,20 +353,20 @@ void scroll_to_divnode(struct divnode *div) {
    * container, no need to scroll it in.
    * This fixes some confusing scroll behavior when focusing the textbox widget.
    */
-  if ( (div->x <= ds->calcx && (div->x + div->w) > (ds->calcx + ds->calcw)) ||
-       (div->y <= ds->calcy && (div->y + div->h) > (ds->calcy + ds->calch)) )
+  if ( (div->r.x <= ds->calc.x && (div->r.x + div->r.w) > (ds->calc.x + ds->calc.w)) ||
+       (div->r.y <= ds->calc.y && (div->r.y + div->r.h) > (ds->calc.y + ds->calc.h)) )
     return;
 
   /* Figure out how much to scroll, if any. */
 
-  if (div->x < ds->calcx)
-    dx = div->x - ds->calcx;
-  else if ( (div->x + div->w) > (ds->calcx + ds->calcw) )
-    dx = (div->x + div->w) - (ds->calcx + ds->calcw);
-  if (div->y < ds->calcy)
-    dy = div->y - ds->calcy;
-  else if ( (div->y + div->h) > (ds->calcy + ds->calch) )
-    dy = (div->y + div->h) - (ds->calcy + ds->calch);
+  if (div->r.x < ds->calc.x)
+    dx = div->r.x - ds->calc.x;
+  else if ( (div->r.x + div->r.w) > (ds->calc.x + ds->calc.w) )
+    dx = (div->r.x + div->r.w) - (ds->calc.x + ds->calc.w);
+  if (div->r.y < ds->calc.y)
+    dy = div->r.y - ds->calc.y;
+  else if ( (div->r.y + div->r.h) > (ds->calc.y + ds->calc.h) )
+    dy = (div->r.y + div->r.h) - (ds->calc.y + ds->calc.h);
 
   /* No scrolling? */
   if (!(dx || dy))
@@ -391,12 +391,12 @@ void divnode_hotspot_position(struct divnode *div, int *hx, int *hy) {
   /* FIXME: Get a smarter way to find the hotspot. For example, account for
    * different optimum positioning in different types of widgets, etc. */
 
-  *hx = div->x + div->w - 8;
-  *hy = div->y + div->h - 8;
-  if (*hx<div->x)
-    *hx = div->x;
-  if (*hy<div->y)
-    *hy = div->y;
+  *hx = div->r.x + div->r.w - 8;
+  *hy = div->r.y + div->r.h - 8;
+  if (*hx<div->r.x)
+    *hx = div->r.x;
+  if (*hy<div->r.y)
+    *hy = div->r.y;
 }
 
 

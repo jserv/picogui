@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.63 2002/10/07 07:08:09 micahjd Exp $
+/* $Id: popup.c,v 1.64 2002/10/11 11:58:44 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -57,31 +57,31 @@ void clip_popup(struct divnode *div) {
    * divtree hasn't been recalc'ed we should clip the ntb to the display size
    * to prevent segfaulting.
    */
-  if ( (ntb.x+ntb.w) > vid->lxres )
-    ntb.w = vid->lxres - ntb.x;
-  if ( (ntb.y+ntb.h) > vid->lyres )
-    ntb.h = vid->lyres - ntb.y;
+  if ( (ntb.r.x+ntb.r.w) > vid->lxres )
+    ntb.r.w = vid->lxres - ntb.r.x;
+  if ( (ntb.r.y+ntb.r.h) > vid->lyres )
+    ntb.r.h = vid->lyres - ntb.r.y;
 
-  if (div->calcx+div->calcw >= ntb.x+ntb.w)
-    div->x = div->calcx = ntb.x+ntb.w - div->calcw;
-  if (div->calcy+div->calch >= ntb.y+ntb.h)
-    div->y = div->calcy = ntb.y+ntb.h - div->calch;
-  if (div->calcx < ntb.x) 
-    div->x = div->calcx = ntb.x;
-  if (div->calcy < ntb.y) 
-    div->y = div->calcy = ntb.y;
-  if (div->calcx+div->calcw >= ntb.x+ntb.w)
-    div->w = div->calcw = ntb.x+ntb.w - div->calcx;
-  if (div->calcy+div->calch >= ntb.y+ntb.h)
-    div->h = div->calch = ntb.y+ntb.h - div->calcy;
+  if (div->calc.x+div->calc.w >= ntb.r.x+ntb.r.w)
+    div->r.x = div->calc.x = ntb.r.x+ntb.r.w - div->calc.w;
+  if (div->calc.y+div->calc.h >= ntb.r.y+ntb.r.h)
+    div->r.y = div->calc.y = ntb.r.y+ntb.r.h - div->calc.h;
+  if (div->calc.x < ntb.r.x) 
+    div->r.x = div->calc.x = ntb.r.x;
+  if (div->calc.y < ntb.r.y) 
+    div->r.y = div->calc.y = ntb.r.y;
+  if (div->calc.x+div->calc.w >= ntb.r.x+ntb.r.w)
+    div->r.w = div->calc.w = ntb.r.x+ntb.r.w - div->calc.x;
+  if (div->calc.y+div->calc.h >= ntb.r.y+ntb.r.h)
+    div->r.h = div->calc.h = ntb.r.y+ntb.r.h - div->calc.y;
 }
 
 void build_popupbg(struct gropctxt *c,unsigned short state,struct widget *self) {
   struct divnode *ntb;
 
   /* Don't bother with it if the popup itself hasn't been sized yet */
-  if (!(self->in->div->w && self->in->div->h) || 
-      self->in->div->x < 0 || self->in->div->y < 0)
+  if (!(self->in->div->r.w && self->in->div->r.h) || 
+      self->in->div->r.x < 0 || self->in->div->r.y < 0)
     return;
 
   /* If the popup is not allowed to overlap toolbars, clip to the nontoolbar
@@ -96,15 +96,15 @@ void build_popupbg(struct gropctxt *c,unsigned short state,struct widget *self) 
    * so that the backdrop can easily draw a drop shadow, or a halo, etc..
    */
 
-  self->in->x = ntb->x;
-  self->in->y = ntb->y;
-  self->in->w = ntb->w;
-  self->in->h = ntb->h;
+  self->in->r.x = ntb->r.x;
+  self->in->r.y = ntb->r.y;
+  self->in->r.w = ntb->r.w;
+  self->in->r.h = ntb->r.h;
 
-  c->x = self->in->div->x - ntb->x;
-  c->y = self->in->div->y - ntb->y;
-  c->w = self->in->div->w;
-  c->h = self->in->div->h;
+  c->r.x = self->in->div->r.x - ntb->r.x;
+  c->r.y = self->in->div->r.y - ntb->r.y;
+  c->r.w = self->in->div->r.w;
+  c->r.h = self->in->div->r.h;
 
   if (theme_lookup(self->in->div->state,PGTH_P_BACKDROP)) {
     /* exec_fillstyle knows not to use the default rectangle fill on a backdrop */
@@ -183,10 +183,10 @@ g_error popup_install(struct widget *self) {
    * Set some defaults: automatic sizing, and centered
    */
 
-  self->in->div->calcx = PG_POPUP_CENTER;
-  self->in->div->calcy = PG_POPUP_CENTER;
-  self->in->div->calcw = 0;
-  self->in->div->calch = 0;
+  self->in->div->calc.x = PG_POPUP_CENTER;
+  self->in->div->calc.y = PG_POPUP_CENTER;
+  self->in->div->calc.w = 0;
+  self->in->div->calc.h = 0;
 
   return success;
 }
@@ -247,19 +247,19 @@ g_error popup_set(struct widget *self,int property, glob data) {
       self->in->state = PGTH_O_POPUP_MENU;
       self->in->div->split = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
     }
-    self->in->div->calcx = data;
+    self->in->div->calc.x = data;
     break;
 
   case PG_WP_ABSOLUTEY:
-    self->in->div->calcy = data;
+    self->in->div->calc.y = data;
     break;
 
   case PG_WP_WIDTH:
-    self->in->div->calcw = data;
+    self->in->div->calc.w = data;
     break;
 
   case PG_WP_HEIGHT:
-    self->in->div->calch = data;
+    self->in->div->calc.h = data;
     break;
 
   default:
@@ -272,16 +272,16 @@ glob popup_get(struct widget *self,int property) {
   switch (property) {
 
   case PG_WP_ABSOLUTEX:
-    return self->in->div->calcx;
+    return self->in->div->calc.x;
 
   case PG_WP_ABSOLUTEY:
-    return self->in->div->calcy;
+    return self->in->div->calc.y;
 
   case PG_WP_WIDTH:
-    return self->in->div->calcw;
+    return self->in->div->calc.w;
 
   case PG_WP_HEIGHT:
-    return self->in->div->calch;
+    return self->in->div->calc.h;
 
   }
   return widget_base_get(self,property);

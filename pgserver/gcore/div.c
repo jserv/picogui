@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.89 2002/10/07 07:08:07 micahjd Exp $
+/* $Id: div.c,v 1.90 2002/10/11 11:58:43 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -50,15 +50,12 @@ struct divtree fakedt = {
 void divnode_divscroll(struct divnode *n) {
   /* Implement DIVNODE_EXTEND_* flags, used for scrolling */
 
-  n->x = n->calcx;
-  n->y = n->calcy;
-  n->w = n->calcw;
-  n->h = n->calch;
+  n->r = n->calc;
 
   if (n->flags & DIVNODE_EXTEND_WIDTH)
-    n->w  = max(n->w,max(n->pw,n->cw));
+    n->r.w  = max(n->r.w,max(n->preferred.w,n->child.w));
   if (n->flags & DIVNODE_EXTEND_HEIGHT)
-    n->h  = max(n->h,max(n->ph,n->ch));
+    n->r.h  = max(n->r.h,max(n->preferred.h,n->child.h));
   
   /* Implement the calculation-time part of DIVNODE_DIVSCROLL */
   if (n->flags & DIVNODE_DIVSCROLL) {
@@ -92,13 +89,10 @@ void divnode_split(struct divnode *n, struct rect *divrect,
     if (n->flags & (DIVNODE_SPLIT_POPUP | DIVNODE_SPLIT_IGNORE))
       return;
 
-    nextrect->x = n->calcx;
-    nextrect->y = n->calcy;
-    nextrect->w = n->calcw;
-    nextrect->h = n->calch;
-    
-    divrect->x = n->calcx;
-    divrect->y = n->calcy;
+    *nextrect = n->calc;
+
+    divrect->x = n->calc.x;
+    divrect->y = n->calc.y;
     divrect->w = 0;
     divrect->h = 0;
   }
@@ -110,10 +104,10 @@ void divnode_split(struct divnode *n, struct rect *divrect,
     n->flags &= ~DIVNODE_SPLIT_POPUP;   /* Clear flag */
 
     /* Get size */
-    x = n->div->calcx;
-    y = n->div->calcy;
-    w = n->div->calcw;
-    h = n->div->calch;
+    x = n->div->calc.x;
+    y = n->div->calc.y;
+    w = n->div->calc.w;
+    h = n->div->calc.h;
 
     /* Get margin value */
     margin = theme_lookup(n->owner->in->div->state,PGTH_P_MARGIN);
@@ -128,9 +122,9 @@ void divnode_split(struct divnode *n, struct rect *divrect,
      */
 
     if (!w)
-      w = max(n->div->cw,n->div->pw) - (margin<<1);
+      w = max(n->div->child.w,n->div->preferred.w) - (margin<<1);
     if (!h)
-      h = max(n->div->ch,n->div->ph) - (margin<<1);
+      h = max(n->div->child.h,n->div->preferred.h) - (margin<<1);
     
     /* The width and height specified in the theme are minimum values */
     i = theme_lookup(n->owner->in->div->state,PGTH_P_WIDTH);
@@ -171,15 +165,15 @@ void divnode_split(struct divnode *n, struct rect *divrect,
       
       if (snap && snap->type == PG_WIDGET_BUTTON) {
 	/* snap to a button edge */
-	x = snap->in->div->x;
-	y = snap->in->div->y + snap->in->div->h + margin;
+	x = snap->in->div->r.x;
+	y = snap->in->div->r.y + snap->in->div->r.h + margin;
 	if ((y+h)>=vid->yres) /* Flip over if near the bottom */
-	  y = snap->in->div->y - h - margin;
+	  y = snap->in->div->r.y - h - margin;
       }
       else if (snap && snap->type == PG_WIDGET_MENUITEM) {
 	/* snap to a menuitem edge */
-	x = snap->in->div->x + snap->in->div->w;
-	y = snap->in->div->y;
+	x = snap->in->div->r.x + snap->in->div->r.w;
+	y = snap->in->div->r.y;
       }
       else {
 	/* exactly at the cursor */
@@ -200,18 +194,18 @@ void divnode_split(struct divnode *n, struct rect *divrect,
   /* All available space for div */
   else if (n->flags & DIVNODE_SPLIT_EXPAND) {
 
-    /* NOTE: the discrepancy in using calcx/y and normal w/h here
+    /* NOTE: the discrepancy in using calc.x/y and normal w/h here
      * is intentional. We want the normal calculated x/y coordinates
      * because we don't want scrolling to be taking effect. But,
      * the width and height should be expanded if necessary.
      */
-    divrect->x = n->calcx;
-    divrect->y = n->calcy;
-    divrect->w = n->w;
-    divrect->h = n->h; 
+    divrect->x = n->calc.x;
+    divrect->y = n->calc.y;
+    divrect->w = n->r.w;
+    divrect->h = n->r.h; 
 
-    nextrect->x = n->calcx;
-    nextrect->y = n->calcy;
+    nextrect->x = n->calc.x;
+    nextrect->y = n->calc.y;
     nextrect->w = 0;
     nextrect->h = 0;
   }
@@ -220,104 +214,104 @@ void divnode_split(struct divnode *n, struct rect *divrect,
   else if (n->flags & (DIVNODE_SPLIT_TOP|DIVNODE_SPLIT_BOTTOM)) {
     
     if (n->flags & DIVNODE_UNIT_PERCENT)
-      split = (n->h*split)/100;
+      split = (n->r.h*split)/100;
     
     else if ( (n->flags & DIVNODE_UNIT_CNTFRACT) && 
 	      n->owner && (split & 0xFF)) {
       struct widget *container;
       if (!iserror(rdhandle((void**)&container,PG_TYPE_WIDGET,
 			    -1,n->owner->container)))
-	split = container->in->div->h * (split >> 8) / (split & 0xFF);
+	split = container->in->div->r.h * (split >> 8) / (split & 0xFF);
     }
     
     /* Not enough space. Shrink the divnode to fit in the available space. 
      */
-    if (split>n->h)
-	split = n->h;
+    if (split>n->r.h)
+	split = n->r.h;
     
-    divrect->x = n->calcx;
-    divrect->w = n->w;
-    nextrect->x = n->calcx;
-    nextrect->w = n->w;
+    divrect->x = n->calc.x;
+    divrect->w = n->r.w;
+    nextrect->x = n->calc.x;
+    nextrect->w = n->r.w;
 
     if (n->flags & DIVNODE_SPLIT_TOP) {
-      divrect->y = n->calcy;
+      divrect->y = n->calc.y;
       divrect->h = split;
-      nextrect->y = n->calcy+split;
-      nextrect->h = n->h-split;
+      nextrect->y = n->calc.y+split;
+      nextrect->h = n->r.h-split;
     }
     else {
-      divrect->y = n->calcy+n->h-split;
+      divrect->y = n->calc.y+n->r.h-split;
       divrect->h = split;
-      nextrect->y = n->calcy;
-      nextrect->h = n->h-split;
+      nextrect->y = n->calc.y;
+      nextrect->h = n->r.h-split;
     }
   }
   
   /* Horizontal */
   else if (n->flags & (DIVNODE_SPLIT_LEFT|DIVNODE_SPLIT_RIGHT)) {
     if (n->flags & DIVNODE_UNIT_PERCENT)
-      split = (n->w*split)/100;
+      split = (n->r.w*split)/100;
     
     else if ( (n->flags & DIVNODE_UNIT_CNTFRACT) && 
 	      n->owner && (split & 0xFF)) {
       struct widget *container;
       if (!iserror(rdhandle((void**)&container,PG_TYPE_WIDGET,
 			    -1,n->owner->container)))
-	split = container->in->div->w * (split >> 8) / (split & 0xFF);
+	split = container->in->div->r.w * (split >> 8) / (split & 0xFF);
     }
     
 
     /* Not enough space. Shrink the divnode to fit in the available space. 
      */
-    if (split>n->w)
-	split = n->w;
+    if (split>n->r.w)
+	split = n->r.w;
     
-    divrect->y = n->calcy;
-    divrect->h = n->h;
-    nextrect->y = n->calcy;
-    nextrect->h = n->h;
+    divrect->y = n->calc.y;
+    divrect->h = n->r.h;
+    nextrect->y = n->calc.y;
+    nextrect->h = n->r.h;
 
     if (n->flags & DIVNODE_SPLIT_LEFT) {
-      divrect->x = n->calcx;
+      divrect->x = n->calc.x;
       divrect->w = split;
-      nextrect->x = n->calcx+split;
-      nextrect->w = n->w-split;
+      nextrect->x = n->calc.x+split;
+      nextrect->w = n->r.w-split;
     }
     else {
-      divrect->x = n->calcx+n->w-split;
+      divrect->x = n->calc.x+n->r.w-split;
       divrect->w = split;
-      nextrect->x = n->calcx;
-      nextrect->w = n->w-split;
+      nextrect->x = n->calc.x;
+      nextrect->w = n->r.w-split;
     }
   }
   
   /* Center the 'div' node in this one. If a 'next' node exists,
    * it has the same coords as this one */
   else if (n->flags & DIVNODE_SPLIT_CENTER) {
-    divrect->w = n->cw;
-    divrect->h = n->ch;
-    divrect->x = n->calcx+(n->w-divrect->w)/2;
-    divrect->y = n->calcy+(n->h-divrect->h)/2;
+    divrect->w = n->child.w;
+    divrect->h = n->child.h;
+    divrect->x = n->calc.x+(n->r.w-divrect->w)/2;
+    divrect->y = n->calc.y+(n->r.h-divrect->h)/2;
     
-    nextrect->x = n->calcx;
-    nextrect->y = n->calcy;
-    nextrect->w = n->w;
-    nextrect->h = n->h;
+    nextrect->x = n->calc.x;
+    nextrect->y = n->calc.y;
+    nextrect->w = n->r.w;
+    nextrect->h = n->r.h;
   }
   
   /* Create a border of 'split' pixels between the 'div' node and
    * this node, if a 'next' exists it is the same as this node. */
   else if (n->flags & DIVNODE_SPLIT_BORDER) {
-    divrect->x = n->calcx+split;
-    divrect->y = n->calcy+split;
-    divrect->w = n->w-split*2;
-    divrect->h = n->h-split*2;
+    divrect->x = n->calc.x+split;
+    divrect->y = n->calc.y+split;
+    divrect->w = n->r.w-split*2;
+    divrect->h = n->r.h-split*2;
     
-    nextrect->x = n->calcx;
-    nextrect->y = n->calcy;
-    nextrect->w = n->w;
-    nextrect->h = n->h;
+    nextrect->x = n->calc.x;
+    nextrect->y = n->calc.y;
+    nextrect->w = n->r.w;
+    nextrect->h = n->r.h;
   }
 
   /* Keep existing sizes, ignoring split? */
@@ -328,37 +322,25 @@ void divnode_split(struct divnode *n, struct rect *divrect,
 
   /* Otherwise give children same w,h,x,y */
   else {
-    nextrect->x = n->calcx;
-    nextrect->y = n->calcy;
-    nextrect->w = n->w;
-    nextrect->h = n->h;
+    nextrect->x = n->calc.x;
+    nextrect->y = n->calc.y;
+    nextrect->w = n->r.w;
+    nextrect->h = n->r.h;
     
-    divrect->x = n->calcx;
-    divrect->y = n->calcy;
-    divrect->w = n->w;
-    divrect->h = n->h;
+    divrect->x = n->calc.x;
+    divrect->y = n->calc.y;
+    divrect->w = n->r.w;
+    divrect->h = n->r.h;
   }
 
   /* Transfer over rectangles */
   if (n->next) {
-    n->next->x = nextrect->x;
-    n->next->y = nextrect->y;
-    n->next->w = nextrect->w;
-    n->next->h = nextrect->h;
-    n->next->calcx = nextrect->x;
-    n->next->calcy = nextrect->y;
-    n->next->calcw = nextrect->w;
-    n->next->calch = nextrect->h;
+    n->next->r = *nextrect;
+    n->next->calc = *nextrect;
   }
   if (n->div) {
-    n->div->x = divrect->x;
-    n->div->y = divrect->y;
-    n->div->w = divrect->w;
-    n->div->h = divrect->h;
-    n->div->calcx = divrect->x;
-    n->div->calcy = divrect->y;
-    n->div->calcw = divrect->w;
-    n->div->calch = divrect->h;
+    n->div->r = *divrect;
+    n->div->calc = *divrect;
   }
 
   /* Validate the size of a popup*/
@@ -384,16 +366,10 @@ void divnode_recalc(struct divnode **pn, struct divnode *parent) {
    if (n->flags & DIVNODE_NEED_RECALC) {
      /* Save the old positions of each child */
      if (n->div) {
-       old_divrect.x = n->div->calcx;
-       old_divrect.y = n->div->calcy;
-       old_divrect.w = n->div->calcw;     
-       old_divrect.h = n->div->calch;
+       old_divrect = n->div->calc;
      }
      if (n->next) {
-       old_nextrect.x = n->next->calcx;
-       old_nextrect.y = n->next->calcy;
-       old_nextrect.w = n->next->calcw;
-       old_nextrect.h = n->next->calch;     
+       old_nextrect = n->next->calc;
      }
 
      /* Split the rectangle */
@@ -446,7 +422,7 @@ void divnode_redraw(struct divnode *n,int all) {
 			     DIVNODE_INCREMENTAL) )) &&
 	!(n->flags & DIVNODE_UNDERCONSTRUCTION) ) { 
 
-     if (n->w && n->h)
+     if (n->r.w && n->r.h)
        grop_render(n,NULL);
 
      if (n->next && (n->flags & DIVNODE_PROPAGATE_REDRAW))
@@ -471,7 +447,7 @@ void divnode_redraw(struct divnode *n,int all) {
    }
 
    /* Don't propagate if this node is invisible */
-   if (n->w && n->h) {
+   if (n->r.w && n->r.h) {
      divnode_redraw(n->div,all);
      divnode_redraw(n->next,all);
    }
@@ -505,10 +481,10 @@ g_error divtree_new(struct divtree **dt) {
   errorcheck;
   e = newdiv(&(*dt)->head,NULL);
   errorcheck;
-  (*dt)->head->calcw = vid->lxres;
-  (*dt)->head->calch = vid->lyres;
-  (*dt)->head->w = vid->lxres;
-  (*dt)->head->h = vid->lyres;
+  (*dt)->head->calc.w = vid->lxres;
+  (*dt)->head->calc.h = vid->lyres;
+  (*dt)->head->r.w = vid->lxres;
+  (*dt)->head->r.h = vid->lyres;
   (*dt)->flags = DIVTREE_ALL_REDRAW;
   (*dt)->head->flags &= ~DIVNODE_UNDERCONSTRUCTION;
   return success;
@@ -714,50 +690,50 @@ void dts_pop(struct divtree *dt) {
 void align(struct gropctxt *d,alignt align,s16 *w,s16 *h,s16 *x,s16 *y) {
   switch (align) {
   case PG_A_CENTER:
-    *x = (d->w-*w)/2;
-    *y = (d->h-*h)/2;
+    *x = (d->r.w-*w)/2;
+    *y = (d->r.h-*h)/2;
     break;
   case PG_A_TOP:
-    *x = (d->w-*w)/2;
+    *x = (d->r.w-*w)/2;
     *y = 0;
     break;
   case PG_A_BOTTOM:
-    *x = (d->w-*w)/2;
-    *y = d->h-*h;
+    *x = (d->r.w-*w)/2;
+    *y = d->r.h-*h;
     break;
   case PG_A_LEFT:
-    *y = (d->h-*h)/2;
+    *y = (d->r.h-*h)/2;
     *x = 0;
     break;
   case PG_A_RIGHT:
-    *y = (d->h-*h)/2;
-    *x = d->w-*w;
+    *y = (d->r.h-*h)/2;
+    *x = d->r.w-*w;
     break;
   case PG_A_NW:
     *x = 0;
     *y = 0;
     break;
   case PG_A_NE:
-    *x = d->w-*w;
+    *x = d->r.w-*w;
     *y = 0;
     break;
   case PG_A_SW:
     *x = 0;
-    *y = d->h-*h;
+    *y = d->r.h-*h;
     break;
   case PG_A_SE:
-    *x = d->w-*w;
-    *y = d->h-*h;
+    *x = d->r.w-*w;
+    *y = d->r.h-*h;
     break;
   case PG_A_ALL:
     *x = 0;
     *y = 0;
-    *w = d->w;
-    *h = d->h;
+    *w = d->r.w;
+    *h = d->r.h;
     break;
   }
-  *x += d->x;
-  *y += d->y;
+  *x += d->r.x;
+  *y += d->r.y;
 }
 
 /* Little helper to rotate a side constant 90 degrees counterclockwise */
@@ -801,11 +777,11 @@ void divresize_split(struct divnode *div) {
     switch (div->flags & ~SIDEMASK) {
     case PG_S_TOP:
     case PG_S_BOTTOM:
-      div->split = max(div->div->ph,div->div->ch);
+      div->split = max(div->div->preferred.h,div->div->child.h);
       break;
     case PG_S_LEFT:
     case PG_S_RIGHT: 
-      div->split = max(div->div->pw,div->div->cw);
+      div->split = max(div->div->preferred.w,div->div->child.w);
       break;
       
       /* If it's something else, leave the split alone */
@@ -825,23 +801,23 @@ void divresize_recursive(struct divnode *div) {
   s16 dw,dh,nw,nh;     /* Size of div and next child nodes */
   s16 old_cw, old_ch;  /* Old preffered size for children */
 
-  old_cw = div->cw;
-  old_ch = div->ch;
+  old_cw = div->child.w;
+  old_ch = div->child.h;
 
   /* Calculate child nodes' sizes */
 	
   if (div->div) {
     divresize_recursive(div->div);
-    dw = max(div->div->cw,div->div->pw);
-    dh = max(div->div->ch,div->div->ph);
+    dw = max(div->div->child.w,div->div->preferred.w);
+    dh = max(div->div->child.h,div->div->preferred.h);
   }
   else
     dw = dh = 0;
   
   if (div->next) {
     divresize_recursive(div->next);
-    nw = max(div->next->cw,div->next->pw);
-    nh = max(div->next->ch,div->next->ph);
+    nw = max(div->next->child.w,div->next->preferred.w);
+    nh = max(div->next->child.h,div->next->preferred.h);
   }
   else
     nw = nh = 0;
@@ -853,35 +829,35 @@ void divresize_recursive(struct divnode *div) {
       
     case PG_S_TOP:
     case PG_S_BOTTOM:
-      div->ch = dh + nh;
-      div->cw = max(dw,nw);
+      div->child.h = dh + nh;
+      div->child.w = max(dw,nw);
       break;
       
     case PG_S_LEFT:
     case PG_S_RIGHT:
-      div->cw = dw + nw;
-      div->ch = max(dh,nh);
+      div->child.w = dw + nw;
+      div->child.h = max(dh,nh);
       break;
       
     case PG_S_ALL:
     case DIVNODE_SPLIT_CENTER:
-      div->cw = dw;
-      div->ch = dh;
+      div->child.w = dw;
+      div->child.h = dh;
       break;
       
     case DIVNODE_SPLIT_BORDER:
-      div->cw = dw + (div->split<<1);
-      div->ch = dh + (div->split<<1);
+      div->child.w = dw + (div->split<<1);
+      div->child.h = dh + (div->split<<1);
       break;
 
     default:
-      div->cw = max(dw,nw);
-      div->ch = max(dh,nh);
+      div->child.w = max(dw,nw);
+      div->child.h = max(dh,nh);
       break;
 
     }
 
-    if (old_cw != div->cw || old_ch != div->ch) {
+    if (old_cw != div->child.w || old_ch != div->child.h) {
 
       /* If this divnode is under the control of a scrollbar, make sure
        * we recalc the scrollbar if the preferred size changes

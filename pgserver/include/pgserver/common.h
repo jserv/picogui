@@ -1,4 +1,4 @@
-/* $Id: common.h,v 1.11 2002/01/23 01:14:47 micahjd Exp $
+/* $Id: common.h,v 1.12 2002/10/11 11:58:44 micahjd Exp $
  *
  * pgserver/common.h - things every file in pgserver should need,
  *                     including memory management, error handling,
@@ -33,6 +33,9 @@
 /* We'll need this if we don't already have it... */
 #ifndef max
 #define max(a,b) (((a) > (b)) ? (a) : (b))
+#endif
+#ifndef min
+#define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
 
 #include <picogui/types.h>

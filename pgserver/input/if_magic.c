@@ -1,4 +1,4 @@
-/* $Id: if_magic.c,v 1.3 2002/09/15 10:51:49 micahjd Exp $
+/* $Id: if_magic.c,v 1.4 2002/10/11 11:58:44 micahjd Exp $
  *
  * if_magic.c - Trap magic debug keys
  *
@@ -128,7 +128,7 @@ void r_grop_dump(struct divnode *div) {
    if (!div) return;
    if (div->grop) {
       printf("Divnode %p at (%d,%d,%d,%d): ",div,
-	     div->x,div->y,div->w,div->h);
+	     div->r.x,div->r.y,div->r.w,div->r.h);
       if (div->owner)
 	printf("Owned by widget %p, type %d\n",div->owner,div->owner->type);
       else
@@ -165,12 +165,12 @@ void r_div_dump(struct divnode *div, const char *label, int level) {
      printf("\t");
    printf("Div %p: flags=0x%04X split=%d prefer=(%d,%d) child=(%d,%d) rect=(%d,%d,%d,%d)"
 	  " calc=(%d,%d,%d,%d) divscroll=%p trans=(%d,%d)\n",
-	  div,div->flags,div->split,div->pw,div->ph,
-	  div->cw,div->ch,
-	  div->x,div->y,div->w,div->h,
-	  div->calcx,div->calcy,div->calcw,div->calch,
+	  div,div->flags,div->split,div->preferred.w,div->preferred.h,
+	  div->child.w,div->child.h,
+	  div->r.x,div->r.y,div->r.w,div->r.h,
+	  div->calc.x,div->calc.y,div->calc.w,div->calc.h,
 	  div->divscroll,
-	  div->tx, div->ty);
+	  div->translation.x, div->translation.y);
 
    r_div_dump(div->div," Div:",level+1);
    r_div_dump(div->next,"Next:",level+1);
@@ -195,15 +195,12 @@ void r_divnode_trace(struct divnode *div) {
   memset(&n,0,sizeof(n));
 
   /* The scroll container must be visible */
-  if (div->divscroll && !(div->divscroll->calcw && div->divscroll->calch))
+  if (div->divscroll && !(div->divscroll->calc.w && div->divscroll->calc.h))
     return;
 
   /* Set up rendering... */
   r.output = vid->display;
-  n.r.x = div->x;
-  n.r.y = div->y;
-  n.r.w = div->w;
-  n.r.h = div->h;
+  n.r = div->r;
   r.clip.x1 = 0;
   r.clip.y1 = 0;
   r.clip.x2 = vid->lxres-1;
@@ -277,10 +274,7 @@ void hotspot_draw(struct hotspot *spot) {
   if (spot->div && spot->div->divscroll) {
       r.color = VID(color_pgtohwr)(0xFF0000);
       n.type = PG_GROP_FRAME;
-      n.r.x = spot->div->divscroll->calcx;
-      n.r.y = spot->div->divscroll->calcy;
-      n.r.w = spot->div->divscroll->calcw;
-      n.r.h = spot->div->divscroll->calch;
+      n.r = spot->div->divscroll->calc;
       gropnode_clip(&r,&n);
       gropnode_draw(&r,&n);
   }

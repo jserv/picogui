@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.97 2002/10/09 17:27:12 micahjd Exp $
+/* $Id: video.h,v 1.98 2002/10/11 11:58:44 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -29,7 +29,6 @@
 #ifndef __H_VIDEO
 #define __H_VIDEO
 
-#include <pgserver/divtree.h>
 #include <picogui/network.h>   /* For pgshmbitmap */
 #include <pgserver/pgstring.h>
 

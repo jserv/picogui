@@ -1,4 +1,4 @@
-/* $Id: video_drivers.c,v 1.7 2002/10/09 17:27:13 micahjd Exp $
+/* $Id: video_drivers.c,v 1.8 2002/10/11 11:58:44 micahjd Exp $
  *
  * video_drivers.c - handles loading/switching video drivers and modes
  *
@@ -397,8 +397,8 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
    /* Resize the root divnodes of all divtrees in the dtstack */
    if (dts)   /* (if this is in early init, dtstack isn't here yet) */
      for (tree=dts->top;tree;tree=tree->next) {
-	tree->head->w = vid->lxres;
-	tree->head->h = vid->lyres;
+	tree->head->r.w = vid->lxres;
+	tree->head->r.h = vid->lyres;
 	tree->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC | DIVNODE_NEED_REBUILD;
 	tree->flags |= DIVTREE_NEED_RECALC | DIVTREE_ALL_REDRAW | DIVTREE_CLIP_POPUP;
      }

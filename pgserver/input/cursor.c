@@ -1,4 +1,4 @@
-/* $Id: cursor.c,v 1.3 2002/10/02 21:25:07 micahjd Exp $
+/* $Id: cursor.c,v 1.4 2002/10/11 11:58:44 micahjd Exp $
  *
  * cursor.c - Cursor abstraction and multiplexing layer 
  *
@@ -316,10 +316,10 @@ void cursor_widgetunder(struct cursor *crsr) {
   if (popup_toolbar_passthrough()) {
     struct divnode *ntb = appmgr_nontoolbar_area();
     
-    if (x < ntb->x ||
-	y < ntb->y ||
-	x >= ntb->x+ntb->w ||
-	y >= ntb->y+ntb->h) {
+    if (x < ntb->r.x ||
+	y < ntb->r.y ||
+	x >= ntb->r.x+ntb->r.w ||
+	y >= ntb->r.y+ntb->r.h) {
       
       /* Get a widget from the bottom layer, with the toolbars */
       div = dts->root->head;
@@ -357,10 +357,10 @@ void r_cursor_widgetunder(struct cursor *crsr, struct divnode *div,int x,int y) 
    * this is made complex by scrolling, if it is in use.
    */
   if ( ((!((div->flags & DIVNODE_DIVSCROLL) && div->divscroll)) ||
-	( div->divscroll->calcx<=x && div->divscroll->calcy<=y &&
-	  (div->divscroll->calcx+div->divscroll->calcw)>x &&
-	  (div->divscroll->calcy+div->divscroll->calch)>y )) &&
-       div->x<=x && div->y<=y && (div->x+div->w)>x && (div->y+div->h)>y) {
+	( div->divscroll->calc.x<=x && div->divscroll->calc.y<=y &&
+	  (div->divscroll->calc.x+div->divscroll->calc.w)>x &&
+	  (div->divscroll->calc.y+div->divscroll->calc.h)>y )) &&
+       div->r.x<=x && div->r.y<=y && (div->r.x+div->r.w)>x && (div->r.y+div->r.h)>y) {
 
     /* The cursor is inside this divnode */
     

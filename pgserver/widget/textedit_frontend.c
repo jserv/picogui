@@ -1,4 +1,4 @@
-/* $Id: textedit_frontend.c,v 1.2 2002/10/05 11:31:38 micahjd Exp $
+/* $Id: textedit_frontend.c,v 1.3 2002/10/11 11:58:45 micahjd Exp $
  *
  * textedit.c - Multi-line text widget. By Chuck Groom,
  * cgroom@bluemug.com, Blue Mug, Inc, July 2002. Intended to be
@@ -198,11 +198,11 @@ void textedit_build ( struct gropctxt *c,
     s16 w, h, tw;
     g_error e;
 
-    w = self->in->div->w;
-    h = self->in->div->h;
+    w = self->in->div->r.w;
+    h = self->in->div->r.h;
 
     /* Set scrollbar properties */
-    self->in->div->ph = h;
+    self->in->div->preferred.h = h;
 
     if (!DATA->fd){
         /* FIXME: Theme lookup foreground, background colors, border */
@@ -302,7 +302,7 @@ g_error textedit_set ( struct widget *self,
         }
         break;
     case PG_WP_SCROLL_Y:
-        if (self->in->div->h) {
+        if (self->in->div->r.h) {
             struct divnode * p_node;
             struct widget * parent;
             int top;
@@ -380,16 +380,16 @@ void textedit_trigger ( struct widget *self,
         if (!GET_FLAG(DATA->flags, TEXT_WIDGET_READONLY)) {
             /* Move cursor. */
             text_backend_cursor_move_xy ( DATA, 
-                                          param->mouse.x - self->in->div->x,
-                                          param->mouse.y - self->in->div->y);
+                                          param->mouse.x - self->in->div->r.x,
+                                          param->mouse.y - self->in->div->r.y);
             grop_render(self->in->div, NULL);
         } 
         break;
     case PG_TRIGGER_DRAG:
         if (param->mouse.btn) {
             text_backend_selection_xy( DATA,
-                                       param->mouse.x - self->in->div->x,
-                                       param->mouse.y - self->in->div->y );
+                                       param->mouse.x - self->in->div->r.x,
+                                       param->mouse.y - self->in->div->r.y );
         }
         return;
     case PG_TRIGGER_KEYUP:
@@ -520,13 +520,13 @@ void textedit_scrollevent( struct widget *self ) {
     height = MAX(DATA->height, DATA->v_height);
 
     if ((parent->type == PG_WIDGET_SCROLL) &&
-        ((self->in->div->ph != height) ||
+        ((self->in->div->preferred.h != height) ||
          p_data->value != value)) {
-        self->in->div->ph = height;
+        self->in->div->preferred.h = height;
         if (parent->in) {
             p_data->value = value;
             if (p_data->res)
-                parent->in->div->ty = p_data->value * p_data->thumbscale / p_data->res;
+                parent->in->div->translation.y = p_data->value * p_data->thumbscale / p_data->res;
             parent->in->div->flags |= DIVNODE_NEED_REDRAW;
             parent->dt->flags |= DIVTREE_NEED_REDRAW;
         }
@@ -626,10 +626,10 @@ void textedit_draw_update ( struct widget *self ) {
     struct cursor * c;
     if (!DATA->update_clean) {
         /* Translate to screen coordinates */
-        DATA->update_x1 += self->in->div->x;
-        DATA->update_x2 += self->in->div->x;
-        DATA->update_y1 += self->in->div->y;
-        DATA->update_y2 += self->in->div->y;
+        DATA->update_x1 += self->in->div->r.x;
+        DATA->update_x2 += self->in->div->r.x;
+        DATA->update_y1 += self->in->div->r.y;
+        DATA->update_y2 += self->in->div->r.y;
 
         grop_render(self->in->div, NULL);  
         VID(update) (DATA->update_x1,

@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.25 2002/10/04 17:22:11 micahjd Exp $
+/* $Id: fillstyle.c,v 1.26 2002/10/11 11:58:44 micahjd Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -201,25 +201,25 @@ g_error exec_fillstyle(struct gropctxt *ctx,u16 state,
     switch (state) {
 
     case PGTH_O_BUTTON_ON:      /* 2 borders */
-      addgropsz(ctx,PG_GROP_FRAME,ctx->x,ctx->y,ctx->w,ctx->h);
-      ctx->x += 1; ctx->y += 1; ctx->w -= 2; ctx->h -= 2;
+      addgropsz(ctx,PG_GROP_FRAME,ctx->r.x,ctx->r.y,ctx->r.w,ctx->r.h);
+      ctx->r.x += 1; ctx->r.y += 1; ctx->r.w -= 2; ctx->r.h -= 2;
     default:                    /* 1 border */
-      addgropsz(ctx,PG_GROP_FRAME,ctx->x,ctx->y,ctx->w,ctx->h);
-      ctx->x += 1; ctx->y += 1; ctx->w -= 2; ctx->h -= 2;
+      addgropsz(ctx,PG_GROP_FRAME,ctx->r.x,ctx->r.y,ctx->r.w,ctx->r.h);
+      ctx->r.x += 1; ctx->r.y += 1; ctx->r.w -= 2; ctx->r.h -= 2;
     case PGTH_O_LABEL_SCROLL:   /* No border */
       addgrop(ctx,PG_GROP_SETCOLOR);
       ctx->current->param[0] = VID(color_pgtohwr) (theme_lookup(state,PGTH_P_BGCOLOR));
-      addgropsz(ctx,PG_GROP_RECT,ctx->x,ctx->y,ctx->w,ctx->h);      
+      addgropsz(ctx,PG_GROP_RECT,ctx->r.x,ctx->r.y,ctx->r.w,ctx->r.h);      
     }
     return success;
   }
 
   /* Reset stack. preload x,y,w,h as local variables */
   if (ctx) {
-    fsstack[0] = ctx->x;
-    fsstack[1] = ctx->y;
-    fsstack[2] = ctx->w;
-    fsstack[3] = ctx->h;
+    fsstack[0] = ctx->r.x;
+    fsstack[1] = ctx->r.y;
+    fsstack[2] = ctx->r.w;
+    fsstack[3] = ctx->r.h;
   }
   fsstkpos = 4;
 
@@ -482,10 +482,10 @@ g_error exec_fillstyle(struct gropctxt *ctx,u16 state,
   
   /* Return x,y,w,h */
   if (ctx) {
-    ctx->x = fsstack[0];
-    ctx->y = fsstack[1];
-    ctx->w = fsstack[2];
-    ctx->h = fsstack[3];
+    ctx->r.x = fsstack[0];
+    ctx->r.y = fsstack[1];
+    ctx->r.w = fsstack[2];
+    ctx->r.h = fsstack[3];
   }    
 
   return success;

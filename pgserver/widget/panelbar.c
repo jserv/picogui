@@ -1,4 +1,4 @@
-/* $Id: panelbar.c,v 1.13 2002/10/02 09:00:27 micahjd Exp $
+/* $Id: panelbar.c,v 1.14 2002/10/11 11:58:44 micahjd Exp $
  *
  * panelbar.c - Container and draggable bar for resizing panels
  *
@@ -126,10 +126,10 @@ int panel_effective_split(struct divnode *d) {
   switch (d->flags & (~SIDEMASK)) {
   case PG_S_LEFT:
   case PG_S_RIGHT:
-    return d->div->calcw;
+    return d->div->calc.w;
   case PG_S_TOP:
   case PG_S_BOTTOM:
-    return d->div->calch;
+    return d->div->calc.h;
   }
   return 0;
 }
@@ -138,7 +138,7 @@ void panelbar_resize(struct widget *self) {
   /* Look up theme parameters */
   self->in->split = theme_lookup(self->in->div->state,PGTH_P_WIDTH);
   self->in->div->split = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
-  self->in->div->pw = self->in->div->ph = self->in->split;
+  self->in->div->preferred.w = self->in->div->preferred.h = self->in->split;
 
   /* If the minimum hasn't been set yet, set it to our width */
   if (!DATA->minimum)
@@ -290,11 +290,11 @@ void panelbar_trigger_sprite(struct widget *self,s32 type,union trigparam *param
     }
      
     /* Allocate the new sprite */
-    if(iserror(new_sprite(&DATA->s,DATA->panelbar->w,DATA->panelbar->h))) {
+    if(iserror(new_sprite(&DATA->s,DATA->panelbar->r.w,DATA->panelbar->r.h))) {
        DATA->s = NULL;
        return;
     }
-    if (iserror(VID(bitmap_new) (&DATA->sbit,DATA->panelbar->w,DATA->panelbar->h,vid->bpp))) {
+    if (iserror(VID(bitmap_new) (&DATA->sbit,DATA->panelbar->r.w,DATA->panelbar->r.h,vid->bpp))) {
        free_sprite(DATA->s);
        DATA->s = NULL;
        DATA->sbit = NULL;
@@ -303,8 +303,8 @@ void panelbar_trigger_sprite(struct widget *self,s32 type,union trigparam *param
     DATA->s->bitmap = &DATA->sbit;
     
     /* Grab a bitmap of the panelbar to use as the sprite */
-    VID(blit) (DATA->sbit,0,0,DATA->panelbar->w,DATA->panelbar->h,
-	       vid->display,DATA->s->x = DATA->panelbar->x,DATA->s->y = DATA->panelbar->y,
+    VID(blit) (DATA->sbit,0,0,DATA->panelbar->r.w,DATA->panelbar->r.h,
+	       vid->display,DATA->s->x = DATA->panelbar->r.x,DATA->s->y = DATA->panelbar->r.y,
 	       PG_LGOP_NONE);
 
     /* Clip the sprite to the travel allowed by boundwidget's parent */
@@ -381,15 +381,15 @@ void panelbar_trigger_sprite(struct widget *self,s32 type,union trigparam *param
      switch (self->in->flags & (~SIDEMASK)) {
      case PG_S_TOP:
      case PG_S_BOTTOM:
-       DATA->s->x = DATA->panelbar->x;
-       DATA->draglen += abs(param->mouse.y - DATA->y + DATA->panelbar->y - DATA->s->y);
-       DATA->s->y = param->mouse.y - DATA->y + DATA->panelbar->y;
+       DATA->s->x = DATA->panelbar->r.x;
+       DATA->draglen += abs(param->mouse.y - DATA->y + DATA->panelbar->r.y - DATA->s->y);
+       DATA->s->y = param->mouse.y - DATA->y + DATA->panelbar->r.y;
        break;
      case PG_S_LEFT:
      case PG_S_RIGHT:
-       DATA->s->y = DATA->panelbar->y;
-       DATA->draglen += abs(param->mouse.x - DATA->x + DATA->panelbar->x - DATA->s->x);
-       DATA->s->x = param->mouse.x - DATA->x + DATA->panelbar->x;
+       DATA->s->y = DATA->panelbar->r.y;
+       DATA->draglen += abs(param->mouse.x - DATA->x + DATA->panelbar->r.x - DATA->s->x);
+       DATA->s->x = param->mouse.x - DATA->x + DATA->panelbar->r.x;
        break;
      }
 

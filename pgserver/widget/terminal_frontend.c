@@ -1,4 +1,4 @@
-/* $Id: terminal_frontend.c,v 1.2 2002/09/28 10:58:11 micahjd Exp $
+/* $Id: terminal_frontend.c,v 1.3 2002/10/11 11:58:45 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -143,13 +143,13 @@ glob terminal_get(struct widget *self,int property) {
 
 /* Preferred size, 80*25 characters */
 void terminal_resize(struct widget *self) {
-  self->in->div->pw = DATA->celw * 80;
-  self->in->div->ph = DATA->celh * DATA->pref_lines;
+  self->in->div->preferred.w = DATA->celw * 80;
+  self->in->div->preferred.h = DATA->celh * DATA->pref_lines;
 
   /* Remember, we must account for the terminal's margin */
   if (DATA->fontmargin) {
-    self->in->div->pw += DATA->celw;
-    self->in->div->ph += DATA->celh;
+    self->in->div->preferred.w += DATA->celw;
+    self->in->div->preferred.h += DATA->celh;
   }
 
   load_terminal_theme(self);
@@ -186,8 +186,8 @@ void build_terminal(struct gropctxt *c,u16 state,struct widget *self) {
 
   /* Using our grop context and character cell size,
    * calculate a good size for us */
-  neww = c->w / DATA->celw - (DATA->fontmargin ? 1 : 0);   /* A little margin */
-  newh = c->h / DATA->celh - (DATA->fontmargin ? 1 : 0);
+  neww = c->r.w / DATA->celw - (DATA->fontmargin ? 1 : 0);   /* A little margin */
+  newh = c->r.h / DATA->celh - (DATA->fontmargin ? 1 : 0);
 
   /* If we're rolled up, don't bother */
   if ((neww>0) && (newh>0)) {
@@ -264,7 +264,7 @@ void build_terminal(struct gropctxt *c,u16 state,struct widget *self) {
   DATA->bgsrc = c->current;
 
   /* Background (solid color or bitmap) */
-  addgropsz(c,bitmap ? PG_GROP_BITMAP : PG_GROP_RECT,c->x,c->y,c->w,c->h);
+  addgropsz(c,bitmap ? PG_GROP_BITMAP : PG_GROP_RECT,c->r.x,c->r.y,c->r.w,c->r.h);
   c->current->flags   |= PG_GROPF_COLORED;
   c->current->param[0] = bitmap ? bitmap : textcolors[0];
   DATA->bg = c->current;
@@ -277,12 +277,12 @@ void build_terminal(struct gropctxt *c,u16 state,struct widget *self) {
 
   /* For the margin we figured in earlier */
   if (DATA->fontmargin) {
-     c->x += DATA->celw >> 1;
-     c->y += DATA->celh >> 1;
+     c->r.x += DATA->celw >> 1;
+     c->r.y += DATA->celh >> 1;
   }
    
   /* Non-incremental text grid */   
-  addgropsz(c,PG_GROP_TEXTGRID,c->x,c->y,c->w,c->h);
+  addgropsz(c,PG_GROP_TEXTGRID,c->r.x,c->r.y,c->r.w,c->r.h);
   c->current->param[0] = DATA->hbuffer;
   c->current->param[1] = DATA->bufferw << 16;
   c->current->param[2] = htextcolors;
@@ -294,8 +294,8 @@ void build_terminal(struct gropctxt *c,u16 state,struct widget *self) {
   c->current->param[0] = DATA->hbuffer;
   c->current->param[2] = grid->param[2];
   DATA->inc = c->current;
-  DATA->x = c->x;
-  DATA->y = c->y;
+  DATA->x = c->r.x;
+  DATA->y = c->r.y;
 
   /* Notify the application */
   post_event(PG_WE_RESIZE,self,(neww << 16) | newh,0,NULL);
@@ -340,12 +340,12 @@ void terminal_trigger(struct widget *self,s32 type,union trigparam *param) {
        */
       
       struct divnode fakediv = *self->in->div;
-      fakediv.x += DATA->x + DATA->celw * DATA->current.crsrx;
-      fakediv.y += DATA->y + DATA->celh * DATA->current.crsry;
-      fakediv.w  = DATA->celw;
-      fakediv.h  = DATA->celh;
+      fakediv.r.x += DATA->x + DATA->celw * DATA->current.crsrx;
+      fakediv.r.y += DATA->y + DATA->celh * DATA->current.crsry;
+      fakediv.r.w  = DATA->celw;
+      fakediv.r.h  = DATA->celh;
       
-	scroll_to_divnode(&fakediv);
+      scroll_to_divnode(&fakediv);
     }
     
     term_realize(self);  /* Realize rects, but don't do a full update */

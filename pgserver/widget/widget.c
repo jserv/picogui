@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.200 2002/10/07 07:08:09 micahjd Exp $
+/* $Id: widget.c,v 1.201 2002/10/11 11:58:45 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -483,12 +483,12 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
       break;
       
     case PG_WP_SCROLL_X:
-      if (data > w->in->cw-w->in->w)
-	data = w->in->cw-w->in->w;
+      if (data > w->in->child.w - w->in->r.w)
+	data = w->in->child.w - w->in->r.w;
       if (data < 0)
 	data = 0;
-      if (maindiv->tx != -data) {
-	maindiv->tx = -data;
+      if (maindiv->translation.x != -data) {
+	maindiv->translation.x = -data;
 	maindiv->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_NEED_RECALC;;
 	w->dt->flags |= DIVTREE_NEED_REDRAW;
 	hotspot_free();
@@ -497,12 +497,12 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
       break;
 
     case PG_WP_SCROLL_Y:
-      if (data > w->in->ch-w->in->h)
-	data = w->in->ch-w->in->h;
+      if (data > w->in->child.h - w->in->r.h)
+	data = w->in->child.h - w->in->r.h;
       if (data < 0)
 	data = 0;
-      if (maindiv->ty != -data) {
-	maindiv->ty = -data;
+      if (maindiv->translation.y != -data) {
+	maindiv->translation.y = -data;
 	maindiv->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_NEED_RECALC;
 	w->dt->flags |= DIVTREE_NEED_REDRAW;
 	hotspot_free();
@@ -575,25 +575,25 @@ glob widget_base_get(struct widget *w, int property) {
   case PG_WP_ABSOLUTEX:      /* Absolute coordinates */
     activate_client_divnodes(w->owner);
     divtree_size_and_calc(w->dt);
-    return maindiv->x;
+    return maindiv->r.x;
   case PG_WP_ABSOLUTEY:
     activate_client_divnodes(w->owner);
     divtree_size_and_calc(w->dt);
-    return maindiv->y;
+    return maindiv->r.y;
     
   case PG_WP_WIDTH:          /* Real width and height */
     activate_client_divnodes(w->owner);
     divtree_size_and_calc(w->dt);
-    return maindiv->calcw;
+    return maindiv->calc.w;
   case PG_WP_HEIGHT:
     activate_client_divnodes(w->owner);
     divtree_size_and_calc(w->dt);
-    return maindiv->calch;
+    return maindiv->calc.h;
     
   case PG_WP_SCROLL_X:
-    return -maindiv->tx;
+    return -maindiv->translation.x;
   case PG_WP_SCROLL_Y:
-    return -maindiv->ty;
+    return -maindiv->translation.y;
     
   case PG_WP_SIDE:
     return w->in->flags & (~SIDEMASK);
@@ -618,11 +618,11 @@ glob widget_base_get(struct widget *w, int property) {
     
   case PG_WP_PREFERRED_W:
     resizewidget(w);
-    return max(maindiv->pw, maindiv->cw);
+    return max(maindiv->preferred.w, maindiv->child.w);
     
   case PG_WP_PREFERRED_H:
     resizewidget(w);
-    return max(maindiv->ph, maindiv->ch);
+    return max(maindiv->preferred.h, maindiv->child.h);
     
   case PG_WP_AUTO_ORIENTATION:
     return w->auto_orientation;

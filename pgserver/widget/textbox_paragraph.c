@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.3 2002/09/23 22:51:27 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.4 2002/10/11 11:58:45 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -118,7 +118,7 @@ g_error paragraph_new(struct paragraph **par, struct divnode *div) {
    * as soon as there's text in here, but until then this is necessary for
    * sizing the cursor and this paragraph's surroundings properly.
    */
-  (*par)->div->div->ph = (*par)->height = (*par)->lines->height = 
+  (*par)->div->div->preferred.h = (*par)->height = (*par)->lines->height = 
     paragraph_font_height((*par)->lines->cache.fmt.fd);
 
   /* Initially hide the cursor and put it at the beginning */
@@ -547,8 +547,8 @@ g_error paragraph_wrap(struct paragraph *par, int force) {
   paragraph_validate_cursor_line(&par->cursor);
 
   /* Update the layout engine with our new preferred size */
-  if (par->div->div->ph != par->height) {
-    par->div->div->ph = par->height;
+  if (par->div->div->preferred.h != par->height) {
+    par->div->div->preferred.h = par->height;
     par->div->div->owner->dt->flags |= DIVTREE_NEED_RESIZE;
   }
 
@@ -662,6 +662,7 @@ void paragraph_rerender_line(struct groprender *r, struct gropnode *n,
     clip.y1 = *y;
     clip.x2 = n->r.x + n->r.w - 1;
     clip.y2 = *y + line->height - 1;
+    quad_intersect(&clip, rect_to_quad(&par->background->r));
     grop_render(par->background, &clip);
   }
 
@@ -673,6 +674,7 @@ void paragraph_rerender_line(struct groprender *r, struct gropnode *n,
     clip.y1 = *y + line->height;
     clip.x2 = n->r.x + n->r.w - 1;
     clip.y2 = r->clip.y2;
+    quad_intersect(&clip, rect_to_quad(&par->background->r));
     grop_render(par->background, &clip);
   }
 #endif
@@ -706,6 +708,7 @@ void paragraph_rerender_line(struct groprender *r, struct gropnode *n,
       clip.y1 = *y;
       clip.x2 = x - 1;
       clip.y2 = *y + line->height - 1;
+      quad_intersect(&clip, rect_to_quad(&par->background->r));
       grop_render(par->background, &clip);
       x = old_x;
     }

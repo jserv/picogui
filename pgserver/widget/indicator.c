@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.34 2002/09/28 10:58:10 micahjd Exp $
+/* $Id: indicator.c,v 1.35 2002/10/11 11:58:44 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -35,7 +35,7 @@ struct indicatordata {
 
 void build_indicator(struct gropctxt *c,u16 state,struct widget *self) {
   /* Set orientation */
-  if (c->w > c->h)
+  if (c->r.w > c->r.h)
     self->in->div->state = PGTH_O_INDICATOR_H;
   else
     self->in->div->state = PGTH_O_INDICATOR_V;
@@ -44,13 +44,13 @@ void build_indicator(struct gropctxt *c,u16 state,struct widget *self) {
 
   /* Within the remaining space, figure out where the indicator is
      hilighted. */
-  if (c->w > c->h)
-    c->w = c->w*DATA->value/100;
+  if (c->r.w > c->r.h)
+    c->r.w = c->r.w * DATA->value/100;
   else {
     int t;
-    t = c->h*(100-DATA->value)/100;
-    c->y += t;
-    c->h -= t;
+    t = c->r.h * (100-DATA->value)/100;
+    c->r.y += t;
+    c->r.h -= t;
   }
 
   exec_fillstyle(c,state,PGTH_P_OVERLAY);
@@ -60,14 +60,14 @@ void indicator_resize(struct widget *self) {
    if ((self->in->flags & PG_S_TOP) ||
        (self->in->flags & PG_S_BOTTOM)) {
  
-     self->in->div->pw = 0;
-     self->in->div->ph = theme_lookup(self->in->div->state,PGTH_P_WIDTH);
+     self->in->div->preferred.w = 0;
+     self->in->div->preferred.h = theme_lookup(self->in->div->state,PGTH_P_WIDTH);
    }
    else if ((self->in->flags & PG_S_LEFT) ||
 	    (self->in->flags & PG_S_RIGHT)) {
       
-     self->in->div->ph = 0;
-     self->in->div->pw = theme_lookup(self->in->div->state,PGTH_P_WIDTH);
+     self->in->div->preferred.h = 0;
+     self->in->div->preferred.w = theme_lookup(self->in->div->state,PGTH_P_WIDTH);
    }
 }
 

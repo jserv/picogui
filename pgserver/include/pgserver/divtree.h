@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.45 2002/10/07 07:08:08 micahjd Exp $
+/* $Id: divtree.h,v 1.46 2002/10/11 11:58:44 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -33,6 +33,7 @@
 #include <pgserver/handle.h>
 #include <pgserver/g_error.h>
 #include <pgserver/video.h>
+#include <pgserver/render.h>
 
 struct widget;
 struct dtstack;
@@ -40,7 +41,6 @@ struct divtree;
 struct divnode;
 struct gropnode;
 struct gropctxt;
-struct rect;
 
 extern struct divtree fakedt;
 #define DT_NIL (&fakedt)
@@ -77,8 +77,6 @@ struct divtree {
 #define DIVTREE_CLIP_POPUP        (1<<4)
 #define DIVTREE_NEED_RESIZE       (1<<5)
 
-typedef short int alignt;
-
 struct divnode {
   /* The 'secondary pointer', contains the space that was 
    * divided off, usually. This is rendered second. */
@@ -109,32 +107,30 @@ struct divnode {
    * the coordinates can be specified absolutely, however this is normally
    * not reccomended (but could be useful for constructs such as popup menus)
    */
-  s16 x,y;
-  
-  /* Width and height, of course */
-  s16 w,h;
+  struct rect r;
 
   /* Calculated size. Normally the same as the size above, but:
    *  - The position will be different if DIVNODE_DIVSCROLL is on
    *  - The size will be different if one of the DIVNODE_EXTEND_* flags
    *    are turned on.
    */
-  s16 calcx,calcy,calcw,calch;
+  struct rect calc;
 
   /* The preferred width and height as calculated by the widget itself.
    * This is taken as a minimum size when the divnode contains other divnodes,
    * because the 'actual' preferred size is calculated as max(pw,cw),max(ph,ch)
    */
-  s16 pw,ph;  
+  struct sizepair preferred;
 	
   /* Child width and height. As long as DIVNODE_SIZE_RECURSIVE is set,
    * this is calculated from the combined size of the child divnodes */
-  s16 cw,ch;
+  struct sizepair child;
 	
   /* Coordinates to translate the grop's by, for scrolling */
-  s16 tx,ty;
+  struct pair translation;
+
   /* Scrolling coordinates as of last redraw */
-  s16 otx,oty;
+  struct pair old_translation;
 
   s16 split;   /* Depending on flags, the pixels or percent to split at */
 

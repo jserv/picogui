@@ -1,4 +1,4 @@
-/* $Id: render.h,v 1.15 2002/10/09 03:26:34 micahjd Exp $
+/* $Id: render.h,v 1.16 2002/10/11 11:58:44 micahjd Exp $
  *
  * render.h - data structures and functions for rendering and manipulating
  *            gropnodes (Graphics Operation nodes)
@@ -58,20 +58,30 @@ extern int disable_output;
 			       * more space is really neaded the primitive
 			       * should be split up somehow. */
 
+typedef short int alignt;
+
 struct fraction {
-   int n,d;
+  int n,d;
 };
+
 struct pair {
-   s16 x,y;
+  s16 x,y;
 };
+
+struct sizepair {
+  s16 w,h;
+};
+
 struct fractionpair {
-   struct fraction x,y;
+  struct fraction x,y;
 };
+
 struct quad {
-   s16 x1,y1,x2,y2;
+  s16 x1,y1,x2,y2;
 };
+
 struct rect {
-   s16 x,y,w,h;
+  s16 x,y,w,h;
 };
 
 struct gropnode {
@@ -113,7 +123,7 @@ struct gropctxt {
   struct gropnode **headpp;   /* Head of groplist */
   struct gropnode *current;   /* Current position */
   u32 n;                      /* Numerical position in gropnode list */
-  s16 x,y,w,h;                /* Current coordinates */
+  struct rect r;              /* Current coordinates */
   struct divnode *owner;      /* Optional */
   /* These are applied to new gropnodes */
   u16 defaultgropflags;
@@ -159,6 +169,11 @@ void gropnode_map(struct groprender *r, struct gropnode *n);
 void gropnode_translate(struct groprender *r, struct gropnode *n);
 void gropnode_clip(struct groprender *r, struct gropnode *n);
 void gropnode_draw(struct groprender *r, struct gropnode *n);
+
+/***************** geometry functions */
+
+void quad_intersect(struct quad *dest, struct quad *src);
+struct quad *rect_to_quad(struct rect *rect);
 
 #endif /* __RENDER_H */
 

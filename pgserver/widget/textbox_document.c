@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.40 2002/10/11 10:21:32 micahjd Exp $
+/* $Id: textbox_document.c,v 1.41 2002/10/11 11:58:45 micahjd Exp $
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and
@@ -297,20 +297,20 @@ void textbox_build_par_div(struct gropctxt *c, u16 state, struct widget *self) {
   par->cursor.width = theme_lookup(state,PGTH_P_CURSOR_WIDTH);
 
   /* If we're displaying to a different width, rewrap it */
-  if (par->width != c->w) {
-    par->width = c->w;
+  if (par->width != c->r.w) {
+    par->width = c->r.w;
     paragraph_wrap(par,1);
   }
 
   /* Set gropnode sizes */
-  grops->next->r.x = c->x;
-  grops->next->r.y = c->y;
-  grops->next->r.w = c->w;
-  grops->next->r.h = c->h;
+  grops->next->r.x = c->r.x;
+  grops->next->r.y = c->r.y;
+  grops->next->r.w = c->r.w;
+  grops->next->r.h = c->r.h;
   grops->next->next->r = grops->next->r;
 
   DBG("Build, size: %d,%d,%d,%d preferred: %d,%d\n",
-      c->x,c->y,c->w,c->h,c->owner->pw,c->owner->ph);
+      c->r.x,c->r.y,c->r.w,c->r.h,c->owner->pw,c->owner->ph);
 }
 
 /* The End */

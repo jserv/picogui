@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.119 2002/10/07 03:31:16 micahjd Exp $
+/* $Id: button.c,v 1.120 2002/10/11 11:58:44 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -114,7 +114,7 @@ void button_setstate(struct widget *self) {
    * Otherwise optimize for the common case of the button state being changed
    * during initialization by the app.
    */
-  if (!(self->in->div->w && self->in->div->h))
+  if (!(self->in->div->r.w && self->in->div->r.h))
     self->in->div->state = state;
   else
     div_setstate(self->in->div,state,0);
@@ -126,10 +126,10 @@ void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
 
   /* Shave off the space between buttons */
   switch (self->in->flags & (~SIDEMASK)) {
-   case PG_S_BOTTOM: c->y += sp; c->h -= sp; break;
-   case PG_S_RIGHT:  c->x += sp; c->w -= sp; break;
-   case PG_S_LEFT:   c->w -= sp; break;
-   case PG_S_TOP:    c->h -= sp; break;
+   case PG_S_BOTTOM: c->r.y += sp; c->r.h -= sp; break;
+   case PG_S_RIGHT:  c->r.x += sp; c->r.w -= sp; break;
+   case PG_S_LEFT:   c->r.w -= sp; break;
+   case PG_S_TOP:    c->r.h -= sp; break;
   }
    
   /* Background */
@@ -821,8 +821,8 @@ void button_resize(struct widget *self) {
   if (!(w && h))
     w = h = 0;
 
-  self->in->div->pw = w;
-  self->in->div->ph = h;
+  self->in->div->preferred.w = w;
+  self->in->div->preferred.h = h;
 }
 
 /* Code to generate the button coordinates, needed to resize or build the button */

@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.67 2002/10/02 20:31:19 micahjd Exp $
+/* $Id: scroll.c,v 1.68 2002/10/11 11:58:44 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -76,15 +76,15 @@ void scrollupdate(struct widget *self) {
 
   if(DATA->horizontal){
     if (DATA->res <= 0)
-      self->in->div->tx = 0;
+      self->in->div->translation.x = 0;
     else
-      self->in->div->tx = DATA->value * DATA->thumbscale / DATA->res;
+      self->in->div->translation.x = DATA->value * DATA->thumbscale / DATA->res;
   }
   else {
     if (DATA->res <= 0)
-      self->in->div->ty = 0;
+      self->in->div->translation.y = 0;
     else
-      self->in->div->ty = DATA->value * DATA->thumbscale / DATA->res;
+      self->in->div->translation.y = DATA->value * DATA->thumbscale / DATA->res;
   }
 
   self->in->div->flags |= DIVNODE_NEED_REDRAW;
@@ -103,9 +103,9 @@ void build_scroll(struct gropctxt *c,u16 state,struct widget *self) {
 			self->scrollbind)) && wgt && wgt->in->div) {
     
     if (DATA->horizontal)
-      DATA->res = wgt->in->cw - wgt->in->w;
+      DATA->res = wgt->in->child.w - wgt->in->r.w;
     else
-      DATA->res = wgt->in->ch - wgt->in->h;
+      DATA->res = wgt->in->child.h - wgt->in->r.h;
 
     /* Bounds/sanity checking.. */
     if (DATA->res < 0)
@@ -159,13 +159,13 @@ void build_scroll(struct gropctxt *c,u16 state,struct widget *self) {
 
   /* The scrollbar thumb */
   if(DATA->horizontal){
-    DATA->thumbscale = (c->w-(c->w>>HEIGHT_DIV));
-    c->w = c->w>>HEIGHT_DIV;
+    DATA->thumbscale = (c->r.w-(c->r.w>>HEIGHT_DIV));
+    c->r.w = c->r.w>>HEIGHT_DIV;
     c->defaultgropflags = PG_GROPF_TRANSLATE;
   }
   else {
-    DATA->thumbscale = (c->h-(c->h>>HEIGHT_DIV));
-    c->h = c->h>>HEIGHT_DIV;
+    DATA->thumbscale = (c->r.h-(c->r.h>>HEIGHT_DIV));
+    c->r.h = c->r.h>>HEIGHT_DIV;
     c->defaultgropflags = PG_GROPF_TRANSLATE;
   }
   exec_fillstyle(c,state,PGTH_P_OVERLAY);
@@ -194,13 +194,13 @@ void scrollevent(struct widget *self) {
 
 void scroll_resize(struct widget *self) {
   if (DATA->horizontal) {
-    self->in->div->pw = 0;
-    self->in->split = self->in->div->ph = DATA->res ? 
+    self->in->div->preferred.w = 0;
+    self->in->split = self->in->div->preferred.h = DATA->res ? 
       theme_lookup(self->in->div->state,PGTH_P_WIDTH) : 0;
   }
   else {
-    self->in->div->ph = 0;
-    self->in->split = self->in->div->pw = DATA->res ?
+    self->in->div->preferred.h = 0;
+    self->in->split = self->in->div->preferred.w = DATA->res ?
       theme_lookup(self->in->div->state,PGTH_P_WIDTH) : 0;
   }
 }
@@ -345,17 +345,17 @@ void scroll_trigger(struct widget *self,s32 type,union trigparam *param) {
       DATA->value++;
 
       if (DATA->horizontal) {
-	DATA->grab_offset = param->mouse.x - self->in->div->x -
-	  self->in->div->tx;
+	DATA->grab_offset = param->mouse.x - self->in->div->r.x -
+	  self->in->div->translation.x;
       }
       else {
-	DATA->grab_offset = param->mouse.y - self->in->div->y -
-	  self->in->div->ty;
+	DATA->grab_offset = param->mouse.y - self->in->div->r.y -
+	  self->in->div->translation.y;
       }
       
       if (DATA->grab_offset < 0)  
 	DATA->release_delta = -SCROLLAMOUNT;
-      else if (DATA->grab_offset > ( ((DATA->horizontal)?self->in->div->w:self->in->div->h)>>HEIGHT_DIV))
+      else if (DATA->grab_offset > ( ((DATA->horizontal)?self->in->div->r.w:self->in->div->r.h)>>HEIGHT_DIV))
 	DATA->release_delta = SCROLLAMOUNT;
       else {
 	DATA->on=1;
@@ -404,14 +404,14 @@ void scroll_trigger(struct widget *self,s32 type,union trigparam *param) {
 
     /* Button 1 is being dragged through our widget. */
     if (DATA->horizontal) {
-      DATA->value = (param->mouse.x - self->in->div->x -
+      DATA->value = (param->mouse.x - self->in->div->r.x -
 		     DATA->grab_offset) * DATA->res /
-	(self->in->div->w - (self->in->div->w>>HEIGHT_DIV));
+	(self->in->div->r.w - (self->in->div->r.w>>HEIGHT_DIV));
     }
     else {
-      DATA->value = (param->mouse.y - self->in->div->y -
+      DATA->value = (param->mouse.y - self->in->div->r.y -
 		     DATA->grab_offset) * DATA->res /
-	(self->in->div->h - (self->in->div->h>>HEIGHT_DIV));
+	(self->in->div->r.h - (self->in->div->r.h>>HEIGHT_DIV));
     }
 
     if (DATA->value > DATA->res) DATA->value = DATA->res;

@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.53 2002/03/26 04:13:52 instinc Exp $
+/* $Id: grop.c,v 1.54 2002/10/11 11:58:43 micahjd Exp $
  *
  * grop.c - grop-list management
  *
@@ -32,6 +32,7 @@
 #include <pgserver/handle.h>
 #include <pgserver/appmgr.h>
 #include <pgserver/render.h>
+#include <pgserver/divtree.h>
 
 /******************* Zombie gropnode management */
 
@@ -195,8 +196,8 @@ void gropctxt_init(struct gropctxt *ctx, struct divnode *div) {
       p=p->next;
     ctx->current=p;
    }
-  ctx->w = div->w;
-  ctx->h = div->h;
+  ctx->r.w = div->r.w;
+  ctx->r.h = div->r.h;
   ctx->owner = div;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: dvbl_sprite.c,v 1.2 2002/07/03 22:03:31 micahjd Exp $
+/* $Id: dvbl_sprite.c,v 1.3 2002/10/11 11:58:44 micahjd Exp $
  *
  * dvbl_sprite.c - This file is part of the Default Video Base Library,
  *                 providing the basic video functionality in picogui but
@@ -36,6 +36,7 @@
 #include <pgserver/video.h>
 #include <pgserver/font.h>
 #include <pgserver/render.h>
+#include <pgserver/divtree.h>
 
 void def_sprite_hide_above(struct sprite *spr);
 int def_sprite_test_overlap(struct sprite *spr,  struct quad *r);
@@ -55,12 +56,12 @@ void def_sprite_show(struct sprite *spr) {
    
   /* Clip to a divnode */
   if (spr->clip_to) {
-    if (spr->x < spr->clip_to->x) spr->x = spr->clip_to->x;
-    if (spr->y < spr->clip_to->y) spr->y = spr->clip_to->y;
-    if (spr->x+spr->w > spr->clip_to->x+spr->clip_to->w)
-      spr->x = spr->clip_to->x + spr->clip_to->w - spr->w;
-    if (spr->y+spr->h > spr->clip_to->y+spr->clip_to->h)
-      spr->y = spr->clip_to->y + spr->clip_to->h - spr->h;
+    if (spr->x < spr->clip_to->r.x) spr->x = spr->clip_to->r.x;
+    if (spr->y < spr->clip_to->r.y) spr->y = spr->clip_to->r.y;
+    if (spr->x+spr->w > spr->clip_to->r.x+spr->clip_to->r.w)
+      spr->x = spr->clip_to->r.x + spr->clip_to->r.w - spr->w;
+    if (spr->y+spr->h > spr->clip_to->r.y+spr->clip_to->r.h)
+      spr->y = spr->clip_to->r.y + spr->clip_to->r.h - spr->h;
 
     spr->ow = spr->w; spr->oh = spr->h;
   }

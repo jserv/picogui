@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.48 2002/10/08 08:49:10 micahjd Exp $
+/* $Id: canvas.c,v 1.49 2002/10/11 11:58:44 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -52,36 +52,36 @@ void canvas_inputmap(struct widget *self,s16 *x,s16 *y) {
   case PG_MAP_NONE:
     return;
     
-    /* self->in->div->w and self->in->div->h should never be zero here.
+    /* self->in->div->r.w and self->in->div->r.h should never be zero here.
      * if they are, it's a bug in the input dispatch.
      */
   case PG_MAP_SCALE:
-    *x = *x * DATA->input_map.w / self->in->div->w;
-    *y = *y * DATA->input_map.h / self->in->div->h;
+    *x = *x * DATA->input_map.w / self->in->div->r.w;
+    *y = *y * DATA->input_map.h / self->in->div->r.h;
     break;
     
   case PG_MAP_SQUARESCALE:
-    if (self->in->div->w * DATA->input_map.h - self->in->div->h * DATA->input_map.w > 0) {
+    if (self->in->div->r.w * DATA->input_map.h - self->in->div->r.h * DATA->input_map.w > 0) {
       /* Centered horizontally */
       
-      *x -= (self->in->div->w - DATA->input_map.w * self->in->div->h / DATA->input_map.h) >> 1;
+      *x -= (self->in->div->r.w - DATA->input_map.w * self->in->div->r.h / DATA->input_map.h) >> 1;
       
-      *x = *x * DATA->input_map.h / self->in->div->h;
-      *y = *y * DATA->input_map.h / self->in->div->h;
+      *x = *x * DATA->input_map.h / self->in->div->r.h;
+      *y = *y * DATA->input_map.h / self->in->div->r.h;
     }
     else {
       /* Centered vertically */
       
-      *y -= (self->in->div->h - DATA->input_map.h * self->in->div->w / DATA->input_map.w) >> 1;
+      *y -= (self->in->div->r.h - DATA->input_map.h * self->in->div->r.w / DATA->input_map.w) >> 1;
       
-      *x = *x * DATA->input_map.w / self->in->div->w;
-      *y = *y * DATA->input_map.w / self->in->div->w;
+      *x = *x * DATA->input_map.w / self->in->div->r.w;
+      *y = *y * DATA->input_map.w / self->in->div->r.w;
     }
     break;
 
   case PG_MAP_CENTER:
-    *x -= (self->in->div->w - DATA->input_map.w) >> 1;
-    *y -= (self->in->div->h - DATA->input_map.h) >> 1;
+    *x -= (self->in->div->r.w - DATA->input_map.w) >> 1;
+    *y -= (self->in->div->r.h - DATA->input_map.h) >> 1;
     break;
  
   }
@@ -93,7 +93,7 @@ void build_canvas(struct gropctxt *c,
 		  u16 state,struct widget *self) {
    /* Just pass this on to the app */
    post_event(PG_WE_BUILD,self,
-	      (self->in->div->w << 16) | self->in->div->h,0,NULL);
+	      (self->in->div->r.w << 16) | self->in->div->r.h,0,NULL);
 }
 
 /* Set up divnodes */
@@ -204,8 +204,8 @@ void canvas_trigger(struct widget *self, s32 type, union trigparam *param) {
    if (evt) {
 
      /* Make coordinates relative to divnode */
-     mx = param->mouse.x - self->in->div->x;
-     my = param->mouse.y - self->in->div->y;
+     mx = param->mouse.x - self->in->div->r.x;
+     my = param->mouse.y - self->in->div->r.y;
      
      /* Apply mapping */
      canvas_inputmap(self,&mx,&my);
@@ -295,23 +295,23 @@ void canvas_extendbox(struct widget *self, struct gropnode *n) {
     return;
 
   i = n->r.x * DATA->gridw;
-  if (i > self->in->div->pw) {
-    self->in->div->pw = i;
+  if (i > self->in->div->preferred.w) {
+    self->in->div->preferred.w = i;
     self->dt->flags |= DIVTREE_NEED_RESIZE;
   }
   i += n->r.w;
-  if (i > self->in->div->pw) {
-    self->in->div->pw = i;
+  if (i > self->in->div->preferred.w) {
+    self->in->div->preferred.w = i;
     self->dt->flags |= DIVTREE_NEED_RESIZE;
   }
   i = n->r.y * DATA->gridh;
-  if (i > self->in->div->ph) {
-    self->in->div->ph = i;
+  if (i > self->in->div->preferred.h) {
+    self->in->div->preferred.h = i;
     self->dt->flags |= DIVTREE_NEED_RESIZE;
   }
   i += n->r.h;
-  if (i > self->in->div->ph) {
-    self->in->div->ph = i;
+  if (i > self->in->div->preferred.h) {
+    self->in->div->preferred.h = i;
     self->dt->flags |= DIVTREE_NEED_RESIZE;
   }
 }
@@ -323,8 +323,8 @@ void canvas_resize(struct widget *self) {
    
    n = self->in->div->grop;
 
-   self->in->div->pw = 0;
-   self->in->div->ph = 0;
+   self->in->div->preferred.w = 0;
+   self->in->div->preferred.h = 0;
 
    while (n) {
      canvas_extendbox(self,n);
@@ -434,10 +434,10 @@ void canvas_command(struct widget *self, u16 command,
     case PGCANVAS_EXECFILL:
       if (numparams<6) return;
       /* Fudge the coordinates */
-      CTX->x = params[2];
-      CTX->y = params[3];
-      CTX->w = params[4];
-      CTX->h = params[5];
+      CTX->r.x = params[2];
+      CTX->r.y = params[3];
+      CTX->r.w = params[4];
+      CTX->r.h = params[5];
       exec_fillstyle(CTX,params[0],params[1]);
       break;
       
@@ -494,8 +494,8 @@ void canvas_command(struct widget *self, u16 command,
       
     case PGCANVAS_SCROLL:
       if (numparams<2) return;
-      self->in->div->tx = params[0];
-      self->in->div->ty = params[1];
+      self->in->div->translation.x = params[0];
+      self->in->div->translation.y = params[1];
       self->in->div->flags |= DIVNODE_SCROLL_ONLY;
       break;
 
