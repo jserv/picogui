@@ -43,18 +43,13 @@ div.section {
   margin: 0em 1.5em 2.0em 1.5em;
 }
 
-div.odd {
+div.row {
   padding: 0.5em;
-}
-
-div.even {
-  padding: 0.5em;
-  background: #eef2fa;
 }
 
 span.itemTag {
   color: #A00000;
-  margin: 0em 0em 0em 0.5em;
+  margin: 0em 0.5em 0em 0em;
   border: 1px solid #8CACBB;
   padding: 0em 0.2em;
   background: White;
@@ -68,6 +63,7 @@ span.itemTag {
 .itemDetail {
   margin: 0.5em;  
   border: 1px dotted #8CACBB;
+  background: #f8f8ff;
 }
 
 li {

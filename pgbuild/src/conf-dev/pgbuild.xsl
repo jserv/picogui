@@ -33,26 +33,20 @@
     <span class="section">Packages</span>
     <div class="section">
       <div class="sectionTop"/>
-      <xsl:apply-templates select="package"/>
-    </div>
-  </xsl:template>
-
-  <xsl:template match="package[position() mod 2 = 1]">
-    <div class="odd">
-      <xsl:apply-templates select="require"/>
-      <div class="item"><xsl:value-of select="@name"/></div>
-      <div class="itemDetail">
-        <xsl:apply-templates select="version"/>
-      </div>
+      <xsl:apply-templates select="package">
+        <xsl:sort select="@name"/>
+      </xsl:apply-templates>
     </div>
   </xsl:template>
 
   <xsl:template match="package">
-    <div class="even">
+    <div class="row">
       <xsl:apply-templates select="require"/>
       <div class="item"><xsl:value-of select="@name"/></div>
       <div class="itemDetail">
-        <xsl:apply-templates select="version"/>
+        <xsl:apply-templates select="version">
+          <xsl:sort select="@name"/>
+        </xsl:apply-templates>
       </div>
     </div>
   </xsl:template>
@@ -61,20 +55,13 @@
     <span class="itemTag">Required</span>
   </xsl:template>
 
-  <xsl:template match="version[position() mod 2 = 1]">
-    <div class="odd">
-      <xsl:value-of select="../@name"/>-<xsl:value-of select="@name"/>
-      <ul>
-        <xsl:apply-templates select="a"/>
-      </ul>
-    </div>
-  </xsl:template>
-
   <xsl:template match="version">
-    <div class="even">
+    <div class="row">
       <xsl:value-of select="../@name"/>-<xsl:value-of select="@name"/>
       <ul>
-        <xsl:apply-templates select="a"/>
+        <xsl:apply-templates select="a">
+          <xsl:sort select="@href"/>
+        </xsl:apply-templates>
       </ul>
     </div>
   </xsl:template>
@@ -85,27 +72,20 @@
     <span class="section">Download Sites</span>
     <div class="section">
       <div class="sectionTop"/>
-      <xsl:apply-templates select="site"/>
-    </div>
-  </xsl:template>
-
-  <xsl:template match="site[position() mod 2 = 1]">
-    <div class="odd">
-      <div class="item"><xsl:value-of select="@name"/></div>
-      <div class="itemDetail">
-        <ul>
-          <xsl:apply-templates select="a"/>
-        </ul>
-      </div>
+      <xsl:apply-templates select="site">
+        <xsl:sort select="@name"/>
+      </xsl:apply-templates>
     </div>
   </xsl:template>
 
   <xsl:template match="site">
-    <div class="even">
+    <div class="row">
       <div class="item"><xsl:value-of select="@name"/></div>
       <div class="itemDetail">
         <ul>
-          <xsl:apply-templates select="a"/>
+          <xsl:apply-templates select="a">
+            <xsl:sort select="@href"/>
+          </xsl:apply-templates>
         </ul>
       </div>
     </div>
