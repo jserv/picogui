@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.37 2000/11/04 07:50:42 micahjd Exp $
+/* $Id: panel.c,v 1.38 2000/11/04 18:16:07 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -40,7 +40,10 @@
 			      as a panel roll-up */
 
 /* the divnode making the whole (draggable) panelbar, including buttons */
-#define BARDIV        self->in->next->div
+#define BARDIV        self->in->div->div
+
+/* The panelbar's thickness */
+#define BARWIDTH      self->in->div->split
 
 struct paneldata {
   int on,over;
@@ -75,9 +78,11 @@ void themeify_panel(struct widget *self);
 void resize_panel(struct widget *self) {
   int s;
 
-  self->in->div->split = theme_lookup(DATA->panelbar->state,PGTH_P_MARGIN);
-  self->in->next->split = theme_lookup(DATA->panelbar->state,PGTH_P_WIDTH);
+  /* Spacings */
+  self->in->div->next->split = theme_lookup(DATA->panelbar->state,PGTH_P_MARGIN);
+  BARWIDTH = theme_lookup(DATA->panelbar->state,PGTH_P_WIDTH);
 
+  /* Button placement */
   s = theme_lookup(PGTH_O_CLOSEBTN,PGTH_P_SIDE);
   if ((self->in->flags & (~SIDEMASK)) & (PG_S_LEFT|PG_S_RIGHT))
     s = rotate_side(s);
@@ -93,7 +98,7 @@ void build_panelbar(struct gropctxt *c,unsigned short state,
 		    struct widget *self) {
   struct fontdesc *fd;
   char *str;
-  int x,y,w,h;
+  int x,y,w,h,m;
   int al = theme_lookup(state,PGTH_P_ALIGN);
   handle font = theme_lookup(state,PGTH_P_FONT);
 
@@ -161,20 +166,20 @@ g_error panel_install(struct widget *self) {
   errorcheck;
   self->in->flags |= PG_S_TOP;
 
-  /* This draws the panel background  */
+  /* Split off another chunk of space for the bar */
   e = newdiv(&self->in->div,self);
   errorcheck;
-  self->in->div->flags |= DIVNODE_SPLIT_BORDER;
-  self->in->div->build = &build_bgfill_only;
-  self->in->div->state = PGTH_O_PANEL;
+  self->in->div->flags |= PG_S_BOTTOM;
 
-  /* Split off another chunk of space for the bar */
-  e = newdiv(&self->in->next,self);
+  /* This draws the panel background  */
+  e = newdiv(&self->in->div->next,self);
   errorcheck;
-  self->in->next->flags |= PG_S_TOP;
+  self->in->div->next->flags |= DIVNODE_SPLIT_BORDER;
+  self->in->div->next->build = &build_bgfill_only;
+  self->in->div->next->state = PGTH_O_PANEL;
 
   /* Close Button */
-  e = widget_create(&DATA->btn_close,PG_WIDGET_BUTTON,self->dt,&self->in->next->div,
+  e = widget_create(&DATA->btn_close,PG_WIDGET_BUTTON,self->dt,&self->in->div->div,
 		    self->container,self->owner);
   errorcheck;
   customize_button(DATA->btn_close,PGTH_O_CLOSEBTN,PGTH_O_CLOSEBTN_ON,
@@ -194,8 +199,8 @@ g_error panel_install(struct widget *self) {
   DATA->panelbar->build = &build_panelbar;
   DATA->panelbar->state = PGTH_O_PANELBAR;
 
-  self->sub = &self->in->div->div;
-  self->out = &self->in->next->next;
+  self->sub = &self->in->div->next->div;
+  self->out = &self->in->next;
 
   self->trigger_mask = TRIGGER_ENTER | TRIGGER_LEAVE | 
     TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE |
@@ -227,12 +232,18 @@ g_error panel_set(struct widget *self,int property, glob data) {
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
       DIVNODE_PROPAGATE_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
-    self->in->next->flags &= SIDEMASK;
-    self->in->next->flags |= ((sidet)data);
+    self->in->div->flags &= SIDEMASK;
+    switch (data) {    /* Invert the side for the panelbar */
+    case PG_S_TOP:    self->in->div->flags |= PG_S_BOTTOM; break;
+    case PG_S_BOTTOM: self->in->div->flags |= PG_S_TOP; break;
+    case PG_S_LEFT:   self->in->div->flags |= PG_S_RIGHT; break;
+    case PG_S_RIGHT:  self->in->div->flags |= PG_S_LEFT; break;
+    }
     return sucess;
 
   case PG_WP_SIZE:
-    if (data<0) data = 0;
+    if (data<0)
+      data = 0;
     self->in->split = data;
     if (data>0)
       DATA->unrolled = data;
@@ -373,14 +384,15 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
       break;
     }
     if (self->in->split < 0) self->in->split = 0;
+    self->in->split += BARWIDTH;    /* Account for panelbar height */
 
     if (abs(self->in->split - DATA->osplit) < MINDRAGLEN) {
       /* This was a click, not a drag */
       DATA->over = 0;
 
-      if (DATA->osplit > 0)
+      if (DATA->osplit > BARWIDTH)
 	/* Roll up the panel */
-	self->in->split = 0;
+	self->in->split = BARWIDTH;
       else
 	/* Unroll the panel */
 	self->in->split = DATA->unrolled;
@@ -389,10 +401,10 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
       
       /* Save this as the new unrolled split,
        * Unless the user manually rolled up the panel */
-      if (self->in->split > MAXROLLUP) 
+      if ((self->in->split-BARWIDTH) > MAXROLLUP) 
 	DATA->unrolled = self->in->split;
       else
-	self->in->split = 0;
+	self->in->split = BARWIDTH;
 
       DATA->over = 1;
     }
