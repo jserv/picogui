@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.87 2001/10/03 19:53:53 micahjd Exp $
+/* $Id: constants.h,v 1.88 2001/10/06 20:25:41 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -342,9 +342,10 @@ typedef unsigned long pghandle;
 #define PGTH_O_RADIOBUTTON_HILIGHT   54   //!< Radio button (cust. button)
 #define PGTH_O_RADIOBUTTON_ON        55   //!< Radio button (cust. button)
 #define PGTH_O_RADIOBUTTON_ON_NOHILIGHT 56 //!< Radio button (cust. button)
+#define PGTH_O_TEXTBOX               57   //!< Textbox widget
 
 //! If you add a themeobject, be sure to increment this and add an inheritance entry in theme/memtheme.c
-#define PGTH_ONUM                    57
+#define PGTH_ONUM                    58
 
 //! \}
 

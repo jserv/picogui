@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.5 2001/10/06 09:02:41 micahjd Exp $
+/* $Id: textbox_main.c,v 1.6 2001/10/06 20:25:41 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -35,7 +35,7 @@
 #define FLASHTIME_OFF  150
 
 struct textboxdata {
-  int focus,on,flash_on;
+  int on,focus,flash_on;
   struct textbox_cursor c;
 };
 #define DATA ((struct textboxdata *)(self->data))
@@ -48,7 +48,6 @@ g_error textbox_install(struct widget *self) {
 		sizeof(struct textboxdata));
    errorcheck;
    memset(self->data,0,sizeof(struct textboxdata));
-   self->rawbuild = 1;                 /* Disable normal grop rebuild */
    e = newdiv(&self->in,self);         /* Main split */
    errorcheck;
    self->in->flags |= PG_S_TOP;
@@ -56,6 +55,8 @@ g_error textbox_install(struct widget *self) {
    e = newdiv(&self->in->div,self);    /* 1st line */
    errorcheck;
    self->in->div->flags |= PG_S_TOP;
+   self->in->div->build = &build_bgfill_only;
+   self->in->div->state = PGTH_O_TEXTBOX;
    memset(&DATA->c,0,sizeof(DATA->c)); /* Set up cursor */
    DATA->c.head = self->in->div;
    DATA->c.widget = self;
@@ -67,13 +68,13 @@ g_error textbox_install(struct widget *self) {
    text_format_modifyfont(&DATA->c,PG_FSTYLE_FLUSH,0,0);
    text_insert_string(&DATA->c,"Hello ");
    text_insert_wordbreak(&DATA->c);
-   text_format_color(&DATA->c,0xFFFF00);
+   text_format_color(&DATA->c,0x008000);
    text_insert_string(&DATA->c,"World! ");
    text_insert_linebreak(&DATA->c);
    text_insert_string(&DATA->c,"This ");
    text_insert_wordbreak(&DATA->c);
    text_format_modifyfont(&DATA->c,PG_FSTYLE_BOLD,0,10);
-   text_format_color(&DATA->c,0xFF0000);
+   text_format_color(&DATA->c,0x000080);
    text_insert_string(&DATA->c,"is ");
    text_format_modifyfont(&DATA->c,PG_FSTYLE_ITALIC,PG_FSTYLE_BOLD,-20);
    text_insert_wordbreak(&DATA->c);
