@@ -98,16 +98,11 @@ class Progress(PGBuild.UI.None.Progress):
 
     def _textBlock(self, text, color=None, bullet="*"):
         """Output a block of text in the given color"""
-        # If color isn't supported, make our block stand out with extra spaces
-        if not self.color.supported:
-            self.color.write("\n")            
         for line in text.split("\n"):
             self.color.write(" %s " % bullet, ('bold',))
             self.color.write(line, color)
             self.color.write("\n")
             bullet = ' '
-        if not self.color.supported:
-            self.color.write("\n")            
 
     def _warning(self, text):
         self._prefixedTextBlock(text, "Warning:", ('bold', 'brown'))
