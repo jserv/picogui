@@ -200,6 +200,13 @@ AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_X11, [
   LDFLAGS="-L/usr/X11/lib -L/usr/X11R6/lib"
 ])
 
+AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_X11_XFT, [
+
+  AC_CHECK_LIB(Xft, XftDrawCreate,, AC_MSG_WARN([can't find XFreeType]))
+
+  DRIVER_LIBS="$DRIVER_LIBS -lXft"
+])
+
 dnl check for ncurses & gpm
 
 AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_NCURSES, [

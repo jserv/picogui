@@ -365,3 +365,9 @@ CONFIG_X11_NOPIXEL
       red. This helps debugging, making it easy to identify code that
       still uses the slow primitives.
 
+CONFIG_X11_XFT
+      Replace PicoGUI's built-in font rendering system with XFreeType.
+      This is part of the XRender extension. You must have an X server
+      that supports this, and you need the libXft library and headers
+      installed. If you are using this option, there is no need to
+      compile any fonts into pgserver.

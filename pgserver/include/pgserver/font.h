@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.17 2001/11/17 10:08:48 micahjd Exp $
+/* $Id: font.h,v 1.18 2001/11/24 13:03:19 micahjd Exp $
  *
  * font.h - structures for representing fonts
  *
@@ -63,6 +63,7 @@ struct fontdesc {
 		   pixels */
   int italicw;  /* Extra width added by the italic */
   int (*decoder)(u8 **str);   /* Text decoder (for Unicode, etc) */
+  void *extra;  /* Extra driver-specific data */
 };
 
 /* This is a description that goes along with a font style.

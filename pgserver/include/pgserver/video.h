@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.61 2001/11/19 09:50:13 micahjd Exp $
+/* $Id: video.h,v 1.62 2001/11/24 13:03:19 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -218,6 +218,24 @@ struct vidlib {
    */
   struct fontglyph const *(*font_getglyph)(struct fontdesc *fd, int ch);
    
+  /* Optional
+   *   Called after sizetext has run, giving the driver an opportunity
+   *   to modify the sizes reported by it
+   *
+   * Default implementation: none
+   */
+  void (*font_sizetext_hook)(struct fontdesc *fd, s16 *w, s16 *h, char *txt);
+
+  /* Optional
+   *   Called before outtext, giving the driver an opportunity to modify
+   *   or observe the data sent to it
+   *
+   * Default implementation: none
+   */
+  void (*font_outtext_hook)(hwrbitmap *dest, struct fontdesc **fd,
+			    s16 *x,s16 *y,hwrcolor *col,char **txt,
+			    struct quad **clip, s16 *lgop, s16 *angle);
+
   /***************** Colors */
 
   /* Optional

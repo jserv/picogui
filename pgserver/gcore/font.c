@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.40 2001/11/17 22:40:41 micahjd Exp $
+/* $Id: font.c,v 1.41 2001/11/24 13:03:19 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -218,6 +218,8 @@ void outtext(hwrbitmap dest, struct fontdesc *fd,
 	     s16 x,s16 y,hwrcolor col,char *txt,struct quad *clip,
 	     s16 lgop, s16 angle) {
    int b,ch;
+
+   VID(font_outtext_hook)(&dest,&fd,&x,&y,&col,&txt,&clip,&lgop,&angle);
    
    switch (angle) {
       
@@ -283,7 +285,8 @@ void outtext(hwrbitmap dest, struct fontdesc *fd,
  */
 void sizetext(struct fontdesc *fd, s16 *w, s16 *h, char *txt) {
   int o_w=0, ch;
-   
+  char *original_txt = txt;
+
   if (!(fd && txt && w && h)) return;
 
   /* No text, no size */
@@ -309,6 +312,8 @@ void sizetext(struct fontdesc *fd, s16 *w, s16 *h, char *txt) {
   if ((*w)<o_w) *w = o_w;
   *w -= fd->interchar_space;
   *w += fd->italicw;
+
+  VID(font_sizetext_hook)(fd,w,h,original_txt);
 }
 
 /* Find a font and fill in the fontdesc structure */

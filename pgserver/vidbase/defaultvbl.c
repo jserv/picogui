@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.59 2001/11/23 02:09:42 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.60 2001/11/24 13:03:19 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -82,6 +82,14 @@ void def_coord_logicalize(s16 *x,s16 *y) {
 }
 
 void def_coord_keyrotate(s16 *k) {
+}
+
+void def_font_sizetext_hook(struct fontdesc *fd, s16 *w, s16 *h, char *txt) {
+}
+
+void def_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
+			   s16 *x,s16 *y,hwrcolor *col,char **txt,
+			   struct quad **clip, s16 *lgop, s16 *angle) {
 }
 
 /******* colors */
@@ -1872,6 +1880,8 @@ void setvbl_default(struct vidlib *vid) {
   vid->bitmap_get_groprender = &def_bitmap_get_groprender;
   vid->coord_keyrotate = &def_coord_keyrotate;
   vid->font_getglyph = &def_font_getglyph;
+  vid->font_sizetext_hook = &def_font_sizetext_hook;
+  vid->font_outtext_hook = &def_font_outtext_hook;
 }
 
 /* The End */
