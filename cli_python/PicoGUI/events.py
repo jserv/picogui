@@ -132,7 +132,7 @@ class Event(object):
     def __repr__(self):
         r = '<PicoGUI %s event object at %s' % (self.name, id(self))
         if hasattr(self, 'char') and self.char:
-            r = '%s ("%s")' % (r, self.char)
+            r = '%s (%r)' % (r, self.char)
         if hasattr(self, 'mods') and self.mods:
             r = '%s %s, keyboard mods %s' % (r, self.data, self.mods)
         if hasattr(self, 'x'):
