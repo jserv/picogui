@@ -1,4 +1,4 @@
-/* $Id: x11_init.c,v 1.13 2002/11/07 07:59:56 micahjd Exp $
+/* $Id: x11_init.c,v 1.14 2002/11/07 11:43:58 micahjd Exp $
  *
  * x11_init.c - Initialization for picogui'x driver for the X window system
  *
@@ -271,6 +271,7 @@ g_error x11_regfunc(struct vidlib *v) {
   v->rotateblit            = &x11_rotateblit;
   v->gradient              = &x11_gradient;
   v->scrollblit            = &x11_scrollblit;
+  v->window_set_flags      = &x11_window_set_flags;
 #ifdef CONFIG_FONTENGINE_FREETYPE
   v->alpha_charblit        = &x11_alpha_charblit;
 #endif

@@ -1,4 +1,4 @@
-/* $Id: x11.h,v 1.11 2002/11/07 07:59:55 micahjd Exp $
+/* $Id: x11.h,v 1.12 2002/11/07 11:43:58 micahjd Exp $
  *
  * x11.h - Header shared by all the x11 driver components in picogui
  *
@@ -216,6 +216,7 @@ void x11_gradient(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,s16 angle,
 		  pgcolor c1, pgcolor c2, s16 lgop);
 void x11_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 		    s16 src_x, s16 src_y, s16 lgop);
+void x11_window_set_flags(hwrbitmap window, int flags);
 
 #endif /* __H_PGX11 */
 

@@ -1,4 +1,4 @@
-/* $Id: managedwindow.c,v 1.12 2002/11/07 09:47:15 micahjd Exp $
+/* $Id: managedwindow.c,v 1.13 2002/11/07 11:43:58 micahjd Exp $
  *
  * managedwindow.c - A root widget representing a window managed by a host GUI
  *
@@ -64,7 +64,7 @@ g_error managedwindow_install(struct widget *self) {
 
   self->out = &self->in->next;
   self->sub = &self->in->div;
-  
+
   /* Attach ourselves as a root widget in the new divtree */
   e = widget_attach(self,DATA->my_dt,&DATA->my_dt->head->next,0);  
   errorcheck;
@@ -100,13 +100,25 @@ g_error managedwindow_set(struct widget *self,int property, glob data) {
      */
 
   case PG_WP_ABSOLUTEX:
-    VID(window_get_position)(self->dt->display, &x, &y);
-    VID(window_set_position)(self->dt->display, data, y);
+    /* If this is a menu, give it a menu theme and get the
+     * window manager to leave it alone.
+     */
+    if (data==PG_POPUP_ATCURSOR || data==PG_POPUP_ATEVENT) {
+      self->in->state = PGTH_O_POPUP_MENU;
+      self->in->split = theme_lookup(self->in->state,PGTH_P_MARGIN);
+      VID(window_set_flags)(self->dt->display, PG_WINDOW_UNMANAGED | PG_WINDOW_GRAB);
+    }
+    else {
+      VID(window_get_position)(self->dt->display, &x, &y);
+      VID(window_set_position)(self->dt->display, data, y);
+    }
     break;
 
   case PG_WP_ABSOLUTEY:
-    VID(window_get_position)(self->dt->display, &x, &y);
-    VID(window_set_position)(self->dt->display, x, data);
+    if (!(data==PG_POPUP_ATCURSOR || data==PG_POPUP_ATEVENT)) {
+      VID(window_get_position)(self->dt->display, &x, &y);
+      VID(window_set_position)(self->dt->display, x, data);
+    }
     break;
 
   case PG_WP_WIDTH:
@@ -174,7 +186,7 @@ void managedwindow_resize(struct widget *self) {
   /* Detect whether the size has been changed by some
    * external force (the user probably) since the last time
    */
-  if (self->in->child.w && self->in->child.h && 
+  if (self->in->div && self->in->div->child.w && self->in->div->child.h && 
       ((!DATA->already_sized) || (w==DATA->last_w && h==DATA->last_h))) {
     w = self->in->child.w;
     h = self->in->child.h;
@@ -182,10 +194,10 @@ void managedwindow_resize(struct widget *self) {
     /* Make sure the window size is reasonable */
     maxw = vid->lxres * 80/100;
     maxh = vid->lyres * 80/100;
-    if (w < 10)
-      w = 10;
-    if (h < 10)
-      h = 10;
+    if (w < 100)
+      w = 100;
+    if (h < 100)
+      h = 100;
     if (w > maxw)
       w = maxw;
     if (h > maxh)
