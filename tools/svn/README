@@ -1,0 +1,6 @@
+This directory contains some simple scripts for collecting and
+analyzing commit history data from the Subversion repository.
+Since getactivity.sh has to be run on the server and it's very
+slow, the activity.log it generates is also stored here. The
+other files here are ways of processing that log.
+
