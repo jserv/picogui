@@ -1,4 +1,4 @@
-/* $Id: benchmark.c,v 1.5 2002/10/20 19:14:53 micahjd Exp $
+/* $Id: benchmark.c,v 1.6 2002/10/22 19:42:26 micahjd Exp $
  *
  * benchmark.c - Run benchmarks on vidlib functions
  *
@@ -391,7 +391,7 @@ void benchmark_run_lgops(struct benchmark_test *test, struct benchmark_param *b)
 void videotest_benchmark(void) {
   struct benchmark_test *t;
   struct benchmark_param b;
-  const char *testname = get_param_str("benchmark","name","");
+  const char *testname = get_param_str("benchmark","test","");
   
   if (vid->lxres < 128 || vid->lyres < 128) {
     printf("The benchmarks require a video mode of at least 128x128!\n");
