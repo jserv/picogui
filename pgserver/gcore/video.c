@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.26 2001/02/17 05:18:40 micahjd Exp $
+/* $Id: video.c,v 1.27 2001/02/23 04:44:47 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -154,6 +154,7 @@ g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
   /* Clear it */
   vid = &vidlib_static;
   memset(vid,0,sizeof(struct vidlib));
+  vid->close = &emulate_dos;
   
   /* Device specifics */
   e = (*regfunc)(vid);

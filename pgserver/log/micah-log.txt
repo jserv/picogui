@@ -1,3 +1,36 @@
+---- Thursday, February 23
+
+Verified optional-widget code
+Fixed namespacing in linear1,2,4
+
+Added config options for error messages
+
+Added more config options, this time some security options to turn off the
+more powerful^H^H^H^H^H^H^H^Hdangerous client-side functions.
+Also added a menu for quota options, but haven't implemented this yet.
+
+
+
+
+---- Wednesday, February 22
+
+I wrote some stubs for linear1 and linear2 that currently require the slow
+defaultvbl functions, but at least they should work. Best of all, it's a
+framework for writing the rest.
++ vidbase/linear1.c
++ vidbase/linear2.c
+
+Made all VBLs optional, made the terminal and canvas widgets optional.
+
+---- Tuesday, February 21
+
+Added code to svgafb to emulate low bit depths in 8bpp for testing linear1,2,4
+It segfaults and I have trouble debugging the SVGAlib stuff with one monitor
+so I'll do it when I get home.
+
+Added defaults for the configuration menu
++ config.defaults
+
 ---- Friday, February 16
 
 Found something interesting... in uClinux the menuitem widgets are actually
@@ -7,6 +40,8 @@ maybe there's a mistake in the function table for the widgets.
 
 Wrote a working svgalib input driver for mouse and keyboard
 + apps/pgremote/svgainput.c
+
+Got the canvas widget fixed. Terminal starts up but crashes on keyboard input.
 
 ---- Thursday, February 15
 

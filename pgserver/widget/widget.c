@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.62 2001/02/17 10:14:50 micahjd Exp $
+/* $Id: widget.c,v 1.63 2001/02/23 04:44:47 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -51,8 +51,18 @@ DEF_STATICWIDGET_TABLE(box)
 DEF_WIDGET_TABLE(field)
 DEF_WIDGET_TABLE(background)
 DEF_HYBRIDWIDGET_TABLE(menuitem,button)
+
+#ifdef CONFIG_WIDGET_TERMINAL
 DEF_WIDGET_TABLE(terminal)
+#else
+DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,102))
+#endif
+
+#ifdef CONFIG_WIDGET_CANVAS
 DEF_WIDGET_TABLE(canvas)
+#else
+DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,103))
+#endif
 };
 
 /* These are needed to determine which widget is under the pointing
@@ -99,7 +109,16 @@ g_error widget_create(struct widget **w,int type,
   (*w)->dt = dt;
   (*w)->container = container;
 
-  if ((*w)->def->install) (*(*w)->def->install)(*w);
+  if ((*w)->def->install)
+     (*(*w)->def->install)(*w);
+   else {
+      /* This widget is not supported, return the error code we
+       * conveniently crammed into the 'remove' field */
+
+      g_free(*w);
+      return (g_error) (*w)->def->remove;
+   }
+   
   if ((*w)->in && (*w)->out) {
      /* If it has an input and output like any well-behaved widget
       * should, we can add it */
@@ -109,9 +128,11 @@ g_error widget_create(struct widget **w,int type,
      if (*(*w)->out && (*(*w)->out)->owner)
        	(*(*w)->out)->owner->where = (*w)->out;
   }
-  else
-    return mkerror(PG_ERRT_INTERNAL,21);
-
+  else {
+     g_free(*w);
+     return mkerror(PG_ERRT_INTERNAL,21);
+  }
+     
   /* Resize for the first time */
   if ((*w)->resize) (*(*w)->resize)(*w);
 

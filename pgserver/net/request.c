@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.19 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: request.c,v 1.20 2001/02/23 04:44:47 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -32,6 +32,10 @@
 #include <pgserver/pgnet.h>
 #include <pgserver/input.h>
 #include <netinet/tcp.h>
+
+#ifndef CONFIG_MAXPACKETSZ
+#define CONFIG_MAXPACKETSZ 6000000
+#endif
 
 /* Socket */
 int s = 0;
@@ -181,8 +185,9 @@ void readfd(int from) {
 	/* Allocate and use a dynamic buffer (set the limit at 6 meg, this should be
 	 * enough for even the most insanely large images (1280x1024x32) but will catch
 	 * stuff before ElectricFence chokes on it. */
-	if ((buf->req.size > 6000000) || iserror(prerror(g_malloc((void**)&buf->data_dyn,
-				         buf->req.size+1)))) {
+	if ((buf->req.size > CONFIG_MAXPACKETSZ) ||
+	    iserror(prerror(g_malloc((void**)&buf->data_dyn,
+				     buf->req.size+1)))) {
 
 	  /* Oops, the client asked for too much memory!
 	     Bad client!

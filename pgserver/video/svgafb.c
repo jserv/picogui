@@ -1,4 +1,4 @@
-/* $Id: svgafb.c,v 1.7 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: svgafb.c,v 1.8 2001/02/23 04:44:47 micahjd Exp $
  *
  * svgafb.c - A driver for linear-framebuffer svga devices that uses the linear*
  *          VBLs instead of the default vbl and libvgagl.
@@ -32,9 +32,6 @@
 
 #include <pgserver/common.h>
 
-/* For debugging: force double-buffer on and don't actually touch the screen */
-//#define VIRTUAL
-
 #include <pgserver/inlstring.h>    /* Fast __memcpy inline function */
 #include <pgserver/video.h>
 #include <pgserver/input.h>
@@ -49,6 +46,7 @@
 
 #define SVGAFB_DOUBLEBUFFER   (1<<0)    /* Use doublebuffering */
 #define SVGAFB_PAGEDBLITS     (1<<1)    /* Blit to nonlinear memory */
+#define SVGAFB_CONVERTBLIT    (1<<2)    /* Convert bpp on blit */
 
 unsigned char svgafb_flags;
 unsigned long svgafb_fbsize;
@@ -58,10 +56,11 @@ int svgafb_closest_mode(int xres,int yres,int bpp);
 g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags);
 void svgafb_close(void);
 void svgafb_update_linear(int x,int y,int w,int h);
+void svgafb_update_convert(int x,int y,int w,int h);
 void svgafb_update_paged(int x,int y,int w,int h);
 g_error svgafb_regfunc(struct vidlib *v);
 
-/****************************************************** Implementations */
+/****************************************************** Init / Shutdown */
 
 /* The find-closest-mode helper function originally presented in svga.c */
 int svgafb_closest_mode(int xres,int yres,int bpp) {
@@ -104,16 +103,16 @@ int svgafb_closest_mode(int xres,int yres,int bpp) {
 
 g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags) {
    g_error e;
-   int mode,i;
+   int mode,i,c;
    vga_modeinfo *mi;
 
-#ifndef VIRTUAL
-   
    /* Must be root for this */
    if (geteuid())
      return mkerror(PG_ERRT_IO,46);
    
-   svgafb_flags = flags & PG_VID_DOUBLEBUFFER ? SVGAFB_DOUBLEBUFFER : 0;
+   svgafb_flags = 0;  /* We don't want double-buffer on yet so if we get
+		       * an unknown bpp it doesn't free the
+		       * nonexistant buffer */
    
    /* In a GUI environment, we don't want VC switches,
     plus they usually crash on my system anyway,
@@ -134,39 +133,91 @@ g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags) {
    errorcheck;
 
    vga_setmode(mode);
-   
-   /* Set up a palette for RGB simulation */
-   for (i=0;i<256;i++)
-     vga_setpalette(i,
-		    (i & 0xC0) * 63 / 0xC0,
-		    (i & 0x38) * 63 / 0x38,
-		    (i & 0x07) * 63 / 0x07);
-   
+   mi = vga_getmodeinfo(mode);
+
    /* Save the actual video mode (might be different than what
     was requested) */
-   vid->xres = vga_getxdim();
-   vid->yres = vga_getydim();
-   vid->bpp  = 8;
+   vid->xres = mi->width;
+   vid->yres = mi->height;
+   vid->bpp  = mi->bytesperpixel << 3;
 
-#else
-   vid->xres = xres;
-   vid->yres = yres;
-   vid->bpp  = 8;
-   svgafb_flags = SVGAFB_DOUBLEBUFFER;
+#ifdef CONFIG_SVGAFB_LOWBPP
+   /* Low-bpp support needs the double-buffering on */
+   if (bpp && bpp<8) {
+      vid->bpp = bpp;
+//      svgafb_flags |= SVGAFB_CONVERTBLIT | SVGAFB_DOUBLEBUFFER;
+   }
 #endif
- 
+
+   /* Select a VBL and do other bpp-specific things */
+   switch (vid->bpp) {   
+      
+#ifdef CONFIG_SVGAFB_LOWBPP
+    /* Select a bit depth and create a grayscale palette, ignore bits outside
+     * of the selected bit depth */
+    
+#ifdef CONFIG_VBL_LINEAR1
+    case 1:
+      setvbl_linear1(vid);
+      for (i=0;i<256;i++) {
+	 c = i&1 ? 63 : 0;
+	 vga_setpalette(i,c,c,c);
+      }
+      break;
+#endif
+      
+#ifdef CONFIG_VBL_LINEAR2
+    case 2:
+      setvbl_linear2(vid);
+      for (i=0;i<256;i++) {
+	 c = ((i&0x03) * 63) / 0x03;
+	 vga_setpalette(i,c,c,c);
+      }
+      break;
+#endif
+     
+#ifdef CONFIG_VBL_LINEAR4
+    case 4:
+      setvbl_linear4(vid);
+      for (i=0;i<256;i++) {
+	 c = ((i&0x0F) * 63) / 0x0F;
+	 vga_setpalette(i,c,c,c);
+      }
+      break;
+#endif
+#endif /* CONFIG_SVGAFB_LOWBPP */
+      
+#ifdef CONFIG_VBL_LINEAR8
+    case 8:
+      setvbl_linear8(vid);
+      /* A palette for simulated RGB */
+      for (i=0;i<256;i++)
+	vga_setpalette(i,(i & 0xC0) * 63 / 0xC0,
+		         (i & 0x38) * 63 / 0x38,
+		         (i & 0x07) * 63 / 0x07);   
+      break;
+#endif
+      
+    default:
+      svgafb_close();
+      return mkerror(PG_ERRT_BADPARAM,101);   /* Unknown bpp */
+   }
+   
+   vid->bpp = 8;
+      
    
    /* Calculate the framebuffer's size */
-   vid->fb_bpl = vid->xres;
+   vid->fb_bpl = (vid->xres * vid->bpp) >> 3;
    svgafb_fbsize = vid->yres * vid->fb_bpl;
-   
-#ifndef VIRTUAL
+
+   /* Was double-buffering requested? */
+   if (flags & PG_VID_DOUBLEBUFFER)
+     svgafb_flags |= SVGAFB_DOUBLEBUFFER;
    
    /* Figure out what type of framebuffer we have now.
     * If we need to and we can, set up linear addressing. Otherwise use
     * the paged double-buffer blits
     */
-   mi = vga_getmodeinfo(mode);
    if ( (!(mi->flags & IS_LINEAR)) &&
         (svgafb_fbsize > 0xFFFF) &&
         ((!(mi->flags & CAPABLE_LINEAR)) || 
@@ -177,8 +228,6 @@ g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags) {
       printf("svgafb: can't get linear addressing, forcing double buffer\n");
    }  
 
-#endif
-   
    /* Set up the linear framebuffer */
 
    if (svgafb_flags & SVGAFB_DOUBLEBUFFER) {
@@ -189,22 +238,22 @@ g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags) {
    else
      vid->fb_mem = vga_getgraphmem();
    
-#ifndef VIRTUAL
-   
    /* Use our flags to choose an update function. Keep the default if we
-    * aren't double-buffering, otherwise choose paged or linear */
+    * aren't double-buffering, otherwise choose paged, linear, or conversion */
    
    if (svgafb_flags & SVGAFB_DOUBLEBUFFER) {
       if (svgafb_flags & SVGAFB_PAGEDBLITS)
 	vid->update = &svgafb_update_paged;
+#ifdef CONFIG_SVGAFB_LOWBPP
+      else if (svgafb_flags & SVGAFB_CONVERTBLIT)
+	vid->update = &svgafb_update_convert;
+#endif
       else
 	vid->update = &svgafb_update_linear;
    }
    else
      vid->update = &def_update;
-   
-#endif
-   
+    
    return sucess;
 }
 
@@ -216,6 +265,9 @@ void svgafb_close(void) {
    vga_setmode(0);
 }
 
+/****************************************************** Update Blits */
+
+/* Normal copy blit */
 void svgafb_update_linear(int x,int y,int w,int h) {
    unsigned char *src,*dest;
    unsigned long fbstart;
@@ -231,6 +283,36 @@ void svgafb_update_linear(int x,int y,int w,int h) {
    for (;h;h--,src+=vid->fb_bpl,dest+=vid->fb_bpl)
      __memcpy(dest,src,w);
 }
+
+#ifdef CONFIG_SVGAFB_LOWBPP
+/* Convert from a low bpp to 8bpp. Used only for debuggative purposes,
+ * so it needs to work but can be slow if necessary
+ */
+void svgafb_update_convert(int x,int y,int w,int h) {
+   unsigned char *src,*dest;
+   int i,bit,pixelsperbyte;
+   char c;
+   
+   return;
+   
+   /* Blit calculations */
+   dest = y*vid->xres + x + graph_mem;
+   src  = y*vid->fb_bpl + ((x*vid->bpp) >> 3) + vid->fb_mem;
+   w    = (w*vid->bpp) >> 3;
+   pixelsperbyte = 8/vid->bpp;
+
+   w=1;
+   
+   /* Might prevent tearing? */
+   vga_waitretrace();
+   
+   /* Slow but compact blit loop */
+   for (;h;h--)
+     for (i=w;i;i--)
+       for (c=*(src++),bit=pixelsperbyte;bit;bit-=vid->bpp) 
+	 *(dest++) = c>>bit;
+}
+#endif
 
 /* Like svgafb_update_linear, but set our 64K page using vga_setpage 
  * This must be able to handle a page change anywhere, including within
@@ -279,7 +361,9 @@ void svgafb_update_paged(int x,int y,int w,int h) {
 /****************************************************** Registration */
 
 g_error svgafb_regfunc(struct vidlib *v) {
-   setvbl_linear8(v);           /* Only 8bpp so far */
+   /* The VBL is loaded in svgafb_init so it can be selected based on bpp.
+    * This is OK because the VBL will never overwrite init or close. */
+   
    v->init = &svgafb_init;
    v->close = &svgafb_close;
    return sucess;

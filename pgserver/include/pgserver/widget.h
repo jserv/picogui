@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.18 2001/02/17 10:14:46 micahjd Exp $
+/* $Id: widget.h,v 1.19 2001/02/23 04:44:47 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -199,6 +199,8 @@ struct widget {
   p->install = &n##_install; p->remove = &m##_remove; p->trigger = &m##_trigger; p->set = &m##_set; p->get = &m##_get; p++;
 # define DEF_STATICWIDGET_TABLE(n) \
   p->install = &n##_install; p->remove = &n##_remove; p->trigger = NULL; p->set = &n##_set; p->get = &n##_get; p++;
+# define DEF_ERRORWIDGET_TABLE(s) \
+  p->install = NULL; p->remove = (void *) s; p->trigger = NULL; p->set = NULL; p->get = NULL; p++;
 
 #else  /* ! RUNTIME_FUNCPTR */
 
@@ -208,6 +210,8 @@ struct widget {
   n##_install, m##_remove, m##_trigger, m##_set, m##_get,
 #define DEF_STATICWIDGET_TABLE(n) \
   n##_install, n##_remove, NULL, n##_set, n##_get,
+#define DEF_ERRORWIDGET_TABLE(s) \
+  NULL, (void *) s, NULL, NULL, NULL,
 
 #endif  /* RUNTIME_FUNCPTR */
 #define DEF_WIDGET_PROTO(n) \

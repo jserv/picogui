@@ -8,18 +8,23 @@ choice 'Platform' \
 	 uClinux			UCLINUX \
 	 Windows			WINDOWS" Linux
 
-bool 'Strip binary' CONFIG_STRIP
-bool 'x86 assembly language optimization' ASM_INTEL
+bool 'x86 asm optimization' ASM_INTEL
+bool 'm68k asm optimization (not implemented)' ASM_68000
 endmenu
 
 mainmenu_option next_comment
 comment 'Debugging'
+bool 'Enable text messages'             CONFIG_TEXT
+if [ "$CONFIG_TEXT" = "y" ]; then
+    bool "  Haiku error messages (Brandon)"  CONFIG_HAIKU_BRANDON
+fi
+bool 'Debugging symbols in binary'      CONFIG_NOSTRIP
+bool 'Debugging keys'                   DEBUG_KEYS
 bool 'Video test mode'                  CONFIG_VIDEOTEST
 bool 'Disable compiler optimization'    CONFIG_NO_OPTIMIZE
 bool 'Electric Fence malloc debugging'  CONFIG_EFENCE
 bool 'gcov coverage analysis'           CONFIG_GCOV
 bool 'gprof profiling'                  CONFIG_GPROF
-bool 'Debugging keys'                   DEBUG_KEYS
 bool 'Terminal prints unknown escapes'  BOTHERSOME_TERMINAL
 bool 'Widget debugging'                 DEBUG_WIDGET
 bool 'Event debugging'                  DEBUG_EVENT
@@ -48,6 +53,9 @@ bool 'Linux framebuffer device'            DRIVER_FBDEV
 bool 'SDL framebuffer driver'              DRIVER_SDLFB
 bool 'Old SDL driver'                      DRIVER_SDL
 bool 'SVGAlib framebuffer driver'          DRIVER_SVGAFB
+if [ "$DRIVER_SVGAFB" = "y" ]; then
+    bool '  SVGAlib framebuffer emulates low bit depths'  CONFIG_SVGAFB_LOWBPP
+fi
 bool 'SVGAlib vgagl driver'                DRIVER_SVGAGL
 bool 'Motorola 68EZ328 LCD driver'         DRIVER_EZ328
 bool 'Ncurses driver'                      DRIVER_NCURSES
@@ -60,3 +68,31 @@ bool 'SDL input driver'                    DRIVER_SDLINPUT
 bool 'SVGAlib input driver'                DRIVER_SVGAINPUT
 bool 'Ncurses/GPM input driver (also for framebuffer)' DRIVER_NCURSESINPUT
 endmenu
+
+mainmenu_option next_comment
+comment 'Video Base Libraries'
+bool 'Linear framebuffer @ 1bpp' CONFIG_VBL_LINEAR1
+bool 'Linear framebuffer @ 2bpp' CONFIG_VBL_LINEAR2
+bool 'Linear framebuffer @ 4bpp' CONFIG_VBL_LINEAR4
+bool 'Linear framebuffer @ 8bpp' CONFIG_VBL_LINEAR8
+endmenu
+
+mainmenu_option next_comment
+comment 'Optional Widgets'
+bool 'Terminal widget (VT102 emulator)'       CONFIG_WIDGET_TERMINAL
+bool 'Canvas widget (for arbitrary graphics)' CONFIG_WIDGET_CANVAS
+endmenu
+
+mainmenu_option next_comment
+comment 'Security'
+bool 'Disable remote input devices'           CONFIG_NOREMOTEINPUT
+bool 'Disable exclusive resource access'      CONFIG_NOEXCLUSIVE
+int  'Client packet size limit in bytes'      CONFIG_MAXPACKETSZ
+bool 'Client quotas (not implemented)'       CONFIG_QUOTA
+if [ "$CONFIG_QUOTA" = "y" ]; then
+    int '  Number of clients'                 CONFIG_MAXCLIENTS
+    int '  Total memory per client in bytes'  CONFIG_MAXCLIENTMEM 
+    int '  Handles per client'                CONFIG_MAXCLIENTHANDLES 
+fi
+endmenu
+

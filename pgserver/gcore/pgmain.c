@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.26 2001/02/17 05:18:40 micahjd Exp $
+/* $Id: pgmain.c,v 1.27 2001/02/23 04:44:47 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
         vidf |= PG_VID_DOUBLEBUFFER;
 	break;
 
-#ifndef TINY_MESSAGES
+#ifdef CONFIG_TEXT
       case 'l':        /* List */
 
 	puts("\nVideo drivers:");
@@ -167,6 +167,15 @@ int main(int argc, char **argv) {
 	  }
 	}
 
+	puts("\n\nOptional widgets:\n  "
+#ifdef CONFIG_WIDGET_TERMINAL
+	     "Terminal  "
+#endif
+#ifdef CONFIG_WIDGET_CANVAS
+	     "Canvas  "
+#endif
+	     );
+	     
 	puts("");
 	exit(1);
 #endif
@@ -222,7 +231,7 @@ int main(int argc, char **argv) {
 #endif
 	 
       default:        /* Need help */
-#ifdef TINY_MESSAGES
+#ifndef CONFIG_TEXT
 	puts("Commandline error");
 #else
 	puts("PicoGUI server (pgui.sourceforge.net)\n\n"

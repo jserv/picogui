@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.58 2001/02/17 05:52:15 micahjd Exp $
+# $Id: Makefile,v 1.59 2001/02/23 04:44:45 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -21,6 +21,10 @@
 #
 #
 # $Log: Makefile,v $
+# Revision 1.59  2001/02/23 04:44:45  micahjd
+# Added many more configuration options, and started a working (hopefully?) but slow
+# linear1 and linear2
+#
 # Revision 1.58  2001/02/17 05:52:15  micahjd
 # Oops, left sdlfb out of the makefile...
 #
@@ -43,6 +47,8 @@ include .config
 
 ######## Add new source and header files here
 
+### Required source files
+
 BINNAME = pgserver
 
 SRC := \
@@ -59,8 +65,6 @@ SRC := \
     widget/field.c \
     widget/background.c \
     widget/menuitem.c \
-    widget/terminal.c \
-    widget/canvas.c \
     \
     gcore/grop.c \
     gcore/g_malloc.c \
@@ -82,15 +86,14 @@ SRC := \
     net/eventq.c \
     \
     vidbase/defaultvbl.c \
-    vidbase/linear8.c \
-    vidbase/linear4.c \
     \
     theme/memtheme.c \
     theme/fillstyle.c \
 
 
-# Optional source files
+### Optional source files
 
+# Drivers
 ifneq ($(DRIVER_SVGAGL),)
     SRC := $(SRC) video/svgagl.c
 endif
@@ -124,10 +127,33 @@ endif
 ifneq ($(DRIVER_NCURSESINPUT),)
     SRC := $(SRC) input/ncursesinput.c
 endif
+
+# Debugging
 ifneq ($(CONFIG_VIDEOTEST),)
     SRC := $(SRC) debug/videotest.c
 endif
 
+# Video base libraries
+ifneq ($(CONFIG_VBL_LINEAR1),)
+    SRC := $(SRC) vidbase/linear1.c
+endif
+ifneq ($(CONFIG_VBL_LINEAR2),)
+    SRC := $(SRC) vidbase/linear2.c
+endif
+ifneq ($(CONFIG_VBL_LINEAR4),)
+    SRC := $(SRC) vidbase/linear4.c
+endif
+ifneq ($(CONFIG_VBL_LINEAR8),)
+    SRC := $(SRC) vidbase/linear8.c
+endif
+
+# Optional widgets
+ifneq ($(CONFIG_WIDGET_TERMINAL),)
+    SRC := $(SRC) widget/terminal.c
+endif
+ifneq ($(CONFIG_WIDGET_CANVAS),)
+    SRC := $(SRC) widget/canvas.c
+endif
 
 # These are lists used in macro-driven function tables
 INC := net/requests.inc gcore/inputdrivers.inc gcore/videodrivers.inc
@@ -145,15 +171,19 @@ LDFLAGS :=
 GCC := gcc
 STRIP := strip
 
+# Don't bother with -g if we will strip
+ifneq ($(CONFIG_NOSTRIP),)
+        CFLAGS := $(CFLAGS) -g
+else
+        CFLAGS := $(CFLAGS) -fomit-frame-pointer
+endif
+
 # Target platform
 ifneq ($(WINDOWS),)
 	GCC := i386-mingw32-$(GCC)
 	STRIP := i386-mingw32-$(STRIP)
 	BINNAME := $(BINNAME).exe
 	LDFLAGS := $(LDFLAGS) -lwsock32 -lwinmm
-else
-        # -g on all but windows. Too slow on windows
-        CFLAGS := $(CFLAGS) -g
 endif
 ifneq ($(UCLINUX),)
         GCC := m68k-pic-coff-gcc
@@ -219,7 +249,7 @@ clean:
 
 $(BINNAME): $(OBJ) $(HDR)
 	$(GCC) -o $(BINNAME) $(OBJ) $(LDFLAGS)
-ifneq ($(CONFIG_STRIP),)
+ifeq ($(CONFIG_NOSTRIP),)
 	$(STRIP) $(BINNAME)
 endif
 

@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.19 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.20 2001/02/23 04:44:47 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -1163,7 +1163,6 @@ void def_sprite_protectarea(struct cliprect *in,struct sprite *from) {
 void setvbl_default(struct vidlib *vid) {
   /* Set defaults */
   vid->setmode = &def_setmode;
-  vid->close = &emulate_dos;
   vid->color_pgtohwr = &def_color_pgtohwr;
   vid->color_hwrtopg = &def_color_hwrtopg;
   vid->font_newdesc = &def_font_newdesc;

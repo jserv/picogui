@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.17 2001/02/17 05:18:40 micahjd Exp $
+/* $Id: g_error.c,v 1.18 2001/02/23 04:44:47 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -39,7 +39,7 @@
 
 g_error prerror(g_error e) {
   if (!iserror(e)) return e;
-#ifndef TINY_MESSAGES
+#ifdef CONFIG_TEXT
   printf("*** ERROR (");
   switch (errtype(e)) {
   case PG_ERRT_MEMORY: printf("MEMORY"); break;

@@ -543,7 +543,7 @@ if [ "$1" != "" ] ; then
 	CONFIG_IN=$1
 fi
 
-DEFAULTS=arch/$ARCH/defconfig
+DEFAULTS=config.defaults
 if [ -f .config ]; then
   DEFAULTS=.config
 fi

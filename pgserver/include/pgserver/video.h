@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.22 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: video.h,v 1.23 2001/02/23 04:44:47 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -511,8 +511,10 @@ void def_unblit(int src_x,int src_y,
 
 /************** Registration functions for Video Base Libraries */
 void setvbl_default(struct vidlib *vid);
-void setvbl_linear8(struct vidlib *vid);
+void setvbl_linear1(struct vidlib *vid);
+void setvbl_linear2(struct vidlib *vid);
 void setvbl_linear4(struct vidlib *vid);
+void setvbl_linear8(struct vidlib *vid);
 
 /************** Debugging */
 void videotest_run(int number);

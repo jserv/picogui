@@ -104,7 +104,7 @@ set -h +o posix
 function set_x_info () {
     eval x=\$$1
     if [ -z "$x" ]; then
-	eval `sed -n -e 's/# \(.*\) is not set.*/\1=n/' -e "/^$1=/p" arch/$ARCH/defconfig`
+	eval `sed -n -e 's/# \(.*\) is not set.*/\1=n/' -e "/^$1=/p" config.defaults`
 	eval x=\${$1:-"$2"}
 	eval $1=$x
 	eval INFO_$1="' (NEW)'"
@@ -1384,7 +1384,7 @@ if [ "$1" != "" ] ; then
 	CONFIG_IN=$1
 fi
 
-DEFAULTS=arch/$ARCH/defconfig
+DEFAULTS=config.defaults
 if [ -f .config ]; then
   DEFAULTS=.config
 fi

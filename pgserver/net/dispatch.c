@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.28 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: dispatch.c,v 1.29 2001/02/23 04:44:47 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -261,25 +261,36 @@ g_error rqh_undef(int owner, struct pgrequest *req,
 
 g_error rqh_in_key(int owner, struct pgrequest *req,
 		   void *data, unsigned long *ret, int *fatal) {
+#ifdef CONFIG_NOREMOTEINPUT
+  return mkerror(PG_ERRT_BADPARAM,104);
+#else
   reqarg(in_key);
   dispatch_key(ntohl(arg->type),(int) ntohs(arg->key),ntohs(arg->mods));
   return sucess;
+#endif
 }
 
 g_error rqh_in_point(int owner, struct pgrequest *req,
 		     void *data, unsigned long *ret, int *fatal) {
-  reqarg(in_point);
+#ifdef CONFIG_NOREMOTEINPUT
+  return mkerror(PG_ERRT_BADPARAM,104);
+#else  reqarg(in_point);
   dispatch_pointing(ntohl(arg->type),ntohs(arg->x),ntohs(arg->y),
 		    ntohs(arg->btn));
   return sucess;
+#endif
 }
 
 g_error rqh_in_direct(int owner, struct pgrequest *req,
 		   void *data, unsigned long *ret, int *fatal) {
+#ifdef CONFIG_NOREMOTEINPUT
+  return mkerror(PG_ERRT_BADPARAM,104);
+#else
   reqarg(in_direct);
   dispatch_direct(((char*)arg)+sizeof(struct pgreqd_in_direct),
 		  ntohl(arg->param));
   return sucess;
+#endif
 }
 
 g_error rqh_wait(int owner, struct pgrequest *req,
@@ -491,6 +502,9 @@ g_error rqh_batch(int owner, struct pgrequest *req,
 
 g_error rqh_regowner(int owner, struct pgrequest *req,
 		    void *data, unsigned long *ret, int *fatal) {
+#ifdef CONFIG_NOEXCLUSIVE
+   return mkerror(PG_ERRT_BADPARAM,105);
+#else
    reqarg(regowner);
    
    switch (ntohs(arg->res)) {
@@ -518,10 +532,14 @@ g_error rqh_regowner(int owner, struct pgrequest *req,
       break;
    }
    return sucess;
+#endif
 }
       
 g_error rqh_unregowner(int owner, struct pgrequest *req,
 		    void *data, unsigned long *ret, int *fatal) {
+#ifdef CONFIG_NOEXCLUSIVE
+   return mkerror(PG_ERRT_BADPARAM,105);
+#else
    reqarg(regowner);
    
    switch (ntohs(arg->res)) {
@@ -542,6 +560,7 @@ g_error rqh_unregowner(int owner, struct pgrequest *req,
       break;
    }
    return sucess;
+#endif
 }
       
 g_error rqh_mkcontext(int owner, struct pgrequest *req,

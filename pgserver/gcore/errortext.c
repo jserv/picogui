@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.18 2001/02/17 05:18:40 micahjd Exp $
+/* $Id: errortext.c,v 1.19 2001/02/23 04:44:47 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -29,13 +29,13 @@
 
 /************************ Numeric Errors */
 
-/* If TINY_MESSAGES is defined, no error
+/* If CONFIG_TEXT is not defined, no error
  * strings are stored- the user gets a nice
  * hexadecimal error code that is in most
  * cases not too much worse than the string :)
  */
 
-#ifdef TINY_MESSAGES
+#ifndef CONFIG_TEXT
 
 /* Eek! Cryptic, but saves lots of space */
 const char *errortext(g_error e) {
@@ -44,7 +44,7 @@ const char *errortext(g_error e) {
   return err;
 }
 
-#else /* !TINY_MESSAGES */
+#else /* CONFIG_TEXT */
 
 /************************ String errors */
 
@@ -55,10 +55,10 @@ const char *errortext(g_error e) {
 }
 
 /* This is Brandon's table of Haiku error messages :)
- * Define HAIKU_MESSAGES to activate
+ * Define CONFIG_HAIKU_BRANDON to activate
  */
 
-#ifdef HAIKU_MESSAGES
+#ifdef CONFIG_HAIKU_BRANDON
 static const char *errors[] = {
 	/* 01 */ "A bit of a mess\nmapped to failure in SIDE\nParamater crash",
 	/* 02 */ "Alignment is hard\nScrewing up can be a fact\nYour bitmap at fault",
@@ -163,8 +163,13 @@ static const char *errors[] = {
      /* 98 */  "Another application is already registered for system events",
      /* 99 */  "Application attempting to own unknown system resource",     
      /* 100 */ "Theme is not word-aligned, use a newer version of themec",
-};
+     /* 101 */ "Unsupported color depth",
+     /* 102 */ "Support for the terminal widget was not compiled in to this server",
+     /* 103 */ "Support for the canvas widget was not compiled in to this server",
+     /* 104 */ "Remote input devices have been disabled",
+     /* 105 */ "Exclusive resource access has been disabled",
 
+};
 #else 
 
 /* Micah's original error table */
@@ -270,10 +275,15 @@ static const char *errors[] = {
   /* 98 */  "Another application is already registered for system events",
   /* 99 */  "Application attempting to own unknown system resource",
   /* 100 */ "Theme is not word-aligned, use a newer version of themec",
+  /* 101 */ "Unsupported color depth",
+  /* 102 */ "Support for the terminal widget was not compiled in to this server",
+  /* 103 */ "Support for the canvas widget was not compiled in to this server",
+  /* 104 */ "Remote input devices have been disabled",
+  /* 105 */ "Exclusive resource access has been disabled",
 };
 
-#endif /* HAIKU_MESSAGES */
-#endif /* TINY_MESSAGES */
+#endif /* CONFIG_HAIKU_BRANDON */
+#endif /* !CONFIG_TEXT */
 
 /* The End */
 

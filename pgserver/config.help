@@ -16,12 +16,11 @@ LINUX
       compiler and SDL.
 
 
-CONFIG_STRIP
-      This removes the debugging symbols from the binary. If you are
-      an end user or you are producing the final binary for an
-      embedded system, it's safe to turn this on. On most platforms
-      the binary size is reduced quite a bit. 
-      
+CONFIG_NOSTRIP
+      This option makes it possible to run the resulting binary in
+      a debugger and get useful output. If this is off, the binary
+      is stripped and the stack frame is turned off.
+	     
       
 ASM_INTEL
       This enables intel-specific assembly language optimizations
@@ -193,3 +192,21 @@ DRIVER_NCURSESINPUT
 CONFIG_VIDEOTEST
       This adds command line options to invoke a video driver test
       mode, including a test pattern and a stress test.
+
+CONFIG_SVGAFB_LOWBPP
+      This allows testing of linear VBLs less than 8bpp using the
+      svgalib framebuffer driver by forcing double-buffering and
+      converting to 8bpp in the update function. 
+    
+
+CONFIG_TEXT
+      This enables text error messages and verbose command line
+      messages. If it is off you will get cryptic messages, usually
+      in hexadecimal. Leave it on unless you really need a small
+      server. It saves around 6K.
+     
+
+CONFIG_HAIKU_BRANDON
+      Replaces the 'normal' errors with Brandon's cryptic but funny haikus
+
+

@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.7 2001/02/21 03:17:23 micahjd Exp $
+/* $Id: linear4.c,v 1.8 2001/02/23 04:44:47 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -42,13 +42,13 @@
 #define PIXELBYTE(x,y) (((x)>>1)+LINE(y))
 
 /* Table of masks used to isolate one pixel within a byte */
-unsigned const char notmask[] = { 0x0F, 0xF0 };
+unsigned const char notmask4[] = { 0x0F, 0xF0 };
 
 /************************************************** Minimum functionality */
 
 /* By default assume 16 grays */
 hwrcolor linear4_color_pgtohwr(pgcolor c) {
-   return (getred(c)+getgreen(c)+getblue(c))/48;
+   return (getred(c)+getgreen(c)+getblue(c))/51;
 }
 pgcolor linear4_color_hwrtopg(hwrcolor c) {
    /* If this was called more often we could use a lookup table,
@@ -59,52 +59,16 @@ pgcolor linear4_color_hwrtopg(hwrcolor c) {
 
 /* Ugh. Evil but necessary... I suppose... */
 
-void inline inl_setpixel(int x,int y,hwrcolor c) {
+void linear4_pixel(int x,int y,hwrcolor c) {
    char *p = PIXELBYTE(x,y);
-   *p &= notmask[x&1];
+   *p &= notmask4[x&1];
    *p |= c << ((1-(x&1))<<2);
 }
-void linear4_pixel(int x,int y,hwrcolor c) {
-   inl_setpixel(x,y,c);
-}
-  
-hwrcolor inline inl_getpixel(int x,int y) {
-   return ((*PIXELBYTE(x,y)) >> ((1-(x&1))<<2)) & 0x0F;
-}
 hwrcolor linear4_getpixel(int x,int y) {
-   return inl_getpixel(x,y);
+   return ((*PIXELBYTE(x,y)) >> ((1-(x&1))<<2)) & 0x0F;
 }
    
 /************************************************** Accelerated (?) primitives */
-
-/* Simple enough... */
-void linear4_clear(void) {
-  __memset(vid->fb_mem,0,vid->fb_bpl*vid->yres);
-}
-
-/* Add colors, truncating if we overflow */
-void linear4_addpixel(int x,int y,pgcolor c) {
-  unsigned char d;
-
-  /* Add and truncate */
-  d = inl_getpixel(x,y) + linear8_color_pgtohwr(c);
-  if (d & 0xF0) d = 0x0F;
-
-  /* Store it  */
-  inl_setpixel(x,y,d);
-}
-
-/* Subtract, truncating to 0 if a component is larger than the original */
-void linear4_subpixel(int x,int y,pgcolor c) {
-  unsigned char d;
-
-  /* Add and truncate */
-  d = inl_getpixel(x,y) - linear8_color_pgtohwr(c);
-  if (d & 0xF0) d = 0x00;
-
-  /* Store it  */
-  inl_setpixel(x,y,d);
-}
 
 /* Simple horizontal and vertical straight lines */
 void linear4_slab(int x,int y,int w,hwrcolor c) {
@@ -130,7 +94,7 @@ void linear4_bar(int x,int y,int h,hwrcolor c) {
    /* Compute the masks ahead of time and reuse! */
    
    char *p = PIXELBYTE(x,y);
-   unsigned char mask = notmask[x&1];
+   unsigned char mask = notmask4[x&1];
    if (!(x&1)) c <<= 4;
    
    for (;h;h--,p+=vid->fb_bpl) {
@@ -169,7 +133,7 @@ void linear4_line(int x1,int y1,int x2,int y2,hwrcolor c) {
   y2 *= vid->fb_bpl;
 
   p = vid->fb_mem + y1 + (x1>>1);
-  *p &= notmask[x1&1];
+  *p &= notmask4[x1&1];
   *p |= c << ((1-(x1&1))<<2);
 
   /* Major axis is horizontal */
@@ -184,7 +148,7 @@ void linear4_line(int x1,int y1,int x2,int y2,hwrcolor c) {
       fraction += dy;
       
       p = vid->fb_mem + y1 + (x1>>1);
-      *p &= notmask[x1&1];
+      *p &= notmask4[x1&1];
       *p |= c << ((1-(x1&1))<<2);
     }
   } 
@@ -201,7 +165,7 @@ void linear4_line(int x1,int y1,int x2,int y2,hwrcolor c) {
       fraction += dx;
        
       p = vid->fb_mem + y1 + (x1>>1);
-      *p &= notmask[x1&1];
+      *p &= notmask4[x1&1];
       *p |= c << ((1-(x1&1))<<2);
     }
   }
@@ -569,9 +533,6 @@ void setvbl_linear4(struct vidlib *vid) {
   vid->color_hwrtopg  = &linear4_color_hwrtopg;
    
   /* Accelerated functions */
-  vid->addpixel       = &linear4_addpixel;
-  vid->subpixel       = &linear4_subpixel;
-  vid->clear          = &linear4_clear;
   vid->slab           = &linear4_slab;
   vid->bar            = &linear4_bar;
   vid->line           = &linear4_line;
