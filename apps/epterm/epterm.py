@@ -64,6 +64,10 @@ class TerminalPage:
     def setPosition(self, position):
         self._position = position
 
+class PalleteConfig:
+    def __init__(self, app):
+        self._window = app.createWidget('popup')
+
 class App(PicoGUI.Application):
     def __init__(self):
         self._pages = []
@@ -76,11 +80,13 @@ class App(PicoGUI.Application):
 	self._pages.append(TerminalPage(self._toolbar, 'after', self, 0))
 	self._pages[-1].tabpage.text = 'tab!'
 
+	self.link(self.update, self, 'idle')
+
     def addtab(self,ev):
         self.appendtab()
 
     def destroy(self, position):
-        self._pages = self._pages[0:position] + self._pages[position + 1:]
+        del self._pages[position]
 	i = position;
 	if(len(self._pages) != 0):
 	    while(i != len(self._pages)):
@@ -93,17 +99,13 @@ class App(PicoGUI.Application):
 	self._pages[-1].tabpage.text = 'tab!'
 	self._pages[-1].tabpage.on = 1
 
-    def update(self):
-        import time
-        self.eventPoll()
+    def update(self, ev):
 	i = 0
 	while(i != len(self._pages)):
 	    self._pages[i].update()
 	    if(len(self._pages) == 0):
 	        sys.exit(0)
 	    i = i + 1
-	time.sleep(0.001)
 
 f = App()
-while(1):
-    f.update()
+f.run()
