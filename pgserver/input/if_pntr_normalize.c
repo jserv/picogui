@@ -1,4 +1,4 @@
-/* $Id: if_pntr_normalize.c,v 1.6 2002/08/13 07:51:21 micahjd Exp $
+/* $Id: if_pntr_normalize.c,v 1.7 2002/08/13 07:58:13 micahjd Exp $
  *
  * if_pntr_normalize.c - Convert the various pointer events to a standard form
  *
@@ -62,7 +62,7 @@ void infilter_pntr_normalize_handler(struct infilter *self, u32 trigger, union t
       rotate90_coord_physicalize(&x,&y);
       break;
     case PG_VID_ROTATE180: 
-      rotate180_coord_physicalize(&x,&y);
+      rotate180_coord_logicalize(&x,&y);
       break;
     case PG_VID_ROTATE270: 
       rotate270_coord_physicalize(&x,&y);
