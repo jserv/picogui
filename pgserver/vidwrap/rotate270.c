@@ -1,4 +1,4 @@
-/* $Id: rotate270.c,v 1.7 2002/02/23 05:25:28 micahjd Exp $
+/* $Id: rotate270.c,v 1.8 2002/04/12 17:28:12 micahjd Exp $
  *
  * rotate270.c - Video wrapper to rotate the screen 270 degrees
  *
@@ -104,12 +104,12 @@ void rotate270_line(hwrbitmap dest,s16 x1,s16 y1,s16 x2,
 void rotate270_blit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
 		   hwrbitmap src,s16 src_x,s16 src_y,
 		   s16 lgop) {
-   s16 bh,sy2;
+   s16 bw,sy2;
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
-   (*vid->bitmap_getsize)(src,&bh,&sy2);
-   sy2 = bh-(h%bh)-src_y;
-   
+   (*vid->bitmap_getsize)(src,&bw,&sy2);
+   sy2 = bw-((h + src_y)%bw);
+
    (*vid->scrollblit)(dest,dx-dest_y-h,dest_x,h,w,
 		      src,sy2,src_x,lgop);
 }
