@@ -16,7 +16,7 @@
 #
 # Its record in the loginfo file should look like:
 #
-#       ALL        $CVSROOT/CVSROOT/ciabot %s $USER
+#       ALL        $CVSROOT/CVSROOT/ciabot.pl %s $USER
 #
 # $Id: ciabot.pl,v 1.30 2003/06/21 23:08:04 pasky Exp $
 
