@@ -102,6 +102,7 @@ bool 'Screen shot driver'                  DRIVER_SCRSHOT
 bool 'Null driver'                         DRIVER_NULL
 bool 'Null framebuffer driver'             DRIVER_NULLFB
 bool 'Zukero EPSON S1D13806 driver'        DRIVER_S1D13806
+bool 'EPSON SED133x driver'                DRIVER_SED133X
 bool 'MGL2 driver'                         DRIVER_MGL2FB
 endmenu
 

@@ -1,4 +1,4 @@
-/* $Id: ez328.c,v 1.22 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: ez328.c,v 1.23 2002/01/23 14:49:50 abergmann Exp $
  *
  * ez328.c - Driver for the 68EZ328's (aka Motorola Dragonball EZ)
  *           built-in LCD controller. It assumes the LCD parameters
@@ -42,6 +42,7 @@
 /* Save all LCD registers, restore on exit */
 #define REGS_LEN     0x36
 #define REGS_START   ((void*)LSSA_ADDR)
+#warning FIXME: This does not look right, try 'char ez328_saveregs[REGS_LEN]'
 unsigned char *ez328_saveregs[REGS_LEN];
 
 g_error ez328_init(void);
