@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.3 2000/09/16 07:04:41 micahjd Exp $
+/* $Id: network.h,v 1.4 2000/09/21 05:57:54 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -30,7 +30,7 @@
 #define _H_PG_NETWORK
 
 #define PG_REQUEST_PORT    30450
-#define PG_PROTOCOL_VER    0x0001
+#define PG_PROTOCOL_VER    0x0002      /* Increment this whenever changes are made */
 #define PG_REQUEST_MAGIC   0x31415926
 
 /******* Packet structures */
@@ -196,17 +196,11 @@ struct pgreqd_register {
   /* This is just a subset of app_info, organized for network
      transmission */
 
-  unsigned long name;
+  unsigned long name;  /* string handle */
   unsigned short type;
-  unsigned short side;
-  unsigned short sidemask;
-  unsigned short w;
-  unsigned short h;
-  unsigned short minw;
-  unsigned short maxw;
-  unsigned short minh;
-  unsigned short maxh;
   unsigned short dummy;
+
+  /* Followed by optional APPSPECs */
 };
 struct pgreqd_mkpopup {
   unsigned short x;
