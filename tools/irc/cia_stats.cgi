@@ -32,7 +32,7 @@ cat <<EOF
 
 <ul>
 EOF
-cat $CHANNELFILE | xargs -n1 -i echo "<li>" {} "</li>"
+sort $CHANNELFILE | xargs -n1 -i echo "<li>" {} "</li>"
 cat <<EOF
 </ul>
 
