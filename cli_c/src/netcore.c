@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.6 2001/06/30 08:52:47 micahjd Exp $
+/* $Id: netcore.c,v 1.7 2001/07/03 02:36:52 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -272,7 +272,7 @@ void _pg_getresponse(void) {
        return;
   }
   else {
-     /* Normal recieve */
+     /* Normal receive */
      
      if (_pg_recv(&_pg_return.type,sizeof(_pg_return.type)))
        return;
@@ -490,8 +490,12 @@ void pgInit(int argc, char **argv)
 {
   int  numbytes;
   struct pghello ServerInfo;
+#ifdef CONFIG_UNIX_SOCKET
   struct hostent *he;
   struct sockaddr_in server_addr; /* connector's address information */
+#else
+  struct sockaddr_un server_addr; 
+#endif
   const char *hostname;
   int fd,i,j,args_to_shift;
   char *arg;
@@ -533,7 +537,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.6 2001/06/30 08:52:47 micahjd Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.7 2001/07/03 02:36:52 micahjd Exp $\n");
 	exit(1);
       }
       
@@ -571,19 +575,25 @@ void pgInit(int argc, char **argv)
     return;
   }
 #else
+#if CONFIG_UNIX_SOCKET
   if ((he=gethostbyname(hostname)) == NULL) {  /* get the host info */
     clienterr("Error resolving server hostname");
     return;
   }
 #endif
+#endif
 
 
-
+#ifdef CONFIG_UNIX_SOCKET
   if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+#else
+  if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+#endif
     clienterr("socket error");
     return;
   }
 
+#ifdef CONFIG_UNIX_SOCKET
   /* Try disabling the "Nagle algorithm" or "tinygram prevention" */
   tmp = 1;
   setsockopt(fd,6 /*PROTO_TCP*/,TCP_NODELAY,(void *)&tmp,sizeof(tmp));
@@ -598,6 +608,13 @@ void pgInit(int argc, char **argv)
   bzero(&(server_addr.sin_zero), 8);                /* zero the rest of the struct */
 
   if (connect(fd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1) {
+#else
+  server_addr.sun_family = AF_UNIX;
+  strcpy(server_addr.sun_path,hostname);
+  i = strlen(server_addr.sun_path) + sizeof(server_addr.sun_family);
+
+  if (connect(fd, (struct sockaddr *)&server_addr, i) == -1) {
+#endif
     clienterr("Error connecting to server");
     return;
   }

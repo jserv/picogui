@@ -20,6 +20,8 @@ fi
 if [ "$CONFIG_LINUX_GENERIC" = "y" ]; then
     bool 'x86 asm optimization'             ASM_INTEL
 fi
+
+bool 'Use UNIX sockets instead of TCP/IP'   CONFIG_UNIX_SOCKET
 endmenu
 
 mainmenu_option next_comment

@@ -1,4 +1,4 @@
-/* $Id: clientlib.h,v 1.5 2001/06/07 23:41:00 micahjd Exp $
+/* $Id: clientlib.h,v 1.6 2001/07/03 02:36:52 micahjd Exp $
  *
  * clientlib.h - definitions used only within the client library code itself
  *
@@ -36,7 +36,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#ifdef CONFIG_UNIX_SOCKET
 #include <netinet/in.h>
+#else
+#include <sys/un.h>
+#endif
 #include <netdb.h>
 #include <stdio.h>    /* for fprintf() */
 #include <malloc.h>
@@ -58,7 +62,11 @@
 //#define DEBUG_EVT
 
 /* Default server */
+#ifdef CONFIG_UNIX_SOCKET
 #define PG_REQUEST_SERVER       "127.0.0.1"
+#else
+#define PG_REQUEST_SERVER	"/tmp/.pgui"
+#endif
 
 /* Buffer size. When packets don't need to be sent immediately,
  * they accumulate in this buffer. It doesn't need to be very big
