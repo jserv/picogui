@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.16 2002/10/22 14:04:41 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.17 2002/10/24 18:10:02 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -266,11 +266,15 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
       case PGKEY_LEFT:
 	paragraph_hide_cursor(DATA->doc->crsr);
 	document_seek(DATA->doc,-1,PGSEEK_CUR);
+	if (document_eof(DATA->doc))
+	  document_seek(DATA->doc,1,PGSEEK_CUR);
 	break;
 
       case PGKEY_RIGHT:
 	paragraph_hide_cursor(DATA->doc->crsr);
 	document_seek(DATA->doc,1,PGSEEK_CUR);
+	if (document_eof(DATA->doc))
+	  document_seek(DATA->doc,-1,PGSEEK_CUR);
 	break;
 
       case PGKEY_UP:
@@ -300,7 +304,9 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
       param->kbd.consume++;
       if (param->kbd.key == PGKEY_BACKSPACE) {
 	paragraph_seekcursor(DATA->doc->crsr, -1);
-	if (!DATA->doc->crsr->iterator.invalid)
+	if (document_eof(DATA->doc))
+	  document_seek(DATA->doc,1,PGSEEK_CUR);
+	else
 	  paragraph_delete_char(DATA->doc->crsr);
       }
       else if (param->kbd.key == PGKEY_DELETE) {
