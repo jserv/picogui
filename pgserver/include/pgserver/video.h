@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.74 2002/02/03 18:50:23 micahjd Exp $
+/* $Id: video.h,v 1.75 2002/02/23 05:42:28 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -585,6 +585,14 @@ void def_coord_keyrotate(s16 *k);
 void rotate90_coord_keyrotate(s16 *k);
 void rotate180_coord_keyrotate(s16 *k);
 void rotate270_coord_keyrotate(s16 *k);
+void def_coord_physicalize(s16 *x, s16 *y);
+void rotate90_coord_physicalize(s16 *x, s16 *y);
+void rotate180_coord_physicalize(s16 *x, s16 *y);
+void rotate270_coord_physicalize(s16 *x, s16 *y);
+void def_coord_logicalize(s16 *x, s16 *y);
+void rotate90_coord_logicalize(s16 *x, s16 *y);
+void rotate180_coord_logicalize(s16 *x, s16 *y);
+void rotate270_coord_logicalize(s16 *x, s16 *y);
 
 /************* Registration functions for video drivers */
 
@@ -595,10 +603,6 @@ g_error chipslice_video_regfunc(struct vidlib *v);
 g_error ez328_regfunc(struct vidlib *v);
 g_error ez328vga_regfunc(struct vidlib *v);
 g_error ncurses_regfunc(struct vidlib *v);
-void def_coord_keyrotate(s16 *k);
-void rotate90_coord_keyrotate(s16 *k);
-void rotate180_coord_keyrotate(s16 *k);
-void rotate270_coord_keyrotate(s16 *k);
 g_error null_regfunc(struct vidlib *v);
 g_error nullfb_regfunc(struct vidlib *v);
 g_error fbdev_regfunc(struct vidlib *v);

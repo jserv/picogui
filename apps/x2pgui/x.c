@@ -532,10 +532,10 @@ static int leave_translate(int isedge, int width, int pos)
 #define EDGE(X) ((X)?edge_width:0)
 
 #define SCALEX(X) \
-( ((X) - EDGE(edge==EDGE_WEST))*mi.xres/(displayWidth - EDGE(EW)) )
+( ((X) - EDGE(edge==EDGE_WEST))*mi.lxres/(displayWidth - EDGE(EW)) )
 
 #define SCALEY(Y) \
-( ((Y)-EDGE(edge==EDGE_NORTH))*mi.yres/(displayHeight-EDGE(NS)) )
+( ((Y)-EDGE(edge==EDGE_NORTH))*mi.lyres/(displayHeight-EDGE(NS)) )
 
 /*
  * HandleTopLevelEvent.

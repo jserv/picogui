@@ -64,7 +64,7 @@ void touchscreen_pentoscreen(int *x, int *y)
     unsigned char data[9];	/* x, y, rotation */
     *(s32*)data=htonl(*x);
     *((s32*)data+1)=htonl(*y);
-#ifdef CONFIG_ROTATIONBASE_0
+#if defined(CONFIG_ROTATIONBASE_0) || defined(CONFIG_ROTATIONBASE_NOPOINTING)
     data[8]=vid->flags&PG_VID_ROTATEMASK;
 #elif defined(CONFIG_ROTATIONBASE_90)
     switch(vid->flags&PG_VID_ROTATEMASK)

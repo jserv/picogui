@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.59 2002/02/12 23:54:36 micahjd Exp $
+/* $Id: video.c,v 1.60 2002/02/23 05:42:28 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -367,6 +367,30 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
      vidwrap->coord_keyrotate = &rotate270_coord_keyrotate;
 #endif
 #endif /* CONFIG_ROTATIONBASE_NOKEYS */
+
+   /* Ignore the base screen rotation for pointing events? */
+#ifdef CONFIG_ROTATIONBASE_NOPOINTING
+   vidwrap->coord_physicalize = &def_coord_logicalize;
+   vidwrap->coord_logicalize = &def_coord_logicalize;
+#ifdef CONFIG_ROTATE
+   if (vid->flags & PG_VID_ROTATE90) {
+     vidwrap->coord_physicalize = &rotate90_coord_physicalize;
+     vidwrap->coord_logicalize = &rotate90_coord_logicalize;
+   }
+#endif   
+#ifdef CONFIG_ROTATE180
+   if (vid->flags & PG_VID_ROTATE180) {
+     vidwrap->coord_physicalize = &rotate180_coord_logicalize;
+     vidwrap->coord_logicalize = &rotate180_coord_logicalize;
+   }
+#endif   
+#ifdef CONFIG_ROTATE270
+   if (vid->flags & PG_VID_ROTATE270) {
+     vidwrap->coord_physicalize = &rotate270_coord_physicalize;
+     vidwrap->coord_logicalize = &rotate270_coord_logicalize;
+   }
+#endif
+#endif /* CONFIG_ROTATIONBASE_NOPOINTING */
 
    /* Since changing video modes pretty much obliterates all onscreen
     * sprites, and the previous location might be offscreen now,
