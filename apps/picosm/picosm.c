@@ -86,7 +86,10 @@ int evtClear(struct pgEvent *evt){
 
 int evtLogin(struct pgEvent *evt){
   picosmUI *interface = (picosmUI *)evt->extra;
-  pgFocus(interface->wPasswd);
+
+  /* Advance focus to the password field if the username field is nonempty */
+  if (pgGetString(pgGetWidget(interface->wLogin,PG_WP_TEXT))[0])
+    pgFocus(interface->wPasswd);
 }
 
 int evtReboot(struct pgEvent *evt){
