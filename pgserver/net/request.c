@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.28 2001/12/04 18:39:35 cgrigis Exp $
+/* $Id: request.c,v 1.29 2001/12/14 21:49:42 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -204,11 +204,7 @@ void readfd(int from) {
     if (!buf->data) {
       /* Reorder the bytes in the header */
       buf->req.type = ntohs(buf->req.type);
-#ifdef ENABLE_THREADING_SUPPORT      
       buf->req.id = ntohl(buf->req.id);
-#else      
-      buf->req.id = ntohs(buf->req.id);
-#endif      
       buf->req.size = ntohl(buf->req.size);
 
 #ifdef DEBUG_NET

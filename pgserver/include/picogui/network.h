@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.48 2001/12/14 00:31:58 micahjd Exp $
+/* $Id: network.h,v 1.49 2001/12/14 21:49:42 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -34,7 +34,7 @@
 #define _H_PG_NETWORK
 
 #define PG_REQUEST_PORT    30450
-#define PG_PROTOCOL_VER    0x000B      /* Increment this whenever changes 
+#define PG_PROTOCOL_VER    0x000C      /* Increment this whenever changes 
 					* are made */
 #define PG_REQUEST_MAGIC   0x31415926
 
@@ -49,13 +49,10 @@ typedef signed long    s32;
 
 /* Request, the only packet ever sent from client to server */
 struct pgrequest {
-  u16 type;
-#ifdef ENABLE_THREADING_SUPPORT   
   u32 id;  /* Just to make sure requests match up with responses */
-#else   
-  u16 id;  /* Just to make sure requests match up with responses */
-#endif   
   u32 size; /* The request is followed by size bytes of data */
+  u16 type;
+  u16 dummy; /* Padding */
 };  
 
 /* various response packets, sent to the client after the 
@@ -66,23 +63,17 @@ struct pgrequest {
 #define PG_RESPONSE_ERR 1
 struct pgresponse_err {
   u16 type;    /* RESPONSE_ERR - error code */
-#ifdef ENABLE_THREADING_SUPPORT      
-  u32 id;
-#else   
-  u16 id;
-#endif   
   u16 errt;
   u16 msglen;  /* Length of following message */
+  u16 dummy; /* Padding */
+  u32 id;
 };
 
 #define PG_RESPONSE_RET 2
 struct pgresponse_ret {
   u16 type;    /* RESPONSE_RET - return value */
-#ifdef ENABLE_THREADING_SUPPORT         
+  u16 dummy; /* Padding */
   u32 id;
-#else   
-  u16 id;
-#endif   
   u32 data;
 };
 
@@ -98,11 +89,8 @@ struct pgresponse_event {
 #define PG_RESPONSE_DATA 4
 struct pgresponse_data {
   u16 type;    /* RESPONSE_DATA */
-#ifdef ENABLE_THREADING_SUPPORT         
+  u16 dummy; /* Padding */
   u32 id;
-#else   
-  u16 id;
-#endif   
   u32 size;
   /* 'size' bytes of data follow */
 };

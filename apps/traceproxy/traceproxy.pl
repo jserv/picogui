@@ -22,7 +22,8 @@
 		mkcontext rmcontext focus getstring dup setpayload getpayload
 		chconect writeto updatepart mkarray render newbitmap thlookup
 		getinactive setinactive drivermsg loaddriver getfstyle
-		findwidget checkevent sizebitmap appmsg undef
+		findwidget checkevent sizebitmap appmsg createwidget attachwidget
+		undef
 		);
 
 @rshiplist =  qw(deprecated_before after inside before);
@@ -98,8 +99,8 @@ while (1) {
     print "\n";
 
     # Get a request packet
-    read(REQ,$rqh,8) or die $!;
-    ($reqtype,$reqid,$reqsize) = unpack("nnN",$rqh);
+    read(REQ,$rqh,12) or die $!;
+    ($reqid,$reqsize,$reqtype) = unpack("NNn",$rqh);
     read(REQ,$reqdata,$reqsize);
     dumprequest($reqtype,$reqdata);
 
@@ -108,14 +109,14 @@ while (1) {
     $rsptype = unpack("n",$rsptypeword);
     if ($rsptype==1) {
 	# Error response packet
-	read(RSP,$rsp_err,6) or die $!;
-	($rspid,$rsperrt,$rspmsglen) = unpack("nnn",$rsp_err);
+	read(RSP,$rsp_err,10) or die $!;
+	($rsperrt,$rspmsglen,$dummy,$rspid) = unpack("nnnN",$rsp_err);
 
 	# if the IDs don't match, print request packets until they do
 	while ($rspid != $reqid) {
 	    print "}\n\n";
-	    read(REQ,$rqh,8) or die $!;
-	    ($reqtype,$reqid,$reqsize) = unpack("nnN",$rqh);
+	    read(REQ,$rqh,12) or die $!;
+	    ($reqid,$reqsize,$reqtype) = unpack("NNn",$rqh);
 	    read(REQ,$reqdata,$reqsize);
 	    dumprequest($reqtype,$reqdata);
 	}
@@ -126,14 +127,14 @@ while (1) {
     }
     elsif ($rsptype==2) {
 	# Return value
-	read(RSP,$rsp_ret,6) or die $!;
-	($rspid,$rspdata) = unpack("nN",$rsp_ret);
+	read(RSP,$rsp_ret,10) or die $!;
+	($dummy,$rspid,$rspdata) = unpack("nNN",$rsp_ret);
 
 	# if the IDs don't match, print request packets until they do
 	while ($rspid != $reqid) {
 	    print "}\n\n";
-	    read(REQ,$rqh,8) or die $!;
-	    ($reqtype,$reqid,$reqsize) = unpack("nnN",$rqh);
+	    read(REQ,$rqh,12) or die $!;
+	    ($reqid,$reqsize,$reqtype) = unpack("NNn",$rqh);
 	    read(REQ,$reqdata,$reqsize);
 	    dumprequest($reqtype,$reqdata);
 	}
@@ -163,8 +164,8 @@ while (1) {
     }
     elsif ($rsptype==4) {
 	# data response packet
-	read(RSP,$rsp_data,6) or die $!;
-	($id,$size) = unpack("nN",$rsp_data);
+	read(RSP,$rsp_data,10) or die $!;
+	($dummy,$id,$size) = unpack("nNN",$rsp_data);
 	read(RSP,$data,$size) or die $!;
 	print "} = ";
 	print " data {\n";
@@ -188,14 +189,14 @@ sub dumprequest {
 	my ($rship,$type,$parent) = unpack("nnN",$data);
 	print " relationship = ".$rshiplist[$rship]."\n";
 	print " type = ".$widgetlist[$type]."\n";
-	printf " parent = %d (0x%X)\n", $parent;  
+	printf " parent = %d (0x%X)\n", $parent, $parent;  
     }
     # Pick apart a batch packet
     elsif ($reqtype==18) {
 	while ($data) {
-	    my ($type,$reqid,$reqsize) = unpack("nnN",substr($data,0,8));
-	    my $reqdata = substr($data,8,$reqsize);
-	    my $pktsize = 8 + $reqsize;
+	    my ($reqid,$reqsize,$type) = unpack("NNn",substr($data,0,12));
+	    my $reqdata = substr($data,12,$reqsize);
+	    my $pktsize = 12 + $reqsize;
 	    # Pad to 32-bit boundary
 	    $pktsize += 4 - ($pktsize & 3) if ($pktsize & 3);
 	    substr($data,0,$pktsize) = "";
