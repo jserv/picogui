@@ -22,6 +22,21 @@ Base classes for all UI modules, doesn't implement any UI at all.
 # 
 
 import PGBuild.Errors
+import time
+
+
+class TimeStamp(object):
+    """This time stamp object is applied to tasks and individual progress reports.
+       UIs that can display multiple panes of information may choose to display this
+       to give the user an indication of when each displayed message was first displayed.
+       """
+    def __init__(self, stamp=None):
+        if stamp == None:
+            stamp = time.time()
+        self.time = stamp
+
+    def __str__(self):
+        return time.strftime("%H:%M:%S", time.localtime(self.time))
 
 
 class Progress(object):
@@ -51,6 +66,7 @@ class Progress(object):
         self.verbosityLevel = verbosityLevel
         self.taskName = taskName
         self.taskHeadingPrinted = 0
+        self.timeStamp = TimeStamp()
         if parent:
             self.indentLevel = parent.indentLevel + 1
             self.root = parent.root
@@ -135,6 +151,7 @@ class Interface(object):
        settings, but it includes hooks for adding a UI.
        """
     progressClass = Progress
+    timeStampClass = TimeStamp
     
     def __init__(self, config):
         self.config = config

@@ -24,7 +24,7 @@ A Curses-based frontend for PGBuild
 import PGBuild
 import PGBuild.UI.None
 import PGBuild.Errors
-import os, struct
+import os, struct, time, threading
 try:
     import curses, termios, signal, fcntl
 except ImportError:
@@ -132,6 +132,10 @@ class Window(object):
             else:
                 self.win.addstr(item)
             self.win.attrset(0)
+
+    def clear(self):
+        self.win.clear()
+        self.win.move(0,0)
         
 
 class Heading(Window):
@@ -168,9 +172,20 @@ class Heading(Window):
     
 class ScrollingWindow(Window):
     """Window that scrolls new text in from the bottom """
+    def __init__(self, rect):
+        self.firstLine = 1
+        Window.__init__(self, rect)
+
+    def clear(self):
+        Window.clear(self)
+        self.firstLine = 1
+
     def addLine(self, line):
+        if self.firstLine:
+            self.firstLine = 0
+        else:
+            self.addText("\n")
         self.addText(line)
-        self.addText("\n")
         self.win.refresh()
 
     def textBlock(self, text, attribute=0, bullet="*"):
@@ -178,7 +193,9 @@ class ScrollingWindow(Window):
            with an optional preceeding bullet.
            """
         formatted = []
+        stamp = str(Interface.timeStampClass())
         for line in text.split("\n"):
+            formatted.append(stamp)
             formatted.append((" %s " % bullet, curses.A_BOLD))
             formatted.append((line, attribute))
             formatted.append("\n")
@@ -189,21 +206,62 @@ class ScrollingWindow(Window):
 class TaskWindow(Window):
     """Window that displays the list of active tasks"""
     def show(self, list):
-        self.win.clear()
-        self.win.move(0,0)
+        self.clear()
         attribute = 0
         for level in xrange(len(list)):
             if level == len(list)-1:
                 attribute = curses.color_pair(006) | curses.A_BOLD
-            self.addText(" " * (level+1))
+            task = list[level]
+            self.addText(str(task.timeStamp) + " " * (level+1))
             self.addText(( (curses.ACS_HLINE, curses.A_BOLD),
-                           " ", (list[level], attribute), "\n"))
+                           " ", (list[level].taskName, attribute), "\n"))
         self.win.refresh()
+
+
+class ClockWindow(Window):
+    """Window that displays the current time,
+       in the same format used for timestamps.
+       """
+    def __init__(self, rect, attr=None):
+        Window.__init__(self, rect)
+        if not attr:
+            attr = curses.color_pair(070)
+        self.attr = attr
+        self.update()
+
+    def update(self):
+        self.clear()
+        self.win.bkgd(' ', self.attr)
+        self.addText(((str(Interface.timeStampClass()), self.attr),))
+        self.win.refresh()
+
+
+class ClockUpdater(threading.Thread):
+    """Thread to update a ClockWindow"""
+    def __init__(self):
+        threading.Thread.__init__(self)
+        # It is important to set the run flag here, even though we aren't
+        # actually running yet. Consider what would happen if we set
+        # running to 1 in run(), but CursesWrangler.cleanup() was called
+        # immediately after calling ClockUpdater.start()- the thread could
+        # be busy initializing when running is set to zero, then running
+        # is set to 1 in run() and cleanup() hangs forever at the join().
+        self.running = 1
+        self.clocks = []
+        
+    def run(self):
+        while self.running:
+            time.sleep(1)
+            for clock in self.clocks:
+                clock.update()
+       
 
 class CursesWrangler(object):
     """Abstraction for our particular interface built with curses"""
     def __init__(self):
         try:
+            self.clockUpdater = ClockUpdater()
+            self.clockUpdater.start()
             self.stdscr = curses.initscr()
             curses.start_color()
             curses.noecho()
@@ -221,6 +279,8 @@ class CursesWrangler(object):
             raise
     
     def cleanup(self):
+        self.clockUpdater.running = 0
+        self.clockUpdater.join()
         self.stdscr.keypad(0)
         curses.echo()
         curses.nocbreak()
@@ -235,14 +295,16 @@ class CursesWrangler(object):
     def layout(self):
         """Set up us our windows, called whenever the size changes"""
         remaining = Rect(0,0,self.width,self.height)
-        Heading(remaining.sliceBottom(1),
-                "%s version %s - Curses frontend" % (PGBuild.name, PGBuild.version),'center', ' ')
+        footer = Heading(remaining.sliceBottom(1),
+                         "%s version %s - Curses frontend" % (PGBuild.name, PGBuild.version),'center', ' ')
         Heading(remaining.sliceTop(1), "Active Tasks")
         self.taskWin = TaskWindow(remaining.sliceTop(self.height / 4))
         Heading(remaining.sliceTop(1), "Messages")
         self.messageWin = ScrollingWindow(remaining.sliceTop(self.height / 4))
         Heading(remaining.sliceTop(1), "Progress")
         self.reportWin = ScrollingWindow(remaining)
+        self.clock = ClockWindow(footer.rect.sliceRight(10))
+        self.clockUpdater.clocks = [self.clock]
 
     def getHeightWidth(self):
         """ getHeightWidth() -> (int, int)
@@ -266,15 +328,16 @@ class Progress(PGBuild.UI.None.Progress):
             self.curses = self.parent.curses
         else:
             self.curses = CursesWrangler()
-        self.warning("oh no\nThis is a warning!")
-        self.error("but...\nThis is an error!")
 
     def _showTaskHeading(self):
+        # Timestamp this task if we haven't seen it before
+        if not getattr(self, 'timeStamp', None):
+            self.timeStamp = time.time()
         task = self
         list = []
         while task:
             if task.taskName:
-                list.insert(0, task.taskName)
+                list.insert(0, task)
             task = task.parent
         self.curses.taskWin.show(list)
 
@@ -282,7 +345,8 @@ class Progress(PGBuild.UI.None.Progress):
         self.curses.cleanup()
 
     def _report(self, verb, noun):
-        self.curses.reportWin.addLine(( ("%10s" % verb,0),
+        stamp = str(Interface.timeStampClass())
+        self.curses.reportWin.addLine(( ("%s %10s" % (stamp, verb),0),
                                         (" : ", curses.A_BOLD),
                                         (noun,0)
                                         ))
