@@ -36,7 +36,7 @@ EOF
 if [ -e /tmp/lastlog-$projectname ]; then
         if ! diff /tmp/lastlog-$projectname $tmpfile &>/dev/null; then
                 # there are differences, so this is a different commit
-                cat $tmpfile | /usr/sbin/sendmail
+                cat $tmpfile | /usr/sbin/sendmail -t
                 mv $tmpfile /tmp/lastlog-$projectname
         else
                 # it's just cvs spamming us from another directory
@@ -53,18 +53,18 @@ fi
         the project name should be the channel name without the leading "#" character. It will be used to prefix the output in #commits
         as well. </p>
 
-    <p> The script is very simple, customise it however you like. The code at the top strips out all the extra info CVS gives
-        you, like which files are modified. It then puts the result in an email and sends it to the bot. It assumes you are using
-        ssh authentication, otherwise the username will always return the same thing.</p>
+    <p> This script strips out all the extra info CVS gives, then compares each log message to the last one sent so that
+        it doesn't spam the bot with the same message for every directory in the commit. It then emails the resulting message
+        off to the bot. This assumes you're using ssh authentication, otherwise the username will always return the same thing.</p>
+
+    <p> Note that if you're using this on sourceforge you'll need to change the email address from commits@picogui.org to an alias,
+        cia@users.sf.net. This is because Sourceforge's CVS server is only allowed to send mail to other sourceforge domains. </p>
 
     <p> Now check out the CVSROOT module of your projects repository, and in the loginfo file, place this line:</p>
 
     <code>
       ALL /path/to/script
     </code>
-
-    <p> Note that Sourceforge's CVS server is only allowed to send mail to other sourceforge domains. You can use cia@users.sf.net
-        instead of commits@picogui.org, and the mail should be forwarded. </p>
 
     <h1> Using it with Subversion </h1>
 
