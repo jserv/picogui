@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.9 2001/01/15 07:50:23 micahjd Exp $
+/* $Id: ncurses.c,v 1.10 2001/01/15 08:53:22 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -179,7 +179,8 @@ void ncurses_close(void) {
    unload_inlib(inlib_main);
 
    g_free(ncurses_screen);
-   endwin();
+
+   clear(); refresh(); endwin();
 }
 
 void ncurses_pixel(int x,int y,hwrcolor c) {
@@ -229,20 +230,45 @@ void ncurses_charblit(unsigned char *chardat,int dest_x,
 
 /**** We use a ncurses character cell as our hwrcolor */
 
-/* By default this stores the hwrcolor as a background attribute.
- * If necessary this is converted to a foreground color later.
- */
+/* This can handle input colors in different formats, always returning
+ * a ncurses attribute value */
+
 hwrcolor ncurses_color_pgtohwr(pgcolor c) {
-   /* Convert to a 16-color value */
-   int sc = 7;
+
+   if (c & 0x20000000) {
+      /* Normal character:  0x20BBFFCC
+       * BB = background
+       * FF = foreground
+       * CC = character
+       */
+      
+      return COLOR_PAIR( ((c & 0x070000)>>13) | ((c & 0x000700)>>8) ) |
+	((c & 0x000800) ? A_BOLD : 0) | (c & 0x0000FF);
+   }
    
-   if ((c & 0xFF0000) > 0x400000) sc |= 32;
-   if ((c & 0x00FF00) > 0x004000) sc |= 16;
-   if ((c & 0x0000FF) > 0x000040) sc |= 8;
-   return ((COLOR_PAIR(sc) | ( ((c&0xFF0000) > 0xA00000) || 
-			     ((c&0x00FF00) > 0x00A000) || 
-			     ((c&0x0000FF) > 0x0000A0) ? A_BOLD : 0)) 
-	   & (~A_CHARTEXT)) | ' ';
+   else if (c & 0x40000000) {
+      /* ACS character:  0x40BBFFCC
+       * BB = background
+       * FF = foreground
+       * CC = ACS character code
+       */
+      
+      return COLOR_PAIR( ((c & 0x070000)>>13) | ((c & 0x000700)>>8) ) |
+	((c & 0x000800) ? A_BOLD : 0) | acs_map[c & 0x0000FF];
+   }
+
+   else {
+      /* RGB value interpreted as a background attribute */
+      
+      int sc = 7;
+      if ((c & 0xFF0000) > 0x400000) sc |= 32;
+      if ((c & 0x00FF00) > 0x004000) sc |= 16;
+      if ((c & 0x0000FF) > 0x000040) sc |= 8;
+      return (COLOR_PAIR(sc) | ( ((c&0xFF0000) > 0xA00000) || 
+				 ((c&0x00FF00) > 0x00A000) || 
+				 ((c&0x0000FF) > 0x0000A0) ? A_BOLD : 0)) | ' ';
+   }
+   
 }
 
 /**** A hack to turn off the picogui sprite cursor */

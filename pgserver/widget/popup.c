@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.22 2001/01/05 06:42:28 micahjd Exp $
+/* $Id: popup.c,v 1.23 2001/01/15 08:53:24 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -47,6 +47,10 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   (*wgt)->isroot = 1;  /* This widget has no siblings, so no point going
 			  outside it anyway */
 
+  /* Get margin value */
+  (*wgt)->in->div->split = margin =
+     theme_lookup((*wgt)->in->div->state,PGTH_P_MARGIN);
+
   /* Special positioning codes */
 
   if (((signed short)x) == PG_POPUP_CENTER) {
@@ -58,9 +62,9 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
     if (under && under->type == PG_WIDGET_BUTTON) {
       /* snap to a button edge */
       x = under->in->div->x;
-      y = under->in->div->y + under->in->div->h;
+      y = under->in->div->y + under->in->div->h + margin;
       if ((y+h)>=vid->yres)
-	y = under->in->div->y - h;
+	y = under->in->div->y - h - margin;
     }
     else if (under && under->type == PG_WIDGET_MENUITEM) {
       /* snap to a menuitem edge */
@@ -81,8 +85,6 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   }
 
   /* Clipping and things */
-  (*wgt)->in->div->split = margin =
-    theme_lookup((*wgt)->in->div->state,PGTH_P_MARGIN);
   (*wgt)->in->div->x = x-margin;
   (*wgt)->in->div->y = y-margin;
   (*wgt)->in->div->w = w+(margin<<1);
