@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.32 2000/10/26 19:46:33 pney Exp $
+# $Id: Makefile,v 1.33 2000/10/30 11:35:22 bauermeister Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -35,7 +35,7 @@ SRC := widget/bitmap.c widget/indicator.c widget/label.c \
        widget/field.c gcore/timer.c gcore/errortext.c gcore/video.c \
        gcore/input.c gcore/driverinfo.c gcore/pgmain.c net/request.c \
        net/dispatch.c net/eventq.c video/svga.c input/svgainput.c \
-       video/ez328_chipslice_lcd.c gcore/platforms.c input/sdlinput.c \
+       video/ez328_chipslice_lcd.c input/sdlinput.c \
        video/sdl.c video/sdlmin.c theme/memtheme.c theme/fillstyle.c \
        widget/background.c
 
@@ -58,6 +58,8 @@ STRIP := strip
 
 include Makefile.cfg
 
+CFLAGS := $(CFLAGS) -Iinclude/$(PLATFORM)
+
 # Target platform
 ifeq ($(strip $(PLATFORM)),windows)
 	GCC := i386-mingw32-$(GCC)
@@ -69,15 +71,7 @@ ifeq ($(strip $(PLATFORM)),uclinux)
         GCC := m68k-pic-coff-gcc
         CFLAGS := $(CFLAGS) -fPIC -DUCLINUX
         BINNAME := uclinux-$(BINNAME)
-        LDFLAGS := $(LDFLAGS)
-endif
-
-# Target arch
-ifeq ($(strip $(ENDIAN)),BIG_ENDIAN)
-	CFLAGS := $(CFLAGS) -DBIG_ENDIAN
-endif
-ifeq ($(strip $(ENDIAN)),LITTLE_ENDIAN)
-	CFLAGS := $(CFLAGS) -DLITTLE_ENDIAN
+	SRC := $(SRC) os/$(PLATFORM)/platform.c
 endif
 
 # Extra compiler flags needed by drivers
@@ -106,7 +100,7 @@ OBJ := $(SRC:.c=.o) font/fontdata.o
 all : $(BINNAME)
 
 clean:
-	rm -f $(BINNAME) *.da *.bb *.bbg debug/* $(OBJ) core 
+	rm -f $(BINNAME) $(BINNAME).coff .da *.bb *.bbg debug/* $(OBJ) core 
 
 $(BINNAME): $(OBJ) $(HDR)
 	$(GCC) -o $(BINNAME) $(OBJ) $(LDFLAGS)
@@ -131,26 +125,11 @@ Makefile.cfg:
 	@echo "***** edit Makefile.cfg"
 	cp Makefile.cfg.sample Makefile.cfg
 
+info:
+	@echo "SRC      : [${SRC}]"
+	@echo "HEADER   : [${HDR}]"
+	@echo "CFLAGS   : [$(CFLAGS)]"
+	@echo "LDFLAGS  : [$(LDFLAGS)]"
+	@echo "PLATFORM : [${PLATFORM}]"
+
 ### The End ###
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

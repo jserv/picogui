@@ -1,4 +1,4 @@
-# $Id: Makefile.cfg-SMARTDATA,v 1.2 2000/10/26 19:46:33 pney Exp $
+# $Id: Makefile.cfg-SMARTDATA,v 1.3 2000/10/30 11:35:22 bauermeister Exp $
 #
 # This file has compile-time options for PicoGUI, including
 # which fonts and drivers are to be compiled in.
@@ -21,15 +21,18 @@
 #PLATFORM = windows
 PLATFORM = uclinux
 
-#### Arch endian type
-ENDIAN = BIG_ENDIAN
-#ENDIAN = LITTLE_ENDIAN
+#### Arch system (uncomment only one or none)
+#ARCH = i386
+ARCH = m68knommu
 
 #### Strip binary? (yes/no)
 STRIPBIN = no
 
 #### Numerical errors, saves ~5k
 #CFLAGS := $(CFLAGS) -DTINY_MESSAGES
+
+#### Optimizations
+CFLAGS := $(CFLAGS) -O2
 
 #### DEBUG flag
 CFLAGS := $(CFLAGS) -DDEBUG
@@ -59,20 +62,25 @@ FONTS := $(FONTS) font/utopia.fi
 
 ######################################## Drivers
 
-#### Video drivers. Uncomment any number of them.
-#DRV := $(DRV) -DDRIVER_SDL                    # SDL driver
-#DRV := $(DRV) -DDRIVER_SDLMIN                 # Debugging only!
-#DRV := $(DRV) -DDRIVER_SVGA                   # SVGAlib driver
-#DRV := $(DRV) -DDRIVER_EZ328_CHIPSLICE        # SMARTDATA driver
+ifeq ($(strip $(PLATFORM)),uclinux)
+  #### SMARTDATA video drivers collection
+  DRV := $(DRV) -DDRIVER_EZ328_CHIPSLICE
+  #### selects one driver (uncomment only one of them)
+  DRV := $(DRV) -DDRIVER_EZ328_CHIPSLICE_V0_2_CITIZEN_G3243H
+else
+  #### Video drivers. Uncomment any number of them.
+  DRV := $(DRV) -DDRIVER_SDL # SDL driver
+  #DRV := $(DRV) -DDRIVER_SDLMIN # Debugging only!
+  #DRV := $(DRV) -DDRIVER_SVGA # SVGAlib driver
+endif
 
-#### SMARTDATA spec. video drivers. Uncomment only one of them.
-#DRV := $(DRV) -DDRIVER_EZ328_CHIPSLICE_VD2_CITIZEN_G3243H
-                                              # VD2 = Version demo 2
-
-#### Input drivers. Uncomment any number of
-#### the following. Note that most video drivers
-#### will not link without a matching input driver
-#DRV := $(DRV) -DDRIVER_SDLINPUT               # For the SDL driver
-#DRV := $(DRV) -DDRIVER_SVGAINPUT              # For the SVGA driver
+ifeq ($(strip $(PLATFORM)),uclinux)
+else
+  #### Input drivers. Uncomment any number of
+  #### the following. Note that most video drivers
+  #### will not link without a matching input driver
+  DRV := $(DRV) -DDRIVER_SDLINPUT # For the SDL driver
+  #DRV := $(DRV) -DDRIVER_SVGAINPUT # For the SVGA driver
+endif
 
 ### The End ###

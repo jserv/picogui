@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.13 2000/10/19 01:21:23 micahjd Exp $
+/* $Id: pgmain.c,v 1.14 2000/10/30 11:35:22 bauermeister Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -299,7 +299,11 @@ int main(int argc, char **argv) {
       exit(1);
     }
 #else
+# ifdef UCLINUX
+    if (!vfork()) {
+# else
     if (!fork()) {
+# endif
       execvp(argv[optind],argv+optind);
       prerror(mkerror(PG_ERRT_BADPARAM,55));
       kill(my_pid,SIGTERM);
