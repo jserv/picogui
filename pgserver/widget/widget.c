@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.99 2001/08/25 17:53:44 micahjd Exp $
+/* $Id: widget.c,v 1.100 2001/08/29 04:10:34 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -369,28 +369,31 @@ glob inline widget_get(struct widget *w, int property) {
    
    /* handle some universal properties */
    switch (property) {
-    
-    case PG_WP_ABSOLUTEX:      /* Absolute coordinates */
-      return w->in->div->x;
-    case PG_WP_ABSOLUTEY:
-      return w->in->div->y;
-
-    case PG_WP_SCROLL_X:
-      return -w->in->div->tx;
-    case PG_WP_SCROLL_Y:
-      return -w->in->div->ty;
-
-    case PG_WP_SIDE:
-      return w->in->flags & (~SIDEMASK);
-
-    case PG_WP_NAME:
-      return w->name;
-
-    case PG_WP_PUBLICBOX:
-      return w->publicbox;
-
-    default:
-      return (*w->def->get)(w,property);
+     
+   case PG_WP_ABSOLUTEX:      /* Absolute coordinates */
+     return w->in->div->x;
+   case PG_WP_ABSOLUTEY:
+     return w->in->div->y;
+     
+   case PG_WP_SCROLL_X:
+     return -w->in->div->tx;
+   case PG_WP_SCROLL_Y:
+     return -w->in->div->ty;
+     
+   case PG_WP_SIDE:
+     return w->in->flags & (~SIDEMASK);
+     
+   case PG_WP_SIZE:
+     return w->in->split;
+     
+   case PG_WP_NAME:
+     return w->name;
+     
+   case PG_WP_PUBLICBOX:
+     return w->publicbox;
+     
+   default:
+     return (*w->def->get)(w,property);
    }
 }
 
