@@ -23,6 +23,7 @@ to reference that container by name and create a root widget inside it.
 		* cli_c/src/netcore.c: Added the --pgapplet parameter to make any
 		  program an applet
 
+		* apps/pgl/applets/*.c: Writing some applets for PGL
 
 2001-08-05    Micah Dowty <micahjd@users.sourceforge.net>
 
