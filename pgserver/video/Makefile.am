@@ -17,7 +17,8 @@ EXTRA_libvideo_a_SOURCES = \
 	serial40x4.c \
 	scrshot.c  \
 	s1d13806.c \
-	x11.c
+	x11.c      \
+	mgl2fb.c
 
 libvideo_a_LIBADD       = $(DRIVER:%.c=%.o)
 libvideo_a_DEPENDENCIES = $(DRIVER:%.c=%.o)

@@ -212,6 +212,12 @@ AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_GPM, [
   DRIVER_LIBS="$DRIVER_LIBS -lgpm"
 ])
 
+dnl check for mgl2
+AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_MGL2FB, [
+    DRIVER_CFLAGS="$DRIVER_CFLAGS -I/usr/pkg/include"
+    DRIVER_LIBS="$DRIVER_LIBS -L/usr/pkg/lib/ -Wl,-rpath,/usr/pkg/lib -lmgl2"
+])
+
 # More compiler flags...
 
 AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_OPTIMIZE_SPEED, [
@@ -254,6 +260,9 @@ case "$host" in
 	CFLAGS="${CFLAGS} -fPIC -DRUNTIME_FUNCPTR"
 	PLATFORM="uclinux"
 	LIB_OS="os/${PLATFORM}/libos.a"
+	;;
+  mipsel-*-netbsd*)
+	CFLAGS="${CFLAGS}"
 	;;
   mipsel-*)
 	CFLAGS="${CFLAGS} -msoft-float"

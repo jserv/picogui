@@ -1,4 +1,4 @@
-/* $Id: clientlib.h,v 1.13 2001/12/04 18:48:10 cgrigis Exp $
+/* $Id: clientlib.h,v 1.14 2002/01/06 01:28:45 micahjd Exp $
  *
  * clientlib.h - definitions used only within the client library code itself
  *
@@ -34,10 +34,17 @@
 
 /* System includes */
 #include <sys/types.h>
+#ifndef __NetBSD__
 #include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <sys/time.h>  /* for time_t type (used in timeval structure) */
 #include <sys/stat.h>
+#else
+#include <sys/time.h>  /* for time_t type (used in timeval structure) */
+#include <sys/stat.h>
+#include <netinet/tcp.h>
+#include <sys/socket.h>
+#endif
 #include <fcntl.h>
 #ifndef CONFIG_UNIX_SOCKET
 #include <netinet/in.h>
@@ -59,6 +66,10 @@
 #include <string.h>   /* for memcpy(), memset(), strcpy() */
 #include <stdarg.h>   /* needed for pgRegisterApp and pgSetWidget */
 #include <stdlib.h>   /* for getenv() */
+
+#ifdef __NetBSD__
+#include <unistd.h>
+#endif
 
 /* PicoGUI */
 #include <picogui.h>            /* Basic PicoGUI include */

@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.26 2001/12/15 12:09:54 lonetech Exp $
+/* $Id: input.h,v 1.27 2002/01/06 01:28:45 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -151,6 +151,7 @@ g_error serialmouse_regfunc(struct inlib *i);
 g_error x11input_regfunc(struct inlib *i);
 g_error palmaxts_regfunc(struct inlib *i);
 g_error gpm_regfunc(struct inlib *i);
+g_error mgl2input_regfunc(struct inlib *i);
 
 /* List of installed input drivers */
 struct inputinfo {

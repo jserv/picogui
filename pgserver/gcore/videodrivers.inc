@@ -17,7 +17,7 @@
 #ifdef DRIVER_SDLFB
   DRV("sdlfb",&sdlfb_regfunc)
 #endif
-   
+
 #ifdef DRIVER_SVGAFB      
   DRV("svgafb",&svgafb_regfunc)
 #endif
@@ -58,4 +58,8 @@
   DRV("s1d13806",&s1d13806_regfunc)
 #endif DRIVER_S1D13806
    
+#ifdef DRIVER_MGL2FB
+  DRV("mgl2fb", &mgl2fb_regfunc)
+#endif
+
 /* The End */

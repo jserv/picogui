@@ -20,6 +20,7 @@ EXTRA_libinput_a_SOURCES = \
 	remorakb.c \
 	serialmouse.c \
 	x11input.c
+	mgl2input.c
 
 libinput_a_LIBADD       = $(INPUT:%.c=%.o)
 libinput_a_DEPENDENCIES = $(INPUT:%.c=%.o)

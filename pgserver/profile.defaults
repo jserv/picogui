@@ -74,6 +74,7 @@ DRIVER_SCRSHOT=y
 DRIVER_NULL=y
 DRIVER_NULLFB=y
 # DRIVER_S1D13806 is not set
+# DRIVER_MGL2FB is not set
 
 #
 # Input Drivers
@@ -89,6 +90,7 @@ DRIVER_SDLINPUT=y
 # DRIVER_TTYKB is not set
 # DRIVER_REMORAKB is not set
 # DRIVER_SERIALMOUSE is not set
+# DRIVER_MGL2INPUT is not set
 
 #
 # Video Base Libraries

@@ -64,4 +64,9 @@
 #ifdef DRIVER_GPM
   DRV("gpm",&gpm_regfunc)
 #endif
+
+#ifdef DRIVER_MGL2INPUT
+  DRV("mgl2input", &mgl2input_regfunc)
+#endif
+
 /* The End */

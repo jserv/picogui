@@ -46,7 +46,7 @@ CONFIG_STATUS_DEPENDENCIES = $(CONFIG_FILE) $(srcdir)/select.in
 .PHONY: config menuconfig
 
 config:
-	sh $(top_srcdir)/configscript/Configure \
+	$(SHELL) $(top_srcdir)/configscript/Configure \
 		$(top_srcdir)/config.in $(CONFIG_FILE)
 	@mv -f $(CONFIG_FILE) $(CONFIG_FILE).old
 	@rm -f .config.h && mv .config $(CONFIG_FILE)
@@ -54,7 +54,7 @@ config:
 	@echo "type make to build the program"
 
 menuconfig: configscript/lxdialog/lxdialog
-	sh $(top_srcdir)/configscript/Menuconfig \
+	$(SHELL) $(top_srcdir)/configscript/Menuconfig \
 		$(top_srcdir)/config.in $(CONFIG_FILE)
 	@rm -f .config.h
 	@test -f .config && \

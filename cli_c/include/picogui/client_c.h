@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.78 2001/12/30 22:11:08 micahjd Exp $
+/* $Id: client_c.h,v 1.79 2002/01/06 01:28:45 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -34,6 +34,11 @@
 #define _H_PG_CLI_C
 
 #include <stdio.h>   /* For NULL and FILE */
+#ifdef __NetBSD__
+#include <sys/types.h>
+#include <sys/time.h>
+#include <unistd.h>
+#endif
 
 /*! 
  * \file client_c.h

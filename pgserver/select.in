@@ -64,6 +64,7 @@ add_if_true serial40x4.c $DRIVER_SERIAL40X4
 add_if_true scrshot.c    $DRIVER_SCRSHOT
 add_if_true s1d13806.c   $DRIVER_S1D13806
 add_if_true x11.c        $DRIVER_X11
+add_if_true mgl2fb.c     $DRIVER_MGL2FB
 
 close_section
 
@@ -96,6 +97,7 @@ add_if_true remorakb.c     $DRIVER_REMORAKB
 add_if_true serialmouse.c  $DRIVER_SERIALMOUSE
 add_if_true x11input.c     $DRIVER_X11INPUT
 add_if_true palmaxts.c	   $DRIVER_PALMAXTS
+add_if_true mgl2input.c    $DRIVER_MGL2INPUT
 
 close_section
 

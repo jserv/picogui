@@ -99,6 +99,7 @@ bool 'Screen shot driver'                  DRIVER_SCRSHOT
 bool 'Null driver'                         DRIVER_NULL
 bool 'Null framebuffer driver'             DRIVER_NULLFB
 bool 'Zukero EPSON S1D13806 driver'        DRIVER_S1D13806
+bool 'MGL2 driver'                         DRIVER_MGL2FB
 endmenu
 
 mainmenu_option next_comment
@@ -127,6 +128,7 @@ bool 'New-Style TuxScreen touchscreen input driver'    DRIVER_UCB1X00
 bool 'TTY keyboard input driver (TuxScreen, fb)'       DRIVER_TTYKB
 bool 'Remora keyboard (Chipslice)'                     DRIVER_REMORAKB
 bool 'Serial mouse input driver'                       DRIVER_SERIALMOUSE
+bool 'MGL2 input driver'                               DRIVER_MGL2INPUT
 endmenu
 
 mainmenu_option next_comment
