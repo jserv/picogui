@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.22 2002/02/20 20:27:30 lonetech Exp $
+/* $Id: font.h,v 1.23 2002/03/06 11:38:46 micahjd Exp $
  *
  * font.h - structures for representing fonts
  *
@@ -125,6 +125,9 @@ void outchar_fake(struct fontdesc *fd, s16 *x, int c);
 void outtext(hwrbitmap dest, struct fontdesc *fd,
 	     s16 x,s16 y,hwrcolor col, const u8 *txt,struct quad *clip,
 	     s16 lgop, s16 angle);
+
+/* If txt is NULL, return the size of a typical character.
+ */
 void sizetext(struct fontdesc *fd, s16 *w, s16 *h, const u8 *txt);
 
 /* Find a font with specified characteristics, and prepare

@@ -1,4 +1,4 @@
-/* $Id: sdlgl_primitives.c,v 1.10 2002/03/05 11:26:30 micahjd Exp $
+/* $Id: sdlgl_primitives.c,v 1.11 2002/03/06 11:38:46 micahjd Exp $
  *
  * sdlgl_primitives.c - OpenGL driver for picogui, using SDL for portability.
  *                      Implement standard picogui primitives using OpenGL
@@ -363,6 +363,208 @@ hwrcolor sdlgl_color_pgtohwr(pgcolor c) {
 }
 pgcolor sdlgl_color_hwrtopg(pgcolor c) {
   return c;
+}
+
+int sdlgl_grop_render_node_hook(struct divnode **div, struct gropnode ***listp,
+				struct groprender *rend, struct gropnode *node) {
+  hwrcolor c;
+  struct fontdesc *fd;
+  char *str;
+ 
+  /* We still need to map the node as normal, this handles the canvas' automatic
+   * scaling, for example.
+   */
+  gropnode_map(rend,node);
+
+  /* Override normal picogui translation and clipping- the divnode translation
+   * is handled with an opengl matrix.
+   * We do need to handle the PG_GROPF_TRANSLATE flag here though
+   */
+  if (node->flags & PG_GROPF_TRANSLATE) {
+    node->r.x += rend->translation.x;
+    node->r.y += rend->translation.y;
+  }
+
+  /* Override a couple grops */
+  switch (node->type) {
+
+    /* Override frame since the default frame has extra clipping
+     * code we don't need or want.
+     */
+  case PG_GROP_FRAME:
+    if (node->flags & PG_GROPF_COLORED)
+      c = node->param[0];
+    else
+      c = rend->color;
+    vid->slab(rend->output,node->r.x,node->r.y,node->r.w,c,rend->lgop);
+    vid->slab(rend->output,node->r.x,node->r.y+node->r.h-1,node->r.w,c,rend->lgop);
+    vid->bar(rend->output,node->r.x,node->r.y,node->r.h,c,rend->lgop);
+    vid->bar(rend->output,node->r.x+node->r.w-1,node->r.y,node->r.h,c,rend->lgop);
+    break;
+
+    /* Override textgrid to provide a more efficient implementation.
+     */
+  case PG_GROP_TEXTGRID:
+    if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,
+			 node->param[0])) || !str) break;
+    if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
+			 rend->hfont)) || !fd) break;
+    {
+      int buffersz,bufferw,bufferh;
+      int charw,charh,offset;
+      int i;
+      s16 celw,celh;
+      unsigned char attr;
+      u32 *textcolors;
+      struct fontglyph *g;
+      struct gl_glyph *glg;
+
+      /* Read textcolors parameter */
+      if (iserror(rdhandle((void**)&textcolors,PG_TYPE_PALETTE,-1,
+			   node->param[2])) || !textcolors) break;
+      if (textcolors[0] < 16)    /* Make sure it's big enough */
+	break;
+      textcolors++;              /* Skip length entry */
+
+      /* Read the size of an average character */
+      sizetext(fd,&celw,&celh,NULL);
+      if (!celw) celw = 1;
+      if (!celh) celh = 1;
+      
+      bufferw   = node->param[1] >> 16;
+      buffersz  = strlen(str) - (node->param[1] & 0xFFFF);
+      str      += node->param[1] & 0xFFFF;
+      bufferh   = (buffersz / bufferw) >> 1;
+      if (buffersz<=0) return;
+      
+      charw     = node->r.w/celw;
+      charh     = node->r.h/celh;
+      offset    = (bufferw-charw)<<1;
+      if (offset<0) {
+	offset = 0;
+	charw = bufferw;
+      }
+      if (charh>bufferh)
+	charh = bufferh;
+      
+      rend->orig.x = node->r.x;
+      for (;charh;charh--,node->r.y+=celh,str+=offset) {
+
+	/* Skip the entire line if it's clipped out */
+	if ((node->r.y+(*div)->y) > rend->clip.y2 ||
+	    (node->r.y+(*div)->y+celh) < rend->clip.y1) {
+	  str += charw << 1;
+	  continue;
+	}
+	
+	for (node->r.x=rend->orig.x,i=charw;i;i--,str++) {
+	  attr = *(str++);
+	
+	  /* Background color (clipped rectangle) */
+	  if ((attr & 0xF0)!=0) {
+	    gl_lgop(PG_LGOP_NONE);
+	    glBegin(GL_QUADS);
+	    gl_color(textcolors[attr>>4]);
+	    glVertex2f(node->r.x,node->r.y);
+	    glVertex2f(node->r.x+celw,node->r.y);
+	    glVertex2f(node->r.x+celw,node->r.y+celh);
+	    glVertex2f(node->r.x,node->r.y+celh);
+	    glEnd();
+	  }
+  
+	  if ((attr & 0x0F)!=0 && (*str!=' ')) {
+	    g = (struct fontglyph *) vid->font_getglyph(fd, *str);
+	    glg = (struct gl_glyph*)(((u8*)fd->font->bitmaps)+g->bitmap);
+	    
+	    glBindTexture(GL_TEXTURE_2D, glg->texture);      
+	    gl_lgop(PG_LGOP_ALPHA);
+	    glEnable(GL_TEXTURE_2D);
+	    gl_color(textcolors[attr & 0x0F]);
+	    glBegin(GL_QUADS);
+	    glTexCoord2f(glg->tx1,glg->ty1);
+	    glVertex2f(node->r.x,node->r.y);
+	    glTexCoord2f(glg->tx2,glg->ty1);
+	    glVertex2f(node->r.x+celw,node->r.y);
+	    glTexCoord2f(glg->tx2,glg->ty2);
+	    glVertex2f(node->r.x+celw,node->r.y+celh);
+	    glTexCoord2f(glg->tx1,glg->ty2);
+	    glVertex2f(node->r.x,node->r.y+celh);
+	    glEnd();
+	    glDisable(GL_TEXTURE_2D);	  
+	  }
+
+	  node->r.x += celw;
+	}
+	
+      }
+    }
+    break;      
+    
+  default:
+    return 1;    /* Use normal code */
+  }
+
+  /* Override normal handling */
+  node->type = PG_LGOP_NONE;
+  return 1;
+}
+
+int sdlgl_grop_render_postsetup_hook(struct divnode **div, struct gropnode ***listp,
+				     struct groprender *rend) {
+  GLdouble eqn[4];
+  
+  /* Set up clipping planes */
+
+  glPushMatrix();
+  glTranslatef(rend->clip.x1,0,0);
+  eqn[0] = 1;
+  eqn[1] = 0;
+  eqn[2] = 0;
+  eqn[3] = 0;
+  glClipPlane(GL_CLIP_PLANE0,eqn);
+  glPopMatrix();
+  
+  glPushMatrix();
+  glTranslatef(rend->clip.x2+1,0,0);
+  eqn[0] = -1;
+  eqn[1] = 0;
+  eqn[2] = 0;
+  eqn[3] = 0;
+  glClipPlane(GL_CLIP_PLANE1,eqn);
+  glEnable(GL_CLIP_PLANE1);
+  glPopMatrix();
+
+  glPushMatrix();
+  glTranslatef(0,rend->clip.y1,0);
+  eqn[0] = 0;
+  eqn[1] = 1;
+  eqn[2] = 0;
+  eqn[3] = 0;
+  glClipPlane(GL_CLIP_PLANE2,eqn);
+  glEnable(GL_CLIP_PLANE2);
+  glPopMatrix();
+  
+  glPushMatrix();
+  glTranslatef(0,rend->clip.y2+1,0);
+  eqn[0] = 0;
+  eqn[1] = -1;
+  eqn[2] = 0;
+  eqn[3] = 0;
+  glClipPlane(GL_CLIP_PLANE3,eqn);
+  glEnable(GL_CLIP_PLANE3);
+  glPopMatrix();
+
+  /* Push an OpenGL translation matrix to move to the divnode's origin */
+  glPushMatrix();
+  glTranslatef(rend->output_rect.x, rend->output_rect.y, 0);
+
+  return 0;
+}
+
+void sdlgl_grop_render_end_hook(struct divnode **div, struct gropnode ***listp,
+				struct groprender *rend) {
+  /* Clean up */
+  glPopMatrix();
 }
 
 /* The End */

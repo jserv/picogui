@@ -63,8 +63,8 @@ object background {
     GL.lightfv(GL_LIGHT1, GL_DIFFUSE,1,0, 0x10000,0x10000,0x12000);
 
     /*** Transformations */
-    
-    GL.translatef(w<<15,h<<15,cube_z);          /* Float above the divnode */
+
+    GL.translatef((x<<16)+(w<<15),(y<<16)+(h<<15),cube_z);   /* Float above the divnode */
 
     /* Set up the light relative to the cube's center.
      * Hover it in front of the cube for nice shading effects.

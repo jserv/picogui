@@ -1,4 +1,4 @@
-/* $Id: sdlgl_font.c,v 1.6 2002/03/03 16:42:26 micahjd Exp $
+/* $Id: sdlgl_font.c,v 1.7 2002/03/06 11:38:46 micahjd Exp $
  *
  * sdlgl_font.c - OpenGL driver for picogui, using SDL for portability.
  *                Replace PicoGUI's normal font rendering with TrueType
@@ -162,8 +162,8 @@ g_error gl_load_font_style(struct gl_fontload *fl,TTF_Font *ttf, struct font **p
     fg[ch].x = minx;
     fg[ch].y = 0;
 
-    if (surf->w > f->w)
-      f->w = surf->w;
+    /* Store average width and maximum height (minus descent) */
+    f->w += surf->w;
     if (surf->h > f->h+f->descent)
       f->h = surf->h - f->descent;
 
@@ -174,6 +174,8 @@ g_error gl_load_font_style(struct gl_fontload *fl,TTF_Font *ttf, struct font **p
     
     SDL_FreeSurface(surf);
   }  
+
+  f->w /= ch;
 
   return success;
 }
@@ -231,7 +233,6 @@ void sdlgl_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
       
       glBindTexture(GL_TEXTURE_2D, glg->texture);
       glBegin(GL_QUADS);
-      glNormal3f(0.0f,0.0f,1.0f);
       glTexCoord2f(glg->tx1,glg->ty1);
       glVertex2f(0,0);
       glTexCoord2f(glg->tx2,glg->ty1);

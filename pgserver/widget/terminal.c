@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.48 2002/02/11 19:39:24 micahjd Exp $
+/* $Id: terminal.c,v 1.49 2002/03/06 11:38:46 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -71,7 +71,7 @@ struct termdata {
   /* The incremental gropnode */
   struct gropnode *inc;
   int x,y;              /* Base coordinates */
-  int celw,celh;        /* Character cel size */
+  s16 celw,celh;        /* Character cel size */
   int fontmargin;
 
   /* Update rectangle (in characters) */
@@ -398,10 +398,10 @@ g_error terminal_set(struct widget *self,int property, glob data) {
     
     /* Get the character cell size, we need it early 
      * on to calculate preferred size */
-    DATA->celw = fd->font->w;
-    DATA->celh = fd->font->h;
+    sizetext(fd,&DATA->celw,&DATA->celh,NULL);
     DATA->fontmargin = fd->margin;
     set_widget_rebuild(self);
+    resizewidget(self);
     break;
 
   case PG_WP_LINES:

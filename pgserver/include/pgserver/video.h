@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.80 2002/03/05 11:26:29 micahjd Exp $
+/* $Id: video.h,v 1.81 2002/03/06 11:38:46 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -293,7 +293,7 @@ struct vidlib {
    *   Return nonzero to skip the normal gropnode transformation and clipping.
    */
   int (*grop_render_node_hook)(struct divnode **div, struct gropnode ***listp,
-			       struct groprender *rend, struct gropnode **node);
+			       struct groprender *rend, struct gropnode *node);
 
   /* Optional
    *   Called for any picogui update(). Return nonzero to abort the update

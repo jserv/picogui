@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.9 2002/03/06 00:52:19 micahjd Exp $
+/* $Id: sdlgl_util.c,v 1.10 2002/03/06 11:38:46 micahjd Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.
@@ -172,12 +172,20 @@ void gl_frame(void) {
   /***************** Divtrees */
   
   gl_set_wireframe(gl_global.wireframe);
+  glEnable(GL_CLIP_PLANE0);
+  glEnable(GL_CLIP_PLANE1);
+  glEnable(GL_CLIP_PLANE2);
+  glEnable(GL_CLIP_PLANE3);
 
   /* Redraw the whole frame */
   for (p=dts->top;p;p=p->next)
     p->flags |= DIVTREE_ALL_REDRAW;
   update(NULL,0);
 
+  glDisable(GL_CLIP_PLANE0);
+  glDisable(GL_CLIP_PLANE1);
+  glDisable(GL_CLIP_PLANE2);
+  glDisable(GL_CLIP_PLANE3);
   gl_set_wireframe(0);
 
   /***************** Sprites */
@@ -213,6 +221,9 @@ void gl_frame(void) {
 
   if (gl_global.grid)
     gl_osd_printf(&i,"Grid enabled");
+
+  if (gl_global.wireframe)
+    gl_osd_printf(&i,"Wireframe mode");
 
   /***************** Done */
 

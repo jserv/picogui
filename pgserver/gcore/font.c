@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.50 2002/01/31 15:25:59 pney Exp $
+/* $Id: font.c,v 1.51 2002/03/06 11:38:45 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -297,36 +297,45 @@ void outtext(hwrbitmap dest, struct fontdesc *fd,
 
 /* Measure the width and height of text as output by outtext
  * This includes the characters themselves , internal spacing,
- * and the margin as specified by fd->margin
+ * and the margin as specified by fd->margin.
+ * 
+ * If txt is NULL, return the size of a typical character.
  */
 void sizetext(struct fontdesc *fd, s16 *w, s16 *h, const u8 *txt) {
   int o_w=0, ch;
   const u8 *original_txt = txt;
 
-  if (!(fd && txt && w && h)) return;
+  if (!(fd && w && h)) return;
 
-  *w = fd->margin << 1;
-  *h = (*w) + fd->font->h + fd->interline_space;
-
-  while ((ch = fd->decoder(&txt))) {
-    if (ch=='\n') {
-      *h += fd->font->h + fd->interline_space;
-      if ((*w)>o_w) o_w = *w;
-      *w = fd->margin << 1;
-    }
-    else if (ch!='\r') {
-      if(fd->passwdc > 0)      /* If the font is set to a password */
-	/* We don't need to run the fd->decoder() here since fd->password
-	 * is a character code, not a string.
-	 */
-	outchar_fake(fd,w,fd->passwdc);
-      else
-	outchar_fake(fd,w,ch);
-    }
+  if (!txt) {
+    *w = fd->font->w;
+    *h = fd->font->h;
   }
-  if ((*w)<o_w) *w = o_w;
-  *w -= fd->interchar_space;
-  *w += fd->italicw;
+  else {
+
+    *w = fd->margin << 1;
+    *h = (*w) + fd->font->h + fd->interline_space;
+    
+    while ((ch = fd->decoder(&txt))) {
+      if (ch=='\n') {
+	*h += fd->font->h + fd->interline_space;
+	if ((*w)>o_w) o_w = *w;
+	*w = fd->margin << 1;
+      }
+      else if (ch!='\r') {
+	if(fd->passwdc > 0)      /* If the font is set to a password */
+	  /* We don't need to run the fd->decoder() here since fd->password
+	   * is a character code, not a string.
+	   */
+	  outchar_fake(fd,w,fd->passwdc);
+	else
+	  outchar_fake(fd,w,ch);
+      }
+    }
+    if ((*w)<o_w) *w = o_w;
+    *w -= fd->interchar_space;
+    *w += fd->italicw;
+  }    
 
   VID(font_sizetext_hook)(fd,w,h,original_txt);
 }

@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.11 2002/03/06 00:52:19 micahjd Exp $
+/* $Id: sdlgl.h,v 1.12 2002/03/06 11:38:46 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -68,7 +68,7 @@
 /* Perspective values */
 #define GL_FOV          45      /* Vertical field of view in degrees */
 #define GL_MINDEPTH     0.01
-#define GL_MAXDEPTH     (vid->xres*5)
+#define GL_MAXDEPTH     (vid->xres*2)
 #define GL_DEFAULTDEPTH (vid->xres)
 #define GL_SCALE        (tan(GL_FOV/360.0f*3.141592654)*GL_DEFAULTDEPTH)
 
@@ -273,6 +273,12 @@ pgcolor sdlgl_color_hwrtopg(pgcolor c);
 void sdlgl_grop_handler(struct groprender *r, struct gropnode *n);
 void gl_make_texture(struct glbitmap *glb);
 void gl_set_wireframe(int on);
+int sdlgl_grop_render_node_hook(struct divnode **div, struct gropnode ***listp,
+				struct groprender *rend, struct gropnode *node);
+int sdlgl_grop_render_postsetup_hook(struct divnode **div, struct gropnode ***listp,
+				     struct groprender *rend);
+void sdlgl_grop_render_end_hook(struct divnode **div, struct gropnode ***listp,
+				struct groprender *rend);
 
 #endif /* _H_SDLGL */
 

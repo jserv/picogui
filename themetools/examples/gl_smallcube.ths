@@ -37,7 +37,7 @@ object background {
 
     /*** Transformations */
     
-    GL.translatef(w<<15,h<<15,s);          /* Float above the divnode */
+    GL.translatef((x<<16)+(w<<15),(y<<16)+(h<<15),s);          /* Float above the divnode */
 
     /* Set up the light relative to the cube's center.
      * Hover it in front of the cube for nice shading effects.

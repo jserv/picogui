@@ -1,4 +1,4 @@
-/* $Id: sdlgl_init.c,v 1.10 2002/03/06 00:52:19 micahjd Exp $
+/* $Id: sdlgl_init.c,v 1.11 2002/03/06 11:38:46 micahjd Exp $
  *
  * sdlgl_init.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has initialization, shutdown, and registration.
@@ -127,10 +127,10 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   glLoadIdentity();
   gl_matrix_pixelcoord();
 
-  /* Set up fonts, if necessary */
-  if (!get_param_int(GL_SECTION,"standard_fonts",0) && !gl_global.old_fonts) {
+  /* Set up fonts */
+  {
     struct gl_fontload *fl;
-
+    
     /* Remove normal picogui fonts */
     gl_global.old_fonts = fontstyles;
     fontstyles = NULL;
@@ -228,12 +228,12 @@ g_error sdlgl_regfunc(struct vidlib *v) {
   v->color_pgtohwr = &sdlgl_color_pgtohwr;
   v->color_hwrtopg = &sdlgl_color_hwrtopg;
   v->grop_handler = &sdlgl_grop_handler;
-
-  if (!get_param_int(GL_SECTION,"standard_fonts",0)) {
-    v->font_sizetext_hook = &sdlgl_font_sizetext_hook;
-    v->font_newdesc = &sdlgl_font_newdesc;
-    v->font_outtext_hook = &sdlgl_font_outtext_hook;
-  }
+  v->grop_render_node_hook = &sdlgl_grop_render_node_hook;
+  v->grop_render_postsetup_hook = &sdlgl_grop_render_postsetup_hook;
+  v->grop_render_end_hook = &sdlgl_grop_render_end_hook;
+  v->font_sizetext_hook = &sdlgl_font_sizetext_hook;
+  v->font_newdesc = &sdlgl_font_newdesc;
+  v->font_outtext_hook = &sdlgl_font_outtext_hook;
 
   return success;
 }

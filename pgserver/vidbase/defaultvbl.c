@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.82 2002/03/05 11:26:30 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.83 2002/03/06 11:38:46 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -132,7 +132,7 @@ void def_grop_render_end_hook(struct divnode **div, struct gropnode ***listp,
 }
 
 int def_grop_render_node_hook(struct divnode **div, struct gropnode ***listp,
-			      struct groprender *rend, struct gropnode **node) {
+			      struct groprender *rend, struct gropnode *node) {
   return 0;
 }
 
