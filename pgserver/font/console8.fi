@@ -1,5 +1,5 @@
 NAME = Console
 SIZE = 8
 STYLE = fixed ibmextend
-NORMAL = linux8x8
+NORMAL = console8
 GEO = 8 3 1
