@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.9 2000/05/28 16:59:22 micahjd Exp $
+/* $Id: request.c,v 1.10 2000/06/01 23:44:41 micahjd Exp $
  *
  * request.c - this connection is for sending requests to the server
  *             and passing return values back to the client
@@ -615,7 +615,7 @@ g_error rqh_register(int owner, struct uipkt_request *req,
     return mkerror(ERRT_BADPARAM,"rqhd_register too small");
 
   i.owner = owner;
-  i.name = &arg->name;
+  i.name = ntohl(arg->name);
   i.type = ntohs(arg->type);
   i.side = ntohs(arg->side);
   i.sidemask = ntohs(arg->sidemask);

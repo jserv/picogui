@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.4 2000/06/01 21:30:45 micahjd Exp $
+/* $Id: global.c,v 1.5 2000/06/01 23:44:41 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -106,7 +106,6 @@ void appmgr_free(void) {
   while (n) {
     condemn = n;
     n = n->next;
-    g_free(condemn->name);
     g_free(condemn);
   }
 }
@@ -177,11 +176,6 @@ g_error appmgr_register(struct app_info *i) {
   e = g_malloc((void **) &dest,sizeof(struct app_info));
   if (e.type != ERRT_NONE) return e;
   memcpy(dest,i,sizeof(struct app_info));
-  if (i->name) {
-    e = g_malloc((void **) &dest->name,strlen(i->name)+1);
-    if (e.type != ERRT_NONE) return e;
-    strcpy(dest->name,i->name);
-  }
 
   /* Insert it */
   dest->next = applist;

@@ -1,4 +1,4 @@
-/* $Id: appmgr.h,v 1.3 2000/05/28 16:59:22 micahjd Exp $
+/* $Id: appmgr.h,v 1.4 2000/06/01 23:44:41 micahjd Exp $
  *
  * appmgr.h - All the window-manager-ish functionality, except we don't
  * do windows (X windows, that is?)
@@ -36,7 +36,7 @@
 /* Parameters defining an application */
 struct app_info {
   /* These should be provided by the client */
-  char *name;
+  handle name;
   int type;
   int minw,maxw,minh,maxh;     /* -1 for no restrictions */
   int sidemask;                /* Mask of allowed sides */

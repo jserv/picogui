@@ -1,4 +1,4 @@
-/* $Id: request.h,v 1.8 2000/05/28 16:59:22 micahjd Exp $
+/* $Id: request.h,v 1.9 2000/06/01 23:44:41 micahjd Exp $
  *
  * request.h - this connection is for sending requests to the server
  *             and passing return values back to the client
@@ -215,7 +215,7 @@ struct rqhd_register {
   /* This is just a subset of app_info, organized for network
      transmission */
 
-  char name[40];
+  unsigned long name;
   unsigned short type;
   unsigned short side;
   unsigned short sidemask;
@@ -225,7 +225,6 @@ struct rqhd_register {
   unsigned short maxw;
   unsigned short minh;
   unsigned short maxh;
-  unsigned short dummy;
 };
 
 #endif /* __H_REQUEST */
