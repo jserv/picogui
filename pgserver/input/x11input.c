@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.24 2002/11/05 16:36:29 micahjd Exp $
+/* $Id: x11input.c,v 1.25 2002/11/06 02:07:13 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -171,9 +171,7 @@ int x11input_fd_activate(int fd) {
       /****************** Keyboard events
        *
        * In X11, keyboard repeats are release events, not press events...
-       * This code needs to send KEYDOWN and KEYUP only when the key
-       * is actually pressed or released, and send CHAR events when the
-       * key is pressed and when it repeats.
+       * We need to convert repeated release events into repeated press events.
        */
 
     case KeyPress:
@@ -197,6 +195,11 @@ int x11input_fd_activate(int fd) {
 	p.kbd.divtree = hlookup(xb->dt,NULL);
       x11_translate_key(x11_display, &ev.xkey, ev.xkey.keycode, &sym, &mod, &chr);
       if (x11_key_repeat(x11_display, &ev)) {
+	if (sym) {
+	  p.kbd.key  = sym;
+	  p.kbd.mods = mod;
+	  infilter_send(NULL,PG_TRIGGER_KEYDOWN,&p);
+	}
 	if (chr) {
 	  p.kbd.key  = chr;
 	  p.kbd.mods = mod;

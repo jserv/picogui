@@ -1,4 +1,4 @@
-/* $Id: font_xft.c,v 1.2 2002/11/06 01:19:59 micahjd Exp $
+/* $Id: font_xft.c,v 1.3 2002/11/06 02:07:13 micahjd Exp $
  *
  * font_xft.c - Font engine for X implemented using Xft
  *
@@ -140,6 +140,8 @@ g_error xft_create(struct font_descriptor *self, const struct font_style *fs) {
   errorcheck;
   memset(self->data,0,sizeof(struct xft_fontdesc));
 
+  //  DATA->flags = fs->style;
+
   /* FIXME: do this right */
   DATA->f = XftFontOpenName(x11_display, x11_screen, "foo-15");
 
@@ -212,7 +214,7 @@ g_error xft_regfunc(struct fontlib *f) {
   f->destroy = &xft_destroy;
   f->getstyle = &xft_getstyle;
   f->getmetrics = &xft_getmetrics;
-  //  f->draw_string = &xft_draw_string;
+  f->draw_string = &xft_draw_string;
   f->measure_string = &xft_measure_string;
   return success;
 }
