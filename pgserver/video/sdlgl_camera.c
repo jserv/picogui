@@ -1,4 +1,4 @@
-/* $Id: sdlgl_camera.c,v 1.5 2002/09/13 01:08:07 micahjd Exp $
+/* $Id: sdlgl_camera.c,v 1.6 2002/09/19 20:44:30 micahjd Exp $
  *
  * sdlgl_camera.c - OpenGL driver for picogui, using SDL for portability.
  *                  This is an input filter that traps keyboard and mouse
@@ -65,8 +65,12 @@ void infilter_sdlgl_handler(struct infilter *self, u32 trigger, union trigparam 
 
     case PGKEY_r:
       gl_global.camera_mode = SDLGL_CAMERAMODE_NONE;
-      glLoadIdentity();
-      gl_matrix_pixelcoord();
+      gl_global.camera.tx = 0;
+      gl_global.camera.ty = 0;
+      gl_global.camera.tz = 0;
+      gl_global.camera.rx = 0;
+      gl_global.camera.ry = 0;
+      gl_global.camera.rz = 0;
       gl_global.need_update++;
       return;
 
@@ -149,15 +153,15 @@ void infilter_sdlgl_handler(struct infilter *self, u32 trigger, union trigparam 
       switch (gl_global.camera_mode) {
 	
       case SDLGL_CAMERAMODE_TRANSLATE:
-	glTranslatef(dx,dy,dz);
+	gl_global.camera.tx += dx;
+	gl_global.camera.ty += dy;
+	gl_global.camera.tz += dz;
 	break;
 	
       case SDLGL_CAMERAMODE_ROTATE:
-	glTranslatef(vid->xres/2,vid->yres/2,0);
-	glRotatef(dy/10.0,1,0,0);
-	glRotatef(dx/10.0,0,1,0);
-	glRotatef(dz/10.0,0,0,1);
-	glTranslatef(-vid->xres/2,-vid->yres/2,0);
+	gl_global.camera.rx += dx;
+	gl_global.camera.ry += dy;
+	gl_global.camera.rz += dz;
 	break;
       }
     }
@@ -181,35 +185,21 @@ void gl_process_camera_keys(void) {
   switch (gl_global.camera_mode) {
     
   case SDLGL_CAMERAMODE_TRANSLATE:
-    if (gl_global.pressed_keys[PGKEY_w])
-      glTranslatef(0.0,0.0,5.0*scale);
-    if (gl_global.pressed_keys[PGKEY_s])
-      glTranslatef(0.0,0.0,-5.0*scale);
-    if (gl_global.pressed_keys[PGKEY_DOWN])
-      glTranslatef(0.0,5.0*scale,0.0);
-    if (gl_global.pressed_keys[PGKEY_UP])
-      glTranslatef(0.0,-5.0*scale,0.0);
-    if (gl_global.pressed_keys[PGKEY_RIGHT])
-      glTranslatef(5.0*scale,0.0,0.0);
-    if (gl_global.pressed_keys[PGKEY_LEFT])
-      glTranslatef(-5.0*scale,0.0,0.0);
+    if (gl_global.pressed_keys[PGKEY_w])     gl_global.camera.dz += 5.0 * scale;
+    if (gl_global.pressed_keys[PGKEY_s])     gl_global.camera.dz -= 5.0 * scale;
+    if (gl_global.pressed_keys[PGKEY_DOWN])  gl_global.camera.dy += 5.0 * scale;
+    if (gl_global.pressed_keys[PGKEY_UP])    gl_global.camera.dy -= 5.0 * scale;
+    if (gl_global.pressed_keys[PGKEY_RIGHT]) gl_global.camera.dx += 5.0 * scale;
+    if (gl_global.pressed_keys[PGKEY_LEFT])  gl_global.camera.dx -= 5.0 * scale;
     break;
 
   case SDLGL_CAMERAMODE_ROTATE:
-    glTranslatef(vid->xres/2,vid->yres/2,0);
-    if (gl_global.pressed_keys[PGKEY_w])
-      glRotatef(0.4*scale,0.0,0.0,1.0);
-    if (gl_global.pressed_keys[PGKEY_s])
-      glRotatef(-0.4*scale,0.0,0.0,1.0);
-    if (gl_global.pressed_keys[PGKEY_UP])
-      glRotatef(0.4*scale,1.0,0.0,0.0);
-    if (gl_global.pressed_keys[PGKEY_DOWN])
-      glRotatef(-0.4*scale,1.0,0.0,0.0);
-    if (gl_global.pressed_keys[PGKEY_LEFT])
-      glRotatef(0.4*scale,0.0,1.0,0.0);
-    if (gl_global.pressed_keys[PGKEY_RIGHT])
-      glRotatef(-0.4*scale,0.0,1.0,0.0);
-    glTranslatef(-vid->xres/2,-vid->yres/2,0);
+    if (gl_global.pressed_keys[PGKEY_w])     gl_global.camera.rz += 0.4 * scale;
+    if (gl_global.pressed_keys[PGKEY_s])     gl_global.camera.rz -= 0.4 * scale;
+    if (gl_global.pressed_keys[PGKEY_UP])    gl_global.camera.rx += 0.4 * scale;
+    if (gl_global.pressed_keys[PGKEY_DOWN])  gl_global.camera.rx -= 0.4 * scale;
+    if (gl_global.pressed_keys[PGKEY_LEFT])  gl_global.camera.ry += 0.4 * scale;
+    if (gl_global.pressed_keys[PGKEY_RIGHT]) gl_global.camera.ry -= 0.4 * scale;
     break;
     
   }

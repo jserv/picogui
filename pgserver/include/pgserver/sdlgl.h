@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.16 2002/09/15 10:51:48 micahjd Exp $
+/* $Id: sdlgl.h,v 1.17 2002/09/19 20:44:30 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -189,6 +189,12 @@ struct sdlgl_data {
 
   /* Camera modes that let the user move the camera around */
   int camera_mode;
+
+  /* Current camera position */
+  struct {
+    float tx,ty,tz;
+    float rx,ry,rz;
+  } camera;
 
   /* For the camera movement, keep track of which keys are pressed */
   u8 pressed_keys[PGKEY_MAX];
