@@ -4,7 +4,8 @@ depth = 1
 
 [timers]
 cursorhide = 10
+backlightoff = 300
+sleep = 1800
 
-[pgserver]
 . /var/pgserver.dynconf
 #end
