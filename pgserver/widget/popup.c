@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.47 2002/02/06 10:05:46 micahjd Exp $
+/* $Id: popup.c,v 1.48 2002/02/14 08:52:51 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -80,6 +80,15 @@ void clip_popup(struct divnode *div) {
 /* We have a /special/ function to create a popup widget from scratch. */
 g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   g_error e;
+
+  /* The mouse won't be over the current widget any more.. */
+  if (div_under_crsr && div_under_crsr->owner) {
+    union trigparam param;
+    memset(&param,0,sizeof(param));
+    param.mouse.x = cursor->x;
+    param.mouse.y = cursor->y;
+    send_trigger(under, TRIGGER_LEAVE, &param);
+  }
 
   /* Freeze the existing layer and make a new one */
   e = dts_push();
