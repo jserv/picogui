@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.29 2002/10/17 01:58:36 micahjd Exp $
+/* $Id: linear16.c,v 1.30 2002/10/20 10:21:55 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -62,24 +62,12 @@ u8 alpha_table_8bit[256*256];
 /************************************************** Minimum functionality */
 
 void linear16_pixel(hwrbitmap dest, s16 x,s16 y,hwrcolor c,s16 lgop) {
-#ifdef DRIVER_S1D13806
-# ifdef DEBUG
-  unsigned short * addr = PIXELADDR (x,y);
-# endif /* DEBUG */
-#endif
-
   if (!FB_ISNORMAL(dest,lgop)) {
     def_pixel(dest,x,y,c,lgop);
     return;
   }
 
-#ifdef DRIVER_S1D13806
-# ifdef DEBUG
-   printf ("set %dx%d @ %p\n", x, y, addr);
-# endif /* DEBUG */
-#endif
-
-   PIXEL(x,y) = c;
+  PIXEL(x,y) = c;
 }
 hwrcolor linear16_getpixel(hwrbitmap dest, s16 x,s16 y) {
 #ifdef DRIVER_S1D13806
@@ -89,7 +77,7 @@ hwrcolor linear16_getpixel(hwrbitmap dest, s16 x,s16 y) {
 
   if (!FB_ISNORMAL(dest,PG_LGOP_NONE))
     return def_getpixel(dest,x,y);
-  
+
 #ifdef DRIVER_S1D13806
   addr = PIXELADDR (x,y);
   c = * addr;
@@ -102,7 +90,7 @@ hwrcolor linear16_getpixel(hwrbitmap dest, s16 x,s16 y) {
 
 /*********************************************** Accelerated (?) primitives */
 
-/* A simple slab function speeds things up a lot compared to def_slab */
+/* Several other default primitives are based on slab, so this is very helpful */
 void linear16_slab(hwrbitmap dest, s16 x,s16 y,s16 w,hwrcolor c,s16 lgop) {
   u16 *p;
 
@@ -114,6 +102,128 @@ void linear16_slab(hwrbitmap dest, s16 x,s16 y,s16 w,hwrcolor c,s16 lgop) {
   p = PIXELADDR(x,y);
   while (w--)
     *(p++) = c;
+}
+
+/* Rectangle fill, with some acceleration for certain LGOPs */
+void linear16_rect(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop) {
+  u16 *dst;
+  s16 i,offset_dst;
+
+  if (!FB_ISNORMAL(dest,PG_LGOP_NONE)) {
+    def_rect(dest,x,y,w,h,c,lgop);
+    return;
+  }
+ 
+  switch (lgop) {
+  case PG_LGOP_NONE:
+  case PG_LGOP_OR:
+  case PG_LGOP_AND:
+  case PG_LGOP_XOR:
+#ifdef CONFIG_FAST_ALPHA
+  case PG_LGOP_ALPHA:
+#endif
+    break;
+
+    /* Invert is easily handled beforehand */
+  case PG_LGOP_INVERT:
+  case PG_LGOP_INVERT_AND:
+  case PG_LGOP_INVERT_OR:
+  case PG_LGOP_INVERT_XOR:
+    c ^= -1;
+    break;
+
+  default:
+    def_rect(dest,x,y,w,h,c,lgop);
+    return;
+  } 
+
+  dst = PIXELADDR(x,y);
+  offset_dst = (FB_BPL>>1) - w;
+
+  /* Normal rectangle fill loop */
+#define RECTLOOP                     \
+    for (;h;h--,dst+=offset_dst) {   \
+      for (i=w;i;i--,dst++)          \
+	OP(dst);                     \
+    }
+  
+  /* Operator to perform fast alpha blending */
+#ifdef CONFIG_FAST_ALPHA
+#if defined(CONFIG_FAST_ALPHA_565)
+#define ALPHA_OP(d)                                                 \
+   {                                                                \
+     u16 oldpixel = *d;                                             \
+     u8 *atab = alpha_table_7bit + ((c >> 16) & 0x7F00);            \
+     int or = (oldpixel&0xF800)>>8;                                 \
+     int og = (oldpixel&0x07E0)>>3;                                 \
+     int ob = (oldpixel&0x001F)<<3;                                 \
+     *d = (((c>>16) + atab[or | (or >> 5)] ) << 8) & 0xF800 |       \
+          (((c>>8)  + atab[og | (og >> 6)] ) << 3) & 0x07E0 |       \
+          (( c      + atab[ob | (ob >> 5)] ) >> 3) & 0x001F;        \
+   }                     
+#elif defined(CONFIG_FAST_ALPHA_555)
+#define ALPHA_OP(d)                                                 \
+   {                                                                \
+     u16 oldpixel = *d;                                             \
+     u8 *atab = alpha_table_7bit + ((c >> 16) & 0x7F00);            \
+     *d = (((c>>16) + atab[(oldpixel&0x7C00)>>7] ) << 7) & 0x7C00 | \
+          (((c>>8)  + atab[(oldpixel&0x03E0)>>2] ) << 2) & 0x03E0 | \
+          (( c      + atab[(oldpixel&0x001F)<<3] ) >> 3) & 0x001F;  \
+   }                     
+#elif defined(CONFIG_FAST_ALPHA_444)
+#define ALPHA_OP(d)                                                 \
+   {                                                                \
+     u16 oldpixel = *d;                                             \
+     u8 *atab = alpha_table_7bit + ((c >> 16) & 0x7F00);            \
+     *d = (((c>>16) + atab[(oldpixel&0x0F00)>>4] ) << 4) & 0x0F00 | \
+           ((c>>8)  + atab[oldpixel&0x00F0     ] )       & 0x00F0 | \
+          (( c      + atab[(oldpixel&0x000F)<<4] ) >> 4) & 0x000F;  \
+   }                     
+#else
+#error Unsupported color mode for fast alpha blending
+#endif
+#endif /* CONFIG_FAST_ALPHA */
+
+  switch (lgop) {
+  case PG_LGOP_NONE: 
+  case PG_LGOP_INVERT: 
+#define OP(d) (*d=c)
+    RECTLOOP;
+#undef OP
+    break;
+
+  case PG_LGOP_INVERT_OR:
+  case PG_LGOP_OR:
+#define OP(d) (*d|=c)
+    RECTLOOP;
+#undef OP
+    break;
+    
+  case PG_LGOP_INVERT_AND:
+  case PG_LGOP_AND:
+#define OP(d) (*d&=c)
+    RECTLOOP;
+#undef OP      
+    break;
+    
+  case PG_LGOP_INVERT_XOR:
+  case PG_LGOP_XOR:
+#define OP(d) (*d^=c)
+    RECTLOOP;
+#undef OP
+    break;
+    
+#ifdef CONFIG_FAST_ALPHA
+  case PG_LGOP_ALPHA:
+#define OP(d) ALPHA_OP(d)
+    RECTLOOP;
+#undef OP
+    break;
+#endif
+  }
+
+#undef RECTLOOP
+#undef ALPHA_OP
 }
 
 /* Fun-fun-fun blit functions! */
@@ -1254,6 +1364,7 @@ void setvbl_linear16(struct vidlib *vid) {
   vid->pixel          = &linear16_pixel;
   vid->getpixel       = &linear16_getpixel;
   vid->slab           = &linear16_slab;
+  vid->rect           = &linear16_rect;
   vid->blit           = &linear16_blit;
   vid->scrollblit     = &linear16_scrollblit;
   vid->charblit       = &linear16_charblit;
