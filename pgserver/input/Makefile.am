@@ -12,6 +12,7 @@ EXTRA_libinput_a_SOURCES = \
 	svgainput.c \
 	tsinput.c \
 	vr3ts.c \
+	tuxts.c \
 	serialmouse.c
 
 libinput_a_LIBADD       = $(INPUT:%.c=%.o)
