@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: kbcompile.pl,v 1.10 2001/10/23 17:25:05 cgrigis Exp $
+# $Id: kbcompile.pl,v 1.11 2001/11/12 17:45:38 cgrigis Exp $
 #
 # This script converts a .kbs keyboard definition source to the .kb
 # binary representation as defined in kbfile.h
@@ -33,10 +33,34 @@
 
 $formatver = 3;
 
+# Default path to PicoGUI
+my $PG_PATH = "/usr/local";
+
+# Parse arguments
+
+sub usage
+  {
+    print "Usage: $0 [-pg <PicoGUI path>]\n";
+    exit (1);
+  }
+
+while (my $arg = shift)
+  {
+    if ($arg eq "-pg" && ($arg = shift))
+      {
+	$PG_PATH = $arg;
+	last;
+      }
+    else
+      {
+	usage ();
+      }
+  }
+
+
 # Load a symbol table
 foreach $file (map {glob($_)} 
-	"/usr/include/picogui/*.h",
-	"/usr/local/include/picogui/*.h") {
+	"${PG_PATH}/include/picogui/*.h") {
 
       open HFILE,$file;
       while (<HFILE>) {

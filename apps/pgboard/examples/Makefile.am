@@ -12,10 +12,10 @@ EXTRA_DIST = us_fitaly_160.kbs us_qwerty_scalable.kbs \
 CLEANFILES = $(top_srcdir)/pgboard/examples/us_fitaly_160.kb \
 	     $(top_srcdir)/pgboard/examples/us_qwerty_scalable.kb \
 	     $(top_srcdir)/pgboard/examples/ch_qwertz_scalable.kb \
-	     $(top_srcdir)/pgboard/examples/us_qwerty_scalable_console8.kb
+	     $(top_srcdir)/pgboard/examples/us_qwerty_scalable_console8.kb \
 	     $(top_srcdir)/pgboard/examples/us_qwerty_scalable_helvetica8.kb
 
-KBD_COMPILER = ../kbcompile.pl
+KBD_COMPILER = ../kbcompile.pl -pg @PICOGUI_LOCATION@
 
 us_fitaly_160.kb: $(top_srcdir)/pgboard/examples/us_fitaly_160.kbs
 	cd $(top_srcdir)/pgboard/examples && $(KBD_COMPILER) < us_fitaly_160.kbs > us_fitaly_160.kb
