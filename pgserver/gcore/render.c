@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.38 2002/10/08 08:37:49 micahjd Exp $
+/* $Id: render.c,v 1.39 2002/10/08 08:49:09 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -562,7 +562,14 @@ void gropnode_map(struct groprender *r, struct gropnode *n) {
     gropnode_scaletranslate(r,n,&scale,&trans);
     break;
 
-    
+    /* The pixels keep their usual size, but center them */
+  case PG_MAP_CENTER:
+    trans.x = (r->output_rect.w - r->map.w) >> 1;
+    trans.y = (r->output_rect.h - r->map.h) >> 1;
+    scale.x.n = scale.x.d = scale.y.n = scale.y.d = 1;
+    gropnode_scaletranslate(r,n,&scale,&trans);
+    break;
+   
   }
 
   /* Add mapping offset */

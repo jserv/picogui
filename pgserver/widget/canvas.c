@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.47 2002/09/28 10:58:10 micahjd Exp $
+/* $Id: canvas.c,v 1.48 2002/10/08 08:49:10 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -48,36 +48,43 @@ struct canvasdata {
 
 /* This does the reverse of mappings specified in render.c */
 void canvas_inputmap(struct widget *self,s16 *x,s16 *y) {
-   switch (DATA->input_maptype) {
-    case PG_MAP_NONE:
-      return;
-      
-      /* self->in->div->w and self->in->div->h should never be zero here.
-       * if they are, it's a bug in the input dispatch.
-       */
-    case PG_MAP_SCALE:
-      *x = *x * DATA->input_map.w / self->in->div->w;
-      *y = *y * DATA->input_map.h / self->in->div->h;
-      break;
-
-   case PG_MAP_SQUARESCALE:
+  switch (DATA->input_maptype) {
+  case PG_MAP_NONE:
+    return;
+    
+    /* self->in->div->w and self->in->div->h should never be zero here.
+     * if they are, it's a bug in the input dispatch.
+     */
+  case PG_MAP_SCALE:
+    *x = *x * DATA->input_map.w / self->in->div->w;
+    *y = *y * DATA->input_map.h / self->in->div->h;
+    break;
+    
+  case PG_MAP_SQUARESCALE:
     if (self->in->div->w * DATA->input_map.h - self->in->div->h * DATA->input_map.w > 0) {
       /* Centered horizontally */
-
+      
       *x -= (self->in->div->w - DATA->input_map.w * self->in->div->h / DATA->input_map.h) >> 1;
-
+      
       *x = *x * DATA->input_map.h / self->in->div->h;
       *y = *y * DATA->input_map.h / self->in->div->h;
     }
     else {
       /* Centered vertically */
-     
+      
       *y -= (self->in->div->h - DATA->input_map.h * self->in->div->w / DATA->input_map.w) >> 1;
-
+      
       *x = *x * DATA->input_map.w / self->in->div->w;
       *y = *y * DATA->input_map.w / self->in->div->w;
     }
-   }
+    break;
+
+  case PG_MAP_CENTER:
+    *x -= (self->in->div->w - DATA->input_map.w) >> 1;
+    *y -= (self->in->div->h - DATA->input_map.h) >> 1;
+    break;
+ 
+  }
 }
 
 /*********************************** Widget interfacing */

@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.159 2002/10/08 08:37:50 micahjd Exp $
+/* $Id: constants.h,v 1.160 2002/10/08 08:49:09 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -732,6 +732,11 @@ typedef unsigned long pghandle;
  */
 #define PG_MAP_SCALE          1      
 #define PG_MAP_SQUARESCALE    2      //!< Like PG_MAP_SCALE, but constrain the aspect ratio
+/*!
+ * The virtual coordinates still refer to pixels, but they are centered within the
+ * actual output rectangle.
+ */
+#define PG_MAP_CENTER         3
 
 //! \}
 
