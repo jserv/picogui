@@ -1,4 +1,4 @@
-/* $Id: demo.c,v 1.13 2000/11/04 20:27:08 micahjd Exp $
+/* $Id: demo.c,v 1.14 2000/11/04 22:38:15 micahjd Exp $
  *
  * demo.c -   source file for testing PicoGUI
  *
@@ -51,6 +51,17 @@ int myDebugEvtHandler(short event,pghandle from,long param) {
   
   return 0;
 }
+
+int closeboxHandler(short event,pghandle from,long param) {
+  /* Present a dialog box. If the user doesn't want to close,
+     return 1 to prevent further handling of the event */
+
+  return pgMessageDialog("Little demo proggie",
+			 "Are you sure you want to close me?",
+			 PG_MSGBTN_YES | PG_MSGBTN_NO)
+    == PG_MSGBTN_NO;
+}  
+
 
 /*** Main program */
 
@@ -159,6 +170,10 @@ int main(int argc, char *argv[])
   /**** Add a handler that catches everything and prints it */
 
   pgBind(PGBIND_ANY,PGBIND_ANY,&myDebugEvtHandler);
+
+  /**** A handler to confirm closing the app */
+
+  pgBind(PGBIND_ANY,PG_WE_CLOSE,&closeboxHandler);
 
   /**** Run it! ****/
   pgEventLoop();

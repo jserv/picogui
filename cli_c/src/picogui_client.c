@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.17 2000/11/04 20:27:09 micahjd Exp $
+/* $Id: picogui_client.c,v 1.18 2000/11/04 22:38:15 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -568,7 +568,7 @@ void pgEventLoop(void) {
       if ( (((signed long)n->widgetkey)==PGBIND_ANY || n->widgetkey==from) &&
 	   (((signed short)n->eventkey)==PGBIND_ANY || n->eventkey==event) )
 	if ((*n->handler)(event,from,param))
-	  break;
+	  goto skiphandlers;
       n = n->next;
     }
 
@@ -576,6 +576,8 @@ void pgEventLoop(void) {
       
     if (event == PG_WE_CLOSE)
       exit(0);
+
+  skiphandlers:
   }
 }
 

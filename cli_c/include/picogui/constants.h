@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.13 2000/11/04 20:27:08 micahjd Exp $
+/* $Id: constants.h,v 1.14 2000/11/04 22:38:15 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -201,10 +201,14 @@ typedef unsigned long pghandle;
 #define PGTH_O_ROTATEBTN             31   /* A panelbar rotate button */
 #define PGTH_O_ROTATEBTN_ON          32   /* A panelbar rotate button, mouse down */
 #define PGTH_O_ROTATEBTN_HILIGHT     33   /* A panelbar rotate button, mouse over */
+#define PGTH_O_ZOOMBTN               34   /* A panelbar zoom button */
+#define PGTH_O_ZOOMBTN_ON            35   /* A panelbar zoom button, mouse down */
+#define PGTH_O_ZOOMBTN_HILIGHT       36   /* A panelbar zoom button, mouse over */
+
 
 /* If you add a themeobject, be sure to increment this and add
    an inheritance entry in theme/thobjtab.c */
-#define PGTH_ONUM                  34
+#define PGTH_ONUM                  37
 
 /*** Loaders */
 
@@ -255,10 +259,18 @@ typedef unsigned long pghandle;
 /* String properties (usually part of PGTH_O_DEFAULT) */
 #define PGTH_P_STRING_OK             501
 #define PGTH_P_STRING_CANCEL         502
+#define PGTH_P_STRING_YES            503
+#define PGTH_P_STRING_NO             504
 
 /* Icon properties (usually part of PGTH_O_DEFAULT) */
 #define PGTH_P_ICON_OK               1001
 #define PGTH_P_ICON_CANCEL           1002
+
+/* Hotkey properties (usually part of PGTH_O_DEFAULT) */
+#define PGTH_P_HOTKEY_OK             1501
+#define PGTH_P_HOTKEY_CANCEL         1502
+#define PGTH_P_HOTKEY_YES            1503
+#define PGTH_P_HOTKEY_NO             1504
 
 /*** Tag IDs */
 
@@ -420,6 +432,8 @@ typedef unsigned long pghandle;
 /* Constants for the message dialog box flags */
 #define PG_MSGBTN_OK      0x0001
 #define PG_MSGBTN_CANCEL  0x0002
+#define PG_MSGBTN_YES     0x0004
+#define PG_MSGBTN_NO      0x0008
 
 /******************** Events */
 
