@@ -19,7 +19,7 @@
 message=`cat`
 uname=`id -un`
 lineno=`echo "$message" | grep -n "Log Message:" | awk -F: ' { print $1 } '`
-message=`echo "$message" | sed "1,${lineno}d"`
+message=`echo "$message" | sed "1,${lineno}d" | head -n 1`
                                                                                                                                    
 cat &lt;&lt;EOF | /usr/sbin/sendmail -t
 From: commits@autopackage.org
