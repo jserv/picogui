@@ -1,6 +1,13 @@
 <?xml version="1.0" ?>
 <pgbuild title="General package list" root="packages">
     
+	<package name="hello">
+		<description><summary>Everyone's favorite greeting software, now for PGBuild!</summary></description>
+		<version name="dev">
+			<a href="users/micah/hello"><site name="picogui-svn" /></a>
+		</version>
+	</package>
+
 	<package name="media/blender">
 		<description><summary>3D renderings and source files related to PicoGUI, made with Blender</summary></description>
 		<versiongroup name="picogui-versions" path="media/blender"/>
