@@ -1,6 +1,6 @@
-""" PGBuild.GUI.auto
+""" PGBuild.UI.help
 
-The 'auto' GUI, that automatically picks a GUI module in order of preference
+The 'help' UI, that just lists the available UIs and exits
 """
 # 
 # PicoGUI Build System
@@ -21,13 +21,18 @@ The 'auto' GUI, that automatically picks a GUI module in order of preference
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
-import PGBuild.GUI
+import PGBuild.UI.none
+import sys
 
-description = "Automatically choose a GUI"
+description = "List the available UIs and exit"
 priority = 0
 
-# Transmogrify our interface into the highest priority GUI
-Interface = PGBuild.GUI.getPrioritizedModules()[0].Interface
+class Interface(PGBuild.UI.none.Interface):
+    def run(self):
+        text = "Available UI modules:\n\n"
+        for module in PGBuild.UI.getPrioritizedModules():
+            text += "%10s: %s\n" % (module.__name__.split(".")[-1], module.description)
+        self.progress.message(text[:-1])
         
 ### The End ###
         

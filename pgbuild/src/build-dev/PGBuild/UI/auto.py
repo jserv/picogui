@@ -1,6 +1,6 @@
-""" PGBuild.GUI.tk
+""" PGBuild.UI.auto
 
-A Tkinter-based frontend for PGBuild
+The 'auto' UI, that automatically picks a UI module in order of preference
 """
 # 
 # PicoGUI Build System
@@ -21,19 +21,14 @@ A Tkinter-based frontend for PGBuild
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
-import PGBuild.GUI.none
-import PGBuild
-import sys
-import tkMessageBox
+import PGBuild.UI
 
-description = "Tkinter-based frontend"
-priority = 20
+description = "Automatically choose a UI"
+priority = 0
 
-class Interface(PGBuild.GUI.none.Interface):
-    def run(self):
-        tkMessageBox.showerror(PGBuild.name,
-                               "The tk GUI is not implemented yet")
-
+# Transmogrify our interface into the highest priority UI
+Interface = PGBuild.UI.getPrioritizedModules()[0].Interface
+        
 ### The End ###
         
     

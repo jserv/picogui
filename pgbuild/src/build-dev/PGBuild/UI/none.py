@@ -1,6 +1,6 @@
-""" PGBuild.GUI.none
+""" PGBuild.UI.none
 
-The 'none' GUI, that provides only command-line-driven functionality
+The 'none' UI, that provides only command-line-driven functionality
 """
 # 
 # PicoGUI Build System

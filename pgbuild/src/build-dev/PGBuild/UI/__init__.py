@@ -1,8 +1,8 @@
-""" PGBuild.GUI
+""" PGBuild.UI
 
 Contains modules to implement PGBuild user interfaces using different
-frameworks. This includes the 'none' GUI, that provides the standard
-command line interface.
+frameworks. This includes a base that all UIs subclass, and various
+command line based interfaces.
 """
 # 
 # PicoGUI Build System
@@ -27,7 +27,7 @@ import PGBuild.Errors
 import os, glob
 
 def getNames():
-    """List the names of all GUI modules"""
+    """List the names of all UI modules"""
     modules = []
     for file in os.listdir(__path__[0]):
         if file[-3:] == ".py" and file != "__init__.py":
@@ -35,11 +35,11 @@ def getNames():
     return modules
 
 def getPrioritizedModules():
-    """List the working GUI modules, highest priority first"""
+    """List the working UI modules, highest priority first"""
     guiList = []
-    for name in PGBuild.GUI.getNames():
+    for name in PGBuild.UI.getNames():
         try:
-            guiList.append(PGBuild.GUI.find(name))
+            guiList.append(PGBuild.UI.find(name))
         except:
             pass
     def prioritySort(a,b):
@@ -51,7 +51,7 @@ def find(name):
     try:
         return __import__(name, globals(), locals())
     except ImportError:
-        raise PGBuild.Errors.UserError("Unknown GUI module '%s'" % name)
+        raise PGBuild.Errors.UserError("Unknown UI module '%s'" % name)
         
 ### The End ###
         

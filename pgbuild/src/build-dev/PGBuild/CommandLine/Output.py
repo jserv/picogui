@@ -100,13 +100,6 @@ class Progress:
             self.root = self
             self.lastTask = self
 
-        # If this task's default unimportance isn't higher than our verbosity
-        # level, go ahead and output the task heading. Otherwise we'll only
-        # output the heading if one of our subtasks or progress reports is
-        # important enough.
-        if verbosityLevel >= 1:
-            self._printTaskHeading()
-
     def _printTaskHeading(self):
         """We need to print a task heading if we're in a task we've never been in
            before, or if the current task has changed.

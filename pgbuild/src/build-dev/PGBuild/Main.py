@@ -24,7 +24,7 @@ as soon as it creates a Bootstrap object with vital path and package names.
 # 
 
 import PGBuild.Package
-import PGBuild.GUI
+import PGBuild.UI
 import PGBuild.CommandLine.Options
 import PGBuild.Config
 import os, re, shutil, sys
@@ -89,7 +89,7 @@ def main(bootstrap, argv):
        this just handles:
 
          - Initializing the config tree
-         - Initializing the GUI module
+         - Initializing the UI module
          - Exception catching
        """
 
@@ -109,8 +109,8 @@ def main(bootstrap, argv):
         # Parse command line options into the <invocation> section
         PGBuild.CommandLine.Options.parse(config, argv)
 
-        # Load a GUI module and run it
-        PGBuild.GUI.find(config.eval("invocation/option[@name='gui']/text()")).Interface(config).run()
+        # Load a UI module and run it
+        PGBuild.UI.find(config.eval("invocation/option[@name='gui']/text()")).Interface(config).run()
     finally:
         config.commit()
 

@@ -1,6 +1,6 @@
-""" PGBuild.GUI.help
+""" PGBuild.UI.tk
 
-The 'help' GUI, that just lists the available GUIs and exits
+A Tkinter-based frontend for PGBuild
 """
 # 
 # PicoGUI Build System
@@ -21,19 +21,19 @@ The 'help' GUI, that just lists the available GUIs and exits
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
-import PGBuild.GUI.none
+import PGBuild.UI.none
+import PGBuild
 import sys
+import tkMessageBox
 
-description = "List the available GUIs and exit"
-priority = 0
+description = "Tkinter-based frontend"
+priority = 20
 
-class Interface(PGBuild.GUI.none.Interface):
+class Interface(PGBuild.UI.none.Interface):
     def run(self):
-        text = "Available GUI modules:\n\n"
-        for module in PGBuild.GUI.getPrioritizedModules():
-            text += "%10s: %s\n" % (module.__name__.split(".")[-1], module.description)
-        self.progress.message(text[:-1])
-        
+        tkMessageBox.showerror(PGBuild.name,
+                               "The tk UI is not implemented yet")
+
 ### The End ###
         
     
