@@ -1,4 +1,4 @@
-/* $Id: init.h,v 1.3 2002/11/04 00:24:38 micahjd Exp $
+/* $Id: init.h,v 1.4 2002/11/23 12:23:35 micahjd Exp $
  *
  * init.h - High level pgserver initialization, main loop, and shutdown
  *
@@ -62,8 +62,23 @@ void childqueue_pop(void);
 
 void childqueue_shutdown(void);
 
-g_error mainloop_run(void);
-void mainloop_stop(void);
+/* Start the main loop, run iterations while mainloop_is_running */
+g_error pgserver_mainloop(void);
+
+/* Affect the state of the main loop, and the value
+ * returned by mainloop_is_running. Note that mainloop_start
+ * doesn't actually run the main loop, just sets the run flag.
+ */
+void pgserver_mainloop_start(void);
+void pgserver_mainloop_stop(void);
+
+/* Return nonzero if the main loop should still be running */
+int pgserver_mainloop_is_running(void);
+
+/* Run one iteration of all pgserver's main loop activities,
+ * including network, input, and rendering.
+ */
+g_error pgserver_mainloop_iteration(void);
 
 #endif /* __H_INIT */
 

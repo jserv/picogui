@@ -1,4 +1,4 @@
-/* $Id: if_magic.c,v 1.13 2002/11/11 08:27:29 micahjd Exp $
+/* $Id: if_magic.c,v 1.14 2002/11/23 12:23:35 micahjd Exp $
  *
  * if_magic.c - Trap magic debug keys
  *
@@ -333,7 +333,7 @@ void magic_button(s16 key) {
   switch (key) {
     
   case PGKEY_SLASH:       /* CTRL-ALT-SLASH exits */
-    mainloop_stop();
+    pgserver_mainloop_stop();
     return;
     
 #ifdef DEBUG_KEYS           /* The rest only work in debug mode */

@@ -1,4 +1,4 @@
-/* $Id: mainloop.c,v 1.2 2002/11/08 02:46:35 micahjd Exp $
+/* $Id: mainloop.c,v 1.3 2002/11/23 12:23:35 micahjd Exp $
  *
  * mainloop.c - Process incoming stimuli from clients and drivers
  *
@@ -27,8 +27,7 @@
 
 #include <pgserver/common.h>
 #include <pgserver/pgnet.h>
-
-int mainloop_runflag;
+#include <pgserver/init.h>
 
 /* Structures for managing the queue of child processes */
 struct child_node {
@@ -47,27 +46,51 @@ g_error childqueue_pop_internal(void);
 
 /******************************************************** Public functions **/
 
-/* The main loop, process all incoming stimuli until os_mainloop_end() */
-g_error mainloop_run(void) {
+/* Start the main loop, run iterations while mainloop_is_running */
+g_error pgserver_mainloop(void) {
   g_error e;
-  mainloop_runflag = 1;
 
-  while (mainloop_runflag) {
-    /* Run any child processes we have pending */
-    while (childqueue_pending>0) {
-      e = childqueue_pop_internal();
-      errorcheck;
-      childqueue_pending--;
-    }
-
-    net_iteration();
+  pgserver_mainloop_start();
+  while (pgserver_mainloop_is_running()) {
+    e = pgserver_mainloop_iteration();
+    errorcheck;
   }
-
+  
   return success;
 }
 
-void mainloop_stop(void) {
+/* Functions to manipulate the running/stopped state of the main loop */
+int mainloop_runflag;
+void pgserver_mainloop_start(void) {
+  mainloop_runflag = 1;
+}
+void pgserver_mainloop_stop(void) {
   mainloop_runflag = 0;
+}
+int pgserver_mainloop_is_running(void) {
+  return mainloop_runflag;
+}
+
+/* Run one iteration of all pgserver's main loop activities,
+ * including network, input, and rendering.
+ */
+g_error pgserver_mainloop_iteration(void) {
+  g_error e;
+
+  /* Run any child processes we have pending */
+  while (childqueue_pending>0) {
+    e = childqueue_pop_internal();
+    errorcheck;
+    childqueue_pending--;
+  }
+ 
+  /* FIXME: this net_iteration thing actually handles input
+   *        too, it needs to be split up into an OS-specific
+   *        main loop that drivers and network modules register with.
+   */
+  net_iteration();
+  
+  return success;
 }
 
 /* Push this command line onto a queue of child processes to run.

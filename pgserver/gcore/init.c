@@ -1,4 +1,4 @@
-/* $Id: init.c,v 1.8 2002/11/07 23:04:05 micahjd Exp $
+/* $Id: init.c,v 1.9 2002/11/23 12:23:35 micahjd Exp $
  *
  * init.c - High level pgserver initialization and shutdown
  *
@@ -188,7 +188,7 @@ g_error pgserver_main(int flags, int argc, char **argv) {
 #endif /* CONFIG_VIDEOTEST */
   {
     /* Normal main loop */
-    e = mainloop_run();
+    e = pgserver_mainloop();
     errorcheck;
   }
 

@@ -1,4 +1,4 @@
-/* $Id: posix_signals.c,v 1.2 2002/11/03 22:44:48 micahjd Exp $
+/* $Id: posix_signals.c,v 1.3 2002/11/23 12:23:35 micahjd Exp $
  *
  * posix_signals.c - Handle signals necessary for subprocess termination,
  *                   quit requests, and VT switching
@@ -100,7 +100,7 @@ void signals_handler(int sig) {
 
   case SIGTERM:
   case SIGINT:
-    mainloop_stop();
+    pgserver_mainloop_stop();
     break;
 
   default:

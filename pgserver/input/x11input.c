@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.32 2002/11/08 05:02:01 micahjd Exp $
+/* $Id: x11input.c,v 1.33 2002/11/23 12:23:35 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -252,7 +252,7 @@ int x11input_fd_activate(int fd) {
 	    }
 	  }
 	  else {
-	    mainloop_stop();
+	    pgserver_mainloop_stop();
 	  }
 	}
       }

@@ -1,6 +1,5 @@
 /* Small demo for integrating picogui support into an OpenGL app.
  * This demo will evolve as pgserver's embedding support does.
- * Right now it's all rather hackish, and just intended to be a proof-of-concept.
  *
  * To compile this, enable the 'libpgserver' option in pgserver's menuconfig,
  * then link this with -lpgserver
@@ -8,18 +7,14 @@
  * -- Micah Dowty <micahjd@users.sourceforge.net>
  */
 
-#include <stdio.h>                /* fopen() and friends */
 #include <pgserver/common.h>      /* data types and exceptions, must come first */
 #include <pgserver/init.h>        /* pgserver_init, pgserver_shutdown */
 #include <pgserver/requests.h>    /* request_exec, struct request_data and friends */
 #include <pgserver/os.h>          /* os_show_error */
 #include <pgserver/handle.h>      /* handle type */
 #include <pgserver/configfile.h>  /* set_param_str */
-#include <pgserver/pgnet.h>       /* net_iteration */
 #include <GL/gl.h>                /* OpenGL of course! */
-
-/* Necessary for the hack in the main loop below */
-extern int mainloop_runflag;
+#include <stdio.h>                /* fopen() and friends */
 
 
 /* The OpenGL scene we draw below the GUI */
@@ -211,26 +206,21 @@ g_error protected_main(int argc, char **argv) {
   if (r.out.free_response_data)
     g_free(r.out.response_data);
 
-  /* This is a hack.. pgserver's standard main loop uses this runflag to
-   * terminate cleanly when it gets an interrupt, it's closed by the window
-   * manager, etc.
-   * This whole main loop should be cleaned up when pgserver's main loop
-   * is reorganized.
+  /* Run our main loop until something signals it to stop...
+   * This could be anything that calls pgserver_mainloop_stop, including
+   * interrupts from drivers or the user.
    */
-  mainloop_runflag = 1;
-  while (mainloop_runflag) {
+  pgserver_mainloop_start();
+  while (pgserver_mainloop_is_running()) {
     /* This is our custom scene that we'll render beneath the GUI.
      * If the theme has no 'holes' for this to show through, you can see it
      * by using CTRL-ALT-Q to move the camera then CTRL-ALT-G to disable the grid.
      */
     scene();
 
-    /* The guts of pgserver's main loop, processing network and input events.
-     * This also happens to redraw the frame in the sdlgl driver.
-     * Necessary for now to recieve input. It's likely a real opengl game would
-     * have its own input driver code, and would just insert events using requests.
-     */
-    net_iteration();
+    /* PicoGUI's main loop, where it processes network, input, and rendering */
+    e = pgserver_mainloop_iteration();
+    errorcheck;
   }
 
   /* Shut down all subsystems and perform memory leak detection */

@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.55 2002/11/20 12:18:22 micahjd Exp $
+/* $Id: request.c,v 1.56 2002/11/23 12:23:35 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -81,7 +81,7 @@ void closefd(int fd) {
   /* Last client left */
   --numclients;
   if (get_param_str("pgserver","session",NULL) && !numclients)
-    mainloop_stop();
+    pgserver_mainloop_stop();
   
   /* Give up captured devices */
   if (display_owner==fd) {
