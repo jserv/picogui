@@ -98,6 +98,8 @@ def install (module, platform, project):
 name = picogui-server
 argv = pgserver
 
+wait = resource-manager
+
 restart  = 1
 announce = 1
 blocked  = 1
@@ -107,6 +109,8 @@ blocked  = 1
         fd.write ('''
 name = picogui-server
 argv = pgserver
+
+wait = resource-manager
 
 restart  = 1
 announce = 1
@@ -118,6 +122,8 @@ blocked  = 1
 name = picogui-server
 argv = pgserver -m 320x240x16
 
+wait = resource-manager
+
 restart  = 1
 announce = 1
 blocked  = 0
@@ -127,6 +133,8 @@ blocked  = 0
         fd.write ('''
 name = picogui-server
 argv = pgserver
+
+wait = resource-manager
 
 restart  = 1
 announce = 1
@@ -191,7 +199,7 @@ pm_tell unblock picogui-server
     else:
         fd.write ('''#!/bin/sh
 
-# automatically launched by the resource manager
+# automatically launched by the process manager
 ''')
         
     fd.close ()
