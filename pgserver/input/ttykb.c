@@ -22,6 +22,7 @@
 #include <pgserver/input.h>
 #include <pgserver/widget.h>
 #include <pgserver/pgnet.h>
+#include <pgserver/configfile.h>
 #include <picogui/pgkeys.h>
 #include <picogui/constants.h>
 
@@ -94,8 +95,9 @@ f_key f_keymap[] = { // Keymap for function keys
 g_error ttykb_init(void)
 {
 	struct termios	new;
-
-	ttykb_fd = open(KEYBOARD, O_NONBLOCK);
+	const char * kbd_device = get_param_str ("input-ttykb", "device", KEYBOARD);
+	
+	ttykb_fd = open(kbd_device, O_NONBLOCK);
 	
 	if (ttykb_fd < 0)
 		return -1;
