@@ -96,6 +96,7 @@ f_key f_keymap[] = { // Keymap for function keys
 		   { "[21~", PGKEY_F10 },
 		   { "[23~", PGKEY_F11 },
 		   { "[24~", PGKEY_F12 },
+		   { "[4~", PGKEY_END},
 		   { NULL }
 };
 
@@ -182,27 +183,34 @@ int ttykb_fd_activate(int fd)
 	unsigned char curkey;
 	int key;
 	int	cc;			/* characters read */
+	int mods = 0;
 	
 	if( fd != ttykb_fd ) 
 		return 0;
 
 	cc = read(fd, &curkey, 1);
-	if ( cc ) {
+	if ( cc && curkey) {
 		if ( keymap[curkey] == PGKEY_ESCAPE )
 			key = get_escaped_key(fd);
 		else
 			key = keymap[curkey];
 
 		if ( key != 0 ) {
+		  if (key > PGKEY_AT && key < PGKEY_LEFTBRACKET)
+		    {
+		      key += 32;
+		      mods = PGMOD_SHIFT;
+		    }
+
 		  if ( key <= 255 ) // Don't send PG_TRIGGER_CHAR for function-keys
-		  	infilter_send_key(PG_TRIGGER_CHAR,key,0);
+		  	infilter_send_key(PG_TRIGGER_CHAR,key,mods);
 
 		  /* FIXME: PG_TRIGGER_KEYUP is not implemented yet, but we at
 		   * least need this so that hotkeys work correctly. This
 		   * needs to respond to a few keys PG_TRIGGER_CHAR does not,
 		   * like the arrow keys */
-		  infilter_send_key(PG_TRIGGER_KEYDOWN,key,0);
-		  infilter_send_key(PG_TRIGGER_KEYUP,key,0);
+		  infilter_send_key(PG_TRIGGER_KEYDOWN,key,mods);
+		  infilter_send_key(PG_TRIGGER_KEYUP,key,mods);
 		}
 
 		else if ( curkey < 32 ) {

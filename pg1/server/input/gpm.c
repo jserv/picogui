@@ -37,7 +37,7 @@
 #include <gpm.h>
 
 Gpm_Event gpm_last_event;
-struct cursor *gpm_cursor;
+struct cursor *gpm_cursor = NULL;
 
 /******************************************** Implementations */
 

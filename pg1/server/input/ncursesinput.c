@@ -21,7 +21,7 @@
  * 
  * Contributors:
  * 
- * 
+ * Lalo Martins <lalo@laranja.org>  --  mouse support
  * 
  */
 
@@ -38,9 +38,138 @@
 
 /******************************************** Implementations */
 
+static WINDOW *ncursesinput_window;
+struct cursor *ncursesinput_cursor = NULL;
+#ifdef DRIVER_GPM
+extern struct cursor *gpm_cursor;
+#endif
+
 /* a shortcut to make the mapping junk smaller */
 void ncursesinput_sendkey(int key) {
    infilter_send_key(PG_TRIGGER_KEYDOWN,key,0);
+}
+
+void ncursesinput_getmouse() {
+  MEVENT event;
+  static int btnstate = 0;
+  /* on my machine this only works on xterm. Then again my libgpm seems to be
+   * a bit on the crazy side...    -- Lalo
+   */
+
+  getmouse(&event);
+
+  /* might have moved - let the filters figure it out */
+  infilter_send_pointing(PG_TRIGGER_MOVE, event.x, event.y, btnstate, ncursesinput_cursor);
+
+  switch (event.bstate) {
+  case BUTTON1_RELEASED:
+    btnstate &= ~1;
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    break;
+  case BUTTON1_PRESSED:
+    btnstate |= 1;
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate, ncursesinput_cursor);
+    break;
+  case BUTTON1_CLICKED:
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 1, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    break;
+  case BUTTON1_DOUBLE_CLICKED:
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 1, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 1, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    break;
+  case BUTTON1_TRIPLE_CLICKED:
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 1, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 1, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 1, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    break;
+
+  case BUTTON2_RELEASED:
+    btnstate &= ~2;
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    break;
+  case BUTTON2_PRESSED:
+    btnstate |= 2;
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate, ncursesinput_cursor);
+    break;
+  case BUTTON2_CLICKED:
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 2, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    break;
+  case BUTTON2_DOUBLE_CLICKED:
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 2, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 2, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    break;
+  case BUTTON2_TRIPLE_CLICKED:
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 2, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 2, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 2, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    break;
+
+  case BUTTON3_RELEASED:
+    btnstate &= ~3;
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    break;
+  case BUTTON3_PRESSED:
+    btnstate |= 3;
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate, ncursesinput_cursor);
+    break;
+  case BUTTON3_CLICKED:
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 3, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    break;
+  case BUTTON3_DOUBLE_CLICKED:
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 3, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 3, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    break;
+  case BUTTON3_TRIPLE_CLICKED:
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 3, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 3, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 3, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    break;
+
+  case BUTTON4_RELEASED:
+    btnstate &= ~4;
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    break;
+  case BUTTON4_PRESSED:
+    btnstate |= 4;
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate, ncursesinput_cursor);
+    break;
+  case BUTTON4_CLICKED:
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 4, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    break;
+  case BUTTON4_DOUBLE_CLICKED:
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 4, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 4, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    break;
+  case BUTTON4_TRIPLE_CLICKED:
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 4, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 4, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_DOWN, event.x, event.y, btnstate | 4, ncursesinput_cursor);
+    infilter_send_pointing(PG_TRIGGER_UP, event.x, event.y, btnstate, ncursesinput_cursor);
+    break;
+  }
 }
 
 int ncursesinput_fd_activate(int fd) {
@@ -48,7 +177,7 @@ int ncursesinput_fd_activate(int fd) {
    
    /* Keyboard activity? */
    if (fd==0) {
-      switch (ch = getch()) {
+      switch (ch = wgetch(ncursesinput_window)) {
 	 
        case ERR:    /* Nothing yet */
 	 break;
@@ -74,7 +203,12 @@ int ncursesinput_fd_activate(int fd) {
 	 
 	 infilter_send_key(PG_TRIGGER_KEYDOWN,ch,mods);
 	 break;
-	 
+
+	 /*** Mouse events */
+      case KEY_MOUSE:
+	ncursesinput_getmouse();
+	break;
+
 	 /**** Keys that must be mapped */
 	 
        case KEY_SUSPEND:      infilter_send_key(PG_TRIGGER_KEYDOWN,PGKEY_z,PGMOD_CTRL); break;
@@ -84,6 +218,7 @@ int ncursesinput_fd_activate(int fd) {
        case KEY_LEFT:         ncursesinput_sendkey(PGKEY_LEFT); break;
        case KEY_RIGHT:        ncursesinput_sendkey(PGKEY_RIGHT); break;
        case KEY_HOME:         ncursesinput_sendkey(PGKEY_HOME); break;
+       case KEY_END:          ncursesinput_sendkey(PGKEY_END); break;
        case KEY_IC:           ncursesinput_sendkey(PGKEY_INSERT); break;
        case KEY_DC:           ncursesinput_sendkey(PGKEY_DELETE); break;
        case KEY_PPAGE:        ncursesinput_sendkey(PGKEY_PAGEUP); break;
@@ -132,7 +267,7 @@ void ncursesinput_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
 
 g_error ncursesinput_init(void) {
    /* Initialize ncurses, possibly also for a video driver's benefit... */
-   initscr(); 
+   ncursesinput_window = initscr(); 
    start_color();
    raw(); 
    meta(stdscr, TRUE);
@@ -147,7 +282,15 @@ g_error ncursesinput_init(void) {
     * screen next time a key is input */
    refresh();
    
-   return success;
+#ifdef DRIVER_GPM
+   if (gpm_cursor != NULL)
+     /* don't give the user two cursors */
+     return 1;
+#endif
+
+   mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
+
+   return cursor_new(&ncursesinput_cursor, NULL, -1);
 }
 
 void ncursesinput_close(void) {
