@@ -65,25 +65,25 @@ char **buildArgv(char *exename, char *optionString);
 void directoryScan(char *path){
   char **appPaths = NULL;
   pgllApp *apps = NULL;
-  int appCount = resCGetAppCount(path);
-  resCResource *appRes = NULL;
+  int appCount = resGetAppCount(path);
+  resResource *appRes = NULL;
 
   if(appCount){
     if(gAppList)
       emptyList();
     gAppCount = appCount;
-    appPaths = resCGetAppPaths(path);
+    appPaths = resGetAppPaths(path);
     gAppList = malloc(sizeof(pgllApp *)*appCount);
     for(;appCount > 0; appCount--){
-      appRes = resCLoadResource(appPaths[appCount-1]);
+      appRes = resLoadResource(appPaths[appCount-1]);
       gAppList[appCount-1] = malloc(sizeof(pgllApp));
-      gAppList[appCount-1]->appName = resCGetProperty(appRes, "PGL-Launcher", "name");
+      gAppList[appCount-1]->appName = resGetProperty(appRes, "PGL-Launcher", "name");
       gAppList[appCount-1]->basePath = strdup(appRes->workingDir);
-      if(!(gAppList[appCount-1]->exeName = resCGetProperty(appRes, architecture, "executable"))){
-	gAppList[appCount-1]->exeName = resCGetProperty(appRes, "any-arch", "executable");
+      if(!(gAppList[appCount-1]->exeName = resGetProperty(appRes, architecture, "executable"))){
+	gAppList[appCount-1]->exeName = resGetProperty(appRes, "any-arch", "executable");
       }
-      if(!(gAppList[appCount-1]->args = resCGetProperty(appRes, architecture, "args"))){
-	gAppList[appCount-1]->args = resCGetProperty(appRes, "any-arch", "args");
+      if(!(gAppList[appCount-1]->args = resGetProperty(appRes, architecture, "args"))){
+	gAppList[appCount-1]->args = resGetProperty(appRes, "any-arch", "args");
       }
     }
   }

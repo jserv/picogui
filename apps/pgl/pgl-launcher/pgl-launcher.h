@@ -26,10 +26,8 @@
 
 typedef struct{
   char *basePath;
+  char *args;
   char *appName;
-  char *variantName;
-  int optionCount;
-  char **appOptions;
   char *exeName;
   char *appIcon;
 } pgllApp;
