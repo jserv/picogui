@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.122 2002/10/14 11:03:11 micahjd Exp $
+/* $Id: button.c,v 1.123 2002/10/22 20:14:39 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -786,11 +786,22 @@ void button_resize(struct widget *self) {
   /* Calculate everything */
   position_button(self,&bp);
 
-  if (bp.h > h)
-     h = bp.h;
-  if ((bp.w+m) > w)
-     w = bp.w + m;
-   
+  /* The margin only applies to the dimension along the text */
+  if (DATA->direction == 90 || DATA->direction==270) {
+    /* Vertical */
+    if (bp.w > w)
+      w = bp.w;
+    if ((bp.h+m) > h)
+      h = bp.h + m;
+  }
+  else {
+    /* Horizontal */
+    if (bp.h > h)
+      h = bp.h;
+    if ((bp.w+m) > w)
+      w = bp.w + m;
+  }   
+
   /* Add spacing between buttons */
   if ((self->in->flags & PG_S_TOP) ||
       (self->in->flags & PG_S_BOTTOM)) {
