@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.181 2003/03/19 18:08:33 lalo Exp $
+/* $Id: constants.h,v 1.182 2003/03/19 22:32:51 lalo Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -953,7 +953,7 @@ typedef unsigned long pghandle;
 #define PG_WP_ABSOLUTEX   22    /* read-only, relative to screen */
 #define PG_WP_ABSOLUTEY   23
 #define PG_WP_ON          24    /* on-off state of button/checkbox/etc */
-#define PG_WP_STATE       25    /* Deprecated! Use PG_WP_THOBJ instead */
+#define PG_WP_STATE       PG_WP_THOBJ    /* Deprecated! Use PG_WP_THOBJ instead */
 #define PG_WP_THOBJ       25    /* Set a widget's theme object */
 #define PG_WP_NAME        26    /* A widget's name (for named containers, etc) */
 #define PG_WP_PUBLICBOX   27    /* Set to 1 to allow other apps to make widgets
@@ -999,6 +999,7 @@ typedef unsigned long pghandle;
 #define PG_WP_TAB_BAR         63  /* The tab bar associated with a tabpage widget */
 #define PG_WP_POPUP_IS_MENU   64  /* Popup is menu flag */
 #define PG_WP_POPUP_IS_SUBMENU 65 /* Popup is submenu flag */
+#define PG_WP_CURSOR_POSITION 66  /* Textbox cursor position */
 
 /* Constants for PG_WP_AUTO_ORIENTATION */
 #define PG_AUTO_SIDE         (1<<0)

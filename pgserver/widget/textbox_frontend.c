@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.41 2003/03/19 04:59:08 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.42 2003/03/19 22:32:50 lalo Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -60,6 +60,10 @@ struct textboxdata {
   unsigned int focus : 1;
   unsigned int flash_on : 1;
   unsigned int readonly : 1;
+
+  /* Mask of extended events to send (meaning: not handle internally)
+   * and other flags*/
+  int extdevents;
 };
 #define WIDGET_SUBCLASS 0
 #define DATA WIDGET_DATA(textboxdata)
@@ -139,6 +143,10 @@ g_error textbox_set(struct widget *self,int property, glob data) {
     paragraph_hide_cursor(DATA->doc->crsr);
     break;
 
+  case PG_WP_EXTDEVENTS:
+    DATA->extdevents = data;
+    break;
+
   case PG_WP_PASSWORD:
     DATA->doc->password = data;
     resizewidget(self);
@@ -191,6 +199,9 @@ glob textbox_get(struct widget *self,int property) {
   case PG_WP_READONLY:
     return DATA->readonly;
 
+  case PG_WP_EXTDEVENTS:
+    return (glob) DATA->extdevents;
+
   case PG_WP_PASSWORD:
     return DATA->doc->password;
 
@@ -238,6 +249,7 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
     
   case PG_TRIGGER_COMMAND:
     textbox_command(self,param->command.command,param->command.numparams,param->command.data);
+    textbox_reset_inactivity(self);
     return;
     
     /* Receive streamed data from client */ 
@@ -292,9 +304,17 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
   case PG_TRIGGER_KEYUP:
     if (!(param->kbd.flags & PG_KF_FOCUSED))
       return;
+
     if (textbox_ignorekey(self,param->kbd.key))
       return;
     param->kbd.consume++;
+
+    if (DATA->extdevents & PG_EXEV_KEY) {
+      /* client asked us to not handle keyup */
+      post_event(PG_WE_KBD_KEYUP,self,(param->kbd.mods<<16)|param->kbd.key,0,NULL);
+      return;
+    }
+
     textbox_reset_inactivity(self);
 
     switch (param->kbd.key) {
@@ -305,7 +325,7 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
     case PGKEY_DOWN:
     case PGKEY_HOME:
     case PGKEY_END:
-    break;
+      break;
     
     default:
       post_event(PG_WE_KBD_KEYUP,self,(param->kbd.mods<<16)|param->kbd.key,0,NULL);
@@ -315,8 +335,16 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
   case PG_TRIGGER_KEYDOWN:
     if (!(param->kbd.flags & PG_KF_FOCUSED))
       return;
+
     if (textbox_ignorekey(self,param->kbd.key))
       return;
+
+    if (DATA->extdevents & PG_EXEV_KEY) {
+      /* client asked us to not handle keydown */
+      post_event(PG_WE_KBD_KEYDOWN,self,(param->kbd.mods<<16)|param->kbd.key,0,NULL);
+      param->kbd.consume++;
+      return;
+    }
 
     textbox_reset_inactivity(self);
     seek_amount = 0;
@@ -376,7 +404,9 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
       break;
       
     default:
+      /* unbound - send to client */
       post_event(PG_WE_KBD_KEYDOWN,self,(param->kbd.mods<<16)|param->kbd.key,0,NULL);
+      param->kbd.consume++;
       return; /* Skip update */
     }
 
@@ -392,14 +422,22 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
     if (!(param->kbd.flags & PG_KF_FOCUSED))
       return;
 
-    if (param->kbd.key == PGKEY_RETURN && !DATA->doc->multiline) {
-      param->kbd.consume++;
-      textbox_reset_inactivity(self);
-      post_event(PG_WE_ACTIVATE,self,0,0,NULL);
+    if (textbox_ignorekey(self,param->kbd.key)) {
+      if (param->kbd.key == PGKEY_RETURN && !DATA->doc->multiline) {
+	param->kbd.consume++;
+	textbox_reset_inactivity(self);
+	post_event(PG_WE_ACTIVATE,self,0,0,NULL);
+	break;
+      }
+      return;
     }
 
-    if (textbox_ignorekey(self,param->kbd.key))
+    if (DATA->extdevents & PG_EXEV_CHAR) {
+      /* client asked us to not handle chars */
+      post_event(PG_WE_KBD_CHAR,self,param->kbd.key,0,NULL);
+      param->kbd.consume++;
       return;
+    }
 
     param->kbd.consume++;
     textbox_reset_inactivity(self);
@@ -416,7 +454,6 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
     paragraph_show_cursor(DATA->doc->crsr);
     paragraph_scroll_to_cursor(DATA->doc->crsr);
 
-    post_event(PG_WE_KBD_CHAR,self,param->kbd.key,0,NULL);
     break;
     
   }
