@@ -325,7 +325,7 @@ class Tree(PGBuild.XMLUtil.Document):
                 mountElement = self.resolveMountPath(minfo.getRoot())
                 PGBuild.XMLUtil.writeSubtree(mountElement, minfo.file,
                                              self.rootName, minfo.attributes,
-                                             comment, self.childNodes)
+                                             comment)
                 
     def boot(self, bootstrap):
         """Initialize the configuration tree from a Bootstrap object"""

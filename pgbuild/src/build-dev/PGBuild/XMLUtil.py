@@ -192,12 +192,6 @@ def writeSubtree(root, dest, rootName=None, rootAttributes=None, comment=None, p
         dest.write(formatCommentBlock(comment))
     dest.write("\n")
 
-    # Write optional processing instructions.
-    if procInstructions:
-        for node in procInstructions:
-            if node.nodeType == node.PROCESSING_INSTRUCTION_NODE:
-                node.writexml(dest, "", "\t", "\n")
-
     # Make a clone of the root node so we can change the name and attributes
     rootClone = root.cloneNode(0)
     rootClone.childNodes = root.childNodes
