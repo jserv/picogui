@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.38 2000/11/04 18:16:07 micahjd Exp $
+/* $Id: panel.c,v 1.39 2000/11/04 20:26:51 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -131,9 +131,7 @@ void build_panelbar(struct gropctxt *c,unsigned short state,
 /** Handlers for the panelbar buttons */
 
 void panelbtn_close(struct widget *self,struct widget *button) {
-#ifdef DEBUG
-  guru("Close button");
-#endif
+  post_event(PG_WE_CLOSE,self,0,self->owner);
 }
 
 void panelbtn_rotate(struct widget *self,struct widget *button) {

@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.16 2000/11/04 07:50:42 micahjd Exp $
+/* $Id: constants.h,v 1.17 2000/11/04 20:26:51 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -427,7 +427,8 @@ typedef unsigned long pghandle;
 #define PG_WE_ACTIVATE    1     /* Gets focus (or for a non-focusing widget such
 			           as a button, it has been clicked/selected  */
 #define PG_WE_DEACTIVATE  2     /* Lost focus */
-     
+#define PG_WE_CLOSE       3     /* A top-level widget has closed */
+
 /* Non-widget events */
 #define PG_NWE_KBD_CHAR    10   /* These are sent if the client has captured the */
 #define PG_NWE_KBD_KEYUP   11   /* keyboard (or pointing device ) */
