@@ -1,0 +1,5 @@
+This is a little demonstration of the power and flexybility of the themes subsystem.
+
+Themes can be "stacked". For example you can define a theme for the whole appearance of the display and another for the cursor shape.
+
+Now try to click some of the filenames below and check the other pages. If something goes wrong or if you want to restore the default theme click the "Default theme" button.

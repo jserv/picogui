@@ -1,0 +1,1 @@
+PicoGUI has unique window management. To try it out press a button below to start a sample application. If it covers the whole screen click and drag the application bar. As you can see windows never overlap.

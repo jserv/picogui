@@ -1,0 +1,3 @@
+Menus in PicoGUI are just buttons + popups. So you can customize the menu to your neeeds... 
+
+Try the menu bar below.

@@ -1,0 +1,5 @@
+One of PicoGUI main peculiarity is the absence of overlapping windows. This is the design choice that makes PicoGUI lightweight and fast.
+
+Anyway PicoGUI implements a number of "popup" interactive windows that freeze the display when invoked. Try the buttons below.
+
+Also try the mod_ themes that modify the popup windows behaviour.
