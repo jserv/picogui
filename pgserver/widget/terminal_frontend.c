@@ -1,4 +1,4 @@
-/* $Id: terminal_frontend.c,v 1.16 2003/03/23 09:25:47 micahjd Exp $
+/* $Id: terminal_frontend.c,v 1.17 2003/03/23 09:38:48 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -114,6 +114,11 @@ g_error terminal_set(struct widget *self,int property, glob data) {
     DATA->fontmargin = m.margin;
     DATA->celw = m.charcell.w;
     DATA->celh = m.charcell.h;
+    
+    /* Protection against SIGFPE if our font engine is hosed */
+    if (DATA->celw < 1) DATA->celw = 1;
+    if (DATA->celh < 1) DATA->celh = 1;
+
     set_widget_rebuild(self);
     resizewidget(self);
     break;
