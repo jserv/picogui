@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.10 2001/01/15 08:53:22 micahjd Exp $
+/* $Id: ncurses.c,v 1.11 2001/01/15 09:24:01 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -147,7 +147,8 @@ g_error ncurses_init(int xres,int yres,int bpp,unsigned long flags) {
    /* Initialize ncurses */
    initscr(); 
    start_color();
-   cbreak(); 
+   raw(); 
+   meta(stdscr, TRUE);
    noecho();
    nonl();
    intrflush(stdscr, FALSE);

@@ -1,4 +1,4 @@
-/* $Id: ncursesinput.c,v 1.4 2001/01/15 07:50:22 micahjd Exp $
+/* $Id: ncursesinput.c,v 1.5 2001/01/15 09:23:57 micahjd Exp $
  *
  * ncursesinput.h - input driver for ncurses
  * 
@@ -60,7 +60,7 @@ int ncursesinput_fd_activate(int fd) {
 
 	 /**** Keys that must be mapped */
 	 
-       case KEY_BACKSPACE:    ncursesinput_sendkey('\b'); break;
+       case KEY_BACKSPACE:    dispatch_key(TRIGGER_CHAR,'\b',0); break;
        case KEY_UP:           ncursesinput_sendkey(PGKEY_UP); break;
        case KEY_DOWN:         ncursesinput_sendkey(PGKEY_DOWN); break;
        case KEY_LEFT:         ncursesinput_sendkey(PGKEY_LEFT); break;
