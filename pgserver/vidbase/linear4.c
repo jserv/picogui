@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.21 2002/02/02 20:01:23 lonetech Exp $
+/* $Id: linear4.c,v 1.22 2002/02/02 22:37:46 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -505,7 +505,38 @@ void linear4_blit(hwrbitmap dest,
    rs = 8-s;
 
    /* The blitter core is a macro so various LGOPs can be used */
-   
+
+#ifdef SWAP_NYBBLES
+
+   /* Nybble-swapped blitter core */   
+#define BLITCORE                                                          \
+   /* Special case when it fits entirely within one byte */               \
+   if ((xb+w)<=2) {                                                       \
+      mask = slabmask4[xb] & ~slabmask4[xb+w];                            \
+      for (;h;h--,src+=srcbit->pitch,dst+=FB_BPL)                         \
+	BLITCOPY(((src[0] << s) | (src[1] >> rs)),mask);                  \
+   }                                                                      \
+   else {                                                                 \
+      tp = (dst_x+w)&1;        /* Trailing pixels */                      \
+      lp = (2-xb)&1;           /* Leading pixels */                       \
+      bw = (w-tp-lp)>>1;       /* Width in whole bytes */                 \
+                                                                          \
+      /* Bit-banging blitter loop */                                      \
+      for (;h;h--,src=srcline+=srcbit->pitch,dst=dstline+=FB_BPL) {       \
+	 if (lp) {                                                        \
+	    BLITCOPY(((src[0] >> s) | (src[1] << rs)),0xF0);              \
+	    src++,dst++;                                                  \
+	 }                                                                \
+	 for (i=bw;i>0;i--,src++,dst++)                                   \
+	   BLITMAINCOPY(((src[0] >> s) | (src[1] << rs)));                \
+	 if (tp)                                                          \
+	    BLITCOPY(((src[0] >> s) | (src[1] << rs)),0x0F);              \
+      }                                                                   \
+   }
+
+#else
+
+   /* Normal blitter core */   
 #define BLITCORE                                                          \
    /* Special case when it fits entirely within one byte */               \
    if ((xb+w)<=2) {                                                       \
@@ -530,16 +561,13 @@ void linear4_blit(hwrbitmap dest,
 	    BLITCOPY(((src[0] << s) | (src[1] >> rs)),0xF0);              \
       }                                                                   \
    }
-   
+#endif
+
    /* Select a blitter based on the current LGOP mode */
    switch (lgop) {
    
     case PG_LGOP_NONE:
-#ifdef SWAP_NYBBLES
-#define BLITCOPY(d,m)   *dst = (d & ~m) | (*dst & m)
-#else
 #define BLITCOPY(d,m)   *dst = (d & m) | (*dst & ~m)
-#endif
 #define BLITMAINCOPY(d) *dst = d
    BLITCORE
 #undef BLITMAINCOPY
@@ -547,11 +575,7 @@ void linear4_blit(hwrbitmap dest,
 	return;
 
     case PG_LGOP_OR:
-#ifdef SWAP_NYBBLES
-#define BLITCOPY(d,m)   *dst |= d & ~m
-#else
 #define BLITCOPY(d,m)   *dst |= d & m
-#endif
 #define BLITMAINCOPY(d) *dst |= d
    BLITCORE
 #undef BLITMAINCOPY
@@ -559,11 +583,7 @@ void linear4_blit(hwrbitmap dest,
 	return;
       
     case PG_LGOP_AND:
-#ifdef SWAP_NYBBLES
-#define BLITCOPY(d,m)   *dst &= d | m
-#else
 #define BLITCOPY(d,m)   *dst &= d | ~m
-#endif
 #define BLITMAINCOPY(d) *dst &= d
    BLITCORE
 #undef BLITMAINCOPY
@@ -571,11 +591,7 @@ void linear4_blit(hwrbitmap dest,
 	return;
       
     case PG_LGOP_XOR:
-#ifdef SWAP_NYBBLES
-#define BLITCOPY(d,m)   *dst ^= d & ~m
-#else
 #define BLITCOPY(d,m)   *dst ^= d & m
-#endif
 #define BLITMAINCOPY(d) *dst ^= d
    BLITCORE
 #undef BLITMAINCOPY

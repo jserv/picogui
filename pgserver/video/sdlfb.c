@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.38 2002/02/02 20:52:52 lonetech Exp $
+/* $Id: sdlfb.c,v 1.39 2002/02/02 22:37:46 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -475,9 +475,17 @@ void sdlfb_update(s16 x,s16 y,s16 w,s16 h) {
        
        /* Slow but it works (this is debug code, after all...) */
        for (j=h;j;j--,src=srcline+=FB_BPL,dest=destline+=sdl_vidsurf->pitch)
-	 for (i=bw;i;i--,src++)
-	   for (shift=maxshift,c=*src;shift>=0;shift-=vid->bpp)
+	 for (i=bw;i;i--,src++) {
+#ifdef CONFIG_FB_PSION
+	   /* Psion swaps pairs of pixels */
+	   c = *src;
+	   *(dest++) = c & mask;
+	   *(dest++) = (c >> 4) & mask;
+#else
+           for (shift=maxshift,c=*src;shift>=0;shift-=vid->bpp)
 	     *(dest++) = (c >> shift) & mask;
+#endif
+	 }
      }
 #endif
    }
