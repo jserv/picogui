@@ -297,6 +297,9 @@ quoted appropriately. For example:
 - mapscale
   Scale the map by this fraction. (space-separated numerator and denominator)
 
+- scroll_distance
+  Magnitude of movement, in pixels, for the scroll wheel
+
 [video-serial40x4]
 
 - device

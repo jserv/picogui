@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.105 2002/09/27 01:14:08 micahjd Exp $
+/* $Id: dispatch.c,v 1.106 2002/09/28 06:25:05 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -176,10 +176,7 @@ g_error rqh_mkwidget(int owner, struct pgrequest *req,
   if (owner>=0 && parent->isroot && ntohs(arg->rship)!=PG_DERIVE_INSIDE)
     return mkerror(PG_ERRT_BADPARAM,60);
 
-  e = widget_derive(&w,ntohs(arg->type),parent,xh,ntohs(arg->rship),owner);
-  errorcheck;
-
-  e = mkhandle(&h,PG_TYPE_WIDGET,owner,w);
+  e = widget_derive(&w,&h,ntohs(arg->type),parent,xh,ntohs(arg->rship),owner);
   errorcheck;
   
   *ret = h;
@@ -194,12 +191,8 @@ g_error rqh_createwidget(int owner, struct pgrequest *req,
   g_error e;
   reqarg(createwidget);
 
-  e = widget_create(&w, ntohs(arg->type), NULL, 0, owner);
+  e = widget_create(&w, &h, ntohs(arg->type), NULL, 0, owner);
   errorcheck;
-
-  e = mkhandle(&h,PG_TYPE_WIDGET,owner,w);
-  errorcheck;
-  
   *ret = h;
 
   return success;
@@ -233,9 +226,7 @@ g_error rqh_attachwidget(int owner, struct pgrequest *req,
   if (owner>=0 && parent && parent->isroot && ntohs(arg->rship)!=PG_DERIVE_INSIDE)
     return mkerror(PG_ERRT_BADPARAM,60);
 
-  //
-  // Get the handle to the widget
-  //
+  /* Get the handle to the widget */
   etmp = rdhandle((void **) &w, PG_TYPE_WIDGET, owner, ntohl(arg->widget));
   if ( iserror(etmp) )
      return etmp;
@@ -243,12 +234,12 @@ g_error rqh_attachwidget(int owner, struct pgrequest *req,
   if (!w)
     return mkerror(PG_ERRT_BADPARAM,117);   /* Null widget in attachwidget */
 
-  //
-  // Call widget_derive to actually do the attaching.  widget_derive will notice that the widget already
-  // has been created and not create it again.  In this case, it will just do the attachment.
-  return widget_derive(&w,w->type,parent,xh,ntohs(arg->rship),owner);  
+  /* Call widget_derive to actually do the attaching.  widget_derive will notice that the widget already
+   * has been created and not create it again.  In this case, it will just do the attachment.
+   */
+  return widget_derive(&w,NULL,w->type,parent,xh,ntohs(arg->rship),owner);  
 
-} // rqh_attachwidget
+}
 
 g_error rqh_mkbitmap(int owner, struct pgrequest *req,
 		   void *data, u32 *ret, int *fatal) {

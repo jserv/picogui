@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.81 2002/09/28 04:06:56 micahjd Exp $
+/* $Id: panel.c,v 1.82 2002/09/28 06:25:06 micahjd Exp $
  *
  * panel.c - Resizable container with decorations. It uses a panelbar for resizing purposes,
  *           and optionally supplies some standard buttons for the panel.
@@ -61,7 +61,7 @@ g_error panel_std_button(handle *h, struct widget *self, int thobj, int thobj_on
   errorcheck;
 
   w = NULL;
-  e = widget_derive(&w,PG_WIDGET_BUTTON,bar,DATA->hbar,PG_DERIVE_INSIDE,self->owner);
+  e = widget_derive(&w,h,PG_WIDGET_BUTTON,bar,DATA->hbar,PG_DERIVE_INSIDE,self->owner);
   errorcheck;
   e = mkhandle(h,PG_TYPE_WIDGET,self->owner,w);
   errorcheck;
@@ -190,12 +190,10 @@ g_error panel_install(struct widget *self) {
   self->in->div->build = &build_panel_border;
 
   /* Create the panelbar widget */
-  e = widget_create(&bar,PG_WIDGET_PANELBAR,
+  e = widget_create(&bar,&DATA->hbar,PG_WIDGET_PANELBAR,
 		    self->dt,self->container,self->owner);
   errorcheck;
   e = widget_attach(bar,self->dt,&self->in->div->div,0,self->owner);
-  errorcheck;
-  e = mkhandle(&DATA->hbar,PG_TYPE_WIDGET,self->owner,bar);
   errorcheck;
 
   /* This draws the panel background  */
@@ -214,10 +212,8 @@ g_error panel_install(struct widget *self) {
   /* Firstly, create a label widget in the panelbar to present the title */
 
   title = NULL;
-  e = widget_derive(&title,PG_WIDGET_LABEL,bar,DATA->hbar,
+  e = widget_derive(&title,&DATA->hlabel,PG_WIDGET_LABEL,bar,DATA->hbar,
 		    PG_DERIVE_INSIDE,self->owner);
-  errorcheck;
-  e = mkhandle(&DATA->hlabel,PG_TYPE_WIDGET,self->owner,title);
   errorcheck;
   widget_set(title,PG_WP_SIDE,PG_S_ALL);
   widget_set(title,PG_WP_THOBJ,PGTH_O_PANELBAR);

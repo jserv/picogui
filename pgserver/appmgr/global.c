@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.67 2002/09/25 15:26:07 micahjd Exp $
+/* $Id: global.c,v 1.68 2002/09/28 06:25:05 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -102,12 +102,10 @@ g_error appmgr_init(void) {
 #endif
    
   /* Make the background widget */
-  e = widget_create(&bgwidget,PG_WIDGET_BACKGROUND,dts->root, 0, -1);
+  e = widget_create(&bgwidget,&res[PGRES_BACKGROUND_WIDGET],
+		    PG_WIDGET_BACKGROUND,dts->root, 0, -1);
   errorcheck;
   e = widget_attach(bgwidget, dts->root, &dts->root->head->next,0,-1);
-  errorcheck;
-  
-  e = mkhandle(&res[PGRES_BACKGROUND_WIDGET],PG_TYPE_WIDGET,-1,bgwidget);   
   errorcheck;
 
   /* Turn off the background's DIVNODE_UNDERCONSTRUCTION flags
@@ -219,16 +217,14 @@ g_error appmgr_register(struct app_info *i) {
     /* Create a simple toolbar as a root widget. Create it after the previous
      * toolbar, if applicable, and update htbboundary. */
     if (wtbboundary)
-      e = widget_derive(&w,PG_WIDGET_TOOLBAR,wtbboundary,htbboundary,PG_DERIVE_AFTER,i->owner);
+      e = widget_derive(&w,&i->rootw,PG_WIDGET_TOOLBAR,wtbboundary,htbboundary,PG_DERIVE_AFTER,i->owner);
     else {
-      e = widget_create(&w,PG_WIDGET_TOOLBAR,dts->root, 0, i->owner);
+      e = widget_create(&w,&i->rootw,PG_WIDGET_TOOLBAR,dts->root, 0, i->owner);
       errorcheck;
       e = widget_attach(w,dts->root,&dts->root->head->next,0,i->owner);
       errorcheck;
     }
-    
-    e = mkhandle(&i->rootw,PG_TYPE_WIDGET,i->owner,w);
-    errorcheck;    
+
     htbboundary = i->rootw;
     wtbboundary = w;
 
@@ -257,11 +253,9 @@ g_error appmgr_register(struct app_info *i) {
 
   case PG_APP_NORMAL:
     /* Put the new app right before the background widget */
-    e = widget_derive(&w,PG_WIDGET_PANEL,bgwidget,res[PGRES_BACKGROUND_WIDGET],
-		      PG_DERIVE_BEFORE,i->owner);
+    e = widget_derive(&w,&i->rootw,PG_WIDGET_PANEL,bgwidget,
+		      res[PGRES_BACKGROUND_WIDGET],PG_DERIVE_BEFORE,i->owner);
     errorcheck;
-    e = mkhandle(&i->rootw,PG_TYPE_WIDGET,i->owner,w);
-    errorcheck;    
 
     /* Set all the properties */
     e = widget_set(w,PG_WP_TEXT,i->name);

@@ -1,4 +1,4 @@
-/* $Id: if_pntr_dispatch.c,v 1.2 2002/07/03 22:03:30 micahjd Exp $
+/* $Id: if_pntr_dispatch.c,v 1.3 2002/09/28 06:25:05 micahjd Exp $
  *
  * if_pntr_dispatch.c - Dispatch mouse pointer events to widgets
  *
@@ -89,7 +89,7 @@ void infilter_pntr_dispatch_handler(struct infilter *self, u32 trigger, union tr
 
     /* First send the 'raw' event, then handle the cooked ones. */
     if (!release_captured)
-      send_trigger(under,trigger,param);
+      send_propagating_trigger(under,trigger,param);
     
     /* If the mouse is clicked in a widget, it 'captures' future MOVE and RELEASE events
      * until this button is released.

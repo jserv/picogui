@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.192 2002/09/28 04:06:56 micahjd Exp $
+/* $Id: widget.c,v 1.193 2002/09/28 06:25:06 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -110,7 +110,7 @@ DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,94))
 DEF_WIDGET_TABLE(1,simplemenu)           /* Subclasses popup */
 DEF_WIDGET_TABLE(1,dialogbox)            /* Subclasses popup */
 DEF_STATICWIDGET_TABLE(2,messagedialog)  /* Subclasses dialogbox, popup */
-DEF_STATICWIDGET_TABLE(0,scrollbox)
+DEF_WIDGET_TABLE(0,scrollbox)
 };
 
 /* To save space, instead of checking whether the divtree is valid every time
@@ -123,7 +123,8 @@ struct divtree fakedt = {
 
 /******** Widget interface functions */
  
-g_error widget_create(struct widget **w, int type, struct divtree *dt, handle container, int owner) {
+g_error widget_create(struct widget **w, handle *h, int type, 
+		      struct divtree *dt, handle container, int owner) {
 
    g_error e;
 
@@ -158,6 +159,13 @@ g_error widget_create(struct widget **w, int type, struct divtree *dt, handle co
   /* Allocate data pointers for this widget and everythign it's subclassed from */
   e = g_malloc((void**)&(*w)->data, sizeof(void *) * ((*w)->def->subclass_num + 1));
   errorcheck;
+
+  /* Allocate a handle for this widget before calling install, so that it may
+   * use the handle when setting up subwidgets.
+   */
+  e = mkhandle(h,PG_TYPE_WIDGET,owner,*w);
+  errorcheck;
+  (*w)->h = *h;
 
   /* Initialize this instance of the widget. This install function should initialize
    * the widget it's subclassed from first, if any
@@ -253,7 +261,7 @@ g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **wher
   return success;
 }
 
-g_error widget_derive(struct widget **w,
+g_error widget_derive(struct widget **w, handle *h,
 		      int type,struct widget *parent,
 		      handle hparent,int rship,int owner) {
 
@@ -271,7 +279,7 @@ g_error widget_derive(struct widget **w,
 
   case PG_DERIVE_INSIDE:
      if (*w == NULL ) {
-        e = widget_create(w, type, parent->dt, hparent, owner);
+        e = widget_create(w,h, type, parent->dt, hparent, owner);
         errorcheck;
      }
      e = widget_attach(*w, parent->dt,parent->sub,hparent,owner);
@@ -279,7 +287,7 @@ g_error widget_derive(struct widget **w,
 
   case PG_DERIVE_AFTER:
      if ( *w == NULL ) {
-        e = widget_create(w, type, parent->dt, parent->container, owner);
+        e = widget_create(w,h, type, parent->dt, parent->container, owner);
         errorcheck;
      }
      e = widget_attach(*w,parent->dt,parent->out,parent->container,owner);
@@ -288,7 +296,7 @@ g_error widget_derive(struct widget **w,
   case PG_DERIVE_BEFORE:
   case PG_DERIVE_BEFORE_OLD:
      if ( *w == NULL ) {
-        e = widget_create(w, type, parent->dt, parent->container, owner);
+        e = widget_create(w,h, type, parent->dt, parent->container, owner);
         errorcheck;
      }
      e = widget_attach(*w,parent->dt,parent->where,parent->container,owner);

@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.68 2002/09/28 04:06:55 micahjd Exp $
+/* $Id: widget.h,v 1.69 2002/09/28 06:25:05 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -162,6 +162,11 @@ struct widget {
   /* Widgets with timers are in a linked list */
   struct widget *tnext;
 
+  /* Widgets must have a handle, for event processing and container linking
+   * among other reasons...
+   */
+  handle h;
+
   /* Other widgets in pgserver may set up a callback to recieve events
    * from the widget. If the callback returns false, the widget is passed
    * on to the client normally, if it returns true the event is absorbed.
@@ -244,12 +249,9 @@ extern int sysevent_owner;
 
 /******* These functions define the 'public' methods for widgets */
      
-/* Special function to generate a popup root widget */
-g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner);
-
-g_error widget_derive(struct widget **w, int type,struct widget *parent, handle hparent,int rship,int owner);
+g_error widget_derive(struct widget **w, handle *h, int type,struct widget *parent, handle hparent,int rship,int owner);
 g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **where, handle container, int owner);
-g_error widget_create(struct widget **w, int type, struct divtree *dt, handle container, int owner);
+g_error widget_create(struct widget **w, handle *h, int type, struct divtree *dt, handle container, int owner);
 
 void widget_remove(struct widget *w);
 g_error widget_set(struct widget *w, int property, glob data);

@@ -1,4 +1,4 @@
-/* $Id: scrollbox.c,v 1.1 2002/09/28 04:06:56 micahjd Exp $
+/* $Id: scrollbox.c,v 1.2 2002/09/28 06:25:06 micahjd Exp $
  *
  * scrollbox.c - A box widget that includes scrollbars
  *
@@ -44,29 +44,26 @@ g_error scrollbox_install(struct widget *self) {
   self->in->flags |= PG_S_ALL;
 
   /* Horizontal scrollbar */
-  e = widget_create(&DATA->scrollh, PG_WIDGET_SCROLL, self->dt, self->container, self->owner);
+  e = widget_create(&DATA->scrollh, &DATA->hscrollh, PG_WIDGET_SCROLL,
+		    self->dt, self->container, self->owner);
   errorcheck;
-  e = widget_attach(DATA->scrollh, self->dt, &self->in->div, 0, self->owner);
-  errorcheck;
-  e = mkhandle(&DATA->hscrollh,PG_TYPE_WIDGET,self->owner,DATA->scrollh);
+  e = widget_attach(DATA->scrollh, self->dt, &self->in->div, self->h, self->owner);
   errorcheck;
   e = widget_set(DATA->scrollh, PG_WP_SIDE, PG_S_BOTTOM);
   errorcheck;
 
   /* Vertical scrollbar */
-  e = widget_create(&DATA->scrollv, PG_WIDGET_SCROLL, self->dt, self->container, self->owner);
+  e = widget_create(&DATA->scrollv, &DATA->hscrollv, PG_WIDGET_SCROLL, 
+		    self->dt, self->container, self->owner);
   errorcheck;
-  e = widget_attach(DATA->scrollv, self->dt, DATA->scrollh->out, 0, self->owner);
-  errorcheck;
-  e = mkhandle(&DATA->hscrollv,PG_TYPE_WIDGET,self->owner,DATA->scrollv);
+  e = widget_attach(DATA->scrollv, self->dt, DATA->scrollh->out, self->h, self->owner);
   errorcheck;
 
   /* Box widget */
-  e = widget_create(&DATA->box, PG_WIDGET_BOX, self->dt, self->container, self->owner);
+  e = widget_create(&DATA->box, &DATA->hbox, PG_WIDGET_BOX, 
+		    self->dt, self->container, self->owner);
   errorcheck;
-  e = widget_attach(DATA->box, self->dt, DATA->scrollv->out, 0, self->owner);
-  errorcheck;
-  e = mkhandle(&DATA->hbox,PG_TYPE_WIDGET,self->owner,DATA->box);
+  e = widget_attach(DATA->box, self->dt, DATA->scrollv->out, self->h, self->owner);
   errorcheck;
   e = widget_set(DATA->box, PG_WP_SIDE, PG_S_ALL);
   errorcheck;
@@ -80,6 +77,8 @@ g_error scrollbox_install(struct widget *self) {
   /* Insertion points */
   self->out = &self->in->next;
   self->sub = DATA->box->sub;
+
+  self->trigger_mask = PG_TRIGGER_SCROLLWHEEL;
 
   return success;
 }
@@ -129,6 +128,11 @@ glob scrollbox_get(struct widget *self,int property) {
   default:
     return widget_get(DATA->box, property);
   }
+}
+
+/* Pass scroll wheel events to the scrollbar */
+void scrollbox_trigger(struct widget *self,s32 type,union trigparam *param) {
+  send_trigger(DATA->scrollv, type, param);
 }
 
 /* The End */

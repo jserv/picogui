@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.64 2002/09/28 04:06:56 micahjd Exp $
+/* $Id: scroll.c,v 1.65 2002/09/28 06:25:06 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -225,7 +225,8 @@ g_error scroll_install(struct widget *self) {
   self->in->div->state = PGTH_O_SCROLL_V;
   self->out = &self->in->next;
   self->trigger_mask = PG_TRIGGER_DRAG | PG_TRIGGER_ENTER | PG_TRIGGER_LEAVE |
-    PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_RELEASE | PG_TRIGGER_TIMER;
+    PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_RELEASE | PG_TRIGGER_TIMER |
+    PG_TRIGGER_SCROLLWHEEL;
 
   return success;
 }
@@ -251,6 +252,10 @@ g_error scroll_set(struct widget *self,int property, glob data) {
     return mkerror(ERRT_PASS,0);
 
   case PG_WP_VALUE:
+    if (data < 0)
+      data = 0;
+    if (data > DATA->res)
+      data = DATA->res;
     DATA->value = data;
     scrollevent(self);
     scrollupdate(self);
@@ -320,6 +325,10 @@ void scroll_trigger(struct widget *self,s32 type,union trigparam *param) {
     DATA->over=0;
     break;
     
+  case PG_TRIGGER_SCROLLWHEEL:
+    widget_set(self, PG_WP_VALUE, DATA->value + param->mouse.y);
+    break;
+
   case PG_TRIGGER_DOWN:
     if (param->mouse.chbtn==1) {
 

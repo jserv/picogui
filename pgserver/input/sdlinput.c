@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.39 2002/07/03 22:03:30 micahjd Exp $
+/* $Id: sdlinput.c,v 1.40 2002/09/28 06:25:05 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -64,6 +64,9 @@ u8 sdlinput_nokeyboard;
 
 /* A cursor, if we have one */
 struct cursor *sdlinput_cursor;
+
+/* Distance the scroll wheel should move */
+int sdlinput_scroll_distance;
 
 /* Munge coordinates for skin support */
 #ifdef CONFIG_SDLSKIN
@@ -133,13 +136,24 @@ void sdlinput_poll(void) {
       switch (evt.type) {
 	
       case SDL_MOUSEBUTTONDOWN:
-	if (sdlinput_foldbuttons)
-	  evt.button.button = evt.button.button!=0;
-	infilter_send_pointing(PG_TRIGGER_DOWN, pgx, pgy, 
-			       btnstate |= 1<<(evt.button.button-1), sdlinput_cursor);
+	/* Scroll wheel events */
+	if (evt.button.button == 4)
+	  infilter_send_pointing(PG_TRIGGER_SCROLLWHEEL,0,-sdlinput_scroll_distance,0,sdlinput_cursor);
+	else if (evt.button.button == 5)
+	  infilter_send_pointing(PG_TRIGGER_SCROLLWHEEL,0,sdlinput_scroll_distance,0,sdlinput_cursor);
+	else {
+	  /* Normal button */
+	  if (sdlinput_foldbuttons)
+	    evt.button.button = evt.button.button!=0;
+	  infilter_send_pointing(PG_TRIGGER_DOWN, pgx, pgy, 
+				 btnstate |= 1<<(evt.button.button-1), sdlinput_cursor);
+	}
 	break;
 	
       case SDL_MOUSEBUTTONUP:      
+	/* Ignore up events for the scroll wheel if we get them */
+	if (evt.button.button == 3 || evt.button.button == 4)
+	  break;
 	if (sdlinput_foldbuttons)
 	  evt.button.button = evt.button.button!=0;
 	infilter_send_pointing(PG_TRIGGER_UP, pgx, pgy,
@@ -186,6 +200,7 @@ g_error sdlinput_init(void) {
   sdlinput_upmove = get_param_int("input-sdlinput","upmove",1);
   sdlinput_nomouse = get_param_int("input-sdlinput","nomouse",0);
   sdlinput_nokeyboard = get_param_int("input-sdlinput","nokeyboard",0);
+  sdlinput_scroll_distance = get_param_int("input-sdlinput","scroll_distance",20);
   SDL_ShowCursor(get_param_int("input-sdlinput","sdlcursor",0));
 
 #ifdef CONFIG_SDLSKIN
