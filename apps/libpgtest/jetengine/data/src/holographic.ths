@@ -240,4 +240,8 @@ object base.panelbtn {
 
 object closebtn text = "Close";
 object rotatebtn text = "Rotate";
-object zoombtn width = 0;
+
+object zoombtn { 
+  width = 0;
+  height = 0;
+}

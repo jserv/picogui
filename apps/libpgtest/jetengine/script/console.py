@@ -1,4 +1,4 @@
-# $Id: console.py,v 1.1 2002/11/26 22:06:16 micahjd Exp $
+# $Id: console.py,v 1.2 2002/11/26 23:03:04 micahjd Exp $
 #
 # console.py - Implement a popup python console
 #
@@ -29,7 +29,8 @@ class Console(InteractiveConsole):
         self.app = game.app
         
         # Load our widget template, importing widgets from it
-        self.wt = self.app.newTemplate(open("data/console.wt").read()).instantiate([
+        self.template = self.app.newTemplate(open("data/console.wt").read())
+        self.inst = self.template.instantiate([
             'PythonConsole',
             'PythonCommand',
             'PythonPrompt',
@@ -37,9 +38,10 @@ class Console(InteractiveConsole):
             ])
         
         # Redirect stdout and stderr to our console
-#        print "Redirecting stdout and stderr. All further output will be in the in-game console."
-#        sys.stdout = self.wt.PythonConsole
-#        sys.stderr = self.wt.PythonConsole
+        self.savedStdout = sys.stdout
+        self.savedStderr = sys.stderr
+        sys.stdout = self.inst.PythonConsole
+        sys.stderr = self.inst.PythonConsole
         
         locals = {
             "__name__":   "__console__",
@@ -59,8 +61,8 @@ class Console(InteractiveConsole):
             sys.ps2 = "... "
 
         self.prompt = sys.ps1
-        self.wt.PythonPrompt.text = self.prompt
-        self.app.link(self.enterLine, self.wt.PythonCommand, 'activate')
+        self.inst.PythonPrompt.text = self.prompt
+        self.app.link(self.enterLine, self.inst.PythonCommand, 'activate')
 
         print "Python %s on %s\n(JetEngine shell, See game.__dict__ for useful variables)\n" %\
               (sys.version, sys.platform)
@@ -72,6 +74,10 @@ class Console(InteractiveConsole):
             self.prompt = sys.ps2
         else:
             self.prompt = sys.ps1
-        self.wt.PythonPrompt.text = self.prompt
+        self.inst.PythonPrompt.text = self.prompt
         widget.text = ''
         
+    def destroy(self):
+        sys.stdout = self.savedStdout
+        sys.stderr = self.savedStderr
+        self.template.destroy()

@@ -1,4 +1,4 @@
-# $Id: game.py,v 1.25 2002/11/26 22:06:16 micahjd Exp $
+# $Id: game.py,v 1.26 2002/11/26 23:03:05 micahjd Exp $
 #
 # game.py - The main module imported by the game engine,
 #           and containing the thread() function it invokes.
@@ -48,12 +48,19 @@ class game:
         self.input = input.Input(self)
         self.hud = hud.Hud(self)
         #self.mainmenu = mainmenu.MainMenu(self)
-        self.console = console.Console(self)
 
         self.setVelocity(10)
         self.setLasers(100)
 
         self.app.run()
+
+
+    def toggleConsole(self):
+        if hasattr(self,'console'):
+            self.console.destroy()
+            del self.console
+        else:
+            self.console = console.Console(self)
 
 
     def setVelocity(self, v):
