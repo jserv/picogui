@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.8 2001/10/23 17:25:05 cgrigis Exp $
+/* $Id: pgboard.c,v 1.9 2001/10/24 01:32:51 micahjd Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -72,6 +72,9 @@ int evtMessage (struct pgEvent * evt)
     {
     case PG_WE_APPMSG:
       cmd = (struct keyboard_command *) evt->e.data.pointer;
+
+      /* Command structure is in network byte order */
+      cmd->type = ntohs(cmd->type);
 
       switch (cmd->type)
 	{

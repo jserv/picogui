@@ -1,4 +1,4 @@
-/* $Id: pgboard.h,v 1.1 2001/10/23 17:26:32 cgrigis Exp $
+/* $Id: pgboard.h,v 1.2 2001/10/24 01:32:51 micahjd Exp $
  *
  * pgboard.h - declarations associated with the virtual keyboard (pgboard)
  * 
@@ -44,5 +44,5 @@
 
 struct keyboard_command
 {
-  unsigned int type;
+  unsigned short type;    /* Network byte order, 16-bits */
 };
