@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.17 2002/11/04 04:46:21 micahjd Exp $
+/* $Id: x11input.c,v 1.18 2002/11/04 05:38:07 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -124,6 +124,14 @@ int x11input_fd_activate(int fd) {
 	XDestroyRegion(expose_region);
 	expose_region = XCreateRegion();
       }
+      break;
+
+      /****************** Resizing */
+
+    case ConfigureNotify: 
+      video_setmode(ev.xconfigure.width, ev.xconfigure.height,
+		    vid->bpp, PG_FM_ON,0); 
+      update(NULL,1);
       break;
 
       /****************** Mouse events

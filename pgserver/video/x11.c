@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.35 2002/11/04 04:46:21 micahjd Exp $
+/* $Id: x11.c,v 1.36 2002/11/04 05:38:07 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -477,19 +477,21 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   if (!xres) xres = 640;
   if (!yres) yres = 480;
 
-  /* Create the window
-   */
   black = BlackPixel(xdisplay, DefaultScreen(xdisplay));
-  x11_display.d = XCreateSimpleWindow(xdisplay, DefaultRootWindow(xdisplay),
-				      0, 0, xres, yres, 0, black, black);
-  
-  /* Map the window, waiting for the MapNotify event 
-   */
-  XSelectInput(xdisplay, x11_display.d, StructureNotifyMask);  
-  XMapWindow(xdisplay,x11_display.d);
-  do {
-    XNextEvent(xdisplay, &ev);
-  } while (ev.type != MapNotify);
+
+  if (!x11_display.d) {
+    /* Create the window */
+    x11_display.d = XCreateSimpleWindow(xdisplay, DefaultRootWindow(xdisplay),
+					0, 0, xres, yres, 0, black, black);
+    
+    /* Map the window, waiting for the MapNotify event 
+     */
+    XSelectInput(xdisplay, x11_display.d, StructureNotifyMask);  
+    XMapWindow(xdisplay,x11_display.d);
+    do {
+      XNextEvent(xdisplay, &ev);
+    } while (ev.type != MapNotify);
+  }
 
   /* Save display information
    */
@@ -499,6 +501,9 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   vid->bpp  = DefaultDepth(xdisplay,0);
   x11_display.w = xres;
   x11_display.h = yres;
+
+  if (x11_backbuffer)
+    vid->bitmap_free((hwrbitmap) x11_backbuffer);
 
   /* Set up some kind of double-buffering */
   switch (get_param_int("video-x11","doublebuffer",1)) {
@@ -610,7 +615,7 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   /* Set input event mask */
   XSelectInput(xdisplay, x11_display.d,
 	       KeyPressMask | KeyReleaseMask | ExposureMask | ButtonMotionMask |
-	       ButtonPressMask | ButtonReleaseMask | PointerMotionMask);
+	       ButtonPressMask | ButtonReleaseMask | PointerMotionMask | StructureNotifyMask);
   XAutoRepeatOn(xdisplay);
 
   XFlush(xdisplay);
