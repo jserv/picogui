@@ -163,13 +163,9 @@ class PackageVersion(object):
         import SCons.Script
         import PGBuild.Build
         
-        # Make sure the binary path exists, and link it to the source path
+        # Get our source and binary paths, and link 'em together
         sourceDir = self.getLocalPath(ctx)
         binDir = self.getBinaryPath(ctx)
-        try:
-            os.makedirs(binDir.abspath)
-        except OSError:
-            pass
         binDir.link(sourceDir, False)
 
         # What a silly naming convention.. if this is actually set to
