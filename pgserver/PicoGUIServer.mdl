@@ -30,7 +30,7 @@ runtime = [
                                  'kernel/video'],
                      help = "Install the PicoGUI Server" ),
 
-            Runtime ('server', 'Run PicoGUI Server',
+            Runtime ('start', 'Run PicoGUI Server',
 
                      content = [ '../etc/rm.d/picoguiserver',
                                  'bin/picogui-launcher.sh' ],
