@@ -15,8 +15,9 @@ depends = [ 'kernel', 'resourcemanager' ]
 runtime = [
 
             Runtime ('install', 'Install PicoGUI Server',
-                                  content = [ 'bin/pgserver' ],
-                                  help = "Install the PicoGUI Server" ),
+                     content = [ 'bin/pgserver',
+                                 'etc/pgserver.conf'],
+                     help = "Install the PicoGUI Server" ),
 
             Runtime ('server', 'Run PicoGUI Server',
                      depends = [ 'picoguiserver/install',
@@ -31,7 +32,9 @@ then
   echo "***  You should use the BIOS to permanently set an appropriate value"
   PG_TS_CALIBRATION="200 650 3650 3750"
 fi
-export PG_TS_CALIBRATION
+echo  >/var/pgserver.dynconf "rotate = $SYSTEM_DISPLAY_HW_ORIENTATION"
+echo >>/var/pgserver.dynconf "[chipslicets]"
+echo >>/var/pgserver.dynconf "calibration = $PG_TS_CALIBRATION"
 
 # start pgserver
 pgserver &
