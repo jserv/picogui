@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.22 2001/07/26 10:11:22 micahjd Exp $
+/* $Id: divtree.h,v 1.23 2001/08/03 16:28:16 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -180,6 +180,10 @@ struct divnode {
 					  * This flag is given to the actual popup
 					  * widget, the 'div' child of the widget
 					  * given DIVNODE_SPLIT_POPUP */
+#define DIVNODE_NOSQUISH         (1<<22) /* Instead of shrinking the widget
+					  * when the available space isn't
+					  * available, make it disappear
+					  */
 
 /* Side value macros and stuff */
 typedef unsigned short int sidet;

@@ -36,6 +36,14 @@ have been taking much longer than they estimated.
 		
 		* cli_c/src/dlg_filepicker.c: Turns off all EXEVs for directories
 		  so they work like buttons
+		  
+		* include/pgserver/divtree.h: Added the DIVNODE_NOSQUISH flag
+		
+		* gcore/div.c: Implementing the DIVNODE_NOSQUISH flag
+		
+		* widget/button.c: Adding the NOSQUISH flag to buttons by default.
+		  This way toolbars can contain many items and gracefully degrade to
+		  small screens by hiding less important items
 
 2001-08-01    Micah Dowty <micahjd@users.sourceforge.net>
 

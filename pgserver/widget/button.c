@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.66 2001/08/03 14:56:11 micahjd Exp $
+/* $Id: button.c,v 1.67 2001/08/03 16:28:17 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -151,7 +151,7 @@ g_error button_install(struct widget *self) {
   /* Main split */
   e = newdiv(&self->in,self);
   errorcheck;
-  self->in->flags |= PG_S_LEFT;
+  self->in->flags |= PG_S_LEFT | DIVNODE_NOSQUISH;
 
   /* Visible node */
   e = newdiv(&self->in->div,self);

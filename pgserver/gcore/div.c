@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.47 2001/08/03 13:13:14 micahjd Exp $
+/* $Id: div.c,v 1.48 2001/08/03 16:28:16 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -145,7 +145,17 @@ void divnode_recalc(struct divnode *n) {
 	    split = container->in->div->h * (split >> 8) / (split & 0xFF);
        }
 	
-       if (split>n->h) split = n->h;
+       /* Not enough space. Normally we shrink the divnode to fit in the 
+	* available space. If the NOSQUISH flag is on, make the offending
+	* divnode disappear instead.
+	*/
+       if (split>n->h) {
+	 if (n->flags & DIVNODE_NOSQUISH)
+	   split = 0;
+	 else
+	   split = n->h;
+       }       
+
        if (n->div) {
 	 n->div->x = n->x;
 	 n->div->w = n->w;
@@ -189,7 +199,17 @@ void divnode_recalc(struct divnode *n) {
 	    split = container->in->div->w * (split >> 8) / (split & 0xFF);
        }
 
-       if (split>n->w) split = n->w;
+       /* Not enough space. Normally we shrink the divnode to fit in the 
+	* available space. If the NOSQUISH flag is on, make the offending
+	* divnode disappear instead.
+	*/
+       if (split>n->w) {
+	 if (n->flags & DIVNODE_NOSQUISH)
+	   split = 0;
+	 else
+	   split = n->w;
+       }       
+
        if (n->div) {
 	 n->div->y = n->y;
 	 n->div->h = n->h;
