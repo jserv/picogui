@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.21 2002/11/04 04:02:37 micahjd Exp $
+/* $Id: sdlgl.h,v 1.22 2002/11/04 04:11:58 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -257,6 +257,13 @@ int sdlgl_grop_render_postsetup_hook(struct divnode **div, struct gropnode ***li
 void sdlgl_grop_render_end_hook(struct divnode **div, struct gropnode ***listp,
 				struct groprender *rend);
 g_error sdlgl_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm);
+
+void sdlgl_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
+		    s16 lines, s16 angle, hwrcolor c, struct quad *clip,
+		    s16 lgop, int char_pitch);
+void sdlgl_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
+			  int char_pitch, u8 *gammatable, s16 angle, hwrcolor c,
+			  struct quad *clip, s16 lgop);
 
 #endif /* _H_SDLGL */
 

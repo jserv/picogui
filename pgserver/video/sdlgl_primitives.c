@@ -1,4 +1,4 @@
-/* $Id: sdlgl_primitives.c,v 1.12 2002/09/15 10:51:50 micahjd Exp $
+/* $Id: sdlgl_primitives.c,v 1.13 2002/11/04 04:11:58 micahjd Exp $
  *
  * sdlgl_primitives.c - OpenGL driver for picogui, using SDL for portability.
  *                      Implement standard picogui primitives using OpenGL
@@ -402,106 +402,6 @@ int sdlgl_grop_render_node_hook(struct divnode **div, struct gropnode ***listp,
     vid->bar(rend->output,node->r.x+node->r.w-1,node->r.y,node->r.h,c,rend->lgop);
     break;
 
-    /* Override textgrid to provide a more efficient implementation.
-     */
-#if 0   /* FIXME: update for pgstrings */
-  case PG_GROP_TEXTGRID:
-    if (iserror(rdhandle((void**)&str,PG_TYPE_PGSTRING,-1,
-			 node->param[0])) || !str) break;
-    if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
-			 rend->hfont)) || !fd) break;
-    {
-      int buffersz,bufferw,bufferh;
-      int charw,charh,offset;
-      int i;
-      s16 celw,celh;
-      unsigned char attr;
-      u32 *textcolors;
-      struct fontglyph *g;
-      struct gl_glyph *glg;
-
-      /* Read textcolors parameter */
-      if (iserror(rdhandle((void**)&textcolors,PG_TYPE_PALETTE,-1,
-			   node->param[2])) || !textcolors) break;
-      if (textcolors[0] < 16)    /* Make sure it's big enough */
-	break;
-      textcolors++;              /* Skip length entry */
-
-      /* Read the size of an average character */
-      sizetext(fd,&celw,&celh,NULL);
-      if (!celw) celw = 1;
-      if (!celh) celh = 1;
-      
-      bufferw   = node->param[1] >> 16;
-      buffersz  = strlen(str) - (node->param[1] & 0xFFFF);
-      str      += node->param[1] & 0xFFFF;
-      bufferh   = (buffersz / bufferw) >> 1;
-      if (buffersz<=0) return;
-      
-      charw     = node->r.w/celw;
-      charh     = node->r.h/celh;
-      offset    = (bufferw-charw)<<1;
-      if (offset<0) {
-	offset = 0;
-	charw = bufferw;
-      }
-      if (charh>bufferh)
-	charh = bufferh;
-      
-      rend->orig.x = node->r.x;
-      for (;charh;charh--,node->r.y+=celh,str+=offset) {
-
-	/* Skip the entire line if it's clipped out */
-	if ((node->r.y+(*div)->y) > rend->clip.y2 ||
-	    (node->r.y+(*div)->y+celh) < rend->clip.y1) {
-	  str += charw << 1;
-	  continue;
-	}
-	
-	for (node->r.x=rend->orig.x,i=charw;i;i--,str++) {
-	  attr = *(str++);
-	
-	  /* Background color (clipped rectangle) */
-	  if ((attr & 0xF0)!=0) {
-	    gl_lgop(PG_LGOP_NONE);
-	    glBegin(GL_QUADS);
-	    gl_color(textcolors[attr>>4]);
-	    glVertex2f(node->r.x,node->r.y);
-	    glVertex2f(node->r.x+celw,node->r.y);
-	    glVertex2f(node->r.x+celw,node->r.y+celh);
-	    glVertex2f(node->r.x,node->r.y+celh);
-	    glEnd();
-	  }
-  
-	  if ((attr & 0x0F)!=0 && (*str!=' ')) {
-	    g = (struct fontglyph *) vid->font_getglyph(fd, *str);
-	    glg = (struct gl_glyph*)(((u8*)fd->font->bitmaps)+g->bitmap);
-	    
-	    glBindTexture(GL_TEXTURE_2D, glg->texture);      
-	    gl_lgop(PG_LGOP_ALPHA);
-	    glEnable(GL_TEXTURE_2D);
-	    gl_color(textcolors[attr & 0x0F]);
-	    glBegin(GL_QUADS);
-	    glTexCoord2f(glg->tx1,glg->ty1);
-	    glVertex2f(node->r.x,node->r.y);
-	    glTexCoord2f(glg->tx2,glg->ty1);
-	    glVertex2f(node->r.x+celw,node->r.y);
-	    glTexCoord2f(glg->tx2,glg->ty2);
-	    glVertex2f(node->r.x+celw,node->r.y+celh);
-	    glTexCoord2f(glg->tx1,glg->ty2);
-	    glVertex2f(node->r.x,node->r.y+celh);
-	    glEnd();
-	    glDisable(GL_TEXTURE_2D);	  
-	  }
-
-	  node->r.x += celw;
-	}
-	
-      }
-    }
-    break;      
-#endif
-    
   default:
     return 1;    /* Use normal code */
   }
@@ -568,6 +468,20 @@ void sdlgl_grop_render_end_hook(struct divnode **div, struct gropnode ***listp,
   /* Clean up */
   glPopMatrix();
 }
+
+void sdlgl_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
+		    s16 lines, s16 angle, hwrcolor c, struct quad *clip,
+		    s16 lgop, int char_pitch) {
+  /* FIXME: implement me! */
+}
+
+#ifdef CONFIG_FONTENGINE_FREETYPE
+void sdlgl_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
+			  int char_pitch, u8 *gammatable, s16 angle, hwrcolor c,
+			  struct quad *clip, s16 lgop) {
+  /* FIXME: implement me! */
+}
+#endif /* CONFIG_FONTENGINE_FREETYPE */
 
 /* The End */
 
