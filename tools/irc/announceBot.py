@@ -33,8 +33,6 @@ channelFile = channelFile + "." + str(botID);
 
 # Lalo's joke: A brainless entity created to keep an eye on subversion                 
 botNick = "CIA"
-##if botID > 1:
-##    botNick = botNick + str(botID)  
 
 # List of channels we're in. These will be autojoined by the
 # AccountManager. We update this and save it when we get a mail
@@ -57,8 +55,6 @@ try:
     password = f.readline().rstrip()
 except:
     pass
-
-print password
 
 connected = 0 # false
 
