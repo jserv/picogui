@@ -25,7 +25,7 @@ run ()
 }
 
 run aclocal ${aclocal_extra}
-run autoheader
+#run autoheader
 run autoconf
 run automake -a
 
