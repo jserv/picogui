@@ -42,9 +42,40 @@ def detectVersion():
         raise CmdlineSVNClientBroken
     return ver
 
+class ptyopen:
+    """Helper class that emulates popen() to the extent we'll
+       need below, using pseudoterminals
+       """
+    def __init__(self, cmdline):
+        import pty
+        (self.pid, self.fd) = pty.fork()
+        if self.pid == 0:
+            os.execlp("sh", "sh", "-c", cmdline)
+        self.file = os.fdopen(self.fd, 'r', 1)   # Line buffered
+
+    def readline(self):
+        try:
+            return self.file.readline()
+        except IOError:
+            return None
+
+    def close(self):
+        self.file.close()
+        (pid, status) = os.waitpid(self.pid, 0)
+        return status >> 8
+
+
 def openSvn(args):
     global svnCommand
-    return os.popen('%s --non-interactive %s' % (svnCommand, args))
+    cmdline = '%s --non-interactive %s' % (svnCommand, args)
+
+    # Our first choice is to use a pseudoterminal. This gets us nice line-buffered
+    # text rather than having it plop out in big chunks. If we have a problem with
+    # ptys, fall back on popen.
+    try:
+        return ptyopen(cmdline)
+    except:
+        return os.popen(cmdline, 'r', 1)   # Line buffered if possible
 
 def expandStatus(line):
     if len(line) < 2:
