@@ -100,8 +100,9 @@ bool 'SDL input driver'                    DRIVER_SDLINPUT
 bool 'SVGAlib input driver'                DRIVER_SVGAINPUT
 bool 'Ncurses/GPM input driver (also for framebuffer)' DRIVER_NCURSESINPUT
 bool 'uClinux m68k touchscreen input driver'           DRIVER_CHIPSLICETS
-if [ "$DRIVER_CHIPSLICETS" = "y" ]; then
-   bool '  Sound FX support via /dev/tty (EXPERIMENTAL)'  DRIVER_CHIPSLICETS_SND
+bool 'Events broker driver'                DRIVER_EVENTBROKER
+if [ "$DRIVER_EVENTBROKER" = "y" ]; then
+   bool '  Sound FX support via /dev/tty (EXPERIMENTAL)'  DRIVER_CHIPSLICE_SND
 fi
 bool 'R3912 (VTech Helio) touchscreen input driver'    DRIVER_R3912TS
 if [ "$DRIVER_R3912TS" = "y" ]; then

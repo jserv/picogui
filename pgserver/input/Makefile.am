@@ -11,6 +11,7 @@ EXTRA_libinput_a_SOURCES = \
 	sdlinput.c \
 	svgainput.c \
 	chipslicets.c \
+	eventbroker.c \
 	vr3ts.c \
 	tuxts.c \
 	ttykb.c \

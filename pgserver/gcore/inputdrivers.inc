@@ -21,6 +21,10 @@
   DRV("chipslicets",&chipslicets_regfunc)
 #endif
 
+#ifdef DRIVER_EVENTBROKER
+  DRV("eventbroker",&eventbroker_regfunc)
+#endif
+
 #ifdef DRIVER_R3912TS
   DRV("r3912ts",&r3912ts_regfunc)
 #endif

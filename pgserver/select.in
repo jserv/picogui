@@ -85,6 +85,7 @@ add_if_true sdlinput.c     $DRIVER_SDLINPUT
 add_if_true svgainput.c    $DRIVER_SVGAINPUT
 add_if_true ncursesinput.c $DRIVER_NCURSESINPUT
 add_if_true chipslicets.c  $DRIVER_CHIPSLICETS
+add_if_true eventbroker.c  $DRIVER_EVENTBROKER
 add_if_true r3912ts.c      $DRIVER_R3912TS
 add_if_true vr3ts.c        $DRIVER_VR3TS
 add_if_true tuxts.c        $DRIVER_TUXTS

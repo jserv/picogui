@@ -71,6 +71,8 @@ DRIVER_EZ328=y
 # DRIVER_SVGAINPUT is not set
 # DRIVER_NCURSESINPUT is not set
 # DRIVER_CHIPSLICETS is not set
+# DRIVER_EVENTBROKER is not set
+# DRIVER_CHIPSLICE_SND is not set
 # DRIVER_R3912TS is not set
 
 #
