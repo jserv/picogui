@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.6 2000/09/04 03:04:20 micahjd Exp $
+/* $Id: pgmain.c,v 1.7 2000/09/04 03:10:56 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -194,19 +194,17 @@ int main(int argc, char **argv) {
 
   /* Now that the socket is listening, run the session manager */
 
-#if 0
-
-  if (argi<argc && argv[argi]) {
+  if (optind<argc && argv[optind]) {
     use_sessionmgmt = 1;
 
 #ifdef WINDOWS
-    if (_spawnvp(_P_NOWAIT,argv[argi],argv+argi)<=0) {
+    if (_spawnvp(_P_NOWAIT,argv[optind],argv+optind)<=0) {
       prerror(mkerror(ERRT_BADPARAM,55));
       exit(1);
     }
 #else
     if (!fork()) {
-      execvp(argv[argi],argv+argi);
+      execvp(argv[optind],argv+optind);
       prerror(mkerror(ERRT_BADPARAM,55));
       kill(my_pid,SIGTERM);
       exit(1);
@@ -214,8 +212,6 @@ int main(int argc, char **argv) {
 #endif
 
   }
-
-#endif
 
   /*************************************** Main loop */
 
