@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.119 2002/03/01 21:17:12 micahjd Exp $
+/* $Id: constants.h,v 1.120 2002/03/25 02:16:44 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -667,6 +667,9 @@ typedef unsigned long pghandle;
 #define PG_GROP_SETANGLE   0x37   //!< Param: angle in degrees
 #define PG_GROP_VIDUPDATE 0x800   //!< Forces a video update
 
+//! Video-driver-defined grops are or'ed with this
+#define PG_GROP_USER     0x1000
+
 //! Find any gropnode's number of parameters
 #define PG_GROPPARAMS(x)   (((x)>>2)&0x03)
 
@@ -824,28 +827,29 @@ typedef unsigned long pghandle;
 
 /* Types of widgets (in the same order they are
    in the table in widget.c) */
-#define PG_WIDGET_TOOLBAR     0
-#define PG_WIDGET_LABEL       1
-#define PG_WIDGET_SCROLL      2
-#define PG_WIDGET_INDICATOR   3
-#define PG_WIDGET_BITMAP      4
-#define PG_WIDGET_BUTTON      5
-#define PG_WIDGET_PANEL       6     /* Internal use only! */
-#define PG_WIDGET_POPUP       7     /* Internal use only! */
-#define PG_WIDGET_BOX         8
-#define PG_WIDGET_FIELD       9
-#define PG_WIDGET_BACKGROUND  10    /* Internal use only! */
-#define PG_WIDGET_MENUITEM    11    /* A variation on button */
-#define PG_WIDGET_TERMINAL    12    /* A full terminal emulator */
-#define PG_WIDGET_CANVAS      13
-#define PG_WIDGET_CHECKBOX    14    /* Another variation of button */
-#define PG_WIDGET_FLATBUTTON  15    /* Yet another customized button */
-#define PG_WIDGET_LISTITEM    16    /* Still yet another... */
-#define PG_WIDGET_SUBMENUITEM 17    /* Menuitem with a submenu arrow */
-#define PG_WIDGET_RADIOBUTTON 18    /* Like a check box, but exclusive */
-#define PG_WIDGET_TEXTBOX     19    /* Client-side text layout */
-#define PG_WIDGET_PANELBAR    20    /* Draggable bar and container */
-#define PG_WIDGETMAX          20    /* For error checking */
+#define PG_WIDGET_TOOLBAR         0
+#define PG_WIDGET_LABEL           1
+#define PG_WIDGET_SCROLL          2
+#define PG_WIDGET_INDICATOR       3
+#define PG_WIDGET_BITMAP          4
+#define PG_WIDGET_BUTTON          5
+#define PG_WIDGET_PANEL           6     /* Internal use only! */
+#define PG_WIDGET_POPUP           7     /* Internal use only! */
+#define PG_WIDGET_BOX             8
+#define PG_WIDGET_FIELD           9
+#define PG_WIDGET_BACKGROUND      10    /* Internal use only! */
+#define PG_WIDGET_MENUITEM        11    /* A variation on button */
+#define PG_WIDGET_TERMINAL        12    /* A full terminal emulator */
+#define PG_WIDGET_CANVAS          13
+#define PG_WIDGET_CHECKBOX        14    /* Another variation of button */
+#define PG_WIDGET_FLATBUTTON      15    /* Yet another customized button */
+#define PG_WIDGET_LISTITEM        16    /* Still yet another... */
+#define PG_WIDGET_SUBMENUITEM     17    /* Menuitem with a submenu arrow */
+#define PG_WIDGET_RADIOBUTTON     18    /* Like a check box, but exclusive */
+#define PG_WIDGET_TEXTBOX         19    /* Client-side text layout */
+#define PG_WIDGET_PANELBAR        20    /* Draggable bar and container */
+#define PG_WIDGET_SIMPLEMENU      21    /* create a simple menu from a string or array */
+#define PG_WIDGETMAX              22    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1

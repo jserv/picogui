@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.28 2002/01/17 10:58:40 gobry Exp $
+/* $Id: netcore.c,v 1.29 2002/03/25 02:16:45 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -563,10 +563,14 @@ void _pg_getresponse(int eventwait) {
 	 _pg_return.e.event.e.size.h = pg_ev.param & 0xFFFF;
 	 break;
 	 
-	 /* Decode 'mouse' parameters */
+	 /* Decode 'mouse' parameters, sign extend the 12-bit values to 16 bits */
        case PG_EVENTCODING_PNTR:
 	 _pg_return.e.event.e.pntr.x     = pg_ev.param & 0x0FFF;
+	 if (_pg_return.e.event.e.pntr.x & 0x0800)
+	   _pg_return.e.event.e.pntr.x |= 0xF000;
 	 _pg_return.e.event.e.pntr.y     = (pg_ev.param>>12) & 0x0FFF;
+	 if (_pg_return.e.event.e.pntr.y & 0x0800)
+	   _pg_return.e.event.e.pntr.y |= 0xF000;
 	 _pg_return.e.event.e.pntr.btn   = pg_ev.param >> 28;
 	 _pg_return.e.event.e.pntr.chbtn = (pg_ev.param>>24) & 0x000F;
 	 break;
@@ -851,7 +855,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.28 2002/01/17 10:58:40 gobry Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.29 2002/03/25 02:16:45 micahjd Exp $\n");
 	exit(1);
       }
 
