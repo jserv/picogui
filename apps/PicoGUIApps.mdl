@@ -107,7 +107,12 @@ runtime = [
               help = "Scribble Pad" ),
      Runtime ( 'atomicnav', 'atomicnav',
               content = [ 'bin/atomicnav' ],
-              help = "Atomic Web Navigator" )
+              help = "Atomic Web Navigator" ),
+
+    Runtime ('libpgboard.so', 'pgboard shared library',
+             content = ['lib/libpgboard.so.0.0.0',
+                        'lib/libpgboard.so.0',
+                        'lib/libpgboard.so']),
     ]
 
 
@@ -118,8 +123,10 @@ def prepare (module, platform, project):
 
     command = command + " --enable-bee"
 
-    command = command + " --prefix=%s --with-prefix --host=%s" % \
-              (module.path ['prefix'], platform.platform )
+    command = command + " --prefix=%s --with-prefix=%s --host=%s" % \
+              (module.path ['prefix'],
+               platform.toolchain,
+               platform.platform )
 
     command = command + " --enable-optimisation"
 
