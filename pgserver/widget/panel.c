@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.88 2002/11/06 09:08:04 micahjd Exp $
+/* $Id: panel.c,v 1.89 2002/11/15 12:53:12 micahjd Exp $
  *
  * panel.c - Resizable container with decorations. It uses a panelbar for resizing purposes,
  *           and optionally supplies some standard buttons for the panel.
@@ -64,7 +64,8 @@ g_error panel_std_button(handle *h, struct widget *self, int thobj, int thobj_on
   errorcheck;
 
   w->callback = callback;
-  
+  w->callback_owner = self;
+
   widget_set(w, PG_WP_THOBJ_BUTTON, thobj);
   widget_set(w, PG_WP_THOBJ_BUTTON_ON, thobj_on);
   widget_set(w, PG_WP_THOBJ_BUTTON_HILIGHT, thobj_hilight);
@@ -74,37 +75,12 @@ g_error panel_std_button(handle *h, struct widget *self, int thobj, int thobj_on
   return success;
 }
 
-/* Used in the callbacks to get a pointer to the panel widget, given a pointer to
- * the button. Returns NULL on failure.
- */
-struct widget *panel_getpanel(struct widget *button) {
-  struct divnode *d;
-  struct widget *bar;
-
-  /* The button's container is the panelbar. The panelbar's container should be
-   * the panel, but this isn't possible because at the time the panelbar is created
-   * the panel doesn't yet have a handle. So, we take advantage of the fact that the
-   * panel is the panelbar's parent in the divtree.
-   *
-   * We might change this later to use payloads or some other method to locate the 
-   * panel. Imagine an app being able to reattach its own rotate button somewhere else :)
-   */
-  
-  bar = widget_traverse(button, PG_TRAVERSE_CONTAINER, 1);
-  if (!bar)
-    return NULL;
-
-  d = divnode_findparent(bar->dt->head, bar->in);
-  if (!d)
-    return NULL;
-  return d->owner;
-}
 
 /**** Callbacks */
 
 int panel_close_callback(int event, struct widget *from, s32 param, int owner, char *data) {
   struct widget *p;
-  p = panel_getpanel(from);
+  p = from->callback_owner;
   if (p && event==PG_WE_ACTIVATE) {
 
     /* Send a close event from the panel widget */
@@ -116,7 +92,7 @@ int panel_close_callback(int event, struct widget *from, s32 param, int owner, c
 
 int panel_rotate_callback(int event, struct widget *from, s32 param, int owner, char *data) {
   struct widget *p;
-  p = panel_getpanel(from);
+  p = from->callback_owner;
   if (p && event==PG_WE_ACTIVATE) {
 
     switch (widget_get(p,PG_WP_SIDE)) {
@@ -133,7 +109,7 @@ int panel_rotate_callback(int event, struct widget *from, s32 param, int owner, 
 
 int panel_zoom_callback(int event, struct widget *from, s32 param, int owner, char *data) {
   struct widget *p;
-  p = panel_getpanel(from);
+  p = from->callback_owner;
   if (p && event==PG_WE_ACTIVATE) {
 
     /* FIXME: Zoom button goes here! */

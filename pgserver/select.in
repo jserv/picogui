@@ -43,6 +43,7 @@ add_if_true  popup.c             $CONFIG_WIDGET_POPUP
 add_if_true  scroll.c            $CONFIG_WIDGET_SCROLL
 add_if_true  scrollbox.c         $CONFIG_WIDGET_SCROLLBOX
 add_if_true  simplemenu.c        $CONFIG_WIDGET_SIMPLEMENU
+add_if_true  tabpage.c           $CONFIG_WIDGET_TABPAGE
 add_if_true  terminal_frontend.c $CONFIG_WIDGET_TERMINAL
 add_if_true  terminal_vt102.c    $CONFIG_WIDGET_TERMINAL
 add_if_true  terminal_textgrid.c $CONFIG_WIDGET_TERMINAL

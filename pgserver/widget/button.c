@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.126 2002/11/06 09:08:04 micahjd Exp $
+/* $Id: button.c,v 1.127 2002/11/15 12:53:12 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -121,6 +121,30 @@ void button_setstate(struct widget *self) {
     self->in->div->state = state;
   else
     div_setstate(self->in->div,state,0);
+}
+
+void button_mutex_activate(struct widget *self) {
+  /* Mutually exclusive too? */
+  if (DATA->extdevents & PG_EXEV_EXCLUSIVE) {
+    struct widget *box;
+    
+    /* Get a pointer to our container */
+    if (!iserror(rdhandle((void**)&box,PG_TYPE_WIDGET,-1,
+			  self->container)) && box) {
+      struct widget *old;
+      
+      /* If another button is active, disable it */
+      if ((!iserror(rdhandle((void**)&old,PG_TYPE_WIDGET,-1,
+			     box->activemutex))) && old) {
+	
+	/* Turn it off */
+	widget_set(old,PG_WP_ON,0);
+      }
+      
+      /* We're the new active widget */
+      box->activemutex = hlookup(self,NULL);
+    }
+  }
 }
 
 void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
@@ -317,9 +341,16 @@ g_error button_set(struct widget *self,int property, glob data) {
     break;
 
   case PG_WP_ON:
-    DATA->on = DATA->toggle = data;
-    /* Fake a trigger to redraw the button */
-    button_trigger(self,0,NULL);
+    if (DATA->on != data) {
+      DATA->on = DATA->toggle = data;
+      /* Fake a trigger to redraw the button */
+      button_trigger(self,0,NULL);
+      /* Notify the client */
+      post_event(PG_WE_ACTIVATE,self,0,0,NULL);
+      /* Deactivate other widgets if we're mutually exclusive */
+      if (data)
+	button_mutex_activate(self);
+    }
     break;
 
   case PG_WP_DISABLED:
@@ -561,30 +592,10 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
       /* If this is a toggle button, and we're toggling it on, send the
        * activate now!
        */
-      if ((!DATA->on) && (DATA->extdevents & PG_EXEV_TOGGLE)) {
+      if (!DATA->on && (DATA->extdevents & PG_EXEV_TOGGLE)) {
 	event = 0;
-
-	/* Mutually exclusive too? */
-	if (DATA->extdevents & PG_EXEV_EXCLUSIVE) {
-	  struct widget *box;
-
-	  /* Get a pointer to our container */
-	  if (!iserror(rdhandle((void**)&box,PG_TYPE_WIDGET,-1,
-				self->container)) && box) {
-	    struct widget *old;
-
-	    /* If another button is active, disable it */
-	    if ((!iserror(rdhandle((void**)&old,PG_TYPE_WIDGET,-1,
-				  box->activemutex))) && old) {
-
-	      /* Turn it off */
-	      widget_set(old,PG_WP_ON,0);
-	    }
-	    
-	    /* We're the new active widget */
-	    box->activemutex = hlookup(self,NULL);
-	  }
-	}
+	/* If this is a mutually exclusive button, make sure we're the only one */
+	button_mutex_activate(self);
       }
       DATA->on=1;
     }
@@ -703,20 +714,7 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
 
   }
 
-#if 0   /*** This probably isn't that necessary, and it is causing
-	 *   a 'shifting' in the formatting due to resizes when the hilighted
-	 *   state is set.
-	 */
-  /* Update subwidgets, update this widget, then send an event */
-  w = widget_traverse(self, PG_TRAVERSE_CHILDREN, 0);
-  while (w) {
-    widget_set(w, PG_WP_HILIGHTED, DATA->over);
-    w = widget_traverse(w, PG_TRAVERSE_FORWARD,1);
-  }
-#endif
-
   button_setstate(self);
-
   if (event>=0)
     post_event(PG_WE_ACTIVATE,self,event,0,NULL);
 }

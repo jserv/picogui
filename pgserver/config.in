@@ -251,6 +251,7 @@ if [ "$CONFIG_WIDGET_SCROLL" = "y" ]; then
   bool '  Scrollbox'                          CONFIG_WIDGET_SCROLLBOX
 fi
 bool 'Simplemenu'                             CONFIG_WIDGET_SIMPLEMENU
+bool 'Tabpage'                                CONFIG_WIDGET_TABPAGE
 bool 'Terminal'                               CONFIG_WIDGET_TERMINAL
 bool 'Textbox (text editing with formatting)' CONFIG_WIDGET_TEXTBOX
 if [ "$CONFIG_WIDGET_TEXTBOX" = "y" ]; then

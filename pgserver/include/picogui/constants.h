@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.171 2002/11/06 20:23:46 micahjd Exp $
+/* $Id: constants.h,v 1.172 2002/11/15 12:53:11 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -385,9 +385,15 @@ typedef unsigned long pghandle;
 #define PGTH_O_PANELBAR_V_HILIGHT    78   //!< Hilighted vertical panelbar
 #define PGTH_O_TEXTEDIT              79   //!< textedit widget
 #define PGTH_O_MANAGEDWINDOW         80   //!< Window managed by a host GUI
+#define PGTH_O_TAB_PAGE              81   //!< The body of a tab page
+#define PGTH_O_TAB_BAR               82   //!< The bar containing tabs
+#define PGTH_O_TAB                   83   //!< An inactive tab
+#define PGTH_O_TAB_HILIGHT           84   //!< A tab with the mouse over it
+#define PGTH_O_TAB_ON                85   //!< An active tab
+#define PGTH_O_TAB_ON_NOHILIGHT      86   //!< An active tab without the mouse over it
 
 //! If you add a themeobject, be sure to increment this and add an inheritance entry in theme/memtheme.c
-#define PGTH_ONUM                    81
+#define PGTH_ONUM                    87
 
 //! Using a theme object named "custom" makes the server automatically allocate a free theme object at load time
 #define PGTH_O_CUSTOM                0x7FFF
@@ -916,7 +922,8 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_MESSAGEDIALOG   23    /* A popup that displays a message and gets a response */
 #define PG_WIDGET_SCROLLBOX       24    /* A box widget including scroll bars */
 #define PG_WIDGET_TEXTEDIT        25    /* Simple text editor */
-#define PG_WIDGETMAX              25    /* For error checking */
+#define PG_WIDGET_TABPAGE         26    /* A page in a tabbed book */
+#define PG_WIDGETMAX              26    /* For error checking */
 
 /* Widget properties */
 #define PG_WP_SIZE        1
@@ -984,6 +991,8 @@ typedef unsigned long pghandle;
 #define PG_WP_READONLY        59
 #define PG_WP_INSERTMODE      60  /* Set to a PG_INSERT_* constant, for textbox widget */
 #define PG_WP_TYPE            61  /* Return the type of the widget (PG_WIDGET_*) */
+#define PG_WP_TAB             62  /* The tab associated with a tabpage widget */
+#define PG_WP_TAB_BAR         63  /* The tab bar associated with a tabpage widget */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0

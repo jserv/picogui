@@ -153,6 +153,12 @@ _thobj_consts = {
             'panelbar v hilight':	(78, {}),
             'textedit':			(79, {}),
             'managedwindow':		(80, {}),
+            'tab page':			(81, {}),
+            'tab bar':			(82, {}),
+            'tab':			(83, {}),
+            'tab hilight':		(84, {}),
+            'tab on':			(85, {}),
+            'tab on nohilight':		(86, {}),
     }
 
 _wtype_consts = {
@@ -182,6 +188,7 @@ _wtype_consts = {
             'messagedialog':    (23, {}),       # a type of dialogbox that displays a message and gets feedback
             'scrollbox':        (24, {}),       # box widget with built-in horizontal and/or vertical scrollbars
             'textedit':         (25, {}),
+            'tabpage':          (26, {}),
     }
 
 constants = {
@@ -404,6 +411,10 @@ constants = {
         }),
         'type':				(61,
             _wtype_consts),
+        'tab':				(62, {
+        }),
+        'tab bar':			(63, {
+        }),
     },
     'traversewidget': {
         'children':	(1, {}),	# starting with first child, traverse forward

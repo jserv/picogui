@@ -40,7 +40,8 @@ EXTRA_libwidget_la_SOURCES = \
     simplemenu.c \
     dialogbox.c \
     messagedialog.c \
-    scrollbox.c
+    scrollbox.c \
+    tabpage.c
 
 libwidget_la_LIBADD       = $(WIDGET:%.c=%.lo)
 libwidget_la_DEPENDENCIES = $(WIDGET:%.c=%.lo)

@@ -1,4 +1,4 @@
-/* $Id: widget_table.c,v 1.3 2002/11/06 22:18:46 micahjd Exp $
+/* $Id: widget_table.c,v 1.4 2002/11/15 12:53:12 micahjd Exp $
  *
  * widget_table.c - Table defining all the installed widgets
  *
@@ -196,6 +196,24 @@ DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,136))
 DEF_WIDGET_TABLE(0,textedit)
 #else
 DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,108))
+#endif
+
+#ifdef CONFIG_WIDGET_TABPAGE
+  /* Custom table entry, since so far this is the only widget
+   * to define the post_attach method.
+   */
+  {
+    subclass_num: 1,
+    install:      tabpage_install,
+    remove:       tabpage_remove,
+    trigger:      NULL,
+    set:          tabpage_set,
+    get:          tabpage_get,
+    resize:       tabpage_resize,
+    post_attach:  tabpage_post_attach,
+  },
+#else
+DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,147))
 #endif
 
 };

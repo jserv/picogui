@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.212 2002/11/13 03:25:10 micahjd Exp $
+/* $Id: widget.c,v 1.213 2002/11/15 12:53:12 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -239,9 +239,17 @@ g_error widget_derive(struct widget **w, handle *h,
   }
   
   /* Error checking code common to all cases */
-  if (iserror(e))
+  if (iserror(e)) {
     widget_remove(*w);
-  return e;
+    errorcheck;
+  }
+
+  if ((*w)->def->post_attach) {
+    e = (*w)->def->post_attach(*w,parent,rship);
+    errorcheck;
+  }
+
+  return success;
 }
 
 void widget_remove(struct widget *w) {

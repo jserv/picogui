@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.77 2002/11/06 09:16:52 micahjd Exp $
+/* $Id: widget.h,v 1.78 2002/11/15 12:53:11 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -61,7 +61,10 @@ struct widgetdef {
    */
   int subclass_num;
 
-  /* Things every widget should have */
+  /* Things every widget should have. Install will be called after
+   * the widget is internally initialized and assigned a handle,
+   * but before it is attached to anything.
+   */
   g_error (*install)(struct widget *self);
   void (*remove)(struct widget *self);
 
@@ -77,6 +80,11 @@ struct widgetdef {
    * changed that would change the widget's size, the system can call it
    * when something globally changes, like the theme. */
   void (*resize)(struct widget *self);
+
+  /* This function will be called after the widget is
+   * attached using widget_derive(). 
+   */
+  g_error (*post_attach)(struct widget *self, struct widget *parent, int rship);
 };
 
 /* The table of widgetdef's, indexed by type */
@@ -168,16 +176,17 @@ struct widget {
    * on to the client normally, if it returns true the event is absorbed.
    */
   int (*callback)(int event, struct widget *from, s32 param, int owner, char *data);
+  struct widget *callback_owner;
 };
 
 # define DEF_WIDGET_TABLE(s,n) \
-  {s, n##_install, n##_remove, n##_trigger, n##_set, n##_get, n##_resize},
+  {s, n##_install, n##_remove, n##_trigger, n##_set, n##_get, n##_resize, NULL},
 # define DEF_HYBRIDWIDGET_TABLE(n,m) \
-  {0, n##_install, m##_remove, m##_trigger, m##_set, m##_get, m##_resize},
+  {0, n##_install, m##_remove, m##_trigger, m##_set, m##_get, m##_resize, NULL},
 # define DEF_STATICWIDGET_TABLE(s,n) \
-  {s, n##_install, n##_remove, NULL, n##_set, n##_get, n##_resize},
+  {s, n##_install, n##_remove, NULL, n##_set, n##_get, n##_resize, NULL},
 # define DEF_ERRORWIDGET_TABLE(s) \
-  {0, NULL, (void *) s, NULL, NULL, NULL, NULL},
+  {0, NULL, (void *) s, NULL, NULL, NULL, NULL, NULL},
 
 #define DEF_WIDGET_PROTO(n) \
   g_error n##_install(struct widget *self); \
@@ -185,7 +194,8 @@ struct widget {
   void n##_trigger(struct widget *self,s32 type,union trigparam *param); \
   g_error n##_set(struct widget *self, int property, glob data); \
   glob n##_get(struct widget *self, int property); \
-  void n##_resize(struct widget *self);
+  void n##_resize(struct widget *self); \
+  g_error n##_post_attach(struct widget *self, struct widget *parent, int rship);
 
 /* Macro used by widgets to access their private data through a DATA pointer.
  * The parameters are: 
@@ -236,6 +246,7 @@ DEF_WIDGET_PROTO(messagedialog)
 DEF_WIDGET_PROTO(scrollbox)
 DEF_WIDGET_PROTO(textedit)
 DEF_WIDGET_PROTO(managedwindow)
+DEF_WIDGET_PROTO(tabpage)
   
 /* Set to the client # if a client has taken over the system resource */
 extern int sysevent_owner;
@@ -269,7 +280,8 @@ void clip_popup(struct divnode *div);
  */
 void resizewidget(struct widget *w);
 
-/* Call the resizewidget() function on all widgets with handles */
+/* Call the resizewidget()l.side = "all"
+ function on all widgets with handles */
 void resizeall(void);
 
 /* Traverse to other widgets in a given direction (PG_TRAVERSE_*) */
