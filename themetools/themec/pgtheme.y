@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.25 2000/11/04 23:03:30 micahjd Exp $
+/* $Id: pgtheme.y,v 1.26 2001/02/07 08:25:11 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -57,6 +57,7 @@
 %token <str>     UNKNOWNSYM
 %token <propval> LOADBITMAP
 %token <propval> COPY
+%token <propval> FONT
 
 %type <num>      constexp
 %type <propval>  propertyval
@@ -66,6 +67,8 @@
 %type <prop>     stmt_list
 %type <prop>     compount_stmt
 %type <obj>      objectdef
+%type <obj>      unit
+%type <obj>      unitlist
 %type <propval>  fillstyle
 %type <fsn>      fsexp
 %type <fsn>      fsarglist
@@ -107,8 +110,8 @@ unitlist: unit
    /* This is a list of the structures that can appear
       unenclosed in the file */
 unit: objectdef
-    | ';'        /* No real purpose but to satisfy people that
-		    insist on ending object definitions with a ';' */
+    | ';' {$$=0;}  /* No real purpose but to satisfy people that
+		      insist on ending object definitions with a ';' */
     ;
 
 objectdef:  OBJ thobj compount_stmt      { 
@@ -179,6 +182,33 @@ propertyval:  constexp          { $$.data = $1; $$.loader = PGTH_LOAD_NONE; $$.l
   $$.data   = ($3 << 16) | $5;
   $$.loader = PGTH_LOAD_COPY;
 }     
+           |  FONT '(' STRING ',' constexp ',' constexp ')' {
+  unsigned char *buf;
+  struct pgrequest *req;
+  struct pgreqd_mkfont *rqd;
+
+  /* Allocate the buffer */
+  if (!(buf = malloc(sizeof(struct pgrequest)+sizeof(struct pgreqd_mkfont))))
+		yyerror("memory allocation error");
+	      
+  /* Two structures in the buffer */
+  memset(buf,0,sizeof(struct pgrequest) + sizeof(struct pgreqd_mkfont));
+  req = (struct pgrequest *) buf;
+  rqd = (struct pgreqd_mkfont *) (req+1)
+
+  req->type = htons(PGREQ_MKFONT);
+  req->size = htonl(sizeof(struct pgreqd_mkfont));
+  if ($3) {
+    strcpy(rqd->name,$3);
+    free($3);
+  }
+  rqd->style = htonl($7);
+  rqd->size  = htons($5);
+
+  $$.ldnode = newloader(buf,sizeof(struct pgrequest) +
+  	    sizeof(struct pgreqd_mkfont));
+  $$.loader = PGTH_LOAD_REQUEST;
+}	   	   
            |  LOADBITMAP '(' STRING ')' {
   FILE *bitf;
   unsigned long size;
@@ -436,8 +466,11 @@ fsprop: THOBJ CLASS PROPERTY { $$ = fsnewnode(PGTH_OPCMD_PROPERTY); $$->param = 
 
 /* Generic error reporting function for parsing errors */
 int yyerror(const char *s) {
+
+/*
   if (YYRECOVERING)
     return;
+*/
 
   if (errors >= MAXERRORS) {
     fprintf(stderr,"Too many errors!\n");

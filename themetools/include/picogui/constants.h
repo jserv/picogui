@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.23 2000/11/11 16:54:30 micahjd Exp $
+/* $Id: constants.h,v 1.24 2001/02/07 08:25:11 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -29,6 +29,11 @@
 #ifndef _H_PG_CONSTANTS
 #define _H_PG_CONSTANTS
 
+/* Just to make sure... */
+#ifndef NULL
+#define NULL ((void*)0)
+#endif
+
 /******************** Keyboard constants */
 
 /* Lots of these, so use a seperate file... */
@@ -58,6 +63,13 @@
 #define PG_APPSPEC_MAXWIDTH  6
 #define PG_APPSPEC_MINHEIGHT 7
 #define PG_APPSPEC_MAXHEIGHT 8
+
+/* Constants to use with PGREQ_REGOWNER to unregister and register
+ * exclusive access to resources */
+#define PG_OWN_KEYBOARD      1      /* _exclusive_ access to the keyboard! */
+#define PG_OWN_POINTER       2      /* _exclusive_ access to the pointer */
+#define PG_OWN_SYSEVENTS     3      /* Recieve system events- app open/close,
+				     * click on background, etc. */
 
 /******************** Layout */
 
@@ -157,7 +169,7 @@ typedef unsigned long pghandle;
  * but theme objects inherit properties from other theme objects
  * according to a built in hierarchy
  *
- * As a naming convention, these constants should start with PG_THO_ and
+ * As a naming convention, these constants should start with PGTH_O_ and
  * after that use underscores to represent subclassing. Bases are omitted
  * from names (otherwise they would be much longer, and if extra bases
  * were added the names would become misleading) so they don't strictly
@@ -347,7 +359,7 @@ typedef unsigned long pghandle;
  * structure to hold GRaphics OPerations)
  *
  * Bits 4-7 indicate the number of parameters (in addition to
- * the standard x,y,w,h.
+ * the standard x,y,w,h)
  */
 #define PG_GROP_NULL       0x0000	/* Doesn't do anything - for temporarily
 					 * turning something off, or for disabling
@@ -365,14 +377,21 @@ typedef unsigned long pghandle;
 #define PG_GROP_GRADIENT   0x0041
 #define PG_GROP_TILEBITMAP 0x0050
 #define PG_GROP_TEXTV      0x0031
+#define PG_GROP_TEXTGRID   0x0042
 
-#define PG_GROPPARAMS(x)   (((x)>>4)&0x0F)
+/* Find any gropnode's number of parameters */
+#define PG_GROPPARAMS(x)   ((x)>>4)
 
 /* Grop flags */
-#define PG_GROPF_TRANSLATE 0x0001  /* Apply the divnode's tx,ty */
+#define PG_GROPF_TRANSLATE    (1<<0)  /* Apply the divnode's tx,ty */
+#define PG_GROPF_INCREMENTAL  (1<<1)  /* Defines nodes used for incremental
+				       * updates. Not rendered normally. */
+#define PG_GROPF_PSEUDOINCREMENTAL (1<<2)  /* Always rendered, but this flag
+					    * is cleared afterwards. */
 
 /* Video mode flags */
 #define PG_VID_FULLSCREEN     0x0001
+#define PG_VID_DOUBLEBUFFER   0x0002
 
 /* Logical operations for blits */
 #define PG_LGOP_NULL        0   /* Don't blit */
@@ -409,7 +428,9 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_FIELD      9
 #define PG_WIDGET_BACKGROUND 10    /* Internal use only! */
 #define PG_WIDGET_MENUITEM   11    /* A variation on button */
-#define PG_WIDGETMAX         11    /* For error checking */
+#define PG_WIDGET_TERMINAL   12    /* A full terminal emulator */
+#define PG_WIDGET_CANVAS     13
+#define PG_WIDGETMAX         13    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1
@@ -453,6 +474,9 @@ typedef unsigned long pghandle;
 #define PG_EXEV_PNTR_UP   0x0001
 #define PG_EXEV_PNTR_DOWN 0x0002
 #define PG_EXEV_NOCLICK   0x0004  /* (ignore clicks) */
+#define PG_EXEV_PNTR_MOVE 0x0008
+#define PG_EXEV_KEY       0x0010  /* Raw key events KEYUP and KEYDOWN */
+#define PG_EXEV_CHAR      0x0020  /* Processed characters */
 
 /* Constants for PG_WP_DIRECTION */
 #define PG_DIR_HORIZONTAL 0
@@ -460,21 +484,41 @@ typedef unsigned long pghandle;
 
 /******************** Events */
 
+/* Events can return various types of data that the client library
+ * will separate out for the app. To indicate a type of encoding, the
+ * PG_WE_* constant is logically or'ed with one of these: */
+
+#define PG_EVENTCODING_PARAM    0x000   /* Just a 32-bit parameter */
+#define PG_EVENTCODING_XY       0x100   /* X,Y coordinates packed into param */
+#define PG_EVENTCODING_PNTR     0x200   /* Mouse parameters (x,y,btn,chbtn) */
+#define PG_EVENTCODING_DATA     0x300   /* Arbitrary data block */
+#define PG_EVENTCODING_KBD      0x400   /* Keyboard params */
+
+#define PG_EVENTCODINGMASK      0xF00
+
 /* Widget events */
-#define PG_WE_ACTIVATE    1     /* Gets focus (or for a non-focusing widget such
+#define PG_WE_ACTIVATE    0x001 /* Gets focus (or for a non-focusing widget such
 			           as a button, it has been clicked/selected  */
-#define PG_WE_DEACTIVATE  2     /* Lost focus */
-#define PG_WE_CLOSE       3     /* A top-level widget has closed */
-#define PG_WE_PNTR_DOWN   4     /* The "mouse" button is now down */
-#define PG_WE_PNTR_UP     5     /* The "mouse" button is now up */
+#define PG_WE_DEACTIVATE  0x002 /* Lost focus */
+#define PG_WE_CLOSE       0x003 /* A top-level widget has closed */
+#define PG_WE_PNTR_DOWN   0x204 /* The "mouse" button is now down */
+#define PG_WE_PNTR_UP     0x205 /* The "mouse" button is now up */
+#define PG_WE_DATA        0x306 /* Widget is streaming data to the app */
+#define PG_WE_RESIZE      0x107 /* For terminal widgets */
+#define PG_WE_BUILD       0x108 /* Sent from a canvas, clients can rebuild groplist */
+#define PG_WE_PNTR_MOVE   0x209 /* The "mouse" moved */
+#define PG_WE_KBD_CHAR    0x40A /* A focused keyboard character recieved */
+#define PG_WE_KBD_KEYUP   0x40B /* A focused raw keyup event */
+#define PG_WE_KBD_KEYDOWN 0x40C /* A focused raw keydown event */
 
 /* Non-widget events */
-#define PG_NWE_KBD_CHAR    10   /* These are sent if the client has captured the */
-#define PG_NWE_KBD_KEYUP   11   /* keyboard (or pointing device ) */
-#define PG_NWE_KBD_KEYDOWN 12
-#define PG_NWE_PNTR_MOVE   13
-#define PG_NWE_PNTR_UP     14
-#define PG_NWE_PNTR_DOWN   15
+#define PG_NWE_KBD_CHAR    0x140A /* These are sent if the client has captured the */
+#define PG_NWE_KBD_KEYUP   0x140B /* keyboard (or pointing device ) */
+#define PG_NWE_KBD_KEYDOWN 0x140C
+#define PG_NWE_PNTR_MOVE   0x1209
+#define PG_NWE_PNTR_UP     0x1205
+#define PG_NWE_PNTR_DOWN   0x1204
+#define PG_NWE_BGCLICK     0x120D /* The user clicked the background widget */
 
 
 #endif /* __H_PG_CONSTANTS */

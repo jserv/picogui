@@ -1,0 +1,105 @@
+/* $Id: lcdmono.ths,v 1.1 2001/02/07 08:25:11 micahjd Exp $
+ *
+ * Monochrome theme for LCDs
+ *
+ * Micah Dowty
+ */
+
+object default {
+   bgcolor = 0xFFFFFF;
+   fgcolor = 0x000000;
+   spacing = 1;
+   margin = 1;
+   height = 11;
+   width = 11;
+   font = Font(NULL,8,0);
+   bgfill = fillstyle {
+      Rect(x,y,w,h,ColorConv(bgcolor));
+   };
+}
+
+object button {
+   bgfill = fillstyle {
+      var fgc;
+      fgc = ColorConv(0x000000);
+      
+      /* Rounded rectangle */
+      Rect(x+1,y+1,w-2,h-2,ColorConv(bgcolor));
+      Slab(x+4,y,w-8,1,fgc);
+      Slab(x+4,y+h-1,w-8,1,fgc);
+      Bar(x,y+4,1,h-8,fgc);
+      Bar(x+w-1,y+4,1,h-8,fgc);
+      Line(x,y+3,3,-3,fgc);
+      Line(x+w-1,y+3,-3,-3,fgc);
+      Line(x,y+h-4,3,3,fgc);
+      Line(x+w-1,y+h-4,-3,3,fgc);
+      Pixel(x+1,y+1,1,1,fgc);
+      Pixel(x+w-2,y+1,1,1,fgc);
+      Pixel(x+1,y+h-2,1,1,fgc);
+      Pixel(x+w-2,y+h-2,1,1,fgc);
+   };
+}
+object button.on {
+   fgcolor = 0xFFFFFF;
+   bgcolor = 0x404040;
+}
+
+object indicator overlay = fillstyle {
+   Rect(x+1,y+1,w-2,h-2,ColorConv(0x404040));
+};
+
+/* Nifty little logo background. I like PicoGUI's background capabilities
+ * much better than the usual bitmap-or-nothing mentality... */
+object background {
+   text = "PicoGUI";
+//   font = Font("Utopia",25,PG_FSTYLE_BOLD);
+   bgfill = fillstyle {
+      Rect(x+30,y,w-30,h,ColorConv(0xFFFFFF));
+      Rect(x,y,30,h,ColorConv(0x808080));
+      Textv(x+3,y+h-4,1,1,text,font,ColorConv(0x000000));
+   };
+}
+
+object popup {
+   width = 5;
+   height = 5;
+   margin = 4;
+   bgcolor = 0xA0A0A0;
+   
+   bgfill = fillstyle {
+      var f,b;
+      f = ColorConv(0x000000);
+      b = ColorConv(0xFFFFFF);
+      
+      /* Nifty hollow rounded rectangle thingy */
+
+      Slab(x+1,y,w-2,1,b);
+      Slab(x+1,y+h-1,w-2,1,b);
+      Bar(x,y+1,1,h-2,b);
+      Bar(x+w-1,y+1,1,h-2,b);
+      Pixel(x+1,y+1,1,1,b);
+      Pixel(x+w-2,y+1,1,1,b);
+      Pixel(x+1,y+h-2,1,1,b);
+      Pixel(x+w-2,y+h-2,1,1,b);
+      
+      Rect(x+2,y+1,w-4,2,f);
+      Rect(x+2,y+h-3,w-4,2,f);
+      Rect(x+1,y+2,2,h-4,f);
+      Rect(x+w-3,y+2,2,h-4,f);
+
+      Rect(x+3,y+3,w-6,h-6,ColorConv(bgcolor));
+      
+      Pixel(x+3,y+3,1,1,f);
+      Pixel(x+w-4,y+3,1,1,f);
+      Pixel(x+3,y+h-4,1,1,f);
+      Pixel(x+w-4,y+h-4,1,1,f);
+   };
+}
+
+object panelbar {
+   font = Font("Times",10,PG_FSTYLE_BOLD);
+}
+
+object scroll width = 4;
+
+/* The End */

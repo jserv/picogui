@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.2 2000/10/10 00:49:05 micahjd Exp $
+/* $Id: network.h,v 1.3 2001/02/07 08:25:11 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -30,7 +30,7 @@
 #define _H_PG_NETWORK
 
 #define PG_REQUEST_PORT    30450
-#define PG_PROTOCOL_VER    0x0002      /* Increment this whenever changes are made */
+#define PG_PROTOCOL_VER    0x0004      /* Increment this whenever changes are made */
 #define PG_REQUEST_MAGIC   0x31415926
 
 /******* Packet structures */
@@ -68,6 +68,7 @@ struct pgresponse_event {
   unsigned short event;
   unsigned long from;
   unsigned long param;
+  /* If event == PG_WE_DATA, 'param' bytes of data follow */
 };
 
 #define PG_RESPONSE_DATA 4
@@ -88,38 +89,41 @@ struct pghello {
 /******* Request handlers */
 
 /* Constants for request handlers                                 args  */
-#define PGREQ_PING         0      /* Simply returns if server is ok |   none  */
-#define PGREQ_UPDATE       1      /* Call update()                  |   none  */
-#define PGREQ_MKWIDGET     2      /* Makes a widget, returns handle |  struct */
-#define PGREQ_MKBITMAP     3      /* Makes a bitmap, returns handle |  struct */
-#define PGREQ_MKFONT       4      /* Makes a fontdesc, ret's handle |  struct */
-#define PGREQ_MKSTRING     5      /* Makes a string, returns handle |  chars  */
-#define PGREQ_FREE         6      /* Frees a handle                 |  handle */
-#define PGREQ_SET          7      /* Set a widget param             |  struct */
-#define PGREQ_GET          8      /* Get a widget param, return it  |  struct */
-#define PGREQ_MKTHEME      9      /* Load a compiled theme          |  theme  */
-#define PGREQ_IN_KEY       10     /* Dispatch keyboard input        |  struct */
-#define PGREQ_IN_POINT     11     /* Dispatch pointing device input |  struct */
-#define PGREQ_IN_DIRECT    12     /* Dispatch direct input          |  struct */
-#define PGREQ_WAIT         13     /* Wait for an event              |  none   */
-#define PGREQ_MKFILLSTYLE  14     /* Load a fill style,return handle|  fillstyle */
-#define PGREQ_REGISTER     15     /* Register a new application     |  struct */
-#define PGREQ_MKPOPUP      16     /* Create a popup root widget     |  struct */
-#define PGREQ_SIZETEXT     17     /* Find the size of text          |  struct */
-#define PGREQ_BATCH        18     /* Executes many requests         |  requests */
-#define PGREQ_GRABKBD      19     /* Become the keyboard owner      |  none */
-#define PGREQ_GRABPNTR     20     /* Own the pointing device        |  none */
-#define PGREQ_GIVEKBD      21     /* Give the keyboard back         |  none */
-#define PGREQ_GIVEPNTR     22     /* Give the pointing device back  |  none */
-#define PGREQ_MKCONTEXT    23     /* Enters a new context           |  none */
-#define PGREQ_RMCONTEXT    24     /* Cleans up and kills the context|  none */
-#define PGREQ_FOCUS        25     /* Force focus to specified widget|  handle */
-#define PGREQ_GETSTRING    26     /* Returns a RESPONSE_DATA        |  handle */
-#define PGREQ_UNUSED2      27     /* Obsolete (will be replaced with another request) */
-#define PGREQ_SETPAYLOAD   28     /* Sets an object's payload       |  struct */
-#define PGREQ_GETPAYLOAD   29     /* Gets an object's payload       |  handle */
+#define PGREQ_PING         0   /* Simply returns if server is ok |   none  */
+#define PGREQ_UPDATE       1   /* Call update()                  |   none  */
+#define PGREQ_MKWIDGET     2   /* Makes a widget, returns handle |  struct */
+#define PGREQ_MKBITMAP     3   /* Makes a bitmap, returns handle |  data   */
+#define PGREQ_MKFONT       4   /* Makes a fontdesc, ret's handle |  struct */
+#define PGREQ_MKSTRING     5   /* Makes a string, returns handle |  chars  */
+#define PGREQ_FREE         6   /* Frees a handle                 |  handle */
+#define PGREQ_SET          7   /* Set a widget param             |  struct */
+#define PGREQ_GET          8   /* Get a widget param, return it  |  struct */
+#define PGREQ_MKTHEME      9   /* Load a compiled theme          |  theme  */
+#define PGREQ_IN_KEY       10  /* Dispatch keyboard input        |  struct */
+#define PGREQ_IN_POINT     11  /* Dispatch pointing device input |  struct */
+#define PGREQ_IN_DIRECT    12  /* Dispatch direct input          |  struct */
+#define PGREQ_WAIT         13  /* Wait for an event              |  none   */
+#define PGREQ_MKFILLSTYLE  14  /* Load a fill style,return handle|  fillstyle */
+#define PGREQ_REGISTER     15  /* Register a new application     |  struct */
+#define PGREQ_MKPOPUP      16  /* Create a popup root widget     |  struct */
+#define PGREQ_SIZETEXT     17  /* Find the size of text          |  struct */
+#define PGREQ_BATCH        18  /* Executes many requests         |  requests */
+#define PGREQ_REGOWNER     19  /* Get exclusive privileges       |  struct */
+#define PGREQ_UNREGOWNER   20  /* Give up exclusive privileges   |  struct */
+#define PGREQ__OLD__1      21  /* Will be replaced */
+#define PGREQ__OLD__2      22  /* Will be replaced */
+#define PGREQ_MKCONTEXT    23  /* Enters a new context           |  none */
+#define PGREQ_RMCONTEXT    24  /* Cleans up and kills the context|  none */
+#define PGREQ_FOCUS        25  /* Force focus to specified widget|  handle */
+#define PGREQ_GETSTRING    26  /* Returns a RESPONSE_DATA        |  handle */
+#define PGREQ_MKMSGDLG     27  /* Creates a message dialog box   |  struct */
+#define PGREQ_SETPAYLOAD   28  /* Sets an object's payload       |  struct */
+#define PGREQ_GETPAYLOAD   29  /* Gets an object's payload       |  handle */
+#define PGREQ_MKMENU       30  /* Creates a simple popup menu    |  handle[] */
+#define PGREQ_WRITETO      31  /* Stream data to a widget        |  handle + data */
+#define PGREQ_UPDATEPART   32  /* Updates subtree defined by wgt |  handle */
 
-#define PGREQ_UNDEF        30     /* types > this will be truncated. return error */
+#define PGREQ_UNDEF        33     /* types > this will be truncated. return error */
 
 /******* Request data structures */
 
@@ -201,8 +205,8 @@ struct pgreqd_register {
   /* Followed by optional APPSPECs */
 };
 struct pgreqd_mkpopup {
-  unsigned short x;
-  unsigned short y;
+  unsigned short x; /* can be a PG_POPUP_* constant */
+  unsigned short y; 
   unsigned short w;
   unsigned short h;
 };
@@ -214,6 +218,22 @@ struct pgreqd_setpayload {
   unsigned long h;  /* Any handle */
   unsigned long payload;  /* 32-bits of data to store with
 			     the handle'd object */
+};
+struct pgreqd_mkmsgdlg {
+  unsigned long title;
+  unsigned long text;
+  unsigned long flags;
+};
+struct pgreqd_regowner {
+  unsigned short res;     /* A resource to own: PG_OWN_* */
+};
+
+/* A structure for encapsulating commands, for example in canvas, within
+ * a RQH_WRITETO */
+struct pgcommand {
+   unsigned short command;
+   unsigned short numparams;
+   /* Followed by numparams * signed long */
 };
 
 #endif /* __H_PG_NETWORK */
