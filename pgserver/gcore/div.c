@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.93 2002/10/24 22:50:56 micahjd Exp $
+/* $Id: div.c,v 1.94 2002/10/25 23:59:55 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -488,6 +488,7 @@ g_error newdiv(struct divnode **p,struct widget *owner) {
 /* Make a new divtree */
 g_error divtree_new(struct divtree **dt) {
   g_error e;
+
   e = g_malloc((void **) dt,sizeof(struct divtree));
   memset(*dt,0,sizeof(struct divtree));
   errorcheck;
@@ -505,6 +506,13 @@ g_error divtree_new(struct divtree **dt) {
   (*dt)->head->r.h = vid->lyres;
   (*dt)->flags = DIVTREE_ALL_REDRAW;
   (*dt)->head->flags &= ~DIVNODE_UNDERCONSTRUCTION;
+
+  /* A handle to this divtree needs to exist, so the divtree
+   * can be referred to by input filters.
+   */
+  e = mkhandle(&(*dt)->h, PG_TYPE_DIVTREE, -1, *dt);
+  errorcheck;
+
   return success;
 }
 
@@ -514,7 +522,9 @@ void divtree_free(struct divtree *dt) {
   if (dt->hotspot_cursor)
     pointer_free(-1,dt->hotspot_cursor);  /* Delete the hotspot cursor   */
   VID(window_free)(dt->display);
-  g_free(dt);                             /* Delete the divtree */
+
+  /* Delete the dt structure itself, and the associated handle */
+  handle_free(-1,dt->h);
 }
 
 /* Delete a divnode recursively */

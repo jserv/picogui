@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.47 2002/10/23 02:09:04 micahjd Exp $
+/* $Id: divtree.h,v 1.48 2002/10/25 23:59:55 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -65,6 +65,8 @@ struct divtree {
 
   handle focus;                   /* Handle to the focused widget in this divtree */
   struct cursor *hotspot_cursor;  /* Hotspot cursor for this divtree, if it exists */
+  
+  handle h;                       /* Handle to this divtree */
 
   /* To support rootless and multihead modes, each divtree has its own rendering information */
   hwrbitmap display;

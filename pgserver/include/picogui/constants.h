@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.169 2002/10/24 11:23:06 micahjd Exp $
+/* $Id: constants.h,v 1.170 2002/10/25 23:59:55 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -263,6 +263,7 @@ typedef unsigned long pghandle;
 #define PG_TYPE_INFILTER   12   //!< One filter in the input filter chain
 #define PG_TYPE_CURSOR     13   //!< Cursor object, used with input filters
 #define PG_TYPE_PARAGRAPH  14   //!< A paragraph (wrapped text) 
+#define PG_TYPE_DIVTREE    15   //!< Tree of divnodes, one layer of nonoverlapping items
 
 /* Also add new handle types to the debug code in handle.c, r_handle_dump() */
 
