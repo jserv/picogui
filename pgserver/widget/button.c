@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.73 2001/08/30 15:05:09 micahjd Exp $
+/* $Id: button.c,v 1.74 2001/08/30 19:39:45 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -470,13 +470,25 @@ void button_resize(struct widget *self) {
 
      /* Vertical */
      h += theme_lookup(DATA->state,PGTH_P_SPACING);
+
+     /* Overridden with PG_WP_SIZE? */
+     if (!(self->in->flags & DIVNODE_SIZE_AUTOSPLIT))
+       h = self->in->split;
   }
   else if ((self->in->flags & PG_S_LEFT) ||
 	   (self->in->flags & PG_S_RIGHT)) {
 
      /* Horizontal */
      w += theme_lookup(DATA->state,PGTH_P_SPACING);
+
+     /* Overridden with PG_WP_SIZE? */
+     if (!(self->in->flags & DIVNODE_SIZE_AUTOSPLIT))
+       w = self->in->split;
   }
+
+  /* If one dimension is zero, hide the button completely */
+  if (!(w && h))
+    w = h = 0;
 
   self->in->div->pw = w;
   self->in->div->ph = h;

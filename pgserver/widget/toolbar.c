@@ -1,4 +1,4 @@
-/* $Id: toolbar.c,v 1.17 2001/07/26 10:11:22 micahjd Exp $
+/* $Id: toolbar.c,v 1.18 2001/08/30 19:39:45 micahjd Exp $
  *
  * toolbar.c - container widget for buttons
  *
@@ -40,8 +40,9 @@ void toolbar_resize(struct widget *self) {
   else
     m = 0;
   
-  self->in->div->ph = theme_lookup(PGTH_O_BUTTON,PGTH_P_HEIGHT)+(m<<1);
-  self->in->div->pw = theme_lookup(PGTH_O_BUTTON,PGTH_P_WIDTH)+(m<<1);
+  /* minimum size */
+  self->in->div->ph = theme_lookup(PGTH_O_TOOLBAR,PGTH_P_HEIGHT);
+  self->in->div->pw = theme_lookup(PGTH_O_TOOLBAR,PGTH_P_WIDTH);
 
   /* Manually set border size */
   self->in->div->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
