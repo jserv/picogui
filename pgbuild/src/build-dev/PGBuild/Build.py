@@ -114,7 +114,7 @@ class System(object):
         taskmaster = SCons.Taskmaster.Taskmaster(nodes)
 
         # This sets up several job threads to run tasks concurrently
-        jobs = SCons.Job.Jobs(int(self.config.eval("invocation/option[@name='numJobs']/text()")), taskmaster)
+        jobs = SCons.Job.Jobs(self.config.intEval("invocation/option[@name='numJobs']/text()"), taskmaster)
         jobs.run()
 
 ### The End ###

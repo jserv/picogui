@@ -170,6 +170,15 @@ class Document(minidom.Document):
             return results[0]
         if len(results) > 1:
             return results
+
+    def intEval(self, path, context=None):
+        """Convenience function to cast the resutls of eval() to integers"""
+        result = self.eval(path, context)
+        if type(result) == str or type(result) == unicode:
+            result = int(result)
+        elif type(result) == type(()) or type(result) == type([]):
+            result = map(int, result)
+        return result
     
     def node(self, path=None, context=None):
         """For convenience, an XMLUtil.Node factory. This by default
