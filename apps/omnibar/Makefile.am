@@ -1,0 +1,7 @@
+bin_PROGRAMS = omnibar
+omnibar_SOURCES = omnibar.c
+
+LDFLAGS += @PICOGUI_LDFLAGS@
+LDADD = @PICOGUI_LIBS@
+
+CFLAGS = @CFLAGS@ @PICOGUI_CFLAGS@

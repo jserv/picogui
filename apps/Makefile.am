@@ -1,4 +1,4 @@
-SUBDIRS = pgboard pterm fieldtest vrcalc
+SUBDIRS = pgboard pterm fieldtest vrcalc omnibar pgtuxphone
 
 if ENABLE_BEE
 

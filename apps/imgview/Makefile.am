@@ -1,0 +1,7 @@
+bin_PROGRAMS = imgview
+imgview_SOURCES = imgview.c
+
+LDFLAGS += @PICOGUI_LDFLAGS@
+LDADD = @PICOGUI_LIBS@
+
+CFLAGS = @CFLAGS@ @PICOGUI_CFLAGS@

@@ -1,0 +1,7 @@
+bin_PROGRAMS = battleship
+battleship_SOURCES = battleship.c
+
+LDFLAGS += @PICOGUI_LDFLAGS@
+LDADD = @PICOGUI_LIBS@
+
+CFLAGS = @CFLAGS@ @PICOGUI_CFLAGS@

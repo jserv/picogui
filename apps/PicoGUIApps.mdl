@@ -57,7 +57,31 @@ runtime = [
               help = "Text input widget" ),
     Runtime ( 'vrcalc', 'vrcalc',
               content = [ 'bin/vrcalc' ],
-              help = "Basic calculator" )
+              help = "Basic calculator" ),
+    Runtime ( 'omnibar', 'omnibar',
+              content = [ 'bin/omnibar' ],
+              help = "Basic launcher" ),
+    Runtime ( 'pgtuxphone', 'pgtuxphone',
+              content = [ 'bin/pgtuxphone' ],
+              help = "PicoGUI tuxphone client" ),
+    Runtime ( 'battleship', 'battleship',
+              content = [ 'bin/battleship' ],
+              help = "Battleship!" ),
+    Runtime ( 'canvastst', 'canvastst',
+              content = [ 'bin/canvastst' ],
+              help = "Canvas Test" ),
+    Runtime ( 'galaxy', 'galaxy',
+              content = [ 'bin/galaxy' ],
+              help = "Galaxy graphics stress test" ),
+    Runtime ( 'dialogdemo', 'dialogdemo',
+              content = [ 'bin/dialogdemo' ],
+              help = "Dialog Demo" ),
+    Runtime ( 'imgview', 'imgview',
+              content = [ 'bin/imgview' ],
+              help = "Image viewer" ),
+    Runtime ( 'scribble', 'scribble',
+              content = [ 'bin/scribble' ],
+              help = "Scribble Pad" )
     ]
 
 def prepare (module, platform, project):
