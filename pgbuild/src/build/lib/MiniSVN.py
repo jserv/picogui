@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
  MiniSVN.py - A minimalist Subversion client capable of doing
-              multithreaded atomic checkouts, using only the
-              Python standard library and MiniDAV.
+              atomic checkouts using only the Python standard
+              library and MiniDAV.
 """
 # 
 # PicoGUI Build System
@@ -24,112 +24,9 @@
 # 
 
 from urlparse import *
-import threading
 from MiniDAV import DavObject
 import os, re, time
 import pickle
-
-class DownloaderPool:
-    def __init__(self, repository, destination, numThreads):
-        """Starts multiple DownloaderThreads and stores data shared between them."""
-        self.queue = [(repository, destination)]
-        self.queueSem = threading.Semaphore()
-        self.numSleeping = 0
-        self.threads = []
-        self.running = 1
-        self.pollInterval = 0.1
-        
-        # Create and start all threads
-        for i in xrange(numThreads):
-            thread = DownloaderThread(self)
-            self.threads.append(thread)
-            thread.start()
-
-        # Wait for all threads to quit. We should be able to just use join() here, but
-        # that will also block a KeyboardInterrupt until after the threads finish.
-        try:
-            while self.running:
-                time.sleep(self.pollInterval)
-        except KeyboardInterrupt:
-            self.running = 0
-            for thread in self.threads:
-                thread.join()
-                
-            # If we were interrupted, delete the repository's properties file so
-            # next time we have the option to do an update, we will.
-            os.unlink(repository.getPropertyFile(destination))
-            raise KeyboardInterrupt
-
-        for thread in self.threads:
-            thread.join()
-            
-
-class DownloaderThread(threading.Thread):
-    def __init__(self, pool):
-        self.pool = pool
-        threading.Thread.__init__(self)
-
-    def run(self):
-        """Thread-safe queue management, to feed items into download()
-           and enqueue children.
-           """
-        while self.pool.running:
-            self.pool.queueSem.acquire()            
-            try:
-                queueItem = self.pool.queue.pop()
-            except IndexError:
-                # Nothing in the queue. If all the threads are in this state, we're done
-                self.pool.queueSem.release()
-                if self.pool.numSleeping == len(self.pool.threads)-1:
-                    break
-                self.pool.numSleeping += 1
-                time.sleep(self.pool.pollInterval)
-                self.pool.numSleeping -= 1
-                continue
-            self.pool.queueSem.release()
-            newItems = self.download(queueItem)
-            if newItems:
-                self.pool.queueSem.acquire()            
-                for item in newItems:
-                    self.pool.queue.append(item)
-                self.pool.queueSem.release()
-        self.pool.running = 0
-
-    def download(self, item):
-        """Download an item from the queue, returning a list of
-           more items to add to the queue.
-           """
-        (object, destination) = item
-
-        if object.getType() == 'collection':
-            # This object is a directory- recursively create it
-            try:
-                os.makedirs(destination)
-            except OSError:
-                # We don't care if it already exists
-                pass
-            print " d %s" % destination
-
-        elif object.getType() == 'file':
-            # This object is a file- download it, creating the directory if necessary
-            try:
-                f = open(destination, "wb")
-            except IOError:
-                os.makedirs(os.path.join(os.path.split(destination)[:-1])[0])
-                f = open(destination, "wb")                
-            f.write(object.read())
-            f.close()
-            print "-> %s" % destination
-        
-        # Get our children ready to queue
-        enqueue = []
-        for child in object.getChildren():
-            # Find the part of the child's URL that was (presumably)
-            # appended to this object's URL and append it to the destination
-            suffix = child.url[len(object.url):].replace("/","")
-            enqueue.append((child, os.path.join(destination, suffix) ))
-        return enqueue
-
 
 class SVNRepository(DavObject):
     def __init__(self, url):
@@ -167,13 +64,54 @@ class SVNRepository(DavObject):
         return props
 
     def download(self, destination, numThreads=5):
-        self.saveProperties(destination)
-        # If this repository consists of just one file, go ahead and join that to
-        # the destination path.
-        if len(self.getChildren()) == 0:
-            suffix = re.search("/([^/]+)$", self.path).group(1)
-            destination = os.path.join(destination, suffix)
-        DownloaderPool(self, destination, numThreads)
+        downloadComplete = 0
+        try:
+            self.saveProperties(destination)
+
+            # If this repository consists of just one file, go ahead and join that to
+            # the destination path.
+            if len(self.getChildren()) == 0:
+                suffix = re.search("/([^/]+)$", self.path).group(1)
+                destination = os.path.join(destination, suffix)
+
+            queue = [(self, destination)]
+
+            while len(queue) > 0:
+                item = queue.pop()
+                (object, objDest) = item
+    
+                if object.getType() == 'collection':
+                    # This object is a directory- recursively create it
+                    try:
+                        os.makedirs(objDest)
+                    except OSError:
+                        # We don't care if it already exists
+                        pass
+                    print " d %s" % objDest
+
+                elif object.getType() == 'file':
+                    # This object is a file- download it, creating the directory if necessary
+                    try:
+                        f = open(objDest, "wb")
+                    except IOError:
+                        os.makedirs(os.path.join(os.path.split(objDest)[:-1])[0])
+                        f = open(objDest, "wb")                
+                    f.write(object.read())
+                    f.close()
+                    print "-> %s" % objDest
+        
+                for child in object.getChildren():
+                    # Find the part of the child's URL that was (presumably)
+                    # appended to this object's URL and append it to the destination
+                    suffix = child.url[len(object.url):].replace("/","")
+                    queue.append((child, os.path.join(objDest, suffix) ))
+
+            downloadComplete = 1
+        finally:
+            if not downloadComplete:
+                # If we were interrupted, delete the repository's properties file so
+                # next time we have the option to do an update, we will.
+                os.unlink(self.getPropertyFile(destination))
 
     def isUpdateAvailable(self, destination):
         try:
