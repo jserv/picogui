@@ -1,4 +1,4 @@
-/* $Id: if_magic.c,v 1.12 2002/11/07 20:36:46 micahjd Exp $
+/* $Id: if_magic.c,v 1.13 2002/11/11 08:27:29 micahjd Exp $
  *
  * if_magic.c - Trap magic debug keys
  *
@@ -63,6 +63,19 @@ struct infilter infilter_magic = {
 
 /********************************************** Debug-only code ****/
 #ifdef DEBUG_KEYS
+
+/* Get the window the cursor is in, falling back on the debug window */
+static hwrbitmap magic_cursor_display(void) {
+  struct cursor *c = cursor_get_default();
+  struct divtree *dt;
+
+  if (!c)
+    return VID(window_debug)();
+  if (iserror(rdhandle((void**)&dt, PG_TYPE_DIVTREE, -1, c->divtree)))
+    return VID(window_debug)();
+
+  return dt->display;
+}
 
 struct debug_bitmaps_data {   
   int db_x,db_y,db_h;
@@ -199,7 +212,7 @@ void r_divnode_trace(struct divnode *div) {
   struct groprender r;
   struct gropnode n;
   s16 lxres,lyres;
-  VID(bitmap_getsize)(VID(window_debug)(), &lxres, &lyres);
+  VID(bitmap_getsize)(magic_cursor_display(), &lxres, &lyres);
 
   if (!div)
     return;
@@ -212,7 +225,7 @@ void r_divnode_trace(struct divnode *div) {
     return;
 
   /* Set up rendering... */
-  r.output = VID(window_debug)();
+  r.output = magic_cursor_display();
   n.r = div->r;
   r.clip.x1 = 0;
   r.clip.y1 = 0;
@@ -257,13 +270,13 @@ void hotspot_draw(struct hotspot *spot) {
     /* prev  */ {-3, 0, 0x00FF00},
   };
   s16 lxres,lyres;
-  VID(bitmap_getsize)(VID(window_debug)(), &lxres, &lyres);
+  VID(bitmap_getsize)(magic_cursor_display(), &lxres, &lyres);
 
   /* Set up rendering...
    */
   memset(&r,0,sizeof(r));
   memset(&n,0,sizeof(n));
-  r.output = VID(window_debug)();
+  r.output = magic_cursor_display();
   r.clip.x1 = 0;
   r.clip.y1 = 0;
   r.clip.x2 = lxres-1;
@@ -387,11 +400,11 @@ void magic_button(s16 key) {
   case PGKEY_b:           /* CTRL-ALT-b blanks the screen */
     {
       s16 lxres,lyres;
-      VID(bitmap_getsize)(VID(window_debug)(), &lxres, &lyres);
+      VID(bitmap_getsize)(magic_cursor_display(), &lxres, &lyres);
 
-      VID(rect)   (VID(window_debug)(), 0,0,lxres,lyres, 
+      VID(rect)   (magic_cursor_display(), 0,0,lxres,lyres, 
 		   VID(color_pgtohwr) (0),PG_LGOP_NONE);
-      VID(update) (VID(window_debug)(),0,0,lxres,lyres);
+      VID(update) (magic_cursor_display(),0,0,lxres,lyres);
     }
     return;
     
@@ -413,12 +426,12 @@ void magic_button(s16 key) {
       
       struct divtree *p;
       s16 lxres,lyres;
-      VID(bitmap_getsize)(VID(window_debug)(), &lxres, &lyres);
+      VID(bitmap_getsize)(magic_cursor_display(), &lxres, &lyres);
 
       /* Push through the black screen */
-      VID(rect)   (VID(window_debug)(), 0,0,lxres,lyres, 
+      VID(rect)   (magic_cursor_display(), 0,0,lxres,lyres, 
 		   VID(color_pgtohwr) (0),PG_LGOP_NONE);
-      VID(update) (VID(window_debug)(),0,0,lxres,lyres);
+      VID(update) (magic_cursor_display(),0,0,lxres,lyres);
       /* Force redrawing everything to the backbuffer */
       for (p=dts->top;p;p=p->next)
 	p->flags |= DIVTREE_ALL_REDRAW;
@@ -436,11 +449,11 @@ void magic_button(s16 key) {
   case PGKEY_u:           /* CTRL-ALT-u makes a blue screen */
     {
       s16 lxres,lyres;
-      VID(bitmap_getsize)(VID(window_debug)(), &lxres, &lyres);
+      VID(bitmap_getsize)(magic_cursor_display(), &lxres, &lyres);
       
-      VID(rect) (VID(window_debug)(),0,0,lxres,lyres,
+      VID(rect) (magic_cursor_display(),0,0,lxres,lyres,
 		 VID(color_pgtohwr) (0x0000FF), PG_LGOP_NONE);
-      VID(update) (VID(window_debug)(),0,0,lxres,lyres);
+      VID(update) (magic_cursor_display(),0,0,lxres,lyres);
     }
     return;
     
@@ -460,9 +473,9 @@ void magic_button(s16 key) {
   case PGKEY_o:           /* CTRL-ALT-o traces all divnodes */
     {
       s16 lxres,lyres;
-      VID(bitmap_getsize)(VID(window_debug)(), &lxres, &lyres);
+      VID(bitmap_getsize)(magic_cursor_display(), &lxres, &lyres);
       r_divnode_trace(dts->top->head);
-      VID(update) (VID(window_debug)(),0,0,lxres,lyres);
+      VID(update) (magic_cursor_display(),0,0,lxres,lyres);
     }
     return;
 
@@ -485,11 +498,11 @@ void magic_button(s16 key) {
     {
       struct hotspot *p;
       s16 lxres,lyres;
-      VID(bitmap_getsize)(VID(window_debug)(), &lxres, &lyres);
+      VID(bitmap_getsize)(magic_cursor_display(), &lxres, &lyres);
 
       for (p=hotspotlist;p;p=p->next)
 	hotspot_draw(p);
-      VID(update) (VID(window_debug)(),0,0,lxres,lyres);
+      VID(update) (magic_cursor_display(),0,0,lxres,lyres);
     }    
     return;
 
