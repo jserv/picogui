@@ -98,3 +98,8 @@ table td {
     text-align: left;
 }
 
+.bargraph {
+    background: #eef4eb;
+    border: 1px solid #8CACBB;
+    margin: 0.1em;
+}
