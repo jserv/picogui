@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.1 2000/08/05 18:28:53 micahjd Exp $
+/* $Id: timer.c,v 1.2 2000/08/06 00:50:53 micahjd Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -34,38 +34,45 @@
 
 static struct timeval first_tick;
 
-static void updatetimers(int sig) {
-  /* Called periodically by an alarm (or the equivalent in the running OS)
-     Dispatches TRIGGER_TIMER events to widgets as necessary
-  */
+/* Linked list of scheduled timers */
+struct timernode {
+  struct widget *w;
+  unsigned long alarm_at;
+  struct timernode *next;
+};
 
-  printf("updatetimers()\n");
+struct timernode *timerlist;
+
+static void sigalarm(int sig) {
+#ifdef DEBUG
+  printf("Enter sigalarm\n");
+#endif
+
+  trigger_timer();
+
+#ifdef DEBUG
+  printf("Leave sigalarm\n");
+#endif
 }
 
 g_error timer_init(void) {
-  struct sigaction action;
-  struct itimerval itv;
+  timerlist = NULL;
 
   /* Get a reference point for getticks */
   gettimeofday(&first_tick,NULL);
-
-  /* Set up the alarm handler */
-  memset(&action, 0, sizeof(struct sigaction));
-  action.sa_handler = updatetimers;
-  action.sa_flags = SA_RESTART;
-  sigemptyset(&action.sa_mask);
-  sigaction(SIGALRM, &action, NULL);
-
-  /* Start the timer */
-  memset(&itv,0,sizeof(struct itimerval));
-  itv.it_value.tv_usec = itv.it_interval.tv_usec = 1000;
-  setitimer(ITIMER_REAL,&itv,NULL);
 
   return sucess;
 }
 
 void timer_release(void) {
+  struct itimerval itv;
 
+  /* Probably not necessary, but shut off the timer
+     for completeness
+  */
+
+  memset(&itv,0,sizeof(struct itimerval));
+  setitimer(ITIMER_REAL,&itv,NULL);
 }
 
 unsigned long getticks(void) {
@@ -76,5 +83,44 @@ unsigned long getticks(void) {
     (now.tv_usec-first_tick.tv_usec)/1000;
 }
 
+/* Used in widget.c to set the time for the
+   next call to trigger_timer
+*/
+unsigned long settimer(unsigned long interval) {
+  struct itimerval itv;
+  struct sigaction action;
+
+#ifdef DEBUG
+  printf("settimer(%lu)\n",interval);
+#endif
+
+  if (!interval) {
+#ifdef DEBUG
+    printf("settimer() -> trigger_timer()\n");
+#endif
+    trigger_timer();
+    return;
+  }
+
+  /* Set up the alarm handler
+     (for this thread) */
+
+  
+  memset(&action, 0, sizeof(struct sigaction));
+  action.sa_handler = sigalarm;
+  action.sa_flags = SA_RESTART;
+  sigemptyset(&action.sa_mask);
+  sigaction(SIGALRM, &action, NULL);
+
+  /*
+  signal(SIGALRM,sigalarm);
+  */
+
+  /* Set the timer */
+  memset(&itv,0,sizeof(struct itimerval));
+  itv.it_value.tv_sec     = (interval/1000);
+  itv.it_value.tv_usec    = (interval%1000)*1000;
+  setitimer(ITIMER_REAL,&itv,NULL);
+}
 
 /* The End */

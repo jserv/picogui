@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.28 2000/08/05 01:08:36 micahjd Exp $
+/* $Id: widget.h,v 1.29 2000/08/06 00:50:53 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -55,6 +55,7 @@ typedef long glob;
 
 /* Constants for a trigger type. One of these constants is used to identify
    a trigger when it happens, and they are combined to form a trigger mask */
+#define TRIGGER_TIMER      (1<<0)  /* Timer event from install_timer */
 #define TRIGGER_HOTKEY     (1<<1)  /* The registered 'hotkey' was pressed */
 #define TRIGGER_DIRECT     (1<<2)  /* A trigger sent explicitely */
 #define TRIGGER_ACTIVATE   (1<<3)  /* Sent when it receives focus */
@@ -157,9 +158,13 @@ struct widget {
 
   /* Active hotkey */
   long hotkey;
-
   /* The widgets with assigned hotkeys are stored in a linked list */
   struct widget *hknext;
+
+  /* Time (in ticks) for a TRIGGER_TIMER */
+  unsigned long time;
+  /* Widgets with timers are in a linked list */
+  struct widget *tnext;
 };
 
 /* Macros to help define widgets */
@@ -278,8 +283,24 @@ long find_hotkey(void);
    Set the current hotkey (from find_hotkey or otherwise)
    Sets the 'hotkey' widget member, and adds to the hkwidgets list
    if necessary
+
+   If hotkey==0, the hotkey is unset
 */
 void install_hotkey(struct widget *self,long hotkey);
+
+/*
+   Set a timer.  At the time, in ticks, specified by 'time',
+   the widget will recieve a TRIGGER_TIMER
+*/
+void install_timer(struct widget *self,unsigned long interval);
+
+/* This is called by the timer subsystem.  It triggers the
+   timer and uninstalls it from the linked list of timers.
+
+   It is assumed that this is triggering the timer at the
+   beginning of the timerwidgets list
+*/
+void trigger_timer(void);
 
 /*
   Request focus for a widget.  Usually called in response to a click, or 

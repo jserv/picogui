@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.33 2000/08/05 05:00:23 micahjd Exp $
+/* $Id: widget.c,v 1.34 2000/08/06 00:50:53 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -54,8 +54,10 @@ int prev_btn;
 struct widget *capture;
 struct widget *kbdfocus;
 
-/* Linked list of widgets with hotkeys */
-struct widget *hkwidgets;
+/* Sorted (chronological order) list of widgets
+   with timers
+*/
+struct widget *timerwidgets;
 
 /* Set to the client # if a client has taken over the input device */
 int keyboard_owner;
@@ -113,6 +115,26 @@ g_error widget_derive(struct widget **w,
     return mkerror(ERRT_BADPARAM,"widget_derive bad derive constant");
 }
 
+/* Used internally */
+void remove_from_timerlist(struct widget *w) {
+  if (timerwidgets) {
+    if (w==timerwidgets) {
+      timerwidgets = w->tnext;
+    }
+    else {
+      struct widget *p = timerwidgets;
+      while (p->tnext)
+	if (p->tnext == w) {
+	  /* Take us out */
+	  p->tnext = w->tnext;
+	  break;
+	}
+	else
+	  p = p->tnext;
+    }
+  }
+}
+
 void widget_remove(struct widget *w) {
   struct divnode *sub_end;  
   handle hw;
@@ -124,6 +146,9 @@ void widget_remove(struct widget *w) {
   if (!in_shutdown) {
     /* Get us out of the hotkey list */
     install_hotkey(w,0);
+
+    /* Get out of the timer list */
+    remove_from_timerlist(w);
 
     /* Get rid of any pointers we have to it */
     if (w==under) under = NULL;
@@ -249,28 +274,92 @@ void install_hotkey(struct widget *self,long hotkey) {
 
   if ((!self->hotkey) && hotkey) {
     /* Add to the hotkey widget list if this is our first hotkey */
-    self->hknext = hkwidgets;
-    hkwidgets = self;
+    self->hknext = dts->top->hkwidgets;
+    dts->top->hkwidgets = self;
   }
   else if (self->hotkey && (!hotkey)) {
     /* Remove us from the list */
-    if (self==hkwidgets) {
-      hkwidgets = self->hknext;
-    }
-    else {
-      struct widget *p = hkwidgets;
-      while (p->hknext)
-	if (p->hknext == self) {
-	  /* Take us out */
-	  p->hknext = self->hknext;
-	  break;
-	}
-	else
-	  p = p->hknext;
+    if (dts->top->hkwidgets) {
+      if (self==dts->top->hkwidgets) {
+	dts->top->hkwidgets = self->hknext;
+      }
+      else {
+	struct widget *p = dts->top->hkwidgets;
+	while (p->hknext)
+	  if (p->hknext == self) {
+	    /* Take us out */
+	    p->hknext = self->hknext;
+	    break;
+	  }
+	  else
+	    p = p->hknext;
+      }
     }
   }
   
   self->hotkey = hotkey;
+}
+
+/*
+   Set a timer.  At the time, in ticks, specified by 'time',
+   the widget will recieve a TRIGGER_TIMER
+*/
+void install_timer(struct widget *self,unsigned long interval) {
+  struct widget *w;
+
+  /* Remove old links */
+  remove_from_timerlist(self);
+
+  self->time = getticks() + interval;
+
+  /* Stick it in the sorted timerwidgets list */
+  if (timerwidgets && (timerwidgets->time < self->time)) {
+    /* Find a place to insert it */
+
+    w = timerwidgets;
+    while (w->tnext && (w->tnext->time < self->time)) 
+      w = w->tnext;
+
+    /* Stick it in! */
+    self->tnext = w->tnext;
+    w->tnext = self;
+  }
+  else {
+    /* The list is empty, or the new timer needs to go
+       before everything else in the list */
+
+    self->tnext = timerwidgets;
+    timerwidgets = self;
+
+    /* Set (reset?) the timer */
+    settimer(interval);
+  }
+}
+
+/* Trigger and remove the next timer trigger */
+void trigger_timer(void) {
+  struct widget *w;
+
+  /* Verify that the trigger is actually due.
+   * The trigger might have been modified between
+   * now and when it was set.
+   */
+  if (timerwidgets && getticks()>=timerwidgets->time) {
+    /* Good. Take it off and trigger it */
+    w = timerwidgets;
+    timerwidgets = timerwidgets->tnext;
+
+    send_trigger(w,TRIGGER_TIMER,NULL);
+  }
+
+  /* Set up the next one */
+  if (timerwidgets) {
+    unsigned long tick = getticks();
+    if (timerwidgets->time < tick)
+      trigger_timer();
+    else
+      settimer(timerwidgets->time - tick);
+  }
 }
 
 /*
@@ -453,7 +542,7 @@ void dispatch_key(long type,int key,int mods) {
   if (type == TRIGGER_CHAR && (mods & ~PGMOD_SHIFT)) return;
 
   /* Iterate through the hotkey-owning widgets if there's a KEYDOWN */
-  p = hkwidgets;
+  p = dts->top->hkwidgets;
   while (p) {
     if (p->hotkey == keycode) {
       suppress = 1;

@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.6 2000/08/02 05:22:49 micahjd Exp $
+/* $Id: field.c,v 1.7 2000/08/06 00:50:53 micahjd Exp $
  *
  * Single-line no-frills text editing box
  *
@@ -40,11 +40,13 @@
 #define FIELDBUF_ALLOCSTEP       10    /* Amount to allocate when the buffer is full */
 
 #define CURSORWIDTH 2
+#define FLASHTIME_ON   250
+#define FLASHTIME_OFF  150
 
 struct fielddata {
   handle font;
   devcolort fg,bg;
-  int focus,on;
+  int focus,on,flash_on;
 
   /* Maximum size the field can hold */
   unsigned int bufmax;
@@ -116,7 +118,7 @@ g_error field_install(struct widget *self) {
   DATA->font = defaultfont;
 
   self->trigger_mask = TRIGGER_UP | TRIGGER_ACTIVATE | TRIGGER_CHAR |
-    TRIGGER_DEACTIVATE | TRIGGER_DOWN | TRIGGER_RELEASE;
+    TRIGGER_DEACTIVATE | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_TIMER;
 
   return sucess;
 }
@@ -237,13 +239,25 @@ void field_trigger(struct widget *self,long type,union trigparam *param) {
     
     /* Update visual appearance to reflect focus or lack of focus */
     
-  case TRIGGER_ACTIVATE:
-    DATA->focus = 1;
-    break;
   case TRIGGER_DEACTIVATE:
     DATA->focus = 0;
+    DATA->flash_on = 0;
     break;
+
+  case TRIGGER_ACTIVATE:
+    DATA->focus = 1;
+    /* No break; here! Get TRIGGER_TIMER to set up the flash timer*/
     
+  case TRIGGER_TIMER:
+    if (DATA->focus==0) break;
+
+    DATA->flash_on = !DATA->flash_on;
+
+    /* Set it again... */
+    install_timer(self,(DATA->flash_on ? 
+			FLASHTIME_ON : FLASHTIME_OFF ));
+    break;
+
     /* Keyboard input */
 
   case TRIGGER_CHAR:
@@ -322,8 +336,9 @@ void fieldstate(struct widget *self) {
        self->in->div->w - fd->margin - CURSORWIDTH) - tw + fd->margin;    
   }
 
-  /* Appear or disappear the cursor depending on focus */
-  if (DATA->focus)
+  /* Appear or disappear the cursor depending on focus and cursor
+     flashing state */
+  if (DATA->flash_on)
     self->in->div->grop->next->next->param.c = DATA->fg;
   else
     self->in->div->grop->next->next->param.c = DATA->bg;

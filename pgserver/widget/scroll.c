@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.18 2000/08/05 18:28:53 micahjd Exp $
+/* $Id: scroll.c,v 1.19 2000/08/06 00:50:53 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -33,6 +33,9 @@
 /* Minimum # of milliseconds between scrolls. This is used to limit the
    scroll bar's frame rate so it doesn't 'lag' behind the mouse */
 #define SCROLL_DELAY 50
+
+/* # of milliseconds between scrolls when holding down the mouse */
+#define SCROLLSPEED  100
 
 /* A power of two to divide the scroll bar's height by to get the
    indicator's height */
@@ -163,7 +166,7 @@ g_error scroll_install(struct widget *self) {
   self->out = &self->in->next;
 
   self->trigger_mask = TRIGGER_DRAG | TRIGGER_ENTER | TRIGGER_LEAVE |
-    TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE;
+    TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_TIMER;
 
   return sucess;
 }
@@ -227,6 +230,7 @@ glob scroll_get(struct widget *self,int property) {
 
 void scroll_trigger(struct widget *self,long type,union trigparam *param) {
   unsigned long tick;
+  int old_value;
 
   switch (type) {
 
@@ -242,15 +246,26 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
     if (param->mouse.chbtn==1) {
       DATA->grab_offset = param->mouse.y - self->in->div->y - 
 	self->in->div->grop->next->next->y;
+
       if (DATA->grab_offset < 0)  
 	DATA->release_delta = -10;
       else if (DATA->grab_offset > (self->in->div->h>>HEIGHT_DIV))
 	DATA->release_delta = 10;
-      else
+      else {
 	DATA->on=1;
+	DATA->release_delta = 0;
+      }
+
+      /* Set up a timer for repeating the scroll */
+      if (DATA->release_delta)
+	install_timer(self,SCROLLSPEED);
     }
     break;
 
+    /* Well, it gets the job done: */
+    
+  case TRIGGER_TIMER:
+    if (!DATA->on) return;
   case TRIGGER_UP:
     if (DATA->release_delta) {
       DATA->value += DATA->release_delta;
@@ -263,12 +278,17 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
       scrollevent(self);
     }
   case TRIGGER_RELEASE:
+    if (type==TRIGGER_TIMER) {
+      install_timer(self,SCROLLSPEED);
+      break;
+    }
     DATA->on=0;
     DATA->release_delta = 0;
     break;
 
   case TRIGGER_DRAG:
     if (!DATA->on) return;
+    old_value = DATA->value;
 
     /* Button 1 is being dragged through our widget. */
     DATA->value = (param->mouse.y - self->in->div->y - 
@@ -277,6 +297,9 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
 
     if (DATA->value > DATA->res) DATA->value = DATA->res;
     if (DATA->value < 0) DATA->value =   0;
+
+    /* Same old value... */
+    if (old_value==DATA->value) return;
 
     /* If we haven't waited long enough since the last update,
        go away */

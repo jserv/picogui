@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.18 2000/06/10 10:17:37 micahjd Exp $
+/* $Id: divtree.h,v 1.19 2000/08/06 00:50:53 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -56,6 +56,7 @@ extern struct dtstack *dts;
 struct divtree {
   struct divnode *head;
   unsigned short int flags;
+  struct widget *hkwidgets; /* Pointer to head widget in hotkey list*/
   int wnum;             /* The ID number of the last numbered widget */
   struct divtree *next;
 };
