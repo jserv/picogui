@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.14 2002/08/19 06:00:14 micahjd Exp $
+/* $Id: sdlgl.h,v 1.15 2002/08/19 06:09:40 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -83,6 +83,7 @@
 struct glbitmap {
   struct stdbitmap *sb;
   int volatilesb;           /* Indicates that the stdbitmap's contents may be changed without notice */
+  u32 last_update_time;     /* Timer for the hack used in gl_make_texture */
 
   /* OpenGL texture, valid if texture is nonzero */
   GLuint texture;
