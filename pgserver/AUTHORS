@@ -12,6 +12,22 @@
   
 -------------------------------------------------------------------------------
 
+N: Pascal Bauermeister
+E: pascal.bauermeister@smartdata.ch
+W: http://www.smartdata.ch
+P: F01A BB22 765A 17FC 13C4  079A A5F6 0044 4469 07BE
+D: Smartdata's head of SW development. Wrote very few lines of code; made Smartdata
+D: (on September 2000) be the first company to adopt and support PicoGUI.
+S: (see web site)
+
+N: Olivier Bornet
+E: Olivier.Bornet@smartdata.ch
+W: http://www.smartdata.ch/
+P: 1024D/C53D9218    D006 AE8A 7B78 FBF1 4284  EBB8 763D D1FC C53D 9218
+D: Misc. stuff.
+D: Mainly for running Waba with PicoGUI (see http://waba.sourceforge.net/)
+S: (see web site)
+
 N: Micah Dowty
 E: micahjd@users.sourceforge.net
 W: http://picogui.org
@@ -20,31 +36,6 @@ S: (ask for current address)
 S: Colorado, USA
 I: dustpuppygeek on AIM
 I: scanline on irc.openprojects.net
-
-N: Yann Vernier
-E: yann@algonet.se
-W: http://www.algonet.se/~yann/
-P: 9242 DC15 2502 FEAB E15F  84C6 D538 EC09 5380 5746
-D: Small bits here and there, Palmax mininotebook support
-S: (ask for current address)
-S: Stockholm, Sweden
-I: LoneTech on irc.undernet.org and irc.openprojects.net
-
-N: Daniel Jackson
-E: carpman@voidptr.org
-W: http://www.voidptr.org
-D: Author of pgl-launcher and pgOrganizer
-S: (ask for current address)
-S: Texas, USA
-I: carpman on irc.openprojects.net
-
-N: Pascal Bauermeister
-E: pascal.bauermeister@smartdata.ch
-W: http://www.smartdata.ch
-P: F01A BB22 765A 17FC 13C4  079A A5F6 0044 4469 07BE
-D: Smartdata's head of SW development. Wrote very few lines of code; made Smartdata
-D: (on September 2000) be the first company to adopt and support PicoGUI.
-S: (see web site)
 
 N: Frederic Gobry
 E: frederic.gobry@smartdata.ch
@@ -60,13 +51,13 @@ P: 6FFD 306F EEC5 1B2C 3DD5  20F1 ED0A BCFF 1B19 F9DC
 D: Some improvements on 'pgboard', the virtual keyboard application
 S: Lausanne, Switzerland
 
-N: Olivier Bornet
-E: Olivier.Bornet@smartdata.ch
-W: http://www.smartdata.ch/
-P: 1024D/C53D9218    D006 AE8A 7B78 FBF1 4284  EBB8 763D D1FC C53D 9218
-D: Misc. stuff.
-D: Mainly for running Waba with PicoGUI (see http://waba.sourceforge.net/)
-S: (see web site)
+N: Daniel Jackson
+E: carpman@voidptr.org
+W: http://www.voidptr.org
+D: Author of pgl-launcher and pgOrganizer
+S: (ask for current address)
+S: Texas, USA
+I: carpman on irc.openprojects.net
 
 N: Philippe Ney
 E: philippe.ney@smartdata.ch
@@ -82,3 +73,12 @@ D: Pseudo geek, Java client and BATTLESHIP!!!
 S: Denver Colorado
 I: lottabs2 on AIM
 I: ickysneeze on irc.openprojects.net
+
+N: Yann Vernier
+E: yann@algonet.se
+W: http://www.algonet.se/~yann/
+P: 9242 DC15 2502 FEAB E15F  84C6 D538 EC09 5380 5746
+D: Small bits here and there, Palmax mininotebook support
+S: (ask for current address)
+S: Stockholm, Sweden
+I: LoneTech on irc.undernet.org and irc.openprojects.net
