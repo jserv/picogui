@@ -89,6 +89,9 @@ array set pg_vid {\
 	rotate180	0x8\
 	rotate270	0x10\
 }
+array set pg_we {\
+	activate 1
+}
 set connection 0
 set defaultparent 0
 set defaultrship $pg_derive(inside)
@@ -335,4 +338,27 @@ proc pgRegisterApp {title type} {
 		set defaultparent $ret(data)
 	}
 	return ret(data)
+}
+proc pgBind {itemid eventid script} {
+	global binds
+	set indexes [array names binds]
+	if {[lsearch $indexes $itemid] == -1} {
+		set handlers($eventid) $script
+	} else {
+		array set handlers [$binds($itemid)]
+		set handlers($eventid) $script
+	}
+	set binds($itemid) [array get handlers]
+}
+proc pgEventLoop {} {
+	global binds
+	while {1} {
+		array set event [pgWaitEvent]
+		set indexes [array names binds]
+		if {[lsearch $indexes $event(from)] == -1} {
+			continue
+		}
+		array set handlers $binds($event(from))
+		eval $handlers($event(event))
+	}
 }
