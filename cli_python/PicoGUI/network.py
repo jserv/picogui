@@ -2,7 +2,7 @@ import socket, struct, os
 
 base_port = 30450
 magic = 0x31415926L
-proto_version_min = 13
+proto_version_min = 21
 default_pgserver = 'localhost:0'
 
 

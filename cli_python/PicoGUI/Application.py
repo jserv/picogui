@@ -80,8 +80,9 @@ class Application(Widget.Widget):
 
     def createWidget(self, wtype, wrapper_class=Widget.Widget):
         'convenience method to create an unparented widget'
-        new_id = self.server.createWidget(wtype)
-        new = wrapper_class(self.server, new_id, self, type=wtype)
+        name, factory = self._get_widget_factory(wtype, wrapper_class)
+        new_id = self.server.createWidget(name)
+        new = factory(self.server, new_id, self, type=name)
         self._notify_new_widget(new)
         return new
 

@@ -47,17 +47,24 @@ class Widget(object):
         if self.parent and hasattr(self.parent, '_notify_new_widget'):
             self.parent._notify_new_widget(new)
 
-    def addWidget(self, wtype, relationship=None, wrapper_class=None):
-        if wrapper_class is None:
-            wrapper_class = Widget
+    def _get_widget_factory(self, wtype, factory):
         if callable(wtype):
-            wrapper_class = wtype
-            if hasattr(wtype, 'default_type'):
-                wtype = wrapper_class.default_type
+            factory = wtype
+            # don't use getattr() so that it isn't inherited
+            if getattr(factory, '__dict__', {}).has_key('widget_type'):
+                name = factory.widget_type
             else:
-                wtype = wrapper_class.__name__
-        new_id = self.server.mkWidget(relationship or self.default_relationship, wtype, self.handle)
-        new = wrapper_class(self.server, new_id, self, type=wtype)
+                name = factory.__name__
+        else:
+            name = wtype
+        if factory is None:
+            factory = Widget
+        return name, factory
+
+    def addWidget(self, wtype, relationship=None, wrapper_class=None):
+        name, factory = self._get_widget_factory(wtype, wrapper_class)
+        new_id = self.server.mkWidget(relationship or self.default_relationship, name, self.handle)
+        new = factory(self.server, new_id, self, type=name)
         self._notify_new_widget(new)
         return new
 
