@@ -174,6 +174,17 @@ quoted appropriately. For example:
 - scrolldistance
   Magnitude of movement, in pixels, for the scroll wheel
 
+
+[video-sdlgl]
+
+- caption
+  Set the window caption when PicoGUI is run in a window. This is a printf
+  format string with 3 integer parameters: width, height, and color depth.
+
+- fullscreen
+  Set to 1 to enable fullscreen mode
+
+
 [video-sdlfb]
 
 - caption
@@ -386,14 +397,7 @@ quoted appropriately. For example:
   related, you can turn this off.
   Default: 1
 
-[video-sdlgl]
-
-- caption
-  Set the window caption when PicoGUI is run in a window. This is a printf
-  format string with 2 integer parameters: width and height.
-
-- fullscreen
-  Set to 1 to enable fullscreen mode
+[opengl]
 
 - texture_filtering
   This may be "linear" or "nearest". Defaults to "linear". Note that font textures
@@ -414,11 +418,14 @@ quoted appropriately. For example:
 - antialias
   With this option on, all lines and polygons in picogui are antialiased. It makes things
   look a LOT better when the camera controls are used or when anything has a scale or rotation
-  applied. This option is _highly_ recommended for any sort of real 3D work, but since
+  applied. This option is recommended for any sort of real 3D work, but since
   under normal use it just slows things down it's disabled by default.
 
-- zoom
-  Set the actual picogui resolution to the window size divided by this amount
+- keys
+  If nonzer, the driver will load an input filter to provide extra magic keys for camera
+  control and other debuggative features. See README.opengl
+  This is on by default
+
 
 [input-jsdev]
 

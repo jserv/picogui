@@ -88,6 +88,12 @@ add_if_true font_freetype.c      $CONFIG_FONTENGINE_FREETYPE
 add_if_true font_textmode.c      $CONFIG_FONTENGINE_TEXTMODE
 add_if_true font_xft.c           $CONFIG_FONTENGINE_XFT
 add_if_true font_ftgl.c          $CONFIG_FONTENGINE_FTGL
+add_if_true gl_bitmap.c          $CONFIG_VBL_GL
+add_if_true gl_camera.c          $CONFIG_VBL_GL
+add_if_true gl_init.c            $CONFIG_VBL_GL
+add_if_true gl_primitives.c      $CONFIG_VBL_GL
+add_if_true gl_util.c            $CONFIG_VBL_GL
+add_if_true gl_grop.c            $CONFIG_VBL_GL
 
 close_section
 
@@ -97,6 +103,7 @@ open_section DRIVER
 add_if_true ez328.c              $DRIVER_EZ328
 add_if_true ez328vga.c           $DRIVER_EZ328VGA
 add_if_true sdlfb.c              $DRIVER_SDLFB
+add_if_true sdlgl.c              $DRIVER_SDLGL
 add_if_true svgafb.c             $DRIVER_SVGAFB
 add_if_true ncurses.c            $DRIVER_NCURSES
 add_if_true null.c               $DRIVER_NULL
@@ -111,12 +118,6 @@ add_if_true x11_window.c         $DRIVER_X11
 add_if_true x11_init.c           $DRIVER_X11
 add_if_true x11_primitives.c     $DRIVER_X11
 add_if_true mgl2fb.c             $DRIVER_MGL2FB
-add_if_true sdlgl_bitmap.c       $DRIVER_SDLGL
-add_if_true sdlgl_camera.c       $DRIVER_SDLGL
-add_if_true sdlgl_init.c         $DRIVER_SDLGL
-add_if_true sdlgl_primitives.c   $DRIVER_SDLGL
-add_if_true sdlgl_util.c         $DRIVER_SDLGL
-add_if_true sdlgl_grop.c         $DRIVER_SDLGL
 
 close_section
 

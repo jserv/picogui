@@ -21,7 +21,7 @@ include_HEADERS = \
 	configfile.h	\
 	hotspot.h	\
 	textbox.h	\
-	sdlgl.h		\
+	gl.h		\
 	fbkeys.h	\
 	svrwt.h		\
 	pgstring.h	\

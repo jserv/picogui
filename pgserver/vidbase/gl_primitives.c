@@ -1,7 +1,7 @@
-/* $Id: sdlgl_primitives.c,v 1.20 2002/11/23 12:01:24 micahjd Exp $
+/* $Id: gl_primitives.c,v 1.1 2002/11/25 05:48:52 micahjd Exp $
  *
- * sdlgl_primitives.c - OpenGL driver for picogui, using SDL for portability.
- *                      Implement standard picogui primitives using OpenGL
+ * gl_primitives.c - OpenGL driver for picogui
+ *                   Implement standard picogui primitives using OpenGL
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -27,10 +27,10 @@
  */
 
 #include <pgserver/common.h>
-#include <pgserver/sdlgl.h>
+#include <pgserver/gl.h>
 
 
-void sdlgl_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
+void gl_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
   if (GL_LINEAR32(dest)) {
     linear32_pixel(STDB(dest),x,y,c,lgop);
     return;
@@ -50,7 +50,7 @@ void sdlgl_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
  * but with all this fun hardware acceleration we shouldn't
  * actually have to use it much.
  */
-hwrcolor sdlgl_getpixel(hwrbitmap dest,s16 x,s16 y) {
+hwrcolor gl_getpixel(hwrbitmap dest,s16 x,s16 y) {
   u8 r,g,b;
 
   if (GL_LINEAR32(dest))
@@ -62,7 +62,7 @@ hwrcolor sdlgl_getpixel(hwrbitmap dest,s16 x,s16 y) {
   return mkcolor(r,g,b);
 }
 
-void sdlgl_rect(hwrbitmap dest,s16 x,s16 y,s16 w, s16 h, hwrcolor c,s16 lgop) {
+void gl_rect(hwrbitmap dest,s16 x,s16 y,s16 w, s16 h, hwrcolor c,s16 lgop) {
   if (GL_LINEAR32(dest)) {
     linear32_rect(STDB(dest),x,y,w,h,c,lgop);
     return;
@@ -78,7 +78,7 @@ void sdlgl_rect(hwrbitmap dest,s16 x,s16 y,s16 w, s16 h, hwrcolor c,s16 lgop) {
   glEnd();
 }
 
-void sdlgl_slab(hwrbitmap dest,s16 x,s16 y,s16 w, hwrcolor c,s16 lgop) {
+void gl_slab(hwrbitmap dest,s16 x,s16 y,s16 w, hwrcolor c,s16 lgop) {
   if (GL_LINEAR32(dest)) {
     linear32_slab(STDB(dest),x,y,w,c,lgop);
     return;
@@ -94,7 +94,7 @@ void sdlgl_slab(hwrbitmap dest,s16 x,s16 y,s16 w, hwrcolor c,s16 lgop) {
   glEnd();
 }
 
-void sdlgl_bar(hwrbitmap dest,s16 x,s16 y,s16 h, hwrcolor c,s16 lgop) {
+void gl_bar(hwrbitmap dest,s16 x,s16 y,s16 h, hwrcolor c,s16 lgop) {
   if (GL_LINEAR32(dest)) {
     linear32_bar(STDB(dest),x,y,h,c,lgop);
     return;
@@ -110,7 +110,7 @@ void sdlgl_bar(hwrbitmap dest,s16 x,s16 y,s16 h, hwrcolor c,s16 lgop) {
   glEnd();
 }
 
-void sdlgl_line(hwrbitmap dest,s16 x1,s16 y1,s16 x2,s16 y2,hwrcolor c,s16 lgop) {
+void gl_line(hwrbitmap dest,s16 x1,s16 y1,s16 x2,s16 y2,hwrcolor c,s16 lgop) {
   if (GL_LINEAR32(dest)) {
     linear32_line(STDB(dest),x1,y1,x2,y2,c,lgop);
     return;
@@ -136,7 +136,7 @@ void sdlgl_line(hwrbitmap dest,s16 x1,s16 y1,s16 x2,s16 y2,hwrcolor c,s16 lgop) 
  *
  * And then the fun part- let OpenGL do all the interpolation for us!
  */
-void sdlgl_gradient(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,s16 angle,
+void gl_gradient(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,s16 angle,
 		  pgcolor c1, pgcolor c2, s16 lgop) {
   float r_v1,g_v1,b_v1;
   float r_v2,g_v2,b_v2;
@@ -223,7 +223,7 @@ void sdlgl_gradient(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,s16 angle,
   glShadeModel(GL_FLAT);
 }
 
-void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
+void gl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 		s16 src_x, s16 src_y, s16 lgop) {
 
   if (GL_LINEAR32(dest) && GL_LINEAR32_SRC(src)) {
@@ -270,14 +270,14 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
   /* FIXME: can't blit from screen back to bitmap. Is this desired, or even possible? */
 }
 
-int sdlgl_update_hook(void) {
+int gl_update_hook(void) {
   if (gl_global.allow_update)
     return 0;
   gl_global.need_update++;
   return 1;
 }
 
-void sdlgl_sprite_show(struct sprite *spr) {
+void gl_sprite_show(struct sprite *spr) {
   if (!gl_global.allow_update)
     return;
 
@@ -294,19 +294,19 @@ void sdlgl_sprite_show(struct sprite *spr) {
 
 }
 
-void sdlgl_sprite_hide(struct sprite *spr) {
+void gl_sprite_hide(struct sprite *spr) {
   /* No need to erase sprites */
 }
 
-void sdlgl_sprite_update(struct sprite *spr) {
+void gl_sprite_update(struct sprite *spr) {
   gl_global.need_update++;
 }
 
-void sdlgl_sprite_protectarea(struct quad *in,struct sprite *from) { 
+void gl_sprite_protectarea(struct quad *in,struct sprite *from) { 
   /* No need to protect for sprites */
 }
 
-int sdlgl_grop_render_presetup_hook(struct divnode **div, struct gropnode ***listp,
+int gl_grop_render_presetup_hook(struct divnode **div, struct gropnode ***listp,
 				    struct groprender *rend) {
 
   /* Don't bother with incremental or scroll-only gropnodes */
@@ -322,14 +322,14 @@ int sdlgl_grop_render_presetup_hook(struct divnode **div, struct gropnode ***lis
 }
 
 /* No color conversion, don't premultiply alphas */
-hwrcolor sdlgl_color_pgtohwr(pgcolor c) {
+hwrcolor gl_color_pgtohwr(pgcolor c) {
   return c;
 }
-pgcolor sdlgl_color_hwrtopg(pgcolor c) {
+pgcolor gl_color_hwrtopg(pgcolor c) {
   return c;
 }
 
-int sdlgl_grop_render_node_hook(struct divnode **div, struct gropnode ***listp,
+int gl_grop_render_node_hook(struct divnode **div, struct gropnode ***listp,
 				struct groprender *rend, struct gropnode *node) {
   hwrcolor c;
   struct fontdesc *fd;
@@ -375,7 +375,7 @@ int sdlgl_grop_render_node_hook(struct divnode **div, struct gropnode ***listp,
   return 1;
 }
 
-int sdlgl_grop_render_postsetup_hook(struct divnode **div, struct gropnode ***listp,
+int gl_grop_render_postsetup_hook(struct divnode **div, struct gropnode ***listp,
 				     struct groprender *rend) {
   GLdouble eqn[4];
   
@@ -427,13 +427,13 @@ int sdlgl_grop_render_postsetup_hook(struct divnode **div, struct gropnode ***li
   return 0;
 }
 
-void sdlgl_grop_render_end_hook(struct divnode **div, struct gropnode ***listp,
+void gl_grop_render_end_hook(struct divnode **div, struct gropnode ***listp,
 				struct groprender *rend) {
   /* Clean up */
   glPopMatrix();
 }
 
-void sdlgl_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
+void gl_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
 		     hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 xo, s16 yo, s16 lgop) {
   s16 i,j;
   int blit_x, blit_y, blit_w, blit_h, blit_src_x, blit_src_y;
@@ -455,7 +455,7 @@ void sdlgl_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
     }
-    sdlgl_blit(dest,x,y,w,h,src,sx,sy,lgop);
+    gl_blit(dest,x,y,w,h,src,sx,sy,lgop);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP);
     return;
@@ -496,7 +496,7 @@ void sdlgl_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
   }
 }
 
-void sdlgl_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
+void gl_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
   int i,j;
 
   /* Convert the radius to a power of 2 */

@@ -30,7 +30,13 @@ EXTRA_libvidbase_la_SOURCES = \
 	font_freetype.c	\
 	font_textmode.c	\
 	font_xft.c	\
-	font_ftgl.c
+	font_ftgl.c	\
+	gl_bitmap.c	\
+	gl_camera.c	\
+	gl_init.c	\
+	gl_primitives.c	\
+	gl_util.c	\
+	gl_grop.c
 
 libvidbase_la_LIBADD       = $(VIDBASE:%.c=%.lo)
 libvidbase_la_DEPENDENCIES = $(VIDBASE:%.c=%.lo)

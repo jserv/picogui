@@ -1,8 +1,8 @@
-/* $Id: sdlgl_grop.c,v 1.7 2002/11/24 10:26:02 micahjd Exp $
+/* $Id: gl_grop.c,v 1.1 2002/11/25 05:48:52 micahjd Exp $
  *
- * sdlgl_grop.c - OpenGL driver for picogui, using SDL for portability.
- *                This handles all new gropnodes that export OpenGL interfaces to
- *                clients and themes.   
+ * gl_grop.c - OpenGL driver for picogui
+ *             This handles all new gropnodes that export OpenGL interfaces to
+ *             clients and themes.   
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -28,14 +28,14 @@
  */
 
 #include <pgserver/common.h>
-#include <pgserver/sdlgl.h>
+#include <pgserver/gl.h>
 #include <picogui/opengl.h>
 
 /* Macro to convert fixed point back to floating point */
 #define UNFIX(x) (((s32)(x))/65536.0f)
 #define UNFIX16(x,y) UNFIX( (((u16)(x))<<16) | ((u16)(y)) )
 
-void sdlgl_grop_handler(struct groprender *r, struct gropnode *n) {
+void gl_grop_handler(struct groprender *r, struct gropnode *n) {
   struct glbitmap *glb;
   GLfloat vector[4];
 

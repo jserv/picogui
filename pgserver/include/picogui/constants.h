@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.173 2002/11/21 10:35:53 thierrythevoz Exp $
+/* $Id: constants.h,v 1.174 2002/11/25 05:48:52 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -863,6 +863,7 @@ typedef unsigned long pghandle;
 #define PGDM_CONTRAST         7   //!< Set display contrast, 0x00-0xFF
 #define PGDM_SIGNAL          13   //!< Internal message, sends SIGUSR1/2 to drivers (param is signal)
 #define PGDM_READY           14   //!< Notify the drivers that the server is completely up
+#define PGDM_MOUSEWARP       15   //!< Warp the mouse to the specified coordinates, X and Y packed into 32 bits
 
 #define PG_SND_KEYCLICK       1   //!< Short click
 #define PG_SND_BEEP           2   //!< Terminal beep

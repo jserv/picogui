@@ -1,15 +1,15 @@
 -------------------- OpenGL support in PicoGUI --
 
-PicoGUI now has a driver for doing OpenGL video, sdlgl.
-This driver is still considered experimental.
+PicoGUI now has a video base library for OpenGL output.
+This is used by video drivers such as "sdlgl"
 
-Required libraries:
+Recommended libraries:
  - SDL
  - OpenGL
  - GLU
  - Freetype2
 
-Required PicoGUI components:
+Recommended PicoGUI components:
  - sdlinput input driver
  - linear32 video base library
  - sdlgl video driver 

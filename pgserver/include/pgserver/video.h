@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.114 2002/11/11 07:33:04 micahjd Exp $
+/* $Id: video.h,v 1.115 2002/11/25 05:48:52 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -835,8 +835,8 @@ void def_dither_finish(hwrdither d);
 /**************************************** Registration functions for video drivers */
 
 g_error sdlfb_regfunc(struct vidlib *v);
-g_error sdlgl_regfunc(struct vidlib *v);
 g_error svgagl_regfunc(struct vidlib *v);
+g_error sdlgl_regfunc(struct vidlib *v);
 g_error svgafb_regfunc(struct vidlib *v);
 g_error chipslice_video_regfunc(struct vidlib *v);
 g_error ez328_regfunc(struct vidlib *v);
@@ -862,6 +862,7 @@ void setvbl_linear16(struct vidlib *vid);
 void setvbl_linear24(struct vidlib *vid);
 void setvbl_linear32(struct vidlib *vid);
 void setvbl_slowvbl(struct vidlib *vid);
+void setvbl_gl(struct vidlib *vid);
 
 /***************************************** Registration functions for video wrapper libraries */
 void vidwrap_rotate90(struct vidlib *vid);

@@ -1,7 +1,7 @@
-/* $Id: sdlgl_bitmap.c,v 1.6 2002/11/08 01:25:37 micahjd Exp $
+/* $Id: gl_bitmap.c,v 1.1 2002/11/25 05:48:52 micahjd Exp $
  *
- * sdlgl_bitmap.c - OpenGL driver for picogui, using SDL for portability
- *                  Functions to replace PicoGUI's normal bitmap data type
+ * gl_bitmap.c - OpenGL driver for picogui
+ *               Functions to replace PicoGUI's normal bitmap data type
  *
  * Note: OpenGL doesn't have a portable way to render to an offscreen
  *       buffer, so this driver keeps offscreen surfaces as a 32bpp
@@ -32,9 +32,9 @@
  */
 
 #include <pgserver/common.h>
-#include <pgserver/sdlgl.h>
+#include <pgserver/gl.h>
 
-g_error sdlgl_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
+g_error gl_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
   struct glbitmap *glb = (struct glbitmap *) bmp;
   g_error e;
     
@@ -69,7 +69,7 @@ g_error sdlgl_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
   return success;
 }
 
-g_error sdlgl_bitmap_getsize(hwrbitmap bmp,s16 *w,s16 *h) {
+g_error gl_bitmap_getsize(hwrbitmap bmp,s16 *w,s16 *h) {
   struct glbitmap *glb = (struct glbitmap *) bmp;
   
   /* Special case for the display */
@@ -82,7 +82,7 @@ g_error sdlgl_bitmap_getsize(hwrbitmap bmp,s16 *w,s16 *h) {
   return def_bitmap_getsize(glb->sb,w,h);
 }
 
-g_error sdlgl_bitmap_new(hwrbitmap *bmp,s16 w,s16 h,u16 bpp) {
+g_error gl_bitmap_new(hwrbitmap *bmp,s16 w,s16 h,u16 bpp) {
   struct glbitmap **glb = (struct glbitmap **) bmp;
   g_error e;
 
@@ -95,7 +95,7 @@ g_error sdlgl_bitmap_new(hwrbitmap *bmp,s16 w,s16 h,u16 bpp) {
   return def_bitmap_new(&(*glb)->sb,w,h,32);
 }
 
-void sdlgl_bitmap_free(hwrbitmap bmp) {
+void gl_bitmap_free(hwrbitmap bmp) {
   struct glbitmap *glb = (struct glbitmap *) bmp;
   def_bitmap_free(glb->sb);
   if (glb->texture)
@@ -123,7 +123,7 @@ int gl_invalidate_texture(hwrbitmap bit) {
  * we mark the bitmap as 'volatile' and recreate the texture every time we blit. This is crufty!
  * FIXME: Need to implement a lock/unlock method of controlling bitmap access to avoid that
  */
-g_error sdlgl_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm) {
+g_error gl_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm) {
   g_error e;
 
   gl_invalidate_texture(bmp);

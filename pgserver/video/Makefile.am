@@ -22,13 +22,8 @@ EXTRA_libvideo_la_SOURCES = \
 	x11_window.c \
 	x11_bitmap.c \
 	x11_primitives.c \
-	mgl2fb.c   \
-	sdlgl_bitmap.c \
-	sdlgl_camera.c \
-	sdlgl_init.c \
-	sdlgl_primitives.c \
-	sdlgl_util.c \
-	sdlgl_grop.c
+	mgl2fb.c \
+	sdlgl.c
 
 noinst_HEADERS = \
 	yuv.h

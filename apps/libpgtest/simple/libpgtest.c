@@ -67,7 +67,7 @@ g_error protected_main(int argc, char **argv) {
   errorcheck;
 
   /* Redraw frames continuously instead of just when something changes */
-  e = set_param_str("video-sdlgl", "continuous", "1");
+  e = set_param_str("opengl", "continuous", "1");
   errorcheck;
 
   /* Define a configuration without using the usual config files.

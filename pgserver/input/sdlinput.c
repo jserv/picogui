@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.45 2002/11/23 12:23:35 micahjd Exp $
+/* $Id: sdlinput.c,v 1.46 2002/11/25 05:48:52 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -282,6 +282,17 @@ void sdlinput_close(void) {
 #endif
 }
 
+void sdlinput_message(u32 message, u32 param, u32 *ret) {
+  switch (message) {
+    
+  case PGDM_MOUSEWARP:
+    SDL_WarpMouse(param>>16, param & 0xFFFF);
+    break;
+
+  }
+}
+
+
 /******************************************** Driver registration */
 
 g_error sdlinput_regfunc(struct inlib *i) {
@@ -289,6 +300,7 @@ g_error sdlinput_regfunc(struct inlib *i) {
   i->poll = &sdlinput_poll;
   i->fd_init = &sdlinput_fd_init;
   i->close = &sdlinput_close;
+  i->message = &sdlinput_message;
 
   return success;
 }

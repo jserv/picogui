@@ -1,7 +1,7 @@
-/* $Id: sdlgl_util.c,v 1.27 2002/11/24 06:59:23 micahjd Exp $
+/* $Id: gl_util.c,v 1.1 2002/11/25 05:48:52 micahjd Exp $
  *
- * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
- *                This file has utilities shared by multiple components of the driver.
+ * gl_util.c - OpenGL driver for picogui
+ *             This file has utilities shared by multiple components of the driver.
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -27,10 +27,10 @@
  */
 
 #include <pgserver/common.h>
-#include <pgserver/sdlgl.h>
-#include <SDL/SDL_endian.h>
+#include <pgserver/gl.h>
+#include <endian.h>
 
-struct sdlgl_data gl_global;
+struct gl_data gl_global;
 
 inline void gl_color(hwrcolor c) {
   if (c & PGCF_ALPHA) {
@@ -235,13 +235,13 @@ void gl_frame(void) {
     gl_osd_printf(&i,"FPS: %.2f",gl_global.fps);
 
   switch (gl_global.camera_mode) {
-  case SDLGL_CAMERAMODE_TRANSLATE:
+  case GL_CAMERAMODE_TRANSLATE:
     gl_osd_printf(&i,"Camera pan/zoom mode");
     break;
-  case SDLGL_CAMERAMODE_ROTATE:
+  case GL_CAMERAMODE_ROTATE:
     gl_osd_printf(&i,"Camera rotate mode");
     break;
-  case SDLGL_CAMERAMODE_FOLLOW_MOUSE:
+  case GL_CAMERAMODE_FOLLOW_MOUSE:
     gl_osd_printf(&i,"Camera following mouse, shift-mousewheel to zoom");
     break;
   }
@@ -255,7 +255,7 @@ void gl_frame(void) {
   /***************** Done */
 
   gl_global.allow_update = 0;
-  SDL_GL_SwapBuffers();
+  vid->update(vid->display,0,0,vid->xres,vid->yres);
 
   /* Pop matrices */
   glMatrixMode(GL_PROJECTION);
@@ -357,37 +357,6 @@ void gl_render_grid(void) {
   glPopMatrix();
 }
 
-/* Show a texture on the screen and pause, for debugging
- */
-void gl_showtexture(GLuint tex, int w, int h) {
-  printf("Showing texture %d\n", tex);
-  gl_lgop(PG_LGOP_NONE);
-  glDisable(GL_TEXTURE_2D);
-  glBegin(GL_QUADS);
-  gl_color(0x000080);
-  glVertex2f(0,0);
-  glVertex2f(10000,0);
-  glVertex2f(10000,10000);
-  glVertex2f(0,10000);
-  glEnd();
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, tex);
-  glBegin(GL_QUADS);
-  gl_color(0xFFFFFF);
-  glNormal3f(0.0f,0.0f,1.0f);
-  glTexCoord2f(0,0);
-  glVertex2f(0,0);
-  glTexCoord2f(1,0);
-  glVertex2f(w,0);
-  glTexCoord2f(1,1);
-  glVertex2f(w,h);
-  glTexCoord2f(0,1);
-  glVertex2f(0,h);
-  glEnd();
-  glDisable(GL_TEXTURE_2D);
-  SDL_GL_SwapBuffers();
-  sleep(2);
-}
 
 void gl_make_texture(struct glbitmap *glb) {
 
@@ -464,18 +433,19 @@ void gl_make_texture(struct glbitmap *glb) {
 	*p = *p | 0xFF000000;
 
 
-      /* On big-endian machines we need to swap it into BGRA order..
-       * It's an OpenGL quirk
-       */
-      *p = SDL_SwapLE32(*p);
+#if __BYTE_ORDER == __BIG_ENDIAN
+      /* OpenGL requires that the pixels are always in little-endian */
+      *p  = (((*p)&0xFF000000)>>24) |
+	    (((*p)&0x00FF0000)>>8)  |
+ 	    (((*p)&0x0000FF00)<<8)  |
+	    (((*p)&0x000000FF)<<24) ;
+#endif
     }
     
     /* Send it to opengl, ditch our temporary */
     glTexImage2D(GL_TEXTURE_2D, 0, 4, glb->tw, glb->th, 0, 
 		 GL_BGRA_EXT, GL_UNSIGNED_BYTE, ((struct glbitmap*)tmpbit)->sb->bits);
     vid->bitmap_free(tmpbit);
-    
-    //  gl_showtexture(glb->texture, glb->tw, glb->th);
   }      
 }
 
