@@ -1,0 +1,57 @@
+# -*- python -*-
+
+# This file is only useful for SMARTDATA's build system
+
+import os
+
+multicompile = 0
+
+native = 1
+
+description = ''' PicoGUI python interface '''
+
+license = ''' GNU LGPL '''
+
+runtime = [
+    SharedRuntime ('install', 'Install PicoGUI python interface',
+                   content = [],
+
+                   depends = [])
+    ]
+
+def clean (module, platform, project):
+    sequence ("python2.2 setup.py clean")
+    return
+
+def prepare (module, platform, project):
+    message ("checking your python installation")
+
+    failed = 0
+    
+    for mod in (('distutils', 'python2.2-dev'),
+                ('xml',       'python2.2-xml')):
+        try:
+            sequence ("python2.2 -c 'import %s' 2> /dev/null" % mod [0])
+        except BeeError:
+            warning ("please install %s" % mod [1])
+            failed = 1
+
+    if failed:
+        raise BeeError ("incomplete python2.2 installation (see above)")
+    
+    return
+
+def compile (module, platform, project):
+    sequence ("python2.2 setup.py build")
+    return
+
+def install (module, platform, project):
+    sequence ('python2.2 setup.py install --prefix=%s' % module.path ['dfl'])
+    return
+
+def linkinfo (module, platform, project):
+
+    path = os.path.join (module.path ['dfl'],
+                         'lib', 'python2.2', 'site-packages')
+    
+    return { 'library' : { 'path' : path }}
