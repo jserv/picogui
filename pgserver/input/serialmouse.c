@@ -1,4 +1,4 @@
-/* $Id: serialmouse.c,v 1.1 2001/09/21 03:50:56 micahjd Exp $
+/* $Id: serialmouse.c,v 1.2 2001/09/21 18:19:35 micahjd Exp $
  *
  * serialmouse.c - input driver for serial mice.
  *
@@ -87,56 +87,64 @@ int multiplier;
 struct termios options;
 
 void serialmouse_fd_activate(int fd) {
-  int buttons,dx,dy;
-  char packet[3];
+  u8 buttons;
+  s8 dx,dy;
+  u8 packet[3];
   s16 cursorx,cursory;
 
-  if (!read(mouse_fd,&packet[0],3))
+  /* Read a correctly-aligned mouse packet. If the first byte isn't 0x40,
+   * it isn't correctly aligned. The mouse packet is 4 bytes long.
+   */
+  
+  if (!read(mouse_fd,packet,1))
+    return;
+  if (!(packet[0] & 0x40))
+    return;
+  if (!read(mouse_fd,packet+1,2))
     return;
 
   /* Get the cursor position in physical coordinates */
   cursorx = cursor->x;
   cursory = cursor->y;
   VID(coord_physicalize)(&cursorx,&cursory);
-
-  /* from gpm */
-  if (packet[0] & 0x40) {
-    buttons= ((packet[0] & 0x20) >> 5) | ((packet[0] &
-					   0x10) >> 2);
-    dx=(signed char)(((packet[0] & 0x03) << 6) |
-		     (packet[1] & 0x3F));
-    dy=(signed char)(((packet[0] & 0x0C) << 4) |
-		     (packet[2] & 0x3F));
-
-#ifdef DRIVER_SERIALMOUSE_DEBUG
-    printf("fd=%d, dx=%d, dy=%d, buttons=%d packet = %04X\n",
-	   mouse_fd,dx,dy,buttons,*(int*)packet);
-#endif    
-
-    cursorx=cursorx+multiplier*dx;
-    cursory=cursory+multiplier*dy;
-    if (cursorx >= vid->xres)       /* Use physical screen size */
-      cursorx=vid->xres-1;
-    if (cursory >= vid->yres)
-      cursory=vid->yres-1;
-    if (cursorx < 0)cursorx=0;
-    if (cursory < 0)cursory=0;
-
-    if ((buttons!=0)&&(btnstate==0)){
-   
-      dispatch_pointing(TRIGGER_DOWN,cursorx,cursory,buttons);
-      btnstate=1;}
-    if ((buttons==0)&&(btnstate==1)){
-   
-      dispatch_pointing(TRIGGER_UP,cursorx,cursory,buttons);
-      btnstate=0;
-    }
-    if((dx!=0)||(dy!=0))
-      dispatch_pointing(TRIGGER_MOVE,cursorx,cursory,buttons);
-       
+  
+  buttons = ((packet[0] & 0x20) >> 5) | ((packet[0] & 0x10) >> 2);
+  dx = ((packet[0] & 0x03) << 6) | (packet[1] & 0x3F);
+  dy = ((packet[0] & 0x0C) << 4) | (packet[2] & 0x3F);
+  
+#ifdef DEBUG_EVENT
+  {
+    int a,b,c;
+    
+    a = packet[0];
+    b = packet[1];
+    c = packet[2];
+    printf("fd=%d, dx=%d, dy=%d, buttons=%d packet = %02X %02X %02X\n",
+	   mouse_fd,dx,dy,buttons,a,b,c);
   }
-  else tcflush(mouse_fd,TCIFLUSH);
-
+#endif    
+  
+  cursorx=cursorx+multiplier*dx;
+  cursory=cursory+multiplier*dy;
+  if (cursorx >= vid->xres)       /* Use physical screen size */
+    cursorx=vid->xres-1;
+  if (cursory >= vid->yres)
+    cursory=vid->yres-1;
+  if (cursorx < 0)cursorx=0;
+  if (cursory < 0)cursory=0;
+  
+  if ((buttons!=0)&&(btnstate==0)){
+    
+    dispatch_pointing(TRIGGER_DOWN,cursorx,cursory,buttons);
+    btnstate=1;}
+  if ((buttons==0)&&(btnstate==1)){
+    
+    dispatch_pointing(TRIGGER_UP,cursorx,cursory,buttons);
+    btnstate=0;
+  }
+  if((dx!=0)||(dy!=0))
+    dispatch_pointing(TRIGGER_MOVE,cursorx,cursory,buttons);
+  
 }
 
 g_error serialmouse_init(void) {
@@ -146,7 +154,7 @@ g_error serialmouse_init(void) {
   mouse_fd = open(get_param_str("input-serialmouse","device","/dev/ttyS0"),
 	    O_RDONLY | O_NOCTTY | O_NDELAY);
 
-  if(mouse_fd == -1)
+  if(mouse_fd < 0)
     return mkerror(PG_ERRT_IO,43);   /* Error opening mouse device */
 
   tcgetattr(mouse_fd, &options);
@@ -156,7 +164,7 @@ g_error serialmouse_init(void) {
   options.c_cflag &= ~PARENB; /* None parity */
   options.c_cflag &= ~CSIZE; /* Mask the character bit
 				size */
-  options.c_cflag |= CS8; /* 8 data bits */
+  options.c_cflag |= CS7; /* 7 data bits */
   options.c_cflag &= ~CSTOPB; /* 1 stop bits */
   options.c_cflag &= ~CRTSCTS;/* Disable hardware flow
 				 control */
@@ -165,7 +173,7 @@ g_error serialmouse_init(void) {
   /* Set raw input and output */
   options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
   options.c_oflag &= ~OPOST;
-
+                                                              
   tcsetattr(mouse_fd, TCSANOW, &options); /* set parameters */
   return sucess;
 }

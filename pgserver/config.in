@@ -101,9 +101,6 @@ if [ "$DRIVER_R3912TS" = "y" ]; then
 fi
 bool 'Agenda VR3 touchscreen input driver'             DRIVER_VR3TS
 bool 'Serial mouse input driver'                       DRIVER_SERIALMOUSE
-if [ "$DRIVER_SERIALMOUSE" = "y" ]; then
-   bool '  Mouse packet debugging messages'            DRIVER_SERIALMOUSE_DEBUG
-fi
 endmenu
 
 mainmenu_option next_comment
