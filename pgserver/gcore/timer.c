@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.14 2001/07/11 08:18:02 micahjd Exp $
+/* $Id: timer.c,v 1.15 2001/10/08 04:02:39 micahjd Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -46,6 +46,7 @@ u32 lastactivity;
 u32 timer_cursorhide;
 u32 timer_backlightoff;
 u32 timer_sleep;
+u32 timer_vidblank;
 
 /* Internal function to send driver messages after periods of inactivity
  * specified in the configuration file
@@ -182,6 +183,11 @@ u32 inactivity_get() {
  * inactivity_set(0) is equivalent to inactivity_reset().
  */
 void inactivity_set(u32 t) {
+  if (!t) {  
+    /* Wake up the hardware */
+    drivermessage(PGDM_POWER,PG_POWER_FULL);
+  }
+
   lastactivity = getticks() - t;
 }
 
@@ -192,6 +198,7 @@ void inactivity_init(void) {
   timer_cursorhide    = get_param_int("timers","cursorhide",0xFFFFFFF);
   timer_backlightoff  = get_param_int("timers","backlightoff",0xFFFFFFF);
   timer_sleep         = get_param_int("timers","sleep",0xFFFFFFF);
+  timer_vidblank      = get_param_int("timers","vidblank",0xFFFFFFF);
 }
 
 void inactivity_check(void) {
@@ -213,6 +220,9 @@ void inactivity_check(void) {
 
   if ( now >= timer_sleep && then < timer_sleep )
     drivermessage(PGDM_POWER,PG_POWER_SLEEP);
+
+  if ( now >= timer_vidblank && then < timer_vidblank )
+    drivermessage(PGDM_POWER,PG_POWER_VIDBLANK);
 
   then = now;
 }

@@ -26,7 +26,6 @@ static const char *PG_TS_ENV_NAME = "PG_TS_CALIBRATION";
 /* file descriptor for touch panel */
 static int fd = -1;
 static int PEN_DOWN;
-static int backlight_on;
 
 g_error tuxts_init(void)
 {
@@ -76,9 +75,9 @@ g_error tuxts_init(void)
 void tuxts_close(void)
 {
   /* turn on the backlight on exit */
-  drivermessage(PGDM_BACKLIGHT,1);
+  ioctl(fd,64,1);		/* turn on the backlight */
 
- 	/* Close the touch panel device. */
+  /* Close the touch panel device. */
 #ifdef DEBUG_EVENT
   printf("tuxts_close called\n");
 #endif
@@ -106,25 +105,19 @@ void tuxts_poll(void) {
 
   if(b>0) {
     if(PEN_DOWN) {
-      if (backlight_on)
-	dispatch_pointing(TRIGGER_MOVE,x,y,1);
+      dispatch_pointing(TRIGGER_MOVE,x,y,1);
 #ifdef DEBUG_EVENT
       printf("Pen Move\n");
 #endif
     } else {
-      if (backlight_on) {
-	dispatch_pointing(TRIGGER_DOWN,x,y,1);
-	PEN_DOWN = 1;
-      }
-      else
-	drivermessage(PGDM_BACKLIGHT,1);
+      dispatch_pointing(TRIGGER_DOWN,x,y,1);
+      PEN_DOWN = 1;
 #ifdef DEBUG_EVENT
       printf("Pen Down\n");
 #endif
     }
   } else {
-    if (backlight_on)
-      dispatch_pointing(TRIGGER_UP,x,y,0);
+    dispatch_pointing(TRIGGER_UP,x,y,0);
 #ifdef DEBUG_EVENT
     printf("Pen Up\n");
 #endif
@@ -145,10 +138,26 @@ void tuxts_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
 void tuxts_message(u32 message, u32 param) {
   switch (message) {
 
-    /* Allow control of the backlight from anywhere */
-  case PGDM_BACKLIGHT:
-    ioctl(fd,64,backlight_on = (param!=0));
+    /* Tuxscreen ioctls:
+     *
+     * ioctl 64 -> backlight power
+     * ioctl 65 -> 0x00-0xFF set brightness
+     * ioctl 66 -> get brightness
+     * ioctl 67 -> 0x00-0xFF set contrast
+     * ioctl 68 -> get contrast
+     */
+
+    /* Control backlight through the power control driver message */
+  case PGDM_POWER:
+    ioctl(fd,64,param > PG_POWER_VIDBLANK);
     break;
+  case PGDM_BRIGHTNESS:
+    ioctl(fd,65,param);
+    break;
+  case PGDM_CONTRAST:
+    ioctl(fd,67,param);
+    break;
+
   }
 }
  

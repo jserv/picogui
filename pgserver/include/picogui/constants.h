@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.88 2001/10/06 20:25:41 micahjd Exp $
+/* $Id: constants.h,v 1.89 2001/10/08 04:02:39 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -736,6 +736,8 @@ typedef unsigned long pghandle;
 #define PGDM_SOUNDFX          3   //!< Parameter is a PG_SND_* constant
 #define PGDM_POWER            4   //!< Enter the power mode, PG_POWER_*
 #define PGDM_SDC_CHAR         5   //!< Send a character to the secondary display channel
+#define PGDM_BRIGHTNESS       6   //!< Set display brightness, 0x00-0xFF
+#define PGDM_CONTRAST         7   //!< Set display contrast, 0x00-0xFF
 
 #define PG_SND_KEYCLICK       1   //!< Short click
 #define PG_SND_BEEP           2   //!< Terminal beep
@@ -743,6 +745,7 @@ typedef unsigned long pghandle;
 
 #define PG_POWER_OFF          0   //!< Turn completely off
 #define PG_POWER_SLEEP       50   //!< Stop CPU, turn off peripherals
+#define PG_POWER_VIDBLANK    70   //!< Blank the video output
 #define PG_POWER_FULL       100   //!< Full speed
 
 //! \}

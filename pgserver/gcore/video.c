@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.41 2001/08/18 06:04:35 micahjd Exp $
+/* $Id: video.c,v 1.42 2001/10/08 04:02:39 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -412,6 +412,7 @@ void drivermessage(u32 message, u32 param) {
       VID(sprite_hide)(cursor);
     realize_updareas();
     break;
+
 
   }
 }

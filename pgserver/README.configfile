@@ -106,6 +106,9 @@ quoted appropriately. For example:
 - sleep
   Inactivity time before sleep mode, in 1/10 seconds
 
+- vidblank
+  Inactivity time before blanking the display, in 1/10 seconds
+
 [video-sdlfb]
 
 - caption
