@@ -1,4 +1,4 @@
-/* $Id: ncursesinput.c,v 1.14 2001/02/23 04:44:47 micahjd Exp $
+/* $Id: ncursesinput.c,v 1.15 2001/04/15 00:28:27 micahjd Exp $
  *
  * ncursesinput.h - input driver for ncurses
  * 
@@ -213,6 +213,10 @@ g_error ncursesinput_init(void) {
    if (Gpm_Open(&my_gpm,0) == -1)
      return mkerror(PG_ERRT_IO,74);
    gpm_zerobased = 1;
+   
+   /* Force a screen update here, otherwise ncurses will impolitely clear the
+    * screen next time a key is input */
+   refresh();
    
    return sucess;
 }
