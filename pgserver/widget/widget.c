@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.215 2002/11/19 06:27:59 micahjd Exp $
+/* $Id: widget.c,v 1.216 2002/11/26 22:03:25 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -448,7 +448,7 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
     case PG_WP_NAME:
       if (iserror(rdhandle((void **)&str,PG_TYPE_PGSTRING,-1,data))) 
 	return mkerror(PG_ERRT_HANDLE,18);
-      w->name = data;
+      w->name = handle_canonicalize((handle) data);
       break;
 
     case PG_WP_PUBLICBOX:

@@ -1,4 +1,4 @@
-/* $Id: wt.c,v 1.7 2002/11/20 12:18:22 micahjd Exp $
+/* $Id: wt.c,v 1.8 2002/11/26 22:03:25 micahjd Exp $
  * 
  * wt.c - Loading and instantiation of PicoGUI's Widget Templates
  *
@@ -189,9 +189,9 @@ g_error wt_run_requests(handle group, int owner, const u8 **requests, int *reque
     
     /* Set our handle mapping table */
     handle_setmapping(htable, num_handles);
-
     e = request_exec(&r);
     errorcheck;
+    handle_setmapping(NULL, 0);
 
     /* Group the resulting handle so it's freed when we are */
     handle_group(owner,group,r.out.ret,owner);

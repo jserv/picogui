@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.34 2002/10/24 03:00:54 micahjd Exp $
+/* $Id: handle.h,v 1.35 2002/11/26 22:03:24 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -172,6 +172,11 @@ void handle_dump(void);
 /* Dump strings on CTRL-ALT-S */
 void string_dump(void);
 #endif
+
+/* Convert a handle that may be in a local handle space to the
+ * canonical global representation.
+ */
+handle handle_canonicalize(handle h);
 
 #endif /* __HANDLE_H */
 /* The End */

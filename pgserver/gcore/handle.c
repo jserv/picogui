@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.63 2002/10/27 21:38:20 micahjd Exp $
+/* $Id: handle.c,v 1.64 2002/11/26 22:03:23 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -299,12 +299,22 @@ void htree_delete(struct handlenode *z) {
   g_free(y);
 }
 
+/* Convert a handle that may be in a local handle space to the
+ * canonical global representation.
+ */
+handle handle_canonicalize(handle h) {
+  /* Mapping table lookup */
+  if ((h & 0x80000000) && ((h & 0x7FFFFFFF) < handle_mapping_len))
+    h = handle_mapping[h & 0x7FFFFFFF];
+
+  return h;
+}
+
+
 struct handlenode *htree_find(handle id) {
   struct handlenode *current = htree;
 
-  /* Map the handle first */
-  if ((id & 0x80000000) && ((id & 0x7FFFFFFF) < handle_mapping_len))
-    id = handle_mapping[id & 0x7FFFFFFF];
+  id = handle_canonicalize(id);
 
   while(current != NIL)
     if(id == current->id)

@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.127 2002/11/15 12:53:12 micahjd Exp $
+/* $Id: button.c,v 1.128 2002/11/26 22:03:25 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -289,7 +289,7 @@ g_error button_set(struct widget *self,int property, glob data) {
     if (iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)))
        return mkerror(PG_ERRT_HANDLE,33);
      
-    DATA->bitmap = (handle) data;
+    DATA->bitmap = handle_canonicalize((handle) data);
     resizewidget(self);
     set_widget_rebuild(self);
     break;
@@ -298,7 +298,7 @@ g_error button_set(struct widget *self,int property, glob data) {
     if (iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)))
        return mkerror(PG_ERRT_HANDLE,34);
 
-    DATA->bitmask = (handle) data;
+    DATA->bitmask = handle_canonicalize((handle) data);
     set_widget_rebuild(self);
     break;
 
@@ -317,7 +317,7 @@ g_error button_set(struct widget *self,int property, glob data) {
   case PG_WP_FONT:
     if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,self->owner,data))) 
 	 return mkerror(PG_ERRT_HANDLE,35);
-    DATA->font = (handle) data;
+    DATA->font = handle_canonicalize((handle) data);
     resizewidget(self);
     set_widget_rebuild(self);
     break;
@@ -325,7 +325,7 @@ g_error button_set(struct widget *self,int property, glob data) {
   case PG_WP_TEXT:
     if (iserror(rdhandle((void **)&str,PG_TYPE_PGSTRING,self->owner,data))) 
        return mkerror(PG_ERRT_HANDLE,13);
-    DATA->text = (handle) data;
+    DATA->text = handle_canonicalize((handle) data);
     resizewidget(self);
     set_widget_rebuild(self);
     break;
