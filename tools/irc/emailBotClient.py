@@ -138,7 +138,7 @@ class AnnounceClient(protocol.Protocol):
             pass
 
         # Don't allow known bad channels, or names with slashes
-        if not subjectFields[1] in badChannels and subjectFields[1].find(os.sep) < 0:
+        if len(subjectFields)<2 or (not subjectFields[1] in badChannels and subjectFields[1].find(os.sep) < 0):
 
             # Commands we process here
             if subjectFields[0] == "SetProjectURL":
