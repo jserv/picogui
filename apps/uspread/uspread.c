@@ -45,6 +45,8 @@ int dc, dr;
 void loadFile ( char *fileName )
 {
    int i, j;
+   char *strWName = malloc( 15 );
+   char *strTmp = malloc( 15 );
 
    csv_info ( fileName, &dc, &dr );
    data = (char **) malloc ( dc*dr*sizeof(char*) );
@@ -111,19 +113,11 @@ void loadFile ( char *fileName )
       for ( j=dc-1; j >= 0; j-- )
       {
          pgNewWidget(PG_WIDGET_FIELD,PG_DERIVE_INSIDE,wRow[i-2]);
-/*
-         pgSetWidget(PGDEFAULT,
-                  PG_WP_TEXT, pgNewString( data[j+(i*dc)] ),
-                  PG_WP_SIDE, PG_S_LEFT,
-                  PG_WP_SIZE, atoi( data[j+dc] ),
-                  PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
-                  0);*/
+
          if ( data[j+(i*dc)] != NULL && data[j+dc] != NULL )
             pgSetWidget(PGDEFAULT,
                      PG_WP_TEXT, pgNewString( data[j+(i*dc)] ),
-                     PG_WP_SIDE, PG_S_LEFT,
                      PG_WP_SIZE, atoi( data[j+dc] ),
-                     PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
                      0);
          else
             if ( data[j+(i*dc)] == NULL )
@@ -131,25 +125,32 @@ void loadFile ( char *fileName )
                if ( data[j+dc] == NULL )
                   pgSetWidget(PGDEFAULT,
                            PG_WP_TEXT, pgNewString( ":)" ),
-                           PG_WP_SIDE, PG_S_LEFT,
                            PG_WP_SIZE, DEF_W,
-                           PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
                            0);
                else
                   pgSetWidget(PGDEFAULT,
                            PG_WP_TEXT, pgNewString( ":)" ),
-                           PG_WP_SIDE, PG_S_LEFT,
                            PG_WP_SIZE, atoi( data[j+dc] ),
-                           PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
                            0);
             }
             else
                pgSetWidget(PGDEFAULT,
                         PG_WP_TEXT, pgNewString( data[j+(i*dc)] ),
-                        PG_WP_SIDE, PG_S_LEFT,
                         PG_WP_SIZE, DEF_W,
-                        PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
                         0);
+         // in any case:
+         // set widget name to CELL.c.r wher c=col no. nad r=row no.
+         strcpy ( strWName, "CELL." );
+         sprintf( strTmp, "%d.", j );
+         strcat ( strWName, strTmp );
+         sprintf( strTmp, "%d.", i-2 );
+         strcat ( strWName, strTmp );
+
+         pgSetWidget(PGDEFAULT,
+                  PG_WP_NAME, pgNewString( strWName ),
+                  PG_WP_SIDE, PG_S_LEFT,
+                  PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
+                  0);
       }
     }
    /**** </widgets> ****/
@@ -166,8 +167,6 @@ int closeboxHandler(struct pgEvent *evt) {
     == PG_MSGBTN_NO;
 }
 
-
-/* The simplest way to make a menu */
 int handleFileMenu(struct pgEvent *evt) {
    int iMainMenu, iRecentMenu, i;
    const char *fileName;
@@ -188,11 +187,11 @@ int handleFileMenu(struct pgEvent *evt) {
             if ( fileName != NULL )
                loadFile ( (char*)fileName );
             break;
-      //case 3:
+      case 3:
          // TODO: get documents in menu
          //iRecentMenu = pgMenuFromString("1...|2...|3...");
          // TODO: open the one
-      //   break;
+         break;
       case 4:
       // FIXME:save file with current name, if noname let flow to save as...
       case 5: fileName = pgFilePicker(NULL,NULL,NULL,PG_FILESAVE,"Save a File");
@@ -210,9 +209,24 @@ int handleFileMenu(struct pgEvent *evt) {
    return 0;
 }
 
+int handleInsertMenu(struct pgEvent *evt) {
+   int iMenu;
+
+   iMenu = pgMenuFromString("Date|File Name|Append Rows");
+
+   /* what happened? */
+   switch (iMenu)
+   {
+      //case 0: /*nothing!*/ break;
+      case 1:
+      //default: no need yet
+   }
+   return 0;
+}
+
 int main(int argc, char *argv[])
 {
-   pghandle wToolbar, wScroll, temp, fileMenu;
+   pghandle wToolbar, wScroll, temp;
    pghandle fnt;
 
    /**** PicoGUI initialization and --pg* arguments ****/
@@ -247,7 +261,15 @@ int main(int argc, char *argv[])
    /**** <widgets where="toolbar"> ****/
 
    /* menu */
-   fileMenu = pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
+   pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
+   pgSetWidget(PGDEFAULT,
+               PG_WP_TEXT,pgNewString("Insert"),
+               PG_WP_SIDE,PG_S_LEFT,
+               PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
+               0);
+   pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&handleInsertMenu,NULL);
+
+   pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
    pgSetWidget(PGDEFAULT,
                PG_WP_TEXT,pgNewString("File"),
                PG_WP_SIDE,PG_S_LEFT,
