@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.15 2000/06/02 01:14:50 micahjd Exp $
+/* $Id: widget.h,v 1.16 2000/06/02 07:44:03 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -160,6 +160,7 @@ DEF_STATICWIDGET_PROTO(indicator)
 DEF_STATICWIDGET_PROTO(bitmap)
 DEF_WIDGET_PROTO(button)
 DEF_WIDGET_PROTO(panel)
+DEF_STATICWIDGET_PROTO(popup)
 
 /* Types of widgets (in the same order they are in the table in widget.c) */
 #define WIDGET_TOOLBAR    0
@@ -169,7 +170,8 @@ DEF_WIDGET_PROTO(panel)
 #define WIDGET_BITMAP     4
 #define WIDGET_BUTTON     5
 #define WIDGET_PANEL      6
-#define WIDGETMAX         6    /* For error checking */
+#define WIDGET_POPUP      7
+#define WIDGETMAX         7    /* For error checking */
      
 /* Constants for properties */
 #define WP_SIZE        1
@@ -200,6 +202,9 @@ DEF_WIDGET_PROTO(panel)
 #define WE_DEACTIVATE  2  /* Lost focus */
 
 /******* These functions define the 'public' methods for widgets */
+     
+/* Special function to generate a popup root widget */
+g_error create_popup(int x,int y,int w,int h,struct widget **wgt);
 
 g_error widget_create(struct widget **w,int type,
 		      struct divtree *dt,struct divnode **where);
