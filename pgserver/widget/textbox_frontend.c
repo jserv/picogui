@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.22 2002/10/28 20:30:42 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.23 2002/10/29 04:52:20 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -260,10 +260,14 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
       paragraph_show_cursor(DATA->doc->crsr);
       request_focus(self);
     }
-#ifdef DEBUG_TEXTBOX
-    else
-      guru("Clicked on no paragraph");
-#endif
+    else {
+      /* They clicked outside of all paragraphs. Assume this means
+       * they clicked after the end of the document, and position the
+       * cursor at the document's end.
+       * FIXME: This could also mean a click within the document's margin!
+       */
+      
+    }
     break;
 
   case PG_TRIGGER_KEYUP:
@@ -316,6 +320,9 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
     break;
 
   case PG_TRIGGER_CHAR:
+    if (param->kbd.key == PGKEY_RETURN && !DATA->doc->multiline)
+      post_event(PG_WE_ACTIVATE,self,0,0,NULL);
+
     if (textbox_ignorekey(self,param->kbd.key))
       return;
 
@@ -330,9 +337,6 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
       }
       else if (param->kbd.key == PGKEY_DELETE) {
 	document_delete_char(DATA->doc);
-      }
-      else if (param->kbd.key == PGKEY_RETURN && !DATA->doc->multiline) {
-	post_event(PG_WE_ACTIVATE,self,0,0,NULL);
       }
       else {
 	document_insert_char(DATA->doc, param->kbd.key, NULL);
@@ -381,6 +385,7 @@ int textbox_ignorekey(struct widget *self, int key) {
     case PGKEY_UP:
     case PGKEY_DOWN:
     case PGKEY_ESCAPE:
+    case PGKEY_RETURN:
       return 1;
     }
 

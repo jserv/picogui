@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.12 2002/10/28 01:00:22 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.13 2002/10/29 04:52:20 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -872,6 +872,10 @@ u32 paragraph_decode_meta(struct paragraph *par, struct pgstr_iterator *p,
     default:
       ch = par->doc->password;
     }
+
+  /* FIXME: handle tabs correctly! This is just so they won't render as an unknown character */
+  if (ch == '\t')
+    ch = ' ';
 
   return ch;
 }
