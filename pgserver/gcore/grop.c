@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.21 2000/10/29 01:45:35 micahjd Exp $
+/* $Id: grop.c,v 1.22 2000/11/03 23:38:32 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -140,13 +140,17 @@ void grop_render(struct divnode *div) {
       (*vid->bar)(x,y,h,list->param[0]);
       break;
     case PG_GROP_TEXT:
+    case PG_GROP_TEXTV:
       if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,
 			   list->param[0])) || !str) break;
       if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
 			   list->param[1])) || !fd) break;
-
-      outtext(fd,x,y,list->param[2],str);
+      if (list->type == PG_GROP_TEXT)
+	outtext(fd,x,y,list->param[2],str);
+      else
+	outtext_v(fd,x,y,list->param[2],str);
       break;
+
     case PG_GROP_BITMAP:
       if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
 			   list->param[0])) || !bit) break;

@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.8 2000/10/30 11:35:22 bauermeister Exp $
+/* $Id: video.h,v 1.9 2000/11/03 23:38:32 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -285,6 +285,16 @@ struct vidlib {
 		   int dest_y,int w,int h,int lines,
 		   hwrcolor c);
      
+  /* Optional
+   *   Like charblit, but rotates the character 90 degrees counterclockwise
+   *   for displaying vertical text.
+   *
+   * Default implementation: pixel()...
+   */
+  void (*charblit_v)(unsigned char *chardat,int dest_x,
+		     int dest_y,int w,int h,int lines,
+		     hwrcolor c);
+
   /***************** Bitmaps */
 
   /* These functions all use the stdbitmap structure.

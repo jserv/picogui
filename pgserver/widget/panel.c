@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.31 2000/10/29 01:45:35 micahjd Exp $
+/* $Id: panel.c,v 1.32 2000/11/03 23:38:33 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -60,6 +60,9 @@ struct paneldata {
 
   /* Sprite for dragging the panelbar */
   struct sprite *s;
+
+  /* Text on the panelbar */
+  handle text;
 };
 #define DATA ((struct paneldata *)(self->data))
 
@@ -68,6 +71,28 @@ void themeify_panel(struct widget *self);
 void resize_panel(struct widget *self) {
   self->in->div->split = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
   self->in->next->split = theme_lookup(self->in->next->div->state,PGTH_P_WIDTH);
+}
+
+void build_panelbar(struct gropctxt *c,unsigned short state,
+		    struct widget *self) {
+  /*
+  struct fontdesc *fd;
+  char *str;
+  */    
+
+  /* Dereference handles */
+  /*  if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,
+      || !fd) return;
+      if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,DATA->text))
+      || !str) return;*/
+
+  exec_fillstyle(c,state,PGTH_P_BGFILL);
+  
+  addgrop(c,(c->w > c->h) ? PG_GROP_TEXT : PG_GROP_TEXTV,0,(c->w > c->h) ?
+	  0 : c->h,1,1);
+  c->current->param[0] = DATA->text;
+  c->current->param[1] = theme_lookup(state,PGTH_P_FONT);
+  c->current->param[2] = theme_lookup(state,PGTH_P_FGCOLOR);
 }
 
 /* Pointers, pointers, and more pointers. What's the point?
@@ -101,7 +126,7 @@ g_error panel_install(struct widget *self) {
   /* And finally, the divnode that draws the panelbar */
   e = newdiv(&self->in->next->div,self);
   errorcheck;
-  self->in->next->div->build = &build_bgfill_only;
+  self->in->next->div->build = &build_panelbar;
   self->in->next->div->state = PGTH_O_PANELBAR;
 
   self->sub = &self->in->div->div;
@@ -123,6 +148,8 @@ void panel_remove(struct widget *self) {
 }
 
 g_error panel_set(struct widget *self,int property, glob data) {
+  char *str;
+
   switch (property) {
 
   case PG_WP_SIDE:
@@ -144,6 +171,14 @@ g_error panel_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
+  case PG_WP_TEXT:
+    if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,data)) || !str) 
+      return mkerror(PG_ERRT_HANDLE,13);
+    DATA->text = (handle) data;
+    self->in->flags |= DIVNODE_NEED_RECALC;
+    self->dt->flags |= DIVTREE_NEED_RECALC;
+    break;
+
   default:
     return mkerror(PG_ERRT_BADPARAM,39);
 
@@ -159,6 +194,9 @@ glob panel_get(struct widget *self,int property) {
 
   case PG_WP_SIZE:
     return self->in->split;
+
+  case PG_WP_TEXT:
+    return DATA->text;
     
   }
   return 0;

@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.9 2000/10/10 00:33:36 micahjd Exp $
+/* $Id: font.c,v 1.10 2000/11/03 23:38:32 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -124,6 +124,54 @@ void outtext(struct fontdesc *fd,
     }
     else
       outchar(fd,&x,&y,col,*txt);
+    txt++;
+  }
+}
+
+/* Like outtext, but print vertically. Origin is at bottom-left */
+void outtext_v(struct fontdesc *fd,
+	     int x,int y,hwrcolor col,char *txt) {
+  int ybase;
+  x += fd->margin;
+  y -= fd->margin;
+  ybase = y; 
+   
+  if (!(fd && txt)) return;
+
+  while (*txt) {
+    if (*txt=='\n') {
+      x += fd->font->h+fd->font->vspace+fd->interline_space;
+      y = ybase;
+    }
+    else {
+      int i,j;
+      int cel_w; /* Total width of this character cel */
+      int glyph_w,glyph_h;
+      unsigned char *glyph;
+      char c = *txt;
+      
+      glyph_w = fd->font->vwtab[c];
+      cel_w = glyph_w + fd->font->hspace + fd->boldw + fd->interchar_space;
+      if (fd->font->trtab[c] >= 0) {
+	glyph = (((unsigned char *)fd->font->bitmaps)+fd->font->trtab[c]);
+	glyph_h = fd->font->h;
+	
+	/* underline, overline, strikeout */
+	if (fd->hline>=0)
+	  (*vid->bar)(y,fd->hline+y,cel_w,fd->hline_c);
+	
+	/* The actual character */
+	i=0;
+	if (fd->skew) 
+	  i = fd->italicw;
+	(*vid->charblit_v)(glyph,x,y-i,glyph_w,glyph_h,fd->skew,col);
+	
+	/* bold */
+	for (i++,j=0;j<fd->boldw;i++,j++)
+	  (*vid->charblit_v)(glyph,x,y-i,glyph_w,glyph_h,fd->skew,col);
+      }
+      y -= cel_w;  
+    }
     txt++;
   }
 }

@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.15 2000/10/29 08:16:42 micahjd Exp $
+/* $Id: video.c,v 1.16 2000/11/03 23:38:32 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -452,6 +452,36 @@ void def_charblit(unsigned char *chardat,int dest_x,
     for (x=dest_x,iw=bw;iw;iw--)
       for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,x++)
 	if (ch&0x80) (*vid->pixel)(x,dest_y,c); 
+  }
+}
+   
+
+void def_charblit_v(unsigned char *chardat,int dest_x,
+		  int dest_y,int w,int h,int lines,
+		  hwrcolor c) {
+  int bw = w;
+  int iw,bit,y,i;
+  int olines = lines;
+  unsigned char ch;
+
+  /* Is it at all in the clipping rect? */
+  //  if (dest_x>vid->clip_x2 || dest_y>vid->clip_y2 || 
+  //      (dest_x+w)<vid->clip_x1 || (dest_y+h)<vid->clip_y1) return;
+
+  /* Find the width of the source data in bytes */
+  if (bw & 7) bw += 8;
+  bw = bw >> 3;
+  bw &= 0x1F;
+
+  for (i=0;i<h;i++,dest_x++) {
+    /* Skewing */
+    if (olines && lines==i) {
+      lines += olines;
+      dest_y++;
+    }
+    for (y=dest_y,iw=bw;iw;iw--)
+      for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,y--)
+	if (ch&0x80) (*vid->pixel)(dest_x,y,c); 
   }
 }
    
@@ -948,6 +978,7 @@ g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
   vid->dim = &def_dim;
   vid->scrollblit = &def_scrollblit;
   vid->charblit = &def_charblit;
+  vid->charblit_v = &def_charblit_v;
   vid->tileblit = &def_tileblit;
   vid->bitmap_loadxbm = &def_bitmap_loadxbm;
   vid->bitmap_loadpnm = &def_bitmap_loadpnm;
