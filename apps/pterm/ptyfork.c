@@ -1,4 +1,4 @@
-/* $Id: ptyfork.c,v 1.5 2002/04/09 16:36:41 micahjd Exp $
+/* $Id: ptyfork.c,v 1.6 2002/04/11 16:22:47 gobry Exp $
  *
  * ptyfork.c - Create a subprocess running under a pty
  *
@@ -41,7 +41,7 @@
 #include <string.h>
 
 /* Error details when enabled */
-//#define DEBUG
+#define DEBUG
 
 /* Returns -1 on error, 0 for child, and a pid for parent 
  * For the parent, returns the pty's fd in *ptyfd
@@ -52,7 +52,8 @@
  *                               ;-)
  */
 
-int ptyfork(int *ptyfd) {
+int ptyfork(int * ptyfd, char ** cmd) {
+
   char fname[11];
   char *chr1,*chr2;
   int master,slave;
@@ -63,16 +64,15 @@ int ptyfork(int *ptyfd) {
   /* Find an available pair */
   for (chr1 = "abcdefpqrstuvwxyzPQRST";*chr1;chr1++) {
     fname[8] = *chr1;      /* Replace the A */
+
     for (chr2 = "0123456789abcdef";*chr2;chr2++) {
       fname[9] = *chr2;    /* Replace the B */
       
       /* Try to open each */
       if ((master = open(fname,O_RDWR)) < 0) {
 	if (errno == ENOENT) {
-#ifdef DEBUG
-	  perror("opening pseudoterminal");
-#endif
-	  return -1;
+	  /* maybe there is no such group of ttys, check for the next one */
+	  break;
 	}
 	else
 	  continue;
@@ -97,83 +97,84 @@ int ptyfork(int *ptyfd) {
 #endif
 	return -1;
       }
-
-      if (!pid) {
-	/* Child */
-	
-	/* Shed our old controlling terminal and get a new session */
-	if (setsid() < 0) {
-#ifdef DEBUG
-	  perror("setsid");
-#endif
-	  return -1;
+      
+      if (pid) {
+	if (ptyfd) {
+	  * ptyfd = master;
 	}
 
-	/* Try to make the device our own, but this won't work unless the
-	 * terminal is setuid root */
-	{
-	  struct group *grptr;
-	  int gid,fds;
-	  
-	  if ((grptr = getgrnam("tty")) != NULL)
-	    gid = grptr->gr_gid;
-	  else
-	    gid = -1;  /* no tty group */
-	  
-	  chown(fname,getuid(),gid);
-	  chmod(fname,S_IRUSR | S_IWUSR | S_IWGRP);  /* Good permissions for a tty */
-	}
-	
-	/* Open the slave device */
-	if ( (slave = open(fname,O_RDWR)) < 0) {
-	  close(master);
-#ifdef DEBUG
-	  perror("opening slave pty");
-#endif
-	  return -1;
-	}
-
-	/* Child doesn't need the master pty anymore */
-	close(master);
-
-	/* Acquire a controlling terminal */
-	ioctl(slave,TIOCSCTTY,NULL);
-
-	/* Make the slave pty our stdin/out/err */
-	if (dup2(slave, STDIN_FILENO) != STDIN_FILENO) {
-#ifdef DEBUG
-	  perror("dup2 stdin");
-#endif
-	  return -1;
-	}
-	if (dup2(slave, STDOUT_FILENO) != STDOUT_FILENO) {
-#ifdef DEBUG
-	  perror("dup2 stdout");
-#endif
-	  return -1;
-	}
-	if (dup2(slave, STDERR_FILENO) != STDERR_FILENO) {
-#ifdef DEBUG
-	  perror("dup2 stderr");
-#endif
-	  return -1;
-	}
-	if (slave > STDERR_FILENO)
-	  close(slave);
-
-	return 0;  /* Just like fork */
-      }
-
-      else {
-	/* Parent */
-	
-	/* Return the pty and the child's pid */
-	*ptyfd = master;
 	return pid;
       }
 
+      /* Child */
+	
+      /* Shed our old controlling terminal and get a new session */
+      if (setsid() < 0) {
+#ifdef DEBUG
+	perror("setsid");
+#endif
+	return -1;
+      }
+      
+      /* Try to make the device our own, but this won't work unless the
+       * terminal is setuid root */
+      {
+	struct group *grptr;
+	int gid,fds;
+	
+	if ((grptr = getgrnam("tty")) != NULL)
+	  gid = grptr->gr_gid;
+	else
+	  gid = -1;  /* no tty group */
+	
+	chown(fname,getuid(),gid);
+	chmod(fname,S_IRUSR | S_IWUSR | S_IWGRP);  /* Good permissions for a tty */
+      }
+      
+      /* Open the slave device */
+      if ( (slave = open(fname,O_RDWR)) < 0) {
+	close(master);
+#ifdef DEBUG
+	perror("opening slave pty");
+#endif
+	return -1;
+      }
+      
+      /* Child doesn't need the master pty anymore */
+      close(master);
+      
+      /* Acquire a controlling terminal */
+      ioctl(slave,TIOCSCTTY,NULL);
+      
+      /* Make the slave pty our stdin/out/err */
+      if (dup2(slave, STDIN_FILENO) != STDIN_FILENO) {
+#ifdef DEBUG
+	perror("dup2 stdin");
+#endif
+	return -1;
+      }
+      if (dup2(slave, STDOUT_FILENO) != STDOUT_FILENO) {
+#ifdef DEBUG
+	perror("dup2 stdout");
+#endif
+	return -1;
+      }
+      if (dup2(slave, STDERR_FILENO) != STDERR_FILENO) {
+#ifdef DEBUG
+	perror("dup2 stderr");
+#endif
+	return -1;
+      }
+
+      if (slave > STDERR_FILENO) close(slave);
+      
+      execvp (cmd [0], cmd);
+      
+      perror ("execvp");
+      exit (127);
     }
   }
+
 #ifdef DEBUG
   perror("finding pseudoterminal");
 #endif

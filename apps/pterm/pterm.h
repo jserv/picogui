@@ -1,4 +1,4 @@
-/* $Id: pterm.h,v 1.1 2001/01/05 09:13:28 micahjd Exp $
+/* $Id: pterm.h,v 1.2 2002/04/11 16:22:47 gobry Exp $
  *
  * pterm.h - PicoGUI Terminal (the 'p' is silent :)
  *
@@ -39,7 +39,7 @@
  *                               ;-)
  */
 
-int ptyfork(int *ptyfd);
+int ptyfork (int * ptyfd, char ** cmd);
 
 #endif /* _H_PTERM */
 
