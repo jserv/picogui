@@ -2795,25 +2795,25 @@ chbtn = (<structfield>pgresponse_event.param</> &gt;&gt; 28) &amp; 0xF;
    <colspec colwidth="45*">
    <tbody>
    <row><entry>PGRES_DEFAULT_FONT</><entry>0</><entry>The server's default font handle</></>
-   <row><entry>PGRES_STRING_OK</><entry>0</><entry>"Ok"</></>
-   <row><entry>PGRES_STRING_CANCEL</><entry>0</><entry>"Cancel"</></>
-   <row><entry>PGRES_STRING_YES</><entry>0</><entry>"Yes"</></>
-   <row><entry>PGRES_STRING_NO</><entry>0</><entry>"No"</></>
-   <row><entry>PGRES_STRING_SEGFAULT</><entry>0</><entry>"Segmentation Fault"</></>
-   <row><entry>PGRES_STRING_MATHERR</><entry>0</><entry>"Floating Point Exception or Divide by Zero"</></>
-   <row><entry>PGRES_STRING_PGUIERR</><entry>0</><entry>"PicoGUI Error"</></>
-   <row><entry>PGRES_STRING_PGUIWARN</><entry>0</><entry>"PicoGUI Warning"</></>
-   <row><entry>PGRES_STRING_PGUIERRDLG</><entry>0</><entry>"An error of type %s occurred in %s:\n\n%s\n\nTerminate the application?"</></>
-   <row><entry>PGRES_STRING_PGUICOMPAT</><entry>0</><entry>"This PicoGUI application uses a newer protocol than the server.You may experience compatibility problems."</></>
-   <row><entry>PGRES_DEFAULT_TEXTCOLORS</><entry>0</><entry>The server's default terminal palette</></>
-   <row><entry>PGRES_INFILTER_KEY_NORMALIZE</><entry>0</><entry>Input filter for standardizing keys recieved from the driver</></>
-   <row><entry>PGRES_INFILTER_PNTR_NORMALIZE</><entry>0</><entry>Input filter for standardizing keys recieved from the pointing device</></>
-   <row><entry>PGRES_INFILTER_TOUCHSCREEN</><entry>0</><entry>Input filter for touchscreen calibration and filtering</></>
-   <row><entry>PGRES_INFILTER_KEY_PREPROCESS</><entry>0</><entry>Input filter for performing extra processing on keys before dispatching them</></>
-   <row><entry>PGRES_INFILTER_PNTR_PREPROCESS</><entry>0</><entry>Input filter for performing extra processing on pointing events before dispatching them</></>
-   <row><entry>PGRES_INFILTER_KEY_MAGIC</><entry>0</><entry>Input filter for handling CTRL-ALT-* debug keys</></>
-   <row><entry>PGRES_INFILTER_KEY_DISPATCH</><entry>0</><entry>Input filter for dispatching key events</></>
-   <row><entry>PGRES_INFILTER_PNTR_DISPATCH</><entry>0</><entry>Input filter for dispatching pointing events</></>
+   <row><entry>PGRES_STRING_OK</><entry>1</><entry>"Ok"</></>
+   <row><entry>PGRES_STRING_CANCEL</><entry>2</><entry>"Cancel"</></>
+   <row><entry>PGRES_STRING_YES</><entry>3</><entry>"Yes"</></>
+   <row><entry>PGRES_STRING_NO</><entry>4</><entry>"No"</></>
+   <row><entry>PGRES_STRING_SEGFAULT</><entry>5</><entry>"Segmentation Fault"</></>
+   <row><entry>PGRES_STRING_MATHERR</><entry>6</><entry>"Floating Point Exception or Divide by Zero"</></>
+   <row><entry>PGRES_STRING_PGUIERR</><entry>7</><entry>"PicoGUI Error"</></>
+   <row><entry>PGRES_STRING_PGUIWARN</><entry>8</><entry>"PicoGUI Warning"</></>
+   <row><entry>PGRES_STRING_PGUIERRDLG</><entry>9</><entry>"An error of type %s occurred in %s:\n\n%s\n\nTerminate the application?"</></>
+   <row><entry>PGRES_STRING_PGUICOMPAT</><entry>10</><entry>"This PicoGUI application uses a newer protocol than the server.You may experience compatibility problems."</></>
+   <row><entry>PGRES_DEFAULT_TEXTCOLORS</><entry>11</><entry>The server's default terminal palette</></>
+   <row><entry>PGRES_INFILTER_KEY_NORMALIZE</><entry>12</><entry>Input filter for standardizing keys recieved from the driver</></>
+   <row><entry>PGRES_INFILTER_PNTR_NORMALIZE</><entry>13</><entry>Input filter for standardizing keys recieved from the pointing device</></>
+   <row><entry>PGRES_INFILTER_TOUCHSCREEN</><entry>14</><entry>Input filter for touchscreen calibration and filtering</></>
+   <row><entry>PGRES_INFILTER_KEY_PREPROCESS</><entry>15</><entry>Input filter for performing extra processing on keys before dispatching them</></>
+   <row><entry>PGRES_INFILTER_PNTR_PREPROCESS</><entry>16</><entry>Input filter for performing extra processing on pointing events before dispatching them</></>
+   <row><entry>PGRES_INFILTER_KEY_MAGIC</><entry>17</><entry>Input filter for handling CTRL-ALT-* debug keys</></>
+   <row><entry>PGRES_INFILTER_KEY_DISPATCH</><entry>18</><entry>Input filter for dispatching key events</></>
+   <row><entry>PGRES_INFILTER_PNTR_DISPATCH</><entry>19</><entry>Input filter for dispatching pointing events</></>
    </tbody>
    </tgroup>
    </table>
