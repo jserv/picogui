@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.34 2001/04/08 01:01:42 micahjd Exp $
+/* $Id: handle.c,v 1.35 2001/04/08 02:01:25 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -277,6 +277,11 @@ void htree_delete(struct handlenode *z) {
     z->group = y->group;
     z->type &= HFLAG_RED;
     z->type |= y->type & ~HFLAG_RED;
+
+#ifdef DEBUG_MEMORY
+     printf("handlenode delete SPECIAL CASE: handle = 0x%08X,"
+	    "nodes 0x%08X -> 0x%08X\n",z->id,y,z);
+#endif
   }  
 
   if ((!(y->type & HFLAG_RED)) && x!=NIL)
@@ -385,6 +390,11 @@ g_error mkhandle(handle *h,unsigned char type,int owner,void *obj) {
   n->payload = 0;
   htree_insert(n);
   *h = n->id;
+   
+#ifdef DEBUG_MEMORY
+  printf("mkhandle(%d,0x%08X): node=0x%08X\n",owner,*h,n);
+#endif
+   
   return sucess;
 }
 
@@ -404,6 +414,10 @@ g_error rdhandle(void **p,unsigned char reqtype,int owner,handle h) {
   void **x;
   g_error e;
   e = rdhandlep(&x,reqtype,owner,h);
+#ifdef DEBUG_MEMORY
+  if (iserror(e))
+     printf("rdhandle error (0x%08X)\n",h);
+#endif
   errorcheck;
   if (x)
      *p = *x;
@@ -462,6 +476,9 @@ int r_handle_cleanup(struct handlenode *n,int owner,int context,
   return 0;
 }
 void handle_cleanup(int owner,int context) {
+#ifdef DEBUG_MEMORY
+  printf("handle_cleanup(%d,%d)\n",owner,context);
+#endif
   while (r_handle_cleanup(htree,owner,context,0));
 }
 
