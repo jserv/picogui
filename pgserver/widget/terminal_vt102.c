@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.23 2003/03/26 06:33:58 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.24 2003/03/26 08:10:29 davidtrowbridge Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -147,7 +147,9 @@ void term_char(struct widget *self,u8 c) {
     case '\033':        /* Escape */
       if (DATA->escapemode) {
 	DBG("-ERROR- beginning escape code while already in escape mode\n");
+#ifdef DEBUG_TERMINAL
 	term_debug_printbuffer(self);
+#endif
       }
       DATA->escapemode = 1;
       DATA->escbuf_pos = 0;
