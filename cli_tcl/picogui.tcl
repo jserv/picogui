@@ -77,8 +77,9 @@ proc pgUpdate {} {
 }
 proc pgNewPopupAt {x y width height} {
 	global pg_request defaultparent
-	send_packet [pack_pgrequest 1 8 $pg_request(mkpopup)]
-	send_packet [binary format "SSSS" $x $y $width $height ]
+	send_packet [pack_pgrequest 1 4 $pg_request(createwidget)]
+	send_packet [binary format "SS" 7 0]
+#	send_packet [binary format "SSSS" $x $y $width $height ]
 	array set ret [pgGetResponse]
 	if {$defaultparent == 0} {
 		set defaultparent $ret(data)
@@ -114,8 +115,18 @@ proc pgNewWidget {type {rship 0} {parent 0}} {
 	send_packet [pack_pgrequest 1 8 $pg_request(mkwidget)]
 	send_packet [binary format "SSI" $rship $type $parent]
 	array set ret [pgGetResponse]
+	parray ret
 	set defaultparent $ret(data)
 	set defaultrship $pg_derive(after)
+	return $ret(data)
+}
+proc pgCreateWidget {type} {
+	global pg_request pg_derive
+	send_packet [pack_pgrequest 1 4 $pg_request(createwidget)]
+	send_packet [binary format "SS" $type 0]
+	array set ret [pgGetResponse]
+	set defaultparent $ret(data)
+	set defaultrship $pg_derive(inside)
 	return $ret(data)
 }
 proc pgSetWidget {widget property glob} {
@@ -287,4 +298,11 @@ proc pgEventLoop {} {
 			eval $handlers($event(event))
 		}
 	}
+}
+proc pgDialog { title } {
+	global pg_widget defaultparent defaltrship
+	set dlg [pgCreateWidget $pg_widget(dialogbox)]
+	pgSetText $dlg $title
+	set defaultparent $dlg
+	return $dlg
 }

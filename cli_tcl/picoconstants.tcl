@@ -1,23 +1,24 @@
 package provide picoconstants 0.4
-array set pg_response {
+
+array set pg_response "
 	error	1
 	ret	2
 	event	3
 	data	4
-}
-array set pg_s {
+"
+array set pg_s "
 	top	8
 	bottom	16
 	left	32
 	right	64
 	all	2048
-}
-array set pg_derive {
+"
+array set pg_derive "
 	after	1
 	inside	2
 	before	3
-}
-array set pg_widget {
+"
+array set pg_widget "
 	toolbar		0
 	label		1
 	scroll		2
@@ -40,8 +41,10 @@ array set pg_widget {
 	textbox		19
 	panelbar	20
 	simplemenu	21
-}
-array set pg_wp {
+	dialogbox	22
+	messagedialog	23
+"
+array set pg_wp "
 	size				1
 	side				2
 	align				3
@@ -96,12 +99,12 @@ array set pg_wp {
 	width				53
 	height				54
 	spacing				55
-}
-array set pg_app {
+"
+array set pg_app "
 	normal	1
 	toolbar	2
-}
-array set pg_exev {
+"
+array set pg_exev "
 	pntr_up		1
 	pntr_down	2
 	pntr_noclick	4
@@ -112,16 +115,16 @@ array set pg_exev {
 	exclusive	128
 	focus		256
 	no_hotspot	512
-}
-array set pg_eventcoding {
+"
+array set pg_eventcoding "
 	param	0
 	xy	256
 	pntr	512
 	data	768
 	kbd	1024
 	mask	3840
-}
-array set pg_request {
+"
+array set pg_request "
 	update		1
 	mkwidget	2
 	mkbitmap	3
@@ -138,32 +141,33 @@ array set pg_request {
 	getstring	26
 	thlookup	36
 	checkevent	43
-}
-array set pg_th_o {
+	createwidget	46
+"
+array set pg_th_o "
 	label_dlgtitle	25
-}
-array set pg_fstyle {
+"
+array set pg_fstyle "
 	bold 256
-}
-array set pg_fm {
+"
+array set pg_fm "
 	set	0
 	on	1
 	off	2
 	toggle	3
-}
-array set pg_vid {\
+"
+array set pg_vid "
 	rotate90	0x4
 	rotate180	0x8
 	rotate270	0x10
-}
-array set pg_we {
+"
+array set pg_we "
 	activate	1
 	close		3
 	pntr_down	516
 	pntr_up		517
 	pntr_move	521
-}
-array set pg_trigger {
+"
+array set pg_trigger "
 	timer		1
 	pntr_relative	4
 	activate	8
@@ -186,14 +190,14 @@ array set pg_trigger {
 	scrollwheel	1048576
 	touchscreen	2097152
 	ts_calibrate	4194304
-}
+"
 array set pg_triggers "
-	mouse	[expr $pg_trigger(pntr_relative)|$pg_trigger(up)|\
-		$pg_trigger(down)|$pg_trigger(move)|$pg_trigger(drag)|\
-		$pg_trigger(pntr_status)|$pg_trigger(scrollwheel)|\
-		$pg_trigger(release)|$pg_trigger(touchscreen)|\
+	mouse	[expr $pg_trigger(pntr_relative)|$pg_trigger(up)|
+		$pg_trigger(down)|$pg_trigger(move)|$pg_trigger(drag)|
+		$pg_trigger(pntr_status)|$pg_trigger(scrollwheel)|
+		$pg_trigger(release)|$pg_trigger(touchscreen)|
 		$pg_trigger(ts_calibrate)]
-	key	[expr $pg_trigger(keyup)|$pg_trigger(keydown)|\
+	key	[expr $pg_trigger(keyup)|$pg_trigger(keydown)|
 		$pg_trigger(char)|$pg_trigger(key_start)|$pg_trigger(key)]
 "
 parray pg_triggers
