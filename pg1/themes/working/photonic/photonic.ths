@@ -1,4 +1,4 @@
-/* $Id: photonic.ths,v 1.3 2002/11/18 10:22:16 micahjd Exp $
+/* $Id$
  *
  * Photonic theme - Inspired by QNX's Photon microGUI
  *
@@ -112,6 +112,21 @@ object button.on {
   gradient_bottom_color = 0xE2DBD5;
 }  
 
+/* Check boxes */
+object checkbox {
+   bgfill = fillstyle {
+      fFlat(x,y,w,h);
+      Bitmap(x+1,y+((h-12)>>1)-1,12,12,bitmap1);
+      x = x + 16;
+   };
+   bitmap1 = LoadBitmap("data/check_unchecked.pnm");
+   align = PG_A_LEFT;
+   margin = 10;
+}
+object checkbox.on bitmap1 = LoadBitmap("data/check_checked.pnm");
+object radiobutton.on bitmap1 = LoadBitmap("data/radio_checked.pnm");
+object radiobutton.on.nohilight parent = PGTH_O_RADIOBUTTON_ON;
+  
 object base.display {
   bgfill = Copy(default::fBeveledFlat);
   bgcolor = 0xFFFFFF;
