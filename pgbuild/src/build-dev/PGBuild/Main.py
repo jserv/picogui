@@ -36,6 +36,7 @@ if sys.hexversion < 0x020200F0:
 import PGBuild.Package
 import PGBuild.UI
 import PGBuild.Config
+import PGBuild.Errors
 import optik
 import PGBuild
 import os, re, shutil
@@ -240,21 +241,29 @@ def main(bootstrap, argv):
 
     config = PGBuild.Config.Tree()
     ui = None
+    # Outer try - cleanups
     try:
+        # Middle try - UI exception handlers
         try:
-            # Load the options passed to us by build.py into the <bootstrap> section
-            boot(config, bootstrap)
+            # Inner try - Exception rewriting
+            try:
+            
+                # Load the options passed to us by build.py into the <bootstrap> section
+                boot(config, bootstrap)
 
-            # Parse user options. This is only meaningful on UNIXes, but should fail
-            # uneventfully on other platforms.
-            config.dirMount(os.path.expanduser("~/.pgbuild"))
+                # Parse user options. This is only meaningful on UNIXes, but should fail
+                # uneventfully on other platforms.
+                config.dirMount(os.path.expanduser("~/.pgbuild"))
 
-            # Parse command line options into the <invocation> section
-            parseCommandLine(config, argv)
+                # Parse command line options into the <invocation> section
+                parseCommandLine(config, argv)
+                
+                # Load a UI module and run it
+                ui = PGBuild.UI.find(config.eval("invocation/option[@name='ui']/text()")).Interface(config)
+                ui.run()
 
-            # Load a UI module and run it
-            ui = PGBuild.UI.find(config.eval("invocation/option[@name='ui']/text()")).Interface(config)
-            ui.run()
+            except KeyboardInterrupt:
+                raise PGBuild.Errors.InterruptError()
         except:
             # If we have a UI yet, try to let it handle the exception. Otherwise just reraise it.
             if ui:

@@ -20,10 +20,10 @@ Base classes for all UI modules, doesn't implement any UI at all.
 #  License along with this library; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
+_svn_id = "$Id$"
 
 import PGBuild.Errors
-import time
-_svn_id = "$Id$"
+import time, sys
 
 
 class TimeStamp(object):
@@ -208,6 +208,7 @@ class Interface(object):
             if not message:
                 message = str(exc_info[1])
             self.progress.error(message)
+            sys.exit(1)
         else:
             self._exception(exc_info)
 

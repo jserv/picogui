@@ -41,6 +41,10 @@ class ExternalError(Error):
     def __init__(self, args=None):
         self.args = args
 
+class InterruptError(ExternalError):
+    def __init__(self, args="The build was interrupted"):
+        self.args = args
+
 class ConfigError(ExternalError):
     explanation = "There was a problem with the configuration"
     def __init__(self, args=None):
