@@ -296,7 +296,7 @@ struct pgreqd_attachwidget {
 };
    </programlisting></figure>
    <para>
-	The <structfield>parent</> is the handle of the new parent to set.
+	The <structfield>parent</> is the handle of the new parent to set, or zero to detach the widget.
    </para>
    <para>
 	The <structfield>widget</> is the handle of the widget that needs
@@ -305,7 +305,8 @@ struct pgreqd_attachwidget {
    <para>
 	The <structfield>rship</> is a <constant>PG_DERIVE_*</> constant
 	indicating the new widget's relationship to it's parent
-	(see <xref linkend="derivetypes"> for a complete listing).
+	(see <xref linkend="derivetypes"> for a complete listing). This is
+	ignored if there is no parent.
    </para>
   </sect2>
 
