@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.16 2000/11/05 10:24:48 micahjd Exp $
+/* $Id: dispatch.c,v 1.17 2000/11/05 18:18:24 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -601,6 +601,8 @@ g_error rqh_getstring(int owner, struct pgrequest *req,
 
   e = rdhandle((void**) &string,PG_TYPE_STRING,owner,ntohl(arg->h));
   errorcheck;
+  if (!string)
+    return mkerror(PG_ERRT_HANDLE,93);   /* Null string in getstring */
 
   /* Send a PG_RESPONSE_DATA back */
   rsp.type = htons(PG_RESPONSE_DATA);

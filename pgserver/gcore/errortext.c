@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.10 2000/10/19 01:21:23 micahjd Exp $
+/* $Id: errortext.c,v 1.11 2000/11/05 18:18:19 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -135,6 +135,7 @@ static const char *errors[] = {
   /* 90 */  "Local variable out of range in fillstyle",
   /* 91 */  "Fillstyle opcode parameter truncated",
   /* 92 */  "Invalid handle in handle_group()",
+  /* 93 */  "Dereferenced string handle is null in getstring",
 };
 
 #endif /* TINY_MESSAGES */
