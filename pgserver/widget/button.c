@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.71 2001/08/10 12:59:08 micahjd Exp $
+/* $Id: button.c,v 1.72 2001/08/10 13:40:33 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -226,7 +226,7 @@ g_error button_set(struct widget *self,int property, glob data) {
     break;
 
   case PG_WP_ON:
-    DATA->on = data;
+    DATA->on = DATA->toggle = data;
     /* Fake a trigger to redraw the button */
     button_trigger(self,0,NULL);
     break;
