@@ -1,4 +1,4 @@
-/* $Id: mainloop.c,v 1.8 2000/05/28 16:59:22 micahjd Exp $
+/* $Id: mainloop.c,v 1.9 2000/06/02 01:14:50 micahjd Exp $
  *
  * mainloop.c - initializes and shuts down everything, main loop
  *
@@ -44,6 +44,7 @@
 
 volatile int proceed;
 extern long memref;
+struct dtstack *dts;
 
 #ifndef WINDOWS
 pid_t my_pid;
@@ -53,7 +54,6 @@ void sigterm_handler(int x);
 void request_quit(void);
 
 int main(int argc, char **argv) {
-  struct dtstack *s;
 
 #ifndef WINDOWS
   my_pid = getpid();
@@ -66,9 +66,9 @@ void windows_inputpoll_hack(void);
   /*************************************** Initialization */
 
   /* Subsystem initialization and error check */
-  if (prerror(dts_new(&s)).type != ERRT_NONE) exit(1);
-  if (prerror(req_init(s)).type != ERRT_NONE) exit(1);
-  if (prerror(appmgr_init(s)).type != ERRT_NONE) exit(1);
+  if (prerror(dts_new()).type != ERRT_NONE) exit(1);
+  if (prerror(req_init()).type != ERRT_NONE) exit(1);
+  if (prerror(appmgr_init()).type != ERRT_NONE) exit(1);
   if (prerror(hwr_init()).type != ERRT_NONE) exit(1);
   if (prerror(input_init(&request_quit)).type != ERRT_NONE) exit(1);
 
@@ -81,7 +81,7 @@ void windows_inputpoll_hack(void);
 #endif
 
   /* initial update */
-  update(s);
+  update();
 
   /*************************************** Main loop */
 
@@ -96,7 +96,7 @@ void windows_inputpoll_hack(void);
   /*************************************** cleanup time */
   input_release();
   handle_cleanup(-1);
-  dts_free(s);
+  dts_free();
   req_free();
   appmgr_free();
   hwr_release();

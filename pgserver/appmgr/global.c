@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.5 2000/06/01 23:44:41 micahjd Exp $
+/* $Id: global.c,v 1.6 2000/06/02 01:14:50 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -38,7 +38,6 @@ handle defaultfont;
 handle background;
 struct widget *bgwidget;
 handle hbgwidget;
-struct dtstack *dts;
 
 /* A little pattern for a default background (in PNM format) */
 unsigned char bg_bits[] = {
@@ -66,13 +65,12 @@ unsigned char bg_bits[] = {
 };
 #define bg_len 206
 
-g_error appmgr_init(struct dtstack *m_dts) {
+g_error appmgr_init(void) {
   struct bitmap *bgbits;
   struct widget *w;
   g_error e;
 
   applist = NULL;  /* No apps yet! */
-  dts = m_dts;
 
   /* Allocate default font */
   e = findfont(&defaultfont,-1,NULL,0,FSTYLE_DEFAULT);
@@ -85,8 +83,8 @@ g_error appmgr_init(struct dtstack *m_dts) {
   if (e.type != ERRT_NONE) return e;
 
   /* Make the background widget */
-  e = widget_create(&bgwidget,WIDGET_BITMAP,m_dts,m_dts->top,
-		    &m_dts->top->head->next);
+  e = widget_create(&bgwidget,WIDGET_BITMAP,dts->root,
+		    &dts->root->head->next);
   if (e.type != ERRT_NONE) return e;
   e = widget_set(bgwidget,WP_BITMAP,(glob)background);
   if (e.type != ERRT_NONE) return e;
@@ -139,7 +137,7 @@ g_error appmgr_register(struct app_info *i) {
 
   case APP_TOOLBAR:
     /* Create a simple toolbar as a root widget */
-    e = widget_create(&w,WIDGET_TOOLBAR,dts,dts->top,&dts->top->head->next);
+    e = widget_create(&w,WIDGET_TOOLBAR,dts->root,&dts->root->head->next);
     if (e.type != ERRT_NONE) return e;
     w->isroot = 1;
     e = mkhandle(&i->rootw,TYPE_WIDGET,i->owner,w);
@@ -156,7 +154,7 @@ g_error appmgr_register(struct app_info *i) {
 
   case APP_NORMAL:
     /* Use a panel */
-    e = widget_create(&w,WIDGET_PANEL,dts,dts->top,&dts->top->head->next);
+    e = widget_create(&w,WIDGET_PANEL,dts->root,&dts->root->head->next);
     if (e.type != ERRT_NONE) return e;
     w->isroot = 1;
     e = mkhandle(&i->rootw,TYPE_WIDGET,i->owner,w);

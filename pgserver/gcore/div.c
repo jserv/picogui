@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.8 2000/06/01 16:08:56 micahjd Exp $
+/* $Id: div.c,v 1.9 2000/06/02 01:14:50 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -273,18 +273,18 @@ void r_divnode_free(struct divnode *n) {
 }
 
 /* Master update function, does everything necessary to redraw the screen */
-void update(struct dtstack *s) {
-  if (s->update_lock) return;   /* Don't want multiple threads updating */
-  s->update_lock++;           /* at the same time !                   */
+void update(void) {
+  if (dts->update_lock) return;   /* Don't want multiple threads updating */
+  dts->update_lock++;           /* at the same time !                   */
 
-  if (s->update_lock==1) {
-    r_dtupdate(s->top);
+  if (dts->update_lock==1) {
+    r_dtupdate(dts->top);
     
     /* NOW we update the hardware */
     hwr_update();
   }
 
-  s->update_lock = 0;
+  dts->update_lock = 0;
 }
 
 /* Update the divtree's calculations and render (both only if necessary) */
@@ -317,22 +317,22 @@ void r_dtupdate(struct divtree *dt) {
 /*********** Functions for managing the dtstack */
 
 /* Create a stack and its root node */
-g_error dts_new(struct dtstack **p) {
+g_error dts_new(void) {
   g_error e;
-  e = g_malloc((void **) p,sizeof(struct dtstack));
+  e = g_malloc((void **) &dts,sizeof(struct dtstack));
   if (e.type != ERRT_NONE) return e;
-  memset(*p,0,sizeof(struct dtstack));
+  memset(dts,0,sizeof(struct dtstack));
   
   /* Make the root tree */
-  e = divtree_new(&(*p)->root);
+  e = divtree_new(&dts->root);
   if (e.type != ERRT_NONE) return e;
-  (*p)->top = (*p)->root;
+  dts->top = dts->root;
 
   return sucess;
 }
 
 /* Delete the stack and all trees inside it */
-void dts_free(struct dtstack *dts) {
+void dts_free(void) {
   struct divtree *p,*condemn;
 
   p = dts->top;
@@ -348,7 +348,7 @@ void dts_free(struct dtstack *dts) {
    sets the DIVTREE_ALL_REDRAW flag on the new top tree
 */
 
-g_error dts_push(struct dtstack *dts) {
+g_error dts_push(void) {
   g_error e;
   struct divtree *otop;
   otop = dts->top;
@@ -358,7 +358,7 @@ g_error dts_push(struct dtstack *dts) {
   return sucess;
 }
 
-void dts_pop(struct dtstack *dts) {
+void dts_pop(void) {
   struct divtree *condemn,*p;
 
   condemn = dts->top;

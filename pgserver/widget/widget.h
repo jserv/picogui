@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.14 2000/06/01 23:11:42 micahjd Exp $
+/* $Id: widget.h,v 1.15 2000/06/02 01:14:50 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -116,8 +116,7 @@ struct widget {
      back to the output of this widget */
   struct divnode **where;
    
-  /* The divtree and stack this widget is part of */
-  struct dtstack *ds;
+  /* The divtree this widget is part of */
   struct divtree *dt;
   
   /* If this is a root widget, an unprivelidged app can only derive
@@ -202,7 +201,7 @@ DEF_WIDGET_PROTO(panel)
 
 /******* These functions define the 'public' methods for widgets */
 
-g_error widget_create(struct widget **w,int type,struct dtstack *ds,
+g_error widget_create(struct widget **w,int type,
 		      struct divtree *dt,struct divnode **where);
 g_error widget_derive(struct widget **w,int type,struct widget *parent,
 		      int rship);

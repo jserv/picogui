@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.11 2000/05/06 06:42:21 micahjd Exp $
+/* $Id: divtree.h,v 1.12 2000/06/02 01:14:50 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -49,6 +49,9 @@ struct dtstack {
 
   int update_lock;
 };
+
+/* The One True Stack */
+extern struct dtstack *dts;
 
 struct divtree {
   struct divnode *head;
@@ -263,12 +266,12 @@ void r_divnode_free(struct divnode *n);
 
 g_error divtree_new(struct divtree **dt);
 void divtree_free(struct divtree *dt);
-void update(struct dtstack *s);
+void update(void);
 void r_dtupdate(struct divtree *dt);
-g_error dts_new(struct dtstack **p);
-void dts_free(struct dtstack *dts);
-g_error dts_push(struct dtstack *dts);
-void dts_pop(struct dtstack *dts);
+g_error dts_new(void);
+void dts_free(void);
+g_error dts_push(void);
+void dts_pop(void);
 
 #endif /* __DIVTREE_H */
 

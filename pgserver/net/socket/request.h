@@ -1,4 +1,4 @@
-/* $Id: request.h,v 1.10 2000/06/02 00:16:15 micahjd Exp $
+/* $Id: request.h,v 1.11 2000/06/02 01:14:50 micahjd Exp $
  *
  * request.h - this connection is for sending requests to the server
  *             and passing return values back to the client
@@ -91,7 +91,7 @@ struct uipkt_hello {
 };
 
 /* 'public' functions */
-g_error req_init(struct dtstack *m_dts);
+g_error req_init(void);
 void req_free(void);
 int reqproc(void);
 void post_event(int event,struct widget *from,long param);

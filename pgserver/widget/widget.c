@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.17 2000/06/01 23:11:42 micahjd Exp $
+/* $Id: widget.c,v 1.18 2000/06/02 01:14:50 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -45,7 +45,6 @@ DEF_WIDGET_TABLE(panel)
 
 /* These are needed to determine which widget is under the pointing
    device, keep track of status */
-struct dtstack *dts;
 struct divnode *divmatch;
 struct widget *under;
 struct widget *prev_under;
@@ -54,14 +53,12 @@ struct widget *capture;
 
 /******** Widget interface functions */
 
-g_error widget_create(struct widget **w,int type,struct dtstack *ds,
-			     struct divtree *dt,struct divnode **where) {
+g_error widget_create(struct widget **w,int type,
+		      struct divtree *dt,struct divnode **where) {
   g_error e;
 
-  if ((type > WIDGETMAX) || (!ds) || (!dt) || (!where)) return 
+  if ((type > WIDGETMAX) || (!dt) || (!where)) return 
       mkerror(ERRT_BADPARAM,"widget_create bad arguments");
-
-  dts = ds;  /* Save it for later */
 
   e = g_malloc((void **)w,sizeof(struct widget));
   if (e.type != ERRT_NONE) return e;
@@ -69,7 +66,6 @@ g_error widget_create(struct widget **w,int type,struct dtstack *ds,
 
   (*w)->type = type;
   (*w)->def = widgettab + type;
-  (*w)->ds = ds;
   (*w)->dt = dt;
 
   if ((*w)->def->install) (*(*w)->def->install)(*w);
@@ -94,11 +90,11 @@ g_error widget_create(struct widget **w,int type,struct dtstack *ds,
 g_error widget_derive(struct widget **w,
 			     int type,struct widget *parent,int rship) {
   if (rship==DERIVE_INSIDE)
-    return widget_create(w,type,parent->ds,parent->dt,parent->sub);
+    return widget_create(w,type,parent->dt,parent->sub);
   else if (rship==DERIVE_AFTER)
-    return widget_create(w,type,parent->ds,parent->dt,parent->out);
+    return widget_create(w,type,parent->dt,parent->out);
   else if (rship==DERIVE_BEFORE)
-    return widget_create(w,type,parent->ds,parent->dt,parent->where);
+    return widget_create(w,type,parent->dt,parent->where);
   else
     return mkerror(ERRT_BADPARAM,"widget_derive bad derive constant");
 }
@@ -271,7 +267,7 @@ void dispatch_pointing(long type,int x,int y,int btn) {
 	   divmatch,under);
 #endif
 
-    update(dts);   /* Do all the updates at once, if any are needed */ 
+    update();   /* Do all the updates at once, if any are needed */ 
   }
 }
 

@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.10 2000/06/01 23:44:41 micahjd Exp $
+/* $Id: request.c,v 1.11 2000/06/02 01:14:50 micahjd Exp $
  *
  * request.c - this connection is for sending requests to the server
  *             and passing return values back to the client
@@ -84,9 +84,6 @@ g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
 /* Socket */
 int s = 0;
 
-/* Dt-stack */
-struct dtstack *dts;
-
 /* File descriptors of all open connections */
 fd_set con;
 int    con_n;
@@ -101,11 +98,11 @@ void closefd(int fd) {
   handle_cleanup(fd);
   close(fd);
   FD_CLR(fd,&con);
-  update(dts);
+  update();
 }
 
 /* Bind the socket and start listening */
-g_error req_init(struct dtstack *m_dts) {
+g_error req_init(void) {
   struct sockaddr_in server_sockaddr;
   volatile int true = 1;
 #ifdef WINDOWS
@@ -113,8 +110,6 @@ g_error req_init(struct dtstack *m_dts) {
 #endif
 
   if (s) return;
-
-  dts = m_dts;
 
 #ifndef WINDOWS
   signal(SIGCHLD, SIG_IGN);
@@ -381,7 +376,7 @@ g_error rqh_ping(int owner, struct uipkt_request *req,
 
 g_error rqh_update(int owner, struct uipkt_request *req,
 		   void *data, unsigned long *ret, int *fatal) {
-  update(dts);
+  update();
   return sucess;
 }
 

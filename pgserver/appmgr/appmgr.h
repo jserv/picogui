@@ -1,4 +1,4 @@
-/* $Id: appmgr.h,v 1.4 2000/06/01 23:44:41 micahjd Exp $
+/* $Id: appmgr.h,v 1.5 2000/06/02 01:14:50 micahjd Exp $
  *
  * appmgr.h - All the window-manager-ish functionality, except we don't
  * do windows (X windows, that is?)
@@ -62,7 +62,7 @@ extern handle defaultfont;
 extern struct app_info *applist;
 
 /* Init & Free */
-g_error appmgr_init(struct dtstack *m_dts);
+g_error appmgr_init(void);
 void appmgr_free(void);
 
 /* Pass it a bitmap handle, or NULL to restore default background */
