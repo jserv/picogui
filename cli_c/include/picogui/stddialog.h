@@ -1,4 +1,4 @@
-/* $Id: stddialog.h,v 1.4 2001/07/31 01:59:45 micahjd Exp $
+/* $Id: stddialog.h,v 1.5 2001/07/31 06:25:43 micahjd Exp $
  *
  * picogui/stddialog.h - Various preconstructed dialog boxes the application
  *                       may use. These are implemented 100% client-side using
@@ -143,6 +143,25 @@ int pgMenuFromArray(pghandle *items,int numitems);
  * \sa pgDialogBox
  */
 int pgDatePicker(int *year, int *month, int *day, const char *title);
+
+/*!
+ * \brief Allow the user to edit a one-line string
+ *
+ * \param title   The title string displayed across the dialog's top
+ * \param message If non-NULL, text to display above the field
+ * \param deftxt  If non-NULL, a default value for the field
+ *
+ * \returns The value of the input field upon clicking "Ok" or NULL if the
+ *          dialog was cancelled.
+ *
+ * As with pgGetString(), the returned pointer is only valid until the next
+ * PicoGUI API call.
+ *
+ * \sa pgMessageDialog, pgMessageDialogFmt
+ */
+const char *pgInputDialog(const char *title, const char *message,
+			  const char *deftxt);
+
 
 //! \}
 

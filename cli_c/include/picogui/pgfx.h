@@ -1,4 +1,4 @@
-/* $Id: pgfx.h,v 1.14 2001/07/31 02:45:24 micahjd Exp $
+/* $Id: pgfx.h,v 1.15 2001/07/31 06:25:43 micahjd Exp $
  *
  * picogui/pgfx.h - The PicoGUI abstract graphics interface
  * 
@@ -422,8 +422,8 @@ pgcontext pgNewBitmapContext(pghandle bitmap);
 //! Delete a PGFX context
 void pgDeleteContext(pgcontext c);
 
-\\! \}
-\\! \}
+//! \}
+//! \}
 
 #endif /* _H_PG_PGFX */
 
