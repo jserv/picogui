@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.201 2002/10/11 11:58:45 micahjd Exp $
+/* $Id: widget.c,v 1.202 2002/10/18 12:20:24 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -573,12 +573,16 @@ glob widget_base_get(struct widget *w, int property) {
   switch (property) {
     
   case PG_WP_ABSOLUTEX:      /* Absolute coordinates */
+    /*
     activate_client_divnodes(w->owner);
     divtree_size_and_calc(w->dt);
+    */
     return maindiv->r.x;
   case PG_WP_ABSOLUTEY:
+    /*
     activate_client_divnodes(w->owner);
     divtree_size_and_calc(w->dt);
+    */
     return maindiv->r.y;
     
   case PG_WP_WIDTH:          /* Real width and height */

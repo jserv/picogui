@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.165 2002/10/18 00:58:44 micahjd Exp $
+/* $Id: constants.h,v 1.166 2002/10/18 12:20:23 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -633,6 +633,9 @@ typedef unsigned long pghandle;
 #define PGTH_OPCMD_WIDGET        0x3A   //!< Return a handle to the widget being drawn to
 #define PGTH_OPCMD_TRAVERSEWGT   0x3B   //!< args: widget, direction, count (same as request)
 #define PGTH_OPCMD_GETWIDGET     0x3C   //!< args: widget, property; returns value of property
+#define PGTH_OPCMD_CALL          0x3D   //!< folowed by 2-byte thobj and 2-byte property, args: x,y,w,h
+#define PGTH_OPCMD_LOCALCALL     0x3E   //!< folowed by 2-byte property, args: x,y,w,h
+/* NOTE: The next opcmd is the last one, use it for expansion! */
 
 /* End fillstyles */
 //! \}

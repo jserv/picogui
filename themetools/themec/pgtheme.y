@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.42 2002/03/05 21:53:33 lonetech Exp $
+/* $Id: pgtheme.y,v 1.43 2002/10/18 12:20:24 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -95,9 +95,12 @@
 %type <fsn>      fsprop
 %type <constn>   constnode
 %type <constn>   constnode_list
+%type <fsn>      traversal_const
+%type <fsn>      widget_handle
 
    /* Reserved words */
-%token OBJ PROP FILLSTYLE VAR COLORADD COLORSUB COLORDIV COLORMULT CLASS 
+%token OBJ PROP FILLSTYLE VAR COLORADD COLORSUB COLORDIV COLORMULT
+%token CLASS CONTAINER NEXT PREVIOUS APP CHILD WIDGET
 
 %right '?' ':'
 %left OR
@@ -543,6 +546,7 @@ fillstyle: FILLSTYLE  { yyerror("fillstyle requires parameters"); }
 
     case PGTH_OPCMD_LONGGROP:         /* 2 byte */
     case PGTH_OPCMD_LOCALPROP:
+    case PGTH_OPCMD_LOCALCALL:
       *(((unsigned short *)bp)++) = htons(p->param);
       break;
 
@@ -552,6 +556,7 @@ fillstyle: FILLSTYLE  { yyerror("fillstyle requires parameters"); }
       break;
      
     case PGTH_OPCMD_PROPERTY:         /* 2 x 2 byte */
+    case PGTH_OPCMD_CALL:
       *(((unsigned short *)bp)++) = htons(p->param);
       *(((unsigned short *)bp)++) = htons(p->param2);
       break;
@@ -615,6 +620,17 @@ fsstmt: FSVAR '=' fsexp ';'          {
   $$ = fsnodecat($3,n = fsnewnode(PGTH_OPCMD_LONGGROP));
   n->param = $1;
 }
+      | THOBJ CLASS PROPERTY '(' fsarglist ')' ';' {
+  struct fsnode *n;
+  $$ = fsnodecat($5,n = fsnewnode(PGTH_OPCMD_CALL));
+  n->param = $1;
+  n->param2 = $3;
+}   
+      | PROPERTY '(' fsarglist ')' ';' {
+  struct fsnode *n;
+  $$ = fsnodecat($3,n = fsnewnode(PGTH_OPCMD_LOCALCALL));
+  n->param = $1;
+}   
       ;
 
 fsarglist:                     { $$ = NULL; }
@@ -652,12 +668,27 @@ fsexp: '(' fsexp ')'    { $$ = $2; }
      | COLORMULT '(' fsarglist ')' { $$ = fsnodecat($3,fsnewnode(PGTH_OPCMD_COLORMULT)); }
      | COLORDIV '(' fsarglist ')' { $$ = fsnodecat($3,fsnewnode(PGTH_OPCMD_COLORDIV)); }
      | fsexp '?' fsexp ':' fsexp { $$ = fsnodecat(fsnodecat(fsnodecat($5,$3),$1),
-					 fsnewnode(PGTH_OPCMD_QUESTIONCOLON)); }
+					 fsnewnode(PGTH_OPCMD_QUESTIONCOLON)); } 
+     | widget_handle CLASS fsexp { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_GETWIDGET)); }
+     | widget_handle
      ;
 
 fsprop: THOBJ CLASS PROPERTY { $$ = fsnewnode(PGTH_OPCMD_PROPERTY); $$->param = $1; $$->param2 = $3; }
       | PROPERTY           { $$ = fsnewnode(PGTH_OPCMD_LOCALPROP); $$->param = $1; }
       ;
+
+traversal_const: CONTAINER { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = PG_TRAVERSE_CONTAINER; }
+               | NEXT      { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = PG_TRAVERSE_FORWARD; }
+               | PREVIOUS  { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = PG_TRAVERSE_BACKWARD; }
+               | APP       { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = PG_TRAVERSE_APP; }
+               | CHILD     { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = PG_TRAVERSE_CHILDREN; }
+               ;
+
+widget_handle: widget_handle
+               | widget_handle '.' traversal_const '[' fsexp ']' { $$ = fsnodecat(fsnodecat(fsnodecat($5,$3),$1),
+		                          				fsnewnode(PGTH_OPCMD_TRAVERSEWGT)); }
+               | WIDGET    { $$ = fsnewnode(PGTH_OPCMD_WIDGET); }
+               ;
 
 %%
 

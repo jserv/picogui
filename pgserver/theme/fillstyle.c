@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.27 2002/10/18 00:58:44 micahjd Exp $
+/* $Id: fillstyle.c,v 1.28 2002/10/18 12:20:23 micahjd Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -37,7 +37,7 @@
 #include <stdio.h>  /* for NULL */
 
 /* Stack for the interpreter */
-#define FSSTACKSIZE  32
+#define FSSTACKSIZE 64
 u32 fsstack[FSSTACKSIZE];
 int fsstkpos;  /* position in the stack */
 
@@ -58,6 +58,12 @@ g_error fspopargs(void);
 
 /* Arguments for binary operators */
 u32 fsa,fsb;
+
+/* Guts of the interpreter, we need to be able to call this
+ * to execute called fillstyles.
+ */
+g_error exec_fillstyle_inner(struct gropctxt *ctx,u16 state,
+			     u16 property);
 
 g_error check_fillstyle(const unsigned char *fs, u32 fssize)
  {
@@ -84,6 +90,15 @@ g_error check_fillstyle(const unsigned char *fs, u32 fssize)
       fsstkpos++;
     } else if(op & PGTH_OPSIMPLE_CMDCODE) {
       switch (op) {
+        case PGTH_OPCMD_CALL:
+	  /* grabs 4 bytes, pops 4 values */
+	  p+=2;
+	  /* fall through */
+      case PGTH_OPCMD_LOCALCALL:
+	  /* grabs 2 bytes, pops 4 values */
+	  p+=2;
+	  fsstkpos-=4;
+	  break;
 	case PGTH_OPCMD_LONGLITERAL:
 	case PGTH_OPCMD_PROPERTY:
 	  /* grabs 4 bytes and pushes 1 value */
@@ -177,9 +192,24 @@ g_error check_fillstyle(const unsigned char *fs, u32 fssize)
   return success;
  }
 
-/* Fillstyle interpreter- generates/refreshes a gropnode list */
+/* Initialize the stack and run a fillstyle */
 g_error exec_fillstyle(struct gropctxt *ctx,u16 state,
 		       u16 property) {
+  /* Reset stack. preload x,y,w,h as local variables */
+  if (ctx) {
+    fsstack[0] = ctx->r.x;
+    fsstack[1] = ctx->r.y;
+    fsstack[2] = ctx->r.w;
+    fsstack[3] = ctx->r.h;
+  }
+  fsstkpos = 4;
+
+  return exec_fillstyle_inner(ctx,state,property);
+}
+
+/* Fillstyle interpreter- generates/refreshes a gropnode list */
+g_error exec_fillstyle_inner(struct gropctxt *ctx,u16 state,
+			     u16 property) {
   g_error e;
   u32 fssize;  /* Fillstyle size */
   unsigned char *fs;  /* Pointer to the actual fillstyle data */
@@ -187,6 +217,7 @@ g_error exec_fillstyle(struct gropctxt *ctx,u16 state,
   unsigned char op;
   int r,g,b;          /* For color arithmetic */
   struct widget *w;
+  int stackframe = fsstkpos-4;
 
   /* Look up the fillstyle */
   e = rdhandle((void**)&fs,PG_TYPE_FILLSTYLE,-1,theme_lookup(state,property));
@@ -219,15 +250,6 @@ g_error exec_fillstyle(struct gropctxt *ctx,u16 state,
     }
     return success;
   }
-
-  /* Reset stack. preload x,y,w,h as local variables */
-  if (ctx) {
-    fsstack[0] = ctx->r.x;
-    fsstack[1] = ctx->r.y;
-    fsstack[2] = ctx->r.w;
-    fsstack[3] = ctx->r.h;
-  }
-  fsstkpos = 4;
 
   /* Process the opcodes */
   fssize = *(((u32 *)fs)++);
@@ -268,14 +290,14 @@ g_error exec_fillstyle(struct gropctxt *ctx,u16 state,
       case PGTH_OPCMD_LONGGET:
 	if (plimit<=p)
 	  return mkerror(PG_ERRT_BADPARAM,91);  /* Truncated opcode */
-	e = fsget(*(p++));
+	e = fsget(*(p++)+stackframe);
 	errorcheck;
 	break;
 
       case PGTH_OPCMD_LONGSET:
 	if (plimit<=p)
 	  return mkerror(PG_ERRT_BADPARAM,91);  /* Truncated opcode */
-	e = fsset(*(p++));
+	e = fsset(*(p++)+stackframe);
 	errorcheck;
 	break;
 
@@ -459,9 +481,6 @@ g_error exec_fillstyle(struct gropctxt *ctx,u16 state,
 	break;
 
       case PGTH_OPCMD_WIDGET:
-	if (fsstkpos<3)
-	  return mkerror(PG_ERRT_BADPARAM,88);  /* Stack underflow */
-	fsstkpos -= 2;
 	if (ctx->owner && ctx->owner->owner)
 	  fsstack[fsstkpos++] = hlookup(ctx->owner->owner,NULL);
 	else
@@ -472,29 +491,55 @@ g_error exec_fillstyle(struct gropctxt *ctx,u16 state,
 	if (fsstkpos<3)
 	  return mkerror(PG_ERRT_BADPARAM,88);  /* Stack underflow */
 	fsstkpos -= 2;
-	e = rdhandle((void**)w, PG_TYPE_WIDGET, -1, fsstack[fsstkpos+1]);
+	e = rdhandle((void**)&w, PG_TYPE_WIDGET, -1, fsstack[fsstkpos+1]);
 	errorcheck;
-	fsstack[fsstkpos-1] = hlookup(widget_traverse(w,fsstack[fsstkpos],fsstack[fsstkpos-1]),NULL);
+	if (w)
+	  fsstack[fsstkpos-1] = hlookup(widget_traverse(w,fsstack[fsstkpos],fsstack[fsstkpos-1]),NULL);
+	else
+	  fsstack[fsstkpos-1] = 0;
 	break;
 
       case PGTH_OPCMD_GETWIDGET:
 	e = fspopargs();
 	errorcheck;
-	e = rdhandle((void**)w, PG_TYPE_WIDGET, -1, fsa);
+	e = rdhandle((void**)&w, PG_TYPE_WIDGET, -1, fsa);
 	errorcheck;
-	fsstack[fsstkpos++] = widget_get(w,fsb);
+	if (w) 
+	  fsstack[fsstkpos++] = widget_get(w,fsb);
+	else
+	  fsstack[fsstkpos++] = 0;
+	break;
+
+      case PGTH_OPCMD_CALL:
+	if ((plimit-p)<4)
+	  return mkerror(PG_ERRT_BADPARAM,91);  /* Truncated opcode */
+	fsa = NEXTSHORT;
+	p += 2;
+	fsb = NEXTSHORT;
+	p += 2;
+	e = exec_fillstyle_inner(ctx,fsa,fsb);
+	errorcheck;
+	break;
+
+      case PGTH_OPCMD_LOCALCALL:
+	if ((plimit-p)<2)
+	  return mkerror(PG_ERRT_BADPARAM,91);  /* Truncated opcode */
+	fsb = NEXTSHORT;
+	p += 2;
+	e = exec_fillstyle_inner(ctx,state,fsb);
+	errorcheck;
 	break;
 
       }
     }
     else if (op & PGTH_OPSIMPLE_GET) {
       /* 1-byte get */
-      e = fsget(op & (PGTH_OPSIMPLE_GET-1));
+      e = fsget((op & (PGTH_OPSIMPLE_GET-1)) + stackframe);
       errorcheck;
     }
     else {
       /* 1-byte set */
-      e = fsset(op);
+      e = fsset(op + stackframe);
       errorcheck;
     }
 
@@ -515,11 +560,12 @@ g_error exec_fillstyle(struct gropctxt *ctx,u16 state,
   
   /* Return x,y,w,h */
   if (ctx) {
-    ctx->r.x = fsstack[0];
-    ctx->r.y = fsstack[1];
-    ctx->r.w = fsstack[2];
-    ctx->r.h = fsstack[3];
-  }    
+    ctx->r.x = fsstack[stackframe+0];
+    ctx->r.y = fsstack[stackframe+1];
+    ctx->r.w = fsstack[stackframe+2];
+    ctx->r.h = fsstack[stackframe+3];
+  }
+  fsstkpos -= 4;
 
   return success;
 }
