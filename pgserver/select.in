@@ -125,6 +125,13 @@ add_if_true libvncserver/libvncserver.la $DRIVER_VNCSERVER
 
 close_section
 
+# Subdirectories under 'video'
+open_section VIDSUBDIRS
+
+add_if_true libvncserver         $DRIVER_VNCSERVER
+
+close_section
+
 # Video wrappers
 open_section VIDWRAP
 

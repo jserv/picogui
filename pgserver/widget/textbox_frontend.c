@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.38 2003/01/19 01:51:13 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.39 2003/01/21 17:35:14 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -166,6 +166,7 @@ g_error textbox_set(struct widget *self,int property, glob data) {
     errorcheck;
     e = textbox_write(self,str);
     errorcheck;
+    paragraph_scroll_to_cursor(DATA->doc->crsr);
     break;
 
   default:
@@ -230,6 +231,7 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
     errorcheck;
     textbox_write(self,str);
     pgstring_delete(str);
+    paragraph_scroll_to_cursor(DATA->doc->crsr);
     return;
   }
 

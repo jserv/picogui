@@ -1,4 +1,4 @@
-SUBDIRS = libvncserver
+SUBDIRS = $(VIDSUBDIRS)
 
 INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include $(DRIVER_CFLAGS)
 
