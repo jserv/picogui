@@ -194,9 +194,9 @@ dnl check for the X window system
 
 AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_X11, [
 
-  AC_CHECK_LIB(X11, XOpenDisplay,, AC_MSG_WARN([can't find libncurses]))
+  AC_CHECK_LIB(X11, XOpenDisplay,, AC_MSG_WARN([can't find libX11]))
 
-  DRIVER_LIBS="-lX11"
+  DRIVER_LIBS="-L/usr/X11/lib -L/usr/X11R6/lib -lX11"
 ])
 
 dnl check for ncurses & gpm
