@@ -1,0 +1,95 @@
+/* $Id: pgboard_api.h,v 1.1 2001/10/30 09:47:57 cgrigis Exp $
+ *
+ * kbd_api.h - high-level API to manipulate the PicoGUI virtual keyboard
+ * 
+ * PicoGUI small and efficient client/server GUI
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * Contributors:
+ *
+ *    Christian Grigis <christian.grigis@smartdata.ch>
+ *            Initial release
+ * 
+ */
+
+#ifndef _PGBOARD_API_H
+#define _PGBOARD_API_H
+
+
+/* Prototype declarations */
+
+/* 
+ * NOTE: 
+ * All the commands will start a virtual keyboard process if none is running.
+ */
+
+/*
+ * Make the virtual keyboard visible and set it to the given key pattern.
+ *
+ * key_pattern : the key pattern to which the virtual keyboard is to be set
+ * force       : 0 --> the command is ignored if a physical keyboard is present
+ *               1 --> the command is always sent to the virtual keyboard
+ */
+void showKeyboard (unsigned short key_pattern, int force);
+
+
+/*
+ * Hide the virtual keyboard.
+ *
+ * force       : 0 --> the command is ignored if a physical keyboard is present
+ *               1 --> the command is always sent to the virtual keyboard
+ */
+void hideKeyboard (int force);
+
+
+/*
+ * Toggle the virtual keyboard.
+ *
+ * force       : 0 --> the command is ignored if a physical keyboard is present
+ *               1 --> the command is always sent to the virtual keyboard
+ */
+void toggleKeyboard (int force);
+
+
+/*
+ * Disable the virtual keyboard.
+ *
+ * force       : 0 --> the command is ignored if a physical keyboard is present
+ *               1 --> the command is always sent to the virtual keyboard
+ */
+void disableKeyboard (int force);
+
+
+/*
+ * Push the current virtual keyboard context.
+ *
+ * force       : 0 --> the command is ignored if a physical keyboard is present
+ *               1 --> the command is always sent to the virtual keyboard
+ */
+void pushKeyboardContext (int force);
+
+
+/*
+ * Pop the last pushed virtual keyboard context.
+ *
+ * force       : 0 --> the command is ignored if a physical keyboard is present
+ *               1 --> the command is always sent to the virtual keyboard
+ */
+void popKeyboardContext (int force);
+
+
+#endif /* _PGBOARD_API_H */

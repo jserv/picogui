@@ -1,5 +1,5 @@
 /*
- * $Id: pgboard_cmds.c,v 1.2 2001/10/29 09:44:13 cgrigis Exp $
+ * $Id: pgboard_cmds.c,v 1.3 2001/10/30 09:47:57 cgrigis Exp $
  *
  * Small test appllication displaying buttons allowing the user to send various
  * commands to the virtual keyboard.
@@ -10,7 +10,7 @@
 
 #include <netinet/in.h>
 #include <picogui.h>
-#include <picogui/pgboard.h>
+#include "pgboard.h"
 
 /*
  * Send a message to the keyboard application

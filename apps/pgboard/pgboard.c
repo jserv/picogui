@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.12 2001/10/29 09:44:13 cgrigis Exp $
+/* $Id: pgboard.c,v 1.13 2001/10/30 09:47:57 cgrigis Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <netinet/in.h>
 #include <picogui.h>
-#include <picogui/pgboard.h>
+#include "pgboard.h"
 #include "kbfile.h"
 
 /* as some systems don't have htons primitives (as uClinux) */

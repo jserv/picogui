@@ -1,15 +1,19 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl
-dnl $Id: configure.in,v 1.4 2001/10/26 10:50:38 bornet Exp $
+dnl $Id: configure.in,v 1.5 2001/10/30 09:47:57 cgrigis Exp $
 dnl
 
 AC_INIT(pgboard/pgboard.c)
+
+AM_CONFIG_HEADER(pgboard/config.h)
 
 AM_INIT_AUTOMAKE(picogui-apps, 0.1)
 
 AM_ACLOCAL_INCLUDE(macros)
 
 AM_PGUI_CROSSCOMPILE
+
+AM_PROG_LIBTOOL
 
 dnl Checks for programs.
 
@@ -66,6 +70,8 @@ dnl
 case "$host" in
   m68k-pic-*)
         CFLAGS="${CFLAGS} -fPIC -DRUNTIME_FUNCPTR -d_NEED_NTOHS_FRIENDS_"
+        PLATFORM="uclinux"
+        ;;
 esac
 
 AC_SUBST(PLATFORM)
@@ -78,6 +84,15 @@ AC_ARG_ENABLE(bee,
 [  --enable-bee     use the bee building system])
 
 AM_CONDITIONAL(ENABLE_BEE, test "${enable_bee}" = "yes")
+
+dnl indicate we are compiling for PocketBee
+AC_ARG_ENABLE(pocketbee,
+[  --enable-pocketbee     compile for PocketBee],
+  if test "$enable_pocketbee" = yes; then
+    AC_DEFINE(POCKETBEE, 1)
+  fi
+)
+
 
 AC_OUTPUT(
 	Makefile

@@ -65,6 +65,8 @@ def prepare (module, platform, project):
 
     command = command + " --enable-optimisation"
 
+    command = command + " --enable-pocketbee"
+
     command = command + " --with-picogui=%s" % \
               project.modules ['picoguiclient'].install_path (platform, project)
 
