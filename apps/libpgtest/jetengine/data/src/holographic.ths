@@ -19,6 +19,9 @@ object default {
     Nop();
   };
 
+  cursorbitmap = LoadBitmap("cursor.png");
+  cursorbitmask = 0;
+
   caustic00 = LoadBitmap("caust00.bw.jpeg");
   caustic01 = LoadBitmap("caust01.bw.jpeg");
   caustic02 = LoadBitmap("caust02.bw.jpeg");
@@ -200,4 +203,11 @@ object button {
 object button.hilight {
   bgfill = Copy(default::fGlowPanel);
   alpha = 0x60000000;
+}
+
+object background {
+  cursorbitmap = LoadBitmap("crosshair.png");
+  cursorbitmask = 0;
+  crsrhotspot.x = 22; 
+  crsrhotspot.y = 22;
 }

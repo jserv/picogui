@@ -10,4 +10,8 @@
 		<label>Velocity</label>
 		<scroll name="VelocitySlider"/>
 	</box>
+
+	<!-- This background widget will cover the play area, -->
+        <!-- allowing us to bind a cursor to it. -->
+	<background/>
 </application>
