@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl
-dnl $Id: configure.in,v 1.21 2002/02/05 15:46:34 cgrigis Exp $
+dnl $Id: configure.in,v 1.22 2002/02/07 11:30:16 bornet Exp $
 dnl
 
 AC_INIT(pgboard/pgboard.c)
@@ -164,6 +164,7 @@ AC_OUTPUT(
 	pgl/pgl-toolbar/Makefile
 	pgl/pgl-launcher/Makefile
 	pgl/pgl-clock/Makefile
+	pgl/pgl-keyboard/Makefile
 	hello/Makefile
 	picomail/Makefile
 )
