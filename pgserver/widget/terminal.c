@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.24 2001/05/01 23:13:17 micahjd Exp $
+/* $Id: terminal.c,v 1.25 2001/05/12 21:04:55 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -35,7 +35,8 @@
 #define ATTR_DEFAULT 0x07
 
 /* Cursor attribute */
-#define ATTR_CURSOR  0xA0
+//#define ATTR_CURSOR  0xA0    /* Green (doesn't work in 1bpp) */
+#define ATTR_CURSOR  0xF0    /* Bright white */
 
 /* On and off times in milliseconds */
 #define FLASHTIME_ON   250
