@@ -110,7 +110,7 @@ def get(connection):
 	elif hasattr(connection, 'recv'):
 		read = connection.recv
 	else:
-		raise TypeError('Connection object doesn\'t support neither read() or recv()')
+		raise TypeError('Connection object supports neither read() nor recv()')
 	def safe_read(len, read=read):
 		try:
 			return read(len)
