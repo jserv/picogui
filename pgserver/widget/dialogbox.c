@@ -1,4 +1,4 @@
-/* $Id: dialogbox.c,v 1.11 2003/01/01 03:43:08 micahjd Exp $
+/* $Id: dialogbox.c,v 1.12 2003/01/19 20:24:00 micahjd Exp $
  *
  * dialogbox.c - The dialogbox is a type of popup widget that is always
  *               automatically sized, and has a title
@@ -60,6 +60,11 @@ void dialogbox_remove(struct widget *self) {
   if (DATA->title)
     handle_free(self->owner, DATA->htitle);
   g_free(DATA);
+
+  /* FIXME: This is a kludge provied by sanit that fixes a memory leak */
+  if (((self->in) && (self->in->div)) && !(self->in->div->div) && (self->sub))
+    self->in->div->div = self->sub;
+
   WIDGET_REMOVE_PARENT;
 }
 
