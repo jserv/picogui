@@ -1,3 +1,14 @@
+2001-10-23    Philippe Ney <philippe.ney@smartdata.ch>
+
+Changed name of input driver for ChipSlice touchscreen
+       * input/tsinput.c -> input/chipslicets.c
+
+Sound parameters could be given to the server through config file
+or command line with
+       * --input-chipslicets.snd_frequency
+       * --input-chipslicets.snd_length
+
+
 2001-10-22    Philippe Ney <philippe.ney@smartdata.ch>
 
 Added sound (beep...) support for ChipSlice through touchscreen input

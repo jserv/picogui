@@ -17,8 +17,8 @@
   DRV("ncursesinput",&ncursesinput_regfunc)
 #endif
 
-#ifdef DRIVER_TSINPUT
-  DRV("tsinput",&tsinput_regfunc)
+#ifdef DRIVER_CHIPSLICETS
+  DRV("chipslicets",&chipslicets_regfunc)
 #endif
 
 #ifdef DRIVER_R3912TS

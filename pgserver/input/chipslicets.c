@@ -1,6 +1,6 @@
-/* $Id: tsinput.c,v 1.23 2001/10/22 15:25:43 pney Exp $
+/* $Id: chipslicets.c,v 1.1 2001/10/23 13:31:41 pney Exp $
  *
- * tsinput.c - input driver for touch screen
+ * chipslicets.c - input driver for touch screen
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -29,7 +29,7 @@
 
 #include <pgserver/common.h>
 
-#ifdef DRIVER_TSINPUT
+#ifdef DRIVER_CHIPSLICETS
 
 #include <unistd.h>
 
@@ -65,11 +65,11 @@ static int iIsPointingDisplayed = 1;
 
 static struct timeval lastEvent;
 
-void tsinput_message(u32 message, u32 param);
+void chipslicets_message(u32 message, u32 param);
 
 /******************************************** Implementations */
 
-int tsinput_sleep(void) {
+int chipslicets_sleep(void) {
 #ifdef DEBUG_EVENT
   printf("-- going to sleep mode\n");
 #endif
@@ -78,13 +78,13 @@ int tsinput_sleep(void) {
   rm_sleep(RM_WAKE_ON_BUTTON);
 
   /*
-   * the hit to wake up the ChipSlice isn't catch by the tsinput driver.
+   * the hit to wake up the ChipSlice isn't catch by the chipslicets driver.
    * It's then necessary to re-initiate the time of the last event.
    */
   gettimeofday(&lastEvent,NULL);
 }
 
-void tsinput_poll(void) {
+void chipslicets_poll(void) {
   struct ts_pen_info pen_info;
   
   pen_info.x = -1; pen_info.y = -1;
@@ -96,7 +96,7 @@ void tsinput_poll(void) {
     switch(pen_info.event) {
     case EV_PEN_UP:
       if(pen_info.x > 350) {
-	tsinput_sleep();
+	chipslicets_sleep();
 	break;
       }
       dispatch_pointing(TRIGGER_UP,pen_info.x,pen_info.y,0);
@@ -156,12 +156,12 @@ void tsinput_poll(void) {
 #endif
     }
     if(delay_sec > SLEEP_IDLE_MAX_SEC)
-      tsinput_sleep();
+      chipslicets_sleep();
   }
 }
 
 
-g_error tsinput_init(void) {
+g_error chipslicets_init(void) {
   struct ts_drv_params  ts_params;
   int                   ret_val;
 
@@ -296,7 +296,7 @@ g_error tsinput_init(void) {
 }
 
 
-void tsinput_close(void) {
+void chipslicets_close(void) {
 #ifdef DEBUG_INIT
   printf("%s: Closing device %s\n",_file_, DEVICE_FILE_NAME);
 #endif
@@ -310,7 +310,7 @@ void tsinput_close(void) {
 
 
 /* Polling time for the input driver */ 
-void tsinput_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
+void chipslicets_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
   
   /* Don't increase the poll time, but try to decrease it to POLL_USEC */
 
@@ -323,13 +323,13 @@ void tsinput_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
 }
 
 /* message between driver to provide sound (for exemple) */
-void tsinput_message(u32 message, u32 param) {
+void chipslicets_message(u32 message, u32 param) {
 
   int snd_type;
 
   switch (message) {
 
-#ifdef DRIVER_TSINPUT_SND
+#ifdef DRIVER_CHIPSLICETS_SND
   /* sound support through /dev/tty2 implemented in drivers/char/vt.c */
   case PGDM_SOUNDFX:
 
@@ -352,8 +352,8 @@ void tsinput_message(u32 message, u32 param) {
 
 # elif defined(CONFIG_CHIPSLICE)
     {
-      int snd_freq = get_param_int("sound","frequency",8000);
-      int snd_leng = get_param_int("sound","length",50);
+      int snd_freq = get_param_int("input-chipslicets","snd_frequency",8000);
+      int snd_leng = get_param_int("input-chipslicets","snd_length",50);
       int fd = 0;
 
       /* if no frequency defined, get_param_int return 5000.
@@ -371,7 +371,7 @@ void tsinput_message(u32 message, u32 param) {
       close(fd);
     }
 # endif /* defined(CONFIG_XCOPILOT) || defined(CONFIG_SOFT_CHIPSLICE) */
-#endif /* DRIVER_TSINPUT_SND */
+#endif /* DRIVER_CHIPSLICETS_SND */
 
   default:
     break;
@@ -383,14 +383,14 @@ void tsinput_message(u32 message, u32 param) {
 
 /******************************************** Driver registration */
 
-g_error tsinput_regfunc(struct inlib *i) {
-  i->init = &tsinput_init;
-  i->close = &tsinput_close;
-  i->poll = &tsinput_poll;
-  i->fd_init = &tsinput_fd_init;
-  i->message = &tsinput_message;
+g_error chipslicets_regfunc(struct inlib *i) {
+  i->init = &chipslicets_init;
+  i->close = &chipslicets_close;
+  i->poll = &chipslicets_poll;
+  i->fd_init = &chipslicets_fd_init;
+  i->message = &chipslicets_message;
   return sucess;
 }
 
-#endif /* DRIVER_TSINPUT */
+#endif /* DRIVER_CHIPSLICETS */
 /* The End */

@@ -70,7 +70,7 @@ DRIVER_EZ328=y
 # DRIVER_SDLINPUT is not set
 # DRIVER_SVGAINPUT is not set
 # DRIVER_NCURSESINPUT is not set
-# DRIVER_TSINPUT is not set
+# DRIVER_CHIPSLICETS is not set
 # DRIVER_R3912TS is not set
 
 #

@@ -10,7 +10,7 @@ EXTRA_libinput_a_SOURCES = \
 	r3912ts.c \
 	sdlinput.c \
 	svgainput.c \
-	tsinput.c \
+	chipslicets.c \
 	vr3ts.c \
 	tuxts.c \
 	ttykb.c \

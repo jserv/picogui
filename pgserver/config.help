@@ -284,9 +284,12 @@ CONFIG_MAX_ZOMBIEGROPS
       be increased. In case you're wondering, each gropnode uses
       (at this writing) 36 bytes of memory plus allocation overhead.
 
-DRIVER_TSINPUT
+DRIVER_CHIPSLICETS
       Touch screen input driver for uClinux/m68k devices
-      
+
+DRIVER_CHIPSLICETS_SND
+      Sound support through ChipSlice touchscreen
+
 DRIVER_R3912TS
       Touch screen driver for the r3912, used in the VTech Helio.
       This reads from /dev/tpanel and uses calibration data from

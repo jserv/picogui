@@ -1,4 +1,4 @@
-/* $Id: ez328.c,v 1.15 2001/10/22 13:46:08 pney Exp $
+/* $Id: ez328.c,v 1.16 2001/10/23 13:31:41 pney Exp $
  *
  * ez328.c - Driver for the 68EZ328's (aka Motorola Dragonball EZ)
  *           built-in LCD controller. It assumes the LCD parameters
@@ -82,7 +82,7 @@ g_error ez328_init(void) {
     defined(CONFIG_XCOPILOT)  || \
     defined(CONFIG_SOFT_CHIPSLICE)
    /* Load the ts driver as the main input driver */
-   return load_inlib(&tsinput_regfunc,&inlib_main);
+   return load_inlib(&chipslicets_regfunc,&inlib_main);
 #else
    return sucess;
 #endif
