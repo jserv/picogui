@@ -1,4 +1,5 @@
 from Buffer import Buffer
+import os
 
 class FileBuffer(Buffer):
     "Represents a file"
@@ -6,9 +7,14 @@ class FileBuffer(Buffer):
     def __init__(self, path=''):
         self.path = path
         self.changed = False
-        f = file(path, 'r')
-        Buffer.__init__(self, name=path, text=f.read())
-        f.close()
+        if os.path.exists(path):
+            f = file(path, 'r')
+            text=f.read()
+            f.close()
+        else:
+            print 'New file'
+            text = ''
+        Buffer.__init__(self, name=path, text=text)
 
     def notify_changed(self, ev):
         Buffer.notify_changed(self, ev)

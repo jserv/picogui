@@ -1,6 +1,7 @@
 import PicoGUI, sys
 from Minibuffer import Minibuffer
 from DebugBuffer import DebugBuffer
+from Textbox import Textbox
 #import pax.backwards_compatibility
 
 class Frame(object):
@@ -24,7 +25,7 @@ class Frame(object):
         self.minibuffer = Minibuffer(self)
         sys.stdout = self.minibuffer
 
-        sys.stderr = DebugBuffer(self)
+        #sys.stderr = DebugBuffer(self)
 
     def get_current(self):
         for page in self._pages:
@@ -51,14 +52,8 @@ class Frame(object):
             self.minibuffer.bind(tabbar = PicoGUI.Widget(self._app.server, page.tab_bar,
                                                          self._app, type='tabbar'))
         self._pages.append(page)
-        t = page.addWidget('scrollbox', 'inside').addWidget('Textbox','inside')
-        t.tabpage = page
-        t.side = 'All'
-        page.textbox = t
-        t.buffer = buffer
-        t.text = buffer.text
-        t.frame = self
-        buffer.add_observer(t)
+        t = page.addWidget('scrollbox', 'inside').addWidget('Textbox','inside', wrapper_class=Textbox)
+        t.open(self, page, buffer)
 
     def close(self, box=None):
         if box is None:
@@ -70,12 +65,12 @@ class Frame(object):
         box.buffer.del_observer(box)
         self._app.delWidget(box)
         self._app.delWidget(box.tabpage)
+        if is_current:
+            self.current = 0
         # for the sake of the garbage collector
         box.tabpage.textbox = None
         box.tabpage = None
         box.buffer = None
-        if is_current:
-            self.current = 0
 
     def save(self, box=None):
         if box is None:
