@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.29 2000/10/10 00:33:36 micahjd Exp $
+# $Id: Makefile,v 1.30 2000/10/12 16:53:22 pney Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -35,7 +35,8 @@ SRC := widget/bitmap.c widget/indicator.c widget/label.c \
        widget/field.c gcore/timer.c gcore/errortext.c gcore/video.c \
        gcore/input.c gcore/driverinfo.c gcore/pgmain.c net/request.c \
        net/dispatch.c net/eventq.c video/svga.c input/svgainput.c \
-       video/sdlmin.c video/sdl.c input/sdlinput.c
+       video/sdlmin.c video/sdl.c input/sdlinput.c \
+       video/ez328_chipslice_lcd.c gcore/platforms.c
 
 HDR := include/pgserver/*.h include/picogui/*.h
 
@@ -63,6 +64,12 @@ ifeq ($(strip $(PLATFORM)),windows)
 	BINNAME := $(BINNAME).exe
 	LDFLAGS := $(LDFLAGS) -lwsock32
 endif
+ifeq ($(strip $(PLATFORM)),uclinux)
+        GCC := m68k-pic-coff-gcc
+        CFLAGS := $(CFLAGS) -fPIC -DUCLINUX
+        BINNAME := uclinux-$(BINNAME)
+        LDFLAGS := $(LDFLAGS)
+endif
 
 # Extra compiler flags needed by drivers
 
@@ -80,6 +87,7 @@ endif
 ifneq ($(findstring DRIVER_SVGA,$(DRV)),)
 	LDFLAGS := $(LDFLAGS) -lvgagl -lvga
 endif
+
 
 # Generate a list of object files
 OBJ := $(SRC:.c=.o) font/fontdata.o
