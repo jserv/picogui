@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.56 2001/11/15 14:48:58 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.57 2001/11/17 09:43:25 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -932,6 +932,10 @@ void def_charblit_0(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
       h = clip->y2-dest_y+1;
     if (clip->y1>dest_y) {
       hc = clip->y1-dest_y; /* Do it this way so skewing doesn't mess up when clipping */
+      while (lines < hc && olines) {
+	lines += olines;
+	dest_x--;
+      }
       dest_y += hc;
       chardat += hc*bw;
     }
@@ -994,6 +998,10 @@ void def_charblit_90(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
       h = clip->x2-dest_x+1;
     if (clip->x1>dest_x) {
       hc = clip->x1-dest_x; /* Do it this way so skewing doesn't mess up when clipping */
+      while (lines < hc && olines) {
+	lines += olines;
+	dest_y++;
+      }
       dest_x += hc;
       chardat += hc*bw;
     }
@@ -1051,6 +1059,10 @@ void def_charblit_180(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
       h = dest_y-clip->y1+1;
     if (clip->y2<dest_y) {
       hc = dest_y-clip->y2; /* Do it this way so skewing doesn't mess up when clipping */
+      while (lines < hc && olines) {
+	lines += olines;
+	dest_x--;
+      }
       dest_y -= hc;
       chardat += hc*bw;
     }
@@ -1108,6 +1120,10 @@ void def_charblit_270(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
       h = dest_x-clip->x1+1;
     if (clip->x2<dest_x) {
       hc = dest_x-clip->x2; /* Do it this way so skewing doesn't mess up when clipping */
+      while (lines < hc && olines) {
+	lines += olines;
+	dest_y++;
+      }
       dest_x -= hc;
       chardat += hc*bw;
     }
