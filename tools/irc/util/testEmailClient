@@ -1,8 +1,0 @@
-#!/bin/bash
-cat <<EOF | ./emailBotClient.py 
-To: commits@picogui.org
-From: mike@theoretic.com
-Subject: $1 $2
-
-test $@
-EOF
