@@ -76,7 +76,7 @@ int NewGame(struct pgEvent *evt)
 {
   int ail;
   board *gee;
-  switch(ail = pgMenuFromString("Skill Level One|Skill Level Two"/*|Skill Level Three|Skill Level Four"*/))
+  switch(ail = pgMenuFromString("Skill Level One|Skill Level Two|Skill Level Three"/*|Skill Level Four"*/))
     {
     case 1:
       pgReplaceTextFmt(info,"Skill Level One");

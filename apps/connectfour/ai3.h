@@ -1,8 +1,8 @@
 /*
- * Filename:  ai.c
+ * Filename:  ai3.h
  * Author:    Brandon Smith
- * Date:      March  23, 2002
- * Purpose:   the main AI functions
+ * Date:      April 1, 2002
+ * Purpose:   The third graduation of the AI header
  *
  * Copyright (C) 2002 Brandon Smith <lottabs2@yahoo.com> 
  *
@@ -23,40 +23,15 @@
  *
  */
 
-#include <stdlib.h>
-#include <time.h>
-#include <stdio.h>
+#ifndef __AI3_H__
+#define __AI3_H__
 
 #include "connectfour.h"
-#include "ai.h"
-#include "rules.h"
 
+void ai3(struct board *it);
+int nextmovelose(struct board *it,int param);
+void notmove(struct board *it, int param);
+int paramcheck(int param, int test);
+int paramadd(int param, int add);
 
-void aicall(struct board *it)
-{
-  switch(it -> ailevel)
-    {
-    case 1:
-      ai1(it);
-      break;
-    case 2:
-      ai2(it);
-      break;
-    case 3:
-      ai3(it);
-      break;
-      /*case 4:
-      ai4(it);
-      break;
-     */}
-}
-
-void randommove(struct board *it)
-{
-  while(move(it,rand()%7) < 0);
-}
-
-int move(struct board *it, int location)
-{
-  return putpiece(location,COMP,it);
-}
+#endif /* __AI3_H__ */
