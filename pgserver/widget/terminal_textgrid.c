@@ -1,4 +1,4 @@
-/* $Id: terminal_textgrid.c,v 1.22 2003/03/26 10:28:25 micahjd Exp $
+/* $Id: terminal_textgrid.c,v 1.23 2003/03/26 10:36:00 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -161,21 +161,21 @@ int term_linedraw(hwrbitmap dest, int x, int y, int w, int h,
 
   case 'j' | 0x80:   /* Bottom-right corner */
     VID(slab)(dest, x, y+(h>>1), 1+(w>>1), color, lgop);
-    VID(bar)(dest, x+(w>>1), y, h>>1, color, lgop);
+    VID(bar)(dest, x+(w>>1), y, 1+(h>>1), color, lgop);
     return 1;
 
   case 'k' | 0x80:   /* Top-right corner */
-    VID(slab)(dest, x, y+(h>>1), w>>1, color, lgop);
-    VID(bar)(dest, x+(w>>1), y+(h>>1), h>>1, color, lgop);
+    VID(slab)(dest, x, y+(h>>1), 1+(w>>1), color, lgop);
+    VID(bar)(dest, x+(w>>1), y+(h>>1), 1+(h>>1), color, lgop);
     return 1;
 
   case 'l' | 0x80:   /* Top-left corner */
-    VID(slab)(dest, x+(w>>1), y+(h>>1), w>>1, color, lgop);
-    VID(bar)(dest, x+(w>>1), y+(h>>1), h>>1, color, lgop);
+    VID(slab)(dest, x+(w>>1), y+(h>>1), 1+(w>>1), color, lgop);
+    VID(bar)(dest, x+(w>>1), y+(h>>1), 1+(h>>1), color, lgop);
     return 1;
 
   case 'm' | 0x80:   /* Bottom-left corner */
-    VID(slab)(dest, x+(w>>1), y+(h>>1), w>>1, color, lgop);
+    VID(slab)(dest, x+(w>>1), y+(h>>1), 1+(w>>1), color, lgop);
     VID(bar)(dest, x+(w>>1), y, h>>1, color, lgop);
     return 1;
 
@@ -206,22 +206,22 @@ int term_linedraw(hwrbitmap dest, int x, int y, int w, int h,
 
   case 't' | 0x80:   /* Right tee */
     VID(bar)(dest, x+(w>>1), y, h, color, lgop);
-    VID(slab)(dest, x+(w>>1), y+(h>>1), w>>1, color, lgop);
+    VID(slab)(dest, x+(w>>1), y+(h>>1), 1+(w>>1), color, lgop);
     return 1;
 
   case 'u' | 0x80:   /* Left tee */
     VID(bar)(dest, x+(w>>1), y, h, color, lgop);
-    VID(slab)(dest, x, y+(h>>1), w>>1, color, lgop);
+    VID(slab)(dest, x, y+(h>>1), 1+(w>>1), color, lgop);
     return 1;
 
   case 'v' | 0x80:   /* Top tee */
     VID(slab)(dest, x, y+(h>>1), w, color, lgop);
-    VID(bar)(dest, x+(w>>1), y, h>>1, color, lgop);
+    VID(bar)(dest, x+(w>>1), y, 1+(h>>1), color, lgop);
     return 1;
 
   case 'w' | 0x80:   /* Bottom tee */
     VID(slab)(dest, x, y+(h>>1), w, color, lgop);
-    VID(bar)(dest, x+(w>>1), y+(h>>1), h>>1, color, lgop);
+    VID(bar)(dest, x+(w>>1), y+(h>>1), 1+(h>>1), color, lgop);
     return 1;
 
   case 'x' | 0x80:   /* Vertical line */
