@@ -1,8 +1,14 @@
 /* Small demo for integrating picogui support into an OpenGL app.
  * This demo will evolve as pgserver's embedding support does.
  *
- * To compile this, enable the 'libpgserver' option in pgserver's menuconfig,
- * then link this with -lpgserver
+ * The sample app used here is Lesson 37 from the NeHe OpenGL tutorials.
+ * nehe.gamedev.net
+ *
+ * This requires a pgserver with:
+ *   - libpgserver support
+ *   - the sdlgl video driver
+ *   - the sdlinput driver
+ *   - the ftgl font engine
  *
  * -- Micah Dowty <micahjd@users.sourceforge.net>
  */
@@ -16,89 +22,6 @@
 #include <GL/gl.h>                /* OpenGL of course! */
 #include <stdio.h>                /* fopen() and friends */
 
-
-/******************************** Example main application *******/
-
-/* Initialization for our OpenGL scene */
-void scene_init(void) {
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluPerspective(45.0f, 1.0f, .5f ,150.0f);
-  glMatrixMode(GL_MODELVIEW);
-}
-
-/* The OpenGL scene we draw below the GUI */
-void scene(void) {
-  static float xr,yr,zr;
-  static float light1_diffuse[] = {0.5,0.8,1,1};
-  static float light1_ambient[] = {0.2,0.2,0.2,0};
-  static float light1_position[] = {-10,5,-5,0};
-
-  glClearColor(0,0,0,0);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  glLightfv(GL_LIGHT1, GL_DIFFUSE, light1_diffuse);
-  glLightfv(GL_LIGHT1, GL_POSITION, light1_position);
-  glLightfv(GL_LIGHT1, GL_AMBIENT, light1_ambient);
-
-  glEnable(GL_DEPTH_TEST);
-  glDepthFunc(GL_LEQUAL);
-  glEnable(GL_LIGHT1);
-  glEnable(GL_LIGHTING);
-  glColor3f(1,1,1);
-  
-  glLoadIdentity();
-  glTranslatef(0.0f,0.0f,-5.0f);
-  glRotatef(xr,1.0f,0.0f,0.0f);
-  glRotatef(yr,0.0f,1.0f,0.0f);
-  glRotatef(zr,0.0f,0.0f,1.0f);
-  xr += 0.1;
-  yr += 0.2;
-  zr += 0.05;
-
-  glBegin(GL_QUADS);  /* Cube */
-  
-  glNormal3f(0,0,-1);
-  glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, -1.0f,  1.0f);
-  glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f, -1.0f,  1.0f);
-  glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f,  1.0f,  1.0f);
-  glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f,  1.0f,  1.0f);
-
-  glNormal3f(0,0,1);
-  glTexCoord2f(1.0f, 0.0f); glVertex3f(-1.0f, -1.0f, -1.0f);
-  glTexCoord2f(1.0f, 1.0f); glVertex3f(-1.0f,  1.0f, -1.0f);
-  glTexCoord2f(0.0f, 1.0f); glVertex3f( 1.0f,  1.0f, -1.0f);
-  glTexCoord2f(0.0f, 0.0f); glVertex3f( 1.0f, -1.0f, -1.0f);
-
-  glNormal3f(0,-1,0);
-  glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f,  1.0f, -1.0f);
-  glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f,  1.0f,  1.0f);
-  glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f,  1.0f,  1.0f);
-  glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f,  1.0f, -1.0f);
-
-  glNormal3f(0,1,0);
-  glTexCoord2f(1.0f, 1.0f); glVertex3f(-1.0f, -1.0f, -1.0f);
-  glTexCoord2f(0.0f, 1.0f); glVertex3f( 1.0f, -1.0f, -1.0f);
-  glTexCoord2f(0.0f, 0.0f); glVertex3f( 1.0f, -1.0f,  1.0f);
-  glTexCoord2f(1.0f, 0.0f); glVertex3f(-1.0f, -1.0f,  1.0f);
-
-  glNormal3f(1,0,0);
-  glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f, -1.0f, -1.0f);
-  glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f,  1.0f, -1.0f);
-  glTexCoord2f(0.0f, 1.0f); glVertex3f( 1.0f,  1.0f,  1.0f);
-  glTexCoord2f(0.0f, 0.0f); glVertex3f( 1.0f, -1.0f,  1.0f);
-
-  glNormal3f(-1,0,0);
-  glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, -1.0f, -1.0f);
-  glTexCoord2f(1.0f, 0.0f); glVertex3f(-1.0f, -1.0f,  1.0f);
-  glTexCoord2f(1.0f, 1.0f); glVertex3f(-1.0f,  1.0f,  1.0f);
-  glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f,  1.0f, -1.0f);
-
-  glEnd();
-}
-
-
-/******************************** Example of pgserver embedding *******/
  
 /* Our main program, wrapped with exception handling */ 
 g_error protected_main(int argc, char **argv) {
@@ -156,7 +79,7 @@ g_error protected_main(int argc, char **argv) {
   errorcheck;
 
   /* OpenGL init for our scene */
-  scene_init();
+  Initialize(640, 480);
 
   /* Now we'll do a small test of pgserver, loading and displaying a widget
    * template. Note that normally this shouldn't need to call request_exec
@@ -220,7 +143,7 @@ g_error protected_main(int argc, char **argv) {
      * If the theme has no 'holes' for this to show through, you can see it
      * by using CTRL-ALT-Q to move the camera then CTRL-ALT-G to disable the grid.
      */
-    scene();
+    Draw();
 
     /* PicoGUI's main loop, where it processes network, input, and rendering */
     e = pgserver_mainloop_iteration();
