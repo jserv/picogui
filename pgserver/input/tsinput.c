@@ -1,4 +1,4 @@
-/* $Id: tsinput.c,v 1.8 2001/04/17 15:14:22 bauermeister Exp $
+/* $Id: tsinput.c,v 1.9 2001/05/24 15:57:20 pney Exp $
  *
  * tsinput.c - input driver for touch screen
  *
@@ -37,7 +37,8 @@
 #include <pgserver/widget.h>    /* for dispatch_pointing */
 #include <pgserver/pgnet.h>
 
-#include <pgserver/mc68328digi.h>
+#include <linux/mc68328digi.h>
+#include <rm/rm_client.h>
 
 
 #define POLL_USEC                100
@@ -59,28 +60,31 @@ static struct timeval lastIdle;
 /******************************************** Implementations */
 
 int tsinput_sleep(void) {
-  pid_t  pid;
+//  pid_t  pid;
 
 printf("Going to sleep mode\n");
-  switch(pid = vfork()) {
-  case -1:                      /* error */
-    printf("vfork failed\n");
-    exit(1);
-    break;
-  case 0:                       /* child */
-    execlp("/opt/raw_sleep","raw_sleep","-b",(char *)0);
-    printf("execlp failed\n");
-    exit(1);
-    break;
-  default:                      /* parent */
-    wait((int *)0);
-    printf("ok, child finished. Now going on...\n");
+//  switch(pid = vfork()) {
+//  case -1:                      /* error */
+//    printf("vfork failed\n");
+//    exit(1);
+//    break;
+//  case 0:                       /* child */
+//    execlp("/opt/raw_sleep","raw_sleep","-b",(char *)0);
+//    printf("execlp failed\n");
+//    exit(1);
+//    break;
+//  default:                      /* parent */
+//    wait((int *)0);
+//    printf("ok, child finished. Now going on...\n");
+
+  rm_sleep (RM_WAKE_ON_BUTTON);
+
     /*
      * the hit to wake up the ChipSlice isn't catch by the tsinput driver.
      * It's then necessary to re-initiate the time of the last event.
      */
     gettimeofday(&lastEvent,NULL);
-  }
+//  }
 }
 
 void tsinput_poll(void) {
@@ -167,8 +171,8 @@ g_error tsinput_init(void) {
     }
 
     ts_params.version_req    = MC68328DIGI_VERSION;
-    ts_params.event_queue_on = 0;
-    ts_params.deglitch_on    = 0;
+    ts_params.event_queue_on = 1;
+    ts_params.deglitch_ms    = 0;
     ts_params.sample_ms      = 10;
     ts_params.follow_thrs    = 2;
     ts_params.mv_thrs        = 5;
@@ -179,6 +183,8 @@ g_error tsinput_init(void) {
     ts_params.y_min          = 0;
     ts_params.x_max          = 159;
     ts_params.x_min          = 0;
+    /* overwrite xy_swap for XCopilot environment */
+    ts_params.xy_swap        = 0;
 
     /* according to mc68328digi.h 'How to calculate the parameters', we have
      * measured:
@@ -193,6 +199,8 @@ g_error tsinput_init(void) {
     ts_params.y_min          = 0;
     ts_params.x_max          = 240-1;
     ts_params.x_min          = 0;
+    /* overwrite xy_swap for XCopilot environment */
+    ts_params.xy_swap        = 0;
 
     /* ratio s are like for xcopilot, except that for big screen
      * height, y is divided by two
@@ -246,6 +254,9 @@ g_error tsinput_init(void) {
       goto error_close;
     }
 
+    /* init the Ressources Manager */
+    rm_init();
+
     gettimeofday(&lastEvent,NULL);
     return sucess;
 
@@ -267,6 +278,9 @@ void tsinput_close(void) {
 
   if(fd)
     close(fd);
+
+/* Disconnects the client from the Resource Manager */
+  rm_exit ();
 }
 
 
