@@ -113,5 +113,3 @@
 /* 105 */ "Exclusive resource access has been disabled",
 /* 106 */ "Fatal signal received, quick & dirty shutdown complete",
 /* 107 */ "Error opening TTY (try setting the video-fbdev.ttydev config variable)",
-/* 108 */ "Password property defined before font one, switch them!",
-

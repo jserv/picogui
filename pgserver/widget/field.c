@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.43 2002/01/22 12:25:09 micahjd Exp $
+/* $Id: field.c,v 1.44 2002/01/25 15:09:01 pney Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -28,6 +28,8 @@
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <pgserver/appmgr.h>
+
+#include <stdio.h>
 
 /* Buffer allocation settings */
 #define FIELDBUF_DEFAULTMAX      512   /* Default setting for buffer maximum */
@@ -156,18 +158,27 @@ g_error field_set(struct widget *self,int property, glob data) {
   struct fontdesc *fd;
   char *str;
   int psplit;
+  int passwdc=0; /* to keep password info when updating font */
 
   switch (property) {
 
   case PG_WP_FONT:
-    /* if a font was already created due to password set, make an error */
-    if(DATA->font)
-      return mkerror(PG_ERRT_HANDLE,108);
+    /* Test if a font already exist to keep password properties */
+    if(DATA->font) {
+      /* get the fontdesc pointer */
+      if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,DATA->font)) || !fd)
+	return mkerror(PG_ERRT_HANDLE,44);
+      /* save password property */
+      passwdc = fd->passwdc;
+    }
 
     if (iserror(rdhandle((void **)&fd,
 			 PG_TYPE_FONTDESC,-1,data)) || !fd) 
       return mkerror(PG_ERRT_HANDLE,44); 
     DATA->font = (handle) data;
+    /* restore password property if needed */
+    if(passwdc) fd->passwdc = passwdc;
+
     psplit = self->in->split;
     if (self->in->split != psplit) {
       self->in->flags |= DIVNODE_PROPAGATE_RECALC;
