@@ -1,4 +1,4 @@
-/* $Id: benchmark.c,v 1.9 2002/11/07 09:41:33 micahjd Exp $
+/* $Id: benchmark.c,v 1.10 2002/11/22 09:36:44 micahjd Exp $
  *
  * benchmark.c - Run benchmarks on vidlib functions
  *
@@ -28,6 +28,9 @@
 #include <pgserver/common.h>
 #include <pgserver/video.h>
 #include <pgserver/configfile.h>
+
+#include <sys/time.h>
+#include <time.h>
 
 hwrbitmap benchmark_srcbit;
 u8 *benchmark_char, *benchmark_gamma;
