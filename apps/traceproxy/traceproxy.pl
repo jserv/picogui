@@ -170,7 +170,7 @@ while (1) {
 	# data response packet
 	read(RSP,$rsp_data,10) or die $!;
 	($dummy,$id,$size) = unpack("nNN",$rsp_data);
-	read(RSP,$data,$size) or die $!;
+	read(RSP,$data,$size);
 	print "} = ";
 	print " data {\n";
 	hexdump($data);
