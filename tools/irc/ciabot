@@ -18,6 +18,11 @@ returnaddress="admin@YOUR_DOMAIN_HERE"
 stripnewlines=false
 #stripnewlines=true
 
+# If your logs don't include the name of the modified file, and you want to
+# show it, turn this on
+includefilename=false
+#includefilename=true
+
 # Deliver directly to the bot:
 commitaddress="commits@picogui.org"
 # Sourceforge projects might need to deliver via users.sf.net (slower)
@@ -46,6 +51,11 @@ if $stripnewlines; then
 fi
 
 module=`echo $1 | cut -d/ -f1`
+
+if $includefilename; then
+	filename=`echo $1 | cut -d" " -f2 | cut -d"," -f1`
+	module="$module: $filename,"
+fi
 
 tmpfile="/tmp/$RANDOM-$projectname"
 cat <<EOF >$tmpfile
