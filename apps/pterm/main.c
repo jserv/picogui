@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.24 2002/11/07 20:43:39 micahjd Exp $
+/* $Id: main.c,v 1.25 2003/03/26 06:33:57 micahjd Exp $
  *
  * main.c - PicoGUI Terminal (the 'p' is silent :)
  *          This handles the PicoGUI init and events
@@ -40,6 +40,7 @@
 int ptyfd;                  /* file descriptor of the pty master */
 pghandle wTerminal,wPanel;  /* Widgets */
 char *title = "Terminal";
+int sizeW, sizeH;
 int terminalHasFont = 0;
 int bSwapDeleteBackspace = 0;   /* if you need to swap delete and backspace */
 
@@ -59,6 +60,11 @@ int btnFont(struct pgEvent *evt) {
     terminalHasFont = 1;
   }  
 }
+
+/* Update the titlebar */
+void updateTitle(void) {
+  pgReplaceTextFmt(wPanel,"%s (%dx%d)",title,sizeW,sizeH);
+}  
 
 /****************************** Terminal event handlers ***/
 
@@ -98,9 +104,20 @@ int termResize(struct pgEvent *evt) {
   size.ws_col = evt->e.size.w;
   ioctl(ptyfd,TIOCSWINSZ,(char *) &size);
 
-  /* Update the title bar */
-  pgReplaceTextFmt(wPanel,"%s (%dx%d)",title,evt->e.size.w,evt->e.size.h);
+  sizeW = evt->e.size.w;
+  sizeH = evt->e.size.h;
+  updateTitle();
+  
+  return 0;
+}
 
+/* The terminal's title was changed */
+int termTitleChange(struct pgEvent *evt) {
+  static char titleBuf[256];
+  strncpy(titleBuf, evt->e.data.pointer, sizeof(titleBuf)-1);
+  titleBuf[sizeof(titleBuf)-1] = 0;
+  title = titleBuf;
+  updateTitle();
   return 0;
 }
 
@@ -225,6 +242,7 @@ int main(int argc, char **argv) {
   pgBind(PGDEFAULT,PG_WE_DATA,&termInput,NULL);      /* Input handler */
   pgCustomizeSelect(&mySelect,&mySelectBH);          /* select() wrapper for output */
   pgBind(PGDEFAULT,PG_WE_RESIZE,&termResize,NULL);   /* Resize handler */
+  pgBind(PGDEFAULT,PG_WE_TITLECHANGE,&termTitleChange,NULL);  /* Title handler */
   pgFocus(PGDEFAULT);
   
   /* Scroll bar */
@@ -244,6 +262,9 @@ int main(int argc, char **argv) {
     char * cmd [] = {
       "/bin/sh", "-sh", NULL 
     };
+
+    /* We support xterm's extended escapes, so pretend to be xterm */
+    putenv("TERM=xterm");
 
     if ((childpid = ptyfork (& ptyfd, argv [0] ? argv : cmd)) < 0 ) {
       pgMessageDialogFmt (argv [0] ? argv[0] : "Shell",

@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.22 2003/03/26 02:49:34 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.23 2003/03/26 06:33:58 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -56,6 +56,8 @@ void term_decset(struct widget *self,int n,int enable);
 void term_ecmaset(struct widget *self,int n,int enable);
 void term_ecmastatus(struct widget *self,int n);
 int term_misc_code(struct widget *self,u8 c);
+void term_xterm(struct widget *self);
+
 
 /********************************************** Keyboard input */
 
@@ -134,10 +136,19 @@ void term_char(struct widget *self,u8 c) {
   /* Clamp by default rather than wrapping/scrolling */
   DATA->clamp_flag = 1;
 
-  /* Is it a control character? */
-  if (c <= '\033')
+  /* Is it a control character? 
+   * Note:
+   *  Normally control characters and escapes are completely
+   *  separate, but xterm extended codes contain the BEL
+   *  character, so we have to exclude that if we're in escape mode.
+   */
+  if (c <= '\033' && (c != '\a' || !DATA->escapemode))
     switch (c) {
     case '\033':        /* Escape */
+      if (DATA->escapemode) {
+	DBG("-ERROR- beginning escape code while already in escape mode\n");
+	term_debug_printbuffer(self);
+      }
       DATA->escapemode = 1;
       DATA->escbuf_pos = 0;
       return;
@@ -236,6 +247,26 @@ void term_char(struct widget *self,u8 c) {
 
 /********************************************** Escape codes */
 
+#ifdef DEBUG_FILE
+void term_debug_printbuffer(struct widget *self) {
+  u8 *p;
+  
+  /* Keep this from messing up the debug terminal! */
+  DATA->escapebuf[ESCAPEBUF_SIZE-1] = 0;
+  p = DATA->escapebuf;
+  while (*p) {
+    if (*p == '\033')
+      *p = '^';
+    p++;
+  }
+  
+  DBG("buffer = \"%s\"\n", DATA->escapebuf);
+}
+#else
+#define term_debug_printbuffer
+#endif
+
+
 /* Handle an incoming character while processing an escape sequence */
 void term_char_escapemode(struct widget *self,u8 c) {
   /* Yer supposed to ignore nulls in escape codes */
@@ -245,35 +276,25 @@ void term_char_escapemode(struct widget *self,u8 c) {
   /* Too much? */
   if (DATA->escbuf_pos >= ESCAPEBUF_SIZE) {
     DATA->escapemode = 0;
-#ifdef DEBUG_FILE
-    {
-      u8 *p;
-      
-      /* Keep this from messing up the debug terminal! */
-      DATA->escapebuf[ESCAPEBUF_SIZE-1] = 0;
-      p = DATA->escapebuf;
-      while (*p) {
-	if (*p == '\033')
-	  *p = '^';
-	p++;
-      }
-      
-      DBG("-ERROR- : buffer overflowed before escape was recognized\nterm: buffer = \"%s\"\n",
-	     DATA->escapebuf);
-    }
-#endif
+    DBG("-ERROR- : buffer overflowed before escape was recognized\n");
+    term_debug_printbuffer(self);
     return;
   }
 
   /* Append to the escape code buffer */
   DATA->escapebuf[DATA->escbuf_pos++] = c;
 
+  /* Handle miscellaneous (non-CSI) escapes */
   if (term_misc_code(self,c))
       DATA->escapemode = 0;
 
   /* Handle CSI escape codes that can all be parsed similarly */ 
-  if (*DATA->escapebuf == '[' && DATA->escbuf_pos>1) 
+  else if (*DATA->escapebuf == '[' && DATA->escbuf_pos>1) 
     term_csi(self,c);
+
+  /* Handle xterm extended escapes */
+  else if (*DATA->escapebuf == ']' && c=='\a')
+    term_xterm(self);
 }
 
 
@@ -945,6 +966,46 @@ void term_decset(struct widget *self,int n,int enable) {
   default:
     DBG("-ERROR- : Unknown DECSET/DECRST number = %d\n",DATA->csiargs[0]);
     break;
+  }
+}
+
+void term_xterm(struct widget *self) {
+  int n;
+  char *txt;
+
+  /* xterm extended codes are all of the form:
+   *   ESC ] n ; txt BEL
+   */
+  n = strtol(DATA->escapebuf+1, &txt, 10);
+  txt++;
+  DATA->escapebuf[DATA->escbuf_pos-1] = 0;
+  DATA->escapemode = 0;
+
+  switch (n) {
+
+  case 0:   /* ESC ] 0 ; txt BEL - Set icon name and window title to txt */
+  case 2:   /* ESC ] 2 ; txt BEL - Set window title to txt */
+    DBG("setting window title to \"%s\"\n", txt);
+    post_event(PG_WE_TITLECHANGE, self, strlen(txt), 0, txt); 
+    break;
+
+    /* ESC ] 0 ; txt BEL - Set icon name to txt */
+  case 1:
+    DBG("ignoring request to set icon name to \"%s\"\n", txt);
+    break;
+
+    /* ESC ] 4 6 ; name BEL - Change log file to name */
+  case 46:
+    DBG("ignoring request to set log file name to \"%s\"\n", txt);
+    break;
+
+    /* ESC ] 5 0 ; txt BEL - Set font to txt */
+  case 50:
+    DBG("ignoring request to set font to \"%s\"\n", txt);
+    break;
+    
+  default:
+    DBG("-ERROR- unknown xterm code %d - \"%s\"\n", n, txt);
   }
 }
 

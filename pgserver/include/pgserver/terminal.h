@@ -1,4 +1,4 @@
-/* $Id: terminal.h,v 1.9 2003/03/26 02:49:34 micahjd Exp $
+/* $Id: terminal.h,v 1.10 2003/03/26 06:33:57 micahjd Exp $
  *
  * terminal.h - Header file shared by components of the terminal emulator widget
  *
@@ -34,8 +34,11 @@
 
 /******************************************************** Data structures **/
 
-/* Size of buffer for VT102 escape codes */
-#define ESCAPEBUF_SIZE 32
+/* Size of buffer for VT102 escape codes.
+ * Normally this would only need to be 32 or so, but we need the extra
+ * length for properly accepting xterm extended escapes.
+ */
+#define ESCAPEBUF_SIZE 256
 
 /* Maximum # of params for a CSI escape code.
  * Same limit imposed by the linux console, should be fine */
