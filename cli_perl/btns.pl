@@ -7,16 +7,19 @@ $lbl = NewWidget(-type => label,-side => top,
 		 -text => $str,-before => $p,-bgcolor => 0,-color => 0xFFFFFF);
 
 $check = NewWidget(-type => button, -inside => $p,
-		   -bitmap  => NewBitmap(-file => '../images/check.pnm'),
-		   -bitmask => NewBitmap(-file => '../images/check_mask.pnm'));
+	-bitmap  => NewBitmap(-file => '../images/button/check.pnm'),
+	-bitmask => NewBitmap(-file => '../images/button/check_mask.pnm'));
 
 $tux = NewWidget(-type => button, -inside => $p,
-		 -bitmap  => NewBitmap(-file => '../images/tux.pnm'),
-		 -bitmask => NewBitmap(-file => '../images/tux_mask.pnm'));
+	-bitmap  => NewBitmap(-file => '../images/button/tux.pnm'),
+	-bitmask => NewBitmap(-file => '../images/button/tux_mask.pnm'));
 
 $x = NewWidget(-type => button, -inside => $p,
-	       -bitmap  => NewBitmap(-file => '../images/x.pnm'),
-	       -bitmask => NewBitmap(-file => '../images/x_mask.pnm'));
+	-bitmap  => NewBitmap(-file => '../images/button/x.pnm'),
+	-bitmask => NewBitmap(-file => '../images/button/x_mask.pnm'));
+
+# Junk button
+NewWidget(-type => button,-side => right);
 
 Update(); 
 
