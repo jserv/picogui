@@ -166,6 +166,8 @@ class Application(Widget.Widget):
         for ev in events:
             try:
                 self._event_registry.dispatch(ev)
+            except SystemExit:
+                raise StopApplication
             except EventHandled:
                 continue
             if ev.widget is self and ev.name in ('close', 'stop'):
