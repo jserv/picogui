@@ -7,11 +7,11 @@ class TerminalPage:
     def __init__(self, parent, relation, app, position):
         self.tabpage = parent.addWidget('tabpage', relation)
 	self._terminal = self.tabpage.addWidget('terminal', 'inside')
+	self._terminal.focus()
 	self._termProcess = False
 	self._app = app
 	self._position = position
 	if position == 0:
-	    print "setting hotkey\n"
 	    self.tabpage.hotkey = 'f1'
 
 	try:
@@ -31,8 +31,7 @@ class TerminalPage:
 	    self._app.link(self.terminalResizeHandler, self._terminal, 'resize')
 	    self._app.link(self.tabClicked, self.tabpage, 'activate')
 	except:
-#	    self._terminal.write("The terminal isn't supported on this operating system.\n\r")
-	    pass
+	    self._terminal.write("The terminal isn't supported on this operating system.\n\r")
 
     def terminalHandler(self, ev):
         os.write(self._ptyfd, ev.data)
@@ -57,13 +56,19 @@ class App(PicoGUI.Application):
 	PicoGUI.Application.__init__(self, 'epterm')
 	self._toolbar = self.addWidget('toolbar')
 
-    def appendtab(self):
-        try:
-	    parent = self._pages[-1].tabpage
-        except IndexError:
-            parent = self._toolbar
-	self._pages.append(TerminalPage(parent,'after', self, len(self._pages) - 1))
+	self._newtabhotkey = self.createWidget('button')
+	self._newtabhotkey.hotkey = 'f12'
+	self.link(self.addtab, self._newtabhotkey, 'activate')
+	self._pages.append(TerminalPage(self._toolbar, 'after', self, 0))
 	self._pages[-1].tabpage.text = 'tab!'
+
+    def addtab(self,ev):
+        self.appendtab()
+
+    def appendtab(self):
+	self._pages.append(TerminalPage(self._pages[-1].tabpage,'after', self, len(self._pages) - 1))
+	self._pages[-1].tabpage.text = 'tab!'
+	self._pages[-1].tabpage.on = 1
 
     def update(self):
         import time
@@ -72,10 +77,6 @@ class App(PicoGUI.Application):
 	    self._pages[i].terminalRead()
 	time.sleep(0.001)
 
-
 f = App()
-num_tabs = 4
-for i in range(0,num_tabs):
-    f.appendtab()
 while(1):
     f.update()
