@@ -1,3 +1,12 @@
+2001-06-21    Pascal Bauermeister <pascal.bauermeister@smartdata.ch>
+	* configure.in Makefile.am input/tsinput.c:
+	Removed hard-coded paths related to resource manager and uClinux. Now,
+	extra include paths and extra libraries can be added via configure
+	options:
+	  --with-extra-ipath=...  --with-extra-lpath=... --with-extra-libs=...
+	They must be specified so that the rm.h, mc68328digi.h and librm.a
+	can be found.
+
 2001-06-04    Pascal Bauermeister <pascal.bauermeister@smartdata.ch>
 	* input/tsinput.c: Added two arguments in PG_TS_CALIBRATION to set
 	the pointer shift
