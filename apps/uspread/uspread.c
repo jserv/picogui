@@ -36,13 +36,26 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DEF_W 20
+#define DEF_W 25
 
 pghandle wBox, *wRow, wHead, wHBox;
 char **data;
 int dc, dr;
+int isModified = 1;  /* 0=false, 1=true */
+int save = 1;  /* 1=save, 2=save as */
+char *fileName;
 
-void loadFile ( char *fileName )
+//FIXME: PicoGUI bug: does not return PG_WP_SIZE so store them till its fixed
+
+int *widths;
+
+int textEdit ( struct pgEvent *evt )
+{
+	printf ( "MODIFY\n" );
+	isModified = 1;
+}
+
+void loadFile ( )
 {
    int i, j;
    char *strWName = malloc( 15 );
@@ -50,6 +63,7 @@ void loadFile ( char *fileName )
 
    csv_info ( fileName, &dc, &dr );
    data = (char **) malloc ( dc*dr*sizeof(char*) );
+   isModified = 0;
    parse_csv ( fileName, data, dc, dr);
 
    //dr -= 2; //first header, 2nd widths
@@ -67,27 +81,24 @@ void loadFile ( char *fileName )
    for ( j=dc-1; j >= 0; j-- )
    {
       pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_INSIDE,wHead);
-      if ( data[j] != NULL && data[j+dc] != NULL )
+      if ( data[j] != NULL && data[j+dc] != NULL && atoi ( data[j+dc] ) != 0 )
          pgSetWidget(PGDEFAULT,
                   PG_WP_TEXT, pgNewString( data[j] ),
-                  PG_WP_SIDE, PG_S_LEFT,
                   PG_WP_SIZE, atoi( data[j+dc] ),
                   PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
                   0);
       else
          if ( data[j] == NULL )
          {
-            if ( data[j+dc] == NULL )
+            if ( data[j+dc] == NULL ||  atoi ( data[j+dc] ) == 0)
                pgSetWidget(PGDEFAULT,
                         PG_WP_TEXT, pgNewString( ":)" ),
-                        PG_WP_SIDE, PG_S_LEFT,
                         PG_WP_SIZE, DEF_W,
                         PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
                         0);
             else
                pgSetWidget(PGDEFAULT,
                         PG_WP_TEXT, pgNewString( ":)" ),
-                        PG_WP_SIDE, PG_S_LEFT,
                         PG_WP_SIZE, atoi( data[j+dc] ),
                         PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
                         0);
@@ -95,10 +106,15 @@ void loadFile ( char *fileName )
          else
             pgSetWidget(PGDEFAULT,
                      PG_WP_TEXT, pgNewString( data[j] ),
-                     PG_WP_SIDE, PG_S_LEFT,
                      PG_WP_SIZE, DEF_W,
                      PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
                      0);
+
+            sprintf( strWName, "HEAD.%d.", j );
+            pgSetWidget ( PGDEFAULT,
+                  PG_WP_SIDE, PG_S_LEFT,
+                  PG_WP_NAME, pgNewString ( strWName ),
+                  0 );
    }
    /**** </widgets> ****/
 
@@ -113,6 +129,7 @@ void loadFile ( char *fileName )
       for ( j=dc-1; j >= 0; j-- )
       {
          pgNewWidget(PG_WIDGET_FIELD,PG_DERIVE_INSIDE,wRow[i-2]);
+         // FIXME: pgBind ( PGDEFAULT, PG_WE_ACTIVATE, &textEdit, NULL );
 
          if ( data[j+(i*dc)] != NULL && data[j+dc] != NULL )
             pgSetWidget(PGDEFAULT,
@@ -140,13 +157,8 @@ void loadFile ( char *fileName )
                         0);
          // in any case:
          // set widget name to CELL.c.r wher c=col no. nad r=row no.
-         strcpy ( strWName, "CELL." );
-         sprintf( strTmp, "%d.", j );
-         strcat ( strWName, strTmp );
-         sprintf( strTmp, "%d.", i-2 );
-         strcat ( strWName, strTmp );
-
-         pgSetWidget(PGDEFAULT,
+         sprintf( strWName, "CELL.%d.%d.", j, i-2 );
+         pgSetWidget ( PGDEFAULT,
                   PG_WP_NAME, pgNewString( strWName ),
                   PG_WP_SIDE, PG_S_LEFT,
                   PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
@@ -154,22 +166,109 @@ void loadFile ( char *fileName )
       }
     }
    /**** </widgets> ****/
+   //FIXME:
+   widths = (int *) malloc ( dc * sizeof ( int ) );
+   for ( i=0; i<dc; i++ )
+   	widths [ i ] = atoi ( data [ i + dc ] );
    free ( data );
+}
+
+void saveFile ( )
+{
+	char *oldFile;
+	char *tmp;
+        FILE *fle;
+        pghandle ctrl;
+        char *strWName;
+        char *strTmp;
+        pghandle ctrlStr;
+
+        int i, j;
+
+        if ( fileName == NULL || save == 2 ) {
+              oldFile = (char *) pgFilePicker(NULL,NULL,NULL,PG_FILESAVE,"µSpread - Save File As");
+              if ( oldFile == NULL ) {
+                	pgMessageDialog ("µSpread", "File Not Saved!", PGDEFAULT );
+                        return;
+              }
+                 strcpy ( fileName, oldFile );
+        }
+
+        // if filename already exists: Want to override?
+	if ( save == 2 ) {
+                fle = fopen ( fileName, "r" );
+                if ( fle != NULL ) {
+                        if ( pgMessageDialog ( "µSpread", "Override Existing File?", PG_MSGBTN_YES|PG_MSGBTN_NO ) == PG_MSGBTN_NO ) {
+                                pgMessageDialog ("µSpread", "File Not Saved!", PGDEFAULT );
+                                return;
+                        }
+                        fclose ( fle );
+                }
+ 	}
+//SAVE IT
+tmp = (char *) malloc ( 5120 );
+        fle = fopen ( fileName, "wt+" );
+        for ( i=0; i < dr; i++ ) {
+        	strcpy ( tmp, "" );
+                for ( j=0; j < dc; j++ ) {
+                        if ( i != 1 ) {
+                        	strcat ( tmp, "\"" );
+                                if ( i != 0 ) {
+                                         sprintf( strWName, "CELL.%d.%d.", j, i-2 );
+                                         ctrl = pgFindWidget ( strWName );
+                                         ctrlStr = pgGetWidget ( ctrl, PG_WP_TEXT );
+                                         strcat ( tmp, pgGetString ( ctrlStr ) );
+                                }
+                                else {
+                                         sprintf( strWName, "HEAD.%d.", j );
+                                         ctrl = pgFindWidget ( strWName );
+                                         ctrlStr = pgGetWidget ( ctrl, PG_WP_TEXT );
+                                         strcat ( tmp, pgGetString ( ctrlStr ) );
+                                }
+                                strcat ( tmp, "\"" );
+                        }
+                        else {
+                                sprintf( strWName, "HEAD.%d.", j );
+                                ctrl = pgFindWidget ( strWName );
+                                sprintf ( strTmp, "%d", widths [ j ] ); //pgGetWidget ( ctrl, PG_WP_SIZE ) );
+                        	strcat ( tmp, strTmp );
+                        }
+                        if ( j != ( dc -1 ) )
+                        	strcat ( tmp, "," );
+        	}
+                strcat ( tmp, "\n" );
+                fputs ( tmp, fle );
+	}
+      fclose ( fle );
 }
 
 int closeboxHandler(struct pgEvent *evt) {
   /* Present a dialog box. If the user doesn't want to close,
      return 1 to prevent further handling of the event */
 
-  return pgMessageDialog("µSpread - EXIT?",
+    if ( isModified )
+       	if ( pgMessageDialog ( "µSpread", "Save Modified File?", PG_MSGBTN_YES | PG_MSGBTN_NO ) == PG_MSGBTN_YES)
+               	saveFile ( );
+  return 0;
+  /*pgMessageDialog("µSpread - EXIT?",
          "Sure to exit?",
          PG_MSGBTN_YES | PG_MSGBTN_NO)
-    == PG_MSGBTN_NO;
+    == PG_MSGBTN_NO;*/
+}
+
+void newSheet ( ) {
+	int i;
+        if ( isModified == 1)
+                if ( pgMessageDialog ( "µSpread", "Save Modified File?", PG_MSGBTN_YES | PG_MSGBTN_NO ) == PG_MSGBTN_YES)
+                        saveFile ( );
+        for ( i=0; i<dr; i++ )
+                pgDelete ( wRow[i] );
+        pgDelete ( wHead );
+        fileName = NULL;
 }
 
 int handleFileMenu(struct pgEvent *evt) {
    int iMainMenu, iRecentMenu, i;
-   const char *fileName;
 
    iMainMenu = pgMenuFromString("New|Open...|Recent    >|Save|Save As...|Quit");
 
@@ -178,32 +277,38 @@ int handleFileMenu(struct pgEvent *evt) {
    {
       //case 0: /*nothing!*/ break;
       case 1:
-      // TODO: 1. if modified then ask to save, 2. reset document
-            for ( i=0; i<dr; i++ )
-               pgDelete ( wRow[i] );
-            pgDelete ( wHead );
-            break;
-      case 2: fileName = pgFilePicker(NULL,NULL,NULL,PG_FILEOPEN,"Open a File");
-            if ( fileName != NULL )
-               loadFile ( (char*)fileName );
-            break;
+      // 1. if modified then ask to save, 2. reset document
+	    //printf ( "%d\n", isModified );
+            	newSheet ( );
+                break;
+      case 2:
+      		newSheet ( );
+      		fileName = (char *) pgFilePicker(NULL,NULL,NULL,PG_FILEOPEN,"µSpread - Open File");
+            	if ( fileName != NULL ) {
+                        loadFile ( );
+                        //FIXME: see textEdit ( )
+                        isModified = 1;
+             	}
+            	break;
       case 3:
-         // TODO: get documents in menu
-         //iRecentMenu = pgMenuFromString("1...|2...|3...");
-         // TODO: open the one
-         break;
+                // TODO: get documents in menu
+                iRecentMenu = pgMenuFromString("1...|2...|3...");
+                // TODO: open the one
+                // strcpy ( fileName, ... );
+                // loadFile ( );
+      		break;
+      case 5:
+      		save = 2;
+                saveFile ( );
+                break;
       case 4:
-      // FIXME:save file with current name, if noname let flow to save as...
-      case 5: fileName = pgFilePicker(NULL,NULL,NULL,PG_FILESAVE,"Save a File");
-            break;
+      		save = 1;
+    		saveFile ( );
+                break;
       case 6:
-            //TODO: if modified then ask to save
-            if ( pgMessageDialog("µSpread - EXIT?",
-                                 "Sure to exit?",
-                                 PG_MSGBTN_YES | PG_MSGBTN_NO)
-                     == PG_MSGBTN_YES )
-               exit(0);
-            break;
+	        closeboxHandler ( NULL );
+                exit(0);
+                break;
       //default: no need yet
    }
    return 0;
@@ -212,13 +317,15 @@ int handleFileMenu(struct pgEvent *evt) {
 int handleInsertMenu(struct pgEvent *evt) {
    int iMenu;
 
-   iMenu = pgMenuFromString("Date|File Name|Append Rows");
+   iMenu = pgMenuFromString("Row|Column");
 
    /* what happened? */
    switch (iMenu)
    {
-      //case 0: /*nothing!*/ break;
+      case 0:
+      		break;
       case 1:
+      		break;
       //default: no need yet
    }
    return 0;
@@ -263,7 +370,7 @@ int main(int argc, char *argv[])
    /* menu */
    pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
    pgSetWidget(PGDEFAULT,
-               PG_WP_TEXT,pgNewString("Insert"),
+               PG_WP_TEXT,pgNewString("Append"),
                PG_WP_SIDE,PG_S_LEFT,
                PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
                0);
@@ -286,5 +393,6 @@ int main(int argc, char *argv[])
    pgEventLoop();
 
    free ( data );
+   free ( widths );
    return 0;
 }
