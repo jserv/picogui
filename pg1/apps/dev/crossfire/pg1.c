@@ -30,6 +30,7 @@
 #include "item.h"
 
 bool is_textmode = FALSE;
+int map_canvas_size;
 pghandle info_widget, map_canvas, title_label,
   hp_indicator, sp_indicator, gr_indicator, food_indicator,
   hp_label, sp_label, gr_label, food_label,
@@ -643,12 +644,6 @@ int get_info_width()
 }
 
 
-void end_windows()
-{
-  fprintf(stderr, ">>> called void end_windows()\n");
-}
-
-
 /* This function draws a little status bar showing where we our
  * in terms of downloading all the image data.
  * start is the start value just sent to the server, end is the end
@@ -830,8 +825,8 @@ void save_defaults()
 
 int init_windows(int argc, char **argv)
 {
-  pghandle inv_pane, look_pane, info_pane, vitals_box, bar;
-  int i, h;
+  pghandle main_pane, inv_pane, info_pane, vitals_box, bar;
+  int h;
   struct pgmemdata lf;
 
   /* pgui initialization */
@@ -842,36 +837,21 @@ int init_windows(int argc, char **argv)
 
   title_label = pgGetWidget(PGDEFAULT, PG_WP_PANELBAR_LABEL);
 
-  inv_pane = pgNewWidget(PG_WIDGET_PANEL,0,0);
+  info_pane = pgNewWidget(PG_WIDGET_PANEL, PG_DERIVE_INSIDE, PGDEFAULT);
   pgDelete(pgGetWidget(PGDEFAULT, PG_WP_PANELBAR_CLOSE));
-  bar = pgGetWidget(inv_pane, PG_WP_PANELBAR);
-  is_textmode = pgGetWidget(bar, PG_WP_HEIGHT) == 1;
+  bar = pgGetWidget(info_pane, PG_WP_PANELBAR);
+  h = pgGetWidget(bar, PG_WP_HEIGHT);
+  is_textmode = h == 1;
   if (is_textmode)
-    printf("text mode client\n");
+    {
+      map_canvas_size = 11;
+      printf("text mode client\n");
+    }
   else
-    printf("graphical client\n");
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_SIDE, PG_S_LEFT,
-	      PG_WP_SIZEMODE, PG_SZMODE_PERCENT,
-	      PG_WP_SIZE, 33,
-	      0);
-  pgNewWidget(PG_WIDGET_LABEL, PG_DERIVE_INSIDE, PGDEFAULT);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT, pgNewString("Inventory comes here, eventually"),
-	      0);
-  look_pane = pgNewWidget(PG_WIDGET_PANEL, PG_DERIVE_INSIDE, inv_pane);
-  pgDelete(pgGetWidget(PGDEFAULT, PG_WP_PANELBAR_CLOSE));
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_SIDE, PG_S_BOTTOM,
-	      PG_WP_SIZEMODE, PG_SZMODE_PERCENT,
-	      PG_WP_SIZE, 50,
-	      0);
-  pgNewWidget(PG_WIDGET_LABEL, PG_DERIVE_INSIDE, PGDEFAULT);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT, pgNewString("`Look' comes here, eventually"),
-	      0);
-  info_pane = pgNewWidget(PG_WIDGET_PANEL, PG_DERIVE_AFTER, inv_pane);
-  pgDelete(pgGetWidget(PGDEFAULT, PG_WP_PANELBAR_CLOSE));
+    {
+      map_canvas_size = 352; /* 32 * 11 */
+      printf("graphical client\n");
+    }
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE, PG_S_RIGHT,
 	      PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
@@ -879,11 +859,20 @@ int init_windows(int argc, char **argv)
 	      0);
   info_widget = pgNewWidget(PG_WIDGET_TERMINAL, PG_DERIVE_INSIDE, info_pane);
   pgSetWidget(info_widget,
-	      PG_WP_SIDE,PG_S_LEFT,
+	      PG_WP_SIDE,PG_S_ALL,
 	      0);
   pgBind(info_widget,PG_WE_DATA,&keyfunc,NULL);      /* Input handler */
   pgFocus(info_widget);
-  stats_pane = pgNewWidget(PG_WIDGET_PANEL, PG_DERIVE_AFTER, info_pane);
+
+
+  main_pane = pgNewWidget(PG_WIDGET_PANEL, PG_DERIVE_AFTER, info_pane);
+  pgDelete(pgGetWidget(PGDEFAULT, PG_WP_PANELBAR_CLOSE));
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE, PG_S_RIGHT,
+	      PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
+	      PG_WP_SIZE, map_canvas_size + h,
+	      0);
+  stats_pane = pgNewWidget(PG_WIDGET_PANEL, PG_DERIVE_INSIDE, main_pane);
   pgDelete(pgGetWidget(PGDEFAULT, PG_WP_PANELBAR_CLOSE));
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE, PG_S_TOP,
@@ -895,12 +884,17 @@ int init_windows(int argc, char **argv)
 	      PG_WP_TEXT, pgNewString("Stats come here, eventually"),
 	      PG_WP_READONLY, 1,
 	      0);
+
   map_canvas = pgNewWidget(PG_WIDGET_CANVAS, PG_DERIVE_AFTER, stats_pane);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE, PG_S_TOP,
 	      PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
-	      PG_WP_SIZE, is_textmode ? 11 : 352,
+	      PG_WP_SIZE, map_canvas_size,
 	      0);
+  pgWriteCmd(map_canvas,PGCANVAS_GROP, 2, PG_GROP_SETCOLOR, 0x000000);
+  pgWriteCmd(map_canvas,PGCANVAS_GROP, 5, PG_GROP_RECT, 0, 0,
+	     map_canvas_size, map_canvas_size);
+
   vitals_box = pgNewWidget(PG_WIDGET_BOX, PG_DERIVE_AFTER, map_canvas);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE, PG_S_TOP,
@@ -979,6 +973,23 @@ int init_windows(int argc, char **argv)
   pgSetWidget(PGDEFAULT,
 	      PG_WP_READONLY, 1,
 	      PG_WP_INSERTMODE, PG_INSERT_APPEND,
+	      0);
+
+
+  inv_pane = pgNewWidget(PG_WIDGET_PANEL, PG_DERIVE_AFTER, main_pane);
+  pgDelete(pgGetWidget(PGDEFAULT, PG_WP_PANELBAR_CLOSE));
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE, PG_S_TOP,
+	      PG_WP_SIZEMODE, PG_SZMODE_PERCENT,
+	      PG_WP_SIZE, 75,
+	      0);
+  pgNewWidget(PG_WIDGET_LABEL, PG_DERIVE_INSIDE, PGDEFAULT);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT, pgNewString("Inventory comes here, eventually"),
+	      0);
+  pgNewWidget(PG_WIDGET_LABEL, PG_DERIVE_AFTER, inv_pane);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT, pgNewString("`Look' comes here, eventually"),
 	      0);
 
   pgUpdate();
