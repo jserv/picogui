@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.20 2001/08/01 14:39:24 micahjd Exp $
+/* $Id: api.c,v 1.21 2001/08/02 03:41:40 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -558,10 +558,14 @@ int pgGetFontStyle(short index, char *name, unsigned short *size,
   pgFlushRequests();
   gfs = (struct pgdata_getfstyle *) _pg_return.e.data.data;
 
-  strcpy(name,gfs->name);
-  *size = ntohs(gfs->size);
-  *fontrep = ntohs(gfs->fontrep);
-  *flags = ntohl(gfs->flags);
+  if (name)
+    strcpy(name,gfs->name);
+  if (size)
+    *size = ntohs(gfs->size);
+  if (fontrep)
+    *fontrep = ntohs(gfs->fontrep);
+  if (flags)
+    *flags = ntohl(gfs->flags);
 
   return name[0]!=0;
 }
