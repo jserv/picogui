@@ -19,6 +19,17 @@ print "ok 1\n";
 # of the test code):
 
 PicoGUI::pgInit(0,"hi");
+
 print "Dialog returned: ".
       PicoGUI::pgMessageDialog("Perl Module","This is a test!\nHello, world",
 			       PG_MSGBTN_OK | PG_MSGBTN_CANCEL)."\n";
+			       
+# Make a custom dialog
+PicoGUI::pgEnterContext();
+PicoGUI::pgNewPopup(160,80);
+$toolbar = PicoGUI::pgNewWidget(PG_WIDGET_TOOLBAR,0,0);
+PicoGUI::pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,$toolbar);
+PicoGUI::pgReplaceText(PGDEFAULT,"Thwamp!");
+PicoGUI::pgUpdate();
+<STDIN>;
+PicoGUI::pgLeaveContext();

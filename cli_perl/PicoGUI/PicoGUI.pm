@@ -1291,12 +1291,16 @@ sub AUTOLOAD {
     {
 	no strict 'refs';
 	# Fixed between 5.005_53 and 5.005_61
-	if ($] >= 5.00561) {
-	    *$AUTOLOAD = sub () { $val };
-	}
-	else {
+
+# Note: This section commented out by Micah. This fixes "prototype
+# mismatch..." warnings about the constants
+#
+#	if ($] >= 5.00561) {
+#	    *$AUTOLOAD = sub () { $val };
+#	}
+#	else {
 	    *$AUTOLOAD = sub { $val };
-	}
+#	}
     }
     goto &$AUTOLOAD;
 }

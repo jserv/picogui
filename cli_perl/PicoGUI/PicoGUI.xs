@@ -9139,10 +9139,119 @@ pgInit(argc, argv)
 	
 int
 pgMessageDialog(title,text,flags)
-	char *title
-	char *text
+	const char *title
+	const char *text
 	unsigned long flags
-	CODE:
-	        RETVAL = pgMessageDialog(title,text,flags);
-	OUTPUT:
-	RETVAL
+
+const char *
+pgErrortypeString(errortype)
+        unsigned short errortype
+	
+void
+pgFlushRequests()
+
+void
+pgUpdate()
+
+void
+pgSubUpdate(widget)
+	pghandle widget
+	
+void
+pgRegisterOwner(resource)
+        int resource
+	
+void
+pgUnregisterOwner(resource)
+	int resource
+	
+void
+pgSendKeyInput(type,key,mods)
+	unsigned long type
+	unsigned short key
+	unsigned short mods
+	
+void
+pgSendPointerInput(type,x,y,btn)
+	unsigned long type
+	unsigned short x
+	unsigned short y
+	unsigned short btn
+	
+void
+pgSetVideoMode(xres,yres,bpp,flagmode,flags)
+	unsigned short xres
+	unsigned short yres
+	unsigned short bpp
+	unsigned short flagmode
+	unsigned long flags
+	
+void
+pgDelete(object)
+        pghandle object
+	
+void
+pgFocus(widget)
+        pghandle widget
+	
+pghandle
+pgNewWidget(type,rship,parent)
+        short int type
+	short int rship
+	pghandle parent
+
+pghandle
+pgNewPopup(width,height)
+	int width
+	int height
+	
+pghandle
+pgNewPopupAt(x,y,width,height)
+	int x
+	int y
+	int width
+	int height
+	
+long
+pgGetWidget(widget,property)
+	pghandle widget
+	short property
+	
+pghandle
+pgNewString(str)
+	const char *str
+	
+char *
+pgGetString(string)
+	pghandle string
+	
+void
+pgReplaceText(widget,str)
+        pghandle widget
+	const char *str
+	
+pghandle
+pgNewFont(name,size,style)
+	const char *name
+	short size
+	unsigned long style
+	
+void
+pgSetPayload(object,payload)
+        pghandle object
+	unsigned long payload
+	
+unsigned long
+pgGetPayload(object)
+	pghandle object
+	
+void
+pgEnterContext()
+
+void
+pgLeaveContext()
+
+int
+pgMenuFromString(items)
+	char *items
+	
