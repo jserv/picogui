@@ -58,7 +58,6 @@ PicoGUI Bugs
 - Themes aren't necessarily loaded back in the right order when increasing bpp
 - Misc server crashes with gremlins
 - Clicking a panelbar in solid mode doesn't shade/unshade it
-- Disappearing handles??
 - A new command prompt appears each time pterm is resized
 - Fragments of the mouse cursor appear on the panelbar sometimes when it
   is dragged in sprite drag mode.
