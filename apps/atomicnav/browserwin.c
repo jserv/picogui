@@ -1,4 +1,4 @@
-/* $Id: browserwin.c,v 1.9 2002/10/11 10:13:18 micahjd Exp $
+/* $Id: browserwin.c,v 1.10 2002/10/11 10:42:35 micahjd Exp $
  *
  * browserwin.c - User interface for a browser window in Atomic Navigator
  *
@@ -116,6 +116,7 @@ void pageStatus(struct url *u) {
     pgEnterContext();
     pgSetWidget(u->browser->wView,
 		PG_WP_TEXTFORMAT, pgNewString("html"),
+		PG_WP_INSERTMODE, PG_INSERT_OVERWRITE,
 		PG_WP_TEXT,pgDataString(u->data),
 		0);
     pgLeaveContext();
@@ -283,8 +284,9 @@ void browserwin_errormsg(struct browserwin *w, const char *msg) {
   pgEnterContext();
   pgSetWidget(w->wView,
 	      PG_WP_TEXTFORMAT,pgNewString("html"),
+	      PG_WP_INSERTMODE, PG_INSERT_OVERWRITE,
 	      PG_WP_TEXT,pgNewString("<font size=+5>Error:</font><hr><p>"),
-	      PG_WP_TEXTFORMAT,pgNewString("+html"),
+	      PG_WP_INSERTMODE, PG_INSERT_APPEND,
 	      PG_WP_TEXT,pgNewString(msg),
 	      0);
   pgLeaveContext();
