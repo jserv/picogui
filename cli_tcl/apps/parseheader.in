@@ -28,7 +28,8 @@ while {$indx < [llength $fdata]} {
 	set start [string first "#define $search" $line]
 	if {$start ==0} {
 		set line [string range $line $cut end ]
-		set line [regsub -all " +" [regsub -all "\t+" $line " "] " "]
+		regsub -all "\t+" $line " " nline
+		regsub -all " +" $nline " " line
 		while {[string index $line end]=="\\"} {
 			incr indx
 			append line [string trim [lindex $fdata $indx]]
