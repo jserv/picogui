@@ -111,14 +111,14 @@ mainmenu_option next_comment
 comment 'Input Drivers'
 bool 'Touchscreen calibration'		                CONFIG_TOUCHSCREEN
 if [ "$CONFIG_TOUCHSCREEN" = "y" ]; then
-   bool 'Palmax touchscreen driver'	                DRIVER_PALMAXTS
-   bool 'SC3 compatible touchscreen input driver'	DRIVER_SC3TS
-   bool 'R3912 (VTech Helio) touchscreen input driver'  DRIVER_R3912TS
+   bool '  Palmax touchscreen driver'	                DRIVER_PALMAXTS
+   bool '  SC3 compatible touchscreen input driver'	DRIVER_SC3TS
+   bool '  R3912 (VTech Helio) touchscreen input driver'  DRIVER_R3912TS
    if [ "$DRIVER_R3912TS" = "y" ]; then
-     bool '  Convert Helio silk-screen buttons'         DRIVER_R3912TS_HELIOSS
+     bool '    Convert Helio silk-screen buttons'         DRIVER_R3912TS_HELIOSS
    fi
-   bool 'Psion touchscreen (adc7843) driver'            DRIVER_ADC7843
 fi
+bool 'Psion touchscreen (adc7843) driver'            DRIVER_ADC7843
 bool 'SDL input driver'                                 DRIVER_SDLINPUT
 bool 'X Window System input driver'                     DRIVER_X11INPUT
 bool 'SVGAlib input driver'                             DRIVER_SVGAINPUT
