@@ -1,4 +1,4 @@
-/* $Id: appmgr.c,v 1.1 2002/10/24 03:00:53 micahjd Exp $
+/* $Id: appmgr.c,v 1.2 2002/11/06 09:16:52 micahjd Exp $
  *
  * appmgr.c - Manage the application list, and use one of the installed
  *            app manager modules to determine app policy.
@@ -67,8 +67,9 @@ g_error appmgr_init(void) {
     for (p=appmgr_modules;*p;p++) {
       if (strcmp(name,(*p)->name))
 	continue;
-      if ((*p)->init) {
-	e = (*p)->init();
+      current_appmgr = *p;
+      if (current_appmgr->init) {
+	e = current_appmgr->init();
 	errorcheck;
       }
       break;
@@ -79,8 +80,9 @@ g_error appmgr_init(void) {
   else {
     /* Try them all in order */
     for (p=appmgr_modules;*p;p++) {
-      if ((*p)->init) {
-	e = (*p)->init();
+      current_appmgr = *p;
+      if (current_appmgr->init) {
+	e = current_appmgr->init();
 	if (!iserror(e))
 	  break;
       }
@@ -89,7 +91,6 @@ g_error appmgr_init(void) {
       return mkerror(PG_ERRT_BADPARAM,141);   /* All installed app managers failed */
   }
 
-  current_appmgr = *p;
   return success;
 }
 
@@ -203,6 +204,15 @@ void appmgr_focus(struct app_info **app) {
   *app = ap->next;
   ap->next = applist;
   applist = ap;
+}
+
+/* All widget instantiations are passed through this function, optionally
+ * changing which widget is created. This includes parents of subclassed widgets.
+ */
+int appmgr_widget_map(int w) {
+  if (current_appmgr->widget_map)
+    return current_appmgr->widget_map(w);
+  return w;
 }
 
 /* The End */

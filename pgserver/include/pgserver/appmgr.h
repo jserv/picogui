@@ -1,4 +1,4 @@
-/* $Id: appmgr.h,v 1.22 2002/10/24 03:00:54 micahjd Exp $
+/* $Id: appmgr.h,v 1.23 2002/11/06 09:16:52 micahjd Exp $
  *
  * appmgr.h - Generic interface to application manager modules
  *
@@ -86,6 +86,11 @@ struct app_info **appmgr_findapp(struct widget *w);
 /* Focus the app by moving it to the front of the app list */
 void appmgr_focus(struct app_info **app);
 
+/* All widget instantiations are passed through this function, optionally
+ * changing which widget is created. This includes parents of subclassed widgets.
+ */
+int appmgr_widget_map(int w);
+
 
 /**************************************** App manager module interface */
 
@@ -117,6 +122,12 @@ struct appmgr {
    * Return the nontoolbar area if this appmgr has such a concept
    */
   struct divnode *(*nontoolbar_area)(void);
+
+  /* Optional:
+   * All widget instantiations are passed through this function, optionally
+   * changing which widget is created. This includes parents of subclassed widgets.
+   */
+  int (*widget_map)(int w);
 
 };
 

@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.76 2002/11/06 09:08:04 micahjd Exp $
+/* $Id: widget.h,v 1.77 2002/11/06 09:16:52 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -41,6 +41,7 @@
 #include <pgserver/pgnet.h>
 #include <pgserver/render.h>
 #include <pgserver/input.h>
+#include <pgserver/appmgr.h>
 
 struct blob;
 struct widgetdef;
@@ -202,7 +203,7 @@ struct widget {
  *  t - The PG_WIDGET_* constant of the parent 
  */
 #define WIDGET_PARENT              self->subclasses[(WIDGET_SUBCLASS)-1].def
-#define WIDGET_INSTALL_PARENT(t)   WIDGET_PARENT = &widgettab[t];\
+#define WIDGET_INSTALL_PARENT(t)   WIDGET_PARENT = &widgettab[appmgr_widget_map(t)];\
                                    WIDGET_PARENT->install(self);
 #define WIDGET_REMOVE_PARENT       WIDGET_PARENT->remove(self);
 
