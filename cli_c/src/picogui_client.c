@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.4 2000/09/20 17:25:21 pney Exp $
+/* $Id: picogui_client.c,v 1.5 2000/09/21 06:28:50 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -35,6 +35,7 @@
 #include <stdio.h>    /* for fprintf() */
 #include <malloc.h>
 #include <string.h>   /* for memcpy() */
+#include <stdarg.h>   /* needed for pgRegisterApp and pgSetWidget */
 
 /* PicoGUI */
 #include <picogui.h>            /* Basic PicoGUI include */
@@ -99,6 +100,9 @@ struct {
 int _pg_send(void *data,unsigned long datasize);
 int _pg_recv(void *data,unsigned long datasize);
 
+/* Malloc wrapper. Reports errors */
+void *_pg_malloc(size_t size);
+
 /* Default error handler */
 void _pg_defaulterr(unsigned short errortype,const char *msg);
 
@@ -128,6 +132,15 @@ int _pg_recv(void *data,unsigned long datasize) {
     return 1;
   }
   return 0;
+}
+
+/* Malloc wrapper */
+void *_pg_malloc(size_t size) {
+  void *p;
+  p = malloc(size);
+  if (!p)
+    clienterr("out of memory");
+  return p;
 }
 
 /* This one just prints to stderr and exits. Maybe in the future
@@ -214,7 +227,8 @@ void _pg_getresponse(void) {
       pg_err.msglen = ntohs(pg_err.msglen);
       
       /* Dynamically allocated buffer for the error message */ 
-      msg = malloc(pg_err.msglen);
+      if (!(msg = _pg_malloc(pg_err.msglen)))
+	return;
       if(_pg_recv(msg,pg_err.msglen))
 	return;
       
@@ -267,7 +281,9 @@ void _pg_getresponse(void) {
       rsp_id = pg_data.id;
       _pg_return.e.data.size = ntohl(pg_data.size);
       
-      _pg_return.e.data.data = malloc(_pg_return.e.data.size);
+      if (!(_pg_return.e.data.data = 
+	    _pg_malloc(_pg_return.e.data.size)))
+	return;
       if (_pg_recv(_pg_return.e.data.data,_pg_return.e.data.size))
 	return;
     }
@@ -335,7 +351,6 @@ void pgInit(int argc, char **argv)
     return;
   ServerInfo.magic = ntohl(ServerInfo.magic);
   ServerInfo.protover = ntohs(ServerInfo.protover);
-  ServerInfo.dummy = ntohs(ServerInfo.dummy);
   
   /* Validate it */
   if(ServerInfo.magic != PG_REQUEST_MAGIC) {
@@ -482,36 +497,44 @@ void pgDelete(pghandle object) {
      handlers. Free it to prevent memory leaks. */
 }
 
-/* Register application. Defining side, dimension and type of it.
- * Dimension is interpreted regarding the side.
+/* Register application. The type and name are required.
+ * Optional specifications (PG_APPSPEC_*) are specified 
+ * in name-value pairs, terminated with a 0.
+ *
+ * Example:
+ *   pgRegisterApp(PG_APP_NORMAL,"My App",
+ *                 PG_APPSPEC_SIDE,PG_S_TOP,
+ *                 PG_APPSPEC_MINHEIGHT,50,
+ *                 0);
+ *
  */
-pghandle pgRegisterApp(int side,int dim,int type) {
-  if((side == PG_S_LEFT)||(side == PG_S_RIGHT))
-    return pgRegisterAppWith(side,dim,0,type,"",0xFFFF,0,0,0,0);
-  else
-    return pgRegisterAppWith(side,0,dim,type,"",0xFFFF,0,0,0,0);
-}
-			   
+pghandle pgRegisterApp(short int type,const char *name, ...) {
+  va_list v;
+  struct pgreqd_register *arg;
+  short *spec;
+  int numspecs,i;
+  
+  /* First just count the number of APPSPECs we have */
+  for (va_start(v,name),numspecs=0;va_arg(v,short);
+       va_arg(v,short),numspecs++);
+  va_end(ap);
 
-/* Register application. Full definition.
- */
-pghandle pgRegisterAppWith(int side,int width,int height,int type,
-                           char* name,int sidemask,int minWidth,
-		           int maxWidth,int minHeight,int maxHeight) {
-  struct pgreqd_register arg;
-  arg.name = htonl(pgNewString(name));
-  arg.type = htons(type);
-  arg.side = htons(side);
-  arg.sidemask = htons(sidemask);
-  arg.w = htons(width);
-  arg.h = htons(height);
-  arg.minw = htons(minWidth);
-  arg.maxw = htons(maxWidth);
-  arg.minh = htons(minHeight);
-  arg.maxh = htons(maxHeight);
-/*  arg.dummy = htons;  */       /* FIXME: What's that ??? */
+  /* Allocate */
+  if (!(arg = malloc(sizeof(struct pgreqd_register)+numspecs*4)))
+    return;
+  spec = (short int *)(((char*)arg)+sizeof(struct pgreqd_register));
 
-  _pg_add_request(PGREQ_REGISTER,&arg,sizeof(arg));
+  /* Fill in the required params */
+  arg->name = htonl(pgNewString(name));
+  arg->type = htons(type);
+  arg->dummy = 0;
+
+  /* Fill in the optional APPSPEC params */
+  for (va_start(v,name),i=numspecs<<1;i;
+       i--,*(spec++)=htons(va_arg(v,short)));
+  va_end(ap);
+
+  _pg_add_request(PGREQ_REGISTER,arg,sizeof(struct pgreqd_register)+numspecs*4);
 
   /* Because we need a result now, flush the buffer */
   pgFlushRequests();
@@ -534,13 +557,9 @@ pghandle pgNewWidget(short int type,short int rship,pghandle parent) {
 
   /* Default placement is after the previous widget
    * (Unless is was a special widget, like a root widget)
-   */
-  arg.parent = htonl(_pgdefault_parent);
-  arg.rship = htons(_pgdefault_rship);
-  
-  /* Passing 0 for 'rship' and 'parent' to get the defaults */
-  if(parent) arg.parent = htonl(parent);
-  if(rship)  arg.rship = htons(rship);
+   * Passing 0 for 'rship' and 'parent' to get the defaults? */
+  arg.parent = htonl(parent ? parent : _pgdefault_parent);
+  arg.rship  = htons(rship  ? rship  : _pgdefault_rship);
 
   _pg_add_request(PGREQ_MKWIDGET,&arg,sizeof(arg));
 
@@ -580,7 +599,9 @@ pghandle pgNewPopup(int width,int height) {
 }
 
 pghandle pgNewString(const char* str) {
-  _pg_add_request(PGREQ_MKSTRING,str,sizeof(str));
+  if (!str) return 0;
+
+  _pg_add_request(PGREQ_MKSTRING,(void *) str,sizeof(str));
 
   /* Because we need a result now, flush the buffer */
   pgFlushRequests();
