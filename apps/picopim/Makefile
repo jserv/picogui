@@ -3,8 +3,8 @@ include ../Makefile.rules
 BINNAME = mainMenu
 SRC     = mainMenu.c calendar.c todo.c
 OBJ     = $(patsubst %.c,%.o,$(SRC))
-CFLAGS	= -DDEBUG -g
-LDFLAGS += -lefence
+CFLAGS	= -DDEBUG -g -I.
+#LDFLAGS += -lefence
 
 $(BINNAME): $(SRC) $(OBJ)
 	$(CC) -o $@ $(LDFLAGS) $(OBJ)
@@ -15,7 +15,7 @@ $(BINNAME): $(SRC) $(OBJ)
 clean:
 	rm -f $(BINNAME) *.o
 
-install:
+install: $(BINNAME)
 	cp $(BINNAME) $(PREFIX)/bin
 
 install-strip:
