@@ -1,4 +1,4 @@
-/* $Id: wt.c,v 1.4 2002/11/19 13:16:11 micahjd Exp $
+/* $Id: wt.c,v 1.5 2002/11/20 03:38:59 micahjd Exp $
  * 
  * wt.c - Loading and instantiation of PicoGUI's Widget Templates
  *
@@ -158,6 +158,7 @@ g_error wt_run_requests(handle group, int owner, const u8 **requests, int *reque
   struct pgrequest req;
   struct request_data r;
   int padding;
+  u32 reqsize;
   g_error e;
 
   while (num_requests--) {
@@ -177,18 +178,18 @@ g_error wt_run_requests(handle group, int owner, const u8 **requests, int *reque
     req = *preq;
     r.in.req = &req;
     r.in.owner = owner;
+    reqsize = ntohl(req.size);
 
     /* Get the associated data */
     r.in.data = (void*) *requests;
-    *requests += req.size;
-    *requests_len -= req.size;
+    *requests += reqsize;
+    *requests_len -= reqsize;
     if (*requests_len < 0)
       return mkerror(PG_ERRT_FILEFMT, 115);    /* Incomplete request */
     
     /* Set our handle mapping table */
     handle_setmapping(htable, num_handles);
 
-    /* Dispatch the request, with a temporary null-termination */
     e = request_exec(&r);
     errorcheck;
 
