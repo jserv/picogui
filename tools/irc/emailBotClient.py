@@ -189,12 +189,14 @@ if __name__ == '__main__':
             channelFilesCurrentlyInExistance.sort()
             socketName = socketBaseName
             lastBotID = "1"
+            lastBotNumberOfChannels = 0
             for cf in channelFilesCurrentlyInExistance:
                 f = open(cf)
                 channelList = {}
                 lastBotID = re.compile('.*\.(.*)$').search(cf).group(1)
                 for line in f.readlines():
                     line = line.strip()
+                    lastBotNumberOfChannels = lastBotNumberOfChannels + 1
                     if line == subjectFields[1]:
                         # we have found the channel, ie a bot is already present in it
                         socketName = socketBaseName + "." + lastBotID
@@ -218,6 +220,10 @@ if __name__ == '__main__':
                     logCommand(commandLine)
                     lines.append(applyColorTags(commandLine))
 
+            if subjectFields[0] == "JoinChannel" and lastBotNumberOfChannels >= 20:
+                print "Sorry, CIA is currently at the freenode-imposed limit of twenty channels per bot."
+                print "Please ask the maintainer to allocate a new copy of CIA to the network."
+                sys.exit(1)
                 
             # now launch the client
             f = AnnounceClientFactory()
