@@ -33,6 +33,21 @@ typedef long glob;
 #define DERIVE_AFTER  1
 #define DERIVE_INSIDE 2
 
+/* Constants for a trigger type. One of these constants is used to identify
+   a trigger when it happens, and they are combined to form a trigger mask */
+#define TRIGGER_KEY        (1<<0)  /* Any key, while focused */
+#define TRIGGER_GLOBALKEY  (1<<1)  /* A registered global key */
+#define TRIGGER_DIRECT     (1<<2)  /* A trigger sent explicitely */
+#define TRIGGER_ACTIVATE   (1<<3)  /* Sent when it receives focus */
+#define TRIGGER_DEACTIVATE (1<<4)  /* Losing focus */
+#define TRIGGER_KEYUP      (1<<5)  /* Ignores autorepeat, etc. */
+#define TRIGGER_KEYDOWN    (1<<6)  /* Ditto. */
+#define TRIGGER_CLICK      (1<<7)  /* A sucessful press and release */
+#define TRIGGER_UP         (1<<8)  /* Mouse up in specified divnode */
+#define TRIGGER_DOWN       (1<<9)  /* Mouse down in divnode */
+#define TRIGGER_MOVE       (1<<10) /* Triggers on any mouse movement in node */
+#define TRIGGER_DRAG       (1<<11) /* Only while pointing device is down */
+
 /* This contains function pointers for the widget methods that define
    how a widget acts and what it does.
 */
@@ -47,7 +62,7 @@ struct widgetdef {
 					      to it */
   void (*getfocus)(struct widget *self);
   void (*removefocus)(struct widget *self);
-  void (*keyevent)(struct widget *self,char k);
+  void (*trigger)(struct widget *self,int type);
 
   /* Setting/getting properties */
   g_error (*set)(struct widget *self, int property, glob data);
@@ -79,12 +94,20 @@ struct widget {
 
   /* Widget's private data (Properties) */
   void *data;
+
+  /**** Used for management of triggers */
+  
+  /* widget sets this to accept triggers.  TRIGGER_* constants or'ed
+     together. */
+  long trigger_mask;
+  /* Name of an active direct trigger */
+  char *direct_trigger;
 };
 
 /* Macros to help define widgets */
 #define DEF_WIDGET_TABLE(n) \
   n##_install, n##_remove, n##_activate, n##_getfocus, n##_removefocus, \
-  n##_keyevent, n##_set, n##_get,
+  n##_trigger, n##_set, n##_get,
 #define DEF_STATICWIDGET_TABLE(n) \
   n##_install, n##_remove, NULL,NULL,NULL,NULL, n##_set, n##_get,
 #define DEF_WIDGET_PROTO(n) \
@@ -156,12 +179,61 @@ void widget_remove(struct widget *w);
 g_error widget_set(struct widget *w, int property, glob data);
 glob widget_get(struct widget *w, int property);
 
-/**** Functions that can be used by widgets */
-void trigger_event(struct widget *w, int event);
+/* Widget must set their trigger_mask to accept triggers.  This defines
+   parameters for some of the triggers.
+   
+   When the trigger_mask is set to accept pointing device triggers,
+   they are sent when pointing device activity is within a divnode owned
+   by this widget.
+
+   By default, no global keys are registered.  To register a key,
+   set the 'key_owners' element for the key to point to the widget.
+   Keys set to NULL in this array are passed on to the focused widget.
+   
+   For a direct trigger to be named, a trigger name must be stored in
+   the widget's 'direct_trigger' string. It should uniquely identify
+   the trigger, probably with the widget's title.
+ */
+
+#define NUM_KEYS 256
+extern struct widget *key_owners[NUM_KEYS];
+
+/* 
+   This function should be called by an interactive widget to allocate
+   a hotkey.  Its value does not need to be displayed unless there is
+   no current pointing device, but it finds the first available acceptable
+   hotkey.
+*/
+int find_hotkey(void);
+
+/**** These are entry points for the various input drivers. */
+
+/* This is a pointing device event.  'type' should be a pointing-device
+   trigger type such as TRIGGER_UP or TRIGGER_DRAG.
+   The trigger parameter is a struct pointing_trigger.
+   x and y here are absolute coords. The divtree is traversed to find the
+   node at those coords.
+*/
+void dispatch_pointing(long type,int x,int y);
+
+/* This dispatches a key.  It is first checked against the global
+   key owner table, and if not found there it is sent to the currently 
+   focused widget.  The key is passed as the trigger param.
+*/
+void dispatch_key(long type,int key);
+  
+/* Dispatch a direct trigger to the widget with a matching direct_trigger.
+   The param is passed directly
+ */
+void dispatch_direct(char *name,long param);
 
 #endif /* __WIDGET_H */
 
 /* The End */
+
+
+
+
 
 
 

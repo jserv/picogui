@@ -1,5 +1,6 @@
 /*
- * widget.c - defines the standard widget interface used by widgets
+ * widget.c - defines the standard widget interface used by widgets, and
+ * handles dispatching widget events and triggers.
  *
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -9,6 +10,8 @@
 
 #include <widget.h>
 #include <g_malloc.h>
+
+struct widget *key_owners[NUM_KEYS];
 
 /* Table of widgets */
 struct widgetdef widgettab[] = {
@@ -117,9 +120,22 @@ glob widget_get(struct widget *w, int property) {
   return 0;
 }
 
-void trigger_event(struct widget *w, int event) {
-  (*w->on_event)(w,event);
+/***** Trigger stuff **/
+
+int find_hotkey(void) {
 }
+
+void dispatch_pointing(long type,int x,int y) {
+}
+
+void dispatch_key(long type,int key) {
+}
+
+void dispatch_direct(char *name,long param) {
+}
+
+#endif /* __WIDGET_H */
+
 
 /* The End */
 
