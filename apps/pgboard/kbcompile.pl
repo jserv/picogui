@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: kbcompile.pl,v 1.8 2001/07/24 09:05:21 micahjd Exp $
+# $Id: kbcompile.pl,v 1.9 2001/08/01 06:39:40 micahjd Exp $
 #
 # This script converts a .kbs keyboard definition source to the .kb
 # binary representation as defined in kbfile.h
@@ -35,8 +35,8 @@ $formatver = 3;
 
 # Load a symbol table
 foreach $file (map {glob($_)} 
-	"/usr/local/include/picogui/*.h",
-	"/usr/include/picogui/*.h") {
+	"/usr/include/picogui/*.h",
+	"/usr/local/include/picogui/*.h") {
 
       open HFILE,$file;
       while (<HFILE>) {
