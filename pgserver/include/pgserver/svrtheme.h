@@ -1,4 +1,4 @@
-/* $Id: svrtheme.h,v 1.4 2001/06/01 01:00:47 micahjd Exp $
+/* $Id: svrtheme.h,v 1.5 2001/12/30 22:11:08 micahjd Exp $
  * 
  * svrtheme.h - functions and data structures for themes, used
  *              only in the server
@@ -104,6 +104,21 @@ void div_setstate(struct divnode *d,unsigned short state,bool force);
 
 /* Small build function for widgets that only need a background */
 void build_bgfill_only(struct gropctxt *c,unsigned short state,struct widget *self);
+
+/* Custom theme objects are assigned unused IDs automatically.
+ * Objects with the same name get the same ID 
+ */
+u16 custom_thobj_id(char *name);
+
+/* Reports whether the given theme object ID has not yet been taken
+ * in any of the loaded themes.
+ */
+int thobj_id_available(s16 id);
+
+/* Find a theme's id given its name. Returns nonzero if the object
+ * was found sucessfully, and loads 'id' with its id.
+ */
+int find_named_thobj(char *name, s16 *id);
 
 #endif /* __SVRTHEME_H */
 

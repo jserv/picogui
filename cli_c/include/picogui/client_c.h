@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.77 2001/12/15 16:34:47 lonetech Exp $
+/* $Id: client_c.h,v 1.78 2001/12/30 22:11:08 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -1019,7 +1019,7 @@ void pgSizeBitmap(int *w, int *h, pghandle bitmap);
 /*!
  * \brief Load a compiled theme
  * 
- * \param A pgmemdata structure, as returned by a pgFrom* function
+ * \param obj A pgmemdata structure, as returned by a pgFrom* function
  * \returns A handle to the new theme object created in the PicoGUI server
  * 
  * The compiled theme data can be generated using the \p themec utility. The theme
@@ -1030,9 +1030,24 @@ void pgSizeBitmap(int *w, int *h, pghandle bitmap);
 pghandle pgLoadTheme(struct pgmemdata obj);
 
 /*!
+ * \brief Find a theme object's ID given its name
+ * 
+ * \param key The "name" property to search for
+ * \returns The theme ID, or zero if it's not found
+ *
+ * This function is useful for finding custom theme objects. Theme objects
+ * defined as \p custom are assigned an ID automatically at load time.
+ * These objects can be found with this function as long as each is assigned
+ * a unique \p name property.
+ *
+ * \sa pgLoadTheme, pgFindWidget
+ */
+int pgFindThemeObject(const char *key);
+
+/*!
  * \brief Load memory into a string handle
  * 
- * \param A pgmemdata structure, as returned by a pgFrom* function
+ * \param obj A pgmemdata structure, as returned by a pgFrom* function
  * \returns A handle to the new string object created in the PicoGUI server
  * 
  * This is like pgNewString() except that the string is loaded from

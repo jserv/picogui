@@ -72,7 +72,7 @@
 /* 64 */  "Incomplete request data in batch",
 /* 65 */  "Can't get exclusive keyboard access. Another app is already being selfish",
 /* 66 */  "Can't get exclusive pointing device access, another app is using it",
-/* 67 */  NULL,
+/* 67 */  NULL, 
 /* 68 */  NULL,
 /* 69 */  "Can't find a connection buffer for the client! Network code must be haunted",
 /* 70 */  "Context underflow",

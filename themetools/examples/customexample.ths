@@ -1,0 +1,35 @@
+/*
+ * This is an example of creating a custom theme object.
+ * A custom theme object is any that doesn't have a predefined
+ * PGTH_O_* constant in constants.h.
+ *
+ * Custom theme objects are defined with the 'custom' name.
+ * Instead of having a predefined theme object ID, 'custom'
+ * instructs pgserver to assign an available theme object ID
+ * to the object at load-time. Theme objects with the same
+ * string value in their 'name' property are assigned the same
+ * object ID.
+ *
+ * Since you don't know the object ID in advance, you must
+ * use the pgFindThemeObject() API function to search for
+ * the theme object based on its 'name' property.
+ *
+ * To prevent name collisions, it is recommended that you
+ * use the name of the theme or application, a slash, then
+ * a name identifying the particular theme object.
+ *
+ * By default custom theme objects inherit only from the
+ * theme's 'default' object. You can modify the inheritance
+ * of any theme object by setting its 'parent' property
+ * to a PGTH_O_* constant.
+ *
+ */
+
+object custom {
+  name = "customexample/bluesquares";
+  
+  bitmap1 = LoadBitmap("data/bg.pnm");
+  bgfill = fillstyle {
+    Bitmap(x,y,w,h,bitmap1);
+  };
+}

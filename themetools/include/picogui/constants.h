@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.43 2001/12/14 21:49:42 micahjd Exp $
+/* $Id: constants.h,v 1.44 2001/12/30 22:11:09 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -363,6 +363,10 @@ typedef unsigned long pghandle;
 
 //! If you add a themeobject, be sure to increment this and add an inheritance entry in theme/memtheme.c
 #define PGTH_ONUM                    65
+
+//! Using a theme object named "custom" makes the server automatically allocate a free theme object at load time
+#define PGTH_O_CUSTOM                0x7FFF
+
 //! \}
 
 /*** Loaders */
@@ -415,7 +419,7 @@ typedef unsigned long pghandle;
 #define PGTH_P_BGFILL        3   //!< Background fillstyle    
 #define PGTH_P_OVERLAY       4   //!< Fillstyle for scroll thumbs, the filled portion of an indicator  
 #define PGTH_P_FONT          5   //!< A widget's main font     
-#define PGTH_P_NAME          6   //!< Name of something, like a theme 
+#define PGTH_P_NAME          6   //!< Name of the theme object, themes can be searched by this
 #define PGTH_P_WIDTH         7   //!< Reccomended width 
 #define PGTH_P_HEIGHT        8   //!< Reccomended height 
 #define PGTH_P_MARGIN        9   //!< The border in some objects 
@@ -444,6 +448,7 @@ typedef unsigned long pghandle;
 #define PGTH_P_TIME_ON       32  //!< Milliseconds on for flashing cursor
 #define PGTH_P_TIME_OFF      33  //!< Milliseconds off for flashing cursor
 #define PGTH_P_TIME_DELAY    34  //!< Milliseconds to wait before flashing
+#define PGTH_P_PARENT        35  //!< Overrides the default theme inheritance
 
 #define PGTH_P_STRING_OK          501    //!< String property (usually in PGTH_O_DEFAULT)
 #define PGTH_P_STRING_CANCEL      502    //!< String property (usually in PGTH_O_DEFAULT)
@@ -857,6 +862,8 @@ typedef unsigned long pghandle;
 #define PG_WP_HILIGHTED   32    /* Widget property to hilight a widget and all it's children */
 #define PG_WP_SELECTED    33    /* List property to select a row. */
 #define PG_WP_SELECTED_HANDLE 34 /* List property to return a handle to the selected row */
+#define PG_WP_AUTOSCROLL  35    /* For the textbox, scroll to any new text that's inserted */
+#define PG_WP_LINES       36    /* Height, in lines */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0
@@ -898,10 +905,10 @@ typedef unsigned long pghandle;
 #define PG_EVENTCODINGMASK      0xF00
 
 /* Widget events */
-#define PG_WE_ACTIVATE    0x001 /* Gets focus (or for a non-focusing widget such
-			           as a button, it has been clicked/selected  */
-#define PG_WE_DEACTIVATE   0x002 /* Lost focus */
+#define PG_WE_ACTIVATE     0x001 /* Button has been clicked/selected  */
+#define PG_WE_DEACTIVATE   0x002 /* Sent when the user clicks outside the active popup */
 #define PG_WE_CLOSE        0x003 /* A top-level widget has closed */
+#define PG_WE_FOCUS        0x004 /* Sent when a widget is focused */
 #define PG_WE_PNTR_DOWN    0x204 /* The "mouse" button is now down */
 #define PG_WE_PNTR_UP      0x205 /* The "mouse" button is now up */
 #define PG_WE_PNTR_RELEASE 0x206 /* The "mouse" button was released outside

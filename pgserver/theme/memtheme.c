@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.44 2001/12/14 22:56:43 micahjd Exp $
+/* $Id: memtheme.c,v 1.45 2001/12/30 22:11:09 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -316,6 +316,63 @@ void build_bgfill_only(struct gropctxt *c,unsigned short state,struct widget *se
   exec_fillstyle(c,state,PGTH_P_BGFILL);
 }
 
+/***************** Custos theme objects */
+
+u16 custom_thobj_id(char *name) {
+  static u16 next_id = 0;
+  u16 x;
+
+  /* If we've already got this object, use the same ID */
+  if (find_named_thobj(name,&x))
+    return x;
+
+  /* Search for an available ID between PGTH_ONUM and PGTH_O_CUSTOM-1 */
+  do {
+    next_id++;
+
+    if (next_id < PGTH_ONUM)
+      next_id = PGTH_ONUM;
+    
+    if (next_id >= PGTH_O_CUSTOM)
+      next_id = PGTH_ONUM;
+  } while (!thobj_id_available(next_id));
+    
+  return next_id;
+}
+
+int thobj_id_available(s16 id) {
+  struct pgmemtheme *ptheme;
+  
+  for (ptheme=memtheme;ptheme;ptheme=ptheme->next)
+    if (find_thobj(ptheme,id))
+      return 0;
+
+  return 1;
+}
+
+/* Search all theme objects in all themes for a PGTH_P_NAME property
+ * matching the given string. If it's found, this puts its id in "*id"
+ * and returns nonzero.
+ */
+int find_named_thobj(char *name, s16 *id) {
+  struct pgmemtheme *ptheme;
+  struct pgmemtheme_thobj *pobj;
+  struct pgmemtheme_prop *pprop;
+  char *thisname;
+  int i;
+
+  for (ptheme=memtheme;ptheme;ptheme=ptheme->next)
+    for (pobj=theme_thobjlist(ptheme),i=0;i<ptheme->num_thobj;pobj++,i++)
+      if (pprop = find_prop(pobj,PGTH_P_NAME))
+	if (!iserror(rdhandle((void**)&thisname,PG_TYPE_STRING,-1,pprop->data)))
+	  if (thisname && !strcmp(thisname,name)) {
+	    *id = pobj->id;
+	    return 1;
+	  }
+     
+  return 0;
+}
+
 /***************** Theme loading */
 
 g_error theme_load(handle *h,int owner,char *themefile,
@@ -336,6 +393,7 @@ g_error theme_load(handle *h,int owner,char *themefile,
   struct pgtheme_prop *propp;
   struct pgmemtheme_prop *mpropp;
   struct pgmemtheme *th;
+  char *objname;
 
   /* Get the header */
   if (themefile_remaining < sizeof(struct pgtheme_header))
@@ -435,6 +493,7 @@ g_error theme_load(handle *h,int owner,char *themefile,
   mthop = thobjarray;   /* Set the memory theme object pointer */
   /* For each theme object... */
   for (i=0;i<hdr->num_thobj;i++,mthop++) {
+    objname = NULL;
 
     /* Validate the offset, and make a pointer */
     if (mthop->proplist.offset > (themefile_len - 
@@ -515,8 +574,15 @@ g_error theme_load(handle *h,int owner,char *themefile,
 
       }
 
+      /* If that was the 'name' property, save it for below... */
+      if (mpropp->id == PGTH_P_NAME)
+	rdhandle((void**)&objname,PG_TYPE_STRING,owner,mpropp->data);
     }
     
+    /* If this was a custom theme object, give it an ID now */
+    if (mthop->id == PGTH_O_CUSTOM)
+      mthop->id = custom_thobj_id(objname);
+
   } /* Next theme object */
 
   /* Add to the linked list */

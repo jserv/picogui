@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.34 2001/12/14 00:31:58 micahjd Exp $
+/* $Id: api.c,v 1.35 2001/12/30 22:11:08 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -793,6 +793,32 @@ pghandle pgFindWidget(const char* str) {
 }
 #else
   _pg_add_request(PGREQ_FINDWIDGET,(void *) str,strlen(str));
+
+  /* Because we need a result now, flush the buffer */
+  pgFlushRequests();
+
+  /* Return the new handle */
+  return _pg_return.e.retdata;
+#endif  
+}
+
+/* Works just like pgNewString :) */
+int pgFindThemeObject(const char* str) {
+  if (!str) return 0;
+
+  /* Passing the NULL terminator to the server is redundant.
+   * no need for a +1 on that strlen...
+   */
+#ifdef ENABLE_THREADING_SUPPORT
+{
+   pgClientReturnData retData;
+   sem_init(&retData.sem, 0, 0);
+   _pg_add_request(PGREQ_FINDTHOBJ,(void *) str,strlen(str), (unsigned int)&retData, 1);
+   sem_wait(&retData.sem);
+   return retData.ret.e.retdata;
+}
+#else
+  _pg_add_request(PGREQ_FINDTHOBJ,(void *) str,strlen(str));
 
   /* Because we need a result now, flush the buffer */
   pgFlushRequests();
