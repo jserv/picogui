@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.30 2001/01/05 06:42:28 micahjd Exp $
+/* $Id: constants.h,v 1.31 2001/01/13 02:16:09 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -381,6 +381,7 @@ typedef unsigned long pghandle;
 
 /* Video mode flags */
 #define PG_VID_FULLSCREEN     0x0001
+#define PG_VID_DOUBLEBUFFER   0x0002
 
 /* Logical operations for blits */
 #define PG_LGOP_NULL        0   /* Don't blit */

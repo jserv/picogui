@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.7 2001/01/10 03:48:46 micahjd Exp $
+/* $Id: linear8.c,v 1.8 2001/01/13 02:16:09 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -29,6 +29,7 @@
  * 
  */
 
+#include <pgserver/inlstring.h>    /* inline-assembly __memcpy */
 #include <pgserver/video.h>
 
 /* Macro for addressing framebuffer pixels. Note that this is only
@@ -52,7 +53,7 @@ pgcolor linear8_color_hwrtopg(hwrcolor c) {
 
 /* Simple enough... */
 void linear8_clear(void) {
-  memset(vid->fb_mem,0,vid->fb_bpl*vid->yres);
+  __memset(vid->fb_mem,0,vid->fb_bpl*vid->yres);
 }
 
 /* Add colors, truncating if we overflow */
@@ -88,8 +89,7 @@ void linear8_subpixel(int x,int y,pgcolor c) {
 
 /* Simple horizontal and vertical straight lines */
 void linear8_slab(int x,int y,int w,hwrcolor c) {
-  unsigned char *p = LINE(y) + x;
-  for (;w;w--,p++) *p = c;
+   __memset(LINE(y) + x,c,w);
 }
 void linear8_bar(int x,int y,int h,hwrcolor c) {
   unsigned char *p = LINE(y) + x;
@@ -157,12 +157,9 @@ void linear8_line(int x1,int y1,int x2,int y2,hwrcolor c) {
 
 /* Just a good 'ol rectangle */
 void linear8_rect(int x,int y,int w,int h,hwrcolor c) {
-  int i,offset = vid->fb_bpl - w;
   unsigned char *p = LINE(y) + x;
-
-  for (;h;h--,p+=offset)
-    for (i=w;i;i--,p++)
-      *p = c;
+  for (;h;h--,p+=vid->fb_bpl)
+     __memset(p,c,w);
 }
 
 /* Gradients look really cheesy in 8bpp anyway, so just
@@ -231,16 +228,9 @@ void linear8_scrollblit(int src_x,int src_y,
 		    int dest_x,int dest_y,int w,int h) {
   unsigned char *src = LINE(src_y + h - 1) + src_x;
   unsigned char *dest = LINE(dest_y + h - 1) + dest_x;
-  int offset = - vid->fb_bpl - w;
-  int i;
 
-  /* Do most of the blit in 32 bits, pick up the crumbs in 8 bits */
-  for (;h;h--,src+=offset,dest+=offset) {
-    for (i=w>>2;i;i--,src+=4,dest+=4)
-      *((unsigned long *)dest) = *((unsigned long *)src);
-    for (i=w&3;i;i--,src++,dest++)
-      *dest = *src;
-  }
+  for (;h;h--,src-=vid->fb_bpl,dest-=vid->fb_bpl)
+     __memcpy(dest,src,w);
 }
 
 /* Blit from 1bpp packed character to the screen,
@@ -429,32 +419,22 @@ void linear8_tileblit(struct stdbitmap *srcbit,
 		  int dest_x,int dest_y,int dest_w,int dest_h) {
   unsigned char *src_top = srcbit->bits + src_y*srcbit->w + src_x;
   unsigned char *dest = LINE(dest_y) + dest_x;
-  int offset = vid->fb_bpl - dest_w;
   int dw;
   /* Restart values for the tile */
-  unsigned char *src;
   unsigned char *src_line;
-  int sh,sw,swm;
+  int sh;
 
   /* This horrifying loop scans across the destination rectangle one
    * line at at time, copying the source bitmap's scanline and letting
-   * it wrap around as many times as needed. (all the while, doing as much
-   * as possible 4 bytes at a time)
+   * it wrap around as many times as needed.
    * These scanlines are repeated for the height of the destination rectangle,
    * wrapping to the top of the source bitmap when necessary.
    */
-  while (dest_h) {
-    for (src_line=src_top,sh=src_h;sh && dest_h;
-	 sh--,dest_h--,src_line+=srcbit->w,dest+=offset) { 
-      for (dw=dest_w;dw;) {
-	swm = (src_w < dw) ? src_w : dw;
-	for (src=src_line,sw=swm>>2;sw;sw--,dw-=4,src+=4,dest+=4)
-	  *((unsigned long *)dest) = *((unsigned long *)src);
-	for (sw=swm&3;sw;sw--,src++,dest++,dw--)
-	  *dest = *src;
-      }
-    }
-  }
+  while (dest_h)
+     for (src_line=src_top,sh=src_h;sh && dest_h;
+	  sh--,dest_h--,src_line+=srcbit->w,dest+=vid->fb_bpl)
+       for (dw=dest_w;dw;)
+	 __memcpy(dest,src_line, src_w < dw ? src_w : dw);
 }
 
 /* Ugh. Evil but necessary... I suppose... */
@@ -493,7 +473,8 @@ void linear8_blit(struct stdbitmap *srcbit,int src_x,int src_y,
      You still have to admit that this blitter is _much_ better
      written than the one on the old SDL driver...
 
-     The loop does as much as possible 32 bits at a time
+     This loop uses __memcpy for the normal blits, and for lgop blits
+     it uses loops, performing as much as possible 4 bytes at a time
   */
 
   /* Normal blit loop */
@@ -538,7 +519,21 @@ void linear8_blit(struct stdbitmap *srcbit,int src_x,int src_y,
     swp = srcbit->w - src_x;
 
     switch (lgop) {
-    case PG_LGOP_NONE:       TILEBLITLOOP(= ,,);                   break;
+    case PG_LGOP_NONE:  
+       while (h) {
+	  for (;sh && h;sh--,h--,src_line+=srcbit->w,dest+=vid->fb_bpl) {
+	     src = src_line + src_x;
+	     swm = (swp < w) ? swp : w;
+	     for (dw=w;dw;) {
+		__memcpy(dest,src,swm);
+		src = src_line;
+		swm = (srcbit->w < dw) ? srcbit->w : dw;
+	     }
+	  }
+	  sh = srcbit->h;
+	  src_line = srcbit->bits;
+       }
+       break;
     case PG_LGOP_OR:         TILEBLITLOOP(|=,,);                   break;
     case PG_LGOP_AND:        TILEBLITLOOP(&=,,);                   break;
     case PG_LGOP_XOR:        TILEBLITLOOP(^=,,);                   break;
@@ -557,7 +552,10 @@ void linear8_blit(struct stdbitmap *srcbit,int src_x,int src_y,
     offset_src = srcbit->w - w;
 
     switch (lgop) {
-    case PG_LGOP_NONE:       BLITLOOP(= ,,);                   break;
+    case PG_LGOP_NONE: 
+       for (;h;h--,src+=srcbit->w,dest+=vid->fb_bpl)
+	 __memcpy(dest,src,w);
+       break;
     case PG_LGOP_OR:         BLITLOOP(|=,,);                   break;
     case PG_LGOP_AND:        BLITLOOP(&=,,);                   break;
     case PG_LGOP_XOR:        BLITLOOP(^=,,);                   break;
@@ -574,21 +572,13 @@ void linear8_unblit(int src_x,int src_y,
 		    struct stdbitmap *destbit,int dest_x,int dest_y,
 		    int w,int h) {
   unsigned char *src,*dest;
-  int i,offset_src,offset_dest;
 
   /* A few calculations */
   src  = LINE(src_y) + src_x;
   dest = destbit->bits + dest_x + dest_y*destbit->w;
-  offset_src  = vid->fb_bpl - w;
-  offset_dest = destbit->w - w;
 
-  /* Another nifty 32-bit loop */
-  for (;h;h--,src+=offset_src,dest+=offset_dest) {
-    for (i=w>>2;i;i--,src+=4,dest+=4)
-      *((unsigned long *)dest) = *((unsigned long *)src);
-    for (i=w&3;i;i--,src++,dest++)
-      *dest = *src;
-  }
+  for (;h;h--,src+=vid->fb_bpl,dest+=destbit->w)
+     __memcpy(dest,src,w);
 }
 
 /* Load our driver functions into a vidlib */

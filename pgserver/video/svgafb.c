@@ -1,4 +1,4 @@
-/* $Id: svgafb.c,v 1.2 2001/01/12 04:49:01 micahjd Exp $
+/* $Id: svgafb.c,v 1.3 2001/01/13 02:16:09 micahjd Exp $
  *
  * svgafb.c - A driver for linear-framebuffer svga devices that uses the linear*
  *          VBLs instead of the default vbl and libvgagl.
@@ -31,6 +31,9 @@
  */
 
 #ifdef DRIVER_SVGAFB
+
+/* For debugging: force double-buffer on and don't actually touch the screen */
+//#define VIRTUAL
 
 #include <pgserver/inlstring.h>    /* Fast __memcpy inline function */
 #include <pgserver/video.h>
@@ -68,7 +71,7 @@ int svgafb_closest_mode(int xres,int yres,int bpp) {
    unsigned int best_yresd = -1;
    int best_bpp = -1;
    vga_modeinfo *inf;
-   
+
    for (i=1;i<vga_lastmodenumber();i++)
      if (vga_hasmode(i)) {
 	inf = vga_getmodeinfo(i);
@@ -102,7 +105,10 @@ int svgafb_closest_mode(int xres,int yres,int bpp) {
 g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags) {
    g_error e;
    int mode,i;
+   vga_modeinfo *mi;
 
+#ifndef VIRTUAL
+   
    svgafb_flags = 0;
    
    /* In a GUI environment, we don't want VC switches,
@@ -138,19 +144,39 @@ g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags) {
    vid->yres = vga_getydim();
    vid->bpp  = 8;
 
-   /* Try to get a linear framebuffer, but if we can't we need to use
-    * paged blits */
-   if (((vid->xres * vid->yres * vid->bpp >> 3)>=0x10000) &&
-       (vga_setlinearaddressing() <= 0)) {
+#else
+   vid->xres = xres;
+   vid->yres = yres;
+   vid->bpp  = 8;
+   svgafb_flags = SVGAFB_DOUBLEBUFFER;
+#endif
+ 
+   
+   /* Calculate the framebuffer's size */
+   vid->fb_bpl = vid->xres;
+   svgafb_fbsize = vid->yres * vid->fb_bpl;
+   
+#ifndef VIRTUAL
+   
+   /* Figure out what type of framebuffer we have now.
+    * If we need to and we can, set up linear addressing. Otherwise use
+    * the paged double-buffer blits
+    */
+   mi = vga_getmodeinfo(mode);
+   if ( (!(mi->flags & IS_LINEAR)) &&
+        (svgafb_fbsize > 0xFFFF) &&
+        ((!(mi->flags & CAPABLE_LINEAR)) || 
+	(vga_setlinearaddressing() <= 0)) ) {
+      /* Nope. Set up paged blits */
+      
       svgafb_flags |= SVGAFB_PAGEDBLITS | SVGAFB_DOUBLEBUFFER;
       printf("svgafb: can't get linear addressing, forcing double buffer\n");
    }  
 
-   /* Calculate the framebuffer's size */
-   svgafb_fbsize = vid->yres * vid->fb_bpl;
+#endif
    
    /* Set up the linear framebuffer */
-   vid->fb_bpl = vid->xres;
+
    if (svgafb_flags & SVGAFB_DOUBLEBUFFER) {
       /* Allocate the back buffer */
       e = g_malloc((void **)&vid->fb_mem,svgafb_fbsize);
@@ -158,7 +184,9 @@ g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags) {
    }
    else
      vid->fb_mem = vga_getgraphmem();
-
+   
+#ifndef VIRTUAL
+   
    /* Use our flags to choose an update function. Keep the default if we
     * aren't double-buffering, otherwise choose paged or linear */
    
@@ -171,11 +199,13 @@ g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags) {
    else
      vid->update = &def_update;
    
+#endif
+   
    return sucess;
 }
 
 void svgafb_close(void) {
-   if (svgafb_flags * SVGAFB_DOUBLEBUFFER)
+   if (svgafb_flags & SVGAFB_DOUBLEBUFFER)
      g_free(vid->fb_mem);
    
    unload_inlib(inlib_main);    /* Take out input driver */
@@ -196,13 +226,8 @@ void svgafb_update_linear(int x,int y,int w,int h) {
    /* Might prevent tearing? */
    vga_waitretrace();
    
-   /* Do most of the blit in 32 bits, pick up the crumbs in 8 bits */
-   for (;h;h--,src+=offset,dest+=offset) {
-      for (i=w>>2;i;i--,src+=4,dest+=4)
-	*((unsigned long *)dest) = *((unsigned long *)src);
-      for (i=w&3;i;i--,src++,dest++)
-	*dest = *src;
-   }
+   for (;h;h--,src+=offset,dest+=offset)
+     __memcpy(dest,src,w);
 }
 
 /* Like svgafb_update_linear, but set our 64K page using vga_setpage 
@@ -216,12 +241,13 @@ void svgafb_update_linear(int x,int y,int w,int h) {
 void svgafb_update_paged(int x,int y,int w,int h) {
    unsigned long vp;
    int page;
-   char *bp = vid->fb_mem;
+   char *bp;
 
    /* Might prevent tearing? */
    vga_waitretrace();
 
    vp   = x + y * vid->fb_bpl;
+   bp   = vid->fb_mem + vp;
    page = vp >> 16;
    vp  &= 0xffff;
    vga_setpage(page);
@@ -232,17 +258,17 @@ void svgafb_update_paged(int x,int y,int w,int h) {
 	    vga_setpage(page);
 	    vp &= 0xffff;
 	 } else {		/* page break within line */
-//	    __memcpy(graph_mem + vp, bp, 0x10000 - vp);
+	    __memcpy(graph_mem + vp, bp, 0x10000 - vp);
 	    page++;
 	    vga_setpage(page);
-//	    __memcpy(graph_mem, bp + 0x10000 - vp,
-//		     (vp + w) & 0xffff);
+	    __memcpy(graph_mem, bp + 0x10000 - vp,
+		     (vp + w) & 0xffff);
 	    vp = (vp + vid->fb_bpl) & 0xffff;
 	    bp += vid->fb_bpl;
 	    continue;
 	 }
       };
-//      __memcpy(graph_mem + vp, bp, w);
+      __memcpy(graph_mem + vp, bp, w);
       bp += vid->fb_bpl;
       vp += vid->fb_bpl;
    }

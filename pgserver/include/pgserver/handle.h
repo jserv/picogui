@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.6 2000/12/31 16:52:32 micahjd Exp $
+/* $Id: handle.h,v 1.7 2001/01/13 02:16:09 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -48,6 +48,14 @@ typedef unsigned short handle;
 #define HANDLE_SIZE (1<<HANDLE_BITS)
 
 struct handlenode {
+   /* 
+    * WARNING!!!!!!
+    * If you add/remove members from this structure, update the node copy
+    * in htree_delete()! If you fail to do so, demons will haunt pgserver
+    * with evil evil bugs
+    *
+    */
+   
   handle id;
    
   short int owner;        /* the connection that owns this handle */

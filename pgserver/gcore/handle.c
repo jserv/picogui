@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.25 2001/01/07 06:42:48 micahjd Exp $
+/* $Id: handle.c,v 1.26 2001/01/13 02:16:08 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -273,6 +273,7 @@ void htree_delete(struct handlenode *z) {
     z->obj = y->obj;
     z->context = y->context;
     z->payload = y->payload;
+    z->group = y->group;
     z->type &= HFLAG_RED;
     z->type |= y->type & ~HFLAG_RED;
   }  

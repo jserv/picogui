@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.20 2001/01/10 13:09:24 micahjd Exp $
+/* $Id: pgmain.c,v 1.21 2001/01/13 02:16:08 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
 
     while (1) {
 
-      c = getopt(argc,argv,"fhlx:y:d:v:i:t:");
+      c = getopt(argc,argv,"fbhlx:y:d:v:i:t:");
       if (c==-1)
 	break;
       
@@ -104,6 +104,10 @@ int main(int argc, char **argv) {
 
       case 'f':        /* Fullscreen */
 	vidf |= PG_VID_FULLSCREEN;
+	break;
+	 
+      case 'b':        /* Double-buffering */
+        vidf |= PG_VID_DOUBLEBUFFER;
 	break;
 
 #ifndef TINY_MESSAGES
@@ -197,9 +201,10 @@ int main(int argc, char **argv) {
 #ifdef DEBUG_ANY
 	     "DEBUG MODE ON\n\n"
 #endif
-	     "usage: pgserver [-fhl] [-x width] [-y height] [-d depth] [-v driver]\n"
+	     "usage: pgserver [-fbhl] [-x width] [-y height] [-d depth] [-v driver]\n"
 	     "                [-i driver] [-t theme] [session manager...]\n\n"
 	     "  f : Fullscreen mode (if the driver supports it)\n"
+	     "  b : double-buffering (if the driver supports it)\n"
 	     "  h : This help message\n"
 	     "  l : List installed drivers and fonts\n\n"
 	     "  x width   : default screen width\n"

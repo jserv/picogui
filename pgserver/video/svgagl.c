@@ -1,4 +1,4 @@
-/* $Id: svgagl.c,v 1.1 2000/12/31 22:13:03 micahjd Exp $
+/* $Id: svgagl.c,v 1.2 2001/01/13 02:16:09 micahjd Exp $
  *
  * svgagl.c - video driver for (S)VGA cards, via vgagl and svgalib
  * 
@@ -35,12 +35,12 @@
 #include <vga.h>
 #include <vgagl.h>
 
-// #define DOUBLEBUFFER
-
 GraphicsContext *svgagl_virtual,*svgagl_physical;
 
 /* Scanline buffer for LGOP blitting */
 unsigned char *svgagl_buf;
+
+void svgagl_update(void);
 
 /******************************************** Implementations */
 
@@ -110,13 +110,16 @@ g_error svgagl_init(int xres,int yres,int bpp,unsigned long flags) {
   gl_setcontextvga(mode);
   svgagl_physical = gl_allocatecontext();
   gl_getcontext(svgagl_physical);
-
-#ifdef DOUBLEBUFFER
-  gl_setcontextvgavirtual(mode);
-  svgagl_virtual = gl_allocatecontext();
-  gl_getcontext(svgagl_virtual);
-#endif
-
+   
+  if (flags & PG_VID_DOUBLEBUFFER) {
+     gl_setcontextvgavirtual(mode);
+     svgagl_virtual = gl_allocatecontext();
+     gl_getcontext(svgagl_virtual);
+     vid->update = &svgagl_update;
+  }
+  else
+     vid->update = &def_update;
+   
   gl_setrgbpalette();
   gl_setwritemode(WRITEMODE_MASKED | FONT_COMPRESSED);
    
@@ -143,9 +146,6 @@ void svgagl_close(void) {
 }
 
 void svgagl_pixel(int x,int y,hwrcolor c) {
-#ifdef DOUBLEBUFFER
-  add_updarea(x,y,1,1);
-#endif
   gl_setpixel(x,y,c);
 }
 
@@ -153,14 +153,11 @@ hwrcolor svgagl_getpixel(int x,int y) {
   return gl_getpixel(x,y);
 }
 
+/* Only used when double-buffering is on */
 void svgagl_update(void) {
-#ifdef DOUBLEBUFFER
   gl_setcontext(svgagl_physical);
-  gl_disableclipping();
   gl_copyboxfromcontext(svgagl_virtual,upd_x,upd_y,upd_w,upd_h,upd_x,upd_y);
   gl_setcontext(svgagl_virtual);
-  upd_x = upd_y = upd_w = upd_h = 0;
-#endif
 }
 
 void svgagl_blit(struct stdbitmap *src,int src_x,int src_y,
@@ -271,18 +268,11 @@ void svgagl_blit(struct stdbitmap *src,int src_x,int src_y,
 void svgagl_unblit(int src_x,int src_y,
 		 struct stdbitmap *dest,int dest_x,int dest_y,
 		 int w,int h) {
-
-  if (w<=0) return;
-  if (h<=0) return;
-  
   if (dest_x==0 && dest_y==0)
     gl_getbox(src_x,src_y,dest->w,dest->h,dest->bits);
 }
 
 void svgagl_rect(int x,int y,int w,int h,hwrcolor c) {
-#ifdef DOUBLEBUFFER
-  add_updarea(x,y,w,h);
-#endif
   gl_fillbox(x,y,w,h,c);
 }
 
@@ -340,7 +330,6 @@ g_error svgagl_regfunc(struct vidlib *v) {
   v->close = &svgagl_close;
   v->pixel = &svgagl_pixel;
   v->getpixel = &svgagl_getpixel;
-  v->update = &svgagl_update;
   v->blit = &svgagl_blit;
   v->unblit = &svgagl_unblit;
   v->rect = &svgagl_rect;
