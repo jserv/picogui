@@ -1,4 +1,4 @@
-/* $Id: phonecall.c,v 1.2 2001/10/30 01:32:28 micahjd Exp $
+/* $Id: phonecall.c,v 1.3 2001/11/16 12:06:56 micahjd Exp $
  *
  * phonecall.c - GUI and data structures to represent information about one
  *               phone call
@@ -32,6 +32,7 @@
 
 pghandle wInfoBar;   /* Call info toolbar, 0 if hidden */
 pghandle wCallStatus, wPhoneNumber, wName, wConnectTime;
+pghandle wKeypadBtn;
 
 /* Strings representing call status */
 const char *status_messages[] = {
@@ -43,77 +44,97 @@ const char *status_messages[] = {
 };
 
 struct phonecall *current_call;
+char redial_number[MAX_PHONENUM_LEN] = "";
 
 /* Previous value for connection time */
 time_t old_connect_time;
 
-/* Completed calls are stored here */
+/* Arrow bitmap: 11x6 1bpp PNM file */
+unsigned char arrow_bits[] = {
+0x50, 0x34, 0x0A, 0x0A, 0x31, 0x31, 0x20, 0x36, 0x0A, 0x04, 
+0x00, 0x0E, 0x00, 0x1F, 0x00, 0x3F, 0x80, 0x7F, 0xC0, 0xFF, 
+0xE0, 
+};
+#define arrow_len 21
+
+/* Functions to create a VFD-style display and set it's text */
+void new_vfd_label(pghandle canvas);
+void set_vfd_text(pghandle vfd,const char *text); 
 
 /****************************************** Public functions */
 
+/* Create our toolbar */
+void init_call_info(void) {
+  pghandle bArrowMask,bArrow;
+    
+  /* Set up a bitmap/bitmask for the keypad button up arrow.
+   * We have the mask stored in PNM format, and we paint
+   * the arrow bitmap itself solid black. If we wanted another
+   * color for the arrow, we could paint it that other color,
+   * then apply the bitmask to it with the PG_LGOP_INVERT_AND
+   * logical operation to mask out only the arrow part.
+   */
+  bArrowMask = pgNewBitmap(pgFromMemory(arrow_bits,arrow_len));
+  bArrow = pgCreateBitmap(11,6);
+  pgRender(bArrow,PG_GROP_SETCOLOR,0x000000);
+  pgRender(bArrow,PG_GROP_RECT,0,0,15,8);
+
+  /* Create a toolbar that starts out hidden */
+  wInfoBar = pgRegisterApp(PG_APP_TOOLBAR,"pgtuxphone/call_info",
+			   PG_APPSPEC_SIDE, PG_S_BOTTOM,
+			   0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIZE,0,
+	      0);
+  
+  /* Create widgets within the toolbar */
+  
+  wKeypadBtn = pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_LEFT,
+	      PG_WP_BITMAP, bArrow,
+	      PG_WP_BITMASK, bArrowMask,
+	      PG_WP_EXTDEVENTS, PG_EXEV_TOGGLE,
+	      PG_WP_TEXT,pgNewString("Keypad"),
+	      0);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnKeypad,NULL);
+  
+  pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_LEFT,
+	      PG_WP_TEXT,pgNewString("Redial"),
+	      0);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnRedial,NULL);
+
+  /* Make the connect time opaque and fixed-width to minimize the
+   * amount of redrawing necessary to update it */
+  wConnectTime = pgNewWidget(PG_WIDGET_LABEL,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TRANSPARENT,0,
+	      PG_WP_SIDE,PG_S_RIGHT,
+	      PG_WP_FONT,pgNewFont(NULL,0,PG_FSTYLE_FIXED),
+	      0);
+  wCallStatus = pgNewWidget(PG_WIDGET_LABEL,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_RIGHT,
+	      0);
+
+  wName = pgNewWidget(PG_WIDGET_LABEL,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_LEFT,
+	      PG_WP_FONT,pgNewFont(NULL,12,0),
+	      0);
+
+  wPhoneNumber = pgNewWidget(PG_WIDGET_CANVAS,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_ALL,
+	      0);
+  new_vfd_label(wPhoneNumber);
+
+}
+
 /* Show and hide the call info bar */
 void show_call_info(struct phonecall *call) {
-  
-  if (!wInfoBar) {
-
-    /* Keep everything in a context so we can easily show and hide the info */
-    pgEnterContext();
-
-    /* If we don't have an info bar yet, create it */
-    wInfoBar = pgRegisterApp(PG_APP_TOOLBAR,"Phone Call Info",
-			     PG_APPSPEC_SIDE, PG_S_BOTTOM,
-			     0);
-
-    /* Create widgets within the toolbar */
-
-    pgNewWidget(PG_WIDGET_BUTTON,0,0);
-    pgSetWidget(PGDEFAULT,
-		PG_WP_SIDE,PG_S_LEFT,
-		PG_WP_TEXT,pgNewString("Redial"),
-		0);
-    pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnRedial,NULL);
-
-    pgNewWidget(PG_WIDGET_BUTTON,0,0);
-    pgSetWidget(PGDEFAULT,
-		PG_WP_SIDE,PG_S_LEFT,
-		PG_WP_TEXT,pgNewString("History"),
-		0);
-    pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnHistory,NULL);
-
-    pgNewWidget(PG_WIDGET_BUTTON,0,0);
-    pgSetWidget(PGDEFAULT,
-		PG_WP_SIDE,PG_S_LEFT,
-		PG_WP_TEXT,pgNewString("Keypad"),
-		0);
-    pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnKeypad,NULL);
-
-    wPhoneNumber = pgNewWidget(PG_WIDGET_LABEL,0,0);
-    pgSetWidget(PGDEFAULT,
-		PG_WP_SIDE,PG_S_LEFT,
-		PG_WP_FONT,pgNewFont(NULL,14,PG_FSTYLE_BOLD),
-		PG_WP_TEXT,pgNewString(" "),
-		0);
-
-    /* Make the connect time opaque and fixed-width to minimize the
-     * amount of redrawing necessary to update it */
-    wConnectTime = pgNewWidget(PG_WIDGET_LABEL,0,0);
-    pgSetWidget(PGDEFAULT,
-		PG_WP_TRANSPARENT,0,
-		PG_WP_SIDE,PG_S_RIGHT,
-		PG_WP_FONT,pgNewFont(NULL,0,PG_FSTYLE_FIXED),
-		0);
-    wCallStatus = pgNewWidget(PG_WIDGET_LABEL,0,0);
-    pgSetWidget(PGDEFAULT,
-		PG_WP_SIDE,PG_S_RIGHT,
-		0);
-
-    wName = pgNewWidget(PG_WIDGET_LABEL,0,0);
-    pgSetWidget(PGDEFAULT,
-		PG_WP_SIDE,PG_S_ALL,  /* Center in remaining space */
-		PG_WP_FONT,pgNewFont(NULL,12,0),
-		0);
-  }
-
   current_call = call;
   old_connect_time = -1;
 
@@ -127,17 +148,21 @@ void show_call_info(struct phonecall *call) {
   set_call_status(call,call->status);
   update_call_timer();
   pgSetIdle(500,update_call_timer);
+  pgSetWidget(wKeypadBtn,
+	      PG_WP_ON,0,
+	      0);
+  set_vfd_text(wPhoneNumber,"");
+  pgSetWidget(wInfoBar,
+	      PG_WP_SIZE,-1,    /* Automatic sizing */
+	      0);
   pgUpdate();
 }
 
 void hide_call_info(void) {
-  if (!wInfoBar)
-    return;
-
-  /* Leave our context to destroy the info bar and all associated handles */
+  /* Turn off the idle handler, hide everything */
   pgSetIdle(0,NULL);
-  pgLeaveContext();
-  wInfoBar = 0;
+  pgSetWidget(wInfoBar,PG_WP_SIZE,0,0);
+  pgSetWidget(wKeypad,PG_WP_SIZE,0,0);
   pgUpdate();
 }
 
@@ -157,6 +182,14 @@ struct phonecall *new_call(int status) {
   return c;
 }
 
+/* FIXME: We're not doing any database things yet, this just stores
+ * the number so we can do a redial
+ */
+void archive_call(struct phonecall *call) {
+  strcpy(redial_number,call->number);
+  free(call);
+}
+
 /* Update the name and number of the current call. If either is NULL, the
  * existing value is retained.
  */
@@ -168,7 +201,7 @@ void set_call_id(struct phonecall *call, const char *name,
   }
   if (number) {
     strncpy(call->number,number,MAX_PHONENUM_LEN);
-    pgReplaceText(wPhoneNumber,call->number);
+    set_vfd_text(wPhoneNumber,call->number);
   }
 }
 
@@ -184,7 +217,7 @@ void set_call_status(struct phonecall *call,int status) {
   if (!call->end_time && status==CALL_COMPLETED)
     call->end_time = time(NULL);
 
-  if (wInfoBar && call==current_call) {
+  if (call==current_call) {
     pgReplaceText(wCallStatus,status_messages[call->status]);
     pgUpdate();
   }
@@ -200,8 +233,8 @@ void call_dial(struct phonecall *call, char digit) {
     return;
   
   strcat(call->number,str);
-  if (wInfoBar && call==current_call) {
-    pgReplaceText(wPhoneNumber,call->number);
+  if (call==current_call) {
+    set_vfd_text(wPhoneNumber,call->number);
     pgUpdate();
   }
 }
@@ -216,8 +249,6 @@ void update_call_timer(void) {
   phone_check_ring_timeout();
   
   if (!current_call)
-    return;
-  if (!wInfoBar)
     return;
 
   /* Measure the time from connect to now or 
@@ -244,5 +275,41 @@ void update_call_timer(void) {
 
 /****************************************** Utilities */
 
+/* Functions to create a VFD-style display and set it's text */
+void new_vfd_label(pghandle canvas) {
+  pgcontext gc;
+  pghandle h = pgNewString(" ");
+
+  /* Use a canvas widget to do a 'inverse VFD style' phone number display 
+   *
+   * Code like this makes me really glad that the canvas widget is
+   * as smart as it is about scaling and calculating preferred sizes
+   */
+  gc = pgNewCanvasContext(canvas,PGFX_PERSISTENT);
+  pgSetMapping(gc,0,0,1,1,PG_MAP_SCALE);
+  pgSetColor(gc,0xBFEDBD);   /* Pastel green */
+  pgRect(gc,0,0,1,1);
+  pgSetColor(gc,0x000000);
+  pgFrame(gc,0,0,1,1);
+  pgSetFont(gc,pgNewFont(NULL,20,0));
+  pgText(gc,0,0,h);
+  pgSetPayload(canvas,h);
+  pgDeleteContext(gc);  
+}
+
+void set_vfd_text(pghandle vfd,const char *text) {
+  /* Use the lower level canvas commands to change the VFD's text.
+   * The display's previous text is stored as its payload so we can
+   * delete it, and we set the new text by changing the text gropnode's
+   * parameter
+   */
+
+  pghandle h;
+  pgDelete(pgGetPayload(vfd));
+  h = pgNewString(text);
+  pgWriteCmd(vfd,PGCANVAS_SETGROP,1,h);
+  pgWriteCmd(vfd,PGCANVAS_REDRAW,0);
+  pgSetPayload(vfd,h);
+}
 
 /* The End */

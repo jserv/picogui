@@ -1,4 +1,4 @@
-/* $Id: eventloop.c,v 1.2 2001/10/30 01:32:28 micahjd Exp $
+/* $Id: eventloop.c,v 1.3 2001/11/16 12:06:56 micahjd Exp $
  *
  * eventloop.c - Event loop for graphical tuxphone
  *
@@ -56,6 +56,10 @@ int main(int argc, char **argv) {
     pgMessageDialog("TuxPhone Error","Unable to connect to tuxphone daemon",0);
     return 1;
   }
+
+  /* Build the GUI */
+  init_call_info();
+  init_keypad();
 
   /* Set up to recieve phone events */
   phone_register_events(phone_fd, ALL_EVENT_MASK);

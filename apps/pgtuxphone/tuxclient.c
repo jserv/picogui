@@ -1,4 +1,4 @@
-/* $Id: tuxclient.c,v 1.2 2001/10/30 01:32:28 micahjd Exp $
+/* $Id: tuxclient.c,v 1.3 2001/11/16 12:06:56 micahjd Exp $
  *
  * tuxclient.c - Network interface to tuxphone
  *
@@ -123,6 +123,7 @@ void phone_get_event(int fd) {
 	  /* End a call */
 	  hide_call_info();
 	  set_call_status(current_call,CALL_COMPLETED);
+	  archive_call(current_call);
 	}
 	else {
 	  /* Begin/answer a call */

@@ -1,4 +1,4 @@
-/* $Id: phoneui.h,v 1.1 2001/10/30 01:32:28 micahjd Exp $
+/* $Id: phoneui.h,v 1.2 2001/11/16 12:06:56 micahjd Exp $
  *
  * phoneui.h - UI functions other than the basic phonecall info bar
  *
@@ -25,9 +25,13 @@
 
 #include <picogui.h>
 
+extern pghandle wKeypad;
+
+void init_keypad(void);
+
 int btnRedial(struct pgEvent *evt);
-int btnHistory(struct pgEvent *evt);
 int btnKeypad(struct pgEvent *evt);
+int btnDial(struct pgEvent *evt);
 
 #endif /* _H_PG_PHONEUI */
 

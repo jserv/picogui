@@ -1,4 +1,4 @@
-/* $Id: phonecall.h,v 1.1 2001/10/25 06:49:17 micahjd Exp $
+/* $Id: phonecall.h,v 1.2 2001/11/16 12:06:56 micahjd Exp $
  *
  * phonecall.h - GUI and data structures to represent information about one
  *               phone call
@@ -50,11 +50,18 @@ struct phonecall {
 extern struct phonecall *current_call;
 
 /* Show and hide the call info bar */
+void init_call_info(void);
 void show_call_info(struct phonecall *call);
 void hide_call_info(void);
 
 /* Create a new phone call */
 struct phonecall *new_call(int status);
+
+/* Number to redial */
+extern char redial_number[MAX_PHONENUM_LEN];
+
+/* Save a completed call in the history database  */
+void archive_call(struct phonecall *call);
 
 /* Update the name and number of the current call. If either is NULL, the
  * existing value is retained.
