@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.12 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: linear4.c,v 1.13 2001/05/01 23:13:17 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -114,11 +114,14 @@ void linear4_bar(hwrbitmap dest,s16 x,s16 y,s16 h,hwrcolor c,s16 lgop) {
 }
 
 /* Raster-optimized version of Bresenham's line algorithm */
-void linear4_line(hwrbitmap dest,s16 x1,s16 y1,s16 x2,s16 y2,
+void linear4_line(hwrbitmap dest,s16 x1,s16 yy1,s16 x2,s16 yy2,
 		  hwrcolor c,s16 lgop) {
   s16 stepx, stepy;
   s16 dx,dy;
   s16 fraction;
+  u32 y1 = yy1,y2 = yy2;   /* Convert y coordinates to 32-bits because
+			    * they will be converted to framebuffer offsets */
+   
   char *p;
    
   if (lgop != PG_LGOP_NONE) {

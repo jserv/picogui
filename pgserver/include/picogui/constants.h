@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.51 2001/05/01 01:12:29 micahjd Exp $
+/* $Id: constants.h,v 1.52 2001/05/01 23:13:17 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -394,7 +394,7 @@ typedef unsigned long pghandle;
 #define PG_GROP_SETOFFSET  0x01   /* this grop's rect sets offset    */
 #define PG_GROP_SETCLIP    0x11   /* this grop's rect sets clipping  */
 #define PG_GROP_SETSRC     0x21   /* this grop's rect sets src_* for */
-#define PG_GROP_SETMAPPING 0x05   /* Param: type (grop's rect used too)*/
+#define PG_GROP_SETMAPPING 0x05   /* Param: PG_MAP_* const (grop's rect used too)*/
 #define PG_GROP_SETCOLOR   0x07   /* Param: pgcolor                  */
 #define PG_GROP_SETFONT    0x17   /* Param: font                     */
 #define PG_GROP_SETLGOP    0x27   /* Param: lgop                     */
@@ -418,6 +418,21 @@ typedef unsigned long pghandle;
 					    * is cleared afterwards. */
 #define PG_GROPF_TRANSIENT    (1<<3)  /* Always render, delete after using
 				       * once */
+#define PG_GROPF_COLORED      (1<<4)  /* This can be used with the simple
+				       * primitives (rect,line,etc...) to
+				       * indicate that the 1st parameter
+				       * contains a color for that node and
+				       * the color set with SETCOLOR is
+				       * ignored */
+
+/* Flags to be used with PG_GROP_SETMAPPING */
+#define PG_MAP_NONE           0
+#define PG_MAP_SCALE          1      /* This grop's width and height define
+				      * the virtual width and height of the
+				      * divnode, grops are mapped from this
+				      * to the real size */
+#define PG_MAP_ASPECTSCALE    2      /* Like PG_MAP_SCALE, but constrain
+				      * the aspect ratio */
 
 /* Video mode flags */
 #define PG_VID_FULLSCREEN     0x0001

@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.45 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: grop.c,v 1.46 2001/05/01 23:13:17 micahjd Exp $
  *
  * grop.c - grop-list management
  *
@@ -45,8 +45,15 @@ g_error gropnode_alloc(struct gropnode **n) {
 #ifdef DEBUG_KEYS
    num_grops++;
 #endif
+#ifdef DEBUG_MEMORY 
+  printf("gropnode_alloc : ");
+#endif
 
    if (grop_zombie_list) {
+#ifdef DEBUG_MEMORY
+   printf("using zombie list\n");
+#endif
+
       /* re-use a zombie grop */
       grop_zombie_count--;
       *n = grop_zombie_list;
@@ -54,6 +61,9 @@ g_error gropnode_alloc(struct gropnode **n) {
       return sucess;
    }
       
+#ifdef DEBUG_MEMORY
+   printf("allocating memory\n");
+#endif
   return g_malloc((void**)n,sizeof(struct gropnode));
 };
 
@@ -61,15 +71,26 @@ void gropnode_free(struct gropnode *n) {
 #ifdef DEBUG_KEYS
    num_grops--;
 #endif
-   
+#ifdef DEBUG_MEMORY 
+  printf("gropnode_free(0x%08X) : ",n);
+#endif
+      
    /* Can we just stick it in the zombie list? */
    if (grop_zombie_count < CONFIG_MAX_ZOMBIEGROPS) {
+#ifdef DEBUG_MEMORY
+   printf("adding to zombie list\n");
+#endif
+   
       n->next = grop_zombie_list;
       grop_zombie_list = n;
       grop_zombie_count++;
       return;
    }
     
+#ifdef DEBUG_MEMORY
+   printf("freeing memory\n");
+#endif
+   
    /* Do it the old-fasioned way */
    g_free(n);
 }

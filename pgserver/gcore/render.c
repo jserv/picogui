@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.1 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: render.c,v 1.2 2001/05/01 23:13:17 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -66,6 +66,8 @@ void grop_render(struct divnode *div) {
    rend.scroll.y = div->ty - div->oty;
    div->otx = div->tx;
    div->oty = div->ty;
+   rend.output_rect.x = div->w;
+   rend.output_rect.y = div->h;
    
    /* Munge our flags a bit. If this is incremental, and we didn't need
     * a full redraw anyway, look for the incremental divnode flag */
@@ -125,6 +127,12 @@ void grop_render(struct divnode *div) {
 	 node.r.x += rend.translation.x;
 	 node.r.y += rend.translation.y;
       }
+      
+      /* Add mapping offset */
+      node.r.x += rend.offset.x;
+      node.r.y += rend.offset.y;
+      node.r.w += rend.offset.w;
+      node.r.h += rend.offset.h;
 
       /* Save node's coordinates before clipping */
       rend.orig = node.r;
@@ -192,7 +200,7 @@ void grop_render(struct divnode *div) {
       skip_this_node:
      
       /* Delete the grop if it was transient */
-      if (node.flags & PG_GROPF_TRANSIENT) {
+      if ((*listp)->flags & PG_GROPF_TRANSIENT) {
 	 struct gropnode *condemn;
 	 condemn = *listp;
 	 *listp = (*listp)->next;   /* close up the hole */
@@ -283,9 +291,18 @@ void gropnode_nonvisual(struct groprender *r, struct gropnode *n) {
     case PG_GROP_SETSRC:
       r->src = n->r;
       break;
+      
+    case PG_GROP_SETOFFSET:
+      r->offset = n->r;
+      break;
 
     case PG_GROP_SETFONT:
       rdhandle((void**)&r->font,PG_TYPE_FONTDESC,-1,n->param[0]);
+      break;
+      
+    case PG_GROP_SETMAPPING:
+      r->map = n->r;
+      r->maptype = n->param[0];
       break;
       
    }
@@ -294,8 +311,25 @@ void gropnode_nonvisual(struct groprender *r, struct gropnode *n) {
 /****************************************************** gropnode_map */
 
 void gropnode_map(struct groprender *r, struct gropnode *n) {
-/* Remember to account for negative src_x and src_y and fix! */
 
+   /* FIXME: Fix negative (or otherwise bad) src values */
+   
+   switch (r->maptype) {
+    case PG_MAP_NONE:
+      return;
+    
+    case PG_MAP_SCALE:
+      n->r.x = n->r.x * r->output_rect.x / r->map.w;
+      n->r.y = n->r.y * r->output_rect.y / r->map.h;
+      if (n->type != PG_GROP_TEXT) {
+	 if (n->type != PG_GROP_BAR)
+	   n->r.w = n->r.w * r->output_rect.x / r->map.w;
+	 if (n->type != PG_GROP_SLAB)
+	   n->r.h = n->r.h * r->output_rect.y / r->map.h;
+      }
+      return;
+      
+   }
 }
 
 /****************************************************** gropnode_clip */
@@ -474,6 +508,14 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
    char *str;
    hwrbitmap bit;
    s16 bw,bh;
+   hwrcolor c;
+
+   /* Normally get color from r->color, but if this gropnode has 
+      PG_GROPF_COLORED get a hwrcolor from the grop's param[0] */
+   if (n->flags & PG_GROPF_COLORED)
+     c = n->param[0];
+   else
+     c = r->color;
    
    switch (n->type) {
 
@@ -481,7 +523,7 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
       VID(pixel) (r->output,
 		  n->r.x,
 		  n->r.y,
-		  r->color,
+		  c,
 		  r->lgop);
       break;
       
@@ -491,7 +533,7 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 		 n->r.y,
 		 n->r.w+n->r.x,
 		 n->r.h+n->r.y,
-		 r->color,
+		 c,
 		 r->lgop);
       break;
 
@@ -501,7 +543,7 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 		 n->r.y,
 		 n->r.w,
 		 n->r.h,
-		 r->color,
+		 c,
 		 r->lgop);
       break;
    
@@ -510,13 +552,13 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
        /* Bogacious clipping cruft for frames. A clipped frame is no
 	* longer a frame, so clip it as it is separated into slabs and bars */
        if (r->orig.y>=r->clip.y1 && r->orig.y<=r->clip.y2 ) 
-	 VID(slab) (r->output,n->r.x,n->r.y,n->r.w,r->color,r->lgop);
+	 VID(slab) (r->output,n->r.x,n->r.y,n->r.w,c,r->lgop);
        if ((r->orig.y+r->orig.h-1)>=r->clip.y1 && (r->orig.y+r->orig.h-1)<=r->clip.y2)
-	 VID(slab) (r->output,n->r.x,n->r.y+n->r.h-1,n->r.w,r->color,r->lgop);
+	 VID(slab) (r->output,n->r.x,n->r.y+n->r.h-1,n->r.w,c,r->lgop);
        if (r->orig.x>=r->clip.x1 && r->orig.x<=r->clip.x2 && n->r.h>2)
-	 VID(bar) (r->output,n->r.x,n->r.y+1,n->r.h-2,r->color,r->lgop);
+	 VID(bar) (r->output,n->r.x,n->r.y+1,n->r.h-2,c,r->lgop);
        if ((r->orig.x+r->orig.w-1)>=r->clip.x1 && (r->orig.x+r->orig.w-1)<=r->clip.x2 && n->r.h>2)
-	 VID(bar) (r->output,n->r.x+n->r.w-1,n->r.y+1,n->r.h-2,r->color,r->lgop);
+	 VID(bar) (r->output,n->r.x+n->r.w-1,n->r.y+1,n->r.h-2,c,r->lgop);
        break;
        
     case PG_GROP_SLAB:
@@ -524,7 +566,7 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 		 n->r.x,
 		 n->r.y,
 		 n->r.w,
-		 r->color,
+		 c,
 		 r->lgop);
       break;
       
@@ -533,71 +575,72 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 		n->r.x,
 		n->r.y,
 		n->r.h,
-		r->color,
+		c,
 		r->lgop);
       break;
       
     case PG_GROP_TEXT:
       if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,
 			   n->param[0])) || !str) break;
-      outtext(vid->display,r->font,n->r.x,n->r.y,r->color,str,&r->clip,
+      outtext(vid->display,r->font,n->r.x,n->r.y,c,str,&r->clip,
 	      r->fill,r->bg,r->lgop,r->angle);
       break;
 
       /* The workhorse of the terminal widget. 4 params: buffer handle,
        * font handle, buffer width, and buffer offset */
     case PG_GROP_TEXTGRID:
-#if 0 /* FIX LATER... ALSO FIX TERMINAL WIDGET! */
       if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,
 			    n->param[0])) || !str) break;
-       if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
-			    n->param[1])) || !fd) break;
-       
-	 {
-	    int buffersz,bufferw,bufferh;
-	    int celw,celh,charw,charh,offset;
-	    int i;
-	    unsigned char attr;
-
-	    /* Should be fine for fixed width fonts
-	     * and pseudo-acceptable for others? */
-	    celw      = fd->font->vwtab['W'];  
-	    celh      = fd->font->h;
-
-	    bufferw   = n->param[2];
-	    buffersz  = strlen(str) - n->param[3];
-	    str      += n->param[3];
-	    bufferh   = (buffersz / bufferw) >> 1;
-	    if (buffersz<=0) return;
-	    
-	    charw     = n->r.w/celw;
-	    charh     = n->r.h/celh;
-	    offset    = (bufferw-charw)<<1;
-	    if (offset<0) {
-	       offset = 0;
-	       charw = bufferw;
-	    }
-	    if (charh>bufferh)
-	      charh = bufferh;
-
-	    r->orig.x = n->r.x;
-	    for (;charh;charh--,n->r.y+=celh,str+=offset)
-	      for (n->r.x=r->orig.x,i=charw;i;i--,n->r.x+=celw,str++) {
-		 attr = *(str++);
-		 if (attr & 0xF0)
-		   VID(rect) (n->r.x,n->r.y,celw,celh,textcolors[attr>>4]);
-		 if ((*str) != ' ')
-		   VID(charblit) ((((unsigned char *)fd->font->bitmaps)+
-				     fd->font->trtab[*str]),
-				    n->r.x,n->r.y,fd->font->vwtab[*str],
-				    celh,0,textcolors[attr & 0x0F],NULL);
-	      }
-	    
-	 }
-
-#endif
-       break;      
-       
+	{
+	   int buffersz,bufferw,bufferh;
+	   int celw,celh,charw,charh,offset;
+	   int i;
+	   unsigned char attr;
+	   
+	   /* Should be fine for fixed width fonts
+	    * and pseudo-acceptable for others? */
+	   celw      = r->font->font->vwtab['W'];  
+	   celh      = r->font->font->h;
+	   
+	   bufferw   = n->param[1];
+	   buffersz  = strlen(str) - n->param[2];
+	   str      += n->param[2];
+	   bufferh   = (buffersz / bufferw) >> 1;
+	   if (buffersz<=0) return;
+	   
+	   charw     = n->r.w/celw;
+	   charh     = n->r.h/celh;
+	   offset    = (bufferw-charw)<<1;
+	   if (offset<0) {
+	      offset = 0;
+	      charw = bufferw;
+	   }
+	   if (charh>bufferh)
+	     charh = bufferh;
+	   
+	   r->orig.x = n->r.x;
+	   for (;charh;charh--,n->r.y+=celh,str+=offset)
+	     for (n->r.x=r->orig.x,i=charw;i;i--,n->r.x+=celw,str++) {
+		attr = *(str++);
+/*
+ * This code made obsolete by fill and bg parameter of charblit
+ * 
+ if (attr & 0xF0)
+ VID(rect) (r->output,n->r.x,n->r.y,celw,celh,
+ textcolors[attr>>4],r->lgop);
+ if ((*str) != ' ')
+ */
+		VID(charblit) (r->output,
+			       (((unsigned char *)r->font->font->bitmaps)+
+				r->font->font->trtab[*str]),
+			       n->r.x,n->r.y,r->font->font->vwtab[*str],
+			       celh,0,0,textcolors[attr & 0x0F],NULL,
+			       attr & 0xF0,textcolors[attr>>4],r->lgop);
+	     }
+	   
+	}
+      break;      
+      
     case PG_GROP_BITMAP:
       if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
 			   n->param[0])) || !bit) break;

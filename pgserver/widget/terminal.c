@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.23 2001/04/29 17:28:40 micahjd Exp $
+/* $Id: terminal.c,v 1.24 2001/05/01 23:13:17 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -227,6 +227,13 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
 
   /************** Gropnodes */
 
+  /* Set font */
+  addgrop(c,PG_GROP_SETFONT);
+  c->current->param[0] = DATA->font;
+  addgrop(c,PG_GROP_SETFONT);
+  c->current->param[0] = DATA->font;
+  c->current->flags   |= PG_GROPF_INCREMENTAL;
+   
   /* Background (solid color or bitmap) */
   addgropsz(c,DATA->bitmap ? PG_GROP_BITMAP : PG_GROP_RECT,c->x,c->y,c->w,c->h);
   c->current->param[0] = DATA->bitmap ? DATA->bitmap : textcolors[0];
@@ -236,9 +243,6 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
   addgropsz(c,DATA->bitmap ? PG_GROP_BITMAP : PG_GROP_RECT,0,0,0,0);
   c->current->flags   |= PG_GROPF_INCREMENTAL;
   c->current->param[0] = DATA->bg->param[0];
-  c->current->param[1] = PG_LGOP_NONE;
-  c->current->param[2] = 0;
-  c->current->param[3] = 0;
   DATA->bginc = c->current;
 
   /* For the margin we figured in earlier */
@@ -250,15 +254,13 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
   /* Non-incremental text grid */   
   addgropsz(c,PG_GROP_TEXTGRID,c->x,c->y,c->w,c->h);
   c->current->param[0] = DATA->hbuffer;
-  c->current->param[1] = DATA->font;
-  c->current->param[2] = DATA->bufferw;
-  c->current->param[3] = 0;
+  c->current->param[1] = DATA->bufferw;
+  c->current->param[2] = 0;
 
   /* Incremental grop for the text grid */
   addgrop(c,PG_GROP_TEXTGRID);
   c->current->flags   |= PG_GROPF_INCREMENTAL;
   c->current->param[0] = DATA->hbuffer;
-  c->current->param[1] = DATA->font;
   DATA->inc = c->current;
   DATA->x = c->x;
   DATA->y = c->y;
@@ -291,7 +293,7 @@ g_error terminal_install(struct widget *self) {
   errorcheck;
      
   /* Default terminal font */
-  e = findfont(&DATA->deffont,-1,"Console",0,PG_FSTYLE_FIXED);
+  e = findfont(&DATA->deffont,-1,NULL,0,PG_FSTYLE_FIXED | PG_FSTYLE_DEFAULT);
   errorcheck;
   DATA->font = DATA->deffont;
    
@@ -538,12 +540,12 @@ void term_realize(struct widget *self) {
    
    /* If this is more than one line, load the buffer width */
    if (DATA->updh > 1)
-     DATA->inc->param[2] = DATA->bufferw;
+     DATA->inc->param[1] = DATA->bufferw;
    else
-     DATA->inc->param[2] = DATA->updw;
+     DATA->inc->param[1] = DATA->updw;
       
    /* Set the buffer offset */
-   DATA->inc->param[3] = (DATA->updx + DATA->updy * DATA->bufferw) << 1;
+   DATA->inc->param[2] = (DATA->updx + DATA->updy * DATA->bufferw) << 1;
    
 /*
    guru("Incremental terminal update:\nx = %d\ny = %d\nw = %d\nh = %d"
@@ -557,8 +559,8 @@ void term_realize(struct widget *self) {
    DATA->bginc->r.y = DATA->inc->r.y = DATA->y + DATA->updy * DATA->celh;
    DATA->bginc->r.w = DATA->inc->r.w = DATA->updw * DATA->celw;
    DATA->bginc->r.h = DATA->inc->r.h = DATA->updh * DATA->celh;
-   DATA->bginc->param[2] = DATA->bginc->r.x;
-   DATA->bginc->param[3] = DATA->bginc->r.y;
+   DATA->bginc->param[1] = DATA->bginc->r.x;
+   DATA->bginc->param[2] = DATA->bginc->r.y;
 
    /* Set the incremental update flag */
    self->in->div->flags |= DIVNODE_INCREMENTAL;

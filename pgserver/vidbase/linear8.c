@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.18 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: linear8.c,v 1.19 2001/05/01 23:13:17 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -64,12 +64,14 @@ void linear8_bar(hwrbitmap dest, s16 x,s16 y,s16 h,hwrcolor c,s16 lgop) {
 }
 
 /* Raster-optimized version of Bresenham's line algorithm */
-void linear8_line(hwrbitmap dest, s16 x1,s16 y1,s16 x2,s16 y2,hwrcolor c,
+void linear8_line(hwrbitmap dest, s16 x1,s16 yy1,s16 x2,s16 yy2,hwrcolor c,
 		  s16 lgop) {
   s16 stepx, stepy;
   s16 dx;
   s16 dy;
   s16 fraction;
+  u32 y1 = yy1,y2 = yy2;   /* Convert y coordinates to 32-bits because
+			    * they will be converted to framebuffer offsets */
   
   if (lgop != PG_LGOP_NONE) {
      def_line(dest,x1,y1,x2,y2,c,lgop);

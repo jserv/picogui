@@ -1,3 +1,38 @@
+2001-05-01    Micah Dowty <micahjd@users.sourceforge.net>
+
+Fixing server bugs. Noticed a couple issues with the 'make install' in
+cli_c, but I don't currently know enough about automake to fix it myself:
+  - Headers in picogui/*.h aren't installed correctly
+  - It doesn't run ldconfig after installing libraries?
+Things to double-check in pgserver's build system:
+  - Is make menuconfig broke?
+  - Some way to prevent accidentally committing a modified config.defaults?
+
+      * widget/canvas.c: Fixed color conversion when making SETCOLOR gropnodes
+
+      * vidbase/linear8.c: Fixed crash bug in line implementation due to 
+        16-bit y1 and y2 vars.
+	
+      * vidbase/linear4.c: Fixed the same problem
+      
+      * gcore/render.c: Fixed the memory leak (used wrong flag when freeing)
+      	This appears to have fixed the black-rectangle bug (disappearing
+	setcolor grops) also.
+      
+      * widget/terminal.c: Fixed up the terminal widget, though it's likely
+        that it's rendering will need to be vastly improved soon.
+
+      * gcore/render.c, widget/canvas.c: Added PG_GROPF_COLORED flag to have
+        the 'oldskool' method of defining the color with each gropnode.
+
+      * apps/blackout.c: Modifications to support new rendering. Moved
+        commands to a menu, started adding support for revealing a solution
+
+      * gcore/render.c: Added support for the first mapping type, PG_MAP_SCALE
+		
+      * cli_c/demos/pgfx_canvas_persistent.c: Added demonstration
+      	of PG_MAP_SCALE
+
 2001-04-30    Micah Dowty <micahjd@users.sourceforge.net>
 
 Just because I'm sick of working on this code outside of CVS and I really

@@ -1,4 +1,4 @@
-/* $Id: render.h,v 1.1 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: render.h,v 1.2 2001/05/01 23:13:17 micahjd Exp $
  *
  * render.h - data structures and functions for rendering and manipulating
  *            gropnodes (Graphics Operation nodes)
@@ -66,7 +66,8 @@ struct gropnode {
 
 /* Structure to hold all state info while rendering one groplist */
 struct groprender {
-   struct rect orig;        /* Original rect of current divnode */
+   struct pair output_rect; /* Size of output device (divnode, etc) */
+   struct rect orig;        /* Original rect of current gropnode */
    struct pair translation; /* From the divnode's tx and ty */
    struct pair scroll;      /* Delta translation from last redraw */
    struct pair csrc;        /* Additional src_x,src_y offsets from clipping */
@@ -75,7 +76,7 @@ struct groprender {
    /* Params that can be set with nonvisual gropnodes */
    struct rect offset, src, map;
    struct quad clip;
-   s16 maptype;
+   u8 maptype;
    hwrcolor color;     /* Used for all primitives */
    s16 lgop;
    bool fill;          /* Currently only used for text */
