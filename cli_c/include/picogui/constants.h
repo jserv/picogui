@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.17 2000/11/05 05:22:08 micahjd Exp $
+/* $Id: constants.h,v 1.18 2000/11/05 05:39:36 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -258,6 +258,7 @@ typedef unsigned long pghandle;
 #define PGTH_P_SPACING    20  /*   int         Distance between similar widgets */
 #define PGTH_P_TEXT       21  /* H string      Text caption for something like a button */
 #define PGTH_P_SIDE       22  /*   int         Side for a widget or subwidget */
+#define PGTH_P_BACKDROP   23  /* H fillstyle   Fillstyle on the screen behind a popup */
 
 /* String properties (usually part of PGTH_O_DEFAULT) */
 #define PGTH_P_STRING_OK             501
@@ -444,6 +445,10 @@ typedef unsigned long pghandle;
 #define PG_POPUP_CENTER   -1
 #define PG_POPUP_ATCURSOR -2   /* (This also assumes it is a popup menu, and
 				  uses PGTH_O_POPUP_MENU) */
+
+/* Constants for PG_WP_EXTDEVENTS, to enable extra events */
+#define PG_EXEV_PNTR_UP   0x0001
+#define PG_EXEV_PNTR_DOWN 0x0002
 
 /******************** Events */
 

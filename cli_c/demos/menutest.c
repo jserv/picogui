@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("Run"),
 	      PG_WP_SIDE,PG_S_LEFT,
-	      PG_WP_EXTDEVENTS,PG_WE_PNTR_DOWN,
+	      PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
 	      0);
   pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&btnMenu);
 
