@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.25 2001/12/12 03:49:16 epchristi Exp $
+/* $Id: netcore.c,v 1.26 2002/01/06 03:47:45 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -851,7 +851,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.25 2001/12/12 03:49:16 epchristi Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.26 2002/01/06 03:47:45 micahjd Exp $\n");
 	exit(1);
       }
 
@@ -1028,6 +1028,7 @@ const char *pgErrortypeString(unsigned short errortype) {
   case PG_ERRT_BUSY:       return "BUSY";
   case PG_ERRT_CLIENT:     return "CLIENT";
   case PG_ERRT_NONE:       return "NONE";
+  case PG_ERRT_FILEFMT:    return "FILEFMT";
   }
   return "UNKNOWN";
 }

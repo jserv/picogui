@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.27 2002/01/06 03:35:47 micahjd Exp $
+/* $Id: g_error.c,v 1.28 2002/01/06 03:47:45 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -53,7 +53,8 @@ g_error prerror(g_error e) {
   case PG_ERRT_HANDLE: printf("HANDLE"); break;
   case PG_ERRT_INTERNAL: printf("INTERNAL"); break;
   case PG_ERRT_BUSY: printf("BUSY"); break;
-  default: printf("?");
+  case PG_ERRT_FILEFMT: printf("FILEFMT"); break;
+  default: printf("UNKNOWN");
   }
   printf(") : %s\n",errortext(e));
 #else
