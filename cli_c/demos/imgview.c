@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
   pgNewWidget(PG_WIDGET_BITMAP,0,0);
   pgSetWidget(0,
 	      PG_WP_SIDE,PG_S_ALL,
-	      PG_WP_BITMAP,pgNewBitmap(pgFromFile(argv[2])),
+	      PG_WP_BITMAP,pgNewBitmap(pgFromFile(argv[1])),
 	      0);
 
   pgEventLoop();
