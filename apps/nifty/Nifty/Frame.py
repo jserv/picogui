@@ -1,7 +1,6 @@
 import PicoGUI, sys
 from Minibuffer import Minibuffer
 from DebugBuffer import DebugBuffer
-from Textbox import Textbox
 #import pax.backwards_compatibility
 
 class Frame(object):
@@ -34,18 +33,18 @@ class Frame(object):
     def get_current(self):
         for page in self._pages:
             if page.on:
-                return page.textbox
+                return page.workspace
 
-    def set_current(self, textbox):
+    def set_current(self, workspace):
         if not self._pages:
             return
-        if type(textbox) in (int, long, float):
-            page = self._pages[textbox]
+        if type(workspace) in (int, long, float):
+            page = self._pages[workspace]
         else:
-            page = textbox.tabpage
+            page = workspace.tabpage
         page.on = 1
 
-    current = property(get_current, set_current, None, "currently selected textbox")
+    current = property(get_current, set_current, None, "currently selected workspace")
 
     def open(self, buffer):
         try:
@@ -56,7 +55,7 @@ class Frame(object):
             self.bind(tabbar = PicoGUI.Widget(self._app.server, page.tab_bar,
                                               self._app, type='tabbar'))
         self._pages.append(page)
-        t = page.addWidget('scrollbox', 'inside').addWidget('Textbox','inside', wrapper_class=Textbox)
+        t = page.addWidget('scrollbox', 'inside').addWidget(buffer.widget, 'inside')
         t.open(self, page, buffer)
 
     def close(self, box=None):
@@ -72,7 +71,7 @@ class Frame(object):
         if is_current:
             self.current = 0
         # for the sake of the garbage collector
-        box.tabpage.textbox = None
+        box.tabpage.workspace = None
         box.tabpage = None
         box.buffer = None
 
@@ -96,7 +95,7 @@ class Frame(object):
     def addWidget(self, *args):
         return self._app.addWidget(*args)
 
-    def focus_textbox(self):
+    def focus_workspace(self):
         if not self._pages:
             return
         self._app.server.focus(self.current)

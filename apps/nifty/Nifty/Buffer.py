@@ -1,7 +1,10 @@
+from Textbox import Textbox
+
 class Buffer(object):
-    "Represents something that may be displayed in a textbox; usually a file or similar"
+    "Represents something that may be displayed in a workspace; usually a file or similar"
 
     default_name = '__unnamed__'
+    widget = Textbox
 
     def __init__(self, name=None, text=''):
         if name is None:

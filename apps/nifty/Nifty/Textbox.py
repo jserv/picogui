@@ -1,36 +1,12 @@
 # wrapper Textbox class
-from PicoGUI import Widget
-from PicoGUI.keys import names as key_names
+from Workspace import Workspace
 import keybindings
 
-class Textbox(Widget):
+class Textbox(Workspace):
     def open(self, frame, page, buffer):
-        self.tabpage = page
-        self.side = 'All'
-        page.textbox = self
-        self.buffer = buffer
-        self.frame = frame
-        buffer.add_observer(self)
+        Workspace.open(self, frame, page, buffer)
         frame.link(self.handle_key, self, 'kbd keyup')
         self._partial_command = None
-
-    def link(self, handler, evname=None):
-        self.frame.link(handler, self, evname)
-
-    def _resolve_key(self, event):
-        if event.data in range(300, 311):
-            # modifier key
-            return None
-        name = key_names.get(event.data, None) or '<%r>' % event.data
-        if event.hasMod('shift'):
-            name = name.upper()
-        if event.hasMod('ctrl'):
-            name = 'C-' + name
-        if event.hasMod('alt'):
-            name = 'A-' + name
-        if event.hasMod('meta'):
-            name = 'M-' + name
-        return name
 
     def handle_key(self, ev):
         key = self._resolve_key(ev)
