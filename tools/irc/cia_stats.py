@@ -96,7 +96,11 @@ def getKey(project):
     if sortKey == "project":
         return project
     if sortKey == "mtbc":
-        return projectMTBC[project]
+        mtbc = projectMTBC[project]
+        if not mtbc:
+            # For sorting purposes, an MTBC of None should appear larger than all others
+            mtbc = 1e+1000   # Infinity, or so...
+        return mtbc
     return projectCounts[project][sortKey]
 def projectSort(a,b):
     if sortDirection == "A":
