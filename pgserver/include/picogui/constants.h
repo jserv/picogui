@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.1 2000/09/09 01:46:15 micahjd Exp $
+/* $Id: constants.h,v 1.2 2000/09/09 01:52:46 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -136,7 +136,7 @@ typedef unsigned long pghandle;
 #define PG_STATE_NORMAL    0
 #define PG_STATE_HILIGHT   1
 #define PG_STATE_ACTIVATE  2
-#define PG_STATENUM       3
+#define PG_STATENUM        3
 
 /* The theme structure (new elements must be added at the end) */
 
