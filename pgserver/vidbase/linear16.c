@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.9 2002/02/03 14:19:01 micahjd Exp $
+/* $Id: linear16.c,v 1.10 2002/02/03 18:50:23 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers (5-6-5 RGB mapping)
@@ -50,6 +50,11 @@
 #define PIXEL(x,y)     (*PIXELADDR(x,y))
 
 #undef DEBUG
+
+/* Lookup table for alpha blending */
+#ifdef CONFIG_FAST_ALPHA
+u8 alpha_table[256*128];
+#endif CONFIG_FAST_ALPHA
 
 /************************************************** Minimum functionality */
 
@@ -129,6 +134,9 @@ void linear16_blit(hwrbitmap dest,
    case PG_LGOP_OR:
    case PG_LGOP_AND:
    case PG_LGOP_XOR:
+#ifdef CONFIG_FAST_ALPHA
+   case PG_LGOP_ALPHA:
+#endif
      break;
    default:
      def_blit(dest,dst_x,dst_y,w,h,sbit,src_x,src_y,lgop);
@@ -152,29 +160,66 @@ void linear16_blit(hwrbitmap dest,
   */
 
   /* Normal blit loop */
-#define BLITLOOP(op)                                               \
+#define BLITLOOP                                                   \
     for (;h;h--,src+=offset_src,dst+=offset_dst) {                 \
       for (i=w;i;i--,src++,dst++)                                  \
-	*dst op *src;                                              \
+	OP(dst,src);                                               \
     }
   
   /* Tiled blit loop - similar to tileblit() but always restarts the bitmap
    * on a tile boundary, instead of tiling a bitmap section */
-#define TILEBLITLOOP(op)                                           \
+#define TILEBLITLOOP                                                      \
    while (h) {                                                            \
-      for (;sh && h;sh--,h--,src_line+=srcbit->pitch,dst+=offset_dst) {       \
+      for (;sh && h;sh--,h--,src_line+=srcbit->pitch,dst+=offset_dst) {   \
 	 src = src_line + src_x;                                          \
 	 swm = (swp < w) ? swp : w;                                       \
 	 for (dw=w;dw;) {                                                 \
 	    for (sw=swm;sw;sw--,src++,dst++,dw--)                         \
-	      *dst op *src;                                               \
+	      OP(dst,src);                                                \
 	    src = src_line;                                               \
 	    swm = (srcbit->w < dw) ? srcbit->w : dw;                      \
 	 }                                                                \
       }                                                                   \
       sh = srcbit->h;                                                     \
-      src_line = srcbit->bits;                                            \
+      src_line = (u16*) srcbit->bits;                                     \
    }
+
+  /* Operator to perform fast alpha blending */
+#ifdef CONFIG_FAST_ALPHA
+#if defined(CONFIG_FAST_ALPHA_565)
+#define ALPHA_OP(d,s)                                                  \
+   {                                                                   \
+     u32 rgba = *((u32*)(s++));                                        \
+     u16 oldpixel = *d;                                                \
+     u8 *atab = alpha_table + ((rgba >> 16) & 0x7F00);                 \
+     *d = (((rgba>>16) + atab[(oldpixel&0xF800)>>8] ) << 8) & 0xF800 | \
+          (((rgba>>8)  + atab[(oldpixel&0x07E0)>>3] ) << 3) & 0x07E0 | \
+          (( rgba      + atab[(oldpixel&0x001F)<<3] ) >> 3) & 0x001F;  \
+   }                     
+#elif defined(CONFIG_FAST_ALPHA_555)
+#define ALPHA_OP(d,s)                                                  \
+   {                                                                   \
+     u32 rgba = *((u32*)(s++));                                        \
+     u16 oldpixel = *d;                                                \
+     u8 *atab = alpha_table + ((rgba >> 16) & 0x7F00);                 \
+     *d = (((rgba>>16) + atab[(oldpixel&0x7C00)>>7] ) << 7) & 0x7C00 | \
+          (((rgba>>8)  + atab[(oldpixel&0x03E0)>>2] ) << 2) & 0x03E0 | \
+          (( rgba      + atab[(oldpixel&0x001F)<<3] ) >> 3) & 0x001F;  \
+   }                     
+#elif defined(CONFIG_FAST_ALPHA_444)
+#define ALPHA_OP(d,s)                                                  \
+   {                                                                   \
+     u32 rgba = *((u32*)(s++));                                        \
+     u16 oldpixel = *d;                                                \
+     u8 *atab = alpha_table + ((rgba >> 16) & 0x7F00);                 \
+     *d = (((rgba>>16) + atab[(oldpixel&0x0F00)>>4] ) << 4) & 0x0F00 | \
+           ((rgba>>8)  + atab[oldpixel&0x00F0     ] )       & 0x00F0 | \
+          (( rgba      + atab[(oldpixel&0x000F)<<4] ) >> 4) & 0x000F;  \
+   }                     
+#else
+#error Unsupported color mode for fast alpha blending
+#endif
+#endif /* CONFIG_FAST_ALPHA */
 
   /* Is this a normal or tiled blit? */
   if (w>(srcbit->w-src_x) || h>(srcbit->h-src_y)) {   /* Tiled */
@@ -204,13 +249,35 @@ void linear16_blit(hwrbitmap dest,
 	     }
 	  }
 	  sh = srcbit->h;
-	  src_line = srcbit->bits;
+	  src_line = (u16*) srcbit->bits;
        }
        break;
 
-    case PG_LGOP_OR:         TILEBLITLOOP(|=);                   break;
-    case PG_LGOP_AND:        TILEBLITLOOP(&=);                   break;
-    case PG_LGOP_XOR:        TILEBLITLOOP(^=);                   break;
+    case PG_LGOP_OR:
+#define OP(d,s) (*d|=*s)
+      TILEBLITLOOP;
+#undef OP
+      break;
+
+    case PG_LGOP_AND:
+#define OP(d,s) (*d&=*s)
+      TILEBLITLOOP;
+#undef OP      
+      break;
+
+    case PG_LGOP_XOR:
+#define OP(d,s) (*d^=*s)
+      TILEBLITLOOP;
+#undef OP
+      break;
+
+#ifdef CONFIG_FAST_ALPHA
+    case PG_LGOP_ALPHA:
+#define OP(d,s) ALPHA_OP(d,s)
+      TILEBLITLOOP;
+#undef OP
+      break;
+#endif
     }
   }
   else {                                        /* Normal */
@@ -219,16 +286,39 @@ void linear16_blit(hwrbitmap dest,
 
     /* Only needed for normal blits */
     src = ((u16*)srcbit->bits) + src_x + src_y*(srcbit->pitch>>1);
-    offset_src = (srcbit->pitch>>1) - w;
+    offset_src = (srcbit->pitch>>1) - ((w*srcbit->bpp)>>4);
 
     switch (lgop) {
     case PG_LGOP_NONE: 
        for (;h;h--,src+=(srcbit->pitch>>1),dst+=(FB_BPL>>1))
 	 __memcpy(dst,src,w<<1);
        break;
-    case PG_LGOP_OR:         BLITLOOP(|=);                   break;
-    case PG_LGOP_AND:        BLITLOOP(&=);                   break;
-    case PG_LGOP_XOR:        BLITLOOP(^=);                   break;
+       
+    case PG_LGOP_OR:
+#define OP(d,s) (*d|=*s)
+      BLITLOOP;
+#undef OP
+      break;
+
+    case PG_LGOP_AND:
+#define OP(d,s) (*d&=*s)
+      BLITLOOP;
+#undef OP      
+      break;
+      
+    case PG_LGOP_XOR:
+#define OP(d,s) (*d^=*s)
+      BLITLOOP;
+#undef OP
+      break;
+      
+#ifdef CONFIG_FAST_ALPHA
+    case PG_LGOP_ALPHA:
+#define OP(d,s) ALPHA_OP(d,s)
+      BLITLOOP;
+#undef OP
+      break;
+#endif
     }
   }
 }
@@ -238,12 +328,25 @@ void linear16_blit(hwrbitmap dest,
 
 /* Load our driver functions into a vidlib */
 void setvbl_linear16(struct vidlib *vid) {
+#ifdef CONFIG_FAST_ALPHA
+  u8 *p;
+  int a,c;
+#endif
+
   setvbl_default(vid);
    
   vid->pixel          = &linear16_pixel;
   vid->getpixel       = &linear16_getpixel;
   vid->slab           = &linear16_slab;
   vid->blit           = &linear16_blit;
+
+#ifdef CONFIG_FAST_ALPHA
+  /* Initialize the alpha blending table */
+  p = alpha_table;
+  for (a=0;a<128;a++)
+    for (c=0;c<256;c++)
+      *(p++) = (c * (128-a)) >> 7;
+#endif
 }
 
 /* The End */

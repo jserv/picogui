@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.56 2002/02/02 20:52:51 lonetech Exp $
+/* $Id: video.c,v 1.57 2002/02/03 18:50:23 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -81,6 +81,7 @@ g_error new_sprite(struct sprite **ps,s16 w,s16 h) {
   VID(bitmap_new) (&(*ps)->backbuffer,w,h,vid->bpp);
   (*ps)->next = spritelist;
   (*ps)->visible = 1;
+  (*ps)->lgop = PG_LGOP_NONE;
   spritelist = *ps;
 
   return success;

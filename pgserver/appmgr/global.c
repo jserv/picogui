@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.58 2002/02/02 20:52:51 lonetech Exp $
+/* $Id: global.c,v 1.59 2002/02/03 18:50:23 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -359,11 +359,15 @@ void appmgr_loadcursor(int thobj) {
    /* Load the cursor bitmaps, using the default if there is a problem */
    
    if (iserror(rdhandlep((void***)&bitmap,PG_TYPE_BITMAP,-1,
-			theme_lookup(thobj,PGTH_P_CURSORBITMAP))) || !bitmap)
+			 theme_lookup(thobj,PGTH_P_CURSORBITMAP))) || !bitmap) {
      bitmap = &defaultcursor_bitmap;
-   if (iserror(rdhandlep((void***)&mask,PG_TYPE_BITMAP,-1,
-			theme_lookup(thobj,PGTH_P_CURSORBITMASK))) || !mask)
      mask = &defaultcursor_bitmask;
+   }
+   else {
+     mask = NULL;
+     rdhandlep((void***)&mask,PG_TYPE_BITMAP,-1,
+	       theme_lookup(thobj,PGTH_P_CURSORBITMASK));
+   }     
 
    VID(bitmap_getsize) (*bitmap,&w,&h);
   
@@ -383,6 +387,12 @@ void appmgr_loadcursor(int thobj) {
    cursor->bitmap = bitmap;
    cursor->mask = mask;
    
+   /* If the cursor has an alpha channel, set the LGOP accordingly */
+   if (w && h && (VID(getpixel)(*bitmap,0,0) & PGCF_ALPHA))
+     cursor->lgop = PG_LGOP_ALPHA;
+   else
+     cursor->lgop = PG_LGOP_NONE;
+
    if (redisplay)
      VID(sprite_show)(cursor);
 }

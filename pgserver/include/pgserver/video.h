@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.73 2002/01/30 12:03:15 micahjd Exp $
+/* $Id: video.h,v 1.74 2002/02/03 18:50:23 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -93,6 +93,7 @@ struct sprite {
   s16 ow,oh; /* The blit last time, with clipping */
   struct divnode *clip_to;
   struct sprite *next;
+  int lgop;  /* lgop to draw bitmap with, if there's no mask */
   unsigned int onscreen : 1;   /* Displayed on screen now */
   unsigned int visible  : 1;   /* Displayed under normal circumstances */
 };

@@ -145,6 +145,15 @@ bool 'Linear framebuffer @ 2bpp'  CONFIG_VBL_LINEAR2
 bool 'Linear framebuffer @ 4bpp'  CONFIG_VBL_LINEAR4
 bool 'Linear framebuffer @ 8bpp'  CONFIG_VBL_LINEAR8
 bool 'Linear framebuffer @ 16bpp' CONFIG_VBL_LINEAR16
+if [ "$CONFIG_VBL_LINEAR16" = "y" ]; then
+   bool '  Fast alpha blending (+ 32K)' CONFIG_FAST_ALPHA
+   if [ "$CONFIG_FAST_ALPHA" = "y" ]; then
+     choice 'Fast alpha color conversion mode' \
+	  "5-6-5       CONFIG_FAST_ALPHA_565 \
+	   5-5-5       CONFIG_FAST_ALPHA_555 \
+	   4-4-4       CONFIG_FAST_ALPHA_444" 5-6-5
+   fi  
+fi
 bool 'Linear framebuffer @ 24bpp' CONFIG_VBL_LINEAR24
 bool 'Linear framebuffer @ 32bpp' CONFIG_VBL_LINEAR32
 bool 'Planar VGA framebuffer @ 4bpp'  CONFIG_VBL_VGAPLAN4

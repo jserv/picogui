@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.73 2002/02/02 20:52:51 lonetech Exp $
+/* $Id: defaultvbl.c,v 1.74 2002/02/03 18:50:23 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -1561,7 +1561,7 @@ void def_sprite_show(struct sprite *spr) {
   }
    else
      VID(blit) (vid->display,spr->x,spr->y,spr->ow,spr->oh,
-		*spr->bitmap,0,0,PG_LGOP_NONE);
+		*spr->bitmap,0,0,spr->lgop);
    
   add_updarea(spr->x,spr->y,spr->ow,spr->oh);
 
