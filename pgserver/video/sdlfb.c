@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.4 2001/01/10 13:10:42 micahjd Exp $
+/* $Id: sdlfb.c,v 1.5 2001/01/13 20:28:19 micahjd Exp $
  *
  * sdlfb.c - Video driver for SDL using a linear framebuffer.
  *           This will soon replace sdl.c, but only after the
@@ -78,9 +78,9 @@ g_error sdlfb_init(int xres,int yres,int bpp,unsigned long flags) {
     SDL_Color palette[256];
 
     for (i=0;i<256;i++) {
-      palette[i].r = i & 0xC0;
-      palette[i].g = (i & 0x38) << 2;
-      palette[i].b = (i & 0x07) << 5;
+      palette[i].r = (i & 0xC0) * 255 / 0xC0;
+      palette[i].g = (i & 0x38) * 255 / 0x38;
+      palette[i].b = (i & 0x07) * 255 / 0x07;
     }
     SDL_SetColors(sdl_vidsurf,palette,0,256);
   }

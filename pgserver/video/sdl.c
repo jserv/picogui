@@ -1,4 +1,4 @@
-/* $Id: sdl.c,v 1.13 2000/12/17 05:53:50 micahjd Exp $
+/* $Id: sdl.c,v 1.14 2001/01/13 20:28:19 micahjd Exp $
  *
  * sdl.c - video driver wrapper for SDL.
  *
@@ -70,9 +70,9 @@ g_error sdl_init(int xres,int yres,int bpp,unsigned long flags) {
     SDL_Color palette[256];
 
     for (i=0;i<256;i++) {
-      palette[i].r = i & 0xC0;
-      palette[i].g = (i & 0x38) << 2;
-      palette[i].b = (i & 0x07) << 5;
+      palette[i].r = (i & 0xC0) * 255 / 0xC0;
+      palette[i].g = (i & 0x38) * 255 / 0x38;
+      palette[i].b = (i & 0x07) * 255 / 0x07;
     }
     SDL_SetColors(sdl_vidsurf,palette,0,256);
   }
