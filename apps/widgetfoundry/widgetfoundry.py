@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: widgetfoundry.py,v 1.6 2002/11/15 07:38:21 micahjd Exp $
+# $Id: widgetfoundry.py,v 1.7 2002/11/17 04:21:51 micahjd Exp $
 #
 # widgetfoundry.py - Main module for the Widget Foundry WT editor
 #
@@ -26,7 +26,7 @@ import Components, CommandLine, Toolbox, WTWidget, XWT
 
 class Main:
     def __init__(self):
-        self.app = PicoGUI.Application('Widget Foundry')
+        self.app = PicoGUI.InvisibleApp('',None,w)
         self.selectNotify = {}
         self.changeNotify = {}
         self.selection = None
@@ -99,4 +99,19 @@ class WorkArea:
        
 
 if __name__ == '__main__':
-    Main().app.run()
+#    Main().app.run()
+    app = PicoGUI.TemplateApp(open('main.wt').read(),[
+        'WidgetTree',
+        'Properties',
+        'WidgetPalette',
+        'PythonPrompt',
+        'PythonCommand',
+        'PythonConsole',
+        'WorkArea',
+        'XWTViewer',
+        ])
+    w = app.WorkArea.addWidget('label','inside')
+    w.text = "Hello"
+    w.side = "all"
+    app.PythonPrompt.text = ">>> "
+    app.run()

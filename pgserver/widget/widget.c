@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.213 2002/11/15 12:53:12 micahjd Exp $
+/* $Id: widget.c,v 1.214 2002/11/17 04:21:51 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -135,7 +135,7 @@ g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **wher
 
   /* Recalc the old attach point */
   if (w->dt && w->dt->head) {
-    w->dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC;
+    w->dt->head->flags |= DIVNODE_NEED_RECALC;
     w->dt->flags |= DIVTREE_NEED_RECALC | DIVTREE_NEED_RESIZE;
   }
 
@@ -186,7 +186,7 @@ g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **wher
   
   /* Recalc the new attach point */
   if (dt && dt->head) {
-    dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC;
+    dt->head->flags |= DIVNODE_NEED_RECALC;
     dt->flags |= DIVTREE_NEED_RECALC | DIVTREE_NEED_RESIZE;
   }
   return success;
