@@ -25,7 +25,7 @@ depends = [
     ('libjpeg', ~S ('platform/m68k-pic-coff')),
     ('libpng', ~S ('platform/m68k-pic-coff')),
     ('busybox', S ('platform/ppc-linux')),
-    ('btkey-report', S ('platform/native-linux')),
+    'btkey-report',
     ]
 
 asserts = [
@@ -45,7 +45,7 @@ runtime = [
                                  ('kernel/keyboard', S ('product/remora')),
                                  ('libjpeg/library', ~ S ('platform/m68k-pic-coff')),
                                  ('libpng/library', ~ S ('platform/m68k-pic-coff')),
-                                 ('btkey-report/install', S ('platform/native-linux')),
+                                 'btkey-report/install',
                                  ],
                      help = "Install the PicoGUI Server" ),
 
@@ -56,7 +56,7 @@ runtime = [
                      
                      depends = [ 'picoguiserver/install',
                                  'processmanager/start',
-                                 ('btkey-report/start', S ('platform/native-linux')),
+                                 'btkey-report/start',
                                  ],
 
                      rcscript = "\n# launch pgserver\npicogui-launcher.sh\n",
@@ -73,13 +73,8 @@ def prepare (module, platform, project):
                            platform, project)
 
     # Other cflags and libs
-    if platform.native:
-        ocflags, olibs = flags ((('btkey-report', 'library'),),
-                                platform, project)
-    else:
-        ocflags = ""
-        olibs = ""
-        
+    ocflags, olibs = flags ((('btkey-report', 'library'),),
+                            platform, project)
         
     command = [
         "--sysconfdir=/etc",
