@@ -48,7 +48,7 @@ class TerminalPage:
 	status = os.waitpid(self._ptypid, os.WNOHANG)
 	if status[0] != 0:
 	    print "child exited\n"
-	    self.tabpage.detach()
+	    self._app.delWidget(self.tabpage)
 	    self._app.destroy(self._position)
 
     def terminalRead(self):
@@ -60,6 +60,9 @@ class TerminalPage:
 
     def tabClicked(self, ev):
         self._terminal.focus()
+
+    def setPosition(self, position):
+        self._position = position
 
 class App(PicoGUI.Application):
     def __init__(self):
@@ -90,8 +93,10 @@ class App(PicoGUI.Application):
     def update(self):
         import time
         self.eventPoll()
-        for i in range(0,len(self._pages)):
+	i = 0
+	while(i != len(self._pages)):
 	    self._pages[i].update()
+	    i = i + 1
 	time.sleep(0.001)
 
 f = App()
