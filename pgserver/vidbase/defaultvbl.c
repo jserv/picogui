@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.40 2001/05/31 07:15:15 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.41 2001/05/31 07:17:06 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -28,7 +28,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
  * Contributors:
- * 
+ * Shane Nay <shane@minirl.com>
  * 
  * 
  */
@@ -501,9 +501,6 @@ void def_gradient(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,s16 angle,
 		  pgcolor c1, pgcolor c2, s16 lgop) {
   /*
     The angle is expressed in degrees.
-    If translucent is positive it will add the gradient to the existing
-    pixels. If negative, it will subtract.  If it is zero, it performs
-    a normal overwrite operation.
     
     This implementation is based on the function:
     color = y*sin(angle) + x*cos(angle)
