@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.30 2002/03/26 16:27:27 instinc Exp $
+/* $Id: netcore.c,v 1.31 2002/04/08 12:41:35 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -855,7 +855,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.30 2002/03/26 16:27:27 instinc Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.31 2002/04/08 12:41:35 micahjd Exp $\n");
 	exit(1);
       }
 
@@ -983,7 +983,15 @@ void pgInit(int argc, char **argv)
   if((ServerInfo.protover < PG_PROTOCOL_VER) && enable_warning) {
 	 const char *s1, *s2;
 	 char * copys1;
-	 
+
+         /* Since we know there's a compatibility problem now, it's unsafe
+	  * to create a message dialog. We'll try it anyway, but first
+	  * print a message to the console.
+	  */
+         printf("*********** PicoGUI incompatibility ************\n"
+		"Server is version %d, require at least version %d\n",
+		ServerInfo.protover, PG_PROTOCOL_VER);
+     
 	 /* We must copy the first string temporarily because the pgGetString
 	  * buffer is only valid until the next picogui call */
 	 s1 = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
