@@ -1,0 +1,4 @@
+# SCons script for PGBuild
+
+print "This is the SConscript for pg1/server. Nothing here yet."
+
