@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.30 2002/10/20 07:07:43 micahjd Exp $
+/* $Id: font_freetype.c,v 1.31 2002/10/22 13:51:23 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -349,28 +349,28 @@ void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct 
 	y > clip->y2 ||
 	x + DATA->metrics.charcell.w < clip->x1 ||
 	y + DATA->metrics.charcell.h < clip->y1)
-      return;
+      lgop = PG_LGOP_NULL;
     break;
   case 90:
     if (x > clip->x2 ||
 	y < clip->y1 ||
 	x + DATA->metrics.charcell.h < clip->x1 ||
 	y - DATA->metrics.charcell.w > clip->y2)
-      return;
+      lgop = PG_LGOP_NULL;
     break;
   case 180:
     if (x < clip->x1 ||
 	y < clip->y1 ||
 	x - DATA->metrics.charcell.w > clip->x2 ||
 	y - DATA->metrics.charcell.h > clip->y2)
-      return;
+      lgop = PG_LGOP_NULL;
     break;
   case 270:
     if (x < clip->x1 ||
 	y > clip->y2 ||
 	x - DATA->metrics.charcell.h > clip->x2 ||
 	y + DATA->metrics.charcell.w < clip->y1)
-      return;
+      lgop = PG_LGOP_NULL;
     break;
   }
 
@@ -378,45 +378,48 @@ void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct 
   ft_load_image(self,ch,&g);
   bg = (FT_BitmapGlyph) g;
 
-  /* PicoGUI's character origin is at the top-left of the bounding box.
-   * Add the ascent to reach the baseline, then subtract the bitmap origin
-   * from that.
-   */
-  i = bg->left;
-  j = DATA->metrics.ascent - bg->top;
-  switch (angle) {
-  case 0:
-    x += i;
-    y += j;
-    break;
-  case 90:
-    x += j;
-    y -= i;
-    break;
-  case 180:
-    x -= i;
-    y -= j;
-    break;
-  case 270:
-    x -= j;
-    y += i;
-    break;
-  }
-
-  switch (bg->bitmap.pixel_mode) {
-
-  case ft_pixel_mode_grays:
-    VID(alpha_charblit)(dest,bg->bitmap.buffer,x,y,bg->bitmap.width,
-			bg->bitmap.rows,bg->bitmap.pitch,ft_pick_gamma_table(col),
-			angle,col,clip,lgop);
-    break;
-
-  case ft_pixel_mode_mono:
-    VID(charblit) (dest,bg->bitmap.buffer,x,y,bg->bitmap.width,bg->bitmap.rows,
-		   0,angle,col,clip,lgop, bg->bitmap.pitch);
-    break;
-
-  }
+  if (lgop != PG_LGOP_NULL) {
+    
+    /* PicoGUI's character origin is at the top-left of the bounding box.
+     * Add the ascent to reach the baseline, then subtract the bitmap origin
+     * from that.
+     */
+    i = bg->left;
+    j = DATA->metrics.ascent - bg->top;
+    switch (angle) {
+    case 0:
+      x += i;
+      y += j;
+      break;
+    case 90:
+      x += j;
+      y -= i;
+      break;
+    case 180:
+      x -= i;
+      y -= j;
+      break;
+    case 270:
+      x -= j;
+      y += i;
+      break;
+    }
+    
+    switch (bg->bitmap.pixel_mode) {
+      
+    case ft_pixel_mode_grays:
+      VID(alpha_charblit)(dest,bg->bitmap.buffer,x,y,bg->bitmap.width,
+			  bg->bitmap.rows,bg->bitmap.pitch,ft_pick_gamma_table(col),
+			  angle,col,clip,lgop);
+      break;
+      
+    case ft_pixel_mode_mono:
+      VID(charblit) (dest,bg->bitmap.buffer,x,y,bg->bitmap.width,bg->bitmap.rows,
+		     0,angle,col,clip,lgop, bg->bitmap.pitch);
+      break;
+      
+    }
+  }    
 
   switch (angle) {
   case 0:
