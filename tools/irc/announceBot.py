@@ -48,13 +48,22 @@ f.close()
 
 print channelList.keys();
 
+# load the freenode password
+password = ""
+try:
+    f = open("/home/commits/.fnpass")
+    password = f.readline()
+except:
+    pass
+
+
 accounts = [
     ircsupport.IRCAccount("IRC", 1,
         botNick,               # nickname
         "",                    # passwd
         "irc.freenode.net",    # irc server
         6667,                  # port
-        ",".join(channelList.keys())
+        ""
     )
 ]
 
@@ -66,7 +75,19 @@ class AccountManager (baseaccount.AccountManager):
         if len(accounts) == 0:
             print "You have defined no accounts."
         for acct in accounts:
-            acct.logOn(self.chatui)
+            defer = acct.logOn(self.chatui)
+            defer.addCallback(self.logonCallback)
+
+    def logonCallback(self, acct):
+        print "Logged on OK"
+        if password != "":
+            acct.client.sendLine("OPER "+botNick+" "+password) # identify to freenode
+            time.sleep(10) # so it won't count towards our limit as much
+            acct.client.sendLine("SILENCE +*@*") # as we don't accept commands via IRC, silence incoming messages to make it more DoS resistant
+
+        for chan in channelList:
+            acct.client.join(chan)
+
 
 class AnnounceServer(LineReceiver):
     def lineReceived(self, line):
