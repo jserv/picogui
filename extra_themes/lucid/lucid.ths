@@ -1,4 +1,4 @@
-/* $Id: lucid.ths,v 1.1 2002/10/25 21:59:45 micahjd Exp $
+/* $Id: lucid.ths,v 1.2 2002/10/25 22:59:37 micahjd Exp $
  *
  * Lucid - A simple and clean solid color and thin outline theme, where
  *         most elements are translucent.
@@ -8,7 +8,7 @@
  * Micah Dowty
  */
 
-property fTranslucent;
+property fBackground,fTranslucent, fSolid, fFramedTranslucent;
 property frameColor,alpha;
 
 object default {
@@ -16,16 +16,91 @@ object default {
 
   bgfill = Copy(default::fTranslucent);
 
+  fBackground = fillstyle {
+    SetClip(x,y,w,h);
+    background::bgfill(-widget::PG_WP_ABSOLUTEX,
+		       -widget::PG_WP_ABSOLUTEY,
+		       0x7FFF,0x7FFF);
+    SetClip(0,0,0x7FFF,0x7FFF);
+  };
+
   fTranslucent = fillstyle {
+    fBackground(x,y,w,h);
+    fSolid(x,y,w,h);
+
+    /*
+    SetLgop(PG_LGOP_ALPHA);
     SetColor(PGCF_ALPHA | (alpha << 24) | bgcolor);
+    Rect(x,y,w,h);
+    SetLgop(PG_LGOP_NONE);
+    */
+  };
+
+  fSolid = fillstyle {
+    SetColor(bgcolor);
     Rect(x,y,w,h);
   };
 
+  fFramedTranslucent = fillstyle {
+    SetColor(frameColor);
+    Frame(x,y,w,h);
+    fTranslucent(x+1,y+1,w-2,h-2);
+  };
+
+  fgcolor = 0x000000;
+  bgcolor = 0xffffff;
+  alpha = 0;
 
   margin  = 5;
   spacing = 5;
   width   = 20;
   height  = 20;
 }
+
+object background {
+  bgcolor = 0xeeeeee;
+  bgfill = fillstyle {
+    fSolid(x,y,w,h);
+  };
+}
+
+object base.tlcontainer {
+  bgcolor = 0xffffff;
+  margin = 10;
+}
+
+object popup bgfill = Copy(default::fFramedTranslucent);
+
+object label.dlgtitle {
+  font = Font(NULL,0,PG_FSTYLE_BOLD);
+  align = PG_A_LEFT;
+  bgfill = fillstyle {
+    fTranslucent(x,y,w,h);
+    SetColor(0x336699);
+    Slab(x+2,y+h-1,w-4,1);
+  };
+}
+
+object button {
+  fgcolor = 0x336699;
+  font = Font(NULL,0,PG_FSTYLE_BOLD);
+  margin = 2;
+}
+
+object button.hilight bgfill = fillstyle {
+  button::bgfill(x,y,w,h);
+  SetColor(fgcolor);
+  SetLgop(PG_LGOP_STIPPLE);
+  Frame(x,y,w,h);
+  SetLgop(PG_LGOP_NONE);
+};
+
+object button.on bgfill = fillstyle {
+  button::bgfill(x,y,w,h);
+  SetColor(fgcolor);
+  Frame(x,y,w,h);
+};
+
+object flatbutton parent = PGTH_O_BUTTON;
 
 /* The End */
