@@ -1,4 +1,4 @@
-/* $Id: input.c,v 1.15 2002/02/02 20:52:51 lonetech Exp $
+/* $Id: input.c,v 1.16 2002/05/20 19:11:20 micahjd Exp $
  *
  * input.c - Abstract input driver interface
  *
@@ -39,6 +39,8 @@ struct inlib *inlib_main;
 
 /* If this is 1, no user input is taken. */
 int disable_input;
+
+/******************************************** Inlib management */
 
 /* Loads an input driver, and puts a pointer 
    to it in 'inl' */

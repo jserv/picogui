@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.55 2002/04/08 23:43:57 micahjd Exp $
+/* $Id: handle.c,v 1.56 2002/05/20 19:11:20 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -678,20 +678,20 @@ g_error handle_payload(u32 **pppayload,int owner,handle h) {
 }
 
 /* Recursive part of handle_iterate() */
-g_error r_iterate(struct handlenode *n,u8 type,handle_iterator iterator) {
+g_error r_iterate(struct handlenode *n,u8 type,handle_iterator iterator, void *extra) {
    g_error e;
    
    if ((!n) || (n==NIL)) return success;
    if ((n->type & PG_TYPEMASK)==type) {
-     e = (*iterator)(&n->obj);
+     e = (*iterator)(&n->obj,extra);
      errorcheck;
    }
-   e = r_iterate(n->left,type,iterator);
+   e = r_iterate(n->left,type,iterator,extra);
    errorcheck;
-   return r_iterate(n->right,type,iterator);
+   return r_iterate(n->right,type,iterator,extra);
 }
-g_error handle_iterate(u8 type,handle_iterator iterator) {
-   return r_iterate(htree,type,iterator);
+g_error handle_iterate(u8 type,handle_iterator iterator, void *extra) {
+   return r_iterate(htree,type,iterator,extra);
 }
 
 /*

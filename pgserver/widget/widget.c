@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.178 2002/05/20 16:00:49 micahjd Exp $
+/* $Id: widget.c,v 1.179 2002/05/20 19:11:20 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -1022,6 +1022,22 @@ void update_pointing(void) {
   dispatch_pointing(TRIGGER_MOVE,x,y,prev_btn);
 }
 
+/* Iterator for dispatching a key to all widgets */
+struct send_trigger_iterator_data {
+  union trigparam *param;
+  u32 type;
+};
+g_error send_trigger_iterator(void **obj, void *extra) {
+  struct send_trigger_iterator_data *data = (struct send_trigger_iterator_data *) extra;
+  struct widget *w = *((struct widget **) obj);
+
+  if (!data->param->kbd.consume)
+    send_trigger(w, data->type, data->param);
+
+  return success;
+}
+
+
 void dispatch_key(u32 type,s16 key,s16 mods) {
   struct widget *p;
   struct app_info **app;
@@ -1122,6 +1138,7 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
    *   3. focused widget's ancestors (within one root widget)
    *   4. all popup widgets and their children, from top to bottom
    *   5. all root widgets and their children, in decreasing pseudo-z-order
+   *   6. all widgets (to handle unattached widgets)
    *
    *  Since PicoGUI doesn't have a real z-order for root widgets, the
    *  order will determined by how recently the root widget had a 
@@ -1129,9 +1146,13 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
    */
 
   /* Let widgets know we're starting a new propagation */
-  for (dt=dts->top;dt;dt=dt->next)
-    if (dt->head->next)
-      r_send_trigger(dt->head->next->owner, TRIGGER_KEY_START, NULL, &param.kbd.consume,1);
+  {
+    struct send_trigger_iterator_data data;
+    data.param = &param;
+    data.type = TRIGGER_KEY_START;
+    param.kbd.flags = PG_KF_ALWAYS;
+    handle_iterate(PG_TYPE_WIDGET,send_trigger_iterator,&data);
+  }
 
   if (kbdfocus) {
     kflags = PG_KF_ALWAYS;
@@ -1191,6 +1212,18 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
 
     param.kbd.flags &= ~PG_KF_APP_TOPMOST;
   }
+
+  /* 6. Any widget
+   */
+  {
+    struct send_trigger_iterator_data data;
+    data.param = &param;
+    data.type = type;
+    param.kbd.flags = PG_KF_ALWAYS;
+    handle_iterate(PG_TYPE_WIDGET,send_trigger_iterator,&data);
+    if (param.kbd.consume > 0)
+      return;
+  }
     
   /* If none of the widgets have consumed the event, 
    * give the global hotkeys a chance
@@ -1206,7 +1239,7 @@ void resizewidget(struct widget *w) {
 }
    
 /* Iterator function used by resizeall() */
-g_error resizeall_iterate(const void **p) {
+g_error resizeall_iterate(const void **p, void *extra) {
    (*((struct widget *) (*p))->def->resize)((struct widget *) (*p));
    return success;
 }
@@ -1214,7 +1247,7 @@ g_error resizeall_iterate(const void **p) {
 void resizeall(void) {
   struct divtree *tree;
 
-  handle_iterate(PG_TYPE_WIDGET,&resizeall_iterate);
+  handle_iterate(PG_TYPE_WIDGET,&resizeall_iterate,NULL);
   
   for (tree=dts->top;tree;tree=tree->next)
     tree->flags |= DIVTREE_NEED_RESIZE;

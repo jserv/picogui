@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.29 2002/04/15 02:40:31 micahjd Exp $
+/* $Id: handle.h,v 1.30 2002/05/20 19:11:20 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -133,8 +133,8 @@ g_error handle_group(int owner,handle from, handle to);
  * This allows a particular transformation to be applied to objects
  * in bulk.
  */
-typedef g_error (*handle_iterator)(const void **pobj);
-g_error handle_iterate(u8 type,handle_iterator iterator);
+typedef g_error (*handle_iterator)(const void **pobj,void *extra);
+g_error handle_iterate(u8 type,handle_iterator iterator, void *extra);
 
 /*
  * Duplicate a handle (if it can be duplicated. Widgets, drivers,

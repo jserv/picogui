@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.60 2002/02/23 05:42:28 micahjd Exp $
+/* $Id: video.c,v 1.61 2002/05/20 19:11:20 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -172,7 +172,7 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
    if (converting_mode) {
       e = bitmap_iterate(vid->bitmap_modeunconvert);
       errorcheck;
-      e = handle_iterate(PG_TYPE_PALETTE,(handle_iterator)array_hwrtopg);
+      e = handle_iterate(PG_TYPE_PALETTE,(handle_iterator)array_hwrtopg, NULL);
       errorcheck;
    }
       
@@ -411,7 +411,7 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
    if (converting_mode) {
       e = bitmap_iterate(vid->bitmap_modeconvert);
       errorcheck;
-      e = handle_iterate(PG_TYPE_PALETTE,(handle_iterator)array_pgtohwr);
+      e = handle_iterate(PG_TYPE_PALETTE,(handle_iterator)array_pgtohwr, NULL);
       errorcheck;
    }
    
@@ -531,7 +531,7 @@ g_error bitmap_iterate(g_error (*iterator)(hwrbitmap *pbit)) {
    struct sprite *spr;
    g_error e;
    
-   e = handle_iterate(PG_TYPE_BITMAP,(handle_iterator) iterator);
+   e = handle_iterate(PG_TYPE_BITMAP,(handle_iterator) iterator, NULL);
    errorcheck;
    
    if (defaultcursor_bitmap) {           /* If we are rotating by default

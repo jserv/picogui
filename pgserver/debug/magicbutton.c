@@ -1,4 +1,4 @@
-/* $Id: magicbutton.c,v 1.8 2002/04/03 16:56:49 micahjd Exp $
+/* $Id: magicbutton.c,v 1.9 2002/05/20 19:11:20 micahjd Exp $
  *
  * magicbutton.c - CTRL-ALT-foo is magical
  *
@@ -37,24 +37,27 @@
 #include <pgserver/hotspot.h>
 
 #ifdef DEBUG_KEYS
-   
-int db_x,db_y,db_h;
+
+struct debug_bitmaps_data {   
+  int db_x,db_y,db_h;
+};
 extern struct hotspot *hotspotlist;
    
-g_error debug_bitmaps(const void **pobj) {
-   hwrbitmap bmp = (hwrbitmap) *pobj;
-   s16 w,h;
-   
-   VID(bitmap_getsize) (bmp,&w,&h);
-   if (db_x+10+w>vid->lxres) {
-     db_x = 0;
-     db_y += db_h+8;
-     db_h = 0;
+g_error debug_bitmaps(const void **pobj, void *extra) {
+  struct debug_bitmaps_data *data = (struct debug_bitmaps_data *) extra;
+  hwrbitmap bmp = (hwrbitmap) *pobj;
+  s16 w,h;
+  
+  VID(bitmap_getsize) (bmp,&w,&h);
+  if (data->db_x+10+w>vid->lxres) {
+     data->db_x = 0;
+     data->db_y += data->db_h+8;
+     data->db_h = 0;
    }
-   if (h>db_h)
-     db_h = h;
+   if (h>data->db_h)
+     data->db_h = h;
    
-   if (db_y+45+h>vid->lyres) {
+   if (data->db_y+45+h>vid->lyres) {
       struct fontdesc *df=NULL;
       struct quad screenclip;
       screenclip.x1 = screenclip.y1 = 0;
@@ -69,13 +72,13 @@ g_error debug_bitmaps(const void **pobj) {
       return success;   /* Lies! :) */
    }
    
-   VID(rect) (vid->display,db_x+3,db_y+38,w+4,h+4,
+   VID(rect) (vid->display,data->db_x+3,data->db_y+38,w+4,h+4,
 	      VID(color_pgtohwr)(0xFFFFFF),PG_LGOP_NONE);
-   VID(rect) (vid->display,db_x+4,db_y+39,w+2,h+2,
+   VID(rect) (vid->display,data->db_x+4,data->db_y+39,w+2,h+2,
 	      VID(color_pgtohwr)(0x000000),PG_LGOP_NONE);
-   VID(blit) (vid->display,db_x+5,db_y+40,w,h,bmp,0,0,PG_LGOP_NONE);
+   VID(blit) (vid->display,data->db_x+5,data->db_y+40,w,h,bmp,0,0,PG_LGOP_NONE);
 
-   db_x += w+8;
+   data->db_x += w+8;
    return success;
 }
    
@@ -383,11 +386,13 @@ void magic_button(s16 key) {
     return;
     
   case PGKEY_p:           /* CTRL-ALT-p shows all loaded bitmaps */
-    guru("Table of loaded bitmaps:");
-    /* Reset evil globals :) */
-    db_x = db_y = db_h = 0;
-    handle_iterate(PG_TYPE_BITMAP,&debug_bitmaps);
-    VID(update) (0,0,vid->lxres,vid->lyres);
+    {
+      struct debug_bitmaps_data data = {0,0,0,0};
+
+      guru("Table of loaded bitmaps:");
+      handle_iterate(PG_TYPE_BITMAP,&debug_bitmaps,&data);
+      VID(update) (0,0,vid->lxres,vid->lyres);
+    }
     return;
     
   case PGKEY_o:           /* CTRL-ALT-o traces all divnodes */
