@@ -158,7 +158,8 @@ fe_new_window (struct session *sess)
 			pgBind(0, PG_WE_DATA, evtPassFocus,
 					(void*)sess->gui->input);
 			pgSetWidget(0, PG_WP_SIDE, PG_S_ALL,
-					PG_WP_AUTOSCROLL, 1, 0);
+					PG_WP_AUTOSCROLL, 1,
+					PG_WP_THOBJ, ircterm, 0);
 			if(prefs.max_lines)
 				pgSetWidget(0, PG_WP_LINES, prefs.max_lines, 0);
 			/* hide cursor */

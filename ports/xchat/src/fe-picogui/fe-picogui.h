@@ -1,3 +1,5 @@
+extern int ircterm;
+
 void palette_load(void);
 
 struct uhmapping {
@@ -13,7 +15,7 @@ struct userbut {
 struct session_gui {
 	pghandle app, topic, output, input, userscroll,
 		userlistinfo, userlist;
-	short int output_type;
+	u16 output_type;
 	struct userbut *userbutton;
 	struct uhmapping *uhmap;
 	int users, buttons;

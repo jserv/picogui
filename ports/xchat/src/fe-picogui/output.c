@@ -33,6 +33,12 @@
 #include <picogui/theme.h>
 #include "fe-picogui.h"
 
+int ircterm=PGTH_O_TERMINAL;
+static const char termthemename[]="IRCterm";
+
+/* May need to use char* on some compilers */
+#define offsetof(structure, member) ((void*)&structure.member-(void*)&structure)
+
 #define TOTAL_COLORS 16
 
 static u32 colconv_rgb[TOTAL_COLORS] = { 0xcfcfcf, 0x000000, 0x0000cc,
@@ -44,6 +50,16 @@ static const char *colconv_termfg[TOTAL_COLORS] = { "22;30", "22;34", "22;32",
 static const char *colconv_termbg[TOTAL_COLORS] = { "25;40", "25;44", "25;42",
 	"25;46", "25;41", "25;45", "25;43", "25;47", "5;40", "5;44", "5;42",
 	"5;46", "5;41", "5;45", "5;43", "5;47" };
+/* PicoGUI theme for terminal palette */
+struct termtheme_struct {
+	struct pgtheme_header hdr;
+	struct pgtheme_thobj obj;
+	struct pgtheme_prop nameprop, parent, def, palette;
+	struct pgrequest namereq;
+	char name[sizeof termthemename-1];
+	struct pgrequest palreq;
+	u32 array[TOTAL_COLORS];
+};
 
 void palette_load(void)
 {
@@ -53,13 +69,7 @@ void palette_load(void)
 	static pghandle themehandle=0;
 
 	/* PicoGUI theme for terminal palette */
-	struct {
-		struct pgtheme_header hdr;
-		struct pgtheme_thobj obj;
-		struct pgtheme_prop def, palette;
-		struct pgrequest req;
-		u32 array[TOTAL_COLORS];
-	} termtheme;
+	struct termtheme_struct termtheme;
 
 	i=snprintf(prefname, sizeof prefname, "%s/palette.conf", get_xdir());
 	if(i>0&&i<sizeof prefname)
@@ -100,29 +110,40 @@ void palette_load(void)
 	/* build terminal palette theme */
 	memset(&termtheme, 0, sizeof termtheme);
 	termtheme.hdr.magic[0]='P';
-	termtheme.hdr.magic[0]='G';
-	termtheme.hdr.magic[0]='t';
-	termtheme.hdr.magic[0]='h';
+	termtheme.hdr.magic[1]='G';
+	termtheme.hdr.magic[2]='t';
+	termtheme.hdr.magic[3]='h';
 	termtheme.hdr.file_len=htonl(sizeof termtheme);
 	termtheme.hdr.file_ver=htons(PGTH_FORMATVERSION);
 	termtheme.hdr.num_thobj=htons(1);
-	termtheme.hdr.num_totprop=htons(2);
-	termtheme.obj.id=htons(PGTH_O_TERMINAL);
-	termtheme.obj.num_prop=htons(2);
-	termtheme.obj.proplist=htonl(sizeof(termtheme.hdr)+
-			sizeof(termtheme.obj));
+	termtheme.hdr.num_totprop=htons(4);
+	termtheme.obj.id=htons(PGTH_O_CUSTOM);
+	termtheme.obj.num_prop=htons(4);
+	termtheme.obj.proplist=htonl(offsetof(termtheme, nameprop));
+
+	termtheme.nameprop.id=htons(PGTH_P_NAME);
+	termtheme.nameprop.loader=htons(PGTH_LOAD_REQUEST);
+	termtheme.nameprop.data=htonl(offsetof(termtheme, namereq));
+	termtheme.namereq.type=htons(PGREQ_MKSTRING);
+	termtheme.namereq.size=htonl(strlen(termthemename));
+	memcpy(termtheme.name, termthemename, sizeof termtheme.name);
+
+	termtheme.parent.id=htons(PGTH_P_PARENT);
+	termtheme.parent.loader=htons(PGTH_LOAD_NONE);
+	termtheme.parent.data=htonl(PGTH_O_TERMINAL);
+
 	termtheme.def.id=htons(PGTH_P_ATTR_DEFAULT);
 	termtheme.def.loader=htons(PGTH_LOAD_NONE);
 	termtheme.def.data=htonl(0x00000001);
+
 	termtheme.palette.id=htons(PGTH_P_TEXTCOLORS);
 	termtheme.palette.loader=htons(PGTH_LOAD_REQUEST);
-	termtheme.palette.data=htonl(sizeof(termtheme.hdr)+
-			sizeof(termtheme.obj)+sizeof(termtheme.def)+
-			sizeof(termtheme.palette));
-	termtheme.req.type=htons(PGREQ_MKARRAY);
-	termtheme.req.size=htonl(sizeof(termtheme.array));
+	termtheme.palette.data=htonl(offsetof(termtheme, palreq));
+	termtheme.palreq.type=htons(PGREQ_MKARRAY);
+	termtheme.palreq.size=htonl(sizeof termtheme.array);
 	for(i=0;i<TOTAL_COLORS;i++)
 		termtheme.array[i]=htonl(colconv_rgb[i]);
+
 	{	/* checksum the theme */
 		u32 sum, len;
 		unsigned char *p;
@@ -135,7 +156,16 @@ void palette_load(void)
 	}
 	if(themehandle)
 		pgDelete(themehandle);
-	themehandle=pgLoadTheme(pgFromMemory(&termtheme, sizeof(termtheme)));
+	{
+		FILE *f;
+		f=fopen("ircterm.th", "w");
+		fwrite(&termtheme, sizeof termtheme, 1, f);
+		fclose(f);
+	}
+	themehandle=pgLoadTheme(pgFromMemory(&termtheme, sizeof termtheme));
+	ircterm=pgFindThemeObject(termthemename);
+	if(!ircterm)
+		ircterm=PGTH_O_TERMINAL;	/* fallback to ugly */
 }
 
 static int
