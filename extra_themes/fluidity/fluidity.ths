@@ -27,6 +27,9 @@
  *
  * Changelog:
  *
+ *  1.02 - Tweaked fonts
+ *         Tweaked colors and sizes
+ *         Added a cursor
  *  1.01 - Decreased base.display margin
  *  1.0  - First stable release
  *
@@ -47,10 +50,13 @@ prop left_sz, right_sz, top_sz, bottom_sz;
 /********************************** Default definitions */
 
 object default {
-  name = "Fluidity";
+  name = "Fluidity v1.02";
   bgfill = Copy(default::fBitmap);
   bitmap1 = Copy(default::bDarkInterlace);
-  font = Font("Helvetica",10,0);
+  font = Font(NULL,10,0);
+
+  cursorbitmap = LoadBitmap("data/cursor.png");
+  cursorbitmask = 0;
 
   bDarkInterlace = LoadBitmap("data/dark_interlace.png");
 
@@ -66,7 +72,7 @@ object default {
   /* Expand horizontally and vertically by tiling 
    */
   fExpand = fillstyle {
-    var bit, sx, sy, sw, sh, l, r, t, b, bsy, by;
+    var bit, sx, sy, sw, sh, l, r, t, b, bsy, by, my_w, my_h;
 
     /* Load theme properties now */
     bit = bitmap1;
@@ -80,12 +86,12 @@ object default {
     b   = bottom_sz;
 	
     /* Limit minimum size */
-    w = w < (l+r) ? (l+r) : w;
-    h = h < (t+b) ? (t+b) : h;
+    my_w = w < (l+r) ? (l+r) : w;
+    my_h = h < (t+b) ? (t+b) : h;
 
     /* Some common subexpressions */
     bsy = sy+sh-b;
-    by  = y+h-b;
+    by  = y+my_h-b;
 
     /* Top-left */
     SetSrc(sx,sy,l,t);
@@ -93,23 +99,23 @@ object default {
 
     /* Top edge */
     SetSrc(sx+l,sy,sw-l-r,t);
-    Tilebitmap(x+l,y,w-l-r,t,bit);
+    Tilebitmap(x+l,y,my_w-l-r,t,bit);
 
     /* Top-right */
     SetSrc(sx+sw-r,sy,r,t);
-    Bitmap(x+w-r,y,r,t,bit);
+    Bitmap(x+my_w-r,y,r,t,bit);
 
     /* Left edge */
     SetSrc(sx,sy+t,l,sh-t-b);
-    Tilebitmap(x,y+t,l,h-t-b,bit);
+    Tilebitmap(x,y+t,l,my_h-t-b,bit);
 
     /* Middle */
     SetSrc(sx+l,sy+t,sw-l-r,sh-t-b);
-    Tilebitmap(x+l,y+t,w-l-r,h-t-b,bit);
+    Tilebitmap(x+l,y+t,my_w-l-r,my_h-t-b,bit);
 
     /* Right edge */
     SetSrc(sx+sw-r,sy+t,r,sh-t-b);
-    Tilebitmap(x+w-r,y+t,r,h-t-b,bit);
+    Tilebitmap(x+my_w-r,y+t,r,my_h-t-b,bit);
 
     /* Bottom-left */
     SetSrc(sx,bsy,l,t);
@@ -117,15 +123,14 @@ object default {
 
     /* Bottom edge */
     SetSrc(sx+l,bsy,sw-l-r,t);
-    Tilebitmap(x+l,by,w-l-r,t,bit);
+    Tilebitmap(x+l,by,my_w-l-r,t,bit);
 
     /* Bottom-right */
     SetSrc(sx+sw-r,bsy,r,t);
-    Bitmap(x+w-r,by,r,t,bit);
+    Bitmap(x+my_w-r,by,r,t,bit);
 
     /* Reset params to not mess up the widget.. */
     SetSrc(0,0,0,0);
-    h = h + offset;
   };    
 
   srcx = 0;
@@ -158,7 +163,7 @@ object panelbar {
   bgfill = Copy(default::fExpand);
   fgcolor = 0x57596F;
   margin = 2;
-  font = Font("Gelly",10,0);
+  font = Font(NULL,9,PG_FSTYLE_BOLD | PG_FSTYLE_ITALIC);
   
   /* This will make it left-justified when horizontal,
    * and centered when vertical. PG_A_NW will make it at the
@@ -264,7 +269,7 @@ object label.dlgtitle {
   };
   align = PG_A_LEFT;
   fgcolor = 0x706C5A;
-  font = Font("Gelly",10,0);
+  font = Copy(panelbar::font);
 }
 
 
@@ -283,7 +288,6 @@ object button {
   bottom_sz = 9;
   margin = 4;
   spacing = 1;
-  offset = -2;
 }  
 
 object button.on bitmap1 = LoadBitmap("data/button_bright_small.png");
@@ -485,7 +489,6 @@ object popup.menu {
 object menuitem {
   bgfill = fillstyle {
     Bitmap(x,y,w,h,bDarkInterlace);
-    h = h - menuitem.hilight::offset;
   };
 
   align = PG_A_LEFT;
@@ -512,13 +515,12 @@ object base.display {
   top_sz = 8;
   bottom_sz = 9;
   margin = 3;
-  offset = -1;
 }
 
 /********************************** Terminal */
 
 object terminal {
-  font = Font("Clean",8,PG_FSTYLE_FIXED);
+  font = Font(NULL,8,PG_FSTYLE_FIXED);
   bitmap1 = 0;
 }
 
