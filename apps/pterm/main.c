@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.23 2002/11/04 12:45:01 micahjd Exp $
+/* $Id: main.c,v 1.24 2002/11/07 20:43:39 micahjd Exp $
  *
  * main.c - PicoGUI Terminal (the 'p' is silent :)
  *          This handles the PicoGUI init and events
@@ -198,7 +198,9 @@ int main(int argc, char **argv) {
    
   /*** PicoGUI Initialization */
   wPanel = pgRegisterApp(PG_APP_NORMAL,title,0);              /* Register app */
-  
+
+  pgSetWidget(wPanel,PG_WP_MARGIN,0,0);   
+   
   /* Use our supernifty panelbar functionality to add a font button,
      if the panelbar was not disabled at compilation time */
   panelbar = pgGetWidget(wPanel,PG_WP_PANELBAR_LABEL);
@@ -260,3 +262,4 @@ int main(int argc, char **argv) {
 }
 
 /* The End */
+
