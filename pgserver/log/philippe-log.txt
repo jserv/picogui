@@ -1,3 +1,9 @@
+2001-05-29    Philippe Ney <philippe.ney@smartdat.ch>
+
+Add a way to display/hide the cursor using sprite_hide from
+vidbase/defaultvbl.c
+
+
 2001-05-24    Philippe Ney <philippe.ney@smartdata.ch>
 
 Some functions directly connected to the hardware like the 'sleep mode' are
