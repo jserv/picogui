@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.11 2000/10/19 01:21:23 micahjd Exp $
+/* $Id: constants.h,v 1.12 2000/10/29 21:05:43 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -396,6 +396,10 @@ typedef unsigned long pghandle;
 #define PG_SZMODE_PIXEL         0
 #define PG_SZMODE_PERCENT       (1<<2)    /* The DIVNODE_UNIT_PERCENT flag */
 #define PG_SZMODEMASK           (~PG_SZMODE_PERCENT)
+
+/* Constants for the message dialog box flags */
+#define PG_MSGBTN_OK      0x0001
+#define PG_MSGBTN_CANCEL  0x0002
 
 /******************** Events */
 

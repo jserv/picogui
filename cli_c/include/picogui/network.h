@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.7 2000/10/19 01:21:23 micahjd Exp $
+/* $Id: network.h,v 1.8 2000/10/29 21:05:43 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -115,7 +115,7 @@ struct pghello {
 #define PGREQ_RMCONTEXT    24     /* Cleans up and kills the context|  none */
 #define PGREQ_FOCUS        25     /* Force focus to specified widget|  handle */
 #define PGREQ_GETSTRING    26     /* Returns a RESPONSE_DATA        |  handle */
-#define PGREQ_UNUSED2      27     /* Obsolete (will be replaced with another request) */
+#define PGREQ_MKMSGDLG     27     /* Creates a message dialog box   |  struct */
 #define PGREQ_SETPAYLOAD   28     /* Sets an object's payload       |  struct */
 #define PGREQ_GETPAYLOAD   29     /* Gets an object's payload       |  handle */
 
@@ -214,6 +214,11 @@ struct pgreqd_setpayload {
   unsigned long h;  /* Any handle */
   unsigned long payload;  /* 32-bits of data to store with
 			     the handle'd object */
+};
+struct pgreqd_mkmsgdlg {
+  unsigned long title;
+  unsigned long text;
+  unsigned long flags;
 };
 
 #endif /* __H_PG_NETWORK */

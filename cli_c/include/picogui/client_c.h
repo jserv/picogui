@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.14 2000/10/26 20:00:53 pney Exp $
+/* $Id: client_c.h,v 1.15 2000/10/29 21:05:43 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -228,6 +228,10 @@ void pgExitEventLoop(void);
 void pgEnterContext(void);
 void pgLeaveContext(void);
 
+/* Create a message dialog box, wait until it is
+ * answered, then return the answer.
+ */
+int pgMessageDialog(const char *title,const char *text,unsigned long flags);
 
 #endif /* __H_PG_CLI_C */
 /* The End */

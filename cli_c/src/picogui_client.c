@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.14 2000/10/26 19:59:51 pney Exp $
+/* $Id: picogui_client.c,v 1.15 2000/10/29 21:05:43 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -940,6 +940,44 @@ void pgReplaceTextFmt(pghandle widget,const char *fmt, ...) {
 
   pgReplaceText(widget,p);
   free(p);
+}
+
+/* Create a message box, wait until it is
+ * answered, then return the answer.
+ */
+int pgMessageDialog(const char *title,const char *text,unsigned long flags) {
+  struct pgreqd_mkmsgdlg arg;
+  pghandle htitle,htext;
+  pghandle from;
+  unsigned long ret;
+
+  /* New context for us! */
+  pgEnterContext();
+
+  /* Build the dialog box */
+  arg.title = htitle = pgNewString(title);
+  arg.text = htext = pgNewString(text);
+  arg.flags = htonl(flags);
+  _pg_add_request(PGREQ_MKMSGDLG,&arg,sizeof(arg));
+
+  /* Display it */
+  pgUpdate();
+
+  /* Wait for a new event */
+  _pg_add_request(PGREQ_WAIT,NULL,0);
+  pgFlushRequests();
+  from = _pg_return.e.event.from;
+  
+  /* Get the payload */
+  _pg_add_request(PGREQ_GETPAYLOAD,&from,sizeof(from));
+  pgFlushRequests();
+  ret = _pg_return.e.retdata;
+
+  /* Go away now */
+  pgLeaveContext();
+  pgUpdate();
+
+  return ret;
 }
 
 /* The End */
