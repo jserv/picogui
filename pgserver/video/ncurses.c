@@ -1,5 +1,4 @@
-
-/* $Id: ncurses.c,v 1.3 2001/01/14 23:42:24 micahjd Exp $
+/* $Id: ncurses.c,v 1.4 2001/01/15 00:51:17 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -36,6 +35,9 @@
 #include <pgserver/input.h>
 
 #include <curses.h>
+
+/* Buffer with the current status of the screen */
+chtype *ncurses_screen;
 
 /******************************************** Fake font */
 /* This is a little hack to trick PicoGUI's text rendering */
@@ -133,6 +135,9 @@ g_error ncurses_init(int xres,int yres,int bpp,unsigned long flags) {
    chtype rgbmap[] = { COLOR_BLACK, COLOR_BLUE, COLOR_GREEN, COLOR_CYAN, 
 	COLOR_RED, COLOR_MAGENTA, COLOR_YELLOW, COLOR_WHITE };
    int f,b;
+   g_error e;
+   unsigned long size;
+   unsigned long *p;
    
    /* Initialize ncurses */
    initscr(); 
@@ -153,6 +158,12 @@ g_error ncurses_init(int xres,int yres,int bpp,unsigned long flags) {
    vid->xres = COLS;
    vid->yres = LINES;
    vid->bpp  = sizeof(chtype)*8;    /* Our pixel is a curses chtype */
+
+   /* Allocate our buffer */
+   e = g_malloc((void**) &ncurses_screen,vid->xres * vid->yres * sizeof(chtype));
+   errorcheck;
+   for (p=ncurses_screen,size=vid->xres*vid->yres;size;size--,p++)
+     p = ' ';
    
    /* Load a main input driver */
    return load_inlib(&ncursesinput_regfunc,&inlib_main);
@@ -161,14 +172,17 @@ g_error ncurses_init(int xres,int yres,int bpp,unsigned long flags) {
 void ncurses_close(void) {
    /* Take out our input driver */
    unload_inlib(inlib_main);
+
+   g_free(ncurses_screen);
    endwin();
 }
 
 void ncurses_pixel(int x,int y,hwrcolor c) {
-   mvaddch(y,x,' ' | c);
+   mvaddch(y,x,ncurses_screen[x + vid->xres * y] = (c & (~A_CHARTEXT)) | ' ');
 }
 
 hwrcolor ncurses_getpixel(int x,int y) {
+   return ncurses_screen[x + vid->xres * y];
 }
 
 void ncurses_update(int x,int y,int w,int h) {
@@ -197,24 +211,21 @@ void ncurses_font_newdesc(struct fontdesc *fd) {
 void ncurses_charblit(unsigned char *chardat,int dest_x,
 		      int dest_y,int w,int h,int lines,
 		      hwrcolor c,struct cliprect *clip) {
-   attr_t attr;
-   short pair;
+   chtype *location;
    
    /* Make sure we're within clip */
    if (clip && (dest_x<clip->x1 || dest_y<clip->y1 ||
 		dest_x>clip->x2 || dest_y>clip->y2))
      return;
    
-   /* Separate out the background attribute so we can preserve it */
-   move(dest_y,dest_x);
-   attr_get(&attr,&pair,NULL);
-   pair |= PAIR_NUMBER(c) >> 3;
-   if (c & A_BLINK) attr |= A_BOLD;
-   attr |= COLOR_PAIR(pair);
-   
-   /* Logically or to combine the attribute (c) and the 
-    * character (in the bitmap table) */
-   mvaddch(dest_y,dest_x,(*chardat));   
+   /* Get the previous contents, strip out all but the background,
+    * and add our new foreground and text */
+   location = ncurses_screen + dest_x + vid->xres * dest_y;
+   *location = COLOR_PAIR((PAIR_NUMBER(*location & (~A_CHARTEXT)) & 0x38) | ((PAIR_NUMBER(c) & 0x38)>>3)) |
+		 /* ((*location) & A_BLINK) | */ (c & A_BOLD) | (*chardat);
+     
+   /* Send it */
+   mvaddch(dest_y,dest_x,*location);
 }
 
 /**** We use a ncurses character cell as our hwrcolor */
@@ -225,10 +236,11 @@ void ncurses_charblit(unsigned char *chardat,int dest_x,
 hwrcolor ncurses_color_pgtohwr(pgcolor c) {
    /* Convert to a 16-color value */
    int sc = 0;
+   
    if ((c & 0xFF0000) > 0x400000) sc |= 32;
    if ((c & 0x00FF00) > 0x004000) sc |= 16;
    if ((c & 0x0000FF) > 0x000040) sc |= 8;
-   return COLOR_PAIR(sc) | ((c & 0x808080) ? A_BLINK : 0);
+   return COLOR_PAIR(sc) /* | ((c & 0x808080) ? A_BLINK : 0) */;
 }
 
 pgcolor ncurses_color_hwrtopg(hwrcolor c) {
