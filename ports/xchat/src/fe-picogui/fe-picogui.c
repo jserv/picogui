@@ -827,17 +827,65 @@ static int
 evtUserButton (struct pgEvent *evt)
 {
 	struct session *sess=evt->extra;
-	int i;
+	char *cmdtemplate=NULL, *p, *cmd;
+	int i, size, didit=0;
 
 	for(i=0;i<sess->gui->buttons;i++)
 		if(sess->gui->userbutton[i].h==evt->from)
 		{
-			/* FIXME go through buttons; put nick instead of %s,
-			 * or all nicks separated by spaces for %a */
-			handle_command (sess->gui->userbutton[i].cmd, sess,
-					FALSE, FALSE);
+			/* I know about the warning, but otherwise strcpy()
+			 * gives that warning a _lot_ below */
+			cmdtemplate=sess->gui->userbutton[i].cmd;
 			break;
 		}
+	if(!cmdtemplate)
+		return 0;
+	size=strlen(cmdtemplate);
+	if(p=strstr(cmdtemplate, "%s"))
+	{	/* one nick at a time */
+		cmd=malloc(size+NICKLEN);	/* wasting at least 2 bytes */
+		memcpy(cmd, cmdtemplate, size=p-cmdtemplate);
+		p+=2;
+		for(i=0;i<sess->gui->users;i++)
+		{
+			if(pgGetWidget(sess->gui->uhmap[i].handle, PG_WP_ON))
+			{
+				strcpy(cmd+size,sess->gui->uhmap[i].user->nick);
+				strcat(cmd+size, p);
+				handle_command (cmd, sess, FALSE, FALSE);
+				didit=1;
+			}
+		}
+		if(!didit)
+		{
+			strcpy(cmd+size, p);
+			handle_command (cmd, sess, FALSE, FALSE);
+		}
+		free(cmd);
+	}
+	else if(p=strstr(cmdtemplate, "%a"))
+	{	/* multinick command */
+		/* wasting at least sess->gui->users+1 bytes */
+		cmd=malloc(size+sess->gui->users*NICKLEN);
+		memcpy(cmd, cmdtemplate, size=p-cmdtemplate);
+		p+=2;
+		for(i=0;i<sess->gui->users;i++)
+		{
+			if(pgGetWidget(sess->gui->uhmap[i].handle, PG_WP_ON))
+			{
+				if(didit)
+					cmd[size++]=' ';
+				strcpy(cmd+size,sess->gui->uhmap[i].user->nick);
+				size+=strlen(cmd+size);
+				didit=1;
+			}
+		}
+		strcpy(cmd+size, p);
+		handle_command (cmd, sess, FALSE, FALSE);
+		free(cmd);
+	}
+	else
+		handle_command (cmdtemplate, sess, FALSE, FALSE);
 	return 1;
 }
 void
