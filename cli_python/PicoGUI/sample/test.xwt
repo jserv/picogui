@@ -1,0 +1,10 @@
+<application text="Example Widget Template">
+	<toolbar>
+		<button text="spiffy"/>
+		<button>And this is another way to do text</button>
+		<button side="right"/>
+	</toolbar>
+	<textbox>
+		Whee, look at all this text!
+	</textbox>
+</application>
