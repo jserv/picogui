@@ -64,9 +64,13 @@ class TerminalPage:
     def setPosition(self, position):
         self._position = position
 
-class PalleteConfig:
-    def __init__(self, app):
-        self._window = app.createWidget('popup')
+class Config:
+    def __init__(self, app, parent, relation):
+        self._box = parent.addWidget('scrollbox', relation)
+	self._palletetab = self._box.addWidget('tabpage', 'inside')
+	self._palletetab.text = 'Pallete'
+	self._bindtab = self._palletetab.addWidget('tabpage', 'after')
+	self._bindtab.text = 'Keybindings'
 
 class App(PicoGUI.Application):
     def __init__(self):
@@ -79,6 +83,10 @@ class App(PicoGUI.Application):
 	self.link(self.addtab, self._newtabhotkey, 'activate')
 	self._pages.append(TerminalPage(self._toolbar, 'after', self, 0))
 	self._pages[-1].tabpage.text = 'tab!'
+
+	self._config = self._pages[-1].tabpage.addWidget('tabpage', 'after')
+	self._config.text = 'config'
+	self._configstuff = Config(self, self._config, 'inside')
 
 	self.link(self.update, self, 'idle')
 
@@ -95,7 +103,7 @@ class App(PicoGUI.Application):
 	    self._pages[position].tabpage.on = 1
 
     def appendtab(self):
-	self._pages.append(TerminalPage(self._pages[-1].tabpage,'after', self, len(self._pages)))
+	self._pages.append(TerminalPage(self._config,'before', self, len(self._pages)))
 	self._pages[-1].tabpage.text = 'tab!'
 	self._pages[-1].tabpage.on = 1
 
