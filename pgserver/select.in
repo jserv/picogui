@@ -109,6 +109,8 @@ add_if_true pnm.c $CONFIG_FORMAT_PNM
 add_if_true jpeg.c $CONFIG_FORMAT_JPEG
 add_if_true bmp.c $CONFIG_FORMAT_BMP
 add_if_true html.c $CONFIG_FORMAT_HTML
+add_if_true png.c $CONFIG_FORMAT_PNG
+add_if_true gif.c $CONFIG_FORMAT_GIF
 
 close_section
 

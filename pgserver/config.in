@@ -166,11 +166,13 @@ endmenu
 
 mainmenu_option next_comment
 comment 'File Formats'
-bool 'Internal XBM loader'                    CONFIG_FORMAT_XBM
-bool 'PNM: portable anymap'                   CONFIG_FORMAT_PNM
-bool 'JPEG: jpeg library'                     CONFIG_FORMAT_JPEG
-bool 'BMP: windows bitmap'                    CONFIG_FORMAT_BMP
-bool 'HTML: hypertext markup'                 CONFIG_FORMAT_HTML
+bool 'Internal XBM loader'                               CONFIG_FORMAT_XBM
+bool 'PNM: portable anymap'                              CONFIG_FORMAT_PNM
+bool 'JPEG: lossy compression (needs libjpeg)'           CONFIG_FORMAT_JPEG
+bool 'BMP: windows bitmap'                               CONFIG_FORMAT_BMP
+bool 'PNG: portable network graphic (needs libpng)'      CONFIG_FORMAT_PNG
+bool 'GIF: graphics interchange format'                  CONFIG_FORMAT_GIF
+bool 'HTML: hypertext markup'                            CONFIG_FORMAT_HTML
 endmenu
 
 mainmenu_option next_comment

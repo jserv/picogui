@@ -178,6 +178,14 @@ AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_SVGAFB, [
   DRIVER_LIBS="$DRIVER_LIBS -lvga"
 ])
 
+dnl check for libpng
+
+AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_FORMAT_PNG, [
+
+  AC_CHECK_LIB(png, png_sig_cmp,, AC_MSG_WARN(cannot find libpng))
+
+  DRIVER_LIBS="$DRIVER_LIBS -lpng"
+])
 
 dnl check for the X window system
 
