@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.8 2000/10/29 21:05:43 micahjd Exp $
+/* $Id: network.h,v 1.9 2000/11/05 10:25:45 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -118,8 +118,9 @@ struct pghello {
 #define PGREQ_MKMSGDLG     27     /* Creates a message dialog box   |  struct */
 #define PGREQ_SETPAYLOAD   28     /* Sets an object's payload       |  struct */
 #define PGREQ_GETPAYLOAD   29     /* Gets an object's payload       |  handle */
+#define PGREQ_MKMENU       30     /* Creates a simple popup menu    |  handle[] */
 
-#define PGREQ_UNDEF        30     /* types > this will be truncated. return error */
+#define PGREQ_UNDEF        31     /* types > this will be truncated. return error */
 
 /******* Request data structures */
 
@@ -201,8 +202,8 @@ struct pgreqd_register {
   /* Followed by optional APPSPECs */
 };
 struct pgreqd_mkpopup {
-  unsigned short x;
-  unsigned short y;
+  unsigned short x; /* can be a PG_POPUP_* constant */
+  unsigned short y; 
   unsigned short w;
   unsigned short h;
 };

@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.21 2000/11/05 05:22:09 micahjd Exp $
+/* $Id: picogui_client.c,v 1.22 2000/11/05 10:25:45 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -735,7 +735,7 @@ struct pgmemdata pgFromFile(const char *file) {
 
 void pgSetPayload(pghandle object,unsigned long payload) {
   struct pgreqd_setpayload arg;
-  arg.h = htonl(object);
+  arg.h = htonl(object ? object : _pgdefault_widget);
   arg.payload = htonl(payload);
   _pg_add_request(PGREQ_SETPAYLOAD,&arg,sizeof(arg));
 }
@@ -1014,6 +1014,57 @@ int pgMessageDialog(const char *title,const char *text,unsigned long flags) {
   arg.text =  htonl(pgNewString(text));
   arg.flags = htonl(flags);
   _pg_add_request(PGREQ_MKMSGDLG,&arg,sizeof(arg));
+
+  /* Run it (ignoring zero-payload events) */
+  while (!(ret = pgGetPayload(pgGetEvent(NULL,NULL))));
+
+  /* Go away now */
+  pgLeaveContext();
+
+  return ret;
+}
+
+/* There are many ways to create a menu in PicoGUI
+ * (at the lowest level, using pgNewPopupAt and the menuitem widget)
+ *
+ * This creates a static popup menu from a "\n"-separated list of
+ * menu items, and returns the number (starting with 1) of the chosen
+ * item, or 0 for cancel.
+ */
+int pgMenuFromString(char *items) {
+  struct pgreqd_mkmsgdlg arg;
+  pghandle from;
+  unsigned long ret;
+  unsigned long *handletab;
+  int i;
+  char *p;
+
+  if (!items || !*items) return 0;
+
+  /* New context for us! */
+  pgEnterContext();
+  
+  /* Count how many items we'll need */
+  i = 1;
+  p = items;
+  while (*p) {
+    if (*p == '\n') i++;
+    p++;
+  }
+  handletab = _pg_malloc(4*i);
+
+  /* Send over the strings individually, store handles */
+  i = 0;
+  do {
+    if (!(p = strchr(items,'\n'))) p = items + strlen(items);
+    _pg_add_request(PGREQ_MKSTRING,(void *) items,p-items);
+    items = p+1;
+    pgFlushRequests();
+    handletab[i++] = htonl(_pg_return.e.retdata);
+  } while (*p);
+
+  /* Build the menu */
+  _pg_add_request(PGREQ_MKMENU,handletab,4*i);
 
   /* Run it */
   ret = pgGetPayload(pgGetEvent(NULL,NULL));
