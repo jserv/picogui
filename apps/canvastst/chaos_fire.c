@@ -6,7 +6,7 @@ const float pi = 3.1415926;
 
 
 float radius(float a, int t) {
-  return sin(a*5+t*0.03)*0.3+1 + sin(a*42+t*0.7)*0.05;
+  return sin(a*5+t*0.08)*0.3+1 + sin(a*42+t*0.7)*0.05;
 }
 
 void animate(void) {
