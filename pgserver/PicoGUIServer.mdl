@@ -2,6 +2,7 @@
 
 import os
 from Bee.Autoconf import compile, install, clean
+from Bee.Logic import S
 
 multicompile     = 1
 platform_variant = 1
@@ -26,9 +27,9 @@ runtime = [
                      content = [ 'etc/rm.d/picoguiserver' ],
                      
                      depends = [ 'picoguiserver/install',
-                                 'pocketapps/bioscall',
+                                 S ('module/picoguiserver/server') & S ('platform/m68k-pic-coff') >> S ('module/pocketapps/bioscall'),
                                  'resourcemanager/server',
-                                 'pocketapps/initenv',
+                                 S ('module/picoguiserver/server') & S ('platform/m68k-pic-coff') >> S ('module/pocketapps/initenv'),
                                  ],
                      rcscript = '''
 # setup env vars
@@ -64,14 +65,15 @@ rm_task unblock picogui-server
 
 
 def prepare (module, platform, project):
-    profile = "../profiles/profile.SMARTDATA-m68k-pic-coff-%s" % \
-              platform.subplatform
+    profile = "../profiles/profile.SMARTDATA-%s" % \
+              platform.fqn ()
     
-    command = ("../configure --prefix=%s --with-profile=%s --with-prefix --host=%s " +
+    command = ("../configure --prefix=%s --with-profile=%s --with-prefix=%s --host=%s " +
                "--with-extra-ipath=%s/include:%s/include --with-extra-libs=%s/lib/librm.a " +
                "--enable-bee") % \
               (module.path ['prefix'],
                profile,
+               platform.toolchain,
                platform.platform,
                project ['module/kernel'].path ['dfl'],
                project ['module/resourcemanager'].path ['dfl'],
