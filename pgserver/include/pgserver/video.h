@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.101 2002/10/14 07:58:27 micahjd Exp $
+/* $Id: video.h,v 1.102 2002/10/16 22:33:41 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -555,7 +555,6 @@ struct vidlib {
 
   /******************************************** Text/fonts */
 
-#ifdef CONFIG_FONTENGINE_BDF
   /* Reccomended when using BDF fonts
    *   Used for character data.  Blits 1bpp data from
    *   chardat to the screen, filling '1' bits with the
@@ -570,8 +569,7 @@ struct vidlib {
    */
   void (*charblit)(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 		   s16 lines, s16 angle, hwrcolor c, struct quad *clip,
-		   s16 lgop);
-#endif
+		   s16 lgop, int char_pitch);
 
 #ifdef CONFIG_FONTENGINE_FREETYPE
   /* Reccomended when using antialiased fonts
@@ -671,7 +669,7 @@ void def_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
 		   hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 xo, s16 yo, s16 lgop);
 void def_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
-		  s16 lgop);
+		  s16 lgop, int char_pitch);
 void def_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 			int char_pitch, u8 *gammatable, s16 angle, hwrcolor c,
 			struct quad *clip, s16 lgop);

@@ -1,4 +1,4 @@
-/* $Id: dvbl_font.c,v 1.8 2002/10/15 02:45:37 micahjd Exp $
+/* $Id: dvbl_font.c,v 1.9 2002/10/16 22:33:41 micahjd Exp $
  *
  * dvbl_font.c - Low level implementations for font rendering
  *
@@ -36,11 +36,9 @@
 #include <pgserver/render.h>
 
 
-#ifdef CONFIG_FONTENGINE_BDF
 void def_charblit_0(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 		    s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
-		    s16 lgop) {
-  int bw = w;
+		    s16 lgop, int char_pitch) {
   int iw,hc,x;
   int olines = lines;
   int bit;
@@ -52,9 +50,6 @@ void def_charblit_0(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
   if (clip && (dest_x>clip->x2 || dest_y>clip->y2 || (dest_x+w)<clip->x1 || 
       (dest_y+h)<clip->y1)) return;
 
-  /* Find the width of the source data in bytes */
-  if (bw & 7) bw += 8;
-  bw = bw >> 3;
   xmin = 0;
   xmax = w;
   hc = 0;
@@ -70,7 +65,7 @@ void def_charblit_0(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 	dest_x--;
       }
       dest_y += hc;
-      chardat += hc*bw;
+      chardat += hc*char_pitch;
     }
     
     /* Setup for horizontal clipping (if so, set a special case) */
@@ -86,7 +81,7 @@ void def_charblit_0(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
       dest_x--;
       flag=1;
     }
-    for (x=dest_x,iw=bw,xpix=0;iw;iw--)
+    for (x=dest_x,iw=char_pitch,xpix=0;iw;iw--)
       for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,x++,xpix++) {
 	 if (ch&0x80 && xpix>=xmin && xpix<xmax) 
 	   (*vid->pixel) (dest,x,dest_y,c,lgop);
@@ -105,8 +100,7 @@ void def_charblit_0(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
  */
 void def_charblit_90(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 		     s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
-		     s16 lgop) {
-  int bw = w;
+		     s16 lgop, int char_pitch) {
   int iw,hc,y;
   int olines = lines;
   int bit;
@@ -118,9 +112,6 @@ void def_charblit_90(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
   if (clip && (dest_x>clip->x2 || (dest_y-w)>clip->y2 || (dest_x+h)<clip->x1 || 
       dest_y<clip->y1)) return;
 
-  /* Find the width of the source data in bytes */
-  if (bw & 7) bw += 8;
-  bw = bw >> 3;
   xmin = 0;
   xmax = w;
   hc = 0;
@@ -136,7 +127,7 @@ void def_charblit_90(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 	dest_y++;
       }
       dest_x += hc;
-      chardat += hc*bw;
+      chardat += hc*char_pitch;
     }
     
     /* Setup for horizontal clipping (if so, set a special case) */
@@ -152,7 +143,7 @@ void def_charblit_90(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
       dest_y++;
       flag=1;
     }
-    for (iw=bw,y=dest_y,xpix=0;iw;iw--)
+    for (iw=char_pitch,y=dest_y,xpix=0;iw;iw--)
       for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,y--,xpix++) {
 	 if (ch&0x80 && xpix>=xmin && xpix<xmax) 
 	   (*vid->pixel) (dest,dest_x,y,c,lgop);
@@ -166,8 +157,7 @@ void def_charblit_90(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 
 void def_charblit_180(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 		      s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
-		      s16 lgop) {
-  int bw = w;
+		      s16 lgop, int char_pitch) {
   int iw,hc,x;
   int olines = lines;
   int bit;
@@ -179,9 +169,6 @@ void def_charblit_180(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
   if (clip && (dest_x<clip->x1 || dest_y<clip->y1 || (dest_x-w)>clip->x2 || 
       (dest_y-h)>clip->y2)) return;
 
-  /* Find the width of the source data in bytes */
-  if (bw & 7) bw += 8;
-  bw = bw >> 3;
   xmin = 0;
   xmax = w;
   hc = 0;
@@ -197,7 +184,7 @@ void def_charblit_180(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 	dest_x--;
       }
       dest_y -= hc;
-      chardat += hc*bw;
+      chardat += hc*char_pitch;
     }
     
     /* Setup for horizontal clipping (if so, set a special case) */
@@ -213,7 +200,7 @@ void def_charblit_180(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
       dest_x--;
       flag=1;
     }
-    for (x=dest_x,iw=bw,xpix=0;iw;iw--)
+    for (x=dest_x,iw=char_pitch,xpix=0;iw;iw--)
       for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,x--,xpix++) {
 	 if (ch&0x80 && xpix>=xmin && xpix<xmax) 
 	   (*vid->pixel) (dest,x,dest_y,c,lgop); 
@@ -227,8 +214,7 @@ void def_charblit_180(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 
 void def_charblit_270(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 		     s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
-		     s16 lgop) {
-  int bw = w;
+		     s16 lgop, int char_pitch) {
   int iw,hc,y;
   int olines = lines;
   int bit;
@@ -240,9 +226,6 @@ void def_charblit_270(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
   if (clip && (dest_x<clip->x1 || (dest_y+w)<clip->y1 || (dest_x-h)>clip->x2 || 
       dest_y>clip->y2)) return;
 
-  /* Find the width of the source data in bytes */
-  if (bw & 7) bw += 8;
-  bw = bw >> 3;
   xmin = 0;
   xmax = w;
   hc = 0;
@@ -258,7 +241,7 @@ void def_charblit_270(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 	dest_y--;
       }
       dest_x -= hc;
-      chardat += hc*bw;
+      chardat += hc*char_pitch;
     }
     
     /* Setup for horizontal clipping (if so, set a special case) */
@@ -274,7 +257,7 @@ void def_charblit_270(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
       dest_y--;
       flag=1;
     }
-    for (iw=bw,y=dest_y,xpix=0;iw;iw--)
+    for (iw=char_pitch,y=dest_y,xpix=0;iw;iw--)
       for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,y++,xpix++) {
 	 if (ch&0x80 && xpix>=xmin && xpix<xmax) 
 	   (*vid->pixel) (dest,dest_x,y,c,lgop);
@@ -289,10 +272,10 @@ void def_charblit_270(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 /* A meta-charblit to select the appropriate function based on angle */
 void def_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
 		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
-		  s16 lgop) {
+		  s16 lgop, int char_pitch) {
 
    void (*p)(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
-	     s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,s16 lgop);
+	     s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,s16 lgop,int char_pitch);
    
    switch (angle) {
     case 0:   p = &def_charblit_0;   break;
@@ -303,9 +286,8 @@ void def_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
       return;
    }
 
-   (*p)(dest,chardat,x,y,w,h,lines,c,clip,lgop);
+   (*p)(dest,chardat,x,y,w,h,lines,c,clip,lgop,char_pitch);
 }
-#endif /* CONFIG_FONTENGINE_BDF */
 
 
 #ifdef CONFIG_FONTENGINE_FREETYPE

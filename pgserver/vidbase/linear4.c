@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.29 2002/10/12 19:53:49 micahjd Exp $
+/* $Id: linear4.c,v 1.30 2002/10/16 22:33:42 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -349,11 +349,9 @@ void linear4_rect(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,hwrcolor c,s16 lgop) {
    }
 }
 
-#ifdef CONFIG_FONTENGINE_BDF
 void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s16 h,
 		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
-		  s16 lgop) {
-  int bw = w;
+		  s16 lgop, int char_pitch) {
   int iw,hc,x;
   int olines = lines;
   int bit;
@@ -363,7 +361,7 @@ void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s1
   char *destline;
 
   if (!FB_ISNORMAL(dest,lgop) || angle) {
-	  def_charblit(dest,chardat,dest_x,dest_y,w,h,lines,angle,c,clip,lgop);
+	  def_charblit(dest,chardat,dest_x,dest_y,w,h,lines,angle,c,clip,lgop,char_pitch);
 	  return;
   }
 
@@ -373,9 +371,6 @@ void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s1
       (dest_y+h)<clip->y1)) return;
 
 
-  /* Find the width of the source data in bytes */
-  if (bw & 7) bw += 8;
-  bw = bw >> 3;
   xmin = 0;
   xmax = w;
   hc = 0;
@@ -391,7 +386,7 @@ void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s1
 	dest_x--;
       }
       dest_y += hc;
-      chardat += hc*bw;
+      chardat += hc*char_pitch;
     }
     
     /* Setup for horizontal clipping (if so, set a special case) */
@@ -418,7 +413,7 @@ void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s1
 	   dest--;
 	flag=1;
       }
-      for (iw=bw,xpix=0;iw;iw--)
+      for (iw=char_pitch,xpix=0;iw;iw--)
 	for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,xpix++) {
 	   if ( (xpix^dest_x)&1 ) {
 	      if (ch&0x80 && xpix>=xmin && xpix<xmax) {
@@ -454,7 +449,7 @@ void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s1
 
   if(dest_x&1) {
 	  for (;hc<h;hc++, destline +=(FB_BPL-4)) {
-		  for (iw=bw;iw;iw--) {
+		  for (iw=char_pitch;iw;iw--) {
 			  ch = *(chardat++);
 #ifdef SWAP_NYBBLES
 			  if (ch&0x80) {*destline &= 0x0F; *destline |= c<<4; } destline++; 
@@ -479,7 +474,7 @@ void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s1
 	  }
   } else {
 	  for (;hc<h;hc++, destline +=(FB_BPL-4)) {
-		  for (iw=bw;iw;iw--) {
+		  for (iw=char_pitch;iw;iw--) {
 			  ch = *(chardat++);
 #ifdef SWAP_NYBBLES
 			  if (ch&0x80) {*destline &= 0xF0; *destline |= c;    }
@@ -504,8 +499,6 @@ void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s1
 	  }
   }
 }
-#endif /* CONFIG_FONTENGINE_BDF */
-
 
 /*
  * This is a relatively complicated 4bpp packed-pixel blit that does
@@ -662,9 +655,7 @@ void setvbl_linear4(struct vidlib *vid) {
   vid->line           = &linear4_line;
   vid->rect           = &linear4_rect;
   vid->blit           = &linear4_blit;
-#ifdef CONFIG_FONTENGINE_BDF
   vid->charblit	      = &linear4_charblit;
-#endif
 }
 
 /* The End */

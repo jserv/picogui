@@ -1,4 +1,4 @@
-/* $Id: font_bdf.c,v 1.4 2002/10/16 11:54:41 micahjd Exp $
+/* $Id: font_bdf.c,v 1.5 2002/10/16 22:33:41 micahjd Exp $
  *
  * font_bdf.c - Font engine that uses fonts compiled into pgserver,
  *              converted from BDF fonts at compile-time.
@@ -59,6 +59,7 @@ void bdf_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *po
   struct bdf_fontglyph const *g;
   u8 *glyph;
   s16 u,v;   /* Displacement (in font coordinate space) of character from the cursor position */
+  int pitch;
 
   g = bdf_getglyph(DATA,ch);
   
@@ -70,6 +71,7 @@ void bdf_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *po
   /* Only render if the character has a bitmap */
   if (g->w && g->h) {
     glyph = (((u8 *)DATA->font->bitmaps)+g->bitmap);
+    pitch = (g->w+7) >> 3;
     
     switch (angle) {
       
@@ -79,12 +81,12 @@ void bdf_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *po
       if (DATA->skew) 
 	i = DATA->italicw;
       VID(charblit) (dest,glyph,position->x+u+i,position->y+v,g->w,g->h,DATA->skew,angle,col,
-		     clip,lgop);
+		     clip,lgop,pitch);
       
       /* bold */
       for (i++,j=0;j<DATA->boldw;i++,j++)
 	VID(charblit) (dest,glyph,position->x+u+i,position->y+v,g->w,g->h,DATA->skew,angle,col,
-		       clip,lgop);
+		       clip,lgop,pitch);
       
       /* underline, overline, strikeout */
       if (DATA->hline>=0) {
@@ -117,12 +119,12 @@ void bdf_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *po
       if (DATA->skew) 
 	i = DATA->italicw;
       VID(charblit) (dest,glyph,position->x+v,position->y-u-i,g->w,g->h,DATA->skew,angle,col,
-		     clip,lgop);
+		     clip,lgop,pitch);
       
       /* bold */
       for (i++,j=0;j<DATA->boldw;i++,j++)
 	VID(charblit) (dest,glyph,position->x+v,position->y-u-i,g->w,g->h,DATA->skew,angle,col,
-		       clip,lgop);
+		       clip,lgop,pitch);
       break;
       
     case 180:
@@ -131,12 +133,12 @@ void bdf_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *po
       if (DATA->skew) 
 	i = DATA->italicw;
       VID(charblit) (dest,glyph,position->x-v-i,position->y-u,g->w,g->h,DATA->skew,angle,col,
-		     clip,lgop);
+		     clip,lgop,pitch);
       
       /* bold */
       for (i++,j=0;j<DATA->boldw;i++,j++)
 	VID(charblit) (dest,glyph,position->x-v-i,position->y-u,g->w,g->h,DATA->skew,angle,col,
-		       clip,lgop);
+		       clip,lgop,pitch);
       break;
       
 #if 0
@@ -150,12 +152,12 @@ void bdf_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *po
       if (DATA->skew) 
 	i = DATA->italicw;
       VID(charblit) (dest,glyph,mx,(my)+i,g->w,g->h,DATA->skew,angle,col,
-		     clip,lgop);
+		     clip,lgop,pitch);
       
       /* bold */
       for (i++,j=0;j<DATA->boldw;i++,j++)
 	VID(charblit) (dest,glyph,mx,(my)+i,g->w,g->h,DATA->skew,angle,col,
-		       clip,lgop);
+		       clip,lgop,pitch);
       break;
 #endif
       

@@ -1,4 +1,4 @@
-/* $Id: vgaplan4.c,v 1.4 2002/10/12 19:53:49 micahjd Exp $
+/* $Id: vgaplan4.c,v 1.5 2002/10/16 22:33:42 micahjd Exp $
  *
  * Video Base Library:
  * vgaplan4.c - For VGA compatible 4bpp access, based on linear1.c
@@ -934,22 +934,20 @@ local void vgaplan4_scrollblit(hwrbitmap dest,
       vgaplan4_screen_blitline(dest,dst_x,dst_y,w,sbit,src_x,src_y);
 }
 
-#ifdef CONFIG_FONTENGINE_BDF
 /* core of the charblit function
    it might be possible to generalize this enough to use it for
    planar blitting without alignedment contraints as well. */
 static inline void 
-vgaplan4_do_charblit(hwrbitmap dest,s16 x, s16 y,s16 w,s16 h,u8 *src)
+vgaplan4_do_charblit(hwrbitmap dest,s16 x, s16 y,s16 w,s16 h,u8 *src,int pitch)
 {
    volatile u8 *p;
-   s16 dx,dy,pitch;
+   s16 dx,dy;
    int front,back;
    u8 mask;
 
    dx = 0;
    front = x&7;
    back  = (x+w)&7;
-   pitch = (w+7) >> 3;
    
    /* left and right border of the character are in the same byte */
    if (front+w < 8) {
@@ -1010,14 +1008,14 @@ vgaplan4_do_charblit(hwrbitmap dest,s16 x, s16 y,s16 w,s16 h,u8 *src)
 local void 
 vgaplan4_charblit(hwrbitmap dest,u8 *chardat,s16 x,s16 y,s16 w,s16 h,
 		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
-		  s16 lgop) {
+		  s16 lgop, int pitch) {
    /* Pass rotated or skewed blits on somewhere else. Also skip charblits
     * with LGOPs above PG_LGOP_MULTIPLY. If there's clipping involved,
     * don't bother. */
    if (angle || lines || (lgop>PG_LGOP_MULTIPLY) ||
        (clip && (x<clip->x1 || y<clip->y1 || 
 		 (x+w)>=clip->x2 || (y+h)>=clip->y2))) {
-      def_charblit(dest,chardat,x,y,w,h,lines,angle,c,clip,lgop);
+      def_charblit(dest,chardat,x,y,w,h,lines,angle,c,clip,lgop,pitch);
       return;
    }
 
@@ -1043,18 +1041,17 @@ vgaplan4_charblit(hwrbitmap dest,u8 *chardat,s16 x,s16 y,s16 w,s16 h,
 #endif
       default:
 	debug_missing("charblit lgop %d",lgop);
-        def_charblit(dest,chardat,x,y,w,h,lines,angle,c,clip,lgop);
+        def_charblit(dest,chardat,x,y,w,h,lines,angle,c,clip,lgop,pitch);
 	return;
    }
 
    SET_SRR(c&0x0f);
 
-   vgaplan4_do_charblit(dest,x,y,w,h,chardat);
+   vgaplan4_do_charblit(dest,x,y,w,h,chardat,pitch);
 		   
    if (lgop!=PG_LGOP_NONE)
 	SET_FSDR(0x00);
 }
-#endif /* CONFIG_FONTENGINE_BDF */
 
 
 /********************************************** Misc stuff */

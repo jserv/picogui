@@ -1,4 +1,4 @@
-/* $Id: dvbl_init.c,v 1.8 2002/10/12 19:53:49 micahjd Exp $
+/* $Id: dvbl_init.c,v 1.9 2002/10/16 22:33:41 micahjd Exp $
  *
  * dvbl_init.c - This file is part of the Default Video Base Library,
  *               providing the basic video functionality in picogui but
@@ -127,9 +127,7 @@ void setvbl_default(struct vidlib *vid) {
   vid->update_hook = &def_update_hook;
   vid->grop_handler = &def_grop_handler;
   vid->blur = &def_blur;
-#ifdef CONFIG_FONTENGINE_BDF
   vid->charblit = &def_charblit;
-#endif
 #ifdef CONFIG_FONTENGINE_FREETYPE
   vid->alpha_charblit = &def_alpha_charblit;
 #endif

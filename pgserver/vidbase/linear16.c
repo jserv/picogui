@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.24 2002/10/15 02:45:38 micahjd Exp $
+/* $Id: linear16.c,v 1.25 2002/10/16 22:33:41 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -836,7 +836,7 @@ void linear16_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 src_
       r = FAST_MUL_8x8(getred(c),a_)   + FAST_MUL_8x8(getred(oc),a);
       g = FAST_MUL_8x8(getgreen(c),a_) + FAST_MUL_8x8(getgreen(oc),a);
       b = FAST_MUL_8x8(getblue(c),a_)  + FAST_MUL_8x8(getblue(oc),a);
-      *pixeldest = vid->color_pgtohwr(mkcolor(0,g,b));
+      *pixeldest = vid->color_pgtohwr(mkcolor(r,g,b));
 #endif
       pixeldest += ac;
     }

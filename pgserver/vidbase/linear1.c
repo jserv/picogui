@@ -1,4 +1,4 @@
-/* $Id: linear1.c,v 1.23 2002/10/12 19:53:49 micahjd Exp $
+/* $Id: linear1.c,v 1.24 2002/10/16 22:33:41 micahjd Exp $
  *
  * Video Base Library:
  * linear1.c - For 1-bit packed pixel devices (most black and white displays)
@@ -391,10 +391,9 @@ void linear1_blit(hwrbitmap dest,
    }
 }
    
-#ifdef CONFIG_FONTENGINE_BDF
 void linear1_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
 		      s16 lines, s16 angle, hwrcolor c, struct quad *clip,
-		      s16 lgop) {
+		      s16 lgop, int char_pitch) {
    struct stdbitmap src;
    
    /* Look-up table for blit LGOP, given original LGOP and color */
@@ -423,7 +422,7 @@ void linear1_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
        (clip && (x<clip->x1 || y<clip->y1 || 
 		 (x+w)>=clip->x2 || (y+h)>=clip->y2)) ||
        !FB_ISNORMAL(dest,PG_LGOP_NONE)) {
-      def_charblit(dest,chardat,x,y,w,h,lines,angle,c,clip,lgop);
+      def_charblit(dest,chardat,x,y,w,h,lines,angle,c,clip,lgop, char_pitch);
       return;
    }
 
@@ -431,16 +430,12 @@ void linear1_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
    src.bits = chardat;
    src.w = w;
    src.h = h;
-   if (w&7)
-     src.pitch = (w+8)>>3;
-   else
-     src.pitch = w>>3;
+   src.pitch = char_pitch;
 
    /* Look up a blit LGOP from the table */
    linear1_blit(dest,x,y,w,h,(hwrbitmap) &src,0,0,
 		lgoptab[c | (lgop<<1)]);
 }
-#endif /* CONFIG_FONTENGINE_BDF */
 
 /*********************************************** Registration */
 
@@ -454,9 +449,7 @@ void setvbl_linear1(struct vidlib *vid) {
    vid->bar            = &linear1_bar;
    vid->line           = &linear1_line;
    vid->blit           = &linear1_blit;
-#ifdef CONFIG_FONTENGINE_BDF
    vid->charblit       = &linear1_charblit;
-#endif
 }
 
 /* The End */

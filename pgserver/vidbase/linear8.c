@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.31 2002/10/12 19:53:49 micahjd Exp $
+/* $Id: linear8.c,v 1.32 2002/10/16 22:33:42 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -163,7 +163,6 @@ void linear8_gradient(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,s16 angle,
 }
 #endif
 
-#ifdef CONFIG_FONTENGINE_BDF
 /* Like charblit, but rotate 90 degrees anticlockwise whilst displaying
  *
  * FIXME: There is still a subtle bug when clipping against the left side
@@ -172,9 +171,8 @@ void linear8_gradient(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,s16 angle,
  */
 void linear8_charblit_v(hwrbitmap dest,u8 *chardat,s16 dest_x,
 			s16 dest_y,s16 w,s16 h,s16 lines,
-			hwrcolor c,struct quad *clip) {
+			hwrcolor c,struct quad *clip, int char_pitch) {
   u8 *dst,*destline;
-  s16 bw = w;
   s16 iw;
   s16 hc;
   s16 olines = lines;
@@ -187,9 +185,6 @@ void linear8_charblit_v(hwrbitmap dest,u8 *chardat,s16 dest_x,
   if (clip && (dest_x>clip->x2 || (dest_y-w)>clip->y2 || (dest_x+h)<clip->x1 || 
       dest_y<clip->y1)) return;
 
-  /* Find the width of the source data in bytes */
-  if (bw & 7) bw += 8;
-  bw = bw >> 3;
   xmin = 0;
   xmax = w;
   clipping = 0;      /* This is set if we are being clipped,
@@ -205,7 +200,7 @@ void linear8_charblit_v(hwrbitmap dest,u8 *chardat,s16 dest_x,
     if (clip->x1>dest_x) {
       hc = clip->x1-dest_x; /* Do it this way so skewing doesn't mess up when clipping */
       destline = (dst += hc);
-      chardat += hc*bw;
+      chardat += hc*char_pitch;
     }
     
     /* Setup for horizontal clipping (if so, set a special case) */
@@ -229,7 +224,7 @@ void linear8_charblit_v(hwrbitmap dest,u8 *chardat,s16 dest_x,
 	dst += FB_BPL;
 	flag=1;
       }
-      for (iw=bw,xpix=0;iw;iw--)
+      for (iw=char_pitch,xpix=0;iw;iw--)
 	for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,
 	     destline-=FB_BPL,xpix++)
 	  if (ch&0x80 && xpix>=xmin && xpix<xmax) *destline = c; 
@@ -243,7 +238,7 @@ void linear8_charblit_v(hwrbitmap dest,u8 *chardat,s16 dest_x,
     /* Tight, unrolled loop, works only for normal case */
     
     for (;hc<h;hc++,destline=(dst++))
-       for (iw=bw;iw;iw--) {
+       for (iw=char_pitch;iw;iw--) {
 	  ch = *(chardat++);
 	  if (ch&0x80) *destline = c; destline-=FB_BPL; 
 	  if (ch&0x40) *destline = c; destline-=FB_BPL; 
@@ -265,19 +260,19 @@ void linear8_charblit_v(hwrbitmap dest,u8 *chardat,s16 dest_x,
 void linear8_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,
 		      s16 dest_y,s16 w,s16 h,s16 lines,s16 angle,
 		      hwrcolor c,struct quad *clip,
-		      s16 lgop) {
+		      s16 lgop, int char_pitch) {
   u8 *dst,*destline;
-  s16 bw,iw,hc,olines,bit,flag,xpix,xmin,xmax,clipping;
+  s16 iw,hc,olines,bit,flag,xpix,xmin,xmax,clipping;
   u8 ch;
 
   if (!FB_ISNORMAL(dest,lgop) || (angle && (angle != 90))) {
-    def_charblit(dest,chardat,dest_x,dest_y,w,h,lines,angle,c,clip,lgop);
-     return;
+    def_charblit(dest,chardat,dest_x,dest_y,w,h,lines,angle,c,clip,lgop,char_pitch);
+    return;
   }
   
   if (angle==90) {
-     linear8_charblit_v(dest,chardat,dest_x,dest_y,w,h,lines,c,clip);
-     return;
+    linear8_charblit_v(dest,chardat,dest_x,dest_y,w,h,lines,c,clip,char_pitch);
+    return;
   }
    
   /* Is it at all in the clipping rect? */
@@ -286,11 +281,7 @@ void linear8_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,
 
   olines = lines;
   flag = 0;
-  bw = w;
    
-  /* Find the width of the source data in bytes */
-  if (bw & 7) bw += 8;
-  bw = bw >> 3;
   xmin = 0;
   xmax = w;
   clipping = 0;      /* This is set if we are being clipped,
@@ -306,7 +297,7 @@ void linear8_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,
     if (clip->y1>dest_y) {
       hc = clip->y1-dest_y; /* Do it this way so skewing doesn't mess up when clipping */
       destline = (dst += hc * FB_BPL);
-      chardat += hc*bw;
+      chardat += hc*char_pitch;
     }
     
     /* Setup for horizontal clipping (if so, set a special case) */
@@ -330,7 +321,7 @@ void linear8_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,
 	dst--;
 	flag=1;
       }
-      for (iw=bw,xpix=0;iw;iw--)
+      for (iw=char_pitch,xpix=0;iw;iw--)
 	for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,destline++,xpix++)
 	  if (ch&0x80 && xpix>=xmin && xpix<xmax) *destline = c; 
       if (flag) {
@@ -343,7 +334,7 @@ void linear8_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,
     /* Tight, unrolled loop, works only for normal case */
     
     for (;hc<h;hc++,destline=(dst+=FB_BPL))
-      for (iw=bw;iw;iw--) {
+      for (iw=char_pitch;iw;iw--) {
 	ch = *(chardat++);
 	if (ch&0x80) *destline = c; destline++; 
 	if (ch&0x40) *destline = c; destline++; 
@@ -356,8 +347,6 @@ void linear8_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,
       }
   }
 }
-#endif /* CONFIG_FONTENGINE_BDF */
-
 
 /* Ugh. Evil but necessary... I suppose... */
 void linear8_pixel(hwrbitmap dest, s16 x,s16 y,hwrcolor c,s16 lgop) {
@@ -437,9 +426,7 @@ void setvbl_linear8(struct vidlib *vid) {
 #ifndef CONFIG_DITHER_GRADIENTS
   vid->gradient       = &linear8_gradient;
 #endif
-#ifdef CONFIG_FONTENGINE_BDF
   vid->charblit       = &linear8_charblit;
-#endif
   vid->pixel          = &linear8_pixel;
   vid->getpixel       = &linear8_getpixel;
   vid->blit           = &linear8_blit;

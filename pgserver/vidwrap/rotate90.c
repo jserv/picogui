@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.33 2002/10/14 07:58:27 micahjd Exp $
+/* $Id: rotate90.c,v 1.34 2002/10/16 22:33:42 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -222,10 +222,9 @@ void rotate90_multiblit(hwrbitmap dest,s16 dest_x,s16 dest_y,
 		     lgop);
 }
 
-#ifdef CONFIG_FONTENGINE_BDF
 void rotate90_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
 		       s16 w,s16 h,s16 lines,s16 angle,hwrcolor c,
-		       struct quad *clip, s16 lgop) {
+		       struct quad *clip, s16 lgop, int pitch) {
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
    
@@ -235,9 +234,9 @@ void rotate90_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
    if (angle<0) angle += 360;
    
    (*vid->charblit)(dest,chardat,dest_y,dy-1-dest_x,w,h,
-		    lines,angle,c,rotate90_rotateclip(clip),lgop);
+		    lines,angle,c,rotate90_rotateclip(clip),lgop,pitch);
 }
-#endif
+
 #ifdef CONFIG_FONTENGINE_FREETYPE
 void rotate90_alpha_charblit(hwrbitmap dest,u8 *chardat, s16 dest_x,s16 dest_y,s16 w,s16 h,
 			     int char_pitch, u8 *gammatable, s16 angle,hwrcolor c,
@@ -324,9 +323,7 @@ void vidwrap_rotate90(struct vidlib *vid) {
    vid->rotateblit = &rotate90_rotateblit;
    vid->scrollblit = &rotate90_scrollblit;
    vid->multiblit = &rotate90_multiblit;
-#ifdef CONFIG_FONTENGINE_BDF
    vid->charblit = &rotate90_charblit;
-#endif
 #ifdef CONFIG_FONTENGINE_FREETYPE
    vid->alpha_charblit = &rotate90_alpha_charblit;
 #endif

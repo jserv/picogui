@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.23 2002/10/16 11:57:48 micahjd Exp $
+/* $Id: font_freetype.c,v 1.24 2002/10/16 22:33:41 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -402,9 +402,20 @@ void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct 
     break;
   }
 
-  VID(alpha_charblit)(dest,bg->bitmap.buffer,x,y,bg->bitmap.width,
-		      bg->bitmap.rows,bg->bitmap.pitch,ft_pick_gamma_table(col),
-		      angle,col,clip,lgop);
+  switch (bg->bitmap.pixel_mode) {
+
+  case FT_PIXEL_MODE_GRAY:
+    VID(alpha_charblit)(dest,bg->bitmap.buffer,x,y,bg->bitmap.width,
+			bg->bitmap.rows,bg->bitmap.pitch,ft_pick_gamma_table(col),
+			angle,col,clip,lgop);
+    break;
+
+  case FT_PIXEL_MODE_MONO:
+    VID(charblit) (dest,bg->bitmap.buffer,x,y,bg->bitmap.width,bg->bitmap.rows,
+		   0,angle,col,clip,lgop, bg->bitmap.pitch);
+    break;
+
+  }
 
   switch (angle) {
   case 0:
@@ -586,7 +597,15 @@ g_error freetype_create(struct font_descriptor *self, const struct font_style *f
   }
   else {
     DATA->metrics.charcell.w = face->available_sizes->width;
-    DATA->metrics.charcell.w = face->available_sizes->height;
+    DATA->metrics.charcell.h = face->available_sizes->height;
+
+    /* Is there any way to get the rest of the metrics?
+     * Just fudge them for now...
+     */
+    DATA->metrics.ascent = DATA->metrics.charcell.h;
+    DATA->metrics.descent = 0;
+    DATA->metrics.lineheight = DATA->metrics.charcell.h;
+    DATA->metrics.linegap = 0;
   }
 
   if (DATA->flags & PG_FSTYLE_FLUSH)
