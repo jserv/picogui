@@ -21,7 +21,7 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
-import os
+import os, popen2
 
 # The name of the svn command to use. This should be made customizable.
 svnCommand = "svn"
@@ -29,17 +29,30 @@ svnCommand = "svn"
 class CmdlineSVNClientBroken(Exception):
     pass
 
+class ErrorReturnCode(Exception):
+    pass
+
 def detectVersion():
-    s = os.popen("%s --version" % svnCommand)
-    ver = s.read()
-    s.close()
+    # Get the complete output from svn --version
+    svn = popen2.Popen4("%s --version" % svnCommand)
+    ver = svn.fromchild.read()
+
+    # If the response doesn't contain "Subversion", assume something's wrong
     if ver.find("Subversion") < 0:
+        raise CmdlineSVNClientBroken
+
+    # Test to make sure we can rely on the client's error codes.
+    if svn.wait():
+        raise CmdlineSVNClientBroken
+    svn = popen2.Popen4("%s --break-now" % svnCommand)
+    if not svn.wait():
         raise CmdlineSVNClientBroken
     return ver
 
 def runCommand(args):
     global svnCommand
-    print os.system('%s --non-interactive %s' % (svnCommand, args))
+    if os.system('%s --non-interactive %s' % (svnCommand, args)):
+        raise ErrorReturnCode
 
 
 # Since exceptions during import will be used to autodetect which Subversion
@@ -59,6 +72,13 @@ class SVNRepository:
         pass
             
     def update(self, destination):
+        try:
+            # Determine if the destination has a repository. This will fail if not.
+            open(os.path.join(destination, os.path.join(".svn", "format"))).close()
+        except IOError:
+            # Do a complete download and return
+            self.download(destination)
+            return
         runCommand('up "%s"' % destination)
 
 
