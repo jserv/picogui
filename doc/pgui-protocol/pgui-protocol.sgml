@@ -1243,8 +1243,8 @@ server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
 server returned data : none
    </programlisting>
    <para>
-	Register exclusive access to a resouce.
-   <para>
+	Register exclusive access to a resource.
+   </para>
    <figure id="pgreqdregowner"><title>struct pgreqd_regowner</><programlisting>
 struct pgreqd_regowner {
   u16 res;
@@ -1270,6 +1270,7 @@ struct pgreqd_regowner {
    <para>
 	<emphasis>NOTE:</> In the next protocol version the <structname>pgreqd_regowner</> structure will be padded to 32bits.
    </para>
+  </sect2>
 
   <sect2 id="pgreq-render">
    <title>PGREQ_RENDER - Render a gropnode to a bitmap</>
@@ -2622,6 +2623,7 @@ chbtn = (<structfield>pgresponse_event.param</> &gt;&gt; 28) &amp; 0xF;
   <row><entry>PGMOD_CAPS</><entry>2000</><entry></></>
   <row><entry>PGMOD_MODE</><entry>4000</><entry></></>
   </tbody>
+  </tgroup>
   </table>
  </appendix>
  
