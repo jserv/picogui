@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.40 2002/04/08 23:43:56 micahjd Exp $
+/* $Id: api.c,v 1.41 2002/04/14 21:37:30 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -625,7 +625,7 @@ void pgAttachWidget(pghandle parent, s16 rship, pghandle widget) {
    struct pgreqd_attachwidget arg;
 
    arg.widget = htonl(widget);
-   arg.parent = htonl(parent ? parent : _pgdefault_widget);   
+   arg.parent = htonl(parent);   
    arg.rship  = htons(rship  ? rship  : _pgdefault_rship);
    
 #ifdef ENABLE_THREADING_SUPPORT
