@@ -1,3 +1,9 @@
+---- Thursday, February 8
+
+Since there's no input device on my ucSimm presently, I'm adding client-side
+support for networked input devices.
+
+
 ---- Wednesday, February 7
 
 Ack. That ucLinux stuff I put in CVS _was_ mostly right except that I forgot
@@ -9,7 +15,23 @@ turns out to be nicely portable.
 The bug in themec turned out to be a strategically-placed-missing-semicolon :-/
 
 Working on ucLinux port using the new hardware...
+Kludged together a driver using linear8. Pixels are reminiscent of Atari,
+but it gets me an entire 160x200 at a good speed.
 
+A few problems with the port so far:
+
+- Word alignment. I think i fixed most of this, and the theme loader no
+longer crashes, but it doesn't work right either.
+
+- Driver, of course!
+
+- Canvas widget and terminal are broke
+
+- Need to implement a custom heap-management system. ucLinux's memory
+mapping is slow and seems to leak quite a bit. Total memory as reported by
+ps starts out at a reasonable 53k but can grow to over 600k after running
+and closing many things. Still, pgserver running the demo app takes less
+memory than the shell!
 
 ---- Tuesday, February 6
 
