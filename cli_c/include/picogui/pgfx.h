@@ -1,4 +1,4 @@
-/* $Id: pgfx.h,v 1.3 2001/04/14 07:48:34 micahjd Exp $
+/* $Id: pgfx.h,v 1.4 2001/04/17 04:02:20 micahjd Exp $
  *
  * picogui/pgfx.h - The PicoGUI abstract graphics interface
  * 
@@ -104,16 +104,16 @@ struct pgfx_lib {
 #define pgSlab(a,b,c,d)                   (*(a)->lib->slab)(a,b,c,d)
 #define pgBar(a,b,c,d)                    (*(a)->lib->bar)(a,b,c,d)
 #define pgText(a,b,c,d,e)                 (*(a)->lib->text)(a,b,c,d,e)
-#define pgTextv(a,b,c,d,e)                (*(a)->lib->textv)(a,b,c,d,e)
+#define pgTextV(a,b,c,d,e)                (*(a)->lib->textv)(a,b,c,d,e)
 #define pgBitmap(a,b,c,d,e,f,g,h,i)       (*(a)->lib->bitmap)(a,b,c,d,e,f,g,h,i)
-#define pgTilebitmap(a,b,c,d,e,f,g,h,i,j) (*(a)->lib->tilebitmap)(a,b,c,d,e,f,g,h,i,j)
+#define pgTileBitmap(a,b,c,d,e,f,g,h,i,j) (*(a)->lib->tilebitmap)(a,b,c,d,e,f,g,h,i,j)
 #define pgGradient(a,b,c,d,e,f,g,h,i)     (*(a)->lib->gradient)(a,b,c,d,e,f,g,h,i)
-#define pgSetcolor(a,b)                   (*(a)->lib->setcolor)(a,b)
+#define pgSetColor(a,b)                   (*(a)->lib->setcolor)(a,b)
 #define pgContextUpdate(a)                (*(a)->lib->update)(a)
 
 /* Meta-primitives */
-void    pgMoveto(pgcontext c, pgu x, pgu y);
-pgprim  pgLineto(pgcontext c, pgu x, pgu y);
+void    pgMoveTo(pgcontext c, pgu x, pgu y);
+pgprim  pgLineTo(pgcontext c, pgu x, pgu y);
 
 /************ Constants */
 
