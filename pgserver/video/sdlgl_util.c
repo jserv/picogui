@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.10 2002/03/06 11:38:46 micahjd Exp $
+/* $Id: sdlgl_util.c,v 1.11 2002/03/26 03:46:04 instinc Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.
@@ -395,7 +395,7 @@ void gl_make_texture(struct glbitmap *glb) {
      * will work as usual.
      */
     i = glb->tw * glb->th;
-    p = ((struct glbitmap*)tmpbit)->sb->bits;
+    p = (u32 *)((struct glbitmap*)tmpbit)->sb->bits;
     for (;i;i--,p++)
       if (*p & PGCF_ALPHA) {
 	*p = (*p & 0x1FFFFFF) | ((*p & 0xFF000000)<<1);

@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.27 2002/03/26 03:12:35 instinc Exp $
+/* $Id: ncurses.c,v 1.28 2002/03/26 03:46:04 instinc Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -114,7 +114,7 @@ g_error ncurses_init(void) {
    /* Allocate our buffer */
    e = g_malloc((void**) &ncurses_screen,vid->xres * vid->yres * sizeof(chtype));
    errorcheck;
-   for (p=ncurses_screen,size=vid->xres*vid->yres;size;size--,p++)
+   for (p=(u32 *)ncurses_screen,size=vid->xres*vid->yres;size;size--,p++)
      *p = ' ';
    
    return success;
