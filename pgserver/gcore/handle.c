@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.47 2001/11/07 07:35:56 micahjd Exp $
+/* $Id: handle.c,v 1.48 2001/12/14 22:56:43 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -438,7 +438,7 @@ g_error mkhandle(handle *h,unsigned char type,int owner,void *obj) {
   if (!h) return mkerror(PG_ERRT_INTERNAL,25);
   if (obj==NULL) {
     *h = 0;
-    return sucess;
+    return success;
   }
 #ifdef DEBUG_KEYS
   num_handles++;
@@ -461,7 +461,7 @@ g_error mkhandle(handle *h,unsigned char type,int owner,void *obj) {
   printf("mkhandle(%d,0x%08X): node=0x%08X\n",owner,*h,n);
 #endif
    
-  return sucess;
+  return success;
 }
 
 /* Group a handle with the theme containing it. Puts the 'to' handle in the
@@ -478,7 +478,7 @@ g_error handle_group(int owner,handle from, handle to) {
   if (owner>=0 && ((t->owner != owner) || (f->owner !=owner))) 
     return mkerror(PG_ERRT_HANDLE,27);
   t->group = f->id;
-  return sucess;
+  return success;
 }
 
 g_error rdhandle(void **p,unsigned char reqtype,int owner,handle h) {
@@ -494,7 +494,7 @@ g_error rdhandle(void **p,unsigned char reqtype,int owner,handle h) {
      *p = *x;
    else
      *p = NULL;
-  return sucess;
+  return success;
 }
    
 /* Reads the handle, returns NULL if handle is invalid or if it
@@ -503,7 +503,7 @@ g_error rdhandlep(void ***p,unsigned char reqtype,int owner,handle h) {
   struct handlenode *n;
   if (!h) {
     *p = NULL;
-    return sucess;
+    return success;
   }
   n = htree_find(h);
   if (!n) return mkerror(PG_ERRT_HANDLE,26);
@@ -520,7 +520,7 @@ g_error rdhandlep(void ***p,unsigned char reqtype,int owner,handle h) {
     return mkerror(PG_ERRT_HANDLE,27);
 
   *p = &n->obj;
-  return sucess;
+  return success;
 }
 
 /* Deletes all handles owned by owner with a context >= 'context',
@@ -579,8 +579,8 @@ g_error handle_free(int owner,handle h) {
 #endif
 
   /* Already gone - don't complain */
-  if (!h) return sucess;
-  if (!n) return sucess;
+  if (!h) return success;
+  if (!n) return success;
 
   if (owner>=0 && n->owner != owner) 
     return mkerror(PG_ERRT_HANDLE,27);
@@ -593,7 +593,7 @@ g_error handle_free(int owner,handle h) {
   /* See if this node had any group members that need to be expunged */
   while (r_handle_cleanup(htree,-1,-1,ncopy.id));
 
-  return sucess;
+  return success;
 }
 
 /* A fairly interesting function.  Destroys any data referenced by
@@ -619,7 +619,7 @@ g_error handle_bequeath(handle dest, handle src, int srcowner) {
   object_free(d);
   d->obj = s->obj;
   htree_delete(s);
-  return sucess;
+  return success;
 }
 
 /* This uses a recursive function to do its acual work */
@@ -647,7 +647,7 @@ g_error rehandle(handle h, void *obj, u8 type) {
   hn->obj = obj;
   hn->type &= ~PG_TYPEMASK;
   hn->type |= type;
-  return sucess;
+  return success;
 }
 
 /* Gets a pointer to the handle's payload, stores it in the variable
@@ -659,14 +659,14 @@ g_error handle_payload(unsigned long **pppayload,int owner,handle h) {
   if (owner>=0 && n->owner != owner) 
     return mkerror(PG_ERRT_HANDLE,27);
   *pppayload = &n->payload;
-  return sucess;
+  return success;
 }
 
 /* Recursive part of handle_iterate() */
 g_error r_iterate(struct handlenode *n,u8 type,g_error (*iterator)(void **pobj)) {
    g_error e;
    
-   if ((!n) || (n==NIL)) return sucess;
+   if ((!n) || (n==NIL)) return success;
    if ((n->type & PG_TYPEMASK)==type) {
      e = (*iterator)(&n->obj);
      errorcheck;
@@ -726,7 +726,7 @@ g_error handle_chcontext(handle h, int owner, s16 delta) {
   if (owner>=0 && n->owner != owner) 
     return mkerror(PG_ERRT_HANDLE,27);
   n->context += delta;
-  return sucess;
+  return success;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: menubar.c,v 1.1 2001/12/12 15:23:34 epchristi Exp $
+/* $Id: menubar.c,v 1.2 2001/12/14 22:56:45 micahjd Exp $
  *
  * menubar.c - Holder for applications
  *
@@ -306,7 +306,7 @@ g_error menubar_install(struct widget *self) {
     TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE |
     TRIGGER_DRAG | TRIGGER_MOVE;
 
-  return sucess;
+  return success;
 }
 
 /**** Properties */
@@ -381,7 +381,7 @@ g_error menubar_set(struct widget *self,int property, glob data) {
     return mkerror(ERRT_PASS,0);
 
   }
-  return sucess;
+  return success;
 }
 
 glob menubar_get(struct widget *self,int property) {
@@ -421,7 +421,7 @@ static g_error insert_widget(struct widget *self, struct widget *w)
   /* now fix up the divtree */
   w->out = &DATA->panelbar; 
 
-  return sucess;
+  return success;
 
 }
 

@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.28 2001/10/29 23:57:55 micahjd Exp $
+/* $Id: sdlinput.c,v 1.29 2001/12/14 22:56:43 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -275,7 +275,7 @@ g_error sdlinput_init(void) {
 
   SDL_EnableUNICODE(1);
   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,SDL_DEFAULT_REPEAT_INTERVAL);
-  return sucess;
+  return success;
 }
 
 /* Polling time for the input driver */ 
@@ -309,7 +309,7 @@ g_error sdlinput_regfunc(struct inlib *i) {
   i->close = &sdlinput_close;
 #endif
 
-  return sucess;
+  return success;
 }
 
 /* The End */

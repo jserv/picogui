@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.68 2001/12/12 03:49:17 epchristi Exp $
+/* $Id: panel.c,v 1.69 2001/12/14 22:56:45 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -320,7 +320,7 @@ g_error panel_install(struct widget *self) {
     TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE |
     TRIGGER_DRAG | TRIGGER_MOVE;
 
-  return sucess;
+  return success;
 }
 
 /**** Properties */
@@ -382,7 +382,7 @@ g_error panel_set(struct widget *self,int property, glob data) {
     return mkerror(ERRT_PASS,0);
 
   }
-  return sucess;
+  return success;
 }
 
 glob panel_get(struct widget *self,int property) {

@@ -1,4 +1,4 @@
-/* $Id: null.c,v 1.6 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: null.c,v 1.7 2001/12/14 22:56:43 micahjd Exp $
  *
  * null.c - A dummy driver that produces no actual output but can do
  *          some error checking and debuggative things
@@ -44,7 +44,7 @@ g_error null_init(void) {
    if (!vid->xres) vid->xres = 640;
    if (!vid->yres) vid->xres = 480;
    if (!vid->bpp) vid->bpp = 8;
-   return sucess;
+   return success;
 }
 
 g_error null_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
@@ -53,7 +53,7 @@ g_error null_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
    vid->yres = yres;
    vid->bpp  = bpp;
    vid->display = NULL;
-   return sucess;
+   return success;
 }
 
 #ifdef DEBUG_VIDEO
@@ -99,7 +99,7 @@ g_error null_regfunc(struct vidlib *v) {
 #endif
    v->pixel = &null_pixel;
    v->getpixel = &null_getpixel;
-   return sucess;
+   return success;
 }
 
 /* The End */

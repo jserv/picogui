@@ -1,4 +1,4 @@
-/* $Id: bmp.c,v 1.3 2001/09/18 17:14:11 micahjd Exp $
+/* $Id: bmp.c,v 1.4 2001/12/14 22:56:42 micahjd Exp $
  *
  * bmp.c - Functions to detect and load files compatible with the Windows BMP
  *         file format. This format is good for palettized images and/or
@@ -214,7 +214,7 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
       rasterdata += 4-x;
   }
     
-  return sucess;
+  return success;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.42 2001/11/30 02:52:10 micahjd Exp $
+/* $Id: font.c,v 1.43 2001/12/14 22:56:43 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -411,7 +411,7 @@ g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
    /* Let the video driver transmogrify it if necessary */
    VID(font_newdesc) (fd,name,size,flags);
    
-   return sucess;
+   return success;
 }
 
 /* A function used by findfont that computes the 'closeness' between

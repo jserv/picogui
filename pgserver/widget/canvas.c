@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.30 2001/11/16 01:42:14 micahjd Exp $
+/* $Id: canvas.c,v 1.31 2001/12/14 22:56:44 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -106,7 +106,7 @@ g_error canvas_install(struct widget *self) {
     */
    self->trigger_mask = TRIGGER_STREAM | TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE;
    
-   return sucess;
+   return success;
 }
 
 void canvas_remove(struct widget *self) {

@@ -1,4 +1,4 @@
-/* $Id: radiobutton.c,v 1.1 2001/08/31 02:19:45 micahjd Exp $
+/* $Id: radiobutton.c,v 1.2 2001/12/14 22:56:45 micahjd Exp $
  *
  * radiobutton.c - a customized button, used for "radio" buttons
  *
@@ -46,7 +46,7 @@ g_error radiobutton_install(struct widget *self) {
   /* Stack vertically */
   widget_set(self,PG_WP_SIDE,PG_S_TOP);
 
-  return sucess;
+  return success;
 }
 
 /* The End */

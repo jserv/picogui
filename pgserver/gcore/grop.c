@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.46 2001/05/01 23:13:17 micahjd Exp $
+/* $Id: grop.c,v 1.47 2001/12/14 22:56:43 micahjd Exp $
  *
  * grop.c - grop-list management
  *
@@ -58,7 +58,7 @@ g_error gropnode_alloc(struct gropnode **n) {
       grop_zombie_count--;
       *n = grop_zombie_list;
       grop_zombie_list = (*n)->next;
-      return sucess;
+      return success;
    }
       
 #ifdef DEBUG_MEMORY
@@ -122,7 +122,7 @@ g_error addgrop(struct gropctxt *ctx, u16 type) {
   g_error e;
 
   /* ctx == NULL is legal, used to disable actual output */
-  if (!ctx) return sucess;
+  if (!ctx) return success;
 
   e = gropnode_alloc(&node);
   errorcheck;
@@ -139,7 +139,7 @@ g_error addgrop(struct gropctxt *ctx, u16 type) {
 
   ctx->n++;   /* There goes another gropnode! */
 
-  return sucess;
+  return success;
 }
 
 g_error addgropsz(struct gropctxt *ctx, u16 type,s16 x,s16 y,s16 w,s16 h) {
@@ -150,7 +150,7 @@ g_error addgropsz(struct gropctxt *ctx, u16 type,s16 x,s16 y,s16 w,s16 h) {
    ctx->current->r.y = y;
    ctx->current->r.w = w;
    ctx->current->r.h = h;
-   return sucess;
+   return success;
 }
 
 /* Delete the whole list */

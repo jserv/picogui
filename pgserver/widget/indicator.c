@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.22 2001/07/06 07:13:04 micahjd Exp $
+/* $Id: indicator.c,v 1.23 2001/12/14 22:56:44 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -77,7 +77,7 @@ g_error indicator_install(struct widget *self) {
   self->in->div->build = &build_indicator;
   self->in->div->state = PGTH_O_INDICATOR;
 
-  return sucess;
+  return success;
 }
 
 void indicator_remove(struct widget *self) {
@@ -99,7 +99,7 @@ g_error indicator_set(struct widget *self,int property, glob data) {
   default:
     return mkerror(ERRT_PASS,0);
   }
-  return sucess;
+  return success;
 }
 
 glob indicator_get(struct widget *self,int property) {

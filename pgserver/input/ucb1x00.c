@@ -74,7 +74,7 @@ g_error ucb1x00_init(void)
   flip_y = get_param_int("input-ucb1x00","flip_y",1);
   tolerance = get_param_int("input-ucb1x00","tolerance",45);
   
-  return sucess;
+  return success;
 }
 
 void ucb1x00_close(void)
@@ -200,7 +200,7 @@ g_error ucb1x00_regfunc(struct inlib *i) {
   i->close = &ucb1x00_close;
   i->fd_activate = &ucb1x00_fd_activate;
   i->fd_init = &ucb1x00_fd_init;
-  return sucess;
+  return success;
 }
 
 /* The End */

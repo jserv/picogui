@@ -1,4 +1,4 @@
-/* $Id: r3912ts.c,v 1.3 2001/08/14 07:04:23 micahjd Exp $
+/* $Id: r3912ts.c,v 1.4 2001/12/14 22:56:43 micahjd Exp $
  *
  * r3912ts.c - input driver for r3912 touch screen found on the VTech Helio
  *             and others. Other touch screens using the same data format should
@@ -209,7 +209,7 @@ g_error r3912ts_init(void) {
    if (r3912ts_fd <= 0)
      return mkerror(PG_ERRT_IO, 74);
    
-   return sucess;
+   return success;
 }
 
 void r3912ts_close(void) {
@@ -310,7 +310,7 @@ g_error r3912ts_regfunc(struct inlib *i) {
   i->close = &r3912ts_close;
   i->fd_activate = &r3912ts_fd_activate;
   i->fd_init = &r3912ts_fd_init;
-  return sucess;
+  return success;
 }
 
 /* The End */

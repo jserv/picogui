@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.62 2001/11/30 02:52:11 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.63 2001/12/14 22:56:43 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -62,7 +62,7 @@ struct bitformat bitmap_formats[] = {
 /******* no-op functions */
 
 g_error def_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
-  return sucess;
+  return success;
 }
 
 void def_font_newdesc(struct fontdesc *fd) {
@@ -72,7 +72,7 @@ void emulate_dos(void) {
 }
 
 g_error def_enterexitmode(void) {
-   return sucess;
+   return success;
 }
 
 void def_update(s16 x,s16 y,s16 w,s16 h) {
@@ -1217,7 +1217,7 @@ g_error def_bitmap_loadxbm(hwrbitmap *bmp,const u8 *data, s16 w, s16 h,
 	bit++;
 	bit &= 7;
      }
-   return sucess;
+   return success;
 }
 #endif /* CONFIG_FORMAT_XBM */
 
@@ -1328,7 +1328,7 @@ g_error def_bitmap_rotate90(hwrbitmap *b) {
    /* Clean up */
    *b = (hwrbitmap) destbit;
    (*vid->bitmap_free)(srcbit);
-   return sucess;
+   return success;
 }
 
 g_error def_bitmap_new(hwrbitmap *b, s16 w,s16 h) {
@@ -1361,7 +1361,7 @@ g_error def_bitmap_new(hwrbitmap *b, s16 w,s16 h) {
   (*bmp)->w = w;
   (*bmp)->h = h;
   
-  return sucess;
+  return success;
 }
 
 void def_bitmap_free(struct stdbitmap *bmp) {
@@ -1377,7 +1377,7 @@ g_error def_bitmap_getsize(hwrbitmap b,s16 *w,s16 *h) {
    struct stdbitmap *bmp = (struct stdbitmap *) b;
    *w = bmp->w;
    *h = bmp->h;
-   return sucess;
+   return success;
 }
 
 #ifndef min
@@ -1707,7 +1707,7 @@ g_error def_bitmap_modeconvert(struct stdbitmap **bmp) {
    /* Clean up */
    *bmp = destbit;
    (*vid->bitmap_free)(srcbit);
-   return sucess;
+   return success;
 }
    
 /* Optional
@@ -1781,7 +1781,7 @@ g_error def_bitmap_modeunconvert(struct stdbitmap **bmp) {
    /* Clean up */
    *bmp = destbit;
    (*vid->bitmap_free)(srcbit);
-   return sucess;
+   return success;
 }
 
 g_error def_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
@@ -1791,7 +1791,7 @@ g_error def_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
 
   if (b->rend) {
     *rend = b->rend;
-    return sucess;
+    return success;
   }
 
   /* ack... we need to make a new context */
@@ -1811,7 +1811,7 @@ g_error def_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
   (*rend)->output_rect.w = w;
   (*rend)->output_rect.h = h;
 
-  return sucess;
+  return success;
 }
    
 /* Small helper function used in outchar_fake and outchar 

@@ -1,4 +1,4 @@
-/* $Id: input.c,v 1.11 2001/07/12 00:17:18 micahjd Exp $
+/* $Id: input.c,v 1.12 2001/12/14 22:56:43 micahjd Exp $
  *
  * input.c - Abstract input driver interface
  *
@@ -81,7 +81,7 @@ g_error load_inlib(g_error (*regfunc)(struct inlib *i),
   /* Return stuff */
   if (inl)
     *inl = newnode;
-  return sucess;
+  return success;
 }
 
 /* Unload a specific driver */

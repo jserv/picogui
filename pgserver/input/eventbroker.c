@@ -1,4 +1,4 @@
-/* $Id: eventbroker.c,v 1.5 2001/11/29 10:44:14 pney Exp $
+/* $Id: eventbroker.c,v 1.6 2001/12/14 22:56:43 micahjd Exp $
  *
  * eventbroker.c - input driver to manage driver messages
  *
@@ -279,7 +279,7 @@ g_error eventbroker_regfunc(struct inlib *i) {
   i->fd_init = &eventbroker_fd_init;
 #endif /* defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE) */
   i->message = &eventbroker_message;
-  return sucess;
+  return success;
 }
 
 /* ------------------------------------------------------------------------- */

@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.43 2001/12/14 00:11:44 micahjd Exp $
+/* $Id: memtheme.c,v 1.44 2001/12/14 22:56:43 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -545,7 +545,7 @@ g_error theme_load(handle *h,int owner,char *themefile,
   dts->top->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
   dts->top->flags |= DIVTREE_NEED_RECALC;
 
-  return sucess;
+  return success;
 }
 
 void theme_remove(struct pgmemtheme *th) {

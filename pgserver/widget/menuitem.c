@@ -1,4 +1,4 @@
-/* $Id: menuitem.c,v 1.8 2001/08/30 16:38:07 micahjd Exp $
+/* $Id: menuitem.c,v 1.9 2001/12/14 22:56:45 micahjd Exp $
  *
  * menuitem.c - a customized button, used for menu items
  *
@@ -45,7 +45,7 @@ g_error menuitem_install(struct widget *self) {
   /* Stack vertically */
   widget_set(self,PG_WP_SIDE,PG_S_TOP);
 
-  return sucess;
+  return success;
 }
 
 g_error submenuitem_install(struct widget *self) {
@@ -66,7 +66,7 @@ g_error submenuitem_install(struct widget *self) {
   /* Stack vertically */
   widget_set(self,PG_WP_SIDE,PG_S_TOP);
 
-  return sucess;
+  return success;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: chipslicets.c,v 1.10 2001/11/29 18:10:06 pney Exp $
+/* $Id: chipslicets.c,v 1.11 2001/12/14 22:56:43 micahjd Exp $
  *
  * chipslicets.c - input driver for touch screen
  *
@@ -279,7 +279,7 @@ g_error chipslicets_init(void)
       goto error_close;
     }
 
-    return sucess;
+    return success;
 
   error_close:
     close(ts_fd);
@@ -336,7 +336,7 @@ g_error chipslicets_regfunc(struct inlib *i)
   i->fd_activate = &chipslicets_fd_activate;
   i->fd_init = &chipslicets_fd_init;
   i->message = &chipslicets_message;
-  return sucess;
+  return success;
 }
 
 /* ------------------------------------------------------------------------- */

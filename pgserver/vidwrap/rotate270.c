@@ -1,4 +1,4 @@
-/* $Id: rotate270.c,v 1.2 2001/11/25 02:47:35 micahjd Exp $
+/* $Id: rotate270.c,v 1.3 2001/12/14 22:56:44 micahjd Exp $
  *
  * rotate270.c - Video wrapper to rotate the screen 270 degrees
  *
@@ -203,7 +203,7 @@ g_error rotate270_exitmode(void) {
    errorcheck;
    e = rotate270_entermode();
    errorcheck;
-   return sucess;
+   return success;
 }
 
 void rotate270_coord_keyrotate(s16 *k) {

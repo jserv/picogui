@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.45 2001/12/12 03:49:17 epchristi Exp $
+/* $Id: scroll.c,v 1.46 2001/12/14 22:56:45 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -155,7 +155,7 @@ g_error scroll_install(struct widget *self) {
   self->trigger_mask = TRIGGER_DRAG | TRIGGER_ENTER | TRIGGER_LEAVE |
     TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_TIMER;
 
-  return sucess;
+  return success;
 }
 
 void scroll_remove(struct widget *self) {
@@ -217,7 +217,7 @@ g_error scroll_set(struct widget *self,int property, glob data) {
   default:
     return mkerror(ERRT_PASS,0);
   }
-  return sucess;
+  return success;
 }
 
 glob scroll_get(struct widget *self,int property) {

@@ -1,4 +1,4 @@
-/* $Id: serial40x4.c,v 1.10 2001/11/15 06:22:28 micahjd Exp $
+/* $Id: serial40x4.c,v 1.11 2001/12/14 22:56:44 micahjd Exp $
  *
  * serial40x4.c - PicoGUI video driver for a serial wall-mounted
  *                40x4 character LCD I put together about a year ago.
@@ -226,7 +226,7 @@ g_error serial40x4_init(void) {
    write(lcd_fd,"\\2\\g",4);
    write(lcd_fd,cg2,64);
    
-   return sucess;
+   return success;
 }
 
 void serial40x4_close(void) {
@@ -389,7 +389,7 @@ g_error serial40x4_regfunc(struct vidlib *v) {
    v->message = &serial40x4_message;
    v->font_getglyph = &serial40x4_font_getglyph;
    
-   return sucess;
+   return success;
 }
 
 /* The End */

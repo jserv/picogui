@@ -1,4 +1,4 @@
-/* $Id: jpeg.c,v 1.5 2001/10/07 07:03:28 micahjd Exp $
+/* $Id: jpeg.c,v 1.6 2001/12/14 22:56:42 micahjd Exp $
  *
  * jpeg.c - Functions to convert any of the jpeg formats 
  *
@@ -281,7 +281,7 @@ g_error jpeg_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   jpeg_finish_decompress(&cinfo);
   jpeg_destroy_decompress(&cinfo);
 
-  return sucess;
+  return success;
 }
 
 /* The End */

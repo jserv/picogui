@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.19 2001/11/15 06:22:28 micahjd Exp $
+/* $Id: ncurses.c,v 1.20 2001/12/14 22:56:43 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -112,7 +112,7 @@ g_error ncurses_init(void) {
    for (p=ncurses_screen,size=vid->xres*vid->yres;size;size--,p++)
      *p = ' ';
    
-   return sucess;
+   return success;
 }
 
 void ncurses_close(void) {
@@ -270,7 +270,7 @@ g_error ncurses_regfunc(struct vidlib *v) {
 
    v->sprite_show = &ncurses_sprite_show;
    
-   return sucess;
+   return success;
 }
 
 /* The End */

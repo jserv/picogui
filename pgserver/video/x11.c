@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.18 2001/12/05 17:48:29 micahjd Exp $
+/* $Id: x11.c,v 1.19 2001/12/14 22:56:44 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -260,7 +260,7 @@ g_error x11_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
 
   if (xb->rend) {
     *rend = xb->rend;
-    return sucess;
+    return success;
   }
 
   VID(bitmap_getsize)(bmp,&w,&h);
@@ -279,14 +279,14 @@ g_error x11_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
   (*rend)->output_rect.w = w;
   (*rend)->output_rect.h = h;
 
-  return sucess;
+  return success;
 }
 
 g_error x11_bitmap_getsize(hwrbitmap bmp,s16 *w,s16 *h) {
   struct x11bitmap *xb = (struct x11bitmap *) bmp;
   *w = xb->w;
   *h = xb->h;
-  return sucess;
+  return success;
 }
 
 g_error x11_bitmap_new(hwrbitmap *bmp,s16 w,s16 h) {
@@ -313,7 +313,7 @@ g_error x11_bitmap_new(hwrbitmap *bmp,s16 w,s16 h) {
 			  DefaultColormap(xdisplay, 0));
 #endif
 
-  return sucess;
+  return success;
 }
 
 void x11_bitmap_free(hwrbitmap bmp) {
@@ -750,7 +750,7 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
   XAutoRepeatOn(xdisplay);
 
   XFlush(xdisplay);
-  return sucess;
+  return success;
 }
 
 void x11_close(void) {
@@ -797,7 +797,7 @@ g_error x11_regfunc(struct vidlib *v) {
     v->fellipse = &x11_fellipse;
   }
 
-  return sucess;
+  return success;
 }
 
 /* The End */

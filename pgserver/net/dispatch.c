@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.69 2001/12/14 21:49:42 micahjd Exp $
+/* $Id: dispatch.c,v 1.70 2001/12/14 22:56:43 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -126,13 +126,13 @@ int dispatch_packet(int from,struct pgrequest *req,void *data) {
 
 g_error rqh_ping(int owner, struct pgrequest *req,
 		   void *data, unsigned long *ret, int *fatal) {
-  return sucess;
+  return success;
 }
 
 g_error rqh_update(int owner, struct pgrequest *req,
 		   void *data, unsigned long *ret, int *fatal) {
   update(NULL,1);
-  return sucess;
+  return success;
 }
 
 g_error rqh_mkwidget(int owner, struct pgrequest *req,
@@ -182,7 +182,7 @@ g_error rqh_mkwidget(int owner, struct pgrequest *req,
   
   *ret = h;
 
-  return sucess;
+  return success;
 }
 
 g_error rqh_createwidget(int owner, struct pgrequest *req,
@@ -216,7 +216,7 @@ g_error rqh_createwidget(int owner, struct pgrequest *req,
   
   *ret = h;
 
-  return sucess;
+  return success;
 }
 
 g_error rqh_attachwidget(int owner, struct pgrequest *req,
@@ -273,7 +273,7 @@ g_error rqh_mkbitmap(int owner, struct pgrequest *req,
   errorcheck;
   
   *ret = h;
-  return sucess;
+  return success;
 }
 
 g_error rqh_mkfont(int owner, struct pgrequest *req,
@@ -286,7 +286,7 @@ g_error rqh_mkfont(int owner, struct pgrequest *req,
   errorcheck;
 
   *ret = h;
-  return sucess;
+  return success;
 }
 
 g_error rqh_mkstring(int owner, struct pgrequest *req,
@@ -304,7 +304,7 @@ g_error rqh_mkstring(int owner, struct pgrequest *req,
   errorcheck;
 
   *ret = h;
-  return sucess;
+  return success;
 }
 
 g_error rqh_free(int owner, struct pgrequest *req,
@@ -336,7 +336,7 @@ g_error rqh_get(int owner, struct pgrequest *req,
 
   *ret = widget_get(w,ntohs(arg->property));
 
-  return sucess;
+  return success;
 }
 
 g_error rqh_undef(int owner, struct pgrequest *req,
@@ -351,7 +351,7 @@ g_error rqh_in_key(int owner, struct pgrequest *req,
 #else
   reqarg(in_key);
   dispatch_key(ntohl(arg->type),(int) ntohs(arg->key),ntohs(arg->mods));
-  return sucess;
+  return success;
 #endif
 }
 
@@ -363,7 +363,7 @@ g_error rqh_in_point(int owner, struct pgrequest *req,
   reqarg(in_point);
   dispatch_pointing(ntohl(arg->type),ntohs(arg->x),ntohs(arg->y),
 		    ntohs(arg->btn));
-  return sucess;
+  return success;
 #endif
 }
 
@@ -375,7 +375,7 @@ g_error rqh_in_direct(int owner, struct pgrequest *req,
   reqarg(in_direct);
   dispatch_direct(((char*)arg)+sizeof(struct pgreqd_in_direct),
 		  ntohl(arg->param));
-  return sucess;
+  return success;
 #endif
 }
 
@@ -512,7 +512,7 @@ g_error rqh_mkpopup(int owner, struct pgrequest *req,
   
   *ret = h;
 
-  return sucess;
+  return success;
 }
 
 g_error rqh_sizetext(int owner, struct pgrequest *req,
@@ -537,7 +537,7 @@ g_error rqh_sizetext(int owner, struct pgrequest *req,
   /* Pack w and h into ret */
   *ret = (((u32)w)<<16) | h;
 
-  return sucess;
+  return success;
 }
 
 /* This accepts a packet that contains many individual request packets.
@@ -646,7 +646,7 @@ g_error rqh_regowner(int owner, struct pgrequest *req,
       return mkerror(PG_ERRT_BADPARAM,99);
       break;
    }
-   return sucess;
+   return success;
 #endif
 }
       
@@ -691,7 +691,7 @@ g_error rqh_unregowner(int owner, struct pgrequest *req,
       break;
 
    }
-   return sucess;
+   return success;
 #endif
 }
       
@@ -712,7 +712,7 @@ g_error rqh_mkcontext(int owner, struct pgrequest *req,
 
   cb->context++;
 
-  return sucess;
+  return success;
 }
 
 g_error rqh_rmcontext(int owner, struct pgrequest *req,
@@ -724,7 +724,7 @@ g_error rqh_rmcontext(int owner, struct pgrequest *req,
   handle_cleanup(owner,cb->context);
   cb->context--;
   
-  return sucess;
+  return success;
 }
 
 g_error rqh_focus(int owner, struct pgrequest *req,
@@ -738,7 +738,7 @@ g_error rqh_focus(int owner, struct pgrequest *req,
   
   request_focus(w);
 
-  return sucess;
+  return success;
 }
 
 g_error rqh_getstring(int owner, struct pgrequest *req,
@@ -776,7 +776,7 @@ g_error rqh_setpayload(int owner, struct pgrequest *req,
   
   *ppayload = ntohl(arg->payload);
 
-  return sucess;
+  return success;
 }
 
 g_error rqh_getpayload(int owner, struct pgrequest *req,
@@ -790,7 +790,7 @@ g_error rqh_getpayload(int owner, struct pgrequest *req,
   
   *ret = *ppayload;
 
-  return sucess;
+  return success;
 }
 
 g_error rqh_mktheme(int owner, struct pgrequest *req,
@@ -811,7 +811,7 @@ g_error rqh_mktheme(int owner, struct pgrequest *req,
 
   *ret = h;
 
-  return sucess;
+  return success;
 }
 
 g_error rqh_mkfillstyle(int owner, struct pgrequest *req,
@@ -832,7 +832,7 @@ g_error rqh_mkfillstyle(int owner, struct pgrequest *req,
   errorcheck;
 
   *ret = h;
-  return sucess;
+  return success;
 }
 
 g_error rqh_writeto(int owner, struct pgrequest *req,
@@ -849,7 +849,7 @@ g_error rqh_writeto(int owner, struct pgrequest *req,
   errorcheck;
   send_trigger(w,TRIGGER_STREAM,&tp);
 
-  return sucess;
+  return success;
 }
 
 g_error rqh_updatepart(int owner, struct pgrequest *req,
@@ -864,7 +864,7 @@ g_error rqh_updatepart(int owner, struct pgrequest *req,
 
   update(w->in,1);
 
-  return sucess;
+  return success;
 }
 
 g_error rqh_getmode(int owner, struct pgrequest *req,
@@ -953,7 +953,7 @@ g_error rqh_render(int owner, struct pgrequest *req,
   /* Take care of nonvisual nodes */
   if (PG_GROP_IS_NONVISUAL(grop.type)) {
     gropnode_nonvisual(rend,&grop);
-    return sucess;
+    return success;
   }
 
   /* Similar steps as the 'main' rendering loop in render.c */
@@ -961,7 +961,7 @@ g_error rqh_render(int owner, struct pgrequest *req,
   gropnode_clip(rend,&grop);
   gropnode_draw(rend,&grop);
 
-  return sucess;
+  return success;
 }
 
 g_error rqh_newbitmap(int owner, struct pgrequest *req,
@@ -977,7 +977,7 @@ g_error rqh_newbitmap(int owner, struct pgrequest *req,
   errorcheck;
   
   *ret = h;
-  return sucess;
+  return success;
 }
 
 g_error rqh_thlookup(int owner, struct pgrequest *req,
@@ -985,13 +985,13 @@ g_error rqh_thlookup(int owner, struct pgrequest *req,
   reqarg(thlookup);
   
   *ret = theme_lookup(ntohs(arg->object),ntohs(arg->property));
-  return sucess;
+  return success;
 }
 
 g_error rqh_getinactive(int owner, struct pgrequest *req,
 			void *data, unsigned long *ret, int *fatal) {
   *ret = inactivity_get();
-  return sucess;
+  return success;
 }
 
 g_error rqh_setinactive(int owner, struct pgrequest *req,
@@ -999,7 +999,7 @@ g_error rqh_setinactive(int owner, struct pgrequest *req,
   reqarg(setinactive);
   
   inactivity_set(ntohl(arg->time));
-  return sucess;
+  return success;
 }
 
 g_error rqh_drivermsg(int owner, struct pgrequest *req,
@@ -1009,7 +1009,7 @@ g_error rqh_drivermsg(int owner, struct pgrequest *req,
 #ifndef CONFIG_NOCLIENTDRIVERMSG
   drivermessage(ntohl(arg->message),ntohl(arg->param),ret);
 #endif
-  return sucess;
+  return success;
 }
 
 g_error rqh_loaddriver(int owner, struct pgrequest *req,
@@ -1031,7 +1031,7 @@ g_error rqh_loaddriver(int owner, struct pgrequest *req,
   errorcheck;
 
   *ret = h;
-  return sucess;
+  return success;
 }
 
 g_error rqh_dup(int owner, struct pgrequest *req,
@@ -1044,7 +1044,7 @@ g_error rqh_dup(int owner, struct pgrequest *req,
   errorcheck;
 
   *ret = h;
-  return sucess;
+  return success;
 }
 
 g_error rqh_chcontext(int owner, struct pgrequest *req,
@@ -1107,10 +1107,10 @@ g_error rqh_findwidget_iterate(void **p) {
   struct widget *w = (struct widget *) (*p);
   const char *str;
   if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,w->name)) || !str)
-    return sucess;
+    return success;
   if (!strncmp(rqh_findwidget_string,str,rqh_findwidget_len))
     rqh_findwidget_result = hlookup(w,NULL);
-  return sucess;
+  return success;
 }
 /* Find a widget by name 
  *
@@ -1124,13 +1124,13 @@ g_error rqh_findwidget(int owner, struct pgrequest *req,
   rqh_findwidget_len = req->size;
   handle_iterate(PG_TYPE_WIDGET,&rqh_findwidget_iterate);
   *ret = rqh_findwidget_result;
-  return sucess;
+  return success;
 }
 
 g_error rqh_checkevent(int owner, struct pgrequest *req,
 		       void *data, unsigned long *ret, int *fatal) {
   *ret = check_event(owner);
-  return sucess;
+  return success;
 }
 
 g_error rqh_sizebitmap(int owner, struct pgrequest *req,
@@ -1149,7 +1149,7 @@ g_error rqh_sizebitmap(int owner, struct pgrequest *req,
   /* Pack w and h into ret */
   *ret = (((u32)w)<<16) | h;
 
-  return sucess;
+  return success;
 }
 
 g_error rqh_appmsg(int owner, struct pgrequest *req,
@@ -1170,7 +1170,7 @@ g_error rqh_appmsg(int owner, struct pgrequest *req,
   if (req->size > 0)
     post_event(PG_WE_APPMSG,w,req->size,0,data);
 
-  return sucess;
+  return success;
 }
 
 /* Byte-swap each entry in the array, and prepend the number of entries */
@@ -1198,7 +1198,7 @@ g_error rqh_mkarray(int owner, struct pgrequest *req,
   errorcheck;
 
   *ret = h;
-  return sucess;
+  return success;
 }
 
 /* The End */

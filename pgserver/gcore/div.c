@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.64 2001/11/14 10:32:36 micahjd Exp $
+/* $Id: div.c,v 1.65 2001/12/14 22:56:42 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -586,7 +586,7 @@ g_error newdiv(struct divnode **p,struct widget *owner) {
      DIVNODE_SIZE_RECURSIVE |
      DIVNODE_SIZE_AUTOSPLIT;
   (*p)->owner = owner;
-  return sucess;
+  return success;
 }
 
 /* Make a new divtree */
@@ -600,7 +600,7 @@ g_error divtree_new(struct divtree **dt) {
   (*dt)->head->w = vid->lxres;
   (*dt)->head->h = vid->lyres;
   (*dt)->flags = DIVTREE_ALL_REDRAW;
-  return sucess;
+  return success;
 }
 
 /* Delete a divtree */
@@ -722,7 +722,7 @@ g_error dts_new(void) {
   errorcheck;
   dts->top = dts->root;
 
-  return sucess;
+  return success;
 }
 
 /* Delete the stack and all trees inside it */
@@ -754,7 +754,7 @@ g_error dts_push(void) {
   hotspot_free();
   request_focus(NULL);
 
-  return sucess;
+  return success;
 }
 
 void dts_pop(struct divtree *dt) {

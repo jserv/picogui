@@ -1,4 +1,4 @@
-/* $Id: pnm.c,v 1.9 2001/11/20 23:58:55 micahjd Exp $
+/* $Id: pnm.c,v 1.10 2001/12/14 22:56:42 micahjd Exp $
  *
  * pnm.c - Functions to convert any of the pbmplus formats (PGM, PBM, PPM)
  *         collectively referred to as PNM
@@ -195,7 +195,7 @@ g_error pnm_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
     }
   }
   
-  return sucess;
+  return success;
 }
 
 /* The End */

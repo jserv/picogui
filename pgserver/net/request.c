@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.29 2001/12/14 21:49:42 micahjd Exp $
+/* $Id: request.c,v 1.30 2001/12/14 22:56:43 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -381,7 +381,7 @@ g_error net_init(void) {
   FD_ZERO(&con);
   FD_ZERO(&evtwait);
 
-  return sucess;
+  return success;
 }
 
 void net_release(void) {

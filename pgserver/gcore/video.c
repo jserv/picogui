@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.49 2001/12/05 15:38:55 micahjd Exp $
+/* $Id: video.c,v 1.50 2001/12/14 22:56:43 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -80,7 +80,7 @@ g_error new_sprite(struct sprite **ps,s16 w,s16 h) {
   (*ps)->visible = 1;
   spritelist = *ps;
 
-  return sucess;
+  return success;
 }
 
 void free_sprite(struct sprite *s) {
@@ -409,7 +409,7 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
       /* FIXME: notify all clients that they can reload here */    
    }
   
-   return sucess;
+   return success;
 }
 
 g_error (*find_videodriver(const char *name))(struct vidlib *v) {
@@ -511,7 +511,7 @@ g_error bitmap_iterate(g_error (*iterator)(hwrbitmap *pbit)) {
       errorcheck;
    }
       
-   return sucess;
+   return success;
 }
 
 /* Iterators for converting between pgcolor and hwrcolor arrays */
@@ -520,14 +520,14 @@ g_error array_pgtohwr(u32 **array) {
   u32 len = **array;
   for (;len;len--,p++)
     *p = VID(color_pgtohwr)(*p);
-  return sucess;
+  return success;
 }
 g_error array_hwrtopg(u32 **array) {
   u32 *p  = (*array)+1;
   u32 len = **array;
   for (;len;len--,p++)
     *p = VID(color_hwrtopg)(*p);
-  return sucess;
+  return success;
 }
 
 /* Convert a handle from array to palette */

@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.30 2001/08/01 21:50:51 micahjd Exp $
+/* $Id: errortext.c,v 1.31 2001/12/14 22:56:42 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -93,7 +93,7 @@ g_error errorload(const char *filename) {
   loaded_errors = NULL;
   num_loaded_errors = 0;
   if (!filename)
-    return sucess;
+    return success;
 
   f = fopen(filename,"r");
   if (!f) 
@@ -167,7 +167,7 @@ g_error errorload(const char *filename) {
   }
 
   fclose(f);
-  return sucess;
+  return success;
 }
 
 /* The End */

@@ -102,7 +102,7 @@ g_error list_install(struct widget *self) {
   self->sub = &self->in->div->div;
   self->trigger_mask = TRIGGER_STREAM | TRIGGER_KEYUP | TRIGGER_KEYDOWN;
   
-  return sucess;
+  return success;
 }
 
 void list_remove(struct widget *self) {
@@ -184,7 +184,7 @@ g_error list_set(struct widget *self,int property, glob data) {
   default:
     return mkerror(ERRT_PASS,0);
   }
-  return sucess;
+  return success;
 }
 
 glob list_get(struct widget *self,int property) {
@@ -637,7 +637,7 @@ static g_error list_command(struct widget *self, unsigned short command,
 
    }  // End of switch
 
-   return sucess;
+   return success;
    
 }  // End of list_command
       

@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.35 2001/10/29 23:57:56 micahjd Exp $
+/* $Id: terminal.c,v 1.36 2001/12/14 22:56:45 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -361,7 +361,7 @@ g_error terminal_install(struct widget *self) {
      TRIGGER_UP | TRIGGER_RELEASE | TRIGGER_ACTIVATE | TRIGGER_DEACTIVATE |
      TRIGGER_TIMER | TRIGGER_KEYDOWN;
 
-  return sucess;
+  return success;
 }
 
 void terminal_remove(struct widget *self) {
@@ -391,7 +391,7 @@ g_error terminal_set(struct widget *self,int property, glob data) {
   default:
     return mkerror(ERRT_PASS,0);
   }
-  return sucess;
+  return success;
 }
 
 glob terminal_get(struct widget *self,int property) {

@@ -1,4 +1,4 @@
-/* $Id: svgainput.c,v 1.19 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: svgainput.c,v 1.20 2001/12/14 22:56:43 micahjd Exp $
  *
  * svgainput.h - input driver for SVGAlib
  *
@@ -326,7 +326,7 @@ g_error svgainput_init(void) {
   keyboard_seteventhandler(&svgainput_kbdhandler);
   default_svgalib_mousehandler = __svgalib_mouse_eventhandler;
   mouse_seteventhandler(&svgainput_mousehandler);
-  return sucess;
+  return success;
 }
  
 void svgainput_close(void) {
@@ -360,7 +360,7 @@ g_error svgainput_regfunc(struct inlib *i) {
   i->close = &svgainput_close;
   i->fd_init = &svgainput_fd_init;
   i->fd_activate = &svgainput_fd_activate;
-  return sucess;
+  return success;
 }
 
 /* The End */

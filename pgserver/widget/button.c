@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.81 2001/12/12 03:49:17 epchristi Exp $
+/* $Id: button.c,v 1.82 2001/12/14 22:56:44 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -192,7 +192,7 @@ g_error button_install(struct widget *self) {
   self->out = &self->in->next;
   self->sub = &self->in->div->div;
 
-  return sucess;
+  return success;
 }
 
 void button_remove(struct widget *self) {
@@ -265,7 +265,7 @@ g_error button_set(struct widget *self,int property, glob data) {
   default:
     return mkerror(ERRT_PASS,0);
   }
-  return sucess;
+  return success;
 }
 
 glob button_get(struct widget *self,int property) {

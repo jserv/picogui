@@ -74,7 +74,7 @@ g_error tuxts_init(void)
   /* Store config for later */
   showcursor = get_param_int("input-tuxts","showcursor",0);
 
-  return sucess;
+  return success;
 }
 
 void tuxts_close(void)
@@ -232,7 +232,7 @@ g_error tuxts_regfunc(struct inlib *i) {
   i->poll = &tuxts_poll;
   i->fd_init = &tuxts_fd_init;
   i->message = &tuxts_message;
-  return sucess;
+  return success;
 }
 
 /* The End */

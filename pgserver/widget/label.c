@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.43 2001/12/12 22:14:16 epchristi Exp $
+/* $Id: label.c,v 1.44 2001/12/14 22:56:44 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -121,7 +121,7 @@ g_error label_install(struct widget *self) {
   self->in->div->state = PGTH_O_LABEL;
   DATA->align = PG_A_CENTER;
 
-  return sucess;
+  return success;
 }
 
 void label_remove(struct widget *self) {
@@ -225,7 +225,7 @@ g_error label_set(struct widget *self,int property, glob data) {
   default:
     return mkerror(ERRT_PASS,0);
   }
-  return sucess;
+  return success;
 }
 
 glob label_get(struct widget *self,int property) {

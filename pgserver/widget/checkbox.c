@@ -1,4 +1,4 @@
-/* $Id: checkbox.c,v 1.4 2001/08/30 15:05:09 micahjd Exp $
+/* $Id: checkbox.c,v 1.5 2001/12/14 22:56:44 micahjd Exp $
  *
  * checkbox.c - a customized button, used for "check boxes"
  *
@@ -46,7 +46,7 @@ g_error checkbox_install(struct widget *self) {
   /* Stack vertically */
   widget_set(self,PG_WP_SIDE,PG_S_TOP);
 
-  return sucess;
+  return success;
 }
 
 /* The End */

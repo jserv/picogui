@@ -1,4 +1,4 @@
-/* $Id: configfile.c,v 1.5 2001/11/06 08:14:39 bauermeister Exp $
+/* $Id: configfile.c,v 1.6 2001/12/14 22:56:42 micahjd Exp $
  *
  * configfile.c - Utilities for loading, storing, and retrieving
  *                configuration options
@@ -132,7 +132,7 @@ g_error configfile_set(struct cfg_section *sect, const char *key,
   errorcheck;
   strcpy(p->value,value);
 
-  return sucess;
+  return success;
 }
 
 /* little utilities to strip whitespace from the head/tail of a string */
@@ -227,7 +227,7 @@ g_error sub_configfile_parse(const char *filename, struct cfg_section **section)
   }
 
   fclose(f);
-  return sucess;
+  return success;
 }
 
 g_error configfile_parse(const char *filename) {

@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.18 2001/11/25 02:47:35 micahjd Exp $
+/* $Id: rotate90.c,v 1.19 2001/12/14 22:56:44 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -189,7 +189,7 @@ g_error rotate90_exitmode(void) {
    errorcheck;
    e = rotate90_entermode();
    errorcheck;
-   return sucess;
+   return success;
 }
 
 void rotate90_coord_keyrotate(s16 *k) {

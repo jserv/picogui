@@ -1,4 +1,4 @@
-/* $Id: remorakb.c,v 1.8 2001/11/28 13:47:47 bauermeister Exp $
+/* $Id: remorakb.c,v 1.9 2001/12/14 22:56:43 micahjd Exp $
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -947,7 +947,7 @@ static g_error kb_init(void)
     /* keyboard not connected, this is not an error */
     WARNF("remorakb: not using hard kb\n");
     kb_fd = -1;
-    return sucess;
+    return success;
   }
   DPRINTF("remorakb: trying [%s] Nr %d\n",
 	  device, device[strlen(device)-1] - '0');
@@ -998,7 +998,7 @@ static g_error kb_init(void)
 
 
   TRACEF("remorakb: done\n");
-  return sucess;
+  return success;
 }
 
 /*****************************************************************************/
@@ -1029,7 +1029,7 @@ g_error remorakb_regfunc(struct inlib *i)
   i->fd_activate = &kb_fd_activate;
   i->fd_init = &kb_fd_init;
   i->close = &kb_close;
-  return sucess;
+  return success;
 }
 
 /*****************************************************************************/

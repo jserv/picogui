@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.20 2001/11/18 00:10:00 micahjd Exp $
+/* $Id: textbox_main.c,v 1.21 2001/12/14 22:56:45 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -82,7 +82,7 @@ g_error textbox_install(struct widget *self) {
      | TRIGGER_MOVE;
    */
 
-   return sucess;
+   return success;
 }
 
 void textbox_remove(struct widget *self) {
@@ -142,7 +142,7 @@ g_error textbox_set(struct widget *self,int property, glob data) {
   default:
     return mkerror(ERRT_PASS,0);
   }
-  return sucess;
+  return success;
 }
 
 glob textbox_get(struct widget *self,int property) {

@@ -1,4 +1,4 @@
-/* $Id: svgafb.c,v 1.10 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: svgafb.c,v 1.11 2001/12/14 22:56:44 micahjd Exp $
  *
  * svgafb.c - A driver for linear-framebuffer svga devices that uses the linear*
  *          VBLs instead of the default vbl and libvgagl.
@@ -126,7 +126,7 @@ g_error svgafb_init(void) {
    
    vga_init();
    
-   return sucess;
+   return success;
 }
    
 g_error svgafb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
@@ -219,7 +219,7 @@ g_error svgafb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
    else
      vid->update = &def_update;
     
-   return sucess;
+   return success;
 }
 
 void svgafb_close(void) {
@@ -301,7 +301,7 @@ g_error svgafb_regfunc(struct vidlib *v) {
    v->setmode = &svgafb_setmode;
    v->init = &svgafb_init;
    v->close = &svgafb_close;
-   return sucess;
+   return success;
 }
 
 /* The End */

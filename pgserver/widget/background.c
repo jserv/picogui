@@ -1,4 +1,4 @@
-/* $Id: background.c,v 1.8 2001/06/25 00:48:50 micahjd Exp $
+/* $Id: background.c,v 1.9 2001/12/14 22:56:44 micahjd Exp $
  *
  * background.c - an internal widget for drawing the screen background
  *
@@ -51,7 +51,7 @@ g_error background_install(struct widget *self) {
 
   self->trigger_mask = TRIGGER_DOWN;
    
-  return sucess;
+  return success;
 }
 
 void background_remove(struct widget *self) {
@@ -60,7 +60,7 @@ void background_remove(struct widget *self) {
 }
 
 g_error background_set(struct widget *self,int property, glob data) {
-  return sucess;
+  return success;
 }
 
 glob background_get(struct widget *self,int property) {

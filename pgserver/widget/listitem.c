@@ -1,4 +1,4 @@
-/* $Id: listitem.c,v 1.2 2001/08/30 15:05:09 micahjd Exp $
+/* $Id: listitem.c,v 1.3 2001/12/14 22:56:45 micahjd Exp $
  *
  * listitem.c - a customized button, used for items in a listbox
  *
@@ -45,7 +45,7 @@ g_error listitem_install(struct widget *self) {
   /* Stack vertically */
   widget_set(self,PG_WP_SIDE,PG_S_TOP);
 
-  return sucess;
+  return success;
 }
 
 /* The End */

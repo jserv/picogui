@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.31 2001/11/19 00:12:38 micahjd Exp $
+/* $Id: sdlfb.c,v 1.32 2001/12/14 22:56:44 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -374,7 +374,7 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   
 #endif /* CONFIG_SDLSKIN */
    
-  return sucess; 
+  return success; 
 }
    
 void sdlfb_close(void) {
@@ -601,7 +601,7 @@ g_error sdlfb_sdc_char(char c) {
 
   /* Don't bother if the SDC hasn't been configured */
   if (!(sdlsdc_w && sdlsdc_h))
-    return sucess;
+    return success;
 
   /* If the font hasn't yet been allocated, set things up now */
   if (!sdlsdc_font) {
@@ -671,7 +671,7 @@ g_error sdlfb_sdc_char(char c) {
 		   fd->font->ascent + fd->font->descent);
   }
 
-  return sucess;
+  return success;
 }
 #endif
 
@@ -681,7 +681,7 @@ g_error sdlfb_regfunc(struct vidlib *v) {
   v->close = &sdlfb_close;
   v->update = &sdlfb_update;    
   v->message = &sdlfb_message;
-  return sucess;
+  return success;
 }
 
 /* The End */

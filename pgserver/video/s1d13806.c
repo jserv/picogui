@@ -1,4 +1,4 @@
-/* $Id: s1d13806.c,v 1.4 2001/11/23 14:45:59 gobry Exp $
+/* $Id: s1d13806.c,v 1.5 2001/12/14 22:56:43 micahjd Exp $
  *
  * s1d13806.c - use a Epson S1D13806 video chip with a M68VZ328
  *
@@ -255,7 +255,7 @@ g_error s1d13806_setmode (s16 xres, s16 yres, s16 bpp, unsigned long flags)
   printf ("s1d13806 mode: xres=%d yres=%d pbb=%d flags=%d BPL=%d\n", xres,
 	  yres, bpp, flags, FB_BPL);
 
-  return sucess;
+  return success;
 }
 
 g_error s1d13806_init (void)
@@ -273,7 +273,7 @@ g_error s1d13806_init (void)
 
   printf (">>> S1D13806 version: 0x%02X revision: 0x%02X address: 0x%08X\n",
 	  version, revision, S1D_PHYSICAL_VMEM_ADDR);
-  return sucess;
+  return success;
 }
 
 void
@@ -301,7 +301,7 @@ g_error s1d13806_regfunc (struct vidlib *v)
   v->close = & s1d13806_close;
   v->setmode = & s1d13806_setmode;
 
-  return sucess;
+  return success;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.18 2001/11/18 00:10:00 micahjd Exp $
+/* $Id: textbox_document.c,v 1.19 2001/12/14 22:56:45 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -50,7 +50,7 @@ struct txtformat text_formats[] = {
 g_error text_format_add(struct textbox_cursor *c, struct formatnode *f) {
   f->next = c->f_top;
   c->f_top = f;
-  return sucess;
+  return success;
 }
 
 /* Add a node to change the text color */
@@ -174,7 +174,7 @@ g_error text_insert_wordbreak(struct textbox_cursor *c) {
     errorcheck;
   }
 
-  return sucess;
+  return success;
 }
 
 /* Begin a new paragraph at the cursor */
@@ -208,7 +208,7 @@ g_error text_insert_linebreak(struct textbox_cursor *c) {
     c->c_div = NULL;
     c->c_gctx.current = NULL;
   }
-  return sucess;
+  return success;
 }
 
 /* Insert the specified divnode as the only div within a line */
@@ -305,7 +305,7 @@ g_error text_insert_string(struct textbox_cursor *c, const char *str,
   c->c_div->div->pw += tw;
   c->c_div->split = c->c_div->div->pw;
 
-  return sucess;
+  return success;
 }
 
 /* Delete the character or other object after the cursor */
@@ -318,7 +318,7 @@ void text_delete_prev(struct textbox_cursor *c) {
 
 /* Combine gropnodes when possible to reduce memory consumption */
 g_error text_compact(struct textbox_cursor *c) {
-  return sucess;
+  return success;
 }
 
 /* Show the caret at the current cursor position */
@@ -359,7 +359,7 @@ g_error text_caret_on(struct textbox_cursor *c) {
   c->caret_div = c->c_div;
   update(c->c_div,1);
 
-  return sucess;
+  return success;
 }
 
 /* Hide the caret at the current cursor position */
@@ -369,7 +369,7 @@ g_error text_caret_off(struct textbox_cursor *c) {
     c->caret_div->flags |= DIVNODE_NEED_REDRAW;
     update(c->caret_div,1);
   }
-  return sucess;
+  return success;
 }
 
 /************************* Loading */
@@ -416,7 +416,7 @@ g_error text_nuke(struct textbox_cursor *c) {
   e = text_format_font(c,h);
   errorcheck;
 
-  return sucess;
+  return success;
 }
 
 /* Load text of the specified format */

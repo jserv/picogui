@@ -1,4 +1,4 @@
-/* $Id: palmaxts.c,v 1.1 2001/12/13 18:06:20 lonetech Exp $
+/* $Id: palmaxts.c,v 1.2 2001/12/14 22:56:43 micahjd Exp $
  *
  * palmaxts.c - input driver for Palmax touchscreens.
  *
@@ -173,7 +173,7 @@ g_error palmaxts_init(void) {
   options.c_oflag &= ~OPOST;
 
   tcsetattr(palmaxts_fd, TCSANOW, &options); /* set parameters */
-  return sucess;
+  return success;
 }
 
 void palmaxts_fd_init(int *n,fd_set *readfds,struct
@@ -194,5 +194,5 @@ g_error palmaxts_regfunc(struct inlib *i) {
   i->fd_init = &palmaxts_fd_init;
   i->message = &touchscreen_message;
   i->close = &palmaxts_close;
-  return sucess;
+  return success;
 }

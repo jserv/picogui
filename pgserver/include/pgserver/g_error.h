@@ -1,4 +1,4 @@
-/* $Id: g_error.h,v 1.9 2001/07/03 10:13:32 micahjd Exp $
+/* $Id: g_error.h,v 1.10 2001/12/14 22:56:43 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -45,7 +45,7 @@ typedef unsigned int g_error;
 #define iserror(e)           (((e) & 0xFF00)!=PG_ERRT_NONE)
 #define errtype(e)           ((e) & 0xFF00)    /* Matches the ERRT_* */
 
-#define sucess               PG_ERRT_NONE
+#define success               PG_ERRT_NONE
 
 /* It's so common, let's make it a macro */
 #define errorcheck           if (iserror(e)) return e;

@@ -4,8 +4,8 @@
 #
 
 # Get a picture of the default theme for comparison
-system("pgserver -nc indexer.pgconf >/dev/null 2>/dev/null");
-system("mv themeshot1.ppm defaulttheme.ppm");
+system("pgserver -nc indexer.pgconf --video-scrshot.total=1 >/dev/null 2>/dev/null");
+system("mv themeshot0.ppm defaulttheme.ppm");
 
 system("rm -f web/*");
 

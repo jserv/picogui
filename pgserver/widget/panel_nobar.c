@@ -1,4 +1,4 @@
-/* $Id: panel_nobar.c,v 1.3 2001/06/25 00:48:50 micahjd Exp $
+/* $Id: panel_nobar.c,v 1.4 2001/12/14 22:56:45 micahjd Exp $
  *
  * panel_nobar.c - A simple replacement for panel that doesn't allow resizing
  *
@@ -52,7 +52,7 @@ g_error panel_install(struct widget *self) {
   self->sub = &self->in->div->div;
   self->out = &self->in->next;
    
-  return sucess;
+  return success;
 }
 
 /**** Properties */
@@ -74,7 +74,7 @@ g_error panel_set(struct widget *self,int property, glob data) {
     return mkerror(ERRT_PASS,0);
 
   }
-  return sucess;
+  return success;
 }
 
 glob panel_get(struct widget *self,int property) {

@@ -1,4 +1,4 @@
-/* $Id: ez328vga.c,v 1.3 2001/09/05 03:15:06 micahjd Exp $
+/* $Id: ez328vga.c,v 1.4 2001/12/14 22:56:43 micahjd Exp $
  *
  * ez328vga.c - Another of my strange drivers...
  *              Using the 68EZ328's LCD controller and a few logic gates,
@@ -175,7 +175,7 @@ g_error ez328vga_init(void) {
 	*p = 0xAA;
    }
    
-   return sucess;
+   return success;
 }
 
 
@@ -202,7 +202,7 @@ g_error ez328vga_regfunc(struct vidlib *v) {
    v->color_hwrtopg = &ez328vga_color_hwrtopg;
    v->color_pgtohwr = &ez328vga_color_pgtohwr;   
    v->close    = &ez328vga_close;
-   return sucess;
+   return success;
 }
 
 /* The End */

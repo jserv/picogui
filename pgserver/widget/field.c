@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.34 2001/10/12 06:20:44 micahjd Exp $
+/* $Id: field.c,v 1.35 2001/12/14 22:56:44 micahjd Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -140,7 +140,7 @@ g_error field_install(struct widget *self) {
   self->trigger_mask = TRIGGER_UP | TRIGGER_ACTIVATE | TRIGGER_CHAR |
     TRIGGER_DEACTIVATE | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_TIMER;
 
-  return sucess;
+  return success;
 }
 
 void field_remove(struct widget *self) {
@@ -200,7 +200,7 @@ g_error field_set(struct widget *self,int property, glob data) {
    default:
      return mkerror(ERRT_PASS,0);
   }
-  return sucess;
+  return success;
 }
 
 glob field_get(struct widget *self,int property) {
@@ -353,7 +353,7 @@ void fieldstate(struct widget *self) {
 g_error bufcheck_grow(struct widget *self) {
   g_error e;
 
-  if (DATA->bufuse < DATA->bufsize) return sucess;
+  if (DATA->bufuse < DATA->bufsize) return success;
 
   DATA->bufsize += FIELDBUF_ALLOCSTEP;
   if (DATA->bufsize > DATA->bufmax) DATA->bufsize = DATA->bufmax;
@@ -368,7 +368,7 @@ g_error bufcheck_grow(struct widget *self) {
 g_error bufcheck_shrink(struct widget *self) {
   g_error e;
 
-  if ((DATA->bufsize-DATA->bufuse)<FIELDBUF_MAXCRUFT) return sucess;
+  if ((DATA->bufsize-DATA->bufuse)<FIELDBUF_MAXCRUFT) return success;
 
   DATA->bufsize -= FIELDBUF_MAXCRUFT;
 

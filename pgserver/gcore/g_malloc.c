@@ -1,4 +1,4 @@
-/* $Id: g_malloc.c,v 1.14 2001/06/28 21:06:44 micahjd Exp $
+/* $Id: g_malloc.c,v 1.15 2001/12/14 22:56:43 micahjd Exp $
  *
  * g_malloc.c - malloc wrapper providing error handling
  *
@@ -65,7 +65,7 @@ g_error g_malloc(void **p,size_t s) {
   printf("+%d #%d (%d) 0x%08X\n",s,memref,memamt,*((char**)p));
 #endif
 
-  return sucess;
+  return success;
 }
 
 void g_free(void *p) {
@@ -113,7 +113,7 @@ g_error g_realloc(void **p,size_t s) {
   printf("* [%d -> %d] #%d (%d) 0x%08X\n",from,s,memref,memamt,*((char**)p));
 #endif
 
-  return sucess;
+  return success;
 
 }
 

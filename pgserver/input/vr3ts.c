@@ -1,4 +1,4 @@
-/* $Id: vr3ts.c,v 1.5 2001/11/15 12:18:58 micahjd Exp $
+/* $Id: vr3ts.c,v 1.6 2001/12/14 22:56:43 micahjd Exp $
  *
  * vr3ts.c - input driver for the Agenda VR3. This contains code from
  *           Agenda's xfree86 patch along with the framework from
@@ -197,7 +197,7 @@ g_error vr3ts_init(void) {
    if (vr3ts_fd <= 0)
      return mkerror(PG_ERRT_IO, 74);
    
-   return sucess;
+   return success;
 }
 
 void vr3ts_close(void) {
@@ -326,7 +326,7 @@ g_error vr3ts_regfunc(struct inlib *i) {
   i->close = &vr3ts_close;
   i->fd_activate = &vr3ts_fd_activate;
   i->fd_init = &vr3ts_fd_init;
-  return sucess;
+  return success;
 }
 
 //#define TEST 1

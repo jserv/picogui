@@ -1,4 +1,4 @@
-/* $Id: toolbar.c,v 1.18 2001/08/30 19:39:45 micahjd Exp $
+/* $Id: toolbar.c,v 1.19 2001/12/14 22:56:45 micahjd Exp $
  *
  * toolbar.c - container widget for buttons
  *
@@ -67,7 +67,7 @@ g_error toolbar_install(struct widget *self) {
   self->in->div->flags |= DIVNODE_SPLIT_BORDER;
   self->sub = &self->in->div->div;
 
-  return sucess;
+  return success;
 }
 
 void toolbar_remove(struct widget *self) {
@@ -118,7 +118,7 @@ g_error toolbar_set(struct widget *self,int property, glob data) {
     default:
       return mkerror(ERRT_PASS,0);
    }
-   return sucess;
+   return success;
 }
 
 glob toolbar_get(struct widget *self,int property) {

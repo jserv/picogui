@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.17 2001/11/12 00:06:18 bauermeister Exp $
+/* $Id: timer.c,v 1.18 2001/12/14 22:56:43 micahjd Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -89,7 +89,7 @@ g_error timer_init(void) {
      the sigalrm handler for linux... */
   ntimer = timeSetEvent(TIMERINTERVAL,1,HandleAlarm,0,TIME_PERIODIC);
   
-  return sucess;
+  return success;
 }
 
 void timer_release(void) {
@@ -147,7 +147,7 @@ g_error timer_init(void) {
     ((TIMERINTERVAL)%1000)*1000;
   setitimer(ITIMER_REAL,&itv,NULL);
 
-  return sucess;
+  return success;
 }
 
 void timer_release(void) {

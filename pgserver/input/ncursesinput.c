@@ -1,4 +1,4 @@
-/* $Id: ncursesinput.c,v 1.15 2001/04/15 00:28:27 micahjd Exp $
+/* $Id: ncursesinput.c,v 1.16 2001/12/14 22:56:43 micahjd Exp $
  *
  * ncursesinput.h - input driver for ncurses
  * 
@@ -218,7 +218,7 @@ g_error ncursesinput_init(void) {
     * screen next time a key is input */
    refresh();
    
-   return sucess;
+   return success;
 }
 
 void ncursesinput_close(void) {
@@ -233,7 +233,7 @@ g_error ncursesinput_regfunc(struct inlib *i) {
    i->close = &ncursesinput_close;
    i->fd_activate = &ncursesinput_fd_activate;
    i->fd_init = &ncursesinput_fd_init;
-   return sucess;
+   return success;
 }
 
 #endif /* DRIVER_NCURSESINPUT */

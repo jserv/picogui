@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.10 2001/11/25 03:54:14 micahjd Exp $
+/* $Id: x11input.c,v 1.11 2001/12/14 22:56:43 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -70,7 +70,7 @@ g_error x11input_init(null) {
   /* Store other config options */
   x11input_pgcursor = get_param_int("input-x11","pgcursor",0);
 
-  return sucess;
+  return success;
 }
 
 void x11input_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
@@ -445,7 +445,7 @@ g_error x11input_regfunc(struct inlib *i) {
   i->init = &x11input_init;
   i->fd_init = &x11input_fd_init;
   i->fd_activate = &x11input_fd_activate;
-  return sucess;
+  return success;
 }
 
 /* The End */

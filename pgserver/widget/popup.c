@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.40 2001/12/12 03:49:17 epchristi Exp $
+/* $Id: popup.c,v 1.41 2001/12/14 22:56:45 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -108,7 +108,7 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   install_hotkey(*wgt,PGKEY_ESCAPE);
 
   /* Yahoo! */
-  return sucess;
+  return success;
 }
 
 void build_popupbg(struct gropctxt *c,unsigned short state,struct widget *self) {
@@ -160,7 +160,7 @@ g_error popup_install(struct widget *self) {
   
   self->trigger_mask = TRIGGER_DOWN | TRIGGER_HOTKEY;
 
-  return sucess;
+  return success;
 }
 
 void popup_remove(struct widget *self) {

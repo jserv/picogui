@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.16 2001/11/19 09:50:13 micahjd Exp $
+/* $Id: pgmain.c,v 1.17 2001/12/14 22:56:42 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -659,7 +659,7 @@ g_error reload_initial_themes(void) {
    /* Don't need to reload them if we're not even done initting yet.
     * It would be bad to reload themes before the appmgr or layout engine
     * is up! */
-   if (in_init) return sucess;
+   if (in_init) return success;
    
    for (p=themefiles;p;p=p->next) {
       
@@ -668,7 +668,7 @@ g_error reload_initial_themes(void) {
       
       /* Load theme from file */
       if ((fd = open(p->name,O_RDONLY))<=0)
-	 continue;     /* Maybe next time we will beink more sucessful, da? */
+	 continue;     /* Maybe next time we will beink more successful, da? */
       fstat(fd,&st);
       e = g_malloc((void**)&themebuf,st.st_size);
       errorcheck;
@@ -681,7 +681,7 @@ g_error reload_initial_themes(void) {
       
       g_free(themebuf);
    }
-   return sucess;
+   return success;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: scrshot.c,v 1.3 2001/07/06 08:51:46 micahjd Exp $
+/* $Id: scrshot.c,v 1.4 2001/12/14 22:56:43 micahjd Exp $
  *
  * scrshot.c - Maintains a virtual framebuffer, taking screenshots on update
  *
@@ -53,7 +53,7 @@ g_error scrshot_init(void) {
    scrshot_skip = get_param_int("video-scrshot","skip",1);
    scrshot_total = get_param_int("video-scrshot","total",1);
    
-   return sucess;
+   return success;
 }
 
 g_error scrshot_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
@@ -131,7 +131,7 @@ g_error scrshot_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
    e = g_malloc((void**)&FB_MEM,(FB_BPL * vid->yres) + 1);
    errorcheck;
    
-   return sucess; 
+   return success; 
 }
       
 void scrshot_close(void) {
@@ -181,7 +181,7 @@ g_error scrshot_regfunc(struct vidlib *v) {
   v->setmode = &scrshot_setmode; 
   v->close = &scrshot_close;
   v->update = &scrshot_update;
-  return sucess;
+  return success;
 }
 
 /* The End */

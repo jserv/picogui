@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.128 2001/12/14 00:31:58 micahjd Exp $
+/* $Id: widget.c,v 1.129 2001/12/14 22:56:45 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -154,7 +154,7 @@ g_error widget_create(struct widget **w, int type, struct divtree *dt, handle co
   //
   // That is is for widget creation.
   //
-  return sucess;
+  return success;
   
 }  // End of widget_create()
  
@@ -219,7 +219,7 @@ g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **wher
 
   dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
   dt->flags |= DIVTREE_NEED_RECALC;
-  return sucess;
+  return success;
 }
 
 g_error widget_derive(struct widget **w,
@@ -502,7 +502,7 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
     default:
       return mkerror(PG_ERRT_BADPARAM,6);   /* Unknown property */
    }
-   return sucess;
+   return success;
 }
 
 glob widget_get(struct widget *w, int property) {
@@ -926,7 +926,7 @@ g_error debug_bitmaps(void **pobj) {
 	      "Too many bitmaps for this screen. Change video mode and try again",
 	      &screenclip,PG_LGOP_NONE,0);
 
-      return sucess;   /* Lies! :) */
+      return success;   /* Lies! :) */
    }
    
    VID(rect) (vid->display,db_x+3,db_y+38,w+4,h+4,
@@ -936,7 +936,7 @@ g_error debug_bitmaps(void **pobj) {
    VID(blit) (vid->display,db_x+5,db_y+40,w,h,bmp,0,0,PG_LGOP_NONE);
 
    db_x += w+8;
-   return sucess;
+   return success;
 }
    
    /* Utility functions to implement CTRL-ALT-N gropnode dump */
@@ -1233,7 +1233,7 @@ void resizewidget(struct widget *w) {
 /* Iterator function used by resizeall() */
 g_error resizeall_iterate(void **p) {
    (*((struct widget *) (*p))->def->resize)((struct widget *) (*p));
-   return sucess;
+   return success;
 }
 /* Call the resize() function on all widgets with handles */
 void resizeall(void) {

@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.49 2001/12/12 03:49:16 epchristi Exp $
+/* $Id: global.c,v 1.50 2001/12/14 22:56:42 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -201,7 +201,7 @@ g_error appmgr_init(void) {
    printf("Init: appmgr: success\n");
 #endif
 
-  return sucess;
+  return success;
 }
 
 /* Most of it is cleaned up by the handles.
@@ -346,7 +346,7 @@ g_error appmgr_register(struct app_info *i) {
   dest->next = applist;
   applist = dest;
 
-  return sucess;
+  return success;
 }
 
 /* Load the mouse cursor specified by the given theme object */

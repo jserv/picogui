@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.13 2001/10/07 08:52:07 micahjd Exp $
+/* $Id: fbdev.c,v 1.14 2001/12/14 22:56:43 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -205,7 +205,7 @@ g_error fbdev_init(void) {
    } 
 #endif
    
-   return sucess;
+   return success;
 }
 
 void fbdev_close(void) {
@@ -230,7 +230,7 @@ void fbdev_close(void) {
 g_error fbdev_regfunc(struct vidlib *v) {
    v->init = &fbdev_init;
    v->close = &fbdev_close;
-   return sucess;
+   return success;
 }
 
 /* The End */

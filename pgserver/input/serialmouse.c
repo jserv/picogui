@@ -1,4 +1,4 @@
-/* $Id: serialmouse.c,v 1.3 2001/11/15 12:22:46 micahjd Exp $
+/* $Id: serialmouse.c,v 1.4 2001/12/14 22:56:43 micahjd Exp $
  *
  * serialmouse.c - input driver for serial mice.
  *
@@ -179,7 +179,7 @@ g_error serialmouse_init(void) {
   options.c_oflag &= ~OPOST;
                                                               
   tcsetattr(mouse_fd, TCSANOW, &options); /* set parameters */
-  return sucess;
+  return success;
 }
 
 void serialmouse_fd_init(int *n,fd_set *readfds,struct
@@ -199,5 +199,5 @@ g_error serialmouse_regfunc(struct inlib *i) {
   i->fd_activate = &serialmouse_fd_activate;
   i->fd_init = &serialmouse_fd_init;
   i->close = &serialmouse_close;
-  return sucess;
+  return success;
 }

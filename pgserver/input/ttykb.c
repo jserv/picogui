@@ -154,5 +154,5 @@ g_error ttykb_regfunc(struct inlib *i) {
         i->close = &ttykb_close;
         i->fd_init = &ttykb_fd_init;
         i->fd_activate = &ttykb_fd_activate;
-        return sucess;
+        return success;
 }

@@ -1,4 +1,4 @@
-/* $Id: html.c,v 1.13 2001/11/17 22:40:40 micahjd Exp $
+/* $Id: html.c,v 1.14 2001/12/14 22:56:42 micahjd Exp $
  *
  * html.c - Use the textbox_document inferface to load HTML markup
  *
@@ -313,7 +313,7 @@ g_error html_tag_p(struct html_parse *hp, struct html_tag_params *tag) {
     e = text_insert_linebreak(hp->c);
     errorcheck;
   }
-  return sucess;
+  return success;
 }
 
 /* Line break */
@@ -325,7 +325,7 @@ g_error html_tag_br(struct html_parse *hp, struct html_tag_params *tag) {
 /* Pop the most recent font change off the stack */
 g_error html_tag_unformat(struct html_parse *hp, struct html_tag_params *tag) {
   text_unformat_top(hp->c);
-  return sucess;
+  return success;
 }
 
 /* New paragraph, big font */
@@ -396,11 +396,11 @@ g_error html_tag_end_pre(struct html_parse *hp, struct html_tag_params *tag) {
 /* Ignore the headers */
 g_error html_tag_head(struct html_parse *hp, struct html_tag_params *tag) {
   hp->parsemode = &html_parse_ignore;
-  return sucess;
+  return success;
 }
 g_error html_tag_end_head(struct html_parse *hp, struct html_tag_params *tag) {
   hp->parsemode = &html_parse_text;
-  return sucess;
+  return success;
 }
 
 g_error html_tag_font(struct html_parse *hp, struct html_tag_params *tag) {
@@ -430,7 +430,7 @@ g_error html_tag_font(struct html_parse *hp, struct html_tag_params *tag) {
   if (setcolor)
     hp->c->f_top->color = VID(color_pgtohwr)(newcolor);
 
-  return sucess;  
+  return success;  
 }
 
 /* Construct a horizontal rule divnode, and insert it on a line by itself */
@@ -468,14 +468,14 @@ g_error html_tag_a(struct html_parse *hp, struct html_tag_params *tag) {
   e = text_format_modifyfont(hp->c,PG_FSTYLE_UNDERLINE,0,0);
   errorcheck;
   hp->c->f_top->color = VID(color_pgtohwr)(LINK_COLOR);
-  return sucess;
+  return success;
 }
 g_error html_tag_end_a(struct html_parse *hp, struct html_tag_params *tag) {
   g_error e;
   
   e = html_tag_unformat(hp,tag);
   errorcheck;
-  return sucess;
+  return success;
 }
 
 /*************************************** HTML tag table */
@@ -603,7 +603,7 @@ g_error html_load(struct textbox_cursor *c, const u8 *data, u32 datalen) {
     errorcheck;
   }
 
-  return sucess;
+  return success;
 }
 
 /* Find the handler, prepare parameters, and call it */
@@ -656,7 +656,7 @@ g_error html_dispatch_tag(struct html_parse *hp,
   write(1,">\n",2);
 #endif
 
-  return sucess;
+  return success;
 }
 
 /* Chop up text into fragments, sending wordbreaks
@@ -694,7 +694,7 @@ g_error html_parse_text(struct html_parse *hp,
     e = html_textfragment(hp,fragment,start-1);
     errorcheck;
   }
-  return sucess;
+  return success;
 }
 
 /* Dispatch preformatted text. Each line is translated into one textfragment-
@@ -735,13 +735,13 @@ g_error html_parse_pre(struct html_parse *hp,
     e = html_textfragment(hp,fragment,start-1);
     errorcheck;
   }
-  return sucess;
+  return success;
 }
 
 /* Ignore text */
 g_error html_parse_ignore(struct html_parse *hp,
 			  const u8 *start, const u8 *end) {
-  return sucess;
+  return success;
 }
 
 /* Convert characters like &nbsp; to characters, store and send the string
@@ -766,7 +766,7 @@ g_error html_textfragment(struct html_parse *hp,
   /* Transcribe it into a new string, converting &foo; using html_findchar() 
    */
   if (!length) 
-    return sucess;
+    return success;
   e = g_malloc((void**)&str, length+1);
   errorcheck;
   str[length] = 0;

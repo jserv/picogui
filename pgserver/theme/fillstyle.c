@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.14 2001/10/07 08:47:26 micahjd Exp $
+/* $Id: fillstyle.c,v 1.15 2001/12/14 22:56:43 micahjd Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -74,7 +74,7 @@ g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
     
     /* When our best just isn't good enough... */
     if (property == PGTH_P_BACKDROP)
-      return sucess;
+      return success;
 
     /* The default fillstyle, if no theme is loaded or no 
        theme has defined the property*/
@@ -95,7 +95,7 @@ g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
       ctx->current->param[0] = VID(color_pgtohwr) (theme_lookup(state,PGTH_P_BGCOLOR));
       addgropsz(ctx,PG_GROP_RECT,ctx->x,ctx->y,ctx->w,ctx->h);      
     }
-    return sucess;
+    return success;
   }
 
   /* Reset stack. preload x,y,w,h as local variables */
@@ -364,7 +364,7 @@ g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
     ctx->h = fsstack[3];
   }    
 
-  return sucess;
+  return success;
 }
 
 g_error fsgrop(struct gropctxt *ctx,int grop) {
@@ -401,21 +401,21 @@ g_error fsgrop(struct gropctxt *ctx,int grop) {
   if (!PG_GROP_IS_UNPOSITIONED(grop))
      fsstkpos -= 4;
 
-  return sucess;
+  return success;
 }
 
 g_error fsget(unsigned long reg) {
   if (reg>=FSSTACKSIZE)
     return mkerror(PG_ERRT_BADPARAM,90);  /* Var out of range */
   fsstack[fsstkpos++] = fsstack[reg];
-  return sucess;
+  return success;
 }
 
 g_error fsset(unsigned long reg) {
   if (reg>=FSSTACKSIZE)
     return mkerror(PG_ERRT_BADPARAM,90);  /* Var out of range */
   fsstack[reg] = fsstack[--fsstkpos]; 
-  return sucess;
+  return success;
 }
 
 g_error fspopargs(void) {
@@ -423,7 +423,7 @@ g_error fspopargs(void) {
     return mkerror(PG_ERRT_BADPARAM,88);  /* Stack underflow */
   fsb = fsstack[--fsstkpos];
   fsa = fsstack[--fsstkpos];
-  return sucess;
+  return success;
 }
 
 /* The End */

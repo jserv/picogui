@@ -1,4 +1,4 @@
-/* $Id: svgaremote.c,v 1.1 2001/02/17 05:21:16 micahjd Exp $
+/* $Id: svgaremote.c,v 1.2 2001/12/14 22:56:42 micahjd Exp $
  *
  * svgaremote.c - This is the svgainput driver for pgserver, hacked up to
  *                work as a good networked input driver
@@ -364,7 +364,7 @@ g_error svgainput_regfunc(struct inlib *i) {
   i->close = &svgainput_close;
   i->fd_init = &svgainput_fd_init;
   i->fd_activate = &svgainput_fd_activate;
-  return sucess;
+  return success;
 }
 */
 
