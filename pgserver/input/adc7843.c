@@ -1,4 +1,4 @@
-/* $Id: adc7843.c,v 1.3 2002/02/03 03:08:13 micahjd Exp $
+/* $Id: adc7843.c,v 1.4 2002/04/15 15:21:54 micahjd Exp $
  *
  * adc7843.c - input driver for adc7843.c touch screen found on the Psion 5mx
  *             Other touch screens using the same data format should
@@ -42,12 +42,21 @@
 #define true 1
 #define false 0
 
-#define X_RES 640
-#define Y_RES 240
-#define MIN_X 335
-#define MAX_X 3825
-#define MIN_Y 330
-#define MAX_Y 3490
+struct cal {
+	int x_res, y_res;
+	int min_x, max_x;
+	int min_y, max_y;
+};
+
+/* psion revo/revo+/mako */
+
+static struct cal revo =  {480, 160, 370, 3900, 330, 3220};
+
+/* psion series 5mx */
+
+static struct cal ps5mx = {640, 240, 335, 3825, 330, 3490};
+
+static struct cal *cal = NULL;
 
 int adc7843_fd;
 
@@ -91,6 +100,15 @@ int adc7843_fd_activate(int fd) {
    static u8 state;
    char buffer[6];
    int trigger, x, y;
+
+   if (!cal) {
+      if (!vid)
+	 return 0;
+      else if (vid->xres == 480)
+	 cal = &revo;
+      else
+	 cal = &ps5mx;
+   }
    
    /* Read raw data from the driver */
    if (fd!=adc7843_fd)
@@ -106,8 +124,8 @@ int adc7843_fd_activate(int fd) {
    y = ts.y;
 
    /* Converte to screen coordinates... */
-   x = ( ( ts.x - MIN_X ) * X_RES / ( MAX_X - MIN_X ) );
-   y = ( ( ts.y - MIN_Y ) * Y_RES / ( MAX_Y - MIN_Y ) );
+   x = ( ( ts.x - cal->min_x ) * cal->x_res / ( cal->max_x - cal->min_x ) );
+   y = ( ( ts.y - cal->min_y ) * cal->y_res / ( cal->max_y - cal->min_y ) );
    
    /* What type of pointer event? */
    if (ts.state) {
