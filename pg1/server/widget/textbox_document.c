@@ -143,9 +143,6 @@ g_error document_nuke(struct textbox_document *doc) {
 g_error document_insert_char(struct textbox_document *doc, u32 ch, void *metadata) {
   g_error e;
 
-  fprintf(stderr, ">> `%lc' (%ld)\n", ch, ch);
-  fflush(stderr);
-
   /* Insert us the paragraph! */
   if (ch == '\n' || ch == '\r') {
     struct paragraph *oldpar, *newpar;
