@@ -9,7 +9,7 @@ def _getString(str, server, reverse=0):
         if str == 0:
             return ''
         else:
-            return denullify(server.getstring(str).data)
+            return server.getstring(str).data.replace('\0','')
     else:
         # check if it's already a handle, too
         if not server:
@@ -461,12 +461,6 @@ def unresolve_constant(name, namespace=constants, server=None):
             return n
     return name
 
-def denullify(str):
-    # Remove trailing nulls from pgserver C strings
-    if str[-1] == '\0':
-        str = str[:-1]
-    return str
-    
 
 # imports
 

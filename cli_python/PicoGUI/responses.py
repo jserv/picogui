@@ -1,7 +1,6 @@
 # handle PicoGUI responses
 
 import struct
-import Server  # Needed for Server.denullify
 
 # errors (pgresponse_err)
 
@@ -13,7 +12,7 @@ class ProtocolError(Error):
 
 	def setData(self, data):
 		# data is a C string
-		self.args = Server.denullify(data)
+		self.args = data.replace('\0','')
 
 class MemoryError(ProtocolError): pass
 class IOError(ProtocolError): pass
