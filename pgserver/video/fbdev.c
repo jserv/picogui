@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.8 2001/05/10 19:07:28 micahjd Exp $
+/* $Id: fbdev.c,v 1.9 2001/06/29 04:02:37 sbarnes Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -46,6 +46,28 @@
 /* This information is only saved so we can munmap() and close()... */
 int fbdev_fd;
 unsigned long fbdev_mapsize;
+
+#ifdef CONFIG_FIX_VR3
+//Color map for the Agenda VR3
+static unsigned short vr_lcd_intensity[16] = {
+    0x0000,
+    0x1111,
+    0x2222,
+    0x3333,
+    0x4444,
+    0x5555,
+    0x6666,
+    0x7777,
+    0x8888,
+    0x9999,
+    0xaaaa,
+    0xbbbb,
+    0xcccc,
+    0xdddd,
+    0xeeee,
+    0xffff
+};
+#endif
 
 g_error fbdev_init(void) {
    g_error e;
@@ -158,6 +180,31 @@ g_error fbdev_init(void) {
       
       ioctl(fbdev_fd,FBIOPUTCMAP,&colors);
    }
+
+#ifdef CONFIG_FIX_VR3
+   // Fix the screwed up color palette on the VR3
+   {
+     unsigned short red[16], green[16], blue[16];
+     struct fb_cmap cmap;
+     int i;
+     
+     for(i = 0; i < 16; i++) {
+       unsigned char c = i;
+       unsigned short b = c << 12 | c << 8 | c << 4 | c;
+       red[i] = vr_lcd_intensity[i];
+       green[i] = vr_lcd_intensity[i];
+       blue[i] = vr_lcd_intensity[i];
+     }
+     
+     cmap.start = 0;
+     cmap.len = 16;
+     cmap.red = red;
+     cmap.green = green;
+     cmap.blue = blue;
+     cmap.transp = 0;
+     ioctl(fbdev_fd, FBIOPUTCMAP, &cmap);
+   } 
+#endif
    
    return sucess;
 }

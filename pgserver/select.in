@@ -82,6 +82,7 @@ add_if_true svgainput.c    $DRIVER_SVGAINPUT
 add_if_true ncursesinput.c $DRIVER_NCURSESINPUT
 add_if_true tsinput.c      $DRIVER_TSINPUT
 add_if_true r3912ts.c      $DRIVER_R3912TS
+add_if_true vr3ts.c        $DRIVER_VR3TS
 
 close_section
 

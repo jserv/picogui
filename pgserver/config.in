@@ -65,6 +65,9 @@ endmenu
 mainmenu_option next_comment
 comment 'Video Drivers'
 bool 'Linux framebuffer device'            DRIVER_FBDEV
+if [ "$DRIVER_FBDEV" = "y" ]; then
+   bool '  Fix VR3 framebuffer'            CONFIG_FIX_VR3
+fi
 bool 'SDL framebuffer driver'              DRIVER_SDLFB
 if [ "$DRIVER_SDLFB" = "y" ]; then
    choice 'SDL framebuffer low-bpp emulation' \
@@ -90,6 +93,7 @@ bool 'R3912 (VTech Helio) touchscreen input driver'    DRIVER_R3912TS
 if [ "$DRIVER_R3912TS" = "y" ]; then
    bool '  Convert Helio silk-screen buttons'          DRIVER_R3912TS_HELIOSS
 fi
+bool 'Agenda VR3 touchscreen input driver'             DRIVER_VR3TS
 endmenu
 
 mainmenu_option next_comment

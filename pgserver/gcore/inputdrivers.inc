@@ -25,4 +25,8 @@
   DRV("r3912ts",&r3912ts_regfunc)
 #endif
 
+#ifdef DRIVER_VR3TS
+  DRV("vr3ts",&vr3ts_regfunc)
+#endif
+
 /* The End */

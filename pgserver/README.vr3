@@ -1,0 +1,44 @@
+PicoGUI for the Agenda VR3
+Ported by Sean Barnes
+
+First, you should download Brad's config.site file from here:
+ftp://ftp.agendacomputing.com/agenda/tools/brad/brads-config.site
+
+I generally put a copy of the file in each directory that I'll be 
+configuring from (ie. /whatever/pgserver and /whatever/cli_c)
+
+Now you can do the following steps:
+$ CONFIG_SITE=brads-config.site ./autogen.sh
+$ make config
+
+Now you can choose your options.
+Required for the Agenda VR3:
+  Platform is 'Linux-mips'
+  Video Driver is 'Linux framebuffer device'
+  You do need to 'Fix VR3 framebuffer'
+  Input Driver is 'Agenda VR3 touchscreen input driver'
+  Video Base Libraries is 'Linear framebuffer @ 4bpp'
+
+All other options are your choice. I would suggest choosing smaller fonts 
+and turning off most (if not all) of the debug options. The 90 degree 
+rotation might be interesting for a terminal (once text input is added for 
+the Agenda).
+
+You can now build it:
+$CONFIG_SITE=brads-config.site make
+
+Now rsync pgserver over to the Agenda. It should be run with the following 
+command:
+
+vr3$ pgserver -i vr3ts &
+
+You can now compile the client library (using the config.site file) and 
+rsync the files to the Agenda. Remeber to reboot or run /sbin/ldconfig
+
+Additional help compiling programs for the Agenda VR3 can be found at:
+http://www.csee.umbc.edu/~acedil1/agenda/
+
+
+Please email me if you have any problems.
+
+-Sean

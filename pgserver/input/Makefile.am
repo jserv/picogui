@@ -10,7 +10,8 @@ EXTRA_libinput_a_SOURCES = \
 	r3912ts.c \
 	sdlinput.c \
 	svgainput.c \
-	tsinput.c
+	tsinput.c \
+	vr3ts.c
 
 libinput_a_LIBADD       = $(INPUT:%.c=%.o)
 libinput_a_DEPENDENCIES = $(INPUT:%.c=%.o)
