@@ -1,11 +1,11 @@
-/* $Id: hotspot.c,v 1.6 2001/08/04 18:08:03 micahjd Exp $
+/* $Id: hotspot.c,v 1.7 2001/09/02 19:26:19 micahjd Exp $
  *
  * hotspot.c - This is an interface for managing hotspots.
  *             The divtree is scanned for hotspot divnodes.
  *             Their position is saved in a graph so it is easy
  *             to, for example, find which hotspot is to the left
  *             of a specified hotspot. This makes navigation with
- *             arrow keys only possible.
+ *             only arrow keys possible.
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
