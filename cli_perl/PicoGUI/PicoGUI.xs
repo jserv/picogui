@@ -9,6 +9,8 @@
 #include <picogui/theme.h>
 #include <picogui/client_c.h>
 
+/***************************************** Header cruft made by h2xs *******/
+
 static int
 not_here(char *s)
 {
@@ -9107,9 +9109,11 @@ not_there:
     return 0;
 }
 
+/***************************************** Glue functions ******************/
 
 MODULE = PicoGUI		PACKAGE = PicoGUI		
 
+PROTOTYPES: DISABLE
 
 double
 constant(sv,arg)
@@ -9124,3 +9128,21 @@ constant(sv,arg)
     OUTPUT:
 	RETVAL
 
+void
+pgInit(argc, argv)
+        int argc
+	char *argv
+	CODE:
+	        pgInit(argc,argv);
+	OUTPUT:
+	
+	
+int
+pgMessageDialog(title,text,flags)
+	char *title
+	char *text
+	unsigned long flags
+	CODE:
+	        RETVAL = pgMessageDialog(title,text,flags);
+	OUTPUT:
+	RETVAL

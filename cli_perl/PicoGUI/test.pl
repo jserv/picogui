@@ -18,3 +18,7 @@ print "ok 1\n";
 # (correspondingly "not ok 13") depending on the success of chunk 13
 # of the test code):
 
+PicoGUI::pgInit(0,"hi");
+print "Dialog returned: ".
+      PicoGUI::pgMessageDialog("Perl Module","This is a test!\nHello, world",
+			       PG_MSGBTN_OK | PG_MSGBTN_CANCEL)."\n";
