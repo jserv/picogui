@@ -7,8 +7,8 @@
 
 #define CONFIG_FILE "/.picomail.conf"
 
-pghandle wBox, *wRow, wHead, wHBox;
-int dc, dr, row;
+pghandle wBox;
+int row;
 
 
 int closeboxHandler(struct pgEvent *evt) {
@@ -27,12 +27,12 @@ addheader( char * sender, char * title, int msg )
     pghandle wItem;
     
     wItem = pgNewWidget(PG_WIDGET_LISTITEM,
-			  PG_DERIVE_INSIDE,
-			  wBox);
+                        row ? PGDEFAULT : PG_DERIVE_INSIDE,
+                        row ? PGDEFAULT : wBox);
+        
     pgReplaceTextFmt(PGDEFAULT,"[%d] %s - (%s)",msg, title, sender);
 
-
-
+    row++;
 }
 
 int main(int argc, char *argv[])

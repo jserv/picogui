@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include "tcpclient.h"
 #include "configfile.h"
+#include "picomail.h"
 
 #define BUFFERSIZE 4048
 
