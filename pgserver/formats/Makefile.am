@@ -2,7 +2,7 @@ INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include
 
 noinst_LIBRARIES = libformats.a 
 
-libformats_a_SOURCES = 
+libformats_a_SOURCES = plaintext.c
 
 EXTRA_libformats_a_SOURCES = pnm.c jpeg.c bmp.c html.c
 

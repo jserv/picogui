@@ -1,4 +1,4 @@
-/* $Id: textbox.h,v 1.7 2001/10/17 05:25:01 micahjd Exp $
+/* $Id: textbox.h,v 1.8 2001/11/05 04:06:38 micahjd Exp $
  *
  * textbox.h - Interface definitions for the textbox widget. This allows
  *             the main textbox widget functions and the text format loaders
@@ -122,6 +122,7 @@ extern struct txtformat text_formats[];
 
 /* Format loader functions */
 g_error html_load(struct textbox_cursor *c, const u8 *data, u32 datalen);
+g_error plaintext_load(struct textbox_cursor *c, const u8 *data, u32 datalen);
 
 
 #endif /* __H_TEXTBOX */   

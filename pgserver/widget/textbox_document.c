@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.13 2001/11/04 16:11:32 micahjd Exp $
+/* $Id: textbox_document.c,v 1.14 2001/11/05 04:06:39 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -35,7 +35,8 @@
 /************************* Supported format loaders */
 
 struct txtformat text_formats[] = {
-  
+
+  { {'T','E','X','T'}, &plaintext_load, NULL },
 #ifdef CONFIG_FORMAT_HTML
   { {'H','T','M','L'}, &html_load, NULL },
 #endif
