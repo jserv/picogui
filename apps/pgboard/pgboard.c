@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.15 2001/11/02 20:54:16 micahjd Exp $
+/* $Id: pgboard.c,v 1.16 2001/11/07 08:29:47 cgrigis Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -327,6 +327,8 @@ void drawDisabledKeyboard ()
   pgcontext gc = pgNewCanvasContext (wDisabled, PGFX_PERSISTENT);
 
   pgSetMapping (gc, 0, 0, 100, 100, PG_MAP_SCALE);
+  pgSetColor (gc, 0xFFFFFF);
+  pgRect (gc, 0, 0, 100, 100);
   /* ... */
 
   pgContextUpdate (gc);
