@@ -1,8 +1,12 @@
 2001-03-29    Micah Dowty <micahjd@users.sourceforge.net>
 
 Ugh. Spent the last 3 days installing a network for some jerk who doesn't
-deserve it. Anyway...
+deserve it. On top of that, a debian upgrade messed up xlib and aalib so I
+couldn't compile PicoGUI for a few hours today. Anyway...
 In preparation for a video mode setting app I'm adding a checkbox widget.
+There is now a new EXEV flag, PG_EXEV_TOGGLE, that makes a button
+'push-on-push-off' the checkbox widget turns this flag on and uses a
+separate theme object to create a checkbox's look and workings.
 
       * widget/checkbox.c: A little code to customize a button, just like in
         menuitem.c
@@ -15,6 +19,11 @@ In preparation for a video mode setting app I'm adding a checkbox widget.
 
       * theme/thobjtab.c: Added theme inheritance entries for the checkbox's
         theme objects.
+	
+      * demos/demo.c: Added examples of a toggle button and checkbox
+
+      * widget/button.c: Added an experimental PG_WP_ON property to get/set
+        the toggle state of a button/checkbox/radiobutton/etc
 
 2001-03-25    Micah Dowty <micahjd@users.sourceforge.net>
 

@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.54 2001/03/30 04:39:21 micahjd Exp $
+/* $Id: button.c,v 1.55 2001/03/30 05:01:23 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -229,6 +229,12 @@ g_error button_set(struct widget *self,int property, glob data) {
     DATA->extdevents = data;
     break;
 
+  case PG_WP_ON:
+    DATA->on = data;
+    /* Fake a trigger to redraw the button */
+    button_trigger(self,0,NULL);
+    break;
+     
    default:
      return mkerror(ERRT_PASS,0);
   }
@@ -261,6 +267,9 @@ glob button_get(struct widget *self,int property) {
 
   case PG_WP_HOTKEY:
     return (glob) self->hotkey;
+     
+  case PG_WP_ON:
+    return (glob) DATA->on;
 
   default:
     return 0;
