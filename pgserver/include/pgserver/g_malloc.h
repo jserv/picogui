@@ -1,4 +1,4 @@
-/* $Id: g_malloc.h,v 1.10 2002/01/16 19:47:25 lonetech Exp $
+/* $Id: g_malloc.h,v 1.11 2002/02/20 19:58:03 lonetech Exp $
  *
  * g_malloc.h - malloc wrapper providing error handling
  *
@@ -38,9 +38,23 @@
 
 #include <pgserver/g_error.h>
 
+#ifdef DEBUG_MEMORY
+void memoryleak_trace(void);
+g_error g_dmalloc(void **p,size_t s,const char *where);
+void g_dfree(const void *p,const char *where);
+g_error g_drealloc(void **p,size_t s,const char *where);
+#define g_malloc(p,s) g_dmalloc(p,s,__FUNCTION__ " in " __FILE__)
+#define g_free(p) g_dfree(p,__FUNCTION__ " in " __FILE__)
+#define g_realloc(p,s) g_drealloc(p,s,__FUNCTION__ " in " __FILE__)
+#else
 g_error g_malloc(void **p,size_t s);
 void g_free(const void *p);
 g_error g_realloc(void **p,size_t s);
+#define g_dmalloc(p,s,where) g_malloc(p,s)
+#define g_dfree(p,where) g_free(p)
+#define g_drealloc(p,s,where) g_realloc(p,s)
+#define memoryleak_trace() prerror(mkerror(PG_ERRT_MEMORY,56))
+#endif
 
 #ifdef DEBUG_KEYS
 /* Memory allocation statistics, for CTRL-ALT-M */
@@ -54,6 +68,14 @@ extern long grop_zombie_count;  /* borrowed from grop.c */
 
 #ifdef DEBUG_ANY
 extern long memamt;       /* Bytes of memory total */
+#endif
+
+#ifdef DEBUG_MEMORY
+extern struct memtrack_struct {
+  void *mem;
+  size_t size;
+  const char *where;
+} *memtrack;
 #endif
 
 #endif /* __H_GMALLOC */

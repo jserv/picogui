@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.23 2002/02/04 16:20:37 gobry Exp $
+/* $Id: pgmain.c,v 1.24 2002/02/20 19:58:03 lonetech Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -58,7 +58,6 @@ volatile u8 use_tpcal = 0;                 /* Run tpcal before running the sessi
 volatile u8 sessionmgr_secondary = 0;      /* Need to run session manager after tpcal */
 volatile u8 sessionmgr_start = 0;          /* Start the session manager at the next iteration */
 
-extern long memref;
 struct dtstack *dts;
 
 #ifdef UCLINUX
@@ -642,7 +641,8 @@ int main(int argc, char **argv) {
   }
   
   /* Check for memory leaks and, finally, exit */
-  if (memref!=0) prerror(mkerror(PG_ERRT_MEMORY,56));
+  if (memref!=0)
+    memoryleak_trace();
   exit(0);
 }
 
