@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.27 2002/01/29 03:19:34 lonetech Exp $
+/* $Id: textbox_document.c,v 1.28 2002/02/02 20:01:23 lonetech Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -251,13 +251,16 @@ g_error text_insert_string(struct textbox_cursor *c, const char *str,
   struct fontdesc *fd;
   s16 tw,th;
   handle hstr;
-  struct gropnode *node;
 
   /*** First thing to do is make sure we have a valid insertion point. */
 
   /* No line? */
-  if (!c->c_line)
+  if (!c->c_line) {
     c->c_line = c->head;
+    c->c_line->flags |= DIVNODE_NEED_RECALC|DIVNODE_PROPAGATE_RECALC;
+    c->widget->in->flags |= DIVNODE_NEED_RECALC;
+    c->widget->dt->flags |= DIVTREE_NEED_RESIZE;
+  }
 
   /* No div? */
   if (!c->c_div) {
@@ -265,7 +268,7 @@ g_error text_insert_string(struct textbox_cursor *c, const char *str,
     errorcheck;
     c->c_div = c->c_line->div;
     c->c_gctx.current = NULL;
-    c->c_div->flags |= PG_S_LEFT | DIVNODE_AUTOWRAP;
+    c->c_div->flags |= PG_S_LEFT | DIVNODE_AUTOWRAP | DIVNODE_NEED_RECALC;
     c->c_div->flags &= ~DIVNODE_UNDERCONSTRUCTION;
 
     /* A child div to actually do the rendering into */

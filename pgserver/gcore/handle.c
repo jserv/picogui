@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.50 2002/01/16 19:47:25 lonetech Exp $
+/* $Id: handle.c,v 1.51 2002/02/02 20:01:23 lonetech Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -26,6 +26,8 @@
  * 
  * 
  */
+
+#include <string.h>
 
 #include <pgserver/common.h>
 

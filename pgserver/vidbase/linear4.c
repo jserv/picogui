@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.20 2002/02/01 19:11:48 micahjd Exp $
+/* $Id: linear4.c,v 1.21 2002/02/02 20:01:23 lonetech Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -105,7 +105,7 @@ void linear4_slab_stipple(hwrbitmap dest,s16 x,s16 y,s16 w,hwrcolor c) {
       
    /* If the slab is completely contained within one byte,
     * use a different method */
-   if ( (remainder + w) < 2 ) {
+   if ( (remainder + w) <= 2 ) {
       mask  = slabmask4[remainder];        /* Isolate the necessary pixels */
       mask &= ~slabmask4[remainder+w];
       mask &= stipple;

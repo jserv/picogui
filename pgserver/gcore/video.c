@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.54 2002/01/30 12:03:15 micahjd Exp $
+/* $Id: video.c,v 1.55 2002/02/02 20:01:23 lonetech Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -25,6 +25,8 @@
  * 
  * 
  */
+
+#include <stdlib.h>
 
 #include <pgserver/common.h>
 

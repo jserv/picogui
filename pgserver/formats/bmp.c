@@ -1,4 +1,4 @@
-/* $Id: bmp.c,v 1.11 2002/01/30 12:03:15 micahjd Exp $
+/* $Id: bmp.c,v 1.12 2002/02/02 20:01:22 lonetech Exp $
  *
  * bmp.c - Functions to detect and load files compatible with the Windows BMP
  *         file format. This format is good for palettized images and/or
@@ -261,7 +261,7 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 	DBG("RLE: %d,%d %#02x %#02x\n", x, y, rle_n, rle_c);
 	if(rle_n)	/* RLE pixels */
 	 {
-	  if(compression=1)	/* 8-bit */
+	  if(compression==1)	/* 8-bit */
 	    c = c2 = colortable[rle_c];
 	  else			/* 4-bit */
 	   {

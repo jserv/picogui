@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.152 2002/01/31 00:38:38 micahjd Exp $
+/* $Id: widget.c,v 1.153 2002/02/02 20:01:23 lonetech Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -1068,7 +1068,7 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
      */
     p = kbdfocus;
     param.kbd.flags = kflags | PG_KF_CHILD_FOCUSED;
-    while (p = widget_traverse(p, PG_TRAVERSE_CONTAINER, 1)) {
+    while ((p = widget_traverse(p, PG_TRAVERSE_CONTAINER, 1))) {
       send_trigger(p,type,&param);
       if (param.kbd.consume > 0)
 	return;

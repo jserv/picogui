@@ -1,4 +1,4 @@
-/* $Id: g_malloc.c,v 1.17 2002/01/16 19:47:25 lonetech Exp $
+/* $Id: g_malloc.c,v 1.18 2002/02/02 20:01:22 lonetech Exp $
  *
  * g_malloc.c - malloc wrapper providing error handling
  *
@@ -71,7 +71,9 @@ g_error g_malloc(void **p,size_t s) {
 void g_free(const void *p) {
 #ifdef DEBUG_ANY
   size_t s;
+#ifdef DEBUG_MEMORY
   const char *adr = p;
+#endif
 #endif
   if (!p) return;
 #ifdef DEBUG_ANY
@@ -80,9 +82,9 @@ void g_free(const void *p) {
   memref--;
 #ifdef DEBUG_ANY
   memamt -= (s = *((size_t*)p));
-#endif
 #ifdef DEBUG_MEMORY
   printf("-%d #%ld (%ld) %p\n",s,memref,memamt,adr);
+#endif
 #endif
 
   free((void*)p);

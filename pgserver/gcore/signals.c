@@ -1,4 +1,4 @@
-/* $Id: signals.c,v 1.6 2002/02/02 18:39:56 sbarnes Exp $
+/* $Id: signals.c,v 1.7 2002/02/02 20:01:23 lonetech Exp $
  *
  * signal.c - Handle some fatal and not-so-fatal signals gracefully
  *            The SIGSEGV handling et cetera was inspired by SDL's
@@ -30,6 +30,7 @@
 #include <pgserver/common.h>
 #include <pgserver/pgmain.h>  /* main loop flags */
 #include <pgserver/video.h>   /* drivermessage() */
+#include <pgserver/input.h>   /* cleanup_inlib() */
 
 #include <unistd.h>
 #include <signal.h>

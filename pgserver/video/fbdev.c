@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.26 2002/02/01 19:11:48 micahjd Exp $
+/* $Id: fbdev.c,v 1.27 2002/02/02 20:01:23 lonetech Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -251,7 +251,9 @@ g_error fbdev_initvt(void) {
 /**************************************** Framebuffer initalization */
 
 g_error fbdev_init(void) {
+#ifdef CONFIG_FB_VT
    g_error e;
+#endif
 
    /* Open the framebuffer device */
    if (!(fbdev_fd = open(get_param_str("video-fbdev","device",DEFAULT_FB), O_RDWR)))

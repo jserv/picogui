@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.23 2002/02/02 00:06:47 micahjd Exp $
+/* $Id: x11.c,v 1.24 2002/02/02 20:01:23 lonetech Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -291,7 +291,7 @@ g_error x11_bitmap_getsize(hwrbitmap bmp,s16 *w,s16 *h) {
   return success;
 }
 
-g_error x11_bitmap_new(hwrbitmap *bmp,s16 w,s16 h) {
+g_error x11_bitmap_new(hwrbitmap *bmp,s16 w,s16 h,u16 bpp) {
   struct x11bitmap **pxb = (struct x11bitmap **) bmp;
   g_error e;
 
@@ -303,7 +303,7 @@ g_error x11_bitmap_new(hwrbitmap *bmp,s16 w,s16 h) {
   (*pxb)->h = h;
 
   /* Allocate a corresponding X pixmap */
-  (*pxb)->d  = XCreatePixmap(xdisplay,x11_display.d,w,h,vid->bpp);
+  (*pxb)->d  = XCreatePixmap(xdisplay,x11_display.d,w,h,bpp);
 
 #ifdef CONFIG_X11_XFT
   /* Allocate an XftDraw */
