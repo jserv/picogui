@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.20 2001/11/13 01:09:54 micahjd Exp $
+/* $Id: netcore.c,v 1.21 2001/11/14 02:09:40 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -155,7 +155,10 @@ int _pg_recvtimeout(short *rsptype) {
      if (_pg_recv(rsptype,sizeof(short)))
        return 1;
      if ((*rsptype) == htons(PG_RESPONSE_EVENT))
-       return 0;
+       /* Important! We need to indicate to the caller that there's an extra
+	* return packet on it's way after this event packet.
+	*/
+       return 2;
      _pg_recv(cruft,sizeof(cruft));
       
      /* At this point either it was a client-defined fd or a timeout.
@@ -359,7 +362,8 @@ void _pg_add_request(short reqtype,void *data,unsigned long datasize) {
 
 void _pg_getresponse(int eventwait) {
   short rsp_id = 0;
-  
+  int extra_packet = 0;
+
   /* Read the response type. This is where the client spends almost
    * all it's time waiting (and the only safe place to interrupt)
    * so handle the idling here.
@@ -373,9 +377,20 @@ void _pg_getresponse(int eventwait) {
 		      (_pgselect_handler != &select) ) ) {
 #endif       
      
-     /* Use the interruptable wait (only for event waits!) */
-     if (_pg_recvtimeout(&_pg_return.type))
-       return;
+    /* Use the interruptable wait (only for event waits!) */
+    switch (_pg_recvtimeout(&_pg_return.type)) {
+    case 2:
+      /* There's an extra packet after this one (return code from 'ping')
+       * so we'll need to suck that up after we're done processing the
+       * actual event packet.
+       */
+      extra_packet = 1;
+      break;
+    case 0:
+      break;
+    default:
+      return;
+    }
   }
   else {
      /* Normal receive */
@@ -670,7 +685,15 @@ void _pg_getresponse(int eventwait) {
 	    _pg_return.e.event.type);
 #endif
 #endif  //    ENABLE_THREADING_SUPPORT
-   
+
+   /* If there was an extra packet (left over from a 'ping') 
+    * we should suck that up now
+    */
+   if (extra_packet) {
+     struct pgresponse_ret cruft;
+     _pg_recv(&cruft,sizeof(cruft));
+   }
+ 
 }
 
 void _pg_free_memdata(struct pgmemdata memdat) {
@@ -821,7 +844,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.20 2001/11/13 01:09:54 micahjd Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.21 2001/11/14 02:09:40 micahjd Exp $\n");
 	exit(1);
       }
 
