@@ -1,4 +1,4 @@
-/* $Id: msgdialog.c,v 1.2 2000/10/31 01:46:34 micahjd Exp $
+/* $Id: msgdialog.c,v 1.3 2000/11/04 20:27:08 micahjd Exp $
  *
  * msgdialog.c - message dialog box demo
  *
@@ -27,7 +27,7 @@
 
 #include <picogui.h>
 
-void rundemo(short event,pghandle from,long param) {
+int rundemo(short event,pghandle from,long param) {
   if (PG_MSGBTN_OK ==
       pgMessageDialog("msgdialog.c test program",
 		      "This is a test dialog box.\n\n"
@@ -35,6 +35,8 @@ void rundemo(short event,pghandle from,long param) {
 		      "World!",
 		      PG_MSGBTN_OK | PG_MSGBTN_CANCEL))
     pgMessageDialog("Yay!","You clicked 'Ok'",0);
+
+  return 0;
 }
 
 /* a main() to make a little launcher for our demo */

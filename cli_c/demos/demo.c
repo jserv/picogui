@@ -1,4 +1,4 @@
-/* $Id: demo.c,v 1.12 2000/10/16 18:03:50 micahjd Exp $
+/* $Id: demo.c,v 1.13 2000/11/04 20:27:08 micahjd Exp $
  *
  * demo.c -   source file for testing PicoGUI
  *
@@ -34,18 +34,22 @@ pghandle wLabel,wIndicator;
 
 /*** Event handlers */
 
-void btnHello(short event,pghandle from,long param) {
+int btnHello(short event,pghandle from,long param) {
   static int i=0;
 
   pgReplaceTextFmt(wLabel,"Hello World\n#%d",++i);
   pgSetWidget(wIndicator,PG_WP_VALUE,i,0);
   pgUpdate();
+
+  return 0;
 }
 
-void myDebugEvtHandler(short event,pghandle from,long param) {
+int myDebugEvtHandler(short event,pghandle from,long param) {
   printf("Received event in myDebugEvtHandler: "
 	 "#%d from 0x%08X, param = 0x%08X\n",
 	 event,from,param);
+  
+  return 0;
 }
 
 /*** Main program */
@@ -58,9 +62,7 @@ int main(int argc, char *argv[])
 
   /**** Register our application */
 
-  pgRegisterApp(PG_APP_NORMAL,"app-foo!",
-		PG_APPSPEC_WIDTH,200,
-		PG_APPSPEC_SIDE,PG_S_LEFT,0);
+  pgRegisterApp(PG_APP_NORMAL,"Demo Application",0);
 
   /**** First level of widgets */
 

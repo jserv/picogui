@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.15 2000/10/29 21:05:43 micahjd Exp $
+/* $Id: client_c.h,v 1.16 2000/11/04 20:27:08 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -43,7 +43,7 @@
 #define PGDEFAULT       0
 
 /* event handler used in pgBind */
-typedef void (*pgevthandler)(short event,pghandle from,long param);
+typedef int (*pgevthandler)(short event,pghandle from,long param);
 
 /* Structure representing data, loaded or mapped into memory.
  * This is returned by the pgFrom* series of functions for loading
