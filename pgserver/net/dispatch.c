@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.106 2002/09/28 06:25:05 micahjd Exp $
+/* $Id: dispatch.c,v 1.107 2002/09/28 20:54:22 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -312,6 +312,10 @@ g_error rqh_set(int owner, struct pgrequest *req,
   e = rdhandle((void**) &w,PG_TYPE_WIDGET,owner,ntohl(arg->widget));
   errorcheck;
 
+  /* They gave us a null widget? Weird... */
+  if (!w)
+    return success;
+  
   return widget_set(w,ntohs(arg->property),ntohl(arg->glob));
 }
 
