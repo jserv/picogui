@@ -1,23 +1,36 @@
 -------------------- OpenGL support in PicoGUI --
 
-PicoGUI now has a driver for doing OpenGL video, sdlgl. At this time the
-driver is experimental.
+PicoGUI now has a driver for doing OpenGL video, sdlgl.
+This driver is still considered experimental.
 
 Required libraries:
  - SDL
- - SDL_ttf
  - OpenGL
  - GLU
+ - Freetype2
 
 Required PicoGUI components:
- - sdlinput
- - linear32
+ - sdlinput input driver
+ - linear32 video base library
+ - sdlgl video driver 
+ - ftgl font engine
 
 In addition, you will need some TrueType fonts installed. By default it
-will search for them in /usr/share/fonts/truetype. I have been using the
-fonts in the "ttf-openoffice" Debian package. There's no real font indexing
-support yet, it only supports one font. You can set this with the
-video-sdlgl.font config option
+will search for them in /usr/share/fonts. 
+
+WARNING: By default it will try to load all fonts it finds in /usr/share/fonts.
+         Since the ftgl driver doesn't load on demand, it will try to stick
+         them all in your card's video memory at initialization. When in doubt,
+         point this at the picogui recommended font distribution.
+
+An example command line for testing the sdlgl driver:
+
+  ./pgserver -v sdlgl --font_engine=ftgl --font-ftgl.path=../fonts
+
+For more information on the supported options, see README.configfile.
+Also, it's possible to use OpenGL commands inside themes. Take a look
+at the gl_cube theme for an example. Note that for OpenGL themes to compile,
+you need to configure themetools with ./configure --enable-opengl.
 
 The sdlgl driver supports several config file options, documented in
 the README.configfile. It also adds several keyboard commands you can
