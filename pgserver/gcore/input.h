@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.3 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: input.h,v 1.4 2000/09/02 17:19:15 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -28,8 +28,82 @@
 #ifndef __H_INPUT
 #define __H_INPUT
 
-g_error input_init(void (*request_quit)(void));
-void input_release();
+#include <sys/time.h>    /* For timeval */
+#include <sys/types.h>   /* For fd_set */
+
+#include <g_error.h>
+
+/* Just like the video lib, use a structure of pointers
+   to functions. These aren't called by much though, and
+   defaults don't make as much sense as for video drivers.
+   So, unused functions are set to null and simply not
+   called. */
+
+struct inlib {
+  
+  /* Called upon loading the input driver. This inits
+     the hardware or underlying library, and optionally
+     starts an input thread.
+  */
+  g_error (*init)(void);
+
+  /* Upon unloading... */
+  void (*close)(void);
+
+  /* This method gives the driver control when activity
+     on filedescriptors is detected.  fd_init() is called
+     prior to entering the select loop, to set the
+     necessary bits. After the select loop, if the 
+     network code doesn't need the fd it is sent to
+     fd_activate(). If the fd is owned by the driver,
+     process it and return a 0. Else, return a 1 and
+     the fd will go to the next driver. (More efficient
+     on average, considering that normally only 1 input
+     driver will be loaded)
+  */
+  /* Look familiar? See select(2). These are already
+     initialized, but the input driver gets a chance
+     to modify them.
+  */
+  void (*fd_init)(int *n,fd_set *readfds,fd_set *writefds,
+	       fd_set *exceptfds,struct timeval *timeout);
+  int (*fd_activate)(int fd);
+
+  /* This is called after every iteration through the select
+     loop no matter what. Note that the default select
+     timeout is a few seconds, so if you rely on this for input
+     you should define fd_init to lower timeout to something ok
+     for the driver
+  */
+  void (*poll)(void);
+
+  /* Do not touch (drivers) */
+  struct inlib *next;
+};
+
+/* Head of the inlib list. */
+extern struct inlib *inlib_list;
+
+/* The main driver - that which the vidlib loads
+   and unloads automatically. This can be NULL if the
+   vidlib doesn't need an input driver. 
+*/
+extern struct inlib *inlib_main;
+
+/* Loads an input driver, and puts a pointer to it in
+   ppinlib.
+*/
+g_error load_inlib(g_error (*regfunc)(struct inlib *i),
+		   struct inlib **inl);
+
+/* Unload a specific driver */
+void unload_inlib(struct inlib *inl);
+
+/* Unload all drivers */
+void cleanup_inlib(void);
+
+/* Registration functions */
+g_error sdlinput_regfunc(struct inlib *i);
 
 #endif /* __H_INPUT */
 /* The End */

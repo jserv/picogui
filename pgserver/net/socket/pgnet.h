@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.14 2000/08/27 05:54:27 micahjd Exp $
+/* $Id: pgnet.h,v 1.15 2000/09/02 17:19:15 micahjd Exp $
  *
  * pgnet.h - header for all PicoGUI networking stuff (request/packet/event...)
  *
@@ -57,7 +57,9 @@
 #include <errno.h>
 #endif
 
+/* Stuff related to the main loop */
 extern volatile int in_shutdown;
+void request_quit(void);
 
 /* Which clients are waiting for events */
 extern fd_set evtwait;

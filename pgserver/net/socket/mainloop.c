@@ -1,4 +1,4 @@
-/* $Id: mainloop.c,v 1.19 2000/08/27 08:31:01 micahjd Exp $
+/* $Id: mainloop.c,v 1.20 2000/09/02 17:19:15 micahjd Exp $
  *
  * mainloop.c - initializes and shuts down everything, main loop
  *
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
 	
       default:   /* Catches -, -h, --help, etc... */
 	puts("\nPicoGUI server (http://pgui.sourceforge.net)\n"
-	     "$Id: mainloop.c,v 1.19 2000/08/27 08:31:01 micahjd Exp $\n\n"
+	     "$Id: mainloop.c,v 1.20 2000/09/02 17:19:15 micahjd Exp $\n\n"
 	     "pgserver [-h] [--] [session manager prog]\n\n"
 	     "\t-h: Displays this usage screen\n"
 	     "\nIf a session manager program is specified, it will be run when PicoGUI\n"
@@ -94,15 +94,14 @@ int main(int argc, char **argv) {
   /*************************************** Initialization */
 
   /* HACK ALERT */
-  if (iserror(prerror(setdriver(
-				svga_regfunc,0,0,0,0	
+  if (iserror(prerror(load_vidlib(
+				sdl_regfunc,500,500,0,0	
 		      )))) exit(1);  
 
   /* Subsystem initialization and error check */
   if (iserror(prerror(dts_new()))) exit(1);
   if (iserror(prerror(req_init()))) exit(1);
   if (iserror(prerror(appmgr_init()))) exit(1);
-  if (iserror(prerror(input_init(&request_quit)))) exit(1);
   if (iserror(prerror(timer_init()))) exit(1);
 
 #ifndef WINDOWS
@@ -149,7 +148,7 @@ int main(int argc, char **argv) {
   /*************************************** cleanup time */
   in_shutdown = 1;
   timer_release();
-  input_release();
+  cleanup_inlib();
   handle_cleanup(-1,-1);
   dts_free();
   req_free();

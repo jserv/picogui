@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.3 2000/08/28 02:06:09 micahjd Exp $
+/* $Id: video.c,v 1.4 2000/09/02 17:19:15 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -763,7 +763,7 @@ g_error def_bitmap_getsize(struct stdbitmap *bmp,int *w,int *h) {
    hardware specific things. Add the resulting structure
    to the list.
 */
-g_error setdriver(g_error (*regfunc)(struct vidlib *v),
+g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
 		  int xres,int yres,int bpp,unsigned long flags) {
   g_error e;
 

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.21 2000/08/27 08:31:00 micahjd Exp $
+# $Id: Makefile,v 1.22 2000/09/02 17:19:15 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -33,8 +33,9 @@ SRC := widget/bitmap.c widget/indicator.c widget/label.c \
        gcore/handle.c gcore/g_error.c appmgr/global.c widget/button.c \
        widget/panel.c widget/default_theme.c widget/popup.c widget/box.c \
        widget/field.c gcore/timer.c gcore/errortext.c gcore/video.c \
-       video/svga.c
-#       video/sdlmin.c video/sdl.c \
+       gcore/input.c \
+       video/sdlmin.c video/sdl.c input/sdlinput.c
+#       video/svga.c
 
 HDR := widget/widget.h gcore/divtree.h gcore/g_malloc.h \
        gcore/font.h gcore/handle.h gcore/g_error.h gcore/video.h \
@@ -111,19 +112,16 @@ endif
 	endif
 
 	# Libraries and includes for SDL
-#	CFLAGS := $(CFLAGS) $(shell $(SDLCONFIG) --cflags) 
-#	LDFLAGS := $(LDFLAGS) $(shell $(SDLCONFIG) --libs)
+	CFLAGS := $(CFLAGS) $(shell $(SDLCONFIG) --cflags) 
+	LDFLAGS := $(LDFLAGS) $(shell $(SDLCONFIG) --libs)
 
-	LDFLAGS := $(LDFLAGS) -lvgagl -lvga
+#	LDFLAGS := $(LDFLAGS) -lvgagl -lvga
 
 # Network-specific source files
 SRC := $(SRC) net/$(NET)/request.c net/$(NET)/mainloop.c \
        net/$(NET)/eventq.c net/$(NET)/dispatch.c
 CFLAGS := $(CFLAGS) -Inet/$(NET)
 HDR := $(HDR) net/$(NET)/pgnet.h
-
-# Input-specific source files
-SRC := $(SRC) input/$(INPUT)/input.c
 
 OBJ := $(SRC:.c=.o) font/fontdata.o
 

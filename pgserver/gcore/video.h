@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.11 2000/08/28 02:06:09 micahjd Exp $
+/* $Id: video.h,v 1.12 2000/09/02 17:19:15 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -346,8 +346,8 @@ int ascread(unsigned char **dat,unsigned long *datlen);
   and optionally changing the mode.  If you just
   want to change the mode use vid->setmode
 */
-g_error setdriver(g_error (*regfunc)(struct vidlib *v),
-		  int xres,int yres,int bpp,unsigned long flags);
+g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
+		    int xres,int yres,int bpp,unsigned long flags);
 
 /* Registration functions */
 g_error sdlmin_regfunc(struct vidlib *v);
