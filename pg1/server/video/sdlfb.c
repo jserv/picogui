@@ -49,7 +49,11 @@
 #elif defined(CONFIG_SDLSDC)
 #include <stdlib.h>               /* strtol() */
 #endif
+#ifndef WIN32
 #include <unistd.h>               /* write() for beeping kludge */
+#else
+#include <io.h>               /* write() for beeping kludge */
+#endif
 #include <string.h>
 
 SDL_Surface *sdl_vidsurf;
@@ -434,7 +438,7 @@ void sdlfb_update(hwrbitmap d,s16 x,s16 y,s16 w,s16 h) {
      /* Calculations */
      srcline = src = sdlfb_backbuffer + 
        (((x-sdlfb_display_x) * vid->bpp) >> 3) + (y-sdlfb_display_y)*FB_BPL;
-     destline = dest = sdl_vidsurf->pixels + 
+     destline = dest = ((char*)sdl_vidsurf->pixels) +
        (((((x-sdlfb_display_x)*sdlfb_scale)+sdlfb_display_x)*vid->bpp)>>3) + 
        (((y-sdlfb_display_y)*sdlfb_scale)+sdlfb_display_y)*sdl_vidsurf->pitch;
      pxw = vid->bpp >> 3;
@@ -481,7 +485,7 @@ void sdlfb_update(hwrbitmap d,s16 x,s16 y,s16 w,s16 h) {
        
        /* Calculations */
        srcline = src = sdlfb_backbuffer + ((x * vid->bpp) >> 3) +y*FB_BPL;
-       destline = dest = sdl_vidsurf->pixels + x + y*sdl_vidsurf->pitch;
+       destline = dest = (char*)sdl_vidsurf->pixels + x + y*sdl_vidsurf->pitch;
        bw = (w * vid->bpp) >> 3;
        
        /* Slow but it works (this is debug code, after all...) */

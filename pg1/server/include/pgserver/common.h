@@ -29,6 +29,13 @@
 
 #define PGSERVER
 
+#ifdef _MSC_VER
+#include "windows.h"
+#define snprintf _snprintf
+#define vsnprintf _vsnprintf
+#define strcasecmp stricmp
+#endif
+
 /* We'll need this if we don't already have it... */
 #ifndef max
 #define max(a,b) (((a) > (b)) ? (a) : (b))

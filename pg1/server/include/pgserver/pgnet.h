@@ -43,7 +43,14 @@
 #ifndef WINDOWS
 #define WINDOWS
 #endif
+#ifdef __MINGW32__
+#ifdef DBG
+#undef DBG
+#endif
+#define DBG 0
 #include <winsock2.h>
+#undef DBG
+#endif 
 #define EAGAIN WSAEWOULDBLOCK
 #define ioctl ioctlsocket
 #else

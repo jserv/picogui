@@ -1032,7 +1032,7 @@ g_error rqh_appmsg(struct request_data *r) {
   reqarg(handlestruct);
 
   /* Everything after the handlestruct is data to send */
-  data = r->in.data + sizeof(struct pgreqd_handlestruct);
+  data = (char*)(r->in.data) + sizeof(struct pgreqd_handlestruct);
   datasize = r->in.req->size - sizeof(struct pgreqd_handlestruct);
   
   /* Is the handle good? */

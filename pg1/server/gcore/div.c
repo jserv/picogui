@@ -39,7 +39,7 @@
  */
 struct divnode fakedt_head;
 struct divtree fakedt = {
-  head: &fakedt_head
+  &fakedt_head /* head */
 };
 
 struct dtstack *dts;

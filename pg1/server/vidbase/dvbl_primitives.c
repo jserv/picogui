@@ -40,7 +40,14 @@
 
 #include <stdlib.h>		/* for qsort */
 #include <string.h>
+#ifdef _MSC_VER
+#define _USE_MATH_DEFINES /* for M_PI */
+#endif
 #include <math.h>
+#ifndef M_PI /* MingW doesn't define this by some reason */
+#define M_PI       3.14159265358979323846
+#endif
+
 
 /* There are about a million ways to optimize this-
    At the very least, combine it with pixel() and
@@ -356,9 +363,9 @@ void def_fpolygon (hwrbitmap dest, s32* array, s16 xoff, s16 yoff, hwrcolor c, s
   lo+=yoff;
   /* Now we know how many polylines we will need */
   {
-    struct poly_line_info mpoly[nplines]; /* Each of these has 16bytes worth of data */
+    struct poly_line_info* mpoly = alloca(nplines*sizeof(struct poly_line_info)); /* Each of these has 16bytes worth of data */
     struct poly_line_info* mptr=mpoly;
-    s16 vert[nplines];
+    s16* vert = alloca(nplines*sizeof(s16));
     /* First stick info in the poly_lines in order */
     j=0;
     for(i=0;i<num_coords;i++) {

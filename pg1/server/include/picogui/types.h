@@ -36,7 +36,7 @@
  * Fixed type definitions for MacOS X, Darwin, and IRIX
  * FIXME: this is a kludge
  */
-#if ((defined(__APPLE__) && defined(__MACH__)) || defined(_MIPS_ISA))
+#if ((defined(__APPLE__) && defined(__MACH__)) || defined(_MIPS_ISA) || defined(_WIN32))
 typedef unsigned char __u8;
 typedef signed char __s8;
 typedef unsigned short __u16;

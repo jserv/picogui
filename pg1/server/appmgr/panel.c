@@ -165,11 +165,13 @@ struct divnode *appmgr_panel_nontoolbar_area(void) {
 /**************************************** Registration */
 
 struct appmgr appmgr_panel = {
-             name:  "panel",
-             init:  appmgr_panel_init,
-         shutdown:  appmgr_panel_shutdown,
-              reg:  appmgr_panel_reg,
-  nontoolbar_area:  appmgr_panel_nontoolbar_area,
+             /*name:  */"panel",
+             /*init:  */appmgr_panel_init,
+         /*shutdown:  */appmgr_panel_shutdown,
+              /*reg:  */appmgr_panel_reg,
+            /*unreg:  */NULL,
+  /*nontoolbar_area:  */appmgr_panel_nontoolbar_area,
+       /*widget_map:  */NULL
 };
 
 /* The End */

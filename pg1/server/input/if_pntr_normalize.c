@@ -103,11 +103,11 @@ void infilter_pntr_normalize_handler(struct infilter *self, u32 trigger, union t
 }
 
 struct infilter infilter_pntr_normalize = {
-  accept_trigs: PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_MOVE | PG_TRIGGER_PNTR_STATUS |
-                PG_TRIGGER_PNTR_RELATIVE | PG_TRIGGER_SCROLLWHEEL,
-  absorb_trigs: PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_MOVE | PG_TRIGGER_PNTR_STATUS |
-                PG_TRIGGER_PNTR_RELATIVE | PG_TRIGGER_SCROLLWHEEL,
-  handler: &infilter_pntr_normalize_handler,
+  /*accept_trigs:  */PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_MOVE | PG_TRIGGER_PNTR_STATUS |
+                     PG_TRIGGER_PNTR_RELATIVE | PG_TRIGGER_SCROLLWHEEL,
+  /*absorb_trigs:  */PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_MOVE | PG_TRIGGER_PNTR_STATUS |
+                     PG_TRIGGER_PNTR_RELATIVE | PG_TRIGGER_SCROLLWHEEL,
+       /*handler:  */&infilter_pntr_normalize_handler
 };
 
 /* The End */

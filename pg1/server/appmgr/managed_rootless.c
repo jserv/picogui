@@ -117,10 +117,13 @@ int appmgr_managed_rootless_widget_map(int w) {
 /**************************************** Registration */
 
 struct appmgr appmgr_managed_rootless = {
-       name:  "managed_rootless",
-       init:  appmgr_managed_rootless_init,
-        reg:  appmgr_managed_rootless_reg,
- widget_map:  appmgr_managed_rootless_widget_map,
+             /*name:  */"managed_rootless", 
+             /*init:  */appmgr_managed_rootless_init,
+         /*shutdown:  */NULL, 
+              /*reg:  */appmgr_managed_rootless_reg, 
+            /*unreg:  */NULL,
+  /*nontoolbar_area:  */NULL, 
+       /*widget_map:  */appmgr_managed_rootless_widget_map
 };
 
 /* The End */

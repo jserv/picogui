@@ -10,11 +10,15 @@
 #define DBG
 #else
 
+#ifndef _MSC_VER
 #ifdef DEBUG_FILE
 #define DBG(fmt, args...) fprintf(stderr, "%s: " fmt, __FUNCTION__ , ## args); fflush(stderr)
 #else
-#define DBG(fmt, args...)
+#define DBG
 #endif
+#else
+_inline void DBG(fmd, ...) {}
+#endif /* _MSC_VER */
 
 #endif /* MacOS X */
 #endif /* _DEBUG_H_ */

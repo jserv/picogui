@@ -33,7 +33,7 @@
 /* I don't know where cygwin gets the right declarations from, but if we just omit this
  * include, for some reason, it works -- lalo */
 #if !defined(ntohl) && !defined(__CYGWIN__)
-#include <netinet/in.h>
+//#include <netinet/in.h>
 #endif
 
 #define PG_REQUEST_PORT    30450

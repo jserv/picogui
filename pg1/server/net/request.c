@@ -37,7 +37,9 @@
 #include <pgserver/init.h>
 #include <pgserver/configfile.h>
 #ifndef CONFIG_UNIX_SOCKET
+#ifndef WIN32
 #include <netinet/tcp.h>
+#endif
 #else
 #include <sys/un.h>
 
@@ -536,6 +538,7 @@ void net_iteration(void) {
   req_in_select = 1;
 
   i = select(con_n,&rfds,NULL,NULL,&tv);
+  
 
 #ifndef WINDOWS
   sigaddset(&sigmask,SIGPIPE);

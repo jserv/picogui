@@ -63,7 +63,7 @@ extern int num_divs;     /* Number of divnodes */
 extern int num_widgets;  /* Number of widgets */
 extern int num_handles;  /* Number of handles */
 extern int memref;       /* Total allocations */
-extern int grop_zombie_count;  /* borrowed from grop.c */
+extern s32 grop_zombie_count;  /* borrowed from grop.c */
 #endif
 
 #ifdef DEBUG_ANY

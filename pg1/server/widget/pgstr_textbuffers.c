@@ -62,11 +62,11 @@ void pgstr_textbuffers_seek(const struct pgstring *str, struct pgstr_iterator *p
 }
 
 const struct pgstr_format pgstrf_textbuffers = {
-  length: pgstr_textbuffers_length,
-  decode: pgstr_textbuffers_decode,
-  encoded_length: pgstr_textbuffers_encoded_length,
-  encode: pgstr_textbuffers_encode,
-  seek: pgstr_textbuffers_seek,
+  pgstr_textbuffers_length,
+  pgstr_textbuffers_decode,
+  pgstr_textbuffers_encoded_length,
+  pgstr_textbuffers_encode,
+  pgstr_textbuffers_seek,
 };
 
 /* The End */

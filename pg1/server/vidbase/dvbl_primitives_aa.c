@@ -41,6 +41,9 @@
 
 #include <stdlib.h>		/* for qsort */
 #include <string.h>
+#ifdef WIN32
+#define _USE_MATH_DEFINES /* for M_PI */
+#endif
 #include <math.h>
 
 /* 
@@ -397,9 +400,9 @@ void def_fpolygon (hwrbitmap dest, s32* array, s16 xoff, s16 yoff, hwrcolor c, s
   lo+=yoff;
   /* Now we know how many polylines we will need */
   {
-    struct poly_line_info mpoly[nplines]; /* Each of these has 16bytes worth of data */
+    struct poly_line_info* mpoly = alloca(nplines*sizeof(struct poly_line_info)); /* Each of these has 16bytes worth of data */
     struct poly_line_info* mptr=mpoly;
-    s16 vert[nplines];
+    s16* vert = alloca(nplines*sizeof(s16));
     /* First stick info in the poly_lines in order */
     j=0;
     for(i=0;i<num_coords;i++) {

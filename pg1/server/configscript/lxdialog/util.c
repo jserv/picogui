@@ -21,6 +21,9 @@
 
 #include "dialog.h"
 
+#ifndef index
+#define index strchr
+#endif
 
 /* use colors by default? */
 bool use_colors = 1;

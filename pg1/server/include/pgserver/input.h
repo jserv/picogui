@@ -37,7 +37,9 @@
 #ifndef WINDOWS
 #define WINDOWS
 #endif
+#ifdef __MINGW32__
 #include <winsock2.h>
+#endif
 #define EAGAIN WSAEWOULDBLOCK
 #define ioctl ioctlsocket
 #else

@@ -33,7 +33,11 @@
 
 # include "yuv.h"
 #include <stdio.h>
+#ifdef WIN32
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 
 
 static size_t yuv16_422_planar_y_plane_size  = 0;

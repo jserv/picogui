@@ -203,14 +203,14 @@ DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,108))
    * to define the post_attach method.
    */
   {
-    subclass_num: 1,
-    install:      tabpage_install,
-    remove:       tabpage_remove,
-    trigger:      NULL,
-    set:          tabpage_set,
-    get:          tabpage_get,
-    resize:       tabpage_resize,
-    post_attach:  tabpage_post_attach,
+    /*subclass_num:  */1,
+         /*install:  */tabpage_install,
+          /*remove:  */tabpage_remove,
+         /*trigger:  */NULL,
+             /*set:  */tabpage_set,
+             /*get:  */tabpage_get,
+          /*resize:  */tabpage_resize,
+     /*post_attach:  */tabpage_post_attach
   },
 #else
 DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,147))

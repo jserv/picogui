@@ -140,9 +140,9 @@ void infilter_key_dispatch_handler(struct infilter *self, u32 trigger, union tri
 }
 
 struct infilter infilter_key_dispatch = {
-  accept_trigs: PG_TRIGGER_KEYDOWN | PG_TRIGGER_KEYUP | PG_TRIGGER_CHAR,
-  absorb_trigs: PG_TRIGGER_KEYDOWN | PG_TRIGGER_KEYUP | PG_TRIGGER_CHAR,
-  handler: &infilter_key_dispatch_handler,
+  /*accept_trigs:  */PG_TRIGGER_KEYDOWN | PG_TRIGGER_KEYUP | PG_TRIGGER_CHAR,
+  /*absorb_trigs:  */PG_TRIGGER_KEYDOWN | PG_TRIGGER_KEYUP | PG_TRIGGER_CHAR,
+       /*handler:  */&infilter_key_dispatch_handler
 };
 
 /*************************************************** Private utilities ****/

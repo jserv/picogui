@@ -36,8 +36,13 @@
 #include <pgserver/timer.h>
 #include <pgserver/input.h>
 
+#ifdef WIN32
+#include <sys/unistd.h>
+#include <winioctl.h>
+#else
 #include <unistd.h>
 #include <sys/ioctl.h>
+#endif
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <fcntl.h>

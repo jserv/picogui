@@ -128,9 +128,9 @@ void infilter_pntr_dispatch_handler(struct infilter *self, u32 trigger, union tr
 }
 
 struct infilter infilter_pntr_dispatch = {
-  accept_trigs: PG_TRIGGER_MOVE | PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_SCROLLWHEEL,
-  absorb_trigs: PG_TRIGGER_MOVE | PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_SCROLLWHEEL,
-  handler: &infilter_pntr_dispatch_handler,
+  /*accept_trigs:  */PG_TRIGGER_MOVE | PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_SCROLLWHEEL,
+  /*absorb_trigs:  */PG_TRIGGER_MOVE | PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_SCROLLWHEEL,
+       /*handler:  */&infilter_pntr_dispatch_handler
 };
 
 /* The End */

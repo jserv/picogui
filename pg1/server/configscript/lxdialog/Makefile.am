@@ -18,6 +18,6 @@ lxdialog_SOURCES = \
 	util.c \
 	yesno.c
 
-lxdialog_LDADD = -lncurses
+lxdialog_LDADD = -l$(CURSES)
 
 EXTRA_DIST = BIG.FAT.WARNING

@@ -314,7 +314,7 @@ void widget_remove(struct widget *w) {
   g_free(w);
 }
 
-g_error inline widget_set(struct widget *w, int property, glob data) {
+g_error widget_set(struct widget *w, int property, glob data) {
    g_error e;
    
    if (!(w && w->def->set))

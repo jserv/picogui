@@ -68,7 +68,7 @@ unsigned const char slabmask4[] = { 0xFF, 0x0F, 0x00 };
 
 /************************************************** Minimum functionality */
 
-inline void linear4_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
+void linear4_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
   unsigned char *p;
   if (!FB_ISNORMAL(dest,lgop)) {
     def_pixel(dest,x,y,c,lgop);

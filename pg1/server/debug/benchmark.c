@@ -29,7 +29,13 @@
 #include <pgserver/video.h>
 #include <pgserver/configfile.h>
 
+#ifdef __MINGW32__
+#include <winsock2.h>
+#endif
+
+#ifndef _MSC_VER
 #include <sys/time.h>
+#endif
 #include <time.h>
 
 hwrbitmap benchmark_srcbit;
@@ -346,6 +352,7 @@ const char *lgop_names[] = {
 };
 
 /* Time one test with one set of parameters, print the results */
+#ifndef WIN32
 void benchmark_run_one(struct benchmark_test *test, struct benchmark_param *b) {
   struct timeval start, end;
   int i, result;
@@ -366,6 +373,32 @@ void benchmark_run_one(struct benchmark_test *test, struct benchmark_param *b) {
   printf("%12d ns  %-30s %-15s %dx%d\n",
 	 result, test->name, lgop_names[b->lgop], b->w,b->h);
 }
+
+#else
+
+void benchmark_run_one(struct benchmark_test *test, struct benchmark_param *b) {
+  LARGE_INTEGER start, end, freq, result;
+  int i;
+
+  QueryPerformanceFrequency(&freq);
+  QueryPerformanceCounter(&start);
+  for (i=0;i<benchmark_iterations;i++)
+    test->func(b);
+  QueryPerformanceCounter(&end);
+  VID(update)(VID(window_debug)(),0,0,vid->lxres,vid->lyres);
+
+  //result = ((end.tv_sec - start.tv_sec)*1000000 + (end.tv_usec - start.tv_usec)); 
+  result.QuadPart = (start.QuadPart-end.QuadPart)*1e6/freq.QuadPart;
+
+  if (benchmark_iterations > 1000)
+    result.QuadPart /= benchmark_iterations / 1000;
+  else
+    result.QuadPart *= 1000 / benchmark_iterations;
+
+  printf("%12d ns  %-30s %-15s %dx%d\n",
+	 result.QuadPart, test->name, lgop_names[b->lgop], b->w,b->h);
+}
+#endif /* _MSC_VER */
 
 /* Run a benchmark at multiple sizes if necessary */
 void benchmark_run_sizes(struct benchmark_test *test, struct benchmark_param *b) {

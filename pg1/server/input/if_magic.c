@@ -56,9 +56,9 @@ void infilter_magic_handler(struct infilter *self, u32 trigger, union trigparam 
 }
 
 struct infilter infilter_magic = {
-  accept_trigs: PG_TRIGGER_KEYDOWN | PG_TRIGGER_KEYUP,
-  absorb_trigs: PG_TRIGGER_KEYDOWN | PG_TRIGGER_KEYUP,
-  handler: &infilter_magic_handler,
+  /*accept_trigs:  */PG_TRIGGER_KEYDOWN | PG_TRIGGER_KEYUP,
+  /*absorb_trigs:  */PG_TRIGGER_KEYDOWN | PG_TRIGGER_KEYUP,
+       /*handler:  */&infilter_magic_handler
 };
 
 /********************************************** Debug-only code ****/

@@ -54,9 +54,9 @@ void infilter_key_preprocess_handler(struct infilter *self, u32 trigger, union t
 }
 
 struct infilter infilter_key_preprocess = {
-  accept_trigs: PG_TRIGGER_KEY | PG_TRIGGER_CHAR | PG_TRIGGER_KEYUP | PG_TRIGGER_KEYDOWN,
-  absorb_trigs: PG_TRIGGER_KEY | PG_TRIGGER_CHAR | PG_TRIGGER_KEYUP | PG_TRIGGER_KEYDOWN,
-  handler: &infilter_key_preprocess_handler,
+  /*accept_trigs:  */PG_TRIGGER_KEY | PG_TRIGGER_CHAR | PG_TRIGGER_KEYUP | PG_TRIGGER_KEYDOWN,
+  /*absorb_trigs:  */PG_TRIGGER_KEY | PG_TRIGGER_CHAR | PG_TRIGGER_KEYUP | PG_TRIGGER_KEYDOWN,
+       /*handler:  */&infilter_key_preprocess_handler
 };
 
 /* The End */

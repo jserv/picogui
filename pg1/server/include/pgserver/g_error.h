@@ -75,7 +75,11 @@ g_error errorload(const char *filename);
 void guru(const char *fmt, ...);
 #else
 /* Allow guru to be used, just don't compile it to anything */
+#ifndef _MSC_VER
 #define guru(fmt, args...)
+#else
+inline void guru(...) {}
+#endif /* WIN32 */
 #endif
 
 #endif /* __H_GERROR */

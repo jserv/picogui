@@ -50,6 +50,12 @@ s16 upd_h;
 /* Statically allocated memory that the driver can use for vid->display */
 struct stdbitmap static_display;
 
+g_error (*external_regfunc)(struct vidlib *v) = NULL;
+s16 external_xres;
+s16 external_yres;
+s16 external_bpp;
+s16 external_flags;
+
 /* Trig table (sin*256 for theta from 0 to 90) 
  * This is used in the default implementation of gradient,
  * and may be used by other VBL functions or drivers.
@@ -144,6 +150,14 @@ g_error video_init(void) {
     break;
   }
   
+  /* Force an external video driver? */
+  if (external_regfunc)
+  {
+    if (iserror(load_vidlib(external_regfunc,
+        external_xres, external_yres,
+        external_bpp, external_flags)))
+      return mkerror(PG_ERRT_IO,78); /* @@@ Prolly some other error*/
+  } else
   /* Force a specific video driver? */
   if ((str = get_param_str("pgserver","video",NULL))) {
     if (!(viddriver = find_videodriver(str)))

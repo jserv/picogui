@@ -1,6 +1,6 @@
-/* $Id$
+/* $Id: 
  *
- * if_pntr_preprocess.c - Various processing on mouse pointer events before dispatch
+ * os_mingw.h - Shared components of the MINGW-compatible OS module
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
@@ -22,34 +22,16 @@
  * Contributors:
  * 
  * 
- * 
  */
 
-#include <pgserver/common.h>
-#include <pgserver/input.h>
+#ifndef __H_OSMINGW
+#define __H_OSMINGW
 
-void infilter_pntr_preprocess_handler(struct infilter *self, u32 trigger, union trigparam *param) {
+//void os_posix_signals_install(void);
 
-  /* Convert the event to logical coordinates if necessary
-   */
-  if (!param->mouse.is_logical) {
-    /* Scroll wheel events always logical */
-    if (trigger != PG_TRIGGER_SCROLLWHEEL)
-      VID(coord_logicalize)(&param->mouse.x, &param->mouse.y);
-    param->mouse.is_logical = 1;
-  }
-}
+/* Return value of the last process to exit */
+//extern int os_posix_child_return;
 
-struct infilter infilter_pntr_preprocess = {
-  /*accept_trigs:  */PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_MOVE | PG_TRIGGER_SCROLLWHEEL,
-  /*absorb_trigs:  */0,
-       /*handler:  */&infilter_pntr_preprocess_handler
-};
+#endif /* __H_OSMINGW */
 
 /* The End */
-
-
-
-
-
-

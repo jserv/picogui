@@ -494,11 +494,11 @@ void pgstr_ascii_seek(const struct pgstring *str, struct pgstr_iterator *p, s32 
 }
 
 static const struct pgstr_format pgstrf_ascii = {
-  length: pgstr_ascii_length,
-  decode: pgstr_ascii_decode,
-  encoded_length: pgstr_ascii_encoded_length,
-  encode: pgstr_ascii_encode,
-  seek: pgstr_ascii_seek,
+  pgstr_ascii_length,
+  pgstr_ascii_decode,
+  pgstr_ascii_encoded_length,
+  pgstr_ascii_encode,
+  pgstr_ascii_seek,
 };
 
 
@@ -679,11 +679,11 @@ void pgstr_utf8_seek(const struct pgstring *str, struct pgstr_iterator *p, s32 c
 }
 
 static const struct pgstr_format pgstrf_utf8 = {
-  length: pgstr_utf8_length,
-  decode: pgstr_utf8_decode,
-  encoded_length: pgstr_utf8_encoded_length,
-  encode: pgstr_utf8_encode,
-  seek: pgstr_utf8_seek,
+  pgstr_utf8_length,
+  pgstr_utf8_decode,
+  pgstr_utf8_encoded_length,
+  pgstr_utf8_encode,
+  pgstr_utf8_seek,
 };
 
 
@@ -727,11 +727,11 @@ void pgstr_term16_seek(const struct pgstring *str, struct pgstr_iterator *p, s32
 }
 
 static const struct pgstr_format pgstrf_term16 = {
-  length: pgstr_term16_length,
-  decode: pgstr_term16_decode,
-  encoded_length: pgstr_term16_encoded_length,
-  encode: pgstr_term16_encode,
-  seek: pgstr_term16_seek,
+  pgstr_term16_length,
+  pgstr_term16_decode,
+  pgstr_term16_encoded_length,
+  pgstr_term16_encode,
+  pgstr_term16_seek,
 };
 
 
@@ -784,11 +784,11 @@ void pgstr_term32_seek(const struct pgstring *str, struct pgstr_iterator *p, s32
 }
 
 static const struct pgstr_format pgstrf_term32 = {
-  length: pgstr_term32_length,
-  decode: pgstr_term32_decode,
-  encoded_length: pgstr_term32_encoded_length,
-  encode: pgstr_term32_encode,
-  seek: pgstr_term32_seek,
+  pgstr_term32_length,
+  pgstr_term32_decode,
+  pgstr_term32_encoded_length,
+  pgstr_term32_encode,
+  pgstr_term32_seek,
 };
 
 /* The End */

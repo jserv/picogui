@@ -92,9 +92,9 @@ void infilter_hotspot_handler(struct infilter *self, u32 trigger, union trigpara
 }
 
 struct infilter infilter_hotspot = {
-  accept_trigs: PG_TRIGGER_KEYDOWN | PG_TRIGGER_KEYUP,
-  absorb_trigs: PG_TRIGGER_KEYDOWN | PG_TRIGGER_KEYUP,
-  handler: &infilter_hotspot_handler,
+  /*accept_trigs:  */PG_TRIGGER_KEYDOWN | PG_TRIGGER_KEYUP,
+  /*absorb_trigs:  */PG_TRIGGER_KEYDOWN | PG_TRIGGER_KEYUP,
+       /*handler:  */&infilter_hotspot_handler 
 };
 
 

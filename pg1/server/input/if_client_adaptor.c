@@ -76,7 +76,9 @@ void infilter_client_adaptor_handler(struct infilter *self, u32 trigger, union t
 }
 
 struct infilter infilter_client_adaptor = {
-  handler: &infilter_client_adaptor_handler,
+  /*accept_trigs:  */0,
+  /*absorb_trigs:  */0,
+       /*handler:  */&infilter_client_adaptor_handler,
 };
 
 /*************************************************** Public Utilities *****/

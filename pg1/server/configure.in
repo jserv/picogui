@@ -82,6 +82,7 @@ AC_SUBST(FONT)
 AC_SUBST(APPMGR)
 AC_SUBST(OS)
 AC_SUBST(VIDSUBDIRS)
+AC_SUBST(CURSES) 
 
 dnl Check for perl
 
@@ -102,10 +103,18 @@ if test "$cross_compiling" = "yes" ; then
 
   AC_CHECK_LIB(ncurses, delscreen, [
       LXDIALOG="lxdialog"
+      CURSES="ncurses"
       AC_CHECK_HEADERS(ncurses/ncurses.h ncurses/curses.h ncurses.h curses.h)
     ], [  
-      LXDIALOG="" 
-      AC_MSG_WARN([menuconfig won't be available])
+      AC_CHECK_LIB(pdcurses, PDC_gotoxy, [
+          LXDIALOG="lxdialog"
+          CURSES="pdcurses"
+          AC_CHECK_HEADERS(pdcurses/pdcurses.h pdcurses/curses.h pdcurses.h curses.h)
+        ], [  
+          LXDIALOG="" 
+          CURSES=""
+          AC_MSG_WARN([menuconfig won't be available])
+        ])
     ])
 
   CC="$old_CC"
@@ -115,10 +124,18 @@ else
 
   AC_CHECK_LIB(ncurses, delscreen, [
     LXDIALOG="lxdialog"
+    CURSES="ncurses"
     AC_CHECK_HEADERS(ncurses/ncurses.h ncurses/curses.h ncurses.h curses.h)
   ], [  
-    LXDIALOG="" 
-    AC_MSG_WARN([menuconfig won't be available])
+    AC_CHECK_LIB(pdcurses, PDC_gotoxy, [
+      LXDIALOG="lxdialog"
+      CURSES="pdcurses"
+      AC_CHECK_HEADERS(pdcurses/pdcurses.h pdcurses/curses.h pdcurses.h curses.h)
+    ], [  
+      LXDIALOG="" 
+      CURSES=""
+      AC_MSG_WARN([menuconfig won't be available])
+    ])
   ])
 
 fi
@@ -132,6 +149,12 @@ CFLAGS=${user_CFLAGS}
 dnl ==================================================
 dnl Extra libraries depending on the selected profile
 dnl ==================================================
+
+dnl Win32 stuff
+AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_OS_WIN32, [ 
+  DRIVER_LIBS="$DRIVER_LIBS -lwsock32" 
+])
+
 
 dnl Eventually check for SDL
 AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_SDLFB, [ 
@@ -272,6 +295,13 @@ AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_NCURSES, [
   AC_CHECK_LIB(ncurses, delscreen,, AC_MSG_WARN([can't find libncurses]))
 
   DRIVER_LIBS="$DRIVER_LIBS -lncurses"
+])
+
+AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_PDCURSES, [
+
+  AC_CHECK_LIB(pdcurses, PDC_gotoxy,, AC_MSG_WARN([can't find libncurses]))
+
+  DRIVER_LIBS="$DRIVER_LIBS -lpdcurses"
 ])
 
 AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_GPM, [

@@ -4,7 +4,8 @@ mainmenu_option next_comment
 comment 'Target System'
 
 choice 'Platform' \
-	"POSIX-compatible               CONFIG_OS_POSIX" POSIX-compatible
+	"POSIX_compatible               CONFIG_OS_POSIX \
+   WIN32_compatible               CONFIG_OS_WIN32" POSIX_compatible
 if [ "$CONFIG_OS_POSIX" = "y" ]; then
     bool '  uClinux'           		CONFIG_OS_UCLINUX
 fi
