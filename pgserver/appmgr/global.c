@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.12 2000/08/03 02:24:02 micahjd Exp $
+/* $Id: global.c,v 1.13 2000/08/07 19:44:08 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -168,7 +168,6 @@ g_error appmgr_register(struct app_info *i) {
     /* Create a simple toolbar as a root widget */
     e = widget_create(&w,WIDGET_TOOLBAR,dts->root,&dts->root->head->next,0,i->owner);
     if (e.type != ERRT_NONE) return e;
-    w->isroot = 1;
     e = mkhandle(&i->rootw,TYPE_WIDGET,i->owner,w);
     if (e.type != ERRT_NONE) return e;    
 
@@ -185,12 +184,13 @@ g_error appmgr_register(struct app_info *i) {
     /* Use a panel */
     e = widget_create(&w,WIDGET_PANEL,dts->root,&dts->root->head->next,0,i->owner);
     if (e.type != ERRT_NONE) return e;
-    w->isroot = 1;
     e = mkhandle(&i->rootw,TYPE_WIDGET,i->owner,w);
     if (e.type != ERRT_NONE) return e;    
 
     /* Set all the properties */
     e = widget_set(w,WP_SIDE,i->side);
+    if (e.type != ERRT_NONE) return e;
+    e = widget_set(w,WP_SIZE,(i->side & (S_LEFT|S_RIGHT)) ? i->w : i->h);
     if (e.type != ERRT_NONE) return e;
     
     break;
@@ -198,6 +198,8 @@ g_error appmgr_register(struct app_info *i) {
   default:
     return mkerror(ERRT_BADPARAM,"Unsupported application type");
   }
+
+  w->isroot = 1;
 
   /* Copy to a new structure */
   e = g_malloc((void **) &dest,sizeof(struct app_info));

@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.20 2000/08/07 12:39:54 micahjd Exp $
+/* $Id: panel.c,v 1.21 2000/08/07 19:44:09 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -151,6 +151,15 @@ g_error panel_set(struct widget *self,int property, glob data) {
     self->in->next->flags |= ((sidet)data);
     return sucess;
 
+  case WP_SIZE:
+    if (data<0) data = 0;
+    self->in->split = data;
+    if (data>0)
+      DATA->unrolled = data;
+    self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+    self->dt->flags |= DIVTREE_NEED_RECALC;
+    break;
+
   default:
     return mkerror(ERRT_BADPARAM,"Invalid property for panel");
 
@@ -163,6 +172,9 @@ glob panel_get(struct widget *self,int property) {
 
   case WP_SIDE:
     return self->in->flags & (~SIDEMASK);
+
+  case WP_SIZE:
+    return self->in->split;
     
   }
   return 0;
@@ -274,12 +286,13 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
       if (DATA->osplit > 0) {
 	/* Roll up the panel */
 	self->in->split = 0;
+
+	DATA->over = 0;
       }
       else {
 	/* Unroll the panel */
 	self->in->split = DATA->unrolled;
       }
-      
     }
     else {
       
