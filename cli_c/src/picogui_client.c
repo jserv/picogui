@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.5 2000/09/21 06:28:50 micahjd Exp $
+/* $Id: picogui_client.c,v 1.6 2000/09/21 17:34:38 pney Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -208,7 +208,7 @@ void _pg_getresponse(void) {
   if (_pg_recv(&_pg_return.type,sizeof(_pg_return.type)))
     return;
   _pg_return.type = ntohs(_pg_return.type);
-  
+
   switch (_pg_return.type) {
     
   case PG_RESPONSE_ERR:
@@ -522,6 +522,7 @@ pghandle pgRegisterApp(short int type,const char *name, ...) {
   /* Allocate */
   if (!(arg = malloc(sizeof(struct pgreqd_register)+numspecs*4)))
     return;
+  /* Move pointer */
   spec = (short int *)(((char*)arg)+sizeof(struct pgreqd_register));
 
   /* Fill in the required params */
@@ -545,6 +546,27 @@ pghandle pgRegisterApp(short int type,const char *name, ...) {
   
   /* Return the new handle */
   return _pg_return.e.retdata;
+}
+
+void  pgSetWidget(pghandle widget, ...) {
+  va_list v;
+  struct pgreqd_set arg;
+  short *spec;
+  int numspecs,i;
+
+  /* Set defaults values */
+  arg.widget = htonl(widget);
+  arg.dummy = 0;
+
+  for(va_start(v,widget);i;){
+    i = va_arg(v,short);
+    if(i){
+      arg.property = htons(i);
+      arg.glob = htonl(va_arg(v,long));
+      _pg_add_request(PGREQ_SET,&arg,sizeof(arg));
+    }
+  }
+  va_end(v);
 }
 
 pghandle pgNewWidget(short int type,short int rship,pghandle parent) {
@@ -601,7 +623,10 @@ pghandle pgNewPopup(int width,int height) {
 pghandle pgNewString(const char* str) {
   if (!str) return 0;
 
-  _pg_add_request(PGREQ_MKSTRING,(void *) str,sizeof(str));
+  /* FIXME: sizeof(str) seems to return 4 in every case ???
+   *        this way is maybe not the best one, but it's ok by now
+   */
+  _pg_add_request(PGREQ_MKSTRING,(void *) str,strlen(str)*sizeof(char));
 
   /* Because we need a result now, flush the buffer */
   pgFlushRequests();

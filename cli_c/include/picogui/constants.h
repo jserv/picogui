@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.3 2000/09/21 05:57:54 micahjd Exp $
+/* $Id: constants.h,v 1.4 2000/09/21 17:34:37 pney Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -279,6 +279,26 @@ typedef unsigned long pghandle;
 #define PG_WE_ACTIVATE    1     /* Gets focus (or for a non-focusing widget such
 			           as a button, it has been clicked/selected  */
 #define PG_WE_DEACTIVATE  2     /* Lost focus */
+
+
+/* Widget events that will be added in a near future...
+          '-onactivate' => 1,
+          '-ondeactivate' => 2,
+          '-onclick' => 1,
+          '-onchange' => 1,
+          '-onfocus' => 1,
+          '-onunfocus' => 2,
+          '-onblur' => 2,
+          '-onchar' => 10,
+          '-onkeyup' => 11,
+          '-onkeydown' => 12,
+          '-onpointermove' => 13,
+          '-onpointerup' => 14,
+          '-onpointerdown' => 15
+*/
+
+
+
      
 /* Non-widget events */
 #define PG_NWE_KBD_CHAR    10   /* These are sent if the client has captured the */
