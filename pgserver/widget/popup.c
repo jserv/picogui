@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.30 2001/04/05 03:32:25 micahjd Exp $
+/* $Id: popup.c,v 1.31 2001/05/13 04:20:27 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -42,9 +42,9 @@ void clip_popup(struct divnode *div) {
   if (div->x <0) div->x = 0;
   if (div->y <0) div->y = 0;
   if (div->x+div->w >= vid->lxres)
-    div->w = vid->lxres-div->x-1;
+    div->w = vid->lxres-div->x;
   if (div->y+div->h >= vid->lyres)
-    div->h = vid->lyres-div->y-1;
+    div->h = vid->lyres-div->y;
 }
 
 /* We have a /special/ function to create a popup widget from scratch. */
