@@ -125,7 +125,7 @@ class AnnounceClient(protocol.Protocol):
     def connectionMade(self):
         # at this point we have got a message, have done some basic parsing, and know that it's meant for a channel
         # Don't allow known bad channels, or names with slashes
-        if len(subjectFields)<2 or (not subjectFields[1] in badChannels and subjectFields[1].find(os.sep) < 0):
+        if len(subjectFields) == 2 or (not subjectFields[1] in badChannels and subjectFields[1].find(os.sep) < 0):
             # Send allowed text commands
             if subjectFields[0] in allowedTextCommands:
                 # Our lame little stat page
