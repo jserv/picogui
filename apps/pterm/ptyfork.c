@@ -1,4 +1,4 @@
-/* $Id: ptyfork.c,v 1.6 2002/04/11 16:22:47 gobry Exp $
+/* $Id: ptyfork.c,v 1.7 2002/05/01 14:00:11 cgrigis Exp $
  *
  * ptyfork.c - Create a subprocess running under a pty
  *
@@ -40,6 +40,10 @@
 #include <sys/ioctl.h>
 #include <string.h>
 
+#ifdef HAVE_CONFIG_H
+#  include "config.h"
+#endif
+
 /* Error details when enabled */
 #define DEBUG
 
@@ -58,6 +62,12 @@ int ptyfork(int * ptyfd, char ** cmd) {
   char *chr1,*chr2;
   int master,slave;
   int pid;
+
+#ifdef HAVE_FORKPTY
+
+  if ( (pid = forkpty (& master, NULL, NULL, NULL)) < 0 ) {
+
+#else /* HAVE_FORKPTY */
 
   strcpy(fname,"/dev/ptyAB");
 
@@ -92,6 +102,9 @@ int ptyfork(int * ptyfd, char ** cmd) {
 
       /* Fork! */
       if ( (pid = fork()) < 0 ) {
+
+#endif /* HAVE_FORKPTY */
+
 #ifdef DEBUG
 	perror("fork");
 #endif
@@ -107,7 +120,9 @@ int ptyfork(int * ptyfd, char ** cmd) {
       }
 
       /* Child */
-	
+
+#ifndef HAVE_FORKPTY	
+
       /* Shed our old controlling terminal and get a new session */
       if (setsid() < 0) {
 #ifdef DEBUG
@@ -167,11 +182,16 @@ int ptyfork(int * ptyfd, char ** cmd) {
       }
 
       if (slave > STDERR_FILENO) close(slave);
+
+#endif /* HAVE_FORKPTY */
       
       execvp (cmd [0], cmd);
       
       perror ("execvp");
       exit (127);
+
+#ifndef HAVE_FORKPTY
+
     }
   }
 
@@ -179,6 +199,9 @@ int ptyfork(int * ptyfd, char ** cmd) {
   perror("finding pseudoterminal");
 #endif
   return -1;
+
+#endif /* HAVE_FORKPTY */
+
 }
 
 

@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.19 2002/04/22 10:22:19 bornet Exp $
+/* $Id: main.c,v 1.20 2002/05/01 14:00:11 cgrigis Exp $
  *
  * main.c - PicoGUI Terminal (the 'p' is silent :)
  *          This handles the PicoGUI init and events
@@ -245,7 +245,7 @@ int main(int argc, char **argv) {
   /* Fork! */
   {
     char * cmd [] = {
-      "/bin/sh", "-sh", NULL 
+      "/bin/sh", "-s", NULL 
     };
 
     if ((childpid = ptyfork (& ptyfd, argv [0] ? argv : cmd)) < 0 ) {
