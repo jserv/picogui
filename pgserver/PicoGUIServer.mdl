@@ -36,12 +36,17 @@ then
   echo "***  You should use the BIOS to permanently set an appropriate value"
   PG_TS_CALIBRATION="200 650 3650 3750"
 fi
-echo  >/var/pgserver.dynconf "rotate = $SYSTEM_DISPLAY_HW_ORIENTATION"
+echo  >/var/pgserver.dynconf "[pgserver]"
+echo >>/var/pgserver.dynconf "rotate = $SYSTEM_DISPLAY_HW_ORIENTATION"
 echo >>/var/pgserver.dynconf "[chipslicets]"
 echo >>/var/pgserver.dynconf "calibration = $PG_TS_CALIBRATION"
 
-remorakb_checker
-remorakb_checker >>/var/pgserver.dynconf
+if test "$PG_TS_REMORAKB_ON" = "1"
+then
+  echo "Using Remora keyboard on ttyS0"
+  echo >>/var/pgserver.dynconf "[remora-kb]"
+  echo >>/var/pgserver.dynconf "device = /dev/ttyS0"
+fi
 
 # start pgserver
 pgserver &
