@@ -14,11 +14,11 @@ from twisted.protocols.basic import LineReceiver
 accounts = [
     ircsupport.IRCAccount("IRC", 1,
         # Lalo's joke: A brainless entity created to keep an eye on subversion                 
-	"CIA",              # nickname
+	"TestCIA",          # nickname
         "",                 # passwd
         "irc.freenode.net", # irc server
         6667,               # port
-        "picogui,commits",  # comma-seperated list of channels
+        "commits",  # comma-seperated list of channels
     )
 ]
 
@@ -42,10 +42,13 @@ class AnnounceServer(LineReceiver):
 	        groups[fields[1]].sendText(fields[2])
 	    except KeyError:
 	        pass
+        elif fields[0] == "JoinChannel":
+            accounts[0].client.join(fields[1])
+        elif fields[0] == "PartChannel":
+            accounts[0].client.leave(fields[1])
 
 class BotConversation(basechat.Conversation):
     pass
-
 
 class BotGroupConversation(basechat.GroupConversation):
     def show(self):

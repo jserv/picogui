@@ -9,6 +9,7 @@ from twisted.internet import reactor, protocol
 import sys, email
 
 socketName = "/tmp/announceBot.socket"
+allowedCommands = ("Announce", "JoinChannel", "PartChannel")
 
 class AnnounceClient(protocol.Protocol):
     def connectionMade(self):
@@ -16,12 +17,12 @@ class AnnounceClient(protocol.Protocol):
         mailMsg  = email.message_from_file(sys.stdin)
         subjectFields = mailMsg['Subject'].split(" ")
         messages = mailMsg.get_payload().split("\n")
-        if subjectFields[0] == "Announce":
+        if subjectFields[0] in allowedCommands:
             for line in messages:
 	    	line = line.strip()
 		if len(line) > 0:
 	            self.transport.write("%s %s %s\r\n" %
-                                         ("Announce", subjectFields[1], line))
+                                         (subjectFields[0], subjectFields[1], line))
         self.transport.loseConnection()
     
     def connectionLost(self, reason):
