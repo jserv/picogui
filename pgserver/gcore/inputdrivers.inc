@@ -17,4 +17,8 @@
   DRV("ncursesinput",&ncursesinput_regfunc)
 #endif
 
+#ifdef DRIVER_TSINPUT
+  DRV("tsinput",&tsinput_regfunc)
+#endif
+   
 /* The End */
