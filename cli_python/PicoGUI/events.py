@@ -64,7 +64,7 @@ class Event(object):
         except KeyError:
             raise ParameterError(paramtype)
         self.type = evtype
-        self.name = typenames[self.type]
+        self.name = typenames.get(self.type)
         self.widget_id = widget_id or None
         if self.paramtype == 'data':
             self.additional_data_wanted = param
