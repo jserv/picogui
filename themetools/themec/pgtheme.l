@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.l,v 1.19 2000/10/17 01:44:08 micahjd Exp $
+/* $Id: pgtheme.l,v 1.20 2001/01/15 05:29:40 micahjd Exp $
  *
  * pgtheme.l - lexer for processing PicoGUI theme source code
  *
@@ -117,7 +117,23 @@ Copy            { return COPY; }
 0x[0-9A-Fa-f]+  { yylval.num = strtol(yytext,(char**)NULL,16); return NUMBER; }
 0[0-9]+         { yylval.num = strtol(yytext,(char**)NULL,8); return NUMBER; }
 [1-9][0-9]*     { yylval.num = strtol(yytext,(char**)NULL,10); return NUMBER; }
-
+\'\\?[^\'\n]\'  {
+   if (yytext[1]=='\\')
+     switch (yytext[2]) {
+      case 'n': yylval.num = '\n'; break;
+      case 't': yylval.num = '\t'; break;
+      case 'v': yylval.num = '\v'; break;
+      case 'b': yylval.num = '\b'; break;
+      case 'r': yylval.num = '\r'; break;
+      case 'f': yylval.num = '\f'; break;
+      case 'a': yylval.num = '\a'; break;
+      default:  yylval.num = yytext[2];
+     }
+   else
+     yylval.num = yytext[1];
+   return NUMBER;
+}
+	
    /* whitespace and comments */
 
 \n              { lineno++; }
