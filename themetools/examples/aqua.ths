@@ -1,4 +1,4 @@
-/* $Id: aqua.ths,v 1.21 2000/11/04 21:05:20 micahjd Exp $
+/* $Id: aqua.ths,v 1.22 2000/11/05 02:21:51 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
@@ -186,6 +186,15 @@ object label.dlgtitle {
   bitmap1 = LoadBitmap("data/aq_title_blu_h.pnm");
   bgfill = Copy(toolbar::bgfill);  // nifty re-use of the shadowed fill
   margin = 6;
+}
+
+/* Menus */
+object popup.menu {
+  bgfill = fillstyle {
+    Bitmap(x,y,w,h,bitmap1,PG_LGOP_NONE,0,0);
+    Frame(x,y,w,h,ColorConv(0x808080));
+  };
+  margin = 1;
 }
 
 /* The End */
