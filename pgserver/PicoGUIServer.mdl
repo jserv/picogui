@@ -14,12 +14,10 @@ Provides the PicoGUI server, which is responsible for the
 graphical interface.
 """
 
-basics  = [ 'kernel', 'resourcemanager' ]
-
-depends = basics + [ ('libjpeg', S ('platform/ppc-linux')) ]
-
-asserts = basics + [ (S ('module/picoguiserver') &
-                      S ('platform/ppc-linux')) >> S ('platform/ppc-linux') ]
+depends = [
+    'resourcemanager', 'kernel',
+    ('libjpeg', S ('platform/ppc-linux'))
+    ]
     
 runtime = [
 
@@ -76,15 +74,19 @@ def prepare (module, platform, project):
               platform.fqn ()
 
     command = ["../configure",
-               "--prefix=%s" % module.path ['prefix'],
                "--with-profile=%s" % profile,
                "--with-prefix=%s" % platform.toolchain,
-               "--host=%s" % platform.platform,
                "--enable-bee",
                "--with-extra-ipath=%s/include" % project ['module/kernel'].path ['dfl'],
                "--with-rm=%s" % project ['module/resourcemanager'].path ['dfl'],
                ]
 
+    if not platform.native:
+        command = command + [
+            "--prefix=%s" % module.path ['prefix'],
+            "--host=%s" % platform.platform,
+        ]
+        
     if platform.platform == "ppc-linux" :
         command += " --with-jpeg-dir=%s" % project ['module/libjpeg'].path ['dfl']
 

@@ -22,11 +22,15 @@ def prepare (module, platform, project):
         "../configure --prefix=/",
         "--enable-bee",
         "--enable-unix-sockets ",
-        "--with-prefix=%s" % platform.toolchain,
-        "--host=%s" % platform.platform,
         "--with-pgserver=%s" % project ['module/picoguiserver'].path ['dfl']
         ]
 
+    if not platform.native:
+        command = command + [
+            "--with-prefix=%s" % platform.toolchain,
+            "--host=%s" % platform.platform
+            ]
+        
     command = string.join (command)
     
     message  ("running: %s" % command)
