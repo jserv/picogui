@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.9 2000/10/15 16:39:42 micahjd Exp $
+/* $Id: constants.h,v 1.10 2000/10/15 19:20:33 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -309,8 +309,9 @@ typedef unsigned long pghandle;
 #define PG_GROP_BAR        0x0015
 #define PG_GROP_DIM        0x0001
 #define PG_GROP_TEXT       0x0030
-#define PG_GROP_BITMAP     0x0020
-#define PG_GROP_GRADIENT   0x0040
+#define PG_GROP_BITMAP     0x0040
+#define PG_GROP_GRADIENT   0x0041
+#define PG_GROP_TILEBITMAP 0x0050
 
 #define PG_GROPPARAMS(x)   (((x)>>4)&0x0F)
 

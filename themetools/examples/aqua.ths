@@ -6,7 +6,25 @@
 
 object default {
   bgfill = fillstyle {
-    Bitmap(x,y,w,h,bitmap1,PG_LGOP_NONE);
+    Bitmap(x,y,w,h,bitmap1,PG_LGOP_NONE,0,0);
   };
   bitmap1 = LoadBitmap("data/aq_bg.pnm");
 }
+
+object button {
+  bitmap1 = LoadBitmap("data/aq_button.pnm");
+  bgfill = fillstyle {
+    /* Cut and paste things to resize the button bitmap */
+    Bitmap(x,y,12,20,bitmap1,PG_LGOP_NONE,0,0);
+    Bitmap(x+w-12,y,12,20,bitmap1,PG_LGOP_NONE,49,0);
+    Tilebitmap(x+12,y,w-24,20,bitmap1,15,0,1,20);
+  };
+}
+/* For different states, just change the bitmap */
+object button.on bitmap1 = LoadBitmap("data/aq_button_on.pnm");
+object button.hilight bitmap1 = LoadBitmap("data/aq_button_over.pnm");
+
+//object base.display bitmap1 = LoadBitmap("data/aq_box.pnm");
+object base.display bitmap1 = LoadBitmap("data/aq_blue.pnm");
+object background bitmap1 = LoadBitmap("data/aq_screenbg.pnm");
+object panelbar bitmap1 = LoadBitmap("data/aq_blue.pnm");

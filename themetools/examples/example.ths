@@ -76,7 +76,7 @@ object button.on      offset  = 2;
 
 object background {
   bgfill = fillstyle {
-    Bitmap(x,y,w,h,bitmap1,PG_LGOP_NONE);
+    Bitmap(x,y,w,h,bitmap1,PG_LGOP_NONE,0,0);
     Gradient(x,y,w,h,40,0x000000,0x404020,0-1);
   };
   bitmap1 = LoadBitmap("data/aq_bg.pnm");
