@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.15 2000/11/05 07:18:40 micahjd Exp $
+/* $Id: dispatch.c,v 1.16 2000/11/05 10:24:48 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -62,6 +62,7 @@ DEF_REQHANDLER(getstring)
 DEF_REQHANDLER(mkmsgdlg)
 DEF_REQHANDLER(setpayload)
 DEF_REQHANDLER(getpayload)
+DEF_REQHANDLER(mkmenu)
 DEF_REQHANDLER(undef)
 g_error (*rqhtab[])(int,struct pgrequest*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(ping)
@@ -94,6 +95,7 @@ g_error (*rqhtab[])(int,struct pgrequest*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(mkmsgdlg)
   TAB_REQHANDLER(setpayload)
   TAB_REQHANDLER(getpayload)
+  TAB_REQHANDLER(mkmenu)
   TAB_REQHANDLER(undef)
 };
 
@@ -735,7 +737,7 @@ g_error rqh_mkmsgdlg(int owner, struct pgrequest *req,
   bh += theme_lookup(PGTH_O_POPUP_MESSAGEDLG,PGTH_P_HEIGHT);
 
   /* The popup box itself */
-  e = create_popup(-1,-1,bw,bh,&w,owner);
+  e = create_popup(PG_POPUP_CENTER,PG_POPUP_CENTER,bw,bh,&w,owner);
   errorcheck;
   w->in->div->state = PGTH_O_POPUP_MESSAGEDLG;
   e = mkhandle(&h,PG_TYPE_WIDGET,owner,w);
@@ -781,6 +783,63 @@ g_error rqh_mkmsgdlg(int owner, struct pgrequest *req,
     dlgbtn(owner,tb,htb,PG_MSGBTN_OK,PGTH_P_STRING_OK,PGTH_P_HOTKEY_OK);
   if (flags & PG_MSGBTN_CANCEL)
     dlgbtn(owner,tb,htb,PG_MSGBTN_CANCEL,PGTH_P_STRING_CANCEL,PGTH_P_HOTKEY_CANCEL);
+
+  return sucess;
+}
+
+/* Create a simple (just menuitems) menu.
+ * Accepts an array of string handles as the items,
+ * and returns the number of the selected item
+ * (numbered starting at 1, 0 is reserved for cancellation)
+ */
+g_error rqh_mkmenu(int owner, struct pgrequest *req,
+		   void *data, unsigned long *ret, int *fatal) {
+  g_error e;
+  char *str;
+  struct fontdesc *fd;
+  struct widget *w,*wbox;
+  handle h,hbox;
+  int bhmin,bw,bh,maxw = 0,ttlh = 0;
+  int i,num = req->size / 4;
+  unsigned long *items = data;
+  unsigned long *ppayload;
+
+  /*** Find the maximum width and total height (and convert byte order) */
+  e = rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,
+	       theme_lookup(PGTH_O_LABEL_DLGTEXT,PGTH_P_FONT));
+  errorcheck;
+  bhmin = theme_lookup(PGTH_O_MENUITEM,PGTH_P_HEIGHT);
+  for (i=0;i<num;i++) {
+    e = rdhandle((void **)&str,PG_TYPE_STRING,-1,items[i] = ntohl(items[i]));
+    errorcheck;
+    sizetext(fd,&bw,&bh,str);
+    if (bw>maxw) maxw = bw;
+    if (bhmin>bh) bh = bhmin;
+    ttlh += bh;
+  }
+
+  /* The popup box itself */
+  e = create_popup(PG_POPUP_ATCURSOR,PG_POPUP_ATCURSOR,
+		   maxw,ttlh,&wbox,owner);
+  errorcheck;
+  e = mkhandle(&hbox,PG_TYPE_WIDGET,owner,wbox);
+  errorcheck;
+  *ret = h;
+
+  /* Items */
+  for (i=num-1;i>=0;i--) {
+    e = widget_derive(&w,PG_WIDGET_MENUITEM,wbox,hbox,PG_DERIVE_INSIDE,owner);
+    errorcheck;
+    e = mkhandle(&h,PG_TYPE_WIDGET,owner,w);
+    errorcheck;
+    e = widget_set(w,PG_WP_TEXT,items[i]);
+    errorcheck;
+
+    /* Set payload to it's item number (1-based) */  
+    e = handle_payload(&ppayload,owner,h);
+    errorcheck;
+    *ppayload = i+1;
+  }
 
   return sucess;
 }
