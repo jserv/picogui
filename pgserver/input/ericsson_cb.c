@@ -1,4 +1,4 @@
-/* $Id: ericsson_cb.c,v 1.5 2002/03/07 18:20:57 bauermeister Exp $
+/* $Id: ericsson_cb.c,v 1.6 2002/03/21 17:06:58 pney Exp $
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -803,6 +803,7 @@ static g_error cb_init(void)
   const char* device = get_param_str("input-ericsson-chatboard",
 				     "device",
 				     NULL);
+  int status;
 
   TRACEF(">>> cb_init()"NL);
 
@@ -847,6 +848,14 @@ static g_error cb_init(void)
 
   /* init states*/
   cb_init_mods();
+
+  /* the enable signal of the ericsson keyboard is driven by the RTS signal
+   * of the device (/dev/ttyS0 or /dev/ttyS1)
+   * RTS high -> keyboard enable
+   */
+  ioctl(cb_fd, TIOCMGET, &status);  /* get the MODEM status bits */
+  status |= TIOCM_RTS;              /* set RTS to high */
+  ioctl(cb_fd, TIOCMSET, status);   /* set the MODEM status bits */
 
   TRACEF("ericsson_cb: done"NL);
   return success;
