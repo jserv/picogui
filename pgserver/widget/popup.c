@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.61 2002/10/04 07:33:23 micahjd Exp $
+/* $Id: popup.c,v 1.62 2002/10/04 08:50:19 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -126,9 +126,6 @@ void build_popupbg(struct gropctxt *c,unsigned short state,struct widget *self) 
 }
 
 void build_popup(struct gropctxt *c,unsigned short state,struct widget *self) {
-  /* Get margin value */
-  self->in->div->split = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
-
   /* Rebuild the backdrop first.. 
    * Normally this would be done automatically, but we skip the automatic call
    * because the popup's size hasn't been calculated yet.
@@ -167,6 +164,7 @@ g_error popup_install(struct widget *self) {
   self->in->div->state = PGTH_O_POPUP;
   self->in->div->flags |= DIVNODE_SPLIT_BORDER;
   self->in->div->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
+  self->in->div->split = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
 
   self->out = &self->in->next;
   self->sub = &self->in->div->div;
@@ -247,6 +245,7 @@ g_error popup_set(struct widget *self,int property, glob data) {
     if (data==PG_POPUP_ATCURSOR || data==PG_POPUP_ATEVENT) {
       self->in->div->state = PGTH_O_POPUP_MENU;
       self->in->state = PGTH_O_POPUP_MENU;
+      self->in->div->split = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
     }
     self->in->div->calcx = data;
     break;
