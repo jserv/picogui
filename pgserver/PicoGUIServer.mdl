@@ -98,9 +98,9 @@ def install (module, platform, project):
 name = picogui-server
 argv = pgserver
 
-restart   = 0
-announce  = 1
-can-block = 1
+restart  = 1
+announce = 1
+blocked  = 1
     ''')
     fd.close ()
     return
