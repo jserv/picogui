@@ -26,6 +26,8 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
+#include <sys/wait.h>
 #include <picogui.h>
 
 #include "applet.h"
@@ -82,10 +84,29 @@ int messageHandler(struct pgEvent *evt){
   return 1;
 }
 
+void childDied(int foo){ 
+
+  waitpid(-1, NULL, WNOHANG); 
+}
+
+int launchApplet(char *appPath){
+  
+  if(!vfork()){
+    execl(appPath, NULL);
+  }
+  
+  return 1;
+}
+
 int main(int argc, char **argv) {
+  int appletCount, appletLoop;
+  char **appletList;
+
   pgInit(argc,argv);
 
-  if(configfile_parse("toolbar.conf")){
+  signal(SIGCHLD, childDied);
+
+  if(configfile_parse("/etc/toolbar.conf")){
     
     pgRegisterApp(PG_APP_TOOLBAR,"PGL Toolbar",0);
     pgSetWidget(PGDEFAULT,
@@ -93,6 +114,17 @@ int main(int argc, char **argv) {
 		PG_WP_NAME,pgNewString("PGL-AppletBar"),
 		0);
     pgBind(PGDEFAULT, PG_WE_APPMSG, &messageHandler, NULL);
+
+    appletList = get_section_params("PGL-Toolbar Applets", &appletCount);
+
+    if(appletList){
+      for(appletLoop = 0; appletLoop < appletCount; appletLoop++){
+	launchApplet(appletList[appletLoop]);
+      }
+      free(appletList);
+    }else{
+      printf("No applets!\n");
+    }
 
     pgEventLoop();
     
