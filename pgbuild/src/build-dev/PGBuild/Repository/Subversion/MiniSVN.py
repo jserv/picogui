@@ -136,9 +136,12 @@ class Repository:
         return 1
             
     def update(self, destination, progress):
+        """Update the package if possible. Return 1 if there was an update available, 0 if not."""
         self.connect()
         if self.isUpdateAvailable(destination):
             # We can't update, just redownload the sources.
             self.download(destination, progress)
+            return 1
+        return 0
 
 ### The End ###

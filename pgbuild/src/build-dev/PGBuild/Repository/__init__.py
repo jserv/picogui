@@ -44,5 +44,4 @@ def open(url):
     raise PGBuild.Errors.ConfigError("Unable to determine repository type for the URL '%s'" % url)
 
 ### The End ###
-        
-    
+

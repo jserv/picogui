@@ -92,6 +92,7 @@ def expandStatus(line):
         return None
 
 def collectProgress(file, progress):
+    updatedFiles = 0
     while 1:
         line = file.readline()
         if not line:
@@ -99,8 +100,10 @@ def collectProgress(file, progress):
         status = expandStatus(line)
         if status:
             progress.report(status, line[2:].strip())
+            updatedFiles += 1
     if file.close():
         raise PGBuild.Errors.InternalError("The Subversion command returned an error code")
+    return updatedFiles
 
 # Since exceptions during import will be used to autodetect which Subversion
 # module to use, we want to cause an exception here if it looks like the
@@ -152,10 +155,12 @@ class Repository:
                 return 1
             
     def update(self, destination, progress):
+        """Update the package if possible. Return 1 if there was an update available, 0 if not."""
         if self.isWorkingCopyPresent(destination):
-            collectProgress(openSvn('up "%s"' % destination), progress)
+            return collectProgress(openSvn('up "%s"' % destination), progress) != 0
         else:
             # No working copy- do a complete download
             self.download(destination, progress)
+            return 1
 
 ### The End ###

@@ -24,6 +24,7 @@ Objects to support package manipulation.
 import os
 import PGBuild.Errors
 import PGBuild.Site
+import PGBuild.Repository
 
 class PackageVersion:
     """A single version of a package, representing a local copy and a repository.
@@ -36,22 +37,43 @@ class PackageVersion:
         self.package = package
         self.configNode = configNode
         self.name = configNode.attributes['name'].value
+        self.repository = None
 
         # The local path for this package
         #self.path = os.path.join(config.eval('bootstrap/path[@name="packages"]/text()'), self.name)
 
-    def getName(self):
+    def __str__(self):
         """Returns a name of the form packagename-version"""
         return "%s-%s" % (self.package.name, self.name)
 
-    def findMirror(self, progress=None):
+    def findMirror(self, progress):
         """Find the fastest mirror for this package version. Returns a PGBuild.Site.Location"""
-        if progress:
-            task = progress.task("Finding the fastest mirror for %s" % self.getName())
-        else:
-            task = None
+        task = progress.task("Finding the fastest mirror for %s" % self)
         return PGBuild.Site.resolve(self.config, self.configNode.getElementsByTagName('a'), task)
 
+    def getRepository(self, progress):
+        """Get a Repository class for the fastest mirror of this package version"""
+        if not self.repository:
+            self.repository = PGBuild.Repository.open(self.findMirror(progress).absoluteURI)
+        return self.repository
+
+    def getLocalPath(self):
+        """Using the current bootstrap configuration, get the local path for this package"""
+        return os.path.join(self.config.eval('bootstrap/path[@name="packages"]/text()'), str(self))
+
+    def update(self, progress):
+       """Update the package if possible. Return 1 if there was an update available, 0 if not."""
+       return self.getRepository(progress).update(self.getLocalPath(), progress.task("Updating package %s" % self))
+
+    def merge(self, progress):
+        """Make sure a package is up to date, then mount its configuration into our config tree"""
+        mergeTask = progress.task("Merging configuration from package %s" % self)
+        self.update(mergeTask)
+
+        # Report the individual mounts in an unimportant task, so we only see them with -v
+        confTask = mergeTask.task("Mounting config files", 1)
+        self.config.dirMount(self.getLocalPath(), confTask)
+        
 
 def decomposeVersion(version):
     """Utility for version number manipulation- separate a version number into
@@ -214,6 +236,14 @@ class PackageList:
             return package
         else:
             return package.findVersion(version)
+
+    def findPackageVersion(self, name, version=None):
+        """Like findPackage(), but if no version was specified, return the latest"""
+        pkg = self.findPackage(name, version)
+        if isinstance(pkg, PackageVersion):
+            return pkg
+        else:
+            return pkg.findVersion()
 
 ### The End ###
         

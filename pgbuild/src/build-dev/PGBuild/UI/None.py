@@ -147,11 +147,8 @@ class Interface:
 
         import PGBuild.Site
         t = self.progress.task("Debuggative cruft")
-        p = self.config.packages.findPackage('picogui')
-        t.report('package', p)
-        v = p.findVersion()
-        t.report('version', v)
-        t.report('site', v.findMirror(t).absoluteURI)
+        pkg = self.config.packages.findPackageVersion('picogui')
+        pkg.merge(t)
 
         treeDumpFile = self.config.eval("invocation/option[@name='treeDumpFile']/text()")
         if treeDumpFile:

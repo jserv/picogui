@@ -88,7 +88,10 @@ class Repository:
         return not self.getCompleteness(destination)
             
     def update(self, destination, progress):
+        """Update the package if possible. Return 1 if there was an update available, 0 if not."""
         if self.isUpdateAvailable(destination):
             self.download(destination, progress)
+            return 1
+        return 0
 
 ### The End ###

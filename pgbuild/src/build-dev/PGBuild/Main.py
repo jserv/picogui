@@ -187,7 +187,7 @@ def main(bootstrap, argv):
     ui = None
     try:
         try:
-            # Load the options passed to use by build.py into the <bootstrap> section
+            # Load the options passed to us by build.py into the <bootstrap> section
             boot(config, bootstrap)
 
             # Parse command line options into the <invocation> section

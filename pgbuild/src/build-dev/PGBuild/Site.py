@@ -77,7 +77,7 @@ class Location:
             speed = 0
         PGBuild.XMLUtil.setChildData(self.host, 'speed', speed)
 
-    def getSpeed(self, progress=None):
+    def getSpeed(self, progress):
         """Return the speed of this Location's host. This will be loaded
            from the configuration database if it has already been calculated
            and we're not forcing a retest, otherwise it will be tested
@@ -97,16 +97,14 @@ class Location:
                 self.retested = 1
 
         if needTest:
-            if progress:
-                progress.showTaskHeading()
+            progress.showTaskHeading()
             self.testSpeed()
-            if progress:
-                server = urlparse.urlparse(self.absoluteURI)[1]
-                speed = float(PGBuild.XMLUtil.getChildData(self.host, 'speed'))
-                if speed > 0:
-                    progress.report("tested", "%7.2f KB/s from %s" % (speed/1000, server))
-                else:
-                    progress.warning("unable to download from %s" % server)
+            server = urlparse.urlparse(self.absoluteURI)[1]
+            speed = float(PGBuild.XMLUtil.getChildData(self.host, 'speed'))
+            if speed > 0:
+                progress.report("tested", "%7.2f KB/s from %s" % (speed/1000, server))
+            else:
+                progress.warning("unable to download from %s" % server)
         return float(PGBuild.XMLUtil.getChildData(self.host, 'speed'))
 
 
@@ -133,7 +131,7 @@ def expand(config, tags):
     return results
             
 
-def resolve(config, tags, progress=None):
+def resolve(config, tags, progress):
     """Given a list of <a> tags, expand them into absolute URIs
        and pick the fastest mirror. Returns a Location.
        """

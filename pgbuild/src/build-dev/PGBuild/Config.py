@@ -304,11 +304,13 @@ class Tree(PGBuild.XMLUtil.Document):
             self.normalize()
             mergeElements(self)
 
-    def dirMount(self, dir):
+    def dirMount(self, dir, progress=None):
         """Mount all config files in the given directory"""
         import glob, os
         for file in glob.glob(os.path.join(dir, "*.%s" % configFileExtension)):
             self.mount(file)
+            if progress:
+                progress.report("mounted", file)
 
     def commit(self):
         """Save changes to all config trees that include 'w' in their mode"""
