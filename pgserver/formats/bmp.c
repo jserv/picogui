@@ -1,4 +1,4 @@
-/* $Id: bmp.c,v 1.5 2002/01/06 09:22:57 micahjd Exp $
+/* $Id: bmp.c,v 1.6 2002/01/09 15:16:02 lonetech Exp $
  *
  * bmp.c - Functions to detect and load files compatible with the Windows BMP
  *         file format. This format is good for palettized images and/or
@@ -132,8 +132,14 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   
   /* Find the raster data */
   offset = LITTLE_LONG(fhdr->data_offset);
-  if (offset + ((w*h*bpp)>>3) > datalen)
-    return mkerror(PG_ERRT_BADPARAM,41);      /* Corrupt BMP header */
+  if(!compression)
+   {
+    if (offset + ((w*h*bpp)>>3) > datalen)
+      return mkerror(PG_ERRT_BADPARAM,41);    /* Corrupt BMP header */
+   }
+  else
+    if (offset + ihdr->image_size > datalen)
+      return mkerror(PG_ERRT_BADPARAM,41);    /* Corrupt BMP header */
   rasterdata = data + offset;
 
   /* Ok so far, so allocate the bitmap.
@@ -148,70 +154,141 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   mask = (1<<bpp)-1;
   shift = -1;
 
-  /* Loop through each line of raster data, from the bottom to the top */
-  for (y=h-1;y>=0;y--) {
+  switch (compression) {
+    case 0:	/* Uncompressed */
+      /* Loop through each line of raster data, from the bottom to the top */
+      for (y=h-1;y>=0;y--) {
     
-    /* Transcribe the raster data into the hwrbitmap. This code
-     * will depend on the format used to store the raster data.
-     */
-    
-    switch (compression) {
-      
-    case 0:      /* Uncompressed */
-
-      for (x=0,linebegin=rasterdata;x<w;x++) {
-	
-	/* Format here depends on color depth. Load the next
-	 * pixel into 'c' as a pgcolor */
-	switch (bpp) {
-
-	  /* < 8bpp palettized */
-	case 1:
-	case 2:
-	case 4:
-	  if (shift < 0) {
-	    shift = 8-bpp;
-	    byte = *(rasterdata++);
-	  }
-	  index = (byte>>shift) & mask;
-	  shift -= bpp;
-	  if (index < numcolors)
-	    c = LITTLE_LONG(colortable[index]);
-	  break;
-
-	  /* 8 bit palettized */
-	case 8:
-	  index = *(rasterdata++);
-	  if (index < numcolors)
-	    c = LITTLE_LONG(colortable[index]);
-	  break;
-
-	  /* 24 bit true color */
-	case 24:
-	  c  =  *(rasterdata++);
-	  c |= (*(rasterdata++)) << 8;
-	  c |= (*(rasterdata++)) << 16;
-	  break;
-	}
-	
-	/* Convert and store c. This method is not the fastest, but
-	 * it will always work and it's easy. If more speed is needed here,
-	 * we could use a pixel-pushing loop like the PNM driver does.
+	/* Transcribe the raster data into the hwrbitmap. This code
+	 * will depend on the format used to store the raster data.
 	 */
-	(*vid->pixel) (*hbmp,x,y,(*vid->color_pgtohwr)(c),PG_LGOP_NONE);
+    
+	for (x=0,linebegin=rasterdata;x<w;x++) {
+	
+	  /* Format here depends on color depth. Load the next
+	   * pixel into 'c' as a pgcolor */
+	  switch (bpp) {
+
+	    /* < 8bpp palettized */
+	    case 1:
+	    case 2:
+	    case 4:
+	      if (shift < 0) {
+		shift = 8-bpp;
+		byte = *(rasterdata++);
+	      }
+	      index = (byte>>shift) & mask;
+	      shift -= bpp;
+	      if (index < numcolors)
+		c = LITTLE_LONG(colortable[index]);
+	      break;
+
+	    /* 8 bit palettized */
+	    case 8:
+	      index = *(rasterdata++);
+	      if (index < numcolors)
+		c = LITTLE_LONG(colortable[index]);
+	      break;
+
+	    /* 24 bit true color */
+	    case 24:
+	      c  =  *(rasterdata++);
+	      c |= (*(rasterdata++)) << 8;
+	      c |= (*(rasterdata++)) << 16;
+	      break;
+	  }
+	
+	  /* Convert and store c. This method is not the fastest, but
+	   * it will always work and it's easy. If more speed is needed here,
+	   * we could use a pixel-pushing loop like the PNM driver does.
+	   */
+	  (*vid->pixel) (*hbmp,x,y,(*vid->color_pgtohwr)(c),PG_LGOP_NONE);
+	}
+	/* Pad to a 32-bit boundary */
+	x = (rasterdata-linebegin) & 0x03;
+	if (x)
+	  rasterdata += 4-x;
       }
       break;
-
-    default:
+    
+    case 1:	/* 8 bit RLE */
+      datalen=offset+ihdr->image_size;
+      printf("RLE: %dx%d\n", w, h);
+      c=LITTLE_LONG(colortable[0]);
+      for(y=0;y<h;y++)
+	for(x=0;x<w;x++)
+	  (*vid->pixel) (*hbmp,x,y,(*vid->color_pgtohwr)(c),PG_LGOP_NONE);
+      x=0;
+      y=h-1;
+      while(rasterdata+1<data+datalen)
+       {
+	unsigned char rle_n, rle_c;
+	rle_n=*(rasterdata++);
+	rle_c=*(rasterdata++);
+	printf("RLE: %d,%d byte %d, command %d %d\n", x, y, 
+	    (int)(rasterdata-data)-offset, rle_n, rle_c);
+	if(rle_n)	/* RLE pixels */
+	 {
+	  c = LITTLE_LONG(colortable[rle_c]);
+	  while(rle_n--)
+	   {
+	    if(x==w)
+	     {
+	      x=0;
+	      y--;
+	      if(y<0)
+		return mkerror(PG_ERRT_BADPARAM,68);    /* RLE data corrupt */
+	     }
+	    (*vid->pixel) (*hbmp,x++,y,(*vid->color_pgtohwr)(c),PG_LGOP_NONE);
+	   }
+	 }
+	else
+	  switch(rle_c)
+	   {
+	    case 0:	/* end of line */
+	      y--;
+	      if(y<-1)
+		return mkerror(PG_ERRT_BADPARAM,68); /* RLE data corrupt */
+	      x=0;
+	      break;
+	    case 1:	/* end of bitmap ... */
+	      return success;
+	    case 2:	/* delta */
+	      if(rasterdata+2>data+datalen)
+		return mkerror(PG_ERRT_BADPARAM,68); /* RLE data corrupt */
+	      x+=*(rasterdata++);
+	      if(x>w)
+		return mkerror(PG_ERRT_BADPARAM,68); /* RLE data corrupt */
+	      y-=*(rasterdata++);
+	      if(y<0)
+		return mkerror(PG_ERRT_BADPARAM,68); /* RLE data corrupt */
+	      break;
+	    default:	/* shift uncompressed pixels */
+	      if(rasterdata+((rle_c+1)&0x1fe)>data+datalen)
+		return mkerror(PG_ERRT_BADPARAM,68);  /* RLE data corrupt */
+	      rle_n=rle_c&1;	/* for alignment */
+	      while(rle_c--)
+	       {
+		if(x==w)
+		 {
+		  x=0;
+		  y--;
+		  if(y<0)
+		    return mkerror(PG_ERRT_BADPARAM,68); /* RLE data corrupt */
+		 }
+		index=*(rasterdata++);
+		c = LITTLE_LONG(colortable[index]);
+		(*vid->pixel) (*hbmp,x++,y,(*vid->color_pgtohwr)(c),
+			       PG_LGOP_NONE);
+	       }
+	      rasterdata+=rle_n;	/* alignment */
+	      break;
+	   }
+       }
+      return mkerror(PG_ERRT_BADPARAM,68);      /* RLE data corrupt */
       
-      /* FIXME: Implement compressed BMP files */
+      /* FIXME: Implement compressed 4-bit BMP files */
 
-    }      
-      
-    /* Pad to a 32-bit boundary */
-    x = (rasterdata-linebegin) & 0x03;
-    if (x)
-      rasterdata += 4-x;
   }
     
   return success;

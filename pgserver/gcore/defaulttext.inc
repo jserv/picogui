@@ -73,7 +73,7 @@
 /* 65 */  "Can't get exclusive keyboard access. Another app is already being selfish",
 /* 66 */  "Can't get exclusive pointing device access, another app is using it",
 /* 67 */  "Unimplemented fillstyle bytecode, you may need to update pgserver", 
-/* 68 */  NULL,
+/* 68 */  "RLE compressed data in BMP file corrupt",
 /* 69 */  "Can't find a connection buffer for the client! Network code must be haunted",
 /* 70 */  "Context underflow",
 /* 71 */  NULL,
