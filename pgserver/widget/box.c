@@ -1,4 +1,4 @@
-/* $Id: box.c,v 1.1 2000/06/10 14:15:56 micahjd Exp $
+/* $Id: box.c,v 1.2 2000/08/05 09:17:49 micahjd Exp $
  *
  * box.c - Generic container for laying out widgets
  *
@@ -89,7 +89,10 @@ g_error box_set(struct widget *self,int property, glob data) {
 
   case WP_BORDERCOLOR:
     BOXCOLOR = data;
-    self->in->div->on_recalc = &box;
+    if (data)
+      self->in->div->on_recalc = &box;
+    else
+      self->in->div->on_recalc = NULL;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
