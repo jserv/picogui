@@ -1,4 +1,4 @@
-/* $Id: cursor.c,v 1.13 2003/03/10 23:48:18 micahjd Exp $
+/* $Id: cursor.c,v 1.14 2003/04/10 13:20:30 lalo Exp $
  *
  * cursor.c - Cursor abstraction and multiplexing layer 
  *
@@ -417,9 +417,9 @@ void cursor_change_under(struct cursor *crsr, handle old_under) {
     return;
 
   if (new_w)
-    widget_set_numcursors(new_w,new_w->numcursors+1);
+    widget_set_numcursors(new_w,new_w->numcursors+1,crsr);
   if (old_w)
-    widget_set_numcursors(old_w,old_w->numcursors-1);
+    widget_set_numcursors(old_w,old_w->numcursors-1,crsr);
 }
 
 

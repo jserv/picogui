@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.220 2003/01/20 02:40:00 micahjd Exp $
+/* $Id: widget.c,v 1.221 2003/04/10 13:20:32 lalo Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -727,16 +727,24 @@ void set_widget_rebuild(struct widget *w) {
 /* Set the number of cursors occupying the widget, and send any appropriate
  * triggers due to the change.
  */
-void widget_set_numcursors(struct widget *self, int num) {
+void widget_set_numcursors(struct widget *self, int num, struct cursor *crsr) {
+  union trigparam param;
+
   /* Don't let our puny little u8 roll over if something else fucks up */
   if (num < 0)
     num = 0;
 
+  cursor_getposition(crsr, &param.mouse.x, &param.mouse.y, NULL);
+  param.mouse.btn = crsr->prev_buttons;
+  param.mouse.chbtn = 0;
+  param.mouse.cursor = crsr;
+  printf("%d\n", param.mouse.btn);
+
   if (self->numcursors && !num)
-    send_trigger(self,PG_TRIGGER_LEAVE,NULL);
+    send_trigger(self,PG_TRIGGER_LEAVE,&param);
 
   if (!self->numcursors && num)
-    send_trigger(self,PG_TRIGGER_ENTER,NULL);  
+    send_trigger(self,PG_TRIGGER_ENTER,&param);  
 
   self->numcursors = num;
 }

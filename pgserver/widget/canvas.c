@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.56 2003/03/19 04:59:08 micahjd Exp $
+/* $Id: canvas.c,v 1.57 2003/04/10 13:20:31 lalo Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -175,6 +175,12 @@ void canvas_trigger(struct widget *self, s32 type, union trigparam *param) {
       break;
     case PG_TRIGGER_MOVE:
       evt = PG_WE_PNTR_MOVE;
+      break;
+    case PG_TRIGGER_ENTER:
+      evt = PG_WE_PNTR_ENTER;
+      break;
+    case PG_TRIGGER_LEAVE:
+      evt = PG_WE_PNTR_LEAVE;
       break;
     default:
       evt = 0;
