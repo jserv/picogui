@@ -1,4 +1,4 @@
-/* $Id: rotate270.c,v 1.15 2002/10/08 10:21:33 micahjd Exp $
+/* $Id: rotate270.c,v 1.16 2002/10/08 11:03:30 micahjd Exp $
  *
  * rotate270.c - Video wrapper to rotate the screen 270 degrees
  *
@@ -123,6 +123,16 @@ void rotate270_blit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
    (*vid->blit)(dest,dx-dest_y-h,dest_x,h,w,
 		src,bw-h-src_y,src_x,lgop);
 }
+void rotate270_rotateblit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
+			  hwrbitmap src,s16 src_x,s16 src_y,
+			  s16 angle, s16 lgop) {
+   s16 bw,bh;
+   s16 dx,dy;
+   (*vid->bitmap_getsize)(dest,&dx,&dy);
+   (*vid->bitmap_getsize)(src,&bw,&bh);
+   (*vid->rotateblit)(dest,dx-dest_y-h,dest_x,h,w,
+		      src,bh-h-src_y,src_x,angle,lgop);
+}
 void rotate270_scrollblit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
 		   hwrbitmap src,s16 src_x,s16 src_y,
 		   s16 lgop) {
@@ -242,6 +252,7 @@ void vidwrap_rotate270(struct vidlib *vid) {
    vid->fellipse = &rotate270_fellipse;
    vid->gradient = &rotate270_gradient;
    vid->blit = &rotate270_blit;
+   vid->rotateblit = &rotate270_rotateblit;
    vid->multiblit = &rotate270_multiblit;
    vid->charblit = &rotate270_charblit;
    vid->scrollblit = &rotate270_scrollblit;

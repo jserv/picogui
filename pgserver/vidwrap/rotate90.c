@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.28 2002/10/08 10:21:33 micahjd Exp $
+/* $Id: rotate90.c,v 1.29 2002/10/08 11:03:30 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -123,6 +123,17 @@ void rotate90_blit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
 
    (*vid->blit)(dest,dest_y,dy-dest_x-w,h,w,
 		src,src_y,bw-src_x-w,lgop);
+}
+void rotate90_rotateblit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
+			 hwrbitmap src,s16 src_x,s16 src_y,
+			 s16 angle, s16 lgop) {
+   s16 bw,foo;
+   s16 dx,dy;
+   (*vid->bitmap_getsize)(dest,&dx,&dy);
+   (*vid->bitmap_getsize)(src,&foo,&bw);
+
+   (*vid->rotateblit)(dest,dest_y,dy-dest_x-w,h,w,
+		      src,src_y,bw-src_x-w,angle,lgop);
 }
 void rotate90_scrollblit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
 			 hwrbitmap src,s16 src_x,s16 src_y,
@@ -291,6 +302,7 @@ void vidwrap_rotate90(struct vidlib *vid) {
    vid->fellipse = &rotate90_fellipse;
    vid->gradient = &rotate90_gradient;
    vid->blit = &rotate90_blit;
+   vid->rotateblit = &rotate90_rotateblit;
    vid->scrollblit = &rotate90_scrollblit;
    vid->multiblit = &rotate90_multiblit;
    vid->charblit = &rotate90_charblit;
