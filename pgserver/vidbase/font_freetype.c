@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.5 2002/10/13 07:46:50 micahjd Exp $
+/* $Id: font_freetype.c,v 1.6 2002/10/13 08:15:35 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -472,10 +472,8 @@ int ft_fontcmp(FT_Face f, const struct font_style *fs) {
 #ifdef CONFIG_FREETYPE_GAMMA
 void ft_build_gamma_table(u8 *table, float gamma) {
   int i;
-  for (i=0;i<256;i++) {
+  for (i=0;i<256;i++)
     table[i] = 255 * pow(i/255.0, 1/gamma);
-    printf("gamma %d => %d\n",i,table[i]);
-  }
 }
 
 void ft_apply_gamma_table(u8 *table, FT_Bitmap *b) {
