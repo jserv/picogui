@@ -65,7 +65,7 @@ class Application(Widget.Widget):
     def createWidget(self, wtype):
         'convenience method to create an unparented widget'
         new_id = self.server.createWidget(wtype)
-        new = Widget(self.server, new_id, self)
+        new = Widget.Widget(self.server, new_id, self)
         self._notify_new_widget(new)
         return new
 
