@@ -7,6 +7,8 @@ from Bee.Logic import S
 multicompile     = 1
 platform_variant = 1
 
+description = ''' PicoGUI server application '''
+
 help = """
 Provides the PicoGUI server, which is responsible for the
 graphical interface.

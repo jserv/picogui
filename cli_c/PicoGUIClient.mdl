@@ -6,6 +6,8 @@ from Bee.Autoconf import compile, install, clean
 
 multicompile = 1
 
+description = ''' PicoGUI client Library '''
+
 depends = [ 'resourcemanager', 'picoguiserver' ]
 
 runtime = [
