@@ -10,7 +10,8 @@ statDir = "/home/commits/stats"
 channelFile = "/home/commits/channels.list"
 
 # List out the subdirs explicitly so we can set the order-
-# the first one here is used as the sort key
+# the first one here is used as the sort key, and for definatively
+# listing the available projects.
 statSubdirs = ('forever', 'monthly', 'weekly', 'daily')
 
 projects = os.listdir(os.path.join(statDir, statSubdirs[0]))
@@ -21,7 +22,10 @@ for project in projects:
     # Build a map of counts indexed by subdirectory
     counts = {}
     for subdir in statSubdirs:
-        counts[subdir] = int(open(os.path.join(statDir, subdir, project)).read().strip())
+        try:
+            counts[subdir] = int(open(os.path.join(statDir, subdir, project)).read().strip())
+        except IOError:
+            counts[subdir] = 0
     projectCounts[project] = counts
 
 # Sort the project list by the 'forever' count, descending
@@ -65,7 +69,11 @@ print "</tr>"
 for project in projects:
     print "<tr><td>%s</td>" % project,
     for subdir in statSubdirs:
-        print "<td>%s</td>" % projectCounts[project][subdir],
+        count = projectCounts[project][subdir]
+        if count:
+            print "<td>%s</td>" % count,
+        else:
+            print "<td></td>",
     print "</tr>"
     
 print """
