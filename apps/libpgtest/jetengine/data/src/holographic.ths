@@ -3,8 +3,8 @@
  * -- Micah Dowty
  */
 
-prop fGlowPanel, fPanelVertices;
-prop upperBevel, lowerBevel, alpha;
+prop fGlowPanel, fPanelVertices, fWetPanel, fEmptyPanel;
+prop upperBevel, lowerBevel, alpha, causticsAlpha;
 
 prop caustic00,caustic01,caustic02,caustic03,caustic04,caustic05,caustic06,caustic07;
 prop caustic08,caustic09,caustic10,caustic11,caustic12,caustic13,caustic14,caustic15;
@@ -14,10 +14,6 @@ prop caustic24,caustic25,caustic26,caustic27,caustic28,caustic29,caustic30,caust
 
 object default {
   name = "Holographic";
-
-  margin = 10;
-  upperBevel = 10;
-  lowerBevel = 20;
 
   bgfill = fillstyle {
     Nop();
@@ -95,10 +91,41 @@ object default {
 		((y+upperBevel)<<16) + 0x8000,
 		0);
   };
-  
-  fGlowPanel = fillstyle {
-    var frame, texture;
 
+  fEmptyPanel = fillstyle {
+    var m;
+    m = margin/2;
+    
+    GL.enable(GL_BLEND);
+
+    /* Panel border */
+    GL.enable(GL_LINE_SMOOTH);
+    GL.color(bgcolor);
+    GL.begin(GL_LINE_LOOP);
+    fPanelVertices(x+m,y+m,w-m-m,h-m-m);
+    GL.end();
+    GL.disable(GL_LINE_SMOOTH);
+  };
+
+  fGlowPanel = fillstyle {
+    var m;
+    m = margin/2;
+
+    GL.enable(GL_BLEND);
+
+    /* Panel interior - solid */
+    GL.color(bgcolor | PGCF_ALPHA | alpha);
+    GL.begin(GL_POLYGON);
+    fPanelVertices(x+m,y+m,w-m-m,h-m-m);
+    GL.end();
+
+    fEmptyPanel(x,y,w,h);
+  };
+
+  fWetPanel = fillstyle {
+    var frame, texture, m;
+    
+    m = margin/2;
     frame = (ticks >> 5) & 31;
 
     /* Yes, this is terribly ugly */
@@ -135,36 +162,42 @@ object default {
               frame==30 ? caustic30 : 
                           caustic31 ;
 
-    /* Built-in border */
-    x = x+4;
-    y = y+4;
-    w = w-8;
-    h = h-8;
-
-    /* Antialias only the lines */
-    GL.enable(GL_LINE_SMOOTH);
     GL.enable(GL_BLEND);
 
-    /* Panel interior */
+    /* Panel interior - caustics */
     GL.enable(GL_TEXTURE_2D);
     GL.bindtexture(texture);
-    GL.color(bgcolor | PGCF_ALPHA | alpha);
+    GL.texparameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    GL.texparameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    GL.color(bgcolor | PGCF_ALPHA | causticsAlpha);
     GL.begin(GL_POLYGON);
-    fPanelVertices(x,y,w,h);
+    fPanelVertices(x+m,y+m,w-m-m,h-m-m);
     GL.end();
     GL.disable(GL_TEXTURE_2D);
 
-    /* Panel border */
-    GL.color(bgcolor);
-    GL.begin(GL_LINE_LOOP);
-    fPanelVertices(x,y,w,h);
-    GL.end();
-
-    GL.disable(GL_LINE_SMOOTH);
+    fGlowPanel(x,y,w,h);
   };
   
-  bgcolor = 0xe5e8fd;
-  alpha = 0x20000000;
+  bgcolor       = 0xe5e8fd;
+  alpha         = 0x40000000;
+  causticsAlpha = 0x30000000;
+
+  margin = 10;
+  upperBevel = 10;
+  lowerBevel = 20;
 }
 
-object box bgfill = Copy(default::fGlowPanel);
+object box bgfill = Copy(default::fWetPanel);
+
+object button {
+  bgfill = Copy(default::fEmptyPanel);
+  lowerBevel = 12;
+  height = 25;
+  width = 25;
+  margin = 2;
+  spacing = 4;
+}
+object button.hilight {
+  bgfill = Copy(default::fGlowPanel);
+  alpha = 0x60000000;
+}
