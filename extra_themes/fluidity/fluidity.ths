@@ -467,4 +467,11 @@ object base.display {
   offset = -1;
 }
 
+/********************************** Terminal */
+
+object terminal {
+  font = Font("Clean",8,0);
+  bitmap1 = 0;
+}
+
 /* The End */
