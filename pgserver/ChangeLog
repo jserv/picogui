@@ -1,3 +1,9 @@
+2002-04-12  Pascal Bauermeister  <pascal.bauermeister@smartdata.ch>
+
+	* include/picogui/constants.h net/dispatch.c: the base rotation is
+	available in the video mode flags. Extremely seldom cases require
+	clients to access this info.
+
 2002-03-27  Pascal Bauermeister  <pascal.bauermeister@smartdata.ch>
 
 	* video/fbdev.c: now supports offscreen bitmaps and has an RGB
