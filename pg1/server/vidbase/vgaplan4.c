@@ -184,7 +184,7 @@ extern void def_scrollblit(hwrbitmap dest, s16 dst_x, s16 dst_y,s16 w, s16 h,
 # define debug_missing(x...) do {	\
 	     static int printed;	\
 	     if (!printed) {		\
-		 printf("vgaplan4: missing " x); \
+		 fprintf(stderr, "vgaplan4: missing " x); \
 		 printed++;		\
 	     }				\
          } while (0)
@@ -1101,9 +1101,13 @@ local void vgaplan4_update(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h)
 void setvbl_vgaplan4(struct vidlib *vid) {
    setvbl_default(vid);
 
-   iopl(3);
+   if(iopl(3) == -1)
+     {
+       fprintf(stderr, "oops - must be root!\n");
+       exit(1);
+     }
 #if 0   
-   printf("SRR %x, ESR %x, CCR %x, FSDR %x, RMS %x, MODE %x,"
+   fprintf(stderr, "SRR %x, ESR %x, CCR %x, FSDR %x, RMS %x, MODE %x,"
           " MISC %x, CDC %x, BMR %x",
 	  GET_SRR, GET_ESR, GET_CCR, GET_FSDR, GET_RMS, GET_MODE,
 	  GET_MODE, GET_CCR, GET_BMR);
