@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.12 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: fillstyle.c,v 1.13 2001/10/07 07:55:32 micahjd Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -39,17 +39,13 @@ unsigned long fsstack[FSSTACKSIZE];
 int fsstkpos;  /* position in the stack */
 
 /* Macros to get the next short/long from the fillstyle buffer */
-#ifdef UCLINUX   /* needs word alignment, so we can't do it the simple way */
 
-#define NEXTSHORT (unsigned short)( (unsigned short)(p[0])<<8 | (unsigned short)(p[1]) )
-#define NEXTLONG  (unsigned long)( (unsigned long)(p[0])<<24 | (unsigned long)(p[1])<<16 | (unsigned long)(p[2])<<8 | (unsigned short)(p[3]) )
+#define NEXTSHORT      ((unsigned short)( (unsigned short)(p[0])<<8 |\
+                        (unsigned short)(p[1]) ))
+#define NEXTLONG       ((unsigned long)( (unsigned long)(p[0])<<24 |\
+                        (unsigned long)(p[1])<<16 | (unsigned long)\
+                        (p[2])<<8 | (unsigned short)(p[3]) ))
 
-#else
-
-#define NEXTLONG ntohl(*((unsigned long*)p))
-#define NEXTSHORT ntohs(*((unsigned short*)p))
-
-#endif /* UCLINUX */
 
 /* Little utility functions */
 
