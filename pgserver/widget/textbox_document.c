@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.33 2002/02/26 06:42:16 micahjd Exp $
+/* $Id: textbox_document.c,v 1.34 2002/04/08 13:37:52 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -444,6 +444,9 @@ g_error text_insert_string(struct textbox_cursor *c, const u8 *str,
   /* update grop width */
   c->c_div->div->pw = tw;
   c->c_gctx.current->r.w = tw;
+  
+  /* update grop height */
+  c->c_div->div->ph = fd->font->h + fd->font->descent;
 
   c->c_div->split = c->c_div->div->pw;
   c->c_div->flags |= DIVNODE_NEED_RECALC | DIVNODE_NEED_REDRAW | 
