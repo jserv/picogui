@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.45 2001/07/11 00:25:53 micahjd Exp $
+/* $Id: dispatch.c,v 1.46 2001/07/11 07:38:20 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -1009,6 +1009,16 @@ g_error rqh_setinactive(int owner, struct pgrequest *req,
   reqarg(setinactive);
   
   inactivity_set(ntohl(arg->time));
+  return sucess;
+}
+
+g_error rqh_drivermsg(int owner, struct pgrequest *req,
+		      void *data, unsigned long *ret, int *fatal) {
+  reqarg(drivermsg);
+  
+#ifndef CONFIG_NOCLIENTDRIVERMSG
+  drivermessage(ntohl(arg->message),ntohl(arg->param));
+#endif
   return sucess;
 }
 

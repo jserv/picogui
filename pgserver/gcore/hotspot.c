@@ -1,4 +1,4 @@
-/* $Id: hotspot.c,v 1.2 2001/07/10 11:46:53 micahjd Exp $
+/* $Id: hotspot.c,v 1.3 2001/07/11 07:38:20 micahjd Exp $
  *
  * hotspot.c - This is an interface for managing hotspots.
  *             The divtree is scanned for hotspot divnodes.
@@ -35,6 +35,7 @@
 #include <pgserver/appmgr.h>
 #include <pgserver/hotspot.h>
 #include <pgserver/widget.h>
+#include <pgserver/video.h>
 
 struct hotspot *hotspotlist;
 
@@ -271,6 +272,8 @@ void hotspot_traverse(short direction) {
   /* focus the widget under the cursor*/
   if (under)
     request_focus(under);
+
+  drivermessage(PGDM_CURSORVISIBLE,1);
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.38 2001/07/11 00:53:19 micahjd Exp $
+/* $Id: video.c,v 1.39 2001/07/11 07:38:20 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -375,6 +375,37 @@ g_error bitmap_iterate(g_error (*iterator)(hwrbitmap *pbit)) {
    }
       
    return sucess;
+}
+
+/* Send the message to all loaded drivers */
+void drivermessage(u32 message, u32 param) {
+  struct inlib *p;
+  
+  /* Current video driver */
+  if (vid->message)
+    (*vid->message)(message,param);
+
+  /* All input drivers loaded */
+  p = inlib_list;
+  while (p) {
+    if (p->message)
+      (*p->message)(message,param);
+    p = p->next;
+  }
+
+  /* Some stuff we can handle here */
+  switch (message) {
+
+  case PGDM_CURSORVISIBLE:
+    cursor->visible = (param != 0);
+    if (cursor->visible)
+      VID(sprite_show)(cursor);
+    else
+      VID(sprite_hide)(cursor);
+    realize_updareas();
+    break;
+
+  }
 }
 
 /* The End */

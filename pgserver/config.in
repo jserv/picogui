@@ -132,6 +132,7 @@ mainmenu_option next_comment
 comment 'Security'
 bool 'Disable remote input devices'           CONFIG_NOREMOTEINPUT
 bool 'Disable exclusive resource access'      CONFIG_NOEXCLUSIVE
+bool 'Ignore driver messages from clients'    CONFIG_NOCLIENTDRIVERMSG 
 int  'Client packet size limit in bytes'      CONFIG_MAXPACKETSZ
 bool 'Client quotas (not implemented)'       CONFIG_QUOTA
 if [ "$CONFIG_QUOTA" = "y" ]; then

@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.12 2001/06/29 04:02:37 sbarnes Exp $
+/* $Id: input.h,v 1.13 2001/07/11 07:38:20 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -88,6 +88,9 @@ struct inlib {
   /* If the input device queues events, this should return nonzero
    * when the queue is nonempty. */
   int (*ispending)(void);
+
+  /* For recieving driver messages */
+  void (*message)(u32 message, u32 param);
    
   /* Do not touch (drivers) */
   g_error (*regfunc)(struct inlib *i);  /* For avoiding duplicates */

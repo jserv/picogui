@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.12 2001/07/10 22:56:37 micahjd Exp $
+/* $Id: timer.c,v 1.13 2001/07/11 07:38:20 micahjd Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -42,6 +42,19 @@
 
 u32 lastactivity;
 
+/* Timers for activating driver messages after periods of inactivity */
+u32 timer_cursorhide;
+u32 timer_backlightoff;
+u32 timer_sleep;
+
+/* Internal function to send driver messages after periods of inactivity
+ * specified in the configuration file
+ */
+void inactivity_check(void);
+
+/* Load timer values from the config file */
+void inactivity_init(void);
+
 /* This defines the maximum 
    precision of the TRIGGER_TIMER */
 #define TIMERINTERVAL 50   /* In milliseconds */
@@ -56,10 +69,13 @@ static UINT ntimer;
 
 static void CALLBACK HandleAlarm(UINT uID,  UINT uMsg, DWORD dwUser,
 				 DWORD dw1, DWORD dw2) {
+  inactivity_check();
   trigger_timer();
 }
 
 g_error timer_init(void) {
+  inactivity_init();
+  
   /* Get a reference point for getticks */
   first_tick = timeGetTime();
   
@@ -91,12 +107,15 @@ u32 getticks(void) {
 static struct timeval first_tick;
 
 static void sigalarm(int sig) {
+  inactivity_check();
   trigger_timer();
 }
 
 g_error timer_init(void) {
   struct itimerval itv;
   struct sigaction action;
+
+  inactivity_init();
 
   /* Get a reference point for getticks */
   gettimeofday(&first_tick,NULL);
@@ -151,7 +170,7 @@ u32 getticks(void) {
 
 /* reset the inactivity timer */
 void inactivity_reset() {
-  lastactivity = getticks();
+  inactivity_set(0);
 }
 
 /* retrieve the number of milliseconds since the last activity */
@@ -164,6 +183,40 @@ u32 inactivity_get() {
  */
 void inactivity_set(u32 t) {
   lastactivity = getticks() - t;
+}
+
+/* These variables are accessed so often (10 times a second) that it
+ * makes sense to not do a config lookup each time they're used
+ */
+void inactivity_init(void) {
+  timer_cursorhide    = get_param_int("timers","cursorhide",0xFFFFFFF);
+  timer_backlightoff  = get_param_int("timers","backlightoff",0xFFFFFFF);
+  timer_sleep         = get_param_int("timers","sleep",0xFFFFFFF);
+}
+
+void inactivity_check(void) {
+  u32 now = inactivity_get()/100;
+  static u32 then = 0;
+
+  if (now == then)
+    return;
+  else if (now < then) {
+    then = 0;
+    return;
+  }
+
+  printf("%d is now, but %d was then\n",now,then);
+
+  if ( now >= timer_cursorhide && then < timer_cursorhide )
+    drivermessage(PGDM_CURSORVISIBLE,0);
+
+  if ( now >= timer_backlightoff && then < timer_backlightoff )
+    drivermessage(PGDM_BACKLIGHT,0);
+
+  if ( now >= timer_sleep && then < timer_sleep )
+    drivermessage(PGDM_POWER,PG_POWER_SLEEP);
+
+  then = now;
 }
 
 /* The End */

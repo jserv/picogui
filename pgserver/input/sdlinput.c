@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.17 2001/07/10 09:21:13 micahjd Exp $
+/* $Id: sdlinput.c,v 1.18 2001/07/11 07:38:20 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -78,6 +78,7 @@ void sdlinput_poll(void) {
     if ((evt.motion.x==ox) && (evt.motion.y==oy)) break;
     dispatch_pointing(TRIGGER_MOVE,ox = evt.motion.x,
 		      oy = evt.motion.y,btnstate=evt.motion.state);
+    drivermessage(PGDM_CURSORVISIBLE,1);
     break;
     
   case SDL_MOUSEBUTTONDOWN:

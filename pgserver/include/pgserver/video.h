@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.45 2001/07/05 06:17:56 micahjd Exp $
+/* $Id: video.h,v 1.46 2001/07/11 07:38:20 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -180,6 +180,9 @@ struct vidlib {
    * case, set this to NULL */
   hwrbitmap display;
    
+  /* Optionally process driver messages */
+  void (*message)(u32 message, u32 param);
+
   /***************** Fonts */
    
   /* Optional
@@ -509,7 +512,7 @@ void def_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 void def_sprite_protectarea(struct quad *in,struct sprite *from);
 g_error def_bitmap_loadxbm(hwrbitmap *bmp,const u8 *data, s16 w, s16 h,
 			   hwrcolor fg, hwrcolor bg);
-   
+
 /************* Registration functions for video drivers */
 
 g_error sdlfb_regfunc(struct vidlib *v);
@@ -555,6 +558,10 @@ g_error bitmap_iterate(g_error (*iterator)(hwrbitmap *pbit));
 void videotest_run(s16 number);
 void videotest_help(void);
 void videotest_benchmark(void);
+
+/************** Send a driver message (to all loaded drivers) */
+
+void drivermessage(u32 message, u32 param);
 
 #endif /* __H_VIDEO */
 

@@ -40,6 +40,7 @@ RQH(newbitmap)
 RQH(thlookup)
 RQH(getinactive)
 RQH(setinactive)
+RQH(drivermsg)
 RQH(undef)
 
 /* The End */

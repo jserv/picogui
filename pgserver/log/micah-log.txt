@@ -30,6 +30,14 @@ Fixing a few bugs...
 		* include/picogui/constants.h: Defining constants for 'driver messages'
 		  that can invoke hardware-specific extras like sleep mode, backlights,
 		  beeps, and such.
+		  
+		* gcore/video.c: Added the drivermessage() function to handle sending
+		  a message to all loaded drivers
+		  
+		* gcore/timer.c: Added some system timeouts that send driver messages
+		  when activated: cursor hide, backlight off, and sleep mode.
+
+
 
 2001-07-09    Micah Dowty <micahjd@users.sourceforge.net>
 
