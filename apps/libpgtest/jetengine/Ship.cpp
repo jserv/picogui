@@ -6,16 +6,13 @@
 
 Ship::Ship() {
   shipTexture = new PGTexture("jetengine/ship");
-  setAttr("pitch",0.0f);
+  setAttr("pitch",20.0f);
   setAttr("roll",0.0f);
   setAttr("yaw",0.0f);
-  setAttr("altitude",12.0f);
+  setAttr("altitude",15.0f);
   setAttr("x",0.0f);
   setAttr("z",-30.0f);
   setAttr("scale",10.0f);
-
-  printf("%f\n",getAttrFloat("altitude"));
-  
 }
 
 Ship::~Ship() {
@@ -23,21 +20,18 @@ Ship::~Ship() {
 }
 
 void Ship::draw() {
+  float scale = getAttrFloat("scale");
   glPushMatrix();
 
-  glTranslatef(0,12.0,-30.0);
-
-  /*
   glTranslatef(getAttrFloat("x"), 
 	       getAttrFloat("altitude"),
 	       getAttrFloat("z"));
-  */
 
   glRotatef( getAttrFloat("pitch"), 1,0,0);
   glRotatef(-getAttrFloat("yaw"),   0,1,0);
   glRotatef(-getAttrFloat("roll"),  0,0,1);
 
-  glScalef(10,10,10);
+  glScalef(scale,scale,scale);
 
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);

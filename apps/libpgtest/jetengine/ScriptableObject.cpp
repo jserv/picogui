@@ -58,35 +58,29 @@ void ScriptableObject::setAttr(char *name, PyObject *value) {
 
 /* Several convenience functions for set/getattr */
 void ScriptableObject::setAttr(char *name, int value) {
-  PyObject *o = Py_BuildValue("i",&value);
+  PyObject *o = Py_BuildValue("i",value);
   setAttr(name,o);
   Py_DECREF(o);
 }
 
 void ScriptableObject::setAttr(char *name, char *value) {
-  PyObject *o = Py_BuildValue("s",&value);
+  PyObject *o = Py_BuildValue("s",value);
   setAttr(name,o);
   Py_DECREF(o);
 }
 
 void ScriptableObject::setAttr(char *name, float value) {
-  PyObject *o = Py_BuildValue("f",&value);
+  PyObject *o = Py_BuildValue("f",value);
   setAttr(name,o);
   Py_DECREF(o);
 }
 
 int ScriptableObject::getAttrInt(char *name) {
-  int i;
-  if (!PyArg_Parse(getAttr(name), "i", &i))
-    throw PythonException();
-  return i;
+  return PyInt_AsLong(getAttr(name));
 }
 
 char *ScriptableObject::getAttrStr(char *name) {
-  char *s;
-  if (!PyArg_Parse(getAttr(name), "s", &s))
-    throw PythonException();
-  return s;
+  return PyString_AsString(getAttr(name));
 }
 
 float ScriptableObject::getAttrFloat(char *name) {
