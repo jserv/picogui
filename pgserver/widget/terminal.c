@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.37 2001/12/16 08:54:12 lonetech Exp $
+/* $Id: terminal.c,v 1.38 2001/12/16 23:02:55 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -47,14 +47,14 @@ struct termdata {
 
   /* Text buffer */
   handle hbuffer;
-  char *buffer;
+  u8 *buffer;
   int bufferw,bufferh,buffersize;
   int crsrx,crsry;
-  unsigned char attr_under_crsr;
-  unsigned char attr;             /* Default attribute for new characters */
+  u8 attr_under_crsr;
+  u8 attr;             /* Default attribute for new characters */
 
   /* Escape code buffer */
-  char escapebuf[ESCAPEBUF_SIZE];
+  u8 escapebuf[ESCAPEBUF_SIZE];
   int escbuf_pos;   /* Position in buffer */
 
   /* Parameter buffer for processed CSI codes */
@@ -102,16 +102,16 @@ void term_realize(struct widget *self);
 void term_rectprepare(struct widget *self);
 
 /* Output formatted char */
-void term_char(struct widget *self,char c);
+void term_char(struct widget *self,u8 c);
 
 /* Add update rectangle */
 void term_updrect(struct widget *self,int x,int y,int w,int h);
 
 /* Plot a character at an x,y position, add update rect */
-void term_plot(struct widget *self,int x,int y,char c);
+void term_plot(struct widget *self,int x,int y,u8 c);
 
 /* Change attribute at an x,y position, return old attribute */
-unsigned char term_chattr(struct widget *self,int x,int y,char c);
+u8 term_chattr(struct widget *self,int x,int y,u8 c);
 
 /* Hide/show cursor */
 void term_setcursor(struct widget *self,int flag);
@@ -124,10 +124,10 @@ void term_ecma48sgr(struct widget *self);
 
 /* Handle a parsed CSI sequence other than ECMA-48, ending
    with the specified character */
-void term_othercsi(struct widget *self,char c);
+void term_othercsi(struct widget *self,u8 c);
 
 /* Copy a rectangle between two text buffers */
-void textblit(char *src,char *dest,int src_x,int src_y,int src_w,
+void textblit(u8 *src,u8 *dest,int src_x,int src_y,int src_w,
 	      int dest_x,int dest_y,int dest_w,int w,int h);
 
 /********************************************** Widget functions */
@@ -204,7 +204,7 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
 
     /* Resize the buffer if necessary */
     if (neww != DATA->bufferw || newh != DATA->bufferh) {
-      char *newbuffer,*p;
+      u8 *newbuffer,*p;
       long newbuffer_size,i;
       /* Blit parameters */
       int src_y,dest_y,w,h;
@@ -375,7 +375,7 @@ void terminal_remove(struct widget *self) {
 g_error terminal_set(struct widget *self,int property, glob data) {
   g_error e;
   struct fontdesc *fd;
-  char *str;
+  u8 *str;
   hwrbitmap bit;
 
   switch (property) {
@@ -398,7 +398,7 @@ glob terminal_get(struct widget *self,int property) {
   g_error e;
   handle h;
   int tw,th;
-  char *str;
+  u8 *str;
   struct fontdesc *fd;
 
   switch (property) {
@@ -504,8 +504,8 @@ void terminal_trigger(struct widget *self,long type,union trigparam *param) {
 
 /* Handle a single key event as received from the server */
 void kbd_event(struct widget *self, int pgkey,int mods) {
-  char *rtn;
-  static char chrstr[] = " ";      /* Must be static - if the event is put on
+  u8 *rtn;
+  static u8 chrstr[] = " ";      /* Must be static - if the event is put on
 				      the queue it might be a while before this
 				      is used. */
 
@@ -635,8 +635,8 @@ void term_updrect(struct widget *self,int x,int y,int w,int h) {
 }
 
 /* Plot a character at an x,y position */
-void term_plot(struct widget *self,int x,int y,char c) {
-   unsigned char *p = DATA->buffer + ((x + y*DATA->bufferw)<<1);
+void term_plot(struct widget *self,int x,int y,u8 c) {
+   u8 *p = DATA->buffer + ((x + y*DATA->bufferw)<<1);
 
    p[0] = DATA->attr;
    p[1] = c;
@@ -645,9 +645,9 @@ void term_plot(struct widget *self,int x,int y,char c) {
 }
 
 /* Change attribute at an x,y position */
-unsigned char term_chattr(struct widget *self,int x,int y,char c) {
-   unsigned char old;
-   unsigned char *p;
+u8 term_chattr(struct widget *self,int x,int y,u8 c) {
+   u8 old;
+   u8 *p;
     
    p = DATA->buffer + ((x + y*DATA->bufferw)<<1);
    old = *p;
@@ -658,7 +658,7 @@ unsigned char term_chattr(struct widget *self,int x,int y,char c) {
 
 /* Format and/or draw one incoming character. 
  * Handle escape codes if present. */
-void term_char(struct widget *self,char c) {
+void term_char(struct widget *self,u8 c) {
   term_setcursor(self,0);  /* Hide */
   
   /* Handling an escape code? */
@@ -673,7 +673,7 @@ void term_char(struct widget *self,char c) {
       DATA->escapemode = 0;
 #ifdef BOTHERSOME_TERMINAL
       {
-	char *p;
+	u8 *p;
 
 	/* Keep this from messing up the debug terminal! */
 	DATA->escapebuf[ESCAPEBUF_SIZE-1] = 0;
@@ -704,7 +704,7 @@ void term_char(struct widget *self,char c) {
      * and terminates the code
      */
     if (*DATA->escapebuf == '[' && DATA->escbuf_pos>1) {
-      char *p,*endp,*num_end;
+      u8 *p,*endp,*num_end;
 
       /* Ignore question mark after CSI */
       if (DATA->escbuf_pos==2 && c=='?') {
@@ -842,7 +842,7 @@ void term_rectprepare(struct widget *self) {
 
 /* Clear a chunk of buffer */
 void term_clearbuf(struct widget *self,int fromx,int fromy,int chars) {
-   unsigned char *p;
+   u8 *p;
    int i;
    int size = chars<<1;
    long offset = (fromx + fromy * DATA->bufferw)<<1;
@@ -952,7 +952,7 @@ void term_ecma48sgr(struct widget *self) {
 
 /* Handle a parsed CSI sequence other than ECMA-48 SGR, ending
    with the specified character */
-void term_othercsi(struct widget *self,char c) {
+void term_othercsi(struct widget *self,u8 c) {
   int i;
   switch (c) {
 
@@ -1050,7 +1050,7 @@ void term_othercsi(struct widget *self,char c) {
 }
 
 /* Copy a rectangle between two text buffers */
-void textblit(char *src,char *dest,int src_x,int src_y,int src_w,
+void textblit(u8 *src,u8 *dest,int src_x,int src_y,int src_w,
 	      int dest_x,int dest_y,int dest_w,int w,int h) {
   int srcoffset  = src_w << 1;
   int destoffset = dest_w << 1;
