@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.98 2002/02/07 01:03:53 micahjd Exp $
+/* $Id: button.c,v 1.99 2002/02/11 05:59:33 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -83,14 +83,25 @@ void position_button(struct widget *self,struct btnposition *bp);
 
 /* Determine the current state of the button and draw it */
 void button_setstate(struct widget *self) {
+  int state;
+  
   if (DATA->on && DATA->over)
-    div_setstate(self->in->div,DATA->state_on,0);
+    state = DATA->state_on;
   else if (DATA->on)
-    div_setstate(self->in->div,DATA->state_on_nohilight,0);
+    state = DATA->state_on_nohilight;
   else if (DATA->over)
-    div_setstate(self->in->div,DATA->state_hilight,0);
+    state = DATA->state_hilight;
   else
-    div_setstate(self->in->div,DATA->state,0);
+    state = DATA->state;
+
+  /* If the button is already visible, use div_setstate for a proper redraw.
+   * Otherwise optimize for the common case of the button state being changed
+   * during initialization by the app.
+   */
+  if (!(self->in->div->w && self->in->div->h))
+    self->in->div->state = state;
+  else
+    div_setstate(self->in->div,state,0);
 }
 
 void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
