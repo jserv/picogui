@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.41 2002/10/11 11:58:45 micahjd Exp $
+/* $Id: textbox_document.c,v 1.42 2002/10/11 23:19:41 micahjd Exp $
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and
@@ -45,6 +45,8 @@ g_error textbox_new_par_div(struct paragraph **par, struct divnode **div,
 /* Rebuild function for paragraph divnodes, issued by textbox_new_par_div */
 void textbox_build_par_div(struct gropctxt *c, u16 state, struct widget *self);
 
+void textbox_delete_parlist(struct paragraph *list);
+
 struct txtformat text_formats[] = {
   { "plaintext", &plaintext_load, &plaintext_save },
 #ifdef CONFIG_FORMAT_HTML
@@ -70,25 +72,13 @@ g_error document_new(struct textbox_document **doc, struct divnode *container_di
   (*doc)->container_div = container_div;
   (*doc)->multiline = 1;
 
-  /* Initial paragraph, stick the cursor in it */
-  e = textbox_new_par_div(&(*doc)->par_list, &container_div->div, container_div);
-  errorcheck;
-  (*doc)->crsr = &(*doc)->par_list->cursor;
-
-  return success;
+  /* Initialize the paragraps */
+  return document_nuke(*doc);
 }
 
 void document_delete(struct textbox_document *doc) {
-  struct paragraph *p, *condemn;
-
-  /* Free all paragraphs we have */
-  p = doc->par_list;
-  while (p) {
-    condemn = p;
-    p = p->next;
-    handle_free(-1,hlookup(condemn,NULL));
-  }
-  
+  textbox_delete_parlist(doc->par_list);
+  doc->container_div->div = NULL;
   g_free(doc);
 }
 
@@ -120,6 +110,17 @@ g_error document_save(struct textbox_document *doc, const struct pgstring *forma
 
 /* Clear out the existing data and reset the cursor */
 g_error document_nuke(struct textbox_document *doc) {
+  g_error e;
+  
+  textbox_delete_parlist(doc->par_list);
+  doc->container_div->div = NULL;
+
+  /* Initial paragraph, stick the cursor in it */
+  e = textbox_new_par_div(&doc->par_list, &doc->container_div->div, doc->container_div);
+  errorcheck;
+  doc->crsr = &doc->par_list->cursor;
+
+  return success;
 }
 
 /* Insert a character/string at the current cursor location.
@@ -311,6 +312,15 @@ void textbox_build_par_div(struct gropctxt *c, u16 state, struct widget *self) {
 
   DBG("Build, size: %d,%d,%d,%d preferred: %d,%d\n",
       c->r.x,c->r.y,c->r.w,c->r.h,c->owner->pw,c->owner->ph);
+}
+
+void textbox_delete_parlist(struct paragraph *list) {
+  struct paragraph *condemn;
+  while (list) {
+    condemn = list;
+    list = list->next;
+    handle_free(-1,hlookup(condemn,NULL));
+  }
 }
 
 /* The End */

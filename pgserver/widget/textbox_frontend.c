@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.12 2002/10/11 12:15:52 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.13 2002/10/11 23:19:41 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -110,6 +110,7 @@ void textbox_resize(struct widget *self) {
 
 g_error textbox_set(struct widget *self,int property, glob data) {
   g_error e;
+  int i;
   struct pgstring *str;  
   struct pgstring *fmt;
 
@@ -129,6 +130,13 @@ g_error textbox_set(struct widget *self,int property, glob data) {
     break;
 
   case PG_WP_TEXT:
+    switch (DATA->insertmode) {
+
+    case PG_INSERT_OVERWRITE:
+      document_nuke(DATA->doc);
+      break;
+
+    }
     e = textbox_getformat(self,&fmt);
     errorcheck;
     e = rdhandle((void**)&str,PG_TYPE_PGSTRING,-1,data);
