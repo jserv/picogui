@@ -70,27 +70,38 @@ int evtSave(struct pgEvent *evt)
 
 int main(int argc, char **argv) {
   pghandle title;
+  pghandle tb;
 
   pgInit(argc,argv);
   wApp=pgRegisterApp(PG_APP_NORMAL,APPTITLE,0);
 
-  title = pgGetWidget(0, PG_WP_PANELBAR_LABEL);
+  /* The textbox itself, inside a scrollbox */
+  pgNewWidget(PG_WIDGET_SCROLLBOX, PG_DERIVE_INSIDE,wApp);
+  wText = pgNewWidget(PG_WIDGET_TEXTBOX, PG_DERIVE_INSIDE, 0);
+  pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_ALL, 0);   
+  pgFocus(PGDEFAULT);
 
-  pgNewWidget(PG_WIDGET_BUTTON, PG_DERIVE_BEFORE, title);
-  pgSetWidget(PGDEFAULT, PG_WP_TEXT, pgNewString("Load"),
-      PG_WP_SIDE, PG_S_LEFT, 0);
-  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&evtLoad,NULL);
+  /* We'll try to put our load and save buttons in
+   * the panelbar, but if there is no panelbar we'll make a toolbar.
+   */
+  title = pgGetWidget(wApp, PG_WP_PANELBAR_LABEL);
+  if (!title)
+    tb = pgNewWidget(PG_WIDGET_TOOLBAR,PG_DERIVE_INSIDE,wApp);
 
-  pgNewWidget(PG_WIDGET_BUTTON, PG_DERIVE_BEFORE, title);
+  /* Our load/save buttons, either in the panelbar or toolbar */
+  pgNewWidget(PG_WIDGET_BUTTON, 
+	      title ? PG_DERIVE_BEFORE : PG_DERIVE_INSIDE,
+	      title ? title : tb);
   pgSetWidget(PGDEFAULT, PG_WP_TEXT,pgNewString("Save"),
       PG_WP_SIDE, PG_S_LEFT, 0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&evtSave,NULL);
 
-  pgNewWidget(PG_WIDGET_SCROLLBOX, PG_DERIVE_INSIDE, wApp);
-  wText = pgNewWidget(PG_WIDGET_TEXTBOX, PG_DERIVE_INSIDE, 0);
-  pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_ALL, 0);
-   
-  pgFocus(PGDEFAULT);
+  pgNewWidget(PG_WIDGET_BUTTON, 
+	      title ? PG_DERIVE_BEFORE : PG_DERIVE_INSIDE,
+	      title ? title : tb);
+  pgSetWidget(PGDEFAULT, PG_WP_TEXT, pgNewString("Load"),
+      PG_WP_SIDE, PG_S_LEFT, 0);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&evtLoad,NULL);
 
   if (argv[1])
     load(argv[1]);
@@ -99,3 +110,4 @@ int main(int argc, char **argv) {
   return 0;
 }
   
+
