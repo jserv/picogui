@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.56 2002/03/22 21:01:45 micahjd Exp $
+/* $Id: widget.h,v 1.57 2002/03/26 03:47:54 instinc Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -110,7 +110,7 @@ struct widgetdef {
   void (*remove)(struct widget *self);
 
   /* Optional, only for interactive controls */
-  void (*trigger)(struct widget *self,long type,union trigparam *param);
+  void (*trigger)(struct widget *self,s32 type,union trigparam *param);
 
   /* Setting/getting properties */
   g_error (*set)(struct widget *self, int property, glob data);
@@ -206,7 +206,7 @@ struct widget {
    * from the widget. If the callback returns false, the widget is passed
    * on to the client normally, if it returns true the event is absorbed.
    */
-  int (*callback)(int event, struct widget *from, long param, int owner, char *data);
+  int (*callback)(int event, struct widget *from, s32 param, int owner, char *data);
 };
 
 /* Macros to help define widgets */
@@ -236,7 +236,7 @@ struct widget {
 #define DEF_WIDGET_PROTO(n) \
   g_error n##_install(struct widget *self); \
   void n##_remove(struct widget *self); \
-  void n##_trigger(struct widget *self,long type,union trigparam *param); \
+  void n##_trigger(struct widget *self,s32 type,union trigparam *param); \
   g_error n##_set(struct widget *self, int property, glob data); \
   glob n##_get(struct widget *self, int property); \
   void n##_resize(struct widget *self);
@@ -293,7 +293,7 @@ void redraw_bg(struct widget *self);
    Set a timer.  At the time, in ticks, specified by 'time',
    the widget will recieve a TRIGGER_TIMER
 */
-void install_timer(struct widget *self,unsigned long interval);
+void install_timer(struct widget *self,u32 interval);
 
 /* This is called by the timer subsystem.  It triggers the
    timer and uninstalls it from the linked list of timers.
@@ -380,13 +380,13 @@ struct widget *widget_traverse(struct widget *w, int direction, int count);
 /* sends a trigger to a widget,
  * returns nonzero if the trigger was accepted.
  */
-int send_trigger(struct widget *w, long type, union trigparam *param);
+int send_trigger(struct widget *w, s32 type, union trigparam *param);
 
 /* Sends a trigger to all of a widget's children,
  * stopping if *stop > 0. Always traverses to the child and the panelbar,
  * only traverses forward for the top level if 'forward' is nonzero.
  */
-void r_send_trigger(struct widget *w, long type, union trigparam *param,
+void r_send_trigger(struct widget *w, s32 type, union trigparam *param,
 		    u16 *stop, int forward);
 
 /* Invokes the spirits of guru() and stdout for debuggativity */
