@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.19 2001/03/17 04:16:34 micahjd Exp $
+/* $Id: font.c,v 1.20 2001/04/18 23:13:11 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -31,6 +31,7 @@
 
 #include <pgserver/font.h>
 #include <pgserver/video.h>
+#include <pgserver/appmgr.h>
 
 /* This defines how italic the generated italic is */
 #define DEFAULT_SKEW 3
@@ -53,10 +54,7 @@
    the request and a particular font */
 int fontcmp(struct fontstyle_node *fs,char *name, int size, stylet flags);
 
-/* Outputs a character. It also updates (*x,*y) as a cursor position.
- * To use this for measuring text but not actually outputting it, set
- * clip to NULL
- */
+/* Outputs a character. It also updates (*x,*y) as a cursor position. */
 void outchar(struct fontdesc *fd,
 	     int *x, int *y,hwrcolor col,char c,struct cliprect *clip) {
   int i,j;
@@ -212,6 +210,11 @@ g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
    int r;
    g_error e;
    
+   /* If the font size is zero, assume the default font size */
+   if ((!size) && 
+       (!iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,defaultfont))) && fd)
+     size = fd->font->h;
+     
    e = g_malloc((void **) &fd,sizeof(struct fontdesc));
    errorcheck;
    e = mkhandle(pfh,PG_TYPE_FONTDESC,owner,fd);
