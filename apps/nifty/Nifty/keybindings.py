@@ -1,22 +1,28 @@
-bindings = {
+default = {
     'C-x': {
       'C-c': 'raise SystemExit',
       'C-s': 'frame.save()',
     },
+    'A-space': 'print workspace.cursor_position',
 }
 
-def resolve(sequence):
-    where = bindings
+def _resolve(sequence, where=default):
     for key in sequence:
         where = where.get(key, None)
         if where is None:
             return
     return where
 
-def bind(sequence, command):
-    parent = resole(sequence[:-1])
+def resolve(sequence, bindings=(default,)):
+    for where in bindings:
+        r = _resolve(sequence, where)
+        if r:
+            return r
+
+def bind(sequence, command, where=default):
+    parent = _resolve(sequence[:-1], where)
     if parent is None:
         # may be recursive
         parent = {}
-        bind(sequence[:-1], parent)
+        bind(sequence[:-1], parent, where)
     parent[sequence[-1]] = command

@@ -43,10 +43,11 @@ class Minibuffer(object):
         self._frame.focus_workspace()
         self._saved_text = None
         try:
-            self.bind(buffer = self._frame.current.buffer)
+            workspace = self._frame.current
+            self.bind(buffer = workspace.buffer, workspace = workspace)
         except AttributeError:
             # no buffers open
-            self.bind(buffer = None)
+            self.bind(buffer = None, workspace = None)
         try:
             exec self._history[-1] in self._frame.python_ns, self.python_ns
         except SystemExit:

@@ -7,6 +7,13 @@ class Textbox(Workspace):
         Workspace.open(self, frame, page, buffer)
         frame.link(self.handle_key, self, 'kbd keyup')
         self._partial_command = None
+        self._keybindings = {}
+
+    def bind_key(self, keyseq, command, b_global=False):
+        if b_global:
+            keybindings.bind(keyseq, command)
+        else:
+            keybindings.bind(keyseq, command, self._keybindings)
 
     def handle_key(self, ev):
         key = self._resolve_key(ev)
@@ -16,12 +23,13 @@ class Textbox(Workspace):
             seq = self._partial_command + seq
         self._partial_command = None
         self.extdevents = None
-        cmd = keybindings.resolve(seq)
+        cmd = keybindings.resolve(seq, (self._keybindings, keybindings.default))
         if type(cmd) is dict:
             self._partial_command = seq
             self.extdevents = 'kbd'
             return
         if type(cmd) is str:
+            self.buffer.python_ns['workspace'] = self
             try:
                 exec cmd in self.frame.python_ns, self.buffer.python_ns
             except SystemExit:
