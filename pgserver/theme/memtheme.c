@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.46 2001/12/31 04:03:09 micahjd Exp $
+/* $Id: memtheme.c,v 1.47 2002/01/04 14:28:30 gobry Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -423,6 +423,7 @@ g_error theme_load(handle *h,int owner,char *themefile,
   struct pgmemtheme_prop *mpropp;
   struct pgmemtheme *th;
   char *objname;
+  short requires_full_update = 0;
 
   /* Get the header */
   if (themefile_remaining < sizeof(struct pgtheme_header))
@@ -553,6 +554,20 @@ g_error theme_load(handle *h,int owner,char *themefile,
       mpropp->id = ntohs(propp->id);
       mpropp->data = ntohl(propp->data);
 
+      /* check if setting this property would cause a full refresh of
+	 the display */
+      switch (mpropp->id) {
+      case PGTH_P_NAME:
+      case PGTH_P_CURSORBITMAP:
+      case PGTH_P_CURSORBITMASK:
+	/* these properties don't force a refresh. */
+	break;
+
+      default:
+	requires_full_update = 1;
+	break;
+      }
+
       /* Loaders */
       switch (mpropp->loader = ntohs(propp->loader)) {
 
@@ -634,11 +649,13 @@ g_error theme_load(handle *h,int owner,char *themefile,
 
   /* Reload global hotkeys from the theme */
   reload_hotkeys();
-   
-  /* Schedule a global recalc (Yikes!) so it takes effect */
-  resizeall();
-  dts->top->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
-  dts->top->flags |= DIVTREE_NEED_RECALC;
+
+  if (requires_full_update) {
+    /* Schedule a global recalc (Yikes!) so it takes effect */
+    resizeall();
+    dts->top->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+    dts->top->flags |= DIVTREE_NEED_RECALC;
+  }
 
   return success;
 }
