@@ -1,10 +1,8 @@
 #!/usr/bin/env python
-""" build.py
+""" pgbuild.py
 
-Command-line entry point for the PGBuild system, responsible only for setting
-paths and transferring control to the PGBuild.Main module. This file should
-be as simple as possible, since it can't be automatically updated, but it
-should also contain all details specific to this directory layout.
+Bootstrap pathnames and packagenames for PGBuild, can function as an entry
+point identically to 'build' for operating systems that don't support "#!" lines
 """
 # 
 # PicoGUI Build System
@@ -47,11 +45,14 @@ class Bootstrap:
         self.packages['build'] = "build-dev"
         self.packages['conf']  = "conf-dev"
 
-if __name__ == '__main__':
+def main(extraArgs=[]):
     # Use the Bootstrap class to locate our build package and call its Main
     boot = Bootstrap()
     sys.path.insert(0, os.path.join(boot.paths['packages'], boot.packages['build']))
     import PGBuild.Main
-    PGBuild.Main.main(boot, sys.argv)
+    PGBuild.Main.main(boot, [sys.argv[0]] + extraArgs + sys.argv[1:])
+
+if __name__ == '__main__':
+    main()
 
 ### The End ###

@@ -2,9 +2,21 @@ This is the top-level directory for PicoGUI's build system.
 The only thing specific to PicoGUI is the default list of packages, so feel
 free to use this in other projects if it's helpful.
 
-  build.py
-    A python script functioning as the build system's entry point. Try
-    ./build.py --help for information.
+  build
+    (Python script)
+    Convenient build system entry point for operating systems that support
+    "#!"-style script execution.
+
+  pgbuild.py
+    (Python script)
+    Bootstrap pathnames and packagenames for PGBuild, can function as an entry
+    point identically to 'build' for operating systems that don't support "#!" lines
+
+  pgbuild-gui.py
+    (Python script)
+    Yet another entry point, but automatically prepends --gui to all the given
+    command line options, causing a graphical interface to be opened. This is for
+    the convenience of point-and-click operating systems like Windows and MacOS.
 
   src/
     Sources for all packages, including the build system itself and its default
