@@ -23,7 +23,8 @@ EXTRA_libvideo_la_SOURCES = \
 	x11_bitmap.c \
 	x11_primitives.c \
 	mgl2fb.c \
-	sdlgl.c
+	sdlgl.c \
+	glcontext.c
 
 noinst_HEADERS = \
 	yuv.h

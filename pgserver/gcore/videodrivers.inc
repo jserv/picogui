@@ -30,6 +30,10 @@
   DRV("svgagl",&svgagl_regfunc)
 #endif   
 
+#ifdef DRIVER_GLCONTEXT
+  DRV("glcontext",&glcontext_regfunc)
+#endif   
+
 #ifdef DRIVER_EZ328
   DRV("ez328",&ez328_regfunc)
 #endif

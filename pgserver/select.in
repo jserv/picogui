@@ -104,6 +104,7 @@ add_if_true ez328.c              $DRIVER_EZ328
 add_if_true ez328vga.c           $DRIVER_EZ328VGA
 add_if_true sdlfb.c              $DRIVER_SDLFB
 add_if_true sdlgl.c              $DRIVER_SDLGL
+add_if_true glcontext.c          $DRIVER_GLCONTEXT
 add_if_true svgafb.c             $DRIVER_SVGAFB
 add_if_true ncurses.c            $DRIVER_NCURSES
 add_if_true null.c               $DRIVER_NULL
