@@ -1,4 +1,4 @@
-/* $Id: themec.h,v 1.12 2002/01/05 16:51:46 micahjd Exp $
+/* $Id: themec.h,v 1.13 2002/02/02 19:14:41 lonetech Exp $
  *
  * themec.h - definitions used internally in the theme compiler
  *
@@ -31,6 +31,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <picogui/types.h>
 #include <picogui/constants.h>
 #include <picogui/theme.h>
 #include <picogui/network.h>

@@ -1,4 +1,4 @@
-/* $Id: thdump.h,v 1.3 2000/10/10 00:49:05 micahjd Exp $
+/* $Id: thdump.h,v 1.4 2002/02/02 19:14:41 lonetech Exp $
  *
  * thdump.h - definitions for the theme dump program
  *
@@ -31,6 +31,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <picogui/types.h>
 #include <picogui/constants.h>
 #include <picogui/theme.h>
 #include <picogui/network.h>

@@ -1,4 +1,4 @@
-/* $Id: theme.h,v 1.30 2002/01/28 09:54:19 micahjd Exp $
+/* $Id: theme.h,v 1.31 2002/02/02 19:14:41 lonetech Exp $
  * 
  * theme.h - Defines the theme file format, used by the server and by
  *           programs that read and write theme files
@@ -39,32 +39,32 @@
 struct pgtheme_header {
   char magic[4];              /* = "PGth" */ 
 
-  unsigned long  file_len;    /* Expected file length */
-  unsigned long  file_sum32;  /* 32-bit checksum */
+  u32 file_len;    /* Expected file length */
+  u32 file_sum32;  /* 32-bit checksum */
 
-  unsigned short file_ver;    /* Format version */
+  u16 file_ver;    /* Format version */
 
-  unsigned short num_tags;    /* Number of (optional) tags defined */
-  unsigned short num_thobj;   /* Number of theme objects defined */
-  unsigned short num_totprop; /* Total number of properties defined */
+  u16 num_tags;    /* Number of (optional) tags defined */
+  u16 num_thobj;   /* Number of theme objects defined */
+  u16 num_totprop; /* Total number of properties defined */
 };
 
 /* Next, there is an array of num_thobj theme objects, sorted in
    ascending order by their id... (8 bytes) */
 struct pgtheme_thobj {
-  unsigned short id;         /* A PGTH_O_* constant */
-  unsigned short num_prop;   /* Number of properties in this theme object */
-  unsigned long  proplist;   /* File offset of the object's property list */
+  u16 id;         /* A PGTH_O_* constant */
+  u16 num_prop;   /* Number of properties in this theme object */
+  u32 proplist;   /* File offset of the object's property list */
 };
 
 /* The proplist pointed to by the theme objects is an array of these
    property structures (8 bytes) */
 struct pgtheme_prop {
-  unsigned short id;         /* a PGTH_P_* constant */
-  unsigned short loader;     /* a PGTH_LOAD_* constant, specifying any
+  u16 id;         /* a PGTH_P_* constant */
+  u16 loader;     /* a PGTH_LOAD_* constant, specifying any
 				necessary load-time preprocessing for
 				the data */
-  unsigned long  data;       /* The actual data content of the property */
+  u32 data;       /* The actual data content of the property */
 };
 
 /* Only the information above this point is actually stored in th
@@ -78,8 +78,8 @@ struct pgtheme_prop {
  * web site, e-mail address, or other information.
  */
 struct pgtheme_tags {
-  unsigned short id;         /* a PGTH_TAG_* constant */
-  unsigned short len;        /* Length of following data */
+  u16 id;         /* a PGTH_TAG_* constant */
+  u16 len;        /* Length of following data */
   /* followed by 'len' bytes of data */
 };
 
