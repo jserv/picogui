@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.18 2002/10/14 15:23:25 micahjd Exp $
+/* $Id: font_freetype.c,v 1.19 2002/10/14 15:50:07 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -187,6 +187,11 @@ void freetype_engine_shutdown(void) {
     g_free(condemn->fs.name);
     g_free(condemn);
   }
+
+  if (ft_default_fs.name)
+    g_free(ft_default_fs.name);
+  if (ft_default_fixed_fs.name)
+    g_free(ft_default_fixed_fs.name);
 
   FTC_Manager_Done(ft_cache_manager);
   FT_Done_FreeType(ft_lib);
@@ -835,6 +840,7 @@ void ft_style_scan(struct font_style *fs, const char *str) {
   if (p!=str) {
     if (iserror(g_malloc((void**) &fs->name, p-str+1)))
       return;
+    ((char*)fs->name)[p-str] = 0;
     strncpy((char*) fs->name, str, p-str);
   }
   str = p+1;
