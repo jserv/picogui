@@ -27,6 +27,8 @@
 #include <time.h>
 #include <string.h>
 
+#include <netinet/in.h>		/* htonl */
+
 #include <picogui.h>
 #include "transform.h"
 
@@ -237,6 +239,7 @@ int evtPenUp(struct pgEvent *evt) {
     pgBind(PGBIND_ANY,PG_NWE_PNTR_UP,NULL,NULL);
     showTransformations();
   }
+  return 0;
 }
 
 int evtPenPos(struct pgEvent *evt) {
@@ -245,18 +248,19 @@ int evtPenPos(struct pgEvent *evt) {
 
   if(evt->e.data.size!=9)
    {
-    fprintf(stderr, "Penpos packet size %d, expected 9\n", evt->e.data.size);
+    fprintf(stderr, "Penpos packet size %ld, expected 9\n", evt->e.data.size);
     pgDriverMessage(PGDM_INPUT_CALEN, 0);
     exit(1);
    }
   penposition.x=htonl(data->x);
   penposition.y=htonl(data->y);
   rotation=((unsigned char*)evt->e.data.pointer)[8];
+  return 0;
 }
 
 int evtPenDown(struct pgEvent *evt) {
   POINT hit;
-  int distance, target;
+  int target;
 
   DBG((__FUNCTION__ " (x=%d,y=%d)\n",penposition.x,penposition.y));
 
