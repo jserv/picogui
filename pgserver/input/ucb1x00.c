@@ -27,15 +27,18 @@ static const char *PG_TS_ENV_NAME = "PG_TS_CALIBRATION";
 /* file descriptor for touch panel */
 static int fd = -1;
 static int pen_down=0;
-static int input_recieved=0;
-static int set_poll=0;
+static int inits_since_data=0;
+
 /* show the cursor on any touchscreen activity */
 static int showcursor;
-static int res_x, res_y, max_x, max_y, min_x, min_y, flip_x, flip_y, tolerance;
+/* Calibration variables read from config file */
+static int res_x, res_y, max_x, max_y, min_x, min_y, flip_x, flip_y;
 
+/* last place the cursor was and lat time it was there */
 static int last_x;
 static int last_y;
 static struct timeval last_time;
+/* counts the number of samples taken (for averaging) */
 static int sample_counter = 0;
 
 g_error ucb1x00_init(void)
@@ -65,16 +68,12 @@ g_error ucb1x00_init(void)
   min_y = get_param_int("input-ucb1x00","min_y",50);
   flip_x = get_param_int("input-ucb1x00","flip_x",1);
   flip_y = get_param_int("input-ucb1x00","flip_y",1);
-  tolerance = get_param_int("input-ucb1x00","tolerance",100);
   
   return sucess;
 }
 
 void ucb1x00_close(void)
 {
-  /* turn on the backlight on exit */
-//  ioctl(fd,64,1);		/* turn on the backlight */
-
   /* Close the touch panel device. */
 #ifdef DEBUG_EVENT
   printf("ucb1x00_close called\n");
@@ -82,18 +81,6 @@ void ucb1x00_close(void)
   if (fd >= 0)
     close(fd);
   fd = -1;
-}
-
-void ucb1x00_poll(void) {
-	if ( pen_down && set_poll && input_recieved ) {
-		dispatch_pointing(TRIGGER_UP,last_x,last_y,0);
-#ifdef DEBUG_EVENT
-		printf("Pen Up\n");
-#endif
-		pen_down = 0;
-		input_recieved = 0;
-		sample_counter = 0;
-	}
 }
 
 int ucb1x00_fd_activate(int active_fd) {
@@ -116,14 +103,13 @@ int ucb1x00_fd_activate(int active_fd) {
   /* read a data point */
   bytes_read = read(fd, (char *)&ts_data, sizeof(ts_data));
 
-  input_recieved = 1;
-  set_poll=0;
-
   /* No data yet */
   if (bytes_read = 0) {
-	  input_recieved = 0;
+	  printf("NO BYTES READ!!!!!!!!!!!!\n");
 	  return 0;
   }
+ 
+  inits_since_data=0;
   
   /* cook the coordinates (perform calibration) */
   cooked_x = (flip_x) ? ((max_x - ts_data.x) * res_x) / (max_x - min_x) :
@@ -131,7 +117,7 @@ int ucb1x00_fd_activate(int active_fd) {
   cooked_y = (flip_y) ? ((max_y - ts_data.y) * res_y) / (max_y - min_y) :
                 ((ts_data.y - min_y) * res_y) / (max_y - min_y);
   
-  if(ts_data.p >= tolerance) {
+  if(ts_data.p) {
 	 
     /* Show the cursor if 'showcursor' is on */
     if (showcursor)
@@ -149,8 +135,10 @@ int ucb1x00_fd_activate(int active_fd) {
       printf("Pen Move\n");
 #endif
     } else if(sample_counter == SAMPLE_SET_SZ) {
+      last_x=sum_x/SAMPLE_SET_SZ;
+      last_y=sum_y/SAMPLE_SET_SZ;
       last_time=ts_data.time;
-      dispatch_pointing(TRIGGER_DOWN,sum_x/SAMPLE_SET_SZ,sum_y/SAMPLE_SET_SZ,1);
+      dispatch_pointing(TRIGGER_DOWN,last_x,last_y,1);
       pen_down = 1;
       sample_counter = 0;
       sum_x=0;
@@ -167,7 +155,7 @@ int ucb1x00_fd_activate(int active_fd) {
   }
 
 #ifdef DEBUG_EVENT
-  printf("(%d,%d:%d) (%d, %d)\n", ts_data.x, ts_data.y, ts_data.p, cooked_x, cooked_y);
+  printf("(%d,%d:%d:%d) (%d, %d)\n", ts_data.x, ts_data.y, ts_data.p, cooked_x, cooked_y);
 #endif	
 
   return 1;
@@ -176,7 +164,6 @@ int ucb1x00_fd_activate(int active_fd) {
 
 /* Polling time for the input driver */
 void ucb1x00_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
-
   if(fd<0) return;
 
   if ((*n)<(fd+1))
@@ -185,44 +172,24 @@ void ucb1x00_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
   if (fd>0)
     FD_SET(fd, readfds);
 
-  set_poll=1;
-}
-
-void ucb1x00_message(u32 message, u32 param, u32 *ret) {
-  switch (message) {
-
-    /* Tuxscreen ioctls:
-     *
-     * ioctl 64 -> backlight power
-     * ioctl 65 -> 0x00-0xFF set brightness
-     * ioctl 66 -> get brightness
-     * ioctl 67 -> 0x00-0xFF set contrast
-     * ioctl 68 -> get contrast
-     */
-
-    /* Control backlight through the power control driver message */
-  case PGDM_POWER:
-//    ioctl(fd,64,param > PG_POWER_VIDBLANK);
-    break;
-  case PGDM_BRIGHTNESS:
-//    ioctl(fd,65,param);
-    break;
-  case PGDM_CONTRAST:
-//    ioctl(fd,67,param);
-    break;
-
+  /* a little unorthodox to do this here, but... simpler? */
+  if(inits_since_data++ > 2 && pen_down) {
+#ifdef DEBUG_EVENT
+	  printf("Pen Up\n");
+#endif
+	  dispatch_pointing(TRIGGER_UP,last_x,last_y,0);
+	  pen_down = 0;
   }
+  
 }
- 
+
 /******************************************** Driver registration */
  
 g_error ucb1x00_regfunc(struct inlib *i) {
   i->init = &ucb1x00_init;
   i->close = &ucb1x00_close;
-  i->poll = &ucb1x00_poll;
   i->fd_activate = &ucb1x00_fd_activate;
   i->fd_init = &ucb1x00_fd_init;
-  i->message = &ucb1x00_message;
   return sucess;
 }
 
