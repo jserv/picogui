@@ -1,10 +1,12 @@
-/* $Id: flux_capacitor.ths,v 1.2 2002/10/25 20:03:02 micahjd Exp $
+/* $Id: flux_capacitor.ths,v 1.3 2002/10/25 20:14:18 micahjd Exp $
  *
  * Flux Capacitor - This is a nice small theme inspired by Fluxbox,
  *                  with ideas taken from the Cthulhain and Chaos themes.
  *
  * The innards of this theme are also fairly nifty, using a lot of fillstyle
  * calling, clipping, and widget tricks.
+ *
+ * WARNING: This theme is still incomplete!
  *
  * Micah Dowty
  */
@@ -22,7 +24,7 @@ property bevelBottomLeft, bevelBottomRight;
 property frameColor;
 
 object default {
-  name = "Flux Capacitor";
+  name = "Flux Capacitor (incomplete)";
 
   bgfill = Copy(default::fBeveled);
 
