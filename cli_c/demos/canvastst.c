@@ -47,7 +47,7 @@ int drawStuff(short event, pghandle from, long param) {
    pgSubUpdate(from);
 
    /* Start the animation timer */
-   pgSetIdle(10,&animate);
+   pgSetIdle(1,&animate);
    
    return 0;
 }

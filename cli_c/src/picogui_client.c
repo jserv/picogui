@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.44 2001/01/24 04:07:34 micahjd Exp $
+/* $Id: picogui_client.c,v 1.45 2001/01/28 03:07:27 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -28,6 +28,7 @@
 /******************* Definitions and includes */
 
 /* System includes */
+#include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <sys/time.h>  /* for time_t type (used in timeval structure) */
 #include <sys/types.h>
@@ -533,7 +534,8 @@ void pgInit(int argc, char **argv)
   const char *hostname;
   int fd,i,j,args_to_shift;
   char *arg;
-
+  volatile int tmp;
+   
   /* Get the app's name */
   _pg_appname = argv[0];
 
@@ -561,7 +563,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: picogui_client.c,v 1.44 2001/01/24 04:07:34 micahjd Exp $\n");
+	fprintf(stderr,"$Id: picogui_client.c,v 1.45 2001/01/28 03:07:27 micahjd Exp $\n");
 	exit(1);
       }
       
@@ -590,6 +592,10 @@ void pgInit(int argc, char **argv)
     return;
   }
 
+  /* Try disabling the "Nagle algorithm" or "tinygram prevention" */
+  tmp = 1;
+  setsockopt(fd,6 /*PROTO_TCP*/,TCP_NODELAY,(void *)&tmp,sizeof(tmp));
+   
   server_addr.sin_family = AF_INET;                 /* host byte order */
   server_addr.sin_port = htons(PG_REQUEST_PORT);    /* short, network byte order */
   server_addr.sin_addr = *((struct in_addr *)he->h_addr);
