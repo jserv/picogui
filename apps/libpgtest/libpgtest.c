@@ -29,9 +29,8 @@ void scene(void) {
   static float light1_ambient[] = {0.2,0.2,0.2,0};
   static float light1_position[] = {-10,5,-5,0};
 
-  glPushMatrix();
+  /* pgserver sets up its own camera matrix at the beginning of its frame */
   glLoadIdentity();
-
   glClearColor(0,0,0,0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -95,9 +94,11 @@ void scene(void) {
 
   glEnd();
 
+  /* pgserver normally runs with depth test and lighting off.
+   * It will set blending and texturing as needed.
+   */
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_LIGHTING);
-  glPopMatrix();
 }
 
  
@@ -112,6 +113,14 @@ g_error protected_main(int argc, char **argv) {
   FILE *f;
   handle wt, wt_instance;
 
+  /* Here we're adding our own config parameters to pgserver's
+   * configuration database. (Below we tell it to init without
+   * loading /etc/pgserver.conf and ~/.pgserverrc)
+   * Since the config database isn't pgserver-specific, it could
+   * be used for general configuration of the host app.
+   * See pgserver/configfile.h for the interface.
+   */
+   
   /* Force the sdlgl video driver */
   e = set_param_str("pgserver", "video", "sdlgl");
   errorcheck;
@@ -140,6 +149,13 @@ g_error protected_main(int argc, char **argv) {
   e = pgserver_init(PGINIT_NO_CONFIGFILE,argc,argv);
   errorcheck;
 
+  /* Now we'll do a small test of pgserver, loading and displaying a widget
+   * template. Note that normally this shouldn't need to call request_exec
+   * directly- either a different process or thread should connect to the
+   * pgserver, or support for request_exec should be added to cli_c so we
+   * can use normal API functions instead of packing everything ourselves.
+   */
+   
   /* Read in a compiled widget template */
   f = fopen("test.wt","rb");
   fseek(f,0,SEEK_END);
@@ -185,8 +201,11 @@ g_error protected_main(int argc, char **argv) {
   if (r.out.free_response_data)
     g_free(r.out.response_data);
 
-  /* This whole main loop is a hack.. will be cleaned up when 
-   * pgserver's main loop code is refactored 
+  /* This is a hack.. pgserver's standard main loop uses this runflag to
+   * terminate cleanly when it gets an interrupt, it's closed by the window
+   * manager, etc.
+   * This whole main loop should be cleaned up when pgserver's main loop
+   * is reorganized.
    */
   mainloop_runflag = 1;
   while (mainloop_runflag) {
@@ -205,13 +224,21 @@ g_error protected_main(int argc, char **argv) {
   }
 
   /* Shut down all subsystems and perform memory leak detection */
-  return pgserver_shutdown();
+  e = pgserver_shutdown();
+  errorcheck;
+
+  return success;
 }
 
 
 /* Exception handling wrapper for main */
 int main(int argc, char **argv) {
   g_error e;
+   
+  /* pgserver has an exception handling mechanism based on the g_error
+   * data type and the 'errorcheck' macro. See pgserver/g_error.h
+   * for info on this system.
+   */
   e = protected_main(argc,argv);
   if (iserror(e)) {
     os_show_error(e);
