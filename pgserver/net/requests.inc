@@ -44,6 +44,7 @@ RQH(drivermsg)
 RQH(loaddriver)
 RQH(getfstyle)
 RQH(findwidget)
+RQH(checkevent)
 RQH(undef)        /* undef must be last */
 
 /* The End */

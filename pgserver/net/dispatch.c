@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.56 2001/08/30 04:46:23 micahjd Exp $
+/* $Id: dispatch.c,v 1.57 2001/09/06 23:42:10 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -1022,6 +1022,12 @@ g_error rqh_findwidget(int owner, struct pgrequest *req,
   rqh_findwidget_len = req->size;
   handle_iterate(PG_TYPE_WIDGET,&rqh_findwidget_iterate);
   *ret = rqh_findwidget_result;
+  return sucess;
+}
+
+g_error rqh_checkevent(int owner, struct pgrequest *req,
+		       void *data, unsigned long *ret, int *fatal) {
+  *ret = check_event(owner);
   return sucess;
 }
 

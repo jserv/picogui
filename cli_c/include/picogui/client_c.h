@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.64 2001/09/03 05:31:42 micahjd Exp $
+/* $Id: client_c.h,v 1.65 2001/09/06 23:42:09 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -1203,6 +1203,27 @@ void pgExitEventLoop(void);
  * \sa pgEventLoop, pgBind, pgSetIdle, pgSetPayload, pgGetPayload
  */
 struct pgEvent *pgGetEvent(void);
+
+/*!
+ * \ brief Check the number of pending events
+ * 
+ * \returns The number of events in the application's queue
+ * 
+ * The PicoGUI server keeps a ring buffer of waiting events for each
+ * client connected to it. This function returns the number of events waiting
+ * in this buffer. Note that this buffer is usually relatively small.
+ * At the time of this writing, it is set to hold 16 events. If the buffer
+ * is full, old events will be discarded.
+ * 
+ * You can use this function if, for some reason, you need to poll PicoGUI
+ * events instead of waiting for them. In the middle of a long operation,
+ * for example, you may wish to periodically check if the user clicks a cancel
+ * button. If this function indicates that there are events waiting,
+ * pgGetEvent will return immediately with the oldest queued event.
+ * 
+ * \sa pgGetEvent, pgEventLoop
+ */
+int pgCheckEvent(void);
 
 /*!
  * \brief Enter a new context

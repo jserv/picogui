@@ -1,4 +1,4 @@
-/* $Id: eventq.c,v 1.11 2001/09/04 01:43:52 micahjd Exp $
+/* $Id: eventq.c,v 1.12 2001/09/06 23:42:10 micahjd Exp $
  *
  * eventq.c - This implements the post_event function that the widgets
  *            use to send events to the client.  It stores these in a
@@ -121,6 +121,26 @@ struct event *get_event(int owner,int remove) {
     return get_event(owner,remove);
 
   return q;
+}
+
+/* Returns the number of pending events for a particular connection */
+int check_event(int owner) {
+  struct conbuf *cb;
+
+  /* Find the connection buffer */
+  cb = find_conbuf(owner);
+  if (!cb) return NULL;   /* Sanity check */
+
+  /* The queue is empty? */
+  if (cb->in == cb->out) 
+    return 0;
+
+  /* Has cb->in wrapped around but cb->out has not? */
+  if (cb->in < cb->out)
+    return EVENTQ_LEN + (cb->in - cb->out); 
+
+  /* Nope */
+  return cb->in - cb->out; 
 }
 
 /* The End */

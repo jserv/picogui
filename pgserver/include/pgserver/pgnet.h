@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.12 2001/02/17 05:18:40 micahjd Exp $
+/* $Id: pgnet.h,v 1.13 2001/09/06 23:42:10 micahjd Exp $
  *
  * pgnet.h - definitions and stuff for the picogui server
  *           networking code. Most of the interesting code
@@ -157,6 +157,9 @@ struct conbuf *find_conbuf(int fd);
    takes it out of the queue
 */
 struct event *get_event(int owner,int remove);
+
+/* Returns the number of pending events for a particular connection */
+int check_event(int owner);
 
 /* All incoming packets are passed to a reqhandler
    owner, req, and data are from the incoming packet.
