@@ -89,8 +89,10 @@ class Widget:
         attr = ''
         if properties == None:
             properties = self.properties
-        for prop in properties:
-            attr += '%s%s="%s"' % (separator, prop, self.properties[prop])
+        keys = properties.keys()
+        keys.sort()
+        for prop in keys:
+            attr += '%s%s="%s"' % (separator, prop, properties[prop])
         return attr
 
     def toXWT(self, indentLevel=0):
@@ -108,7 +110,7 @@ class Widget:
             
         # Was that too long? We can put properties on individual lines
         if len(xwt) > self.maxInlineLength:
-            separator = '\n' + getIndent(indentLevel+1)
+            separator = '\n' + self.getIndent(indentLevel+1)
             xwt = '%s<%s%s%s' % (indent, self.wtype.name,
                                  self.getAttributes(properties,separator), separator)
             

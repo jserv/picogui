@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import PicoGUI
-import Components, CommandLine, Toolbox, WTWidget
+import Components, CommandLine, Toolbox, WTWidget, XWT
 
 
 class Main:
@@ -30,6 +30,20 @@ class Main:
                 'extdevents' : 'toggle',
                 'component'  : CommandLine.CommandLine,
                 'attr'       : 'commandLine'
+                }),
+            ('XWT View',       Components.toggleComponent, {
+                'extdevents' : 'toggle',
+                'component'  : XWT.XWTView,
+                'attr'       : 'xwtView'
+                }),
+            ('Export WT',      XWT.ExportWT, {
+                'side'       : 'right',
+                }),
+            ('Save XWT',       XWT.Save, {
+                'side'       : 'right',
+                }),
+            ('Load XWT',       XWT.Load, {
+                'side'       : 'right',
                 }),
             ])
 
