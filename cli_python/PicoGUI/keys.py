@@ -243,7 +243,7 @@ keys = {
     'max':		322,
 }
 
-names = []
+names = {}
 for name, code in keys.items():
     names[code] = name
 del name, code
