@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.22 2002/11/04 11:03:01 micahjd Exp $
+/* $Id: main.c,v 1.23 2002/11/04 12:45:01 micahjd Exp $
  *
  * main.c - PicoGUI Terminal (the 'p' is silent :)
  *          This handles the PicoGUI init and events
@@ -215,9 +215,6 @@ int main(int argc, char **argv) {
   /* Make a terminal 
    */
   wTerminal = pgNewWidget(PG_WIDGET_TERMINAL,PG_DERIVE_INSIDE,wPanel);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_SIDE,PG_S_TOP,
-	      0);
   if (fontsize) {
      pgSetWidget(PGDEFAULT,PG_WP_FONT,
 		 pgNewFont(NULL,fontsize,PG_FSTYLE_FIXED),0);
