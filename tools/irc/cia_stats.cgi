@@ -110,7 +110,7 @@ print """
 <div><span class="section">Most recent commits</span></div>
 <div class="section">
   <div class="sectionTop"></div>
-  <div class="row">
+  <div class="commitBox">
     <ul>
 """
 for command in readLatestCommands():
