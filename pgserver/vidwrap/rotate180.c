@@ -1,4 +1,4 @@
-/* $Id: rotate180.c,v 1.18 2002/10/10 08:19:26 micahjd Exp $
+/* $Id: rotate180.c,v 1.19 2002/10/13 13:04:11 micahjd Exp $
  *
  * rotate180.c - Video wrapper to rotate the screen 180 degrees
  *
@@ -167,6 +167,8 @@ void rotate180_multiblit(hwrbitmap dest,s16 dest_x,s16 dest_y,
 		     src_w - ((xo + dest_w) % src_w), src_h - ((yo + dest_h) % src_h),
 		     lgop);
 }
+
+#ifdef CONFIG_FONTENGINE_BDF
 void rotate180_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
 		       s16 w,s16 h,s16 lines,s16 angle,hwrcolor c,
 		       struct quad *clip,s16 lgop) {
@@ -181,6 +183,23 @@ void rotate180_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
    (*vid->charblit)(dest,chardat,dx-1-dest_x,dy-1-dest_y,w,h,
 		    lines,angle,c,rotate180_rotateclip(clip),lgop);
 }
+#endif
+#ifdef CONFIG_FONTENGINE_FREETYPE
+void rotate180_alpha_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
+			      s16 w,s16 h,int char_pitch,s16 angle,hwrcolor c,
+			      struct quad *clip,s16 lgop) {
+   s16 dx,dy;
+   (*vid->bitmap_getsize)(dest,&dx,&dy);
+   
+   /* Rotate the text */
+   angle += 180;
+   angle %= 360;
+   if (angle<0) angle += 360;
+   
+   (*vid->alpha_charblit)(dest,chardat,dx-1-dest_x,dy-1-dest_y,w,h,
+			  char_pitch,angle,c,rotate180_rotateclip(clip),lgop);
+}
+#endif
 
 /******* Bitmap rotation */
 
@@ -239,7 +258,12 @@ void vidwrap_rotate180(struct vidlib *vid) {
    vid->rotateblit = &rotate180_rotateblit;
    vid->scrollblit = &rotate180_scrollblit;
    vid->multiblit = &rotate180_multiblit;
+#ifdef CONFIG_FONTENGINE_BDF
    vid->charblit = &rotate180_charblit;
+#endif
+#ifdef CONFIG_FONTENGINE_FREETYPE
+   vid->alpha_charblit = &rotate180_alpha_charblit;
+#endif
    vid->coord_logicalize = &rotate180_coord_logicalize;
    vid->coord_physicalize = &rotate180_coord_logicalize;
 #ifdef CONFIG_FORMAT_XBM

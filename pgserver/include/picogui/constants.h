@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.162 2002/10/12 14:46:34 micahjd Exp $
+/* $Id: constants.h,v 1.163 2002/10/13 13:04:11 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -167,10 +167,16 @@
 #define PG_FSTYLE_DOUBLEWIDTH  (1<<15)   //!< Add extra space between characters
 #define PG_FSTYLE_ITALIC2      (1<<16)   //!< Twice the slant of the default italic
 #define PG_FSTYLE_ENCODING_UNICODE    (1<<17) //!< Unicode encoding
+#define PG_FSTYLE_CONDENSED    (1<<18)   //!< Condensed width
 
 #define PG_FSTYLE_ENCODING_MASK       (PG_FSTYLE_ENCODING_ISOLATIN1|\
                                        PG_FSTYLE_ENCODING_IBM|\
                                        PG_FSTYLE_ENCODING_UNICODE)
+
+/* Styles that are part of the font, rather than how it's rendered */
+#define PG_FSTYLE_STYLE_MASK          (PG_FSTYLE_BOLD|\
+                                       PG_FSTYLE_ITALIC|\
+                                       PG_FSTYLE_CONDENSED)
 
 //! \}
 
