@@ -4,10 +4,10 @@
 Summary: PicoGUI server
 Name: @PACKAGE@
 Version: @VERSION@
-Release: sd.1
+Release: sd.4
 Copyright: GPL
 Group: PicoGUI/Server
-Packager: Frédéric Gobry <frederic.gobry@smartdata.ch>
+Packager: Olivier Bornet <Olivier.Bornet@smartdata.ch>
 Source: @PACKAGE@-@VERSION@.tar.gz
 Vendor: SMARTDATA
 
@@ -24,7 +24,7 @@ Requires: @PACKAGE@-mdl = @VERSION@
 %package mdl
 Summary: bee module
 Group: PicoGUI/Server
-Requires: bee >= 0.13
+Requires: bee >= 1.0.4
 
 %description @RPM_PLATFORM@
 The PicoGUI server application, which provides the display engine for PicoGUI clients.
