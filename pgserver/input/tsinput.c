@@ -1,4 +1,4 @@
-/* $Id: tsinput.c,v 1.10 2001/05/25 10:23:02 pney Exp $
+/* $Id: tsinput.c,v 1.11 2001/05/29 10:35:50 pney Exp $
  *
  * tsinput.c - input driver for touch screen
  *
@@ -42,8 +42,14 @@
 
 
 #define POLL_USEC                100
-//#define BACKLIGHT_IDLE_MAX_SEC    50
+
+/*
+ * timeout for pointing display, backlight (not yet implemented)
+ * and sleep mode
+ */
+#define POINTING_IDLE_MAX_SEC      2
 #define SLEEP_IDLE_MAX_SEC       100
+//#define BACKLIGHT_IDLE_MAX_SEC    50
 
 static const char *DEVICE_FILE_NAME = "/dev/ts";
 static const char *_file_ = __FILE__; 
@@ -52,39 +58,26 @@ static const char *PG_TS_ENV_NAME = "PG_TS_CALIBRATION";
 static int fd=0;
 static int bytes_transfered=0;
 static int iIsPenUp = 1;
+static int iIsPointingDisplayed = 1;
 
 static struct timeval lastEvent;
-static struct timeval lastIdle;
 
 
 /******************************************** Implementations */
 
 int tsinput_sleep(void) {
-//  pid_t  pid;
+#ifdef DEBUG_EVENT
+  printf("-- going to sleep mode\n");
+#endif
 
-printf("Going to sleep mode\n");
-//  switch(pid = vfork()) {
-//  case -1:                      /* error */
-//    printf("vfork failed\n");
-//    exit(1);
-//    break;
-//  case 0:                       /* child */
-//    execlp("/opt/raw_sleep","raw_sleep","-b",(char *)0);
-//    printf("execlp failed\n");
-//    exit(1);
-//    break;
-//  default:                      /* parent */
-//    wait((int *)0);
-//    printf("ok, child finished. Now going on...\n");
-
+  /* call bios sleep function throught Ressources Manager */
   rm_sleep(RM_WAKE_ON_BUTTON);
 
-    /*
-     * the hit to wake up the ChipSlice isn't catch by the tsinput driver.
-     * It's then necessary to re-initiate the time of the last event.
-     */
-    gettimeofday(&lastEvent,NULL);
-//  }
+  /*
+   * the hit to wake up the ChipSlice isn't catch by the tsinput driver.
+   * It's then necessary to re-initiate the time of the last event.
+   */
+  gettimeofday(&lastEvent,NULL);
 }
 
 void tsinput_poll(void) {
@@ -101,16 +94,26 @@ void tsinput_poll(void) {
       dispatch_pointing(TRIGGER_UP,pen_info.x,pen_info.y,0);
       gettimeofday(&lastEvent,NULL);
       iIsPenUp = 1;
+      iIsPointingDisplayed = 1;
       break;
       
     case EV_PEN_DOWN:
       dispatch_pointing(TRIGGER_DOWN,pen_info.x,pen_info.y,1);
       gettimeofday(&lastEvent,NULL);
       iIsPenUp = 0;
+      iIsPointingDisplayed = 1;
       break;
       
     case EV_PEN_MOVE:
-      dispatch_pointing(TRIGGER_MOVE,pen_info.x,pen_info.y,1);
+      /*
+       * don't display pointing device when move for speed reason 
+       * this may certainly change in the future
+       */
+//      dispatch_pointing(TRIGGER_MOVE,pen_info.x,pen_info.y,1);
+      if(iIsPointingDisplayed) {
+	VID(sprite_hide) (cursor);
+	iIsPointingDisplayed = 0;
+      }
       gettimeofday(&lastEvent,NULL);
       iIsPenUp = 0;
       break;
@@ -130,12 +133,20 @@ void tsinput_poll(void) {
 
   /* If pen is up, test if there is some activity or not */
   if(iIsPenUp) {
+    struct timeval lastIdle;
     int delay_sec;
 
     gettimeofday(&lastIdle,NULL);
     delay_sec = lastIdle.tv_sec - lastEvent.tv_sec;
 
-    /* Management for backlight will take place here too */
+    /* Management for pointing display, sleep mode and backlight */
+    if((delay_sec > POINTING_IDLE_MAX_SEC) && iIsPointingDisplayed) {
+      VID(sprite_hide) (cursor);
+      iIsPointingDisplayed = 0;
+#ifdef DEBUG_EVENT
+      printf("-- hide pointing\n");
+#endif
+    }
     if(delay_sec > SLEEP_IDLE_MAX_SEC)
       tsinput_sleep();
   }
@@ -172,7 +183,7 @@ g_error tsinput_init(void) {
     ts_params.sample_ms      = 10;
     ts_params.follow_thrs    = 2;
     ts_params.mv_thrs        = 5;
-    ts_params.xy_swap        = 1;
+    ts_params.xy_swap        = 0;
 
 #ifdef CONFIG_XCOPILOT
     ts_params.y_max          = 159 + 66;  /* to allow scribble area */
@@ -268,7 +279,7 @@ g_error tsinput_init(void) {
 
 
 void tsinput_close(void) {
-#ifdef DEBUG_EVENT
+#ifdef DEBUG_INIT
   printf("%s: Closing device %s\n",_file_, DEVICE_FILE_NAME);
 #endif
 
