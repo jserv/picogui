@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.12 2001/11/23 11:00:15 micahjd Exp $
+/* $Id: x11.c,v 1.13 2001/11/23 11:32:09 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -70,6 +70,12 @@ void (*x11_expose)(int x, int y, int w, int h);
 /* Saved config options */
 int x11_autowarp;
 int x11_sound;
+
+/* Stipple bitmap */
+#define stipple_width 8
+#define stipple_height 8
+static unsigned char stipple_bits[] = {
+   0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa};
 
 /******************************************** Implementations */
 
@@ -409,8 +415,8 @@ void x11_message(u32 message, u32 param, u32 *ret) {
   }
 }
 
-/* Connect to the default X server */
 g_error x11_init(void) {
+  /* Connect to the default X server */
   xdisplay = XOpenDisplay(NULL);
   if (!xdisplay)
     return mkerror(PG_ERRT_IO,46);   /* Error initializing video */
@@ -456,34 +462,6 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
   x11_display.w = xres;
   x11_display.h = yres;
 
-  /* Set up graphics contexts for each LGOP that X can support directly 
-   */
-  x11_gctab[PG_LGOP_NONE]       = XCreateGC(xdisplay,x11_display.d,0,NULL);
-  x11_gctab[PG_LGOP_OR]         = XCreateGC(xdisplay,x11_display.d,0,NULL);
-  x11_gctab[PG_LGOP_AND]        = XCreateGC(xdisplay,x11_display.d,0,NULL);
-  x11_gctab[PG_LGOP_XOR]        = XCreateGC(xdisplay,x11_display.d,0,NULL);
-  x11_gctab[PG_LGOP_INVERT]     = XCreateGC(xdisplay,x11_display.d,0,NULL);
-  x11_gctab[PG_LGOP_INVERT_OR]  = XCreateGC(xdisplay,x11_display.d,0,NULL);
-  x11_gctab[PG_LGOP_INVERT_AND] = XCreateGC(xdisplay,x11_display.d,0,NULL);
-  x11_gctab[PG_LGOP_INVERT_XOR] = XCreateGC(xdisplay,x11_display.d,0,NULL);
-  x11_gctab[PG_LGOP_STIPPLE]    = XCreateGC(xdisplay,x11_display.d,0,NULL);
-
-  XSetFunction(xdisplay,x11_gctab[PG_LGOP_OR],        GXor);
-  XSetFunction(xdisplay,x11_gctab[PG_LGOP_AND],       GXand);
-  XSetFunction(xdisplay,x11_gctab[PG_LGOP_XOR],       GXxor);
-  XSetFunction(xdisplay,x11_gctab[PG_LGOP_INVERT],    GXcopyInverted);
-  XSetFunction(xdisplay,x11_gctab[PG_LGOP_INVERT_OR], GXorInverted);
-  XSetFunction(xdisplay,x11_gctab[PG_LGOP_INVERT_AND],GXandInverted);
-  XSetFunction(xdisplay,x11_gctab[PG_LGOP_INVERT_XOR],GXequiv);
-
-  /* FIXME: Stipple LGOP not working in X?
-   *
-  XSetLineAttributes(xdisplay,x11_gctab[PG_LGOP_STIPPLE],
-		     1,LineOnOffDash,CapRound,JoinRound);
-  XSetFillStyle(xdisplay,x11_gctab[PG_LGOP_STIPPLE],FillStippled);
-  XSetFillRule(xdisplay,x11_gctab[PG_LGOP_STIPPLE],EvenOddRule);
-   */
-  
   /* Set up some kind of double-buffering */
   switch (get_param_int("video-x11","doublebuffer",1)) {
     
@@ -514,6 +492,39 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
    break;
   }
 
+  /* Set up our GCs for each supported LGOP */
+  /* Set up graphics contexts for each LGOP that X can support directly 
+   */
+  x11_gctab[PG_LGOP_NONE]       = XCreateGC(xdisplay,x11_display.d,0,NULL);
+  x11_gctab[PG_LGOP_OR]         = XCreateGC(xdisplay,x11_display.d,0,NULL);
+  x11_gctab[PG_LGOP_AND]        = XCreateGC(xdisplay,x11_display.d,0,NULL);
+  x11_gctab[PG_LGOP_XOR]        = XCreateGC(xdisplay,x11_display.d,0,NULL);
+  x11_gctab[PG_LGOP_INVERT]     = XCreateGC(xdisplay,x11_display.d,0,NULL);
+  x11_gctab[PG_LGOP_INVERT_OR]  = XCreateGC(xdisplay,x11_display.d,0,NULL);
+  x11_gctab[PG_LGOP_INVERT_AND] = XCreateGC(xdisplay,x11_display.d,0,NULL);
+  x11_gctab[PG_LGOP_INVERT_XOR] = XCreateGC(xdisplay,x11_display.d,0,NULL);
+  x11_gctab[PG_LGOP_STIPPLE]    = XCreateGC(xdisplay,x11_display.d,0,NULL);
+
+  XSetFunction(xdisplay,x11_gctab[PG_LGOP_OR],        GXor);
+  XSetFunction(xdisplay,x11_gctab[PG_LGOP_AND],       GXand);
+  XSetFunction(xdisplay,x11_gctab[PG_LGOP_XOR],       GXxor);
+  XSetFunction(xdisplay,x11_gctab[PG_LGOP_INVERT],    GXcopyInverted);
+  XSetFunction(xdisplay,x11_gctab[PG_LGOP_INVERT_OR], GXorInverted);
+  XSetFunction(xdisplay,x11_gctab[PG_LGOP_INVERT_AND],GXandInverted);
+  XSetFunction(xdisplay,x11_gctab[PG_LGOP_INVERT_XOR],GXequiv);
+
+  /* Set up a stipple bitmap for PG_LGOP_STIPPLE */
+  XSetLineAttributes(xdisplay,x11_gctab[PG_LGOP_STIPPLE],
+		     1,LineOnOffDash,CapRound,JoinRound);
+  XSetFillStyle(xdisplay,x11_gctab[PG_LGOP_STIPPLE],FillStippled);
+  XSetStipple(xdisplay,x11_gctab[PG_LGOP_STIPPLE],
+	      XCreateBitmapFromData(xdisplay,x11_display.d,
+				    stipple_bits,stipple_width,stipple_height));
+  
+  /* Save other settings */
+  x11_sound = get_param_int("video-x11","sound",1);
+  x11_autowarp = get_param_int("input-x11","autowarp",1);
+
   /* Blank the cursor if we don't want it */
   if (!get_param_int("input-x11","xcursor",1)) {
     XColor black, white;
@@ -543,10 +554,6 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
 	       KeyPressMask | KeyReleaseMask | ExposureMask | ButtonMotionMask |
 	       ButtonPressMask | ButtonReleaseMask | PointerMotionMask);
   XAutoRepeatOn(xdisplay);
-
-  /* Save other settings */
-  x11_sound = get_param_int("video-x11","sound",1);
-  x11_autowarp = get_param_int("input-x11","autowarp",1);
 
   XFlush(xdisplay);
   return sucess;
