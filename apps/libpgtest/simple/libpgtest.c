@@ -42,7 +42,14 @@ g_error protected_main(int argc, char **argv) {
    * See pgserver/configfile.h for the interface.
    */
    
-  /* Force the sdlgl video driver */
+  /* Force the sdlgl video driver.
+   * This driver handles OpenGL initialization, shutdown,
+   * and page flipping by itself. It will default to 640x480,
+   * but you can use standard picogui config vars to change that
+   * or to enable fullscreen mode.
+   * If you just want to render to an existing OpenGL context,
+   * you can use the "glcontext" driver here instead
+   */
   e = set_param_str("pgserver", "video", "sdlgl");
   errorcheck;
 
