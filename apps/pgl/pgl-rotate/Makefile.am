@@ -1,0 +1,7 @@
+bin_PROGRAMS = pgl-rotate 
+pgl_rotate_SOURCES = pgl-rotate.c 
+
+LDFLAGS += @PICOGUI_LDFLAGS@
+LDADD = @PICOGUI_LIBS@
+
+CFLAGS = @CFLAGS@ @PICOGUI_CFLAGS@

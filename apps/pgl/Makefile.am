@@ -1,5 +1,5 @@
 
-SUBDIRS = pgl-toolbar pgl-launcher pgl-clock pgl-keyboard
+SUBDIRS = pgl-toolbar pgl-launcher pgl-clock pgl-keyboard pgl-rotate
 
 if ENABLE_BEE
 
