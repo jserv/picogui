@@ -1,4 +1,4 @@
-/* $Id: input.c,v 1.3 2000/09/04 00:33:33 micahjd Exp $
+/* $Id: input.c,v 1.4 2000/09/04 04:21:55 micahjd Exp $
  *
  * input.c - Abstract input driver interface
  *
@@ -37,24 +37,36 @@ struct inlib *inlib_main;
    to it in ppinlib. */
 g_error load_inlib(g_error (*regfunc)(struct inlib *i),
 		   struct inlib **inl) {
-  struct inlib *newnode;
+  struct inlib *newnode,*p;
   g_error e;
+
+  if (!regfunc)
+    return mkerror(ERRT_BADPARAM,75);
+
+  /* Avoid duplicates */
+  p = inlib_list;
+  while (p) {
+    if (p->regfunc == regfunc)
+      return mkerror(ERRT_BADPARAM,76);
+    p = p->next;
+  }
 
   /* Allocate... */
   e = g_malloc((void**)&newnode,sizeof(struct inlib));
   errorcheck;
   memset(newnode,0,sizeof(struct inlib));
-  
+
   /* Register it */
   e = (*regfunc)(newnode);
   if (iserror(e)) {
     g_free(newnode);
     return e;
   }
+  newnode->regfunc = regfunc;
 
   /* Insert */
   newnode->next = inlib_list;
-  inlib_list = newnode->next;
+  inlib_list = newnode;
 
   /* Init */
   if (newnode->init)
@@ -102,6 +114,16 @@ void cleanup_inlib(void) {
       (*condemn->close)();
     g_free(condemn);
   }
+}
+
+g_error (*find_inputdriver(const char *name))(struct inlib *i) {
+  struct inputinfo *p = inputdrivers;
+  while (p->name) {
+    if (!strcmp(name,p->name))
+      return p->regfunc;
+    p++;
+  }
+  return NULL;
 }
 
 /* The End */

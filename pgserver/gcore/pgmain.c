@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.7 2000/09/04 03:10:56 micahjd Exp $
+/* $Id: pgmain.c,v 1.8 2000/09/04 04:21:55 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -65,6 +65,9 @@ int main(int argc, char **argv) {
 
     /* Default video mode: 0x0x0 (driver chooses) */
     int vidw=0,vidh=0,vidd=0,vidf=0;
+
+    /* Drivers */
+    g_error (*viddriver)(struct vidlib *v) = NULL;
     
     while (1) {
 
@@ -140,7 +143,14 @@ int main(int argc, char **argv) {
 	break;
 
       case 'v':        /* Video */
+	viddriver = find_videodriver(optarg);
+	break;
+
       case 'i':        /* Input */
+	if (iserror(prerror(
+			    load_inlib(find_inputdriver(optarg),NULL)
+			    ))) exit(1);
+	break;
 
       case '?':        /* Need help */
       case 'h':

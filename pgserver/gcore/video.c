@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.6 2000/09/04 00:15:54 micahjd Exp $
+/* $Id: video.c,v 1.7 2000/09/04 04:21:55 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -816,6 +816,16 @@ g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
   }
 
   return sucess;
+}
+
+g_error (*find_videodriver(const char *name))(struct vidlib *v) {
+  struct vidinfo *p = videodrivers;
+  while (p->name) {
+    if (!strcmp(name,p->name))
+      return p->regfunc;
+    p++;
+  }
+  return NULL;
 }
 
 /* The End */

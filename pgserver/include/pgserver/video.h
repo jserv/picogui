@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: video.h,v 1.2 2000/09/04 04:21:55 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -360,6 +360,8 @@ struct vidinfo {
   g_error (*regfunc)(struct vidlib *v);
 };
 extern struct vidinfo videodrivers[];
+
+g_error (*find_videodriver(const char *name))(struct vidlib *v);
 
 #endif /* __H_VIDEO */
 

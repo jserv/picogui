@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.3 2000/09/04 00:33:33 micahjd Exp $
+/* $Id: input.h,v 1.4 2000/09/04 04:21:55 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -77,6 +77,7 @@ struct inlib {
   void (*poll)(void);
 
   /* Do not touch (drivers) */
+  g_error (*regfunc)(struct inlib *i);  /* For avoiding duplicates */
   struct inlib *next;
 };
 
@@ -111,6 +112,8 @@ struct inputinfo {
   g_error (*regfunc)(struct inlib *i);
 };
 extern struct inputinfo inputdrivers[];
+
+g_error (*find_inputdriver(const char *name))(struct inlib *i);
 
 #endif /* __H_INPUT */
 /* The End */

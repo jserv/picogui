@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.4 2000/09/03 21:44:02 micahjd Exp $
+/* $Id: errortext.c,v 1.5 2000/09/04 04:21:55 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -117,6 +117,8 @@ static const char *errors[] = {
   /* 72 */  "This driver doesn't support changing video modes",
   /* 73 */  "Error initializing keyboard",
   /* 74 */  "Error initializing mouse",
+  /* 75 */  "Nonexistant input driver",
+  /* 76 */  "This input driver is already loaded",
 };
 
 #endif /* TINY_MESSAGES */
