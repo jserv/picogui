@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.33 2002/04/03 16:56:49 micahjd Exp $
+/* $Id: pgmain.c,v 1.34 2002/04/04 22:44:03 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -532,7 +532,7 @@ int main(int argc, char **argv) {
       reload_hotkeys();
 
     /* Load us some themes */
-    if (iserror(load_themefile_list(themefiles)))
+    if (iserror(prerror(load_themefile_list(themefiles))))
       return 1;
 
 #endif /* WINDOWS */
