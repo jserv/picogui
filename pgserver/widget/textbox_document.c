@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.22 2002/01/26 01:04:17 lonetech Exp $
+/* $Id: textbox_document.c,v 1.23 2002/01/28 06:27:45 lonetech Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -307,8 +307,9 @@ g_error text_insert_string(struct textbox_cursor *c, const char *str,
   sizetext(fd,&tw,&th," ");
   c->c_div->div->pw += tw;
   c->c_div->split = c->c_div->div->pw;
-  c->c_div->flags |= DIVNODE_NEED_REDRAW;
-  c->widget->dt->flags |= DIVTREE_NEED_REDRAW;
+  c->c_div->flags |= DIVNODE_NEED_REDRAW|DIVNODE_NEED_RECALC|
+    DIVNODE_PROPAGATE_RECALC|DIVNODE_PROPAGATE_REDRAW;
+  c->widget->dt->flags |= DIVTREE_NEED_REDRAW|DIVTREE_NEED_RECALC;
 
   return success;
 }

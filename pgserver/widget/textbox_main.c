@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.27 2002/01/26 01:04:17 lonetech Exp $
+/* $Id: textbox_main.c,v 1.28 2002/01/28 06:27:45 lonetech Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -177,7 +177,8 @@ glob textbox_get(struct widget *self,int property) {
 
 /* Move the cursor to the mouse location */
 void textbox_move_cursor(struct widget *self, union trigparam *param) {
-  DATA->c.c_div = deepest_div_under_crsr;
+  DATA->c.c_div = divnode_findparent(self->dt->head, deepest_div_under_crsr);
+  DATA->c.c_line = divnode_findbranch(self->dt->head, DATA->c.c_div);
   DATA->c.c_gx = param->mouse.x - deepest_div_under_crsr->x;
   DATA->c.c_gy = 0;
   DATA->c.c_gctx.current = NULL;
