@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.19 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: fillstyle.c,v 1.20 2002/01/24 02:40:27 lonetech Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -118,7 +118,7 @@ g_error check_fillstyle(const unsigned char *fs, unsigned long fssize)
 	  fsstkpos--;
 	  break;
 	case PGTH_OPCMD_QUESTIONCOLON:
-	  fsstkpos--;
+	  --fsstkpos;
 	  /* fall through; 3 arguments, 1 result */
 	case PGTH_OPCMD_PLUS:
 	case PGTH_OPCMD_MINUS:
@@ -132,14 +132,16 @@ g_error check_fillstyle(const unsigned char *fs, unsigned long fssize)
 	case PGTH_OPCMD_GT:
 	case PGTH_OPCMD_LOGICAL_OR:
 	case PGTH_OPCMD_LOGICAL_AND:
-	case PGTH_OPCMD_LOGICAL_NOT:
 	case PGTH_OPCMD_DIVIDE:
 	case PGTH_OPCMD_COLORADD:
 	case PGTH_OPCMD_COLORSUB:
 	case PGTH_OPCMD_COLORDIV:
 	case PGTH_OPCMD_COLORMULT:
 	  /* 2 arguments, 1 result */
-	  if(!--fsstkpos)
+	  --fsstkpos;
+	case PGTH_OPCMD_LOGICAL_NOT:
+	  /* 1 argument, 1 result */
+	  if(fsstkpos<1)
 	    return mkerror(PG_ERRT_BADPARAM,88);  /* Stack underflow */
 	  break;
 	default:
