@@ -69,17 +69,17 @@ $srvport = 30450 + $1;
 $localport = 30450 + $ARGV[1];
 
 # make fifos for request and response packets
-`mkfifo requests`;
-`mkfifo responses`;
-`mkfifo responses2`;
+`rm -f requests-fifo; mkfifo requests-fifo`;
+`rm -f responses-fifo; mkfifo responses-fifo`;
+`rm -f responses2-fifo; mkfifo responses2-fifo`;
 
 # Shuffle data between client and server, capturing a copy
 if (fork()) {
-    system "cat responses2 | nc -l -p $localport | tee requests | nc $server $srvport | tee responses > responses2";
+    system "cat responses2-fifo | nc -l -p $localport | tee requests-fifo | nc $server $srvport | tee responses-fifo > responses2-fifo";
     exit();
 }
-open REQ,"requests";
-open RSP,"responses";
+open REQ,"requests-fifo";
+open RSP,"responses-fifo";
 
 # greeting packet
 read(RSP,$pghello,8) or die $!;
@@ -96,28 +96,49 @@ while (1) {
     read(REQ,$reqdata,$reqsize);
     dumprequest($reqtype,$reqdata);
 
-
     # Get a response packet
-    print "} = ";
     read(RSP,$rsptypeword,2) or die $!;
     $rsptype = unpack("n",$rsptypeword);
     if ($rsptype==1) {
 	# Error response packet
 	read(RSP,$rsp_err,6) or die $!;
 	($rspid,$rsperrt,$rspmsglen) = unpack("nnn",$rsp_err);
+
+	# if the IDs don't match, print request packets until they do
+	while ($rspid != $reqid) {
+	    print "}\n\n";
+	    read(REQ,$rqh,8) or die $!;
+	    ($reqtype,$reqid,$reqsize) = unpack("nnN",$rqh);
+	    read(REQ,$reqdata,$reqsize);
+	    dumprequest($reqtype,$reqdata);
+	}
+
 	read(RSP,$rsperrmsg,$rspmsglen) or die $!;
+	print "} = ";
 	printf "ERROR 0x%04X \"%s\"\n",$rsperrt,$rsperrmsg; 
     }
     elsif ($rsptype==2) {
 	# Return value
 	read(RSP,$rsp_ret,6) or die $!;
 	($rspid,$rspdata) = unpack("nN",$rsp_ret);
+
+	# if the IDs don't match, print request packets until they do
+	while ($rspid != $reqid) {
+	    print "}\n\n";
+	    read(REQ,$rqh,8) or die $!;
+	    ($reqtype,$reqid,$reqsize) = unpack("nnN",$rqh);
+	    read(REQ,$reqdata,$reqsize);
+	    dumprequest($reqtype,$reqdata);
+	}
+
+	print "} = ";
 	printf "%d (0x%X)\n",$rspdata,$rspdata;
     }
     elsif ($rsptype==3) {
 	# Event
 	read(RSP,$rsp_evt,10) or die $!;
 	($evt,$from,$param) = unpack("nNN",$rsp_evt);
+	print "} = ";
 	print "event {\n";
 	# Decode type
 	print " type = ".$evtcoding{$evt}."\n";
@@ -138,7 +159,8 @@ while (1) {
 	read(RSP,$rsp_data,6) or die $!;
 	($id,$size) = unpack("nN",$rsp_data);
 	read(RSP,$data,$size) or die $!;
-	print " data = {\n";
+	print "} = ";
+	print " data {\n";
 	hexdump($data);
 	print " }\n";
     }
@@ -156,7 +178,7 @@ sub dumprequest {
     # Different decoding depending on the request type
     if ($reqtype==2) { 
 	# MKWIDGET
-	($rship,$type,$parent) = unpack("nnN",$data);
+	my ($rship,$type,$parent) = unpack("nnN",$data);
 	print " relationship = ".qw(deprecated_before after inside
 				    before)[$rship]."\n";
 	print " type = ".qw(toolbar label scroll indicator bitmap
@@ -171,7 +193,7 @@ sub dumprequest {
 	while ($data) {
 	    my ($type,$reqid,$reqsize) = unpack("nnN",substr($data,0,8));
 	    my $reqdata = substr($data,8,$reqsize);
-	    $pktsize = 8 + $reqsize;
+	    my $pktsize = 8 + $reqsize;
 	    # Pad to 32-bit boundary
 	    $pktsize += 4 - ($pktsize & 3) if ($pktsize & 3);
 	    substr($data,0,$pktsize) = "";
