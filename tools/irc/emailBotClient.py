@@ -191,6 +191,7 @@ if __name__ == '__main__':
             # now locate the right socket for the given channel
             import glob
             channelFilesCurrentlyInExistance = glob.glob(channelFile + ".*");
+            channelFilesCurrentlyInExistance.sort()
             socketName = socketBaseName            
             for cf in channelFilesCurrentlyInExistance:
                 f = open(cf)
