@@ -5,88 +5,39 @@ debug = print
 dofile("const.lua")
 
 -- wrapper methods
-
-function Pico:Dialog(table)
-    -- FIXME: doesnot work yet.
-    -- a modal dialog with button
-    -- message in table postion 1, optinal title, type, icon, btn1, btn2
-    -- return 1 for when click btn1, or nil when click btn2 or close
-    
-    if not table.title then table.title = "Dialog" end 
-    if not table.type then table.type = "message" end
-    if not table.icon then table.icon = table.type end
-    
-    if table.type=="question" then
-	-- question box
-	if not btn1 then btn1 = "YES" end
-	if not btn2 then btn2 = "NO" end
-    elseif table.type=="input" then
-	-- input box
-	if not btn1 then btn1 = "CONFIRM" end
-	if not btn2 then btn2 = "CANCEL" end
-    else 
-	-- message
-	if not btn1 then btn1 = "OK" end
-    end
-	
---    Pico:netcall { Pico.req_mkcontext }  -- a new context for us
-
-    -- create widgets
-    Pico:Group( Pico:Widget{ Pico.w_popup;
-		    absolutex = Pico.popup_center, 
-		    absolutey = -1, 
-		    width = 100, 
-		    height = 100
-		    } 
-		)  --create popup and put following inside
-    Pico:Widget{ Pico.w_label;
-		    text = title,
-		    transparent = 0,
-		    thobj = Pico.th_o_label_dlgtitle,
-		    side = Pico.s_top
-		    }
-    Pico:Widget{ Pico.w_label;
-		 text = table[1],
-		 side = Pico.s_all
-		}
 		
-    Pico:Group( Pico:Widget{ Pico.w_toolbar; size = Pico.s_bottom } )
-    Pico:netcall{ Pico.req_setpayload, 
-	Pico:Widget { Pico.w_button; text = table.btn1, 
-		align = Pico.a_right }, 1 }
-    if table.btn2 then 
-	Pico:netcall { Pico.req_setpayload,
-	    Pico:widget { Pico.w_button; text = table.btn2, 
-		align = Pico.a_right }, 0 }
-    end
-    
-    Pico:update() 
-    local ret
---~     
---~     print("Before loop")
---~     while 1 do	
---~ 	Pico:request(Pico.req_wait)  -- put on server wait queue
---~ 	restype, event, from, param = Pico:response(-1)
---~ 	print (restype, event, from, param )
---~ 	if restype==Pico.response_event then
---~ 	    ret = Pico:netcall { Pico.req_getpayload, from } 
---~ 	    if ret~=nil then break end
---~ 	end
---~     end    
---~     print("After loop")
---~     Pico:netcall { Pico.req_rmcontext }     
---~     return ret
+-- message service
+function Pico:findwidget(name)
+    local str = Pico:raw2str(name)
+    return Pico:netcall { Pico.req_findwidget,str }
 end
 
-		
+function Pico:sendwidgetmsg(widget, msg )
+    local str = Pico:raw2str(msg)
+    return Pico:netcall { Pico.req_appmsg, widget, str }
+end
+
+function Pico:sendappmsg(name, msg)
+    -- name is the Register name of the applet.
+    local w = Pico:findwidget(name) 
+    if w then 
+	sendwidgetmsg(w, msg)
+    else
+	-- start the applet with msg argument
+	execute(name..msg)
+    end
+end
+    
 function Pico:Register(name, apptype, table, host, display)
     -- register app window with given name and type
     if not Pico:connect(host, display) then return end
+    if not apptype then apptype = Pico.app_normal end
     
     local hName = Pico:String(name)
     if not hName then return nil end
     local app = Pico:netcall { Pico.req_register, hName, apptype }
     if app then Pico:Group(app) end
+    Pico.app = app   -- make it global
     return app
 end
 
@@ -101,8 +52,8 @@ function Pico:setProperty(widget, table)
 	    -- special? (not in Pico.wp)
 	    if tonumber(k) then 
 		-- positional arg, do nothing
-	    elseif k == "callback" then
-		Pico:addHandler(v[1], v[2], widget) 
+--~ 	    elseif k == "callback" then
+--~ 		Pico:addHandler(v[1], v[2], table[1]) 
 	    else
 		Pico:errmsg(widget.." has no property "..k )
 	    end
@@ -119,11 +70,13 @@ function Pico:setProperty(widget, table)
 	    end
 	    debug(k,v,const,suf)
 	    const=tonumber(const)
-	    if not Pico:netcall{ Pico.req_set, widget, v, const } then
+	    if v and not  Pico:netcall{ Pico.req_set, widget, v, const } then
 		Pico:errmsg(widget.." could not set property '"..k.."' to value "..v)
+		return  -- fail
 	    end
 	end
     end
+    return 1  -- ok
 end
 
 function Pico:String(str)
@@ -175,6 +128,14 @@ function Pico:replaceText(widget, string)
     if old then Pico:netcall{ Pico.req_free, old } end
 end
 
+function Pico:replaceImageFile(widget, imgfile)
+    local old = Pico:netcall{ Pico.req_get, widget, Pico.wp_bitmap }
+    local w 
+    if imgfile then Pico:setProperty(widget, { bitmap = imgfile }) end
+    if old then Pico:netcall{ Pico.req_free, old } end
+    return w
+end
+
 function Pico:makeWidget(widtype, buddy, rship)
     -- create and attach a widget to a buddy widget
     if not buddy then buddy=Pico.lastWidget end
@@ -187,13 +148,253 @@ function Pico:makeWidget(widtype, buddy, rship)
     return t
 end
 
-function Pico:addHandler(event, func, widget)
+-- graphics
+
+function Pico:canvascmd(widget, cmd, gropobj, paratable)
+    -- wrap Pico.req_writeto
+    local n = getn(paratable) 
+    
+    if gropobj then 
+	Pico.tmpstr = format("%04x%04x%08x", cmd, n+1, gropobj) 
+    else
+	Pico.tmpstr = format("%04x%04x", cmd, n)  -- ugly, to avoid upvalue
+    end
+    
+    foreachi(paratable, function (k,v)
+	Pico.tmpstr = Pico.tmpstr..format("%08x", v)
+	end )
+    debug("canvascmd: ", Pico.tmpstr)
+    Pico:netcall { Pico.req_writeto, widget, Pico.tmpstr }
+end
+
+function Pico:Pixel(canvas, x, y)
+    Pico:canvascmd(canvas, Pico.canvas_grop, Pico.grop_pixel, {x,y,1,1})
+end
+
+function Pico:Line(canvas, x1, y1, x2, y2)
+    Pico:canvascmd(canvas, Pico.canvas_grop, Pico.grop_line, {x1, y1, x2-x1, y2-y1} )
+end
+
+function Pico:Rect(canvas, x, y, w, h)
+    Pico:canvascmd(canvas, Pico.canvas_grop, Pico.grop_rect, {x, y, w, h} )
+end
+
+function Pico:Blur(canvas, x, y, w, h, radius)
+    Pico:canvascmd(canvas, Pico.canvas_grop, Pico.grop_blur, {x, y, w, h, radius})
+end
+
+function Pico:Frame(canvas, x, y, w, h)
+    Pico:canvascmd(canvas, Pico.canvas_grop, Pico.grop_frame, {x, y, w, h})
+end
+
+function Pico:Slab(canvas, x, y, w)
+    Pico:canvascmd(canvas, Pico.canvas_grop, Pico.grop_slab, {x, y, w, 1})
+end
+
+function Pico:Bar(canvas, x, y, h)
+    Pico:canvascmd(canvas, Pico.canvas_grop, Pico.grop_bar, {x, y, 1, h})
+end
+
+function Pico:Ellipse(canvas, x, y, w, h)
+    Pico:canvascmd(canvas, Pico.canvas_grop, Pico.grop_ellipse, {x, y, w, h})
+end
+
+function Pico:Fellipse(canvas, x, y, w, h)
+    Pico:canvascmd(canvas, Pico.canvas_grop, Pico.grop_fellipse, {x, y, w, h})
+end
+
+function Pico:Fpolygon(canvas, vertextable)
+    Pico:canvascmd(canvas, Pico.canvas_grop, Pico.grop_fpolygon, vertextable)
+end
+
+function Pico:Text(canvas, x, y, string )
+    local id = Pico:String(string)
+    Pico:canvascmd(canvas, Pico.canvas_grop, Pico.grop_text, {x, y, 1, 1, id})
+end
+
+function Pico:Bitmap(canvas, x, y, w, h, bitmapid )
+    Pico:canvascmd(canvas, Pico.canvas_grop, Pico.grop_bitmap, {x, y, w, h, bitmapid})
+end
+
+function Pico:TileBitmap(canvas, x, y, w, h, bitmapid )
+    Pico:canvascmd(canvas, Pico.canvas_grop, Pico.grop_tilebitmap, {x, y,  w, h, bitmapid})
+end
+
+function Pico:Color(str)
+    -- str in RGB, or in usual name, eg "FF0000" or "red"
+    str = strlower(str)
+    local v = Pico.usualcolor[str]
+    if not v then
+	v = tonumber(str,16)
+    end
+    return v
+end
+
+function Pico:Gradient(canvas, x, y, w, h, angle, color1, color2)
+    local c1 = Pico:Color(color1)
+    local c2 = Pico:Color(color2)
+    Pico:canvascmd(canvas, Pico.canvas_grop, Pico.grop_gradient, {x, y, w, h, angle, c1, c2})
+end
+
+function Pico:setcolor(canvas, color)
+    local c = Pico:Color(color)
+    Pico:canvascmd(canvas, Pico.canvas_grop, Pico.grop_setcolor, {c} )
+end
+
+function Pico:setfont(canvas, fontid)
+    -- use Pico:Font to get fontid
+    Pico:canvascmd(canvas, Pico.canvas_grop, Pico.grop_setfont, {fontid} )
+end
+
+function Pico:setlgop(canvas, lgop)
+    Pico:canvascmd(canvas, Pico.canvas_grop, Pico.grop_setfont, {lgop} )
+end
+
+function Pico:setangel(canvas, angel)
+    Pico:canvascmd(canvas, Pico.canvas_grop, Pico.grop_setfont, {angel} )
+end
+
+function Pico:setsrc(canvas, x, y, w, h)
+    Pico:canvascmd(canvas, Pico.canvas_grop, Pico.grop_setsrc, {x, y, w, h} )
+end
+
+function Pico:setmapping(canvas, x, y, w, h, type)
+    Pico:canvascmd(canvas, Pico.canvas_grop, Pico.grop_setsrc, {x, y, w, h, type} )
+    Pico:canvascmd(canvas, Pico.canvas_inputmapping,nil, {x, y, w, h, type} )    
+end
+
+function Pico:setclip(canvas, x, y, w, h)
+    Pico:canvascmd(canvas, Pico.canvas_grop, Pico.grop_setclip, {x, y, w, h} )
+end
+
+function Pico:redraw(canvas)
+	Pico:canvascmd(canvas, Pico.canvas_redraw)
+end
+
+function Pico:redraw_inc(canvas)
+    Pico:canvascmd(canvas, Pico.canvas_incremental)
+end
+
+function Pico:gropflag(canvas, gropf, isdefault)
+    local grop
+    if isdefault then grop = Pico.canvas_defaultflags
+    else grop = Pico.canvas__gropflags end
+    
+    Pico:canvascmd(canvas, grop, gropf)
+end
+
+-- shade (non-modal dialog)
+Pico.shadebar={}
+
+function Pico:shade_pre()
+    Pico.old_context = Pico:netcall { Pico.req_getcontext }  
+    if not Pico.context then Pico.context = Pico.old_context + 1 end
+    
+    Pico:netcall { Pico.req_setcontext, Pico.context }
+    debug ("--------------------------------- context "..Pico.context)
+
+    local hName = Pico:String("")
+    local bar = Pico:netcall{ Pico.req_register, hName, Pico.app_toolbar }
+    Pico:Group(bar)
+
+end
+    
+function Pico:shade_post(btntext, btnfunc)
+     local btn = Pico:Widget { Pico.w_button; 
+		text = btntext or "close", 
+		side = Pico.s_right
+		}
+
+    Pico.shadebar[btn] = Pico.context  -- for future freeing
+    Pico.context = Pico.context + 1
+     
+    Pico:bind(Pico.we_activate, btn, btnfunc or Pico.closeShade)
+    
+    Pico:netcall { Pico.req_setcontext, Pico.old_context }
+    return btn
+end
+    
+function Pico:Shademsg(msg, font)
+    Pico:shade_pre()
+    Pico:Widget { Pico.w_label; 
+		    text = msg, 
+		    font = font or {nil,Pico.fstyle_bold,14},
+		    side = Pico.s_left }
+    Pico:shade_post()
+    
+end
+
+function Pico:Shadeask(msg, yesfunc, nofunc, font, yestext, notext)
+    -- with yes, no button and callback
+    Pico:shade_pre()
+    
+    Pico:Widget { Pico.w_label; 
+		    text = msg, 
+		    font = font or {nil,Pico.fstyle_bold,14},
+		    side = Pico.s_left }
+		    
+    local btn = Pico:Widget { Pico.w_button; 
+		text = yestext or "yes", 
+		side = Pico.s_right
+		}
+		
+    local btnclose =  Pico:shade_post(notext or "no", nofunc)
+
+    Pico:bind(Pico.we_activate, btn, yesfunc) -- yesfunc needs to call shutShade
+    return btnclose  -- call shutShade with this
+end
+        
+function Pico:Shadeinput(label, msg, yesfunc, nofunc, font, yestext, notext)
+    -- with yes, no button and callback
+    Pico:shade_pre()
+    
+    Pico:Widget { Pico.w_label; 
+		    text = label, 
+		    font = font or {nil,Pico.fstyle_bold,14},
+		    side = Pico.s_left }
+	
+    local btn = Pico:Widget { Pico.w_button; 
+		text = yestext or "Ok", 
+		side = Pico.s_right
+		}
+    Pico:bind(Pico.we_activate, btn, yesfunc) -- yesfunc needs to call shutShade
+
+    local btnclose =  Pico:shade_post(notext or "Cancel", nofunc)
+    
+    local input = Pico:Widget {Pico.w_field; text = msg, side = Pico.s_all }
+
+
+    return btnclose, input  -- call shutShade with this
+end
+
+function Pico:getShadeinput(input_id)
+    -- return string from input_id
+    return Pico:netcall {Pico.req_getstring,
+	Pico:netcall { Pico.req_get, input_id, Pico.wp_text }
+	}
+end
+
+function Pico:closeShade(event, from, param)
+    local context = Pico.shadebar[from]
+    debug("closeShade ", from, context)
+    
+    if context then
+	local old_context = Pico:netcall { Pico.req_getcontext }
+        print("free shadebar context"..context)
+	Pico:netcall { Pico.req_setcontext, context }
+	Pico:netcall { Pico.req_rmcontext, context }
+	Pico:netcall { Pico.req_setcontext, old_context }
+	Pico.shadebar[from] = nil
+    end
+end
+	
+function Pico:bind(event, widget, func)
     -- bind a callback function to event and optional widget
     -- no chain, it's not easy to use, overwrite func instead
     if not func then  -- nil func remove the binding
-	if not widget then -- nil widget remove all 
+	if not widget and Pico.handler[event] then -- nil widget remove all 
 	    Pico.handler[event] = nil 
-	else -- remove only that widget
+	elseif Pico.handler[event][widget] then -- remove only that widget
 	    Pico.handler[event][widget] = nil
 	end
 	debug ("hander removed for event: "..event.." and widget "..(widget or "all"))
@@ -203,18 +404,9 @@ function Pico:addHandler(event, func, widget)
 	Pico:errmsg("Handler is not a function. It's type: "..type(t))
 	return 
     end
-    
-    local t = Pico.handler[event]
-    if t and widget then -- append a widget
-	    t[widget] = 1
-	    t["all"] = nil
-    else -- nil widget = all
-	Pico.handler[event] = {}  -- clear
-	t = Pico.handler[event]
-	t["all"] = 1
-    end
-    t["func"] = func
-    debug("handler added for event: "..event.." and widget "..(widget or "all"))
+    if not Pico.handler[event] then Pico.handler[event] ={} end
+    Pico.handler[event][widget] = func
+    debug("handler added for event: "..event.." and widget "..widget )
     
 end
 
@@ -223,18 +415,18 @@ function Pico:run()
     local restype, event, from, param, quit, t
 
     -- add default handler
-    Pico:addHandler(Pico.we_close, function () return 1 end) -- quit
-    
+    Pico:bind(Pico.we_close, Pico.app, function () return 1 end) -- quit
     while 1 do
         Pico:update()
 	Pico:request(Pico.req_wait)  -- put on server wait queue
 	restype, event, from, param = Pico:response(-1)
 	if restype==Pico.response_event then
 	    -- call event handler(s)
-	    t = Pico.handler[event]
-	    if t and (t["all"] or t[from]) then 
-		debug ("handler called for event "..event.." and widget "..(t["all"] or t[from]))
-		quit = t["func"](event, from, param) 
+	      t = Pico.handler[event]
+	      if t then  t= Pico.handler[event][from] end
+	      if t then 
+		debug ("handler called for event "..event.." and widget "..from)
+		quit = t(self, event, from, param) 
 	    end
 	    if event==Pico.we_close and quit then Pico:close() break end
 	end
@@ -244,7 +436,7 @@ end
 
 -- Pico netcore protocol
 Pico.proto = {}
-Pico.proto[Pico.req_appmsg] = "%08x"
+Pico.proto[Pico.req_appmsg] = "%08x%s"
 Pico.proto[Pico.req_attachwidget]  = "%08x%08x%04x0000"
 Pico.proto[Pico.req_chcontext] = "%08x%04x0000"
 Pico.proto[Pico.req_checkevent] = ""
@@ -293,7 +485,7 @@ Pico.proto[Pico.req_unregowner ] = "%04x"
 Pico.proto[Pico.req_update] = ""
 Pico.proto[Pico.req_updatepart] = ""
 Pico.proto[Pico.req_wait] = ""
-Pico.proto[Pico.req_writeto] = "%08x"
+Pico.proto[Pico.req_writeto] = "%08x%s"
 
 function Pico:netcall(req)
     -- request and param in the req table in position, max 9
@@ -392,7 +584,8 @@ Pico.t_keys = Pico.t_keyup + Pico.t_keydown + Pico.t_char + Pico.t_key_start + P
 
 function Pico:errmsg(msg)
     -- generic error handling, can overide to suit your application
-    print("Pico_lua ERROR: "..msg)
+    print( "Pico_lua ERROR: "..msg)
+    -- exit(1)
 end
 
 -- format data
@@ -493,7 +686,7 @@ function Pico:response(timeout)
 	local size,len
 	id = Pico:u32(s,5)
 	if Pico.id == nil or Pico.id ~= id then 
-	    Pico.errmsg("Pico.resp.data, Id: "..id.." not match with the requested: "..Pico.id)
+	    Pico:errmsg("Pico.resp.data, Id: "..id.." not match with the requested: "..Pico.id)
 	    return
 	end
 	
@@ -506,7 +699,7 @@ function Pico:response(timeout)
 	    return data
 	end 	    
     else
-	Pico.errmsg("unknown response type: "..restype)
+	Pico:errmsg("unknown response type: "..restype)
     end
     
 end
@@ -519,15 +712,15 @@ function Pico:connect(host, display)
  
     Pico.con, err = connect(Pico.host, Pico.display)
     if not Pico.con then 
-	Pico.errmsg("Failed to connect to server "..Pico.host..":"..Pico.display.." . Error is: "..err) return end
+	Pico:errmsg("Failed to connect to server "..Pico.host..":"..Pico.display.." . Error is: "..err) return end
 	
     -- get hello 
     s=Pico.con:receive(8)
  --   if strsub(s,1,4)~=Pico.magic then 
     if Pico:u32(s,1) ~= Pico.request_magic then
-	Pico.errmsg( "Bad Magic"..s) return end
+	Pico:errmsg( "Bad Magic"..s) return end
     if Pico:u16(s,5) ~= Pico.protocol_ver then
-	Pico.errmsg( "Bad proto version: "..Pico:u16(s,5) ) return end
+	Pico:errmsg( "Bad proto version: "..Pico:u16(s,5) ) return end
     return 1 -- ok
 end
 

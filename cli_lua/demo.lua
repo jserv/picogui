@@ -1,3 +1,4 @@
+#!./sol -f
 -- demo.lua
 dofile("pico.lua")
 
@@ -6,10 +7,16 @@ function cb_hello ()
     cnt = cnt + 1
     Pico:replaceText(label, "Hello World "..cnt)
     Pico:setProperty(indicator, {value = cnt})
---    Pico:Dialog{ "test text"}
+    -- send a message
+    local t = Pico:findwidget("demos/message_receiver/app")
+    if not t then
+	Pico:Shademsg ("Cannot find receiver")
+    else
+	Pico:sendappmsg(t, "hello there")
+    end
 end
 
-win = Pico:Register ("demo", Pico.app_normal)
+win = Pico:Register ("demo")
 assert(win, "Error starting") 
 
 toolbar = Pico:Widget{Pico.w_toolbar}
@@ -44,7 +51,7 @@ label = Pico:Widget{
 Pico:Group(box) 
 text = Pico:Widget{Pico.w_label;
 	 side = Pico.s_all,
-	  text = " test line \n another line "
+	  text = " test line another line "
 	}
     
 Pico:Widget{Pico.w_scroll, box, Pico.derive_before; bind = box }
@@ -62,13 +69,14 @@ Pico:Widget{
 	    bitmap="data/tux.pnm",
 	    bitmask="data/tux_mask.pnm"
 	   }
-Pico:Widget{
+	   
+Pico:bind ( Pico.we_activate,
+    Pico:Widget{
 	Pico.w_button;
 	 side = Pico.s_right, 
-	 text = "Hello world!", 
-	 callback = {Pico.we_activate, cb_hello}
+	 text = "Hello world!"
 	}
-
+    , cb_hello )
 
 Pico:run()	
 
