@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<pgbuild title="PicoGUI Version Groups list">
+<pgbuild title="PicoGUI Version Groups list" root="versiongroups">
 
 	<!-- 
 	Version groups are a convenience for managing large sets of packages
