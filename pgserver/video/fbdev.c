@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.43 2003/01/20 17:12:23 thierrythevoz Exp $
+/* $Id: fbdev.c,v 1.44 2003/02/03 11:47:30 thierrythevoz Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -198,32 +198,6 @@ void fbdev_disable(void) {
   inactivity_reset();
   disable_output = 1;
   disable_input = 1;
-}
-
-/* Indirectly, this is the signal handler. A few extra
- * signals like SIGUSR1 get routed here
- */
-void fbdev_message(u32 message, u32 param, u32 *ret) {
-  static int disabled = 0;
-  
-  DBG("Got message %d, param %d\n",message,param);
-
-  if (message!=PGDM_SIGNAL || param!=SIGVT || !fbdev_handler_on)
-    return;
-
-  /* Toggle in and out of our VT.. 
-   * Set variables, redraw, acknowledge
-   */
-  if (disabled) {
-    ioctl(ttyfd, VT_RELDISP, VT_ACKACQ);
-    fbdev_enable();
-  }
-  else {
-    fbdev_disable();
-    ioctl(ttyfd, VT_RELDISP, 1);
-  }
-
-  disabled = !disabled;
 }
 
 /* Switch to the right VT, set up stuff */
@@ -611,6 +585,107 @@ void fbdev_close(void) {
    close(ttyfd);
 }
 
+/* Indirectly, this is the signal handler. A few extra
+ * signals like SIGUSR1 get routed here
+ */
+void fbdev_message(u32 message, u32 param, u32 *ret) {
+#ifdef CONFIG_FB_VT
+  static int vt_disabled = 0;
+#endif /* CONFIG_FB_VT */
+  static int display_disabled = 0;
+  static int backlight_disabled = 0;
+  
+  DBG("Got message %d, param %d\n",message,param);
+
+  switch (message) {
+  case PGDM_BACKLIGHT:
+    switch (param) {
+    case 0: /* turn backlight off */
+      if (!backlight_disabled) {
+        DBG ("backlight off\n");
+        ioctl (fbdev_fd, FBIOBLANK, VESA_HSYNC_SUSPEND);
+        backlight_disabled = 1;
+      }
+      break;
+    
+    case 1: /* turn backlight on */
+      if (backlight_disabled) {
+        DBG ("backlight on\n");
+        ioctl (fbdev_fd, FBIOBLANK, VESA_NO_BLANKING);
+        backlight_disabled = 0;
+      }
+      break;
+    
+    default:
+      /* g_assert_not_reached (); */
+    }
+    return; /* case PGDM_BACKLIGHT */
+    
+  case PGDM_POWER:
+    switch (param) {
+    case PG_POWER_OFF:  
+      /* turn display hw off */
+      DBG ("power off\n");
+      ioctl (fbdev_fd, FBIOBLANK, VESA_POWERDOWN);
+      backlight_disabled = 1;
+      display_disabled = 1;
+      break;
+    
+    case PG_POWER_SLEEP:  
+      /* suspend display hw */
+      DBG ("power suspend\n");
+      ioctl (fbdev_fd, FBIOBLANK, VESA_VSYNC_SUSPEND);
+      backlight_disabled = 1;
+      display_disabled = 1;
+      break;
+    
+    case PG_POWER_VIDBLANK: 
+      DBG("power standby\n");
+      /* standby display hw */
+      ioctl (fbdev_fd, FBIOBLANK, VESA_HSYNC_SUSPEND);
+      backlight_disabled = 1;
+      display_disabled = 1;
+      break;
+    
+    case PG_POWER_FULL:  
+      /* turn display on */
+      if (backlight_disabled || display_disabled) {
+        DBG ("power on\n");
+        ioctl (fbdev_fd, FBIOBLANK, VESA_NO_BLANKING);
+        backlight_disabled = 0;
+        display_disabled = 0;
+      }  
+      break;
+    
+    default:
+      /* g_assert_not_reached (); */
+    }
+    return; /* case PGDM_POWER */
+    
+  default:
+    /* continue further processing below... */
+  }
+  
+#ifdef CONFIG_FB_VT
+  if (message!=PGDM_SIGNAL || param!=SIGVT || !fbdev_handler_on)
+    return;
+
+  /* Toggle in and out of our VT.. 
+   * Set variables, redraw, acknowledge
+   */
+  if (vt_disabled) {
+    ioctl(ttyfd, VT_RELDISP, VT_ACKACQ);
+    fbdev_enable();
+  }
+  else {
+    fbdev_disable();
+    ioctl(ttyfd, VT_RELDISP, 1);
+  }
+
+  vt_disabled = !vt_disabled;
+#endif /* CONFIG_FB_VT */
+}
+
 void fbdev_doublebuffer_update(hwrbitmap d,s16 x,s16 y,s16 w,s16 h) {
   if (d!=vid->display)
     return;
@@ -656,11 +731,12 @@ g_error fbdev_regfunc(struct vidlib *v) {
   g_error e;
    v->init = &fbdev_init;
    v->close = &fbdev_close;
-
+   v->message = &fbdev_message;
+/*
 #ifdef CONFIG_FB_VT
    v->message = &fbdev_message;
 #endif
-  
+*/  
 #ifdef CONFIG_FB_YUV16_422_PLANAR
    e = yuv16_422_planar_regfunc(v);
    errorcheck;

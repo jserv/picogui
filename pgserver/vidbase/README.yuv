@@ -94,7 +94,7 @@ YUV16 encoding
 --------------
 
 It is available when depth is 16, and 'Video Drivers' -> 'Linux
-framebuffer device' -> 'YUV16' is checked (CONFIG_FB_YUV16=y).
+framebuffer device' -> 'YUV16' is checked (CONFIG_FB_YUV16_422_PLANAR=y).
 
 The fb memory is organized in two equal consecutive segments, each one
 of xres*yres bytes (thus the total memory is xres*yres*2 bytes, as

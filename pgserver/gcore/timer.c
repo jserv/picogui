@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.27 2003/01/01 03:42:59 micahjd Exp $
+/* $Id: timer.c,v 1.28 2003/02/03 11:47:30 thierrythevoz Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -82,6 +82,10 @@ void inactivity_set(u32 t) {
     drivermessage(PGDM_POWER,PG_POWER_FULL,NULL);
   }
   timer_lastactivity = os_getticks() - t;
+  
+  if (!os_get_timer()) {
+    master_timer();  /* Reevaluate the next timer to trigger */
+  }
 }
 
 /*
