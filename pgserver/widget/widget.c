@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.174 2002/04/15 01:05:12 micahjd Exp $
+/* $Id: widget.c,v 1.175 2002/04/15 01:33:19 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -235,6 +235,14 @@ g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **wher
 
     /* Take off all the unnecessary divscroll flags */
     r_div_unscroll(w->in);
+
+    /* If we just detached the widget under the mouse, tell it the mouse is gone */
+    if (div_under_crsr && div_under_crsr->owner && 
+	div_under_crsr->owner->dt==&fakedt) {
+      union trigparam param;
+      memset(&param,0,sizeof(param));
+      send_trigger(div_under_crsr->owner,TRIGGER_LEAVE,&param);
+    }
   }
   
   /* Add the widget to the divtree */
