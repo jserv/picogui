@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.65 2001/08/30 15:05:09 micahjd Exp $
+/* $Id: panel.c,v 1.66 2001/10/09 02:06:30 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -361,6 +361,13 @@ g_error panel_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
+  case PG_WP_THOBJ:
+     self->in->div->next->state = data;
+     resizewidget(self);
+     self->in->flags |= DIVNODE_NEED_RECALC;
+     self->dt->flags |= DIVTREE_NEED_RECALC;
+     break;
+
   default:
     return mkerror(ERRT_PASS,0);
 
@@ -379,6 +386,9 @@ glob panel_get(struct widget *self,int property) {
 
   case PG_WP_TEXT:
     return DATA->text;
+
+  case PG_WP_THOBJ:
+    return self->in->div->next->state;;
     
   }
   return 0;

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.117 2001/10/07 07:01:25 micahjd Exp $
+/* $Id: widget.c,v 1.118 2001/10/09 02:06:30 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -388,7 +388,7 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
      w->scrollbind = data;
      break;
 
-   case PG_WP_STATE:
+   case PG_WP_THOBJ:
      w->in->div->state = data;
      resizewidget(w);
      w->in->flags |= DIVNODE_NEED_RECALC;
