@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.48 2001/06/25 00:49:41 micahjd Exp $
+/* $Id: client_c.h,v 1.49 2001/06/26 11:34:38 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -586,14 +586,25 @@ void pgSetWidget(pghandle widget, ...);
 long pgGetWidget(pghandle widget,short property);
 
 /*!
- * \brief Create a new bitmap object
+ * \brief Create a new bitmap object from existing data
  * 
- * \param A pgmemdata structure, as returned by a pgFrom* function
+ * \param obj A pgmemdata structure, as returned by a pgFrom* function
  * \returns A handle to the new bitmap object created in the PicoGUI server
  * 
- * \sa pgFromMemory, pgFromFile, pgFromStream, pgFromTempMemory, pgDelete, pgEnterContext, pgLeaveContext
+ * \sa pgFromMemory, pgFromFile, pgFromStream, pgFromTempMemory, pgDelete, pgEnterContext, pgLeaveContext, pgCreateBitmap
  */
 pghandle pgNewBitmap(struct pgmemdata obj);
+
+/*!
+ * \brief Create a new bitmap object
+ *
+ * \param width Width, in pixels, of the new bitmap
+ * \param height Height, in pixels, of the new bitmap
+ * \returns A handle to the new bitmap object. It's contents are undefined
+ *
+ * \sa pgNewBitmap
+ */
+pghandle pgCreateBitmap(short width, short height);
 
 /*!
  * \brief Create a new string object 
@@ -807,6 +818,18 @@ void pgWriteData(pghandle widget,struct pgmemdata data);
  * \sa pgWriteData, PG_WIDGET_CANVAS, pgNewCanvasContext
  */
 void pgWriteCmd(pghandle widget,short command,short numparams, ...);
+
+/*!
+ * \brief Render a gropnode to a bitmap
+ *
+ * \param bitmap A bitmap handle to render to. Alternatively, if the app has registered exclusive display access this can be zero to draw directly to the display.
+ * \param groptype A PG_GROP_* constant indicating the type of gropnode
+ *
+ * Gropnode parameters follow the gropnode type.
+ *
+ * \sa pgWriteCmd, pgNewBitmapContext, pgRegisterOwner
+ */
+void pgRender(pghandle bitmap,short groptype, ...);
 
 /******************** Data loading */
 

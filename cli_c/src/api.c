@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.12 2001/06/25 20:40:19 micahjd Exp $
+/* $Id: api.c,v 1.13 2001/06/26 11:34:38 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -460,6 +460,21 @@ pghandle pgNewBitmap(struct pgmemdata obj) {
   return _pg_return.e.retdata;
 }
 
+pghandle pgCreateBitmap(short width, short height) {
+  struct pgreqd_newbitmap arg;
+
+  arg.width = htons(width);
+  arg.height = htons(height);
+  
+  _pg_add_request(PGREQ_NEWBITMAP,&arg,sizeof(arg));
+
+  /* Because we need a result now, flush the buffer */
+  pgFlushRequests();
+
+  /* Return the property */
+  return _pg_return.e.retdata;
+}
+
 pghandle pgNewString(const char* str) {
   if (!str) return 0;
 
@@ -721,6 +736,36 @@ void pgWriteCmd(pghandle widget,short command,short numparams, ...) {
    va_end(v);
    
    pgWriteData(widget,pgFromMemory(buf,bufsize));
+}
+
+void pgRender(pghandle bitmap,short groptype, ...) {
+  struct pgreqd_render *arg;
+  unsigned long *params;
+  int size;
+  int numparams;
+  va_list v;
+
+  /* Allocate the packet on the stack */
+  numparams = PG_GROPPARAMS(groptype);
+  if (!PG_GROP_IS_UNPOSITIONED(groptype))
+    numparams += 4;
+  size =  sizeof(struct pgreqd_render) + 4*numparams;
+  arg = alloca(size);
+  params = (unsigned long *) (((unsigned char *)arg) + 
+			      sizeof(struct pgreqd_render));
+
+  /* Transcribe arguments */
+  arg->dest = htonl(bitmap);
+  arg->groptype = htonl(groptype);
+
+  va_start(v,groptype);
+  for (;numparams;numparams--) {
+    *params = htonl(va_arg(v,long));
+    params++;
+  }
+  va_end(v);
+  
+  _pg_add_request(PGREQ_RENDER,arg,size);
 }
 
 /* The End */

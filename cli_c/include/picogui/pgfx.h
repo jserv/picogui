@@ -1,4 +1,4 @@
-/* $Id: pgfx.h,v 1.12 2001/06/25 00:49:41 micahjd Exp $
+/* $Id: pgfx.h,v 1.13 2001/06/26 11:34:38 micahjd Exp $
  *
  * picogui/pgfx.h - The PicoGUI abstract graphics interface
  * 
@@ -350,6 +350,19 @@ pgprim  pgLineTo(pgcontext c, pgu x, pgu y);
  * \sa PGFX_IMMEDIATE, PGFX_PERSISTENT, PG_WIDGET_CANVAS, pgDeleteContext
  */
 pgcontext pgNewCanvasContext(pghandle canvas,short mode);
+
+/*!
+ * \brief Create a context for rendering to a bitmap
+ * \param bitmap Handle to a bitmap
+ * \returns A pgcontext that can be used with PGFX primitives. It must be deleted with pgDeleteContext
+ * 
+ * \p bitmap may be zero to render directly to the display if your application
+ * has registered for exclusive display access.
+ *
+ * \sa pgDeleteContext, pgNewBitmap, pgCreateBitmap, PG_OWN_DISPLAY, pgRegisterOwner
+ */
+pgcontext pgNewBitmapContext(pghandle bitmap);
+
 //! Delete a PGFX context
 void pgDeleteContext(pgcontext c);
 

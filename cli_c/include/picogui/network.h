@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.31 2001/06/25 00:49:41 micahjd Exp $
+/* $Id: network.h,v 1.32 2001/06/26 11:34:38 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -128,8 +128,10 @@ struct pghello {
 #define PGREQ_WRITETO      31  /* Stream data to a widget        |  handle + data */
 #define PGREQ_UPDATEPART   32  /* Updates subtree defined by wgt |  handle */
 #define PGREQ_MKARRAY      33  /* Makes a array, returns handle  |    data */  
+#define PGREQ_RENDER       34  /* Render gropnode(s) to a bitmap |  struct */
+#define PGREQ_NEWBITMAP    35  /* Creates a blank bitmap         |  struct */
 
-#define PGREQ_UNDEF        34     /* types > this will be truncated. return error */ 
+#define PGREQ_UNDEF        36  /* types > this will be truncated. return error */
 
 /******* Request data structures */
 
@@ -232,6 +234,23 @@ struct pgreqd_mkmsgdlg {
 };
 struct pgreqd_regowner {
   u16 res;     /* A resource to own: PG_OWN_* */
+};
+struct pgreqd_render {
+  /* Handle of a bitmap to render to. If this is null,
+   * _and_ the client has been registered as owning the display,
+   * the destination will be vid->display
+   */
+  u32 dest;
+  u32 groptype;    /* PG_GROP_* constant */
+
+  /* Followed by a number of 32-bit parameters.
+   * like PGCANVAS_GROP, the first four must be x,y,w,h unless it is an
+   * unpositioned gropnode. The rest are treated as gropnode parameters.
+   */
+};
+struct pgreqd_newbitmap {
+  u16 width;
+  u16 height;
 };
 
 /* A structure for encapsulating commands, for example in canvas, within
