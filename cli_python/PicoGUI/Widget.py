@@ -2,9 +2,7 @@
 
 default_relationship = 'after'
 
-import Server, struct, types
-_propnames = Server.constants['set'].keys()
-_cmdnames = Server.constants['writecmd'][0].keys()
+import Server, constants, struct, types
 
 class Command_Proxy(object):
     def __init__(self, widget, name, ns=None, args=()):
@@ -12,7 +10,7 @@ class Command_Proxy(object):
         self.name = name
         self.args = args
         if ns is None:
-            ns = Server.constants['writecmd'][0][name][1]
+            ns = constants.cmd_ns(name)
         if type(ns) is types.DictType:
             self.ns = ns
         else:
@@ -73,18 +71,18 @@ class Widget(object):
 
     def __setattr__(self, name, value):
         pname = name.lower().replace('_', ' ')
-        if pname in _propnames:
+        if pname in constants.propnames:
             self.server.set(self.handle, pname, value)
         else:
             self.__dict__[name] = value
 
     def __getattr__(self, name):
         pname = name.lower().replace('_', ' ')
-        if pname in _propnames:
+        if pname in constants.propnames:
             result = self.server.get(self.handle, pname)
             ns = Server.constants['set'].get(pname)[1]
-            return Server.unresolve_constant(result, ns, self.server)
-        elif pname in _cmdnames:
+            return constants.unresolve(result, ns, self.server)
+        elif pname in constants.cmdnames:
             return Command_Proxy(self, pname)
         else:
             raise AttributeError(name)
