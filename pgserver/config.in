@@ -53,6 +53,7 @@ bool 'PicoGUI error tracing'            CONFIG_ERROR_TRACE
 bool 'Virtual terminal debugging'       DEBUG_VT
 bool 'Video driver debugging'           DEBUG_VIDEODRIVER
 bool 'Dont catch fatal signals'         DEBUG_FATALSIGNALS
+bool 'Trace location of fatal signals'  DEBUG_SIGTRACE
 endmenu
 
 mainmenu_option next_comment

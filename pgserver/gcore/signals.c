@@ -1,4 +1,4 @@
-/* $Id: signals.c,v 1.8 2002/03/28 11:43:38 micahjd Exp $
+/* $Id: signals.c,v 1.9 2002/03/29 03:20:13 micahjd Exp $
  *
  * signal.c - Handle some fatal and not-so-fatal signals gracefully
  *            The SIGSEGV handling et cetera was inspired by SDL's
@@ -61,7 +61,11 @@ static int pgserver_signals[] = {
 
 /* Handler for all signals!
  */
+#ifdef DEBUG_SIGTRACE   /* Use a sigaction handler if we need a trace */
+void signals_handler(int sig, siginfo_t *siginfo, void *context) {
+#else
 void signals_handler(int sig) {
+#endif
   static volatile u8 lock = 0;
 
   switch (sig) {
@@ -107,6 +111,34 @@ void signals_handler(int sig) {
      * in a confusing or unusable state.
      */
 
+#ifdef DEBUG_SIGTRACE   /* Print some extra info about the signal before quitting */
+    printf("*** PicoGUI Oops!\n"
+	   "***          si_signo: %d (%p)\n"
+	   "***          si_errno: %d\n"
+	   "***           si_code: %d\n"
+	   "***            si_pid: %d\n"
+	   "***            si_uid: %d\n"
+	   "***         si_status: %d\n"
+	   "***          si_value: %d\n"
+	   "***            si_int: %d\n"
+	   "***            si_ptr: %p\n"
+	   "***           si_addr: %p\n"
+	   "***           si_band: %d\n"
+	   "***             si_fd: %d\n",
+	   siginfo->si_signo,(void*)siginfo->si_signo,
+	   siginfo->si_errno,
+	   siginfo->si_code,
+	   siginfo->si_pid,
+	   siginfo->si_uid,
+	   siginfo->si_status,
+	   siginfo->si_value,
+	   siginfo->si_int,
+	   siginfo->si_ptr,
+	   siginfo->si_addr,
+	   siginfo->si_band,
+	   siginfo->si_fd);
+#endif /* DEBUG_SIGTRACE */
+
     /* Prevent infinite recursion */
     if (lock++) break;
 
@@ -131,12 +163,14 @@ void signals_handler(int sig) {
     exit(-sig);
   }
 
+#ifndef DEBUG_SIGTRACE   /* If we're using sigaction, we can ask to be restarted automatically */
   /* Some platforms (at least Linux <= 2.0.x) unregister the signal
      handler once the signal occured. So we need to register it back */
   if (signal(sig,&signals_handler)==SIG_ERR) {
     prerror(mkerror(PG_ERRT_INTERNAL,54));
     exit(1);
   }
+#endif
 }
 
 
@@ -145,11 +179,23 @@ void signals_handler(int sig) {
 void signals_install(void) {
   int *sig;
 
-  for (sig=pgserver_signals;*sig;sig++)
+  for (sig=pgserver_signals;*sig;sig++) {
+#ifdef DEBUG_SIGTRACE   /* Set a sigaction handler */
+    struct sigaction sa;
+    memset(&sa,0,sizeof(sa));
+    sa.sa_flags = SA_SIGINFO;
+    sa.sa_sigaction = &signals_handler;
+    if (sigaction(*sig,&sa,NULL)<0) {
+      prerror(mkerror(PG_ERRT_INTERNAL,54));
+      exit(1);
+    }
+#else                   /* Normal signal handler */
     if (signal(*sig,&signals_handler)==SIG_ERR) {
       prerror(mkerror(PG_ERRT_INTERNAL,54));
       exit(1);
     }
+#endif /* DEBUG_SIGTRACE */
+  }
 }
 
 /* The End */
