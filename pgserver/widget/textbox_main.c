@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.28 2002/01/28 06:27:45 lonetech Exp $
+/* $Id: textbox_main.c,v 1.29 2002/01/29 02:52:35 lonetech Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -244,6 +244,10 @@ void textbox_trigger(struct widget *self,long type,union trigparam *param) {
       text_insert_linebreak(&DATA->c);
       break;
       
+    case PGKEY_SPACE:
+      text_insert_wordbreak(&DATA->c);
+      break;
+
     default:
       {
 	char *str;
@@ -252,8 +256,6 @@ void textbox_trigger(struct widget *self,long type,union trigparam *param) {
 	str[0] = param->kbd.key;
 	str[1] = 0;
 	text_insert_string(&DATA->c,str,0);
-	if (param->kbd.key == PGKEY_SPACE)
-	  text_insert_wordbreak(&DATA->c);
 	update(self->in->div,1);
       }
       break;
