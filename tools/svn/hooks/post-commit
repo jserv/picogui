@@ -33,11 +33,11 @@ REPOS="$1"
 REV="$2"
 
 # Automatic backup
-svnadmin dump --incremental -r "$REV" "$REPOS" > /navi/backups/svn_auto/picogui-incremental.$REV 2> /dev/null
+svnadmin dump --incremental -r "$REV" "$REPOS" > /navi/backups/svn_auto/picogui-incremental.$REV 2> /dev/null&
 
 # IRC notification
-$REPOS/hooks/announceClient.py localhost picogui "`svnlook author -r $REV $REPOS`" committed revision $REV: "`svnlook log -r $REV $REPOS`"
+$REPOS/hooks/announceClient.py localhost picogui "`svnlook author -r $REV $REPOS`" committed revision $REV: "`svnlook log -r $REV $REPOS`"&
 
 # Send commit mail
-$REPOS/hooks/commit-email.pl --from "micah@navi.picogui.org" "$REPOS" "$REV" pgui-commits@lists.sourceforge.net
+$REPOS/hooks/commit-email.pl --from "micah@navi.picogui.org" "$REPOS" "$REV" pgui-commits@lists.sourceforge.net&
 
