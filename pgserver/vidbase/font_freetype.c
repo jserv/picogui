@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.1 2002/10/12 14:46:35 micahjd Exp $
+/* $Id: font_freetype.c,v 1.2 2002/10/12 15:50:26 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -28,8 +28,15 @@
 
 #include <pgserver/common.h>
 #include <pgserver/font.h>
+#include <freetype/freetype.h>
 
 /********************************** Implementations ***/
+
+g_error freetype_engine_init(void) {
+}
+
+void freetype_engine_shutdown(void) {
+}
 
 void freetype_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
 		   hwrcolor col, int ch, struct quad *clip, s16 lgop, s16 angle) {
@@ -60,6 +67,8 @@ void freetype_measure_string(struct font_descriptor *self, const struct pgstring
 /********************************** Registration ***/
 
 g_error freetype_regfunc(struct fontlib *f) {
+  f->engine_init = &freetype_engine_init;
+  f->engine_shutdown = &freetype_engine_shutdown;
   f->draw_char = &freetype_draw_char;
   f->measure_char = &freetype_measure_char;
   f->create = &freetype_create;

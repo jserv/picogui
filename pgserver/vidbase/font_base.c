@@ -1,4 +1,4 @@
-/* $Id: font_base.c,v 1.2 2002/10/12 15:13:32 micahjd Exp $
+/* $Id: font_base.c,v 1.3 2002/10/12 15:50:26 micahjd Exp $
  *
  * font_base.c - Handles multiple font backends, and provides default
  *               implementations of fontlib functions
@@ -68,8 +68,18 @@ g_error font_init(void) {
   font_register_defaults(&global_fontlib);
   e = fe->reg(&global_fontlib);
   errorcheck;
+  
+  if (global_fontlib.engine_init) {
+    e = global_fontlib.engine_init();
+    errorcheck;
+  }
 
   return success;
+}
+
+void font_shutdown(void) {
+  if (global_fontlib.engine_shutdown)
+    global_fontlib.engine_shutdown();
 }
 
 /* Create a new font using the default font engine loaded in font_init().

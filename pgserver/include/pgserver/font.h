@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.27 2002/10/12 15:13:32 micahjd Exp $
+/* $Id: font.h,v 1.28 2002/10/12 15:50:26 micahjd Exp $
  *
  * font.h - Common structures for defining fonts, and an interface
  *          for specific font engines to attach to
@@ -57,7 +57,8 @@ struct font_metrics {
  * if we need to. Right now one has to be chosen at startup.
  */
 g_error font_init(void);
-	
+void font_shutdown(void);
+
 /* Create a new font using the default font engine loaded in font_init().
  * If style is NULL, get a default font.
  */
@@ -83,6 +84,9 @@ g_error freetype_regfunc(struct fontlib *f);
 /********************************** Font engine interface ***/
 
 struct fontlib {
+  g_error (*engine_init)(void);
+  void (*engine_shutdown)(void);
+
   /*   Draw a single character to the screen at the given position
    *   and angle, into a clipping rectangle. The position is mesured
    *   at the top-left of the character cel. The font is in a
