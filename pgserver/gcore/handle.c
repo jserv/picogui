@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.7 2000/07/30 21:29:17 micahjd Exp $
+/* $Id: handle.c,v 1.8 2000/07/31 20:18:22 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -270,8 +270,8 @@ void htree_delete(struct handlenode *z) {
     z->id = y->id;   /* y passes its identity on to z */
     z->owner = y->owner;
     z->obj = y->obj;
-    z->type &= HFLAG_RED | HFLAG_NFREE;
-    z->type |= y->type & ~(HFLAG_RED|HFLAG_NFREE);
+    z->type &= HFLAG_RED;
+    z->type |= y->type & ~HFLAG_RED;
   }  
 
   if ((!(y->type & HFLAG_RED)) && x!=NIL)
@@ -388,6 +388,7 @@ g_error rdhandle(void **p,unsigned char reqtype,int owner,handle h) {
 /* Deletes the handle, and if HFLAG_NFREE is not set it frees the object */
 g_error handle_free(int owner,handle h) {
   struct handlenode *n = htree_find(h);
+
   if (!h) return mkerror(ERRT_HANDLE,"handle_free - null handle");
   if (!n) return mkerror(ERRT_HANDLE,"handle_free - invalid handle");
   if (owner>=0 && n->owner != owner) 
