@@ -12,7 +12,7 @@ channelFile = "/home/commits/channels.list"
 # List out the subdirs explicitly so we can set the order-
 # the first one here is used as the sort key, and for definatively
 # listing the available projects.
-statSubdirs = ('forever', 'monthly', 'weekly', 'daily')
+statSubdirs = ('forever', 'monthly', 'weekly', 'end-of-day', 'daily')
 
 projects = os.listdir(os.path.join(statDir, statSubdirs[0]))
 channels = open(channelFile).read().strip().split("\n")
