@@ -1,0 +1,240 @@
+/*
+ * font.c - loading and rendering fonts
+ * $Revision: 1.1 $
+ * 
+ * Micah Dowty <micah@homesoftware.com>
+ * 
+ * This file is released under the GPL. Please see the file COPYING that
+ * came with this distribution.
+ */
+
+#include <font.h>
+#include <string.h>
+#include <g_malloc.h>
+#include <g_error.h>
+
+handle defaultfont;
+
+/* This defines how italic the generated italic is */
+#define DEFAULT_SKEW 3
+
+/* Various bits turned on for matches in fontcmp.  The order
+ * of these bits defines the priority of the various
+ * attributes
+ */
+#define FCMP_STYLE    (1<<0)
+#define FCMP_FIXEDVAR (1<<1)
+#define FCMP_SIZE(x)  ((0xFF-(x&0xFF))<<2)   /* This macro is passed the
+						difference in size between the
+						request and the actual font */
+#define FCMP_CHARSET  (1<<11)
+#define FCMP_TYPE     (1<<12)
+#define FCMP_DEFAULT  (1<<13)
+#define FCMP_NAME     (1<<14)
+
+/* A function used by findfont that computes the 'closeness' between
+   the request and a particular font */
+int fontcmp(struct fontstyle_node *fs,char *name, int size, stylet flags);
+
+/* Outputs a character. It also updates (*x,*y) as a cursor position.
+ * To use this for measuring text but not actually outputting it, set
+ * clip to NULL
+ */
+void outchar(struct cliprect *clip, struct fontdesc *fd,
+	     int *x, int *y,devcolort col,char c) {
+  int i,j;
+  int cel_w; /* Total width of this character cel */
+  int glyph_w,glyph_h;
+  unsigned char *glyph;
+
+  glyph_w = fd->font->vwtab[c];
+  cel_w = glyph_w + fd->font->hspace + fd->boldw + fd->interchar_space;
+  if (fd->font->trtab[c] >= 0) {
+    glyph = (((unsigned char *)fd->font->bitmaps)+fd->font->trtab[c]);
+    glyph_h = fd->font->h;
+
+    if (clip) {
+      /* underline, overline, strikeout */
+      if (fd->hline>=0)
+	hwr_slab(clip,*x,fd->hline+(*y),cel_w,fd->hline_c);
+      
+      /* The actual character */
+      i=0;
+      if (fd->skew) i = fd->italicw;
+      hwr_chrblit(clip,glyph,(*x)+i,*y,glyph_w,glyph_h,fd->skew,col);
+      
+      /* bold */
+    for (i++,j=0;j<fd->boldw;i++,j++)
+      hwr_chrblit(clip,glyph,(*x)+i,*y,glyph_w,glyph_h,fd->skew,col);
+    }
+  }
+  *x += cel_w;  
+}
+
+/* Output text, interpreting '\n' but no other control chars.
+ * This function does add the margin as specified by fd->margin.
+*/
+void outtext(struct cliprect *clip,struct fontdesc *fd,
+	     int x,int y,devcolort col,char *txt) {
+  int xbase;
+  x += fd->margin;
+  y += fd->margin;
+  xbase = x; 
+   
+  if (!(fd && txt)) return;
+
+  while (*txt) {
+    if (*txt=='\n') {
+      y += fd->font->h+fd->font->vspace+fd->interline_space;
+      x = xbase;
+    }
+    else
+      outchar(clip,fd,&x,&y,col,*txt);
+    txt++;
+  }
+}
+
+/* Measure the width and height of text as output by outtext
+ * This includes the characters themselves , internal spacing,
+ * and the margin as specified by fd->margin
+ */
+void sizetext(struct fontdesc *fd, int *w, int *h, char *txt) {
+  int o_w=0;
+  *w = fd->margin << 1;
+  *h = (*w) + fd->fs->ulineh;
+   
+  if (!(fd && txt && w && h)) return;
+
+  while (*txt) {
+    if ((*txt)=='\n') {
+      *h += fd->font->h + fd->font->vspace + fd->interline_space;
+      if ((*w)>o_w) o_w = *w;
+      *w = fd->margin << 1;
+    }
+    else {
+      outchar(NULL,fd,w,h,black,*txt);
+    }
+    txt++;
+  }
+  if ((*w)<o_w) *w = o_w;
+  *w -= fd->font->hspace + fd->interchar_space;
+  *w += fd->italicw;
+}
+
+/* Find a font and fill in the fontdesc structure */
+g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
+  struct fontstyle_node *p;
+  struct fontstyle_node *closest = NULL;
+  struct fontdesc *fd; 
+  int closeness = -1;
+  int r;
+  g_error e;
+
+  e = g_malloc((void **) &fd,sizeof(struct fontdesc));
+  if (e.type != ERRT_NONE) return e;
+  e = mkhandle(pfh,TYPE_FONTDESC,owner,fd);
+  if (e.type != ERRT_NONE) return e;
+
+  /* Initialize the fd */
+  memset(fd,0,sizeof(struct fontdesc));
+  fd->hline = -1;
+  fd->hline_c = black;
+  
+  if (!(flags & FSTYLE_FLUSH)) fd->margin = 2;
+  if (flags & FSTYLE_GRAYLINE) {
+    fd->hline_c = gray;
+    flags |= FSTYLE_UNDERLINE;
+  }
+
+  /* Now that the easy stuff is taken care of, find the font to use */
+  p = fontstyles;
+  while (p) {
+    r = fontcmp(p,name,size,flags);
+    if (r>closeness) {
+      closeness = r;
+      closest = p;
+    }
+    p = p->next;
+  }
+  fd->fs = closest;
+
+  if ((flags&FSTYLE_BOLD) && (flags&FSTYLE_ITALIC) && closest->bolditalic) {
+    flags &= ~(FSTYLE_BOLD|FSTYLE_ITALIC);
+    fd->font = closest->bolditalic;
+  }
+  else if ((flags&FSTYLE_ITALIC) && closest->italic) {
+    flags &= ~FSTYLE_ITALIC;
+    fd->font = closest->italic;
+  }
+  else if ((flags&FSTYLE_BOLD) && closest->bold) {
+    flags &= ~FSTYLE_BOLD;
+    fd->font = closest->bold;
+  }
+  else					
+    fd->font = closest->normal;
+
+  if (flags&FSTYLE_BOLD) fd->boldw = closest->boldw;
+
+  if (flags&FSTYLE_DOUBLESPACE) fd->interline_space = 
+				  fd->font->h+fd->font->vspace;
+  if (flags&FSTYLE_DOUBLEWIDTH) fd->interchar_space =
+				  fd->font->vwtab[' ']+fd->font->hspace+
+				  fd->boldw;
+  if (flags&FSTYLE_UNDERLINE) fd->hline = closest->ulineh;
+  if (flags&FSTYLE_STRIKEOUT) fd->hline = closest->slineh;
+
+  if (flags&FSTYLE_ITALIC2) {
+    fd->skew = DEFAULT_SKEW / 2;
+    fd->italicw = closest->ulineh / fd->skew; 
+  }
+  else if (flags&FSTYLE_ITALIC) {
+    fd->skew = DEFAULT_SKEW;
+    fd->italicw = closest->ulineh / fd->skew; 
+  }
+
+  return sucess;
+}
+
+/* A function used by findfont that computes the 'closeness' between
+   the request and a particular font */
+int fontcmp(struct fontstyle_node *fs,char *name, int size, stylet flags) {
+  int result;
+  int szdif;
+  
+  if (size) { 
+    szdif = size-fs->size;
+    if (szdif<0) szdif = 0-szdif;
+    result = FCMP_SIZE(szdif);
+  }    
+  else {
+    result = 0;
+  }
+
+  if (name && (!strcasecmp(name,fs->name))) result |= FCMP_NAME;
+  if ((flags&FSTYLE_FIXED)==(fs->flags&FSTYLE_FIXED)) result |= FCMP_FIXEDVAR;
+  if ((flags&FSTYLE_DEFAULT) && (fs->flags&FSTYLE_DEFAULT)) 
+    result |= FCMP_DEFAULT;
+
+  if (((flags&(FSTYLE_BOLD|FSTYLE_ITALIC)) == FSTYLE_BOLD)
+      && fs->bold) result |= FCMP_STYLE;
+  if (((flags&(FSTYLE_BOLD|FSTYLE_ITALIC)) == FSTYLE_ITALIC)
+      && fs->italic) result |= FCMP_STYLE;
+  if (((flags&(FSTYLE_BOLD|FSTYLE_ITALIC)) == (FSTYLE_BOLD|FSTYLE_ITALIC))
+      && fs->bolditalic) result |= FCMP_STYLE;
+  if ( ((flags&FSTYLE_SYMBOL)==(fs->flags&FSTYLE_SYMBOL)) &&
+       ((flags&FSTYLE_SUBSET)==(fs->flags&FSTYLE_SUBSET)))
+    result |= FCMP_TYPE;
+  if ( ((flags&FSTYLE_EXTENDED)==(fs->flags&FSTYLE_EXTENDED)) &&
+       ((flags&FSTYLE_IBMEXTEND)==(fs->flags&FSTYLE_IBMEXTEND)))
+    result |= FCMP_CHARSET;
+
+  return result;
+}
+
+/* The End */
+
+
+
+
+
+
