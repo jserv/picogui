@@ -1,4 +1,4 @@
-/* $Id: dvbl_primitives_aa.c,v 1.2 2003/01/01 03:43:05 micahjd Exp $
+/* $Id: dvbl_primitives_aa.c,v 1.3 2003/02/10 19:54:03 micahjd Exp $
  *
  * dvbl_primitives_aa.c - Antialiased versions of the normal primitives
  *
@@ -52,6 +52,22 @@ void def_line(hwrbitmap dest,s16 x1,s16 y1,s16 x2,s16 y2,hwrcolor clr,s16 lgop) 
 
   dx = x2 - x1;
   dy = y2 - y1;
+
+  /* This code doesn't handle horizontal and vertical lines */
+  if (!dx) {
+    if (y1<y2)
+      vid->slab(dest,x1,y1,y2-y1+1,clr,lgop);
+    else
+      vid->slab(dest,x1,y2,y1-y2+1,clr,lgop);
+    return;
+  }
+  if (!dy) {
+    if (x1<x2)
+      vid->bar(dest,x1,y1,x2-x1+1,clr,lgop);
+    else
+      vid->bar(dest,x2,y1,x1-x2+1,clr,lgop);
+    return;
+  }
   
   slope = (dy<<16) / dx;
   slope_reciprocal = (dx<<16) / dy;
