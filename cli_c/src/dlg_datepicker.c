@@ -1,4 +1,4 @@
-/* $Id: dlg_datepicker.c,v 1.3 2001/07/30 05:52:21 micahjd Exp $
+/* $Id: dlg_datepicker.c,v 1.4 2001/07/30 07:15:02 micahjd Exp $
  *
  * dlg_datepicker.c - Implementation of the pgDatePicker() function. Display
  *                    a date on a calendar, and allow the user to select a
@@ -91,7 +91,7 @@ void datepicker_drawmonth(pghandle canvas, pghandle title,
   /* Find the weekday of the 1st of the month */
   memset(&then,0,sizeof(then));
   then.tm_year = year-1900;
-  then.tm_mon = month;
+  then.tm_mon = month-1;
   then.tm_mday = 1;
   just_then = mktime(&then);
   first_weekday = localtime(&just_then)->tm_wday;
@@ -99,7 +99,7 @@ void datepicker_drawmonth(pghandle canvas, pghandle title,
   /* Find the number of days in the month */
   memset(&then,0,sizeof(then));
   then.tm_year = year-1900;
-  then.tm_mon = month+1;
+  then.tm_mon = month;
   just_then = mktime(&then);
   *numdays = localtime(&just_then)->tm_mday;
 
@@ -138,7 +138,7 @@ void datepicker_drawmonth(pghandle canvas, pghandle title,
   pgDeleteContext(gc);
 
   /* Calendar title */
-  pgReplaceTextFmt(title, "%s %d, %d",months[month],*day,year);
+  pgReplaceTextFmt(title, "%s %d, %d",months[month-1],*day,year);
 }
 
 int pgDatePicker(int *year, int *month, int *day, const char *title) {
@@ -153,6 +153,9 @@ int pgDatePicker(int *year, int *month, int *day, const char *title) {
   pghandle fHeading;
   int firstday,numdays;
   int retval = 0;
+  int saved_year  = *year;
+  int saved_month = *month;
+  int saved_day   = *day;     /* Here I come to save the day! */
 
   pgEnterContext();
 
@@ -236,7 +239,7 @@ int pgDatePicker(int *year, int *month, int *day, const char *title) {
 		PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
 		PG_WP_SIZE,pgFraction(1,6),
 		0);
-    pgSetPayload(PGDEFAULT,i);
+    pgSetPayload(PGDEFAULT,i+1);
   }
 
   /********** Event loop */
@@ -247,9 +250,10 @@ int pgDatePicker(int *year, int *month, int *day, const char *title) {
   if (!*year)
     *year = now->tm_year + 1900;
   if (!*month)
-    *month = now->tm_mon;
+    *month = now->tm_mon + 1;
   if (!*day)
     *day = now->tm_mday;
+
 
   /* Draw the months in a separate context */
   pgEnterContext();
@@ -261,8 +265,12 @@ int pgDatePicker(int *year, int *month, int *day, const char *title) {
     id = pgGetPayload(evt.from);
 
     /* Cancel button? */
-    if (evt.from==wCancel)
+    if (evt.from==wCancel) {
+      *year = saved_year;
+      *month = saved_month;
+      *day = saved_day;
       break;
+    }
 
     /* Ok button? */
     if (evt.from==wOk) {
@@ -271,7 +279,7 @@ int pgDatePicker(int *year, int *month, int *day, const char *title) {
     }
 
     /* A month button? */
-    else if (id<12 && evt.from==wMonths[id])
+    else if (id && id<13 && evt.from==wMonths[id-1])
       *month = id;
 
     /* Year buttons? */
@@ -317,4 +325,29 @@ int pgDatePicker(int *year, int *month, int *day, const char *title) {
 }
 
 /* The End */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

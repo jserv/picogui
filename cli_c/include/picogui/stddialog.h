@@ -1,4 +1,4 @@
-/* $Id: stddialog.h,v 1.2 2001/07/30 04:42:06 micahjd Exp $
+/* $Id: stddialog.h,v 1.3 2001/07/30 07:15:02 micahjd Exp $
  *
  * picogui/stddialog.h - Various preconstructed dialog boxes the application
  *                       may use. These are implemented 100% client-side using
@@ -126,6 +126,10 @@ int pgMenuFromArray(pghandle *items,int numitems);
  *          cancel button was pressed
  *
  * \p year, \p month, and/or \p day may be zero to use the current date.
+ * The year must be fully specified. For example, use 1984 instead of just 84.
+ * Of course the dialog is Y2K compliant!  On systems with 32-bit time_t, it
+ * does not allow years beyond 2037. With a 64-bit time_t this isn't a problem.
+ * Months and days are both one-based.
  *
  * \sa pgDialogBox
  */
