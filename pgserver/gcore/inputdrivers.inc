@@ -33,6 +33,10 @@
   DRV("tuxts",&tuxts_regfunc)
 #endif
 
+#ifdef DRIVER_TTYKB
+  DRV("ttykb",&ttykb_regfunc)
+#endif
+
 #ifdef DRIVER_SERIALMOUSE
   DRV("serialmouse",&serialmouse_regfunc)
 #endif

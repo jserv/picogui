@@ -1,4 +1,4 @@
-/* $Id: pgkeys.h,v 1.6 2001/09/09 20:54:52 micahjd Exp $
+/* $Id: pgkeys.h,v 1.7 2001/10/06 02:36:39 gork Exp $
  *
  * pgkeys.h - Constants for the keyboard keys and modifiers
  *
@@ -46,6 +46,7 @@
 #define PGKEY_QUOTEDBL           34
 #define PGKEY_HASH      	 35
 #define PGKEY_DOLLAR    	 36
+#define PGKEY_PERCENT            37
 #define PGKEY_AMPERSAND          38
 #define PGKEY_QUOTE     	 39
 #define PGKEY_LEFTPAREN  	 40
@@ -105,6 +106,10 @@
 #define PGKEY_x           	 120
 #define PGKEY_y           	 121
 #define PGKEY_z           	 122
+#define PGKEY_LEFTBRACE          123
+#define PGKEY_PIPE               124
+#define PGKEY_RIGHTBRACE         125
+#define PGKEY_TILDE              126
 #define PGKEY_DELETE           	 127
 #define PGKEY_WORLD_0            160		/* 0xA0 */
 #define PGKEY_WORLD_1            161

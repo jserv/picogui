@@ -102,6 +102,7 @@ if [ "$DRIVER_R3912TS" = "y" ]; then
 fi
 bool 'Agenda VR3 touchscreen input driver'             DRIVER_VR3TS
 bool 'TuxScreen touchscreen input driver'              DRIVER_TUXTS
+bool 'TTY keyboard input driver (TuxScreen, fb)'       DRIVER_TTYKB
 bool 'Serial mouse input driver'                       DRIVER_SERIALMOUSE
 endmenu
 
