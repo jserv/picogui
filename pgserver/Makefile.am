@@ -36,7 +36,7 @@ EXTRA_DIST = \
 	script/pnm_embed.pl		\
 	config.in			\
 	select.in			\
-	config.defaults 		\
+	profile.defaults 		\
 	macros/aclocal-include.m4 	\
 	macros/pguiconfig.m4
 
@@ -64,3 +64,7 @@ menuconfig: configscript/lxdialog/lxdialog
 configscript/lxdialog/lxdialog:
 	@(cd configscript/lxdialog && $(MAKE) $(AM_MAKEFLAGS) all)
 
+distclean-local:
+	list='$(DIST_SUBDIRS)'; for subdir in $$list; do \
+	  test "$$subdir" = . || (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) distclean); \
+	done

@@ -10,8 +10,9 @@ AM_PGUI_CROSSCOMPILE
 dnl Get the configuration file for the system
 
 AC_ARG_WITH(config,
-[  --with-config=<config file>   Use given configuration file],,
-  with_config="${srcdir}/config.defaults")
+[  --with-profile=<config file>   Use given profile for server customization],,
+  test -f profile.user || cp "${srcdir}/profile.defaults" profile.user
+  with_config="profile.user")
 
 
 dnl normalize the path somehow
