@@ -34,10 +34,13 @@ for line in input():
 	if(name[:7]=='pgth.p.'):
 	  properties[value]=name[7:]
 	if(name[:8]=='pg.grop.'):
-	  if(name[8:11]=='set'):
-	    gropname[value]=capitalize(name[8:11])+capitalize(name[11:])
-	  else:
-	    gropname[value]=capitalize(name[8:])
+	  if(name[8:10]=='gl'):
+            gropname[value]='GL'+capitalize(name[10:]);
+          else:
+	    if(name[8:11]=='set'):
+	      gropname[value]=capitalize(name[8:11])+capitalize(name[11:])
+	    else:
+	      gropname[value]=capitalize(name[8:])
       else:
 	print "# Couldn't eval", m.group(2), "result", repr(value), "in", fullline
     fullline=''

@@ -51,84 +51,84 @@ object background {
     ts = 1<<16;        /* Size in texture coordinates */
     cube_z = s;        /* Height it floats at */
         
-    Gl_pushmatrix();
-    Gl_enable(GL_DEPTH_TEST);
-    Gl_depthfunc(GL_LESS);
-    Gl_bindtexture(tPanel);
-    Gl_enable(GL_TEXTURE_2D);
-    Gl_disable(GL_BLEND);
-    Gl_enable(GL_LIGHT1);
-    Gl_enable(GL_LIGHTING);
-    Gl_lightfv(GL_LIGHT1, GL_AMBIENT,1,0, 0x0A000,0x0A000,0x0A000);
-    Gl_lightfv(GL_LIGHT1, GL_DIFFUSE,1,0, 0x10000,0x10000,0x12000);
+    GL.pushmatrix();
+    GL.enable(GL_DEPTH_TEST);
+    GL.depthfunc(GL_LESS);
+    GL.bindtexture(tPanel);
+    GL.enable(GL_TEXTURE_2D);
+    GL.disable(GL_BLEND);
+    GL.enable(GL_LIGHT1);
+    GL.enable(GL_LIGHTING);
+    GL.lightfv(GL_LIGHT1, GL_AMBIENT,1,0, 0x0A000,0x0A000,0x0A000);
+    GL.lightfv(GL_LIGHT1, GL_DIFFUSE,1,0, 0x10000,0x10000,0x12000);
 
     /*** Transformations */
     
-    Gl_translatef(w<<15,h<<15,cube_z);          /* Float above the divnode */
+    GL.translatef(w<<15,h<<15,cube_z);          /* Float above the divnode */
 
     /* Set up the light relative to the cube's center.
      * Hover it in front of the cube for nice shading effects.
      */
-    Gl_lightfv(GL_LIGHT1, GL_POSITION,1,0, 0,0,w<<15);
+    GL.lightfv(GL_LIGHT1, GL_POSITION,1,0, 0,0,w<<15);
 
-    Gl_rotatef(45,0,0,0, 1<<16,0,0);            /* Small vertical tilt */
-    Gl_rotatef(t>>4,t<<12,0,0, 0,1<<16,0);      /* Spin */
-    Gl_translatef(0-(s>>1),0-(s>>1),0-(s>>1));  /* Center on the origin */
+    GL.rotatef(45,0,0,0, 1<<16,0,0);            /* Small vertical tilt */
+    GL.rotatef(t>>4,t<<12,0,0, 0,1<<16,0);      /* Spin */
+    GL.translatef(0-(s>>1),0-(s>>1),0-(s>>1));  /* Center on the origin */
 
     /*** Cube */
     
-    Gl_begin(GL_QUADS);
+    GL.begin(GL_QUADS);
     
     /* Right */
-    Gl_normal3f(u,0,0);
-    Gl_texcoord2f(0,0);     Gl_vertex3f(s,0,0);
-    Gl_texcoord2f(ts,0);    Gl_vertex3f(s,s,0);
-    Gl_texcoord2f(ts,ts);   Gl_vertex3f(s,s,s);
-    Gl_texcoord2f(0,ts);    Gl_vertex3f(s,0,s);
+    GL.normal3f(u,0,0);
+    GL.texcoord2f(0,0);     GL.vertex3f(s,0,0);
+    GL.texcoord2f(ts,0);    GL.vertex3f(s,s,0);
+    GL.texcoord2f(ts,ts);   GL.vertex3f(s,s,s);
+    GL.texcoord2f(0,ts);    GL.vertex3f(s,0,s);
     
     /* Left */
-    Gl_normal3f(-u,0,0);
-    Gl_texcoord2f(0,0);     Gl_vertex3f(0,0,0);
-    Gl_texcoord2f(ts,0);    Gl_vertex3f(0,s,0);
-    Gl_texcoord2f(ts,ts);   Gl_vertex3f(0,s,s);
-    Gl_texcoord2f(0,ts);    Gl_vertex3f(0,0,s);
+    GL.normal3f(-u,0,0);
+    GL.texcoord2f(0,0);     GL.vertex3f(0,0,0);
+    GL.texcoord2f(ts,0);    GL.vertex3f(0,s,0);
+    GL.texcoord2f(ts,ts);   GL.vertex3f(0,s,s);
+    GL.texcoord2f(0,ts);    GL.vertex3f(0,0,s);
     
     /* Bottom */
-    Gl_normal3f(0,u,0);
-    Gl_texcoord2f(0,0);     Gl_vertex3f(0,s,0);
-    Gl_texcoord2f(ts,0);    Gl_vertex3f(s,s,0);
-    Gl_texcoord2f(ts,ts);   Gl_vertex3f(s,s,s);
-    Gl_texcoord2f(0,ts);    Gl_vertex3f(0,s,s);
+    GL.normal3f(0,u,0);
+    GL.texcoord2f(0,0);     GL.vertex3f(0,s,0);
+    GL.texcoord2f(ts,0);    GL.vertex3f(s,s,0);
+    GL.texcoord2f(ts,ts);   GL.vertex3f(s,s,s);
+    GL.texcoord2f(0,ts);    GL.vertex3f(0,s,s);
     
     /* Top */
-    Gl_normal3f(0,-u,0);
-    Gl_texcoord2f(0,0);     Gl_vertex3f(0,0,0);
-    Gl_texcoord2f(ts,0);    Gl_vertex3f(s,0,0);
-    Gl_texcoord2f(ts,ts);   Gl_vertex3f(s,0,s);
-    Gl_texcoord2f(0,ts);    Gl_vertex3f(0,0,s);
+    GL.normal3f(0,-u,0);
+    GL.texcoord2f(0,0);     GL.vertex3f(0,0,0);
+    GL.texcoord2f(ts,0);    GL.vertex3f(s,0,0);
+    GL.texcoord2f(ts,ts);   GL.vertex3f(s,0,s);
+    GL.texcoord2f(0,ts);    GL.vertex3f(0,0,s);
     
     /* Front */
-    Gl_normal3f(0,0,-u);
-    Gl_texcoord2f(0,0);     Gl_vertex3f(0,0,0);
-    Gl_texcoord2f(ts,0);    Gl_vertex3f(s,0,0);
-    Gl_texcoord2f(ts,ts);   Gl_vertex3f(s,s,0);
-    Gl_texcoord2f(0,ts);    Gl_vertex3f(0,s,0);
+    GL.normal3f(0,0,-u);
+    GL.texcoord2f(0,0);     GL.vertex3f(0,0,0);
+    GL.texcoord2f(ts,0);    GL.vertex3f(s,0,0);
+    GL.texcoord2f(ts,ts);   GL.vertex3f(s,s,0);
+    GL.texcoord2f(0,ts);    GL.vertex3f(0,s,0);
     
     /* Back */
-    Gl_normal3f(0,0,u);
-    Gl_texcoord2f(0,0);     Gl_vertex3f(0,0,s);
-    Gl_texcoord2f(ts,0);    Gl_vertex3f(s,0,s);
-    Gl_texcoord2f(ts,ts);   Gl_vertex3f(s,s,s);
-    Gl_texcoord2f(0,ts);    Gl_vertex3f(0,s,s);
+    GL.normal3f(0,0,u);
+    GL.texcoord2f(0,0);     GL.vertex3f(0,0,s);
+    GL.texcoord2f(ts,0);    GL.vertex3f(s,0,s);
+    GL.texcoord2f(ts,ts);   GL.vertex3f(s,s,s);
+    GL.texcoord2f(0,ts);    GL.vertex3f(0,s,s);
     
-    Gl_end();
+    GL.end();
 
     /*** Cleanup */
     
-    Gl_disable(GL_TEXTURE_2D);
-    Gl_disable(GL_DEPTH_TEST);
-    Gl_disable(GL_LIGHTING);
-    Gl_popmatrix();
+    GL.disable(GL_TEXTURE_2D);
+    GL.disable(GL_DEPTH_TEST);
+    GL.disable(GL_LIGHTING);
+    GL.popmatrix();
   };
 }
 
