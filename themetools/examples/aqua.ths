@@ -1,4 +1,4 @@
-/* $Id: aqua.ths,v 1.42 2002/10/29 03:59:17 micahjd Exp $
+/* $Id: aqua.ths,v 1.43 2002/11/15 21:45:29 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
@@ -7,12 +7,13 @@
  *       written before a lot of nice themec features were implemented.
  *       read the source to a newer theme like Fluidity to get some better examples.
  *
- * Version 1.07
+ * Version 1.09
  *
  * -- Micah Dowty
  *
  * Changelog:
  *
+ *  1.09 - Support for the tab widget
  *  1.08 - Fixed textbox background
  *  1.07 - Black background for terminal
  *  1.06 - Fixed textbox margins
@@ -28,7 +29,7 @@ prop interlace;
 
 /* The stripey background */
 object default {
-  name = "PicoAqua 1.08";
+  name = "PicoAqua 1.09";
 
   bgfill = Copy(default::interlace);
   bitmap1 = LoadBitmap("data/aq_bg.pnm");
@@ -380,5 +381,49 @@ object textbox {
   bgfill = Copy(default::bgfill);
   bitmap1 = Copy(default::bitmap1);
 }
+
+object tab.bar {
+  bgfill = fillstyle {
+    default::interlace(x,y,w,h-8);
+    Bitmap(x,y+h-9,w,8,bitmap2);
+    SetColor(0x808080);
+    Bar(x,y+h-9,1,7);
+    Bar(x+w-1,y+h-9,1,7);
+  };
+  bitmap2 = LoadBitmap("data/aq_tabbar.pnm");
+  margin = 0;
+}
+
+object tab {
+  bitmap1 = LoadBitmap("data/aq_tab_light.pnm");
+  offset = 2;
+  height = 33;
+  spacing = 0;
+  bgfill = fillstyle {
+    var o;
+    o = offset;
+    x = x+2;
+    w = w-4;
+    Bitmap(x,y,w,o,default::bitmap1);
+    SetSrc(0,0,10,25);
+    Bitmap(x,y+o,10,25,bitmap1);
+    SetSrc(62,0,10,25);
+    Bitmap(x+w-11,y+o,10,25,bitmap1);
+    SetSrc(10,0,53,25);
+    Tilebitmap(x+10,y+o,w-20,25,bitmap1);
+    SetSrc(0,0,0,0);
+    Bitmap(x,y+h-9,w,8,tab.bar::bitmap2);
+    h = h - 8;
+    y = y + o;
+  };
+}
+
+object tab.on {
+  parent = PGTH_O_TAB;
+  bitmap1 = LoadBitmap("data/aq_tab_dark.pnm");
+  offset = 0;
+}
+
+object tab.hilight parent = PGTH_O_TAB;
 
 /* The End */
