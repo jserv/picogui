@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.53 2001/10/27 20:43:25 bornet Exp $
+/* $Id: defaultvbl.c,v 1.54 2001/11/06 06:57:59 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -1054,8 +1054,8 @@ void def_tileblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
   /* Do a tiled blit */
   for (i=0;i<w;i+=sw)
      for (j=0;j<h;j+=sh)
-       (*vid->blit) (dest,x+i,y+j,min(w-i,sw),min(h-j,h),
-		     src,sx,sy,PG_LGOP_NONE);
+       (*vid->blit) (dest,x+i,y+j,min(w-i,sw),min(h-j,sh),
+		     src,sx,sy,lgop);
 }
 
 /* Scary slow blit, but necessary for dealing with unsupported lgop values
