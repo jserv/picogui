@@ -98,3 +98,8 @@ W: http://bluemug.com
 D: Textedit widget
 D: We do mobile consumer device software, hence the interest in PicoGUI
 S: Berkeley, CA, USA
+
+N: E.Allen Soard
+E: esp@espsw.net
+D: Tcl Bindings for picogui
+S: Ridgecrest, CA, USA
