@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.12 2001/01/02 19:08:44 micahjd Exp $
+/* $Id: main.c,v 1.13 2001/02/08 06:48:28 micahjd Exp $
  *
  * main.c - main() and some parser utility functions for
  *          the PicoGUI theme compiler.  The actual parsing
@@ -224,6 +224,11 @@ struct loadernode *newloader(unsigned char *data,unsigned long len) {
     n->next = loaderlist;
 
     datasz_loader += len;
+     
+    /* Account for word boundary padding */
+    if (len & 3)
+       datasz_loader += 4 - (len & 3);
+     
     loaderlist = n;
   }
   else

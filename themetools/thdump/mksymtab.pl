@@ -1,4 +1,4 @@
-# $Id: mksymtab.pl,v 1.3 2000/10/10 00:49:05 micahjd Exp $
+# $Id: mksymtab.pl,v 1.4 2001/02/08 06:48:28 micahjd Exp $
 #
 # mksymtab.pl - convert the constant definitions in constants.h
 #               into a symbol table for looking up constants
@@ -44,7 +44,9 @@ while (<>) {
     # so we can make a table
 
     next if (!/^\#define\s*(PG\S+)/);
-    print "\t{$1,\"$1\"},\n";
+    $sym = $1;
+    next if ($sym =~ /[\(\)]/);   # skip macros 
+    print "\t{$sym,\"$sym\"},\n";
 }
 
 print "\t{0,NULL}\n};\n\n/* The End */\n";

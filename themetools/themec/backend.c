@@ -1,4 +1,4 @@
-/* $Id: backend.c,v 1.5 2000/10/10 00:49:06 micahjd Exp $
+/* $Id: backend.c,v 1.6 2001/02/08 06:48:28 micahjd Exp $
  *
  * backend.c - convert the in-memory representation of the
  *             theme data to the actual compiled theme file
@@ -148,6 +148,10 @@ void backend(void) {
   ldr = loaderlist;
   while (ldr) {
 
+    /* Align on a word boundary */
+    if ( ( ((char*)themeheap_p) - ((char*)themeheap) ) & 3)
+       themeheap_p += 4 - (( ((char*)themeheap_p) - ((char*)themeheap) ) & 3);
+     
     /* link */
     *ldr->link_from = htonl( ((char*)themeheap_p) - ((char*)themeheap) );
 
