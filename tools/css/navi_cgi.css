@@ -138,26 +138,41 @@ ul {
 /* Most of this table formatting is modified from Plone's default CSS */
 
 table {
-    margin: 0em 0em 1em 0em;
+  margin: 0em 0em 1em 0em;
 }
 
 table th {
-    border-bottom: 1px solid #8CACBB;
-    font-weight: normal;
-    padding: 0.2em 1em;
-    text-transform: lowercase;
-    white-space: nowrap;
+  border-bottom: 1px solid #8CACBB;
+  font-weight: normal;
+  padding: 0.2em 1em;
+  text-transform: lowercase;
+  white-space: nowrap;
 }
 
 table td {
-    padding: 0.8em 0.8em 0em 0.8em;
-    text-align: left;
+  padding: 0.8em 0.8em 0em 0.8em;
+  text-align: left;
 }
 
 .bargraph {
-    background: #DEECE7;
-    border: 1px solid #8CBBAC;
+  background: #DEECE7;
+  border: 1px solid #8CBBAC;
 }
+
+.chart {
+  margin: 0em;
+  padding: 0em;
+} 
+
+.chartBody {
+  margin: 0em;
+  padding: 0em;
+} 
+
+.chartLegend {
+  margin: 0em;
+  padding: 0em;
+} 
 
 /* HTML representation of the IRC colors */
 
