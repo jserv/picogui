@@ -1,4 +1,4 @@
-/* $Id: os.h,v 1.3 2002/11/03 22:55:58 micahjd Exp $
+/* $Id: os.h,v 1.4 2002/11/03 23:52:26 micahjd Exp $
  *
  * os.h - Interface to OS-specific functions used by pgserver, independent
  *        of the actual OS in use. Functions that only exist in a particular
@@ -55,6 +55,14 @@ void os_set_timer(u32 ticks);
 
 /* Return the timer value most recently set with os_set_timer() */
 u32 os_get_timer(void);
+
+/* Create a new shared memory segment, returning a key, id, and pointer.
+ * The key is passed to the client so it can attach to the section, the id
+ * is passed to os_shm_free(), and the pointer is self explanatory.
+ * The segment will have ownership set to the supplied uid.
+ */
+g_error os_shm_alloc(u8 **shmaddr, u32 size, u32 *id, u32 *key, u32 pid);
+void os_shm_free(u8 *shmaddr, u32 id);
 
 #endif /* __H_OS */
 

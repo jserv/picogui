@@ -1,4 +1,4 @@
-/* $Id: posix.c,v 1.5 2002/11/03 23:18:46 micahjd Exp $
+/* $Id: posix.c,v 1.6 2002/11/03 23:52:26 micahjd Exp $
  *
  * posix.c - Implementation of OS-specific functions for POSIX-compatible systems
  *
@@ -33,6 +33,9 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <errno.h>
 extern char **environ;
 
 /* Return value of the last process to exit */
@@ -133,6 +136,45 @@ void os_set_timer(u32 ticks) {
 
 u32 os_get_timer(void) {
   return os_posix_timer;
+}
+
+/* Create a new shared memory segment, returning a key, id, and pointer.
+ * The key is passed to the client so it can attach to the section, the id
+ * is passed to os_shm_free(), and the pointer is self explanatory.
+ * The segment will have ownership set to the supplied uid.
+ */
+g_error os_shm_alloc(u8 **shmaddr, u32 size, u32 *id, u32 *key, u32 uid) {
+  struct shmid_ds ds;
+
+  /* Find an unused SHM key, starting with a magic number.
+   * (Anybody nerdy enough to know where it comes from should be punished ;)
+   */
+  *key = 3263827;
+  while ((*id = shmget(*key,size,IPC_CREAT | IPC_EXCL | 0600)) < 0) {
+    if (errno != EEXIST)
+      return mkerror(PG_ERRT_IO,5);     /* Error creating SHM segment */
+    (*key)++;
+  }
+
+  /* Attach it to our address space */
+  *shmaddr = shmat(*id,NULL,0);
+  if (!*shmaddr) {
+    shmctl(*key, IPC_RMID, NULL);
+    return mkerror(PG_ERRT_IO,5);     /* Error creating SHM segment */
+  }
+
+  /* Assign ownership */
+  shmctl(*id,IPC_STAT,&ds);
+  ds.shm_perm.uid = uid;
+  shmctl(*id,IPC_SET,&ds);
+
+  return success;
+}
+
+void os_shm_free(u8 *shmaddr, u32 id) {
+  /* Unmap this segment and remove the key itself */
+  shmdt(shmaddr);
+  shmctl(id, IPC_RMID, NULL);
 }
 
 /* The End */

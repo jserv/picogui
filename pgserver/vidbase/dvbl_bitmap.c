@@ -1,4 +1,4 @@
-/* $Id: dvbl_bitmap.c,v 1.15 2002/10/12 19:53:49 micahjd Exp $
+/* $Id: dvbl_bitmap.c,v 1.16 2002/11/03 23:52:26 micahjd Exp $
  *
  * dvbl_bitmap.c - This file is part of the Default Video Base Library,
  *                 providing the basic video functionality in picogui but
@@ -38,10 +38,6 @@
 #include <pgserver/render.h>
 #include <pgserver/appmgr.h>   /* for res[PGRES_DEFAULT_FONT] */
 
-#include <sys/types.h>         /* Includes for managing shared memory bitmaps */
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <errno.h>
 
 /******* Table of available bitmap formats */
 
@@ -216,11 +212,8 @@ void def_bitmap_free(struct stdbitmap *bmp) {
   if (bmp->freebits)
     g_free(bmp->bits);
 
-  if (bmp->shm_id) {
-    /* Unmap this segment and remove the key itself */
-    shmdt(bmp->bits);
-    shmctl(bmp->shm_id, IPC_RMID, NULL);
-  }
+  if (bmp->shm_id)
+    os_shm_free(bmp->bits, bmp->shm_id);
 
   g_free(bmp);
 }
@@ -524,11 +517,11 @@ void def_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
  */
 g_error def_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm) {
   struct stdbitmap *b = (struct stdbitmap *) bmp;
-  key_t key;
-  int id;
-  int size = b->pitch * b->h + 1;  /* +1 for bpp<8 padding, as described in def_bitmap_new() */
+  u32 key;
+  u32 id;
+  u32 size = b->pitch * b->h + 1;  /* +1 for bpp<8 padding, as described in def_bitmap_new() */
   void *shmaddr;
-  struct shmid_ds ds;
+  g_error e;
 
   /* Make sure we can free the existing bitmap data to move it to a shared
    * memory segment, if not assume it's already mapped to SHM or some device.
@@ -536,22 +529,8 @@ g_error def_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm) {
   if (!b->freebits)
     return mkerror(PG_ERRT_BUSY,4);     /* Bitmap is already mapped */
 
-  /* Find an unused SHM key, starting with a magic number.
-   * (Anybody nerdy enough to know where it comes from should be punished ;)
-   */
-  key = 3263827;
-  while ((id = shmget(key,size,IPC_CREAT | IPC_EXCL | 0600)) < 0) {
-    if (errno != EEXIST)
-      return mkerror(PG_ERRT_IO,5);     /* Error creating SHM segment */
-    key++;
-  }
-
-  /* Attach it to our address space */
-  shmaddr = shmat(id,NULL,0);
-  if (!shmaddr) {
-    shmctl(key, IPC_RMID, NULL);
-    return mkerror(PG_ERRT_IO,5);     /* Error creating SHM segment */
-  }
+  e = os_shm_alloc(&shmaddr, size, &id, &key, uid);
+  errorcheck;
 
   /* Copy over the bitmap data and delete the original */
   memcpy(shmaddr, b->bits, size);
@@ -561,11 +540,6 @@ g_error def_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm) {
   /* Now assign this SHM section to the bitmap */
   b->bits = (u8 *) shmaddr;
   b->shm_id = id;
-
-  /* Assign ownership of this SHM section to the client now */
-  shmctl(id,IPC_STAT,&ds);
-  ds.shm_perm.uid = uid;
-  shmctl(id,IPC_SET,&ds);
 
   /* Fill in the easy information in the shmbitmap structure 
    */
