@@ -77,13 +77,13 @@ void directoryScan(char *path){
     for(;appCount > 0; appCount--){
       appRes = resLoadResource(appPaths[appCount-1]);
       gAppList[appCount-1] = malloc(sizeof(pgllApp));
-      gAppList[appCount-1]->appName = resGetProperty(appRes, "PGL-Launcher", "name");
+      gAppList[appCount-1]->appName = resGetProperty(appRes, "PGL-Launcher", "name", NULL);
       gAppList[appCount-1]->basePath = strdup(appRes->workingDir);
-      if(!(gAppList[appCount-1]->exeName = resGetProperty(appRes, architecture, "executable"))){
-	gAppList[appCount-1]->exeName = resGetProperty(appRes, "any-arch", "executable");
+      if(!(gAppList[appCount-1]->exeName = resGetProperty(appRes, architecture, "executable", NULL))){
+	gAppList[appCount-1]->exeName = resGetProperty(appRes, "any-arch", "executable", NULL);
       }
-      if(!(gAppList[appCount-1]->args = resGetProperty(appRes, architecture, "args"))){
-	gAppList[appCount-1]->args = resGetProperty(appRes, "any-arch", "args");
+      if(!(gAppList[appCount-1]->args = resGetProperty(appRes, architecture, "args", NULL))){
+	gAppList[appCount-1]->args = resGetProperty(appRes, "any-arch", "args", NULL);
       }
     }
   }
