@@ -1,4 +1,4 @@
-/* $Id: pgstring.c,v 1.15 2002/11/05 17:40:31 micahjd Exp $
+/* $Id: pgstring.c,v 1.16 2002/11/25 12:34:41 micahjd Exp $
  *
  * pgstring.c - String data type to handle various encodings
  *
@@ -112,8 +112,8 @@ g_error pgstring_new(struct pgstring **str, int encoding, int length, const u8 *
 /* Delete the buffer and string structure */
 void pgstring_delete(struct pgstring *str) {
   if (!(str->flags & PGSTR_STORAGE_NOFREE)) {
-    if (pgstr_getformat(str)->delete)
-      pgstr_getformat(str)->delete(str);
+    if (pgstr_getformat(str)->del)
+      pgstr_getformat(str)->del(str);
     g_free(str->buffer);
   }
   g_free(str);

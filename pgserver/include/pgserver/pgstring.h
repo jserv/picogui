@@ -1,4 +1,4 @@
-/* $Id: pgstring.h,v 1.8 2002/11/05 17:40:31 micahjd Exp $
+/* $Id: pgstring.h,v 1.9 2002/11/25 12:34:41 micahjd Exp $
  *
  * pgstring.h - String data type to handle various encodings
  *
@@ -86,7 +86,7 @@ struct pgstr_format {
   u32 (*encoded_length)(struct pgstr_char ch);
   void (*encode)(struct pgstring *str, struct pgstr_iterator *p, struct pgstr_char ch);
   void (*seek)(const struct pgstring *str, struct pgstr_iterator *p, s32 char_num, int whence);
-  void (*delete)(struct pgstring *str);
+  void (*del)(struct pgstring *str);
 };
 
 

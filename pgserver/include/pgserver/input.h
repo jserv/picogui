@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.48 2002/11/03 22:44:47 micahjd Exp $
+/* $Id: input.h,v 1.49 2002/11/25 12:34:41 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -362,7 +362,7 @@ void infilter_send_touchscreen(int x, int y, int pressure, int btn);
 
 /* Management functions */
 g_error infilter_insert(struct infilter **insertion, handle *h, int owner,
-			struct infilter *template);
+			struct infilter *def);
 void infilter_delete(struct infilter *node);
 g_error infilter_init(void);
 g_error touchscreen_init(void);
