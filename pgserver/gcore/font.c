@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.30 2001/10/09 05:15:26 micahjd Exp $
+/* $Id: font.c,v 1.31 2001/10/09 22:32:10 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -73,14 +73,10 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
    s16 cel_w; /* Total width of this character cel */
    struct fontglyph const *g = font_getglyph(fd,c);
    u8 *glyph;
-   s16 mx,my; /* Character positions we are free to munge (screen logical coordinates) */
    s16 u,v;   /* Displacement (in font coordinate space) of character from the cursor position */
 
    cel_w = g->dwidth + fd->boldw + fd->interchar_space;
    
-   mx = *x;
-   my = *y;
-
    u = g->x;
    v = fd->font->ascent - g->h - g->y;
 
@@ -91,16 +87,25 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
       switch (angle) {
     
        case 0:
-	 mx += u;
-	 my += v;
+	 /* The actual character */
+	 i=0;
+	 if (fd->skew) 
+	   i = fd->italicw;
+	 VID(charblit) (dest,glyph,*x+u+i,*y+v,g->w,g->h,fd->skew,angle,col,
+			clip,lgop);
+	 
+	 /* bold */
+	 for (i++,j=0;j<fd->boldw;i++,j++)
+	   VID(charblit) (dest,glyph,*x+u+i,*y+v,g->w,g->h,fd->skew,angle,col,
+			  clip,lgop);
 
 	 /* underline, overline, strikeout */
 	 if (fd->hline>=0) {
 	   /* We must clip this! */
 
 	   s16 sx,sy,w;
-	   sx = mx;
-	   sy = fd->hline+(my);
+	   sx = *x;
+	   sy = fd->hline+(*y);
 	   w  = cel_w;
 	   
 	   if (clip) {
@@ -113,64 +118,41 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
 	   }	   
 
 	   if (w>0 && ( (!clip) || (sy >= clip->y1 && sy <= clip->y2) ))
-	     VID(slab) (dest,mx,fd->hline+(my),cel_w,fd->hline_c,lgop);
+	     VID(slab) (dest,*x,fd->hline+(*y),cel_w,fd->hline_c,lgop);
 	 }	 
-
-	 /* The actual character */
-	 i=0;
-	 if (fd->skew) 
-	   i = fd->italicw;
-	 VID(charblit) (dest,glyph,(mx)+i,my,g->w,g->h,fd->skew,angle,col,
-			clip,lgop);
-	 
-	 /* bold */
-	 for (i++,j=0;j<fd->boldw;i++,j++)
-	   VID(charblit) (dest,glyph,(mx)+i,my,g->w,g->h,fd->skew,angle,col,
-			  clip,lgop);
 	 break;
 	 
        case 90:
-	 mx += v;
-	 my -= u;
+	 /* FIXME: Support underline for rotated text */
 
-	 /* underline, overline, strikeout */
-	 if (fd->hline>=0)
-	   VID(bar) (dest,(mx)+fd->hline,(my)-cel_w+1,cel_w,fd->hline_c,lgop);
-	 
 	 /* The actual character */
 	 i=0;
 	 if (fd->skew) 
 	   i = fd->italicw;
-	 VID(charblit) (dest,glyph,mx,(my)-i,g->w,g->h,fd->skew,angle,col,
+	 VID(charblit) (dest,glyph,*x+v,*y-u-i,g->w,g->h,fd->skew,angle,col,
 			clip,lgop);
 	 
 	 /* bold */
 	 for (i++,j=0;j<fd->boldw;i++,j++)
-	   VID(charblit) (dest,glyph,mx,(my)-i,g->w,g->h,fd->skew,angle,col,
+	   VID(charblit) (dest,glyph,*x+v,*y-u-i,g->w,g->h,fd->skew,angle,col,
 			  clip,lgop);
 	 break;
 	 
        case 180:
-	 mx -= v;
-	 my -= u;
-
-	 /* underline, overline, strikeout */
-	 if (fd->hline>=0)
-	   VID(slab) (dest,(mx)+cel_w-1,(my)-fd->hline,cel_w,fd->hline_c,lgop);
-	 
 	 /* The actual character */
 	 i=0;
 	 if (fd->skew) 
 	   i = fd->italicw;
-	 VID(charblit) (dest,glyph,(mx)-i,my,g->w,g->h,fd->skew,angle,col,
+	 VID(charblit) (dest,glyph,*x-v-i,*y-u,g->w,g->h,fd->skew,angle,col,
 			clip,lgop);
 	 
 	 /* bold */
 	 for (i++,j=0;j<fd->boldw;i++,j++)
-	   VID(charblit) (dest,glyph,(mx)-i,my,g->w,g->h,fd->skew,angle,col,
+	   VID(charblit) (dest,glyph,*x-v-i,*y-u,g->w,g->h,fd->skew,angle,col,
 			  clip,lgop);
 	 break;
-	 
+
+#if 0              /* 270-degree code not needed yet */	 
        case 270:
 	 /* underline, overline, strikeout */
 	 if (fd->hline>=0)
@@ -188,6 +170,7 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
 	   VID(charblit) (dest,glyph,mx,(my)+i,g->w,g->h,fd->skew,angle,col,
 			  clip,lgop);
 	 break;
+#endif
 	 
       }
    }
@@ -205,10 +188,12 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
     case 180: 
       *x -= cel_w; 
       break;
-      
+
+#if 0              /* 270-degree code not needed yet */	       
     case 270: 
       *y += cel_w; 
       break;
+#endif
       
    }
 }
