@@ -1,4 +1,4 @@
-/* $Id: pgfx_bitmap.c,v 1.1 2001/06/26 11:34:38 micahjd Exp $
+/* $Id: pgfx_bitmap.c,v 1.2 2001/07/11 01:10:04 micahjd Exp $
  *
  * picogui/pgfx_bitmap.c - lib functions and registration for offscreen bitmap
  *                         drawing through the PGFX interface
@@ -71,7 +71,8 @@ pgprim _pgfxbitmap_fellipse(pgcontext c, pgu x,  pgu y, pgu w,  pgu h) {
 } 
  
 pgprim _pgfxbitmap_fpolygon(pgcontext c, pghandle array) { 
-  pgRender(c->device,PG_GROP_FPOLYGON,1,1,1,1,array); 
+   pgRender(c->device,PG_GROP_FPOLYGON,1,1,1,1,array); 
+	return 0;
 } 
  
 pgprim _pgfxbitmap_text(pgcontext c, pgu x,  pgu y,  pghandle string) {
@@ -129,6 +130,17 @@ pgprim _pgfxbitmap_setmapping(pgcontext c,
 }
 
 void _pgfxbitmap_update(pgcontext c) {
+	/* Normally an update is not necessary, but if we're rendering
+	 * directly to the display there might be double-buffering
+	 * that requires updating. The app can get fine-grained control
+	 * over this by using PG_GROP_VIDUPDATE directly, but this is the
+	 * easy way.
+	 * 
+	 * We don't necessarily know the screen size here, so just
+	 * give it a ludicrously high value and let PicoGUI clip it.
+	 */
+	if (!c->device)
+      pgRender(0,PG_GROP_VIDUPDATE,0,0,20000,20000);
 }
 
 /******************************* Registration */

@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.50 2001/06/30 08:52:47 micahjd Exp $
+/* $Id: client_c.h,v 1.51 2001/07/11 01:10:04 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -801,6 +801,31 @@ void pgSetPayload(pghandle object,unsigned long payload);
  * \sa pgSetPayload
  */
 unsigned long pgGetPayload(pghandle object);
+
+/*!
+ * \brief Set the inactivity timer
+ *
+ * \param Inactivity timer value in milliseconds
+ *
+ * This sets the inactivity timer. Set it to zero periodically if you want
+ * to prevent screensavers or sleep modes from activating even if there is
+ * no user input.
+ *
+ * \sa pgGetInactivity
+ */
+void pgSetInactivity(unsigned long time);
+
+/*!
+ * \brief Get the inactivity timer
+ *
+ * \returns The inactivity timer value in milliseconds
+ *
+ * This timer is maintained by PicoGUI. It continually increments, but it is
+ * cleared whenever user input is recieved and it can be set by pgSetInactivity
+ * 
+ * \sa pgSetInactivity
+ */
+unsigned long pgGetInactivity(void);
 
 /*!
  * \brief Write data to a widget

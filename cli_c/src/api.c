@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.14 2001/06/30 08:52:47 micahjd Exp $
+/* $Id: api.c,v 1.15 2001/07/11 01:10:04 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -253,6 +253,17 @@ unsigned long pgGetPayload(pghandle object) {
   return _pg_return.e.retdata;
 }
 
+void pgSetInactivity(unsigned long time) {
+  struct pgreqd_setinactive arg;
+  arg.time = htonl(time);
+  _pg_add_request(PGREQ_SETINACTIVE,&arg,sizeof(arg));
+}
+
+unsigned long pgGetInactivity(void) {
+  _pg_add_request(PGREQ_GETINACTIVE,NULL,0);
+  pgFlushRequests();
+  return _pg_return.e.retdata;
+}
 
 void pgSubUpdate(pghandle widget) {
   struct pgreqd_handlestruct arg;
