@@ -1,7 +1,11 @@
-/* $Id: aqua.ths,v 1.38 2002/09/28 20:50:03 micahjd Exp $
+/* $Id: aqua.ths,v 1.39 2002/10/18 18:39:45 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
+ *
+ * NOTE: This theme is not a good example of theme coding style, since it was
+ *       written before a lot of nice themec features were implemented.
+ *       read the source to a newer theme like Fluidity to get some better examples.
  *
  * Version 1.04
  *
@@ -9,6 +13,7 @@
  *
  * Changelog:
  *
+ *  1.05 - Used the new widget object to fix interlacing alignment, panelbtn cleanups
  *  1.04 - Fixed a small bug that affected bouncyball
  *  1.03 - Patch from Florian Berger to support horizontal scrollbar rendering
  *  1.02 - new indicator, removed many objects' borders for a cleaner look
@@ -16,14 +21,22 @@
  *  1.0  - First stable release
  */
 
+prop interlace;
+
 /* The stripey background */
 object default {
-  name = "PicoAqua";
+  name = "PicoAqua 1.05";
 
-  bgfill = fillstyle {
-    Bitmap(x,y,w,h,bitmap1);
-  };
+  bgfill = Copy(default::interlace);
   bitmap1 = LoadBitmap("data/aq_bg.pnm");
+  interlace = fillstyle {
+    SetSrc(widget::PG_WP_ABSOLUTEX - widget->app[0]::PG_WP_ABSOLUTEX + x,
+	   widget::PG_WP_ABSOLUTEY - widget->app[0]::PG_WP_ABSOLUTEY + y,
+	   w,h);
+    Bitmap(x,y,w,h,bitmap1);
+    SetSrc(0,0,0,0);
+  };
+
   margin=0;
 }
 
@@ -240,7 +253,7 @@ object scroll {
 }
 
 object label {
-  bgfill = Copy(default::bgfill);
+  bgfill = Copy(default::interlace);
   bitmap1 = Copy(default::bitmap1);
   margin = 4;
 }
@@ -280,7 +293,28 @@ object base.panelbtn {
   height = 20;
   spacing = 0;
   margin = 0;
-  bgfill = Copy(default::bgfill);
+  bgfill = fillstyle {
+    var hz;
+    hz = widget::PG_WP_SIDE == PG_S_LEFT || widget::PG_WP_SIDE == PG_S_RIGHT;
+
+    /* Background */
+    Bitmap(x,y,w,h, hz ? panelbar::bitmap2 : panelbar::bitmap1);
+    SetColor(0xC0C0C0);
+
+    /* Horizontal frame */
+    SetLgop(hz ? PG_LGOP_NONE : PG_LGOP_NULL);
+    Slab(x,y,w,1);
+    Slab(x,y+h-1,w,1);
+
+    /* Vertical frame */
+    SetLgop(hz ? PG_LGOP_NULL : PG_LGOP_NONE);
+    Bar(x,y,1,h);
+    Bar(x+w-1,y,1,h);
+
+    /* Button image */
+    SetLgop(PG_LGOP_NONE);
+    Bitmap((w-15)>>1,(h-16)>>1,15,16,bitmap1);
+  };
 } 
 object closebtn bitmap1 = LoadBitmap("data/aq_closebtn.pnm");
 object closebtn.hilight bitmap1 = LoadBitmap("data/aq_closebtn_over.pnm");
@@ -293,7 +327,7 @@ object box margin = 3;
 
 object toolbar {
   bgfill = fillstyle {
-    Bitmap(x,y,w,h,bitmap1);
+    interlace(x,y,w,h);
     SetColor(0xA0A0A0);
     Frame(x,y,w,h);
     SetLgop(PG_LGOP_SUBTRACT);
@@ -309,7 +343,7 @@ object popup {
   /* Normal background, but with shading on the edge, and 
      a thin black border */
   bgfill = fillstyle {
-    Bitmap(x,y,w,h,bitmap1);
+    interlace(x,y,w,h);
     SetColor(0x000000);
     Frame(x,y,w,h);
     SetLgop(PG_LGOP_SUBTRACT);

@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.43 2002/10/18 12:20:24 micahjd Exp $
+/* $Id: pgtheme.y,v 1.44 2002/10/18 18:39:46 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -100,7 +100,7 @@
 
    /* Reserved words */
 %token OBJ PROP FILLSTYLE VAR COLORADD COLORSUB COLORDIV COLORMULT
-%token CLASS CONTAINER NEXT PREVIOUS APP CHILD WIDGET
+%token CLASS CONTAINER NEXT PREVIOUS APP CHILD WIDGET ARROW
 
 %right '?' ':'
 %left OR
@@ -684,11 +684,10 @@ traversal_const: CONTAINER { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = P
                | CHILD     { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = PG_TRAVERSE_CHILDREN; }
                ;
 
-widget_handle: widget_handle
-               | widget_handle '.' traversal_const '[' fsexp ']' { $$ = fsnodecat(fsnodecat(fsnodecat($5,$3),$1),
-		                          				fsnewnode(PGTH_OPCMD_TRAVERSEWGT)); }
-               | WIDGET    { $$ = fsnewnode(PGTH_OPCMD_WIDGET); }
-               ;
+widget_handle: widget_handle ARROW traversal_const '[' fsexp ']' { $$ = fsnodecat(fsnodecat(fsnodecat($5,$3),$1),
+										fsnewnode(PGTH_OPCMD_TRAVERSEWGT)); }
+             | WIDGET    { $$ = fsnewnode(PGTH_OPCMD_WIDGET); }
+             ;
 
 %%
 
