@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.6 2001/07/05 04:36:46 micahjd Exp $
+/* $Id: pgmain.c,v 1.7 2001/07/05 06:33:05 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -42,6 +42,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/types.h>
+extern char **environ;
 #endif
 
 volatile u8 proceed = 1;
@@ -545,6 +546,29 @@ int main(int argc, char **argv) {
 #endif
 
   }
+
+#ifndef WINDOWS  
+  /* We still might have a session manager from the config file */
+  if (get_param_str("pgserver","session",NULL)) {
+    use_sessionmgmt = 1;
+    
+# ifdef UCLINUX
+    if (!vfork()) {
+# else
+    if (!fork()) {
+# endif
+      char *sargv[4];
+      sargv[0] = "sh";
+      sargv[1] = "-c";
+      sargv[2] = get_param_str("pgserver","session",NULL);
+      sargv[3] = 0;
+      execve("/bin/sh",sargv,environ);
+      prerror(mkerror(PG_ERRT_BADPARAM,55));
+      kill(my_pid,SIGTERM);
+      exit(1);
+    }
+  }    
+#endif
 
   in_init = 0;
      

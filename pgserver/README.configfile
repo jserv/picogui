@@ -75,6 +75,10 @@ quoted appropriately. For example:
   Number of degrees to rotate the screen. The proper video wrappers must be
   compiled in for this to have any effect.
 
+- session
+  A program or shell command to run whenever pgserver starts up. pgserver
+  will exit when the last client disconnects
+
 [video-sdlfb]
 
 - caption
