@@ -68,7 +68,7 @@ def parseCommandLine(config, argv):
     parser.add_option("-u", "--ui", action="store", dest="ui", metavar="MODULE",
                       help="Selects a front-end module. Try --ui=help to list the available modules.")
     parser.add_option("--traceback", action="store_true", dest="traceback",
-                      help="Disables the user-friendly exception handler and give a traceback when an error occurs.")
+                      help="Disables the user-friendly exception handler and gives a traceback when an error occurs.")
 
     ############# Configuration management
 
@@ -77,6 +77,9 @@ def parseCommandLine(config, argv):
                            help="Dumps the configuration tree to FILE.", metavar="FILE")
     configGroup.add_option("--retest-mirrors", dest="retestMirrors", action="store_true",
                            help="Re-runs any mirror speed tests, ignoring saved results.")
+    configGroup.add_option("-l", "--list", dest="listPath", metavar="XPATH",
+                           help="Lists configuration data from the given path. " +
+                                'If you don\'t know how to use PGBuild\'s XPaths, try ".", "sites", or "packages".')
 
     ############# Package management
 

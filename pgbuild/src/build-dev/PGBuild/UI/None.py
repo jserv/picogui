@@ -25,6 +25,7 @@ _svn_id = "$Id$"
 import PGBuild.Errors
 import PGBuild.SConsGlue
 import time, sys
+import StringIO
 
 
 class TimeStamp(object):
@@ -184,12 +185,19 @@ class Interface(object):
         for name in self.config.listEval("invocation/option[@name='merge']/item/text()"):
             self.config.packages.findPackageVersion(name).merge(mergeTask)
 
+        # Interface cleanup- options that dump to stdout and don't use any UI features
+        #                    should be placed after this line!
+        self.cleanup()
+
         # Handle --dump-tree command line option
         treeDumpFile = self.config.eval("invocation/option[@name='treeDumpFile']/text()")
         if treeDumpFile:
             self.config.dump(treeDumpFile, self.progress)
 
-        self.cleanup()
+        # Handle --list command line option
+        listPath = self.config.eval("invocation/option[@name='listPath']/text()")
+        if listPath:
+            self.list(listPath)
 
     def exception(self, exc_info):
         """This is called when PGBuild.Main catches an exception. This default
@@ -218,6 +226,26 @@ class Interface(object):
 
     def _exception(self, exc_info):
         raise exc_info[0], exc_info[1], exc_info[2]
+
+    def list(self, listPath):
+        """Guts of the --list command line option- list the contents of an XPath"""
+        results = self.config.xpath(listPath)
+        for result in results:
+            self.listNode(result)
+
+    def listNode(self, node, indentLevel=0):
+        """For list(), this recursively lists one DOM node"""
+        indentString = "   " * indentLevel
+
+        if node.nodeType == node.ELEMENT_NODE:
+            try:
+                # An element with a name, list it by name without recursion
+                print "%s%s" % (indentString, node.attributes['name'].value)
+            except KeyError:
+                # An element without a name, try to treat it as a container and recurse into its children
+                print "%s%s:" % (indentString, node.tagName)
+                for child in node.childNodes:
+                    self.listNode(child, indentLevel+1)
 
 ### The End ###
         
