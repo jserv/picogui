@@ -106,11 +106,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
-#ifdef POCKETBEE
-	      PG_WP_TEXT,pgNewString("Pi"),
-#else
 	      PG_WP_TEXT,pgNewString("^"),
-#endif
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnPower,&display);
 
@@ -174,7 +170,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,4),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
-	      PG_WP_TEXT,pgNewString("x"),
+	      PG_WP_TEXT,pgNewString("*"),
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnMultiply,&display);
 
@@ -263,11 +259,7 @@ int btnSecond(struct pgEvent *evt) {
     // show normal operations
     pgReplaceText(btn_del,"<-");
     pgReplaceText(btn_neg,"+/-");
-#ifdef POCKETBEE
-    pgReplaceText(btn_pow,"Pi");
-#else
     pgReplaceText(btn_pow,"^");
-#endif
   }
   return 0;
 }
@@ -329,17 +321,7 @@ int btnNegate(struct pgEvent *evt) {
 }
 int btnPower(struct pgEvent *evt) {
   if (!second)
-#ifdef POCKETBEE    
-    /* There seems to be some issues with pow() on uClibm, so let's use */
-    /* this key to display Pi! */
-    {
-      sprintf (number, "3.1415927");
-      pgReplaceText (display, number);
-      isResult = 1;
-    }
-#else
     return doOperation(POWER);
-#endif
   else {
     if (openp) {
       double answer;
@@ -648,12 +630,7 @@ double evaluate(Node* stack) {
   // this mess of loops removes any trailing zeros (for a nicer display)
   for (counter=0;counter<NDIGITS+2;counter++)
     ans[counter]='\0';
-#ifdef POCKETBEE
-  /* uClibc's libm has a lower precision */
-  snprintf(ans,NDIGITS+2,"%.3f",answer + 0.0005);
-#else
   snprintf(ans,NDIGITS+2,"%.8f",answer);
-#endif
   for (counter=0;counter<NDIGITS+2;counter++) {
     if (ans[counter]=='.') {
       for (counter=NDIGITS+1;counter>=0;counter--) {
