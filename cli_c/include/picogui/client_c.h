@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.7 2000/09/22 18:04:28 pney Exp $
+/* $Id: client_c.h,v 1.8 2000/09/23 01:51:31 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -109,6 +109,12 @@ pghandle pgNewWidget(short int type,short int rship,
 pghandle pgNewPopup(int width,int height);
 pghandle pgNewPopupAt(int x,int y,int width,int height);
 
+/* Set properties of a widget. If the widget is null, default
+ * to the last widget created. After that, it accepts a list
+ * of property-value pairs, terminated by a 0.
+ */
+void pgSetWidget(pghandle widget, ...);
+
 /* Attatch an event handler to a widget and/or event. A NULL
  * widget uses the default, as usual. Either the handle or the
  * event (or both!) can be the wildcard PGBIND_ANY to match all
@@ -119,18 +125,6 @@ pghandle pgNewPopupAt(int x,int y,int width,int height);
 void pgBind(pghandle widgetkey,unsigned short eventkey,
 	    void (*handler)(unsigned short event,pghandle from,
 			    unsigned long param));
-
-/* Add a pair widget/event in the binding list.
- * If the pair is the first on, return the pointer on it
- * else return NULL.
- */
-struct pgbindlist *pgBindAdd(struct pgbindlist *bind);
-
-/* Set properties of a widget. If the widget is null, default
- * to the last widget created. After that, it accepts a list
- * of property-value pairs, terminated by a 0.
- */
-void pgSetWidget(pghandle widget, ...);
 
 /* Create a new string object */
 pghandle pgNewString(const char *str);
