@@ -1,4 +1,4 @@
-/* $Id: serial40x4.c,v 1.1 2001/05/12 19:23:26 micahjd Exp $
+/* $Id: serial40x4.c,v 1.2 2001/05/12 20:36:33 micahjd Exp $
  *
  * serial40x4.c - PicoGUI video driver for a serial wall-mounted
  *                40x4 character LCD I put together about a year ago.
@@ -68,11 +68,15 @@
 #include <pgserver/font.h>
 #include <pgserver/render.h>
 
-/* Buffer with the current status of the screen */
-u8 *serial40x4_screen;
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
-#define COLS  40
-#define LINES 4
+/* Macros to easily access the members of vid->display */
+#define FB_MEM   (((struct stdbitmap*)vid->display)->bits)
+#define FB_BPL   (((struct stdbitmap*)vid->display)->pitch)
+
+int lcd_fd;
 
 /******************************************** Fake font */
 /* This is a little hack to trick PicoGUI's text rendering */
@@ -172,48 +176,39 @@ g_error serial40x4_init(void) {
    unsigned long size;
    u8 *p;
 
-   /* Save the actual video mode */
-   vid->xres = COLS;
-   vid->yres = LINES;
-   vid->bpp  = sizeof(u8)*8;    /* Our pixel is a curses u8 */
-   vid->display = NULL;
+   vid->xres = 40;
+   vid->yres = 4;
+   vid->bpp  = 8;
+   FB_BPL = 40;
    
    /* Allocate our buffer */
-   e = g_malloc((void**) &serial40x4_screen,vid->xres * vid->yres);
+   e = g_malloc((void**) &FB_MEM,vid->xres * vid->yres);
    errorcheck;
-   for (p=serial40x4_screen,size=vid->xres*vid->yres;size;size--,p++)
+   for (p=FB_MEM,size=vid->xres*vid->yres;size;size--,p++)
      *p = ' ';
+   
+   /* Open LCD device */
+   lcd_fd = open("/dev/lcd",O_WRONLY);
+   if (lcd_fd<=0)
+     return mkerror(PG_ERRT_IO,46);
    
    return sucess;
 }
 
 void serial40x4_close(void) {
-   g_free(serial40x4_screen);
-}
-
-void serial40x4_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
-   if (dest || (lgop!=PG_LGOP_NONE))
-     def_pixel(dest,x,y,c,lgop);
-   else
-     serial40x4_screen[x + vid->xres * y] = c;
-}
-
-hwrcolor serial40x4_getpixel(hwrbitmap src,s16 x,s16 y) {
-   if (src)
-     return def_getpixel(src,x,y);
-   else
-     return serial40x4_screen[x + vid->xres * y];
+   g_free(FB_MEM);
+   close(lcd_fd);
 }
 
 void serial40x4_update(s16 x,s16 y,s16 w,s16 h) {
-   int i;
-   char *p = serial40x4_screen;
-   for (i=vid->xres*vid->yres;i;i--,p++) {
-     printf("%c",*p);
-     if (!((i+1)&vid->xres))
-	printf("\n");
-   }
-   
+   write(lcd_fd,"\\1\\d",4);
+   write(lcd_fd,FB_MEM,40);
+   write(lcd_fd,"\\n",2);
+   write(lcd_fd,FB_MEM+40,40);
+   write(lcd_fd,"\\2\\d",4);
+   write(lcd_fd,FB_MEM+80,40);
+   write(lcd_fd,"\\n",2);
+   write(lcd_fd,FB_MEM+120,40);   
 }
 
 /**** Hack the normal font rendering a bit so we use regular text */
@@ -256,16 +251,12 @@ hwrcolor serial40x4_color_pgtohwr(pgcolor c) {
 /******************************************** Driver registration */
 
 g_error serial40x4_regfunc(struct vidlib *v) {
-   setvbl_default(v);
+   setvbl_linear8(v);
    
    v->init = &serial40x4_init;
    v->close = &serial40x4_close;
-   
-   v->pixel = &serial40x4_pixel;
-   v->getpixel = &serial40x4_getpixel;
    v->update = &serial40x4_update;  
    v->color_pgtohwr = &serial40x4_color_pgtohwr;
-   
    v->font_newdesc = &serial40x4_font_newdesc;
    v->charblit = &serial40x4_charblit;
 

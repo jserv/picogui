@@ -30,7 +30,7 @@
   DRV("ncurses",&ncurses_regfunc)
 #endif   
 
-#ifdef DRIVER_serial40X4
+#ifdef DRIVER_SERIAL40X4
   DRV("serial40x4",&serial40x4_regfunc)
 #endif   
 
