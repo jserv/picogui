@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.26 2002/10/11 11:58:44 micahjd Exp $
+/* $Id: fillstyle.c,v 1.27 2002/10/18 00:58:44 micahjd Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -92,6 +92,9 @@ g_error check_fillstyle(const unsigned char *fs, u32 fssize)
 	case PGTH_OPCMD_LOCALPROP:
 	  /* reads 2 bytes, pushes 1 value */
 	  p+=2;
+	  /* fall through */
+        case PGTH_OPCMD_WIDGET:
+	  /* pushes 1 value */
 	  fsstkpos++;
 	  break;
 	case PGTH_OPCMD_LONGGROP:
@@ -121,9 +124,11 @@ g_error check_fillstyle(const unsigned char *fs, u32 fssize)
 	  fsstkpos--;
 	  break;
 	case PGTH_OPCMD_QUESTIONCOLON:
+        case PGTH_OPCMD_TRAVERSEWGT:
 	  --fsstkpos;
 	  /* fall through; 3 arguments, 1 result */
-	case PGTH_OPCMD_PLUS:
+	case PGTH_OPCMD_GETWIDGET:
+        case PGTH_OPCMD_PLUS:
 	case PGTH_OPCMD_MINUS:
 	case PGTH_OPCMD_MULTIPLY:
 	case PGTH_OPCMD_SHIFTL:
@@ -181,6 +186,7 @@ g_error exec_fillstyle(struct gropctxt *ctx,u16 state,
   unsigned char *p,*plimit;
   unsigned char op;
   int r,g,b;          /* For color arithmetic */
+  struct widget *w;
 
   /* Look up the fillstyle */
   e = rdhandle((void**)&fs,PG_TYPE_FILLSTYLE,-1,theme_lookup(state,property));
@@ -450,6 +456,33 @@ g_error exec_fillstyle(struct gropctxt *ctx,u16 state,
 	fsstkpos -= 2;
 	fsstack[fsstkpos-1] = fsstack[fsstkpos+1] ? 
 	  fsstack[fsstkpos] : fsstack[fsstkpos-1];
+	break;
+
+      case PGTH_OPCMD_WIDGET:
+	if (fsstkpos<3)
+	  return mkerror(PG_ERRT_BADPARAM,88);  /* Stack underflow */
+	fsstkpos -= 2;
+	if (ctx->owner && ctx->owner->owner)
+	  fsstack[fsstkpos++] = hlookup(ctx->owner->owner,NULL);
+	else
+	  fsstack[fsstkpos++] = 0;
+	break;
+	
+      case PGTH_OPCMD_TRAVERSEWGT:
+	if (fsstkpos<3)
+	  return mkerror(PG_ERRT_BADPARAM,88);  /* Stack underflow */
+	fsstkpos -= 2;
+	e = rdhandle((void**)w, PG_TYPE_WIDGET, -1, fsstack[fsstkpos+1]);
+	errorcheck;
+	fsstack[fsstkpos-1] = hlookup(widget_traverse(w,fsstack[fsstkpos],fsstack[fsstkpos-1]),NULL);
+	break;
+
+      case PGTH_OPCMD_GETWIDGET:
+	e = fspopargs();
+	errorcheck;
+	e = rdhandle((void**)w, PG_TYPE_WIDGET, -1, fsa);
+	errorcheck;
+	fsstack[fsstkpos++] = widget_get(w,fsb);
 	break;
 
       }
