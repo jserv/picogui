@@ -1,7 +1,7 @@
 # -*- python -*-
 
 import os, string
-from Bee.Autoconf import compile, install, clean
+from Bee.Autoconf import compile, install, clean, configure, flags
 from Bee.Logic import S
 
 multicompile     = 1
@@ -60,29 +60,32 @@ def prepare (module, platform, project):
     profile = "../profiles/profile.SMARTDATA-%s" % \
               platform.fqn ()
 
-    command = ["../configure",
-               "--sysconfdir=/etc",
-               "--prefix=%s" % module.path ['prefix'],
-               "--with-profile=%s" % profile,
-               "--enable-bee",
-               "--with-extra-ipath=%s/include" % project ['module/kernel'].path ['dfl'],
-               "--with-rm=%s" % project ['module/resourcemanager'].path ['dfl'],
-               "--with-pm=%s" % project ['module/processmanager'].path ['dfl'],
-               ]
+    cflags, libs = flags ((('resourcemanager', 'library'),
+                           ('processmanager', 'library')),
+                          platform, project)
+
+    command = [
+        "--sysconfdir=/etc",
+        "--prefix=%s" % module.path ['prefix'],
+        "--with-profile=%s" % profile,
+        "--enable-bee",
+        "--with-extra-ipath=%s/include" % project ['module/kernel'].path ['dfl'],
+        "--with-extra-cflags='%s'" % cflags,
+        "--with-extra-libs='%s'" % libs,
+        ]
 
     if not platform.native:
         command = command + [
             "--with-prefix=%s" % platform.toolchain,
-            "--host=%s" % platform.platform,
-        ]
-        
-    if not platform.platform == "m68k-pic-coff":
-        command += [" --with-jpeg-dir=%s" % project ['module/libjpeg'].path ['dfl']]
+            ]
 
-    message ("running: %s" % string.join (command))
-    sequence ("test ! -f ../autogen.sh || (cd .. ; ./autogen.sh || true)",
-              string.join (command))
-    return
+    if not platform.platform == "m68k-pic-coff":
+        command += [
+            "--with-jpeg-dir=%s" % project ['module/libjpeg'].path ['dfl']
+            ]
+
+        configure (module, platform, command)
+        return
 
 def install (module, platform, project):
     sequence ("make install DESTDIR=%s" % module.path ['d_frz'])
