@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.30 2002/11/01 02:11:02 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.31 2002/11/01 09:14:59 lalo Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -305,22 +305,50 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
       
     case PGKEY_LEFT:
       paragraph_hide_cursor(DATA->doc->crsr);
-      document_bounded_seek(DATA->doc,-1,PGSEEK_CUR);
+      if (param->kbd.mods & PGMOD_CTRL)
+        document_bounded_seek(DATA->doc,-10,PGSEEK_CUR);
+      else
+        document_bounded_seek(DATA->doc,-1,PGSEEK_CUR);
       break;
       
     case PGKEY_RIGHT:
       paragraph_hide_cursor(DATA->doc->crsr);
-      document_bounded_seek(DATA->doc,1,PGSEEK_CUR);
+      if (param->kbd.mods & PGMOD_CTRL)
+        document_bounded_seek(DATA->doc,10,PGSEEK_CUR);
+      else
+        document_bounded_seek(DATA->doc,1,PGSEEK_CUR);
       break;
       
     case PGKEY_UP:
       paragraph_hide_cursor(DATA->doc->crsr);
-      document_lineseek(DATA->doc,-1);
+      if (param->kbd.mods & PGMOD_CTRL)
+        document_lineseek(DATA->doc,-10);
+      else
+        document_lineseek(DATA->doc,-1);
       break;
       
     case PGKEY_DOWN:
       paragraph_hide_cursor(DATA->doc->crsr);
-      document_lineseek(DATA->doc,1);
+      if (param->kbd.mods & PGMOD_CTRL)
+        document_lineseek(DATA->doc,10);
+      else
+        document_lineseek(DATA->doc,1);
+      break;
+      
+    case PGKEY_HOME:
+      paragraph_hide_cursor(DATA->doc->crsr);
+      if (param->kbd.mods & PGMOD_CTRL)
+        document_bounded_seek(DATA->doc,0,PGSEEK_SET);
+      else
+        paragraph_seekcursor(DATA->doc->crsr,0,PGSEEK_SET);
+      break;
+      
+    case PGKEY_END:
+      paragraph_hide_cursor(DATA->doc->crsr);
+      if (param->kbd.mods & PGMOD_CTRL)
+        document_bounded_seek(DATA->doc,0,PGSEEK_END);
+      else
+        paragraph_seekcursor(DATA->doc->crsr,0,PGSEEK_END);
       break;
       
     default:
