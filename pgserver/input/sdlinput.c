@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.36 2002/03/03 01:03:02 micahjd Exp $
+/* $Id: sdlinput.c,v 1.37 2002/03/12 01:09:30 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -279,9 +279,10 @@ g_error sdlinput_init(void) {
 
 /* Polling time for the input driver */ 
 void sdlinput_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
-  timeout->tv_sec = 0;
-  if (timeout->tv_usec > POLL_USEC)
+  if (timeout->tv_sec > 0 || timeout->tv_usec > POLL_USEC) {
+    timeout->tv_sec = 0;
     timeout->tv_usec = POLL_USEC;
+  }
 }
 
 #ifdef CONFIG_SDLSKIN
