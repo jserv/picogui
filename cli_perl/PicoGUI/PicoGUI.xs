@@ -9135,8 +9135,62 @@ _pgInit()
 	   char *temp = NULL;
     	   pgInit(0,&temp);
 	}
- 
 
+pghandle
+pgRegisterApp(type,name)
+        short int type
+	const char *name
+    CODE:
+        RETVAL = pgRegisterApp(type,name,0);
+    OUTPUT:
+        RETVAL
+
+void
+pgGetEvent()
+    PPCODE:
+    	{
+	   struct pgEvent *evt;
+	   dXSTARG;
+	   
+	   evt = pgGetEvent();
+	   XSprePUSH;
+	   XPUSHs(newSVpvn("type",4));
+	   XPUSHs(newSViv(evt->type));
+	   XPUSHs(newSVpvn("from",4));
+	   XPUSHs(newSViv(evt->from));
+	   switch (evt->type & PG_EVENTCODINGMASK) {
+	    case PG_EVENTCODING_XY:
+	      XPUSHs(newSVpvn("w",1));
+	      XPUSHs(newSViv(evt->e.size.w));
+	      XPUSHs(newSVpvn("h",1));
+	      XPUSHs(newSViv(evt->e.size.h));
+	      break;
+	    case PG_EVENTCODING_KBD:
+	      XPUSHs(newSVpvn("mods",4));
+	      XPUSHs(newSViv(evt->e.kbd.mods));
+	      XPUSHs(newSVpvn("key",3));
+	      XPUSHs(newSViv(evt->e.kbd.key));
+	      break;
+	    case PG_EVENTCODING_PNTR:
+	      XPUSHs(newSVpvn("x",1));
+	      XPUSHs(newSViv(evt->e.pntr.x));
+	      XPUSHs(newSVpvn("y",1));
+	      XPUSHs(newSViv(evt->e.pntr.y));
+	      XPUSHs(newSVpvn("btn",3));
+	      XPUSHs(newSViv(evt->e.pntr.btn));
+	      XPUSHs(newSVpvn("chbtn",5));
+	      XPUSHs(newSViv(evt->e.pntr.chbtn));
+	      break;
+	    case PG_EVENTCODING_DATA:
+	      XPUSHs(newSVpvn("data",4));
+	      XPUSHs(newSVpvn(evt->e.data.pointer,evt->e.data.size));
+	      break;
+	    default:
+	      XPUSHs(newSVpvn("param",5));
+	      XPUSHs(newSViv(evt->e.param));
+	   }
+	}
+	      
 int
 pgMessageDialog(title,text,flags=0)
 	const char *title

@@ -18,20 +18,30 @@ print "ok 1\n";
 # (correspondingly "not ok 13") depending on the success of chunk 13
 # of the test code):
 
-PicoGUI::pgMessageDialog("PicoGUI test","Hello!\nThis is a simple dialog");
+pgMessageDialog("PicoGUI test","Hello!\nThis is a simple dialog");
 
 print "Dialog returned: ".
-      PicoGUI::pgMessageDialog("Perl Module","This is a test!\nHello, world",
+      pgMessageDialog("Perl Module","This is a test!\nHello, world",
 			       PG_MSGBTN_OK | PG_MSGBTN_CANCEL)."\n";
 			       
 # Make a custom dialog
-PicoGUI::pgEnterContext();
-PicoGUI::pgNewPopup(160,80);
-$toolbar = PicoGUI::pgNewWidget(PG_WIDGET_TOOLBAR,0,0);
-PicoGUI::pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,$toolbar);
-PicoGUI::pgReplaceText(PGDEFAULT,"Thwamp!");
-PicoGUI::pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_AFTER,$toolbar);
-PicoGUI::pgReplaceText(PGDEFAULT,"Send a line to stdin\nto continue");
-PicoGUI::pgUpdate();
+pgEnterContext();
+pgNewPopup(160,80);
+$toolbar = pgNewWidget(PG_WIDGET_TOOLBAR);
+pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,$toolbar);
+pgReplaceText(PGDEFAULT,"Thwamp!");
+pgNewWidget(PG_WIDGET_BUTTON);
+pgReplaceText(PGDEFAULT,"Quack!");
+$wLabel = pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_AFTER,$toolbar);
+pgNewWidget(PG_WIDGET_CANVAS);
+pgUpdate();
+# Little event loop
+while (1) {
+      pgReplaceText($wLabel,join ',',pgGetEvent());
+}
+pgLeaveContext();
+
+# Make an application
+pgRegisterApp(PG_APP_NORMAL,"Perl PicoGUI test app");
+pgUpdate();
 <STDIN>;
-PicoGUI::pgLeaveContext();
