@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.61 2001/10/08 01:15:18 micahjd Exp $
+/* $Id: dispatch.c,v 1.62 2001/10/10 00:49:44 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -1085,6 +1085,33 @@ g_error rqh_appmsg(int owner, struct pgrequest *req,
   return sucess;
 }
 
+/* Byte-swap each entry in the array, and prepend the number of entries */
+g_error rqh_mkarray(int owner, struct pgrequest *req,
+		    void *data, unsigned long *ret, int *fatal) {
+  u32 *buf;
+  int i;
+  handle h;
+  g_error e;
+
+  /* Truncate size to a multiple of 4 */
+  req->size &= ~3;
+
+  e = g_malloc((void **) &buf, req->size + 4);  /* Additional space for the
+						   number of entries in the
+						   array */
+  errorcheck;
+  buf[0] = req->size >> 2;       /* Number of entries */
+
+  /* Swap the data as we copy it */
+  for (i=1;i<=buf[0];i++,data+=4)
+    buf[i] = *(u32*)data;
+
+  e = mkhandle(&h,PG_TYPE_ARRAY,owner,buf);
+  errorcheck;
+
+  *ret = h;
+  return sucess;
+}
 
 /* The End */
 

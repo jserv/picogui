@@ -34,7 +34,7 @@ RQH(getpayload)
 RQH(chcontext)
 RQH(writeto)
 RQH(updatepart)
-RQH(undef)        /* Shane's mkarray code goes here */
+RQH(mkarray)
 RQH(render)
 RQH(newbitmap)
 RQH(thlookup)
