@@ -88,6 +88,7 @@ if [ "$DRIVER_X11" = "y" ]; then
    bool '  Always Double-buffer'                  CONFIG_X11_DOUBLEBUFFER
    bool '  Disable pixel/getpixel (debug only)'   CONFIG_X11_NOPIXEL
    bool '  Use defaultvbl ellipse & fellipse'     CONFIG_X11_DEFAULTELLIPSE
+   bool '  Use native X11 cursor'                 CONFIG_X11_CURSOR
 fi
 bool 'SVGAlib framebuffer driver'          DRIVER_SVGAFB
 bool 'Motorola 68EZ328 LCD driver'         DRIVER_EZ328

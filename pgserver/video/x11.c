@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.7 2001/11/20 23:44:15 micahjd Exp $
+/* $Id: x11.c,v 1.8 2001/11/21 04:38:34 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -518,6 +518,16 @@ void x11_sprite_update(struct sprite *spr) {
 }
 #endif /* CONFIG_X11_DOUBLEBUFFER */
 
+/* A little hack to disable the PicoGUI cursor when we're using the X cursor */
+#ifdef CONFIG_X11_CURSOR
+void x11_sprite_show(struct sprite *spr) {
+  if (spr==cursor)
+    spr->visible = 0;
+  def_sprite_show(spr);
+}
+#endif
+
+
 /******************************************** Driver registration */
 
 g_error x11_regfunc(struct vidlib *v) {
@@ -528,12 +538,6 @@ g_error x11_regfunc(struct vidlib *v) {
   v->close = &x11_close;
   v->pixel = &x11_pixel;
   v->getpixel = &x11_getpixel;
-#ifdef CONFIG_X11_DOUBLEBUFFER
-  v->update = &x11_buffered_update;
-#else
-  v->sprite_update = &x11_sprite_update;
-  v->update = &x11_update;
-#endif
   v->bitmap_get_groprender = &x11_bitmap_get_groprender;
   v->bitmap_getsize = &x11_bitmap_getsize;
   v->bitmap_new = &x11_bitmap_new;
@@ -543,9 +547,21 @@ g_error x11_regfunc(struct vidlib *v) {
   v->slab = &x11_slab;
   v->bar = &x11_bar;
   v->line = &x11_line;
+
+#ifdef CONFIG_X11_DOUBLEBUFFER
+  v->update = &x11_buffered_update;
+#else
+  v->sprite_update = &x11_sprite_update;
+  v->update = &x11_update;
+#endif
+
 #ifndef CONFIG_X11_DEFAULTELLIPSE
   v->ellipse = &x11_ellipse;
   v->fellipse = &x11_fellipse;
+#endif
+
+#ifdef CONFIG_X11_CURSOR
+  v->sprite_show = &x11_sprite_show;
 #endif
 
   return sucess;
