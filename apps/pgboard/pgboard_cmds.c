@@ -1,5 +1,5 @@
 /*
- * $Id: pgboard_cmds.c,v 1.6 2001/11/09 08:50:33 cgrigis Exp $
+ * $Id: pgboard_cmds.c,v 1.7 2001/11/21 15:17:40 cgrigis Exp $
  *
  * Small test appllication displaying buttons allowing the user to send various
  * commands to the virtual keyboard.
@@ -61,6 +61,8 @@ int main (int argc, char * argv [])
   struct keyboard_command cmd_select_pattern = {htons (PG_KEYBOARD_SELECT_PATTERN), htons (PG_KBPATTERN_NUMERIC)};
   struct keyboard_command cmd_push_context   = {htons (PG_KEYBOARD_PUSH_CONTEXT)};
   struct keyboard_command cmd_pop_context    = {htons (PG_KEYBOARD_POP_CONTEXT)};
+  struct keyboard_command cmd_block          = {htons (PG_KEYBOARD_BLOCK)};
+  struct keyboard_command cmd_release        = {htons (PG_KEYBOARD_RELEASE)};
 
   /* Handle for GUI placement */
   pghandle lastBox;
@@ -152,6 +154,24 @@ int main (int argc, char * argv [])
 	       PG_WP_FONT, font,
 	       0);
   pgBind (PGDEFAULT, PG_WE_ACTIVATE, &handleButton, &cmd_pop_context);
+
+  lastBox = pgNewWidget (PG_WIDGET_BOX, PG_DERIVE_AFTER, lastBox);
+
+  pgNewWidget (PG_WIDGET_BUTTON, PG_DERIVE_INSIDE, PGDEFAULT);	
+  pgSetWidget (PGDEFAULT,
+	       PG_WP_TEXT, pgNewString ("BLOCK"),
+	       PG_WP_SIDE, PG_S_LEFT,
+	       PG_WP_FONT, font,
+	       0);
+  pgBind (PGDEFAULT, PG_WE_ACTIVATE, &handleButton, &cmd_block);
+
+  pgNewWidget (PG_WIDGET_BUTTON, PG_DERIVE_AFTER, PGDEFAULT);	
+  pgSetWidget (PGDEFAULT,
+	       PG_WP_TEXT, pgNewString ("RELEASE"),
+	       PG_WP_SIDE, PG_S_LEFT,
+	       PG_WP_FONT, font,
+	       0);
+  pgBind (PGDEFAULT, PG_WE_ACTIVATE, &handleButton, &cmd_release);
 
   font = pgNewFont ("Helvetica", 12, 0);
 

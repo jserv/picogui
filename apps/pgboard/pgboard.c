@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.24 2001/11/21 09:25:22 cgrigis Exp $
+/* $Id: pgboard.c,v 1.25 2001/11/21 15:17:40 cgrigis Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -61,6 +61,8 @@ struct key_entry *keydown = NULL;
 static int enable_status = 1;
 /* Current pattern */
 static unsigned short current_patnum;
+/* Flag indicating whether the keyboard is blocked */
+static int blocked = 0;
 
 /* Structure to hold the current keyboard context */
 struct keyboard_context
@@ -156,9 +158,6 @@ int evtMessage (struct pgEvent * evt)
   /* Received command */
   struct keyboard_command * cmd;
 
-  /* Keyboard's new size */
-  int newSize = -1;
-
   switch (evt->type)
     {
     case PG_WE_APPMSG:
@@ -167,58 +166,79 @@ int evtMessage (struct pgEvent * evt)
       /* Command structure is in network byte order */
       cmd->type = ntohs(cmd->type);
 /*       printf ("[pgboard] received command: %d\n", cmd->type); */
-  
-      switch (cmd->type)
+
+      if (blocked)
 	{
-	case PG_KEYBOARD_SHOW:
-	  newSize = mpat->app_size;
-	  break;
-
-	case PG_KEYBOARD_HIDE:
-	  newSize = 0;
-	  break;
-
-	case PG_KEYBOARD_TOGGLE:
-	  newSize = mpat->app_size - pgGetWidget (wApp, PG_WP_SIZE);
-	  break;
-
-	case PG_KEYBOARD_ENABLE:
-	  enableKbdCanvas ();
-	  enable_status = 1;
-	  break;
-
-	case PG_KEYBOARD_DISABLE:
-	  disableKbdCanvas ();
-	  enable_status = 0;
-	  break;
-
-	case PG_KEYBOARD_TOGGLE_DISPLAY:
-	  enable_status = !enable_status;
-	  enable_status ? enableKbdCanvas () : disableKbdCanvas ();
-	  break;
-
-	case PG_KEYBOARD_SELECT_PATTERN:
-	  selectPattern (ntohs (cmd->data.pattern));
-	  break;
-
-	case PG_KEYBOARD_PUSH_CONTEXT:
-	  pushKeyboardContext ();
-	  break;
-
-	case PG_KEYBOARD_POP_CONTEXT:
-	  popKeyboardContext ();
-	  break;
-
-	default:
-	  printf ("[pgboard] Unknown command: %d\n", cmd->type);
-	  break;
+	  if (cmd->type == PG_KEYBOARD_RELEASE)
+	    {
+	      blocked = 0;
+	    }
 	}
-
-      if (newSize >= 0)
+      else
 	{
-	  pgSetWidget(wApp,
-		      PG_WP_SIZE, newSize,
-		      0);
+	  /* Keyboard's new size */
+	  int newSize = -1;
+
+	  switch (cmd->type)
+	    {
+	    case PG_KEYBOARD_SHOW:
+	      newSize = mpat->app_size;
+	      break;
+
+	    case PG_KEYBOARD_HIDE:
+	      newSize = 0;
+	      break;
+
+	    case PG_KEYBOARD_TOGGLE:
+	      newSize = mpat->app_size - pgGetWidget (wApp, PG_WP_SIZE);
+	      break;
+
+	    case PG_KEYBOARD_ENABLE:
+	      enableKbdCanvas ();
+	      enable_status = 1;
+	      break;
+
+	    case PG_KEYBOARD_DISABLE:
+	      disableKbdCanvas ();
+	      enable_status = 0;
+	      break;
+
+	    case PG_KEYBOARD_TOGGLE_DISPLAY:
+	      enable_status = !enable_status;
+	      enable_status ? enableKbdCanvas () : disableKbdCanvas ();
+	      break;
+
+	    case PG_KEYBOARD_SELECT_PATTERN:
+	      selectPattern (ntohs (cmd->data.pattern));
+	      break;
+
+	    case PG_KEYBOARD_PUSH_CONTEXT:
+	      pushKeyboardContext ();
+	      break;
+
+	    case PG_KEYBOARD_POP_CONTEXT:
+	      popKeyboardContext ();
+	      break;
+
+	    case PG_KEYBOARD_BLOCK:
+	      blocked = 1;
+	      break;
+
+	    case PG_KEYBOARD_RELEASE:
+	      /* Nothing */
+	      break;
+
+	    default:
+	      printf ("[pgboard] Unknown command: %d\n", cmd->type);
+	      break;
+	    }
+
+	  if (newSize >= 0)
+	    {
+	      pgSetWidget(wApp,
+			  PG_WP_SIZE, newSize,
+			  0);
+	    }
 	}
       
       break;
@@ -374,9 +394,12 @@ int kbd_btn_handler (struct pgEvent * evt)
 {
   if (evt->type == PG_WE_ACTIVATE)
     {
-      pgSetWidget(wApp,
-		  PG_WP_SIZE, mpat->app_size - pgGetWidget (wApp, PG_WP_SIZE),
-		  0);
+      if (!blocked)
+	{
+	  pgSetWidget(wApp,
+		      PG_WP_SIZE, mpat->app_size - pgGetWidget (wApp, PG_WP_SIZE),
+		      0);
+	}
     }
   else
     {

@@ -1,6 +1,6 @@
-/* $Id: pgboard_api.c,v 1.8 2001/11/21 09:25:22 cgrigis Exp $
+/* $Id: pgboard_api.c,v 1.9 2001/11/21 15:17:40 cgrigis Exp $
  *
- * kbd_api.c - high-level API to manipulate the PicoGUI virtual keyboard
+ * pgboard_api.c - high-level API to manipulate the PicoGUI virtual keyboard
  * 
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -85,7 +85,7 @@ static int pgboard_started;
  */
 void sig_pgboard_ok (int sig)
 {
-  fprintf (stderr, "'pgboard' started properly\n");
+  fprintf (stderr, "[pgboard_api] 'pgboard' started properly\n");
   pgboard_started = 1;
 }
 #endif /* POCKETBEE */
@@ -177,7 +177,6 @@ void send_command (struct keyboard_command * cmd, int force)
 {
   if ( cmd && (!physical_keyboard_available () || force) )
     {
-/*       struct pgmemdata data = {cmd, sizeof (struct keyboard_command), 0}; */
       pghandle kb;
 
 /*       printf ("[pgboard_api] sending command: %d\n", cmd->type); */
@@ -205,7 +204,6 @@ void send_command (struct keyboard_command * cmd, int force)
 	  if (cmd->type == PG_KEYBOARD_TOGGLE)
 	    {
 	      struct keyboard_command hide_cmd = {htons (PG_KEYBOARD_HIDE)};
-/* 	      struct pgmemdata hide_data = {&hide_cmd, sizeof (struct keyboard_command), 0}; */
 	      pgAppMessage (kb, pgFromMemory (&hide_cmd, sizeof (struct keyboard_command)));
 	    }
 
@@ -214,6 +212,10 @@ void send_command (struct keyboard_command * cmd, int force)
 
       /* Send the user command */
       pgAppMessage (kb, pgFromMemory (cmd, sizeof (struct keyboard_command)));
+
+      /* Flush PG_APPMSG requests */
+      pgFlushRequests ();
+
       usleep (300000);
     }
 }
@@ -242,9 +244,6 @@ void showKeyboard (unsigned short key_pattern, int force)
   /* Show the keyboard */
   cmd.type = PG_KEYBOARD_SHOW;
   send_command (&cmd, force);
-
-  /* Flush PG_APPMSG requests */
-  pgFlushRequests ();
 }
 
 
@@ -260,9 +259,6 @@ void hideKeyboard (int force)
 
   cmd.type = PG_KEYBOARD_HIDE;
   send_command (&cmd, force);
-
-  /* Flush PG_APPMSG requests */
-  pgFlushRequests ();
 }
 
 
@@ -278,9 +274,6 @@ void toggleKeyboard (int force)
 
   cmd.type = PG_KEYBOARD_TOGGLE;
   send_command (&cmd, force);
-
-  /* Flush PG_APPMSG requests */
-  pgFlushRequests ();
 }
 
 
@@ -296,9 +289,6 @@ void disableKeyboard (int force)
 
   cmd.type = PG_KEYBOARD_DISABLE;
   send_command (&cmd, force);
-
-  /* Flush PG_APPMSG requests */
-  pgFlushRequests ();
 }
 
 
@@ -314,9 +304,6 @@ void pushKeyboardContext (int force)
 
   cmd.type = PG_KEYBOARD_PUSH_CONTEXT;
   send_command (&cmd, force);
-
-  /* Flush PG_APPMSG requests */
-  pgFlushRequests ();
 }
 
 
@@ -332,7 +319,38 @@ void popKeyboardContext (int force)
 
   cmd.type = PG_KEYBOARD_POP_CONTEXT;
   send_command (&cmd, force);
+}
 
-  /* Flush PG_APPMSG requests */
-  pgFlushRequests ();
+
+/*
+ * Block the keyboard.
+ * The keyboard will ignore all further commands until it is released.
+ * Usage of the keyboard (i.e. clicking on the keys), however, is unaffected.
+ *
+ * force       : 0 --> the command is ignored if a physical keyboard is present
+ *               1 --> the command is always sent to the virtual keyboard
+ */
+void blockKeyboard (int force)
+{
+  struct keyboard_command cmd;
+
+  cmd.type = PG_KEYBOARD_BLOCK;
+  send_command (&cmd, force);
+}
+
+
+/*
+ * Release the keyboard.
+ * The keyboard will resume executing commands. All commands received since
+ * the keyboard was blocked are lost.
+ *
+ * force       : 0 --> the command is ignored if a physical keyboard is present
+ *               1 --> the command is always sent to the virtual keyboard
+ */
+void releaseKeyboard (int force)
+{
+  struct keyboard_command cmd;
+
+  cmd.type = PG_KEYBOARD_RELEASE;
+  send_command (&cmd, force);
 }

@@ -1,6 +1,6 @@
-/* $Id: pgboard_api.h,v 1.1 2001/10/30 09:47:57 cgrigis Exp $
+/* $Id: pgboard_api.h,v 1.2 2001/11/21 15:17:40 cgrigis Exp $
  *
- * kbd_api.h - high-level API to manipulate the PicoGUI virtual keyboard
+ * pgboard_api.h - high-level API to manipulate the PicoGUI virtual keyboard
  * 
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -90,6 +90,28 @@ void pushKeyboardContext (int force);
  *               1 --> the command is always sent to the virtual keyboard
  */
 void popKeyboardContext (int force);
+
+
+/*
+ * Block the keyboard.
+ * The keyboard will ignore all further commands until it is released.
+ * Usage of the keyboard (i.e. clicking on the keys), however, is unaffected.
+ *
+ * force       : 0 --> the command is ignored if a physical keyboard is present
+ *               1 --> the command is always sent to the virtual keyboard
+ */
+void blockKeyboard (int force);
+
+
+/*
+ * Release the keyboard.
+ * The keyboard will resume executing commands. All commands received since
+ * the keyboard was blocked are lost.
+ *
+ * force       : 0 --> the command is ignored if a physical keyboard is present
+ *               1 --> the command is always sent to the virtual keyboard
+ */
+void releaseKeyboard (int force);
 
 
 #endif /* _PGBOARD_API_H */

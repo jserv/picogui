@@ -1,4 +1,4 @@
-/* $Id: pgboard.h,v 1.3 2001/11/20 09:44:47 cgrigis Exp $
+/* $Id: pgboard.h,v 1.4 2001/11/21 15:17:40 cgrigis Exp $
  *
  * pgboard.h - declarations associated with the virtual keyboard (pgboard)
  * 
@@ -53,6 +53,8 @@
 #define PG_KEYBOARD_SELECT_PATTERN  7  /* Select a different pattern */
 #define PG_KEYBOARD_PUSH_CONTEXT    8  /* Push the current keyboard context */
 #define PG_KEYBOARD_POP_CONTEXT     9  /* Pop the last pushed keyboard context */
+#define PG_KEYBOARD_BLOCK          10  /* Block the keyboard in its current state (make it ignore further commands) */
+#define PG_KEYBOARD_RELEASE        11  /* Release the keyboard (allow it to take new commands) */
 
 
 /* Constants for keyboard patterns */
