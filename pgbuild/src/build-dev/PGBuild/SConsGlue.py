@@ -42,6 +42,8 @@ def startup(config):
 def loadScript(name, progress):
     """Load one SCons script"""
     progress.showTaskHeading()
+    d = SCons.Node.FS.default_fs.File(name).dir
+    SCons.Node.FS.default_fs.set_SConstruct_dir(d)
     SCons.Script.SConscript.SConscript(name)
     progress.report("loaded", name)
 
