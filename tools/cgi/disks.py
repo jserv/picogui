@@ -35,7 +35,8 @@ def getMountPoints():
     mounts = []
     for line in f.readlines():
         (device, total, used, available, percent, path, whitespace) = re.split("\s+", line)
-        mounts.append(MountPoint(device, long(used), long(available), path))
+	if device != "none":
+	        mounts.append(MountPoint(device, long(used), long(available), path))
     f.close()
     return mounts
 
