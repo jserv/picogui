@@ -11,21 +11,23 @@ if { $connection == 0 } {
 	exit 1
 }
 
-pgui entercontext
+set context [pgui entercontext]
 
 set imgnr 0
 while {$imgnr<$NUMFRAMES} {
 	set img($imgnr) [pgui createbitmap -name [format $imagebase $imgnr]]
 	incr imgnr
 }
-set dlg [pgDialog "Boing!"]
+set dlg [pgCreateWidget dialogbox]
 set ok [pgCreateWidget button]
-set bmp [pgNewBitmap $img(0)]
+set bmp [pgCreateWidget label]
 
+pgSetText $dlg "Boing"
 pgSetText $ok "Ok"
+
 pgSetSide $ok bottom
 pgSetSide $bmp all
-pgSetWidget $bmp $pg_wp(transparent) 0
+
 pgAttach $ok inside $dlg
 pgAttach $bmp after $ok
 
@@ -49,4 +51,4 @@ while { 1 } {
 	}
 	incr i $d
 }
-pgLeaveContext
+pgui leave -id $context

@@ -114,21 +114,6 @@ proc pgGetString {textid} {
 	array set ret [pgGetResponse]
 	return $ret(data)
 }
-proc pgNewWidget {type {rship 0} {parent 0}} {
-	global pg_request defaultparent defaultrship pg_derive pg_widget
-	if {$parent == 0 } {
-		set parent $defaultparent
-	}
-	if {$rship == 0} {
-		set rship $defaultrship
-	}
-	send_packet [pack_pgrequest 1 8 $pg_request(mkwidget)]
-	send_packet [binary format "SSI" $pg_derive($rship) $pg_widget($type) $parent]
-	array set ret [pgGetResponse]
-	set defaultparent $ret(data)
-	set defaultrship after
-	return $ret(data)
-}
 proc pgCreateWidget {type} {
 	global pg_request pg_derive pg_widget
 	send_packet [pack_pgrequest 1 4 $pg_request(createwidget)]
@@ -162,19 +147,6 @@ proc pgThemeLookup {object property} {
 	array set ret [pgGetResponse]
 	return $ret(data)
 }
-proc pgLeaveContext {{id ""}} {
-	global pg_request
-	set len 0
-	if { $id != "" } {
-		set len 4
-	}
-	send_packet [pack_pgrequest 1 $len $pg_request(rmcontext)]
-	if { $len > 0 } {
-		send_packet [binary format "I" $id]
-	}
-	array set ret [pgGetResponse]
-	return $ret(data)
-}
 proc pgFromFile { filename } {
 	set data ""
 	set f [open $filename]
@@ -185,16 +157,6 @@ proc pgFromFile { filename } {
 	close $f
 	return $data
 }
-proc pgNewLabel {{text ""} {rship 0} {parent 0}} {
-	set label [pgNewWidget label $rship $parent]
-	pgSetText $label $text
-	return $label
-}
-proc pgNewButton {{text ""} {rship 0} {parent 0}} {
-	set button [pgNewWidget button $rship $parent]
-	pgSetText $button $text
-	return $button
-}
 proc isInteger {test} {
 	set res 0
 	scan $test "%d" res
@@ -202,17 +164,6 @@ proc isInteger {test} {
 		return 1
 	}
 	return 0
-}
-proc pgNewBitmap {{image 0} {rship 0} {parent 0}} {
-	set bitmap [pgNewWidget label $rship $parent]
-	if {$image ==0} {
-		return $bitmap
-	} elseif {[isInteger $image] == 1} {
-		pgSetBitmap $bitmap $image
-	} else {
-		pgSetBitmap $bitmap [pgui createbitmap $image]
-	}
-	return $bitmap
 }
 proc pgSetBitmap {widget bitmap} {
 	global pg_wp
@@ -268,7 +219,7 @@ proc pgEventLoop {} {
 	global binds
 	pgui update
 	while {1} {
-		array set event [pgWaitEvent]
+		array set event [pgui waitevent]
 		parray event
 		set indexes [array names binds]
 		if {[lsearch $indexes $event(from)] == -1} {
@@ -320,6 +271,16 @@ proc pgui {command args} {
 	} elseif {$command =="entercontext"} {
 		send_packet [pack_pgrequest 1 0 $pg_request(mkcontext)]
 		array set ret [pgGetResponse]
+	} elseif {$command =="leavecontext"} {
+		set len 0
+		if {[info exists aa(-id)]} {
+			set len 4
+		}
+		send_packet [pack_pgrequest 1 $len $pg_request(rmcontext)]
+		if {$len >0 } {
+			send_packet [binary format "I" $aa(-id)]
+		}
+		array set ret [pgGetResponse]
 	} elseif {$command =="checkevent"} {
 		send_packet [pack_pgrequest 1 0 $pg_request(checkevent)]
 		array set ret [pgGetResponse]
@@ -348,9 +309,9 @@ proc pgui {command args} {
 			puts "unknown arguments for pgui createbitmap"
 		}
 	}
-	if {[info exists ret(from)]} {
-		return [array get ret]
-	} elseif {[info exists ret(data)]} {
+	if {[info exists ret(data)]} {
 		return $ret(data)
+	} else {
+		return [array get ret]
 	}
 }

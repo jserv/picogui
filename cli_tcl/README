@@ -3,5 +3,6 @@ pgui connect ?-server servername? ?-display displaynum?
 pgui createbitmap -name filename|-data filedata
 pgui createbitmap -width width -height height
 pgui entercontext
+pgui leavecontext ?-id contextid?
 pgui update
 pgui waitevent

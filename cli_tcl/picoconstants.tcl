@@ -183,6 +183,7 @@ array set pg_widget "
 	simplemenu	21
 	dialogbox	22
 	messagedialog	23
+	scrollbox	24
 "
 array set pg_s "
 	top [expr 1<<3]
