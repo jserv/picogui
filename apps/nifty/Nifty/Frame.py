@@ -1,5 +1,6 @@
 import PicoGUI, sys
 from Minibuffer import Minibuffer
+from DebugBuffer import DebugBuffer
 #import pax.backwards_compatibility
 
 class Frame(object):
@@ -23,6 +24,8 @@ class Frame(object):
         self.minibuffer = Minibuffer(self)
         sys.stdout = self.minibuffer
 
+        sys.stderr = DebugBuffer(self)
+
     def get_current(self):
         for page in self._pages:
             if page.on:
@@ -30,7 +33,7 @@ class Frame(object):
 
     def set_current(self, textbox):
         if type(textbox) in (int, long, float):
-            page = self._pages[page]
+            page = self._pages[textbox]
         else:
             page = textbox.tabpage
         page.on = 1
@@ -53,13 +56,13 @@ class Frame(object):
         t.buffer = buffer
         t.text = buffer.text
         t.tabpage.text = buffer.name
+        buffer.add_observer(t)
 
     def save(self):
         box = self.current
         buffer = box.buffer
         buffer.text = box.text
         buffer.save()
-        print 'buffer %r saved' % buffer.name
 
     def _save_button_handler(self, ev):
         self.save()

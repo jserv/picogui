@@ -13,3 +13,4 @@ class FileBuffer(Buffer):
         f = file(self.path, 'w')
         f.write(self.text)
         f.close()
+        print 'buffer %r saved' % self.name

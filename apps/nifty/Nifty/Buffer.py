@@ -4,7 +4,10 @@ class Buffer(object):
     def __init__(self, name='', text=''):
         self.name = name
         self.text = text
-        #self.observers = []
+        self.observers = []
 
     def save(self):
         raise NotImplemented
+
+    def add_observer(self, o):
+        self.observers.append(o)

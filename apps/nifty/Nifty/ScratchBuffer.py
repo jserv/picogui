@@ -4,4 +4,4 @@ class ScratchBuffer(Buffer):
     "A buffer to hold temporary stuff"
 
     def save(self):
-        pass
+        print 'cannot save a ScratchBuffer'
