@@ -1,4 +1,4 @@
-/* $Id: dlg_datepicker.c,v 1.6 2001/08/06 07:50:06 micahjd Exp $
+/* $Id: dlg_datepicker.c,v 1.7 2001/11/01 18:32:44 epchristi Exp $
  *
  * dlg_datepicker.c - Implementation of the pgDatePicker() function. Display
  *                    a date on a calendar, and allow the user to select a
@@ -31,6 +31,8 @@
  * 
  */
 
+#include <stdlib.h>
+#include <time.h>
 #include "clientlib.h"
 
 #include <time.h>     /* Calendars need time */

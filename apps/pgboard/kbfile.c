@@ -1,4 +1,4 @@
-/* $Id: kbfile.c,v 1.6 2001/10/24 09:47:37 bornet Exp $
+/* $Id: kbfile.c,v 1.7 2001/11/01 18:32:43 epchristi Exp $
   *
   * kbfile.c - Functions to validate and load patterns from a keyboard file
   * 
@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <picogui.h>
+#include <netinet/in.h>
 #include "kbfile.h"
 
 /* as some systems don't have htons primitives (as uClinux) */

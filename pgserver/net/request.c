@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.25 2001/09/02 19:45:22 micahjd Exp $
+/* $Id: request.c,v 1.26 2001/11/01 18:32:44 epchristi Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -8,6 +8,9 @@
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
+ * Thread-safe code added by RidgeRun Inc.
+ * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
+ * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -190,7 +193,11 @@ void readfd(int from) {
     if (!buf->data) {
       /* Reorder the bytes in the header */
       buf->req.type = ntohs(buf->req.type);
+#ifdef ENABLE_THREADING_SUPPORT      
+      buf->req.id = ntohl(buf->req.id);
+#else      
       buf->req.id = ntohs(buf->req.id);
+#endif      
       buf->req.size = ntohl(buf->req.size);
 
 #ifdef DEBUG_NET

@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.18 2001/10/29 23:57:55 micahjd Exp $
+/* $Id: input.h,v 1.19 2001/11/01 18:32:44 epchristi Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -128,6 +128,9 @@ g_error svgainput_regfunc(struct inlib *i);
 g_error ncursesinput_regfunc(struct inlib *i);
 g_error chipslicets_regfunc(struct inlib *i);
 g_error r3912ts_regfunc(struct inlib *i);
+g_error rrdsc21_gpio_regfunc(struct inlib *i);
+g_error rrsim_regfunc(struct inlib *i);
+g_error rrts_regfunc(struct inlib *i);
 g_error vr3ts_regfunc(struct inlib *i);
 g_error tuxts_regfunc(struct inlib *i);
 g_error ttykb_regfunc(struct inlib *i);

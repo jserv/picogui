@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.19 2001/10/12 06:20:44 micahjd Exp $
+/* $Id: network.h,v 1.20 2001/11/01 18:32:44 epchristi Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -6,6 +6,9 @@
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
+ * Thread-safe code added by RidgeRun Inc.
+ * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
+ * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -46,7 +49,11 @@ typedef signed long    s32;
 /* Request, the only packet ever sent from client to server */
 struct pgrequest {
   u16 type;
+#ifdef ENABLE_THREADING_SUPPORT   
+  u32 id;  /* Just to make sure requests match up with responses */
+#else   
   u16 id;  /* Just to make sure requests match up with responses */
+#endif   
   u32 size; /* The request is followed by size bytes of data */
 };  
 
@@ -58,7 +65,11 @@ struct pgrequest {
 #define PG_RESPONSE_ERR 1
 struct pgresponse_err {
   u16 type;    /* RESPONSE_ERR - error code */
+#ifdef ENABLE_THREADING_SUPPORT      
+  u32 id;
+#else   
   u16 id;
+#endif   
   u16 errt;
   u16 msglen;  /* Length of following message */
 };
@@ -66,7 +77,11 @@ struct pgresponse_err {
 #define PG_RESPONSE_RET 2
 struct pgresponse_ret {
   u16 type;    /* RESPONSE_RET - return value */
+#ifdef ENABLE_THREADING_SUPPORT         
+  u32 id;
+#else   
   u16 id;
+#endif   
   u32 data;
 };
 
@@ -82,7 +97,11 @@ struct pgresponse_event {
 #define PG_RESPONSE_DATA 4
 struct pgresponse_data {
   u16 type;    /* RESPONSE_DATA */
+#ifdef ENABLE_THREADING_SUPPORT            
+  u32 id;
+#else   
   u16 id;
+#endif   
   u32 size;
   /* 'size' bytes of data follow */
 };

@@ -1,9 +1,11 @@
-/* $Id: client_c.h,v 1.72 2001/10/24 19:39:58 micahjd Exp $
+/* $Id: client_c.h,v 1.73 2001/11/01 18:32:43 epchristi Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Thread-safe code added by RidgeRun Inc.
+ * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -357,7 +359,9 @@ pgidlehandler pgSetIdle(long t,pgidlehandler handler);
  * 
  * \sa pgUpdate
  */
+#ifndef ENABLE_THREADING_SUPPORT
 void pgFlushRequests(void);
+#endif
 
 /*!
  * \brief Update the screen 
@@ -1290,7 +1294,9 @@ int pgCheckEvent(void);
  *
  * \sa pgGetEvent, pgCheckEvent, pgEventLoop
  */
+#ifndef ENABLE_THREADING_SUPPORT
 void pgDispatchEvent(struct pgEvent *evt);
+#endif
 
 /*!
  * \brief Get and dispatch new events if there are any

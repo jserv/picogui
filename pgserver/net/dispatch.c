@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.64 2001/10/29 23:57:55 micahjd Exp $
+/* $Id: dispatch.c,v 1.65 2001/11/01 18:32:44 epchristi Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -9,6 +9,9 @@
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
+ * Thread-safe code added by RidgeRun Inc.
+ * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
+ * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -90,7 +93,11 @@ int dispatch_packet(int from,struct pgrequest *req,void *data) {
     struct pgresponse_ret rsp;
     
     rsp.type = htons(PG_RESPONSE_RET);
+#ifdef ENABLE_THREADING_SUPPORT    
+    rsp.id = htonl(req->id);
+#else    
     rsp.id = htons(req->id);
+#endif    
     rsp.data = htonl(ret_data);
     
     /* Send the return packet */
@@ -106,7 +113,11 @@ int dispatch_packet(int from,struct pgrequest *req,void *data) {
     errlen = strlen(errmsg = errortext(e));
     
     rsp.type = htons(PG_RESPONSE_ERR);
+#ifdef ENABLE_THREADING_SUPPORT        
+    rsp.id = htonl(req->id);
+#else    
     rsp.id = htons(req->id);
+#endif    
     rsp.errt = htons(errtype(e));
     rsp.msglen = htons(errlen);
 
@@ -477,7 +488,11 @@ g_error rqh_batch(int owner, struct pgrequest *req,
 
     /* Reorder the bytes in the header */
     subreq->type = ntohs(subreq->type);
+#ifdef ENABLE_THREADING_SUPPORT            
+    subreq->id = ntohl(subreq->id);
+#else    
     subreq->id = ntohs(subreq->id);
+#endif    
     subreq->size = ntohl(subreq->size);
 
     /* Extract the data */
@@ -667,8 +682,11 @@ g_error rqh_getstring(int owner, struct pgrequest *req,
 
   /* Send a PG_RESPONSE_DATA back */
   rsp.type = htons(PG_RESPONSE_DATA);
-  rsp.id = htons(req->id);
-
+#ifdef ENABLE_THREADING_SUPPORT              
+  rsp.id = htonl(req->id);
+#else  
+  rsp.id = htons(req->id);  
+#endif
   size = strlen(string)+1;
   rsp.size = htonl(size);
   
@@ -796,7 +814,11 @@ g_error rqh_getmode(int owner, struct pgrequest *req,
    
   /* Send a PG_RESPONSE_DATA back */
   rsp.type = htons(PG_RESPONSE_DATA);
+#ifdef ENABLE_THREADING_SUPPORT  
+  rsp.id = htonl(req->id);
+#else  
   rsp.id = htons(req->id);
+#endif  
   rsp.size = htonl(sizeof(mi));
   
   *fatal |= send_response(owner,&rsp,sizeof(rsp));  
@@ -1003,7 +1025,11 @@ g_error rqh_getfstyle(int owner, struct pgrequest *req,
 
   /* Send a PG_RESPONSE_DATA back */
   rsp.type = htons(PG_RESPONSE_DATA);
+#ifdef ENABLE_THREADING_SUPPORT    
+  rsp.id = htonl(req->id);
+#else  
   rsp.id = htons(req->id);
+#endif  
   rsp.size = htonl(sizeof(gfs));
   *fatal |= send_response(owner,&rsp,sizeof(rsp));  
   *fatal |= send_response(owner,&gfs,sizeof(gfs));  

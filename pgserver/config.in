@@ -70,7 +70,7 @@ mainmenu_option next_comment
 comment 'Video Drivers'
 bool 'Linux framebuffer device'            DRIVER_FBDEV
 if [ "$DRIVER_FBDEV" = "y" ]; then
-   bool '  Fix VR3 framebuffer'             CONFIG_FIX_VR3
+   bool '  Fix VR3 framebuffer'            CONFIG_FIX_VR3
    bool '  Dont enable graphics-only mode'  CONFIG_FB_NOGRAPHICS
 fi
 bool 'SDL framebuffer driver'              DRIVER_SDLFB

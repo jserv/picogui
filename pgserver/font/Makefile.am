@@ -25,7 +25,11 @@ FDF_FILES = \
 	lucida10.bdf \
 	times10b.bdf \
 	times10.bdf \
-	utopia25.bdf
+	utopia25.bdf \
+	helvr08u.bdf \
+	helvo14.bdf \
+	helvb14.bdf \
+   atari8.bdf
 
 FI_FILES = \
 	clean12.fi \
@@ -40,7 +44,11 @@ FI_FILES = \
 	helvetica8.fi \
 	lucida10.fi \
 	times10.fi \
-	utopia25.fi
+	utopia25.fi \
+	helvb08u.fi \
+	helvo14.fi \
+	helvb14.fi \
+   atari8.fi
 
 EXTRA_DIST = $(FDF_FILES) $(FI_FILES)
 

@@ -1,4 +1,4 @@
-/* $Id: dlg_filepicker.c,v 1.13 2001/08/07 09:34:51 gobry Exp $
+/* $Id: dlg_filepicker.c,v 1.14 2001/11/01 18:32:44 epchristi Exp $
  *
  * dlg_filepicker.c - Display a dialog box the user can use to select
  *                    a file to open or save. It is customizable with flags
@@ -16,6 +16,9 @@
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
+ * Thread-safe code added by RidgeRun Inc.
+ * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
+ * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -118,6 +121,10 @@ void filepicker_pathmenu(struct filepickdata *dat) {
   int ret;
   int i;
   struct stat st;
+#ifdef ENABLE_THREADING_SUPPORT
+  pgClientReturnData retData;
+  sem_init(&retData.sem, 0, 0);
+#endif
   
   /* Create the menu popup in its own context */
   pgEnterContext();
@@ -171,9 +178,17 @@ void filepicker_pathmenu(struct filepickdata *dat) {
     if (p==items)
       str = pgNewString("/");   /* Root directory */
     else {
+#ifdef ENABLE_THREADING_SUPPORT       
+      _pg_add_request(PGREQ_MKSTRING,(void *) items,p-items, (unsigned int)&retData, 1);
+      sem_wait(&retData.sem);
+      str = retData.ret.e.retdata;
+#else      
       _pg_add_request(PGREQ_MKSTRING,(void *) items,p-items);
       pgFlushRequests();
-      str = _pg_return.e.retdata;
+      str = _pg_return.e.retdata;      
+#endif      
+
+
     }
     items = p+1;
 
