@@ -1,4 +1,4 @@
-/* $Id: checkbox.c,v 1.9 2003/03/10 23:48:26 micahjd Exp $
+/* $Id$
  *
  * checkbox.c - a customized button, used for "check boxes"
  *

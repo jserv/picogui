@@ -1,4 +1,4 @@
-/* $Id: themedemo.c,v 1.1 2001/10/11 05:37:25 gork Exp $
+/* $Id$
  *
  * themedemo.c - Test proggie for the new theme stuff I've been
  *               working on in the theme_overhaul branch of

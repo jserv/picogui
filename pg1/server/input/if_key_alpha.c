@@ -1,4 +1,4 @@
-/* $Id: if_key_alpha.c,v 1.4 2003/03/10 23:48:19 micahjd Exp $
+/* $Id$
  *
  * if_key_alpha.c - Process the "Alpha" key, used to enter text on numeric keypads
  *

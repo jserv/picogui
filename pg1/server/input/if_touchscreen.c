@@ -1,4 +1,4 @@
-/* $Id: if_touchscreen.c,v 1.11 2003/03/10 23:48:19 micahjd Exp $
+/* $Id$
  *
  * if_touchscreen.c - Touchscreen calibration and filtering
  *

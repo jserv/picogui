@@ -1,4 +1,4 @@
-/* $Id: font_textmode.c,v 1.4 2003/03/10 23:48:23 micahjd Exp $
+/* $Id$
  *
  * font_textmode.c - Font rendering in text mode, for ncurses and LCD drivers
  *

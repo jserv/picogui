@@ -1,4 +1,4 @@
-/* $Id: serialmouse.c,v 1.11 2003/03/10 23:48:20 micahjd Exp $
+/* $Id$
  *
  * serialmouse.c - input driver for serial mice.
  *

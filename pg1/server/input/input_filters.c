@@ -1,4 +1,4 @@
-/* $Id: input_filters.c,v 1.5 2003/03/10 23:48:19 micahjd Exp $
+/* $Id$
  *
  * input_filters.c - Abstract input filter interface
  *

@@ -1,4 +1,4 @@
-/* $Id: os_posix.h,v 1.3 2003/03/10 23:48:13 micahjd Exp $
+/* $Id$
  *
  * os_posix.h - Shared components of the POSIX-compatible OS module
  *

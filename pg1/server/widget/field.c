@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.62 2003/03/10 23:48:26 micahjd Exp $
+/* $Id$
  *
  * field.c - A single line text editor, based (hybrid, not subclassed) on textbox
  *

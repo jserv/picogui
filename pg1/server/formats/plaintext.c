@@ -1,4 +1,4 @@
-/* $Id: plaintext.c,v 1.13 2003/03/10 23:48:01 micahjd Exp $
+/* $Id$
  *
  * plaintext.c - Load and save plain unformatted text into the textbox widget
  *

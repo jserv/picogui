@@ -1,4 +1,4 @@
-/* $Id: benchmark.c,v 1.13 2003/03/10 23:48:00 micahjd Exp $
+/* $Id$
  *
  * benchmark.c - Run benchmarks on vidlib functions
  *

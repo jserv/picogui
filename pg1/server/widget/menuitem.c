@@ -1,4 +1,4 @@
-/* $Id: menuitem.c,v 1.14 2003/03/10 23:48:27 micahjd Exp $
+/* $Id$
  *
  * menuitem.c - a customized button, used for menu items
  *

@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.5 2003/03/10 23:48:00 micahjd Exp $
+/* $Id$
  *
  * panel.c - Traditional panel/panelbar application manager
  *

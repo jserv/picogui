@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.92 2003/01/01 03:43:08 micahjd Exp $
+/* $Id$
  *
  * panel.c - Resizable container with decorations. It uses a panelbar for resizing purposes,
  *           and optionally supplies some standard buttons for the panel.

@@ -1,4 +1,4 @@
-/* $Id: textbox.h,v 1.24 2003/03/10 23:48:16 micahjd Exp $
+/* $Id$
  *
  * textbox.h - Interface definitions for the textbox widget. This allows
  *             the main textbox widget functions and the text format loaders

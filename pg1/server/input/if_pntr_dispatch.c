@@ -1,4 +1,4 @@
-/* $Id: if_pntr_dispatch.c,v 1.9 2003/03/10 23:48:19 micahjd Exp $
+/* $Id$
  *
  * if_pntr_dispatch.c - Dispatch mouse pointer events to widgets
  *

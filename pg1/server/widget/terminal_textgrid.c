@@ -1,4 +1,4 @@
-/* $Id: terminal_textgrid.c,v 1.26 2003/03/27 10:50:32 micahjd Exp $
+/* $Id$
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.

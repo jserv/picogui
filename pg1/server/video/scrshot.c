@@ -1,4 +1,4 @@
-/* $Id: scrshot.c,v 1.15 2003/03/10 23:48:24 micahjd Exp $
+/* $Id$
  *
  * scrshot.c - Maintains a virtual framebuffer, taking screenshots on update
  *

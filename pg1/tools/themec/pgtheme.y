@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.44 2002/10/18 18:39:46 micahjd Exp $
+/* $Id$
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *

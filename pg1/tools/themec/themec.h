@@ -1,4 +1,4 @@
-/* $Id: themec.h,v 1.14 2002/10/04 17:24:48 micahjd Exp $
+/* $Id$
  *
  * themec.h - definitions used internally in the theme compiler
  *

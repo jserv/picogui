@@ -1,4 +1,4 @@
-/* $Id: omnibar-helio.c,v 1.1 2001/10/11 05:37:25 gork Exp $
+/* $Id$
  * 
  * omnibar-helio.c - omnibar, hacked up a bit to look good on Helio
  *

@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.38 2003/03/10 23:48:26 micahjd Exp $
+/* $Id$
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *

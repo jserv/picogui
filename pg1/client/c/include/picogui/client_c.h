@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.97 2003/03/19 04:59:07 micahjd Exp $
+/* $Id$
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *

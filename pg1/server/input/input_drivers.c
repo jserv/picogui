@@ -1,4 +1,4 @@
-/* $Id: input_drivers.c,v 1.7 2003/03/10 23:48:19 micahjd Exp $
+/* $Id$
  *
  * input_drivers.c - Abstract input driver interface
  *

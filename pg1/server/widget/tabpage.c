@@ -1,4 +1,4 @@
-/* $Id: tabpage.c,v 1.9 2003/03/25 16:57:33 micahjd Exp $
+/* $Id$
  *
  * tabpage.c - A page in a tabbed book. It can be inserted into any
  *             container and automatically link with other tab pages

@@ -1,4 +1,4 @@
-/* $Id: pgkeys.h,v 1.12 2003/01/01 03:43:02 micahjd Exp $
+/* $Id$
  *
  * pgkeys.h - Constants for the keyboard keys and modifiers
  *

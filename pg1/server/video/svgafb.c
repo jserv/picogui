@@ -1,4 +1,4 @@
-/* $Id: svgafb.c,v 1.16 2003/03/10 23:48:24 micahjd Exp $
+/* $Id$
  *
  * svgafb.c - A driver for linear-framebuffer svga devices that uses the linear*
  *          VBLs instead of the default vbl and libvgagl.

@@ -1,4 +1,4 @@
-/* $Id: platform.c,v 1.4 2002/03/25 15:19:38 bornet Exp $
+/* $Id$
  *
  * platforms.c - Contains platform-dependant stuff
  *

@@ -1,4 +1,4 @@
-/* $Id: ericsson_cb.c,v 1.13 2003/03/10 23:48:18 micahjd Exp $
+/* $Id$
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>

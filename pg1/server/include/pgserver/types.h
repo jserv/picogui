@@ -1,4 +1,4 @@
-/* $Id: types.h,v 1.7 2003/03/10 23:48:17 micahjd Exp $
+/* $Id$
  *
  * pgserver/types.h - Common types used throughout pgserver
  *                    (but only in pgserver)

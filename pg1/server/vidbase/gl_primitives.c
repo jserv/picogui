@@ -1,4 +1,4 @@
-/* $Id: gl_primitives.c,v 1.8 2003/03/10 23:48:23 micahjd Exp $
+/* $Id$
  *
  * gl_primitives.c - OpenGL driver for picogui
  *                   Implement standard picogui primitives using OpenGL

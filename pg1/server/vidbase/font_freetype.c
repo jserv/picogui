@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.40 2003/04/25 16:10:40 micahjd Exp $
+/* $Id$
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts

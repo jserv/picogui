@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.35 2003/03/10 23:48:23 micahjd Exp $
+/* $Id$
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers

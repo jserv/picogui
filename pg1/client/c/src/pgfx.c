@@ -1,4 +1,4 @@
-/* $Id: pgfx.c,v 1.11 2003/01/17 15:03:15 bornet Exp $
+/* $Id$
  *
  * picogui/pgfx.c - PGFX general-purpose utility functions
  * 

@@ -1,4 +1,4 @@
-/* $Id: NetCore.java,v 1.2 2003/01/01 03:42:55 micahjd Exp $
+/* $Id$
  *
  * NetCore.java - core networking code for the Waba/Java client library
  *
@@ -696,7 +696,7 @@ public class NetCore {
 		} else if (argument.equals ("version")) {
 
 		    /* --pgversion : For now print CVS id */
-		    _pgUtils._client_err ("$Id: NetCore.java,v 1.2 2003/01/01 03:42:55 micahjd Exp $");
+		    _pgUtils._client_err ("$Id$");
 
 		    return false;
 

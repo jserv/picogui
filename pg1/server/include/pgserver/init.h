@@ -1,4 +1,4 @@
-/* $Id: init.h,v 1.7 2003/04/14 01:49:27 micahjd Exp $
+/* $Id$
  *
  * init.h - High level pgserver initialization, main loop, and shutdown
  *

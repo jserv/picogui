@@ -1,4 +1,4 @@
-/* $Id: dlg_filepicker.c,v 1.19 2003/03/19 18:17:23 lalo Exp $
+/* $Id$
  *
  * dlg_filepicker.c - Display a dialog box the user can use to select
  *                    a file to open or save. It is customizable with flags

@@ -1,4 +1,4 @@
-/* $Id: render.h,v 1.20 2003/03/10 23:48:15 micahjd Exp $
+/* $Id$
  *
  * render.h - data structures and functions for rendering and manipulating
  *            gropnodes (Graphics Operation nodes)

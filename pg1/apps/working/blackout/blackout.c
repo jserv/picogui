@@ -1,4 +1,4 @@
-/* $Id: blackout.c,v 1.7 2002/09/05 16:09:47 bornet Exp $
+/* $Id$
  *
  * blackout.c - "Blackout" game to demonstrate game programming and
  *              canvas widget event handling.

@@ -1,4 +1,4 @@
-/* $Id: gpmremote.c,v 1.2 2002/07/03 22:03:25 micahjd Exp $
+/* $Id$
  * 
  * gpmremote.c - A mouse-only remote input driver using gpm
  *

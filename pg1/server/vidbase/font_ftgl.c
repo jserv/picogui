@@ -1,4 +1,4 @@
-/* $Id: font_ftgl.c,v 1.12 2003/04/25 16:10:41 micahjd Exp $
+/* $Id$
  *
  * font_ftgl.c - Font engine that uses OpenGL textures prepared with SDL_ttf.
  *                This engine is very minimalistic compared to the freetype engine:

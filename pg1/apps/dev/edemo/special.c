@@ -1,4 +1,4 @@
-/*  $Id: special.c,v 1.1 2003/02/10 23:34:52 micahjd Exp $
+/*  $Id$
  *
  *  edemo - a PicoGUI demo
  *

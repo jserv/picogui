@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.56 2003/03/19 04:59:07 micahjd Exp $
+/* $Id$
  *
  * input.h - Abstract input driver interface
  *

@@ -1,4 +1,4 @@
-/* $Id: font_bdf.c,v 1.8 2003/03/10 23:48:22 micahjd Exp $
+/* $Id$
  *
  * font_bdf.c - Font engine that uses fonts compiled into pgserver,
  *              converted from BDF fonts at compile-time.

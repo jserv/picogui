@@ -1,4 +1,4 @@
-/* $Id: picogui.h,v 1.16 2002/07/04 00:48:05 epchristi Exp $
+/* $Id$
  *
  * picogui.h - Include file for your average PicoGUI client using the
  *             C client library

@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.40 2003/03/10 23:48:07 micahjd Exp $
+/* $Id$
  *
  * g_error.h - Defines a format for errors
  *

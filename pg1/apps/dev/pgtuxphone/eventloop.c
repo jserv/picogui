@@ -1,4 +1,4 @@
-/* $Id: eventloop.c,v 1.3 2001/11/16 12:06:56 micahjd Exp $
+/* $Id$
  *
  * eventloop.c - Event loop for graphical tuxphone
  *

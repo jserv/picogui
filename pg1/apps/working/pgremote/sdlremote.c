@@ -1,4 +1,4 @@
-/* $Id: sdlremote.c,v 1.7 2002/07/03 22:03:25 micahjd Exp $
+/* $Id$
  * 
  * sdlremote.c - pgremote is a networked PicoGUI input driver.
  *               This uses SDL, so hopefully it is fairly portable.

@@ -1,4 +1,4 @@
-/* $Id: yuv16_422_planar.c,v 1.4 2003/04/11 10:20:02 cgrigis Exp $
+/* $Id$
  *
  * Video Base Library:
  * yuv16_422_planar.c - For 16bpp YUV 422 planar framebuffer

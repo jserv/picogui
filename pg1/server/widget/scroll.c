@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.78 2003/03/10 23:48:27 micahjd Exp $
+/* $Id$
  *
  * scroll.c - standard scroll indicator
  *

@@ -1,4 +1,4 @@
-/* $Id: requests.c,v 1.6 2003/03/19 04:59:07 micahjd Exp $
+/* $Id$
  *
  * requests.c - Process the requests that form picogui's network
  *              protocol and several file formats.

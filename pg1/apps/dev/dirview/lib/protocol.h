@@ -19,7 +19,7 @@
    Author: Pascal Bauermeister
    Contributors:
 
-   $Id: protocol.h,v 1.1 2002/07/08 04:29:43 bauermeister Exp $
+   $Id$
 */
 
 #ifndef __LIBPG_DIRVIEW_PROTOCOL_H__

@@ -1,4 +1,4 @@
-/* $Id: pgstring.c,v 1.20 2003/03/10 23:48:07 micahjd Exp $
+/* $Id$
  *
  * pgstring.c - String data type to handle various encodings
  *

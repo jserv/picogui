@@ -2,7 +2,7 @@ dnl usage: AM_BEE_RPMPROFILE
 dnl
 dnl provides options and variables to generate rpm spec file.
 dnl
-dnl $Id: rpmprofile.m4,v 1.1 2001/08/24 11:54:51 gobry Exp $
+dnl $Id$
 
 AC_DEFUN(AM_BEE_RPMPROFILE, [
 

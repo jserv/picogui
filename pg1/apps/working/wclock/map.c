@@ -19,7 +19,7 @@
    Author: Pascal Bauermeister
    Contributors:
 
-   $Id: map.c,v 1.1 2002/04/29 23:35:24 bauermeister Exp $
+   $Id$
 */
 
 #include "wclock.h"

@@ -1,4 +1,4 @@
-/* $Id: rrts.c,v 1.1 2002/06/10 07:40:36 bornet Exp $
+/* $Id$
  *
  * rrts.c - input driver for ridgerun touch screen 
  *

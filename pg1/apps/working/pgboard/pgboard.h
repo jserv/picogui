@@ -1,4 +1,4 @@
-/* $Id: pgboard.h,v 1.8 2003/01/01 03:42:49 micahjd Exp $
+/* $Id$
  *
  * pgboard.h - declarations associated with the virtual keyboard (pgboard)
  * 

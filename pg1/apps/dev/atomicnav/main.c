@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.5 2003/01/01 03:42:47 micahjd Exp $
+/* $Id$
  *
  * main.c - Initialization and event loop for Atomic Navigator
  *

@@ -1,5 +1,5 @@
 /*
- * $Id: pgboard_cmds.c,v 1.7 2001/11/21 15:17:40 cgrigis Exp $
+ * $Id$
  *
  * Small test appllication displaying buttons allowing the user to send various
  * commands to the virtual keyboard.

@@ -1,4 +1,4 @@
-/* $Id: messagedialog.c,v 1.8 2003/03/10 23:48:27 micahjd Exp $
+/* $Id$
  *
  * messagedialog.c - A type of dialog box that can display a message and get
  *                   a user's response to it.

@@ -1,4 +1,4 @@
-# $Id: mksymtab.pl,v 1.4 2001/02/08 06:48:28 micahjd Exp $
+# $Id$
 #
 # mksymtab.pl - convert the constant definitions in constants.h
 #               into a symbol table for looking up constants

@@ -1,4 +1,4 @@
-/* $Id: stddialog.c,v 1.21 2003/03/19 18:17:26 lalo Exp $
+/* $Id$
  *
  * stddialog.c - Various preconstructed dialog boxes the application
  *               may use. These are implemented 100% client-side using

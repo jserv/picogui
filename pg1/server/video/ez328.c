@@ -1,4 +1,4 @@
-/* $Id: ez328.c,v 1.27 2003/03/10 23:48:23 micahjd Exp $
+/* $Id$
  *
  * ez328.c - Driver for the 68EZ328's (aka Motorola Dragonball EZ)
  *           built-in LCD controller. It assumes the LCD parameters

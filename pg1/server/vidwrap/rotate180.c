@@ -1,4 +1,4 @@
-/* $Id: rotate180.c,v 1.25 2003/03/10 23:48:25 micahjd Exp $
+/* $Id$
  *
  * rotate180.c - Video wrapper to rotate the screen 180 degrees
  *

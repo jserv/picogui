@@ -1,4 +1,4 @@
-/* $Id: globals.c,v 1.3 2003/03/10 23:48:07 micahjd Exp $
+/* $Id$
  *
  * globals.c - Global object, including server resources
  *

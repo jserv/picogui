@@ -1,4 +1,4 @@
-/* $Id: x11_window.c,v 1.12 2003/03/10 23:48:25 micahjd Exp $
+/* $Id$
  *
  * x11_util.c - Utility functions for picogui's driver for the X window system
  *

@@ -1,4 +1,4 @@
-/* $Id: if_client_adaptor.c,v 1.8 2003/03/10 23:48:18 micahjd Exp $
+/* $Id$
  *
  * if_client_adaptor.c - Send events to clients, for client-side input filters
  *

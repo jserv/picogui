@@ -1,4 +1,4 @@
-/* $Id: radiobutton.c,v 1.6 2003/03/10 23:48:27 micahjd Exp $
+/* $Id$
  *
  * radiobutton.c - a customized button, used for "radio" buttons
  *

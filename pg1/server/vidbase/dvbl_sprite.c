@@ -1,4 +1,4 @@
-/* $Id: dvbl_sprite.c,v 1.7 2003/01/21 04:10:38 micahjd Exp $
+/* $Id$
  *
  * dvbl_sprite.c - This file is part of the Default Video Base Library,
  *                 providing the basic video functionality in picogui but

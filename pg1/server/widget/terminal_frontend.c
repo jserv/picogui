@@ -1,4 +1,4 @@
-/* $Id: terminal_frontend.c,v 1.22 2003/03/27 05:30:17 micahjd Exp $
+/* $Id$
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.

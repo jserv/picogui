@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.83 2003/04/10 13:20:26 lalo Exp $
+/* $Id$
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the

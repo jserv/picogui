@@ -1,4 +1,4 @@
-/* $Id: canvastst.c,v 1.1 2003/02/10 23:34:50 micahjd Exp $
+/* $Id$
  *
  * canvastst.c - based on  PicoGUI's "canvastst.c"
  *

@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.38 2003/04/25 16:10:39 micahjd Exp $
+/* $Id$
  *
  * font.h - Common structures for defining fonts, and an interface
  *          for specific font engines to attach to

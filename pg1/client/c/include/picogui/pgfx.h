@@ -1,4 +1,4 @@
-/* $Id: pgfx.h,v 1.21 2003/01/17 15:03:13 bornet Exp $
+/* $Id$
  *
  * picogui/pgfx.h - The PicoGUI abstract graphics interface
  * 

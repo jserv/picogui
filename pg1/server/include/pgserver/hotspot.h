@@ -1,4 +1,4 @@
-/* $Id: hotspot.h,v 1.9 2003/03/10 23:48:11 micahjd Exp $
+/* $Id$
  *
  * pgserver/hotspot.h - This is an interface for managing hotspots.
  *                      The divtree is scanned for hotspot divnodes.

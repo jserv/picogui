@@ -1,4 +1,4 @@
-/* $Id: vgaplan4.c,v 1.7 2003/01/21 04:10:39 micahjd Exp $
+/* $Id$
  *
  * Video Base Library:
  * vgaplan4.c - For VGA compatible 4bpp access, based on linear1.c

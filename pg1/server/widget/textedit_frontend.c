@@ -1,4 +1,4 @@
-/* $Id: textedit_frontend.c,v 1.19 2003/03/10 23:48:27 micahjd Exp $
+/* $Id$
  *
  * textedit.c - Multi-line text widget. By Chuck Groom,
  * cgroom@bluemug.com, Blue Mug, Inc, July 2002. Intended to be

@@ -1,4 +1,4 @@
-/* $Id: requests.h,v 1.5 2003/03/10 23:48:15 micahjd Exp $
+/* $Id$
  *
  * requests.h - The interface to request packet handlers, used to
  *              implement the client/server protocol, themes, and WTs

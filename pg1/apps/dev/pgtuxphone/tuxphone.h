@@ -1,4 +1,4 @@
-/* $Id: tuxphone.h,v 1.1 2001/10/25 06:49:17 micahjd Exp $
+/* $Id$
  * 
  * tuxphone.h - Defines the socket interface to control the phone remotely
  *              using tuxphone.

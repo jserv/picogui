@@ -1,4 +1,4 @@
-/* $Id: lcdnet.c,v 1.3 2003/01/01 03:42:48 micahjd Exp $
+/* $Id$
  * 
  * lcdnet.c - Network monitor designed for use with a wall-mounted
  *            LCD (see README) but maybe with other uses

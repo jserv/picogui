@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.39 2003/03/10 23:48:23 micahjd Exp $
+/* $Id$
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers

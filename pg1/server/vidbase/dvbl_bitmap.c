@@ -1,4 +1,4 @@
-/* $Id: dvbl_bitmap.c,v 1.19 2003/01/21 04:10:38 micahjd Exp $
+/* $Id$
  *
  * dvbl_bitmap.c - This file is part of the Default Video Base Library,
  *                 providing the basic video functionality in picogui but

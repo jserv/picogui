@@ -1,4 +1,4 @@
-/* $Id: textedit.h,v 1.10 2003/01/20 17:12:11 thierrythevoz Exp $
+/* $Id$
  *
  * Multi-line text widget. The widget is divided into PicoGUI specific
  * code in widget/textedit.c, and abstract text widget code in

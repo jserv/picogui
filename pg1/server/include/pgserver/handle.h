@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.37 2003/03/10 23:48:11 micahjd Exp $
+/* $Id$
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,

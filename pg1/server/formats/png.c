@@ -1,4 +1,4 @@
-/* $Id: png.c,v 1.5 2003/03/10 23:48:02 micahjd Exp $
+/* $Id$
  *
  * png.c - Use the libpng library to load PNG graphics into PicoGUI 
  *

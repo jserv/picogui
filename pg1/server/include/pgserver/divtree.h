@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.51 2003/03/10 23:48:10 micahjd Exp $
+/* $Id$
  *
  * divtree.h - define data structures related to divtree management
  *

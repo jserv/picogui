@@ -1,4 +1,4 @@
-/* $Id: flatbutton.c,v 1.7 2003/03/10 23:48:26 micahjd Exp $
+/* $Id$
  *
  * flatbutton.c - another custom border, simply using an alternate theme object
  *                without the usual border

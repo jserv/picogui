@@ -1,4 +1,4 @@
-/* $Id: dialogbox.c,v 1.14 2003/03/10 23:48:26 micahjd Exp $
+/* $Id$
  *
  * dialogbox.c - The dialogbox is a type of popup widget that is always
  *               automatically sized, and has a title

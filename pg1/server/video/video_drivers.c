@@ -1,4 +1,4 @@
-/* $Id: video_drivers.c,v 1.19 2003/03/23 21:19:54 micahjd Exp $
+/* $Id$
  *
  * video_drivers.c - handles loading/switching video drivers and modes
  *

@@ -1,4 +1,4 @@
-/* $Id: vr3ts.c,v 1.12 2003/03/10 23:48:20 micahjd Exp $
+/* $Id$
  *
  * vr3ts.c - input driver for the Agenda VR3. This contains code from
  *           Agenda's xfree86 patch along with the framework from

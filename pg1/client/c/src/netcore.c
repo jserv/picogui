@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.42 2003/03/11 02:41:15 micahjd Exp $
+/* $Id$
  *
  * netcore.c - core networking code for the C client library
  *
@@ -658,7 +658,7 @@ void pgInit(int argc, char **argv)
 	
 	else if (!strcmp(arg,"version")) {
 	  /* --pgversion : For now print CVS id */
-	  fprintf(stderr,"$Id: netcore.c,v 1.42 2003/03/11 02:41:15 micahjd Exp $\n");
+	  fprintf(stderr,"$Id$\n");
 	  exit(1);
 	}
 	

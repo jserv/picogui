@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.36 2003/03/10 23:48:23 micahjd Exp $
+/* $Id$
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)

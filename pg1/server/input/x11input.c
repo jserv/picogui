@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.35 2003/03/10 23:48:21 micahjd Exp $
+/* $Id$
  *
  * x11input.h - input driver for X11 events
  *

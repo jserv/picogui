@@ -1,4 +1,4 @@
-/* $Id: paragraph.h,v 1.10 2003/03/10 23:48:13 micahjd Exp $
+/* $Id$
  *
  * paragraph.h - Build upon the text storage capabilities of pgstring, adding word
  *               wrapping, formatting, and UI.

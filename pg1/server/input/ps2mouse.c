@@ -1,4 +1,4 @@
-/* $Id: ps2mouse.c,v 1.5 2003/03/10 23:48:20 micahjd Exp $
+/* $Id$
  *
  * ps2mouse.c - Driver for PS/2 compatible mouse devices, including input core
  *              drivers that emulate PS/2 mice.

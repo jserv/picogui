@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.25 2003/03/26 06:33:57 micahjd Exp $
+/* $Id$
  *
  * main.c - PicoGUI Terminal (the 'p' is silent :)
  *          This handles the PicoGUI init and events

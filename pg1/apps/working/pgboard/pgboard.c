@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.31 2003/01/01 03:42:49 micahjd Exp $
+/* $Id$
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'

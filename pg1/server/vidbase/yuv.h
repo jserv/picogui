@@ -1,4 +1,4 @@
-/* $Id: yuv.h,v 1.2 2003/03/10 23:48:23 micahjd Exp $
+/* $Id$
  *
  * yuv.h - Some general-purpose YUV stuff
  * 

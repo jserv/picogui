@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.37 2003/03/10 23:48:07 micahjd Exp $
+/* $Id$
  *
  * errortext.c - optional error message strings
  *

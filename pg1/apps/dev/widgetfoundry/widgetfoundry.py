@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: widgetfoundry.py,v 1.11 2003/03/19 22:19:02 lalo Exp $
+# $Id$
 #
 # widgetfoundry.py - Main module for the Widget Foundry WT editor
 #

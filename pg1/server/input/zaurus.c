@@ -1,4 +1,4 @@
-/* $Id: zaurus.c,v 1.15 2003/03/10 23:48:21 micahjd Exp $
+/* $Id$
  *
  * zaurus.c - Input driver for the Sharp Zaurus SL-5000. This includes a
  *            simple touchscreen driver, and some extras to handle sound

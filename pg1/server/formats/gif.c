@@ -1,4 +1,4 @@
-/* $Id: gif.c,v 1.7 2002/11/03 23:27:55 micahjd Exp $
+/* $Id$
  *
  * gif.c - Read only GIF loader based on libungif
  *

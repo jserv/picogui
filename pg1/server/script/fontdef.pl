@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: fontdef.pl,v 1.22 2002/10/12 14:46:35 micahjd Exp $
+# $Id$
 #
 # This script turns a directory full of .fi and .bdf font files
 # into C source code that is compiled into the PicoGUI server.

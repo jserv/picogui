@@ -1,4 +1,4 @@
-/* $Id: widget_table.c,v 1.5 2003/01/01 03:43:09 micahjd Exp $
+/* $Id$
  *
  * widget_table.c - Table defining all the installed widgets
  *

@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.67 2003/03/23 22:54:39 micahjd Exp $
+/* $Id$
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory

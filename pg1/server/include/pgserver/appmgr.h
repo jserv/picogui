@@ -1,4 +1,4 @@
-/* $Id: appmgr.h,v 1.25 2003/03/10 23:48:09 micahjd Exp $
+/* $Id$
  *
  * appmgr.h - Generic interface to application manager modules
  *

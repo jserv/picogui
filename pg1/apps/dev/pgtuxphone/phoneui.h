@@ -1,4 +1,4 @@
-/* $Id: phoneui.h,v 1.2 2001/11/16 12:06:56 micahjd Exp $
+/* $Id$
  *
  * phoneui.h - UI functions other than the basic phonecall info bar
  *

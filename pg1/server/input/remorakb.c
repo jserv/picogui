@@ -1,4 +1,4 @@
-/* $Id: remorakb.c,v 1.15 2003/03/10 23:48:20 micahjd Exp $
+/* $Id$
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>

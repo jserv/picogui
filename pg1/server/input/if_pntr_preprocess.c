@@ -1,4 +1,4 @@
-/* $Id: if_pntr_preprocess.c,v 1.5 2003/03/10 23:48:19 micahjd Exp $
+/* $Id$
  *
  * if_pntr_preprocess.c - Various processing on mouse pointer events before dispatch
  *

@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.3 2000/10/10 00:49:05 micahjd Exp $
+/* $Id$
  *
  * main.c - theme dump program for debugging and testing the
  *          theme tools

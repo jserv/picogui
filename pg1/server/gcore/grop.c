@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.56 2003/03/10 23:48:07 micahjd Exp $
+/* $Id$
  *
  * grop.c - grop-list management
  *

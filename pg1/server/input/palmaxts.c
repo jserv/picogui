@@ -1,4 +1,4 @@
-/* $Id: palmaxts.c,v 1.9 2003/03/10 23:48:20 micahjd Exp $
+/* $Id$
  *
  * palmaxts.c - input driver for Palmax touchscreens.
  *

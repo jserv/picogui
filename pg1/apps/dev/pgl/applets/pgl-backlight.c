@@ -1,4 +1,4 @@
-/* $Id: pgl-backlight.c,v 1.4 2003/01/01 03:42:49 micahjd Exp $
+/* $Id$
  * 
  * pgl-backlight.c - Very simple app to toggle backlight
  *

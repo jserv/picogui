@@ -1,4 +1,4 @@
-/* $Id: glcontext.c,v 1.3 2003/03/10 23:48:24 micahjd Exp $
+/* $Id$
  *
  * glcontext.c - Driver for using an existing OpenGL context
  *

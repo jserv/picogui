@@ -1,4 +1,4 @@
-/* $Id: dvbl_font.c,v 1.12 2003/01/21 04:10:38 micahjd Exp $
+/* $Id$
  *
  * dvbl_font.c - Low level implementations for font rendering
  *

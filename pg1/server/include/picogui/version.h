@@ -1,4 +1,4 @@
-/* $Id: version.h,v 1.6 2003/04/11 20:43:40 micahjd Exp $
+/* $Id$
  * 
  * version.h - Define the version of the picogui server
  *

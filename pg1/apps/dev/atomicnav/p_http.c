@@ -1,4 +1,4 @@
-/* $Id: p_http.c,v 1.11 2003/01/01 03:42:47 micahjd Exp $
+/* $Id$
  *
  * p_http.c - HTTP client implementation for the Atomic Navigator web browser
  *

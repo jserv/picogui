@@ -1,4 +1,4 @@
-/* $Id: mime.c,v 1.1 2002/07/08 04:29:43 bauermeister Exp $
+/* $Id$
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

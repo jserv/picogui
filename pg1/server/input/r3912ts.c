@@ -1,4 +1,4 @@
-/* $Id: r3912ts.c,v 1.12 2003/03/10 23:48:20 micahjd Exp $
+/* $Id$
  *
  * r3912ts.c - input driver for r3912 touch screen found on the VTech Helio
  *             and others. Other touch screens using the same data format should

@@ -1,4 +1,4 @@
-/* $Id: rotate270.c,v 1.26 2003/03/10 23:48:25 micahjd Exp $
+/* $Id$
  *
  * rotate270.c - Video wrapper to rotate the screen 270 degrees
  *

@@ -1,4 +1,4 @@
-/* $Id: textedit_logical.c,v 1.17 2003/03/10 23:48:28 micahjd Exp $
+/* $Id$
  *
  * textedit_logical.c - Backend for multi-line text widget. This
  * defines the behavior of a generic wrapping text widget, and is not

@@ -1,4 +1,4 @@
-# $Id: WTWidget.py,v 1.7 2003/03/23 02:11:28 micahjd Exp $
+# $Id$
 #
 # WTWidget.py - Extensions to the PicoGUI widget class to support
 #               Widget Foundry's XWT exporting and property editing

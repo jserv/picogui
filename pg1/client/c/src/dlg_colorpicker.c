@@ -1,4 +1,4 @@
-/* $Id: dlg_colorpicker.c,v 1.5 2003/03/19 18:17:21 lalo Exp $
+/* $Id$
  *
  * dlg_colorpicker.c - Implementation of the pColorPicker() function.
  *                     The current implementation is simple and only allows

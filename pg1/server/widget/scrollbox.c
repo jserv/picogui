@@ -1,4 +1,4 @@
-/* $Id: scrollbox.c,v 1.9 2003/03/10 23:48:27 micahjd Exp $
+/* $Id$
  *
  * scrollbox.c - A box widget that includes scrollbars. It also
  *               conglomerates properties and events as necessary

@@ -1,4 +1,4 @@
-/* $Id: testPgserver.java,v 1.2 2003/01/01 03:42:54 micahjd Exp $ */
+/* $Id$ */
 
 /*
  * testPgserver.java - a small class to test the org.picogui.NetCore

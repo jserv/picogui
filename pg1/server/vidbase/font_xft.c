@@ -1,4 +1,4 @@
-/* $Id: font_xft.c,v 1.10 2003/03/10 23:48:23 micahjd Exp $
+/* $Id$
  *
  * font_xft.c - Font engine for X implemented using Xft
  *

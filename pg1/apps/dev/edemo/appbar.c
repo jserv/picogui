@@ -1,4 +1,4 @@
-/* $Id: appbar.c,v 1.1 2003/02/10 23:34:50 micahjd Exp $
+/* $Id$
  *
  * appbar.c - based on PicoGUI's "themebar"
  * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>

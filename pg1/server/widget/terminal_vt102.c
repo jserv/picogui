@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.31 2003/03/27 10:23:00 micahjd Exp $
+/* $Id$
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.

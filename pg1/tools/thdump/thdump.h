@@ -1,4 +1,4 @@
-/* $Id: thdump.h,v 1.4 2002/02/02 19:14:41 lonetech Exp $
+/* $Id$
  *
  * thdump.h - definitions for the theme dump program
  *

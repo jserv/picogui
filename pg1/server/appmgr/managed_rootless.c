@@ -1,4 +1,4 @@
-/* $Id: managed_rootless.c,v 1.8 2003/03/10 23:48:00 micahjd Exp $
+/* $Id$
  *
  * managed_rootless.c - Application management for rootless modes 
  *                      managed by a host GUI

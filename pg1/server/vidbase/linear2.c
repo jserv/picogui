@@ -1,4 +1,4 @@
-/* $Id: linear2.c,v 1.14 2003/03/10 23:48:23 micahjd Exp $
+/* $Id$
  *
  * Video Base Library:
  * linear2.c - For 2-bit packed pixel devices (4 grayscales)

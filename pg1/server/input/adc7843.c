@@ -1,4 +1,4 @@
-/* $Id: adc7843.c,v 1.9 2003/03/10 23:48:18 micahjd Exp $
+/* $Id$
  *
  * adc7843.c - input driver for adc7843.c touch screen found on the Psion 5mx
  *             Other touch screens using the same data format should

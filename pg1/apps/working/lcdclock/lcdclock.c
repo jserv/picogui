@@ -1,4 +1,4 @@
-/* $Id: lcdclock.c,v 1.7 2003/01/20 22:51:33 micahjd Exp $
+/* $Id$
  * 
  * lcdclock.c - Clock application designed for use with a wall-mounted
  *              LCD (see README) but maybe with other uses

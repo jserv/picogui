@@ -1,4 +1,4 @@
-/* $Id: opengl.h,v 1.7 2003/01/01 03:43:02 micahjd Exp $
+/* $Id$
  *
  * picogui/opengl.h - This is an extension to PicoGUI, supported by the sdlgl
  *                    driver, for including OpenGL commands in groplists.

@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.3 2001/02/14 05:21:32 micahjd Exp $
+/* $Id$
  * 
  * main.c - Main source file for pgremote, a networked PicoGUI input driver
  *

@@ -1,4 +1,4 @@
-/* $Id: chaos_fire.c,v 1.1 2003/02/10 23:34:51 micahjd Exp $
+/* $Id$
  *
  * chaos_fire.c - based on  PicoGUI's "chaos_fire.c"
  *

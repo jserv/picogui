@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.35 2003/03/10 23:48:24 micahjd Exp $
+/* $Id$
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.

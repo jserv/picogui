@@ -1,4 +1,4 @@
-/* $Id: if_key_dispatch.c,v 1.6 2003/03/25 01:26:14 micahjd Exp $
+/* $Id$
  *
  * if_key_dispatch.c - Send key events to widgets
  *

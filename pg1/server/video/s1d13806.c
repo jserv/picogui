@@ -1,4 +1,4 @@
-/* $Id: s1d13806.c,v 1.9 2003/01/01 03:43:06 micahjd Exp $
+/* $Id$
  *
  * s1d13806.c - use a Epson S1D13806 video chip with a M68VZ328
  *

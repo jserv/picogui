@@ -1,4 +1,4 @@
-/* $Id: os.h,v 1.8 2003/03/10 23:48:13 micahjd Exp $
+/* $Id$
  *
  * os.h - Interface to OS-specific functions used by pgserver, independent
  *        of the actual OS in use. Functions that only exist in a particular

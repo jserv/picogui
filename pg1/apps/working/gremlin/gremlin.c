@@ -1,4 +1,4 @@
-/* $Id: gremlin.c,v 1.5 2002/10/07 07:23:10 micahjd Exp $
+/* $Id$
  * 
  * gremlin.c - This is similar to the PalmOS app with the similar name. It
  *             sends random (but repeatable) input events to the server in an

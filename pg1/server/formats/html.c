@@ -1,5 +1,5 @@
 /* -*- mode: c; c-basic-offset: 2 -*-
- * $Id: html.c,v 1.21 2003/03/10 23:48:01 micahjd Exp $
+ * $Id$
  *
  * html.c - Use the textbox_document inferface to load HTML markup
  *

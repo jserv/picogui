@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.47 2003/04/13 03:06:20 micahjd Exp $
+/* $Id$
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling

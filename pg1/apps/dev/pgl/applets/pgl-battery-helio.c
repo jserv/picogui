@@ -1,4 +1,4 @@
-/* $Id: pgl-battery-helio.c,v 1.1 2001/08/12 00:24:40 micahjd Exp $
+/* $Id$
  * 
  * pgl-battery-helio.c - Battery monitor applet for Helio
  *

@@ -1,4 +1,4 @@
-/* $Id: chipslicets.c,v 1.14 2002/07/03 22:03:29 micahjd Exp $
+/* $Id$
  *
  * chipslicets.c - input driver for touch screen
  *

@@ -1,4 +1,4 @@
-/* $Id: pgstr_textbuffers.c,v 1.4 2003/03/10 23:48:27 micahjd Exp $
+/* $Id$
  *
  * pgstr_textbuffers.c - An encoding for pgstrings that uses an array of small buffers,
  *                       providing fast insertion/deletion, Unicode support, and the

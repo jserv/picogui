@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-# $Id: PicoGUIServer.mdl,v 1.57 2003/04/14 14:50:10 cgrigis Exp $
+# $Id$
 
 import os, string
 from Bee.Autoconf import compile, install, clean, configure, flags

@@ -1,4 +1,4 @@
-/* $Id: slowvbl.c,v 1.6 2003/03/10 23:48:23 micahjd Exp $
+/* $Id$
  *
  * Video Base Library:
  * slowvbl.c - intentionally slow VBL for debugging

@@ -1,4 +1,4 @@
-/* $Id: phonecall.h,v 1.2 2001/11/16 12:06:56 micahjd Exp $
+/* $Id$
  *
  * phonecall.h - GUI and data structures to represent information about one
  *               phone call

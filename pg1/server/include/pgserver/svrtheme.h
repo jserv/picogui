@@ -1,4 +1,4 @@
-/* $Id: svrtheme.h,v 1.18 2003/03/10 23:48:15 micahjd Exp $
+/* $Id$
  * 
  * svrtheme.h - functions and data structures for themes, used
  *              only in the server

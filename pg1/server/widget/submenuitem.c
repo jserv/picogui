@@ -1,4 +1,4 @@
-/* $Id: submenuitem.c,v 1.4 2003/03/10 23:48:27 micahjd Exp $
+/* $Id$
  *
  * submenuitem.c - a customized button, for menuitems opening submenus
  *

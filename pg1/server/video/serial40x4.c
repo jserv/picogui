@@ -1,4 +1,4 @@
-/* $Id: serial40x4.c,v 1.19 2003/03/10 23:48:24 micahjd Exp $
+/* $Id$
  *
  * serial40x4.c - PicoGUI video driver for a serial wall-mounted
  *                40x4 character LCD I put together about a year ago.

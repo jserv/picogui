@@ -1,4 +1,4 @@
-/* $Id: protocol.h,v 1.3 2003/01/01 03:42:47 micahjd Exp $
+/* $Id$
  *
  * protocol.h - Definition of the protocol handler object
  *

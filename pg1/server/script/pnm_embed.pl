@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: pnm_embed.pl,v 1.4 2001/02/17 05:18:41 micahjd Exp $
+# $Id$
 #
 # Munge a binary PNM file into a header file to be directly compiled
 # into a program

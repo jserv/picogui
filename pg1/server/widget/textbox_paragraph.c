@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.30 2003/04/13 03:06:20 micahjd Exp $
+/* $Id$
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,

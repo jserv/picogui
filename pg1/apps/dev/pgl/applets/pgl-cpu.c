@@ -1,4 +1,4 @@
-/* $Id: pgl-cpu.c,v 1.4 2002/02/07 01:34:17 carpman Exp $
+/* $Id$
  * 
  * pgl-cpu.c - PGL applet to display a simple CPU monitor
  *

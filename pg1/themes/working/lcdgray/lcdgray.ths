@@ -1,4 +1,4 @@
-/* $Id: lcdgray.ths,v 1.2 2003/04/11 14:09:38 lalo Exp $
+/* $Id$
  *
  * LCD16 - based on lcdmono but uses shading on grayscale screens
  *

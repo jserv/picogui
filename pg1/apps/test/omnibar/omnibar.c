@@ -1,4 +1,4 @@
-/* $Id: omnibar.c,v 1.2 2001/12/01 01:12:01 gork Exp $
+/* $Id$
  * 
  * omnibar.c - hopefully this will grow into a general interface
  *             for starting and manipulating applications, but

@@ -1,4 +1,4 @@
-/* $Id: libpg_dirview.h,v 1.2 2002/07/28 17:06:48 micahjd Exp $
+/* $Id$
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>

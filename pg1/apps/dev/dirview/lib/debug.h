@@ -19,7 +19,7 @@
    Author: Pascal Bauermeister
    Contributors:
 
-   $Id: debug.h,v 1.1 2002/07/08 04:29:43 bauermeister Exp $
+   $Id$
 */
 
 #ifndef __PGWCLOCK_DEBUG_H__

@@ -1,4 +1,4 @@
-/* $Id: x11_bitmap.c,v 1.6 2003/03/10 23:48:25 micahjd Exp $
+/* $Id$
  *
  * x11_bitmap.c - Utilities for dealing with bitmaps in X
  *

@@ -1,4 +1,4 @@
-/* $Id: sed133x.c,v 1.6 2003/01/01 03:43:07 micahjd Exp $
+/* $Id$
  *
  * sed133x.c -- driver for Epson SED1330/SED1335/SED1336 based LC displays
  *

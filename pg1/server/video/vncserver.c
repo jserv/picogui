@@ -1,4 +1,4 @@
-/* $Id: vncserver.c,v 1.13 2003/03/10 23:48:24 micahjd Exp $
+/* $Id$
  *
  * vncserver.c - Video driver that runs a VNC server and processes
  *               input events for multiple clients, using the

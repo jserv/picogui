@@ -1,4 +1,4 @@
-/* $Id: wt.c,v 1.9 2003/01/01 03:43:04 micahjd Exp $
+/* $Id$
  * 
  * wt.c - Loading and instantiation of PicoGUI's Widget Templates
  *

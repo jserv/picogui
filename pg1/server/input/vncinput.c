@@ -1,4 +1,4 @@
-/* $Id: vncinput.c,v 1.5 2003/03/10 23:48:20 micahjd Exp $
+/* $Id$
  *
  * vncinput.h - input driver for VNC events
  *

@@ -1,4 +1,4 @@
-/* $Id: dlg_datepicker.c,v 1.10 2003/03/19 18:17:23 lalo Exp $
+/* $Id$
  *
  * dlg_datepicker.c - Implementation of the pgDatePicker() function. Display
  *                    a date on a calendar, and allow the user to select a

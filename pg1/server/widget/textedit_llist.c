@@ -1,4 +1,4 @@
-/* $Id: textedit_llist.c,v 1.4 2003/03/10 23:48:28 micahjd Exp $
+/* $Id$
  * 
  * textedit_llist.c - generic doubly-linked list. Note that this list
  * includes metadata which allow for fast lookup of start/end of

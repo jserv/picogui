@@ -1,4 +1,4 @@
-/* $Id: cursor.c,v 1.14 2003/04/10 13:20:30 lalo Exp $
+/* $Id$
  *
  * cursor.c - Cursor abstraction and multiplexing layer 
  *

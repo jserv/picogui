@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.30 2003/03/10 23:48:14 micahjd Exp $
+/* $Id$
  *
  * pgnet.h - Server-side networking interface common to all transports
  *

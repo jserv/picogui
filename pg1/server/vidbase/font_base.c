@@ -1,4 +1,4 @@
-/* $Id: font_base.c,v 1.14 2003/03/10 23:48:22 micahjd Exp $
+/* $Id$
  *
  * font_base.c - Handles multiple font backends, and provides default
  *               implementations of fontlib functions

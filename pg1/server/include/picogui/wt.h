@@ -1,4 +1,4 @@
-/* $Id: wt.h,v 1.3 2003/01/01 03:43:02 micahjd Exp $
+/* $Id$
  * 
  * wt.h - Defines the Widget Template file format, used by the server and by
  *        programs that read and write Widget Template files

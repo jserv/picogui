@@ -1,4 +1,4 @@
-/* $Id: gl.h,v 1.7 2003/03/10 23:48:11 micahjd Exp $
+/* $Id$
  *
  * gl.h - Components defined and used by the OpenGL VBL for PicoGUI
  *

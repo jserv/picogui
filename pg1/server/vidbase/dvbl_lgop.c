@@ -1,4 +1,4 @@
-/* $Id: dvbl_lgop.c,v 1.3 2003/01/01 03:43:05 micahjd Exp $
+/* $Id$
  *
  * dvbl_lgop.c - This file is part of the Default Video Base Library,
  *               providing the basic video functionality in picogui but

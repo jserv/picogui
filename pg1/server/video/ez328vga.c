@@ -1,4 +1,4 @@
-/* $Id: ez328vga.c,v 1.7 2003/03/10 23:48:23 micahjd Exp $
+/* $Id$
  *
  * ez328vga.c - Another of my strange drivers...
  *              Using the 68EZ328's LCD controller and a few logic gates,

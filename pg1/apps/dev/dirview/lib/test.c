@@ -1,4 +1,4 @@
-/* $Id: test.c,v 1.4 2003/01/01 03:42:48 micahjd Exp $
+/* $Id$
  *
  * libpg_dirview - A directory browser based on the source code of cli_c's
  *                 dlg_filepicker.c

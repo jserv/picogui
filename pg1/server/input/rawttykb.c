@@ -1,4 +1,4 @@
-/* $Id: rawttykb.c,v 1.8 2003/03/10 23:48:20 micahjd Exp $
+/* $Id$
  *
  * rawttykb.c - A medium-raw TTY keyboard driver that accurately
  *              represents the keyboard at the risk of less compatibility

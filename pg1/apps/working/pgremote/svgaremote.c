@@ -1,4 +1,4 @@
-/* $Id: svgaremote.c,v 1.5 2003/01/01 03:42:51 micahjd Exp $
+/* $Id$
  *
  * svgaremote.c - This is the svgainput driver for pgserver, hacked up to
  *                work as a good networked input driver

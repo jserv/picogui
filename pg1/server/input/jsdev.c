@@ -1,4 +1,4 @@
-/* $Id: jsdev.c,v 1.8 2003/03/10 23:48:20 micahjd Exp $
+/* $Id$
  *
  * jsdev.c - Driver for cursor control and key input using a joystick,
  *           reads from the linux joystick device. Note that all joystick 

@@ -3,7 +3,7 @@ dnl
 dnl Add a --with-<module>=... configuration option and create
 dnl <module>_CFLAGS and <module>_LDFLAGS accordingly.
 dnl
-dnl $Id: beemodule.m4,v 1.2 2002/09/24 07:18:10 gobry Exp $
+dnl $Id$
 
 
 AC_DEFUN(BEE_MODULE, [

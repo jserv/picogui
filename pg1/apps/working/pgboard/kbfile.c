@@ -1,4 +1,4 @@
-/* $Id: kbfile.c,v 1.15 2003/01/01 03:42:48 micahjd Exp $
+/* $Id$
   *
   * kbfile.c - Functions to validate and load patterns from a keyboard file
   * 

@@ -1,4 +1,4 @@
-/* $Id: h3600ts.c,v 1.6 2003/01/01 03:43:02 micahjd Exp $
+/* $Id$
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>

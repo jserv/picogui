@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.59 2003/04/14 01:49:27 micahjd Exp $
+/* $Id$
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.

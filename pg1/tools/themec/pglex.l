@@ -1,5 +1,5 @@
 %{
-/* $Id: pglex.l,v 1.8 2002/10/18 18:39:46 micahjd Exp $
+/* $Id$
  *
  * pgtheme.l - lexer for processing PicoGUI theme source code
  *

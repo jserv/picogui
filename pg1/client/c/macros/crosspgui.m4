@@ -3,7 +3,7 @@ dnl
 dnl Tests the compilation environment, add the --with-cross option and
 dnl define CC_FOR_BUILD variable to the build-platform compiler
 dnl
-dnl $Id: crosspgui.m4,v 1.2 2001/05/11 10:35:37 gobry Exp $
+dnl $Id$
 
 AC_DEFUN(AM_PGUI_CROSSCOMPILE, [
 

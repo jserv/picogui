@@ -1,4 +1,4 @@
-/* $Id: url.c,v 1.7 2003/01/01 03:42:47 micahjd Exp $
+/* $Id$
  *
  * url.c - framework for parsing and retrieving URLs
  *

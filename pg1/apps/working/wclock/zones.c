@@ -19,7 +19,7 @@
    Author: Pascal Bauermeister
    Contributors:
 
-   $Id: zones.c,v 1.2 2002/05/02 20:24:35 bauermeister Exp $
+   $Id$
 */
 
 #include "wclock.h"

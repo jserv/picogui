@@ -1,4 +1,4 @@
-/* $Id: dlg_fontpicker.c,v 1.9 2003/03/19 18:17:26 lalo Exp $
+/* $Id$
  *
  * dlg_datepicker.c - Implementation of the pgFontPicker function, allowing
  *                    the user to choose any installed font

@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.135 2003/03/25 17:06:05 micahjd Exp $
+/* $Id$
  *
  * button.c - generic button, with a string or a image
  *

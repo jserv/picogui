@@ -1,4 +1,4 @@
-/* $Id: serialremote.c,v 1.1 2001/02/14 01:42:51 micahjd Exp $
+/* $Id$
  * 
  * serialremote.c - remote input driver for PicoGUI (mouse only)
  *                  relays events directly from a microsoft-compatible

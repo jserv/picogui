@@ -1,4 +1,4 @@
-/* $Id: configfile.c,v 1.14 2003/03/10 23:48:04 micahjd Exp $
+/* $Id$
  *
  * configfile.c - Utilities for loading, storing, and retrieving
  *                configuration options

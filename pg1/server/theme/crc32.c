@@ -9,7 +9,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
 
-/* @(#) $Id: crc32.c,v 1.1 2002/04/07 01:26:17 micahjd Exp $ */
+/* @(#) $Id$ */
 
 /* zlib.h -- interface of the 'zlib' general purpose compression library
   version 1.1.4, March 11th, 2002

@@ -1,4 +1,4 @@
-/* $Id: pterm.h,v 1.2 2002/04/11 16:22:47 gobry Exp $
+/* $Id$
  *
  * pterm.h - PicoGUI Terminal (the 'p' is silent :)
  *

@@ -1,4 +1,4 @@
-/* $Id: gl_util.c,v 1.15 2003/03/10 23:48:23 micahjd Exp $
+/* $Id$
  *
  * gl_util.c - OpenGL driver for picogui
  *             This file has utilities shared by multiple components of the driver.

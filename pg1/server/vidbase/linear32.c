@@ -1,4 +1,4 @@
-/* $Id: linear32.c,v 1.11 2003/03/10 23:48:23 micahjd Exp $
+/* $Id$
  *
  * Video Base Library:
  * linear32.c - For 32bpp linear framebuffers

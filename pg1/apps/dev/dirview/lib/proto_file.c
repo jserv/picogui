@@ -19,7 +19,7 @@
    Author: Pascal Bauermeister
    Contributors:
 
-   $Id: proto_file.c,v 1.2 2002/07/16 19:45:06 bauermeister Exp $
+   $Id$
 */
 
 #include <string.h>

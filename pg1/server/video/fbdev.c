@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.47 2003/03/23 03:40:50 micahjd Exp $
+/* $Id$
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 

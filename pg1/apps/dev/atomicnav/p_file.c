@@ -1,4 +1,4 @@
-/* $Id: p_file.c,v 1.6 2003/01/01 03:42:47 micahjd Exp $
+/* $Id$
  *
  * p_file.c - Local disk access for the Atomic Navigator web browser
  *

@@ -1,4 +1,4 @@
-/* $Id: pgboard_api.c,v 1.15 2003/01/01 03:42:49 micahjd Exp $
+/* $Id$
  *
  * pgboard_api.c - high-level API to manipulate the PicoGUI virtual keyboard
  * 

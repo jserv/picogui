@@ -1,4 +1,4 @@
-/* $Id: dialogdemo.c,v 1.1 2003/02/10 23:34:51 micahjd Exp $
+/* $Id$
  *
  * dialogdemo.c - based on  PicoGUI's "dialogdemo.c"
  *

@@ -1,4 +1,4 @@
-/* $Id: backend.c,v 1.10 2002/10/04 17:23:45 micahjd Exp $
+/* $Id$
  *
  * backend.c - convert the in-memory representation of the
  *             theme data to the actual compiled theme file

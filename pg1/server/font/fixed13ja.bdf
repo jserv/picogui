@@ -4,7 +4,7 @@ COMMENT Adapted and extended for ISO 10646-1 by Markus Kuhn <mkuhn@acm.org>
 COMMENT This font was scaled down from a 14x14 source font
 COMMENT Hangul glyphs prepared by Won-kyu Park <wkpark@chem.skku.ac.kr>
 COMMENT from BAEKMUK font.
-COMMENT $Id: fixed13ja.bdf,v 1.1 2001/10/26 10:14:07 micahjd Exp $
+COMMENT $Id$
 FONT -Misc-Fixed-Medium-R-Normal-ja-13-120-75-75-C-120-ISO10646-1
 SIZE 12 75 75
 FONTBOUNDINGBOX 12 13 0 -2

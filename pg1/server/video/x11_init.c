@@ -1,4 +1,4 @@
-/* $Id: x11_init.c,v 1.18 2003/03/10 23:48:25 micahjd Exp $
+/* $Id$
  *
  * x11_init.c - Initialization for picogui'x driver for the X window system
  *

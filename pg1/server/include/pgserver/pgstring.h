@@ -1,4 +1,4 @@
-/* $Id: pgstring.h,v 1.11 2003/03/10 23:48:14 micahjd Exp $
+/* $Id$
  *
  * pgstring.h - String data type to handle various encodings
  *

@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.39 2003/03/10 23:48:27 micahjd Exp $
+/* $Id$
  *
  * indicator.c - progress meter, battery bar, etc.
  *

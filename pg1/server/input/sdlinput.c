@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.48 2003/03/10 23:48:20 micahjd Exp $
+/* $Id$
  *
  * sdlinput.h - input driver for SDL
  *

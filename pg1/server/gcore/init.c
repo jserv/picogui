@@ -1,4 +1,4 @@
-/* $Id: init.c,v 1.13 2003/04/20 07:25:01 micahjd Exp $
+/* $Id$
  *
  * init.c - High level pgserver initialization and shutdown
  *

@@ -1,4 +1,4 @@
-/* $Id: dvbl_effects.c,v 1.2 2003/01/01 03:43:05 micahjd Exp $
+/* $Id$
  *
  * dvbl_effects.c - This file is part of the Default Video Base Library,
  *                  providing the basic video functionality in picogui but

@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: kbcompile.pl,v 1.13 2002/06/17 09:14:59 lalo Exp $
+# $Id$
 #
 # This script converts a .kbs keyboard definition source to the .kb
 # binary representation as defined in kbfile.h

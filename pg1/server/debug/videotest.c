@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.40 2003/03/10 23:48:00 micahjd Exp $
+/* $Id$
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver

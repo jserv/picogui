@@ -1,4 +1,4 @@
-/* $Id: font_bdf.h,v 1.3 2003/03/10 23:48:10 micahjd Exp $
+/* $Id$
  *
  * font_bdf.h - Definitions shared between the BDF font engine and the
  *              set of compiled-in fonts.

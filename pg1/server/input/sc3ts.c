@@ -1,4 +1,4 @@
-/* $Id: sc3ts.c,v 1.4 2002/07/03 22:03:30 micahjd Exp $
+/* $Id$
  *
  * sc3ts.c - input driver for sc3 compatible touch screens
  *

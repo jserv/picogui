@@ -1,4 +1,4 @@
-/* $Id: pnm.c,v 1.16 2003/03/10 23:48:02 micahjd Exp $
+/* $Id$
  *
  * pnm.c - Functions to convert any of the pbmplus formats (PGM, PBM, PPM)
  *         collectively referred to as PNM

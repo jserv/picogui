@@ -1,4 +1,4 @@
-/* $Id: kbfile.h,v 1.9 2003/01/01 03:42:49 micahjd Exp $
+/* $Id$
   *
   * kbfile.h - Definition of the PicoGUI keyboard file format 
   * 

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.222 2003/04/10 14:36:30 lalo Exp $
+/* $Id$
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.

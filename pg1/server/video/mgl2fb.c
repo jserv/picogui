@@ -1,4 +1,4 @@
-/* $Id: mgl2fb.c,v 1.2 2002/10/22 23:08:12 micahjd Exp $
+/* $Id$
  *
  * mgl2fb.c - Video driver for MGL2
  *

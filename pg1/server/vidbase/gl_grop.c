@@ -1,4 +1,4 @@
-/* $Id: gl_grop.c,v 1.6 2003/03/10 23:48:23 micahjd Exp $
+/* $Id$
  *
  * gl_grop.c - OpenGL driver for picogui
  *             This handles all new gropnodes that export OpenGL interfaces to

@@ -1,4 +1,4 @@
-/* $Id: jpeg.c,v 1.17 2003/04/16 16:24:38 cgrigis Exp $
+/* $Id$
  *
  * jpeg.c - Functions to convert any of the jpeg formats 
  *

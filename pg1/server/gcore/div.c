@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.106 2003/03/10 23:48:06 micahjd Exp $
+/* $Id$
  *
  * div.c - calculate, render, and build divtrees
  *

@@ -1,4 +1,4 @@
-/* $Id: browserwin.c,v 1.11 2003/01/01 03:42:47 micahjd Exp $
+/* $Id$
  *
  * browserwin.c - User interface for a browser window in Atomic Navigator
  *

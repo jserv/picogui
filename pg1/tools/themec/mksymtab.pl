@@ -1,4 +1,4 @@
-# $Id: mksymtab.pl,v 1.16 2002/12/03 14:32:43 micahjd Exp $
+# $Id$
 #
 # mksymtab.pl - convert the constant definitions in constants.h
 #               into a symbol table to compile into the theme

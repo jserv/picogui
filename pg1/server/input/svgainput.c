@@ -1,4 +1,4 @@
-/* $Id: svgainput.c,v 1.25 2003/03/10 23:48:20 micahjd Exp $
+/* $Id$
  *
  * svgainput.h - input driver for SVGAlib
  *

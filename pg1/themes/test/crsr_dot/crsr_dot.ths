@@ -1,4 +1,4 @@
-/* $Id: crsr_dot.ths,v 1.2 2001/07/05 07:53:59 micahjd Exp $
+/* $Id$
  *
  * Single pixel, good for very low resolution displays like
  * ncurses or serial40x4

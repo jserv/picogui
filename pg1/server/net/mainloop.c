@@ -1,4 +1,4 @@
-/* $Id: mainloop.c,v 1.5 2003/04/14 01:49:27 micahjd Exp $
+/* $Id$
  *
  * mainloop.c - Process incoming stimuli from clients and drivers
  *

@@ -1,4 +1,4 @@
-/* $Id: box.c,v 1.30 2003/03/10 23:48:26 micahjd Exp $
+/* $Id$
  *
  * box.c - Generic container for holding a group of widgets. It's sizing and
  *         appearance are defined by the theme.

@@ -1,4 +1,4 @@
-/* $Id: linear1.c,v 1.28 2003/03/10 23:48:23 micahjd Exp $
+/* $Id$
  *
  * Video Base Library:
  * linear1.c - For 1-bit packed pixel devices (most black and white displays)

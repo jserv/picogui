@@ -1,4 +1,4 @@
-/* $Id: if_hotspot.c,v 1.9 2003/03/10 23:48:18 micahjd Exp $
+/* $Id$
  *
  * if_hotspot.c - Use arrow keys to navigate around the screen.
  *                Besides the actual input filter, this has utilities to build the

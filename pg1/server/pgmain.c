@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.53 2003/03/10 23:47:59 micahjd Exp $
+/* $Id$
  *
  * pgmain.c - Entry point for a standalone pgserver
  *

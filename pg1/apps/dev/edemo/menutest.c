@@ -1,4 +1,4 @@
-/*  $Id: menutest.c,v 1.1 2003/02/10 23:34:51 micahjd Exp $
+/*  $Id$
  *
  * menutest.c - based on , PicoGUI's "menutest"
  * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>

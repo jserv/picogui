@@ -1,4 +1,4 @@
-/* $Id: ntohs_fr.h,v 1.3 2003/01/01 03:42:49 micahjd Exp $
+/* $Id$
   *
   * ntohs_fr.h - definition of ntohs friends for system don't having them
   * 

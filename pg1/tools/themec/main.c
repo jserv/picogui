@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.18 2002/10/04 17:22:11 micahjd Exp $
+/* $Id$
  *
  * main.c - main() and some parser utility functions for
  *          the PicoGUI theme compiler.  The actual parsing

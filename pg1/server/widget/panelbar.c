@@ -1,4 +1,4 @@
-/* $Id: panelbar.c,v 1.19 2002/11/26 23:58:21 micahjd Exp $
+/* $Id$
  *
  * panelbar.c - Container and draggable bar for resizing panels
  *

@@ -1,4 +1,4 @@
-/* $Id: llist.h,v 1.5 2003/03/10 23:48:13 micahjd Exp $
+/* $Id$
  * 
  * llist.h - generic doubly-linked list. Note that this list includes
  * metadata which allow for fast lookup of start/end of list. API modeled

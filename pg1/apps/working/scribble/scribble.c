@@ -1,4 +1,4 @@
-/* $Id: scribble.c,v 1.4 2001/11/15 11:49:01 micahjd Exp $
+/* $Id$
  *
  * scribble.c - Simple paint program
  *

@@ -1,4 +1,4 @@
-/* $Id: bmp.c,v 1.15 2003/03/10 23:48:01 micahjd Exp $
+/* $Id$
  *
  * bmp.c - Functions to detect and load files compatible with the Windows BMP
  *         file format. This format is good for palettized images and/or

@@ -1,4 +1,4 @@
-/* $Id: pgfx_bitmap.c,v 1.7 2003/01/17 15:03:15 bornet Exp $
+/* $Id$
  *
  * picogui/pgfx_bitmap.c - lib functions and registration for offscreen bitmap
  *                         drawing through the PGFX interface

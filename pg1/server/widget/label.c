@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.55 2003/03/10 23:48:27 micahjd Exp $
+/* $Id$
  *
  * label.c - A customized button for displaying static text and/or bitmaps
  *

@@ -1,4 +1,4 @@
-/* $Id: protocol.c,v 1.1 2002/01/07 06:28:31 micahjd Exp $
+/* $Id$
  *
  * protocol.c - Table of supported protocols
  */

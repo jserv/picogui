@@ -1,4 +1,4 @@
-/* $Id: x11_primitives.c,v 1.18 2003/03/10 23:48:25 micahjd Exp $
+/* $Id$
  *
  * x11_primitives.c - Implementation of picogui primitives on top of the
  *                    X window system.

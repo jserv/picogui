@@ -1,4 +1,4 @@
-/* $Id: nullfb.c,v 1.9 2003/03/10 23:48:24 micahjd Exp $
+/* $Id$
  *
  * nullfb.c - For testing and profiling. Uses linear* VBLs to generate a frame
  *            but does not blit the buffer to any actual hardware

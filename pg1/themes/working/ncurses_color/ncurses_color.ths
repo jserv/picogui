@@ -1,4 +1,4 @@
-/* $Id: ncurses_color.ths,v 1.7 2002/09/28 09:45:26 micahjd Exp $
+/* $Id$
  *
  * PicoGUI theme for the ncurses video driver.
  * Nice colorful buttons and things, as provided by programs like dialog

@@ -1,4 +1,4 @@
-/* $Id: simplemenu.c,v 1.5 2003/03/10 23:48:27 micahjd Exp $
+/* $Id$
  *
  * simplemenu.c - This is a type of popup widget that builds a simple popup menu from
  *                either a single string of pipe-separated items or an array

@@ -1,4 +1,4 @@
-/* $Id: mgl2input.c,v 1.3 2002/07/03 22:03:30 micahjd Exp $
+/* $Id$
  *
  * mgl2input.c - input driver for MGL2
  *

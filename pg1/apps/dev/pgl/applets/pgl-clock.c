@@ -1,4 +1,4 @@
-/* $Id: pgl-clock.c,v 1.6 2003/01/01 03:42:49 micahjd Exp $
+/* $Id$
  * 
  * pgl-clock.c - This is a simple clock applet for PGL
  *

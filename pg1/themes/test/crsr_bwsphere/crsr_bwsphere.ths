@@ -1,4 +1,4 @@
-/* $Id: crsr_bwsphere.ths,v 1.2 2001/07/05 07:53:59 micahjd Exp $
+/* $Id$
  *
  * Large black&white sphere. Not a useful cursor, but good for testing blit
  * performance in linear1.

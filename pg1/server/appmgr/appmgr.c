@@ -1,4 +1,4 @@
-/* $Id: appmgr.c,v 1.4 2003/03/10 23:47:59 micahjd Exp $
+/* $Id$
  *
  * appmgr.c - Manage the application list, and use one of the installed
  *            app manager modules to determine app policy.

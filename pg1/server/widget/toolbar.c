@@ -1,4 +1,4 @@
-/* $Id: toolbar.c,v 1.29 2003/03/10 23:48:28 micahjd Exp $
+/* $Id$
  *
  * toolbar.c - container widget for buttons
  *

@@ -22,7 +22,7 @@
    Author: Pascal Bauermeister
    Contributors:
 
-   $Id: wclock.c,v 1.1 2002/04/29 23:35:24 bauermeister Exp $
+   $Id$
 */
 
 #include <time.h>

@@ -19,7 +19,7 @@
    Author: Pascal Bauermeister
    Contributors:
 
-   $Id: displet.h,v 1.2 2002/07/16 19:45:05 bauermeister Exp $
+   $Id$
 */
 
 #ifndef __LIBPG_DIRVIEW_DISPLET_H__

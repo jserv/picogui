@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.30 2003/03/10 23:48:08 micahjd Exp $
+/* $Id$
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed

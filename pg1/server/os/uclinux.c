@@ -1,4 +1,4 @@
-/* $Id: uclinux.c,v 1.4 2003/03/10 23:45:51 micahjd Exp $
+/* $Id$
  *
  * uclinux.c - Platform-specific code for uClinux
  *

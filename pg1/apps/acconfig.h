@@ -1,4 +1,4 @@
-/* $Id: acconfig.h,v 1.3 2002/09/20 12:01:35 cgrigis Exp $ */
+/* $Id$ */
 
 /* If set, we are compiling for PocketBee */
 #undef POCKETBEE

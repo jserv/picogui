@@ -1,4 +1,4 @@
-/* $Id: input_util.c,v 1.8 2003/03/10 23:48:19 micahjd Exp $
+/* $Id$
  *
  * input_util.c - Collection of utilities used by the input code
  *

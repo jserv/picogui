@@ -1,4 +1,4 @@
-/* $Id: configfile.h,v 1.4 2003/01/01 03:42:51 micahjd Exp $
+/* $Id$
  *
  * pgserver/configfile.h - Header for the configuration file utilities
  *                         in configfile.c

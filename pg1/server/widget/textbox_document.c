@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.60 2003/03/10 23:48:27 micahjd Exp $
+/* $Id$
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and

@@ -1,4 +1,4 @@
-# $Id: Server.pm,v 1.1 2002/07/18 14:29:22 micahjd Exp $
+# $Id$
 #
 # PicoGUI client module for Perl - TCP/IP PicoGUI server module
 #

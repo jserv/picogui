@@ -1,4 +1,4 @@
-/* $Id: null.c,v 1.11 2003/03/10 23:48:24 micahjd Exp $
+/* $Id$
  *
  * null.c - A dummy driver that produces no actual output but can do
  *          some error checking and debuggative things

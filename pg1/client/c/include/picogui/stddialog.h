@@ -1,4 +1,4 @@
-/* $Id: stddialog.h,v 1.15 2003/01/01 03:42:53 micahjd Exp $
+/* $Id$
  *
  * picogui/stddialog.h - Various preconstructed dialog boxes the application
  *                       may use. These are implemented 100% client-side using

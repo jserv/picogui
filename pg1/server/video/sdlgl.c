@@ -1,4 +1,4 @@
-/* $Id: sdlgl.c,v 1.15 2003/03/10 23:48:24 micahjd Exp $
+/* $Id$
  *
  * sdlgl.c - Video driver using SDL and the OpenGL VBL 
  *

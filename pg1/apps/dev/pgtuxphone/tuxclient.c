@@ -1,4 +1,4 @@
-/* $Id: tuxclient.c,v 1.4 2002/07/03 22:03:25 micahjd Exp $
+/* $Id$
  *
  * tuxclient.c - Network interface to tuxphone
  *

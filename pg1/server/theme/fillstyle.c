@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.32 2003/03/10 23:48:21 micahjd Exp $
+/* $Id$
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *

@@ -1,4 +1,4 @@
-/* $Id: g_malloc.c,v 1.27 2003/03/10 23:48:07 micahjd Exp $
+/* $Id$
  *
  * g_malloc.c - malloc wrapper providing error handling
  *
