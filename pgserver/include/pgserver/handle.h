@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.21 2001/11/14 00:41:49 bornet Exp $
+/* $Id: handle.h,v 1.22 2001/11/14 00:47:54 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -38,27 +38,15 @@
 			        handle is destroyed (free'd in a method
 			        depending on the data type */
 
-/* Data type of a handle ID */
+/* Data type of a handle ID 
+ *
+ * We don't use the full 32 bits because then things like (1<<HANDLE_BITS)
+ * would overflow. This still allows about a billion handles, so it
+ * it shouln't be a limitation :)
+ */
 typedef u32 handle;
 #define HANDLE_BITS     30
-
-#ifndef CONFIG_LINUX_MIPS
 #define HANDLE_SIZE     (1<<HANDLE_BITS)
-#else
-
-//Hmm... 1<<32 doesn't seem like a good idea on a 32-bit machine.
-//Even (1<<32)-1 is an overflow for u32, due to the temporary
-//use of bit 32. While this works on the PC, it's killing
-//the VR3 in an infinite loop (Max handle is 0... =-)
-
-//Since HANDLE_SIZE is only used with a -1 following it,
-//it would make sense to set this to 0, allowing you to easily
-//get the maximum. However, that's asking for errors, so I'll just
-//use one less handle. Darn, only 4,294,967,294 possible handles
-
-#define HANDLE_SIZE (0xFFFFFFFF)
-
-#endif //CONFIG_LINUX_MIPS
 
 struct handlenode {
    /* 
