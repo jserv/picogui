@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.19 2001/08/12 22:35:15 micahjd Exp $
+/* $Id: sdlfb.c,v 1.20 2001/08/12 23:16:12 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -68,6 +68,8 @@ g_error sdlfb_regfunc(struct vidlib *v);
 g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags);
 hwrcolor sdlfb_tint_pgtohwr(pgcolor c);
 pgcolor sdlfb_color_tint(pgcolor c);
+hwrcolor sdlfb_tint_hwrtopg(pgcolor c);
+pgcolor sdlfb_color_untint(pgcolor c);
 
 g_error sdlfb_init(void) {
   /* Avoid freeing a nonexistant backbuffer in close() */
@@ -314,8 +316,10 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
 
   /* Load initial tint */
   sdlfb_tint = strtol(get_param_str("video-sdlfb","tint","FFFFFF"),NULL,16);
-  if (sdlfb_tint != 0xFFFFFF)
+  if (sdlfb_tint != 0xFFFFFF) {
     vid->color_pgtohwr = &sdlfb_tint_pgtohwr;
+    vid->color_hwrtopg = &sdlfb_tint_hwrtopg;
+  }
 #endif
    
   return sucess; 
@@ -392,8 +396,38 @@ pgcolor sdlfb_color_tint(pgcolor c) {
 
   return mkcolor(r>>8,g>>8,b>>8);
 }
+pgcolor sdlfb_color_untint(pgcolor c) {
+  u16 r,g,b;
+
+  if (sdlfb_tint == 0xFFFFFF)
+    return c;
+  
+  r  = getred(c) << 8;
+  g  = getgreen(c) << 8;
+  b  = getblue(c) << 8;
+  r /= getred(sdlfb_tint);
+  g /= getgreen(sdlfb_tint);
+  b /= getblue(sdlfb_tint);
+
+  /* FIXME: Hack! This forces colors close to white to be white, and
+   * colors close to black to be black. This is just so things
+   * won't look _too_ terrible when we turn the backlight on and
+   * off a bunch.
+   */
+  if (r>200) r = 255;
+  if (g>200) g = 255;
+  if (b>200) b = 255;
+  if (r<50) r = 0;
+  if (g<50) g = 0;
+  if (b<50) b = 0;
+
+  return mkcolor(r,g,b);
+}
 hwrcolor sdlfb_tint_pgtohwr(pgcolor c) {
   return def_color_pgtohwr(sdlfb_color_tint(c));
+}
+hwrcolor sdlfb_tint_hwrtopg(pgcolor c) {
+  return sdlfb_color_untint(def_color_hwrtopg(c));
 }
 #endif
 
@@ -430,10 +464,16 @@ void sdlfb_message(u32 message, u32 param) {
 
 #ifdef CONFIG_SDLSKIN
   case PGDM_BACKLIGHT:
-    /* Simulate the backlight by using an alternate tint color */
+    /* Simulate the backlight by using an alternate tint color.
+     * Go through the same procedure we use when changing color
+     * depth in order to make everything re-convert their colors
+     */
+    bitmap_iterate(vid->bitmap_modeunconvert);
     sdlfb_tint = strtol(get_param_str("video-sdlfb",
 				      param ? "backlight_tint" : "tint",
 				      "FFFFFF"),NULL,16);
+    bitmap_iterate(vid->bitmap_modeconvert);
+    reload_initial_themes();
     break;
 #endif
 
