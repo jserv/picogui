@@ -46,7 +46,8 @@ class AnnounceClient(protocol.Protocol):
 	f.write(mailMsg.as_string())
 	f.close()
         subjectFields = mailMsg['Subject'].split(" ")
-        messages = mailMsg.get_payload().split("\n")
+        # This limits the length of the maximum message, mainly to prevent DOS'ing the bot too badly
+        messages = mailMsg.get_payload().split("\n")[:40]
         subjectFields[1] = subjectFields[1].lower()
 
         if not subjectFields[1] in badChannels:
