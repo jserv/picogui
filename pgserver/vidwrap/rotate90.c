@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.19 2001/12/14 22:56:44 micahjd Exp $
+/* $Id: rotate90.c,v 1.20 2002/01/05 06:18:02 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -53,6 +53,18 @@ void rotate90_rect(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
    (*vid->rect)(dest,y,dy-x-w,h,w,c,lgop);
+}
+void rotate90_ellipse(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,
+		      hwrcolor c,s16 lgop) {
+   s16 dx,dy;
+   (*vid->bitmap_getsize)(dest,&dx,&dy);
+   (*vid->ellipse)(dest,y,dy-x-w,h,w,c,lgop);
+}
+void rotate90_fellipse(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,
+		       hwrcolor c,s16 lgop) {
+   s16 dx,dy;
+   (*vid->bitmap_getsize)(dest,&dx,&dy);
+   (*vid->fellipse)(dest,y,dy-x-w,h,w,c,lgop);
 }
 void rotate90_coord_logicalize(s16 *x,s16 *y) {
    s16 tx = *x;
@@ -211,6 +223,8 @@ void vidwrap_rotate90(struct vidlib *vid) {
    vid->bar = &rotate90_bar;
    vid->line = &rotate90_line;
    vid->rect = &rotate90_rect;
+   vid->ellipse = &rotate90_ellipse;
+   vid->fellipse = &rotate90_fellipse;
    vid->gradient = &rotate90_gradient;
    vid->blit = &rotate90_blit;
    vid->tileblit = &rotate90_tileblit;

@@ -1,4 +1,4 @@
-/* $Id: rotate270.c,v 1.3 2001/12/14 22:56:44 micahjd Exp $
+/* $Id: rotate270.c,v 1.4 2002/01/05 06:18:02 micahjd Exp $
  *
  * rotate270.c - Video wrapper to rotate the screen 270 degrees
  *
@@ -53,6 +53,18 @@ void rotate270_rect(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
    (*vid->rect)(dest,dx-y-h,x,h,w,c,lgop);
+}
+void rotate270_ellipse(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,
+		       hwrcolor c,s16 lgop) {
+   s16 dx,dy;
+   (*vid->bitmap_getsize)(dest,&dx,&dy);
+   (*vid->ellipse)(dest,dx-y-h,x,h,w,c,lgop);
+}
+void rotate270_fellipse(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,
+			hwrcolor c,s16 lgop) {
+   s16 dx,dy;
+   (*vid->bitmap_getsize)(dest,&dx,&dy);
+   (*vid->fellipse)(dest,dx-y-h,x,h,w,c,lgop);
 }
 void rotate270_coord_logicalize(s16 *x,s16 *y) {
    s16 ty = *y;
@@ -225,6 +237,8 @@ void vidwrap_rotate270(struct vidlib *vid) {
    vid->bar = &rotate270_bar;
    vid->line = &rotate270_line;
    vid->rect = &rotate270_rect;
+   vid->ellipse = &rotate270_ellipse;
+   vid->fellipse = &rotate270_fellipse;
    vid->gradient = &rotate270_gradient;
    vid->blit = &rotate270_blit;
    vid->tileblit = &rotate270_tileblit;
