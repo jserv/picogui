@@ -1,4 +1,4 @@
-/* $Id: sdlgl_primitives.c,v 1.14 2002/11/08 01:25:37 micahjd Exp $
+/* $Id: sdlgl_primitives.c,v 1.15 2002/11/21 09:08:22 micahjd Exp $
  *
  * sdlgl_primitives.c - OpenGL driver for picogui, using SDL for portability.
  *                      Implement standard picogui primitives using OpenGL
@@ -452,9 +452,24 @@ void sdlgl_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
   s16 i,j;
   int blit_x, blit_y, blit_w, blit_h, blit_src_x, blit_src_y;
   int full_line_y = -1;
+  struct glbitmap *glsrc = (struct glbitmap *) src;
 
   if (!(sw && sh)) return;
 
+  /* Under just the right conditions, we can have OpenGL wrap the texture. We have to
+   * be blitting from the entire source texture, and it has to be using the entire OpenGL
+   * texture (therefore a power of 2 in each dimension)
+   */
+  if (sw==glsrc->sb->w && sh==glsrc->sb->h && sw==glsrc->tw && sh==glsrc->th) {
+    glBindTexture(GL_TEXTURE_2D, glsrc->texture);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+    sdlgl_blit(dest,x,y,w,h,src,sx,sy,lgop);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP);
+    return;
+  }
+  
   /* Split the tiled blit up into individual blits clipped against the destination.
    * We do y clipping once per line, since only x coordinates change in the inner loop
    */
