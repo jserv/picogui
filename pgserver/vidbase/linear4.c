@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.14 2001/05/29 20:33:35 micahjd Exp $
+/* $Id: linear4.c,v 1.15 2001/06/05 21:05:31 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -47,7 +47,8 @@
 #define PIXELBYTE(x,y) (((x)>>1)+LINE(y))
 
 /* Table of masks used to isolate one pixel within a byte */
-unsigned const char notmask4[] = { 0x0F, 0xF0 };
+unsigned const char notmask4[]  = { 0x0F, 0xF0 };
+unsigned const char slabmask4[] = { 0xFF, 0x0F, 0x00 };
 
 /************************************************** Minimum functionality */
 
@@ -67,32 +68,103 @@ hwrcolor linear4_getpixel(hwrbitmap dest,s16 x,s16 y) {
    
 /************************************************** Accelerated (?) primitives */
 
-/* Simple horizontal and vertical straight lines */
-void linear4_slab(hwrbitmap dest,s16 x,s16 y,s16 w,hwrcolor c,s16 lgop) {
-   /* Do the individual pixels at the end seperately if necessary,
-    * and do most of it with memset */
+/* 'Simple' horizontal line with stippling */
+void linear4_slab_stipple(hwrbitmap dest,s16 x,s16 y,s16 w,hwrcolor c) {
+   u8 *p;
+   u8 mask, remainder, stipple;
+   s16 bw;
    
-   char *p;
+   p = PIXELBYTE(x,y);
+   remainder = x&1;
+   stipple = y&1 ? 0xF0 : 0x0F;
+   c = c | (c<<4);                         /* Expand color to 8 bits */
+      
+   /* If the slab is completely contained within one byte,
+    * use a different method */
+   if ( (remainder + w) < 2 ) {
+      mask  = slabmask4[remainder];        /* Isolate the necessary pixels */
+      mask &= ~slabmask4[remainder+w];
+      mask &= stipple;
+      *p &= ~mask;
+      *p |= c & mask;
+      return;
+   }
+   
+   if (remainder) {                        /* Draw the partial byte before */
+      mask = slabmask4[remainder];
+      mask &= stipple;
+      *p &= ~mask;
+      *p |= c & mask;
+      p++;
+      w-=2-remainder;
+   }
+   if (w<1)                                /* That it? */
+     return;
+   
+   /* Full bytes */
+   c &= stipple;
+   for (bw = w >> 1;bw;bw--,p++) {
+      *p &= ~stipple;
+      *p |= c;
+   }
+   
+   if (remainder = (w&1)) {                /* Partial byte afterwards */
+      mask = slabmask4[remainder];
+      mask = (~mask) & stipple;
+      *p &= ~mask;
+      *p |= c & mask;
+   }
+}
 
-   if (lgop != PG_LGOP_NONE) {
+/* 'Simple' horizontal line */
+void linear4_slab(hwrbitmap dest,s16 x,s16 y,s16 w,hwrcolor c,s16 lgop) {
+   u8 *p;
+   u8 mask, remainder;
+   s16 bw;
+   
+   if (lgop == PG_LGOP_NONE)
+     c = c | (c<<4);                       /* Expand color to 8 bits */
+   else if (lgop == PG_LGOP_STIPPLE) {
+      linear4_slab_stipple(dest,x,y,w,c);
+      return;
+   }
+   else {
       def_slab(dest,x,y,w,c,lgop);
       return;
    }
    
    p = PIXELBYTE(x,y);
-   if (x&1) {
-      *p &= 0xF0;
-      *p |= c;
-      p++;
-      w--;
+   remainder = x&1;
+   
+   /* If the slab is completely contained within one byte,
+    * use a different method */
+   if ( (remainder + w) < 2 ) {
+      mask  = slabmask4[remainder];        /* Isolate the necessary pixels */
+      mask &= ~slabmask4[remainder+w];
+      *p &= ~mask;
+      *p |= c & mask;
+      return;
    }
-   __memset(p,c | (c<<4),w>>1);
-   if (w&1) {
-      p+=(w>>1);
-      *p &= 0x0F;
-      *p |= c << 4;
+   
+   if (remainder) {                        /* Draw the partial byte before */
+      mask = slabmask4[remainder];
+      *p &= ~mask;
+      *p |= c & mask;
+      p++;
+      w-=2-remainder;
+   }
+   if (w<1)                                /* That it? */
+     return;
+   bw = w>>1;
+   __memset(p,c,bw);                       /* Full bytes */
+   if (remainder = (w&1)) {                /* Partial byte afterwards */
+      p+=bw;
+      mask = slabmask4[remainder];
+      *p &= mask;
+      *p |= c & ~mask;
    }
 }
+
 void linear4_bar(hwrbitmap dest,s16 x,s16 y,s16 h,hwrcolor c,s16 lgop) {
    char *p;
    unsigned char mask;
@@ -337,155 +409,115 @@ void linear4_charblit(unsigned char *chardat,int dest_x,
 }
 #endif
 
-#if 0
-/* Blitter is buggy! FIXME! */
+/*
+ * This is a relatively complicated 1bpp packed-pixel blit that does
+ * handle LGOPs but currently doesn't handle tiling by itself.
+ * Note that it can read (but not modify) one byte past the boundary of the
+ * bitmap, but this is alright.
+ */
 void linear4_blit(hwrbitmap dest,
-		  s16 dst_x, s16 dst_y, s16 w, s16 h,
+		  s16 dst_x, s16 dst_y,s16 w, s16 h,
 		  hwrbitmap sbit,s16 src_x,s16 src_y,
 		  s16 lgop) {
-   unsigned char *dst,*dstline,*src,*srcline;
-   int i,bw = w>>1;
+   u8 *src, *srcline, *dst, *dstline, mask;
    struct stdbitmap *srcbit = (struct stdbitmap *) sbit;
-   unsigned char flag_l,flag_r;
-   
-   src  = srcline  = srcbit->bits + (src_x>>1) + src_y*srcbit->pitch;
+   int bw,xb,s,rs,tp,lp,rlp;
+   int i;
+
+   /* Pass on the blit if it is an unsupported LGOP */
+   switch (lgop) {
+    case PG_LGOP_NONE:
+    case PG_LGOP_OR:
+    case PG_LGOP_AND:
+    case PG_LGOP_XOR:
+      break;
+    default:
+      default_blitter:
+      def_blit(dest,dst_x,dst_y,w,h,sbit,src_x,src_y,lgop);
+      return;
+   }
+
+   /* Currently there is no tile blitter, so let defaultvbl handle it */
+   if (w>(srcbit->w-src_x) || h>(srcbit->h-src_y))
+     goto default_blitter;   
+      
+   /* Initializations */ 
+   src = srcline = srcbit->bits + (src_x>>1) + src_y*srcbit->pitch;
    dst = dstline = PIXELBYTE(dst_x,dst_y);
-   flag_l = (dst_x&1) ^ (src_x&1);
-   flag_r = 0; //(dst_x^w) & 1;
+   xb = dst_x & 1;
+   s = (src_x & 1) - xb;
+   if (s<0) {
+      s += 2;
+      src=--srcline;
+   }
+   s <<= 2;
+   rs = 8-s;
+
+   /* The blitter core is a macro so various LGOPs can be used */
    
-   for (;h;h--,src=srcline+=srcbit->pitch,dst=dstline+=FB_BPL) {
-      /* Check for an extra nibble at the beginning, and shift
-       * pixels while blitting */
-      if (flag_l) {
-	 switch (lgop) {
-	    
-	  case PG_LGOP_NONE:
-	    *dst &= 0xF0;
-	    *dst |= (*src) >> 4;
-	    dst++;
-	    for (i=bw;i;i--,dst++,src++)
-	      *dst = ((*src) << 4) | ((*(src+1)) >> 4);
-	    break;
-	  case PG_LGOP_OR:
-	    *dst |= (*src) >> 4;
-	    dst++;
-	    for (i=bw;i;i--,dst++,src++)
-	      *dst |= ((*src) << 4) | ((*(src+1)) >> 4);
-	    break;
-	  case PG_LGOP_AND:
-	    *dst &= ((*src) >> 4) | 0xF0;
-	    dst++;
-	    for (i=bw;i;i--,dst++,src++)
-	      *dst &= ((*src) << 4) | ((*(src+1)) >> 4);
-	    break;
-	  case PG_LGOP_XOR:
-	    *dst ^= (*src) >> 4;
-	    dst++;
-	    for (i=bw;i;i--,dst++,src++)
-	      *dst ^= ((*src) << 4) | ((*(src+1)) >> 4);
-	    break;
-	  case PG_LGOP_INVERT:
-	    *dst &= 0xF0;
-	    *dst |= ((*src) >> 4) ^ 0x0F;
-	    dst++;
-	    for (i=bw;i;i--,dst++,src++)
-	      *dst = (((*src) << 4) | ((*(src+1)) >> 4)) ^ 0xFF;
-	    break;
-	  case PG_LGOP_INVERT_OR:
-	    *dst |= ((*src) >> 4) ^ 0x0F;
-	    dst++;
-	    for (i=bw;i;i--,dst++,src++)
-	      *dst |= (((*src) << 4) | ((*(src+1)) >> 4)) ^ 0xFF;
-	    break;
-	  case PG_LGOP_INVERT_AND:
-	    *dst &= (((*src) >> 4) | 0xF0) ^ 0x0F;
-	    dst++;
-	    for (i=bw;i;i--,dst++,src++)
-	      *dst &= (((*src) << 4) | ((*(src+1)) >> 4)) ^ 0xFF;
-	    break;
-	  case PG_LGOP_INVERT_XOR:
-	    *dst ^= ((*src) >> 4) ^ 0x0F;
-	    dst++;
-	    for (i=bw;i;i--,dst++,src++)
-	      *dst ^= (((*src) << 4) | ((*(src+1)) >> 4)) ^ 0xFF;
-	    break;
-	 }
-      }
-      else {
-	 /* Normal byte copy */
-	 switch (lgop) {
-	    
-	  case PG_LGOP_NONE:
-	    __memcpy(dst,src,bw);
-	    dst+=bw;
-	    src+=bw;
-	    break;
-	  case PG_LGOP_OR:
-	    for (i=bw;i;i--,dst++,src++)
-	      *dst |= *src;
-	    break;
-	  case PG_LGOP_AND:
-	    for (i=bw;i;i--,dst++,src++)
-	      *dst &= *src;
-	    break;
-	  case PG_LGOP_XOR:
-	    for (i=bw;i;i--,dst++,src++)
-	      *dst ^= *src;
-	    break;
-	  case PG_LGOP_INVERT:
-	    for (i=bw;i;i--,dst++,src++)
-	      *dst = (*src) ^ 0xFF;
-	    break;
-	  case PG_LGOP_INVERT_OR:
-	    for (i=bw;i;i--,dst++,src++)
-	      *dst |= (*src) ^ 0xFF;
-	    break;
-	  case PG_LGOP_INVERT_AND:
-	    for (i=bw;i;i--,dst++,src++)
-	      *dst &= (*src) ^ 0xFF;
-	    break;
-	  case PG_LGOP_INVERT_XOR:
-	    for (i=bw;i;i--,dst++,src++)
-	      *dst ^= (*src) ^ 0xFF;
-	    break;
-	 }
-      }
-      if (flag_r) {
-	 /* Extra nibble on the right */
-	 switch (lgop) {
-	    
-	  case PG_LGOP_NONE:
-	    *dst &= 0x0F;
-	    *dst |= (*src) & 0xF0;
-	    break;
-	  case PG_LGOP_OR:
-	    *dst |= (*src) & 0xF0;
-	    break;
-	  case PG_LGOP_AND:
-	    *dst &= ((*src) & 0xF0) | 0x0F;
-	    break;
-	  case PG_LGOP_XOR:
-	    *dst ^= (*src) & 0xF0;
-	    break;
-	  case PG_LGOP_INVERT:
-	    *dst &= 0x0F;
-	    *dst = ((*src) & 0xF0) ^ 0xF0;
-	    break;
-	  case PG_LGOP_INVERT_OR:
-	    *dst |= ((*src) & 0xF0) ^ 0xF0;
-	    break;
-	  case PG_LGOP_INVERT_AND:
-	    *dst &= (((*src) & 0xF0) ^ 0xF0) | 0x0F;
-	    break;
-	  case PG_LGOP_INVERT_XOR:
-	    *dst ^= ((*src) & 0xF0) ^ 0xF0;
-	    break;
-	 }
-      }
+#define BLITCORE                                                          \
+   /* Special case when it fits entirely within one byte */               \
+   if ((xb+w)<=2) {                                                       \
+      mask = slabmask4[xb] & ~slabmask4[xb+w];                            \
+      for (;h;h--,src+=srcbit->pitch,dst+=FB_BPL)                         \
+	BLITCOPY(((src[0] << s) | (src[1] >> rs)),mask);                  \
+   }                                                                      \
+   else {                                                                 \
+      tp = (dst_x+w)&1;        /* Trailing pixels */                      \
+      lp = (2-xb)&1;           /* Leading pixels */                       \
+      bw = (w-tp-lp)>>1;       /* Width in whole bytes */                 \
+                                                                          \
+      /* Bit-banging blitter loop */                                      \
+      for (;h;h--,src=srcline+=srcbit->pitch,dst=dstline+=FB_BPL) {       \
+	 if (lp) {                                                        \
+	    BLITCOPY(((src[0] << s) | (src[1] >> rs)),0x0F);              \
+	    src++,dst++;                                                  \
+	 }                                                                \
+	 for (i=bw;i>0;i--,src++,dst++)                                   \
+	   BLITMAINCOPY(((src[0] << s) | (src[1] >> rs)));                \
+	 if (tp)                                                          \
+	    BLITCOPY(((src[0] << s) | (src[1] >> rs)),0xF0);              \
+      }                                                                   \
+   }
+   
+   /* Select a blitter based on the current LGOP mode */
+   switch (lgop) {
+   
+    case PG_LGOP_NONE:
+#define BLITCOPY(d,m)   *dst = (d & m) | (*dst & ~m)
+#define BLITMAINCOPY(d) *dst = d
+   BLITCORE
+#undef BLITMAINCOPY
+#undef BLITCOPY
+	return;
+
+    case PG_LGOP_OR:
+#define BLITCOPY(d,m)   *dst |= d & m
+#define BLITMAINCOPY(d) *dst |= d
+   BLITCORE
+#undef BLITMAINCOPY
+#undef BLITCOPY
+	return;
+      
+    case PG_LGOP_AND:
+#define BLITCOPY(d,m)   *dst &= d | ~m
+#define BLITMAINCOPY(d) *dst &= d
+   BLITCORE
+#undef BLITMAINCOPY
+#undef BLITCOPY
+	return;
+      
+    case PG_LGOP_XOR:
+#define BLITCOPY(d,m)   *dst ^= d & m
+#define BLITMAINCOPY(d) *dst ^= d
+   BLITCORE
+#undef BLITMAINCOPY
+#undef BLITCOPY
+	return;  
+      
    }
 }
-#endif
-
+   
 /************************************************** Registration */
 
 /* Load our driver functions into a vidlib */
@@ -498,7 +530,7 @@ void setvbl_linear4(struct vidlib *vid) {
   vid->bar            = &linear4_bar;
   vid->line           = &linear4_line;
   vid->rect           = &linear4_rect;
-//  vid->blit           = &linear4_blit;
+  vid->blit           = &linear4_blit;
 }
 
 /* The End */

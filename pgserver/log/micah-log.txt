@@ -11,6 +11,10 @@ them for linear2 and linear4.
       * vidbase/linear2.c: Adding line,slab,bar, and blit based on linear1
         code
 
+      * vidbase/linear4.c: Replaced the broken blitter with a modified
+        version of the blitter I wrote for linear1. Also added the slab with
+	PG_LGOP_STIPPLE support.
+
 2001-05-31    Micah Dowty <micahjd@users.sourceforge.net>
 
 It's taken a while longer than I expected, but I wrote a fast blitter for
