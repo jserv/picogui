@@ -6,8 +6,8 @@ t.side = 'All'
 f = open(fname, 'r')
 t.text = f.read()
 f.close()
-panel = app.panelbar() or app
-bt=panel.addWidget('Button', 'inside')
+bar = app.panelbar() or app.addWidget('toolbar')
+bt=bar.addWidget('Button', 'inside')
 bt.text = 'Save'
 def save (ev, button):
     f = open(fname, 'w')
