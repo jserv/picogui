@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.12 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: x11input.c,v 1.13 2002/01/16 19:47:26 lonetech Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -34,6 +34,7 @@
 #include <pgserver/common.h>
 #include <pgserver/input.h>
 #include <pgserver/widget.h>
+#include <pgserver/configfile.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
@@ -52,7 +53,7 @@ int x11input_pgcursor;
 /* Keyboard translation utilities */
 void x11_translate_key(Display *display, XKeyEvent *xkey, KeyCode kc,
 		       s16 *psym, s16 *pmod, s16 *pchr);
-int x11input_key_repeat(Display *display, XEvent *event);
+int x11_key_repeat(Display *display, XEvent *event);
 void x11input_init_keymap(void);
 static s16 ODD_keymap[256];
 static s16 MISC_keymap[256];
@@ -338,8 +339,6 @@ void x11_translate_key(Display *display, XKeyEvent *xkey, KeyCode kc,
 
 /* This is all from SDL's X11_InitKeymap() function */
 void x11input_init_keymap(void) {
-  int i;
-  
   /* Odd keys used in international keyboards */
   
 #ifdef XK_dead_circumflex

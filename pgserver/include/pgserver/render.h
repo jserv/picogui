@@ -1,4 +1,4 @@
-/* $Id: render.h,v 1.10 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: render.h,v 1.11 2002/01/16 19:47:26 lonetech Exp $
  *
  * render.h - data structures and functions for rendering and manipulating
  *            gropnodes (Graphics Operation nodes)
@@ -128,6 +128,7 @@ g_error addgropsz(struct gropctxt *ctx, u16 type, s16 x,s16 y,s16 w,s16 h);
 void grop_addnode(struct gropnode **headpp,struct gropnode *node);
 void grop_free(struct gropnode **headpp);
 void grop_kill_zombies(void);
+g_error gropnode_alloc(struct gropnode **n);
 void gropnode_free(struct gropnode *n);
 
 void align(struct gropctxt *d,alignt align,s16 *w,s16 *h,s16 *x,s16 *y);

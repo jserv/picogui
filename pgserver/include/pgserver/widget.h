@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.46 2002/01/15 07:35:14 micahjd Exp $
+/* $Id: widget.h,v 1.47 2002/01/16 19:47:26 lonetech Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -235,13 +235,13 @@ struct widget {
 #else  /* ! RUNTIME_FUNCPTR */
 
 # define DEF_WIDGET_TABLE(n) \
-  n##_install, n##_remove, n##_trigger, n##_set, n##_get, n##_resize,
+  {n##_install, n##_remove, n##_trigger, n##_set, n##_get, n##_resize},
 # define DEF_HYBRIDWIDGET_TABLE(n,m) \
-  n##_install, m##_remove, m##_trigger, m##_set, m##_get, m##_resize,
+  {n##_install, m##_remove, m##_trigger, m##_set, m##_get, m##_resize},
 # define DEF_STATICWIDGET_TABLE(n) \
-  n##_install, n##_remove, NULL, n##_set, n##_get, n##_resize,
+  {n##_install, n##_remove, NULL, n##_set, n##_get, n##_resize},
 # define DEF_ERRORWIDGET_TABLE(s) \
-  NULL, (void *) s, NULL, NULL, NULL, NULL,
+  {NULL, (void *) s, NULL, NULL, NULL, NULL},
 
 #endif  /* RUNTIME_FUNCPTR */
 #define DEF_WIDGET_PROTO(n) \
@@ -270,11 +270,11 @@ DEF_WIDGET_PROTO(canvas)
 DEF_WIDGET_PROTO(checkbox)
 DEF_WIDGET_PROTO(flatbutton)
 DEF_WIDGET_PROTO(listitem)
-DEF_WIDGET_PROTO(submenuitem);
-DEF_WIDGET_PROTO(radiobutton);
-DEF_WIDGET_PROTO(textbox);			
-DEF_WIDGET_PROTO(list);
-DEF_WIDGET_PROTO(panelbar);
+DEF_WIDGET_PROTO(submenuitem)
+DEF_WIDGET_PROTO(radiobutton)
+DEF_WIDGET_PROTO(textbox)
+DEF_WIDGET_PROTO(list)
+DEF_WIDGET_PROTO(panelbar)
     
 /* Set to the client # if a client has taken over the system resource */
 extern int keyboard_owner;
@@ -286,6 +286,7 @@ extern int sysevent_owner;
 /* Special function to generate a popup root widget */
 g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner);
 
+g_error widget_derive(struct widget **w, int type,struct widget *parent, handle hparent,int rship,int owner);
 g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **where, handle container, int owner);
 g_error widget_create(struct widget **w, int type, struct divtree *dt, handle container, int owner);
 
@@ -396,6 +397,9 @@ extern u16 hotkey_activate, hotkey_next;
 
 /* Traverse to other widgets in a given direction (PG_TRAVERSE_*) */
 struct widget *widget_traverse(struct widget *w, int direction, int count);
+
+/* sends a trigger to a widget */
+int send_trigger(struct widget *w, long type, union trigparam *param);
 
 #endif /* __WIDGET_H */
 

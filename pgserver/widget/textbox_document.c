@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.20 2002/01/06 09:23:00 micahjd Exp $
+/* $Id: textbox_document.c,v 1.21 2002/01/16 19:47:27 lonetech Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -31,6 +31,7 @@
 #include <pgserver/widget.h>
 #include <pgserver/font.h>
 #include <pgserver/textbox.h>
+#include <string.h>	/* strncmp() */
 
 /************************* Supported format loaders */
 
@@ -231,6 +232,8 @@ g_error text_insert_line_div(struct textbox_cursor *c, struct divnode *div) {
 
 /* Insert a divnode to be wrapped along with the other words */
 g_error text_insert_word_div(struct textbox_cursor *c, struct divnode *div) {
+  /* TODO: implement this */
+  return success;
 }
 
 /* Insert text with the current formatting at the cursor. This will not
@@ -288,7 +291,7 @@ g_error text_insert_string(struct textbox_cursor *c, const char *str,
   errorcheck;
   sizetext(fd,&tw,&th,str);
   th = fd->font->ascent + fd->font->descent + fd->interline_space + fd->margin;
-  
+
   /* Add a text gropnode at the cursor */
   e = mkhandle(&hstr,PG_TYPE_STRING | hflag,c->widget->owner,str);
   errorcheck;

@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.38 2002/01/15 07:35:15 micahjd Exp $
+/* $Id: field.c,v 1.39 2002/01/16 19:47:27 lonetech Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -68,11 +68,9 @@ g_error bufcheck_shrink(struct widget *self);   /* Check before removing */
 void fieldstate(struct widget *self);
 
 void build_field(struct gropctxt *c,unsigned short state,struct widget *self) {
-  int x,y,w,h;
   struct fontdesc *fd;
   handle font = DATA->font ? DATA->font : theme_lookup(state,PGTH_P_FONT);
-  hwrcolor fg;
-   
+
   exec_fillstyle(c,state,PGTH_P_BGFILL);
 
   /* Center the font vertically and use the same amount of margin on the side */
@@ -110,7 +108,6 @@ void build_field(struct gropctxt *c,unsigned short state,struct widget *self) {
 */
 g_error field_install(struct widget *self) {
   g_error e;
-  int owner=-1;
 
   e = g_malloc(&self->data,sizeof(struct fielddata));
   errorcheck;
@@ -204,12 +201,6 @@ g_error field_set(struct widget *self,int property, glob data) {
 }
 
 glob field_get(struct widget *self,int property) {
-  g_error e;
-  handle h;
-  int tw,th;
-  char *str;
-  struct fontdesc *fd;
-
   switch (property) {
 
   case PG_WP_FONT:

@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.26 2002/01/15 07:35:15 micahjd Exp $
+/* $Id: indicator.c,v 1.27 2002/01/16 19:47:27 lonetech Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -97,7 +97,7 @@ g_error indicator_set(struct widget *self,int property, glob data) {
   case PG_WP_VALUE:
     if (data > 100) data = 100;
     if (data < 0) data = 0;
-    VALUE = (int) data;
+    self->data = (void*) data;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;

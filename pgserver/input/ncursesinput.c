@@ -1,4 +1,4 @@
-/* $Id: ncursesinput.c,v 1.18 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: ncursesinput.c,v 1.19 2002/01/16 19:47:26 lonetech Exp $
  *
  * ncursesinput.h - input driver for ncurses
  * 
@@ -46,7 +46,6 @@ void ncursesinput_sendkey(int key) {
 
 int ncursesinput_fd_activate(int fd) {
    int ch,mods;
-   static int savedbtn = 0;
    
    /* Keyboard activity? */
    if (fd==0) {

@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.19 2002/01/06 09:22:57 micahjd Exp $
+/* $Id: videotest.c,v 1.20 2002/01/16 19:47:25 lonetech Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -31,6 +31,7 @@
 #include <pgserver/render.h>
 #include <pgserver/appmgr.h>
 #include <time.h>               /* For benchmarking */
+#include <unistd.h>		/* sleep() */
 
 #define NUM_PATTERNS    6
 #define TEST_DURATION   2      /* Length of each benchmark run, in seconds */
@@ -106,7 +107,6 @@ void testpat_color(void) {
    hwrcolor bg = VID(color_pgtohwr) (0x000000);
    hwrcolor fg = VID(color_pgtohwr) (0xFFFFFF);
    struct fontdesc *fd;
-   int patx,paty,patw;
    int y=0;
    int h;
    
@@ -267,9 +267,8 @@ void testpat_stipple(void) {
 
 void testpat_text(void) {
    hwrcolor bg = VID(color_pgtohwr) (0xFFFFFF);
-   hwrcolor fg = VID(color_pgtohwr) (0x000000);
    struct fontdesc *fd;
-   int x,y;
+   s16 x,y;
    u8 c;
    
    rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,defaultfont);
@@ -385,7 +384,7 @@ const char *videotest_time_one(int number,int update) {
       seconds = time(NULL) - start;
    } while (seconds < TEST_DURATION);
 
-   sprintf(fpsbuf,"%5d.%02d",frames/seconds,(frames*100/seconds)%100);
+   sprintf(fpsbuf,"%5ld.%02ld",frames/seconds,(frames*100/seconds)%100);
    return fpsbuf;
 }
 

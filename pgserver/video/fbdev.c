@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.18 2002/01/16 01:18:54 micahjd Exp $
+/* $Id: fbdev.c,v 1.19 2002/01/16 19:47:26 lonetech Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -32,6 +32,7 @@
 #include <pgserver/video.h>
 
 #include <unistd.h>
+#include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <fcntl.h>
@@ -77,7 +78,6 @@ static unsigned short vr_lcd_intensity[16] = {
 #endif
 
 g_error fbdev_init(void) {
-   g_error e;
    int fbdev_fd;
    
    /* Open the framebuffer device */
@@ -205,8 +205,6 @@ g_error fbdev_init(void) {
      int i;
      
      for(i = 0; i < 16; i++) {
-       unsigned char c = i;
-       unsigned short b = c << 12 | c << 8 | c << 4 | c;
        red[i] = vr_lcd_intensity[i];
        green[i] = vr_lcd_intensity[i];
        blue[i] = vr_lcd_intensity[i];

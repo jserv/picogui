@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.33 2002/01/10 18:07:16 micahjd Exp $
+/* $Id: request.c,v 1.34 2002/01/16 19:47:26 lonetech Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -34,6 +34,7 @@
 #include <pgserver/common.h>
 #include <pgserver/pgnet.h>
 #include <pgserver/input.h>
+#include <pgserver/configfile.h>
 #ifndef CONFIG_UNIX_SOCKET
 #include <netinet/tcp.h>
 #else
@@ -210,7 +211,7 @@ void readfd(int from) {
 
 #ifdef DEBUG_NET
       printf("prep data (type %u, #%u, %lu bytes)\n",buf->req.type,
-	     buf->req.id,buf->req.size);
+	     buf->req.id,(unsigned long)buf->req.size);
 #endif
       /* Will the data fit in the static buffer? */
       if (buf->req.size < PKTBUF_LEN) {
@@ -317,7 +318,7 @@ g_error net_init(void) {
   WSADATA wsad;
 #endif
 
-  if (s) return;
+  if (s) return success;
 
 #ifndef WINDOWS
   signal(SIGCHLD, SIG_IGN);

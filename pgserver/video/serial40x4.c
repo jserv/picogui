@@ -1,4 +1,4 @@
-/* $Id: serial40x4.c,v 1.12 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: serial40x4.c,v 1.13 2002/01/16 19:47:26 lonetech Exp $
  *
  * serial40x4.c - PicoGUI video driver for a serial wall-mounted
  *                40x4 character LCD I put together about a year ago.
@@ -76,7 +76,9 @@
 #include <pgserver/appmgr.h>
 #include <pgserver/font.h>
 #include <pgserver/render.h>
+#include <pgserver/configfile.h>
 
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -198,10 +200,7 @@ u8 const cg2[] = {
 /******************************************** Implementations */
 
 g_error serial40x4_init(void) {
-   int i;
    g_error e;
-   unsigned long size;
-   u8 *p;
 
    vid->xres = 40;
    vid->yres = 4;
@@ -311,8 +310,8 @@ void serial40x4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,
    (*vid->blit)(dest,dest_x,dest_y,w,h,(hwrbitmap) &chbit,0,0,PG_LGOP_NONE);
 }
 
-void serial40x4_font_newdesc(struct fontdesc *fd, char *name,
-			     int size, stylet flags) {
+void serial40x4_font_newdesc(struct fontdesc *fd, const u8 *name,
+			     int size, int flags) {
    fd->margin = 0;
    fd->hline = -1;
    fd->italicw = 0;
@@ -358,7 +357,7 @@ hwrcolor serial40x4_color_pgtohwr(pgcolor c) {
    
 }
 
-void serial40x4_message(u32 message, u32 param) {
+void serial40x4_message(u32 message, u32 param, u32 *ret) {
    char beep[3] = "\\ ";
    
    if (message != PGDM_SOUNDFX) 

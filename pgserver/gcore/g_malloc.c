@@ -1,4 +1,4 @@
-/* $Id: g_malloc.c,v 1.16 2002/01/06 09:22:57 micahjd Exp $
+/* $Id: g_malloc.c,v 1.17 2002/01/16 19:47:25 lonetech Exp $
  *
  * g_malloc.c - malloc wrapper providing error handling
  *
@@ -62,16 +62,16 @@ g_error g_malloc(void **p,size_t s) {
 #endif
 
 #ifdef DEBUG_MEMORY
-  printf("+%d #%d (%d) 0x%08X\n",s,memref,memamt,*((char**)p));
+  printf("+%d #%ld (%ld) %p\n",s,memref,memamt,*((char**)p));
 #endif
 
   return success;
 }
 
-void g_free(void *p) {
+void g_free(const void *p) {
 #ifdef DEBUG_ANY
   size_t s;
-  char *adr = p;
+  const char *adr = p;
 #endif
   if (!p) return;
 #ifdef DEBUG_ANY
@@ -82,10 +82,10 @@ void g_free(void *p) {
   memamt -= (s = *((size_t*)p));
 #endif
 #ifdef DEBUG_MEMORY
-  printf("-%d #%d (%d) 0x%08X\n",s,memref,memamt,adr);
+  printf("-%d #%ld (%ld) %p\n",s,memref,memamt,adr);
 #endif
 
-  free(p);
+  free((void*)p);
 }
 
 g_error g_realloc(void **p,size_t s) {
@@ -110,7 +110,7 @@ g_error g_realloc(void **p,size_t s) {
 #endif
 
 #ifdef DEBUG_MEMORY
-  printf("* [%d -> %d] #%d (%d) 0x%08X\n",from,s,memref,memamt,*((char**)p));
+  printf("* [%d -> %d] #%ld (%ld) %p\n",from,s,memref,memamt,*((char**)p));
 #endif
 
   return success;

@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.48 2002/01/06 09:23:00 micahjd Exp $
+/* $Id: scroll.c,v 1.49 2002/01/16 19:47:27 lonetech Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -27,6 +27,8 @@
 
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
+#include <pgserver/input.h>
+#include <pgserver/timer.h>
 
 /* Minimum # of milliseconds between scrolls. This is used to limit the
    scroll bar's frame rate so it doesn't 'lag' behind the mouse */

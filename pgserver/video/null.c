@@ -1,4 +1,4 @@
-/* $Id: null.c,v 1.8 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: null.c,v 1.9 2002/01/16 19:47:26 lonetech Exp $
  *
  * null.c - A dummy driver that produces no actual output but can do
  *          some error checking and debuggative things
@@ -47,7 +47,7 @@ g_error null_init(void) {
    return success;
 }
 
-g_error null_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
+g_error null_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
    /* Just go along with whatever they want... */
    vid->xres = xres;
    vid->yres = yres;
@@ -69,7 +69,7 @@ void null_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
    }
 #ifdef DEBUG_VIDEO
    if (!driver_initialized)
-     printf("Null driver: pixel set when uninitialized\n",x,y);
+     printf("Null driver: pixel at %d,%d set when uninitialized\n",x,y);
    if (x<0 || y<0 || (x>=vid->xres) || (y>=vid->yres))
      printf("Null driver: pixel out of bounds at %d,%d\n",x,y);
 #endif
@@ -80,7 +80,7 @@ hwrcolor null_getpixel(hwrbitmap src,s16 x,s16 y) {
      return def_getpixel(src,x,y);
 #ifdef DEBUG_VIDEO
    if (!driver_initialized)
-     printf("Null driver: pixel get when uninitialized\n",x,y);
+     printf("Null driver: pixel at %d,%d get when uninitialized\n",x,y);
    if (x<0 || y<0 || (x>=vid->xres) || (y>=vid->yres))
       printf("Null driver: getpixel out of bounds at %d,%d\n",x,y);
 #endif

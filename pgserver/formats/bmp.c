@@ -1,4 +1,4 @@
-/* $Id: bmp.c,v 1.6 2002/01/09 15:16:02 lonetech Exp $
+/* $Id: bmp.c,v 1.7 2002/01/16 19:47:25 lonetech Exp $
  *
  * bmp.c - Functions to detect and load files compatible with the Windows BMP
  *         file format. This format is good for palettized images and/or
@@ -125,10 +125,25 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   /* Supported format? */
   if (LITTLE_SHORT(ihdr->planes) != 1)
     return mkerror(PG_ERRT_BADPARAM,42);      /* Unsupported BMP format */
-  if (compression > 2)
-    return mkerror(PG_ERRT_BADPARAM,42);      /* Unsupported BMP format */
-  if (bpp!=1 && bpp!=2 && bpp!=4 && bpp!=8 && bpp!=24)
-    return mkerror(PG_ERRT_BADPARAM,42);      /* Unsupported BMP format */
+  switch (compression)
+   {
+    case 0:	/* uncompressed */
+      if (bpp!=1 && bpp!=2 && bpp!=4 && bpp!=8 && bpp!=24)
+	return mkerror(PG_ERRT_BADPARAM,42);      /* Unsupported BMP format */
+      break;
+    case 1:	/* 8-bit RLE */
+      if(bpp!=8)
+	return mkerror(PG_ERRT_BADPARAM,42);      /* Unsupported BMP format */
+      break;
+#if 0
+    case 2:	/* 4-bit RLE */
+      if(bpp!=4)
+	return mkerror(PG_ERRT_BADPARAM,42);      /* Unsupported BMP format */
+      break;
+#endif
+    default:
+      return mkerror(PG_ERRT_BADPARAM,42);      /* Unsupported BMP format */
+   }
   
   /* Find the raster data */
   offset = LITTLE_LONG(fhdr->data_offset);
@@ -211,9 +226,8 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
       }
       break;
     
-    case 1:	/* 8 bit RLE */
+    case 1:	/* 8-bit RLE */
       datalen=offset+ihdr->image_size;
-      printf("RLE: %dx%d\n", w, h);
       c=LITTLE_LONG(colortable[0]);
       for(y=0;y<h;y++)
 	for(x=0;x<w;x++)
@@ -225,8 +239,6 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 	unsigned char rle_n, rle_c;
 	rle_n=*(rasterdata++);
 	rle_c=*(rasterdata++);
-	printf("RLE: %d,%d byte %d, command %d %d\n", x, y, 
-	    (int)(rasterdata-data)-offset, rle_n, rle_c);
 	if(rle_n)	/* RLE pixels */
 	 {
 	  c = LITTLE_LONG(colortable[rle_c]);
@@ -287,8 +299,23 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
        }
       return mkerror(PG_ERRT_BADPARAM,68);      /* RLE data corrupt */
       
-      /* FIXME: Implement compressed 4-bit BMP files */
-
+#if 0
+    case 2:	/* 4-bit RLE */
+      datalen=offset+ihdr->image_size;
+      c=LITTLE_LONG(colortable[0]);
+      for(y=0;y<h;y++)
+	for(x=0;x<w;x++)
+	  (*vid->pixel) (*hbmp,x,y,(*vid->color_pgtohwr)(c),PG_LGOP_NONE);
+      x=0;
+      y=h-1;
+      while(rasterdata+1<data+datalen)
+       {
+	unsigned char rle_n, rle_c;
+	rle_n=*(rasterdata++);
+	rle_c=*(rasterdata++);
+       }
+      return mkerror(PG_ERRT_BADPARAM,68);      /* RLE data corrupt */
+#endif
   }
     
   return success;

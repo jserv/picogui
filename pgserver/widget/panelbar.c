@@ -1,4 +1,4 @@
-/* $Id: panelbar.c,v 1.1 2002/01/15 07:40:55 micahjd Exp $
+/* $Id: panelbar.c,v 1.2 2002/01/16 19:47:27 lonetech Exp $
  *
  * panelbar.c - Container and draggable bar for resizing panels
  *
@@ -29,6 +29,10 @@
 #include <pgserver/widget.h>
 #include <pgserver/video.h>
 #include <pgserver/timer.h>
+#include <pgserver/input.h>
+#ifdef CONFIG_DRAGSOLID
+#include <pgserver/configfile.h>
+#endif
 
 #define DRAG_DELAY    20   /* Min. # of milliseconds between
 			      updates while dragging */
@@ -223,7 +227,6 @@ void panelbar_trigger(struct widget *self,long type,union trigparam *param) {
 }
 
 void panelbar_trigger_sprite(struct widget *self,long type,union trigparam *param) {
-  g_error e;
   bool force = 0;
   struct widget *boundwidget;
   int s;
@@ -382,7 +385,6 @@ void panelbar_trigger_sprite(struct widget *self,long type,union trigparam *para
 
 #ifdef CONFIG_DRAGSOLID
 void panelbar_trigger_solid(struct widget *self,long type,union trigparam *param) {
-  g_error e;
   bool force = 0;
   struct widget *boundwidget;
   int s;

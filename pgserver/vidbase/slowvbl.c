@@ -1,4 +1,4 @@
-/* $Id: slowvbl.c,v 1.1 2002/01/16 03:56:57 micahjd Exp $
+/* $Id: slowvbl.c,v 1.2 2002/01/16 19:47:26 lonetech Exp $
  *
  * Video Base Library:
  * slowvbl.c - intentionally slow VBL for debugging
@@ -29,6 +29,8 @@
 #include <pgserver/common.h>
 #include <pgserver/configfile.h>
 #include <pgserver/video.h>
+
+#include <stdlib.h>	/* strtol */
 
 /* Save the original pixel function so we can call it */
 void (*slowvbl_original_pixel)(hwrbitmap dest, s16 x,s16 y,hwrcolor c,s16 lgop);
@@ -89,6 +91,7 @@ void slowvbl_pixel(hwrbitmap dest, s16 x,s16 y,hwrcolor c,s16 lgop) {
   for (i=slowvbl_delay;i;i--);
 }
 
+extern void def_sprite_update(struct sprite *s);
 void slowvbl_sprite_update(struct sprite *s) {
   slowvbl_in_sprite_update++;
   def_sprite_update(s);
@@ -100,7 +103,7 @@ void slowvbl_sprite_update(struct sprite *s) {
  * been loaded, and we're now being loaded on top of that.
  */
 void setvbl_slowvbl(struct vidlib *vid) {
-  hwrbitmap (*slowvbl_original_getpixel)(hwrbitmap src, s16 x,s16 y);
+  hwrcolor (*slowvbl_original_getpixel)(hwrbitmap src, s16 x,s16 y);
 
   /* Save old functions */
   slowvbl_original_pixel = vid->pixel;

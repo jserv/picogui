@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.45 2002/01/08 12:25:06 micahjd Exp $
+/* $Id: font.c,v 1.46 2002/01/16 19:47:25 lonetech Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -53,12 +53,12 @@
 
 /* A function used by findfont that computes the 'closeness' between
    the request and a particular font */
-int fontcmp(struct fontstyle_node *fs,char *name, int size, stylet flags);
+int fontcmp(struct fontstyle_node *fs,const u8 *name, int size, stylet flags);
 
 /* Utility to do a binary search for a font glyph */
-struct fontglyph *font_findglyph(struct fontglyph *start, 
-				 struct fontglyph *end, s32 key) {
-  struct fontglyph *middle;
+const struct fontglyph *font_findglyph(const struct fontglyph *start, 
+				 const struct fontglyph *end, s32 key) {
+  const struct fontglyph *middle;
 
   while (start<=end) {
     middle = start + ((end-start)>>1);
@@ -97,7 +97,7 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
 
    /* Only render if the character has a bitmap */
    if (g->w && g->h) {
-      glyph = (((unsigned char *)fd->font->bitmaps)+g->bitmap);
+      glyph = (((u8 *)fd->font->bitmaps)+g->bitmap);
 
       switch (angle) {
     
@@ -223,7 +223,7 @@ void outchar_fake(struct fontdesc *fd, s16 *x,int  c) {
  * This function does add the margin as specified by fd->margin.
  */
 void outtext(hwrbitmap dest, struct fontdesc *fd,
-	     s16 x,s16 y,hwrcolor col,char *txt,struct quad *clip,
+	     s16 x,s16 y,hwrcolor col, const u8 *txt,struct quad *clip,
 	     s16 lgop, s16 angle) {
    int b,ch;
 
@@ -257,7 +257,7 @@ void outtext(hwrbitmap dest, struct fontdesc *fd,
             
    }
       
-   while (ch = fd->decoder(&txt)) {
+   while ((ch = fd->decoder(&txt))) {
       if (ch=='\n')
 	switch (angle) {
 	 
@@ -291,16 +291,16 @@ void outtext(hwrbitmap dest, struct fontdesc *fd,
  * This includes the characters themselves , internal spacing,
  * and the margin as specified by fd->margin
  */
-void sizetext(struct fontdesc *fd, s16 *w, s16 *h, char *txt) {
+void sizetext(struct fontdesc *fd, s16 *w, s16 *h, const u8 *txt) {
   int o_w=0, ch;
-  char *original_txt = txt;
+  const u8 *original_txt = txt;
 
   if (!(fd && txt && w && h)) return;
 
   *w = fd->margin << 1;
   *h = (*w) + fd->font->h + fd->interline_space;
 
-  while (ch = fd->decoder(&txt)) {
+  while ((ch = fd->decoder(&txt))) {
     if (ch=='\n') {
       *h += fd->font->h + fd->interline_space;
       if ((*w)>o_w) o_w = *w;
@@ -318,7 +318,7 @@ void sizetext(struct fontdesc *fd, s16 *w, s16 *h, char *txt) {
 }
 
 /* Find a font and fill in the fontdesc structure */
-g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
+g_error findfont(handle *pfh,int owner, const u8 *name,int size,stylet flags) {
    struct fontstyle_node *p;
    struct fontstyle_node *closest = NULL;
    struct fontdesc *fd; 
@@ -409,7 +409,7 @@ g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
 
 /* A function used by findfont that computes the 'closeness' between
    the request and a particular font */
-int fontcmp(struct fontstyle_node *fs,char *name, int size, stylet flags) {
+int fontcmp(struct fontstyle_node *fs,const u8 *name, int size, stylet flags) {
   int result;
   int szdif;
   
@@ -449,7 +449,7 @@ int fontcmp(struct fontstyle_node *fs,char *name, int size, stylet flags) {
  * For a description of the UTF-8 standard, see:
  * http://www.cl.cam.ac.uk/~mgk25/unicode.html
  */
-int decode_utf8(u8 **str) {
+int decode_utf8(const u8 **str) {
   int ch = 0;
   u8 b;
   int length,i;
@@ -511,7 +511,7 @@ int decode_utf8(u8 **str) {
 }
 
 /* Simple decoder for 8-bit text */
-int decode_ascii(u8 **str) {
+int decode_ascii(const u8 **str) {
   return *((*str)++);
 }
 

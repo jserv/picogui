@@ -1,4 +1,4 @@
-/* $Id: r3912ts.c,v 1.6 2002/01/07 16:22:14 carpman Exp $
+/* $Id: r3912ts.c,v 1.7 2002/01/16 19:47:26 lonetech Exp $
  *
  * r3912ts.c - input driver for r3912 touch screen found on the VTech Helio
  *             and others. Other touch screens using the same data format should
@@ -33,6 +33,7 @@
 #include <pgserver/common.h>
 #include <pgserver/input.h>
 #include <pgserver/widget.h>    /* For sending events */
+#include <pgserver/touchscreen.h>
 
 #include <stdio.h>              /* For reading the device */
 
@@ -44,25 +45,13 @@ struct tpanel_sample {
 	unsigned short y;
 };
 
-/******************************************** Utilities */
-/* This section is pretty much all by Jay Carlson (or whoever he
- * 'borrowed' code from ;-) */
-
-typedef struct
-{
-        s16 x, y;
-} XYPOINT;
-
-int GetPointerCalibrationData()
-{
-	return touchscreen_init();
-}
-
 /******************************************** Implementations */
 
 g_error r3912ts_init(void) {
-   if (GetPointerCalibrationData())
-     return mkerror(PG_ERRT_IO, 74);
+   g_error e;
+
+   e=touchscreen_init();
+   errorcheck;
    r3912ts_fd = open("/dev/tpanel",O_NONBLOCK);
    if (r3912ts_fd <= 0)
      return mkerror(PG_ERRT_IO, 74);
@@ -82,9 +71,8 @@ void r3912ts_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
 
 int r3912ts_fd_activate(int fd) {
    struct tpanel_sample ts;
-   XYPOINT dev,scr;
    static u8 state = 0;
-   int trigger;
+   int trigger, x, y;
    
    /* Read raw data from the driver */
    if (fd!=r3912ts_fd)
@@ -93,9 +81,9 @@ int r3912ts_fd_activate(int fd) {
      return 1;
    
    /* Convert to screen coordinates */
-   scr.x = ts.x;
-   scr.y = ts.y;
-   touchscreen_pentoscreen(&scr.x, &scr.y);
+   x = ts.x;
+   y = ts.y;
+   touchscreen_pentoscreen(&x, &y);
 
    /* What type of pointer event? */
    if (ts.state) {
@@ -113,7 +101,7 @@ int r3912ts_fd_activate(int fd) {
    
    /* If we got this far, accept the new state and send the event */
    state = (trigger != TRIGGER_UP);
-   dispatch_pointing(trigger,scr.x,scr.y,state);
+   dispatch_pointing(trigger,x,y,state);
    
    return 1;
 }

@@ -1,4 +1,4 @@
-/* $Id: gpm.c,v 1.2 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: gpm.c,v 1.3 2002/01/16 19:47:26 lonetech Exp $
  *
  * gpm.c - input driver for gpm
  * 
@@ -46,13 +46,11 @@ Gpm_Event gpm_last_event;
 /******************************************** Implementations */
 
 int gpm_fd_activate(int fd) {
-   int ch,mods;
    Gpm_Event evt;
    static int savedbtn = 0;
    
    /* Mouse activity? */
-   if (fd==gpm_fd)
-      if (Gpm_GetEvent(&evt) > 0) {
+   if (fd==gpm_fd && Gpm_GetEvent(&evt) > 0) {
 	 int trigger;
 
 	 /* Generate our own coordinates and fit it within the
@@ -99,12 +97,12 @@ int gpm_fd_activate(int fd) {
 			   ((evt.buttons>>2)&1) ||
 			   ((evt.buttons<<2)&4) ||
 			   (evt.buttons&2));
+	 return 1;
       }
       
    /* Pass on the event if necessary */
    else
      return 0;
-   return 1;
 }
 
 void gpm_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {

@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.70 2002/01/16 15:25:21 bauermeister Exp $
+/* $Id: video.h,v 1.71 2002/01/16 19:47:26 lonetech Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -206,7 +206,7 @@ struct vidlib {
    * 
    * Default implementation: none
    */
-  void (*font_newdesc)(struct fontdesc *fd, char *name, int size, int flags);
+  void (*font_newdesc)(struct fontdesc *fd, const u8 *name, int size, int flags);
   /* Utility to do a binary search for a font glyph */
   
   /* Optional
@@ -224,7 +224,7 @@ struct vidlib {
    *
    * Default implementation: none
    */
-  void (*font_sizetext_hook)(struct fontdesc *fd, s16 *w, s16 *h, char *txt);
+  void (*font_sizetext_hook)(struct fontdesc *fd, s16 *w, s16 *h, const u8 *txt);
 
   /* Optional
    *   Called before outtext, giving the driver an opportunity to modify
@@ -233,7 +233,7 @@ struct vidlib {
    * Default implementation: none
    */
   void (*font_outtext_hook)(hwrbitmap *dest, struct fontdesc **fd,
-			    s16 *x,s16 *y,hwrcolor *col,char **txt,
+			    s16 *x,s16 *y,hwrcolor *col,const u8 **txt,
 			    struct quad **clip, s16 *lgop, s16 *angle);
 
   /* Optional
@@ -510,12 +510,12 @@ g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
 
 /* List of installed video drivers */
 struct vidinfo {
-  char *name;
+  const u8 *name;
   g_error (*regfunc)(struct vidlib *v);
 };
 extern struct vidinfo videodrivers[];
 
-g_error (*find_videodriver(const char *name))(struct vidlib *v);
+g_error (*find_videodriver(const u8 *name))(struct vidlib *v);
 
 /* Set the video mode using the current driver. This is the implementation
  * of the setmode client request */

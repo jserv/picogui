@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.20 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: x11.c,v 1.21 2002/01/16 19:47:26 lonetech Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -182,6 +182,7 @@ void x11_bar(hwrbitmap dest, s16 x,s16 y,s16 h, hwrcolor c, s16 lgop) {
   XFillRectangle(xdisplay,xb->d,g,x,y,1,h);
 }
 
+extern void def_ellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop);
 void x11_ellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
   struct x11bitmap *xb = (struct x11bitmap *) dest;
   GC g = x11_gctab[lgop];
@@ -194,6 +195,7 @@ void x11_ellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
   XDrawArc(xdisplay,xb->d,g,x,y,w,h,0,360*64);
 }
 
+extern void def_fellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop);
 void x11_fellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
   struct x11bitmap *xb = (struct x11bitmap *) dest;
   GC g = x11_gctab[lgop];
@@ -293,9 +295,6 @@ g_error x11_bitmap_new(hwrbitmap *bmp,s16 w,s16 h) {
   struct x11bitmap **pxb = (struct x11bitmap **) bmp;
   g_error e;
 
-  int lw;
-  u32 size;
-
   /* Allocate an x11bitmap structure for this */
   e = g_malloc((void **) pxb,sizeof(struct x11bitmap));
   errorcheck;
@@ -367,6 +366,7 @@ void x11_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
     XCopyArea(xdisplay,sxb->d,dxb->d,g,src_x,src_y,w,h,x,y);
 }
 
+extern void def_sprite_update(struct sprite *spr);
 /* The default sprite code is fine on slow LCDs, or
  * on double-buffered displays. On X11 without double-buffering,
  * the flickering's pretty bad. x11_sprite_update() does a little
@@ -603,10 +603,9 @@ g_error x11_init(void) {
 }
 
 /* Create a window */
-g_error x11_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
+g_error x11_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   int black;
   XEvent ev;
-  XTextProperty titleprop;
   char title[80];
   g_error e;
   Visual *xvisual;

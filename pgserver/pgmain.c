@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.19 2002/01/10 18:07:16 micahjd Exp $
+/* $Id: pgmain.c,v 1.20 2002/01/16 19:47:25 lonetech Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -35,6 +35,8 @@
 #include <pgserver/widget.h>
 #include <pgserver/configfile.h>
 #include <pgserver/touchscreen.h>
+#include <pgserver/timer.h>
+#include <pgserver/hotspot.h>
 
 #include <stdlib.h>
 #include <string.h>   /* For strdup() */
@@ -163,7 +165,6 @@ int main(int argc, char **argv) {
 #endif
     unsigned char *themebuf;
     struct themefilenode *tail = NULL,*p;
-    handle h;
     int vidw,vidh,vidd,vidf;
     const char *str;
     g_error (*viddriver)(struct vidlib *v) = NULL;
@@ -186,7 +187,7 @@ int main(int argc, char **argv) {
 	{
 	  char *section, *key, *value;
 
-	  if (key = strchr(optarg,'.')) {
+	  if ((key = strchr(optarg,'.'))) {
 	    *key = 0;
 	    key++;
 	    section = optarg;
@@ -196,7 +197,7 @@ int main(int argc, char **argv) {
 	    section = "pgserver";
 	  }
 
-	  if (value = strchr(key,'=')) {
+	  if ((value = strchr(key,'='))) {
 	    *value = 0;
 	    value++;
 	  }
@@ -371,7 +372,7 @@ int main(int argc, char **argv) {
 #ifdef CONFIG_VIDEOTEST
      /* Process test mode config options */
 
-     if (str = get_param_str("pgserver","videotest",NULL)) {
+     if ((str = get_param_str("pgserver","videotest",NULL))) {
 	videotest_on = 1;
 	videotest_mode = atoi(str);
 	if (!videotest_mode) {
@@ -398,10 +399,10 @@ int main(int argc, char **argv) {
        char *themes;
        char *tok;
 
-       if (constthemes = get_param_str("pgserver","themes",NULL)) {
+       if ((constthemes = get_param_str("pgserver","themes",NULL))) {
 	 themes = strdup(constthemes);
 
-	 while (tok = strtok(themes," \t")) {
+	 while ((tok = strtok(themes," \t"))) {
 
 	   if (iserror(prerror(g_malloc((void**)&p,
 					sizeof(struct themefilenode)))))
@@ -425,10 +426,10 @@ int main(int argc, char **argv) {
        char *inputs,*str;
        char *tok;
 
-       if (constinputs = get_param_str("pgserver","input",NULL)) {
+       if ((constinputs = get_param_str("pgserver","input",NULL))) {
 	 str = inputs = strdup(constinputs);
 
-	 while (tok = strtok(str," \t")) {
+	 while ((tok = strtok(str," \t"))) {
 	   if (iserror(prerror(
 			       load_inlib(find_inputdriver(tok),NULL)
 			       ))) 
@@ -465,7 +466,7 @@ int main(int argc, char **argv) {
     }
 
     /* Force a specific video driver? */
-    if (str = get_param_str("pgserver","video",NULL)) {
+    if ((str = get_param_str("pgserver","video",NULL))) {
       if (!(viddriver = find_videodriver(str))) {
 	prerror(mkerror(PG_ERRT_BADPARAM,77));
 	exit(1);

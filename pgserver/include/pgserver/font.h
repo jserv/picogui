@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.19 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: font.h,v 1.20 2002/01/16 19:47:25 lonetech Exp $
  *
  * font.h - structures for representing fonts
  *
@@ -62,7 +62,7 @@ struct fontdesc {
 		   image horizontally one pixel for every 'skew' vertical
 		   pixels */
   int italicw;  /* Extra width added by the italic */
-  int (*decoder)(u8 **str);   /* Text decoder (for Unicode, etc) */
+  int (*decoder)(const u8 **str);   /* Text decoder (for Unicode, etc) */
   void *extra;  /* Extra driver-specific data */
 };
 
@@ -70,7 +70,7 @@ struct fontdesc {
    It indicates its name, size, bold, italic, etc.
    This is searched to produce a fontdesc. */
 struct fontstyle_node {
-  char *name;
+  const u8 *name;
   int size;
   long flags;
   struct fontstyle_node *next;
@@ -119,28 +119,28 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
  * chars
  */
 void outtext(hwrbitmap dest, struct fontdesc *fd,
-	     s16 x,s16 y,hwrcolor col,char *txt,struct quad *clip,
+	     s16 x,s16 y,hwrcolor col, const u8 *txt,struct quad *clip,
 	     s16 lgop, s16 angle);
-void sizetext(struct fontdesc *fd, s16 *w, s16 *h, char *txt);
+void sizetext(struct fontdesc *fd, s16 *w, s16 *h, const u8 *txt);
 
 /* Find a font with specified characteristics, and prepare
  * a fontdesc structure for it.  The closest font will be matched.
  * Any of the FSTYLE_* flags can be used to indicate that attribute
  * is required. */
-g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags);
+g_error findfont(handle *pfh,int owner, const u8 *name,int size,stylet flags);
 
 /* Decode one character from the specified UTF-8 string, 
  * advancing the pointer.
  * If it decodes an invalid character, it returns -1
  */
-int decode_utf8(u8 **str);
+int decode_utf8(const u8 **str);
 
 /* Very simple decoder for ASCII and ISO Latin-1 */
-int decode_ascii(u8 **str);
+int decode_ascii(const u8 **str);
 
 /* Utility to do a binary search for a font glyph */
-struct fontglyph *font_findglyph(struct fontglyph *start, 
-				 struct fontglyph *end, s32 key);
+const struct fontglyph *font_findglyph(const struct fontglyph *start, 
+				 const struct fontglyph *end, s32 key);
 
 #endif /* __H_FONT */
 

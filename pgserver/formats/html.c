@@ -1,4 +1,4 @@
-/* $Id: html.c,v 1.15 2002/01/06 09:22:57 micahjd Exp $
+/* $Id: html.c,v 1.16 2002/01/16 19:47:25 lonetech Exp $
  *
  * html.c - Use the textbox_document inferface to load HTML markup
  *
@@ -87,6 +87,11 @@
 #include <pgserver/common.h>
 #include <pgserver/textbox.h>
 #include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
+#ifdef DEBUG_HTML
+#include <unistd.h>
+#endif
 
 /*************************************** Font/color options */
 

@@ -1,4 +1,4 @@
-/* $Id: nullfb.c,v 1.5 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: nullfb.c,v 1.6 2002/01/16 19:47:26 lonetech Exp $
  *
  * nullfb.c - For testing and profiling. Uses linear* VBLs to generate a frame
  *            but does not blit the buffer to any actual hardware
@@ -44,6 +44,12 @@ g_error nullfb_init(void) {
    if (!vid->bpp)  vid->bpp  = 32;
    
    return success;
+}
+
+void nullfb_close(void) {
+   /* Free backbuffer */
+   if (FB_MEM)
+     g_free(FB_MEM);
 }
 
 g_error nullfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
@@ -124,12 +130,6 @@ g_error nullfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
    return success; 
 }
    
-void nullfb_close(void) {
-   /* Free backbuffer */
-   if (FB_MEM)
-     g_free(FB_MEM);
-}
-
 g_error nullfb_regfunc(struct vidlib *v) {
   v->init = &nullfb_init;
   v->setmode = &nullfb_setmode; 

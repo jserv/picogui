@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.72 2002/01/15 07:35:15 micahjd Exp $
+/* $Id: panel.c,v 1.73 2002/01/16 19:47:27 lonetech Exp $
  *
  * panel.c - Holder for applications. It uses a panelbar for resizing purposes,
  *           and optionally supplies some standard buttons for the panel.
@@ -93,7 +93,7 @@ struct widget *panel_getpanel(struct widget *button) {
 
   d = divnode_findparent(bar->dt->head, bar->in);
   if (!d)
-    return;
+    return NULL;
   return d->owner;
 }
 
@@ -148,7 +148,6 @@ void panel_resize(struct widget *self) {
 g_error panel_install(struct widget *self) {
   struct widget *bar, *title;
   g_error e;
-  handle hself;
 
   /* Allocate data structure */
   e = g_malloc(&self->data,sizeof(struct paneldata));

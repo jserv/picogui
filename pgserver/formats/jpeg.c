@@ -1,4 +1,4 @@
-/* $Id: jpeg.c,v 1.7 2002/01/06 09:22:57 micahjd Exp $
+/* $Id: jpeg.c,v 1.8 2002/01/16 19:47:25 lonetech Exp $
  *
  * jpeg.c - Functions to convert any of the jpeg formats 
  *
@@ -26,6 +26,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <pgserver/common.h>
 #include <pgserver/video.h>
 #include <jpeglib.h>

@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.44 2002/01/15 07:35:15 micahjd Exp $
+/* $Id: terminal.c,v 1.45 2002/01/16 19:47:27 lonetech Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -29,7 +29,10 @@
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <pgserver/render.h>
+#include <pgserver/hotspot.h>
+#include <pgserver/timer.h>
 #include <ctype.h>
+#include <stdlib.h>	/* strtol() */
 
 /* Size of buffer for VT102 escape codes */
 #define ESCAPEBUF_SIZE 32
@@ -383,10 +386,7 @@ void terminal_remove(struct widget *self) {
 }
 
 g_error terminal_set(struct widget *self,int property, glob data) {
-  g_error e;
   struct fontdesc *fd;
-  u8 *str;
-  hwrbitmap bit;
 
   switch (property) {
 
@@ -422,12 +422,6 @@ g_error terminal_set(struct widget *self,int property, glob data) {
 }
 
 glob terminal_get(struct widget *self,int property) {
-  g_error e;
-  handle h;
-  int tw,th;
-  u8 *str;
-  struct fontdesc *fd;
-
   switch (property) {
 
   case PG_WP_FONT:
@@ -774,7 +768,7 @@ void term_char(struct widget *self,u8 c) {
       endp = DATA->escapebuf+DATA->escbuf_pos-1; /* Stop before the end */
       while (p<endp) {
 	/* Convert the number */
-	DATA->csiargs[DATA->num_csiargs] = strtol(p,&num_end,10);
+	DATA->csiargs[DATA->num_csiargs] = strtol(p,(char**)&num_end,10);
 
 	/* Got nothing good? */
 	if (p==num_end)

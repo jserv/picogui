@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.19 2002/01/06 09:22:57 micahjd Exp $
+/* $Id: timer.c,v 1.20 2002/01/16 19:47:25 lonetech Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -38,6 +38,7 @@
 #include <sys/time.h>
 #endif
 
+#include <pgserver/configfile.h>
 #include <pgserver/timer.h>
 
 u32 lastactivity;

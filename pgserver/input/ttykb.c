@@ -68,10 +68,6 @@ static int keymap[128] = {		/* The keymap */
  */
 g_error ttykb_init(null)
 {
-  char *env;
-
-	int		i;
-	int		ledstate = 0;
 	struct termios	new;
 
 	ttykb_fd = open(KEYBOARD, O_NONBLOCK);

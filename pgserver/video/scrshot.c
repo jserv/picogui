@@ -1,4 +1,4 @@
-/* $Id: scrshot.c,v 1.5 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: scrshot.c,v 1.6 2002/01/16 19:47:26 lonetech Exp $
  *
  * scrshot.c - Maintains a virtual framebuffer, taking screenshots on update
  *
@@ -27,6 +27,8 @@
 
 #include <pgserver/common.h>
 #include <pgserver/video.h>
+#include <pgserver/configfile.h>
+#include <pgserver/pgmain.h>
 
 #include <stdio.h>
 
@@ -56,6 +58,7 @@ g_error scrshot_init(void) {
    return success;
 }
 
+extern void nullfb_close(void);
 g_error scrshot_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
    g_error e;
    
@@ -140,14 +143,14 @@ void scrshot_close(void) {
      g_free(FB_MEM);
 }
 
-void scrshot_update(s16 x, s16 y, s16 w, s16 h) {
+void scrshot_update(s16 unusedx, s16 unusedy, s16 w, s16 h) {
   char buf[256];    /* I hate static buffers... */
   FILE *f;
   int x,y;
 
   if (scrshot_skip) {
     scrshot_skip--;
-    printf("scrshot: Skipping frame (%d remaining)\n");
+    printf("scrshot: Skipping frame (%d remaining)\n", scrshot_skip);
     return;
   }
 

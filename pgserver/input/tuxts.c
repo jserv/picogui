@@ -16,12 +16,11 @@
 #include <pgserver/input.h>
 #include <pgserver/widget.h>    /* for dispatch_pointing */
 #include <pgserver/pgnet.h>
+#include <pgserver/configfile.h>
 
 #define POLL_USEC                500
  
 static const char *DEVICE_FILE_NAME = "/dev/ucb1200-ts";
-static const char *_file_ = __FILE__;
-static const char *PG_TS_ENV_NAME = "PG_TS_CALIBRATION";
 
 /* file descriptor for touch panel */
 static int fd = -1;
@@ -95,8 +94,7 @@ void tuxts_poll(void) {
   /* read a data point */
   short data[4];
   int bytes_read;
-  int x, y, z, b;
-  int mouse = -1;
+  int x, y, b;
        
   bytes_read = read(fd, data, 4 * sizeof(short));
 	

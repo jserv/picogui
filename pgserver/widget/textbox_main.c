@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.25 2002/01/08 14:21:42 micahjd Exp $
+/* $Id: textbox_main.c,v 1.26 2002/01/16 19:47:27 lonetech Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -30,6 +30,7 @@
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <pgserver/textbox.h>
+#include <pgserver/hotspot.h>
 
 #define FLASHTIME_ON   250
 #define FLASHTIME_OFF  150
@@ -224,7 +225,8 @@ void textbox_trigger(struct widget *self,long type,union trigparam *param) {
   case TRIGGER_TIMER:
     if (DATA->focus==0) break;
 
-    if (DATA->flash_on = !DATA->flash_on)
+    /* extra parentheses to make gcc happy */
+    if ((DATA->flash_on = !DATA->flash_on))
       text_caret_on(&DATA->c);
     else
       text_caret_off(&DATA->c);

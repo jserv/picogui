@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.48 2002/01/06 09:22:57 micahjd Exp $
+/* $Id: grop.c,v 1.49 2002/01/16 19:47:25 lonetech Exp $
  *
  * grop.c - grop-list management
  *
@@ -72,7 +72,7 @@ void gropnode_free(struct gropnode *n) {
    num_grops--;
 #endif
 #ifdef DEBUG_MEMORY 
-  printf("gropnode_free(0x%08X) : ",n);
+  printf("gropnode_free(%p) : ",n);
 #endif
       
    /* Can we just stick it in the zombie list? */
@@ -118,7 +118,7 @@ void grop_kill_zombies(void) {
 /* Add a new gropnode to the context. Caller fills in
    all the grop's parameters afterwards. */
 g_error addgrop(struct gropctxt *ctx, u16 type) {
-  struct gropnode *p,*node;
+  struct gropnode *node;
   g_error e;
 
   /* ctx == NULL is legal, used to disable actual output */
@@ -145,7 +145,6 @@ g_error addgrop(struct gropctxt *ctx, u16 type) {
 g_error addgropsz(struct gropctxt *ctx, u16 type,s16 x,s16 y,s16 w,s16 h) {
    g_error e;
    e = addgrop(ctx,type);
-   errortext;
    ctx->current->r.x = x;
    ctx->current->r.y = y;
    ctx->current->r.w = w;
@@ -159,7 +158,7 @@ void grop_free(struct gropnode **headpp) {
 
 #ifdef DEBUG_MEMORY
   static int lock = 0;
-  printf("-> grop_free(0x%08X = &0x%08X)\n",headpp,*headpp);
+  printf("-> grop_free(%p = &%p)\n",headpp,*headpp);
   if (lock)
     printf("     -- grop_free lock triggered --\n");
   lock = 1;

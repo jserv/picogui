@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.49 2002/01/06 09:22:57 micahjd Exp $
+/* $Id: handle.c,v 1.50 2002/01/16 19:47:25 lonetech Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -32,6 +32,7 @@
 #include <pgserver/handle.h>
 #include <pgserver/widget.h>
 #include <pgserver/pgnet.h>
+#include <pgserver/input.h>	/* unload_inlib */
 
 #define NIL ((struct handlenode *)(&sentinel))
 struct handlenode const sentinel = {0,0,0,0,0,0,NULL,NIL,NIL,NIL};
@@ -280,7 +281,7 @@ void htree_delete(struct handlenode *z) {
 
 #ifdef DEBUG_MEMORY
      printf("handlenode delete SPECIAL CASE: handle = 0x%08X,"
-	    "nodes 0x%08X -> 0x%08X\n",z->id,y,z);
+	    "nodes %p -> %p\n",z->id,y,z);
 #endif
   }  
 
@@ -351,16 +352,16 @@ void object_free(struct handlenode *n) {
   if (!(n->type & HFLAG_NFREE)) {
     switch (n->type & PG_TYPEMASK) {
     case PG_TYPE_BITMAP:
-      VID(bitmap_free) (n->obj);
+      VID(bitmap_free) ((hwrbitmap)n->obj);
       break;
     case PG_TYPE_WIDGET:
-      widget_remove(n->obj);
+      widget_remove((struct widget *)n->obj);
       break;
     case PG_TYPE_THEME:
-      theme_remove(n->obj);
+      theme_remove((struct pgmemtheme *)n->obj);
       break;
     case PG_TYPE_DRIVER:
-      unload_inlib(n->obj);
+      unload_inlib((struct inlib *)n->obj);
       break;
     default:
       g_free(n->obj);
@@ -389,11 +390,11 @@ void r_handle_dump(struct handlenode *n,int level) {
    r_handle_dump(n->left,level+1);
    for (i=0;i<level;i++)
      printf(" ");
-   printf("0x%04X : node 0x%08X obj 0x%08X grp 0x%04X pld 0x%08X own %d ctx %d red %d type %s",
+   printf("0x%04X : node %p obj %p grp 0x%04X pld 0x%08lX own %d ctx %d red %d type %s",
 	  n->id,n,n->obj,n->group,n->payload,n->owner,n->context,
 	  n->type & PG_TYPEMASK,typenames[(n->type & PG_TYPEMASK)-1]);
    if ((n->type & PG_TYPEMASK) == PG_TYPE_STRING)
-     printf(" = \"%s\"\n",n->obj);
+     printf(" = \"%s\"\n",(char*)n->obj);
    else
      printf("\n");
    r_handle_dump(n->right,level+1);
@@ -407,14 +408,12 @@ void handle_dump(void) {
 
 /* Dump strings to stdout */
 void r_string_dump(struct handlenode *n) {
-   int i;
-   
    if (!n) return;
    if (n==NIL) return;
    r_string_dump(n->left);
 	if ((n->type & PG_TYPEMASK)==PG_TYPE_STRING)
 					 printf("0x%04X : %s\n",
-							  n->id,n->obj);
+							  n->id,(char*)n->obj);
    r_string_dump(n->right);
 }
 void string_dump(void) {
@@ -425,7 +424,7 @@ void string_dump(void) {
 #endif
 
 /* Allocates a new handle for obj */
-g_error mkhandle(handle *h,unsigned char type,int owner,void *obj) {
+g_error mkhandle(handle *h,unsigned char type,int owner,const void *obj) {
   struct handlenode *n;
   g_error e;
   int context = -1;
@@ -458,7 +457,7 @@ g_error mkhandle(handle *h,unsigned char type,int owner,void *obj) {
   *h = n->id;
    
 #ifdef DEBUG_MEMORY
-  printf("mkhandle(%d,0x%08X): node=0x%08X\n",owner,*h,n);
+  printf("mkhandle(%d,0x%08X): node=%p\n",owner,*h,n);
 #endif
    
   return success;
@@ -519,7 +518,7 @@ g_error rdhandlep(void ***p,unsigned char reqtype,int owner,handle h) {
   if (owner>=0 && n->owner>=0 && n->owner != owner) 
     return mkerror(PG_ERRT_HANDLE,27);
 
-  *p = &n->obj;
+  *p = (void**)&n->obj;
   return success;
 }
 
@@ -575,7 +574,7 @@ g_error handle_free(int owner,handle h) {
   struct handlenode ncopy;
 
 #ifdef DEBUG_MEMORY
-  printf("handle_free(%d,0x%08X): node=0x%08X\n",owner,h,n);
+  printf("handle_free(%d,0x%08X): node=%p\n",owner,h,n);
 #endif
 
   /* Already gone - don't complain */
@@ -663,7 +662,7 @@ g_error handle_payload(unsigned long **pppayload,int owner,handle h) {
 }
 
 /* Recursive part of handle_iterate() */
-g_error r_iterate(struct handlenode *n,u8 type,g_error (*iterator)(void **pobj)) {
+g_error r_iterate(struct handlenode *n,u8 type,handle_iterator iterator) {
    g_error e;
    
    if ((!n) || (n==NIL)) return success;
@@ -675,7 +674,7 @@ g_error r_iterate(struct handlenode *n,u8 type,g_error (*iterator)(void **pobj))
    errorcheck;
    return r_iterate(n->right,type,iterator);
 }
-g_error handle_iterate(u8 type,g_error (*iterator)(void **pobj)) {
+g_error handle_iterate(u8 type,handle_iterator iterator) {
    return r_iterate(htree,type,iterator);
 }
 
@@ -685,7 +684,7 @@ g_error handle_iterate(u8 type,g_error (*iterator)(void **pobj)) {
  * and themes currently can't be duplicated)
  */
 g_error handle_dup(handle *dest, int owner, handle src) {
-  struct handlenode *n,*n2;
+  struct handlenode *n;
   void *newobj;
   g_error e;
   u32 sz;

@@ -1,4 +1,4 @@
-/* $Id: g_malloc.h,v 1.9 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: g_malloc.h,v 1.10 2002/01/16 19:47:25 lonetech Exp $
  *
  * g_malloc.h - malloc wrapper providing error handling
  *
@@ -39,7 +39,7 @@
 #include <pgserver/g_error.h>
 
 g_error g_malloc(void **p,size_t s);
-void g_free(void *p);
+void g_free(const void *p);
 g_error g_realloc(void **p,size_t s);
 
 #ifdef DEBUG_KEYS

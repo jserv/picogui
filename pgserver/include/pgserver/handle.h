@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.23 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: handle.h,v 1.24 2002/01/16 19:47:25 lonetech Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -69,7 +69,7 @@ struct handlenode {
 
   /* 32-bit fields */
   unsigned long int payload;   /* Client-definable data */
-  void *obj;
+  const void *obj;
   struct handlenode *left,*right,*parent;  /* For the red-black tree */
 };
 
@@ -79,7 +79,7 @@ struct handlenode *htree_find(handle id);
 /* Allocates a new handle for obj 
  * Owner = -1, system owns it
  */
-g_error mkhandle(handle *h,unsigned char type,int owner,void *obj);
+g_error mkhandle(handle *h,unsigned char type,int owner, const void *obj);
 
 /* Reads the handle, returns NULL if handle is invalid or if it
    doesn't match the required type and user. If owner is -1, we don't care */
@@ -125,7 +125,8 @@ g_error handle_group(int owner,handle from, handle to);
  * This allows a particular transformation to be applied to objects
  * in bulk.
  */
-g_error handle_iterate(u8 type,g_error (*iterator)(void **pobj));
+typedef g_error (*handle_iterator)(const void **pobj);
+g_error handle_iterate(u8 type,handle_iterator iterator);
 
 /*
  * Duplicate a handle (if it can be duplicated. Widgets, drivers,

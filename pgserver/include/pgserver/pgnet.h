@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.18 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: pgnet.h,v 1.19 2002/01/16 19:47:26 lonetech Exp $
  *
  * pgnet.h - definitions and stuff for the picogui server
  *           networking code. Most of the interesting code
@@ -173,12 +173,12 @@ int check_event(int owner);
    fatal can be set to one.
 */
 /* Make a declaration for a handler */
-#define DEF_REQHANDLER(n) g_error rqh_##n(int owner, struct pgrequest *req, void *data, unsigned long *ret, int *fatal);
+#define DEF_REQHANDLER(n) g_error rqh_##n(int owner, struct pgrequest *req, void *data, u32 *ret, int *fatal);
 /* Make a handler table entry */
 #define TAB_REQHANDLER(n) &rqh_##n ,
 
 /* Request handler table */
-extern g_error (*rqhtab[])(int,struct pgrequest*,void*,unsigned long*,int*);
+extern g_error (*rqhtab[])(int,struct pgrequest*,void*,u32*,int*);
 
 /* Nonzero when the main program is waiting for network/user input 
    in a select() call */

@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.17 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: linear4.c,v 1.18 2002/01/16 19:47:26 lonetech Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -108,7 +108,7 @@ void linear4_slab_stipple(hwrbitmap dest,s16 x,s16 y,s16 w,hwrcolor c) {
       *p |= c;
    }
    
-   if (remainder = (w&1)) {                /* Partial byte afterwards */
+   if ((remainder = (w&1))) {              /* Partial byte afterwards */
       mask = slabmask4[remainder];
       mask = (~mask) & stipple;
       *p &= ~mask;
@@ -157,7 +157,7 @@ void linear4_slab(hwrbitmap dest,s16 x,s16 y,s16 w,hwrcolor c,s16 lgop) {
      return;
    bw = w>>1;
    __memset(p,c,bw);                       /* Full bytes */
-   if (remainder = (w&1)) {                /* Partial byte afterwards */
+   if ((remainder = (w&1))) {              /* Partial byte afterwards */
       p+=bw;
       mask = slabmask4[remainder];
       *p &= mask;
@@ -421,7 +421,7 @@ void linear4_blit(hwrbitmap dest,
 		  s16 lgop) {
    u8 *src, *srcline, *dst, *dstline, mask;
    struct stdbitmap *srcbit = (struct stdbitmap *) sbit;
-   int bw,xb,s,rs,tp,lp,rlp;
+   int bw,xb,s,rs,tp,lp;
    int i;
 
    /* Pass on the blit if it is an unsupported LGOP */

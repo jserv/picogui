@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.86 2002/01/15 07:35:15 micahjd Exp $
+/* $Id: button.c,v 1.87 2002/01/16 19:47:26 lonetech Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -189,7 +189,6 @@ void button_remove(struct widget *self) {
 }
 
 g_error button_set(struct widget *self,int property, glob data) {
-  g_error e;
   hwrbitmap bit;
   char *str;
   struct fontdesc *fd;
@@ -285,9 +284,6 @@ g_error button_set(struct widget *self,int property, glob data) {
 }
 
 glob button_get(struct widget *self,int property) {
-  g_error e;
-  handle h;
-
   switch (property) {
 
   case PG_WP_BITMAP:

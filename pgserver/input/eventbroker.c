@@ -1,4 +1,4 @@
-/* $Id: eventbroker.c,v 1.6 2001/12/14 22:56:43 micahjd Exp $
+/* $Id: eventbroker.c,v 1.7 2002/01/16 19:47:26 lonetech Exp $
  *
  * eventbroker.c - input driver to manage driver messages
  *
@@ -241,6 +241,7 @@ static g_error eventbroker_init(void)
   }
 # endif
 #endif /* defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE) */
+  return success;
 }
 
 /* ------------------------------------------------------------------------- */

@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.35 2002/01/16 03:56:57 micahjd Exp $
+/* $Id: sdlfb.c,v 1.36 2002/01/16 19:47:26 lonetech Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -32,14 +32,20 @@
 #include <pgserver/common.h>      /* Needed for any pgserver file */
 
 #include <pgserver/video.h>       /* Always needed for a video driver! */
+#include <pgserver/pgmain.h>      /* For reload_initial_themes() */
 #include <pgserver/render.h>      /* For data types like 'quad' */
 #include <pgserver/input.h>       /* For loading our corresponding input lib */
+#include <pgserver/configfile.h>  /* For loading our configuration */
 
 #include <SDL/SDL.h>              /* This is the SDL video driver */
 
 #ifdef CONFIG_SDLSKIN
 #include <stdio.h>                /* File I/O for loading skin bitmap */
+#include <stdlib.h>               /* strtol() */
+#elif defined(CONFIG_SDLSKIN)
+#include <stdlib.h>               /* strtol() */
 #endif
+#include <unistd.h>               /* write() for beeping kludge */
 
 SDL_Surface *sdl_vidsurf;
 #if defined(CONFIG_SDLEMU_COLOR) || defined(CONFIG_SDLEMU_BLIT)
@@ -112,7 +118,7 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   int i;
   s16 fbw,fbh;
 #ifdef CONFIG_SDLSKIN
-  char *s;
+  const char *s;
 #endif
 
 #ifdef CONFIG_SDLEMU_BLIT
@@ -128,11 +134,11 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   if (get_param_int("video-sdlfb","fullscreen",0))
     sdlflags |= SDL_FULLSCREEN;
 #ifdef CONFIG_SDLSKIN
-  if (i = get_param_int("video-sdlfb","width",0)) {
+  if ((i = get_param_int("video-sdlfb","width",0))) {
     fbw = i;
     sdlflags &= ~SDL_RESIZABLE;
   }
-  if (i = get_param_int("video-sdlfb","height",0)) {
+  if ((i = get_param_int("video-sdlfb","height",0))) {
     fbh = i;
     sdlflags &= ~SDL_RESIZABLE;
   }
@@ -322,7 +328,7 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
 
 #ifdef CONFIG_SDLSKIN
   /* Install the skin background */
-  if (s = get_param_str("video-sdlfb","background",NULL)) {
+  if ((s = get_param_str("video-sdlfb","background",NULL))) {
     FILE *f;
     char *mem;
     unsigned long len;

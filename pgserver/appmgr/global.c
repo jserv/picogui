@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.52 2002/01/15 07:35:14 micahjd Exp $
+/* $Id: global.c,v 1.53 2002/01/16 19:47:25 lonetech Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -96,8 +96,6 @@ handle default_textcolors;
 
 
 g_error appmgr_init(void) {
-  hwrbitmap bgbits;
-  struct widget *w;
   g_error e;
 
   applist = NULL;  /* No apps yet! */
@@ -249,7 +247,6 @@ void appmgr_unregowner(int owner) {
 g_error appmgr_register(struct app_info *i) {
   struct app_info *dest;
   struct widget *w = NULL;
-  struct divnode *p;
   struct divtree *tree;
   g_error e;
 

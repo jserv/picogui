@@ -1,4 +1,4 @@
-/* $Id: gif.c,v 1.1 2002/01/10 15:22:12 micahjd Exp $
+/* $Id: gif.c,v 1.2 2002/01/16 19:47:25 lonetech Exp $
  *
  * gif.c - Read only GIF loader based on libungif
  *
@@ -197,12 +197,15 @@ typedef struct GifFilePrivateType {
     unsigned int Prefix[LZ_MAX_CODE+1];
 
     /* Original image in memory here */
-    u8 *input;
+    const u8 *input;
     u32 input_len;
 } GifFilePrivateType;
 
 int _GifError;
 
+int DGifGetScreenDesc(GifFileType *GifFile);
+int DGifGetCodeNext(GifFileType *GifFile, GifByteType **CodeBlock);
+int DGifGetExtensionNext(GifFileType *GifFile, GifByteType **Extension);
 static int DGifGetWord(GifFilePrivateType *p, int *Word);
 static int DGifSetupDecompress(GifFileType *GifFile);
 static int DGifDecompressLine(GifFileType *GifFile, GifPixelType *Line,
@@ -226,7 +229,7 @@ size_t my_fread(void *ptr, size_t size, size_t nmemb, GifFilePrivateType *p) {
 *   Returns GifFileType pointer dynamically allocated which serves as the gif *
 * info record. _GifError is cleared if succesfull.			      *
 ******************************************************************************/
-GifFileType *DGifOpenFileMemory(u8* input, u32 input_len)
+GifFileType *DGifOpenFileMemory(const u8* input, u32 input_len)
 {
     GifFileType *GifFile;
     GifFilePrivateType *Private;
@@ -529,7 +532,7 @@ int DGifCloseFile(GifFileType *GifFile)
 ******************************************************************************/
 static int DGifGetWord(GifFilePrivateType *p, int *Word)
 {
-    unsigned char *c;
+    const u8 *c;
 
     if (p->input_len < 2) {
 	_GifError = D_GIF_ERR_READ_FAILED;
@@ -890,7 +893,7 @@ static int DGifBufferedInput(GifFilePrivateType *File, GifByteType *Buf,
 int BitSize(int n)
 /* return smallest bitfield size n will fit in */
 {
-    register	i;
+    register int i;
 
     for (i = 1; i <= 8; i++)
 	if ((1 << i) >= n)

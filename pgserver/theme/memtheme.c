@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.50 2002/01/07 08:14:47 micahjd Exp $
+/* $Id: memtheme.c,v 1.51 2002/01/16 19:47:26 lonetech Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -289,7 +289,6 @@ void div_rebuild(struct divnode *d) {
  */
 u16 trace_thobj(u16 obj) {
    struct pgmemtheme *ptheme;
-   struct pgmemtheme_thobj *pobj;
    
    while (obj) {
    
@@ -385,7 +384,7 @@ int thobj_id_available(s16 id) {
  * matching the given string. If it's found, this puts its id in "*id"
  * and returns nonzero.
  */
-int find_named_thobj(char *name, s16 *id) {
+int find_named_thobj(const u8 *name, s16 *id) {
   struct pgmemtheme *ptheme;
   struct pgmemtheme_thobj *pobj;
   struct pgmemtheme_prop *pprop;
@@ -394,7 +393,7 @@ int find_named_thobj(char *name, s16 *id) {
 
   for (ptheme=memtheme;ptheme;ptheme=ptheme->next)
     for (pobj=theme_thobjlist(ptheme),i=0;i<ptheme->num_thobj;pobj++,i++)
-      if (pprop = find_prop(pobj,PGTH_P_NAME))
+      if ((pprop = find_prop(pobj,PGTH_P_NAME)))
 	if (!iserror(rdhandle((void**)&thisname,PG_TYPE_STRING,-1,pprop->data)))
 	  if (thisname && !strcmp(thisname,name)) {
 	    *id = pobj->id;
@@ -487,7 +486,7 @@ g_error theme_load(handle *h,int owner,char *themefile,
   }
 
 #ifdef DEBUG_THEME
-  printf("Allocated an internal theme heap: %d bytes\n",heaplen);
+  printf("Allocated an internal theme heap: %ld bytes\n",heaplen);
 #endif
 
   /* Stick a memtheme header on the new heap */
@@ -661,7 +660,7 @@ g_error theme_load(handle *h,int owner,char *themefile,
 
 	{
 	  s16 id;
-	  if (find_named_thobj((const u8 *)(themefile_start + mpropp->data), &id))
+	  if (find_named_thobj(themefile_start + mpropp->data, &id))
 	    mpropp->data = id;
 	  else
 	    mpropp->data = 0;

@@ -1,4 +1,4 @@
-/* $Id: linear2.c,v 1.8 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: linear2.c,v 1.9 2002/01/16 19:47:26 lonetech Exp $
  *
  * Video Base Library:
  * linear2.c - For 2-bit packed pixel devices (4 grayscales)
@@ -103,7 +103,7 @@ void linear2_slab_stipple(hwrbitmap dest,s16 x,s16 y,s16 w,hwrcolor c) {
       *p |= c;
    }
    
-   if (remainder = (w&3)) {                /* Partial byte afterwards */
+   if ((remainder = (w&3))) {              /* Partial byte afterwards */
       mask = slabmask2[remainder];
       mask = (~mask) & stipple;
       *p &= ~mask;
@@ -152,7 +152,7 @@ void linear2_slab(hwrbitmap dest,s16 x,s16 y,s16 w,hwrcolor c,s16 lgop) {
      return;
    bw = w>>2;
    __memset(p,c,bw);                       /* Full bytes */
-   if (remainder = (w&3)) {                /* Partial byte afterwards */
+   if ((remainder = (w&3))) {              /* Partial byte afterwards */
       p+=bw;
       mask = slabmask2[remainder];
       *p &= mask;

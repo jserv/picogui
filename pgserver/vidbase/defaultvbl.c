@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.68 2002/01/14 09:06:17 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.69 2002/01/16 19:47:26 lonetech Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -46,6 +46,8 @@
 #include <pgserver/render.h>
 #include <pgserver/appmgr.h>    /* for defaultfont */
 
+#include <stdlib.h>		/* for qsort */
+
 /******* Table of available bitmap formats */
 
 struct bitformat bitmap_formats[] = {
@@ -79,7 +81,7 @@ g_error def_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   return success;
 }
 
-void def_font_newdesc(struct fontdesc *fd) {
+void def_font_newdesc(struct fontdesc *fd, const u8 *name, int size, int flags) {
 }
 
 void emulate_dos(void) {
@@ -98,11 +100,11 @@ void def_coord_logicalize(s16 *x,s16 *y) {
 void def_coord_keyrotate(s16 *k) {
 }
 
-void def_font_sizetext_hook(struct fontdesc *fd, s16 *w, s16 *h, char *txt) {
+void def_font_sizetext_hook(struct fontdesc *fd, s16 *w, s16 *h, const u8 *txt) {
 }
 
 void def_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
-			   s16 *x,s16 *y,hwrcolor *col,char **txt,
+			   s16 *x,s16 *y,hwrcolor *col,const u8 **txt,
 			   struct quad **clip, s16 *lgop, s16 *angle) {
 }
 
@@ -523,7 +525,7 @@ void def_fellipse(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lg
   y=h; 
   ddinc0=(h2<<1)+h2; 
   ddinc1=(2-(y<<1))*w2; 
-  dd=h2-w2*h+h2>>2; 
+  dd=(h2-w2*h+h2)>>2; 
   conda=w2*y-(w2>>1); 
   condb=h2; 
   while(conda>condb) { 
@@ -615,7 +617,6 @@ void def_fpolygon (hwrbitmap dest, s32* array, s16 xoff, s16 yoff, hwrcolor c, s
    *    Down to 2.45k from 6k on Intel
    *
    */
-  static tester=0;
   s16 num_coords=array[0]>>1;
   s16 nplines=num_coords; // First set nplines to max number
   s16 i,j,k,n,t,hi,lo,m;
@@ -714,7 +715,7 @@ void def_fpolygon (hwrbitmap dest, s32* array, s16 xoff, s16 yoff, hwrcolor c, s
       }
     }
     mptr=mpoly;
-    qsort(mpoly,nplines,sizeof(struct poly_line_info),&polygon_simple_compare);
+    qsort(mpoly,nplines,sizeof(struct poly_line_info),(int(*)(const void*,const void*))&polygon_simple_compare);
     m=0;
     while(lo <= hi) {
       t=0;
@@ -1465,7 +1466,7 @@ void def_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 void def_sprite_show(struct sprite *spr) {
   static struct quad cr;
 
-  DBG("spr = 0x%08X\n",spr);
+  DBG("spr = %p\n",spr);
    
   if (spr->onscreen || !spr->visible || !vid->xres) return;
    
@@ -1593,7 +1594,7 @@ void def_sprite_show(struct sprite *spr) {
 void def_sprite_hide(struct sprite *spr) {
   static struct quad cr;
 
-  DBG("spr = 0x%08X\n",spr);
+  DBG("spr = %p\n",spr);
    
   if ( (!spr->onscreen) ||
        (spr->ox == -1) )
@@ -1616,7 +1617,7 @@ void def_sprite_hide(struct sprite *spr) {
 }
 
 void def_sprite_update(struct sprite *spr) {
-  DBG("spr = 0x%08X\n",spr);
+  DBG("spr = %p\n",spr);
    
   (*vid->sprite_hide) (spr);
   (*vid->sprite_show) (spr);
@@ -1653,7 +1654,7 @@ void def_sprite_protectarea(struct quad *in,struct sprite *from) {
    /* Base case: from is null */
    if (!from) return;
 
-   DBG("quad(%d %d %d %d)\n",in->x1,in->x1,in->y1,in->x2,in->y2);
+   DBG("quad(%d %d %d %d)\n",in->x1,in->y1,in->x2,in->y2);
 
    /* Load this all on the stack so we go backwards */
    def_sprite_protectarea(in,from->next);
@@ -1852,7 +1853,7 @@ g_error def_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
  * character.
  */
 struct fontglyph const *def_font_getglyph(struct fontdesc *fd, int ch) {
-  struct fontglyph *g, *start, *end;
+  const struct fontglyph *g, *start, *end;
 
   start = fd->font->glyphs;
   end = start + fd->font->numglyphs-1;

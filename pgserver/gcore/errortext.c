@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.33 2002/01/06 09:22:57 micahjd Exp $
+/* $Id: errortext.c,v 1.34 2002/01/16 19:47:25 lonetech Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -30,6 +30,7 @@
 #include <stdio.h>              /* For file IO */
 #include <ctype.h>
 #include <string.h>
+#include <stdlib.h>
 
 /* Maximum line size when reading error tables */
 #define LINESIZE     256
@@ -104,11 +105,7 @@ g_error errorload(const char *filename) {
    * memory block and read in the text */
 
   while (fgets(line,LINESIZE,f)) {
-#ifndef __NetBSD__
-    n = strtol(line,&p);           /* Error code */
-#else
     n = strtol(line,&p,0);         /* Error code */
-#endif
     if (!n || p==line)             /* skip blank lines or comments */
       continue;
     if (n>num_loaded_errors)       /* Store maximum error code */
@@ -132,11 +129,7 @@ g_error errorload(const char *filename) {
 
   /* Now read in the file for real */
   while (fgets(line,LINESIZE,f)) {
-#ifndef __NetBSD__
-    n = strtol(line,&p);           /* Error code */
-#else
     n = strtol(line,&p,0);         /* Error code */
-#endif
     if (!n || p==line)             /* skip blank lines or comments */
       continue;
     loaded_errors[n-1] = errorheap;/* Store string pointer */

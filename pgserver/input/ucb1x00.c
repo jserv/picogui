@@ -16,13 +16,12 @@
 #include <pgserver/input.h>
 #include <pgserver/widget.h>    /* for dispatch_pointing */
 #include <pgserver/pgnet.h>
+#include <pgserver/configfile.h>
 
 #define SAMPLE_SET_SZ		3	/* how many samples to average */
 #define JITTER_TOLERANCE	3	/* Pixel radius to ignore jitter */
  
 static const char *DEVICE_FILE_NAME = "/dev/ucb1x00-ts";
-static const char *_file_ = __FILE__;
-static const char *PG_TS_ENV_NAME = "PG_TS_CALIBRATION";
 
 /* file descriptor for touch panel */
 static int fd = -1;
@@ -105,7 +104,7 @@ int ucb1x00_fd_activate(int active_fd) {
   bytes_read = read(fd, (char *)&ts_data, sizeof(ts_data));
 
   /* No data yet - (shouldnt ever actaully call this)*/
-  if (bytes_read = 0) {
+  if (bytes_read == 0) {
 	  return 0;
   }
  
@@ -161,7 +160,7 @@ int ucb1x00_fd_activate(int active_fd) {
   }
 
 #ifdef DEBUG_EVENT
-  printf("(%d,%d:%d:%d) (%d, %d)\n", ts_data.x, ts_data.y, ts_data.pressure, cooked_x, cooked_y);
+  printf("(%d,%d:%d) (%d, %d)\n", ts_data.x, ts_data.y, ts_data.pressure, cooked_x, cooked_y);
 #endif	
 
   return 1;

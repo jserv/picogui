@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.18 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: fillstyle.c,v 1.19 2002/01/16 19:47:26 lonetech Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -146,7 +146,7 @@ g_error check_fillstyle(const unsigned char *fs, unsigned long fssize)
 	  return mkerror(PG_ERRT_BADPARAM,67);  /* Bad bytecode */
       }
     } else if(op & PGTH_OPSIMPLE_GET) {
-	if(op & (PGTH_OPSIMPLE_GET-1) >= FSSTACKSIZE)
+	if((op & (PGTH_OPSIMPLE_GET-1)) >= FSSTACKSIZE)
 	  return mkerror(PG_ERRT_BADPARAM,90);  /* Var out of range */
 	fsstkpos++;
     } else {	/* 1-byte set */
@@ -284,7 +284,7 @@ g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
 	 fsa = NEXTSHORT;
 	 p += 2;
 #ifdef DEBUG_THEME
-	 printf("Local theme lookup, property %d\n",fsa);
+	 printf("Local theme lookup, property %ld\n",fsa);
 #endif
 	 fsstack[fsstkpos++] = theme_lookup(state,fsa);
 	break;
@@ -456,7 +456,7 @@ g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
     /* trace */
     printf("FILLSTYLE --- Op: 0x%02X Stk:",op);
     for (fsa=0;fsa<fsstkpos;fsa++)
-      printf(" %d",fsstack[fsa]);
+      printf(" %ld",fsstack[fsa]);
     printf("\n"); 
 #endif
     

@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.46 2002/01/14 08:52:38 micahjd Exp $
+/* $Id: label.c,v 1.47 2002/01/16 19:47:27 lonetech Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -131,7 +131,6 @@ void label_remove(struct widget *self) {
 }
 
 g_error label_set(struct widget *self,int property, glob data) {
-  g_error e;
   struct fontdesc *fd;
   char *str;
 
@@ -218,8 +217,6 @@ g_error label_set(struct widget *self,int property, glob data) {
 }
 
 glob label_get(struct widget *self,int property) {
-  g_error e;
-
   switch (property) {
 
   case PG_WP_TRANSPARENT:

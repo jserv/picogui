@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.142 2002/01/15 10:17:04 micahjd Exp $
+/* $Id: widget.c,v 1.143 2002/01/16 19:47:27 lonetech Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -32,6 +32,11 @@
 #include <pgserver/widget.h>
 #include <pgserver/pgnet.h>
 #include <pgserver/hotspot.h>
+#include <pgserver/timer.h>
+#include <pgserver/configfile.h>
+#ifdef CONFIG_KEY_ALPHA
+#include <string.h>	/* strchr() */
+#endif
 
 #ifdef DEBUG_WIDGET
 #define DEBUG_FILE
@@ -159,10 +164,9 @@ g_error widget_create(struct widget **w, int type, struct divtree *dt, handle co
 }  // End of widget_create()
  
 g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **where, handle container, int owner) {
-  g_error e;
   struct divnode *div;
 
-  DBG("widget 0x%08X, container %d, owner %d\n",w,container,owner);
+  DBG("widget %p, container %d, owner %d\n",w,container,owner);
   
   //
   // Initial error checking
@@ -230,7 +234,7 @@ g_error widget_derive(struct widget **w,
 
   g_error e;
 
-  DBG("type %d, rship %d, parent 0x%08X, owner %d\n",type,rship,parent,owner);
+  DBG("type %d, rship %d, parent %p, owner %d\n",type,rship,parent,owner);
   
   switch (rship) {
 
@@ -286,7 +290,7 @@ void widget_remove(struct widget *w) {
   struct divnode *sub_end;  
   handle hw;
 
-  DBG("0x%08X\n",w);
+  DBG("%p\n",w);
 
   if (!in_shutdown) {
     /* Get us out of the hotkey list */
@@ -320,7 +324,7 @@ void widget_remove(struct widget *w) {
 	 widgets inside of it, we will need to insert the 'sub'
 	 list. This is a desperate attempt to not segfault. */
 
-      DBG("************** Relocating sub list. w=0x%08X\n",w);
+      DBG("************** Relocating sub list. w=%p\n",w);
       
       sub_end = *w->sub;
       while (sub_end->next) 
@@ -986,7 +990,7 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
    
 int db_x,db_y,db_h;
    
-g_error debug_bitmaps(void **pobj) {
+g_error debug_bitmaps(const void **pobj) {
    hwrbitmap bmp = (hwrbitmap) *pobj;
    s16 w,h;
    
@@ -1031,10 +1035,10 @@ void r_grop_dump(struct divnode *div) {
    
    if (!div) return;
    if (div->grop) {
-      printf("Divnode 0x%08X at (%d,%d,%d,%d): ",div,
+      printf("Divnode %p at (%d,%d,%d,%d): ",div,
 	     div->x,div->y,div->w,div->h);
       if (div->owner)
-	printf("Owned by widget 0x%08X, type %d\n",div->owner,div->owner->type);
+	printf("Owned by widget %p, type %d\n",div->owner,div->owner->type);
       else
 	printf("Unowned\n");
       
@@ -1067,8 +1071,8 @@ void r_div_dump(struct divnode *div, const char *label, int level) {
    printf(label);
    for (i=0;i<level;i++)
      printf("\t");
-   printf("Div 0x%08X: flags=0x%04X split=%d prefer=(%d,%d) child=(%d,%d) rect=(%d,%d,%d,%d)"
-	  " calc=(%d,%d,%d,%d) nextline=0x%08X\n",
+   printf("Div %p: flags=0x%04X split=%d prefer=(%d,%d) child=(%d,%d) rect=(%d,%d,%d,%d)"
+	  " calc=(%d,%d,%d,%d) nextline=%p\n",
 	  div,div->flags,div->split,div->pw,div->ph,
 	  div->cw,div->ch,
 	  div->x,div->y,div->w,div->h,
@@ -1372,7 +1376,7 @@ void resizewidget(struct widget *w) {
 }
    
 /* Iterator function used by resizeall() */
-g_error resizeall_iterate(void **p) {
+g_error resizeall_iterate(const void **p) {
    (*((struct widget *) (*p))->def->resize)((struct widget *) (*p));
    return success;
 }

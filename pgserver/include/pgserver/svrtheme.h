@@ -1,4 +1,4 @@
-/* $Id: svrtheme.h,v 1.8 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: svrtheme.h,v 1.9 2002/01/16 19:47:26 lonetech Exp $
  * 
  * svrtheme.h - functions and data structures for themes, used
  *              only in the server
@@ -55,7 +55,7 @@ struct pgmemtheme {
 struct pgmemtheme_prop {
   unsigned short id;         /* a PGTH_P_* constant */
   unsigned short loader;     /* Loader constant */
-  unsigned long  data;       /* Property data, already processed by the loader */
+  u32            data;       /* Property data, already processed by the loader */
 };
 
 /* The header for a theme object. See the theme constants section
@@ -121,7 +121,7 @@ int thobj_id_available(s16 id);
 /* Find a theme's id given its name. Returns nonzero if the object
  * was found sucessfully, and loads 'id' with its id.
  */
-int find_named_thobj(char *name, s16 *id);
+int find_named_thobj(const u8 *name, s16 *id);
 
 /* Given a theme object, returns the theme object parent's ID 
  */

@@ -1,4 +1,4 @@
-/* $Id: linear1.c,v 1.19 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: linear1.c,v 1.20 2002/01/16 19:47:26 lonetech Exp $
  *
  * Video Base Library:
  * linear1.c - For 1-bit packed pixel devices (most black and white displays)
@@ -114,7 +114,7 @@ void linear1_slab_stipple(hwrbitmap dest,s16 x,s16 y,s16 w,hwrcolor c) {
       *p |= c;
    }
    
-   if (remainder = (w&7)) {                /* Partial byte afterwards */
+   if ((remainder = (w&7))) {              /* Partial byte afterwards */
       mask = slabmask1[remainder];
       mask = (~mask) & stipple;
       *p &= ~mask;
@@ -162,7 +162,7 @@ void linear1_slab(hwrbitmap dest,s16 x,s16 y,s16 w,hwrcolor c,s16 lgop) {
    if (w<1)                                /* That it? */
      return;
    __memset(p,c,bw = (w>>3));              /* Full bytes */
-   if (remainder = (w&7)) {                /* Partial byte afterwards */
+   if ((remainder = (w&7))) {              /* Partial byte afterwards */
       p+=bw;
       mask = slabmask1[remainder];
       *p &= mask;

@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.42 2002/01/06 09:23:00 micahjd Exp $
+/* $Id: popup.c,v 1.43 2002/01/16 19:47:27 lonetech Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -71,7 +71,6 @@ void clip_popup(struct divnode *div) {
 /* We have a /special/ function to create a popup widget from scratch. */
 g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   g_error e;
-  int margin;
 
   /* Freeze the existing layer and make a new one */
   e = dts_push();

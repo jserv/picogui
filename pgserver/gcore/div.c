@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.68 2002/01/14 07:52:38 micahjd Exp $
+/* $Id: div.c,v 1.69 2002/01/16 19:47:25 lonetech Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -29,6 +29,7 @@
 
 #include <pgserver/divtree.h>
 #include <pgserver/widget.h>
+#include <pgserver/hotspot.h>
 
 /* Check flags for divnode-level scrolling, and modify the
  * divnode's size if necessary. We must do this before
@@ -645,7 +646,7 @@ void update(struct divnode *subtree,int show) {
   }
 
 #ifdef DEBUG_VIDEO
-  printf("****************** Update (sub: 0x%08X)\n",subtree);
+  printf("****************** Update (sub: %p)\n",subtree);
 #endif
 }
 
@@ -674,7 +675,7 @@ void r_dtupdate(struct divtree *dt) {
   
   if (dt->flags & DIVTREE_NEED_RECALC) {
 #ifdef DEBUG_VIDEO
-    printf("divnode_recalc\n",dt->head);
+    printf("divnode_recalc(%p)\n",dt->head);
 #endif
 
     /* Recalc, repeat if aborted */
@@ -1013,9 +1014,9 @@ struct divnode *r_divnode_findbranch(struct divnode *p,
     return branch;
 
   /* Traversing 'div' we change branches, traversing 'next' we don't */
-  if (x = r_divnode_findbranch(p->div,dest,p))
+  if ((x = r_divnode_findbranch(p->div,dest,p)))
     return x;
-  if (x = r_divnode_findbranch(p->next,dest,branch))
+  if ((x = r_divnode_findbranch(p->next,dest,branch)))
     return x;
 
   return NULL;
@@ -1041,9 +1042,9 @@ struct divnode **divnode_findpointer(struct divnode *tree,
   if (tree->next == dest)
     return &tree->next;
 
-  if (p = divnode_findpointer(tree->div,dest))
+  if ((p = divnode_findpointer(tree->div,dest)))
     return p;
-  if (p = divnode_findpointer(tree->next,dest))
+  if ((p = divnode_findpointer(tree->next,dest)))
     return p;
     
   return NULL;
@@ -1061,9 +1062,9 @@ struct divnode *divnode_findparent(struct divnode *tree,
   if (tree->div == dest || tree->next == dest)
     return tree;
 
-  if (p = divnode_findparent(tree->div,dest))
+  if ((p = divnode_findparent(tree->div,dest)))
     return p;
-  if (p = divnode_findparent(tree->next,dest))
+  if ((p = divnode_findparent(tree->next,dest)))
     return p;
     
   return NULL;

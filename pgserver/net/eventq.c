@@ -1,4 +1,4 @@
-/* $Id: eventq.c,v 1.16 2002/01/15 07:35:15 micahjd Exp $
+/* $Id: eventq.c,v 1.17 2002/01/16 19:47:26 lonetech Exp $
  *
  * eventq.c - This implements the post_event function that the widgets
  *            use to send events to the client.  It stores these in a
@@ -147,7 +147,7 @@ int check_event(int owner) {
 
   /* Find the connection buffer */
   cb = find_conbuf(owner);
-  if (!cb) return NULL;   /* Sanity check */
+  if (!cb) return 0;   /* Sanity check */
 
   /* The queue is empty? */
   if (cb->in == cb->out) 

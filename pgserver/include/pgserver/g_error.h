@@ -1,4 +1,4 @@
-/* $Id: g_error.h,v 1.13 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: g_error.h,v 1.14 2002/01/16 19:47:25 lonetech Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -51,6 +51,7 @@ typedef unsigned int g_error;
  * a called function, return it
  */
 #ifdef CONFIG_ERROR_TRACE
+#include <stdio.h>	/* printf */
 extern const char *errtrace_fmt;
 #define errorcheck           if (iserror(e)) {  \
                                printf(errtrace_fmt,__FUNCTION__,__FILE__,__LINE__); \

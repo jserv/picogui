@@ -1,4 +1,4 @@
-/* $Id: hotspot.c,v 1.16 2002/01/06 09:22:57 micahjd Exp $
+/* $Id: hotspot.c,v 1.17 2002/01/16 19:47:25 lonetech Exp $
  *
  * hotspot.c - This is an interface for managing hotspots.
  *             The divtree is scanned for hotspot divnodes.
@@ -239,7 +239,6 @@ void hotspot_graph(void) {
  */
 void hotspot_traverse(short direction) {
   struct hotspot *p;
-  s16 px,py;
 
   /* rebuild the graph */
   if (!hotspotlist) {
