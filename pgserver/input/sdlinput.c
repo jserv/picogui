@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.40 2002/09/28 06:25:05 micahjd Exp $
+/* $Id: sdlinput.c,v 1.41 2002/10/25 06:30:42 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -145,6 +145,7 @@ void sdlinput_poll(void) {
 	  /* Normal button */
 	  if (sdlinput_foldbuttons)
 	    evt.button.button = evt.button.button!=0;
+
 	  infilter_send_pointing(PG_TRIGGER_DOWN, pgx, pgy, 
 				 btnstate |= 1<<(evt.button.button-1), sdlinput_cursor);
 	}
@@ -152,7 +153,7 @@ void sdlinput_poll(void) {
 	
       case SDL_MOUSEBUTTONUP:      
 	/* Ignore up events for the scroll wheel if we get them */
-	if (evt.button.button == 3 || evt.button.button == 4)
+	if (evt.button.button == 4 || evt.button.button == 5)
 	  break;
 	if (sdlinput_foldbuttons)
 	  evt.button.button = evt.button.button!=0;

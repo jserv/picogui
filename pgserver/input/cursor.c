@@ -1,4 +1,4 @@
-/* $Id: cursor.c,v 1.6 2002/10/23 02:09:05 micahjd Exp $
+/* $Id: cursor.c,v 1.7 2002/10/25 06:30:42 micahjd Exp $
  *
  * cursor.c - Cursor abstraction and multiplexing layer 
  *
@@ -354,31 +354,45 @@ void r_cursor_widgetunder(struct cursor *crsr, struct divnode *div,int x,int y) 
 
   if (!div) return;
 
-  /* Check whether the cursor is in this divnode...
-   * this is made complex by scrolling, if it is in use.
+  /* If the cursor is outside this node, 
+   * ignore it and all children.
    */
-  if ( ((!((div->flags & DIVNODE_DIVSCROLL) && div->divscroll)) ||
-	( div->divscroll->calc.x<=x && div->divscroll->calc.y<=y &&
-	  (div->divscroll->calc.x+div->divscroll->calc.w)>x &&
-	  (div->divscroll->calc.y+div->divscroll->calc.h)>y )) &&
-       div->r.x<=x && div->r.y<=y && (div->r.x+div->r.w)>x && (div->r.y+div->r.h)>y) {
+  if ( (x < div->r.x) ||
+       (y < div->r.y) ||
+       (x > div->r.x + div->r.w - 1) ||
+       (y > div->r.y + div->r.h - 1) )
+    return;
 
-    /* The cursor is inside this divnode */
-    
-    /* If this divnode has an interactive widget as its owner, and it
-     * is visible, store it in crsr->under
-     */
-    if (div->owner && div->owner->trigger_mask && (div->grop || div->build))
-      crsr->ctx.div_under = div;
+  /* If the cursor is outside this node's scrolling
+   * container, ignore it and all its children. 
+   */
+  if ( (div->flags & DIVNODE_DIVSCROLL) &&
+       div->divscroll &&
+       ( (x < div->divscroll->r.x) ||
+	 (y < div->divscroll->r.y) ||
+	 (x > div->divscroll->r.x + div->divscroll->r.w - 1) ||
+	 (y > div->divscroll->r.y + div->divscroll->r.h - 1) ))
+    return;
 
+  printf("Cursor visiting div %p\n",div);
+  if (div->owner)
+    printf("Cursor visiting widget %p, type %d, trigmask 0x%08X, grop %p, build %p\n",
+	   div->owner,div->owner->type,div->owner->trigger_mask,div->grop,div->build);
 
-    /* Always store the deepest match in here */
-    crsr->ctx.deepest_div = div;
-
-    /* Check this divnode's children */
-    r_cursor_widgetunder(crsr,div->next,x,y);
-    r_cursor_widgetunder(crsr,div->div,x,y);
+  /* If this divnode has an interactive widget as its owner, and it
+   * is visible, store it in crsr->under
+   */
+  if (div->owner && div->owner->trigger_mask && (div->grop || div->build)) {
+    crsr->ctx.div_under = div;
+    printf("Cursor matching widget %p, type %d\n",div->owner,div->owner->type);
   }
+  
+  /* Always store the deepest match in here */
+  crsr->ctx.deepest_div = div;
+  
+  /* Check this divnode's children */
+  r_cursor_widgetunder(crsr,div->next,x,y);
+  r_cursor_widgetunder(crsr,div->div,x,y);
 }
 
 

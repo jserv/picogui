@@ -1,4 +1,4 @@
-/* $Id: hotspot.h,v 1.6 2002/07/03 22:03:29 micahjd Exp $
+/* $Id: hotspot.h,v 1.7 2002/10/25 06:30:42 micahjd Exp $
  *
  * pgserver/hotspot.h - This is an interface for managing hotspots.
  *                      The divtree is scanned for hotspot divnodes.
@@ -42,7 +42,7 @@
 #define HOTSPOT_NEXT  4   /* Tab and shift-tab */
 #define HOTSPOT_PREV  5
 
-#define HOTSPOTMAX    6
+#define HOTSPOTNUM    6
 
 struct hotspot {
   /* Position */
@@ -55,7 +55,7 @@ struct hotspot {
   struct divnode *div;
 
   /* Links for the hotspot graph, indexed by direction */
-  struct hotspot *graph[HOTSPOTMAX];
+  struct hotspot *graph[HOTSPOTNUM];
 
   /* Simple linked list including all hotspots */
   struct hotspot *next;

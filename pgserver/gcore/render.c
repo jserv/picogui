@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.46 2002/10/23 02:09:03 micahjd Exp $
+/* $Id: render.c,v 1.47 2002/10/25 06:30:41 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -50,7 +50,8 @@ void gropnode_rect_clip(struct groprender *r, struct gropnode *n);
 
 /****************************************************** grop_render */
 
-/* This renders a divnode's groplist to the screen
+/* Final calculations for the given divnode, and render
+ * its groplist to the screen
  *
  * Sets up a groprender structure based on the divnode's information,
  * performs pre-render housekeeping, processes flags, and renders each node
@@ -66,14 +67,14 @@ void grop_render(struct divnode *div, struct quad *clip) {
   /* Don't render if an app has exclusive display 
    * access, or we have nothing to render 
    */
-  if (display_owner || disable_output || !div->grop)
+  if (display_owner || disable_output || !div->owner)
     return;
 
   /* default render values */
   memset(&rend,0,sizeof(rend));
   rend.lgop = PG_LGOP_NONE;
-  rend.output = div->owner->dt->display;
   rend.hfont = res[PGRES_DEFAULT_FONT];
+  rend.output = div->owner->dt->display;
    
   /* Allow the video driver to override */
   if (!VID(grop_render_presetup_hook)(&div,&listp,&rend)) {

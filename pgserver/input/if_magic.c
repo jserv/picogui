@@ -1,4 +1,4 @@
-/* $Id: if_magic.c,v 1.8 2002/10/23 02:09:05 micahjd Exp $
+/* $Id: if_magic.c,v 1.9 2002/10/25 06:30:42 micahjd Exp $
  *
  * if_magic.c - Trap magic debug keys
  *
@@ -264,7 +264,7 @@ void hotspot_draw(struct hotspot *spot) {
 
   /* Draw arrows for all the directions in the graph
    */
-  for (i=0;i<=HOTSPOTMAX;i++)
+  for (i=0;i<HOTSPOTNUM;i++)
     if (spot->graph[i]) {
       r.color = VID(color_pgtohwr)(directiontab[i].c);
       n.type = PG_GROP_LINE;

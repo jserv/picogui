@@ -1,4 +1,4 @@
-/* $Id: if_pntr_dispatch.c,v 1.4 2002/10/02 21:05:21 micahjd Exp $
+/* $Id: if_pntr_dispatch.c,v 1.5 2002/10/25 06:30:42 micahjd Exp $
  *
  * if_pntr_dispatch.c - Dispatch mouse pointer events to widgets
  *
@@ -27,6 +27,7 @@
 
 #include <pgserver/common.h>
 #include <pgserver/input.h>
+#include <pgserver/widget.h>
 
 void infilter_pntr_dispatch_handler(struct infilter *self, u32 trigger, union trigparam *param) {
   struct widget *under;
