@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.79 2002/11/28 12:57:55 micahjd Exp $
+/* $Id: memtheme.c,v 1.80 2002/12/03 12:28:24 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -212,6 +212,17 @@ struct pgmemtheme_prop *find_prop(struct pgmemtheme_thobj *tho, u16 id) {
   return NULL;
 }
 
+#ifdef CONFIG_ANIMATION
+/* Use the specified value as the 'ticks' theme property instead of
+ * retrieving it with os_getticks(). This lets pgserver be used to generate
+ * non-realtime animation.
+ */
+u32 ticks_override;
+void pg_ticks_override(u32 ticks) {
+  ticks_override = ticks;
+}
+#endif
+
 /* Look for the given property, starting at 'object'
  * returns the property's 'data' member */
 u32 theme_lookup(u16 object, u16 property) {
@@ -288,8 +299,10 @@ u32 theme_lookup(u16 object, u16 property) {
   case PGTH_P_TIME_ON:          return 250;
   case PGTH_P_TIME_OFF:         return 125;
   case PGTH_P_TIME_DELAY:       return 500;
-  case PGTH_P_TICKS:            return os_getticks();
+#ifdef CONFIG_ANIMATION
+  case PGTH_P_TICKS:            return ticks_override ? ticks_override : os_getticks();
   case PGTH_P_RANDOM:           return rand();
+#endif
   case PGTH_P_CURSORBITMAP:     return res[PGRES_DEFAULT_CURSORBITMAP];
   case PGTH_P_CURSORBITMASK:    return res[PGRES_DEFAULT_CURSORBITMASK];
   case PGTH_P_CURSOR_WIDTH:     return 2;

@@ -1,4 +1,4 @@
-/* $Id: svrtheme.h,v 1.15 2002/11/19 13:16:11 micahjd Exp $
+/* $Id: svrtheme.h,v 1.16 2002/12/03 12:28:24 micahjd Exp $
  * 
  * svrtheme.h - functions and data structures for themes, used
  *              only in the server
@@ -139,6 +139,14 @@ int find_named_thobj(const struct pgstring *name, s16 *id);
 /* Given a theme object, returns the theme object parent's ID 
  */
 s16 thobj_parent(s16 id);
+
+#ifdef CONFIG_ANIMATION
+/* Use the specified value as the 'ticks' theme property instead of
+ * retrieving it with os_getticks(). This lets pgserver be used to generate
+ * non-realtime animation.
+ */
+void pg_ticks_override(u32 ticks);
+#endif
 
 #endif /* __SVRTHEME_H */
 
