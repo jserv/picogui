@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.35 2001/04/11 02:28:59 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.36 2001/04/14 22:33:13 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -851,8 +851,8 @@ void def_blit(struct stdbitmap *srcbit,int src_x,int src_y,
       /* Do a tiled blit */
       for (i=0,sx=src_x;i<w;i+=srcbit->w-sx,sx=0)
 	for (j=0,sy=src_y;j<h;j+=srcbit->h-sy,sy=0)
-	  VID(blit) (srcbit,sx,sy,dest_x+i,dest_y+j,
-		     min(srcbit->w-sx,w-i),min(srcbit->h-sy,h-j),lgop);
+	  def_blit(srcbit,sx,sy,dest_x+i,dest_y+j,
+		   min(srcbit->w-sx,w-i),min(srcbit->h-sy,h-j),lgop);
     
       return;
    }
