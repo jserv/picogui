@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.21 2000/12/17 05:53:49 micahjd Exp $
+/* $Id: video.c,v 1.22 2000/12/29 22:31:58 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -37,7 +37,6 @@
 struct vidlib *vid;
 struct vidlib vidlib_static;
 struct sprite *spritelist;
-unsigned char sprites_hidden;
 int upd_x;
 int upd_y;
 int upd_w;
@@ -105,8 +104,11 @@ g_error new_sprite(struct sprite **ps,int w,int h) {
   (*ps)->h = h;
   (*vid->bitmap_new)(&(*ps)->backbuffer,w,h);
   (*ps)->next = spritelist;
-
+  (*ps)->visible = 1;
+   
   spritelist = *ps;
+   
+  (*vid->sprite_show)(*ps);
 
   return sucess;
 }
@@ -114,6 +116,8 @@ g_error new_sprite(struct sprite **ps,int w,int h) {
 void free_sprite(struct sprite *s) {
   struct sprite *n;
 
+  (*vid->sprite_hide)(s);
+   
   /* Remove from the sprite list */
   if (s==spritelist)
     spritelist = s->next;
@@ -211,6 +215,30 @@ void add_updarea(int x,int y,int w,int h) {
     upd_w = w;
     upd_h = h;
   }
+}
+
+/* Update and reset the update rectangle */
+void realize_updareas(void) {
+   if (upd_w) {
+      if (upd_x<0) {
+	 upd_w += upd_x;
+	 upd_x = 0;
+      }
+      if (upd_y<0) {
+	 upd_h += upd_y;
+	 upd_y = 0;
+      }
+      if ((upd_x+upd_w)>vid->xres)
+	upd_w = vid->xres-upd_x;
+      if ((upd_y+upd_h)>vid->yres)
+	upd_h = vid->yres-upd_y;
+#ifdef DEBUG_VIDEO
+      /* Show update rectangles */
+      (*vid->frame)(upd_x,upd_y,upd_w,upd_h,(*vid->color_pgtohwr)(0xFF0000));
+#endif
+      (*vid->update)(upd_x,upd_y,upd_w,upd_h);
+      upd_x = upd_y = upd_w = upd_h = 0;
+   } 
 }
 
 /* The End */

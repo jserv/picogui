@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.10 2000/11/03 23:38:32 micahjd Exp $
+/* $Id: font.c,v 1.11 2000/12/29 22:31:58 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -58,7 +58,7 @@ int fontcmp(struct fontstyle_node *fs,char *name, int size, stylet flags);
  * clip to NULL
  */
 void outchar(struct fontdesc *fd,
-	     int *x, int *y,hwrcolor col,char c) {
+	     int *x, int *y,hwrcolor col,char c,struct cliprect *clip) {
   int i,j;
   int cel_w; /* Total width of this character cel */
   int glyph_w,glyph_h;
@@ -78,11 +78,11 @@ void outchar(struct fontdesc *fd,
     i=0;
     if (fd->skew) 
       i = fd->italicw;
-    (*vid->charblit)(glyph,(*x)+i,*y,glyph_w,glyph_h,fd->skew,col);
+    (*vid->charblit)(glyph,(*x)+i,*y,glyph_w,glyph_h,fd->skew,col,clip);
     
     /* bold */
     for (i++,j=0;j<fd->boldw;i++,j++)
-      (*vid->charblit)(glyph,(*x)+i,*y,glyph_w,glyph_h,fd->skew,col);
+      (*vid->charblit)(glyph,(*x)+i,*y,glyph_w,glyph_h,fd->skew,col,clip);
   }
   *x += cel_w;  
 }
@@ -109,7 +109,7 @@ void outchar_fake(struct fontdesc *fd,
  * This function does add the margin as specified by fd->margin.
 */
 void outtext(struct fontdesc *fd,
-	     int x,int y,hwrcolor col,char *txt) {
+	     int x,int y,hwrcolor col,char *txt,struct cliprect *clip) {
   int xbase;
   x += fd->margin;
   y += fd->margin;
@@ -123,14 +123,14 @@ void outtext(struct fontdesc *fd,
       x = xbase;
     }
     else
-      outchar(fd,&x,&y,col,*txt);
+      outchar(fd,&x,&y,col,*txt,clip);
     txt++;
   }
 }
 
 /* Like outtext, but print vertically. Origin is at bottom-left */
 void outtext_v(struct fontdesc *fd,
-	     int x,int y,hwrcolor col,char *txt) {
+	     int x,int y,hwrcolor col,char *txt,struct cliprect *clip) {
   int ybase;
   x += fd->margin;
   y -= fd->margin;
@@ -164,11 +164,11 @@ void outtext_v(struct fontdesc *fd,
 	i=0;
 	if (fd->skew) 
 	  i = fd->italicw;
-	(*vid->charblit_v)(glyph,x,y-i,glyph_w,glyph_h,fd->skew,col);
+	(*vid->charblit_v)(glyph,x,y-i,glyph_w,glyph_h,fd->skew,col,clip);
 	
 	/* bold */
 	for (i++,j=0;j<fd->boldw;i++,j++)
-	  (*vid->charblit_v)(glyph,x,y-i,glyph_w,glyph_h,fd->skew,col);
+	  (*vid->charblit_v)(glyph,x,y-i,glyph_w,glyph_h,fd->skew,col,clip);
       }
       y -= cel_w;  
     }

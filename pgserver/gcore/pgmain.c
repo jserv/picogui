@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.16 2000/12/17 05:53:49 micahjd Exp $
+/* $Id: pgmain.c,v 1.17 2000/12/29 22:31:58 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -28,6 +28,8 @@
  */
 
 #include <pgserver/all.h>
+
+#include <string.h>   /* For strdup() */
 
 #if defined(__WIN32__) || defined(WIN32)
 #define WINDOWS

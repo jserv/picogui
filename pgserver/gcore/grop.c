@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.27 2000/12/17 05:53:49 micahjd Exp $
+/* $Id: grop.c,v 1.28 2000/12/29 22:31:58 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -40,12 +40,17 @@ short int defaultgropflags;
 void grop_render(struct divnode *div) {
   struct gropnode *list;
   struct fontdesc *fd;
-  struct bitmap *bit;
-  int x,y,w,h,ydif,i,j,xo;
-  unsigned char attr;
+  hwrbitmap bit;
+  int x,y,w,h,ydif;
   unsigned char *str;
   int cx1,cx2,cy1,cy2;   /* Clipping */
-
+  int srcx,srcy;         /* Offset added to source bitmap,
+			    calculated from clipping */
+  int ox,oy,ow,oh;       /* Copy of x,y,w,h before clipping */
+  int type;
+  struct cliprect cr;
+  unsigned int incflag;
+   
   list = div->grop;
 
   /* Normally the clipping is set to the divnode */
@@ -54,6 +59,14 @@ void grop_render(struct divnode *div) {
   cy1 = div->y;
   cy2 = div->y+div->h-1;
 
+  /* If we're doing an incremental redraw, look for the PG_GROPF_INCREMENTAL
+   * flag set, otherwise make sure it's unset */
+  if ((div->flags & DIVNODE_INCREMENTAL) && 
+      !(div->flags & DIVNODE_NEED_REDRAW))
+     incflag = PG_GROPF_INCREMENTAL;
+   else
+     incflag = 0;
+   
   if ((div->flags & DIVNODE_SCROLL_ONLY) && 
       !(div->flags & DIVNODE_NEED_REDRAW)) {
 
@@ -93,11 +106,27 @@ void grop_render(struct divnode *div) {
   div->otx = div->tx;
   div->oty = div->ty;
 
+  /* Package up that clipping rectangle */
+  cr.x1 = cx1;
+  cr.x2 = cx2;
+  cr.y1 = cy1;
+  cr.y2 = cy2;
+   
+  /* Get rid of any pesky sprites in the area. If this isn't incremental
+   * go ahead and protect the whole divnode */
+  if (!incflag) {
+     (*vid->sprite_protectarea)(&cr,spritelist);
+     
+     /* "dirty" this region of the screen so the blits notice it */
+     add_updarea(cx1,cy1,cx2-cx1+1,cy2-cy1+1);
+  }
+   
   while (list) {
-    if ((list->w <= 0 || list->h <= 0) && list->type!=PG_GROP_LINE)
-      /* There is no spoon */
-      goto skip_this_node;
-
+     
+    /* Handle incremental updates */
+    if ((list->flags & PG_GROPF_INCREMENTAL) != incflag)
+       goto skip_this_node;
+     
     x = list->x+div->x;
     y = list->y+div->y;
     w = list->w;
@@ -108,41 +137,178 @@ void grop_render(struct divnode *div) {
       y += div->ty;
     }
 
+    ox = x; oy = y; ow = w; oh = h;
+
+    /* Save the type locally so we can change it if needed */
+    type = list->type;
+     
     /* Clip - clipping serves two purposes:
      *   1. security, an app/widget stays in its allocated space
      *   2. scrolling needs to be able to update any arbitrary
      *      slice of an area
      */
-    switch (list->type) {
-      /* Default clipping just truncates */
-    default:
-      if (x<cx1) {
-	w += cx1 - x;
-	x = cx1;
-      }
-      if (y<cy1) {
-	h += cy1 - y;
-	y = cy1;
-      }
-      if ((x+w-1)>cx2)
-	w += 1-x-w+cx2;
-      if ((y+h-1)>cy2)
-	h += 1-y-h+cy2;
+    srcx = srcy = 0;
+    switch (type) {
+      
+     case PG_GROP_LINE:
+
+       /* Is this line just completely out there? */
+       if ( ((x<cx1) && ((x+w)<cx1)) ||
+	   ((x>cx2) && ((x+w)>cx2)) ||
+	   ((y<cy1) && ((y+h)<cy1)) ||
+	   ((y>cy2) && ((y+h)>cy2)) )
+	 goto skip_this_node;
+       
+       if (w && h) {        /* Not horizontal or vertical */
+	  int t,u;
+
+	  /* A real line - clip, taking slope into account */
+
+	  if (x<cx1) {               /* Point 1 left of clip */
+	     t = cx1 - x;
+	     u = t*h/w;
+	     y += u;
+	     h -= u;
+	     w -= t;
+	     x = cx1;
+	  }
+	  
+	  else if (x>cx2) {          /* Point 1 right of clip */
+	     t = x - cx2;
+	     u = t*h/w;
+	     y -= u;
+	     h += u;
+	     w += t;
+	     x = cx2;
+	  }
+	  
+	  if (y<cy1) {               /* Point 1 above clip */
+	     t = cy1 - y;
+	     if (!h) goto skip_this_node;   /* Avoid divide by zero */
+	     u = t*w/h;
+	     x += u;
+	     w -= u;
+	     h -= t;
+	     y = cy1;
+	  }
+
+	  else if (y>cy2) {          /* Point 1 below clip */
+	     t = y - cy2;
+	     if (!h) goto skip_this_node;   /* Avoid divide by zero */
+	     u = t*w/h;
+	     x -= u;
+	     w += u;
+	     h += t;
+	     y = cy2;
+	  }
+
+	  if ((x+w)<cx1) {           /* Point 2 left of clip */
+	     t = cx1 - x - w;
+	     if (!w) goto skip_this_node;   /* Avoid divide by zero */
+	     h += t*h/w;
+	     w = cx1-x;
+	  }
+
+	  else if ((x+w)>cx2) {      /* Point 2 right of clip */
+	     t = x + w - cx2;
+	     if (!w) goto skip_this_node;   /* Avoid divide by zero */
+	     h -= t*h/w;
+	     w = cx2-x;
+	  }
+
+	  if ((y+h)<cy1) {           /* Point 2 above clip */
+	     t = cy1 - y - h;
+	     if (!h) goto skip_this_node;   /* Avoid divide by zero */
+	     w += t*w/h;
+	     h = cy1-y;
+	  }
+
+	  else if ((y+h)>cy2) {      /* Point 2 below clip */
+	     t = y + h - cy2;
+	     if (!h) goto skip_this_node;   /* Avoid divide by zero */
+	     w -= t*w/h;
+	     h = cy2-y;
+	  }
+
+	  /* If the line's endpoints are no longer within the clipping
+	   * rectangle, it means the line never intersected it in the
+	   * first place */
+	  
+	  if ( (x<cx1) || (x>cx2) || (y<cy1) || (y>cy2) ||
+	       ((x+w)<cx1) || ((x+w)>cx2) || ((y+h)<cy1) || ((y+h)>cy2) )
+	    goto skip_this_node;
+	  
+      	  break;
+       }
+       
+       else {
+	  /* It's horizontal or vertical. Do a little prep, then
+	   * let it -fall through- to the normal clipper */
+
+	  if (w) {
+	     h=1;   
+	     if (w<0) {
+		x += w;
+		w = 1-w;
+	     }
+	     type = PG_GROP_SLAB;
+	  }
+	  
+	  else {
+	     w=1;
+	     if (h<0) {
+		y += h;
+		h = 1-h;
+	     }
+	     type = PG_GROP_BAR;
+	  }
+
+	  /* ... and fall through to default */
+       }
+       
+       /* Default clipping just truncates */
+     default:
+       if (x<cx1) {
+	  w -= srcx = cx1 - x;
+	  x = cx1;
+       }
+       if (y<cy1) {
+	  h -= srcy = cy1 - y;
+	  y = cy1;
+       }
+       if ((x+w-1)>cx2)
+	 w = cx2-x+1;
+       if ((y+h-1)>cy2)
+	 h = cy2-y+1;
     }
 
     /* Anything to do? */
-    if (!w || !h)
+    if ((w <= 0 || h <= 0) && type!=PG_GROP_LINE)
       goto skip_this_node;
-
-    /* "dirty" this region of the screen so the blits notice it */
-    add_updarea(x,y,w,h);
 
     #ifdef DEBUG_VIDEO
     /* Illustrate the grop extents */
     (*vid->frame)(x,y,w,h,(*vid->color_pgtohwr)(0x00FF00));
     #endif
 
-    switch (list->type) {
+    /* If this is incremental, do the sprite protection and double-buffer
+     * update rectangle things for each gropnode because the updated area
+     * is usually small compared to the whole
+     */
+    if (incflag) {
+       struct cliprect lcr;
+       lcr.x1 = x;
+       lcr.y1 = y;
+       lcr.x2 = x+w-1;
+       lcr.y2 = y+h-1;
+       
+       (*vid->sprite_protectarea)(&lcr,spritelist);
+       
+       /* "dirty" this region of the screen so the blits notice it */
+       add_updarea(x,y,w,h);
+    }
+     
+    switch (type) {
     case PG_GROP_PIXEL:
       (*vid->pixel)(x,y,list->param[0]);
       break;
@@ -156,8 +322,18 @@ void grop_render(struct divnode *div) {
       (*vid->dim)(x,y,w,h);
       break;
     case PG_GROP_FRAME:
-      (*vid->frame)(x,y,w,h,list->param[0]);
-      break;
+       
+       /* Bogacious clipping cruft for frames */
+       if (oy>=cy1 && oy<=cy2 ) 
+	 (*vid->slab)(x,y,w,list->param[0]);
+       if ((oy+oh-1)>=cy1 && (oy+oh-1)<=cy2)
+	 (*vid->slab)(x,y+h-1,w,list->param[0]);
+       if (ox>=cx1 && ox<=cx2)
+	 (*vid->bar)(x,y+1,h-2,list->param[0]);
+       if ((ox+ow-1)>=cx1 && (ox+ow-1)<=cx2)
+	 (*vid->bar)(x+w-1,y+1,h-2,list->param[0]);
+       break;
+       
     case PG_GROP_SLAB:
       (*vid->slab)(x,y,w,list->param[0]);
       break;
@@ -169,58 +345,79 @@ void grop_render(struct divnode *div) {
       if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,
 			   list->param[0])) || !str) break;
       if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
-			   list->param[1])) || !fd) break;
-      if (list->type == PG_GROP_TEXT)
-	outtext(fd,x,y,list->param[2],str);
-      else
-	outtext_v(fd,x,y,list->param[2],str);
+			   list->param[1])) || !fd) break;	
+      if (type == PG_GROP_TEXT)
+	 outtext(fd,x,y,list->param[2],str,&cr);
+       else
+	 outtext_v(fd,x,y,list->param[2],str,&cr);
       break;
 
-      /* The workhorse of the terminal widget. 4 params: buffer handle, font handle,
-	 buffer width, and buffer offset */
+      /* The workhorse of the terminal widget. 4 params: buffer handle,
+       * font handle, buffer width, and buffer offset */
     case PG_GROP_TEXTGRID:
-      if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,
-			   list->param[0])) || !str) break;
-      if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
-			   list->param[1])) || !fd) break;
-      for (;list->param[3] && *str;list->param[3]--) str++;
-      i = 0;
-      xo = x;
-      while ((*str) && (*(str+1))) {
-	if (i==list->param[2]) {
-	  y += fd->font->h;
-	  i = 0;
-	  x = xo;
-	}
+       if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,
+			    list->param[0])) || !str) break;
+       if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
+			    list->param[1])) || !fd) break;
+       
+	 {
+	    int buffersz,bufferw,bufferh;
+	    int celw,celh,charw,charh,offset;
+	    int i;
+	    unsigned char attr;
 
-	attr = *(str++);
-	(*vid->rect)(x,y,fd->font->vwtab['W'],fd->font->h,textcolors[attr>>4]);
-	if (fd->font->trtab[*str] >= 0)
-	  (*vid->charblit)((((unsigned char *)fd->font->bitmaps)+fd->font->trtab[*str]),
-			   x,y,fd->font->vwtab[*str],fd->font->h,0,textcolors[attr & 0x0F]);
-	x += fd->font->vwtab['W'];
-	str++; i++;
-      }	
-      break;      
+	    /* Should be fine for fixed width fonts
+	     * and pseudo-acceptable for others? */
+	    celw      = fd->font->vwtab['W'];  
+	    celh      = fd->font->h;
 
+	    bufferw   = list->param[2];
+	    buffersz  = strlen(str) - list->param[3];
+	    str      += list->param[3];
+	    bufferh   = (buffersz / bufferw) >> 1;
+	    if (buffersz<=0) return;
+	    
+	    charw     = w/celw;
+	    charh     = h/celh;
+	    offset    = (bufferw-charw)<<1;
+	    if (offset<0) {
+	       offset = 0;
+	       charw = bufferw;
+	    }
+	    if (charh>bufferh)
+	      charh = bufferh;
+	    ox = x;
+
+	    /* Draw the background */
+	    (*vid->rect)(x,y,w,h,textcolors[0]);
+	    
+	    for (;charh;charh--,y+=celh,str+=offset)
+	      for (x=ox,i=charw;i;i--,x+=celw,str++) {
+		 attr = *(str++);
+		 if (attr & 0xF0)
+		   (*vid->rect)(x,y,celw,celh,textcolors[attr>>4]);
+		 (*vid->charblit)((((unsigned char *)fd->font->bitmaps)+
+				   fd->font->trtab[*str]),
+				  x,y,fd->font->vwtab[*str],
+				  celh,0,textcolors[attr & 0x0F],NULL);
+	      }
+	    
+	 }
+
+       break;      
+       
     case PG_GROP_BITMAP:
       if (list->param[1]==PG_LGOP_NULL) break;
       if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
 			   list->param[0])) || !bit) break;
-
-      /* Did they really mean a tiled blit instead? */
-      (*vid->bitmap_getsize)(bit,&i,&j);
-      if (w>i || h>j)
-	(*vid->tileblit)(bit,list->param[2],list->param[3],i,j,x,y,w,h);
-      else
-	(*vid->blit)(bit,list->param[2],list->param[3],x,y,w,h,list->param[1]);
+      (*vid->blit)(bit,list->param[2]+srcx,list->param[3]+srcy,x,y,w,h,list->param[1]);
       break;
     case PG_GROP_TILEBITMAP:
       if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
 			   list->param[0])) || !bit) break;
       (*vid->tileblit)(bit,
-		       list->param[1],
-		       list->param[2],
+		       list->param[1]+srcx,
+		       list->param[2]+srcy,
 		       list->param[3],
 		       list->param[4],
 		       x,y,w,h);

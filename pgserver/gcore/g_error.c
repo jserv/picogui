@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.11 2000/12/17 05:53:49 micahjd Exp $
+/* $Id: g_error.c,v 1.12 2000/12/29 22:31:58 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -78,13 +78,17 @@ void guru(const char *fmt, ...) {
   hwrbitmap icon;
   char msgbuf[256];
   va_list ap;
-
+  struct cliprect screenclip;
+   
   if (!vid) return;
 
   /* Setup */
   (*vid->clear)();
   rdhandle((void**)&df,PG_TYPE_FONTDESC,-1,defaultfont);
-
+  screenclip.x1 = screenclip.y1 = 0;
+  screenclip.x2 = vid->xres-1;
+  screenclip.y2 = vid->yres-1;
+   
   /* Icon (if this fails, no big deal) */
   if (!iserror((*vid->bitmap_loadxbm)(&icon,deadcomp_bits,
 				      deadcomp_width,deadcomp_height,
@@ -99,7 +103,8 @@ void guru(const char *fmt, ...) {
   vsnprintf(msgbuf,256,fmt,ap);
   va_end(ap);
 
-  outtext(df,20+deadcomp_width,10,(*vid->color_pgtohwr)(0xFFFFFF),msgbuf);
+  outtext(df,20+deadcomp_width,10,(*vid->color_pgtohwr)(0xFFFFFF),msgbuf,
+	  &screenclip);
   (*vid->update)(0,0,vid->xres,vid->yres);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.31 2000/12/17 05:53:49 micahjd Exp $
+/* $Id: div.c,v 1.32 2000/12/29 22:31:58 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -209,8 +209,9 @@ void divnode_recalc(struct divnode *n) {
 void divnode_redraw(struct divnode *n,int all) {
    if (!n) return;
 
-   if (all || (n->flags & DIVNODE_NEED_REDRAW) || 
-       (n->flags & DIVNODE_SCROLL_ONLY)) {
+   if (all || (n->flags & (DIVNODE_NEED_REDRAW | 
+			   DIVNODE_SCROLL_ONLY | 
+			   DIVNODE_INCREMENTAL) )) { 
      grop_render(n);
      if (n->flags & DIVNODE_PROPAGATE_REDRAW)
        if (n->next)
@@ -218,7 +219,7 @@ void divnode_redraw(struct divnode *n,int all) {
      if (n->div)
        n->div->flags |= DIVNODE_NEED_REDRAW | DIVNODE_PROPAGATE_REDRAW;
      n->flags &= ~(DIVNODE_NEED_REDRAW | DIVNODE_PROPAGATE_REDRAW |
-		   DIVNODE_SCROLL_ONLY);
+		   DIVNODE_SCROLL_ONLY | DIVNODE_INCREMENTAL);
    }
 
    divnode_redraw(n->next,all);
@@ -274,9 +275,6 @@ void r_divnode_free(struct divnode *n) {
 }
 
 void update(struct divnode *subtree,int show) {
-  /* FIXME: Only hide sprites when really necessary! */
-  (*vid->sprite_hideall)();
-
   if (subtree) {
     /* Subtree update */
     
@@ -293,14 +291,7 @@ void update(struct divnode *subtree,int show) {
     (*vid->sprite_showall)();
     
     /* NOW we update the hardware */
-    if (upd_w) {
-#ifdef DEBUG_VIDEO
-      /* Show update rectangles */
-      (*vid->frame)(upd_x,upd_y,upd_w,upd_h,(*vid->color_pgtohwr)(0xFF0000));
-#endif
-      (*vid->update)(upd_x,upd_y,upd_w,upd_h);
-      upd_x = upd_y = upd_w = upd_h = 0;
-    }    
+    realize_updareas();
   }
 
 #ifdef DEBUG_VIDEO
