@@ -67,13 +67,11 @@ class PackageVersion(object):
         return os.sep.join(str(self).split("/"))
 
     def getLocalPath(self, ctx):
-        """Get the local path for this package. This links the source and binary directories."""
-        local = ctx.paths['packages'].Dir(self.getPathName())
-        self.getBinaryPath(ctx).link(local, False)
-        return local
+        """Get the local path for this package."""
+        return ctx.paths['packages'].Dir(self.getPathName())
 
     def getBinaryPath(self, ctx):
-        """Get the binary path for this package, optionally ensuring that it exists"""
+        """Get the binary path for this package"""
         return ctx.paths['bin'].Dir(str(self.package.getHostPlatform(ctx))).Dir(self.getPathName())
 
     def update(self, ctx):
@@ -140,7 +138,7 @@ class PackageVersion(object):
         if performMount:
             ctx.config.dirMount(ctx.task("Mounting config files"), self.getLocalPath(ctx))
         import PGBuild.Build
-        PGBuild.Build.loadScriptDir(ctx.task("Loading SCons scripts"), self.getLocalPath(ctx))
+        self.loadScript(ctx.task("Loading SCons scripts"))
 
     def removeLocalCopy(self, ctx):
         """Deletes the local copy if there is one"""
@@ -157,6 +155,38 @@ class PackageVersion(object):
                 ctx.progress.report("removed", "empty directory %s" % dirPath)
         except OSError:
             pass
+
+    def loadScript(self, ctx):
+        """Run the SConscripts in this package, if any"""
+        import os
+        import SCons.Node
+        import SCons.Script
+        import PGBuild.Build
+        
+        # Make sure the binary path exists, and link it to the source path
+        sourceDir = self.getLocalPath(ctx)
+        binDir = self.getBinaryPath(ctx)
+        try:
+            os.makedirs(binDir.abspath)
+        except OSError:
+            pass
+        binDir.link(sourceDir, False)
+
+        # What a silly naming convention.. if this is actually set to
+        # the directory with the SConscript in it, things break.
+        ctx.fs.set_SConstruct_dir(ctx.paths['root'])
+        
+        # Now try to find a suitably named script to run
+        for name in PGBuild.Build.scriptNames:
+            fObject = sourceDir.File(name)
+            if fObject.exists():
+                ctx.progress.showTaskHeading()
+                # Once we find it, give SCons the path that the script would
+                # be at in the build directory, so that it builds in there
+                # rather than in the local tree.
+                SCons.Script.SConscript.SConscript(binDir.File(name))
+                ctx.progress.report("loaded", fObject)
+                break
 
         
 class Package(object):

@@ -104,29 +104,6 @@ class BuildTask(SCons.Taskmaster.Task):
         self.do_failed(status)
 
 
-def loadScript(ctx, name):
-    """Load one SCons script. Note that this doesn't set the current
-       SCons directory- that is handled in loadScriptDir()
-       """
-    import SCons.Script
-    ctx.progress.showTaskHeading()
-    SCons.Script.SConscript.SConscript(name)
-    ctx.progress.report("loaded", name)
-    
-
-def loadScriptDir(ctx, dir):
-    """Look for a script in the given directory and run it if it's found"""
-    import os
-    import SCons.Node
-    ctx.fs.chdir(dir)
-    ctx.fs.set_SConstruct_dir(dir)
-    for name in scriptNames:
-        fObject = dir.File(name)
-        if fObject.exists():
-            loadScript(ctx, fObject)
-            break
-
-
 def Environment(ctx):
     """Factory to create an SCons environment from a PGBuild Baton"""
     import SCons.Environment

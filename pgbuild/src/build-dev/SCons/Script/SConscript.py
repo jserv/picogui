@@ -255,6 +255,7 @@ def SConscript(*ls, **kw):
                     # where the SConstruct and SConscript files might be
                     # in different Repositories.  For now, cross that
                     # bridge when someone comes to it.
+                    print f
                     ldir = default_fs.Dir(f.dir.get_path(sd))
                     try:
                         default_fs.chdir(ldir, change_os_dir=sconscript_chdir)
@@ -335,7 +336,7 @@ def Default(*targets):
             default_targets.append(t)
         else:
             default_targets.extend(SCons.Node.arg2nodes(t,
-                                         SCons.Node.FS.default_fs.Entry))
+                                         SCons.Node.FS.default_fs.getcwd().Entry))
 
 def Local(*targets):
     for targ in targets:
