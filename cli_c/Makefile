@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.15 2001/01/19 06:36:59 micahjd Exp $
+# $Id: Makefile,v 1.16 2001/01/24 03:08:20 micahjd Exp $
 #
 # C client library (libpgui) makefile
 #
@@ -47,11 +47,13 @@ HDR := include/*.h include/picogui/*.h
 
 CFLAGS := -Iinclude
 
+#LDFLAGS := -lefence
+
 ######## Flags and Tools
 
 DEMOCFLAGS := $(CFLAGS) -O3
 CFLAGS := $(CFLAGS) -O3 -g -c
-LDFLAGS := -rpath $(RPATH)
+LDFLAGS := $(LDFLAGS) -rpath $(RPATH)
 
 LIBTOOL := libtool
 GCC := gcc

@@ -12,6 +12,11 @@ int drawStuff(short event, pghandle from, long param) {
 
    /* Turn off the animation while we're busy */
    pgSetIdle(0,NULL);
+
+   /* If we're rolled up, don't bother starting the animation again
+    * or even rebuilding the groplist. Save memory and CPU. */
+   if (!PG_W || !PG_H)
+      return;
    
    /* Save new width and height for later */
    width  = PG_W;

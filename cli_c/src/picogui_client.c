@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.41 2001/01/19 06:36:59 micahjd Exp $
+/* $Id: picogui_client.c,v 1.42 2001/01/24 03:08:20 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -46,6 +46,7 @@
 #include <picogui/network.h>    /* Network interface to the server */
 
 //#define DEBUG
+#define DEBUG_EVT
 
 /* Default server */
 #define PG_REQUEST_SERVER       "127.0.0.1"
@@ -80,6 +81,7 @@ struct _pghandlernode *_pghandlerlist;  /* List of pgBind event handlers */
 
 struct timeval _pgidle_period;  /* Period before calling idle handler */
 pgidlehandler _pgidle_handler;  /* Idle handler */
+unsigned char _pgidle_lock;     /* Already in idle handler? */
 char *_pg_appname;              /* Name of the app's binary */
 pgselecthandler _pgselect_handler;   /* Normally a pointer to select() */
 
@@ -118,7 +120,10 @@ struct {
 /* IO wrappers.  On error, they return nonzero and call clienterr() */
 int _pg_send(void *data,unsigned long datasize);
 int _pg_recv(void *data,unsigned long datasize);
-int _pg_recvtimout(void *data,unsigned long datasize);
+
+/* Wait for a new event, recieves the type code. This is used 
+ * when an idle handler or other interruption is needed */
+int _pg_recvtimeout(short *rsptype);
 
 /* Malloc wrapper. Reports errors */
 void *_pg_malloc(size_t size);
@@ -163,20 +168,22 @@ int _pg_recv(void *data,unsigned long datasize) {
   return 0;
 }
 
-/* Timout receive.. 
- * This is used to implement idle handlers while waiting for another
- * packet. If no data is recieved within the timeout it runs the idle
- * handler, puts this app back on the event waiting list, and tries again
- */
-int _pg_recvtimeout(void *data,unsigned long datasize) {
+/* Wait for a new event, recieves the type code. This is used 
+ * when an idle handler or other interruption is needed */
+int _pg_recvtimeout(short *rsptype) {
   struct timeval tv;
   fd_set readfds;
   struct pgrequest waitreq;
+  struct pgrequest unwaitreq;
+  char cruft[sizeof(struct pgresponse_ret) - sizeof(short)];	/* Unused return packet */
    
   /* Set up a packet to send to put us back on the waiting list */
   waitreq.type = htons(PGREQ_WAIT);
-  waitreq.id = ++_pgrequestid;
   waitreq.size = 0;
+   
+  /* Set up a packet to send to take us off the waiting list */
+  unwaitreq.type = htons(PGREQ_PING);
+  unwaitreq.size = 0;
    
   while (1) {
      FD_ZERO(&readfds);
@@ -190,10 +197,30 @@ int _pg_recvtimeout(void *data,unsigned long datasize) {
        continue;
 
      /* Well, now we have something! */
+
+     if (FD_ISSET(_pgsockfd, &readfds))   /* Got data from server */
+	return _pg_recv(rsptype,sizeof(short));
+	
+     /* We'll need these */
+     waitreq.id = ++_pgrequestid;
+     unwaitreq.id = ++_pgrequestid;
+
+     /* No event yet, but now we have a race condition. We need to tell the server
+      * to take the client off the waiting list, but it's possible that before the command
+      * reaches the server another event will already be on its way. Like any other request,
+      * PGREQ_PING takes us off the waiting list. Wait for a return code: if it's an event,
+      * Go ahead and return it. (There will still be a return packet on it's way, but
+      * we skip that) If it's a return packet, ignore it and go on with the idle handler */
+
+     /* FIXME!!!! This doesn't work yet!! */
      
-     if (FD_ISSET(_pgsockfd, &readfds))    /* Got data from server */
-	return _pg_recv(data,datasize);
-     
+     _pg_send(&unwaitreq,sizeof(unwaitreq));
+     if (_pg_recv(rsptype,sizeof(short)))
+       return 1;
+     if (rsptype == htons(PG_RESPONSE_EVENT))
+       return 0;
+     _pg_recv(cruft,sizeof(cruft));
+      
      /* At this point either it was a client-defined fd or a timeout.
 	Either way we need to kickstart the event loop. */
 
@@ -301,11 +328,21 @@ void _pg_getresponse(void) {
    * all it's time waiting (and the only safe place to interrupt)
    * so handle the idling here.
    */
-  if (( (_pgidle_period.tv_sec + _pgidle_period.tv_usec) ||
-	(_pgselect_handler != &select) ) ?
-      _pg_recvtimeout(&_pg_return.type,sizeof(_pg_return.type)) :
-      _pg_recv(&_pg_return.type,sizeof(_pg_return.type)))
-     return;
+  
+  if ( ((_pgidle_period.tv_sec + _pgidle_period.tv_usec)&&!_pgidle_lock) ||
+	(_pgselect_handler != &select) ) {
+     
+     /* Use the interruptable wait */
+     if (_pg_recvtimeout(&_pg_return.type))
+       return;
+  }
+  else {
+     /* Normal recieve */
+     
+     if (_pg_recv(&_pg_return.type,sizeof(_pg_return.type)))
+       return;
+  }
+
   _pg_return.type = ntohs(_pg_return.type);
 
   switch (_pg_return.type) {
@@ -366,17 +403,22 @@ void _pg_getresponse(void) {
       _pg_return.e.event.from = ntohl(pg_ev.from);      
       _pg_return.e.event.param = ntohl(pg_ev.param);      
 
+#ifdef DEBUG_EVT
+     printf("Event is %d in PG_RESPONSE_EVENT case\n",
+	    _pg_return.e.event.event);
+#endif
+
       /* If this is a data event, get the data */
       if (_pg_return.e.event.event == PG_WE_DATA) {
 
-	if (!(_pg_return.e.event.data = 
-	      _pg_malloc(_pg_return.e.event.param+1)))
-	  return;
-	if (_pg_recv(_pg_return.e.event.data,_pg_return.e.event.param))
-	  return;
-	
-      /* Add a null terminator */
-      ((char *)_pg_return.e.event.data)[_pg_return.e.event.param] = 0;
+	 if (!(_pg_return.e.event.data = 
+	       _pg_malloc(_pg_return.e.event.param+1)))
+	   return;
+	 if (_pg_recv(_pg_return.e.event.data,_pg_return.e.event.param))
+	   return;
+	 
+	 /* Add a null terminator */
+	 ((char *)_pg_return.e.event.data)[_pg_return.e.event.param] = 0;
       }
     }
     break;
@@ -416,6 +458,12 @@ void _pg_getresponse(void) {
     */
     printf("PicoGUI - incorrect packet ID (%i -> %i)\n",_pgrequestid,rsp_id);
   }
+#endif
+
+#ifdef DEBUG_EVT
+   if (_pg_return.type == PG_RESPONSE_EVENT) 
+     printf("Event is %d after case\n",
+	    _pg_return.e.event.event);
 #endif
 }
 
@@ -463,15 +511,14 @@ char * _pg_dynformat(const char *fmt,va_list ap) {
 
 /* Idle handler */
 void _pg_idle(void) {
-  static unsigned char idle_lock = 0;
 
-  if (idle_lock) return;
-  idle_lock++;
+   if (_pgidle_lock) return;
+  _pgidle_lock++;
 
   if (_pgidle_handler)
     (*_pgidle_handler)();
 
-  idle_lock = 0;
+  _pgidle_lock = 0;
 }
 
 /******************* API functions */
@@ -516,7 +563,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: picogui_client.c,v 1.41 2001/01/19 06:36:59 micahjd Exp $\n");
+	fprintf(stderr,"$Id: picogui_client.c,v 1.42 2001/01/24 03:08:20 micahjd Exp $\n");
 	exit(1);
       }
       
@@ -692,14 +739,21 @@ void pgEventLoop(void) {
     pgUpdate();
 
     /* Wait for a new event */
-    _pg_add_request(PGREQ_WAIT,NULL,0);
-    pgFlushRequests();
-    
+    do {
+       _pg_add_request(PGREQ_WAIT,NULL,0);
+       pgFlushRequests();
+    } while (_pg_return.type != PG_RESPONSE_EVENT);
+     
     /* Save the event (a handler might call pgFlushRequests and overwrite it) */
     event = _pg_return.e.event.event;
     from = _pg_return.e.event.from;
     param = _pg_return.e.event.param;
     data = _pg_return.e.event.data;
+
+#ifdef DEBUG_EVT
+     printf("Recieved event %d from 0x%08X with param 0x%08X\n",
+	    event,from,param);
+#endif
 
     /* Search the handler list, executing the applicable ones */
     n = _pghandlerlist;
@@ -738,8 +792,10 @@ pghandle pgGetEvent(unsigned short *event, unsigned long *param) {
   pgUpdate();
 
   /* Wait for a new event */
-  _pg_add_request(PGREQ_WAIT,NULL,0);
-  pgFlushRequests();
+  do {
+     _pg_add_request(PGREQ_WAIT,NULL,0);
+     pgFlushRequests();
+  } while (_pg_return.type != PG_RESPONSE_EVENT);
   if (event) *event = _pg_return.e.event.event;
   if (param) *param = _pg_return.e.event.param;
 
