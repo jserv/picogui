@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.28 2000/08/02 05:22:49 micahjd Exp $
+/* $Id: widget.c,v 1.29 2000/08/03 04:32:46 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -142,6 +142,12 @@ void widget_remove(struct widget *w) {
     if (w==capture) capture = NULL;
     if (w==kbdfocus) kbdfocus = NULL;
 
+#ifdef DEBUG
+    printf("widget_remove():  w      = 0x%08X\n",w);
+    printf("widget_remove():  w->sub = 0x%08X\n",w->sub);
+    printf("widget_remove(): *w->sub = 0x%08X\n",*w->sub);
+#endif
+
     /* Remove inner widgets if it can be done safely
        (only remove if they have handles) */
     while (w->sub && *w->sub) {    
@@ -149,6 +155,12 @@ void widget_remove(struct widget *w) {
 	handle_free(-1,hw);
       else
 	break;
+
+#ifdef DEBUG
+    printf("widget_remove(): loop  w      = 0x%08X\n",w);
+    printf("widget_remove(): loop  w->sub = 0x%08X\n",w->sub);
+    printf("widget_remove(): loop  *w->sub = 0x%08X\n",*w->sub);
+#endif
     }
     
     if (w->sub && *w->sub) {    

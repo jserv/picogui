@@ -1,4 +1,4 @@
-/* $Id: theme.c,v 1.9 2000/08/03 02:24:02 micahjd Exp $
+/* $Id: theme.c,v 1.10 2000/08/03 04:32:46 micahjd Exp $
  *
  * theme.h - This defines the structures and functions for themes,
  * parameters defining the way widgets are drawn that are reconfigurable
@@ -97,6 +97,15 @@ void applystate(struct gropnode *n,struct element *el,int state) {
 void themeset(int element,int state,int param,unsigned long value) {
   struct element *el;
   if ((element<0) || (element>=E_NUM)) return;
+
+  /* With STATE_ALL, call ourselves for all states */
+  if (state == STATE_ALL) {
+    int i;
+    for (i=0;i<STATE_NUM;i++)
+      themeset(element,i,param,value);
+    return;
+  }
+
   el = &current_theme[element];
   switch (param) {
   case EPARAM_WIDTH:

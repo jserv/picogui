@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.12 2000/08/03 02:24:02 micahjd Exp $
+/* $Id: dispatch.c,v 1.13 2000/08/03 04:32:46 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -616,6 +616,7 @@ g_error rqh_getstring(int owner, struct uipkt_request *req,
 g_error rqh_restoretheme(int owner, struct uipkt_request *req,
 			 void *data, unsigned long *ret, int *fatal) {
   restoretheme();
+  return sucess;
 }
 
 /* The End */

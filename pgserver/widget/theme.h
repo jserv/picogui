@@ -1,4 +1,4 @@
-/* $Id: theme.h,v 1.11 2000/08/03 02:24:02 micahjd Exp $
+/* $Id: theme.h,v 1.12 2000/08/03 04:32:46 micahjd Exp $
  *
  * theme.h - This defines the structures and functions for themes,
  * parameters defining the way widgets are drawn that are reconfigurable
@@ -45,6 +45,7 @@
 #define ELEM_GRADIENT   2   /* Uses c1,c2,angle,translucent */
 
 /* Element states */
+#define STATE_ALL       255
 #define STATE_NORMAL    0
 #define STATE_HILIGHT   1
 #define STATE_ACTIVATE  2
