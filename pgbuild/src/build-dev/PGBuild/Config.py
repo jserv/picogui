@@ -79,10 +79,18 @@ def mergeElements(root):
         mergeElements(child)
 
 def stripElements(root):
-    """Recursively trim whitespace from text elements"""
+    """Recursively trim whitespace from text elements.
+       We have to be careful not to nuke whitespace-only text
+       nodes that are separating two other text elements.
+       """
     for child in root.childNodes:
         if child.nodeType == child.TEXT_NODE:
             child.data = child.data.strip()
+            if len(child.data) == 0 and child.previousSibling and \
+                   child.previousSibling.nodeType == child.TEXT_NODE and \
+                   child.nextSibling and child.nextSibling.nodeType == child.TEXT_NODE:
+                child.previousSibling.data += " " + child.nextSibling.data.strip()
+                child.nextSibling.data = ""
         else:
             stripElements(child)
 

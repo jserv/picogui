@@ -96,9 +96,9 @@
       <description>
         <summary>The source code for PGBuild itself.</summary>
         <detail>
-          This is included in the initial download of pgbuild for obvious reasons, but it is
-          also a package, so it can be automatically updated just like
-          any other package.
+          This is included in the initial download of PGBuild for obvious reasons, but it is
+          also a package. This makes it easy to keep PGBuild up to date without any special
+          cases.
         </detail>
       </description>
       <require/>
