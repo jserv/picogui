@@ -1,4 +1,4 @@
-/* $Id: demo.c,v 1.5 2000/09/21 17:34:37 pney Exp $
+/* $Id: demo.c,v 1.6 2000/09/22 01:07:44 micahjd Exp $
  *
  * demo.c -   source file for testing PicoGUI
  *
@@ -33,7 +33,6 @@ int main(int argc, char *argv[])
   pghandle tb,app;
   pghandle w1,w2;
   pghandle t1,t2,t3,t4;
-  char str[500];
   
   pgInit(argc,argv);
 
@@ -45,21 +44,18 @@ int main(int argc, char *argv[])
 		0);
 */
 
-  strcpy(str,"Mobile internet appliances\n");
-  strcat(str,"will likely be the smart merge\n");
-  strcat(str,"of computer power, multimedia,\n");
-  strcat(str,"Internet, wireless telecommunication\n");
-  strcat(str,"technology and fashion; this is the\n");
-  strcat(str,"reason why this market is to be\n");
-  strcat(str,"considered as one of the major fast\n");
-  strcat(str,"growing markets at the beginning\n");
-  strcat(str,"of this millennium.\n");
   t1 = pgNewString(" 1 ");
   t2 = pgNewString(" 2 ");
   t3 = pgNewString(" 3 ");
-  t4 = pgNewString(str); 
-
-
+  t4 = pgNewString("Mobile internet appliances\n"
+		   "will likely be the smart merge\n"
+		   "of computer power, multimedia,\n"
+		   "Internet, wireless telecommunication\n"
+		   "technology and fashion; this is the\n"
+		   "reason why this market is to be\n"
+		   "considered as one of the major fast\n"
+		   "growing markets at the beginning\n"
+		   "of this millennium.\n");
 
   tb = pgRegisterApp(PG_APP_TOOLBAR,"Demo app",0);
 
