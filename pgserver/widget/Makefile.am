@@ -35,7 +35,10 @@ EXTRA_libwidget_a_SOURCES = \
     textbox_paragraph.c \
     pgstr_textbuffers.c \
     field.c \
-    panel.c
+    panel.c \
+    textedit_frontend.c \
+    textedit_logical.c \
+    textedit_llist.c
 
 libwidget_a_LIBADD       = $(WIDGET:%.c=%.o)
 libwidget_a_DEPENDENCIES = $(WIDGET:%.c=%.o)

@@ -26,7 +26,9 @@ noinst_HEADERS = \
 	svrwt.h		\
 	pgstring.h	\
 	paragraph.h     \
-	terminal.h
+	terminal.h      \
+	textedit.h	\
+	llist.h
 
 CONFIG_CLEAN_FILES = autoconf.h
 

@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.156 2002/10/02 09:00:26 micahjd Exp $
+/* $Id: constants.h,v 1.157 2002/10/05 11:21:05 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -372,9 +372,10 @@ typedef unsigned long pghandle;
 #define PGTH_O_PANELBAR_H_HILIGHT    76   //!< Hilighted horizontal panelbar
 #define PGTH_O_PANELBAR_V_ON         77   //!< Clicked vertical panelbar
 #define PGTH_O_PANELBAR_V_HILIGHT    78   //!< Hilighted vertical panelbar
+#define PGTH_O_TEXTEDIT              79   //!< textedit widget
 
 //! If you add a themeobject, be sure to increment this and add an inheritance entry in theme/memtheme.c
-#define PGTH_ONUM                    79
+#define PGTH_ONUM                    80
 
 //! Using a theme object named "custom" makes the server automatically allocate a free theme object at load time
 #define PGTH_O_CUSTOM                0x7FFF
@@ -887,7 +888,8 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_DIALOGBOX       22    /* A popup with a standard title */
 #define PG_WIDGET_MESSAGEDIALOG   23    /* A popup that displays a message and gets a response */
 #define PG_WIDGET_SCROLLBOX       24    /* A box widget including scroll bars */
-#define PG_WIDGETMAX              24    /* For error checking */
+#define PG_WIDGET_TEXTEDIT        25    /* Simple text editor */
+#define PG_WIDGETMAX              25    /* For error checking */
 
 /* Widget properties */
 #define PG_WP_SIZE        1
@@ -955,6 +957,8 @@ typedef unsigned long pghandle;
 #define PG_WP_SPACING         55  /* Override the normal spacing between buttons */
 #define PG_WP_MINIMUM         56  /* Used by the panelbar widget to set minimum size */
 #define PG_WP_MULTILINE       57  /* Turn this off on the textbox widget to get a single line textbox */
+#define PG_WP_SELECTION       58  /* Selected text in the textedit widget */
+#define PG_WP_READONLY        59
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0

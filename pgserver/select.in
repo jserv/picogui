@@ -34,6 +34,9 @@ add_if_true  textbox_document.c    $CONFIG_WIDGET_TEXTBOX
 add_if_true  textbox_paragraph.c   $CONFIG_WIDGET_TEXTBOX
 add_if_true  pgstr_textbuffers.c   $CONFIG_WIDGET_TEXTBOX
 add_if_true  field.c               $CONFIG_WIDGET_TEXTBOX
+add_if_true  textedit_frontend.c   $CONFIG_WIDGET_TEXTEDIT
+add_if_true  textedit_llist.c      $CONFIG_WIDGET_TEXTEDIT
+add_if_true  textedit_logical.c    $CONFIG_WIDGET_TEXTEDIT
 
 close_section
 

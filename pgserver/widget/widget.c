@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.197 2002/10/04 07:42:42 micahjd Exp $
+/* $Id: widget.c,v 1.198 2002/10/05 11:21:05 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -111,6 +111,12 @@ DEF_WIDGET_TABLE(1,simplemenu)           /* Subclasses popup */
 DEF_WIDGET_TABLE(1,dialogbox)            /* Subclasses popup */
 DEF_STATICWIDGET_TABLE(2,messagedialog)  /* Subclasses dialogbox, popup */
 DEF_WIDGET_TABLE(0,scrollbox)
+
+#ifdef CONFIG_WIDGET_TEXTEDIT
+DEF_WIDGET_TABLE(0,textedit)
+#else
+DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,108))
+#endif
 };
 
 /* To save space, instead of checking whether the divtree is valid every time

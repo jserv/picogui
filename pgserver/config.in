@@ -60,6 +60,7 @@ bool 'Virtual terminal debugging'       DEBUG_VT
 bool 'Video driver debugging'           DEBUG_VIDEODRIVER
 bool 'Trace pgstring memory management' DEBUG_PGSTRING_MEM
 bool 'Textbox widget debugging'         DEBUG_TEXTBOX
+bool 'Textedit widget debugging'        DEBUG_TEXTEDIT
 
 comment 'Other options'
 bool 'Electric Fence malloc debugging'  CONFIG_EFENCE
@@ -231,6 +232,7 @@ comment 'Widget Options'
 bool 'Terminal widget - VT102 emulator'       CONFIG_WIDGET_TERMINAL
 bool 'Canvas widget - for arbitrary graphics' CONFIG_WIDGET_CANVAS
 bool 'Textbox widget - text editing with formatting' CONFIG_WIDGET_TEXTBOX
+bool 'Textedit widget - simple text editor'   CONFIG_WIDGET_TEXTEDIT
 bool 'Disable panelbar on app panels'         CONFIG_NOPANELBAR
 bool 'Support for solid panel dragging'       CONFIG_DRAGSOLID
 int  'Maximum number of zombie gropnodes'     CONFIG_MAX_ZOMBIEGROPS

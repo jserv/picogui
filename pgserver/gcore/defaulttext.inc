@@ -113,7 +113,7 @@
 /* 105 */ "Exclusive resource access has been disabled",
 /* 106 */ "Fatal signal received, quick & dirty shutdown complete",
 /* 107 */ "Error opening TTY (try setting the video-fbdev.ttydev config variable)",
-/* 108 */ NULL,
+/* 108 */ "Support for the textedit widget was not compiled in to this server",
 /* 109 */ "Can't open a theme file specified for automatic loading",
 /* 110 */ "Can't open the specified palette file",
 /* 111 */ "Widget template has no header",
