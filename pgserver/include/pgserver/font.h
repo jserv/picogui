@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.12 2001/10/17 22:48:58 micahjd Exp $
+/* $Id: font.h,v 1.13 2001/10/26 10:14:08 micahjd Exp $
  *
  * font.h - structures for representing fonts
  *
@@ -89,7 +89,7 @@ struct fontglyph {
   s16 dwidth; /* Delta X between this char and the next */
   s16 w,h;    /* Width and height of the glyph bitmap   */
   s16 x,y;    /* X and Y displacement for the glyph     */
-  u16 bitmap; /* Offset to bitmap data                  */
+  u32 bitmap; /* Offset to bitmap data                  */
 };
 
 /* An individual bitmapped font */
@@ -111,7 +111,7 @@ struct font {
  * requested by the fontdesc.
  */
 void outchar(hwrbitmap dest, struct fontdesc *fd,
-	     s16 *x, s16 *y,hwrcolor col,unsigned char c,struct quad *clip,
+	     s16 *x, s16 *y,hwrcolor col,int c,struct quad *clip,
 	     s16 lgop, s16 angle);
 
 /* These functions interpret the '\n' character, but no other control
@@ -127,6 +127,12 @@ void sizetext(struct fontdesc *fd, s16 *w, s16 *h, char *txt);
  * Any of the FSTYLE_* flags can be used to indicate that attribute
  * is required. */
 g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags);
+
+/* Decode one character from the specified UTF-8 string, 
+ * advancing the pointer.
+ * If it decodes an invalid character, it returns -1
+ */
+int decode_utf8(u8 **str);
 
 #endif /* __H_FONT */
 

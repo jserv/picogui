@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.32 2001/10/17 22:48:58 micahjd Exp $
+/* $Id: font.c,v 1.33 2001/10/26 10:14:07 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -56,9 +56,7 @@
 int fontcmp(struct fontstyle_node *fs,char *name, int size, stylet flags);
 
 /* Small helper function used in outchar_fake and outchar */
-struct fontglyph const *font_getglyph(struct fontdesc *fd, u8 c) {
-  s16 ch = c;
-
+struct fontglyph const *font_getglyph(struct fontdesc *fd, int ch) {
   ch -= fd->font->beginglyph;
   if (ch < 0 || ch >= fd->font->numglyphs)
     ch = fd->font->defaultglyph - fd->font->beginglyph;
@@ -67,7 +65,7 @@ struct fontglyph const *font_getglyph(struct fontdesc *fd, u8 c) {
 
 /* Outputs a character. It also updates (*x,*y) as a cursor position. */
 void outchar(hwrbitmap dest, struct fontdesc *fd,
-	     s16 *x, s16 *y,hwrcolor col,unsigned char c,struct quad *clip,
+	     s16 *x, s16 *y,hwrcolor col,int c,struct quad *clip,
 	     s16 lgop, s16 angle) {
    int i,j;
    s16 cel_w; /* Total width of this character cel */
@@ -200,7 +198,7 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
 
 /* A version of outchar that doesn't make any
    output. Used for sizetext */
-void outchar_fake(struct fontdesc *fd, s16 *x,unsigned char c) {
+void outchar_fake(struct fontdesc *fd, s16 *x,int  c) {
   *x += font_getglyph(fd,c)->dwidth + fd->boldw + fd->interchar_space;
 }
 
@@ -210,7 +208,7 @@ void outchar_fake(struct fontdesc *fd, s16 *x,unsigned char c) {
 void outtext(hwrbitmap dest, struct fontdesc *fd,
 	     s16 x,s16 y,hwrcolor col,char *txt,struct quad *clip,
 	     s16 lgop, s16 angle) {
-   int b;
+   int b,ch;
    
    switch (angle) {
       
@@ -240,8 +238,8 @@ void outtext(hwrbitmap dest, struct fontdesc *fd,
             
    }
       
-   while (*txt) {
-      if (*txt=='\n')
+   while (ch = decode_utf8(&txt)) {
+      if (ch=='\n')
 	switch (angle) {
 	 
 	 case 0:
@@ -266,8 +264,7 @@ void outtext(hwrbitmap dest, struct fontdesc *fd,
 	   
 	}
       else
-	outchar(dest,fd,&x,&y,col,(unsigned char) *txt,clip,lgop,angle);
-      txt++;
+	outchar(dest,fd,&x,&y,col,ch,clip,lgop,angle);
    }
 }
 
@@ -276,7 +273,7 @@ void outtext(hwrbitmap dest, struct fontdesc *fd,
  * and the margin as specified by fd->margin
  */
 void sizetext(struct fontdesc *fd, s16 *w, s16 *h, char *txt) {
-  int o_w=0;
+  int o_w=0, ch;
    
   if (!(fd && txt && w && h)) return;
 
@@ -290,16 +287,15 @@ void sizetext(struct fontdesc *fd, s16 *w, s16 *h, char *txt) {
   *w = fd->margin << 1;
   *h = (*w) + fd->font->h + fd->interline_space;
 
-  while (*txt) {
-    if ((*txt)=='\n') {
+  while (ch = decode_utf8(&txt)) {
+    if (ch=='\n') {
       *h += fd->font->h + fd->interline_space;
       if ((*w)>o_w) o_w = *w;
       *w = fd->margin << 1;
     }
     else {
-      outchar_fake(fd,w,*txt);
+      outchar_fake(fd,w,ch);
     }
-    txt++;
   }
   if ((*w)<o_w) *w = o_w;
   *w -= fd->interchar_space;
@@ -432,6 +428,74 @@ int fontcmp(struct fontstyle_node *fs,char *name, int size, stylet flags) {
     result |= FCMP_CHARSET;
 
   return result;
+}
+
+/* Decode one character from the specified UTF-8 string, 
+ * advancing the pointer 
+ *
+ * For a description of the UTF-8 standard, see:
+ * http://www.cl.cam.ac.uk/~mgk25/unicode.html
+ */
+int decode_utf8(u8 **str) {
+  int ch = 0;
+  u8 b;
+  int length,i;
+
+  /* Skip past any partial characters */
+  while (((**str) & 0xC0) == 0x80)
+    (*str)++;
+
+  /* The first character determines the sequence's length */
+  ch = *((*str)++);
+
+  if (!(ch & 0x80))
+    /* 1-byte code, return it as-is */
+    return ch;
+  else if (!(ch & 0x20)) {
+    length = 2;
+    ch &= 0x1F;
+  }
+  else if (!(ch & 0x10)) {
+    length = 3;
+    ch &= 0x0F;
+  }
+  else if (!(ch & 0x08)) {
+    length = 4;
+    ch &= 0x07;
+  }
+  else if (!(ch & 0x04)) {
+    length = 5;
+    ch &= 0x03;
+  }
+  else if (!(ch & 0x02)) {
+    length = 6;
+    ch &= 0x01;
+  }
+  else
+    /* Invalid code */
+    return -1;
+
+  /* Decode each byte of the sequence */
+  for (i=1;i<length;i++) {
+    b = *((*str)++);
+    if (!b)
+      return 0;
+    if ((b & 0xC0) != 0x80) {
+      (*str)--;
+      return -1;
+    }
+    ch <<= 6;
+    ch |= b & 0x3F;
+  }  
+
+  /* Make sure it is a unique representation */
+  if (ch <= 0x7F && length > 1) return -1;
+  if (ch <= 0x7FF && length > 2) return -1;
+  if (ch <= 0xFFFF && length > 3) return -1;
+  if (ch <= 0x1FFFFF && length > 4) return -1;
+  if (ch <= 0x3FFFFFF && length > 5) return -1;
+
+  return ch;
 }
 
 /* The End */
