@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.22 2002/02/02 23:52:21 micahjd Exp $
+/* $Id: videotest.c,v 1.23 2002/02/03 12:30:18 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -284,7 +284,7 @@ void testpat_text(void) {
 	 y+=fd->font->h;
 	 x = 0;
       }
-      if (y+fd->font->h>vid->yres)
+      if (y+(fd->font->h<<1)>vid->yres)
 	return;
       if (c>'~')
 	c = ' ';
@@ -294,9 +294,26 @@ void testpat_text(void) {
 
 /************ alpha blit test pattern */
 
-void testpat_alpha() {
-  hwrbitmap test;
+/* This is a PNG file with alpha channel */
+#include "alphatest.png.h"
 
+hwrbitmap alphatest_bitmap = NULL;  
+
+void testpat_alpha() {
+  /* Load it the first time */
+  if (!alphatest_bitmap) {
+    if (iserror(vid->bitmap_load(&alphatest_bitmap, alpha_png_bits, alpha_png_len))) {
+      printf("Alpha channel test requires PNG loader\n");
+    }
+    VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,
+	       VID(color_pgtohwr)(0xFFFFFF),PG_LGOP_NONE);
+  }
+  
+  VID(blit) (vid->display,
+	     (vid->lxres - alpha_png_width)>>1,
+	     (vid->lyres - alpha_png_height)>>1,
+	     alpha_png_width,alpha_png_height,alphatest_bitmap,
+	     0,0,PG_LGOP_ALPHA);
 }
 
 
@@ -310,6 +327,7 @@ void videotest_help(void) {
 	"\t4\tSlab alignment test pattern\n"
 	"\t5\tStippled rectangle test pattern\n"
 	"\t6\tText test pattern\n"
+	"\t7\tAlpha channel test\n"
 	"\t99\tAll tests\n"
 	"\tnegative value: repeat test in a loop\n"
 	);
@@ -348,6 +366,14 @@ default:
 }
 
 
+void videotest_cleanup(void) {
+  /* If we had to create the alpha test bitmap, clean that up now */
+  if (alphatest_bitmap) {
+    VID(bitmap_free)(alphatest_bitmap);
+    alphatest_bitmap = NULL;
+  }
+}
+
 void videotest_run(s16 number) {
   int loop, cycle, nr;
   const int delay = 1;
@@ -364,7 +390,7 @@ void videotest_run(s16 number) {
       if (sleep(delay))    /* If sleep is interrupted, exit -- micah */
 	 exit(0);
       if(cycle) {
-	if(++nr>4) {
+	if(++nr>NUM_PATTERNS) {
 	  if(!loop) break;
 	  else nr = 1;
 	}
@@ -372,6 +398,8 @@ void videotest_run(s16 number) {
     }
     else break;
   }
+
+  videotest_cleanup();
 }
 
 /************ Benchmarking */
@@ -414,6 +442,7 @@ void videotest_benchmark(void) {
       printf("%s\n",videotest_time_one(i,0));
    }
 
+   videotest_cleanup();
    printf("\nDone.\n");
 }
       
