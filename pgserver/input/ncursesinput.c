@@ -1,4 +1,4 @@
-/* $Id: ncursesinput.c,v 1.10 2001/01/20 22:00:30 micahjd Exp $
+/* $Id: ncursesinput.c,v 1.11 2001/02/13 04:09:14 micahjd Exp $
  *
  * ncursesinput.h - input driver for ncurses
  * 
@@ -131,8 +131,8 @@ int ncursesinput_fd_activate(int fd) {
 	 /* Generate our own coordinates and fit it within the
 	  * video driver's screen resolution */
 	 if (vid->xres>200) {    /* For stupid scale hack */
-	    evt.x = pointer->x + (evt.dx << SCALEHACK);
-	    evt.y = pointer->y + (evt.dy << SCALEHACK);
+	    evt.x = cursor->x + (evt.dx << SCALEHACK);
+	    evt.y = cursor->y + (evt.dy << SCALEHACK);
 	    gpm_mx = vid->xres;
 	    gpm_my = vid->yres;
 	    Gpm_FitEvent(&evt);
