@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.16 2000/08/28 02:06:09 micahjd Exp $
+/* $Id: bitmap.c,v 1.17 2000/08/28 03:30:43 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -72,6 +72,7 @@ g_error bitmap_install(struct widget *self) {
   e = g_malloc(&self->data,sizeof(struct bitmapdata));
   errorcheck;
   memset(self->data,0,sizeof(struct bitmapdata));
+  DATA->transparent = 1;
 
   e = newdiv(&self->in,self);
   errorcheck;

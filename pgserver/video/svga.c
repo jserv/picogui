@@ -1,4 +1,4 @@
-/* $Id: svga.c,v 1.2 2000/08/27 09:04:54 micahjd Exp $
+/* $Id: svga.c,v 1.3 2000/08/28 03:30:43 micahjd Exp $
  *
  * svga.c - video driver for (S)VGA cards, via vgagl and svgalib
  *
@@ -29,6 +29,8 @@
 #include <vga.h>
 #include <vgagl.h>
 
+//#define DOUBLEBUFFER
+
 GraphicsContext *svga_virtual,*svga_physical;
 
 /* Scanline buffer for LGOP blitting */
@@ -44,16 +46,20 @@ g_error svga_init(int xres,int yres,int bpp,unsigned long flags) {
      PicoGUI compliant...
   */
 
-#define VGA_MODE G320x200x256
+#define VGA_MODE G640x480x16M
 
   vga_init();
   vga_setmode(VGA_MODE);
   gl_setcontextvga(VGA_MODE);
   svga_physical = gl_allocatecontext();
   gl_getcontext(svga_physical);
+
+#ifdef DOUBLEBUFFER
   gl_setcontextvgavirtual(VGA_MODE);
   svga_virtual = gl_allocatecontext();
   gl_getcontext(svga_virtual);
+#endif
+
   gl_setrgbpalette();
 
 
@@ -85,7 +91,9 @@ hwrcolor svga_getpixel(int x,int y) {
 }
 
 void svga_update(void) {
+#ifdef DOUBLEBUFFER
   gl_copyscreen(svga_physical);
+#endif
 }
 
 void svga_clip_set(int x1,int y1,int x2,int y2) {

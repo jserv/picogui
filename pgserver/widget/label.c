@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.18 2000/08/28 02:06:09 micahjd Exp $
+/* $Id: label.c,v 1.19 2000/08/28 03:30:43 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -77,6 +77,7 @@ g_error label_install(struct widget *self) {
   e = g_malloc(&self->data,sizeof(struct labeldata));
   errorcheck;
   memset(self->data,0,sizeof(struct labeldata));
+  DATA->transparent = 1;
 
   e = newdiv(&self->in,self);
   errorcheck;
