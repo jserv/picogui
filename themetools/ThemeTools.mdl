@@ -7,6 +7,8 @@ multicompile = 1
 
 
 def prepare (module, platform, project):
-    sequence ("../configure --prefix=%s" % module.path ['dfl'])
+    sequence ("rm -f config.status",
+              "test ! -f ../autogen.sh || (cd .. ; ./autogen.sh || true)",
+              "../configure --prefix=%s" % module.path ['dfl'])
     return
 
