@@ -1,4 +1,4 @@
-/* $Id: eventbroker.c,v 1.2 2001/11/12 00:59:25 bauermeister Exp $
+/* $Id: eventbroker.c,v 1.3 2001/11/12 09:57:51 bauermeister Exp $
  *
  * eventbroker.c - input driver to manage driver messages
  *
@@ -44,8 +44,8 @@
 #include <rm_client.h> /* to access the PocketBee ResourceManager */
 
 
-#define LOCAL_DEBUG 0
-#define LOCAL_TRACE 0
+#define LOCAL_DEBUG 1
+#define LOCAL_TRACE 1
 
 /* ------------------------------------------------------------------------- */
 
@@ -85,7 +85,8 @@ void rm_event_callback (RMStateEvent ev)
     /* The RM said the system went up: reset the timers, so that we won't
      * get a PG_POWER_SLEEP too soon !
      */
-    DPRINTF("Got RM_ST_CPU_RUNNING event from the RM\n"); 
+    DPRINTF("Got RM_ST_CPU_RUNNING event from the RM "
+	    "=> calling inactivity_reset()\n"); 
     inactivity_reset();
     break;
 
@@ -100,11 +101,30 @@ void rm_event_callback (RMStateEvent ev)
 /*                      PicoGUI input events handling                        */
 /* ------------------------------------------------------------------------- */
 
-/* Well, for now we are no real input driver, just a one-day-so-called 
- * 'generic driver', so we provide nothing like:
- *    static void eventbroker_fd_init(int *, fd_set *, struct timeval *)
- *    int eventbroker_fd_activate(int)
- */
+static int eventbroker_fd_activate(int fd)
+{
+  int index;
+
+  /* is the fd mine ? */
+  if(fd!=rm_fd)
+    return 0;
+
+  /* run the RM event pump by 1 step */
+  rm_loop(1);
+
+  return 1;
+}
+
+
+static void eventbroker_fd_init(int *n, fd_set *readfds,
+				struct timeval *timeout)
+{
+  /* register the RM's fd in the set of fd pgserver will watch */
+  if ((*n)<(rm_fd+1))
+    *n = rm_fd+1;
+  if (rm_fd>0)
+    FD_SET(rm_fd, readfds);
+}
 
 /* ------------------------------------------------------------------------- */
 /*                      PicoGUI driver messages handling                     */
@@ -239,8 +259,8 @@ g_error eventbroker_regfunc(struct inlib *i) {
   TRACEF(">>> eventbroker_regfunc\n");
   i->init = &eventbroker_init;
   i->close = &eventbroker_close;
-  i->fd_activate = 0;
-  i->fd_init = 0;
+  i->fd_activate = &eventbroker_fd_activate;
+  i->fd_init = &eventbroker_fd_init;
   i->message = &eventbroker_message;
   return sucess;
 }
