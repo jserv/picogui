@@ -1,4 +1,4 @@
-/* $Id: g_error.h,v 1.8 2001/03/03 01:44:26 micahjd Exp $
+/* $Id: g_error.h,v 1.9 2001/07/03 10:13:32 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -50,8 +50,14 @@ typedef unsigned int g_error;
 /* It's so common, let's make it a macro */
 #define errorcheck           if (iserror(e)) return e;
 
+/* Look up a text error message, with internationalization */
 const char *errortext(g_error e);
+
+/* Print the error message for 'e' and return 'e' */
 g_error prerror(g_error e);
+
+/* Load a table of internationalized error messages from disk */
+g_error errorload(const char *filename);
 
 /* "Guru" error screen only available in debugging mode */
 #if defined(DEBUG_KEYS) | defined(DEBUG_WIDGET) | defined(DEBUG_EVENT) | \

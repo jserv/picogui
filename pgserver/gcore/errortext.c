@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.27 2001/07/03 08:13:28 micahjd Exp $
+/* $Id: errortext.c,v 1.28 2001/07/03 10:13:32 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -27,9 +27,16 @@
 
 #include <pgserver/common.h>
 
+#include <stdio.h>              /* For file IO */
+#include <ctype.h>
+#include <string.h>
+
+/* Maximum line size when reading error tables */
+#define LINESIZE     256
+
 /* A loadable error table */
-char *loaded_errors[];
-int   num_loaded_errors;
+char **loaded_errors;
+int    num_loaded_errors;
 
 /* Builtin error table */
 static const char *builtin_errors[] = {
@@ -51,7 +58,7 @@ static const char *builtin_errors[] = {
 const char *errortext(g_error e) {
   const char *errtxt = NULL;
   int errnum = (e & 0xFF) - 1;
-  static char errbuf[10];
+  static char errbuf[20];
 
   /* Loaded table */
   if (loaded_errors && (errnum < num_loaded_errors))
@@ -66,8 +73,100 @@ const char *errortext(g_error e) {
     return errtxt;
 
   /* Nothing left to do but give the raw numeric error code */
-  sprintf(errbuf,"#%d/%d",e>>8,e & 0xFF);
+  sprintf(errbuf,"Error#%d/%d",e>>8,e & 0xFF);
   return errbuf;
+}
+
+/* Load an internationalized error table from disk */
+g_error errorload(const char *filename) {
+  g_error e;
+  FILE *f;
+  char line[LINESIZE+1];
+  int totalsize = 0;
+  int n;
+  char *p,*q;
+  char *errorheap;
+
+  /* Free any existing error table */
+  if (loaded_errors)
+    g_free(loaded_errors);
+  loaded_errors = NULL;
+  num_loaded_errors = 0;
+  if (!filename)
+    return sucess;
+
+  f = fopen(filename,"r");
+  if (!f) 
+    return mkerror(PG_ERRT_IO,21);      /* Can't open error file */
+
+  /* Now we need to read the file twice. First count the total size
+   * of all strings and the maximum error number. Then allocate the necessary
+   * memory block and read in the text */
+
+  while (fgets(line,LINESIZE,f)) {
+    n = strtol(line,&p);           /* Error code */
+    if (p==line)                   /* skip blank lines or comments */
+      continue;
+    if (n>num_loaded_errors)       /* Store maximum error code */
+      num_loaded_errors = n;
+    while (p && isspace(*p)) {     /* Skip whitespace */
+      p++;
+    }
+    totalsize += strlen(p);        /* Accumulate string size */
+  }
+
+  rewind(f);
+
+  /* Allocate buffer */
+  e = g_malloc((void**) &loaded_errors,
+	       totalsize + sizeof(char*)*num_loaded_errors);
+  if (iserror(e))
+    fclose(f);
+  errorcheck;
+  errorheap = ((char*)loaded_errors) + sizeof(char*)*num_loaded_errors;
+
+  /* Now read in the file for real */
+  while (fgets(line,LINESIZE,f)) {
+    n = strtol(line,&p);           /* Error code */
+    if (p==line)                   /* skip blank lines or comments */
+      continue;
+    loaded_errors[n-1] = errorheap;/* Store string pointer */
+    while (p && isspace(*p)) {     /* Skip whitespace */
+      p++;
+    }
+    p[strlen(p)-1] = 0;            /* Cut off newline */
+
+    /* Convert escape sequences in the string */
+    q=p;
+    while (*q) {
+      if ( (*q == '\\') && *(q+1) ) {
+	switch (*(q+1)) {
+	  
+	case 'n':
+	  *q = '\n';
+	  break;
+
+	case 't':
+	  *q = '\t';
+	  break;
+
+	default:
+	  *q = *(q+1);
+
+	}
+
+	/* Move the rest of the string to cover up the hole */
+	memmove(q+1,q+2,strlen(q+1));
+      }
+      q++;
+    }
+
+    strcpy(errorheap,p);           /* Toss the string on the heap */
+    errorheap += strlen(p)+1;
+  }
+
+  fclose(f);
+  return sucess;
 }
 
 /* The End */

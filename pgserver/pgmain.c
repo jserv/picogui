@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.3 2001/05/29 20:39:10 micahjd Exp $
+/* $Id: pgmain.c,v 1.4 2001/07/03 10:13:31 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -117,11 +117,16 @@ int main(int argc, char **argv) {
 
     while (1) {
 
-      c = getopt(argc,argv,"mf12bhlx:y:d:v:i:t:s:");
+      c = getopt(argc,argv,"mf12bhlx:y:d:v:i:t:s:e:");
       if (c==-1)
 	break;
       
       switch (c) {
+
+      case 'e':        /* Error table */
+	if (iserror(prerror(errorload(optarg))))
+	  return 1;
+	break;
 
       case 'f':        /* Fullscreen */
 	vidf |= PG_VID_FULLSCREEN;
@@ -306,6 +311,7 @@ int main(int argc, char **argv) {
 #ifdef CONFIG_VIDEOTEST
 	     "  s modenum : enter video test mode. modenum = 'help' to list modes\n"
 #endif
+	     "  e txtfile : Load internationalized error text\n"
 	     "\n"
 	     "  If specified, a session manager process will be run after server\n"
 	     "  initialization is done, and the server will quit after the last\n"
@@ -485,6 +491,7 @@ int main(int argc, char **argv) {
   grop_kill_zombies();
   if (vid)
     VID(close) ();
+  errorload(NULL);
 
   {  /* Free the list of loaded theme files */
      struct themefilenode *p,*condemn;

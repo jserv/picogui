@@ -1,3 +1,14 @@
+2001-07-03    Micah Dowty <micahjd@users.sourceforge.net>
+
+PicoGUI has working internationalization now!
+The command line option '-e' can load a simple text file with
+internationalized messages.
+
+		* gcore/errortext.c: Completely rewritten errortext(), added loading
+		  function.
+		  			
+		* pgmain.c: -e command line option
+
 2001-06-29    Micah Dowty <micahjd@users.sourceforge.net>
 
 Ugh. There's a bug somewhere causing the client to use the wrong messages.

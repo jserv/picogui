@@ -26,7 +26,7 @@
 /* 18 */  "The widget you wish to bind has no PG_WP_SCROLL",
 /* 19 */  "Floating Point Exception or Divide by Zero",
 /* 20 */  "The widget you seek to create cannot exist",
-/* 21 */  NULL,
+/* 21 */  "Unable to open error message file",
 /* 22 */  "Derive constant not understood. Do not drink and derive.",
 /* 23 */  "Invalid widget in widget_set",
 /* 24 */  "PicoGUI Error",

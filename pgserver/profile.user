@@ -15,7 +15,7 @@ CONFIG_LINUX_GENERIC=y
 #
 # Debugging
 #
-# CONFIG_TEXT is not set
+CONFIG_TEXT=y
 # CONFIG_NOSTRIP is not set
 DEBUG_KEYS=y
 CONFIG_VIDEOTEST=y
