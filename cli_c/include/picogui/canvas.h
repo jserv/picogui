@@ -1,4 +1,4 @@
-/* $Id: canvas.h,v 1.16 2001/05/05 02:04:00 micahjd Exp $
+/* $Id: canvas.h,v 1.17 2001/05/05 20:55:40 micahjd Exp $
  *
  * picogui/canvas.h - This defines the commands sent from the client to a
  *                    canvas widget (Via RQH_WRITETO)
@@ -207,6 +207,18 @@
  *  2. Y translation
  */
 #define PGCANVAS_SCROLL      12
+
+/* Sets the mapping type used by the server for mouse/touchpad input.
+ * Works just like the PG_GROP_SETMAPPING gropnode.
+ * 
+ * Parameters:
+ *  1. x
+ *  2. y
+ *  3. w
+ *  4. h
+ *  5. mapping type (PG_MAP_*)
+ */
+#define PGCANVAS_INPUTMAPPING  13
 
 #endif /* __H_PG_CANVAS */
 /* The End */
