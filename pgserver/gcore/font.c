@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.33 2001/10/26 10:14:07 micahjd Exp $
+/* $Id: font.c,v 1.34 2001/10/26 22:54:20 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -55,9 +55,19 @@
    the request and a particular font */
 int fontcmp(struct fontstyle_node *fs,char *name, int size, stylet flags);
 
-/* Small helper function used in outchar_fake and outchar */
+/* Small helper function used in outchar_fake and outchar 
+ *
+ * If it's an invalid character, first try replacing it with the Unicode
+ * symbol for an unknown character, then if that doesn't work use a question
+ * mark. If the question mark doesn't work either, use the font's default
+ * character.
+ */
 struct fontglyph const *font_getglyph(struct fontdesc *fd, int ch) {
   ch -= fd->font->beginglyph;
+  if (ch < 0 || ch >= fd->font->numglyphs)
+    ch = 0xFFFD - fd->font->beginglyph;
+  if (ch < 0 || ch >= fd->font->numglyphs)
+    ch = '?' - fd->font->beginglyph;
   if (ch < 0 || ch >= fd->font->numglyphs)
     ch = fd->font->defaultglyph - fd->font->beginglyph;
   return fd->font->glyphs+ch;
@@ -441,9 +451,6 @@ int decode_utf8(u8 **str) {
   u8 b;
   int length,i;
 
-  /* Skip past any partial characters */
-  while (((**str) & 0xC0) == 0x80)
-    (*str)++;
 
   /* The first character determines the sequence's length */
   ch = *((*str)++);
@@ -451,6 +458,8 @@ int decode_utf8(u8 **str) {
   if (!(ch & 0x80))
     /* 1-byte code, return it as-is */
     return ch;
+  else if ((ch & 0xC0) == 0x80)
+    return -1;
   else if (!(ch & 0x20)) {
     length = 2;
     ch &= 0x1F;
