@@ -1,4 +1,4 @@
-/* $Id: g_malloc.c,v 1.20 2002/02/20 19:58:03 lonetech Exp $
+/* $Id: g_malloc.c,v 1.21 2002/03/03 11:21:11 micahjd Exp $
  *
  * g_malloc.c - malloc wrapper providing error handling
  *
@@ -119,12 +119,18 @@ void g_dfree(const void *p, const char *where) {
       break;
      }
    }
-  memtrack=realloc(memtrack, sizeof(*memtrack)*memref);
-  if(memref && memtrack==NULL)
-   {
-    guru("Aieee! Memory tracker ran out of memory!");
-    exit(234);
-   }
+  /* Argh!! Electric Fence assumes it's a bug if we allocate
+   * zero bytes, so to keep efence from aborting us, don't resize
+   * this if it would be sizing to zero bytes.
+   */
+  if (memref) {
+    memtrack=realloc(memtrack, sizeof(*memtrack)*memref);
+    if(memref && memtrack==NULL)
+      {
+	guru("Aieee! Memory tracker ran out of memory!");
+	exit(234);
+      }
+  }
   printf("-%d #%ld (%ld) %p %s\n",s,memref,memamt,adr,where);
 #endif
 #endif

@@ -1,4 +1,4 @@
-/* $Id: sdlgl_init.c,v 1.3 2002/03/03 07:35:04 micahjd Exp $
+/* $Id: sdlgl_init.c,v 1.4 2002/03/03 11:21:11 micahjd Exp $
  *
  * sdlgl_init.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has initialization, shutdown, and registration.
@@ -137,7 +137,7 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
     e = gl_fontload_init(&fl);
     errorcheck;
 
-    e = gl_load_font(fl,"/usr/share/fonts/truetype/openoffice/timmonsr.ttf");  
+    e = gl_load_font(fl,"/usr/share/fonts/truetype/openoffice/helmetb.ttf");  
     errorcheck;
 
     gl_fontload_finish(fl);
@@ -150,6 +150,8 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
 }
    
 void sdlgl_close(void) {
+  struct fontstyle_node *f;
+
   if (gl_global.display_rend) {
     g_free(gl_global.display_rend);
     gl_global.display_rend = NULL;
@@ -163,10 +165,15 @@ void sdlgl_close(void) {
     handle_free(gl_global.osd_font,-1);
 
   if (gl_global.old_fonts) {
+    /* Delete our fonts */
+    while (fontstyles) {
+      f = fontstyles;
+      fontstyles = f->next;
+      gl_fontstyle_free(f);
+    }
+
     /* Put back normal fonts */
     fontstyles = gl_global.old_fonts;
-
-    /* FIXME: Delete our allocated fonts */
   }
 
   TTF_Quit();

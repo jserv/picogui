@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.2 2002/03/03 07:35:03 micahjd Exp $
+/* $Id: sdlgl.h,v 1.3 2002/03/03 11:21:11 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -68,7 +68,7 @@
 /* Perspective values */
 #define GL_FOV          45      /* Vertical field of view in degrees */
 #define GL_MINDEPTH     0.01
-#define GL_MAXDEPTH     (vid->xres*10)
+#define GL_MAXDEPTH     (vid->xres*5)
 #define GL_DEFAULTDEPTH (vid->xres)
 #define GL_SCALE        (tan(GL_FOV/360.0f*3.141592654)*GL_DEFAULTDEPTH)
 
@@ -250,6 +250,8 @@ void gl_fontload_finish(struct gl_fontload *fl);
 void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 		s16 src_x, s16 src_y, s16 lgop);
 float gl_get_key_scale(void);
+void gl_fontstyle_free(struct fontstyle_node *fsn);
+void gl_font_free(struct font *f);
 
 #endif /* _H_SDLGL */
 

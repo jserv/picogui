@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.25 2002/02/21 14:47:13 pney Exp $
+/* $Id: pgmain.c,v 1.26 2002/03/03 11:21:11 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -615,7 +615,6 @@ int main(int argc, char **argv) {
 			     * of this bulk extinction of memory */
 
   timer_release();
-  cleanup_inlib();
   handle_cleanup(-1,-1);
   hotspot_free();
   dts_free();
@@ -628,6 +627,7 @@ int main(int argc, char **argv) {
 	    g_free(((struct stdbitmap *)vid->display)->rend);
      VID(close) ();
   }
+  cleanup_inlib();
   configfile_free();
   errorload(NULL);
 

@@ -1,4 +1,4 @@
-/* $Id: sdlgl_font.c,v 1.3 2002/03/03 08:03:01 micahjd Exp $
+/* $Id: sdlgl_font.c,v 1.4 2002/03/03 11:21:11 micahjd Exp $
  *
  * sdlgl_font.c - OpenGL driver for picogui, using SDL for portability.
  *                Replace PicoGUI's normal font rendering with TrueType
@@ -342,6 +342,26 @@ void gl_fontload_finish(struct gl_fontload *fl) {
   glDeleteTextures(1,&fl->texture);
   g_free(fl->pixels);
   g_free(fl);
+}
+
+void gl_fontstyle_free(struct fontstyle_node *fsn) {
+  if (fsn->name)
+    g_free(fsn->name);
+  if (fsn->normal)
+    gl_font_free(fsn->normal);
+  if (fsn->bold)
+    gl_font_free(fsn->bold);
+  if (fsn->italic)
+    gl_font_free(fsn->italic);
+  if (fsn->bolditalic)
+    gl_font_free(fsn->bolditalic);
+  g_free(fsn);
+}
+
+void gl_font_free(struct font *f) {
+  g_free(f->glyphs);
+  g_free(f->bitmaps);
+  g_free(f);
 }
 
 /* The End */
