@@ -1,75 +1,8 @@
-<html>
-  <head>
-    <title>Setting up your project for CIA commit monitoring</title>
-  </head>
-
-  <body>
-    <h1>What is CIA?</h1>
-    <p>CIA is a bot that will take email from your CVS/Subversion/BitKeeper repositories' commit scripts, and output it to the
-      #commits channel on freenode, and optionally to your project's IRC channel.
-      It means you can sit in that channel and marvel in real time at all the free software
-      being written all over the world. CIA also collects some 
-      <a href="http://navi.picogui.org/cgi-bin/cia_stats.cgi">simple statistics</a>.</p>
-
-    <h1>Using it with CVS</h1>
-
-    <p> Download the <a href="clients/ciabot_cvs.sh">CVS ciabot</a> script and follow the instructions in the comments at the top of the file. </p>
-    <p> Thanks to Petr Baudis, we have <a href="clients/ciabot_cvs.pl">an alternative</a> script that offers more features, nicer output and so on. Requires Perl. Go wild :) </p>
-
-    <h1> Using it with Subversion </h1>
-
-    <p> Download the <a href="clients/ciabot_svn.sh">Subversion ciabot</a> script and follow the instructions in the comments at the top of the file. </p>
-
-    <h1> Using it with BitKeeper </h1>
-
-    <p> Leonard Norrgard started a BitKeeper project to support using CIA with bk projects at
-        <a href="http://commits.bkbits.net/">http://commits.bkbits.net/</a>. It includes documentation. </p>
-
-    <h1>Controlling the bot</h1>
-
-    <p> You can make the bot join your channel by sending an email to commits@picogui.org with the subject
-        "JoinChannel <i>channelname</i>".
-        (Leave out the "#" beginning the channel name) You can make it leave your channel by sending a mail with the subject
-        "PartChannel <i>channelname</i>". The email body will be ignored. </p>
-    <p> To set the project URL displayed in the
-        <a href="http://navi.picogui.org/cgi-bin/cia_stats.cgi">stats page</a>, send an email to commits@picogui.org with
-        the subject "SetProjectURL <i>projectname</i>" and the URL on the first line of the body. </p>
-
-    <h1> Source code </h1>
-
-    <p> The source is in the <a href="http://picogui.org/links/repository">PicoGUI Subversion repository</a> at 
-        <a href="http://navi.picogui.org/svn/picogui/trunk/tools/irc/">
-	http://navi.picogui.org/svn/picogui/trunk/tools/irc/</a>.
-     It falls under the "who cares" license, do anything you like with it. </p>
-
-    <h1> Who wrote this stuff? </h1>
-    
-    <p> That would be scanline (Micah Dowty), in #picogui. The bot is currently being maintained by TD (Mike Hearn) in
-      #autopackage.  When I'm not on IRC, you can contact me by email at <a href="mailto:mike@theoretic.com">mike@theoretic.com</a>. 
-      Shout at me if you find bugs, or want new features. Patches gladly accepted, new features (esp to the stats page) take 
-      low priority so if you want them, best to send me a patch. I'll try and fix bugs ASAP. <a href="TODO">View the TODO list</a>
-    </p>
-
-    <h1> Why is this here? </h1>
-
-    <p> Micah was reading about extreme version control on the <a href="http://c2.com/cgi/wiki?WelcomeVisitors">C2 Wiki</a>, which
-        mentioned a chat room bot that shows commit information. He wrote the first version of the CIA bot to receive messages
-        from PicoGUI's subversion repository and splat them out into #picogui with a little formatting. Lalo Martins named it:
-        CIA was originally written to monitor PicoGUI's Subversion repository, so the bot is a brainless entity designed to
-        monitor subversion. </p>
-
-    <p> About a week later, Mike Hearn made the suggestion that as many open source projects as possible should use the bot, and
-        it should report all messages to a central channel that people could join to bask in the warm glow of code in development.
-        After some quick hacking, Micah got the first version of the bot online. Only 5 hours after opening the #commits channel
-        there were around 50 users occupying it and several projects sending their commit messages to CIA.</p>
-
-    
-    <hr>
-    
-    <p> Thanks to freenode for providing resources and support for the bot. It's very much appreciated! </p>
-
-    <hr>
-    <p>$Id$</p>
-  </body>
-
-</html>
+<html><head>
+   <title>CIA has moved</title>
+   <meta HTTP-EQUIV="Refresh" CONTENT="4; URL=http://navi.picogui.org/cia/">  
+</head></html><body>
+   <h3>The CIA bot has moved</h3>
+   <p>To go along with a complete rewrite, the CIA bot has a new URL:<p>
+   <p><a href="http://navi.picogui.org/cia/">http://navi.picogui.org/cia/</a></p>
+</body></html>
