@@ -1,5 +1,5 @@
 DEPS = widgets.in requests.in pg_wp.in pgth_o.in pg_vid.in pg_we.in \
-	pg_fstyle.in \
+	pg_fstyle.in pg_trigger.in\
 	picoconstants.in picogui.in
 
 picogui.tcl: $(DEPS)
@@ -33,6 +33,10 @@ pg_fstyle.in: ../pgserver/include/picogui/constants.h apps/parseheader.tcl
 requests.in: ../pgserver/include/picogui/network.h apps/parseheader.tcl
 	apps/parseheader.tcl $< $@ PGREQ_ pg_request
 
+trigger.in: ../pgserver/include/picogui/network.h apps/parseheader.tcl
+	apps/parseheader.tcl $< $@ PG_TRIGGER_ pg_trigger
+
 clean:
 	rm -f apps/*.tcl picogui.tcl tclheader widgets.in requests.in \
-		pg_wp.in pgth_o.in pg_we.in pg_vid.in pg_fstyle.in
+		pg_wp.in pgth_o.in pg_we.in pg_vid.in pg_fstyle.in \
+		pg_trigger.in
