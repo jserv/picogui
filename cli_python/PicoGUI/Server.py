@@ -2,10 +2,7 @@
 
 import network, requests, responses, constants
 
-# the Request utility class
-
 class Request(object):
-    # IMPORTANT: we can't resolve constants in keyword arguments
     def __init__(self, server, name):
         self.server = server
         self.handler = getattr(requests, name)
@@ -21,8 +18,6 @@ class Request(object):
 
 def noop(*a, **kw):
     pass
-
-# the class itself
 
 class Server(object):
     def __init__(self, address=None, display=None, stream=None, stream_read=0):
