@@ -27,7 +27,7 @@ import PGBuild.Package
 import PGBuild.CommandLine.Options
 import PGBuild.CommandLine.Output
 import PGBuild.Config
-import os, re
+import os, re, shutil
 
 def run(config, progress):
     """Examine the provided configuration and take the specified actions"""
