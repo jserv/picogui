@@ -152,7 +152,8 @@ fe_new_window (struct session *sess)
 			pgBind(0, PG_WE_DATA, evtPassFocus,
 					(void*)sess->gui->input);
 			pgSetWidget(0, PG_WP_SIDE, PG_S_ALL, 0);
-			/* FIXME: hide cursor (not implemented in terminal) */
+			/* hide cursor */
+			pgWriteData(0, pgFromMemory("\e[?25l", 6));
 			break;
 	}
 	fe_buttons_update(sess);
@@ -681,7 +682,7 @@ void
 fe_userlist_insert (struct session *sess, struct User *newuser, int row)
 {
 	int i;
-	pghandle label;
+	pghandle item;
 
 	sess->gui->uhmap=realloc(sess->gui->uhmap,
 			++sess->gui->users*sizeof(struct uhmapping));
@@ -690,13 +691,14 @@ fe_userlist_insert (struct session *sess, struct User *newuser, int row)
 	else
 		for(i=sess->gui->users-1;i>row;i--)
 			sess->gui->uhmap[i]=sess->gui->uhmap[i-1];
-	label=pgNewWidget(PG_WIDGET_LABEL, row?PG_DERIVE_AFTER:
+	item=pgNewWidget(PG_WIDGET_LISTITEM, row?PG_DERIVE_AFTER:
 			PG_DERIVE_INSIDE, row?sess->gui->uhmap[row-1].handle:
 			sess->gui->userlist);
-	pgSetWidget(0, PG_WP_ALIGN, PG_A_LEFT, 0);
+	pgSetWidget(0, PG_WP_EXTDEVENTS, pgGetWidget(0, PG_WP_EXTDEVENTS) &
+			~PG_EXEV_EXCLUSIVE, 0);
 	pgReplaceTextFmt(0, "%c%s", newuser->prefix, newuser->nick);
 	sess->gui->uhmap[row].user=newuser;
-	sess->gui->uhmap[row].handle=label;
+	sess->gui->uhmap[row].handle=item;
 }
 void
 fe_userlist_remove (struct session *sess, struct User *user)
@@ -817,7 +819,7 @@ void
 fe_pluginlist_update (void)
 {
 }
-static int			/* FIXME userlist connection */
+static int
 evtUserButton (struct pgEvent *evt)
 {
 	struct session *sess=evt->extra;
@@ -826,6 +828,8 @@ evtUserButton (struct pgEvent *evt)
 	for(i=0;i<sess->gui->buttons;i++)
 		if(sess->gui->userbutton[i].h==evt->from)
 		{
+			/* FIXME go through buttons; put nick instead of %s,
+			 * or all nicks separated by spaces for %a */
 			handle_command (sess->gui->userbutton[i].cmd, sess,
 					FALSE, FALSE);
 			break;
