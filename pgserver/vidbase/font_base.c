@@ -1,4 +1,4 @@
-/* $Id: font_base.c,v 1.10 2002/11/21 15:18:02 micahjd Exp $
+/* $Id: font_base.c,v 1.11 2002/11/22 09:02:12 micahjd Exp $
  *
  * font_base.c - Handles multiple font backends, and provides default
  *               implementations of fontlib functions
@@ -55,7 +55,7 @@ struct fontengine fontengine_list[] = {
 #ifdef CONFIG_FONTENGINE_TEXTMODE
   {"textmode", &textmode_regfunc },
 #endif
-#ifdef CONFIG_FONTENGINE_TEXTMODE
+#ifdef CONFIG_FONTENGINE_FTGL
   {"ftgl", &ftgl_regfunc },
 #endif
   {NULL,NULL}
