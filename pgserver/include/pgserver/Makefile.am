@@ -1,6 +1,8 @@
 BUILT_SOURCES = autoconf.h
 
-noinst_HEADERS = \
+includedir = @includedir@/pgserver
+
+include_HEADERS = \
 	appmgr.h 	\
 	autoconf.h 	\
 	common.h 	\
