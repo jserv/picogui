@@ -1,4 +1,4 @@
-/* $Id: dlg_filepicker.c,v 1.10 2001/08/04 18:08:03 micahjd Exp $
+/* $Id: dlg_filepicker.c,v 1.11 2001/08/05 04:21:30 micahjd Exp $
  *
  * dlg_filepicker.c - Display a dialog box the user can use to select
  *                    a file to open or save. It is customizable with flags
@@ -427,11 +427,8 @@ void filepicker_setdir(struct filepickdata *dat) {
   pgEnterContext();
 
   /* Scroll back to the top */
-  pgSetWidget(dat->wFileList,
-	      PG_WP_SCROLL,0,            /* Reset the list itself */
-	      0);
   pgSetWidget(dat->wScroll,
-	      PG_WP_VALUE,0,             /* Reset the scroll bar */
+	      PG_WP_VALUE,0,
 	      0);
   
   /* Set the directory button's text. We don't need to use replacetext here
@@ -681,7 +678,6 @@ const char *pgFilePicker(pgfilter filefilter, const char *pattern,
   dat.wFileList = pgNewWidget(PG_WIDGET_BOX,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_ALL,
-	      PG_WP_SCROLL,0,
 	      0);
   pgSetWidget(dat.wScroll,
 	      PG_WP_BIND,dat.wFileList,

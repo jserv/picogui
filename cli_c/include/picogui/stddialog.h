@@ -1,4 +1,4 @@
-/* $Id: stddialog.h,v 1.9 2001/08/03 12:54:59 micahjd Exp $
+/* $Id: stddialog.h,v 1.10 2001/08/05 04:21:30 micahjd Exp $
  *
  * picogui/stddialog.h - Various preconstructed dialog boxes the application
  *                       may use. These are implemented 100% client-side using
@@ -192,6 +192,17 @@ pghandle pgFontPicker(const char *title);
  */
 const char *pgFilePicker(pgfilter filefilter, const char *pattern,
 			 const char *deffile,int flags, const char *title);
+
+/*!
+ * \brief Display a dialog box allowing the user to select a color
+ *
+ * \param c Initially, the color to display. Returns the selected color
+ * \param title   The title string displayed across the dialog's top
+ * \returns Nonzero if the dialog was closed with the "Ok" button
+ *
+ * \sa pgDialogBox
+ */
+int pgColorPicker(pgcolor *c, const char *title);
 
 //! \}
 

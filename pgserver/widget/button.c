@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.68 2001/08/05 00:53:40 micahjd Exp $
+/* $Id: button.c,v 1.69 2001/08/05 04:21:30 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -292,6 +292,8 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
       return;
     }
     param->mouse.chbtn = 1;
+    /* Fake a mouse click so popups stick to buttons when triggered by keyboard */
+    lastclicked = self;
   case TRIGGER_DOWN:
     if (DATA->extdevents & PG_EXEV_PNTR_DOWN)
       post_event(PG_WE_PNTR_DOWN,self,param->mouse.chbtn,0,NULL);

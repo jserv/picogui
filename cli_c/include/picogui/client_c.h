@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.60 2001/08/04 08:33:01 micahjd Exp $
+/* $Id: client_c.h,v 1.61 2001/08/05 04:21:30 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -130,6 +130,31 @@ struct pgEvent {
 
 //! A wildcard value for pgNewFont
 #define PGFONT_ANY      0
+
+/*! 
+ * \brief RGB hardware-independant color
+ * 
+ * The format is 24-bit RGB, similar to that used by HTML.
+ * The following are some example colors:
+ * \code
+#define BLACK   0x000000
+#define WHITE   0xFFFFFF
+#define GREY    0x808080
+#define RED     0xFF0000
+#define GREEN   0x00FF00
+#define BLUE    0x0000FF
+#define YELLOW  0xFFFF00
+ * \endcode
+ * 
+ * Video drivers may define other formats that are selected by
+ * setting a bit in the color's high byte. For example, in text-mode
+ * drivers, a high byte set to 0x20 would indicate a raw character code.
+ * Using the  driver, the expression (0x20000F00 | 'A') would be
+ * a capital "A" with a white foreground and black background.
+ * These formats are video-driver dependant, and under normal circumstances
+ * the high byte should always be zero.
+ */
+typedef unsigned long pgcolor;
 
 /*! 
  * \brief Refer to the default widget handle

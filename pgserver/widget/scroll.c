@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.40 2001/08/04 18:08:03 micahjd Exp $
+/* $Id: scroll.c,v 1.41 2001/08/05 04:21:30 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -155,6 +155,7 @@ g_error scroll_set(struct widget *self,int property, glob data) {
 
   case PG_WP_VALUE:
     DATA->value = data;
+    scrollevent(self);
     scrollupdate(self);
     break;
 
@@ -172,13 +173,13 @@ g_error scroll_set(struct widget *self,int property, glob data) {
     if (iserror(rdhandle((void **)&w,PG_TYPE_WIDGET,-1,data)) || !w) 
       return mkerror(PG_ERRT_HANDLE,17);
 
-    /* Do a test run to see if the widget supports PG_WP_SCROLL */
-    if (iserror(widget_set(w,PG_WP_SCROLL,DATA->value)))
-      return mkerror(PG_ERRT_BADPARAM,18);
     DATA->binding = (handle) data;
-
+ 
     /* If applicable, turn off transparency in the widget */
     widget_set(w,PG_WP_TRANSPARENT,0);
+
+    /* Reset scrolling */
+    widget_set(w,PG_WP_SCROLL,0);
 
     /* Use a special scroll-enhanced theme if possible */
     if (w->type == PG_WIDGET_LABEL)

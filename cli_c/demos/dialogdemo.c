@@ -15,6 +15,21 @@ int year,month,day;
 
 pghandle wInputBtn,wFontBtn,wFileOpenBtn,wFileSaveBtn;
 
+/******************* Bomb */
+
+int btnBomb(struct pgEvent *evt) {
+  pgNewWidget(0xFEEDBEEF,PG_DERIVE_AFTER,wInputBtn);
+}
+
+/******************* Color */
+
+int btnColor(struct pgEvent *evt) {
+  static pgcolor c = 0x224466;
+
+  if (pgColorPicker(&c,"Select a Color"))
+    pgMessageDialogFmt("Color",0,"You selected:\n0x%06X",c);
+}
+
 /******************* File save dialog */
 
 int btnFileSave(struct pgEvent *evt) {
@@ -225,6 +240,22 @@ int main(int argc,char **argv) {
 	      PG_WP_SIDE,PG_S_TOP,
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnFileSave,NULL);
+
+  /* Color Picker */
+  pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString("pgColorPicker: Select a Color"),
+	      PG_WP_SIDE,PG_S_TOP,
+	      0);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnColor,NULL);
+
+  /* Bomb */
+  pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString("Bomb: Cause error dialog"),
+	      PG_WP_SIDE,PG_S_TOP,
+	      0);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnBomb,NULL);
 
   pgEventLoop();
   return 0;

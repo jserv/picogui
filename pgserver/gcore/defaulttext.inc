@@ -23,7 +23,7 @@
 /* 15 */  "No",
 /* 16 */  "Segmentation Fault",
 /* 17 */  "Bad scrollbar binding handle",
-/* 18 */  "The widget you wish to bind has no PG_WP_SCROLL",
+/* 18 */  NULL,
 /* 19 */  "Floating Point Exception or Divide by Zero",
 /* 20 */  "The widget you seek to create cannot exist",
 /* 21 */  "Unable to open error message file",

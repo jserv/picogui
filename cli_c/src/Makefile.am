@@ -13,6 +13,7 @@ libpgui_la_SOURCES = \
 	dlg_datepicker.c \
 	dlg_fontpicker.c \
 	dlg_filepicker.c \
+	dlg_colorpicker.c \
 	$(PLATFORM)
 
 EXTRA_libpgui_la_SOURCES = platform.c
