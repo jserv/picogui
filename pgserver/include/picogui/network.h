@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.27 2001/06/28 21:06:44 micahjd Exp $
+/* $Id: network.h,v 1.28 2001/06/28 21:09:11 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -256,7 +256,7 @@ struct pgreqd_newbitmap {
 struct pgreqd_thlookup {
   u16 object;
   u16 property;
-}
+};
 
 /* A structure for encapsulating commands, for example in canvas, within
  * a RQH_WRITETO */
