@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.162 2002/02/14 13:05:14 micahjd Exp $
+/* $Id: widget.c,v 1.163 2002/02/16 14:36:28 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -955,6 +955,17 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
      mouse is outside its divnodes. */
   if (type == TRIGGER_MOVE && capture)
     send_trigger(capture,TRIGGER_DRAG,&param);
+}
+
+/* Update which widget/divnode the mouse is inside, etc, when the divtree changes */
+void update_pointing(void) {
+  /* For now the easiest way to do this is send a fake mouse 
+   * move event to the current location 
+   */
+  s16 x = cursor->x;
+  s16 y = cursor->y;
+  VID(coord_physicalize) (&x,&y);
+  dispatch_pointing(TRIGGER_MOVE,x,y,prev_btn);
 }
 
 void dispatch_key(u32 type,s16 key,s16 mods) {

@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.54 2002/02/14 13:05:14 micahjd Exp $
+/* $Id: widget.h,v 1.55 2002/02/16 14:36:28 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -323,6 +323,9 @@ void reset_widget_pointers(void);
    Pointing device events should only be sent here for MOVE, UP, DOWN.
 */
 void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn);
+
+/* Update which widget/divnode the mouse is inside, etc, when the divtree changes */
+void update_pointing(void);
 
 /* This dispatches a key.  It is first checked against the global
    key owner table, and if not found there it is sent to the currently 

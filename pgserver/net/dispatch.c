@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.83 2002/02/02 20:52:51 lonetech Exp $
+/* $Id: dispatch.c,v 1.84 2002/02/16 14:36:28 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -147,7 +147,12 @@ g_error rqh_update(int owner, struct pgrequest *req,
    */
   activate_client_divnodes(owner);
 
+  /* The layout engine's entry point */
   update(NULL,1);
+
+  /* Update which widget the mouse is over */
+  update_pointing();
+
   return success;
 }
 
