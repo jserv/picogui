@@ -189,8 +189,8 @@ if __name__ == '__main__':
             channelFilesCurrentlyInExistance.sort()
             socketName = socketBaseName
             lastBotID = "1"
-            lastBotNumberOfChannels = 0
             for cf in channelFilesCurrentlyInExistance:
+                lastBotNumberOfChannels = 0
                 f = open(cf)
                 channelList = {}
                 lastBotID = re.compile('.*\.(.*)$').search(cf).group(1)
