@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.28 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: input.h,v 1.29 2002/01/07 15:48:42 lonetech Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -130,6 +130,9 @@ void touchscreen_pentoscreen(s16 *x, s16 *y);
 void touchscreen_message(u32 message, u32 param, u32 *ret);
 /* loads touchscreen calibration - CALL THIS! */
 g_error touchscreen_init(void);
+/* 1 if touchscreen has been calibrated - run tpcal if not, and DO NOT process
+ * pointer coordinates in any way! */
+extern u8 touchscreen_calibrated;
 #endif
 
 /* Registration functions */

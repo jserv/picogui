@@ -41,7 +41,7 @@ typedef struct
 } TRANSFORMATION_COEFFICIENTS;
 
 static const char *calib_file=NULL;
-static u8 touchscreen_calibrated=1;
+u8 touchscreen_calibrated=0;
 static TRANSFORMATION_COEFFICIENTS tc={0,0,0,0,0,0,0};
 
 void touchscreen_pentoscreen(s16 *x, s16 *y)
@@ -78,6 +78,7 @@ g_error touchscreen_init(void)
 		tc.d/=calheight;
 		tc.e/=calheight;
 		tc.f/=calheight;
+		touchscreen_calibrated=1;
 		fclose(fp);
 	}
 	return success;
