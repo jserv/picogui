@@ -1,4 +1,4 @@
-/* $Id: box.c,v 1.2 2000/08/05 09:17:49 micahjd Exp $
+/* $Id: box.c,v 1.3 2000/08/05 18:28:53 micahjd Exp $
  *
  * box.c - Generic container for laying out widgets
  *
@@ -89,16 +89,13 @@ g_error box_set(struct widget *self,int property, glob data) {
 
   case WP_BORDERCOLOR:
     BOXCOLOR = data;
-    if (data)
-      self->in->div->on_recalc = &box;
-    else
-      self->in->div->on_recalc = NULL;
+    self->in->div->on_recalc = &box;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
   default:
-    return mkerror(ERRT_BADPARAM,"Invalid property for boxx");
+    return mkerror(ERRT_BADPARAM,"Invalid property for box");
 
   }
   return sucess;

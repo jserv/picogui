@@ -1,4 +1,4 @@
-/* $Id: mainloop.c,v 1.13 2000/08/01 06:31:39 micahjd Exp $
+/* $Id: mainloop.c,v 1.14 2000/08/05 18:28:53 micahjd Exp $
  *
  * mainloop.c - initializes and shuts down everything, main loop
  *
@@ -32,6 +32,7 @@
 #include <g_error.h>
 #include <appmgr.h>
 #include <input.h>
+#include <timer.h>
 
 #if defined(__WIN32__) || defined(WIN32)
 #define WINDOWS
@@ -72,6 +73,7 @@ void windows_inputpoll_hack(void);
   if (prerror(req_init()).type != ERRT_NONE) exit(1);
   if (prerror(appmgr_init()).type != ERRT_NONE) exit(1);
   if (prerror(input_init(&request_quit)).type != ERRT_NONE) exit(1);
+  if (prerror(timer_init()).type != ERRT_NONE) exit(1);
 
 #ifndef WINDOWS
   /* Signal handler (it's usually good to have a way to exit!) */
@@ -95,6 +97,7 @@ void windows_inputpoll_hack(void);
 
   /*************************************** cleanup time */
   in_shutdown = 1;
+  timer_release();
   input_release();
   handle_cleanup(-1,-1);
   dts_free();

@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.21 2000/08/01 06:31:39 micahjd Exp $
+/* $Id: request.c,v 1.22 2000/08/05 18:28:53 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -410,7 +410,7 @@ int reqproc(void) {
   }
   else {
     /* Error */
-    return 0;
+    return 1;
   }
 }
 

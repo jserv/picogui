@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.17 2000/06/11 17:59:18 micahjd Exp $
+/* $Id: scroll.c,v 1.18 2000/08/05 18:28:53 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -28,6 +28,11 @@
 #include <widget.h>
 #include <theme.h>
 #include <g_error.h>
+#include <timer.h>
+
+/* Minimum # of milliseconds between scrolls. This is used to limit the
+   scroll bar's frame rate so it doesn't 'lag' behind the mouse */
+#define SCROLL_DELAY 50
 
 /* A power of two to divide the scroll bar's height by to get the
    indicator's height */
@@ -44,6 +49,8 @@ struct scrolldata {
   handle binding;  /* If nonzero, this widget's WP_SCROLL property will
 		      be set in response to scrollbar movement instead of
 		      an event being sent back to the client */
+
+  unsigned long wait_tick;
 };
 #define DATA ((struct scrolldata *)(self->data))
 
@@ -219,6 +226,7 @@ glob scroll_get(struct widget *self,int property) {
 }
 
 void scroll_trigger(struct widget *self,long type,union trigparam *param) {
+  unsigned long tick;
 
   switch (type) {
 
@@ -261,6 +269,7 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
 
   case TRIGGER_DRAG:
     if (!DATA->on) return;
+
     /* Button 1 is being dragged through our widget. */
     DATA->value = (param->mouse.y - self->in->div->y - 
 		   DATA->grab_offset) * DATA->res /
@@ -268,6 +277,12 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
 
     if (DATA->value > DATA->res) DATA->value = DATA->res;
     if (DATA->value < 0) DATA->value =   0;
+
+    /* If we haven't waited long enough since the last update,
+       go away */
+    tick = getticks();
+    if (tick < DATA->wait_tick) break;
+    DATA->wait_tick = tick + SCROLL_DELAY;
 
     scrollevent(self);
     break;
