@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.84 2001/07/10 21:30:34 micahjd Exp $
+/* $Id: widget.c,v 1.85 2001/07/10 22:56:38 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -522,6 +522,8 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
   union trigparam param;
   memset(&param,0,sizeof(param));
 
+  inactivity_reset();
+
   /* Convert coordinates from physical to logical */
   VID(coord_logicalize) (&x,&y);
    
@@ -735,6 +737,8 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
 
   long keycode = (mods<<16) | key;     /* Combines mods and the key */
   
+  inactivity_reset();
+
   /* First, process magic 'double bucky' keys */
   if (type==TRIGGER_KEYDOWN &&
       (mods & PGMOD_CTRL) &&

@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.43 2001/07/10 11:46:53 micahjd Exp $
+/* $Id: dispatch.c,v 1.44 2001/07/10 22:56:38 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -984,6 +984,20 @@ g_error rqh_thlookup(int owner, struct pgrequest *req,
   reqarg(thlookup);
   
   *ret = theme_lookup(ntohs(arg->object),ntohs(arg->property));
+  return sucess;
+}
+
+g_error rqh_getinactive(int owner, struct pgrequest *req,
+			void *data, unsigned long *ret, int *fatal) {
+  *ret = inactivity_get();
+  return sucess;
+}
+
+g_error rqh_setinactive(int owner, struct pgrequest *req,
+			void *data, unsigned long *ret, int *fatal) {
+  reqarg(setinactive);
+  
+  inactivity_set(ntohl(arg->time));
   return sucess;
 }
 

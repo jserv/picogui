@@ -38,6 +38,8 @@ RQH(undef)        /* Shane's mkarray code goes here */
 RQH(render)
 RQH(newbitmap)
 RQH(thlookup)
+RQH(getinactive)
+RQH(setinactive)
 RQH(undef)
 
 /* The End */

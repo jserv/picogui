@@ -1,4 +1,4 @@
-/* $Id: timer.h,v 1.3 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: timer.h,v 1.4 2001/07/10 22:56:37 micahjd Exp $
  *
  * timer.h - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -38,7 +38,18 @@ void timer_release(void);
 /* General-purpose func to get the time
    in milliseconds
 */
-unsigned long getticks(void);
+u32 getticks(void);
+
+/* reset the inactivity timer */
+void inactivity_reset();
+
+/* retrieve the number of milliseconds since the last activity */
+u32 inactivity_get();
+
+/* Set the number of milliseconds since last activity.
+ * inactivity_set(0) is equivalent to inactivity_reset().
+ */
+void inactivity_set(u32 t);
 
 #endif /* __H_TIMER */
 

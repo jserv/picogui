@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.11 2001/02/17 05:18:40 micahjd Exp $
+/* $Id: timer.c,v 1.12 2001/07/10 22:56:37 micahjd Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -40,6 +40,8 @@
 
 #include <pgserver/timer.h>
 
+u32 lastactivity;
+
 /* This defines the maximum 
    precision of the TRIGGER_TIMER */
 #define TIMERINTERVAL 50   /* In milliseconds */
@@ -79,7 +81,7 @@ void timer_release(void) {
   timeEndPeriod(TIMERINTERVAL);
 }
 
-unsigned long getticks(void) {
+u32 getticks(void) {
   return timeGetTime();
 }
 
@@ -135,7 +137,7 @@ void timer_release(void) {
   setitimer(ITIMER_REAL,&itv,NULL);
 }
 
-unsigned long getticks(void) {
+u32 getticks(void) {
   static struct timeval now;
 
   gettimeofday(&now,NULL);
@@ -144,6 +146,25 @@ unsigned long getticks(void) {
 }
 
 #endif /* WINDOWS */
+
+/**************** OS-Neutral code */
+
+/* reset the inactivity timer */
+void inactivity_reset() {
+  lastactivity = getticks();
+}
+
+/* retrieve the number of milliseconds since the last activity */
+u32 inactivity_get() {
+  return getticks() - lastactivity;
+}
+
+/* Set the number of milliseconds since last activity.
+ * inactivity_set(0) is equivalent to inactivity_reset().
+ */
+void inactivity_set(u32 t) {
+  lastactivity = getticks() - t;
+}
 
 /* The End */
 
