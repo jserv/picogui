@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.27 2000/08/02 05:22:49 micahjd Exp $
+/* $Id: widget.h,v 1.28 2000/08/05 01:08:36 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -222,6 +222,7 @@ DEF_WIDGET_PROTO(field)
 #define WP_BIND        16
 #define WP_SCROLL      17    /* Scroll bar binds here on scrollable widgets */
 #define WP_VIRTUALH    18    /* Basically, the maximum vertical scroll */
+#define WP_HOTKEY      19
 
 /* Constants for SIZEMODE */
 #define SZMODE_PIXEL         0
@@ -271,14 +272,14 @@ void redraw_bg(struct widget *self);
    no current pointing device, but it finds the first available acceptable
    hotkey.
 */
-int find_hotkey(void);
+long find_hotkey(void);
 
 /* 
    Set the current hotkey (from find_hotkey or otherwise)
    Sets the 'hotkey' widget member, and adds to the hkwidgets list
    if necessary
 */
-void install_hotkey(struct widget *self,int key,int mods);
+void install_hotkey(struct widget *self,long hotkey);
 
 /*
   Request focus for a widget.  Usually called in response to a click, or 

@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.24 2000/06/11 17:59:18 micahjd Exp $
+/* $Id: button.c,v 1.25 2000/08/05 01:08:36 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -197,7 +197,7 @@ g_error button_install(struct widget *self) {
   self->in->next->split = HWG_MARGIN;
   self->out = &self->in->next->next;
 
-  self->trigger_mask = TRIGGER_ENTER | TRIGGER_LEAVE | 
+  self->trigger_mask = TRIGGER_ENTER | TRIGGER_LEAVE | TRIGGER_HOTKEY |
     TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_DIRECT;
 
   return sucess;
@@ -299,6 +299,10 @@ g_error button_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
+  case WP_HOTKEY:
+    install_hotkey(self,data);
+    break;
+
   default:
     return mkerror(ERRT_BADPARAM,"Invalid property for button");
   }
@@ -331,6 +335,9 @@ glob button_get(struct widget *self,int property) {
 
   case WP_TEXT:
     return (glob) DATA->text;
+
+  case WP_HOTKEY:
+    return (glob) self->hotkey;
 
   default:
     return 0;
@@ -368,9 +375,12 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
       DATA->on=0;
     break;
 
+  case TRIGGER_HOTKEY:
   case TRIGGER_DIRECT:
-    event = 1;
-    break;
+    /* No graphical interaction here, so just
+       post the event and get on with it */
+    post_event(WE_ACTIVATE,self,2,0);
+    return;
     
   }
 

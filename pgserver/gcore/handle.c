@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.10 2000/08/04 07:31:48 micahjd Exp $
+/* $Id: handle.c,v 1.11 2000/08/05 01:08:35 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -396,7 +396,7 @@ g_error rdhandle(void **p,unsigned char reqtype,int owner,handle h) {
 /* Deletes the handle, and if HFLAG_NFREE is not set it frees the object */
 g_error handle_free(int owner,handle h) {
   struct handlenode *n = htree_find(h);
-  struct handlenode ncopy = *n;
+  struct handlenode ncopy;
 
 #ifdef DEBUG
   printf("handle_free(%d,0x%08X): node=0x%08X\n",owner,h,n);
@@ -404,6 +404,9 @@ g_error handle_free(int owner,handle h) {
 
   if (!h) return mkerror(ERRT_HANDLE,"handle_free - null handle");
   if (!n) return mkerror(ERRT_HANDLE,"handle_free - invalid handle");
+
+  ncopy = *n;
+
   if (owner>=0 && n->owner != owner) 
     return mkerror(ERRT_HANDLE,"handle_free - permission denied");
   htree_delete(n);    /* Remove from the handle tree BEFORE deleting the object itself */
@@ -418,9 +421,12 @@ g_error handle_free(int owner,handle h) {
    be rearranged by deletion
 */
 int r_handle_cleanup(struct handlenode *n,int owner,int context) {
-  struct handlenode ncopy = *n;
+  struct handlenode ncopy;
 
   if ((!n) || (n==NIL)) return 0;
+
+  ncopy = *n;
+
   if (((owner<0) || (owner==n->owner)) && (n->context>=context)) {
     htree_delete(n);    /* Remove from the handle tree BEFORE deleting the object itself */
     object_free(&ncopy);

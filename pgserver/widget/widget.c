@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.30 2000/08/04 07:31:49 micahjd Exp $
+/* $Id: widget.c,v 1.31 2000/08/05 01:08:36 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -254,13 +254,13 @@ void reset_pointer(void) {
 /*
   FIXME: implement find_hotkey!
 */
-int find_hotkey(void) {
+long find_hotkey(void) {
 }
 
 /*
   Installs or updates the hotkey for a widget
 */
-void install_hotkey(struct widget *self,int key,int mods) {
+void install_hotkey(struct widget *self,long hotkey) {
 
   if (!self->hotkey) {
     /* Add to the hotkey widget list if this is our first hotkey */
@@ -268,7 +268,7 @@ void install_hotkey(struct widget *self,int key,int mods) {
     hkwidgets = self;
   }
 
-  self->hotkey = (mods<<16) | key;
+  self->hotkey = hotkey;
 }
 
 /*
@@ -458,6 +458,7 @@ void dispatch_key(long type,int key,int mods) {
       if (type = TRIGGER_KEYDOWN)
 	send_trigger(p,TRIGGER_HOTKEY,NULL);
     }
+    p = p->hknext;
   }
   if (suppress) return;
 
