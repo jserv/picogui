@@ -1,4 +1,4 @@
-/* $Id: hardware.c,v 1.1 2000/06/04 08:53:14 micahjd Exp $
+/* $Id: hardware.c,v 1.2 2000/06/04 20:30:52 micahjd Exp $
  *
  * hardware.c - Interface to svgalib/vgagl
  * Anything that makes any kind of assumptions about the display hardware
@@ -31,6 +31,11 @@
 #include <g_malloc.h>
 #include <stdlib.h>
 
+GraphicsContext *virtualscreen,*physicalscreen;
+
+/* Scanline buffer for LGOP blitting */
+devcolort slbuf[HWR_WIDTH*HWR_PIXELW];
+
 /* vgagl has nice clipping functions.  This is a bit of glue to load up
    cliprect into vgagl's clipping system
 */
@@ -48,6 +53,12 @@ g_error hwr_init() {
   vga_init();
   vga_setmode(VGA_MODE);
   gl_setcontextvga(VGA_MODE);
+  physicalscreen = gl_allocatecontext();
+  gl_getcontext(physicalscreen);
+  gl_setcontextvgavirtual(VGA_MODE);
+  virtualscreen = gl_allocatecontext();
+  gl_getcontext(virtualscreen);
+  gl_setcontext(virtualscreen);
   gl_setrgbpalette();
 
   return sucess;
@@ -63,6 +74,7 @@ void hwr_clear() {
 }
 
 void hwr_update() {
+  gl_copyscreen(physicalscreen);
 }
 
 void hwr_pixel(struct cliprect *clip,int x,int y,devcolort c) {
@@ -102,8 +114,9 @@ void hwr_rect(struct cliprect *clip,int x,int y,int w,int h,devcolort c) {
 */
 void hwr_dim(struct cliprect *clip) {
   int i,j;
-  for (j=clip->y;j<=clip->y2;j+=2)
-    for (i=clip->x+(j&1);i<=clip->x2;i++)
+  vga_setclip(NULL);
+  for (j=clip->y;j<=clip->y2;j++)
+    for (i=clip->x+(j&1);i<=clip->x2;i+=2)
       gl_setpixel(i,j,0);
 }
 
@@ -115,10 +128,8 @@ void hwr_frame(struct cliprect *clip,int x,int y,int w,int h,devcolort c) {
   hwr_bar(clip,x+w-1,y+1,h-2,c);
 }
 
-/* Right now this is seriously brain-damaged.  Completely ignores lgops,
-   assumes src_x and src_y are 0, and is just stupid.
-   Need to fix this, or simplify the stuff that calls it so the extra params
-   are not needed???
+/* This is still kinda broke.  Copies to bitmaps other than the screen
+   don't work yet
 */
 void hwr_blit(struct cliprect *clip, int lgop,
 	      struct bitmap *src, int src_x, int src_y,
@@ -128,6 +139,8 @@ void hwr_blit(struct cliprect *clip, int lgop,
   if (lgop==LGOP_NULL) return;
   if (w<=0) return;
   if (h<=0) return;
+  
+  if (dest) return;   /*** FIX THIS ***/
 
   vga_setclip(clip);
 
@@ -142,110 +155,155 @@ void hwr_blit(struct cliprect *clip, int lgop,
     return;
   }
   
-  gl_putbox(dest_x,dest_y,src->w,src->h,src->bits);
+  if (lgop==LGOP_NONE)
+    if (src_x==0 && src_y==0)
+      gl_putbox(dest_x,dest_y,src->w,src->h,src->bits);
+    else
+      gl_putboxpart(dest_x,dest_y,src->w,src->h,w,h,src->bits,src_x,src_y);
+  {
+    devbmpt s,b;
+    int iw,lo;
+
+    /* Copy the screen data into the buffer, apply the bitmap with the LGOP
+       and paste it back. Not too much worse than the line-by-line way
+       the sdl driver blits, but this can't assume the video is mappable
+       into system memory. Let vgagl take care of the graphics card's oddities.
+    */
+    s = src->bits+src_x+src_y*HWR_WIDTH;
+    switch (lgop) {
+      
+    case LGOP_OR:
+      lo = src->w-w;
+      for (;h;h--,dest_y++,b+=lo) {
+	gl_getbox(dest_x,dest_y,w,1,b=slbuf);
+	for (iw=w;iw;iw--)
+	  *(b++) |= *(s++);
+	gl_putbox(dest_x,dest_y,w,1,slbuf);
+      }
+      break;
+      
+    case LGOP_AND:
+      lo = (src->w-w)*HWR_PIXELW;
+      for (;h;h--,dest_y++,b+=lo) {
+	gl_getbox(dest_x,dest_y,w,1,b=slbuf);
+	for (iw=w;iw;iw--)
+	  *(b++) &= *(s++);
+	gl_putbox(dest_x,dest_y,w,1,slbuf);
+      }
+      break;
+      
+    case LGOP_XOR:
+      lo = (src->w-w)*HWR_PIXELW;
+      for (;h;h--,dest_y++,b+=lo) {
+	gl_getbox(dest_x,dest_y,w,1,b=slbuf);
+	for (iw=w;iw;iw--)
+	  *(b++) ^= *(s++);
+	gl_putbox(dest_x,dest_y,w,1,slbuf);
+      }
+      break;
+      
+    case LGOP_INVERT:
+      lo = (src->w-w)*HWR_PIXELW;
+      for (;h;h--,dest_y++,b+=lo) {
+	for (iw=w;iw;iw--)
+	  *(b++) = *(s++) ^ HWR_BPPMASK;
+	gl_putbox(dest_x,dest_y,w,1,slbuf);
+      }
+      break;
+      
+    case LGOP_INVERT_OR:
+      lo = (src->w-w)*HWR_PIXELW;
+      for (;h;h--,dest_y++,b+=lo) {
+	gl_getbox(dest_x,dest_y,w,1,b=slbuf);
+	for (iw=w;iw;iw--)
+	  *(b++) |= *(s++) ^ HWR_BPPMASK;
+	gl_putbox(dest_x,dest_y,w,1,slbuf);
+      }
+      break;
+      
+    case LGOP_INVERT_AND:
+      lo = (src->w-w)*HWR_PIXELW;
+      for (;h;h--,dest_y++,b+=lo) {
+	gl_getbox(dest_x,dest_y,w,1,b=slbuf);
+	for (iw=w;iw;iw--)
+	  *(b++) &= *(s++) ^ HWR_BPPMASK;
+	gl_putbox(dest_x,dest_y,w,1,slbuf);
+      }
+      break;
+      
+    case LGOP_INVERT_XOR:
+      lo = (src->w-w)*HWR_PIXELW;
+      for (;h;h--,dest_y++,b+=lo) {
+	gl_getbox(dest_x,dest_y,w,1,b=slbuf);
+	for (iw=w;iw;iw--)
+	  *(b++) ^= *(s++) ^ HWR_BPPMASK;
+	gl_putbox(dest_x,dest_y,w,1,slbuf);
+      }
+      break;
+    }
+    
+  }
 }
 
-/* A special blit function completely rewritten for font glyph
-   blits.
-   Much room for optimizational improvement, but remember that this
-   is the 'portable' driver so no assembler!  :)
-*/
 void hwr_chrblit(struct cliprect *clip, unsigned char *chardat,int dest_x,
 		 int dest_y, int w, int h,int lines,devcolort col) {
-#if 0
-  devbmpt dest;
-  devbmpt destline;
-  int bw = w;
-  int iw;
-  int hc;
-  int olines = lines;
-  int bit;
-  int flag=0;
-  int xpix,xmin,xmax,clipping;
+  int ix,iw,bw = w;
   unsigned char ch;
 
+  vga_setclip(clip);
+  
   /* Find the width of the source data in bytes */
   if (bw & 7) bw += 8;
   bw = bw >> 3;
   bw &= 0x1F;
-  xmin = 0;
-  xmax = w;
-  clipping = 0;   /* This is set if we are being clipped,
-		     otherwise we can use a tight, fast loop */
 
-  SDL_LockSurface(screen);
-  dest = screen->pixels;
-
-  destline = dest =(devbmpt)screen->pixels+dest_x+dest_y*HWR_WIDTH;
-  hc = 0;
-
-  /* Do vertical clipping ahead of time (it does not require a special case) */
-  if (clip) {
-    if (clip->y>dest_y) {
-      hc = clip->y-dest_y; /* Do it this way so skewing doesn't mess up when
-			     clipping */
-      destline = (dest += hc * HWR_WIDTH);
+  for (;h;h--,dest_y++)
+    for (ix=dest_x,iw=bw;iw;iw--) {
+      ch = *(chardat++);
+      if (ch&0x80) gl_setpixel(ix,dest_y,col); ix++;
+      if (ch&0x40) gl_setpixel(ix,dest_y,col); ix++;
+      if (ch&0x20) gl_setpixel(ix,dest_y,col); ix++;
+      if (ch&0x10) gl_setpixel(ix,dest_y,col); ix++;
+      if (ch&0x08) gl_setpixel(ix,dest_y,col); ix++;
+      if (ch&0x04) gl_setpixel(ix,dest_y,col); ix++;
+      if (ch&0x02) gl_setpixel(ix,dest_y,col); ix++;
+      if (ch&0x01) gl_setpixel(ix,dest_y,col); ix++;
     }
-    if (clip->y2<(dest_y+h))
-      h = clip->y2-dest_y+1;
-
-    /* Setup for horizontal clipping (if so, set a special case) */
-    if (clip->x>dest_x) {
-      xmin = clip->x-dest_x;
-      clipping = 1;
-    }
-    if (clip->x2<(dest_x+w)) {
-      xmax = clip->x2-dest_x+1;
-      clipping = 1;
-    }
-  }
-
-  /* Decide which loop to use */
-  if (olines || clipping) {
-    /* Slower loop, taking skewing and clipping into account */
-
-    for (;hc<h;hc++,destline=(dest+=HWR_WIDTH)) {
-      if (olines && lines==hc) {
-	lines += olines;
-	dest--;
-	flag=1;
-      }
-      for (iw=bw,xpix=0;iw;iw--)
-	for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,destline++,xpix++)
-	  if (ch&0x80 && xpix>=xmin && xpix<xmax) *destline = col; 
-      if (flag) {
-	xmax++;
-	flag=0;
-      }
-    }
-  }
-  else {
-    /* Tight, unrolled loop, works only for normal case */
-
-    for (;hc<h;hc++,destline=(dest+=HWR_WIDTH))
-      for (iw=bw;iw;iw--) {
-	ch = *(chardat++);
-	if (ch&0x80) *destline = col; destline++; 
-	if (ch&0x40) *destline = col; destline++; 
-	if (ch&0x20) *destline = col; destline++; 
-	if (ch&0x10) *destline = col; destline++; 
-	if (ch&0x08) *destline = col; destline++; 
-	if (ch&0x04) *destline = col; destline++; 
-	if (ch&0x02) *destline = col; destline++; 
-	if (ch&0x01) *destline = col; destline++; 
-      }
-  }
-
-  SDL_UnlockSurface(screen);
-#endif
 }
 
-/* Nyet to be messink with this */
 g_error hwrbit_xbm(struct bitmap **bmp,
 		   unsigned char *data, int w, int h,
 		   devcolort fg, devcolort bg) {
-  return 
-    mkerror(ERRT_INTERNAL,"hwrbit_xbm not implemented in SVGAlib interface");
+  int i,bit;
+  unsigned char c;
+  devbmpt b;
+  devbmpt p;
+  g_error e;
+
+  e = g_malloc((void **) &b,w*h*HWR_PIXELW);
+  if (e.type != ERRT_NONE) return e;
+
+  e = g_malloc((void **) bmp,sizeof(struct bitmap));
+  if (e.type != ERRT_NONE) return e;
+
+  p = b;
+
+  (*bmp)->bits = b;
+  (*bmp)->freebits = 1;
+  (*bmp)->w = w;
+  (*bmp)->h = h;
+
+  for (;h>0;h--) {
+    bit = 0;
+    for (i=0;i<w;i++) {
+      if (!bit)
+	c = *(data++);
+      *(p++) = (c&1) ? fg : bg;
+      c = c>>1;
+      bit++;
+      if (bit==8) bit = 0;
+    }
+  }
 }
 
 void hwrbit_free(struct bitmap *b) {
@@ -344,7 +402,7 @@ g_error hwrbit_pnm(struct bitmap **bmp,
   if (!datalen) return efmt;
 
   /* Set up the bitmap */
-  e = g_malloc((void **) &bits,w*h);
+  e = g_malloc((void **) &bits,w*h*HWR_PIXELW);
   if (e.type != ERRT_NONE) return e;
   p = bits;
   e = g_malloc((void **) bmp,sizeof(struct bitmap));

@@ -1,4 +1,4 @@
-/* $Id: mode.h,v 1.1 2000/06/04 08:53:14 micahjd Exp $
+/* $Id: mode.h,v 1.2 2000/06/04 20:30:52 micahjd Exp $
  *
  * A basic 256 color 640x480 SVGA mode
  *
@@ -38,6 +38,8 @@ typedef unsigned char * devbmpt;
 #define HWR_WIDTH   640
 #define HWR_HEIGHT  480
 #define HWR_BPP     8
+#define HWR_PIXELW  1
+#define HWR_BPPMASK 0xFF
 
 /* Mapping between RGB and a 2-3-3 palette */
 
