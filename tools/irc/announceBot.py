@@ -6,6 +6,8 @@ from clients connecting to it on a UNIX socket
 socketName = "/tmp/announceBot.socket"
 channelFile = "/home/commits/channels.list"
 
+secondsBetweenLines = 2
+
 from twisted.im import basechat, baseaccount, ircsupport 
 from twisted.internet.protocol import Factory
 from twisted.internet.app import Application
@@ -71,7 +73,7 @@ class AnnounceServer(LineReceiver):
                 groups[project+"-commits"].sendText(message)
             except KeyError:
 	        pass
-            time.sleep(1)
+            time.sleep(secondsBetweenLines)
 
         elif command == "SendToChannels":
             # Send a message to a comma-separated list of channels.
@@ -80,7 +82,7 @@ class AnnounceServer(LineReceiver):
                     groups[channel].sendText(message)
                 except KeyError:
                     pass
-            time.sleep(1)
+            time.sleep(secondsBetweenLines)
             
         elif command == "JoinChannel":
             accounts[0].client.join(project)
