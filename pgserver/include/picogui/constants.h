@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.59 2001/07/05 04:36:46 micahjd Exp $
+/* $Id: constants.h,v 1.60 2001/07/11 00:59:42 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -535,7 +535,7 @@ typedef unsigned long pghandle;
  * \{
  */
 
-#define PG_GROP_RECT	   0x00   
+#define PG_GROP_RECT	      0x00   
 #define PG_GROP_FRAME      0x10   
 #define PG_GROP_SLAB       0x20   
 #define PG_GROP_BAR        0x30   
@@ -559,6 +559,7 @@ typedef unsigned long pghandle;
 #define PG_GROP_SETFONT    0x17   //!< Param: font
 #define PG_GROP_SETLGOP    0x27   //!< Param: lgop
 #define PG_GROP_SETANGLE   0x37   //!< Param: angle in degrees
+#define PG_GROP_VIDUPDATE 0x800   //!< Forces a video update
 
 //! Find any gropnode's number of parameters
 #define PG_GROPPARAMS(x)   (((x)>>2)&0x03)
