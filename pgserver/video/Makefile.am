@@ -27,6 +27,9 @@ EXTRA_libvideo_a_SOURCES = \
 	sdlgl_util.c \
 	sdlgl_grop.c
 
+noinst_HEADERS = \
+	yuv.h
+
 libvideo_a_LIBADD       = $(DRIVER:%.c=%.o)
 libvideo_a_DEPENDENCIES = $(DRIVER:%.c=%.o)
 

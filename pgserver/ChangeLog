@@ -1,3 +1,18 @@
+2002-03-27  Pascal Bauermeister  <pascal.bauermeister@smartdata.ch>
+
+	* config.in: Added option CONFIG_FB_YUV16
+
+	* profiles/profile.SMARTDATA-ppc-linux-redwood4: uses CONFIG_FB_YUV16
+	
+	* video/Makefile.am: added header yuv.h
+
+	* video/fbdev.c: added yuv 16 support
+	
+	* video/yuv.h: file added
+
+	* video/README.yuv: file added
+	
+
 2001-05-11  Frédéric Gobry  <frederic.gobry@smartdata.ch>
 
 	* configure.in: changed option to use the name "profile" for

@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.30 2002/03/26 03:12:35 instinc Exp $
+/* $Id: fbdev.c,v 1.31 2002/03/27 10:38:51 bauermeister Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -46,6 +46,10 @@
 #include <linux/kd.h>
 #include <linux/vt.h>
 #include <signal.h>
+
+#ifdef CONFIG_FB_YUV16
+# include "yuv.h"
+#endif
 
 #ifdef DEBUG_VT
 #define DEBUG_FILE
@@ -124,6 +128,81 @@ hwrcolor fbdev_color_pgtohwr(pgcolor c) {
          ( (((u32)getgreen(c)) >> (8 - varinfo.green.length)) << varinfo.green.offset ) |
          ( (((u32)getblue(c))  >> (8 - varinfo.blue.length )) << varinfo.blue.offset  );
 }
+
+/**************************************** YUV memory format */
+
+#ifdef CONFIG_FB_YUV16
+
+/* the length of the Y plane */
+static size_t yuv16_y_seg_size  = 0;
+static size_t yuv16_y_seg_pitch = 0;
+
+/* Our own conversion routines for YUV 16
+ */
+pgcolor yuv16_color_hwrtopg(hwrcolor c)
+{
+  /* no alpha blending for now ... */
+
+  /* hwrcolor is in RGB until very hardware access */
+  return c;
+}
+
+hwrcolor yuv16_color_pgtohwr(pgcolor c)
+{
+  /* no alpha blending for now ... */
+
+  /* hwrcolor is in RGB until very hardware access */
+  return c;
+}
+
+
+static hwrcolor fbdev_yuv16_getpixel(hwrbitmap src, s16 x, s16 y)
+{
+  /* TODO: implement me */
+  return 0;
+}
+
+static void fbdev_yuv16_pixel(hwrbitmap dest,
+			      s16 x, s16 y, hwrcolor c,
+			      s16 lgop)
+{
+  /* no special check: if we are here, it is because we are in 16 bpp */
+
+  unsigned long r = getred(c);
+  unsigned long g = getgreen(c);
+  unsigned long b = getblue(c);
+
+  struct stdbitmap *bmp = (struct stdbitmap *) dest;
+
+  /* FIXME: This should be used:
+   *   size_t offset = bmp->pitch*y + ((x*bmp->bpp)>>3);
+   * .. but it doesn not work (FIXME!)
+   * so we use this instead (it will not support off-screen rendering):
+   */
+  size_t offset = yuv16_y_seg_pitch*y + x;
+
+  u8 *dst_y  = /*bmp->bits*/FB_MEM + offset;
+  u8 *dst_uv = /*bmp->bits*/FB_MEM + yuv16_y_seg_size + (offset&~1);
+
+  switch (lgop) {      
+  case PG_LGOP_NONE: {
+    int y, cb, cr;
+
+    rgb_to_ycbcr(r, g, b, &y, &cb, &cr);
+      *dst_y = (char)y;
+      *dst_uv++ = (char)cb;
+      *dst_uv = (char)cr;
+      break;
+    }
+
+    default:
+      /* Not supported yet */
+      return;
+  }
+}
+
+#endif
+
 
 /**************************************** Virtual Terminals */
 #ifdef CONFIG_FB_VT
@@ -289,6 +368,11 @@ g_error fbdev_init(void) {
    vid->yres   = varinfo.yres;
    vid->bpp    = varinfo.bits_per_pixel;
 
+#ifdef CONFIG_FB_YUV16
+   yuv16_y_seg_size  = vid->xres * vid->yres;
+   yuv16_y_seg_pitch = vid->xres;
+#endif
+
    /* Load a VBL */
    switch (FB_TYPE(fixinfo.type,vid->bpp)) {
       
@@ -320,7 +404,12 @@ g_error fbdev_init(void) {
     case 12:
     case 15:
     case 16:
+# ifdef CONFIG_FB_YUV16
+    /* TODO: have YUV16 accelerator, and do setvbl_yuv16 */
+      setvbl_default(vid);
+# else
       setvbl_linear16(vid);
+# endif
       break;
 #endif
 
@@ -363,7 +452,16 @@ g_error fbdev_init(void) {
      vid->color_hwrtopg = &fbdev_color_hwrtopg;
      vid->color_pgtohwr = &fbdev_color_pgtohwr;
    }
-   
+
+#ifdef CONFIG_FB_YUV16
+   if (vid->bpp == 16) {
+     vid->color_hwrtopg = &yuv16_color_hwrtopg;
+     vid->color_pgtohwr = &yuv16_color_pgtohwr;
+     vid->pixel         = &fbdev_yuv16_pixel;
+     vid->getpixel      = &fbdev_yuv16_getpixel;
+   }
+#endif
+
    /* Map it */
    FB_MEM = mmap(0,fbdev_mapsize = fixinfo.smem_len,
 		      PROT_READ|PROT_WRITE,MAP_SHARED,fbdev_fd,0);

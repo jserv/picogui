@@ -66,6 +66,7 @@ DRIVER_FBDEV=y
 # CONFIG_FB_NOGRAPHICS is not set
 # CONFIG_FB_VT is not set
 # CONFIG_FB_PSION is not set
+CONFIG_FB_YUV16=y
 # DRIVER_SDLFB is not set
 # DRIVER_X11 is not set
 # DRIVER_SDLGL is not set
