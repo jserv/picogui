@@ -1,4 +1,4 @@
-/* $Id: sdlgl_primitives.c,v 1.1 2002/03/03 05:42:26 micahjd Exp $
+/* $Id: sdlgl_primitives.c,v 1.2 2002/03/03 11:47:18 micahjd Exp $
  *
  * sdlgl_primitives.c - OpenGL driver for picogui, using SDL for portability.
  *                      Implement standard picogui primitives using OpenGL
@@ -266,6 +266,7 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
      * size if necessary, and use that to reduce the number of separate
      * quads we have to send to OpenGL
      */
+#if 0
     if ((w > glsrc->sb->w || h > glsrc->sb->h) && 
 	(glsrc->sb->w < GL_TILESIZE || glsrc->sb->h < GL_TILESIZE)) {
       /* Create a pre-tiled image */
@@ -280,12 +281,14 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
       }
       glsrc = glsrc->tile;
     }
+#endif
 
     /* If we still have to tile, let defaulvbl do it
      */
-    if (w > glsrc->sb->w || h > glsrc->sb->h)
+    if (w > glsrc->sb->w || h > glsrc->sb->h) {
       def_blit(dest,x,y,w,h,(hwrbitmap) glsrc,src_x,src_y,lgop);
-
+      return;
+    }
 
     /* Make sure the bitmap has a corresponding texture */
     if (!glsrc->texture) {
@@ -325,10 +328,10 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
     }      
     
     /* Calculate texture coordinates */
-    tx1 = glsrc->tx1 + src_x * (glsrc->tx2 - glsrc->tx1) / w;
-    ty1 = glsrc->ty1 + src_y * (glsrc->ty2 - glsrc->ty1) / h;
-    tx2 = glsrc->tx1 + (src_x + w) * (glsrc->tx2 - glsrc->tx1) / w;
-    ty2 = glsrc->ty1 + (src_y + h) * (glsrc->ty2 - glsrc->ty1) / h;
+    tx1 = glsrc->tx1 + src_x * (glsrc->tx2 - glsrc->tx1) / glsrc->sb->w;
+    ty1 = glsrc->ty1 + src_y * (glsrc->ty2 - glsrc->ty1) / glsrc->sb->h;
+    tx2 = glsrc->tx1 + (src_x + w) * (glsrc->tx2 - glsrc->tx1) / glsrc->sb->w;
+    ty2 = glsrc->ty1 + (src_y + h) * (glsrc->ty2 - glsrc->ty1) / glsrc->sb->h;
     
     /* Draw a texture-mapped quad
      */
