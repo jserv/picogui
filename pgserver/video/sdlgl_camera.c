@@ -1,4 +1,4 @@
-/* $Id: sdlgl_camera.c,v 1.9 2002/09/19 22:57:10 micahjd Exp $
+/* $Id: sdlgl_camera.c,v 1.10 2002/09/20 02:06:14 micahjd Exp $
  *
  * sdlgl_camera.c - OpenGL driver for picogui, using SDL for portability.
  *                  This is an input filter that traps keyboard and mouse
@@ -119,6 +119,13 @@ void infilter_sdlgl_handler(struct infilter *self, u32 trigger, union trigparam 
 	gl_global.need_update++;
       }
 
+    /* Mouse click should also exit... 
+     */
+    if (trigger == PG_TRIGGER_DOWN && (param->mouse.btn & 1)) {
+      gl_global.camera_mode = SDLGL_CAMERAMODE_NONE;
+      gl_global.need_update++;
+    }
+
     /* If this was a mouse movement from SDL, get the 
      * relative movement then warp the SDL cursor back to the center
      */
@@ -227,7 +234,7 @@ void gl_process_camera_smoothing(void) {
      * to be rendered. Below that threshlod, snap to the correct position and render
      * one more frame. If it's zero, don't render anything.
      */
-    if (fabs(diff) > 0.001) {
+    if (fabs(diff) > 0.01) {
       gl_global.smoothed_cam.array[i] += diff * 0.1;
       gl_global.need_update++;
     }
