@@ -1,0 +1,4 @@
+object default {
+ cursorbitmap = LoadBitmap("data/alphacursor.png");
+ cursormask = 0;
+}
