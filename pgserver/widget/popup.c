@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.36 2001/09/09 00:00:49 micahjd Exp $
+/* $Id: popup.c,v 1.37 2001/10/20 10:38:38 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -121,6 +121,7 @@ g_error popup_install(struct widget *self) {
   self->in->build = &build_popupbg;
   self->in->state = PGTH_O_POPUP;
   errorcheck;
+  self->in->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
   self->in->flags |= DIVNODE_SPLIT_IGNORE | DIVNODE_SPLIT_POPUP;
 
   e = newdiv(&self->in->div,self);
@@ -128,6 +129,7 @@ g_error popup_install(struct widget *self) {
   self->in->div->build = &build_bgfill_only;
   self->in->div->state = PGTH_O_POPUP;
   self->in->div->flags |= DIVNODE_SPLIT_BORDER;
+  self->in->div->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
 
   self->out = &self->in->next;
   self->sub = &self->in->div->div;

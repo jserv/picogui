@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.17 2001/10/20 02:19:26 micahjd Exp $
+/* $Id: render.c,v 1.18 2001/10/20 10:38:36 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -85,8 +85,10 @@ void grop_render(struct divnode *div) {
    rend.scroll.y = dty - div->oty;
    div->otx = dtx;
    div->oty = dty;
-   rend.output_rect.x = div->w;
-   rend.output_rect.y = div->h;
+   rend.output_rect.x = div->x;
+   rend.output_rect.y = div->y;
+   rend.output_rect.w = div->w;
+   rend.output_rect.h = div->h;
 
    /* Clip the clipping rectangle to the scrolling container */
    if ((div->flags & DIVNODE_DIVSCROLL) && div->divscroll) {
@@ -122,7 +124,12 @@ void grop_render(struct divnode *div) {
       add_updarea(rend.clip.x1,rend.clip.y1,rend.clip.x2-
 		  rend.clip.x1+1,rend.clip.y2-rend.clip.y1+1);
    }
-   
+
+   /* Store our clipping rectangle before any 
+    * PG_GROP_SETCLIP's can modify it.
+    */
+   rend.orig_clip = rend.clip;
+
    /* Begin rendering loop! */
    while (*listp) {
      
@@ -152,13 +159,8 @@ void grop_render(struct divnode *div) {
        * not measured in pixels while the divnodes are always in pixels */
       gropnode_map(&rend,&node);
       
-      /* Always draw relative to divnode, optionally add translation */
-      node.r.x += div->x;
-      node.r.y += div->y;
-      if (node.flags & PG_GROPF_TRANSLATE) {
-	node.r.x += rend.translation.x;
-	node.r.y += rend.translation.y;
-      }
+      /* Convert from divnode coordinates to screen coordinates */
+      gropnode_translate(&rend,&node);
       
       /* Clip clip! */
       gropnode_clip(&rend,&node);
@@ -369,8 +371,41 @@ void gropnode_nonvisual(struct groprender *r, struct gropnode *n) {
       r->map = n->r;
       r->maptype = n->param[0];
       break;
-      
+
+    case PG_GROP_SETCLIP:
+      {
+	struct gropnode node;
+
+	/* Reset the clipping rectangle */
+	r->clip = r->orig_clip;
+	
+	/* Make a local copy of the SETCLIP to map, translate, and clip */
+	node = *n;
+	gropnode_map(r,&node);       /* Map in divnode coordinates */
+	gropnode_translate(r,&node); /* convert to logical coordinates */
+	gropnode_clip(r,&node);      /* Clip to divnode */
+
+	/* This is our new clip */
+	r->clip.x1 = node.r.x;
+	r->clip.y1 = node.r.y;
+	r->clip.x2 = node.r.x + node.r.w - 1;
+	r->clip.y2 = node.r.y + node.r.h - 1;
+      }
+      break;
+
    }
+}
+
+/****************************************************** gropnode_translate */
+
+void gropnode_translate(struct groprender *r, struct gropnode *n) {
+  /* Always draw relative to divnode, optionally add translation */
+  n->r.x += r->output_rect.x;
+  n->r.y += r->output_rect.y;
+  if (n->flags & PG_GROPF_TRANSLATE) {
+    n->r.x += r->translation.x;
+    n->r.y += r->translation.y;
+  }
 }
 
 /****************************************************** gropnode_map */
@@ -387,13 +422,13 @@ void gropnode_map(struct groprender *r, struct gropnode *n) {
       break;
     
     case PG_MAP_SCALE:
-      n->r.x = n->r.x * r->output_rect.x / r->map.w;
-      n->r.y = n->r.y * r->output_rect.y / r->map.h;
+      n->r.x = n->r.x * r->output_rect.w / r->map.w;
+      n->r.y = n->r.y * r->output_rect.h / r->map.h;
       if (n->type != PG_GROP_TEXT) {
 	 if (n->type != PG_GROP_BAR)
-	   n->r.w = n->r.w * r->output_rect.x / r->map.w;
+	   n->r.w = n->r.w * r->output_rect.w / r->map.w;
 	 if (n->type != PG_GROP_SLAB)
-	   n->r.h = n->r.h * r->output_rect.y / r->map.h;
+	   n->r.h = n->r.h * r->output_rect.h / r->map.h;
       }
       break;
       

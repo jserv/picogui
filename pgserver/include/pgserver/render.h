@@ -1,4 +1,4 @@
-/* $Id: render.h,v 1.7 2001/10/09 05:15:26 micahjd Exp $
+/* $Id: render.h,v 1.8 2001/10/20 10:38:38 micahjd Exp $
  *
  * render.h - data structures and functions for rendering and manipulating
  *            gropnodes (Graphics Operation nodes)
@@ -72,12 +72,14 @@ struct gropnode {
 
 /* Structure to hold all state info while rendering one groplist */
 struct groprender {
-   struct pair output_rect; /* Size of output device (divnode, etc) */
+   struct rect output_rect; /* Size of output device (divnode, etc) */
    struct rect orig;        /* Original rect of current gropnode */
    struct pair translation; /* Applied only to grops with PG_GROPF_TRANSLATE */
    struct pair scroll;      /* Delta translation from last redraw */
    struct pair csrc;        /* Additional src_x,src_y offsets from clipping */
    hwrbitmap output;        /* Bitmap to render to */
+   struct quad orig_clip;   /* Original clipping rectangle, before any
+			     * PG_GROP_SETCLIP nodes modify it */
 
    /* Params that can be set with nonvisual gropnodes */
    struct rect offset, src, map;
@@ -139,6 +141,7 @@ void grop_render(struct divnode *div);
 void groplist_scroll(struct groprender *r, struct divnode *div);
 void gropnode_nonvisual(struct groprender *r, struct gropnode *n);
 void gropnode_map(struct groprender *r, struct gropnode *n);
+void gropnode_translate(struct groprender *r, struct gropnode *n);
 void gropnode_clip(struct groprender *r, struct gropnode *n);
 void gropnode_draw(struct groprender *r, struct gropnode *n);
 
