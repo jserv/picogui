@@ -1,4 +1,4 @@
-/* $Id: gif.c,v 1.3 2002/01/30 12:03:15 micahjd Exp $
+/* $Id: gif.c,v 1.4 2002/01/30 12:40:35 micahjd Exp $
  *
  * gif.c - Read only GIF loader based on libungif
  *
@@ -945,7 +945,8 @@ void FreeMapObject(ColorMapObject *Object)
 }
 
 /* Transcribe one scanline from the GIF to the picogui bitmap */
-void transcribe_line(hwrbitmap b, GifFileType *f, int y) {
+void transcribe_line(hwrbitmap b, GifFileType *f, int y, 
+		     int transparent_flag, int transparent_color) {
   pgcolor c;
   u8 pixel;
   GifColorType *color;
@@ -954,7 +955,12 @@ void transcribe_line(hwrbitmap b, GifFileType *f, int y) {
   for (x=0;x<f->Image.Width;x++) {
     DGifGetPixel(f, &pixel);
     color = f->SColorMap->Colors + (pixel % f->SColorMap->ColorCount);
-    c = mkcolor(color->Red,color->Green,color->Blue);
+    if (transparent_flag) {
+      c = mkcolora(pixel==transparent_color ? 0 : 127,color->Red,color->Green,color->Blue);
+    }
+    else {
+      c = mkcolor(color->Red,color->Green,color->Blue);
+    }
     vid->pixel(b,x,y,VID(color_pgtohwr)(c),PG_LGOP_NONE);
   }
 }
@@ -980,6 +986,8 @@ g_error gif_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   g_error e;
   GifByteType *Extension;
   int ExtCode;
+  int transparent_color = 0;
+  int transparent_flag = 0;
   
   if (!f)
     return mkerror(PG_ERRT_IO,72);   /* Error reading GIF */
@@ -999,11 +1007,19 @@ g_error gif_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 	DGifCloseFile(f);
 	return mkerror(PG_ERRT_IO,72);   /* Error reading GIF */
       }
-      while (Extension)
+      while (Extension) {
+	/*
+	 * Process graphic control label extension blocks
+	 */
+	if (ExtCode == 0xF9) {
+	  transparent_color = Extension[4];
+	  transparent_flag  = Extension[1] & 1;
+	}
 	if (!DGifGetExtensionNext(f, &Extension)) {
 	  DGifCloseFile(f);
 	  return mkerror(PG_ERRT_IO,72);   /* Error reading GIF */
 	}
+      }
       break;
       
     case IMAGE_DESC_RECORD_TYPE:
@@ -1027,8 +1043,14 @@ g_error gif_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
     return mkerror(PG_ERRT_IO,72);   /* Error reading GIF */
   }
 
-  /* Now we know how big the image is, so allocate it */
-  e = vid->bitmap_new(hbmp,f->Image.Width, f->Image.Height, vid->bpp);
+  /* Now we know how big the image is, so allocate it.
+   * Note that if we have an alpha channel, we must use a 32bpp
+   * image to hold the ARGB colors with the PGCF_ALPHA flag.
+   */
+  if (transparent_flag)
+    e = vid->bitmap_new(hbmp,f->Image.Width, f->Image.Height, 32);
+  else
+    e = vid->bitmap_new(hbmp,f->Image.Width, f->Image.Height, vid->bpp);
   if (iserror(e))
     DGifCloseFile(f);
   errorcheck;
@@ -1037,22 +1059,22 @@ g_error gif_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
     /* Interlaced */
     
     for (y=0;y<f->Image.Height;y+=8)
-      transcribe_line(*hbmp, f, y);
+      transcribe_line(*hbmp, f, y, transparent_flag, transparent_color);
 
     for (y=4;y<f->Image.Height;y+=8)
-      transcribe_line(*hbmp, f, y);
+      transcribe_line(*hbmp, f, y, transparent_flag, transparent_color);
 
     for (y=2;y<f->Image.Height;y+=4)
-      transcribe_line(*hbmp, f, y);
+      transcribe_line(*hbmp, f, y, transparent_flag, transparent_color);
 
     for (y=1;y<f->Image.Height;y+=2)
-      transcribe_line(*hbmp, f, y);
+      transcribe_line(*hbmp, f, y, transparent_flag, transparent_color);
   }
   else {
     /* Non-interlaced */
 
     for (y=0;y<f->Image.Height;y++)
-      transcribe_line(*hbmp, f, y);
+      transcribe_line(*hbmp, f, y, transparent_flag, transparent_color);
   }
   
   DGifCloseFile(f);
