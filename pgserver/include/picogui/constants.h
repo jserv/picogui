@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.96 2001/11/04 16:11:32 micahjd Exp $
+/* $Id: constants.h,v 1.97 2001/11/12 00:02:05 bauermeister Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -756,6 +756,7 @@ typedef unsigned long pghandle;
 #define PGDM_CONTRAST         7   //!< Set display contrast, 0x00-0xFF
 #define PGDM_INPUT_RAW        8   //!< Send PG_NWE_PNTR_RAW from the specified widget
 #define PGDM_INPUT_SETCAL     9   //!< param is a handle to a new calibration string
+#define PGDM_CURSORBLKEN     10   //!< Cursor blanking on/off
 
 #define PG_SND_KEYCLICK       1   //!< Short click
 #define PG_SND_BEEP           2   //!< Terminal beep
