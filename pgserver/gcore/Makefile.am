@@ -3,7 +3,6 @@ INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include
 noinst_LIBRARIES = libgcore.a
 
 libgcore_a_SOURCES = \
-	platforms.c	\
 	grop.c 		\
 	render.c 	\
 	g_malloc.c 	\
