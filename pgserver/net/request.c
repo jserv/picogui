@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.30 2001/12/14 22:56:43 micahjd Exp $
+/* $Id: request.c,v 1.31 2002/01/05 14:19:01 lonetech Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -466,15 +466,9 @@ void net_iteration(void) {
   req_in_select = 0;
 
 #ifdef DEBUG_NET
-  /* For some reason, extra signals interrupt select() before it's done.
-     FIXME.
-     Uncomment this guru event for more information:
-  */
-  /*
-  if (i<0)
+  if (i<0 && errno!=EINTR)
     guru("Return from select()\ni = %d\ntv.tv_sec = %d\ntv.tv_usec = %d\nerrno = %d",
 	 i,tv.tv_sec,tv.tv_usec,errno);
-  */
 #endif
 
   if (i>0) {
