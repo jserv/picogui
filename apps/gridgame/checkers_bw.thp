@@ -1,0 +1,33 @@
+/* another alternate checkers theme-
+ * this one looks good in black&white
+ */
+
+object custom {
+  name = "checkers";
+  bgfill = fillstyle {
+    SetOffset(0,0,0,0);
+    SetColor(0x808080);
+  };
+  BGEVEN = fillstyle {
+    Rect(x,y,w,h);
+  };
+}
+
+object custom {
+  name = "checkers.player1";
+  bgcolor = 0xFFFFFF;
+  PIECE = fillstyle {
+    SetOffset(1,1,-2,-2);
+    SetColor(bgcolor);
+    Fellipse(x,y,w,h);
+    SetColor(ColorSub(0xFFFFFF,bgcolor));
+    Ellipse(x,y,w,h);
+  };
+}
+
+object custom {
+  name = "checkers.player2";
+  bgcolor = 0x000000;
+  parent = FindThemeObject("checkers.player1");
+}
+
