@@ -19,7 +19,8 @@ libwidget_a_SOURCES = \
     flatbutton.c \
     listitem.c \
     radiobutton.c \
-    textbox.c \
+    textbox_main.c \
+    textbox_document.c \
     $(WIDGET)
 
 EXTRA_libwidget_a_SOURCES = \

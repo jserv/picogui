@@ -20,7 +20,8 @@ noinst_HEADERS = \
 	video.h 	\
 	widget.h \
 	configfile.h \
-	hotspot.h
+	hotspot.h \
+	textbox.h
 
 CONFIG_CLEAN_FILES = autoconf.h
 
