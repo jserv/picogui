@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.13 2001/01/19 06:27:54 micahjd Exp $
+/* $Id: widget.h,v 1.14 2001/01/20 22:52:11 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -113,12 +113,18 @@ extern struct widgetdef widgettab[];
 
 /* Finally, and actual widget structure */
 struct widget {
-  /***** 16/8-bit packed values */
+
+  /***** Bits */
+   
+  /* Omit the usual automatic clear and update done in div_rebuild */
+  unsigned int rawbuild : 1;
    
   /* If this is a root widget, an unprivelidged app can only derive
      widgets inside it, not before or after it */
-  unsigned char isroot;
+  unsigned int isroot : 1;
 
+  /***** 16/8-bit packed values */
+   
   /* Defines the type of widget */
   int type;
 

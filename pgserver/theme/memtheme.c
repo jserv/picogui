@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.18 2001/01/20 22:00:30 micahjd Exp $
+/* $Id: memtheme.c,v 1.19 2001/01/20 22:52:11 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -187,11 +187,12 @@ void div_rebuild(struct divnode *d) {
    struct gropctxt c;
    
    if (!d->build) return;
-   if (d->owner->type != PG_WIDGET_CANVAS)
-     grop_free(&d->grop);
-   gropctxt_init(&c,d);
+   if (!(d->owner && d->owner->rawbuild)) {
+      grop_free(&d->grop);
+      gropctxt_init(&c,d);
+   }
    (*d->build)(&c,d->state,d->owner);
-   if (!c.delayrend) {
+   if (!(d->owner && d->owner->rawbuild)) {
       d->flags |= DIVNODE_NEED_REDRAW;
       if (d->owner)
 	d->owner->dt->flags |= DIVTREE_NEED_REDRAW;

@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.3 2001/01/20 11:41:52 micahjd Exp $
+/* $Id: canvas.c,v 1.4 2001/01/20 22:52:11 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -39,13 +39,9 @@ void canvas_command(struct widget *self, unsigned short command,
 
 void build_canvas(struct gropctxt *c,
 		  unsigned short state,struct widget *self) {
-
    /* Just pass this on to the app */
-   *CTX = *c;
-   post_event(PG_WE_BUILD,self,(c->w << 16) | c->h,0,NULL);
-
-   /* Override the default redraw */
-   c->delayrend = 1;
+   post_event(PG_WE_BUILD,self,
+	      (self->in->div->w << 16) | self->in->div->h,0,NULL);
 }
 
 /* Set up divnodes */
@@ -69,6 +65,7 @@ g_error canvas_install(struct widget *self) {
 
    /* Init grop context */
    gropctxt_init(CTX,self->in->div);
+   self->rawbuild = 1;
    
    self->trigger_mask = TRIGGER_STREAM;
    
