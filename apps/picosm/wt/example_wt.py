@@ -7,7 +7,7 @@ app.name = "PSMApp"
 # A spiffy icon from KDE's Crystal icon set
 icon = app.addWidget('label')
 icon.side = 'left'
-icon.bitmap = app.server.mkbitmap(open('kscreensaver.png').read())
+icon.bitmap = open('kscreensaver.png').read()
 
 title = icon.addWidget('label')
 title.font = ':20:bold'

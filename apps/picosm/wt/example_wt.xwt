@@ -1,0 +1,12 @@
+<!-- A translation of example_wt.py into the XWT format -->
+
+<application text="PicoGUI Login" name="PSMApp">
+	<label side="left" bitmap_src="kscreensaver.png"/>
+	<label font=":20:bold">Welcome to PicoGUI</label>
+	<textbox readonly="1">
+		To begin your PicoGUI session, enter your username and password below. You may also sit here and stare at the pretty icon to the left of this message, or admire the fact that all these extra useless widgets were brought to you in a conveniently packaged Widget Template (tm) for your enjoyment.
+	</textbox>
+	<box name="PSMLoginBox"/>
+	<box name="PSMPasswdBox"/>
+	<toolbar name="PSMButtonBox" side="bottom"/>
+</application>
