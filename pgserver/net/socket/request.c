@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.22 2000/08/05 18:28:53 micahjd Exp $
+/* $Id: request.c,v 1.23 2000/08/09 06:57:49 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -43,12 +43,22 @@ fd_set evtwait;
 /* Linked list of connection buffers */
 struct conbuf *conbufs = NULL;
 
+/* If this is nonzero, the last client exiting will cause
+   the server to exit
+*/
+extern int use_sessionmgmt;
+int numclients = 0;
+
 /************* Functions used only in this file **/
 /* Stuff that actually does the work, and gets called by the select loop */
 
 /* Close a connection and clean up */
 void closefd(int fd) {
   struct conbuf *p,*condemn=NULL;
+
+  /* Last client left */
+  if (use_sessionmgmt && !(--numclients))
+    request_quit();
   
   /* Give up captured input devices */
   if (keyboard_owner==fd)
@@ -95,6 +105,8 @@ void newfd(int fd) {
   struct uipkt_hello hi;
   struct conbuf *mybuf;
   memset(&hi,0,sizeof(hi));
+
+  numclients++;
 
   /* Allocate connection buffers */
   if (prerror(g_malloc((void **)&mybuf,sizeof(struct conbuf)))
@@ -320,7 +332,7 @@ void req_free(void) {
 }
 
 /* Yay, a big select loop! */
-int reqproc(void) {
+void reqproc(void) {
   int fd;
   int len;
   struct sockaddr_in ec;
@@ -328,7 +340,7 @@ int reqproc(void) {
   int argh=1;
   fd_set rfds;
   struct timeval tv;
-  
+
   /* Get ready to select() the socket itself and all open connections */
   FD_ZERO(&rfds);
   FD_SET(s,&rfds);
@@ -368,7 +380,7 @@ int reqproc(void) {
 	printf("WSAGetLastError() = %d\n",WSAGetLastError());
 #endif
 #endif
-	return 0;
+	return;
       }
 
       /* Make it non-blocking */
@@ -384,7 +396,7 @@ int reqproc(void) {
       
       newfd(fd);
 
-      return 1;  /* Proceed */
+      return;
     }
     else {
       /* An existing connection needs attention */
@@ -399,19 +411,12 @@ int reqproc(void) {
 #endif
 	  
 	  readfd(fd);
-	  return 1;
+	  return;
 	}
       }
     }
   }
-  else if (i==0) {
-    /* No activity before the timeout, just try again */
-    return 1;
-  }
-  else {
-    /* Error */
-    return 1;
-  }
+  return;
 }
 
 /* The End */

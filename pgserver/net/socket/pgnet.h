@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.12 2000/08/03 02:24:02 micahjd Exp $
+/* $Id: pgnet.h,v 1.13 2000/08/09 06:57:49 micahjd Exp $
  *
  * pgnet.h - header for all PicoGUI networking stuff (request/packet/event...)
  *
@@ -118,9 +118,13 @@ int dispatch_packet(int from,struct uipkt_request *req,void *data);
 
 g_error req_init(void);
 void req_free(void);
-int reqproc(void);
+void reqproc(void);
 void post_event(int event,struct widget *from,long param,int owner);
 int send_response(int to,const void *data,size_t len);
+
+/********* Functions provided by mainloop.c */
+
+void request_quit(void);
 
 /********* Buffers needed by each connection (packet and event) */
 

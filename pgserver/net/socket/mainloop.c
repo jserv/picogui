@@ -1,4 +1,4 @@
-/* $Id: mainloop.c,v 1.14 2000/08/05 18:28:53 micahjd Exp $
+/* $Id: mainloop.c,v 1.15 2000/08/09 06:57:49 micahjd Exp $
  *
  * mainloop.c - initializes and shuts down everything, main loop
  *
@@ -37,6 +37,7 @@
 #if defined(__WIN32__) || defined(WIN32)
 #define WINDOWS
 #include <SDL.h> /* Currently we need this for windoze event processing */
+#include <process.h>
 #else
 #include <unistd.h>
 #include <signal.h>
@@ -45,25 +46,49 @@
 
 volatile int proceed = 1;
 volatile int in_shutdown = 0;
+int use_sessionmgmt = 0;
 extern long memref;
 struct dtstack *dts;
 
 #ifndef WINDOWS
 pid_t my_pid;
 void sigterm_handler(int x);
+#else
+void windows_inputpoll_hack(void);
 #endif
 
-void request_quit(void);
-
 int main(int argc, char **argv) {
+  int argi=1;
+  const char *arg;
 
 #ifndef WINDOWS
   my_pid = getpid();
 #endif
 
-#ifdef WINDOWS
-void windows_inputpoll_hack(void);
-#endif
+  /*************************************** Command-line processing */
+
+  while (argi<argc && argv[argi][0]=='-') {
+    arg = argv[argi++] + 1;
+
+    do {
+      switch (*arg) {
+	/* No actual command line options yet... */
+	
+      case '-':  /* --, forces end of switches */
+	goto switches_done;
+	
+      default:   /* Catches -, -h, --help, etc... */
+	puts("\nPicoGUI server (http://pgui.sourceforge.net)\n"
+	     "$Id: mainloop.c,v 1.15 2000/08/09 06:57:49 micahjd Exp $\n\n"
+	     "pgserver [-h] [--] [session manager prog]\n\n"
+	     "\t-h: Displays this usage screen\n"
+	     "\nIf a session manager program is specified, it will be run when PicoGUI\n"
+	     "starts, and PicoGUI will shut down when closes.\n");
+	exit(1);
+      }
+    } while (*arg);
+  };
+ switches_done:
 
   /*************************************** Initialization */
 
@@ -86,14 +111,35 @@ void windows_inputpoll_hack(void);
   /* initial update */
   update();
 
+  /* Now that the socket is listening, run the session manager */
+
+  if (argi<argc && argv[argi]) {
+    use_sessionmgmt = 1;
+
+#ifdef WINDOWS
+    if (_spawnvp(_P_NOWAIT,argv[argi],argv+argi)<=0) {
+      puts("Unable to start session manager!");
+      exit(1);
+    }
+#else
+    if (!fork()) {
+      execvp(argv[argi],argv+argi);
+      puts("Unable to start session manager!");
+      kill(my_pid,SIGTERM);
+      exit(1);
+    }
+#endif
+
+  }
+
   /*************************************** Main loop */
 
-  while (proceed && reqproc())
-#ifndef WINDOWS
-    ;
-#else
+  while (proceed) {
+    reqproc();
+#ifdef WINDOWS
     windows_inputpoll_hack();
 #endif
+  }
 
   /*************************************** cleanup time */
   in_shutdown = 1;
