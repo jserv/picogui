@@ -1,4 +1,4 @@
-/* $Id: clientlib.h,v 1.7 2001/07/03 05:48:15 micahjd Exp $
+/* $Id: clientlib.h,v 1.8 2001/08/09 10:57:01 micahjd Exp $
  *
  * clientlib.h - definitions used only within the client library code itself
  *
@@ -125,6 +125,11 @@ extern unsigned char _pgidle_lock;     /* Already in idle handler? */
 extern char *_pg_appname;             /* Name of the app's binary */
 extern pgselecthandler _pgselect_handler;   /* Normally a pointer to select() */
 extern struct _pg_return_type _pg_return; /* Response from _pg_flushpackets */
+
+/* If this is nonzero, the application should be created in this container
+ * instead of a new app in pgRegisterApp
+ */
+extern pghandle _pg_appletbox;
 
 #define clienterr(msg)        (*_pgerrhandler)(PG_ERRT_CLIENT,msg)
 

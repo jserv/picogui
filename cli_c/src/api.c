@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.22 2001/08/09 09:00:45 micahjd Exp $
+/* $Id: api.c,v 1.23 2001/08/09 10:57:01 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -323,39 +323,50 @@ pghandle pgRegisterApp(short int type,const char *name, ...) {
   struct pgreqd_register *arg;
   short *spec;
   int numspecs,i;
-  
-  /* First just count the number of APPSPECs we have */
-  for (va_start(v,name),numspecs=0;va_arg(v,long);
-       va_arg(v,long),numspecs++);
-  va_end(v);
+  pghandle ret;
 
-  /* Allocate */
-  if (!(arg = malloc(sizeof(struct pgreqd_register)+numspecs*4)))
-    return;
-  /* Move pointer */
-  spec = (short int *)(((char*)arg)+sizeof(struct pgreqd_register));
-
-  /* Fill in the required params */
-  arg->name = htonl(pgNewString(name));
-  arg->type = htons(type);
-  arg->dummy = 0;
-
-  /* Fill in the optional APPSPEC params */
-  for (va_start(v,name),i=numspecs<<1;i;
-       i--,*(spec++)=htons(va_arg(v,long)));
-  va_end(v);
-
-  _pg_add_request(PGREQ_REGISTER,arg,sizeof(struct pgreqd_register)+numspecs*4);
-
-  /* Because we need a result now, flush the buffer */
-  pgFlushRequests();
+  /* Are we going to use an applet instead? */
+  if (_pg_appletbox) {
+    ret = pgNewWidget(PG_WIDGET_BOX,PG_DERIVE_INSIDE,_pg_appletbox);
+  }
+  else {
+    /* Normal app */
+   
+    /* First just count the number of APPSPECs we have */
+    for (va_start(v,name),numspecs=0;va_arg(v,long);
+	 va_arg(v,long),numspecs++);
+    va_end(v);
+    
+    /* Allocate */
+    if (!(arg = malloc(sizeof(struct pgreqd_register)+numspecs*4)))
+      return;
+    /* Move pointer */
+    spec = (short int *)(((char*)arg)+sizeof(struct pgreqd_register));
+    
+    /* Fill in the required params */
+    arg->name = htonl(pgNewString(name));
+    arg->type = htons(type);
+    arg->dummy = 0;
+    
+    /* Fill in the optional APPSPEC params */
+    for (va_start(v,name),i=numspecs<<1;i;
+	 i--,*(spec++)=htons(va_arg(v,long)));
+    va_end(v);
+    
+    _pg_add_request(PGREQ_REGISTER,arg,
+		    sizeof(struct pgreqd_register)+numspecs*4);
+    
+    /* Because we need a result now, flush the buffer */
+    pgFlushRequests();
+    ret = _pg_return.e.retdata;
+  }
 
   /* Default is inside this widget */
   _pgdefault_rship = PG_DERIVE_INSIDE;
-  _pgdefault_widget = _pg_return.e.retdata;
+  _pgdefault_widget = ret;
   
   /* Return the new handle */
-  return _pg_return.e.retdata;
+  return ret;
 }
 
 void  pgSetWidget(pghandle widget, ...) {

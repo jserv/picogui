@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.9 2001/08/06 07:50:06 micahjd Exp $
+/* $Id: netcore.c,v 1.10 2001/08/09 10:57:01 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -27,6 +27,8 @@
  */
 
 #include "clientlib.h"
+#include <ctype.h>
+#include <stdlib.h>    /* for atol() */
 
 /* Global vars for the client lib */
 int _pgsockfd;                  /* Socket fd to the pgserver */
@@ -47,6 +49,11 @@ unsigned char _pgidle_lock;     /* Already in idle handler? */
 char *_pg_appname;              /* Name of the app's binary */
 pgselecthandler _pgselect_handler;   /* Normally a pointer to select() */
 struct _pg_return_type _pg_return;   /* Response from _pg_flushpackets */
+
+/* If this is nonzero, the application should be created in this container
+ * instead of a new app in pgRegisterApp
+ */
+pghandle _pg_appletbox;
 
 /******************* Internal functions */
 
@@ -537,13 +544,22 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.9 2001/08/06 07:50:06 micahjd Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.10 2001/08/09 10:57:01 micahjd Exp $\n");
 	exit(1);
+      }
+
+      else if (!strcmp(arg,"applet")) {
+	/* --pgapplet : Create the app in a public container instead of
+	 *              registering a new app.
+	 */
+
+	args_to_shift = 2;
+	_pg_appletbox = atol(argv[i+1]);
       }
       
       else {
 	/* Other command, print some help */
-	fprintf(stderr,"PicoGUI Client Library\nCommands: --pgserver --pgversion\n");
+	fprintf(stderr,"PicoGUI Client Library\nCommands: --pgserver --pgversion --pgapplet\n");
 	exit(1);
       }
 
