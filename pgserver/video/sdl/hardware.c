@@ -1,4 +1,4 @@
-/* $Id: hardware.c,v 1.8 2000/04/27 03:27:36 micahjd Exp $
+/* $Id: hardware.c,v 1.9 2000/04/29 02:40:59 micahjd Exp $
  *
  * hardware.c - SDL "hardware" layer
  * Anything that makes any kind of assumptions about the display hardware
@@ -259,24 +259,48 @@ void hwr_line(struct cliprect *clip,int x1,int y1,int x2,int y2,devcolort c) {
   SDL_UnlockSurface(screen);
 }
 
+/* Trig table used in hwr_gradient (sin*256 for theta from 0 to 90) */
+unsigned char trigtab[] = {
+  0x00,0x04,0x08,0x0D,0x11,0x16,0x1A,0x1F,0x23,0x28,
+  0x2C,0x30,0x35,0x39,0x3D,0x42,0x46,0x4A,0x4F,0x53,
+  0x57,0x5B,0x5F,0x64,0x68,0x6C,0x70,0x74,0x78,0x7C,
+  0x80,0x83,0x87,0x8B,0x8F,0x92,0x96,0x9A,0x9D,0xA1,
+  0xA4,0xA7,0xAB,0xAE,0xB1,0xB5,0xB8,0xBB,0xBE,0xC1,
+  0xC4,0xC6,0xC9,0xCC,0xCF,0xD1,0xD4,0xD6,0xD9,0xDB,
+  0xDD,0xDF,0xE2,0xE4,0xE6,0xE8,0xE9,0xEB,0xED,0xEE,
+  0xF0,0xF2,0xF3,0xF4,0xF6,0xF7,0xF8,0xF9,0xFA,0xFB,
+  0xFC,0xFC,0xFD,0xFE,0xFE,0xFF,0xFF,0xFF,0xFF,0xFF,
+  0xFF
+};
+
 /* Implementation of this function in a driver is optional - 
    not implementing gradients will only mean that gradient-enhanced
    themes will not look as good.  If you choose not to implement it,
    just make hwr_gradient call hwr_rect and send it the average of the
    two colors.
 
-   This is a vertical gradient, which is sheared by 'sy' pixels vertically
-   every 'sx' horizontal pixels.
+   The angle is expressed in degrees.
+
+   This implementation is based on the function:
+     color = y*sin(angle) + x*sin(angle)
+   with scaling added to keep color between the specified values.
+   The main improvement (?) is that it has been munged to use
+   fixed-point calculations, and only addition and shifting in the
+   inner loop.
+
+   Wow, algebra and trigonometry are useful for something!  ;-)
 */
-void hwr_vgradient(struct cliprect *clip,int x,int y,int w,int h,
-		  devcolort c1,devcolort c2,int sx,int sy) {
-  devbmpt p,line;
-  int i,isx,j;
-  int r,g,b;    /* Current rgb values */
-  int or,og,ob;    /* Original rgb values */
-  int dr,dg,db; /* total rgb deltas */
-  int lr,lg,lb; /* rgb at the beginning of a line */
-  
+void hwr_gradient(struct cliprect *clip,int x,int y,int w,int h,
+		  devcolort c1,devcolort c2,int angle) {
+  /* Lotsa vars! */
+  long r_vs,g_vs,b_vs,r_sa,g_sa,b_sa,r_ca,g_ca,b_ca,r_ica,g_ica,b_ica;
+  long r_vsc,g_vsc,b_vsc,r_vss,g_vss,b_vss,sc_d;
+  long r_v1,g_v1,b_v1,r_v2,g_v2,b_v2;
+  devbmpt p;
+  int r,g,b,i,s,c;
+  int line_offset;
+
+  /* Clipping */
   if (w<=0) return;
   if (h<=0) return;
   if (clip) {
@@ -293,33 +317,85 @@ void hwr_vgradient(struct cliprect *clip,int x,int y,int w,int h,
     if (w<=0 || h<=0) return;
   }
 
+  /* Look up the sine and cosine */
+  angle %= 360;
+  if (angle<0) angle += 360;
+  if      (angle <= 90 ) s =  trigtab[angle];
+  else if (angle <= 180) s =  trigtab[180-angle];
+  else if (angle <= 270) s = -trigtab[angle-180];
+  else                   s = -trigtab[360-angle];
+  angle += 90;
+  if (angle>=360) angle -= 360;
+  if      (angle <= 90 ) c =  trigtab[angle];
+  else if (angle <= 180) c =  trigtab[180-angle];
+  else if (angle <= 270) c = -trigtab[angle-180];
+  else                   c = -trigtab[360-angle];
+
+  /* Init the bitmap */
   SDL_LockSurface(screen);
-  p = ((devbmpt) screen->pixels)+x+y*HWR_WIDTH;
+  p = ((devbmpt) screen->pixels) + x + y*HWR_WIDTH;
+  line_offset = HWR_WIDTH-w;
 
-  /* This method of color interpolation (RGB) is portable, but
-     pallete-based or grayscale drivers could perform much better if they
-     worked directly with device-specific colors here instead of using
-     the conversion macros.
-  */
-  or = r = getred(c1);
-  og = g = getgreen(c1);
-  ob = b = getblue(c1);
-  dr = getred(c2) - r;
-  dg = getgreen(c2) - g;
-  db = getblue(c2) - b;
+  /* Calculate denominator of the scale value */
+  sc_d = h*((s<0) ? -((long)s) : ((long)s)) +
+    w*((c<0) ? -((long)c) : ((long)c));
 
-  for (line=p,j=h,lr=lg=lb=0;j;j--,line=(p+=HWR_WIDTH)) {
-    for (i=0,isx=0;i<w;i++,isx++,line++) {
-      /* Draw a pixel */
-      *line = mkcolor(r,g,b);
-    }
+  /* Decode colors */
+  r_v1 = getred(c1);
+  g_v1 = getgreen(c1);
+  b_v1 = getblue(c1);
+  r_v2 = getred(c2);
+  g_v2 = getgreen(c2);
+  b_v2 = getblue(c2);
 
-    /* Set the RGB values up for the next scan line. (Yuk, division!) */
-    r = or+(lr += dr)/h;
-    g = og+(lg += dg)/h;
-    b = ob+(lb += db)/h;
+  /* Calculate the scale values and 
+   * scaled sine and cosine (for each channel) */
+  r_vs = ((r_v2<<16)-(r_v1<<16)) / sc_d;
+  g_vs = ((g_v2<<16)-(g_v1<<16)) / sc_d;
+  b_vs = ((b_v2<<16)-(b_v1<<16)) / sc_d;
+
+  /* Zero the accumulators */
+  r_ca = g_ca = b_ca = r_ica = g_ica = b_ica = 0;
+
+  /* Calculate the sine and cosine scales */
+  r_vsc = (r_vs*((long)c)) >> 8;
+  r_vss = (r_vs*((long)s)) >> 8;
+  g_vsc = (g_vs*((long)c)) >> 8;
+  g_vss = (g_vs*((long)s)) >> 8;
+  b_vsc = (b_vs*((long)c)) >> 8;
+  b_vss = (b_vs*((long)s)) >> 8;
+
+  /* Initial sine accumulator */
+  if (s<=0) { 
+    r_sa = r_v2<<8; 
+    g_sa = g_v2<<8; 
+    b_sa = b_v2<<8; 
+  }
+  else {
+    r_sa = r_v1<<8;
+    g_sa = g_v1<<8;
+    b_sa = b_v1<<8;
   }
 
+  /* If the scales are negative, start from the opposite side */
+  if (r_vss<0) r_sa  = -r_vss*h;
+  if (r_vsc<0) r_ica = -r_vsc*w; 
+  if (g_vss<0) g_sa  = -g_vss*h;
+  if (g_vsc<0) g_ica = -g_vsc*w; 
+  if (b_vss<0) b_sa  = -b_vss*h;
+  if (b_vsc<0) b_ica = -b_vsc*w; 
+
+  /* Finally, the loop! */
+
+  for (;h;h--,r_sa+=r_vss,g_sa+=g_vss,b_sa+=b_vss,p+=line_offset)
+    for (r_ca=r_ica,g_ca=g_ica,b_ca=b_ica,i=w;i;
+	 i--,r_ca+=r_vsc,g_ca+=g_vsc,b_ca+=b_vsc) {
+      r = (r_ca+r_sa) >> 8;
+      g = (g_ca+g_sa) >> 8;
+      b = (b_ca+b_sa) >> 8;
+      *(p++) = mkcolor(r,g,b);
+    }
+  
   SDL_UnlockSurface(screen);
 }
 
