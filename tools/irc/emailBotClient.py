@@ -16,6 +16,7 @@ mailLog = os.path.join(baseDir, "mail.log")
 commandLog = os.path.join(baseDir, "commands.log")
 statsDir = os.path.join(baseDir, "stats")
 urlDir = os.path.join(baseDir, "urls")
+lastLogDir = os.path.join(statsDir, "lastlog")
 statsSubdirs = ("forever", "daily", "weekly", "monthly")
 socketName = "/tmp/announceBot.socket"
 
@@ -125,9 +126,26 @@ class AnnounceClient(protocol.Protocol):
     def connectionMade(self):
         # at this point we have got a message, have done some basic parsing, and know that it's meant for a channel
         # Don't allow known bad channels, or names with slashes
-        if len(subjectFields) == 2 or (not subjectFields[1] in badChannels and subjectFields[1].find(os.sep) < 0):
+        if len(subjectFields) < 2 or (not subjectFields[1] in badChannels and subjectFields[1].find(os.sep) < 0):
             # Send allowed text commands
             if subjectFields[0] in allowedTextCommands:
+                # Check for duplicates
+                fullLog = "\n".join([subjectFields[0]] + lines)
+                lastLog = None
+                try:
+                    f = open(os.path.join(lastLogDir, subjectFields[1]))
+                    lastLog = f.read()
+                    f.close()
+                except IOError:
+                    pass
+                if lastLog == fullLog:
+		    # Duplicate
+		    self.transport.loseConnection()
+		    return
+                f = open(os.path.join(lastLogDir, subjectFields[1]), "w")
+                f.write(fullLog)
+                f.close()
+
                 # Our lame little stat page
                 if subjectFields[0] in statCountedCommands:
                     updateStats(subjectFields[1])
