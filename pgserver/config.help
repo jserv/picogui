@@ -372,3 +372,6 @@ CONFIG_X11_XFT
       installed. If you are using this option, there is no need to
       compile any fonts into pgserver.
 
+CONFIG_ROTATIONBASE_NOKEYS
+      This overrides rotating the coord_keyrotate function, so that even
+      when there's a base rotation the keyboard isn't affected.

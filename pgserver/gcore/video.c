@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.48 2001/11/19 09:50:13 micahjd Exp $
+/* $Id: video.c,v 1.49 2001/12/05 15:38:55 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -345,6 +345,23 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
 #endif
 #endif
 #endif
+
+   /* Should we ignore the base screen rotation for keyboard events? */
+#ifdef CONFIG_ROTATIONBASE_NOKEYS
+   vidwrap->coord_keyrotate = &def_coord_keyrotate;
+#ifdef CONFIG_ROTATE
+   if (vid->flags & PG_VID_ROTATE90)
+     vidwrap->coord_keyrotate = &rotate90_coord_keyrotate;
+#endif   
+#ifdef CONFIG_ROTATE180
+   if (vid->flags & PG_VID_ROTATE180)
+     vidwrap->coord_keyrotate = &rotate180_coord_keyrotate;
+#endif   
+#ifdef CONFIG_ROTATE270
+   if (vid->flags & PG_VID_ROTATE270)
+     vidwrap->coord_keyrotate = &rotate270_coord_keyrotate;
+#endif
+#endif /* CONFIG_ROTATIONBASE_NOKEYS */
 
    /* Since changing video modes pretty much obliterates all onscreen
     * sprites, and the previous location might be offscreen now,

@@ -139,6 +139,7 @@ choice 'Base rotation angle' \
 	 90	       		CONFIG_ROTATIONBASE_90 \
 	 180	       		CONFIG_ROTATIONBASE_180 \
 	 270			CONFIG_ROTATIONBASE_270" 0
+bool 'Base rotation doesnt affect arrow keys' CONFIG_ROTATIONBASE_NOKEYS
 endmenu
 
 mainmenu_option next_comment

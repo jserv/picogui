@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.63 2001/11/30 02:52:10 micahjd Exp $
+/* $Id: video.h,v 1.64 2001/12/05 15:38:55 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -576,6 +576,10 @@ g_error def_bitmap_loadxbm(hwrbitmap *bmp,const u8 *data, s16 w, s16 h,
 			   hwrcolor fg, hwrcolor bg);
 struct fontglyph const *def_font_getglyph(struct fontdesc *fd, int ch);
 g_error def_bitmap_getsize(hwrbitmap bmp,s16 *w,s16 *h);
+void def_coord_keyrotate(s16 *k);
+void rotate90_coord_keyrotate(s16 *k);
+void rotate180_coord_keyrotate(s16 *k);
+void rotate270_coord_keyrotate(s16 *k);
 
 /************* Registration functions for video drivers */
 
