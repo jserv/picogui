@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.37 2003/01/01 03:43:09 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.38 2003/01/19 01:51:13 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -224,10 +224,12 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
   int seek_amount;
 
   if (type == PG_TRIGGER_STREAM) {
-    /* FIXME: this doesn't do unicode correctly */
-    struct pgstring str = *pgstring_tmpwrap(param->stream.data);
-    str.num_bytes = str.num_chars = param->stream.size;
-    textbox_write(self,&str);
+    struct pgstring *str;
+    g_error e;
+    e = pgstring_new(&str, PGSTR_ENCODE_UTF8, param->stream.size, param->stream.data);
+    errorcheck;
+    textbox_write(self,str);
+    pgstring_delete(str);
     return;
   }
 
