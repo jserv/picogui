@@ -1,4 +1,4 @@
-/* $Id: panelbar.c,v 1.3 2002/01/30 12:03:16 micahjd Exp $
+/* $Id: panelbar.c,v 1.4 2002/02/02 16:37:45 lonetech Exp $
  *
  * panelbar.c - Container and draggable bar for resizing panels
  *
@@ -198,6 +198,8 @@ g_error panelbar_set(struct widget *self,int property, glob data) {
     e = rdhandle((void **)&w,PG_TYPE_WIDGET,self->owner,data);
     errorcheck;
     DATA->bindto = data;
+    /* FIXME: this should be in pixels */
+    DATA->unrolled = widget_get(w,PG_WP_SIZE);
     break;
 
   default:
