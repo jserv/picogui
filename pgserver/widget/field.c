@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.41 2002/01/18 16:42:59 pney Exp $
+/* $Id: field.c,v 1.42 2002/01/19 09:18:21 micahjd Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -265,6 +265,7 @@ void field_trigger(struct widget *self,long type,union trigparam *param) {
 
   case TRIGGER_ACTIVATE:
     DATA->focus = 1;
+    post_event(PG_WE_FOCUS,self,1,0,NULL);
     /* No break; here! Get TRIGGER_TIMER to set up the flash timer*/
     
   case TRIGGER_TIMER:

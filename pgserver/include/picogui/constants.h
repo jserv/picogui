@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.117 2002/01/18 16:42:59 pney Exp $
+/* $Id: constants.h,v 1.118 2002/01/19 09:18:21 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -924,6 +924,7 @@ typedef unsigned long pghandle;
 #define PG_EXEV_CHAR      0x0020  /* Processed characters */
 #define PG_EXEV_TOGGLE    0x0040  /* Clicks toggle the button's state */
 #define PG_EXEV_EXCLUSIVE 0x0080  /* Button is mutually exclusive */
+#define PG_EXEV_FOCUS     0x0100  /* We want to receive PG_WE_FOCUS */
 
 /* Constants for PG_WP_DIRECTION */
 #define PG_DIR_HORIZONTAL     0
@@ -947,7 +948,8 @@ typedef unsigned long pghandle;
 #define PG_WE_ACTIVATE     0x001 /* Button has been clicked/selected  */
 #define PG_WE_DEACTIVATE   0x002 /* Sent when the user clicks outside the active popup */
 #define PG_WE_CLOSE        0x003 /* A top-level widget has closed */
-#define PG_WE_FOCUS        0x004 /* Sent when a widget is focused */
+#define PG_WE_FOCUS        0x004 /* Sent when a button is focused, only if it has 
+				  * PG_EXEV_FOCUS. The field widget always sends this. */
 #define PG_WE_PNTR_DOWN    0x204 /* The "mouse" button is now down */
 #define PG_WE_PNTR_UP      0x205 /* The "mouse" button is now up */
 #define PG_WE_PNTR_RELEASE 0x206 /* The "mouse" button was released outside

@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.88 2002/01/17 17:07:34 epchristi Exp $
+/* $Id: button.c,v 1.89 2002/01/19 09:18:21 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -175,7 +175,7 @@ g_error button_install(struct widget *self) {
 
   self->trigger_mask = TRIGGER_ENTER | TRIGGER_LEAVE | TRIGGER_HOTKEY |
     TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_DIRECT |
-    TRIGGER_KEYUP | TRIGGER_KEYDOWN | TRIGGER_DEACTIVATE;
+    TRIGGER_KEYUP | TRIGGER_KEYDOWN | TRIGGER_DEACTIVATE | TRIGGER_ACTIVATE;
 
   self->out = &self->in->next;
   self->sub = &self->in->div->div;
@@ -452,6 +452,11 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     }
     else
       return;
+
+  case TRIGGER_ACTIVATE:
+    if (DATA->extdevents & PG_EXEV_FOCUS)
+      post_event(PG_WE_FOCUS,self,1,0,NULL);
+    return;
 
   case TRIGGER_HOTKEY:
   case TRIGGER_DIRECT:
