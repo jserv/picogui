@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.53 2002/09/15 10:51:47 micahjd Exp $
+/* $Id: font.c,v 1.54 2002/09/17 23:01:56 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -464,7 +464,7 @@ int fontcmp(struct fontstyle_node *fs,const u8 *name, int size, stylet flags) {
   return result;
 }
 
-
+#ifdef CONFIG_WIDGET_TERMINAL
 /* The workhorse of the terminal widget. 3 params:
  * 1. buffer handle,
  * 2. buffer width and offset (0xWWWWOOOO)
@@ -565,7 +565,7 @@ void textgrid_render(struct groprender *r, struct gropnode *n) {
     }
   }
 }
-
+#endif
 
 /* The End */
 
