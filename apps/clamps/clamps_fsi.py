@@ -18,10 +18,13 @@ class filesystemInterface:
                 type = "Directory"
                 fileList.append((fileName, type, None))
             else:
-                statData = os.stat(os.path.join(self.path, fileName))
-                size = statData.st_size
-                type = "File"
-                fileList.append((fileName, type, size))
+                try:
+                    statData = os.stat(os.path.join(self.path, fileName))
+                    size = statData.st_size
+                    type = "File"
+                    fileList.append((fileName, type, size))
+                except:
+                    print "Bad file"
         return fileList
 
     def getPath(self):
