@@ -2,10 +2,10 @@
 import sys, email, smtplib
 from StringIO import StringIO
 
-returnAddress = "python_commits@picogui.org"
+returnAddress = "kde_commits@picogui.org"
 toAddress = "commits@picogui.org"
-projectName = "python"
-logFile = "/home/python_commits/mail.log"
+projectName = "kde"
+logFile = "/home/commits/mail.log"
 
 message = email.message_from_file(sys.stdin)
 body = StringIO(message.get_payload())
@@ -17,16 +17,15 @@ open(logFile, "a").write(str(message))
 if message['subject'].strip().lower().find("re") == 0:
     sys.exit(0)
 
-# Directory name is the second token in the subject
-dirName = message['subject'].split(" ")[1]
+# Directory name is the first token in the subject
+dirName = message['subject'].split(" ")[0]
 
-# Use the from address as the author
-author = message['from']
+# Author is the last token of the first line, with a trailing colon
+author = body.readline().strip().split(" ")[-1][:-1]
 
-# The body is the set of non-blank lines starting after "Log Message:"
+# The body is the set of non-blank lines starting on the third line
 log = ""
-while body.readline().strip() != "Log Message:":
-    pass
+body.readline()
 while True:
     line = body.readline().strip()
     if not line:

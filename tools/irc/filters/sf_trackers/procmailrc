@@ -1,5 +1,0 @@
-:0
-* ^Subject: \[ [A-Za-z0-9 \-]+ \]
-| /home/sf_trackers/filter.py
-:0
-| /usr/lib/mh/rcvstore +inbox

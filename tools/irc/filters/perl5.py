@@ -5,7 +5,7 @@ from StringIO import StringIO
 returnAddress = "perl5_commits@picogui.org"
 toAddress = "commits@picogui.org"
 projectName = "perl5"
-logFile = "/home/perl5_commits/mail.log"
+logFile = "/home/perl5/mail.log"
 
 message = email.message_from_file(sys.stdin)
 body = StringIO(message.get_payload())

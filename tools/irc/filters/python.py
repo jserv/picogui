@@ -2,10 +2,10 @@
 import sys, email, smtplib
 from StringIO import StringIO
 
-returnAddress = "plone_commits@picogui.org"
+returnAddress = "python_commits@picogui.org"
 toAddress = "commits@picogui.org"
-projectName = "plone"
-logFile = "/home/plone_commits/mail.log"
+projectName = "python"
+logFile = "/home/commits/mail.log"
 
 message = email.message_from_file(sys.stdin)
 body = StringIO(message.get_payload())
