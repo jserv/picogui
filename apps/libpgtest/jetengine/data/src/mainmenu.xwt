@@ -7,7 +7,7 @@
 		</label>
 	</box>	
 
-	<!--========================================== Footer =======-->
+	<!--========================================== Footer ===========-->
 	<box side="bottom">
 		<label side="all">
 			JetEngine - JetStream technology demo
@@ -16,23 +16,46 @@
 	
 	<box transparent="1" side="all">
 
-		<!--================================== Introduction =-->
+		<!--================================== Introduction =====-->
 		<tabpage text="Introduction" side="left">
 			<scrollbox transparent="1">
 				<textbox text_src="intro.text" side="all" readonly="1"/>
 			</scrollbox>
 		</tabpage>
 
-		<!--================================== About ========-->
+
+		<!--================================== Single-player ====-->
+		<tabpage text="Single-player Missions" side="left">
+			<label side="all">
+				This isn't here yet
+			</label>
+		</tabpage>
+
+		<!--================================== Multiplayer ======-->
+		<tabpage text="Multiplayer" side="left">
+			<label side="all">
+				This doesn't do anything either
+			</label>
+		</tabpage>
+
+		<!--================================== About ============-->
 		<tabpage text="About" side="left">
 			<box transparent="1" margin="0" side="bottom">
 				<label bitmap_src="pglogo3.png" side="left" />
 				<label bitmap_src="pythonlogo.png" side="right" />		
 			</box>
 			<scrollbox transparent="1">
-				<textbox text_src="intro.text" side="all" readonly="1"/>
+				<textbox text_src="/home/micah/samples/albuquerque.txt" side="all" readonly="1"/>
 			</scrollbox>
 		</tabpage>
+
+		<!--================================== Mods =============-->
+		<tabpage text="Mods" side="left" name="ModsTab">
+			<label side="all">
+				No mods installed
+			</label>
+		</tabpage>
+
 	</box>
 
 </toolbarapp>
