@@ -223,18 +223,23 @@ int clickski(struct pgEvent *evt)
 	  pgBind(evt -> from,PG_WE_PNTR_DOWN,&clickski2,NULL);
 	  quoe(10);
 	  picked_color = 0;
-	  redraw(evt);
+	  //redraw(evt);
+	  draw_spot(guessx,guessy,PLAY_GUESS);
+	  pgWriteCmd(canvas,PGCANVAS_REDRAW,0);
 	  pgMessageDialogFmt("HORRAY!",PG_MSGBTN_OK,"YOU WIN BY %d POINTS",17-aivalues.comp_points);
 	  picked_color = 1;
 	  return 0;
 	}
       draw_spot(guessx,guessy,PLAY_GUESS);
+      pgWriteCmd(canvas,PGCANVAS_REDRAW,0);
       aicall();
       if(aivalues.comp_points == 17)
 	{
-	  redraw(evt);
-	  pgUpdate();
+	  //	  redraw(evt);
+	  //	  pgUpdate();
 	  pgBind(evt->from,PG_WE_PNTR_DOWN,&clickski2,NULL);
+	  draw_spot(guessx,guessy,PLAY_GUESS);
+	  pgWriteCmd(canvas,PGCANVAS_REDRAW,0)
 	  pgMessageDialogFmt("ERROR",PG_MSGBTN_OK ,"YOU NEED TO KEEP YOUR SHIPS");
 	  quoe(10);
 	  picked_color = 0;
@@ -328,7 +333,7 @@ int redraw(struct pgEvent *evt)
   //Draw the comp pieces if they are there
 
   pgWriteCmd(evt->from,PGCANVAS_REDRAW,0);
-  pgUpdate();
+  // pgUpdate();
   
   return 0;
 }
@@ -392,10 +397,10 @@ void draw_spot (int x, int y, int side)
   switch(side)
     {
     case COMP_GUESS:
-      fprintf(stderr,"draw_spot called with %d and %d for COMP_GUESS\n",x%11,y);
+      //      fprintf(stderr,"draw_spot called with %d and %d for COMP_GUESS\n",x%11,y);
       break;
     case COMP_PIECE:
-      fprintf(stderr,"draw_spot called with %d and %d for COMP_PIECE\n",x%11,y);
+      //      fprintf(stderr,"draw_spot called with %d and %d for COMP_PIECE\n",x%11,y);
       break;
     case PLAY_GUESS:
       //fprintf(stderr,"draw_spot called with %d and %d for PLAY_GUESS\n",x%11,y);
@@ -445,7 +450,7 @@ void draw_hit(int x, int y)
   pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,(x*ss)+xleft+unit+center,(y*ss)+yleft-unit+center,0,center);
 
   pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,(x*ss)+xleft-unit+center,(y*ss)+yleft+center,2*unit,0);
-  pgWriteCmd(canvas,PGCANVAS_REDRAW,0);
+  //pgWriteCmd(canvas,PGCANVAS_REDRAW,0);
   //pgSubUpdate(canvas);
 }
 
@@ -473,7 +478,7 @@ void draw_hit_ship(int x, int y)
   //This is a filled box
   pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_RECT,(x*ss)+xleft + (center - unit),(y*ss)+yleft-unit+center,2*unit,2*unit);
   pgWriteCmd(canvas,PGCANVAS_REDRAW,0);
-  pgSubUpdate(canvas);
+  //pgSubUpdate(canvas);
 }
 
 void quoe(int x)
