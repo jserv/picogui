@@ -652,7 +652,7 @@ quoted appropriately. For example:
 
 - defer-update
   Maximum number of milliseconds to defer updates
-  Defaults to 40
+  Defaults to 0
 
 - name
   Desktop name that will usually appear in a client's window title
