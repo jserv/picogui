@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.36 2001/12/14 22:56:45 micahjd Exp $
+/* $Id: terminal.c,v 1.37 2001/12/16 08:54:12 lonetech Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -864,6 +864,8 @@ void term_clearbuf(struct widget *self,int fromx,int fromy,int chars) {
 /* Handle a parsed ECMA-48 CSI sequence */
 void term_ecma48sgr(struct widget *self) {
   int *arg = DATA->csiargs;
+  if(!DATA->num_csiargs)	/* no arg = reset */
+    DATA->attr = DATA->attr_default;
   for (;DATA->num_csiargs;DATA->num_csiargs--,arg++)
     switch (*arg) {
 
