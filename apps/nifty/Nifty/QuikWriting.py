@@ -69,18 +69,11 @@ tables = tuple(tables)
 class QWPad(object):
     def __init__(self, height, app=None):
         self.height = height
-        if app is None:
-            self.app = PicoGUI.ToolbarApp('nqw')
-            self.box = self.app
-        else:
-            self.app = app
-            h = app.server.register('nqw', 2)
-            self.box = PicoGUI.Widget(server=app.server, handle=h, parent=app, type='ToolbarApp')
-            self.box.default_relationship = 'inside'
-        self.box.side = 'bottom'
-        self.box.size = self.height+5
-        #self.box.margin = 0
-        alpha = self.box.addWidget('box')
+        self.app = PicoGUI.ToolbarApp('nqw', parent=app)
+        self.app.side = 'bottom'
+        self.app.size = self.height+5
+        #self.app.margin = 0
+        alpha = self.app.addWidget('box')
         alpha.side = 'left'
         alpha.size = self.height
         alpha.sizemode = 'pixel'
@@ -146,7 +139,7 @@ class QWPad(object):
         self.app.link(lambda ev: self.set_mode(0), center, 'pntr up')
         # FIXME: VR3-specific, should also check for apm devices
         if os.path.exists('/dev/adif'):
-            self.batt = self.box.addWidget('label')
+            self.batt = self.app.addWidget('label')
             self.batt.transparent = False
             self.batt.side = 'right'
             self.batt.text = '???'
@@ -157,13 +150,13 @@ class QWPad(object):
         self.set_mode()
 
     def hide(self):
-        self.box.size = 0
+        self.app.size = 0
 
     def unhide(self):
-        self.box.size = self.height
+        self.app.size = self.height
 
     def toggle_hide(self):
-        if self.box.size:
+        if self.app.size:
             self.hide()
         else:
             self.unhide()
