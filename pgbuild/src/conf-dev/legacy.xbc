@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<pgbuild title="Pre-PGBuild legacy packages" root="packages">
+
+	<package name="legacy/picogui">
+		<description>
+			<summary>PicoGUI legacy packages.</summary>
+			<detail>
+				This package is for older versions of PicoGUI, before PGBuild support was added.
+				These are currently here mainly to test PGBuild's support for software packages
+				in .tar.gz format with autoconf/automake build systems.
+			</detail>
+		</description>
+		<version name="0.42">
+			<a href="picogui-0.42.tar.gz"><site name="picogui-releases"/></a>
+		</version>
+		<version name="0.43">
+			<a href="picogui-0.43.tar.gz"><site name="picogui-releases"/></a>
+		</version>
+		<version name="0.44">
+			<a href="picogui-0.44.tar.gz"><site name="picogui-releases"/></a>
+		</version>
+		<version name="0.45">
+			<a href="picogui-0.45.tar.gz"><site name="picogui-releases"/></a>
+		</version>
+	</package>
+
+</pgbuild>

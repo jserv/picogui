@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<pgbuild title="PicoGUI Version Groups list">
+
+	<!-- 
+	Version groups are a convenience for managing large sets of packages
+	that are usually released under a single version number, and stored
+	in the same relative location for each version release.
+	Package definitions can use a tag of the form:
+		<versiongroup name="Name" path="Path">
+	to refer to a version group defined here. The 'path' attribute will be
+	joined to all URIs specified by the version group.
+
+	Note that <version> tags in the <versiongroup> are processed just like
+	<version> tags in the package itself, so versiongroups can be nested.
+	-->
+
+	<!--
+	Group for all packages following the shared PicoGUI version numbering scheme.
+	This doesn't include sources from before the SVN migration-
+	those are in the 'legacy' package.
+	-->
+	<versiongroup name="picogui-versions">
+		<version name="dev">
+			<a href="trunk"><site name="picogui-svn" /></a>
+		</version>
+	</versiongroup>
+
+</pgbuild>

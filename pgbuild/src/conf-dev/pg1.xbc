@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<pgbuild title="Main package list for the PicoGUI 1.x architecture" root="packages">
+    
+	<package name="pg1/server">
+		<description>
+			<summary>PicoGUI Server.</summary>
+			<detail>
+				In the PicoGUI 1.x architecture, the server is the component that manages
+				and contains drivers, widgets, and all subsystems except the client and client
+				library.
+			</detail>
+		</description>
+		<versiongroup name="picogui-versions" path="pg1/server"/>
+	</package>
+
+</pgbuild>

@@ -3,3 +3,7 @@ PGBuild's configuration database with project-specific data.
 Any XML Build Configuration files (.xbc extension) in this
 directory are automatically loaded by PGBuild before
 any others.
+
+If you choose to use PGBuild on a different project, this
+conf package should be all you need to change.
+
