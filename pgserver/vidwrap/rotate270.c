@@ -1,4 +1,4 @@
-/* $Id: rotate270.c,v 1.6 2002/01/30 12:03:16 micahjd Exp $
+/* $Id: rotate270.c,v 1.7 2002/02/23 05:25:28 micahjd Exp $
  *
  * rotate270.c - Video wrapper to rotate the screen 270 degrees
  *
@@ -83,7 +83,7 @@ void rotate270_gradient(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,s16 angle,
 		       pgcolor c1,pgcolor c2,s16 lgop) {
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
-   (*vid->gradient)(dest,dx-y-w,x,h,w,angle-270,c1,c2,lgop);
+   (*vid->gradient)(dest,dx-y-h,x,h,w,angle-270,c1,c2,lgop);
 }
 void rotate270_slab(hwrbitmap dest,s16 x,s16 y,s16 w,hwrcolor c,s16 lgop) {
    s16 dx,dy;
@@ -102,6 +102,18 @@ void rotate270_line(hwrbitmap dest,s16 x1,s16 y1,s16 x2,
    (*vid->line)(dest,dx-1-y1,x1,dx-1-y2,x2,c,lgop);
 }
 void rotate270_blit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
+		   hwrbitmap src,s16 src_x,s16 src_y,
+		   s16 lgop) {
+   s16 bh,sy2;
+   s16 dx,dy;
+   (*vid->bitmap_getsize)(dest,&dx,&dy);
+   (*vid->bitmap_getsize)(src,&bh,&sy2);
+   sy2 = bh-(h%bh)-src_y;
+   
+   (*vid->scrollblit)(dest,dx-dest_y-h,dest_x,h,w,
+		      src,sy2,src_x,lgop);
+}
+void rotate270_scrollblit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
 		   hwrbitmap src,s16 src_x,s16 src_y,
 		   s16 lgop) {
    s16 bh,sy2;
@@ -134,21 +146,21 @@ void rotate270_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
    (*vid->bitmap_getsize)(dest,&dx,&dy);
 
    if (clip) {
-      cr.x1 = vid->xres-1-clip->y2;
+      cr.x1 = vid->xres - 1 - clip->y2;
       cr.y1 = clip->x1;
-      cr.x2 = vid->xres-1-clip->y1;
+      cr.x2 = vid->xres - 1 - clip->y1;
       cr.y2 = clip->x2;
       crp = &cr;
    }
    else
      crp = NULL;
-   crp=NULL;
+
    /* Rotate the text */
    angle += 270;
    angle %= 360;
    if (angle<0) angle += 360;
    
-   (*vid->charblit)(dest,chardat,dx-1-dest_y,dest_x,w,h,
+   (*vid->charblit)(dest,chardat,dx-dest_y,dest_x,w,h,
 		    lines,angle,c,crp,lgop);
 
 }
@@ -243,6 +255,7 @@ void vidwrap_rotate270(struct vidlib *vid) {
    vid->blit = &rotate270_blit;
    vid->tileblit = &rotate270_tileblit;
    vid->charblit = &rotate270_charblit;
+   vid->scrollblit = &rotate270_scrollblit;
    vid->coord_logicalize = &rotate270_coord_logicalize;
    vid->coord_physicalize = &rotate270_coord_physicalize;
 #ifdef CONFIG_FORMAT_XBM

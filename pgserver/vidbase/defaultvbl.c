@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.75 2002/02/11 19:39:23 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.76 2002/02/23 05:25:27 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -1214,10 +1214,10 @@ void def_charblit_270(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
     }
     
     /* Setup for horizontal clipping (if so, set a special case) */
-    if (clip->y2<dest_y-w+1)
-      xmax = 1+clip->y2-dest_y;
-    if (clip->y1>(dest_y))
+    if (clip->y1>dest_y)
       xmin = clip->y1-dest_y;
+    if (clip->y2<(dest_y+w))
+      xmax = clip->y2-dest_y+1;
   }
 
   for (;hc<h;hc++,dest_x--) {
@@ -1489,11 +1489,35 @@ void def_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 	(*vid->pixel) (dest,x+i,y,(*vid->getpixel)(src,src_x+i,src_y),lgop);
 }
 
-/* Copy it... Backwards! */
+/* Backwards version of the scary slow blit, needed for scrolling 1/2 of the time */
 void def_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 		    s16 src_x, s16 src_y, s16 lgop) {
-  for (y+=h-1,src_y+=h-1;h;h--,y--,src_y--)
-    (*vid->blit) (dest,x,y,w,1,src,src_x,src_y,lgop);
+   int i;
+   s16 bw,bh;
+   
+   if(!src)
+	   return;
+
+   (*vid->bitmap_getsize)(src,&bw,&bh);
+
+   if (w>(bw-src_x) || h>(bh-src_y)) {
+      int i,j,sx,sy;
+      src_x %= bw;
+      src_y %= bh;
+      
+      /* Do a tiled blit */
+      for (i=0,sx=src_x;i<w;i+=bw-sx,sx=0)
+	for (j=0,sy=src_y;j<h;j+=bh-sy,sy=0)
+	  (*vid->scrollblit) (dest,x+i,y+j,
+			      min(bw-sx,w-i),min(bh-sy,h-j),
+			      src,sx,sy,lgop);
+      return;
+   }
+   
+   /* Icky blit loop */
+   for (y+=h-1,src_y+=h-1;h;h--,y--,src_y--)
+     for (i=w-1;i>=0;i--)
+	(*vid->pixel) (dest,x+i,y,(*vid->getpixel)(src,src_x+i,src_y),lgop);
 }
 
 void def_sprite_show(struct sprite *spr) {
@@ -1612,13 +1636,14 @@ void def_sprite_show(struct sprite *spr) {
       fd.fs = fontstyles;
       fd.font = fd.fs->normal;
       fd.hline = -1;
+      fd.decoder = decode_ascii;
  
       cr.x1 = 100;
       cr.y1 = 100;
       cr.x2 = 150;
-      cr.y2 = 110;
+      cr.y2 = 180;
       VID(rect) (vid->display,cr.x1,cr.y1,cr.x2-cr.x1+1,cr.y2-cr.y1+1,(*vid->color_pgtohwr)(0x004000),PG_LGOP_NONE);
-      outtext(vid->display,&fd,spr->x,spr->y,(*vid->color_pgtohwr) (0xFFFF80),"Hello,\nWorld!",&cr,0,0,PG_LGOP_NONE,0);
+      outtext(vid->display,&fd,spr->x,spr->y,(*vid->color_pgtohwr) (0xFFFF80),"Hello,\nWorld!",&cr,PG_LGOP_NONE,0);
       //      outtext_v(&fd,spr->x,spr->y,(*vid->color_pgtohwr) (0xFFFF80),"Hello,\nWorld!",&cr);
 //      outtext_v(&fd,spr->x,spr->y,(*vid->color_pgtohwr) (0xFFFF80),"E",&cr);
       VID(update) (0,0,vid->lxres,vid->lyres);
