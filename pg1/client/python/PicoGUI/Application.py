@@ -93,6 +93,7 @@ class Application(Widget.Widget):
             if thread is not None:
                 self._run_lock = thread.allocate_lock()
                 self._dispatch_lock = thread.allocate_lock()
+            self.app = self
         else:
             parent._notify_new_widget(self)
             self._widget_registry = parent._widget_registry
@@ -102,6 +103,7 @@ class Application(Widget.Widget):
             if thread is not None:
                 self._run_lock = parent._run_lock
                 self._dispatch_lock = parent._dispatch_lock
+            self.app = parent.app
 
     def panelbar(self):
         handle = self.server.get(self.handle, 'panelbar')

@@ -55,6 +55,10 @@ class Widget(object):
         self.handle = handle
         self.default_relationship = default_relationship
         self.parent = parent
+        try:
+            self.app = parent.app
+        except AttributeError:
+            self.app = None
         self._type = type
 
     def __eq__(self, other):
