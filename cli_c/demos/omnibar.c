@@ -1,4 +1,4 @@
-/* $Id: omnibar.c,v 1.6 2000/12/12 00:55:53 micahjd Exp $
+/* $Id: omnibar.c,v 1.7 2000/12/29 21:24:42 micahjd Exp $
  * 
  * omnibar.c - hopefully this will grow into a general interface
  *             for starting and manipulating applications, but
@@ -223,7 +223,7 @@ int main(int argc, char **argv) {
 	      0);  
 
   /* Run it. */
-  pgSetIdle(50,&sysIdle);
+  pgSetIdle(1000,&sysIdle);
   pgEventLoop();
    
   return 0;
