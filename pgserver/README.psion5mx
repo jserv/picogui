@@ -1,0 +1,55 @@
+Compiling pgserver for the Psion5MX
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You should want to have a cross compiler :-) You can find one at
+http://www.emdebian.org/
+
+
+To compile follow these instructions:
+
+1. If you have the source from CVS you need to do "./autogen.sh"
+
+2. Run "./configure"
+
+3. Do a "make menuconfig" make sure you have at least these settings:
+    Target System
+        Linux-generic Platform
+        NO! x86 asm optimization
+        Optimize for size & speed (at your opinion)
+
+    Video Drivers
+        Linux framebuffer device
+        Virtual Terminal switching
+        Psion framebuffer hack
+
+    Input Drivers
+        Psion touchscreen (adc7843) driver
+        TTY keyboard input driver
+
+    Video Base Libraries
+        Linear framebuffer @ 4bpp
+
+4. Build it "make"
+
+5. You now have a "pgserver" in compiled... Copy it to your Psion ;)
+
+
+
+A sample "/etc/pgserver.conf"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[pgserver]
+depth = 4
+themes = /usr/local/share/picogui/themes/lcdmono.th /usr/local/share/picogui/themes/term_white.th
+input = ttykb adc7843
+session = pgl-toolbar
+
+[timers]
+cursorhide = 10
+backlightoff = 300
+sleep = 3000
+
+[sound]
+click = 1
+keyclick = 1
+
+
