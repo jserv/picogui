@@ -49,7 +49,12 @@ class Canvas:
         self.widget.writecmd(12, x, y)
         
     def inputmapping(self, x, y, w, h, type):
-        self.widget.writecmd(13, x, y, w, h, type)
+        self.widget.writecmd(13, x, y, w, h, {
+            'none': 0,
+            'scale': 1,
+            'squarescale': 2,
+            'center': 3,
+            }[type])
 
     def gridsize(self, x, y):
         self.widget.writecmd(14, x, y)
@@ -111,7 +116,12 @@ class Canvas:
         self.grop(0x21, x, y, w, h)
 
     def setmapping(self, x, y, w, h, type):
-        self.grop(0x05, x, y, w, h, type)
+        self.grop(0x05, x, y, w, h, {
+            'none': 0,
+            'scale': 1,
+            'squarescale': 2,
+            'center': 3,
+            }[type])
 
     def setcolor(self, color):
         self.grop(0x07, color)
