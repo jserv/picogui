@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.16 2000/06/03 18:37:47 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.17 2000/06/08 06:55:57 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -29,7 +29,8 @@ use Carp;
 @ISA       = qw(Exporter);
 @EXPORT    = qw(NewWidget %ServerInfo Update NewString
 		NewFont NewBitmap delete SetBackground RestoreBackground
-		SendPoint SendKey ThemeSet RegisterApp EventLoop NewPopup);
+		SendPoint SendKey ThemeSet RegisterApp EventLoop NewPopup
+		GetTextSize);
 
 ################################ Constants
 
@@ -255,12 +256,25 @@ END {
 
 ######### Internal subs
 
+# Format a packet, store it in the buffer
 sub _request {
     my ($type,$data) = @_;
-    my ($rsp,$r_id,$ret,$errt,$msg,$rspt,$mlen);
-    my ($etype,$efrom,$eparam);
-    print S pack("nnN",$type,++$id,length $data);
-    print S $data;
+    $buf .= pack("nnN",$type,++$id,length $data).$data;
+    ++$numpackets;
+}
+
+# Flushes the buffer of packets - if there's only one, it gets sent as is
+# More than one packet is wrapped in a batch packet
+sub _flushpackets {
+    return if (!$numpackets);
+    if ($numpackets==1) {
+	print S $buf;
+    }
+    else {
+	print S pack("nnN",18,++$id,length $buf).$buf;
+    }
+    $buf = '';
+    $numpackets = 0;
 
     # Read the response type
     read S,$rsp,2 or croak "PicoGUI - Error reading response code";
@@ -294,28 +308,34 @@ sub _request {
 # Subs for each type of request
 sub Update {
     _request(1);
+    _flushpackets();
 }
 sub _mkwidget {
     _request(2,pack('nnN',@_));
+    _flushpackets();
 }
 sub _mkbitmap {
     my ($w,$h,$fg,$bg,$bits) = @_;
     _request(3,pack('nnNN',$w,$h,$fg,$bg).$bits);
+    _flushpackets();
 }
 sub _mkfont {
     _request(4,pack('a40Nnnn',@_));
+    _flushpackets();
 }
 sub _set {
     _request(7,pack('NNnn',@_));
 }
 sub _get {
     _request(8,pack('Nnn',@_));
+    _flushpackets();
 }
 sub _free {
     _request(6,pack('N',@_));
 }
 sub _mkstring {
     _request(5,join('',@_));
+    _flushpackets();
 }
 sub _setbg {
     _request(9,pack('N',@_));
@@ -331,18 +351,33 @@ sub _in_direct {
 }
 sub _wait {
     _request(13);
+    _flushpackets();
 }
 sub _themeset {
     _request(14,pack('Nnnnn',@_));
 }
 sub _register {
     _request(15,pack('Nnnnnnnnnnn',@_));
+    _flushpackets();
 }
 sub _mkpopup {
     _request(16,pack('nnnn',@_));
+    _flushpackets();
+}
+sub _sizetext {
+    _request(17,pack('NN',@_));
+    _flushpackets();
 }
 
 ######### Public functions
+
+# Mandatory string followed by optional font object. Returns a list
+# with (w,h) in it.
+sub GetTextSize {
+    my $x;
+    $x = _sizetext($_[0]->{'h'},$_[1]->{'h'});
+    return ($x>>16,$x&0xFFFF);
+}
 
 sub NewPopup {
     my ($x,$y,$w,$h) = @_;

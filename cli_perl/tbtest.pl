@@ -35,7 +35,7 @@ sub tuxclick {
     NewWidget(-type => label, -text =>NewString($s),-side=>all,
 	      -transparent => 1);
     
-    NewWidget(-type => button, -onclick => sub {$p->delete},
+    NewWidget(-type => button, -onclick => sub {$p->delete;Update()},
 	      -inside => $tb, -side => top,
 	      -bitmap => NewBitmap(-file=>'../images/button/check.pnm'),
 	      -bitmask => NewBitmap(-file=>'../images/button/check_mask.pnm'));
