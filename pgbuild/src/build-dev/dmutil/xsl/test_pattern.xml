@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!DOCTYPE xsa PUBLIC "-//LM Garshol//DTD XML Software Autoupdate 1.0//EN//XML" 
+                     "http://birk105.studby.uio.no/www_work/xsa/xsa.dtd">
+
+<xsa>
+  <vendor>
+    <name>Dieter Maurer</name>
+    <email>dieter@handshake.de</email>
+    <url>http://www.handshake.de/~dieter</url>
+  </vendor>
+
+
+  <product id="weakdict">
+    <name>WeakDict</name>
+    <version>0.01</version>
+    <last-release>19981216</last-release>
+    <info-url>http://www.handshake.de/~dieter/pyprojects/weakdict.html</info-url>
+  </product>
+
+  <product id="addcontenttable">
+    <name>AddContentTable</name>
+    <version>0.02</version>
+    <last-release>19990131</last-release>
+    <info-url>http://www.handshake.de/~dieter/pyprojects/addcontenttable.html</info-url>
+    <changes>
+ * visitor module fixed.
+    </changes>
+  </product>
+
+  <product id="xslpattern">
+    <name>XSL-Pattern</name>
+    <version>0.02</version>
+    <last-release>19990131</last-release>
+    <info-url>http://www.handshake.de/~dieter/pyprojects/xslpattern.html</info-url>
+    <changes>
+ * XML whitespace specification followed (restricted to ISO Latin-1)
+ * The pattern parser now recognizes
+   XML namespaces (restricted to ISO Latin-1).
+   However,
+   namespace prefixes are not yet transformed into URI's as required
+   by the XSL specification, because PyDOM does not yet support
+   namespaces.
+ * I am now convinced that the relation between the (XSL specified)
+   select patterns and the (implemented) accept patterns is correct.
+ * Slightly improved documentation
+    </changes>
+  </product>
+</xsa>
+
+
+  

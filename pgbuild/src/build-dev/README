@@ -1,0 +1,23 @@
+This directory is expected to be in the python path when
+using PGBuild. It is comprised of sources from multiple locations:
+
+  - SCons
+    v0.13
+
+    This module provides the SCons build system that PGBuild is
+    layered on top of. See http://scons.sourceforge.net/
+
+  - dmutil, PyBison
+    v0.1
+
+    These modules are for the PyXPath parser. The XML XPath
+    language is used in PGBuild to specify configuration tags.
+    See http://www.handshake.de/~dieter/pyprojects/pyxpath.html
+
+  - PGBuild
+    dev
+
+    This directory contains the new code for the PGBuild system.
+    It is maintained in-place in the PicoGUI repository.
+
+  
