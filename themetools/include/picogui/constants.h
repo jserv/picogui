@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.28 2001/05/10 04:19:57 micahjd Exp $
+/* $Id: constants.h,v 1.29 2001/06/28 21:55:41 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -29,6 +29,27 @@
 #ifndef _H_PG_CONSTANTS
 #define _H_PG_CONSTANTS
 
+/*! 
+ * \file constants.h
+ * \brief Constants used in the client and server
+ * 
+ * This file defines constants common to the PicoGUI client and the server.
+ * Because the most interesting things in PicoGUI like widgets and gropnodes
+ * are referred to using constants, they are documented in this file.
+ * 
+ * Usually this file does not need to be included
+ * separately, it is included with <tt>\#include <picogui.h></tt>
+ */
+
+/*!
+ * \defgroup constants Constants
+ * 
+ * These constants are used in both the PicoGUI client and the server.
+ * They are defined in constants.h
+ * 
+ * \{
+ */
+
 /* Just to make sure... */
 #ifndef NULL
 #define NULL ((void*)0)
@@ -41,128 +62,187 @@
 
 /******************** Application manager */
 
-/**** Values for application type */
-#define PG_APP_NORMAL  1
-#define PG_APP_TOOLBAR 2
-#define PG_APPMAX      2
+/*!
+ * \defgroup appconst Application registration constants
+ * 
+ * These constants are used with pgRegisterApp() to create
+ * a new application
+ * 
+ * \{
+ */
 
-/**** Extra parameters for applications */
+#define PG_APP_NORMAL  1     //!< Normal application for pgRegisterApp
+#define PG_APP_TOOLBAR 2     //!< Toolbar application for pgRegisterApp
+#define PG_APPMAX      2     //!< Current maximum value used in PG_APP_* constants
 
-/* a PG_S_* value for the initial side the app sticks to */
-#define PG_APPSPEC_SIDE      1
+#define PG_APPSPEC_SIDE      1    //!< Force the app to a specified side
+#define PG_APPSPEC_SIDEMASK  2    //!< A bitmask of acceptable sides for an application
+#define PG_APPSPEC_WIDTH     3    //!< Requested width
+#define PG_APPSPEC_HEIGHT    4    //!< Requested height
 
-/* a bitmask of acceptable sides for the app */
-#define PG_APPSPEC_SIDEMASK  2
+#define PG_APPSPEC_MINWIDTH  5    //!< Minimum allowed width
+#define PG_APPSPEC_MAXWIDTH  6    //!< Maximum allowed width
+#define PG_APPSPEC_MINHEIGHT 7    //!< Minimum allowed height
+#define PG_APPSPEC_MAXHEIGHT 8    //!< Maximum allowed height
 
-/* Initial width and height */
-#define PG_APPSPEC_WIDTH     3
-#define PG_APPSPEC_HEIGHT    4
+#define PG_OWN_KEYBOARD      1    //!< Exclusive access to the keyboard
+#define PG_OWN_POINTER       2    //!< Exclusive access to the pointer
+#define PG_OWN_SYSEVENTS     3    //!< Recieve system events like app open/close, click on background, etc.
+#define PG_OWN_DISPLAY       4    //!< Exclusive access to the display via pgRender
 
-/* Minimum and maximum size */
-#define PG_APPSPEC_MINWIDTH  5
-#define PG_APPSPEC_MAXWIDTH  6
-#define PG_APPSPEC_MINHEIGHT 7
-#define PG_APPSPEC_MAXHEIGHT 8
-
-/* Constants to use with PGREQ_REGOWNER to unregister and register
- * exclusive access to resources */
-#define PG_OWN_KEYBOARD      1      /* _exclusive_ access to the keyboard! */
-#define PG_OWN_POINTER       2      /* _exclusive_ access to the pointer */
-#define PG_OWN_SYSEVENTS     3      /* Recieve system events- app open/close,
-				     * click on background, etc. */
+//! \}
 
 /******************** Layout */
 
-/* Alignment types */
-#define PG_A_CENTER   0
-#define PG_A_TOP      1
-#define PG_A_LEFT     2
-#define PG_A_BOTTOM   3
-#define PG_A_RIGHT    4
-#define PG_A_NW       5
-#define PG_A_SW       6
-#define PG_A_NE       7
-#define PG_A_SE       8
-#define PG_A_ALL      9
-#define PG_AMAX       9   /* For error checking the range of the align */
-
-/* Side values 
- * these come from the DIVNODE flags used internally in the
- * picoGUI server, hence the strange values
+/*!
+ * \defgroup layoutconst Layout constants
+ * 
+ * PicoGUI defines two types of layout constants:
+ *  - PG_A_* constants define alignment, the way a smaller object is positioned
+ *    within a larger one, usually without changing the smaller object's size.
+ *    For example, placing text within a widget.
+ *  - PG_S_* constants specify a side to attach something to, for example the
+ *    side of a container that a widget will stick to
+ *
+ * The side flags can be combined with a bitwise 'or' if necessary.
+ * The values of the PG_S_* constants are significant because they must
+ * be compatible with the server's internal layout engine flags.
+ * 
+ * \sa PG_WP_SIDE, PG_WP_ALIGN
+ *
+ * \{
  */
-#define PG_S_TOP      (1<<3)
-#define PG_S_BOTTOM   (1<<4)
-#define PG_S_LEFT     (1<<5)
-#define PG_S_RIGHT    (1<<6)
-#define PG_S_ALL      (1<<11)
+
+/* Alignment types */
+#define PG_A_CENTER   0  //!< Center in the available space
+#define PG_A_TOP      1  //!< Stick to the top-center of the available space
+#define PG_A_LEFT     2  //!< Stick to the left-center of the available space
+#define PG_A_BOTTOM   3  //!< Stick to the bottom-center of the available space
+#define PG_A_RIGHT    4  //!< Stick to the right-center of the available space
+#define PG_A_NW       5  //!< Stick to the northwest corner
+#define PG_A_SW       6  //!< Stick to the southwest corner
+#define PG_A_NE       7  //!< Stick to the northeast corner
+#define PG_A_SE       8  //!< Stick to the southeast corner
+#define PG_A_ALL      9  //!< Occupy all available space (good for tiled bitmaps)
+#define PG_AMAX       9  //!< Current maximum value for a PG_A_* constant 
+
+#define PG_S_TOP      (1<<3)   //!< Stick to the top edge
+#define PG_S_BOTTOM   (1<<4)   //!< Stick to the bottom edge
+#define PG_S_LEFT     (1<<5)   //!< Stick to the left edge
+#define PG_S_RIGHT    (1<<6)   //!< Stick to the right edget
+#define PG_S_ALL      (1<<11)  //!< Occupy all available space
+
+//! \}
 
 /******************** Fonts */
 
-/* Font style flags.  These flags can be used
- * when defining a font or in findfont
+/*!
+ * \defgroup fontconst Font styles
+ * 
+ * These font style constants can be used as the \p flags parameter of
+ * pgFindFont() to specify font attributes.
+ * 
+ * These constants can also be used when defining a new font for pgserver:
+ *   - PG_FSTYLE_FIXED
+ *   - PG_FSTYLE_DEFAULT
+ *   - PG_FSTYLE_SYMBOL
+ *   - PG_FSTYLE_SUBSET
+ *   - PG_FSTYLE_EXTENDED
+ *   - PG_FSTYLE_IBMEXTEND
+ * 
+ * \{
  */
 
-#define PG_FSTYLE_FIXED        (1<<0)
-#define PG_FSTYLE_DEFAULT      (1<<1)    /* The default font in its category,
-					    fixed or proportional. */
-#define PG_FSTYLE_SYMBOL       (1<<2)    /* Font contains special chars not letters
-					    and will not be chosen unless
-					    specifically asked for */
-#define PG_FSTYLE_SUBSET       (1<<3)    /* Font does not contain all the ASCII
-					    chars before 127, and shouldn't
-					    be used unless asked for */
-#define PG_FSTYLE_EXTENDED     (1<<4)    /* Contains international characters
-					    above 127 and will be used if this
-					    is requested */
-#define PG_FSTYLE_IBMEXTEND    (1<<5)    /* Has IBM-PC extended characters */
+#define PG_FSTYLE_FIXED        (1<<0)    //!< Fixed width
+#define PG_FSTYLE_DEFAULT      (1<<1)    //!< The default font in its category, fixed or proportional.
+#define PG_FSTYLE_SYMBOL       (1<<2)    //!< Font contains nonstandard chars and will not be chosen unless specifically requested
+#define PG_FSTYLE_SUBSET       (1<<3)    //!< Font does not contain all the ASCII chars before 127, and shouldn't be used unless requested
+#define PG_FSTYLE_EXTENDED     (1<<4)    //!< Contains international characters above 127 
+#define PG_FSTYLE_IBMEXTEND    (1<<5)    //!< Has IBM-PC extended characters
 
-/* These should only be used for findfont
- * (findfont uses them to add features to that individial
- * font descriptor, or to search for the best font)
- */
-#define PG_FSTYLE_DOUBLESPACE  (1<<7)
-#define PG_FSTYLE_BOLD         (1<<8)
-#define PG_FSTYLE_ITALIC       (1<<9)
-#define PG_FSTYLE_UNDERLINE    (1<<10)
-#define PG_FSTYLE_STRIKEOUT    (1<<11)
-#define PG_FSTYLE_GRAYLINE     (1<<12)  /* A faint underline */
-#define PG_FSTYLE_FLUSH        (1<<14)  /* No margin */
-#define PG_FSTYLE_DOUBLEWIDTH  (1<<15)
-#define PG_FSTYLE_ITALIC2      (1<<16)  /* Twice the normal italic */
+#define PG_FSTYLE_DOUBLESPACE  (1<<7)    //!< Add extra space between lines
+#define PG_FSTYLE_BOLD         (1<<8)    //!< Use or simulate a bold version of the font
+#define PG_FSTYLE_ITALIC       (1<<9)    //!< Use or simulate an italic version of the font
+#define PG_FSTYLE_UNDERLINE    (1<<10)   //!< Underlined text
+#define PG_FSTYLE_STRIKEOUT    (1<<11)   //!< Strikeout, a line through the middle of the text
+#define PG_FSTYLE_GRAYLINE     (1<<12)   //!< A faint underline
+#define PG_FSTYLE_FLUSH        (1<<14)   //!< Disable the margin that PicoGUI puts around text
+#define PG_FSTYLE_DOUBLEWIDTH  (1<<15)   //!< Add extra space between characters
+#define PG_FSTYLE_ITALIC2      (1<<16)   //!< Twice the slant of the default italic
+
+//! \}
 
 /******************** Errors */
 
-/* Error types */
-#define PG_ERRT_NONE     0x0000
-#define PG_ERRT_MEMORY   0x0100
-#define PG_ERRT_IO       0x0200
-#define PG_ERRT_NETWORK  0x0300
-#define PG_ERRT_BADPARAM 0x0400
-#define PG_ERRT_HANDLE   0x0500
-#define PG_ERRT_INTERNAL 0x0600
-#define PG_ERRT_BUSY     0x0700
-#define PG_ERRT_FILEFMT  0x0800
+/*! 
+ * \defgroup errconst Error types
+ * 
+ * These error types are passed to the error handler
+ * when the client or server triggers an error.
+ * 
+ * \sa pgSetErrorHandler
+ * 
+ * \{
+ */
+#define PG_ERRT_NONE     0x0000    //!< No error condition
+#define PG_ERRT_MEMORY   0x0100    //!< Error allocating memory
+#define PG_ERRT_IO       0x0200    //!< Filesystem, operating system, or other IO error
+#define PG_ERRT_NETWORK  0x0300    //!< Network (or IPC) communication error */
+#define PG_ERRT_BADPARAM 0x0400    //!< Invalid parameters */
+#define PG_ERRT_HANDLE   0x0500    //!< Invalid handle ID, type, or ownership
+#define PG_ERRT_INTERNAL 0x0600    //!< Shouldn't happen (tell a developer!)
+#define PG_ERRT_BUSY     0x0700    //!< Try again later?
+#define PG_ERRT_FILEFMT  0x0800    //!< Error in a loaded file format (theme files, bitmaps)
 
-/* Reserved for client-side errors (not used by the server) */
-#define PG_ERRT_CLIENT   0x8000
+#define PG_ERRT_CLIENT   0x8000    //!< An error caused by the client lib, not the server
+
+//! \}
 
 /******************** Handles */
 
-/* Client's handle data type */
+/*!
+ * \defgroup handletypes Handle types
+ * \{
+ */
+
+/*!
+ * \brief PicoGUI handle data type
+ * 
+ * A handle is an arbitrary number that refers to an object stored in the
+ * PicoGUI server's memory. All handles have a type, all handles can be
+ * deleted, and all handles can store a payload.
+ * 
+ * \sa pgDelete, PG_ERRT_HANDLE, pgSetPayload, pgGetPayload
+ */
 typedef unsigned long pghandle;
 
 /* Data types */
-#define PG_TYPE_BITMAP     1
-#define PG_TYPE_WIDGET     2
-#define PG_TYPE_FONTDESC   3
-#define PG_TYPE_STRING     4
-#define PG_TYPE_THEME      5
-#define PG_TYPE_FILLSTYLE  6
+#define PG_TYPE_BITMAP     1    //!< Created by pgNewBitmap()
+#define PG_TYPE_WIDGET     2    //!< Created by pgNewWidget(), pgNewPopup(), pgNewPopupAt(), or pgRegisterApp()
+#define PG_TYPE_FONTDESC   3    //!< Created by pgNewFont()
+#define PG_TYPE_STRING     4    //!< Created by pgNewString()
+#define PG_TYPE_THEME      5    //!< Created by pgLoadTheme()
+#define PG_TYPE_FILLSTYLE  6    //!< Used internally to store a theme's fillstyles
+
+//! \}
 
 /******************** Theme constants */
 
-/* Theme objects. These don't have to correspond to widgets or anything
- * else in PicoGUI.  A widget can have more than one theme object, or
+/*!
+ * \defgroup themeconst Theme constants
+ * 
+ * Themes in PicoGUI make use of many types of constants. Theme objects,
+ * properties, tags, loaders, and opcodes are described in this section.
+ * 
+ * \{
+ */
+
+/*! 
+ * \defgroup thobj Theme objects
+ * 
+ * Theme objects: they don't have to correspond to widgets or anything
+ * else in PicoGUI, although they usually do.
+ * A widget can have more than one theme object, or
  * theme objects can be used for things that aren't widgets, etc...
  *
  * A theme object is just a category to place a list of properties in,
@@ -176,142 +256,196 @@ typedef unsigned long pghandle;
  * follow the inheritance flow. The theme compiler uses '.' to subclass
  * (for us C weenies) so what is PGTH_O_FOO_MUMBLE is foo.mumble
  * in the theme compiler.
+ * 
+ * \{
  */
 
-#define PGTH_O_DEFAULT               0    /* Every theme object inherits this */
-#define PGTH_O_BASE_INTERACTIVE      1    /* Base for interactive widgets */
-#define PGTH_O_BASE_CONTAINER        2    /* Base for containers like toolbars */
-#define PGTH_O_BUTTON                3    /* The button widget */
-#define PGTH_O_BUTTON_HILIGHT        4    /* Button, hilighted when mouse is over */
-#define PGTH_O_BUTTON_ON             5    /* Button, mouse is pressed */
-#define PGTH_O_TOOLBAR               6    /* The toolbar widget */
-#define PGTH_O_SCROLL                7    /* The scrollbar widget */
-#define PGTH_O_SCROLL_HILIGHT        8    /* Scroll, when mouse is over it */
-#define PGTH_O_INDICATOR             9    /* The indicator widget */
-#define PGTH_O_PANEL                 10   /* The background portion of a panel */
-#define PGTH_O_PANELBAR              11   /* The draggable titlebar of a panel */
-#define PGTH_O_POPUP                 12   /* Popup window */
-#define PGTH_O_BACKGROUND            13   /* Background widget bitmap */
-#define PGTH_O_BASE_DISPLAY          14   /* Base for widgets that mostly display stuff */
-#define PGTH_O_BASE_TLCONTAINER      15   /* Top-level containers like popups, panels */ 
-#define PGTH_O_THEMEINFO             16   /* Information about the theme that should be
-					   loaded into memory, like the name */
-#define PGTH_O_LABEL                 17   /* The label widget */
-#define PGTH_O_FIELD                 18   /* The field widget */
-#define PGTH_O_BITMAP                19   /* The bitmap widget */
-#define PGTH_O_SCROLL_ON             20   /* Scroll, when mouse is down */
-#define PGTH_O_LABEL_SCROLL          21   /* A label, when bound to a scrollbar */
-#define PGTH_O_PANELBAR_HILIGHT      22   /* A panelbar, when mouse is inside it */
-#define PGTH_O_PANELBAR_ON           23   /* A panelbar, when mouse is down */
-#define PGTH_O_BOX                   24   /* The box widget */
-#define PGTH_O_LABEL_DLGTITLE        25   /* A label, used for a dialog box title */
-#define PGTH_O_LABEL_DLGTEXT         26   /* A label, used for the body of a dialog */
-#define PGTH_O_CLOSEBTN              27   /* A panelbar close button */
-#define PGTH_O_CLOSEBTN_ON           28   /* A panelbar close button, mouse down */
-#define PGTH_O_CLOSEBTN_HILIGHT      29   /* A panelbar close button, mouse over */
-#define PGTH_O_BASE_PANELBTN         30   /* Base for a panelbar button */
-#define PGTH_O_ROTATEBTN             31   /* A panelbar rotate button */
-#define PGTH_O_ROTATEBTN_ON          32   /* A panelbar rotate button, mouse down */
-#define PGTH_O_ROTATEBTN_HILIGHT     33   /* A panelbar rotate button, mouse over */
-#define PGTH_O_ZOOMBTN               34   /* A panelbar zoom button */
-#define PGTH_O_ZOOMBTN_ON            35   /* A panelbar zoom button, mouse down */
-#define PGTH_O_ZOOMBTN_HILIGHT       36   /* A panelbar zoom button, mouse over */
-#define PGTH_O_POPUP_MENU            37   /* A popup menu */
-#define PGTH_O_POPUP_MESSAGEDLG      38   /* A message dialog */
-#define PGTH_O_MENUITEM              39   /* Item in a popup menu (customized button) */
-#define PGTH_O_MENUITEM_HILIGHT      40   /* menuitem with the mouse over it */
-#define PGTH_O_CHECKBOX              41   /* Check box (customized button) */
-#define PGTH_O_CHECKBOX_HILIGHT      42   /* checkbox with mouse over it */
-#define PGTH_O_CHECKBOX_ON           43   /* checkbox when on */
-#define PGTH_O_FLATBUTTON            44   /* Flat button (customized button) */
-#define PGTH_O_FLATBUTTON_HILIGHT    45   /* flatbutton with mouse over it */
-#define PGTH_O_FLATBUTTON_ON         46   /* flatbutton with mouse down */
+#define PGTH_O_DEFAULT               0    //!< Every theme object inherits this 
+#define PGTH_O_BASE_INTERACTIVE      1    //!< Base for interactive widgets 
+#define PGTH_O_BASE_CONTAINER        2    //!< Base for containers like toolbars 
+#define PGTH_O_BUTTON                3    //!< The button widget 
+#define PGTH_O_BUTTON_HILIGHT        4    //!< Button, hilighted when mouse is over 
+#define PGTH_O_BUTTON_ON             5    //!< Button, mouse is pressed 
+#define PGTH_O_TOOLBAR               6    //!< The toolbar widget 
+#define PGTH_O_SCROLL                7    //!< The scrollbar widget 
+#define PGTH_O_SCROLL_HILIGHT        8    //!< Scroll, when mouse is over it 
+#define PGTH_O_INDICATOR             9    //!< The indicator widget 
+#define PGTH_O_PANEL                 10   //!< The background portion of a panel 
+#define PGTH_O_PANELBAR              11   //!< The draggable titlebar of a panel 
+#define PGTH_O_POPUP                 12   //!< Popup window 
+#define PGTH_O_BACKGROUND            13   //!< Background widget bitmap 
+#define PGTH_O_BASE_DISPLAY          14   //!< Base for widgets that mostly display stuff 
+#define PGTH_O_BASE_TLCONTAINER      15   //!< Top-level containers like popups, panels  
+#define PGTH_O_THEMEINFO             16   //!< Information about the theme that should be loaded into memory, like the name 
+#define PGTH_O_LABEL                 17   //!< The label widget 
+#define PGTH_O_FIELD                 18   //!< The field widget 
+#define PGTH_O_BITMAP                19   //!< The bitmap widget 
+#define PGTH_O_SCROLL_ON             20   //!< Scroll, when mouse is down 
+#define PGTH_O_LABEL_SCROLL          21   //!< A label, when bound to a scrollbar 
+#define PGTH_O_PANELBAR_HILIGHT      22   //!< A panelbar, when mouse is inside it 
+#define PGTH_O_PANELBAR_ON           23   //!< A panelbar, when mouse is down 
+#define PGTH_O_BOX                   24   //!< The box widget 
+#define PGTH_O_LABEL_DLGTITLE        25   //!< A label, used for a dialog box title 
+#define PGTH_O_LABEL_DLGTEXT         26   //!< A label, used for the body of a dialog 
+#define PGTH_O_CLOSEBTN              27   //!< A panelbar close button 
+#define PGTH_O_CLOSEBTN_ON           28   //!< A panelbar close button, mouse down 
+#define PGTH_O_CLOSEBTN_HILIGHT      29   //!< A panelbar close button, mouse over 
+#define PGTH_O_BASE_PANELBTN         30   //!< Base for a panelbar button 
+#define PGTH_O_ROTATEBTN             31   //!< A panelbar rotate button 
+#define PGTH_O_ROTATEBTN_ON          32   //!< A panelbar rotate button, mouse down 
+#define PGTH_O_ROTATEBTN_HILIGHT     33   //!< A panelbar rotate button, mouse over 
+#define PGTH_O_ZOOMBTN               34   //!< A panelbar zoom button 
+#define PGTH_O_ZOOMBTN_ON            35   //!< A panelbar zoom button, mouse down 
+#define PGTH_O_ZOOMBTN_HILIGHT       36   //!< A panelbar zoom button, mouse over 
+#define PGTH_O_POPUP_MENU            37   //!< A popup menu 
+#define PGTH_O_POPUP_MESSAGEDLG      38   //!< A message dialog 
+#define PGTH_O_MENUITEM              39   //!< Item in a popup menu (customized button) 
+#define PGTH_O_MENUITEM_HILIGHT      40   //!< menuitem with the mouse over it 
+#define PGTH_O_CHECKBOX              41   //!< Check box (customized button) 
+#define PGTH_O_CHECKBOX_HILIGHT      42   //!< checkbox with mouse over it 
+#define PGTH_O_CHECKBOX_ON           43   //!< checkbox when on 
+#define PGTH_O_FLATBUTTON            44   //!< Flat button (customized button) 
+#define PGTH_O_FLATBUTTON_HILIGHT    45   //!< flatbutton with mouse over it 
+#define PGTH_O_FLATBUTTON_ON         46   //!< flatbutton with mouse down 
 
-/* If you add a themeobject, be sure to increment this and add
-   an inheritance entry in theme/memtheme.c */
+//! If you add a themeobject, be sure to increment this and add an inheritance entry in theme/memtheme.c
 #define PGTH_ONUM                    47
+
+//! \}
 
 /*** Loaders */
 
-/* Property loaders perform some type of transformation 
-   on the data value at load-time. */
+/*!
+ * \defgroup thloadconst Theme loaders
+ *
+ * Theme loaders perform some type of transformation on a property's
+ * value as it is loaded.
+ *
+ * \{
+ */
 
-#define PGTH_LOAD_NONE       0   /* Leave data as-is */
-#define PGTH_LOAD_REQUEST    1   /* Treat data as a file-offset to load a request packet
-				    from. This request packet is executed, and the
-				    return code stored in 'data'. Errors cause an error
-				    in loading the theme. */
-#define PGTH_LOAD_COPY       2   /* Data is a theme object and property to copy the
-				    value of */
+#define PGTH_LOAD_NONE       0   //!< Leave data as-is
+/*! 
+ * \brief Load a request packet
+ *
+ * Treat data as a file-offset to load a request packet
+ * from. This request packet is executed, and the
+ * return code stored as the new property value.
+ * Errors in processing the request cause an error
+ * in loading the theme.
+ */
+#define PGTH_LOAD_REQUEST    1
+/*!
+ * \brief Copy an existing property value
+ * 
+ * The property data is treated as a theme object and property
+ * pair. A theme lookup is performed, and the result stored
+ * as the property's value.
+ */
+#define PGTH_LOAD_COPY       2   
+
+//! \}
 
 /*** Property IDs */
 
-/* The descriptions here are only guidelines. Many of these properties
-   are not used by the server itself, merely assigned IDs for the
-   use of the themes themselves (fillstyles, for example)
-*/
+/*!
+ * \defgroup themeprop Theme properties
+ *
+ * The descriptions here are only guidelines. Many of these properties
+ * are not used by the server itself, merely assigned IDs for the
+ * use of the themes themselves (from within fillstyles, for example)
+ * 
+ * \{
+ */
 
-/*                               Handle?
-        Name              ID     | Data type   Description */
+#define PGTH_P_BGCOLOR       1   //!< Default background color 
+#define PGTH_P_FGCOLOR       2   //!< Default foreground color 
+#define PGTH_P_BGFILL        3   //!< Background fillstyle    
+#define PGTH_P_OVERLAY       4   //!< Fillstyle for scroll thumbs, the filled portion of an indicator  
+#define PGTH_P_FONT          5   //!< A widget's main font     
+#define PGTH_P_NAME          6   //!< Name of something, like a theme 
+#define PGTH_P_WIDTH         7   //!< Reccomended width 
+#define PGTH_P_HEIGHT        8   //!< Reccomended height 
+#define PGTH_P_MARGIN        9   //!< The border in some objects 
+#define PGTH_P_HILIGHTCOLOR  10  //!< Color for hilighting an object 
+#define PGTH_P_SHADOWCOLOR   11  //!< Color for shading an object 
+#define PGTH_P_OFFSET        12  //!< An amount to displace something by 
+#define PGTH_P_ALIGN         13  //!< How to position an object's contents
+#define PGTH_P_BITMAPSIDE    14  //!< Bitmap side relative to text (button) 
+#define PGTH_P_BITMAPMARGIN  15  //!< Spacing between bitmap and text 
+#define PGTH_P_BITMAP1       16  //!< Generic bitmap property for theme use 
+#define PGTH_P_BITMAP2       17  //!< Generic bitmap property for theme use 
+#define PGTH_P_BITMAP3       18  //!< Generic bitmap property for theme use 
+#define PGTH_P_BITMAP4       19  //!< Generic bitmap property for theme use 
+#define PGTH_P_SPACING       20  //!< Distance between similar widgets 
+#define PGTH_P_TEXT          21  //!< Text caption for something like a button 
+#define PGTH_P_SIDE          22  //!< Side for a widget or subwidget 
+#define PGTH_P_BACKDROP      23  //!< Fillstyle on the screen behind a popup 
+#define PGTH_P_WIDGETBITMAP  24  //!< Bitmap for something like a button 
+#define PGTH_P_WIDGETBITMASK 25  //!< Bitmask for something like a button 
+#define PGTH_P_CURSORBITMAP  26  //!< Bitmap for the (mouse) pointer 
+#define PGTH_P_CURSORBITMASK 27  //!< Bitmask for the (mouse) pointer 
 
-#define PGTH_P_BGCOLOR       1   /*   pgcolor     Default background color */
-#define PGTH_P_FGCOLOR       2   /*   pgcolor     Default foreground color */
-#define PGTH_P_BGFILL        3   /* H fillstyle   Background fill style    */
-#define PGTH_P_OVERLAY       4   /* H fillstyle   Fill style applied last  */
-#define PGTH_P_FONT          5   /* H fontdesc    A widget's main font     */
-#define PGTH_P_NAME          6   /* H string      Name of something, like a theme */
-#define PGTH_P_WIDTH         7   /*   int         Reccomended width */
-#define PGTH_P_HEIGHT        8   /*   int         Reccomended width */
-#define PGTH_P_MARGIN        9   /*   int         The border in some objects */
-#define PGTH_P_HILIGHTCOLOR  10  /*   pgcolor     Color for hilighting an object */
-#define PGTH_P_SHADOWCOLOR   11  /*   pgcolor     Color for shading an object */
-#define PGTH_P_OFFSET        12  /*   int         an amount to displace something by */
-#define PGTH_P_ALIGN         13  /*   alignment   How to position an object's contents */
-#define PGTH_P_BITMAPSIDE    14  /*   side        Bitmap side relative to text (button) */
-#define PGTH_P_BITMAPMARGIN  15  /*   int         Spacing between bitmap and text */
-#define PGTH_P_BITMAP1       16  /* H bitmap      Generic bitmap property for theme use */
-#define PGTH_P_BITMAP2       17  /* H bitmap      Generic bitmap property for theme use */
-#define PGTH_P_BITMAP3       18  /* H bitmap      Generic bitmap property for theme use */
-#define PGTH_P_BITMAP4       19  /* H bitmap      Generic bitmap property for theme use */
-#define PGTH_P_SPACING       20  /*   int         Distance between similar widgets */
-#define PGTH_P_TEXT          21  /* H string      Text caption for something like a button */
-#define PGTH_P_SIDE          22  /*   int         Side for a widget or subwidget */
-#define PGTH_P_BACKDROP      23  /* H fillstyle   Fillstyle on the screen behind a popup */
-#define PGTH_P_WIDGETBITMAP  24  /* H bitmap      Bitmap for something like a button */
-#define PGTH_P_WIDGETBITMASK 25  /* H bitmap      Bitmask for something like a button */
-#define PGTH_P_CURSORBITMAP  26  /* H bitmap      Bitmap for the (mouse) pointer */
-#define PGTH_P_CURSORBITMASK 27  /* H bitmap      Bitmask for the (mouse) pointer */
+#define PGTH_P_STRING_OK          501    //!< String property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_STRING_CANCEL      502    //!< String property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_STRING_YES         503    //!< String property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_STRING_NO          504    //!< String property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_STRING_SEGFAULT    505    //!< String property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_STRING_MATHERR     506    //!< String property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_STRING_PGUIERR     507    //!< String property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_STRING_PGUIWARN    508    //!< String property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_STRING_PGUIERRDLG  509    //!< String property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_STRING_PGUICOMPAT  510    //!< String property (usually in PGTH_O_DEFAULT)
 
-/* String properties (usually part of PGTH_O_DEFAULT) */
-#define PGTH_P_STRING_OK             501
-#define PGTH_P_STRING_CANCEL         502
-#define PGTH_P_STRING_YES            503
-#define PGTH_P_STRING_NO             504
+#define PGTH_P_ICON_OK       1001        //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_CANCEL   1002        //!< Icon property (usually in PGTH_O_DEFAULT)
 
-/* Icon properties (usually part of PGTH_O_DEFAULT) */
-#define PGTH_P_ICON_OK               1001
-#define PGTH_P_ICON_CANCEL           1002
+#define PGTH_P_HOTKEY_OK     1501        //!< Hotkey property (usually in PGTH_O_DEFAULT) 
+#define PGTH_P_HOTKEY_CANCEL 1502        //!< Hotkey property (usually in PGTH_O_DEFAULT) 
+#define PGTH_P_HOTKEY_YES    1503        //!< Hotkey property (usually in PGTH_O_DEFAULT)   
+#define PGTH_P_HOTKEY_NO     1504        //!< Hotkey property (usually in PGTH_O_DEFAULT) 
 
-/* Hotkey properties (usually part of PGTH_O_DEFAULT) */
-#define PGTH_P_HOTKEY_OK             1501
-#define PGTH_P_HOTKEY_CANCEL         1502
-#define PGTH_P_HOTKEY_YES            1503
-#define PGTH_P_HOTKEY_NO             1504
+//! \}
 
 /*** Tag IDs */
 
-/* The name of the theme is not stored in a tag (because it is helpful
-   to have the name of themes so the themes in use can be listed and
-   manipulated) */
+/*!
+ * \defgroup thtagconst Theme tag constants
+ * 
+ * Theme tags are designed to store extra data about a theme that
+ * does not need to be loaded into memory for the theme to
+ * function. 
+ *
+ * The name of the theme is not stored in a tag, because it is helpful
+ * to have the name of themes stored in memory so they can be referenced
+ * more easily.
+ *
+ * \{ 
+ */
 
 #define PGTH_TAG_AUTHOR        1
 #define PGTH_TAG_AUTHOREMAIL   2
 #define PGTH_TAG_URL           3
 #define PGTH_TAG_README        4
 
+//! \}
+
 /*** Fillstyle opcodes */
 
-/* Bits:  7 6 5 4 3 2 1 0
+/*!
+ * \defgroup fsops Fillstyle opcodes
+ *
+ * A fillstyle is a small stack-based program in a
+ * theme that can perform theme lookups and create gropnodes,
+ * among other things. The fillstyle code is compiled by \p themec
+ * into a series of opcodes, described in this section.
+ * 
+ * When the fillstyle interpreter is expecting a new opcode,
+ * there are five types of bytes it could find:
+ * 
+ * \verbatim
+  
+   Bits:  7 6 5 4 3 2 1 0
           
 	  1 G G G G G G G    Build gropnode
           0 1 L L L L L L    Short numeric literal
@@ -323,18 +457,26 @@ typedef unsigned long pghandle;
    G - gropnode type
    V - variable offset
    C - command code constant
-*/
 
-/* Simple opcodes (or'ed with data) */
-#define PGTH_OPSIMPLE_GROP       0x80
-#define PGTH_OPSIMPLE_LITERAL    0x40
-#define PGTH_OPSIMPLE_CMDCODE    0x20
-#define PGTH_OPSIMPLE_GET        0x10
-#define PGTH_OPSIMPLE_SET        0x00
+\endverbatim
+ * 
+ * These five types (corresponding to the PGTH_OPSIMPLE_* constants)
+ * implement frequently-used commands in one byte. Longer opcodes
+ * use PGTH_OPSIMPLE_CMDCODE to store a PGTH_OPCMD_* constant with the
+ * actual opcode.
+ * 
+ * \{
+ */
+
+#define PGTH_OPSIMPLE_GROP       0x80   //!< Create a gropnode, 7-bit gropnode type
+#define PGTH_OPSIMPLE_LITERAL    0x40   //!< Push a 6-bit numeric literal onto the stack
+#define PGTH_OPSIMPLE_CMDCODE    0x20   //!< Container for a PG_OPCMD_* opcode
+#define PGTH_OPSIMPLE_GET        0x10   //!< Push a copy of a variable at the indicated 4-bit stack offset
+#define PGTH_OPSIMPLE_SET        0x00   //!< Pop a value off the stack and overwrite the indicated variable
 
 /* Command codes */
-#define PGTH_OPCMD_LONGLITERAL   0x20  /* Followed by a 4-byte literal */
-#define PGTH_OPCMD_PLUS          0x21
+#define PGTH_OPCMD_LONGLITERAL   0x20   //!< Followed by a 4-byte literal
+#define PGTH_OPCMD_PLUS          0x21 
 #define PGTH_OPCMD_MINUS         0x22
 #define PGTH_OPCMD_MULTIPLY      0x23
 #define PGTH_OPCMD_DIVIDE        0x24
@@ -342,32 +484,39 @@ typedef unsigned long pghandle;
 #define PGTH_OPCMD_SHIFTR        0x26
 #define PGTH_OPCMD_OR            0x27
 #define PGTH_OPCMD_AND           0x28
-#define PGTH_OPCMD_LONGGROP      0x29  /* Followed by a 2-byte grop code */
-#define PGTH_OPCMD_LONGGET       0x2A  /* Followed by a 1-byte var offset */
-#define PGTH_OPCMD_LONGSET       0x2B  /* Followed by a 1-byte var offset */
-#define PGTH_OPCMD_PROPERTY      0x2C  /* Followed by 2-byte object code and 2-byte property code */
-#define PGTH_OPCMD_LOCALPROP     0x2D  /* Followed by 2-byte property code */
-#define PGTH_OPCMD_COLORADD      0x2F  /* Convert pgcolor to hwrcolor */
-#define PGTH_OPCMD_COLORSUB      0x30  
-#define PGTH_OPCMD_COLORMULT     0x31
-#define PGTH_OPCMD_COLORDIV      0x32
-#define PGTH_OPCMD_QUESTIONCOLON 0x33  /* The ?: operator from C */
-#define PGTH_OPCMD_EQ            0x34  /* Comparison operators */
+#define PGTH_OPCMD_LONGGROP      0x29   //!< Followed by a 2-byte grop type
+#define PGTH_OPCMD_LONGGET       0x2A   //!< Followed by a 1-byte var offset
+#define PGTH_OPCMD_LONGSET       0x2B   //!< Followed by a 1-byte var offset
+#define PGTH_OPCMD_PROPERTY      0x2C   //!< Followed by 2-byte object code and 2-byte property code
+#define PGTH_OPCMD_LOCALPROP     0x2D   //!< Followed by 2-byte property code
+#define PGTH_OPCMD_COLORADD      0x2F   //!< Add two pgcolors, clamping to white
+#define PGTH_OPCMD_COLORSUB      0x30   //!< Subtract two pgcolors, clamping to black
+#define PGTH_OPCMD_COLORMULT     0x31   //!< Multiply two pgcolors
+#define PGTH_OPCMD_COLORDIV      0x32   //!< Divide two pgcolors
+#define PGTH_OPCMD_QUESTIONCOLON 0x33   //!< The ?: conditional operator from C
+#define PGTH_OPCMD_EQ            0x34
 #define PGTH_OPCMD_LT            0x35
 #define PGTH_OPCMD_GT            0x36
-#define PGTH_OPCMD_LOGICAL_OR    0x37  /* Logical operators */
+#define PGTH_OPCMD_LOGICAL_OR    0x37
 #define PGTH_OPCMD_LOGICAL_AND   0x38
 #define PGTH_OPCMD_LOGICAL_NOT   0x39
 
+/* End fillstyles */
+//! \}
+/* End themes */
+//! \}
 
 /******************** Video */
 
-/* Gropnode types (gropnodes are a single element in a metafile-like
- * structure to hold GRaphics OPerations)
+/*!
+ * \defgroup gropconst Gropnodes
+ *
+ * Gropnodes are the fundamental unit of rendering in PicoGUI, a single element
+ * in a list of GRaphics OPerations.
  *
  * The most frequently used grops should be 7 bits or less to keep theme opcode
  * size at 8 bits. If it goes over 7 bits, the full 16 bits can be used
- * for the gropnode type and a 16 bit theme opcode will be used.
+ * for the gropnode type and a 24 bit theme opcode will be used.
  * 
  * The LSB (bit 0) is a 'nonvisual' flag indicating it does no rendering,
  * only setup work. Bit 1 indicates that it is 'unpositioned' (does not use
@@ -377,85 +526,107 @@ typedef unsigned long pghandle;
  * 
  * Sorry if this seems a little paranoid, but the point is to save as much
  * space as possible in these structures as there will be many copies of them.
+ *
+ * See the Canvas widget documentation for more information on using the
+ * gropnodes directly in a client program.
+ * 
+ * \sa PGCANVAS_GROP
+ * 
+ * \{
  */
-#define PG_GROP_RECT	   0x00
-#define PG_GROP_FRAME      0x10
-#define PG_GROP_SLAB       0x20
-#define PG_GROP_BAR        0x30
+
+#define PG_GROP_RECT	   0x00   
+#define PG_GROP_FRAME      0x10   
+#define PG_GROP_SLAB       0x20   
+#define PG_GROP_BAR        0x30   
 #define PG_GROP_PIXEL      0x40
 #define PG_GROP_LINE   	   0x50
-#define PG_GROP_TEXT       0x04   /* Param: string                   */
-#define PG_GROP_BITMAP     0x14   /* Param: bitmap                   */
-#define PG_GROP_TILEBITMAP 0x24   /* Param: bitmap                   */ 
-#define PG_GROP_GRADIENT   0x0C   /* Param: angle, c1, c2            */
-#define PG_GROP_TEXTGRID   0x1C   /* Param: string, bufferw, offset  */
+#define PG_GROP_ELLIPSE    0x60 
+#define PG_GROP_FELLIPSE   0x70
+#define PG_GROP_FPOLYGON   0x90 
+#define PG_GROP_TEXT       0x04   //!< Param: string 
+#define PG_GROP_BITMAP     0x14   //!< Param: bitmap 
+#define PG_GROP_TILEBITMAP 0x24   //!< Param: bitmap 
+#define PG_GROP_GRADIENT   0x0C   //!< Param: angle, c1, c2 
+#define PG_GROP_TEXTGRID   0x1C   //!< Param: string, bufferw, offset
 #define PG_GROP_NOP        0x03
-#define PG_GROP_RESETCLIP  0x13   /* Reset clip to whole divnode     */
-#define PG_GROP_SETOFFSET  0x01   /* this grop's rect sets offset    */
-#define PG_GROP_SETCLIP    0x11   /* this grop's rect sets clipping  */
-#define PG_GROP_SETSRC     0x21   /* this grop's rect sets src_* for */
-#define PG_GROP_SETMAPPING 0x05   /* Param: PG_MAP_* const (grop's rect used too)*/
-#define PG_GROP_SETCOLOR   0x07   /* Param: pgcolor                  */
-#define PG_GROP_SETFONT    0x17   /* Param: font                     */
-#define PG_GROP_SETLGOP    0x27   /* Param: lgop                     */
-#define PG_GROP_SETANGLE   0x37   /* Param: angle in degrees         */
+#define PG_GROP_RESETCLIP  0x13   //!< Reset clip to whole divnode
+#define PG_GROP_SETOFFSET  0x01   //!< this grop's rect sets offset
+#define PG_GROP_SETCLIP    0x11   //!< this grop's rect sets clipping
+#define PG_GROP_SETSRC     0x21   //!< this grop's rect sets src_*
+#define PG_GROP_SETMAPPING 0x05   //!< Param: PG_MAP_* const
+#define PG_GROP_SETCOLOR   0x07   //!< Param: pgcolor
+#define PG_GROP_SETFONT    0x17   //!< Param: font
+#define PG_GROP_SETLGOP    0x27   //!< Param: lgop
+#define PG_GROP_SETANGLE   0x37   //!< Param: angle in degrees
 
-/* Find any gropnode's number of parameters */
+//! Find any gropnode's number of parameters
 #define PG_GROPPARAMS(x)   (((x)>>2)&0x03)
 
-/* Returns nonzero if the gropnode type specified does not actually draw
- * something, only sets up state information */
+//! Returns nonzero if the gropnode type specified does not actually draw something, only sets parameters
 #define PG_GROP_IS_NONVISUAL(x)  ((x)&1)
 
-/* Returns nonzero if the gropnode doesn't require position data (x,y,w,h) */
+//! Returns nonzero if the gropnode doesn't require position data (x,y,w,h)
 #define PG_GROP_IS_UNPOSITIONED(x) ((x)&2)
 
-/* Grop flags */
-#define PG_GROPF_TRANSLATE    (1<<0)  /* Apply the divnode's tx,ty */
-#define PG_GROPF_INCREMENTAL  (1<<1)  /* Defines nodes used for incremental
-				       * updates. Not rendered normally. */
-#define PG_GROPF_PSEUDOINCREMENTAL (1<<2)  /* Always rendered, but this flag
-					    * is cleared afterwards. */
-#define PG_GROPF_TRANSIENT    (1<<3)  /* Always render, delete after using
-				       * once */
-#define PG_GROPF_COLORED      (1<<4)  /* This can be used with the simple
-				       * primitives (rect,line,etc...) to
-				       * indicate that the 1st parameter
-				       * contains a color for that node and
-				       * the color set with SETCOLOR is
-				       * ignored */
-#define PG_GROPF_UNIVERSAL    (1<<5)  /* This gropnode is always rendered */
+/*!
+ * \defgroup gropflags Gropnode flags
+ * \{
+ */
 
-/* Flags to be used with PG_GROP_SETMAPPING */
+//! The gropnode can be scrolled using the divnode's translation (tx,ty)
+#define PG_GROPF_TRANSLATE    (1<<0)
+//! Rendered in incremental updates, not rendered normally
+#define PG_GROPF_INCREMENTAL  (1<<1)
+//! Always rendered, but this flag is cleared afterwards
+#define PG_GROPF_PSEUDOINCREMENTAL (1<<2)
+//! Always rendered, the gropnode is deleted afterwards
+#define PG_GROPF_TRANSIENT    (1<<3)
+//! The primitive's color is taken from its first parameter instead of the value set with PG_GROP_SETCOLOR
+#define PG_GROPF_COLORED      (1<<4)
+//! The gropnode is always rendered
+#define PG_GROPF_UNIVERSAL    (1<<5)
+
+//! \}
+
+/*!
+ * \defgroup gropmap Coordinate mapping
+ * \sa PG_GROP_SETMAPPING, pgSetMapping
+ * \{
+ */
+
 #define PG_MAP_NONE           0
-#define PG_MAP_SCALE          1      /* This grop's width and height define
-				      * the virtual width and height of the
-				      * divnode, grops are mapped from this
-				      * to the real size */
-#define PG_MAP_ASPECTSCALE    2      /* Like PG_MAP_SCALE, but constrain
-				      * the aspect ratio */
+/*!
+ * This grop's width and height define
+ * the virtual width and height of the
+ * divnode, grops are mapped from this
+ * to the real size
+ */
+#define PG_MAP_SCALE          1      
+#define PG_MAP_ASPECTSCALE    2      //!< Like PG_MAP_SCALE, but constrain the aspect ratio
 
-/* Video mode flags */
-#define PG_VID_FULLSCREEN     0x0001
-#define PG_VID_DOUBLEBUFFER   0x0002
-#define PG_VID_ROTATE90       0x0004  /* Rotate flags are mutually exclusive */
-#define PG_VID_ROTATE180      0x0008
-#define PG_VID_ROTATE270      0x0010
 
-/* flagmode parameter for the setmode request */
-#define PG_FM_SET             0      /* Sets all flags to specified value */
-#define PG_FM_ON              1      /* Turns on specified flags */
-#define PG_FM_OFF             2      /* Turns off specified flags */
-#define PG_FM_TOGGLE          3      /* Toggles specified flags */
+//! \}
+
+/*!
+ * \defgroup lgopconst Logical Operations
+ * 
+ * These constants describe a method of combining
+ * a new primitive with data already on the display
+ * 
+ * \sa pgSetLgop, PG_GROP_SETLGOP
+ *
+ * \{
+ */
 
 /* Logical operations for any primitive */
-#define PG_LGOP_NULL        0   /* Don't blit */
-#define PG_LGOP_NONE        1   /* Copy directly to the screen */
+#define PG_LGOP_NULL        0   //!< Don't render the primitive
+#define PG_LGOP_NONE        1   //!< Copy directly to the screen
 #define PG_LGOP_OR          2
 #define PG_LGOP_AND         3
 #define PG_LGOP_XOR         4
 #define PG_LGOP_INVERT      5   
-#define PG_LGOP_INVERT_OR   6   /* Inverts the source data beforehand */
+#define PG_LGOP_INVERT_OR   6   //!< Inverts the source data beforehand
 #define PG_LGOP_INVERT_AND  7
 #define PG_LGOP_INVERT_XOR  8
 #define PG_LGOP_ADD         9
@@ -463,9 +634,36 @@ typedef unsigned long pghandle;
 #define PG_LGOP_MULTIPLY    11
 #define PG_LGOP_STIPPLE     12
 
-#define PG_LGOPMAX          12  /* For error-checking */
+#define PG_LGOPMAX          12  //!< For error-checking
+
+//! \}
+
+/* End gropnodes */
+//! \}
+
+/*!
+ * \defgroup vidflags Video mode flags
+ * 
+ * Use these with pgSetVideoMode()
+ * \{
+ */
+
+#define PG_VID_FULLSCREEN     0x0001
+#define PG_VID_DOUBLEBUFFER   0x0002
+#define PG_VID_ROTATE90       0x0004  //!< Rotate flags are mutually exclusive
+#define PG_VID_ROTATE180      0x0008
+#define PG_VID_ROTATE270      0x0010
+
+#define PG_FM_SET             0      //!< Sets all flags to specified value
+#define PG_FM_ON              1      //!< Turns on specified flags
+#define PG_FM_OFF             2      //!< Turns off specified flags
+#define PG_FM_TOGGLE          3      //!< Toggles specified flags
+
+//! \}
 
 /******************** Widgets */
+
+
 
 /* Constants used for rship, the relationship between 
    a widget and its parent */
@@ -600,5 +798,6 @@ typedef unsigned long pghandle;
 #define PG_TRIGGER_CHAR       (1<<14) /* A processed ASCII/Unicode character */
 
 
+//! \}
 #endif /* __H_PG_CONSTANTS */
 /* The End */
