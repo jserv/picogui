@@ -23,6 +23,7 @@ Base classes for all UI modules, doesn't implement any UI at all.
 _svn_id = "$Id$"
 
 import PGBuild.Errors
+import PGBuild.SConsGlue
 import time, sys
 
 
@@ -170,6 +171,9 @@ class Interface(object):
         """Examine the provided configuration and take the specified actions"""
         # Note that order is important here!
         # It wouldn't make sense to run --nuke after --merge, for example.
+
+        # Set up SCons
+        PGBuild.SConsGlue.startup(self.config)
 
         # Handle --nuke command line option
         if self.config.eval("invocation/option[@name='nuke']/text()"):

@@ -72,14 +72,12 @@ class PackageVersion(object):
        return self.getRepository(progress).update(self.getLocalPath(), progress.task("Updating package %s" % self))
 
     def merge(self, progress):
-        """Make sure a package is up to date, then mount its configuration into our config tree"""
+        """Make sure a package is up to date, then load in configuration and build targets from it"""
         mergeTask = progress.task("Merging configuration from package %s" % self)
         self.update(mergeTask)
+        self.config.dirMount(self.getLocalPath(), mergeTask.task("Mounting config files"))
+        PGBuild.SConsGlue.loadScriptDir(self.getLocalPath(), mergeTask.task("Loading SCons scripts"))
 
-        # Report the individual mounts in an unimportant task, so we only see them with -v
-        confTask = mergeTask.task("Mounting config files", 1)
-        self.config.dirMount(self.getLocalPath(), confTask)
-        
         
 class Package(object):
     """A package object, initialized from the configuration tree.

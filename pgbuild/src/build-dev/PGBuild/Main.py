@@ -254,7 +254,7 @@ def main(bootstrap, argv):
             
                 # Set up the configuration tree
                 boot(config, bootstrap, argv)
-                
+
                 # Load a UI module and run it
                 ui = PGBuild.UI.find(config.eval("invocation/option[@name='ui']/text()")).Interface(config)
                 ui.run()

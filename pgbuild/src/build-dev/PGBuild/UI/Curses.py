@@ -287,8 +287,11 @@ class CursesWrangler(object):
             raise
     
     def cleanup(self):
-        self.clockUpdater.running = 0
-        self.clockUpdater.join()
+        try:
+            self.clockUpdater.running = 0
+            self.clockUpdater.join()
+        except:
+            pass
         self.cursesSem.acquire()
         self.stdscr.keypad(0)
         curses.echo()

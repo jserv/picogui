@@ -1,8 +1,8 @@
 """ PGBuild.SConsGlue
 
-Glue between SCons and PGBuild- this provides roughly the same functionality
-as the SCons.Main module, but with interfaces to the PGBuild config tree
-instead of directly to the command line.
+Glue between SCons and PGBuild. This includes facilities to construct
+an SCons environment using the configuration database, to set up other
+SCons parameters, execute SConscripts, and build targets.
 """
 # 
 # PicoGUI Build System
@@ -24,11 +24,40 @@ instead of directly to the command line.
 #
 _svn_id = "$Id$"
 
+import SCons.Defaults
+import SCons.Script.SConscript
+import os
 
+# Acceptable names for an SCons script, in order of preference
+scriptNames = ['SConscript', 'Sconscript', 'sconscript']
+
+
+def startup(config):
+    """Initialize SCons defaults. This should be called
+       after the config tree has been booted and filled with command line options.
+       """
+    SCons.Node.FS.default_fs.set_toplevel_dir(config.eval('bootstrap/path[@name="root"]/text()'))
+    SCons.Defaults._default_env = Environment(config)
+
+def loadScript(name, progress):
+    """Load one SCons script"""
+    progress.showTaskHeading()
+    SCons.Script.SConscript.SConscript(name)
+    progress.report("loaded", name)
+
+def loadScriptDir(dir, progress):
+    """Look for a script in the given directory and run it if it's found"""
+    for name in scriptNames:
+        path = os.path.join(dir, name)
+        if os.path.isfile(path):
+            loadScript(path, progress)
+            break
 
 def Environment(config):
     """Factory to create an SCons environment from a PGBuild configuration"""
-    
+    env = SCons.Environment.Environment()
+    env.config = config
+    return env
 
 ### The End ###
         
