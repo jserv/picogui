@@ -1,4 +1,4 @@
-/* $Id: if_pntr_dispatch.c,v 1.3 2002/09/28 06:25:05 micahjd Exp $
+/* $Id: if_pntr_dispatch.c,v 1.4 2002/10/02 21:05:21 micahjd Exp $
  *
  * if_pntr_dispatch.c - Dispatch mouse pointer events to widgets
  *
@@ -39,8 +39,10 @@ void infilter_pntr_dispatch_handler(struct infilter *self, u32 trigger, union tr
    * filter chain, but this makes it theoretically possible for a client to pick
    * up the cursorless events.
    */
-  if (!param->mouse.cursor)
+  if (!param->mouse.cursor) {
     infilter_send(self, trigger, param);
+    return;
+  }
 
   /* Move the cursor */
   if (trigger==PG_TRIGGER_MOVE) {
