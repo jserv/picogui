@@ -63,7 +63,7 @@ class SVNRepository(DavObject):
         propFile.close()
         return props
 
-    def download(self, destination, numThreads=5):
+    def download(self, destination, progress, numThreads=5):
         downloadComplete = 0
         try:
             self.saveProperties(destination)
@@ -87,7 +87,7 @@ class SVNRepository(DavObject):
                     except OSError:
                         # We don't care if it already exists
                         pass
-                    print " d %s" % objDest
+                    progress.report('created', objDest)
 
                 elif object.getType() == 'file':
                     # This object is a file- download it, creating the directory if necessary
@@ -98,7 +98,7 @@ class SVNRepository(DavObject):
                         f = open(objDest, "wb")                
                     f.write(object.read())
                     f.close()
-                    print "-> %s" % objDest
+                    progress.report('downloaded', objDest)
         
                 for child in object.getChildren():
                     # Find the part of the child's URL that was (presumably)
@@ -129,13 +129,14 @@ class SVNRepository(DavObject):
             pass
         return 1
             
-    def update(self, destination):
+    def update(self, destination, progress):
         if self.isUpdateAvailable(destination):
             # We can't update, just redownload the sources.
-            self.download(destination)
+            self.download(destination, progress)
 
 
 if __name__ == '__main__':
     import sys
+    from StdProgress import StdProgress
     repo = SVNRepository(sys.argv[1])
-    repo.update(sys.argv[2])
+    repo.update(sys.argv[2], StdProgress().task('Testing update()'))

@@ -32,7 +32,7 @@ except IndexError:
 
 userAgent = "PicoGUI-MiniDAV"
 if revision:
-    userAgent += "/r%s" % rev
+    userAgent += "/r%s" % revision
 
 
 class MiniDAVException(Exception):
