@@ -67,12 +67,13 @@ def mergeElements(root):
             # This is a duplicate! Prepend all the children from
             # the first one, and delete it.
             old = d[sig]
-#            while old.childNodes:
-#                last = old.lastChild
-#                if child.childNodes:
-#                    child.insertBefore(last, child.childNodes[0])
-#                else:
-#                    child.appendChild(last)
+            while old.dom.childNodes:
+                last = old.dom.lastChild
+                if child.dom.childNodes:
+                    child.dom.insertBefore(last, child.dom.childNodes[0])
+                else:
+                    child.dom.appendChild(last)
+            root.removeChild(old)
         d[sig] = child
     del d
 
