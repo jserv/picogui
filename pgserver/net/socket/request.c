@@ -1,7 +1,7 @@
 /*
  * request.c - this connection is for sending requests to the server
  *             and passing return values back to the client
- * $Revision: 1.4 $
+ * $Revision: 1.5 $
  * 
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -21,19 +21,25 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>
 #include <string.h>
+#include <errno.h>
+#include <ctype.h>
+
+#if defined(__WIN32__) || defined(WIN32)
+#define WINDOWS
+#include <windows.h>
+#else
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <netinet/in.h>
-#include <errno.h>
 #include <sys/stat.h>
 #include <dirent.h>
 #include <signal.h>
 #include <unistd.h>
-#include <ctype.h>
+#endif
 
 /* Table of request handlers */
 DEF_REQHANDLER(ping)
@@ -91,13 +97,23 @@ void closefd(int fd) {
 g_error req_init(struct dtstack *m_dts) {
   struct sockaddr_in server_sockaddr;
   volatile int true = 1;
+#ifdef WINDOWS
+  WSADATA wsad;
+#endif
 
   if (s) return;
 
   dts = m_dts;
 
+#ifndef WINDOWS
   signal(SIGCHLD, SIG_IGN);
   signal(SIGPIPE, SIG_IGN);
+#endif
+
+#ifdef WINDOWS
+  if (WSAStartup(MAKEWORD(2,0),&wsad))
+    return mkerror(ERRT_NETWORK,"Error in WSAStartup()");
+#endif
 
   if((s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
     return mkerror(ERRT_NETWORK,"Error in socket()");
@@ -131,6 +147,10 @@ void req_free(void) {
     if (FD_ISSET(i,&con)) close(i);
   close(s);
   s = 0;
+
+  #ifdef WINDOWS
+  WSACleanup();
+  #endif
 }
 
 int reqproc(void) {
@@ -157,9 +177,26 @@ int reqproc(void) {
   FD_SET(s,&rfds);
   for (i=0;i<con_n;i++)     /* con stores all the active connections */
     if (FD_ISSET(i,&con)) FD_SET(i,&rfds);
+
+  /* In linux the timeout is a just-in-case for errors.  In windows we
+     have to wake from our little select() coma often to pump the message
+     loop or windows will get unresponsive.  That's what MS gets for
+     not putting the GUI in a seperate task.
+     Instead of putting the input in a seperate thread, we have to poll
+     both the input and the network, sucking up CPU.
+  */
+#ifdef WINDOWS
+  tv.tv_sec = 0;
+  tv.tv_usec = 0;
+#else
   tv.tv_sec = 5;
   tv.tv_usec = 0;
+#endif
+
   i = select(con_n,&rfds,NULL,NULL,&tv);
+#ifdef DEBUG
+  printf("select() = %d\n",i);
+#endif
 
   if (i>0) {
     /* Something is active */
@@ -169,8 +206,16 @@ int reqproc(void) {
       struct uipkt_hello hi;
       memset(&hi,0,sizeof(hi));
 
-      if((fd = accept(s, (void *)&ec, &len)) == -1)
+      len = sizeof(struct sockaddr_in);
+      if((fd = accept(s, (void *)&ec, &len)) == -1) {
+#ifdef DEBUG
+	printf("accept() returned -1\n");
+#ifdef WINDOWS
+	printf("WSAGetLastError() = %d\n",WSAGetLastError());
+#endif
+#endif
 	return 0;
+      }
 
 #ifdef NONBLOCKING
       /* Make it non-blocking */
@@ -184,7 +229,7 @@ int reqproc(void) {
       hi.height = htons(HWR_HEIGHT);
       hi.bpp = htons(HWR_BPP);
       strcpy(hi.title,HWR);
-      write(fd,&hi,sizeof(hi)); /* Say Hi! */
+      send(fd,&hi,sizeof(hi),0); /* Say Hi! */
 
       /* Save it for later */
       FD_SET(fd,&con);
@@ -208,7 +253,7 @@ int reqproc(void) {
 	  remaining = sizeof(req);
 	  pd = (unsigned char *) &req;
 	  while (remaining) {
-	    de = read(fd,pd,remaining);
+	    de = recv(fd,pd,remaining,0);
 	    if (de<=0) {
 	      /* Connection close? */
 	      closefd(fd);
@@ -243,7 +288,7 @@ int reqproc(void) {
 	    remaining = req.size;
 	    pd = data;
 	    while (remaining) {
-	      de = read(fd,pd,remaining);
+	      de = recv(fd,pd,remaining,0);
 	      if (de<=0) {
 		/* Connection close? */
 		g_free(data);
@@ -287,7 +332,7 @@ int reqproc(void) {
 #endif
 
 	  /* Send the response packet */
-	  if (write(fd,&rsp,sizeof(rsp))<sizeof(rsp))   
+	  if (send(fd,&rsp,sizeof(rsp),0)<sizeof(rsp))   
 	    fatal = 1;
 
 	  if (fatal)

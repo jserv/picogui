@@ -1,9 +1,14 @@
 /*
  * input.c - Input layer for SDL
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * 
  * Creates a seperate thread that waits on the SDL events and sends
  * them over to widget.c
+ *
+ * In windoze waiting in a seperate thread doesn't work, so we poll the
+ * input and the network.  This makes the 'normal' input_init and
+ * input_release into stubs and expects windows_inputpoll_hack() to be
+ * called on a regular basis.
  *
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -18,30 +23,51 @@
 #include <SDL.h>
 #include <SDL_thread.h>
 
+#if defined(__WIN32__) || defined(WIN32)
+#define WINDOWS
+#endif
+
 extern SDL_Surface *screen;
+#ifndef WINDOWS
 int threadfunc(void *p);
 SDL_Thread *thread;
+#else
+void windows_inputpoll_hack(void);
+#endif
 void (*quitreq)(void);
 
 /* Create the thread */
 g_error input_init(void (*request_quit)(void)) {
   quitreq = request_quit;
+#ifndef WINDOWS
   thread = SDL_CreateThread(&threadfunc,NULL);
   if (!thread) return mkerror(ERRT_IO,"Can't create input thread");
+#endif
   return sucess;
 }
 
 /* Terminate the thread */
 void input_release() {
+#ifndef WINDOWS
   SDL_KillThread(thread);
+#endif
 }
 
 /* The actual thread */
+#ifndef WINDOWS
 int threadfunc(void *p) {
+#else
+void windows_inputpoll_hack(void) {
+#endif
   SDL_Event evt;
   int ox=-1,oy=-1;
+#ifndef WINDOWS
   for (;;) {
     SDL_WaitEvent(&evt);
+#else
+  if (!SDL_PollEvent(&evt)) return;
+#endif   
+
     switch (evt.type) {
 
     case SDL_MOUSEMOTION:
@@ -65,7 +91,9 @@ int threadfunc(void *p) {
       break;
 
     }
+#ifndef WINDOWS
   }
+#endif
 }
 
 /* The End */

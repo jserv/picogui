@@ -1,6 +1,6 @@
 /*
  * mainloop.c - initializes and shuts down everything, main loop
- * $Revision: 1.4 $
+ * $Revision: 1.5 $
  * 
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -16,21 +16,35 @@
 #include <appmgr.h>
 #include <input.h>
 
+#if defined(__WIN32__) || defined(WIN32)
+#define WINDOWS
+#include <SDL.h> /* Currently we need this for windoze event processing */
+#else
 #include <unistd.h>
 #include <signal.h>
 #include <sys/types.h>
+#endif
 
 volatile int proceed;
 extern long memref;
-pid_t my_pid;
 
+#ifndef WINDOWS
+pid_t my_pid;
 void sigterm_handler(int x);
+#endif
+
 void request_quit(void);
 
 int main(int argc, char **argv) {
   struct dtstack *s;
 
+#ifndef WINDOWS
   my_pid = getpid();
+#endif
+
+#ifdef WINDOWS
+void windows_inputpoll_hack(void);
+#endif
 
   /*************************************** Initialization */
 
@@ -41,11 +55,13 @@ int main(int argc, char **argv) {
   if (prerror(hwr_init()).type != ERRT_NONE) exit(1);
   if (prerror(input_init(&request_quit)).type != ERRT_NONE) exit(1);
 
+#ifndef WINDOWS
   /* Signal handler (it's usually good to have a way to exit!) */
   if (signal(SIGTERM,&sigterm_handler)==SIG_ERR) {
     prerror(mkerror(ERRT_INTERNAL,"error setting signal handler"));
     exit(1);
   }
+#endif
 
   /* initial update */
   update(s);
@@ -53,7 +69,12 @@ int main(int argc, char **argv) {
   /*************************************** Main loop */
 
   proceed = 1;
-  while (proceed && reqproc());
+  while (proceed && reqproc())
+#ifndef WINDOWS
+    ;
+#else
+    windows_inputpoll_hack();
+#endif
 
   /*************************************** cleanup time */
   input_release();
@@ -65,11 +86,18 @@ int main(int argc, char **argv) {
   exit(0);
 }
 
+#ifndef WINDOWS
 void sigterm_handler(int x) {
   proceed = 0;
 }
+#endif
+
 void request_quit(void) {
+#ifdef WINDOWS
+  proceed = 0;
+#else
   kill(my_pid,SIGTERM);
+#endif
 }
 
 /* The End */

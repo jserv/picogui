@@ -1,5 +1,5 @@
 # Makefile for PicoGUI
-# $Revision: 1.4 $
+# $Revision: 1.5 $
 #
 # Micah Dowty <micah@homesoftware.com> 
 #
@@ -26,24 +26,24 @@ CFLAGS := -Iwidget -Igcore -Iappmgr
 
 CFLAGS := $(CFLAGS) -O2 -g -c
 LDFLAGS := 
-GCC = gcc
-STRIP = strip
+
+# These are default, can be overridden later
+GCC := gcc
+STRIP := strip
 
 ######## Load options from .config and add source files for modules
-all : $(BINNAME)
-
-clean:
-	rm -f $(BINNAME) *.da *.bb *.bbg debug/* $(OBJ) core 
 
 ### Config parsing
 
-.config :
-	script/config.pl
-
-config :
-	script/config.pl
-
 include .config
+
+# Target platform
+ifeq ($(strip $(PLATFORM)),windows)
+	GCC := i386-mingw32-$(GCC)
+	STRIP := i386-mingw32-$(STRIP)
+	BINNAME := $(BINNAME).exe
+	LDFLAGS := $(LDFLAGS) -lwsock32
+endif
 
 # Set debugging variables
 ifeq ($(strip $(DEBUG)),efence)
@@ -92,8 +92,8 @@ CFLAGS := $(CFLAGS) \
 # Set any necessary flags peculiar to a hardware library
 ifeq ($(strip $(VIDLIB)),sdl)
 	# Libraries and includes for SDL
-	CFLAGS := $(CFLAGS) -I/usr/local/include/SDL
-	LDFLAGS := $(LDFLAGS) -lSDL -lpthread
+	CFLAGS := $(CFLAGS) $(shell sdl-config --cflags)
+	LDFLAGS := $(LDFLAGS) $(shell sdl-config --libs)
 endif
 
 # Hardware-specific source files
@@ -112,6 +112,17 @@ SRC := $(SRC) input/$(INPUT)/input.c
 OBJ := $(SRC:.c=.o) font/fontdata.o
 
 ### Rules
+
+all : $(BINNAME)
+
+clean:
+	rm -f $(BINNAME) *.da *.bb *.bbg debug/* $(OBJ) core 
+
+.config :
+	script/config.pl
+
+config :
+	script/config.pl
 
 $(BINNAME): $(OBJ) $(HDR)
 	$(GCC) -o $(BINNAME) $(OBJ) $(LDFLAGS)

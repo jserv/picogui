@@ -3,7 +3,7 @@
 # Configuration options for PicoGUI.
 # This creates the .config file that Makefile uses.
 # Requires the 'dialog' command.
-# $Revision: 1.4 $
+# $Revision: 1.5 $
 #
 # Micah Dowty <micah@homesoftware.com> 
 #
@@ -17,7 +17,8 @@
 	    'NET' => 'Network type',
 	    'FONTSET' => 'Font set',
 	    'STRIPBIN' => 'Strip binary',
-	    'INPUT' => 'Input driver'
+	    'INPUT' => 'Input driver',
+	    'PLATFORM' => 'Target platform'
 	    );
 
 %opts = (
@@ -26,7 +27,8 @@
 	 'NET' => 'socket',
 	 'FONTSET' => 'all',
 	 'STRIPBIN' => 'no',
-	 'INPUT' => 'sdl'
+	 'INPUT' => 'sdl',
+	 'PLATFORM' => 'linux'
 	 );
 
 %optopts = (
@@ -46,7 +48,9 @@
 	    'STRIPBIN' => 'no=Leave debugging symbols:'.
 	               'yes=Zap debugging symbols',
 	    'INPUT' => 'sdl=Input from SDL event loop:'.
-	               'null=No input driver (network only)'
+	               'null=No input driver (network only)',
+	    'PLATFORM' => 'linux=Compile natively for linux:'.
+		          'windows=Cross-compile for M$ windoze'
 	    );
 
 ########
