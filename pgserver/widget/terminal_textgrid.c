@@ -1,4 +1,4 @@
-/* $Id: terminal_textgrid.c,v 1.12 2003/03/23 09:24:20 micahjd Exp $
+/* $Id: terminal_textgrid.c,v 1.13 2003/03/23 09:25:47 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -79,6 +79,10 @@ void textgrid_render(struct groprender *r, struct gropnode *n) {
   celw      = m.charcell.w;
   celh      = m.charcell.h;
   
+  /* Protection against SIGFPE if our font engine is hosed */
+  if (celw < 1) celw = 1;
+  if (celh < 1) celh = 1;
+
   /* n->param[1]'s low u16 is the buffer width, the high u16 is
    * an offset from the beginning of the buffer.
    */

@@ -1,4 +1,4 @@
-/* $Id: terminal_frontend.c,v 1.15 2003/03/23 02:08:41 micahjd Exp $
+/* $Id: terminal_frontend.c,v 1.16 2003/03/23 09:25:47 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -199,14 +199,8 @@ void build_terminal(struct gropctxt *c,u16 state,struct widget *self) {
 
   /* Using our grop context and character cell size,
    * calculate a good size for us */
-  if (DATA->celw)
-    neww = c->r.w / DATA->celw - (DATA->fontmargin ? 1 : 0);   /* A little margin */
-  else
-    neww = 0;
-  if (DATA->celh)
-    newh = c->r.h / DATA->celh - (DATA->fontmargin ? 1 : 0);
-  else
-    newh = 0;
+  neww = c->r.w / DATA->celw - (DATA->fontmargin ? 1 : 0);   /* A little margin */
+  newh = c->r.h / DATA->celh - (DATA->fontmargin ? 1 : 0);
 
   if (neww < 0) neww = 0;
   if (newh < 0) newh = 0;
