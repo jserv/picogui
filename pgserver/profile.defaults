@@ -32,6 +32,7 @@ CONFIG_EFENCE=y
 # DEBUG_INIT is not set
 # DEBUG_MEMORY is not set
 CONFIG_STDERR_GURU=y
+# DEBUG_HTML is not set
 
 #
 # Fonts
@@ -49,15 +50,18 @@ FONT_HELVETICA12=y
 # FONT_HELVETICA24 is not set
 # FONT_TIMES10 is not set
 FONT_UTOPIA25=y
+# FONT_FIXED13JA is not set
 
 #
 # Video Drivers
 #
 DRIVER_FBDEV=y
 # CONFIG_FIX_VR3 is not set
+# CONFIG_FB_NOGRAPHICS is not set
 DRIVER_SDLFB=y
 CONFIG_SDLSKIN=y
 # CONFIG_SDLSDC is not set
+# CONFIG_SDL_FULLUPDATE is not set
 # CONFIG_SDLEMU_NONE is not set
 CONFIG_SDLEMU_BLIT=y
 # CONFIG_SDLEMU_COLOR is not set
@@ -69,6 +73,7 @@ CONFIG_SDLEMU_BLIT=y
 DRIVER_SCRSHOT=y
 DRIVER_NULL=y
 DRIVER_NULLFB=y
+# DRIVER_S1D13806 is not set
 
 #
 # Input Drivers
@@ -77,8 +82,13 @@ DRIVER_SDLINPUT=y
 # DRIVER_SVGAINPUT is not set
 # DRIVER_NCURSESINPUT is not set
 # DRIVER_CHIPSLICETS is not set
+# DRIVER_EVENTBROKER is not set
 # DRIVER_R3912TS is not set
 # DRIVER_VR3TS is not set
+# DRIVER_TUXTS is not set
+# DRIVER_TTYKB is not set
+# DRIVER_REMORAKB is not set
+# DRIVER_SERIALMOUSE is not set
 
 #
 # Video Base Libraries
@@ -103,14 +113,16 @@ CONFIG_WIDGET_CANVAS=y
 # CONFIG_DRAGSOLID is not set
 CONFIG_MAX_ZOMBIEGROPS=150
 # CONFIG_KEY_ALPHA is not set
+# CONFIG_BUTTON_BEEP is not set
 
 #
-# Bitmap Formats
+# File Formats
 #
 CONFIG_FORMAT_XBM=y
 CONFIG_FORMAT_PNM=y
 CONFIG_FORMAT_JPEG=y
 CONFIG_FORMAT_BMP=y
+CONFIG_FORMAT_HTML=y
 
 #
 # Security
