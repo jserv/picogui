@@ -67,7 +67,6 @@ AC_OUTPUT(
 	Makefile
 	picogui-client.spec
 	src/Makefile
-	demos/Makefile
 	include/Makefile
 	include/picogui/Makefile
 )

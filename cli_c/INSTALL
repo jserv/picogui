@@ -15,7 +15,7 @@
 	  --help                 for a complete list of options
 
 
- 3. - Compile the library and the demos :
+ 3. - Compile the library :
 
          make
 
