@@ -104,7 +104,7 @@ proc pgGetString {textid} {
 	return $ret(data)
 }
 proc pgNewWidget {type {rship 0} {parent 0}} {
-	global pg_request defaultparent defaultrship pg_derive
+	global pg_request defaultparent defaultrship pg_derive pg_widget
 	if {$parent == 0 } {
 		set parent $defaultparent
 	}
@@ -112,16 +112,16 @@ proc pgNewWidget {type {rship 0} {parent 0}} {
 		set rship $defaultrship
 	}
 	send_packet [pack_pgrequest 1 8 $pg_request(mkwidget)]
-	send_packet [binary format "SSI" $rship $type $parent]
+	send_packet [binary format "SSI" $rship $pg_widget($type) $parent]
 	array set ret [pgGetResponse]
 	set defaultparent $ret(data)
 	set defaultrship $pg_derive(after)
 	return $ret(data)
 }
 proc pgCreateWidget {type} {
-	global pg_request pg_derive
+	global pg_request pg_derive pg_widget
 	send_packet [pack_pgrequest 1 4 $pg_request(createwidget)]
-	send_packet [binary format "SS" $type 0]
+	send_packet [binary format "SS" $pg_widget($type) 0]
 	array set ret [pgGetResponse]
 	set defaultparent $ret(data)
 	set defaultrship $pg_derive(inside)
@@ -198,14 +198,12 @@ proc pgLoadBitmap {data} {
 	return $ret(data)
 }
 proc pgNewLabel {{text ""} {rship 0} {parent 0}} {
-	global pg_widget
-	set label [pgNewWidget $pg_widget(label) $rship $parent]
+	set label [pgNewWidget label $rship $parent]
 	pgSetText $label $text
 	return $label
 }
 proc pgNewButton {{text ""} {rship 0} {parent 0}} {
-	global pg_widget
-	set button [pgNewWidget $pg_widget(button) $rship $parent]
+	set button [pgNewWidget button $rship $parent]
 	pgSetText $button $text
 	return $button
 }
@@ -218,8 +216,7 @@ proc isInteger {test} {
 	return 0
 }
 proc pgNewBitmap {{image 0} {rship 0} {parent 0}} {
-	global pg_widget
-	set bitmap [pgNewWidget $pg_widget(label) $rship $parent]
+	set bitmap [pgNewWidget label $rship $parent]
 	if {$image ==0} {
 		return $bitmap
 	} elseif {[isInteger $image] == 1} {
@@ -299,7 +296,7 @@ proc pgEventLoop {} {
 }
 proc pgDialog { title } {
 	global pg_widget defaultparent defaltrship
-	set dlg [pgCreateWidget $pg_widget(dialogbox)]
+	set dlg [pgCreateWidget dialogbox]
 	pgSetText $dlg $title
 	set defaultparent $dlg
 	return $dlg

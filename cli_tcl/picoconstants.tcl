@@ -254,6 +254,7 @@ array set pg_fstyle "
 	encoding_isolatin1	[expr 1<<4]
 	encoding_ibm		[expr 1<<5]
 	doublespace		[expr 1<<7]
+	bold			[expr 1<<8]
 	italic			[expr 1<<9]
 	underline		[expr 1<<10]
 	strikeout		[expr 1<<11]
@@ -264,6 +265,7 @@ array set pg_fstyle "
 "
 set pg_fstyle(encoding_mask) [expr $pg_fstyle(encoding_isolatin1)| \
 	$pg_fstyle(encoding_ibm)|$pg_fstyle(encoding_unicode)]
+
 array set pg_trigger "
 	timer		[expr 1<<0]
 	pntr_relative	[expr 1<<1]

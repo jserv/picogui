@@ -3,7 +3,7 @@ source picogui.tcl
 pgConnect localhost 0
 
 pgRegisterApp "Greetings" $pg_app(normal)
-set b [pgNewWidget $pg_widget(canvas)]
+set b [pgNewWidget canvas]
 pgSetSide $b all
 pgSetWidget $b $pg_wp(triggermask) $pg_trigger(move)
 pgBind $b any {parray "event"}
