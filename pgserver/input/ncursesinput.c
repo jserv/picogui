@@ -1,4 +1,4 @@
-/* $Id: ncursesinput.c,v 1.8 2001/01/20 09:04:49 micahjd Exp $
+/* $Id: ncursesinput.c,v 1.9 2001/01/20 09:31:11 micahjd Exp $
  *
  * ncursesinput.h - input driver for ncurses
  * 
@@ -39,6 +39,11 @@
 #include <gpm.h>
 
 Gpm_Event ncurses_last_event;
+
+/* the stupid gpm server scales down the input for text mode,
+ * so we either have to deal with darn slow input or choppy
+ * scaling cruft. */
+#define SCALEHACK 2
 
 /******************************************** Implementations */
 
@@ -125,8 +130,14 @@ int ncursesinput_fd_activate(int fd) {
 
 	 /* Generate our own coordinates and fit it within the
 	  * video driver's screen resolution */
-	 evt.x = pointer->x + evt.dx;
-	 evt.y = pointer->y + evt.dy;
+	 if (vid->xres>200) {    /* For stupid scale hack */
+	    evt.x = pointer->x + (evt.dx << SCALEHACK);
+	    evt.y = pointer->y + (evt.dy << SCALEHACK);
+	 }
+	 else {
+	    evt.x = pointer->x + evt.dx;
+	    evt.y = pointer->y + evt.dy;
+	 }
 	 gpm_mx = vid->xres;
 	 gpm_my = vid->yres;
 	 Gpm_FitEvent(&evt);
