@@ -1,4 +1,4 @@
-/* $Id: driverinfo.c,v 1.10 2000/12/29 22:31:58 micahjd Exp $
+/* $Id: driverinfo.c,v 1.11 2001/01/14 23:03:11 micahjd Exp $
  *
  * driverinfo.c - has a static array with information about
  *                installed drivers
@@ -58,6 +58,10 @@ struct vidinfo videodrivers[] = {
 #  endif
 #endif
 
+#ifdef DRIVER_NCURSES
+  {"ncurses",&ncurses_regfunc},
+#endif   
+   
   /* End */ {NULL,NULL}
 };
 
@@ -66,11 +70,17 @@ struct vidinfo videodrivers[] = {
  * specified, no input. Order does not matter
  */
 struct inputinfo inputdrivers[] = {
+
 #ifdef DRIVER_SDLINPUT
   {"sdlinput",&sdlinput_regfunc},
 #endif
+   
 #ifdef DRIVER_SVGAINPUT
   {"svgainput",&svgainput_regfunc},
+#endif
+
+#ifdef DRIVER_NCURSESINPUT
+  {"ncursesinput",&ncursesinput_regfunc},
 #endif
 
   /* End */ {NULL,NULL}
