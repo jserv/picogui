@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.1 2000/09/24 06:39:59 micahjd Exp $
+# $Id: Makefile,v 1.2 2000/09/25 00:15:26 micahjd Exp $
 #
 # Theme compiler makefile
 #
@@ -29,11 +29,12 @@
 
 BINNAME = themec
 
-SRC := lex.yy.c y.tab.c
+SRC := lex.yy.c y.tab.c symtab.c
 LEXSRC := pgtheme.l
 YACCSRC := pgtheme.y
 
-HDR := y.tab.h
+HDR := y.tab.h themec.h ../include/picogui/*.h
+CONSTANTS := ../include/picogui/constants.h
 
 CFLAGS := -I../include
 
@@ -45,6 +46,7 @@ LDFLAGS := -lfl
 GCC := gcc
 LEX := flex
 YACC := yacc -d
+MKSYMTAB := perl mksymtab.pl
 
 ### Rules
 
@@ -54,7 +56,7 @@ OBJ := $(SRC:.c=.o)
 all: $(BINNAME)
 
 clean:
-	rm -f $(OBJ) $(BINNAME) lex.yy.c y.tab.c y.tab.h
+	rm -f $(OBJ) $(BINNAME) lex.yy.c y.tab.c y.tab.h symtab.c
 
 $(BINNAME) : $(OBJ) $(HDR)
 	$(GCC) -o $(BINNAME) $(OBJ) $(LDFLAGS)
@@ -71,6 +73,11 @@ y.tab.c : $(YACCSRC)
 	$(YACC) $(YACCSRC)
 
 y.tab.h : y.tab.c
+
+# Auto-generated symtab
+
+symtab.c : $(CONSTANTS) mksymtab.pl
+	$(MKSYMTAB) < $(CONSTANTS) > symtab.c
 
 ### The End ###
 

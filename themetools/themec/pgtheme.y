@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.2 2000/09/24 07:28:14 micahjd Exp $
+/* $Id: pgtheme.y,v 1.3 2000/09/25 00:15:26 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -25,37 +25,53 @@
  * 
  * 
  */
+
+#include "themec.h"
+
 %}
 
 %union {
   unsigned long num;
+  unsigned short propid;
+  unsigned short thobjid;
+  struct {
+    unsigned long data;
+    unsigned short loader;
+  } propval;
 }
 
-%token <num> NUMBER
-%token <num> PROPERTY
+%token <num>     NUMBER
+%token <propid>  PROPERTY
+%token <thobjid> THOBJ
 %token STRING
 
 %left '-' '+'
 %left '*' '/'
 
-%type <num> expression
+%type <num>      constexp
+%type <propval>  propertyval
+%type <propval>  statement
 
 %%
 statementlist: statement
              | statementlist statement
              ;
 
-statement:  PROPERTY '=' expression ';' { printf("=%d\n",$3); }
+statement:  PROPERTY '=' propertyval ';' { printf("=%d\n",$3); }
          ;
 
-expression: expression '+' expression { $$ = $1 + $3; }
-          | expression '-' expression { $$ = $1 - $3; }
-          | expression '*' expression { $$ = $1 * $3; }
-          | expression '/' expression { 
-	    if ($3 == 0)
-	      yyerror("Divide by zero");
-	    else
-	      $$ = $1 / $3; }
-          | '(' expression ')' { $$ = $2; }
-          | NUMBER
-          ;
+propertyval:  constexp
+           |  statement
+           ;
+
+constexp: constexp '+' constexp { $$ = $1 + $3; }
+        | constexp '-' constexp { $$ = $1 - $3; }
+        | constexp '*' constexp { $$ = $1 * $3; }
+        | constexp '/' constexp { 
+	  if ($3 == 0)
+	    yyerror("Divide by zero");
+	  else
+	    $$ = $1 / $3; }
+        | '(' constexp ')' { $$ = $2; }
+        | NUMBER
+        ;

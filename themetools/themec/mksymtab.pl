@@ -1,4 +1,4 @@
-# $Id: mksymtab.pl,v 1.1 2000/09/25 00:01:02 micahjd Exp $
+# $Id: mksymtab.pl,v 1.2 2000/09/25 00:15:26 micahjd Exp $
 #
 # mksymtab.pl - convert the constant definitions in constants.h
 #               into a symbol table to compile into the theme
@@ -48,7 +48,7 @@ while (<>) {
     $n = $1;
 
     # All values can be used as-is as a numerical constant
-    print "\t{NUMCONST,\"$n\",$n},\n";
+    print "\t{NUMBER,\"$n\",$n},\n";
 
     # If this is a thobj, put it in with dotted lowercase notation
     if ($n =~ /^PGTH_O_(.*)/) {
@@ -65,7 +65,7 @@ while (<>) {
     }
 }
 
-print "\t{NULL,0},\n};\n/* The End */\n";
+print "\t{0,NULL,0},\n};\n/* The End */\n";
 
 ### The End ###
 
