@@ -1,0 +1,35 @@
+/* $Id: mod_lucid_small.ths 3979 2003-05-23 11:24:57Z lalo $
+ *
+ * Lucid - A simple and clean solid color and thin outline theme, where
+ *         most elements are translucent.
+ *
+ * This mod makes it smaller.
+ *
+ * Micah Dowty
+ */
+
+property fBackground,fTranslucent, fSolid, fFramedTranslucent, fStippleFramedTranslucent;
+property fNop, frameColor, alpha, boxOffset;
+
+object default {
+  name = "Lucid (small)";
+  font = Font("Helvetica",8,0);
+  spacing = 2;
+  width   = 14;
+  height  = 14;
+  boxOffset = 7;
+}
+
+object base.tlcontainer margin = 1;
+
+object panel border.size = 7;
+
+object field margin = 1;
+
+object textbox margin = 1;
+
+object scroll width = 7;
+
+object tab.page margin = 4;
+
+obj terminal font = Font("Clean", 8, PG_FSTYLE_FIXED);

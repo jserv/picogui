@@ -9,10 +9,10 @@
  */
 
 property fBackground,fTranslucent, fSolid, fFramedTranslucent, fStippleFramedTranslucent;
-property fNop, frameColor, alpha;
+property fNop, frameColor, alpha, boxOffset;
 
 object default {
-  name = "Lucid (incomplete)";
+  name = "Lucid";
 
   bgfill = Copy(default::fTranslucent);
 
@@ -66,6 +66,7 @@ object default {
   spacing = 5;
   width   = 20;
   height  = 20;
+  boxOffset = 10;
 }
 
 object background {
@@ -124,7 +125,7 @@ object flatbutton parent = PGTH_O_BUTTON;
 object checkbox {
    bgfill = fillstyle {
       fTranslucent(x,y,w,h);
-      x = x + 10;
+      x = x + boxOffset;
    };
    align = PG_A_LEFT;
 }
@@ -135,7 +136,7 @@ object checkbox.on {
     SetColor(button::fgcolor);
     Line(x+8,0,-4,h-1);
     Line(x+4,h-1,-4,0-(h/2));
-    x = x + 10;
+    x = x + boxOffset;
   };
 };
 object checkbox.on.nohilight {
@@ -153,7 +154,7 @@ object radiobutton bgfill = fillstyle {
    Line(x+5,b-5,-3,5);
    Line(x+5,b+5,3,-5);
    Line(x+5,b+5,-3,-5);
-   x = x + 10;
+   x = x + boxOffset;
 };
 object radiobutton.hilight {
   fgcolor = button::fgcolor;
@@ -172,7 +173,7 @@ object radiobutton.on {
     Line(x+5,b+5,-3,-5);
     Line(x+1,b-6,8,12);
     Line(x+1,b+6,8,-12);
-    x = x + 10;
+    x = x + boxOffset;
   };
   parent = PGTH_O_RADIOBUTTON;
 };
