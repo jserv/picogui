@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.21 2001/08/13 18:53:30 micahjd Exp $
+/* $Id: canvas.c,v 1.22 2001/09/04 18:21:35 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -96,7 +96,7 @@ g_error canvas_install(struct widget *self) {
    self->rawbuild = 1;
    
    self->trigger_mask = TRIGGER_STREAM | TRIGGER_UP | TRIGGER_DOWN |
-     TRIGGER_RELEASE;
+     TRIGGER_RELEASE | TRIGGER_CHAR | TRIGGER_KEYUP | TRIGGER_KEYDOWN;
    
    return sucess;
 }
@@ -157,7 +157,7 @@ void canvas_trigger(struct widget *self,long type,union trigparam *param) {
    }
 
    /* Nope, it was some sort of event to pass on to the app */
-   
+
    switch (type) {
     case TRIGGER_UP:
       evt = PG_WE_PNTR_UP;
@@ -168,33 +168,64 @@ void canvas_trigger(struct widget *self,long type,union trigparam *param) {
     case TRIGGER_RELEASE:
       evt = PG_WE_PNTR_RELEASE;
       break;
+    default:
+      evt = 0;
    }
 
-   /* Make coordinates relative to divnode */
-   param->mouse.x -= self->in->div->x;
-   param->mouse.y -= self->in->div->y;
-   
-   /* Apply mapping */
-   canvas_inputmap(self,&param->mouse.x,&param->mouse.y);
-   
-   /* Same mouse event packing used for pointer grabbing in widget.c:  
-    *
-    * Squeeze all the mouse params into a long, as follows.
-    * Note that if PicoGUI is to support screens bigger than
-    * 4096x4096 this won't work!
-    * 
-    * Bits 31-28:  buttons
-    * Bits 27-24:  changed buttons
-    * Bits 23-12:  Y
-    * Bits 11-0 :  X
-    */
-      
-   post_event(evt,self,
-	      (param->mouse.btn << 28) |
-	      (param->mouse.chbtn << 24) |
-	      (param->mouse.y << 12) |
-	      param->mouse.x,
-	      0,NULL);
+   /* Mouse event */
+   if (evt) {
+
+     /* Make coordinates relative to divnode */
+     param->mouse.x -= self->in->div->x;
+     param->mouse.y -= self->in->div->y;
+     
+     /* Apply mapping */
+     canvas_inputmap(self,&param->mouse.x,&param->mouse.y);
+     
+     /* Same mouse event packing used for pointer grabbing in widget.c:  
+      *
+      * Squeeze all the mouse params into a long, as follows.
+      * Note that if PicoGUI is to support screens bigger than
+      * 4096x4096 this won't work!
+      * 
+      * Bits 31-28:  buttons
+      * Bits 27-24:  changed buttons
+      * Bits 23-12:  Y
+      * Bits 11-0 :  X
+      */
+     
+     post_event(evt,self,
+		(param->mouse.btn << 28) |
+		(param->mouse.chbtn << 24) |
+		(param->mouse.y << 12) |
+		param->mouse.x,
+		0,NULL);
+
+     return;
+   }
+
+   /* Keyboard event? */
+   switch (type) {
+    case TRIGGER_KEYUP:
+      evt = PG_WE_KBD_KEYUP;
+      break;
+    case TRIGGER_KEYDOWN:
+      evt = PG_WE_KBD_KEYDOWN;
+      break;
+    case TRIGGER_CHAR:
+      evt = PG_WE_KBD_CHAR;
+      break;
+   default:
+      evt = 0;
+   }      
+
+   if (evt)
+     post_event(evt,self,
+		(evt==PG_WE_KBD_CHAR) ? param->kbd.key : 
+		(param->kbd.mods<<16)|param->kbd.key,
+		0,NULL);
+
+
 }
 
 /* Extend the canvas's preferred size to include the gropnode specified */

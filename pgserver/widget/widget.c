@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.106 2001/09/03 02:04:00 micahjd Exp $
+/* $Id: widget.c,v 1.107 2001/09/04 18:21:35 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -1022,8 +1022,8 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
     return;
   }
 
-  /* Ignore CHAR events for keys modified by anything other than shift */
-  if (type == TRIGGER_CHAR && (mods & ~PGMOD_SHIFT)) return;
+  /* Ignore CHAR events for keys modified by ALT or CTRL */
+  if (type == TRIGGER_CHAR && (mods & (PGMOD_ALT | PGMOD_CTRL))) return;
 
   /* Iterate through the hotkey-owning widgets if there's a KEYDOWN */
   p = dts->top->hkwidgets;
