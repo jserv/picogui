@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 """
- A client for the announceBot that accepts email messages from stdin.
+ A hackish little client for the announceBot that accepts email messages from stdin.
  This is meant to be used from a .forward file.
  The message should have a subject of the form "Announce <channel>".
  Every non-blank line of the body will be sent as a message to the bot.
+ There's also a lot of goop in here to update stats.
 """
 from twisted.internet import reactor, protocol
 import sys, email, os
@@ -11,9 +12,10 @@ import irc_colors
 
 logFile = "/home/commits/mail.log"
 statsDir = "/home/commits/stats"
+mtbcSubdir = "mtbc"
 statsSubdirs = ("forever", "daily", "weekly", "monthly")
 socketName = "/tmp/announceBot.socket"
-import re
+import re, time
 
 # Allowed commands, split up into those with content and those without
 allowedTextCommands = ("Announce",)
@@ -50,22 +52,50 @@ badChannels = ("#!~!raisin!!",
                "commits",
                )
 
+# Little utilities to save and load numbers from files... for our cheesy stats directory
+def saveInt(f, i):
+    f = open(f, "w")
+    f.write("%d\n" % i)
+    f.close()
+
+def loadInt(f):
+    f = open(f)
+    count = int(f.read().strip())
+    f.close()
+    return count
+
+def addIntToFile(f, i):
+    try:
+        count = loadInt(f)
+    except IOError:
+        count = None
+    if not count:
+        count = 0
+    count += i
+    saveInt(f, count)
+
 def incrementProjectCommits(project):
     if project.find(os.sep) >= 0:
         return
     for statsSubdir in statsSubdirs:
-        statFile = os.path.join(statsDir, statsSubdir, project)
-        count = 0
-        try:
-            f = open(statFile)
-            count = int(f.read().strip())
-            f.close()
-        except:
-            pass
-        count += 1
-        f = open(statFile, "w")
-        f.write("%d\n" % count)
-        f.close()
+        addIntToFile(os.path.join(statsDir, statsSubdir, project), 1)
+
+def updateCommitTimes(project):
+    """Record data for the Mean Time Between Commits page"""
+    currentTime = time.time()
+    lastTime = None
+    try:
+        lastTime = loadInt(os.path.join(statsDir, mtbcSubdir, project + '.lastTime'))
+    except IOError:
+        pass
+    if lastTime:
+        addIntToFile(os.path.join(statsDir, mtbcSubdir, project + '.numSamples'), 1)
+        addIntToFile(os.path.join(statsDir, mtbcSubdir, project + '.totalTime'), currentTime - lastTime)
+    saveInt(os.path.join(statsDir, mtbcSubdir, project + '.lastTime'), currentTime)
+
+def updateStats(project):
+    incrementProjectCommits(project)
+    updateCommitTimes(project)
 
 def applyColorTags(message):
     # We support tags of the form {red}, {bold}, {normal}, etc.
@@ -92,12 +122,13 @@ class AnnounceClient(protocol.Protocol):
 
         message = applyColorTags(message)
 
-        if not subjectFields[1] in badChannels:
+        # Don't allow known bad channels, or channel names with slashes
+        if not subjectFields[1] in badChannels and subjectFields[1].find(os.sep) < 0:
 
             # Send allowed text commands
             if subjectFields[0] in allowedTextCommands:
                 # Our lame little stat page
-                incrementProjectCommits(subjectFields[1])
+                updateStats(subjectFields[1])
                 
                 # This limits the length of the maximum message, mainly to prevent DOS'ing the bot too badly
                 for line in message.split("\n")[:40]:
