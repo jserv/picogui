@@ -1,4 +1,4 @@
-/* $Id: init.c,v 1.1 2002/11/03 04:54:23 micahjd Exp $
+/* $Id: init.c,v 1.2 2002/11/03 05:15:08 micahjd Exp $
  *
  * init.c - High level pgserver initialization and shutdown
  *
@@ -181,12 +181,14 @@ g_error pgserver_main(int flags, int argc, char **argv) {
 
 #ifdef CONFIG_VIDEOTEST
   /* Run a video test if the user asked for that */
-  n = get_param_int("pgserver","videotest",0);
-  if (n)
-    videotest_run(n);
-  else {
-    videotest_help();
-    return pgserver_shutdown();
+  if (get_param_str("pgserver","videotest",NULL)) {
+    n = get_param_int("pgserver","videotest",0);
+    if (n)
+      videotest_run(n);
+    else {
+      videotest_help();
+      return pgserver_shutdown();
+    }
   }
 
   if (get_param_int("pgserver","benchmark",0)) {
