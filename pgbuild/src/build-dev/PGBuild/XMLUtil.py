@@ -258,6 +258,22 @@ def writeSubtree(root, dest, rootName=None, rootAttributes=None, comment=None, p
     if needClose:
         dest.close()
 
+def getText(tag):
+    """Return all text enclosed immediately by the node"""
+    data = ''
+    for child in tag.childNodes:
+        if child.nodeType == child.TEXT_NODE:
+            data += child.data
+    return data.strip()
+
+def getTextRecursive(tag):
+    """Return all text enclosed by the node, including children"""
+    if tag.nodeType == tag.TEXT_NODE:
+        return tag.data
+    data = ''
+    for child in tag.childNodes:
+        data += getTextRecursive(child)
+    return data
 
 def getChildData(tag, childName, default=None):
     """Find exactly one child tag with the given name, and return its data content"""
@@ -266,11 +282,7 @@ def getChildData(tag, childName, default=None):
         raise PGBuild.Errors.ConfigError("Multiple <%s> tags found where only one was expected" % childName)
     if len(children) == 0:
         return default
-    data = ''
-    for grandChild in children[0].childNodes:
-        if grandChild.nodeType == grandChild.TEXT_NODE:
-            data += grandChild.data
-    return data
+    return getText(children[0])
 
 def setChildData(tag, childName, data):
     """Set the named child tag's data, creating the child if it doesn't exist"""

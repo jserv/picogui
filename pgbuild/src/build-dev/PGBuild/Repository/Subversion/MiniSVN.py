@@ -45,7 +45,7 @@ class Repository(PGBuild.Repository.RepositoryBase):
             # This part comes from guesstimation and looking at apache logs...
             # I couldn't find any docs on the WebDAV URLs used by Subversion, and
             # this was faster than digging through the source :)
-            reposPath = DavObject(url).getProperties()['DAV::checked-in']
+            reposPath = DavObject(url).getPropertyText('checked-in')
             reposPath = reposPath.replace("/!svn/ver/", "/!svn/bc/")
             parsed = urlparse(url)
             url = urlunparse((parsed[0], parsed[1], reposPath, '', '', ''))
@@ -61,7 +61,7 @@ class Repository(PGBuild.Repository.RepositoryBase):
         except OSError:
             pass
         propFile = open(self.getPropertyFile(destination), "w")
-        pickle.dump(self.root.getProperties(), propFile)
+        pickle.dump(self.root.getPropertyDict(), propFile)
         propFile.close()
 
     def getSavedProperties(self, destination):

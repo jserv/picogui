@@ -24,7 +24,8 @@ _svn_id = "$Id$"
 
 from httplib import HTTPConnection
 from urlparse import urlparse, urlunparse
-from xml.parsers import expat
+import sys
+import PGBuild.XMLUtil
 import PGBuild.Errors
 
 try:
@@ -34,68 +35,11 @@ except IndexError:
 
 userAgent = "%s/%s" % (PGBuild.name, PGBuild.version)
 
-class DavPropertyParser(object):
-    """Utility to parse the XML responses from a PROPFIND request"""
+class ResponseError(PGBuild.Errors.ExternalError):
+    explanation = "There was a problem parsing the Subversion server's PROPFIND response"
+    def __init__(self, args=None):
+        self.args = args
 
-    # Note: this should probably be rewritten to use PGBuild.XML.dom.minidom. At the
-    #       time I wrote this, I was having trouble with the bug described in the
-    #       source to PGBuild.XML but I didn't have a solution for it.
-    
-    def __init__(self):
-        self.elementStack = []
-        self.responses = {}
-        self.currentResponse = None
-        self.currentProperty = None
-    
-    def __startElementHandler(self, name, attrs):
-        self.elementStack.append(name)
-        if name == 'DAV::response':
-            self.currentResponse = {}
-
-        # Consider a tag immediately inside a <D:prop> to be a property
-        try:
-            if self.elementStack[-2] == 'DAV::prop':
-                self.currentProperty = self.elementStack[-1]
-        except IndexError:
-            pass
-
-        # If we get a tag inside a property tag, it might be worth saving. If we also
-        # get data, as in the case of <D:href>, the data will overwrite this. But, if we only
-        # have a tag this will end up storing the tag name as the property value. This is a
-        # hackish but painless way to make tags like <D:collection/> visible.
-        try:
-            if self.elementStack[-3] == 'DAV::prop':
-                self.currentResponse[self.currentProperty] = self.elementStack[-1]
-        except IndexError:
-            pass
-        
-            
-    def __endElementHandler(self, name):
-        # If we just left a tag immediately inside the <D:prop>, clear the current property
-        try:
-            if self.elementStack[-1] == 'DAV::prop':
-                self.currentProperty = None
-        except IndexError:
-            pass
-
-    def __characterDataHandler(self, data):
-        # The href tag sent immediately inside a new response tag will give the response
-        # its name in our dictionary
-        if self.elementStack[-1] == 'DAV::href' and self.elementStack[-2] == 'DAV::response':
-            self.responses[data] = self.currentResponse
-
-        # If we think we're inside a property, stow this data
-        if self.currentProperty:
-            self.currentResponse[self.currentProperty] = data
-
-    def parse(self, data):
-        Parser = expat.ParserCreate("UTF-8", ":")        
-        Parser.StartElementHandler = self.__startElementHandler
-        Parser.EndElementHandler = self.__endElementHandler
-        Parser.CharacterDataHandler = self.__characterDataHandler
-        Parser.Parse(data)
-
-        
 class DavObject(object):
     """Represent an object on a WebDAV server"""
     def __init__(self, url):
@@ -137,15 +81,45 @@ class DavObject(object):
             raise PGBuild.Errors.EnvironmentError(
                 "Server returned status '%d' for PROPFIND request" % resp.status)
             raise ErrorResponse(resp)
-        parser = DavPropertyParser()
-        parser.parse(resp.read())
+        try:
+            dom = PGBuild.XMLUtil.Document(resp)
+        except:
+            raise PGBuild.Errors.ResponseError(
+                "The response does not appear to be valid XML\n%s %s" %
+                (sys.exc_info()[0], sys.exc_info()[1]))
         conn.close()
 
+        # Now parse up our response. We should have a <DAV::multistatus> at the root,
+        # with a <DAV::response> for each child and ourselves.
+        try:
+            root = dom.getElementsByTagNameNS("DAV:", "multistatus")[0]
+        except IndexError:
+            raise PGBuild.Errors.ResponseError(
+                "A DAV <multistatus> element was not found at the response's root")
+
+        # Parse the <response> tags into a hash associating URI with <prop> trees
+        responses = {}
+        for response in root.getElementsByTagNameNS("DAV:", "response"):
+            try:
+                uri = PGBuild.XMLUtil.getText(response.getElementsByTagNameNS("DAV:", "href")[0])
+            except IndexError:
+                raise PGBuild.Errors.ResponseError("An <href> tag was not found in the <response>")
+            try:
+                propstat = response.getElementsByTagNameNS("DAV:", "propstat")[0]
+            except IndexError:
+                raise PGBuild.Errors.ResponseError("An <propstat> tag was not found in the <response>")
+            try:
+                prop = propstat.getElementsByTagNameNS("DAV:", "prop")[0]
+            except IndexError:
+                raise PGBuild.Errors.ResponseError("An <prop> tag was not found in the <propstat>")
+            responses[uri] = prop
+
         # We now have a dictionary of the responses, keyed by the href.
+        # First extract the response for our own properties.
         # If the URL we were given didn't have a trailing slash even though
         # it was a collection, it won't match exactly.
         self.properties = None
-        for response in parser.responses.keys():
+        for response in responses:
             if response == self.path or response == self.path + '/':
                 # We can tell based on whether this response has a trailing slash,
                 # if this object is a collection or a file.
@@ -154,18 +128,19 @@ class DavObject(object):
                 else:
                     self.type = 'file'
 
-                self.properties = parser.responses[response]
-                del parser.responses[response]
+                self.properties = responses[response]
+                del responses[response]
+                break
+        if not self.properties:
+            raise PGBuild.Errors.ResponseError(
+                "No <response> received with an <href> corresponding to the requested URI")
 
-        # Now that the response for this object has been safely tucked away,
-        # all the objects left in the list, if any, should be subdirectories.
-        # Convert each one of them to a DavObject, and store the properties
-        # since we already have them. Note that this leaves the children's
-        # children properties undefined.
+        # All the remaining <response>'s define children, so create DavObjects for them
+        # and file the property trees away appropriately.
         self.children = []
-        for response in parser.responses.keys():
+        for response in responses:
             obj = DavObject(urlunparse(('http', self.server, response, '', '', '')))
-            obj.properties = parser.responses[response]
+            obj.properties = responses[response]
 
             # As above, we can tell from the response whether the child is a collection
             # or not. If not, go ahead and give it an empty children list.
@@ -182,10 +157,38 @@ class DavObject(object):
             self.propfind()
         return self.children
 
-    def getProperties(self):
+    def getPropertiesDOM(self):
+        """Return the DOM representation of all properties"""
         if not hasattr(self, "properties"):
             self.propfind()
         return self.properties
+
+    def getPropertyDOM(self, name, namespace="DAV:"):
+        """Return the DOM representation of one property"""
+        props = self.getPropertiesDOM()
+        if namespace:
+            prop = props.getElementsByTagNameNS(namespace, name)
+        else:
+            prop = props.getElementsByTagName(name)
+        if not prop:
+            return None
+        return prop[0]
+
+    def getPropertyText(self, name, namespace="DAV:"):
+        """Return all text contained within a property"""
+        return PGBuild.XMLUtil.getTextRecursive(self.getPropertyDOM(name, namespace)).strip()
+
+    def getPropertyDict(self):
+        """Return a dictionary mapping element names of the form
+           namespaceURI:localName to the property's full text.
+           """
+        pdict = {}
+        for child in self.getPropertiesDOM().childNodes:
+            if child.nodeType == child.ELEMENT_NODE:
+                name = "%s:%s" % (child.namespaceURI, child.localName)
+                pdict[name] = PGBuild.XMLUtil.getTextRecursive(child).strip()
+        print pdict
+        return pdict
 
     def getType(self):
         if not hasattr(self, "type"):
