@@ -1,12 +1,13 @@
 # Set this to cross compile
-CROSS	= 
-#CROSS	= arm-linux-
+#CROSS	= 
+CROSS	= /root/tuxscreen/cvs/buildroot-tux/staging_dir/usr/bin/arm-uclibc-
 
 # Change this to the path of your cli_c headers
 INCLUDE = -I../../cli_c/include
 
 # Change this to your install prefix
-PREFIX	= /usr/local
+#PREFIX	= /usr/local
+PREFIX	= /root/tuxscreen/cvs/buildroot-tux/root/usr
 
 # Programs we need
 CC      = $(CROSS)gcc
