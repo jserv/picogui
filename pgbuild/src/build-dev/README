@@ -3,7 +3,7 @@ path when using PGBuild. It is comprised of sources from
 multiple locations:
 
   - SCons
-    v0.13
+    v0.14
 
     This module provides the SCons build system that PGBuild is
     layered on top of. See http://scons.sourceforge.net/
