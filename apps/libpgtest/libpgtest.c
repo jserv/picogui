@@ -24,10 +24,6 @@ void scene(void) {
   static float light1_ambient[] = {0.2,0.2,0.2,0};
   static float light1_position[] = {-10,5,-5,0};
 
-  /* pgserver sets up its own camera matrix at the beginning of
-   * its frame, so it's okay if we wipe out whatever matrix is set.
-   */
-  glLoadIdentity();
   glClearColor(0,0,0,0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -43,6 +39,7 @@ void scene(void) {
   glEnable(GL_LIGHTING);
   glColor3f(1,1,1);
 
+  glLoadIdentity();
   glTranslatef(0.0f,0.0f,-5.0f);
   glRotatef(xr,1.0f,0.0f,0.0f);
   glRotatef(yr,0.0f,1.0f,0.0f);
@@ -241,9 +238,14 @@ int main(int argc, char **argv) {
    */
   e = protected_main(argc,argv);
   if (iserror(e)) {
+
+    /* This will print a possibly OS-specific error message. Right now this just
+     * dumps it to stderr, but in a future Win32 port for example it may make a dialog.
+     */
     os_show_error(e);
     return 1;
   }
+
   return 0;
 }
 
