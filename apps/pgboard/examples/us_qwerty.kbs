@@ -1,0 +1,31 @@
+# Keyboard source for the US 'qwerty' layout
+#
+# This keyboard compiler is a relatively braindead perl script, so the
+# formatting isn't as nifty as the theme format.  
+#
+# Before the layouts, the global parameter 'virtual' defines the
+# size of the keyboard's virtual coordinate system.
+#
+# Each keyboard can have multiple layouts (called patterns) defined by the
+# bracketed sections. Every pattern has the following two sections:
+#
+# An actual pattern definition, which is simply a list
+# of canvas commands (as used in pgWriteCmd) transcribed right into binary.
+# The request loader can be used to insert fonts/bitmaps/text/whatever
+# into the commands through a function-like notation. Each line consists of
+# a canvas command name, whitespace, then a comma-separated list of parameters
+#
+# A table of keys, linking hotspots with actions. Simply a list of all the
+# entries in a key_entry structure on each line
+#
+# -- Micah Dowty <micahjd@users.sourceforge.net>
+
+virtual = 10 10
+
+[normal]
+
+:pattern
+PGCANVAS_GROP,PG_GROP_FRAME,2,2,6,6
+
+:keys
+2,2,6,6,0,'x',PGKEY_x,0,0
