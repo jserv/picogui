@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.3 2000/09/25 06:19:28 micahjd Exp $
+/* $Id: main.c,v 1.4 2000/09/25 19:04:33 micahjd Exp $
  *
  * main.c - main() and some parser utility functions for
  *          the PicoGUI theme compiler.  The actual parsing
@@ -32,12 +32,18 @@
 #include "y.tab.h"
 
 int lineno = 1;
-int errors = 0;
-
+int errors;
+struct objectnode *objectlist;
+unsigned long num_tags;
+unsigned long num_thobj;
+unsigned long num_totprop;
+unsigned long datasz_loader;
+unsigned long datasz_tags;
 char *filename;
 
 int main(int argc, char **argv) {
 
+  /**** Command line */
   /* I will put in a nice getopt-based arg processor later */
 
   filename = "stdin";
@@ -49,9 +55,21 @@ int main(int argc, char **argv) {
     }
   }
 
+  /**** Front end (Scanner/parser) */
+  /* Parse the input file, generating linked lists */
+
   do {
     yyparse();
   } while (!feof(yyin));
+
+  /**** Back end */
+  /* Process the parsed data */
+
+  backend();
+  
+  /**** Output */
+  /* Write it to a file */
+
   return (errors ? 1 : 0);
 }
 
@@ -70,18 +88,6 @@ int symlookup(const char *sym,unsigned long *value) {
   
   yyerror("Unrecognized symbol");
   return UNKNOWNSYM;
-}
-
-/* This is called when a completed theme object
-   definition is read, including a linked list of
-   statement nodes */
-void add_objectdef(unsigned long thobj,struct propnode *props) {
-  printf("Theme object %d:\n",thobj);
-  while (props) {
-    printf("\t property %d = 0x%08X with loader %d\n",props->propid,
-	   props->data,props->loader);
-    props = props->next;
-  }
 }
 
 /* The End */

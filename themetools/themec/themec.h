@@ -1,4 +1,4 @@
-/* $Id: themec.h,v 1.3 2000/09/25 06:19:28 micahjd Exp $
+/* $Id: themec.h,v 1.4 2000/09/25 19:04:33 micahjd Exp $
  *
  * themec.h - definitions used internally in the theme compiler
  *
@@ -57,17 +57,33 @@ extern struct symnode symboltab[];
 struct propnode {
   unsigned long data;
   unsigned long loader;
-  unsigned long propid;
+  unsigned short propid;
+  long count;
   struct propnode *next;
 };
 
-/*** Utility functions ***/
+struct objectnode {
+  unsigned short id;
+  struct propnode *proplist;
+  struct objectnode *next;
+};
+
+extern struct objectnode *objectlist;
+extern unsigned long num_tags;
+extern unsigned long num_thobj;
+extern unsigned long num_totprop;
+
+extern unsigned long datasz_loader;
+extern unsigned long datasz_tags;
+
+/*** Parser utility functions ***/
 
 int yyerror(const char *s);   /* Error reporting */
 int symlookup(const char *sym,unsigned long *value);
 
-/* Functions for processing the correctly parsed data */
-void add_objectdef(unsigned long thobj,struct propnode *props);
- 
+/*** Important functions ***/
+
+void backend(void);
+
 #endif /* _H_THEMEC */
 /* The End */

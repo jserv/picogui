@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.5 2000/09/25 06:19:28 micahjd Exp $
+/* $Id: pgtheme.y,v 1.6 2000/09/25 19:04:33 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -40,6 +40,7 @@
     unsigned long data;
   } propval;
   struct propnode *prop;
+  struct objectnode *obj;
 }
 
    /* Data types */
@@ -55,6 +56,7 @@
 %type <prop>     statement
 %type <prop>     stmt_list
 %type <prop>     compount_stmt
+%type <obj>      objectdef
 
    /* Reserved words */
 %token UNKNOWNSYM OBJ
@@ -78,7 +80,20 @@ unit: objectdef
 		    insist on ending object definitions with a ';' */
     ;
 
-objectdef:  OBJ thobj compount_stmt      { add_objectdef($2,$3); }
+objectdef:  OBJ thobj compount_stmt      { 
+  /* Add to the list of objects */
+  $$ = malloc(sizeof(struct propnode));
+  if ($$) {
+    memset($$,0,sizeof(struct propnode));
+    $$->proplist = & $3;
+    $$->id       = $2;
+    $$->next     = objectlist;
+    objectlist   = $$;
+    num_thobj++;
+  }
+  else
+    yyerror("memory allocation error");  
+}
          ;
 
 compount_stmt:  statement                { $$ = $1; }
@@ -92,6 +107,7 @@ statement:  property '=' propertyval ';' {
     $$->loader = $3.loader;
     $$->data   = $3.data;
     $$->propid = $1;
+    num_totprop++;
   }
   else
     yyerror("memory allocation error");
@@ -106,6 +122,7 @@ stmt_list: statement               { $$ = $1; }
          | stmt_list statement     { 
   if ($2) {
     $2->next = $1; 
+    $2->count = $1->count + 1;
     $$ = $2; 
   }
   else       /* This handles skipping invalid statements
