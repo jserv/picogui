@@ -596,7 +596,7 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
     param->mouse.chbtn = 1;
   case PG_TRIGGER_DOWN:
     if (DATA->extdevents & PG_EXEV_PNTR_DOWN)
-      post_event(PG_WE_PNTR_DOWN,self,param->mouse.chbtn,0,NULL);
+      post_event(PG_WE_PNTR_DOWN,self,(param->mouse.btn << 28) | (param->mouse.chbtn << 24),0,NULL);
     if (param->mouse.chbtn==1 && 
 	!(DATA->extdevents & PG_EXEV_NOCLICK)) {
       /* If this is a toggle button, and we're toggling it on, send the
@@ -616,7 +616,7 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
   case PG_TRIGGER_KEYUP:
 
 #ifdef DEBUG_EVENT
-      printf("PG_TRIGGER_KEYUP: button %p, received\n",self);
+      fprintf(stderr, "PG_TRIGGER_KEYUP: button %p, received\n",self);
 #endif
 
     /* Hotkey was pressed, simulate a keypress
@@ -627,7 +627,7 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
 	param->kbd.consume++;
 
 #ifdef DEBUG_EVENT
-      printf("PG_TRIGGER_KEYUP: button %p, hotkey_received was %d\n",self, DATA->hotkey_received);
+      fprintf(stderr, "PG_TRIGGER_KEYUP: button %p, hotkey_received was %d\n",self, DATA->hotkey_received);
 #endif
 
       /* Make sure we don't do this twice, or without
@@ -678,7 +678,7 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
     param->mouse.chbtn = 1;
   case PG_TRIGGER_UP:
     if (DATA->extdevents & PG_EXEV_PNTR_UP)
-      post_event(PG_WE_PNTR_UP,self,param->mouse.chbtn,0,NULL);
+      post_event(PG_WE_PNTR_UP,self,(param->mouse.btn << 28) | (param->mouse.chbtn << 24),0,NULL);
     if (DATA->on && param->mouse.chbtn==1) {
       if (DATA->extdevents & PG_EXEV_TOGGLE) {
 	if (!(DATA->extdevents & PG_EXEV_EXCLUSIVE))
@@ -718,7 +718,7 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
 
   case PG_TRIGGER_KEY_START:
 #ifdef DEBUG_EVENT
-    printf("button %p got PG_TRIGGER_KEY_START\n",self);
+    fprintf(stderr, "button %p got PG_TRIGGER_KEY_START\n",self);
 #endif
     DATA->hotkey_received = 0;
     break;
