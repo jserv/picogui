@@ -15,6 +15,7 @@ class TerminalPage:
 	    self.tabpage.hotkey = 'f1'
 	if position == 1:
 	    self.tabpage.hotkey = 'f2'
+	self._dynamictitle = False
 
 	try:
             import pty, fcntl, termios
@@ -45,8 +46,9 @@ class TerminalPage:
 
     def terminalTitleHandler(self, ev):
         self.tabpage.text = ev.data
+	self._dynamictitle = True
 	if self._app.current == self._position:
-	    self._app.text = "epterm - " + self.tabpage.text
+	    self._app.text = self.tabpage.text
 
     def update(self):
         self.terminalRead()
@@ -66,7 +68,10 @@ class TerminalPage:
 
     def tabClicked(self, ev):
         self._terminal.focus()
-	self._app.text = "epterm - " + self.tabpage.text
+	if self._dynamictitle:
+	    self._app.text = self.tabpage.text
+	else:
+	    self._app.text = "epterm"
 	self._app.current = self._position
 
     def setPosition(self, position):
@@ -74,11 +79,17 @@ class TerminalPage:
 
 class Config:
     def __init__(self, app, parent, relation):
+        self._parent = parent
         self._box = parent.addWidget('scrollbox', relation)
 	self._palletetab = self._box.addWidget('tabpage', 'inside')
 	self._palletetab.text = 'Pallete'
 	self._bindtab = self._palletetab.addWidget('tabpage', 'after')
 	self._bindtab.text = 'Keybindings'
+	self._app = app
+	self._app.link(self.activate, self._parent, 'activate')
+
+    def activate(self, ev):
+        self._app.text = "epterm config"
 
 class App(PicoGUI.Application):
     def __init__(self):
