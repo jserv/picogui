@@ -1,4 +1,4 @@
-/* $Id: posix.c,v 1.9 2003/01/01 03:43:04 micahjd Exp $
+/* $Id$
  *
  * posix.c - Implementation of OS-specific functions for POSIX-compatible systems
  *
@@ -33,12 +33,22 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#ifndef __CYGWIN__
+/* FIXME: this can be fixed by finding the proper ipc and shm stuff in cygwin
+ * and making it work... but I'm not doing it right now ;-) -- lalo */
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#endif /* __CYGWIN__ */
 #include <errno.h>
 #include <sys/stat.h>
 #include <dirent.h>
 #include <stdio.h>
+
+#ifdef __NAME_MAX__
+#warning "NAME_MAX is not defined on your system: Guessing..."
+#define NAME_MAX 512
+#endif /* __NAME_MAX__ */
+
 extern char **environ;
 
 /* Return value of the last process to exit */
@@ -155,6 +165,7 @@ u32 os_get_timer(void) {
  * The segment will have ownership set to the supplied uid.
  */
 g_error os_shm_alloc(u8 **shmaddr, u32 size, s32 *id, s32 *key, int secure) {
+#ifndef __CYGWIN__
   /* Find an unused SHM key, starting with a magic number. */
   while ((*id = shmget(os_posix_magic,size,IPC_CREAT | IPC_EXCL | 
 		       (secure ? 0600 : 0666))) < 0) {
@@ -171,20 +182,25 @@ g_error os_shm_alloc(u8 **shmaddr, u32 size, s32 *id, s32 *key, int secure) {
     return mkerror(PG_ERRT_IO,5);     /* Error creating SHM segment */
   }
 
+#endif /* ! __CYGWIN__ */
   return success;
 }
 
 void os_shm_set_uid(s32 id, u32 uid) {
+#ifndef __CYGWIN__
   struct shmid_ds ds;
   shmctl(id,IPC_STAT,&ds);
   ds.shm_perm.uid = uid;
   shmctl(id,IPC_SET,&ds);
+#endif /* ! __CYGWIN__ */
 }
 
 void os_shm_free(u8 *shmaddr, s32 id) {
+#ifndef __CYGWIN__
   /* Unmap this segment and remove the key itself */
   shmdt(shmaddr);
   shmctl(id, IPC_RMID, NULL);
+#endif /* ! __CYGWIN__ */
 }
 
 /* Recursively scan through all files and directories in the given path,

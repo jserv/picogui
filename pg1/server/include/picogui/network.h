@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.75 2003/03/23 12:57:36 lalo Exp $
+/* $Id$
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -30,7 +30,9 @@
 #define _H_PG_NETWORK
 
 /* This #ifndef is necessary since some systems already have this defined in another file. */
-#ifndef ntohl
+/* I don't know where cygwin gets the right declarations from, but if we just omit this
+ * include, for some reason, it works -- lalo */
+#if !defined(ntohl) && !defined(__CYGWIN__)
 #include <netinet/in.h>
 #endif
 
