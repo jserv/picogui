@@ -18,7 +18,7 @@ from twisted.python import log
 import time, irc_colors, glob, sys, re, os
 
 # Lalo's joke: A brainless entity created to keep an eye on subversion                 
-botNick = "MI5"
+botNick = "CIA"
 
 # List of channels we're in. These will be autojoined by the
 # AccountManager. We update this and save it when we get a mail
