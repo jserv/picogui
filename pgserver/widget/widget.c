@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.198 2002/10/05 11:21:05 micahjd Exp $
+/* $Id: widget.c,v 1.199 2002/10/05 13:03:50 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -144,6 +144,11 @@ g_error widget_create(struct widget **w, handle *h, int type,
    if ( type > PG_WIDGETMAX )
       return mkerror(PG_ERRT_BADPARAM, 20);
 
+   /* Check if it's supported
+    */
+   if (!widgettab[type].install)
+     return (g_error) (long) widgettab[type].remove;
+
 #ifdef DEBUG_KEYS
   num_widgets++;
 #endif
@@ -176,15 +181,7 @@ g_error widget_create(struct widget **w, handle *h, int type,
   /* Initialize this instance of the widget. This install function should initialize
    * the widget it's subclassed from first, if any
    */
-  if ((*w)->def->install) {
-     (*(*w)->def->install)(*w);
-  }
-  else {
-      /* This widget is not supported, return the error code we
-       * conveniently crammed into the 'remove' field */
-      g_free(*w);
-      return (g_error) (long) (*w)->def->remove;
-  }
+  (*(*w)->def->install)(*w);
 
   return success;
 }
