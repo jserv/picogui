@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.126 2001/12/12 22:54:14 micahjd Exp $
+/* $Id: widget.c,v 1.127 2001/12/13 17:59:33 lonetech Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -809,7 +809,7 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
 		 (param.mouse.chbtn << 24) |
 		 (param.mouse.y << 12) |
 		 param.mouse.x,
-		 keyboard_owner,NULL);
+		 pointer_owner,NULL);
     return;
   }
 
