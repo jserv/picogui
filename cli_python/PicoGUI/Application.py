@@ -19,7 +19,11 @@ class EventRegistry(object):
         self.map = {}
 
     def get(self, widget, evname):
-        return self.map.setdefault(widget.handle, {}).setdefault(evname, [])
+        if widget is None:
+            handle = None
+        else:
+            handle = widget.handle
+        return self.map.setdefault(handle, {}).setdefault(evname, [])
 
     def add(self, handler, widget=None, evname=None):
         self.get(widget, evname).append((handler, widget))
