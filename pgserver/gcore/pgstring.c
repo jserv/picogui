@@ -1,4 +1,4 @@
-/* $Id: pgstring.c,v 1.18 2003/01/18 21:33:03 micahjd Exp $
+/* $Id: pgstring.c,v 1.19 2003/01/18 21:33:52 micahjd Exp $
  *
  * pgstring.c - String data type to handle various encodings
  *
@@ -666,6 +666,9 @@ void pgstr_utf8_seek(const struct pgstring *str, struct pgstr_iterator *p, s32 c
       p->offset++;
     else
       p->offset--;
+    pgstr_boundscheck(str,p);
+    if (p->invalid)
+      return;
     if (((str->buffer[p->offset] & 0x80) == 0x00) || 
 	((str->buffer[p->offset] & 0xC0) == 0xC0))
       if (char_num > 0)
