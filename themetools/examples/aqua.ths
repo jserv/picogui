@@ -1,14 +1,15 @@
-/* $Id: aqua.ths,v 1.36 2002/09/18 11:36:36 micahjd Exp $
+/* $Id: aqua.ths,v 1.37 2002/09/28 20:31:01 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
  *
- * Version 1.03
+ * Version 1.04
  *
  * -- Micah Dowty
  *
  * Changelog:
  *
+ *  1.04 - Fixed a small bug that affected bouncyball
  *  1.03 - Patch from Florian Berger to support horizontal scrollbar rendering
  *  1.02 - new indicator, removed many objects' borders for a cleaner look
  *  1.01 - Fixed terminal background
@@ -153,6 +154,9 @@ object base.display {
     /* space from the edge */
     x = x+2; y = y+2;
     w = w-4; h = h-4;
+
+    /* Reset rendering */
+    SetSrc(0,0,0,0);
   };
 }
 
@@ -235,7 +239,7 @@ object scroll {
   };
 }
 
-object label margin = 4;
+object label margin = 10;
 
 /* Use a simple scrollbar-safe background when the label scrolls */
 object label.scroll {
