@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.35 2001/08/30 16:38:07 micahjd Exp $
+/* $Id: memtheme.c,v 1.36 2001/08/30 21:06:56 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -104,6 +104,10 @@ unsigned short thobj_ancestry[PGTH_ONUM] = {
   /* 50 PGTH_O_CHECKBOX_ON_NOHILIGHT */ PGTH_O_CHECKBOX_ON,
   /* 51 PGTH_O_SUBMENUITEM           */ PGTH_O_MENUITEM,
   /* 52 PGTH_O_SUBMENUITEM_HILIGHT   */ PGTH_O_MENUITEM_HILIGHT,
+  /* 53 PGTH_O_RADIOBUTTON           */ PGTH_O_CHECKBOX,
+  /* 54 PGTH_O_RADIOBUTTON_HILIGHT   */ PGTH_O_CHECKBOX_HILIGHT,
+  /* 55 PGTH_O_RADIOBUTTON_ON        */ PGTH_O_CHECKBOX_ON,
+  /* 56 PGTH_O_RADIOBUTTON_ON_NOHILIGHT */ PGTH_O_CHECKBOX_ON_NOHILIGHT,
 };
 
 struct pgmemtheme *memtheme;
