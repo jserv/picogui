@@ -1,3 +1,4 @@
+includedir = @includedir@/picogui
 
 include_HEADERS = \
 	canvas.h \
