@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys
+import sys, os
 
 if len (sys.argv) > 1:
     pgkeys = file (sys.argv[1])
@@ -27,7 +27,7 @@ if not max_key:
     max_key = max (keynames.keys())
 
 
-out = file ('src/keynames.c', 'w')
+out = file ('keynames.c', 'w')
 print >> out, '''/*
 * AUTO-GENERATED FILE, do not edit
 */
