@@ -56,8 +56,6 @@ EOF
     <code><pre>
 REPOS="$1"
 REV="$2"
-
-# IRC notification
 echo "`svnlook author -r $REV $REPOS`" committed revision $REV: "`svnlook log -r $REV $REPOS`" | \
    head -n 1 | mail -s "Announce <i>channelname</i>" commits@picogui.org&
     </pre></code>
@@ -67,9 +65,10 @@ echo "`svnlook author -r $REV $REPOS`" committed revision $REV: "`svnlook log -r
 
     <h1>Controlling the bot</h1>
 
-    <p> You can make the bot join your channel by sending an email to commits@picogui.org with the subject "JoinChannel [channel]".
+    <p> You can make the bot join your channel by sending an email to commits@picogui.org with the subject
+        "JoinChannel <i>channelname</i>".
         (Leave out the "#" beginning the channel name) You can make it leave your channel by sending a mail with the subject
-        "PartChannel [channel]". </p> The email body will be ignored.
+        "PartChannel <i>channelname</i>". </p> The email body will be ignored.
 
     <h1> Source code </h1>
 
