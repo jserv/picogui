@@ -12,7 +12,7 @@
 
     <h1>Using it with CVS</h1>
 
-    <p>For CVS, firstly place this script somewhere on the server:</p>
+    <p>For CVS, save this script as "ciabot" in the CVSROOT module of your repository:</p>
     <code><pre>
 
 #!/bin/bash
@@ -62,10 +62,10 @@ fi
         to try changing the email address from commits@picogui.org to an alias, cia@users.sf.net. Note that this could make
         the commit messages much slower, depending on how fast sourceforge's mail server is feeling. </p>
 
-    <p> Now check out the CVSROOT module of your projects repository, and in the loginfo file, place this line:</p>
+    <p> Now in the loginfo file from the CVSROOT module of your repository, place this line:</p>
 
     <code>
-      ALL /path/to/script
+      ALL $CVSROOT/CVSROOT/ciabot
     </code>
 
     <h1> Using it with Subversion </h1>
