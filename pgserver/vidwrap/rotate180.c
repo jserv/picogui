@@ -1,4 +1,4 @@
-/* $Id: rotate180.c,v 1.1 2001/05/01 01:12:29 micahjd Exp $
+/* $Id: rotate180.c,v 1.2 2001/05/01 01:31:27 micahjd Exp $
  *
  * rotate180.c - Video wrapper to rotate the screen 180 degrees
  *
@@ -118,10 +118,10 @@ void rotate180_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
    (*vid->bitmap_getsize)(dest,&dx,&dy);
    
    if (clip) {
-      cr.x1 = vid->xres-1-clip->x1;
-      cr.y1 = vid->yres-1-clip->y1;
-      cr.x2 = vid->xres-1-clip->x2;
-      cr.y2 = vid->yres-1-clip->y2;
+      cr.x1 = vid->xres-1-clip->x2;
+      cr.y1 = vid->yres-1-clip->y2;
+      cr.x2 = vid->xres-1-clip->x1;
+      cr.y2 = vid->yres-1-clip->y1;
       crp = &cr;
    }
    else

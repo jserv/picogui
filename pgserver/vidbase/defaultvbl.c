@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.37 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.38 2001/05/01 01:31:26 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -684,6 +684,8 @@ void def_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
     case 0:   p = &def_charblit_0;   break;
     case 90:  p = &def_charblit_90;  break;
     case 180: p = &def_charblit_180; break;
+    default:
+      return;
    }
 
    (*p)(dest,chardat,x,y,w,h,lines,c,clip,fill,bg,lgop);
