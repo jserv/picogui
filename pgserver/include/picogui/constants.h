@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.140 2002/05/20 21:10:48 micahjd Exp $
+/* $Id: constants.h,v 1.141 2002/05/20 22:46:01 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -839,7 +839,13 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_LABEL           1
 #define PG_WIDGET_SCROLL          2
 #define PG_WIDGET_INDICATOR       3
-#define PG_WIDGET_BITMAP          4
+#define PG_WIDGET_UNDEF_1         4      /* FIXME: BITMAP widget is deprecated, this is here
+					  * to encourage future source compatibility
+				          * when the bitmap widget is removed from the
+					  * widget tables entirely. For now it's a clone
+					  * of the label widget.
+					  */
+#define PG_WIDGET_BITMAP          PG_WIDGET_LABEL
 #define PG_WIDGET_BUTTON          5
 #define PG_WIDGET_PANEL           6     /* Internal use only! */
 #define PG_WIDGET_POPUP           7     /* Internal use only! */

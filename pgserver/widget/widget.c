@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.181 2002/05/20 21:10:48 micahjd Exp $
+/* $Id: widget.c,v 1.182 2002/05/20 22:46:02 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -55,7 +55,9 @@ DEF_STATICWIDGET_TABLE(toolbar)
 DEF_HYBRIDWIDGET_TABLE(label,button)
 DEF_WIDGET_TABLE(scroll)
 DEF_STATICWIDGET_TABLE(indicator)
-DEF_HYBRIDWIDGET_TABLE(label,button)
+DEF_HYBRIDWIDGET_TABLE(label,button)    /* FIXME: This is here for binary compatibility temporarily,
+					 * since the bitmap widget has been deprecated.
+					 */
 DEF_WIDGET_TABLE(button)
 DEF_STATICWIDGET_TABLE(panel)
 DEF_WIDGET_TABLE(popup)
