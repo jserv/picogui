@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.18 2002/10/24 21:58:50 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.19 2002/10/26 19:03:28 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -98,10 +98,7 @@ g_error textbox_install(struct widget *self) {
 }
 
 void textbox_remove(struct widget *self) {
-  g_error e;
-
-  e = handle_free(self->owner,DATA->doc_string);
-  errorcheck;
+  handle_free(self->owner,DATA->doc_string);
   document_delete(DATA->doc);
   g_free(DATA);
   r_divnode_free(self->in);
@@ -141,7 +138,6 @@ g_error textbox_set(struct widget *self,int property, glob data) {
 
     case PG_INSERT_OVERWRITE:
       document_nuke(DATA->doc);
-      return success;
       break;
 
     }
