@@ -98,6 +98,16 @@ object scroll {
    bgcolor = 0x808080;
 }
 
+/* Special overlay for indicators */
+object indicator {
+  overlay = fillstyle {
+    SetColor(widget::PG_WP_COLOR);
+    Rect(x,y,w,h);
+  };
+  bgcolor = 0x40000700 | 'a';
+  fgcolor = 0xffffff;
+}
+
 object base.panelbtn {
    width = 3;
    height = 3;
