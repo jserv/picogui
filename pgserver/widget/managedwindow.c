@@ -1,4 +1,4 @@
-/* $Id: managedwindow.c,v 1.15 2002/11/07 20:36:47 micahjd Exp $
+/* $Id: managedwindow.c,v 1.16 2002/11/14 20:33:05 micahjd Exp $
  *
  * managedwindow.c - A root widget representing a window managed by a host GUI
  *
@@ -173,11 +173,13 @@ g_error managedwindow_set(struct widget *self,int property, glob data) {
     break;
 
   case PG_WP_WIDTH:
+    DATA->already_sized = 1;
     VID(window_get_size)(self->dt->display, &x, &y);
     VID(window_set_size)(self->dt->display, data, y);
     break;
 
   case PG_WP_HEIGHT:
+    DATA->already_sized = 1;
     VID(window_get_size)(self->dt->display, &x, &y);
     VID(window_set_size)(self->dt->display, x, data);
     break;
