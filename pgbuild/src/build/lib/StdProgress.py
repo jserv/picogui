@@ -70,6 +70,7 @@ class StdProgress:
 
     def __init__(self):
         self.color = Colorizer()
+        self.taskStack = []
     
     def report(self, verb, noun):
         self.color.write("%15s " % verb)
@@ -77,9 +78,13 @@ class StdProgress:
         self.color.write(" %s\n" % noun)
 
     def task(self, name):
+        self.color.write(" - " * len(self.taskStack))
         self.color.write(" - ", ('bold',))
         self.color.write("%s...\n" % name, ('bold', 'cyan'))
-        return StdProgress()
+        newProgress = StdProgress()
+        newProgress.taskStack = self.taskStack[:]
+        newProgress.taskStack.append(name)
+        return newProgress
     
 if __name__ == '__main__':
     p = StdProgress()
@@ -87,8 +92,11 @@ if __name__ == '__main__':
     task.report('frobbed', 'super sprocket')
     task.report('frobbed', '/dev/sprocket')
     task.report('frobbed', 'more sprockets')
-    task = p.task('Cleaning up')
-    task.report('scrubbed', 'super sprocket')
-    task.report('scrubbed', '/dev/sprocket')
-    task.report('scrubbed', 'more sprockets')
+    subtask = task.task('Cleaning up')
+    subtask.report('scrubbed', 'super sprocket')
+    subtask.report('scrubbed', '/dev/sprocket')
+    subtask.report('scrubbed', 'more sprockets')
+    task = p.task('And now for something completely different')
+    task.report('eating', 'my hat')
+
     
