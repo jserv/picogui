@@ -1,6 +1,6 @@
 CFLAGS=-I../common -I.. -g
 
-pgcfclient: pg1.o
+pgcfclient: pg1.o crosshack.o
 	gcc -o $@ $^ -lpgui -lpng ../common/libcfclient.a
 
 test: pgcfclient

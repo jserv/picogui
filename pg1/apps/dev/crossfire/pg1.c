@@ -79,6 +79,7 @@ static struct pgmemdata command_colorcmd = {"\033[0;22;40;32m", 13, 0};
 
 int image_size=DEFAULT_IMAGE_SIZE;
 #define MAXIMAGENUM 10000
+extern struct pgmemdata crosshack_font[MAXIMAGENUM];
 struct image_data
 {
   u16 width;
@@ -510,6 +511,7 @@ void pg_input_string (union pg_client_trigger *trig, void action (char*))
 	  action (text);
 	  if (!cpl.no_echo)
 	    pgWriteData (info_widget, pg_crlf);
+	  pgUpdate ();
 	}
       else
 	action ("");
@@ -591,8 +593,49 @@ int keyboard_handler (struct pgEvent *evt)
 	trig->content.u.kbd.key += 32;
 	trig->content.u.kbd.mods |= PGMOD_SHIFT;
       }
-    printf("K %s (%d), mods %x\n", pgKeyName (trig->content.u.kbd.key), trig->content.u.kbd.key,
-	   trig->content.u.kbd.mods);
+    /* hack: should use keybindings instead */
+    switch (trig->content.u.kbd.key)
+      {
+      case PGKEY_y:
+	extended_command ("northwest");
+	pgUpdate ();
+	break;
+      case PGKEY_u:
+	extended_command ("north");
+	pgUpdate ();
+	break;
+      case PGKEY_i:
+	extended_command ("northeast");
+	pgUpdate ();
+	break;
+      case PGKEY_h:
+	extended_command ("west");
+	pgUpdate ();
+	break;
+      case PGKEY_k:
+	extended_command ("east");
+	pgUpdate ();
+	break;
+      case PGKEY_n:
+	extended_command ("southwest");
+	pgUpdate ();
+	break;
+      case PGKEY_m:
+	extended_command ("south");
+	pgUpdate ();
+	break;
+      case PGKEY_COMMA:
+	extended_command ("southeast");
+	pgUpdate ();
+	break;
+      case PGKEY_a:
+	extended_command ("apply");
+	pgUpdate ();
+	break;
+      default:
+	printf("K %s (%d), mods %x\n", pgKeyName (trig->content.u.kbd.key), trig->content.u.kbd.key,
+	       trig->content.u.kbd.mods);
+      }
     break;
 
   case Reply_One:
@@ -647,17 +690,8 @@ int create_and_rescale_image_from_data (Cache_Entry *ce, int pixmap_num, uint8 *
 
   if (is_textmode)
     {
-      static struct pgmemdata unknown = {"AA\0\xf0?", 5};
-      static pghandle unknown_i = 0;
-
-      if (!unknown_i)
-	{
-	  unknown_i = pgNewBitmap (unknown);
-	  fprintf (stderr, ">>> created unknown_i: %04x\n", unknown_i);
-	}
-
       pgDelete (image);
-      image = unknown_i;
+      image = pgNewBitmap (crosshack_font[pixmap_num]);
     }
 
   images[pixmap_num].width = width;
@@ -821,27 +855,35 @@ void pg_text_draw_map (int redraw)
 	  /* Don't need to touch this space */
 	  if (!redraw && !cell->need_update) continue;
 
-	  fprintf (stderr, ">>> textmode: drawing %2d, %2d: [%4d (%04x), %4d (%04x), %4d (%04x)]",
-		   x, y,
-		   cell->heads[0].face, images[cell->heads[0].face].handle,
-		   cell->heads[1].face, images[cell->heads[1].face].handle,
-		   cell->heads[2].face, images[cell->heads[2].face].handle);
+	  fprintf (stderr, ">>> textmode: drawing %2d, %2d: [%4d, %4d, %4d]",
+		   x, y, cell->heads[0].face, cell->heads[1].face, cell->heads[2].face);
 	  if (cell->tails[0].face || cell->tails[1].face || cell->tails[2].face)
-	    fprintf (stderr, "  tails: [%4d (%04x), %4d (%04x), %4d (%04x)]",
-		     cell->tails[0].face, images[cell->tails[0].face].handle,
-		     cell->tails[1].face, images[cell->tails[1].face].handle,
-		     cell->tails[2].face, images[cell->tails[2].face].handle);
+	    fprintf (stderr, "  tails: [%4d, %4d, %4d]",
+		     cell->tails[0].face, cell->tails[1].face, cell->tails[2].face);
 
 	  if (cell->heads[0].face)
 	    {
-	      fprintf (stderr, "  - floor (%04x)", images[cell->heads[0].face].handle);
-	      pgBitmap (map_context, x+1, y, 1, 1, images[cell->heads[0].face].handle);
+	      pgBitmap (map_context, x, y, 1, 1, images[cell->heads[0].face].handle);
 	    }
 	  else
 	    {
-	      /* nothing to draw, move along */
+	      /* no floor to draw, move along */
 	      pgSetColor (map_context, 0);
 	      pgRect (map_context, x, y, 2, 1);
+	    }
+
+	  if (cell->heads[1].face) /* we draw this because it may want to span 2 cells */
+	    {
+	      pgBitmap (map_context, x, y, 1, 1, images[cell->heads[1].face].handle);
+	    }
+
+	  if (cell->heads[2].face) /* this, if present, is the topmost head */
+	    {
+	      pgBitmap (map_context, x, y, 1, 1, images[cell->heads[2].face].handle);
+	    }
+	  else if (cell->tails[2].face) /* this, if present, is the topmost tail */
+	    {
+	      pgBitmap (map_context, x, y, 1, 1, images[cell->tails[2].face].handle);
 	    }
 
 	  fprintf (stderr, "\n");
