@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.97 2002/02/05 01:51:34 micahjd Exp $
+/* $Id: button.c,v 1.98 2002/02/07 01:03:53 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -489,11 +489,19 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
 
   case TRIGGER_KEYUP:
 
+#ifdef DEBUG_EVENT
+      printf("TRIGGER_KEYUP: button %p, received\n",self);
+#endif
+
     /* Hotkey was pressed, simulate a keypress
      */
     if (param->kbd.key == DATA->hotkey && (param->kbd.flags & DATA->hotkey_flags)) {
       if (DATA->hotkey_consume)
 	param->kbd.consume++;
+
+#ifdef DEBUG_EVENT
+      printf("TRIGGER_KEYUP: button %p, hotkey_received was %d\n",self, DATA->hotkey_received);
+#endif
 
       /* Make sure we don't do this twice */
       if (DATA->hotkey_received)
@@ -576,6 +584,9 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     return;
 
   case TRIGGER_KEY_START:
+#ifdef DEBUG_EVENT
+    printf("button %p got TRIGGER_KEY_START\n",self);
+#endif
     DATA->hotkey_received = 0;
     break;
 

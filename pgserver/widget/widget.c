@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.158 2002/02/04 07:32:49 micahjd Exp $
+/* $Id: widget.c,v 1.159 2002/02/07 01:03:53 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -1049,7 +1049,7 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
   /* Let widgets know we're starting a new propagation */
   for (dt=dts->top;dt;dt=dt->next)
     if (dt->head->next)
-      r_send_trigger(dt->head->next->owner, TRIGGER_KEY_START, NULL, &param.kbd.consume,0);
+      r_send_trigger(dt->head->next->owner, TRIGGER_KEY_START, NULL, &param.kbd.consume,1);
 
   if (kbdfocus) {
     kflags = PG_KF_ALWAYS;
