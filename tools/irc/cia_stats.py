@@ -155,6 +155,17 @@ print """
   </div>
 </div>
 
+<div><span class="section">Channels</span></div>
+<div class="section">
+  <div class="sectionTop"></div>
+  <div class="row">
+"""
+for channel in channels:
+    print "#%s" % channel
+print """
+  </div>
+</div>
+
 <div><span class="section">Most recent commits</span></div>
 <div class="section">
   <div class="sectionTop"></div>
@@ -171,22 +182,9 @@ print """
   </div>
 </div>
 
-<div><span class="section">Channels the bot is currently in</span></div>
-<div class="section">
-  <div class="sectionTop"></div>
-  <div class="row">
-    <ul>
-"""
-for channel in channels:
-    print "<li>%s</li>" % channel
-print """
-    </ul>
-  </div>
-</div>
-
 <div class="footer">
-   <a href="/"><img src="/images/web/navi64.png" border="0" width="64" height="39" alt="Navi"/></a>
    <a href="http://freenode.org"><img src="/images/web/freenode.png" border="0" width="137" height="39" alt="freenode"/></a>
+   <a href="/"><img src="/images/web/navi64.png" border="0" width="64" height="39" alt="Navi"/></a>
 </div>
 
 </body>
