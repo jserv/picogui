@@ -22,7 +22,6 @@ EXTRA_libvideo_la_SOURCES = \
 	mgl2fb.c   \
 	sdlgl_bitmap.c \
 	sdlgl_camera.c \
-	sdlgl_font.c \
 	sdlgl_init.c \
 	sdlgl_primitives.c \
 	sdlgl_util.c \

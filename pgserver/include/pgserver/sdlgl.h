@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.20 2002/09/23 22:51:26 micahjd Exp $
+/* $Id: sdlgl.h,v 1.21 2002/11/04 04:02:37 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -36,8 +36,6 @@
 #include <pgserver/render.h>      /* For data types like 'quad' */
 #include <pgserver/input.h>       /* For loading our corresponding input lib */
 #include <pgserver/configfile.h>  /* For loading our configuration */
-#include <pgserver/appmgr.h>      /* Default font */
-#include <pgserver/font.h>        /* font rendering */
 
 #ifdef DEBUG_VIDEODRIVER
 #define DEBUG_FILE
@@ -105,25 +103,6 @@ struct glbitmap {
 #define GL_TILESIZE_MIN   128   /* If a texture dimension is less than this, pretile it */
 #define GL_TILESIZE_IDEAL 256   /* Create pretiled textures at this size. Should be a power of 2! */
 
-/* Texture and coordinates for one glyph. A table of these is in the font's
- * "bitmaps" array.
- */
-struct gl_glyph {
-  GLuint texture;
-  float tx1,ty1,tx2,ty2;  /* Texture coordinates */
-};
-
-/* Power of two of our font texture's size */
-#define GL_FONT_TEX_POWER 9
-
-/* Size of the textures to use for font conversion, in pixels. MUST be a power of 2 */
-#define GL_FONT_TEX_SIZE (1<<(GL_FONT_TEX_POWER))
-
-/* There must be sufficient spacing between characters so that even in the mipmapped
- * font textures, there is no bleeding of colors between characters. This should be
- * one greater than the power of two used in GL_FONT_TEX_SIZE */
-#define GL_FONT_SPACING ((GL_FONT_TEX_POWER)+1)
-
 /* Macro to determine when to redirect drawing to linear32 */
 #define GL_LINEAR32(dest) ((dest) && gl_invalidate_texture(dest))
 #define GL_LINEAR32_SRC(src) (src)
@@ -136,14 +115,6 @@ struct gl_glyph {
 #define SDLGL_CAMERAMODE_TRANSLATE    1
 #define SDLGL_CAMERAMODE_ROTATE       2
 #define SDLGL_CAMERAMODE_FOLLOW_MOUSE 3
-
-/* This is a temporary structure used during font loading. It must
- * be initialized and shut down properly. */
-struct gl_fontload {
-  GLuint texture;
-  u8 *pixels;
-  int tx,ty,tline;
-};
 
 union gl_camera {
   double array[6];
@@ -206,7 +177,7 @@ struct sdlgl_data {
   u8 pressed_keys[PGKEY_MAX];
   
   /* Font for onscreen display */
-  handle osd_font;
+  struct font_descriptor *osd_font;
   
   /* More flags */
   int grid;
@@ -219,9 +190,6 @@ struct sdlgl_data {
   int wireframe;
   int resetting;
 
-  /* save the old font list so we can restore it on exit */
-  struct fontstyle_node *old_fonts;
-  
   /* Handle to sdlgl's input filter */
   handle h_infilter;
 };
@@ -264,21 +232,9 @@ void gl_matrix_camera(void);
 void gl_process_camera_keys(void);
 void gl_process_camera_smoothing(void);
 void gl_render_grid(void);
-g_error gl_load_font_style(struct gl_fontload *fl,TTF_Font *ttf, struct font **ppf, int style);
-g_error gl_load_font(struct gl_fontload *fl,const char *file);
-void sdlgl_font_newdesc(struct fontdesc *fd, const u8 *name, int size, int flags);
-void sdlgl_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
-			     s16 *x,s16 *y,hwrcolor *col,const struct pgstring **txt,
-			     struct quad **clip, s16 *lgop, s16 *angle);
-void sdlgl_font_sizetext_hook(struct fontdesc *fd, s16 *w, s16 *h, const struct pgstring *txt);
-void gl_fontload_storetexture(struct gl_fontload *fl);
-g_error gl_fontload_init(struct gl_fontload **fl);
-void gl_fontload_finish(struct gl_fontload *fl); 
 void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 		s16 src_x, s16 src_y, s16 lgop);
 float gl_get_key_scale(void);
-void gl_fontstyle_free(struct fontstyle_node *fsn);
-void gl_font_free(struct font *f);
 void gl_showtexture(GLuint tex, int w, int h);
 int gl_invalidate_texture(hwrbitmap bit);
 int sdlgl_update_hook(void);

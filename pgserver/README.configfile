@@ -447,12 +447,6 @@ quoted appropriately. For example:
   applied. This option is _highly_ recommended for any sort of real 3D work, but since
   under normal use it just slows things down it's disabled by default.
 
-- standard_fonts
-  This option disables sdlgl's truetype font code and uses PicoGUI's normal font
-  renderer. Note that this usually makes rendering _much slower_ since it draws two triangles
-  for each pixel rather than taking advantage of texture mapping. Without the 'antialias'
-  option on, the standard fonts will look pretty bad when scaled.
-
 - zoom
   Set the actual picogui resolution to the window size divided by this amount
 

@@ -1,4 +1,4 @@
-/* $Id: sdlgl_camera.c,v 1.12 2002/09/30 04:32:41 micahjd Exp $
+/* $Id: sdlgl_camera.c,v 1.13 2002/11/04 04:02:37 micahjd Exp $
  *
  * sdlgl_camera.c - OpenGL driver for picogui, using SDL for portability.
  *                  This is an input filter that traps keyboard and mouse
@@ -162,7 +162,7 @@ void infilter_sdlgl_handler(struct infilter *self, u32 trigger, union trigparam 
 
       if (trigger == PG_TRIGGER_MOVE) {
 	/* Measure the relative motion */
-	cursor_getposition(param->mouse.cursor,&oldx,&oldy);
+	cursor_getposition(param->mouse.cursor,&oldx,&oldy,NULL);
 	dx = param->mouse.x - oldx;
 	dy = param->mouse.y - oldy;
 	

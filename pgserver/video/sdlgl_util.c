@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.21 2002/11/03 22:44:48 micahjd Exp $
+/* $Id: sdlgl_util.c,v 1.22 2002/11/04 04:02:38 micahjd Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.
@@ -240,34 +240,35 @@ void gl_frame(void) {
 void gl_osd_printf(int *y, const char *fmt, ...) {
   char buf[256];
   va_list v;
-  struct fontdesc *fd;
   s16 w,h;
-
-  if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,gl_global.osd_font)))
-    return;
+  struct pair xy;
+  struct quad clip;
 
   va_start(v,fmt);
   vsnprintf(buf,sizeof(buf),fmt,v);
   va_end(v);
-  sizetext(fd,&w,&h,pgstring_tmpwrap(buf));
+  gl_global.osd_font->lib->measure_string(gl_global.osd_font,pgstring_tmpwrap(buf),0,&w,&h);
 
   /* Save the current matrix, set up a pixel coordinates matrix */
   glPushMatrix();
   glLoadIdentity();
   gl_matrix_pixelcoord();
 
-  /* Draw a shaded background behind the OSD text */
-  gl_lgop(PG_LGOP_ALPHA);
-  glColor4f(0.0f,0.0f,0.0f,0.5f);
-  glBegin(GL_QUADS);
-  glVertex2f(5,5+*y);
-  glVertex2f(5+w,5+*y);
-  glVertex2f(5+w,5+*y+h);
-  glVertex2f(5,5+*y+h);
-  glEnd();
-  
-  outtext(vid->display,fd,5,5+*y,0xFFFF00,pgstring_tmpwrap(buf),NULL,PG_LGOP_NONE,0);
-
+  /* Draw the text yellow, on a black drop shadow */
+  clip.x1 = 0;
+  clip.y1 = 0;
+  clip.x2 = vid->lxres-1;
+  clip.y2 = vid->lyres-1;
+  xy.x = 8;
+  xy.y = 3+(*y);  
+  gl_global.osd_font->lib->draw_string(gl_global.osd_font,vid->display,
+				       &xy,0x000000,pgstring_tmpwrap(buf),
+				       &clip,PG_LGOP_NONE,0);
+  xy.x = 5;
+  xy.y = *y;  
+  gl_global.osd_font->lib->draw_string(gl_global.osd_font,vid->display,
+				       &xy,0xFFFF00,pgstring_tmpwrap(buf),
+				       &clip,PG_LGOP_NONE,0);
   *y += h;
 
   /* Restore matrix */

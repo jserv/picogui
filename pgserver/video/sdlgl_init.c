@@ -1,4 +1,4 @@
-/* $Id: sdlgl_init.c,v 1.17 2002/09/13 01:08:07 micahjd Exp $
+/* $Id: sdlgl_init.c,v 1.18 2002/11/04 04:02:38 micahjd Exp $
  *
  * sdlgl_init.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has initialization, shutdown, and registration.
@@ -38,8 +38,8 @@ g_error sdlgl_init(void) {
   if (!vid->xres) vid->xres = 640;
   if (!vid->yres) vid->yres = 480;
 
-  /* Start up the SDL video subsystem thingy and the SDL_ttf library */
-  if (SDL_Init(SDL_INIT_VIDEO) || TTF_Init())
+  /* Start up the SDL video subsystem thingy */
+  if (SDL_Init(SDL_INIT_VIDEO))
     return mkerror(PG_ERRT_IO,46);
 
   /* We're _not_ using a normal framebuffer */
@@ -81,6 +81,7 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   char str[80];
   float a,x,y,z;
   g_error e;
+  struct font_style fs;
   int zoom = get_param_int(GL_SECTION,"zoom",1);
    
   /* Interpret flags */
@@ -113,9 +114,6 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   glClearColor(0.0f, 0.4f, 0.0f, 0.0f);
   glClearDepth(1.0);
 
-  //  glDepthFunc(GL_LEQUAL);
-  //  glEnable(GL_DEPTH_TEST);
-
   gl_global.antialias = get_param_int(GL_SECTION,"antialias",0);
   if (gl_global.antialias) {
     glEnable(GL_POLYGON_SMOOTH);
@@ -132,33 +130,16 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   glLoadIdentity();
   gl_matrix_pixelcoord();
 
-  /* Set up fonts */
-  if (!get_param_int(GL_SECTION,"standard_fonts",0)) {
-    struct gl_fontload *fl;
-    
-    /* Remove normal picogui fonts */
-    gl_global.old_fonts = fontstyles;
-    fontstyles = NULL;
-
-    e = gl_fontload_init(&fl);
-    errorcheck;
-
-    e = gl_load_font(fl,get_param_str("video-sdlgl","font","/usr/share/fonts/truetype/openoffice/helmetb.ttf"));
-    errorcheck;
-
-    gl_fontload_finish(fl);
-  }
-  else
-    gl_global.old_fonts = NULL;
-
-  e = findfont(&gl_global.osd_font,-1,NULL,get_param_int(GL_SECTION,"osd_fontsize",20),0);
+  /* Load a font for the OSD */
+  memset(&fs,0,sizeof(fs));
+  fs.size = get_param_int(GL_SECTION,"osd_fontsize",20);
+  e = font_descriptor_create(&gl_global.osd_font,&fs);
   errorcheck;
 
   return success; 
 }
    
 void sdlgl_close(void) {
-  struct fontstyle_node *f;
 
   if (gl_global.h_infilter)
     handle_free(-1,gl_global.h_infilter);
@@ -172,21 +153,8 @@ void sdlgl_close(void) {
   unload_inlib(gl_global.continuous_inlib);
 
   if (gl_global.osd_font)
-    handle_free(gl_global.osd_font,-1);
+    font_descriptor_destroy(gl_global.osd_font);
 
-  if (gl_global.old_fonts) {
-    /* Delete our fonts */
-    while (fontstyles) {
-      f = fontstyles;
-      fontstyles = f->next;
-      gl_fontstyle_free(f);
-    }
-
-    /* Put back normal fonts */
-    fontstyles = gl_global.old_fonts;
-  }
-
-  TTF_Quit();
   SDL_Quit();
 }
 
@@ -239,11 +207,6 @@ g_error sdlgl_regfunc(struct vidlib *v) {
   v->grop_render_node_hook = &sdlgl_grop_render_node_hook;
   v->grop_render_postsetup_hook = &sdlgl_grop_render_postsetup_hook;
   v->grop_render_end_hook = &sdlgl_grop_render_end_hook;
-  if (!get_param_int(GL_SECTION,"standard_fonts",0)) {
-    v->font_sizetext_hook = &sdlgl_font_sizetext_hook;
-    v->font_newdesc = &sdlgl_font_newdesc;
-    v->font_outtext_hook = &sdlgl_font_outtext_hook;
-  }
   v->bitmap_getshm = &sdlgl_bitmap_getshm;
 
   return success;
