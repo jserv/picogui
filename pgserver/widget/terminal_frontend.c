@@ -1,4 +1,4 @@
-/* $Id: terminal_frontend.c,v 1.5 2002/10/12 14:46:35 micahjd Exp $
+/* $Id: terminal_frontend.c,v 1.6 2002/10/27 16:19:33 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -118,9 +118,11 @@ g_error terminal_set(struct widget *self,int property, glob data) {
     break;
 
   case PG_WP_LINES:
-    if (data>0)
-      DATA->pref_lines = data;
-    resizewidget(self);
+    /* FIXME: proper scrollback support
+     *
+     DATA->pref_lines = data;
+     resizewidget(self);
+    */
     break;
 
   case PG_WP_AUTOSCROLL:
