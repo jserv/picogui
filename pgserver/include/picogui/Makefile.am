@@ -5,4 +5,5 @@ noinst_HEADERS = \
 	pgkeys.h \
 	theme.h \
 	types.h \
-	opengl.h
+	opengl.h \
+	wt.h
