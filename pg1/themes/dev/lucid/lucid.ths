@@ -8,7 +8,7 @@
  * Micah Dowty
  */
 
-property fBackground,fTranslucent, fSolid, fFramedTranslucent;
+property fBackground,fTranslucent, fSolid, fFramedTranslucent, fStippleFramedTranslucent;
 property fNop, frameColor, alpha, diamondShape;
 
 object default {
@@ -47,6 +47,14 @@ object default {
   fFramedTranslucent = fillstyle {
     SetColor(frameColor);
     Frame(x,y,w,h);
+    fTranslucent(x+1,y+1,w-2,h-2);
+  };
+
+  fStippleFramedTranslucent =  fillstyle {
+    SetColor(frameColor);
+    SetLgop(PG_LGOP_STIPPLE);
+    Frame(x,y,w,h);
+    SetLgop(PG_LGOP_NONE);
     fTranslucent(x+1,y+1,w-2,h-2);
   };
 
@@ -102,13 +110,7 @@ object button {
   margin = 2;
 }
 
-object button.hilight bgfill = fillstyle {
-  button::bgfill(x,y,w,h);
-  SetColor(frameColor);
-  SetLgop(PG_LGOP_STIPPLE);
-  Frame(x,y,w,h);
-  SetLgop(PG_LGOP_NONE);
-};
+object button.hilight bgfill = Copy(default::fStippleFramedTranslucent);
 
 object button.on bgfill = fillstyle {
   button::bgfill(x,y,w,h);
@@ -205,6 +207,10 @@ object panel {
   };
 }
 
+object closebtn text = "X";
+object rotatebtn text = "/";
+object zoombtn text = "-";
+
 /* Editables */
 
 object field {
@@ -220,21 +226,14 @@ object field {
 }
 
 object textbox {
-  bgfill = fillstyle {
-    fTranslucent(x,y,w,h);
-
-    SetColor(frameColor);
-    SetLgop(PG_LGOP_STIPPLE);
-    Frame(x,y,w,h);
-    SetLgop(PG_LGOP_NONE);
-  };
+  bgfill = Copy(default::fStippleFramedTranslucent);
 
   frameColor = button::fgcolor;
   margin  = 3;
   alpha   = 0x75000000;
 }
 
-/* The scrollbar - only thing that's not translucent, for niftier effect */
+/* The scrollbar - not translucent, for niftier effect */
 
 object scroll {
   width = 12;
@@ -256,9 +255,5 @@ object scroll {
     Rect(x+2,y+2,w-4,h-4);
   };
 }
-
-object closebtn text = "X";
-object rotatebtn text = "/";
-object zoombtn text = "-";
 
 /* The End */
