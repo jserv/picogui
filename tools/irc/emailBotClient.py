@@ -16,6 +16,10 @@ socketName = "/tmp/announceBot.socket"
 allowedTextCommands = ("Announce",)
 allowedControlCommands = ("JoinChannel", "PartChannel")
 
+# Prohibited channels
+badChannels = ("shell",)
+
+
 def incrementProjectCommits(project):
     if project.find(os.sep) >= 0:
         return
@@ -43,18 +47,20 @@ class AnnounceClient(protocol.Protocol):
         messages = mailMsg.get_payload().split("\n")
         subjectFields[1] = subjectFields[1].lower()
 
-        # Send allowed text commands
-        if subjectFields[0] in allowedTextCommands:
-            incrementProjectCommits(subjectFields[1])
-            for line in messages:
-	    	line = line.strip()
-		if len(line) > 0:
-                    self.transport.write("%s %s %s\r\n" %
-                                         (subjectFields[0], subjectFields[1], line))
+        if not subjectFields[1] in badChannels:
 
-        # Send allowed control commands
-        if subjectFields[0] in allowedControlCommands:
-            self.transport.write("%s %s\r\n" % (subjectFields[0], subjectFields[1]))
+            # Send allowed text commands
+            if subjectFields[0] in allowedTextCommands:
+                incrementProjectCommits(subjectFields[1])
+                for line in messages:
+                    line = line.strip()
+                    if len(line) > 0:
+                        self.transport.write("%s %s %s\r\n" %
+                                             (subjectFields[0], subjectFields[1], line))
+
+            # Send allowed control commands
+            if subjectFields[0] in allowedControlCommands:
+                self.transport.write("%s %s\r\n" % (subjectFields[0], subjectFields[1]))
             
         self.transport.loseConnection()
     
