@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.18 2000/06/10 08:28:27 micahjd Exp $
+/* $Id: div.c,v 1.19 2000/08/07 05:33:53 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -388,19 +388,12 @@ g_error dts_push(void) {
 }
 
 void dts_pop(void) {
-  struct divtree *condemn,*p;
+  struct divtree *condemn;
 
   reset_pointer();
   condemn = dts->top;
   dts->top = dts->top->next;
   divtree_free(condemn);
-
-  /* Redraw the top and everything below it */
-  p = dts->top;
-  while (p) {
-    p->flags |= DIVTREE_ALL_REDRAW;
-    p = p->next;
-  }
 }
 
 /* Aligns a 'thing' of specified width and height in the specified divnode
