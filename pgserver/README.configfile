@@ -110,6 +110,10 @@ quoted appropriately. For example:
   in Gimp's palette format (3 integers values per line between 0 and 255, comments
   begin with #, blank lines ignored)
 
+- video
+  Force the video driver pgserver should load. The default is to try each driver
+  in a predefined order until one loads successfully.
+
 [sound]
 
 - click
