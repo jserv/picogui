@@ -497,15 +497,46 @@ object popup.menu {
 }
 
 object menuitem {
-  bgfill = Copy(default::fDarkInterlace);
   align = PG_A_LEFT;
   height = 18;
+  bgfill = fillstyle {
+    /* Standard background */
+    fDarkInterlace(x,y,w,h);
+
+    /* Right arrow */
+    SetLgop(PG_LGOP_MULTIPLY);
+    Bitmap(x+w-9,4,6,9,bitmap2);
+
+    /* Cleanup */
+    SetLgop(PG_LGOP_NONE);
+    SetSrc(0,0,0,0);
+  };
 }
 
 object menuitem.hilight {
   parent = PGTH_O_BASE_DISPLAY;
-  align = PG_A_LEFT;	
-  bitmap1 = LoadBitmap("data/gold_square.png");	
+  align = PG_A_LEFT;
+  bitmap1 = LoadBitmap("data/gold_square.png");
+  bgfill = fillstyle {
+    /* Standard background */
+    fExpand(x,y,w,h);
+
+    /* Right arrow */
+    SetLgop(PG_LGOP_MULTIPLY);
+    Bitmap(x+w-9,4,6,9,bitmap2);
+
+    /* Cleanup */
+    SetLgop(PG_LGOP_NONE);
+    SetSrc(0,0,0,0);
+  };
+}
+
+object submenuitem {
+  bitmap2 = LoadBitmap("data/r_arrow.png");
+}
+
+object submenuitem.hilight {
+  bitmap2 = Copy(submenuitem::bitmap2);
 }
 
 /********************************** Label */
