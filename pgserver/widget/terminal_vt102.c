@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.24 2003/03/26 08:10:29 davidtrowbridge Exp $
+/* $Id: terminal_vt102.c,v 1.25 2003/03/26 08:58:11 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -57,6 +57,25 @@ void term_ecmaset(struct widget *self,int n,int enable);
 void term_ecmastatus(struct widget *self,int n);
 int term_misc_code(struct widget *self,u8 c);
 void term_xterm(struct widget *self);
+
+#ifdef DEBUG_FILE
+void term_debug_printbuffer(struct widget *self) {
+  u8 *p;
+  
+  /* Keep this from messing up the debug terminal! */
+  DATA->escapebuf[ESCAPEBUF_SIZE-1] = 0;
+  p = DATA->escapebuf;
+  while (*p) {
+    if (*p == '\033')
+      *p = '^';
+    p++;
+  }
+  
+  DBG("buffer = \"%s\"\n", DATA->escapebuf);
+}
+#else
+#define term_debug_printbuffer
+#endif
 
 
 /********************************************** Keyboard input */
@@ -147,9 +166,7 @@ void term_char(struct widget *self,u8 c) {
     case '\033':        /* Escape */
       if (DATA->escapemode) {
 	DBG("-ERROR- beginning escape code while already in escape mode\n");
-#ifdef DEBUG_TERMINAL
 	term_debug_printbuffer(self);
-#endif
       }
       DATA->escapemode = 1;
       DATA->escbuf_pos = 0;
@@ -248,26 +265,6 @@ void term_char(struct widget *self,u8 c) {
 
 
 /********************************************** Escape codes */
-
-#ifdef DEBUG_FILE
-void term_debug_printbuffer(struct widget *self) {
-  u8 *p;
-  
-  /* Keep this from messing up the debug terminal! */
-  DATA->escapebuf[ESCAPEBUF_SIZE-1] = 0;
-  p = DATA->escapebuf;
-  while (*p) {
-    if (*p == '\033')
-      *p = '^';
-    p++;
-  }
-  
-  DBG("buffer = \"%s\"\n", DATA->escapebuf);
-}
-#else
-#define term_debug_printbuffer
-#endif
-
 
 /* Handle an incoming character while processing an escape sequence */
 void term_char_escapemode(struct widget *self,u8 c) {
