@@ -1,5 +1,7 @@
 CC = @CC_FOR_BUILD@
-CFLAGS = -O2
+
+CFLAGS  = -O2
+LDFLAGS =
 
 noinst_PROGRAMS  = lxdialog
 
