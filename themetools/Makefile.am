@@ -1,4 +1,4 @@
-SUBDIRS = thdump themec libpgwt pgbg
+SUBDIRS = thdump themec pgbg
 
 EXTRA_DIST = themetools.spec
 
