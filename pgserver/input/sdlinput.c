@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.22 2001/08/14 06:18:53 micahjd Exp $
+/* $Id: sdlinput.c,v 1.23 2001/08/14 07:07:52 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -95,8 +95,16 @@ void sdlinput_poll(void) {
 	  evt.button.x <= sdlinput_map[i].x2 &&
 	  evt.button.y <= sdlinput_map[i].y2) {
 	
-	if (evt.type == SDL_MOUSEBUTTONDOWN)
+	/* FIXME: This doesn't handle modifiers or anything
+	 * fancy like that yet. It would also be nice to have some specialized
+	 * button codes, like power or backlight.
+	 */
+	if (evt.type == SDL_MOUSEBUTTONDOWN) {
+	  /* Not a weird key? */
+	  if (sdlinput_map[i].key < 128)
+	    dispatch_key(TRIGGER_CHAR, sdlinput_map[i].key, 0);
 	  dispatch_key(TRIGGER_KEYDOWN, sdlinput_map[i].key, 0);
+	}
 	else if (evt.type == SDL_MOUSEBUTTONUP)
 	  dispatch_key(TRIGGER_KEYUP, sdlinput_map[i].key, 0);
        
