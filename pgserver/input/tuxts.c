@@ -55,13 +55,13 @@ g_error tuxts_init(void)
   ioctl(fd,6,480);	/* res y */
 	
 /* Set up us the calibration datum!!! */
-  ioctl(fd,3,964);	/* top left corner raw max x */
-  ioctl(fd,4,964);	/*                 raw max y */
-  ioctl(fd,10,46);	/* bottom  right corner raw min x */
-  ioctl(fd,11,52);	/*                      raw min y */
-  ioctl(fd,15,1);		/* reverse x axis */
-  ioctl(fd,16,1);		/* reverse y axis */
-  ioctl(fd,13,1);		/* enable calibration */
+  //  ioctl(fd,3,964);	/* top left corner raw max x */
+  //  ioctl(fd,4,964);	/*                 raw max y */
+  //  ioctl(fd,10,46);	/* bottom  right corner raw min x */
+  //  ioctl(fd,11,52);	/*                      raw min y */
+  //  ioctl(fd,15,1);		/* reverse x axis */
+  //  ioctl(fd,16,1);		/* reverse y axis */
+  //  ioctl(fd,13,1);		/* enable calibration */
 
   /* Do other ioctls we gotta do!!! */
 #ifdef DEBUG_EVENT
