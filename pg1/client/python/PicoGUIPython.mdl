@@ -62,11 +62,13 @@ def sample_contents (module, platform, project):
 runtime = [
     Runtime ('install', 'Install PicoGUI python interface',
              content = package_contents,
-             depends = []),
+             depends = [ 'python/modules/utf-8',
+                         'python/modules/network',
+                         ]),
     
     Runtime ('samples', 'Install PicoGUI python interface',
              content = sample_contents,
-             depends = [])
+             depends = [ 'picoguipython/install' ])
     ]
 
 def clean (module, platform, project):
