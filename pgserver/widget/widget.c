@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.64 2001/03/03 01:44:27 micahjd Exp $
+/* $Id: widget.c,v 1.65 2001/03/16 03:14:45 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -331,8 +331,22 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
 }
 
 glob inline widget_get(struct widget *w, int property) {
-  if (w && w->def->get) return (*w->def->get)(w,property);
-  return 0;
+   if (!(w && w->def->get))
+     return 0;
+   
+   /* handle some universal properties */
+   switch (property) {
+    
+    case PG_WP_ABSOLUTEX:      /* Absolute coordinates */
+      return w->in->div->x;
+	break;
+    case PG_WP_ABSOLUTEY:
+      return w->in->div->y;
+	break;
+      
+    default:
+      return (*w->def->get)(w,property);
+   }
 }
 
 /* This is used in transparent widgets - it propagates a redraw through
