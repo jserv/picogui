@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.19 2001/11/16 03:09:34 micahjd Exp $
+/* $Id: textbox_main.c,v 1.20 2001/11/18 00:10:00 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -47,7 +47,6 @@ void textbox_move_cursor(struct widget *self, union trigparam *param);
 /* Set up divnodes */
 g_error textbox_install(struct widget *self) {
    g_error e;
-   pghandle h;
 
    e = g_malloc(&self->data,           /* Allocate data structure */
 		sizeof(struct textboxdata));
@@ -71,14 +70,10 @@ g_error textbox_install(struct widget *self) {
    e = newdiv(&self->in->div->div,self);  /* 1st line */
    errorcheck;
    self->in->div->div->flags |= PG_S_TOP;
-   memset(&DATA->c,0,sizeof(DATA->c)); /* Set up cursor */
-   DATA->c.head = self->in->div->div;
-   DATA->c.widget = self;
 
-   /* Set up a reasonable default font */
-   e = findfont(&h,self->owner,"Lucida",10,PG_FSTYLE_FLUSH);
-   errorcheck;
-   e = text_format_font(&DATA->c,h);
+   /* This sets up the cursor and sets the default font */
+   DATA->c.widget = self;
+   e = text_nuke(&DATA->c);
    errorcheck;
 
    /**** Editing doesn't work yet 
@@ -90,23 +85,8 @@ g_error textbox_install(struct widget *self) {
    return sucess;
 }
 
-/* Delete a linked list of formatnodes */
-void textbox_delete_formatstack(struct widget *self,
-				struct formatnode *list) {
-  struct formatnode *n, *condemn;
-  n = list;
-  while (n) {
-    condemn = n;
-    n = n->next;
-    
-    if (condemn->fontdef)
-      handle_free(self->owner,condemn->fontdef);
-    g_free(condemn);
-  }
-} 
-
 void textbox_remove(struct widget *self) {
-  /* Delete our formatting stacks */
+  /* Delete our formatting stacks and associated fonts */
   textbox_delete_formatstack(self, DATA->c.f_used);
   textbox_delete_formatstack(self, DATA->c.f_top);
 
@@ -117,11 +97,12 @@ void textbox_remove(struct widget *self) {
 
 void textbox_resize(struct widget *self) {
   /* Set our margin using the theme */
-  self->in->div->split = theme_lookup(self->in->div->state,PGTH_P_MARGIN);;  
+  self->in->div->split = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
 }
 
 g_error textbox_set(struct widget *self,int property, glob data) {
   char *str, *fmt;
+  g_error e;
 
   switch (property) {
     
@@ -150,7 +131,9 @@ g_error textbox_set(struct widget *self,int property, glob data) {
       fmt++;
     }
     else {
-      /* FIXME: Delete existing text */
+      /* Delete everything */
+      e = text_nuke(&DATA->c);
+      errorcheck;
     }
    
     return text_load(&DATA->c,fmt,str,strlen(str));

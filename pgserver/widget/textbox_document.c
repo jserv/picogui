@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.17 2001/11/17 09:21:17 micahjd Exp $
+/* $Id: textbox_document.c,v 1.18 2001/11/18 00:10:00 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -369,6 +369,53 @@ g_error text_caret_off(struct textbox_cursor *c) {
     c->caret_div->flags |= DIVNODE_NEED_REDRAW;
     update(c->caret_div,1);
   }
+  return sucess;
+}
+
+/************************* Loading */
+/* Delete a linked list of formatnodes */
+
+void textbox_delete_formatstack(struct widget *self,
+				struct formatnode *list) {
+  struct formatnode *n, *condemn;
+  n = list;
+  while (n) {
+    condemn = n;
+    n = n->next;
+    
+    if (condemn->fontdef)
+      handle_free(self->owner,condemn->fontdef);
+    g_free(condemn);
+  }
+} 
+
+g_error text_nuke(struct textbox_cursor *c) {
+  g_error e;
+  struct widget *w = c->widget;
+  handle h;
+
+  /* Delete our formatting stacks and associated fonts */
+  textbox_delete_formatstack(c->widget, c->f_used);
+  textbox_delete_formatstack(c->widget, c->f_top);
+
+  /* Delete divnodes */
+  if (c->head) {
+    r_divnode_free(c->head->div);
+    r_divnode_free(c->head->next);
+    c->head->div = c->head->next = NULL;
+  }
+
+  /* Reset the cursor */
+  memset(c,0,sizeof(struct textbox_cursor));
+  c->head = w->in->div->div;
+  c->widget = w;
+
+  /* Set up a reasonable default font */
+  e = findfont(&h,w->owner,"Lucida",10,PG_FSTYLE_FLUSH);
+  errorcheck;
+  e = text_format_font(c,h);
+  errorcheck;
+
   return sucess;
 }
 
