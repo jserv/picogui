@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.46 2001/02/02 07:42:06 micahjd Exp $
+/* $Id: picogui_client.c,v 1.47 2001/02/02 08:02:54 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -46,8 +46,8 @@
 #include <picogui.h>            /* Basic PicoGUI include */
 #include <picogui/network.h>    /* Network interface to the server */
 
-//#define DEBUG
-//#define DEBUG_EVT
+#define DEBUG
+#define DEBUG_EVT
 
 /* Default server */
 #define PG_REQUEST_SERVER       "127.0.0.1"
@@ -485,7 +485,7 @@ void _pg_getresponse(void) {
 #ifdef DEBUG_EVT
    if (_pg_return.type == PG_RESPONSE_EVENT) 
      printf("Event is %d after case\n",
-	    _pg_return.e.event.event);
+	    _pg_return.e.event.type);
 #endif
 }
 
@@ -586,7 +586,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: picogui_client.c,v 1.46 2001/02/02 07:42:06 micahjd Exp $\n");
+	fprintf(stderr,"$Id: picogui_client.c,v 1.47 2001/02/02 08:02:54 micahjd Exp $\n");
 	exit(1);
       }
       
@@ -1043,8 +1043,8 @@ void  pgSetWidget(pghandle widget, ...) {
   arg.widget = htonl(widget ? widget : _pgdefault_widget);
   arg.dummy = 0;
 
+  va_start(v,widget);
   for (;;) {
-    va_start(v,widget);
     i = va_arg(v,short);
     if (!i) break;
     arg.property = htons(i);
