@@ -27,8 +27,9 @@ as soon as it creates a Bootstrap object with vital path and package names.
 def run(config, progress):
     """Examine the provided configuration and take the specified actions"""
 
-    for dumpFileNode in config.xpath("invocation/option[@name='treeDumpFile']/text()"):
-        f = open(dumpFileNode.data, "w")
+    treeDumpFile = config.eval("invocation/option[@name='treeDumpFile']/text()")
+    if treeDumpFile:
+        f = open(treeDumpFile, "w")
         f.write(config.toprettyxml())
         f.close()
 
