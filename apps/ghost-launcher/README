@@ -1,0 +1,13 @@
+Start apps based on user clicking "invisible buttons".
+
+This is intended to be used for starting apps based on tapping
+silkscreen "buttons" in PDAs.
+
+The config file is /etc/ghost-launcher.conf, and is line-based. Each line is:
+x1 x2 y1 y2 type commandline
+
+The "type" argument is always 0 for running a command. It's planned
+that it will have other possible values in the future, for
+showing/hiding the keyboard or displaying a menu, for example.
+
+Lalo Martins <lalo@laranja.org> Sun, 20 Oct 2002 14:04:58 -0300
