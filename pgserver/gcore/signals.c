@@ -1,4 +1,4 @@
-/* $Id: signals.c,v 1.3 2002/01/18 11:48:23 micahjd Exp $
+/* $Id: signals.c,v 1.4 2002/01/18 11:53:25 micahjd Exp $
  *
  * signal.c - Handle some fatal and not-so-fatal signals gracefully
  *            The SIGSEGV handling et cetera was inspired by SDL's
@@ -105,10 +105,14 @@ void signals_handler(int sig) {
     /* Prevent infinite recursion */
     if (lock++) break;
 
-     /* Try to shutdown the video driver if it's on */
+    /* Try to shutdown the video driver if it's on */
     if (vid && !in_init)
       VID(close)();
 
+    /* It would also be nice not to hose the console.. */
+    if (!in_init)
+      cleanup_inlib();
+     
     /* Print an appropriate error message for the most popular signals */
     switch (sig) {
     case SIGSEGV:  prerror(mkerror(PG_ERRT_INTERNAL,16)); break;
