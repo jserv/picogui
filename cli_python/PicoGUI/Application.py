@@ -1,6 +1,6 @@
 # Application class
 
-import Widget, Server, events, time, infilter
+import Widget, Server, events, time, infilter, template
 
 class EventHandled(Exception):
     """raise this from an event handler when you don't want other
@@ -73,6 +73,10 @@ class Application(Widget.Widget):
         filter = infilter.Infilter(self, *args, **kw)
         self._infilter_registry[filter.handle] = filter
         return filter
+
+    def newTemplate(self, wt):
+        t = template.Template(self, wt)
+        return t
 
     def _notify_new_widget(self, new):
         self._widget_registry[new.handle] = new
