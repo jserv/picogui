@@ -72,6 +72,10 @@ class PackageVersion(object):
 
     def update(self, progress):
        """Update the package if possible. Return 1 if there was an update available, 0 if not."""
+       # If we are doing a bunch of update checks but not actually updating anything, we should
+       # still report our progress. This makes a --merge-all with an already up to date local
+       # packages directory much less uninteresting.
+       progress.showTaskHeading()
        return self.getRepository(progress).update(self.getLocalPath(), progress.task("Updating package %s" % self))
 
     def merge(self, progress):

@@ -95,16 +95,18 @@ def expandStatus(line):
 
 def collectProgress(file, progress, destination):
     updatedFiles = 0
+    allOutput = ""
     while 1:
         line = file.readline()
         if not line:
             break
+        allOutput += line
         status = expandStatus(line)
         if status:
             progress.report(status, line[2:].strip()[len(destination)+1:])
             updatedFiles += 1
     if file.close():
-        raise PGBuild.Errors.InternalError("The Subversion command returned an error code")
+        raise PGBuild.Errors.EnvironmentError("The Subversion command returned an error:\n\n%s" % allOutput)
     return updatedFiles
 
 # Since exceptions during import will be used to autodetect which Subversion
