@@ -1,4 +1,4 @@
-/* $Id: url.c,v 1.5 2002/01/08 11:36:06 micahjd Exp $
+/* $Id: url.c,v 1.6 2002/01/08 11:54:49 micahjd Exp $
  *
  * url.c - framework for parsing and retrieving URLs
  *
@@ -29,6 +29,7 @@
 #include <string.h>
 #include "url.h"
 #include "protocol.h"
+#include "debug.h"
 
 struct url *active_urls;
 
@@ -51,6 +52,8 @@ struct url * url_new(struct browserwin *browser, const char *name) {
   if (!u)
     return NULL;
   memset(u,0,sizeof(struct url));
+
+  DBG("creating URL 0x%08X from \"%s\"\n",u,name);
 
   u->progress = -1;
   u->browser = browser;
@@ -151,6 +154,8 @@ struct url * url_new(struct browserwin *browser, const char *name) {
  * If a transfer is in progress, abort the transfer.
  */
 void url_delete(struct url *u) {
+  DBG("deleting URL 0x%08X\n",u);
+
   if (u->handler)
     u->handler->stop(u);
   url_deactivate(u);
@@ -200,6 +205,9 @@ void url_progress(struct url *u) {
     u->progress = u->bytes_received * 100 / u->size;
   else 
     u->progress = -1;
+
+  DBG("u->progress = %d\n", u->progress);
+  
   if (u->progress_change)
     u->progress_change(u);
 }

@@ -1,4 +1,4 @@
-/* $Id: p_http.c,v 1.4 2002/01/08 11:36:06 micahjd Exp $
+/* $Id: p_http.c,v 1.5 2002/01/08 11:54:49 micahjd Exp $
  *
  * p_http.c - Local disk access for the Atomic Navigator web browser
  *
@@ -68,7 +68,7 @@ struct http_data {
 
 /* Process one HTTP header */
 void p_http_header(struct url *u, const char *name, const char *value) {
-  DBG("%s: %s\n",name,value);
+  DBG("%s = \"%s\"\n",name,value);
 
   if (!strcmp(name,"Content-Type") && !u->type) 
     u->type = strdup(value);
@@ -150,7 +150,7 @@ void p_http_connect(struct url *u) {
       return;
   }
   hd->in = fdopen(hd->fd,"r");
-  do {
+  for (;;) {
     /* Get one header line */
     if (!fgets(hd->headerline, HEADER_LINE_BUFFER, hd->in)) {
       browserwin_errormsg(u->browser, "The HTTP headers are incomplete");
@@ -177,10 +177,12 @@ void p_http_connect(struct url *u) {
     }
     else 
       p = "";
-    
-    p_http_header(u,hd->headerline,p);
 
-  } while (*hd->headerline);
+    if (!*hd->headerline)
+      break;
+
+    p_http_header(u,hd->headerline,p);
+  };
   free(hd->headerline);
   hd->headerline = NULL;
 
