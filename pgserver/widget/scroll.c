@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.7 2000/05/06 06:42:21 micahjd Exp $
+/* $Id: scroll.c,v 1.8 2000/05/06 15:54:47 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -37,6 +37,9 @@
 struct scrolldata {
   int on,over;
   int res;        /* Scroll bar's resolution - maximum value */
+  int grab_offset;  /* The difference from the top of the indicator to
+		       the point that was clicked */
+  int release_delta;
 };
 #define DATA ((struct scrolldata *)(self->data))
 
@@ -68,7 +71,7 @@ void scrollupdate(struct widget *self) {
     return;
   
   /* Apply the current state to the elements */
-  if (DATA->on && DATA->over) {
+  if (DATA->on) {
     applystate(self->in->div->grop,
 	       &current_theme[E_SCROLLBAR_BORDER],
 	       STATE_ACTIVATE);
@@ -154,8 +157,8 @@ g_error scroll_install(struct widget *self) {
   self->in->div->on_recalc = &scrollbar;
   self->out = &self->in->next;
 
-  self->trigger_mask = TRIGGER_MOVE | TRIGGER_ENTER | TRIGGER_LEAVE |
-    TRIGGER_UP | TRIGGER_DOWN;
+  self->trigger_mask = TRIGGER_DRAG | TRIGGER_ENTER | TRIGGER_LEAVE |
+    TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE;
 
   return sucess;
 }
@@ -209,27 +212,39 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
     break;
     
   case TRIGGER_DOWN:
-    if (param->mouse.chbtn==1)
-      DATA->on=1;
-    break;
-
-  case TRIGGER_UP:
-    if (DATA->on && param->mouse.chbtn==1) {
-      
-
-      DATA->on=0;
+    if (param->mouse.chbtn==1) {
+      DATA->grab_offset = param->mouse.y - self->in->div->y - 
+	self->in->div->grop->next->next->y;
+      if (DATA->grab_offset < 0)  
+	DATA->release_delta = -10;
+      else if (DATA->grab_offset > (self->in->div->h>>HEIGHT_DIV))
+	DATA->release_delta = 10;
+      else
+	DATA->on=1;
     }
     break;
 
+  case TRIGGER_UP:
+    if (DATA->release_delta) {
+      self->in->div->param.i += DATA->release_delta;
+
+      if (self->in->div->param.i > DATA->res) 
+	self->in->div->param.i = DATA->res;
+      if (self->in->div->param.i < 0) 
+	self->in->div->param.i =   0;
+      
+      post_event(WE_ACTIVATE,self,self->in->div->param.i);
+    }
   case TRIGGER_RELEASE:
-    if (param->mouse.chbtn==1)
-      DATA->on=0;
+    DATA->on=0;
+    DATA->release_delta = 0;
     break;
 
-  case TRIGGER_MOVE:
-    if (param->mouse.btn!=1) break;
+  case TRIGGER_DRAG:
+    if (!DATA->on) return;
     /* Button 1 is being dragged through our widget. */
-    self->in->div->param.i = (param->mouse.y - self->in->div->y) * 100 /
+    self->in->div->param.i = (param->mouse.y - self->in->div->y - 
+			      DATA->grab_offset) * 100 /
       (self->in->div->h - (self->in->div->h>>HEIGHT_DIV));
 
     if (self->in->div->param.i > DATA->res) self->in->div->param.i = DATA->res;

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.15 2000/05/05 23:00:59 micahjd Exp $
+/* $Id: widget.c,v 1.16 2000/05/06 15:54:47 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -252,6 +252,11 @@ void dispatch_pointing(long type,int x,int y,int btn) {
     call_update |= send_trigger(prev_under,TRIGGER_LEAVE,&param);
     prev_under = under;
   }
+
+  /* If a captured widget accepts TRIGGER_DRAG, send it even when the
+     mouse is outside its divnodes. */
+  if (type == TRIGGER_MOVE && capture)
+    call_update |= send_trigger(capture,TRIGGER_DRAG,&param);
 
   if (call_update) {
 #ifdef DEBUG

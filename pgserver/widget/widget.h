@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.11 2000/05/05 23:00:59 micahjd Exp $
+/* $Id: widget.h,v 1.12 2000/05/06 15:54:47 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -66,6 +66,7 @@ typedef long glob;
 #define TRIGGER_MOVE       (1<<10) /* Triggers on any mouse movement in node */
 #define TRIGGER_ENTER      (1<<11) /* Mouse moves inside widget */
 #define TRIGGER_LEAVE      (1<<12) /* Mouse moves outside widget */
+#define TRIGGER_DRAG       (1<<13) /* Mouse move when captured */
 
 /* Note on TRIGGER_RELEASE:  This is when the mouse was pressed inside
    the widget, then released elsewhere.  */
