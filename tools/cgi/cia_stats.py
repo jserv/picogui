@@ -85,9 +85,19 @@ class StatPage(navi_cgi.NaviPage):
             return cia_statreader.projectCounts[project][sortKey]
         def projectSort(a,b):
             if sortDirection == "A":
-                return cmp(getKey(a),getKey(b))
+                sign = 1
             else:
-                return cmp(getKey(b),getKey(a))
+                sign = -1
+
+            # First sort by the selected key
+            c = cmp(getKey(a),getKey(b))
+
+            # As a fallback, sort by 'forever'
+            if c == 0:
+                c = cmp(cia_statreader.projectCounts[a]['forever'],
+                        cia_statreader.projectCounts[b]['forever'])
+
+            return sign*c
         cia_statreader.projects.sort(projectSort)
 
         # Project table contents
