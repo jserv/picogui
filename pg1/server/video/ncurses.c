@@ -25,7 +25,7 @@
  * 
  * Contributors:
  * 
- * 
+ * Lalo Martins <lalo@laranja.org>
  * 
  */
 
@@ -171,6 +171,84 @@ hwrcolor ncurses_color_hwrtopg(pgcolor c) {
   return c & 0xFFFFFF;
 }
 
+/******************************************** Image special-casing (ascii art) */
+
+g_error ncurses_bitmap_load(hwrbitmap *bmp, const u8 *data, u32 datalen) {
+  g_error e;
+
+  if (datalen > 2)
+    if (data[0] == 'A' && data[1] == 'A')
+      {
+	/* FIXME: should probably support multi-line art */
+	fprintf(stderr, "ncurses: reading ascii art of len %d\n", datalen-2);
+	e = vid->bitmap_new(bmp, datalen-2, 1, 8);
+	errorcheck;
+	(*bmp)->bpp = 0;
+	if (data[2] == 0)
+	  /* color-coded */
+	  (*bmp)->w = (datalen-3) / 2;
+	memcpy ((*bmp)->bits, data + 2, datalen-2);
+	return success;
+      }
+  fprintf(stderr, "ncurses: reading bitmap, not ascii art, of len %d (%c%c)\n", datalen,
+	  data[0], data[1]);
+  return def_bitmap_load(bmp, data, datalen);
+}
+
+void ncurses_blit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrbitmap src,
+	      s16 src_x, s16 src_y, s16 lgop) {
+  int i;
+  hwrcolor c;
+  u8 *p;
+
+  if (!src) {
+    fprintf(stderr, "ncurses: blitting non-ascii art\n");
+    def_blit(dest, x, y, w, h, src, src_x, src_y, lgop);
+    return;
+  }
+
+  if (src->bpp) {
+    fprintf(stderr, "ncurses: blitting non-ascii art\n");
+    def_blit(dest, x, y, w, h, src, src_x, src_y, lgop);
+    return;
+  }
+
+  fprintf(stderr, "ncurses: blitting ascii art\n");
+  if (src->bits[0])
+    {
+      /* just characters (actually slower as we have to get current attributes at the pixels) */
+      for (i=0; i < src->w; i++)
+	{
+	  c = ncurses_getpixel (dest, x+i, y);
+	  if (c & (PGCF_TEXT_ASCII | PGCF_TEXT_ACS)) {
+	    /* yay! simplest case */
+	    if (c & PGCF_TEXT_ACS) {
+	      c &= ~PGCF_TEXT_ACS;
+	      c |= PGCF_TEXT_ASCII;
+	    }
+	    c &= ~0xff;  /* forget the old character */
+	  }
+	  else {
+	    /* FIXME - I don't know how to convert an RGB color into the color code ncurses_pixel wants :-( */
+	    c = 0x40000F00;   /* white on black */
+	  }
+	  c |= src->bits[i];
+	  ncurses_pixel (dest, x+i, y, c, lgop);
+	}
+    }
+  else
+    {
+      /* old-style color-coded pairs */
+      for (i=0, p=src->bits+1; i < src->w; i++, p+=2)
+	{
+	  c = PGCF_TEXT_ASCII |
+	    ((p[0] & 0x0f) <<  8) | ((p[0] & 0x0f) << 12) |
+	    ((p[0] & 0xf0) << 12) | ((p[0] & 0xf0) << 16) |
+	    p[1];
+	  ncurses_pixel (dest, x+i, y, c, lgop);
+	}
+    }
+}
 /******************************************** Driver registration */
 
 g_error ncurses_regfunc(struct vidlib *v) {
@@ -183,6 +261,8 @@ g_error ncurses_regfunc(struct vidlib *v) {
    v->update = &ncurses_update;  
    v->color_pgtohwr = &ncurses_color_pgtohwr;
    v->color_hwrtopg = &ncurses_color_hwrtopg;
+   v->bitmap_load = &ncurses_bitmap_load;
+   v->blit = &ncurses_blit;
    
    return success;
 }
