@@ -1,7 +1,7 @@
 bin_PROGRAMS = pgl-launcher 
-pgl_launcher_SOURCES = pgl-launcher.c configfile.c linkedList.c 
+pgl_launcher_SOURCES = pgl-launcher.c 
 
-LDFLAGS += @PICOGUI_LDFLAGS@
+LDFLAGS += -lres_c @PICOGUI_LDFLAGS@
 LDADD = @PICOGUI_LIBS@
 
-CFLAGS = @CFLAGS@ @PICOGUI_CFLAGS@
+CFLAGS = -I/usr/local/include/ @CFLAGS@ @PICOGUI_CFLAGS@
