@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.30 2001/09/01 23:12:10 micahjd Exp $
+/* $Id: terminal.c,v 1.31 2001/10/09 06:00:29 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -32,11 +32,13 @@
 #include <ctype.h>
 
 /* Default text attribute */
-#define ATTR_DEFAULT 0x07
+//#define ATTR_DEFAULT 0x07   /* Standard console look */
+#define ATTR_DEFAULT 0xF0     /* Black on white */
 
 /* Cursor attribute */
 //#define ATTR_CURSOR  0xA0    /* Green (doesn't work in 1bpp) */
-#define ATTR_CURSOR  0xF0    /* Bright white */
+//#define ATTR_CURSOR  0xF0    /* Bright white */
+#define ATTR_CURSOR    0x10    /* Dark blue */
 
 /* On and off times in milliseconds */
 #define FLASHTIME_ON   250
@@ -243,12 +245,14 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
    
   /* Background (solid color or bitmap) */
   addgropsz(c,DATA->bitmap ? PG_GROP_BITMAP : PG_GROP_RECT,c->x,c->y,c->w,c->h);
-  c->current->param[0] = DATA->bitmap ? DATA->bitmap : textcolors[0];
+  c->current->flags   |= PG_GROPF_COLORED;
+  c->current->param[0] = DATA->bitmap ? DATA->bitmap : 
+    textcolors[ATTR_DEFAULT>>4];
   DATA->bg = c->current;
 
   /* Incremental grop for the background */
   addgropsz(c,DATA->bitmap ? PG_GROP_BITMAP : PG_GROP_RECT,0,0,0,0);
-  c->current->flags   |= PG_GROPF_INCREMENTAL;
+  c->current->flags   |= PG_GROPF_INCREMENTAL | PG_GROPF_COLORED;
   c->current->param[0] = DATA->bg->param[0];
   DATA->bginc = c->current;
 
