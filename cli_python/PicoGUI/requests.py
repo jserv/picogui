@@ -124,9 +124,6 @@ def newbitmap(width, height, image, id=None):
 def ping(id=None):
 	return request(0, id=id)
 	
-def register(name, type, id=None):
-	return request(15, pack('LHxx', name, type), id=id)
-	
 def own(res, id=None):
 	return request(19, pack('H', res), id=id)
 	
@@ -169,10 +166,10 @@ def updatepart(widget_id, property, value, id=None):
 def update(id=None):
 	return request(1, id=id)
 		
-def register(name_id, id=None):
+def register(name_id, apptype=1, id=None):
 	# the id of the string for the app name, and 1 for PG_APP_NORMAL
 	# (could be 2 for PG_APP_TOOLBAR)
-	return request(15, pack('LHxx', name_id, 1), id=id)
+	return request(15, pack('LHxx', name_id, apptype), id=id)
 
 def wait(id=None):
 	return request(13, id=id)

@@ -3,10 +3,12 @@
 import Widget, Server
 
 class Application(Widget.Widget):
+    _type = 1 # apptype parameter for the register request
+    
     def __init__(self, title, server=None):
         if not server:
             server = Server.Server()
-        Widget.Widget.__init__(self, server, server.register(title))
+        Widget.Widget.__init__(self, server, server.register(title, self._type))
         self.default_relationship = 'inside'
 
     def run(self):
@@ -18,3 +20,6 @@ class Application(Widget.Widget):
 
     def shutdown(self):
         self.server.close_connection()
+
+class ToolbarApp(Application):
+    _type = 2

@@ -14,10 +14,11 @@
 
 import Server
 server = Server
-Server = Server.Server
+Server = server.Server
 import Widget
 widget = Widget
-Widget = Widget.Widget
+Widget = widget.Widget
 import Application
 application = Application
-Application = Application.Application
+Application = application.Application
+ToolbarApp = application.ToolbarApp
