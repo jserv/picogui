@@ -1,4 +1,4 @@
-/* $Id: platform.c,v 1.3 2001/04/25 13:58:32 gobry Exp $
+/* $Id: platform.c,v 1.4 2002/03/25 15:19:38 bornet Exp $
  *
  * platforms.c - Contains platform-dependant stuff
  *
@@ -45,7 +45,7 @@
 /* Return the size of the list
  * Code derived from the on in the 'glib'
  */
-int g_printf_string_upper_bound (const char* format, va_list args) {
+int my_g_printf_string_upper_bound (const char* format, va_list args) {
   int len = 1;
 
   while (*format) {
@@ -170,7 +170,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args) {
   G_VA_COPY (args2, args);
 
   /* if the size of the args to write is bigger than 'size' return -1 */
-  if((g_printf_string_upper_bound (fmt,args)) > size)
+  if((my_g_printf_string_upper_bound (fmt,args)) > size)
     return -1;
     
   return (vsprintf(buf,fmt,args2));
