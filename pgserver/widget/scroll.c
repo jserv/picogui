@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.51 2002/01/28 09:50:44 micahjd Exp $
+/* $Id: scroll.c,v 1.52 2002/02/02 20:52:52 lonetech Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -25,6 +25,7 @@
  * 
  */
 
+#include <string.h>
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <pgserver/input.h>

@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.27 2002/01/18 09:32:13 micahjd Exp $
+/* $Id: render.c,v 1.28 2002/02/02 20:52:51 lonetech Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -28,6 +28,8 @@
  * 
  * 
  */
+
+#include <string.h>
 
 #include <pgserver/common.h>
 

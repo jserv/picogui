@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.75 2002/01/27 14:13:18 micahjd Exp $
+/* $Id: panel.c,v 1.76 2002/02/02 20:52:52 lonetech Exp $
  *
  * panel.c - Holder for applications. It uses a panelbar for resizing purposes,
  *           and optionally supplies some standard buttons for the panel.
@@ -28,6 +28,7 @@
  * 
  */
 
+#include <string.h>
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 

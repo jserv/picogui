@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.95 2002/01/31 00:38:38 micahjd Exp $
+/* $Id: button.c,v 1.96 2002/02/02 20:52:52 lonetech Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -25,6 +25,7 @@
  * 
  */
 
+#include <string.h>
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <pgserver/appmgr.h>

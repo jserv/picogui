@@ -1,4 +1,4 @@
-/* $Id: eventq.c,v 1.18 2002/01/18 11:14:34 lonetech Exp $
+/* $Id: eventq.c,v 1.19 2002/02/02 20:52:51 lonetech Exp $
  *
  * eventq.c - This implements the post_event function that the widgets
  *            use to send events to the client.  It stores these in a
@@ -30,6 +30,7 @@
  * 
  */
 
+#include <string.h>
 #include <pgserver/common.h>
 #include <pgserver/pgnet.h>
 

@@ -1,4 +1,4 @@
-/* $Id: hotspot.c,v 1.19 2002/01/28 09:08:53 micahjd Exp $
+/* $Id: hotspot.c,v 1.20 2002/02/02 20:52:51 lonetech Exp $
  *
  * hotspot.c - This is an interface for managing hotspots.
  *             The divtree is scanned for hotspot divnodes.
@@ -30,6 +30,7 @@
  * 
  */
 
+#include <string.h>
 #include <pgserver/common.h>
 #include <pgserver/divtree.h>
 #include <pgserver/appmgr.h>

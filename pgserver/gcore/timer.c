@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.21 2002/01/20 09:56:16 micahjd Exp $
+/* $Id: timer.c,v 1.22 2002/02/02 20:52:51 lonetech Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -28,6 +28,7 @@
 
 #include <pgserver/common.h>
 
+#include <string.h>
 #ifdef WINDOWS
 #include <windows.h>
 #include <mmsystem.h>

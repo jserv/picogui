@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.37 2002/01/22 02:44:55 micahjd Exp $
+/* $Id: sdlfb.c,v 1.38 2002/02/02 20:52:52 lonetech Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -42,10 +42,11 @@
 #ifdef CONFIG_SDLSKIN
 #include <stdio.h>                /* File I/O for loading skin bitmap */
 #include <stdlib.h>               /* strtol() */
-#elif defined(CONFIG_SDLSKIN)
+#elif defined(CONFIG_SDLSDC)
 #include <stdlib.h>               /* strtol() */
 #endif
 #include <unistd.h>               /* write() for beeping kludge */
+#include <string.h>
 
 SDL_Surface *sdl_vidsurf;
 #if defined(CONFIG_SDLEMU_COLOR) || defined(CONFIG_SDLEMU_BLIT)

@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.52 2002/01/27 14:13:17 micahjd Exp $
+/* $Id: memtheme.c,v 1.53 2002/02/02 20:52:51 lonetech Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -34,6 +34,7 @@
 #include <picogui/theme.h>
 
 #include <stdio.h>  /* for NULL */
+#include <string.h>
 
 /***************** Data */
 

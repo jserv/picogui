@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.72 2002/01/31 15:47:53 cgrigis Exp $
+/* $Id: defaultvbl.c,v 1.73 2002/02/02 20:52:51 lonetech Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -47,6 +47,7 @@
 #include <pgserver/appmgr.h>    /* for defaultfont */
 
 #include <stdlib.h>		/* for qsort */
+#include <string.h>
 
 /******* Table of available bitmap formats */
 

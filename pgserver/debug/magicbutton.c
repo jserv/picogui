@@ -1,4 +1,4 @@
-/* $Id: magicbutton.c,v 1.4 2002/01/31 02:00:04 micahjd Exp $
+/* $Id: magicbutton.c,v 1.5 2002/02/02 20:52:51 lonetech Exp $
  *
  * magicbutton.c - CTRL-ALT-foo is magical
  *
@@ -27,6 +27,7 @@
  * 
  */
 
+#include <string.h>
 #include <pgserver/common.h>
 #include <pgserver/video.h>
 #include <pgserver/render.h>

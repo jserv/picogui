@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.50 2002/01/28 07:59:30 lonetech Exp $
+/* $Id: grop.c,v 1.51 2002/02/02 20:52:51 lonetech Exp $
  *
  * grop.c - grop-list management
  *
@@ -24,6 +24,8 @@
  * 
  * 
  */
+
+#include <string.h>
 
 #include <pgserver/common.h>
 

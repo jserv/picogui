@@ -1,4 +1,4 @@
-/* $Id: panelbar.c,v 1.4 2002/02/02 16:37:45 lonetech Exp $
+/* $Id: panelbar.c,v 1.5 2002/02/02 20:52:52 lonetech Exp $
  *
  * panelbar.c - Container and draggable bar for resizing panels
  *
@@ -25,6 +25,7 @@
  * 
  */
 
+#include <string.h>
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <pgserver/video.h>
@@ -199,7 +200,7 @@ g_error panelbar_set(struct widget *self,int property, glob data) {
     errorcheck;
     DATA->bindto = data;
     /* FIXME: this should be in pixels */
-    DATA->unrolled = widget_get(w,PG_WP_SIZE);
+    DATA->unrolled = widget_get(w, PG_WP_SIZE);
     break;
 
   default:

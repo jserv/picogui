@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.82 2002/01/30 12:03:16 micahjd Exp $
+/* $Id: dispatch.c,v 1.83 2002/02/02 20:52:51 lonetech Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -42,6 +42,7 @@
 #include <pgserver/touchscreen.h>
 #endif
 
+#include <stdlib.h>	/* alloca */
 #include <string.h>	/* strncmp */
 
 /* First bring in function prototypes for all handlers */

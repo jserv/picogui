@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.29 2002/01/29 02:52:35 lonetech Exp $
+/* $Id: textbox_main.c,v 1.30 2002/02/02 20:52:52 lonetech Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -27,6 +27,7 @@
  * 
  */
 
+#include <string.h>
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <pgserver/textbox.h>

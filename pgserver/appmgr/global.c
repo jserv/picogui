@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.57 2002/01/30 12:03:15 micahjd Exp $
+/* $Id: global.c,v 1.58 2002/02/02 20:52:51 lonetech Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -28,6 +28,8 @@
  * 
  * 
  */
+
+#include <string.h>
 
 #include <pgserver/common.h>
 

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.153 2002/02/02 20:01:23 lonetech Exp $
+/* $Id: widget.c,v 1.154 2002/02/02 20:52:52 lonetech Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -35,9 +35,7 @@
 #include <pgserver/timer.h>
 #include <pgserver/input.h>
 #include <pgserver/configfile.h>
-#ifdef CONFIG_KEY_ALPHA
-#include <string.h>	/* strchr() */
-#endif
+#include <string.h>
 
 #ifdef DEBUG_WIDGET
 #define DEBUG_FILE

@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.73 2002/01/28 08:36:00 micahjd Exp $
+/* $Id: div.c,v 1.74 2002/02/02 20:52:51 lonetech Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -24,6 +24,8 @@
  * 
  * 
  */
+
+#include <string.h>
 
 #include <pgserver/common.h>
 

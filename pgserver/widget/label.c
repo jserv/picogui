@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.48 2002/01/19 23:47:02 micahjd Exp $
+/* $Id: label.c,v 1.49 2002/02/02 20:52:52 lonetech Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -26,6 +26,7 @@
  * 
  */
 
+#include <string.h>
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <pgserver/appmgr.h>

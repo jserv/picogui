@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.27 2002/01/16 19:47:27 lonetech Exp $
+/* $Id: indicator.c,v 1.28 2002/02/02 20:52:52 lonetech Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -28,7 +28,7 @@
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 
-#define VALUE ((int)self->data)
+#define VALUE ((long)self->data)
 
 void build_indicator(struct gropctxt *c,unsigned short state,struct widget *self) {
   /* Set orientation */

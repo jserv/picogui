@@ -4,6 +4,8 @@
 
 #if !defined(ASM_INTEL)
 
+#include <string.h>
+
 #define __memcpy(dst,src,n)			memcpy((dst),(src),(n))
 #define __memcpy_conventional(dst,src,n)	memcpy((dst),(src),(n))
 #define __memcpyb(dst,src,n)			memcpy((dst),(src),(n))

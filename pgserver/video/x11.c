@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.24 2002/02/02 20:01:23 lonetech Exp $
+/* $Id: x11.c,v 1.25 2002/02/02 20:52:52 lonetech Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -34,6 +34,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <stdio.h>
+#include <string.h>
 #ifdef CONFIG_X11_XFT
 #include <X11/Xft/Xft.h>
 #endif

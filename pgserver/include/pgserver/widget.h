@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.50 2002/01/31 00:38:38 micahjd Exp $
+/* $Id: widget.h,v 1.51 2002/02/02 20:52:51 lonetech Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -386,10 +386,4 @@ void magic_button(s16 key);
 #endif /* __WIDGET_H */
 
 /* The End */
-
-
-
-
-
-
 
