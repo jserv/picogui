@@ -1,4 +1,4 @@
-/* $Id: textedit_logical.c,v 1.13 2002/11/12 18:28:25 cgroom Exp $
+/* $Id: textedit_logical.c,v 1.14 2002/11/12 23:18:08 cgroom Exp $
  *
  * textedit_logical.c - Backend for multi-line text widget. This
  * defines the behavior of a generic wrapping text widget, and is not
@@ -292,7 +292,7 @@ g_error text_backend_init ( text_widget * widget ) {
     LList * l;
     paragraph * p;
     block * b;
-
+    
     assert(widget);
 
     /* clipboard client registration */
@@ -319,16 +319,12 @@ g_error text_backend_init ( text_widget * widget ) {
     errorcheck;
 
     widget->current = widget->blocks;
-    widget->v_height = 0;
-    widget->v_y_top = 0;
     widget->fvb = widget->blocks;
     widget->fvb_v_y = 0;
-    widget->cursor_x_stash = -1;
-    widget->cursor_v_y = 0;
     widget->border_h = 2;
     widget->border_v = 2;
     widget->selection = SELECTION_NONE;
-
+    
     widget->client_data = NULL;
     widget->client_data_h = 0;
     return success;
@@ -377,7 +373,11 @@ g_error text_backend_build ( text_widget * widget,
 
     widget->width = w;
     widget->height = h;
-    
+    widget->v_height = 0;
+    widget->v_y_top = 0;
+    widget->cursor_x_stash = -1;
+    widget->cursor_v_y = 0;
+
     textedit_clear_rect(widget->self, 0, 0, 
                         widget->width, widget->height);
     
@@ -391,13 +391,14 @@ g_error text_backend_build ( text_widget * widget,
             p_offset += PARAGRAPH(ll_p)->len;
         }
     }
+    widget_cursor_v_y(widget);
     widget_render(widget);
     return success;
 }
 
 
 g_error text_backend_set_text ( text_widget * widget,
-                             struct pgstring * text ) {
+                                struct pgstring * text ) {
     g_error e;
     LList * ll_b, * ll_p, * ll_a;
     size_t para_len;
@@ -660,7 +661,7 @@ void text_backend_set_v_top ( text_widget * widget,
     v_top = MIN(v_top, widget->v_height - (widget->height - 2*widget->border_v));
     widget_set_v_top (widget, v_top);
     if ((widget->cursor_v_y < widget->v_y_top) || 
-        (widget->cursor_v_y > widget->v_y_top + (widget->height - 2*widget->border_v))) {
+        (widget->cursor_v_y >= widget->v_y_top + (widget->height - 2*widget->border_v))) {
         /* Hide cursor if off-screen */
         textedit_move_cursor (widget->self, (s16) widget->cursor_grop->r.x,
                               widget->height,
@@ -1204,7 +1205,8 @@ static void widget_render ( text_widget * widget ) {
                 offset += p->len;
                 y += p->height;
             } else {
-                if (GET_FLAG(p->flags, PARAGRAPH_FLAG_DRAW_ALL) == ((u8) PARAGRAPH_FLAG_DRAW_ALL))
+                if (GET_FLAG(p->flags, PARAGRAPH_FLAG_DRAW_ALL) == 
+                    ((u8) PARAGRAPH_FLAG_DRAW_ALL))
                     draw_all = TRUE;
                 draw_atoms = draw_all;
 
@@ -1325,18 +1327,22 @@ static u32 widget_cursor_v_y ( text_widget * widget ) {
  */
 static void widget_scroll_to_cursor ( text_widget * widget ) {
     u16 widget_height;
+    u16 line_extend;
+    
     widget_height = widget->height - widget->border_h * 2;
-    widget_height -= widget_height % widget->cursor_grop->r.h;
-
-    if ((widget->v_height > widget_height) &&
-        (widget->v_height - widget->v_y_top < widget_height)) {
-        widget_set_v_top (widget, widget->v_height - widget_height);
+    line_extend = widget_height % widget->cursor_grop->r.h;
+    widget_height -= line_extend;
+    
+    if (widget->v_height < widget_height) {
+        widget_set_v_top (widget, 0);
     } else if (widget->cursor_v_y < widget->v_y_top ) {
         widget_set_v_top (widget, widget->cursor_v_y);
-    } else if (widget->cursor_v_y + widget->cursor_grop->r.h > 
+    } else if (widget->cursor_v_y + widget->cursor_grop->r.h + line_extend >= 
                widget->v_y_top + widget_height) {
-        widget_set_v_top (widget, widget->cursor_v_y + 
-                          widget->cursor_grop->r.h -
+        widget_set_v_top (widget, 
+                          (widget->cursor_v_y + 
+                           line_extend +
+                           widget->cursor_grop->r.h) -
                           widget_height);
     }
 }
@@ -1366,7 +1372,8 @@ static void widget_set_v_top ( text_widget * widget,
     }
 
     /* Line-align top */
-    for (ll_a = PARAGRAPH(ll_p)->atoms; ll_a && (widget->fvb_v_y + h < v_top); 
+    for (ll_a = PARAGRAPH(ll_p)->atoms; 
+         ll_a && (widget->fvb_v_y + h < v_top); 
          ll_a = llist_next(ll_a)) {
         if (GET_FLAG(ATOM(ll_a)->flags, ATOM_FLAG_RIGHT)) {
             h += ATOM(ll_a)->height;
@@ -1973,18 +1980,18 @@ static g_error widget_insert_chars ( text_widget * widget,
                 SET_FLAG( PARAGRAPH(b->cursor_paragraph)->flags,
                           PARAGRAPH_FLAG_DRAW_ALL);
             }
-            e = wrap(widget, b, p, b->cursor_atom);
-            errorcheck;
         }
+        e = wrap(widget, b, p, b->cursor_atom);
+        errorcheck;
 
         len -= chunk_len;
         str += chunk_len;
     }
 
     if (widget_realized) {
-        widget_scroll_to_cursor (widget);
         if (new_para)
             widget_cursor_v_y(widget);
+        widget_scroll_to_cursor (widget);
         widget_render (widget);
         widget_cursor_stay_on (widget);
     }
@@ -2620,7 +2627,7 @@ static g_error wrap ( text_widget * widget,
     u16 len;
     s16 w, h, width, height, line_width, next_line_word_w;
     u16 widget_width = widget->width - 2*widget->border_h;
-    
+
     assert (widget && b && p && a_ll);
 
     for (l = b->paragraphs; PARAGRAPH(l) != p; l = llist_next(l)) 

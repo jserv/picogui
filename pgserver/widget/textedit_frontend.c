@@ -1,4 +1,4 @@
-/* $Id: textedit_frontend.c,v 1.15 2002/11/12 18:28:25 cgroom Exp $
+/* $Id: textedit_frontend.c,v 1.16 2002/11/12 23:18:08 cgroom Exp $
  *
  * textedit.c - Multi-line text widget. By Chuck Groom,
  * cgroom@bluemug.com, Blue Mug, Inc, July 2002. Intended to be
@@ -340,17 +340,6 @@ g_error textedit_set ( struct widget *self,
             install_timer(self, FLASHTIME_ON);
         }
         break;
-    case PG_WP_SCROLL_Y:
-        if (self->in->div->r.h) {
-            struct divnode * p_node;
-            struct widget * parent;
-            int res;
-            p_node = divnode_findparent(self->dt->head, self->in);
-            parent = p_node->owner;
-            res = widget_get(parent, PG_WP_SIZE);
-            text_backend_set_v_top(DATA, ((u32) data * DATA->v_height) / res);
-        }
-        break;
     }
     return success;
 }
@@ -379,6 +368,8 @@ void textedit_trigger ( struct widget *self,
                         union trigparam *param) {
     int key;
     struct cursor * c;
+    u32 v_height, v_top;
+    struct font_metrics m;
 
     switch (type) {
     case PG_TRIGGER_DEACTIVATE:
@@ -425,6 +416,9 @@ void textedit_trigger ( struct widget *self,
                 grop_render(self->in->div, NULL);
             } else {
                 text_backend_selection_unset(DATA);
+                v_height = MAX(DATA->v_height, 
+                               DATA->cursor_v_y + DATA->cursor_grop->r.h);
+                
                 /* In scrollbar region */
                 if ((param->mouse.y - self->in->div->r.y < DATA->thumb_top) ||
                     (param->mouse.y - self->in->div->r.y >
@@ -435,14 +429,22 @@ void textedit_trigger ( struct widget *self,
                     else 
                         DATA->thumb_top += DATA->thumb_size;
                     DATA->thumb_top = MAX(0, MIN(DATA->thumb_top, 
-                                                 DATA->height - DATA->thumb_size));
-                    DATA->scroll_lock = 1;                
-                    text_backend_set_v_top(DATA, 
-                                           (DATA->v_height * DATA->thumb_top) / 
-                                           DATA->height);
+                                                 DATA->height - 
+                                                 DATA->thumb_size));
+                    v_top = (v_height * DATA->thumb_top) / DATA->height;
+                    /* Round to full screen lines */
+                    DATA->fd->lib->getmetrics(DATA->fd,&m);
+                    if (v_top % m.lineheight) {
+                        v_top = (v_top  - v_top % m.lineheight) +
+                            m.lineheight;
+                    }
+                    if (v_top != DATA->v_y_top) {
+                        DATA->scroll_lock = 1;                
+                        text_backend_set_v_top(DATA, v_top);
+                        DATA->scroll_lock = 0;
+                    }
                     div_rebuild(self->in->div->div);
                     update(NULL,1);
-                    DATA->scroll_lock = 0;
                 } else {
                     DATA->thumb_drag_start = 
                         (param->mouse.y - self->in->div->r.y) - 
@@ -458,6 +460,8 @@ void textedit_trigger ( struct widget *self,
                                            param->mouse.x - self->in->div->r.x,
                                            param->mouse.y - self->in->div->r.y );
             } else {
+                v_height = MAX(DATA->v_height, 
+                               DATA->cursor_v_y + DATA->cursor_grop->r.h);
                 DATA->thumb_top = param->mouse.y - 
                     self->in->div->r.y -
                     DATA->thumb_drag_start;
@@ -466,16 +470,23 @@ void textedit_trigger ( struct widget *self,
                 DATA->thumb_drag_start = param->mouse.y -
                     self->in->div->r.y -
                     DATA->thumb_top;
-                DATA->scroll_lock = 1;                
-                text_backend_set_v_top(DATA, 
-                                       (DATA->v_height * DATA->thumb_top) / 
-                                       DATA->height);
+                v_top = (v_height * DATA->thumb_top) / DATA->height;
+                /* Round to full screen lines */
+                DATA->fd->lib->getmetrics(DATA->fd,&m);
+                if (v_top % m.lineheight) {
+                    v_top = (v_top  - v_top % m.lineheight) +
+                                              m.lineheight;
+                }
+                if (v_top != DATA->v_y_top) {
+                    DATA->scroll_lock = 1;  
+                    text_backend_set_v_top(DATA, v_top);
+                    DATA->scroll_lock = 0;  
+                }
                 div_rebuild(self->in->div->div);
                 update(NULL,1);
-                DATA->scroll_lock = 0;
             }
         }
-        return;
+        break;
     case PG_TRIGGER_KEYUP:
         if (GET_FLAG(DATA->flags, TEXT_WIDGET_READONLY) ||
             !GET_FLAG(DATA->flags, TEXT_WIDGET_FOCUS))
@@ -560,15 +571,17 @@ void textedit_trigger ( struct widget *self,
 
 void textedit_scrollevent( struct widget *self ) {
     u16 thumb_size, thumb_top;
+    u32 v_height;
 
     if (DATA->scroll_lock)
         return;
     DATA->scroll_lock = 1;
     
-    if (DATA->height < DATA->v_height) {
-        thumb_size = (DATA->height * self->in->div->div->r.h) / DATA->v_height;
-        thumb_top = (DATA->v_y_top * self->in->div->div->r.h) / 
-            (DATA->v_height);
+    v_height = MAX(DATA->v_height, DATA->cursor_v_y + DATA->cursor_grop->r.h);
+        
+    if (DATA->height < v_height) {
+        thumb_size = (DATA->height * self->in->div->div->r.h) / v_height;
+        thumb_top = (DATA->v_y_top * self->in->div->div->r.h) / v_height;
         if (thumb_top + thumb_size > DATA->height)
             thumb_top = DATA->height - thumb_size;
     } else {
