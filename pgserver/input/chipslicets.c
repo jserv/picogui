@@ -1,4 +1,4 @@
-/* $Id: chipslicets.c,v 1.2 2001/11/01 18:20:41 pney Exp $
+/* $Id: chipslicets.c,v 1.3 2001/11/06 09:10:17 bauermeister Exp $
  *
  * chipslicets.c - input driver for touch screen
  *
@@ -39,6 +39,7 @@
 #include <pgserver/input.h>
 #include <pgserver/widget.h>    /* for dispatch_pointing */
 #include <pgserver/pgnet.h>
+#include <pgserver/configfile.h>
 
 #include <linux/mc68328digi.h>
 #include <rm_client.h>
@@ -59,7 +60,6 @@
 
 static const char *DEVICE_FILE_NAME = "/dev/ts";
 static const char *_file_ = __FILE__; 
-static const char *PG_TS_ENV_NAME = "PG_TS_CALIBRATION";
 
 static int fd=0;
 static int bytes_transfered=0;
@@ -69,9 +69,12 @@ static int chipslicetsSTATE = RUN;
 
 static struct timeval lastEvent;
 
-void chipslicets_message(u32 message, u32 param);
+void chipslicets_message(u32 message, u32 param, u32 *ret);
 
+/*
 #define DEBUG_EVENT
+*/
+
 /******************************************** Implementations */
 
 int chipslicets_sleep(void) {
@@ -96,7 +99,7 @@ void chipslicets_poll(void) {
   struct ts_pen_info pen_info;
   
   pen_info.x = -1; pen_info.y = -1;
-  
+
   bytes_transfered=read(fd,(char *)&pen_info,sizeof(pen_info));
 
   if(pen_info.x != -1) {
@@ -188,7 +191,7 @@ g_error chipslicets_init(void) {
     int mx1, mx2, my1, my2;
     int ux1, ux2, uy1, uy2;
     int offx = 0, offy = 0;
-    char* pg_ts_env;
+    const char* calibration_string;
 
     ret_val=ioctl(fd,TS_PARAMS_GET,&ts_params);
     if(ret_val < 0) {
@@ -255,17 +258,17 @@ g_error chipslicets_init(void) {
     my2 =  710; uy2 = 320;
 #endif
 
-    /* env var will override default values (but only in ChipSlice!!) */
-    if( pg_ts_env = (char*)getenv(PG_TS_ENV_NAME) ) {
-      sscanf(pg_ts_env, "%d %d %d %d %d %d %d %d %d %d",
+    /* param may override default values */
+  if(calibration_string = get_param_str("chipslicets", "calibration", 0)) {
+      sscanf(calibration_string, "%d %d %d %d %d %d %d %d %d %d",
 	     &mx1, &my1, &mx2, &my2, &offx, &offy, &ux1, &uy1, &ux2, &uy2);
-#  ifdef DEBUG_INIT
-      printf("%s: taking m1 and m2 points from env var: '%s'\n",
-	     _file_, pg_ts_env);
+#ifdef DEBUG_INIT
+      printf("%s: taking m1 and m2 points from param: '%s'\n",
+	     _file_, calibration_string);
       printf("  mx1=%d my1=%d mx2=%d my2=%d offx=%d offy=%d "
 	     "ux1=%d uy1=%d ux2=%d uy2=%d\n",
 	     mx1, my1, mx2, my2, offx, offy, ux1, uy1, ux2, uy2);
-#  endif
+#endif
     }
 
     ux1 += offx;
@@ -333,9 +336,10 @@ void chipslicets_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
 }
 
 /* message between driver to provide sound (for exemple) */
-void chipslicets_message(u32 message, u32 param) {
+void chipslicets_message(u32 message, u32 param, u32 *ret) {
 
   int snd_type;
+  *ret = 0;
 
   switch (message) {
 
