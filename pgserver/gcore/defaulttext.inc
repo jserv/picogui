@@ -32,7 +32,7 @@
 /* 24 */  "PicoGUI Error",
 /* 25 */  "Memory allocation error",
 /* 26 */  "You step in the stream, but the water has moved on; This handle is not here",
-/* 27 */  "Access Denied reading handle",
+/* 27 */  "I'm sorry Dave, I'm afraid I can't let you do that. Access Denied reading handle",
 /* 28 */  "The handle you seek has been found, but it is not what you are looking for. Invalid handle type.",
 /* 29 */  "An error of type %s occurred in %s:\n\n%s\n\nTerminate the application?",
 /* 30 */  "The application type you need does not exist.",
