@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.37 2001/05/01 01:12:29 micahjd Exp $
+/* $Id: video.c,v 1.38 2001/07/11 00:53:19 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -195,7 +195,9 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
    vid->lyres = vid->yres;
    
    /* Synchronize vid->display info */
-   if (vid->display) {
+	if (vid->display) {
+		if (((struct stdbitmap *)vid->display)->rend)
+		   g_free(((struct stdbitmap *)vid->display)->rend);
       ((struct stdbitmap *)vid->display)->freebits = 0;
       ((struct stdbitmap *)vid->display)->w = vid->xres;
       ((struct stdbitmap *)vid->display)->h = vid->yres;
