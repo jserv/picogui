@@ -33,6 +33,10 @@
   DRV("vr3ts",&vr3ts_regfunc)
 #endif
 
+#ifdef DRIVER_H3600TS
+  DRV("h3600ts",&h3600ts_regfunc)
+#endif
+
 #ifdef DRIVER_TUXTS
   DRV("tuxts",&tuxts_regfunc)
 #endif

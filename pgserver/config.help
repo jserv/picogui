@@ -317,6 +317,12 @@ DRIVER_R3912TS
       More information on the Linux port to this device is at      
       vhl-tools.sourceforge.net and ftp.pocketlinux.com
       
+DRIVER_H3600TS
+      Touch screen driver for the Compaq iPAQ H3600 PDA. It might
+      work on other iPAQs, but that is not tested. If you want to
+      compile PicoGUI to include this driver, you should have the
+      header files for the official iPAQ kernel from www.handhelds.org.
+
 CONFIG_SDLSKIN
       Adds extra config file options to the SDL video and input
       drivers for supporting 'skins' to make SDL look like a

@@ -126,6 +126,7 @@ bool 'GPM input driver'			                DRIVER_GPM
 bool 'ChipSlice touchscreen input driver'               DRIVER_CHIPSLICETS
 bool 'Event broker driver'                              DRIVER_EVENTBROKER
 bool 'Agenda VR3 touchscreen input driver'              DRIVER_VR3TS
+bool 'Compaq iPAQ H3600 touchscreen input driver'	DRIVER_H3600TS
 bool 'Old-Style TuxScreen touchscreen input driver'     DRIVER_TUXTS
 if [ "$DRIVER_TUXTS" = "y" ]; then
    bool '  Sound FX support via /dev/wheaties (EXPERIMENTAL)'  DRIVER_TUXTS_WHEATIES

@@ -95,6 +95,7 @@ add_if_true chipslicets.c  $DRIVER_CHIPSLICETS
 add_if_true eventbroker.c  $DRIVER_EVENTBROKER
 add_if_true r3912ts.c      $DRIVER_R3912TS
 add_if_true vr3ts.c        $DRIVER_VR3TS
+add_if_true h3600ts.c      $DRIVER_H3600TS
 add_if_true tuxts.c        $DRIVER_TUXTS
 add_if_true ucb1x00.c      $DRIVER_UCB1X00
 add_if_true ttykb.c        $DRIVER_TTYKB

@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.35 2002/03/01 08:04:53 bauermeister Exp $
+/* $Id: input.h,v 1.36 2002/03/02 16:39:14 abergmann Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -133,6 +133,7 @@ g_error rrdsc21_gpio_regfunc(struct inlib *i);
 g_error rrsim_regfunc(struct inlib *i);
 g_error rrts_regfunc(struct inlib *i);
 g_error vr3ts_regfunc(struct inlib *i);
+g_error h3600ts_regfunc(struct inlib *i);
 g_error tuxts_regfunc(struct inlib *i);
 g_error ucb1x00_regfunc(struct inlib *i);
 g_error sc3_regfunc(struct inlib *i);

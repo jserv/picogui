@@ -14,6 +14,7 @@ EXTRA_libinput_a_SOURCES = \
 	chipslicets.c \
 	eventbroker.c \
 	vr3ts.c \
+	h3600ts.c \
 	tuxts.c \
 	ucb1x00.c \
 	ttykb.c \
