@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.42 2001/06/30 08:54:05 micahjd Exp $
+/* $Id: handle.c,v 1.43 2001/07/12 00:17:18 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -358,6 +358,9 @@ void object_free(struct handlenode *n) {
       break;
     case PG_TYPE_THEME:
       theme_remove(n->obj);
+      break;
+    case PG_TYPE_DRIVER:
+      unload_inlib(n->obj);
       break;
     default:
       g_free(n->obj);

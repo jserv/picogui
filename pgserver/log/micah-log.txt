@@ -1,5 +1,14 @@
 2001-07-10    Micah Dowty <micahjd@users.sourceforge.net>
 
+Well, I'm supposed to be done with this meta-input stuff today. After that
+I'll be finishing the virtual keyboard. Starting off finishing the bugs
+I left off with yesterday.
+
+      * net/dispatch.c: Added the PGREQ_LOADDRIVER to load an input driver
+		  and get a handle to it.
+
+2001-07-10    Micah Dowty <micahjd@users.sourceforge.net>
+
 Fixing a few bugs, continuing on the meta-input features.
 -
 Still one feature to add for the meta-input phase (I think):

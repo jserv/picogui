@@ -41,6 +41,7 @@ RQH(thlookup)
 RQH(getinactive)
 RQH(setinactive)
 RQH(drivermsg)
+RQH(loaddriver)
 RQH(undef)
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.16 2001/07/11 07:48:01 micahjd Exp $
+/* $Id: api.c,v 1.17 2001/07/12 00:17:18 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -795,6 +795,21 @@ void pgRender(pghandle bitmap,short groptype, ...) {
   va_end(v);
   
   _pg_add_request(PGREQ_RENDER,arg,size);
+}
+
+pghandle pgLoadDriver(const char *name) {
+  if (!name) return 0;
+
+  /* Passing the NULL terminator to the server is redundant.
+   * no need for a +1 on that strlen...
+   */
+  _pg_add_request(PGREQ_LOADDRIVER,(void *) name,strlen(name));
+
+  /* Because we need a result now, flush the buffer */
+  pgFlushRequests();
+
+  /* Return the new handle */
+  return _pg_return.e.retdata;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.31 2001/07/11 07:38:20 micahjd Exp $
+/* $Id: network.h,v 1.32 2001/07/12 00:17:18 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -134,8 +134,9 @@ struct pghello {
 #define PGREQ_GETINACTIVE  37  /* get milliseconds of inactivity |    none */
 #define PGREQ_SETINACTIVE  38  /* set milliseconds of inactivity |  struct */
 #define PGREQ_DRIVERMSG    39  /* Send a message to all drivers  |  struct */
+#define PGREQ_LOADDRIVER   40  /* Load input/misc (not video)    |   chars */
 
-#define PGREQ_UNDEF        40  /* types > this will be truncated. return error */
+#define PGREQ_UNDEF        41  /* types > this will be truncated. return error */
 
 /******* Request data structures */
 

@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.52 2001/07/11 07:48:01 micahjd Exp $
+/* $Id: client_c.h,v 1.53 2001/07/12 00:17:18 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -219,6 +219,15 @@ void pgInit(int argc, char **argv);
  */
 void pgSetErrorHandler(void (*handler)(unsigned short errortype,
 				       const char *msg));
+
+/*!
+ * \brief Load an input driver by name and return a handle
+ *
+ * \param name Driver name as reported by 'pgserver -l'
+ *
+ * \returns A handle to the loaded driver
+ */
+pghandle pgLoadDriver(const char *name);
 
 /*! 
  * \brief Convert a numerical errortype to a string

@@ -1,4 +1,4 @@
-/* $Id: input.c,v 1.10 2001/03/21 05:21:18 micahjd Exp $
+/* $Id: input.c,v 1.11 2001/07/12 00:17:18 micahjd Exp $
  *
  * input.c - Abstract input driver interface
  *
@@ -36,7 +36,7 @@ struct inlib *inlib_list = NULL;
 struct inlib *inlib_main;
 
 /* Loads an input driver, and puts a pointer 
-   to it in ppinlib. */
+   to it in 'inl' */
 g_error load_inlib(g_error (*regfunc)(struct inlib *i),
 		   struct inlib **inl) {
   struct inlib *newnode,*p;

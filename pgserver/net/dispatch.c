@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.46 2001/07/11 07:38:20 micahjd Exp $
+/* $Id: dispatch.c,v 1.47 2001/07/12 00:17:18 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -1021,6 +1021,29 @@ g_error rqh_drivermsg(int owner, struct pgrequest *req,
 #endif
   return sucess;
 }
+
+g_error rqh_loaddriver(int owner, struct pgrequest *req,
+		       void *data, unsigned long *ret, int *fatal) {
+  char *buf;
+  handle h;
+  g_error e;
+  struct inlib *i;
+
+  buf = alloca(req->size+1);
+  memcpy(buf,data,req->size);
+  buf[req->size] = 0;  /* Null terminate it if it isn't already */
+
+  /* Load the inlib */
+  e = load_inlib(find_inputdriver(buf),&i);
+  errorcheck;
+
+  e = mkhandle(&h,PG_TYPE_DRIVER,owner,i);
+  errorcheck;
+
+  *ret = h;
+  return sucess;
+}
+
 
 /* The End */
 
