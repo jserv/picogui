@@ -16,7 +16,9 @@ typenames = {
     0x005:	'changed',	# Sent by the textbox when its contents change (but only after a delay)
     0x204:	'pntr down',	# The "mouse" button is now down 
     0x205:	'pntr up',	# The "mouse" button is now up 
-    0x206:	'pntr release',	# The "mouse" button was released outside the widget 
+    0x206:	'pntr release',	# The "mouse" button was released outside the widget
+    0x207:	'pntr enter',	# The pointer is over the widget
+    0x208:	'pntr leave',	# The pointer is not over the widget
     0x306:	'data',		# Widget is streaming data to the app 
     0x107:	'resize',	# For terminal widgets 
     0x108:	'build',	# Sent from a canvas, clients can rebuild groplist 
@@ -86,8 +88,8 @@ class Event(object):
     def _decode_pointer(self, data):
         self.x = data & 0xfff
         self.y = (data >> 12) & 0xfff
-        self.buttons = (data >> 24) & 0xf
-        self.chbuttons = (data >> 28) & 0xf
+        self.chbuttons = (data >> 24) & 0xf
+        self.buttons = (data >> 28) & 0xf
 
     def _decode_data(self, data):
         # not really - we don't know what this data means, so we just store it
