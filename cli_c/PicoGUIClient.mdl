@@ -1,6 +1,6 @@
 # -*- python -*-
 
-from beeconfig import compile, install, distrib, clean
+from Bee.Autoconf import compile, install, clean
 
 multicompile = 1
 
@@ -8,9 +8,8 @@ depends = [ 'resourcemanager' ]
 
 
 def prepare (module, platform, project):
-    command = "../configure --with-rpm-prefix=%s --prefix=/ --with-prefix --host=%s --enable-bee --enable-unix-sockets" % \
-              (module.install_path (platform, project, standard = 1),
-               platform.feature ['platform'])
+    command = "../configure --prefix=/  --enable-bee --enable-unix-sockets " + \
+              "--with-prefix --host=%s" %  platform.platform
 
     message  ("running: %s" % command)
     sequence ("rm -f config.status ; test ! -f ../autogen.sh || (cd .. ; ./autogen.sh || true)",

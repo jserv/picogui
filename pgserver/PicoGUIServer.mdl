@@ -1,7 +1,7 @@
 # -*- python -*-
 
 import os
-from beeconfig import compile, distrib, install, clean
+from Bee.Autoconf import compile, install, clean
 
 multicompile     = 1
 platform_variant = 1
@@ -57,37 +57,28 @@ rm_task unblock picogui-server
 
 
 def prepare (module, platform, project):
-    profile = "../profiles/profile.SMARTDATA-m68k-pic-coff-%s" % platform.feature ['variant']
+    profile = "../profiles/profile.SMARTDATA-m68k-pic-coff-%s" % \
+              platform.subplatform
     
     command = ("../configure --prefix=%s --with-profile=%s --with-prefix --host=%s " +
                "--with-extra-ipath=%s/include:%s/include --with-extra-libs=%s/lib/librm.a " +
-               "--with-rpm-prefix=%s --with-rpm-platform=%s --enable-bee") % \
-              (module.install_path (platform, project),
+               "--enable-bee") % \
+              (module.path ['prefix'],
                profile,
-               platform.feature ['platform'],
-               project.modules ['kernel'].install_path (platform, project),
-               project.modules ['resourcemanager'].install_path (platform, project),
-               project.modules ['resourcemanager'].install_path (platform, project),
-               module.install_path (platform, project, standard = 1),
-               platform.fqn ())
+               platform.platform,
+               project ['module/kernel'].path ['dfl'],
+               project ['module/resourcemanager'].path ['dfl'],
+               project ['module/resourcemanager'].path ['dfl'])
 
     message ("running: %s" % command)
     sequence ("test ! -f ../autogen.sh || (cd .. ; ./autogen.sh || true)", command)
     return
 
-
-def compile (module, platform, project):
-    sequence ("make")
-    return
-
-
 def install (module, platform, project):
     sequence ("make install prefix=%s" % module.path ['frz'])
 
     # try to install the mdl file in the root of the frozen directory
-    mdl = module.file
-    if os.path.isfile (mdl):
-        installfile (mdl, module.path ['r_frz'])
+    installfile (module.file, module.path ['r_frz'])
 
     # generate the RM file
     file = os.path.join (module.path ['frz'], 'etc', 'rm.d', 'picoguiserver')
