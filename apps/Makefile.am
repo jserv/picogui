@@ -7,7 +7,7 @@ else
 
 SUBDIRS = pgboard pterm fieldtest vrcalc omnibar pgtuxphone blackout gridgame \
 	  battleship galaxy imgview dialogdemo scribble canvastst bouncyball \
-	  atomicnav tpcal pgl hello picomail pgmon
+	  atomicnav tpcal pgl hello picomail pgmon wclock
 
 endif
 
