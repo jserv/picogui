@@ -70,6 +70,22 @@ evtClose(struct pgEvent *evt)
 	return 1;
 }
 
+static int
+evtPassFocus(struct pgEvent *evt)
+{
+	int i;
+
+	pgFocus((pghandle)evt->extra);
+	if(evt->type==PG_WE_DATA)
+	{
+		/* hope they don't send things with mods.. */
+		for(i=0;i<evt->e.data.size;i++)
+			pgSendKeyInput(PG_TRIGGER_CHAR, evt->e.data.pointer[i],
+					0);
+	}
+	return 1;
+}
+
 static int done_intro = 0;
 
 void
@@ -93,13 +109,13 @@ fe_new_window (struct session *sess)
 	rightbox=pgNewWidget(PG_WIDGET_BOX, PGDEFAULT, PGDEFAULT);
 	pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_RIGHT, 0);
 	sess->gui->userlistinfo=pgNewWidget(PG_WIDGET_LABEL, PG_DERIVE_INSIDE, 0);
+	/* scroll bug: the scroll doesn't recalculate correctly when resized.
+	 * be sure to have the top of the nicklist visible when enlarging */
 	scroll=pgNewWidget(PG_WIDGET_SCROLL, PGDEFAULT, PGDEFAULT);
 	sess->gui->userlist=pgNewWidget(PG_WIDGET_BOX, PGDEFAULT, PGDEFAULT);
-	pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_LEFT, 0);
+	pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_TOP, 0);
 	pgSetWidget (scroll, PG_WP_BIND, sess->gui->userlist, PGDEFAULT);
-	/* FIXME - scrollbar gets overdrawn */
-	/* this is a textbox bug. another one is that wrapped text somehow 
-	 * winds up after all other text. */
+	/* textbox bug: wrapped text somehow winds up after all other text. */
 	rightbox=pgNewWidget(PG_WIDGET_BOX, PGDEFAULT, rightbox);
 	pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_ALL, 0);
 	scroll=pgNewWidget(PG_WIDGET_SCROLL, PG_DERIVE_INSIDE, PGDEFAULT);
@@ -116,11 +132,10 @@ fe_new_window (struct session *sess)
 				PG_WP_TEXTFORMAT, pgNewString("+HTML"), 0);
 			break;
 		case PG_WIDGET_TERMINAL:
-			/* don't let the terminal widget get focus */
-			/* FIXME: need to prevent PG_TRIGGER_ACTIVATE */
-			pgSetWidget(PGDEFAULT, PG_WP_TRIGGERMASK,
-				pgGetWidget(PGDEFAULT, PG_WP_TRIGGERMASK) &
-				~PG_TRIGGER_DOWN, PG_WP_SIDE, PG_S_ALL, 0);
+			/* make the terminal widget pass focus to the input */
+			pgBind(PGDEFAULT, PG_WE_DATA, evtPassFocus,
+					(void*)sess->gui->input);
+			pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_ALL, 0);
 			/* FIXME: hide cursor (not implemented in terminal) */
 			break;
 	}
