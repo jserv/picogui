@@ -1,4 +1,4 @@
-/* $Id: x11_primitives.c,v 1.11 2002/11/07 09:08:52 micahjd Exp $
+/* $Id: x11_primitives.c,v 1.12 2002/11/07 09:41:33 micahjd Exp $
  *
  * x11_primitives.c - Implementation of picogui primitives on top of the
  *                    X window system.
@@ -308,7 +308,7 @@ void x11_fpolygon(hwrbitmap dest, s32* array, s16 xoff, s16 yoff , hwrcolor c, s
   }
 
   /* Convert our array into an XPoint array */
-  npoints = *(array++);
+  npoints = (*(array++)) >> 1;
   points = alloca(sizeof(XPoint)*npoints);
   for (i=0;i<npoints;i++) {
     points[i].x = *(array++);

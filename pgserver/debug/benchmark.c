@@ -1,4 +1,4 @@
-/* $Id: benchmark.c,v 1.8 2002/10/23 02:09:02 micahjd Exp $
+/* $Id: benchmark.c,v 1.9 2002/11/07 09:41:33 micahjd Exp $
  *
  * benchmark.c - Run benchmarks on vidlib functions
  *
@@ -125,8 +125,8 @@ void bench_rotateblit_0(struct benchmark_param *b) {
   struct quad clip;
   clip.x1 = 0;
   clip.y1 = 0;
-  clip.x2 = vid->lxres-1;
-  clip.y2 = vid->lyres-1;
+  clip.x2 = b->w-1;
+  clip.y2 = b->h-1;
   VID(rotateblit)(VID(window_debug)(),0,0,
 		  benchmark_srcbit,0,0,b->w,b->h,&clip,0,b->lgop);
 }
@@ -135,9 +135,9 @@ void bench_rotateblit_90(struct benchmark_param *b) {
   struct quad clip;
   clip.x1 = 0;
   clip.y1 = 0;
-  clip.x2 = vid->lxres-1;
-  clip.y2 = vid->lyres-1;
-  VID(rotateblit)(VID(window_debug)(),0,vid->lyres-1,
+  clip.x2 = b->w-1;
+  clip.y2 = b->h-1;
+  VID(rotateblit)(VID(window_debug)(),0,b->h-1,
 		  benchmark_srcbit,0,0,b->w,b->h,&clip,90,b->lgop);
 }
 
@@ -145,9 +145,9 @@ void bench_rotateblit_180(struct benchmark_param *b) {
   struct quad clip;
   clip.x1 = 0;
   clip.y1 = 0;
-  clip.x2 = vid->lxres-1;
-  clip.y2 = vid->lyres-1;
-  VID(rotateblit)(VID(window_debug)(),vid->lxres-1,vid->lyres-1,
+  clip.x2 = b->w-1;
+  clip.y2 = b->h-1;
+  VID(rotateblit)(VID(window_debug)(),b->w-1,b->h-1,
 		  benchmark_srcbit,0,0,b->w,b->h,&clip,180,b->lgop);
 }
 
@@ -155,9 +155,9 @@ void bench_rotateblit_270(struct benchmark_param *b) {
   struct quad clip;
   clip.x1 = 0;
   clip.y1 = 0;
-  clip.x2 = vid->lxres-1;
-  clip.y2 = vid->lyres-1;
-  VID(rotateblit)(VID(window_debug)(),vid->lxres-1,0,
+  clip.x2 = b->w-1;
+  clip.y2 = b->h-1;
+  VID(rotateblit)(VID(window_debug)(),b->w-1,0,
 		  benchmark_srcbit,0,0,b->w,b->h,&clip,270,b->lgop);
 }
 
@@ -194,8 +194,8 @@ void bench_charblit_0(struct benchmark_param *b) {
   struct quad clip;
   clip.x1 = 0;
   clip.y1 = 0;
-  clip.x2 = vid->lxres-1;
-  clip.y2 = vid->lyres-1;
+  clip.x2 = b->w-1;
+  clip.y2 = b->h-1;
   VID(charblit)(VID(window_debug)(),benchmark_char,0,0,b->w,b->h,
 		0,0,0,&clip,b->lgop,b->w>>3);
 }
@@ -204,9 +204,9 @@ void bench_charblit_90(struct benchmark_param *b) {
   struct quad clip;
   clip.x1 = 0;
   clip.y1 = 0;
-  clip.x2 = vid->lxres-1;
-  clip.y2 = vid->lyres-1;
-  VID(charblit)(VID(window_debug)(),benchmark_char,0,vid->lyres-1,b->w,b->h,
+  clip.x2 = b->w-1;
+  clip.y2 = b->h-1;
+  VID(charblit)(VID(window_debug)(),benchmark_char,0,b->h-1,b->w,b->h,
 		0,90,0,&clip,b->lgop,b->w>>3);
 }
 
@@ -214,9 +214,9 @@ void bench_charblit_180(struct benchmark_param *b) {
   struct quad clip;
   clip.x1 = 0;
   clip.y1 = 0;
-  clip.x2 = vid->lxres-1;
-  clip.y2 = vid->lyres-1;
-  VID(charblit)(VID(window_debug)(),benchmark_char,vid->lxres-1,vid->lyres-1,b->w,b->h,
+  clip.x2 = b->w-1;
+  clip.y2 = b->h-1;
+  VID(charblit)(VID(window_debug)(),benchmark_char,b->w-1,b->h-1,b->w,b->h,
 		0,180,0,&clip,b->lgop,b->w>>3);
 }
 
@@ -224,9 +224,9 @@ void bench_charblit_270(struct benchmark_param *b) {
   struct quad clip;
   clip.x1 = 0;
   clip.y1 = 0;
-  clip.x2 = vid->lxres-1;
-  clip.y2 = vid->lyres-1;
-  VID(charblit)(VID(window_debug)(),benchmark_char,vid->lxres-1,0,b->w,b->h,
+  clip.x2 = b->w-1;
+  clip.y2 = b->h-1;
+  VID(charblit)(VID(window_debug)(),benchmark_char,b->w-1,0,b->w,b->h,
 		0,270,0,&clip,b->lgop,b->w>>3);
 }
 
@@ -235,8 +235,8 @@ void bench_alpha_charblit_0(struct benchmark_param *b) {
   struct quad clip;
   clip.x1 = 0;
   clip.y1 = 0;
-  clip.x2 = vid->lxres-1;
-  clip.y2 = vid->lyres-1;
+  clip.x2 = b->w-1;
+  clip.y2 = b->h-1;
   VID(alpha_charblit)(VID(window_debug)(),benchmark_char,0,0,b->w,b->h,
 		      128,benchmark_gamma,0,0,&clip,b->lgop);
 }
@@ -245,9 +245,9 @@ void bench_alpha_charblit_90(struct benchmark_param *b) {
   struct quad clip;
   clip.x1 = 0;
   clip.y1 = 0;
-  clip.x2 = vid->lxres-1;
-  clip.y2 = vid->lyres-1;
-  VID(alpha_charblit)(VID(window_debug)(),benchmark_char,0,vid->lyres-1,b->w,b->h,
+  clip.x2 = b->w-1;
+  clip.y2 = b->h-1;
+  VID(alpha_charblit)(VID(window_debug)(),benchmark_char,0,b->h-1,b->w,b->h,
 		      128,benchmark_gamma,90,0,&clip,b->lgop);
 }
 
@@ -255,9 +255,9 @@ void bench_alpha_charblit_180(struct benchmark_param *b) {
   struct quad clip;
   clip.x1 = 0;
   clip.y1 = 0;
-  clip.x2 = vid->lxres-1;
-  clip.y2 = vid->lyres-1;
-  VID(alpha_charblit)(VID(window_debug)(),benchmark_char,vid->lxres-1,vid->lyres-1,b->w,b->h,
+  clip.x2 = b->w-1;
+  clip.y2 = b->h-1;
+  VID(alpha_charblit)(VID(window_debug)(),benchmark_char,b->w-1,b->h-1,b->w,b->h,
 		      128,benchmark_gamma,180,0,&clip,b->lgop);
 }
 
@@ -265,9 +265,9 @@ void bench_alpha_charblit_270(struct benchmark_param *b) {
   struct quad clip;
   clip.x1 = 0;
   clip.y1 = 0;
-  clip.x2 = vid->lxres-1;
-  clip.y2 = vid->lyres-1;
-  VID(alpha_charblit)(VID(window_debug)(),benchmark_char,vid->lxres-1,0,b->w,b->h,
+  clip.x2 = b->w-1;
+  clip.y2 = b->h-1;
+  VID(alpha_charblit)(VID(window_debug)(),benchmark_char,b->w-1,0,b->w,b->h,
 		      128,benchmark_gamma,270,0,&clip,b->lgop);
 }
 #endif /* CONFIG_FONTENGINE_FREETYPE */
