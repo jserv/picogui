@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.1 2002/01/06 12:32:41 micahjd Exp $
+/* $Id: main.c,v 1.2 2002/01/07 06:28:08 micahjd Exp $
  *
  * main.c - Initialization and event loop for Atomic Navigator
  *
@@ -27,12 +27,44 @@
 
 #include <picogui.h>
 #include "browserwin.h"
+#include "url.h"
+#include "protocol.h"
+
+/* The PicoGUI client lib doesn't care about writefds or exceptfds, but we do */
+fd_set static_wfds, static_efds;
+
+int selectHandler(int n, fd_set *readfds, fd_set *writefds,
+		  fd_set *exceptfds, struct timeval *timeout);
+void selectBH(int result, fd_set *readfds);
 
 int main(int argc, char **argv) {
-  struct browserwin *b;
   pgInit(argc,argv);
-  b = browserwin_new();
+
+  browserwin_new();
+
+  pgCustomizeSelect(selectHandler, selectBH);
   pgEventLoop();
+}
+
+/* Call fd_init on all activated URLs */
+int selectHandler(int n, fd_set *readfds, fd_set *writefds,
+		  fd_set *exceptfds, struct timeval *timeout) {
+  struct url *u;
+
+  FD_ZERO(&static_efds);
+  FD_ZERO(&static_wfds);
+    
+  for (u=active_urls;u;u=u->next)
+    u->handler->fd_init(u,&n,readfds,&static_wfds,&static_efds);
+
+  return select(n,readfds,&static_wfds,&static_efds,timeout);
+}
+
+/* Call fd_activate on all active URLs */
+void selectBH(int result, fd_set *readfds) {
+  struct url *u;
+  for (u=active_urls;u;u=u->next)
+    u->handler->fd_activate(u,readfds,&static_wfds,&static_efds);
 }
 
 /* The End */

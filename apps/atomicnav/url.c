@@ -1,4 +1,4 @@
-/* $Id: url.c,v 1.2 2002/01/06 15:34:23 micahjd Exp $
+/* $Id: url.c,v 1.3 2002/01/07 06:28:08 micahjd Exp $
  *
  * url.c - framework for parsing and retrieving URLs
  *
@@ -30,6 +30,8 @@
 #include "url.h"
 #include "protocol.h"
 
+struct url *active_urls;
+
 /********************************* Methods */
 
 /* Create an object representing this URL.
@@ -38,14 +40,14 @@
  * so the parameter only needs to be valid for the duration of
  * this function call.
  */
-struct url * url_new(struct browserwin *browser, const char *url) {
+struct url * url_new(struct browserwin *browser, const char *name) {
   struct url *u;
   const char *p;
   int n;
   struct protocol **h;
 
   /* Allocate the URL itself */
-  u = malloc(sizeof(struct url));
+  u = (struct url *) malloc(sizeof(struct url));
   if (!u)
     return NULL;
   memset(u,0,sizeof(struct url));
@@ -53,69 +55,65 @@ struct url * url_new(struct browserwin *browser, const char *url) {
   u->progress = -1;
   u->browser = browser;
 
-  /* Make a local copy of the entire URL */
-  u->url = strdup(url);
-  if (!u->url) {
+  /* Make a local copy of the URL name */
+  u->name = strdup(name);
+  if (!u->name) {
     free(u);
     return NULL;
   }
 
-  printf("1 u->url = %s, url = %s, u->protocol = %s\n",u->url,url,u->protocol);
-
   /* Is there a protocol specified? It should be at the beginning
    * of the URL, preceeding a "://"
    */
-  p = strstr(url, "://");
+  p = strstr(name, "://");
   if (p) {
-    if (p != url) {
-      u->protocol = malloc(p-url+1);
+    if (p != name) {
+      u->protocol = malloc(p-name+1);
       if (u->protocol) {
-	strncpy(u->protocol,url,p-url);
-	u->protocol[p-url] = 0;
+	strncpy(u->protocol,name,p-name);
+	u->protocol[p-name] = 0;
       }
     }
-    url = p+3;
+    name = p+3;
   }
   
-  printf("2 u->url = %s, url = %s, u->protocol = %s\n",u->url,url,u->protocol);
-
   /* Next will come the server */
-  n = strcspn(url,":/#");
+  n = strcspn(name,":/#");
   if (n) {
     u->server = malloc(n+1);
     if (u->server) {
-      strncpy(u->server,url,n);
+      strncpy(u->server,name,n);
       u->server[n] = 0;
     }
-    url += n;
+    name += n;
   }
 
   /* The port */
-  if (*url == ':') {
-    url++;
-    u->port = atoi(url);
-    p = strchr(url,'/');
+  if (*name == ':') {
+    name++;
+    u->port = atoi(name);
+    p = strchr(name,'/');
     if (!p)
       return u;
-    url = p;
+    name = p;
   }
 
   /* Everything after the port will be considered the path
    * (as long as it's before the anchor)
    */
-  n = strcspn(url,"#");
+  n = strcspn(name,"#");
   if (n) {
     u->path = malloc(n+1);
     if (u->path) {
-      strncpy(u->path,url,n);
+      strncpy(u->path,name,n);
       u->path[n] = 0;
     }
-    url += n;
+    name += n;
   }
 
   /* Only the anchor left */
-  if (*url == '#' && url[1])
-    u->anchor = strdup(url+1);
+  if (*name == '#' && name[1])
+    u->anchor = strdup(name+1);
 
   /* No protocol?
    * See if we can guess...
@@ -149,7 +147,8 @@ struct url * url_new(struct browserwin *browser, const char *url) {
 void url_delete(struct url *u) {
   if (u->handler)
     u->handler->stop(u);
-  if (u->url)       free(u->url);
+  url_deactivate(u);
+  if (u->name)      free(u->name);
   if (u->protocol)  free(u->protocol);
   if (u->user);     free(u->user);
   if (u->password); free(u->password);
@@ -158,6 +157,7 @@ void url_delete(struct url *u) {
   if (u->filename); free(u->filename);
   if (u->anchor);   free(u->anchor);
   if (u->type);     free(u->type);
+  if (u->data);     free(u->data);
   free(u);
 }
 
@@ -166,8 +166,35 @@ void url_delete(struct url *u) {
  */
 void url_setstatus(struct url *u, int status) {
   u->status = status;
-  if (u->callback)
-    u->callback(u);
+  if (u->status_change)
+    u->status_change(u);
+  url_progress(u);
+}
+
+/* Add/remove a URL to the list of active URLs */
+void url_activate(struct url *u) {
+  url_deactivate(u);
+  u->next = active_urls;
+  active_urls = u;
+}
+void url_deactivate(struct url *u) {
+  struct url *p;
+  
+  if (active_urls == u)
+    active_urls = active_urls->next;
+  for (p=active_urls;p;p=p->next)
+    if (p->next == u)
+      p->next = u->next;
+}
+
+/* Update progress indicators associated with the URL */
+void url_progress(struct url *u) {
+  if (u->size > 0)
+    u->progress = u->size_received * 100 / u->size;
+  else
+    u->progress = -1;
+  if (u->progress_change)
+    u->progress_change(u);
 }
 
 /* The End */

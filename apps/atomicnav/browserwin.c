@@ -1,4 +1,4 @@
-/* $Id: browserwin.c,v 1.2 2002/01/06 15:34:23 micahjd Exp $
+/* $Id: browserwin.c,v 1.3 2002/01/07 06:28:08 micahjd Exp $
  *
  * browserwin.c - User interface for a browser window in Atomic Navigator
  *
@@ -31,25 +31,65 @@
 #include "url.h"
 #include "protocol.h"
 
+/* Corresponding to URL_STATUS_* constants */
 const char *status_names[] = {
-  "Done.",
+  "Idle.",
+  "Resolving page name...",
+  "Connecting...",
+  "Sending data...",
   "Loading page...",
-  "Loading images...",
+  "Done.",
   "Error loading page!",
+  "Stopped.",
+  "Using cached copy.",
 };
 
 /********************************* GUI Events */
 
 int btnGo(struct pgEvent *evt) {
   struct browserwin *w = (struct browserwin *) evt->extra;
+
   browserwin_seturl(w,pgGetString(pgGetWidget(w->wURL,PG_WP_TEXT)));
   return 0;
-};
+}
+
+int btnStop(struct pgEvent *evt) {
+  struct browserwin *w = (struct browserwin *) evt->extra;
+
+  if (w->page) {
+    url_delete(w->page);
+    w->page = NULL;
+  }
+  browserwin_showstatus(w,NULL);
+}
+
+int btnBack(struct pgEvent *evt) {
+  struct browserwin *w = (struct browserwin *) evt->extra;
+
+}
+
+int btnForward(struct pgEvent *evt) {
+  struct browserwin *w = (struct browserwin *) evt->extra;
+
+}
 
 /********************************* Callbacks */
 
-void pageLoadCallback(struct url *u) {
-  printf("URL callback\n");
+void pageStatus(struct url *u) {
+  browserwin_showstatus(u->browser, u);
+
+  printf("Status: %d\n" ,u->status);
+}
+
+void pageProgress(struct url *u) {
+  static int old_progress = -1;
+  
+  if (u->progress != old_progress) {
+    pgSetWidget(u->browser->wProgress,
+		PG_WP_VALUE, u->progress,
+		0);
+    old_progress = u->progress;
+  }
 }
 
 /********************************* Methods */
@@ -120,16 +160,19 @@ struct browserwin *browserwin_new(void) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT, pgNewString("<"),
 	      0);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,btnBack,(void*) w);
 
   w->wForward = pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT, pgNewString(">"),
 	      0);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,btnForward,(void*) w);
 
   w->wStop = pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT, pgNewString("Stop"),
 	      0);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,btnStop,(void*) w);
 
   w->wGo = pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
@@ -145,16 +188,33 @@ struct browserwin *browserwin_new(void) {
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,btnGo,(void*) w);
   pgFocus(PGDEFAULT);
 
-  browserwin_setstatus(w,STATUS_IDLE);
+  /* No URL yet */
+  browserwin_showstatus(w, NULL);
 
   return w;
 }
 
-void browserwin_setstatus(struct browserwin *w, int status) {
-  w->status = status;
-  pgReplaceText(w->wStatus, status_names[status]);
+/* Show a URL's status in the browser window */
+void browserwin_showstatus(struct browserwin *w, struct url *u) {
+  if (u) {
+    w->status = u->status;
+    pageProgress(u);
+  }
+  else {
+    /* No current URL */
+
+    w->status = URL_STATUS_IDLE;
+    pgSetWidget(w->wProgress,
+		PG_WP_VALUE, -1,
+		0);
+  }
+
+  pgReplaceText(w->wStatus, status_names[w->status]);
   pgSetWidget(w->wStop,
-	      PG_WP_DISABLED, status == STATUS_IDLE,
+	      PG_WP_DISABLED, 
+	      w->status == URL_STATUS_IDLE || 
+	      w->status == URL_STATUS_DONE || 
+	      w->status == URL_STATUS_ERROR,
 	      0);
 }
 
@@ -162,13 +222,12 @@ void browserwin_seturl(struct browserwin *w, const char *url) {
   if (w->page)
     url_delete(w->page);
 
-  browserwin_setstatus(w,STATUS_LOADING_PAGE);  
-
   w->page = url_new(w,url);
   if (!w->page)
     return;
 
-  w->page->callback = pageLoadCallback;
+  w->page->status_change = pageStatus;
+  w->page->progress_change = pageProgress;
   w->page->handler->connect(w->page);
 }
 
@@ -182,8 +241,6 @@ void browserwin_errormsg(struct browserwin *w, const char *msg) {
 	      PG_WP_TEXTFORMAT,pgNewString("+HTML"),
 	      PG_WP_TEXT,pgNewString(msg),
 	      0);
-
-  browserwin_setstatus(w,STATUS_ERROR);
 }
 
 

@@ -1,4 +1,4 @@
-/* $Id: p_http.c,v 1.1 2002/01/06 15:34:23 micahjd Exp $
+/* $Id: p_http.c,v 1.2 2002/01/07 06:28:08 micahjd Exp $
  *
  * p_http.c - HTTP protocol for the Atomic Navigator web browser
  *
@@ -29,9 +29,8 @@
 #include "protocol.h"
 
 void p_http_connect(struct url *u) {
-}
-
-unsigned long p_http_read(struct url *u, void *buf, unsigned long count) {
+  browserwin_errormsg(u->browser,"HTTP not supported yet");
+  url_setstatus(u,URL_STATUS_ERROR);
 }
 
 void p_http_stop(struct url *u) {
@@ -40,7 +39,6 @@ void p_http_stop(struct url *u) {
 struct protocol p_http = {
   name: "http",
   connect: p_http_connect,
-  read: p_http_read,
   stop: p_http_stop,
 }; 
 

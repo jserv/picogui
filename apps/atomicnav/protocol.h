@@ -1,4 +1,4 @@
-/* $Id: protocol.h,v 1.1 2002/01/06 15:34:23 micahjd Exp $
+/* $Id: protocol.h,v 1.2 2002/01/07 06:28:08 micahjd Exp $
  *
  * protocol.h - Definition of the protocol handler object
  *
@@ -28,6 +28,9 @@
 #ifndef __H_PROTOCOL
 #define __H_PROTOCOL
 
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include "url.h"
 
 struct protocol {
@@ -39,15 +42,18 @@ struct protocol {
    */
   void (*connect)(struct url *u);
 
-  /* When the URL is in the READ state, use this function
-   * to read a block of data from the URL.
-   */
-  unsigned long (*read)(struct url *u, void *buf, unsigned long count);
-  
   /* This stops all data transfer and frees all memory
    * associated with this URL connection.
    */
   void (*stop)(struct url *u);
+
+  /* The protocol should initialize it's file descriptors to watch here */
+  void (*fd_init)(struct url *u, int *n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds);
+
+  /* And this should check whether a descriptor belonging to this protocol
+   * was activated, and take apropriate action.
+   */
+  void (*fd_activate)(struct url *u, fd_set *readfds, fd_set *writefds, fd_set *exceptfds);
 };
 
 /* This list is defined in protocol.c */

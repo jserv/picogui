@@ -1,4 +1,4 @@
-/* $Id: browserwin.h,v 1.2 2002/01/06 15:34:23 micahjd Exp $
+/* $Id: browserwin.h,v 1.3 2002/01/07 06:28:08 micahjd Exp $
  *
  * browserwin.h - User interface for a browser window in Atomic Navigator
  *
@@ -70,16 +70,9 @@ struct browserwin {
 /********************************* Methods */
 
 struct browserwin *browserwin_new(void);
-void browserwin_setstatus(struct browserwin *w, int status);
+void browserwin_showstatus(struct browserwin *w, struct url *u);
 void browserwin_seturl(struct browserwin *w, const char *url);
 void browserwin_errormsg(struct browserwin *w, const char *msg);
-
-/********************************* Status */
-
-#define STATUS_IDLE           0
-#define STATUS_LOADING_PAGE   1
-#define STATUS_LOADING_IMAGES 2
-#define STATUS_ERROR          3
 
 #endif /* __H_BROWSERWIN */
 

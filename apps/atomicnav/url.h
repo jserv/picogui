@@ -1,4 +1,4 @@
-/* $Id: url.h,v 1.2 2002/01/06 15:34:23 micahjd Exp $
+/* $Id: url.h,v 1.3 2002/01/07 06:28:08 micahjd Exp $
  *
  * url.h - framework for parsing and retrieving URLs
  *
@@ -34,7 +34,7 @@ struct protocol;
 struct browserwin;
 
 struct url {
-  char *url;
+  char *name;
 
   /* Browser window this URL is associated with.
    * Useful for error reporting via browserwin_errormsg()
@@ -42,10 +42,9 @@ struct url {
    */
   struct browserwin *browser;
 
-  /* The owner of the url will usually set a callback
-   * to be called when the URL's status changes.
-   */
-  void (*callback)(struct url *u);
+  /* Callbacks set by the URL owner */
+  void (*status_change)(struct url *u);
+  void (*progress_change)(struct url *u);
   
   /* Parsed from the name (zero/NULL for none) */
   char *protocol;
@@ -66,11 +65,25 @@ struct url {
   /* Progress. -1 for unknown, or a number between 0 and 100 */
   int progress;
 
-  /* By the time status is URL_STATUS_READ we should know the content type */
+  /* By the time status is URL_STATUS_READ we should know the
+   * content type and size
+   */
   char *type;
+  unsigned long size;
 
   /* this is a block of data that may be used by the protocol */
   void *proto_extra;
+
+  /* When this process is done, the URL's data will be here */
+  void *data;
+
+  /* Amount of data read so far */
+  unsigned long size_received;
+
+  /* If this URL is currently loading it will be in a linked list
+   * of URLs to check in our pgCustomizeSelect handler
+   */
+  struct url *next;
 };
 
 /********************************* Constants */
@@ -80,7 +93,10 @@ struct url {
 #define URL_STATUS_CONNECTING 2
 #define URL_STATUS_WRITE      3
 #define URL_STATUS_READ       4
-#define URL_STATUS_DONE       5
+#define URL_STATUS_DONE       5   /* Url done loading into the buffer */
+#define URL_STATUS_ERROR      6   /* Protocol handler already called browserwin_errormsg() */
+#define URL_STATUS_STOPPED    7
+#define URL_STATUS_CACHED     8   /* Using cached copy */
 
 /********************************* Methods */
 
@@ -90,7 +106,7 @@ struct url {
  * so the parameter only needs to be valid for the duration of
  * this function call.
  */
-struct url * url_new(struct browserwin *browser, const char *url);
+struct url * url_new(struct browserwin *browser, const char *name);
 
 /* Free all memory associated with the URL.
  * If a transfer is in progress, abort the transfer.
@@ -101,6 +117,15 @@ void url_delete(struct url *u);
  * URL's status. It calls the url->callback.
  */
 void url_setstatus(struct url *u, int status);
+
+/* Add/remove a URL to the list of active URLs */
+void url_activate(struct url *u);
+void url_deactivate(struct url *u);
+
+/* Update progress indicators associated with the URL */
+void url_progress(struct url *u);
+
+extern struct url *active_urls;
 
 #endif /* __H_BROWSERWIN */
 
