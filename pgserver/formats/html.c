@@ -1,4 +1,4 @@
-/* $Id: html.c,v 1.2 2001/10/17 05:25:01 micahjd Exp $
+/* $Id: html.c,v 1.3 2001/10/17 06:26:22 micahjd Exp $
  *
  * html.c - Use the textbox_document inferface to load HTML markup
  *
@@ -51,7 +51,7 @@
  *   <IMG> *
  *   <FONT> *
  *   <BASEFONT> *
- *   <BR> *
+ *   <BR>
  *   <MAP> *
  *   ISO Latin-1 character entities
  *   UTF-8 encoding *
@@ -104,7 +104,7 @@ g_error html_dispatch_textfragment(struct html_parse *hp,
 				   const u8 *start,const u8 *end);
 char html_findchar(const u8 *charname, int namelen);
 
-/************************* Character name table */
+/*************************************** Character name table */
 
 /* This table is used to convert character names like &nbsp; to character
  * numbers, as defined by the HTML standard.
@@ -215,7 +215,7 @@ struct html_charname {
   { NULL, 0 }
 };
 
-/************************* HTML tag handlers */
+/*************************************** HTML tag handlers */
 
 /* Insert a blank line (next paragraph) */
 g_error html_tag_p(struct html_parse *hp, struct html_tag_params *tag) {
@@ -228,7 +228,15 @@ g_error html_tag_p(struct html_parse *hp, struct html_tag_params *tag) {
   return sucess;
 }
 
-/************************* HTML tag table */
+/* Line break */
+g_error html_tag_br(struct html_parse *hp, struct html_tag_params *tag) {
+  g_error e;
+  e = text_insert_linebreak(hp->c);
+  errorcheck;
+  return sucess;
+}
+
+/*************************************** HTML tag table */
 
 struct html_taghandler {
   const char *name;
@@ -236,11 +244,12 @@ struct html_taghandler {
 } html_tagtable[] = {
   
   { "p", &html_tag_p },
+  { "br", &html_tag_br },
 
   { NULL, NULL }
 };
 
-/************************* Interface */
+/*************************************** Parsing engine*/
 
 /* This function performs the highest level of HTML parsing- separating
  * HTML tags and normal text.
@@ -265,7 +274,7 @@ g_error html_load(struct textbox_cursor *c, const u8 *data, u32 datalen) {
 
       /* Ending the tag? */
       if ((!in_tag_quote) && *data=='>') {
-	e = html_dispatch_tag(&hp,tag_start,data);
+	e = html_dispatch_tag(&hp,tag_start,data-1);
 	errorcheck;
 	tag_start = NULL;
       }
@@ -283,7 +292,7 @@ g_error html_load(struct textbox_cursor *c, const u8 *data, u32 datalen) {
 	  text_start = NULL;
 	}
 
-	tag_start = data;
+	tag_start = data+1;
       }
       else if (!text_start)
 	text_start = data;
@@ -302,13 +311,53 @@ g_error html_load(struct textbox_cursor *c, const u8 *data, u32 datalen) {
   return sucess;
 }
 
-/************************* Utilities */
-
+/* Find the handler, prepare parameters, and call it */
 g_error html_dispatch_tag(struct html_parse *hp,
 			  const u8 *start, const u8 *end) {
   struct html_taghandler *p;
+  struct html_tag_params tag_params;
+  const u8 *tag;
+  int tag_len;
 
-  /* Find the handler, prepare parameters, and call it */
+  /* Skip leading whitespace */
+  while (start<=end && isspace(*start))
+    start++;
+  
+  /* Measure the length of the HTML tag */
+  tag = start;
+  tag_len = 0;
+  while (start<=end && !isspace(*start)) {
+    start++;
+    tag_len++;
+  }
+
+  /* Find a handler for the tag */
+  p = html_tagtable;
+  while (p->name) {
+    if (!strncasecmp(p->name,tag,tag_len) && !p->name[tag_len]) {
+      /* Got a handler */
+
+      /* Skip leading whitespace */
+      while (start<=end && isspace(*start))
+	start++;
+
+      /* Fill in the html_tag_params structure */
+      memset(&tag_params,0,sizeof(tag_params));
+      tag_params.paramtext = start;
+      tag_params.paramtext_len = end-start+1;
+
+      /* Call handler */
+      return (*p->handler)(hp,&tag_params);
+    }
+    p++;
+  }  
+
+  /* No handler, ignore tag */
+#ifdef DEBUG_HTML
+  write(1,"html: ignoring unhandled tag <",30);
+  write(1,tag,tag_len);
+  write(1,">\n",2);
+#endif
 
   return sucess;
 }
@@ -373,7 +422,7 @@ g_error html_dispatch_textfragment(struct html_parse *hp,
    */
   e = g_malloc((void**)&str, length+1);
   errorcheck;
-  str[length-1] = 0;
+  str[length] = 0;
   for (p=start,q=str; p<=end && length; p++, q++, length--)
     if (*p == '&') {
       /* Character name */

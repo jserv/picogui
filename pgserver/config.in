@@ -45,6 +45,7 @@ bool 'Client/server debugging'          DEBUG_NET
 bool 'Initialization debugging'         DEBUG_INIT
 bool 'Memory debugging'                 DEBUG_MEMORY
 bool 'Mirror guru() output on stderr'   CONFIG_STDERR_GURU
+bool 'HTML parser debugging'            DEBUG_HTML
 endmenu
 
 mainmenu_option next_comment
