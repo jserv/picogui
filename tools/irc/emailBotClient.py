@@ -10,9 +10,11 @@ from twisted.internet import reactor, protocol
 import sys, email, os
 import irc_colors
 
-mailLog = "/home/commits/mail.log"
-commandLog = "/home/commits/commands.log"
-statsDir = "/home/commits/stats"
+baseDir = "/home/commits"
+mailLog = os.path.join(baseDir, "mail.log")
+commandLog = os.path.join(baseDir, "commands.log")
+statsDir = os.path.join(baseDir, "stats")
+urlDir = os.path.join(baseDir, "urls")
 statsSubdirs = ("forever", "daily", "weekly", "monthly")
 socketName = "/tmp/announceBot.socket"
 import re, time
@@ -113,6 +115,11 @@ def logCommand(cmd):
     f.write(cmd)
     f.close()
 
+def setProjectURL(project, url):
+    f = open(os.path.join(urlDir, project), "w")
+    f.write("%s\n" % url)
+    f.close()
+
 class AnnounceClient(protocol.Protocol):
     def connectionMade(self):
         import sys
@@ -126,11 +133,15 @@ class AnnounceClient(protocol.Protocol):
         if subjectFields[1][0] == "#":
             subjectFields[1] = subjectFields[1][1:]
 
-        # Don't allow known bad channels, or channel names with slashes
+        # Don't allow known bad channels, or names with slashes
         if not subjectFields[1] in badChannels and subjectFields[1].find(os.sep) < 0:
 
+            # Commands we process here
+            if subjectFields[0] == "SetProjectURL":
+                setProjectURL(subjectFields[1], message.split("\n")[0].strip())
+
             # Send allowed text commands
-            if subjectFields[0] in allowedTextCommands:
+            elif subjectFields[0] in allowedTextCommands:
                 # Our lame little stat page
                 updateStats(subjectFields[1])
                 
@@ -144,7 +155,7 @@ class AnnounceClient(protocol.Protocol):
                         self.transport.write(applyColorTags(commandLine))
 
             # Send allowed control commands
-            if subjectFields[0] in allowedControlCommands:
+            elif subjectFields[0] in allowedControlCommands:
                 commandLine = "%s %s\r\n" % (subjectFields[0], subjectFields[1])
                 logCommand(commandLine)
                 self.transport.write(commandLine)
