@@ -1,4 +1,4 @@
-/* $Id: ptyfork.c,v 1.7 2002/05/01 14:00:11 cgrigis Exp $
+/* $Id: ptyfork.c,v 1.8 2002/05/02 07:48:54 cgrigis Exp $
  *
  * ptyfork.c - Create a subprocess running under a pty
  *
@@ -185,7 +185,7 @@ int ptyfork(int * ptyfd, char ** cmd) {
 
 #endif /* HAVE_FORKPTY */
       
-      execvp (cmd [0], cmd);
+      execvp (cmd [0], & cmd [1]);
       
       perror ("execvp");
       exit (127);
