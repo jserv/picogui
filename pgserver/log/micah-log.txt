@@ -8,7 +8,15 @@ skins work.
  
       * widget/scroll.c: Adding extra error checking to scroll resolution,
 		  adding support for auto-hiding the scroll bars when it's not necessary.
+
+		* input/sdlinput.c: Added a (really dumb) parser for using HTML image
+		  maps to define silkscreen/hardware buttons in skins
 		  
+		* skin/*.map: Added image maps for all skins. The silkscreen buttons are
+		  for now just being mapped to the function keys. This should be what
+		  the actual hardware does, but if not it can be easily changed.
+		
+
 
 2001-08-12    Micah Dowty <micahjd@users.sourceforge.net>
 

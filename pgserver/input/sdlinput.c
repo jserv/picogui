@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.21 2001/08/13 06:16:05 micahjd Exp $
+/* $Id: sdlinput.c,v 1.22 2001/08/14 06:18:53 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -30,6 +30,7 @@
 #include <pgserver/input.h>
 #include <pgserver/widget.h>
 #include <pgserver/pgnet.h>
+#include <pgserver/configfile.h>
 
 #include <SDL.h>
 #include <SDL_thread.h>
@@ -61,6 +62,10 @@ u8 sdlinput_upmove;
 
 /* Munge coordinates for skin support */
 #ifdef CONFIG_SDLSKIN
+struct sdlinput_rect {
+  s16 x1,y1,x2,y2,key;
+} *sdlinput_map;
+int sdlinput_mapsize;
 extern s16 sdlfb_display_x;
 extern s16 sdlfb_display_y;
 extern u16 sdlfb_scale;
@@ -79,6 +84,26 @@ void sdlinput_poll(void) {
   s16 cursorx,cursory;
 
   if (!SDL_PollEvent(&evt)) return;
+
+#ifdef CONFIG_SDLSKIN
+  /* check hotspot map */
+  {
+    int i;
+    for (i=0;i<sdlinput_mapsize;i++)
+      if (evt.button.x >= sdlinput_map[i].x1 &&
+	  evt.button.y >= sdlinput_map[i].y1 &&
+	  evt.button.x <= sdlinput_map[i].x2 &&
+	  evt.button.y <= sdlinput_map[i].y2) {
+	
+	if (evt.type == SDL_MOUSEBUTTONDOWN)
+	  dispatch_key(TRIGGER_KEYDOWN, sdlinput_map[i].key, 0);
+	else if (evt.type == SDL_MOUSEBUTTONUP)
+	  dispatch_key(TRIGGER_KEYUP, sdlinput_map[i].key, 0);
+       
+	return;
+      }
+  }
+#endif
 
   /* Get the physical position of PicoGUI's cursor */
   cursorx = cursor->x;
@@ -185,6 +210,53 @@ g_error sdlinput_init(void) {
   sdlinput_upmove = get_param_int("input-sdlinput","upmove",1);
   SDL_ShowCursor(get_param_int("input-sdlinput","sdlcursor",0));
 
+#ifdef CONFIG_SDLSKIN
+  /* Load keyboard map */
+  if (sdlinput_map)
+    g_free(sdlinput_map);
+  sdlinput_mapsize = 0;
+
+  {
+    const char *fname = get_param_str("input-sdlinput","map",NULL);
+    FILE *f;
+    char linebuf[80];
+    int i;
+    g_error e;
+    char *p;
+    if (fname && (f = fopen(fname,"r"))) {
+
+      /* Count the number of rectangles */
+      i = 0;
+      while (fgets(linebuf,79,f))
+	if (!strncmp(linebuf,"<AREA",5))
+	  i++;
+
+      /* Allocate map */
+      sdlinput_mapsize = i;
+      e = g_malloc((void**)&sdlinput_map,i * sizeof(struct sdlinput_rect));
+      errorcheck;
+      
+      /* Really stupid parser thingy */
+      rewind(f);
+      i = 0;
+      while (fgets(linebuf,79,f) && i<sdlinput_mapsize)
+	if (!strncmp(linebuf,"<AREA",5)) {
+	  p = strstr(linebuf,"COORDS=")+8;
+	  sdlinput_map[i].x1 = atoi(p);
+	  p = strchr(p,',')+1;
+	  sdlinput_map[i].y1 = atoi(p);
+	  p = strchr(p,',')+1;
+	  sdlinput_map[i].x2 = atoi(p);
+	  p = strchr(p,',')+1;
+	  sdlinput_map[i].y2 = atoi(p);
+	  p = strstr(p,"HREF=")+6;
+	  sdlinput_map[i].key = atoi(p);
+	  i++;
+	}
+    }
+  }
+#endif
+
   SDL_EnableUNICODE(1);
   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,SDL_DEFAULT_REPEAT_INTERVAL);
   return sucess;
@@ -202,6 +274,14 @@ int sdlinput_ispending(void) {
    return SDL_PollEvent(NULL);
 }
 
+#ifdef CONFIG_SDLSKIN
+void sdlinput_close(void) {
+  if (sdlinput_map)
+    g_free(sdlinput_map);
+  sdlinput_mapsize = 0;
+}
+#endif
+
 /******************************************** Driver registration */
 
 g_error sdlinput_regfunc(struct inlib *i) {
@@ -209,6 +289,10 @@ g_error sdlinput_regfunc(struct inlib *i) {
   i->poll = &sdlinput_poll;
   i->fd_init = &sdlinput_fd_init;
   i->ispending = &sdlinput_ispending;
+#ifdef CONFIG_SDLSKIN
+  i->close = &sdlinput_close;
+#endif
+
   return sucess;
 }
 

@@ -181,12 +181,13 @@ quoted appropriately. For example:
   Convert all mouse button clicks to button 1, to simulate a one-button
   mouse or touchpad
 
+- map
+  (requires 'Skin support' config option)
+  This is the filename of an  imagemap defining hotspots on the skin.
+  Only rectangles are supported, no polygons or circles. The URL for each
+  rectangle is the key number, found in pgkeys.h. I have only tested this
+  with maps produced by Gimp's image map plugin. The parser is awfully dumb,
+  so don't expect it to work with anything other than Gimp at this time.
+
 --- The End ---
-
-
-
-
-
-
-
 
