@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.27 2001/09/07 00:26:02 micahjd Exp $
+/* $Id: api.c,v 1.28 2001/09/10 18:02:19 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -559,6 +559,16 @@ void pgSizeText(int *w,int *h,pghandle font,pghandle text) {
   arg.text = htonl(text);
   arg.font = htonl(font);
   _pg_add_request(PGREQ_SIZETEXT,&arg,sizeof(arg));
+   
+  /* Get the return value */
+  pgFlushRequests();
+  if (w) *w = _pg_return.e.retdata >> 16;
+  if (h) *h = _pg_return.e.retdata & 0xFFFF;
+}
+
+void pgSizeBitmap(int *w, int *h, pghandle bitmap) {
+  bitmap = htonl(bitmap);
+  _pg_add_request(PGREQ_SIZEBITMAP,&bitmap,sizeof(pghandle));
    
   /* Get the return value */
   pgFlushRequests();

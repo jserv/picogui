@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.79 2001/09/09 18:17:24 micahjd Exp $
+/* $Id: constants.h,v 1.80 2001/09/10 18:02:19 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application

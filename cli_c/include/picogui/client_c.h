@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.68 2001/09/09 04:06:04 micahjd Exp $
+/* $Id: client_c.h,v 1.69 2001/09/10 18:02:19 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -953,6 +953,17 @@ pgLeaveContext();
  * \sa pgEnterContext, pgLeaveContext, pgNewString, pgNewFont
  */
 void pgSizeText(int *w,int *h,pghandle font,pghandle text);
+
+/*!
+ * \brief Return the size of a bitmap object
+ *
+ * \param w The address to return the width in
+ * \param h The address to return the height in
+ * \param bitmap Handle to a valid PicoGUI bitmap object
+ *
+ * \sa pgCreateBitmap, pgNewBitmap
+ */
+void pgSizeBitmap(int *w, int *h, pghandle bitmap);
 
 /*!
  * \brief Load a compiled theme

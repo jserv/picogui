@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.47 2001/08/05 10:50:52 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.48 2001/09/10 18:02:19 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -986,6 +986,7 @@ g_error def_bitmap_getsize(hwrbitmap b,s16 *w,s16 *h) {
    struct stdbitmap *bmp = (struct stdbitmap *) b;
    *w = bmp->w;
    *h = bmp->h;
+   return sucess;
 }
 
 #ifndef min
