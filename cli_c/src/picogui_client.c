@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.42 2001/01/24 03:08:20 micahjd Exp $
+/* $Id: picogui_client.c,v 1.43 2001/01/24 04:05:02 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -212,12 +212,10 @@ int _pg_recvtimeout(short *rsptype) {
       * Go ahead and return it. (There will still be a return packet on it's way, but
       * we skip that) If it's a return packet, ignore it and go on with the idle handler */
 
-     /* FIXME!!!! This doesn't work yet!! */
-     
      _pg_send(&unwaitreq,sizeof(unwaitreq));
      if (_pg_recv(rsptype,sizeof(short)))
        return 1;
-     if (rsptype == htons(PG_RESPONSE_EVENT))
+     if ((*rsptype) == htons(PG_RESPONSE_EVENT))
        return 0;
      _pg_recv(cruft,sizeof(cruft));
       
@@ -563,7 +561,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: picogui_client.c,v 1.42 2001/01/24 03:08:20 micahjd Exp $\n");
+	fprintf(stderr,"$Id: picogui_client.c,v 1.43 2001/01/24 04:05:02 micahjd Exp $\n");
 	exit(1);
       }
       
