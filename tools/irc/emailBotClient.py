@@ -22,6 +22,9 @@ class AnnounceClient(protocol.Protocol):
         subjectFields = mailMsg['Subject'].split(" ")
         messages = mailMsg.get_payload().split("\n")
         if subjectFields[0] in allowedCommands:
+	    # We want to send at least one command, even if the body is empty.
+	    if not messages:
+	        messages = [" "]
             for line in messages:
 	    	line = line.strip()
 		if len(line) > 0:
