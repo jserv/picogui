@@ -94,7 +94,10 @@ void ucb1x00_packet(int x, int y, int pressure) {
     else
       return 1;
   }
-  
+
+  if (showcursor)
+    drivermessage(PGDM_CURSORVISIBLE,1,NULL);
+   
   /* If we got this far, accept the new state and send the event */
   state = (trigger != TRIGGER_UP);
   dispatch_pointing(trigger,x,y,state);

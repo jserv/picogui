@@ -22,7 +22,7 @@ $(DOCNAME).rtf: $(DOCNAME).sgml
 	db2rtf $(DOCNAME).sgml
 
 $(DOCNAME).html: $(DOCNAME).sgml
-	db2html --nochunks $(DOCNAME).sgml > $(DOCNAME).html
+	db2html --nochunks $(DOCNAME).sgml | grep -v "output is pgui-protocol" | egrep -v "^Using catalogs:" | egrep -v "^Using stylesheet:" | egrep -v "Working on:" > $(DOCNAME).html
 	rm -rf $(DOCNAME).junk
 
 html: $(DOCNAME).sgml
