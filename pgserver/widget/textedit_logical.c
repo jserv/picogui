@@ -1,4 +1,4 @@
-/* $Id: textedit_logical.c,v 1.11 2002/10/30 14:33:29 pney Exp $
+/* $Id: textedit_logical.c,v 1.12 2002/11/04 18:22:29 cgroom Exp $
  *
  * textedit_logical.c - Backend for multi-line text widget. This
  * defines the behavior of a generic wrapping text widget, and is not
@@ -2042,6 +2042,10 @@ static g_error widget_delete_chars ( text_widget * widget,
                 cursor_del = TRUE;
             b = BLOCK(llist_next(ll_start_b));
             len -= b->len;
+            for (ll_temp = b->paragraphs; ll_temp; 
+                 ll_temp = llist_next(ll_temp)) {
+                widget->v_height -= PARAGRAPH(ll_temp)->height;
+            }
             block_destroy(b);
             llist_remove(&widget->blocks, llist_next(ll_start_b));
         } 
@@ -2052,6 +2056,7 @@ static g_error widget_delete_chars ( text_widget * widget,
             p = PARAGRAPH(llist_next(ll_start_p));
             b->len -= p->len;
             len -= p->len;
+            widget->v_height -= p->height;
             paragraph_destroy(p);
             llist_remove(&b->paragraphs, llist_next(ll_start_p)); 
         }
@@ -2063,6 +2068,7 @@ static g_error widget_delete_chars ( text_widget * widget,
             b->len -= p->len;
             offset -= p->len;
             len -= p->len;
+            widget->v_height -= p->height;
             paragraph_destroy(p);
             llist_remove(&b->paragraphs, llist_prev(ll_p)); 
         }
@@ -2091,6 +2097,7 @@ static g_error widget_delete_chars ( text_widget * widget,
 
         BLOCK(ll_b)->len -= p->len;
         BLOCK(ll_b)->b_gap += p->len;
+
         llist_remove(&BLOCK(ll_b)->paragraphs, ll_p);
 
          /* Remove block if empty */
@@ -2117,6 +2124,7 @@ static g_error widget_delete_chars ( text_widget * widget,
                     cursor_del = TRUE;
                 p = PARAGRAPH(llist_next(ll_start_p));
                 len -= p->len;
+                widget->v_height -= p->height;
                 paragraph_destroy(p);
                 llist_remove(&b->paragraphs, llist_next(ll_start_p)); 
             }
@@ -2127,6 +2135,7 @@ static g_error widget_delete_chars ( text_widget * widget,
                          p->atoms);
             PARAGRAPH(ll_start_p)->len += p->len;
             p->atoms = NULL;
+            widget->v_height -= p->height;
             paragraph_destroy(p);
             llist_remove(&b->paragraphs, ll_p);                
         }
@@ -2736,7 +2745,7 @@ static g_error rewrap ( text_widget * widget,
     u16 a_start, a_len, a_width; 
     u8  atom_redraw, set_cursor;
     atom * a;
-    
+        
     /* Set a_ll and offset to be the start of a line */
     while (!GET_FLAG(ATOM(a_ll)->flags, ATOM_FLAG_LEFT)) {
         offset -= ATOM(a_ll)->len;
