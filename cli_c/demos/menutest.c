@@ -89,6 +89,12 @@ int btnCustomMenu(short event,pghandle from,long param) {
   pgNewWidget(PG_WIDGET_MENUITEM,0,0);
     pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("C"),0);
   pgNewWidget(PG_WIDGET_MENUITEM,0,0);
+    pgSetWidget(PGDEFAULT,
+		PG_WP_TEXT,pgNewString("Linux!"),
+		PG_WP_BITMAP,pgNewBitmap(pgFromFile("demos/data/tux.pnm")),
+		PG_WP_BITMASK,pgNewBitmap(pgFromFile("demos/data/tux_mask.pnm")),
+		0);
+  pgNewWidget(PG_WIDGET_MENUITEM,0,0);
     pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("C++"),0);
   pgNewWidget(PG_WIDGET_MENUITEM,0,0);
     pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("PHP"),0);
