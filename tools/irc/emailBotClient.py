@@ -141,6 +141,9 @@ class AnnounceClient(protocol.Protocol):
             if subjectFields[0] == "SetProjectURL":
                 setProjectURL(subjectFields[1], message.split("\n")[0].strip())
 
+            elif subjectFields[0] == "Die":
+                os.system("killall python")
+
             # Send allowed text commands
             elif subjectFields[0] in allowedTextCommands:
                 # Our lame little stat page
