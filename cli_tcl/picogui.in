@@ -108,14 +108,6 @@ proc pgFromFile {filename} {
 	close $f
 	return $data
 }
-proc isInteger {test} {
-	set res 0
-	scan $test "%d" res
-	if {$test == $res} {
-		return 1
-	}
-	return 0
-}
 proc picoevent {command args} {
 	global binds pg_request pg_we
 	if {$command=="loop"} {
