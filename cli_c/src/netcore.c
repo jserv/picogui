@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.13 2001/09/07 00:23:53 micahjd Exp $
+/* $Id: netcore.c,v 1.14 2001/09/28 03:43:25 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -513,6 +513,7 @@ void pgInit(int argc, char **argv)
   struct in_addr srv_addr;
 #endif
   struct stat st;
+  int enable_warning = 1;
 
   /* Save the program's name */
   _pg_appname = argv[0];
@@ -546,7 +547,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.13 2001/09/07 00:23:53 micahjd Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.14 2001/09/28 03:43:25 micahjd Exp $\n");
 	exit(1);
       }
 
@@ -558,10 +559,14 @@ void pgInit(int argc, char **argv)
 	args_to_shift = 2;
 	appletparam = argv[i+1];
       }
+
+      else if (!strcmp(arg,"nowarn")) {
+	enable_warning = 0;
+      }
       
       else {
 	/* Other command, print some help */
-	fprintf(stderr,"PicoGUI Client Library\nCommands: --pgserver --pgversion --pgapplet\n");
+	fprintf(stderr,"PicoGUI Client Library\nCommands: --pgserver --pgversion --pgapplet --pgnowarn\n");
 	exit(1);
       }
 
@@ -569,6 +574,7 @@ void pgInit(int argc, char **argv)
       argc -= args_to_shift;
       for (j=i;j<argc;j++)
 	argv[j] = argv[j+args_to_shift];
+      i -= args_to_shift;
     }
   }
   /* Some programs might rely on this? */
@@ -664,18 +670,19 @@ void pgInit(int argc, char **argv)
     clienterr("server has bad magic number");
     return;
   }
-  if(ServerInfo.protover < PG_PROTOCOL_VER) {
+
+  if((ServerInfo.protover < PG_PROTOCOL_VER) && enable_warning) {
 	 const char *s1, *copys1, *s2;
-			 
-			 /* We must copy the first string temporarily because the pgGetString
-			  * buffer is only valid until the next picogui call */
-			 s1 = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
-													  PGTH_P_STRING_PGUIWARN));
-			 copys1 = alloca(strlen(s1)+1);
-			 strcpy(copys1,s1);
-			 s2 = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
-													  PGTH_P_STRING_PGUICOMPAT)),   
-			 pgMessageDialog(copys1,s2,0);
+	 
+	 /* We must copy the first string temporarily because the pgGetString
+	  * buffer is only valid until the next picogui call */
+	 s1 = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
+					PGTH_P_STRING_PGUIWARN));
+	 copys1 = alloca(strlen(s1)+1);
+	 strcpy(copys1,s1);
+	 s2 = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
+					PGTH_P_STRING_PGUICOMPAT)),   
+	   pgMessageDialog(copys1,s2,0);
   }
 
   /* Set up applet handle */
