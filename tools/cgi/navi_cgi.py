@@ -212,7 +212,7 @@ def pieChart(width, height, slices):
     shadowColor = 0xD0D0D0
 
     # PIL doesn't seem to support antialiasing on all primitives, so we'll fake it with oversampling.
-    oversample = 2
+    oversample = 3
     img = Image.new("RGB", (width * oversample, height * oversample), bgColor)
     draw = ImageDraw.Draw(img)
 
@@ -230,27 +230,28 @@ def pieChart(width, height, slices):
                            img.size[1] - margin[1] + offset[1] + shadowAmount),
                           start, end, fill=shadowColor)
         else:
+            # If this is an especially small size, turning off the usual outline
+            # will make it look a lot better.
+            if end - start < 4:
+                oc = color
+            else:
+                oc = outlineColor
             draw.pieslice((margin[0] + offset[0],
                            margin[1] + offset[1],
                            img.size[0] - margin[0] + offset[0],
                            img.size[1] - margin[1] + offset[1]),
-                          start, end, outline=outlineColor, fill=color)
+                          start, end, outline=oc, fill=color)
 
     def drawSlices(slices, shadow):
         totalAngle = 0
-        for i in xrange(len(slices)):
-            (fraction, color) = slices[i]
-            if i == len(slices)-1:
-                # Last slice
-                sliceAngle = 360 - totalAngle
-            else:
-                sliceAngle = fraction * 360
+        for (fraction, color) in slices:
+            sliceAngle = fraction * 360
             drawSlice(totalAngle, totalAngle + sliceAngle, color, shadow)
             totalAngle += sliceAngle
 
     # Draw in two steps- all shadows, then all pie slices
     drawSlices(slices, True)
     drawSlices(slices, False)
-    
+
     return img.resize((width, height), Image.ANTIALIAS)
     
