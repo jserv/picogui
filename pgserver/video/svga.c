@@ -1,4 +1,4 @@
-/* $Id: svga.c,v 1.1 2000/08/27 08:31:01 micahjd Exp $
+/* $Id: svga.c,v 1.2 2000/08/27 09:04:54 micahjd Exp $
  *
  * svga.c - video driver for (S)VGA cards, via vgagl and svgalib
  *
@@ -31,11 +31,13 @@
 
 GraphicsContext *svga_virtual,*svga_physical;
 
+/* Scanline buffer for LGOP blitting */
+unsigned char *svga_buf;
+
 /******************************************** Implementations */
 
 g_error svga_init(int xres,int yres,int bpp,unsigned long flags) {
-  unsigned long sdlflags = 0;
-  char str[80];
+  g_error e;
   
   /* 100% hackish here.
      Trying to get something that just runs, then make it 
@@ -60,11 +62,16 @@ g_error svga_init(int xres,int yres,int bpp,unsigned long flags) {
   vid->xres = WIDTH;
   vid->yres = HEIGHT;
   vid->bpp  = BITSPERPIXEL;
+  
+  /* Allocate scanline buffer */
+  e = g_malloc((void**)&svga_buf,WIDTH*BYTESPERPIXEL);
+  errorcheck;
 
   return sucess;
 }
 
 void svga_close(void) {
+  g_free(svga_buf);
   gl_clearscreen(0);
   vga_setmode(0);
 }
@@ -84,6 +91,10 @@ void svga_update(void) {
 void svga_clip_set(int x1,int y1,int x2,int y2) {
   gl_setclippingwindow(x1,y1,x2,y2);
   gl_enableclipping();
+  vid->clip_x1 = x1;
+  vid->clip_y1 = y1;
+  vid->clip_x2 = x2;
+  vid->clip_y2 = y2;
 }
 
 void svga_clip_off(void) {
@@ -93,7 +104,119 @@ void svga_clip_off(void) {
 void svga_blit(struct stdbitmap *src,int src_x,int src_y,
 		 struct stdbitmap *dest,int dest_x,int dest_y,
 		 int w,int h,int lgop) {
+  if (lgop==LGOP_NULL) return;
+  if (w<=0) return;
+  if (h<=0) return;
+  
+  if (dest) return;   /*** FIX THIS ***/
 
+  if (w>(src->w-src_x) || h>(src->h-src_y)) {
+    int i,j;
+
+    /* Do a tiled blit */
+    for (i=0;i<w;i+=src->w)
+      for (j=0;j<h;j+=src->h)
+        svga_blit(src,0,0,dest,dest_x+i,dest_y+j,src->w,src->h,lgop);
+
+    return;
+  }
+  
+  if (lgop==LGOP_NONE)
+    if (src_x==0 && src_y==0)
+      gl_putbox(dest_x,dest_y,src->w,src->h,src->bits);
+    else
+      gl_putboxpart(dest_x,dest_y,src->w,src->h,w,h,src->bits,src_x,src_y);
+  {
+    unsigned char *s,*b;
+    int iw,lo;
+
+    /* Copy the screen data into the buffer, apply the bitmap with the LGOP
+       and paste it back. Not too much worse than the line-by-line way
+       the sdl driver blits, but this can't assume the video is mappable
+       into system memory. Let vgagl take care of the graphics card's oddities.
+    */
+    s = src->bits+src_x+src_y*WIDTH;
+    switch (lgop) {
+      
+    case LGOP_OR:
+      lo = src->w-w;
+      for (;h;h--,dest_y++,b+=lo) {
+        gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
+        for (iw=w;iw;iw--)
+          *(b++) |= *(s++);
+        gl_putbox(dest_x,dest_y,w,1,svga_buf);
+      }
+      break;
+      
+    case LGOP_AND:
+      lo = (src->w-w)*BYTESPERPIXEL;
+      for (;h;h--,dest_y++,b+=lo) {
+        gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
+        for (iw=w;iw;iw--)
+          *(b++) &= *(s++);
+        gl_putbox(dest_x,dest_y,w,1,svga_buf);
+      }
+      break;
+      
+    case LGOP_XOR:
+      lo = (src->w-w)*BYTESPERPIXEL;
+      for (;h;h--,dest_y++,b+=lo) {
+        gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
+        for (iw=w;iw;iw--)
+          *(b++) ^= *(s++);
+        gl_putbox(dest_x,dest_y,w,1,svga_buf);
+      }
+      break;
+      
+    case LGOP_INVERT:
+      lo = (src->w-w)*BYTESPERPIXEL;
+      for (;h;h--,dest_y++,b+=lo) {
+        for (iw=w;iw;iw--)
+          *(b++) = *(s++);
+        gl_putbox(dest_x,dest_y,w,1,svga_buf);
+      }
+      break;
+      
+    case LGOP_INVERT_OR:
+      lo = (src->w-w)*BYTESPERPIXEL;
+      for (;h;h--,dest_y++,b+=lo) {
+        gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
+        for (iw=w;iw;iw--)
+          *(b++) |= *(s++);
+        gl_putbox(dest_x,dest_y,w,1,svga_buf);
+      }
+      break;
+      
+    case LGOP_INVERT_AND:
+      lo = (src->w-w)*BYTESPERPIXEL;
+      for (;h;h--,dest_y++,b+=lo) {
+        gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
+        for (iw=w;iw;iw--)
+          *(b++) &= *(s++);
+        gl_putbox(dest_x,dest_y,w,1,svga_buf);
+      }
+      break;
+      
+    case LGOP_INVERT_XOR:
+      lo = (src->w-w)*BYTESPERPIXEL;
+      for (;h;h--,dest_y++,b+=lo) {
+        gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
+        for (iw=w;iw;iw--)
+          *(b++) ^= *(s++);
+        gl_putbox(dest_x,dest_y,w,1,svga_buf);
+      }
+      break;
+    }
+    
+  }
+}
+
+void svga_rect(int x,int y,int w,int h,hwrcolor c) {
+  gl_fillbox(x,y,w,h,c);
+}
+
+hwrcolor svga_color_pgtohwr(pgcolor c) {
+  return gl_rgbcolor(getred(c),getgreen(c),getblue(c));
 }
 
 /******************************************** Driver registration */
@@ -108,6 +231,8 @@ g_error svga_regfunc(struct vidlib *v) {
   v->blit = &svga_blit;
   v->clip_set = &svga_clip_set;
   v->clip_off = &svga_clip_off;
+  v->rect = &svga_rect;
+  v->color_pgtohwr = &svga_color_pgtohwr;
 
   return sucess;
 }
