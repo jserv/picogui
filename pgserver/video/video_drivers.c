@@ -1,4 +1,4 @@
-/* $Id: video_drivers.c,v 1.12 2002/11/05 12:41:21 bornet Exp $
+/* $Id: video_drivers.c,v 1.13 2002/11/11 07:33:04 micahjd Exp $
  *
  * video_drivers.c - handles loading/switching video drivers and modes
  *
@@ -81,7 +81,7 @@ g_error new_sprite(struct sprite **ps,struct divtree *dt,s16 w,s16 h) {
   (*ps)->next = spritelist;
   (*ps)->visible = 1;
   (*ps)->lgop = PG_LGOP_NONE;
-  (*ps)->dt = dt;
+  (*ps)->dt = hlookup(dt,NULL);
   spritelist = *ps;
 
   return success;

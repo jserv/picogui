@@ -1,4 +1,4 @@
-/* $Id: dvbl_sprite.c,v 1.4 2002/10/23 02:09:06 micahjd Exp $
+/* $Id: dvbl_sprite.c,v 1.5 2002/11/11 07:33:04 micahjd Exp $
  *
  * dvbl_sprite.c - This file is part of the Default Video Base Library,
  *                 providing the basic video functionality in picogui but
@@ -46,6 +46,7 @@ struct quad *def_sprite_quad(struct sprite *spr);
 
 void def_sprite_show(struct sprite *spr) {
   int src_x = 0, src_y = 0;
+  struct divtree *dt;
 
   //  DBG("spr = %p\n",spr);
 
@@ -54,6 +55,9 @@ void def_sprite_show(struct sprite *spr) {
    
   if (spr->onscreen || !spr->visible || !vid->xres) return;
    
+  if (iserror(rdhandle((void**)&dt, PG_TYPE_DIVTREE, -1, spr->dt)))
+    return;
+
   /* Clip to a divnode */
   if (spr->clip_to) {
     if (spr->x < spr->clip_to->r.x) spr->x = spr->clip_to->r.x;
@@ -105,31 +109,33 @@ void def_sprite_show(struct sprite *spr) {
   
   /* Grab a new backbuffer */
   VID(blit) (spr->backbuffer,0,0,spr->ow,spr->oh,
-	     spr->dt->display,spr->x,spr->y,PG_LGOP_NONE);
+	     dt->display,spr->x,spr->y,PG_LGOP_NONE);
 
   /* Display the sprite */
   if (spr->mask && *spr->mask) {
-     VID(blit) (spr->dt->display,spr->x,spr->y,spr->ow,spr->oh,
+     VID(blit) (dt->display,spr->x,spr->y,spr->ow,spr->oh,
 		*spr->mask,src_x,src_y,PG_LGOP_AND);
-     VID(blit) (spr->dt->display,spr->x,spr->y,spr->ow,spr->oh,
+     VID(blit) (dt->display,spr->x,spr->y,spr->ow,spr->oh,
 		*spr->bitmap,src_x,src_y,PG_LGOP_OR);
   }
   else {
-    VID(blit) (spr->dt->display,spr->x,spr->y,spr->ow,spr->oh,
+    VID(blit) (dt->display,spr->x,spr->y,spr->ow,spr->oh,
 	       *spr->bitmap,src_x,src_y,spr->lgop);
   }
    
-  add_updarea(spr->dt,spr->x,spr->y,spr->ow,spr->oh);
+  add_updarea(dt,spr->x,spr->y,spr->ow,spr->oh);
 
   spr->onscreen = 1;
 }
 
 void def_sprite_hide(struct sprite *spr) {
   static struct quad cr;
-
-  //  DBG("spr = %p\n",spr);
+  struct divtree *dt;
 
   if (disable_output)
+    return;
+
+  if (iserror(rdhandle((void**)&dt, PG_TYPE_DIVTREE, -1, spr->dt)))
     return;
    
   if ( (!spr->onscreen) ||
@@ -145,21 +151,23 @@ void def_sprite_hide(struct sprite *spr) {
   def_sprite_hide_above(spr);
    
   /* Put back the old image */
-  VID(blit) (spr->dt->display,spr->ox,spr->oy,spr->ow,spr->oh,
+  VID(blit) (dt->display,spr->ox,spr->oy,spr->ow,spr->oh,
 	     spr->backbuffer,0,0,PG_LGOP_NONE);
-  add_updarea(spr->dt,spr->ox,spr->oy,spr->ow,spr->oh);
+  add_updarea(dt,spr->ox,spr->oy,spr->ow,spr->oh);
 
   spr->onscreen = 0;
 }
 
 void def_sprite_update(struct sprite *spr) {
-  //  DBG("spr = %p\n",spr);
+  struct divtree *dt;
+  if (iserror(rdhandle((void**)&dt, PG_TYPE_DIVTREE, -1, spr->dt)))
+    return;
 
   (*vid->sprite_hide) (spr);
   def_sprite_showall();       /* Also re-show the sprites we hid with protectarea */
 
   /* Redraw */
-  realize_updareas(spr->dt);
+  realize_updareas(dt);
 }
 
 /* Traverse back -> front, showing sprites */

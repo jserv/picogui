@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.113 2002/11/07 10:43:04 micahjd Exp $
+/* $Id: video.h,v 1.114 2002/11/11 07:33:04 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -113,7 +113,7 @@ struct bitformat {
 /* A sprite node, overlaid on the actual picture */
 struct sprite {
   hwrbitmap *bitmap,*mask,backbuffer;
-  struct divtree *dt;  /* The divtree this sprite exists above */
+  handle dt; /* The divtree this sprite exists above */
   s16 x,y;   /* Current coordinates, relative to the display */
   s16 ox,oy; /* Coordinates last time it was drawn */
   s16 w,h;   /* Dimensions of all buffers */
