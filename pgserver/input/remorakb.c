@@ -1,4 +1,4 @@
-/* $Id: remorakb.c,v 1.3 2001/11/09 19:49:17 bauermeister Exp $
+/* $Id: remorakb.c,v 1.4 2001/11/10 12:23:50 bauermeister Exp $
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -921,26 +921,22 @@ static int kb_fd_activate(int fd)
 
 /*****************************************************************************/
 
-static void set_rts(int fd, int active)
-{
-  int bits = TIOCM_CTS;
-  if(ioctl(fd, active ? TIOCMBIS : TIOCMBIC, &bits) < 0)
-    fprintf(stderr, "%s: Can't set RTS %s.\n",
-	    __FILE__, active ? "on" : "off");
-
-}
-
-/*****************************************************************************/
-
 static g_error kb_init(void)
 {
   struct termios options;
-  int uart_number = atoi(get_param_str("remora-kb","uart","2"));
-  const char* device = uart_number==1 ? "/dev/ttyS0" : "/dev/ttyS1";
+  const char* device = get_param_str("remora-kb", "device", NULL);
 
   TRACEF((">>> kb_init()\n"));
-  TRACEF(("  > device=[%s]\n", device));
 
+  if(device==NULL) {
+    /* keyboard not connected, this is not an error */
+printf("kb_init: no kb\n");
+    kb_fd = -1;
+    return sucess;
+  }
+printf("kb_init: trying [%s] Nr %d\n", device, device[strlen(device)-1]);
+
+  TRACEF(("  > device=[%s]\n", device));
   kb_fd = open(device, O_RDONLY | O_NOCTTY | O_NDELAY);
 
   if(kb_fd < 0)
@@ -967,13 +963,12 @@ static g_error kb_init(void)
   tcsetattr(kb_fd, TCSANOW, &options);
 
   /* other misc stuff */
-  if(uart_number==1)
+  if(device[strlen(device)-1]=='0')
     UMISC |= 0x0008;        /* set uart to invert receive polarity */
   else
     UMISC2 |= 0x0008;       /* set uart2 to invert receive polarity */
   kb_init_mods();           /* init states*/
 
-  set_rts(kb_fd, 1);  
 
   TRACEF(("  > kb_init done\n"));
   return sucess;
@@ -994,7 +989,6 @@ static void kb_fd_init(int *n, fd_set *readfds, struct timeval *timeout)
 static void kb_close(void)
 {
   TRACEF((">>> kb_close()\n"));
-  set_rts(kb_fd, 0);
   tcsetattr(kb_fd, TCSANOW, &saved_options);
   close(kb_fd);
 }

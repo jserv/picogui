@@ -24,7 +24,9 @@ runtime = [
                      depends = [ 'picoguiserver/install',
                                  'pocketapps/bioscall',
                                  'resourcemanager/server',
-                                 'pocketapps/initenv' ],
+                                 'pocketapps/initenv',
+                                 'pocketapps/remorakb_checker',
+                                 ],
                      rcscript = '''
 # calibration
 if test "$PG_TS_CALIBRATION" = ""
@@ -37,6 +39,9 @@ fi
 echo  >/var/pgserver.dynconf "rotate = $SYSTEM_DISPLAY_HW_ORIENTATION"
 echo >>/var/pgserver.dynconf "[chipslicets]"
 echo >>/var/pgserver.dynconf "calibration = $PG_TS_CALIBRATION"
+
+remorakb_checker
+remorakb_checker >>/var/pgserver.dynconf
 
 # start pgserver
 pgserver &
