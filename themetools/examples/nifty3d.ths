@@ -1,4 +1,4 @@
-/* $Id: nifty3d.ths,v 1.10 2002/01/15 07:45:42 micahjd Exp $
+/* $Id: nifty3d.ths,v 1.11 2002/02/24 17:52:47 micahjd Exp $
  *
  * This theme's pretty darn cpu-intensive, but it
  * demonstrates the neat things that can be done with
@@ -126,37 +126,11 @@ object label.dlgtitle {
   bgcolor = Copy(panelbar::bgcolor);
 }
 
-/* Translucent popup with drop shadow */
 object popup {
-  margin = 26;
-
-  /* Alpha channel for drop shadow */
-  bitmap1 = LoadBitmap("data/dropshadow.pgm");
+  margin = 6;
 
   bgfill = fillstyle {
     var m,hc;
-
-    /* Multiply sections of the drop shadow bitmap onto the window's border */
-    m = margin;
-    SetLgop(PG_LGOP_MULTIPLY);
-    SetSrc(34,0,20,20);
-    Bitmap(x+w-20,y+20,20,20,bitmap1);
-    SetSrc(0,33,20,19);
-    Bitmap(x+20,y+h-20,20,19,bitmap1);
-    SetSrc(34,33,20,19);
-    Bitmap(x+w-20,y+h-20,20,19,bitmap1);
-    SetSrc(20,33,14,19);
-    Tilebitmap(x+40,y+h-20,w-60,19,bitmap1);
-    SetSrc(34,19,20,14);
-    Tilebitmap(x+w-20,y+40,20,h-60,bitmap1);
-
-    /* Subtract the drop shadow area */
-    x = x+20;
-    y = y+20;
-    w = w-40;
-    h = h-40;
-
-    SetLgop(PG_LGOP_NONE);
 
     /* Black frame around it all */
     SetColor(0x000000);
@@ -187,15 +161,6 @@ object popup.menu {
   height = 0;
 
   bgfill = fillstyle {
-    // Very simple shaded border
-    SetLgop(PG_LGOP_MULTIPLY);
-    SetColor(0xA0A0A0);
-    Bar(x+w-2,y+4,1,h-5);
-    Slab(x+4,y+h-2,w-6,1);
-    SetColor(0xE0E0E0);
-    Bar(x+w-1,y+4,1,h-3);
-    Slab(x+4,y+h-1,w-5,1);
-
     // Gray background
     SetLgop(PG_LGOP_NONE);
     SetColor(0x808080);
