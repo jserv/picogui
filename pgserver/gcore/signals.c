@@ -1,4 +1,4 @@
-/* $Id: signals.c,v 1.4 2002/01/18 11:53:25 micahjd Exp $
+/* $Id: signals.c,v 1.5 2002/01/23 15:15:51 gobry Exp $
  *
  * signal.c - Handle some fatal and not-so-fatal signals gracefully
  *            The SIGSEGV handling et cetera was inspired by SDL's
@@ -124,6 +124,13 @@ void signals_handler(int sig) {
 
     /* Ieeeeeee! */
     exit(-sig);
+  }
+
+  /* Some platforms (at least Linux <= 2.0.x) unregister the signal
+     handler once the signal occured. So we need to register it back */
+  if (signal(sig,&signals_handler)==SIG_ERR) {
+    prerror(mkerror(PG_ERRT_INTERNAL,54));
+    exit(1);
   }
 }
 
