@@ -29,7 +29,14 @@ def readStats():
     global projects, channels, projectCounts
     
     projects = os.listdir(os.path.join(statDir, statSubdirs[0]))
-    channels = open(channelFile).read().strip().split("\n")
+
+    # Yucky hack to strip off "#"
+    channels = []
+    for channel in open(channelFile).read().strip().split("\n"):
+        if channel[0] == '#':
+            channels.append(channel[1:])
+        else:
+            channels.append(channel)
 
     projectCounts = {}
     for project in projects:
