@@ -8,7 +8,7 @@ class Frame(object):
     history_limit = 23 # completely arbitrary
 
     def __init__(self, title):
-        self._boxes = []
+        self._pages = []
         self._app = PicoGUI.Application(title)
 
         self._box = self.addWidget('Box')
@@ -23,26 +23,28 @@ class Frame(object):
         self.minibuffer = Minibuffer(self)
 
     def get_current(self):
-        for box in self._boxes:
-            if box.on:
-                return box
+        for page in self._pages:
+            if page.on:
+                return page.textbox
 
-    def set_current(self, box):
-        if type(box) in (int, long, float):
-            box = self._boxes[box]
-        box.on = 1
+    def set_current(self, textbox):
+        if type(textbox) in (int, long, float):
+            page = self._pages[page]
+        else:
+            page = textbox.tabpage
+        page.on = 1
 
-    current = property(get_current, set_current, None, "currently selected box")
+    current = property(get_current, set_current, None, "currently selected textbox")
 
     def open(self, buffer):
         try:
-            parent = self._boxes[-1]
+            parent = self._pages[-1]
             page = parent.addWidget('tabpage')
         except IndexError:
             page = self._box.addWidget('tabpage', 'inside')
             self.minibuffer.bind(tabbar = PicoGUI.Widget(self._app.server, page.tab_bar,
                                                          self._app, type='tabbar'))
-        self._boxes.append(page)
+        self._pages.append(page)
         t = page.addWidget('scrollbox', 'inside').addWidget('Textbox','inside')
         t.tabpage = page
         t.side = 'All'
@@ -52,7 +54,7 @@ class Frame(object):
         t.tabpage.text = buffer.name
 
     def save(self):
-        box = self.current.textbox
+        box = self.current
         buffer = box.buffer
         buffer.text = box.text
         buffer.save()

@@ -40,7 +40,7 @@ class Minibuffer(object):
     def _python_handler(self, ev):
         self.append_to_history()
         self._field.text = ''
-        self.bind(buffer = self._frame.current)
+        self.bind(buffer = self._frame.current.buffer)
         try:
             exec self._history[-1] in self._globals, self._locals
         except SystemExit:
