@@ -1,5 +1,12 @@
 2001-07-19    Micah Dowty <micahjd@users.sourceforge.net>
 
+Well, i would eventually like to write a sort of PicoGUI drawing program
+that can save a binary canvas command file. But, until then, I think I'll
+just write a better ASCII format for the keyboards and get on with writing
+them by hand.
+
+2001-07-18    Micah Dowty <micahjd@users.sourceforge.net>
+
 Finishing the virtual keyboard.
 -
 The virtual keyboard interpreter, pgboard, is (for now) finished. It can

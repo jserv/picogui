@@ -1,4 +1,4 @@
-/* $Id: toolbar.c,v 1.15 2001/06/25 00:48:50 micahjd Exp $
+/* $Id: toolbar.c,v 1.16 2001/07/23 00:38:01 micahjd Exp $
  *
  * toolbar.c - container widget for buttons
  *
@@ -29,9 +29,17 @@
 #include <pgserver/widget.h>
 #include <pgserver/appmgr.h>
 
-void toolbar_resize(struct widget *self) {
-  int m = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
+void build_nothing(struct gropctxt *c,unsigned short state, struct widget *self) {
+}
 
+void toolbar_resize(struct widget *self) {
+  int m;
+
+  if (self->in->div->build == &build_bgfill_only)
+    m = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
+  else
+    m = 0;
+  
   self->in->div->ph = theme_lookup(PGTH_O_BUTTON,PGTH_P_HEIGHT)+(m<<1);
   self->in->div->pw = theme_lookup(PGTH_O_BUTTON,PGTH_P_WIDTH)+(m<<1);
 
@@ -83,7 +91,21 @@ void toolbar_remove(struct widget *self) {
 }
 
 g_error toolbar_set(struct widget *self,int property, glob data) {
-  return mkerror(ERRT_PASS,0);
+   switch (property) {
+      
+    case PG_WP_TRANSPARENT:
+      self->in->div->build = data ? (&build_nothing) : (&build_bgfill_only);
+      resizewidget(self);
+      break;	
+
+    case PG_WP_STATE:
+      self->in->div->state = data;
+      break;
+      
+    default:
+      return mkerror(ERRT_PASS,0);
+   }
+   return sucess;
 }
 
 glob toolbar_get(struct widget *self,int property) {
