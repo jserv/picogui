@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.11 2001/06/25 00:49:41 micahjd Exp $
+/* $Id: api.c,v 1.12 2001/06/25 20:40:19 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -306,7 +306,7 @@ pghandle pgRegisterApp(short int type,const char *name, ...) {
   /* First just count the number of APPSPECs we have */
   for (va_start(v,name),numspecs=0;va_arg(v,long);
        va_arg(v,long),numspecs++);
-  va_end(ap);
+  va_end(v);
 
   /* Allocate */
   if (!(arg = malloc(sizeof(struct pgreqd_register)+numspecs*4)))
@@ -322,7 +322,7 @@ pghandle pgRegisterApp(short int type,const char *name, ...) {
   /* Fill in the optional APPSPEC params */
   for (va_start(v,name),i=numspecs<<1;i;
        i--,*(spec++)=htons(va_arg(v,long)));
-  va_end(ap);
+  va_end(v);
 
   _pg_add_request(PGREQ_REGISTER,arg,sizeof(struct pgreqd_register)+numspecs*4);
 
@@ -718,7 +718,7 @@ void pgWriteCmd(pghandle widget,short command,short numparams, ...) {
       *params = htonl(va_arg(v,long));
       params++;
    }
-   va_end(V);
+   va_end(v);
    
    pgWriteData(widget,pgFromMemory(buf,bufsize));
 }
