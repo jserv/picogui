@@ -1,4 +1,4 @@
-/* $Id: vncserver.c,v 1.10 2003/01/20 00:03:28 micahjd Exp $
+/* $Id: vncserver.c,v 1.11 2003/01/20 02:41:11 micahjd Exp $
  *
  * vncserver.c - Video driver that runs a VNC server and processes
  *               input events for multiple clients, using the
@@ -60,11 +60,11 @@ void vncserver_close(void) {
   iterator = rfbGetClientIterator(vncserver_screeninfo);
   while((cl=rfbClientIteratorNext(iterator))) {
     /* Terminate each client thread */
-    pthread_kill(cl->client_thread, 2);
+    pthread_kill(cl->client_thread, 9);
   }
 
   /* Terminate the listener thread */
-  pthread_kill(vncserver_screeninfo->listener_thread, 2);
+  pthread_kill(vncserver_screeninfo->listener_thread, 9);
 
   unload_inlib(inlib_main);   /* Take out our input driver */
   if (FB_MEM) {
