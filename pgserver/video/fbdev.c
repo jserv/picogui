@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.7 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: fbdev.c,v 1.8 2001/05/10 19:07:28 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -135,8 +135,6 @@ g_error fbdev_init(void) {
 	 close(xx);
       }
    }
-#else
-   ioctl(0, KDSETMODE, KD_GRAPHICS);
 #endif
    
    /* Set up a palette for RGB simulation */
