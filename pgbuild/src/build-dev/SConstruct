@@ -16,6 +16,8 @@ tag = doc.childNodes[0].getElementsByTagName("ducks")[0].getElementsByTagName("d
 print tag
 print tag.toxml()
 
+### Some XPath tests
+
 p.task("Testing relative addressing")
 tag = doc.xpath('/test-fu')[0]
 tag = tag.xpath('ducks')
@@ -40,12 +42,10 @@ for tag in tags:
     print tag.toxml()
 
 p.task("Looking up Murray the Duck using XPath")
-tags = doc.xpath('//duck[@name = "murray"]')
+tags = doc.xpath("//duck[@name = 'murray']")
 print tags
 for tag in tags:
     print tag.toxml()
-
-
 
 
 # Build a 'hello world'
