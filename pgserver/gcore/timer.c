@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.4 2000/08/06 04:42:38 micahjd Exp $
+/* $Id: timer.c,v 1.5 2000/08/06 05:56:31 micahjd Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -48,11 +48,14 @@
 #ifdef WINDOWS
 /**************** Windows */
 
+void windows_inputpoll_hack(void);
+
 static DWORD first_tick;
 static UINT ntimer;
 
 static void CALLBACK HandleAlarm(UINT uID,  UINT uMsg, DWORD dwUser,
 				 DWORD dw1, DWORD dw2) {
+  windows_inputpoll_hack();
   trigger_timer();
 }
 

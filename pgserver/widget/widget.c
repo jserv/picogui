@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.36 2000/08/06 02:48:18 micahjd Exp $
+/* $Id: widget.c,v 1.37 2000/08/06 05:56:31 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -63,6 +63,7 @@ struct widget *timerwidgets;
 int keyboard_owner;
 int pointer_owner;
 
+int timerlock = 0;
 /******** Widget interface functions */
 
 g_error widget_create(struct widget **w,int type,
@@ -337,6 +338,7 @@ void install_timer(struct widget *self,unsigned long interval) {
 void inline trigger_timer(void) {
   struct widget *w;
 
+
   /* Verify that the trigger is actually due.
    * The trigger might have been modified between
    * now and when it was set.
@@ -347,7 +349,7 @@ void inline trigger_timer(void) {
     timerwidgets = timerwidgets->tnext;
 
     send_trigger(w,TRIGGER_TIMER,NULL);
-  }
+  };
 }
 
 /*
