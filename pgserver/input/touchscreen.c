@@ -20,6 +20,7 @@
  */
 
 #include <pgserver/common.h>
+#include <stdio.h>
 
 typedef struct
 {
@@ -37,6 +38,7 @@ typedef struct
         int a, b, c, d, e, f, s;
 } TRANSFORMATION_COEFFICIENTS;
 
+static const char *calib_file=NULL;
 static u8 touchscreen_calibrated=1;
 static TRANSFORMATION_COEFFICIENTS tc={0,0,0,0,0,0,0};
 
@@ -52,6 +54,21 @@ void touchscreen_pentoscreen(s16 *x, s16 *y)
 	}
 }
 
+g_error touchscreen_init(void)
+{
+	FILE *fp=NULL;
+
+	calib_file=get_param_str("pgserver", "pointercal", "/etc/pointercal");
+	fp=fopen(calib_file, "r");
+	if(fp!=NULL)
+	{
+		fscanf(fp, "%d %d %d %d %d %d %d", &tc.a, &tc.b, &tc.c,
+				&tc.d, &tc.e, &tc.f, &tc.s);
+		fclose(fp);
+	}
+	return success;
+}
+
 void touchscreen_message(u32 message, u32 param, u32 *ret)
 {
 	char *str;
@@ -64,9 +81,27 @@ void touchscreen_message(u32 message, u32 param, u32 *ret)
 		case PGDM_INPUT_SETCAL:
 			if(iserror(rdhandle((void**)&str, PG_TYPE_STRING, -1,
 							param)) || !str) break;
-			sscanf(str, "COEFFv1 %d %d %d %d %d %d %d",
+			if(sscanf(str, "COEFFv1 %d %d %d %d %d %d %d",
 					&tc.a, &tc.b, &tc.c, &tc.d, &tc.e,
-					&tc.f, &tc.s);
+					&tc.f, &tc.s)==7)
+			{
+				FILE *fp=NULL;
+
+				if(!calib_file)
+				{
+					/* report faulty driver */
+					fputs("Touchscreen driver didn't call touchscreen_init()!\n", stderr);
+					touchscreen_init();
+				}
+				fp=fopen(calib_file, "w");
+				if(fp!=NULL)
+				{
+					fprintf(fp, "%d %d %d %d %d %d %d\n",
+							tc.a, tc.b, tc.c, tc.d,
+							tc.e, tc.f, tc.s);
+					fclose(fp);
+				}
+			}
 			break;
 	}
 }

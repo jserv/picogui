@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.24 2001/12/13 18:06:20 lonetech Exp $
+/* $Id: input.h,v 1.25 2001/12/14 23:26:12 lonetech Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -128,6 +128,8 @@ void cleanup_inlib(void);
 void touchscreen_pentoscreen(s16 *x, s16 *y);
 /* message function for the calibration codes */
 void touchscreen_message(u32 message, u32 param, u32 *ret);
+/* loads touchscreen calibration - CALL THIS! */
+g_error touchscreen_init(void);
 #endif
 
 /* Registration functions */

@@ -1,4 +1,4 @@
-/* $Id: palmaxts.c,v 1.2 2001/12/14 22:56:43 micahjd Exp $
+/* $Id: palmaxts.c,v 1.3 2001/12/14 23:26:12 lonetech Exp $
  *
  * palmaxts.c - input driver for Palmax touchscreens.
  *
@@ -140,12 +140,11 @@ int palmaxts_fd_activate(int fd) {
 }
 
 g_error palmaxts_init(void) {
-#if 0
-  top = get_param_int("input-palmaxts","top",0);
-  bottom = get_param_int("input-palmaxts","bottom",0x3f0)-top;
-  left = get_param_int("input-palmaxts","left",0);
-  right = get_param_int("input-palmaxts","right",0x3f0)-left;
-#endif
+  g_error ret;
+
+  ret=touchscreen_init();
+  if(ret!=success)
+	  return ret;
 
   btnstate=0;
 
