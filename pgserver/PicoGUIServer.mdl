@@ -20,7 +20,7 @@ prefix = '/usr'
 
 depends = [
     'resourcemanager', 'kernel', 'processmanager',
-    ('libjpeg', S ('platform/ppc-linux') | S ('platform/native-linux')),
+    ('libjpeg', ~S ('platform/m68k-pic-coff')),
     ('busybox', S ('platform/ppc-linux')),
     ]
 
@@ -73,7 +73,7 @@ def prepare (module, platform, project):
             "--host=%s" % platform.platform,
         ]
         
-    if platform.platform == "ppc-linux" or platform.platform == "native-linux":
+    if not platform.platform == "m68k-pic-coff":
         command += [" --with-jpeg-dir=%s" % project ['module/libjpeg'].path ['dfl']]
 
     message ("running: %s" % string.join (command))
