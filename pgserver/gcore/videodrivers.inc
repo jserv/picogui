@@ -52,15 +52,15 @@
 
 #ifdef DRIVER_NULLFB
   DRV("nullfb",&nullfb_regfunc)
-#endif DRIVER_NULLFB
+#endif
 
 #ifdef DRIVER_NULL
   DRV("null",&null_regfunc)
-#endif DRIVER_NULL
+#endif
 
 #ifdef DRIVER_S1D13806
   DRV("s1d13806",&s1d13806_regfunc)
-#endif DRIVER_S1D13806
+#endif
    
 #ifdef DRIVER_SED133X
   DRV("sed133x",&sed133x_regfunc)
