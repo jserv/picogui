@@ -60,7 +60,7 @@ class stream(object):
     s1 = s
     version = 1
     if zlib is not None:
-      flen = len(self.globals) + len(self.instance) + struct.calcsize(fmt)
+      flen = len(s) + len(self.globals) + len(self.instance) + struct.calcsize(fmt)
       s1 += struct.pack(fmt, flen, 0, version,
                         self.num_global, self.num_instance, self.next_handle)
       s1 += self.globals + self.instance
