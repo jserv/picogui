@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.68 2002/10/11 11:58:44 micahjd Exp $
+/* $Id: scroll.c,v 1.69 2002/10/17 01:24:17 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -43,7 +43,7 @@
 
 /* Minimum # of milliseconds between scrolls. This is used to limit the
    scroll bar's frame rate so it doesn't 'lag' behind the mouse */
-#define SCROLL_DELAY 5
+#define SCROLL_DELAY 20
 
 /* # of milliseconds between scrolls when holding down the mouse */
 #define SCROLLSPEED  5
