@@ -2,7 +2,7 @@
 #
 # PicoGUI tracer proxy
 #
-# For the hexdump to work correctly, the "xxd" program needs to be installed
+# This requires Perl, Netcat, and xxd
 #
 # Proxy a network connection between 1 picogui client and a server, decoding
 # and printing all the communications between them. Good for debugging,
@@ -14,20 +14,6 @@
 # -- Micah Dowty <micahjd@users.sourceforge.net>
 #
 
-use IO::Socket;
-
-if (!$ARGV[0]) {
-    print <<EOF;
-
-usage: traceproxy.pl server[:display] [local_display]
-
-       server: the host running pgserver
-      display: optional display the pgserver is running on
-local_display: display to run the proxy on
-
-EOF
-    exit 1;
-}
 
 # identifier tables (FIXME: load these from constants.h)
 @requests = qw( ping update mkwidget mkbitmap mkfont mkstring free set get
@@ -38,6 +24,7 @@ EOF
 		getinactive setinactive drivermsg loaddriver getfstyle
 		findwidget checkevent sizebitmap appmsg undef
 		);
+
 
 %evtcoding = (0x001,'activate',
 	      0x002,'deactivate',
@@ -61,107 +48,106 @@ EOF
 	      0x120D,'nwe_bgclick',
 	      0x1101,'nwe_pntr_raw');
 
+
+if (!$ARGV[0]) {
+    print <<EOF;
+
+usage: traceproxy.pl server[:display] [local_display]
+
+       server: the host running pgserver
+      display: optional display the pgserver is running on
+local_display: display to run the proxy on
+
+EOF
+    exit 1;
+}
+
 # Chop up arguments
 $server = $ARGV[0];
 $server =~ s/:(.*)//;
-$srvdisplay = $1;
-$srvdisplay = 0 if (!$srvdisplay);
-$localdisplay = $ARGV[1];
-$localdisplay = 0 if (!$localdisplay);
+$srvport = 30450 + $1;
+$localport = 30450 + $ARGV[1];
 
-print "Connecting to pgserver on $server:$srvdisplay...\n";
+# make fifos for request and response packets
+`mkfifo requests`;
+`mkfifo responses`;
+`mkfifo responses2`;
 
-$server = IO::Socket::INET->new(Proto      => 'tcp',
-				PeerAddr   => $server,
-				PeerPort   => 30450 + $srvdisplay)
-    or die "can't connect to server";
+# Shuffle data between client and server, capturing a copy
+if (fork()) {
+    system "cat responses2 | nc -l -p $localport | tee requests | nc $server $srvport | tee responses > responses2";
+    exit();
+}
+open REQ,"requests";
+open RSP,"responses";
 
-print "Waiting for greeting packet...\n";
-read($server,$pghello,8) or die $!;
+# greeting packet
+read(RSP,$pghello,8) or die $!;
 ($magic, $protover) = unpack "Nn", $pghello;
 die "Invalid greeting packet\n" if ($magic != 0x31415926); 
 printf "Connected with protocol version 0x%04X\n", $protover;
 
-$clientsocket = IO::Socket::INET->new( Proto     => 'tcp',
-				       LocalPort => 30450 + $localdisplay,
-				       Listen    => SOMAXCONN,
-				       Reuse     => 1)
-    or die "can't listen for clients";
-print "Waiting for a client on display :$localdisplay...\n";
-$client = $clientsocket->accept();
-$client->autoflush(1);
-
-print "Sending greeting packet...\n";
-print $client $pghello;
-print "Client connected.\n";
-
-# Now the connections are set up. Shuffle packets between client
-# and server, decoding their contents.
-
 while (1) {
-    # Blank line before each real packet recieved
     print "\n";
 
     # Get a request packet
-    read($client,$rqh,8) or die $!;
+    read(REQ,$rqh,8) or die $!;
     ($reqtype,$reqid,$reqsize) = unpack("nnN",$rqh);
-    read($client,$reqdata,$reqsize);
+    read(REQ,$reqdata,$reqsize);
     dumprequest($reqtype,$reqdata);
 
-    # Send it to the server
-    print $server $rqh.$reqdata;
 
     # Get a response packet
     print "} = ";
-    read($server,$rsptypeword,2) or die $!;
+    read(RSP,$rsptypeword,2) or die $!;
     $rsptype = unpack("n",$rsptypeword);
     if ($rsptype==1) {
 	# Error response packet
-	read($server,$rsp_err,6) or die $!;
+	read(RSP,$rsp_err,6) or die $!;
 	($rspid,$rsperrt,$rspmsglen) = unpack("nnn",$rsp_err);
-	read($server,$rsperrmsg,$rspmsglen) or die $!;
+	read(RSP,$rsperrmsg,$rspmsglen) or die $!;
 	printf "ERROR 0x%04X \"%s\"\n",$rsperrt,$rsperrmsg; 
-	print $client $rsptypeword.$rsp_err.$rsperrmsg;
     }
     elsif ($rsptype==2) {
 	# Return value
-	read($server,$rsp_ret,6) or die $!;
+	read(RSP,$rsp_ret,6) or die $!;
 	($rspid,$rspdata) = unpack("nN",$rsp_ret);
 	printf "%d (0x%X)\n",$rspdata,$rspdata;
-	print $client $rsptypeword.$rsp_ret;
     }
     elsif ($rsptype==3) {
 	# Event
-	read($server,$rsp_evt,10) or die $!;
+	read(RSP,$rsp_evt,10) or die $!;
 	($evt,$from,$param) = unpack("nNN",$rsp_evt);
 	print "event {\n";
 	# Decode type
 	print " type = ".$evtcoding{$evt}."\n";
 	printf " from = %d (0x%X)\n",$from,$from;
+	printf " param = %d (0x%X)\n",$param,$param;
 	# If this is PG_EVENTCODING_DATA, get the data */
 	$evtdata = "";
-	if ($evt&0xF00 == 0x300) {
-	    read($server,$evtdata,$param) or die $!;
-	    print "\tevent data: ($param bytes)\n";
+	if (($evt >> 8) == 3) {
+	    read(RSP,$evtdata,$param) or die $!;
+	    print " data = {\n";
 	    hexdump($evtdata);
+	    print " }\n";
 	}
 	print "}\n";
-	print $client $rsptypeword.$rsp_evt.$evtdata;
     }
     elsif ($rsptype==4) {
 	# data response packet
-	read($server,$rsp_data,6) or die $!;
+	read(RSP,$rsp_data,6) or die $!;
 	($id,$size) = unpack("nN",$rsp_data);
-	read($server,$data,$size) or die $!;
-	print "\treturn data: ($size bytes)\n";
+	read(RSP,$data,$size) or die $!;
+	print " data = {\n";
 	hexdump($data);
-	print $client $rsptypeword.$rsp_data,$data;
+	print " }\n";
     }
     else {
 	# Have to die here, we can't recover from an unknown response type
 	die "Unknown response type $rsptype\n";
     }
 }
+
 
 sub dumprequest {
     my ($reqtype,$data) = @_;
@@ -185,7 +171,10 @@ sub dumprequest {
 	while ($data) {
 	    my ($type,$reqid,$reqsize) = unpack("nnN",substr($data,0,8));
 	    my $reqdata = substr($data,8,$reqsize);
-	    substr($data,0,8+$reqsize) = "";
+	    $pktsize = 8 + $reqsize;
+	    # Pad to 32-bit boundary
+	    $pktsize += 4 - ($pktsize & 3) if ($pktsize & 3);
+	    substr($data,0,$pktsize) = "";
 	    dumprequest($type,$reqdata);
 	    print "}\n";
 	}
