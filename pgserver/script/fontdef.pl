@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: fontdef.pl,v 1.20 2001/11/01 18:32:44 epchristi Exp $
+# $Id: fontdef.pl,v 1.21 2001/11/04 11:51:28 micahjd Exp $
 #
 # This script turns a directory full of .fi and .bdf font files
 # into C source code that is compiled into the PicoGUI server.
@@ -98,7 +98,6 @@ foreach $fntname (sort keys %fdfs) {
     open FDATA,"$fontdir/$fntname.bdf";
 
     $numglyphs = 0;
-    $beginglyph = -1;
     $defaultglyph = 32;
     $h = 0;
     $ascent = 0;
@@ -145,17 +144,7 @@ foreach $fntname (sort keys %fdfs) {
 		    $bitmapdata .= $_;
 		}
 		elsif (/^ENCODING\s*(\S+)/) {
-		    if ($1 > 0 and $encoding+1 != $1 and $beginglyph!=-1) {
-			# We will later replace these extras with copies of the default glyph
-			for ($i=$1-$encoding-1;$i;$i--) {
-			    $numglyphs++;
-			    push @glyphs, "0,0,0,0,0,0";
-
-			}
-		    }
 		    $encoding = $1;
-		    $saved_beginglyph = $beginglyph;
-		    $beginglyph = $encoding if ($beginglyph==-1);
 		    $gdwidth = $gw = $gh = $gx = $gy =  0;
 		    $gbitmap = length($bitmapdata)/2;
 		}
@@ -164,11 +153,10 @@ foreach $fntname (sort keys %fdfs) {
                     # omit it. Some fonts include useless duplicates of the default glyph that just
 		    # take up space before or after the actual characters.
 		    if (length($bitmapdata)/2 == $gbitmap and $encoding != $defaultglyph) {
-			$beginglyph = -1 if ($saved_beginglyph==-1);
 		    }
 		    else {
 			$numglyphs++;
-			push @glyphs, "$gdwidth, $gw, $gh, $gx, $gy, $gbitmap";
+			push @glyphs, "encoding: $encoding, bitmap: $gbitmap, dwidth: $gdwidth, w: $gw, h: $gh, x: $gx, y: $gy";
 		    }
 		}
 		elsif (/^DWIDTH\s*(\S+)/) {
@@ -191,11 +179,8 @@ foreach $fntname (sort keys %fdfs) {
     # ************ Output glyph table
 
     print "\nstruct fontglyph const ${fntname}_glyphs[$numglyphs] = {\n";
-    $i = $beginglyph;
     foreach (@glyphs) {
-	$_ = $glyphs[$defaultglyph-$beginglyph] if ($_ eq "");
-	print "{$_},\t/* $i */ \n";
-	$i++;
+	print "{$_},\n";
     }
     print "};\n";
     
@@ -211,8 +196,9 @@ foreach $fntname (sort keys %fdfs) {
     # ************ Font structure
     
     print "\nstruct font const $fntname = {\n\t";
-    print "$numglyphs, $beginglyph, $defaultglyph, $fw, $h, $ascent, ";
-    print "$descent, ${fntname}_glyphs, ${fntname}_bits\n";
+    print "numglyphs: $numglyphs, defaultglyph: $defaultglyph, w: $fw,\n";
+    print "h: $h, ascent: $ascent, descent: $descent,\n"; 
+    print "glyphs: ${fntname}_glyphs, bitmaps: ${fntname}_bits\n";
     print "\n};\n";
     
 #    $hdrs = 256*5;

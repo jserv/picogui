@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.36 2001/10/29 23:57:55 micahjd Exp $
+/* $Id: font.c,v 1.37 2001/11/04 11:51:27 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -55,6 +55,23 @@
    the request and a particular font */
 int fontcmp(struct fontstyle_node *fs,char *name, int size, stylet flags);
 
+/* Utility to do a binary search for a font glyph */
+struct fontglyph *font_findglyph(struct fontglyph *start, 
+				 struct fontglyph *end, s32 key) {
+  struct fontglyph *middle;
+
+  while (start<=end) {
+    middle = start + ((end-start)>>1);
+    if (key > middle->encoding)
+      start = middle+1;
+    else if (key < middle->encoding)
+      end = middle-1;
+    else
+      return middle;
+  }
+  return NULL;
+}
+
 /* Small helper function used in outchar_fake and outchar 
  *
  * If it's an invalid character, first try replacing it with the Unicode
@@ -63,14 +80,29 @@ int fontcmp(struct fontstyle_node *fs,char *name, int size, stylet flags);
  * character.
  */
 struct fontglyph const *font_getglyph(struct fontdesc *fd, int ch) {
-  ch -= fd->font->beginglyph;
-  if (ch < 0 || ch >= fd->font->numglyphs)
-    ch = 0xFFFD - fd->font->beginglyph;
-  if (ch < 0 || ch >= fd->font->numglyphs)
-    ch = '?' - fd->font->beginglyph;
-  if (ch < 0 || ch >= fd->font->numglyphs)
-    ch = fd->font->defaultglyph - fd->font->beginglyph;
-  return fd->font->glyphs+ch;
+  struct fontglyph *g, *start, *end;
+
+  start = fd->font->glyphs;
+  end = start + fd->font->numglyphs-1;
+
+  /* Try the requested character */
+  g = font_findglyph(start,end,ch);
+  if (g) return g;
+
+  /* Get the Unicode symbol for an unknown character */
+  g = font_findglyph(start,end,0xFFFD);
+  if (g) return g;
+
+  /* Try an ASCII question mark */
+  g = font_findglyph(start,end,'?');
+  if (g) return g;
+
+  /* The font's default character */
+  g = font_findglyph(start,end,fd->font->defaultglyph);
+  if (g) return g;
+
+  /* shouldn't get here, but to avoid crashing return the 1st glyph */
+  return fd->font->glyphs;
 }
 
 /* Outputs a character. It also updates (*x,*y) as a cursor position. */
@@ -248,7 +280,7 @@ void outtext(hwrbitmap dest, struct fontdesc *fd,
             
    }
       
-   while (ch = decode_utf8(&txt)) {
+   while (ch = fd->decoder(&txt)) {
       if (ch=='\n')
 	switch (angle) {
 	 
@@ -297,7 +329,7 @@ void sizetext(struct fontdesc *fd, s16 *w, s16 *h, char *txt) {
   *w = fd->margin << 1;
   *h = (*w) + fd->font->h + fd->interline_space;
 
-  while (ch = decode_utf8(&txt)) {
+  while (ch = fd->decoder(&txt)) {
     if (ch=='\n') {
       *h += fd->font->h + fd->interline_space;
       if ((*w)>o_w) o_w = *w;
@@ -336,6 +368,7 @@ g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
    fd->hline = -1;
    fd->hline_c = VID(color_pgtohwr) (0x000000);
    fd->style = flags;
+   fd->decoder = &decode_ascii;
    
    if (!(flags & PG_FSTYLE_FLUSH)) fd->margin = 2;
    if (flags & PG_FSTYLE_GRAYLINE) {
@@ -395,7 +428,9 @@ g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
 	 fd->skew = DEFAULT_SKEW;
 	 fd->italicw = closest->normal->ascent / fd->skew; 
       }
-      
+
+      if (closest->flags & PG_FSTYLE_ENCODING_UNICODE)
+	fd->decoder = &decode_utf8;
    }
    
    /* Let the video driver transmogrify it if necessary */

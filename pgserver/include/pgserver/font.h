@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.14 2001/10/29 23:57:55 micahjd Exp $
+/* $Id: font.h,v 1.15 2001/11/04 11:51:28 micahjd Exp $
  *
  * font.h - structures for representing fonts
  *
@@ -63,6 +63,7 @@ struct fontdesc {
 		   image horizontally one pixel for every 'skew' vertical
 		   pixels */
   int italicw;  /* Extra width added by the italic */
+  int (*decoder)(u8 **str);   /* Text decoder (for Unicode, etc) */
 };
 
 /* This is a description that goes along with a font style.
@@ -86,16 +87,16 @@ struct fontstyle_node {
 
 /* One glyph in a font */
 struct fontglyph {
-  s16 dwidth; /* Delta X between this char and the next */
-  s16 w,h;    /* Width and height of the glyph bitmap   */
-  s16 x,y;    /* X and Y displacement for the glyph     */
-  u32 bitmap; /* Offset to bitmap data                  */
+  s32 encoding;
+  u32 bitmap;   /* Offset to bitmap data                  */
+  s16 dwidth;   /* Delta X between this char and the next */
+  s16 w,h;      /* Width and height of the glyph bitmap   */
+  s16 x,y;      /* X and Y displacement for the glyph     */
 };
 
 /* An individual bitmapped font */
 struct font {
   u16 numglyphs;    /* Total number of glyphs in the table */
-  u16 beginglyph;   /* Character number for the first glyph */
   u16 defaultglyph; /* Default glyph, when the requested glyph isn't found */
   s16 w,h;          /* Font size (pixels) */            
   s16 ascent;       /* Distance glyphs will extend above the baseline */
