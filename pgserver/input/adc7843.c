@@ -1,4 +1,4 @@
-/* $Id: adc7843.c,v 1.1 2002/02/02 23:52:22 micahjd Exp $
+/* $Id: adc7843.c,v 1.2 2002/02/03 03:04:38 micahjd Exp $
  *
  * adc7843.c - input driver for adc7843.c touch screen found on the Psion 5mx
  *             Other touch screens using the same data format should
@@ -42,6 +42,13 @@
 
 #define true 1
 #define false 0
+
+#define X_RES 640
+#define Y_RES 240
+#define MIN_X 335
+#define MAX_X 3825
+#define MIN_Y 330
+#define MAX_Y 3490
 
 int adc7843_fd;
 
@@ -104,8 +111,11 @@ int adc7843_fd_activate(int fd) {
    y = ts.y;
 
    /* Converte to screen coordinates... */
-   touchscreen_pentoscreen(&x, &y);
-   
+   //   touchscreen_pentoscreen(&x, &y);
+
+   //   this works better!
+   x = ( ( ts.x - MIN_X ) * X_RES / ( MAX_X - MIN_X ) );
+   y = ( ( ts.y - MIN_Y ) * Y_RES / ( MAX_Y - MIN_Y ) );
    
    /* What type of pointer event? */
    if (ts.state) {
