@@ -22,6 +22,9 @@ load/unload cycle bug go away!
       * apps/gremlin/gremlin.c: Added a new debugging app, an automated tester
         program a la "Gremlins" for PalmOS.
 
+      * widget/terminal.c: Gremlins found a memory leak in the terminal
+        widget, twas easy to fix
+
 2001-04-08    Micah Dowty <micahjd@users.sourceforge.net>
 
 I think the only way to figure out what's really happening is to add a debug

@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.21 2001/03/03 01:44:27 micahjd Exp $
+/* $Id: terminal.c,v 1.22 2001/04/10 02:28:01 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -55,7 +55,7 @@ struct termdata {
   unsigned long update_time;
 
   /* character info */
-  handle font;
+  handle font,deffont;
 
   /* Text buffer */
   handle hbuffer;
@@ -293,9 +293,10 @@ g_error terminal_install(struct widget *self) {
   errorcheck;
      
   /* Default terminal font */
-  e = findfont(&DATA->font,-1,"Console",0,PG_FSTYLE_FIXED);
+  e = findfont(&DATA->deffont,-1,"Console",0,PG_FSTYLE_FIXED);
   errorcheck;
-
+  DATA->font = DATA->deffont;
+   
   e = newdiv(&self->in,self);
   errorcheck;
   self->in->flags |= PG_S_ALL;
@@ -313,6 +314,8 @@ g_error terminal_install(struct widget *self) {
 }
 
 void terminal_remove(struct widget *self) {
+  handle_free(-1,DATA->hbuffer);   /* Free our system handles */
+  handle_free(-1,DATA->deffont);
   g_free(self->data);
   if (!in_shutdown)
     r_divnode_free(self->in);
