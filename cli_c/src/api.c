@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.29 2001/10/04 09:37:44 micahjd Exp $
+/* $Id: api.c,v 1.30 2001/10/10 00:23:52 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -527,8 +527,16 @@ pghandle pgFindWidget(const char* str) {
   return _pg_return.e.retdata;
 }
 
-pghandle pgNewArray(short* dat, unsigned short size) {  
-  _pg_add_request(PGREQ_MKARRAY,(void *) dat, size);  
+pghandle pgNewArray(const long* dat, unsigned short size) {  
+  unsigned short i;
+  long *swapped;
+  
+  /* Swap each entry first */
+  swapped = alloca(size * sizeof(long));
+  for (i=0;i<size;i++)
+    swapped[i] = htonl(dat[i]);
+
+  _pg_add_request(PGREQ_MKARRAY,(void *) swapped, size * sizeof(long));  
   pgFlushRequests();  
   return _pg_return.e.retdata;  
 }  

@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.70 2001/10/04 09:37:44 micahjd Exp $
+/* $Id: client_c.h,v 1.71 2001/10/10 00:23:52 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -820,11 +820,11 @@ pghandle pgNewString(const char *str);
  * \brief Create a new array object  
  * 
  * \param dat The data to put in the array 
- * \param size The size of the array (in bytes) 
+ * \param size Number of entries in the array 
  * \returns A handle to the new array object 
  * 
  */  
-pghandle pgNewArray(short* dat, unsigned short size);  
+pghandle pgNewArray(const long* dat, unsigned short size);  
  
 /*!
  * \brief Get the contents of a string handle
