@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.145 2002/06/12 14:34:05 micahjd Exp $
+/* $Id: constants.h,v 1.146 2002/06/17 20:02:20 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -965,6 +965,8 @@ typedef unsigned long pghandle;
 #define PG_EVENTCODING_DATA     0x300   /* Arbitrary data block */
 #define PG_EVENTCODING_KBD      0x400   /* Keyboard params */
 #define PG_EVENTCODINGMASK      0xF00
+
+#define PG_NWE             0x1000       /* Flag indicating a non-widget event */
 
 /* Widget events */
 #define PG_WE_ACTIVATE     0x001 /* Button has been clicked/selected  */
