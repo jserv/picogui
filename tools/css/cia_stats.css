@@ -16,6 +16,12 @@ body {
   border: 1px solid #8CBBAC;
 }  
 
+.providerBox {
+  float: right;
+  margin: 1em;
+  padding: 0.5em;
+}
+
 a {
   background: White;
   border-style: dotted;
