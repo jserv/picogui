@@ -15,6 +15,7 @@ class Textbox(Workspace):
         self._keybindings = {}
         self._mark = None
         self._paste_offset = 1
+        self.focus()
 
     def bind_key(self, keyseq, command, b_global=False):
         if b_global:
@@ -60,13 +61,13 @@ class Textbox(Workspace):
 
     def confirm_close(self):
         import sys
-        print >>sys.stderr, 'confirm close', self.buffer.path
         if not self.buffer.changed:
             return True
-        k = self.frame.ask_confirm('Closing - save %r?' % self.buffer.path,)
-        if k == 'a':
+        k = self.frame.ask_confirm('Closing - save %r?' % self.buffer.path,
+                                   ('Yes', 'No', "Don't quit"))
+        if k == "Don't quit":
             return False
-        if k == 'y':
+        if k == 'Yes':
             self.buffer.save()
         return True
     

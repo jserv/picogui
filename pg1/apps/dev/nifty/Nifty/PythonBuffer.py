@@ -48,9 +48,10 @@ def detector(path):
         return
     text = f.readlines()
     f.close()
-    if text[0].startswith('#!' and (text[0].find('python') >= 0)):
+    print repr(text)
+    if text[0].startswith('#!') and (text[0].find('python') >= 0):
         return PythonBuffer(path)
-    header = text[0] + text[1]
+    header = ''.join(text[:2])
     if header.find('-*-') >= 0:
         if (header.find('-*- python -*-' >= 0) or header.find('mode: python') >= 0):
             return PythonBuffer(path)

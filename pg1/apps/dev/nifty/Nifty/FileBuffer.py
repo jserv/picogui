@@ -19,9 +19,11 @@ class FileBuffer(TextBuffer):
         TextBuffer.__init__(self, name=self.basename, text=text)
 
     def notify_changed(self, ev):
+        old_text = self.text
         TextBuffer.notify_changed(self, ev)
-        self.changed = True
-        self.change_name('*' + self.basename)
+        if (not self.changed) and old_text != self.text:
+            self.changed = True
+            self.change_name('*' + self.basename)
 
     def save(self):
         f = file(self.path, 'w')

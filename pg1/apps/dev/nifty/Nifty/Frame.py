@@ -125,8 +125,28 @@ class Frame(object):
     def workspaces(self):
         return [page.workspace for page in self._pages]
 
+    def __ask_confirm_cb(self, ev):
+        self.__ask_confirm_answer = ev.widget.text
+        raise SystemExit
+
     def ask_confirm(self, question, options):
-        print >>sys.stderr, question
+        widgets = []
+        widgets.append(self._app.createWidget('dialogbox'))
+        widgets[0].text = question
+        widgets[0].default_relationship = 'inside'
+        for answer in options:
+            widgets.append(widgets[-1].addWidget('button'))
+            widgets[-1].text = answer
+            self._app.link(self.__ask_confirm_cb, widgets[-1], 'activate')
+        self._app.run()
+        widgets.reverse()
+        for w in widgets:
+            # we delete them all because we don't want leftover
+            # event bindings in the event registry
+            self._app.delWidget(w)
+        answer = self.__ask_confirm_answer
+        del self.__ask_confirm_answer
+        return answer
 
     def copy(self, data):
         self._clipboard.append(data)
