@@ -160,7 +160,7 @@ class Repository(PGBuild.Repository.RepositoryBase):
     def update(self, destination, progress):
         """Update the package if possible. Return 1 if there was an update available, 0 if not."""
         if self.isWorkingCopyPresent(destination):
-            return collectProgress(openSvn('up "%s"' % destination), progress) != 0
+            return collectProgress(openSvn('up "%s"' % destination), progress, destination) != 0
         else:
             # No working copy- do a complete download
             self.download(destination, progress)
