@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.20 2000/10/16 05:42:09 micahjd Exp $
+/* $Id: pgtheme.y,v 1.21 2000/10/16 17:35:50 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -169,7 +169,7 @@ property: PROPERTY
 propertyval:  constexp          { $$.data = $1; $$.loader = PGTH_LOAD_NONE; $$.ldnode = NULL;}
            |  fillstyle         { $$ = $1; }
            |  COPY '(' THOBJ ':' PROPERTY ')' {
-  $$.data   = (ntohs($3) << 16) | ntohs($5);
+  $$.data   = ($3 << 16) | $5;
   $$.loader = PGTH_LOAD_COPY;
 }     
            |  LOADBITMAP '(' STRING ')' {

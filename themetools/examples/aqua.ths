@@ -56,22 +56,33 @@ object base.display {
 }
 
 object indicator {
-  bitmap2 = LoadBitmap("data/aq_thumb_v.pnm");
-  overlay = fillstyle {
-    Bitmap(x,y,10,15,bitmap2,PG_LGOP_NONE,0,0);
-    Tilebitmap(x,y+15,10,h-30,bitmap2,0,5,10,10);
-    Bitmap(x,y+h-15,10,15,bitmap2,PG_LGOP_NONE,0,7);
-  };
+  /* Same overlay as scroll bar */
+  overlay = Copy(scroll:overlay);
   width = 16;
   margin = 3;
 }
 
 object scroll {
+  bitmap2 = LoadBitmap("data/aq_thumb_v.pnm");
   overlay = fillstyle {
-    Rect(x,y,w,h,ColorConv(0x000000));
+    Bitmap(x,y,10,15,scroll:bitmap2,PG_LGOP_NONE,0,0);
+    Tilebitmap(x,y+15,10,h-30,scroll:bitmap2,0,5,10,10);
+    Bitmap(x,y+h-15,10,15,scroll:bitmap2,PG_LGOP_NONE,0,7);
   };
+  width = 13;
+  margin = 0;
+
+  bitmap1 = LoadBitmap("data/aq_trough_v.pnm");
   bgfill = fillstyle {
-    Rect(x,y,w,h,ColorConv(0x808080));
+    Bitmap(x,y,13,20,scroll:bitmap1,PG_LGOP_NONE,0,0);
+    Tilebitmap(x,y+20,13,h-40,scroll:bitmap1,0,20,13,5);
+    Bitmap(x,y+h-20,13,20,scroll:bitmap1,PG_LGOP_NONE,0,25);
+
+    /* Don't quite go all the way to the top/bottom */
+    y = y+4;
+    h = h-8;
+    /* Center the thumb */
+    x = x+2;
   };
 }
 
@@ -94,6 +105,9 @@ object panelbar.hilight bitmap1 = LoadBitmap("data/aq_title_blu_v.pnm");
 
 object box {
   height = 30;
-  margin = 5;
+  margin = 4;
   bgfill = Copy(base.display:bgfill);     // Use the same nifty box
+  bitmap1 = Copy(base.display:bitmap1);
 }
+
+/* The End */
