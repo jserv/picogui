@@ -46,7 +46,14 @@ class EventRegistry(object):
             l += self.map.get(widget.handle, {}).get(None, [])
         for handler, wo in l:
             try:
-                handler(ev, wo or widget)
+                try:
+                    handler(ev)
+                except TypeError:
+                    handler(ev, wo or widget)
+                    import warnings
+                    warnings.warn('handler %r expects 2 arguments' % handler,
+                                  DeprecationWarning,
+                                  stacklevel = 4)
             except EventHandled:
                 return
 
