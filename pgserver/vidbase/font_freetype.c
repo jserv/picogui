@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.12 2002/10/14 07:58:27 micahjd Exp $
+/* $Id: font_freetype.c,v 1.13 2002/10/14 08:14:38 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -152,7 +152,7 @@ g_error freetype_engine_init(void) {
   /* Gamma config/initialization */
 #ifdef CONFIG_FREETYPE_GAMMA
   ft_build_gamma_table(ft_light_gamma_table,
-		       atof(get_param_str(CFGSECTION,"light_gamma","1.6")));
+		       atof(get_param_str(CFGSECTION,"light_gamma","1.5")));
   ft_build_gamma_table(ft_dark_gamma_table,
 		       atof(get_param_str(CFGSECTION,"dark_gamma","0.75")));
   ft_gamma_light_dark_threshold = 3*get_param_int(CFGSECTION,"gamma_light_dark_threshold",128);
@@ -567,11 +567,16 @@ void freetype_measure_string(struct font_descriptor *self, const struct pgstring
   FT_Glyph g;
 
   original_x = x = DATA->metrics.margin << 7;
-  y = x + ((DATA->metrics.lineheight - DATA->metrics.descent) << 6);
+
+  /* Centering looks best when we shave 1/2 the descent off
+   * the line height when computing string height.
+   */
+  y = x + ((DATA->metrics.lineheight - DATA->metrics.linegap - 
+	    (DATA->metrics.descent >> 1)) << 6);
 
   while ((ch = pgstring_decode(str,&p))) {
     if (ch=='\n') {
-      y += DATA->metrics.lineheight;
+      y += DATA->metrics.lineheight << 6;
       if (x>max_x) max_x = x;
       x = original_x;
     }
