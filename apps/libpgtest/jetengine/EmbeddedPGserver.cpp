@@ -21,6 +21,8 @@ EmbeddedPGserver::EmbeddedPGserver(int argc, char **argv) {
   setParam("video-sdlgl", "caption", "JetEngine");
   setParam("opengl", "continuous", "1");
   setParam("pgserver", "appmgr", "null");
+  setParam("pgserver", "themedir", "data");
+  setParam("pgserver", "themes", "textures.th holographic.th");
 
   /* Load without a config file */
   e = pgserver_init(PGINIT_NO_CONFIGFILE, argc, argv);

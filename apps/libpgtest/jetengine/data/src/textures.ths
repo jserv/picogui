@@ -1,0 +1,5 @@
+/* Theme objects containing textures */
+
+object "jetengine/grass" bitmap1 = LoadBitmap("grass.png");
+object "jetengine/ship" bitmap1 = LoadBitmap("ship.png");
+

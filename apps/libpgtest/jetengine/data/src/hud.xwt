@@ -1,3 +1,10 @@
 <application>
-	<label text="HUD" font=":50" side="all"/>
+	<box side="top">
+		<label bitmap_src="pglogo3.png" side="right"/>
+	</box>
+	<box side="bottom">
+		<label color="white" side="right" font=":0:bold">
+			JetEngine - PicoGUI and Python embedding demo
+		</label>
+	</box>
 </application>

@@ -1,5 +1,5 @@
-OBJS = EmbeddedPGserver.o jetengine.o PythonThread.o
-HEADERS = EmbeddedPGserver.h PythonThread.h SimpleException.h
+OBJS = EmbeddedPGserver.o jetengine.o PythonThread.o PGTexture.o
+HEADERS = EmbeddedPGserver.h PythonThread.h SimpleException.h PGTexture.h
 BIN = jetengine
 
 # Embedding pgserver and python
@@ -30,7 +30,7 @@ LDFLAGS += -export-dynamic
 XWTCOMPILE = ../../../../../cli_python/PicoGUI/sample/xwtcompile.py
 
 
-$(BIN): $(OBJS) data/holographic.th data/mainmenu.wt data/hud.wt
+$(BIN): $(OBJS) data/holographic.th data/textures.th data/mainmenu.wt data/hud.wt
 	$(CXX) -o $@ $(LDFLAGS) $(OBJS) $(LIBS) 
 
 %.o: %.cpp $(HEADERS)
@@ -39,11 +39,14 @@ $(BIN): $(OBJS) data/holographic.th data/mainmenu.wt data/hud.wt
 data/holographic.th: data/src/holographic.ths
 	cd data/src && themec holographic.ths && mv holographic.th ..
 
+data/textures.th: data/src/textures.ths
+	cd data/src && themec textures.ths && mv textures.th ..
+
 data/mainmenu.wt: data/src/mainmenu.xwt
 	cd data/src && $(XWTCOMPILE) mainmenu.xwt ../mainmenu.wt
 
-data/hud.wt: data/src/mainmenu.xwt
+data/hud.wt: data/src/hud.xwt
 	cd data/src && $(XWTCOMPILE) hud.xwt ../hud.wt
 
 clean:
-	rm $(OBJS) $(BIN) data/holographic.th
+	rm $(OBJS) $(BIN) data/*.th data/*.wt
