@@ -25,10 +25,6 @@ AC_ARG_WITH(extra-lpath,
 [  --with-extra-lpath=<extra lib path>   To specify extra library paths],
   LDFLAGS="$LDFLAGS -L`echo ${withval} | sed 's/:/ -L/g' `")
 
-AC_ARG_WITH(extra-libs,
-[  --with-extra-libs=<extra libs>   To specify extra libraries],
-  LIBS="$LIBS `echo ${withval} | sed 's/:/ /g' `")
-
 dnl
 dnl Check if we have processmanager or not
 dnl 
@@ -168,6 +164,11 @@ else
   AC_DISABLE_SHARED
 fi
 AM_PROG_LIBTOOL
+
+dnl Check if we need extra libs
+AC_ARG_WITH(extra-libs,
+[  --with-extra-libs=<extra libs>   To specify extra libraries],
+  LIBS="$LIBS `echo ${withval} | sed 's/:/ /g' `")
 
 dnl jpeg
 echo "checking whether user wants jpeg... $CONFIG_FORMAT_JPEG"
