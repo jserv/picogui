@@ -1,14 +1,15 @@
-/* $Id: aqua.ths,v 1.33 2001/12/16 20:23:15 micahjd Exp $
+/* $Id: aqua.ths,v 1.34 2002/01/07 08:36:08 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
  *
- * Version 1.01
+ * Version 1.02
  *
  * -- Micah Dowty
  *
  * Changelog:
  *
+ *  1.02 - new indicator, removed many objects' borders for a cleaner look
  *  1.01 - Fixed terminal background
  *  1.0  - First stable release
  */
@@ -21,7 +22,7 @@ object default {
     Bitmap(x,y,w,h,bitmap1);
   };
   bitmap1 = LoadBitmap("data/aq_bg.pnm");
-margin=0;
+  margin=0;
 }
 
 object terminal {
@@ -103,7 +104,7 @@ object button {
   height = 20;
   width  = 21;   // Tiny buttons get a cute sphere shape :)
   margin = 8;
-  spacing = 2;
+  spacing = 5;
 }
 /* For different states, just change the bitmap */
 object button.on bitmap1 = LoadBitmap("data/aq_button_on.pnm");
@@ -111,11 +112,10 @@ object button.hilight bitmap1 = LoadBitmap("data/aq_button_over.pnm");
 
 object flatbutton {
   margin = 6;
-  spacing = 1;
+  spacing = 5;
 }
    
-/* This defines a resizable grey box, used in all base.display-derived
-   widgets, and a few others (like scroll) 
+/* A nice resizable grey box
 */
 object base.display {
   bitmap1 = LoadBitmap("data/aq_box.pnm");
@@ -155,11 +155,38 @@ object base.display {
   };
 }
 
+/* Settings common to all indicators */
 object indicator {
-  /* Same overlay as scroll bar */
-  overlay = Copy(scroll::overlay);
-  width = 14;
+  width = 15;
   margin = 0;
+}
+
+/* Horizontal indicator */
+object indicator.h {
+  bitmap1 = LoadBitmap("data/aq_indicator_gray_h.pnm");	
+  bitmap2 = LoadBitmap("data/aq_indicator_h.pnm");
+
+  bgfill = fillstyle {
+    Bitmap(x,y+(h-15)/2,w,15,bitmap1);
+  };
+    
+  overlay = fillstyle {
+    Bitmap(x-w,y+(h-15)/2,w*2,15,bitmap2);
+  };
+}
+
+/* Vertical indicator */
+object indicator.v {
+  bitmap1 = LoadBitmap("data/aq_indicator_gray_v.pnm");	
+  bitmap2 = LoadBitmap("data/aq_indicator_v.pnm");
+
+  bgfill = fillstyle {
+    Bitmap(x+(w-15)/2,y,15,h,bitmap1);
+  };
+    
+  overlay = fillstyle {
+    Bitmap(x+(w-15)/2,y-h,15,h*2,bitmap1);
+  };
 }
 
 /* Nice scrollbar thumb (doubles as indicator overlay) */
@@ -214,7 +241,7 @@ object label.scroll {
 object background bitmap1 = LoadBitmap("data/aq_screenbg.pnm");
 
 /* Interactive titlebar */
-object panel margin = 10;
+object panel margin = 5;
 object panelbar {
   bitmap1 = LoadBitmap("data/aq_title_wht_v.pnm");
   bitmap2 = LoadBitmap("data/aq_title_wht_h.pnm");
@@ -245,24 +272,20 @@ object rotatebtn.hilight bitmap1 = LoadBitmap("data/aq_rotatebtn_over.pnm");
 object zoombtn bitmap1 = LoadBitmap("data/aq_zoombtn.pnm");
 object zoombtn.hilight bitmap1 = LoadBitmap("data/aq_zoombtn_over.pnm");
 
-object box {
-  height = 30;
-  margin = 3;
-  bgfill = Copy(base.display::bgfill);     // Use the same nifty box
-  bitmap1 = Copy(base.display::bitmap1);
-}
+object box margin = 3;
 
 object toolbar {
   bgfill = fillstyle {
     Bitmap(x,y,w,h,bitmap1);
-    SetColor(0x808080);
+    SetColor(0xA0A0A0);
     Frame(x,y,w,h);
     SetLgop(PG_LGOP_SUBTRACT);
-    Gradient(x,y,margin,h,0,0x404040,0x000000);
-    Gradient(x,y,w,margin,90,0x404040,0x000000);
-    SetLgop(PG_LGOP_NONE);   /* for text in dlgtitle */
+    Gradient(x,y,margin,h,0,0x202020,0x000000);
+    Gradient(x,y,w,margin,90,0x202020,0x000000);
+    SetLgop(PG_LGOP_NONE); 
   };
-  margin = 5;
+
+  margin = 6;
 }
 
 object popup {
