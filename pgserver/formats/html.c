@@ -1,4 +1,4 @@
-/* $Id: html.c,v 1.6 2001/10/18 05:35:11 micahjd Exp $
+/* $Id: html.c,v 1.7 2001/10/19 06:19:48 micahjd Exp $
  *
  * html.c - Use the textbox_document inferface to load HTML markup
  *
@@ -15,6 +15,7 @@
  * by this implementation. Tags with an asterisk are not yet implemented:
  *
  *   <body> *
+ *   <head>
  *   <address> *
  *   <p>
  *   <ul> *
@@ -113,19 +114,38 @@ struct html_tag_params {
   /* HTML tag name */
   const u8 *tag;
   int tag_len;
+
+  /* Pointer for traversing the tag, looking for parameters */
+  const u8 *pparam;
+  int pparam_len;
 };
 
+/* One tag parameter */
+struct html_param {
+  const u8 *name;
+  int name_len;
+  const u8 *value;
+  int value_len;
+};
+
+/* Parsing modes */
+g_error html_parse_text(struct html_parse *hp,
+			   const u8 *start,const u8 *end);
+g_error html_parse_pre(struct html_parse *hp,
+			  const u8 *start,const u8 *end);
+g_error html_parse_ignore(struct html_parse *hp,
+			     const u8 *start,const u8 *end);
+
+/* Utilities */
 g_error html_dispatch_tag(struct html_parse *hp,
 			  const u8 *start,const u8 *end);
-g_error html_dispatch_text(struct html_parse *hp,
-			   const u8 *start,const u8 *end);
-g_error html_dispatch_pre(struct html_parse *hp,
+g_error html_textfragment(struct html_parse *hp,
 			  const u8 *start,const u8 *end);
-g_error html_dispatch_textfragment(struct html_parse *hp,
-				   const u8 *start,const u8 *end);
 char html_findchar(const u8 *charname, int namelen);
+int html_nextarg(struct html_tag_params *tag, struct html_param *par);
+pgcolor html_findcolor(const u8 *colorname, int namelen);
 
-/*************************************** Character name table */
+/*************************************** Tables */
 
 /* This table is used to convert character names like &nbsp; to character
  * numbers, as defined by the HTML standard.
@@ -238,6 +258,33 @@ struct html_charname {
   { NULL, 0 }
 };
 
+/* Another table to convert HTML color names to RGB colors */
+
+struct html_colorname {
+  const char *name;
+  pgcolor c;
+} html_colortable[] = {
+  
+  { "Black",    0x000000 },
+  { "Green",    0x008000 },
+  { "Silver",   0xC0C0C0 }, 
+  { "Lime",     0x00FF00 },
+  { "Gray",     0x808080 },
+  { "Olive",    0x808000 },
+  { "White",    0xFFFFFF },
+  { "Yellow",   0xFFFF00 },
+  { "Maroon",   0x800000 },
+  { "Navy",     0x000080 },
+  { "Red",      0xFF0000 },  
+  { "Blue",     0x0000FF },  
+  { "Purple",   0x800080 },
+  { "Teal",     0x008080 },
+  { "Fuchsia",  0xFF00FF },
+  { "Aqua",     0x00FFFF },
+
+  { NULL, 0 }
+};   
+   
 /*************************************** HTML tag handlers */
 
 /* Insert a blank line (next paragraph) */
@@ -289,7 +336,7 @@ g_error html_tag_pre(struct html_parse *hp, struct html_tag_params *tag) {
   g_error e;
 
   /* Preformatted text mode */
-  hp->parsemode = &html_dispatch_pre;
+  hp->parsemode = &html_parse_pre;
 
   /* New paragraph */
   e = html_tag_p(hp,tag);
@@ -302,7 +349,7 @@ g_error html_tag_end_pre(struct html_parse *hp, struct html_tag_params *tag) {
   g_error e;
 
   /* Normal text mode */
-  hp->parsemode = &html_dispatch_text;
+  hp->parsemode = &html_parse_text;
 
   /* Teletype mode off */
   e = html_tag_unformat(hp,tag);
@@ -311,7 +358,44 @@ g_error html_tag_end_pre(struct html_parse *hp, struct html_tag_params *tag) {
   /* New paragraph */
   return html_tag_p(hp,tag);
 }
+
+/* Ignore the headers */
+g_error html_tag_head(struct html_parse *hp, struct html_tag_params *tag) {
+  hp->parsemode = &html_parse_ignore;
+  return sucess;
+}
+g_error html_tag_end_head(struct html_parse *hp, struct html_tag_params *tag) {
+  hp->parsemode = &html_parse_text;
+  return sucess;
+}
+
+g_error html_tag_font(struct html_parse *hp, struct html_tag_params *tag) {
+  struct html_param p;
+  pgcolor newcolor;
+  int setcolor = 0;
+  int size = 0;
   
+  /* Process each tag parameter */
+  while (html_nextarg(tag,&p)) {
+    
+    if (p.name_len==5 && !strncasecmp(p.name,"color",p.name_len)) {
+      setcolor = 1;
+      newcolor = html_findcolor(p.value,p.value_len);
+      if (*p.value=='#') {
+	/* Was it a hex color? */
+	setcolor = 1;
+	newcolor = strtoul(p.value+1,NULL,16);
+      }
+    }
+  }
+
+  /* Set the new font */
+  text_format_modifyfont(hp->c,0,0,size);
+  if (setcolor)
+    hp->c->f_top->color = VID(color_pgtohwr)(newcolor);
+
+  return sucess;  
+}
 
 /*************************************** HTML tag table */
 
@@ -342,6 +426,10 @@ struct html_taghandler {
   { "/small",  &html_tag_unformat },
   { "pre",     &html_tag_pre },
   { "/pre",    &html_tag_end_pre },
+  { "head",    &html_tag_head },
+  { "/head",   &html_tag_end_head },
+  { "font",    &html_tag_font },
+  { "/font",   &html_tag_unformat },
 
   { NULL, NULL }
 };
@@ -361,7 +449,7 @@ g_error html_load(struct textbox_cursor *c, const u8 *data, u32 datalen) {
   /* Fill in parse structure */
   memset(&hp,0,sizeof(hp));
   hp.c = c;
-  hp.parsemode = &html_dispatch_text;
+  hp.parsemode = &html_parse_text;
 
   while (*data && datalen) {
     
@@ -477,30 +565,20 @@ g_error html_dispatch_tag(struct html_parse *hp,
 
 /* Chop up text into fragments, sending wordbreaks
  * between them when necessary */
-g_error html_dispatch_text(struct html_parse *hp,
-			   const u8 *start, const u8 *end) {
+g_error html_parse_text(struct html_parse *hp,
+			const u8 *start, const u8 *end) {
   const u8 *fragment;
   g_error e;
-
-#ifdef DEBUG_HTML
-  /* Debuggativity! */
-  write(1,"html: dispatching text '",24);
-  write(1,start,end-start+1);
-  write(1,"'\n",2);
-#endif
 
   for (fragment = NULL;start <= end;start++) {
     if (fragment) {
       /* Look for the end */
 
       if (isspace(*start)) {
-	e = html_dispatch_textfragment(hp,fragment,start-1);
+	e = html_textfragment(hp,fragment,start-1);
 	errorcheck;
 	fragment = NULL;
 
-#ifdef DEBUG_HTML
-	printf("html: insert wordbreak\n");
-#endif
 	e = text_insert_wordbreak(hp->c);
 	errorcheck;
       }
@@ -509,9 +587,6 @@ g_error html_dispatch_text(struct html_parse *hp,
       /* Look for the beginning */
 
       if (isspace(*start)) {
-#ifdef DEBUG_HTML
-	printf("html: insert wordbreak\n");
-#endif
 	e = text_insert_wordbreak(hp->c);
 	errorcheck;
       }
@@ -520,7 +595,7 @@ g_error html_dispatch_text(struct html_parse *hp,
     }
   }
   if (fragment) {
-    e = html_dispatch_textfragment(hp,fragment,start-1);
+    e = html_textfragment(hp,fragment,start-1);
     errorcheck;
   }
   return sucess;
@@ -529,24 +604,17 @@ g_error html_dispatch_text(struct html_parse *hp,
 /* Dispatch preformatted text. Each line is translated into one textfragment-
  * never send wordbreaks, send a line break for '\n'
  */
-g_error html_dispatch_pre(struct html_parse *hp,
-			  const u8 *start, const u8 *end) {
+g_error html_parse_pre(struct html_parse *hp,
+		       const u8 *start, const u8 *end) {
   const u8 *fragment;
   g_error e;
-
-#ifdef DEBUG_HTML
-  /* Debuggativity! */
-  write(1,"html: dispatching preformatted text '",37);
-  write(1,start,end-start+1);
-  write(1,"'\n",2);
-#endif
 
   for (fragment = NULL;start <= end;start++) {
     if (fragment) {
       /* Look for the end */
 
       if (*start == '\n') {
-	e = html_dispatch_textfragment(hp,fragment,start-1);
+	e = html_textfragment(hp,fragment,start-1);
 	errorcheck;
 	fragment = NULL;
 
@@ -566,28 +634,27 @@ g_error html_dispatch_pre(struct html_parse *hp,
     }
   }
   if (fragment) {
-    e = html_dispatch_textfragment(hp,fragment,start-1);
+    e = html_textfragment(hp,fragment,start-1);
     errorcheck;
   }
+  return sucess;
+}
+
+/* Ignore text */
+g_error html_parse_ignore(struct html_parse *hp,
+			  const u8 *start, const u8 *end) {
   return sucess;
 }
 
 /* Convert characters like &nbsp; to characters, store and send the string
  * to the textbox.
  */
-g_error html_dispatch_textfragment(struct html_parse *hp,
-				   const u8 *start,const u8 *end) {
+g_error html_textfragment(struct html_parse *hp,
+			  const u8 *start,const u8 *end) {
   int length;
   const u8 *p,*cname;
   char *str, *q;
   g_error e;
-
-#ifdef DEBUG_HTML
-  /* Yet More Debuggativity! */
-  write(1,"html: dispatching textfragment '",32);
-  write(1,start,end-start+1);
-  write(1,"'\n",2);
-#endif
 
   /* Count the number of characters in the string, treating &foo; sequences
    * as 1 character.
@@ -633,6 +700,99 @@ char html_findchar(const u8 *charname, int namelen) {
     
   /* Still not found... */
   return '?';
+}
+
+/* Find the next tag argument. If there is a tag parameter remaining,
+ * returns one and puts the relevant info in 'par'. otherwise, returns zero.
+ */
+int html_nextarg(struct html_tag_params *tag, struct html_param *par) {
+  memset(par,0,sizeof(struct html_param));
+
+  /* First time? */
+  if (!tag->pparam) {
+    tag->pparam = tag->paramtext;
+    tag->pparam_len = tag->paramtext_len;
+  }
+
+  /* Skip leading whitespace */
+  while (tag->pparam_len && isspace(*tag->pparam)) {
+      tag->pparam++;
+      tag->pparam_len--;
+  }
+
+  /* Anything left? */
+  if (!tag->pparam_len)
+    return 0;
+
+  /* We're at the beginning of the tag name now */
+  par->name = tag->pparam;
+ 
+  /* Keep going until we get to a whitespace (end of tag, has no param)
+   * or to an '=' sign
+   */
+  while (tag->pparam_len) {
+    if (*tag->pparam == '=')
+      break;
+    if (isspace(*tag->pparam)) {
+      /* Done with this tag, it has no value */
+      par->value = NULL;
+      par->value_len = 0;
+      return 1;
+    }
+    par->name_len++;
+    tag->pparam++;
+    tag->pparam_len--;
+  }
+
+  /* Tag has a parameter. Skip the '=', see if it's quoted */
+  tag->pparam++;
+  tag->pparam_len--;
+  if (*tag->pparam == '"' && tag->pparam_len>1) {
+
+    /* Quoted parameter, it extends until the next '"' character */
+    tag->pparam++;
+    tag->pparam_len--;
+    par->value = tag->pparam;
+    while (tag->pparam_len && *tag->pparam!='"') {
+      tag->pparam++;
+      tag->pparam_len--;
+      par->value_len++;
+    }
+
+    /* Skip over the closing quote */
+    tag->pparam++;
+    tag->pparam_len--;
+  }
+  else {
+
+    /* Unquoted parameter, extends until a whitespace */    
+    par->value = tag->pparam;
+    while (tag->pparam_len && !isspace(*tag->pparam)) {
+      tag->pparam++;
+      tag->pparam_len--;
+      par->value_len++;
+    }
+  }
+  return 1;
+}
+
+pgcolor html_findcolor(const u8 *colorname, int namelen) {
+  struct html_colorname *p;
+  
+  /* If it's a numeric code, return it */
+  if (colorname[0]=='#')
+    return strtoul(colorname+1,NULL,16);
+  
+  /* Search our table of color names */
+  p = html_colortable;
+  while (p->name) {
+    if (!strncasecmp(p->name,colorname,namelen))
+      return p->c;
+    p++;
+  }
+  
+  /* Still not found... */
+  return 0;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.11 2001/10/18 23:22:55 micahjd Exp $
+/* $Id: textbox_document.c,v 1.12 2001/10/19 06:19:48 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -243,7 +243,7 @@ g_error text_insert_string(struct textbox_cursor *c, const char *str,
     c->c_gctx.current->param[0] = c->f_top->fontdef;
   }
   /* Add color */
-  if (c->f_top && c->f_top->color) {
+  if (c->f_top) {
     addgrop(&c->c_gctx,PG_GROP_SETCOLOR);
     c->c_gctx.current->param[0] = c->f_top->color;
   }

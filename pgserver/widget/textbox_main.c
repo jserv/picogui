@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.14 2001/10/18 07:03:50 micahjd Exp $
+/* $Id: textbox_main.c,v 1.15 2001/10/19 06:19:48 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -83,10 +83,11 @@ Normal text<br>
 <em>Emphasized</em> and <strong>strong</strong> text<br>
 <big>Big</big> and <small>small</small> text<br>
 Combinations of <b><i>multiple</i> <u>formats</u></b><br>
-Changing<b>formats</b>within<b>one</b>word<br>
+Changing<b>formats</b><font color=green>within</font><b>one</b>word<br>
 Nonbreaking spaces: --&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--<Br>
 ISO Latin-1 international characters: N&iacute;ft&egrave;&eacute; <BR>
-Other formats: <tt>teletype mode</tt>, <strike>strikeout</strike>
+Other formats: <tt>teletype mode</tt>, <strike>strikeout</strike><br>
+Font tag: <font color=red>red</font>, <font color=\"#FFFF00\">#FFFF00</font><br>
 
 <pre>
   __              __  
