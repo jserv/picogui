@@ -1,4 +1,4 @@
-/* $Id: bmp.c,v 1.8 2002/01/16 22:37:58 lonetech Exp $
+/* $Id: bmp.c,v 1.9 2002/01/20 03:03:17 lonetech Exp $
  *
  * bmp.c - Functions to detect and load files compatible with the Windows BMP
  *         file format. This format is good for palettized images and/or
@@ -76,6 +76,7 @@ struct bmp_infoheader {
   
   /* Color table follows */
 };
+#define MAXPALETTE 256
 
 /**************************** Detect */
 
@@ -93,21 +94,18 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   struct bmp_fileheader *fhdr;
   struct bmp_infoheader *ihdr;
   int w,h,bpp;
-  const u8 *rasterdata;
+  const u8 *rasterdata, *linebegin;
   g_error e;
-  u32 offset,compression,numcolors;
+  u32 offset, compression, numcolors, *u32p;
   int x,y,shift,mask,index;
   u8 byte;
-  pgcolor c, c2;
-  const u8 *linebegin;
-  u32 *colortable;
+  pgcolor c, c2, colortable[MAXPALETTE];
 
   /* Load the headers. Fileheader is after "BM", infoheader is after that */
   if (datalen < FILEHEADER_LEN + INFOHEADER_LEN)
     return mkerror(PG_ERRT_BADPARAM,41);      /* Corrupt BMP header */
   fhdr = (struct bmp_fileheader *) (data + 2);
   ihdr = (struct bmp_infoheader *) (data + FILEHEADER_LEN);
-  colortable = (u32 *) (data + FILEHEADER_LEN + INFOHEADER_LEN);
 
   /* Important header values */
   w = LITTLE_LONG(ihdr->width);
@@ -115,11 +113,18 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   bpp = LITTLE_SHORT(ihdr->bpp);
   compression = LITTLE_LONG(ihdr->compression);
   numcolors = LITTLE_LONG(ihdr->colors_used);
+  offset = LITTLE_LONG(fhdr->data_offset);
+  if(!numcolors)
+   {
+    numcolors=(offset-FILEHEADER_LEN-INFOHEADER_LEN)>>2;
+    if(numcolors>1<<bpp)
+      numcolors=1<<bpp;
+   }
 
   /* Sanity checks for the header */
   if (LITTLE_LONG(ihdr->infoheader_size) != INFOHEADER_LEN)
     return mkerror(PG_ERRT_BADPARAM,41);      /* Corrupt BMP header */
-  if (numcolors > 256)
+  if (numcolors > MAXPALETTE)
     return mkerror(PG_ERRT_BADPARAM,41);      /* Corrupt BMP header */
 
   /* Supported format? */
@@ -143,8 +148,19 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
       return mkerror(PG_ERRT_BADPARAM,42);      /* Unsupported BMP format */
    }
   
+  /* Load palette */
+  fprintf(stderr, "%dx%d, %d bpp, compression %d, %d/%d colors\n", w, h, bpp,
+      compression, numcolors, LITTLE_LONG(ihdr->colors_important));
+  if (FILEHEADER_LEN+INFOHEADER_LEN+4*numcolors>datalen)
+    return mkerror(PG_ERRT_BADPARAM,41);	/* Corrupt BMP header */
+  u32p = (u32 *) (data + FILEHEADER_LEN + INFOHEADER_LEN);
+  for(index=0;index<numcolors;index++)
+   {
+    colortable[index]=LITTLE_LONG(u32p[index]);
+    fprintf(stderr, "Color %d: %06x\n", index, colortable[index]);
+   }
+
   /* Find the raster data */
-  offset = LITTLE_LONG(fhdr->data_offset);
   if(!compression)
    {
     if (offset + ((w*h*bpp)>>3) > datalen)
@@ -165,7 +181,6 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 
   /* If we're converting from < 8bpp, make a mask */
   mask = (1<<bpp)-1;
-  shift = -1;
 
   switch (compression) {
     case 0:	/* Uncompressed */
@@ -176,7 +191,7 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 	 * will depend on the format used to store the raster data.
 	 */
     
-	for (x=0,linebegin=rasterdata;x<w;x++) {
+	for (shift=-1,x=0,linebegin=rasterdata;x<w;x++) {
 	
 	  /* Format here depends on color depth. Load the next
 	   * pixel into 'c' as a pgcolor */
@@ -193,14 +208,14 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 	      index = (byte>>shift) & mask;
 	      shift -= bpp;
 	      if (index < numcolors)
-		c = LITTLE_LONG(colortable[index]);
+		c = colortable[index];
 	      break;
 
 	    /* 8 bit palettized */
 	    case 8:
 	      index = *(rasterdata++);
 	      if (index < numcolors)
-		c = LITTLE_LONG(colortable[index]);
+		c = colortable[index];
 	      break;
 
 	    /* 24 bit true color */
@@ -226,8 +241,8 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
     
     case 1:	/* 8-bit RLE */
     case 2:	/* 4-bit RLE */
-      datalen=offset+ihdr->image_size;
-      c=LITTLE_LONG(colortable[0]);
+      /*datalen=offset+ihdr->image_size;*/
+      c=colortable[0];
       for(y=0;y<h;y++)
 	for(x=0;x<w;x++)
 	  (*vid->pixel) (*hbmp,x,y,(*vid->color_pgtohwr)(c),PG_LGOP_NONE);
@@ -238,14 +253,15 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 	unsigned char rle_n, rle_c;
 	rle_n=*(rasterdata++);
 	rle_c=*(rasterdata++);
+	fprintf(stderr, "RLE: %d,%d %#02x %#02x\n", x, y, rle_n, rle_c);
 	if(rle_n)	/* RLE pixels */
 	 {
 	  if(compression=1)	/* 8-bit */
-	    c = c2 = LITTLE_LONG(colortable[rle_c]);
+	    c = c2 = colortable[rle_c];
 	  else			/* 4-bit */
 	   {
-	    c = LITTLE_LONG(colortable[rle_c>>4]);
-	    c2 = LITTLE_LONG(colortable[rle_c&0xf]);
+	    c = colortable[rle_c>>4];
+	    c2 = colortable[rle_c&0xf];
 	   }
 	  while(rle_n--)
 	   {
@@ -304,13 +320,13 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 		switch(compression+c2)
 		 {
 		  case 2:	/* 1 8-bit pixel */
-		    c = LITTLE_LONG(colortable[index]);
+		    c = colortable[index];
 		    break;
 		  case 3:	/* 2nd 4-bit pixel */
-		    c = LITTLE_LONG(colortable[index&0xf]);
+		    c = colortable[index&0xf];
 		    break;
 		  case 4:	/* 1st 4-bit pixel */
-		    c = LITTLE_LONG(colortable[index>>4]);
+		    c = colortable[index>>4];
 		    break;
 		 }
 		(*vid->pixel) (*hbmp,x++,y,(*vid->color_pgtohwr)(c),
