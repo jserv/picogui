@@ -1,4 +1,4 @@
-/* $Id: chipslicets.c,v 1.1 2001/10/23 13:31:41 pney Exp $
+/* $Id: chipslicets.c,v 1.2 2001/11/01 18:20:41 pney Exp $
  *
  * chipslicets.c - input driver for touch screen
  *
@@ -44,6 +44,9 @@
 #include <rm_client.h>
 
 
+#define IDLE                      0
+#define RUN                       1
+
 #define POLL_USEC                100
 
 /*
@@ -62,20 +65,25 @@ static int fd=0;
 static int bytes_transfered=0;
 static int iIsPenUp = 1;
 static int iIsPointingDisplayed = 1;
+static int chipslicetsSTATE = RUN;
 
 static struct timeval lastEvent;
 
 void chipslicets_message(u32 message, u32 param);
 
+#define DEBUG_EVENT
 /******************************************** Implementations */
 
 int chipslicets_sleep(void) {
 #ifdef DEBUG_EVENT
-  printf("-- going to sleep mode\n");
+  printf("-- send RM_EV_IDLE to RM\n");
 #endif
 
+  /* set state to IDLE */
+  chipslicetsSTATE = IDLE;
+
   /* call bios sleep function throught Ressources Manager */
-  rm_sleep(RM_WAKE_ON_BUTTON);
+  rm_emit(RM_EV_IDLE);
 
   /*
    * the hit to wake up the ChipSlice isn't catch by the chipslicets driver.
@@ -92,6 +100,8 @@ void chipslicets_poll(void) {
   bytes_transfered=read(fd,(char *)&pen_info,sizeof(pen_info));
 
   if(pen_info.x != -1) {
+
+    if(!chipslicetsSTATE) chipslicetsSTATE = RUN;
 
     switch(pen_info.event) {
     case EV_PEN_UP:
@@ -155,7 +165,7 @@ void chipslicets_poll(void) {
       printf("-- hide pointing\n");
 #endif
     }
-    if(delay_sec > SLEEP_IDLE_MAX_SEC)
+    if((delay_sec > SLEEP_IDLE_MAX_SEC) && (chipslicetsSTATE != IDLE))
       chipslicets_sleep();
   }
 }
