@@ -1,6 +1,6 @@
 #!/bin/sh
 
-aclocal_extra=""
+aclocal_extra="-I macros"
 
 if [ -f .autogen.conf ] ; then
     echo "autogen.sh:sourcing .autogen.conf"
