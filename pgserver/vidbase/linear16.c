@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.4 2001/10/15 16:25:19 bauermeister Exp $
+/* $Id: linear16.c,v 1.5 2001/10/19 22:09:09 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers (5-6-5 RGB mapping)
@@ -68,6 +68,19 @@ hwrcolor linear16_getpixel(hwrbitmap dest, s16 x,s16 y) {
 
 /*********************************************** Accelerated (?) primitives */
 
+/* A simple slab function speeds things up a lot compared to def_slab */
+void linear16_slab(hwrbitmap dest, s16 x,s16 y,s16 w,hwrcolor c,s16 lgop) {
+  u16 *p;
+
+  if (lgop != PG_LGOP_NONE) {
+    def_slab(dest,x,y,w,c,lgop);
+    return;
+  }
+
+  p = PIXELADDR(x,y);
+  while (w--)
+    *(p++) = c;
+}
 
    
 /*********************************************** Registration */
@@ -78,6 +91,7 @@ void setvbl_linear16(struct vidlib *vid) {
    
   vid->pixel          = &linear16_pixel;
   vid->getpixel       = &linear16_getpixel;
+  vid->slab           = &linear16_slab;
 }
 
 /* The End */
