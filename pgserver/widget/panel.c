@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.16 2000/08/07 10:04:13 micahjd Exp $
+/* $Id: panel.c,v 1.17 2000/08/07 11:09:27 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -218,17 +218,25 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     switch (self->in->flags & (~SIDEMASK)) {
     case S_TOP:
       self->in->split =  param->mouse.y - DATA->grab_offset - self->in->y;
+      if (self->in->split + PANELBAR_DIV->h > self->in->h)
+	self->in->split = self->in->h - PANELBAR_DIV->h;
       break;
     case S_BOTTOM:
       self->in->split = self->in->y + self->in->h - 1 -
 	param->mouse.y - DATA->grab_offset;
+      if (self->in->split + PANELBAR_DIV->h > self->in->h)
+	self->in->split = self->in->h - PANELBAR_DIV->h;
       break;
     case S_LEFT:
       self->in->split =  param->mouse.x - DATA->grab_offset - self->in->x;
+      if (self->in->split + PANELBAR_DIV->w > self->in->w)
+	self->in->split = self->in->w - PANELBAR_DIV->w;
       break;
     case S_RIGHT:
       self->in->split = self->in->x + self->in->w - 1 -
 	param->mouse.x - DATA->grab_offset;
+      if (self->in->split + PANELBAR_DIV->w > self->in->w)
+	self->in->split = self->in->w - PANELBAR_DIV->w;
       break;
     }
     if (self->in->split < 0) self->in->split = 0;
@@ -264,7 +272,7 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
       break;
     case S_BOTTOM:
       DATA->x = PANELBAR_DIV->x;
-      DATA->y = param->mouse.y - DATA->grab_offset;
+      DATA->y = param->mouse.y + DATA->grab_offset - PANELBAR_DIV->h;
       break;
     case S_LEFT:
       DATA->y = PANELBAR_DIV->y;
@@ -272,9 +280,16 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
       break;
     case S_RIGHT:
       DATA->y = PANELBAR_DIV->y;
-      DATA->x = param->mouse.x - DATA->grab_offset;
+      DATA->x = param->mouse.x + DATA->grab_offset - PANELBAR_DIV->w;
       break;
     }
+    /* Clippin' stuff... Prevent segfaults and missing panelbars */
+    if (DATA->x < self->in->x) DATA->x = self->in->x;
+    if (DATA->y < self->in->y) DATA->y = self->in->y;
+    if (DATA->x+PANELBAR_DIV->w > self->in->x+self->in->w)
+      DATA->x = self->in->x + self->in->w - PANELBAR_DIV->w;
+    if (DATA->y+PANELBAR_DIV->h > self->in->y+self->in->h)
+      DATA->y = self->in->y + self->in->h - PANELBAR_DIV->h;
 
     /* Put back the old image */
     if (DATA->ox != -1)
