@@ -1,4 +1,4 @@
-/* $Id: zaurus.c,v 1.6 2002/07/03 22:03:31 micahjd Exp $
+/* $Id: zaurus.c,v 1.7 2002/08/06 20:49:31 micahjd Exp $
  *
  * zaurus.c - Input driver for the Sharp Zaurus SL-5000. This includes a
  *            simple touchscreen driver, and some extras to handle sound
@@ -32,7 +32,6 @@
 #include <pgserver/common.h>
 #include <pgserver/input.h>
 #include <pgserver/widget.h>
-#include <pgserver/touchscreen.h>
 #include <stdio.h>
 
 /* These headers are from the Zaurus' kernel source */
@@ -48,8 +47,6 @@ int zaurus_led_fd;
 g_error zaurus_init(void) {
    g_error e;
 
-   e=touchscreen_init();
-   errorcheck;
    zaurus_ts_fd = open("/dev/sharp_ts",O_NONBLOCK);
    if (zaurus_ts_fd <= 0)
      return mkerror(PG_ERRT_IO, 74);
