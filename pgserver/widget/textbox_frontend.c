@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.42 2003/03/19 22:32:50 lalo Exp $
+/* $Id: textbox_frontend.c,v 1.43 2003/03/23 02:36:39 lalo Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -60,6 +60,7 @@ struct textboxdata {
   unsigned int focus : 1;
   unsigned int flash_on : 1;
   unsigned int readonly : 1;
+  unsigned int has_unreported_edit : 1;
 
   /* Mask of extended events to send (meaning: not handle internally)
    * and other flags*/
@@ -277,13 +278,19 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
     /* No break; here! Get PG_TRIGGER_TIMER to set up the flash timer*/
     
   case PG_TRIGGER_TIMER:
-    if (DATA->focus==0) break;
-
     if (os_getticks() > DATA->update_time + DATA->time_delay) {
-      if (DATA->flash_on = !DATA->flash_on)
-	paragraph_show_cursor(DATA->doc->crsr);
-      else
-	paragraph_hide_cursor(DATA->doc->crsr);
+
+      if (DATA->has_unreported_edit) {
+	DATA->has_unreported_edit = 0;
+	post_event(PG_WE_CHANGED,self,0,0,NULL);
+      }
+
+      if (DATA->focus) {
+	if (DATA->flash_on = !DATA->flash_on)
+	  paragraph_show_cursor(DATA->doc->crsr);
+	else
+	  paragraph_hide_cursor(DATA->doc->crsr);
+      }
     }
 
     /* Set it again... */
@@ -449,6 +456,8 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
     else
       document_insert_char(DATA->doc, param->kbd.key, NULL);
     paragraph_wrap(DATA->doc->crsr->par,0);
+
+    DATA->has_unreported_edit = 1;
 
     /* The cursor might have been hidden if we added a paragraph */
     paragraph_show_cursor(DATA->doc->crsr);

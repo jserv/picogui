@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.182 2003/03/19 22:32:51 lalo Exp $
+/* $Id: constants.h,v 1.183 2003/03/23 02:36:39 lalo Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -1065,6 +1065,8 @@ typedef unsigned long pghandle;
 #define PG_WE_CLOSE        0x003 /* A top-level widget has closed */
 #define PG_WE_FOCUS        0x004 /* Sent when a button is focused, only if it has 
 				  * PG_EXEV_FOCUS. The field widget always sends this. */
+#define PG_WE_CHANGED      0x005 /* Sent by the textbox when its contents change
+				    (but only after a delay) */
 #define PG_WE_PNTR_DOWN    0x204 /* The "mouse" button is now down */
 #define PG_WE_PNTR_UP      0x205 /* The "mouse" button is now up */
 #define PG_WE_PNTR_RELEASE 0x206 /* The "mouse" button was released outside

@@ -31,6 +31,7 @@ typenames = {
     0x002:	'deactivate',	# Sent when the user clicks outside the active popup 
     0x003:	'close',	# A top-level widget has closed 
     0x004:	'focus',	# Sent when a button is focused, only if it has PG_EXEV_FOCUS. The field widget always sends this. 
+    0x005:	'changed',	# Sent by the textbox when its contents change (but only after a delay)
     0x204:	'pntr down',	# The "mouse" button is now down 
     0x205:	'pntr up',	# The "mouse" button is now up 
     0x206:	'pntr release',	# The "mouse" button was released outside the widget 
