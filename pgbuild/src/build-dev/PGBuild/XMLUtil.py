@@ -95,8 +95,7 @@ class Document(minidom.Document):
        order of attempt:
 
        1. A class with a get_contents() method, such as an SCons file node
-       2. A file object
-       3. A string, (or string-like object) treated as the XML data to parse
+       2. A string, (or string-like object) treated as a file name
 
        This class also provides a few convenience functions, and makes
        it easier to subclass an XML document.
@@ -105,10 +104,7 @@ class Document(minidom.Document):
         try:
             dom = minidom.parseString(input.get_contents())
         except AttributeError:
-            if type(input) == file:
-                dom = minidom.parse(input)
-            else:
-                dom = minidom.parseString(input)
+            dom = minidom.parse(input)
                 
         # Copy the attributes from the loaded DOM object into ourselves, being
         # careful not to overwrite any existing attributes.

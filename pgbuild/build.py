@@ -31,7 +31,7 @@ class Bootstrap:
     """PGBuild bootstrap object, holds pathnames and other
        settings necessary to bootstrap the rest of the system.
        """
-    
+
     # Store the path this script is in as the PGBuild root path
     rootPath = os.path.abspath(os.path.dirname(sys.argv[0]))
 

@@ -179,8 +179,13 @@ class Tree(PGBuild.XMLUtil.Document):
        changes back to those documents.
        """
     def __init__(self, title="Merged configuration tree", rootName="pgbuild"):
-        PGBuild.XMLUtil.Document.__init__(
-            self, '<?xml version="1.0" ?><%s title="%s"/>' % (rootName, title))
+        class DefaultXML:
+            def get_contents(self):
+                return '<?xml version="1.0" ?><%s title="%s"/>' % (self.rootName, self.title)
+        d = DefaultXML()
+        d.rootName = rootName
+        d.title = title
+        PGBuild.XMLUtil.Document.__init__(self, d)
         self.rootName = rootName
         self.title = title
         self.mounts = []
@@ -297,6 +302,12 @@ class Tree(PGBuild.XMLUtil.Document):
             self.normalize()
             mergeElements(self)
 
+    def dirMount(self, dir):
+        """Mount all .xbc files in the given directory"""
+        import glob, os
+        for file in glob.glob(os.path.join(dir, "*.xbc")):
+            self.mount(file)
+
     def commit(self):
         """Save changes to all config trees that include 'w' in their mode"""
 
@@ -312,6 +323,30 @@ class Tree(PGBuild.XMLUtil.Document):
                 PGBuild.XMLUtil.writeSubtree(mountElement, minfo.file,
                                              self.rootName, minfo.attributes,
                                              comment, self.childNodes)
+                
+    def boot(self, bootstrap):
+        """Initialize the configuration tree from a Bootstrap object"""
+
+        class BootstrapXML:
+            """An object that wraps a Bootstrap object, providing an XML document that
+               can be mounted into the configuration tree.
+               """
+            def __init__(self, bootstrap):
+                self.bootstrap = bootstrap
+
+            def get_contents(self):
+                return """
+                <pgbuild title="Bootstrap Configuration">
+                </pgbuild>
+                """
+
+        # Mount in an XML representation of the bootstrap object
+        self.mount(BootstrapXML(bootstrap))
+
+        # Mount our config directories
+        self.dirMount(bootstrap.confPackage)
+        self.dirMount(bootstrap.localConfPath)
+
                 
 default = Tree()
 

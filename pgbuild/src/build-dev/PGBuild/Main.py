@@ -27,18 +27,18 @@ from optik import OptionParser
 import PGBuild
 import PGBuild.Config
 
-def loadBootstrap(bootstrap):
-    """Load the provided bootstrap object's settings into the config tree"""
-    
-
-def main(bootstrap, argv):
-    """The entry point called by build.py"""
-
-    # Process the command line using Optik
+def processCommandLine(argv):
+    """Process command line options using Optik"""
     parser = OptionParser(version=PGBuild.version)
     parser.parse_args(argv)
 
-    loadBootstrap(bootstrap)
+def main(bootstrap, argv):
+    """The entry point called by build.py"""
+    try:
+        processCommandLine(argv)
+        PGBuild.Config.default.boot(bootstrap)
+    finally:
+        PGBuild.Config.default.commit()
 
 ### The End ###
         
