@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.28 2002/10/12 15:50:26 micahjd Exp $
+/* $Id: font.h,v 1.29 2002/10/16 11:54:41 micahjd Exp $
  *
  * font.h - Common structures for defining fonts, and an interface
  *          for specific font engines to attach to
@@ -30,6 +30,17 @@
 #define __H_FONT
 
 #include <pgserver/video.h>
+
+/* Weights used for font comparison */
+#define FCMP_TYPE     (1<<14)
+#define FCMP_CHARSET  (1<<13)
+#define FCMP_FIXEDVAR (1<<12)
+#define FCMP_SIZE(x)  ((0xFF-(x&0xFF))<<3)   /* This macro is passed the
+						difference in size between the
+						request and the actual font */
+#define FCMP_NAME     (1<<2)
+#define FCMP_DEFAULT  (1<<1)
+#define FCMP_STYLE    (1<<0)
 
 /* Font descriptor- engine-specific data, and the engine used */
 struct font_descriptor {

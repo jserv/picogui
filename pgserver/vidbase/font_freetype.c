@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.21 2002/10/16 11:05:46 micahjd Exp $
+/* $Id: font_freetype.c,v 1.22 2002/10/16 11:54:41 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -81,15 +81,6 @@ FTC_CMapCache      ft_cmap_cache;
 struct pair26_6 {
   s32 x,y;
 };
-
-/* Various bits turned on for matches in fontcmp.  The order
- * of these bits defines the priority of the various
- * attributes
- */
-#define FCMP_TYPE     (1<<3)
-#define FCMP_FIXEDVAR (1<<2)
-#define FCMP_NAME     (1<<1)
-#define FCMP_STYLE    (1<<0)
 
 void ft_face_scan(const char *directory, int base_len);
 int ft_face_scan_list(const char *file, const char *path);
@@ -546,7 +537,7 @@ g_error freetype_create(struct font_descriptor *self, const struct font_style *f
   }
 
   /* If they asked for a default font, give it to them */
-  if (!fs->name || (fs->style & PG_FSTYLE_DEFAULT)) {
+  if (!fs->name || !*fs->name || (fs->style & PG_FSTYLE_DEFAULT)) {
     int saved_size = fs->size;
     int saved_style = fs->style;
 
@@ -571,7 +562,7 @@ g_error freetype_create(struct font_descriptor *self, const struct font_style *f
   /* If the font is scalable, pick the size intelligently, otherwise
    * we have to use whatever was chosen above.
    */
-  if (fs->representation & PG_FR_SCALABLE) {
+  if (closest->fs.representation & PG_FR_SCALABLE) {
     DATA->size = fs->size ? fs->size : 
       (fs->style & PG_FSTYLE_FIXED ? &ft_default_fixed_fs : &ft_default_fs)->size;
     if (DATA->size < ft_minimum_size)
@@ -584,7 +575,7 @@ g_error freetype_create(struct font_descriptor *self, const struct font_style *f
   /* Store the font metrics now, since they'll be needed frequently */
   ft_get_descriptor_face(self,&face);
 
-  if (fs->representation & PG_FR_SCALABLE) {
+  if ((closest->fs.representation & PG_FR_SCALABLE) || face->num_fixed_sizes==0) {
     DATA->metrics.ascent = face->size->metrics.ascender >> 6;
     DATA->metrics.descent = (-face->size->metrics.descender) >> 6;
     DATA->metrics.lineheight = face->size->metrics.height >> 6;
@@ -603,6 +594,12 @@ g_error freetype_create(struct font_descriptor *self, const struct font_style *f
   else
     DATA->metrics.margin = DATA->metrics.descent;
 
+  printf("Found font ");
+  ft_style_print(&DATA->face->fs);
+  printf(" for request of ");
+  ft_style_print(fs);
+  printf("\n");
+
   return success;
 }
 
@@ -613,9 +610,22 @@ void freetype_destroy(struct font_descriptor *self) {
 /* Gauge the closeness between a face and a requested style
  */
 int ft_fontcmp(const struct ft_face_id *f, const struct font_style *fs) {
-  int result = 0;
+  int result;
   int szdif;
   struct font_style f_fs;
+
+  if (fs->size) { 
+    if (f->fs.representation & PG_FR_SCALABLE)
+      szdif = 0;
+    else
+      szdif = f->fs.size - fs->size;
+
+    if (szdif<0) szdif = 0-szdif;
+    result = FCMP_SIZE(szdif);
+  }    
+  else {
+    result = 0;
+  }
 
   if (fs->name && (!strcasecmp(f->fs.name,fs->name)))
     result |= FCMP_NAME;
@@ -766,6 +776,9 @@ void ft_get_face_style(FT_Face f, struct font_style *fs) {
     }
   }
 
+  if (f->available_sizes > 0)
+    fs->size = f->available_sizes->height;
+
   /* Is there no better way to detect a condensed font? */
   if (f->style_name && strstr(f->style_name,"ondensed"))
     fs->style |= PG_FSTYLE_CONDENSED;
@@ -826,6 +839,7 @@ void ft_font_listing(void) {
   for (f=ft_facelist;f;f=f->next) {
     printf("%-50s",f->relative_path);
     ft_style_print(&f->fs);
+    printf("\n");
   }
 }
 
@@ -841,8 +855,6 @@ void ft_style_print(const struct font_style *fs) {
   for (flag=ft_repflags;flag->name;flag++)
     if (flag->value & fs->representation)
       printf(":%s",flag->name);
-
-  printf("\n");
 }
 
 /* Scan a human-readable style string back into a

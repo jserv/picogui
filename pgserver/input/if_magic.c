@@ -1,4 +1,4 @@
-/* $Id: if_magic.c,v 1.5 2002/10/12 14:46:35 micahjd Exp $
+/* $Id: if_magic.c,v 1.6 2002/10/16 11:54:41 micahjd Exp $
  *
  * if_magic.c - Trap magic debug keys
  *
@@ -98,7 +98,7 @@ g_error debug_bitmaps(const void **pobj, void *extra) {
 					   "Change video mode and try again"),
 			  &screenclip,PG_LGOP_NONE,0);
 
-      return success;   /* Lies! :) */
+     return mkerror(PG_ERRT_INTERNAL,0);  /* Dummy error to get us to abort */
    }
    
    VID(rect) (vid->display,data->db_x+3,data->db_y+38,w+4,h+4,

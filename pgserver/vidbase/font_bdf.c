@@ -1,4 +1,4 @@
-/* $Id: font_bdf.c,v 1.3 2002/10/12 15:13:32 micahjd Exp $
+/* $Id: font_bdf.c,v 1.4 2002/10/16 11:54:41 micahjd Exp $
  *
  * font_bdf.c - Font engine that uses fonts compiled into pgserver,
  *              converted from BDF fonts at compile-time.
@@ -36,20 +36,6 @@
 
 /* This defines how italic the generated italic is */
 #define DEFAULT_SKEW 3
-
-/* Various bits turned on for matches in fontcmp.  The order
- * of these bits defines the priority of the various
- * attributes
- */
-#define FCMP_TYPE     (1<<14)
-#define FCMP_CHARSET  (1<<13)
-#define FCMP_FIXEDVAR (1<<12)
-#define FCMP_SIZE(x)  ((0xFF-(x&0xFF))<<3)   /* This macro is passed the
-						difference in size between the
-						request and the actual font */
-#define FCMP_NAME     (1<<2)
-#define FCMP_DEFAULT  (1<<1)
-#define FCMP_STYLE    (1<<0)
 
 /* A function used by findfont that computes the 'closeness' between
    the request and a particular font */
