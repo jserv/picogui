@@ -26,6 +26,8 @@ static const char *PG_TS_ENV_NAME = "PG_TS_CALIBRATION";
 /* file descriptor for touch panel */
 static int fd = -1;
 static int PEN_DOWN;
+/* show the cursor on any touchscreen activity */
+static int showcursor;
 
 g_error tuxts_init(void)
 {
@@ -69,6 +71,9 @@ g_error tuxts_init(void)
 #endif
   ioctl(fd,64,1);		/* turn on the backlight */
 
+  /* Store config for later */
+  showcursor = get_param_int("input-tuxts","showcursor",0);
+
   return sucess;
 }
 
@@ -104,6 +109,10 @@ void tuxts_poll(void) {
   b = data[0];
 
   if(b>0) {
+    /* Show the cursor if 'showcursor' is on */
+    if (showcursor)
+      drivermessage(PGDM_CURSORVISIBLE,1);
+
     if(PEN_DOWN) {
       dispatch_pointing(TRIGGER_MOVE,x,y,1);
 #ifdef DEBUG_EVENT

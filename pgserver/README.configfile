@@ -236,5 +236,11 @@ quoted appropriately. For example:
 - multiplier
   A value to multiply delta movement by. Defaults to 2.
 
+[input-tuxts]
+
+- showcursor
+  Set to 1 to show the cursor on any touchscreen activity. Helpful if you're
+  not sure about the calibration.
+
 --- The End ---
 
