@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.23 2001/11/19 11:55:07 cgrigis Exp $
+/* $Id: netcore.c,v 1.24 2001/12/04 18:48:10 cgrigis Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -851,7 +851,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.23 2001/11/19 11:55:07 cgrigis Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.24 2001/12/04 18:48:10 cgrigis Exp $\n");
 	exit(1);
       }
 
@@ -894,7 +894,8 @@ void pgInit(int argc, char **argv)
   if (!*hostname)
     hostname = PG_REQUEST_SERVER;
    
-#ifdef UCLINUX
+#ifndef CONFIG_UNIX_SOCKET
+#  ifdef UCLINUX
   /* get the host info.
    * gethostbyname() and gethostbyaddr() not working in uClinux.
    * Using inet_aton()
@@ -912,13 +913,12 @@ void pgInit(int argc, char **argv)
     clienterr("Error resolving server hostname");
     return;
   }
-#else
-#ifndef CONFIG_UNIX_SOCKET
+#  else
   if ((he=gethostbyname(hostname)) == NULL) {  /* get the host info */
     clienterr("Error resolving server hostname");
     return;
   }
-#endif
+#  endif
 #endif
 
 
@@ -953,6 +953,7 @@ void pgInit(int argc, char **argv)
 
   if (connect(fd, (struct sockaddr *)&server_addr, i) == -1) {
 #endif
+    perror ("connect");
     clienterr("Error connecting to server");
     return;
   }

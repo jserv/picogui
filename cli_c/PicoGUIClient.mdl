@@ -8,7 +8,7 @@ depends = [ 'resourcemanager' ]
 
 
 def prepare (module, platform, project):
-    command = "../configure --with-rpm-prefix=%s --prefix=/ --with-prefix --host=%s --enable-bee" % \
+    command = "../configure --with-rpm-prefix=%s --prefix=/ --with-prefix --host=%s --enable-bee --enable-unix-sockets" % \
               (module.install_path (platform, project, standard = 1),
                platform.feature ['platform'])
 

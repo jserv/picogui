@@ -1,4 +1,4 @@
-/* $Id: clientlib.h,v 1.12 2001/11/13 01:09:54 micahjd Exp $
+/* $Id: clientlib.h,v 1.13 2001/12/04 18:48:10 cgrigis Exp $
  *
  * clientlib.h - definitions used only within the client library code itself
  *
@@ -73,9 +73,9 @@
 
 /* Default server */
 #ifndef CONFIG_UNIX_SOCKET 
-#define PG_REQUEST_SERVER       "127.0.0.1"
+#  define PG_REQUEST_SERVER       "127.0.0.1"
 #else
-#define PG_REQUEST_SERVER	"/tmp/.pgui"
+#  define PG_REQUEST_SERVER       "/var/tmp/.pgui"
 #endif
 
 /* Buffer size. When packets don't need to be sent immediately,
