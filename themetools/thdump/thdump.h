@@ -1,4 +1,4 @@
-/* $Id: thdump.h,v 1.1 2000/10/07 19:03:48 micahjd Exp $
+/* $Id: thdump.h,v 1.2 2000/10/07 19:33:24 micahjd Exp $
  *
  * thdump.h - definitions for the theme dump program
  *
@@ -37,9 +37,8 @@
 
 /* An entry in the symbol table */
 struct symnode {
-  int type;
-  const char *name;
   unsigned long value;
+  const char *name;
 };
 
 extern struct symnode symboltab[];
