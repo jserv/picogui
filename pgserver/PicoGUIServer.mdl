@@ -1,0 +1,69 @@
+# -*- python -*-
+
+from beeconfig import compile, install, clean
+
+multicompile     = 1
+platform_variant = 1
+
+help = """
+Provides the PicoGUI server, which is responsible for the
+graphical interface.
+"""
+
+depends = [ 'kernel', 'resourcemanager' ]
+
+runtime = [
+
+            Runtime ('install', 'Install PicoGUI Server',
+                                  content = [ 'bin/pgserver' ],
+                                  help = "Install the PicoGUI Server" ),
+
+            Runtime ('server', 'Run PicoGUI Server',
+                     depends = [ 'picoguiserver/install',
+                                 'pocketapps/bioscall',
+                                 'pocketapps/initenv' ],
+                     rcscript = '''
+# calibration
+if test "$PG_TS_CALIBRATION" = ""
+then
+  echo "*** PG_TS_CALIBRATION is unset"
+  echo "***  Setting default calibration (for small touchscreen)"
+  echo "***  You should use the BIOS to permanently set an appropriate value"
+  PG_TS_CALIBRATION="200 650 3650 3750"
+fi
+export PG_TS_CALIBRATION
+
+# start pgserver
+pgserver &
+sleep 2
+''',
+                     help = "Start the PicoGUI Server" )
+            ]
+
+
+def prepare (module, platform, project):
+    profile = "../SMARTDATA-%s.config" % platform.feature ['variant']
+    
+    command = ("../configure --prefix=%s --with-profile=%s --with-prefix --host=%s " +
+               "--with-extra-ipath=%s/include:%s/include --with-extra-libs=%s/lib/librm.a " +
+               "--with-rpm-prefix=%s --with-rpm-platform=%s --enable-bee") % \
+              (module.install_path (platform, project),
+               profile,
+               platform.feature ['platform'],
+               project.modules ['kernel'].install_path (platform, project),
+               project.modules ['resourcemanager'].install_path (platform, project),
+               project.modules ['resourcemanager'].install_path (platform, project),
+               module.install_path (platform, project, standard = 1),
+               platform.fqn ())
+
+    message ("running: %s" % command)
+    sequence ("test ! -f ../autogen.sh || (cd .. ; ./autogen.sh || true)", command)
+    return
+
+
+def compile (module, platform, project):
+    sequence ("make")
+    return
+
+
+

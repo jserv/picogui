@@ -264,6 +264,16 @@ AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(gettimeofday select socket strerror strspn strtol)
 
+
+dnl for integration in the bee compilation system
+AM_BEE_RPMPROFILE
+
+AC_ARG_ENABLE(bee, 
+[  --enable-bee     use the bee building system])
+
+AM_CONDITIONAL(ENABLE_BEE, test ${enable_bee} = "yes")
+
+
 AC_OUTPUT(
 	Makefile
 	widget/Makefile
@@ -285,6 +295,7 @@ AC_OUTPUT(
 	configscript/Makefile
 	configscript/lxdialog/Makefile
 	formats/Makefile
+	picogui-server.spec
 )
 
 echo "--------------------------------------------------"

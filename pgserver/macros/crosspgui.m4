@@ -3,7 +3,7 @@ dnl
 dnl Tests the compilation environment, add the --with-cross option and
 dnl define CC_FOR_BUILD variable to the build-platform compiler
 dnl
-dnl $Id: crosspgui.m4,v 1.3 2001/05/11 10:37:51 gobry Exp $
+dnl $Id: crosspgui.m4,v 1.4 2001/08/24 11:39:13 gobry Exp $
 
 AC_DEFUN(AM_PGUI_CROSSCOMPILE, [
 
@@ -18,7 +18,7 @@ if test "$host" != "$ac_cv_canonical_host" ; then
   AC_MSG_WARN([host platform has changed, removing config.cache])
   AC_MSG_WARN([you can now run the script again])
 
-  exit 0
+  exit 1
 fi
 
 AC_ARG_WITH(prefix,

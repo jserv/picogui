@@ -1,0 +1,58 @@
+%define prefix @RPM_PREFIX@
+%define module %{prefix}/../bee
+
+Summary: PicoGUI server
+Name: @PACKAGE@
+Version: @VERSION@
+Release: sd.1
+Copyright: GPL
+Group: PicoGUI/Server
+Packager: Frédéric Gobry <frederic.gobry@smartdata.ch>
+Source: @PACKAGE@-@VERSION@.tar.gz
+Vendor: SMARTDATA
+
+Buildroot: %{_tmppath}/@PACKAGE@
+
+%description
+The PicoGUI server application, which provides the display engine for PicoGUI clients.
+
+%package @RPM_PLATFORM@
+Summary: executable and headers
+Group: PicoGUI/Server
+Requires: @PACKAGE@-mdl = @VERSION@
+
+%package mdl
+Summary: bee module
+Group: PicoGUI/Server
+Requires: bee >= 0.13
+
+%description @RPM_PLATFORM@
+The PicoGUI server application, which provides the display engine for PicoGUI clients.
+
+%description mdl
+The PicoGUI server application, which provides the display engine for PicoGUI clients.
+
+
+%prep
+%setup -n @PACKAGE@-@VERSION@
+
+%build
+mkdir build && cd build
+.@RPM_CONFIGURE@
+make
+
+%install
+cd build
+make install prefix=$RPM_BUILD_ROOT%{prefix}
+
+install -D -m 0644 ../PicoGUIServer.mdl $RPM_BUILD_ROOT%{module}/PicoGUIServer.mdl
+
+%files @RPM_PLATFORM@
+%{prefix}/bin/*
+
+%files mdl
+%{module}/*
+
+%clean
+[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf ${RPM_BUILD_ROOT}
+
