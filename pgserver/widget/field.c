@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.44 2002/01/25 15:09:01 pney Exp $
+/* $Id: field.c,v 1.45 2002/01/25 16:10:33 pney Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -220,7 +220,7 @@ g_error field_set(struct widget *self,int property, glob data) {
        return mkerror(PG_ERRT_HANDLE,44);
 
      /* set the font to 'password look' */
-     fd->passwdc = 1;
+     fd->passwdc = (int) data;
      break;
 
    default:
