@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.29 2002/10/17 04:07:57 micahjd Exp $
+/* $Id: font_freetype.c,v 1.30 2002/10/20 07:07:43 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -744,8 +744,10 @@ void freetype_getstyle(int i, struct font_style *fs) {
 
   /* Iterate to the face they asked about */
   for (f=ft_facelist;f && i>0;i--,f=f->next);
-  if (!f) return;
-  memcpy(fs,&f->fs,sizeof(*fs));
+  if (f)
+    memcpy(fs,&f->fs,sizeof(*fs));
+  else
+    memset(fs,0,sizeof(*fs));
 }
 
 void ft_get_face_style(FT_Face f, struct font_style *fs) {
