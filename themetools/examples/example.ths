@@ -13,7 +13,7 @@ object default {
     var gw1,gw2;
 
     /* thin border */
-    Frame(x,y,w,h,Color(fgcolor));
+    Frame(x,y,w,h,ColorConv(fgcolor));
     x = x+1;
     y = y+1;
     w = w-2;
@@ -22,9 +22,9 @@ object default {
     /* Hilight with gradients! */
     gw1 = 5+w/20;   // Width of left gradient
     gw2 = w/10;   // Width of right gradient
-    Gradient(x,y,gw1,h,0,bgcolor >> 1,bgcolor,0);
-    Rect(x+gw1,y,w-gw1-gw2,h,Color(bgcolor));
-    Gradient(x+w-gw2,y,gw2,h,0,bgcolor,0xDDDDDD,0);
+    Gradient(x,y,gw1,h,0,ColorDiv(bgcolor,0x020202),bgcolor,0);
+    Rect(x+gw1,y,w-gw1-gw2,h,ColorConv(bgcolor));
+    Gradient(x+w-gw2,y,gw2,h,0,bgcolor,ColorAdd(bgcolor,0x202040),0);
     Gradient(x+w/4,y+h*7/8,w,h,34,0x000000,0x303000,1);
   };
 
@@ -33,9 +33,7 @@ object default {
   bgcolor = 0x808080;
 };
 
-//object panel {
-  
-
+object panel.bar bgcolor = 0xD0D0B0;
 object themeinfo name = "Example theme";
 object button bgcolor = 0x8080FF;
 object button.hilight bgcolor = 0xB0B0FF;
