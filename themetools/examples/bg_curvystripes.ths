@@ -1,0 +1,24 @@
+/* Background theme-
+ * Gradient-heavy stripey things
+ */
+
+object background {
+
+   /* 406x340 stripey decal image */
+   bitmap1 = LoadBitmap("data/curvy_decal.pnm");
+
+   bgfill = fillstyle {
+     var bx,by;
+
+     /* Mostly solid background */
+     Rect(x,y,w,h,ColorConv(0x5a81cf));
+
+     /* Stripes */
+     Bitmap(x+w-406,y,406,340,bitmap1,PG_LGOP_NONE,0,0);
+
+     /* Fading on the edge */
+     Gradient(x,y,w/8,h,0,0x91a0ba,0x5a81cf,0);
+   };
+}
+
+/* The End */
