@@ -89,19 +89,6 @@ print """
   </div>
 </div>
 
-<div><span class="section">Channels the bot is currently in</span></div>
-<div class="section">
-  <div class="sectionTop"></div>
-  <div class="row">
-    <ul>
-"""
-for channel in channels:
-    print "<li>%s</li>" % channel
-print """
-    </ul>
-  </div>
-</div>
-
 <div><span class="section">Totals</span></div>
 <div class="section">
   <div class="sectionTop"></div>
@@ -115,6 +102,19 @@ for projCount in projectCounts.values():
     msgTotal += projCount[statSubdirs[0]]
 print "<li>%d messages</li>" % msgTotal
 print "<li>overall MTBC: %s</li>" % convertDuration(totalMTBC)
+print """
+    </ul>
+  </div>
+</div>
+
+<div><span class="section">Channels the bot is currently in</span></div>
+<div class="section">
+  <div class="sectionTop"></div>
+  <div class="row">
+    <ul>
+"""
+for channel in channels:
+    print "<li>%s</li>" % channel
 print """
     </ul>
   </div>
