@@ -17,7 +17,10 @@ Fixing a few bugs...
 		* net/dispatch.c: Added network requests to get and set the inactivity
 		  timer
 		  
+		* gcore/video.c, pgmain.c: Fixed memory leak of vid->display's
+		  gropcontext structure
 		  
+		* gcore/render.c: Added PG_GROP_VIDUPDATE gropnode
 
 2001-07-09    Micah Dowty <micahjd@users.sourceforge.net>
 
