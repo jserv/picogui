@@ -13,6 +13,8 @@ class TerminalPage:
 	self._position = position
 	if position == 0:
 	    self.tabpage.hotkey = 'f1'
+	if position == 1:
+	    self.tabpage.hotkey = 'f2'
 
 	try:
             import pty, fcntl, termios
@@ -40,6 +42,15 @@ class TerminalPage:
         if ev.x > 0 and ev.y > 0:
 	    self._fcntl.ioctl(self._ptyfd, self._termios.TIOCSWINSZ, struct.pack('4H', ev.y, ev.x, 0, 0))
 
+    def update(self):
+        self.terminalRead()
+        # expire this terminal if pid is finished
+	status = os.waitpid(self._ptypid, os.WNOHANG)
+	if status[0] != 0:
+	    print "child exited\n"
+	    self.tabpage.detach()
+	    self._app.destroy(self._position)
+
     def terminalRead(self):
         if self._termProcess:
 	    try:
@@ -65,8 +76,14 @@ class App(PicoGUI.Application):
     def addtab(self,ev):
         self.appendtab()
 
+    def destroy(self, position):
+        print "pages is ",len(self._pages)," elements long"
+        self._pages = self._pages[0:position] + self._pages[position + 1:]
+        print "pages is ",len(self._pages)," elements long"
+        pass
+
     def appendtab(self):
-	self._pages.append(TerminalPage(self._pages[-1].tabpage,'after', self, len(self._pages) - 1))
+	self._pages.append(TerminalPage(self._pages[-1].tabpage,'after', self, len(self._pages)))
 	self._pages[-1].tabpage.text = 'tab!'
 	self._pages[-1].tabpage.on = 1
 
@@ -74,7 +91,7 @@ class App(PicoGUI.Application):
         import time
         self.eventPoll()
         for i in range(0,len(self._pages)):
-	    self._pages[i].terminalRead()
+	    self._pages[i].update()
 	time.sleep(0.001)
 
 f = App()
