@@ -1,4 +1,4 @@
-/* $Id: ez328vga.c,v 1.1 2001/06/29 07:50:59 micahjd Exp $
+/* $Id: ez328vga.c,v 1.2 2001/09/05 03:09:13 micahjd Exp $
  *
  * ez328vga.c - Another of my strange drivers...
  *              Using the 68EZ328's LCD controller and a few logic gates,
@@ -18,16 +18,9 @@
  *              or even a color greater than 7 to damage the monitor!
  *              It is not my fault if building this project damages you,
  *              your monitor, your uCsimm, or anything else.
- *              Even though the linear4 VBL would work fine for this
- *              driver, for now it is not used. There are two reasons for this:
- *
- *                - Safety. Only implementing the low-level functions lets
- *                  us do more error checking on the color values
- *
- *                - Line repetition. The current implementation has very
- *                  non-square pixels. This driver draws a vertical line of
- *                  pixels for every pixel() drawn to make it look a little
- *                  better.
+ *              Stray data written outside the visible area of the framebuffer
+ *              or even improper color values written anywhere in the
+ *              framebuffer _will_ mess with the sync signals!
  * 
  * -------------------------------8<---------------------------------
  * 
@@ -84,7 +77,6 @@
  *
  * Known problems:
  * 
- *   The driver is very inefficient.
  *   This isn't really good for anything useful in its current stage. The
  *   resolution is much too low. Also, there is a horizontal 'jitter' on the
  *   screen that I think is caused by the 'ez328's DMA process. Maybe a latch
@@ -129,12 +121,14 @@
 #define PHYSLINES   512
 #define VIRTLINES   480
 #define PGUILINES   120   /* Resolution after line repetition */
-#define PGUIREPEAT  4     /* Amount of line repetition */
 #define VSYNCSTART  494   /* In lines */
 #define VSYNCWIDTH  378   /* In bytes */
 #define FBSIZE      ((PHYSWIDTH*PHYSLINES)>>1)
-#define FBBPL       (PHYSWIDTH>>1)
-    
+
+/* Macros to easily access the members of vid->display */
+#define FB_MEM   (((struct stdbitmap*)vid->display)->bits)
+#define FB_BPL   (((struct stdbitmap*)vid->display)->pitch)
+
 unsigned char *ez328vga_fb;
 
 g_error ez328vga_init(void) {
@@ -163,6 +157,10 @@ g_error ez328vga_init(void) {
    *((unsigned char *)0xfffffa25)  = 0x00;
    *((unsigned short *)0xfffff412) = 0xff00;
    *((unsigned char *)0xfffffa21)  = 0x00;
+
+   /* Set up linear4 params */
+   FB_MEM = ez328vga_fb;
+   FB_BPL = PHYSWIDTH >> 1;
    
    /* Clear memory, then 'draw' the horizontal and vertical sync signals 
     * (see above schematic explanation) */
@@ -186,45 +184,6 @@ void ez328vga_close(void) {
    g_free(ez328vga_fb);
 }
 
-void ez328vga_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
-   unsigned char *p;
-   int i;
-   
-   if (dest || lgop!=PG_LGOP_NONE) {
-      def_pixel(dest,x,y,c,lgop);
-      return;
-   }
-
-   if (x<0 || y<0 || (x>=vid->xres) || (y>=vid->yres))
-     return;
-   
-   c &= 7;   /* important! */
-   
-   p = ez328vga_fb + (x>>1) + y*FBBPL*PGUIREPEAT;
-   for (i=PGUIREPEAT;i;i--,p+=FBBPL) {
-      if (x&1) {
-	 *p &= 0xF0;
-	 *p |= c;
-      }
-      else {
-	 *p &= 0x0F;
-	 *p |= c<<4;
-      }
-   }
-}
-
-hwrcolor ez328vga_getpixel(hwrbitmap src,s16 x,s16 y) {
-   unsigned char *p;
-   
-   if (src)
-     return def_getpixel(src,x,y);
-
-   p = ez328vga_fb + (x>>1) + y*FBBPL*PGUIREPEAT;
-   if (x&1)
-     return (*p) & 7;
-   return (*p) >> 4;
-}
-
 hwrcolor ez328vga_color_pgtohwr(pgcolor c) {
    return ((getred(c)&0x80) >> 5) |
           ((getgreen(c)&0x80) >> 6) |
@@ -238,7 +197,7 @@ pgcolor ez328vga_color_hwrtopg(hwrcolor c) {
 }
    
 g_error ez328vga_regfunc(struct vidlib *v) {
-   setvbl_default(v);
+   setvbl_linear4(v);
    
    v->init     = &ez328vga_init;
    v->color_hwrtopg = &ez328vga_color_hwrtopg;
