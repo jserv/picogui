@@ -1,4 +1,14 @@
-2001-03-23    Pascal Bauermeister <pascal.bauermeister@smartdata.ch>
+2001-04-12    Pascal Bauermeister <pascal.bauermeister@smartdata.ch>
+
+	* vidbase/linear1.c vidbase/linear2.c vidbase/linear3.c:
+	added handling for CONFIG_ROTATE180
+
+	* SMARTDATA.config: updated config
+
+	* appmgr/global.c: reverted to old cursor
+
+
+2001-04-12    Pascal Bauermeister <pascal.bauermeister@smartdata.ch>
 
 Added support for video 180 degree rotation. This is provided as an option in
 the config. When selected, the whole display is rotated by 180 degree (any
