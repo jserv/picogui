@@ -323,9 +323,9 @@ class Server(object):
         return self._strings[text]
 
     def getBitmap(self, image):
-        if not self._bitmaps.has_key(text):
-            self._bitmaps[text] = self.mkbitmap(text)
-        return self._bitmaps[text]
+        if not self._bitmaps.has_key(image):
+            self._bitmaps[image] = self.mkbitmap(image)
+        return self._bitmaps[image]
 
     def getFont(self, spec):
         if not self._fonts.has_key(spec):
