@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.122 2001/11/15 11:17:42 micahjd Exp $
+/* $Id: widget.c,v 1.123 2001/11/16 03:34:48 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -318,9 +318,14 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
       break;
 
     case PG_WP_SIZE:
-      if (data<0) data = 0;
-      w->in->split = data;
-      w->in->flags &= ~DIVNODE_SIZE_AUTOSPLIT;     /* No auto resizing */
+      if (data<0) {
+	/* Automatic sizing */
+	w->in->flags |= DIVNODE_SIZE_AUTOSPLIT;
+      }
+      else {
+	w->in->split = data;
+	w->in->flags &= ~DIVNODE_SIZE_AUTOSPLIT;     /* No auto resizing */
+      }
       w->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
       w->dt->flags |= DIVTREE_NEED_RECALC;
       redraw_bg(w);
