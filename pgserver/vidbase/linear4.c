@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.26 2002/07/31 15:28:45 micahjd Exp $
+/* $Id: linear4.c,v 1.27 2002/07/31 22:14:41 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -75,13 +75,20 @@ inline void linear4_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
     return;
   }
   p = PIXELBYTE(x,y);
-  
-  if (x&1) {
-	  *p = (*p&0xF0) | (c&0x0F);
-		  
+
+#ifdef SWAP_NYBBLES
+  if (x & 1) {
+    *p = (*p&0x0F)  | ((c&0x0F) << 4);
   } else {
-	  *p = (*p&0x0F)  | ((c&0x0F) << 4);
+    *p = (*p&0xF0) | (c&0x0F);
   }
+#else 
+  if (x&1) {
+    *p = (*p&0xF0) | (c&0x0F);
+  } else {
+    *p = (*p&0x0F)  | ((c&0x0F) << 4);
+  }
+#endif
 }
 
 
