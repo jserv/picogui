@@ -2,7 +2,7 @@
 
 # This script should be called as "ciabot %{}" from loginfo.
 # Sample loginfo line:
-# ALL $CVSROOT/CVSROOT/ciabot %{}
+# ALL $CVSROOT/CVSROOT/ciabot %{sVv}
 # Put that in your CVSROOT/loginfo, then set the variables at the top of this
 # script.  Then commit this file to your CVSROOT, and add it to
 # CVSROOT/checkoutlist, and
@@ -53,8 +53,9 @@ fi
 module=`echo $1 | cut -d/ -f1`
 
 if $includefilename; then
+	directory=`echo $1 | cut -d" " -f1`
 	filename=`echo $1 | cut -d" " -f2 | cut -d"," -f1`
-	module="$module: $filename,"
+	module="$directory/$filename"
 fi
 
 tmpfile="/tmp/$RANDOM-$projectname"
