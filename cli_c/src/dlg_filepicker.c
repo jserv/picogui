@@ -1,4 +1,4 @@
-/* $Id: dlg_filepicker.c,v 1.8 2001/08/04 16:17:30 micahjd Exp $
+/* $Id: dlg_filepicker.c,v 1.9 2001/08/04 16:31:40 micahjd Exp $
  *
  * dlg_filepicker.c - Display a dialog box the user can use to select
  *                    a file to open or save. It is customizable with flags
@@ -589,6 +589,8 @@ void filepicker_setdir(struct filepickdata *dat) {
 		  PG_WP_TEXT,pgNewString(buf),
 		  PG_WP_ALIGN,PG_A_LEFT,
 		  PG_WP_SIZE,itemheight,
+		  PG_WP_TRANSPARENT,0,
+		  PG_WP_STATE,PGTH_O_LISTITEM,
 		  0);
     }
   }
