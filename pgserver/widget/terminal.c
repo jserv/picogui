@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.40 2001/12/18 04:53:06 micahjd Exp $
+/* $Id: terminal.c,v 1.41 2001/12/18 07:04:39 lonetech Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -798,8 +798,13 @@ void term_char(struct widget *self,u8 c) {
       break;
       
     case '\t':
+      if (DATA->crsrx >= DATA->bufferw) {
+        DATA->crsrx = 8;	/* "magic" wrapping */
+        DATA->crsry++;
+      }
+      else
       /* Not sure this is right, but it's consistant with observed behavior */
-      DATA->crsrx += 8 - (DATA->crsrx & 7);
+        DATA->crsrx += 8 - (DATA->crsrx & 7);
       break;
       
     case '\b':
@@ -811,12 +816,31 @@ void term_char(struct widget *self,u8 c) {
 
   /* Normal character */
   else
-    term_plot(self,DATA->crsrx++,DATA->crsry,c);
+    {
+      if (DATA->crsrx >= DATA->bufferw) {
+        DATA->crsrx = 0;	/* "magic" wrapping */
+        DATA->crsry++;
+	if (DATA->crsry >= DATA->bufferh) {  /* Scroll vertically */
+          DATA->crsry = DATA->bufferh-1;
+          memcpy(DATA->buffer,DATA->buffer + (DATA->bufferw<<1),
+	         DATA->buffersize-(DATA->bufferw<<1));
+          term_clearbuf(self,0,DATA->bufferh-1,DATA->bufferw);
+
+          /* Two methods here - just redraw the screen or try a scroll blit */
+
+          term_updrect(self,0,0,DATA->bufferw,DATA->bufferh);
+
+          //self->in->div->flags |= DIVNODE_SCROLL_ONLY;
+          //self->in->div->oty = DATA->celh;
+	}
+      }
+      term_plot(self,DATA->crsrx++,DATA->crsry,c);
+    }
   
   /* Handle screen edges */
   if (DATA->crsrx < 0)
     DATA->crsrx = 0;
-  else if (DATA->crsrx >= DATA->bufferw) {  /* Wrap around the side */
+  else if (DATA->crsrx > DATA->bufferw) {  /* Wrap around the side */
     DATA->crsrx = 0;
     DATA->crsry++;
   }
@@ -849,11 +873,13 @@ void term_setcursor(struct widget *self,int flag) {
   
   if (flag)
     /* Show cursor */
-    DATA->attr_under_crsr = term_chattr(self,DATA->crsrx,
+    DATA->attr_under_crsr = term_chattr(self,DATA->crsrx==DATA->bufferw?
+		    			DATA->crsrx-1:DATA->crsrx,
 					DATA->crsry,DATA->attr_cursor);
   else
     /* Hide cursor */
-    term_chattr(self,DATA->crsrx,DATA->crsry,DATA->attr_under_crsr);
+    term_chattr(self,DATA->crsrx==DATA->bufferw?DATA->crsrx-1:DATA->crsrx,
+		    DATA->crsry,DATA->attr_under_crsr);
   
   DATA->cursor_on = flag;
 }
