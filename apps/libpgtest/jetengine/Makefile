@@ -1,5 +1,5 @@
 OBJS = EmbeddedPGserver.o jetengine.o PythonThread.o
-HEADERS = EmbeddedPGserver.h PythonThread.h
+HEADERS = EmbeddedPGserver.h PythonThread.h SimpleException.h
 BIN = jetengine
 
 # Embedding pgserver and python
@@ -19,8 +19,7 @@ BIN = jetengine
 
 # Libs for a dynamic pgserver and static python
 LIBS += -lpgserver \
-	-lutil /usr/lib/python2.2/config/libpython2.2.a \
-	-lGLU
+	-lutil /usr/lib/python2.2/config/libpython2.2.a
 CXXFLAGS += -I/usr/include/python2.2 -g
 
 $(BIN): $(OBJS)

@@ -6,6 +6,7 @@
 extern "C" {
 #include <pgserver/g_error.h>
 }
+#include "SimpleException.h"
 
 class EmbeddedPGserver {
  public:
@@ -22,10 +23,10 @@ class EmbeddedPGserver {
   void setParam(const char *section, const char *param, const char *value);
 };
 
-class PicoGUIException {
+class PicoGUIException : public SimpleException {
  public:
   PicoGUIException(g_error e);
-  void show(void);
+  virtual void show(void);
  private:
   g_error e;
 };

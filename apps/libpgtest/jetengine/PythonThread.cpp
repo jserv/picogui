@@ -8,17 +8,15 @@ int PythonThreadCallback(void *data) {
   return t->threadHandler();
 }
 
-PythonThread::PythonThread(char *module) {
+PythonThread::PythonThread(char *path,char *modulename) {
   Py_Initialize();
+  addPath(path);
 
-  dict = PyImport_ImportModule(module);
-  if (!dict)
-    throw "Can't open python module";
-
-  iteration = PyObject_GetAttrString(dict, "iteration");  
-  if (!iteration)
-    throw "Can't find 'iteration' in python module";
-
+  module = PyImport_ImportModule(modulename);
+  if (!module)
+    throw PythonException();
+  
+  args  = Py_BuildValue("()");
   running = true;
   thread = SDL_CreateThread(&PythonThreadCallback, this);
 }
@@ -26,12 +24,38 @@ PythonThread::PythonThread(char *module) {
 PythonThread::~PythonThread() {
   running = false;
   SDL_WaitThread(thread,NULL);
+  Py_Finalize();
+}
+
+void PythonThread::addPath(char *path) {
+  PyObject *sysmodule, *pathlist, *newpath;
+
+  sysmodule = PyImport_ImportModule("sys");
+  if (!sysmodule)
+    throw PythonException();
+  
+  pathlist = PyObject_GetAttrString(sysmodule, "path");
+  if (!pathlist)
+    throw PythonException();
+  
+  newpath = PyString_FromString(path);
+  if (!newpath)
+    throw PythonException();
+
+  if (PyList_Append(pathlist, newpath))
+    throw PythonException();
+
+  Py_DECREF(sysmodule);
+  Py_DECREF(pathlist);
+  Py_DECREF(newpath);
 }
 
 int PythonThread::threadHandler(void) {
-  while (running) {
-    PyEval_CallObject(iteration,NULL);
-  }
+  PyEval_CallObject(module,args);
   return 0;
+}
+
+void PythonException::show(void) {
+  PyErr_Print();
 }
 

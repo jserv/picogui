@@ -7,18 +7,14 @@
 int main(int argc, char **argv) {
   try {
     EmbeddedPGserver pgserver(argc, argv);
-    PythonThread pythread("game");
+    PythonThread pythread("./script","game");
 
     while (pgserver.mainloopIsRunning()) {
       pgserver.mainloopIteration();
     }  
   }
-  catch (PicoGUIException &e) {
+  catch (SimpleException &e) {
     e.show();
-    return 1;
-  }
-  catch (const char *str) {
-    printf("Error: %s\n",str);
     return 1;
   }
   return 0;
