@@ -1,14 +1,15 @@
-/* $Id: aqua.ths,v 1.35 2002/01/15 02:30:32 micahjd Exp $
+/* $Id: aqua.ths,v 1.36 2002/09/18 11:36:36 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
  *
- * Version 1.02
+ * Version 1.03
  *
  * -- Micah Dowty
  *
  * Changelog:
  *
+ *  1.03 - Patch from Florian Berger to support horizontal scrollbar rendering
  *  1.02 - new indicator, removed many objects' borders for a cleaner look
  *  1.01 - Fixed terminal background
  *  1.0  - First stable release
@@ -211,19 +212,26 @@ object scroll {
   margin = 0;
 
   /* A simple background for the thumb to slide in */
+  bitmap4 = LoadBitmap("data/aq_trough_h.pnm");
   bitmap1 = LoadBitmap("data/aq_trough_v.pnm");
   bgfill = fillstyle {
-    Bitmap(x,y,13,20,scroll::bitmap1);
-    SetSrc(0,20,13,5);
-    Tilebitmap(x,y+20,13,h-40,scroll::bitmap1);
-    SetSrc(0,25,0,0);
-    Bitmap(x,y+h-20,13,20,scroll::bitmap1);
+    var hz,bmp;
+    hz = w>h;
+    bmp = hz ? scroll::bitmap4 : scroll::bitmap1;
+    Bitmap(x,y,hz?20:13,hz?13:20,bmp);
+    SetSrc(hz?20:0,hz?0:20,hz?5:13,hz?13:5);
+    Tilebitmap(x+(hz?20:0),y+(hz?0:20),hz?w-13:13,hz?40:h-40,bmp);
+    SetSrc(hz?25:0,hz?0:25,0,0);
+    Bitmap(x+(hz?w-20:0),y+(hz?0:h-20),hz?20:13,hz?13:20,bmp);
 
     /* Don't quite go all the way to the top/bottom */
-    y = y+4;
-    h = h-8;
+    y = y+(hz?0:4);
+    x = x+(hz?4:0);
+    h = h-(hz?0:8);
+    w = w-(hz?8:0);
     /* Center the thumb */
-    x = x+2;
+    x = x+(hz?0:2);
+    y = y+(hz?2:0);
   };
 }
 

@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.57 2002/09/15 10:51:50 micahjd Exp $
+/* $Id: scroll.c,v 1.58 2002/09/18 11:36:36 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -57,6 +57,7 @@
 
 /* This widget has extra data we can't store in the divnodes themselves */
 struct scrolldata {
+  int vertical;
   int on,over;
   int res;        /* Scroll bar's resolution - maximum value */
   int grab_offset;  /* The difference from the top of the indicator to
@@ -72,26 +73,41 @@ void scrollevent(struct widget *self);
 
 /* When value changes, update the grop coordinates */
 void scrollupdate(struct widget *self) {
-  if (DATA->res <= 0)
-    self->in->div->ty = 0;
-  else
-    self->in->div->ty = DATA->value * DATA->thumbscale / DATA->res;
+
+  if(DATA->vertical){
+    if (DATA->res <= 0)
+      self->in->div->ty = 0;
+    else
+      self->in->div->ty = DATA->value * DATA->thumbscale / DATA->res;
+  } else {
+    if (DATA->res <= 0)
+      self->in->div->tx = 0;
+    else
+      self->in->div->tx = DATA->value * DATA->thumbscale / DATA->res;
+  }
 
   self->in->div->flags |= DIVNODE_NEED_REDRAW;
   self->dt->flags |= DIVTREE_NEED_REDRAW;
+
 }
 
 void build_scroll(struct gropctxt *c,u16 state,struct widget *self) {
   struct widget *wgt;
   s16 oldres;
-
   /* Size ourselves to fit the widget we are bound to
    */
+
+  DATA->vertical=(c->h > c->w);
+
   oldres = DATA->res;
   if (!iserror(rdhandle((void **)&wgt,PG_TYPE_WIDGET,-1,
 			self->scrollbind)) && wgt && wgt->in->div) {
 
-    DATA->res = wgt->in->ch - wgt->in->h;
+    if(DATA->vertical){
+      DATA->res = wgt->in->ch - wgt->in->h;
+    } else {
+      DATA->res = wgt->in->cw - wgt->in->w;
+    }
 
     /* Bounds/sanity checking.. */
     if (DATA->res < 0)
@@ -131,9 +147,15 @@ void build_scroll(struct gropctxt *c,u16 state,struct widget *self) {
   exec_fillstyle(c,state,PGTH_P_BGFILL);
 
   /* The scrollbar thumb */
-  DATA->thumbscale = (c->h-(c->h>>HEIGHT_DIV));
-  c->h = c->h>>HEIGHT_DIV;
-  c->defaultgropflags = PG_GROPF_TRANSLATE;
+  if(DATA->vertical){
+      DATA->thumbscale = (c->h-(c->h>>HEIGHT_DIV));
+      c->h = c->h>>HEIGHT_DIV;
+      c->defaultgropflags = PG_GROPF_TRANSLATE;
+  } else {
+      DATA->thumbscale = (c->w-(c->w>>HEIGHT_DIV));
+      c->w = c->w>>HEIGHT_DIV;
+      c->defaultgropflags = PG_GROPF_TRANSLATE;
+  }
   exec_fillstyle(c,state,PGTH_P_OVERLAY);
 
   /* Update the scroll position */
@@ -271,7 +293,7 @@ glob scroll_get(struct widget *self,int property) {
 void scroll_trigger(struct widget *self,s32 type,union trigparam *param) {
   u32 tick;
   bool force = 0;     /* Force div_setstate to redraw? */
-   
+
   switch (type) {
 
   case PG_TRIGGER_ENTER:
@@ -287,12 +309,17 @@ void scroll_trigger(struct widget *self,s32 type,union trigparam *param) {
 
       DATA->value++;
 
-      DATA->grab_offset = param->mouse.y - self->in->div->y - 
-	self->in->div->ty;
+      if(DATA->vertical){
+          DATA->grab_offset = param->mouse.y - self->in->div->y -
+              self->in->div->ty;
+      } else {
+          DATA->grab_offset = param->mouse.x - self->in->div->x -
+              self->in->div->tx;
+      }
       
       if (DATA->grab_offset < 0)  
 	DATA->release_delta = -SCROLLAMOUNT;
-      else if (DATA->grab_offset > (self->in->div->h>>HEIGHT_DIV))
+      else if (DATA->grab_offset > ( ((DATA->vertical)?self->in->div->h:self->in->div->w)>>HEIGHT_DIV))
 	DATA->release_delta = SCROLLAMOUNT;
       else {
 	DATA->on=1;
@@ -340,9 +367,15 @@ void scroll_trigger(struct widget *self,s32 type,union trigparam *param) {
     if (!DATA->on) return;
 
     /* Button 1 is being dragged through our widget. */
-    DATA->value = (param->mouse.y - self->in->div->y - 
-		   DATA->grab_offset) * DATA->res /
-      (self->in->div->h - (self->in->div->h>>HEIGHT_DIV));
+    if(DATA->vertical){
+        DATA->value = (param->mouse.y - self->in->div->y -
+                       DATA->grab_offset) * DATA->res /
+            (self->in->div->h - (self->in->div->h>>HEIGHT_DIV));
+    } else {
+        DATA->value = (param->mouse.x - self->in->div->x -
+                       DATA->grab_offset) * DATA->res /
+            (self->in->div->w - (self->in->div->w>>HEIGHT_DIV));
+    }
 
     if (DATA->value > DATA->res) DATA->value = DATA->res;
     if (DATA->value < 0) DATA->value =   0;
