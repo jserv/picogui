@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
  A minimal read-only WebDAV client
 """

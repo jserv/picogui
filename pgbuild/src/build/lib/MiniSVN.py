@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
  MiniSVN.py - A minimalist Subversion client capable of doing
               multithreaded atomic checkouts, using only the
@@ -26,11 +27,12 @@ from urlparse import *
 import threading
 from MiniDAV import DavObject
 import os, re, time
+import pickle
 
 class DownloaderPool:
-    def __init__(self, queue, numThreads):
+    def __init__(self, repository, destination, numThreads):
         """Starts multiple DownloaderThreads and stores data shared between them."""
-        self.queue = queue
+        self.queue = [(repository, destination)]
         self.queueSem = threading.Semaphore()
         self.numSleeping = 0
         self.threads = []
@@ -52,7 +54,12 @@ class DownloaderPool:
             self.running = 0
             for thread in self.threads:
                 thread.join()
+                
+            # If we were interrupted, delete the repository's properties file so
+            # next time we have the option to do an update, we will.
+            os.unlink(repository.getPropertyFile(destination))
             raise KeyboardInterrupt
+
         for thread in self.threads:
             thread.join()
             
@@ -140,17 +147,57 @@ class SVNRepository(DavObject):
             url = urlunparse((parsed[0], parsed[1], reposPath, '', '', ''))
         DavObject.__init__(self, url)
 
+    def getPropertyFile(self, destination):
+        """Get the properties filename associated with the given destination directory"""
+        return os.path.join(destination, ".minisvn-properties")
+
+    def saveProperties(self, destination):
+        try:
+            os.makedirs(destination)
+        except OSError:
+            pass
+        propFile = open(self.getPropertyFile(destination), "w")
+        pickle.dump(self.getProperties(), propFile)
+        propFile.close()
+
+    def getSavedProperties(self, destination):
+        propFile = open(self.getPropertyFile(destination), "r")
+        props = pickle.load(propFile)
+        propFile.close()
+        return props
+
     def download(self, destination, numThreads=5):
+        self.saveProperties(destination)
         # If this repository consists of just one file, go ahead and join that to
         # the destination path.
         if len(self.getChildren()) == 0:
             suffix = re.search("/([^/]+)$", self.path).group(1)
             destination = os.path.join(destination, suffix)
+        DownloaderPool(self, destination, numThreads)
 
-        DownloaderPool([(self, destination)], numThreads)
+    def isUpdateAvailable(self, destination):
+        try:
+            # DAV::version-name should have the latest revision that this subdirectory
+            # or any of its children were modified in. This means that if we only have a
+            # subdirectory of the repository checked out, we won't have to do an update
+            # if some other part of it changes
+            downloadedVersion = self.getSavedProperties(destination)['DAV::version-name']
+            latestVersion = self.getProperties()['DAV::version-name']
+            if downloadedVersion == latestVersion:
+                return 0
+        except IOError:
+            # If the repository hasn't been downloaded at all yet, or our properties file
+            # can't be read, force an update.
+            pass
+        return 1
+            
+    def update(self, destination):
+        if self.isUpdateAvailable(destination):
+            # We can't update, just redownload the sources.
+            self.download(destination)
 
 
 if __name__ == '__main__':
     import sys
     repo = SVNRepository(sys.argv[1])
-    repo.download(sys.argv[2])
+    repo.update(sys.argv[2])
