@@ -1,4 +1,4 @@
-/* $Id: zaurus.c,v 1.10 2002/08/23 12:33:14 micahjd Exp $
+/* $Id: zaurus.c,v 1.11 2002/08/23 12:36:05 micahjd Exp $
  *
  * zaurus.c - Input driver for the Sharp Zaurus SL-5000. This includes a
  *            simple touchscreen driver, and some extras to handle sound
@@ -154,7 +154,7 @@ void infilter_zaurus_handler(struct infilter *self, u32 trigger, union trigparam
   case PGKEY_ESCAPE:
     now = getticks();
     if (now < last_cancel_press + 250)
-      drivermessage(PGDM_POWER, PG_POWER_SLEEP);
+      drivermessage(PGDM_POWER, PG_POWER_SLEEP, NULL);
     else
       last_cancel_press = now;
     break;
