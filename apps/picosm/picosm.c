@@ -55,15 +55,7 @@ int evtLogon(struct pgEvent *evt){
   }
 
   pgMessageDialog("Error", "Login failed!", 0);
-  pgEnterContext();
-  pgSetWidget(interface->wPasswd,
-	      PG_WP_TEXT, pgNewString(""),
-	      0);
-  pgSetWidget(interface->wLogin,
-	      PG_WP_TEXT, pgNewString(""),
-	      0);
-  pgFocus(interface->wLogin);
-  pgLeaveContext();
+  evtClear(evt);
 
   if(salt)
     free(salt);
@@ -75,12 +67,17 @@ int evtLogon(struct pgEvent *evt){
 
 int evtClear(struct pgEvent *evt){
   picosmUI *interface = (picosmUI *)evt->extra;
-  pgSetWidget(interface->wLogin,
-	      PG_WP_TEXT, pgNewString(""),
-	      0);
+
+  pgEnterContext();
   pgSetWidget(interface->wPasswd,
 	      PG_WP_TEXT, pgNewString(""),
 	      0);
+  pgSetWidget(interface->wLogin,
+	      PG_WP_TEXT, pgNewString(""),
+	      0);
+  pgFocus(interface->wLogin);
+  pgLeaveContext();
+
   return 1;
 }
 
