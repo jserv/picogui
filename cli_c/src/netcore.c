@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.35 2002/07/04 00:48:05 epchristi Exp $
+/* $Id: netcore.c,v 1.36 2002/07/28 16:40:10 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -838,7 +838,8 @@ void pgInit(int argc, char **argv)
   int enable_warning = 1;
 
   /* Save the program's name */
-  _pg_appname = argv[0];
+  if (argc > 0)
+    _pg_appname = argv[0];
    
   /* Set default handlers */
   pgSetErrorHandler(&_pg_defaulterr);
@@ -853,55 +854,57 @@ void pgInit(int argc, char **argv)
      hostname = PG_REQUEST_SERVER;
 
   /* Handle arguments we recognize, Leave others for the app */
-  for (i=1;i<argc;i++) {
-    arg = argv[i];
-
-    /* It's ours if it starts with --pg */
-    if (!bcmp(arg,"--pg",4)) {
-      arg+=4;
-      args_to_shift = 1;
-
-      if (!strcmp(arg,"server")) {
-	/* --pgserver : Next argument is the picogui server */
-	args_to_shift = 2;
-	hostname = argv[i+1];
-	setenv("pgserver",hostname,1);    /* Child processes inherit server */
-      }
-
-      else if (!strcmp(arg,"version")) {
-	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.35 2002/07/04 00:48:05 epchristi Exp $\n");
-	exit(1);
-      }
-
-      else if (!strcmp(arg,"applet")) {
-	/* --pgapplet : Create the app in a public container instead of
-	 *              registering a new app.
-	 */
-
-	args_to_shift = 2;
-	appletparam = argv[i+1];
-      }
-
-      else if (!strcmp(arg,"nowarn")) {
-	enable_warning = 0;
-      }
+  if (argc > 0) {
+    for (i=1;i<argc;i++) {
+      arg = argv[i];
       
-      else {
-	/* Other command, print some help */
-	fprintf(stderr,"PicoGUI Client Library\nCommands: --pgserver --pgversion --pgapplet --pgnowarn\n");
-	exit(1);
+      /* It's ours if it starts with --pg */
+      if (!bcmp(arg,"--pg",4)) {
+	arg+=4;
+	args_to_shift = 1;
+	
+	if (!strcmp(arg,"server")) {
+	  /* --pgserver : Next argument is the picogui server */
+	  args_to_shift = 2;
+	  hostname = argv[i+1];
+	  setenv("pgserver",hostname,1);    /* Child processes inherit server */
+	}
+	
+	else if (!strcmp(arg,"version")) {
+	  /* --pgversion : For now print CVS id */
+	  fprintf(stderr,"$Id: netcore.c,v 1.36 2002/07/28 16:40:10 micahjd Exp $\n");
+	  exit(1);
+	}
+	
+	else if (!strcmp(arg,"applet")) {
+	  /* --pgapplet : Create the app in a public container instead of
+	   *              registering a new app.
+	   */
+	  
+	  args_to_shift = 2;
+	  appletparam = argv[i+1];
+	}
+	
+	else if (!strcmp(arg,"nowarn")) {
+	  enable_warning = 0;
+	}
+	
+	else {
+	  /* Other command, print some help */
+	  fprintf(stderr,"PicoGUI Client Library\nCommands: --pgserver --pgversion --pgapplet --pgnowarn\n");
+	  exit(1);
+	}
+	
+	/* Remove this argument - shuffle all future args back a space */
+	argc -= args_to_shift;
+	for (j=i;j<argc;j++)
+	  argv[j] = argv[j+args_to_shift];
+	i -= args_to_shift;
       }
-
-      /* Remove this argument - shuffle all future args back a space */
-      argc -= args_to_shift;
-      for (j=i;j<argc;j++)
-	argv[j] = argv[j+args_to_shift];
-      i -= args_to_shift;
     }
+    /* Some programs might rely on this? */
+    argv[argc] = NULL;
   }
-  /* Some programs might rely on this? */
-  argv[argc] = NULL;
 
   /* Separate the display number from the hostname */
   arg = strrchr(hostname,':');
