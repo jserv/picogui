@@ -1,4 +1,4 @@
-/* $Id: g_error.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: g_error.h,v 1.2 2000/09/04 08:19:52 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -58,6 +58,11 @@ typedef unsigned int g_error;
 
 const char *errortext(g_error e);
 g_error prerror(g_error e);
+
+/* "Guru" error screen only available in debugging mode */
+#ifdef DEBUG
+void guru(const char *fmt, ...);
+#endif
 
 #endif /* __H_GERROR */
 /* The End */

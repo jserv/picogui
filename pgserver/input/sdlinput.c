@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.5 2000/09/03 23:40:59 micahjd Exp $
+/* $Id: sdlinput.c,v 1.6 2000/09/04 08:19:52 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -126,8 +126,7 @@ void sdlinput_close(void) {
 
 #ifdef WINDOWS
 /* Make it poll as often as possible */
-void sdlinput_fd_init(int *n,fd_set *readfds,fd_set *writefds,
-		      fd_set *exceptfds,struct timeval *timeout) {
+void sdlinput_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
   timeout->tv_sec = 0;
   timeout->tv_usec = 0;
 }

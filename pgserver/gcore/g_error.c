@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.4 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: g_error.c,v 1.5 2000/09/04 08:19:03 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -27,6 +27,16 @@
 
 #include <pgserver/g_error.h>
 
+#ifdef DEBUG
+/* Extra includes needed for guru screen */
+#include <pgserver/video.h>
+#include <pgserver/font.h>
+#include <pgserver/appmgr.h>
+#include <stdio.h>
+#include <stdarg.h>
+#endif
+
+
 g_error prerror(g_error e) {
   if (!iserror(e)) return e;
 #ifndef TINY_MESSAGES
@@ -47,6 +57,56 @@ g_error prerror(g_error e) {
 #endif
   return e;
 }
+
+/* graphical error/info screen, only in debug mode */
+#ifdef DEBUG
+
+#define deadcomp_width 20
+#define deadcomp_height 28
+static char deadcomp_bits[] = {
+  0xfe, 0xff, 0x07, 0x01, 0x00, 0x08, 0x01, 0x00, 0x08, 0xf1, 0xff, 0x08, 
+  0x09, 0x00, 0x09, 0xa9, 0x50, 0x09, 0x49, 0x20, 0x09, 0xa9, 0x50, 0x09, 
+  0x09, 0x00, 0x09, 0x09, 0x00, 0x09, 0x09, 0x00, 0x09, 0x89, 0x1f, 0x09, 
+  0x49, 0x20, 0x09, 0x29, 0x40, 0x09, 0x09, 0x00, 0x09, 0xf1, 0xff, 0x08, 
+  0x01, 0x00, 0x08, 0x01, 0x00, 0x08, 0x01, 0x00, 0x08, 0x01, 0x00, 0x08, 
+  0x01, 0x00, 0x08, 0x01, 0x00, 0x08, 0x19, 0xff, 0x08, 0x01, 0x00, 0x08, 
+  0x03, 0x00, 0x0c, 0x02, 0x00, 0x04, 0x02, 0x00, 0x04, 0xfe, 0xff, 0x07, 
+  };
+
+void guru(const char *fmt, ...) {
+  struct fontdesc *df=NULL;
+  hwrcolor fg;
+  hwrbitmap icon;
+  char msgbuf[256];
+  va_list ap;
+
+  if (!vid) return;
+
+  /* Setup */
+  (*vid->clip_off)();
+  (*vid->clear)();
+  fg = (*vid->color_pgtohwr)(0x8080FF);
+  rdhandle((void**)&df,TYPE_FONTDESC,-1,defaultfont);
+
+  /* Icon (if this fails, no big deal) */
+  if (!iserror((*vid->bitmap_loadxbm)(&icon,deadcomp_bits,
+				      deadcomp_width,deadcomp_height,
+				      fg,0))) {
+    (*vid->blit)(icon,0,0,NULL,10,10,deadcomp_width,deadcomp_height,LGOP_NONE);
+    (*vid->bitmap_free)(icon);
+  }
+
+  /* Format and print message */
+
+  va_start(ap,fmt);
+  vsnprintf(msgbuf,256,fmt,ap);
+  va_end(ap);
+
+  outtext(df,20+deadcomp_width,10,fg,msgbuf);
+  (*vid->update)();
+}
+
+#endif /* DEBUG */
 
 /* The End */
 

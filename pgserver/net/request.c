@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.3 2000/09/04 00:33:33 micahjd Exp $
+/* $Id: request.c,v 1.4 2000/09/04 08:19:52 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -409,9 +409,10 @@ void net_iteration(void) {
 	    n = inlib_list;
 	    while (n) {
 	      if (n->fd_activate && (*n->fd_activate)(fd))
-		break;
+		goto requestloop_finish;
 	      n = n->next;
 	    }
+	    goto requestloop_finish;
 	  }
 	}
     }

@@ -1,4 +1,4 @@
-/* $Id: svgainput.c,v 1.2 2000/09/03 23:40:59 micahjd Exp $
+/* $Id: svgainput.c,v 1.3 2000/09/04 08:19:52 micahjd Exp $
  *
  * svgainput.h - input driver for SVGAlib
  *
@@ -47,8 +47,6 @@ g_error svgainput_init(void) {
     return mkerror(ERRT_IO,73);
   vga_setmousesupport(1);
 
-  printf("keyboard: %d, mouse: %d\n",__svgalib_kbd_fd,__svgalib_mouse_fd);
-
   return sucess;
 }
  
@@ -56,11 +54,41 @@ void svgainput_close(void) {
   keyboard_close();
 }
 
+void svgainput_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
+  if ((*n) < (__svgalib_mouse_fd+1)) *n = __svgalib_mouse_fd+1;
+  if ((*n) < (__svgalib_kbd_fd+1)) *n = __svgalib_kbd_fd+1;
+  FD_SET(__svgalib_mouse_fd,readfds);
+  FD_SET(__svgalib_kbd_fd,readfds);
+}
+
+void svgainput_fd_activate(int fd) {
+  if (fd==__svgalib_mouse_fd) {
+    mouse_update();
+  }
+  else if (fd==__svgalib_kbd_fd) {
+    keyboard_update();
+    dispatch_key(TRIGGER_KEYDOWN,PGKEY_u,PGMOD_CTRL|PGMOD_ALT);
+  }
+  else 
+    return 0;
+  return 1;
+}
+
+void svgainput_poll(void) {
+#ifdef DEBUG
+  guru("svgainput_poll()");
+  sleep(50);
+#endif
+}
+
 /******************************************** Driver registration */
 
 g_error svgainput_regfunc(struct inlib *i) {
-  i->init = &svgainput_init;
-  i->close = &svgainput_close;
+  //  i->init = &svgainput_init;
+  //  i->close = &svgainput_close;
+  //  i->fd_init = &svgainput_fd_init;
+  //  i->fd_activate = &svgainput_fd_activate;
+  i->poll = &svgainput_poll;
 
   return sucess;
 }
