@@ -1,4 +1,4 @@
-/* $Id: terminal.h,v 1.13 2003/03/26 13:49:20 micahjd Exp $
+/* $Id: terminal.h,v 1.14 2003/03/27 05:30:16 micahjd Exp $
  *
  * terminal.h - Header file shared by components of the terminal emulator widget
  *
@@ -83,6 +83,7 @@ struct terminaldata {
   struct gropnode *bg,*bginc,*bgsrc;   /* Background */
 
   struct gropnode *inc;                /* The incremental gropnode */
+  struct gropnode *grid;               /* Nonincremental textgrid */
   int x,y;                             /* Base coordinates */
   s16 celw,celh;                       /* Character cel size */
   int fontmargin;

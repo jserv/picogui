@@ -1,4 +1,4 @@
-/* $Id: terminal_frontend.c,v 1.21 2003/03/26 13:49:21 micahjd Exp $
+/* $Id: terminal_frontend.c,v 1.22 2003/03/27 05:30:17 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -177,7 +177,6 @@ void terminal_resize(struct widget *self) {
    
 void build_terminal(struct gropctxt *c,u16 state,struct widget *self) {
   int neww,newh;
-  struct gropnode *grid;
   pghandle bitmap = theme_lookup(self->in->div->state,PGTH_P_BITMAP1);
   u32 *textcolors;
   g_error e;
@@ -313,13 +312,13 @@ void build_terminal(struct gropctxt *c,u16 state,struct widget *self) {
   c->current->param[0] = DATA->hbuffer;
   c->current->param[1] = DATA->bufferw << 16;
   c->current->param[2] = htextcolors;
-  grid = c->current;
+  DATA->grid = c->current;
 
   /* Incremental grop for the text grid */
   addgrop(c,PG_GROP_TEXTGRID);
   c->current->flags   |= PG_GROPF_INCREMENTAL;
   c->current->param[0] = DATA->hbuffer;
-  c->current->param[2] = grid->param[2];
+  c->current->param[2] = DATA->grid->param[2];
   DATA->inc = c->current;
   DATA->x = c->r.x;
   DATA->y = c->r.y;
@@ -339,12 +338,14 @@ void terminal_trigger(struct widget *self,s32 type,union trigparam *param) {
   
   if (type & (PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_MOVE)) {
     /* Get the x,y of the mouse, for mouse events */
-    DATA->mouse_x = (param->mouse.x - self->in->div->r.x - DATA->bg->r.x) / DATA->celw;
-    DATA->mouse_y = (param->mouse.y - self->in->div->r.y - DATA->bg->r.y) / DATA->celh;
+    DATA->mouse_x = (param->mouse.x - self->in->div->r.x - DATA->grid->r.x) / DATA->celw;
+    DATA->mouse_y = (param->mouse.y - self->in->div->r.y - DATA->grid->r.y) / DATA->celh;
     if (DATA->mouse_x<0) DATA->mouse_x = 0;
     if (DATA->mouse_y<0) DATA->mouse_y = 0;
     if (DATA->mouse_x>=DATA->bufferw) DATA->mouse_x = DATA->bufferw - 1;
     if (DATA->mouse_y>=DATA->bufferh) DATA->mouse_y = DATA->bufferh - 1;
+    DATA->mouse_x++;
+    DATA->mouse_y++;
   }
 
   switch (type) {
