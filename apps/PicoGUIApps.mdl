@@ -155,7 +155,7 @@ def prepare (module, platform, project):
 def install (module, platform, project):
     sequence ("make install prefix=%s" % module.path ['frz'])
 
-    sequence ("ln -s %s/bin/pterm %s/share/Terminal.app" % \
+    sequence ("ln -sf %s/bin/pterm %s/share/Terminal.app" % \
               (module.path ['frz'], module.path ['frz']))
 
     # try to install the mdl file in the root of the frozen directory
