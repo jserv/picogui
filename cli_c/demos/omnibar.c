@@ -1,4 +1,4 @@
-/* $Id: omnibar.c,v 1.9 2001/02/07 08:36:42 micahjd Exp $
+/* $Id: omnibar.c,v 1.10 2001/04/05 03:26:13 micahjd Exp $
  * 
  * omnibar.c - hopefully this will grow into a general interface
  *             for starting and manipulating applications, but
@@ -152,11 +152,11 @@ void sysIdle(void) {
   sscanf(buf,"cpu %lu %lu %lu %lu",&cpu_user,&cpu_nice,&cpu_sys,&cpu_idle);  
   crun = cpu_user + cpu_sys;
   ctotal = crun + cpu_nice + cpu_idle;
+  if (crun==ocrun || ctotal==octotal) return; /* Prevent SIGFPE */
   pgSetWidget(wLoad,PG_WP_VALUE, (crun-ocrun) * 100 / (ctotal-octotal),0);
   ocrun = crun;
   octotal = ctotal;
   pgSubUpdate(wLoad);
-
 }
 
 /********* Main program */
