@@ -447,6 +447,9 @@ quoted appropriately. For example:
   for each pixel rather than taking advantage of texture mapping. Without the 'antialias'
   option on, the standard fonts will look pretty bad when scaled.
 
+- zoom
+  Set the actual picogui resolution to the window size divided by this amount
+
 [input-jsdev]
 
 - polltime

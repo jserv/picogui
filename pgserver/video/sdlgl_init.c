@@ -1,4 +1,4 @@
-/* $Id: sdlgl_init.c,v 1.15 2002/08/19 12:35:02 micahjd Exp $
+/* $Id: sdlgl_init.c,v 1.16 2002/09/13 00:37:32 micahjd Exp $
  *
  * sdlgl_init.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has initialization, shutdown, and registration.
@@ -81,6 +81,7 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   char str[80];
   float a,x,y,z;
   g_error e;
+  int zoom = get_param_int(GL_SECTION,"zoom",1);
    
   /* Interpret flags */
   if (get_param_int(GL_SECTION,"fullscreen",0))
@@ -95,9 +96,9 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
 
   /* Always use true color */
   vid->bpp = 32;
-  vid->xres = xres;
-  vid->yres = yres;
-  
+  vid->xres = xres/zoom;
+  vid->yres = yres/zoom;
+
   /* Info */
   snprintf(str,sizeof(str),get_param_str(GL_SECTION,"caption","PicoGUI (sdlgl@%dx%d)"),
 	   vid->xres,vid->yres,bpp);
@@ -123,7 +124,7 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   }
 
   /* Set up camera */
-  glViewport(0,0,vid->xres,vid->yres);
+  glViewport(0,0,xres,yres);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   gluPerspective(GL_FOV,1,GL_MINDEPTH,GL_MAXDEPTH);
