@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.58 2002/03/01 21:17:12 micahjd Exp $
+/* $Id: memtheme.c,v 1.59 2002/03/26 02:34:23 instinc Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -48,7 +48,7 @@
  * This used to be in a seperate file, but a possible bug in egcs
  * (compiler or linker) forced me to move it in here.
  */
-unsigned short thobj_ancestry[PGTH_ONUM] = {
+u16 thobj_ancestry[PGTH_ONUM] = {
 
   /* #  Theme object                 Parent              */
 
@@ -154,8 +154,8 @@ s16 thobj_parent(s16 id) {
   return parent;
 }
 
-struct pgmemtheme_thobj *find_thobj(struct pgmemtheme *th,unsigned short id) {
-  unsigned short i;
+struct pgmemtheme_thobj *find_thobj(struct pgmemtheme *th, u16 id) {
+  u16 i;
   struct pgmemtheme_thobj *tlist = theme_thobjlist(th);
   if (!th) return NULL;
   
@@ -165,8 +165,8 @@ struct pgmemtheme_thobj *find_thobj(struct pgmemtheme *th,unsigned short id) {
   return NULL;
 }
 
-struct pgmemtheme_prop *find_prop(struct pgmemtheme_thobj *tho,unsigned short id) {
-  unsigned short i;
+struct pgmemtheme_prop *find_prop(struct pgmemtheme_thobj *tho, u16 id) {
+  u16 i;
   struct pgmemtheme_prop *plist;
 
   if (!tho) return NULL;
@@ -180,12 +180,11 @@ struct pgmemtheme_prop *find_prop(struct pgmemtheme_thobj *tho,unsigned short id
 
 /* Look for the given property, starting at 'object'
  * returns the property's 'data' member */
-unsigned long theme_lookup(unsigned short object,
-			   unsigned short property) {
+u32 theme_lookup(u16 object, u16 property) {
   struct pgmemtheme *ptheme = memtheme;
   struct pgmemtheme_thobj *pobj;
   struct pgmemtheme_prop *pprop;
-  unsigned short obj;
+  u16 obj;
 
   while (ptheme) {
     obj = object;
@@ -363,7 +362,7 @@ void div_setstate(struct divnode *d,u16 state,bool force) {
 }
 
 /* Small build function for widgets that only need a background */
-void build_bgfill_only(struct gropctxt *c,unsigned short state,struct widget *self) {
+void build_bgfill_only(struct gropctxt *c, u16 state, struct widget *self) {
   exec_fillstyle(c,state,PGTH_P_BGFILL);
 }
 
@@ -446,19 +445,19 @@ void theme_divtree_update(struct pgmemtheme *th) {
 }
 
 g_error theme_load(handle *h,int owner,char *themefile,
-		   unsigned long themefile_len) {
+		   u32 themefile_len) {
   g_error e;
   struct pgtheme_header *hdr;
-  unsigned long sum32;
-  unsigned long mysum32 = 0;
+  u32 sum32;
+  u32 mysum32 = 0;
   unsigned char *cp;
-  unsigned long c;
-  unsigned short i,j;
-  unsigned long heaplen;
+  u32 c;
+  u16 i,j;
+  u32 heaplen;
   unsigned char *heap;
   struct pgtheme_thobj *thop;
   struct pgmemtheme_thobj *mthop,*thobjarray;
-  unsigned long themefile_remaining = themefile_len;
+  u32 themefile_remaining = themefile_len;
   char *themefile_start = themefile;
   struct pgtheme_prop *propp;
   struct pgmemtheme_prop *mpropp;

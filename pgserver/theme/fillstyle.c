@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.21 2002/03/03 19:23:30 micahjd Exp $
+/* $Id: fillstyle.c,v 1.22 2002/03/26 02:34:23 instinc Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -35,16 +35,16 @@
 
 /* Stack for the interpreter */
 #define FSSTACKSIZE  32
-unsigned long fsstack[FSSTACKSIZE];
+u32 fsstack[FSSTACKSIZE];
 int fsstkpos;  /* position in the stack */
 
 /* Macros to get the next short/long from the fillstyle buffer */
 
-#define NEXTSHORT      ((unsigned short)( (unsigned short)(p[0])<<8 |\
-                        (unsigned short)(p[1]) ))
-#define NEXTLONG       ((unsigned long)( (unsigned long)(p[0])<<24 |\
-                        (unsigned long)(p[1])<<16 | (unsigned long)\
-                        (p[2])<<8 | (unsigned short)(p[3]) ))
+#define NEXTSHORT      ((u16)( (u16)(p[0])<<8 |\
+                        (u16)(p[1]) ))
+#define NEXTLONG       ((u32)( (u32)(p[0])<<24 |\
+                        (u32)(p[1])<<16 | (u32)\
+                        (p[2])<<8 | (u16)(p[3]) ))
 
 /* Little utility functions */
 
@@ -54,13 +54,13 @@ g_error fsset(int reg);
 g_error fspopargs(void);
 
 /* Arguments for binary operators */
-unsigned long fsa,fsb;
+u32 fsa,fsb;
 
-g_error check_fillstyle(const unsigned char *fs, unsigned long fssize)
+g_error check_fillstyle(const unsigned char *fs, u32 fssize)
  {
   const unsigned char *p=fs, *plimit=fs+fssize;
   unsigned char op, reg;
-  unsigned short grop;
+  u16 grop;
 
   /* Initialize stack; 4 positions loaded for x y w h */
   fsstkpos = 4;
@@ -170,10 +170,10 @@ g_error check_fillstyle(const unsigned char *fs, unsigned long fssize)
  }
 
 /* Fillstyle interpreter- generates/refreshes a gropnode list */
-g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
-		       unsigned short property) {
+g_error exec_fillstyle(struct gropctxt *ctx,u16 state,
+		       u16 property) {
   g_error e;
-  unsigned long fssize;  /* Fillstyle size */
+  u32 fssize;  /* Fillstyle size */
   unsigned char *fs;  /* Pointer to the actual fillstyle data */
   unsigned char *p,*plimit;
   unsigned char op;
@@ -221,7 +221,7 @@ g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
   fsstkpos = 4;
 
   /* Process the opcodes */
-  fssize = *(((unsigned long *)fs)++);
+  fssize = *(((u32 *)fs)++);
   p = fs;
   plimit = fs+fssize;
   while (p<plimit) {
