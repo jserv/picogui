@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.132 2003/03/19 19:18:29 lalo Exp $
+/* $Id: button.c,v 1.133 2003/03/25 01:44:28 micahjd Exp $
  *
  * button.c - generic button, with a string or a image
  *
@@ -77,6 +77,7 @@ struct btndata {
 
   int hotkey;
   int hotkey_flags;
+  int hotkey_modifiers;
   unsigned int hotkey_consume : 1;
   unsigned int hotkey_down : 1;
 
@@ -403,6 +404,10 @@ g_error button_set(struct widget *self,int property, glob data) {
     DATA->hotkey_consume = data;
     break;
 
+  case PG_WP_HOTKEY_MODIFIERS:
+    DATA->hotkey_modifiers = data;
+    break;
+
   case PG_WP_HOTKEY:
     /* Process PGTH_P_HIDEHOTKEYS if it is set */
     switch (theme_lookup(widget_get(self,PG_WP_STATE),PGTH_P_HIDEHOTKEYS)) {
@@ -506,6 +511,9 @@ glob button_get(struct widget *self,int property) {
   case PG_WP_HOTKEY_CONSUME:
     return (glob) DATA->hotkey_consume;
 
+  case PG_WP_HOTKEY_MODIFIERS:
+    return (glob) DATA->hotkey_modifiers;
+
   case PG_WP_TRANSPARENT:
     return (glob) DATA->transparent;
 
@@ -557,14 +565,16 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
   case PG_TRIGGER_CHAR:
     if (param->kbd.key == hotkey_activate && (param->kbd.flags & PG_KF_FOCUSED))
       param->kbd.consume++;
-    if (DATA->hotkey_consume && param->kbd.key == DATA->hotkey && (param->kbd.flags & DATA->hotkey_flags))
+    if (DATA->hotkey_consume && param->kbd.key == DATA->hotkey && 
+	param->kbd.mods == DATA->hotkey_modifiers && (param->kbd.flags & DATA->hotkey_flags))
       param->kbd.consume++;
     return;
     
   case PG_TRIGGER_KEYDOWN:
     /* We want to consume the hotkey's KEYDOWN, but only act on KEYUP.
      */
-    if (param->kbd.key == DATA->hotkey && (param->kbd.flags & DATA->hotkey_flags)) {
+    if (param->kbd.key == DATA->hotkey && param->kbd.mods == DATA->hotkey_modifiers && 
+	(param->kbd.flags & DATA->hotkey_flags)) {
       DATA->hotkey_down = 1;
       if (DATA->hotkey_consume)
 	param->kbd.consume++;      
@@ -573,7 +583,7 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
     
     /* Do the fake mouseclick if it's focused and they pressed the activate key
      */
-    if (param->kbd.key == hotkey_activate && (param->kbd.flags & PG_KF_FOCUSED))
+    if (param->kbd.key == hotkey_activate && param->kbd.mods == 0 && (param->kbd.flags & PG_KF_FOCUSED))
       param->kbd.consume++;
     else
       return;
@@ -611,7 +621,8 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
 
     /* Hotkey was pressed, simulate a keypress
      */
-    if (param->kbd.key == DATA->hotkey && (param->kbd.flags & DATA->hotkey_flags)) {
+    if (param->kbd.key == DATA->hotkey && param->kbd.mods == DATA->hotkey_modifiers &&
+	(param->kbd.flags & DATA->hotkey_flags)) {
       if (DATA->hotkey_consume)
 	param->kbd.consume++;
 

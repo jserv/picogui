@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.184 2003/03/25 01:26:14 micahjd Exp $
+/* $Id: constants.h,v 1.185 2003/03/25 01:44:24 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -1000,6 +1000,7 @@ typedef unsigned long pghandle;
 #define PG_WP_POPUP_IS_MENU   64  /* Popup is menu flag */
 #define PG_WP_POPUP_IS_SUBMENU 65 /* Popup is submenu flag */
 #define PG_WP_CURSOR_POSITION 66  /* Textbox cursor position */
+#define PG_WP_HOTKEY_MODIFIERS 67 /* Modifiers to require along with the hotkey */
 
 /* Constants for PG_WP_AUTO_ORIENTATION */
 #define PG_AUTO_SIDE         (1<<0)

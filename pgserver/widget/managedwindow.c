@@ -1,4 +1,4 @@
-/* $Id: managedwindow.c,v 1.20 2003/03/19 22:24:15 lalo Exp $
+/* $Id: managedwindow.c,v 1.21 2003/03/25 01:44:31 micahjd Exp $
  *
  * managedwindow.c - A root widget representing a window managed by a host GUI
  *
@@ -276,26 +276,7 @@ void managedwindow_resize(struct widget *self) {
 }
 
 void managedwindow_trigger(struct widget *self,s32 type,union trigparam *param) {
-  /* Escape or clicking outside the window sends PG_WE_DEACTIVATE,
-   * an explicit close message from the window manager sends PG_WE_CLOSE.
-   */
   switch (type) {
-
-  case PG_TRIGGER_KEYUP:
-  case PG_TRIGGER_KEYDOWN:
-  case PG_TRIGGER_CHAR:
-    if (param->kbd.key == PGKEY_ESCAPE) {
-      param->kbd.consume++;
-      if (type == PG_TRIGGER_KEYUP)
-	post_event(PG_WE_DEACTIVATE,self,0,0,NULL);
-    }
-    break;
-
-  case PG_TRIGGER_DOWN:
-    if (param->mouse.x < 0 || param->mouse.y < 0 ||
-	param->mouse.x > self->in->calc.w || param->mouse.y > self->in->calc.h)
-	post_event(PG_WE_DEACTIVATE,self,0,0,NULL);
-    break;
 
   case PG_TRIGGER_CLOSE:
     post_event(PG_WE_CLOSE, self, 0,0,NULL);

@@ -318,6 +318,25 @@ _key_consts = {
 	    'alpha':		(322, {}),
     }
 
+_modifier_consts = {
+  	    'lshift':		(0x0001, {}),
+	    'rshift':		(0x0002, {}),
+	    'shift':		(0x0003, {}),
+	    'lctrl':		(0x0040, {}),
+	    'rctrl':		(0x0080, {}),
+	    'ctrl':		(0x00C0, {}),
+	    'lalt':		(0x0100, {}),
+	    'ralt':		(0x0200, {}),
+	    'alt':		(0x0300, {}),
+	    'lmeta':		(0x0400, {}),
+	    'rmeta':		(0x0800, {}),
+	    'meta':		(0x0C00, {}),
+	    'num':		(0x1000, {}),
+	    'caps':		(0x2000, {}),
+	    'mode':		(0x4000, {}),
+    }
+
+
 _thobj_consts = {
             'default':			(0, {}),
             'base interactive':		(1, {}),
@@ -671,6 +690,14 @@ _constants = {
         }),
         'tab bar':			(63, {
         }),
+        'popup is menu':		(63, {
+        }),
+        'popup is submenu':		(63, {
+        }),
+        'cursor position':		(63, {
+        }),
+        'hotkey modifiers':		(63,
+	    _modifier_consts),    
     },
     'traversewidget': {
         'children':	(1, {}),	# starting with first child, traverse forward
