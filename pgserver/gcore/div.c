@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.83 2002/03/03 20:05:29 micahjd Exp $
+/* $Id: div.c,v 1.84 2002/04/15 02:40:31 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -147,21 +147,36 @@ void divnode_split(struct divnode *n, struct rect *divrect,
       x=(vid->lxres>>1)-(w>>1);
       y=(vid->lyres>>1)-(h>>1);
     }
-    else if (x == PG_POPUP_ATCURSOR) {
+    else if (x == PG_POPUP_ATCURSOR || x==PG_POPUP_ATEVENT) {
+      struct widget *snap;
+      struct conbuf *cb;
+
+      /* Snap to the last click or to the last event */
+      if (x == PG_POPUP_ATEVENT && n->owner) {
+	/* The last event is stored along with the client's connection buffer */
+	cb = find_conbuf(n->owner->owner);
+	if ((!cb) || iserror(rdhandle((void**)&snap, 
+				      PG_TYPE_WIDGET, -1, cb->lastevent_from)))
+	  snap = NULL;
+      }
+      else {
+	snap = lastclicked;
+      }
+
       /* This is a menu, allow it to overlap toolbars */
       n->div->flags &= ~DIVNODE_POPUP_NONTOOLBAR;
       
-      if (lastclicked && lastclicked->type == PG_WIDGET_BUTTON) {
+      if (snap && snap->type == PG_WIDGET_BUTTON) {
 	/* snap to a button edge */
-	x = lastclicked->in->div->x;
-	y = lastclicked->in->div->y + lastclicked->in->div->h + margin;
+	x = snap->in->div->x;
+	y = snap->in->div->y + snap->in->div->h + margin;
 	if ((y+h)>=vid->yres) /* Flip over if near the bottom */
-	  y = lastclicked->in->div->y - h - margin;
+	  y = snap->in->div->y - h - margin;
       }
-      else if (lastclicked && lastclicked->type == PG_WIDGET_MENUITEM) {
+      else if (snap && snap->type == PG_WIDGET_MENUITEM) {
 	/* snap to a menuitem edge */
-	x = lastclicked->in->div->x + lastclicked->in->div->w;
-	y = lastclicked->in->div->y;
+	x = snap->in->div->x + snap->in->div->w;
+	y = snap->in->div->y;
       }
       else {
 	/* exactly at the cursor */

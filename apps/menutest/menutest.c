@@ -70,7 +70,7 @@ int btnCustomMenu(struct pgEvent *evt) {
   pgEnterContext();
 
   /* Create a popup menu at the cursor with automatic sizing */
-  pgNewPopupAt(PG_POPUP_ATCURSOR,PG_POPUP_ATCURSOR,
+  pgNewPopupAt(PG_POPUP_ATEVENT,PG_POPUP_ATEVENT,
 	       PGDEFAULT,PGDEFAULT);
 
   /* Decorations! */
@@ -258,6 +258,7 @@ int main(int argc, char *argv[])
 	      PG_WP_TEXT,pgNewString("String"),
 	      PG_WP_SIDE,PG_S_LEFT,
 	      PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
+	      PG_WP_HOTKEY,PGKEY_F1,
 	      0);
   pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&btnMenuFromString,NULL);
 
@@ -266,6 +267,7 @@ int main(int argc, char *argv[])
 	      PG_WP_TEXT,pgNewString("Array"),
 	      PG_WP_SIDE,PG_S_LEFT,
 	      PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
+	      PG_WP_HOTKEY,PGKEY_F2,
 	      0);
   pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&btnMenuFromArray,NULL);
 
@@ -274,6 +276,7 @@ int main(int argc, char *argv[])
 	      PG_WP_TEXT,pgNewString("Custom"),
 	      PG_WP_SIDE,PG_S_LEFT,
 	      PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
+	      PG_WP_HOTKEY,PGKEY_F3,
 	      0);
   pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&btnCustomMenu,NULL);
 
@@ -281,6 +284,7 @@ int main(int argc, char *argv[])
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("Dialog"),
 	      PG_WP_SIDE,PG_S_LEFT,
+	      PG_WP_HOTKEY,PGKEY_F4,
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnDialog,NULL);
 

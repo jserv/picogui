@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.28 2002/04/08 23:43:57 micahjd Exp $
+/* $Id: handle.h,v 1.29 2002/04/15 02:40:31 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -71,6 +71,14 @@ struct handlenode {
   u32 payload;   /* Client-definable data */
   const void *obj;
   struct handlenode *left,*right,*parent;  /* For the red-black tree */
+
+  /* 
+   * WARNING!!!!!!
+   * If you add/remove members from this structure, update the node copy
+   * in htree_delete()! If you fail to do so, demons will haunt pgserver
+   * with evil evil bugs
+   *
+   */
 };
 
 /* Find the handlenode associated with a handle ID */

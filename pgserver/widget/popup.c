@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.52 2002/04/11 08:51:43 micahjd Exp $
+/* $Id: popup.c,v 1.53 2002/04/15 02:40:31 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -100,8 +100,8 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   (*wgt)->isroot = 1;  /* This widget has no siblings, so no point going
 			  outside it anyway */
 
-  /* Give it a menu theme if it's position is PG_POPUP_ATCURSOR */
-  if (x==PG_POPUP_ATCURSOR) {
+  /* Give it a menu theme if it's position is PG_POPUP_ATCURSOR or _ATEVENT */
+  if (x==PG_POPUP_ATCURSOR || x==PG_POPUP_ATEVENT) {
     (*wgt)->in->div->state = PGTH_O_POPUP_MENU;
     (*wgt)->in->state = PGTH_O_POPUP_MENU;
   }

@@ -3,7 +3,7 @@
 <book id="PicoGUI.Protocol">
  <bookinfo>
   <title>PicoGUI Protocol</title>
-  <subtitle>Version 14</>
+  <subtitle>Version 15</>
 
   <authorgroup>
    <author>
@@ -177,7 +177,7 @@ struct pghello {
 	The <structfield>protover</structfield> identifies the protocol
 	version in use.	The version number is incremented every time a
 	change is made to the protocol specifications.  At the time of
-	writing this document the latest value was <constant>14</constant>.
+	writing this document the latest value was <constant>15</constant>.
    </para>
   </sect2>
  </sect1>
@@ -994,7 +994,13 @@ struct pgreqd_mkpopup {
    <row><entry>PG_POPUP_CENTER</><entry>-1</><entry>Centered on screen</></>
    <row><entry>PG_POPUP_ATCURSOR</><entry>-2</><entry>At the pointing device's
    cursor. If the cursor is over a button or menuitem, the popup snaps to its
-   edge automatically</></>
+   edge automatically. This also chooses the PGTH_O_POPUP_MENU theme object
+   for the popup.</></>
+   <row><entry>PG_POPUP_ATEVENT</><entry>-3</><entry>Snaps the popup to the
+   widget that most recently sent an event to the client. This usually has
+   the same effect as PG_POPUP_ATCURSOR, but this will work even when the mouse
+   is not the originator of the event. This also chooses the PGTH_O_POPUP_MENU
+   theme object for the popup.</></>
    </tbody>
    </tgroup>
    </table>

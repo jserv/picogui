@@ -1,4 +1,4 @@
-/* $Id: stddialog.c,v 1.13 2002/03/26 16:27:27 instinc Exp $
+/* $Id: stddialog.c,v 1.14 2002/04/15 02:40:31 micahjd Exp $
  *
  * stddialog.c - Various preconstructed dialog boxes the application
  *               may use. These are implemented 100% client-side using
@@ -186,7 +186,7 @@ int pgMenuFromString(char *items) {
 
   /* Create the menu popup in its own context */
   pgEnterContext();
-  pgNewPopupAt(PG_POPUP_ATCURSOR,PG_POPUP_ATCURSOR,0,0);
+  pgNewPopupAt(PG_POPUP_ATEVENT,PG_POPUP_ATEVENT,0,0);
   
   i=0;
   do {
@@ -237,7 +237,7 @@ int pgMenuFromArray(pghandle *items,int numitems) {
 #endif  
   int i;
   pghandle returnHandle;
-  returnHandle = pgNewPopupAt(PG_POPUP_ATCURSOR,PG_POPUP_ATCURSOR,0,0);
+  returnHandle = pgNewPopupAt(PG_POPUP_ATEVENT,PG_POPUP_ATEVENT,0,0);
 
   for (i=0;i<numitems;i++) {
     printf("Menu Item => %d\n", pgNewWidget(PG_WIDGET_MENUITEM,0,0));

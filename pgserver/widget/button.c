@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.102 2002/03/27 15:09:25 lonetech Exp $
+/* $Id: button.c,v 1.103 2002/04/15 02:40:31 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -427,10 +427,10 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
     return;
     
   case TRIGGER_KEYDOWN:
-    /* We want to consume the hotkey's KEYDOWN, but only act on KEYUP
+    /* We want to consume the hotkey's KEYDOWN, but only act on KEYUP.
      */
     if (DATA->hotkey_consume && param->kbd.key == DATA->hotkey && (param->kbd.flags & DATA->hotkey_flags)) {
-      param->kbd.consume++;
+      param->kbd.consume++;      
       return;
     }
     
@@ -530,6 +530,10 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
 	 * so just post the event and get on with it 
 	 */
 	post_event(PG_WE_ACTIVATE,self,2,0,NULL);
+	if (DATA->extdevents & PG_EXEV_PNTR_DOWN)
+	  post_event(PG_WE_PNTR_DOWN,self,1,0,NULL);
+	if (DATA->extdevents & PG_EXEV_PNTR_UP)
+	  post_event(PG_WE_PNTR_UP,self,1,0,NULL);
       }
       return;
     }

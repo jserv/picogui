@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.24 2002/04/11 08:44:59 micahjd Exp $
+/* $Id: pgnet.h,v 1.25 2002/04/15 02:40:31 micahjd Exp $
  *
  * pgnet.h - definitions and stuff for the picogui server
  *           networking code. Most of the interesting code
@@ -113,7 +113,9 @@ struct conbuf {
   int owner;
 
   int context;   /* The owner's current context */
-  
+  handle lastevent_from;   /* Originator of the last event sent to this connection,
+			    * currently used for the PG_POPUP_ATEVENT flag */
+
   /* Event ring buffer */
   struct event q[EVENTQ_LEN];
   struct event *in,*out;

@@ -1,4 +1,4 @@
-/* $Id: eventq.c,v 1.20 2002/03/26 04:05:43 instinc Exp $
+/* $Id: eventq.c,v 1.21 2002/04/15 02:40:31 micahjd Exp $
  *
  * eventq.c - This implements the post_event function that the widgets
  *            use to send events to the client.  It stores these in a
@@ -54,6 +54,12 @@ void post_event(int event,struct widget *from,s32 param,int owner,char *data) {
   hfrom = hlookup(from,&owner);
   if (!(hfrom || owner)) return;
 
+  cb = find_conbuf(owner);
+  if (!cb) return;   /* Sanity check */
+
+  /* Store this as the most recently sent event */
+  cb->lastevent_from = hfrom;
+    
   /* Is the owner already waiting for an event? */
   if (FD_ISSET(owner,&evtwait)) {
     struct pgresponse_event rsp;
@@ -73,9 +79,7 @@ void post_event(int event,struct widget *from,s32 param,int owner,char *data) {
   }
   else {
     /* Store it in the queue */
-    cb = find_conbuf(owner);
-    if (!cb) return;   /* Sanity check */
-    
+
     /* Free any data that might be left in this node
      * (in case we had an overflow)
      */
