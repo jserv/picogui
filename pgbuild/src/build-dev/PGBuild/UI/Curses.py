@@ -227,12 +227,12 @@ class ClockWindow(Window):
         if not attr:
             attr = curses.color_pair(070)
         self.attr = attr
+        self.clear()
+        self.win.bkgd(' ', self.attr)
         self.update()
 
     def update(self):
-        self.clear()
-        self.win.bkgd(' ', self.attr)
-        self.addText(((str(Interface.timeStampClass()), self.attr),))
+        self.addText(((str(Interface.timeStampClass()), self.attr),), 0, 0)
         self.win.refresh()
 
 
@@ -260,20 +260,27 @@ class CursesWrangler(object):
     """Abstraction for our particular interface built with curses"""
     def __init__(self):
         try:
+            self.cursesSem = threading.Semaphore()
             self.clockUpdater = ClockUpdater()
-            self.clockUpdater.start()
+
+            self.cursesSem.acquire()
             self.stdscr = curses.initscr()
             curses.start_color()
             curses.noecho()
             curses.cbreak()
             curses.curs_set(0)
             self.stdscr.keypad(1)
+
             # Initialize all possible color pairs so we can specify
             # foreground and background colors in octal.
             for color in range(1,64):
                 curses.init_pair(color, color & 7, color >> 3) 
+            self.cursesSem.release()
+
             signal.signal(signal.SIGWINCH, self.resize)
+
             self.resize()
+            self.clockUpdater.start()
         except:
             self.cleanup()
             raise
@@ -281,11 +288,13 @@ class CursesWrangler(object):
     def cleanup(self):
         self.clockUpdater.running = 0
         self.clockUpdater.join()
+        self.cursesSem.acquire()
         self.stdscr.keypad(0)
         curses.echo()
         curses.nocbreak()
         curses.curs_set(1)
         curses.endwin()
+        self.cursesSem.release()
 
     def resize(self, signum=None, frame=None):
         """Called on terminal resize, and once to get the initial size"""
@@ -294,6 +303,7 @@ class CursesWrangler(object):
 
     def layout(self):
         """Set up us our windows, called whenever the size changes"""
+        self.cursesSem.acquire()
         remaining = Rect(0,0,self.width,self.height)
         footer = Heading(remaining.sliceBottom(1),
                          "%s version %s - Curses frontend" % (PGBuild.name, PGBuild.version),'center', ' ')
@@ -305,6 +315,7 @@ class CursesWrangler(object):
         self.reportWin = ScrollingWindow(remaining)
         self.clock = ClockWindow(footer.rect.sliceRight(10))
         self.clockUpdater.clocks = [self.clock]
+        self.cursesSem.release()
 
     def getHeightWidth(self):
         """ getHeightWidth() -> (int, int)
@@ -331,6 +342,7 @@ class Progress(PGBuild.UI.None.Progress):
 
     def _showTaskHeading(self):
         # Timestamp this task if we haven't seen it before
+        self.curses.cursesSem.acquire()
         if not getattr(self, 'timeStamp', None):
             self.timeStamp = time.time()
         task = self
@@ -340,25 +352,34 @@ class Progress(PGBuild.UI.None.Progress):
                 list.insert(0, task)
             task = task.parent
         self.curses.taskWin.show(list)
+        self.curses.cursesSem.release()
 
     def cleanup(self):
         self.curses.cleanup()
 
     def _report(self, verb, noun):
+        self.curses.cursesSem.acquire()
         stamp = str(Interface.timeStampClass())
         self.curses.reportWin.addLine(( ("%s %10s" % (stamp, verb),0),
                                         (" : ", curses.A_BOLD),
                                         (noun,0)
                                         ))
+        self.curses.cursesSem.release()
         
     def _warning(self, text):
+        self.curses.cursesSem.acquire()
         self.curses.messageWin.textBlock("Warning:\n" + text, curses.color_pair(003) | curses.A_BOLD)
+        self.curses.cursesSem.release()
             
     def _error(self, text):
+        self.curses.cursesSem.acquire()
         self.curses.messageWin.textBlock("Error:\n" + text, curses.color_pair(001) | curses.A_BOLD)
+        self.curses.cursesSem.release()
 
     def _message(self, text):
+        self.curses.cursesSem.acquire()
         self.curses.messageWin.textBlock(text)
+        self.curses.cursesSem.release()        
 
 
 class Interface(PGBuild.UI.None.Interface):
