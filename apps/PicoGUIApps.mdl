@@ -14,19 +14,17 @@ prefix = '/'
 
 depends = [ 'picoguiclient' ]
 
-asserts = [ 'picoguiclient',
-
-            (S ('module/picoguiapps/pgboard_run_us_qwerty') |
-             S ('module/picoguiapps/pgboard_run_us_qwerty_bitmap') |
-             S ('module/picoguiapps/pgboard_run_fitaly') |
-             S ('module/picoguiapps/pgboard_run_ch_qwertz')) >>
+asserts = [
+    (S ('module/picoguiapps/pgboard_run_us_qwerty') |
+     S ('module/picoguiapps/pgboard_run_us_qwerty_bitmap') |
+     S ('module/picoguiapps/pgboard_run_fitaly') |
+     S ('module/picoguiapps/pgboard_run_ch_qwertz')) >>
             
-            (S ('module/picoguiapps/pgboard_run_us_qwerty') ^
-             S ('module/picoguiapps/pgboard_run_us_qwerty_bitmap') ^
-             S ('module/picoguiapps/pgboard_run_fitaly') ^
-             S ('module/picoguiapps/pgboard_run_ch_qwertz'))
-            
-            ]
+    (S ('module/picoguiapps/pgboard_run_us_qwerty') ^
+     S ('module/picoguiapps/pgboard_run_us_qwerty_bitmap') ^
+     S ('module/picoguiapps/pgboard_run_fitaly') ^
+     S ('module/picoguiapps/pgboard_run_ch_qwertz'))
+    ]
 
 declare = [ 'option/picoguiapps/debug' ]
 
@@ -125,12 +123,13 @@ def prepare (module, platform, project):
     command = "../configure"
 
     command = command + " --enable-bee"
+    command = command + " --prefix=%s" % module.path ['prefix']
 
-    command = command + " --prefix=%s --with-prefix=%s --host=%s" % \
-              (module.path ['prefix'],
-               platform.toolchain,
-               platform.platform )
-
+    if not platform.native:
+        command = command + " --with-prefix=%s --host=%s" % \
+                  (platform.toolchain,
+                   platform.platform)
+        
     command = command + " --enable-optimisation"
 
     command = command + " --enable-pocketbee"
