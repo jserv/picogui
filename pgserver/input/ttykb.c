@@ -20,6 +20,7 @@
 #include <pgserver/pgnet.h>
 #include <picogui/pgkeys.h>
 #include <picogui/constants.h>
+#include <pgserver/configfile.h>
 
 #define	KEYBOARD	"/dev/tty"	/* keyboard associated with screen*/
 
@@ -70,7 +71,8 @@ g_error ttykb_init(null)
 {
 	struct termios	new;
 
-	ttykb_fd = open(KEYBOARD, O_NONBLOCK);
+	ttykb_fd = open(get_param_str("input-ttykb","device", KEYBOARD),
+		 O_NONBLOCK);
 	
 	if (ttykb_fd < 0)
 		return -1;
