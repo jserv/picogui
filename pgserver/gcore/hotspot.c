@@ -1,4 +1,4 @@
-/* $Id: hotspot.c,v 1.13 2001/12/14 22:56:43 micahjd Exp $
+/* $Id: hotspot.c,v 1.14 2001/12/15 21:47:06 micahjd Exp $
  *
  * hotspot.c - This is an interface for managing hotspots.
  *             The divtree is scanned for hotspot divnodes.
@@ -256,10 +256,16 @@ void hotspot_traverse(short direction) {
 
   /* If the closest node isn't really that close, just warp to
    * that closest node. Otherwise, traverse. */
-  if ( (cursor->x <= p->x+5) &&
-       (cursor->x >= p->x-5) &&
-       (cursor->y <= p->y+5) &&
-       (cursor->y >= p->y-5) ) {
+  if ( (!p->div &&
+	((cursor->x <= p->x+5) &&        /* no divnode, use a radius of 5 */ 
+	(cursor->x >= p->x-5) &&
+	(cursor->y <= p->y+5) &&
+	(cursor->y >= p->y-5))) ||
+       (p->div &&
+	(cursor->x < p->div->x + p->div->w) &&
+	(cursor->x >= p->div->x) &&
+	(cursor->y < p->div->y + p->div->h) &&
+	(cursor->y >= p->div->y))) {
   
     /* traverse */
     p = p->graph[direction];
