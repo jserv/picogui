@@ -73,4 +73,8 @@
   DRV("mgl2input", &mgl2input_regfunc)
 #endif
 
+#ifdef DRIVER_ADC7843
+  DRV("adc7843", &adc7843_regfunc)
+#endif
+
 /* The End */

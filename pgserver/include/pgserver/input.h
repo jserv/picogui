@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.32 2002/01/20 09:56:16 micahjd Exp $
+/* $Id: input.h,v 1.33 2002/02/02 23:52:22 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -143,6 +143,7 @@ g_error x11input_regfunc(struct inlib *i);
 g_error palmaxts_regfunc(struct inlib *i);
 g_error gpm_regfunc(struct inlib *i);
 g_error mgl2input_regfunc(struct inlib *i);
+g_error adc7843_regfunc(struct inlib *i);
 
 /* List of installed input drivers */
 struct inputinfo {

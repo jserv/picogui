@@ -103,6 +103,7 @@ add_if_true x11input.c     $DRIVER_X11INPUT
 add_if_true palmaxts.c	   $DRIVER_PALMAXTS
 add_if_true sc3ts.c        $DRIVER_SC3TS
 add_if_true mgl2input.c    $DRIVER_MGL2INPUT
+add_if_true adc7843.c      $DRIVER_ADC7843
 
 close_section
 

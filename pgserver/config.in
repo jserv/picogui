@@ -116,7 +116,8 @@ if [ "$CONFIG_TOUCHSCREEN" = "y" ]; then
    bool 'R3912 (VTech Helio) touchscreen input driver'  DRIVER_R3912TS
    if [ "$DRIVER_R3912TS" = "y" ]; then
      bool '  Convert Helio silk-screen buttons'         DRIVER_R3912TS_HELIOSS
-  fi
+   fi
+   bool 'Psion touchscreen (adc7843) driver'            DRIVER_ADC7843
 fi
 bool 'SDL input driver'                                 DRIVER_SDLINPUT
 bool 'X Window System input driver'                     DRIVER_X11INPUT
