@@ -1,4 +1,4 @@
-/* $Id: if_pntr_preprocess.c,v 1.2 2002/07/03 22:03:30 micahjd Exp $
+/* $Id: if_pntr_preprocess.c,v 1.3 2002/10/08 10:08:58 micahjd Exp $
  *
  * if_pntr_preprocess.c - Various processing on mouse pointer events before dispatch
  *
@@ -33,7 +33,9 @@ void infilter_pntr_preprocess_handler(struct infilter *self, u32 trigger, union 
   /* Convert the event to logical coordinates if necessary
    */
   if (!param->mouse.is_logical) {
-    VID(coord_logicalize)(&param->mouse.x, &param->mouse.y);
+    /* Scroll wheel events always logical */
+    if (trigger != PG_TRIGGER_SCROLLWHEEL)
+      VID(coord_logicalize)(&param->mouse.x, &param->mouse.y);
     param->mouse.is_logical = 1;
   }
 }
