@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.15 2000/10/29 21:05:43 micahjd Exp $
+/* $Id: picogui_client.c,v 1.16 2000/10/30 12:46:40 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -947,7 +947,6 @@ void pgReplaceTextFmt(pghandle widget,const char *fmt, ...) {
  */
 int pgMessageDialog(const char *title,const char *text,unsigned long flags) {
   struct pgreqd_mkmsgdlg arg;
-  pghandle htitle,htext;
   pghandle from;
   unsigned long ret;
 
@@ -955,8 +954,8 @@ int pgMessageDialog(const char *title,const char *text,unsigned long flags) {
   pgEnterContext();
 
   /* Build the dialog box */
-  arg.title = htitle = pgNewString(title);
-  arg.text = htext = pgNewString(text);
+  arg.title = htonl(pgNewString(title));
+  arg.text =  htonl(pgNewString(text));
   arg.flags = htonl(flags);
   _pg_add_request(PGREQ_MKMSGDLG,&arg,sizeof(arg));
 
