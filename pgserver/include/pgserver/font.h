@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.26 2002/10/12 14:46:34 micahjd Exp $
+/* $Id: font.h,v 1.27 2002/10/12 15:13:32 micahjd Exp $
  *
  * font.h - Common structures for defining fonts, and an interface
  *          for specific font engines to attach to
@@ -49,6 +49,8 @@ struct font_metrics {
   struct sizepair charcell;
   int ascent,descent;
   int margin;
+  int linegap;
+  int lineheight;   /* = ascent + descent + linegap */
 };
 
 /* This should be extensible to support multiple font engines simultaneously

@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.6 2002/10/12 14:46:35 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.7 2002/10/12 15:13:32 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -563,7 +563,7 @@ g_error paragraph_wrap(struct paragraph *par, int force) {
 int paragraph_font_height(struct font_descriptor *fd) {
   struct font_metrics m;
   fd->lib->getmetrics(fd,&m);
-  return m.ascent + m.descent;
+  return m.lineheight;
 }
 
 /* Skip from one line to the next, updating the metadata and iterator cache. 

@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.29 2002/10/12 14:46:34 micahjd Exp $
+/* $Id: videotest.c,v 1.30 2002/10/12 15:13:31 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -115,7 +115,7 @@ void testpat_color(void) {
    
    rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
    fd->lib->getmetrics(fd,&m);
-   h = m.ascent + m.descent;
+   h = m.lineheight;
    
    /* Background */
    VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,bg,PG_LGOP_NONE);
@@ -295,10 +295,10 @@ void testpat_text(void) {
    c=' ';
    while (1) {
       if (p.x + m.charcell.w > vid->xres) {
-	 p.y += m.ascent + m.descent;
+	 p.y += m.lineheight;
 	 p.x = 0;
       }
-      if (p.y + m.ascent + m.descent > vid->yres)
+      if (p.y + m.lineheight > vid->yres)
 	return;
       if (c>'~')
 	c = ' ';

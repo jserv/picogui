@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.47 2002/10/12 14:46:35 micahjd Exp $
+/* $Id: sdlfb.c,v 1.48 2002/10/12 15:13:32 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -662,7 +662,7 @@ g_error sdlfb_sdc_char(char c) {
     /* Set the initial cursor position */
     fd->lib->getmetrics(fd,&m);
     sdlsdc_c.x = 0;
-    sdlsdc_c.y = sdlsdc_h - m.ascent - m.descent;
+    sdlsdc_c.y = sdlsdc_h - m.lineheight;
   }
   
   /* Look up the font */
@@ -705,7 +705,7 @@ g_error sdlfb_sdc_char(char c) {
 		   sdlsdc_x+sdlsdc_c.x-m.charcell.w,
 		   sdlsdc_y+sdlsdc_c.y,
 		   m.charcell.w,
-		   m.ascent + m.descent);
+		   m.lineheight);
   }
 
   return success;

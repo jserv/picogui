@@ -1,4 +1,4 @@
-/* $Id: font_base.c,v 1.1 2002/10/12 14:47:14 micahjd Exp $
+/* $Id: font_base.c,v 1.2 2002/10/12 15:13:32 micahjd Exp $
  *
  * font_base.c - Handles multiple font backends, and provides default
  *               implementations of fontlib functions
@@ -157,22 +157,22 @@ void def_draw_string(struct font_descriptor *fd, hwrbitmap dest, struct pair *po
       switch (angle) {
 	
       case 0:
-	position->y += m.ascent + m.descent;
+	position->y += m.lineheight;
 	position->x = b;
 	break;
 	
       case 90:
-	position->x += m.ascent + m.descent;
+	position->x += m.lineheight;
 	position->y = b;
 	break;
 	
       case 180:
-	position->y -= m.ascent + m.descent;
+	position->y -= m.lineheight;
 	position->x = b;
 	break;
 	
       case 270:
-	position->x -= m.ascent + m.descent;
+	position->x -= m.lineheight;
 	position->y = b;
 	break;
 	
@@ -195,11 +195,11 @@ void def_measure_string(struct font_descriptor *fd, const struct pgstring *str,
   fd->lib->getmetrics(fd,&m);
 
   *w = m.margin << 1;
-  *h = (*w) + m.ascent + m.descent;
+  *h = (*w) + m.lineheight;
   
   while ((ch = pgstring_decode(str,&p))) {
     if (ch=='\n') {
-      *h += m.ascent + m.descent;
+      *h += m.lineheight;
       if ((*w)>o_w) o_w = *w;
       *w = m.margin << 1;
     }

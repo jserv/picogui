@@ -1,4 +1,4 @@
-/* $Id: font_bdf.c,v 1.2 2002/10/12 14:51:33 micahjd Exp $
+/* $Id: font_bdf.c,v 1.3 2002/10/12 15:13:32 micahjd Exp $
  *
  * font_bdf.c - Font engine that uses fonts compiled into pgserver,
  *              converted from BDF fonts at compile-time.
@@ -339,6 +339,8 @@ void bdf_getmetrics(struct font_descriptor *self, struct font_metrics *m) {
   m->ascent = DATA->font->ascent;
   m->descent = DATA->font->descent;
   m->margin = DATA->margin;
+  m->linegap = 0;
+  m->lineheight = m->ascent + m->descent;
 }
 
 void bdf_measure_string(struct font_descriptor *self, const struct pgstring *str,
