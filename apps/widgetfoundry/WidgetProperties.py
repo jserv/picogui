@@ -1,35 +1,77 @@
 import PicoGUI, string, sys
 
+widgetTypes = {}
+
+# Get the WidgetType class for a widget type
+def getType(app, type):
+    if not widgetTypes.has_key(type):
+	widgetTypes[type] = WidgetType(app, type)
+    return widgetTypes[type]
+    
+
+# Get a widget's property list
+def getList(widget, app):
+    if not hasattr(widget,'properties'):
+	# We need to generate the list
+	widget.properties = {}
+	type = getType(app, widget.type)
+	for prop in type.properties:
+	    value = getattr(widget, prop)
+	    if value != type.defaults[prop]:
+		widget.properties[prop] = value
+    return widget.properties
+
+
+class WidgetType:
+    """
+    Gathers and stores information about the property types and
+    defaults supported by a particular widget type.
+    """
+    def __init__(self, app, type):
+        # Create a widget of this type, and scan it for settable
+        # properties and their default values
+        widget = app.createWidget(type)
+        self.properties = []
+        self.defaults = {}
+        for prop in PicoGUI.server.constants['set'].keys():
+            try:
+                default = getattr(widget, prop)
+                setattr(widget,prop,default)
+                self.defaults[prop] = default
+            except:
+                pass
+            else:
+                self.properties.append(prop)
+	self.properties.sort()
+        app.delWidget(widget)
+
 
 class PropertyList:
+    "A user-editable list of widget properties"
     def __init__(self, app, widget, container):
         self.app = app
         self.widget = widget
         self.container = container
         self.list = []
+	self.type = getType(app, widget.type)
 
-	widget.properties = ('text','font','side','thobj','transparent')
+        for i in self.type.properties:
+            self.list.append(PropertyEdit(self,i))
 
-	# Take the widget's current state as default if
-	# we haven't already saved other defaults.
-	if not hasattr(widget,'defaults'):
-		widget.defaults = {}
-		for i in widget.properties:
-			widget.defaults[i] = getattr(widget,i)
+    def destroy(self):
+	for i in self.list:
+	    i.destroy()
 
-	for i in widget.properties:
-		widget.defaults
-	        self.add(i)
-
-    def add(self, property):
-        self.list.append(PropertyEdit(self,property))
 
 class PropertyEdit:
+    "A generic property editor container"
     def __init__(self, propertyList, property):
         self.plist = propertyList
         self.property = property
         self.widget = self.plist.widget
         self.app = self.plist.app
+	self.type = self.plist.type
+	self.visible = False
 
         if len(self.plist.list) == 0:
             self.box = self.plist.container.addWidget('box','inside')
@@ -45,27 +87,32 @@ class PropertyEdit:
         self.app.link(self._show_hide, self.checkbox, 'activate')
 
         self.value = getattr(self.widget, self.property)
-	if self.value != self.widget.defaults[self.property]:
-		self.checkbox.on = 1
-		self.show()
+        if self.value != self.type.defaults[self.property]:
+            self.checkbox.on = 1
+            self.show()
+	    self.propertyValid()
 
+    def destroy(self):
+	self.deleteEditorWidgets()
+	self.app.delWidget(self.checkbox)
+	
     def show(self):
-        self.settingsBox = self.box.addWidget('box','inside')
-        self.settingsBox.side = 'bottom'
-        self.settingsBox.transparent = 1
+	if not self.visible:
+	    self.editor = StringPropertyEditor(self)
+	    self.visible = True
 
-        self.editWidget = self.settingsBox.addWidget('field','inside')
-        self.editWidget.side = 'top'
-        self.editWidget.text = str(self.value)
-        self.app.link(self._modify, self.editWidget, 'activate')
+    def deleteEditorWidgets(self):
+	self.editor.destroy()
+        if hasattr(self,'errorLabel'):
+            self.app.delWidget(self.errorLabel)	
 
     def hide(self):
-        self.app.delWidget(self.settingsBox)
-        self.app.delWidget(self.editWidget)
-        if hasattr(self,'errorLabel'):
-            self.app.delWidget(self.errorLabel)
-	self.value = self.widget.defaults[self.property]
-	setattr(self.widget, self.property, self.value)
+	if self.visible:
+	    self.deleteEditorWidgets()
+	    self.value = self.type.defaults[self.property]
+	    setattr(self.widget, self.property, self.value)
+	    self.propertyInvalid()
+	    self.visible = False
 
     def _show_hide(self, ev, widget):
         if widget.on:
@@ -73,19 +120,49 @@ class PropertyEdit:
         else:
             self.hide()
 
-    def _modify(self, ev, widget):
+    def set(self,value):
+	self.show()
+	
         # Delete a stale error notice if we have one
         if hasattr(self,'errorLabel'):
-                self.app.delWidget(self.errorLabel)
+	    self.app.delWidget(self.errorLabel)
 
         # If we have an exception setting the property,
         # slap an invalid warning on this property
-        self.value = widget.text
+        self.value = value
         try:
             setattr(self.widget, self.property, self.value)
-            self.valid = 1
+	    if not hasattr(self.widget,'properties'):
+		self.widget.properties = {}
+	    self.propertyValid()
         except:
-            self.errorLabel = self.settingsBox.addWidget('label','inside')
+            self.errorLabel = self.box.addWidget('label','inside')
             self.errorLabel.side = 'bottom'
             self.errorLabel.text = 'Invalid Value'
-            self.valid = 0
+	    self.propertyInvalid()
+
+    def propertyValid(self):
+	self.widget.properties[self.property] = self.value
+
+    def propertyInvalid(self):
+	if hasattr(self.widget,'properties'):
+	    if self.widget.properties.has_key(self.property):
+		del self.widget.properties[self.property]
+
+
+class StringPropertyEditor:
+    "An editor for properties that can be represented as strings"
+    def __init__(self,propertyEdit):
+	self.pedit = propertyEdit
+	self.app = self.pedit.app
+
+	self.editWidget = self.pedit.box.addWidget('field','inside')
+        self.editWidget.side = 'bottom'
+        self.editWidget.text = str(self.pedit.value)
+        self.app.link(self._modify, self.editWidget, 'activate')
+
+    def _modify(self, ev, widget):
+	self.pedit.set(widget.text)
+
+    def destroy(self):
+        self.app.delWidget(self.editWidget)

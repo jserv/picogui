@@ -89,6 +89,9 @@ class Application(Widget.Widget):
         if self._widget_registry.has_key(widget.handle):
             del self._widget_registry[widget.handle]
 
+    def getWidget(self, handle):
+        return self._widget_registry[handle]
+
     def send(self, widget, name, **attrs):
         self._event_stack.append(InternalEvent(name, widget, attrs))
 
