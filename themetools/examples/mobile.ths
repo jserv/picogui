@@ -1,4 +1,4 @@
-/* $Id: mobile.ths,v 1.2 2001/08/31 18:05:47 micahjd Exp $
+/* $Id: mobile.ths,v 1.3 2001/08/31 18:38:37 micahjd Exp $
  *
  * Theme for small mobile communications devices with very limited screen space
  * and only a keypad for input. This would be good for a cell phone, credit
@@ -30,11 +30,6 @@ object background {
     SetColor(bgcolor);
     Rect(x,y,w,h);
     Bitmap(x+((w-32)>>1),y+((h-32)>>1),32,32,bitmap1);
-
-    SetColor(fgcolor);
-    Pixel(5,5,1,1);
-    SetFont(font);
-    Text(5,5,1,1,default::name);
   };
   font = Font("Helvetica",8,PG_FSTYLE_FLUSH);
 }
