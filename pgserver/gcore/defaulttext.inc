@@ -50,7 +50,7 @@
 /* 42 */  NULL,
 /* 43 */  NULL,
 /* 44 */  "Bad font for field",
-/* 45 */  NULL,
+/* 45 */  "Can't duplicate an object of this type",
 /* 46 */  "Error initializing video",
 /* 47 */  "Error setting video mode",
 /* 48 */  "Invalid PNM bitmap",

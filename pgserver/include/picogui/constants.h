@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.65 2001/07/19 09:06:38 micahjd Exp $
+/* $Id: constants.h,v 1.66 2001/08/01 11:05:30 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -225,6 +225,8 @@ typedef unsigned long pghandle;
 #define PG_TYPE_FILLSTYLE  6    //!< Used internally to store a theme's fillstyles
 #define PG_TYPE_ARRAY      7
 #define PG_TYPE_DRIVER     8    //!< Created by pgLoadDriver()
+
+#define PG_TYPEMASK        0x1F
 
 //! \}
 

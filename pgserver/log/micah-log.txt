@@ -1,3 +1,29 @@
+2001-08-01    Micah Dowty <micahjd@users.sourceforge.net>
+
+I've been working on the standard dialogs out of CVS, at least for
+experimentation. Since this is all client side anyway, it's easiest to work
+on a small standalone client program then copy the dialog code into the
+client library..
+I have the string input dialog almost complete. I just need to work out the
+issue of where the string returned to the caller is stored. What might be
+useful here is a string duplication function and a function to change the
+context level of an object.
+The file dialog requires more complicated scrolling than PicoGUI currently
+supports, and I've been thinking about how to implement it. I'd like to be
+able to attach a scroll widget to a box, and be able to scroll all widgets
+in the box.
+I started a color picker dialog, but it will be a little difficult finding a
+way to pick a color that works on so many different devices. I will probably
+just have many types of color pickers, allowing the user to pick a picker :)
+The font dialog should be easy, but it needs the new scrolling plus a way to
+enumerate the available fonts.
+Maybe I should just make a stub property that allows binding a scroll widget
+to a box without error, and actually implement the scrolling a little later.
+
+      * net/dispatch.c, net/requests.inc, gcore/handle.c, etc: Added the 
+		  PGREQ_DUP and PGREQ_CHCONTEXT requests, for duplicating an 
+		  object and changing its context, respectively.
+
 2001-07-27    Micah Dowty <micahjd@users.sourceforge.net>
 
 I'm starting standard dialog support today. Probably the largest decision to

@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.15 2001/06/30 08:54:05 micahjd Exp $
+/* $Id: handle.h,v 1.16 2001/08/01 11:05:30 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -122,6 +122,18 @@ g_error handle_group(int owner,handle from, handle to);
  * in bulk.
  */
 g_error handle_iterate(u8 type,g_error (*iterator)(void **pobj));
+
+/*
+ * Duplicate a handle (if it can be duplicated. Widgets, drivers,
+ * and themes currently can't be duplicated)
+ */
+g_error handle_dup(handle *dest, int owner, handle src);
+
+/*
+ * Change the context of an existing handle by 'delta'.
+ * Can be positive or negative
+ */
+g_error handle_chcontext(handle h, int owner, s16 delta);
 
 #ifdef DEBUG_KEYS
 /* Debugging function to dump handle tree to stdout on CTRL-ALT-H */

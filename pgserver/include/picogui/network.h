@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.34 2001/07/28 10:44:50 micahjd Exp $
+/* $Id: network.h,v 1.35 2001/08/01 11:05:30 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -121,10 +121,10 @@ struct pghello {
 #define PGREQ_RMCONTEXT    24  /* Cleans up and kills the context|  none */
 #define PGREQ_FOCUS        25  /* Force focus to specified widget|  handle */
 #define PGREQ_GETSTRING    26  /* Returns a RESPONSE_DATA        |  handle */
-#define PGREQ_UNUSED_27    27
+#define PGREQ_DUP          27  /* Duplicates an object           |  handle */
 #define PGREQ_SETPAYLOAD   28  /* Sets an object's payload       |  struct */
 #define PGREQ_GETPAYLOAD   29  /* Gets an object's payload       |  handle */
-#define PGREQ_UNUSED_30    30
+#define PGREQ_CHCONTEXT    30  /* Change a handle's context      |  struct */
 #define PGREQ_WRITETO      31  /* Stream data to a widget        |  handle + data */
 #define PGREQ_UPDATEPART   32  /* Updates subtree defined by wgt |  handle */
 #define PGREQ_MKARRAY      33  /* Makes a array, returns handle  |    data */  
@@ -267,6 +267,11 @@ struct pgreqd_setinactive {
 struct pgreqd_drivermsg {
   u32 message;
   u32 param;
+};
+struct pgreqd_chcontext {
+  u32 handle;
+  s16 delta;   /* Add this value to the context, may be negative */
+  s16 dummy;
 };
 
 /* A structure for encapsulating commands, for example in canvas, within

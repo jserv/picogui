@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.43 2001/07/12 00:17:18 micahjd Exp $
+/* $Id: handle.c,v 1.44 2001/08/01 11:05:30 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -346,10 +346,10 @@ void object_free(struct handlenode *n) {
 #endif
 #ifdef DEBUG_MEMORY
   printf("Enter object free of handle 0x%08X, type %d\n",n->id,n->type &
-	 ~(HFLAG_RED|HFLAG_NFREE));
+	 PG_TYPEMASK);
 #endif
   if (!(n->type & HFLAG_NFREE)) {
-    switch (n->type & ~(HFLAG_RED|HFLAG_NFREE)) {
+    switch (n->type & PG_TYPEMASK) {
     case PG_TYPE_BITMAP:
       VID(bitmap_free) (n->obj);
       break;
@@ -368,7 +368,7 @@ void object_free(struct handlenode *n) {
   }
 #ifdef DEBUG_MEMORY
   printf("Leave object free of handle 0x%08X, type %d\n",n->id,n->type &
-	 ~(HFLAG_RED|HFLAG_NFREE));
+	 PG_TYPEMASK);
 #endif
 }
 
@@ -390,7 +390,7 @@ void r_handle_dump(struct handlenode *n,int level) {
      printf(" ");
    printf("0x%04X : node 0x%08X obj 0x%08X grp 0x%04X pld 0x%08X own %d ctx %d red %d type %s\n",
 	  n->id,n,n->obj,n->group,n->payload,n->owner,n->context,
-	  n->type & HFLAG_RED,typenames[(n->type & ~(HFLAG_RED|HFLAG_NFREE))-1]);
+	  n->type & PG_TYPEMASK,typenames[(n->type & PG_TYPEMASK)-1]);
    r_handle_dump(n->right,level+1);
 }
 void handle_dump(void) {
@@ -407,7 +407,7 @@ void r_string_dump(struct handlenode *n) {
    if (!n) return;
    if (n==NIL) return;
    r_string_dump(n->left);
-	if ((n->type & ~(HFLAG_RED|HFLAG_NFREE))==PG_TYPE_STRING)
+	if ((n->type & PG_TYPEMASK)==PG_TYPE_STRING)
 					 printf("0x%04X : %s\n",
 							  n->id,n->obj);
    r_string_dump(n->right);
@@ -440,12 +440,15 @@ g_error mkhandle(handle *h,unsigned char type,int owner,void *obj) {
 #endif
   e = g_malloc((void **) &n,sizeof(struct handlenode));
   errorcheck;
+  /* HAHAHA! Must initialize memory so 'group' doesn't have a random
+   * value!  I think this was the source of MUCH trouble and TORMENT!!
+   */
+  memset(n,0,sizeof(struct handlenode));
   n->id = newhandle();
   n->type = type;
   n->context = context;
   n->obj = obj;
   n->owner = owner;
-  n->payload = 0;
   htree_insert(n);
   *h = n->id;
    
@@ -499,7 +502,7 @@ g_error rdhandlep(void ***p,unsigned char reqtype,int owner,handle h) {
   }
   n = htree_find(h);
   if (!n) return mkerror(PG_ERRT_HANDLE,26);
-  if ((n->type & ~(HFLAG_RED|HFLAG_NFREE)) != reqtype) 
+  if ((n->type & PG_TYPEMASK) != reqtype) 
     return mkerror(PG_ERRT_HANDLE,28);
 
   /*
@@ -604,8 +607,8 @@ g_error handle_bequeath(handle dest, handle src, int srcowner) {
   if (!(src && s && dest && d)) return mkerror(PG_ERRT_HANDLE,26);
   if (srcowner>=0 && s->owner != srcowner) 
     return mkerror(PG_ERRT_HANDLE,27);
-  if ((s->type & ~(HFLAG_RED|HFLAG_NFREE)) !=
-      (d->type & ~(HFLAG_RED|HFLAG_NFREE)))
+  if ((s->type & PG_TYPEMASK) !=
+      (d->type & PG_TYPEMASK))
     return mkerror(PG_ERRT_HANDLE,28);
 
   object_free(d);
@@ -657,7 +660,7 @@ g_error r_iterate(struct handlenode *n,u8 type,g_error (*iterator)(void **pobj))
    g_error e;
    
    if ((!n) || (n==NIL)) return sucess;
-   if ((n->type & ~(HFLAG_RED|HFLAG_NFREE))==type) {
+   if ((n->type & PG_TYPEMASK)==type) {
      e = (*iterator)(&n->obj);
      errorcheck;
    }
@@ -667,6 +670,56 @@ g_error r_iterate(struct handlenode *n,u8 type,g_error (*iterator)(void **pobj))
 }
 g_error handle_iterate(u8 type,g_error (*iterator)(void **pobj)) {
    return r_iterate(htree,type,iterator);
+}
+
+/*
+ * Duplicate a handle and it's associated object.
+ * (if it can be duplicated. Widgets, drivers,
+ * and themes currently can't be duplicated)
+ */
+g_error handle_dup(handle *dest, int owner, handle src) {
+  struct handlenode *n,*n2;
+  void *newobj;
+  g_error e;
+  u32 sz;
+
+  /* Find the handle */
+  n = htree_find(src);
+  /* make sure it exists */
+  if (!n) return mkerror(PG_ERRT_HANDLE,26);
+  /* Same permissions as rdhandle() */
+  if (owner>=0 && n->owner>=0 && n->owner != owner) 
+    return mkerror(PG_ERRT_HANDLE,27);
+  
+  /* Check the type. Right now we can only duplicate very simple objects */
+  switch (n->type & PG_TYPEMASK) {
+
+  case PG_TYPE_STRING:
+    sz = strlen(n->obj) + 1;
+    e = g_malloc(&newobj,sz);
+    errorcheck;
+    memcpy(newobj,n->obj,sz);
+    break;
+
+  default:
+    return mkerror(PG_ERRT_BADPARAM,45);   /* Can't duplicate object */
+  }
+  
+  /* Just make a new one! */
+  return mkhandle(dest,n->type & PG_TYPEMASK,owner,newobj);
+}
+
+/*
+ * Change the context of an existing handle by 'delta'.
+ * Can be positive or negative
+ */
+g_error handle_chcontext(handle h, int owner, s16 delta) {
+  struct handlenode *n = htree_find(h);
+  if (!n) return mkerror(PG_ERRT_HANDLE,26);
+  if (owner>=0 && n->owner != owner) 
+    return mkerror(PG_ERRT_HANDLE,27);
+  n->context += delta;
+  return sucess;
 }
 
 /* The End */
