@@ -201,7 +201,7 @@ class Interface(object):
                 self.config.packages.findPackageVersion(name).merge(mergeTask)
 
         # Run SCons tasks
-        PGBuild.SConsGlue.run(self.config)
+        PGBuild.SConsGlue.run(self.config, self.progress)
 
         # Interface cleanup- options that dump to stdout and don't use any UI features
         #                    should be placed after this line!

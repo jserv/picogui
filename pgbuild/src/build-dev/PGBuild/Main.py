@@ -56,13 +56,15 @@ class OptionParser(optik.OptionParser):
         ############# General options
         
         self.add_option("-v", "--verbose", action="count", dest="verbosity", default=1,
-                          help="Reports progress in more detail.")    
+                        help="Reports progress in more detail.")    
         self.add_option("-q", "--quiet", action="uncount", dest="verbosity", default=1,
-                          help="Reports progress in less detail.")    
+                        help="Reports progress in less detail.")    
         self.add_option("-i", "--ui", action="store", dest="ui", metavar="MODULE",
-                          help="Selects a user interface module. Try --ui=help to list the available modules.")
+                        help="Selects a user interface module. Try --ui=help to list the available modules.")
         self.add_option("--traceback", action="store_true", dest="traceback",
-                          help="Disables the user-friendly exception handler and gives a traceback when an error occurs.")
+                        help="Disables the user-friendly exception handler and gives a traceback when an error occurs.")
+        self.add_option("-j", "--jobs", dest="numJobs", default=1,
+                        help="Sets the number of jobs that may run concurrently.")
          
         ############# Configuration management
 

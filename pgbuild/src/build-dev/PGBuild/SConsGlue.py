@@ -28,6 +28,7 @@ import SCons.Defaults
 import SCons.Script.SConscript
 import SCons.Job
 import SCons.Taskmaster
+import PGBuild.Errors
 import os
 
 # Acceptable names for an SCons script, in order of preference
@@ -41,10 +42,43 @@ def startup(config):
     SCons.Node.FS.default_fs.set_toplevel_dir(config.eval('bootstrap/path[@name="root"]/text()'))
     SCons.Defaults._default_env = Environment(config)
 
-def run(config):
-    print SCons.Script.SConscript.default_targets
-    taskmaster = SCons.Taskmaster.Taskmaster(nodes, task_class, calc, order)
-    jobs = SCons.Job.Jobs(ssoptions.get('num_jobs'), taskmaster)
+def run(config, progress):
+    # Code to specify targets would go here
+    targets = None
+    if not targets:
+        targets = SCons.Script.SConscript.default_targets
+    
+    # Convert our list of targets to nodes. The targets may be originally specified
+    # as nodes, filenames, or aliases.
+    target_top = None
+    #target_top = "/home/micah/picogui/pgbuild/src/hello-dev"
+    def Entry(x, top=target_top):
+        if isinstance(x, SCons.Node.Node):
+            node = x
+        else:
+            node = SCons.Node.Alias.default_ans.lookup(x)
+            if node is None:
+                node = SCons.Node.FS.default_fs.Entry(x,
+                                                      directory = top,
+                                                      create = 1)
+        if top and not node.is_under(top):
+            if isinstance(node, SCons.Node.FS.Dir) and top.is_under(node):
+                node = top
+            else:
+                node = None
+        return node
+    nodes = filter(lambda x: x is not None, map(Entry, targets))
+
+    if nodes:
+        progress.message("Building targets:" + " ".join(map(lambda x:(" " + str(x)), nodes)))
+    else:
+        raise PGBuild.Errors.ExternalError("No targets to build")
+
+    # Create a taskmaster using a list of target nodes
+    taskmaster = SCons.Taskmaster.Taskmaster(nodes)
+
+    # This sets up several job threads to run tasks concurrently
+    jobs = SCons.Job.Jobs(int(config.eval("invocation/option[@name='numJobs']/text()")), taskmaster)
     jobs.run()
 
 def loadScript(name, progress):
