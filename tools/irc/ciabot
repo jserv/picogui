@@ -1,0 +1,74 @@
+#!/bin/bash
+
+# This script should be called as "ciabot %{}" from loginfo.
+# Sample loginfo line:
+# ALL $CVSROOT/CVSROOT/ciabot %{}
+# Put that in your loginfo, then set the variables at the top of this
+# script.  Then commit this file to your CVSROOT, and add it to
+# CVSROOT/checkoutlist, and
+#   echo | mail -s "JoinChannel #myproject" commits@picogui.org
+
+projectname="fresco"  # will announce to channel #<whatever you put here>
+returnaddress="admin@fresco.org"
+
+# You should turn stripnewlines on if you tend to write short blocks
+# of text, and off if you tend to have any formatting.  If you stick
+# full changelog entries in your commit messages, definitely turn it
+# off.
+stripnewlines=false
+#stripnewlines=true
+
+# For non-sourceforge projects:
+commitaddress="commits@picogui.org"
+# For sourceforge projects:
+#commitaddress="cia@users.sf.net"
+
+#################### End of what you'll generally need to change
+
+echo -n "Notifying #${projectname}..."
+
+maxlines=6
+message=`cat`
+uname=`id -un`
+lineno=`echo "$message" | grep -n "Log Message:" | awk -F: ' { print $1 } '`
+message=`echo "$message" | sed "1,${lineno}d"`
+newline=`echo`
+
+if [ "$message" != "`echo \"$message\" | head -n $maxlines`" ]; then
+# The following line appears to be the only way to insert a newline at
+# that place.
+    message="`echo \"$message\" | head -n $(($maxlines - 1))`
+<...>"
+fi
+
+if $stripnewlines; then
+    message=`echo -n "$message" | tr '\n\r' ' '`
+fi
+
+module=`echo $1 | cut -d/ -f1`
+
+tmpfile="/tmp/$RANDOM-$projectname"
+cat <<EOF >$tmpfile
+From: $returnaddress
+To: commits@picogui.org
+Content-Type: text/plain;
+Subject: Announce $projectname
+
+commit by $uname to $module: $message
+EOF
+
+if [ -e /tmp/lastlog-$projectname ]; then
+    if ! diff /tmp/lastlog-$projectname $tmpfile &>/dev/null; then
+        # there are differences, so this is a different commit
+        cat $tmpfile | /usr/sbin/sendmail -t
+        mv $tmpfile /tmp/lastlog-$projectname
+    else
+        # it's just cvs spamming us from another directory
+        rm $tmpfile
+    fi
+else
+    cat $tmpfile | /usr/sbin/sendmail -t
+    mv $tmpfile /tmp/lastlog-$projectname
+fi
+
+echo "done."
