@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
  CommandLine.py - Utilities specific to operating in a command line environment
 """
