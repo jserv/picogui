@@ -78,7 +78,7 @@ int btnScrollableList(struct pgEvent *evt) {
    pgSetWidget (scroll, PG_WP_BIND, boundingbox, 0);
    
    for ( i=0; i < MAX_ROWS; i++ ) {
-      row[i] = pgCreateWidget(PG_WIDGET_BOX, 0);
+      row[i] = pgCreateWidget(PG_WIDGET_BOX);
       pgSetWidget(row[i], PG_WP_TRANSPARENT, 1, 0);
       sprintf(str, "This is row %d", i);
       pgNewWidget(PG_WIDGET_LABEL, PG_DERIVE_INSIDE, row[i]);

@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.75 2001/12/12 03:49:16 epchristi Exp $
+/* $Id: client_c.h,v 1.76 2001/12/14 00:31:58 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -724,7 +724,7 @@ pghandle pgRegisterApp(short int type,const char *name, ...);
  * 
  * \param type A PG_WIDGET_* constant for the widget type
  * \param rship A PG_DERIVE_* constant indicating the new widget's relationship to it's parent. It can be PGDEFAULT.
- * \param parant The parent widget's handle, or PGDEFAULT.
+ * \param parent The parent widget's handle, or PGDEFAULT.
  * 
  * \returns A handlet to the new widget
  *
@@ -738,7 +738,32 @@ pghandle pgRegisterApp(short int type,const char *name, ...);
 pghandle pgNewWidget(short int type,short int rship,
 		     pghandle parent);
 
-pghandle pgCreateWidget(short int type, pghandle parent);
+/*!
+ * \brief Create a new widget without a parent
+ *
+ * \param type A PG_WIDGET_* constant for the widget type
+ *
+ * This function creates a widget, but does not attach it to the parent widget.
+ * You can still set the widget's parameters and attach child widgets to this one,
+ * but the widget cannot be drawn until you call pgAttachWidget.
+ *
+ * \sa pgAttachWidget, pgNewWidget
+ */
+pghandle pgCreateWidget(short int type);
+
+/*!
+ * \brief Attach a widget to a new parent
+ *
+ * \param parent The parent widget's handle, or PGDEFAULT.
+ * \param rship A PG_DERIVE_* constant indicating the new widget's relationship to it's parent. It can be PGDEFAULT.
+ * \param widget The widget to attach
+ *
+ * This is necessary if you earlier created a widget using pgCreateWidget and now need to attach it
+ * to a parent, or if you want to reattach a widget to a different parent. If the widget has any subwidgets,
+ * they are moved along with the specified widget.
+ *
+ * \sa pgCreateWidget, pgDeleteWidget
+ */
 void pgAttachWidget(pghandle parent, short int rship, pghandle widget);
 
 /*!

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.127 2001/12/13 17:59:33 lonetech Exp $
+/* $Id: widget.c,v 1.128 2001/12/14 00:31:58 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -193,6 +193,17 @@ g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **wher
   if (w->trigger_mask & TRIGGER_CHAR && dt->head->next && dt->head->next->div && 
       dt->head->next->div->owner->type == PG_WIDGET_POPUP) {
     dt->head->next->div->flags |= DIVNODE_POPUP_NONTOOLBAR;
+  }
+
+  /* If this widget is already in the divtree, remove it */
+  if (w->where) {
+    if (w->out && *w->out) {
+      *w->where = *w->out;
+      if (*w->out && (*w->out)->owner)
+	(*w->out)->owner->where = w->where;
+    }
+    else if ( w->where )
+      *w->where = NULL;
   }
   
   /* Add the widget to the divtree */

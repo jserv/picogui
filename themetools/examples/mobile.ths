@@ -1,4 +1,4 @@
-/* $Id: mobile.ths,v 1.13 2001/09/04 18:21:35 micahjd Exp $
+/* $Id: mobile.ths,v 1.14 2001/12/14 00:31:58 micahjd Exp $
  *
  * Theme for small mobile communications devices with very limited screen space
  * and only a keypad for input. This would be good for a cell phone, credit
@@ -323,6 +323,15 @@ object scroll {
     SetSrc(0,3,6,2);
     Tilebitmap(x+1,y+3,6,h-6,bitmap1);
   };
+}
+
+object label.hilight {
+  fgcolor = 0xffffff;
+  bgcolor = 0x000000;
+}
+object box.hilight {
+  fgcolor = 0xffffff;
+  bgcolor = 0x000000;
 }
 
 /* The End */

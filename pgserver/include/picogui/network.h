@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.47 2001/12/12 03:49:16 epchristi Exp $
+/* $Id: network.h,v 1.48 2001/12/14 00:31:58 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -187,12 +187,13 @@ struct pgreqd_handlestruct {
 
 struct pgreqd_createwidget {
    u16 type;
-   u32 parent;
+   u16 dummy;   /* pad to 32-bit */
 };
 struct pgreqd_attachwidget {
    u32 parent;
-   u16 rship;
    u32 widget;
+   u16 rship;
+   u16 dummy;   /* pad to 32-bit */
 };
 
 struct pgreqd_mkwidget {

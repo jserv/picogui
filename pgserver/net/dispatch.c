@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.67 2001/12/12 03:49:16 epchristi Exp $
+/* $Id: dispatch.c,v 1.68 2001/12/14 00:31:58 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -195,10 +195,12 @@ g_error rqh_mkwidget(int owner, struct pgrequest *req,
 
 g_error rqh_createwidget(int owner, struct pgrequest *req,
 		                   void *data, unsigned long *ret, int *fatal) {
-  struct widget *w,*parent;
+  struct widget *w;
   handle h;
-  handle xh;
-  g_error e,etmp;
+  g_error e;
+  /* Fake divtree to assign to unattached widgets */
+  static struct divtree fakedt;
+  static struct divnode fakedt_head;
   reqarg(createwidget);
 
   /* Don't allow direct creation of 'special' widgets that must
@@ -211,11 +213,10 @@ g_error rqh_createwidget(int owner, struct pgrequest *req,
     return mkerror(PG_ERRT_BADPARAM,58);
   }
 
-  etmp = rdhandle((void**) &parent,PG_TYPE_WIDGET,owner,xh=ntohl(arg->parent));
-  if (iserror(etmp))
-     return etmp;
-  
-  e = widget_create(&w, ntohs(arg->type), parent->dt, parent->container, owner);
+  memset(&fakedt,0,sizeof(fakedt));
+  memset(&fakedt_head,0,sizeof(fakedt_head));
+  fakedt.head = &fakedt_head;
+  e = widget_create(&w, ntohs(arg->type), &fakedt, 0, owner);
   errorcheck;
 
   e = mkhandle(&h,PG_TYPE_WIDGET,owner,w);
