@@ -1,4 +1,4 @@
-/* $Id: panelbar.c,v 1.12 2002/09/28 10:58:10 micahjd Exp $
+/* $Id: panelbar.c,v 1.13 2002/10/02 09:00:27 micahjd Exp $
  *
  * panelbar.c - Container and draggable bar for resizing panels
  *
@@ -143,6 +143,8 @@ void panelbar_resize(struct widget *self) {
   /* If the minimum hasn't been set yet, set it to our width */
   if (!DATA->minimum)
     DATA->minimum = self->in->split;
+
+  themeify_panelbar(self,0);
 }
 
 g_error panelbar_install(struct widget *self) {
@@ -160,7 +162,7 @@ g_error panelbar_install(struct widget *self) {
   self->in->div->flags |= DIVNODE_SPLIT_BORDER;
   self->in->div->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
   self->in->div->build = &build_bgfill_only;
-  self->in->div->state = PGTH_O_PANELBAR;
+  self->in->div->state = PGTH_O_PANELBAR_H;
   DATA->panelbar = self->in->div;
 
   self->out = &self->in->next;
@@ -512,13 +514,16 @@ void panelbar_trigger_solid(struct widget *self,s32 type,union trigparam *param)
 #endif /* CONFIG_DRAGSOLID */
 
 void themeify_panelbar(struct widget *self,bool force) {
+  int hz = widget_get(self,PG_WP_SIDE) & (PG_S_TOP | PG_S_BOTTOM);
+
   /* Apply the current state  */
+
   if (DATA->on)
-    div_setstate(DATA->panelbar,PGTH_O_PANELBAR_ON,force);
+    div_setstate(DATA->panelbar,hz ? PGTH_O_PANELBAR_H_ON : PGTH_O_PANELBAR_V_ON,force);
   else if (DATA->over)
-    div_setstate(DATA->panelbar,PGTH_O_PANELBAR_HILIGHT,force);
+    div_setstate(DATA->panelbar,hz ? PGTH_O_PANELBAR_H_HILIGHT : PGTH_O_PANELBAR_V_HILIGHT,force);
   else
-    div_setstate(DATA->panelbar,PGTH_O_PANELBAR,force);
+    div_setstate(DATA->panelbar,hz ? PGTH_O_PANELBAR_H : PGTH_O_PANELBAR_V,force);
 }
 
 /* The End */
