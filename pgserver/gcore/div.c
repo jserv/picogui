@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.62 2001/11/14 08:14:19 micahjd Exp $
+/* $Id: div.c,v 1.63 2001/11/14 09:28:29 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -367,7 +367,9 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
 	* visited. It's safest to just redo the whole recalc. If we keep the
 	* flags straight, the recalc will reset itself and traverse again.
 	*/
-       if ((!(nextrect.w && nextrect.h)) && ((!parent) || parent->div!=n)) {
+       if (n->div && (n->div->w < max(n->div->pw,n->div->cw) || 
+		      n->div->h < max(n->div->ph,n->div->ch)) && 
+	   ((!parent) || parent->div!=n)) {
 	 struct divnode *p;
 	 /* Send to the next line */
 
@@ -442,12 +444,14 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
 	 /* See how many divnodes from the next line will fit here */
 	 p = &n->nextline->div;
 	 while (*p) {
-	   if ((*p)->flags & (DIVNODE_SPLIT_LEFT|DIVNODE_SPLIT_RIGHT))
-	     avw -= (*p)->cw;
-	   if ((*p)->flags & (DIVNODE_SPLIT_TOP|DIVNODE_SPLIT_BOTTOM))
-	     avh -= (*p)->ch;
-	   if (avw<=0 || avh<=0)
-	     break;
+	   if ((*p)->div) {
+	     if ((*p)->flags & (DIVNODE_SPLIT_LEFT|DIVNODE_SPLIT_RIGHT))
+	       avw -= max((*p)->div->cw,(*p)->div->pw);
+	     if ((*p)->flags & (DIVNODE_SPLIT_TOP|DIVNODE_SPLIT_BOTTOM))
+	       avh -= max((*p)->div->ch,(*p)->div->ph);
+	     if (avw<0 || avh<0)
+	       break;
+	   }
 	   p = &(*p)->next;
 	 }
 	 
@@ -919,7 +923,7 @@ void divresize_recursive(struct divnode *div) {
        */
       if (div->next && (div->next->flags & DIVNODE_CONTINUATION_LINE)) {
 	div->cw = dw + nw;
-	div->ch = max(dh,nh);
+	div->ch = dh + nh;
       }
       else {
 	div->ch = dh + nh;
@@ -935,7 +939,7 @@ void divresize_recursive(struct divnode *div) {
        */
       if (div->next && (div->next->flags & DIVNODE_CONTINUATION_LINE)) {
 	div->ch = dh + nh;
-	div->cw = max(dw,nw);
+	div->cw = dw + nw;
       }
       else {
 	div->cw = dw + nw;
