@@ -1,4 +1,4 @@
-/* $Id: pgstring.h,v 1.7 2002/11/04 08:36:25 micahjd Exp $
+/* $Id: pgstring.h,v 1.8 2002/11/05 17:40:31 micahjd Exp $
  *
  * pgstring.h - String data type to handle various encodings
  *
@@ -146,7 +146,7 @@ void pgstring_seek_bytes(const struct pgstring *str, struct pgstr_iterator *p, s
 /* Encode/decode, with optional metadata
  */
 void pgstring_encode_meta(struct pgstring *str, struct pgstr_iterator *p, u32 ch, void *metadata);
-u32 pgstring_decode_meta(struct pgstring *str, struct pgstr_iterator *p, void **metadatap);
+u32 pgstring_decode_meta(const struct pgstring *str, struct pgstr_iterator *p, void **metadatap);
 
 /* Measure how many bytes a character would take to encode
  */
