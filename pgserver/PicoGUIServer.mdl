@@ -27,8 +27,7 @@ depends = [
 runtime = [
 
             Runtime ('install', 'Install PicoGUI Server',
-                     content = [ 'bin/pgserver',
-                                 '/etc/pgserver.conf'],
+                     content = [ 'bin/pgserver'],
                      depends = [ 'resourcemanager/install',
                                  'kernel/video'],
                      help = "Install the PicoGUI Server" ),
