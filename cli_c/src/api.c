@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.7 2001/05/02 03:53:16 micahjd Exp $
+/* $Id: api.c,v 1.8 2001/05/02 03:57:33 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -29,7 +29,6 @@
  */
 
 #include "clientlib.h"
-#include <stdio.h>
 
 /******* The simple functions that don't need args or return values */
 
@@ -158,7 +157,6 @@ struct pgmemdata pgFromFile(const char *file) {
   return x;
 }
 
-#ifdef FILE
 /* Load from an already-opened stream */
 struct pgmemdata pgFromStream(FILE *f, unsigned long length) {
    static struct pgmemdata x;
@@ -173,7 +171,6 @@ struct pgmemdata pgFromStream(FILE *f, unsigned long length) {
    
    return x;
 }
-#endif
 
 /******* A little more complex ones, with args */
 

@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.41 2001/05/02 03:53:16 micahjd Exp $
+/* $Id: client_c.h,v 1.42 2001/05/02 03:57:33 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -29,11 +29,7 @@
 #ifndef _H_PG_CLI_C
 #define _H_PG_CLI_C
 
-/* Most picogui programs won't need stdio.h,
-   so we should define this if needed. */
-#ifndef NULL
-#define NULL ((void*)0)
-#endif
+#include <stdio.h>   /* For NULL and FILE */
 
 /******************** Client-specific constants and data types */
 
@@ -365,10 +361,8 @@ struct pgmemdata pgFromMemory(void *data,unsigned long length);
 /* Load from a normal disk file */
 struct pgmemdata pgFromFile(const char *file);
 
-#ifdef FILE
 /* Load from an already-opened stream */
 struct pgmemdata pgFromStream(FILE *f, unsigned long length);
-#endif
 
 /* TODO: Load from resource. Allow apps to package necessary bitmaps
    and things in a file, named after their binary but with a '.res'
