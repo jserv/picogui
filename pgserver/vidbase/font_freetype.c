@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.8 2002/10/13 13:12:30 micahjd Exp $
+/* $Id: font_freetype.c,v 1.9 2002/10/13 13:26:16 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -471,11 +471,26 @@ int ft_fontcmp(const struct ft_face_id *f, const struct font_style *fs) {
 }
 
 void ft_get_descriptor_face(struct font_descriptor *self, FT_Face *aface) {
+  static struct font_descriptor *last_fd = NULL;
+  static FT_Face last_face = NULL;
   FTC_FontRec fr;
+
+  /* Optimize for consecutive calls with the same face */
+  if (self == last_fd) {
+    *aface =  last_face;
+    return;
+  }
+
   fr.face_id = DATA->face;
   fr.pix_width = 0;
   fr.pix_height = DATA->size;
   FTC_Manager_Lookup_Size(ft_cache,&fr,aface,NULL);
+
+  /* It should be safe to store the face here since this is the
+   * only function that calls FTC_Manager_Lookup_Size
+   */
+  last_fd = self;
+  last_face = *aface;
 }
 
  
