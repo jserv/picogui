@@ -50,18 +50,20 @@ int main(int argc, char **argv)
 }
 
 extern Bool SendPointerEvent(int x, int y, int buttonMask) {
-  static int old_buttonMask = 0;
+  static union pg_client_trigger trig;
+  static pghandle cursor = 0;
 
-  if (old_buttonMask & ~buttonMask)
-    pgSendPointerInput(PG_TRIGGER_UP,x,y,buttonMask);
-  if (buttonMask & ~old_buttonMask)
-    pgSendPointerInput(PG_TRIGGER_DOWN,x,y,buttonMask);
-  else
-    pgSendPointerInput(PG_TRIGGER_MOVE,x,y,buttonMask);
-  
-   pgDriverMessage(PGDM_CURSORVISIBLE,1);
+  if (!cursor)
+    cursor = pgNewCursor();
+
+  trig.content.type = PG_TRIGGER_PNTR_STATUS;
+  trig.content.u.mouse.x = x;
+  trig.content.u.mouse.y = y;
+  trig.content.u.mouse.btn = buttonMask;
+  trig.content.u.mouse.cursor_handle = cursor;
+
+  pgInFilterSend(&trig);
   pgFlushRequests();
-  old_buttonMask = buttonMask;
   return 1;
 }
 

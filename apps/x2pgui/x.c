@@ -63,6 +63,14 @@ int emulate_wheel=1;
  */
 static Bool mouseOnScreen;
 
+void SendKeyInput(int trigger, int key, int mods) {
+  static union pg_client_trigger trig;
+  trig.content.type = trigger;
+  trig.content.u.kbd.key = key;
+  trig.content.u.kbd.mods = mods;
+  pgInFilterSend(&trig);
+  pgFlushRequests();
+}
 
 /* Check to see if this is a repeated key.
  * This code was borrowed from SDL, which borrowed it from GII :)
@@ -761,9 +769,9 @@ HandleTopLevelEvent(XEvent *ev)
     case KeyPress:
       x11_translate_key(dpy, &ev->xkey, ev->xkey.keycode, &sym, &mod, &chr);
       if (sym)
-	pgSendKeyInput(PG_TRIGGER_KEYDOWN,sym,mod);
+	SendKeyInput(PG_TRIGGER_KEYDOWN,sym,mod);
       if (chr)
-	pgSendKeyInput(PG_TRIGGER_CHAR,chr,mod);
+	SendKeyInput(PG_TRIGGER_CHAR,chr,mod);
       pgFlushRequests();
       break;
 
@@ -771,11 +779,11 @@ HandleTopLevelEvent(XEvent *ev)
       x11_translate_key(dpy, &ev->xkey, ev->xkey.keycode, &sym, &mod, &chr);
       if (x11_key_repeat(dpy, ev)) {
 	if (chr)
-	  pgSendKeyInput(PG_TRIGGER_CHAR,chr,mod);
+	  SendKeyInput(PG_TRIGGER_CHAR,chr,mod);
       }
       else {
 	if (sym)
-	  pgSendKeyInput(PG_TRIGGER_KEYUP,sym,mod);
+	  SendKeyInput(PG_TRIGGER_KEYUP,sym,mod);
       }
       pgFlushRequests();
       break;

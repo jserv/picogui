@@ -227,21 +227,21 @@ int tpcalInFilter(struct pgEvent *evt) {
   union pg_client_trigger *trig = evt->e.data.trigger;
   POINT hit;
   int target;
+  static int old_btn = 0;
+  int btn;
 
   penposition.x = trig->content.u.mouse.x;
   penposition.y = trig->content.u.mouse.y;
+  btn = trig->content.u.mouse.btn;
+  if (btn == old_btn)
+    return 0;
+  old_btn = btn;
 
-  switch (trig->content.type) {
+  DBG((__FUNCTION__ " (x=%d,y=%d,btn=%d)\n",penposition.x,penposition.y,btn));
 
-  case PG_TRIGGER_UP:
-    if(current_target == total_targets)
-      showTransformations();
-    break;
+  if (btn) {
+    /* Stylus pressed, record a calibration point */
 
-  case PG_TRIGGER_DOWN:
-
-    DBG((__FUNCTION__ " (x=%d,y=%d)\n",penposition.x,penposition.y));
-    
     if (pcp == 0)
       return 0;
     
@@ -264,8 +264,14 @@ int tpcalInFilter(struct pgEvent *evt) {
     DrawTarget(current_target_location, 0xD0D0D0);
     
     evtDrawTarget(evt);
-    
   }
+  else {
+    /* Stylus released, complete transformation if we're done */
+
+    if(current_target == total_targets)
+      showTransformations();
+  }
+
   return 0;
 }
 
@@ -328,8 +334,8 @@ int main(int argc, char *argv[])
    * mouse-related events are absorbed.
    */
   pgNewInFilter(pgGetServerRes(PGRES_INFILTER_PNTR_NORMALIZE),
-		PG_TRIGGER_UP | PG_TRIGGER_DOWN,
-		PG_TRIGGERS_MOUSE);
+		PG_TRIGGER_TOUCHSCREEN,
+		PG_TRIGGER_TOUCHSCREEN);
   pgBind(PGBIND_ANY, PG_NWE_INFILTER, tpcalInFilter, NULL);
 
   pgEventLoop();
