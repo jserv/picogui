@@ -1,4 +1,4 @@
-/* $Id: sdlgl_primitives.c,v 1.15 2002/11/21 09:08:22 micahjd Exp $
+/* $Id: sdlgl_primitives.c,v 1.16 2002/11/21 09:12:08 micahjd Exp $
  *
  * sdlgl_primitives.c - OpenGL driver for picogui, using SDL for portability.
  *                      Implement standard picogui primitives using OpenGL
@@ -433,17 +433,17 @@ void sdlgl_grop_render_end_hook(struct divnode **div, struct gropnode ***listp,
   glPopMatrix();
 }
 
+/* There's no good way to implement these font blits, so just hilight the area red
+ * to indicate there's something wrong. They should be using a special font engine with this driver.
+ */
 void sdlgl_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 		    s16 lines, s16 angle, hwrcolor c, struct quad *clip,
 		    s16 lgop, int char_pitch) {
-  /* FIXME: implement me! */
 }
-
 #ifdef CONFIG_FONTENGINE_FREETYPE
 void sdlgl_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 			  int char_pitch, u8 *gammatable, s16 angle, hwrcolor c,
 			  struct quad *clip, s16 lgop) {
-  /* FIXME: implement me! */
 }
 #endif /* CONFIG_FONTENGINE_FREETYPE */
 
