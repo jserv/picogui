@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.94 2002/01/30 12:03:16 micahjd Exp $
+/* $Id: button.c,v 1.95 2002/01/31 00:38:38 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -48,6 +48,9 @@ struct btndata {
 
   /* Use the PG_LGOP_ALPHA operation to draw the bitmap */
   unsigned int has_alpha : 1;
+
+  /* This flag is set when our hotkey is received */
+  unsigned int hotkey_received : 1;
   
   handle bitmap,bitmask,text,font;
   
@@ -191,7 +194,8 @@ g_error button_install(struct widget *self) {
 
   self->trigger_mask = TRIGGER_ENTER | TRIGGER_LEAVE | TRIGGER_CHAR |
     TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_DIRECT |
-    TRIGGER_KEYUP | TRIGGER_KEYDOWN | TRIGGER_DEACTIVATE | TRIGGER_ACTIVATE;
+    TRIGGER_KEYUP | TRIGGER_KEYDOWN | TRIGGER_DEACTIVATE | TRIGGER_ACTIVATE |
+    TRIGGER_KEY_START;
 
   self->out = &self->in->next;
   self->sub = &self->in->div->div;
@@ -489,6 +493,11 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     if (param->kbd.key == DATA->hotkey && (param->kbd.flags & DATA->hotkey_flags)) {
       if (DATA->hotkey_consume)
 	param->kbd.consume++;
+
+      /* Make sure we don't do this twice */
+      if (DATA->hotkey_received)
+	return;
+      DATA->hotkey_received = 1;
       
       /* If it's a toggle button, go ahead and make it change state. Otherwise
        * send the event and get out of here without redrawing anything
@@ -564,6 +573,10 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     if (DATA->extdevents & PG_EXEV_FOCUS)
       post_event(PG_WE_FOCUS,self,1,0,NULL);
     return;
+
+  case TRIGGER_KEY_START:
+    DATA->hotkey_received = 0;
+    break;
 
   }
 
