@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.2 2000/09/15 18:10:48 pney Exp $
+/* $Id: network.h,v 1.3 2000/09/16 07:04:41 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -20,7 +20,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
- * Contributors: Philippe Ney <philippe.ney@smartdata.ch>
+ * Contributors:
  * 
  * 
  * 
@@ -29,31 +29,11 @@
 #ifndef _H_PG_NETWORK
 #define _H_PG_NETWORK
 
-
-/********************* Include files *********************/
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <netdb.h>
-
-
-/********************* Definitions *********************/
-#define PG_REQUEST_SERVER  "localhost"
 #define PG_REQUEST_PORT    30450
 #define PG_PROTOCOL_VER    0x0001
 #define PG_REQUEST_MAGIC   0x31415926
 
-
 /******* Packet structures */
-
-/* return structure for the flushpacket function */
-struct pgreturn {
-  unsigned short s1;
-  unsigned short s2;
-  unsigned long l1;
-  unsigned long l2;
-  char* data;
-};
 
 /* Request, the only packet ever sent from client to server */
 struct pgrequest {
@@ -114,10 +94,11 @@ struct pghello {
 #define PGREQ_MKBITMAP     3      /* Makes a bitmap, returns handle |  struct */
 #define PGREQ_MKFONT       4      /* Makes a fontdesc, ret's handle |  struct */
 #define PGREQ_MKSTRING     5      /* Makes a string, returns handle |  chars  */
-#define PGREQ_FREE         6      /* Frees a handle                 |  struct */
+#define PGREQ_FREE         6      /* Frees a handle                 |  handle */
 #define PGREQ_SET          7      /* Set a widget param             |  struct */
 #define PGREQ_GET          8      /* Get a widget param, return it  |  struct */
-#define PGREQ_SETBG        9      /* bequeath a new background bmp  |  struct */
+#define PGREQ_SETBG        9      /* bequeath a new background bmp  |  handle
+				     DO NOT USE - theme subsystem _will_ change */
 #define PGREQ_IN_KEY       10     /* Dispatch keyboard input        |  struct */
 #define PGREQ_IN_POINT     11     /* Dispatch pointing device input |  struct */
 #define PGREQ_IN_DIRECT    12     /* Dispatch direct input          |  struct */
@@ -134,11 +115,13 @@ struct pghello {
 #define PGREQ_GIVEPNTR     22     /* Give the pointing device back  |  none */
 #define PGREQ_MKCONTEXT    23     /* Enters a new context           |  none */
 #define PGREQ_RMCONTEXT    24     /* Cleans up and kills the context|  none */
-#define PGREQ_FOCUS        25     /* Force focus to specified widget|  struct */
-#define PGREQ_GETSTRING    26     /* Returns a RESPONSE_DATA        |  struct */
+#define PGREQ_FOCUS        25     /* Force focus to specified widget|  handle */
+#define PGREQ_GETSTRING    26     /* Returns a RESPONSE_DATA        |  handle */
 #define PGREQ_RESTORETHEME 27     /* Restore theme defaults         |  none   */
+#define PGREQ_SETPAYLOAD   28     /* Sets an object's payload       |  struct */
+#define PGREQ_GETPAYLOAD   29     /* Sets an object's payload       |  handle */
 
-#define PGREQ_UNDEF        28     /* types > this will be truncated. return error */
+#define PGREQ_UNDEF        30     /* types > this will be truncated. return error */
 
 /******* Request data structures */
 
@@ -152,13 +135,15 @@ struct pghello {
  * (also in network order)
  *
  */
+
+struct pgreqd_handlestruct {
+  unsigned long h;   /* for requests that just use a handle */
+};
+
 struct pgreqd_mkwidget {
   unsigned short rship;
   unsigned short type;
   unsigned long parent;
-};
-struct pgreqd_free {
-  unsigned long h;
 };
 struct pgreqd_mkbitmap {
   unsigned short w;       /* If these are 0, the following data is a */
@@ -183,9 +168,6 @@ struct pgreqd_get {
   unsigned long widget;
   unsigned short property;
   unsigned short dummy;
-};
-struct pgreqd_setbg {
-  unsigned long h;   /* 0 to restore original */
 };
 struct pgreqd_in_key {
   unsigned long type;   /* A TRIGGER_* constant */
@@ -236,11 +218,10 @@ struct pgreqd_sizetext {
   unsigned long text;  /* Handle to text and to font */
   unsigned long font;
 };
-struct pgreqd_focus {
-  unsigned long h;     /* Handle of widget to focus */
-};
-struct pgreqd_getstring {
-  unsigned long h;     /* Handle of string */
+struct pgreqd_setpayload {
+  unsigned long h;  /* Any handle */
+  unsigned long payload;  /* 32-bits of data to store with
+			     the handle'd object */
 };
 
 #endif /* __H_PG_NETWORK */

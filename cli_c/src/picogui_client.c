@@ -1,6 +1,6 @@
-/* $Id: picogui_client.c,v 1.1 2000/09/16 01:38:02 micahjd Exp $
+/* $Id: picogui_client.c,v 1.2 2000/09/16 07:04:41 micahjd Exp $
  *
- * picogui.c - 
+ * picogui_client.c - C client library for PicoGUI
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -25,11 +25,325 @@
  * 
  */
 
+/******************* Definitions and includes */
 
-/***************************** Inclusions *************************************/
-#include "picogui.h"
+/* System includes */
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <stdio.h>    /* for fprintf() */
+#include <malloc.h>
+#include <string.h>   /* for memcpy() */
+
+/* PicoGUI */
+#include <picogui.h>            /* Basic PicoGUI include */
+#include <picogui/network.h>    /* Network interface to the server */
+
+#define DEBUG
+
+/* Default server */
+#define PG_REQUEST_SERVER       "localhost"
+
+/* Buffer size. When packets don't need to be sent immediately,
+ * they accumulate in this buffer. It doesn't need to be very big
+ * because most packets are quite small. Large packets like bitmaps
+ * won't fit here anyway, so they are sent immediately.
+ */
+#define PG_REQBUFSIZE           512
+
+/* Global vars for the client lib */
+int _pgsockfd;                  /* Socket fd to the pgserver */
+short _pgrequestid;             /* Request ID to detect errors */
+short _pgdefault_rship;         /* Default relationship and parent */
+short _pgdefault_parent;        /*   for new widgets */
+unsigned char _pgeventloop_on;  /* Boolean - is event loop running? */
+unsigned char _pgreqbuffer[PG_REQBUFSIZE];  /* Buffer of request packets */
+short _pgreqbuffer_size;        /* # of bytes in reqbuffer */
+short _pgreqbuffer_count;       /* # of packets in reqbuffer */
+void (*_pgerrhandler)(unsigned short errortype,const char *msg);
+                                /* Error handler */
+
+/* Structure for a retrieved and validated response code,
+   the data collected by _pg_flushpackets is stored here. */
+struct {
+  short type;
+  union {
+
+    /* if type == PG_RESPONSE_RET */
+    unsigned long retdata;
+
+    /* if type == PG_RESPONSE_EVENT */
+    struct {
+      unsigned short event;
+      pghandle from;
+      unsigned long param;
+    } event;
+
+    /* if type == PG_RESPONSE_DATA */
+    struct {
+      unsigned long size;
+      void *data;         /* Dynamically allocated - should be freed and
+			     set to NULL when done, or it will be freed
+			     next time flushpackets is called */
+    } data;
+
+  } e;  /* e for extra? ;-) */
+} _pg_return;
+
+#define clienterr(msg)        (*_pgerrhandler)(PG_ERRT_CLIENT,msg)
+
+/**** Internal functions */
+
+/* IO wrappers.  On error, they return nonzero and call clienterr() */
+int _pg_send(void *data,unsigned long datasize);
+int _pg_recv(void *data,unsigned long datasize);
+
+/* Default error handler */
+void _pg_defaulterr(unsigned short errortype,const char *msg);
+
+/* Put a request into the queue */
+void _pg_add_request(short reqtype,void *data,unsigned long datasize);
+
+/* Receive a response packet and store its contents in _pg_return
+ * (handling errors if necessary)
+ */
+void _pg_getresponse(void);
+
+/******************* Internal functions */
+
+/* Send data to the server, checking and reporting errors */
+int _pg_send(void *data,unsigned long datasize) {
+  if (send(_pgsockfd,data,datasize,0)!=datasize) {
+    clienterr("send error");
+    return 1;
+  }
+  return 0;
+}
+
+/* Receive... */
+int _pg_recv(void *data,unsigned long datasize) {
+  if (recv(_pgsockfd,data,datasize,0) < 0) {
+    clienterr("recv error");
+    return 1;
+  }
+  return 0;
+}
+
+/* This one just prints to stderr and exits. Maybe in the future
+   (after messageboxes are implemented in an easy way) this will put
+   up a message box of death before exiting :)
+*/
+void _pg_defaulterr(unsigned short errortype,const char *msg) {
+  fprintf(stderr,"*** PicoGUI ERROR (%s) : %s\n",pgErrortypeString(errortype),msg);
+  exit(errortype);
+}
+
+/* Put a request into the queue */
+void _pg_add_request(short reqtype,void *data,unsigned long datasize) {
+  struct pgrequest *newhdr;
+
+  /* If this will overflow the buffer, flush it and send this packet
+   * individually. This has two possible uses:
+   *    - there are many packets in the buffer, so it flushes them 
+   *    - this latest packet is very large and won't fit in the buffer
+   *      anyway (a bitmap or long string for example)
+   */
+  if ((_pgreqbuffer_size + sizeof(struct pgrequest) + datasize) >
+      PG_REQBUFSIZE) {
+
+    struct pgrequest req;
+
+    pgFlushRequests();
+
+    /* Send this one */
+    req.type = htons(reqtype);
+    req.id = ++_pgrequestid;
+    req.size = htonl(datasize);
+    _pg_send(&req,sizeof(struct pgrequest));
+    _pg_send(data,datasize);
+
+#ifdef DEBUG
+    printf("Forced buffer flush. New request: type = %d, size = %d\n",reqtype,datasize);
+#endif
+    
+    _pg_getresponse();
+    return;
+  } 
+
+  /* Find a good place for the new header in the buffer and fill it in */
+  newhdr = (struct pgrequest *) (_pgreqbuffer + _pgreqbuffer_size);
+  _pgreqbuffer_count++;
+  _pgreqbuffer_size += sizeof(struct pgrequest);
+  newhdr->type = htons(reqtype);
+  newhdr->id = ++_pgrequestid;
+  newhdr->size = htonl(datasize);
+
+#ifdef DEBUG
+  printf("Added request: type = %d, size = %d\n",reqtype,datasize);
+#endif
+
+  /* Now the data */
+  memcpy(_pgreqbuffer + _pgreqbuffer_size,data,datasize);
+  _pgreqbuffer_size += datasize;
+}
+
+void _pg_getresponse(void) {
+  short rsp_id = 0;
+
+  /* Read the response type */
+  if (_pg_recv(&_pg_return.type,sizeof(_pg_return.type)))
+    return;
+  _pg_return.type = ntohs(_pg_return.type);
+  
+  switch (_pg_return.type) {
+    
+  case PG_RESPONSE_ERR:
+    {
+      /* Error */
+      struct pgresponse_err pg_err;
+      char *msg;
+      
+      /* Read the rest of the error (already have response type) */
+      pg_err.type = _pg_return.type;
+      if (_pg_recv(((char*)&pg_err)+sizeof(_pg_return.type),
+		   sizeof(pg_err)-sizeof(_pg_return.type)))
+	return;
+      rsp_id = pg_err.id;
+      pg_err.errt = ntohs(pg_err.errt);
+      pg_err.msglen = ntohs(pg_err.msglen);
+      
+      /* Dynamically allocated buffer for the error message */ 
+      msg = malloc(pg_err.msglen);
+      if(_pg_recv(msg,pg_err.msglen))
+	return;
+      
+      (*_pgerrhandler)(pg_err.errt,msg);
+      free(msg);
+    }
+    break;
+
+  case PG_RESPONSE_RET:
+    {
+      /* Return value */
+      struct pgresponse_ret pg_ret;
+      
+      /* Read the rest of the error (already have response type) */
+      pg_ret.type = _pg_return.type;
+      if (_pg_recv(((char*)&pg_ret)+sizeof(_pg_return.type),
+		   sizeof(pg_ret)-sizeof(_pg_return.type)))
+	return;
+      rsp_id = pg_ret.id;
+      _pg_return.e.retdata = ntohl(pg_ret.data);
+    }
+    break;
+
+  case PG_RESPONSE_DATA:
+    {
+      /* Something larger- return it in a dynamically allocated buffer */
+      struct pgresponse_data pg_data;
+      
+      /* Read the rest of the error (already have response type) */
+      pg_data.type = _pg_return.type;
+      if (_pg_recv(((char*)&pg_data)+sizeof(_pg_return.type),
+		   sizeof(pg_data)-sizeof(_pg_return.type)))
+	return;
+      rsp_id = pg_data.id;
+      _pg_return.e.data.size = ntohl(pg_data.size);
+      
+      _pg_return.e.data.data = malloc(_pg_return.e.data.size);
+      if (_pg_recv(_pg_return.e.data.data,_pg_return.e.data.size))
+	return;
+    }
+    break;
+
+  default:
+    clienterr("Unexpected response type");
+  }
+  
+  if(rsp_id && (rsp_id != _pgrequestid)) {
+    /* ID mismatch. This shouldn't happen, but if it does it's probably
+       not serious. Maybe turn this on with a DEBUG flag?
+    */
+    printf("PicoGUI - incorrect packet ID (%i -> %i)\n",_pgrequestid,rsp_id);
+  }
+}
 
 
+/******************* API functions */
+
+void pgSetErrorHandler(void (*handler)(unsigned short errortype,
+				       const char *msg)) {
+  _pgerrhandler = handler;
+}
+
+const char *pgErrortypeString(unsigned short errortype) {
+  switch (errortype) {
+  case PG_ERRT_MEMORY:     return "MEMORY";
+  case PG_ERRT_IO:         return "IO";
+  case PG_ERRT_NETWORK:    return "NETWORK";
+  case PG_ERRT_BADPARAM:   return "BADPARAM";
+  case PG_ERRT_HANDLE:     return "HANDLE";
+  case PG_ERRT_INTERNAL:   return "INTERNAL";
+  case PG_ERRT_BUSY:       return "BUSY";
+  case PG_ERRT_CLIENT:     return "CLIENT";
+  case PG_ERRT_NONE:       return "NONE";
+  }
+  return "UNKNOWN";
+}
+
+/* Flushes the buffer of packets - if there's only one, it gets sent as is
+  More than one packet is wrapped in a batch packet.
+
+  This checks for errors.  If a return value is needed, the API function will
+  call FlushRequests directly. If the client calls this it is assumed that they
+  don't care about the return value (anything needing a return value would have
+  called it explicitly)
+
+  Return data is stored in _pg_return (yes, it's a little messy, but it's more
+  efficient than a static variable in the function that must be passed out as
+  a pointer) I believe in niceness for APIs and efficiency for the guts 8-)
+*/
+void pgFlushRequests(void) {
+
+#ifdef DEBUG
+  printf("Flushed %d packet(s), %d bytes\n",_pgreqbuffer_count,_pgreqbuffer_size);
+#endif
+
+  /* Free the data! */
+  if (_pg_return.type == PG_RESPONSE_DATA &&
+      _pg_return.e.data.data) {
+    free(_pg_return.e.data.data);
+    _pg_return.e.data.data = NULL;
+  }
+
+  if (!_pgreqbuffer_count) {
+    /* No packets */
+    return;
+  }
+  else if (_pgreqbuffer_count==1) {
+    /* One packet- send as is */
+    if (_pg_send(_pgreqbuffer,_pgreqbuffer_size))
+      return;
+  }
+  else {
+    /* Many packets - use a batch packet */
+    struct pgrequest batch_header;
+    batch_header.type = htons(PGREQ_BATCH);
+    batch_header.id = ++_pgrequestid;    /* Order doesn't matter for id */
+    batch_header.size = htonl(_pgreqbuffer_size);
+    if (_pg_send(&batch_header,sizeof(batch_header)))
+      return;
+    if (_pg_send(_pgreqbuffer,_pgreqbuffer_size))
+      return;
+  }
+
+  /* Reset buffer */
+  _pgreqbuffer_size = _pgreqbuffer_count = 0;
+
+  /* Need a response packet back... */
+  _pg_getresponse();
+}
 
 /* Open a connection to the server, parsing PicoGUI commandline options
   if they are present
@@ -37,30 +351,30 @@
 void pgInit(int argc, char **argv)
 {
   int /*sockfd,*/ numbytes;
-  struct pghello buf, ServerInfo;
+  struct pghello ServerInfo;
   struct hostent *he;
   struct sockaddr_in server_addr; /* connector's address information */
-  
-  /* Initialise the global id */
-  id = 0;
+  const char *hostname;
 
-  if (argc != 2) {
-    if ((he=gethostbyname(PG_REQUEST_SERVER)) == NULL) {  /* get the host info */
-      herror("gethostbyname");
-      exit(1);
-    }
+  /* Set default error handler */
+  pgSetErrorHandler(&_pg_defaulterr);
+
+  /* Should use a getopt-based system here to process various args, leaving
+     the extras for the client app to process. But this is ok temporarily.
+  */
+  if (argc != 2)
+    hostname = PG_REQUEST_SERVER;
+  else
+    hostname = argv[1];
+
+  if ((he=gethostbyname(hostname)) == NULL) {  /* get the host info */
+    clienterr("Error resolving server hostname");
+    return;
   }
 
-  else {
-    if((he=gethostbyname(argv[1])) == NULL) {  /* get the host info */
-    herror("gethostbyname");
-    exit(1);
-    }
-  }
-
-  if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-    perror("socket");
-    exit(1);
+  if ((_pgsockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+    clienterr("socket error");
+    return;
   }
 
   server_addr.sin_family = AF_INET;                 /* host byte order */
@@ -68,241 +382,49 @@ void pgInit(int argc, char **argv)
   server_addr.sin_addr = *((struct in_addr *)he->h_addr);
   bzero(&(server_addr.sin_zero), 8);                /* zero the rest of the struct */
 
-  if (connect(sockfd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1) {
-    perror("connect");
-    exit(1);
+  if (connect(_pgsockfd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1) {
+    clienterr("Error connecting to server");
+    return;
   }
 
-  if ((numbytes=recv(sockfd, &buf, sizeof(buf), 0)) == -1) {
-    perror("recv");
-    exit(1);
-  }
-
-/*  buf[numbytes] = '\0'; */
-  ServerInfo.magic = ntohl(buf.magic);
-  ServerInfo.protover = ntohs(buf.protover);
-  ServerInfo.dummy = ntohs(buf.dummy);
+  /* Receive the hello packet and convert byte order */
+  if (_pg_recv(&ServerInfo,sizeof(ServerInfo)))
+    return;
+  ServerInfo.magic = ntohl(ServerInfo.magic);
+  ServerInfo.protover = ntohs(ServerInfo.protover);
+  ServerInfo.dummy = ntohs(ServerInfo.dummy);
+  
+  /* Validate it */
 
   if(ServerInfo.magic != PG_REQUEST_MAGIC) {
-    printf("PicoGUI - incorrect magic number (%i -> %i)\n",PG_REQUEST_MAGIC,ServerInfo.magic);
-    exit(1);
-    }
-  if(ServerInfo.protover != PG_PROTOCOL_VER) {
-    printf("PicoGUI - protocol version not supported\n");
-    exit(1);
-    }
-
-  printf("Received:\n");
-  printf("Magic: %i\n",ServerInfo.magic);
-  printf("Protover: %i\n",ServerInfo.protover);
-  printf("Dummy: %i\n",ServerInfo.dummy);
-
-}
-
-
-
-/* Flushes the buffer of packets - if there's only one, it gets sent as is
-  More than one packet is wrapped in a batch packet
-*/
-long _flushpackets(const void *in_pgr,int pgr_len,
-                   const void *in_data,int data_len,
-		   struct pgreturn *in_pgret)
-{
-  int numbytes;
-  char* msg = NULL;
-  short msg_len,ret_code;
-
-
-  if(send_info(sockfd,in_pgr,pgr_len)) exit(1);
-
-  if(in_data != NULL) {
-printf("In des DATA a sender: %i\n",data_len);
-    if(send_info(sockfd,in_data,data_len)) exit(1);
+    clienterr("server has bad magic number");
+    return;
   }
-
-/* Read the response type */
-  if ((numbytes=recv(sockfd, &ret_code, sizeof(ret_code), 0)) == -1) {
-    printf("PicoGUI - Error reading response code");
-    exit(1);
+  if(ServerInfo.protover < PG_PROTOCOL_VER) {
+    puts("Warning: PicoGUI server is older than the client. \n"
+	 "         you may experience compatibility problems");
   }
-
-  printf("Received:\n");
-  printf("Numb: %i\n",ntohs(ret_code));
-
-  
-  if(ntohs(ret_code)==PG_RESPONSE_ERR) {
-    /* Error */
-    struct pgresponse_err pg_err;
-    
-    if((numbytes=recv(sockfd, &pg_err, sizeof(pg_err), 0)) == -1) {
-      printf("PicoGUI - Error reading response code");
-      exit(1);
-    }
-    msg_len = ntohs(pg_err.msglen);
-    if(msg) free(msg);
-    msg = malloc(msg_len);
-    if((numbytes=recv(sockfd, msg, msg_len, 0)) == -1) {
-      printf("PicoGUI - Error reading error string");
-      exit(1);
-    }
-    if(ntohs(pg_err.id)!=id) {
-      printf("PicoGUI - incorrect packet ID (%i -> %i)\n",ntohs(pg_err.id),id);
-    }
-    printf("PicoGUI - Server error of type %i: %s\n",ntohs(pg_err.errt),msg);
-  }
-
-  if(ntohs(ret_code)==PG_RESPONSE_RET) {
-    /* Return code */
-    struct pgresponse_ret pg_ret;
-
-    if((numbytes=recv(sockfd,&pg_ret,sizeof(pg_ret), 0)) == -1) {
-      printf("PicoGUI - Error reading return value");
-      exit(1);
-    }
-    if(ntohs(pg_ret.id)!=id) {
-      printf("PicoGUI - incorrect packet ID (%i -> %i)\n",ntohs(pg_ret.id),id);
-    }
-    
-    pgret.l1 = (ntohl(pg_ret.data));
-  }
-
-  if(ntohs(ret_code)==PG_RESPONSE_EVENT) {
-    struct pgresponse_event pg_ev;
-    
-    if((numbytes=recv(sockfd, &pg_ev, sizeof(pg_ev), 0)) == -1) {
-      printf("PicoGUI - Error reading event");
-      exit(1);
-    }
-    pgret.s1 = pg_ev.event;
-    pgret.l1 = pg_ev.from;
-    pgret.l2 = pg_ev.param;
-  }
-
-  if(ntohs(ret_code)==PG_RESPONSE_DATA) {
-    struct pgresponse_data pg_data;
-    
-    if((numbytes=recv(sockfd, &pg_data, sizeof(pg_data), 0)) == -1) {
-      printf("PicoGUI - Error reading return data header");
-      exit(1);
-    }
-    if(ntohs(pg_data.id)!=id) {
-      printf("PicoGUI - incorrect packet ID (%i -> %i)\n",ntohs(pg_data.id),id);
-    }
-    msg_len = ntohl(pg_data.size);
-    if(msg) free(msg);
-    msg = malloc(msg_len);
-    if((numbytes=recv(sockfd, msg, msg_len, 0)) == -1) {
-      printf("PicoGUI - Error reading return data");
-      exit(1);
-    }
-    pgret.data = malloc(msg_len);
-    pgret.data = msg;
-  }
-  
-/*  printf("PicoGUI - Unexpected response type (%i)\n",ntohs(ret_code)); */
-
 }
-
-/* Like send, but with some error checking stuff.  Returns nonzero
-   on error.
-*/
-int send_info(int to,const void *data,int len) {
-printf("In send_info\n");
-
-  if (send(to,data,len,0)!=len) {
-
-    printf("Error in send()\n");     
-
-    close(to);
-    return 1;
-  }
-  return 0;
-}
-
-
-
-/********************* Functions for each type of request *********************/
-void Update(void) {
-  struct pgrequest pgr;
-
-  id++;
-  pgr.type = htons(1);
-  pgr.id = htons(id);
-  pgr.size = htonl(0);
-
-/*  _flushpackets(&pgr,sizeof(pgr),NULL,0,&pgret);*/
-}
-
-void _wait(void) {
-  struct pgrequest pgr;
-
-  id++;
-  pgr.type = htons(13);
-  pgr.id = htons(id);
-  pgr.size = htonl(0);
-printf("In _wait\n");
-printf("Size of pgr struc: %i\n",sizeof(pgr));
-  _flushpackets(&pgr,sizeof(pgr),NULL,0,&pgret);
-}
-
-void _mkpopup(short in_x,short in_y,short in_w,short in_h) {
-  struct pgrequest pgr;
-  struct pgreqd_mkpopup pgmkpopup;
-
-  id++;
-  pgmkpopup.x = htons(in_x);
-  pgmkpopup.y = htons(in_y);
-  pgmkpopup.w = htons(in_w);
-  pgmkpopup.h = htons(in_h);
-
-  pgr.type = htons(16);
-  pgr.id = htons(id);
-  pgr.size = htonl(sizeof(pgmkpopup));
-printf("In _mkpopup BEFORE _flushpackets\n");
-
-  _flushpackets(&pgr,sizeof(pgr),&pgmkpopup,sizeof(pgmkpopup),&pgret);
-}
-
-
-void NewPopup(short in_x,short in_y,short in_w,short in_h) {
-/*    my $self = {-root => 1};  */
-
-/*    # If there were only two args, it was width and height. 
-    # Just center it instead.
-    if (scalar(@_)<4) {
-	$w = $x;
-	$h = $y;
-	$x = $y = -1;
-    }      Not availlable in C */
-
-/*    bless $self;
-    $self->{'h'} =   */
-
-  _mkpopup(in_x,in_y,in_w,in_h);
-
-  /* Default is inside this widget */
-  default_rship = PG_DERIVE_INSIDE;
-/*    $default_parent = $self->{'h'}; */
-
-/*    return $self;  */
-}
-
 
 /* This is called after the app finishes it's initialization.
    It waits for events, and dispatches them to the functions they're
    bound to.
 */
 void pgEventLoop(void) {
-/*    my $fromobj = {};  */
-
-printf("In eventloop BEFORE _wait\n");
-  eventloop_on = 1;
+  _pgeventloop_on = 1;
 
   /* Good place for an update...  (probably the first update) */
-  Update();
+  pgUpdate();
 
-  while (eventloop_on) {
-    _wait();
+  while (_pgeventloop_on) {
+    /* Wait for a new event */
+    _pg_add_request(PGREQ_WAIT,NULL,0);
+    pgFlushRequests();
+    
+    /* FIXME: use a linked list to look up a function 
+       to match the 'from' handle
+    */
+
 /*    ($event, $from, $param) = _wait();
 	
     # Package the 'from' handle in an object
@@ -312,10 +434,60 @@ printf("In eventloop BEFORE _wait\n");
     # Call the code reference
     $r = $bindings{$from.':'.$event};
     &$r($fromobj,$param) if (defined $r);
-*/    }
+*/    
+  }
 
 }
 
+/******* The simple functions that don't need args or return values */
 
+void pgUpdate(void) {
+  _pg_add_request(PGREQ_UPDATE,NULL,0);
+  /* Update forces a buffer flush */
+  pgFlushRequests();
+}
+
+void pgEnterContext(void) {
+  _pg_add_request(PGREQ_MKCONTEXT,NULL,0);
+}  
+
+void pgLeaveContext(void) {
+  _pg_add_request(PGREQ_RMCONTEXT,NULL,0);
+}  
+
+/******* A little more complex ones, with args */
+
+void pgDelete(pghandle object) {
+  struct pgreqd_handlestruct arg;
+  arg.h = htonl(object);
+  _pg_add_request(PGREQ_FREE,&arg,sizeof(arg));
+
+  /* FIXME: Look for this deleted object in the list of event
+     handlers. Free it to prevent memory leaks. */
+}
+
+pghandle pgNewPopup(int width,int height) {
+  /* Tell the server to center it */
+  pgNewPopupAt(-1,-1,width,height);
+}
+
+pghandle pgNewPopupAt(int x,int y,int width,int height) {
+  struct pgreqd_mkpopup arg;
+  arg.x = htons(x);
+  arg.y = htons(y);
+  arg.w = htons(width);
+  arg.h = htons(height);
+  _pg_add_request(PGREQ_MKPOPUP,&arg,sizeof(arg));
+
+  /* Because we need a result now, flush the buffer */
+  pgFlushRequests();
+
+  /* Default is inside this widget */
+  _pgdefault_rship = PG_DERIVE_INSIDE;
+  _pgdefault_parent = _pg_return.e.retdata;
+  
+  /* Return the new handle */
+  return _pg_return.e.retdata;
+}
 
 /* The End */

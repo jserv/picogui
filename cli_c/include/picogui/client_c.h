@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.2 2000/09/15 18:10:48 pney Exp $
+/* $Id: client_c.h,v 1.3 2000/09/16 07:04:41 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -28,15 +28,7 @@
 #ifndef _H_PG_CLI_C
 #define _H_PG_CLI_C
 
-
-/********************* Include files *********************/
-#include <stdio.h> 
-#include <stdlib.h> 
-#include <errno.h> 
-#include <string.h>
-
-#include "network.h"
-
+/******************** Client-specific constants */
 
 /******************** Administration */
 
@@ -58,8 +50,27 @@ void pgInit(int argc, char **argv);
  * Thing happened.  To override this behavior, set up a new
  * error handler
  */
-void pgErrorHandler(void (*handler)(short int errortype,
-				    const char *msg));
+void pgSetErrorHandler(void (*handler)(unsigned short errortype,
+				       const char *msg));
+
+/* Convert a numerical errortype to a string. Useful for
+ * error handlers
+ */
+const char *pgErrortypeString(unsigned short errortype);
+
+/* Flush the request buffer, make sure everything is sent to
+ * the server. Usually this is handled automatically, but
+ * it might be needed in some rare situations...
+ */
+void pgFlushRequests(void);
+
+/* Update the screen. Call this once after setting up a new
+ * popup box, app panel, or making a change that needs to
+ * become visible. Use this sparingly. Only things that have
+ * been changed get recalculated, but drawing unfinished 
+ * popups or applications to the screen is a Bad Thing (tm)
+ */
+void pgUpdate(void);
 
 /******************** Objects */
 
@@ -74,11 +85,30 @@ void pgDelete(pghandle object);
 pghandle pgNewWidget(short int type,short int rship,
 		     pghandle parent);
 
+/* Make a new popup box, centered on the screen. After
+ * creating a popup box, widgets are placed inside it by
+ * default (if NULL is used for 'parent')
+ * If you need to specify the x,y position, use pgNewPopupAt
+ */
+pghandle pgNewPopup(int width,int height);
+pghandle pgNewPopupAt(int x,int y,int width,int height);
+
 /* Set properties of a widget. If the widget is null, default
  * to the last widget created. After that, it accepts a list
  * of property-value pairs, terminated by a 0.
  */
 void pgSetWidget(pghandle widget, ...);
+
+/* Attatch an event handler to a widget and/or event. A NULL
+ * widget uses the default, as usual. Either the handle or the
+ * event (or both!) can be the wildcard PGBIND_ANY to match all
+ * handles/events. If a handler with these properties already
+ * exists, it is not removed. If the widget a handler refers to
+ * is deleted, the handler is deleted however.
+ */
+void pgBind(pghandle widgetkey,unsigned short eventkey,
+	    void (*handler)(unsigned short event,pghandle from,
+			    unsigned long param));
 
 /* Create a new string object */
 pghandle pgNewString(const char *str);
@@ -102,23 +132,6 @@ void pgEventLoop(void);
  */
 void pgEnterContext(void);
 void pgLeaveContext(void);
-
-
-/* Flushes the buffer of packets
- */
-long _flushpackets(const void *in_pgr,int pgr_len,
-                   const void *in_data,int data_len,
-		   struct pgreturn *in_pgret);
-
-/* Like send, but with some error checking stuff.  Returns nonzero
- * on error.
- */
-int send_response(int to,const void *data,int len);
-
-void Update();
-void _wait();
-void _mkpopup(short in_x,short in_y,short in_w,short in_h);
-void NewPopup(short in_x,short in_y,short in_w,short in_h);
 
 
 #endif /* __H_PG_CLI_C */

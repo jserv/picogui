@@ -1,4 +1,4 @@
-/* $Id: demo.c,v 1.1 2000/09/15 18:07:24 pney Exp $
+/* $Id: demo.c,v 1.2 2000/09/16 07:04:41 micahjd Exp $
  *
  * demo.c -   source file for testing PicoGUI
  *
@@ -26,23 +26,16 @@
  * 
  */
 
-#include "picogui.h"
-
+#include <picogui.h>
 
 int main(int argc, char *argv[])
 {
-  struct pgreturn pgret;
-  
-  pgret.s1 = 0;
-  pgret.s2 = 0;
-  pgret.l1 = 0;
-  pgret.l2 = 0;
-  strcpy(pgret.data,"");
-  
   pgInit(argc,argv);
-  NewPopup(20,20,10,50);
+
+  pgNewPopupAt(20,20,10,50);
   pgEventLoop();
-  return 1;
+
+  return 0;
 }
 
 

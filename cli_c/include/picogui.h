@@ -1,4 +1,4 @@
-/* $Id: picogui.h,v 1.2 2000/09/15 18:10:48 pney Exp $
+/* $Id: picogui.h,v 1.3 2000/09/16 07:04:41 micahjd Exp $
  *
  * picogui.h - Include file for your average PicoGUI client using the
  *             C client library
@@ -28,17 +28,5 @@
 
 #include <picogui/constants.h>
 #include <picogui/client_c.h>
-
-
-/******************* Global variables *********************/
-int sockfd;
-
-short id;
-struct pgreturn pgret;
-short default_rship;
-short default_parent;
-short eventloop_on;
-
-
 
 /* The End */
