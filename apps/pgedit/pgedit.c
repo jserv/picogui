@@ -11,26 +11,31 @@ char *filename=NULL;
 
 #define APPTITLE "Text Editor"
 
+void load(const char *file) {
+  const char *p;
+  pghandle hstr;
+
+  if(filename)
+    free(filename);
+  filename=strdup(file);
+  hstr = pgDataString(pgFromFile(filename));
+  pgSetWidget(wText, PG_WP_TEXT, hstr, 0);
+  pgDelete(hstr);
+  
+  p = strrchr(file,'/');
+  if (p) 
+    file = p+1;  
+  pgReplaceTextFmt(wApp,"%s - %s",file,APPTITLE);
+}  
+
 int evtLoad(struct pgEvent *evt)
  {
-  const char *file,*p;
-  pghandle hstr;
+  const char *file;
 
   file = pgFilePicker(NULL,NULL,filename,PG_FILEOPEN,"Load a plain text file");
   if (file)
-   {
-    if(filename)
-      free(filename);
-    filename=strdup(file);
-    hstr = pgDataString(pgFromFile(filename));
-    pgSetWidget(wText, PG_WP_TEXT, hstr, 0);
-    pgDelete(hstr);
+    load(file);
 
-    p = strrchr(file,'/');
-    if (p) 
-      file = p+1;  
-    pgReplaceTextFmt(wApp,"%s - %s",file,APPTITLE);
-   }
   return 0;
  }
 
@@ -86,6 +91,9 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_ALL, 0);
    
   pgFocus(PGDEFAULT);
+
+  if (argv[1])
+    load(argv[1]);
 
   pgEventLoop();
   return 0;
