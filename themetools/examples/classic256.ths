@@ -1,4 +1,4 @@
-/* $Id: classic256.ths,v 1.1 2000/10/17 04:18:19 micahjd Exp $
+/* $Id: classic256.ths,v 1.2 2000/10/19 17:53:56 micahjd Exp $
  *
  * PicoGUI theme, modeled after the original 256-color
  * theme used in the old theme system.
@@ -6,18 +6,53 @@
  * Micah Dowty
  */
 
-/* Most of the buttons keep the default rectangular fill.
-   Improve the color scheme a bit.
-*/
-
-object button         bgcolor = 0xC0E0FF;
+object button {
+  bgcolor = 0xC0E0FF;
+  height = 22;
+  width = 22;
+  spacing = 2;
+}
 object button.hilight bgcolor = 0xC0C0FF;
 object button.on      bgcolor = 0x808080;
 object toolbar        bgcolor = 0xC0C0C0;
-//object scroll         bgcolor = 0x808080;
-object scroll         bgcolor = 0xFFFFC0;
+object scroll {
+  bgfill = fillstyle {
+    Frame(x,y,w,h,ColorConv(0x000000));
+    Rect(x+1,y+1,w-2,h-2,ColorConv(0x808080));
+  };
+  bgcolor = 0xFFFFC0;
+  width = 10;
+}
 object scroll.hilight bgcolor = 0xC0E0FF;
 object scroll.on      bgcolor = 0xC0C0FF;
-//object indicator      bgcolor = 0x404080;
-object indicator      bgcolor = 0x8080FF;
+object indicator {
+  bgfill = fillstyle {
+    Frame(x,y,w,h,ColorConv(0xC0C0C0));
+    Frame(x+1,y+1,w-2,h-2,ColorConv(0x000000));
+    x = x+2;
+    y = y+2;
+    w = w-4;
+    h = h-4;
+    Rect(x,y,w,h,ColorConv(0x404080));
+  };
+  overlay = fillstyle {
+    Rect(x,y,w,h,ColorConv(0x8080FF));
+  };
+}
+object panelbar {
+  fgcolor = 0x404040;
+  bgcolor = 0xFFFFC0;
+  width = 15;
+}
+object panelbar.hilight bgcolor = 0xC0E0FF;
+object panelbar.on bgcolor = 0xC0C0FF;
+object popup bgcolor = 0xFFFFE0;
+object panel {
+  bgfill = fillstyle {
+    Rect(x,y,w,h,ColorConv(bgcolor));
+  };
+  margin = 0;
+}
+object box margin = 1;
 
+/* The End */
