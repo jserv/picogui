@@ -1,4 +1,4 @@
-/* $Id: clientlib.h,v 1.1 2001/03/12 04:25:21 micahjd Exp $
+/* $Id: clientlib.h,v 1.2 2001/03/16 04:10:03 micahjd Exp $
  *
  * clientlib.h - definitions used only within the client library code itself
  *
@@ -113,7 +113,7 @@ extern struct _pghandlernode *_pghandlerlist;  /* List of pgBind event handlers 
 extern struct timeval _pgidle_period;  /* Period before calling idle handler */
 extern pgidlehandler _pgidle_handler;  /* Idle handler */
 extern unsigned char _pgidle_lock;     /* Already in idle handler? */
-extern char *_pg_appname;              /* Name of the app's binary */
+extern char *_pg_appname;             /* Name of the app's binary */
 extern pgselecthandler _pgselect_handler;   /* Normally a pointer to select() */
 extern struct _pg_return_type _pg_return; /* Response from _pg_flushpackets */
 

@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.1 2001/03/12 04:25:21 micahjd Exp $
+/* $Id: netcore.c,v 1.2 2001/03/16 04:10:03 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -464,10 +464,11 @@ void pgInit(int argc, char **argv)
 #ifdef UCLINUX  
   struct in_addr srv_addr;
 #endif
+  struct stat st;
 
-  /* Get the app's name */
+  /* Save the program's name */
   _pg_appname = argv[0];
-
+   
   /* Set default handlers */
   pgSetErrorHandler(&_pg_defaulterr);
   _pgselect_handler = &select;
@@ -495,7 +496,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.1 2001/03/12 04:25:21 micahjd Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.2 2001/03/16 04:10:03 micahjd Exp $\n");
 	exit(1);
       }
       

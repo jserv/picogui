@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.1 2001/03/12 04:25:21 micahjd Exp $
+/* $Id: api.c,v 1.2 2001/03/16 04:10:03 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -73,6 +73,56 @@ struct pgmemdata pgFromMemory(void *data,unsigned long length) {
   x.flags = 0;
   return x;
 }
+
+#if 0                         /* RESOURCE STUFF IS UNDECIDED SO FAR */
+/* Load a resource file 
+ *
+ * If program is non-null, load from the resource associated with that
+ * binary. Otherwise load from ourselves.
+ * 
+ * name is the name of a resource, like icon/32
+ * 
+ * Currently this simply corresponds to a file in a .res directory, but
+ * this allows for expansion, and possibly some form of virtual file system.
+ */
+struct pgmemdata pgFromResource(const char *program,const char *name) {
+  char *realname;
+   
+  if (!program)
+     program = _pg_appname;
+   
+  /* Get the app's real name */
+  if (lstat(program,&st)<0) {
+    /* FIXME: Better error message / a way for the app to catch this error */
+    clienterr("Error opening program file in pgFromResource()");
+    x.pointer = NULL;
+    return x;
+  }
+  if (S_ISLNK(st.st_mode)) {
+     realname = alloca(200);
+     tmp = readlink(_pg_appname,realname,200);
+     if (tmp<0) {
+	_pg_free(realname);
+	x.pointer = NULL;    /* This is unlikely */
+	return x;
+     }
+     realname[tmp] = 0;
+
+     /* If that was a relative link, we need to make it absolute */
+     if (realname[0] != '/') {
+	char *nstr;
+	nstr = malloc(strlen(_pg_appname)+strlen(realname)+1);
+	strcpy(nstr,_pg_appname);
+	*(strrchr(nstr,'/')+1) = 0;
+	strcat(nstr,realname);
+	free(realname);
+	realname = nstr;
+     }
+  }
+   else
+     realname = _pg_appname;
+}
+#endif
 
 /* Load from a normal disk file */
 struct pgmemdata pgFromFile(const char *file) {
