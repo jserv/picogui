@@ -1,11 +1,50 @@
 PicoGUI Server
 --------------
 
-PicoGUI is designed to be a small, efficient, portable GUI.
+PicoGUI is designed to be a small, efficient, portable, scalable GUI. It
+works on various types of systems, including many embedded systems. It has
+a unique client/server architecture. This is the server portion.
 
-Web page at: pgui.sourceforge.net
+--- Contacts
 
-Admin:
-Micah Dowty <micahjd@users.sourceforge.net>
+There is more information about picogui at its web page:
+http://picogui.org
 
+You can contact the author/maintainer, Micah Dowty at:
+ micahjd@users.sourceforge.net
+ 
+There's also an IRC channel, #picogui on irc.freenode.net
+
+--- Compiling pgserver
+
+This is the extra concice version, see below for more:
+
+ ./autogen.sh
+ ./configure
+ make menuconfig
+ make
+
+You don't need to run "make install" just to use pgserver, but it's helpful
+to install pgserver so that client libraries and themetools can access
+its header files. If you don't want to install pgserver, you can use
+./configure options in themetools and cli_c to point them at your headers.
+
+--- Configuration options
+
+The PicoGUI server supports many compile-time and runtime options :
+
+ - Cross-compiling is achieved through standard GNU ./configure options.
+   There are also several custom ./configure options to make it easier to
+   integrate PicoGUI into other build systems. Type "./configure --help"
+   for more information.
+
+ - The server has numerous options that can be set at compile-time. It uses
+   a modified version of the Linux kernel configuration system. Type
+   "make menuconfig" to access these.
+
+ - The server has a runtime config system that can be accessed via command
+   line options or config files. Take a look at README.configfile for more
+   information on the format, and read the output of "pgserver -h" for
+   the extra command line options supported.
+   
 --- The End ---
