@@ -27,6 +27,7 @@
  *
  * Changelog:
  *
+ *  1.03 - Make interlacing align properly
  *  1.02 - Tweaked fonts
  *         Tweaked colors and sizes
  *         Added a cursor
@@ -39,7 +40,7 @@
 prop bDarkInterlace;
 
 /* Fillstyles */
-prop fBitmap, fNop, fExpand;
+prop fBitmap, fNop, fExpand, fDarkInterlace;
 
 /* X and Y of source bitmap */
 prop srcx, srcy, srcw, srch;
@@ -50,9 +51,8 @@ prop left_sz, right_sz, top_sz, bottom_sz;
 /********************************** Default definitions */
 
 object default {
-  name = "Fluidity v1.02";
-  bgfill = Copy(default::fBitmap);
-  bitmap1 = Copy(default::bDarkInterlace);
+  name = "Fluidity v1.03";
+  bgfill = Copy(default::fDarkInterlace);
   font = Font(NULL,11,0);
 
   cursorbitmap = LoadBitmap("data/cursor.png");
@@ -132,6 +132,15 @@ object default {
     /* Reset params to not mess up the widget.. */
     SetSrc(0,0,0,0);
   };    
+
+  /* Draw our interlaced background, making sure it lines up */
+  fDarkInterlace = fillstyle {
+    SetSrc(widget::PG_WP_ABSOLUTEX - widget->app[0]::PG_WP_ABSOLUTEX + x,
+	   widget::PG_WP_ABSOLUTEY - widget->app[0]::PG_WP_ABSOLUTEY + y,
+	   w,h);
+    Bitmap(x,y,w,h,bDarkInterlace);
+    SetSrc(0,0,0,0);
+  };
 
   srcx = 0;
   srcy = 0;
@@ -247,7 +256,7 @@ object popup {
     /* Draw a thin grey border containing our background pattern */
     SetColor(0x606060);
     Frame(x,y+4,w,h-4);
-    Bitmap(x+1,y+5,w-2,h-6,bDarkInterlace);
+    fDarkInterlace(x+1,y+5,w-2,h-6);
 
     /* Draw the titlebar, with alpha */
     SetLgop(PG_LGOP_ALPHA);
@@ -300,7 +309,7 @@ object checkbox {
   align = PG_A_LEFT;
 
   bgfill = fillstyle {
-    Bitmap(x,y,w,h,bDarkInterlace);
+    fDarkInterlace(x,y,w,h);
     Bitmap(x,y,18,18,bitmap1);
     x = x + 20;
   };
@@ -330,7 +339,7 @@ object scroll.v {
     h = h<22 ? 22 : h;
 
     /* Standard background */
-    Bitmap(x,y,w,h,bDarkInterlace);
+    fDarkInterlace(x,y,w,h);
     
     /* Alpha blended bar the scroll thumb slides on */
     SetLgop(PG_LGOP_ALPHA);
@@ -370,7 +379,7 @@ object scroll.h {
     w = w<22 ? 22 : w;
 
     /* Standard background */
-    Bitmap(x,y,w,h,bDarkInterlace);
+    fDarkInterlace(x,y,w,h);
     
     /* Alpha blended bar the scroll thumb slides on */
     SetLgop(PG_LGOP_ALPHA);
@@ -482,16 +491,11 @@ object popup.menu {
     SetSrc(0,0,0,0);
   };
 
-  bgfill = fillstyle {
-    Bitmap(x,y,w,h,bDarkInterlace);
-  };
+  bgfill = Copy(default::fDarkInterlace);
 }
 
 object menuitem {
-  bgfill = fillstyle {
-    Bitmap(x,y,w,h,bDarkInterlace);
-  };
-
+  bgfill = Copy(default::fDarkInterlace);
   align = PG_A_LEFT;
   height = 18;
 }
