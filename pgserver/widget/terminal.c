@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.16 2001/01/19 06:27:54 micahjd Exp $
+/* $Id: terminal.c,v 1.17 2001/01/26 09:00:08 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -27,6 +27,7 @@
  */
 
 #include <pgserver/widget.h>
+#include <ctype.h>
 
 /* Default text attribute */
 #define ATTR_DEFAULT 0x07

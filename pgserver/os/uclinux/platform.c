@@ -1,4 +1,4 @@
-/* $Id: platform.c,v 1.1 2000/10/30 11:35:22 bauermeister Exp $
+/* $Id: platform.c,v 1.2 2001/01/26 09:00:07 micahjd Exp $
  *
  * platforms.c - Contains platform-dependant stuff
  *
@@ -88,6 +88,8 @@ void* realloc(void* ptr, size_t size)
 }
 
 /* NTO... ************************************************************************************/
+
+/* FIXME: These really should be macros or inlines */
 
 unsigned long int
 ntohl(unsigned long int x)
