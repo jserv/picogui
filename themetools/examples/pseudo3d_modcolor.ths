@@ -1,4 +1,4 @@
-/* $Id: pseudo3d_modcolor.ths,v 1.1 2000/11/11 22:34:10 micahjd Exp $
+/* $Id: pseudo3d_modcolor.ths,v 1.2 2001/03/07 04:11:47 micahjd Exp $
  *
  * This is a theme meant to be loaded _in addition to_ pseudo3d.
  * It adds extra colors and things.
@@ -14,6 +14,11 @@ object panelbar {
   };
   bgcolor = 0x0000C0;
 }
+
+/* Background gradient stuff */
+object background bgfill = fillstyle {
+   Gradient(x,y,w,h,42,0xA89CD8,0x635891,0);
+};
 
 /* Tints and hilights for the buttons */
 object button         bgcolor = 0xC0C0D0;

@@ -1,4 +1,4 @@
-/* $Id: aqua.ths,v 1.24 2000/12/29 21:19:21 micahjd Exp $
+/* $Id: aqua.ths,v 1.25 2001/03/07 04:11:47 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
@@ -12,6 +12,7 @@ object default {
     Bitmap(x,y,w,h,bitmap1,PG_LGOP_NONE,0,0);
   };
   bitmap1 = LoadBitmap("data/aq_bg.pnm");
+margin=0;
 }
 
 /* Jellybean-like buttons! */
