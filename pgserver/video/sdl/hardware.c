@@ -1,6 +1,6 @@
 /*
  * hardware.c - SDL "hardware" layer
- * $Revision: 1.2 $
+ * $Revision: 1.3 $
  * 
  * Emulate display hardware using SDL
  *
@@ -309,12 +309,18 @@ void hwr_chrblit(struct cliprect *clip, unsigned char *chardat,int dest_x,
   int hc;
   int olines = lines;
   int bit;
+  int flag=0;
+  int xpix,xmin,xmax,clipping;
   unsigned char ch;
 
   /* Find the width of the source data in bytes */
   if (bw & 7) bw += 8;
   bw = bw >> 3;
   bw &= 0x1F;
+  xmin = 0;
+  xmax = w;
+  clipping = 0;   /* This is set if we are being clipped,
+		     otherwise we can use a tight, fast loop */
 
   SDL_LockSurface(screen);
   dest = screen->pixels;
@@ -322,7 +328,7 @@ void hwr_chrblit(struct cliprect *clip, unsigned char *chardat,int dest_x,
   destline = dest =(devbmpt)screen->pixels+dest_x+dest_y*HWR_WIDTH;
   hc = 0;
 
-  /* Do vertical clipping ahead of time */
+  /* Do vertical clipping ahead of time (it does not require a special case) */
   if (clip) {
     if (clip->y>dest_y) {
       hc = clip->y-dest_y; /* Do it this way so skewing doesn't mess up when
@@ -330,20 +336,53 @@ void hwr_chrblit(struct cliprect *clip, unsigned char *chardat,int dest_x,
       destline = (dest += hc * HWR_WIDTH);
     }
     if (clip->y2<(dest_y+h))
-      h -= (dest_y+h-clip->y2);
+      h = clip->y2-dest_y+1;
+
+    /* Setup for horizontal clipping (if so, set a special case) */
+    if (clip->x>dest_x) {
+      xmin = clip->x-dest_x;
+      clipping = 1;
+    }
+    if (clip->x2<(dest_x+w)) {
+      xmax = clip->x2-dest_x+1;
+      clipping = 1;
+    }
   }
 
-  /* FINISH HORIZONTAL CLIPPING HERE!!! */
+  /* Decide which loop to use */
+  if (olines || clipping) {
+    /* Slower loop, taking skewing and clipping into account */
 
-  /* Nice enigmatic loop, taking skewing and clipping into account */
-  for (;hc<h;hc++,destline=(dest+=HWR_WIDTH)) {
-    if (olines && lines==hc) {
-      lines += olines;
-      dest--;
+    for (;hc<h;hc++,destline=(dest+=HWR_WIDTH)) {
+      if (olines && lines==hc) {
+	lines += olines;
+	dest--;
+	flag=1;
+      }
+      for (iw=bw,xpix=0;iw;iw--)
+	for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,destline++,xpix++)
+	  if (ch&0x80 && xpix>=xmin && xpix<xmax) *destline = col; 
+      if (flag) {
+	xmax++;
+	flag=0;
+      }
     }
-    for (iw=bw;iw;iw--)
-      for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,destline++)
-	if (ch&0x80) *destline = col;  
+  }
+  else {
+    /* Tight, unrolled loop, works only for normal case */
+
+    for (;hc<h;hc++,destline=(dest+=HWR_WIDTH))
+      for (iw=bw;iw;iw--) {
+	ch = *(chardat++);
+	if (ch&0x80) *destline = col; destline++; 
+	if (ch&0x40) *destline = col; destline++; 
+	if (ch&0x20) *destline = col; destline++; 
+	if (ch&0x10) *destline = col; destline++; 
+	if (ch&0x08) *destline = col; destline++; 
+	if (ch&0x04) *destline = col; destline++; 
+	if (ch&0x02) *destline = col; destline++; 
+	if (ch&0x01) *destline = col; destline++; 
+      }
   }
 
   SDL_UnlockSurface(screen);
