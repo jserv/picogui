@@ -11,10 +11,8 @@ class TerminalPage:
 	self._termProcess = False
 	self._app = app
 	self._position = position
-	if position == 0:
-	    self.tabpage.hotkey = 'f1'
-	if position == 1:
-	    self.tabpage.hotkey = 'f2'
+	if position < 12:
+	    self.tabpage.hotkey = 'f%d' % (position+1)
 	self._dynamictitle = False
 
 	try:
