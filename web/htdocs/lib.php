@@ -109,6 +109,18 @@ alt="PicoGUI Logo" border=0>
 ################################# Sidebar
 function sidebar() {
 
+   # Look up the most recent screenshot
+   box("Latest screenshot");
+   $shots = GetDirArray($path = "/home/groups/pgui/news","scrshot");
+   $latest = $shots[Count($shots)-1];
+   scrshot_thumb($path,$latest);
+   echo "<br><center>(<a href=\"scrshots.php\">more screenshots</a>)</center>\n";
+   endbox();
+
+   box("Documentation");
+   linkitem("diagrams.php","Diagrams");
+   endbox();
+
    box("Download source code");
    linkitem("http://pgui.sourceforge.net/cvstgz/pgui-dev-latest.tar.gz",
 	    "Latest nightly snapshot");
@@ -117,14 +129,6 @@ function sidebar() {
    linkitem("http://cvs.sourceforge.net/cgi-bin/cvsweb.cgi/?cvsroot=pgui",
 	    "Browse CVS");
    linkitem("http://sourceforge.net/cvs/?group_id=4764","CVS info");
-   endbox();
-
-   # Look up the most recent screenshot
-   box("Latest screenshot");
-   $shots = GetDirArray($path = "/home/groups/pgui/news","scrshot");
-   $latest = $shots[Count($shots)-1];
-   scrshot_thumb($path,$latest);
-   echo "<p><center>(<a href=\"scrshots.php\">more screenshots</a>)</center>\n";
    endbox();
 
    box("Contacts");
@@ -171,7 +175,7 @@ function box($title) {
  <?php
 }
 function endbox() {
-   echo "</td><tr></table></td><tr></table><p>\n";
+   echo "</td><tr></table></td><tr></table><br>\n";
 }
 # The End
 ?>
