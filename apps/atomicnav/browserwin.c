@@ -1,4 +1,4 @@
-/* $Id: browserwin.c,v 1.7 2002/01/08 11:36:06 micahjd Exp $
+/* $Id: browserwin.c,v 1.8 2002/01/11 04:31:09 micahjd Exp $
  *
  * browserwin.c - User interface for a browser window in Atomic Navigator
  *
@@ -132,6 +132,8 @@ void pageProgress(struct url *u) {
 		PG_WP_VALUE, u->progress,
 		0);
     old_progress = u->progress;
+    pgSubUpdate(u->browser->wProgress);
+    pgFlushRequests();
   }
 }
 

@@ -1,4 +1,4 @@
-/* $Id: p_http.c,v 1.5 2002/01/08 11:54:49 micahjd Exp $
+/* $Id: p_http.c,v 1.6 2002/01/11 04:31:10 micahjd Exp $
  *
  * p_http.c - Local disk access for the Atomic Navigator web browser
  *
@@ -76,8 +76,10 @@ void p_http_header(struct url *u, const char *name, const char *value) {
   else if (!strcmp(name,"Content-Length"))
     u->size = atoi(value);
 
-  else if (!strcmp(name,"Location"))
-    browserwin_command(u->browser->wApp, "URL", value);
+  else if (!strcmp(name,"Location")) {
+    if (strcmp(value,u->name))
+      browserwin_command(u->browser->wApp, "URL", value);
+  }
 }
 
 /********************************* Methods */
