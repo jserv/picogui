@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.39 2002/01/16 19:47:27 lonetech Exp $
+/* $Id: field.c,v 1.40 2002/01/16 23:04:26 micahjd Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -98,6 +98,7 @@ void build_field(struct gropctxt *c,unsigned short state,struct widget *self) {
    * FIXME: The cursor doesn't use themes! (much)
    */
   addgropsz(c,PG_GROP_RECT,0,c->y,CURSORWIDTH,c->h);
+  c->current->flags |= PG_GROPF_COLORED;
   DATA->cursor = c->current;
    
   fieldstate(self);
@@ -334,7 +335,8 @@ void fieldstate(struct widget *self) {
 
   /* Appear or disappear the cursor depending on focus and cursor
      flashing state */
-  DATA->cursor->type = DATA->flash_on ? PG_GROP_RECT : PG_GROP_NOP; 
+  DATA->cursor->param[0] = VID(color_pgtohwr)(DATA->flash_on ? 0x000000 : 
+					      theme_lookup(self->in->div->state,PGTH_P_BGCOLOR)); 
 }
 
 /* If the buffer doesn't have room for one more char, enlarge it */

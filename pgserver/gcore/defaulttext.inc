@@ -99,7 +99,7 @@
 /* 91 */  "Fillstyle opcode parameter truncated",
 /* 92 */  "Invalid handle in handle_group()",
 /* 93 */  "Dereferenced string handle is null in getstring",
-/* 94 */  NULL,
+/* 94 */  "Support for the panelbar widget was not compiled into pgserver",
 /* 95 */  "Error opening framebuffer device",
 /* 96 */  "Error mapping framebuffer device",
 /* 97 */  "Framebuffer ioctl error",

@@ -26,6 +26,7 @@ add_if_true  terminal.c    $CONFIG_WIDGET_TERMINAL
 add_if_true  canvas.c      $CONFIG_WIDGET_CANVAS
 add_if_true  panel_nobar.c $CONFIG_NOPANELBAR
 add_if_false panel.c       $CONFIG_NOPANELBAR
+add_if_false panelbar.c    $CONFIG_NOPANELBAR
 
 close_section
 

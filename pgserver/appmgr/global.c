@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.53 2002/01/16 19:47:25 lonetech Exp $
+/* $Id: global.c,v 1.54 2002/01/16 23:04:26 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -281,6 +281,8 @@ g_error appmgr_register(struct app_info *i) {
     e = widget_set(w,PG_WP_SIDE,i->side);
     errorcheck;
 
+    w->isroot = 1;
+
     /* If there is a popup in the nontoolbar area, we need to update all layers
      * and reclip the popups. This is necessary because, for example, the user
      * may want to turn on a virtual keyboard while in a dialog box.
@@ -311,6 +313,9 @@ g_error appmgr_register(struct app_info *i) {
     e = widget_set(w,PG_WP_SIZE,(i->side & (PG_S_LEFT|PG_S_RIGHT)) ? i->w : i->h);
     errorcheck;
 
+    w->isroot = 1;
+
+#ifndef CONFIG_NOPANELBAR
     /* bind the embedded panelbar to the panel. It's rather messy to do this here,
      * but there's no good way to do it in panel_install because the panel has
      * no handle at that point.
@@ -319,14 +324,13 @@ g_error appmgr_register(struct app_info *i) {
     errorcheck;
     e = widget_set(w,PG_WP_BIND,i->rootw);
     errorcheck;    
+#endif
 
     break;
 
   default:
     return mkerror(PG_ERRT_BADPARAM,30);
   }
-
-  w->isroot = 1;
 
   /* Copy to a new structure */
   e = g_malloc((void **) &dest,sizeof(struct app_info));
