@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.18 2001/11/04 16:11:32 micahjd Exp $
+/* $Id: textbox_main.c,v 1.19 2001/11/16 03:09:34 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -66,7 +66,8 @@ g_error textbox_install(struct widget *self) {
    errorcheck;
    self->in->div->build = &build_bgfill_only;
    self->in->div->state = PGTH_O_TEXTBOX;
-   self->in->div->flags |= PG_S_ALL;
+   self->in->div->flags |= DIVNODE_SPLIT_BORDER;
+   self->in->div->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
    e = newdiv(&self->in->div->div,self);  /* 1st line */
    errorcheck;
    self->in->div->div->flags |= PG_S_TOP;
@@ -115,6 +116,8 @@ void textbox_remove(struct widget *self) {
 }
 
 void textbox_resize(struct widget *self) {
+  /* Set our margin using the theme */
+  self->in->div->split = theme_lookup(self->in->div->state,PGTH_P_MARGIN);;  
 }
 
 g_error textbox_set(struct widget *self,int property, glob data) {
