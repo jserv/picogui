@@ -1,4 +1,4 @@
-/* $Id: gl_util.c,v 1.2 2002/11/25 06:43:00 micahjd Exp $
+/* $Id: gl_util.c,v 1.3 2002/11/25 06:49:39 micahjd Exp $
  *
  * gl_util.c - OpenGL driver for picogui
  *             This file has utilities shared by multiple components of the driver.
@@ -359,9 +359,6 @@ void gl_render_grid(void) {
 
 
 void gl_bind_texture(struct glbitmap *glb) {
-  if (glb->texture && glb->texture==gl_global.current_texture)
-    return;
-
   /* FIXME: This is a hack! We need lock/unlock commands for SHM bitmaps so we know when to update. This
    * code just updates volatile bitmaps every blit, limiting the maximum number of updates per second.
    */
@@ -450,6 +447,14 @@ void gl_bind_texture(struct glbitmap *glb) {
 		 GL_BGRA_EXT, GL_UNSIGNED_BYTE, ((struct glbitmap*)tmpbit)->sb->bits);
     vid->bitmap_free(tmpbit);
   }      
+  else {
+    /* Texture already exists, just bind it */
+    if (glb->texture!=gl_global.current_texture) {
+      glBindTexture(GL_TEXTURE_2D, glb->texture);
+      gl_global.current_texture = glb->texture;
+    }
+  }   
+
 }
 
 void gl_set_wireframe(int on) {

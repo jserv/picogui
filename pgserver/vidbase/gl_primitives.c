@@ -1,4 +1,4 @@
-/* $Id: gl_primitives.c,v 1.3 2002/11/25 06:43:00 micahjd Exp $
+/* $Id: gl_primitives.c,v 1.4 2002/11/25 06:49:39 micahjd Exp $
  *
  * gl_primitives.c - OpenGL driver for picogui
  *                   Implement standard picogui primitives using OpenGL
@@ -232,8 +232,6 @@ void gl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
     struct glbitmap *glsrc = (struct glbitmap *) src;
     float tx1,ty1,tx2,ty2;
 
-    gl_bind_texture(glsrc);
-    
     /* Calculate texture coordinates */
     tx1 = glsrc->tx1 + src_x * (glsrc->tx2 - glsrc->tx1) / glsrc->sb->w;
     ty1 = glsrc->ty1 + src_y * (glsrc->ty2 - glsrc->ty1) / glsrc->sb->h;
@@ -244,7 +242,7 @@ void gl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
      */
     gl_lgop(lgop);
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, glsrc->texture);
+    gl_bind_texture(glsrc);
     glBegin(GL_QUADS);
     glColor4f(1.0f,1.0f,1.0f,1.0f);
     glNormal3f(0.0f,0.0f,1.0f);
