@@ -250,6 +250,11 @@ class Tree(PGBuild.XMLUtil.Document):
                 "Trying to mount a config tree with a <%s> root where <%s> is expected" %
                 (dom.getRoot().nodeName,self.rootName))
 
+        # Save the document's attributes in the
+        # MountInfo for later access via mounts[]
+        minfo = MountInfo(file, dom.getRoot().attributes, dom)
+        self.mounts.append(minfo)
+
         # Recursively tag all objects in the
         # new DOM with their MountInfo
         def rTag(element, minfo):
@@ -257,11 +262,6 @@ class Tree(PGBuild.XMLUtil.Document):
             for child in element.childNodes:
                 rTag(child, minfo)
         rTag(dom, minfo)
-
-        # Save the document's attributes in the
-        # MountInfo for later access via mounts[]
-        minfo = MountInfo(file, dom.getRoot().attributes, dom)
-        self.mounts.append(minfo)
 
         # Make sure the mount path will resolve, whether we're using
         # it right away or not.

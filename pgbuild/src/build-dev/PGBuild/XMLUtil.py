@@ -169,13 +169,13 @@ def writeSubtree(root, dest, rootName=None, rootAttributes=None, comment=None):
     # go ahead and open it now.
     needClose = 0
     if type(dest) != file:
-        file = open(str(file), "w")
+        dest = open(str(dest), "w")
         needClose = 1
 
     
 
     if needClose:
-        file.close()
+        dest.close()
     
 ### The End ###
         

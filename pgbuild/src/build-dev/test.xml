@@ -1,7 +1,7 @@
 <?testing merging="of"?>
 <?testing processing="instructions"?>
 
-<pgbuild title="Test configuration file">
+<pgbuild title="Test configuration file" mode="rw">
 
   <!-- Change the description on an existing package -->
   <packages>
