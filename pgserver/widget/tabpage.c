@@ -1,4 +1,4 @@
-/* $Id: tabpage.c,v 1.7 2003/03/10 23:48:27 micahjd Exp $
+/* $Id: tabpage.c,v 1.8 2003/03/19 18:14:11 lalo Exp $
  *
  * tabpage.c - A page in a tabbed book. It can be inserted into any
  *             container and automatically link with other tab pages
@@ -114,9 +114,9 @@ void tabpage_remove(struct widget *self) {
 static int is_tab_property(int property) {
   switch (property) {
   case PG_WP_TEXT:
-  case PG_WP_BITMAP:
+  case PG_WP_IMAGE:
   case PG_WP_BITMASK:
-  case PG_WP_BITMAPSIDE:
+  case PG_WP_IMAGESIDE:
   case PG_WP_FONT:
   case PG_WP_DISABLED:
   case PG_WP_HOTKEY_FLAGS:

@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.130 2003/03/10 23:48:26 micahjd Exp $
+/* $Id: button.c,v 1.131 2003/03/19 18:14:05 lalo Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -285,7 +285,7 @@ g_error button_set(struct widget *self,int property, glob data) {
 
   switch (property) {
 
-  case PG_WP_BITMAP:
+  case PG_WP_IMAGE:
     if (iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)))
        return mkerror(PG_ERRT_HANDLE,33);
      
@@ -302,7 +302,7 @@ g_error button_set(struct widget *self,int property, glob data) {
     set_widget_rebuild(self);
     break;
 
-  case PG_WP_BITMAPSIDE:
+  case PG_WP_IMAGESIDE:
     DATA->bitmap_side = (int) data;
     resizewidget(self);
     set_widget_rebuild(self);
@@ -461,13 +461,13 @@ g_error button_set(struct widget *self,int property, glob data) {
 glob button_get(struct widget *self,int property) {
   switch (property) {
 
-  case PG_WP_BITMAP:
+  case PG_WP_IMAGE:
     return (glob) DATA->bitmap;
 
   case PG_WP_BITMASK:
     return (glob) DATA->bitmask;
 
-  case PG_WP_BITMAPSIDE:
+  case PG_WP_IMAGESIDE:
     return (glob) DATA->bitmap_side;
     
   case PG_WP_EXTDEVENTS:
@@ -744,11 +744,11 @@ void button_resize(struct widget *self) {
 
   t = theme_lookup(DATA->state,PGTH_P_WIDGETBITMAP);
   if (t) {
-     widget_set(self,PG_WP_BITMAP,t);
+     widget_set(self,PG_WP_IMAGE,t);
      DATA->theme_bitmap = 1;
   }
   else if (DATA->theme_bitmap) {
-     widget_set(self,PG_WP_BITMAP,0);
+     widget_set(self,PG_WP_IMAGE,0);
      DATA->theme_bitmap = 0;
   }
 
