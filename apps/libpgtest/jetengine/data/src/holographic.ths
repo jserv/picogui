@@ -3,11 +3,71 @@
  * -- Micah Dowty
  */
 
+prop fGlowPanel, fPanelVertices;
+prop upperBevel, lowerBevel, alpha;
+
 object default {
   name = "Holographic";
+
+  margin = 10;
+  upperBevel = 10;
+  lowerBevel = 20;
 
   bgfill = fillstyle {
     Nop();
   };
+
+  /* The vertices that make up our shaped panels.
+   * We shift them toward the bottom-left 1/2 pixel so lines line
+   * up on pixel boundaries.
+   */
+  fPanelVertices = fillstyle {
+    GL.vertex3f(((x+upperBevel)<<16) - 0x8000,
+		(y<<16) + 0x8000,
+		0);
+    GL.vertex3f(((x+w-1)<<16) - 0x8000,
+		(y<<16) + 0x8000,
+		0);
+    GL.vertex3f(((x+w-1)<<16) - 0x8000,
+		((y+h-1-lowerBevel)<<16) + 0x8000,
+		0);
+    GL.vertex3f(((x+w-1-lowerBevel)<<16) - 0x8000,
+		((y+h-1)<<16) + 0x8000,
+		0);
+    GL.vertex3f((x<<16) - 0x8000,
+		((y+h-1)<<16) + 0x8000,
+		0);
+    GL.vertex3f((x<<16) - 0x8000,
+		((y+upperBevel)<<16) + 0x8000,
+		0);
+  };
+  
+  fGlowPanel = fillstyle {
+    /* Built-in border */
+    x = x+4;
+    y = y+4;
+    w = w-8;
+    h = h-8;
+
+    /* Antialias only the lines */
+    GL.enable(GL_LINE_SMOOTH);
+    GL.enable(GL_BLEND);
+
+    /* Panel interior */
+    GL.color(bgcolor | PGCF_ALPHA | alpha);
+    GL.begin(GL_POLYGON);
+    fPanelVertices(x,y,w,h);
+    GL.end();
+
+    /* Panel border */
+    GL.color(bgcolor);
+    GL.begin(GL_LINE_LOOP);
+    fPanelVertices(x,y,w,h);
+    GL.end();
+  };
+  
+  bgcolor = 0xe5e8fd;
+  alpha = 0x20000000;
 }
 
+object box bgfill = Copy(default::fGlowPanel);

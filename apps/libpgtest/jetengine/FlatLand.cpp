@@ -30,8 +30,8 @@ void FlatLand::draw() {
   glVertex3f(-1000, 0, -1000);
   glVertex3f(1000, 0, -1000);
   glColor3f(0.047, 0.357, 0.569);
-  glVertex3f(1000, 500,-1000);
-  glVertex3f(-1000, 500,-1000);
+  glVertex3f(1000, 600,-1000);
+  glVertex3f(-1000, 600,-1000);
   glEnd();
   
   hrepeat = getAttrFloat("hrepeat");
