@@ -74,12 +74,22 @@ g_error widget_derive(struct widget **w,
 
 void widget_remove(struct widget *w) {
   struct divnode *sub_end;  
+  handle hw;
 
-  /* More pointer mangling...  :)  
-   * If this widget has other widgets inside of it,
-   * we will need to insert the 'sub' list */
+  /* Remove inner widgets if it can be done safely
+     (only remove if they have handles) */
+  while (w->sub && *w->sub) {    
+    if ((*w->sub)->owner && (hw = hlookup((*w->sub)->owner)))
+      handle_free(-1,hw);
+    else
+      break;
+  }
 
-  if (w->sub && *w->sub) {
+  if (w->sub && *w->sub) {    
+    /* More pointer mangling...  :)  
+     * If this widget has other widgets inside of it,
+     * we will need to insert the 'sub' list */
+    
     sub_end = *w->sub;
     while (sub_end->next) sub_end = sub_end->next;
     if (w->where) *w->where = *w->sub;
