@@ -61,7 +61,7 @@ def prepare (module, platform, project):
             "--host=%s" % platform.platform,
         ]
         
-    if platform.platform == "ppc-linux" :
+    if platform.platform == "ppc-linux" or platform.platform == "native-linux":
         command += [" --with-jpeg-dir=%s" % project ['module/libjpeg'].path ['dfl']]
 
     message ("running: %s" % string.join (command))
