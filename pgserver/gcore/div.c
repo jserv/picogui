@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.7 2000/05/06 06:42:21 micahjd Exp $
+/* $Id: div.c,v 1.8 2000/06/01 16:08:56 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -191,7 +191,7 @@ void divnode_recalc(struct divnode *n) {
        
        if (n->next) {
 	 n->next->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
-	 if (n->next->on_recalc && (!n->div->grop_lock)) {
+	 if (n->next->on_recalc && (!n->next->grop_lock)) {
 	   n->next->grop_lock++;
 	   if (n->next->grop_lock==1) {
 	     grop_free(&n->next->grop);
