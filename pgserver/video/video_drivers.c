@@ -1,4 +1,4 @@
-/* $Id: video_drivers.c,v 1.4 2002/10/07 10:21:58 micahjd Exp $
+/* $Id: video_drivers.c,v 1.5 2002/10/07 10:39:29 micahjd Exp $
  *
  * video_drivers.c - handles loading/switching video drivers and modes
  *
@@ -162,16 +162,6 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
       errorcheck;
    }
    
-   /* If the new bpp is different, use modeconvert/modeunconvert */
-   oldbpp = vid->bpp;
-   converting_mode = (bpp != vid->bpp);
-   if (converting_mode) {
-      e = bitmap_iterate((handle_iterator)vid->bitmap_modeunconvert, NULL);
-      errorcheck;
-      e = handle_iterate(PG_TYPE_PALETTE,(handle_iterator)array_hwrtopg, NULL);
-      errorcheck;
-   }
-      
    /* Default values, combine flags */
    if (!xres) xres = vid->xres;
    if (!yres) yres = vid->yres;
@@ -189,6 +179,16 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
    }
    vid->flags = flags;
 
+   /* If the new bpp is different, use modeconvert/modeunconvert */
+   oldbpp = vid->bpp;
+   converting_mode = (bpp != vid->bpp);
+   if (converting_mode) {
+      e = bitmap_iterate((handle_iterator)vid->bitmap_modeunconvert, NULL);
+      errorcheck;
+      e = handle_iterate(PG_TYPE_PALETTE,(handle_iterator)array_hwrtopg, NULL);
+      errorcheck;
+   }
+      
    /* Might want to tell the driver! */
    e = (*vid->setmode) (xres,yres,bpp,flags);
    errorcheck;
@@ -533,7 +533,7 @@ g_error bitmap_rotate(hwrbitmap *pbit, s16 angle) {
   old = *pbit;  
   e = vid->bitmap_getsize(old,&old_w,&old_h);
   errorcheck;
-
+  
   if (angle==90 || angle==270) {
     new_w = old_h;
     new_h = old_w;
