@@ -1,8 +1,7 @@
 import PicoGUI
 app = PicoGUI.Application('Textbox Test')
-tb = app.addWidget('Textbox')
+tb = app.addWidget('scrollbox').addWidget('Textbox','inside')
 tb.side = 'all'
-app.addWidget('Scroll').bind = tb
 tb.text = """Beastie Boys - Just a Test
 
 Like a flag at half mast as frames click fast

@@ -46,6 +46,7 @@ _wtype_consts = {
             'simplemenu':	(21, {}),	# create a simple menu from a string or array
             'dialogbox':        (22, {}),       # a type of popup that is always autosized and has a title
             'messagedialog':    (23, {}),       # a type of dialogbox that displays a message and gets feedback
+            'scrollbox':        (24, {}),       # box widget with built-in horizontal and/or vertical scrollbars
     }
 
 constants = {
