@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.24 2000/12/29 22:31:58 micahjd Exp $
+/* $Id: handle.c,v 1.25 2001/01/07 06:42:48 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -428,14 +428,22 @@ int r_handle_cleanup(struct handlenode *n,int owner,int context,
 
   if ((!n) || (n==NIL)) return 0;
 
-  ncopy = *n;
-
   if ( ((owner<0) || (owner==n->owner)) && (n->context>=context) &&
        ((!group) || group==n->group)) {
-    htree_delete(n);    /* Remove from the handle tree BEFORE deleting the object itself */
+
+    /* Same sequence as handle_free()
+       Remove from the handle tree BEFORE deleting the object itself */
+
+    ncopy = *n;
+    htree_delete(n);
     object_free(&ncopy);
+
+    /* See if this node had any group members that need to be expunged */
+    while (r_handle_cleanup(htree,-1,-1,n));
+
     return 1;
   }
+
   if (r_handle_cleanup(n->left,owner,context,group)) return 1;
   if (r_handle_cleanup(n->right,owner,context,group)) return 1;
   return 0;
@@ -466,7 +474,7 @@ g_error handle_free(int owner,handle h) {
   object_free(&ncopy);
 
   /* See if this node had any group members that need to be expunged */
-  r_handle_cleanup(htree,-1,-1,n);
+  while (r_handle_cleanup(htree,-1,-1,n));
 
   return sucess;
 }
