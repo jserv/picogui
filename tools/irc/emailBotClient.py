@@ -130,9 +130,12 @@ class AnnounceClient(protocol.Protocol):
         f.close()
         subjectFields = mailMsg['Subject'].split(" ")
         message = mailMsg.get_payload()
-        subjectFields[1] = subjectFields[1].lower()
-        if subjectFields[1][0] == "#":
-            subjectFields[1] = subjectFields[1][1:]
+        try:
+            subjectFields[1] = subjectFields[1].lower()
+            if subjectFields[1][0] == "#":
+                subjectFields[1] = subjectFields[1][1:]
+        except IndexError:
+            pass
 
         # Don't allow known bad channels, or names with slashes
         if not subjectFields[1] in badChannels and subjectFields[1].find(os.sep) < 0:
