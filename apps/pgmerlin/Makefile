@@ -61,7 +61,7 @@ clean:
 distclean:
 			rm -f *.o *~ core nil* $(TARGET)
 
-install:
+install:		$(TARGET)
 			$(STRIP) $(TARGET)
 			install -d $(SAMPLES_INSTALL_DIR)
 			install samples/*.dat $(SAMPLES_INSTALL_DIR)
