@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.57 2001/02/17 05:17:55 micahjd Exp $
+# $Id: Makefile,v 1.58 2001/02/17 05:52:15 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -21,6 +21,9 @@
 #
 #
 # $Log: Makefile,v $
+# Revision 1.58  2001/02/17 05:52:15  micahjd
+# Oops, left sdlfb out of the makefile...
+#
 # Revision 1.57  2001/02/17 05:17:55  micahjd
 # Implemented video test patterns (-s command line option)
 #
@@ -96,6 +99,9 @@ ifneq ($(DRIVER_EZ328),)
 endif
 ifneq ($(DRIVER_SDL),)
     SRC := $(SRC) video/sdl.c
+endif
+ifneq ($(DRIVER_SDLFB),)
+    SRC := $(SRC) video/sdlfb.c
 endif
 ifneq ($(DRIVER_SVGAFB),)
     SRC := $(SRC) video/svgafb.c
