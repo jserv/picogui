@@ -1,6 +1,6 @@
-/* $Id: p_http.c,v 1.9 2002/02/06 21:15:09 bornet Exp $
+/* $Id: p_http.c,v 1.10 2002/10/11 10:48:14 micahjd Exp $
  *
- * p_http.c - Local disk access for the Atomic Navigator web browser
+ * p_http.c - HTTP client implementation for the Atomic Navigator web browser
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
