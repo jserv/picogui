@@ -1,4 +1,4 @@
-/* $Id: pgfx.h,v 1.7 2001/05/16 00:45:32 micahjd Exp $
+/* $Id: pgfx.h,v 1.8 2001/05/16 01:36:21 micahjd Exp $
  *
  * picogui/pgfx.h - The PicoGUI abstract graphics interface
  * 
@@ -276,19 +276,49 @@ inline pgprim pgSetMapping(pgcontext c,pgu x,pgu y,pgu w,pgu h,short type);
  */
 inline void pgContextUpdate(pgcontext c);
 
-/* Meta-primitives */
+//! Sets a position to draw lines from
 void    pgMoveTo(pgcontext c, pgu x, pgu y);
+//! Draws a line from the position last set with pgMoveTo or pgLineTo
 pgprim  pgLineTo(pgcontext c, pgu x, pgu y);
 
 /************ Constants */
 
-/* Modes for pgNewCanvasContext */
-#define PGFX_IMMEDIATE    1     /* Primitives are drawn now, not stored */
-#define PGFX_PERSISTENT   2     /* Primitives drawn and stored in groplist */
+/*!
+ * \brief PGFX canvas immediate mode
+ * 
+ * All primitives are rendered, but not stored. Note that this includes
+ * nonvisual primitives like pgSetColor, pgSetMapping, and pgSetLgop.
+ * 
+ * For a slightly lower-level explanation, this mode sets the default gropnode
+ * flags to PG_GROPF_TRANSIENT so that gropnodes are deleted immediately
+ * after rendering.
+ *
+ * \sa pgWriteCmd, PG_WIDGET_CANVAS, PG_GROPF_TRANSIENT
+ */
+#define PGFX_IMMEDIATE    1
+/*!
+ * \brief PGFX canvas persistent mode
+ * 
+ * Primitives are rendered and stored in the PicoGUI server. This allows
+ * automatic redrawing by the server without client intervention.
+ * Primitives can be manipulated after being sent to the server.
+ * 
+ * \sa pgWriteCmd, PG_WIDGET_CANVAS, pgSetMapping
+ */
+#define PGFX_PERSISTENT   2
 
 /************ Context management functions */
 
+/*!
+ * \brief Create a context for rendering to a canvas
+ * \param canvas Handle to a canvas widget
+ * \param mode Rendering mode: PGFX_IMMEDIATE or PGFX_PERSISTENT
+ * \returns A pgcontext that can be used with PGFX primitives. It must be deleted with pgDeleteContext
+ * 
+ * \sa PGFX_IMMEDIATE, PGFX_PERSISTENT, PG_WIDGET_CANVAS, pgDeleteContext
+ */
 pgcontext pgNewCanvasContext(pghandle canvas,short mode);
+//! Delete a PGFX context
 void pgDeleteContext(pgcontext c);
 
 /* The End */
