@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.13 2001/04/29 17:28:40 micahjd Exp $
+/* $Id: rotate90.c,v 1.14 2001/05/01 01:12:29 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -127,7 +127,7 @@ void rotate90_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
      crp = NULL;
    
    /* Rotate the text */
-   angle -= 90;
+   angle += 90;
    angle %= 360;
    if (angle<0) angle += 360;
    
@@ -151,6 +151,7 @@ g_error rotate90_bitmap_loadxbm(hwrbitmap *bmp,
 				hwrcolor bg) {
    g_error e;
    e = (*vid->bitmap_loadxbm)(bmp,data,w,h,fg,bg);
+   errorcheck;
    return (*vid->bitmap_rotate90)(bmp);
 }
 #endif

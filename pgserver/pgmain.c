@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.1 2001/04/25 09:54:31 gobry Exp $
+/* $Id: pgmain.c,v 1.2 2001/05/01 01:12:24 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
 
     while (1) {
 
-      c = getopt(argc,argv,"mfrbhlx:y:d:v:i:t:s:");
+      c = getopt(argc,argv,"mf12bhlx:y:d:v:i:t:s:");
       if (c==-1)
 	break;
       
@@ -132,8 +132,14 @@ int main(int argc, char **argv) {
 	break;
 	 
 #ifdef CONFIG_ROTATE
-      case 'r':        /* Rotate */
+      case '1':        /* Rotate */
 	vidf |= PG_VID_ROTATE90;
+	break;
+#endif
+	 
+#ifdef CONFIG_ROTATE180
+      case '2':        /* Rotate */
+	vidf |= PG_VID_ROTATE180;
 	break;
 #endif
 	 
@@ -282,7 +288,10 @@ int main(int argc, char **argv) {
 	     "  h : This help message\n"
 	     "  l : List installed drivers and fonts\n"
 #ifdef CONFIG_ROTATE
-	     "  r : Begin with screen rotated\n"
+	     "  1 : Begin with screen rotated 90 degrees\n"
+#endif
+#ifdef CONFIG_ROTATE180
+	     "  2 : Begin with screen rotated 180 degrees\n"
 #endif
 #ifdef CONFIG_VIDEOTEST
 	     "  m : enter benchmark mode\n"
@@ -340,14 +349,6 @@ int main(int argc, char **argv) {
       }
     }
 
-#ifdef CONFIG_VIDEOTEST   /* Video test mode */
-    if (videotest_on==1)
-       videotest_run(videotest_mode);
-    if (videotest_on==2)
-       videotest_benchmark();
-#endif
-     
-     
     /* Subsystem initialization and error check */
 
 #ifdef DEBUG_INIT
@@ -419,9 +420,14 @@ int main(int argc, char **argv) {
      exit(1);
   }
 #endif
-
+   
+#ifdef CONFIG_VIDEOTEST   /* Video test mode */
+    if (videotest_on==1)
+       videotest_run(videotest_mode);
+    if (videotest_on==2)
+       videotest_benchmark();
+     
   /* initial update */
-#ifdef CONFIG_VIDEOTEST
   if (!videotest_on)    /* If we have a test pattern, leave that up */
 #endif   
      update(NULL,1);

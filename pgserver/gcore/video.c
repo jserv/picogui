@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.36 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: video.c,v 1.37 2001/05/01 01:12:29 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -225,7 +225,15 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
       vid->lyres = vid->xres;
    }
 #endif   
-   
+
+#ifdef CONFIG_ROTATE180
+   if (vid->flags & PG_VID_ROTATE180) {
+      vidwrap_rotate180(vidwrap);
+      vid->lxres = vid->xres;
+      vid->lyres = vid->yres;
+   }
+#endif   
+
    /* Since changing video modes pretty much obliterates all onscreen
     * sprites, and the previous location might be offscreen now,
     * reset the backbuffer on all sprites */

@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.39 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: global.c,v 1.40 2001/05/01 01:12:29 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -270,6 +270,7 @@ g_error appmgr_register(struct app_info *i) {
 void appmgr_loadcursor(int thobj) {
    hwrbitmap *bitmap,*mask;
    s16 w,h;
+   bool redisplay;
    
    /* Load the cursor bitmaps, using the default if there is a problem */
    
@@ -284,7 +285,10 @@ void appmgr_loadcursor(int thobj) {
   
    /* Insert the new bitmaps, resize the sprite if necessary */
 
-   VID(sprite_hide) (cursor);
+   redisplay = cursor->onscreen;
+   if (redisplay)
+     VID(sprite_hide) (cursor);
+
    if ( (w!=cursor->w) || (h!=cursor->h) ) {
       cursor->w = w;
       cursor->h = h;
@@ -295,7 +299,8 @@ void appmgr_loadcursor(int thobj) {
    cursor->bitmap = bitmap;
    cursor->mask = mask;
    
-   VID(sprite_show) (cursor);
+   if (redisplay)
+     VID(sprite_show)(cursor);
 }
 	
 

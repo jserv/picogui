@@ -1,3 +1,31 @@
+2001-04-30    Micah Dowty <micahjd@users.sourceforge.net>
+
+Just because I'm sick of working on this code outside of CVS and I really
+need some motivation to fix it up lately, I committed the video stuff to CVS
+yesterday. Still many outstanding issues, as documented in email.
+First order of business is the rotation, then fixing the memory cruft in
+render.c. Might also want to think about recompatibilizing the other apps. I
+should probably write the mapping code and make the virtual keyboard, and
+integrate it into a new complete-with-shell Helio ROM.
+
+      * vidwrap/rotate90.c: Really dumb bug in calculating the new angle,
+        made rotated charblits segfault. 90 degree rotation works now.
+	Thank you ddd! (really nifty debugger)
+
+      * vidwrap/rotate180.c: Starting 180 degree rotation wrapper. Also
+        added build system and video core miscellany to enable this
+	
+      * pgmain.c: Incorporated a small patch into pgmain.c that got lost
+        when pgmain moved. This fixes fonts in the video test mode and
+	benchmark mode
+
+      * appmgr/global.c: Fixed a quirk in cursor loading that would munge the
+        sprite flags, resulting in some extraneous blits that caused a black
+	rectangle in the upper-left corner
+
+      * vidwrap/rotate180.c: Finished the core 180 degree rotation code,
+        should just be charblit mods to do...
+
 2001-04-24    Micah Dowty <micahjd@users.sourceforge.net>
 
 Almost finished with video reorganization junk. Too many changes to
