@@ -1,4 +1,4 @@
-/* $Id: font_bdf.c,v 1.1 2002/10/12 14:46:35 micahjd Exp $
+/* $Id: font_bdf.c,v 1.2 2002/10/12 14:51:33 micahjd Exp $
  *
  * font_bdf.c - Font engine that uses fonts compiled into pgserver,
  *              converted from BDF fonts at compile-time.
@@ -235,8 +235,6 @@ g_error bdf_create(struct font_descriptor *self, const struct font_style *fs) {
     flags = fs->style;
     name = fs->name;
   }
-
-  printf("Finding font %s:%d:%X\n",name,size,flags);
 
   /* If the font size is zero, assume the default font size */
   if ((!size) && 
