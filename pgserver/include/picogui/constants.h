@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.63 2001/07/12 00:17:18 micahjd Exp $
+/* $Id: constants.h,v 1.64 2001/07/12 08:44:54 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -680,6 +680,7 @@ typedef unsigned long pghandle;
 
 #define PG_SND_KEYCLICK       1   //!< Short click
 #define PG_SND_BEEP           2   //!< Terminal beep
+#define PG_SND_VISUALBELL     3   //!< Flash the visual bell if available
 
 #define PG_POWER_OFF          0   //!< Turn completely off
 #define PG_POWER_SLEEP       50   //!< Stop CPU, turn off peripherals

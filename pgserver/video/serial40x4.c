@@ -1,4 +1,4 @@
-/* $Id: serial40x4.c,v 1.7 2001/05/13 07:04:56 micahjd Exp $
+/* $Id: serial40x4.c,v 1.8 2001/07/12 08:44:54 micahjd Exp $
  *
  * serial40x4.c - PicoGUI video driver for a serial wall-mounted
  *                40x4 character LCD I put together about a year ago.
@@ -447,6 +447,23 @@ hwrcolor serial40x4_color_pgtohwr(pgcolor c) {
    
 }
 
+void serial40x4_message(u32 message, u32 param) {
+   char beep[3] = "\\ ";
+   
+   if (message != PGDM_SOUNDFX) 
+     return;
+	  
+   if (param == PG_SND_BEEP)
+     beep[1] = 'b';
+   else if (param == PG_SND_VISUALBELL)
+     beep[1] = 'f';
+   else
+     return;
+   
+   write(lcd_fd,beep,3);
+   sleep(1);
+}
+
 /******************************************** Driver registration */
 
 g_error serial40x4_regfunc(struct vidlib *v) {
@@ -458,7 +475,8 @@ g_error serial40x4_regfunc(struct vidlib *v) {
    v->color_pgtohwr = &serial40x4_color_pgtohwr;
    v->font_newdesc = &serial40x4_font_newdesc;
    v->charblit = &serial40x4_charblit;
-
+   v->message = &serial40x4_message;
+   
    return sucess;
 }
 
