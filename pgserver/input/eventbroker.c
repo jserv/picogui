@@ -1,4 +1,4 @@
-/* $Id: eventbroker.c,v 1.13 2002/11/05 14:50:40 bornet Exp $
+/* $Id: eventbroker.c,v 1.14 2003/01/14 14:03:46 pney Exp $
  *
  * eventbroker.c - input driver to manage driver messages
  *
@@ -167,7 +167,11 @@ void eventbroker_message(u32 message, u32 param, u32 *ret)
 
   case PGDM_BACKLIGHT:
 #ifdef RM_ENABLED
-    rm_backlight_ctrl(param ? RM_BACKLIGHT_ON : RM_BACKLIGHT_OFF);
+/* no more support for backlight now anywhere... */
+/*      rm_backlight_ctrl(param ? RM_BACKLIGHT_ON : RM_BACKLIGHT_OFF); */
+/* backlight support will maybe manager somewhere else in the future...
+ * I don't erase the code, one never knows...
+ */
 #endif
     break;
 
