@@ -10,6 +10,9 @@ in pgserver and occasionally tossing in the odd feature here and there.
 	segfaults. Now instead of segfaulting if you delete a button's font,
 	it will fall back on the theme's button font or in extreme cases
 	the default font.
+	
+      * apps/pgl/applets/pgl-clock.c: Finished a rather nifty configurable
+        clock applet
 
 2001-08-08    Micah Dowty <micahjd@users.sourceforge.net>
 
