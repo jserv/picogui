@@ -1,4 +1,4 @@
-/* $Id: kbfile.c,v 1.13 2002/06/18 09:55:11 lalo Exp $
+/* $Id: kbfile.c,v 1.14 2002/09/26 19:48:46 lalo Exp $
   *
   * kbfile.c - Functions to validate and load patterns from a keyboard file
   * 
@@ -281,12 +281,13 @@ void kb_selectpattern (unsigned short pattern_num, pghandle canvas)
 {
   /* Flag indicating if we are within a context */
   static int inContext = 0;
+  struct pattern_info * requested_pat = NULL;
 
   if (pattern_num < pat.num_patterns)
     {
-      current_pat = pattern_data + pattern_num;
+      requested_pat = pattern_data + pattern_num;
 
-      if (current_pat->ptype == PGKB_REQUEST_NORMAL)
+      if (requested_pat->ptype == PGKB_REQUEST_NORMAL)
 	{
 	  /* Manage context */
 	  if (inContext)
@@ -299,14 +300,16 @@ void kb_selectpattern (unsigned short pattern_num, pghandle canvas)
 	    }
 	  pgEnterContext ();
 
+          current_pat = requested_pat;
+
 	  pgWriteData (canvas, pgFromMemory (current_pat->canvas_buffer, 
 					     current_pat->canvasdata_len));
 	  pgWriteCmd (canvas, PGCANVAS_REDRAW, 0);
 	  pgSubUpdate (canvas);
 	}
-      else if (current_pat->ptype = PGKB_REQUEST_EXEC)
+      else if (requested_pat->ptype = PGKB_REQUEST_EXEC)
 	{
-	  spawn_process (current_pat->canvas_buffer);
+	  spawn_process (requested_pat->canvas_buffer);
 	}
     }
 }
