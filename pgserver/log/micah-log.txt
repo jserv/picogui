@@ -1,5 +1,16 @@
 2001-05-03    Micah Dowty <micahjd@users.sourceforge.net>
 
+Fixink a couple bugs, continuing from yesterday.
+Happy Friday!!!
+
+      * widget/canvas.c: Fixed a subtle bug that caused much groplist
+        mangling when using transient nodes.
+	
+      * gcore/render.c: Added PG_GROPF_UNIVERSAL to always render a node.
+        Good for setting transformations, etc.
+
+2001-05-03    Micah Dowty <micahjd@users.sourceforge.net>
+
 I think I'll get this keyboard working, then write some docs. The server
 seems to be holding up fine with the new gropnode engine.
 

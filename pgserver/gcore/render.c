@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.2 2001/05/01 23:13:17 micahjd Exp $
+/* $Id: render.c,v 1.3 2001/05/05 02:00:07 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -96,10 +96,11 @@ void grop_render(struct divnode *div) {
    while (*listp) {
      
       /* Skip if the incremental-ness isn't right,
-       * but not if it's pseudoincremental or transient */
+       * but not if it's pseudoincremental, transient, or universal */
       if ( (( (*listp)->flags &  PG_GROPF_INCREMENTAL) != incflag) &&
 	   (!((*listp)->flags & (PG_GROPF_PSEUDOINCREMENTAL |
-				 PG_GROPF_TRANSIENT))))
+				 PG_GROPF_TRANSIENT |
+				 PG_GROPF_UNIVERSAL))))
 	goto skip_this_node;
       
       /* Clear pseudoincremental flag */
