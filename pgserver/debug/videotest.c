@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.6 2001/03/19 05:59:28 micahjd Exp $
+/* $Id: videotest.c,v 1.7 2001/03/19 17:34:18 bauermeister Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -257,40 +257,59 @@ void videotest_help(void) {
 	"\t1\tLine test pattern\n"
    	"\t2\tColor test pattern\n"
 	"\t3\tBlit/unblit test pattern\n"
-	"\t4\tSlab alignment test pattern\n");
+	"\t4\tSlab alignment test pattern\n"
+	"\t99\tAll tests\n"
+	"\tnegative value: repeat test in a loop\n"
+	);
 }
+
+
+static void videotest_run_one(int number) {
+  switch (number) {
+  case 1:
+    testpat_line();
+    break;
+  case 2:
+    testpat_color();
+    break;
+  case 3:
+    testpat_unblit();
+    break;
+  case 4:
+    testpat_slab();
+    break;
+  default:
+    printf("Unknown video test mode");
+    exit(1);
+  }
+  VID(update) (0,0,vid->lxres,vid->lyres);
+}
+
 
 void videotest_run(int number) {
-   switch (number) {
-   
-    case 1:
-      testpat_line();
-      break;
-    case 2:
-      testpat_color();
-      break;
-    case 3:
-      testpat_unblit();
-      break;
-    case 4:
-      testpat_slab();
-      break;
-      
-    default:
-      printf("Unknown video test mode");
-      exit(1);
-   }
-   
-   VID(update) (0,0,vid->lxres,vid->lyres);
+  int loop, cycle, nr;
+  const int delay = 1;
+
+  loop = number<0;
+  number = number<0 ? -number : number;
+  cycle = number==99;
+  nr = cycle ? 1 : number;
+
+  for(;;) {
+    videotest_run_one(nr);
+
+    if(loop || cycle) {
+      sleep(delay);
+      if(cycle) {
+	if(++nr>4) {
+	  if(!loop) break;
+	  else nr = 1;
+	}
+      }
+    }
+    else break;
+  }
 }
 
+
 /* The End */
-
-
-
-
-
-
-
-
-
