@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.33 2001/10/12 06:46:17 micahjd Exp $
+/* $Id: terminal.c,v 1.34 2001/10/13 01:10:09 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -767,8 +767,11 @@ void term_char(struct widget *self,char c) {
       return;
       
     case '\n':
-      DATA->crsrx = 0;
       DATA->crsry++;
+      break;
+
+    case '\r':
+      DATA->crsrx = 0;
       break;
       
     case '\t':
