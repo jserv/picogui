@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.50 2001/02/09 00:58:13 micahjd Exp $
+/* $Id: picogui_client.c,v 1.51 2001/02/10 10:34:56 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -567,7 +567,8 @@ void pgInit(int argc, char **argv)
   _pgselect_handler = &select;
 
   /* Default tunables */
-  hostname = PG_REQUEST_SERVER;
+  if (!(hostname = getenv("pgserver")))
+     hostname = PG_REQUEST_SERVER;
 
   /* Handle arguments we recognize, Leave others for the app */
   for (i=1;i<argc;i++) {
@@ -582,11 +583,12 @@ void pgInit(int argc, char **argv)
 	/* --pgserver : Next argument is the picogui server */
 	args_to_shift = 2;
 	hostname = argv[i+1];
+	setenv("pgserver",hostname,1);    /* Child processes inherit server */
       }
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: picogui_client.c,v 1.50 2001/02/09 00:58:13 micahjd Exp $\n");
+	fprintf(stderr,"$Id: picogui_client.c,v 1.51 2001/02/10 10:34:56 micahjd Exp $\n");
 	exit(1);
       }
       
