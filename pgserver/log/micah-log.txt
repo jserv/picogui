@@ -1,3 +1,10 @@
+---- Friday, March 16
+
+Happy Friday!
+
+I brought the uCsimm hardware today, so I should be able to debug the theme
+loading. 
+
 ---- Thursday, March 15
 
 sdlfb now forces the screenw width to be aligned in < 8bpp modes, fixing a
@@ -8,6 +15,9 @@ help with many things including rectangles!
 Threw in a bar() as a bonus.
 
 Added absolute positioning widget properties (read only)
+
+Started adding rotation via video wrapper libs. Converted all (*vid->func)
+style calls to a macro VID(func)
 
 ---- Monday, March 12
 

@@ -1,4 +1,4 @@
-/* $Id: ez328_chipslice_lcd.c,v 1.5 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: ez328_chipslice_lcd.c,v 1.6 2001/03/17 04:16:36 micahjd Exp $
  *
  * ez328_chipslice_lcd.c
  *           LCD video drivers for the DragonBall-based ChipSlice.
@@ -226,7 +226,7 @@ static g_error lcd_init(int xres,int yres,int bpp,unsigned long flags) {
   vid->bpp  = 8; /* logically 8 bpp, physically 2 bpp */
 
   /* set clip to full screen */
-  (*vid->clip_off)();
+  VID(clip_off) ();
 
   return sucess;
 }

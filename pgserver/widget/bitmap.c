@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.27 2001/03/03 01:44:27 micahjd Exp $
+/* $Id: bitmap.c,v 1.28 2001/03/17 04:16:36 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -44,7 +44,7 @@ void build_bitmap(struct gropctxt *c,unsigned short state,struct widget *self) {
   /* Size and add the bitmap itself */
   if (DATA->bitmap && !iserror(rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,
       DATA->bitmap)) && bit) {
-    (*vid->bitmap_getsize)(bit,&w,&h);
+    VID(bitmap_getsize) (bit,&w,&h);
     align(c,DATA->align,&w,&h,&x,&y);
 
     /* Optional bitmask */
@@ -189,7 +189,7 @@ void resizebitmap(struct widget *self) {
   if (iserror(rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,DATA->bitmap)))
     return;
   if (!bit) return;
-  (*vid->bitmap_getsize)(bit,&w,&h);
+  VID(bitmap_getsize) (bit,&w,&h);
 
   if ((self->in->flags & DIVNODE_SPLIT_TOP) ||
       (self->in->flags & DIVNODE_SPLIT_BOTTOM))

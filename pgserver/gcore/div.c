@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.35 2001/03/07 04:10:11 micahjd Exp $
+/* $Id: div.c,v 1.36 2001/03/17 04:16:34 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -308,7 +308,7 @@ void update(struct divnode *subtree,int show) {
     r_dtupdate(dts->top);
   
   if (show) {
-    (*vid->sprite_showall)();
+    VID(sprite_showall) ();
     
     /* NOW we update the hardware */
     realize_updareas();

@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.15 2001/03/01 02:23:11 micahjd Exp $
+/* $Id: linear8.c,v 1.16 2001/03/17 04:16:35 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -140,7 +140,7 @@ void linear8_gradient(int x,int y,int w,int h,int angle,
   int q;
 
   /* Find a reasonable in-between color to use */
-  c = (*vid->color_pgtohwr)(mkcolor((getred(c2)+getred(c1))>>1,
+  c = VID(color_pgtohwr) (mkcolor((getred(c2)+getred(c1))>>1,
 				    (getgreen(c2)+getgreen(c1))>>1,
 				    (getblue(c2)+getblue(c1))>>1));
 

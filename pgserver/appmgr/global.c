@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.34 2001/03/12 17:37:49 pney Exp $
+/* $Id: global.c,v 1.35 2001/03/17 04:16:34 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -104,23 +104,23 @@ g_error appmgr_init(void) {
    /* Actually load the cursor */
    
   /* Load the default mouse cursor bitmaps */
-  e = (*vid->bitmap_loadxbm)(&defaultcursor_bitmap,cursor_bits,
+  e = VID(bitmap_loadxbm) (&defaultcursor_bitmap,cursor_bits,
 			     cursor_width,cursor_height,
-			     (*vid->color_pgtohwr)(0xFFFFFF),
-			     (*vid->color_pgtohwr)(0x000000));
+			     VID(color_pgtohwr) (0xFFFFFF),
+			     VID(color_pgtohwr) (0x000000));
   errorcheck;
-  e = (*vid->bitmap_loadxbm)(&defaultcursor_bitmask,cursor_mask_bits,
+  e = VID(bitmap_loadxbm) (&defaultcursor_bitmask,cursor_mask_bits,
 			     cursor_width,cursor_height,
-			     (*vid->color_pgtohwr)(0x000000),
-			     (*vid->color_pgtohwr)(0xFFFFFF));
+			     VID(color_pgtohwr) (0x000000),
+			     VID(color_pgtohwr) (0xFFFFFF));
   errorcheck;
 
 #else
    /* Fake it */
 #define cursor_width  0
 #define cursor_height 0
-   (*vid->bitmap_new)(&defaultcursor_bitmap,0,0);
-   (*vid->bitmap_new)(&defaultcursor_bitmask,0,0);
+   VID(bitmap_new) (&defaultcursor_bitmap,0,0);
+   VID(bitmap_new) (&defaultcursor_bitmask,0,0);
 #endif
    
 #ifdef DEBUG_INIT
@@ -274,23 +274,23 @@ void appmgr_loadcursor(int thobj) {
    if (iserror(rdhandle((void**)&mask,PG_TYPE_BITMAP,-1,
 			theme_lookup(thobj,PGTH_P_CURSORBITMASK))) || !mask)
      mask = defaultcursor_bitmask;
-   (*vid->bitmap_getsize)(bitmap,&w,&h);
+   VID(bitmap_getsize) (bitmap,&w,&h);
   
    /* Insert the new bitmaps, resize the sprite if necessary */
 
-   (*vid->sprite_hide)(cursor);
+   VID(sprite_hide) (cursor);
 
    if ( (w!=cursor->w) || (h!=cursor->h) ) {
       cursor->w = w;
       cursor->h = h;
-      (*vid->bitmap_free)(cursor->backbuffer);
-      (*vid->bitmap_new)(&cursor->backbuffer,w,h);
+      VID(bitmap_free) (cursor->backbuffer);
+      VID(bitmap_new) (&cursor->backbuffer,w,h);
    }
    
    cursor->bitmap = bitmap;
    cursor->mask = mask;
    
-   (*vid->sprite_show)(cursor);
+   VID(sprite_show) (cursor);
 }
 	
 

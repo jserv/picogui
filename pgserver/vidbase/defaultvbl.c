@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.25 2001/03/17 03:56:43 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.26 2001/03/17 04:16:35 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -117,7 +117,7 @@ void def_addpixel(int x,int y,pgcolor c) {
      Don't let the RGB components roll over either
   */
   int r,g,b;
-  pgcolor oc = VID(color_hwrtopg) ((*vid->getpixel)(x,y));
+  pgcolor oc = (*vid->color_hwrtopg) ((*vid->getpixel)(x,y));
 
   r = getred(oc);
   g = getgreen(oc);
@@ -130,13 +130,13 @@ void def_addpixel(int x,int y,pgcolor c) {
   if (g>255) g=255;
   if (b>255) b=255;
 
-  VID(pixel) (x,y,(*vid->color_pgtohwr)(mkcolor(r,g,b)));
+  (*vid->pixel) (x,y,(*vid->color_pgtohwr)(mkcolor(r,g,b)));
 }
 
 void def_subpixel(int x,int y,pgcolor c) {
   /* Same idea, but subtract */
   int r,g,b;
-  pgcolor oc = VID(color_hwrtopg) ((*vid->getpixel)(x,y));
+  pgcolor oc = (*vid->color_hwrtopg) ((*vid->getpixel)(x,y));
 
   r = getred(oc);
   g = getgreen(oc);
@@ -149,20 +149,20 @@ void def_subpixel(int x,int y,pgcolor c) {
   if (g<0) g=0;
   if (b<0) b=0;
 
-  VID(pixel) (x,y,(*vid->color_pgtohwr)(mkcolor(r,g,b)));
+  (*vid->pixel) (x,y,(*vid->color_pgtohwr)(mkcolor(r,g,b)));
 }
 
 /* Should be more than OK for most situations */
 void def_clear(void) {
-  VID(rect) (0,0,vid->xres,vid->yres,(*vid->color_pgtohwr)(0));
+  (*vid->rect) (0,0,vid->xres,vid->yres,(*vid->color_pgtohwr)(0));
 }
 
 void def_slab(int x,int y,int w,hwrcolor c) {
-  VID(rect) (x,y,w,1,c);
+  (*vid->rect) (x,y,w,1,c);
 }
 
 void def_bar(int x,int y,int h,hwrcolor c) {
-  VID(rect) (x,y,1,h,c);
+  (*vid->rect) (x,y,1,h,c);
 }
 
 /* There are about a million ways to optimize this-
@@ -198,7 +198,7 @@ void def_line(int x1,int y1,int x2,int y2,hwrcolor c) {
     stepy = 1;
   }
 
-  VID(pixel) (x1,y1,c);
+  (*vid->pixel) (x1,y1,c);
 
   /* Major axis is horizontal */
   if (dx > dy) {
@@ -211,7 +211,7 @@ void def_line(int x1,int y1,int x2,int y2,hwrcolor c) {
       x1 += stepx;
       fraction += dy;
       
-      VID(pixel) (x1,y1,c);
+      (*vid->pixel) (x1,y1,c);
     }
   } 
   
@@ -226,13 +226,13 @@ void def_line(int x1,int y1,int x2,int y2,hwrcolor c) {
       y1 += stepy;
       fraction += dx;
       
-      VID(pixel) (x1,y1,c);
+      (*vid->pixel) (x1,y1,c);
     }
   }
 }
 
 void def_rect(int x,int y,int w,int h,hwrcolor c) {
-  for (;h;h--,y++) VID(slab) (x,y,w,c);
+  for (;h;h--,y++) (*vid->slab) (x,y,w,c);
 }
 
 void def_gradient(int x,int y,int w,int h,int angle,
@@ -327,7 +327,7 @@ void def_gradient(int x,int y,int w,int h,int angle,
       for (x1=x,r_ca=r_ica,g_ca=g_ica,b_ca=b_ica,i=w;i;
 	   i--,r_ca+=r_vsc,g_ca+=g_vsc,b_ca+=b_vsc,x1++) {
 
-	VID(pixel) (x1,y,(*vid->color_pgtohwr)
+	(*vid->pixel) (x1,y,(*vid->color_pgtohwr)
 		      (mkcolor(
 			       r_v1 + ((r_ca+r_sa) >> 8),
 			       g_v1 + ((g_ca+g_sa) >> 8),
@@ -339,7 +339,7 @@ void def_gradient(int x,int y,int w,int h,int angle,
       for (x1=x,r_ca=r_ica,g_ca=g_ica,b_ca=b_ica,i=w;i;
 	   i--,r_ca+=r_vsc,g_ca+=g_vsc,b_ca+=b_vsc,x1++) {
 
-	VID(addpixel) (x1,y,mkcolor(
+	(*vid->addpixel) (x1,y,mkcolor(
 				      r_v1 + ((r_ca+r_sa) >> 8),
 				      g_v1 + ((g_ca+g_sa) >> 8),
 				      b_v1 + ((b_ca+b_sa) >> 8)));
@@ -350,7 +350,7 @@ void def_gradient(int x,int y,int w,int h,int angle,
       for (x1=x,r_ca=r_ica,g_ca=g_ica,b_ca=b_ica,i=w;i;
 	   i--,r_ca+=r_vsc,g_ca+=g_vsc,b_ca+=b_vsc,x1++) {
 
-	VID(subpixel) (x1,y,mkcolor(
+	(*vid->subpixel) (x1,y,mkcolor(
 				      r_v1 + ((r_ca+r_sa) >> 8),
 				      g_v1 + ((g_ca+g_sa) >> 8),
 				      b_v1 + ((b_ca+b_sa) >> 8)));
@@ -367,7 +367,7 @@ void def_dim(int x,int y,int w,int h) {
    */
   for (;h;h--,y++)
     for (xx=x+(h&1),i=w;i;i--,xx+=2)
-      VID(pixel) (xx,y,0);
+      (*vid->pixel) (xx,y,0);
 }
 
 void def_scrollblit(int src_x,int src_y,
@@ -380,7 +380,7 @@ void def_scrollblit(int src_x,int src_y,
   */
 
   for (src_y+=h-1,dest_y+=h-1;h;h--,src_y--,dest_y--)
-    VID(blit) (NULL,src_x,src_y,dest_x,dest_y,w,1,PG_LGOP_NONE);
+    (*vid->blit) (NULL,src_x,src_y,dest_x,dest_y,w,1,PG_LGOP_NONE);
 }
 
 void def_charblit(unsigned char *chardat,int dest_x,
@@ -438,7 +438,7 @@ void def_charblit(unsigned char *chardat,int dest_x,
     for (x=dest_x,iw=bw,xpix=0;iw;iw--)
       for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,x++,xpix++)
 	if (ch&0x80 && xpix>=xmin && xpix<xmax) 
-	  VID(pixel) (x,dest_y,c); 
+	  (*vid->pixel) (x,dest_y,c); 
     if (flag) {
       xmax++;
       flag=0;
@@ -506,7 +506,7 @@ void def_charblit_v(unsigned char *chardat,int dest_x,
     for (iw=bw,y=dest_y,xpix=0;iw;iw--)
       for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,y--,xpix++)
 	if (ch&0x80 && xpix>=xmin && xpix<xmax) 
-	  VID(pixel) (dest_x,y,c);
+	  (*vid->pixel) (dest_x,y,c);
     if (flag) {
       xmax++;
       flag=0;
@@ -526,7 +526,7 @@ g_error def_bitmap_loadxbm(struct stdbitmap **bmp,
   g_error e;
   int shift;
 
-  e = VID(bitmap_new) ((hwrbitmap *) bmp,w,h);
+  e = (*vid->bitmap_new) ((hwrbitmap *) bmp,w,h);
   errorcheck;
   p = pline = (*bmp)->bits;
    
@@ -668,7 +668,7 @@ void def_tileblit(struct stdbitmap *src,
   /* Do a tiled blit */
   for (i=0;i<dest_w;i+=src_w)
     for (j=0;j<dest_h;j+=src_h)
-      VID(blit) (src,src_x,src_y,dest_x+i,dest_y+j,min(dest_w-i,src_w),
+      (*vid->blit) (src,src_x,src_y,dest_x+i,dest_y+j,min(dest_w-i,src_w),
 		   min(dest_h-j,src_h),PG_LGOP_NONE);
 }
 
@@ -708,7 +708,7 @@ void def_blit(struct stdbitmap *srcbit,int src_x,int src_y,
    for (;h;h--,src_y++,dest_y++,src=srcline+=srcbit->pitch)
      for (oshift=shiftset,i=0;i<w;i++) {
 	if (lgop!=PG_LGOP_NONE)
-	  s = VID(getpixel) (dest_x+i,dest_y);
+	  s = (*vid->getpixel) (dest_x+i,dest_y);
 
 	if (srcbit->bits)
 	  switch (vid->bpp) {
@@ -742,7 +742,7 @@ void def_blit(struct stdbitmap *srcbit,int src_x,int src_y,
 	     break;     
 	  }
 	else
-	  c = VID(getpixel) (src_x+i,src_y);
+	  c = (*vid->getpixel) (src_x+i,src_y);
 
 	switch (lgop) {
 	 case PG_LGOP_NONE:       s  = c;  break;
@@ -755,7 +755,7 @@ void def_blit(struct stdbitmap *srcbit,int src_x,int src_y,
 	 case PG_LGOP_INVERT_XOR: s ^= c ^ 0xFFFFFFFF;  break;
 	}
 
-	VID(pixel) (dest_x+i,dest_y,s);
+	(*vid->pixel) (dest_x+i,dest_y,s);
      }
 }
 
@@ -772,7 +772,7 @@ void def_unblit(int src_x,int src_y,
    
    for (;h;h--,src_y++,dest=destline+=destbit->pitch)
      for (oshift=shiftset,i=0;i<w;i++) {
-	c = VID(getpixel) (src_x+i,src_y);
+	c = (*vid->getpixel) (src_x+i,src_y);
 
 	switch (vid->bpp) {
 
@@ -856,18 +856,18 @@ void def_sprite_show(struct sprite *spr) {
   spr->ox = spr->x; spr->oy = spr->y;
   
   /* Grab a new backbuffer */
-  VID(unblit) (spr->x,spr->y,spr->backbuffer,
+  (*vid->unblit) (spr->x,spr->y,spr->backbuffer,
   	       0,0,spr->ow,spr->oh);
 
   /* Display the sprite */
  if (spr->mask) {
-    VID(blit) (spr->mask,0,0,
+    (*vid->blit) (spr->mask,0,0,
 		 spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_AND);
-    VID(blit) (spr->bitmap,0,0,
+    (*vid->blit) (spr->bitmap,0,0,
 		 spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_OR);
   }
   else
-   VID(blit) (spr->bitmap,0,0,
+   (*vid->blit) (spr->bitmap,0,0,
 		 spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_NONE);
 
   add_updarea(spr->x,spr->y,spr->ow,spr->oh);
@@ -894,8 +894,8 @@ void def_sprite_show(struct sprite *spr) {
 	d.h = 72;
 	d.grop = &g;
 	g.type = PG_GROP_LINE;
-	g.param[0] = VID(color_pgtohwr) (0xFFFF00);
-	VID(rect) (d.x,d.y,d.w,d.h,(*vid->color_pgtohwr)(0x004000));
+	g.param[0] = (*vid->color_pgtohwr) (0xFFFF00);
+	(*vid->rect) (d.x,d.y,d.w,d.h,(*vid->color_pgtohwr)(0x004000));
 	g.x = spr->x-d.x;
 	g.y = spr->y-d.y;
 	for (i=0;i<8;i++) {
@@ -905,7 +905,7 @@ void def_sprite_show(struct sprite *spr) {
 	   g.h = yp[i];
 	   grop_render(&d);
 	}
-	VID(update) (d.x,d.y,d.w,d.h);
+	(*vid->update) (d.x,d.y,d.w,d.h);
      }
 */
 
@@ -924,11 +924,11 @@ void def_sprite_show(struct sprite *spr) {
       cr.y1 = 100;
       cr.x2 = 150;
       cr.y2 = 150;
-      VID(rect) (cr.x1,cr.y1,cr.x2-cr.x1+1,cr.y2-cr.y1+1,(*vid->color_pgtohwr)(0x004000));
-//      outtext(&fd,spr->x,spr->y,VID(color_pgtohwr) (0xFFFF80),"Hello,\nWorld!",&cr);
-//      outtext_v(&fd,spr->x,spr->y,VID(color_pgtohwr) (0xFFFF80),"Hello,\nWorld!",&cr);
-        outtext_v(&fd,spr->x,spr->y,VID(color_pgtohwr) (0xFFFF80),"E",&cr);
-      VID(update) (0,0,vid->xres,vid->yres);
+      (*vid->rect) (cr.x1,cr.y1,cr.x2-cr.x1+1,cr.y2-cr.y1+1,(*vid->color_pgtohwr)(0x004000));
+//      outtext(&fd,spr->x,spr->y,(*vid->color_pgtohwr) (0xFFFF80),"Hello,\nWorld!",&cr);
+//      outtext_v(&fd,spr->x,spr->y,(*vid->color_pgtohwr) (0xFFFF80),"Hello,\nWorld!",&cr);
+        outtext_v(&fd,spr->x,spr->y,(*vid->color_pgtohwr) (0xFFFF80),"E",&cr);
+      (*vid->update) (0,0,vid->xres,vid->yres);
     }
 */
    
@@ -954,7 +954,7 @@ void def_sprite_hide(struct sprite *spr) {
   def_sprite_protectarea(&cr,spr->next);
    
   /* Put back the old image */
-  VID(blit) (spr->backbuffer,0,0,
+  (*vid->blit) (spr->backbuffer,0,0,
 	       spr->ox,spr->oy,spr->ow,spr->oh,PG_LGOP_NONE);
   add_updarea(spr->ox,spr->oy,spr->ow,spr->oh);
 
@@ -966,8 +966,8 @@ void def_sprite_update(struct sprite *spr) {
    printf("def_sprite_update\n");
 #endif
    
-  VID(sprite_hide) (spr);
-  VID(sprite_show) (spr);
+  (*vid->sprite_hide) (spr);
+  (*vid->sprite_show) (spr);
 
   /* Redraw */
   realize_updareas();
@@ -982,7 +982,7 @@ void def_sprite_showall(void) {
 #endif
 
    while (p) {
-    VID(sprite_show) (p);
+    (*vid->sprite_show) (p);
     p = p->next;
   }
 }
@@ -991,7 +991,7 @@ void def_sprite_showall(void) {
 void r_spritehide(struct sprite *s) {
   if (!s) return;
   r_spritehide(s->next);
-  VID(sprite_hide) (s);
+  (*vid->sprite_hide) (s);
 }
 void def_sprite_hideall(void) {
   r_spritehide(spritelist);
@@ -1014,7 +1014,7 @@ void def_sprite_protectarea(struct cliprect *in,struct sprite *from) {
         ((from->y+from->h) >= in->y1) &&
         (from->x <= in->x2) &&
         (from->y <= in->y2) )
-     VID(sprite_hide) (from);
+     (*vid->sprite_hide) (from);
 }
 
 /* Load our driver functions into a vidlib */

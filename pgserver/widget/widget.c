@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.65 2001/03/16 03:14:45 micahjd Exp $
+/* $Id: widget.c,v 1.66 2001/03/17 04:16:36 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -522,7 +522,7 @@ void dispatch_pointing(long type,int x,int y,int btn) {
   /* Update the cursor */
   cursor->x = x;
   cursor->y = y;
-  (*vid->sprite_update)(cursor);
+  VID(sprite_update) (cursor);
 
   /* Selfish apps that don't like using widgets can just steal the pointing
      device for themselves.  Probably not something a word processor would
@@ -652,8 +652,8 @@ void dispatch_key(long type,int key,int mods) {
       return;
 
     case PGKEY_b:           /* CTRL-ALT-b blanks the screen */
-      (*vid->clear)();
-      (*vid->update)(0,0,vid->xres,vid->yres);
+      VID(clear) ();
+      VID(update) (0,0,vid->xres,vid->yres);
       return;
 
     case PGKEY_y:           /* CTRL-ALT-y unsynchronizes the screen buffers */
@@ -674,8 +674,8 @@ void dispatch_key(long type,int key,int mods) {
 
 	struct divtree *p;
 	/* Push through the black screen */
-	(*vid->clear)();
-	(*vid->update)(0,0,vid->xres,vid->yres);
+	VID(clear) ();
+	VID(update) (0,0,vid->xres,vid->yres);
 	/* Force redrawing everything to the backbuffer */
 	p = dts->top;
 	while (p) {
@@ -688,14 +688,14 @@ void dispatch_key(long type,int key,int mods) {
 	upd_w = 0;
 	/* The above zero flag left sprites off.
 	   With sprites off it's tough to use the mouse! */
-	(*vid->sprite_showall)();
+	VID(sprite_showall) ();
       }
       return;
 
     case PGKEY_u:           /* CTRL-ALT-u makes a blue screen */
-      (*vid->rect)(0,0,vid->xres,vid->yres,
-		   (*vid->color_pgtohwr)(0x0000FF));
-      (*vid->update)(0,0,vid->xres,vid->yres);
+      VID(rect) (0,0,vid->xres,vid->yres,
+		   VID(color_pgtohwr) (0x0000FF));
+      VID(update) (0,0,vid->xres,vid->yres);
       return;
 
 #endif /* DEBUG_KEYS */

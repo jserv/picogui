@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.40 2001/03/07 04:10:11 micahjd Exp $
+/* $Id: grop.c,v 1.41 2001/03/17 04:16:34 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -87,9 +87,9 @@ void grop_render(struct divnode *div) {
 	cr.x2 = div->x + div->w - 1;
 	cr.y2 = div->y + div->h + ydif - 1;
 	add_updarea(cr.x1,cr.y1,cr.x2,cr.y2);
-	(*vid->sprite_protectarea)(&cr,spritelist);
+	VID(sprite_protectarea) (&cr,spritelist);
 
-	(*vid->blit)(NULL,div->x,div->y-ydif,
+	VID(blit) (NULL,div->x,div->y-ydif,
 		     div->x,div->y,
 		     div->w,div->h+ydif,PG_LGOP_NONE);
       }
@@ -106,9 +106,9 @@ void grop_render(struct divnode *div) {
 	cr.x2 = div->x + div->w - 1;
 	cr.y2 = div->y + div->h - 1;
 	add_updarea(cr.x1,cr.y1,cr.x2,cr.y2);
-	(*vid->sprite_protectarea)(&cr,spritelist);
+	VID(sprite_protectarea) (&cr,spritelist);
 
-	(*vid->scrollblit)(div->x,div->y,div->x,div->y+ydif,
+	VID(scrollblit) (div->x,div->y,div->x,div->y+ydif,
 			   div->w,div->h-ydif);
       }      
 
@@ -118,10 +118,10 @@ void grop_render(struct divnode *div) {
     else
       return;
 
-    #ifdef DEBUG_VIDEO
+#ifdef DEBUG_VIDEO
     /* Illustrate the clipping rect */
-    (*vid->rect)(cx1,cy1,cx2-cx1+1,cy2-cy1+1,(*vid->color_pgtohwr)(0x00FF00));
-    #endif
+    VID(rect) (cx1,cy1,cx2-cx1+1,cy2-cy1+1,VID(color_pgtohwr) (0x00FF00));
+#endif
   }
 
   div->otx = div->tx;
@@ -136,7 +136,7 @@ void grop_render(struct divnode *div) {
   /* Get rid of any pesky sprites in the area. If this isn't incremental
    * go ahead and protect the whole divnode */
   if (!incflag) {
-     (*vid->sprite_protectarea)(&cr,spritelist);
+     VID(sprite_protectarea) (&cr,spritelist);
      
      /* "dirty" this region of the screen so the blits notice it */
      add_updarea(cx1,cy1,cx2-cx1+1,cy2-cy1+1);
@@ -324,7 +324,7 @@ void grop_render(struct divnode *div) {
 
     #ifdef DEBUG_VIDEO
     /* Illustrate the grop extents */
-    //    (*vid->rect)(x,y,w,h,(*vid->color_pgtohwr)(0x00FF00));
+    //    VID(rect) (x,y,w,h,VID(color_pgtohwr) (0x00FF00));
     #endif
 
     /* If this is incremental, do the sprite protection and double-buffer
@@ -371,40 +371,40 @@ void grop_render(struct divnode *div) {
 	  add_updarea(x,y,w,h);
        }
 
-     (*vid->sprite_protectarea)(&lcr,spritelist);	  
+     VID(sprite_protectarea) (&lcr,spritelist);	  
     }
      
     switch (type) {
     case PG_GROP_PIXEL:
-      (*vid->pixel)(x,y,list->param[0]);
+      VID(pixel) (x,y,list->param[0]);
       break;
     case PG_GROP_LINE:
-      (*vid->line)(x,y,w+x,h+y,list->param[0]);
+      VID(line) (x,y,w+x,h+y,list->param[0]);
       break;
     case PG_GROP_RECT:
-      (*vid->rect)(x,y,w,h,list->param[0]);
+      VID(rect) (x,y,w,h,list->param[0]);
       break;
     case PG_GROP_DIM:
-      (*vid->dim)(x,y,w,h);
+      VID(dim) (x,y,w,h);
       break;
     case PG_GROP_FRAME:
        
        /* Bogacious clipping cruft for frames */
        if (oy>=cy1 && oy<=cy2 ) 
-	 (*vid->slab)(x,y,w,list->param[0]);
+	 VID(slab) (x,y,w,list->param[0]);
        if ((oy+oh-1)>=cy1 && (oy+oh-1)<=cy2)
-	 (*vid->slab)(x,y+h-1,w,list->param[0]);
+	 VID(slab) (x,y+h-1,w,list->param[0]);
        if (ox>=cx1 && ox<=cx2 && h>2)
-	 (*vid->bar)(x,y+1,h-2,list->param[0]);
+	 VID(bar) (x,y+1,h-2,list->param[0]);
        if ((ox+ow-1)>=cx1 && (ox+ow-1)<=cx2 && h>2)
-	 (*vid->bar)(x+w-1,y+1,h-2,list->param[0]);
+	 VID(bar) (x+w-1,y+1,h-2,list->param[0]);
        break;
        
     case PG_GROP_SLAB:
-      (*vid->slab)(x,y,w,list->param[0]);
+      VID(slab) (x,y,w,list->param[0]);
       break;
     case PG_GROP_BAR:
-      (*vid->bar)(x,y,h,list->param[0]);
+      VID(bar) (x,y,h,list->param[0]);
       break;
     case PG_GROP_TEXT:
     case PG_GROP_TEXTV:
@@ -459,9 +459,9 @@ void grop_render(struct divnode *div) {
 	      for (x=ox,i=charw;i;i--,x+=celw,str++) {
 		 attr = *(str++);
 		 if (attr & 0xF0)
-		   (*vid->rect)(x,y,celw,celh,textcolors[attr>>4]);
+		   VID(rect) (x,y,celw,celh,textcolors[attr>>4]);
 		 if ((*str) != ' ')
-		   (*vid->charblit)((((unsigned char *)fd->font->bitmaps)+
+		   VID(charblit) ((((unsigned char *)fd->font->bitmaps)+
 				     fd->font->trtab[*str]),
 				    x,y,fd->font->vwtab[*str],
 				    celh,0,textcolors[attr & 0x0F],NULL);
@@ -475,18 +475,18 @@ void grop_render(struct divnode *div) {
       if (list->param[1]==PG_LGOP_NULL) break;
       if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
 			   list->param[0])) || !bit) break;
-      (*vid->bitmap_getsize)(bit,&bw,&bh);
+      VID(bitmap_getsize) (bit,&bw,&bh);
       /** FIXME: this will crash for large negative src_x or src_y */
       if (list->param[2]<0)
 	list->param[2] += bw;
       if (list->param[3]<0)
 	list->param[3] += bh;
-      (*vid->blit)(bit,(list->param[2]+srcx)%bw,(list->param[3]+srcy)%bh,x,y,w,h,list->param[1]);
+      VID(blit) (bit,(list->param[2]+srcx)%bw,(list->param[3]+srcy)%bh,x,y,w,h,list->param[1]);
       break;
     case PG_GROP_TILEBITMAP:
       if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
 			   list->param[0])) || !bit) break;
-      (*vid->tileblit)(bit,
+      VID(tileblit) (bit,
 		       list->param[1]+srcx,
 		       list->param[2]+srcy,
 		       list->param[3],
@@ -495,7 +495,7 @@ void grop_render(struct divnode *div) {
       break;
     case PG_GROP_GRADIENT:
       /* Gradients are fun! */
-      (*vid->gradient)(x,y,w,h,
+      VID(gradient) (x,y,w,h,
 		       list->param[0],
 		       list->param[1],
 		       list->param[2],

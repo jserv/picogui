@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.51 2001/03/07 04:10:13 micahjd Exp $
+/* $Id: button.c,v 1.52 2001/03/17 04:16:36 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -116,7 +116,7 @@ void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
     addgrop(c,PG_GROP_TEXT,bp.x+bp.tx,bp.y+bp.ty,bp.tw,bp.th);
     c->current->param[0] = DATA->text;
     c->current->param[1] = bp.font;
-    c->current->param[2] = (*vid->color_pgtohwr)
+    c->current->param[2] = VID(color_pgtohwr) 
        (theme_lookup(state,PGTH_P_FGCOLOR));
   }
 }
@@ -390,7 +390,7 @@ void position_button(struct widget *self,struct btnposition *bp) {
   if (text)
     sizetext(fd,&bp->tw,&bp->th,text);
   if (bit)
-    (*vid->bitmap_getsize)(bit,&bp->bw,&bp->bh);
+    VID(bitmap_getsize) (bit,&bp->bw,&bp->bh);
   
   /* Position the text and bitmap relative to each other */
   if (text && bit) {

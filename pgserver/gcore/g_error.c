@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.19 2001/03/08 01:22:22 micahjd Exp $
+/* $Id: g_error.c,v 1.20 2001/03/17 04:16:34 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -85,7 +85,7 @@ void guru(const char *fmt, ...) {
   if (!vid) return;
 
   /* Setup */
-  (*vid->clear)();
+  VID(clear) ();
   rdhandle((void**)&df,PG_TYPE_FONTDESC,-1,defaultfont);
   screenclip.x1 = screenclip.y1 = 0;
   screenclip.x2 = vid->xres-1;
@@ -95,12 +95,12 @@ void guru(const char *fmt, ...) {
   /* Icon (if this fails, no big deal) */
   {
      hwrbitmap icon;
-     if (!iserror((*vid->bitmap_loadxbm)(&icon,deadcomp_bits,
+     if (!iserror(VID(bitmap_loadxbm) (&icon,deadcomp_bits,
 					 deadcomp_width,deadcomp_height,
-					 (*vid->color_pgtohwr)(0xFFFF80),
-					 (*vid->color_pgtohwr)(0x000000)))) {
-	(*vid->blit)(icon,0,0,5,5,deadcomp_width,deadcomp_height,PG_LGOP_NONE);
-	(*vid->bitmap_free)(icon);
+					 VID(color_pgtohwr) (0xFFFF80),
+					 VID(color_pgtohwr) (0x000000)))) {
+	VID(blit) (icon,0,0,5,5,deadcomp_width,deadcomp_height,PG_LGOP_NONE);
+	VID(bitmap_free) (icon);
      }
   }
 #else
@@ -113,9 +113,9 @@ void guru(const char *fmt, ...) {
   vsnprintf(msgbuf,256,fmt,ap);
   va_end(ap);
 
-  outtext(df,10+deadcomp_width,5,(*vid->color_pgtohwr)(0xFFFFFF),msgbuf,
+  outtext(df,10+deadcomp_width,5,VID(color_pgtohwr) (0xFFFFFF),msgbuf,
 	  &screenclip);
-  (*vid->update)(0,0,vid->xres,vid->yres);
+  VID(update) (0,0,vid->xres,vid->yres);
 }
 
 #endif /* DEBUG_ANY */

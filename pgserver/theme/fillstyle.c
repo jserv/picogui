@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.9 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: fillstyle.c,v 1.10 2001/03/17 04:16:35 micahjd Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -88,15 +88,15 @@ g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
 
     case PGTH_O_BUTTON_ON:      /* 2 borders */
       addgrop(ctx,PG_GROP_FRAME,ctx->x,ctx->y,ctx->w,ctx->h);
-      ctx->current->param[0] = (*vid->color_pgtohwr)(0x000000);
+      ctx->current->param[0] = VID(color_pgtohwr) (0x000000);
       ctx->x += 1; ctx->y += 1; ctx->w -= 2; ctx->h -= 2;
     default:                    /* 1 border */
       addgrop(ctx,PG_GROP_FRAME,ctx->x,ctx->y,ctx->w,ctx->h);
-      ctx->current->param[0] = (*vid->color_pgtohwr)(0x000000);
+      ctx->current->param[0] = VID(color_pgtohwr) (0x000000);
       ctx->x += 1; ctx->y += 1; ctx->w -= 2; ctx->h -= 2;
     case PGTH_O_LABEL_SCROLL:   /* No border */
       addgrop(ctx,PG_GROP_RECT,ctx->x,ctx->y,ctx->w,ctx->h);
-      ctx->current->param[0] = (*vid->color_pgtohwr)(theme_lookup(state,PGTH_P_BGCOLOR));
+      ctx->current->param[0] = VID(color_pgtohwr) (theme_lookup(state,PGTH_P_BGCOLOR));
       
     }
     return sucess;
@@ -178,7 +178,7 @@ g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
 	break;
 
       case PGTH_OPCMD_COLOR:
-	fsstack[fsstkpos-1] = (*vid->color_pgtohwr)(fsstack[fsstkpos-1]);
+	fsstack[fsstkpos-1] = VID(color_pgtohwr) (fsstack[fsstkpos-1]);
 	break;
 
       case PGTH_OPCMD_PLUS:

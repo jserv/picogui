@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.28 2001/03/08 01:22:22 micahjd Exp $
+/* $Id: pgmain.c,v 1.29 2001/03/17 04:16:34 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -446,7 +446,7 @@ int main(int argc, char **argv) {
   net_release();
   appmgr_free();
   if (vid)
-    (*vid->close)();
+    VID(close) ();
   if (memref!=0) prerror(mkerror(PG_ERRT_MEMORY,56));
   exit(0);
 }

@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.20 2001/03/03 01:44:27 micahjd Exp $
+/* $Id: field.c,v 1.21 2001/03/17 04:16:36 micahjd Exp $
  *
  * Single-line no-frills text editing box
  *
@@ -88,7 +88,7 @@ void build_field(struct gropctxt *c,unsigned short state,struct widget *self) {
   addgrop(c,PG_GROP_TEXT,fd->margin,(c->h>>1) - (fd->font->h>>1),1,1);
   c->current->param[0] = DATA->hbuffer;
   c->current->param[1] = font;
-  c->current->param[2] = fg = (*vid->color_pgtohwr)
+  c->current->param[2] = fg = VID(color_pgtohwr) 
      (theme_lookup(state,PGTH_P_FGCOLOR)); 
   DATA->text = c->current;
 

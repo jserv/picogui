@@ -1,5 +1,5 @@
 
-/* $Id: panel.c,v 1.51 2001/03/03 03:33:07 micahjd Exp $
+/* $Id: panel.c,v 1.52 2001/03/17 04:16:36 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -388,19 +388,19 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     /* Update the screen now, so we have an up-to-date picture
        of the panelbar stored in DATA->bar */
     themeify_panel(self);
-    (*vid->sprite_hideall)();   /* This line combined with the zero flag on */
+    VID(sprite_hideall) ();   /* This line combined with the zero flag on */
     update(NULL,0);             /*  the next gets a clean spriteless grab */
 
     /* Allocate the new sprite */
     if(iserror(new_sprite(&DATA->s,BARDIV->w,BARDIV->h)))
       return;
-    if (iserror((*vid->bitmap_new)(&DATA->s->bitmap,BARDIV->w,BARDIV->h))) {
+    if (iserror(VID(bitmap_new) (&DATA->s->bitmap,BARDIV->w,BARDIV->h))) {
       free_sprite(DATA->s);
       return;
     }
     
     /* Grab a bitmap of the panelbar to use as the sprite */
-    (*vid->unblit)(DATA->s->x = BARDIV->x,DATA->s->y = BARDIV->y,
+    VID(unblit) (DATA->s->x = BARDIV->x,DATA->s->y = BARDIV->y,
 		   DATA->s->bitmap,0,0,
 		   BARDIV->w,BARDIV->h);
     DATA->s->clip_to = self->in;
@@ -503,7 +503,7 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     }
 
     /* Reposition sprite */
-    (*vid->sprite_update)(DATA->s);
+    VID(sprite_update) (DATA->s);
 
     return;
 

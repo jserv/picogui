@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.18 2001/02/17 05:18:40 micahjd Exp $
+/* $Id: font.c,v 1.19 2001/03/17 04:16:34 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -72,17 +72,17 @@ void outchar(struct fontdesc *fd,
 
     /* underline, overline, strikeout */
     if (fd->hline>=0)
-      (*vid->slab)(*x,fd->hline+(*y),cel_w,fd->hline_c);
+      VID(slab) (*x,fd->hline+(*y),cel_w,fd->hline_c);
     
     /* The actual character */
     i=0;
     if (fd->skew) 
       i = fd->italicw;
-    (*vid->charblit)(glyph,(*x)+i,*y,glyph_w,glyph_h,fd->skew,col,clip);
+    VID(charblit) (glyph,(*x)+i,*y,glyph_w,glyph_h,fd->skew,col,clip);
     
     /* bold */
     for (i++,j=0;j<fd->boldw;i++,j++)
-      (*vid->charblit)(glyph,(*x)+i,*y,glyph_w,glyph_h,fd->skew,col,clip);
+      VID(charblit) (glyph,(*x)+i,*y,glyph_w,glyph_h,fd->skew,col,clip);
   }
   *x += cel_w;  
 }
@@ -158,17 +158,17 @@ void outtext_v(struct fontdesc *fd,
 	
 	/* underline, overline, strikeout */
 	if (fd->hline>=0)
-	  (*vid->bar)(y,fd->hline+y,cel_w,fd->hline_c);
+	  VID(bar) (y,fd->hline+y,cel_w,fd->hline_c);
 	
 	/* The actual character */
 	i=0;
 	if (fd->skew) 
 	  i = fd->italicw;
-	(*vid->charblit_v)(glyph,x,y-i,glyph_w,glyph_h,fd->skew,col,clip);
+	VID(charblit_v) (glyph,x,y-i,glyph_w,glyph_h,fd->skew,col,clip);
 	
 	/* bold */
 	for (i++,j=0;j<fd->boldw;i++,j++)
-	  (*vid->charblit_v)(glyph,x,y-i,glyph_w,glyph_h,fd->skew,col,clip);
+	  VID(charblit_v) (glyph,x,y-i,glyph_w,glyph_h,fd->skew,col,clip);
       }
       y -= cel_w;  
     }
@@ -220,11 +220,11 @@ g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
    /* Initialize the fd */
    memset(fd,0,sizeof(struct fontdesc));
    fd->hline = -1;
-   fd->hline_c = (*vid->color_pgtohwr)(0x000000);
+   fd->hline_c = VID(color_pgtohwr) (0x000000);
    
    if (!(flags & PG_FSTYLE_FLUSH)) fd->margin = 2;
    if (flags & PG_FSTYLE_GRAYLINE) {
-      fd->hline_c = (*vid->color_pgtohwr)(0x808080);
+      fd->hline_c = VID(color_pgtohwr) (0x808080);
       flags |= PG_FSTYLE_UNDERLINE;
    }
    
@@ -284,7 +284,7 @@ g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
    }
    
    /* Let the video driver transmogrify it if necessary */
-   (*vid->font_newdesc)(fd);
+   VID(font_newdesc) (fd);
    
    return sucess;
 }

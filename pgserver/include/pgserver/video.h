@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.25 2001/03/08 01:22:22 micahjd Exp $
+/* $Id: video.h,v 1.26 2001/03/17 04:16:35 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -413,6 +413,12 @@ struct vidlib {
 
 /* Currently in-use video driver */
 extern struct vidlib *vid;
+
+/* Optional wrapper around that driver that provides some transformation */
+extern struct vidlib *vidwrap;
+
+/* This macro is used to call a video function */
+#define VID(f) (*vidwrap->f)
 
 /* Trig (sin*256 from 0 to 90 degrees) */
 extern unsigned char trigtab[];

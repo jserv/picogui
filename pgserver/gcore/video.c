@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.29 2001/03/08 01:22:22 micahjd Exp $
+/* $Id: video.c,v 1.30 2001/03/17 04:16:34 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -35,7 +35,7 @@
 /******************************************** Utils */
 
 /* Vidlib vars */
-struct vidlib *vid;
+struct vidlib *vid, *vidwrap;
 struct vidlib vidlib_static;
 struct sprite *spritelist;
 int upd_x;
@@ -69,13 +69,13 @@ g_error new_sprite(struct sprite **ps,int w,int h) {
   (*ps)->ox = -1;
   (*ps)->w = w;
   (*ps)->h = h;
-  (*vid->bitmap_new)(&(*ps)->backbuffer,w,h);
+  VID(bitmap_new) (&(*ps)->backbuffer,w,h);
   (*ps)->next = spritelist;
   (*ps)->visible = 1;
    
   spritelist = *ps;
    
-  (*vid->sprite_show)(*ps);
+  VID(sprite_show) (*ps);
 
   return sucess;
 }
@@ -83,7 +83,7 @@ g_error new_sprite(struct sprite **ps,int w,int h) {
 void free_sprite(struct sprite *s) {
   struct sprite *n;
 
-  (*vid->sprite_hide)(s);
+  VID(sprite_hide) (s);
    
   /* Remove from the sprite list */
   if (s==spritelist)
@@ -99,9 +99,9 @@ void free_sprite(struct sprite *s) {
     }
   }
 
-  (*vid->bitmap_free)(s->bitmap);
-  (*vid->bitmap_free)(s->mask);
-  (*vid->bitmap_free)(s->backbuffer);
+  VID(bitmap_free) (s->bitmap);
+  VID(bitmap_free) (s->mask);
+  VID(bitmap_free) (s->backbuffer);
   g_free(s);
 }
 
@@ -115,10 +115,11 @@ g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
 
   /* Unload */
   if (vid) 
-    (*vid->close)();
+    VID(close) ();
 
   /* Clear it */
   vid = &vidlib_static;
+  vidwrap = vid;         /* No transforms */
   memset(vid,0,sizeof(struct vidlib));
   vid->close = &emulate_dos;
   vid->update = &def_update;
@@ -133,7 +134,7 @@ g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
   inlib_main = NULL;
 
   /* Load new driver */
-  e = (*vid->init)(xres,yres,bpp,flags);
+  e = VID(init) (xres,yres,bpp,flags);
   if (iserror(e)) {
     vid = NULL;
     return e;
@@ -141,7 +142,7 @@ g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
 
   /* Generate text colors table */
   for (i=0;i<16;i++)
-    textcolors[i] = (*vid->color_pgtohwr)
+    textcolors[i] = VID(color_pgtohwr) 
       ( (i & 0x08) ?
 	(((i & 0x04) ? 0xFF0000 : 0) |
 	 ((i & 0x02) ? 0x00FF00 : 0) |
@@ -212,9 +213,9 @@ void realize_updareas(void) {
 	upd_h = vid->yres-upd_y;
 #ifdef DEBUG_VIDEO
       /* Show update rectangles */
-      //      (*vid->frame)(upd_x,upd_y,upd_w,upd_h,(*vid->color_pgtohwr)(0xFF0000));
+      //      VID(frame) (upd_x,upd_y,upd_w,upd_h,(*vid->color_pgtohwr)(0xFF0000));
 #endif
-      (*vid->update)(upd_x,upd_y,upd_w,upd_h);
+      VID(update) (upd_x,upd_y,upd_w,upd_h);
       upd_x = upd_y = upd_w = upd_h = 0;
    } 
    

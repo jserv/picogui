@@ -1,4 +1,4 @@
-/* $Id: pnm.c,v 1.1 2001/03/08 01:22:22 micahjd Exp $
+/* $Id: pnm.c,v 1.2 2001/03/17 04:16:34 micahjd Exp $
  *
  * pnm.c - Functions to convert any of the pbmplus formats (PGM, PBM, PPM)
  *         collectively referred to as PNM
@@ -133,12 +133,12 @@ g_error pnm_load(struct stdbitmap **bmp, u8 *data, u32 datalen) {
 
   /* Check for a correct-sized data buffer */
   if (datalen < ((((w*bpp)%8) ? (w*bpp+8) : (w*bpp))/8*h)) {
-    (*vid->bitmap_free)(*bmp);
+    VID(bitmap_free) (*bmp);
     return efmt;
   }
 
   /* Set up the bitmap */
-  e = (*vid->bitmap_new)((hwrbitmap *)bmp,w,h);
+  e = VID(bitmap_new) ((hwrbitmap *)bmp,w,h);
   errorcheck;
   pline = p = (*bmp)->bits;
 
@@ -200,7 +200,7 @@ g_error pnm_load(struct stdbitmap **bmp, u8 *data, u32 datalen) {
       }
 
       /* Convert to hwrcolor */
-      hc = (*vid->color_pgtohwr)(mkcolor(r,g,b));
+      hc = VID(color_pgtohwr) (mkcolor(r,g,b));
 
       /* Output them in the device's bpp */
       switch (vid->bpp) {
