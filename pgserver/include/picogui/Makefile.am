@@ -8,4 +8,5 @@ include_HEADERS = \
 	theme.h \
 	types.h \
 	opengl.h \
-	wt.h
+	wt.h \
+	version.h

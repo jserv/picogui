@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.50 2002/07/28 17:06:49 micahjd Exp $
+/* $Id: request.c,v 1.51 2002/11/01 21:01:18 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -31,6 +31,7 @@
 #include <string.h>
 #include <pgserver/common.h>
 #include <pgserver/pgnet.h>
+#include <picogui/version.h>
 #include <pgserver/input.h>
 #include <pgserver/configfile.h>
 #ifndef CONFIG_UNIX_SOCKET
@@ -160,8 +161,9 @@ void newfd(int fd) {
   conbufs = mybuf;
 
   /* Say Hi!  Send a structure with information about the server */
-  hi.magic = htonl(PG_REQUEST_MAGIC);
-  hi.protover = htons(PG_PROTOCOL_VER);
+  hi.magic         = htonl(PG_REQUEST_MAGIC);
+  hi.protover      = htons(PG_PROTOCOL_VER);
+  hi.serverversion = htons(PGSERVER_VERSION_NUMBER);
   if (send_response(fd,&hi,sizeof(hi))) closefd(fd);
 }
 

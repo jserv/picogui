@@ -1,5 +1,5 @@
-PicoGUI Server                                                    Version 0.42
-------------------------------------------------------------------------------
+PicoGUI Server 
+-----------------
 
 PicoGUI is designed to be a small, efficient, portable, scalable GUI. It
 works on various types of systems, including many embedded systems. It has
@@ -10,9 +10,11 @@ a unique client/server architecture. This is the server portion.
 There is more information about picogui at its web page:
 http://picogui.org
 
-You can contact the author/maintainer, Micah Dowty at:
+You can contact the primary author/maintainer, Micah Dowty at:
  micahjd@users.sourceforge.net
- 
+
+There is a list of contributors in the AUTHORS file
+
 There's also an IRC channel, #picogui on irc.freenode.net
 
 --- Compiling pgserver

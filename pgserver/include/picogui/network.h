@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.69 2002/10/26 07:53:07 micahjd Exp $
+/* $Id: network.h,v 1.70 2002/11/01 21:01:17 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -92,9 +92,9 @@ struct pgresponse_data {
 
 /* This is sent to the client after establishing a connection */
 struct pghello {
-  u32  magic;
-  u16 protover;
-  u16 dummy;   /* padding */
+  u32 magic;
+  u16 protover;       /* Protocol version, defined above               */
+  u16 serverversion;  /* Implementation version, see picogui/version.h */
 };
 
 /* A client-side representation of triggers, used for client-side input filters

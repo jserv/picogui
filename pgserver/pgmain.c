@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.49 2002/11/01 02:39:17 micahjd Exp $
+/* $Id: pgmain.c,v 1.50 2002/11/01 21:01:17 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -37,6 +37,7 @@
 #include <pgserver/timer.h>
 #include <pgserver/hotspot.h>
 #include <pgserver/appmgr.h>
+#include <picogui/version.h>
 
 #ifdef CONFIG_FONTENGINE_BDF
 #include <pgserver/font_bdf.h>
@@ -114,7 +115,7 @@ void commandline_help(void) {
 #else
   puts("\n"
        "PicoGUI server (http://picogui.org)\n"
-       "Version 0.42 \"Shiny Foam Disk\"\n"
+       "Version " PGSERVER_VERSION_STRING "\n"
        "\n"
 #ifdef DEBUG_ANY
        "DEBUG MODE ON\n"
