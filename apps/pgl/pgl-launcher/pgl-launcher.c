@@ -44,6 +44,9 @@ int directoryScan(char *path){
   struct dirent *dent;
   DIR *d;
 
+  if(!path)
+    return 0;
+
   d = opendir(path);
 
   if(d){
@@ -100,13 +103,8 @@ void parseConfig(char *configfile){
   char *appDirTmp;
 
   configfile_parse("launcher.conf");
-  if((appDirTmp = get_param_str("Applications", "appdirPath", NULL))){
-    appDir = malloc(strlen(appDirTmp)+1);
-    strcpy(appDir, appDirTmp);
-  }else{
-    appDir = malloc(strlen("/usr/local/apps")+1);
-    strcpy(appDir, "/usr/local/apps");
-  }
+  appDirTmp = get_param_str("Applications", "appdirPath", "/usr/local/apps");
+  appDir = strdup(appDirTmp);
   configfile_free();
 }
 
