@@ -1,4 +1,4 @@
-/* $Id: ericsson_cb.c,v 1.6 2002/03/21 17:06:58 pney Exp $
+/* $Id: ericsson_cb.c,v 1.7 2002/04/18 09:18:04 bauermeister Exp $
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -430,13 +430,14 @@ static const KeyStr key_str_table[] = {
   { "1,20"              , PGKEY_1                             , '1'  ,  '1'  },
   { "11"                , PGKEY_MINUS                         , '-'  ,  '-'  },
   { "111"               , PGKEY_QUESTION                      , '?'  ,  '?'  },
+  { "1111"              , PGKEY_EXCLAIM                       , '!'  ,  '!'  },
   { "11111"             , PGKEY_COMMA                         , ','  ,  ','  },
   { "111111"            , PGKEY_PERIOD                        , '.'  ,  '.'  },
   { "1111111"           , PGKEY_COLON                         , ':'  ,  ':'  },
   { "111111111"         , PGKEY_QUOTEDBL                      , '"'  ,  '"'  },
   { "1111111111"        , PGKEY_QUOTE                         , '\'' ,  '\'' },
   { "11111111111111"    , PGKEY_LEFTBRACKET                   , '('  ,  '('  },
-  { "1111111111111111"  , PGKEY_EXCLAIM                       , '!'  ,  '!'  },
+  { "1111111111111111"  , PGKEY_1                             , '1'  ,  '1'  },
   { "2"                 , PGKEY_a                             , 'A'  ,  'a'  },
   { "2,20"              , PGKEY_2                             , '2'  ,  '2'  },
   { "22"                , PGKEY_b                             , 'B'  ,  'b'  },
@@ -492,10 +493,10 @@ static const KeyStr key_str_table[] = {
   { "9?huh?"            , 0                 /* c-cedille */   , 0xc7 ,  0xe7 },
   { "<"                 , PGKEY_LEFT                          , 0    ,  0    },
   { ">"                 , PGKEY_RIGHT                         , 0    ,  0    },
-  { "c"                 , PGKEY_DELETE      /* <-- */         , 0    ,  0    },
+  { "c"                 , PGKEY_BACKSPACE   /* <-- */         , 8    ,  8    },
   { "e"                 , PGKEY_ESCAPE      /* [No] */        , 0    ,  0    },
   { "eseee<see<s>>s"    , PGKEY_F4          /* [PhoneBook] */ , 0    ,  0    },
-  { "s"                 , PGKEY_RETURN      /* [Yes] */       , 0    ,  0    },
+  { "s"                 , PGKEY_RETURN      /* [Yes] */       , 13   ,  13   },
   /*
    * The table above must be sorted using 'LC_ALL=C sort -k 2'
    */
