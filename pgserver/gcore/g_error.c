@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.5 2000/09/04 08:19:03 micahjd Exp $
+/* $Id: g_error.c,v 1.6 2000/09/04 18:35:17 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -75,7 +75,6 @@ static char deadcomp_bits[] = {
 
 void guru(const char *fmt, ...) {
   struct fontdesc *df=NULL;
-  hwrcolor fg;
   hwrbitmap icon;
   char msgbuf[256];
   va_list ap;
@@ -85,13 +84,12 @@ void guru(const char *fmt, ...) {
   /* Setup */
   (*vid->clip_off)();
   (*vid->clear)();
-  fg = (*vid->color_pgtohwr)(0x8080FF);
   rdhandle((void**)&df,TYPE_FONTDESC,-1,defaultfont);
 
   /* Icon (if this fails, no big deal) */
   if (!iserror((*vid->bitmap_loadxbm)(&icon,deadcomp_bits,
 				      deadcomp_width,deadcomp_height,
-				      fg,0))) {
+				      (*vid->color_pgtohwr)(0xFF8080),0))) {
     (*vid->blit)(icon,0,0,NULL,10,10,deadcomp_width,deadcomp_height,LGOP_NONE);
     (*vid->bitmap_free)(icon);
   }
@@ -102,7 +100,7 @@ void guru(const char *fmt, ...) {
   vsnprintf(msgbuf,256,fmt,ap);
   va_end(ap);
 
-  outtext(df,20+deadcomp_width,10,fg,msgbuf);
+  outtext(df,20+deadcomp_width,10,(*vid->color_pgtohwr)(0xFFFFFF),msgbuf);
   (*vid->update)();
 }
 
