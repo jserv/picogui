@@ -196,7 +196,7 @@ if __name__ == '__main__':
             channelFilesCurrentlyInExistance = glob.glob(channelFile + ".*");
             channelFilesCurrentlyInExistance.sort()
             socketName = socketBaseName
-            lastBotID = -1
+            lastBotID = ""
             for cf in channelFilesCurrentlyInExistance:
                 f = open(cf)
                 channelList = {}
@@ -209,7 +209,7 @@ if __name__ == '__main__':
                         #print "found socket = " + socketName
                 f.close()
 
-            if lastBotID != -1:
+            if lastBotID != "":
                 # we did not find the channel
                 if socketName == socketBaseName:
                     # we always choose the last bot to be started for joining channels
