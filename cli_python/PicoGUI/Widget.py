@@ -73,6 +73,9 @@ class Widget(object):
     def command(self, command, *parameters):
         self.server.writecmd(self.handle, command, *parameters)
 
+    def focus(self):
+        self.server.focus(self.handle)
+
     def __setattr__(self, name, value):
         pname = name.lower().replace('_', ' ')
         if pname in constants.propnames:
