@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.16 2002/10/14 11:03:10 micahjd Exp $
+/* $Id: font_freetype.c,v 1.17 2002/10/14 12:09:46 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -279,6 +279,46 @@ void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct 
   int x,y,i,j;
   FT_Glyph g;
   FT_BitmapGlyph bg;
+
+  x = position->x >> 6;
+  y = position->y >> 6;
+
+  /* If the character is completely outside the clipping rectangle, stop now.
+   * Note that to determine this accurately we'd need to load the glyph, and we'd
+   * like to avoid that if possible. This just uses the maximum character cell size.
+   */
+  switch (angle) {
+  case 0:
+    if (x > clip->x2 ||
+	y > clip->y2 ||
+	x + DATA->metrics.charcell.w < clip->x1 ||
+	y + DATA->metrics.charcell.h < clip->y1)
+      return;
+    break;
+  case 90:
+    if (x > clip->x2 ||
+	y < clip->y1 ||
+	x + DATA->metrics.charcell.h < clip->x1 ||
+	y - DATA->metrics.charcell.w > clip->y2)
+      return;
+    break;
+  case 180:
+    if (x < clip->x1 ||
+	y < clip->y1 ||
+	x - DATA->metrics.charcell.w > clip->x2 ||
+	y - DATA->metrics.charcell.h > clip->y2)
+      return;
+    break;
+  case 270:
+    if (x < clip->x1 ||
+	y > clip->y2 ||
+	x - DATA->metrics.charcell.h > clip->x2 ||
+	y + DATA->metrics.charcell.w < clip->y1)
+      return;
+    break;
+  }
+
+  /* Fetch a glyph from the cache, or render a new one */
   ft_load_image(self,ch,&g);
   bg = (FT_BitmapGlyph) g;
 
@@ -286,8 +326,6 @@ void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct 
    * Add the ascent to reach the baseline, then subtract the bitmap origin
    * from that.
    */
-  x = position->x >> 6;
-  y = position->y >> 6;
   i = bg->left;
   j = DATA->metrics.ascent - bg->top;
   switch (angle) {
@@ -308,7 +346,7 @@ void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct 
     y += i;
     break;
   }
-  
+
   VID(alpha_charblit)(dest,bg->bitmap.buffer,x,y,bg->bitmap.width,
 		      bg->bitmap.rows,bg->bitmap.pitch,ft_pick_gamma_table(col),
 		      angle,col,clip,lgop);
