@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.96 2002/10/27 17:26:04 micahjd Exp $
+/* $Id: div.c,v 1.97 2002/10/27 23:56:10 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -558,6 +558,7 @@ void update(struct divnode *subtree,int show) {
       /* Full update, all divtrees */
       for (dt=dts->top;dt;dt=dt->next)
 	r_dtupdate(dt);
+      cursor_update_hover();
     }
 
     if (show) {
@@ -586,10 +587,12 @@ void update(struct divnode *subtree,int show) {
       divnode_recalc(&subtree,NULL);
       divnode_redraw(subtree,0);
     }
-    else 
+    else {
       /* Full update */
       r_dtupdate(dts->top);
-    
+      cursor_update_hover();
+    }    
+
     if (show) {
       VID(sprite_showall) ();
       realize_updareas(dts->top);
@@ -625,9 +628,6 @@ void divtree_size_and_calc(struct divtree *dt) {
 
     /* The hotspot graph is now invalid */
     hotspot_free();
-
-    /* Update which widgets are under the cursors */
-    cursor_update_hover();
   }
 }
 
