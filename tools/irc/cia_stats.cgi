@@ -14,6 +14,16 @@ channelFile = "/home/commits/channels.list"
 # listing the available projects.
 statSubdirs = ('forever', 'monthly', 'weekly', 'end-of-day', 'daily')
 
+# Mapping between subdirectory names and table headings
+statHeadings = {
+    'project': 'project',
+    'forever': 'forever',
+    'monthly': 'this month',
+    'weekly': 'this week',
+    'end-of-day': 'yesterday',
+    'daily': 'today',
+    }
+
 projects = os.listdir(os.path.join(statDir, statSubdirs[0]))
 channels = open(channelFile).read().strip().split("\n")
 
@@ -61,8 +71,8 @@ print """Content-type: text/html
 
 # Project table heading
 print "<tr>",
-for heading in ('Project',) + statSubdirs:
-    print '<th>%s</th>' % heading,
+for heading in ('project',) + statSubdirs:
+    print '<th>%s</th>' % statHeadings[heading],
 print "</tr>"
 
 # Project table contents
