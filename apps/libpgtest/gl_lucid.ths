@@ -165,17 +165,25 @@ object button {
   bgcolor = 0xC0C0C0;
 
   bgfill = fillstyle {
+    var bg,r,g,b;
+    bg = bgcolor;
+    r = bg >> 16;
+    g = (bg >> 8) & 0xFF;
+    b = bg & 0xFF;
+
     GL.enable(GL_DEPTH_TEST);
-    GL.depthfunc(GL_LESS);
+    GL.depthfunc(GL_LEQUAL);
     GL.disable(GL_BLEND);
-    GL.enable(GL_LIGHT1);
+
+    GL.lightfv(GL_LIGHT0, GL_AMBIENT,  1,0, 0x0A000,0x0A000,0x0A000);
+    GL.lightfv(GL_LIGHT0, GL_SPECULAR, 1,0, 0,0,0);
+    GL.lightfv(GL_LIGHT0, GL_DIFFUSE,  1,0, 0x10000,0x10000,0x10000);
+    GL.lightfv(GL_LIGHT0, GL_POSITION, 1,0, -50<<16,-50<<16,100<<16);
+    GL.materialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,1,0, r<<16, g<<16, b<<16);
+    GL.enable(GL_LIGHT0);
     GL.enable(GL_LIGHTING);
+    GL.disable(GL_COLOR_MATERIAL);
 
-    GL.lightfv(GL_LIGHT1, GL_AMBIENT, 1,0, 0x0A000,0x0A000,0x0A000);
-    GL.lightfv(GL_LIGHT1, GL_DIFFUSE, 1,0, 0x10000,0x10000,0x12000);
-    GL.lightfv(GL_LIGHT1, GL_POSITION,1,0, -50<<16,-50<<16,100<<16);
-
-    GL.color(bgcolor);
     fBeveledPrism(x,y,w,h);
 
     /* Float the button contents in front of our prism */

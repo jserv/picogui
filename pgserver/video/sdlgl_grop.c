@@ -1,4 +1,4 @@
-/* $Id: sdlgl_grop.c,v 1.6 2002/11/23 12:01:24 micahjd Exp $
+/* $Id: sdlgl_grop.c,v 1.7 2002/11/24 10:26:02 micahjd Exp $
  *
  * sdlgl_grop.c - OpenGL driver for picogui, using SDL for portability.
  *                This handles all new gropnodes that export OpenGL interfaces to
@@ -134,6 +134,18 @@ void sdlgl_grop_handler(struct groprender *r, struct gropnode *n) {
     vector[2] = UNFIX(n->param[2]);
     vector[3] = UNFIX16(n->r.w,n->r.h);
     glLightfv(n->r.x,n->r.y,(const GLfloat *)&vector);
+    break;
+
+  case PG_GROP_GL_MATERIALFV:
+    vector[0] = UNFIX(n->param[0]);
+    vector[1] = UNFIX(n->param[1]);
+    vector[2] = UNFIX(n->param[2]);
+    vector[3] = UNFIX16(n->r.w,n->r.h);
+    glMaterialfv(n->r.x,n->r.y,(const GLfloat *)&vector);
+    break;
+
+  case PG_GROP_GL_MATERIALI:
+    glMateriali(n->param[0], n->param[1], n->param[2]);
     break;
 
   case PG_GROP_GL_MATRIX_PIXELCOORD:
