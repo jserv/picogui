@@ -5,7 +5,8 @@
 #define MAXPLAYERS 4
 
 struct gridgame {
-  const char *name;
+  const char *name, *theme;
+  const char * const *themes;
   int width, height;	/* currently fixed; some games may implement resizing */
   int players;
   void (*init)(void);

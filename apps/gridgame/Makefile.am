@@ -1,6 +1,6 @@
 bin_PROGRAMS = gridgame
 gridgame_SOURCES = gridgame.c ataxx.c
-pkgdata_DATA = ataxx.th
+pkgdata_DATA = checkers.th
 
 SUFFIXES += .th .ths .thp
 

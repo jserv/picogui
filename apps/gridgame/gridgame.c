@@ -6,7 +6,7 @@
 struct gridgame *register_ataxx(void);
 
 static struct gridgame **games=NULL, *game=NULL;
-static int currentgame=-1, totalgames=0, thobj=0;
+static int currentgame, totalgames=0, thobj=0;
 static int bgfill, bgevenodd[2], doredraw;
 static int player[MAXPLAYERS];
 static pghandle toolbar, canvas, app, theme=0;
@@ -118,31 +118,27 @@ void ggdeselect(gridpos square)
 
 static void selectgame(int which)
  {
-  int i;
-  char themename[256];
+  int i=0;
+  char thobjname[256];
 
   which%=totalgames;	/* no segfaults here, please */
-  if(which==currentgame)
-    return;
   if(game)
-    game->cleanup();
-  if(theme)
    {
-    pgDelete(theme);
-    theme=thobj=0;
-   }
-  if(squares)
+    game->cleanup();
+    pgLeaveContext();
     free(squares);
+   }
   currentgame=which;
   game=games[currentgame];
   pgReplaceTextFmt(app, "Gridgame: %s", game->name);
-  sprintf(themename, "%s.th", game->name);
-  theme=pgLoadTheme(pgFromFile(themename));
-  thobj=pgFindThemeObject(game->name);
+  pgEnterContext();
+  while(game->themes[i])
+    pgLoadTheme(pgFromFile(game->themes[i++]));
+  thobj=pgFindThemeObject(game->theme);
   for(i=1; i<=game->players; i++)
    {
-    sprintf(themename, "%s.player%d", game->name, i);
-    player[i-1]=pgFindThemeObject(themename);
+    sprintf(thobjname, "%s.player%d", game->theme, i);
+    player[i-1]=pgFindThemeObject(thobjname);
    }
   bgfill=pgThemeLookup(thobj, PGTH_P_BGFILL);
   bgevenodd[0]=pgThemeLookup(thobj, BGEVEN);
@@ -178,13 +174,26 @@ static int evtBuild(struct pgEvent *evt)
     redraw();
  }
 
+static int evtNewGame(struct pgEvent *evt)
+ {
+  selectgame((int)evt->extra);
+ }
+
 int main(int argc, char *argv[])
  {
-  int i, j;
+  int i=0, j;
 
   /* Initialize game list */
   games=realloc(games, ++totalgames);
   games[totalgames-1]=register_ataxx();
+  while(i<totalgames)
+   {
+    /* TODO: game unloading? */
+    if(games[i]->players>MAXPLAYERS)	/* unsupported game */
+      games[i]=games[--totalgames];
+    else
+      i++;
+   }
 
   /* Initialize UI */
   pgInit(argc, argv);
@@ -194,6 +203,13 @@ int main(int argc, char *argv[])
   pgBind(PGDEFAULT, PG_WE_PNTR_DOWN, evtPtrDown, NULL);
   pgBind(PGDEFAULT, PG_WE_PNTR_UP, evtPtrUp, NULL);
   pgBind(PGDEFAULT, PG_WE_BUILD, evtBuild, NULL);
+
+  for(i=0; i<totalgames; i++)
+   {
+    pgNewWidget(PG_WIDGET_BUTTON, i?0:PG_DERIVE_INSIDE, i?0:toolbar);
+    pgSetWidget(PGDEFAULT, PG_WP_TEXT, pgNewString(games[i]->name));
+    pgBind(PGDEFAULT, PG_WE_ACTIVATE, evtNewGame, (void*)i);
+   }
 
   /* Start game engine */
   selectgame(0);	/* TODO: select other games */
