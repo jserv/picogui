@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.53 2001/03/29 20:38:04 micahjd Exp $
+/* $Id: button.c,v 1.54 2001/03/30 04:39:21 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -295,7 +295,10 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
       post_event(PG_WE_PNTR_UP,self,param->mouse.chbtn,0,NULL);
     if (DATA->on && param->mouse.chbtn==1) {
       event = 0;
-      DATA->on=(DATA->toggle^=1);
+      if (DATA->extdevents & PG_EXEV_TOGGLE)
+	 DATA->on = (DATA->toggle^=1);
+       else
+	 DATA->on = 0;
     }
     else
       return;
