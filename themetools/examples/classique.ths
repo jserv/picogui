@@ -1,0 +1,358 @@
+/* $Id: classique.ths,v 1.1 2002/03/11 02:32:57 micahjd Exp $
+ *
+ * It's not classic, it's classique!
+ *
+ * Note: This theme is rather messy right now, and mostly just a quick
+ *       hack of pseudo3d so i'd have something cool to run on Puchuu :)
+ *
+ * Micah Dowty
+ */
+
+object default {
+  name = "Classique";
+
+  /* Simple fill */
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+  };
+
+  bgcolor = 0xDADEDA;
+  hilightcolor = 0xFCFCFC;
+  shadowcolor = 0x7B7B7B;
+
+  /* Some consistant spacings and margins */
+  spacing = 3;
+  margin = 3;
+}
+
+/* Beveled fill for buttons and things */
+object base.interactive {
+  /* Black border, hilights, and a dynamic offset */
+  bgfill = fillstyle {
+    SetColor(0x000000);
+    Frame(x,y,w,h);
+    SetColor(bgcolor);
+    Rect(x+2,y+2,w-4,h-4);
+    SetColor(hilightcolor);
+    Slab(x+1,y+1,w-2,1);
+    Bar(x+1,y+1,1,h-2);
+    SetColor(shadowcolor);
+    Slab(x+1,y+h-2,w-2,1);
+    Bar(x+w-2,y+1,1,h-2);
+    x = x + offset;
+    y = y + offset;
+  };
+  overlay = Copy(base.interactive::bgfill);
+}
+
+/* Check boxes */
+object checkbox {
+   bgfill = fillstyle {
+      Bitmap(x+1,y+((h-12)>>1)-1,12,12,bitmap1);
+      x = x + 16;
+   };
+   bitmap1 = LoadBitmap("data/check_unchecked.pnm");
+   align = PG_A_LEFT;
+   margin = 10;
+}
+object checkbox.on bitmap1 = LoadBitmap("data/check_checked.pnm");
+  
+/* Top-level containers need the same bevel */
+object base.tlcontainer bgfill = Copy(base.interactive::bgfill);
+
+/* A slightly simpler bevel for containers */
+object base.container {
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x+1,y+1,w-2,h-2);
+    SetColor(hilightcolor);
+    Slab(x,y,w-1,1);
+    Bar(x,y,1,h-1);
+    SetColor(shadowcolor);
+    Slab(x,y+h-1,w-1,1);
+    Bar(x+w-1,y,1,h-1);
+    x = x+2; y = y+2;
+    w = w-4; h = h-4;
+  };
+  /* Containers are beveled 'in to the screen' */
+  hilightcolor = Copy(default::shadowcolor);
+  shadowcolor = Copy(default::hilightcolor);
+}
+
+/* Display widgets are similar */
+object base.display bgfill = Copy(base.container::bgfill);
+
+/* Special overlay for indicators */
+object indicator overlay = fillstyle {
+  SetColor(0x000080);
+  Rect(x,y,w,h);
+};
+
+/* Button code is a modified version of bitmapengine's fs_expand */
+object button {
+  height = 20;
+  width = 20;
+
+  bitmap1 = LoadBitmap("data/clq_button.pgm");
+  
+  bgfill = fillstyle {
+       var bit, sx, sy, sw, sh, l, r, t, b, bsy, by;
+
+    /* Load theme properties now */
+    bit = bitmap1;
+    sx  = 0;
+    sy  = 0;
+    sw  = 17;
+    sh  = 17;
+    l   = 4;
+    r   = 4;
+    t   = 4;
+    b   = 4;
+
+    /* Some common subexpressions */
+    bsy = sy+sh-b;
+    by  = y+h-b;
+
+    /* Top-left */
+    SetSrc(sx,sy,l,t);
+    Bitmap(x,y,l,t,bit);
+
+    /* Top edge */
+    SetSrc(sx+l,sy,sw-l-r,t);
+    Tilebitmap(x+l,y,w-l-r,t,bit);
+
+    /* Top-right */
+    SetSrc(sx+sw-r,sy,r,t);
+    Bitmap(x+w-r,y,r,t,bit);
+
+    /* Left edge */
+    SetSrc(sx,sy+t,l,sh-t-b);
+    Tilebitmap(x,y+t,l,h-t-b,bit);
+
+    /* Middle */
+    SetSrc(sx+l,sy+t,sw-l-r,sh-t-b);
+    Tilebitmap(x+l,y+t,w-l-r,h-t-b,bit);
+
+    /* Right edge */
+    SetSrc(sx+sw-r,sy+t,r,sh-t-b);
+    Tilebitmap(x+w-r,y+t,r,h-t-b,bit);
+
+    /* Bottom-left */
+    SetSrc(sx,bsy,l,t);
+    Bitmap(x,by,l,t,bit);
+
+    /* Bottom edge */
+    SetSrc(sx+l,bsy,sw-l-r,t);
+    Tilebitmap(x+l,by,w-l-r,t,bit);
+
+    /* Bottom-right */
+    SetSrc(sx+sw-r,bsy,r,t);
+    Bitmap(x+w-r,by,r,t,bit);
+
+    /* Reset params to not mess up the widget.. */
+    SetSrc(0,0,0,0);
+
+    x = x + offset;
+    y = y + offset;
+  };
+}
+
+object button.on {
+  bitmap1 = LoadBitmap("data/clq_button_on.pgm");
+  offset = 1;
+}
+
+/* Special stuff for panelbuttons */
+object base.panelbtn {
+  bgfill = fillstyle {
+    x = x + ((w-13)>>1);
+    y = y + ((h-13)>>1);
+    Bitmap(x,y,13,13,bitmap1);
+  };
+  width = 21;
+  height = 21;
+  spacing = 0;
+  margin = 0;
+  bitmap1 = LoadBitmap("data/clq_closebtn.pgm");
+  side = PG_S_LEFT;
+}
+object rotatebtn {
+  side = PG_S_RIGHT;
+  bgfill = fillstyle {
+    x = x + ((w-13)>>1);
+    y = y + ((h-13)>>1);
+    Bitmap(x,y,13,13,bitmap1);
+    SetColor(PGC_BLACK);
+    Slab(x+2,y+7,6,1);
+    Bar(x+7,y+2,1,6);
+  };
+}
+object zoombtn {
+  side = PG_S_RIGHT;
+  width = 13;
+  height = 13;
+  bgfill = fillstyle {
+    x = x + ((w-13)>>1);
+    y = y + ((h-13)>>1);
+    Bitmap(x,y,13,13,bitmap1);
+    SetColor(PGC_BLACK);
+    Slab(x+2,y+7,9,1);
+    Slab(x+2,y+5,9,1);
+
+  };
+}
+object closebtn.on bitmap1 = LoadBitmap("data/clq_closebtn_on.pgm");
+object zoombtn.on bitmap1 = Copy(closebtn.on::bitmap1);
+object rotatebtn.on bitmap1 = Copy(closebtn.on::bitmap1);
+
+/* Panelbars */
+object panelbar {
+  width = 21;
+  margin = 0;
+
+  bgfill = fillstyle {
+    var stripew, stripex;
+    var v;
+
+    /* Normal bevel */
+    SetColor(0x000000);
+    Frame(x,y,w,h);
+    SetColor(bgcolor);
+    Rect(x+2,y+2,w-4,h-4);
+    SetColor(hilightcolor);
+    Slab(x+1,y+1,w-2,1);
+    Bar(x+1,y+1,1,h-2);
+    SetColor(shadowcolor);
+    Slab(x+1,y+h-2,w-2,1);
+    Bar(x+w-2,y+1,1,h-2);
+
+    /* stripey doodads (ugly mess to handle horizontal and vertical) */
+
+    v = h>w;
+
+    stripew = v ? (h-58)>>3 : (w-58)>>3;
+    stripex = v ? y+20 : x+20;
+    SetSrc(0,0,v ? 12 : 1,v ? 1 : 12);
+    Bitmap(v ? x+4 : stripex,v ? stripex : y+4,v ? 12 : 1,v ? 1 : 12,v ? bitmap2 : bitmap1);
+    SetSrc(v ? 0 : 1,v ? 1 : 0,v ? 12 : 1,v ? 1 : 12);
+    Tilebitmap(v ? x+4 : stripex+1,v ? stripex+1 : y+4,v ? 12 : stripew-2,v ? stripew-2 : 12,
+	       v ? bitmap2 : bitmap1);
+    SetSrc(v ? 0 : 2,v ? 2 : 0,v ? 12 : 1,v ? 1 : 12);
+    Bitmap(v ? x+4 : stripex+stripew-1,v ? stripex+stripew-1 : y+4,v ? 12 : 1,v ? 1 : 12,
+	   v ? bitmap2 : bitmap1);
+
+    stripex = v ? y+h-37-stripew : x+w-37-stripew;
+    SetSrc(0,0,v ? 12 : 1,v ? 1 : 12);
+    Bitmap(v ? x+4 : stripex,v ? stripex : y+4,v ? 12 : 1,v ? 1 : 12,v ? bitmap2 : bitmap1);
+    SetSrc(v ? 0 : 1,v ? 1 : 0,v ? 12 : 1,v ? 1 : 12);
+    Tilebitmap(v ? x+4 : stripex+1,v ? stripex+1 : y+4,v ? 12 : stripew-2,v ? stripew-2 : 12,
+	       v ? bitmap2 : bitmap1);
+    SetSrc(v ? 0 : 2,v ? 2 : 0,v ? 12 : 1,v ? 1 : 12);
+    Bitmap(v ? x+4 : stripex+stripew-1,v ? stripex+stripew-1 : y+4,v ? 12 : 1,v ? 1 : 12,
+	   v ? bitmap2 : bitmap1);
+
+  };
+
+  bgcolor = 0xCACACA;
+  bitmap1 = LoadBitmap("data/clq_hstripes.pgm");
+  bitmap2 = LoadBitmap("data/clq_vstripes.pgm");
+}
+
+/* Dialog box title, just like a panelbar */
+object label.dlgtitle {
+  margin = 6;
+  bgfill = fillstyle {
+    var stripex, stripew;
+
+    /* Normal bevel */
+    SetColor(0x000000);
+    Frame(x,y,w,h);
+    SetColor(bgcolor);
+    Rect(x+2,y+2,w-4,h-4);
+    SetColor(hilightcolor);
+    Slab(x+1,y+1,w-2,1);
+    Bar(x+1,y+1,1,h-2);
+    SetColor(shadowcolor);
+    Slab(x+1,y+h-2,w-2,1);
+    Bar(x+w-2,y+1,1,h-2);
+    
+    stripew = w>>3;
+    stripex = 3;
+    SetSrc(0,0,1,12);
+    Bitmap(stripex,y+4,1,12,bitmap1);
+    SetSrc(1,0,1,12);
+    Tilebitmap(stripex+1,y+4,stripew-2,12,bitmap1);
+    SetSrc(2,0,1,12);
+    Bitmap(stripex+stripew-1,y+4,1,12,bitmap1);
+
+    stripex = x+w-3-stripew;
+    SetSrc(0,0,1,12);
+    Bitmap(stripex,y+4,1,12,bitmap1);
+    SetSrc(1,0,1,12);
+    Tilebitmap(stripex+1,y+4,stripew-2,12,bitmap1);
+    SetSrc(2,0,1,12);
+    Bitmap(stripex+stripew-1,y+4,1,12,bitmap1);
+  };
+  bgcolor = Copy(panelbar::bgcolor);
+  bitmap1 = Copy(panelbar::bitmap1);
+}
+
+object background {
+  bgfill = fillstyle {
+    Bitmap(x,y,w,h,bitmap1);
+  };
+  bitmap1 = LoadBitmap("data/clq_background.pnm");
+}
+
+/* Menu items are pretty simple */
+object menuitem {
+  bgfill = Copy(default::bgfill);
+  spacing = 0;
+  align = PG_A_LEFT;
+}
+object menuitem.hilight {
+  bgcolor = Copy(menuitem::fgcolor);
+  fgcolor = Copy(menuitem::bgcolor);
+}
+
+/* A little 'fudge factor' for the dialogs */
+object popup.messagedlg {
+  width = 10;
+  height = 30;
+}
+
+/* Hilight definitions */
+object label.hilight {
+  fgcolor = Copy(label::bgcolor);
+  bgcolor = Copy(label::fgcolor);
+}
+object box.hilight {
+  fgcolor = Copy(box::bgcolor);
+  bgcolor = Copy(box::fgcolor);
+}
+
+object field height = 18;
+
+object scroll {
+  width = 16;
+  bitmap1 = LoadBitmap("data/clq_scrollbar.pnm");
+  bgfill = fillstyle {
+    SetColor(PGC_BLACK);
+    Slab(x,y,w,1);
+    Slab(x,y+h-1,w,1);
+    SetSrc(0,16,16,5);
+    Tilebitmap(x,y+1,w,h-2,bitmap1);
+  };
+  overlay = fillstyle {
+    SetSrc(0,0,16,2);
+    Bitmap(x,y,w,2,bitmap1);
+    SetSrc(0,14,16,2);
+    Bitmap(x,y+h-2,w,2,bitmap1);
+    SetSrc(0,10,16,4);
+    Tilebitmap(x,y+2,w,h-4,bitmap1);
+    SetSrc(0,2,16,8);
+    Bitmap(x,y+((h-8)>>1),16,8,bitmap1);
+  };
+}
+/* The End */
