@@ -1,4 +1,4 @@
-/* $Id: theme.h,v 1.1 2000/09/24 22:02:33 micahjd Exp $
+/* $Id: theme.h,v 1.2 2000/09/24 22:57:14 micahjd Exp $
  * 
  * theme.h - Defines the theme file format, used by the server and by
  *           programs that read and write theme files
@@ -47,7 +47,7 @@ struct pgtheme_header {
   unsigned short num_tags;    /* Number of (optional) tags defined */
   unsigned short num_thobj;   /* Number of theme objects defined */
   unsigned short num_totprop; /* Total number of properties defined */
-}
+};
 
 /* Next, there is an array of num_thobj theme objects, sorted in
    ascending order by their id... (8 bytes) */
@@ -55,7 +55,7 @@ struct pgtheme_thobj {
   unsigned short id;         /* A PGTH_O_* constant */
   unsigned short num_prop;   /* Number of properties in this theme object */
   unsigned long  proplist;   /* File offset of the object's property list */
-}
+};
 
 /* The proplist pointed to by the theme objects is an array of these
    property structures (8 bytes) */
@@ -65,7 +65,7 @@ struct pgtheme_prop {
 				necessary load-time preprocessing for
 				the data */
   unsigned long  data;       /* The actual data content of the property */
-}
+};
 
 /* Only the information above this point is actually stored in th
    server's theme heap. The file may contain more information used
@@ -81,7 +81,7 @@ struct pgtheme_tags {
   unsigned short id;         /* a PGTH_TAG_* constant */
   unsigned short len;        /* Length of following data */
   /* followed by 'len' bytes of data */
-}
+};
 
 #endif /* __THEME_H */
 
