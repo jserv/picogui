@@ -1,4 +1,4 @@
-/* $Id: dlg_filepicker.c,v 1.6 2001/08/04 08:33:01 micahjd Exp $
+/* $Id: dlg_filepicker.c,v 1.7 2001/08/04 12:18:14 micahjd Exp $
  *
  * dlg_filepicker.c - Display a dialog box the user can use to select
  *                    a file to open or save. It is customizable with flags
@@ -245,7 +245,6 @@ void filepicker_pathmenu(struct filepickdata *dat) {
       break;
       
     case 4:     /* Rename */
-      printf("Renaming action yay!\n");
       if (dat->sFileName) {
 	filepicker_fullpath(pgGetString(dat->sFileName));
 	str = pgInputDialog("Rename File",filepicker_buf,0);
