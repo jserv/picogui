@@ -1,4 +1,4 @@
-/* $Id: lcdgray.ths,v 1.1 2002/04/17 17:00:23 micahjd Exp $
+/* $Id: lcdgray.ths,v 1.2 2003/04/11 14:09:38 lalo Exp $
  *
  * LCD16 - based on lcdmono but uses shading on grayscale screens
  *
@@ -275,5 +275,17 @@ object toolbar {
   };
   margin = 2;
 }
+
+object textbox {
+  bgfill = fillstyle {
+    SetColor(fgcolor);
+    Rect(x,y,w,h);
+    SetColor(bgcolor);
+    Rect(x+1,y+1,w-2,h-2);
+  };
+  margin = 1;
+}
+
+object field parent = PGTH_O_TEXTBOX;
 
 /* The End */
