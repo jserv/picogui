@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.40 2001/06/28 21:06:44 micahjd Exp $
+/* $Id: handle.c,v 1.41 2001/06/28 21:44:15 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -473,8 +473,16 @@ g_error rdhandlep(void ***p,unsigned char reqtype,int owner,handle h) {
   if (!n) return mkerror(PG_ERRT_HANDLE,26);
   if ((n->type & ~(HFLAG_RED|HFLAG_NFREE)) != reqtype) 
     return mkerror(PG_ERRT_HANDLE,28);
-  if (owner>=0 && n->owner != owner) 
+
+  /*
+   * Allow the system to read any handle. Any application can read a
+   * system handle. Applications can read their own handles, but not
+   * other apps' handles.
+   *
+   */
+  if (owner>=0 && n->owner>=0 && n->owner != owner) 
     return mkerror(PG_ERRT_HANDLE,27);
+
   *p = &n->obj;
   return sucess;
 }
