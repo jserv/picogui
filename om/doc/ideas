@@ -1,5 +1,10 @@
 Brainstorming for Om and pg2
 
+*** Note that so far this is all just the result of some idle brainstorming,
+*** and not necessarily an indication of what Om's final design will be.
+*** Also note that I change my mind a few times during the file, so read the
+*** whole thing :)
+
 Om consists of:
 
    * a specification for how objects can interact, the Abstract Protocol
@@ -72,6 +77,6 @@ Objects could have a mandatory constructor that could, among other things,
 associate locations in a struct with attributes. Once associated, only that 
 particular data type can be stored, and the association can not be broken. So, 
 what if a subclass wants to reassociate a parent class' attribute?  Maybe the C 
-and C++ protocols could use attribute associations to buold subclasses in 
+and C++ protocols could use attribute associations to build subclasses in 
 structs that contain the parent classes, just like in C++.
 
