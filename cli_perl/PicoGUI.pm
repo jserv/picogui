@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.18 2000/06/10 06:09:53 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.19 2000/06/10 10:21:55 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -624,14 +624,3 @@ sub ThemeSet {
 _init();
 1;
 ### The End ###
-
-
-
-
-
-
-
-
-
-
-
