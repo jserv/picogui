@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.21 2001/02/13 04:02:14 micahjd Exp $
+/* $Id: memtheme.c,v 1.22 2001/02/13 05:09:19 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -473,9 +473,12 @@ void theme_remove(struct pgmemtheme *th) {
 
   /* Schedule a global recalc (Yikes!) so it takes effect */
   if (!in_shutdown) {
-    resizeall();
-    dts->top->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
-    dts->top->flags |= DIVTREE_NEED_RECALC;
+     /* Reload the mouse cursor */
+     appmgr_loadcursor(PGTH_O_DEFAULT);
+
+     resizeall();
+     dts->top->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+     dts->top->flags |= DIVTREE_NEED_RECALC;
   }
 
   g_free(th);
