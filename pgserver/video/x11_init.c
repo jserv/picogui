@@ -1,4 +1,4 @@
-/* $Id: x11_init.c,v 1.10 2002/11/06 22:54:39 micahjd Exp $
+/* $Id: x11_init.c,v 1.11 2002/11/07 00:44:57 micahjd Exp $
  *
  * x11_init.c - Initialization for picogui'x driver for the X window system
  *
@@ -113,6 +113,56 @@ void x11_close(void) {
   unload_inlib(inlib_main);   /* Take out our input driver */
   XCloseDisplay(x11_display);
   x11_display = NULL;
+}
+
+void x11_gc_setup(Drawable d) {
+  /* Set up our GCs for each supported LGOP */
+  /* Set up graphics contexts for each LGOP that X can support directly 
+   */
+  x11_gctab[PG_LGOP_NONE]       = XCreateGC(x11_display,d,0,NULL);
+
+  x11_gctab[PG_LGOP_OR]         = XCreateGC(x11_display,d,0,NULL);
+  x11_gctab[PG_LGOP_AND]        = XCreateGC(x11_display,d,0,NULL);
+  x11_gctab[PG_LGOP_XOR]        = XCreateGC(x11_display,d,0,NULL);
+  x11_gctab[PG_LGOP_INVERT]     = XCreateGC(x11_display,d,0,NULL);
+  x11_gctab[PG_LGOP_INVERT_OR]  = XCreateGC(x11_display,d,0,NULL);
+  x11_gctab[PG_LGOP_INVERT_AND] = XCreateGC(x11_display,d,0,NULL);
+  x11_gctab[PG_LGOP_INVERT_XOR] = XCreateGC(x11_display,d,0,NULL);
+  x11_gctab[PG_LGOP_STIPPLE]    = XCreateGC(x11_display,d,0,NULL);
+
+  XSetFunction(x11_display,x11_gctab[PG_LGOP_OR],        GXor);
+  XSetFunction(x11_display,x11_gctab[PG_LGOP_AND],       GXand);
+  XSetFunction(x11_display,x11_gctab[PG_LGOP_XOR],       GXxor);
+  XSetFunction(x11_display,x11_gctab[PG_LGOP_INVERT],    GXcopyInverted);
+  XSetFunction(x11_display,x11_gctab[PG_LGOP_INVERT_OR], GXorInverted);
+  XSetFunction(x11_display,x11_gctab[PG_LGOP_INVERT_AND],GXandInverted);
+  XSetFunction(x11_display,x11_gctab[PG_LGOP_INVERT_XOR],GXequiv);
+
+  /* Set up a stipple bitmap for PG_LGOP_STIPPLE */
+  XSetLineAttributes(x11_display,x11_gctab[PG_LGOP_STIPPLE],
+		     1,LineOnOffDash,CapRound,JoinRound);
+  XSetFillStyle(x11_display,x11_gctab[PG_LGOP_STIPPLE],FillStippled);
+  XSetStipple(x11_display,x11_gctab[PG_LGOP_STIPPLE],
+	      XCreateBitmapFromData(x11_display,d,x11_stipple_bits,
+				    x11_stipple_width,x11_stipple_height));
+}
+
+
+/******************************************************** Miscellaneous */
+
+void x11_message(u32 message, u32 param, u32 *ret) {
+  switch (message) {
+
+  case PGDM_SOUNDFX:
+    /* XFree86 ignores the volume, it seems */
+    if (get_param_int("video-x11","sound",0)) 
+      XBell(x11_display,50);
+    break;
+  }
+}
+
+int x11_is_rootless(void) {
+  return (vid->flags & PG_VID_ROOTLESS)!=0;
 }
 
 

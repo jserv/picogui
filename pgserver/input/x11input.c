@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.29 2002/11/06 22:22:38 micahjd Exp $
+/* $Id: x11input.c,v 1.30 2002/11/07 00:44:57 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -111,8 +111,8 @@ int x11input_fd_activate(int fd) {
 	if (VID(is_rootless)()) {
 	  /* If the window has just changed size, hold off on the expose */
 	  x11_window_get_size((hwrbitmap)xb,&w,&h);
-	  if (w!=xb->w || h!=xb->h)
-	  break;
+	  if (w!=xb->sb.w || h!=xb->sb.h)
+	    break;
 	}
 	
 	x11_expose(xb,expose_region);

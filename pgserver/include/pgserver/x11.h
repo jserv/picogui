@@ -1,4 +1,4 @@
-/* $Id: x11.h,v 1.8 2002/11/06 22:54:38 micahjd Exp $
+/* $Id: x11.h,v 1.9 2002/11/07 00:44:57 micahjd Exp $
  *
  * x11.h - Header shared by all the x11 driver components in picogui
  *
@@ -52,10 +52,14 @@
  * offscreen bitmaps.
  */
 struct x11bitmap {
-  /* Basic functionality */
+  /* Standard picogui bitmap functionality.
+   * There will only be valid bitmap data in here if this is
+   * a pixmap with SHM support.
+   */
+  struct stdbitmap sb;          
+
+  /* X server-side representation */
   Drawable d;                    /* This can be a Pixmap or a Window */
-  struct groprender *rend;       /* gropnode rendering info used by picogui */
-  s16 w,h;                       /* Width and height */
 
   /* Windows */
   unsigned int is_window:1;      /* Flag indicating if this is a window */
@@ -127,6 +131,16 @@ void x11_acknowledge_resize(hwrbitmap window, int w, int h);
 /* Internals of x11_window_set_resize, will work in rootless or monolithic mode */
 void x11_internal_window_resize(hwrbitmap window, int w, int h);
 
+/* Free the internal representation of a bitmap without freeing
+ * the x11bitmap structure itself.
+ */
+void x11_internal_bitmap_free(struct x11bitmap *xb);
+
+/* Allocate a pixmap for internal representation
+ * of the given bitmap, using SHM if possible.
+ */
+g_error x11_new_bitmap_pixmap(struct x11bitmap *xb);
+
 
 /******************************************************** Primitives */
 
@@ -161,6 +175,7 @@ void x11_window_get_position(hwrbitmap window, s16 *x, s16 *y);
 void x11_window_get_size(hwrbitmap window, s16 *w, s16 *h);
 void x11_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
 		   hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 xo, s16 yo, s16 lgop);
+g_error x11_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm);
 
 #endif /* __H_PGX11 */
 

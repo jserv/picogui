@@ -1,4 +1,4 @@
-/* $Id: x11_primitives.c,v 1.6 2002/11/06 22:54:39 micahjd Exp $
+/* $Id: x11_primitives.c,v 1.7 2002/11/07 00:44:57 micahjd Exp $
  *
  * x11_primitives.c - Implementation of picogui primitives on top of the
  *                    X window system.
@@ -160,7 +160,7 @@ void x11_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
    *   3. The destination rectangle isn't larger than the source. In this case the
    *      extra setup work here isn't worth it.
    */
-  if (sx!=0 || sy!=0 || sw!=XB(src)->w || sh!=XB(src)->h || 
+  if (sx!=0 || sy!=0 || sw!=XB(src)->sb.w || sh!=XB(src)->sb.h || 
       lgop==PG_LGOP_STIPPLE || (w<=sw && h<=sh)) {
     def_multiblit(dest,x,y,w,h,src,sx,sy,sw,sh,xo,yo,lgop);
     return;

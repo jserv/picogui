@@ -1,4 +1,4 @@
-/* $Id: x11_util.c,v 1.13 2002/11/06 20:23:46 micahjd Exp $
+/* $Id: x11_window.c,v 1.1 2002/11/07 00:44:57 micahjd Exp $
  *
  * x11_util.c - Utility functions for picogui's driver for the X window system
  *
@@ -29,93 +29,6 @@
 #include <pgserver/x11.h>
 #include <pgserver/configfile.h>
 
-
-/******************************************************** Utilities */
-
-g_error x11_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
-  g_error e;
-  s16 w,h;
-
-  if (XB(bmp)->rend) {
-    *rend = XB(bmp)->rend;
-    return success;
-  }
-
-  VID(bitmap_getsize)(bmp,&w,&h);
-
-  /* New groprender context for this bitmap */
-  e = g_malloc((void **) rend,sizeof(struct groprender));
-  errorcheck;
-  XB(bmp)->rend = *rend;
-  memset(*rend,0,sizeof(struct groprender));
-  (*rend)->lgop = PG_LGOP_NONE;
-  (*rend)->output = bmp;
-  (*rend)->hfont = res[PGRES_DEFAULT_FONT];
-  (*rend)->clip.x2 = w - 1;
-  (*rend)->clip.y2 = h - 1;
-  (*rend)->orig_clip = (*rend)->clip;
-  (*rend)->output_rect.w = w;
-  (*rend)->output_rect.h = h;
-
-  return success;
-}
-
-g_error x11_bitmap_getsize(hwrbitmap bmp,s16 *w,s16 *h) {
-  *w = XB(bmp)->w;
-  *h = XB(bmp)->h;
-  return success;
-}
-
-g_error x11_bitmap_new(hwrbitmap *bmp,s16 w,s16 h,u16 bpp) {
-  struct x11bitmap **pxb = (struct x11bitmap **) bmp;
-  g_error e;
-
-  /* Allocate an x11bitmap structure for this */
-  e = g_malloc((void **) pxb,sizeof(struct x11bitmap));
-  errorcheck;
-  memset(*pxb,0,sizeof(struct x11bitmap));
-  (*pxb)->w = w;
-  (*pxb)->h = h;
-
-  /* X doesn't like 0 dimensions */
-  if (!w) w = 1;
-  if (!h) h = 1;
-
-  /* Allocate a corresponding X pixmap */
-  (*pxb)->d  = XCreatePixmap(x11_display,RootWindow(x11_display, x11_screen),w,h,vid->bpp);
-
-  return success;
-}
-
-void x11_bitmap_free(hwrbitmap bmp) {
-  if (XB(bmp)->frontbuffer)
-    x11_bitmap_free((hwrbitmap) XB(bmp)->frontbuffer);
-
-  if (XB(bmp)->rend)
-    g_free(XB(bmp)->rend);
-
-  if (XB(bmp)->is_window)
-    XDestroyWindow(x11_display,XB(bmp)->d);
-  else
-    XFreePixmap(x11_display,XB(bmp)->d);
-  
-  g_free(bmp);
-}
-
-void x11_message(u32 message, u32 param, u32 *ret) {
-  switch (message) {
-
-  case PGDM_SOUNDFX:
-    /* XFree86 ignores the volume, it seems */
-    if (get_param_int("video-x11","sound",0)) 
-      XBell(x11_display,50);
-    break;
-  }
-}
-
-int x11_is_rootless(void) {
-  return (vid->flags & PG_VID_ROOTLESS)!=0;
-}
 
 hwrbitmap x11_window_debug(void) {
   if (VID(is_rootless)()) {
@@ -176,7 +89,7 @@ g_error x11_create_window(hwrbitmap *hbmp) {
    */
   xb->d = XCreateSimpleWindow(x11_display, RootWindow(x11_display, x11_screen),
 			      0, 0, 1, 1, 0, bgcolor, bgcolor);
-  xb->w = xb->h = 0;
+  xb->sb.w = xb->sb.h = 0;
 
   /* Set the bit gravity so X doesn't redraw any background */
   attr.bit_gravity = StaticGravity;
@@ -197,6 +110,9 @@ g_error x11_create_window(hwrbitmap *hbmp) {
 
 void x11_window_free(hwrbitmap window) {
   struct x11bitmap **b;
+
+  if (XB(window)->frontbuffer)
+    x11_bitmap_free((hwrbitmap) XB(window)->frontbuffer);
 
   if (VID(is_rootless)()) {
     /* Remove it from the window list */
@@ -297,44 +213,12 @@ void x11_window_get_size(hwrbitmap window, s16 *w, s16 *h) {
   *h = ih;
 }
 
-void x11_gc_setup(Drawable d) {
-  /* Set up our GCs for each supported LGOP */
-  /* Set up graphics contexts for each LGOP that X can support directly 
-   */
-  x11_gctab[PG_LGOP_NONE]       = XCreateGC(x11_display,d,0,NULL);
-
-  x11_gctab[PG_LGOP_OR]         = XCreateGC(x11_display,d,0,NULL);
-  x11_gctab[PG_LGOP_AND]        = XCreateGC(x11_display,d,0,NULL);
-  x11_gctab[PG_LGOP_XOR]        = XCreateGC(x11_display,d,0,NULL);
-  x11_gctab[PG_LGOP_INVERT]     = XCreateGC(x11_display,d,0,NULL);
-  x11_gctab[PG_LGOP_INVERT_OR]  = XCreateGC(x11_display,d,0,NULL);
-  x11_gctab[PG_LGOP_INVERT_AND] = XCreateGC(x11_display,d,0,NULL);
-  x11_gctab[PG_LGOP_INVERT_XOR] = XCreateGC(x11_display,d,0,NULL);
-  x11_gctab[PG_LGOP_STIPPLE]    = XCreateGC(x11_display,d,0,NULL);
-
-  XSetFunction(x11_display,x11_gctab[PG_LGOP_OR],        GXor);
-  XSetFunction(x11_display,x11_gctab[PG_LGOP_AND],       GXand);
-  XSetFunction(x11_display,x11_gctab[PG_LGOP_XOR],       GXxor);
-  XSetFunction(x11_display,x11_gctab[PG_LGOP_INVERT],    GXcopyInverted);
-  XSetFunction(x11_display,x11_gctab[PG_LGOP_INVERT_OR], GXorInverted);
-  XSetFunction(x11_display,x11_gctab[PG_LGOP_INVERT_AND],GXandInverted);
-  XSetFunction(x11_display,x11_gctab[PG_LGOP_INVERT_XOR],GXequiv);
-
-  /* Set up a stipple bitmap for PG_LGOP_STIPPLE */
-  XSetLineAttributes(x11_display,x11_gctab[PG_LGOP_STIPPLE],
-		     1,LineOnOffDash,CapRound,JoinRound);
-  XSetFillStyle(x11_display,x11_gctab[PG_LGOP_STIPPLE],FillStippled);
-  XSetStipple(x11_display,x11_gctab[PG_LGOP_STIPPLE],
-	      XCreateBitmapFromData(x11_display,d,x11_stipple_bits,
-				    x11_stipple_width,x11_stipple_height));
-}
-
 void x11_expose(struct x11bitmap *xb, Region r) {
   if (xb->frontbuffer) {
     /* Double-buffered expose update */
     XSetRegion(x11_display,x11_gctab[PG_LGOP_NONE],r);
     XCopyArea(x11_display,xb->d,xb->frontbuffer->d,
-	      x11_gctab[PG_LGOP_NONE],0,0,xb->w,xb->h,0,0);
+	      x11_gctab[PG_LGOP_NONE],0,0,xb->sb.w,xb->sb.h,0,0);
     XSetRegion(x11_display,x11_gctab[PG_LGOP_NONE],x11_display_region);
   }
   else {
@@ -358,17 +242,6 @@ void x11_expose(struct x11bitmap *xb, Region r) {
 	XSetRegion(x11_display,x11_gctab[i],x11_display_region);
     x11_current_region = x11_display_region;
   }
-}
-
-/* Create a backbuffer for double-buffering the given surface */
-g_error x11_new_backbuffer(struct x11bitmap **backbuffer, struct x11bitmap *frontbuffer) {
-  g_error e;
-
-  e = VID(bitmap_new)((hwrbitmap*)backbuffer, frontbuffer->w, frontbuffer->h, vid->bpp);
-  errorcheck;
-
-  (*backbuffer)->frontbuffer = frontbuffer;
-  return success;
 }
 
 /* Return the shared window used in non-rootless mode, creating it if it doens't exist */
@@ -416,18 +289,17 @@ struct x11bitmap *x11_get_window(Window w) {
  * even in response to x11_window_set_size 
  */
 void x11_acknowledge_resize(hwrbitmap window, int w, int h) {
-  if (XB(window)->w != w || XB(window)->h != h) {
-    XB(window)->w = w;
-    XB(window)->h = h;
+  if (XB(window)->sb.w != w || XB(window)->sb.h != h) {
+    XB(window)->sb.w = w;
+    XB(window)->sb.h = h;
     
     /* Resize the backbuffer if we're using one */
     if (XB(window)->frontbuffer) {
-      XFreePixmap(x11_display, XB(window)->d);
-      XB(window)->frontbuffer->w = w;
-      XB(window)->frontbuffer->h = h;
-      if (XB(window)->rend)
-	g_free(XB(window)->rend);
-      XB(window)->d = XCreatePixmap(x11_display, XB(window)->frontbuffer->d, w, h, vid->bpp);
+      /* FIXME: can't deal with errors here! */
+      x11_internal_bitmap_free(XB(window));
+      XB(window)->sb.w = XB(window)->frontbuffer->sb.w = w;
+      XB(window)->sb.h = XB(window)->frontbuffer->sb.h = h;
+      x11_new_bitmap_pixmap(XB(window));
     }
     
     /* Resize the divtree */

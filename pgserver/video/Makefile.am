@@ -19,7 +19,8 @@ EXTRA_libvideo_la_SOURCES = \
 	scrshot.c  \
 	s1d13806.c \
 	x11_init.c \
-	x11_util.c \
+	x11_window.c \
+	x11_bitmap.c \
 	x11_primitives.c \
 	mgl2fb.c   \
 	sdlgl_bitmap.c \
