@@ -1,4 +1,4 @@
-/* $Id: test.c,v 1.1 2002/07/08 04:29:43 bauermeister Exp $
+/* $Id: test.c,v 1.2 2002/07/16 19:45:07 bauermeister Exp $
  *
  * libpg_dirview - A directory browser based on the source code of cli_c's
  *                 dlg_filepicker.c
@@ -68,7 +68,8 @@ int main(int argc, char** argv)
 	       //"file://pascal:lombric@localhost/a/b/c/toto.html?123",
 	       //"file://localhost/a/b/c/toto.html?123",
 	       //"file:/a/b/c/toto.html",
-	       "file:///a/b/c/toto.html?abcd",
+	       //"file:///a/b/c/toto.html?abcd",
+	       "file:///usr/local/",
 	       //"http:/a/b/c/toto.html?123",
 	       //"http:/a/b/c/toto.html",
 	       LPGDV_TITLE,                       "Yellow world",

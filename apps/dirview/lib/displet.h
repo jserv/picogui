@@ -19,7 +19,7 @@
    Author: Pascal Bauermeister
    Contributors:
 
-   $Id: displet.h,v 1.1 2002/07/08 04:29:43 bauermeister Exp $
+   $Id: displet.h,v 1.2 2002/07/16 19:45:05 bauermeister Exp $
 */
 
 #ifndef __LIBPG_DIRVIEW_DISPLET_H__
@@ -27,6 +27,19 @@
 
 typedef enum {
   LPGDV_DISP_STD = 0,  /**< standard properties */
+  LPGDV_DISP_FILE,
 } LpgdvDispletClass;
+
+typedef enum {
+  LPGDV_DISP_FILE_LIST_SHOWDEV      =  1<<0,
+  LPGDV_DISP_FILE_LIST_SHOWDOT      =  1<<1,
+  LPGDV_DISP_FILE_LIST_SHOWHIDDEN   =  1<<2, 
+  LPGDV_DISP_FILE_LIST_SHOWBAK      =  1<<3,
+  LPGDV_DISP_FILE_LIST_DIRSFIRST    =  1<<4,
+  LPGDV_DISP_FILE_LIST_DIRSLAST     =  1<<5,
+  LPGDV_DISP_FILE_LIST_SORT         =  1<<6,
+  LPGDV_DISP_FILE_LIST_REVERSESORT  =  1<<7,
+} LpgdvFileListDisplay;
+
 
 #endif /* __LIBPG_DIRVIEW_DISPLET_H__ */

@@ -19,14 +19,29 @@
    Author: Pascal Bauermeister
    Contributors:
 
-   $Id: proto_file.c,v 1.1 2002/07/08 04:29:43 bauermeister Exp $
+   $Id: proto_file.c,v 1.2 2002/07/16 19:45:06 bauermeister Exp $
 */
 
 #include <string.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <dirent.h>
+#include <unistd.h>
+#include <errno.h>
+#include <ctype.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 #include "libpg_dirview.h"
 #include "protocol.h"
 #include "debug.h"
 
+#define FREE(var)          { if(var) free((void*)(var)); var=0; }
+#define REASSIGN(var, val) { FREE(var); var=val; }
+
+/*****************************************************************************/
+/* Protos */
 
 static void* file_protocol_init(void);
 static void  file_protocol_uninit(void*);
@@ -52,6 +67,9 @@ static const char* file_getitemname(const char* path);
 
 static int file_is_same_site(const char*, const char*);
 static int file_is_same_dir(const char*, const char*);
+
+/*****************************************************************************/
+/* Functions table */
 
 const LpgdvProtocol file_protocol = {
   "file",
@@ -84,18 +102,72 @@ const LpgdvProtocol file_protocol = {
   file_is_same_dir,
 };
 
+/*****************************************************************************/
+
+/* This is the size of the buffer files are returned in */
+#define FILEMAX 512
+
+/* This is the maximum size of an individual file name */
+#define NAMEMAX 80
+
+typedef struct {
+  char name[NAMEMAX];
+  struct stat st;
+} Filenode;
+
+/* Our pdata (instance) structure */
+typedef struct {
+  const char*      dir_name;
+  struct dirent*   dirent;
+  struct stat      stat;
+  Filenode*        nodes;
+  char dir_buf[FILEMAX];
+  char path_buf[FILEMAX];
+} Instance;
+
+/*****************************************************************************/
+
+static void
+fullpath(const char *file, const char* dir, char* path)
+{
+  int len = strlen(dir);
+  strcpy(path, dir);
+  if (len<(FILEMAX-1) && path[len-1]!='/') {
+    strcat(path, "/");
+    len--;
+  }
+  strncat(path, file, FILEMAX-1-len);
+}
+
+static int
+filter(unsigned int flags, const char *name, struct stat *st)
+{
+  return 1;
+}
+
+
+/*****************************************************************************/
+
 static void*
 file_protocol_init(void)
 {
   ENTER("file_protocol_init()");
+  Instance* i = malloc(sizeof(Instance));
   LEAVE;
-  return (void*)1;
+  return i;
 }
 
 static void
 file_protocol_uninit(void* pdata)
 {
   ENTER("file_protocol_uninit()");
+  Instance* inst = (Instance*)pdata;
+
+  if(inst) {
+    FREE(inst->dir_name);
+    FREE(inst);
+  }
+
   LEAVE;
   return;
 }
@@ -118,17 +190,69 @@ file_site_leave(void* pdata, const char* site_name, int port)
 }
 
 static int
-file_dir_enter(void* pdata, const char* site_name)
+file_dir_enter(void* pdata, const char* dir_name)
 {
   ENTER("file_dir_enter()");
+  Instance* inst = (Instance*)pdata;
+  int ret = 0;
+
+  if(inst) {
+    DIR *dir;
+    struct dirent* de;
+    Filenode* fn;
+    int nb_avail = 0;
+    int nb_taken = 0;
+
+    memset(inst, 0, sizeof(Instance));
+    inst->dir_name = strdup(dir_name);
+
+    /* first just count the files */
+    dir = opendir(dir_name);
+    if (dir==0) goto done;
+    while (readdir(dir))
+      ++nb_avail;
+    rewinddir(dir);
+
+    /* alloc mem for the nodes */
+    inst->nodes = malloc(nb_avail * sizeof(Filenode));
+    if(inst->nodes==0) {
+      closedir(dir);
+      goto done;
+    }
+
+    /**/
+    fn = inst->nodes;
+    while (nb_taken<nb_avail && (de = readdir(dir))) {
+      struct stat st;
+      fullpath(de->d_name, dir_name, inst->path_buf);
+      lstat(inst->path_buf, &st);
+      if(filter(0, de->d_name, &st)) {
+	memcpy(&fn->st, &st, sizeof(st));
+	fn->name[NAMEMAX-1] = 0;
+	strncpy(fn->name, de->d_name, NAMEMAX-1);
+	DPRINTF("++ [%s]\n", fn->name);
+	++fn;
+	++nb_taken;
+      }
+    }
+    closedir(dir);
+  }
+
+ done:
   LEAVE;
-  return 1;
+  return ret;
 }
 
 static int
-file_dir_leave(void* pdata, const char* site_name)
+file_dir_leave(void* pdata, const char* dir_name)
 {
   ENTER("file_dir_leave()");
+  Instance* inst = (Instance*)pdata;
+
+  if(inst) {
+    FREE(inst->dir_name);
+  }
+
   LEAVE;
   return 1;
 }
