@@ -192,12 +192,11 @@ array set pg_trigger "
 	ts_calibrate	4194304
 "
 array set pg_triggers "
-	mouse	[expr $pg_trigger(pntr_relative)|$pg_trigger(up)|
-		$pg_trigger(down)|$pg_trigger(move)|$pg_trigger(drag)|
-		$pg_trigger(pntr_status)|$pg_trigger(scrollwheel)|
-		$pg_trigger(release)|$pg_trigger(touchscreen)|
+	mouse	[expr $pg_trigger(pntr_relative)|$pg_trigger(up)| \
+		$pg_trigger(down)|$pg_trigger(move)|$pg_trigger(drag)| \
+		$pg_trigger(pntr_status)|$pg_trigger(scrollwheel)| \
+		$pg_trigger(release)|$pg_trigger(touchscreen)| \
 		$pg_trigger(ts_calibrate)]
-	key	[expr $pg_trigger(keyup)|$pg_trigger(keydown)|
+	key	[expr $pg_trigger(keyup)|$pg_trigger(keydown)| \
 		$pg_trigger(char)|$pg_trigger(key_start)|$pg_trigger(key)]
 "
-parray pg_triggers
