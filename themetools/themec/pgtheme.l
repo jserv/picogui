@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.l,v 1.1 2000/09/24 03:14:59 micahjd Exp $
+/* $Id: pgtheme.l,v 1.2 2000/09/24 06:39:59 micahjd Exp $
  *
  * pgtheme.l - lexer for processing PicoGUI theme source code
  *
@@ -27,18 +27,40 @@
  */
 
 #include <string.h>
+#include <stdio.h>
 
 #include "y.tab.h"
-extern int yylval;
+ 
+int lineno = 1;
+int errors = 0;
+
 %}
 
 %%
 [ \t]           ;     /* ignore whitespace */
-0x[0-9A-Fa-f]+  { yylval = strtol(yytext,(char**)NULL,16); return NUMBER; }
-0[0-9]+         { yylval = strtol(yytext,(char**)NULL,8); return NUMBER; }
-[0-9]+          { yylval = strtol(yytext,(char**)NULL,10); return NUMBER; }
-=               { return EQUALS; }
-\{              { return BEGINBLOCK; }
-\}              { return ENDBLOCK; }
-.               { yyerror("Unrecognized token"); } 
+\n              { lineno++; }
+0               { yylval.num = 0; return NUMBER; } 
+0x[0-9A-Fa-f]+  { yylval.num = strtol(yytext,(char**)NULL,16); return NUMBER; }
+0[0-9]+         { yylval.num = strtol(yytext,(char**)NULL,8); return NUMBER; }
+[1-9][0-9]*     { yylval.num = strtol(yytext,(char**)NULL,10); return NUMBER; }
+[a-zA-Z]        { return PROPERTY; }
+\;              { return 0; }
+.               { return yytext[0]; }
 %%
+
+extern FILE *yyin;
+
+int main(void) {
+  do {
+    yyparse();
+  } while (!feof(yyin));
+  return errors;
+}
+
+int yyerror(const char *s) {
+  fprintf(stderr,"Error on line %d: %s\n",lineno,s);
+  errors++;
+  return 1;
+}
+
+/* The End */
