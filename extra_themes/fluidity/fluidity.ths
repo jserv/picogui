@@ -514,4 +514,37 @@ object terminal {
   bitmap1 = 0;
 }
 
+/********************************** Indicator */
+
+object indicator {
+  width = 15;
+  margin = 0;
+}
+
+object indicator.h {
+  bitmap1 = LoadBitmap("data/indicator_h_gray.png");	
+  bitmap2 = LoadBitmap("data/indicator_h.png");
+
+  bgfill = fillstyle {
+    Bitmap(x,y+(h-15)/2,w,15,bitmap1);
+  };
+    
+  overlay = fillstyle {
+    Bitmap(x-w,y+(h-15)/2,w*2,15,bitmap2);
+  };
+} 
+
+object indicator.v {
+  bitmap1 = LoadBitmap("data/indicator_v_gray.png");	
+  bitmap2 = LoadBitmap("data/indicator_v.png");
+
+  bgfill = fillstyle {
+    Bitmap(x+(w-15)/2,y,15,h,bitmap1);
+  };
+    
+  overlay = fillstyle {
+    Bitmap(x+(w-15)/2,y-h,15,h*2,bitmap1);
+  };
+}
+
 /* The End */
