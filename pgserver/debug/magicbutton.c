@@ -1,4 +1,4 @@
-/* $Id: magicbutton.c,v 1.6 2002/02/04 13:26:16 micahjd Exp $
+/* $Id: magicbutton.c,v 1.7 2002/02/05 01:51:34 micahjd Exp $
  *
  * magicbutton.c - CTRL-ALT-foo is magical
  *
@@ -152,6 +152,10 @@ void r_divnode_trace(struct divnode *div) {
 
   memset(&r,0,sizeof(r));
   memset(&n,0,sizeof(n));
+
+  /* The scroll container must be visible */
+  if (div->divscroll && !(div->divscroll->calcw && div->divscroll->calch))
+    return;
 
   /* Set up rendering... */
   r.output = vid->display;

@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.96 2002/02/02 20:52:52 lonetech Exp $
+/* $Id: button.c,v 1.97 2002/02/05 01:51:34 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -581,12 +581,17 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
 
   }
 
+#if 0   /*** This probably isn't that necessary, and it is causing
+	 *   a 'shifting' in the formatting due to resizes when the hilighted
+	 *   state is set.
+	 */
   /* Update subwidgets, update this widget, then send an event */
   w = widget_traverse(self, PG_TRAVERSE_CHILDREN, 0);
   while (w) {
     widget_set(w, PG_WP_HILIGHTED, DATA->over);
     w = widget_traverse(w, PG_TRAVERSE_FORWARD,1);
   }
+#endif
 
   button_setstate(self);
 
