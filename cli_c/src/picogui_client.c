@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.49 2001/02/07 08:36:43 micahjd Exp $
+/* $Id: picogui_client.c,v 1.50 2001/02/09 00:58:13 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -586,7 +586,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: picogui_client.c,v 1.49 2001/02/07 08:36:43 micahjd Exp $\n");
+	fprintf(stderr,"$Id: picogui_client.c,v 1.50 2001/02/09 00:58:13 micahjd Exp $\n");
 	exit(1);
       }
       
@@ -944,6 +944,27 @@ void pgUnregisterOwner(int resource) {
   struct pgreqd_regowner arg;
   arg.res = htons(resource);
   _pg_add_request(PGREQ_UNREGOWNER,&arg,sizeof(arg));
+}
+
+void pgSendKeyInput(unsigned long type,unsigned short key,
+		    unsigned short mods) {
+  struct pgreqd_in_key arg;
+  arg.type = htonl(type);
+  arg.key  = htons(key);
+  arg.mods = htons(mods);
+  _pg_add_request(PGREQ_IN_KEY,&arg,sizeof(arg));
+}
+
+/* Also used by networked input devices, but to send pointing device events */
+void pgSendPointerInput(unsigned long type,unsigned short x,unsigned short y,
+			unsigned short btn) {
+  struct pgreqd_in_point arg;
+  arg.type = htonl(type);
+  arg.x  = htons(x);
+  arg.y  = htons(y);
+  arg.btn = htons(btn);
+  arg.dummy = 0;
+  _pg_add_request(PGREQ_IN_POINT,&arg,sizeof(arg));
 }
 
 unsigned long pgGetPayload(pghandle object) {

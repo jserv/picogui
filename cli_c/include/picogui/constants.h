@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.28 2001/02/07 08:36:42 micahjd Exp $
+/* $Id: constants.h,v 1.29 2001/02/09 00:58:13 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -519,6 +519,16 @@ typedef unsigned long pghandle;
 #define PG_NWE_PNTR_UP     0x1205
 #define PG_NWE_PNTR_DOWN   0x1204
 #define PG_NWE_BGCLICK     0x120D /* The user clicked the background widget */
+
+/* These are event constants used for networked input drivers. It is a subset
+ * of the TRIGGER_* constants in the server, representing only those needed
+ * for input drivers. */
+#define PG_TRIGGER_KEYUP      (1<<5)  /* Ignores autorepeat, etc. Raw key codes*/
+#define PG_TRIGGER_KEYDOWN    (1<<6)  /* Ditto. */
+#define PG_TRIGGER_UP         (1<<8)  /* Mouse up */
+#define PG_TRIGGER_DOWN       (1<<9)  /* Mouse down */
+#define PG_TRIGGER_MOVE       (1<<10) /* any mouse movement in node */
+#define PG_TRIGGER_CHAR       (1<<14) /* A processed ASCII/Unicode character */
 
 
 #endif /* __H_PG_CONSTANTS */

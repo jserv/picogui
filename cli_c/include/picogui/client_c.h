@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.34 2001/02/07 08:36:42 micahjd Exp $
+/* $Id: client_c.h,v 1.35 2001/02/09 00:58:13 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -213,6 +213,19 @@ void pgCustomizeSelect(pgselecthandler handler);
  */
 void pgRegisterOwner(int resource);
 void pgUnregisterOwner(int resource);
+
+/* This function is used by networked input devices to send keyboard events
+ * as if from a local keyboard.
+ * 
+ * type must be a PG_TRIGGER_* constant, the events follow the same conventions
+ * as the compiled-in video drivers.
+ */
+void pgSendKeyInput(unsigned long type,unsigned short key,
+		    unsigned short mods);
+
+/* Also used by networked input devices, but to send pointing device events */
+void pgSendPointerInput(unsigned long type,unsigned short x,unsigned short y,
+			unsigned short btn);
 
 /******************** Objects */
 
