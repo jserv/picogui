@@ -21,6 +21,7 @@ A Curses-based frontend for PGBuild
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
+import PGBuild
 import PGBuild.UI.None
 import PGBuild.Errors
 import os, struct
@@ -30,6 +31,23 @@ except ImportError:
     raise PGBuild.Errors.EnvironmentError("Curses doesn't seem to be installed")
 
 
+class Window(object):
+    """Wrapper around a curses window, provides extra initialization and a heading"""
+    def __init__(self, x, y, w, h, heading):
+        self.win = curses.newwin(h,w,y,x)
+        self.win.hline(0,0,curses.ACS_HLINE,w)
+        self.win.setscrreg(1,h-1)
+        self.win.idlok(1)
+        self.win.scrollok(1)
+        self.win.addstr(0, w - len(heading) - 10, " %s " % heading)
+        self.win.move(1,1)
+        self.win.refresh()
+
+    def addLine(self, line):
+        self.win.addstr(line + "\n")
+        self.win.refresh()
+        
+
 class CursesWrangler(object):
     """Abstraction for our particular interface built with curses"""
     def __init__(self):
@@ -37,19 +55,29 @@ class CursesWrangler(object):
             self.stdscr = curses.initscr()
             curses.noecho()
             curses.cbreak()
+            curses.curs_set(0)
             self.stdscr.keypad(1)
             signal.signal(signal.SIGWINCH, self.resize)
             self.resize()
         except:
             self.cleanup()
             raise
+    
+    def cleanup(self):
+        self.stdscr.keypad(0)
+        curses.echo()
+        curses.nocbreak()
+        curses.curs_set(1)
+        curses.endwin()
 
     def resize(self, signum=None, frame=None):
+        # Yucky hardcoded layout
         (height, width) = self.getHeightWidth()
-        
-        self.taskWin = curses.newwin(10,width,0,0)
-        self.taskWin.box()
-        self.taskWin.refresh()
+        self.stdscr.addstr(0,0,"%s version %s - Curses frontend" % (PGBuild.name, PGBuild.version))
+        self.stdscr.refresh()
+        taskHeight = height/3
+        self.taskWin = Window(0,1,width,taskHeight, "Active Tasks")
+        self.reportWin = Window(0,taskHeight+1,width,height-taskHeight-1, "Progress")
         
     def getHeightWidth(self):
         """ getwidth() -> (int, int)
@@ -64,13 +92,7 @@ class CursesWrangler(object):
                 "hhhh", fcntl.ioctl(0, termios.TIOCGWINSZ ,"\000"*8))[0:2]
             if not height: return 25, 80
             return height, width
-    
-    def cleanup(self):
-        self.stdscr.keypad(0)
-        curses.echo()
-        curses.nocbreak()
-        curses.endwin()
-
+        
 
 class Progress(PGBuild.UI.None.Progress):
     def _init(self):
@@ -81,6 +103,9 @@ class Progress(PGBuild.UI.None.Progress):
 
     def cleanup(self):
         self.curses.cleanup()
+
+    def _report(self, verb, noun):
+        self.curses.reportWin.addLine(noun)
         
 
 class Interface(PGBuild.UI.None.Interface):
