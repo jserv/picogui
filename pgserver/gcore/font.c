@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.28 2001/10/02 08:47:50 micahjd Exp $
+/* $Id: font.c,v 1.29 2001/10/08 05:13:04 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -191,6 +191,9 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
 	 
       }
    }
+   /* We need to fill anyway? */
+   else if (fill)
+     VID(rect) (dest,mx,my,cel_w,fd->font->ascent+fd->font->descent,bg,lgop);
    
    switch (angle) {
 
