@@ -108,6 +108,11 @@ def applyColorTags(message):
         message = re.sub('{%s}' % color, irc_colors.COLOR_PREFIX + irc_colors.COLORS[color], message)
     return message
 
+def logCommand(cmd):
+    f = open(commandLog, "a")
+    f.write(cmd)
+    f.close()
+
 class AnnounceClient(protocol.Protocol):
     def connectionMade(self):
         import sys
@@ -120,8 +125,6 @@ class AnnounceClient(protocol.Protocol):
         subjectFields[1] = subjectFields[1].lower()
         if subjectFields[1][0] == "#":
             subjectFields[1] = subjectFields[1][1:]
-
-        message = applyColorTags(message)
 
         # Don't allow known bad channels, or channel names with slashes
         if not subjectFields[1] in badChannels and subjectFields[1].find(os.sep) < 0:
@@ -136,14 +139,15 @@ class AnnounceClient(protocol.Protocol):
                     line = line.strip()
                     if len(line) > 0:
                         commandLine = "%s %s %s\r\n" % (subjectFields[0], subjectFields[1], line)
-                        f = open(commandLog, "a")
-                        f.write(commandLine)
-                        f.close()
-                        self.transport.write(commandLine)
+                        # Log the message before we colorize it, so it can be used in places other than IRC.
+                        logCommand(commandLine)
+                        self.transport.write(applyColorTags(commandLine))
 
             # Send allowed control commands
             if subjectFields[0] in allowedControlCommands:
-                self.transport.write("%s %s\r\n" % (subjectFields[0], subjectFields[1]))
+                commandLine = "%s %s\r\n" % (subjectFields[0], subjectFields[1])
+                logCommand(commandLine)
+                self.transport.write(commandLine)
             
         self.transport.loseConnection()
     
