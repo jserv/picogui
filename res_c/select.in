@@ -1,0 +1,26 @@
+# -*- sh -*-
+
+open_section () {
+  SRC=""
+  NAME="$1"
+}
+close_section () {
+  echo "$NAME=\"$SRC\""
+}
+add_if_true () {
+  if [ "$2" = "y" ] ; then
+    SRC="$SRC $1"
+  fi
+}
+add_if_false () {
+  if [ "$2" != "y" ] ; then
+    SRC="$SRC $1"
+  fi
+}
+
+#PicoGUI support
+open_section INTERFACES
+
+add_if_true picogui_support.c	$CONFIG_PICOGUI_SUPPORT
+
+close_section
