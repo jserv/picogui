@@ -297,7 +297,17 @@ quoted appropriately. For example:
   The framebuffer device, defaults to /dev/fb0
 
 - ttydev
-  The tty device (for setting graphics mode) defaults to /dev/tty
+  The tty device (for setting graphics mode) defaults to /dev/tty0
+  Note: This only works if you're _not_ using VT switching. If you have
+        vt switching compiled in, this is determined by the VT pgserver
+        should be running on.
+
+- vt
+  This can be:
+   - "auto", to automatically allocate an available virtual terminal
+   - "current", to use the same VT we were started from
+   - An integer, to use that VT
+  Defaults to "current"
 
 - slowvbl
   Use the slowvbl layer for video debugging if nonzero

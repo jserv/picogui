@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.23 2002/01/18 11:48:23 micahjd Exp $
+/* $Id: fbdev.c,v 1.24 2002/01/19 03:12:50 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -44,6 +44,11 @@
 #include <linux/kd.h>
 #include <linux/vt.h>
 #include <signal.h>
+
+#ifdef DEBUG_VT
+#define DEBUG_FILE
+#endif
+#include <pgserver/debug.h>
 
 /**************************************** Globals */
 
@@ -118,6 +123,12 @@ volatile u8 fbdev_handler_on = 0;
  */
 struct vidlib fbdev_savedlib;
 
+/* The original virtual terminal, before pgserver started */
+int fbdev_savedvt;
+
+/* The VT that this pgserver is using */
+int fbdev_pgvt;
+
 /* Signal to use for VT switching */
 #define SIGVT SIGUSR1
 
@@ -128,6 +139,7 @@ struct vidlib fbdev_savedlib;
  * FIXME: As microwindows' vtswitch.c states, this is a horrible hack but it works
  */
 void fbdev_redrawvt(int vt) {
+  DBG("%d\n",vt);
   ioctl(ttyfd, VT_ACTIVATE, vt == 1 ? 2 : 1);
   ioctl(ttyfd, VT_ACTIVATE, vt);
 }
@@ -144,11 +156,16 @@ int fbdev_getvt(void) {
 void fbdev_enable(void) {
   struct divtree *p;
   disable_output = 0;
+  
+  DBG("on VT %d\n",fbdev_getvt());
+
   for (p=dts->top;p;p=p->next)
     p->flags |= DIVTREE_ALL_REDRAW;
   update(NULL,1);
 }
 void fbdev_disable(void) {
+  DBG("on VT %d\n",fbdev_getvt());
+
   disable_output = 1;
 }
 
@@ -158,6 +175,8 @@ void fbdev_disable(void) {
 void fbdev_message(u32 message, u32 param, u32 *ret) {
   static int disabled = 0;
   
+  DBG("Got message %d, param %d\n",message,param);
+
   if (message!=PGDM_SIGNAL || param!=SIGVT || !fbdev_handler_on)
     return;
 
@@ -176,32 +195,69 @@ void fbdev_message(u32 message, u32 param, u32 *ret) {
   disabled = !disabled;
 }
 
+/* Switch to the right VT, set up stuff */
+g_error fbdev_initvt(void) {
+  const char *vt;
+  char buf[20];
+
+  fbdev_savedvt = fbdev_getvt();
+  
+  /* We'll need /dev/tty0 just to determine what VT to run on
+   */
+  ttyfd = open("/dev/tty0", O_RDWR);
+  if (ttyfd <= 0)
+    return mkerror(PG_ERRT_IO,107);   /* can't open TTY */
+  
+  /* What VT should we run on?
+   */
+  vt = get_param_str("video-fbdev","vt","current");
+  if (!strcmp(vt,"current"))
+    fbdev_pgvt = fbdev_savedvt;
+  else if (!strcmp(vt,"auto"))
+    ioctl(ttyfd, VT_OPENQRY, &fbdev_pgvt);
+  else
+    fbdev_pgvt = atoi(vt);
+
+  DBG("video-fbdev.vt = %s -> %d\n",vt,fbdev_pgvt);
+    
+  ioctl(ttyfd, VT_ACTIVATE, fbdev_pgvt);
+
+  /* Redraw the text mode to put us back at the
+   * top of the virtual screen
+   */
+  if (fbdev_pgvt == fbdev_savedvt)
+    fbdev_redrawvt(fbdev_getvt());
+
+  /* Make sure we init while on the right VT */
+  ioctl(ttyfd, VT_WAITACTIVE, fbdev_pgvt);
+
+  /* Now open the right TTY */
+  sprintf(buf,"/dev/tty%d",fbdev_pgvt);
+  ttyfd = open(buf, O_RDWR);
+  if (ttyfd <= 0)
+    return mkerror(PG_ERRT_IO,107);   /* can't open TTY */
+
+  return success;
+}
+
 #endif /* CONFIG_FB_VT */
 /**************************************** Framebuffer initalization */
 
 g_error fbdev_init(void) {
+   g_error e;
+
    /* Open the framebuffer device */
    if (!(fbdev_fd = open(get_param_str("video-fbdev","device",DEFAULT_FB), O_RDWR)))
      return mkerror(PG_ERRT_IO,95);        /* Error opening framebuffer */
 
-   /* Open the tty. It's not a big deal if we can't open it, but we need it for
-    * VT switching and changing the console mode.
-    */
-   ttyfd = open(get_param_str("video-fbdev","ttydev",DEFAULT_TTY), O_RDWR);
-
-   /* Then again, if we're doing VT switching we really should have a TTY...
-    */
-   if (ttyfd <= 0) {
-     close(fbdev_fd);
-     return mkerror(PG_ERRT_IO,107);   /* can't open TTY */
-   }
-
 #ifdef CONFIG_FB_VT
-   /* Redraw the text mode to put us back at the
-    * top of the virtual screen
-    */
-   fbdev_redrawvt(fbdev_getvt());
-#endif /* CONFIG_FB_VT */     
+   /* Init the whole VT mess */
+   e = fbdev_initvt();
+   errorcheck;
+#else
+   /* Just open the TTY specified in the config file */
+   ttyfd = open(get_param_str("video-fbdev","ttydev",DEFAULT_TTY), O_RDWR);
+#endif
    
    /* Get info on the framebuffer */
    if ((ioctl(fbdev_fd,FBIOGET_FSCREENINFO,&fixinfo) < 0) ||
@@ -413,8 +469,14 @@ void fbdev_close(void) {
      mode.acqsig = 0;
      ioctl(ttyfd, VT_SETMODE, &mode);
 
-     /* Refresh the text mode */
-     fbdev_redrawvt(fbdev_getvt());
+     if (fbdev_getvt() == fbdev_savedvt) {
+       /* Refresh the text mode */
+       fbdev_redrawvt(fbdev_getvt());
+     }
+     else {
+       /* Back to the original console */
+       ioctl(ttyfd, VT_ACTIVATE, fbdev_savedvt);
+     }
    }
 #endif
 
