@@ -1,4 +1,4 @@
-/* $Id: x11_window.c,v 1.3 2002/11/07 09:41:33 micahjd Exp $
+/* $Id: x11_window.c,v 1.4 2002/11/07 09:52:51 micahjd Exp $
  *
  * x11_util.c - Utility functions for picogui's driver for the X window system
  *
@@ -92,7 +92,7 @@ g_error x11_create_window(hwrbitmap *hbmp) {
   xb->sb.w = xb->sb.h = 0;
 
   /* Set the bit gravity so X doesn't redraw any background */
-  attr.bit_gravity = NorthWestGravity;
+  attr.bit_gravity = StaticGravity;
   XChangeWindowAttributes(x11_display, xb->d, CWBitGravity, &attr);
 
   /* Optionally double-buffer this window */
