@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.21 2001/08/05 10:50:52 micahjd Exp $
+/* $Id: linear8.c,v 1.22 2001/09/27 03:14:47 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -443,32 +443,32 @@ void linear8_blit(hwrbitmap dest,
 
   /* Normal blit loop */
 #ifdef UCLINUX   /* The 32-bit stuff isn't aligned, crashes uclinux */
-#define BLITLOOP(op,xtra32,xtra8)                                  \
+#define BLITLOOP(op)                                               \
     for (;h;h--,src+=offset_src,dst+=offset_dst) {                 \
       for (i=w;i;i--,src++,dst++)                                  \
-	*dst op *src xtra8;                                        \
+	*dst op *src;                                              \
     }
 #else
-#define BLITLOOP(op,xtra32,xtra8)                                  \
+#define BLITLOOP(op)                                               \
     for (;h;h--,src+=offset_src,dst+=offset_dst) {                 \
       for (i=w>>2;i;i--,src+=4,dst+=4)                             \
-	*((unsigned long *)dst) op *((unsigned long *)src) xtra32; \
+	*((unsigned long *)dst) op *((unsigned long *)src);        \
       for (i=w&3;i;i--,src++,dst++)                                \
-	*dst op *src xtra8;                                        \
+	*dst op *src;                                              \
     }
 #endif
    
   /* Tiled blit loop - similar to tileblit() but always restarts the bitmap
    * on a tile boundary, instead of tiling a bitmap section */
 #ifdef UCLINUX   /* The 32-bit stuff isn't aligned, crashes uclinux */
-#define TILEBLITLOOP(op,xtra32,xtra8)                                     \
+#define TILEBLITLOOP(op)                                           \
    while (h) {                                                            \
       for (;sh && h;sh--,h--,src_line+=srcbit->pitch,dst+=offset_dst) {       \
 	 src = src_line + src_x;                                          \
 	 swm = (swp < w) ? swp : w;                                       \
 	 for (dw=w;dw;) {                                                 \
 	    for (sw=swm;sw;sw--,src++,dst++,dw--)                         \
-	      *dst op *src xtra8;                                         \
+	      *dst op *src;                                               \
 	    src = src_line;                                               \
 	    swm = (srcbit->w < dw) ? srcbit->w : dw;                      \
 	 }                                                                \
@@ -477,18 +477,18 @@ void linear8_blit(hwrbitmap dest,
       src_line = srcbit->bits;                                            \
    }
 #else
-#define TILEBLITLOOP(op,xtra32,xtra8)                                     \
+#define TILEBLITLOOP(op)                                                  \
    while (h) {                                                            \
       for (;sh && h;sh--,h--,src_line+=srcbit->pitch,dst+=offset_dst) {       \
 	 src = src_line + src_x;                                          \
 	 swm = (swp < w) ? swp : w;                                       \
 	 for (dw=w;dw;) {                                                 \
 	    for (sw=swm>>2;sw;sw--,dw-=4,src+=4,dst+=4)                   \
-	      *((unsigned long *)dst) op *((unsigned long *)src) xtra32;  \
+	      *((unsigned long *)dst) op *((unsigned long *)src);         \
 	    for (sw=swm&3;sw;sw--,src++,dst++,dw--)                       \
-	      *dst op *src xtra8;                                         \
+	      *dst op *src;                                               \
 	    src = src_line;                                               \
-	    swm = (srcbit->pitch < dw) ? srcbit->pitch : dw;                      \
+	    swm = (srcbit->pitch < dw) ? srcbit->pitch : dw;              \
 	 }                                                                \
       }                                                                   \
       sh = srcbit->h;                                                     \
@@ -526,9 +526,9 @@ void linear8_blit(hwrbitmap dest,
 	  src_line = srcbit->bits;
        }
        break;
-    case PG_LGOP_OR:         TILEBLITLOOP(|=,,);                   break;
-    case PG_LGOP_AND:        TILEBLITLOOP(&=,,);                   break;
-    case PG_LGOP_XOR:        TILEBLITLOOP(^=,,);                   break;
+    case PG_LGOP_OR:         TILEBLITLOOP(|=);                   break;
+    case PG_LGOP_AND:        TILEBLITLOOP(&=);                   break;
+    case PG_LGOP_XOR:        TILEBLITLOOP(^=);                   break;
     }
   }
   else {                                        /* Normal */
@@ -544,9 +544,9 @@ void linear8_blit(hwrbitmap dest,
        for (;h;h--,src+=srcbit->pitch,dst+=FB_BPL)
 	 __memcpy(dst,src,w);
        break;
-    case PG_LGOP_OR:         BLITLOOP(|=,,);                   break;
-    case PG_LGOP_AND:        BLITLOOP(&=,,);                   break;
-    case PG_LGOP_XOR:        BLITLOOP(^=,,);                   break;
+    case PG_LGOP_OR:         BLITLOOP(|=);                   break;
+    case PG_LGOP_AND:        BLITLOOP(&=);                   break;
+    case PG_LGOP_XOR:        BLITLOOP(^=);                   break;
     }
   }
 }
