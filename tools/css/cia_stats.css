@@ -67,34 +67,19 @@ ul {
 /* Most of this table formatting is modified from Plone's default CSS */
 
 table {
-    /* The default table for document listings. Contains name, document types, modification times etc in a file-browser-like fashion */
-    border-collapse: collapse;
-    border-left: 1px solid #8CACBB;
-    border-bottom: 1px solid #8CACBB;
     margin: 1em;
-    clear: both;
 }
 
 table th {
-    background: #DEE7EC;
-    border-top: 1px solid #8CACBB;
     border-bottom: 1px solid #8CACBB;
-    border-right: 1px solid #8CACBB;
-    color: Black;
     font-weight: normal;
-    padding: 0.4em 1em;
+    padding: 0.2em 1em;
     text-transform: lowercase;
     white-space: nowrap;
 }
 
-td.top {
-    text-align: center ! important;
-    padding: 0em 1em;
-}
-
 table td {
-    border-right: 1px solid #8CACBB;
-    padding: 0.2em 1em;
+    padding: 0.8em 0.8em 0em 0.8em;
     text-align: left;
 }
 
