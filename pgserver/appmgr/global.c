@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.7 2000/06/03 17:50:42 micahjd Exp $
+/* $Id: global.c,v 1.8 2000/06/08 18:44:19 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -129,6 +129,30 @@ g_error appmgr_setbg(int owner,handle bitmap) {
   return widget_set(bgwidget,WP_BITMAP,0);
 }
 
+/* Unregisters applications owned by a given connection */
+void appmgr_unregowner(int owner) {
+  struct app_info *n,*condemn;
+  condemn = NULL;
+  if (!applist) return;
+  if (applist->owner==owner) {
+    condemn = applist;
+    applist = applist->next;
+  }
+  else {
+    n = applist;
+    while (n->next) {
+      if (n->next->owner==owner) {
+	condemn = n->next;
+	n->next = n->next->next;
+	break;
+      }
+      else
+	n = n->next;
+    }  
+  }
+  g_free(condemn);
+}
+
 g_error appmgr_register(struct app_info *i) {
   struct app_info *dest;
   struct widget *w;
@@ -185,4 +209,5 @@ g_error appmgr_register(struct app_info *i) {
 }
 
 /* The End */
+
 

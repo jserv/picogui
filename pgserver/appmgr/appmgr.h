@@ -1,4 +1,4 @@
-/* $Id: appmgr.h,v 1.5 2000/06/02 01:14:50 micahjd Exp $
+/* $Id: appmgr.h,v 1.6 2000/06/08 18:44:19 micahjd Exp $
  *
  * appmgr.h - All the window-manager-ish functionality, except we don't
  * do windows (X windows, that is?)
@@ -74,6 +74,9 @@ g_error appmgr_setbg(int owner,handle bitmap);
    copy is stored.
 */
 g_error appmgr_register(struct app_info *i);
+
+/* Unregisters applications owned by a given connection */
+void appmgr_unregowner(int owner);
 
 #endif /* __H_APPMGR */
 /* The End */
