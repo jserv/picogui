@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.10 2001/10/17 05:25:01 micahjd Exp $
+/* $Id: textbox_main.c,v 1.11 2001/10/17 20:44:37 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -74,17 +74,42 @@ g_error textbox_install(struct widget *self) {
 
    { 
      const char *t = 
-       "Hello, World!<P>\n"
-       "<B><i>This</i></B> is a <u>test...</u> foo<b>!</b> \n"
+       "Hello, <b>World</b>!<P>\n"
+       "<B><i>This</i></B> is a <u>test...</u> foo<b>!</b> <br>\n"
        "--&nbsp;&nbsp;&foo;&nbsp;-- N&iacute;ft&egrave;&eacute;";
-     
+     handle f;
+
+     e = findfont(&f,self->owner,"Helvetica",18,PG_FSTYLE_FLUSH);
+     errorcheck;
+     e = text_format_font(&DATA->c,f);
+     errorcheck;
+
      text_load(&DATA->c,"HTML",t,strlen(t));
    }
    
    return sucess;
 }
 
+/* Delete a linked list of formatnodes */
+void textbox_delete_formatstack(struct widget *self,
+				struct formatnode *list) {
+  struct formatnode *n, *condemn;
+  n = list;
+  while (n) {
+    condemn = n;
+    n = n->next;
+    
+    if (condemn->fontdef)
+      handle_free(self->owner,condemn->fontdef);
+    g_free(condemn);
+  }
+} 
+
 void textbox_remove(struct widget *self) {
+  /* Delete our formatting stacks */
+  textbox_delete_formatstack(self, DATA->c.f_used);
+  textbox_delete_formatstack(self, DATA->c.f_top);
+
   g_free(self->data);
   if (!in_shutdown)
      r_divnode_free(self->in);

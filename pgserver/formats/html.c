@@ -1,4 +1,4 @@
-/* $Id: html.c,v 1.3 2001/10/17 06:26:22 micahjd Exp $
+/* $Id: html.c,v 1.4 2001/10/17 20:44:37 micahjd Exp $
  *
  * html.c - Use the textbox_document inferface to load HTML markup
  *
@@ -94,6 +94,10 @@ struct html_tag_params {
   /* Raw text of the HTML parameters */
   const u8 *paramtext;
   int paramtext_len;
+
+  /* HTML tag name */
+  const u8 *tag;
+  int tag_len;
 };
 
 g_error html_dispatch_tag(struct html_parse *hp,
@@ -236,6 +240,25 @@ g_error html_tag_br(struct html_parse *hp, struct html_tag_params *tag) {
   return sucess;
 }
 
+/* One handler for bold, italic, and underline */
+g_error html_tag_b_i_u(struct html_parse *hp, struct html_tag_params *tag) {
+  u32 flag;
+  /* Determine font flag from name character */
+  switch (tag->tag[0]) {
+  case 'b': flag = PG_FSTYLE_BOLD;      break;
+  case 'i': flag = PG_FSTYLE_ITALIC;    break;
+  case 'u': flag = PG_FSTYLE_UNDERLINE; break;
+  default:  flag = 0;
+  }
+  return text_format_modifyfont(hp->c,flag,0,0);
+}
+
+/* Pop the most recent font change off the stack */
+g_error html_tag_unformat(struct html_parse *hp, struct html_tag_params *tag) {
+  text_unformat_top(hp->c);
+  return sucess;
+}
+
 /*************************************** HTML tag table */
 
 struct html_taghandler {
@@ -243,8 +266,14 @@ struct html_taghandler {
   g_error (*handler)(struct html_parse *hp, struct html_tag_params *tag);
 } html_tagtable[] = {
   
-  { "p", &html_tag_p },
-  { "br", &html_tag_br },
+  { "p",       &html_tag_p },
+  { "br",      &html_tag_br },
+  { "b",       &html_tag_b_i_u },
+  { "i",       &html_tag_b_i_u },
+  { "u",       &html_tag_b_i_u },
+  { "/b",      &html_tag_unformat },
+  { "/i",      &html_tag_unformat },
+  { "/u",      &html_tag_unformat },
 
   { NULL, NULL }
 };
@@ -345,6 +374,8 @@ g_error html_dispatch_tag(struct html_parse *hp,
       memset(&tag_params,0,sizeof(tag_params));
       tag_params.paramtext = start;
       tag_params.paramtext_len = end-start+1;
+      tag_params.tag = tag;
+      tag_params.tag_len = tag_len;
 
       /* Call handler */
       return (*p->handler)(hp,&tag_params);

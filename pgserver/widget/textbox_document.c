@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.8 2001/10/17 05:25:01 micahjd Exp $
+/* $Id: textbox_document.c,v 1.9 2001/10/17 20:44:37 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -121,10 +121,35 @@ g_error text_format_modifyfont(struct textbox_cursor *c,
 
 /* Remove the topmost layer of formatting */
 void text_unformat_top(struct textbox_cursor *c) {
+  struct formatnode *n;
+
+  if (!c->f_top)
+    return;
+  
+  /* Remove the node from the stack */
+  n = c->f_top;
+  c->f_top = n->next;
+
+  /* Is this node used? */
+  if (n->font_refcnt) {
+
+    /* Move it to the f_used list */
+    n->next = c->f_used;
+    c->f_used = n;
+  }
+  else {
+
+    /* Delete it, and its associated handles */
+    if (n->fontdef)
+      handle_free(c->widget->owner,n->fontdef);
+    g_free(n);
+  }
 }
 
 /* Remove all formatting */
 void text_unformat_all(struct textbox_cursor *c) {
+  while (c->f_top)
+    text_unformat_top(c);
 }
 
 /************************* Text */
@@ -231,11 +256,14 @@ g_error text_insert_string(struct textbox_cursor *c, const char *str,
   addgropsz(&c->c_gctx,PG_GROP_TEXT,c->c_gx,c->c_gy,1,1);
   c->c_gctx.current->param[0] = hstr;
 
-  /* Update cursor and preferred size */
+  /* Update cursor and preferred size. Add the width of a space to
+   * the preferred size so we have space between words. */
   c->c_gx += tw;
   c->c_div->pw = c->c_gx;
   if (th > c->c_div->ph)
     c->c_div->ph = th;
+  sizetext(fd,&tw,&th," ");
+  c->c_div->pw += tw;
   c->c_div->split = c->c_div->pw;
 
   return sucess;
