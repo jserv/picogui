@@ -26,7 +26,7 @@ def chcontext(obj_id, delta, id=None):
 def checkevent(id=None):
 	return request(43, id=id)
 
-def createwidget(type, id=None):
+def createwidget(wtype, id=None):
 	return request(46, pack('!Hxx', wtype), id=id)
 
 def drivermsg(message, param, id=None):

@@ -59,7 +59,7 @@ class Event(object):
     """A PicoGUI Event.
     """
     def __init__(self, evtype, widget_id, param):
-        paramtype = (evtgroup & 0x0f00) >> 8
+        paramtype = (evtype & 0x0f00) >> 8
         try:
             self.paramtype = _paramtypes[paramtype]
         except KeyError:
@@ -113,16 +113,16 @@ class Event(object):
             return self.mods & kmods.get(mod.upper(), 0)
 
     def __repr__(self):
-        r = '<PicoGUI %s event object at %s:' % (self.name, id(self))
+        r = '<PicoGUI %s event object at %s' % (self.name, id(self))
         if hasattr(self, 'char') and self.char:
             r = '%s ("%s")' % (r, self.char)
         if hasattr(self, 'mods') and self.mods:
-            r = '%s keyboard mods %s' % (r, self.mods)
+            r = '%s %s, keyboard mods %s' % (r, self.data, self.mods)
         if hasattr(self, 'x'):
             r = '%s x=%s, y=%s' % (r, self.x, self.y)
             if hasattr(self, 'buttons'):
                 r = '%s, buttons %s' % (r, self.buttons)
-        return r
+        return r + '>'
 
     def __str__(self):
         return self.name
