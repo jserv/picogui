@@ -23,6 +23,7 @@ The main package for the PGBuild configuration and build utility
 _svn_id = "$Id$"
 
 import PGBuild.Version
+import PGBuild.Platform
 
 # This section defines the name of the package, and the current version.
 # The 'release' below should be set to a version number for releases,
@@ -34,6 +35,8 @@ release = None
 version = PGBuild.Version.determineVersion()
 
 about = "%s %s\nVersion %s" % (name, description, version)
+
+platform = PGBuild.Platform.guess()
 
 ### The End ###
         

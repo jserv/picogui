@@ -198,8 +198,8 @@ def determineVersion():
         return "svn-unknown"
 
     # Scan the project's $Id$ tags and get the latest revision
-    PGBuild.svn_id_dict = scanIds(PGBuild)
-    PGBuild.revision = findLatestRevision(PGBuild.svn_id_dict)
+    PGBuild._svn_id_dict = scanIds(PGBuild)
+    PGBuild.revision = findLatestRevision(PGBuild._svn_id_dict)
     return "svn-r%d" % PGBuild.revision
 
 

@@ -60,13 +60,24 @@ class PackageVersion(object):
             self.repository = PGBuild.Repository.open(self.config, self.findMirror(progress).absoluteURI)
         return self.repository
 
+    def getPathName(self):
+        """Convert the package name to a path name suitable for the local OS. This is
+           necessary because in configuration all packages use '/' as a separator,
+           regardless of the local OS' separator.
+           """
+        return os.sep.join(str(self).split("/"))
+
     def getLocalPath(self):
         """Using the current bootstrap configuration, get the local path for this package"""
-        name = str(self)
-        # The name may contain slashes to indicate directories- the package name always
-        # uses forward slashes, here we convert them to the local OS's format
-        name = os.sep.join(name.split("/"))
-        return os.path.join(self.config.eval('bootstrap/path[@name="packages"]/text()'), name)
+        return os.path.join(self.config.eval('bootstrap/path[@name="packages"]/text()'),
+                            self.getPathName())
+
+    def getBinaryPath(self):
+        """Using the current bootstrap configuration and package build platform,
+           get the binary path for this package."""
+        return os.path.join(self.config.eval('bootstrap/path[@name="bin"]/text()'),
+                            str(self.package.getHostPlatform()),
+                            self.getPathName())
 
     def update(self, progress):
        """Update the package if possible. Return 1 if there was an update available, 0 if not."""
@@ -137,8 +148,7 @@ class PackageVersion(object):
 class Package(object):
     """A package object, initialized from the configuration tree.
        Holds details common to all package versions.
-       """
-    
+       """    
     def __init__(self, list, name):
         self.list = list
         self.config = list.config
@@ -197,6 +207,14 @@ class Package(object):
             raise PGBuild.Errors.ConfigError(
                 "Can't find version '%s' of package '%s'" % (version, self.name))
         return self.versions[matches[-1]]
+
+    def getHostPlatform(self):
+        """Find the platform this package will be built to run on. This will first
+           try the package's host platform, falling back on the default host.
+           """
+        import PGBuild.Platform
+        return PGBuild.Platform.parse(self.config.eval('hostPlatform',
+                                                       self.configNode) or "host")
 
 
 def splitPackageName(name):

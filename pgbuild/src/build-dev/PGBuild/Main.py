@@ -239,11 +239,13 @@ class PackageXML(xml.dom.minidom.Document):
         self.appendChild(pgbuild)
         
         for attr in dir(package):
-            if attr[0] != '_' and type(getattr(package,attr)) == str:
-                node = self.createElement("attr")
-                node.setAttribute("name", attr)
-                node.appendChild(self.createTextNode(getattr(package, attr)))
-                pgbuild.appendChild(node)
+            if attr[0] != '_':
+                value = str(getattr(package, attr))
+                if not (value[0] == '<' and value[-1] == '>'):
+                    node = self.createElement("attr")
+                    node.setAttribute("name", attr)
+                    node.appendChild(self.createTextNode(value))
+                    pgbuild.appendChild(node)
 
 
 def boot(bootstrap, argv):
