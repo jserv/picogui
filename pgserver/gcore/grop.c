@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.23 2000/11/12 02:49:54 micahjd Exp $
+/* $Id: grop.c,v 1.24 2000/11/12 04:03:21 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -167,8 +167,8 @@ void grop_render(struct divnode *div) {
     case PG_GROP_GRADIENT:
       /* Gradients are fun! */
 #ifdef DEBUG
-      printf("Gradient (%d,%d,%d,%d) clip(%d,%d,%d,%d)\n",x,y,w,h,
-	     vid->clip_x1,vid->clip_y1,vid->clip_x2,vid->clip_y2);
+      //      printf("Gradient (%d,%d,%d,%d) clip(%d,%d,%d,%d)\n",x,y,w,h,
+      //	     vid->clip_x1,vid->clip_y1,vid->clip_x2,vid->clip_y2);
 #endif
       (*vid->gradient)(x,y,w,h,
 		       list->param[0],
