@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.8 2001/07/03 05:48:15 micahjd Exp $
+/* $Id: netcore.c,v 1.9 2001/08/06 07:50:06 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -164,47 +164,47 @@ void _pg_defaulterr(unsigned short errortype,const char *msg) {
 	* until the next picogui call */
   in_defaulterr = 1;
   s1 = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
-											PGTH_P_STRING_PGUIERR));
+				 PGTH_P_STRING_PGUIERR));
   copys1 = alloca(strlen(s1)+1);
   strcpy(copys1,s1);
   s2 = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
-											PGTH_P_STRING_PGUIERRDLG));
+				 PGTH_P_STRING_PGUIERRDLG));
   copys2 = alloca(strlen(s2)+strlen(pgErrortypeString(errortype))+
-						strlen(_pg_appname)+strlen(msg)+1);
+		  strlen(_pg_appname)+strlen(msg)+1);
   sprintf(copys2,s2,pgErrortypeString(errortype),_pg_appname,msg);
   if (PG_MSGBTN_YES ==
       pgMessageDialog(copys1,copys2,
-							 PG_MSGBTN_YES | PG_MSGBTN_NO))
-					 exit(errortype);
-	   pgUpdate(); /* In case this happens in a weird place, go ahead and update. */
-	   in_defaulterr = 0;
+		      PG_MSGBTN_YES | PG_MSGBTN_NO | PG_MSGICON_ERROR))
+    exit(errortype);
+  pgUpdate(); /* In case this happens in a weird place, go ahead and update. */
+  in_defaulterr = 0;
 }
 
 /* Some 'user friendly' default sig handlers */
 void _pgsig(int sig) {
-	 char *a,*b;
-	 short id;
-		  
-	 switch (sig) {
+  char *a,*b;
+  short id;
+  
+  switch (sig) {
     
-    case SIGSEGV:
-		id = PGTH_P_STRING_SEGFAULT;
-  		break;
-			  				
-    case SIGFPE:
-		id = PGTH_P_STRING_MATHERR;
-      break;
-     
-	 default:
-		return;
-
-	 }
-				
-	 a = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
-											 id));
-	 b = alloca(strlen(a)+1);
-	 strcpy(b,a);
-	 clienterr(b);
+  case SIGSEGV:
+    id = PGTH_P_STRING_SEGFAULT;
+    break;
+    
+  case SIGFPE:
+    id = PGTH_P_STRING_MATHERR;
+    break;
+    
+  default:
+    return;
+    
+  }
+  
+  a = pgGetString(pgThemeLookup(PGTH_O_DEFAULT,
+				id));
+  b = alloca(strlen(a)+1);
+  strcpy(b,a);
+  clienterr(b);
 }
 
 /* Put a request into the queue */
@@ -537,7 +537,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.8 2001/07/03 05:48:15 micahjd Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.9 2001/08/06 07:50:06 micahjd Exp $\n");
 	exit(1);
       }
       

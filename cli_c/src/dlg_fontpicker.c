@@ -1,4 +1,4 @@
-/* $Id: dlg_fontpicker.c,v 1.3 2001/08/04 18:08:03 micahjd Exp $
+/* $Id: dlg_fontpicker.c,v 1.4 2001/08/06 07:50:06 micahjd Exp $
  *
  * dlg_datepicker.c - Implementation of the pgFontPicker function, allowing
  *                    the user to choose any installed font
@@ -169,12 +169,20 @@ pghandle pgFontPicker(const char *title) {
 	      PG_WP_TEXT,pgNewString("Ok"),
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_HOTKEY,PGKEY_RETURN,
+	      PG_WP_BITMAP,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+					 PGTH_P_ICON_OK),
+	      PG_WP_BITMASK,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+					  PGTH_P_ICON_OK_MASK),
 	      0);
   wCancel = pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("Cancel"),
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_HOTKEY,PGKEY_ESCAPE,
+	      PG_WP_BITMAP,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+					 PGTH_P_ICON_CANCEL),
+	      PG_WP_BITMASK,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+					  PGTH_P_ICON_CANCEL_MASK),
 	      0);
 
   /* Set up the sample text area */

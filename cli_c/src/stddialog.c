@@ -1,4 +1,4 @@
-/* $Id: stddialog.c,v 1.4 2001/08/01 12:12:02 micahjd Exp $
+/* $Id: stddialog.c,v 1.5 2001/08/06 07:50:06 micahjd Exp $
  *
  * stddialog.c - Various preconstructed dialog boxes the application
  *               may use. These are implemented 100% client-side using
@@ -57,15 +57,34 @@ int pgMessageDialogFmt(const char *title,unsigned long flags,const char *fmt, ..
 }
 
 /* Little internal helper function for the message dialog */
-void dlgbtn(pghandle tb,unsigned long payload,int textproperty,int key) {
+void dlgbtn(pghandle tb,unsigned long payload,int textproperty,
+	    int iconproperty,int key) {
 
   pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,tb);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,textproperty),
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_HOTKEY,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,key),
+	      PG_WP_BITMAP,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+					 iconproperty),
+	      PG_WP_BITMASK,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+					  iconproperty+1),
 	      0);
   pgSetPayload(PGDEFAULT,payload);
+}
+void dlgicon(pghandle at,int prop) {
+  pghandle bit;
+
+  bit = pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,prop);
+  if (bit) {
+
+  pgNewWidget(PG_WIDGET_BITMAP,PG_DERIVE_AFTER,at);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_LEFT,
+	      PG_WP_BITMAP,bit,
+	      PG_WP_BITMASK,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,prop+1),
+	      0);
+  }
 }
 
 /* Create a message box, wait until it is
@@ -79,8 +98,16 @@ int pgMessageDialog(const char *title,const char *text,unsigned long flags) {
   pgEnterContext();
 
   /* Default flags if none are supplied */
-  if (!flags)
-    flags = PG_MSGBTN_OK;
+  if (!(flags & PG_MSGBTNMASK))
+    flags |= PG_MSGBTN_OK;
+  if (!(flags & PG_MSGICONMASK)) {
+    /* Assume that if the user can say no, it's a question */
+    
+    if (flags & (PG_MSGBTN_CANCEL | PG_MSGBTN_NO))
+      flags |= PG_MSGICON_QUESTION;
+    else
+      flags |= PG_MSGICON_MESSAGE;
+  }
 
   /* Create the important widgets */
   pgDialogBox(title);
@@ -96,13 +123,25 @@ int pgMessageDialog(const char *title,const char *text,unsigned long flags) {
 
   /* Buttons */
   if (flags & PG_MSGBTN_CANCEL)
-    dlgbtn(wToolbar,PG_MSGBTN_CANCEL,PGTH_P_STRING_CANCEL,PGTH_P_HOTKEY_CANCEL);
+    dlgbtn(wToolbar,PG_MSGBTN_CANCEL,PGTH_P_STRING_CANCEL,
+	   PGTH_P_ICON_CANCEL,PGTH_P_HOTKEY_CANCEL);
   if (flags & PG_MSGBTN_OK)
-    dlgbtn(wToolbar,PG_MSGBTN_OK,PGTH_P_STRING_OK,PGTH_P_HOTKEY_OK);
+    dlgbtn(wToolbar,PG_MSGBTN_OK,PGTH_P_STRING_OK,
+	   PGTH_P_ICON_OK,PGTH_P_HOTKEY_OK);
   if (flags & PG_MSGBTN_YES)
-    dlgbtn(wToolbar,PG_MSGBTN_YES,PGTH_P_STRING_YES,PGTH_P_HOTKEY_YES);
+    dlgbtn(wToolbar,PG_MSGBTN_YES,PGTH_P_STRING_YES,
+	   PGTH_P_ICON_YES,PGTH_P_HOTKEY_YES);
   if (flags & PG_MSGBTN_NO)
-    dlgbtn(wToolbar,PG_MSGBTN_NO,PGTH_P_STRING_NO,PGTH_P_HOTKEY_NO);
+    dlgbtn(wToolbar,PG_MSGBTN_NO,PGTH_P_STRING_NO,
+	   PGTH_P_ICON_NO,PGTH_P_HOTKEY_NO);
+
+  /* Icons */
+  if (flags & PG_MSGICON_ERROR)
+    dlgicon(wToolbar,PGTH_P_ICON_ERROR);
+  if (flags & PG_MSGICON_MESSAGE)
+    dlgicon(wToolbar,PGTH_P_ICON_MESSAGE);
+  if (flags & PG_MSGICON_QUESTION)
+    dlgicon(wToolbar,PGTH_P_ICON_QUESTION);
 
   /* Run it (ignoring zero-payload events) */
   while (!(ret = pgGetPayload(pgGetEvent()->from)));
@@ -223,6 +262,10 @@ pghandle pgInputDialog(const char *title, const char *message,
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_HOTKEY,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					 PGTH_P_HOTKEY_CANCEL),
+	      PG_WP_BITMAP,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+					 PGTH_P_ICON_CANCEL),
+	      PG_WP_BITMASK,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+					  PGTH_P_ICON_CANCEL_MASK),
 	      0);
   wOk = pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
   pgSetWidget(PGDEFAULT,
@@ -231,6 +274,10 @@ pghandle pgInputDialog(const char *title, const char *message,
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_HOTKEY,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					 PGTH_P_HOTKEY_OK),
+	      PG_WP_BITMAP,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+					 PGTH_P_ICON_OK),
+	      PG_WP_BITMASK,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+					  PGTH_P_ICON_OK_MASK),
 	      0);
 
   /* Run */

@@ -14,8 +14,8 @@ obj default {
 
   icon.yes = Copy(default::icon.ok);
   icon.yes.mask = Copy(default::icon.ok.mask);
-  icon.no = Copy(default::icon.no);
-  icon.no.mask = Copy(default::icon.no.mask);
+  icon.no = Copy(default::icon.cancel);
+  icon.no.mask = Copy(default::icon.cancel.mask);
 
   icon.error = LoadBitmap("data/icon_color_64_error.pnm");
   icon.error.mask = LoadBitmap("data/icon_color_64_error.mask.pnm");

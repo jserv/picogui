@@ -1,4 +1,4 @@
-/* $Id: dlg_colorpicker.c,v 1.1 2001/08/05 04:21:30 micahjd Exp $
+/* $Id: dlg_colorpicker.c,v 1.2 2001/08/06 07:50:06 micahjd Exp $
  *
  * dlg_colorpicker.c - Implementation of the pColorPicker() function.
  *                     The current implementation is simple and only allows
@@ -170,6 +170,10 @@ int pgColorPicker(pgcolor *c, const char *title) {
 	      PG_WP_TEXT,pgNewString("Ok"),
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_HOTKEY,PGKEY_RETURN,
+	      PG_WP_BITMAP,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+					 PGTH_P_ICON_OK),
+	      PG_WP_BITMASK,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+					  PGTH_P_ICON_OK_MASK),
 	      0);
 
   dat.wCancel = pgNewWidget(PG_WIDGET_BUTTON,0,0);
@@ -177,6 +181,10 @@ int pgColorPicker(pgcolor *c, const char *title) {
 	      PG_WP_TEXT,pgNewString("Cancel"),
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_HOTKEY,PGKEY_ESCAPE,
+	      PG_WP_BITMAP,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+					 PGTH_P_ICON_CANCEL),
+	      PG_WP_BITMASK,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+					  PGTH_P_ICON_CANCEL_MASK),
 	      0);
 
   /* Information and samples for the chosen color */

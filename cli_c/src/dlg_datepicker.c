@@ -1,4 +1,4 @@
-/* $Id: dlg_datepicker.c,v 1.5 2001/08/01 06:41:13 micahjd Exp $
+/* $Id: dlg_datepicker.c,v 1.6 2001/08/06 07:50:06 micahjd Exp $
  *
  * dlg_datepicker.c - Implementation of the pgDatePicker() function. Display
  *                    a date on a calendar, and allow the user to select a
@@ -221,6 +221,10 @@ int pgDatePicker(int *year, int *month, int *day, const char *title) {
 	      PG_WP_TEXT,pgNewString("Ok"),
 	      PG_WP_HOTKEY,PGKEY_RETURN,
 	      PG_WP_SIDE,PG_S_RIGHT,
+	      PG_WP_BITMAP,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+					 PGTH_P_ICON_OK),
+	      PG_WP_BITMASK,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+					  PGTH_P_ICON_OK_MASK),
 	      0);
 
   wCancel = pgNewWidget(PG_WIDGET_BUTTON,0,0);
@@ -228,6 +232,10 @@ int pgDatePicker(int *year, int *month, int *day, const char *title) {
 	      PG_WP_TEXT,pgNewString("Cancel"),
 	      PG_WP_HOTKEY,PGKEY_ESCAPE,
 	      PG_WP_SIDE,PG_S_RIGHT,
+	      PG_WP_BITMAP,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+					 PGTH_P_ICON_CANCEL),
+	      PG_WP_BITMASK,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+					  PGTH_P_ICON_CANCEL_MASK),
 	      0);
 
   /********** Months */

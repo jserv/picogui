@@ -12,6 +12,18 @@ two.
 		
 		* images/icons/*: Adding icons themselves
 
+		* themetools/examples/icon_color.th, icon_color_large.th: Added icon
+		  themes
+		  
+		* include/picogui/constants.h: Removed MSGBTN constants
+		
+		* cli_c/include/picogui/client_c.h: Added MSGBTN constants, plus
+		  new constants for choosing icons
+		  
+		* cli_c/src/stddialog.c: Added support for message dialog icons
+		
+		* cli_c/src/netcore.c: Added PG_MSGICON_ERROR to error dialog
+
 2001-08-04    Micah Dowty <micahjd@users.sourceforge.net>
 
 Yay, the file dialog is finally done. It has some powerful features: You can
