@@ -2,6 +2,7 @@
 
 SCons node types for dealing with XML documents. This lets SCons track
 dependencies involving individual tags or subtrees of an XML document.
+Compatible with the minidom, and includes extensions like XPath.
 """
 # 
 # PicoGUI Build System
@@ -24,7 +25,21 @@ dependencies involving individual tags or subtrees of an XML document.
 
 import SCons.Node
 import PGBuild.XML.dom.minidom
+import dmutil.xsl.xpath
 
+class XPathParser:
+    """Utility class to abstract the XPath implementation in use.
+       Normally you should call the xpath() member of an Element
+       instead of using this directly.
+       """
+    def __init__(self):
+        self.parser = dmutil.xsl.xpath.makeParser()
+        self.env = dmutil.xsl.xpath.Env()
+
+    def parse(self, element, path):
+        return self.parser(path).eval(element, [element], self.env)
+
+default_xpath = XPathParser()
 
 class NodeWrapper:
     """Wrapper for functions and sequences that retrieves
@@ -73,22 +88,22 @@ class Element(SCons.Node.Node):
             self.__class__.__name__,
             self.dom)
 
+    # This node always exists, and it's outside the filesystem
     def sconsign(self):
         pass
-
     def exists(self):
         return 1
-
     def rexists(self):
         return 1
-    
     def is_under(self, dir):
-        """This object doesn't exist in the filesystem, always use it"""
         return 1
 
     def get_contents(self):
         """This returns the data used for the content signature"""
         return self.toxml()
+
+    def xpath(self, path):
+        return default_xpath.parse(self, path)
 
 class Document(Element):
     """Read in a File node and generate a DOM

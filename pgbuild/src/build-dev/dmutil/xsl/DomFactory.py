@@ -19,7 +19,10 @@
 # PERFORMANCE OF THIS SOFTWARE.
 """PyDOM factory for XSL expressions."""
 
-from xml.dom import core
+# This copy of DomFactory has been modified to use minidom via PGBuild's
+# wrapper, rather than using the full DOM.
+from PGBuild.XML.dom import minidom
+
 from BaseFactory import BaseFactory, Expr, NodeListExpr, EvalContext
 from dmutil.visitor import Visitor
 from string import find, join
@@ -51,12 +54,12 @@ class _DomOpt:
   #
   def dfs(self,node):
     """returns a pair *(doc,dfs_number)*."""
-    doc= node.ownerDocument or node; docid= doc._node
+    doc= node.ownerDocument or node; docid= doc
     if self._orders is None: self._orders= {}
     try: dfs= self._orders[docid]
     except KeyError:
       self._orders[docid]= dfs= dfsNumberer(doc)
-    return (docid,dfs[node._node])
+    return (docid,dfs[node])
   #
   # id-references
   def hasId(self,node,idval):
@@ -68,7 +71,7 @@ class _DomOpt:
     return hasId(node,idval)
   #
   def getIdMap(self,node):
-    doc= node.ownerDocument or node; docid= doc._node
+    doc= node.ownerDocument or node; docid= doc
     if self._idrefs is None: self._idrefs= {}
     try: return self._idrefs[docid]
     except KeyError:
@@ -87,11 +90,11 @@ class DomFactory(BaseFactory):
   def WildcardName(self,name=None):
     return lambda node,env, name=name: _WildcardCheck(node,name,env)
   def text(self):
-    return lambda node,env: node.nodeType == core.TEXT
+    return lambda node,env: node.nodeType == minidom.Node.TEXT_NODE
   def comment(self):
-    return lambda node,env: node.nodeType == core.COMMENT
+    return lambda node,env: node.nodeType == minidom.Node.COMMENT_NODE
   def pi(self,name=None):
-    return lambda node,env: node.nodeType == core.PROCESSING_INSTRUCTION \
+    return lambda node,env: node.nodeType == minidom.Node.PROCESSING_INSTRUCTION_NODE \
 	                    and name is None or name == node.nodeName
   #
   # axis functions
@@ -180,11 +183,11 @@ class DomFactory(BaseFactory):
     return node.ownerDocument or node
   #
   # normalize node
-  def normNode(self,node): return node._node
+  def normNode(self,node): return node
   #
   # nodeQname
   def nodeQName(self,node):
-    if node.nodeType in (core.ELEMENT, core.ATTRIBUTE):
+    if node.nodeType in (minidom.Node.ELEMENT_NODE, minidom.Node.ATTRIBUTE_NODE):
       return node.nodeName
     return ''
   #
@@ -236,7 +239,7 @@ class DomFactory(BaseFactory):
 
 
 def _WildcardCheck(node,name,env):
-  if node.nodeType not in (core.ELEMENT, core.ATTRIBUTE): return 0
+  if node.nodeType not in (minidom.Node.ELEMENT_NODE, minidom.Node.ATTRIBUTE_NODE): return 0
   if name is None: return 1
   n= node.nodeName
   i= find(n,':')
@@ -259,7 +262,7 @@ class _DfsNumberer(Visitor):
     self._visit(doc)
     return self._dfs
   def _numberer(self,node):
-    self._dfs[node._node]= self._number
+    self._dfs[node]= self._number
     self._number= self._number + 1
 
 dfsNumberer= _DfsNumberer().visit
@@ -311,9 +314,9 @@ def _sortDocumentOrder(nodeseqlist,dfs):
 
 def _preceding(limits,test,res):
   if len(limits) <= 1: return
-  s= limits[0]; del limits[0]; lid= limits[0]._node
+  s= limits[0]; del limits[0]; lid= limits[0]
   for n in s.childNodes:
-    if n._node is lid:
+    if n is lid:
       _preceding(limits,test,res)
       return
     _nodeVisitor.visit(n,test,res)
@@ -333,16 +336,16 @@ class _Descender(Visitor):
   def __init__(self):
     Visitor.__init__(self,self._descend)
   def visit(self,doc,test,accept_root=1):
-    self._nodes= []
-    self._root= doc._node
+    selfs= []
+    self._root= doc
     self._test= test
     self._accept_root= accept_root
     self._visit(doc)
-    return self._nodes
+    return selfs
   def _descend(self,node):
-    nnode= node._node
+    nnode= node
     if (nnode != self._root or self._accept_root) and self._test(node):
-      self._nodes.append(node)
+      selfs.append(node)
 
 _descender= _Descender()
 
@@ -375,8 +378,8 @@ class _ValueVisitor(Visitor):
   #
   def _classify(self,node):
     nt= node.nodeType
-    if nt in (core.ELEMENT, core.DOCUMENT): return None
-    if nt == core.TEXT: self.valfragments.append(node.nodeValue)
+    if nt in (minidom.Node.ELEMENT_NODE, minidom.Node.DOCUMENT_NODE): return None
+    if nt == minidom.Node.TEXT_NODE: self.valfragments.append(node.nodeValue)
     return 1
 
 _valueVisitor= _ValueVisitor()
@@ -408,7 +411,7 @@ class _IdMapper(Visitor):
     return self._dict
   #
   def _check(self,node):
-    if node.nodeType == core.ELEMENT:
+    if node.nodeType == minidom.Node.ELEMENT_NODE:
       idmap= self._idmap; et= node.nodeName
       if idmap.has_key(et):
         a= idmap[et]

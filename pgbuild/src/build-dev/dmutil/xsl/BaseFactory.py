@@ -70,7 +70,7 @@ EXPR=		-1	# special context value indicating NO_CONTEXT,
 
 ##############################################################################
 ## XML whitespace
-_WHITESPACE=r'[\x20\x9\xd\xa]'
+_WHITESPACE=r'[ \t\r\n]'     # <-- This whitespace line patched like the one in xpath.py --Micah
 _re_spaces=re.compile(_WHITESPACE+'+')
 _re_strip_spaces= re.compile('%s*(.*?)%s*$' % (_WHITESPACE,_WHITESPACE),re.S)
 
