@@ -1,6 +1,6 @@
 # Application class
 
-import Widget, Server, events
+import Widget, Server, events, time
 
 class EventHandled(Exception):
     """raise this from an event handler when you don't want other
@@ -79,9 +79,7 @@ class Application(Widget.Widget):
         self.server.update()
         while 1:
 
-            # Commented out to keep this from infinitely looping --Micah
-            queued = 1
-            #queued = self.server.checkevent()
+            queued = self.server.checkevent()
 
             for i in range(queued):
                 ev = self.server.wait()
@@ -92,8 +90,9 @@ class Application(Widget.Widget):
                 else:
                     ev.widget = Widget.Widget(self.server, ev.widget_id)
                 self._event_stack.append(ev)
-            else:
+            else: #nothing queued - send idle and sleep
                 self.send(self, 'idle')
+                time.sleep(0.1)
             # XXX DANGER for thread-safety
             # (could lose events - when we decide to go thread-safe this operation
             # needs to be wrapped in a semaphore)
