@@ -6,7 +6,9 @@ The green section holds items that people have suggested but I don't consider hi
 probably won't get done unless I'm sent patches.
 
 RED:
- * If lilo doesn't sort things out on freenode, proper throttling and flood detection
+ * Proper throttling	
+ * Automatic reconnect
+ * Bounce if full (ie if there is only 1 bot running joined to 20 channels, rather than silently failing to join the 21st, bounce)
  * Allow the bot to register with NickServ so we don't have to keep re-opping it in #only-commits
  * Allow the bot to op itself on freenode (OPER)
 
