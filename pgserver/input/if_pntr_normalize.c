@@ -1,4 +1,4 @@
-/* $Id: if_pntr_normalize.c,v 1.13 2002/10/26 07:53:07 micahjd Exp $
+/* $Id: if_pntr_normalize.c,v 1.14 2002/11/04 04:46:21 micahjd Exp $
  *
  * if_pntr_normalize.c - Convert the various pointer events to a standard form
  *
@@ -44,51 +44,54 @@ void infilter_pntr_normalize_handler(struct infilter *self, u32 trigger, union t
     param->mouse.cursor = cursor_global_invisible;
   }
 
-  /* Get physical cursor position for use later */
-  cursor_getposition(param->mouse.cursor, &x, &y,NULL);
-  if (!param->mouse.is_logical) {
-    /* Normal rotation handling */
-    VID(coord_physicalize)(&x,&y);
-  }
-
-  /* Convert relative motion to absolute motion.
-   * We have to be careful about which coordinate system the input is in.
-   */
-  if (trigger==PG_TRIGGER_PNTR_RELATIVE) {
-    trigger = PG_TRIGGER_PNTR_STATUS;
-    param->mouse.x += x;
-    param->mouse.y += y;
-    if (param->mouse.is_logical)
+  if (trigger != PG_TRIGGER_SCROLLWHEEL) {
+    
+    /* Get physical cursor position for use later */
+    cursor_getposition(param->mouse.cursor, &x, &y,NULL);
+    if (!param->mouse.is_logical) {
+      /* Normal rotation handling */
       VID(coord_physicalize)(&x,&y);
-    param->mouse.is_logical = 0;
-  }
+    }
     
-  /* Convert absolute motion to individual events
-   */
-  if (trigger==PG_TRIGGER_PNTR_STATUS) {
-    /* Save the old/new button state too, since it may be modified by other
-     * input filters when we do infilter_send. Remember that this is all working
-     * with the same trigparam structure, and just repassing it after changing
-     * the type :)
+    /* Convert relative motion to absolute motion.
+     * We have to be careful about which coordinate system the input is in.
      */
-    newbtn = param->mouse.btn;
-    oldbtn = param->mouse.cursor->prev_buttons;
+    if (trigger==PG_TRIGGER_PNTR_RELATIVE) {
+      trigger = PG_TRIGGER_PNTR_STATUS;
+      param->mouse.x += x;
+      param->mouse.y += y;
+      if (param->mouse.is_logical)
+	VID(coord_physicalize)(&x,&y);
+      param->mouse.is_logical = 0;
+    }
     
-    if (newbtn & ~oldbtn)
-      trigger = PG_TRIGGER_DOWN;
-    else if (oldbtn & ~newbtn)
-      trigger = PG_TRIGGER_UP;
-    else
-      trigger = PG_TRIGGER_MOVE;
-  }
-
-  /* If we're moving the cursor and this isn't a MOVE event, generate one
-   */
-  if ((param->mouse.x != x || param->mouse.y != y) && trigger!=PG_TRIGGER_MOVE) {
-    union trigparam moveparam = *param;
-    moveparam.mouse.btn = param->mouse.cursor->prev_buttons;
-    infilter_send(self,PG_TRIGGER_MOVE,&moveparam);
-  }
+    /* Convert absolute motion to individual events
+     */
+    if (trigger==PG_TRIGGER_PNTR_STATUS) {
+      /* Save the old/new button state too, since it may be modified by other
+       * input filters when we do infilter_send. Remember that this is all working
+       * with the same trigparam structure, and just repassing it after changing
+       * the type :)
+       */
+      newbtn = param->mouse.btn;
+      oldbtn = param->mouse.cursor->prev_buttons;
+      
+      if (newbtn & ~oldbtn)
+	trigger = PG_TRIGGER_DOWN;
+      else if (oldbtn & ~newbtn)
+	trigger = PG_TRIGGER_UP;
+      else
+	trigger = PG_TRIGGER_MOVE;
+    }
+    
+    /* If we're moving the cursor and this isn't a MOVE event, generate one
+     */
+    if ((param->mouse.x != x || param->mouse.y != y) && trigger!=PG_TRIGGER_MOVE) {
+      union trigparam moveparam = *param;
+      moveparam.mouse.btn = param->mouse.cursor->prev_buttons;
+      infilter_send(self,PG_TRIGGER_MOVE,&moveparam);
+    }
+  }    
 
   /* Detect changes in buttons, and store that along with the event
    */
@@ -101,9 +104,9 @@ void infilter_pntr_normalize_handler(struct infilter *self, u32 trigger, union t
 
 struct infilter infilter_pntr_normalize = {
   accept_trigs: PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_MOVE | PG_TRIGGER_PNTR_STATUS |
-                PG_TRIGGER_PNTR_RELATIVE,
+                PG_TRIGGER_PNTR_RELATIVE | PG_TRIGGER_SCROLLWHEEL,
   absorb_trigs: PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_MOVE | PG_TRIGGER_PNTR_STATUS |
-                PG_TRIGGER_PNTR_RELATIVE,
+                PG_TRIGGER_PNTR_RELATIVE | PG_TRIGGER_SCROLLWHEEL,
   handler: &infilter_pntr_normalize_handler,
 };
 

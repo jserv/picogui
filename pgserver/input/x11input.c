@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.16 2002/08/15 01:19:56 micahjd Exp $
+/* $Id: x11input.c,v 1.17 2002/11/04 04:46:21 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -58,6 +58,10 @@ void x11input_init_keymap(void);
 static s16 ODD_keymap[256];
 static s16 MISC_keymap[256];
 
+/* Distance the scroll wheel should move */
+int x11input_scroll_distance;
+
+
 /******************************* Implementations */
 
 g_error x11input_init(null) {
@@ -75,6 +79,7 @@ g_error x11input_init(null) {
     e = cursor_new(&x11input_pgcursor,NULL,-1);
     errorcheck;
   }
+  x11input_scroll_distance = get_param_int("input-x11","scroll_distance",20);
 
   return success;
 }
@@ -92,6 +97,7 @@ int x11input_fd_activate(int fd) {
   s16 mod,sym,chr;
   Region expose_region = XCreateRegion();
   XRectangle rect;
+  u32 btn;
 
   if(fd != x11_fd) return 0;
 
@@ -129,22 +135,28 @@ int x11input_fd_activate(int fd) {
        * passed along with each event is the _previous_ state, not
        * the state after the event in question. This little bit of
        * shifing and logical cruft fixes it.
+       * We also need to translate X11's buttons 4 and 5 into scroll wheel events.
        */
 
     case MotionNotify:
       infilter_send_pointing(PG_TRIGGER_MOVE,ev.xmotion.x, ev.xmotion.y, 
-			     ev.xmotion.state >> 8, x11input_pgcursor);
+			     (ev.xmotion.state >> 8) & 0x07, x11input_pgcursor);
       break;
 
     case ButtonPress:
+      btn = (ev.xbutton.state >> 8) | (1 << (ev.xbutton.button-1));
+      if (btn & 0x08)
+	infilter_send_pointing(PG_TRIGGER_SCROLLWHEEL,0,-x11input_scroll_distance,0,x11input_pgcursor);
+      if (btn & 0x10)
+	infilter_send_pointing(PG_TRIGGER_SCROLLWHEEL,0,x11input_scroll_distance,0,x11input_pgcursor);
+	
       infilter_send_pointing(PG_TRIGGER_DOWN,ev.xbutton.x, ev.xbutton.y,
-			     (ev.xbutton.state >> 8) | (1 << (ev.xbutton.button-1)),
-			     x11input_pgcursor);
+			     btn & 0x07, x11input_pgcursor);
       break;
 
     case ButtonRelease:
       infilter_send_pointing(PG_TRIGGER_UP,ev.xbutton.x, ev.xbutton.y,
-			     (ev.xbutton.state >> 8) & (~(1 << (ev.xbutton.button-1))),
+			     ((ev.xbutton.state >> 8) & (~(1 << (ev.xbutton.button-1)))) & 0x07,
 			     x11input_pgcursor);
       break;
 

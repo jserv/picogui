@@ -175,6 +175,9 @@ quoted appropriately. For example:
   environments.
   The default is zero.
 
+- scrolldistance
+  Magnitude of movement, in pixels, for the scroll wheel
+
 - sound
   Use XBell to handle PGDM_SOUNDFX events.
   This is on my default
@@ -303,7 +306,7 @@ quoted appropriately. For example:
 - mapscale
   Scale the map by this fraction. (space-separated numerator and denominator)
 
-- scroll_distance
+- scrolldistance
   Magnitude of movement, in pixels, for the scroll wheel
 
 [video-serial40x4]

@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.34 2002/11/04 04:20:58 micahjd Exp $
+/* $Id: x11.c,v 1.35 2002/11/04 04:46:21 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -187,7 +187,6 @@ void x11_ellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
   XDrawArc(xdisplay,xb->d,g,x,y,w,h,0,360*64);
 }
 
-extern void def_fellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop);
 void x11_fellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
   struct x11bitmap *xb = (struct x11bitmap *) dest;
   GC g = x11_gctab[lgop];
