@@ -1,7 +1,11 @@
-/* $Id: terminal_vt102.c,v 1.10 2003/03/21 03:58:50 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.11 2003/03/21 09:54:18 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
+ *
+ *     References:
+ *         - linux console_codes manpage
+ *         - http://www.ibiblio.org/pub/historic-linux/ftp-archives/tsx-11.mit.edu/Oct-07-1996/info/xterm-seqs2.txt
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
@@ -39,8 +43,9 @@
 void term_char_escapemode(struct widget *self,u8 c);
 void term_ecma48sgr(struct widget *self);
 void term_csi(struct widget *self, u8 c);
-void term_othercsi(struct widget *self,u8 c);
 void term_decset(struct widget *self,int n,int enable);
+void term_ecmaset(struct widget *self,int n,int enable);
+void term_ecmastatus(struct widget *self,int n);
 int term_misc_code(struct widget *self,u8 c);
 
 /********************************************** Keyboard input */
@@ -241,15 +246,10 @@ void term_char_escapemode(struct widget *self,u8 c) {
  */
 void term_csi(struct widget *self, u8 c) {
   u8 *p,*endp,*num_end;
-  
-  /* Ignore question mark after CSI */
-  if (DATA->escbuf_pos==2 && c=='?') {
-    DATA->escbuf_pos--;
-    return;
-  }
+  int i;
   
   /* If there's more, come back later */
-  if (isdigit(c) || c==';')
+  if (isdigit(c) || c==';' || c=='?')
     return;
   
   /* We're ending the code */
@@ -259,7 +259,9 @@ void term_csi(struct widget *self, u8 c) {
   DATA->num_csiargs = 0;
   /* Unspecified params must be zero */
   memset(&DATA->csiargs,0,sizeof(int) * CSIARGS_SIZE);
-  p    = DATA->escapebuf+1;                  /* Start after the CSI */
+  p = DATA->escapebuf+1;                     /* Start after the CSI */
+  if (*p == '?')                             /* Ignore the '?' for now */
+    p++;
   endp = DATA->escapebuf+DATA->escbuf_pos-1; /* Stop before the end */
   while (p<endp) {
     /* Convert the number */
@@ -278,13 +280,234 @@ void term_csi(struct widget *self, u8 c) {
     p = num_end+1;
   }
   
-  /* If it ended with 'm', we got an ECMA-48 CSI sequence (colors) */
-  if (c=='m')
+  /* Do the code-specific processing */
+
+  switch (c) {
+
+    /* @ - Insert the indicated # of blank characters */
+  case '@':
+    DBG("Insert %d blank characters\n", DATA->csiargs[0]);
+    for (i=0;i<DATA->csiargs[0];i++)
+      term_char(self,' ');
+    break;
+
+    /* A - Move cursor up */
+  case 'A':
+    DBG("move cursor up\n");
+    DATA->current.crsry -= DATA->csiargs[0];
+    break;
+
+    /* B - Move cursor down */
+  case 'B':
+    DBG("move cursor down\n");
+    DATA->current.crsry += DATA->csiargs[0];
+    break;
+
+    /* C - Move cursor right */
+  case 'C':
+    DBG("move cursor right\n");
+    DATA->current.crsrx += DATA->csiargs[0];
+    break;
+
+    /* D - Move cursor left */
+  case 'D':
+    DBG("move cursor left\n");
+    DATA->current.crsrx -= DATA->csiargs[0];
+    break;
+
+    /* E - Move cursor down and to column 1 */
+  case 'E':
+    DBG("move cursor down and to column 1\n");
+    DATA->current.crsry += DATA->csiargs[0];
+    DATA->current.crsrx = 0;
+    break;
+
+    /* F - Move cursor up and to column 1 */
+  case 'F':
+    DBG("move cursor up and to column 1\n");
+    DATA->current.crsry -= DATA->csiargs[0];
+    DATA->current.crsrx = 0;
+    break;
+
+    /* G - Set column */
+  case 'G':
+    DBG("set column to %d\n", DATA->csiargs[0]);
+    DATA->current.crsrx = DATA->csiargs[0] ? DATA->csiargs[0] - 1 : 0;
+    break;
+
+    /* H - Set row,column */
+  case 'H':
+    DBG("set row,column to %d, %d\n", DATA->csiargs[0], DATA->csiargs[1]);
+    DATA->current.crsry = DATA->csiargs[0] ? DATA->csiargs[0] - 1 : 0;
+    DATA->current.crsrx = DATA->csiargs[1] ? DATA->csiargs[1] - 1 : 0;
+    break;
+
+    /* J - Erase */
+  case 'J':
+    switch (DATA->csiargs[0]) {
+    case 1:
+      DBG("erase from start to cursor\n");
+      term_clearbuf(self,0,0,DATA->current.crsry * DATA->bufferw + DATA->current.crsrx);
+      break;
+    case 2:
+      DBG("erase whole display\n");
+      term_clearbuf(self,0,0,DATA->bufferw * DATA->bufferh);
+      break;
+    default:
+      DBG("erase from cursor to and of display\n");
+      term_clearbuf(self,DATA->current.crsrx,DATA->current.crsry,
+		    (DATA->bufferw * DATA->bufferh) -
+		    (DATA->current.crsrx + DATA->current.crsry * DATA->bufferw));
+    }
+    break;
+
+    /* K - Erase Line */
+  case 'K':
+    switch (DATA->csiargs[0]) {
+    case 1:
+      DBG("erase from start of line to cursor\n");
+      term_clearbuf(self,0,DATA->current.crsry,DATA->current.crsrx);
+      break;
+    case 2:
+      DBG("erase whole line\n");
+      term_clearbuf(self,0,DATA->current.crsry,DATA->bufferw);
+      break;
+    default:
+      DBG("erase from cursor to end of line\n");
+      term_clearbuf(self,DATA->current.crsrx,DATA->current.crsry,DATA->bufferw-DATA->current.crsrx);
+    }
+    break;
+
+    /* L - Insert blank lines */
+  case 'L':
+    DBG("insert %d blank lines\n", DATA->csiargs[0]);
+    term_scroll(self,DATA->current.crsry,DATA->current.scroll_bottom,DATA->csiargs[0]);
+    break;
+
+    /* M - Delete lines */
+  case 'M':
+    DBG("delete %d lines\n", DATA->csiargs[0]);
+    term_scroll(self,DATA->current.crsry,DATA->current.scroll_bottom,-DATA->csiargs[0]);
+    break;
+
+    /* P - Delete characters */
+  case 'P':
+    DBG("-UNIMPLEMENTED- delete %d characters\n", DATA->csiargs[0]);
+    break;
+    
+    /* X - Erase characters */
+  case 'X':
+    DBG("-UNIMPLEMENTED- erase %d characters\n", DATA->csiargs[0]);
+    break;
+
+    /* a - Move cursor right */
+  case 'a':
+    DBG("-UNIMPLEMENTED- move right %d columns\n", DATA->csiargs[0]);
+    break;
+    
+    /* c - Identify as a VT102 terminal */
+  case 'c':
+    {
+      static const char *response = "\e[?6c";
+      DBG("identifying as a VT102 terminal\n");
+      post_event(PG_WE_DATA,self,strlen(response),0,(char*)response);
+    }
+    break;
+
+    /* d - Set row */
+  case 'd':
+    DBG("set row to %d\n", DATA->csiargs[0]);
+    DATA->current.crsry = DATA->csiargs[0] ? DATA->csiargs[0] - 1 : 0;
+    break;
+
+    /* e - Move cursor down */
+  case 'e':
+    DBG("-UNIMPLEMENTED- move down %d rows\n", DATA->csiargs[0]);
+    break;
+
+    /* f - Set row,column */
+  case 'f':
+    DBG("set row, column to %d, %d\n", DATA->csiargs[0], DATA->csiargs[1]);
+    DATA->current.crsry = DATA->csiargs[0] ? DATA->csiargs[0] - 1 : 0;
+    DATA->current.crsrx = DATA->csiargs[1] ? DATA->csiargs[1] - 1 : 0;
+    break;
+
+    /* g - Delete tab stops */
+  case 'g':
+    if (DATA->num_csiargs == 0) {
+      DBG("-UNIMPLEMENTED- delete current tab stop\n");
+    }
+    else if (DATA->num_csiargs == 1 && DATA->csiargs[0] == 3) {
+      DBG("-UNIMPLEMENTED- delete all tab stops\n");
+    }
+    else {
+      DBG("-ERROR- Unknown tab stop deletion escape\n");
+    }
+    break;
+
+    /* l and h - DECSET/DECRST sequence */
+  case 'h':  /* SET */
+  case 'l':  /* RST */
+    if (DATA->escapebuf[1]=='?')
+      term_decset(self,DATA->csiargs[0],c=='h');
+    else
+      term_ecmaset(self,DATA->csiargs[0],c=='h');
+    break;
+
+    /* m - ECMA48 SGR sequence */
+  case 'm':
     term_ecma48sgr(self);
-  
-  /* Other CSI sequence (mainly cursor control) */
-  else
-    term_othercsi(self,c);
+    break;
+
+    /* n - Status report */
+  case 'n':
+    term_ecmastatus(self,DATA->csiargs[0]);
+    break;
+
+    /* q - Keyboard LEDs */
+  case 'q':
+    DBG("ignoring request to set keyboard LEDs\n");
+    break;
+
+    /* r - Set scrolling region */
+  case 'r':
+    if (DATA->num_csiargs == 2) {
+      DBG("set scrolling region to %d, %d\n", DATA->csiargs[0],DATA->csiargs[1]);
+      DATA->current.scroll_top = DATA->csiargs[0] - 1;
+      DATA->current.scroll_bottom = DATA->csiargs[1] ? DATA->csiargs[1] - 1 : DATA->bufferh - 1;
+    }
+    else {
+      DBG("set scrolling region to (0), %d\n", DATA->csiargs[0]);
+      DATA->current.scroll_top = 0;
+      DATA->current.scroll_bottom = DATA->csiargs[0] ? DATA->csiargs[0] - 1 : DATA->bufferh - 1;
+    }
+    break;
+
+    /* s - Save cursor position */
+  case 's':
+    DBG("save cursor position\n");
+    DATA->current.savcrsry = DATA->current.crsry;
+    DATA->current.savcrsrx = DATA->current.crsrx;
+    break;
+
+    /* u - Restore cursor position */
+  case 'u':
+    DBG("restore cursor position\n");
+    DATA->current.crsry = DATA->current.savcrsry;
+    DATA->current.crsrx = DATA->current.savcrsrx;
+    break;
+
+    /* ` - Move cursor to indicated column in current row */
+  case '`':
+    DBG("move cursor to column %d in current row\n", DATA->csiargs[0]);
+    DATA->current.crsrx = DATA->csiargs[0] - 1;
+    break;
+    
+  default:
+      DBG("-ERROR- : Unknown final character in CSI escape = %c (%d)\n",c,c);
+      break;
+
+  }
 }
 
 
@@ -311,6 +534,12 @@ void term_ecma48sgr(struct widget *self) {
       /* 5 - blink (not really, it's like bold for backgrounds) */
     case 5:
        DATA->current.attr |= 0x80;
+      break;
+
+    case 10:  /* 10 - reset selected mapping, display control flag, toggle meta flag */
+    case 11:  /* 11 - select null mapping, set display control flag, reset toggle meta flag */
+    case 12:  /* 12 - select null mapping, set display control flag, set toggle meta flag */
+      DBG("-UNIMPLEMENTED- CSI mapping flag\n");
       break;
 
       /* 7 - reverse video on */
@@ -372,182 +601,6 @@ void term_ecma48sgr(struct widget *self) {
       DBG("-ERROR- : Unknown ECMA-48 SGR number = %d\n",*arg);
       break;
     }
-  }
-}
-
-
-/* Handle a parsed CSI sequence other than ECMA-48 SGR, ending
-   with the specified character */
-void term_othercsi(struct widget *self,u8 c) {
-  int i;
-  switch (c) {
-
-    /* @ - Insert the indicated # of blank characters */
-  case '@':
-    DBG("Insert %d blank characters\n", DATA->csiargs[0]);
-    for (i=0;i<DATA->csiargs[0];i++)
-      term_char(self,' ');
-    break;
-
-    /* A - Move cursor up */
-  case 'A':
-    DBG("move cursor up\n");
-    DATA->current.crsry -= DATA->csiargs[0];
-    break;
-
-    /* B - Move cursor down */
-  case 'B':
-    DBG("move cursor down\n");
-    DATA->current.crsry += DATA->csiargs[0];
-    break;
-
-    /* C - Move cursor right */
-  case 'C':
-    DBG("move cursor right\n");
-    DATA->current.crsrx += DATA->csiargs[0];
-    break;
-
-    /* D - Move cursor left */
-  case 'D':
-    DBG("move cursor left\n");
-    DATA->current.crsrx -= DATA->csiargs[0];
-    break;
-
-    /* E - Move cursor down and to column 1 */
-  case 'E':
-    DBG("move cursor down and to column 1\n");
-    DATA->current.crsry += DATA->csiargs[0];
-    DATA->current.crsrx = 0;
-    break;
-
-    /* F - Move cursor up and to column 1 */
-  case 'F':
-    DBG("move cursor up and to column 1\n");
-    DATA->current.crsry -= DATA->csiargs[0];
-    DATA->current.crsrx = 0;
-    break;
-
-    /* G - Set column */
-  case 'G':
-    DBG("set column to %d\n", DATA->csiargs[0]);
-    DATA->current.crsrx = DATA->csiargs[0] - 1;
-    break;
-
-    /* H - Set row,column */
-  case 'H':
-    DBG("set row,column to %d, %d\n", DATA->csiargs[0], DATA->csiargs[1]);
-    DATA->current.crsry = DATA->csiargs[0] - 1;
-    DATA->current.crsrx = DATA->csiargs[1] - 1;
-    break;
-
-    /* J - Erase */
-  case 'J':
-    switch (DATA->csiargs[0]) {
-    case 1:
-      DBG("erase from start to cursor\n");
-      term_clearbuf(self,0,0,DATA->current.crsry * DATA->bufferw + DATA->current.crsrx);
-      break;
-    case 2:
-      DBG("erase whole display\n");
-      term_clearbuf(self,0,0,DATA->bufferw * DATA->bufferh);
-      break;
-    default:
-      DBG("erase from cursor to and of display\n");
-      term_clearbuf(self,DATA->current.crsrx,DATA->current.crsry,
-		    (DATA->bufferw * DATA->bufferh) -
-		    (DATA->current.crsrx + DATA->current.crsry * DATA->bufferw));
-    }
-    break;
-
-    /* K - Erase Line */
-  case 'K':
-    switch (DATA->csiargs[0]) {
-    case 1:
-      DBG("erase from start of line to cursor\n");
-      term_clearbuf(self,0,DATA->current.crsry,DATA->current.crsrx);
-      break;
-    case 2:
-      DBG("erase whole line\n");
-      term_clearbuf(self,0,DATA->current.crsry,DATA->bufferw);
-      break;
-    default:
-      DBG("erase from cursor to end of line\n");
-      term_clearbuf(self,DATA->current.crsrx,DATA->current.crsry,DATA->bufferw-DATA->current.crsrx);
-    }
-    break;
-
-    /* L - Insert blank lines */
-  case 'L':
-    DBG("insert %d blank lines\n", DATA->csiargs[0]);
-    term_scroll(self,DATA->current.crsry,DATA->current.scroll_bottom,DATA->csiargs[0]);
-    break;
-
-    /* M - Delete lines */
-  case 'M':
-    DBG("delete %d lines\n", DATA->csiargs[0]);
-    term_scroll(self,DATA->current.crsry,DATA->current.scroll_bottom,-DATA->csiargs[0]);
-    break;
-
-    /* c - Identify as a VT102 terminal */
-  case 'c':
-    {
-      static const char *response = "\e[?6c";
-      DBG("identifying as a VT102 terminal\n");
-      post_event(PG_WE_DATA,self,strlen(response),0,(char*)response);
-    }
-    break;
-
-    /* d - Set row */
-  case 'd':
-    DBG("set row to %d\n", DATA->csiargs[0]);
-    DATA->current.crsry = DATA->csiargs[0] - 1;
-    break;
-
-    /* f - Set row,column */
-  case 'f':
-    DBG("set row, column to %d, %d\n", DATA->csiargs[0], DATA->csiargs[1]);
-    DATA->current.crsry = DATA->csiargs[0] - 1;
-    DATA->current.crsrx = DATA->csiargs[1] - 1;
-    break;
-
-    /* r - Set scrolling region */
-  case 'r':
-    if (DATA->num_csiargs == 2) {
-      DBG("set scrolling region to %d, %d\n", DATA->csiargs[0],DATA->csiargs[1]);
-      DATA->current.scroll_top = DATA->csiargs[0] - 1;
-      DATA->current.scroll_bottom = DATA->csiargs[1] - 1;
-    }
-    else {
-      DBG("set scrolling region to (0), %d\n", DATA->csiargs[0]);
-      DATA->current.scroll_top = 0;
-      DATA->current.scroll_bottom = DATA->csiargs[0] - 1;
-    }
-    break;
-
-    /* s - Save cursor position */
-  case 's':
-    DBG("save cursor position\n");
-    DATA->current.savcrsry = DATA->current.crsry;
-    DATA->current.savcrsrx = DATA->current.crsrx;
-    break;
-
-    /* u - Restore cursor position */
-  case 'u':
-    DBG("restore cursor position\n");
-    DATA->current.crsry = DATA->current.savcrsry;
-    DATA->current.crsrx = DATA->current.savcrsrx;
-    break;
-    
-    /* l and h - DECSET/DECRST sequence */
-  case 'h':  /* SET */
-  case 'l':  /* RST */
-    term_decset(self,DATA->csiargs[0],c=='h');
-    break;
-
-  default:
-      DBG("-ERROR- : Unknown final character in CSI escape = %c (%d)\n",c,c);
-      break;
-
   }
 }
 
@@ -707,20 +760,90 @@ int term_misc_code(struct widget *self,u8 c) {
   return 0;
 }
 
+void term_ecmaset(struct widget *self,int n,int enable) {
+  switch (n) {
+
+    /* ESC [ 3 h - Display control characters */
+  case 3:
+    DBG("-UNIMPLEMENTED- set display of control characters to %d\n", enable);
+    break;
+
+    /* ESC [ 4 h - Display control characters */
+  case 4:
+    DBG("-UNIMPLEMENTED- set insert mode to %d\n", enable);
+    break;
+    
+    /* ESC [ 20 h - Automatically follow echo of LF, VT, or FF with CR */
+  case 20:
+    DBG("-UNIMPLEMENTED- CR echo set to %d\n", enable);
+    break;
+
+  default:
+    DBG("-ERROR- : Unknown ECMA mode switch number = %d\n",DATA->csiargs[0]);
+    break;
+  }
+}
+
+void term_ecmastatus(struct widget *self,int n) {
+  switch (n) {
+    
+    /* ESC [ 5 n - Device status report, answer ESC [ 0 n */
+  case 5:
+    {
+      static const char *response = "\e[0n";
+      DBG("answering device status report\n");
+      post_event(PG_WE_DATA,self,strlen(response),0,(char*)response);
+    }
+    break;
+
+    /* ESC [ 6 n - Cursor position report, answer ESC [ y ; x R */
+  case 6:
+    DBG("-UNIMPLEMENTED- cursor position report\n");
+    break;
+
+  default:
+    DBG("-ERROR- : Unknown ECMA status report number = %d\n",DATA->csiargs[0]);
+    break;
+  }
+}
 
 void term_decset(struct widget *self,int n,int enable) {
   switch (n) {
 
+    /* ESC [ ? 1 h - Cursor keys send ESC O rather than ESC [ when set */
+  case 1:
+    DBG("-UNIMPLEMENTED- cursor key prefix switch\n");
+    break;
+    
     /* ESC [ ? 3 h - 80/132 column mode */
   case 3:
     DBG("ignoring 80/132 column switch\n");
-    /* Ignore this */
+    break;
+    
+    /* ESC [ ? 5 h - Set reverse video mode */
+  case 5:
+    DBG("-UNIMPLEMENTED- set reverse video mode\n");
+    break;
+    
+    /* ESC [ ? 6 h - When set, cursor addressing is relative to the upper left corner of the scroll region */
+  case 6:
+    DBG("-UNIMPLEMENTED- scroll-relative cursor addressing\n");
     break;
     
     /* ESC [ ? 7 h - Autowrap on/off */
   case 7:
     DBG("setting autowrap to %d\n", enable);
     DATA->current.no_autowrap = !enable;
+    break;
+
+    /* ESC [ ? 8 h - Keyboard autorepeat */
+  case 8:
+    DBG("ignoring request to set keyboard autorepeat to %d\n", enable);
+    break;
+
+    /* ESC [ ? 9 h - X10 mouse reporting */
+  case 9:
+    DBG("-UNIMPLEMENTED- X10 mouse reporting\n");
     break;
 
     /* ESC [ ? 25 h - Cursor on/off */
@@ -732,6 +855,16 @@ void term_decset(struct widget *self,int n,int enable) {
       DATA->current.cursor_hidden = 1;
       term_setcursor(self,0);
     }
+    break;
+
+    /* ESC [ ? 47 h - Alternate screen buffer */
+  case 47:
+    DBG("-UNIMPLEMENTED- alternate screen buffer\n");
+    break;
+
+    /* ESC [ ? 1000 h - X11 mouse reporting */
+  case 1000:
+    DBG("-UNIMPLEMENTED- X11 mouse reporting\n");
     break;
 
   default:
