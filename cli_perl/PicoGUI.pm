@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.30 2000/08/09 07:00:00 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.31 2000/08/10 18:08:26 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -960,6 +960,17 @@ sub ThemeSet {
 	    _themeset($v,$ELEMENT{$wgt.".".$el},$STATE{$st},$PARAM{$par});
 	}
     }
+}
+
+# A little shortcut that sets the text of a widget, freeing the memory
+# used by the old text
+sub ReplaceText {
+    my $self = shift;
+    my $oldtxt;
+    
+    $oldtxt = $self->GetWidget(-text);
+    $self->SetWidget(-text => NewString($_[0]));
+    $oldtxt->delete if ($oldtxt && $oldtxt->{'h'});
 }
 
 _init();

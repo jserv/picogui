@@ -728,10 +728,10 @@ sub setlesson {
 
     $currentlessonwidget = $self;
 
+    # This text is already stored as a handle, so don't duplicate it
     $lessonname->SetWidget(-text => $hlname = $self->GetWidget(-text));
     $lname = $hlname->GetString;
-    $ltext->delete if ($ltext);
-    $litext->delete if ($litext);
+
     $lessontextscroll->delete if ($lessontextscroll);
 
     if ($student{$lname}) {
@@ -741,15 +741,13 @@ sub setlesson {
 	$str = "You have not completed \"$lname\" yet.";
     }
 
-    $lessoninfo->SetWidget(-text => $litext = NewString("\n$str\n"));
-    $lessontextwidget->SetWidget(-text => $ltext = NewString($lesson{$lname}));
+    $lessoninfo->ReplaceText("\n$str\n");
+    $lessontextwidget->ReplaceText($lesson{$lname});
 
     Update;
 }
 
 sub typechar {
-    $tstext->delete if ($tstext);
-
     if ($_[1]) {
 	$c = pack 'c',($_[1] & 0xFF);
 	
@@ -786,8 +784,7 @@ sub typechar {
     else {
 	$typespace->SetWidget(-font => $bigfont);
     }
-    $typespace->SetWidget(-text => $tstext = 
-			  NewString($lessontext[$lessonline]."\n".$str.'_'));
+    $typespace->ReplaceText($lessontext[$lessonline]."\n".$str.'_');
     Update;
 }
 
