@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.23 2001/04/11 16:42:10 micahjd Exp $
+/* $Id: network.h,v 1.24 2001/04/12 02:38:34 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
