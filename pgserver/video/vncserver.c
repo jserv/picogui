@@ -1,4 +1,4 @@
-/* $Id: vncserver.c,v 1.5 2003/01/19 10:41:07 micahjd Exp $
+/* $Id: vncserver.c,v 1.6 2003/01/19 12:19:09 micahjd Exp $
  *
  * vncserver.c - Video driver that runs a VNC server and processes
  *               input events for multiple clients, using the
@@ -106,6 +106,7 @@ g_error vncserver_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
    vncserver_screeninfo->rfbAlwaysShared    = get_param_int("video-vncserver", "always-shared", 0);
    vncserver_screeninfo->rfbNeverShared     = get_param_int("video-vncserver", "never-shared", 0);
    vncserver_screeninfo->rfbDontDisconnect  = get_param_int("video-vncserver", "dont-disconnect", 0);
+   rfbLogEnable(get_param_int("video-vncserver", "verbose", 0));
 
    /* Start the VNC server's thread */
    rfbInitServer(vncserver_screeninfo);

@@ -16,8 +16,6 @@ libvncserver_la_SOURCES = \
 	translate.c	\
 	vncauth.c	\
 	zlib.c		\
-	httpd.c		\
-	cursor.c	\
 	stats.c
 
 noinst_HEADERS = \

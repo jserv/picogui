@@ -175,7 +175,6 @@ typedef unsigned long KeySym;
 
 struct _rfbClientRec;
 struct _rfbScreenInfo;
-struct rfbCursor;
 
 enum rfbNewClientAction {
 	RFB_CLIENT_ACCEPT,
@@ -187,7 +186,6 @@ typedef void (*KbdAddEventProcPtr) (Bool down, KeySym keySym, struct _rfbClientR
 typedef void (*KbdReleaseAllKeysProcPtr) (struct _rfbClientRec* cl);
 typedef void (*PtrAddEventProcPtr) (int buttonMask, int x, int y, struct _rfbClientRec* cl);
 typedef void (*SetXCutTextProcPtr) (char* str,int len, struct _rfbClientRec* cl);
-typedef struct rfbCursor* (*GetCursorProcPtr) (struct _rfbClientRec* pScreen);
 typedef Bool (*SetTranslateFunctionProcPtr)(struct _rfbClientRec* cl);
 typedef Bool (*PasswordCheckProcPtr)(struct _rfbClientRec* cl,const char* encryptedPassWord,int len);
 typedef enum rfbNewClientAction (*NewClientHookPtr)(struct _rfbClientRec* cl);
@@ -225,48 +223,7 @@ typedef struct _rfbScreenInfo
      * same time while using the same functions.
      */
     void* screenData;
-  
-    /* The following two members are used to minimise the amount of unnecessary
-       drawing caused by cursor movement.  Whenever any drawing affects the
-       part of the screen where the cursor is, the cursor is removed first and
-       then the drawing is done (this is what the sprite routines test for).
-       Afterwards, however, we do not replace the cursor, even when the cursor
-       is logically being moved across the screen.  We only draw the cursor
-       again just as we are about to send the client a framebuffer update.
-
-       We need to be careful when removing and drawing the cursor because of
-       their relationship with the normal drawing routines.  The drawing
-       routines can invoke the cursor routines, but also the cursor routines
-       themselves end up invoking drawing routines.
-
-       Removing the cursor (rfbUndrawCursor) is eventually achieved by
-       doing a CopyArea from a pixmap to the screen, where the pixmap contains
-       the saved contents of the screen under the cursor.  Before doing this,
-       however, we set cursorIsDrawn to FALSE.  Then, when CopyArea is called,
-       it sees that cursorIsDrawn is FALSE and so doesn't feel the need to
-       (recursively!) remove the cursor before doing it.
-
-       Putting up the cursor (rfbDrawCursor) involves a call to
-       PushPixels.  While this is happening, cursorIsDrawn must be FALSE so
-       that PushPixels doesn't think it has to remove the cursor first.
-       Obviously cursorIsDrawn is set to TRUE afterwards.
-
-       Another problem we face is that drawing routines sometimes cause a
-       framebuffer update to be sent to the RFB client.  When the RFB client is
-       already waiting for a framebuffer update and some drawing to the
-       framebuffer then happens, the drawing routine sees that the client is
-       ready, so it calls rfbSendFramebufferUpdate.  If the cursor is not drawn
-       at this stage, it must be put up, and so rfbSpriteRestoreCursor is
-       called.  However, if the original drawing routine was actually called
-       from within rfbSpriteRestoreCursor or rfbSpriteRemoveCursor we don't
-       want this to happen.  So both the cursor routines set
-       dontSendFramebufferUpdate to TRUE, and all the drawing routines check
-       this before calling rfbSendFramebufferUpdate. */
-
-    Bool cursorIsDrawn;		    /* TRUE if the cursor is currently drawn */
-    Bool dontSendFramebufferUpdate; /* TRUE while removing or drawing the
-				       cursor */
-   
+     
     /* additions by libvncserver */
 
     rfbPixelFormat rfbServerFormat;
@@ -293,14 +250,6 @@ typedef struct _rfbScreenInfo
 
     int rfbMaxClientWait;
 
-    /* http stuff */
-    Bool httpInitDone;
-    int httpPort;
-    char* httpDir;
-    SOCKET httpListenSock;
-    SOCKET httpSock;
-    FILE* httpFP;
-
     PasswordCheckProcPtr passwordCheck;
     void* rfbAuthPasswdData;
 
@@ -313,12 +262,6 @@ typedef struct _rfbScreenInfo
     Bool rfbDontDisconnect;
     struct _rfbClientRec* rfbClientHead;
 
-    /* cursor */
-    int cursorX, cursorY,underCursorBufferLen;
-    char* underCursorBuffer;
-    Bool dontConvertRichCursorToXCursor;
-    struct rfbCursor* cursor;
-
     /* the frameBufferhas to be supplied by the serving process.
      * The buffer will not be freed by 
      */
@@ -327,7 +270,6 @@ typedef struct _rfbScreenInfo
     KbdReleaseAllKeysProcPtr kbdReleaseAllKeys;
     PtrAddEventProcPtr ptrAddEvent;
     SetXCutTextProcPtr setXCutText;
-    GetCursorProcPtr getCursorPtr;
     SetTranslateFunctionProcPtr setTranslateFunction;
   
     /* newClientHook is called just after a new client is created */
@@ -336,7 +278,6 @@ typedef struct _rfbScreenInfo
     DisplayHookPtr displayHook;
 
 #ifdef HAVE_PTHREADS
-    MUTEX(cursorMutex);
     Bool backgroundLoop;
 #endif
 
@@ -482,8 +423,6 @@ typedef struct _rfbClientRec {
     int rfbRectanglesSent[MAX_ENCODINGS];
     int rfbLastRectMarkersSent;
     int rfbLastRectBytesSent;
-    int rfbCursorBytesSent;
-    int rfbCursorUpdatesSent;
     int rfbFramebufferUpdateMessagesSent;
     int rfbRawBytesEquivalent;
     int rfbKeyEventsRcvd;
@@ -504,9 +443,6 @@ typedef struct _rfbClientRec {
     int tightQualityLevel;
 
     Bool enableLastRectEncoding;   /* client supports LastRect encoding */
-    Bool enableCursorShapeUpdates; /* client supports cursor shape updates */
-    Bool useRichCursorEncoding;    /* rfbEncodingRichCursor is preferred */
-    Bool cursorWasChanged;         /* cursor shape update should be sent */
 
     Bool useNewFBSize;             /* client supports NewFBSize encoding */
     Bool newFBSizePending;         /* framebuffer size was changed */
@@ -541,9 +477,7 @@ typedef struct _rfbClientRec {
  */
 
 #define FB_UPDATE_PENDING(cl)                                              \
-     ((!(cl)->enableCursorShapeUpdates && !(cl)->screen->cursorIsDrawn) || \
-     ((cl)->enableCursorShapeUpdates && (cl)->cursorWasChanged) ||         \
-     ((cl)->useNewFBSize && (cl)->newFBSizePending) ||                     \
+     (((cl)->useNewFBSize && (cl)->newFBSizePending) ||                     \
      !sraRgnEmpty((cl)->copyRegion) || !sraRgnEmpty((cl)->modifiedRegion))
 
 /*
@@ -635,16 +569,6 @@ extern Bool rfbSetTranslateFunction(rfbClientPtr cl);
 extern Bool rfbSetClientColourMap(rfbClientPtr cl, int firstColour, int nColours);
 extern void rfbSetClientColourMaps(rfbScreenInfoPtr rfbScreen, int firstColour, int nColours);
 
-/* httpd.c */
-
-extern int httpPort;
-extern char *httpDir;
-
-extern void httpInitSockets(rfbScreenInfoPtr rfbScreen);
-extern void httpCheckFds(rfbScreenInfoPtr rfbScreen);
-
-
-
 /* auth.c */
 
 extern void rfbAuthNewClient(rfbClientPtr cl);
@@ -694,30 +618,6 @@ extern Bool rfbTightDisableGradient;
 extern int rfbNumCodedRectsTight(rfbClientPtr cl, int x,int y,int w,int h);
 extern Bool rfbSendRectEncodingTight(rfbClientPtr cl, int x,int y,int w,int h);
 
-
-/* cursor.c */
-
-typedef struct rfbCursor {
-    unsigned char *source;			/* points to bits */
-    unsigned char *mask;			/* points to bits */
-    unsigned short width, height, xhot, yhot;	/* metrics */
-    unsigned short foreRed, foreGreen, foreBlue; /* device-independent colour */
-    unsigned short backRed, backGreen, backBlue; /* device-independent colour */
-    unsigned char *richSource; /* source bytes for a rich cursor */
-} rfbCursor, *rfbCursorPtr;
-
-extern Bool rfbSendCursorShape(rfbClientPtr cl/*, rfbScreenInfoPtr pScreen*/);
-extern unsigned char rfbReverseByte[0x100];
-extern void rfbConvertLSBCursorBitmapOrMask(int width,int height,unsigned char* bitmap);
-extern rfbCursorPtr rfbMakeXCursor(int width,int height,char* cursorString,char* maskString);
-extern char* rfbMakeMaskForXCursor(int width,int height,char* cursorString);
-extern void MakeXCursorFromRichCursor(rfbScreenInfoPtr rfbScreen,rfbCursorPtr cursor);
-extern void MakeRichCursorFromXCursor(rfbScreenInfoPtr rfbScreen,rfbCursorPtr cursor);
-extern void rfbFreeCursor(rfbCursorPtr cursor);
-extern void rfbDrawCursor(rfbScreenInfoPtr rfbScreen);
-extern void rfbUndrawCursor(rfbScreenInfoPtr rfbScreen);
-extern void rfbSetCursor(rfbScreenInfoPtr rfbScreen,rfbCursorPtr c,Bool freeOld);
-
 /* cursor handling for the pointer */
 extern void defaultPtrAddEvent(int buttonMask,int x,int y,rfbClientPtr cl);
 
@@ -725,54 +625,6 @@ extern void defaultPtrAddEvent(int buttonMask,int x,int y,rfbClientPtr cl);
 
 extern void rfbResetStats(rfbClientPtr cl);
 extern void rfbPrintStats(rfbClientPtr cl);
-
-/* font.c */
-
-typedef struct rfbFontData {
-  unsigned char* data;
-  /*
-    metaData is a 256*5 array:
-    for each character
-    (offset,width,height,x,y)
-  */
-  int* metaData;
-} rfbFontData,* rfbFontDataPtr;
-
-int rfbDrawChar(rfbScreenInfoPtr rfbScreen,rfbFontDataPtr font,int x,int y,unsigned char c,Pixel colour);
-void rfbDrawString(rfbScreenInfoPtr rfbScreen,rfbFontDataPtr font,int x,int y,const char* string,Pixel colour);
-/* if colour==backColour, background is transparent */
-int rfbDrawCharWithClip(rfbScreenInfoPtr rfbScreen,rfbFontDataPtr font,int x,int y,unsigned char c,int x1,int y1,int x2,int y2,Pixel colour,Pixel backColour);
-void rfbDrawStringWithClip(rfbScreenInfoPtr rfbScreen,rfbFontDataPtr font,int x,int y,const char* string,int x1,int y1,int x2,int y2,Pixel colour,Pixel backColour);
-int rfbWidthOfString(rfbFontDataPtr font,const char* string);
-int rfbWidthOfChar(rfbFontDataPtr font,unsigned char c);
-void rfbFontBBox(rfbFontDataPtr font,unsigned char c,int* x1,int* y1,int* x2,int* y2);
-/* this returns the smallest box enclosing any character of font. */
-void rfbWholeFontBBox(rfbFontDataPtr font,int *x1, int *y1, int *x2, int *y2);
-
-/* dynamically load a linux console font (4096 bytes, 256 glyphs a 8x16 */
-rfbFontDataPtr rfbLoadConsoleFont(char *filename);
-/* free a dynamically loaded font */
-void rfbFreeFont(rfbFontDataPtr font);
-
-/* draw.c */
-
-/* You have to call rfbUndrawCursor before using these functions */
-void rfbFillRect(rfbScreenInfoPtr s,int x1,int y1,int x2,int y2,Pixel col);
-void rfbDrawPixel(rfbScreenInfoPtr s,int x,int y,Pixel col);
-void rfbDrawLine(rfbScreenInfoPtr s,int x1,int y1,int x2,int y2,Pixel col);
-
-/* selbox.c */
-
-/* this opens a modal select box. list is an array of strings, the end marked
-   with a NULL.
-   It returns the index in the list or -1 if cancelled or something else
-   wasn't kosher. */
-typedef void (*SelectionChangedHookPtr)(int index);
-extern int rfbSelectBox(rfbScreenInfoPtr rfbScreen,
-			rfbFontDataPtr font, char** list,
-			int x1, int y1, int x2, int y2,
-			Pixel foreColour, Pixel backColour,
-			int border,SelectionChangedHookPtr selChangedHook);
 
 /* main.c */
 

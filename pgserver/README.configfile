@@ -666,5 +666,9 @@ quoted appropriately. For example:
   Boolean, don't disconnect existing shared clients if a nonshared client connects
   Defaults off
 
+- verbose
+  Boolean, log connection statistics to stderr
+  Defaults off
+
 --- The End ---
 

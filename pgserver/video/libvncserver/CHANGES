@@ -1,6 +1,8 @@
 pgserver inteagration
    Removed argument processing
    Swapped RGB order
+   Removed cursor support (Not sufficient to handle picogui's cursors)
+   Removed httpd
 
 0.4
    support for NewFB from Const Kaplinsky
