@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.25 2002/02/02 20:52:52 lonetech Exp $
+/* $Id: x11.c,v 1.26 2002/04/23 20:11:34 bauermeister Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -591,6 +591,36 @@ struct fontglyph const *x11_xft_font_getglyph(struct fontdesc *fd, int c) {
 }
 
 #endif /* CONFIG_X11_XFT */
+
+#ifdef CONFIG_X11_ICON
+# include <X11/xpm.h>
+# include "x11logo/pglogo-dblborder.xpm"
+
+static void set_icon(Display* d, Window w) {
+  XWMHints *wm_hints = XAllocWMHints();
+  Pixmap icon, mask;
+  XpmAttributes attributes;
+
+  bzero((void*)&attributes, sizeof(attributes));
+  if (XpmCreatePixmapFromData(d,
+                              DefaultRootWindow(d),
+                              pgserver_xpm,
+                              &icon,
+                              &mask,
+                              &attributes)
+      ) return;               
+
+  wm_hints->flags       = IconPixmapHint | IconMaskHint;
+  wm_hints->icon_pixmap = icon;
+  wm_hints->icon_mask   = mask;
+
+  XSetWMHints(d, w, wm_hints);
+
+  XFree((void *)wm_hints);
+}
+
+#endif
+
 /******************************************** Init/shutdown */
 
 g_error x11_init(void) {
@@ -736,6 +766,11 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
     c = XCreatePixmapCursor(xdisplay,p,p,&black,&white,0,0);
     XDefineCursor(xdisplay, x11_display.d, c);
   }
+
+#ifdef CONFIG_X11_ICON
+  /* Load icon */
+  set_icon(xdisplay, x11_display.d);
+#endif
 
   /* Set the window title
    */

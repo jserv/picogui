@@ -215,6 +215,13 @@ AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_X11_XFT, [
   DRIVER_LIBS="$DRIVER_LIBS -lXft"
 ])
 
+AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_X11_ICON, [
+
+  AC_CHECK_LIB(Xpm, XpmCreatePixmapFromData,, AC_MSG_WARN([can't find libXpm]))
+
+  DRIVER_LIBS="$DRIVER_LIBS -lXpm"
+])
+
 dnl check for ncurses & gpm
 
 AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_NCURSES, [
