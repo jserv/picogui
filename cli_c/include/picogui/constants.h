@@ -1,10 +1,10 @@
-/* $Id: constants.h,v 1.29 2001/02/09 00:58:13 micahjd Exp $
+/* $Id: constants.h,v 1.30 2001/03/07 04:12:18 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -273,6 +273,8 @@ typedef unsigned long pghandle;
 #define PGTH_P_BACKDROP      23  /* H fillstyle   Fillstyle on the screen behind a popup */
 #define PGTH_P_WIDGETBITMAP  24  /* H bitmap      Bitmap for something like a button */
 #define PGTH_P_WIDGETBITMASK 25  /* H bitmap      Bitmask for something like a button */
+#define PGTH_P_CURSORBITMAP  26  /* H bitmap      Bitmap for the (mouse) pointer */
+#define PGTH_P_CURSORBITMASK 27  /* H bitmap      Bitmask for the (mouse) pointer */
 
 /* String properties (usually part of PGTH_O_DEFAULT) */
 #define PGTH_P_STRING_OK             501
@@ -457,7 +459,8 @@ typedef unsigned long pghandle;
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0
 #define PG_SZMODE_PERCENT       (1<<2)    /* The DIVNODE_UNIT_PERCENT flag */
-#define PG_SZMODEMASK           (~PG_SZMODE_PERCENT)
+#define PG_SZMODE_CNTFRACT      (1<<15)   /* The DIVNODE_UNIT_CNTFRACT flag */
+#define PG_SZMODEMASK           (PG_SZMODE_PERCENT|PG_SZMODE_PIXEL|PG_SZMODE_CNTFRACT)
 
 /* Constants for the message dialog box flags */
 #define PG_MSGBTN_OK      0x0001

@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.36 2001/02/15 02:03:36 micahjd Exp $
+/* $Id: client_c.h,v 1.37 2001/03/07 04:12:18 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -88,6 +88,9 @@ struct pgEvent {
    perfectly acceptable, but this can make your code easier to
    read. */
 #define PGDEFAULT       0
+
+/* For forming fractions, such as the size when PG_SZMODE_CNTFRACT is used */
+#define pgFraction(n,d) (((n)<<8)|(d))
 
 /* event handler used in pgBind */
 typedef int (*pgevthandler)(struct pgEvent *evt);

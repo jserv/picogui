@@ -1,6 +1,7 @@
-/* $Id: calc.c,v 1.2 2001/02/02 07:42:06 micahjd Exp $
+/* $Id: calc.c,v 1.3 2001/03/07 04:12:17 micahjd Exp $
  *
- * calc.c - Calculator application for PicoGUI
+ * calc.c - Calculator application for PicoGUI.
+ *          Demonstrates grids of buttons using percent sizing
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -38,17 +39,18 @@ int btnHandler(struct pgEvent *evt) {
 		    pgGetPayload(evt->from));
 }
 
+static char *buttongrid[] = {
+   NULL,"1","2","3",
+   NULL,"4","5","6",
+   NULL,"7","8","9",
+   NULL,NULL
+};
+
 int main(int argc, char **argv) {
    int i;
    char *s;
    pghandle wRow = 0,wButton = 0;
-   pghandle wDisplay;
-   static char *buttongrid[] = {
-      NULL,"1","2","3",
-      NULL,"4","5","6",
-      NULL,"7","8","9",
-      NULL,NULL
-   };
+   pghandle wDisplay,wGridbox;
    
    pgInit(argc,argv);
    pgRegisterApp(PG_APP_NORMAL,"Calculator",0);
@@ -58,6 +60,9 @@ int main(int argc, char **argv) {
 	       PG_WP_TRANSPARENT,0,
 	       PG_WP_TEXT,pgNewString("0"),
 	       0);
+
+   wGridbox = pgNewWidget(PG_WIDGET_BOX,0,0);
+   pgSetWidget(PGDEFAULT,PG_WP_SIDE,PG_S_ALL,0);
    
    /* Buttons */
 
@@ -67,16 +72,28 @@ int main(int argc, char **argv) {
 	 wButton = pgNewWidget(PG_WIDGET_BUTTON,
 			       wButton ? PG_DERIVE_AFTER : PG_DERIVE_INSIDE,
 			       wButton ? wButton : wRow);
-	 pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString(s),0);
+	 pgSetWidget(PGDEFAULT,
+		     PG_WP_TEXT,pgNewString(s),
+		     PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+		     PG_WP_SIZE,pgFraction(1,3),
+		     0);
 	 pgSetPayload(PGDEFAULT,(unsigned long) s);
       }
       else {     /* Add a row */
 	 if (!buttongrid[i+1])  /* Two consecutive NULLs, exit */
 	   break;
-         wRow = pgNewWidget(PG_WIDGET_BOX,PG_DERIVE_AFTER,
-			    wRow ? wRow : wDisplay);
-	 pgSetWidget(PGDEFAULT,PG_WP_SIDE,PG_S_BOTTOM,0);
+         wRow = pgNewWidget(PG_WIDGET_BOX,
+			    wRow ? PG_DERIVE_AFTER : PG_DERIVE_INSIDE,
+			    wRow ? wRow : wGridbox);
+	 pgSetWidget(PGDEFAULT,
+		     PG_WP_TRANSPARENT,1,
+		     PG_WP_SIDE,PG_S_BOTTOM,
+		     PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+		     PG_WP_SIZE,pgFraction(1,3),
+		     0);
 	 wButton = 0;
+	 row--;
+	 column = 3;
       }
    }
 
