@@ -1,29 +1,11 @@
 from responses import ProtocolError
-import infilter
+import infilter, keys
 
 class ParameterError(ProtocolError):
     def __init__(self, code):
         self.args = 'Unknown event parameter type, can\'t handle!', code
 
 _paramtypes = ('num', 'xy', 'pointer', 'data', 'kbd')
-
-kmods = {
-    'lshift':	0x0001,
-    'rshift':	0x0002,
-    'shift':	0x0003,
-    'lctrl':	0x0040,
-    'rctrl':	0x0080,
-    'ctrl':	0x00c0,
-    'lalt':	0x0100,
-    'ralt':	0x0200,
-    'alt':	0x0300,
-    'lmeta':	0x0400,
-    'rmeta':	0x0800,
-    'meta':	0x0c00,
-    'num':	0x1000,
-    'caps':	0x2000,
-    'mode':	0x4000,
-}
 
 typenames = {
     # Widget events
@@ -128,7 +110,7 @@ class Event(object):
     def hasMod(self, mod):
         """Check for a keyboard modifier"""
         if hasattr(self, 'mods'):
-            return self.mods & kmods.get(mod.lower(), 0)
+            return self.mods & keys.mods.get(mod.lower(), 0)
 
     def __repr__(self):
         r = '<PicoGUI %s event object at %s' % (self.name, id(self))
