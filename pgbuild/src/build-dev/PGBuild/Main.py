@@ -55,29 +55,29 @@ def parseCommandLine(config, argv):
     ############# General options
 
     parser.add_option("-v", "--verbose", action="count", dest="verbosity", default=1,
-                      help="report progress in more detail")    
+                      help="Reports progress in more detail.")    
     parser.add_option("-q", "--quiet", action="uncount", dest="verbosity", default=1,
-                      help="report progress in less detail")    
+                      help="Reports progress in less detail.")    
     parser.add_option("-u", "--ui", action="store", dest="ui", metavar="MODULE", default="Text",
-                      help="select a front-end module. Try --ui=help to list the available modules")
+                      help="Selects a front-end module. Try --ui=help to list the available modules.")
     parser.add_option("--traceback", action="store_true", dest="traceback",
-                      help="disable the user-friendly exception handler and give a traceback when an error occurs")
+                      help="Disables the user-friendly exception handler and give a traceback when an error occurs.")
 
     ############# Configuration management
 
     configGroup = parser.add_option_group("Configuration Management")
     configGroup.add_option("-t", "--dump-tree", dest="treeDumpFile",
-                           help="dump the configuration tree to FILE", metavar="FILE")
+                           help="Dump the configuration tree to FILE.", metavar="FILE")
     configGroup.add_option("--retest-mirrors", dest="retestMirrors", action="store_true",
-                           help="re-run any mirror speed tests, ignoring saved results")
+                           help="Re-runs any mirror speed tests, ignoring saved results.")
 
     ############# Package management
 
     packageGroup = parser.add_option_group("Package Management")
     packageGroup.add_option("--nuke", dest="nuke", action="store_true",
-                            help="unconditionally delete local copies of all non-bootstrap packages")
+                            help="Unconditionally deletes local copies of all non-bootstrap packages.")
     packageGroup.add_option("--merge", dest="merge", action="append", metavar="PACKAGE",
-                            help="forcibly update the specified package and merge its configuration")
+                            help="Forcibly updates the specified package and merge its configuration.")
 
     config.mount(OptionsXML(parser.parse_args(argv[1:])))
 
