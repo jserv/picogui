@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.13 2000/11/11 16:53:59 micahjd Exp $
+/* $Id: memtheme.c,v 1.14 2000/11/12 02:49:55 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -186,13 +186,22 @@ unsigned long theme_lookup(unsigned short object,
 void div_rebuild(struct divnode *d) {
   struct gropctxt c;
 
-  if ((!d->build) || d->grop_lock) return;
+  if ((!d->build) || d->grop_lock) {
+#ifdef DEBUG
+    printf("***** Locked grop rebuild!  *****");
+#endif
+    return;
+  }
   d->grop_lock++;
   if (d->grop_lock == 1) {
     grop_free(&d->grop);
     gropctxt_init(&c,d);
     (*d->build)(&c,d->state,d->owner);
   }
+#ifdef DEBUG
+  else
+    printf("***** Locked grop rebuild! (stage 2) *****");
+#endif
   d->grop_lock = 0;
   d->flags |= DIVNODE_NEED_REDRAW;
   if (d->owner)

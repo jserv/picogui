@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.22 2000/11/03 23:38:32 micahjd Exp $
+/* $Id: grop.c,v 1.23 2000/11/12 02:49:54 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -101,11 +101,9 @@ void grop_render(struct divnode *div) {
   div->oty = div->ty;
 
   while (list) {
-    if ((list->w <= 0 || list->h <= 0) && list->type!=PG_GROP_LINE) {
+    if ((list->w <= 0 || list->h <= 0) && list->type!=PG_GROP_LINE)
       /* There is no spoon */
-      list = list->next;
-      continue;
-    }
+      goto skip_this_node;
 
     x = list->x+div->x;
     y = list->y+div->y;
@@ -168,6 +166,10 @@ void grop_render(struct divnode *div) {
       break;
     case PG_GROP_GRADIENT:
       /* Gradients are fun! */
+#ifdef DEBUG
+      printf("Gradient (%d,%d,%d,%d) clip(%d,%d,%d,%d)\n",x,y,w,h,
+	     vid->clip_x1,vid->clip_y1,vid->clip_x2,vid->clip_y2);
+#endif
       (*vid->gradient)(x,y,w,h,
 		       list->param[0],
 		       list->param[1],
@@ -175,6 +177,7 @@ void grop_render(struct divnode *div) {
 		       list->param[3]);      
       break;
     }
+  skip_this_node:
     list = list->next;
   }
 }

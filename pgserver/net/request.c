@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.8 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: request.c,v 1.9 2000/11/12 02:49:55 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -170,9 +170,12 @@ void readfd(int from) {
 	buf->data = buf->data_stat;
       }
       else {
-	/* Allocate and use a dynamic buffer */
-	if (iserror(prerror(g_malloc((void**)&buf->data_dyn,
-				     buf->req.size+1)))) {
+	/* Allocate and use a dynamic buffer (set the limit at 6 meg, this should be
+	 * enough for even the most insanely large images (1280x1024x32) but will catch
+	 * stuff before ElectricFence chokes on it. */
+	if ((buf->req.size > 6000000) || iserror(prerror(g_malloc((void**)&buf->data_dyn,
+				         buf->req.size+1)))) {
+
 	  /* Oops, the client asked for too much memory!
 	     Bad client!
 	     Make them disappear.

@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.11 2000/11/05 18:18:19 micahjd Exp $
+/* $Id: errortext.c,v 1.12 2000/11/12 02:49:54 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -136,6 +136,7 @@ static const char *errors[] = {
   /* 91 */  "Fillstyle opcode parameter truncated",
   /* 92 */  "Invalid handle in handle_group()",
   /* 93 */  "Dereferenced string handle is null in getstring",
+  /* 94 */  "Request packet too big; memory allocation failed",
 };
 
 #endif /* TINY_MESSAGES */
