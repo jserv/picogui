@@ -1,0 +1,159 @@
+#!/usr/bin/perl
+#
+# Small script to set the background in picogui or create a theme
+# file from a background file and a few options. Requries the PicoGUI
+# theme compiler. Also, requires imagemagick's convert program to convert
+# the image size/format.
+#
+# -- Micah Dowty <micahjd@users.sourceforge.net>
+#
+
+if (!@ARGV) {
+    $id = '$Id: pgbg,v 1.1 2002/03/29 16:23:20 micahjd Exp $';
+    print <<EOF;
+
+Create a PicoGUI background theme
+$id
+
+usage: pgbg [-i <image file>] [-c <color>] [-e] [-p]
+            [-s <width>x<height>] [-f <format>] [-o <file>]
+
+     <image file>: Use this image in the background
+          <color>: Fill the background not covered by the image with this color
+               -e: Center the image in the background
+ <width>x<height>: Resize the image to this size
+         <format>: Convert the image to this format
+           <file>: Write out this compiled theme file. If not specified, loads
+                   the theme into pgserver
+	       -p: Preview the theme on the default PicoGUI server
+EOF
+exit(1);
+}
+
+$description = "Background ";
+
+# Process command line args
+while ($opt = shift @ARGV) {
+    if ($opt eq "-i") {
+	$image = shift @ARGV;
+	$image =~ /([^\/]+)$/;
+	$description .= "image $1, ";
+    }
+    elsif ($opt eq "-c") {
+	$color = shift @ARGV;
+	$description .= "color '$color', ";
+    }
+    elsif ($opt eq "-e") {
+	$center = 1;
+	$description .= "centered, ";
+    }
+    elsif ($opt eq "-p") {
+	$preview = 1;
+    }
+    elsif ($opt eq "-s") {
+	$size = shift @ARGV;
+	$description .= "resized to $size, ";
+    }
+    elsif ($opt eq "-f") {
+	$format = shift @ARGV;
+	$description .= "converted to $format, ";
+    }
+    elsif ($opt eq "-o") {
+	$output = shift @ARGV;
+    }
+    else {
+	die "Bad argument '$opt'\n";
+    }
+}
+$description .= "created by pgbg";
+
+# Resize and/or convert the image if necessary
+if (defined $size or defined $format) {
+    if (!defined $format) {
+	$image =~ /\.([^\.]+)$/;
+	$format = $1;
+    }
+    if (defined $size) {
+	$geom = "-geometry $size";
+    }
+    $tempimage = "/tmp/pgbg_tmpfile.$format";
+    system("convert $image $geom $tempimage");
+    $image = $tempimage;
+} 
+
+$theme = "object default name = \"$description\";\n";
+
+# Some possibilities for the background style...
+# 1. Just a fill color
+# 2. A tiled bitmap
+# 3. A centered bitmap, with fill color
+
+if (defined $image and !defined $center) {
+    $theme .= <<EOF;
+    obj background {
+	bitmap1 = LoadBitmap("$image");
+	bgfill = fillstyle {
+	    Bitmap(x,y,w,h,bitmap1);
+	};
+    }
+EOF
+}
+
+elsif (defined $image) {
+    # Find the size of the image
+    open IMGINFO,"file $image|";
+    $image_info = <IMGINFO>;
+    close IMGINFO;
+    $image_info =~ /([0-9])+ x ([0-9]+)/;
+    $image_w = $1;
+    $image_h = $2;
+    die "Can't find image size\n" if (!$image_w or !$image_h);
+
+    die "Background color required\n" if (!defined $color);
+    $theme .= <<EOF;
+    obj background {
+	bitmap1 = LoadBitmap("$image");
+	bgfill = fillstyle {
+	    var bx,by;
+
+	    /* Compute bitmap position */
+	    bx = (w-$image_w)>>1;
+	    by = (h-$image_h)>>1;
+	    
+	    /* Draw image centered */
+	    Bitmap(bx+x,by+y,$image_w,$image_h,bitmap1);
+
+	    /* Draw the colored background in pieces to avoid overdraw */
+	    SetColor($color);
+	    Rect(x,y,w,by);
+	    Rect(x,y+by+$image_h,w,h-by-$image_h);
+	    Rect(x,y+by,bx,$image_h);
+	    Rect(x+bw+$image_w,y+by,w-bx-$image_w,$image_h);
+	};
+    }
+EOF
+}
+
+else {
+    $theme .= <<EOF;
+    obj background {
+	bgfill = fillstyle {
+	    SetColor($color);
+	    Rect(x,y,w,h);
+	};
+    }
+EOF
+}    
+
+# Now compile the theme
+die "Output file is required\n" if (!defined $output);
+open THS, "|themec -o $output";
+print THS $theme;
+close THS;
+
+# FIXME: add an option to preview the theme
+
+# Kill our temp files
+unlink $tempimage;
+
+### The End ###
