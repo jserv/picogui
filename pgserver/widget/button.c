@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.79 2001/10/29 23:57:56 micahjd Exp $
+/* $Id: button.c,v 1.80 2001/11/04 16:11:32 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -225,7 +225,7 @@ g_error button_set(struct widget *self,int property, glob data) {
 
   case PG_WP_TEXT:
     if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,data))) 
-       return mkerror(PG_ERRT_HANDLE,36);
+       return mkerror(PG_ERRT_HANDLE,13);
     DATA->text = (handle) data;
     resizewidget(self);
     self->in->flags |= DIVNODE_NEED_RECALC;

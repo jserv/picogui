@@ -1,13 +1,14 @@
-/* $Id: network.h,v 1.68 2001/11/01 18:32:43 epchristi Exp $
+/* $Id: network.h,v 1.69 2001/11/04 16:11:32 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ *
  * Thread-safe code added by RidgeRun Inc.
  * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
- *
+ * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -66,9 +67,9 @@ struct pgresponse_err {
   u16 type;    /* RESPONSE_ERR - error code */
 #ifdef ENABLE_THREADING_SUPPORT      
   u32 id;
-#else
+#else   
   u16 id;
-#endif
+#endif   
   u16 errt;
   u16 msglen;  /* Length of following message */
 };
@@ -96,7 +97,7 @@ struct pgresponse_event {
 #define PG_RESPONSE_DATA 4
 struct pgresponse_data {
   u16 type;    /* RESPONSE_DATA */
-#ifdef ENABLE_THREADING_SUPPORT            
+#ifdef ENABLE_THREADING_SUPPORT         
   u32 id;
 #else   
   u16 id;

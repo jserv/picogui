@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.12 2001/10/19 06:19:48 micahjd Exp $
+/* $Id: textbox_document.c,v 1.13 2001/11/04 16:11:32 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -346,10 +346,10 @@ g_error text_load(struct textbox_cursor *c, const char *fmt_code,
 		  const u8 *data, u32 datalen) {
   struct txtformat *f = text_formats;
 
-  while (f->name && strncmp(f->name,fmt_code,4))
+  while (f->name[0] && strncmp(f->name,fmt_code,4))
     f++;
 
-  if (!f)
+  if (!f->name[0])
     return mkerror(PG_ERRT_BADPARAM,51);  /* Unsupported text format */
 
   return (*f->load)(c,data,datalen);

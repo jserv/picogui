@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.17 2001/10/19 23:02:32 micahjd Exp $
+/* $Id: textbox_main.c,v 1.18 2001/11/04 16:11:32 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -37,6 +37,7 @@
 struct textboxdata {
   int on,focus,flash_on;
   struct textbox_cursor c;
+  handle textformat;
 };
 #define DATA ((struct textboxdata *)(self->data))
 
@@ -46,6 +47,7 @@ void textbox_move_cursor(struct widget *self, union trigparam *param);
 /* Set up divnodes */
 g_error textbox_install(struct widget *self) {
    g_error e;
+   pghandle h;
 
    e = g_malloc(&self->data,           /* Allocate data structure */
 		sizeof(struct textboxdata));
@@ -72,52 +74,18 @@ g_error textbox_install(struct widget *self) {
    DATA->c.head = self->in->div->div;
    DATA->c.widget = self;
 
+   /* Set up a reasonable default font */
+   e = findfont(&h,self->owner,"Lucida",10,PG_FSTYLE_FLUSH);
+   errorcheck;
+   e = text_format_font(&DATA->c,h);
+   errorcheck;
+
    /**** Editing doesn't work yet 
    self->trigger_mask = TRIGGER_UP | TRIGGER_ACTIVATE | TRIGGER_CHAR |
      TRIGGER_DEACTIVATE | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_TIMER
      | TRIGGER_MOVE;
    */
 
-   /* Add some demo text */
-
-   { 
-     const char *t = "
-Hello, <b>World</b>!<br>
-This is a              demonstration 
-              of PicoGUI's HTML parsing capabilities:
-<p>
-Normal text<br>
-<b>Bold</b>, <i>italic</i>, and <u>underlined</u> text<br>
-<em>Emphasized</em> and <strong>strong</strong> text<br>
-<big>Big</big> and <small>small</small> text<br>
-Combinations of <b><i>multiple</i> <u>formats</u></b><br>
-Changing<b>formats</b><font color=green>within</font><b>one</b>word<br>
-Nonbreaking spaces: --&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--<Br>
-ISO Latin-1 international characters: N&iacute;ft&egrave;&eacute; <BR>
-Other formats: <tt>teletype mode</tt>, <strike>strikeout</strike><br>
-Font tag: <font color=red>red</font>, <font color=\"#FFFF00\">#FFFF00</font>
-
-<pre>
-  __              __  
- / /_ __  _ __ ___\\ \\ 
-/ /| '_ \\| '__/ _ \\\\ \\ 
-\\ \\| |_) | | |  __// /
- \\_\\ .__/|_|  \\___/_/ 
-   |_|                
-</pre>
-
-The End!
-";
-     handle f;
-
-     e = findfont(&f,self->owner,"Lucida",10,PG_FSTYLE_FLUSH);
-     errorcheck;
-     e = text_format_font(&DATA->c,f);
-     errorcheck;
-
-     text_load(&DATA->c,"HTML",t,strlen(t));
-   }
-   
    return sucess;
 }
 
@@ -150,11 +118,55 @@ void textbox_resize(struct widget *self) {
 }
 
 g_error textbox_set(struct widget *self,int property, glob data) {
-   return mkerror(ERRT_PASS,0);
+  char *str, *fmt;
+
+  switch (property) {
+    
+    /* Store a string describing the text format */
+  case PG_WP_TEXTFORMAT:
+    if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,data))) 
+      return mkerror(PG_ERRT_HANDLE,61); /* bad textformat handle */
+    DATA->textformat = (handle) data;
+    break;
+
+    /* Load text in the current format */
+  case PG_WP_TEXT:
+    /* Load handles */
+    if (DATA->textformat) {
+      if (iserror(rdhandle((void **)&fmt,PG_TYPE_STRING,-1,DATA->textformat))) 
+	return mkerror(PG_ERRT_HANDLE,61); /* bad textformat handle */
+    }    
+    else
+      fmt = "TEXT";   /* Default to plaintext */
+    if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,data))) 
+      return mkerror(PG_ERRT_HANDLE,13); /* bad text handle */
+
+    /* Using the '+' modifier? */
+    if (*fmt == '+') {
+      /* Lose the + */
+      fmt++;
+    }
+    else {
+      /* FIXME: Delete existing text */
+    }
+   
+    return text_load(&DATA->c,fmt,str,strlen(str));
+    break;
+    
+  default:
+    return mkerror(ERRT_PASS,0);
+  }
+  return sucess;
 }
 
 glob textbox_get(struct widget *self,int property) {
-   return 0;
+  switch (property) {
+
+  case PG_WP_TEXTFORMAT:
+    return (glob) DATA->textformat;
+
+  }
+  return 0;
 }
 
 /* Move the cursor to the mouse location */

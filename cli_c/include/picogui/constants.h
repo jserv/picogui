@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.86 2001/10/20 05:11:49 micahjd Exp $
+/* $Id: constants.h,v 1.87 2001/11/04 16:11:32 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -147,8 +147,9 @@
  *   - PG_FSTYLE_DEFAULT
  *   - PG_FSTYLE_SYMBOL
  *   - PG_FSTYLE_SUBSET
- *   - PG_FSTYLE_EXTENDED
- *   - PG_FSTYLE_IBMEXTEND
+ *   - PG_FSTYLE_ENCODING_ISOLATIN1
+ *   - PG_FSTYLE_ENCODING_IBM
+ *   - PG_FSTYLE_ENCODING_UNICODE
  * 
  * \{
  */
@@ -157,9 +158,8 @@
 #define PG_FSTYLE_DEFAULT      (1<<1)    //!< The default font in its category, fixed or proportional.
 #define PG_FSTYLE_SYMBOL       (1<<2)    //!< Font contains nonstandard chars and will not be chosen unless specifically requested
 #define PG_FSTYLE_SUBSET       (1<<3)    //!< Font does not contain all the ASCII chars before 127, and shouldn't be used unless requested
-#define PG_FSTYLE_EXTENDED     (1<<4)    //!< Contains international characters above 127 
-#define PG_FSTYLE_IBMEXTEND    (1<<5)    //!< Has IBM-PC extended characters
-
+#define PG_FSTYLE_EXTENDED     (1<<4)    //!< (deprecated) Contains international characters above 127 
+#define PG_FSTYLE_IBMEXTEND    (1<<5)    //!< (deprecated) Has IBM-PC extended characters
 #define PG_FSTYLE_DOUBLESPACE  (1<<7)    //!< Add extra space between lines
 #define PG_FSTYLE_BOLD         (1<<8)    //!< Use or simulate a bold version of the font
 #define PG_FSTYLE_ITALIC       (1<<9)    //!< Use or simulate an italic version of the font
@@ -169,6 +169,13 @@
 #define PG_FSTYLE_FLUSH        (1<<14)   //!< Disable the margin that PicoGUI puts around text
 #define PG_FSTYLE_DOUBLEWIDTH  (1<<15)   //!< Add extra space between characters
 #define PG_FSTYLE_ITALIC2      (1<<16)   //!< Twice the slant of the default italic
+#define PG_FSTYLE_ENCODING_ISOLATIN1  (1<<4)  //!< ISO Latin-1 encoding
+#define PG_FSTYLE_ENCODING_IBM        (1<<5)  //!< IBM-PC extended characters
+#define PG_FSTYLE_ENCODING_UNICODE    (1<<17) //!< Unicode encoding
+
+#define PG_FSTYLE_ENCODING_MASK       (PG_FSTYLE_ENCODING_ISOLATIN1|\
+                                       PG_FSTYLE_ENCODING_IBM|\
+                                       PG_FSTYLE_ENCODING_UNICODE)
 
 //! \}
 
@@ -829,6 +836,11 @@ typedef unsigned long pghandle;
 				 * in this container */
 #define PG_WP_DISABLED    28    /* For buttons, grays out text and prevents clicking */
 #define PG_WP_MARGIN      29    /* For boxes, overrides the default margin */
+#define PG_WP_TEXTFORMAT  30    /* For the textbox, defines a format for 
+				 * PG_WP_TEXT. fourCC format, with optional
+				 * preceeding '+' to prevent erasing existing
+				 * data, just append at the cursor position
+				 */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0

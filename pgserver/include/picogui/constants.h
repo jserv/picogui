@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.95 2001/10/29 23:57:55 micahjd Exp $
+/* $Id: constants.h,v 1.96 2001/11/04 16:11:32 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -836,6 +836,11 @@ typedef unsigned long pghandle;
 				 * in this container */
 #define PG_WP_DISABLED    28    /* For buttons, grays out text and prevents clicking */
 #define PG_WP_MARGIN      29    /* For boxes, overrides the default margin */
+#define PG_WP_TEXTFORMAT  30    /* For the textbox, defines a format for 
+				 * PG_WP_TEXT. fourCC format, with optional
+				 * preceeding '+' to prevent erasing existing
+				 * data, just append at the cursor position
+				 */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0
