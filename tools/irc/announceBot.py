@@ -15,11 +15,11 @@ import time, irc_colors
 accounts = [
     ircsupport.IRCAccount("IRC", 1,
         # Lalo's joke: A brainless entity created to keep an eye on subversion                 
-	"CIA",              # nickname
+	"CIA",         # nickname
         "",                 # passwd
         "irc.freenode.net", # irc server
         6667,               # port
-        "picogui, commits", # comma-seperated list of channels
+        "commits",          # comma-seperated list of channels
     )
 ]
 
@@ -40,7 +40,7 @@ class AnnounceServer(LineReceiver):
 	if fields[0] == "Announce":
 	    try:
 	        groups['commits'].sendText(irc_colors.boldify(fields[1] + ": ") + fields[2])
-	        groups[fields[1]].sendText(fields[2])
+                groups[fields[1]].sendText(fields[2])
 		time.sleep(1)
             except KeyError:
 	        pass
@@ -65,12 +65,13 @@ class BotChat(basechat.ChatUI):
     def getConversation(self, person, Class=BotConversation, stayHidden=0):
         return basechat.ChatUI.getConversation(self, person, Class, stayHidden)
 
-if __name__ == "__main__":
-    from twisted.internet import reactor
-    AccountManager()
-    serv = Factory()
-    serv.protocol = AnnounceServer
-    reactor.listenUNIX(socketName, serv)
-    
-    reactor.run()
+from twisted.internet.app import Application
+application = Application("announceBot")
+AccountManager()
+serv = Factory()
+serv.protocol = AnnounceServer
+application.listenUNIX(socketName, serv)
+
+if __name__ == '__main__':
+    application.run()
 
