@@ -63,7 +63,7 @@ def parseCommandLine(config, argv):
                       help="Reports progress in more detail.")    
     parser.add_option("-q", "--quiet", action="uncount", dest="verbosity", default=1,
                       help="Reports progress in less detail.")    
-    parser.add_option("-u", "--ui", action="store", dest="ui", metavar="MODULE", default="Text",
+    parser.add_option("-u", "--ui", action="store", dest="ui", metavar="MODULE",
                       help="Selects a front-end module. Try --ui=help to list the available modules.")
     parser.add_option("--traceback", action="store_true", dest="traceback",
                       help="Disables the user-friendly exception handler and give a traceback when an error occurs.")
@@ -222,10 +222,12 @@ def main(bootstrap, argv):
             # Load the options passed to us by build.py into the <bootstrap> section
             boot(config, bootstrap)
 
+            # Parse user options. This is only meaningful on UNIXes, but should fail
+            # uneventfully on other platforms.
+            config.dirMount(os.path.expanduser("~/.pgbuild"))
+
             # Parse command line options into the <invocation> section
             parseCommandLine(config, argv)
-
-            config.dump("debug.xbc")
 
             # Load a UI module and run it
             ui = PGBuild.UI.find(config.eval("invocation/option[@name='ui']/text()")).Interface(config)

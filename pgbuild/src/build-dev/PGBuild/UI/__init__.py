@@ -42,6 +42,9 @@ def find(name):
     """Given a UI module name, this tries loading it. The given name is case-insensitive,
        this function will munge its case to match our naming convention.
        """
+    # Default to 'text'
+    if not name:
+        name = "Text"
     name = name[0].upper() + name[1:].lower()
     try:
         return __import__(name, globals(), locals())
