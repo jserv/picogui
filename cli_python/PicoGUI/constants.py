@@ -441,13 +441,13 @@ _constants = {
         }),
         'tab bar':			(63, {
         }),
-        'popup is menu':		(63, {
+        'popup is menu':		(64, {
         }),
-        'popup is submenu':		(63, {
+        'popup is submenu':		(65, {
         }),
-        'cursor position':		(63, {
+        'cursor position':		(66, {
         }),
-        'hotkey modifiers':		(63,
+        'hotkey modifiers':		(67,
 	    _modifier_consts),    
     },
     'traversewidget': {
