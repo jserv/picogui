@@ -1,4 +1,4 @@
-/* $Id: managedwindow.c,v 1.17 2003/01/01 03:43:08 micahjd Exp $
+/* $Id: managedwindow.c,v 1.18 2003/03/19 19:19:38 lalo Exp $
  *
  * managedwindow.c - A root widget representing a window managed by a host GUI
  *
@@ -31,6 +31,7 @@
 struct managedwindowdata {
   struct divtree *my_dt;
   handle text;            /* Stored handle to the text, so we can get PG_WP_TEXT later */
+  handle icon;
 
   /* These values are used to detect whether the window should automatically resize */
   int last_w, last_h;
@@ -89,6 +90,13 @@ g_error managedwindow_set(struct widget *self,int property, glob data) {
   /* All of these pass through to the video driver's implementation */
   switch (property) {
     
+  case PG_WP_IMAGE:
+    if (iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)))
+       return mkerror(PG_ERRT_HANDLE,33);
+     
+    DATA->image = handle_canonicalize((handle) data);
+    break;
+
   case PG_WP_TEXT:
     if (iserror(rdhandle((void **)&str,PG_TYPE_PGSTRING,self->owner,data))) 
       return mkerror(PG_ERRT_HANDLE,13);
@@ -200,6 +208,9 @@ glob managedwindow_get(struct widget *self,int property) {
   s16 x,y;
 
   switch (property) {
+
+  case PG_WP_IMAGE:
+    return (glob) DATA->image;
 
   case PG_WP_TEXT:
     return DATA->text;
