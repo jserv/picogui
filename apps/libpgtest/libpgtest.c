@@ -29,7 +29,9 @@ void scene(void) {
   static float light1_ambient[] = {0.2,0.2,0.2,0};
   static float light1_position[] = {-10,5,-5,0};
 
-  /* pgserver sets up its own camera matrix at the beginning of its frame */
+  /* pgserver sets up its own camera matrix at the beginning of
+   * its frame, so it's okay if we wipe out whatever matrix is set.
+   */
   glLoadIdentity();
   glClearColor(0,0,0,0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -145,7 +147,11 @@ g_error protected_main(int argc, char **argv) {
   e = set_param_str("video-sdlgl", "continuous", "1");
   errorcheck;
 
-  /* Define a configuration without using the usual config files */
+  /* Define a configuration without using the usual config files.
+   * Command line processing is optional as well, though it's useful
+   * to have in this demo.
+   * See pgserver/init.h for more info.
+   */
   e = pgserver_init(PGINIT_NO_CONFIGFILE,argc,argv);
   errorcheck;
 
