@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.50 2001/08/04 16:20:16 micahjd Exp $
+/* $Id: div.c,v 1.51 2001/08/05 00:35:18 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -35,6 +35,36 @@
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 #endif
 
+/* Check flags for divnode-level scrolling, and modify the
+ * divnode's size if necessary. We must do this before
+ * divnode_recalc() and before div_rebuild()
+ */
+void divnode_divscroll(struct divnode *n) {
+  /* Implement DIVNODE_EXTEND_* flags, used for scrolling */
+  n->calcx = n->x;
+  n->calcy = n->y;
+  n->calcw = n->w;
+  n->calch = n->h;
+  if (n->flags & DIVNODE_EXTEND_WIDTH)
+    n->w  = max(n->w,max(n->pw,n->cw));
+  if (n->flags & DIVNODE_EXTEND_HEIGHT)
+    n->h  = max(n->h,max(n->ph,n->ch));
+  
+  /* Implement the calculation-time part of DIVNODE_DIVSCROLL */
+  if (n->flags & DIVNODE_DIVSCROLL) {
+    if (!n->divscroll)
+      n->divscroll = n;
+    if (n->next) {
+      n->next->flags |= DIVNODE_DIVSCROLL;
+      n->next->divscroll = n->divscroll;
+    }
+    if (n->div) {
+      n->div->flags |= DIVNODE_DIVSCROLL;
+      n->div->divscroll = n->divscroll;
+    }
+  }
+}
+
 /* Fill in the x,y,w,h of this divnode's children node based on it's
  * x,y,w,h and it's split. Also rebuilds child divnodes.
  * Recurse into all the node's children.
@@ -46,30 +76,6 @@ void divnode_recalc(struct divnode *n) {
 
    if (n->flags & DIVNODE_NEED_RECALC) {
      split = n->split;
-
-     /* Implement DIVNODE_EXTEND_* flags, used for scrolling */
-     n->calcx = n->x;
-     n->calcy = n->y;
-     n->calcw = n->w;
-     n->calch = n->h;
-     if (n->flags & DIVNODE_EXTEND_WIDTH)
-       n->w  = max(n->w,max(n->pw,n->cw));
-     if (n->flags & DIVNODE_EXTEND_HEIGHT)
-       n->h  = max(n->h,max(n->ph,n->ch));
-
-     /* Implement the calculation-time part of DIVNODE_DIVSCROLL */
-     if (n->flags & DIVNODE_DIVSCROLL) {
-       if (!n->divscroll)
-	 n->divscroll = n;
-       if (n->next) {
-	 n->next->flags |= DIVNODE_DIVSCROLL;
-	 n->next->divscroll = n->divscroll;
-       }
-       if (n->div) {
-	 n->div->flags |= DIVNODE_DIVSCROLL;
-	 n->div->divscroll = n->divscroll;
-       }
-     }
 
      /* Process as a popup box size */
      if (n->flags & DIVNODE_SPLIT_POPUP) {
@@ -324,10 +330,12 @@ void divnode_recalc(struct divnode *n) {
       */
      if (n->div) {
        n->div->flags |= DIVNODE_NEED_RECALC | (n->flags & DIVNODE_PROPAGATE_RECALC);
+       divnode_divscroll(n->div);
        div_rebuild(n->div);
      }     
      if ((n->flags & DIVNODE_PROPAGATE_RECALC) && n->next) {
        n->next->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+       divnode_divscroll(n->next);
        div_rebuild(n->next);
      }
      
