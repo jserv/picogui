@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.83 2002/04/02 21:16:52 micahjd Exp $
+/* $Id: video.h,v 1.84 2002/04/03 08:08:40 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -704,7 +704,32 @@ void linear32_slab(hwrbitmap dest, s16 x, s16 y, s16 w, hwrcolor c, s16 lgop);
 void linear32_bar(hwrbitmap dest, s16 x,s16 y,s16 h,hwrcolor c, s16 lgop);
 void linear32_rect(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop);
 void linear32_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
-	      s16 src_x, s16 src_y, s16 lgop);
+		   s16 src_x, s16 src_y, s16 lgop);
+void def_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
+		    s16 src_x, s16 src_y, s16 lgop);
+void def_ellipse(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
+void def_fellipse(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
+void def_fpolygon(hwrbitmap dest, s32* array, s16 xoff, s16 yoff , hwrcolor c, s16 lgop);
+g_error def_bitmap_load(hwrbitmap *bmp,const u8 *data,u32 datalen);
+g_error def_bitmap_new(hwrbitmap *bmp,
+		       s16 w,s16 h,u16 bpp);
+void def_bitmap_free(hwrbitmap bmp);
+void def_sprite_show(struct sprite *spr);
+void def_sprite_hide(struct sprite *spr);
+void def_sprite_update(struct sprite *spr);
+void def_sprite_hideall(void);
+void def_sprite_showall(void);
+g_error def_bitmap_rotate90(hwrbitmap *bmp);
+g_error def_bitmap_modeconvert(hwrbitmap *bmp);
+g_error def_bitmap_modeunconvert(hwrbitmap *bmp);
+g_error def_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend);
+void def_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius);
+#ifdef CONFIG_DITHER
+g_error def_dither_start(hwrdither *d, hwrbitmap dest, int vflip, 
+			 int x, int y, int w, int h);
+void def_dither_store(hwrdither *d, pgcolor pixel, s16 lgop);
+void def_dither_finish(hwrdither *d);
+#endif
 
 /************* Registration functions for video drivers */
 

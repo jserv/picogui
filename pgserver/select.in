@@ -40,15 +40,16 @@ close_section
 # Video base libraries
 open_section VIDBASE
 
-add_if_true linear1.c  $CONFIG_VBL_LINEAR1
-add_if_true linear2.c  $CONFIG_VBL_LINEAR2
-add_if_true linear4.c  $CONFIG_VBL_LINEAR4
-add_if_true linear8.c  $CONFIG_VBL_LINEAR8
-add_if_true linear16.c $CONFIG_VBL_LINEAR16
-add_if_true linear24.c $CONFIG_VBL_LINEAR24
-add_if_true linear32.c $CONFIG_VBL_LINEAR32
-add_if_true vgaplan4.c $CONFIG_VBL_VGAPLAN4
-add_if_true slowvbl.c  $CONFIG_VBL_SLOWVBL
+add_if_true linear1.c     $CONFIG_VBL_LINEAR1
+add_if_true linear2.c     $CONFIG_VBL_LINEAR2
+add_if_true linear4.c     $CONFIG_VBL_LINEAR4
+add_if_true linear8.c     $CONFIG_VBL_LINEAR8
+add_if_true linear16.c    $CONFIG_VBL_LINEAR16
+add_if_true linear24.c    $CONFIG_VBL_LINEAR24
+add_if_true linear32.c    $CONFIG_VBL_LINEAR32
+add_if_true vgaplan4.c    $CONFIG_VBL_VGAPLAN4
+add_if_true slowvbl.c     $CONFIG_VBL_SLOWVBL
+add_if_true dvbl_dither.c $CONFIG_DITHER
 
 close_section
 
