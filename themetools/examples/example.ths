@@ -1,0 +1,25 @@
+# This is a comment
+
+# I'm still trying to decide how the source code file
+# format should look...
+
+# This is one possibility, that theme objects would
+# be represented by bracketed sections of 'code'
+# Properties would be similar to variable assignments.
+# Simple properties could be specified with constants
+# and loaders could be represented with 'functions'
+
+# I'm also not sure about file extensions...
+# .ths for theme source and .th for a compiled theme?
+
+button {
+    bgcolor = 0xFFFFFF;
+    fgcolor = 0x000000;
+    font = font(size = 15);
+    bgfill = fillstyle( ??? );
+}
+
+button.hilight {
+    overlay = fillstyle( ??? );
+    font = property(font).bold;
+}
