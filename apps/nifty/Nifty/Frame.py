@@ -58,28 +58,28 @@ class Frame(object):
         t = page.addWidget('scrollbox', 'inside').addWidget(buffer.widget, 'inside')
         t.open(self, page, buffer)
 
-    def close(self, box=None):
-        if box is None:
-            box = self.current
+    def close(self, workspace=None):
+        if workspace is None:
+            workspace = self.current
             is_current = 1
         else:
-            is_current = box is self.current
-        self._pages.remove(box.tabpage)
-        box.buffer.del_observer(box)
-        self._app.delWidget(box)
-        self._app.delWidget(box.tabpage)
+            is_current = workspace is self.current
+        self._pages.remove(workspace.tabpage)
+        workspace.buffer.del_observer(workspace)
+        self._app.delWidget(workspace)
+        self._app.delWidget(workspace.tabpage)
         if is_current:
             self.current = 0
         # for the sake of the garbage collector
-        box.tabpage.workspace = None
-        box.tabpage = None
-        box.buffer = None
+        workspace.tabpage.workspace = None
+        workspace.tabpage = None
+        workspace.buffer = None
 
-    def save(self, box=None):
-        if box is None:
-            box = self.current
-        buffer = box.buffer
-        buffer.text = box.text
+    def save(self, workspace=None):
+        if workspace is None:
+            workspace = self.current
+        buffer = workspace.buffer
+        buffer.text = workspace.text
         buffer.save()
 
     def _save_button_handler(self, ev):
