@@ -34,4 +34,7 @@ WCLOCK TODO LIST
 
 13 show day/night illumination
 
+14 Fix huge memory leak you can see when pressing CTRL-ALT-M before and
+after changing zones
+
 [end]
