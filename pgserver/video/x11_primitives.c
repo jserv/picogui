@@ -1,4 +1,4 @@
-/* $Id: x11_primitives.c,v 1.12 2002/11/07 09:41:33 micahjd Exp $
+/* $Id: x11_primitives.c,v 1.13 2002/11/11 08:17:09 micahjd Exp $
  *
  * x11_primitives.c - Implementation of picogui primitives on top of the
  *                    X window system.
@@ -122,30 +122,25 @@ void x11_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
 }
 
 hwrcolor x11_getpixel(hwrbitmap src,s16 x,s16 y) {
-  XImage *img;
-  hwrcolor c;
-
   if (use_shm1(src))
     return XB(src)->lib->getpixel(&XB(src)->sb,x,y);
 
-#ifdef CONFIG_X11_NOPIXEL
-  return VID(color_pgtohwr)(0xFF0000);
-#else
-  /* Terribly slow method of getting a pixel...
-   * Hopefully we'll be using the SHM method instead.
+  /* We could use XGetImage to get the pixel value,
+   * but that is too horrible to speak of...
+   * Since we should never have to use this, just return
+   * bright red so we know something's wrong.
    */
-  img = XGetImage (x11_display, XB(src)->d, x, y, 1, 1, AllPlanes, ZPixmap);
-  c = XGetPixel(img,0,0);
-  XDestroyImage(img);
-  return c;
-#endif
+  return VID(color_pgtohwr)(0xFF0000);
 }
 
 void x11_rect(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
   GC g = x11_gctab[lgop];
 
-  if (!g && use_shm1(dest)) {
-    XB(dest)->lib->rect(&XB(dest)->sb, x,y,w,h,c,lgop);
+  if (!g) {
+    if (use_shm1(dest))
+      XB(dest)->lib->rect(&XB(dest)->sb, x,y,w,h,c,lgop);
+    else
+      def_rect(dest,x,y,w,h,c,lgop);
     return;
   }
   
@@ -157,8 +152,11 @@ void x11_rect(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
 void x11_line(hwrbitmap dest, s16 x1,s16 y1,s16 x2,s16 y2,hwrcolor c, s16 lgop) {
   GC g = x11_gctab[lgop];
 
-  if (!g && use_shm1(dest)) {
-    XB(dest)->lib->line(&XB(dest)->sb, x1,y1,x2,y2,c,lgop);
+  if (!g) {
+    if (use_shm1(dest))
+      XB(dest)->lib->line(&XB(dest)->sb, x1,y1,x2,y2,c,lgop);
+    else
+      def_line(dest,x1,y1,x2,y2,c,lgop);
     return;
   }
 
@@ -170,8 +168,11 @@ void x11_line(hwrbitmap dest, s16 x1,s16 y1,s16 x2,s16 y2,hwrcolor c, s16 lgop) 
 void x11_slab(hwrbitmap dest, s16 x,s16 y,s16 w, hwrcolor c, s16 lgop) {
   GC g = x11_gctab[lgop];
 
-  if (!g && use_shm1(dest)) {
-    XB(dest)->lib->slab(&XB(dest)->sb, x,y,w,c,lgop);
+  if (!g) {
+    if (use_shm1(dest))
+      XB(dest)->lib->slab(&XB(dest)->sb, x,y,w,c,lgop);
+    else
+      def_slab(dest,x,y,w,c,lgop);
     return;
   }
 
@@ -183,8 +184,11 @@ void x11_slab(hwrbitmap dest, s16 x,s16 y,s16 w, hwrcolor c, s16 lgop) {
 void x11_bar(hwrbitmap dest, s16 x,s16 y,s16 h, hwrcolor c, s16 lgop) {
   GC g = x11_gctab[lgop];
 
-  if (!g && use_shm1(dest)) {
-    XB(dest)->lib->bar(&XB(dest)->sb, x,y,h,c,lgop);
+  if (!g) {
+    if (use_shm1(dest))
+      XB(dest)->lib->bar(&XB(dest)->sb, x,y,h,c,lgop);
+    else
+      def_bar(dest,x,y,h,c,lgop);
     return;
   }
 
@@ -196,8 +200,11 @@ void x11_bar(hwrbitmap dest, s16 x,s16 y,s16 h, hwrcolor c, s16 lgop) {
 void x11_ellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
   GC g = x11_gctab[lgop];
 
-  if (!g && use_shm1(dest)) {
-    XB(dest)->lib->ellipse(&XB(dest)->sb, x,y,w,h,c,lgop);
+  if (!g) {
+    if (use_shm1(dest))
+      XB(dest)->lib->ellipse(&XB(dest)->sb, x,y,w,h,c,lgop);
+    else
+      def_ellipse(dest,x,y,w,h,c,lgop);
     return;
   }
 
@@ -209,8 +216,11 @@ void x11_ellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
 void x11_fellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
   GC g = x11_gctab[lgop];
 
-  if (!g && use_shm1(dest)) {
-    XB(dest)->lib->fellipse(&XB(dest)->sb, x,y,w,h,c,lgop);
+  if (!g) {
+    if (use_shm1(dest))
+      XB(dest)->lib->fellipse(&XB(dest)->sb, x,y,w,h,c,lgop);
+    else
+      def_fellipse(dest,x,y,w,h,c,lgop);
     return;
   }
 
@@ -223,8 +233,11 @@ void x11_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 	      s16 src_x, s16 src_y, s16 lgop) {
   GC g = x11_gctab[lgop];
 
-  if (!g && use_shm2(src,dest)) {
-    XB(dest)->lib->blit(&XB(dest)->sb, x,y,w,h, &XB(src)->sb, src_x,src_y,lgop);
+  if (!g) {
+    if (use_shm2(src,dest))
+      XB(dest)->lib->blit(&XB(dest)->sb, x,y,w,h, &XB(src)->sb, src_x,src_y,lgop);
+    else
+      def_blit(dest,x,y,w,h,src,src_x,src_y,lgop);
     return;
   }
 
@@ -302,8 +315,11 @@ void x11_fpolygon(hwrbitmap dest, s32* array, s16 xoff, s16 yoff , hwrcolor c, s
   int npoints;
   int i;
 
-  if (!g && use_shm1(dest)) {
-    XB(dest)->lib->fpolygon(&XB(dest)->sb, array,xoff,yoff,c,lgop);
+  if (!g) {
+    if (use_shm1(dest))
+      XB(dest)->lib->fpolygon(&XB(dest)->sb, array,xoff,yoff,c,lgop);
+    else
+      def_fpolygon(dest,array,xoff,yoff,c,lgop);
     return;
   }
 
@@ -342,8 +358,11 @@ void x11_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 		    s16 src_x, s16 src_y, s16 lgop) {
   GC g = x11_gctab[lgop];
 
-  if (!g && use_shm2(src,dest)) {
-    XB(dest)->lib->scrollblit(&XB(dest)->sb, x,y,w,h, &XB(src)->sb, src_x,src_y,lgop);
+  if (!g) {
+    if (use_shm2(src,dest))
+      XB(dest)->lib->scrollblit(&XB(dest)->sb, x,y,w,h, &XB(src)->sb, src_x,src_y,lgop);
+    else
+      def_scrollblit(dest,x,y,w,h,src,src_x,src_y,lgop);
     return;
   }
 
