@@ -1,3 +1,17 @@
+2001-06-04    Pascal Bauermeister <pascal.bauermeister@smartdata.ch>
+	* input/tsinput.c: Added two arguments in PG_TS_CALIBRATION to set
+	the pointer shift
+
+	* appmgr/global.c: Big cursor for ChipSlice !
+
+	* SMARTDATA-soft.config SMARTDATA.config: Latest Smartdata config
+
+
+2001-05-29    Pascal Bauermeister <pascal.bauermeister@smartdata.ch>
+	* video/ez328.c: CONFIG_SOFT_CHIPSLICE shares the same bug as
+	Xcopilot: restoring of LCD registers have to be skipped
+
+
 2001-04-12    Pascal Bauermeister <pascal.bauermeister@smartdata.ch>
 
 	* vidbase/linear1.c vidbase/linear2.c vidbase/linear3.c:
