@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.219 2003/01/01 03:43:09 micahjd Exp $
+/* $Id: widget.c,v 1.220 2003/01/20 02:40:00 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -110,20 +110,17 @@ g_error widget_create(struct widget **w, handle *h, int type,
  */
 void r_widget_setcontainer(struct divnode *n, handle oldcontainer,
 			   handle container, struct divtree *dt) {  
-  handle new_oldcontainer = oldcontainer;
-
   if (!n)
     return;
 
   if (n->owner) {
     n->owner->dt = dt;
-    new_oldcontainer = n->owner->container;
     if (n->owner->container == oldcontainer)
       n->owner->container = container;
   }    
 
-  r_widget_setcontainer(n->div,new_oldcontainer,container,dt);
-  r_widget_setcontainer(n->next,new_oldcontainer,container,dt);
+  r_widget_setcontainer(n->div,oldcontainer,container,dt);
+  r_widget_setcontainer(n->next,oldcontainer,container,dt);
 }
  
 g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **where, handle container) {
