@@ -1,5 +1,5 @@
 %{
-/* $Id: pglex.l,v 1.2 2001/09/27 16:18:37 micahjd Exp $
+/* $Id: pglex.l,v 1.3 2001/10/10 01:52:31 micahjd Exp $
  *
  * pgtheme.l - lexer for processing PicoGUI theme source code
  *
@@ -55,6 +55,7 @@ ColorMult       { return COLORMULT; }
 LoadBitmap      { return LOADBITMAP; }
 Copy            { return COPY; }
 Font            { return FONT; }
+Array           { return ARRAY; }
 "NULL"          { yylval.num = 0; return STRING; }
 
    /* symbols, operators, and strings */

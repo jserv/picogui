@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.14 2001/08/03 16:54:40 gobry Exp $
+/* $Id: main.c,v 1.15 2001/10/10 01:52:31 micahjd Exp $
  *
  * main.c - main() and some parser utility functions for
  *          the PicoGUI theme compiler.  The actual parsing
@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
 
   /* Little message thing */
   if (!quiet && !testrun)
-    printf("Compiling %s -> %s\n",filename,outfile);
+    fprintf(stderr,"Compiling %s -> %s\n",filename,outfile);
 
   /*** Initialization */
 

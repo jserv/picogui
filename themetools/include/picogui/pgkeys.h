@@ -1,4 +1,4 @@
-/* $Id: pgkeys.h,v 1.17 2001/09/03 06:03:17 micahjd Exp $
+/* $Id: pgkeys.h,v 1.18 2001/10/10 01:52:31 micahjd Exp $
  *
  * pgkeys.h - Constants for the keyboard keys and modifiers
  *
@@ -46,6 +46,7 @@
 #define PGKEY_QUOTEDBL           34
 #define PGKEY_HASH      	 35
 #define PGKEY_DOLLAR    	 36
+#define PGKEY_PERCENT            37
 #define PGKEY_AMPERSAND          38
 #define PGKEY_QUOTE     	 39
 #define PGKEY_LEFTPAREN  	 40
@@ -105,6 +106,10 @@
 #define PGKEY_x           	 120
 #define PGKEY_y           	 121
 #define PGKEY_z           	 122
+#define PGKEY_LEFTBRACE          123
+#define PGKEY_PIPE               124
+#define PGKEY_RIGHTBRACE         125
+#define PGKEY_TILDE              126
 #define PGKEY_DELETE           	 127
 #define PGKEY_WORLD_0            160		/* 0xA0 */
 #define PGKEY_WORLD_1            161
@@ -264,6 +269,8 @@
 #define PGKEY_MENU        	 319
 #define PGKEY_POWER        	 320		/* Power Macintosh power key */
 #define PGKEY_EURO        	 321		/* Some european keyboards */
+#define PGKEY_ALPHA              322   /* Selects letters on a numeric keypad
+					* (for celphones and similar devices */
 
 /* Modifier keys (also from SDL) */
 #define PGMOD_LSHIFT  0x0001

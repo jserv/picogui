@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.39 2001/09/03 06:03:17 micahjd Exp $
+/* $Id: constants.h,v 1.40 2001/10/10 01:52:31 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -342,9 +342,10 @@ typedef unsigned long pghandle;
 #define PGTH_O_RADIOBUTTON_HILIGHT   54   //!< Radio button (cust. button)
 #define PGTH_O_RADIOBUTTON_ON        55   //!< Radio button (cust. button)
 #define PGTH_O_RADIOBUTTON_ON_NOHILIGHT 56 //!< Radio button (cust. button)
+#define PGTH_O_TEXTBOX               57   //!< Textbox widget
 
 //! If you add a themeobject, be sure to increment this and add an inheritance entry in theme/memtheme.c
-#define PGTH_ONUM                    57
+#define PGTH_ONUM                    58
 
 //! \}
 
@@ -734,6 +735,11 @@ typedef unsigned long pghandle;
 #define PGDM_BACKLIGHT        2   //!< Turn the backlight on/off
 #define PGDM_SOUNDFX          3   //!< Parameter is a PG_SND_* constant
 #define PGDM_POWER            4   //!< Enter the power mode, PG_POWER_*
+#define PGDM_SDC_CHAR         5   //!< Send a character to the secondary display channel
+#define PGDM_BRIGHTNESS       6   //!< Set display brightness, 0x00-0xFF
+#define PGDM_CONTRAST         7   //!< Set display contrast, 0x00-0xFF
+#define PGDM_INPUT_RAW        8   //!< Send PG_NWE_PNTR_RAW from the specified widget
+#define PGDM_INPUT_SETCAL     9   //!< param is a handle to a new calibration string
 
 #define PG_SND_KEYCLICK       1   //!< Short click
 #define PG_SND_BEEP           2   //!< Terminal beep
@@ -741,6 +747,7 @@ typedef unsigned long pghandle;
 
 #define PG_POWER_OFF          0   //!< Turn completely off
 #define PG_POWER_SLEEP       50   //!< Stop CPU, turn off peripherals
+#define PG_POWER_VIDBLANK    70   //!< Blank the video output
 #define PG_POWER_FULL       100   //!< Full speed
 
 //! \}
@@ -776,7 +783,8 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_LISTITEM    16    /* Still yet another... */
 #define PG_WIDGET_SUBMENUITEM 17    /* Menuitem with a submenu arrow */
 #define PG_WIDGET_RADIOBUTTON 18    /* Like a check box, but exclusive */
-#define PG_WIDGETMAX          18    /* For error checking */
+#define PG_WIDGET_TEXTBOX     19    /* Client-side text layout */
+#define PG_WIDGETMAX          19    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1
@@ -803,11 +811,13 @@ typedef unsigned long pghandle;
 #define PG_WP_ABSOLUTEX   22    /* read-only, relative to screen */
 #define PG_WP_ABSOLUTEY   23
 #define PG_WP_ON          24    /* on-off state of button/checkbox/etc */
-#define PG_WP_STATE       25    /* theme object - the widget's current state */
+#define PG_WP_STATE       25    /* Deprecated! Use PG_WP_THOBJ instead */
+#define PG_WP_THOBJ       25    /* Set a widget's theme object */
 #define PG_WP_NAME        26    /* A widget's name (for named containers, etc) */
 #define PG_WP_PUBLICBOX   27    /* Set to 1 to allow other apps to make widgets
 				 * in this container */
 #define PG_WP_DISABLED    28    /* For buttons, grays out text and prevents clicking */
+#define PG_WP_MARGIN      29    /* For boxes, overrides the default margin */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0
@@ -846,7 +856,6 @@ typedef unsigned long pghandle;
 #define PG_EVENTCODING_PNTR     0x200   /* Mouse parameters (x,y,btn,chbtn) */
 #define PG_EVENTCODING_DATA     0x300   /* Arbitrary data block */
 #define PG_EVENTCODING_KBD      0x400   /* Keyboard params */
-
 #define PG_EVENTCODINGMASK      0xF00
 
 /* Widget events */
@@ -865,6 +874,7 @@ typedef unsigned long pghandle;
 #define PG_WE_KBD_CHAR    0x40A /* A focused keyboard character recieved */
 #define PG_WE_KBD_KEYUP   0x40B /* A focused raw keyup event */
 #define PG_WE_KBD_KEYDOWN 0x40C /* A focused raw keydown event */
+#define PG_WE_APPMSG      0x301 /* Messages from another application */
 
 /* Non-widget events */
 #define PG_NWE_KBD_CHAR    0x140A /* These are sent if the client has captured the */
@@ -874,6 +884,7 @@ typedef unsigned long pghandle;
 #define PG_NWE_PNTR_UP     0x1205
 #define PG_NWE_PNTR_DOWN   0x1204
 #define PG_NWE_BGCLICK     0x120D /* The user clicked the background widget */
+#define PG_NWE_PNTR_RAW    0x1101 /* Raw coordinates, for tpcal */
 
 /* These are event constants used for networked input drivers. It is a subset
  * of the TRIGGER_* constants in the server, representing only those needed

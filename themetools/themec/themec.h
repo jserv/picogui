@@ -1,4 +1,4 @@
-/* $Id: themec.h,v 1.10 2000/10/10 00:49:06 micahjd Exp $
+/* $Id: themec.h,v 1.11 2001/10/10 01:52:31 micahjd Exp $
  *
  * themec.h - definitions used internally in the theme compiler
  *
@@ -91,6 +91,12 @@ struct fsnode {
   unsigned long param;
   unsigned long param2;
   struct fsnode *next;
+};
+
+/* A single constant in a list of constants */
+struct constnode {
+  unsigned long data;
+  struct constnode *next;
 };
 
 /* Linked list of loaders to link */

@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.31 2001/09/27 16:28:20 micahjd Exp $
+/* $Id: pgtheme.y,v 1.32 2001/10/10 01:52:31 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -51,6 +51,7 @@
   struct propnode *prop;
   struct objectnode *obj;
   struct fsnode *fsn;
+  struct constnode *constn;
   char *str;
 }
 
@@ -65,6 +66,7 @@
 %token <propval> LOADBITMAP
 %token <propval> COPY
 %token <propval> FONT
+%token <propval> ARRAY
 
 %type <num>      constexp
 %type <propval>  propertyval
@@ -88,6 +90,8 @@
 %type <fsn>      fsbody
 %type <fsn>      fsvar
 %type <fsn>      fsprop
+%type <constn>   constnode
+%type <constn>   constnode_list
 
    /* Reserved words */
 %token OBJ FILLSTYLE VAR SHIFTR SHIFTL COLORADD COLORSUB COLORDIV COLORMULT
@@ -275,7 +279,68 @@ propertyval:  constexp          { $$.data = $1; $$.loader = PGTH_LOAD_NONE; $$.l
   $$.ldnode = newloader(buf,(sizeof(struct pgrequest)+len));
   $$.loader = PGTH_LOAD_REQUEST;
 }
+	   |  ARRAY '(' constnode_list ')' {
+  unsigned char *buf;
+  struct pgrequest *req;
+  struct constnode *n,*condemn;
+  unsigned long *arr;
+  int len;
+
+  /* Count the number of constants in the list */
+  n = $3;
+  len = 0;
+  while (n) {
+    len++;
+    n = n->next;
+  }
+
+  /* Allocate the buffer */
+  if (!(buf = malloc(sizeof(struct pgrequest)+ len*4 )))
+    yyerror("memory allocation error");
+
+  /* Reserve space for the request header */
+  req = (struct pgrequest *) buf;
+  memset(req,0,sizeof(struct pgrequest));
+  req->type = htons(PGREQ_MKARRAY);
+  req->size = htonl(len*4);
+
+  /* Byteswap each constant into the new array, freeing the constant list */
+  arr = (unsigned long *) ((unsigned char *) buf + sizeof(struct pgrequest));
+  n = $3;
+  while (n) {
+    *arr = htonl(n->data);
+    arr++;
+    condemn = n;
+    n = n->next;
+    free(condemn);
+  }
+
+  $$.ldnode = newloader(buf,(sizeof(struct pgrequest)+len*4));
+  $$.loader = PGTH_LOAD_REQUEST;
+}
            ;
+
+constnode_list: constnode                     { $$ = $1; }
+              | constnode_list ',' constnode  { 
+  /* Find the end of the list */
+  struct constnode *n = $1;
+  while (n->next)
+    n = n->next;
+  /* Concatenate */
+  n->next = $3;
+  $$ = $1;
+}
+              ;
+
+constnode: constexp { 
+  struct constnode *n = malloc(sizeof(struct constnode));
+  if (!n)
+    yyerror("memory allocation error");
+  n->data = $1;
+  n->next = NULL;
+  $$ = n;
+}
+         ;
 
 constexp: constexp '+' constexp { $$ = $1 + $3; }
         | constexp '-' constexp { $$ = $1 - $3; }
