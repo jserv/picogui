@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.8 2000/05/06 15:54:47 micahjd Exp $
+/* $Id: scroll.c,v 1.9 2000/05/24 04:31:30 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -164,6 +164,7 @@ g_error scroll_install(struct widget *self) {
 }
 
 void scroll_remove(struct widget *self) {
+  g_free(self->data);
   r_divnode_free(self->in);
 }
 
