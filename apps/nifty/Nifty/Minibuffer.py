@@ -40,7 +40,11 @@ class Minibuffer(object):
     def _python_handler(self, ev):
         self.append_to_history()
         self._field.text = ''
-        self._frame.current.focus()
+        try:
+            self._frame.current.focus()
+        except AttributeError:
+            # no buffers open
+            self._frame.toolbar.focus()
         self._saved_text = None
         try:
             workspace = self._frame.current
@@ -83,7 +87,11 @@ class Minibuffer(object):
         if self._saved_text is None:
             self._saved_text = self._field.text
         self._field.text = text
-        self._frame.current.focus()
+        try:
+            self._frame.current.focus()
+        except AttributeError:
+            # no buffers open
+            self._frame.toolbar.focus()
 
     def bind(__self, **kw):
         __self.python_ns.update(kw)

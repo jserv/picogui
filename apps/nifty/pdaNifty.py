@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-import sys, PicoGUI, thread, gc, os
+import sys, PicoGUI, gc, os
 from Nifty import Frame, FileBuffer, ScratchBuffer
 import Nifty.Poing as Poing
 import Nifty.QuikWriting as nqw
 
 poing = Poing.DB()
-frames = {}
+frame = None
 
 main_out = sys.stdout
 class _main_err(object):
@@ -16,13 +16,21 @@ class _main_err(object):
         if self.tb is None:
             app.server.mkcontext()
             self.dlg = app.createWidget('dialogbox')
-            self.dlg.text = 'pdaNifty message'
-            self.tb = self.dlg.addWidget('textbox', 'inside')
-            self.tb.insertmode = 'append'
-            btn = self.tb.addWidget('button')
-            btn.text = 'ok'
-            btn.side = 'all'
+            # contexts phoock up cli_python's string cache, so don't use it
+            self.dlg.text = app.server.mkstring('pdaNifty message')
+            scroll = self.dlg.addWidget('scrollbox', 'inside')
+            scroll.side = 'all'
+            self.tb = scroll.addWidget('textbox', 'inside')
+            self.tb.side = 'all'
+            # this is a hack to make the dialog big enough
+            self.tb.write('\n' * 10)
+            btn = self.dlg.addWidget('button', 'inside')
+            btn.text = app.server.mkstring('ok')
+            btn.side = 'bottom'
             app.link(self.close, btn, 'activate')
+            app.server.update()
+            self.tb.write('')
+            self.tb.insertmode = 'append'
         self.tb.readonly = False
         self.tb.write(s)
         self.tb.readonly = True
@@ -30,39 +38,49 @@ class _main_err(object):
 
     def close(self, ev):
         app.server.rmcontext()
+        self.tb = None
 main_err = _main_err()
+# uncomment when you need to debug
+main_err = sys.stderr
 
-class _threaded_stream_manager (object):
+class _stream_manager (object):
     def __init__(self, name, fallback):
         self.name = name
         self.fallback = fallback
 
     def write(self, s):
-        frame = frames.get (thread.get_ident(), None)
-        sink = getattr (frame, self.name, self.fallback)
-        sink.write(s)
+        try:
+            sink = getattr (frame, self.name, self.fallback)
+            sink.write(s)
+        except:
+            import traceback
+            print >> self.fallback, 'error while writing to %s!' % self.name
+            traceback.print_exc(file=self.fallback)
+            raise
 
-sys.stdout = _threaded_stream_manager ('minibuffer', main_out)
-sys.stderr = _threaded_stream_manager ('stderr', main_err)
+sys.stdout = _stream_manager ('minibuffer', main_out)
+sys.stderr = _stream_manager ('stderr', main_err)
 
-def run_frame(frame):
-    id = thread.get_ident()
-    frames[id] = frame
-    frame.bind(poing = poing)
-    frame.run()
-    del frames[id]
+def close_frame(ev):
+    global frame
+    print >> main_err, 'closing frame', frame
+    _app = frame._app
+    frame = None
+    print >> main_err, 'forgotten'
+    app.delWidget(_app) # does this leak? Do I have to del sub-widgets?
+    print >> main_err, 'deleted'
     gc.collect()
 
 def open_frame():
-    frame = Frame("This here is my text editor. Is it not nifty? Worship the text editor!")
-    thread.start_new_thread (run_frame, (frame,))
-    return frame
+    global frame
+    frame = Frame("This here is my text editor. Is it not nifty? Worship the text editor!", app=app)
+    app.link(close_frame, frame, 'close')
+    app.link(close_frame, frame, 'stop')
+    frame.bind(poing = poing)
 
 def get_frame():
-    if frames:
-        frame = frames.values()[0]
-    else:
-        frame = open_frame()
+    if frame is None:
+        open_frame()
     # doesn't work... how do we do something like that?
     #frame._app.focus()
     return frame

@@ -96,6 +96,8 @@ class Viewer(Workspace):
         for field in self.buffer.Schema():
             self.buffer.setField(field.name, self.fields[field.name].text)
 
+# TODO: add new item
+
 class Lister(Workspace):
     widget_type = 'Box'
     

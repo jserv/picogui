@@ -9,15 +9,18 @@ class Frame(object):
     history_limit = 23 # completely arbitrary
     clipboard_limit = 23 # idem
 
-    def __init__(self, title):
+    def __init__(self, title, initial_ns={}, app=None):
         self._pages = []
-        self._app = PicoGUI.Application(title)
+        self._app = PicoGUI.Application(title, parent=app)
+        # for the benefit of someone who might wish to link events to us
+        self.handle = self._app.handle
 
         self._box = self.addWidget('Box')
         self._box.side = 'All'
 
         self.python_ns = {'frame': self, '__name__': '__nifty__'}
         exec 'from Nifty import FileBuffer, ScratchBuffer, Subprocess, keybindings' in self.python_ns
+        self.python_ns.update(initial_ns)
 
         Nifty.config.exec_config_file('init.py', self.python_ns)
 
@@ -29,9 +32,7 @@ class Frame(object):
         self.link(self._save_button_handler, bt, 'activate')
 
         self.minibuffer = Minibuffer(self)
-        sys.stdout = self.minibuffer
-
-        sys.stderr = DebugBuffer(self)
+        self.stderr = DebugBuffer(self)
 
         self._clipboard = []
 
@@ -126,4 +127,6 @@ class Frame(object):
         return self._clipboard[-offset]
 
     def run(self):
-        return self._app.run()
+        r = self._app.run()
+        self._app.shutdown()
+        return r

@@ -2,6 +2,7 @@ default = {
     'C-x': {
       'C-c': 'raise SystemExit',
       'C-s': 'frame.save()',
+      'k': 'frame.close()',
     },
     'A-space': 'print workspace.cursor_position',
     'C-space': 'workspace.set_mark()',

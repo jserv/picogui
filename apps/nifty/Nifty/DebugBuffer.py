@@ -5,8 +5,6 @@ class DebugBuffer(TextBuffer):
 
     def __init__(self, frame):
         self.frame = frame
-        import sys
-        self.stderr = sys.stderr
         TextBuffer.__init__(self, '__debug__', 'Debugging information (sys.stderr):\n')
 
     def save(self):
@@ -18,7 +16,6 @@ class DebugBuffer(TextBuffer):
         o.insertmode = 'append'
 
     def write(self, text):
-        self.stderr.write(text)
         self.text += text
         if self.observers:
             for o in self.observers:
