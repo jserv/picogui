@@ -93,6 +93,7 @@ CONFIG_FB_YUV16=y
 # Input Drivers
 #
 # CONFIG_TOUCHSCREEN is not set
+# DRIVER_H3600TS is not set
 # DRIVER_ADC7843 is not set
 # DRIVER_SDLINPUT is not set
 # DRIVER_X11INPUT is not set
@@ -102,17 +103,16 @@ CONFIG_FB_YUV16=y
 # DRIVER_CHIPSLICETS is not set
 # DRIVER_RRTS is not set
 DRIVER_EVENTBROKER=y
-# DRIVER_VR3TS is not set
-# DRIVER_H3600TS is not set
 # DRIVER_TUXTS is not set
 DRIVER_TTYKB=y
 # DRIVER_RAWTTYKB is not set
 # DRIVER_REMORAKB is not set
-DRIVER_SERIALMOUSE=y
+# DRIVER_SERIALMOUSE is not set
 # DRIVER_MGL2INPUT is not set
 # DRIVER_ERICSSON_CHATBOARD is not set
 # DRIVER_PS2MOUSE is not set
 # DRIVER_JSDEV is not set
+# CONFIG_KEY_ALPHA is not set
 
 #
 # Video Base Libraries
@@ -144,7 +144,6 @@ CONFIG_ROTATIONBASE_0=y
 # CONFIG_ROTATIONBASE_270 is not set
 # CONFIG_ROTATIONBASE_NOKEYS is not set
 # CONFIG_ROTATIONBASE_NOPOINTING is not set
-# CONFIG_ROTATIONBASE_CLIENT is not set
 
 #
 # Widget Options
