@@ -1,15 +1,5 @@
 #!/bin/sh
 
-# This is a small hack to install default configuration if none exists yet.
-# This lets developers easily make local changes to profile.user without
-# having to worry about them going into CVS. There might be a better way
-# to do this.
-# -- Micah
-if [ ! -f profile.user ] ; then
-    echo "Installing default configuration"
-	 cp profile.defaults profile.user
-fi
-
 aclocal_extra="-I macros"
 
 if [ -f .autogen.conf ] ; then
