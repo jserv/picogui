@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.70 2002/01/19 08:11:53 micahjd Exp $
+/* $Id: div.c,v 1.71 2002/01/21 08:17:28 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -37,10 +37,12 @@
  */
 void divnode_divscroll(struct divnode *n) {
   /* Implement DIVNODE_EXTEND_* flags, used for scrolling */
-  n->calcx = n->x;
-  n->calcy = n->y;
-  n->calcw = n->w;
-  n->calch = n->h;
+
+  n->x = n->calcx;
+  n->y = n->calcy;
+  n->w = n->calcw;
+  n->h = n->calch;
+
   if (n->flags & DIVNODE_EXTEND_WIDTH)
     n->w  = max(n->w,max(n->pw,n->cw));
   if (n->flags & DIVNODE_EXTEND_HEIGHT)
@@ -84,13 +86,18 @@ void divnode_split(struct divnode *n, struct rect *divrect,
    * override all the normal sizing flags.
    */
   if (n->flags & DIVNODE_UNDERCONSTRUCTION) {
-    nextrect->x = n->x;
-    nextrect->y = n->y;
-    nextrect->w = n->w;
-    nextrect->h = n->h;
+
+    /* Sometimes we should just not mess with it... */
+    if (n->flags & (DIVNODE_SPLIT_POPUP | DIVNODE_SPLIT_IGNORE))
+      return;
+
+    nextrect->x = n->calcx;
+    nextrect->y = n->calcy;
+    nextrect->w = n->calcw;
+    nextrect->h = n->calch;
     
-    divrect->x = n->x;
-    divrect->y = n->y;
+    divrect->x = n->calcx;
+    divrect->y = n->calcy;
     divrect->w = 0;
     divrect->h = 0;
   }
@@ -102,10 +109,10 @@ void divnode_split(struct divnode *n, struct rect *divrect,
     n->flags &= ~DIVNODE_SPLIT_POPUP;   /* Clear flag */
 
     /* Get size */
-    x = n->div->x;
-    y = n->div->y;
-    w = n->div->w;
-    h = n->div->h;
+    x = n->div->calcx;
+    y = n->div->calcy;
+    w = n->div->calcw;
+    h = n->div->calch;
 
     /* Get margin value */
     margin = theme_lookup(n->owner->in->div->state,PGTH_P_MARGIN);
@@ -173,13 +180,19 @@ void divnode_split(struct divnode *n, struct rect *divrect,
   
   /* All available space for div */
   else if (n->flags & DIVNODE_SPLIT_EXPAND) {
-    divrect->x = n->x;
-    divrect->y = n->y;
+
+    /* NOTE: the discrepancy in using calcx/y and normal w/h here
+     * is intentional. We want the normal calculated x/y coordinates
+     * because we don't want scrolling to be taking effect. But,
+     * the width and height should be expanded if necessary.
+     */
+    divrect->x = n->calcx;
+    divrect->y = n->calcy;
     divrect->w = n->w;
     divrect->h = n->h; 
 
-    nextrect->x = n->x;
-    nextrect->y = n->y;
+    nextrect->x = n->calcx;
+    nextrect->y = n->calcy;
     nextrect->w = 0;
     nextrect->h = 0;
   }
@@ -209,21 +222,21 @@ void divnode_split(struct divnode *n, struct rect *divrect,
 	split = n->h;
     }       
     
-    divrect->x = n->x;
+    divrect->x = n->calcx;
     divrect->w = n->w;
-    nextrect->x = n->x;
+    nextrect->x = n->calcx;
     nextrect->w = n->w;
 
     if (n->flags & DIVNODE_SPLIT_TOP) {
-      divrect->y = n->y;
+      divrect->y = n->calcy;
       divrect->h = split;
-      nextrect->y = n->y+split;
+      nextrect->y = n->calcy+split;
       nextrect->h = n->h-split;
     }
     else {
-      divrect->y = n->y+n->h-split;
+      divrect->y = n->calcy+n->h-split;
       divrect->h = split;
-      nextrect->y = n->y;
+      nextrect->y = n->calcy;
       nextrect->h = n->h-split;
     }
   }
@@ -252,21 +265,21 @@ void divnode_split(struct divnode *n, struct rect *divrect,
 	split = n->w;
     }       
     
-    divrect->y = n->y;
+    divrect->y = n->calcy;
     divrect->h = n->h;
-    nextrect->y = n->y;
+    nextrect->y = n->calcy;
     nextrect->h = n->h;
 
     if (n->flags & DIVNODE_SPLIT_LEFT) {
-      divrect->x = n->x;
+      divrect->x = n->calcx;
       divrect->w = split;
-      nextrect->x = n->x+split;
+      nextrect->x = n->calcx+split;
       nextrect->w = n->w-split;
     }
     else {
-      divrect->x = n->x+n->w-split;
+      divrect->x = n->calcx+n->w-split;
       divrect->w = split;
-      nextrect->x = n->x;
+      nextrect->x = n->calcx;
       nextrect->w = n->w-split;
     }
   }
@@ -276,11 +289,11 @@ void divnode_split(struct divnode *n, struct rect *divrect,
   else if (n->flags & DIVNODE_SPLIT_CENTER) {
     divrect->w = n->cw;
     divrect->h = n->ch;
-    divrect->x = n->x+(n->w-divrect->w)/2;
-    divrect->y = n->y+(n->h-divrect->h)/2;
+    divrect->x = n->calcx+(n->w-divrect->w)/2;
+    divrect->y = n->calcy+(n->h-divrect->h)/2;
     
-    nextrect->x = n->x;
-    nextrect->y = n->y;
+    nextrect->x = n->calcx;
+    nextrect->y = n->calcy;
     nextrect->w = n->w;
     nextrect->h = n->h;
   }
@@ -295,13 +308,13 @@ void divnode_split(struct divnode *n, struct rect *divrect,
 	split = n->h/2;
     }
     
-    divrect->x = n->x+split;
-    divrect->y = n->y+split;
+    divrect->x = n->calcx+split;
+    divrect->y = n->calcy+split;
     divrect->w = n->w-split*2;
     divrect->h = n->h-split*2;
     
-    nextrect->x = n->x;
-    nextrect->y = n->y;
+    nextrect->x = n->calcx;
+    nextrect->y = n->calcy;
     nextrect->w = n->w;
     nextrect->h = n->h;
   }
@@ -314,13 +327,13 @@ void divnode_split(struct divnode *n, struct rect *divrect,
 
   /* Otherwise give children same w,h,x,y */
   else {
-    nextrect->x = n->x;
-    nextrect->y = n->y;
+    nextrect->x = n->calcx;
+    nextrect->y = n->calcy;
     nextrect->w = n->w;
     nextrect->h = n->h;
     
-    divrect->x = n->x;
-    divrect->y = n->y;
+    divrect->x = n->calcx;
+    divrect->y = n->calcy;
     divrect->w = n->w;
     divrect->h = n->h;
   }
@@ -331,12 +344,20 @@ void divnode_split(struct divnode *n, struct rect *divrect,
     n->next->y = nextrect->y;
     n->next->w = nextrect->w;
     n->next->h = nextrect->h;
+    n->next->calcx = nextrect->x;
+    n->next->calcy = nextrect->y;
+    n->next->calcw = nextrect->w;
+    n->next->calch = nextrect->h;
   }
   if (n->div) {
     n->div->x = divrect->x;
     n->div->y = divrect->y;
     n->div->w = divrect->w;
     n->div->h = divrect->h;
+    n->div->calcx = divrect->x;
+    n->div->calcy = divrect->y;
+    n->div->calcw = divrect->w;
+    n->div->calch = divrect->h;
   }
 
   /* Validate the size of a popup*/
@@ -614,6 +635,8 @@ g_error divtree_new(struct divtree **dt) {
   errorcheck;
   e = newdiv(&(*dt)->head,NULL);
   errorcheck;
+  (*dt)->head->calcw = vid->lxres;
+  (*dt)->head->calch = vid->lyres;
   (*dt)->head->w = vid->lxres;
   (*dt)->head->h = vid->lyres;
   (*dt)->flags = DIVTREE_ALL_REDRAW;

@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.43 2002/01/16 19:47:27 lonetech Exp $
+/* $Id: popup.c,v 1.44 2002/01/21 08:17:30 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -66,6 +66,15 @@ void clip_popup(struct divnode *div) {
     div->w = ntb.x+ntb.w - div->x;
   if (div->y+div->h >= ntb.y+ntb.h)
     div->h = ntb.y+ntb.h - div->y;
+
+  /* Pretend these were the actual calculated
+   * coordinates so the x,y position propagates through
+   * the layout engine also.
+   */
+  div->calcx = div->x;
+  div->calcy = div->y;
+  div->calcw = div->w;
+  div->calch = div->h;
 }
 
 /* We have a /special/ function to create a popup widget from scratch. */
@@ -98,10 +107,10 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   /* Set the position and size verbatim, let the
    * layout engine sort things out */
 
-  (*wgt)->in->div->x = x;
-  (*wgt)->in->div->y = y;
-  (*wgt)->in->div->w = w;
-  (*wgt)->in->div->h = h;
+  (*wgt)->in->div->calcx = x;
+  (*wgt)->in->div->calcy = y;
+  (*wgt)->in->div->calcw = w;
+  (*wgt)->in->div->calch = h;
    
   /* Escape can close the popup box */
   install_hotkey(*wgt,PGKEY_ESCAPE);
