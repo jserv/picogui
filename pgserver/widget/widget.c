@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.160 2002/02/11 19:39:24 micahjd Exp $
+/* $Id: widget.c,v 1.161 2002/02/12 07:31:00 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -380,7 +380,7 @@ void widget_remove(struct widget *w) {
   if (!in_shutdown) {
     /* Set the flags for redraw */
     if (w->dt && w->dt->head) {
-      w->dt->head->flags |= DIVNODE_NEED_RECALC;
+      w->dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC;
       w->dt->flags |= DIVTREE_NEED_RECALC;
     }   
   }
