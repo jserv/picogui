@@ -1,4 +1,4 @@
-/* $Id: hotspot.h,v 1.3 2001/09/03 00:28:39 micahjd Exp $
+/* $Id: hotspot.h,v 1.4 2001/09/10 10:05:50 micahjd Exp $
  *
  * pgserver/hotspot.h - This is an interface for managing hotspots.
  *                      The divtree is scanned for hotspot divnodes.
@@ -48,10 +48,11 @@ struct hotspot {
   /* Position */
   s16 x,y;
 
-  /* If the hotspot is in a scrolled container and isn't currently visible,
-   * this is the scroll container.
+  /* If this hotspot is attached to a specific divnode, this should be
+   * a pointer to that divnode. This allows focusing and scrolling to work
+   * automatically, but is not required.
    */
-  struct divnode *divscroll;
+  struct divnode *div;
 
   /* Links for the hotspot graph, indexed by direction */
   struct hotspot *graph[HOTSPOTMAX];
@@ -64,7 +65,7 @@ struct hotspot {
 void hotspot_free(void);
 
 /* Add a new hotspot to the list, don't reconfigure graph */
-g_error hotspot_add(s16 x, s16 y, struct divnode *divscroll);
+g_error hotspot_add(s16 x, s16 y, struct divnode *div);
 
 /* Recursively add hotspots for all applicable divnodes 
  * If 'ntb' is non-NULL, only add hotspots outside it.
@@ -87,6 +88,14 @@ void hotspot_graph(void);
  * The direction is a HOTSPOT_* constant
  */
 void hotspot_traverse(short direction);
+
+/* Given a divnode, this will scroll the divnode's container so that
+ * the divnode is completely visible.
+ */
+void scroll_to_divnode(struct divnode *div);
+
+/* Return a preferred position for a hotspot within the specified divnode */
+void divnode_hotspot_position(struct divnode *div, s16 *hx, s16 *hy);
 
 #endif /* __H_HOTSPOT */
 

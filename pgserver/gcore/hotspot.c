@@ -1,4 +1,4 @@
-/* $Id: hotspot.c,v 1.10 2001/09/03 02:04:00 micahjd Exp $
+/* $Id: hotspot.c,v 1.11 2001/09/10 10:05:50 micahjd Exp $
  *
  * hotspot.c - This is an interface for managing hotspots.
  *             The divtree is scanned for hotspot divnodes.
@@ -73,7 +73,7 @@ void hotspot_free(void) {
 }
 
 /* Add a new hotspot to the list with an insertion sort */
-g_error hotspot_add(s16 x, s16 y, struct divnode *divscroll) {
+g_error hotspot_add(s16 x, s16 y, struct divnode *div) {
   struct hotspot *newspot;
   g_error e;
   struct hotspot **where;
@@ -84,7 +84,7 @@ g_error hotspot_add(s16 x, s16 y, struct divnode *divscroll) {
   memset(newspot,0,sizeof(struct hotspot));
   newspot->x = x;
   newspot->y = y;
-  newspot->divscroll = divscroll;
+  newspot->div = div;
   
   /* Figure out where to add the node */
   where = &hotspotlist;
@@ -110,22 +110,10 @@ g_error hotspot_build(struct divnode *n, struct divnode *ntb) {
        n->x >= ntb->x+ntb->w || n->y >= ntb->y+ntb->h)) {
 
     /* Find a good place within the node for the hotspot */
-    x = n->x + n->w - 8;
-    y = n->y + n->h - 8;
-    if (x<n->x)
-      x = n->x;
-    if (y<n->y)
-      y = n->y;
+    divnode_hotspot_position(n,&x,&y);
 
-    /* If this is a scrolled divnode, see if it's not visible */
-
-    if ((n->flags & DIVNODE_DIVSCROLL) && n->divscroll && 
-	(x < n->divscroll->calcx || y < n->divscroll->calcy ||
-	 x >= (n->divscroll->calcx+n->divscroll->calcw) || 
-	 y >= (n->divscroll->calcy+n->divscroll->calch)))
-      e = hotspot_add(x,y,n->divscroll);
-    else
-      e = hotspot_add(x,y,NULL);
+    /* Give the hotspot both an actual hotspot position and the divnode */
+    e = hotspot_add(x,y,n);
     errorcheck;
   }
 
@@ -279,48 +267,73 @@ void hotspot_traverse(short direction) {
       return;
   }
 
-  /* Must we scroll first? */
-  if (p->divscroll) {
-    s16 dx = 0,dy = 0;
-    struct divnode *ds = p->divscroll;
-    struct widget *w;
-
-    /* Figure out how much to scroll */
-    if (p->x < ds->calcx || p->x >= (ds->calcx + ds->calcw))
-      dx = p->x - cursor->x;
-    if (p->y < ds->calcy || p->y >= (ds->calcy + ds->calch))
-      dy = p->y - cursor->y;
-
-    /* Move cursor to the hotspot position, taking scroll into account */
-    px = p->x - dx;
-    py = p->y - dy;
-
-    /* Get a pointer to the scroll bar */
-    if (!iserror(rdhandle((void **)&w,PG_TYPE_WIDGET,-1,
-			  ds->owner->scrollbind)) && w) {
-
-      /* FIXME: horizontal scroll here! */
-
-      if (dy)
-	widget_set(w,PG_WP_VALUE,widget_get(w,PG_WP_VALUE) + dy);
-
-      update(NULL,1);
-    }
+  /* Make sure the divnode is scrolled in and focused now */
+  if (p->div) {
+    request_focus(p->div->owner);
   }
   else {
-    /* Move cursor to the hotspot position */
+    /* If it's not a divnode hotspot, just move the mouse to it.
+     * If we're actually focusing the widget, that code will handle
+     * pointer warping, etc. Otherwise we need to do a simple pointer 
+     * warp here.
+     */
+
+    s16 px,py;
     px = p->x;
     py = p->y;
+    VID(coord_physicalize)(&px,&py);
+    dispatch_pointing(PG_TRIGGER_MOVE,px,py,0);
   }
-  /* move the cursor */
-  VID(coord_physicalize)(&px,&py);
-  dispatch_pointing(PG_TRIGGER_MOVE,px,py,0);
+}
 
-  /* focus the widget under the cursor*/
-  if (under)
-    request_focus(under);
+void scroll_to_divnode(struct divnode *div) {
+  s16 dx = 0,dy = 0;
+  struct divnode *ds = div->divscroll;
+  struct widget *w;
 
-  drivermessage(PGDM_CURSORVISIBLE,1);
+  if (!ds)
+    return;
+
+  /* Figure out how much to scroll, if any. */
+
+  if (div->x < ds->calcx)
+    dx = div->x - ds->calcx;
+  else if ( (div->x + div->w) > (ds->calcx + ds->calcw) )
+    dx = (div->x + div->w) - (ds->calcx + ds->calcw);
+  if (div->y < ds->calcy)
+    dy = div->y - ds->calcy;
+  else if ( (div->y + div->h) > (ds->calcy + ds->calch) )
+    dy = (div->y + div->h) - (ds->calcy + ds->calch);
+
+  /* No scrolling? */
+  if (!(dx || dy))
+    return;
+
+  /* Get a pointer to the scroll bar */
+  if (!iserror(rdhandle((void **)&w,PG_TYPE_WIDGET,-1,
+			ds->owner->scrollbind)) && w) {
+    
+    /* FIXME: horizontal scroll here! */
+    
+    if (dy)
+      widget_set(w,PG_WP_VALUE,widget_get(w,PG_WP_VALUE) + dy);
+    
+    update(NULL,1);
+  }
+}
+
+/* Return a preferred position for a hotspot within the specified divnode */
+void divnode_hotspot_position(struct divnode *div, s16 *hx, s16 *hy) {
+
+  /* FIXME: Get a smarter way to find the hotspot. For example, account for
+   * different optimum positioning in different types of widgets, etc. */
+
+  *hx = div->x + div->w - 8;
+  *hy = div->y + div->h - 8;
+  if (*hx<div->x)
+    *hx = div->x;
+  if (*hy<div->y)
+    *hy = div->y;
 }
 
 /* The End */

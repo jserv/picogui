@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.108 2001/09/09 20:54:52 micahjd Exp $
+/* $Id: widget.c,v 1.109 2001/09/10 10:05:50 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -560,10 +560,29 @@ void inline trigger_timer(void) {
   triggers, and update necessary vars
 */
 void request_focus(struct widget *self) {
+  /* Already focused? */
   if (kbdfocus==self) return;
+
+  /* Deactivate the old widget, activate the new */
   send_trigger(kbdfocus,TRIGGER_DEACTIVATE,NULL);
   kbdfocus = self;
   send_trigger(self,TRIGGER_ACTIVATE,NULL);
+
+  /* If the cursor isn't already within this widget, scroll it in
+   * and warp the cursor to it. This is important for
+   * correct navigation with hotspots.
+   */
+  if (self != under && self) {
+    s16 px,py;
+
+    /* Scroll in */
+    scroll_to_divnode(self->in->div);
+    
+    /* Pointer warp */
+    divnode_hotspot_position(self->in->div,&px,&py);
+    VID(coord_physicalize)(&px,&py);
+    dispatch_pointing(PG_TRIGGER_MOVE,px,py,0);
+  }
 }
 
 /*
