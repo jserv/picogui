@@ -41,9 +41,6 @@ AC_ARG_ENABLE(opengl,
         esac],[opengl=false])
 AM_CONDITIONAL(OPENGL, test x$opengl = xtrue)
 
-dnl We need expat for parsing Widget Templates
-AC_CHECK_LIB(expat,XML_ParserCreate)
-
 AC_OUTPUT(
 	Makefile
 	thdump/Makefile
