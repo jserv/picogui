@@ -1,4 +1,4 @@
-/* $Id: requests.h,v 1.1 2002/11/19 13:16:30 micahjd Exp $
+/* $Id: requests.h,v 1.2 2002/11/20 22:23:27 micahjd Exp $
  *
  * requests.h - The interface to request packet handlers, used to
  *              implement the client/server protocol, themes, and WTs
@@ -28,6 +28,8 @@
 
 #ifndef _H_REQUESTS
 #define _H_REQUESTS
+
+#include <picogui/network.h>
 
 /* Structure passed through the request handlers */
 struct request_data {
