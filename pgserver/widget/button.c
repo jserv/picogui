@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.42 2000/11/05 06:55:22 micahjd Exp $
+/* $Id: button.c,v 1.43 2000/11/11 16:53:59 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -53,6 +53,11 @@ void customize_button(struct widget *self,int state,int state_on,int state_hilig
   DATA->state_hilight = state_hilight;
   DATA->extra = extra;
   DATA->event = event;
+
+  button_set(self,PG_WP_TEXT,theme_lookup(state,PGTH_P_TEXT));
+  button_set(self,PG_WP_BITMAP,theme_lookup(state,PGTH_P_WIDGETBITMAP));
+  button_set(self,PG_WP_BITMASK,theme_lookup(state,PGTH_P_WIDGETBITMASK));
+
   resize_button(self);
 }
 
@@ -89,7 +94,7 @@ void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
   if (DATA->bitmap) {
     addgrop(c,PG_GROP_BITMAP,bp.x+bp.bx,bp.y+bp.by,bp.bw,bp.bh);
     c->current->param[0] = DATA->bitmap;
-    c->current->param[1] = PG_LGOP_OR;
+    c->current->param[1] = DATA->bitmask ? PG_LGOP_OR : PG_LGOP_NONE;
   }
 
   /* Text */
