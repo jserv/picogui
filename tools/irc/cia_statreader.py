@@ -38,12 +38,8 @@ def readStats():
             projects.append(project)
 
     # Yucky hack to strip off "#"
-    channels = []
-    for channel in open(channelFile).read().strip().split("\n"):
-        if channel[0] == '#':
-            channels.append(channel[1:])
-        else:
-            channels.append(channel)
+    channels = open(channelFile).read().strip().split("\n")
+    channels.sort()
 
     projectCounts = {}
     for project in projects:

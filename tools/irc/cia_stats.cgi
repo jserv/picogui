@@ -58,7 +58,7 @@ for project in projects:
             # A stupid trick for making bargraph thingies
             print """
             <td>
-              <span class="bargraph" style="padding: 0em %sem;">%s</span>
+              <span class="bargraph" style="padding: 0em %.4fem;">%s</span>
             </td>
             """ % (width, count)
         else:
