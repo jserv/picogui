@@ -22,7 +22,7 @@ FILE *imapfp;
 
 /* How many messages in the folder? */
 int messages = 0;
-
+int rowno;
 int connectionLocked = false;
 
 /* Counter for the command id... */
@@ -174,18 +174,51 @@ doheader (char *line)
 }
 
 int
+domessageheader (char *line)
+{
+  if ((strncmp (line, "From: ", 6) == 0) ||
+      (strncmp (line, "To: ", 4) == 0) ||
+      (strncmp (line, "Subject: ", 9) == 0) ||
+      (strncmp (line, "Date: ", 6) == 0))
+    {
+      if (imapCurrentHeaderAlloc <
+	  (strlen (line) + strlen (imapCurrentHeader) + 1))
+	{
+	  imapCurrentHeaderAlloc =
+	    strlen (line) + strlen (imapCurrentHeader) + 1024;
+	  imapCurrentHeader =
+	    realloc (imapCurrentHeader, imapCurrentHeaderAlloc);
+	}
+      strcat (imapCurrentHeader, line);
+    }
+  return SUCCESS;
+}
+
+int
 domessage (char *line)
 {
-  if (imapCurrentMessageAlloc <
-      (strlen (line) + strlen (imapCurrentMessage) + 1))
-    {
-      imapCurrentMessageAlloc =
-	strlen (line) + strlen (imapCurrentMessage) + 1024;
-      imapCurrentMessage =
-	realloc (imapCurrentMessage, imapCurrentMessageAlloc);
-    }
-  strcat (imapCurrentMessage, line);
+  //char *cmdid;
+  //char *compare;
 
+  //getcmdid (cmdid);
+  //compare = malloc(30);
+
+  //sprintf (compare, "%s OK FETCH completed.", cmdid);
+
+  //if ((strncmp (line, compare, strlen (compare)) != 0))
+  if ((rowno++ != 0))
+    {
+      if (imapCurrentMessageAlloc <
+	  (strlen (line) + strlen (imapCurrentMessage) + 1))
+	{
+	  imapCurrentMessageAlloc =
+	    strlen (line) + strlen (imapCurrentMessage) + 1024;
+	  imapCurrentMessage =
+	    realloc (imapCurrentMessage, imapCurrentMessageAlloc);
+	}
+      strcat (imapCurrentMessage, line);
+    }
+  //free(compare);
   return SUCCESS;
 }
 
@@ -198,8 +231,7 @@ imap_login ()
   command = malloc (512);
   sprintf (command, "LOGIN %s %s",
 	   get_param_str ("imap", "username", "guest"),
-	   get_param_str ("imap", "password", "guest")
-	   );
+	   get_param_str ("imap", "password", "guest"));
   docmd (command, &donothing);
 
   return 0;
@@ -266,6 +298,9 @@ imap_getmesg (int mesg)
 {
   char *header;
   char *text;
+  char *message;
+
+  rowno = 0;
 
   header = malloc (512);
   text = malloc (512);
@@ -278,13 +313,24 @@ imap_getmesg (int mesg)
 
   sprintf (header, "FETCH %d RFC822.HEADER", mesg);
   sprintf (text, "FETCH %d RFC822.TEXT", mesg);
-  
+
   check_connection ();
-  docmd (header, &donothing);
+  docmd (header, &domessageheader);
   docmd (text, &domessage);
 
-  printf ("GETMESSAGEMESSAGE: %s\n", imapCurrentMessage);
-  return imapCurrentMessage;
+  message =
+    malloc (strlen (imapCurrentHeader) + strlen (imapCurrentMessage) + 6);
+  strcpy (message, imapCurrentHeader);
+  strcat (message, "~~~\n\n");
+  strcat (message, imapCurrentMessage);
+
+  imapCurrentHeader = "";
+  imapCurrentMessage = "";
+
+  free (imapCurrentHeader);
+  free (imapCurrentMessage);
+
+  return message;
 }
 
 
