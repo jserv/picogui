@@ -537,16 +537,19 @@ _constants = {
 # some useful stuff for importing
 
 # names of all properties
-propnames = _constants['set'].keys()
+propnames = [name for name in _constants['set'].keys() if type(name) is str]
 # namespace for property values, to pass to resolve()
 def prop_ns(name):
     return _constants['set'][name][1]
 
 # names of all commands
-cmdnames = _constants['writecmd'][0].keys()
+cmdnames = [name for name in _constants['writecmd'][0].keys() if type(name) is str]
 # namespace for command arguments, to pass to resolve()
 def cmd_ns(name):
-    return _constants['writecmd'][0][name][1]
+    t = _constants['writecmd'][0][name]
+    if t is _stop:
+        return {}
+    return t[1]
 
 #################################################################
 # external API

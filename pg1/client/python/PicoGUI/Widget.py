@@ -4,17 +4,12 @@ default_relationship = 'after'
 
 import constants, struct, types
 
-class Command_Proxy(object):
-    def __init__(self, widget, name, ns=None, args=()):
+class BoundCommandMethod(object):
+    def __init__(self, widget, name, ns, args):
         self.widget = widget
         self.name = name
+        self.ns = ns
         self.args = args
-        if ns is None:
-            ns = constants.cmd_ns(name)
-        if type(ns) is types.DictType:
-            self.ns = ns
-        else:
-            self.ns = None
 
     def __call__(self, *args):
         args = self.args + args
@@ -25,19 +20,42 @@ class Command_Proxy(object):
             ns = self.ns[name][1]
         except KeyError:
             raise AttributeError(name)
-        return Command_Proxy(self.widget, self.name, ns, self.args + (name,))
+        return BoundCommandMethod(self.widget, self.name, ns, self.args + (name,))
+
+class CommandMethod(object):
+    def __init__(self, name):
+        self.name = name
+        ns = constants.cmd_ns(name)
+        if type(ns) is types.DictType:
+            self.ns = ns
+        else:
+            self.ns = {}
+
+    def __get__(self, widget, widgetclass):
+        return BoundCommandMethod(widget, self.name, self.ns, ())
+
+class WidgetProperty(object):
+    def __init__(self, name):
+        self.name = name
+
+    def __get__(self, widget, widgetclass):
+        result = widget.server.get(widget.handle, self.name)
+        ns = constants.prop_ns(self.name)
+        return constants.unresolve(result, ns, widget.server)
+
+    def __set__(self, widget, value):
+        widget.server.set(widget.handle, self.name, value)
+
+    def __delete__(self, widget):
+        raise AttributeError, 'cannot delete a widget property'
 
 class Widget(object):
     def __init__(self, server, handle, parent=None, type=None):
-        # we do this instead of self.server = server
-        # to avoid calling __setattr__
-        self.__dict__.update({
-            'server': server,
-            'handle': handle,
-            'default_relationship': default_relationship,
-            'parent': parent,
-            'type': type,
-            })
+        self.server = server
+        self.handle = handle
+        self.default_relationship = default_relationship
+        self.parent = parent
+        self._type = type
 
     def __eq__(self, other):
         return (self.server is other.server) and (self.handle == other.handle)
@@ -93,21 +111,16 @@ class Widget(object):
     def focus(self):
         self.server.focus(self.handle)
 
-    def __setattr__(self, name, value):
-        pname = name.lower().replace('_', ' ')
-        if pname in constants.propnames:
-            self.server.set(self.handle, pname, value)
-        else:
-            self.__dict__[name] = value
+for pname in constants.propnames:
+    descriptor = WidgetProperty(pname)
+    setattr(Widget, pname, descriptor)
+    alt_name = pname.replace(' ', '_')
+    if alt_name != pname:
+        setattr(Widget, alt_name, descriptor)
 
-    def __getattr__(self, name):
-        pname = name.lower().replace('_', ' ')
-        if pname in constants.propnames:
-            result = self.server.get(self.handle, pname)
-            ns = constants.prop_ns(pname)
-            return constants.unresolve(result, ns, self.server)
-        elif pname in constants.cmdnames:
-            return Command_Proxy(self, pname)
-        else:
-            raise AttributeError(name)
-
+for cname in constants.cmdnames:
+    meth = CommandMethod(cname)
+    setattr(Widget, cname, meth)
+    alt_name = cname.replace(' ', '_')
+    if alt_name != cname:
+        setattr(Widget, alt_name, meth)
