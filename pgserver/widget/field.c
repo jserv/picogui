@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.47 2002/01/30 19:42:47 micahjd Exp $
+/* $Id: field.c,v 1.48 2002/01/31 15:15:03 pney Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -21,6 +21,7 @@
  * 
  * Contributors:
  * Shane R. Nay <shane@minirl.com> 
+ * Philippe Ney <philippe.ney@smartdata.ch>
  * 
  * 
  */
@@ -374,8 +375,15 @@ void fieldstate(struct widget *self) {
      total of the text width as it is done, but this whole widget
      so far is a quick hack anyway...
   */
-  if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
-		       font)) || !fd) return;
+  /* the local font copy contain the password properties
+   * then if it already exist we use it
+   */
+
+  if (DATA->font)
+    fd = &DATA->fd;
+  else
+    if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
+	                 font)) || !fd) return;
   sizetext(fd,&tw,&th,DATA->buffer);
 
   /* If the whole text fits in the field, left justify it. Otherwise, 
@@ -433,8 +441,14 @@ void field_resize(struct widget *self) {
   handle font = DATA->font ? DATA->font :  
     theme_lookup(self->in->div->state, PGTH_P_FONT); 
  
-  if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,font)) 
-          || !fd) return; 
+  /* the local font copy contain the password properties
+   * then if it already exist we use it
+   */
+  if (DATA->font)
+    fd = &DATA->fd;
+  else
+    if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,font)) 
+	|| !fd) return; 
   sizetext(fd,&w,&h,DATA->buffer); 
   w += m<<1;
 
