@@ -1,5 +1,15 @@
 object custom {
   name = "checkers";
+  bgfill = fillstyle {
+    /* Gray box one pixel _outside_ the game:
+     * this way when the game is played in a non-square
+     * canvas there will be a thin border at the edge
+     * of the game.
+     */
+    SetColor(0x808080);
+    SetOffset(-1,-1,2,2);
+    Frame(x,y,w,h);
+  };
   BGEVEN = fillstyle {
     SetColor(0x8080FF);
     Rect(x,y,w,h);
@@ -10,8 +20,12 @@ object custom {
   name = "checkers.player1";
   bgcolor = 0xFFFF00;
   PIECE = fillstyle {
+    /* Circle with black border one pixel inside the grid */
+    SetOffset(1,1,-2,-2);
     SetColor(bgcolor);
     Fellipse(x,y,w,h);
+    SetColor(0x000000);
+    Ellipse(x,y,w,h);
   };
 }
 
