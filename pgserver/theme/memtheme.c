@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.53 2002/02/02 20:52:51 lonetech Exp $
+/* $Id: memtheme.c,v 1.54 2002/02/06 10:05:45 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -286,14 +286,6 @@ void div_rebuild(struct divnode *d) {
       d->flags |= DIVNODE_NEED_REDRAW;
       if (d->owner)
 	d->owner->dt->flags |= DIVTREE_NEED_REDRAW;
-   }
-
-   /* If this widget is bound to a scrollbar, get the scrollbar
-    * to update also.
-    */
-   if (d->owner && d->owner->scrollbind && d->owner->type!=PG_WIDGET_SCROLL && 
-       !iserror(rdhandle((void**)&w,PG_TYPE_WIDGET,d->owner->owner,d->owner->scrollbind))) {
-     div_rebuild(w->in->div);
    }
 }
 

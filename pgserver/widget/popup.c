@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.46 2002/01/22 15:14:34 micahjd Exp $
+/* $Id: popup.c,v 1.47 2002/02/06 10:05:46 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -119,6 +119,10 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
 void build_popupbg(struct gropctxt *c,unsigned short state,struct widget *self) {
   struct divnode *ntb;
 
+  /* Don't bother with it if the popup itself hasn't been sized yet */
+  if (!(self->in->div->w && self->in->div->h))
+    return;
+
   /* If the popup is not allowed to overlap toolbars, clip to the nontoolbar
    * area. Otherwise, just clip to the root divnode to make sure we stay on
    * the display. */
@@ -127,17 +131,32 @@ void build_popupbg(struct gropctxt *c,unsigned short state,struct widget *self) 
   else
     ntb = dts->root->head;
 
-  /* Set the popup backdrop to only display over the nontoolbar
-   * area when applicable.
+  /* Clip it to the nontoolbar area, but pass the coordinates of the popup itself
+   * so that the backdrop can easily draw a drop shadow, or a halo, etc..
    */
-  c->x = ntb->x;
-  c->y = ntb->y;
-  c->w = ntb->w;
-  c->h = ntb->h;
 
-  /* exec_fillstyle knows not to use the default
-     rectangle fill on a backdrop */
-  exec_fillstyle(c,state,PGTH_P_BACKDROP);
+  self->in->x = ntb->x;
+  self->in->y = ntb->y;
+  self->in->w = ntb->w;
+  self->in->h = ntb->h;
+
+  c->x = self->in->div->x - ntb->x;
+  c->y = self->in->div->y - ntb->y;
+  c->w = self->in->div->w;
+  c->h = self->in->div->h;
+
+  /* exec_fillstyle knows not to use the default rectangle fill on a backdrop */
+  exec_fillstyle(c,self->in->div->state,PGTH_P_BACKDROP);
+}
+
+void build_popup(struct gropctxt *c,unsigned short state,struct widget *self) {
+  /* Rebuild the backdrop first.. 
+   * Normally this would be done automatically, but we skip the automatic call
+   * because the popup's size hasn't been calculated yet.
+   */
+  div_rebuild(self->in);
+
+  exec_fillstyle(c,state,PGTH_P_BGFILL);
 }
 
 g_error popup_install(struct widget *self) {
@@ -148,14 +167,13 @@ g_error popup_install(struct widget *self) {
   */
   e = newdiv(&self->in,self);
   self->in->build = &build_popupbg;
-  self->in->state = PGTH_O_POPUP;
   errorcheck;
   self->in->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
   self->in->flags |= DIVNODE_SPLIT_IGNORE | DIVNODE_SPLIT_POPUP;
 
   e = newdiv(&self->in->div,self);
   errorcheck;
-  self->in->div->build = &build_bgfill_only;
+  self->in->div->build = &build_popup;
   self->in->div->state = PGTH_O_POPUP;
   self->in->div->flags |= DIVNODE_SPLIT_BORDER;
   self->in->div->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
