@@ -7,7 +7,7 @@ set binds(any) "any {parray event} $pg_we(close) exit"
 
 set connection 0
 set defaultparent 0
-set defaultrship $pg_derive(inside)
+set defaultrship inside
 
 proc pgGetResponse {} {
 	global pg_response pg_request connection pg_eventcoding
@@ -124,10 +124,10 @@ proc pgNewWidget {type {rship 0} {parent 0}} {
 		set rship $defaultrship
 	}
 	send_packet [pack_pgrequest 1 8 $pg_request(mkwidget)]
-	send_packet [binary format "SSI" $rship $pg_widget($type) $parent]
+	send_packet [binary format "SSI" $pg_derive($rship) $pg_widget($type) $parent]
 	array set ret [pgGetResponse]
 	set defaultparent $ret(data)
-	set defaultrship $pg_derive(after)
+	set defaultrship after
 	return $ret(data)
 }
 proc pgCreateWidget {type} {
@@ -136,7 +136,7 @@ proc pgCreateWidget {type} {
 	send_packet [binary format "SS" $pg_widget($type) 0]
 	array set ret [pgGetResponse]
 	set defaultparent $ret(data)
-	set defaultrship $pg_derive(inside)
+	set defaultrship inside
 	return $ret(data)
 }
 proc pgSetWidget {widget property glob} {
