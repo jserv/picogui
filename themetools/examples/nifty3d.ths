@@ -1,13 +1,18 @@
-/* $Id: nifty3d.ths,v 1.6 2001/07/05 07:53:59 micahjd Exp $
+/* $Id: nifty3d.ths,v 1.7 2001/11/06 08:22:51 micahjd Exp $
  *
  * This theme's pretty darn cpu-intensive, but it
  * demonstrates the neat things that can be done with
  * fillstyles and gradients.
  * Uses much less memory than Aqua, but probably not faster.
  *
- * Version 1.0
+ * Version 1.1
  *
- * Micah Dowty
+ * -- Micah Dowty
+ *
+ * Changelog:
+ *
+ *  1.1 - Added alpha blending effects on popup windows
+ *  1.0 - First 'stable' release
  */
 
 object default {
@@ -32,7 +37,8 @@ object default {
     hc = hilightcolor;
 
     /* Body of the surface */
-    Gradient(x+1,y+1,w-2,h-2,a ? 205 : 25,bgcolor,ColorSub(bgcolor,shadowcolor));
+    Gradient(x+1,y+1,w-2,h-2,a ? 205 : 25,bgcolor,
+	     ColorSub(bgcolor,shadowcolor));
 
     /* Hilights */
     SetLgop(a ? PG_LGOP_SUBTRACT : PG_LGOP_ADD);
@@ -118,17 +124,90 @@ object label.dlgtitle {
   bgcolor = Copy(panelbar::bgcolor);
 }
 
-/* Menus */
+/* Translucent popup with drop shadow */
+object popup {
+  margin = 26;
+
+  /* Alpha channel for drop shadow */
+  bitmap1 = LoadBitmap("data/dropshadow.pgm");
+
+  bgfill = fillstyle {
+    var m,hc;
+
+    /* Multiply sections of the drop shadow bitmap onto the window's border */
+    m = margin;
+    SetLgop(PG_LGOP_MULTIPLY);
+    SetSrc(34,0,20,20);
+    Bitmap(x+w-20,y+20,20,20,bitmap1);
+    SetSrc(0,33,20,19);
+    Bitmap(x+20,y+h-20,20,19,bitmap1);
+    SetSrc(34,33,20,19);
+    Bitmap(x+w-20,y+h-20,20,19,bitmap1);
+    SetSrc(20,33,14,19);
+    Tilebitmap(x+40,y+h-20,w-60,19,bitmap1);
+    SetSrc(34,19,20,14);
+    Tilebitmap(x+w-20,y+40,20,h-60,bitmap1);
+
+    /* Subtract the drop shadow area */
+    x = x+20;
+    y = y+20;
+    w = w-40;
+    h = h-40;
+
+    SetLgop(PG_LGOP_NONE);
+
+    /* Black frame around it all */
+    SetColor(0x000000);
+    Frame(x,y,w,h);
+
+    /* Thickness of the border */
+    m = 3;
+    /* Preload hilight color */
+    hc = hilightcolor;
+
+    /* Body of the surface */
+    Gradient(x+1,y+1,w-2,h-2,25,bgcolor,ColorSub(bgcolor,shadowcolor));
+
+    /* Hilights */
+    SetLgop(PG_LGOP_ADD);
+    Gradient(x+1,y+1,m,h-2,0,hc,0);
+    Gradient(x+1,y+1,w-2,m,90,hc,0);
+    SetLgop(PG_LGOP_SUBTRACT);
+    Gradient(x+w-m-1,y+1,m,h-2,180,hc,0);
+    Gradient(x+1,y+h-m-1,w-2,m,270,hc,0);
+  };
+}
+
+/* Really spiffy translucent popup menus */
+object popup.menu {
+  margin = 2;
+  width = 0;
+  height = 0;
+
+  bgfill = fillstyle {
+    SetLgop(PG_LGOP_ADD);
+    Gradient(x,y,w,h,0,0x808080,0x000000);
+    SetLgop(PG_LGOP_MULTIPLY);
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+    SetColor(fgcolor);
+    Frame(x,y,w,h);
+  };
+  bgcolor = 0x8080C0;
+  fgcolor = 0x404040;
+}
 object menuitem {
   bgfill = fillstyle {
-    Gradient(x,y,w,h,42,bgcolor,ColorSub(bgcolor,shadowcolor));
+    SetLgop(PG_LGOP_NONE);
   };
-  spacing = 0;
-  shadowcolor = 0x505050;
+  font = Font(NULL,0,PG_FSTYLE_DEFAULT | PG_FSTYLE_BOLD);
+  fgcolor = 0x000000;
   align = PG_A_LEFT;
+  margin = 2;
 }
-object menuitem.hilight bgcolor = Copy(button.hilight::bgcolor);
-object popup.menu margin = 2;
+object menuitem.hilight {
+  fgcolor = 0xFFFFFF;
+}
 
 /* A little 'fudge factor' for the dialogs */
 object popup.messagedlg {
