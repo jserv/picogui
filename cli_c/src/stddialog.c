@@ -1,4 +1,4 @@
-/* $Id: stddialog.c,v 1.18 2002/11/04 13:18:27 micahjd Exp $
+/* $Id: stddialog.c,v 1.19 2002/11/04 13:28:09 micahjd Exp $
  *
  * stddialog.c - Various preconstructed dialog boxes the application
  *               may use. These are implemented 100% client-side using
@@ -38,6 +38,7 @@ pghandle pgDialogBox(const char *title) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString(title),
 	      0);
+  _pgdefault_rship = PG_DERIVE_INSIDE;
 
   /* return the newly created handle */
   return popupHandle;
