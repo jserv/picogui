@@ -19,6 +19,8 @@ object button {
     Bitmap(x+w-12,y,12,20,bitmap1,PG_LGOP_NONE,49,0);
     Tilebitmap(x+12,y,w-24,20,bitmap1,15,0,1,20);
   };
+  height = 20;
+  width  = 60;
 }
 /* For different states, just change the bitmap */
 object button.on bitmap1 = LoadBitmap("data/aq_button_on.pnm");
@@ -48,15 +50,20 @@ object base.display {
     Rect(x+5,y+10,w-10,h-20,ColorConv(0xe7e7e7));
 
     /* space from the edge */
-    x = x+2; y = y+2;
-    w = w-4; h = h-4;
+    x = x+3; y = y+3;
+    w = w-6; h = h-6;
   };
 }
 
 object indicator {
+  bitmap2 = LoadBitmap("data/aq_thumb_v.pnm");
   overlay = fillstyle {
-    Gradient(x,y,w,h/2,90,0x808000,0x000000,0-1);
+    Bitmap(x,y,10,15,bitmap2,PG_LGOP_NONE,0,0);
+    Tilebitmap(x,y+15,10,h-30,bitmap2,0,5,10,10);
+    Bitmap(x,y+h-15,10,15,bitmap2,PG_LGOP_NONE,0,7);
   };
+  width = 16;
+  margin = 3;
 }
 
 object scroll {
@@ -68,7 +75,7 @@ object scroll {
   };
 }
 
-object label margin = 5;
+object label margin = 8;
 
 object label.scroll {
   bgfill = fillstyle {
@@ -77,4 +84,16 @@ object label.scroll {
 }
 
 object background bitmap1 = LoadBitmap("data/aq_screenbg.pnm");
-object panelbar bitmap1 = LoadBitmap("data/aq_blue.pnm");
+
+object panel margin = 10;
+object panelbar {
+  bitmap1 = LoadBitmap("data/aq_title_wht_v.pnm");
+  width = 20;
+}
+object panelbar.hilight bitmap1 = LoadBitmap("data/aq_title_blu_v.pnm");
+
+object box {
+  height = 30;
+  margin = 5;
+  bgfill = Copy(base.display:bgfill);     // Use the same nifty box
+}
