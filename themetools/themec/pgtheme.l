@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.l,v 1.5 2000/09/25 00:15:26 micahjd Exp $
+/* $Id: pgtheme.l,v 1.6 2000/09/25 00:50:48 micahjd Exp $
  *
  * pgtheme.l - lexer for processing PicoGUI theme source code
  *
@@ -28,9 +28,6 @@
 
 #include "themec.h"
 #include "y.tab.h"
-
-int lineno = 1;
-int errors = 0;
 
 %}
 
@@ -62,30 +59,3 @@ int errors = 0;
 
 .               { yyerror("invalid character"); }
 
-%%
-
-extern FILE *yyin;
-
-int main(int argc, char **argv) {
-
-  if (argc==2) {
-    yyin = fopen(argv[1],"r");
-    if (!yyin) {
-      perror("Error opening file");
-      return 2;
-    }
-  }
-
-  do {
-    yyparse();
-  } while (!feof(yyin));
-  return (errors ? 1 : 0);
-}
-
-int yyerror(const char *s) {
-  fprintf(stderr,"Error on line %d: %s\n",lineno,s);
-  errors++;
-  return 1;
-}
-
-/* The End */

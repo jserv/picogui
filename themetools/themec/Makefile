@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.2 2000/09/25 00:15:26 micahjd Exp $
+# $Id: Makefile,v 1.3 2000/09/25 00:50:47 micahjd Exp $
 #
 # Theme compiler makefile
 #
@@ -29,7 +29,7 @@
 
 BINNAME = themec
 
-SRC := lex.yy.c y.tab.c symtab.c
+SRC := lex.yy.c y.tab.c symtab.c main.c
 LEXSRC := pgtheme.l
 YACCSRC := pgtheme.y
 
