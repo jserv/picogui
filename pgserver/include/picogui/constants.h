@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.22 2000/11/05 05:08:19 micahjd Exp $
+/* $Id: constants.h,v 1.23 2000/11/05 05:39:52 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -445,6 +445,10 @@ typedef unsigned long pghandle;
 #define PG_POPUP_CENTER   -1
 #define PG_POPUP_ATCURSOR -2   /* (This also assumes it is a popup menu, and
 				  uses PGTH_O_POPUP_MENU) */
+
+/* Constants for PG_WP_EXTDEVENTS, to enable extra events */
+#define PG_EXEV_PNTR_UP   0x0001
+#define PG_EXEV_PNTR_DOWN 0x0002
 
 /******************** Events */
 

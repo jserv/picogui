@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.18 2000/11/05 05:08:19 micahjd Exp $
+/* $Id: popup.c,v 1.19 2000/11/05 05:39:52 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -145,8 +145,11 @@ glob popup_get(struct widget *self,int property) {
 }
 
 void popup_trigger(struct widget *self,long type,union trigparam *param) {
-  /* Only possible trigger (due to the mask) is a mouse down. */
-  //  guru("Panel trigger.\n div_under_crsr = 0x%08X",div_under_crsr);
+  /* Only possible trigger (due to the mask) is a mouse down. 
+   * If it's outside the panel, it's a DEACTIVATE */
+
+  if (div_under_crsr == self->in)
+    post_event(PG_WE_DEACTIVATE,self,0,0);
 }
 
 /* The End */
