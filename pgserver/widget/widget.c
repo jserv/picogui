@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.199 2002/10/05 13:03:50 micahjd Exp $
+/* $Id: widget.c,v 1.200 2002/10/07 07:08:09 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -119,14 +119,6 @@ DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,108))
 #endif
 };
 
-/* To save space, instead of checking whether the divtree is valid every time
- * we have to set a divtree flag, assign unattached widgets a fake divtree
- */
-struct divnode fakedt_head;
-struct divtree fakedt = {
-  head: &fakedt_head
-};
-
 /******** Widget interface functions */
  
 g_error widget_create(struct widget **w, handle *h, int type, 
@@ -137,7 +129,7 @@ g_error widget_create(struct widget **w, handle *h, int type,
    DBG("type %d, container %d, owner %d\n",type,container,owner);
 
    if (!dt)
-     dt = &fakedt;
+     dt = DT_NIL;
 
    /* Check the type.
     */
@@ -188,26 +180,30 @@ g_error widget_create(struct widget **w, handle *h, int type,
 
 /* Recursive utilities to change the divtree and container of all widgets in a tree.
  * Sets the divtree to the given value, and sets the container only if the current
- * value matches the old value given.
+ * value matches the old value given. This doesn't use widget_traverse but instead
+ * visits every divnode, so as not to miss widgets embedded in other widgets.
  */
-void r_widget_setcontainer(struct widget *w, handle oldcontainer,
-			   handle container, struct divtree *dt) {
-  if (!w)
+void r_widget_setcontainer(struct divnode *n, handle oldcontainer,
+			   handle container, struct divtree *dt) {  
+  handle new_oldcontainer = oldcontainer;
+
+  if (!n)
     return;
 
-  w->dt = dt;
-  if (w->container == oldcontainer)
-    w->container = container;
+  if (n->owner) {
+    n->owner->dt = dt;
+    new_oldcontainer = n->owner->container;
+    if (n->owner->container == oldcontainer)
+      n->owner->container = container;
+  }    
 
-  if (w->sub && *w->sub && (*w->sub)->owner)
-    r_widget_setcontainer((*w->sub)->owner,w->container,container,dt);
-  if (w->out && *w->out && (*w->out)->owner)
-    r_widget_setcontainer((*w->out)->owner,w->container,container,dt);
+  r_widget_setcontainer(n->div,new_oldcontainer,container,dt);
+  r_widget_setcontainer(n->next,new_oldcontainer,container,dt);
 }
  
-g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **where, handle container, int owner) {
+g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **where, handle container) {
 
-  DBG("widget %p, container %d, owner %d\n",w,container,owner);
+  DBG("widget %p, container %d\n",w,container);
   
   if (!dt)
     dt = &fakedt;
@@ -219,8 +215,8 @@ g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **wher
   }
 
   /* Change the container and divtree of this and all child widgets */
-  if (w->sub && *w->sub && (*w->sub)->owner)
-    r_widget_setcontainer((*w->sub)->owner,w->container,container,dt);
+  if (w->sub)
+    r_widget_setcontainer(*w->sub,w->container,container,dt);
   w->dt = dt;
   w->container = container;
   
@@ -283,7 +279,7 @@ g_error widget_derive(struct widget **w, handle *h,
    * by the attachwidget request handler.
    */
   if (!parent)
-    return widget_attach(*w, NULL, NULL, 0, owner);
+    return widget_attach(*w, NULL, NULL, 0);
   
   switch (rship) {
 
@@ -292,7 +288,7 @@ g_error widget_derive(struct widget **w, handle *h,
         e = widget_create(w,h, type, parent->dt, hparent, owner);
         errorcheck;
      }
-     e = widget_attach(*w, parent->dt,parent->sub,hparent,owner);
+     e = widget_attach(*w, parent->dt,parent->sub,hparent);
      break;
 
   case PG_DERIVE_AFTER:
@@ -300,7 +296,7 @@ g_error widget_derive(struct widget **w, handle *h,
         e = widget_create(w,h, type, parent->dt, parent->container, owner);
         errorcheck;
      }
-     e = widget_attach(*w,parent->dt,parent->out,parent->container,owner);
+     e = widget_attach(*w,parent->dt,parent->out,parent->container);
      break;
 
   case PG_DERIVE_BEFORE:
@@ -309,7 +305,7 @@ g_error widget_derive(struct widget **w, handle *h,
         e = widget_create(w,h, type, parent->dt, parent->container, owner);
         errorcheck;
      }
-     e = widget_attach(*w,parent->dt,parent->where,parent->container,owner);
+     e = widget_attach(*w,parent->dt,parent->where,parent->container);
      break;
      
   default:
@@ -333,12 +329,12 @@ void widget_remove(struct widget *w) {
 
   /* Detach the widget from the widget tree */
   old_where = w->where;
-  widget_attach(w,NULL,NULL,0,w->owner);
+  widget_attach(w,NULL,NULL,0);
 
   /* Detach all children from this widget */
   while ((child = widget_traverse(w,PG_TRAVERSE_CHILDREN,0))) {
     DBG("removing child %p, type %d. where %p\n",child,child->type,child->where);
-    widget_attach(child,NULL,NULL,0,child->owner);
+    widget_attach(child,NULL,NULL,0);
   }
 
   /* Note that the widget may have it's 'sub' attachment point filled even
@@ -705,7 +701,7 @@ struct widget *widget_traverse(struct widget *w, int direction, int count) {
      */
   case PG_TRAVERSE_FORWARD:
     for (;w && count;count--) {
-      if (!*w->out)
+      if (!w->out || !*w->out || (*w->out)->owner->in != *w->out)
 	return NULL;
       w = (*w->out)->owner;
     }

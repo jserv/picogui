@@ -1,12 +1,10 @@
-/* $Id: panel.c,v 1.86 2002/10/04 05:20:30 micahjd Exp $
+/* $Id: panel.c,v 1.87 2002/10/07 07:08:09 micahjd Exp $
  *
  * panel.c - Resizable container with decorations. It uses a panelbar for resizing purposes,
  *           and optionally supplies some standard buttons for the panel.
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
- * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.
- * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
  *  
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -191,7 +189,7 @@ g_error panel_install(struct widget *self) {
   e = widget_create(&bar,&DATA->hbar,PG_WIDGET_PANELBAR,
 		    self->dt,self->container,self->owner);
   errorcheck;
-  e = widget_attach(bar,self->dt,&self->in->div->div,0,self->owner);
+  e = widget_attach(bar,self->dt,&self->in->div->div,0);
   errorcheck;
   e = widget_set(bar,PG_WP_BIND,self->h);
   errorcheck;

@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.44 2002/09/15 10:51:48 micahjd Exp $
+/* $Id: divtree.h,v 1.45 2002/10/07 07:08:08 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -41,6 +41,9 @@ struct divnode;
 struct gropnode;
 struct gropctxt;
 struct rect;
+
+extern struct divtree fakedt;
+#define DT_NIL (&fakedt)
 
 /* This is a stack of divtrees.  The one on top is the currently active
  * tree, and is updated by the renderer.  Trees below this are grayed out

@@ -1,4 +1,4 @@
-/* $Id: scrollbox.c,v 1.5 2002/10/04 05:20:30 micahjd Exp $
+/* $Id: scrollbox.c,v 1.6 2002/10/07 07:08:09 micahjd Exp $
  *
  * scrollbox.c - A box widget that includes scrollbars. It also
  *               conglomerates properties and events as necessary
@@ -50,7 +50,7 @@ g_error scrollbox_install(struct widget *self) {
   e = widget_create(&DATA->scrollh, &DATA->hscrollh, PG_WIDGET_SCROLL,
 		    self->dt, self->container, self->owner);
   errorcheck;
-  e = widget_attach(DATA->scrollh, self->dt, &self->in->div, self->h, self->owner);
+  e = widget_attach(DATA->scrollh, self->dt, &self->in->div, self->h);
   errorcheck;
   e = widget_set(DATA->scrollh, PG_WP_SIDE, PG_S_BOTTOM);
   errorcheck;
@@ -59,14 +59,14 @@ g_error scrollbox_install(struct widget *self) {
   e = widget_create(&DATA->scrollv, &DATA->hscrollv, PG_WIDGET_SCROLL, 
 		    self->dt, self->container, self->owner);
   errorcheck;
-  e = widget_attach(DATA->scrollv, self->dt, DATA->scrollh->out, self->h, self->owner);
+  e = widget_attach(DATA->scrollv, self->dt, DATA->scrollh->out, self->h);
   errorcheck;
 
   /* Box widget */
   e = widget_create(&DATA->box, &DATA->hbox, PG_WIDGET_BOX, 
 		    self->dt, self->container, self->owner);
   errorcheck;
-  e = widget_attach(DATA->box, self->dt, DATA->scrollv->out, self->h, self->owner);
+  e = widget_attach(DATA->box, self->dt, DATA->scrollv->out, self->h);
   errorcheck;
   e = widget_set(DATA->box, PG_WP_SIDE, PG_S_ALL);
   errorcheck;

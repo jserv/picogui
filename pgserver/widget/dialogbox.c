@@ -1,4 +1,4 @@
-/* $Id: dialogbox.c,v 1.3 2002/09/28 10:58:10 micahjd Exp $
+/* $Id: dialogbox.c,v 1.4 2002/10/07 07:08:09 micahjd Exp $
  *
  * dialogbox.c - The dialogbox is a type of popup widget that is always
  *               automatically sized, and has a title
@@ -46,7 +46,7 @@ g_error dialogbox_install(struct widget *self) {
   e = widget_create(&DATA->title, &DATA->htitle, PG_WIDGET_LABEL,
 		    self->dt, self->container, self->owner);
   errorcheck;
-  e = widget_attach(DATA->title, self->dt, self->sub, self->h, self->owner);
+  e = widget_attach(DATA->title, self->dt, self->sub, self->h);
   errorcheck;
   e = widget_set(DATA->title, PG_WP_SIDE, PG_S_TOP);
   errorcheck;

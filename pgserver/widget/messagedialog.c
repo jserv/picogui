@@ -1,4 +1,4 @@
-/* $Id: messagedialog.c,v 1.3 2002/09/28 10:58:10 micahjd Exp $
+/* $Id: messagedialog.c,v 1.4 2002/10/07 07:08:09 micahjd Exp $
  *
  * messagedialog.c - A type of dialog box that can display a message and get
  *                   a user's response to it.
@@ -43,7 +43,7 @@ g_error messagedialog_install(struct widget *self) {
   /* Create a toolbar widget attached to the bottom side */
   e = widget_create(&DATA->toolbar, &DATA->htoolbar, PG_WIDGET_TOOLBAR, self->dt, self->container, self->owner);
   errorcheck;
-  e = widget_attach(DATA->toolbar, self->dt, self->sub, 0, self->owner);
+  e = widget_attach(DATA->toolbar, self->dt, self->sub, 0);
   errorcheck;
   e = widget_set(DATA->toolbar, PG_WP_SIDE, PG_S_BOTTOM);
   errorcheck;

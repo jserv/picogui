@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.71 2002/10/05 11:21:05 micahjd Exp $
+/* $Id: widget.h,v 1.72 2002/10/07 07:08:08 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -251,7 +251,7 @@ extern int sysevent_owner;
 /******* These functions define the 'public' methods for widgets */
      
 g_error widget_derive(struct widget **w, handle *h, int type,struct widget *parent, handle hparent,int rship,int owner);
-g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **where, handle container, int owner);
+g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **where, handle container);
 g_error widget_create(struct widget **w, handle *h, int type, struct divtree *dt, handle container, int owner);
 
 void widget_remove(struct widget *w);
@@ -292,7 +292,7 @@ void set_widget_rebuild(struct widget *w);
  * Sets the divtree to the given value, and sets the container only if the current
  * value matches the old value given.
  */
-void r_widget_setcontainer(struct widget *w, handle oldcontainer,
+void r_widget_setcontainer(struct divnode *n, handle oldcontainer,
 			   handle container, struct divtree *dt);
 
 /* Set the number of cursors occupying the widget, and send any appropriate

@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.62 2002/10/04 08:50:19 micahjd Exp $
+/* $Id: popup.c,v 1.63 2002/10/07 07:08:09 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -172,7 +172,7 @@ g_error popup_install(struct widget *self) {
   self->trigger_mask = PG_TRIGGER_DOWN | PG_TRIGGER_KEYUP | PG_TRIGGER_KEYDOWN | PG_TRIGGER_CHAR;
 
   /* Attach ourselves as a root widget in the new divtree */
-  e = widget_attach(self,DATA->my_dt,&DATA->my_dt->head->next,0,self->owner);  
+  e = widget_attach(self,DATA->my_dt,&DATA->my_dt->head->next,0);  
   errorcheck;
   self->isroot = 1;
 
@@ -201,11 +201,11 @@ void popup_remove(struct widget *self) {
 
   /* We must use our saved divtree pointer to delete the divtree
    * instead of self->dt, since by this time the widget has been
-   * detatched from the divtree.
+   * detatched from the divtree. Our self->dt and all our childrens'
+   * self->dt should already be set to DT_NIL.
    */
   dts_pop(DATA->my_dt);
-  self->dt = NULL;
-  
+ 
   /* If applicable, don't redraw toolbars on the root divtree.
    * Normally we could just use popup_toolbar_passthrough() but we
    * also take into account the tree we just deleted.

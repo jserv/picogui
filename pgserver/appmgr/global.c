@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.69 2002/09/28 09:30:44 micahjd Exp $
+/* $Id: global.c,v 1.70 2002/10/07 07:08:07 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -105,7 +105,7 @@ g_error appmgr_init(void) {
   e = widget_create(&bgwidget,&res[PGRES_BACKGROUND_WIDGET],
 		    PG_WIDGET_BACKGROUND,dts->root, 0, -1);
   errorcheck;
-  e = widget_attach(bgwidget, dts->root, &dts->root->head->next,0,-1);
+  e = widget_attach(bgwidget, dts->root, &dts->root->head->next,0);
   errorcheck;
 
   /* Turn off the background's DIVNODE_UNDERCONSTRUCTION flags
@@ -221,7 +221,7 @@ g_error appmgr_register(struct app_info *i) {
     else {
       e = widget_create(&w,&i->rootw,PG_WIDGET_TOOLBAR,dts->root, 0, i->owner);
       errorcheck;
-      e = widget_attach(w,dts->root,&dts->root->head->next,0,i->owner);
+      e = widget_attach(w,dts->root,&dts->root->head->next,0);
       errorcheck;
     }
 

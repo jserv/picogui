@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.88 2002/09/25 15:26:07 micahjd Exp $
+/* $Id: div.c,v 1.89 2002/10/07 07:08:07 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -32,6 +32,16 @@
 #include <pgserver/divtree.h>
 #include <pgserver/widget.h>
 #include <pgserver/hotspot.h>
+
+/* To save space, instead of checking whether the divtree is valid every time
+ * we have to set a divtree flag, assign unattached widgets a fake divtree.
+ * This is DT_NIL
+ */
+struct divnode fakedt_head;
+struct divtree fakedt = {
+  head: &fakedt_head
+};
+
 
 /* Check flags for divnode-level scrolling, and modify the
  * divnode's size if necessary. We must do this before
