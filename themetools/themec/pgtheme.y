@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.1 2000/09/24 06:39:59 micahjd Exp $
+/* $Id: pgtheme.y,v 1.2 2000/09/24 07:28:14 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -33,6 +33,7 @@
 
 %token <num> NUMBER
 %token <num> PROPERTY
+%token STRING
 
 %left '-' '+'
 %left '*' '/'
@@ -40,7 +41,11 @@
 %type <num> expression
 
 %%
-statement:  PROPERTY '=' expression { printf("=%d",$3); }
+statementlist: statement
+             | statementlist statement
+             ;
+
+statement:  PROPERTY '=' expression ';' { printf("=%d\n",$3); }
          ;
 
 expression: expression '+' expression { $$ = $1 + $3; }

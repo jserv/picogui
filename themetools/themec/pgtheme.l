@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.l,v 1.2 2000/09/24 06:39:59 micahjd Exp $
+/* $Id: pgtheme.l,v 1.3 2000/09/24 07:28:14 micahjd Exp $
  *
  * pgtheme.l - lexer for processing PicoGUI theme source code
  *
@@ -36,25 +36,52 @@ int errors = 0;
 
 %}
 
+%x COMMENT
+
 %%
-[ \t]           ;     /* ignore whitespace */
-\n              { lineno++; }
+
+[a-zA-Z_][a-zA-Z0-9]* { return PROPERTY; }
+[-+*/()=;]      { return yytext[0]; }
+\"[^"\n]*["\n]  { return STRING; } 
+
+   /* numeric constants */
+
 0               { yylval.num = 0; return NUMBER; } 
 0x[0-9A-Fa-f]+  { yylval.num = strtol(yytext,(char**)NULL,16); return NUMBER; }
 0[0-9]+         { yylval.num = strtol(yytext,(char**)NULL,8); return NUMBER; }
 [1-9][0-9]*     { yylval.num = strtol(yytext,(char**)NULL,10); return NUMBER; }
-[a-zA-Z]        { return PROPERTY; }
-\;              { return 0; }
-.               { return yytext[0]; }
+
+   /* whitespace and comments */
+
+\n              { lineno++; }
+[ \t\r]+        ;     /* ignore whitespace */
+"#".*           ;     /* script-style comment */
+"//".*          ;     /* c++ comment */
+"/*"            { BEGIN COMMENT; }
+<COMMENT>\n     { lineno++; }
+<COMMENT>"*/"   { BEGIN 0; }
+<COMMENT>.      ;
+
+.               { yyerror("invalid character"); }
+
 %%
 
 extern FILE *yyin;
 
-int main(void) {
+int main(int argc, char **argv) {
+
+  if (argc==2) {
+    yyin = fopen(argv[1],"r");
+    if (!yyin) {
+      perror("Error opening file");
+      return 2;
+    }
+  }
+
   do {
     yyparse();
   } while (!feof(yyin));
-  return errors;
+  return (errors ? 1 : 0);
 }
 
 int yyerror(const char *s) {
