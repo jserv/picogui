@@ -33,9 +33,16 @@ class XWTParser:
             widget = self.widgetStack[-1].children[-1].addWidget(name,'after')
             self.widgetStack[-1].children.append(widget)
 
-        # All remaining XML attributes are widget properties
+        # All remaining XML attributes are widget properties.
+        # Any attribute ending with "_src" is considered to be a filename
+        # pointing to the property data rather than the property data itself.
         for property in attrs.keys():
-            widget.server.set(widget.handle, property, attrs[property])
+            value = attrs[property]
+            if property[-4:] == '_src':
+                value = open(value,'r').read()
+                property = property[:-4]
+            canonicalProperty = property.lower().replace('_', ' ')
+            widget.server.set(widget.handle, canonicalProperty, value)
         
         widget.children = []
         self.widgetStack.append(widget)

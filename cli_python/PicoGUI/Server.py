@@ -1,5 +1,7 @@
 # Server class
 
+import string
+
 # constant maps
 
 def _getString(str, server):
@@ -20,6 +22,18 @@ def _getFont(str, server):
     except:
         return str, _getFont
     return server.getFont(str), _getFont
+
+def _getBitmap(str, server):
+    return server.mkbitmap(str), _getBitmap
+
+def _getSize(str, server):
+    # This converts fractions of the form "numerator/denominator"
+    # into pgserver 8:8 bit fractions if necessary.
+    fraction = string.split(str,'/')
+    if len(fraction) > 1:
+        return (int(fraction[0])<<8) | int(fraction[1]), _getSize
+    return str, _getSize
+
 
 _wtype_consts = {
             'toolbar':		(0, {}),
@@ -106,8 +120,7 @@ constants = {
         'infilter pntr dispatch':	(19, {}),
     },
     'set': {
-        'size':				(1, {
-        }),
+        'size':				(1, _getSize),
         'side':				(2, {
             'top':	(1<<3, {}),	# stick to the top edge
             'bottom':	(1<<4, {}),	# stick to the bottom edge
@@ -142,8 +155,7 @@ constants = {
         }),
         'bordercolor':			(10, {
         }),
-        'bitmap':			(12, {
-        }),
+        'bitmap':			(12, _getBitmap),
         'lgop':				(13, {
         }),
         'value':			(14, {
