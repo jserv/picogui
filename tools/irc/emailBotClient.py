@@ -220,10 +220,10 @@ if __name__ == '__main__':
                     logCommand(commandLine)
                     lines.append(applyColorTags(commandLine))
 
-            if subjectFields[0] == "JoinChannel" and lastBotNumberOfChannels >= 20:
-                print "Sorry, CIA is currently at the freenode-imposed limit of twenty channels per bot."
-                print "Please ask the maintainer to allocate a new copy of CIA to the network."
-                sys.exit(1)
+#            if subjectFields[0] == "JoinChannel" and lastBotNumberOfChannels >= 20:
+#                print "Sorry, CIA is currently at the freenode-imposed limit of twenty channels per bot."
+#                print "Please ask the maintainer to allocate a new copy of CIA to the network."
+#                sys.exit(1)
                 
             # now launch the client
             f = AnnounceClientFactory()
