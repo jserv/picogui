@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.22 2001/11/16 17:42:58 gobry Exp $
+/* $Id: netcore.c,v 1.23 2001/11/19 11:55:07 cgrigis Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -32,6 +32,7 @@
 #include "clientlib.h"
 #include <ctype.h>
 #include <stdlib.h>    /* for atol() */
+#include <errno.h>
 
 #ifdef ENABLE_THREADING_SUPPORT
 #include <pthread.h>
@@ -850,7 +851,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.22 2001/11/16 17:42:58 gobry Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.23 2001/11/19 11:55:07 cgrigis Exp $\n");
 	exit(1);
       }
 
