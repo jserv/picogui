@@ -128,7 +128,7 @@ blocked  = 1
     elif platform.platform == 'ppc-linux':
         fd.write ('''
 name = picogui-server
-argv = pgserver
+argv = pgserver --input-rawttykb.device=/dev/tty1
 
 restart  = 1
 announce = 1
