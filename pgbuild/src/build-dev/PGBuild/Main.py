@@ -51,42 +51,71 @@ class OptionParser(optik.OptionParser):
         optik.STD_HELP_OPTION.help    = "Shows this help message and exits."
         optik.STD_VERSION_OPTION.help = "Shows the version number and exits."
 
-        ############# General options
+        # Please try to follow the following conventions when adding command line options:
+        #
+        #   1. All options except the built-in --version and --help should be in a group,
+        #      unless you can think of a darn good reason why not.
+        #
+        #   2. All options must have a help string, beginning with a verb in the Simple Present
+        #      tense and ending in a period.
+        #
+        #   3. All destinations must begin with a lowercase letter and capitalize the initial
+        #      letter of subsequent words.
+        #
+        #   4. On options with the default action of "store", a sensible metavar should be
+        #      provided, in all capitals.
+        #
+        #   5. Options and groups should be listed in alphabetical order. If you want
+        #      options to be listed together, that's what groups are for.
+        #
+
+        ############# Build options
         
-        self.add_option("-v", "--verbose", action="count", dest="verbosity", default=1,
-                        help="Reports progress in more detail.")    
-        self.add_option("-q", "--quiet", action="uncount", dest="verbosity", default=1,
-                        help="Reports progress in less detail.")    
-        self.add_option("-i", "--ui", action="store", dest="ui", metavar="MODULE",
-                        help="Selects a user interface module. Try --ui=help to list the available modules.")
-        self.add_option("--traceback", action="store_true", dest="traceback",
-                        help="Disables the user-friendly exception handler and gives a traceback when an error occurs.")
-        self.add_option("-j", "--jobs", dest="numJobs", default=1,
-                        help="Sets the number of jobs that may run concurrently.")
+        buildGroup = self.add_option_group("Build Options")
+        buildGroup.add_option("--ignore-errors", dest="ignoreErrors", action="store_true",
+                              help="Ignores errors from build actions.")
+        buildGroup.add_option("-j", "--jobs", dest="numJobs", default=1,
+                              help="Sets the number of jobs that may run concurrently.")
+        buildGroup.add_option("-k", "--keep-going", dest="keepGoing", action="store_true",
+                              help="Keeps going when a target can't be built.")
          
         ############# Configuration management
 
         configGroup = self.add_option_group("Configuration Management")
         configGroup.add_option("--dump-tree", dest="treeDumpFile",
                                help="Dumps the configuration tree to FILE.", metavar="FILE")
-        configGroup.add_option("--retest-mirrors", dest="retestMirrors", action="store_true",
-                               help="Re-runs any mirror speed tests, ignoring saved results.")
         configGroup.add_option("-l", "--list", dest="listPath", metavar="XPATH",
                                help="Lists items from the given configuration path. " +
                                'If you\'re unfamilair with PGBuild\'s XPaths, try "sites", or "packages".')
+        configGroup.add_option("--retest-mirrors", dest="retestMirrors", action="store_true",
+                               help="Re-runs any mirror speed tests, ignoring saved results.")
         
         ############# Package management
         
         packageGroup = self.add_option_group("Package Management")
         packageGroup.add_option("--nuke", dest="nuke", action="store_true",
                                 help="Unconditionally deletes local copies of all non-bootstrap packages.")
-        packageGroup.add_option("-u", "--update", dest="update", action="store_true", 
-                                help="Updates the specified package and merges its configuration.")
         packageGroup.add_option("-m", "--merge", dest="merge", action="append", metavar="PACKAGE",
                                 help="Explicitly merges configuration from the specified package.")
         packageGroup.add_option("--merge-all", dest="mergeAll", action="store_true",
                                 help="Merges configuration from all available packages.")
+        packageGroup.add_option("-u", "--update", dest="update", action="store_true", 
+                                help="Updates the specified package and merges its configuration.")
         
+        ############# Reporting options
+        
+        reportingGroup = self.add_option_group("Reporting Options")
+        reportingGroup.add_option("-i", "--ui", action="store", dest="ui", metavar="MODULE",
+                                  help="Selects a user interface module. Try --ui=help to list " +
+                                  "the available modules.")
+        reportingGroup.add_option("-q", "--quiet", action="uncount", dest="verbosity", default=1,
+                                  help="Reports progress in less detail.")    
+        reportingGroup.add_option("--traceback", action="store_true", dest="traceback",
+                                  help="Disables the user-friendly exception handler and gives " +
+                                  "a traceback when an error occurs.")
+        reportingGroup.add_option("-v", "--verbose", action="count", dest="verbosity", default=1,
+                                  help="Reports progress in more detail.")    
+
 
 class HelpFormatter(optik.IndentedHelpFormatter):
     """Custom help formatting- provides some extra information about

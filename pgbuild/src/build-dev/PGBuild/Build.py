@@ -35,7 +35,6 @@ import sys
 # FIXME: move these to invocation options
 keep_going_on_error = False
 ignore_errors = False
-print_time = False
 exit_status = 0
 
 class BuildTask(SCons.Taskmaster.Task):
@@ -44,7 +43,7 @@ class BuildTask(SCons.Taskmaster.Task):
        subclassing wouldn't have been effective.
        """
     def display(self, message):
-        self.progress.messsage('scons: ' + message)
+        self.progress.messsage(message)
 
     def execute(self):
         target = self.targets[0]
@@ -52,14 +51,7 @@ class BuildTask(SCons.Taskmaster.Task):
             if self.top and target.has_builder():
                 self.display('"%s" is up to date.' % str(target))
         elif target.has_builder() and not hasattr(target.builder, 'status'):
-            if print_time:
-                start_time = time.time()
             SCons.Taskmaster.Task.execute(self)
-            if print_time:
-                finish_time = time.time()
-                global command_time
-                command_time = command_time+finish_time-start_time
-                self.progress.message("Command execution time: %f seconds" % (finish_time-start_time))
 
     def do_failed(self, status=2):
         global exit_status
@@ -76,14 +68,14 @@ class BuildTask(SCons.Taskmaster.Task):
         t = self.targets[0]
         if self.top and not t.has_builder() and not t.side_effect:
             if not t.exists():
-                s = "scons: *** Do not know how to make target `%s'." % t
+                s = "Do not know how to make target `%s'." % t
                 if not keep_going_on_error:
                     s += "  Stop."
                 s += "\n"
                 self.progress.error(s)
                 self.do_failed()
             else:
-                self.progress.message("scons: Nothing to be done for `%s'." % t)
+                self.progress.message("Nothing to be done for `%s'." % t)
                 SCons.Taskmaster.Task.executed(self)
         else:
             SCons.Taskmaster.Task.executed(self)
