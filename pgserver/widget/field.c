@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.15 2000/10/19 01:21:24 micahjd Exp $
+/* $Id: field.c,v 1.16 2000/11/18 06:32:34 micahjd Exp $
  *
  * Single-line no-frills text editing box
  *
@@ -52,6 +52,9 @@ struct fielddata {
   handle hbuffer;
   unsigned int bufsize;
 
+  /* Saved grops for dynamic updates */
+  struct gropnode *cursor,*text;
+   
   /* Amount of space in the buffer that is used (including null termination) */
   unsigned int bufuse;
 
@@ -69,7 +72,8 @@ void build_field(struct gropctxt *c,unsigned short state,struct widget *self) {
   int x,y,w,h;
   struct fontdesc *fd;
   handle font = DATA->font ? DATA->font : theme_lookup(state,PGTH_P_FONT);
-
+  hwrcolor fg;
+   
   exec_fillstyle(c,state,PGTH_P_BGFILL);
 
   /* Center the font vertically and use the same amount of margin on the side */
@@ -79,16 +83,22 @@ void build_field(struct gropctxt *c,unsigned short state,struct widget *self) {
   /* Save it for later */
   DATA->startctxt = *c;
 
-#if 0
-  /* Draw order: background, text, cursor, border */
-  grop_rect(&d->grop,-1,-1,-1,-1,DATA->bg);
-  grop_text(&d->grop,fd->margin,(d->h>>1) - (fd->font->h>>1),
-	    DATA->font,DATA->fg,DATA->hbuffer);
-  grop_rect(&d->grop,0,2,CURSORWIDTH,d->h-4,DATA->bg);
-  grop_frame(&d->grop,-1,-1,-1,-1,0x000000);
+  /* The text itself */
+  addgrop(c,PG_GROP_TEXT,fd->margin,(c->h>>1) - (fd->font->h>>1),1,1);
+  c->current->param[0] = DATA->hbuffer;
+  c->current->param[1] = font;
+  c->current->param[2] = fg = (*vid->color_pgtohwr)
+     (theme_lookup(state,PGTH_P_FGCOLOR)); 
+  DATA->text = c->current;
 
+  /* Cursor 
+   * FIXME: The cursor doesn't use themes! (much)
+   */
+  addgrop(c,PG_GROP_RECT,0,c->y+2,CURSORWIDTH,c->h-4);
+  c->current->param[0] = fg;
+  DATA->cursor = c->current;
+   
   fieldstate(self);
-#endif 0
 }
 
 /* Pointers, pointers, and more pointers. What's the point?
@@ -286,54 +296,46 @@ void field_trigger(struct widget *self,long type,union trigparam *param) {
 
   /* If we're busy rebuilding the grop list, don't bother poking
      at the individual nodes */
-  if (self->in->div->grop_lock || !self->in->div->grop)
-    return;
+//  if (self->in->div->grop_lock || !self->in->div->grop)
+//    return;
 
   /* Update stuff */
-  fieldstate(self);
-
-  self->in->div->flags |= DIVNODE_NEED_REDRAW;
-  self->dt->flags |= DIVTREE_NEED_REDRAW;   
-  if (self->dt==dts->top) update();
+//  fieldstate(self);
+  div_setstate(self->in->div,self->in->div->state);
 }
 
 /* Apply the current visual state */
 void fieldstate(struct widget *self) {
   int tw,th;
   struct fontdesc *fd;
-
+  handle font = DATA->font ? DATA->font : 
+   theme_lookup(self->in->div->state,PGTH_P_FONT);
+   
   /* Size the text.  If this is a problem, we could keep a running
      total of the text width as it is done, but this whole widget
      so far is a quick hack anyway...
   */
   if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
-		       DATA->font)) || !fd) return;
+		       font)) || !fd) return;
   sizetext(fd,&tw,&th,DATA->buffer);
 
   /* If the whole text fits in the field, left justify it. Otherwise, 
      right justify
   */
   if (tw<self->in->div->w) {
-    self->in->div->grop->next->x = fd->margin;
+    DATA->text->x = fd->margin;
     /* Move the cursor to the end of the text */
-    self->in->div->grop->next->next->x = tw;
+    DATA->cursor->x = tw;
   }
   else {
     /* Right justify, cursor at right side of widget */
-    self->in->div->grop->next->x = 
-      (self->in->div->grop->next->next->x = 
+    DATA->text->x = (DATA->cursor->x = 
        self->in->div->w - fd->margin - CURSORWIDTH) - tw + fd->margin;    
   }
 
-#if 0
   /* Appear or disappear the cursor depending on focus and cursor
      flashing state */
-  if (DATA->flash_on)
-    self->in->div->grop->next->next->param.c = DATA->fg;
-  else
-    self->in->div->grop->next->next->param.c = DATA->bg;
-#endif   
-
+  DATA->cursor->type = DATA->flash_on ? PG_GROP_RECT : PG_GROP_NULL; 
 }
 
 /* If the buffer doesn't have room for one more char, enlarge it */

@@ -1,4 +1,4 @@
-/* $Id: svgainput.c,v 1.10 2000/10/29 08:16:44 micahjd Exp $
+/* $Id: svgainput.c,v 1.11 2000/11/18 06:32:31 micahjd Exp $
  *
  * svgainput.h - input driver for SVGAlib
  *
@@ -78,6 +78,9 @@ short svgainput_keymap[128] = {
 /* Current modifier state (in PGKEY values) */
 int svgainput_mod;
 
+/* Nonzero means the keyboard mouse control (via arrow keys) is on */
+unsigned char kbdmouse;
+
 /* Initialize the keymaps. Almost all of this is from
    SDL_svgaevents.c in SDL.
    Duplicates the kernel's keymapping code, so it's kinda
@@ -99,8 +102,16 @@ void svgainput_initkeymaps(void) {
 	if ( entry.kb_value == K_ENTER ) {
 	  entry.kb_value = K(KT_ASCII,13);
 	}
+	/* The delete key */
+	else if ( entry.kb_value == K_REMOVE ) {
+	  entry.kb_value = K(KT_ASCII,127);
+	}
+	/* Backspace */
+	else if ( entry.kb_value == 127) {
+	   entry.kb_value = K(KT_ASCII,8);
+	}
 	/* Handle numpad specially as well */
-	if ( KTYP(entry.kb_value) == KT_PAD ) {
+	else if ( KTYP(entry.kb_value) == KT_PAD ) {
 	  switch ( entry.kb_value ) {
 	  case K_P0:
 	  case K_P1:
@@ -165,7 +176,11 @@ void svgainput_kbdhandler(int scancode,int press) {
     if (!press) break;
     svgainput_mod ^= PGMOD_NUM;
     goto updatelights;
-  case SCANCODE_CAPSLOCK:
+  case SCANCODE_SCROLLLOCK:
+    if (!press) break;
+    kbdmouse ^= 1;
+    goto updatelights;
+   case SCANCODE_CAPSLOCK:
     if (!press) break;
     svgainput_mod ^= PGMOD_CAPS;
   updatelights:
@@ -173,6 +188,7 @@ void svgainput_kbdhandler(int scancode,int press) {
     /* Update the keyboard LEDs */
     if (svgainput_mod & PGMOD_CAPS)  led |= LED_CAP;
     if (svgainput_mod & PGMOD_NUM)   led |= LED_NUM;
+    if (kbdmouse)                    led |= LED_SCR;
     ioctl(__svgalib_kbd_fd,KDSETLED,led);
     break;
     
@@ -189,6 +205,39 @@ void svgainput_kbdhandler(int scancode,int press) {
   else
     svgainput_mod &= ~x;
 
+  /******* Handle mouse keys */
+  if (kbdmouse) {
+     static char n=0,e=0,s=0,w=0,b=0;
+
+          if (scancode == SCANCODE_CURSORBLOCKUP)    n = press;
+     else if (scancode == SCANCODE_CURSORBLOCKRIGHT) e = press;
+     else if (scancode == SCANCODE_CURSORBLOCKDOWN)  s = press;
+     else if (scancode == SCANCODE_CURSORBLOCKLEFT)  w = press;
+     else if (scancode == SCANCODE_INSERT || scancode == SCANCODE_REMOVE) {
+        if (press) {
+	   if (previouskey==scancode) return;
+	   previouskey = scancode;
+	   b |= scancode == SCANCODE_REMOVE ? 2 : 1;
+	}
+	else {
+	  previouskey = 0;
+	  b &= scancode == SCANCODE_REMOVE ? ~2 : ~1;
+	}
+	dispatch_pointing(press ? TRIGGER_DOWN : TRIGGER_UP,
+			  pointer->x,pointer->y,b);	
+	return;
+     }
+     else
+       goto nomousekey;
+
+     dispatch_pointing(TRIGGER_MOVE,
+		       pointer->x+((e-w)<<1),
+		       pointer->y+((s-n)<<1),b);
+     mouse_setposition(pointer->x,pointer->y);
+     return;
+  }
+   nomousekey:
+   
   /******* Handle ascii character events */
 
   if (press) {
@@ -215,9 +264,7 @@ void svgainput_kbdhandler(int scancode,int press) {
 
 
 #ifdef DEBUG
-    /*
     guru("Translated key: %c (%d) (mods: %d)",c,c,svgainput_mod);
-    */
 #endif
 
     if (c)

@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.24 2000/11/05 19:45:48 micahjd Exp $
+/* $Id: label.c,v 1.25 2000/11/18 06:32:34 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -66,7 +66,8 @@ void build_label(struct gropctxt *c,unsigned short state,struct widget *self) {
     addgrop(c,PG_GROP_TEXT,x,y,w,h);
   c->current->param[0] = DATA->text;
   c->current->param[1] = font;
-  c->current->param[2] = theme_lookup(state,PGTH_P_FGCOLOR);
+  c->current->param[2] = (*vid->color_pgtohwr)
+     (theme_lookup(state,PGTH_P_FGCOLOR));
   c->current->flags |= PG_GROPF_TRANSLATE;
 }
 

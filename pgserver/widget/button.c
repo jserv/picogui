@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.43 2000/11/11 16:53:59 micahjd Exp $
+/* $Id: button.c,v 1.44 2000/11/18 06:32:34 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -102,7 +102,8 @@ void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
     addgrop(c,PG_GROP_TEXT,bp.x+bp.tx,bp.y+bp.ty,bp.tw,bp.th);
     c->current->param[0] = DATA->text;
     c->current->param[1] = bp.font;
-    c->current->param[2] = theme_lookup(state,PGTH_P_FGCOLOR);
+    c->current->param[2] = (*vid->color_pgtohwr)
+       (theme_lookup(state,PGTH_P_FGCOLOR));
   }
 }
 

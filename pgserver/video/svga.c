@@ -1,4 +1,4 @@
-/* $Id: svga.c,v 1.15 2000/10/29 09:06:39 micahjd Exp $
+/* $Id: svga.c,v 1.16 2000/11/18 06:32:33 micahjd Exp $
  *
  * svga.c - video driver for (S)VGA cards, via vgagl and svgalib
  *
@@ -50,7 +50,7 @@ g_error svga_init(int xres,int yres,int bpp,unsigned long flags) {
      PicoGUI compliant...
   */
 
-#define VGA_MODE G640x480x64K
+#define VGA_MODE G320x200x256
 
   /* In a GUI environment, we don't want VC switches,
      plus they usually crash on my system anyway,
