@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.26 2001/03/17 04:16:35 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.27 2001/03/19 02:00:10 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -158,7 +158,11 @@ void def_clear(void) {
 }
 
 void def_slab(int x,int y,int w,hwrcolor c) {
-  (*vid->rect) (x,y,w,1,c);
+  /* You could make this create a very thin rectangle, but then if niether
+   * were implemented they would be a pair of mutually recursive functions! */
+   
+  for (;w;w--,x++)
+     (*vid->pixel) (x,y,c);
 }
 
 void def_bar(int x,int y,int h,hwrcolor c) {
