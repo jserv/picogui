@@ -1,7 +1,7 @@
 import PicoGUI, sys
 from Minibuffer import Minibuffer
 from DebugBuffer import DebugBuffer
-#import pax.backwards_compatibility
+import Nifty.config
 
 class Frame(object):
     "A window"
@@ -15,8 +15,10 @@ class Frame(object):
         self._box = self.addWidget('Box')
         self._box.side = 'All'
 
-        self.python_ns = {'frame': self}
+        self.python_ns = {'frame': self, '__name__': title}
         exec 'from Nifty import FileBuffer, ScratchBuffer, Subprocess, keybindings' in self.python_ns
+
+        Nifty.config.exec_config_file('init.py', self.python_ns)
 
         bar = self._app.panelbar() or self.addWidget('toolbar')
         bt = bar.addWidget('Button', 'inside')
