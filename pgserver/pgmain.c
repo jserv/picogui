@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.29 2002/03/29 18:03:22 micahjd Exp $
+/* $Id: pgmain.c,v 1.30 2002/03/29 20:09:22 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -672,7 +672,6 @@ g_error reload_initial_themes(void) {
 	filename = p->name;
 
       /* Load theme from file */
-      printf("Trying to load %s\n",filename);
       if ((fd = open(filename,O_RDONLY))<=0)
 	return mkerror(PG_ERRT_IO,109);       /* Can't find a theme file */
       fstat(fd,&st);
@@ -682,7 +681,6 @@ g_error reload_initial_themes(void) {
       close(fd);
       e = theme_load(&p->h,-1,themebuf,st.st_size);
       errorcheck;
-      printf("Theme loaded- %s is %d\n",filename, p->h);
       
       /* FIXME: Theme not loaded in the correct order */
       

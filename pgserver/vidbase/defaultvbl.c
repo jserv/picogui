@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.85 2002/03/27 15:09:25 lonetech Exp $
+/* $Id: defaultvbl.c,v 1.86 2002/03/29 20:09:25 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -1971,6 +1971,90 @@ struct fontglyph const *def_font_getglyph(struct fontdesc *fd, int ch) {
   return fd->font->glyphs;
 }
 
+/* This isn't nearly as slow as a real gaussian blur, but it still ain't great.
+ * In a framebuffer-specific implementation, a lot of the pointer arithmetic and
+ * color conversion is unnecessary.
+ */  
+void def_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
+  int i,j;
+  int r1,r2,r3;  /* 3-pixel buffer for blurring */
+  int g1,g2,g3;
+  int b1,b2,b3;
+  hwrcolor c;
+
+  /* Repeat the same basic 3x3 blur to get more blurrring. Each iteration
+   * covers 2 additional pixels, therefore one extra radius unit.
+   */
+  while (radius--) {
+
+    /* Horizontal blur */
+    for (j=0;j<h;j++) {
+
+      /* Throughout the blur we keep our 3-pixel buffer full, but at the beginning we need to prime it */
+      c = vid->color_hwrtopg(vid->getpixel(dest,x,y+j));
+      r2 = getred(c);
+      g2 = getgreen(c);
+      b2 = getblue(c);
+      c = vid->color_hwrtopg(vid->getpixel(dest,x+1,y+j));
+      r3 = getred(c);
+      g3 = getgreen(c);
+      b3 = getblue(c);
+
+      for (i=1;i<w-2;i++) {
+	c = vid->color_hwrtopg(vid->getpixel(dest,x+i+1,y+j));
+
+	r1 = r2;
+	r2 = r3;
+	r3 = getred(c);
+	g1 = g2;
+	g2 = g3;
+	g3 = getgreen(c);
+	b1 = b2;
+	b2 = b3;
+	b3 = getblue(c);
+	c = mkcolor(((r1+r2+r3)/3),
+		    ((g1+g2+g3)/3),
+		    ((b1+b2+b3)/3));
+
+	vid->pixel(dest,x+i,y+j,vid->color_pgtohwr(c),PG_LGOP_NONE);
+      }
+    }
+
+    /* Vertical blur */
+    for (i=1;i<w-2;i++) {
+
+      /* Throughout the blur we keep our 3-pixel buffer full, but at the beginning we need to prime it */
+      c = vid->color_hwrtopg(vid->getpixel(dest,x+i,y));
+      r2 = getred(c);
+      g2 = getgreen(c);
+      b2 = getblue(c);
+      c = vid->color_hwrtopg(vid->getpixel(dest,x+i,y+1));
+      r3 = getred(c);
+      g3 = getgreen(c);
+      b3 = getblue(c);
+      
+      for (j=0;j<h;j++) {
+	c = vid->color_hwrtopg(vid->getpixel(dest,x+i,y+j+1));
+
+	r1 = r2;
+	r2 = r3;
+	r3 = getred(c);
+	g1 = g2;
+	g2 = g3;
+	g3 = getgreen(c);
+	b1 = b2;
+	b2 = b3;
+	b3 = getblue(c);
+	c = mkcolor(((r1+r2+r3)/3),
+		    ((g1+g2+g3)/3),
+		    ((b1+b2+b3)/3));
+
+	vid->pixel(dest,x+i,y+j,vid->color_pgtohwr(c),PG_LGOP_NONE);
+      }
+    }
+  }
+}
+
 /* Load our driver functions into a vidlib */
 void setvbl_default(struct vidlib *vid) {
   /* Set defaults */
@@ -2023,6 +2107,7 @@ void setvbl_default(struct vidlib *vid) {
   vid->grop_render_node_hook = &def_grop_render_node_hook;
   vid->update_hook = &def_update_hook;
   vid->grop_handler = &def_grop_handler;
+  vid->blur = &def_blur;
 }
 
 /* The End */

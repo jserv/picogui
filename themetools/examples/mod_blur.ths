@@ -1,0 +1,4 @@
+object default name = "Blur behind popup boxes";
+object popup backdrop = fillstyle {
+  Blur(0,0,0x7FFF,0x7FFF,3);
+};

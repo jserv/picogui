@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.81 2002/03/06 11:38:46 micahjd Exp $
+/* $Id: video.h,v 1.82 2002/03/29 20:09:23 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -424,6 +424,11 @@ struct vidlib {
   void (*ellipse) (hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
   void (*fellipse) (hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
   void (*fpolygon) (hwrbitmap dest, s32* array, s16 xoff, s16 yoff , hwrcolor c, s16 lgop);
+
+  /* Optional
+   *   Yep, it's a blur...
+   */
+  void (*blur) (hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius);
    
   /***************** Bitmaps */
 
