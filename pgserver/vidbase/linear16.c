@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.32 2002/10/20 16:16:10 micahjd Exp $
+/* $Id: linear16.c,v 1.33 2002/10/20 16:54:34 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -505,17 +505,12 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
  */
 void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
   int log_diameter, diameter, i, j;
-  int shiftsize;
+  int shiftsize,strideradius;
   int r,g,b;        /* Current color sums */
-  int skip, stride, fallback, bpl, strideradius;
-  u16 *p, *stop;
+  int bpl;
+  u16 *corner, *p, *line;
   u16 color;
   s16 imgw, imgh;
-
-  /* And the radius can't be wider than the image, to avoid reading past the end */
-  vid->bitmap_getsize(dest,&imgw,&imgh);
-  if (radius > imgw)
-    radius = imgw;
 
   /* This algorithm is more intense than the usual one, so cut the radius in half */
   diameter = radius;
@@ -524,16 +519,10 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
   if (diameter <= 2)
     diameter = 4;
 
-  /* Don't let the radius overlap the top/bottom */
-  if (y<=radius) {
-    h-=radius+1-y;
-    y=radius+1;
-  }
-  if (h+y+diameter>=imgh)
-    h = imgh-y-diameter-1;
-
-  /* Too small to blur? */
-  if (h<=0)
+  /* Leave room on the edges, so the p[radius]/p[-radius] stuff below is legal */
+  x += radius;
+  w -= radius<<1;
+  if (w<=0)
     return;
 
   /* Find out the next highest power of two from radius, and the log of that */
@@ -551,22 +540,18 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
     diameter = 1<<log_diameter;
   }
   radius = diameter>>1;
-
-  /* Set up the various loop increments */
   bpl = FB_BPL;
-  stride = bpl>>1;
-  skip = stride - w;
-  strideradius = stride * radius;
-  fallback = stride*h;
-
-  /* Horizontal blur, even fields */
-  p = PIXELADDR(x,y);
-  j = h;
+  strideradius = (bpl>>1)*radius;
+  corner = PIXELADDR(x,y);
   r=g=b=0;
-  while (j--) {
-    stop = p+w;
-    for (;p<stop;p++) {
+  
+  for (line=corner,j=h;j;j--,(u8*)line+=bpl) {
+    color = line[-radius];
+    r = (color & 0xF800) << log_diameter;
+    g = (color & 0x07E0) << log_diameter;
+    b = (color & 0x001F) << log_diameter;
 
+    for (p=line,i=w;i;i--,p++) {
       /* Add the new pixel into the buffer */
       color = p[radius];
       r += color & 0xF800;
@@ -584,95 +569,7 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
 	    ((g >> log_diameter) & 0x07E0) |
 	    ((b >> log_diameter) & 0x001F) );
     }
-    p = stop + skip;
   }
-
-  /* Horizontal blur, odd fields */
-
-  p = PIXELADDR(x,y);
-  j = h;
-  while (j--) {
-    stop = p+w;
-    p++;
-    for (;p<stop;p+=2) {
-
-      /* Add the new pixel into the buffer */
-      color = p[radius];
-      r += color & 0xF800;
-      g += color & 0x07E0;
-      b += color & 0x001F;
-
-      /* Take the old one away */
-      color = p[-radius];
-      r -= color & 0xF800;
-      g -= color & 0x07E0;
-      b -= color & 0x001F;
-
-      /* Shift it into place */
-      *p = (((r >> log_diameter) & 0xF800) |
-	    ((g >> log_diameter) & 0x07E0) |
-	    ((b >> log_diameter) & 0x001F) );
-    }
-    p = stop + skip;
-  }
-
-  /* Vertical blur, even fields */
-
-  p = PIXELADDR(x,y);
-  j = w;
-  while (j--) {
-    stop = p+fallback;
-    for (;p<stop;p+=bpl) {
-
-      /* Add the new pixel into the buffer */
-      color = p[strideradius];
-      r += color & 0xF800;
-      g += color & 0x07E0;
-      b += color & 0x001F;
-
-      /* Take the old one away */
-      color = p[-strideradius];
-      r -= color & 0xF800;
-      g -= color & 0x07E0;
-      b -= color & 0x001F;
-
-      /* Shift it into place */
-      *p = (((r >> log_diameter) & 0xF800) |
-	    ((g >> log_diameter) & 0x07E0) |
-	    ((b >> log_diameter) & 0x001F) );
-    }
-    p = stop - fallback + 1;
-  }
-
-  /* Vertical blur, odd fields */
-
-  p = PIXELADDR(x,y);
-  j = w;
-  while (j--) {
-    stop = p+fallback;
-    p += stride;
-    for (;p<stop;p+=bpl) {
-
-      /* Add the new pixel into the buffer */
-      color = p[strideradius];
-      r += color & 0xF800;
-      g += color & 0x07E0;
-      b += color & 0x001F;
-
-      /* Take the old one away */
-      color = p[-strideradius];
-      r -= color & 0xF800;
-      g -= color & 0x07E0;
-      b -= color & 0x001F;
-
-      /* Shift it into place */
-      *p = (((r >> log_diameter) & 0xF800) |
-	    ((g >> log_diameter) & 0x07E0) |
-	    ((b >> log_diameter) & 0x001F) );
-    }
-    p = stop - fallback + 1;
-  }
-
 }
 #endif /* CONFIG_FASTER_BLUR */
 
