@@ -1,4 +1,4 @@
-/* $Id: cursor.c,v 1.10 2002/11/07 20:36:45 micahjd Exp $
+/* $Id: cursor.c,v 1.11 2002/11/11 07:03:53 micahjd Exp $
  *
  * cursor.c - Cursor abstraction and multiplexing layer 
  *
@@ -329,14 +329,15 @@ void cursor_widgetunder(struct cursor *crsr) {
    */
   if (popup_toolbar_passthrough()) {
     struct divnode *ntb = appmgr_nontoolbar_area();
-    
-    if (x < ntb->r.x ||
-	y < ntb->r.y ||
-	x >= ntb->r.x+ntb->r.w ||
-	y >= ntb->r.y+ntb->r.h) {
-      
-      /* Get a widget from the bottom layer, with the toolbars */
-      div = dts->root->head;
+    if (ntb) {
+      if (x < ntb->r.x ||
+	  y < ntb->r.y ||
+	  x >= ntb->r.x+ntb->r.w ||
+	  y >= ntb->r.y+ntb->r.h) {
+	
+	/* Get a widget from the bottom layer, with the toolbars */
+	div = dts->root->head;
+      }
     }
   }
  
