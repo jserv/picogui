@@ -46,8 +46,6 @@ struct fontdesc {
   int italicw;  /* Extra width added by the italic */
 };
 
-extern handle defaultfont;
-
 /* Flags for a font style */
 #define FSTYLE_FIXED      (1<<0)
 #define FSTYLE_DEFAULT    (1<<1)    /* The default font in its category,

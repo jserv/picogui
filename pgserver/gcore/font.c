@@ -1,6 +1,6 @@
 /*
  * font.c - loading and rendering fonts
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * 
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -12,8 +12,6 @@
 #include <string.h>
 #include <g_malloc.h>
 #include <g_error.h>
-
-handle defaultfont;
 
 /* This defines how italic the generated italic is */
 #define DEFAULT_SKEW 3

@@ -1,7 +1,7 @@
 /*
  * request.h - this connection is for sending requests to the server
  *             and passing return values back to the client
- * $Revision: 1.1 $ 
+ * $Revision: 1.2 $ 
  *
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -69,8 +69,9 @@ int reqproc(void);
 #define RQH_FREE     6      /* Frees a handle                 |  struct */
 #define RQH_SET      7      /* Set a widget param             |  struct */
 #define RQH_GET      8      /* Get a widget param, return it  |  struct */
+#define RQH_SETBG    9      /* bequeath a new background bmp  |  struct */
 
-#define RQH_UNDEF    9      /* types > this will be truncated. return error */
+#define RQH_UNDEF    10     /* types > this will be truncated. return error */
 
 /* Structures passed to request handlers as 'data'.
  * Dummy variables pad it to a multiple of 4 bytes (compiler likes it?)
@@ -106,6 +107,9 @@ struct rqhd_get {
   unsigned long widget;
   unsigned short property;
   unsigned short dummy;
+};
+struct rqhd_setbg {
+  unsigned long h;   /* 0 to restore original */
 };
 
 #endif /* __H_REQUEST */

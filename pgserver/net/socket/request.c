@@ -1,7 +1,7 @@
 /*
  * request.c - this connection is for sending requests to the server
  *             and passing return values back to the client
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * 
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -14,6 +14,7 @@
 #include <g_malloc.h>
 #include <handle.h>
 #include <widget.h>
+#include <appmgr.h>
 
 /* #define NONBLOCKING */
 
@@ -43,6 +44,7 @@ DEF_REQHANDLER(mkstring)
 DEF_REQHANDLER(free)
 DEF_REQHANDLER(set)
 DEF_REQHANDLER(get)
+DEF_REQHANDLER(setbg)
 DEF_REQHANDLER(undef)
 g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(ping)
@@ -54,6 +56,7 @@ g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(free)
   TAB_REQHANDLER(set)
   TAB_REQHANDLER(get)
+  TAB_REQHANDLER(setbg)
   TAB_REQHANDLER(undef)
 };
 
@@ -453,6 +456,15 @@ g_error rqh_get(int owner, struct uipkt_request *req,
   *ret = widget_get(w,ntohs(arg->property));
 
   return sucess;
+}
+
+g_error rqh_setbg(int owner, struct uipkt_request *req,
+		   void *data, unsigned long *ret, int *fatal) {
+  struct rqhd_setbg *arg = (struct rqhd_setbg *) data;
+  if (req->size < sizeof(struct rqhd_setbg)) 
+    return mkerror(ERRT_BADPARAM,"rqhd_setbg too small");
+  
+  return appmgr_setbg(owner,ntohl(arg->h));
 }
 
 g_error rqh_undef(int owner, struct uipkt_request *req,

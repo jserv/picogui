@@ -58,5 +58,11 @@ g_error handle_free(int owner,handle h);
 /* Deletes all handles from a specified owner (-1 for all handles) */
 void handle_cleanup(int owner);
 
+/* A fairly interesting function.  Destroys any data referenced by
+   the destination handle, and transfers the data from the source
+   handle to the destination handle.  The destination's ownership is
+   retained, and the source becomes invalid */
+g_error handle_bequeath(handle dest, handle src, int srcowner);
+
 #endif /* __HANDLE_H */
 /* The End */

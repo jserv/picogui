@@ -12,6 +12,7 @@
 #include <divtree.h>
 #include <font.h>
 #include <g_malloc.h>
+#include <appmgr.h>
 
 void resizelabel(struct widget *self);
 

@@ -440,6 +440,34 @@ void handle_cleanup(int owner) {
   while (r_handle_cleanup(htree,owner));
 }
 
+/* A fairly interesting function.  Destroys any data referenced by
+   the destination handle, and transfers the data from the source
+   handle to the destination handle.  The destination's ownership is
+   retained, and the source becomes invalid */
+g_error handle_bequeath(handle dest, handle src, int srcowner) {
+  /* First, validate both handles */
+  struct handlenode *s = htree_find(src);
+  struct handlenode *d = htree_find(dest);
+  if (!src) return mkerror(ERRT_HANDLE,
+			   "handle_bequeath - null source handle");
+  if (!s) return mkerror(ERRT_HANDLE,
+			 "handle_bequeath - invalid source handle");
+  if (!dest) return mkerror(ERRT_HANDLE,
+			    "handle_bequeath - null dest handle");
+  if (!d) return mkerror(ERRT_HANDLE,
+			 "handle_bequeath - invalid dest handle");
+  if (srcowner>=0 && s->owner != srcowner) 
+    return mkerror(ERRT_HANDLE,"handle_bequeath - permission denied");
+  if ((s->type & ~(HFLAG_RED|HFLAG_NFREE)) !=
+      (d->type & ~(HFLAG_RED|HFLAG_NFREE)))
+    return mkerror(ERRT_HANDLE,"handle_bequeath - incompatible handle types");
+
+  object_free(d);
+  d->obj = s->obj;
+  htree_delete(s);
+  return sucess;
+}
+
 /* The End */
 
 
