@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.32 2001/10/12 06:20:44 micahjd Exp $
+/* $Id: terminal.c,v 1.33 2001/10/12 06:46:17 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -476,7 +476,7 @@ void terminal_trigger(struct widget *self,long type,union trigparam *param) {
       
       /* Reset timer */
       install_timer(self,(DATA->cursor_on ? 
-			  DATA->flashtime_on : DATA->flashtime_off ));
+			  DATA->flashtime_off : DATA->flashtime_on ));
 
       /* Flash the cursor if it should be active */
       if (getticks() > (DATA->update_time + DATA->cursor_wait))
