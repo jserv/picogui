@@ -1,4 +1,4 @@
-/* $Id: zaurus.c,v 1.2 2002/02/23 08:13:55 micahjd Exp $
+/* $Id: zaurus.c,v 1.3 2002/02/23 09:56:12 micahjd Exp $
  *
  * zaurus.c - Input driver for the Sharp Zaurus SL-5000. This includes a
  *            simple touchscreen driver, and some extras to handle sound
@@ -83,12 +83,14 @@ int zaurus_ts_fd_activate(int fd) {
      return 0;
    if (read(zaurus_ts_fd,&ts,sizeof(ts)) < sizeof(ts))
      return 1;
-
-   //   printf("touchscreen: x=%d y=%d pressure=%d\n", ts.x, ts.y, ts.pressure);
-   
-   /* Convert to screen coordinates */
    x = ts.x;
    y = ts.y;
+
+   /* Filter the sample, skipping one if necessary */
+   if (touchscreen_filter(&x, &y, ts.pressure))
+     return 1;
+
+   /* Convert to screen coordinates */
    touchscreen_pentoscreen(&x, &y);
 
    /* What type of pointer event?
