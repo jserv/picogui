@@ -1,9 +1,12 @@
-/*  Might eventually become a full Aqua theme (it's inevitable that every
-    OS/GUI/WM will have an Aqua theme ;-)
+/* $Id: aqua.ths,v 1.12 2000/10/17 04:04:02 micahjd Exp $
+ *
+ * The obligatory Aqua theme (every OS has one, right :)
+ * Looks nice, and it's a good test of the server's bitmap primitives.
+ *
+ * Micah Dowty
+ */
 
-    For now it's just a testbed for the bitmap-related features.
-*/
-
+/* The stripey background */
 object default {
   bgfill = fillstyle {
     Bitmap(x,y,w,h,bitmap1,PG_LGOP_NONE,0,0);
@@ -11,6 +14,7 @@ object default {
   bitmap1 = LoadBitmap("data/aq_bg.pnm");
 }
 
+/* Jellybean-like buttons! */
 object button {
   bitmap1 = LoadBitmap("data/aq_button.pnm");
   bgfill = fillstyle {
@@ -27,6 +31,9 @@ object button {
 object button.on bitmap1 = LoadBitmap("data/aq_button_on.pnm");
 object button.hilight bitmap1 = LoadBitmap("data/aq_button_over.pnm");
 
+/* This defines a resizable grey box, used in all base.display-derived
+   widgets, and a few others (like scroll) 
+*/
 object base.display {
   bitmap1 = LoadBitmap("data/aq_box.pnm");
   bgfill = fillstyle {
@@ -63,6 +70,7 @@ object indicator {
   margin = 3;
 }
 
+/* Nice scrollbar thumb (doubles as indicator overlay) */
 object scroll {
   bitmap2 = LoadBitmap("data/aq_thumb_v.pnm");
   overlay = fillstyle {
@@ -83,6 +91,7 @@ object scroll {
   width = 13;
   margin = 0;
 
+  /* A simple background for the thumb to slide in */
   bitmap1 = LoadBitmap("data/aq_trough_v.pnm");
   bgfill = fillstyle {
     Bitmap(x,y,13,20,scroll::bitmap1,PG_LGOP_NONE,0,0);
@@ -99,14 +108,17 @@ object scroll {
 
 object label margin = 8;
 
+/* Use a simple scrollbar-safe background when the label scrolls */
 object label.scroll {
   bgfill = fillstyle {
     Rect(x,y,w,h,ColorConv(0xe7e7e7));
   };
 }
 
+/* Wallpaper */
 object background bitmap1 = LoadBitmap("data/aq_screenbg.pnm");
 
+/* Interactive titlebar */
 object panel margin = 10;
 object panelbar {
   bitmap1 = LoadBitmap("data/aq_title_wht_v.pnm");
