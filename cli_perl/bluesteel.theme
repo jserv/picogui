@@ -8,32 +8,32 @@ button {
 	border {
 		normal.width = 2
 		normal.type = gradient
-		normal.c1 = 0x7080A0
-		normal.c2 = 0x000000
+		normal.c1 = 0x90A0C0
+		normal.c2 = 0x203040
 		normal.angle = 45
 		normal.trans = none
-		hilighted.c1 = 0x7080A0
-		hilighted.c2 = 0x000000
+		hilighted.c1 = 0x90A0C0
+		hilighted.c2 = 0x203040
 		hilighted.angle = 45
 		hilighted.trans = none
-		active.c1 = 0x7080A0
-		active.c2 = 0x000000
+		active.c1 = 0x90A0C0
+		active.c2 = 0x203040
 		active.angle = 225
 		active.trans = none
 	}
 	fill {
 		normal.width = 0
 		normal.type = gradient
-		normal.c1 = 0x8090B0
-		normal.c2 = 0x000000
+		normal.c1 = 0xA0B0D0
+		normal.c2 = 0x203040
 		normal.angle = 240
 		normal.trans = none
-		hilighted.c1 = 0x8090B0
-		hilighted.c2 = 0x000000
+		hilighted.c1 = 0xA0B0D0
+		hilighted.c2 = 0x203040
 		hilighted.angle = 240
 		hilighted.trans = none
-		active.c1 = 0x8090B0
-		active.c2 = 0x000000
+		active.c1 = 0xA0B0D0
+		active.c2 = 0x203040
 		active.angle = 240
 		active.trans = none
 	}

@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.19 2000/06/10 10:21:55 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.20 2000/06/10 14:19:02 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -87,7 +87,8 @@ use Carp;
 	   'scroll' => 2,
 	   'indicator' => 3,
 	   'bitmap' => 4,
-	   'button' => 5
+	   'button' => 5,
+	   'box' => 8
 	   );
 
 %WPROP = (
