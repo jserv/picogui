@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.4 2001/01/15 00:51:17 micahjd Exp $
+/* $Id: ncurses.c,v 1.5 2001/01/15 01:03:27 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -163,7 +163,7 @@ g_error ncurses_init(int xres,int yres,int bpp,unsigned long flags) {
    e = g_malloc((void**) &ncurses_screen,vid->xres * vid->yres * sizeof(chtype));
    errorcheck;
    for (p=ncurses_screen,size=vid->xres*vid->yres;size;size--,p++)
-     p = ' ';
+     *p = ' ';
    
    /* Load a main input driver */
    return load_inlib(&ncursesinput_regfunc,&inlib_main);
@@ -221,8 +221,8 @@ void ncurses_charblit(unsigned char *chardat,int dest_x,
    /* Get the previous contents, strip out all but the background,
     * and add our new foreground and text */
    location = ncurses_screen + dest_x + vid->xres * dest_y;
-   *location = COLOR_PAIR((PAIR_NUMBER(*location & (~A_CHARTEXT)) & 0x38) | ((PAIR_NUMBER(c) & 0x38)>>3)) |
-		 /* ((*location) & A_BLINK) | */ (c & A_BOLD) | (*chardat);
+   *location = COLOR_PAIR((PAIR_NUMBER(*location & (~A_CHARTEXT)) & 0x38) | 
+			  ((PAIR_NUMBER(c) & 0x38)>>3)) | (c & A_BOLD) | (*chardat);
      
    /* Send it */
    mvaddch(dest_y,dest_x,*location);
@@ -240,7 +240,9 @@ hwrcolor ncurses_color_pgtohwr(pgcolor c) {
    if ((c & 0xFF0000) > 0x400000) sc |= 32;
    if ((c & 0x00FF00) > 0x004000) sc |= 16;
    if ((c & 0x0000FF) > 0x000040) sc |= 8;
-   return COLOR_PAIR(sc) /* | ((c & 0x808080) ? A_BLINK : 0) */;
+   return COLOR_PAIR(sc) | ( ((c&0xFF0000) > 0xA00000) || 
+			     ((c&0x00FF00) > 0x00A000) || 
+			     ((c&0x0000FF) > 0x0000A0) ? A_BOLD : 0);
 }
 
 pgcolor ncurses_color_hwrtopg(hwrcolor c) {
