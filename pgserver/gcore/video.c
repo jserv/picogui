@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.8 2000/09/04 05:00:19 micahjd Exp $
+/* $Id: video.c,v 1.9 2000/09/08 00:38:16 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -730,17 +730,18 @@ g_error def_bitmap_new(struct stdbitmap **bmp,
 		       int w,int h) {
   g_error e;
 
-  e = g_malloc((void **) bmp,sizeof(struct stdbitmap));
+  /* The bitmap and the header can be allocated seperately,
+     but usually it is sufficient to make them one big
+     chunk of memory.  It's 1 alloc vs 2.
+  */
+
+  e = g_malloc((void **) bmp,sizeof(struct stdbitmap) +
+	       (((unsigned long)w)*h*vid->bpp)/8);
   errorcheck;
 
-  e = g_malloc((void **) &(*bmp)->bits,
-	       (((unsigned long)w)*h*vid->bpp)/8);
-  if (iserror(e)) {
-    g_free(*bmp);
-    return e;
-  }
-
-  (*bmp)->freebits = 1;
+  (*bmp)->freebits = 0;
+  (*bmp)->bits = ((unsigned char *)(*bmp)) + 
+    sizeof(struct stdbitmap);
   (*bmp)->w = w;
   (*bmp)->h = h;
   
