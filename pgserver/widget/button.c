@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.36 2000/11/04 05:54:23 micahjd Exp $
+/* $Id: button.c,v 1.37 2000/11/04 07:03:42 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -35,8 +35,10 @@ struct btndata {
   int on,over;
   handle bitmap,bitmask,text,font;
 
-  /* Hooks for customizing a button's appearance */
+  /* Hooks for embedding a button in another widget */
   int state,state_on,state_hilight;
+  void *extra;
+  void (*event)(void *extra,struct widget *button);
 };
 #define DATA ((struct btndata *)(self->data))
 
@@ -44,10 +46,13 @@ void resize_button(struct widget *self);
 
 /* Customizes the button's appearance
    (used by other widgets that embed buttons in themeselves) */
-void customize_button(struct widget *self,int state,int state_on,int state_hilight) {
+void customize_button(struct widget *self,int state,int state_on,int state_hilight,
+		      void *extra, void (*event)(void *extra,struct widget *button)) {
   self->in->div->state = DATA->state = state;
   DATA->state_on = state_on;
   DATA->state_hilight = state_hilight;
+  DATA->extra = extra;
+  DATA->event = event;
   resize_button(self);
 }
 
@@ -311,8 +316,12 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
   else
     div_setstate(self->in->div,DATA->state);
 
-  if (event>=0)
-    post_event(PG_WE_ACTIVATE,self,event,0);
+  if (event>=0) {
+    if (DATA->event)
+      (*DATA->event)(DATA->extra,self);
+    else
+      post_event(PG_WE_ACTIVATE,self,event,0);
+  }
 }
 
 /* HWG_BUTTON is the minimum size (either dimension) for a button.

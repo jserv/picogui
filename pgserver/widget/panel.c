@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.35 2000/11/04 05:54:23 micahjd Exp $
+/* $Id: panel.c,v 1.36 2000/11/04 07:03:42 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -63,7 +63,7 @@ struct paneldata {
   handle text;
 
   /* buttons on the panelbar */
-  struct widget *btn_close;
+  struct widget *btn_close,*btn_rotate;
 
   /* The panelbar */
   struct divnode *panelbar;
@@ -120,6 +120,25 @@ void build_panelbar(struct gropctxt *c,unsigned short state,
   c->current->param[2] = theme_lookup(state,PGTH_P_FGCOLOR);
 }
 
+/** Handlers for the panelbar buttons */
+
+void panelbtn_close(struct widget *self,struct widget *button) {
+#ifdef DEBUG
+  guru("Close button");
+#endif
+}
+
+void panelbtn_rotate(struct widget *self,struct widget *button) {
+  switch (panel_get(self,PG_WP_SIDE)) {
+
+  case PG_S_TOP:    panel_set(self,PG_WP_SIDE,PG_S_RIGHT); break;
+  case PG_S_RIGHT:  panel_set(self,PG_WP_SIDE,PG_S_BOTTOM); break;
+  case PG_S_BOTTOM: panel_set(self,PG_WP_SIDE,PG_S_LEFT); break;
+  case PG_S_LEFT:   panel_set(self,PG_WP_SIDE,PG_S_TOP); break;
+
+  }
+}
+
 /* Pointers, pointers, and more pointers. What's the point?
    Set up some divnodes!
 */
@@ -148,17 +167,24 @@ g_error panel_install(struct widget *self) {
   errorcheck;
   self->in->next->flags |= PG_S_TOP;
 
-  /* Buttons */
+  /* Close Button */
   e = widget_create(&DATA->btn_close,PG_WIDGET_BUTTON,self->dt,&self->in->next->div,
 		    self->container,self->owner);
   errorcheck;
   customize_button(DATA->btn_close,PGTH_O_CLOSEBTN,PGTH_O_CLOSEBTN_ON,
-		   PGTH_O_CLOSEBTN_HILIGHT);
+		   PGTH_O_CLOSEBTN_HILIGHT,self,&panelbtn_close);
+
+  /* Rotate Button */
+  e = widget_create(&DATA->btn_rotate,PG_WIDGET_BUTTON,self->dt,DATA->btn_close->out,
+		    self->container,self->owner);
+  errorcheck;
+  customize_button(DATA->btn_rotate,PGTH_O_ROTATEBTN,PGTH_O_ROTATEBTN_ON,
+		   PGTH_O_ROTATEBTN_HILIGHT,self,&panelbtn_rotate);
 
   /* And finally, the divnode that draws the panelbar */
-  e = newdiv(DATA->btn_close->out,self);
+  e = newdiv(DATA->btn_rotate->out,self);
   errorcheck;
-  DATA->panelbar = *DATA->btn_close->out;
+  DATA->panelbar = *DATA->btn_rotate->out;
   DATA->panelbar->build = &build_panelbar;
   DATA->panelbar->state = PGTH_O_PANELBAR;
 
@@ -177,6 +203,7 @@ g_error panel_install(struct widget *self) {
 void panel_remove(struct widget *self) {
   /* Kill the buttons */
   widget_remove(DATA->btn_close);
+  widget_remove(DATA->btn_rotate);
 
   g_free(self->data);
   if (!in_shutdown)

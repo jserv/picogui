@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.5 2000/11/04 05:54:23 micahjd Exp $
+/* $Id: memtheme.c,v 1.6 2000/11/04 07:03:42 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -78,11 +78,12 @@ unsigned short thobj_ancestry[PGTH_ONUM] = {
   /* 25 PGTH_O_LABEL_DLGTITLE        */ PGTH_O_LABEL,
   /* 26 PGTH_O_LABEL_DLGTEXT         */ PGTH_O_LABEL,
   /* 27 PGTH_O_CLOSEBTN              */ PGTH_O_BASE_PANELBTN,
-  /* 28 PGTH_O_CLOSEBTN_ON           */ PGTH_O_BASE_PANELBTN_ON,
-  /* 29 PGTH_O_CLOSEBTN_HILIGHT      */ PGTH_O_BASE_PANELBTN_HILIGHT,
-  /* 30 PGTH_O_BASE_PANELBTN         */ PGTH_O_BASE_INTERACTIVE,
-  /* 31 PGTH_O_BASE_PANELBTN_ON      */ PGTH_O_BASE_PANELBTN_HILIGHT,
-  /* 32 PGTH_O_BASE_PANELBTN_HILIGHT */ PGTH_O_BASE_PANELBTN,
+  /* 28 PGTH_O_CLOSEBTN_ON           */ PGTH_O_CLOSEBTN_HILIGHT,
+  /* 29 PGTH_O_CLOSEBTN_HILIGHT      */ PGTH_O_CLOSEBTN,
+  /* 30 PGTH_O_BASE_PANELBTN         */ PGTH_O_BUTTON,
+  /* 31 PGTH_O_ROTATEBTN             */ PGTH_O_BASE_PANELBTN,
+  /* 32 PGTH_O_ROTATEBTN_ON          */ PGTH_O_ROTATEBTN_HILIGHT,
+  /* 33 PGTH_O_ROTATEBTN_HILIGHT     */ PGTH_O_ROTATEBTN,
 };
 
 struct pgmemtheme *memtheme;
