@@ -61,6 +61,9 @@ OS-specific information:
 _svn_id = "$Id: __init__.py 4093 2003-05-30 05:33:04Z micah $"
 
 
+platformAliases = ['host', 'build', 'target']
+
+
 class Platform(object):
     """Object to represent a set of platform specifiers"""
     def __init__(self, operatingSystem, architecture=None, libC=None):
@@ -77,8 +80,22 @@ class Platform(object):
         return spec
 
 
+def evalPlatformAlias(config, name):
+    """Resolve a platform alias (recursively if necessary) to a Platform"""
+    if name in platformAliases:
+        # See if we have a matching invocation option
+        opt = config.eval("invocation/option[@name='%sPlatform']/text()" % name)
+        if not opt:
+            opt = config.eval("sys/platform/text()")
+        return parse(opt)
+    
+
+
 def parse(name):
-    """Given a platform specification string, construct a Platform object"""
+    """Given a platform specification string, a platform alias,
+       or a Platform instance, construct a Platform object"""
+
+    
     pass
 
 
