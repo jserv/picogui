@@ -1,4 +1,4 @@
-/* $Id: panelbar.c,v 1.8 2002/05/22 10:01:21 micahjd Exp $
+/* $Id: panelbar.c,v 1.9 2002/08/19 11:54:37 micahjd Exp $
  *
  * panelbar.c - Container and draggable bar for resizing panels
  *
@@ -59,6 +59,7 @@ struct panelbardata {
   handle bindto;              /* Widget the panelbar resizes */
   unsigned int on : 1;        /* Mouse is pressed on the widget */
   unsigned int over : 1;      /* Mouse is over the widget */
+  unsigned int draglen;       /* Total drag length, used to discern between clicks and drags */
 
 #ifdef CONFIG_DRAGSOLID
   unsigned int solid : 1;
@@ -257,6 +258,7 @@ void panelbar_trigger_sprite(struct widget *self,s32 type,union trigparam *param
     DATA->on = 1;
     DATA->x = param->mouse.x;
     DATA->y = param->mouse.y;
+    DATA->draglen = 0;
      
     /* Update the screen now, so we have an up-to-date picture
        of the panelbar stored in DATA->s */
@@ -312,7 +314,7 @@ void panelbar_trigger_sprite(struct widget *self,s32 type,union trigparam *param
       s = panel_calcsplit(self,param->mouse.x,param->mouse.y,
 			  widget_get(boundwidget,PG_WP_SIDE));
       
-      if (abs(s) < MINDRAGLEN) {
+      if (DATA->draglen < MINDRAGLEN) {
 	/* This was a click, not a drag */
 	DATA->over = 0;
 	
@@ -368,11 +370,13 @@ void panelbar_trigger_sprite(struct widget *self,s32 type,union trigparam *param
      case PG_S_TOP:
      case PG_S_BOTTOM:
        DATA->s->x = DATA->panelbar->x;
+       DATA->draglen += abs(param->mouse.y - DATA->y + DATA->panelbar->y - DATA->s->y);
        DATA->s->y = param->mouse.y - DATA->y + DATA->panelbar->y;
        break;
      case PG_S_LEFT:
      case PG_S_RIGHT:
        DATA->s->y = DATA->panelbar->y;
+       DATA->draglen += abs(param->mouse.x - DATA->x + DATA->panelbar->x - DATA->s->x);
        DATA->s->x = param->mouse.x - DATA->x + DATA->panelbar->x;
        break;
      }
@@ -419,6 +423,7 @@ void panelbar_trigger_solid(struct widget *self,s32 type,union trigparam *param)
     DATA->on = 1;
     DATA->x = param->mouse.x;
     DATA->y = param->mouse.y;
+    DATA->draglen = 0;
     break;
 
   case PG_TRIGGER_UP:
@@ -429,7 +434,7 @@ void panelbar_trigger_solid(struct widget *self,s32 type,union trigparam *param)
     if (!iserror(rdhandle((void**)&boundwidget,PG_TYPE_WIDGET,self->owner,
 			  DATA->bindto)) && boundwidget) {
 
-      if (abs(DATA->oldsize - widget_get(boundwidget,PG_WP_SIZE)) < MINDRAGLEN) {
+      if (DATA->draglen < MINDRAGLEN) {
 	/* This was a click, not a drag */
 	DATA->over = 0;
 	
@@ -469,6 +474,7 @@ void panelbar_trigger_solid(struct widget *self,s32 type,union trigparam *param)
      
        s = panel_calcsplit(self,param->mouse.x,param->mouse.y,
 			   widget_get(boundwidget,PG_WP_SIDE));
+       DATA->draglen += abs(s);
        
        if (s) {
 	 s += boundwidget->in->split;
