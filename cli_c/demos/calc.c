@@ -1,4 +1,4 @@
-/* $Id: calc.c,v 1.3 2001/03/07 04:12:17 micahjd Exp $
+/* $Id: calc.c,v 1.4 2001/03/12 04:25:21 micahjd Exp $
  *
  * calc.c - Calculator application for PicoGUI.
  *          Demonstrates grids of buttons using percent sizing
@@ -92,8 +92,6 @@ int main(int argc, char **argv) {
 		     PG_WP_SIZE,pgFraction(1,3),
 		     0);
 	 wButton = 0;
-	 row--;
-	 column = 3;
       }
    }
 
