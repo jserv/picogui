@@ -3,6 +3,7 @@
 PicoGUI has working internationalization now!
 The command line option '-e' can load a simple text file with
 internationalized messages.
+Now I'm starting on config file parsing.
 
 		* gcore/errortext.c: Completely rewritten errortext(), added loading
 		  function.
@@ -11,6 +12,9 @@ internationalized messages.
 
 		* gcore/errortext.c: Fixed segfault on comment or blank line.
 		  (I think the manpage for strtol() is wrong...)
+
+		* gcore/configfile.c: Implementing functions to parse, store, and
+		  retrieve configuration options
 
 2001-06-29    Micah Dowty <micahjd@users.sourceforge.net>
 

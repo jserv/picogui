@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.4 2001/07/03 10:13:31 micahjd Exp $
+/* $Id: pgmain.c,v 1.5 2001/07/04 05:45:19 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -491,6 +491,7 @@ int main(int argc, char **argv) {
   grop_kill_zombies();
   if (vid)
     VID(close) ();
+  configfile_free();
   errorload(NULL);
 
   {  /* Free the list of loaded theme files */
