@@ -1,4 +1,4 @@
-/* $Id: managedwindow.c,v 1.9 2002/11/06 09:44:27 micahjd Exp $
+/* $Id: managedwindow.c,v 1.10 2002/11/06 19:08:12 micahjd Exp $
  *
  * managedwindow.c - A root widget representing a window managed by a host GUI
  *
@@ -146,7 +146,7 @@ glob managedwindow_get(struct widget *self,int property) {
 }
 
 void managedwindow_resize(struct widget *self) {
-  s16 w,h;
+  s16 w,h,maxw,maxh;
   VID(window_get_size)(DATA->my_dt->display,&w,&h);
 
   /* Detect whether the size has been changed by some
@@ -158,14 +158,16 @@ void managedwindow_resize(struct widget *self) {
     h = self->in->child.h;
 
     /* Make sure the window size is reasonable */
-    if (w < 8)
+    maxw = vid->lxres * 80/100;
+    maxh = vid->lyres * 80/100;
+    if (w < 10)
       w = 10;
-    if (h < 8)
+    if (h < 10)
       h = 10;
-    if (w > vid->lxres)
-      w = vid->lxres;
-    if (h > vid->lyres)
-      h = vid->lyres;
+    if (w > maxw)
+      w = maxw;
+    if (h > maxh)
+      h = maxh;
 
     VID(window_set_size)(DATA->my_dt->display,w,h);
     DATA->already_sized = 1;
