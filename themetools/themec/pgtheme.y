@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.23 2000/10/17 01:44:08 micahjd Exp $
+/* $Id: pgtheme.y,v 1.24 2000/10/19 01:40:33 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -92,6 +92,8 @@
 %left SHIFTL SHIFTR
 %left '-' '+'
 %left '*' '/'
+%right '!'
+%nonassoc UMINUS
 %left CLASS
 
 %start unitlist
@@ -412,7 +414,8 @@ fsexp: '(' fsexp ')'    { $$ = $2; }
      | fsexp GTEQ fsexp  { $$ = fsnodecat(fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_LT)),fsnewnode(PGTH_OPCMD_LOGICAL_NOT)); }
      | fsexp SHIFTL fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_SHIFTL)); }
      | fsexp SHIFTR fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_SHIFTR)); }
-     | NUMBER              { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = $1; }     
+     | '-' NUMBER %prec UMINUS { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = 0-$2; }     
+     | NUMBER             { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = $1; }
      | FSVAR               { $$ = fsnewnode(PGTH_OPCMD_LONGGET); $$->param = $1; }
      | fsprop              { $$ = $1; }
      | CNVCOLOR '(' fsexp ')' { $$ = fsnodecat($3,fsnewnode(PGTH_OPCMD_COLOR)); }
