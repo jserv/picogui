@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.66 2001/10/09 02:06:30 micahjd Exp $
+/* $Id: panel.c,v 1.67 2001/10/14 00:46:47 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -357,6 +357,7 @@ g_error panel_set(struct widget *self,int property, glob data) {
     if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,data)) || !str) 
       return mkerror(PG_ERRT_HANDLE,13);
     DATA->text = (handle) data;
+    resizewidget(self);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
