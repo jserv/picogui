@@ -1,4 +1,4 @@
-/* $Id: paragraph.h,v 1.3 2002/10/12 14:46:34 micahjd Exp $
+/* $Id: paragraph.h,v 1.4 2002/10/28 01:00:21 micahjd Exp $
  *
  * paragraph.h - Build upon the text storage capabilities of pgstring, adding word
  *               wrapping, formatting, and UI.
@@ -36,6 +36,8 @@
 #define PAR_META_FONT            1
 #define PAR_META_COLOR           2
 #define PAR_META_EMBED_WIDGET    3
+
+struct textbox_document;
 
 /* This structure is embedded in the metadata of the paragraph's pgstring,
  * and controls formatting and embedded objects.
@@ -134,6 +136,12 @@ struct paragraph {
    * onto a different line.
    */
   struct paragraph_cursor cursor;
+
+  /* Document this paragraph is contained in if any, or NULL.
+   * This is needed for document-wide settings, like password rendering
+   * or line wrapping options.
+   */
+  struct textbox_document *doc;
 
   /* Previous and next paragraphs in cursor navigation order */
   struct paragraph *prev, *next;

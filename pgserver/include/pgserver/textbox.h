@@ -1,4 +1,4 @@
-/* $Id: textbox.h,v 1.15 2002/10/11 09:44:38 micahjd Exp $
+/* $Id: textbox.h,v 1.16 2002/10/28 01:00:21 micahjd Exp $
  *
  * textbox.h - Interface definitions for the textbox widget. This allows
  *             the main textbox widget functions and the text format loaders
@@ -39,6 +39,8 @@ struct textbox_document {
   struct divnode *container_div;  /* Divnode containing everything */
   struct paragraph_cursor *crsr;  /* Current cursor (and therefore current paragraph) */
 
+  /* Owner-settable options */
+  int password;                   /* Character to use for password hiding, if nonzero */
   unsigned int multiline : 1;
 };
 

@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.19 2002/10/26 19:03:28 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.20 2002/10/28 01:00:22 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -51,6 +51,7 @@ struct textboxdata {
 
   unsigned int focus : 1;
   unsigned int flash_on : 1;
+  unsigned int readonly : 1;
 };
 #define DATA WIDGET_DATA(0,textboxdata)
 
@@ -78,7 +79,7 @@ g_error textbox_install(struct widget *self) {
   /* Global background and container for the document */
   e = newdiv(&self->in->div,self);
   errorcheck;
-  self->in->div->flags |= DIVNODE_SPLIT_BORDER;
+  self->in->div->flags |= DIVNODE_SPLIT_BORDER | DIVNODE_HOTSPOT;
   self->in->div->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
   self->in->div->build = &build_bgfill_only;
   self->in->div->state = PGTH_O_TEXTBOX;
@@ -116,8 +117,14 @@ g_error textbox_set(struct widget *self,int property, glob data) {
 
   switch (property) {
 
+  case PG_WP_READONLY:
+    DATA->readonly = data;
+    paragraph_hide_cursor(DATA->doc->crsr);
+    break;
+
   case PG_WP_PASSWORD:
-    /* FIXME: Implement this! */
+    DATA->doc->password = data;
+    resizewidget(self);
     break;
 
   case PG_WP_MULTILINE:
@@ -162,9 +169,11 @@ glob textbox_get(struct widget *self,int property) {
 
   switch (property) {
 
+  case PG_WP_READONLY:
+    return DATA->readonly;
+
   case PG_WP_PASSWORD:
-    /* FIXME: Implement this! */
-    return 0;
+    return DATA->doc->password;
 
   case PG_WP_MULTILINE:
     return DATA->doc->multiline;

@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.11 2002/10/28 00:33:15 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.12 2002/10/28 01:00:22 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -36,6 +36,7 @@
 #include <pgserver/render.h>
 #include <pgserver/appmgr.h>
 #include <pgserver/widget.h>
+#include <pgserver/textbox.h>
 #include <ctype.h>
 
 #ifdef DEBUG_TEXTBOX
@@ -87,6 +88,13 @@ void paragraph_validate_cursor_line(struct paragraph_cursor *crsr);
 
 /* Make the line cache for a particular line valid if it isn't already */
 void paragraph_validate_line_cache(struct paragraph *par, struct paragraph_line *line);
+
+/* Version of pgstring_decode_meta on par->content for internal use,
+ * handles character transformations like password rendering.
+ */
+u32 paragraph_decode_meta(struct paragraph *par, struct pgstr_iterator *p,
+			  void **metadatap);
+
 
 /******************************************************** Public Methods **/
 
@@ -199,7 +207,7 @@ void paragraph_render(struct groprender *r, struct gropnode *n) {
       for (i=line->char_width;i;i--) {
 	draw_cursor = par->cursor.visible && 
 	  !pgstring_iteratorcmp(&p, &par->cursor.iterator);
-	ch = pgstring_decode_meta(par->content, &p, (void**) &meta);
+	ch = paragraph_decode_meta(par, &p, (void**) &meta);
 	if (meta) 
 	  paragraph_apply_metadata(meta, &fmt);
 	old_x = xy.x;
@@ -304,7 +312,7 @@ void paragraph_movecursor(struct paragraph_cursor *crsr,
       if (!crsr->line->next) {
 	/* We've run past the last line.. position the cursor at the end */
 	crsr->iterator = crsr->line->cache.iterator;
-	while (pgstring_decode(par->content, &crsr->iterator));
+	while (paragraph_decode_meta(par, &crsr->iterator, NULL));
 	DBG("Moved cursor to END at %d,%p,%d\n",
 	    crsr->iterator.offset,crsr->iterator.buffer,crsr->iterator.invalid);
 	return;
@@ -317,7 +325,7 @@ void paragraph_movecursor(struct paragraph_cursor *crsr,
     crsr->iterator = crsr->line->cache.iterator;
     fmt = crsr->line->cache.fmt;
     for (i=crsr->line->char_width;i;i--) {
-      ch = pgstring_decode_meta(par->content, &crsr->iterator, (void**) &meta);
+      ch = paragraph_decode_meta(par, &crsr->iterator, (void**) &meta);
       if (meta)
 	paragraph_apply_metadata(meta,&fmt);
       ch_size.x = 0;
@@ -437,7 +445,7 @@ g_error paragraph_wrap_line(struct paragraph *par, struct paragraph_line **line,
 
   /* Now accumulate characters in the line until we reach our wrapping point */
   for (;;) {
-    ch = pgstring_decode_meta(par->content, &i, (void**) &meta);
+    ch = paragraph_decode_meta(par, &i, (void**) &meta);
 
     if (meta && meta->type == PAR_META_FONT) {
       int h;
@@ -458,7 +466,7 @@ g_error paragraph_wrap_line(struct paragraph *par, struct paragraph_line **line,
 	/* Step back until we get to a breaking space */
 	pgstring_seek(par->content,&i,-1);
 	for (;;) {
-	  ch = pgstring_decode_meta(par->content, &i, (void**)&meta);
+	  ch = paragraph_decode_meta(par, &i, (void**)&meta);
 	  
 	  /* Reapply font changes in reverse order */
 	  if (meta && meta->type == PAR_META_FONT) {
@@ -601,7 +609,7 @@ void paragraph_line_skip(struct paragraph *par, struct paragraph_line **line, in
 
       /* Update the iterator and metadata as we traverse the line */
       for (i=thisline->char_width;i;i--) {
-	pgstring_decode_meta(par->content, &nextline->cache.iterator, (void**) &meta);
+	paragraph_decode_meta(par, &nextline->cache.iterator, (void**) &meta);
 	if (meta)
 	  paragraph_apply_metadata(meta, &nextline->cache.fmt);
       }
@@ -655,7 +663,7 @@ void paragraph_rerender_line(struct groprender *r, struct gropnode *n,
   /* Skip until we get to the beginning of the change */
   if (skip_to) {
     while (pgstring_iteratorcmp(&p,skip_to)) {
-      ch = pgstring_decode_meta(par->content, &p, (void**) &meta);
+      ch = paragraph_decode_meta(par, &p, (void**) &meta);
       if (meta) 
 	paragraph_apply_metadata(meta, &fmt);
       if (!ch)
@@ -709,7 +717,7 @@ void paragraph_rerender_line(struct groprender *r, struct gropnode *n,
     draw_cursor = par->cursor.visible && 
       !pgstring_iteratorcmp(&p, &par->cursor.iterator);
    
-    ch = pgstring_decode_meta(par->content, &p, (void**) &meta);
+    ch = paragraph_decode_meta(par, &p, (void**) &meta);
     if (meta) 
       paragraph_apply_metadata(meta, &fmt);
     old_x = xy.x;
@@ -842,6 +850,30 @@ void paragraph_validate_line_cache(struct paragraph *par, struct paragraph_line 
   l = par->lines;
   while (l && l!=line)
     paragraph_line_skip(par,&l,&valid);
+}
+
+/* Version of pgstring_decode_meta on par->content for internal use,
+ * handles character transformations like password rendering.
+ */
+u32 paragraph_decode_meta(struct paragraph *par, struct pgstr_iterator *p,
+			  void **metadatap) {
+  u32 ch = pgstring_decode_meta(par->content, p, metadatap);
+
+  /* Password rendering - replace all characters with the password char */
+  if (par->doc && par->doc->password)
+    switch (ch) {
+      
+      /* Characters we shouldn't affect */
+    case 0:
+    case '\n':
+      break;
+
+      /* Passwordize the rest */
+    default:
+      ch = par->doc->password;
+    }
+
+  return ch;
 }
 
 /* The End */
