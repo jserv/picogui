@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.20 2001/01/29 00:22:33 micahjd Exp $
+/* $Id: video.h,v 1.21 2001/02/10 11:07:04 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -57,8 +57,9 @@ typedef struct stdbitmap *hwrbitmap;
 */
 struct stdbitmap {
   unsigned char *bits;    /* actual format depends on bpp */
-  int w,h;
-  int freebits;    /* Should 'bits' be freed also when bitmap is freed? */
+  short int w,h;
+  short int pitch;       /* Spacing between lines, in bytes */
+  short int freebits;    /* Should 'bits' be freed also when bitmap is freed? */
 };
 
 /* A sprite node, overlaid on the actual picture */
@@ -511,6 +512,7 @@ void def_unblit(int src_x,int src_y,
 /************** Registration functions for Video Base Libraries */
 void setvbl_default(struct vidlib *vid);
 void setvbl_linear8(struct vidlib *vid);
+void setvbl_linear4(struct vidlib *vid);
 
 #endif /* __H_VIDEO */
 

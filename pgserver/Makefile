@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.51 2001/01/31 03:54:55 micahjd Exp $
+# $Id: Makefile,v 1.52 2001/02/10 11:07:03 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -79,6 +79,7 @@ SRC := \
     \
     vidbase/defaultvbl.c \
     vidbase/linear8.c \
+    vidbase/linear4.c \
     \
     theme/memtheme.c \
     theme/fillstyle.c \

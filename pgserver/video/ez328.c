@@ -1,4 +1,4 @@
-/* $Id: ez328.c,v 1.3 2001/02/08 04:56:03 micahjd Exp $
+/* $Id: ez328.c,v 1.4 2001/02/10 11:07:04 micahjd Exp $
  *
  * ez328.c - Driver for the 68EZ328's (aka Motorola Dragonball EZ)
  *           built-in LCD controller. It assumes the LCD parameters
@@ -44,9 +44,9 @@ g_error ez328_init(int xres,int yres,int bpp,unsigned long flags) {
    /* Save existing register settings */
    memcpy(ez328_saveregs,REGS_START,REGS_LEN);
    
-   vid->xres   = 160;
-   vid->yres   = 200;
-   vid->bpp    = 8;
+   vid->xres   = LXMAX;
+   vid->yres   = LYMAX+1;
+   vid->bpp    = 4;
    vid->fb_bpl = (vid->xres * vid->bpp) >> 3;
    
    /* Allocate video memory */
@@ -63,22 +63,10 @@ void ez328_close(void) {
    g_free(vid->fb_mem);
 }
 
-hwrcolor ez328_color_pgtohwr(pgcolor c) {
-//   return (getred(c)+getgreen(c)+getblue(c))/48;
-
-   unsigned char x = ((getred(c)+getgreen(c)+getblue(c))/48);
-   return x | (x<<4);
-}
-   
 g_error ez328_regfunc(struct vidlib *v) {
-   setvbl_linear8(v);
-//   setvbl_default(v);
-   
+   setvbl_linear4(v);
    v->init = &ez328_init;
    v->close = &ez328_close;
-//   v->pixel = &ez328_pixel;
-//   v->getpixel = &ez328_getpixel;
-   v->color_pgtohwr = &ez328_color_pgtohwr;
    return sucess;
 }
 

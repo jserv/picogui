@@ -1,8 +1,17 @@
+---- Friday, February 9
+
+Updated pgremote to have proper keyboard support, and work with SDL.
+Not perfect, but almost completely functional.
+
+Starting the linear4 driver!
+
 ---- Thursday, February 8
 
 Since there's no input device on my ucSimm presently, I'm adding client-side
 support for networked input devices.
 
+Got a remote control working that lets me work the mouse and keyboard from
+a networked computer!
 
 ---- Wednesday, February 7
 

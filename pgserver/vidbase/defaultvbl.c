@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.13 2001/02/08 04:56:03 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.14 2001/02/10 11:07:04 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -496,12 +496,12 @@ g_error def_bitmap_loadxbm(struct stdbitmap **bmp,
 			   hwrcolor bg) {
   int i,bit;
   unsigned char c;
-  unsigned char *p;
+  unsigned char *p,*pline;
   g_error e;
 
   e = (*vid->bitmap_new)((hwrbitmap *) bmp,w,h);
   errorcheck;
-  p = (*bmp)->bits;
+  p = pline = (*bmp)->bits;
 
   /* The easy case */
   if (vid->bpp == 1) {
@@ -510,7 +510,7 @@ g_error def_bitmap_loadxbm(struct stdbitmap **bmp,
   }
 
   /* Shift in the pixels! */
-  for (;h>0;h--)
+  for (;h>0;h--,p=pline+=(*bmp)->pitch)
     for (bit=0,i=0;i<w;i++) {
       if (!bit) c = *(data++);
       
@@ -597,8 +597,9 @@ g_error def_bitmap_loadpnm(struct stdbitmap **bmp,
   int has_maxval=1;
   int w,h,max;
   int i,val,bit,r,g,b;
-  unsigned char *p;
-  int oshift = 8-vid->bpp;
+  unsigned char *p,*pline;
+  int shiftset = 8-vid->bpp;
+  int oshift;
   g_error e;
   g_error efmt = mkerror(PG_ERRT_BADPARAM,48);
   hwrcolor hc;
@@ -653,10 +654,10 @@ g_error def_bitmap_loadpnm(struct stdbitmap **bmp,
   /* Set up the bitmap */
   e = (*vid->bitmap_new)((hwrbitmap *)bmp,w,h);
   errorcheck;
-  p = (*bmp)->bits;
+  pline = p = (*bmp)->bits;
 
   /* Read in the values, convert colors, output them... */
-  for (;h>0;h--) {
+  for (oshift=shiftset;h>0;h--,p=pline+=(*bmp)->pitch) {
     bit = 0;
     for (i=0;i<w;i++) {
       if (!bit)
@@ -720,15 +721,16 @@ g_error def_bitmap_loadpnm(struct stdbitmap **bmp,
       case 1:
       case 2:
       case 4:
-	if (oshift)
-	  *p |= hc << oshift;
+	if (oshift==shiftset)
+	   *p = hc << oshift;
 	else
-	  *p = hc;
-	oshift -= vid->bpp;
+	   *p |= hc << oshift;
 	if (!oshift) {
-	  oshift = 8 - vid->bpp;
+	  oshift = shiftset;
 	  p++;
 	}
+	 else
+	   oshift -= vid->bpp;
 	break;
 
       case 8:
@@ -770,16 +772,22 @@ g_error def_bitmap_loadpnm(struct stdbitmap **bmp,
 g_error def_bitmap_new(struct stdbitmap **bmp,
 		       int w,int h) {
   g_error e;
-
+  int lw;
+   
   /* The bitmap and the header can be allocated seperately,
      but usually it is sufficient to make them one big
      chunk of memory.  It's 1 alloc vs 2.
   */
 
-  e = g_malloc((void **) bmp,sizeof(struct stdbitmap) +
-	       (((unsigned long)w)*h*vid->bpp)/8);
+  /* Pad the line width up to the nearest byte */
+  lw = (unsigned long) w * vid->bpp;
+  if ((vid->bpp<8) && (lw & ((8/vid->bpp))-1))
+     lw += 8;
+  lw >>= 3;
+  e = g_malloc((void **) bmp,sizeof(struct stdbitmap) + (lw * h));
   errorcheck;
 
+  (*bmp)->pitch = lw;
   (*bmp)->freebits = 0;
   (*bmp)->bits = ((unsigned char *)(*bmp)) + 
     sizeof(struct stdbitmap);
@@ -823,10 +831,10 @@ void def_blit(struct stdbitmap *srcbit,int src_x,int src_y,
 	      int w, int h, int lgop) {
    struct stdbitmap screen;
    int i;
-   char *src;
-   int src_offset;
+   char *src,*srcline;
    hwrcolor c,s;
-   int oshift = 8-vid->bpp;
+   int shiftset = 8-vid->bpp;
+   int oshift;
    
    /* Screen-to-screen blit */
    if (!srcbit) {
@@ -836,9 +844,7 @@ void def_blit(struct stdbitmap *srcbit,int src_x,int src_y,
       screen.h = vid->yres;
    }
    
-   src_offset = (srcbit->w - w) * vid->bpp >> 3;
-   
-   for (src=srcbit->bits;h;h--,src_y++,dest_y++,src+=src_offset)
+   for (srcline=src=srcbit->bits,oshift=shiftset;h;h--,src_y++,dest_y++,src=srcline+=srcbit->pitch)
      for (i=0;i<w;i++) {
 	if (lgop!=PG_LGOP_NONE)
 	  s = (*vid->getpixel)(dest_x+i,dest_y);
@@ -850,11 +856,12 @@ void def_blit(struct stdbitmap *srcbit,int src_x,int src_y,
 	   case 2:
 	   case 4:
 	     c = ((*src) >> oshift) & ((1<<vid->bpp)-1);
-	     oshift -= vid->bpp;
 	     if (!oshift) {
-		oshift = 8 - vid->bpp;
+		oshift = shiftset;
 		src++;
 	     }
+	     else
+	       oshift -= vid->bpp;
 	     break; 
 	   
 	   case 8:
@@ -898,11 +905,13 @@ void def_unblit(int src_x,int src_y,
 		int w,int h) {
    int i;
    char *dest = destbit->bits;
+   char *destline = dest;
    int dest_offset = (destbit->w - w) * vid->bpp >> 3;
    hwrcolor c;
-   int oshift = 8 - vid->bpp;
+   int shiftset = 8-vid->bpp;
+   int oshift = shiftset;
    
-   for (;h;h--,src_y++,dest+=dest_offset)
+   for (;h;h--,src_y++,dest=destline+=dest_offset)
      for (i=0;i<w;i++) {
 	c = (*vid->getpixel)(src_x+i,src_y);
 
@@ -911,15 +920,16 @@ void def_unblit(int src_x,int src_y,
 	 case 1:
 	 case 2:
 	 case 4:
-	   if (oshift)
-	     *dest |= c << oshift;
+	   if (oshift==shiftset)
+	     *dest = c << oshift;
 	   else
-	     *dest = c;
-	   oshift -= vid->bpp;
+	     *dest |= c << oshift;
 	   if (!oshift) {
-	      oshift = 8 - vid->bpp;
+	      oshift = shiftset;
 	      dest++;
 	   }
+	   else
+	     oshift -= vid->bpp;
 	   break;
 
 	 case 8:
@@ -941,7 +951,8 @@ void def_unblit(int src_x,int src_y,
 	   break;
 	   
 	}
-     }
+      
+   }
 }
 
 void def_sprite_show(struct sprite *spr) {
