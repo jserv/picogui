@@ -53,7 +53,8 @@ class Minibuffer(object):
             # no buffers open
             self.bind(buffer = None, workspace = None)
         try:
-            exec self._history[-1] in self._frame.python_ns, self.python_ns
+            c = compile(self._history[-1], '<string>', 'single')
+            exec c in self._frame.python_ns, self.python_ns
         except SystemExit:
             raise
         except:
