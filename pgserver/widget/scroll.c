@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.13 2000/06/09 01:53:39 micahjd Exp $
+/* $Id: scroll.c,v 1.14 2000/06/10 05:39:40 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -65,6 +65,7 @@ void scrollbar(struct divnode *d) {
 
 /* When value changes, update the grop coordinates */
 void scrollupdate(struct widget *self) {
+  int state;
 
   /* If we're busy rebuilding the grop list, don't bother poking
      at the individual nodes */
@@ -72,57 +73,22 @@ void scrollupdate(struct widget *self) {
     return;
   
   /* Apply the current state to the elements */
-  if (DATA->on) {
-    applystate(self->in->div->grop,
-	       &current_theme[E_SCROLLBAR_BORDER],
-	       STATE_ACTIVATE);
-    applystate(self->in->div->grop->next,
-	       &current_theme[E_SCROLLBAR_FILL],
-	       STATE_ACTIVATE);
-    applystate(self->in->div->grop->next->next,
-	       &current_theme[E_SCROLLIND_BORDER],
-	       STATE_ACTIVATE);
-    applystate(self->in->div->grop->next->next->next,
-	       &current_theme[E_SCROLLIND_FILL],
-	       STATE_ACTIVATE);
-    applystate(self->in->div->grop->next->next->next->next,
-	       &current_theme[E_SCROLLIND_OVERLAY],
-	       STATE_ACTIVATE);
-  }
-  else if (DATA->over) {
-    applystate(self->in->div->grop,
-	       &current_theme[E_SCROLLBAR_BORDER],
-	       STATE_HILIGHT);
-    applystate(self->in->div->grop->next,
-	       &current_theme[E_SCROLLBAR_FILL],
-	       STATE_HILIGHT);
-    applystate(self->in->div->grop->next->next,
-	       &current_theme[E_SCROLLIND_BORDER],
-	       STATE_HILIGHT);
-    applystate(self->in->div->grop->next->next->next,
-	       &current_theme[E_SCROLLIND_FILL],
-	       STATE_HILIGHT);
-    applystate(self->in->div->grop->next->next->next->next,
-	       &current_theme[E_SCROLLIND_OVERLAY],
-	       STATE_HILIGHT);
-  }
-  else {
-    applystate(self->in->div->grop,
-	       &current_theme[E_SCROLLBAR_BORDER],
-	       STATE_NORMAL);
-    applystate(self->in->div->grop->next,
-	       &current_theme[E_SCROLLBAR_FILL],
-	       STATE_NORMAL);
-    applystate(self->in->div->grop->next->next,
-	       &current_theme[E_SCROLLIND_BORDER],
-	       STATE_NORMAL);
-    applystate(self->in->div->grop->next->next->next,
-	       &current_theme[E_SCROLLIND_FILL],
-	       STATE_NORMAL);
-    applystate(self->in->div->grop->next->next->next->next,
-	       &current_theme[E_SCROLLIND_OVERLAY],
-	       STATE_NORMAL);
-  }
+  if (DATA->on)
+    state = STATE_ACTIVATE;
+  else if (DATA->over)
+    state = STATE_HILIGHT;
+  else
+    state = STATE_NORMAL;
+  applystate(self->in->div->grop,
+	     &current_theme[E_SCROLLBAR_BORDER],state);
+  applystate(self->in->div->grop->next,
+	     &current_theme[E_SCROLLBAR_FILL],state);
+  applystate(self->in->div->grop->next->next,
+	     &current_theme[E_SCROLLIND_BORDER],state);
+  applystate(self->in->div->grop->next->next->next,
+	     &current_theme[E_SCROLLIND_FILL],state);
+  applystate(self->in->div->grop->next->next->next->next,
+	     &current_theme[E_SCROLLIND_OVERLAY],state);
 
   /* Border */
   self->in->div->grop->next->next->y = DATA->value * 

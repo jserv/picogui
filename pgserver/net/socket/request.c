@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.18 2000/06/08 18:44:19 micahjd Exp $
+/* $Id: request.c,v 1.19 2000/06/10 05:39:40 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -347,9 +347,6 @@ int reqproc(void) {
 #endif
 
   i = select(con_n,&rfds,NULL,NULL,&tv);
-#ifdef DEBUG
-  printf("select() = %d\n",i);
-#endif
 
   if (i>0) {
     /* Something is active */

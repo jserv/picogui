@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.16 2000/06/10 04:31:15 micahjd Exp $
+/* $Id: div.c,v 1.17 2000/06/10 05:39:40 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -235,13 +235,13 @@ void divnode_redraw(struct divnode *n,int all) {
 
    if (all || (n->flags & DIVNODE_NEED_REDRAW)) {
      grop_render(n);
+     if (n->flags & DIVNODE_PROPAGATE_REDRAW)
+       if (n->next)
+	 n->next->flags |= DIVNODE_NEED_REDRAW | DIVNODE_PROPAGATE_REDRAW;
+     if (n->div)
+       n->div->flags |= DIVNODE_NEED_REDRAW | DIVNODE_PROPAGATE_REDRAW;
+     n->flags &= ~(DIVNODE_NEED_REDRAW | DIVNODE_PROPAGATE_REDRAW);
    }
-   if (n->flags & DIVNODE_PROPAGATE_REDRAW)
-     if (n->next)
-       n->next->flags |= DIVNODE_NEED_REDRAW | DIVNODE_PROPAGATE_REDRAW;
-   if (n->div)
-     n->div->flags |= DIVNODE_NEED_REDRAW | DIVNODE_PROPAGATE_REDRAW;
-   n->flags &= ~(DIVNODE_NEED_REDRAW | DIVNODE_PROPAGATE_REDRAW);
 
    divnode_redraw(n->next,all);
    divnode_redraw(n->div,all);
@@ -320,7 +320,7 @@ void r_dtupdate(struct divtree *dt) {
 
   if (dt->flags & DIVTREE_NEED_RECALC) {
 #ifdef DEBUG
-    printf("divnode_recalc(0x%X)\n",dt->head);
+    printf("divnode_recalc\n",dt->head);
 #endif
     divnode_recalc(dt->head);
     /* If we recalc, at least one divnode will need redraw */
@@ -328,7 +328,7 @@ void r_dtupdate(struct divtree *dt) {
   }
   if (dt->flags &(DIVTREE_NEED_REDRAW|DIVTREE_ALL_REDRAW)) {
 #ifdef DEBUG
-    printf("divnode_redraw(0x%X, %d)\n",dt->head,dt->flags & DIVTREE_ALL_REDRAW);
+    printf("divnode_redraw\n");
 #endif
     divnode_redraw(dt->head,dt->flags & DIVTREE_ALL_REDRAW);
   }
