@@ -120,18 +120,25 @@ fe_new_window (struct session *sess)
 	pgSetWidget(0, PG_WP_SIDE, PG_S_BOTTOM, 0);
 	pgBind(0, PG_WE_ACTIVATE, fieldActivate, sess);
 	/* Chat area */
-	rightbox=pgNewWidget(PG_WIDGET_BOX, 0, 0);
-	pgSetWidget(0, PG_WP_SIDE, PG_S_RIGHT, 0);
-	sess->gui->userlistinfo=pgNewWidget(PG_WIDGET_LABEL,
-			PG_DERIVE_INSIDE, 0);
-	/* scroll bug: the scroll doesn't recalculate correctly when resized.
-	 * be sure to have the top of the nicklist visible when enlarging */
-	sess->gui->userscroll=pgNewWidget(PG_WIDGET_SCROLL, 0, 0);
-	sess->gui->userlist=pgNewWidget(PG_WIDGET_BOX, 0, 0);
-	pgSetWidget(0, PG_WP_SIDE, PG_S_TOP, 0);
-	pgSetWidget (sess->gui->userscroll, PG_WP_BIND, sess->gui->userlist, 0);
-	/* textbox bug: wrapped text somehow winds up after all other text. */
-	pgNewWidget(PG_WIDGET_BOX, 0, rightbox);
+	if(sess->type!=SESS_DIALOG)
+	{
+		rightbox=pgNewWidget(PG_WIDGET_BOX, 0, 0);
+		pgSetWidget(0, PG_WP_SIDE, PG_S_RIGHT, 0);
+		sess->gui->userlistinfo=pgNewWidget(PG_WIDGET_LABEL,
+				PG_DERIVE_INSIDE, 0);
+		/* scroll bug: the scroll doesn't recalculate correctly
+		 * when resized. be sure to have the top of the nicklist
+		 * visible when enlarging */
+		sess->gui->userscroll=pgNewWidget(PG_WIDGET_SCROLL, 0, 0);
+		sess->gui->userlist=pgNewWidget(PG_WIDGET_BOX, 0, 0);
+		pgSetWidget(0, PG_WP_SIDE, PG_S_TOP, 0);
+		pgSetWidget (sess->gui->userscroll, PG_WP_BIND,
+				sess->gui->userlist, 0);
+		fe_buttons_update(sess);
+		pgNewWidget(PG_WIDGET_BOX, 0, rightbox);
+	}
+	else
+		pgNewWidget(PG_WIDGET_BOX, 0, 0);
 	pgSetWidget(0, PG_WP_SIDE, PG_S_ALL, 0);
 	scroll=pgNewWidget(PG_WIDGET_SCROLL, PG_DERIVE_INSIDE, 0);
 	pgSetWidget(0, PG_WP_SIDE, PG_S_RIGHT, 0);
@@ -157,7 +164,6 @@ fe_new_window (struct session *sess)
 			pgWriteData(0, pgFromMemory("\e[?25l", 6));
 			break;
 	}
-	fe_buttons_update(sess);
 
 	if (!sess->server->front_session)
 	{
@@ -547,8 +553,10 @@ fe_close_window (struct session *sess)
 {
 	int i;
 
-	sess->gui->userlistinfo=pgGetWidget(sess->gui->userlistinfo,PG_WP_TEXT);
-	sess->gui->topic=pgGetWidget(sess->gui->app, PG_WP_TEXT);
+	if(sess->gui->userlistinfo)
+		sess->gui->userlistinfo=pgGetWidget(sess->gui->userlistinfo,PG_WP_TEXT);
+	if(sess->gui->topic)
+		sess->gui->topic=pgGetWidget(sess->gui->app, PG_WP_TEXT);
 	for(i=0;i<sess->gui->buttons;i++)
 		sess->gui->userbutton[i].h=
 			pgGetWidget(sess->gui->userbutton[i].h, PG_WP_TEXT);
@@ -558,12 +566,16 @@ fe_close_window (struct session *sess)
 	pgDelete(sess->gui->app);
 	for(i=0;i<sess->gui->buttons;i++)
 		pgDelete(sess->gui->userbutton[i].h);
-	free(sess->gui->userbutton);
+	if(sess->gui->userbutton)
+		free(sess->gui->userbutton);
 	for(i=0;i<sess->gui->users;i++)
 		pgDelete(sess->gui->uhmap[i].handle);
-	free(sess->gui->uhmap);
-	pgDelete(sess->gui->topic);
-	pgDelete(sess->gui->userlistinfo);
+	if(sess->gui->uhmap)
+		free(sess->gui->uhmap);
+	if(sess->gui->topic)
+		pgDelete(sess->gui->topic);
+	if(sess->gui->userlistinfo)
+		pgDelete(sess->gui->userlistinfo);
 	kill_session_callback (sess);
 }
 
