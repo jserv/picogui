@@ -1,4 +1,4 @@
-/* $Id: appmgr.h,v 1.2 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: appmgr.h,v 1.3 2000/05/28 16:59:22 micahjd Exp $
  *
  * appmgr.h - All the window-manager-ish functionality, except we don't
  * do windows (X windows, that is?)
@@ -29,14 +29,51 @@
 #ifndef __H_APPMGR
 #define __H_APPMGR
 
+/* Values for application type */
+#define APP_NORMAL  1
+#define APP_TOOLBAR 2
+
+/* Parameters defining an application */
+struct app_info {
+  /* These should be provided by the client */
+  char *name;
+  int type;
+  int minw,maxw,minh,maxh;     /* -1 for no restrictions */
+  int sidemask;                /* Mask of allowed sides */
+
+  /* Filled initially with suggested values, later replaced by actual
+     values. */
+  int side;
+  int w,h;   /* w is used if side is a vertical split, h if it is a
+		horizontal split */
+
+  /* This should be managed by the request system. */
+  int owner;
+
+  /* Root widget handle (Filled in on app registration) */
+  handle rootw; 
+
+  /* Yep, it's a linked list */
+  struct app_info *next;
+};
+
 /* Global objects */
 extern handle defaultfont;
+extern struct app_info *applist;
 
-/* Init */
+/* Init & Free */
 g_error appmgr_init(struct dtstack *m_dts);
+void appmgr_free(void);
 
 /* Pass it a bitmap handle, or NULL to restore default background */
 g_error appmgr_setbg(int owner,handle bitmap);
+
+/* Register a new application. 
+   Fill out the app_info structure, then call this.
+   The app_info structure can be on the stack - a dynamically allocated
+   copy is stored.
+*/
+g_error appmgr_register(struct app_info *i);
 
 #endif /* __H_APPMGR */
 /* The End */

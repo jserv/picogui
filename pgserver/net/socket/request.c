@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.8 2000/04/29 19:21:26 micahjd Exp $
+/* $Id: request.c,v 1.9 2000/05/28 16:59:22 micahjd Exp $
  *
  * request.c - this connection is for sending requests to the server
  *             and passing return values back to the client
@@ -59,6 +59,7 @@ DEF_REQHANDLER(in_point)
 DEF_REQHANDLER(in_direct)
 DEF_REQHANDLER(wait)
 DEF_REQHANDLER(themeset)
+DEF_REQHANDLER(register)
 DEF_REQHANDLER(undef)
 g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(ping)
@@ -76,6 +77,7 @@ g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(in_direct)
   TAB_REQHANDLER(wait)
   TAB_REQHANDLER(themeset)
+  TAB_REQHANDLER(register)
   TAB_REQHANDLER(undef)
 };
 
@@ -395,13 +397,14 @@ g_error rqh_mkwidget(int owner, struct uipkt_request *req,
 
   e = rdhandle((void**) &parent,TYPE_WIDGET,owner,ntohl(arg->parent));
   if (e.type != ERRT_NONE) return e;
+  if (!parent) return mkerror(ERRT_BADPARAM,"NULL parent widget");
 
-  if (!parent)
-    /* If parent is null, create a new widget */
-    e = widget_create(&w,ntohs(arg->type),dts,dts->top,&dts->top->head->next);
-  else
-    e = widget_derive(&w,ntohs(arg->type),parent,ntohs(arg->rship));
-  
+  /* Don't let an app put stuff outside its root widget */
+  if (owner>=0 && parent->isroot && ntohs(arg->rship)!=DERIVE_INSIDE)
+    return mkerror(ERRT_BADPARAM,
+		   "App attempted to derive before or after a root widget");
+
+  e = widget_derive(&w,ntohs(arg->type),parent,ntohs(arg->rship));
   if (e.type != ERRT_NONE) return e;
 
   e = mkhandle(&h,TYPE_WIDGET,owner,w);
@@ -600,6 +603,34 @@ g_error rqh_wait(int owner, struct uipkt_request *req,
   
   FD_SET(owner,&evtwait);
   return sucess;
+}
+
+g_error rqh_register(int owner, struct uipkt_request *req,
+		     void *data, unsigned long *ret, int *fatal) {
+  struct rqhd_register *arg = (struct rqhd_register *) data;
+  struct app_info i;
+  g_error e;
+  memset(&i,0,sizeof(i));
+  if (req->size < (sizeof(struct rqhd_register)+1)) 
+    return mkerror(ERRT_BADPARAM,"rqhd_register too small");
+
+  i.owner = owner;
+  i.name = &arg->name;
+  i.type = ntohs(arg->type);
+  i.side = ntohs(arg->side);
+  i.sidemask = ntohs(arg->sidemask);
+  i.w = ntohs(arg->w);
+  i.h = ntohs(arg->h);
+  i.minw = ntohs(arg->minw);
+  i.maxw = ntohs(arg->maxw);
+  i.minh = ntohs(arg->minh);
+  i.maxh = ntohs(arg->maxh);
+ 
+  e = appmgr_register(&i);
+
+  *ret = i.rootw;
+
+  return e;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: mainloop.c,v 1.7 2000/04/27 03:27:36 micahjd Exp $
+/* $Id: mainloop.c,v 1.8 2000/05/28 16:59:22 micahjd Exp $
  *
  * mainloop.c - initializes and shuts down everything, main loop
  *
@@ -98,6 +98,7 @@ void windows_inputpoll_hack(void);
   handle_cleanup(-1);
   dts_free(s);
   req_free();
+  appmgr_free();
   hwr_release();
   if (memref!=0) prerror(mkerror(ERRT_MEMORY,"Memory leak detected on exit"));
   exit(0);

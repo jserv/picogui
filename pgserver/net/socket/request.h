@@ -1,4 +1,4 @@
-/* $Id: request.h,v 1.7 2000/04/29 19:21:26 micahjd Exp $
+/* $Id: request.h,v 1.8 2000/05/28 16:59:22 micahjd Exp $
  *
  * request.h - this connection is for sending requests to the server
  *             and passing return values back to the client
@@ -147,8 +147,9 @@ struct event *get_event(int owner,int remove);
 #define RQH_IN_DIRECT 12     /* Dispatch direct input          |  struct */
 #define RQH_WAIT      13     /* Wait for an event              |  none   */
 #define RQH_THEMESET  14     /* Set an element in the theme    |  struct */
+#define RQH_REGISTER  15     /* Register a new application     |  struct */
 
-#define RQH_UNDEF     15     /* types > this will be truncated. return error */
+#define RQH_UNDEF     16     /* types > this will be truncated. return error */
 
 /* Structures passed to request handlers as 'data'.
  * Dummy variables pad it to a multiple of 4 bytes (compiler likes it?)
@@ -208,6 +209,22 @@ struct rqhd_themeset {
   unsigned short element;
   unsigned short state;
   unsigned short param;
+  unsigned short dummy;
+};
+struct rqhd_register {
+  /* This is just a subset of app_info, organized for network
+     transmission */
+
+  char name[40];
+  unsigned short type;
+  unsigned short side;
+  unsigned short sidemask;
+  unsigned short w;
+  unsigned short h;
+  unsigned short minw;
+  unsigned short maxw;
+  unsigned short minh;
+  unsigned short maxh;
   unsigned short dummy;
 };
 

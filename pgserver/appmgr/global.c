@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.2 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: global.c,v 1.3 2000/05/28 16:59:22 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -33,10 +33,12 @@
 #include <g_malloc.h>
 #include <appmgr.h>
 
+struct app_info *applist;
 handle defaultfont;
 handle background;
 struct widget *bgwidget;
 handle hbgwidget;
+struct dtstack *dts;
 
 /* A little pattern for a default background (in PNM format) */
 unsigned char bg_bits[] = {
@@ -64,12 +66,13 @@ unsigned char bg_bits[] = {
 };
 #define bg_len 206
 
-/* App manager doesn't need to be freed, everything is cleaned
-   up by the handles */
 g_error appmgr_init(struct dtstack *m_dts) {
   struct bitmap *bgbits;
   struct widget *w;
   g_error e;
+
+  applist = NULL;  /* No apps yet! */
+  dts = m_dts;
 
   /* Allocate default font */
   e = findfont(&defaultfont,-1,NULL,0,FSTYLE_DEFAULT);
@@ -95,6 +98,19 @@ g_error appmgr_init(struct dtstack *m_dts) {
   return sucess;
 }
 
+/* Most of it is cleaned up by the handles.
+   Here we free the linked list */
+void appmgr_free(void) {
+  struct app_info *n,*condemn;
+  n = applist;
+  while (n) {
+    condemn = n;
+    n = n->next;
+    g_free(condemn->name);
+    g_free(condemn);
+  }
+}
+
 /* Set the background, or NULL to restore it */
 g_error appmgr_setbg(int owner,handle bitmap) {
   struct bitmap *bgbits;
@@ -112,6 +128,52 @@ g_error appmgr_setbg(int owner,handle bitmap) {
   e = handle_bequeath(background,bitmap,owner);
   if (e.type != ERRT_NONE) return e;
   return widget_set(bgwidget,WP_BITMAP,0);
+}
+
+g_error appmgr_register(struct app_info *i) {
+  struct app_info *dest;
+  struct widget *w;
+  g_error e;
+
+  /* Allocate root widget, do any setup specific to the app type */
+  switch (i->type) {
+
+  case APP_TOOLBAR:
+    /* Create a simple toolbar as a root widget */
+    e = widget_create(&w,WIDGET_TOOLBAR,dts,dts->top,&dts->top->head->next);
+    if (e.type != ERRT_NONE) return e;
+    w->isroot = 1;
+    e = mkhandle(&i->rootw,TYPE_WIDGET,i->owner,w);
+    if (e.type != ERRT_NONE) return e;    
+
+    /* Size specs are ignored for the toolbar.
+       They won't be moved by the appmgr, so sidemask has no effect.
+       Set the side here, though.
+    */
+    e = widget_set(w,WP_SIDE,i->side);
+    if (e.type != ERRT_NONE) return e;
+    
+    break;
+
+  default:
+    return mkerror(ERRT_BADPARAM,"Unsupported application type");
+  }
+
+  /* Copy to a new structure */
+  e = g_malloc((void **) &dest,sizeof(struct app_info));
+  if (e.type != ERRT_NONE) return e;
+  memcpy(dest,i,sizeof(struct app_info));
+  if (i->name) {
+    e = g_malloc((void **) &dest->name,strlen(i->name)+1);
+    if (e.type != ERRT_NONE) return e;
+    strcpy(dest->name,i->name);
+  }
+
+  /* Insert it */
+  dest->next = applist;
+  applist = dest;
+  
+  return sucess;
 }
 
 /* The End */

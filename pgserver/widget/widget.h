@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.12 2000/05/06 15:54:47 micahjd Exp $
+/* $Id: widget.h,v 1.13 2000/05/28 16:59:22 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -119,6 +119,10 @@ struct widget {
   /* The divtree and stack this widget is part of */
   struct dtstack *ds;
   struct divtree *dt;
+  
+  /* If this is a root widget, an unprivelidged app can only derive
+     widgets inside it, not before or after it */
+  int isroot;
 
   /* Widget's private data (Properties) */
   void *data;
