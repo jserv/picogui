@@ -94,7 +94,7 @@ fe_new_window (struct session *sess)
 	pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_RIGHT, 0);
 	sess->gui->userlistinfo=pgNewWidget(PG_WIDGET_LABEL, PG_DERIVE_INSIDE, 0);
 	scroll=pgNewWidget(PG_WIDGET_SCROLL, PGDEFAULT, PGDEFAULT);
-	sess->gui->userlist=pgNewWidget(PG_WIDGET_LIST, PGDEFAULT, PGDEFAULT);
+	sess->gui->userlist=pgNewWidget(PG_WIDGET_BOX, PGDEFAULT, PGDEFAULT);
 	pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_LEFT, 0);
 	pgSetWidget (scroll, PG_WP_BIND, sess->gui->userlist, PGDEFAULT);
 	/* FIXME - scrollbar gets overdrawn */
@@ -507,6 +507,8 @@ fe_message (char *msg, int wait)
 void
 fe_close_window (struct session *sess)
 {
+	if(sess->gui->uhmap)
+		free(sess->gui->uhmap);
 	pgDelete(sess->gui->app);
 	kill_session_callback (sess);
 }
@@ -623,23 +625,71 @@ void
 fe_progressbar_end (struct session *sess)
 {
 }
+
 void
 fe_userlist_insert (struct session *sess, struct User *newuser, int row)
 {
+	int i;
 	pghandle label;
 
-	label=pgCreateWidget(PG_WIDGET_LABEL);
-	pgSetWidget(PGDEFAULT, PG_WP_TRANSPARENT, 1, PG_WP_TEXT,
-			pgNewString(newuser->nick), 0);
-	pgListInsertAt(sess->gui->userlist, label, row);
+	sess->gui->uhmap=realloc(sess->gui->uhmap,
+			++sess->gui->users*sizeof(struct uhmapping));
+	if(row==-1)
+		row=sess->gui->users-1;
+	else
+		for(i=sess->gui->users-1;i>row;i--)
+			sess->gui->uhmap[i]=sess->gui->uhmap[i-1];
+	label=pgNewWidget(PG_WIDGET_LABEL, row?PG_DERIVE_AFTER:PG_DERIVE_INSIDE,
+			row?sess->gui->uhmap[row-1].handle:sess->gui->userlist);
+	pgReplaceTextFmt(PGDEFAULT, "%c%s", newuser->prefix, newuser->nick);
+	sess->gui->uhmap[row].user=newuser;
+	sess->gui->uhmap[row].handle=label;
 }
 void
 fe_userlist_remove (struct session *sess, struct User *user)
 {
+	int i;
+
+	for(i=0;i<sess->gui->users;i++)
+		if(sess->gui->uhmap[i].user==user)
+		{
+			pgDelete(sess->gui->uhmap[i].handle);
+			while(i<--sess->gui->users)
+				sess->gui->uhmap[i]=sess->gui->uhmap[i+1];
+			sess->gui->uhmap=realloc(sess->gui->uhmap, sess->gui->users *
+					sizeof(struct uhmapping));
+			break;
+		}
 }
 void
 fe_userlist_move (struct session *sess, struct User *user, int new_row)
 {
+	struct uhmapping tmp;
+	int i;
+
+	if(new_row==-1)
+		new_row=sess->gui->users-1;
+	for(i=0;i<sess->gui->users;i++)
+		if(sess->gui->uhmap[i].user==user)
+		{
+			tmp=sess->gui->uhmap[i];
+			break;
+		}
+	while(i<new_row)
+	{
+		sess->gui->uhmap[i]=sess->gui->uhmap[i+1];
+		i++;
+	}
+	while(i>new_row)
+	{
+		sess->gui->uhmap[i]=sess->gui->uhmap[i-1];
+		i--;
+	}
+	sess->gui->uhmap[new_row]=tmp;
+	pgReplaceTextFmt(tmp.handle, "%c%s", tmp.user->prefix, tmp.user->nick);
+	pgAttachWidget(new_row?sess->gui->uhmap[new_row-1].handle:sess->gui->userlist,
+			new_row?PG_DERIVE_AFTER:PG_DERIVE_INSIDE, tmp.handle);
+	pgSubUpdate(sess->gui->userlist);
 }
 void
 fe_userlist_numbers (struct session *sess)
@@ -650,6 +700,15 @@ fe_userlist_numbers (struct session *sess)
 void
 fe_userlist_clear (struct session *sess)
 {
+	int i;
+
+	for(i=0;i<sess->gui->users;i++)
+	{
+		pgListRemove(sess->gui->userlist, sess->gui->uhmap[i].handle);
+		pgDelete(sess->gui->uhmap[i].handle);
+	}
+	free(sess->gui->uhmap);
+	sess->gui->uhmap=NULL;
 }
 void
 fe_dcc_update_recv_win (void)

@@ -1,6 +1,13 @@
+struct uhmapping {
+	struct User *user;
+	pghandle handle;
+};
+
 struct session_gui {
 	pghandle app, topic, output, input, userlistinfo, userlist;
 	short int output_type;
+	struct uhmapping *uhmap;
+	int users;
 };
 
 struct server_gui {
