@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.51 2002/02/02 20:52:51 lonetech Exp $
+/* $Id: widget.h,v 1.52 2002/02/04 03:26:55 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -376,9 +376,11 @@ struct widget *widget_traverse(struct widget *w, int direction, int count);
 int send_trigger(struct widget *w, long type, union trigparam *param);
 
 /* Sends a trigger to all of a widget's children,
- * stopping if *stop > 0.
+ * stopping if *stop > 0. Always traverses to the child and the panelbar,
+ * only traverses forward for the top level if 'forward' is nonzero.
  */
-void r_send_trigger(struct widget *w, long type, union trigparam *param, u16 *stop);
+void r_send_trigger(struct widget *w, long type, union trigparam *param,
+		    u16 *stop, int forward);
 
 /* Invokes the spirits of guru() and stdout for debuggativity */
 void magic_button(s16 key);

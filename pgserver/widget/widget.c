@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.156 2002/02/04 03:02:07 micahjd Exp $
+/* $Id: widget.c,v 1.157 2002/02/04 03:26:55 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -778,13 +778,24 @@ int send_trigger(struct widget *w, long type,
 
 /* Sends a trigger to all of a widget's children */
 void r_send_trigger(struct widget *w, long type,
-		    union trigparam *param, u16 *stop) {
+		    union trigparam *param, u16 *stop,int forward) {
+  struct widget *bar;
+  
   if (!w || (*stop) > 0)
     return;
   send_trigger(w,type,param);
   
-  r_send_trigger(widget_traverse(w,PG_TRAVERSE_CHILDREN,0),type,param,stop);
-  r_send_trigger(widget_traverse(w,PG_TRAVERSE_FORWARD,1),type,param,stop);
+  /* Also traverse the panelbar if there is one */
+  if (!iserror(rdhandle((void**)&bar, PG_TYPE_WIDGET, w->owner, 
+			widget_get(w,PG_WP_PANELBAR))) && bar) {
+    r_send_trigger(bar, type, param, stop,0);
+    if ((*stop) > 0)
+      return;
+  }
+  
+  r_send_trigger(widget_traverse(w,PG_TRAVERSE_CHILDREN,0),type,param,stop,1);
+  if (forward)
+    r_send_trigger(widget_traverse(w,PG_TRAVERSE_FORWARD,1),type,param,stop,1);
 }
 
 void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
@@ -1037,7 +1048,7 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
   /* Let widgets know we're starting a new propagation */
   for (dt=dts->top;dt;dt=dt->next)
     if (dt->head->next)
-      r_send_trigger(dt->head->next->owner, TRIGGER_KEY_START, NULL, &param.kbd.consume);
+      r_send_trigger(dt->head->next->owner, TRIGGER_KEY_START, NULL, &param.kbd.consume,0);
 
   if (kbdfocus) {
     kflags = PG_KF_ALWAYS;
@@ -1058,8 +1069,8 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
     /* 2. focused widget's children
      */
     param.kbd.flags = kflags | PG_KF_CONTAINER_FOCUSED;
-    r_send_trigger(widget_traverse(kbdfocus, PG_TRAVERSE_CHILDREN,0),
-		   type, &param, &param.kbd.consume);
+    r_send_trigger(widget_traverse(kbdfocus,PG_TRAVERSE_CHILDREN,0),
+		   type, &param, &param.kbd.consume, 1);
     if (param.kbd.consume > 0)
       return;    
     
@@ -1079,7 +1090,7 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
   param.kbd.flags = PG_KF_ALWAYS;  
   for (dt=dts->top;dt && dt!=dts->root;dt=dt->next) {
     if (dt->head->next)
-      r_send_trigger(dt->head->next->owner, type, &param, &param.kbd.consume);
+      r_send_trigger(dt->head->next->owner, type, &param, &param.kbd.consume, 0);
     if (param.kbd.consume > 0)
       return;    
   }
@@ -1091,21 +1102,7 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
     if (iserror(rdhandle((void**)&p,PG_TYPE_WIDGET,ap->owner,ap->rootw)))
       continue;
 
-    send_trigger(p,type,&param);
-    if (param.kbd.consume > 0)
-      return;
-    
-    /* Also traverse the panelbar if there is one */
-    if (!iserror(rdhandle((void**)&bar, PG_TYPE_WIDGET, ap->owner, 
-			  widget_get(p,PG_WP_PANELBAR))) && bar) {
-      r_send_trigger(widget_traverse(bar,PG_TRAVERSE_CHILDREN,0), type, 
-		     &param, &param.kbd.consume);
-      if (param.kbd.consume > 0)
-	return;
-    }
-
-    r_send_trigger(widget_traverse(p,PG_TRAVERSE_CHILDREN,0), type, 
-		   &param, &param.kbd.consume);
+    r_send_trigger(p, type, &param, &param.kbd.consume, 0);
     if (param.kbd.consume > 0)
       return;
 
