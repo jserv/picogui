@@ -1,10 +1,12 @@
 # -*- python -*-
 
+import string
+
 from Bee.Autoconf import compile, install, clean
 
 multicompile = 1
 
-depends = [ 'resourcemanager' ]
+depends = [ 'resourcemanager', 'picoguiserver' ]
 
 runtime = [
     Runtime ('libpgui.so', 'PicoGUI client shared library',
@@ -14,11 +16,17 @@ runtime = [
     ]
 
 def prepare (module, platform, project):
-    command = "../configure --prefix=/  --enable-bee --enable-unix-sockets " + \
-              "--with-prefix=%s --host=%s" % \
-              (platform.toolchain,
-               platform.platform)
+    command = [
+        "../configure --prefix=/",
+        "--enable-bee",
+        "--enable-unix-sockets ",
+        "--with-prefix=%s" % platform.toolchain,
+        "--host=%s" % platform.platform,
+        "--with-pgserver=%s" % project ['module/picoguiserver'].path ['dfl']
+        ]
 
+    command = string.join (command)
+    
     message  ("running: %s" % command)
     sequence ("rm -f config.status ; test ! -f ../autogen.sh || (cd .. ; ./autogen.sh || true)",
               command)
