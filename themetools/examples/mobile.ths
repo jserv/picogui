@@ -1,4 +1,4 @@
-/* $Id: mobile.ths,v 1.14 2001/12/14 00:31:58 micahjd Exp $
+/* $Id: mobile.ths,v 1.15 2002/03/04 00:52:16 micahjd Exp $
  *
  * Theme for small mobile communications devices with very limited screen space
  * and only a keypad for input. This would be good for a cell phone, credit
@@ -259,7 +259,7 @@ object submenuitem.hilight {
 
 /* the check boxes are designed to line up with menuitems */
 object checkbox {
-  margin = 30;  /* Space for check column and right arrow */
+//  margin = 30;  /* Space for check column and right arrow */
   height = 11;  /* Must be at least as big as
 		 * PicoGUI's calculated size, or it
 		 * will instead use the calculated
