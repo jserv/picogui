@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.59 2001/02/23 04:44:45 micahjd Exp $
+# $Id: Makefile,v 1.60 2001/02/23 17:51:40 pney Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -21,6 +21,9 @@
 #
 #
 # $Log: Makefile,v $
+# Revision 1.60  2001/02/23 17:51:40  pney
+# Add option for touch screen input driver support.
+#
 # Revision 1.59  2001/02/23 04:44:45  micahjd
 # Added many more configuration options, and started a working (hopefully?) but slow
 # linear1 and linear2
@@ -126,6 +129,9 @@ ifneq ($(DRIVER_SVGAINPUT),)
 endif
 ifneq ($(DRIVER_NCURSESINPUT),)
     SRC := $(SRC) input/ncursesinput.c
+endif
+ifneq ($(DRIVER_TSINPUT),)
+    SRC := $(SRC) input/tsinput.c
 endif
 
 # Debugging
