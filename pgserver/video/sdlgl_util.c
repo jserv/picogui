@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.11 2002/03/26 03:46:04 instinc Exp $
+/* $Id: sdlgl_util.c,v 1.12 2002/08/15 02:34:27 micahjd Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.
@@ -28,6 +28,7 @@
 
 #include <pgserver/common.h>
 #include <pgserver/sdlgl.h>
+#include <SDL/SDL_endian.h>
 
 struct sdlgl_data gl_global;
 
@@ -396,12 +397,19 @@ void gl_make_texture(struct glbitmap *glb) {
      */
     i = glb->tw * glb->th;
     p = (u32 *)((struct glbitmap*)tmpbit)->sb->bits;
-    for (;i;i--,p++)
+    for (;i;i--,p++) {
       if (*p & PGCF_ALPHA) {
 	*p = (*p & 0x1FFFFFF) | ((*p & 0xFF000000)<<1);
       }
       else
 	*p = *p | 0xFF000000;
+
+
+      /* On big-endian machines we need to swap it into BGRA order..
+       * It's an OpenGL quirk
+       */
+      *p = SDL_SwapLE32(*p);
+    }
     
     /* Send it to opengl, ditch our temporary */
     glTexImage2D(GL_TEXTURE_2D, 0, 4, glb->tw, glb->th, 0, 
