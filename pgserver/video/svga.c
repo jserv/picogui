@@ -1,4 +1,4 @@
-/* $Id: svga.c,v 1.3 2000/08/28 03:30:43 micahjd Exp $
+/* $Id: svga.c,v 1.4 2000/08/28 03:36:19 micahjd Exp $
  *
  * svga.c - video driver for (S)VGA cards, via vgagl and svgalib
  *
@@ -136,7 +136,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
       gl_putboxpart(dest_x,dest_y,src->w,src->h,w,h,src->bits,src_x,src_y);
   {
     unsigned char *s,*b;
-    int iw,lo;
+    int iw,lo,bytew;
 
     /* Copy the screen data into the buffer, apply the bitmap with the LGOP
        and paste it back. Not too much worse than the line-by-line way
@@ -144,13 +144,14 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
        into system memory. Let vgagl take care of the graphics card's oddities.
     */
     s = src->bits+src_x+src_y*WIDTH;
+    bytew = w*BYTESPERPIXEL;
     switch (lgop) {
       
     case LGOP_OR:
       lo = src->w-w;
       for (;h;h--,dest_y++,b+=lo) {
         gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
-        for (iw=w;iw;iw--)
+        for (iw=bytew;iw;iw--)
           *(b++) |= *(s++);
         gl_putbox(dest_x,dest_y,w,1,svga_buf);
       }
@@ -160,7 +161,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
       lo = (src->w-w)*BYTESPERPIXEL;
       for (;h;h--,dest_y++,b+=lo) {
         gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
-        for (iw=w;iw;iw--)
+        for (iw=bytew;iw;iw--)
           *(b++) &= *(s++);
         gl_putbox(dest_x,dest_y,w,1,svga_buf);
       }
@@ -170,7 +171,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
       lo = (src->w-w)*BYTESPERPIXEL;
       for (;h;h--,dest_y++,b+=lo) {
         gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
-        for (iw=w;iw;iw--)
+        for (iw=bytew;iw;iw--)
           *(b++) ^= *(s++);
         gl_putbox(dest_x,dest_y,w,1,svga_buf);
       }
@@ -179,7 +180,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
     case LGOP_INVERT:
       lo = (src->w-w)*BYTESPERPIXEL;
       for (;h;h--,dest_y++,b+=lo) {
-        for (iw=w;iw;iw--)
+        for (iw=bytew;iw;iw--)
           *(b++) = *(s++);
         gl_putbox(dest_x,dest_y,w,1,svga_buf);
       }
@@ -189,7 +190,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
       lo = (src->w-w)*BYTESPERPIXEL;
       for (;h;h--,dest_y++,b+=lo) {
         gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
-        for (iw=w;iw;iw--)
+        for (iw=bytew;iw;iw--)
           *(b++) |= *(s++);
         gl_putbox(dest_x,dest_y,w,1,svga_buf);
       }
@@ -199,7 +200,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
       lo = (src->w-w)*BYTESPERPIXEL;
       for (;h;h--,dest_y++,b+=lo) {
         gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
-        for (iw=w;iw;iw--)
+        for (iw=bytew;iw;iw--)
           *(b++) &= *(s++);
         gl_putbox(dest_x,dest_y,w,1,svga_buf);
       }
@@ -209,7 +210,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
       lo = (src->w-w)*BYTESPERPIXEL;
       for (;h;h--,dest_y++,b+=lo) {
         gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
-        for (iw=w;iw;iw--)
+        for (iw=bytew;iw;iw--)
           *(b++) ^= *(s++);
         gl_putbox(dest_x,dest_y,w,1,svga_buf);
       }
