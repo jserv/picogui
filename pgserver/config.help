@@ -309,5 +309,11 @@ CONFIG_SDLSDC
       message, and displayed according to configuration
       file options.
 
+CONFIG_KEY_ALPHA
+      This adds support for an "Alpha" key (PGKEY_ALPHA) as
+      might be found on celphones or other devices with a
+      numeric keypad. This key allows the user to cycle
+      through letters after pressing a number key.
+
 
 

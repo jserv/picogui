@@ -1,4 +1,4 @@
-/* $Id: pgkeys.h,v 1.5 2001/05/17 04:50:29 micahjd Exp $
+/* $Id: pgkeys.h,v 1.6 2001/09/09 20:54:52 micahjd Exp $
  *
  * pgkeys.h - Constants for the keyboard keys and modifiers
  *
@@ -264,6 +264,8 @@
 #define PGKEY_MENU        	 319
 #define PGKEY_POWER        	 320		/* Power Macintosh power key */
 #define PGKEY_EURO        	 321		/* Some european keyboards */
+#define PGKEY_ALPHA              322   /* Selects letters on a numeric keypad
+					* (for celphones and similar devices */
 
 /* Modifier keys (also from SDL) */
 #define PGMOD_LSHIFT  0x0001

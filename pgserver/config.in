@@ -122,6 +122,7 @@ bool 'Canvas widget (for arbitrary graphics)' CONFIG_WIDGET_CANVAS
 bool 'Disable panelbar'                       CONFIG_NOPANELBAR
 bool 'Solid panel dragging'                   CONFIG_DRAGSOLID
 int  'Maximum number of zombie gropnodes'     CONFIG_MAX_ZOMBIEGROPS
+bool 'Support for Alpha key'                  CONFIG_KEY_ALPHA
 endmenu
 
 mainmenu_option next_comment

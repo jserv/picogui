@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.107 2001/09/04 18:21:35 micahjd Exp $
+/* $Id: widget.c,v 1.108 2001/09/09 20:54:52 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -88,6 +88,7 @@ int prev_btn;
 struct widget *capture;
 struct widget *kbdfocus;
 int capturebtn;           /* Button that is holding the capture */
+s16 last_char_key;        /* Key for the last character event received */
 
 /* Sorted (chronological order) list of widgets
    with timers
@@ -994,6 +995,10 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
   printf("Keyboard event: 0x%08X (#%d, '%c') mod:0x%08X\n",type,key,key,mods);
 #endif
 
+  /* Store the last character event sent */
+  if (type == PG_TRIGGER_CHAR)
+    last_char_key = key;
+
   /* If the keyboard has been captured by a client, redirect everything
      to them.  This would seem a bit selfish of the client to want ALL
      keyboard input, but programs like games and kiosks are traditionally
@@ -1107,6 +1112,35 @@ void global_hotkey(u16 key,u16 mods, u32 type) {
 	hotspot_traverse(HOTSPOT_LEFT);
       else if (key == hotkey_right)
 	hotspot_traverse(HOTSPOT_RIGHT);
+
+#ifdef CONFIG_KEY_ALPHA
+      else if (key == PGKEY_ALPHA) {
+	/* Nifty table for looking up the next alpha character. To find the
+	 * next character in the rotation, look up the first occurance of the
+	 * existing character, and the next character in the string is the
+	 * character to replace it with.
+	 */
+	static const char alphatab[] = 
+	  "1qzQZ12abcABC23defDEF3"
+	  "4ghiGHI45jklJKL56mnoMNO6"
+	  "7prsPRS78tuvTUV89wxyWXY90 $.#0";
+	const char *p;
+
+	if (last_char_key > 255)
+	  return;
+	p = strchr(alphatab,last_char_key);
+	if (!p)
+	  return;
+	p++;
+
+	/* The new character is in '*p' now. Simulate a backspace and the
+	 * new character.
+	 */
+	dispatch_key(PG_TRIGGER_CHAR,PGKEY_BACKSPACE,0);
+	dispatch_key(PG_TRIGGER_CHAR,*p,0);
+      }
+#endif
+
     }
     
     else if (mods & PGMOD_SHIFT) {
