@@ -79,7 +79,9 @@ def lookup_propname(value):
   elif value > constants['PGTH_P_THEMEAUTO']:
     return 'themeauto%d'%(value-constants['PGTH_P_THEMEAUTO'])
   elif value > constants['PGTH_P_USER']:
-    return 'user%d'%(value-constants['PGTH_P_USER'])
+    # This must be changed once Prop() is implemented in themec
+    # Currently user properties cannot be read from themes
+    return 'PGTH_P_USER+%d'%(value-constants['PGTH_P_USER'])
   else:
     return str(value)
 
