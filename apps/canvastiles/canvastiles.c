@@ -14,18 +14,18 @@ struct rectsize {
 
 struct sceneGlobals {
   /* Bitmaps */
-  pghandle bShip, bLogo;
-  int shipw,shiph,logow,logoh;
+  pghandle bShip, bLogo, bLasers;
+  int shipw,shiph,logow,logoh,laserw,laserh;
 
   /* PGFX context to draw on */
   pgcontext gc;
   struct rectsize canvasSize;
 
   /* Toggle flags */
-  int drawShip, drawGrass, drawLogo, drawSolidBG;
+  int drawShip, drawGrass, drawLogo, drawLasers;
 
   /* Animation */
-  int y;
+  int y, laser_y;
 };  
 
 int evtToggle(struct pgEvent *evt);
@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
   makeToggle(wTB,"Logo", &sg.drawLogo);
   makeToggle(wTB,"Ship", &sg.drawShip);
   makeToggle(wTB,"Grass", &sg.drawGrass);
-  makeToggle(wTB,"Solid", &sg.drawSolidBG);
+  makeToggle(wTB,"Lasers", &sg.drawLasers);
 
   /* Load graphics and such */
   initScene(&sg);
@@ -150,8 +150,10 @@ void initScene(struct sceneGlobals *sg) {
   /* Get handles to the sprites and their sizes */
   sg->bShip = pgThemeLookup(pgFindThemeObject("canvastiles/sprites/ship"),PGTH_P_BITMAP1);
   sg->bLogo = pgThemeLookup(pgFindThemeObject("canvastiles/sprites/logo"),PGTH_P_BITMAP1);
+  sg->bLasers = pgThemeLookup(pgFindThemeObject("canvastiles/sprites/lasers"),PGTH_P_BITMAP1);
   pgSizeBitmap(&sg->shipw,&sg->shiph,sg->bShip);
   pgSizeBitmap(&sg->logow,&sg->logoh,sg->bLogo);
+  pgSizeBitmap(&sg->laserw,&sg->laserh,sg->bLasers);
 }
 
 void drawScene(struct sceneGlobals *sg) {
@@ -165,21 +167,31 @@ void drawScene(struct sceneGlobals *sg) {
     h += sg->logoh;
   y = (sg->canvasSize.h - h)>>1;
 
-  if (sg->drawSolidBG) {
-    pgSetColor(sg->gc,PGC_YELLOW);
-    pgRect(sg->gc,0,0,sg->canvasSize.w,sg->canvasSize.h);
-  }
-  
   if (sg->drawGrass)
     drawGrass(sg);
 
+  /* Everything on top of the background has alpha */
+  pgSetLgop(sg->gc,PG_LGOP_ALPHA);
+
+  /* Draw some laser beams coming from the ship */
+  if (sg->drawLasers) {
+    pgSetClip(sg->gc,0,0,sg->canvasSize.w,y+45);
+    pgBitmap(sg->gc,(sg->canvasSize.w - sg->laserw)>>1,sg->laser_y,
+	     sg->laserw,sg->laserh,sg->bLasers);
+    sg->laser_y -= 5;
+    if (sg->laser_y < -sg->laserh)
+      sg->laser_y = y+45;
+    pgSetClip(sg->gc,0,0,sg->canvasSize.w,sg->canvasSize.h);
+  }
+      
+  /* The Ship */
   if (sg->drawShip) {
-    pgSetLgop(sg->gc,PG_LGOP_ALPHA);
     pgBitmap(sg->gc,(sg->canvasSize.w - sg->shipw)>>1,y,
 	     sg->shipw,sg->shiph,sg->bShip);
     y += sg->shiph;
   }
 
+  /* Neat little picogui logo */
   if (sg->drawLogo) {
     pgSetLgop(sg->gc,PG_LGOP_ALPHA);
     pgBitmap(sg->gc,(sg->canvasSize.w - sg->logow)>>1,
