@@ -1,11 +1,11 @@
 bin_PROGRAMS = xchat-picogui
 
-xchat_picogui_LDADD = ../common/libxchatmain.a libpgui.a
+xchat_picogui_LDADD = ../common/libxchatmain.a -lpgui
 
 if USE_MYGLIB
 glibc = glib.c
 endif
 
-INCLUDES = -I$(includedir) -I/home/yann/pgui/cli_c/include	-DLOCALEDIR=\"$(datadir)/locale\"
+INCLUDES = -I$(includedir) -DLOCALEDIR=\"$(datadir)/locale\"
 
 xchat_picogui_SOURCES = fe-picogui.c $(glibc)
