@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.26 2003/03/26 09:02:19 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.27 2003/03/26 09:11:37 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -592,6 +592,7 @@ void term_ecma48sgr(struct widget *self) {
     case 0:
       DBG("reset\n");
       DATA->current.attr = DATA->attr_default;
+      DATA->current.reverse_video = 0;
       break;
 
       /* 1 - bold */
