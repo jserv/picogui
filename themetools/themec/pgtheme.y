@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.18 2000/10/15 01:59:52 micahjd Exp $
+/* $Id: pgtheme.y,v 1.19 2000/10/15 16:39:43 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -55,6 +55,8 @@
 %token <num>     FSFUNC
 %token <str>     STRING 
 %token <str>     UNKNOWNSYM
+%type <propval>  LOADBITMAP
+%type <propval>  COPY
 
 %type <num>      constexp
 %type <propval>  propertyval
@@ -166,7 +168,44 @@ property: PROPERTY
 
 propertyval:  constexp          { $$.data = $1; $$.loader = PGTH_LOAD_NONE; $$.ldnode = NULL;}
            |  fillstyle         { $$ = $1; }
-           |  STRING {
+           |  LOADBITMAP '(' STRING ')' {
+  FILE *bitf;
+  unsigned long size;
+  unsigned char *buf;
+  struct pgrequest *req;
+  
+  /* Make a bitmap loader from a file */
+
+  bitf = fopen($3,"r");
+  if (!(bitf = fopen($3,"r")))
+    yyerror("Error opening bitmap file");
+  else {
+    fseek(bitf,0,SEEK_END);
+    size = ftell(bitf);
+    rewind(bitf);
+
+    /* Allocate the buffer */
+    if (!(buf = malloc(sizeof(struct pgrequest)+size)))
+      yyerror("memory allocation error");
+    else {
+
+      /* Reserve space for the request header */
+      req = (struct pgrequest *) buf;
+      memset(req,0,sizeof(struct pgrequest));
+      req->type = htons(PGREQ_MKBITMAP);
+      req->size = htonl(size);
+      
+      /* copy string and discard original */
+      fread(buf+sizeof(struct pgrequest),size,1,bitf);
+      fclose(bitf);
+      
+      $$.ldnode = newloader(buf,(sizeof(struct pgrequest)+size));
+      $$.loader = PGTH_LOAD_REQUEST;
+    }
+  }
+  free($3);
+}     
+	   |  STRING {
   unsigned char *buf;
   struct pgrequest *req;
 

@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.8 2000/10/15 15:37:06 micahjd Exp $
+/* $Id: constants.h,v 1.9 2000/10/15 16:39:42 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -228,6 +228,10 @@ typedef unsigned long pghandle;
 #define PGTH_P_ALIGN      13  /*   alignment   How to position an object's contents */
 #define PGTH_P_BITMAPSIDE 14  /*   side        Bitmap side relative to text (button) */
 #define PGTH_P_BITMAPMARGIN 15/*   int         Spacing between bitmap and text */
+#define PGTH_P_BITMAP1    16  /* H bitmap      Generic bitmap property for theme use */
+#define PGTH_P_BITMAP2    17  /* H bitmap      Generic bitmap property for theme use */
+#define PGTH_P_BITMAP3    18  /* H bitmap      Generic bitmap property for theme use */
+#define PGTH_P_BITMAP4    19  /* H bitmap      Generic bitmap property for theme use */
 
 /*** Tag IDs */
 

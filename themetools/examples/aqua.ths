@@ -1,0 +1,12 @@
+/*  Might eventually become a full Aqua theme (it's inevitable that every
+    OS/GUI/WM will have an Aqua theme ;-)
+
+    For now it's just a testbed for the bitmap-related features.
+*/
+
+object default {
+  bgfill = fillstyle {
+    Bitmap(x,y,w,h,bitmap1,PG_LGOP_NONE);
+  };
+  bitmap1 = LoadBitmap("data/aq_bg.pnm");
+}

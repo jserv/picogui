@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.l,v 1.16 2000/10/15 01:59:52 micahjd Exp $
+/* $Id: pgtheme.l,v 1.17 2000/10/15 16:39:43 micahjd Exp $
  *
  * pgtheme.l - lexer for processing PicoGUI theme source code
  *
@@ -47,6 +47,8 @@ ColorAdd        { return COLORADD; }
 ColorSub        { return COLORSUB; }
 ColorDiv        { return COLORDIV; }
 ColorMult       { return COLORMULT; }
+LoadBitmap      { return LOADBITMAP; }
+Copy            { return COPY; }
 
    /* symbols, operators, and strings */
 
