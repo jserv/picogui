@@ -22,6 +22,8 @@ def sock(address=None, display=None):
                                 # just the display
                                 address = default_pgserver.split(':')[0]
                 display = int(display)
+	if display is None:
+		display = 0
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
                 s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
