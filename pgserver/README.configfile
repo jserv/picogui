@@ -312,6 +312,9 @@ quoted appropriately. For example:
 - slowvbl
   Use the slowvbl layer for video debugging if nonzero
 
+- doublebuffer
+  If nonzero, doublebuffer the frame-buffer
+
 [input-serialmouse]
 
 - device

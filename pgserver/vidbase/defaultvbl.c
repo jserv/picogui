@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.76 2002/02/23 05:25:27 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.77 2002/02/23 07:57:59 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -1492,32 +1492,32 @@ void def_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 /* Backwards version of the scary slow blit, needed for scrolling 1/2 of the time */
 void def_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 		    s16 src_x, s16 src_y, s16 lgop) {
-   int i;
-   s16 bw,bh;
-   
-   if(!src)
-	   return;
+  int i;
 
-   (*vid->bitmap_getsize)(src,&bw,&bh);
+  /* Special scrollblit handling is only necessary if we're copying to the same bitmap */
+  if (dest==src) {
 
-   if (w>(bw-src_x) || h>(bh-src_y)) {
-      int i,j,sx,sy;
-      src_x %= bw;
-      src_y %= bh;
-      
-      /* Do a tiled blit */
-      for (i=0,sx=src_x;i<w;i+=bw-sx,sx=0)
-	for (j=0,sy=src_y;j<h;j+=bh-sy,sy=0)
-	  (*vid->scrollblit) (dest,x+i,y+j,
-			      min(bw-sx,w-i),min(bh-sy,h-j),
-			      src,sx,sy,lgop);
+    /* If the blit moves the image down, we need to to an upside-down blit */
+    if (y>src_y) {
+      for (y+=h-1,src_y+=h-1;h;h--,y--,src_y--)
+	(*vid->blit) (dest,x,y,w,1,src,src_x,src_y,lgop);
       return;
-   }
-   
-   /* Icky blit loop */
-   for (y+=h-1,src_y+=h-1;h;h--,y--,src_y--)
-     for (i=w-1;i>=0;i--)
-	(*vid->pixel) (dest,x+i,y,(*vid->getpixel)(src,src_x+i,src_y),lgop);
+    }
+    
+    /* If the blit moves right on the same line, we can split the image into vertical
+     * slices to do the horizontal equivalent of an upside-down blit. Note that though
+     * this seems obscure, it's the common method of scrolling on rotated platforms such
+     * as most QVGA handheld devices.
+     */
+    if (y==src_y && x>src_x) {
+      for (x+=w-1,src_x+=w-1;w;w--,x--,src_x--)
+	(*vid->blit) (dest,x,y,1,h,src,src_x,src_y,lgop);
+      return;
+    }
+  }    
+  
+  /* Well... no reason we can't do a normal blit */
+  (*vid->blit) (dest,x,y,w,h,src,src_x,src_y,lgop);
 }
 
 void def_sprite_show(struct sprite *spr) {

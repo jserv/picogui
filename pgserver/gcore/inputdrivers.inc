@@ -77,4 +77,8 @@
   DRV("adc7843", &adc7843_regfunc)
 #endif
 
+#ifdef DRIVER_ZAURUS
+  DRV("zaurus", &zaurus_regfunc)
+#endif
+
 /* The End */

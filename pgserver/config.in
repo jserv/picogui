@@ -114,9 +114,7 @@ if [ "$CONFIG_TOUCHSCREEN" = "y" ]; then
    bool '  Palmax touchscreen driver'	                DRIVER_PALMAXTS
    bool '  SC3 compatible touchscreen input driver'	DRIVER_SC3TS
    bool '  R3912 (VTech Helio) touchscreen input driver'  DRIVER_R3912TS
-   if [ "$DRIVER_R3912TS" = "y" ]; then
-     bool '    Convert Helio silk-screen buttons'         DRIVER_R3912TS_HELIOSS
-   fi
+   bool '  Sharp Zaurus input driver'                   DRIVER_ZAURUS
 fi
 bool 'Psion touchscreen (adc7843) driver'            DRIVER_ADC7843
 bool 'SDL input driver'                                 DRIVER_SDLINPUT
