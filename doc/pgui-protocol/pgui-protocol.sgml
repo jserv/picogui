@@ -292,10 +292,16 @@ struct pgrequest {
    <title>PGREQ_APPMSG - Send PG_WE_APPMSG to any widget</>
    <programlisting>
 type                 : PGREQ_APPMSG
-client lib equivalent: 
-additional data      : 
+client lib equivalent: pgAppMessage()
+additional data      : pgreqd_handlestruct
+                       data
    </programlisting>
    <para>
+	Send a message to a widget owned by any application.
+   </para>
+   <para>
+	See <xref linkend="pgreqdhandlestruct"> for the format of the
+	<structname>pgreqd_handlestruct</> structure.
    </para>
   </sect2>
 
@@ -303,10 +309,31 @@ additional data      :
    <title>PGREQ_ATTACHWIDGET - Attach widget</>
    <programlisting>
 type                 : PGREQ_ATTACHWIDGET
-client lib equivalent: 
-additional data      : 
+client lib equivalent: pgAttachWidget()
+additional data      : struct pgreqd_attachwidget
    </programlisting>
    <para>
+	Attach a widget to a new parent.
+   </para>
+   <figure><title>struct pgreqd_attachwidget</><programlisting>
+struct pgreqd_attachwidget {
+  u32 parent;
+  u32 widget;
+  u16 rship;
+  u16 dummy;
+};
+   </programlisting></figure>
+   <para>
+	The <structfield>parent</> is the handle of the new parent to set.
+   </para>
+   <para>
+	The <structfield>widget</> is the handle of the widget that needs
+	to be attached.
+   </para>
+   <para>
+	The <structfield>rship</> is a <constant>PG_DERIVE_*</> constant
+	indicating the new widget's relationship to it's parent
+	(see <xref linkend="derivetypes"> for a complete listing).
    </para>
   </sect2>
 
@@ -363,10 +390,26 @@ struct pgreqd_chcontext {
    <title>PGREQ_CHECKEVENT - Return number of queued events</>
    <programlisting>
 type                 : PGREQ_CHECKEVENT
-client lib equivalent: 
-additional data      : 
+client lib equivalent: pgCheckEvent()
+additional data      : none
    </programlisting>
    <para>
+	Check the number of pending events.
+   </para>
+   <para>
+	The PicoGUI server keeps a ring buffer of waiting events for each
+	client connected to it. This request returns the number of events
+	waiting in this buffer. Note that this buffer is usually relatively
+	small. At the time of writing this, it is set to hold 16 events.
+	If the buffer is full, old events will be discarded.
+   </para>
+   <para>
+	You can use this request if, for some reason, you need to poll
+	PicoGUI events instead of waiting for them. In the middle of a long
+	operation, for example, you may wish to periodically check if the
+	user clicks a cancel button. If this request indicates that there are
+	events waiting, a <constant>PGREQ_WAIT</> request will immediately
+	return the oldest queued event.
    </para>
   </sect2>
 
@@ -400,10 +443,25 @@ struct pgreqd_createwidget {
    <title>PGREQ_DRIVERMSG - Send a message to all drivers</>
    <programlisting>
 type                 : PGREQ_DRIVERMSG
-client lib equivalent: 
-additional data      : 
+client lib equivalent: pgDriverMessage()
+additional data      : struct pgreqd_drivermsg
    </programlisting>
    <para>
+	This command can send 'extra' commands that may be
+	hardware-specific, like beeps, cursor blanking, and backlight
+	control.
+   </para>
+   <figure><title>struct pgreqd_drivermsg</><programlisting>
+struct pgreqd_drivermsg {
+  u32 message;
+  u32 param;
+};
+   </programlisting></figure>
+   <para>
+	Where <structfield>message</> is a <constant>PGDM_*</> constant
+	specying the message type and <structfield>param</> is the
+	associated data for the specific message type sent (see
+	<xref linkend="pgdmtypes"> for a complete listing).
    </para>
   </sect2>
 
@@ -422,7 +480,7 @@ additional data      : struct pgreqd_handlestruct
    <para>
 	Some objects simply can't be duplicated: For example, it would not
 	make sense to duplicate a widget, driver, or theme.
-	<footnote><para>At the time of this writing, the only object type
+	<footnote><para>At the time of writing this, the only object type
 	for which duplication is implemented is the string object.</></>
    </para>
   </sect2>
@@ -431,10 +489,17 @@ additional data      : struct pgreqd_handlestruct
    <title>PGREQ_FINDTHOBJ - Find theme object by name</>
    <programlisting>
 type                 : PGREQ_FINDTHOBJ
-client lib equivalent: 
-additional data      : 
+client lib equivalent: pgFindThemeObject()
+additional data      : data (name)
    </programlisting>
    <para>
+	Find a theme object's ID given its name.  Theme objects defined as
+	custom are assigned an ID automatically at load time. These objects
+	can be found with this request as long as each is assigned a unique
+	name property.
+   </para>
+   <para>
+	The <structfield>data</> is the name of the property to search for.
    </para>
   </sect2>
 
@@ -442,10 +507,17 @@ additional data      :
    <title>PGREQ_FINDWIDGET - Get widget handle by name</>
    <programlisting>
 type                 : PGREQ_FINDWIDGET
-client lib equivalent: 
-additional data      : 
+client lib equivalent: pgFindWidget()
+additional data      : data (name)
    </programlisting>
    <para>
+	Search for a widget by its PG_WP_NAME property.
+   </para>
+   <para>
+	Every widget can be given a name by setting it's PG_WP_NAME property
+	to a string handle. This request can search for a widget's handle
+	based on this name. Note that this request will search all widgets,
+	even those not owned by the client.
    </para>
   </sect2>
 
@@ -1839,5 +1911,34 @@ additional data      : pgreqd_handlestruct
   <row><entry>PGMOD_MODE</><entry>4000</><entry></></>
   </tbody>
   </table>
+ </appendix>
+
+ <appendix>
+  <title>Driver Messages Types</title>
+  <sect1 id="pgdmtypes"><title>Generic Driver Message Types</>
+   <table pgwide=1 frame=none><title>PGDM values</>
+   <tgroup cols=3 align=left>
+   <colspec colwidth="45*">
+   <colspec colwidth="10*">
+   <colspec colwidth="45*">
+   <tbody>
+   <row><entry>PGDM_CURSORVISIBLE</><entry>1</><entry>Turn the cursor on/off</></>
+   <row><entry>PGDM_BACKLIGHT</><entry>2</><entry>Turn the backlight on/off</></>
+   <row><entry>PGDM_SOUNDFX</><entry>3</><entry>Parameter is a PG_SND_* constant</></>
+   <row><entry>PGDM_POWER</><entry>4</><entry>Enter the power mode, PG_POWER_*</></>
+   <row><entry>PGDM_SDC_CHAR</><entry>5</><entry>Send a character to the secondary display channel</></>
+   <row><entry>PGDM_BRIGHTNESS</><entry>6</><entry>Set display brightness, 0x00-0xFF</></>
+   <row><entry>PGDM_CONTRAST</><entry>7</><entry>Set display contrast, 0x00-0xFF</></>
+   <row><entry>PGDM_INPUT_RAW</><entry>8</><entry>Send PG_NWE_PNTR_RAW from the specified widget</></>
+   <row><entry>PGDM_INPUT_SETCAL</><entry>9</><entry>Param is a handle to a new calibration string</></>
+   <row><entry>PGDM_CURSORBLKEN</><entry>10</><entry>Cursor blanking on/off</></>
+   <row><entry>PGDM_INPUT_CALEN</><entry>11</><entry>Turn calibration mode on/off</></>
+   <row><entry>PGDM_CURSORWARP</><entry>12</><entry>Internal message, notify drivers of a cursor warp</></>
+   <row><entry>PGDM_SIGNAL</><entry>13</><entry>Internal message, sends SIGUSR1/2 to drivers (param is signal)</></>
+   <row><entry>PGDM_READY</><entry>14</><entry>Notify the drivers that the server is completely up</></>
+   </tbody>
+   </tgroup>
+   </table>
+  </sect1>
  </appendix>
 </book>
