@@ -50,8 +50,8 @@ def run(config, progress):
     
     # Convert our list of targets to nodes. The targets may be originally specified
     # as nodes, filenames, or aliases.
-    target_top = None
-    #target_top = "/home/micah/picogui/pgbuild/src/hello-dev"
+    target_top = SCons.Node.FS.default_fs.Entry("src/hello-dev")
+    print target_top
     def Entry(x, top=target_top):
         if isinstance(x, SCons.Node.Node):
             node = x
@@ -67,7 +67,10 @@ def run(config, progress):
             else:
                 node = None
         return node
-    nodes = filter(lambda x: x is not None, map(Entry, targets))
+    if targets:
+        nodes = filter(lambda x: x is not None, map(Entry, targets))
+    else:
+        nodes = []
 
     if nodes:
         progress.message("Building targets:" + " ".join(map(lambda x:(" " + str(x)), nodes)))
