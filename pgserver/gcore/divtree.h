@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.7 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: divtree.h,v 1.8 2000/04/27 00:17:32 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -222,7 +222,7 @@ void grop_free(struct gropnode **headpp);
 g_error grop_pixel(struct gropnode **headpp,
 		   int x, int y, devcolort c);
 g_error grop_line(struct gropnode **headpp,
-		  int x, int y, int w, int h, devcolort c);
+		  int x1, int y1, int x2, int y2, devcolort c);
 g_error grop_rect(struct gropnode **headpp,
 		  int x, int y, int w, int h, devcolort c);
 g_error grop_dim(struct gropnode **headpp);

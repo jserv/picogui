@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.3 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: grop.c,v 1.4 2000/04/27 00:17:32 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -68,7 +68,7 @@ void grop_render(struct divnode *div) {
       hwr_pixel(&clip,x,y,list->param.c);
       break;
     case GROP_LINE:
-      hwr_line(&clip,x,y,w,h,list->param.c);
+      hwr_line(&clip,x,y,w+div->x+div->tx,h+div->y+div->ty,list->param.c);
       break;
     case GROP_RECT:
       hwr_rect(&clip,x,y,w,h,list->param.c);
@@ -151,16 +151,16 @@ g_error grop_pixel(struct gropnode **headpp,
 }
 
 g_error grop_line(struct gropnode **headpp,
-		  int x, int y, int w, int h, devcolort c) {
+		  int x1, int y1, int x2, int y2, devcolort c) {
   struct gropnode *n;
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
   if (e.type != ERRT_NONE) return e;
   n->type = GROP_LINE;
-  n->x = x;
-  n->y = y;
-  n->w = w;
-  n->h = h;
+  n->x = x1;
+  n->y = y1;
+  n->w = x2;
+  n->h = y2;
   n->param.c = c;
   grop_addnode(headpp,n);
   return sucess;

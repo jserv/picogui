@@ -1,4 +1,4 @@
-/* $Id: hardware.c,v 1.6 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: hardware.c,v 1.7 2000/04/27 00:17:32 micahjd Exp $
  *
  * hardware.c - SDL "hardware" layer
  * Anything that makes any kind of assumptions about the display hardware
@@ -141,8 +141,67 @@ void hwr_bar(struct cliprect *clip,int x,int y,int l,devcolort c) {
   SDL_UnlockSurface(screen);
 }
 
-void hwr_line(struct cliprect *clip,int x,int y,int w,int h,devcolort c) {
-  /* TODO: put a fast line-drawing algorithm here */
+void hwr_line(struct cliprect *clip,int x1,int y1,int x2,int y2,devcolort c) {
+  /* Implementation of Bresenham's algorithm */
+
+  int stepx, stepy;
+  int dx = x2-x1;
+  int dy = y2-y1;
+  int fraction;
+  
+  SDL_LockSurface(screen);
+
+  if (dx<0) { 
+    dx = -(dx << 1);
+    stepx = -1; 
+  } else {
+    dx = dx << 1;
+    stepx = 1;
+  }
+  if (dy<0) { 
+    dy = -(dy << 1);
+    stepy = -HWR_WIDTH; 
+  } else {
+    dy = dy << 1;
+    stepy = HWR_WIDTH;
+  }
+
+  y1 *= HWR_WIDTH;
+  y2 *= HWR_WIDTH;
+
+  ((devbmpt)screen->pixels)[x1+y1] = c;
+
+  /* Major axis is horizontal */
+  if (dx > dy) {
+    fraction = dy - (dx >> 1);
+    while (x1 != x2) {
+      if (fraction >= 0) {
+	y1 += stepy;
+	fraction -= dx;
+      }
+      x1 += stepx;
+      fraction += dy;
+
+      ((devbmpt)screen->pixels)[x1+y1] = c;
+    }
+  } 
+
+  /* Major axis is vertical */
+  else {
+    fraction = dx - (dy >> 1);
+    while (y1 != y2) {
+      if (fraction >= 0) {
+	x1 += stepx;
+	fraction -= dy;
+      }
+      y1 += stepy;
+      fraction += dx;
+
+      ((devbmpt)screen->pixels)[x1+y1] = c;
+    }
+  }
+
+  SDL_UnlockSurface(screen);
 }
 
 void hwr_rect(struct cliprect *clip,int x,int y,int w,int h,devcolort c) {

@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.2 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: video.h,v 1.3 2000/04/27 00:17:32 micahjd Exp $
  *
  * video.h - generic hardware defines (common to all drivers)
  *
@@ -56,7 +56,7 @@ void hwr_update();
 void hwr_pixel(struct cliprect *clip,int x,int y,devcolort c);
 void hwr_slab(struct cliprect *clip,int x,int y,int l,devcolort c);
 void hwr_bar(struct cliprect *clip,int x,int y,int l,devcolort c);
-void hwr_line(struct cliprect *clip,int x,int y,int w,int h,devcolort c);
+void hwr_line(struct cliprect *clip,int x1,int y1,int x2,int y2,devcolort c);
 void hwr_rect(struct cliprect *clip,int x,int y,int w,int h,devcolort c);
 void hwr_frame(struct cliprect *clip,int x,int y,int w,int h,devcolort c);
 void hwr_dim(struct cliprect *clip);  /* This dims (in a method appropriate
