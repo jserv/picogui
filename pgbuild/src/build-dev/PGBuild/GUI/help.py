@@ -30,8 +30,8 @@ priority = 0
 class Interface(PGBuild.GUI.none.Interface):
     def run(self):
         text = "Available GUI modules:\n\n"
-        for name in PGBuild.GUI.getNames():
-            text += "%10s: %s\n" % (name, PGBuild.GUI.find(name).description)
+        for module in PGBuild.GUI.getPrioritizedModules():
+            text += "%10s: %s\n" % (module.__name__.split(".")[-1], module.description)
         self.progress.message(text[:-1])
         
 ### The End ###

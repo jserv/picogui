@@ -89,7 +89,7 @@ def main(bootstrap, argv):
        this just handles:
 
          - Initializing the config tree
-         - Initializing the Progress object
+         - Initializing the GUI module
          - Exception catching
        """
     config = PGBuild.Config.Tree()

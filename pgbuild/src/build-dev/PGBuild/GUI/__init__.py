@@ -34,6 +34,19 @@ def getNames():
             modules.append(file[:-3])
     return modules
 
+def getPrioritizedModules():
+    """List the working GUI modules, highest priority first"""
+    guiList = []
+    for name in PGBuild.GUI.getNames():
+        try:
+            guiList.append(PGBuild.GUI.find(name))
+        except:
+            pass
+    def prioritySort(a,b):
+        return cmp(b.priority, a.priority)
+    guiList.sort(prioritySort)
+    return guiList
+
 def find(name):
     try:
         return __import__(name, globals(), locals())

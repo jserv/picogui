@@ -26,19 +26,8 @@ import PGBuild.GUI
 description = "Automatically choose a GUI"
 priority = 0
 
-# Load all the GUIs we can, and sort them by priority
-guiList = []
-for name in PGBuild.GUI.getNames():
-    try:
-        guiList.append(PGBuild.GUI.find(name))
-    except:
-        pass
-def prioritySort(a,b):
-    return cmp(b.priority, a.priority)
-guiList.sort(prioritySort)
-
 # Transmogrify our interface into the highest priority GUI
-Interface = guiList[0].Interface
+Interface = PGBuild.GUI.getPrioritizedModules()[0].Interface
         
 ### The End ###
         
