@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.20 2002/10/07 05:48:47 micahjd Exp $
+/* $Id: linear16.c,v 1.21 2002/10/07 05:52:45 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -147,7 +147,8 @@ void linear16_blit(hwrbitmap dest,
    * get a bus error on platforms like ARM that don't allow unaligned access!
    */
   if (lgop==PG_LGOP_ALPHA && srcbit->bpp!=32) {
-    linear16_rect(dest,dst_x,dst_y,w,h,0xFF00,PG_LGOP_NONE);
+    /* Draw a red rectangle instead to let us know something's wrong */
+    vid->rect(dest,dst_x,dst_y,w,h,vid->color_pgtohwr(0xFF0000),PG_LGOP_NONE);
     return;
   }
 
