@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.58 2002/09/18 11:36:36 micahjd Exp $
+/* $Id: scroll.c,v 1.59 2002/09/21 02:51:38 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -123,6 +123,7 @@ void build_scroll(struct gropctxt *c,u16 state,struct widget *self) {
   }
 
   if ( (oldres==0) != (DATA->res==0) ) {
+    static int lock = 0;
     DBG("Scroll bar show/hide, residewidget()\n");
 
     /* Jumpstart layout engine here to account for the change 
@@ -135,11 +136,19 @@ void build_scroll(struct gropctxt *c,u16 state,struct widget *self) {
      * run the layout engine twice, since the flags will be reset correctly.
      * Then, we need to restart div_rebuild (this function!) with the new
      * coordinates.
+     *
+     * Note that it may be possible for the layout engine to oscillate
+     * between scrollbar visible and hidden states. We use the 'lock'
+     * variable here to prevent infinite recursion in that case.
      */
+    if (lock)
+      return;
+    lock++;
     resizewidget(self);
     self->in->flags |= DIVNODE_NEED_RECALC;
     divnode_recalc(&self->in,NULL);
     div_rebuild(self->in->div);
+    lock = 0;
     return;
   }
 
