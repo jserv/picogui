@@ -56,7 +56,7 @@
 /* 48 */  "Invalid PNM bitmap",
 /* 49 */  "Error in WSAStartup???",
 /* 50 */  "Error in socket???",
-/* 51 */  NULL,
+/* 51 */  "Unsupported text format",
 /* 52 */  "Error in bind() - Is there already a PicoGUI server running here?",
 /* 53 */  "Error in listen() Hmm...",
 /* 54 */  "Can't set up a signal handler",
