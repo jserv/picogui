@@ -28,7 +28,7 @@
  *
  * Lalo Martins/Micah Dowty/Simon Howard
  */
-
+property realText;
 
 object default {
   name = "LCARS";
@@ -57,6 +57,7 @@ object button {
   bgcolor = 0x9999cc;
   /* Rounded rectangle */
   bgfill = fillstyle {
+    default::bgfill(x,y,w,h);
     SetColor(bgcolor);
     Rect(x+1,y+1,w-2,h-2);
     Slab(x+4,y,w-8,1);
@@ -113,46 +114,50 @@ object label.dlgtitle {
   font = Copy(panelbar::font);
 }
 
-object base.tlcontainer {
+object panel {
   hilightcolor = 0xff9900;
-  margin = 55;
+  margin = 19;
   bgfill = fillstyle {
     var indiam = 20;
-    SetColor(0x000000);
-    Rect(x+53,y+1,w-108,h-3);
-    SetColor(0xFF9900);
-    // top bar
-    Rect(x+104,y+1,w-122,17);
-    // bottom bar
-    Rect(x+165,y+h-19,w-183,17);
+    //x = x - 54;
+    //w = w + 54;
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+    //SetColor(0x000000);
+    //Rect(x+53,y+1,w-108,h-3);
     // topleft
     SetColor(0x9999cc);
-    Fellipse(x+1,y+1,42,42);
-    Rect(x,y+21,53,9);
-    Rect(x+20,y+1,44,29);
-    Rect(x+20,y+1,80,17);
+    Rect(x+w-10,y+1,10,29);
+    Rect(x+w-46,y+1,80,17);
     SetColor(0x000000);
-    Fellipse(x+54,y+18,20,20);
+    Fellipse(x+w-20,y+18,20,20);
     // bottomleft
     SetColor(0xbe7ea3);
-    Fellipse(x+1,y+h-43,42,42);
-    Rect(x,y+h-31,53,9);
-    Rect(x+20,y+h-31,44,29);
-    Rect(x+20,y+h-19,141,17);
+    Rect(x+w-10,y+h-31,10,29);
+    Rect(x+w-107,y+h-19,107,17);
     SetColor(0x000000);
-    Fellipse(x+54,y+h-38,20,20);
-    // clean up left side
-    Rect(x,y+30,53,h-61);
+    Fellipse(x+w-20,y+h-38,20,20);
     SetColor(0xFF9900);
-    // left bar
-    Rect(x,y+34,53,h-70);
+    // top bar
+    Rect(x+18,y+1,w-68,17);
+    // bottom bar
+    Rect(x+18,y+h-19,w-129,17);
     // topright
-    Fellipse(x+w-15,y+1,15,17);
-    Rect(x+w-15,y+1,8,17);
+    Fellipse(x,y+1,15,17);
+    Rect(x+7,y+1,8,17);
     // bottomright
-    Fellipse(x+w-15,y+h-19,15,17);
-    Rect(x+w-15,y+h-19,8,17);
+    Fellipse(x,y+h-19,15,17);
+    Rect(x+7,y+h-19,8,17);
+    // window title
+    SetColor(0x000000);
+    SetFont(font);
+    Text(x+18,y-8,1,1,widget::PG_WP_TEXT);
+    SetFont(closebtn::font);
+    Text(x+18,y+h-11,1,1,text);
   };
+  side = PG_S_LEFT;
+  font = Font("Crillee",18,0);
+  text = "PicoGUI";
 }
 
 object popup.menu {
@@ -164,6 +169,7 @@ object popup.menu {
 }
 
 object panelbar {
+  /*
   bgfill = fillstyle {
     SetColor(0x000000);
     Rect(x,y,w,h);
@@ -172,36 +178,89 @@ object panelbar {
   bgcolor = 0x000000;
   width = 19;
   margin = 0;
-  align = PG_A_RIGHT;
+  align = PG_A_TOP;
   font = Font("Helvetica",14,PG_FSTYLE_BOLD);
+  */
+  bgfill = fillstyle {
+    var indiam = 20;
+    SetColor(0x000000);
+    Rect(x,y,w,h);
+    // topleft
+    SetColor(0x9999cc);
+    Fellipse(x+11,y+1,42,42);
+    Rect(x,y+21,53,9);
+    Rect(x,y+1,34,29);
+    // bottomleft
+    SetColor(0xbe7ea3);
+    Fellipse(x+11,y+h-43,42,42);
+    Rect(x,y+h-31,53,9);
+    Rect(x,y+h-31,34,29);
+    // clean up left side
+    SetColor(0x000000);
+    Rect(x,y+30,53,h-61);
+    SetColor(0xFF9900);
+    // left bar
+    Rect(x,y+34,53,h-70);
+  };
+  bgcolor = 0xff9900;
+  fgcolor = 0xff9900;
+  width = 54;
+  margin = 0;
+  align = PG_A_TOP;
+  font = Font("Crillee",5,0);
 }
 object base.panelbtn {
-  bgfill  = fillstyle {
-    SetColor(bgcolor);
-    Rect(x+1,y+1,w-2,h-2);
-  };
   bgcolor = 0x000000;
   fgcolor = 0x000000;
-  font = Font("Helvetica",10,PG_FSTYLE_BOLD);
-  spacing = 1;
-  margin = 2;
-  side = PG_S_LEFT;
-  // wish
-  //direction = PG_DIR_VERTICAL;
-  width = 19;
-  height = 19;
+  font = Font("Helvetica",1,0);
+  spacing = 0;
+  margin = 0;
+  height = 34;
+  side = PG_S_TOP;
 }
 object closebtn  {
+  bgfill  = fillstyle {
+    SetFont(panelbar::font);
+    Text(x,y+20,1,1,realText);
+  };
   bgcolor = 0xff9900;
-  text = "Close";
+  realText = "close";
+  text = "";
 }
 object rotatebtn {
+  bgfill  = fillstyle {
+    SetColor(0x000000);
+    Rect(x,y,w,h);
+    SetColor(bgcolor);
+    Rect(x,y,w-1,h-5);
+    SetColor(0x000000);
+    SetFont(panelbar::font);
+    Text(x,y-2,1,1,realText);
+  };
   bgcolor = 0xbe7ea3;
-  text = "Rotate";
+  realText = "rotate";
+  text = "";
 }
 object zoombtn {
-  bgcolor = 0x9999cc;
-  text = "Zoom";
+  bgfill  = fillstyle {
+    Nop();
+    /*
+    till this does something, let's just not draw it
+    SetColor(0x000000);
+    Rect(x,y,w,h);
+    SetColor(bgcolor);
+    Rect(x,y,w-1,h-5);
+    SetColor(0x000000);
+    SetFont(panelbar::font);
+    Text(x,y+18,1,1,text);
+    SetLgop(PG_LGOP_ALPHA);
+    SetColor(PGCF_ALPHA | 0);
+    */
+  };
+  height = 0;
+  bgcolor = 0xff9900;
+  fgcolor = 0xff9900;
+  text = "zoom";
 }
 
 object scroll {
@@ -233,14 +292,35 @@ object scroll {
 /* Check boxes */
 object checkbox {
   bgfill = fillstyle {
-    Bitmap(x+1,y+((h-12)>>1)-1,11,11,bitmap1);
-    x = x + 15;
+    default::bgfill(x,y,w,h);
+    button::bgfill(x+1,y+((h-10)>>1)-1,16,14);
+    //Bitmap(x+1,y+((h-12)>>1)-1,11,11,bitmap1);
+    x = x + 18;
   };
   bitmap1 = LoadBitmap("data/lcars-check.png");
   align = PG_A_LEFT;
   margin = 10;
 }
-object checkbox.on bitmap1 = LoadBitmap("data/lcars-check-on.png");
+object checkbox.on bgfill = fillstyle {
+    default::bgfill(x,y,w,h);
+    button.hilight::bgfill(x+1,y+((h-10)>>1)-1,16,14);
+    //Bitmap(x+1,y+((h-12)>>1)-1,11,11,bitmap1);
+    x = x + 18;
+  };
+
+object radiobutton {
+  parent = PGTH_O_BUTTON;
+  //fgcolor = 0x000000;
+  bgcolor = 0xbe7ea3;
+}
+
+object radiobutton.on parent = PGTH_O_BUTTON_HILIGHT;
+object radiobutton.hilight parent = PGTH_O_BUTTON_HILIGHT;
+object radiobutton.on.nohilight {
+  parent = PGTH_O_BUTTON;
+  //fgcolor = 0x000000;
+  bgcolor = 0xFF9900;
+}
 
 object toolbar {
   bgfill = fillstyle {
@@ -250,6 +330,63 @@ object toolbar {
     Slab(x,y+h-1,w,1);
   };
   margin = 2;
+}
+
+object textbox {
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+    SetColor(fgcolor);
+    Frame(x,y+2,w,h-4);
+  };
+  margin = 2;
+  spacing = 2;
+}
+
+object tab.on {
+  fgcolor = 0x000000;
+  bgcolor = 0x9999cc;
+  /* Rounded rectangle, except at bottom */
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+    SetColor((widget->container[1]::PG_WP_SIDE == PG_S_TOP || widget->container[1]::PG_WP_SIDE == PG_S_LEFT) ? fgcolor: bgcolor);
+    Pixel(x,y,1,1);
+    SetColor((widget->container[1]::PG_WP_SIDE == PG_S_TOP || widget->container[1]::PG_WP_SIDE == PG_S_RIGHT) ? fgcolor: bgcolor);
+    Pixel(x+w-1,y,1,1);
+    SetColor((widget->container[1]::PG_WP_SIDE == PG_S_BOTTOM || widget->container[1]::PG_WP_SIDE == PG_S_LEFT) ? fgcolor: bgcolor);
+    Pixel(x,y+h-1,1,1);
+    SetColor((widget->container[1]::PG_WP_SIDE == PG_S_BOTTOM || widget->container[1]::PG_WP_SIDE == PG_S_RIGHT) ? fgcolor: bgcolor);
+    Pixel(x+w-1,y+h-1,1,1);
+    y = y - 2;
+  };
+}
+object tab {
+  fgcolor = 0x000000;
+  bgcolor = 0x9999cc;
+  bgfill = fillstyle {
+    default::bgfill(x,y,w,h);
+    button::bgfill(x+2,y+2,w-4,h-4);
+    y = y - 2;
+  };
+}
+object tab.hilight {
+  parent = PGTH_O_TAB;
+}
+
+object tab.bar {
+  bgfill = Copy(default::bgfill);
+  margin = 0;
+}
+
+object tab.page {
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+    SetColor(fgcolor);
+    Frame(x,y,w,h);
+  };
+  margin = 4;
 }
 
 /* The End */
