@@ -26,14 +26,14 @@ runtime = [
 
             Runtime ('install', 'Install PicoGUI Server',
                      content = [ 'bin/pgserver',
-                                 '../etc/pgserver.conf'],
+                                 '/etc/pgserver.conf'],
                      depends = [ 'resourcemanager/install',
                                  'kernel/video'],
                      help = "Install the PicoGUI Server" ),
 
             Runtime ('start', 'Run PicoGUI Server',
 
-                     content = [ '../etc/rm.d/picoguiserver',
+                     content = [ '/etc/rm.d/picoguiserver',
                                  'bin/picogui-launcher.sh' ],
                      
                      depends = [ 'picoguiserver/install', 'resourcemanager/start',
