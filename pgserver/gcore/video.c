@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.2 2000/08/27 05:54:27 micahjd Exp $
+/* $Id: video.c,v 1.3 2000/08/28 02:06:09 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -401,7 +401,7 @@ void def_dim(void) {
    * looking stupid  ;-)
    */
   for (y=vid->clip_y1;y<=vid->clip_y2;y++)
-    for (x=vid->clip_x1+(y&1);x<vid->clip_x2;x+=2)
+    for (x=vid->clip_x1+(y&1);x<=vid->clip_x2;x+=2)
       (*vid->pixel)(x,y,0);
 }
 

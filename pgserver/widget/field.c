@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.10 2000/08/27 09:15:33 micahjd Exp $
+/* $Id: field.c,v 1.11 2000/08/28 02:06:09 micahjd Exp $
  *
  * Single-line no-frills text editing box
  *
@@ -45,7 +45,7 @@
 
 struct fielddata {
   handle font;
-  hwrcolor fg,bg;
+  pgcolor fg,bg;
   int focus,on,flash_on;
 
   /* Maximum size the field can hold */
@@ -80,7 +80,7 @@ void field(struct divnode *d) {
   grop_text(&d->grop,fd->margin,(d->h>>1) - (fd->font->h>>1),
 	    DATA->font,DATA->fg,DATA->hbuffer);
   grop_rect(&d->grop,0,2,CURSORWIDTH,d->h-4,DATA->bg);
-  grop_frame(&d->grop,-1,-1,-1,-1,black);
+  grop_frame(&d->grop,-1,-1,-1,-1,0x000000);
 
   fieldstate(self);
 }
@@ -114,7 +114,7 @@ g_error field_install(struct widget *self) {
   e = newdiv(&self->in->div,self);
   errorcheck;
   self->in->div->on_recalc = &field;
-  DATA->bg = white;
+  DATA->bg = 0xFFFFFF;
   DATA->font = defaultfont;
 
   self->trigger_mask = TRIGGER_UP | TRIGGER_ACTIVATE | TRIGGER_CHAR |

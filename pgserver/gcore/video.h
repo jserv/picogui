@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.10 2000/08/27 08:31:01 micahjd Exp $
+/* $Id: video.h,v 1.11 2000/08/28 02:06:09 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -60,9 +60,6 @@ typedef unsigned long pgcolor;
 
 /* HACK ALERT!!!! This stuff needs to be integrated into the
    themes... Save this for the theme overhaul. */
-#define white          0xFFFFFF
-#define black          0x000000
-#define gray           0x808080
 #define HWG_BUTTON 22
 #define HWG_MARGIN 2
 #define HWG_SCROLL 10

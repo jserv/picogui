@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.15 2000/08/27 09:15:33 micahjd Exp $
+/* $Id: bitmap.c,v 1.16 2000/08/28 02:06:09 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -30,7 +30,7 @@
 struct bitmapdata {
   handle bitmap,bitmask;
   int align,lgop,transparent;
-  hwrcolor fill;
+  pgcolor fill;
 };
 #define DATA ((struct bitmapdata *)(self->data))
 
@@ -81,7 +81,7 @@ g_error bitmap_install(struct widget *self) {
   e = newdiv(&self->in->div,self);
   errorcheck;
   self->in->div->on_recalc = &bitmap;
-  DATA->fill = white;
+  DATA->fill = 0xFFFFFF;
   DATA->align = A_CENTER;
   DATA->lgop = LGOP_NONE;
 

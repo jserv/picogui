@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.5 2000/08/27 05:54:27 micahjd Exp $
+/* $Id: font.c,v 1.6 2000/08/28 02:06:09 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -170,11 +170,11 @@ g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
   /* Initialize the fd */
   memset(fd,0,sizeof(struct fontdesc));
   fd->hline = -1;
-  fd->hline_c = black;
+  fd->hline_c = (*vid->color_pgtohwr)(0x000000);
   
   if (!(flags & FSTYLE_FLUSH)) fd->margin = 2;
   if (flags & FSTYLE_GRAYLINE) {
-    fd->hline_c = gray;
+    fd->hline_c = (*vid->color_pgtohwr)(0x808080);
     flags |= FSTYLE_UNDERLINE;
   }
 

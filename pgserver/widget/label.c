@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.17 2000/08/27 09:15:33 micahjd Exp $
+/* $Id: label.c,v 1.18 2000/08/28 02:06:09 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -35,7 +35,7 @@
 struct labeldata {
   handle text,font;
   int transparent,align;
-  hwrcolor bg,fg;
+  pgcolor bg,fg;
 };
 #define DATA ((struct labeldata *)(self->data))
 
@@ -86,7 +86,7 @@ g_error label_install(struct widget *self) {
   e = newdiv(&self->in->div,self);
   errorcheck;
   self->in->div->on_recalc = &text;
-  DATA->bg = white;
+  DATA->bg = 0xFFFFFF;
   DATA->align = A_CENTER;
   DATA->font = defaultfont;
 

@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.15 2000/08/27 09:15:33 micahjd Exp $
+/* $Id: grop.c,v 1.16 2000/08/28 02:06:09 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -162,8 +162,8 @@ void grop_render(struct divnode *div) {
 	break;
       (*vid->gradient)(x,y,w,h,
 		       list->param.gradient.angle,
-		       (*vid->color_hwrtopg)(list->param.gradient.c1),
-		       (*vid->color_hwrtopg)(list->param.gradient.c2),
+		       list->param.gradient.c1,
+		       list->param.gradient.c2,
 		       list->param.gradient.translucent);      
       break;
     }
@@ -356,8 +356,8 @@ g_error grop_gradient(struct gropnode **headpp,
   n->y = y;
   n->w = w;
   n->h = h;
-  n->param.gradient.c1 = (*vid->color_pgtohwr)(c1);
-  n->param.gradient.c2 = (*vid->color_pgtohwr)(c2);
+  n->param.gradient.c1 = c1;
+  n->param.gradient.c2 = c2;
   n->param.gradient.angle = angle;
   n->param.gradient.translucent = translucent;
   grop_addnode(headpp,n);
