@@ -1,4 +1,4 @@
-/* $Id: textbox.h,v 1.21 2002/10/31 20:33:55 micahjd Exp $
+/* $Id: textbox.h,v 1.22 2002/11/12 22:52:47 micahjd Exp $
  *
  * textbox.h - Interface definitions for the textbox widget. This allows
  *             the main textbox widget functions and the text format loaders
@@ -71,13 +71,15 @@ void document_seek(struct textbox_document *doc, s32 offset, int whence);
 
 /* Like document_seek, but bound it at the edges of the document.
  * document_eof() will never be set after calling this.
+ * Returns the amount actually seeked.
  */
-void document_bounded_seek(struct textbox_document *doc, s32 offset, int whence);
+int document_bounded_seek(struct textbox_document *doc, s32 offset, int whence);
 
 /* Seek up/down in the document, snapping the cursor to the nearest character
  * This is bounded to the document edges.
+ * Returns the number of lines actually seeked (positive or negative)
  */
-void document_lineseek(struct textbox_document *doc, s32 offset);
+int document_lineseek(struct textbox_document *doc, s32 offset);
 
 /* Return 0 if the cursor is still inside the document,
  * If the cursor is before the beginning of the document return

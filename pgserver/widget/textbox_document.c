@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.57 2002/11/01 02:28:58 micahjd Exp $
+/* $Id: textbox_document.c,v 1.58 2002/11/12 22:52:47 micahjd Exp $
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and
@@ -243,11 +243,13 @@ void document_seek(struct textbox_document *doc, s32 offset, int whence) {
  *
  * This works by finding the proper paragraph, Then using the
  * last known cursor location to move directly vertical.
+ * Returns the number of lines actually seeked (positive or negative)
  */
-void document_lineseek(struct textbox_document *doc, s32 offset) {
+int document_lineseek(struct textbox_document *doc, s32 offset) {
   struct pgstr_iterator i;
   struct paragraph *par;
   struct paragraph_cursor *oldcrsr;
+  int seeked = 0;
 
   /* Up */
   while (offset<0) {
@@ -255,13 +257,14 @@ void document_lineseek(struct textbox_document *doc, s32 offset) {
     if (!doc->crsr->line->prev)
       par = par->prev;
     if (!par)
-      return;
+      return seeked;
     oldcrsr = doc->crsr;
     doc->crsr = &par->cursor;
     paragraph_movecursor(doc->crsr, par,
 			 oldcrsr->last_rect.x - par->div->div->r.x,
 			 oldcrsr->last_rect.y - par->div->div->r.y - 1);
     offset++;
+    seeked--;
   }
     
   /* Down */
@@ -270,14 +273,17 @@ void document_lineseek(struct textbox_document *doc, s32 offset) {
     if (!doc->crsr->line->next)
       par = par->next;
     if (!par)
-      return;
+      return seeked;
     oldcrsr = doc->crsr;
     doc->crsr = &par->cursor;
     paragraph_movecursor(doc->crsr, par,
 			 oldcrsr->last_rect.x - par->div->div->r.x,
 			 oldcrsr->last_rect.y + oldcrsr->line->height + 1 - par->div->div->r.y);
     offset--;
+    seeked++;
   }
+
+  return seeked;
 }
 
 
@@ -373,9 +379,12 @@ g_error document_backspace_char(struct textbox_document *doc) {
 /* Like document_seek, but bound it at the edges of the document.
  * document_eof() will never be set after calling this.
  */
-void document_bounded_seek(struct textbox_document *doc, s32 offset, int whence) {
+int document_bounded_seek(struct textbox_document *doc, s32 offset, int whence) {
+  int correction;
   document_seek(doc,offset,whence);
-  document_seek(doc,-document_eof(doc),PGSEEK_CUR);
+  correction = -document_eof(doc);
+  document_seek(doc,correction,PGSEEK_CUR);
+  return offset + correction;
 }
 
 /* Insert a new paragraph after the one the cursor is on.

@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.33 2002/11/06 09:08:04 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.34 2002/11/12 22:52:47 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -240,6 +240,8 @@ glob textbox_get(struct widget *self,int property) {
 }
 
 void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
+  int seek_amount;
+
   if (DATA->readonly)
     return;
 
@@ -299,62 +301,71 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
     if (textbox_ignorekey(self,param->kbd.key))
       return;
 
-    param->kbd.consume++;
     textbox_reset_inactivity(self);
-    
+    seek_amount = 0;
+
     switch (param->kbd.key) {
       
     case PGKEY_LEFT:
       paragraph_hide_cursor(DATA->doc->crsr);
       if (param->kbd.mods & PGMOD_CTRL)
-        document_bounded_seek(DATA->doc,-10,PGSEEK_CUR);
+        seek_amount = document_bounded_seek(DATA->doc,-10,PGSEEK_CUR);
       else
-        document_bounded_seek(DATA->doc,-1,PGSEEK_CUR);
+        seek_amount = document_bounded_seek(DATA->doc,-1,PGSEEK_CUR);
       break;
       
     case PGKEY_RIGHT:
       paragraph_hide_cursor(DATA->doc->crsr);
       if (param->kbd.mods & PGMOD_CTRL)
-        document_bounded_seek(DATA->doc,10,PGSEEK_CUR);
+        seek_amount = document_bounded_seek(DATA->doc,10,PGSEEK_CUR);
       else
-        document_bounded_seek(DATA->doc,1,PGSEEK_CUR);
+        seek_amount = document_bounded_seek(DATA->doc,1,PGSEEK_CUR);
       break;
       
     case PGKEY_UP:
       paragraph_hide_cursor(DATA->doc->crsr);
       if (param->kbd.mods & PGMOD_CTRL)
-        document_lineseek(DATA->doc,-10);
+        seek_amount = document_lineseek(DATA->doc,-10);
       else
-        document_lineseek(DATA->doc,-1);
+        seek_amount = document_lineseek(DATA->doc,-1);
       break;
       
     case PGKEY_DOWN:
       paragraph_hide_cursor(DATA->doc->crsr);
       if (param->kbd.mods & PGMOD_CTRL)
-        document_lineseek(DATA->doc,10);
+        seek_amount = document_lineseek(DATA->doc,10);
       else
-        document_lineseek(DATA->doc,1);
+        seek_amount = document_lineseek(DATA->doc,1);
       break;
       
     case PGKEY_HOME:
       paragraph_hide_cursor(DATA->doc->crsr);
       if (param->kbd.mods & PGMOD_CTRL)
-        document_bounded_seek(DATA->doc,0,PGSEEK_SET);
-      else
+        seek_amount = document_bounded_seek(DATA->doc,0,PGSEEK_SET);
+      else {
         paragraph_seekcursor(DATA->doc->crsr,0,PGSEEK_SET);
+	seek_amount = 1;
+      }
       break;
       
     case PGKEY_END:
       paragraph_hide_cursor(DATA->doc->crsr);
       if (param->kbd.mods & PGMOD_CTRL)
-        document_bounded_seek(DATA->doc,0,PGSEEK_END);
-      else
-        paragraph_seekcursor(DATA->doc->crsr,0,PGSEEK_END);
+        seek_amount = document_bounded_seek(DATA->doc,0,PGSEEK_END);
+      else {
+	paragraph_seekcursor(DATA->doc->crsr,0,PGSEEK_END);
+	seek_amount = 1;
+      }
       break;
       
     default:
       return; /* Skip update */
     }
+
+    /* If we didn't actually get anywhere, let the event pass */
+    if (seek_amount)
+      param->kbd.consume++;
+
     paragraph_show_cursor(DATA->doc->crsr);
     paragraph_scroll_to_cursor(DATA->doc->crsr);
     break;
@@ -431,7 +442,7 @@ int textbox_ignorekey(struct widget *self, int key) {
     case PGKEY_RETURN:
       return 1;
     }
-
+  
   return 0;
 }
 
