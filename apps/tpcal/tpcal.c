@@ -217,7 +217,7 @@ int evtDrawTarget(struct pgEvent *evt) {
     DrawTarget(current_target_location, 0xD0D0D0);
   }
 
-  DBG((__FUNCTION__" current_target=%d (%dx%d)\n",current_target,xext,yext));
+  DBG((__FUNCTION__" current_target=%d (%d,%d)\n",current_target,xext,yext));
 
   if (current_target != total_targets) {
     /* draw new target at current location */
