@@ -217,7 +217,7 @@ if __name__ == '__main__':
             reactor.run()
 
             # and now if we are not the first bot, send there, so it goes into the main channels
-            if not socketName == socketBaseName + ".1":
+            if socketName != socketBaseName + ".1":
                 socketName = socketBaseName + ".1"
                 f = AnnounceClientFactory()
                 reactor.connectUNIX(socketName, f)
