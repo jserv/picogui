@@ -257,6 +257,25 @@ object scroll {
   };
 }
 
+object indicator {
+  width = 12;
+  fgcolor = 0x336699;
+
+  bgfill = fillstyle {
+    var m;
+
+    default::bgfill(x,y,w,h);
+    SetColor(widget::PG_WP_COLOR);
+    m = width/2-1;
+    Rect(x+m,y+m,w-m*2,h-m*2);
+  };
+
+  overlay = fillstyle {
+    SetColor(widget::PG_WP_COLOR);
+    Rect(x+1,y+1,w-2,h-2);
+  };
+}
+
 /* The tabpage and its family */
 
 object tab.page {
