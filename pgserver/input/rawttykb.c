@@ -1,4 +1,4 @@
-/* $Id: rawttykb.c,v 1.3 2002/07/03 22:03:30 micahjd Exp $
+/* $Id: rawttykb.c,v 1.4 2002/08/15 23:22:55 micahjd Exp $
  *
  * rawttykb.c - A medium-raw TTY keyboard driver that accurately
  *              represents the keyboard at the risk of less compatibility
@@ -238,7 +238,7 @@ void FB_CloseKeyboard(void) {
 }
 
 int FB_OpenKeyboard(void) {
-  keyboard_fd = open("/dev/tty", O_RDWR);
+  keyboard_fd = open(get_param_str("input-rawttykb","device","/dev/tty"),O_RDWR);
   saved_kbd_mode = -1;
   
   /* Make sure that our input is a console terminal */

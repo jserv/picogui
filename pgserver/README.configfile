@@ -490,5 +490,10 @@ quoted appropriately. For example:
 - device
   The name of the device for the keyboard. Defaults to /dev/tty.
 
+[input-rawttykb]
+
+- device
+  The name of the device for the keyboard. Defaults to /dev/tty.
+
 --- The End ---
 
