@@ -54,6 +54,10 @@ badChannels = ("#!~!raisin!!",
                # Commits is in here, since the bot is in it by
                # default and shouldn't be able to leave
                "commits",
+
+	       # This is here because #e's ops don't like CIA and
+	       # don't know how to ask it to leave properly :P
+	       "e",
                )
 
 # Little utilities to save and load numbers from files... for our cheesy stats directory
