@@ -58,7 +58,14 @@ if $includefilename; then
 	module="$directory/$filename"
 fi
 
-tmpfile="/tmp/$RANDOM-$projectname"
+# the /tmp directory often has its sticky bit set, so do things
+# in a private subdir so we can have shared state
+tmpdir="/tmp/ciabot.cvs"
+if [ ! -d $tmpdir ]; then
+    mkdir $tmpdir;
+    chmod 0777 $tmpdir
+fi
+tmpfile="$tmpdir/$RANDOM-$projectname"
 cat <<EOF >$tmpfile
 From: $returnaddress
 To: $commitaddress
@@ -72,9 +79,13 @@ if [ -e /tmp/lastlog-$projectname ]; then
     if ! diff /tmp/lastlog-$projectname $tmpfile &>/dev/null; then
         # there are differences, so this is a different commit
         cat $tmpfile | /usr/sbin/sendmail -t
-        mv $tmpfile /tmp/lastlog-$projectname
-        # To ensure that the next person to commit will be able to overwrite
-        chmod a+w /tmp/lastlog-$projectname
+        # try to replace the lastlog if we're allowed
+        # ...which we aren't if the sticky bit is set
+        if [ -w /tmp/lastlog-$projectname ]; then
+            mv $tmpfile /tmp/lastlog-$projectname
+            # allow the next person to commit to overwrite
+            chmod a+w /tmp/lastlog-$projectname
+        fi
     else
         # it's just cvs spamming us from another directory
         rm $tmpfile
