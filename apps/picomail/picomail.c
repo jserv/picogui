@@ -64,7 +64,7 @@ int
 setSelected (struct pgEvent *evt)
 {
   selectedMessage = (int) (evt->extra);
-  printf ("Message %d selected.\n", selectedMessage);
+  //printf ("Message %d selected.\n", selectedMessage);
   return 0;
 }
 

@@ -41,7 +41,7 @@ getrow ()
   newrow = (char *) malloc (strlen (row) + 1);
   strcpy (newrow, row);
 
-  printf ("DEBUG RCV: %s", newrow);
+//  printf ("DEBUG RCV: %s", newrow);
 
   return newrow;
 }
@@ -74,7 +74,7 @@ sendcmd (char *command)
   getcmdid (cmdid);
 
   fprintf (imapfp, "%s %s\n", cmdid, command);
-  printf ("DEBUG SND: %s %s\n", cmdid, command);
+//  printf ("DEBUG SND: %s %s\n", cmdid, command);
 }
 
 
@@ -138,7 +138,7 @@ mesgcount (char *line)
 
       line[i] = '\0';
       messages = atoi (line);
-      printf ("Messages Count: %d\n", messages);
+      //printf ("Messages Count: %d\n", messages);
     }
   return SUCCESS;
 }
@@ -250,7 +250,7 @@ readmessage (char *command)
 	}
     }
 
-  message[strlen (message) - 2] = '\0';
+  message[strlen (message) - 4] = '\0';
   return message;
 }
 
@@ -308,7 +308,7 @@ imap_init ()
 {
   char *command;
   command = malloc (512);
-  printf ("Connection to IMAP...\n");
+  //printf ("Connection to IMAP...\n");
   imapfp = tcp_connect (get_param_str ("imap", "server", "127.0.0.1"),
 			get_param_int ("imap", "port", 143));
   if (!check_ok ())
@@ -342,7 +342,7 @@ imap_getlist ()
 {
   char *command;
   command = malloc (64);
-  printf ("imap_getlist\n");
+  //printf ("imap_getlist\n");
   check_connection ();
   sprintf (command, "FETCH %d:%d (BODY[HEADER.FIELDS (SUBJECT DATE FROM)])",
 	   1, messages);
