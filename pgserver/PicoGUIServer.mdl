@@ -44,8 +44,7 @@ echo >>/var/pgserver.dynconf "calibration = $PG_TS_CALIBRATION"
 if test "$PG_TS_REMORAKB_ON" = "1"
 then
   echo "Using Remora keyboard on ttyS0"
-  echo >>/var/pgserver.dynconf "[remora-kb]"
-  echo >>/var/pgserver.dynconf "device = /dev/ttyS0"
+  remorakb_checker --force=0 >>/var/pgserver.dynconf
 fi
 
 # start pgserver
