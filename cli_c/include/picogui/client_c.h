@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.22 2000/11/05 18:20:35 micahjd Exp $
+/* $Id: client_c.h,v 1.23 2000/11/12 02:51:28 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -57,7 +57,7 @@ typedef int (*pgevthandler)(short event,pghandle from,long param);
  * directly, for compatibility reasons.
  */
 struct pgmemdata {
-  void *pointer;
+  void *pointer;       /* when null, indicates error */
   unsigned long size;
   int flags;           /* PGMEMDAT_* flags or'ed together */
 };

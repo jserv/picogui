@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.25 2000/11/05 19:50:49 micahjd Exp $
+/* $Id: picogui_client.c,v 1.26 2000/11/12 02:51:28 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -395,7 +395,8 @@ char * _pg_dynformat(const char *fmt,va_list ap) {
   int n, size = 100;
   char *p;
 
-  p = _pg_malloc(size);
+  if (!(p = _pg_malloc(size)))
+    return NULL;
   while (1) {
     /* Try to print in the allocated space. */
     n = vsnprintf (p, size, fmt, ap);
@@ -414,7 +415,8 @@ char * _pg_dynformat(const char *fmt,va_list ap) {
 		    a new buffer and copying the data.
 		    We don't need the old data so this
 		    is more efficient. */    
-    p = _pg_malloc(size);
+    if (!(p = _pg_malloc(size)))
+      return NULL;
   }
   return p;
 }
@@ -684,6 +686,10 @@ void pgLeaveContext(void) {
 }  
 
 pghandle pgLoadTheme(struct pgmemdata obj) {
+
+  /* Error */
+  if (!obj.pointer) return NULL;
+
   /* FIXME: I should probably find a way to do this that
      doesn't involve copying the data- probably flushing any
      pending packets, then writing the mmap'd file data directly
@@ -717,16 +723,21 @@ struct pgmemdata pgFromFile(const char *file) {
      Much more efficient for larger files. */
 
   fd = open(file,O_RDONLY);
-  if (fd<0)
+  if (fd<0) {
     /* FIXME: Better error message / a way for the app to catch this error */
     clienterr("Error opening file in pgFromFile()");
+    x.pointer = NULL;
+    return x;
+  }
   fstat(fd,&st);
   x.size = st.st_size;
 
   /* FIXME: more error checking (you can tell this function has been
      a quick hack so I can test theme loading :) */
-  if (!(x.pointer = malloc(x.size)))
-    clienterr("malloc error in pgFromFile");
+  if (!(x.pointer = _pg_malloc(x.size))) {
+    x.pointer = NULL;
+    return x;
+  }
   x.flags = PGMEMDAT_NEED_FREE;
 
   read(fd,x.pointer,x.size);
@@ -920,6 +931,10 @@ pghandle pgNewPopup(int width,int height) {
 }
 
 pghandle pgNewBitmap(struct pgmemdata obj) {
+
+  /* Error */
+  if (!obj.pointer) return NULL;
+
   /* FIXME: I should probably find a way to do this that
      doesn't involve copying the data- probably flushing any
      pending packets, then writing the mmap'd file data directly
@@ -993,7 +1008,8 @@ void pgReplaceTextFmt(pghandle widget,const char *fmt, ...) {
   va_list ap;
   
   va_start(ap,fmt);
-  p = _pg_dynformat(fmt,ap);
+  if (!(p = _pg_dynformat(fmt,ap)))
+    return;
   pgReplaceText(widget,p);
   free(p);
   va_end(ap);
@@ -1006,7 +1022,8 @@ int pgMessageDialogFmt(const char *title,unsigned long flags,const char *fmt, ..
   va_list ap;
 
   va_start(ap,fmt);
-  p = _pg_dynformat(fmt,ap);
+  if (!(p = _pg_dynformat(fmt,ap)))
+    return;
   ret = pgMessageDialog(title,p,flags);
   free(p);
   va_end(ap);
@@ -1056,9 +1073,6 @@ int pgMenuFromString(char *items) {
 
   if (!items || !*items) return 0;
 
-  /* New context for us! */
-  pgEnterContext();
-  
   /* Count how many items we'll need */
   i = 1;
   p = items;
@@ -1066,8 +1080,12 @@ int pgMenuFromString(char *items) {
     if (*p == '\n') i++;
     p++;
   }
-  handletab = _pg_malloc(4*i);
+  if (!(handletab = _pg_malloc(4*i)))
+    return;
 
+  /* New context for us! */
+  pgEnterContext();
+  
   /* Send over the strings individually, store handles */
   i = 0;
   do {
