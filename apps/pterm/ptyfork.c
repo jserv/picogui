@@ -1,4 +1,4 @@
-/* $Id: ptyfork.c,v 1.4 2001/01/31 03:55:54 micahjd Exp $
+/* $Id: ptyfork.c,v 1.5 2002/04/09 16:36:41 micahjd Exp $
  *
  * ptyfork.c - Create a subprocess running under a pty
  *
@@ -61,7 +61,7 @@ int ptyfork(int *ptyfd) {
   strcpy(fname,"/dev/ptyAB");
 
   /* Find an available pair */
-  for (chr1 = "pqrstuvwxyzPQRST";*chr1;chr1++) {
+  for (chr1 = "abcdefpqrstuvwxyzPQRST";*chr1;chr1++) {
     fname[8] = *chr1;      /* Replace the A */
     for (chr2 = "0123456789abcdef";*chr2;chr2++) {
       fname[9] = *chr2;    /* Replace the B */
