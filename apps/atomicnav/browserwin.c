@@ -1,4 +1,4 @@
-/* $Id: browserwin.c,v 1.8 2002/01/11 04:31:09 micahjd Exp $
+/* $Id: browserwin.c,v 1.9 2002/10/11 10:13:18 micahjd Exp $
  *
  * browserwin.c - User interface for a browser window in Atomic Navigator
  *
@@ -113,12 +113,12 @@ void pageStatus(struct url *u) {
 
   /* Done loading a page? */
   if (u->status == URL_STATUS_DONE) {
-    pghandle page = pgDataString(u->data);
-
+    pgEnterContext();
     pgSetWidget(u->browser->wView,
-		PG_WP_TEXTFORMAT, pgNewString("HTML"),
-		PG_WP_TEXT,page,
+		PG_WP_TEXTFORMAT, pgNewString("html"),
+		PG_WP_TEXT,pgDataString(u->data),
 		0);
+    pgLeaveContext();
   }
 
   pgUpdate();
@@ -280,13 +280,14 @@ void browserwin_seturl(struct browserwin *w, const char *url) {
 void browserwin_errormsg(struct browserwin *w, const char *msg) {
   /* Display the error message on a web page */
 
-  /* FIXME: This is a memory leak! */
+  pgEnterContext();
   pgSetWidget(w->wView,
-	      PG_WP_TEXTFORMAT,pgNewString("HTML"),
+	      PG_WP_TEXTFORMAT,pgNewString("html"),
 	      PG_WP_TEXT,pgNewString("<font size=+5>Error:</font><hr><p>"),
-	      PG_WP_TEXTFORMAT,pgNewString("+HTML"),
+	      PG_WP_TEXTFORMAT,pgNewString("+html"),
 	      PG_WP_TEXT,pgNewString(msg),
 	      0);
+  pgLeaveContext();
 }
 
 /* By passing messages using pgAppMessage, we will only receive them when we're
