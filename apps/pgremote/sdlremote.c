@@ -1,4 +1,4 @@
-/* $Id: sdlremote.c,v 1.1 2001/02/10 01:21:52 micahjd Exp $
+/* $Id: sdlremote.c,v 1.2 2001/02/14 05:21:32 micahjd Exp $
  * 
  * sdlremote.c - pgremote is a networked PicoGUI input driver.
  *               This uses SDL, so hopefully it is fairly portable.
@@ -58,6 +58,7 @@ int main(int argc, char **argv) {
       printf("Error setting video mode: %s\n",SDL_GetError());
       return 1;
    }
+   SDL_EnableUNICODE(1);
 
    /* Time to wait! Most PicoGUI apps spend their time waiting in a
     * pgEventLoop, but we don't even have one... */
@@ -66,7 +67,11 @@ int main(int argc, char **argv) {
       switch (evt.type) {
     
        case SDL_MOUSEMOTION:
+	 /* Skip false moves (like dragging outside the window edge)
+	  * and ignore moves we can't keep up with */
 	 if ((evt.motion.x==ox) && (evt.motion.y==oy)) break;
+	 if (SDL_PollEvent(NULL)) break;
+
          pgSendPointerInput(PG_TRIGGER_MOVE,ox = evt.motion.x,
 			   oy = evt.motion.y,btnstate=evt.motion.state);
 	 break;

@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.7 2001/02/07 08:32:33 micahjd Exp $
+/* $Id: main.c,v 1.8 2001/02/14 05:21:32 micahjd Exp $
  *
  * main.c - PicoGUI Terminal (the 'p' is silent :)
  *          This handles the PicoGUI init and events
@@ -145,7 +145,7 @@ int main(int argc, char **argv) {
      argv++;
   }
   while (argc) {            /* Process switch(es) */
-     if (**argv != '-')
+     if (!*argv || **argv != '-')
        break;               /* Out of switches, rest is for subprocess */
      switch ((*argv)[1]) {  /* Switch :-) */
 	
