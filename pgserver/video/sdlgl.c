@@ -1,4 +1,4 @@
-/* $Id: sdlgl.c,v 1.8 2002/03/01 21:17:13 micahjd Exp $
+/* $Id: sdlgl.c,v 1.9 2002/03/02 05:04:28 micahjd Exp $
  *
  * sdlgl.c - OpenGL driver for picogui, using SDL for portability
  *
@@ -40,6 +40,7 @@
 #include <pgserver/font.h>        /* font rendering */
 
 #include <SDL/SDL.h>
+#include <SDL/SDL_ttf.h>
 
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -55,6 +56,7 @@
 
 #include <math.h>       /* Floating point math in picogui? Blasphemy :) */
 #include <stdarg.h>     /* for gl_osd_printf */
+#include <string.h>
 
 /************************************************** Definitions */
 
@@ -117,10 +119,16 @@ struct glbitmap {
  */
 #define GL_TILESIZE 256
 
-struct subtexture {
+/* Texture and coordinates for one glyph. A table of these is in the font's
+ * "bitmaps" array.
+ */
+struct gl_glyph {
   GLuint texture;
-  float w,h;
+  float tx1,ty1,tx2,ty2;  /* Texture coordinates */
 };
+
+/* Size of the textures to use for font conversion, in pixels. MUST be a power of 2 */
+#define GL_FONT_TEX_SIZE 512
 
 /* Macro to determine when to redirect drawing to linear32 */
 #define GL_LINEAR32(dest) (dest)
@@ -146,6 +154,9 @@ handle gl_osd_font;
 /* More flags */
 int gl_grid;
 int gl_showfps;
+
+/* save the old font list so we can restore it on exit */
+struct fontstyle_node *gl_old_fonts;
 
 inline void gl_color(hwrcolor c);
 inline float gl_dist_line_to_point(float point_x, float point_y, 
@@ -173,14 +184,20 @@ g_error sdlgl_bitmap_new(hwrbitmap *bmp,s16 w,s16 h,u16 bpp);
 void sdlgl_bitmap_free(hwrbitmap bmp);
 void gl_continuous_init(int *n,fd_set *readfds,struct timeval *timeout);
 g_error gl_continuous_regfunc(struct inlib *i);
-hwrbitmap gl_surface2bitmap(SDL_Surface *surf);
 void gl_osd_printf(int *y, const char *fmt, ...);
 void gl_matrix_pixelcoord(void);
 int sdlgl_key_event_hook(u32 *type, s16 *key, s16 *mods);
 int sdlgl_pointing_event_hook(u32 *type, s16 *x, s16 *y, s16 *btn);
 void gl_process_camera_keys(void);
 void gl_render_grid(void);
-
+g_error gl_load_font_style(TTF_Font *ttf, struct font **f, int style);
+g_error gl_load_font(const char *file);
+void sdlgl_font_newdesc(struct fontdesc *fd, const u8 *name, int size, int flags);
+void sdlgl_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
+			     s16 *x,s16 *y,hwrcolor *col,const u8 **txt,
+			     struct quad **clip, s16 *lgop, s16 *angle);
+void sdlgl_font_sizetext_hook(struct fontdesc *fd, s16 *w, s16 *h, const u8 *txt);
+ 
 /************************************************** Utilities */
 
 inline void gl_color(hwrcolor c) {
@@ -201,95 +218,62 @@ inline float gl_dist_line_to_point(float point_x, float point_y,
 /* OpenGL can't support all of picogui's LGOPs, but try to
  * make good approximations of what the user probably intended.
  *
- * FIXME: most of these haven't been tested
+ * FIXME: most of these haven't been implemented/tested
  */
 inline void gl_lgop(s16 lgop) {
   switch (lgop) {
 
   case PG_LGOP_NULL:
-    glDisable(GL_BLEND);
-    glEnable(GL_LOGIC_OP);
-    glLogicOp(GL_NOOP);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ZERO,GL_ONE);
+    glBlendEquation(GL_FUNC_ADD);
     break;
 
   case PG_LGOP_NONE:
-    glDisable(GL_LOGIC_OP);
     glDisable(GL_BLEND);
-    break;
-
-  case PG_LGOP_OR:
-    glDisable(GL_BLEND);
-    glEnable(GL_LOGIC_OP);
-    glLogicOp(GL_OR);
-    break;
-
-  case PG_LGOP_AND:
-    glDisable(GL_BLEND);
-    glEnable(GL_LOGIC_OP);
-    glLogicOp(GL_AND);
     break;
 
   case PG_LGOP_XOR:
-    glDisable(GL_BLEND);
-    glEnable(GL_LOGIC_OP);
-    glLogicOp(GL_XOR);
     break;
 
   case PG_LGOP_INVERT:
-    glDisable(GL_BLEND);
-    glEnable(GL_LOGIC_OP);
-    glLogicOp(GL_INVERT);
     break;
 
   case PG_LGOP_INVERT_OR:
-    glDisable(GL_BLEND);
-    glEnable(GL_LOGIC_OP);
-    glLogicOp(GL_OR_REVERSE);
     break;
 
   case PG_LGOP_INVERT_AND:
-    glDisable(GL_BLEND);
-    glEnable(GL_LOGIC_OP);
-    glLogicOp(GL_AND_REVERSE);
     break;
 
   case PG_LGOP_INVERT_XOR:
-    glDisable(GL_BLEND);
-    glEnable(GL_LOGIC_OP);
-    glLogicOp(GL_EQUIV);
     break;
 
+  case PG_LGOP_OR:
   case PG_LGOP_ADD:
     glEnable(GL_BLEND);
-    glDisable(GL_LOGIC_OP);
     glBlendFunc(GL_ONE,GL_ONE);
     glBlendEquation(GL_FUNC_ADD);
     break;
 
   case PG_LGOP_SUBTRACT:
     glEnable(GL_BLEND);
-    glDisable(GL_LOGIC_OP);
     glBlendFunc(GL_ONE,GL_ONE);
     glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
     break;
 
+  case PG_LGOP_AND:
   case PG_LGOP_MULTIPLY:
     glEnable(GL_BLEND);
-    glDisable(GL_LOGIC_OP);
     glBlendFunc(GL_ZERO,GL_SRC_COLOR);
     glBlendEquation(GL_FUNC_ADD);
     break;
 
   case PG_LGOP_STIPPLE:
-    glDisable(GL_LOGIC_OP);
-    glDisable(GL_BLEND);
-    glBlendEquation(GL_FUNC_ADD);
     break;
 
   case PG_LGOP_ALPHA:
     glEnable(GL_BLEND);
-    glDisable(GL_LOGIC_OP);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBlendEquation(GL_FUNC_ADD);
     break;
 
@@ -347,17 +331,6 @@ void gl_frame(void) {
   gl_process_camera_keys();
 }
 
-/* Copy an SDL surface into a picogui bitmap, and discard the surface */
-hwrbitmap gl_surface2bitmap(SDL_Surface *surf) {
-  hwrbitmap b;
-
-  vid->bitmap_new(&b, surf->w, surf->h, vid->bpp);
-  memcpy(((struct glbitmap *)b)->sb->bits, surf->pixels, surf->pitch * surf->h);
-  
-  SDL_FreeSurface(surf);
-  return b;
-}
-
 void gl_osd_printf(int *y, const char *fmt, ...) {
   char buf[256];
   va_list v;
@@ -376,10 +349,6 @@ void gl_osd_printf(int *y, const char *fmt, ...) {
   glLoadIdentity();
   gl_matrix_pixelcoord();
 
-  /* Draw the text multiple times to get a border effect */
-  for (i=-1;i<=1;i++)
-    for (j=-1;j<=1;j++)
-      outtext(vid->display,fd,5+i,5+*y+j,0x202020,buf,NULL,PG_LGOP_NONE,0);
   outtext(vid->display,fd,5,5+*y,0xFFFF00,buf,NULL,PG_LGOP_NONE,0);
 
   /* 1.5 spacing between items */
@@ -956,6 +925,258 @@ void gl_process_camera_keys(void) {
   }
 }
 
+/************************************************** Fonts using textures and SDL_ttf */
+
+/* Convert a TrueType font to a series of textures and store the metadata
+ * in picogui's fontstyle list.
+ */
+g_error gl_load_font(const char *file) {
+  TTF_Font *ttf;
+  struct fontstyle_node *fsn;
+  g_error e;
+  char smallname[40];
+  char *p;
+
+  ttf = TTF_OpenFont(file, get_param_int("video-sdlgl","font_resolution",32));
+  /* Don't complain about font loading errors, it's not that important */
+  if (!ttf) return;
+
+  /* Allocate a picogui fontstyle node */
+  e = g_malloc((void**)&fsn, sizeof(struct fontstyle_node));
+  errorcheck;
+  memset(fsn,0,sizeof(struct fontstyle_node));
+
+  /* Make a small name for the font, using the filename */
+  p = strrchr(file,'/');
+  if (!p) p = strrchr(file,'\\');
+  if (!p) p = (char*) file;
+  strncpy(smallname,p,sizeof(smallname));
+  smallname[sizeof(smallname)-1] = 0;
+  p = strrchr(smallname,'.');
+  if (p) *p = 0;
+  e = g_malloc((void**)&fsn->name, strlen(smallname)+1);
+  errorcheck;
+  strcpy((char*) fsn->name,smallname);
+
+  fsn->size = TTF_FontHeight(ttf);
+
+  /* Build all the font representations */
+
+  e = gl_load_font_style(ttf,&fsn->normal,TTF_STYLE_NORMAL);
+  errorcheck;
+  e = gl_load_font_style(ttf,&fsn->bold,TTF_STYLE_BOLD);
+  errorcheck;
+  e = gl_load_font_style(ttf,&fsn->italic,TTF_STYLE_ITALIC);
+  errorcheck;
+  e = gl_load_font_style(ttf,&fsn->bolditalic,TTF_STYLE_BOLD | TTF_STYLE_ITALIC);
+  errorcheck;
+
+  /* Link into picogui's font list */
+  fsn->next = fontstyles;
+  fontstyles = fsn;
+
+  TTF_CloseFont(ttf);
+  return success;
+}
+
+/* Load all the glyphs from one font style into a texture, allocating a new struct font
+ *
+ * FIXME: This just loads glyphs 0 through 255. This breaks Unicode!
+ *         We need a way to determine which glyphs actually exist.
+ */
+g_error gl_load_font_style(TTF_Font *ttf, struct font **ppf, int style) {
+  g_error e;
+  struct font *f;
+  Uint16 ch;
+  struct gl_glyph *glg;
+  struct fontglyph *fg;
+  int minx, maxx, miny, maxy, advance;
+  SDL_Surface *surf;
+  static GLuint texture = 0;
+  static int tx = 0,ty = 0, tline = 0;
+  static SDL_Color white = {0xFF,0xFF,0xFF,0};
+  static SDL_Color black = {0x00,0x00,0x00,0};
+  u32 i;
+  u8 *p;
+
+  TTF_SetFontStyle(ttf, style);
+
+  /* Set up a new picogui font structure */
+  e = g_malloc((void**)ppf, sizeof(struct font));
+  errorcheck;
+  f = *ppf;
+  memset(f,0,sizeof(struct font));
+
+  f->numglyphs = 256;
+  f->ascent = TTF_FontAscent(ttf);
+  f->descent = -TTF_FontDescent(ttf);
+  
+  /* Allocate the glyph bitmap array and the glyph array */
+  e = g_malloc((void**)&f->bitmaps, sizeof(struct gl_glyph) * f->numglyphs);
+  errorcheck;
+  glg = (struct gl_glyph*) f->bitmaps;
+  e = g_malloc((void**)&f->glyphs, sizeof(struct fontglyph) * f->numglyphs);
+  errorcheck;
+  fg = (struct fontglyph*) f->glyphs;
+
+  /* FIXME: This won't work for Unicode, and it's inefficient anyways.
+   * we need a way to figure out what glyphs actually exist in the font.
+   */
+  for (ch=0;ch<256;ch++) {
+    TTF_GlyphMetrics(ttf, ch, &minx, &maxx, &miny, &maxy, &advance);
+    surf = TTF_RenderGlyph_Shaded(ttf, ch, white,black);
+    
+    /* Not enough space on this line? */
+    if (tx+maxx-minx+1 > GL_FONT_TEX_SIZE) {
+      tx = 0;
+      ty += tline+1;
+    }
+
+    /* Texture nonexistant or full? Make a new one */
+    if (!texture || ty+maxy-miny+1 > GL_FONT_TEX_SIZE) {
+      /* A chunk of zeroes we'll use to make sure the unused portions of the font
+       * bitmap are cleared. This will avoid filtering artifacts at the edges of fonts.
+       */
+      char *p;
+      e = g_malloc((void**)&p, GL_FONT_TEX_SIZE * GL_FONT_TEX_SIZE);
+      errorcheck;
+      memset(p,0,GL_FONT_TEX_SIZE * GL_FONT_TEX_SIZE);
+
+      glGenTextures(1,&texture);
+      glBindTexture(GL_TEXTURE_2D, texture);
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,gl_texture_filtering);
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,gl_texture_filtering);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_INTENSITY4, GL_FONT_TEX_SIZE, GL_FONT_TEX_SIZE, 0, 
+		   GL_LUMINANCE, GL_UNSIGNED_BYTE, p);
+      tx = ty = tline = 0;
+      g_free(p);
+    }
+
+    /* Scale the glyph bitmap into the full range 0-255 */
+    p = (u8*) surf->pixels;
+    for (i=surf->pitch*surf->h;i;i--,p++)
+      *p = (*p)*255/4;
+      
+    /* Copy our new glyph at (tx,ty) */
+    glTexSubImage2D(GL_TEXTURE_2D, 0, tx,ty, surf->w, surf->h,
+		    GL_LUMINANCE, GL_UNSIGNED_BYTE, surf->pixels);
+ 
+    /* Save the texture data in the 'bitmaps' table */
+    glg[ch].texture = texture;
+    glg[ch].tx1 = (float)tx / (float)GL_FONT_TEX_SIZE;
+    glg[ch].ty1 = (float)ty / (float)GL_FONT_TEX_SIZE;
+    glg[ch].tx2 = (float)(tx+surf->w) / (float)GL_FONT_TEX_SIZE;
+    glg[ch].ty2 = (float)(ty+surf->h) / (float)GL_FONT_TEX_SIZE;
+
+    /* Fill in the normal picogui glyph data */
+    fg[ch].encoding = ch;
+    fg[ch].bitmap = ch * sizeof(struct gl_glyph);
+    fg[ch].dwidth = advance;
+    fg[ch].w = surf->w;
+    fg[ch].h = surf->h;
+    fg[ch].x = minx;
+    fg[ch].y = 0;
+
+    if (surf->w > f->w)
+      f->w = surf->w;
+    if (surf->h > f->h+f->descent)
+      f->h = surf->h - f->descent;
+
+    /* Increment cursor in the texture */
+    tx += surf->w+1;
+    if (tline < surf->h)
+      tline = surf->h;
+    
+    SDL_FreeSurface(surf);
+  }  
+
+  return success;
+}
+
+void sdlgl_font_newdesc(struct fontdesc *fd, const u8 *name, int size, int flags) {
+  /* Let them have any size, dont constrain to the size in the fontstyle.
+   * Store the size in "extra"
+   */
+  fd->extra = (void*) size;
+}
+
+void sdlgl_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
+			     s16 *x,s16 *y,hwrcolor *col,const u8 **txt,
+			     struct quad **clip, s16 *lgop, s16 *angle) {
+  int size = (int) (*fd)->extra;  
+  float scale = (float)size / (*fd)->font->h;
+  int ch;
+  struct fontglyph const *g;
+  struct gl_glyph *glg;
+
+  if (GL_LINEAR32(dest)) {
+    /* FIXME: Can't render to offscreen bitmaps yet */
+    return;
+  }
+
+  /* FIXME: No lgops for text yet, but i don't think anything actually
+   *        uses those yet.
+   */
+
+  /* Set up blending and texturing */
+  gl_lgop(PG_LGOP_ALPHA);
+  glEnable(GL_TEXTURE_2D);
+  gl_color(*col);
+
+  /* Use OpenGL's matrix for translation, scaling, and rotation 
+   * (So much easier than picogui's usual method :)
+   */
+  glPushMatrix();
+  glTranslatef(*x,*y,0);
+  glScalef(scale,scale,scale);
+  glRotatef(*angle,0,0,1);
+
+  while ((ch = (*fd)->decoder(txt))) {
+    if (ch=='\n')
+      glTranslatef(0,(*fd)->font->h + (*fd)->interline_space,0);
+    else if (ch!='\r') {
+      if ((*fd)->passwdc > 0)
+	ch = (*fd)->passwdc;
+
+      g = vid->font_getglyph(*fd,ch);
+      glg = (struct gl_glyph*)(((u8*)(*fd)->font->bitmaps)+g->bitmap);
+      
+      glBindTexture(GL_TEXTURE_2D, glg->texture);
+      glBegin(GL_QUADS);
+      glNormal3f(0.0f,0.0f,1.0f);
+      glTexCoord2f(glg->tx1,glg->ty1);
+      glVertex2f(0,0);
+      glTexCoord2f(glg->tx2,glg->ty1);
+      glVertex2f(g->w,0);
+      glTexCoord2f(glg->tx2,glg->ty2);
+      glVertex2f(g->w,g->h);
+      glTexCoord2f(glg->tx1,glg->ty2);
+      glVertex2f(0,g->h);
+      glEnd();
+
+      glTranslatef(g->dwidth,0,0);
+    }
+  }
+
+  /* Clean up */
+  glPopMatrix();
+  glDisable(GL_TEXTURE_2D);
+  gl_lgop(PG_LGOP_NONE);
+
+  /* Prevent normal outtext rendering */
+  *txt = "";
+  *lgop = PG_LGOP_NONE;
+}
+ 
+void sdlgl_font_sizetext_hook(struct fontdesc *fd, s16 *w, s16 *h, const u8 *txt) {
+  int size = (int) fd->extra;
+
+  /* Most of the sizetext should still be fine for us, but we need to scale
+   * the final result by the real requested font size.
+   */
+  *w = (*w) * size / fd->font->h;
+}
+
 /************************************************** Initialization */
 
 g_error sdlgl_init(void) {
@@ -968,7 +1189,7 @@ g_error sdlgl_init(void) {
   if (!vid->yres) vid->yres = 480;
 
   /* Start up the SDL video subsystem thingy */
-  if (SDL_Init(SDL_INIT_VIDEO))
+  if (SDL_Init(SDL_INIT_VIDEO) || TTF_Init())
     return mkerror(PG_ERRT_IO,46);
 
   /* We're _not_ using a normal framebuffer */
@@ -999,9 +1220,6 @@ g_error sdlgl_init(void) {
 
   sscanf(get_param_str("video-sdlgl","fps_interval","0.25"),"%f",&gl_fps_interval);
   
-  e = findfont(&gl_osd_font,-1,NULL,get_param_int("video-sdlgl","osd_fontsize",14),0);
-  errorcheck;
-
   /* Load a main input driver */
   return load_inlib(&sdlinput_regfunc,&inlib_main);
 }
@@ -1010,6 +1228,7 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   unsigned long sdlflags = SDL_RESIZABLE | SDL_OPENGL;
   char str[80];
   float a,x,y,z;
+  g_error e;
    
   /* Interpret flags */
   if (get_param_int("video-sdlgl","fullscreen",0))
@@ -1080,7 +1299,19 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
 
   sscanf(get_param_str("video-sdlgl","pixel_translate","0 0 0"), "%f %f %f", &x,&y,&z);
   glTranslatef(x,y,z);
-  
+
+
+  /* Remove normal picogui fonts */
+  gl_old_fonts = fontstyles;
+  fontstyles = NULL;
+
+  /* Load Truetype fonts */
+  gl_load_font("/usr/share/fonts/truetype/openoffice/timmonsr.ttf");  
+
+  e = findfont(&gl_osd_font,-1,NULL,get_param_int("video-sdlgl","osd_fontsize",20),0);
+  errorcheck;
+
+
   return success; 
 }
    
@@ -1089,11 +1320,18 @@ void sdlgl_close(void) {
     g_free(gl_display_rend);
     gl_display_rend = NULL;
   }
+
   unload_inlib(inlib_main);   /* Take out our input driver */
   if (gl_continuous)
     unload_inlib(gl_continuous);
+
   if (gl_osd_font)
     handle_free(gl_osd_font,-1);
+
+  /* Put back normal fonts */
+  fontstyles = gl_old_fonts;
+
+  TTF_Quit();
   SDL_Quit();
 }
 
@@ -1131,6 +1369,9 @@ g_error sdlgl_regfunc(struct vidlib *v) {
   v->blit = &sdlgl_blit;
   v->key_event_hook = &sdlgl_key_event_hook;
   v->pointing_event_hook = &sdlgl_pointing_event_hook;
+  v->font_sizetext_hook = &sdlgl_font_sizetext_hook;
+  v->font_newdesc = &sdlgl_font_newdesc;
+  v->font_outtext_hook = &sdlgl_font_outtext_hook;
 
   return success;
 }
