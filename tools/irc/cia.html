@@ -13,25 +13,12 @@
 
     <h1>Using it with CVS</h1>
 
-    <p> Download the <a href="ciabot_cvs.sh">ciabot</a> script and follow the instructions in the comments at the top of the file. </p>
+    <p> Download the <a href="ciabot_cvs.sh">CVS ciabot</a> script and follow the instructions in the comments at the top of the file. </p>
     <p> Thanks to Petr Baudis, we have <a href="ciabot_cvs.pl">an alternative</a> script that offers more features, nicer output and so on. Requires Perl. Go wild :) </p>
 
     <h1> Using it with Subversion </h1>
 
-    <p>Place this script in hooks/post-commit under your repository directory: (This is the directory on the server containing the
-       repository database, not inside the repository itself) </p>
-
-    <code><pre>
-#!/bin/sh
-REPOS="$1"
-REV="$2"
-echo "`svnlook author -r $REV $REPOS`" committed revision $REV: "`svnlook log -r $REV $REPOS`" | \
-   head -n 1 | mail -s "Announce <i>channelname</i>" commits@picogui.org&
-    </pre></code>
-
-    <p>Substitute the name of your channel for <i>channelname</i>. There is a slightly more complex
-       example including colorizing and a commit directory name in the PicoGUI repository's
-       <a href="http://navi.picogui.org/svn/picogui/trunk/tools/svn/hooks/post-commit">post-commit script</a>. </p>
+    <p> Download the <a href="ciabot_svn.sh">Subversion ciabot</a> script and follow the instructions in the comments at the top of the file. </p>
 
     <h1> Using it with BitKeeper </h1>
 
