@@ -586,7 +586,7 @@ void textbox_command(struct widget *self, u32 command,
    switch (command) {
 
     case 1:
-      printf("textbox: received NUKE\n");
+      document_nuke(DATA->doc);
       break;
       
    }
