@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.53 2002/01/15 07:35:15 micahjd Exp $
+/* $Id: constants.h,v 1.54 2002/01/17 17:07:35 epchristi Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -900,6 +900,7 @@ typedef unsigned long pghandle;
 #define PG_WP_PANELBAR_CLOSE  46
 #define PG_WP_PANELBAR_ROTATE 47
 #define PG_WP_PANELBAR_ZOOM   48
+#define PG_WP_BITMAPSIDE      49
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0

@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.87 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: button.c,v 1.88 2002/01/17 17:07:34 epchristi Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -49,7 +49,7 @@ struct btndata {
   handle bitmap,bitmask,text,font;
   
   /* Values set by PG_WP_THOBJ_BUTTON_* */
-  int state,state_on,state_hilight,state_on_nohilight;
+  int state,state_on,state_hilight,state_on_nohilight,bitmap_side;
   
   /* Mask of extended (other than ACTIVATE) events to send
    * and other flags*/
@@ -153,6 +153,7 @@ g_error button_install(struct widget *self) {
   memset(self->data,0,sizeof(struct btndata));
 
   DATA->theme_side = 1;
+  DATA->bitmap_side = -1;
 
   /* Default states */
   DATA->state = PGTH_O_BUTTON;
@@ -210,6 +211,13 @@ g_error button_set(struct widget *self,int property, glob data) {
        return mkerror(PG_ERRT_HANDLE,34);
 
     DATA->bitmask = (handle) data;
+    self->in->flags |= DIVNODE_NEED_RECALC;
+    self->dt->flags |= DIVTREE_NEED_RECALC;
+    break;
+
+  case PG_WP_BITMAPSIDE:
+    DATA->bitmap_side = (int) data;
+    resizewidget(self);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -292,6 +300,9 @@ glob button_get(struct widget *self,int property) {
   case PG_WP_BITMASK:
     return (glob) DATA->bitmask;
 
+  case PG_WP_BITMAPSIDE:
+    return (glob) DATA->bitmap_side;
+    
   case PG_WP_EXTDEVENTS:
     return (glob) DATA->extdevents;
 
@@ -625,6 +636,10 @@ void position_button(struct widget *self,struct btnposition *bp) {
   if (text && bit) {
     int s = theme_lookup(self->in->div->state,PGTH_P_BITMAPSIDE);
     int m = theme_lookup(self->in->div->state,PGTH_P_BITMAPMARGIN);
+
+    if(DATA->bitmap_side >= 0) {
+      s = DATA->bitmap_side;
+    }
 
     if (s & (PG_S_TOP | PG_S_BOTTOM)) {
       /* Horizontal positioning for top/bottom */
