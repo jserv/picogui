@@ -1,4 +1,4 @@
-/* $Id: types.h,v 1.2 2002/02/12 09:45:48 micahjd Exp $
+/* $Id: types.h,v 1.3 2002/02/13 05:20:25 micahjd Exp $
  *
  * pgserver/common.h - things every file in pgserver should need,
  *                     including memory management, error handling,
@@ -66,7 +66,7 @@ typedef signed long __s32;
 # define s32 __s32
 #endif
 
-#if !defined(bool) && !defined(NO_BOOL)
+#if !defined(bool) && !defined(NO_BOOL) && !defined(__cplusplus__)
 typedef unsigned char    bool;
 #endif
 
