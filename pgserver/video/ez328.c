@@ -1,4 +1,4 @@
-/* $Id: ez328.c,v 1.17 2001/10/29 13:27:21 bauermeister Exp $
+/* $Id: ez328.c,v 1.18 2001/11/06 09:11:54 bauermeister Exp $
  *
  * ez328.c - Driver for the 68EZ328's (aka Motorola Dragonball EZ)
  *           built-in LCD controller. It assumes the LCD parameters
@@ -45,7 +45,7 @@
 unsigned char *ez328_saveregs[REGS_LEN];
 
 g_error ez328_init(void);
-g_error ez328_setmode(int xres,int yres,int bpp,unsigned long flags);
+g_error ez328_setmode(s16 xres,s16 yres,s16 bpp,u32 flags);
 void ez328_close(void);
 g_error ez328_regfunc(struct vidlib *v);
 
@@ -73,15 +73,13 @@ g_error ez328_init(void) {
 #elif defined(CONFIG_SOFT_CHIPSLICE)
    LXMAX  = 240;
    LYMAX  = 320-1;
-   if (!vid->bpp) vid->bpp = 2;
+   if (!vid->bpp) vid->bpp = 1;
    vid->bpp = vid->bpp<=2 ? vid->bpp : 1;
 #endif
    
    if (!vid->bpp) vid->bpp = 1;        /* Default to black and white */
    
-#if defined(CONFIG_CHIPSLICE) || \
-    defined(CONFIG_XCOPILOT)  || \
-    defined(CONFIG_SOFT_CHIPSLICE)
+#if defined(CONFIG_XCOPILOT)
    /* Load the ts driver as the main input driver */
    return load_inlib(&chipslicets_regfunc,&inlib_main);
 #else
@@ -89,7 +87,7 @@ g_error ez328_init(void) {
 #endif
 }
    
-g_error ez328_setmode(int xres,int yres,int bpp,unsigned long flags) {
+g_error ez328_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
    g_error e;
    
    /* bpp-specific setup. Load the appropriate VBL and set the controller's
@@ -157,9 +155,7 @@ void ez328_close(void) {
    memcpy(REGS_START,ez328_saveregs,REGS_LEN);   
 #endif
 
-#if defined(CONFIG_CHIPSLICE) || \
-    defined(CONFIG_XCOPILOT)  || \
-    defined(CONFIG_SOFT_CHIPSLICE)
+#if defined(CONFIG_XCOPILOT)
    unload_inlib(inlib_main);   /* Chipslice loaded an input driver */
 #endif
 
