@@ -20,5 +20,9 @@
 #ifdef DRIVER_TSINPUT
   DRV("tsinput",&tsinput_regfunc)
 #endif
-   
+
+#ifdef DRIVER_R3912TS
+  DRV("r3912ts",&r3912ts_regfunc)
+#endif
+
 /* The End */

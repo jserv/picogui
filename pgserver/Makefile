@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.70 2001/04/15 02:11:59 micahjd Exp $
+# $Id: Makefile,v 1.71 2001/04/16 04:38:28 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -21,6 +21,9 @@
 #
 #
 # $Log: Makefile,v $
+# Revision 1.71  2001/04/16 04:38:28  micahjd
+# Added a touchpanel driver for the R3912 cpu used in the VTech Helio
+#
 # Revision 1.70  2001/04/15 02:11:59  micahjd
 # PicoGUI can now be cross-compiled to the mips architecture, used by many
 # WinCE handhelds and the VTech Helio.
@@ -173,6 +176,9 @@ ifneq ($(DRIVER_NCURSESINPUT),)
 endif
 ifneq ($(DRIVER_TSINPUT),)
     SRC := $(SRC) input/tsinput.c
+endif
+ifneq ($(DRIVER_R3912TS),)
+    SRC := $(SRC) input/r3912ts.c
 endif
 
 # Debugging

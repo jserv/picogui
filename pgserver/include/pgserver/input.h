@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.10 2001/03/21 05:21:18 micahjd Exp $
+/* $Id: input.h,v 1.11 2001/04/16 04:38:30 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -124,6 +124,7 @@ g_error sdlinput_regfunc(struct inlib *i);
 g_error svgainput_regfunc(struct inlib *i);
 g_error ncursesinput_regfunc(struct inlib *i);
 g_error tsinput_regfunc(struct inlib *i);
+g_error r3912ts_regfunc(struct inlib *i);
 
 /* List of installed input drivers */
 struct inputinfo {

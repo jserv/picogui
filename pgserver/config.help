@@ -249,14 +249,24 @@ CONFIG_ROTATE180
       the display is rotated physically.
 
 CONFIG_MAX_ZOMBIEGROPS
-      The server uses a list of 'zombie gropnodes' as a cache to reduce
-      memory allocation and deallocation during graphical operations.
-      Decreasing this will decrease memory usage, increasing it can
-      potentially increase graphical speed. For plain old buttons and toolbars
-      and things with a relatively sane theme a value of around 20 should
-      be more than adequate. For complicated themes or heavy canvas widget
-      use, this should be increased.
-      In case you're wondering, each gropnode uses (at this writing) 36
-      bytes of memory plus allocation overhead.
+      The server uses a list of 'zombie gropnodes' as a cache to
+      reduce memory allocation and deallocation during graphical
+      operations. Decreasing this will decrease memory usage, 
+      increasing it can potentially increase graphical speed. For
+      plain old buttons and toolbars and things with a relatively
+      sane theme a value of around 20 should be more than adequate.
+      For complicated themes or heavy canvas widget use, this should
+      be increased. In case you're wondering, each gropnode uses
+      (at this writing) 36 bytes of memory plus allocation overhead.
+
+DRIVER_TSINPUT
+      Touch screen input driver for uClinux/m68k devices
       
+DRIVER_R3912TS
+      Touch screen driver for the r3912, used in the VTech Helio.
+      This reads from /dev/tpanel and uses calibration data from
+      /etc/pointercal. You must have the r3912 driver compiled
+      into the kernel.
+      More information on the Linux port to this device is at      
+      vhl-tools.sourceforge.net and ftp.pocketlinux.com
       
