@@ -1,4 +1,4 @@
-/* $Id: signals.c,v 1.7 2002/02/02 20:01:23 lonetech Exp $
+/* $Id: signals.c,v 1.8 2002/03/28 11:43:38 micahjd Exp $
  *
  * signal.c - Handle some fatal and not-so-fatal signals gracefully
  *            The SIGSEGV handling et cetera was inspired by SDL's
@@ -43,12 +43,14 @@ static int pgserver_signals[] = {
   SIGPIPE,
   SIGCHLD,
   /* Fatal signals */
+#ifndef DEBUG_FATALSIGNALS
   SIGTERM,
   SIGSEGV,
   SIGBUS,
   SIGFPE,
   SIGQUIT,
   SIGINT,
+#endif
   /* Extra signals */
   SIGUSR1,
 #ifdef SIGUNUSED

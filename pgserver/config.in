@@ -52,6 +52,7 @@ bool 'Update the entire surface in sdlfb' CONFIG_SDL_FULLUPDATE
 bool 'PicoGUI error tracing'            CONFIG_ERROR_TRACE
 bool 'Virtual terminal debugging'       DEBUG_VT
 bool 'Video driver debugging'           DEBUG_VIDEODRIVER
+bool 'Dont catch fatal signals'         DEBUG_FATALSIGNALS
 endmenu
 
 mainmenu_option next_comment
