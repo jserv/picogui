@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.34 2002/01/16 19:47:25 lonetech Exp $
+/* $Id: errortext.c,v 1.35 2002/03/27 15:09:24 lonetech Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -59,7 +59,7 @@ static const char *builtin_errors[] = {
 const char *errortext(g_error e) {
   const char *errtxt = NULL;
   int errnum = (e & 0xFF) - 1;
-  static char errbuf[20];
+  static char errbuf[20];	/* rely on this being 0-initialized */
 
   /* Loaded table */
   if (loaded_errors && (errnum < num_loaded_errors))
@@ -74,7 +74,7 @@ const char *errortext(g_error e) {
     return errtxt;
    
   /* Nothing left to do but give the raw numeric error code */
-  sprintf(errbuf,"Error#%d/%d",e>>8,e & 0xFF);
+  snprintf(errbuf,sizeof(errbuf)-1,"Error#%d/%d",e>>8,e & 0xFF);
   return errbuf;
 }
 

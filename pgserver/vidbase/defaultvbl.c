@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.84 2002/03/26 03:56:57 instinc Exp $
+/* $Id: defaultvbl.c,v 1.85 2002/03/27 15:09:25 lonetech Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -1522,8 +1522,6 @@ void def_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 /* Backwards version of the scary slow blit, needed for scrolling 1/2 of the time */
 void def_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 		    s16 src_x, s16 src_y, s16 lgop) {
-  int i;
-
   /* Special scrollblit handling is only necessary if we're copying to the same bitmap */
   if (dest==src) {
 

@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.54 2002/03/26 03:47:20 instinc Exp $
+/* $Id: field.c,v 1.55 2002/03/27 15:09:25 lonetech Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -212,7 +212,7 @@ g_error field_set(struct widget *self,int property, glob data) {
     }
      
     /* Update text */
-    strcpy(DATA->buffer,str);
+    memcpy(DATA->buffer,str,DATA->bufuse);
     resizewidget(self); 
     set_widget_rebuild(self);
     break;

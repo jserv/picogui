@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.31 2002/03/27 10:38:51 bauermeister Exp $
+/* $Id: fbdev.c,v 1.32 2002/03/27 15:09:25 lonetech Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -329,7 +329,8 @@ g_error fbdev_initvt(void) {
   ioctl(ttyfd, VT_WAITACTIVE, fbdev_pgvt);
 
   /* Now open the right TTY */
-  sprintf(buf,"/dev/tty%d",fbdev_pgvt);
+  snprintf(buf,sizeof(buf)-1,"/dev/tty%d",fbdev_pgvt);
+  buf[sizeof(buf)-1]=0;
   ttyfd = open(buf, O_RDWR);
   if (ttyfd <= 0)
     return mkerror(PG_ERRT_IO,107);   /* can't open TTY */

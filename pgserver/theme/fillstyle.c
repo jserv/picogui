@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.22 2002/03/26 02:34:23 instinc Exp $
+/* $Id: fillstyle.c,v 1.23 2002/03/27 15:09:25 lonetech Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -290,7 +290,7 @@ g_error exec_fillstyle(struct gropctxt *ctx,u16 state,
 	 fsa = NEXTSHORT;
 	 p += 2;
 #ifdef DEBUG_THEME
-	 printf("Local theme lookup, property %ld\n",fsa);
+	 printf("Local theme lookup, property %d\n",(int)fsa);
 #endif
 	 fsstack[fsstkpos++] = theme_lookup(state,fsa);
 
@@ -466,7 +466,7 @@ g_error exec_fillstyle(struct gropctxt *ctx,u16 state,
     /* trace */
     printf("FILLSTYLE --- Op: 0x%02X Stk:",op);
     for (fsa=0;fsa<fsstkpos;fsa++)
-      printf(" %ld",fsstack[fsa]);
+      printf(" %d",(int)fsstack[fsa]);
     printf("\n"); 
 #endif
     

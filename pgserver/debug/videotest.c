@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.24 2002/03/26 04:22:30 instinc Exp $
+/* $Id: videotest.c,v 1.25 2002/03/27 15:09:25 lonetech Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -195,7 +195,8 @@ void testpat_unblit(void) {
       for (i=0;i<=patw;i+=3)
 	VID(line) (vid->display,patx+i,paty+patw,patx+patw,paty+i,
 		   fg, PG_LGOP_NONE);
-      sprintf(buf,"%d/%d",patx&7,patw);
+      snprintf(buf,sizeof(buf)-1,"%d/%d",patx&7,patw);
+      buf[sizeof(buf)-1]=0;
       outtext(vid->display,fd,patx+2,paty+2,fg,buf,NULL,PG_LGOP_NONE,0);
       
       /* Blit the bounding box */
@@ -412,7 +413,7 @@ void videotest_run(s16 number) {
 const char *videotest_time_one(int number,int update) {
    time_t start,seconds;
    u32 frames = 0;
-   static char fpsbuf[10];
+   static char fpsbuf[10];	/* we rely on this being 0-initialized */
    
    start = time(NULL);
    do {
@@ -421,7 +422,8 @@ const char *videotest_time_one(int number,int update) {
       seconds = time(NULL) - start;
    } while (seconds < TEST_DURATION);
 
-   sprintf(fpsbuf,"%5ld.%02ld",frames/seconds,(frames*100/seconds)%100);
+   snprintf(fpsbuf, sizeof(fpsbuf)-1,
+       "%5ld.%02ld",frames/seconds,(frames*100/seconds)%100);
    return fpsbuf;
 }
 

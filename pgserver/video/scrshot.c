@@ -1,4 +1,4 @@
-/* $Id: scrshot.c,v 1.7 2002/02/10 05:23:29 micahjd Exp $
+/* $Id: scrshot.c,v 1.8 2002/03/27 15:09:25 lonetech Exp $
  *
  * scrshot.c - Maintains a virtual framebuffer, taking screenshots on update
  *
@@ -155,12 +155,12 @@ void scrshot_update(s16 unusedx, s16 unusedy, s16 w, s16 h) {
     return;
   }
 
-  sprintf(buf,scrshot_file,scrshot_frame++);
+  snprintf(buf,sizeof(buf)-1,scrshot_file,scrshot_frame++);
+  buf[sizeof(buf)-1]=0;
   f = fopen(buf,"wb");
   printf("scrshot: Taking screenshot '%s' (%d remaining)\n",
 	 buf,scrshot_total-scrshot_frame);
-  sprintf(buf,"P6\n%d %d\n255\n",vid->xres,vid->yres);
-  fputs(buf,f);
+  fprintf(f,"P6\n%d %d\n255\n",vid->xres,vid->yres);
 
   for (y=0;y<vid->yres;y++)
     for (x=0;x<vid->xres;x++) {

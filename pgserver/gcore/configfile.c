@@ -1,4 +1,4 @@
-/* $Id: configfile.c,v 1.10 2002/03/03 05:42:26 micahjd Exp $
+/* $Id: configfile.c,v 1.11 2002/03/27 15:09:24 lonetech Exp $
  *
  * configfile.c - Utilities for loading, storing, and retrieving
  *                configuration options
@@ -83,22 +83,24 @@ struct cfg_section *configfile_getsection(const char *section) {
 
 /* Get the section, creating it if it doesn't exist */
 struct cfg_section *configfile_makesection(const char *section) {
+  size_t len;
   struct cfg_section *sect;
   g_error e;
   
   /* Find the proper section, create one if it doesn't exist */
   sect = configfile_getsection(section);
   if (!sect) {
+    len=strlen(section)+1;
     /* create the section and section name */
     e = g_malloc((void**) &sect,
-		 sizeof(struct cfg_section) + strlen(section) + 1);
+		 sizeof(struct cfg_section) + len);
     if (iserror(e))
       return NULL;
     memset(sect,0,sizeof(struct cfg_section));
     sect->next = sections;
     sections = sect;
     sect->name = ((char*)sect) + sizeof(struct cfg_section);
-    strcpy(sect->name,section);
+    memcpy(sect->name,section,len);
   }
   return sect;
 }
@@ -107,6 +109,7 @@ g_error configfile_set(struct cfg_section *sect, const char *key,
 		       const char *value) {
   struct cfg_item *p;
   g_error e;
+  size_t len;
 
   /* Find/create the item */
   p = sect->items;
@@ -116,15 +119,16 @@ g_error configfile_set(struct cfg_section *sect, const char *key,
     p = p->next;
   }
   if (!p) {
+    len=strlen(key)+1;
     /* Create the new item */
     e = g_malloc((void**) &p,
-		 sizeof(struct cfg_item) + strlen(key) + 1);
+		 sizeof(struct cfg_item) + len);
     errorcheck;
     memset(p,0,sizeof(struct cfg_item));
     p->next = sect->items;
     sect->items = p;
     p->key = ((char*)p) + sizeof(struct cfg_item);
-    strcpy(p->key,key);
+    memcpy(p->key,key,len);
   }
   else {
     /* Free the existing value */
@@ -132,9 +136,10 @@ g_error configfile_set(struct cfg_section *sect, const char *key,
   }
   
   /* Allocate a new value */
-  e = g_malloc((void**) &p->value,strlen(value)+1);
+  len=strlen(value)+1;
+  e = g_malloc((void**) &p->value,len);
   errorcheck;
-  strcpy(p->value,value);
+  memcpy(p->value,value,len);
 
   return success;
 }

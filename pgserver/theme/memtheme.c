@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.59 2002/03/26 02:34:23 instinc Exp $
+/* $Id: memtheme.c,v 1.60 2002/03/27 15:09:25 lonetech Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -28,6 +28,7 @@
 
 #include <pgserver/common.h>
 
+#include <pgserver/timer.h>
 #include <pgserver/svrtheme.h>
 #include <pgserver/divtree.h>
 #include <pgserver/pgnet.h>
@@ -270,7 +271,6 @@ u32 theme_lookup(u16 object, u16 property) {
    the node's groplist */
 void div_rebuild(struct divnode *d) {
    struct gropctxt c;
-   struct widget *w;
 
 #ifdef DEBUG_VIDEO
    printf("div_rebuild: div %p at %d,%d,%d,%d\n", d,d->x,d->y,d->w,d->h);
@@ -453,7 +453,7 @@ g_error theme_load(handle *h,int owner,char *themefile,
   unsigned char *cp;
   u32 c;
   u16 i,j;
-  u32 heaplen;
+  unsigned long heaplen;
   unsigned char *heap;
   struct pgtheme_thobj *thop;
   struct pgmemtheme_thobj *mthop,*thobjarray;
@@ -524,7 +524,7 @@ g_error theme_load(handle *h,int owner,char *themefile,
   }
 
 #ifdef DEBUG_THEME
-  printf("Allocated an internal theme heap: %ld bytes\n",heaplen);
+  printf("Allocated an internal theme heap: %lu bytes\n",heaplen);
 #endif
 
   /* Stick a memtheme header on the new heap */

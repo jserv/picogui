@@ -1,4 +1,4 @@
-/* $Id: plaintext.c,v 1.7 2002/02/03 16:07:58 lonetech Exp $
+/* $Id: plaintext.c,v 1.8 2002/03/27 15:09:24 lonetech Exp $
  *
  * plaintext.c - Load plain text into the textbox widget
  *
@@ -66,7 +66,7 @@ g_error plaintext_save(struct textbox_cursor *c, u8 **data, u32 *datalen)
 	wordlen=strlen(str);
 	e = g_realloc((void**)data, *datalen+wordlen+2);
 	errorcheck;
-	strcpy(*data+*datalen, str);
+	memcpy(*data+*datalen, str, wordlen);
 	*datalen+=wordlen;
 	(*data)[(*datalen)++]=' ';
 	(*data)[*datalen]=0;

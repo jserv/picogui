@@ -1,4 +1,4 @@
-/* $Id: g_malloc.c,v 1.23 2002/03/26 04:13:52 instinc Exp $
+/* $Id: g_malloc.c,v 1.24 2002/03/27 15:09:24 lonetech Exp $
  *
  * g_malloc.c - malloc wrapper providing error handling
  *
@@ -31,19 +31,20 @@
 #include <pgserver/common.h>
 
 #include <stdlib.h>
+#include <string.h>
 
-s32 memref = 0;
+int memref = 0;
 
 #ifdef DEBUG_ANY
-s32 memamt = 0;       /* Bytes of memory total */
+long memamt = 0;       /* Bytes of memory total */
 #endif
 
 #ifdef DEBUG_KEYS
 /* Memory allocation statistics, for debugging and profiling */
-s32 num_grops = 0;    /* Number of gropnodes */
-s32 num_divs = 0;     /* Number of divnodes */
-s32 num_widgets = 0;  /* Number of widgets */
-s32 num_handles = 0;  /* Number of handles */
+int num_grops = 0;    /* Number of gropnodes */
+int num_divs = 0;     /* Number of divnodes */
+int num_widgets = 0;  /* Number of widgets */
+int num_handles = 0;  /* Number of handles */
 #endif
 
 #ifdef DEBUG_MEMORY
@@ -54,7 +55,7 @@ void memoryleak_trace(void)
   int i;
 
   for(i=0;i<memref;i++)
-    printf("!%d #%ld %p %s\n", memtrack[i].size, i,
+    printf("!%d #%d %p %s\n", memtrack[i].size, i,
 	memtrack[i].mem, memtrack[i].where);
   prerror(mkerror(PG_ERRT_MEMORY,56));
  }
@@ -87,7 +88,7 @@ g_error g_malloc(void **p,size_t s) {
   memtrack[memref-1].mem=*p;
   memtrack[memref-1].size=s;
   memtrack[memref-1].where=where;
-  printf("+%d #%ld (%ld) %p %s\n",s,memref,memamt,*p,where);
+  printf("+%d #%d (%ld) %p %s\n",s,memref,memamt,*p,where);
 #endif
 
   return success;
@@ -135,7 +136,7 @@ void g_dfree(const void *p, const char *where) {
 #ifdef CONFIG_EFENCE
   }
 #endif
-  printf("-%d #%ld (%ld) %p %s\n",s,memref,memamt,adr,where);
+  printf("-%d #%d (%ld) %p %s\n",s,memref,memamt,adr,where);
 #endif
 #endif
   free((void*)p);
@@ -206,7 +207,7 @@ g_error g_realloc(void **p,size_t s) {
   memtrack[pos].mem=*p;
   memtrack[pos].size=s;
   memtrack[pos].where=where;
-  printf("* [%d -> %d] #%ld (%ld) %p %s\n",from,s,memref,memamt,*p,where);
+  printf("* [%d -> %d] #%d (%ld) %p %s\n",from,s,memref,memamt,*p,where);
 #endif
 
   return success;

@@ -93,10 +93,6 @@ f_key f_keymap[] = { // Keymap for function keys
  */
 g_error ttykb_init(null)
 {
-  char *env;
-
-	int		i;
-	int		ledstate = 0;
 	struct termios	new;
 
 	ttykb_fd = open(KEYBOARD, O_NONBLOCK);

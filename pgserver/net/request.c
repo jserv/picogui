@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.45 2002/03/26 04:05:44 instinc Exp $
+/* $Id: request.c,v 1.46 2002/03/27 15:09:24 lonetech Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -219,7 +219,7 @@ void readfd(int from) {
 
 #ifdef DEBUG_NET
       printf("prep data (type %u, #%u, %lu bytes)\n",buf->req.type,
-	     buf->req.id,(u32)buf->req.size);
+	     buf->req.id,(unsigned long)buf->req.size);
 #endif
       /* Will the data fit in the static buffer? */
       if (buf->req.size < PKTBUF_LEN) {
@@ -366,7 +366,8 @@ g_error net_init(void) {
   /* Setup unix domain socket */
 
   server_sockaddr.sun_family = AF_UNIX;
-  strcpy(server_sockaddr.sun_path,PG_REQUEST_SERVER);
+  strncpy(server_sockaddr.sun_path,PG_REQUEST_SERVER,
+      sizeof server_sockaddr.sun_path);
   /* Remove possible previous sockets */
   unlink(server_sockaddr.sun_path);
   tmp = strlen(server_sockaddr.sun_path) + sizeof(server_sockaddr.sun_family);

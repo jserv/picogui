@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.27 2002/03/26 04:12:43 instinc Exp $
+/* $Id: pgmain.c,v 1.28 2002/03/27 15:09:24 lonetech Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -142,14 +142,17 @@ int main(int argc, char **argv) {
 
   /* Read in global and user-specific config files */
   {
+    const char filename[]="/.pgserverrc";
     char *s,*home;
+    size_t len;
 
     configfile_parse("/etc/pgserver.conf");
 
     home = getenv("HOME");
-    if (home && !iserror(prerror(g_malloc((void**)&s,strlen(home)+20)))) {
-      strcpy(s,home);
-      strcat(s,"/.pgserverrc");
+    len=strlen(home);
+    if (home && !iserror(prerror(g_malloc((void**)&s,len+sizeof(filename))))) {
+      memcpy(s,home,len);
+      memcpy(s+len,filename,sizeof(filename));
       configfile_parse(s);
       g_free(s);
     }

@@ -1,4 +1,4 @@
-/* $Id: jsdev.c,v 1.1 2002/03/27 12:50:47 micahjd Exp $
+/* $Id: jsdev.c,v 1.2 2002/03/27 15:09:25 lonetech Exp $
  *
  * jsdev.c - Driver for cursor control and key input using a joystick,
  *           reads from the linux joystick device. Note that all joystick 
@@ -235,9 +235,10 @@ g_error jsdev_init(void) {
 
   jsdev_polltime = get_param_int("input-jsdev","polltime",300);
 
+  buf[sizeof(buf)-1]=0;
   for (i=0;i<axes;i++) {
 
-    snprintf(buf, sizeof(buf), "axis%d-type", i);
+    snprintf(buf, sizeof(buf)-1, "axis%d-type", i);
     value = get_param_str("input-jsdev",buf,"ignore");
     if (!strcmp(value,"pointer"))
       jsdev_axes[i].type = AXIS_POINTER;
@@ -246,36 +247,36 @@ g_error jsdev_init(void) {
     else
       jsdev_axes[i].type = AXIS_IGNORE;
 
-    snprintf(buf, sizeof(buf), "axis%d-pointer-axis", i);
+    snprintf(buf, sizeof(buf)-1, "axis%d-pointer-axis", i);
     value = get_param_str("input-jsdev",buf,"");
     if (!strcmp(value,"y"))
       jsdev_axes[i].pointer_axis = AXIS_Y;
     else
       jsdev_axes[i].pointer_axis = AXIS_X;
 
-    snprintf(buf, sizeof(buf), "axis%d-deadzone", i);
+    snprintf(buf, sizeof(buf)-1, "axis%d-deadzone", i);
     jsdev_axes[i].deadzone = get_param_int("input-jsdev",buf,0);
 
-    snprintf(buf, sizeof(buf), "axis%d-multiplier", i);
+    snprintf(buf, sizeof(buf)-1, "axis%d-multiplier", i);
     jsdev_axes[i].multiplier = get_param_int("input-jsdev",buf,1);
 
-    snprintf(buf, sizeof(buf), "axis%d-divisor", i);
+    snprintf(buf, sizeof(buf)-1, "axis%d-divisor", i);
     jsdev_axes[i].divisor = get_param_int("input-jsdev",buf,5000);
 
     for (j=0;j<NUM_AXIS_KEYS;j++) {
-      snprintf(buf, sizeof(buf), "axis%d-key%d", i,j);
+      snprintf(buf, sizeof(buf)-1, "axis%d-key%d", i,j);
       jsdev_axes[i].k[j].key = get_param_int("input-jsdev",buf,0);
       
-      snprintf(buf, sizeof(buf), "axis%d-min%d", i,j);
+      snprintf(buf, sizeof(buf)-1, "axis%d-min%d", i,j);
       jsdev_axes[i].k[j].min = get_param_int("input-jsdev",buf,1);
       
-      snprintf(buf, sizeof(buf), "axis%d-max%d", i,j);
+      snprintf(buf, sizeof(buf)-1, "axis%d-max%d", i,j);
       jsdev_axes[i].k[j].max = get_param_int("input-jsdev",buf,0);
     }
   }
   for (i=0;i<buttons;i++) {
 
-    snprintf(buf, sizeof(buf), "button%d-type", i);
+    snprintf(buf, sizeof(buf)-1, "button%d-type", i);
     value = get_param_str("input-jsdev",buf,"ignore");
     if (!strcmp(value,"key"))
       jsdev_buttons[i].type = BUTTON_KEY;
@@ -284,10 +285,10 @@ g_error jsdev_init(void) {
     else
       jsdev_buttons[i].type = BUTTON_IGNORE;
 
-    snprintf(buf, sizeof(buf), "button%d-key", i);
+    snprintf(buf, sizeof(buf)-1, "button%d-key", i);
     jsdev_buttons[i].key = get_param_int("input-jsdev",buf,0);
 
-    snprintf(buf, sizeof(buf), "button%d-mousebutton", i);
+    snprintf(buf, sizeof(buf)-1, "button%d-mousebutton", i);
     jsdev_buttons[i].mousebutton = get_param_int("input-jsdev",buf,1);
   }    
 

@@ -1,4 +1,4 @@
-/* $Id: sdlgl_font.c,v 1.7 2002/03/06 11:38:46 micahjd Exp $
+/* $Id: sdlgl_font.c,v 1.8 2002/03/27 15:09:24 lonetech Exp $
  *
  * sdlgl_font.c - OpenGL driver for picogui, using SDL for portability.
  *                Replace PicoGUI's normal font rendering with TrueType
@@ -39,6 +39,7 @@ g_error gl_load_font(struct gl_fontload *fl,const char *file) {
   g_error e;
   char smallname[40];
   char *p;
+  size_t len;
 
   ttf = TTF_OpenFont(file, get_param_int(GL_SECTION,"font_resolution",32));
   /* Don't complain about font loading errors, it's not that important */
@@ -57,9 +58,10 @@ g_error gl_load_font(struct gl_fontload *fl,const char *file) {
   smallname[sizeof(smallname)-1] = 0;
   p = strrchr(smallname,'.');
   if (p) *p = 0;
-  e = g_malloc((void**)&fsn->name, strlen(smallname)+1);
+  len = strlen(smallname)+1;
+  e = g_malloc((void**)&fsn->name, len);
   errorcheck;
-  strcpy((char*) fsn->name,smallname);
+  memcpy((char*) fsn->name,smallname,len);
 
   fsn->size = TTF_FontHeight(ttf);
 

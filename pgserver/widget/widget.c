@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.169 2002/03/26 17:09:24 instinc Exp $
+/* $Id: widget.c,v 1.170 2002/03/27 15:09:25 lonetech Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -510,7 +510,7 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
 	data = w->in->ch-w->in->h;
       if (data < 0)
 	data = 0;
-      DBG("PG_WP_SCROLL_Y: ty = %d, data = %d\n",w->in->div->ty, data);
+      DBG("PG_WP_SCROLL_Y: ty = %d, data = %d\n",w->in->div->ty, (int)data);
       if (w->in->div->ty != -data) {
 	w->in->div->ty = -data;
 	w->in->div->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_NEED_RECALC;
@@ -983,7 +983,6 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
   s32 keycode = (mods<<16) | key;     /* Combines mods and the key */
   int kflags;
   struct divtree *dt;
-  struct widget *bar;
 
 #ifdef DEBUG_INPUT
   printf(__FUNCTION__": type = %d, key = %d, mods = %d\n", type, key, mods);

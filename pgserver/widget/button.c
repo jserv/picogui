@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.101 2002/03/26 03:47:20 instinc Exp $
+/* $Id: button.c,v 1.102 2002/03/27 15:09:25 lonetech Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -399,7 +399,6 @@ glob button_get(struct widget *self,int property) {
 
 void button_trigger(struct widget *self,s32 type,union trigparam *param) {
   int event=-1;
-  struct widget *w;
   union trigparam tp;
 
   /* If it's disabled, don't allow anything except
