@@ -1,5 +1,5 @@
 # Makefile for PicoGUI
-# $Revision: 1.5 $
+# $Revision: 1.6 $
 #
 # Micah Dowty <micah@homesoftware.com> 
 #
@@ -102,7 +102,7 @@ CFLAGS := $(CFLAGS) -Ivideo/$(VIDLIB)/$(VIDMODE)
 HDR := $(HDR) video/$(VIDLIB)/$(VIDMODE)/mode.h
 
 # Network-specific source files
-SRC := $(SRC) net/$(NET)/request.c net/$(NET)/mainloop.c
+SRC := $(SRC) net/$(NET)/request.c net/$(NET)/mainloop.c net/$(NET)/eventq.c
 CFLAGS := $(CFLAGS) -Inet/$(NET)
 HDR := $(HDR) net/$(NET)/request.h
 

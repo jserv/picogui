@@ -55,7 +55,7 @@ g_error panel_set(struct widget *self,int property, glob data) {
   case WP_SIZE:
     if (data<0) return mkerror(ERRT_BADPARAM,"WP_SIZE is negative (panel)");
     self->in->split = (int) data;
-    self->in->flags |= DIVNODE_NEED_RECALC;
+    self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
@@ -66,7 +66,8 @@ g_error panel_set(struct widget *self,int property, glob data) {
     self->in->next->flags &= SIDEMASK;
     self->in->flags &= SIDEMASK;
     self->in->next->flags |= ((sidet)data);
-    self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC;
+    self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
+      DIVNODE_PROPAGATE_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
@@ -86,7 +87,7 @@ g_error panel_set(struct widget *self,int property, glob data) {
     if (data<0) return mkerror(ERRT_BADPARAM,
 			       "WP_BORDERSIZE is negative (panel)");
     self->in->next->split = (int) data;
-    self->in->flags |= DIVNODE_NEED_RECALC;
+    self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
@@ -94,7 +95,7 @@ g_error panel_set(struct widget *self,int property, glob data) {
     if ((data != SZMODE_PIXEL) && (data != SZMODE_PERCENT)) return
        mkerror(ERRT_BADPARAM,"WP_SIZEMODE invalid sizemode (panel)");
     self->in->flags &= SZMODE_MASK;
-    self->in->flags |= data | DIVNODE_NEED_RECALC;
+    self->in->flags |= data | DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 

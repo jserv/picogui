@@ -74,6 +74,7 @@ g_error label_set(struct widget *self,int property, glob data) {
   g_error e;
   struct fontdesc *fd;
   char *str;
+  int psplit;
 
   switch (property) {
 
@@ -82,7 +83,8 @@ g_error label_set(struct widget *self,int property, glob data) {
 	(data != S_BOTTOM)) return mkerror(ERRT_BADPARAM,
 	"WP_SIDE param is not a valid side value (label)");
     self->in->flags &= SIDEMASK;
-    self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC;
+    self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC |
+      DIVNODE_PROPAGATE_RECALC;
     resizelabel(self);
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -118,7 +120,10 @@ g_error label_set(struct widget *self,int property, glob data) {
     if (rdhandle((void **)&fd,TYPE_FONTDESC,-1,data).type!=ERRT_NONE || !fd) 
       return mkerror(ERRT_HANDLE,"WP_FONT invalid font handle (label)");
     self->in->div->param.text.fd = (handle) data;
+    psplit = self->in->split;
     resizelabel(self);
+    if (self->in->split != psplit)
+      self->in->flags |= DIVNODE_PROPAGATE_RECALC;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -127,7 +132,10 @@ g_error label_set(struct widget *self,int property, glob data) {
     if (rdhandle((void **)&str,TYPE_STRING,-1,data).type!=ERRT_NONE || !str) 
       return mkerror(ERRT_HANDLE,"WP_TEXT invalid string handle (label)");
     self->in->div->param.text.string = (handle) data;
+    psplit = self->in->split;
     resizelabel(self);
+    if (self->in->split != psplit)
+      self->in->flags |= DIVNODE_PROPAGATE_RECALC;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;

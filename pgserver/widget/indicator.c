@@ -69,7 +69,7 @@ g_error indicator_set(struct widget *self,int property, glob data) {
     if (data < 0) return mkerror(ERRT_BADPARAM,
 				 "WP_SIZE param is negative (indicator)");
     self->in->split = (int) data;
-    self->in->flags |= DIVNODE_NEED_RECALC;
+    self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
@@ -78,7 +78,8 @@ g_error indicator_set(struct widget *self,int property, glob data) {
 	(data != S_BOTTOM)) return mkerror(ERRT_BADPARAM,
 	"WP_SIDE param is not a valid side value (indicator)");
     self->in->flags &= SIDEMASK;
-    self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC;
+    self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
+      DIVNODE_PROPAGATE_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
 
   default:

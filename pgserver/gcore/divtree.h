@@ -1,7 +1,7 @@
 
 /*
  * divtree.h - define data structures related to divtree management
- * $Revision: 1.3 $
+ * $Revision: 1.4 $
  * 
  * This file contains structures defining and surrounding the divtree, 
  * PicoGUI's method of organizing screen space.
@@ -48,9 +48,9 @@ struct divtree {
 };
 
 /* Flags used in divtree.flags */
-#define DIVTREE_NEED_RECALC	(1<<0)
-#define DIVTREE_NEED_REDRAW	(1<<1)
-#define DIVTREE_ALL_REDRAW	(1<<2)
+#define DIVTREE_NEED_RECALC	  (1<<0)
+#define DIVTREE_NEED_REDRAW	  (1<<1)
+#define DIVTREE_ALL_REDRAW	  (1<<2)
 
 /* Alignment types */
 typedef short int alignt;
@@ -163,6 +163,7 @@ struct divnode {
 #define DIVNODE_SPLIT_RIGHT	(1<<6)
 #define DIVNODE_SPLIT_BORDER	(1<<7) /* Shave 'split' pixels off each side */
 #define DIVNODE_SPLIT_CENTER    (1<<8) /* Keep div's w and h, center it */
+#define DIVNODE_PROPAGATE_RECALC (1<<9)
 
 /* Values for the 'side' parameter */
 

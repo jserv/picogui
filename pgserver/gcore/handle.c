@@ -469,18 +469,21 @@ g_error handle_bequeath(handle dest, handle src, int srcowner) {
 }
 
 /* This uses a recursive function to do its acual work */
-handle r_hlookup(struct handlenode *n,void *obj) {
+handle r_hlookup(struct handlenode *n,void *obj,int *owner) {
   static handle h;
 
   if ((!n) || (n==NIL)) return 0;
-  if (obj==n->obj)
+  if (obj==n->obj) {
+    if (owner) *owner = n->owner;
     return n->id;
-  if ((h = r_hlookup(n->left,obj)) || (h = r_hlookup(n->right,obj)))
+  }
+  if ((h = r_hlookup(n->left,obj,owner)) || 
+      (h = r_hlookup(n->right,obj,owner)))
     return h;
   return 0;
 }
-handle hlookup(void *obj) {
-  return r_hlookup(htree,obj);
+handle hlookup(void *obj,int *owner) {
+  return r_hlookup(htree,obj,owner);
 }
 
 /* The End */

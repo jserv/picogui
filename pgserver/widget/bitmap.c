@@ -61,6 +61,7 @@ void bitmap_remove(struct widget *self) {
 
 g_error bitmap_set(struct widget *self,int property, glob data) {
   struct bitmap *bit;
+  int psplit;
 
   switch (property) {
 
@@ -69,7 +70,8 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
 	(data != S_BOTTOM)) return mkerror(ERRT_BADPARAM,
 	"WP_SIDE param is not a valid side value (bitmap)");
     self->in->flags &= SIDEMASK;
-    self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC;
+    self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
+      DIVNODE_PROPAGATE_RECALC;
     resizebitmap(self);
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -116,7 +118,10 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
     }
     else if (rdhandle((void **)&bit,TYPE_BITMAP,-1,data).type==ERRT_NONE && bit) {
       self->in->div->param.bitmap.bitmap = (handle) data;
+      psplit = self->in->split;
       resizebitmap(self);
+      if (self->in->split != psplit)
+	self->in->flags |= DIVNODE_PROPAGATE_RECALC;
       self->in->flags |= DIVNODE_NEED_RECALC;
       self->dt->flags |= DIVTREE_NEED_RECALC;
     }

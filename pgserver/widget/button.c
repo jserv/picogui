@@ -26,13 +26,16 @@ struct btndata {
 void bitbutton(struct divnode *d) {
   int x,y,w,h;
   struct bitmap *bit;
+  struct widget *self = d->owner;
   x = y = 0;
   w = d->w;
   h = d->h;
 
   grop_frame(&d->grop,x,y,w,h,btn_b1); x++; y++; w-=2; h-=2;
-  grop_frame(&d->grop,x,y,w,h,btn_b2); x++; y++; w-=2; h-=2;
-  grop_rect(&d->grop,x,y,w,h,btn_off); x++; y++; w-=2; h-=2;
+  grop_frame(&d->grop,x,y,w,h,
+	     DATA->over ? btn_over : btn_b2); x++; y++; w-=2; h-=2;
+  grop_rect(&d->grop,x,y,w,h,
+	    DATA->on ? btn_on : btn_off); x++; y++; w-=2; h-=2;
 
   /* We need at least the main bitmap for alignment.  The mask
      bitmap is optional, but without it what's the point... */
@@ -54,6 +57,10 @@ void bitbutton(struct divnode *d) {
 g_error button_install(struct widget *self) {
   g_error e;
 
+  e = g_malloc(&self->data,sizeof(struct btndata));
+  if (e.type != ERRT_NONE) return e;
+  memset(self->data,0,sizeof(struct btndata));
+
   e = newdiv(&self->in,self);
   if (e.type != ERRT_NONE) return e;
   self->in->flags |= S_LEFT;
@@ -71,10 +78,6 @@ g_error button_install(struct widget *self) {
 
   self->trigger_mask = TRIGGER_ENTER | TRIGGER_LEAVE | 
     TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE;
-
-  e = g_malloc(&self->data,sizeof(struct btndata));
-  if (e.type != ERRT_NONE) return e;
-  memset(self->data,0,sizeof(struct btndata));
 
   return sucess;
 }
@@ -96,9 +99,10 @@ g_error button_set(struct widget *self,int property, glob data) {
 	(data != S_BOTTOM)) return mkerror(ERRT_BADPARAM,
 	"WP_SIDE param is not a valid side value (button)");
     self->in->flags &= SIDEMASK;
-    self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC;
+    self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC |
+      DIVNODE_PROPAGATE_RECALC;
     self->in->next->flags &= SIDEMASK;
-    self->in->next->flags |= ((sidet)data) | DIVNODE_NEED_RECALC;
+    self->in->next->flags |= ((sidet)data);
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
@@ -177,10 +181,9 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
   }
 
   /* Was it a sucessful trigger? */
-  if (type==TRIGGER_UP || type==TRIGGER_DIRECT) {
+  if ((type==TRIGGER_UP && param->mouse.chbtn==1) || type==TRIGGER_DIRECT) {
     /* Send an event back to the client app */
-
-
+    post_event(WE_ACTIVATE,self,0);
   }
 
   /* This code for updating the button's appearance modifies
@@ -202,3 +205,5 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
 }
 
 /* The End */
+
+

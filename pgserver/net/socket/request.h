@@ -1,7 +1,7 @@
 /*
  * request.h - this connection is for sending requests to the server
  *             and passing return values back to the client
- * $Revision: 1.4 $ 
+ * $Revision: 1.5 $ 
  *
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -15,6 +15,24 @@
 #include <g_error.h>
 #include <divtree.h>
 
+#if defined(__WIN32__) || defined(WIN32)
+#define WINDOWS
+#include <windows.h>
+#else
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <signal.h>
+#include <unistd.h>
+#endif
+
+extern fd_set evtwait;
+
 #define REQUEST_PORT    30450
 #define PROTOCOL_VER    0x0001
 #define REQUEST_MAGIC   0x31415926
@@ -26,11 +44,25 @@ struct uipkt_request {
   unsigned short id;  /* Just to make sure requests match up with responses */
   unsigned long size; /* The request is followed by size bytes of data */
 };  
-struct uipkt_response {
+#define RESPONSE_ERR 1
+struct response_err {
+  unsigned short type;    /* RESPONSE_ERR - error code */
   unsigned short id;
   unsigned short errt;
-  unsigned long data;
-  char msg[80];
+  unsigned short msglen;  /* Length of following message */
+};
+#define RESPONSE_RET 2
+struct response_ret {
+    unsigned short type;    /* RESPONSE_RET - return value */
+    unsigned short id;
+    unsigned long data;
+};
+#define RESPONSE_EVENT 3
+struct response_event {
+    unsigned short type;    /* RESPONSE_EVENT */
+    unsigned short event;
+    unsigned long from;
+    unsigned long param;
 };
 struct uipkt_hello {
   unsigned long  magic; /* These 2 from this file */
@@ -41,9 +73,32 @@ struct uipkt_hello {
   char title[50];
 };
 
+/* 'public' functions */
 g_error req_init(struct dtstack *m_dts);
 void req_free(void);
 int reqproc(void);
+void post_event(int event,struct widget *from,long param);
+
+/* These are definitions for the event queue's ring buffer */
+
+#define EVENTQ_LEN 10   /* The size of each app's buffer */
+/* One event */
+struct event {
+  int event;
+  handle from;
+  long param;
+};
+/* An event queue */
+struct eventq {
+  int owner;
+  struct event q[EVENTQ_LEN];
+  struct event *in,*out;
+  struct eventq *next;
+};
+/* Gets the next pending event for 'owner' and if 'remove' is nonzero
+   takes it out of the queue
+*/
+struct event *get_event(int owner,int remove);
 
 /* All incoming packets are passed to a reqhandler
    owner, req, and data are from the incoming packet.
@@ -73,8 +128,9 @@ int reqproc(void);
 #define RQH_IN_KEY    10     /* Dispatch keyboard input        |  struct */
 #define RQH_IN_POINT  11     /* Dispatch pointing device input |  struct */
 #define RQH_IN_DIRECT 12     /* Dispatch direct input          |  struct */
+#define RQH_WAIT      13     /* Wait for an event              |  none   */
 
-#define RQH_UNDEF     13     /* types > this will be truncated. return error */
+#define RQH_UNDEF     14     /* types > this will be truncated. return error */
 
 /* Structures passed to request handlers as 'data'.
  * Dummy variables pad it to a multiple of 4 bytes (compiler likes it?)

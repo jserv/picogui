@@ -148,34 +148,43 @@ void divnode_recalc(struct divnode *n) {
        }
      }
      
-     /* Clear the NEED_RECALC flag now that we're done, but set
-      * our childrens' flags
+     /* Recalc completed.  Propagate the changes- always propagate to
+	div, only propagate to next if our changes affected other nodes. 
       */
-     n->flags &= ~DIVNODE_NEED_RECALC;
-     if (n->div) n->div->flags |= DIVNODE_NEED_RECALC;
-     if (n->next) n->next->flags |= DIVNODE_NEED_RECALC;
-
-     /* Recalc completed, let the widgets rebuild their grop_list */
-     if (n->div && n->div->on_recalc) {
-       grop_free(&n->div->grop);
-       (*n->div->on_recalc)(n->div);
+     if (n->div) {
+       n->div->flags |= DIVNODE_NEED_RECALC;
+       if (n->div->on_recalc) {
+	 grop_free(&n->div->grop);
+	 (*n->div->on_recalc)(n->div);
 #ifdef DEBUG
-       printf("div: on_recalc(0x%X)\n",n->div);
+	 printf("div: on_recalc(0x%X)\n",n->div);
 #endif
-       n->div->flags |= DIVNODE_NEED_REDRAW;
+	 n->div->flags |= DIVNODE_NEED_REDRAW;
+       }
+       divnode_recalc(n->div);
      }
-     if (n->next && n->next->on_recalc) {
-       grop_free(&n->next->grop);
-       (*n->next->on_recalc)(n->next);
+     
+     if (n->flags & DIVNODE_PROPAGATE_RECALC) {
+       
+       if (n->next) {
+	 n->next->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+	 if (n->next->on_recalc) {
+	   grop_free(&n->next->grop);
+	   (*n->next->on_recalc)(n->next);
 #ifdef DEBUG
-       printf("next: on_recalc(0x%X)\n",n->next);
+	   printf("next: on_recalc(0x%X)\n",n->next);
 #endif
-       n->next->flags |= DIVNODE_NEED_REDRAW;
+	   n->next->flags |= DIVNODE_NEED_REDRAW;
+	 }
+	 divnode_recalc(n->next);
+       }
      }
+     
+     /* We're done */
+     n->flags &= ~(DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC);
    }
 
    divnode_recalc(n->next);
-   divnode_recalc(n->div);
 }
 
 /* Redraw the divnodes if they need it.

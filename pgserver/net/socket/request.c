@@ -1,7 +1,7 @@
 /*
  * request.c - this connection is for sending requests to the server
  *             and passing return values back to the client
- * $Revision: 1.5 $
+ * $Revision: 1.6 $
  * 
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -25,22 +25,6 @@
 #include <errno.h>
 #include <ctype.h>
 
-#if defined(__WIN32__) || defined(WIN32)
-#define WINDOWS
-#include <windows.h>
-#else
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <netinet/in.h>
-#include <sys/stat.h>
-#include <dirent.h>
-#include <signal.h>
-#include <unistd.h>
-#endif
-
 /* Table of request handlers */
 DEF_REQHANDLER(ping)
 DEF_REQHANDLER(update)
@@ -55,6 +39,7 @@ DEF_REQHANDLER(setbg)
 DEF_REQHANDLER(in_key)
 DEF_REQHANDLER(in_point)
 DEF_REQHANDLER(in_direct)
+DEF_REQHANDLER(wait)
 DEF_REQHANDLER(undef)
 g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(ping)
@@ -70,6 +55,7 @@ g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(in_key)
   TAB_REQHANDLER(in_point)
   TAB_REQHANDLER(in_direct)
+  TAB_REQHANDLER(wait)
   TAB_REQHANDLER(undef)
 };
 
@@ -82,6 +68,9 @@ struct dtstack *dts;
 /* File descriptors of all open connections */
 fd_set con;
 int    con_n;
+
+/* The connections waiting for an event */
+fd_set evtwait;
 
 void closefd(int fd) {
 #ifdef DEBUG 
@@ -135,6 +124,7 @@ g_error req_init(struct dtstack *m_dts) {
 
   con_n = s+1;
   FD_ZERO(&con);
+  FD_ZERO(&evtwait);
 
   return sucess;
 }
@@ -165,7 +155,8 @@ int reqproc(void) {
   struct timeval tv;
   char c;
   struct uipkt_request req;
-  struct uipkt_response rsp;
+  struct response_err rsp_err;
+  struct response_ret rsp_ret;
   void *data;
   g_error e;
   int fatal;
@@ -245,6 +236,9 @@ int reqproc(void) {
       for (fd=0;fd<con_n;fd++)
 	if (FD_ISSET(fd,&rfds) && FD_ISSET(fd,&con)) {
 
+	  /* Well, we're not waiting now! */
+	  FD_CLR(fd,&evtwait);
+
 #ifdef DEBUG
 	  printf("Incoming. fd = %d\n",fd);
 #endif
@@ -304,36 +298,41 @@ int reqproc(void) {
 	  else
 	    data = NULL;
 
-	  /* Call the request handler, translate the returned g_error
-	   * into the error fields of the response packet */
+	  /* Call the request handler, and send a response packet */
 	  if (req.type>RQH_UNDEF) req.type = RQH_UNDEF;
-	  memset(&rsp,0,sizeof(rsp));
-	  rsp.id = req.id;   /* This comes verbatim from the request */
-	  rsp.errt = htons(ERRT_NONE);
 	  fatal = 0;
-	  e = (*rqhtab[req.type])(fd,&req,data,&rsp.data,&fatal);
+
+	  rsp_ret.data = 0;
+	  e = (*rqhtab[req.type])(fd,&req,data,&rsp_ret.data,&fatal);
 	  g_free(data);
-	  rsp.data = htonl(rsp.data);
+
+	  /* Send an error packet if there was an error */
 	  if (e.type != ERRT_NONE) {
-	    rsp.errt = htons(e.type);
-	    strncpy(rsp.msg,e.msg,79);
+	    int errlen;
+	    errlen = strlen(e.msg);
+
+	    rsp_err.type = htons(RESPONSE_ERR);
+	    rsp_err.id = req.id;
+	    rsp_err.errt = htons(e.type);
+	    rsp_err.msglen = htons(errlen);
+
+	    /* Send the error */
+	    if (send(fd,&rsp_err,sizeof(rsp_err),0)<sizeof(rsp_err))   
+	      fatal = 1;
+	    if (send(fd,e.msg,errlen,0)<errlen)   
+	      fatal = 1;
 	  }
+	  else if (req.type != RQH_WAIT) { /*WAIT packet gets no response yet*/
+	    /* Send a normal response packet */
 
-#ifdef DEBUG
-	  printf("Response. fd = %d, id = 0x%04X, ret = 0x%08X, errt = 0x%04X,\n          msg = '%s', \n          (%02X %02X %02X %02X %02X %02X %02X %02X) \n", fd,rsp.id,ntohl(rsp.data),ntohs(rsp.errt),rsp.msg,
-		 ((unsigned char *)&rsp)[0],
-		 ((unsigned char *)&rsp)[1],
-		 ((unsigned char *)&rsp)[2],
-		 ((unsigned char *)&rsp)[3],
-		 ((unsigned char *)&rsp)[4],
-		 ((unsigned char *)&rsp)[5],
-		 ((unsigned char *)&rsp)[6],
-		 ((unsigned char *)&rsp)[7]);
-#endif
+	    rsp_ret.type = htons(RESPONSE_RET);
+	    rsp_ret.id = req.id;
+	    rsp_ret.data = htonl(rsp_ret.data);
 
-	  /* Send the response packet */
-	  if (send(fd,&rsp,sizeof(rsp),0)<sizeof(rsp))   
-	    fatal = 1;
+	    /* Send the return packet */
+	    if (send(fd,&rsp_ret,sizeof(rsp_ret),0)<sizeof(rsp_ret))   
+	      fatal = 1;
+	  }
 
 	  if (fatal)
 	    closefd(fd);
@@ -552,6 +551,13 @@ g_error rqh_in_direct(int owner, struct uipkt_request *req,
     return mkerror(ERRT_BADPARAM,"rqhd_in_direct too small");
   dispatch_direct(((char*)arg)+sizeof(struct rqhd_in_direct),
 		  ntohl(arg->param));
+  return sucess;
+}
+
+g_error rqh_wait(int owner, struct uipkt_request *req,
+		 void *data, unsigned long *ret, int *fatal) {
+  
+  FD_SET(owner,&evtwait);
   return sucess;
 }
 

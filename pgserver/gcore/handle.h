@@ -51,9 +51,9 @@ g_error mkhandle(handle *h,unsigned char type,int owner,void *obj);
 g_error rdhandle(void **p,unsigned char reqtype,int owner,handle h);
 
 /* Given a pointer to an object, returns its handle.  Returns 0 if
-   there is no matching handle.
+   there is no matching handle. Places the owner in 'owner' if not null.
 */
-handle hlookup(void *obj);
+handle hlookup(void *obj,int *owner);
 
 /* Deletes the handle, and if HFLAG_NFREE is not set it frees the object.
  * Owner = -1, don't care

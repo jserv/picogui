@@ -1,7 +1,7 @@
 /*
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
- * $Revision: 1.9 $
+ * $Revision: 1.10 $
  *
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -89,10 +89,15 @@ void widget_remove(struct widget *w) {
   struct divnode *sub_end;  
   handle hw;
 
+  /* Get rid of any pointers we have to it */
+  if (w==under) under = NULL;
+  if (w==prev_under) prev_under = NULL;
+  if (w==capture) capture = NULL;
+
   /* Remove inner widgets if it can be done safely
      (only remove if they have handles) */
   while (w->sub && *w->sub) {    
-    if ((*w->sub)->owner && (hw = hlookup((*w->sub)->owner)))
+    if ((*w->sub)->owner && (hw = hlookup((*w->sub)->owner,NULL)))
       handle_free(-1,hw);
     else
       break;
@@ -128,7 +133,7 @@ void widget_remove(struct widget *w) {
 
   /* Set the flags for redraw */
   if (w->dt && w->dt->head) {
-    w->dt->head->flags |= DIVNODE_NEED_RECALC;
+    w->dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
     w->dt->flags |= DIVTREE_NEED_RECALC;
   }   
 
@@ -167,9 +172,10 @@ void widgetunder(int x,int y,struct divnode *div) {
 }
 
 /* Internal function that sends a trigger to a widget if it accepts it. */
-int inline send_trigger(struct widget *w, long type,
+int send_trigger(struct widget *w, long type,
 			 union trigparam *param) {
-  if (w && w->def->trigger && (w->trigger_mask & type)) {
+  if (w && w->def && w->def->trigger &&
+      (w->trigger_mask & type)) {
     (*w->def->trigger)(w,type,param);
     return 1;
   }
@@ -196,7 +202,7 @@ void dispatch_pointing(long type,int x,int y,int btn) {
 
   if (type == TRIGGER_UP && capture) {
     call_update |= send_trigger(capture,TRIGGER_RELEASE,&param);
-    capture == NULL;
+    capture = NULL;
   }
 
   divmatch = NULL;
