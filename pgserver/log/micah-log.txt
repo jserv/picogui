@@ -41,6 +41,14 @@ separate theme object to create a checkbox's look and workings.
 
       * widget/button.c: Fixed small bug in sizing vertical buttons, it wasn't
         accounting for the small space between them.
+	
+      * demos/vidpopup.c: Started work on a small video mode selector popup
+        menu. This will (someday??) be integrated into pgl, the PicoGUI
+	Launcher yet-to-be-written
+
+      * net/requests.inc,include/picogui/network.h,net/dispatch.c: Added a new
+        request, getmode, that returns a pgmodeinfo structure with details on
+	the current video mode
 
 2001-03-25    Micah Dowty <micahjd@users.sourceforge.net>
 
