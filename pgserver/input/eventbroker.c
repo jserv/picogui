@@ -1,4 +1,4 @@
-/* $Id: eventbroker.c,v 1.3 2001/11/12 09:57:51 bauermeister Exp $
+/* $Id: eventbroker.c,v 1.4 2001/11/12 10:57:02 bauermeister Exp $
  *
  * eventbroker.c - input driver to manage driver messages
  *
@@ -44,8 +44,8 @@
 #include <rm_client.h> /* to access the PocketBee ResourceManager */
 
 
-#define LOCAL_DEBUG 1
-#define LOCAL_TRACE 1
+#define LOCAL_DEBUG 0
+#define LOCAL_TRACE 0
 
 /* ------------------------------------------------------------------------- */
 
