@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.6 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: linear4.c,v 1.7 2001/02/21 03:17:23 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -534,34 +534,23 @@ void linear4_unblit(int src_x,int src_y,
 		    struct stdbitmap *destbit,int dest_x,int dest_y,
 		    int w,int h) {
    unsigned char *dest,*destline,*src,*srcline;
-   int i,bw = w>>1;
-   unsigned char flag_l,flag_r;
+   int i,bw;
+   unsigned char flag_l;
    
+   bw = /*(w>>1) -1; */ destbit->pitch;  /* FIXME: for w!=destbit->w this doesn't work! */
    dest = destline = destbit->bits + (dest_x>>1) + dest_y*destbit->pitch;
    src  = srcline  = PIXELBYTE(src_x,src_y);
    flag_l = src_x&1;
-   flag_r = (src_x^w) & 1;
    
    for (;h;h--,src=srcline+=vid->fb_bpl,dest=destline+=destbit->pitch) {
-      /* Check for an extra nibble at the beginning, and shift
-       * pixels while blitting */
       if (flag_l) {
-	 *dest &= 0xF0;
-	 *dest |= (*src) >> 4;
-	 dest++;
+	 /* Shifted copy */
 	 for (i=bw;i;i--,dest++,src++)
 	   *dest = ((*src) << 4) | ((*(src+1)) >> 4);
       }
       else {
 	 /* Normal byte copy */
 	 __memcpy(dest,src,bw);
-	 dest+=bw;
-	 src+=bw;
-      }
-      if (flag_r) {
-	 /* Extra nibble on the right */
-	 *dest &= 0x0F;
-	 *dest |= (*src) & 0xF0;
       }
    }
 }

@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.1 2001/02/17 05:17:55 micahjd Exp $
+/* $Id: videotest.c,v 1.2 2001/02/21 03:17:21 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -139,12 +139,99 @@ void testpat_color(void) {
    
 }
 
+/************ Blit/unblit test pattern */
+
+void testpat_unblit(void) {
+   hwrcolor bg = (*vid->color_pgtohwr)(0xFFFFFF);
+   hwrcolor fg = (*vid->color_pgtohwr)(0x000000);
+   struct fontdesc fd;
+   int patx,paty,patw;
+   int patxstart;
+   int i;
+   hwrbitmap bit;
+   char buf[20];
+   
+   /* Manufacture a simple fontdesc */
+   memset(&fd,0,sizeof(fd));
+   fd.fs = fontstyles;
+   fd.font = fd.fs->normal;
+   fd.hline = -1;
+   (*vid->font_newdesc)(&fd);
+   
+   /* Manufacture a simple fontdesc */
+   memset(&fd,0,sizeof(fd));
+   fd.fs = fontstyles;
+   fd.font = fd.fs->normal;
+   fd.hline = -1;
+   (*vid->font_newdesc)(&fd);
+   
+   /* Background */
+   (*vid->rect)(0,0,vid->xres,vid->yres,bg);
+
+   /* test pattern bounding box */
+   patw = 50;
+   patx = patxstart = 10;
+   (*vid->bar)(patw+25,0,vid->yres,fg);
+   
+   /* Repeat for different pixel alignments */
+   for (paty=10;paty+patw<vid->yres;paty+=patw+15,patx=++patxstart,patw--) {
+      
+      /* Draw little alignment marks, a 1-pixel gap from the test pattern */
+      (*vid->slab)(patx-5,paty,4,fg);
+      (*vid->slab)(patx-5,paty+patw,4,fg);
+      (*vid->slab)(patx+patw+2,paty,4,fg);
+      (*vid->slab)(patx+patw+2,paty+patw,4,fg);
+      (*vid->bar)(patx,paty-5,4,fg);
+      (*vid->bar)(patx+patw,paty-5,4,fg);
+      (*vid->bar)(patx,paty+patw+2,4,fg);
+      (*vid->bar)(patx+patw,paty+patw+2,4,fg);
+      
+      /* Line thingies within the box */
+      (*vid->rect)(patx,paty,patw+1,patw+1,fg);
+      (*vid->rect)(patx+1,paty+1,patw-1,patw-1,bg);
+      for (i=0;i<=patw;i+=3)
+	(*vid->line)(patx+i,paty+patw,patx+patw,paty+i,fg);
+      sprintf(buf,"%d/%d",patx&7,patw);
+      outtext(&fd,patx+2,paty+2,fg,buf,NULL);
+      
+      /*
+      for (i=0;i<=patw;i+=4) {
+         (*vid->line)(patx+i,paty,patx+patw,paty+i,fg);
+	 (*vid->line)(patx,paty+i,patx+i,paty+patw,fg);
+      }
+      */
+      
+      /* Blit the bounding box */
+      (*vid->bitmap_new)(&bit,patw+1,patw+1);
+      (*vid->unblit)(patx,paty,bit,0,0,patw+1,patw+1);
+      
+      
+      /* Same pattern, shifted to the side in various alignments */
+      for (patx=patw+40,i=0;patx+patw<vid->xres;patx=((patx+patw+25)&(~7))+(i++)) {
+	 
+	 (*vid->slab)(patx-5,paty,4,fg);
+	 (*vid->slab)(patx-5,paty+patw,4,fg);
+	 (*vid->slab)(patx+patw+2,paty,4,fg);
+	 (*vid->slab)(patx+patw+2,paty+patw,4,fg);
+	 (*vid->bar)(patx,paty-5,4,fg);
+	 (*vid->bar)(patx+patw,paty-5,4,fg);
+	 (*vid->bar)(patx,paty+patw+2,4,fg);
+	 (*vid->bar)(patx+patw,paty+patw+2,4,fg);
+	 
+	 (*vid->blit)(bit,0,0,patx,paty,patw+1,patw+1,PG_LGOP_NONE);
+      }
+
+      (*vid->bitmap_free)(bit);
+   }
+}
+
 /************ Front-end */
 
 void videotest_help(void) {
    puts("\nVideo test modes:\n"
 	"\t1\tLine test pattern\n"
-   	"\t2\tColor test pattern\n");
+   	"\t2\tColor test pattern\n"
+	"\t3\tBlit/unblit test pattern\n");
 }
 
 void videotest_run(int number) {
@@ -155,6 +242,9 @@ void videotest_run(int number) {
       break;
     case 2:
       testpat_color();
+      break;
+    case 3:
+      testpat_unblit();
       break;
     
     default:
