@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.45 2001/12/30 22:11:09 micahjd Exp $
+/* $Id: memtheme.c,v 1.46 2001/12/31 04:03:09 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -122,6 +122,35 @@ struct pgmemtheme *memtheme;
 
 /***************** Theme searching */
 
+/* Given a theme object, returns the theme object parent's ID 
+ */
+s16 thobj_parent(s16 id) {
+  s16 parent = PGTH_O_DEFAULT;
+  int prop;
+  static int lock = 0;
+
+  if (lock) {
+    /* This is being called from within the theme_lookup() below.
+     * We don't want to have inheritance for the PGTH_P_PARENT
+     * property anyway, so return zero.
+     */
+    return 0;
+  }
+  lock++;
+  
+  /* For pre-defined theme objects, use our default inheritance */
+  if (id >= 0 && id < PGTH_ONUM)
+    parent = thobj_ancestry[id];
+
+  /* Object can override its inheritance with PGTH_P_PARENT */
+  prop = theme_lookup(id, PGTH_P_PARENT);
+  if (prop)
+      parent = prop;
+
+  lock--;
+  return parent;
+}
+
 struct pgmemtheme_thobj *find_thobj(struct pgmemtheme *th,unsigned short id) {
   unsigned short i;
   struct pgmemtheme_thobj *tlist = theme_thobjlist(th);
@@ -162,8 +191,8 @@ unsigned long theme_lookup(unsigned short object,
     pobj = find_thobj(ptheme,obj);
     pprop = NULL;
     while ((!pobj) || (!(pprop = find_prop(pobj,property)))) {
-      if ((!obj) || obj>=PGTH_ONUM) break;
-      obj = thobj_ancestry[obj];
+      if (!obj) break;
+      obj = thobj_parent(obj);
       pobj = find_thobj(ptheme,obj);
     }
     
@@ -260,7 +289,7 @@ u16 trace_thobj(u16 obj) {
    struct pgmemtheme *ptheme;
    struct pgmemtheme_thobj *pobj;
    
-   while (obj && (obj<PGTH_ONUM)) {
+   while (obj) {
    
       /* If this object is defined in any loaded themes, return it */
       for (ptheme=memtheme;ptheme;ptheme=ptheme->next)
@@ -268,7 +297,7 @@ u16 trace_thobj(u16 obj) {
 	  return obj;
       
       /* Next object in the hierarchy */
-      obj = thobj_ancestry[obj];
+      obj = thobj_parent(obj);
    }
    
    return obj;

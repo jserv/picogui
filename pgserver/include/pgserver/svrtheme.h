@@ -1,4 +1,4 @@
-/* $Id: svrtheme.h,v 1.5 2001/12/30 22:11:08 micahjd Exp $
+/* $Id: svrtheme.h,v 1.6 2001/12/31 04:03:09 micahjd Exp $
  * 
  * svrtheme.h - functions and data structures for themes, used
  *              only in the server
@@ -119,6 +119,10 @@ int thobj_id_available(s16 id);
  * was found sucessfully, and loads 'id' with its id.
  */
 int find_named_thobj(char *name, s16 *id);
+
+/* Given a theme object, returns the theme object parent's ID 
+ */
+s16 thobj_parent(s16 id);
 
 #endif /* __SVRTHEME_H */
 
