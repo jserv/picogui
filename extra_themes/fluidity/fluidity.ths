@@ -1,0 +1,160 @@
+/*
+ * "Fluidity" theme for PicoGUI
+ *
+ * Code and artwork Copyright 2002 Micah Dowty 
+ * <micahjd@users.sourceforge.net>
+ *
+ * This theme requires the JPEG and PNG image loaders,
+ * and is optimized for 320x240 or 240x320 high-color LCDs
+ *
+ */ 
+
+/* Bitmaps */
+prop bBackground, bDarkInterlace, bBrightHBar, bButtonWhite;
+
+/* Fillstyles */
+prop fBitmap, fNop, fExpand;
+
+/* X and Y of source bitmap */
+prop srcx, srcy, srcw, srch;
+
+/* Amount not to tile on each side */
+prop left_sz, right_sz, top_sz, bottom_sz;
+
+/********************************** Default definitions */
+
+object default {
+  name = "Fluidity";
+  bgfill = Copy(default::fNop);
+
+  bBackground = LoadBitmap("data/background.jpeg");
+  bDarkInterlace = LoadBitmap("data/dark_interlace.png");
+  bBrightHBar = LoadBitmap("data/bright_hbar.png");
+  bButtonWhite = LoadBitmap("data/button_white.png");
+
+  fNop = fillstyle {
+    Nop();
+  };
+
+  fBitmap = fillstyle {
+    Bitmap(x,y,w,h,bitmap1);
+  };
+
+  /* Tile a bitmap horizontally, keeping the end pieces static */
+  /* Expand horizontally and vertically by tiling 
+   */
+  fExpand = fillstyle {
+    var bit, sx, sy, sw, sh, l, r, t, b, bsy, by;
+
+    /* Load theme properties now */
+    bit = bitmap1;
+    sx  = srcx;
+    sy  = srcy;
+    sw  = srcw;
+    sh  = srch;
+    l   = left_sz;
+    r   = right_sz;
+    t   = top_sz;
+    b   = bottom_sz;
+
+    /* Some common subexpressions */
+    bsy = sy+sh-b;
+    by  = y+h-b;
+
+    /* Top-left */
+    SetSrc(sx,sy,l,t);
+    Bitmap(x,y,l,t,bit);
+
+    /* Top edge */
+    SetSrc(sx+l,sy,sw-l-r,t);
+    Tilebitmap(x+l,y,w-l-r,t,bit);
+
+    /* Top-right */
+    SetSrc(sx+sw-r,sy,r,t);
+    Bitmap(x+w-r,y,r,t,bit);
+
+    /* Left edge */
+    SetSrc(sx,sy+t,l,sh-t-b);
+    Tilebitmap(x,y+t,l,h-t-b,bit);
+
+    /* Middle */
+    SetSrc(sx+l,sy+t,sw-l-r,sh-t-b);
+    Tilebitmap(x+l,y+t,w-l-r,h-t-b,bit);
+
+    /* Right edge */
+    SetSrc(sx+sw-r,sy+t,r,sh-t-b);
+    Tilebitmap(x+w-r,y+t,r,h-t-b,bit);
+
+    /* Bottom-left */
+    SetSrc(sx,bsy,l,t);
+    Bitmap(x,by,l,t,bit);
+
+    /* Bottom edge */
+    SetSrc(sx+l,bsy,sw-l-r,t);
+    Tilebitmap(x+l,by,w-l-r,t,bit);
+
+    /* Bottom-right */
+    SetSrc(sx+sw-r,bsy,r,t);
+    Bitmap(x+w-r,by,r,t,bit);
+
+    /* Reset params to not mess up the widget.. */
+    SetSrc(0,0,0,0);
+  };    
+
+  srcx = 0;
+  srcy = 0;
+  srcw = 0;
+  srch = 0;
+  left_sz = 0;
+  right_sz = 0;
+  top_sz = 0;
+  bottom_sz = 0;
+}
+  
+/********************************** Background */
+
+object background {
+  bgfill = Copy(default::fBitmap);
+  bitmap1 = Copy(default::bBackground);
+}
+
+/********************************** Panels */
+
+object base.tlcontainer {
+  bgfill = Copy(default::fBitmap);
+  bitmap1 = Copy(default::bDarkInterlace);
+}
+
+object panelbar {
+  width = 19;
+  bgfill = Copy(default::fExpand);
+  bitmap1 = Copy(default::bBrightHBar);  
+  srcw = 20;
+  srch = 19;
+  left_sz = 7;
+  right_sz = 6;
+  align = PG_A_LEFT;
+}
+
+object base.panelbtn {
+  side = PG_S_RIGHT;
+  width = 13;
+  height = 13;
+}
+  
+/********************************** Buttons */
+
+object button {
+  bgfill = Copy(default::fExpand);
+  bitmap1 = Copy(default::bButtonWhite);
+  width = 24;
+  height = 24;
+  srcw = 24;
+  srch = 24;
+  left_sz = 11;
+  right_sz = 12;
+  top_sz = 11;
+  bottom_sz = 12;
+}  
+
+/* The End */
