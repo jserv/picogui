@@ -11,7 +11,7 @@
 #else
 
 #ifdef DEBUG_FILE
-#define DBG(fmt, args...) printf( "%s: " fmt, __FUNCTION__ , ## args); fflush(stdout)
+#define DBG(fmt, args...) fprintf(stderr, "%s: " fmt, __FUNCTION__ , ## args); fflush(stderr)
 #else
 #define DBG(fmt, args...)
 #endif

@@ -50,7 +50,7 @@ typedef unsigned int g_error;
 #include <stdio.h>	/* printf */
 extern const char *errtrace_fmt;
 #define errorcheck           if (iserror(e)) {  \
-                               printf(errtrace_fmt,__FUNCTION__,__FILE__,__LINE__); \
+                               fprintf(stderr, errtrace_fmt,__FUNCTION__,__FILE__,__LINE__); \
                                prerror(e); return e; \
                              }
 #else

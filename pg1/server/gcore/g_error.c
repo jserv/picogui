@@ -44,19 +44,19 @@ const char *errtrace_fmt = "=== Trace message (not necessarily bad)\n    %s in %
 g_error prerror(g_error e) {
   if (!iserror(e)) return e;
 #ifdef CONFIG_TEXT
-  printf("*** ERROR (");
+  fprintf(stderr, "*** ERROR (");
   switch (errtype(e)) {
-  case PG_ERRT_MEMORY: printf("MEMORY"); break;
-  case PG_ERRT_IO: printf("IO"); break;
-  case PG_ERRT_NETWORK: printf("NETWORK"); break;
-  case PG_ERRT_BADPARAM: printf("BADPARAM"); break;
-  case PG_ERRT_HANDLE: printf("HANDLE"); break;
-  case PG_ERRT_INTERNAL: printf("INTERNAL"); break;
-  case PG_ERRT_BUSY: printf("BUSY"); break;
-  case PG_ERRT_FILEFMT: printf("FILEFMT"); break;
-  default: printf("UNKNOWN");
+  case PG_ERRT_MEMORY: fprintf(stderr, "MEMORY"); break;
+  case PG_ERRT_IO: fprintf(stderr, "IO"); break;
+  case PG_ERRT_NETWORK: fprintf(stderr, "NETWORK"); break;
+  case PG_ERRT_BADPARAM: fprintf(stderr, "BADPARAM"); break;
+  case PG_ERRT_HANDLE: fprintf(stderr, "HANDLE"); break;
+  case PG_ERRT_INTERNAL: fprintf(stderr, "INTERNAL"); break;
+  case PG_ERRT_BUSY: fprintf(stderr, "BUSY"); break;
+  case PG_ERRT_FILEFMT: fprintf(stderr, "FILEFMT"); break;
+  default: fprintf(stderr, "UNKNOWN");
   }
-  printf(") : %s\n",errortext(e));
+  fprintf(stderr, ") : %s\n",errortext(e));
 #else
   puts(errortext(e));
 #endif
@@ -92,7 +92,7 @@ void guru(const char *fmt, ...) {
    
   if (!vid) return;
   if (semaphore) {
-    printf("GURU re-entered!\n");
+    fprintf(stderr, "GURU re-entered!\n");
     return;
   }
   semaphore++;
