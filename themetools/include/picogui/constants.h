@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.11 2000/10/16 01:44:31 micahjd Exp $
+/* $Id: constants.h,v 1.12 2000/10/16 05:42:09 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -189,10 +189,13 @@ typedef unsigned long pghandle;
 #define PGTH_O_BITMAP              19   /* The bitmap widget */
 #define PGTH_O_SCROLL_ON           20   /* Scroll, when mouse is down */
 #define PGTH_O_LABEL_SCROLL        21   /* A label, when bound to a scrollbar */
+#define PGTH_O_PANELBAR_HILIGHT    22   /* A panelbar, when mouse is inside it */
+#define PGTH_O_PANELBAR_ON         23   /* A panelbar, when mouse is down */
+#define PGTH_O_BOX                 24   /* The box widget */
 
 /* If you add a themeobject, be sure to increment this and add
    an inheritance entry in theme/thobjtab.c */
-#define PGTH_ONUM                  22
+#define PGTH_ONUM                  25
 
 /*** Loaders */
 
@@ -204,6 +207,8 @@ typedef unsigned long pghandle;
 				    from. This request packet is executed, and the
 				    return code stored in 'data'. Errors cause an error
 				    in loading the theme. */
+#define PGTH_LOAD_COPY       2   /* Data is a theme object and property to copy the
+				    value of */
 
 /*** Property IDs */
 
@@ -234,6 +239,7 @@ typedef unsigned long pghandle;
 #define PGTH_P_BITMAP2    17  /* H bitmap      Generic bitmap property for theme use */
 #define PGTH_P_BITMAP3    18  /* H bitmap      Generic bitmap property for theme use */
 #define PGTH_P_BITMAP4    19  /* H bitmap      Generic bitmap property for theme use */
+#define PGTH_P_SPACING    20  /*   int         Distance between similar widgets */
 
 /*** Tag IDs */
 
