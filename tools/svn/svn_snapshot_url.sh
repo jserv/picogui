@@ -1,10 +1,13 @@
 #!/bin/bash
 #
-# Usage: svn_snapshot.sh URL Prefix Destination
+# Usage: svn_snapshot_url.sh URL Prefix Destination
 #
 # Export each directory under the given URL into a separate .tar.bz2 file,
 # and dump those into the given destination. The given prefix is prepended
 # to the package name when making a name for the .tar.bz2 file.
+#
+# Note: this puts pretty big load on the server! Better to use svn_snapshot_local.
+#
 #  --Micah
 #
 
