@@ -14,7 +14,9 @@ EXTRA_DIST = us_fitaly_160.kbs us_qwerty_scalable.kbs \
              img/us_qwerty_240_cap.pbm \
              img/us_qwerty_240_ctrl.pbm \
              img/us_qwerty_240_num.pbm \
-             img/us_qwerty_240_sym.pbm
+             img/us_qwerty_240_sym.pbm \
+             img/us_qwerty_240_int.pbm \
+             img/us_qwerty_240_shiftint.pbm
 
 CLEANFILES = $(top_srcdir)/pgboard/examples/us_fitaly_160.kb \
 	     $(top_srcdir)/pgboard/examples/us_qwerty_240.kb \
@@ -25,10 +27,24 @@ CLEANFILES = $(top_srcdir)/pgboard/examples/us_fitaly_160.kb \
 
 KBD_COMPILER = ../kbcompile.pl -pg @PICOGUI_LOCATION@
 
-us_fitaly_160.kb: $(top_srcdir)/pgboard/examples/us_fitaly_160.kbs
+us_fitaly_160.kb: $(top_srcdir)/pgboard/examples/us_fitaly_160.kbs \
+                  $(top_srcdir)/pgboard/examples/img/fitaly_default.pbm \
+                  $(top_srcdir)/pgboard/examples/img/fitaly_shift.pbm \
+                  $(top_srcdir)/pgboard/examples/img/fitaly_caps.pbm \
+                  $(top_srcdir)/pgboard/examples/img/fitaly_symbols.pbm \
+                  $(top_srcdir)/pgboard/examples/img/fitaly_control.pbm \
+                  $(top_srcdir)/pgboard/examples/img/fitaly_numbers.pbm
 	cd $(top_srcdir)/pgboard/examples && $(KBD_COMPILER) < us_fitaly_160.kbs > us_fitaly_160.kb
 
-us_qwerty_240.kb: $(top_srcdir)/pgboard/examples/us_qwerty_240.kbs
+us_qwerty_240.kb: $(top_srcdir)/pgboard/examples/us_qwerty_240.kbs \
+                  $(top_srcdir)/pgboard/examples/img/us_qwerty_240_alpha.pbm \
+                  $(top_srcdir)/pgboard/examples/img/us_qwerty_240_shift.pbm \
+                  $(top_srcdir)/pgboard/examples/img/us_qwerty_240_cap.pbm \
+                  $(top_srcdir)/pgboard/examples/img/us_qwerty_240_ctrl.pbm \
+                  $(top_srcdir)/pgboard/examples/img/us_qwerty_240_num.pbm \
+                  $(top_srcdir)/pgboard/examples/img/us_qwerty_240_sym.pbm \
+                  $(top_srcdir)/pgboard/examples/img/us_qwerty_240_int.pbm \
+                  $(top_srcdir)/pgboard/examples/img/us_qwerty_240_shiftint.pbm
 	cd $(top_srcdir)/pgboard/examples && $(KBD_COMPILER) < us_qwerty_240.kbs > us_qwerty_240.kb
 
 us_qwerty_scalable.kb: $(top_srcdir)/pgboard/examples/us_qwerty_scalable.kbs

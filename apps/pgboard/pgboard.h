@@ -1,4 +1,4 @@
-/* $Id: pgboard.h,v 1.5 2002/01/06 09:22:56 micahjd Exp $
+/* $Id: pgboard.h,v 1.6 2002/01/22 17:04:29 cgrigis Exp $
  *
  * pgboard.h - declarations associated with the virtual keyboard (pgboard)
  * 
@@ -59,12 +59,14 @@
 
 /* Constants for keyboard patterns */
 
-#define PG_KBPATTERN_NORMAL     1
-#define PG_KBPATTERN_SHIFT      2
-#define PG_KBPATTERN_CAPSLOCK   3
-#define PG_KBPATTERN_CONTROL    4
-#define PG_KBPATTERN_NUMERIC    5
-#define PG_KBPATTERN_SYMBOLS    6
+#define PG_KBPATTERN_NORMAL               1
+#define PG_KBPATTERN_SHIFT                2
+#define PG_KBPATTERN_CAPSLOCK             3
+#define PG_KBPATTERN_CONTROL              4
+#define PG_KBPATTERN_NUMERIC              5
+#define PG_KBPATTERN_SYMBOLS              6
+#define PG_KBPATTERN_INTERNATIONAL        7
+#define PG_KBPATTERN_SHIFT_INTERNATIONAL  8
 
 
 /* Data structure for a keyboard command */
