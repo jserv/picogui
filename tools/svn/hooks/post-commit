@@ -38,10 +38,10 @@ svnadmin dump --incremental -r "$REV" "$REPOS" > /navi/backups/svn_auto/picogui-
 # IRC notification via the CIA bot.
 # This is a little more complex than the web page's example-
 # get the directory all the changes occurred under, colorizing that and the author.
-basedir=`svnlook dirs-changed -r "$REV" "$REPOS" | python -c 'import os,sys;print os.path.commonprefix(sys.stdin.readlines())'`
+basedir=`svnlook dirs-changed -r "$REV" "$REPOS" | python -c 'import os,sys;print os.path.commonprefix(sys.stdin.readlines())[:-1]'`
 author=`svnlook author -r "$REV" "$REPOS"`
 loghead=`svnlook log -r "$REV" "$REPOS" | head -n 1`
-message="{orange}$author{normal} committed revision {aqua}$REV{normal} changing {light green}$basedir{normal}: $loghead"
+message="$basedir r$REV {orange}$author{normal}: $loghead"
 echo $message | mail -s "Announce picogui" commits@picogui.org&
 
 # Send commit mail
