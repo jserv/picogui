@@ -1,5 +1,5 @@
 """
- minisvn.py - A minimalist Subversion client capable of doing
+ MiniSVN.py - A minimalist Subversion client capable of doing
               multithreaded atomic checkouts, using only the
               Python standard library.
 """
@@ -114,6 +114,7 @@ class DavObject:
         parsedURL = urlparse.urlparse(url)
         if parsedURL[0] != 'http':
             raise UnknownProtocol(parsedURL[0])
+        self.url = url
         self.server = parsedURL[1]
         self.path = parsedURL[2]
 
@@ -176,6 +177,21 @@ class DavObject:
             self.propfind()
         return self.children
 
+    def getProperties(self):
+        if not hasattr(self, "properties"):
+            self.propfind()
+        return self.properties
 
-for child in DavObject("http://navi.picogui.org:8080/svn/picogui").getChildren():
-    print child.path
+
+if __name__ == '__main__':
+    import sys
+    obj = DavObject(sys.argv[1])
+    print "\nURL: %s" % obj.url
+
+    print "\nChildren:"
+    for child in obj.getChildren():
+        print "\t%s" % child.path
+
+    print "\nProperties:"
+    for property in obj.getProperties():
+        print "\t%s = %s" % (property, obj.getProperties()[property])
