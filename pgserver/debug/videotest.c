@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.10 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: videotest.c,v 1.11 2001/05/29 20:33:32 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -313,7 +313,7 @@ void videotest_run(s16 number) {
  */
 const char *videotest_time_one(int number,int update) {
    time_t start,seconds;
-   unsigned long frames;
+   unsigned long frames = 0;
    static char fpsbuf[10];
    
    start = time(NULL);

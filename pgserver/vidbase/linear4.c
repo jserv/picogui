@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.13 2001/05/01 23:13:17 micahjd Exp $
+/* $Id: linear4.c,v 1.14 2001/05/29 20:33:35 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -337,83 +337,77 @@ void linear4_charblit(unsigned char *chardat,int dest_x,
 }
 #endif
 
-#if 0   /* Blitter is buggy! FIXME! */
-void linear4_blit(struct stdbitmap *srcbit,int src_x,int src_y,
-		  int dest_x, int dest_y,
-		  int w, int h, int lgop) {
-   struct stdbitmap screen;
-   unsigned char *dest,*destline,*src,*srcline;
+#if 0
+/* Blitter is buggy! FIXME! */
+void linear4_blit(hwrbitmap dest,
+		  s16 dst_x, s16 dst_y, s16 w, s16 h,
+		  hwrbitmap sbit,s16 src_x,s16 src_y,
+		  s16 lgop) {
+   unsigned char *dst,*dstline,*src,*srcline;
    int i,bw = w>>1;
+   struct stdbitmap *srcbit = (struct stdbitmap *) sbit;
    unsigned char flag_l,flag_r;
    
-   /* Screen-to-screen blit */
-   if (!srcbit) {
-      srcbit = &screen;
-      screen.bits = FB_MEM;
-      screen.w = FB_BPL;
-      screen.h = vid->yres;
-   }
-   
    src  = srcline  = srcbit->bits + (src_x>>1) + src_y*srcbit->pitch;
-   dest = destline = PIXELBYTE(dest_x,dest_y);
-   flag_l = dest_x&1;
-   flag_r = (dest_x^w) & 1;
+   dst = dstline = PIXELBYTE(dst_x,dst_y);
+   flag_l = (dst_x&1) ^ (src_x&1);
+   flag_r = 0; //(dst_x^w) & 1;
    
-   for (;h;h--,src=srcline+=srcbit->pitch,dest=destline+=FB_BPL) {
+   for (;h;h--,src=srcline+=srcbit->pitch,dst=dstline+=FB_BPL) {
       /* Check for an extra nibble at the beginning, and shift
        * pixels while blitting */
       if (flag_l) {
 	 switch (lgop) {
 	    
 	  case PG_LGOP_NONE:
-	    *dest &= 0xF0;
-	    *dest |= (*src) >> 4;
-	    dest++;
-	    for (i=bw;i;i--,dest++,src++)
-	      *dest = ((*src) << 4) | ((*(src+1)) >> 4);
+	    *dst &= 0xF0;
+	    *dst |= (*src) >> 4;
+	    dst++;
+	    for (i=bw;i;i--,dst++,src++)
+	      *dst = ((*src) << 4) | ((*(src+1)) >> 4);
 	    break;
 	  case PG_LGOP_OR:
-	    *dest |= (*src) >> 4;
-	    dest++;
-	    for (i=bw;i;i--,dest++,src++)
-	      *dest |= ((*src) << 4) | ((*(src+1)) >> 4);
+	    *dst |= (*src) >> 4;
+	    dst++;
+	    for (i=bw;i;i--,dst++,src++)
+	      *dst |= ((*src) << 4) | ((*(src+1)) >> 4);
 	    break;
 	  case PG_LGOP_AND:
-	    *dest &= ((*src) >> 4) | 0xF0;
-	    dest++;
-	    for (i=bw;i;i--,dest++,src++)
-	      *dest &= ((*src) << 4) | ((*(src+1)) >> 4);
+	    *dst &= ((*src) >> 4) | 0xF0;
+	    dst++;
+	    for (i=bw;i;i--,dst++,src++)
+	      *dst &= ((*src) << 4) | ((*(src+1)) >> 4);
 	    break;
 	  case PG_LGOP_XOR:
-	    *dest ^= (*src) >> 4;
-	    dest++;
-	    for (i=bw;i;i--,dest++,src++)
-	      *dest ^= ((*src) << 4) | ((*(src+1)) >> 4);
+	    *dst ^= (*src) >> 4;
+	    dst++;
+	    for (i=bw;i;i--,dst++,src++)
+	      *dst ^= ((*src) << 4) | ((*(src+1)) >> 4);
 	    break;
 	  case PG_LGOP_INVERT:
-	    *dest &= 0xF0;
-	    *dest |= ((*src) >> 4) ^ 0x0F;
-	    dest++;
-	    for (i=bw;i;i--,dest++,src++)
-	      *dest = (((*src) << 4) | ((*(src+1)) >> 4)) ^ 0xFF;
+	    *dst &= 0xF0;
+	    *dst |= ((*src) >> 4) ^ 0x0F;
+	    dst++;
+	    for (i=bw;i;i--,dst++,src++)
+	      *dst = (((*src) << 4) | ((*(src+1)) >> 4)) ^ 0xFF;
 	    break;
 	  case PG_LGOP_INVERT_OR:
-	    *dest |= ((*src) >> 4) ^ 0x0F;
-	    dest++;
-	    for (i=bw;i;i--,dest++,src++)
-	      *dest |= (((*src) << 4) | ((*(src+1)) >> 4)) ^ 0xFF;
+	    *dst |= ((*src) >> 4) ^ 0x0F;
+	    dst++;
+	    for (i=bw;i;i--,dst++,src++)
+	      *dst |= (((*src) << 4) | ((*(src+1)) >> 4)) ^ 0xFF;
 	    break;
 	  case PG_LGOP_INVERT_AND:
-	    *dest &= (((*src) >> 4) | 0xF0) ^ 0x0F;
-	    dest++;
-	    for (i=bw;i;i--,dest++,src++)
-	      *dest &= (((*src) << 4) | ((*(src+1)) >> 4)) ^ 0xFF;
+	    *dst &= (((*src) >> 4) | 0xF0) ^ 0x0F;
+	    dst++;
+	    for (i=bw;i;i--,dst++,src++)
+	      *dst &= (((*src) << 4) | ((*(src+1)) >> 4)) ^ 0xFF;
 	    break;
 	  case PG_LGOP_INVERT_XOR:
-	    *dest ^= ((*src) >> 4) ^ 0x0F;
-	    dest++;
-	    for (i=bw;i;i--,dest++,src++)
-	      *dest ^= (((*src) << 4) | ((*(src+1)) >> 4)) ^ 0xFF;
+	    *dst ^= ((*src) >> 4) ^ 0x0F;
+	    dst++;
+	    for (i=bw;i;i--,dst++,src++)
+	      *dst ^= (((*src) << 4) | ((*(src+1)) >> 4)) ^ 0xFF;
 	    break;
 	 }
       }
@@ -422,37 +416,37 @@ void linear4_blit(struct stdbitmap *srcbit,int src_x,int src_y,
 	 switch (lgop) {
 	    
 	  case PG_LGOP_NONE:
-	    __memcpy(dest,src,bw);
-	    dest+=bw;
+	    __memcpy(dst,src,bw);
+	    dst+=bw;
 	    src+=bw;
 	    break;
 	  case PG_LGOP_OR:
-	    for (i=bw;i;i--,dest++,src++)
-	      *dest |= *src;
+	    for (i=bw;i;i--,dst++,src++)
+	      *dst |= *src;
 	    break;
 	  case PG_LGOP_AND:
-	    for (i=bw;i;i--,dest++,src++)
-	      *dest &= *src;
+	    for (i=bw;i;i--,dst++,src++)
+	      *dst &= *src;
 	    break;
 	  case PG_LGOP_XOR:
-	    for (i=bw;i;i--,dest++,src++)
-	      *dest ^= *src;
+	    for (i=bw;i;i--,dst++,src++)
+	      *dst ^= *src;
 	    break;
 	  case PG_LGOP_INVERT:
-	    for (i=bw;i;i--,dest++,src++)
-	      *dest = (*src) ^ 0xFF;
+	    for (i=bw;i;i--,dst++,src++)
+	      *dst = (*src) ^ 0xFF;
 	    break;
 	  case PG_LGOP_INVERT_OR:
-	    for (i=bw;i;i--,dest++,src++)
-	      *dest |= (*src) ^ 0xFF;
+	    for (i=bw;i;i--,dst++,src++)
+	      *dst |= (*src) ^ 0xFF;
 	    break;
 	  case PG_LGOP_INVERT_AND:
-	    for (i=bw;i;i--,dest++,src++)
-	      *dest &= (*src) ^ 0xFF;
+	    for (i=bw;i;i--,dst++,src++)
+	      *dst &= (*src) ^ 0xFF;
 	    break;
 	  case PG_LGOP_INVERT_XOR:
-	    for (i=bw;i;i--,dest++,src++)
-	      *dest ^= (*src) ^ 0xFF;
+	    for (i=bw;i;i--,dst++,src++)
+	      *dst ^= (*src) ^ 0xFF;
 	    break;
 	 }
       }
@@ -461,30 +455,30 @@ void linear4_blit(struct stdbitmap *srcbit,int src_x,int src_y,
 	 switch (lgop) {
 	    
 	  case PG_LGOP_NONE:
-	    *dest &= 0x0F;
-	    *dest |= (*src) & 0xF0;
+	    *dst &= 0x0F;
+	    *dst |= (*src) & 0xF0;
 	    break;
 	  case PG_LGOP_OR:
-	    *dest |= (*src) & 0xF0;
+	    *dst |= (*src) & 0xF0;
 	    break;
 	  case PG_LGOP_AND:
-	    *dest &= ((*src) & 0xF0) | 0x0F;
+	    *dst &= ((*src) & 0xF0) | 0x0F;
 	    break;
 	  case PG_LGOP_XOR:
-	    *dest ^= (*src) & 0xF0;
+	    *dst ^= (*src) & 0xF0;
 	    break;
 	  case PG_LGOP_INVERT:
-	    *dest &= 0x0F;
-	    *dest = ((*src) & 0xF0) ^ 0xF0;
+	    *dst &= 0x0F;
+	    *dst = ((*src) & 0xF0) ^ 0xF0;
 	    break;
 	  case PG_LGOP_INVERT_OR:
-	    *dest |= ((*src) & 0xF0) ^ 0xF0;
+	    *dst |= ((*src) & 0xF0) ^ 0xF0;
 	    break;
 	  case PG_LGOP_INVERT_AND:
-	    *dest &= (((*src) & 0xF0) ^ 0xF0) | 0x0F;
+	    *dst &= (((*src) & 0xF0) ^ 0xF0) | 0x0F;
 	    break;
 	  case PG_LGOP_INVERT_XOR:
-	    *dest ^= ((*src) & 0xF0) ^ 0xF0;
+	    *dst ^= ((*src) & 0xF0) ^ 0xF0;
 	    break;
 	 }
       }
@@ -504,6 +498,7 @@ void setvbl_linear4(struct vidlib *vid) {
   vid->bar            = &linear4_bar;
   vid->line           = &linear4_line;
   vid->rect           = &linear4_rect;
+//  vid->blit           = &linear4_blit;
 }
 
 /* The End */

@@ -1,12 +1,30 @@
+2001-05-29    Micah Dowty <micahjd@users.sourceforge.net>
+
+I'm starting the extreme video driver fixink today. Basically this means
+writing good primitives for linear1, 2, and 4. This will start with
+PG_LGOP_NONE but will move on to encompass all LGOPs. This will result in
+a relatively large volume of code that will make PicoGUI faster but somewhat 
+larger, so there will be compile-time options.
+
+linear4 already has a blit and charblit function, but they are buggy and
+hence they have been disabled.
+I'm starting with linear1 according to Pascal's priority list.
+
+      * vidbase/linear1.c: Linear1 already has a slab() and bar(), both are
+        pretty fast. Adding a faster line() based on the raster-optimized
+	bresenham's from linear8
+	
+      * debug/videotest.c: Fixed stupid bug that reportes 1.6 billion frames
+        per second for test #1. (didn't initialize frames counter)
+
+
 2001-05-14    Micah Dowty <micahjd@users.sourceforge.net>
 
 Starting to do documentation... Read most of the doxygen manual, seems like
 a good system. Configuring doxygen and starting to add documentation comments
 to cli_c.
 
-      * cli_c/Doxyfile: Added a Doxyfile!
-      
-      
+      * cli_c/Doxyfile: Added a Doxyfile!      
 
 2001-05-12    Micah Dowty <micahjd@users.sourceforge.net>
 

@@ -1,11 +1,7 @@
-/* $Id: linear1.c,v 1.7 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: linear1.c,v 1.8 2001/05/29 20:33:35 micahjd Exp $
  *
  * Video Base Library:
  * linear1.c - For 1-bit packed pixel devices (most black and white displays)
- *
- * BIG FAT WARNING:
- * This is just a stub that only implements pixel() getpixel() and the color
- * conversions. A fast linear1 is on the way, but this will substitute for now.
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -138,6 +134,84 @@ void linear1_bar(hwrbitmap dest,s16 x,s16 y,s16 h,hwrcolor c,s16 lgop) {
    }
 }
 
+/* Raster-optimized version of Bresenham's line algorithm */
+void linear1_line(hwrbitmap dest, s16 x1,s16 yy1,s16 x2,s16 yy2,hwrcolor c,
+		  s16 lgop) {
+  s16 stepx, stepy;
+  s16 dx;
+  s16 dy;
+  s16 fraction;
+  u32 y1 = yy1,y2 = yy2;   /* Convert y coordinates to 32-bits because
+			    * they will be converted to framebuffer offsets */
+  
+  if (lgop != PG_LGOP_NONE) {
+     def_line(dest,x1,y1,x2,y2,c,lgop);
+     return;
+  }
+   
+  dx = x2-x1;
+  dy = y2-y1;
+
+  if (dx<0) { 
+    dx = -(dx << 1);
+    stepx = -1; 
+  } else {
+    dx = dx << 1;
+    stepx = 1;
+  }
+  if (dy<0) { 
+    dy = -(dy << 1);
+    stepy = -FB_BPL; 
+  } else {
+    dy = dy << 1;
+    stepy = FB_BPL;
+  }
+
+  y1 *= FB_BPL;
+  y2 *= FB_BPL;
+
+  if (c)
+     FB_MEM[(x1>>3)+y1] |= pxlmask1[x1&7];
+   else
+     FB_MEM[(x1>>3)+y1] &= notmask1[x1&7];
+
+  /* Major axis is horizontal */
+  if (dx > dy) {
+    fraction = dy - (dx >> 1);
+    while (x1 != x2) {
+      if (fraction >= 0) {
+	y1 += stepy;
+	fraction -= dx;
+      }
+      x1 += stepx;
+      fraction += dy;
+
+      if (c)
+	 FB_MEM[(x1>>3)+y1] |= pxlmask1[x1&7];
+       else
+	 FB_MEM[(x1>>3)+y1] &= notmask1[x1&7];
+    }
+  } 
+  
+  /* Major axis is vertical */
+  else {
+    fraction = dx - (dy >> 1);
+    while (y1 != y2) {
+      if (fraction >= 0) {
+	x1 += stepx;
+	fraction -= dy;
+      }
+      y1 += stepy;
+      fraction += dx;
+       
+      if (c)
+	 FB_MEM[(x1>>3)+y1] |= pxlmask1[x1&7];
+       else
+	 FB_MEM[(x1>>3)+y1] &= notmask1[x1&7];
+    }
+  }
+}
+
 /*********************************************** Registration */
 
 /* Load our driver functions into a vidlib */
@@ -148,6 +222,7 @@ void setvbl_linear1(struct vidlib *vid) {
    vid->getpixel       = &linear1_getpixel;
    vid->slab           = &linear1_slab;
    vid->bar            = &linear1_bar;
+   vid->line           = &linear1_line;
 }
 
 /* The End */
