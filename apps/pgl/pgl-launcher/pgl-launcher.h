@@ -27,6 +27,7 @@
 struct pgllApp{
   char *appName;
   char *appPath;
+  char *appIcon;
 };
 
 struct pgllApp *gAppList;
