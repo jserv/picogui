@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.45 2002/01/25 16:10:33 pney Exp $
+/* $Id: field.c,v 1.46 2002/01/30 15:37:55 pney Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -188,43 +188,57 @@ g_error field_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-   case PG_WP_TEXT:
-     /* Copy the provided data into our private buffer */
+  case PG_WP_TEXT:
+    /* Copy the provided data into our private buffer */
 
-     if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,data)) || !str) 
-       return mkerror(PG_ERRT_HANDLE,13);
+    if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,data)) || !str) 
+      return mkerror(PG_ERRT_HANDLE,13);
       
      /* Need resize? */
-     DATA->bufuse = strlen(str) + 1;
-     if (DATA->bufsize < DATA->bufuse) {
-	DATA->bufsize = DATA->bufuse + FIELDBUF_ALLOCSTEP;
-	e = g_realloc((void *)&DATA->buffer,DATA->bufsize);
-	errorcheck;
-	e = rehandle(DATA->hbuffer,DATA->buffer,PG_TYPE_STRING);
-	errorcheck;
-     }
+    DATA->bufuse = strlen(str) + 1;
+    if (DATA->bufsize < DATA->bufuse) {
+      DATA->bufsize = DATA->bufuse + FIELDBUF_ALLOCSTEP;
+      e = g_realloc((void *)&DATA->buffer,DATA->bufsize);
+      errorcheck;
+      e = rehandle(DATA->hbuffer,DATA->buffer,PG_TYPE_STRING);
+      errorcheck;
+    }
      
-     /* Update text */
-     strcpy(DATA->buffer,str);
-     resizewidget(self); 
-     self->in->flags |= DIVNODE_NEED_RECALC;
-     self->dt->flags |= DIVTREE_NEED_RECALC;
-     break;
+    /* Update text */
+    strcpy(DATA->buffer,str);
+    resizewidget(self); 
+    self->in->flags |= DIVNODE_NEED_RECALC;
+    self->dt->flags |= DIVTREE_NEED_RECALC;
+    break;
 
-   case PG_WP_PASSWORD:
-     /* If no font already associated with the field, create a default one */
-     if(!DATA->font) findfont(&(DATA->font),-1,NULL,0,PG_FSTYLE_DEFAULT);
+  case PG_WP_PASSWORD:
+    /* If no font already associated with the field, create a default one */
+    if(!DATA->font) findfont(&(DATA->font),-1,NULL,0,PG_FSTYLE_DEFAULT);
 
      /* get the fontdesc pointer */
-     if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,DATA->font)) || !fd)
-       return mkerror(PG_ERRT_HANDLE,44);
+    if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,DATA->font)) || !fd)
+      return mkerror(PG_ERRT_HANDLE,44);
 
      /* set the font to 'password look' */
-     fd->passwdc = (int) data;
-     break;
+     /* firs, test if arch is big or little endian */
+    {
+      int ilocal = (int) data;
+      u32 b1 = 1;
+      u32 b2,b3,b4;
 
-   default:
-     return mkerror(ERRT_PASS,0);
+      if(*(char *)&b1 != 1) {         /* big endian arch, then swap bytes  */
+	b4 = (ilocal >> 24) & 0xff;
+	b3 = (ilocal >> 16) & 0xff;
+	b2 = (ilocal >> 8)  & 0xff;
+	b1 =  ilocal        & 0xff;
+	ilocal = (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
+      }
+      fd->passwdc = ilocal;
+    }
+    break;
+
+  default:
+    return mkerror(ERRT_PASS,0);
   }
   return success;
 }
