@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.50 2002/01/27 14:13:18 micahjd Exp $
+/* $Id: scroll.c,v 1.51 2002/01/28 09:50:44 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -82,7 +82,7 @@ void build_scroll(struct gropctxt *c,unsigned short state,struct widget *self) {
   if (!iserror(rdhandle((void **)&wgt,PG_TYPE_WIDGET,-1,
 			self->scrollbind)) && wgt && wgt->in->div) {
 
-    DATA->res = wgt->in->div->h - wgt->in->div->calch;
+    DATA->res = wgt->in->ch - wgt->in->h;
 
     /* Bounds/sanity checking.. */
     if (DATA->res < 0)
