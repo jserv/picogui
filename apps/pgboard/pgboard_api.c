@@ -1,4 +1,4 @@
-/* $Id: pgboard_api.c,v 1.2 2001/11/01 17:17:31 cgrigis Exp $
+/* $Id: pgboard_api.c,v 1.3 2001/11/02 15:47:35 cgrigis Exp $
  *
  * kbd_api.c - high-level API to manipulate the PicoGUI virtual keyboard
  * 
@@ -137,9 +137,6 @@ void send_command (struct keyboard_command * cmd, int force)
 
       if ( !(kb = pgFindWidget (PG_KEYBOARD_APPNAME)) )
 	{
-	  /* Command to hide the keyboard */
-	  struct keyboard_command hide_cmd = {htons (PG_KEYBOARD_HIDE)};
-	  struct pgmemdata hide_data = {&hide_cmd, sizeof (struct keyboard_command), 0};
 	  printf ("'pgboard' not running, attempting to start it ...\n");
 
 	  /* Start the virtual keyboard */
@@ -159,6 +156,8 @@ void send_command (struct keyboard_command * cmd, int force)
 	   */
 	  if (cmd->type == PG_KEYBOARD_TOGGLE)
 	    {
+	      struct keyboard_command hide_cmd = {htons (PG_KEYBOARD_HIDE)};
+	      struct pgmemdata hide_data = {&hide_cmd, sizeof (struct keyboard_command), 0};
 	      pgAppMessage (kb, hide_data);
 	    }
 

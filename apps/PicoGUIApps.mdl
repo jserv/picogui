@@ -46,7 +46,7 @@ runtime = [
                            'picoguiapps/ch_qwertz' ],
                rcscript = "# start pgboard\n%s/bin/pgboard %s/share/pgboard/ch_qwertz_scalable.kb&\n\n" % \
                           ( prefix, prefix )),
-    Runtime ( 'pgboard_cmds', 'Virtual Keyboard Command Sender',
+    Runtime ( 'pgboard_cmds', 'Virtual Keyboard Tester',
               content = [ 'bin/pgboard_cmds' ],
               help = "Test application to send commands to the Virtual Keyboard" )
     ]

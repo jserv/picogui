@@ -1,4 +1,4 @@
-/* $Id: kbfile.h,v 1.4 2001/05/06 00:16:40 micahjd Exp $
+/* $Id: kbfile.h,v 1.5 2001/11/02 15:47:35 cgrigis Exp $
   *
   * kbfile.h - Definition of the PicoGUI keyboard file format 
   * 
@@ -95,27 +95,35 @@ struct key_entry {
 
 /************** Keyboard loading functions and in-memory representation */
 
+struct pattern_info
+{
+  unsigned long canvasdata_len;
+  char * canvas_buffer;
+  unsigned short num_keys;
+  struct key_entry * keys;
+};
+
 struct mem_pattern {
    /* Filled in during kb_validate */
    unsigned short num_patterns;
    unsigned short app_side;
    unsigned short app_size;
    unsigned short app_sizemode;
-
-   /* Filled in during kb_loadpattern */
-   unsigned short num_keys;
-   struct key_entry *keys;
 };
 
 /* These functions return nonzero on error */
 
 /* Validate a pattern's header, fill in global data for mem_pattern */
-int kb_validate(FILE *f, struct mem_pattern *pat);
+int kb_validate(FILE *f, struct mem_pattern ** pat);
 
-/* Load (and allocate memory for if necessary) a pattern from file.
- * This keeps the key table in memory, and loads the pattern itself
- * into the specified canvas widget */
-int kb_loadpattern(FILE *f, struct mem_pattern *pat,
-		   short patnum, pghandle canvas);
+/* Load (and allocate memory for if necessary) all patterns from a file */
+int kb_loadpatterns (FILE *f);
+
+/* Select a pattern from the ones loaded in memory, and load it into the
+   specified canvas widget */
+void kb_selectpattern (unsigned short pattern_num, pghandle canvas);
+
+/* Find the key in the current pattern given the clicked coordinates */
+struct key_entry * find_clicked_key (unsigned int x, unsigned int y);
 
 /* The End */

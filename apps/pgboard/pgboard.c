@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.13 2001/10/30 09:47:57 cgrigis Exp $
+/* $Id: pgboard.c,v 1.14 2001/11/02 15:47:35 cgrigis Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -41,21 +41,21 @@
 #endif
 
 FILE *fpat;
-struct mem_pattern mpat;
+struct mem_pattern * mpat;
 pghandle wCanvas, wDisabled, wApp;
 struct key_entry *keydown = NULL;
 
 /* Flag representing the status of the keyboard (enabled/disabled) */
 static int enable_status = 1;
-  /* Current pattern */
-static unsigned short current_pat;
+/* Current pattern */
+static unsigned short current_patnum;
 
 /* Structure to hold the current keyboard context */
 struct keyboard_context
 {
   long appSize;
   int enable_status;
-  unsigned short current_pat;
+  unsigned short current_patnum;
 
   /* Linked list pointer */
   struct keyboard_context * next;
@@ -87,7 +87,7 @@ void pushKeyboardContext ()
   /* Fill in context data */
   kbc->appSize = pgGetWidget (wApp, PG_WP_SIZE);
   kbc->enable_status = enable_status;
-  kbc->current_pat = current_pat;
+  kbc->current_patnum = current_patnum;
   kbc->next = context_top;
 
   /* Update top of context stack */
@@ -114,7 +114,7 @@ void popKeyboardContext ()
 	      0);
   enable_status = kbc->enable_status;
   enable_status ? enableKbdCanvas () : disableKbdCanvas ();
-  selectPattern (kbc->current_pat);
+  selectPattern (kbc->current_patnum);
 
   /* Update top of context stack */
   context_top = kbc->next;
@@ -158,7 +158,7 @@ int evtMessage (struct pgEvent * evt)
       switch (cmd->type)
 	{
 	case PG_KEYBOARD_SHOW:
-	  newSize = mpat.app_size;
+	  newSize = mpat->app_size;
 	  break;
 
 	case PG_KEYBOARD_HIDE:
@@ -166,7 +166,7 @@ int evtMessage (struct pgEvent * evt)
 	  break;
 
 	case PG_KEYBOARD_TOGGLE:
-	  newSize = mpat.app_size - pgGetWidget (wApp, PG_WP_SIZE);
+	  newSize = mpat->app_size - pgGetWidget (wApp, PG_WP_SIZE);
 	  break;
 
 	case PG_KEYBOARD_ENABLE:
@@ -224,40 +224,18 @@ int evtMessage (struct pgEvent * evt)
  */
 void selectPattern (unsigned short pattern)
 {
-  /* Flag indicating if we are within a context */
-  static int inContext = 0;
-
-  if (pattern == current_pat)
+  if (pattern == current_patnum)
     {
       /* Shortcut if we are selecting the current pattern */
       return;
     }
 
-  if (inContext)
-    {
-      pgLeaveContext ();
-    }
-  else
-    {
-      inContext = 1;
-    }
-
-  pgEnterContext ();
-
-  if (kb_loadpattern (fpat, &mpat, pattern - 1, wCanvas))
-    {
-      pgMessageDialog ("Virtual Keyboard", "Error loading keyboard pattern", 0);
-      return;
-    }
-
-  pgWriteCmd (wCanvas, PGCANVAS_REDRAW, 0);
-  pgSubUpdate (wCanvas);
-
-  current_pat = pattern;
+  kb_selectpattern (pattern - 1, wCanvas);
+  current_patnum = pattern;
 }
 
 int evtMouse(struct pgEvent *evt) {
-  struct key_entry *k, *clickkey = NULL;
+  struct key_entry *clickkey = NULL;
   short n;
 
   /* Ignore all but left mouse button */
@@ -265,15 +243,7 @@ int evtMouse(struct pgEvent *evt) {
     return 0;
 
   /* Figure out what (if anything) was clicked */
-  for (k=mpat.keys,n=mpat.num_keys;n;n--,k++) {
-    if (evt->e.pntr.x < k->x) continue;
-    if (evt->e.pntr.x > (k->x+k->w-1)) continue;
-    if (evt->e.pntr.y < k->y) continue;
-    if (evt->e.pntr.y > (k->y+k->h-1)) continue;
-   
-    clickkey = k;
-    break;
-  }
+  clickkey = find_clicked_key (evt->e.pntr.x, evt->e.pntr.y);
 
   /* If we got this far, it was clicked */
   if (evt->type == PG_WE_PNTR_DOWN) {
@@ -383,24 +353,28 @@ int main(int argc,char **argv) {
     return 1;
   }
 
-  /* Load a pattern */
-  memset(&mpat,0,sizeof(mpat));
+  /* Load patterns */
   fpat = fopen(argv[1],"r");
   if (!fpat) {
     pgMessageDialog(*argv,"Error loading keyboard file",0);
     return 1;
   }
   if (kb_validate(fpat,&mpat)) {
-    pgMessageDialog(*argv,"Invalid keyboard file",0);
+    pgMessageDialog(*argv,"Invalid keyboard file [kb_validate()]",0);
     return 1;
   }
+  if (kb_loadpatterns(fpat)) {
+    pgMessageDialog(*argv,"Invalid keyboard file [kb_loadpatterns()]",0);
+    return 1;
+  }
+  fclose (fpat);
 
   /* Resize app widget */
   pgSetWidget(wApp,
               PG_WP_NAME,pgNewString(PG_KEYBOARD_APPNAME),
-	      PG_WP_SIDE,mpat.app_side,
-	      PG_WP_SIZE,mpat.app_size,
-	      PG_WP_SIZEMODE,mpat.app_sizemode,
+	      PG_WP_SIDE,mpat->app_side,
+	      PG_WP_SIZE,mpat->app_size,
+	      PG_WP_SIZEMODE,mpat->app_sizemode,
 /* 	      PG_WP_TRANSPARENT,1, */
 	      0);
 

@@ -1,4 +1,4 @@
-/* $Id: kbfile.c,v 1.7 2001/11/01 18:32:43 epchristi Exp $
+/* $Id: kbfile.c,v 1.8 2001/11/02 15:47:35 cgrigis Exp $
   *
   * kbfile.c - Functions to validate and load patterns from a keyboard file
   * 
@@ -37,13 +37,25 @@
     #include <netinet/in.h>
 #endif
 
+/* Data about all the patterns read from the keyboard definition file */
+static struct mem_pattern pat;
+
+/* All pattern information */
+static struct pattern_info * pattern_data = NULL;
+
+/* Current pattern info */
+static struct pattern_info * current_pat = NULL;
+
 /* Validate a pattern's header, fill in global data for mem_pattern */
-int kb_validate(FILE *f, struct mem_pattern *pat) {
+int kb_validate(FILE *f, struct mem_pattern ** user_pat) {
    unsigned long checksum = 0;
    unsigned char c;
    struct keyboard_header hdr;
    int i;
    
+   /* Clear pattern info */
+   memset (&pat, 0, sizeof (pat));
+
    /* Read in the header */
    rewind(f);
    if (!fread(&hdr,1,sizeof(hdr),f))
@@ -88,138 +100,192 @@ int kb_validate(FILE *f, struct mem_pattern *pat) {
      return 1;
 
    /* Looks ok, store data */
-   pat->num_patterns = hdr.num_patterns;
-   pat->app_size = hdr.app_size;
-   pat->app_sizemode = hdr.app_sizemode;
-   pat->app_side = hdr.app_side;
+   pat.num_patterns = hdr.num_patterns;
+   pat.app_size = hdr.app_size;
+   pat.app_sizemode = hdr.app_sizemode;
+   pat.app_side = hdr.app_side;
+
+   /* Affect user mem_pattern variable */
+   (*user_pat) = &pat;
 
    return 0;
 }
 
-/* Load (and allocate memory for if necessary) a pattern from file.
- * This keeps the key table in memory, and loads the pattern itself
- * into the specified canvas widget 
- *
- * Normally I wouldn't like loading things like this from file, but on
- * a handheld it's really flash memory or ram anyway, and a machine with
- * a magnetic disk probably has enough cache to make it alright. At the moment
- * it doesn't seem worth storing the entire pattern table in memory.
- */
-int kb_loadpattern(FILE *f, struct mem_pattern *pat,
-		   short patnum, pghandle canvas) {
-   struct pattern_header pathdr;
-   struct request_header kbrqh;
-   struct pgrequest rqh;
-   unsigned long x;
-   struct key_entry *k;
-   char *canvasbuf;
+/* Load (and allocate memory for if necessary) all patterns from a file 
+   [adapted from former 'kb_loadpattern()' to load all data in memory for 
+   performance reasons] */
+int kb_loadpatterns (FILE *f)
+{
+   /* Number of current pattern */
+   int npat;
+   /* Current pattern */
+   struct pattern_info * current_pat;
 
-   /* If necessary, free the previous key table */
-   if (pat->keys)
-     free(pat->keys);
-   
-   /* Seek to immediately after the header */
-   fseek(f,sizeof(struct keyboard_header),SEEK_SET);
+   /* Skip the header */
+   fseek (f, sizeof (struct keyboard_header), SEEK_SET);
 
-   /* Skip patterns */
-   for (;patnum;patnum--) {
-
-      /* Load and byte-swap the pattern header */
-      if (!fread(&pathdr,1,sizeof(pathdr),f))
-	return 1;    /* Could fail if patnum is invalid */
-      pathdr.canvasdata_len = ntohl(pathdr.canvasdata_len);
-      pathdr.num_requests   = ntohs(pathdr.num_requests);
-      pathdr.num_keys       = ntohs(pathdr.num_keys);
-      
-      /* Skip canvas data block */
-      fseek(f,pathdr.canvasdata_len,SEEK_CUR);
-      
-      /* Skip requests */
-      for (;pathdr.num_requests;pathdr.num_requests--) {
-	 
-	 /* Skip keyboard request header */
-	 fseek(f,sizeof(struct request_header),SEEK_CUR);
-	 
-	 /* Read PicoGUI request header and skip request */
-	 fread(&rqh,1,sizeof(rqh),f);
-	 fseek(f,ntohl(rqh.size),SEEK_CUR);
-      }
-      
-      /* Skip keys */
-      fseek(f,sizeof(struct key_entry) * pathdr.num_keys,SEEK_CUR);
-   }
-
-   /* Read the selected pattern */
-
-   /* Load and byte-swap the pattern header */
-   if (!fread(&pathdr,1,sizeof(pathdr),f))
+   /* Allocate space for the patterns */
+   pattern_data = (struct pattern_info *) 
+     malloc (pat.num_patterns * sizeof (struct pattern_info));
+   if (!pattern_data)
      return 1;
-   pathdr.canvasdata_len = ntohl(pathdr.canvasdata_len);
-   pathdr.num_requests   = ntohs(pathdr.num_requests);
-   pathdr.num_keys       = ntohs(pathdr.num_keys);
-   pat->num_keys = pathdr.num_keys;
-   
-   /* Load the canvasdata */
-   canvasbuf = (char *) malloc(pathdr.canvasdata_len);
+   current_pat = pattern_data;
 
-   if (!canvasbuf)
-     return 1;
-   fread(canvasbuf,1,pathdr.canvasdata_len,f);
-      
-   /* Read requests */
-   for (;pathdr.num_requests;pathdr.num_requests--) {
-      char *rqhbuf;
-      pghandle result;
-      
-      /* Read the various headers */
-      fread(&kbrqh,1,sizeof(kbrqh),f);
-      fread(&rqh,1,sizeof(rqh),f);
-      kbrqh.canvasdata_offset = ntohl(kbrqh.canvasdata_offset);
-      rqh.type = ntohs(rqh.type);
-      rqh.size = ntohl(rqh.size);
-      
-      /* Validate canvasdata offset */
-      if (kbrqh.canvasdata_offset > (pathdr.canvasdata_len-4))
-	return 1;
-      
-      /* Load request data */
-      rqhbuf = (char *) malloc(rqh.size);
-      fread(rqhbuf,1,rqh.size,f);
-      result = pgEvalRequest(rqh.type,rqhbuf,rqh.size);
-      free(rqhbuf);
+   /* Read all the patterns */
+   for (npat = 0; npat < pat.num_patterns; npat++)
+     {
+       struct pattern_header pat_hdr;
+       /* Current key */
+       struct key_entry * current_key;
 
-      /* Link it in to the canvas data */
-      *((unsigned long *)(canvasbuf+kbrqh.canvasdata_offset)) = htonl(result);
-   }
+       /* Read pattern header */
+       if (!fread (&pat_hdr, sizeof (pat_hdr), 1, f))
+	 return 1;
 
-   /* Send to canvas (client lib frees memory) */
-   pgWriteData(canvas,pgFromTempMemory(canvasbuf,pathdr.canvasdata_len));
+       /* Byte-swap data */
+       pat_hdr.canvasdata_len = ntohl (pat_hdr.canvasdata_len);
+       pat_hdr.num_requests   = ntohs (pat_hdr.num_requests);
+       pat_hdr.num_keys       = ntohs (pat_hdr.num_keys);
+       
+       current_pat->canvasdata_len = pat_hdr.canvasdata_len;
+       current_pat->num_keys = pat_hdr.num_keys;
 
-   /* Load key table into memory */
-   if (pat->num_keys) {
-      x = sizeof(struct key_entry) * pat->num_keys;
-      pat->keys = (struct key_entry *) malloc(x);
-      if (!pat->keys)
-	return 1;
-      fread(pat->keys,1,x,f);
-      
-      /* Byteswap the key entries */
-      k = pat->keys;
-      x = pat->num_keys;
-      for (;x;x--,k++) {
-	 k->x = ntohs(k->x);
-	 k->y = ntohs(k->y);
-	 k->w = ntohs(k->w);
-	 k->h = ntohs(k->h);
-	 k->flags = ntohl(k->flags);
-	 k->key = ntohs(k->key);
-	 k->pgkey = ntohs(k->pgkey);
-	 k->mods = ntohs(k->mods);
-	 k->pattern = ntohs(k->pattern);
-      }
-   }
-      
+       /* Read canvas data */
+       current_pat->canvas_buffer = (char *) malloc (current_pat->canvasdata_len);
+       if (!current_pat->canvas_buffer)
+	 return 1;
+       if (!fread (current_pat->canvas_buffer, sizeof (char), current_pat->canvasdata_len, f))
+	 return 1;
+
+       /* Read requests */
+       for ( ;pat_hdr.num_requests > 0; pat_hdr.num_requests--)
+	 {
+	   struct request_header kbrqh;
+	   struct pgrequest req;
+	   char * req_buf;
+	   pghandle result;
+
+	   /* Read request header */
+	   if (!fread (&kbrqh, sizeof (kbrqh), 1, f))
+	     return 1;
+
+	   /* Byte-swap data */
+	   kbrqh.canvasdata_offset = ntohl (kbrqh.canvasdata_offset);
+
+	   /* Validate offset */
+	   if (kbrqh.canvasdata_offset > (pat_hdr.canvasdata_len - 4))
+	     return 1;
+
+	   /* Read request */
+	   if (!fread (&req, sizeof (req), 1, f))
+	     return 1;
+
+	   /* Byte-swap data */
+	   req.type = ntohs (req.type);
+	   req.size = ntohl (req.size);
+
+	   /* Read request data */
+	   req_buf = (char *) malloc (req.size);
+	   if (!req_buf)
+	     return 1;
+	   if (!fread (req_buf, req.size, 1, f))
+	     return 1;
+
+	   /* Evaluate request */
+	   result = pgEvalRequest (req.type, req_buf, req.size);
+	   
+	   /* Free request memory */
+	   free (req_buf);
+
+	   /* Link request to canvas data */
+	   *( (unsigned long *) 
+	      (current_pat->canvas_buffer + kbrqh.canvasdata_offset) 
+	      ) = htonl (result);
+	 }
+
+       /* Read keys */
+       current_pat->keys = (struct key_entry *)
+	 malloc (pat_hdr.num_keys * sizeof (struct key_entry));
+       if (!current_pat->keys)
+	 return 1;
+       if (!fread (current_pat->keys, 
+		   sizeof (struct key_entry), pat_hdr.num_keys, f))
+	 return 1;
+
+       /* Byte-swap key data */
+       current_key = current_pat->keys;
+       for ( ;pat_hdr.num_keys > 0; pat_hdr.num_keys--)
+	 {
+	   current_key->x       = ntohs (current_key->x);
+	   current_key->y       = ntohs (current_key->y);
+	   current_key->w       = ntohs (current_key->w);
+	   current_key->h       = ntohs (current_key->h);
+	   current_key->flags   = ntohl (current_key->flags);
+	   current_key->key     = ntohs (current_key->key);
+	   current_key->pgkey   = ntohs (current_key->pgkey);
+	   current_key->mods    = ntohs (current_key->mods);
+	   current_key->pattern = ntohs (current_key->pattern);
+	   
+	   current_key++;
+	 }
+
+       current_pat++;
+     }
+
    return 0;
+}
+
+/* Select a pattern from the ones loaded in memory, and load it into the
+   specified canvas widget */
+void kb_selectpattern (unsigned short pattern_num, pghandle canvas)
+{
+  /* Flag indicating if we are within a context */
+  static int inContext = 0;
+
+  if (pattern_num < pat.num_patterns)
+    {
+      /* Manage context */
+      if (inContext)
+	{
+	  pgLeaveContext ();
+	}
+      else
+	{
+	  inContext = 1;
+	}
+      pgEnterContext ();
+
+      current_pat = pattern_data + pattern_num;
+      pgWriteData (canvas, pgFromMemory (current_pat->canvas_buffer, 
+					 current_pat->canvasdata_len));
+      pgWriteCmd (canvas, PGCANVAS_REDRAW, 0);
+      pgSubUpdate (canvas);
+    }
+}
+
+/* Find the key in the current pattern given the clicked coordinates */
+struct key_entry * find_clicked_key (unsigned int x, unsigned int y)
+{
+  struct key_entry * key;
+  struct key_entry * clicked_key = NULL;
+  int i;
+
+  if (current_pat)
+    {
+      for (i = 0, key = current_pat->keys; i < current_pat->num_keys; i++, key++)
+	{
+	  if (x < key->x) continue;
+	  if (x > key->x + key->w - 1) continue;
+	  if (y < key->y) continue;
+	  if (y > key->y + key->h - 1) continue;
+	  
+	  /* Key found */
+	  clicked_key = key;
+	  break;
+	}
+    }
+
+  return clicked_key;
 }
 
 /* The End */
