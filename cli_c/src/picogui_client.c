@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.28 2000/11/12 08:32:41 micahjd Exp $
+/* $Id: picogui_client.c,v 1.29 2000/11/18 06:50:17 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -39,7 +39,6 @@
 #include <malloc.h>
 #include <string.h>   /* for memcpy(), memset(), strcpy() */
 #include <stdarg.h>   /* needed for pgRegisterApp and pgSetWidget */
-#include <math.h>     /* for floor() */
 
 /* PicoGUI */
 #include <picogui.h>            /* Basic PicoGUI include */
@@ -78,9 +77,8 @@ void (*_pgerrhandler)(unsigned short errortype,const char *msg);
                                 /* Error handler */
 struct _pghandlernode *_pghandlerlist;  /* List of pgBind event handlers */
 
-long _pgnonblocking_on;         /* To set a timeout in the pgEventLoop */
-typedef int (*wrapper_f)(void *data,unsigned long datasize);
-                                /* Pointer to IO wrappers */
+struct timeval _pgidle_period;  /* Centiseconds before calling idle handler */
+pgidlehandler _pgidle_handler;  /* Idle handler */
 char *_pg_appname;              /* Name of the app's binary */
 
 /* Structure for a retrieved and validated response code,
@@ -159,36 +157,50 @@ int _pg_recv(void *data,unsigned long datasize) {
   return 0;
 }
 
-/* Timout receive.. */
+/* Timout receive.. 
+ * This is used to implement idle handlers while waiting for another
+ * packet. If no data is recieved within the timeout it runs the idle
+ * handler, puts this app back on the event waiting list, and tries again
+ */
 int _pg_recvtimeout(void *data,unsigned long datasize) {
   struct timeval tv;
   fd_set readfds;
-
-  tv.tv_sec = floor(_pgnonblocking_on / 100);
-  tv.tv_usec = (_pgnonblocking_on - (tv.tv_sec * 100)) * 10000;
-
-  FD_ZERO(&readfds);
-  FD_SET(_pgsockfd,&readfds);
-
-  /* don't care about writefds and exceptfds: */
-  select(_pgsockfd+1,&readfds,NULL,NULL,&tv);
-
-  if (FD_ISSET(_pgsockfd, &readfds)) {
+  struct pgrequest waitreq;
+   
+  /* Set up a packet to send to put us back on the waiting list */
+  waitreq.type = htons(PGREQ_WAIT);
+  waitreq.id = ++_pgrequestid;
+  waitreq.size = 0;
+   
+  while (1) {
+     FD_ZERO(&readfds);
+     FD_SET(_pgsockfd,&readfds);
+     tv = _pgidle_period;
+   
+     /* don't care about writefds and exceptfds: */
+     select(_pgsockfd+1,&readfds,NULL,NULL,&tv);
+     
+     if (FD_ISSET(_pgsockfd, &readfds)) {
 #ifdef DEBUG
-    printf("Something happened on socket!\n");
+//	printf("Something happened on socket!\n");
 #endif
-    return _pg_recv(data,datasize);
-  }
-  else {
+	return _pg_recv(data,datasize);
+     }
+     else {
 #ifdef DEBUG
-    printf("Timed out.\n");
+//	printf("Timed out.\n");
 #endif
-    pgExitEventLoop();
-    return 1;
+	
+	/* Run the idle handler, reset the event loop, then try again */
+	(*_pgidle_handler)();
+	pgUpdate();          /* Clear the pipes... */
+	pgFlushRequests();
+	_pg_send(&waitreq,sizeof(waitreq));  /* Kickstart the event loop */
+     }
   }
 }
-
-/* Malloc wrapper */
+   
+   /* Malloc wrapper */
 void *_pg_malloc(size_t size) {
   void *p;
   p = malloc(size);
@@ -218,6 +230,7 @@ void _pg_defaulterr(unsigned short errortype,const char *msg) {
 			 " in %s:\n\n%s\n\nTerminate the application?",
 			 pgErrortypeString(errortype),_pg_appname,msg))
     exit(errortype);
+  pgUpdate(); /* In case this happens in a wierd place, go ahead and update. */
   in_defaulterr = 0;
 }
 
@@ -272,14 +285,15 @@ void _pg_add_request(short reqtype,void *data,unsigned long datasize) {
 
 void _pg_getresponse(void) {
   short rsp_id = 0;
-  wrapper_f pf;
   
-  if(!_pgnonblocking_on) pf = &_pg_recv;
-  else                   pf = &_pg_recvtimeout;
-
-  /* Read the response type */
-    if ((*pf)(&_pg_return.type,sizeof(_pg_return.type)))
-      return;
+  /* Read the response type. This is where the client spends almost
+   * all it's time waiting (and the only safe place to interrupt)
+   * so handle the idling here.
+   */
+  if ((_pgidle_period.tv_sec + _pgidle_period.tv_usec) ?
+      _pg_recvtimeout(&_pg_return.type,sizeof(_pg_return.type)) :
+      _pg_recv(&_pg_return.type,sizeof(_pg_return.type)))
+     return;
   _pg_return.type = ntohs(_pg_return.type);
 
   switch (_pg_return.type) {
@@ -292,7 +306,7 @@ void _pg_getresponse(void) {
 
       /* Read the rest of the error (already have response type) */
       pg_err.type = _pg_return.type;
-      if ((*pf)(((char*)&pg_err)+sizeof(_pg_return.type),
+      if (_pg_recv(((char*)&pg_err)+sizeof(_pg_return.type),
 		   sizeof(pg_err)-sizeof(_pg_return.type)))
 	return;
       rsp_id = pg_err.id;
@@ -300,11 +314,12 @@ void _pg_getresponse(void) {
       pg_err.msglen = ntohs(pg_err.msglen);
       
       /* Dynamically allocated buffer for the error message */ 
-      if (!(msg = _pg_malloc(pg_err.msglen)))
+      if (!(msg = _pg_malloc(pg_err.msglen+1)))
 	return;
       if(_pg_recv(msg,pg_err.msglen))
 	return;
-      
+      msg[pg_err.msglen] = 0;
+       
       (*_pgerrhandler)(pg_err.errt,msg);
       free(msg);
     }
@@ -317,7 +332,7 @@ void _pg_getresponse(void) {
       
       /* Read the rest of the error (already have response type) */
       pg_ret.type = _pg_return.type;
-      if ((*pf)(((char*)&pg_ret)+sizeof(_pg_return.type),
+      if (_pg_recv(((char*)&pg_ret)+sizeof(_pg_return.type),
 		   sizeof(pg_ret)-sizeof(_pg_return.type)))
 	return;
       rsp_id = pg_ret.id;
@@ -332,7 +347,7 @@ void _pg_getresponse(void) {
 
       /* Read the rest of the event (already have response type) */
       pg_ev.type = _pg_return.type;
-      if ((*pf)(((char*)&pg_ev)+sizeof(_pg_return.type),
+      if (_pg_recv(((char*)&pg_ev)+sizeof(_pg_return.type),
 		   sizeof(pg_ev)-sizeof(_pg_return.type)))
 	return;
       _pg_return.e.event.event = ntohs(pg_ev.event);
@@ -348,7 +363,7 @@ void _pg_getresponse(void) {
       
       /* Read the rest of the error (already have response type) */
       pg_data.type = _pg_return.type;
-      if ((*pf)(((char*)&pg_data)+sizeof(_pg_return.type),
+      if (_pg_recv(((char*)&pg_data)+sizeof(_pg_return.type),
 		   sizeof(pg_data)-sizeof(_pg_return.type)))
 	return;
       rsp_id = pg_data.id;
@@ -357,7 +372,7 @@ void _pg_getresponse(void) {
       if (!(_pg_return.e.data.data = 
 	    _pg_malloc(_pg_return.e.data.size+1)))
 	return;
-      if ((*pf)(_pg_return.e.data.data,_pg_return.e.data.size))
+      if (_pg_recv(_pg_return.e.data.data,_pg_return.e.data.size))
 	return;
 
       /* Add a null terminator */
@@ -442,10 +457,8 @@ void pgInit(int argc, char **argv)
   /* Set default error handler */
   pgSetErrorHandler(&_pg_defaulterr);
 
-  /* Set default to blocking receive state */
-  pgSetnonblocking(0);
-
-  /* Should use a getopt-based system here to process various args, leaving
+  /*  FIXME: client argument handling
+     Should use a getopt-based system here to process various args, leaving
      the extras for the client app to process. But this is ok temporarily.
   */
   if (argc != 2)
@@ -517,12 +530,14 @@ const char *pgErrortypeString(unsigned short errortype) {
   return "UNKNOWN";
 }
 
-/* Timeout setting */
-void pgSetnonblocking(long Hundredthseconds) {
-  if(Hundredthseconds >= 0)
-    _pgnonblocking_on = Hundredthseconds;
-  else
-    _pgnonblocking_on = -Hundredthseconds;
+/* Sets an idle handler using nonblocking IO. See details in client_c.h */
+pgidlehandler pgSetIdle(long t,pgidlehandler handler) {
+   pgidlehandler previous = _pgidle_handler;
+   _pgidle_handler = handler;
+   if (!handler) t = 0;
+   _pgidle_period.tv_sec = t / 1000;
+   _pgidle_period.tv_usec = (t % 1000) * 1000;
+   return previous;
 }
 
 /* Flushes the buffer of packets - if there's only one, it gets sent as is
@@ -692,7 +707,7 @@ void pgLeaveContext(void) {
 pghandle pgLoadTheme(struct pgmemdata obj) {
 
   /* Error */
-  if (!obj.pointer) return NULL;
+  if (!obj.pointer) return 0;
 
   /* FIXME: I should probably find a way to do this that
      doesn't involve copying the data- probably flushing any
@@ -937,7 +952,7 @@ pghandle pgNewPopup(int width,int height) {
 pghandle pgNewBitmap(struct pgmemdata obj) {
 
   /* Error */
-  if (!obj.pointer) return NULL;
+  if (!obj.pointer) return 0;
 
   /* FIXME: I should probably find a way to do this that
      doesn't involve copying the data- probably flushing any

@@ -1,4 +1,4 @@
-/* $Id: omnibar.c,v 1.2 2000/11/12 08:26:23 micahjd Exp $
+/* $Id: omnibar.c,v 1.3 2000/11/18 06:50:16 micahjd Exp $
  * 
  * omnibar.c - hopefully this will grow into a general interface
  *             for starting and manipulating applications, but
@@ -34,6 +34,8 @@
 #include <sys/stat.h>
 
 #include <malloc.h>      /* Dynamic memory is used for the array */
+
+pghandle wClock;
 
 /********* Event handlers */
 
@@ -96,25 +98,37 @@ int btnAppMenu(short event,pghandle from,long param) {
   return 0;
 }
 
-/* Quick little about box */
-int btnAbout(short event,pghandle from,long param) {
-  pgMessageDialog("About PicoGUI",
-		  "Welcome to PicoGUI!\n"
-		  "This is a preview release (or a development\n"
-		  "version if you're a developer :)\n"
-		  "What you see may or may not represent the\n"
-		  "future of PicoGUI, it is just a test.\n"
-		  "For more information and the latest code, visit:\n"
-		  "     http://pgui.sourceforge.net\n"
-		  "\n"
-		  "-- Micah",0);
+/* System menu */
+int btnSysMenu(short event,pghandle from,long param) {
+  switch (pgMenuFromString("About PicoGUI...|Scotty, beam me out!")) {
+     
+   case 1:
+   
+     /* Quick little about box */
+     pgMessageDialog("About PicoGUI",
+		     "Welcome to PicoGUI!\n"
+		     "This is a preview release (or a development\n"
+		     "version if you're a developer :)\n"
+		     "What you see may or may not represent the\n"
+		     "future of PicoGUI, it is just a test.\n"
+		     "For more information and the latest code, visit:\n"
+		     "     http://pgui.sourceforge.net\n"
+		     "\n"
+		     "-- Micah",0);
+     break;
+
+   case 2:
+     /* Beam us out! */
+     if (pgMessageDialog("Beam out...","Make it so?",
+			 PG_MSGBTN_YES | PG_MSGBTN_NO)==PG_MSGBTN_YES)
+       exit(0);
+  }
 }
 
-/* Beam us out! */
-int btnBeamOut(short event,pghandle from,long param) {
-  if (pgMessageDialog("Beam out...","Make it so?",
-		      PG_MSGBTN_YES | PG_MSGBTN_NO)==PG_MSGBTN_YES)
-    exit(0);
+/* Called to update the clock and system load indicators */
+void sysIdle(void) {
+   static int n = 0;
+   pgReplaceTextFmt(wClock,"[%d]",++n);
 }
 
 /********* Main program */
@@ -127,24 +141,23 @@ int main(int argc, char **argv) {
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("Applications"),
-	      PG_WP_SIDE,PG_S_LEFT,
 	      PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
 	      0);
   pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&btnAppMenu);
 
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgNewString("Scotty, beam me out!"),
-	      PG_WP_SIDE,PG_S_RIGHT,
+	      PG_WP_TEXT,pgNewString("System"),
+	      PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
 	      0);
-  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnBeamOut);
+  pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&btnSysMenu);
 
-  pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  wClock = pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgNewString("About..."),
 	      PG_WP_SIDE,PG_S_RIGHT,
+	      PG_WP_FONT,pgNewFont(NULL,10,PG_FSTYLE_FIXED),
+	      PG_WP_TRANSPARENT,0,
 	      0);
-  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnAbout);
 
   pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(PGDEFAULT,
@@ -153,10 +166,11 @@ int main(int argc, char **argv) {
 	      PG_WP_FONT,pgNewFont("Times",10,PG_FSTYLE_BOLD),
 	      0);
 
-  /* Run it */
+  /* Run it. */
+  pgSetIdle(1000,&sysIdle);
   pgEventLoop();
-
+   
   return 0;
 }
-
+   
 /* The End */

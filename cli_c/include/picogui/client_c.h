@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.23 2000/11/12 02:51:28 micahjd Exp $
+/* $Id: client_c.h,v 1.24 2000/11/18 06:50:16 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -50,6 +50,8 @@
 
 /* event handler used in pgBind */
 typedef int (*pgevthandler)(short event,pghandle from,long param);
+/* event handler for pgSetIdle */
+typedef void (*pgidlehandler)(void);
 
 /* Structure representing data, loaded or mapped into memory.
  * This is returned by the pgFrom* series of functions for loading
@@ -92,10 +94,21 @@ void pgSetErrorHandler(void (*handler)(unsigned short errortype,
  */
 const char *pgErrortypeString(unsigned short errortype);
 
-/* Set receive state to blocking or not. To have the possibility
- * to introduce a timeout in the EventLoop
+/* After 't' milliseconds of event loop inactivity,
+ * the supplied function is called.
+ * To deactivate the idle handler, set 't' to 0 or the handler to NULL.
+ * 
+ * Returns the previous idle handler, if any.
+ * 
+ * This is based on the pgSetnonblocking code added by Philippe, but
+ * this fits the event-driven model better, and most importantly it
+ * handles stopping and starting the event loop automatically.
+ * Note that it is still possible for PicoGUI to block if the server
+ * sends a partial reply packet, but even if the idle handler were called
+ * during this time the network connection would be 'jammed' so there wouldn't
+ * be much point. 
  */
-void pgSetnonblocking(long state);
+pgidlehandler pgSetIdle(long t,pgidlehandler handler); 
 
 /* Flush the request buffer, make sure everything is sent to
  * the server. Usually this is handled automatically, but
