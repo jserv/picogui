@@ -2,6 +2,7 @@ pgui connect ?-server servername? ?-display displaynum?
 pgui create bitmap -name filename|-data filedata
 pgui create bitmap -width width -height height
 pgui create font -name name -style style -size size
+pgui create string text
 pgui entercontext
 pgui leavecontext ?-id contextid?
 pgui register -title title -type normal|toolbar

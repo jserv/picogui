@@ -77,14 +77,6 @@ proc pgGetVideoMode {} {
 		res(lxres) res(lyres) res(bbp) res(dummy)
 	return [array get res]
 }
-proc pgNewString {text} {
-	global pg_request
-	send_packet [pack_pgrequest \
-		1 [string length $text] $pg_request(mkstring)]
-	send_packet $text
-	array set ret [pgGetResponse]
-	return $ret(data)
-}
 proc pgGetString {textid} {
 	global pg_request
 	send_packet [pack_pgrequest 1 4 $pg_request(getstring)]
@@ -189,7 +181,7 @@ proc picowidget {command arg1 args} {
 			if {$prop=="side"} {
 				set aa(-side) $pg_s($aa(-side))
 			} elseif {$prop=="text"} {
-				set aa(-text) [pgNewString $aa(-text)]
+				set aa(-text) [eval picogui create string $aa(-text)]
 			} 
 			if {[info exists pg_wp($prop)]} {
 				send_packet [pack_pgrequest 1 12 $pg_request(set)]
@@ -206,13 +198,21 @@ proc picowidget {command arg1 args} {
 proc picogui {command args} {
 	global connection pg_request pg_app
 	global display server
-	set creatables {bitmap font}
+	set creatables {bitmap font string}
 	if {$command=="create"} {
 		set command [lindex $args 0]
 		set args [lrange $args 1 end]
 		if {[lsearch $creatables $command]==-1} {
 			puts "unknown creatable must be one of $creatables"
 			return 0
+		} 
+		if {$command=="string"} {
+			puts $args
+			send_packet [pack_pgrequest \
+				1 [string length $args] $pg_request(mkstring)]
+			send_packet $args
+			array set ret [pgGetResponse]
+			return $ret(data)
 		}
 	}
 	array set aa $args
@@ -248,7 +248,7 @@ proc picogui {command args} {
 		send_packet [pack_pgrequest 1 0 $pg_request(update)]
 		array set ret [pgGetResponse]
 	} elseif {$command =="register"} {
-		set textid [pgNewString $aa(-title)]
+		set textid [eval picogui create string $aa(-title)]
 		send_packet [pack_pgrequest 1 8 $pg_request(register)]
 		send_packet [binary format "ISS" $textid $pg_app($aa(-type)) 0]
 		array set ret [pgGetResponse]
