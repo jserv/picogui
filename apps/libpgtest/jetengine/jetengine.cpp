@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <GL/gl.h>
+#include <SDL/SDL.h>
 #include "EmbeddedPGserver.h"
 #include "PythonThread.h"
 #include "PythonInterpreter.h"
@@ -16,6 +17,8 @@ int main(int argc, char **argv) {
     EmbeddedPGserver pgserver(argc, argv);
     PythonThread pythread;
     FlatLand world;
+    u32 old_ticks, new_ticks;
+    float frame_time;
 
     pythread.addObject("world",&world);
     pythread.run();
@@ -27,7 +30,12 @@ int main(int argc, char **argv) {
     glMatrixMode(GL_MODELVIEW);
 
     PGTexture ship("jetengine/ship");
+
+    old_ticks = SDL_GetTicks();
     while (pgserver.mainloopIsRunning()) {
+      new_ticks = SDL_GetTicks();
+      frame_time = (new_ticks - old_ticks) / 1000.0f;
+      old_ticks = new_ticks;
 
       glEnable(GL_DEPTH_TEST);
       glDepthFunc(GL_LEQUAL);
@@ -38,6 +46,7 @@ int main(int argc, char **argv) {
       glTranslatef(0,-20,-5);
 
       world.draw();
+      world.animate(frame_time);
 
       /* Ship */
       glTranslatef(0,12,-30);

@@ -14,10 +14,12 @@ FlatLand::~FlatLand() {
   delete ground;
 }
 
-void FlatLand::draw() {
+void FlatLand::animate(float seconds) {
   /* Update the position using our velocity attribute */
-  x += getAttrFloat("velocity");
+  x += getAttrFloat("velocity") * seconds;
+}
 
+void FlatLand::draw() {
   /* Simple gradient sky */
   glBegin(GL_QUADS);
   glColor3f(0.851, 0.886, 0.918);

@@ -12,7 +12,8 @@ class FlatLand : public ScriptableObject {
   virtual ~FlatLand();
 
   void draw(void);
-  
+  void animate(float seconds);
+
  private:
   PGTexture *ground;
   float x;

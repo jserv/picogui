@@ -1,4 +1,4 @@
-import PicoGUI, time
+import PicoGUI
 
 print "Imporing python module"
 
@@ -12,7 +12,7 @@ def thread():
 
     # Event handler for the velocity slider
     def velocityChange(ev, widget):
-        world.velocity = (1000-widget.value) / 100000.0
+        world.velocity = (1000-widget.value) / 150.0
     app.VelocitySlider.size = 1000
     app.VelocitySlider.value = 1000
     app.link(velocityChange,app.VelocitySlider,'activate')
