@@ -1,4 +1,4 @@
-/* $Id: svgainput.c,v 1.16 2001/01/20 09:52:00 micahjd Exp $
+/* $Id: svgainput.c,v 1.17 2001/02/13 04:02:14 micahjd Exp $
  *
  * svgainput.h - input driver for SVGAlib
  *
@@ -225,16 +225,16 @@ void svgainput_kbdhandler(int scancode,int press) {
 	  b &= scancode == SCANCODE_REMOVE ? ~2 : ~1;
 	}
 	dispatch_pointing(press ? TRIGGER_DOWN : TRIGGER_UP,
-			  pointer->x,pointer->y,b);	
+			  cursor->x,cursor->y,b);	
 	return;
      }
      else
        goto nomousekey;
 
      dispatch_pointing(TRIGGER_MOVE,
-		       pointer->x+((e-w)<<scale),
-		       pointer->y+((s-n)<<scale),b);
-     mouse_setposition(pointer->x,pointer->y);
+		       cursor->x+((e-w)<<scale),
+		       cursor->y+((s-n)<<scale),b);
+     mouse_setposition(cursor->x,cursor->y);
      return;
   }
    nomousekey:

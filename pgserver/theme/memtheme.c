@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.20 2001/02/08 07:36:28 micahjd Exp $
+/* $Id: memtheme.c,v 1.21 2001/02/13 04:02:14 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -443,6 +443,9 @@ g_error theme_load(handle *h,int owner,char *themefile,
 	mpropp->data = theme_lookup(d >> 16,d & 0xFFFF);
       }
 
+  /* Reload the mouse cursor */
+  appmgr_loadcursor(PGTH_O_DEFAULT);
+   
   /* Schedule a global recalc (Yikes!) so it takes effect */
   resizeall();
   dts->top->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;

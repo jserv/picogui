@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.37 2001/02/09 00:55:42 micahjd Exp $
+/* $Id: constants.h,v 1.38 2001/02/13 04:02:14 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -273,6 +273,8 @@ typedef unsigned long pghandle;
 #define PGTH_P_BACKDROP      23  /* H fillstyle   Fillstyle on the screen behind a popup */
 #define PGTH_P_WIDGETBITMAP  24  /* H bitmap      Bitmap for something like a button */
 #define PGTH_P_WIDGETBITMASK 25  /* H bitmap      Bitmask for something like a button */
+#define PGTH_P_CURSORBITMAP  26  /* H bitmap      Bitmap for the (mouse) pointer */
+#define PGTH_P_CURSORBITMASK 27  /* H bitmap      Bitmask for the (mouse) pointer */
 
 /* String properties (usually part of PGTH_O_DEFAULT) */
 #define PGTH_P_STRING_OK             501

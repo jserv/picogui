@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.23 2001/01/15 08:53:24 micahjd Exp $
+/* $Id: popup.c,v 1.24 2001/02/13 04:02:14 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -73,12 +73,12 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
     }
     else {
       /* exactly at the cursor */
-      x = pointer->x;
-      y = pointer->y;
+      x = cursor->x;
+      y = cursor->y;
     } 
 
     /* pop vertically if the cursor is on the bottom half of the screen */
-    // y = (pointer->y > (vid->yres>>1)) ? (pointer->y - h) : pointer->y;
+    // y = (cursor->y > (vid->yres>>1)) ? (cursor->y - h) : cursor->y;
 
     (*wgt)->in->div->state = PGTH_O_POPUP_MENU;
     (*wgt)->in->state = PGTH_O_POPUP_MENU;

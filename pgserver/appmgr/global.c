@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.28 2001/01/29 00:22:33 micahjd Exp $
+/* $Id: global.c,v 1.29 2001/02/13 04:02:12 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -33,13 +33,24 @@
 #include <pgserver/g_malloc.h>
 #include <pgserver/appmgr.h>
 
-#include "defaultcursor.inc"
+/*** Simple arrow cursor in XBM format */
+
+#define cursor_width 8
+#define cursor_height 14
+unsigned char const cursor_bits[] = {
+0x01,0x03,0x05,0x09,0x11,0x21,0x41,0x81,0xC1,0x21,0x2D,0x4B,0x50,0x70
+};
+unsigned char const cursor_mask_bits[] = {
+0x01,0x03,0x07,0x0F,0x1F,0x3F,0x7F,0xFF,0xFF,0x3F,0x3F,0x7B,0x70,0x70
+};
+
 
 struct app_info *applist;
 handle defaultfont;
 struct widget *bgwidget;
 handle hbgwidget;
-struct sprite *pointer;
+struct sprite *cursor;
+hwrbitmap defaultcursor_bitmap,defaultcursor_bitmask;
 handle string_ok,string_cancel,string_yes,string_no;
 handle htbboundary;       /* The last toolbar, represents the boundary between
 			     toolbars and application panels */
@@ -75,20 +86,31 @@ g_error appmgr_init(void) {
   errorcheck;
 
 #ifdef DEBUG_INIT
-   printf("Init: appmgr: pointer sprite\n");
+   printf("Init: appmgr: cursor sprite bitmaps\n");
 #endif
-   
-  /* Create the pointer sprite */
-  e = new_sprite(&pointer,19,22);
+
+  /* Load the default mouse cursor bitmaps */
+  e = (*vid->bitmap_loadxbm)(&defaultcursor_bitmap,cursor_bits,
+			     cursor_width,cursor_height,
+			     (*vid->color_pgtohwr)(0xFFFFFF),
+			     (*vid->color_pgtohwr)(0x000000));
   errorcheck;
-#ifdef DEBUG_INIT
-   printf("Init: appmgr: pointer sprite bitmaps\n");
-#endif
-  e = (*vid->bitmap_loadpnm)(&pointer->bitmap,cursor_bits,cursor_len);
-  errorcheck;
-  e = (*vid->bitmap_loadpnm)(&pointer->mask,cursor_mask_bits,cursor_mask_len);
+  e = (*vid->bitmap_loadxbm)(&defaultcursor_bitmask,cursor_mask_bits,
+			     cursor_width,cursor_height,
+			     0,0xFFFFFFFF);
   errorcheck;
 
+#ifdef DEBUG_INIT
+   printf("Init: appmgr: cursor sprite\n");
+#endif
+
+  /* Allocate the sprite */
+  e = new_sprite(&cursor,cursor_width,cursor_height);
+  errorcheck;
+   
+  /* Load bitmaps */
+  appmgr_loadcursor(PGTH_O_DEFAULT);
+   
 #ifdef DEBUG_INIT
    printf("Init: appmgr: strings\n");
 #endif
@@ -117,9 +139,9 @@ void appmgr_free(void) {
     g_free(condemn);
   }
   
-  /* Free the mouse pointer */
-  free_sprite(pointer);
-  pointer = NULL;
+  /* Free the mouse cursor */
+  free_sprite(cursor);
+  cursor = NULL;
 }
 
 /* Unregisters applications owned by a given connection */
@@ -215,6 +237,39 @@ g_error appmgr_register(struct app_info *i) {
 
   return sucess;
 }
+
+/* Load the mouse cursor specified by the given theme object */
+void appmgr_loadcursor(int thobj) {
+   hwrbitmap bitmap,mask;
+   int w,h;
+   
+   /* Load the cursor bitmaps, using the default if there is a problem */
+   
+   if (iserror(rdhandle((void**)&bitmap,PG_TYPE_BITMAP,-1,
+			theme_lookup(thobj,PGTH_P_CURSORBITMAP))) || !bitmap)
+     bitmap = defaultcursor_bitmap;
+   if (iserror(rdhandle((void**)&mask,PG_TYPE_BITMAP,-1,
+			theme_lookup(thobj,PGTH_P_CURSORBITMASK))) || !mask)
+     mask = defaultcursor_bitmask;
+   (*vid->bitmap_getsize)(bitmap,&w,&h);
+  
+   /* Insert the new bitmaps, resize the sprite if necessary */
+
+   (*vid->sprite_hide)(cursor);
+
+   if ( (w!=cursor->w) || (h!=cursor->h) ) {
+      cursor->w = w;
+      cursor->h = h;
+      (*vid->bitmap_free)(cursor->backbuffer);
+      (*vid->bitmap_new)(&cursor->backbuffer,w,h);
+   }
+   
+   cursor->bitmap = bitmap;
+   cursor->mask = mask;
+   
+   (*vid->sprite_show)(cursor);
+}
+	
 
 /* The End */
 

@@ -1,3 +1,16 @@
+---- Monday, February 12
+
+To reduce the size of pgserver and make it better suited for low-bpp
+displays, I replaced the hand cursor (that took about 4k in the binary) with
+a tiny XBM cursor that takes practically no space.
+I will be adding theme support to the cursor so the hand cursor can be
+reborn as a theme.
+
+---- Weekend, February 10-11
+
+Posted pictures of the uCsimm and PicoGUI on the web page. The linear4
+driver has working line, pixel, rectangle, and blit functions
+
 ---- Friday, February 9
 
 Updated pgremote to have proper keyboard support, and work with SDL.
