@@ -1,4 +1,4 @@
-/* $Id: ncursesinput.c,v 1.6 2001/01/15 09:57:46 micahjd Exp $
+/* $Id: ncursesinput.c,v 1.7 2001/01/15 21:45:30 micahjd Exp $
  *
  * ncursesinput.h - input driver for ncurses
  * 
@@ -63,17 +63,26 @@ int ncursesinput_fd_activate(int fd) {
 	 ch = getch();
 	 mods = PGMOD_ALT;
 
+	 /* CTRL-ALT-/ seems not to work... this hack maps ALT-/ to CTRL-ALT-/ */
+	 if (ch==47)
+	   mods |= PGMOD_CTRL;
+	 
 	 /* Check for ctrl too */
 	 if (ch < ' ') {
 	    ch += 'a'-1;
 	    mods |= PGMOD_CTRL;
 	 }
+	
+	 /* Hack to map CTRL-Z */
+	 if (ch==KEY_SUSPEND)
+	   ch = PGKEY_z;
 	 
 	 dispatch_key(TRIGGER_KEYDOWN,ch,mods);
 	 break;
 	 
 	 /**** Keys that must be mapped */
 	 
+       case KEY_SUSPEND:      dispatch_key(TRIGGER_KEYDOWN,PGKEY_z,PGMOD_CTRL); break;
        case KEY_BACKSPACE:    dispatch_key(TRIGGER_CHAR,'\b',0); break;
        case KEY_UP:           ncursesinput_sendkey(PGKEY_UP); break;
        case KEY_DOWN:         ncursesinput_sendkey(PGKEY_DOWN); break;
@@ -99,11 +108,12 @@ int ncursesinput_fd_activate(int fd) {
        case KEY_F(12):        ncursesinput_sendkey(PGKEY_F12); break;
 	 
        default:     /* Normal key */
-	 dispatch_key(TRIGGER_CHAR,ch,0);
 	 
 	 /* Check for ctrl */
 	 if (ch < ' ')
-	   dispatch_key(TRIGGER_DOWN,ch+'A'-1,PGMOD_CTRL);
+	   dispatch_key(TRIGGER_KEYDOWN,ch+PGKEY_a-1,PGMOD_CTRL);
+	 else
+	   dispatch_key(TRIGGER_CHAR,ch,0);
       }
    }
    
@@ -112,6 +122,12 @@ int ncursesinput_fd_activate(int fd) {
       if (Gpm_GetEvent(&evt) > 0) {
 	 int trigger;
 
+	 /* Maybe movement outside of window or on another VT */
+	 if ((evt.type & (GPM_MOVE|GPM_DRAG)) && 
+	     (evt.x==ncurses_last_event.x) &&
+	     (evt.y==ncurses_last_event.y))
+	   return 1;
+	 
 	 ncurses_last_event = evt;
 	 
 	 switch (evt.type & (GPM_MOVE | GPM_DRAG | GPM_UP | GPM_DOWN)) {
