@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.58 2003/01/01 03:43:03 micahjd Exp $
+/* $Id: request.c,v 1.59 2003/04/14 01:49:27 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -34,6 +34,7 @@
 #include <picogui/version.h>
 #include <pgserver/input.h>
 #include <pgserver/requests.h>
+#include <pgserver/init.h>
 #include <pgserver/configfile.h>
 #ifndef CONFIG_UNIX_SOCKET
 #include <netinet/tcp.h>
@@ -78,7 +79,8 @@ int numclients = 0;
 void closefd(int fd) {
   /* Last client left */
   --numclients;
-  if (get_param_str("pgserver","session",NULL) && !numclients)
+  if (get_param_str("pgserver","session",NULL) && 
+      !numclients && childqueue_is_empty())
     pgserver_mainloop_stop();
   
   /* Give up captured devices */

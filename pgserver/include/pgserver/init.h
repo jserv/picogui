@@ -1,4 +1,4 @@
-/* $Id: init.h,v 1.6 2003/03/10 23:48:12 micahjd Exp $
+/* $Id: init.h,v 1.7 2003/04/14 01:49:27 micahjd Exp $
  *
  * init.h - High level pgserver initialization, main loop, and shutdown
  *
@@ -61,6 +61,8 @@ g_error childqueue_push(const char *cmdline);
 void childqueue_pop(void);
 
 void childqueue_shutdown(void);
+
+int childqueue_is_empty(void);
 
 /* Start the main loop, run iterations while mainloop_is_running */
 g_error pgserver_mainloop(void);

@@ -1,4 +1,4 @@
-/* $Id: mainloop.c,v 1.4 2003/01/01 03:43:03 micahjd Exp $
+/* $Id: mainloop.c,v 1.5 2003/04/14 01:49:27 micahjd Exp $
  *
  * mainloop.c - Process incoming stimuli from clients and drivers
  *
@@ -160,6 +160,11 @@ g_error childqueue_pop_internal(void) {
   }
   return success;
 }
+
+int childqueue_is_empty(void) {
+  return childlist_tail == NULL && childqueue_pending == 0;
+}
+
 
 /* The End */
 
