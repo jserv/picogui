@@ -1,4 +1,4 @@
-/* $Id: pgboard_api.c,v 1.6 2001/11/20 09:44:47 cgrigis Exp $
+/* $Id: pgboard_api.c,v 1.7 2001/11/20 16:07:24 cgrigis Exp $
  *
  * kbd_api.c - high-level API to manipulate the PicoGUI virtual keyboard
  * 
@@ -211,7 +211,7 @@ void send_command (struct keyboard_command * cmd, int force)
 
       /* Send the user command */
       pgAppMessage (kb, pgFromMemory (cmd, sizeof (struct keyboard_command)));
-      usleep (100000);
+      usleep (300000);
     }
 }
 
