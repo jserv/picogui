@@ -6,7 +6,7 @@
  Every non-blank line of the body will be sent as a message to the bot.
 """
 from twisted.internet import reactor, protocol
-import sys, email
+import sys, email, irc_colors
 
 logFile = "/home/commits/mail.log"
 socketName = "/tmp/announceBot.socket"
@@ -30,7 +30,7 @@ class AnnounceClient(protocol.Protocol):
 	    	line = line.strip()
 		if len(line) > 0:
                     self.transport.write("%s %s %s\r\n" %
-                                         (subjectFields[0], subjectFields[1], line))
+                                         (subjectFields[0], irc_colors.boldify(subjectFields[1]), line))
         if subjectFields[0] in allowedControlCommands:
             self.transport.write("%s %s\r\n" % (subjectFields[0], subjectFields[1]))
         self.transport.loseConnection()
