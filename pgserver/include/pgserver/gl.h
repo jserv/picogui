@@ -1,4 +1,4 @@
-/* $Id: gl.h,v 1.2 2002/11/25 06:43:00 micahjd Exp $
+/* $Id: gl.h,v 1.3 2002/12/01 19:35:51 micahjd Exp $
  *
  * gl.h - Components defined and used by the OpenGL VBL for PicoGUI
  *
@@ -198,6 +198,8 @@ inline float gl_dist_line_to_point(float point_x, float point_y,
 inline void gl_lgop(s16 lgop);
 int gl_power2_round(int x);
 void gl_frame(void);
+void gl_frame_setup(void);
+void gl_frame_cleanup(void);
 void gl_feedback(int x, int y, int w, int h, int lgop, int filter,
 		 int source, int generate_mipmaps, int mipmap_level);
 void gl_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop);

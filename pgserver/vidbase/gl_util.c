@@ -1,4 +1,4 @@
-/* $Id: gl_util.c,v 1.5 2002/11/25 13:43:01 micahjd Exp $
+/* $Id: gl_util.c,v 1.6 2002/12/01 19:35:51 micahjd Exp $
  *
  * gl_util.c - OpenGL driver for picogui
  *             This file has utilities shared by multiple components of the driver.
@@ -162,30 +162,7 @@ void gl_frame(void) {
 
   gl_global.need_update = 0;
   gl_global.allow_update = 1;
-
-  /* Push current modelview and projection matrices,
-   * Set up our perspective pixel-coordinates matrices.
-   */
-  glMatrixMode(GL_PROJECTION);
-  glPushMatrix();
-  glLoadIdentity();
-  gluPerspective(GL_FOV,1,GL_MINDEPTH,GL_MAXDEPTH*2);
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  glLoadIdentity();
-  gl_matrix_camera();
-
-  /* Make sure appropriate modes are set */
-  if (gl_global.antialias) {
-    glEnable(GL_POLYGON_SMOOTH);
-    glEnable(GL_LINE_SMOOTH);
-    glEnable(GL_BLEND);
-  }
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_LIGHTING);
-  glDisable(GL_SMOOTH);
-  glDisable(GL_TEXTURE_2D);
-
+  gl_frame_setup();
 
   /***************** Background grid */
 
@@ -257,7 +234,35 @@ void gl_frame(void) {
 
   gl_global.allow_update = 0;
   vid->update(vid->display,0,0,vid->xres,vid->yres);
+  gl_frame_cleanup();
+}
 
+void gl_frame_setup(void) {
+  /* Push current modelview and projection matrices,
+   * Set up our perspective pixel-coordinates matrices.
+   */
+  glMatrixMode(GL_PROJECTION);
+  glPushMatrix();
+  glLoadIdentity();
+  gluPerspective(GL_FOV,1,GL_MINDEPTH,GL_MAXDEPTH*2);
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glLoadIdentity();
+  gl_matrix_camera();
+
+  /* Make sure appropriate modes are set */
+  if (gl_global.antialias) {
+    glEnable(GL_POLYGON_SMOOTH);
+    glEnable(GL_LINE_SMOOTH);
+    glEnable(GL_BLEND);
+  }
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_LIGHTING);
+  glDisable(GL_SMOOTH);
+  glDisable(GL_TEXTURE_2D);
+}
+
+void gl_frame_cleanup(void) {
   /* Pop matrices */
   glMatrixMode(GL_PROJECTION);
   glPopMatrix();
@@ -494,8 +499,9 @@ void gl_feedback(int x, int y, int w, int h, int lgop, int filter,
   }
 
   /* Use an OpenGL extension to automatically generate mipmaps if we want that */
-  glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+  glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, generate_mipmaps);
   glEnable(GL_TEXTURE_2D);
+  glReadBuffer(source);
 
   /* Find the origin of the modelview matrix, projected into viewport coordinates */
   glGetFloatv(GL_PROJECTION_MATRIX, projection);
@@ -525,7 +531,6 @@ void gl_feedback(int x, int y, int w, int h, int lgop, int filter,
       tileh = min(h-iy,t_size);
 
       /* Copy from the source buffer */
-      glReadBuffer(source);
       glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_BASE_LEVEL,0);
       glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 
 			  tilex+originx, vid->yres-(originy+tiley+tileh), tilew, tileh);
