@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.37 2002/01/05 15:06:22 micahjd Exp $
+/* $Id: pgtheme.y,v 1.38 2002/01/05 15:27:08 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -243,7 +243,13 @@ property: PROPERTY
 propertyval:  constexp          { $$.data = $1; $$.loader = PGTH_LOAD_NONE; $$.ldnode = NULL;}
            |  fillstyle         { $$ = $1; }
            |  COPY '(' THOBJ CLASS PROPERTY ')' {
+  /* The Copy() syntax exists for backward compatibility and verbosity */
   $$.data   = ($3 << 16) | $5;
+  $$.loader = PGTH_LOAD_COPY;
+}     
+           |  THOBJ CLASS PROPERTY {
+  /* Just like Copy() */
+  $$.data   = ($1 << 16) | $3;
   $$.loader = PGTH_LOAD_COPY;
 }     
            |  FONT '(' STRING ',' constexp ',' constexp ')' {
