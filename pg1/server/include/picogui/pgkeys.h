@@ -272,16 +272,16 @@
 #define PGKEY_ALPHA              322   /* Selects letters on a numeric keypad
 					* (for celphones and similar devices) */
 
-#ifdef DRIVER_BTKEY
-# define PG_KBD_CONNECTED        323
-# define PG_KBD_NOT_CONNECTED    324
-# define PG_PHONE_CONNECTED      325
-# define PG_PHONE_NOT_CONNECTED  326
+/**
+ * The following are used only by the BTKEY input driver, to signal when
+ * a device has appeared or disappeared.
+ */
+#define PG_KBD_CONNECTED         323
+#define PG_KBD_NOT_CONNECTED     324
+#define PG_PHONE_CONNECTED       325
+#define PG_PHONE_NOT_CONNECTED   326
 
-# define PGKEY_MAX               326
-#else
-# define PGKEY_MAX               322
-#endif
+#define PGKEY_MAX                326
 
 /* Modifier keys (also from SDL) */
 #define PGMOD_LSHIFT  0x0001
