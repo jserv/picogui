@@ -61,12 +61,20 @@ class Location:
            """
         try:
             bytes = 0
+            # Make two downloads- a tiny one and a somewhat larger one.
+            # We use the first one to guess the connection time and subtract
+            # that from the second one's time.
+            startTime = time.time()
+            url = urllib2.urlopen(self.absoluteURI)
+            url.read(1)
+            url.close()
+            connectTime = time.time() - startTime
             startTime = time.time()
             url = urllib2.urlopen(self.absoluteURI)
             bytes += len(url.read(64000))
             url.close()
-            endTime = time.time()
-            speed = bytes / (endTime - startTime)
+            dlTime = time.time() - startTime
+            speed = bytes / (dlTime-connectTime)
         except IOError:
             speed = 0
         PGBuild.XMLUtil.setChildData(self.host, 'speed', speed)
@@ -91,12 +99,13 @@ class Location:
                 self.retested = 1
 
         if needTest:
+            if progress:
+                progress.showTaskHeading()
             self.testSpeed()
             if progress:
-                # Get a little info to make a more useful progress report
                 server = urlparse.urlparse(self.absoluteURI)[1]
                 speed = float(PGBuild.XMLUtil.getChildData(self.host, 'speed'))
-                progress.report("tested", "%7.2f KB/s - %s" % (speed/1000, server))
+                progress.report("tested", "%7.2f KB/s from %s" % (speed/1000, server))
         return float(PGBuild.XMLUtil.getChildData(self.host, 'speed'))
 
 

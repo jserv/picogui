@@ -100,15 +100,18 @@ class Progress:
             self.root = self
             self.lastTask = self
 
-    def _printTaskHeading(self):
+    def showTaskHeading(self):
         """We need to print a task heading if we're in a task we've never been in
            before, or if the current task has changed.
+           This can also be called manually if a task is starting that will take
+           some time before generating any progress reports.
            """
         if self.root.lastTask != self or not self.taskHeadingPrinted:
             if self.parent and not self.parent.taskHeadingPrinted:
-                self.parent._printTaskHeading()            
+                self.parent.showTaskHeading()            
             if self.taskName:
-                self.color.write(" -" * self.indentLevel, ('bold',))
+                self.color.write(" ")
+                self.color.write("-" * self.indentLevel, ('bold',))
                 self.color.write(" %s..." % self.taskName, ('bold', 'cyan'))
                 self.color.write("\n")
             self.taskHeadingPrinted = 1
@@ -121,7 +124,7 @@ class Progress:
            """
         if unimportance > self.verbosityLevel:
             return 0
-        self._printTaskHeading()
+        self.showTaskHeading()
         return 1
     
     def report(self, verb, noun, unimportance=1):
