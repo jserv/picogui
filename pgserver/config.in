@@ -85,7 +85,7 @@ if [ "$DRIVER_SDLFB" = "y" ]; then
 fi
 bool 'X Window System driver'              DRIVER_X11
 if [ "$DRIVER_X11" = "y" ]; then
-   bool '  Double-buffering'                      CONFIG_X11_DOUBLEBUFFER
+   bool '  Always Double-buffer'                  CONFIG_X11_DOUBLEBUFFER
    bool '  Disable pixel/getpixel (debug only)'   CONFIG_X11_NOPIXEL
    bool '  Use defaultvbl ellipse & fellipse'     CONFIG_X11_DEFAULTELLIPSE
 fi

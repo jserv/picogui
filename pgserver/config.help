@@ -351,10 +351,11 @@ DRIVER_X11INPUT
       This input driver is required for the X Window System video driver
 
 CONFIG_X11_DOUBLEBUFFER
-      Double-buffering constructs the screen's image in a separate buffer,
-      then blits that to the screen when necessary. This eliminates flicker
-      and makes handling XExpose events much faster, but makes most drawing
-      slower.
+      Normally the X driver only double-buffers sprite updates. This is
+      usually sufficient, but there will still be the occasional flicker
+      elsewhere. This option forces the driver to double-buffer everything.
+      This should eliminate all flicker, but it will slow down all
+      display updates.
 
 CONFIG_X11_NOPIXEL
       Since the X Window System provides high-level primitives, the

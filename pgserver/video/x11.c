@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.5 2001/11/20 05:52:28 micahjd Exp $
+/* $Id: x11.c,v 1.6 2001/11/20 12:51:20 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -45,6 +45,11 @@ struct x11bitmap {
   struct groprender *rend;   /* Context for pgRender() */
   struct x11bitmap *tile;    /* Cached tile            */
 } x11_display;
+
+/* This is our back-buffer when we double-buffer. Even if we're not
+ * double-buffering everything, we still double-buffer sprites
+ */
+struct x11bitmap *x11_backbuffer;
 
 /* In X11 there is a comparatively large per-blit penalty, and
  * no API function for tiling a bitmap. To speed things up
@@ -139,12 +144,17 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
   XSetFillRule(xdisplay,x11_gctab[PG_LGOP_STIPPLE],EvenOddRule);
    */
 
+  /* Allocate a backbuffer- necessary for full double-buffering,
+   * and also for buffering sprite updates.
+   */
+  e = vid->bitmap_new((hwrbitmap*) &x11_backbuffer,vid->xres,vid->yres);
+  errorcheck;  
+  
 #ifdef CONFIG_X11_DOUBLEBUFFER
   /* This driver is double-buffered. This eliminates flicker, and
    * lets us repaint the screen when we get an expose event.
    */
-  e = vid->bitmap_new(&vid->display,vid->xres,vid->yres);
-  errorcheck;
+  vid->display = (hwrbitmap) x11_backbuffer;
 #else
   /* Draw directly to the output window */
   vid->display = (hwrbitmap) &x11_display;
@@ -168,9 +178,7 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
 void x11_close(void) {
   if (x11_display.rend)
     g_free(x11_display.rend);
-#ifdef CONFIG_X11_DOUBLEBUFFER
-  vid->bitmap_free(vid->display);
-#endif
+  vid->bitmap_free((hwrbitmap) x11_backbuffer);
   unload_inlib(inlib_main);   /* Take out our input driver */
   XCloseDisplay(xdisplay);
   xdisplay = NULL;
@@ -292,20 +300,28 @@ void x11_fellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) 
 }
 #endif
 
-/* Blit the backbuffer to the display */
-void x11_update(s16 x,s16 y,s16 w,s16 h) {
-#ifdef CONFIG_X11_DOUBLEBUFFER
+/* Blit the backbuffer to the display- we always need this,
+ * at the very least for sprite buffering
+ */
+void x11_buffered_update(s16 x,s16 y,s16 w,s16 h) {
   XCopyArea(xdisplay,((struct x11bitmap*)vid->display)->d,x11_display.d,
 	    x11_gctab[PG_LGOP_NONE],x,y,w,h,x,y);
-#endif
   XFlush(xdisplay);
 }
+
+/* Non-buffered update. Only need this if we're not doublebuffering
+ */
+#ifndef CONFIG_X11_DOUBLEBUFFER
+void x11_update(s16 x,s16 y,s16 w,s16 h) {
+  XFlush(xdisplay);
+}
+#endif
 
 /* Similar to the update function, but triggered by the X server */
 void x11_expose(int x,int y,int w,int h) {
 #ifdef CONFIG_X11_DOUBLEBUFFER
 
-  /* If we're double-buffered, this is just x11_update without the XFlush */
+  /* If we're double-buffered, this is just x11_buffered_update without the XFlush */
   XCopyArea(xdisplay,((struct x11bitmap*)vid->display)->d,x11_display.d,
 	    x11_gctab[PG_LGOP_NONE],x,y,w,h,x,y);
 
@@ -430,7 +446,7 @@ void x11_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
       (sxb->w < X11_TILESIZE || sxb->h < X11_TILESIZE)) {
     /* Create a pre-tiled image */
     if (!sxb->tile) {
-      vid->bitmap_new( (hwrbitmap)&sxb->tile,
+      vid->bitmap_new( (hwrbitmap*)&sxb->tile,
 		       (X11_TILESIZE/sxb->w + 1) * sxb->w,
 		       (X11_TILESIZE/sxb->h + 1) * sxb->h );
       def_blit((hwrbitmap)sxb->tile,0,0,sxb->tile->w,
@@ -445,6 +461,37 @@ void x11_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
     XCopyArea(xdisplay,sxb->d,dxb->d,g,src_x,src_y,w,h,x,y);
 }
 
+/* The default sprite code is fine on slow LCDs, or
+ * on double-buffered displays. On X11 without double-buffering,
+ * the flickering's pretty bad. x11_sprite_update() does a little
+ * magic to double-buffer sprite updates.
+ */
+#ifndef CONFIG_X11_DOUBLEBUFFER
+void x11_sprite_update(struct sprite *spr) {
+
+  /* What's the relevant portion of the display? Assume that the
+   * old and new positions of the sprite are close together. Use
+   * add_updarea to calculate us an update region.
+   */
+  add_updarea(spr->x,spr->y,spr->w,spr->h);
+  add_updarea(spr->ox,spr->oy,spr->ow,spr->oh);
+
+  /* Copy the relevant portion of the display to the backbuffer */
+  XCopyArea(xdisplay,x11_display.d,x11_backbuffer->d,
+  	    x11_gctab[PG_LGOP_NONE],upd_x,upd_y,upd_w,upd_h,upd_x,upd_y);
+
+  /* Normal sprite update, but draw to the backbuffer instead
+   * of the display itself.
+   */
+  vid->display = (hwrbitmap) x11_backbuffer;
+  vid->sprite_hide(spr);
+  vid->sprite_show(spr);
+  
+  /* Copy backbuffer to display */
+  x11_buffered_update(upd_x,upd_y,upd_w,upd_h);
+  vid->display = (hwrbitmap) &x11_display;
+}
+#endif /* CONFIG_X11_DOUBLEBUFFER */
 
 /******************************************** Driver registration */
 
@@ -456,7 +503,12 @@ g_error x11_regfunc(struct vidlib *v) {
   v->close = &x11_close;
   v->pixel = &x11_pixel;
   v->getpixel = &x11_getpixel;
+#ifdef CONFIG_X11_DOUBLEBUFFER
+  v->update = &x11_buffered_update;
+#else
+  v->sprite_update = &x11_sprite_update;
   v->update = &x11_update;
+#endif
   v->bitmap_get_groprender = &x11_bitmap_get_groprender;
   v->bitmap_getsize = &x11_bitmap_getsize;
   v->bitmap_new = &x11_bitmap_new;
