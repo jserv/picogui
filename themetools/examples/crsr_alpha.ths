@@ -1,4 +1,5 @@
 object default {
+  name = "Alpha blended arrow cursor";
   cursorbitmap = LoadBitmap("data/alphacursor.png");
   cursorbitmask = 0;
 }

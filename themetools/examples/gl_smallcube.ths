@@ -7,10 +7,10 @@
  *  -rw-r--r--    1 micah    micah        1806 Mar  5 22:24 cube.dxf
  *  -rw-r--r--    1 micah    micah         361 Mar  5 22:24 cube.obj
  *  -rw-r--r--    1 micah    micah        1831 Mar  5 22:24 cube.wrl
- *  -rw-r--r--    1 micah    micah         528 Mar  5 23:05 gl_smallcube.th
+ *  -rw-r--r--    1 micah    micah         520 Mar  5 23:05 gl_smallcube.th
  */
 
-object default name = "Simple spinning cube demo (OpenGL)";
+object default name = "Simple cube demo (OpenGL)";
 
 object background {
 
