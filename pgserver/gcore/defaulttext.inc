@@ -111,5 +111,6 @@
 /* 103 */ "Support for the canvas widget was not compiled in to this server",
 /* 104 */ "Remote input devices have been disabled",
 /* 105 */ "Exclusive resource access has been disabled",
+/* 106 */ "Fatal signal received, quick & dirty shutdown complete",
 
 

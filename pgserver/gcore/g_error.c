@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.29 2002/01/06 09:22:57 micahjd Exp $
+/* $Id: g_error.c,v 1.30 2002/01/18 00:27:10 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -64,7 +64,7 @@ g_error prerror(g_error e) {
 }
 
 /* graphical error/info screen, only in debug mode */
-#ifdef DEBUG_ANY
+#ifdef HAS_GURU
 
 /* Without the XBM loader, no nifty icon! */
 #ifdef CONFIG_FORMAT_XBM

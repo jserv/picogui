@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.34 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: request.c,v 1.35 2002/01/18 00:27:11 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -66,10 +66,9 @@ fd_set evtwait;
 /* Linked list of connection buffers */
 struct conbuf *conbufs = NULL;
 
-/* If this is nonzero, the last client exiting will cause
-   the server to exit
-*/
-extern int use_sessionmgmt;
+/* Keep track of the number of clients so we can exit
+ * when the last one does if applicable
+ */
 int numclients = 0;
 
 /************* Functions used only in this file **/
@@ -319,11 +318,6 @@ g_error net_init(void) {
 #endif
 
   if (s) return success;
-
-#ifndef WINDOWS
-  signal(SIGCHLD, SIG_IGN);
-  signal(SIGPIPE, SIG_IGN);
-#endif
 
 #ifdef WINDOWS    /* Windows - compatible enough with BSD sockets that
 		     programmers would accept WinSock, but incompatible enough

@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.115 2002/01/17 17:07:34 epchristi Exp $
+/* $Id: constants.h,v 1.116 2002/01/18 00:27:11 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -788,6 +788,7 @@ typedef unsigned long pghandle;
 #define PGDM_CURSORBLKEN     10   //!< Cursor blanking on/off
 #define PGDM_INPUT_CALEN     11   //!< Turn calibration mode on/off
 #define PGDM_CURSORWARP      12   //!< Internal message, notify drivers of a cursor warp
+#define PGDM_SIGNAL          13   //!< Internal message, sends SIGUSR1/2 to drivers (param is signal)
 
 #define PG_SND_KEYCLICK       1   //!< Short click
 #define PG_SND_BEEP           2   //!< Terminal beep

@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.20 2002/01/16 19:47:25 lonetech Exp $
+/* $Id: pgmain.c,v 1.21 2002/01/18 00:27:10 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -51,12 +51,13 @@
 extern char **environ;
 #endif
 
-volatile u8 proceed = 1;
+volatile u8 mainloop_proceed = 1;
 volatile u8 in_shutdown = 0, in_init = 1;
-volatile int use_sessionmgmt = 0;           /* Using session manager, exit after last client */
-int use_tpcal = 0;                          /* Run tpcal before running the session manager */
-int sessionmgr_secondary = 0;               /* Need to run session manager after tpcal */
-volatile int sessionmgr_start = 0;          /* Start the session manager at the next iteration */
+volatile u8 use_sessionmgmt = 0;           /* Using session manager, exit after last client */
+volatile u8 use_tpcal = 0;                 /* Run tpcal before running the session manager */
+volatile u8 sessionmgr_secondary = 0;      /* Need to run session manager after tpcal */
+volatile u8 sessionmgr_start = 0;          /* Start the session manager at the next iteration */
+
 extern long memref;
 struct dtstack *dts;
 
@@ -64,12 +65,6 @@ struct dtstack *dts;
 extern char *optarg;
 extern int optind;
 #endif /* UCLINUX */
-
-#ifndef WINDOWS
-pid_t my_pid;
-void sigterm_handler(int x);
-void sigchld_handler(int x);
-#endif
 
 /* For storing theme files to load later */
 struct themefilenode {
@@ -86,6 +81,7 @@ struct themefilenode *themefiles;
 int run_config_process(const char *name) {
 #ifndef WINDOWS  
   const char *cmd;
+  int my_pid = getpid();
 
   cmd = get_param_str("pgserver",name,NULL);
 
@@ -124,10 +120,6 @@ int main(int argc, char **argv) {
   int videotest_mode,videotest_on = 0;
 #endif
    
-#ifndef WINDOWS
-  my_pid = getpid();
-#endif
-
   /* Initialize pointer tables here if it can't be done at compile-time */
 #ifdef RUNTIME_FUNCPTR
    widgettab_init();
@@ -558,29 +550,16 @@ int main(int argc, char **argv) {
 #ifdef DEBUG_INIT
    printf("Init: signal handler and subprocess\n");
 #endif
-
-#ifndef WINDOWS
-  /* Signal handler (it's usually good to have a way to exit!) */
-  if (signal(SIGTERM,&sigterm_handler)==SIG_ERR) {
-     prerror(mkerror(PG_ERRT_INTERNAL,54));
-     exit(1);
-  }
-  if (signal(SIGINT,&sigterm_handler)==SIG_ERR) {
-     prerror(mkerror(PG_ERRT_INTERNAL,54));
-     exit(1);
-  }
-  if (signal(SIGCHLD,&sigchld_handler)==SIG_ERR) {
-     prerror(mkerror(PG_ERRT_INTERNAL,54));
-     exit(1);
-  }
-#endif
+   
+   /* Get signals.c to init signal handlers */
+   signals_install();
    
 #ifdef CONFIG_VIDEOTEST   /* Video test mode */
     if (videotest_on==1)
        videotest_run(videotest_mode);
     if (videotest_on==2) {
        videotest_benchmark();
-       proceed = 0;       /* Don't bother with running a server :) */
+       mainloop_proceed = 0;   /* Don't bother with running a server :) */
     }
        
   /* initial update */
@@ -617,7 +596,7 @@ int main(int argc, char **argv) {
   guru("Initialization done!\n\n(This message brought to you\nby DEBUG_INIT)");
 #endif
      
-  while (proceed) {
+  while (mainloop_proceed) {
     net_iteration();
 
     if (sessionmgr_start) {
@@ -664,27 +643,11 @@ int main(int argc, char **argv) {
   exit(0);
 }
 
-#ifndef WINDOWS
-void sigterm_handler(int x) {
-  proceed = 0;
-}
-
-void sigchld_handler(int x) {
-  /* Wait for child so we don't have zombies */
-  waitpid(-1, NULL, WNOHANG);
-    
-  if (sessionmgr_secondary) {
-    sessionmgr_start = 1;
-    sessionmgr_secondary = 0;
-  }
-}
-#endif
-
 void request_quit(void) {
 #ifdef WINDOWS
-  proceed = 0;
+  mainloop_proceed = 0;
 #else
-  kill(my_pid,SIGTERM);
+  kill(getpid(),SIGTERM);
 #endif
 }
    

@@ -1,4 +1,4 @@
-/* $Id: g_error.h,v 1.14 2002/01/16 19:47:25 lonetech Exp $
+/* $Id: g_error.h,v 1.15 2002/01/18 00:27:11 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -75,6 +75,7 @@ g_error errorload(const char *filename);
     defined(DEBUG_VIDEO) | defined(DEBUG_THEME) | defined(DEBUG_NET) | \
     defined(DEBUG_MEMORY) | defined(DEBUG_INIT)
 #define DEBUG_ANY
+#define HAS_GURU
 void guru(const char *fmt, ...);
 #endif
 

@@ -1,4 +1,4 @@
-/* $Id: pgmain.h,v 1.7 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: pgmain.h,v 1.8 2002/01/18 00:27:11 micahjd Exp $
  *
  * pgmain.h - just a few things related to the main loop
  *
@@ -28,8 +28,20 @@
 #ifndef _H_PGMAIN
 #define _H_PGMAIN
 
-extern volatile u8 in_shutdown;
+/* Variables indicating pgserver's status, they may be affected by signals
+ */
+extern volatile u8 mainloop_proceed;
+extern volatile u8 in_shutdown, in_init;
+extern volatile u8 use_sessionmgmt;           /* Using session manager, exit after last client */
+extern volatile u8 use_tpcal;                 /* Run tpcal before running the session manager */
+extern volatile u8 sessionmgr_secondary;      /* Need to run session manager after tpcal */
+extern volatile u8 sessionmgr_start;          /* Start the session manager at the next iteration */
+
+/* Call request_quit to exit pgserver cleanly */
 void request_quit(void);
+
+/* This installs signal handlers in signals.c */
+void signals_install(void);
 
 /* Functions for initializing function pointer tables when they can't
  * be done at compile time (ucLinux, for example) */

@@ -10,13 +10,14 @@ libgcore_a_SOURCES = \
 	font.c 		 \
 	handle.c 	 \
 	g_error.c 	 \
-	timer.c 	    \
-	errortext.c  \
-	video.c 	    \
-	input.c 	    \
-	driverinfo.c \
-	configfile.c \
-	hotspot.c
+	timer.c 	 \
+	errortext.c      \
+	video.c 	 \
+	input.c 	 \
+	driverinfo.c     \
+	configfile.c     \
+	hotspot.c        \
+	signals.c
 
 EXTRA_DIST = inputdrivers.inc videodrivers.inc defaulttext.inc
 
