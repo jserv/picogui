@@ -2,7 +2,7 @@
 
 default_relationship = 'after'
 
-import Server
+import Server, struct
 _propnames = Server.constants['set'].keys()
 
 class Widget(object):
@@ -43,6 +43,12 @@ class Widget(object):
 
     def write(self, data):
         self.server.writeto(self.handle,data)
+
+    def writecmd(self, command, *params):
+        pkt = struct.pack('!HH', command, len(params))
+        for param in params:
+            pkt += struct.pack('!l',param)
+        self.write(pkt)
 
     def __setattr__(self, name, value):
         pname = name.lower().replace('_', ' ')

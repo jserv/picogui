@@ -25,3 +25,8 @@ Application = application.Application
 ToolbarApp = application.ToolbarApp
 InvisibleApp = application.InvisibleApp
 TemplateApp = application.TemplateApp
+import Canvas
+canvas = Canvas
+Canvas = canvas.Canvas
+
+
