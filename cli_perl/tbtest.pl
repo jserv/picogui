@@ -11,6 +11,15 @@ NewWidget(-type => button, -onclick => \&tuxclick,
 	  -bitmap => NewBitmap(-file=>'../images/button/tux.pnm'),
 	  -bitmask => NewBitmap(-file=>'../images/button/tux_mask.pnm'));
 
+NewWidget(-type => label,-side => left,
+	  -text => NewString("Or, exit: "),-transparent => 1,
+	  -font => NewFont("Helvetica",0,bold));
+
+NewWidget(-type => button, -onclick => sub {exit 0},
+	  -bitmap => NewBitmap(-file=>'../images/button/x.pnm'),
+	  -bitmask => NewBitmap(-file=>'../images/button/x_mask.pnm'));
+
+
 EventLoop;
 
 sub tuxclick {
@@ -30,4 +39,6 @@ sub tuxclick {
 	      -inside => $tb, -side => top,
 	      -bitmap => NewBitmap(-file=>'../images/button/check.pnm'),
 	      -bitmask => NewBitmap(-file=>'../images/button/check_mask.pnm'));
+
+    Update();
 }
