@@ -2,7 +2,7 @@
 # Simple disorganized python module for processing CIA stats
 #
 
-import os, glob
+import os, glob, time
 
 baseDir = "/home/commits"
 statDir = os.path.join(baseDir, "stats")
@@ -30,11 +30,14 @@ statHeadings = {
 # Projects we want to hide from stat lists
 hiddenProjects = ('stats', 'test')
 
-def loadInt(f):
-    f = open(f)
-    count = int(f.read().strip())
-    f.close()
-    return count
+def loadInt(f, default=0):
+    try:
+        f = open(f)
+        count = int(f.read().strip())
+        f.close()
+        return count
+    except IOError:
+        return default
 
 def readStats():
     """Stats are automatically read into the module on import,
@@ -67,10 +70,7 @@ def readStats():
         # Build a map of counts indexed by subdirectory
         counts = {}
         for subdir in statSubdirs:
-            try:
-                counts[subdir] = loadInt(os.path.join(statDir, subdir, project))
-            except IOError:
-                counts[subdir] = 0
+            counts[subdir] = loadInt(os.path.join(statDir, subdir, project))
         projectCounts[project] = counts
 
     # Sort the project list by the 'forever' count, descending
@@ -80,18 +80,27 @@ def readStats():
     projects.sort(countSort)
 
     # Calculate the Mean Time Between Commits, total and per-project
-    totalSamples = 0
-    totalTime = 0
     projectMTBC = {}
+    now = time.time()
     for project in ['commits'] + projects:
-        try:
-            projectSamples = loadInt(os.path.join(statDir, mtbcSubdir, project + '.numSamples'))
-            projectTime = loadInt(os.path.join(statDir, mtbcSubdir, project + '.totalTime'))
-            projectMTBC[project] = projectTime * 1.0 / projectSamples
-            totalSamples += projectSamples
-            totalTime += projectTime
-        except IOError:
-            projectMTBC[project] = None
+        projectLastTime = loadInt(os.path.join(statDir, mtbcSubdir, project + '.lastTime'))
+        projectSamples = loadInt(os.path.join(statDir, mtbcSubdir, project + '.numSamples'))
+        projectTime = loadInt(os.path.join(statDir, mtbcSubdir, project + '.totalTime'))
+
+        if projectSamples:
+            mtbc = projectTime * 1.0 / projectSamples
+            # If it's been longer than the MTBC since the last commit, weigh this in with the calculated MTBC
+            if now - projectLastTime > mtbc:
+                mtbc = (projectTime + (now - projectLastTime)) * 1.0 / (projectSamples + 1)
+        else:
+            # We don't have enough samples to calculate an MTBC. If we have one sample, just give the time
+            # since that sample was taken.
+            if projectLastTime:
+                mtbc = now - projectLastTime
+            else:
+                mtbc = None
+        projectMTBC[project] = mtbc
+
     totalMTBC = projectMTBC['commits']
 
     # Get project URLs
