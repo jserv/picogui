@@ -47,7 +47,7 @@ __version__= '0.2'
 
 # This copy of Visitor has been modified to use minidom via PGBuild's
 # wrapper, rather than using the full DOM.
-from PGBuild.XML.dom.minidom import Node
+from xml.dom.minidom import Node
 
 class Visitor:
   ProcessAttributes= 0

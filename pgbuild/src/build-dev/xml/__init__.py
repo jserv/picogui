@@ -24,19 +24,4 @@ __version__ = "$Revision: 1.11 $".split()[-2:][0]
 _MINIMUM_XMLPLUS_VERSION = (0, 6, 1)
 
 
-try:
-    import _xmlplus
-except ImportError:
-    pass
-else:
-    try:
-        v = _xmlplus.version_info
-    except AttributeError:
-        # _xmlplue is too old; ignore it
-        pass
-    else:
-        if v >= _MINIMUM_XMLPLUS_VERSION:
-            import sys
-            sys.modules[__name__] = _xmlplus
-        else:
-            del v
+### xmlplus hack removed -- Micah

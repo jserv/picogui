@@ -24,7 +24,7 @@ and XPath utilities.
 # 
 
 import SCons.Node
-import PGBuild.XML.dom.minidom
+from xml.dom import minidom
 import dmutil.xsl.xpath
 
 class XPathParser:
@@ -89,7 +89,7 @@ def getAttrDict(element):
         d[key] = element.attributes[key].value
     return d
 
-class Document(PGBuild.XML.dom.minidom.Document):
+class Document(minidom.Document):
     """Class that abstracts DOM-implementation-specific details on
        document loading. This accepts several types of input, in
        order of attempt:
@@ -103,12 +103,12 @@ class Document(PGBuild.XML.dom.minidom.Document):
        """
     def __init__(self, input):
         try:
-            dom = PGBuild.XML.dom.minidom.parseString(input.get_contents())
+            dom = minidom.parseString(input.get_contents())
         except AttributeError:
             if type(input) == file:
-                dom = PGBuild.XML.dom.minidom.parse(input)
+                dom = minidom.parse(input)
             else:
-                dom = PGBuild.XML.dom.minidom.parseString(input)
+                dom = minidom.parseString(input)
                 
         # Copy the attributes from the loaded DOM object into ourselves, being
         # careful not to overwrite any existing attributes.

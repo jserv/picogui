@@ -21,7 +21,7 @@
 
 # This copy of DomFactory has been modified to use minidom via PGBuild's
 # wrapper, rather than using the full DOM.
-from PGBuild.XML.dom import minidom
+from xml.dom import minidom
 
 from BaseFactory import BaseFactory, Expr, NodeListExpr, EvalContext
 from dmutil.visitor import Visitor

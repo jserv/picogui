@@ -26,6 +26,16 @@ multiple locations:
     but it's been modified.
     See http://optik.sourceforge.net/
 
+  - xml
+    Python 2.2.2 - modified
+
+    This is a copy of the xml module from Python 2.2.2.
+    It has been modified to not attempt loading the xmlplus module.
+    This is here to work around a bug in some versions of Gentoo
+    Linux where the xmlplus module is broken. Previously I had been
+    using a less drastic workaround for the bug, but it caused
+    an annoying delay at startup.
+
   - PGBuild
     dev
 
