@@ -6,14 +6,31 @@
  Every non-blank line of the body will be sent as a message to the bot.
 """
 from twisted.internet import reactor, protocol
-import sys, email
+import sys, email, os
 
 logFile = "/home/commits/mail.log"
+statsDir = "/home/commits/stats"
 socketName = "/tmp/announceBot.socket"
 
 # Allowed commands, split up into those with content and those without
 allowedTextCommands = ("Announce",)
 allowedControlCommands = ("JoinChannel", "PartChannel")
+
+def incrementProjectCommits(project):
+    if project.find(os.sep) >= 0:
+        return
+    statFile = os.path.join(statsDir, project)
+    count = 0
+    try:
+        f = open(statFile)
+        count = int(f.read().strip())
+        f.close()
+    except:
+        pass
+    count += 1
+    f = open(statFile, "w")
+    f.write("%d\n" % count)
+    f.close()
 
 class AnnounceClient(protocol.Protocol):
     def connectionMade(self):
@@ -25,14 +42,20 @@ class AnnounceClient(protocol.Protocol):
         subjectFields = mailMsg['Subject'].split(" ")
         messages = mailMsg.get_payload().split("\n")
         subjectFields[1] = subjectFields[1].lower()
+
+        # Send allowed text commands
         if subjectFields[0] in allowedTextCommands:
+            incrementProjectCommits(subjectFields[1])
             for line in messages:
 	    	line = line.strip()
 		if len(line) > 0:
                     self.transport.write("%s %s %s\r\n" %
                                          (subjectFields[0], subjectFields[1], line))
+
+        # Send allowed control commands
         if subjectFields[0] in allowedControlCommands:
             self.transport.write("%s %s\r\n" % (subjectFields[0], subjectFields[1]))
+            
         self.transport.loseConnection()
     
     def connectionLost(self, reason):
