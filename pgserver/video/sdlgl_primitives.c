@@ -1,4 +1,4 @@
-/* $Id: sdlgl_primitives.c,v 1.17 2002/11/21 11:37:29 micahjd Exp $
+/* $Id: sdlgl_primitives.c,v 1.18 2002/11/22 10:23:06 micahjd Exp $
  *
  * sdlgl_primitives.c - OpenGL driver for picogui, using SDL for portability.
  *                      Implement standard picogui primitives using OpenGL
@@ -461,9 +461,14 @@ void sdlgl_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
    * texture (therefore a power of 2 in each dimension)
    */
   if (sw==glsrc->sb->w && sh==glsrc->sb->h && sw==glsrc->tw && sh==glsrc->th) {
-    glBindTexture(GL_TEXTURE_2D, glsrc->texture);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+    /* Make sure this is actually a tiled blit, so we don't introduce artifacts when
+     * doing normal blits from things that are a power of two
+     */
+    if (xo || yo || sw!=w || sh!=h) {
+       glBindTexture(GL_TEXTURE_2D, glsrc->texture);
+       glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
+       glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+    }
     sdlgl_blit(dest,x,y,w,h,src,sx,sy,lgop);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP);
