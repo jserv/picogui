@@ -135,7 +135,8 @@ static void selectgame(int which)
   which%=totalgames;	/* no segfaults here, please */
   if(game)
    {
-    game->cleanup();
+    if(game->cleanup)
+      game->cleanup();
     pgLeaveContext();
     free(squares);
    }
@@ -157,7 +158,8 @@ static void selectgame(int which)
   squares=malloc(sizeof(squares[0])*game->width*game->height);
   memset(squares, 0, sizeof(squares[0])*game->width*game->height);
   drawboard();
-  game->init();
+  if(game->init)
+    game->init();
  }
 
 static int ptrx, ptry;

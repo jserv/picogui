@@ -4,14 +4,6 @@
 
 static currentplayer=1;
 
-static void overflow_cleanup(void)
- {
- }
-
-static void overflow_init(void)
- {
- }
-
 static int recursiveflow(gridpos p)
  {
   static int levels=0;
@@ -19,7 +11,6 @@ static int recursiveflow(gridpos p)
   squarestatus s;
 
   s=gggetstatus(p);
-  printf("Flow %d,%d (%d)\n", p.x, p.y, s.bricktype);
   if(s.player==-1)
     return 0;
   s.player=currentplayer;
@@ -84,9 +75,7 @@ static struct gridgame overflow = {
   width: 8,
   height: 8,
   players: 2,
-  init: overflow_init,
   drag: overflow_drag,
-  cleanup: overflow_cleanup
 };
 
 struct gridgame *register_overflow(void)

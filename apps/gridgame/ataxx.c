@@ -3,10 +3,6 @@
 
 static currentplayer=1;
 
-static void ataxx_cleanup(void)
- {
- }
-
 static void ataxx_init(void)
  {
   gridpos p={0,0};
@@ -69,7 +65,6 @@ static struct gridgame ataxx = {
   players: 2,
   init: ataxx_init,
   drag: ataxx_drag,
-  cleanup: ataxx_cleanup
 };
 
 struct gridgame *register_ataxx(void)
