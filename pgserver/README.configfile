@@ -291,7 +291,7 @@ quoted appropriately. For example:
   with maps produced by Gimp's image map plugin. The parser is awfully dumb,
   so don't expect it to work with anything other than Gimp at this time.
 
-- scalemap
+- mapscale
   Scale the map by this fraction. (space-separated numerator and denominator)
 
 [video-serial40x4]

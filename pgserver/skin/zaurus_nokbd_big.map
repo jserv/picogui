@@ -1,0 +1,20 @@
+<IMG SRC="/home/micah/sf/pgui-main/pgserver/skin/zaurus_nokbd_small.jpeg" WIDTH=621 HEIGHT=1196 BORDER=0 USEMAP="#map">
+
+<MAP NAME="map">
+<!-- #$-:Image Map file created by GIMP Imagemap Plugin -->
+<!-- #$-:GIMP Imagemap Plugin by Maurits Rijk -->
+<!-- #$-:Please do not edit lines starting with "#$" -->
+<!-- #$VERSION:1.3 -->
+<!-- #$AUTHOR:Micah Dowty -->
+<AREA SHAPE="RECT" COORDS="63,892,134,962" HREF="282">
+<AREA SHAPE="RECT" COORDS="148,874,220,945" HREF="283">
+<AREA SHAPE="RECT" COORDS="263,851,378,924" HREF="284">
+<AREA SHAPE="RECT" COORDS="428,876,494,944" HREF="285">
+<AREA SHAPE="RECT" COORDS="512,890,581,960" HREF="286">
+<AREA SHAPE="RECT" COORDS="81,987,205,1071" HREF="27">
+<AREA SHAPE="RECT" COORDS="436,989,563,1074" HREF="13">
+<AREA SHAPE="RECT" COORDS="282,928,361,973" HREF="273">
+<AREA SHAPE="RECT" COORDS="233,972,282,1047" HREF="276">
+<AREA SHAPE="RECT" COORDS="360,972,416,1049" HREF="275">
+<AREA SHAPE="RECT" COORDS="283,1048,362,1109" HREF="274">
+</MAP>
