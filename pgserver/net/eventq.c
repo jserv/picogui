@@ -1,4 +1,4 @@
-/* $Id: eventq.c,v 1.10 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: eventq.c,v 1.11 2001/09/04 01:43:52 micahjd Exp $
  *
  * eventq.c - This implements the post_event function that the widgets
  *            use to send events to the client.  It stores these in a
@@ -95,19 +95,30 @@ void post_event(int event,struct widget *from,long param,int owner,char *data) {
 struct event *get_event(int owner,int remove) {
   struct event *q;
   struct conbuf *cb;
+  struct widget *w;
+  int badwidget = 0;
 
   cb = find_conbuf(owner);
   if (!cb) return NULL;   /* Sanity check */
 
-  /* Either we're messed up (overflowed) or (more likely)
-     the queue is just empty */
-  if (cb->in == cb->out) return NULL;
+  /* Return if the queue's empty */
+  if (cb->in == cb->out) 
+    return NULL;
 
+  /* Get the next event */
   q = cb->out;
 
-  if (remove)
+  /* Make sure the widget that sent the queued event still exists! */
+  badwidget = iserror(rdhandle((void **) &w,PG_TYPE_WIDGET,owner,q->from));
+
+  /* Remove it from the queue */
+  if (remove || badwidget)
     if ((++cb->out) >= (cb->q+EVENTQ_LEN))   /* Wrap around */
       cb->out = cb->q;
+
+  /* If that widget was bad, try again */
+  if (badwidget)
+    return get_event(owner,remove);
 
   return q;
 }
