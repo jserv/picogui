@@ -121,4 +121,4 @@ class SVNRepository(DavObject):
 if __name__ == '__main__':
     import sys
     repo = SVNRepository(sys.argv[1])
-    repo.download("tmp")
+    repo.download(sys.argv[2])
