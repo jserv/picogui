@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.55 2001/03/30 05:01:23 micahjd Exp $
+/* $Id: button.c,v 1.56 2001/03/30 08:04:36 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -384,6 +384,9 @@ void resize_button(struct widget *self) {
     else
       self->in->split = w;
   }
+
+  /* Necessary to account for spacing between buttons */
+  self->in->split += theme_lookup(DATA->state,PGTH_P_SPACING);
 }
 
 /* Code to generate the button coordinates, needed to resize or build the button */

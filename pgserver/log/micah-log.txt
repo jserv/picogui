@@ -39,6 +39,9 @@ separate theme object to create a checkbox's look and workings.
 
       * examples/pastel_light.ths: Added good checkbox support
 
+      * widget/button.c: Fixed small bug in sizing vertical buttons, it wasn't
+        accounting for the small space between them.
+
 2001-03-25    Micah Dowty <micahjd@users.sourceforge.net>
 
 Well, I'm on spring break now! So, aside from the multiplayer gaming, I have
