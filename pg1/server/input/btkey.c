@@ -79,12 +79,11 @@ g_error btkey_init(void)
     }
   }
   
-  
-  mkfifo(BTKEY_FIFO_PATH, 0666);
-  
-  /* Open it */
-  btkey_fd = open(BTKEY_FIFO_PATH, O_RDONLY);
-  
+  /* create the fifo */
+  mkfifo (BTKEY_FIFO_PATH, 0666);
+
+  /* Open it in non-blocking mode */
+  btkey_fd = open (BTKEY_FIFO_PATH, O_RDONLY | O_NONBLOCK);
   
   if (btkey_fd < 0)
     return -1;
@@ -140,7 +139,7 @@ int btkey_fd_activate(int fd)
     /* incorrect reading, maybe end of file on fifo, so close it and
        open again */
     close (btkey_fd);
-    btkey_fd = open(BTKEY_FIFO_PATH, O_RDONLY);
+    btkey_fd = open (BTKEY_FIFO_PATH, O_RDONLY | O_NONBLOCK);
     return 1;
   }
 
