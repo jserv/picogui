@@ -1,0 +1,7 @@
+bin_PROGRAMS = picosm 
+picosm_SOURCES = picosm.c 
+
+LDFLAGS += @PICOGUI_LDFLAGS@
+LDADD = @PICOGUI_LIBS@ -lcrypt
+
+CFLAGS = @CFLAGS@ @PICOGUI_CFLAGS@
