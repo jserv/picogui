@@ -1,0 +1,5 @@
+object default {
+  name = "Alpha blended gold arrow cursor (small)";
+  cursorbitmap = LoadBitmap("data/goldcursor_small.png");
+  cursorbitmask = 0;
+}
