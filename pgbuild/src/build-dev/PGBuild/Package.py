@@ -91,6 +91,13 @@ class PackageVersion(object):
                task.warning("Updating bootstrap package %s" % self)
                isUpdated = repo.update(tempPathNew, task)
                if isUpdated:
+                   if os.path.isdir(tempPathOld):
+                       # An old temp directory is in the way
+                       try:
+                           shutil.rmtree(tempPathOld)
+                       except OSError:
+                           progress.warning(("There is an old temporary directory for package %s in the way.\n" +
+                                             "Please try to remove %s") % (self, tempPathOld))
                    try:
                        os.rename(localPath, tempPathOld)
                        os.rename(tempPathNew, localPath)
