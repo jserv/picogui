@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.20 2001/11/13 14:12:56 cgrigis Exp $
+/* $Id: pgboard.c,v 1.21 2001/11/15 15:59:50 cgrigis Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -113,7 +113,7 @@ void popKeyboardContext ()
   if (context_top == NULL)
     {
       /* No context to pop -> ignore */
-      printf ("popKeyboardContext() on empty context stack --> ignored\n");
+      printf ("[pgboard] popKeyboardContext() on empty context stack --> ignored\n");
       return;
     }
 
@@ -444,7 +444,12 @@ int main(int argc,char **argv) {
   pgSetWidget(wApp,
               PG_WP_NAME,pgNewString(PG_KEYBOARD_APPNAME),
 	      PG_WP_SIDE,mpat->app_side,
+#ifdef POCKETBEE
+	      /* Start the keyboard hidden */
+	      PG_WP_SIZE,0,
+#else /* POCKETBEE */
 	      PG_WP_SIZE,mpat->app_size,
+#endif /* POCKETBEE */
 	      PG_WP_SIZEMODE,mpat->app_sizemode,
 	      PG_WP_TRANSPARENT,1,
 	      0);
@@ -460,7 +465,7 @@ int main(int argc,char **argv) {
 
     while ( !(box = pgFindWidget ("FinderKbdBox")) && i < 5 )
       {
-	printf ("Finder public box not found, waiting ...\n");
+	printf ("[pgboard] Finder public box not found, waiting ...\n");
 	sleep (1);
 	i++;
       }
