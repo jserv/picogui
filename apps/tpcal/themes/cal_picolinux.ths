@@ -38,7 +38,7 @@ obj "tpcal" {
   scale = 9;
   message1 = "Welcome to Pico/Linux!";
   message2 = "Tap each target firmly to\ncalibrate your touchscreen.";
-  logo = LoadBitmap("picolinux_logo_tiny.bmp");
+  logo = LoadBitmap("data/picolinux_logo_tiny.bmp");
   logo_bgcolor = 0xD2D2D2;
   fgcolor = 0x000000;
   message1font = Font("Helvetica",10,PG_FSTYLE_BOLD);

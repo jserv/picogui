@@ -1,0 +1,42 @@
+prop ring_radius, blank_radius, dot_radius, dot_color;
+prop message1, message2, message1font, message2font;
+prop logo;
+
+obj "tpcal" {
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+    
+    /* logo */
+    Bitmap(x+((w-198)>>1), 5, 198,200, logo);
+    
+    /* Messages */
+    SetColor(fgcolor);
+    SetFont(message1font);
+    Text(x + ((w-240)>>1), (h>>1) + 30, 1, 1, message1);
+    SetFont(message2font);
+    Text(x + 40, (h>>1) + 90, 1, 1, message2);
+  };
+  PGTH_P_USER = fillstyle {
+    Rect(x-ring_radius,y-ring_radius,ring_radius*2+1,ring_radius*2+1);
+    SetColor(0xFFFFFF);
+    SetLgop(PG_LGOP_XOR);
+    Rect(x-ring_radius,y-ring_radius,ring_radius*2+1,ring_radius*2+1);
+    SetLgop(PG_LGOP_NONE);    
+    SetColor(bgcolor);
+    Rect(x-blank_radius,y-blank_radius,blank_radius*2+1,blank_radius*2+1);
+    SetColor(dot_color);
+    Rect(x-dot_radius,y-dot_radius,dot_radius*2+1,dot_radius*2+1);
+  };
+  bgcolor = 0x336699;
+  ring_radius = 20;
+  blank_radius = 15;
+  dot_radius = 3;
+  dot_color = 0xFFFF00;
+  message1 = "Welcome to TuxScreen!";
+  message2 = "To calibrate your touchscreen, firmly and accurately tap the yellow\ndot in the center of each white target.";
+  logo = LoadBitmap("data/tuxcal_logo.bmp");
+  fgcolor = 0xFFFFFF;
+  message1font = Font("Helvetica",24,0);
+  message2font = Font("Helvetica",18,0);
+}
