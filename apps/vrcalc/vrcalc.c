@@ -466,7 +466,7 @@ int doOperation(enum op n) {
   number[0]='0';
   sign=' ';
   
-  if (currentStack->op_stack && (order[n] <= order[currentStack->op_stack->value])) {
+  while (currentStack->op_stack && (order[n] <= order[currentStack->op_stack->value])) {
     //evaluate one level of the stack
     char ans[12];
     int counter;
@@ -496,7 +496,7 @@ int doOperation(enum op n) {
     // this mess of loops removes any trailing zeros (for a nicer display)
     for (counter=0;counter<12;counter++)
       ans[counter]='\0';
-    snprintf(ans,12,"%f",answer);
+    snprintf(ans,12,"%.8f",answer);
     for (counter=0;counter<12;counter++) {
       if (ans[counter]=='.') {
 	for (counter=11;counter>=0;counter--) {
@@ -585,7 +585,7 @@ double evaluate(Node* stack) {
   // this mess of loops removes any trailing zeros (for a nicer display)
   for (counter=0;counter<12;counter++)
     ans[counter]='\0';
-  snprintf(ans,12,"%f",answer);
+  snprintf(ans,12,"%.8f",answer);
   for (counter=0;counter<12;counter++) {
     if (ans[counter]=='.') {
       for (counter=11;counter>=0;counter--) {
