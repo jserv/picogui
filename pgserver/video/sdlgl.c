@@ -1,4 +1,4 @@
-/* $Id: sdlgl.c,v 1.3 2002/02/27 22:00:33 micahjd Exp $
+/* $Id: sdlgl.c,v 1.4 2002/02/28 01:00:51 micahjd Exp $
  *
  * sdlgl.c - OpenGL driver for picogui, using SDL for portability
  *
@@ -81,13 +81,25 @@ extern u16 sdlfb_scale;
  */
 struct glbitmap {
   struct stdbitmap *sb;
-  int has_texture;        /* Nonzero if the texture has been allocated */
 
-  /* OpenGL texture, valid if has_texture is nonzero */
+  /* OpenGL texture, valid if texture is nonzero */
   GLuint texture;
   float tx1,ty1,tx2,ty2;  /* Texture coordinates */
   int tw,th;              /* Texture size (power of two) */
+
+  /* If non-NULL, this is a cached tiled representation  */
+  struct glbitmap *tile;
 };
+
+/* Like X11 and most other high-level graphics APIs, there is a relatively
+ * large per-blit penalty. This becomes a big problem when drawing tiled
+ * bitmaps. OpenGL natively handles tiling textures, but that doesn't help
+ * us much since textures have to be a power of two in size. We solve this
+ * by storing a pre-tiled copy of the bitmap. Bitmaps below the following size
+ * are tiled and stored in the bitmap's 'tile' variable. This size should
+ * be a power of two.
+ */
+#define GL_TILESIZE 256
 
 /* Macro to determine when to redirect drawing to linear32 */
 #define GL_LINEAR32(dest) (dest)
@@ -455,23 +467,46 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
   /* Blitting from an offscreen bitmap to the screen? */
   if (GL_LINEAR32(src)) {
     struct glbitmap *glsrc = (struct glbitmap *) src;
+    float tx1,ty1,tx2,ty2;
+
+    /* If we're tiling, create a cached tiled bitmap at the minimum
+     * size if necessary, and use that to reduce the number of separate
+     * quads we have to send to OpenGL
+     */
+    if ((w > glsrc->sb->w || h > glsrc->sb->h) && 
+	(glsrc->sb->w < GL_TILESIZE || glsrc->sb->h < GL_TILESIZE)) {
+      /* Create a pre-tiled image */
+      if (!glsrc->tile) {
+	vid->bitmap_new( (hwrbitmap*)&glsrc->tile,
+			 (GL_TILESIZE/glsrc->sb->w + 1) * glsrc->sb->w,
+			 (GL_TILESIZE/glsrc->sb->h + 1) * glsrc->sb->h, vid->bpp );
+	def_blit((hwrbitmap)glsrc->tile,0,0,glsrc->tile->sb->w,
+		 glsrc->tile->sb->h,src,0,0,PG_LGOP_NONE);
+
+	printf("Expand tile to %d,%d\n",glsrc->tile->sb->w,glsrc->tile->sb->h);
+      }
+      glsrc = glsrc->tile;
+    }
+
+    /* If we still have to tile, let defaulvbl do it
+     */
+    if (w > glsrc->sb->w || h > glsrc->sb->h)
+      def_blit(dest,x,y,w,h,(hwrbitmap) glsrc,src_x,src_y,lgop);
+
 
     /* Make sure the bitmap has a corresponding texture */
-    if (!glsrc->has_texture) {
+    if (!glsrc->texture) {
       glGenTextures(1,&glsrc->texture);
       glBindTexture(GL_TEXTURE_2D, glsrc->texture);
 
       /* Linear filtering */
       glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
 
       /* We have to round up to the nearest power of two...
        * FIXME: this is wasteful. We need a way to pack multiple
        *        glbitmaps into one texture.
        */
-      glsrc->has_texture = 1;
       glsrc->tw = gl_power2_round(glsrc->sb->w);
       glsrc->th = gl_power2_round(glsrc->sb->h);
       glsrc->tx1 = 0;
@@ -479,13 +514,9 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
       glsrc->tx2 = ((float)glsrc->sb->w) / ((float)glsrc->tw);
       glsrc->ty2 = ((float)glsrc->sb->h) / ((float)glsrc->th);
       
-      printf("Expanding %d,%d to %d,%d\n",glsrc->sb->w,glsrc->sb->h,
-	     glsrc->tw,glsrc->th);
-
       /* Allocate texture */
       glTexImage2D(GL_TEXTURE_2D, 0, 4, glsrc->tw, glsrc->th, 0, 
 		   GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-      printf("glteximage2d %s\n",gluErrorString(glGetError()));
 
       /* Paste our subimage into it */
       glTexSubImage2D(GL_TEXTURE_2D,0, 0,0, glsrc->sb->w, glsrc->sb->h,
@@ -502,6 +533,12 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 		      GL_BGRA_EXT, GL_UNSIGNED_BYTE, 
 		      glsrc->sb->bits + (glsrc->sb->h-1)*glsrc->sb->pitch); 
     }      
+    
+    /* Calculate texture coordinates */
+    tx1 = glsrc->tx1 + src_x * (glsrc->tx2 - glsrc->tx1) / w;
+    ty1 = glsrc->ty1 + src_y * (glsrc->ty2 - glsrc->ty1) / h;
+    tx2 = glsrc->tx1 + (src_x + w - 1) * (glsrc->tx2 - glsrc->tx1) / w;
+    ty2 = glsrc->ty1 + (src_y + h - 1) * (glsrc->ty2 - glsrc->ty1) / h;
 
     /* Draw a texture-mapped quad
      */
@@ -510,13 +547,13 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
     glBegin(GL_QUADS);
     glColor3f(1.0f,1.0f,1.0f);
     glNormal3f(0.0f,0.0f,1.0f);
-    glTexCoord2f(glsrc->tx1,glsrc->ty1);
+    glTexCoord2f(tx1,ty1);
     glVertex2f(x,y);
-    glTexCoord2f(glsrc->tx2,glsrc->ty1);
+    glTexCoord2f(tx2,ty1);
     glVertex2f(x+w,y);
-    glTexCoord2f(glsrc->tx2,glsrc->ty2);
+    glTexCoord2f(tx2,ty2);
     glVertex2f(x+w,y+h);
-    glTexCoord2f(glsrc->tx1,glsrc->ty2);
+    glTexCoord2f(tx1,ty2);
     glVertex2f(x,y+h);
     glEnd();
     glDisable(GL_TEXTURE_2D);
@@ -524,7 +561,7 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
     return;
   }
 
-  //  def_blit(dest,x,y,w,h,src,src_x,src_y,lgop);
+  def_blit(dest,x,y,w,h,src,src_x,src_y,lgop);
 }
 
 
@@ -589,7 +626,9 @@ g_error sdlgl_bitmap_new(hwrbitmap *bmp,s16 w,s16 h,u16 bpp) {
 void sdlgl_bitmap_free(hwrbitmap bmp) {
   struct glbitmap *glb = (struct glbitmap *) bmp;
   def_bitmap_free(glb->sb);
-  if (glb->has_texture)
+  if (glb->tile)
+    sdlgl_bitmap_free(glb->tile);
+  if (glb->texture)
     glDeleteTextures(1,&glb->texture);
   g_free(glb);
 }
@@ -624,6 +663,7 @@ g_error sdlgl_init(void) {
 g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   unsigned long sdlflags = SDL_RESIZABLE | SDL_OPENGL;
   char str[80];
+  float a,x,y,z;
    
   /* Interpret flags */
   if (get_param_int("video-sdlgl","fullscreen",0))
@@ -666,13 +706,38 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   gluPerspective(GL_FOV,1,GL_MINDEPTH,GL_MAXDEPTH);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
+
+  /* Apply the transformations that should be done while
+   * the origin is in the center and each edge is one unit from the origin.
+   */
+  
+  sscanf(get_param_str("video-sdlgl","unit_rotate","0 0 0 0"), "%f %f %f %f", &a,&x,&y,&z);
+  glRotatef(a,x,y,z);
+
+  sscanf(get_param_str("video-sdlgl","unit_scale","1 1 1"), "%f %f %f", &x,&y,&z);
+  glScalef(x,y,z);
+
+  sscanf(get_param_str("video-sdlgl","unit_translate","0 0 0"), "%f %f %f", &x,&y,&z);
+  glTranslatef(x,y,z);
+
+  /* Now convert to pixel coordinates */
+
   glScalef(GL_SCALE,GL_SCALE,1.0f);
   glScalef(2.0f/xres,-2.0f/yres,1.0f);
   glTranslatef(-xres/2,-yres/2,-GL_DEFAULTDEPTH);
 
-  //  glRotatef(10.0f,1.0f,0.0f,1.0f);
+  /* Apply the transformations that should be done in pixels
+   */
   
+  sscanf(get_param_str("video-sdlgl","pixel_rotate","0 0 0 0"), "%f %f %f %f", &a,&x,&y,&z);
+  glRotatef(a,x,y,z);
 
+  sscanf(get_param_str("video-sdlgl","pixel_scale","1 1 1"), "%f %f %f", &x,&y,&z);
+  glScalef(x,y,z);
+
+  sscanf(get_param_str("video-sdlgl","pixel_translate","0 0 0"), "%f %f %f", &x,&y,&z);
+  glTranslatef(x,y,z);
+  
   return success; 
 }
    
