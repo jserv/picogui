@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.20 2001/08/12 23:16:12 micahjd Exp $
+/* $Id: sdlfb.c,v 1.21 2001/08/13 00:05:38 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -272,8 +272,10 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   /* Offset vid->display to the specified position */
   sdlfb_display_x = get_param_int("video-sdlfb","display_x",0);
   sdlfb_display_y = get_param_int("video-sdlfb","display_y",0);
-  FB_MEM += bpp * sdlfb_display_x / 8;
-  FB_MEM += FB_BPL * sdlfb_display_y;
+  if (!sdlfb_backbuffer) {
+    FB_MEM += bpp * sdlfb_display_x / 8;
+    FB_MEM += FB_BPL * sdlfb_display_y;
+  }
 
   /* Install the skin background */
   if (s = get_param_str("video-sdlfb","background",NULL)) {
@@ -336,11 +338,6 @@ void sdlfb_close(void) {
 }
 
 void sdlfb_update(s16 x,s16 y,s16 w,s16 h) {
-#ifdef CONFIG_SDLSKIN
-  x += sdlfb_display_x;
-  y += sdlfb_display_y;
-#endif
-
 #ifdef DEBUG_VIDEO
    printf("sdlfb_update(%d,%d,%d,%d)\n",x,y,w,h);
 #endif
@@ -376,7 +373,11 @@ void sdlfb_update(s16 x,s16 y,s16 w,s16 h) {
 #endif
 
    /* Always let SDL update the front buffer */
+#ifdef CONFIG_SDLSKIN
+   SDL_UpdateRect(sdl_vidsurf,x+sdlfb_display_x,y+sdlfb_display_y,w,h);
+#else
    SDL_UpdateRect(sdl_vidsurf,x,y,w,h);
+#endif
 }
 
 #ifdef CONFIG_SDLSKIN
