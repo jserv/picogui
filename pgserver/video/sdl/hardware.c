@@ -1,4 +1,4 @@
-/* $Id: hardware.c,v 1.14 2000/06/10 08:28:27 micahjd Exp $
+/* $Id: hardware.c,v 1.15 2000/06/10 08:48:06 micahjd Exp $
  *
  * hardware.c - SDL "hardware" layer
  * Anything that makes any kind of assumptions about the display hardware
@@ -594,8 +594,8 @@ void hwr_blit(struct cliprect *clip, int lgop,
     
     s_of = -src->w;
     d_of = -dest->w;
-    s = src->bits + src_x - (src_y+h)*s_of;
-    d = dest->bits + dest_x - (dest_y+h)*d_of;
+    s = src->bits + src_x - (src_y+h-1)*s_of;
+    d = dest->bits + dest_x - (dest_y+h-1)*d_of;
   }    
   else {
     /* Forwards */

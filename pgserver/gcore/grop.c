@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.8 2000/06/10 08:28:27 micahjd Exp $
+/* $Id: grop.c,v 1.9 2000/06/10 08:48:06 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -74,7 +74,7 @@ void grop_render(struct divnode *div) {
 	clip.x = div->x;
 	clip.x2 = div->x+div->w-1;
 	clip.y = div->x;
-	clip.y2 = div->x+ydif;
+	clip.y2 = div->x+ydif-1;
       }
       
     }
