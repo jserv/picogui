@@ -23,6 +23,10 @@ def sock(address=None, display=None):
                                 address = default_pgserver.split(':')[0]
                 display = int(display)
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+                s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        except:
+                pass
 	s.connect((address, base_port + display))
 	hello = struct.unpack('!LHxx', s.recv(8))
 	if hello[0] != magic:
