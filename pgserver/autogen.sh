@@ -42,5 +42,7 @@ if [ -x ./config.status ] ; then
     run ./config.status --recheck
     run ./config.status
 else
-    run ./configure $*
+    if [ $# -gt 0 ] ; then
+        run ./configure $*
+    fi
 fi
