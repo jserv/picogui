@@ -1,4 +1,4 @@
-/* $Id: rawttykb.c,v 1.6 2003/01/01 03:43:03 micahjd Exp $
+/* $Id: rawttykb.c,v 1.7 2003/01/12 17:32:50 micahjd Exp $
  *
  * rawttykb.c - A medium-raw TTY keyboard driver that accurately
  *              represents the keyboard at the risk of less compatibility
@@ -88,13 +88,13 @@ struct keysym {
   int scancode, sym, mod, unicode;
 };
 
-static void FB_vgainitkeymaps(int fd);
-int FB_EnterGraphicsMode(void);
-void FB_LeaveGraphicsMode(void);
-void FB_CloseKeyboard(void);
-int FB_OpenKeyboard(void);
+static void rawttykb_vgainitkeymaps(int fd);
+int rawttykb_EnterGraphicsMode(void);
+void rawttykb_LeaveGraphicsMode(void);
+void rawttykb_CloseKeyboard(void);
+int rawttykb_OpenKeyboard(void);
 static void handle_keyboard(void);
-void FB_InitOSKeymap(void);
+void rawttykb_InitOSKeymap(void);
 static struct keysym *TranslateKey(int scancode, struct keysym *keysym);
 int rawttykb_fd_activate(int fd);
 void rawttykb_fd_init(int *n,fd_set *readfds,struct timeval *timeout);
@@ -107,7 +107,7 @@ g_error rawttykb_init(void);
 
    FIXME: Add keyboard LED handling code
 */
-static void FB_vgainitkeymaps(int fd) {
+static void rawttykb_vgainitkeymaps(int fd) {
   struct kbentry entry;
   int map, i;
 
@@ -183,7 +183,7 @@ static void FB_vgainitkeymaps(int fd) {
   }
 }
 
-int FB_EnterGraphicsMode(void) {
+int rawttykb_EnterGraphicsMode(void) {
   struct termios keyboard_termios;
 
   /* Set medium-raw keyboard mode */
@@ -209,27 +209,27 @@ int FB_EnterGraphicsMode(void) {
   keyboard_termios.c_cc[VMIN] = 0;
   keyboard_termios.c_cc[VTIME] = 0;
   if (tcsetattr(keyboard_fd, TCSAFLUSH, &keyboard_termios) < 0) {
-    FB_CloseKeyboard();
+    rawttykb_CloseKeyboard();
     return(-1);
   }
   /* This will fail if we aren't root or this isn't our tty */
   if ( ioctl(keyboard_fd, KDSKBMODE, K_MEDIUMRAW) < 0 ) {
-    FB_CloseKeyboard();
+    rawttykb_CloseKeyboard();
     return(-1);
   }
 
   return(keyboard_fd);
 }
 
-void FB_LeaveGraphicsMode(void) {
+void rawttykb_LeaveGraphicsMode(void) {
   ioctl(keyboard_fd, KDSKBMODE, saved_kbd_mode);
   tcsetattr(keyboard_fd, TCSAFLUSH, &saved_kbd_termios);
   saved_kbd_mode = -1;
 }
 
-void FB_CloseKeyboard(void) {
+void rawttykb_CloseKeyboard(void) {
   if ( keyboard_fd >= 0 ) {
-    FB_LeaveGraphicsMode();
+    rawttykb_LeaveGraphicsMode();
     if ( keyboard_fd > 0 ) {
       close(keyboard_fd);
     }
@@ -237,7 +237,7 @@ void FB_CloseKeyboard(void) {
   keyboard_fd = -1;
 }
 
-int FB_OpenKeyboard(void) {
+int rawttykb_OpenKeyboard(void) {
   int dummy;
 
   keyboard_fd = open(get_param_str("input-rawttykb","device","/dev/tty"),O_RDWR);
@@ -254,7 +254,7 @@ int FB_OpenKeyboard(void) {
   ioctl(keyboard_fd,FIONBIO,&dummy);
   
   /* Set up keymap */
-  FB_vgainitkeymaps(keyboard_fd);
+  rawttykb_vgainitkeymaps(keyboard_fd);
   return(keyboard_fd);
 }
 
@@ -381,7 +381,7 @@ static void handle_keyboard(void) {
   }
 }
 
-void FB_InitOSKeymap(void) {
+void rawttykb_InitOSKeymap(void) {
   int i;
 
   /* Initialize the Linux key translation table */
@@ -554,14 +554,14 @@ void rawttykb_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
 }
 
 void rawttykb_close(void) {
-  FB_LeaveGraphicsMode();
-  FB_CloseKeyboard();
+  rawttykb_LeaveGraphicsMode();
+  rawttykb_CloseKeyboard();
 }
 
 g_error rawttykb_init(void) {
-  if (FB_OpenKeyboard() < 0 || FB_EnterGraphicsMode() < 0)
+  if (rawttykb_OpenKeyboard() < 0 || rawttykb_EnterGraphicsMode() < 0)
     return mkerror(PG_ERRT_IO, 73);   /* Error initializing keyboard */
-  FB_InitOSKeymap();
+  rawttykb_InitOSKeymap();
   return success;
 }
 
