@@ -1,4 +1,4 @@
-/* $Id: chipslicets.c,v 1.7 2001/11/13 10:53:34 bauermeister Exp $
+/* $Id: chipslicets.c,v 1.8 2001/11/20 08:05:06 bauermeister Exp $
  *
  * chipslicets.c - input driver for touch screen
  *
@@ -268,33 +268,13 @@ g_error chipslicets_init(void)
     my2 =  710; uy2 = 320;
 #endif
 
-    /* param may override default values */
-    if(cal_string = get_param_str("chipslicets", "calibration", 0)) {
-      sscanf(cal_string, "%d %d %d %d %d %d %d %d %d %d",
-	     &mx1, &my1, &mx2, &my2, &offx, &offy, &ux1, &uy1, &ux2, &uy2);
+    /*
+     * (calibration parameters are no longer determined here; it is a
+     *  shell utility that pre-calibrates the device prior to starting
+     *  the pgserver)
+     */
 
-      DPRINTF("taking m1 and m2 points from param: '%s'\n",
-	      cal_string);
-      DPRINTF("  mx1=%d my1=%d mx2=%d my2=%d offx=%d offy=%d "
-	      "ux1=%d uy1=%d ux2=%d uy2=%d\n",
-	      mx1, my1, mx2, my2, offx, offy, ux1, uy1, ux2, uy2);
-    }
-
-    ux1 += offx;
-    uy1 += offy;
-    ux2 += offx;
-    uy2 += offy;
-
-    ts_params.x_ratio_num    = ux1 - ux2;
-    ts_params.x_ratio_den    = mx1 - mx2;
-    ts_params.x_offset       =
-      ux1 - mx1 * ts_params.x_ratio_num / ts_params.x_ratio_den;
-    
-    ts_params.y_ratio_num    = uy1 - uy2;
-    ts_params.y_ratio_den    = my1 - my2;
-    ts_params.y_offset       =
-      uy1 - my1 * ts_params.y_ratio_num / ts_params.y_ratio_den;
-
+    /* put new params */
     ret_val=ioctl(ts_fd,TS_PARAMS_SET,&ts_params);
     if(ret_val < 0) {
       fprintf(stderr, "%s: ioctl set error: %s\n", __FILE__, strerror(errno));
