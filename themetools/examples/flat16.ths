@@ -1,4 +1,4 @@
-/* $Id: flat16.ths,v 1.1 2000/11/14 05:05:20 micahjd Exp $
+/* $Id: flat16.ths,v 1.2 2001/03/30 07:11:02 micahjd Exp $
  *
  * Mostly flat, but with a little hilight animation
  *
@@ -28,6 +28,25 @@ object button.hilight fgcolor = 0x0000FF;
 /* Special overlay for indicators */
 object indicator overlay = fillstyle {
   Rect(x,y,w,h,ColorConv(0x000080));
+};
+
+/* Check box things */
+object checkbox {
+   bgfill = fillstyle {
+      Rect(x,y,w,h,ColorConv(bgcolor));
+      x = x + 10;
+   };
+   margin = 5;
+   align = PG_A_LEFT;
+}
+object checkbox.hilight fgcolor = 0x0000FF;
+object checkbox.on bgfill = fillstyle {
+   var q,fg;
+   fg = ColorConv(fgcolor);
+   Rect(x,y,w,h,ColorConv(bgcolor));
+   Line(x+8,0,-4,h,fg);
+   Line(x+4,h,-4,0-(h/2),fg);
+   x = x + 10;
 };
 
 /* Special stuff for panelbuttons */
