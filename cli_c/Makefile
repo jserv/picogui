@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.22 2001/04/13 05:03:05 micahjd Exp $
+# $Id: Makefile,v 1.23 2001/04/14 00:02:19 micahjd Exp $
 #
 # C client library (libpgui) makefile
 #
@@ -43,7 +43,8 @@ SRC := src/netcore.c src/api.c src/pgfx.c src/pgfx_canvas.c
 DEMOSRC := demos/demo.c demos/themedemo.c demos/msgdialog.c \
            demos/imgview.c demos/menutest.c demos/omnibar.c \
            demos/fieldtest.c demos/calc.c demos/canvastst.c \
-	   demos/abstest.c demos/vidpopup.c
+	   demos/abstest.c demos/vidpopup.c \
+	   demos/pgfx_canvas_persistent.c
 
 HDR := include/*.h include/picogui/*.h
 

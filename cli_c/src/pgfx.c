@@ -1,4 +1,4 @@
-/* $Id: pgfx.c,v 1.1 2001/04/13 05:03:06 micahjd Exp $
+/* $Id: pgfx.c,v 1.2 2001/04/14 00:02:22 micahjd Exp $
  *
  * picogui/pgfx.c - PGFX general-purpose utility functions
  * 
@@ -28,7 +28,7 @@
  * 
  */
 
-#include <picogui.h>
+#include "clientlib.h"
 
 void pgMoveto(pgcontext c, pgu x, pgu y) {
    c->cx = x;

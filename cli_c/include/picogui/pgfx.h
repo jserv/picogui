@@ -1,4 +1,4 @@
-/* $Id: pgfx.h,v 1.1 2001/04/13 05:03:06 micahjd Exp $
+/* $Id: pgfx.h,v 1.2 2001/04/14 00:02:22 micahjd Exp $
  *
  * picogui/pgfx.h - The PicoGUI abstract graphics interface
  * 
@@ -62,24 +62,27 @@ typedef struct pgfx_context {
  */
 struct pgfx_lib {
    /* Primitives */
-   pgprim (*pixel)     (pgu x,  pgu y);
-   pgprim (*line)      (pgu x1, pgu y1, pgu x2, pgu y2);
-   pgprim (*rect)      (pgu x,  pgu y,  pgu w,  pgu h);
-   pgprim (*dim)       (pgu x,  pgu y,  pgu w,  pgu h);
-   pgprim (*frame)     (pgu x,  pgu y,  pgu w,  pgu h);
-   pgprim (*slab)      (pgu x,  pgu y,  pgu w);
-   pgprim (*bar)       (pgu x,  pgu y,  pgu h);
-   pgprim (*text)      (pgu x,  pgu y,  pghandle string, pghandle font);
-   pgprim (*textv)     (pgu x,  pgu y,  pghandle string, pghandle font);
-   pgprim (*bitmap)    (pgu x,  pgu y,  pgu w,  pgu h,   pghandle bitmap,
-		        pgu src_x, pgu src_y, short lgop);
-   pgprim (*tilebitmap)(pgu x,  pgu y,  pgu w,  pgu h,   pghandle bitmap,
-			pgu src_x, pgu src_y, pgu src_w, pgu src_h);
-   pgprim (*gradient)  (pgu x,  pgu y,  pgu w,  pgu h,   pgu angle,
-			pgcolor c1, pgcolor c2, short translucent);
+   pgprim (*pixel)     (pgcontext c, pgu x,  pgu y);
+   pgprim (*line)      (pgcontext c, pgu x1, pgu y1, pgu x2, pgu y2);
+   pgprim (*rect)      (pgcontext c, pgu x,  pgu y,  pgu w,  pgu h);
+   pgprim (*dim)       (pgcontext c, pgu x,  pgu y,  pgu w,  pgu h);
+   pgprim (*frame)     (pgcontext c, pgu x,  pgu y,  pgu w,  pgu h);
+   pgprim (*slab)      (pgcontext c, pgu x,  pgu y,  pgu w);
+   pgprim (*bar)       (pgcontext c, pgu x,  pgu y,  pgu h);
+   pgprim (*text)      (pgcontext c, pgu x,  pgu y,  pghandle string,
+			pghandle font);
+   pgprim (*textv)     (pgcontext c, pgu x,  pgu y,  pghandle string,
+			pghandle font);
+   pgprim (*bitmap)    (pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
+			pghandle bitmap, pgu src_x, pgu src_y, short lgop);
+   pgprim (*tilebitmap)(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
+			pghandle bitmap, pgu src_x, pgu src_y, pgu src_w,
+			pgu src_h);
+   pgprim (*gradient)  (pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
+			pgu angle, pgcolor c1, pgcolor c2, short translucent);
 
    /* Support functions */
-   void (*setcolor)(pgcolor c);
+   void (*setcolor)(pgcontext c, pgcolor color);
    /* FIXME: add functions to manipulate grops after they're created */
 };
 
@@ -87,19 +90,19 @@ struct pgfx_lib {
 
 /* These macros make it easy to call the primitives with a familiar syntax 
  * See the above definition of pgfx_lib for the parameters */
-#define pgPixel(a,b,c)                    (*(a)->lib->pixel)(b,c)
-#define pgLine(a,b,c,d,e)                 (*(a)->lib->line)(b,c,d,e)
-#define pgRect(a,b,c,d,e)                 (*(a)->lib->rect)(b,c,d,e)
-#define pgDim(a,b,c,d,e)                  (*(a)->lib->dim)(b,c,d,e)
-#define pgFrame(a,b,c,d,e)                (*(a)->lib->frame)(b,c,d,e)
-#define pgSlab(a,b,c,d)                   (*(a)->lib->slab)(b,c,d)
-#define pgBar(a,b,c,d)                    (*(a)->lib->bar)(b,c,d)
-#define pgText(a,b,c,d,e)                 (*(a)->lib->text)(b,c,d,e)
-#define pgTextv(a,b,c,d,e)                (*(a)->lib->textv)(b,c,d,e)
-#define pgBitmap(a,b,c,d,e,f,g,h,i)       (*(a)->lib->bitmap)(b,c,d,e,f,g,h,i)
-#define pgTilebitmap(a,b,c,d,e,f,g,h,i,j) (*(a)->lib->tilebitmap)(b,c,d,e,f,g,h,i,j)
-#define pgGradient(a,b,c,d,e,f,g,h,i)     (*(a)->lib->gradient)(b,c,d,e,f,g,h,i)
-#define pgSetcolor(a,b)                   (*(a)->lib->setcolor)(b)
+#define pgPixel(a,b,c)                    (*(a)->lib->pixel)(a,b,c)
+#define pgLine(a,b,c,d,e)                 (*(a)->lib->line)(a,b,c,d,e)
+#define pgRect(a,b,c,d,e)                 (*(a)->lib->rect)(a,b,c,d,e)
+#define pgDim(a,b,c,d,e)                  (*(a)->lib->dim)(a,b,c,d,e)
+#define pgFrame(a,b,c,d,e)                (*(a)->lib->frame)(a,b,c,d,e)
+#define pgSlab(a,b,c,d)                   (*(a)->lib->slab)(a,b,c,d)
+#define pgBar(a,b,c,d)                    (*(a)->lib->bar)(a,b,c,d)
+#define pgText(a,b,c,d,e)                 (*(a)->lib->text)(a,b,c,d,e)
+#define pgTextv(a,b,c,d,e)                (*(a)->lib->textv)(a,b,c,d,e)
+#define pgBitmap(a,b,c,d,e,f,g,h,i)       (*(a)->lib->bitmap)(a,b,c,d,e,f,g,h,i)
+#define pgTilebitmap(a,b,c,d,e,f,g,h,i,j) (*(a)->lib->tilebitmap)(a,b,c,d,e,f,g,h,i,j)
+#define pgGradient(a,b,c,d,e,f,g,h,i)     (*(a)->lib->gradient)(a,b,c,d,e,f,g,h,i)
+#define pgSetcolor(a,b)                   (*(a)->lib->setcolor)(a,b)
 
 /* Meta-primitives */
 void    pgMoveto(pgcontext c, pgu x, pgu y);
