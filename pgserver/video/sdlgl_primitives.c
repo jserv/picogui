@@ -1,4 +1,4 @@
-/* $Id: sdlgl_primitives.c,v 1.3 2002/03/03 14:07:50 micahjd Exp $
+/* $Id: sdlgl_primitives.c,v 1.4 2002/03/03 14:48:00 micahjd Exp $
  *
  * sdlgl_primitives.c - OpenGL driver for picogui, using SDL for portability.
  *                      Implement standard picogui primitives using OpenGL
@@ -164,7 +164,6 @@ void sdlgl_line(hwrbitmap dest,s16 x1,s16 y1,s16 x2,s16 y2,hwrcolor c,s16 lgop) 
  */
 void sdlgl_gradient(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,s16 angle,
 		  pgcolor c1, pgcolor c2, s16 lgop) {
-  float theta;
   float r_v1,g_v1,b_v1;
   float r_v2,g_v2,b_v2;
   float r_c,g_c,b_c;
@@ -172,6 +171,7 @@ void sdlgl_gradient(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,s16 angle,
   float vx,vy;
   float cx,cy;
   float farthest, d1, d2, d3, d4;
+  float theta = 0;
 
   if (GL_LINEAR32(dest)) {
     linear32_gradient(STDB(dest),x,y,w,h,angle,c1,c2,lgop);
@@ -184,7 +184,7 @@ void sdlgl_gradient(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,s16 angle,
   glShadeModel(GL_SMOOTH);
 
   /* Convert angle to radians */
-  theta = angle / 360.0f * 3.141592654 * 2.0f;
+  theta = -angle / 360.0f * 3.141592654 * 2.0f;
 
   /* Decode colors */
   r_v1 = getred(c1)/255.0f;
@@ -301,6 +301,8 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
     /* Make sure the bitmap has a corresponding texture */
     if (!glsrc->texture) {
       hwrbitmap tmpbit;
+      u32 *p;
+      u32 i;
 
       glGenTextures(1,&glsrc->texture);
       glBindTexture(GL_TEXTURE_2D, glsrc->texture);
@@ -328,26 +330,40 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
       if (iserror(vid->bitmap_new(&tmpbit, glsrc->tw, glsrc->th, vid->bpp))) return;
       
       /* Texture itself */
-      vid->blit(tmpbit, 0,0, glsrc->sb->w, glsrc->sb->h, glsrc, 0,0, PG_LGOP_NONE);
+      vid->blit(tmpbit, 0,0, glsrc->sb->w, glsrc->sb->h, src, 0,0, PG_LGOP_NONE);
 
       /* Left and right edges */
       if (glsrc->tw > glsrc->sb->w) {
-	vid->blit(tmpbit, glsrc->sb->w,0, 1, glsrc->sb->h, glsrc, glsrc->sb->w-1,0, PG_LGOP_NONE);
-	vid->blit(tmpbit, glsrc->tw-1,0, 1,glsrc->sb->h, glsrc, 0,0, PG_LGOP_NONE);
+	vid->blit(tmpbit, glsrc->sb->w,0, 1, glsrc->sb->h, src, glsrc->sb->w-1,0, PG_LGOP_NONE);
+	vid->blit(tmpbit, glsrc->tw-1,0, 1,glsrc->sb->h, src, 0,0, PG_LGOP_NONE);
       }
 
       /* Top and bottom edges */
       if (glsrc->th > glsrc->sb->h) {
-	vid->blit(tmpbit, 0,glsrc->sb->h, glsrc->sb->w, 1, glsrc, 0,glsrc->sb->h-1, PG_LGOP_NONE);
-	vid->blit(tmpbit, 0,glsrc->th-1, glsrc->sb->w,1, glsrc, 0,0, PG_LGOP_NONE);
+	vid->blit(tmpbit, 0,glsrc->sb->h, glsrc->sb->w, 1, src, 0,glsrc->sb->h-1, PG_LGOP_NONE);
+	vid->blit(tmpbit, 0,glsrc->th-1, glsrc->sb->w,1, src, 0,0, PG_LGOP_NONE);
       }
 
       /* Corners */
       if (glsrc->tw > glsrc->sb->w && glsrc->th > glsrc->sb->h) {
-	vid->blit(tmpbit, glsrc->sb->w,glsrc->sb->h, 1, 1, glsrc, 
+	vid->blit(tmpbit, glsrc->sb->w,glsrc->sb->h, 1, 1, src, 
 		  glsrc->sb->w-1,glsrc->sb->h-1, PG_LGOP_NONE);
-	vid->blit(tmpbit, glsrc->tw-1,glsrc->th-1, 1,1, glsrc, 0,0, PG_LGOP_NONE);
+	vid->blit(tmpbit, glsrc->tw-1,glsrc->th-1, 1,1, src, 0,0, PG_LGOP_NONE);
       }
+
+      /* Now convert the alpha channel in our temporary bitmap. Any colors with the
+       * PGCF_ALPHA flag need to have their alpha channels shifted over one bit,
+       * other pixels get an alpha of 0xFF. Note that the original bitmap will still
+       * have the PGCF_ALPHA-style colors, so detection of bitmaps with alpha channels
+       * will work as usual.
+       */
+      i = glsrc->tw * glsrc->th;
+      p = ((struct glbitmap*)tmpbit)->sb->bits;
+      for (;i;i--,p++)
+	if (*p & PGCF_ALPHA)
+	  *p = (*p & 0x1FFFFFF) | ((*p & 0xFF000000)<<1);
+	else
+	  *p = *p | 0xFF000000;
 
       /* Send it to opengl, ditch our temporary */
       glTexImage2D(GL_TEXTURE_2D, 0, 4, glsrc->tw, glsrc->th, 0, 
@@ -365,6 +381,7 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
     
     /* Draw a texture-mapped quad
      */
+    gl_lgop(lgop);
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, glsrc->texture);
     glBegin(GL_QUADS);

@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.4 2002/03/03 14:07:49 micahjd Exp $
+/* $Id: sdlgl.h,v 1.5 2002/03/03 14:48:00 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -254,6 +254,8 @@ float gl_get_key_scale(void);
 void gl_fontstyle_free(struct fontstyle_node *fsn);
 void gl_font_free(struct font *f);
 void gl_showtexture(GLuint tex, int w, int h);
+hwrcolor sdlgl_color_pgtohwr(pgcolor c);
+pgcolor sdlgl_color_hwrtopg(hwrcolor c);
 
 #endif /* _H_SDLGL */
 

@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.2 2002/03/03 14:07:50 micahjd Exp $
+/* $Id: sdlgl_util.c,v 1.3 2002/03/03 14:48:00 micahjd Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.
@@ -32,10 +32,18 @@
 struct sdlgl_data gl_global;
 
 inline void gl_color(hwrcolor c) {
-  glColor4ub(getred(c),
-	     getgreen(c),
-	     getblue(c),
-	     255);
+  if (c & PGCF_ALPHA) {
+    /* Convert 7-bit alpha channel to 8-bit */
+    glColor4ub(getred(c),
+	       getgreen(c),
+	       getblue(c),
+	       c>>23 | ((c>>24)&1));
+  }
+  else {
+    glColor3ub(getred(c),
+	       getgreen(c),
+	       getblue(c));
+  }
 }
 
 /* Measure the distance between (point_x,point_y) and a line
