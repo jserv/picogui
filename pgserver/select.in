@@ -73,6 +73,7 @@ open_section VIDWRAP
 
 add_if_true rotate90.c $CONFIG_ROTATE
 add_if_true rotate180.c $CONFIG_ROTATE180
+add_if_true rotate270.c $CONFIG_ROTATE270
 
 close_section
 

@@ -273,6 +273,10 @@ CONFIG_ROTATE180
       Another "video wrapper" like CONFIG_ROTATE that adds 180 degree rotation
       support at runtime
 
+CONFIG_ROTATE270
+      Another "video wrapper" like CONFIG_ROTATE that adds 270 degree rotation
+      support at runtime
+
 CONFIG_MAX_ZOMBIEGROPS
       The server uses a list of 'zombie gropnodes' as a cache to
       reduce memory allocation and deallocation during graphical

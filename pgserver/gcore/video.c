@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.43 2001/10/12 06:20:44 micahjd Exp $
+/* $Id: video.c,v 1.44 2001/10/27 20:43:25 bornet Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -260,6 +260,14 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
       vidwrap_rotate180(vidwrap);
       vid->lxres = vid->xres;
       vid->lyres = vid->yres;
+   }
+#endif   
+
+#ifdef CONFIG_ROTATE270
+   if (vid->flags & PG_VID_ROTATE270) {
+      vidwrap_rotate270(vidwrap);
+      vid->lxres = vid->yres;
+      vid->lyres = vid->xres;
    }
 #endif   
 

@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.52 2001/10/21 12:01:22 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.53 2001/10/27 20:43:25 bornet Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -782,6 +782,62 @@ void def_charblit_180(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
   }
 }
 
+void def_charblit_270(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
+		     s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
+		     s16 lgop) {
+  int bw = w;
+  int iw,hc,y;
+  int olines = lines;
+  int bit;
+  int flag=0;
+  int xpix,xmin,xmax;
+  unsigned char ch;
+
+  /* Is it at all in the clipping rect? */
+  if (clip && (dest_x<clip->x1 || (dest_y+w)<clip->y1 || (dest_x-h)>clip->x2 || 
+      dest_y>clip->y2)) return;
+
+  /* Find the width of the source data in bytes */
+  if (bw & 7) bw += 8;
+  bw = bw >> 3;
+  xmin = 0;
+  xmax = w;
+  hc = 0;
+
+  /* Do vertical clipping ahead of time (it does not require a special case) */
+  if (clip) {
+    if (clip->x1>(dest_x-h-1))
+      h = dest_x-clip->x1+1;
+    if (clip->x2<dest_x) {
+      hc = dest_x-clip->x2; /* Do it this way so skewing doesn't mess up when clipping */
+      dest_x -= hc;
+      chardat += hc*bw;
+    }
+    
+    /* Setup for horizontal clipping (if so, set a special case) */
+    if (clip->y2<dest_y-w+1)
+      xmax = 1+clip->y2-dest_y;
+    if (clip->y1>(dest_y))
+      xmin = clip->y1-dest_y;
+  }
+
+  for (;hc<h;hc++,dest_x--) {
+    if (olines && lines==hc) {
+      lines += olines;
+      dest_y++;
+      flag=1;
+    }
+    for (iw=bw,y=dest_y,xpix=0;iw;iw--)
+      for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,y++,xpix++) {
+	 if (ch&0x80 && xpix>=xmin && xpix<xmax) 
+	   (*vid->pixel) (dest,dest_x,y,c,lgop);
+      }
+    if (flag) {
+      xmax++;
+      flag=0;
+    }
+  }
+}
 
 /* A meta-charblit to select the appropriate function based on angle */
 void def_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
@@ -795,6 +851,7 @@ void def_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
     case 0:   p = &def_charblit_0;   break;
     case 90:  p = &def_charblit_90;  break;
     case 180: p = &def_charblit_180; break;
+    case 270: p = &def_charblit_270; break;
     default:
       return;
    }
