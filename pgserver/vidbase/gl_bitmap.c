@@ -1,4 +1,4 @@
-/* $Id: gl_bitmap.c,v 1.1 2002/11/25 05:48:52 micahjd Exp $
+/* $Id: gl_bitmap.c,v 1.2 2002/11/25 06:30:17 micahjd Exp $
  *
  * gl_bitmap.c - OpenGL driver for picogui
  *               Functions to replace PicoGUI's normal bitmap data type
@@ -108,6 +108,10 @@ void gl_bitmap_free(hwrbitmap bmp) {
  */
 int gl_invalidate_texture(hwrbitmap bit) {
   struct glbitmap *glb = (struct glbitmap *) bit;
+
+  /* If this is a stdbitmap, go away */
+  if (glb->null)
+    return 1;
 
   if (glb->texture) {
     glDeleteTextures(1,&glb->texture);

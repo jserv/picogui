@@ -1,4 +1,4 @@
-/* $Id: gl_primitives.c,v 1.1 2002/11/25 05:48:52 micahjd Exp $
+/* $Id: gl_primitives.c,v 1.2 2002/11/25 06:30:17 micahjd Exp $
  *
  * gl_primitives.c - OpenGL driver for picogui
  *                   Implement standard picogui primitives using OpenGL
@@ -46,20 +46,16 @@ void gl_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
   glEnd();
 }
 
-/* This is _really_ damn slow, like the X11 getpixel,
- * but with all this fun hardware acceleration we shouldn't
- * actually have to use it much.
- */
 hwrcolor gl_getpixel(hwrbitmap dest,s16 x,s16 y) {
   u8 r,g,b;
 
-  if (GL_LINEAR32(dest))
+  if (GL_LINEAR32(dest))    
     return linear32_getpixel(STDB(dest),x,y);
 
-  glReadPixels(x,y,1,1,GL_RED,GL_UNSIGNED_BYTE,&r);
-  glReadPixels(x,y,1,1,GL_GREEN,GL_UNSIGNED_BYTE,&g);
-  glReadPixels(x,y,1,1,GL_BLUE,GL_UNSIGNED_BYTE,&b);
-  return mkcolor(r,g,b);
+  /* Don't allow reading pixels from the OpenGL screen, it's much too slow.
+   * We'll just flag this as red, so we'll notice if something's trying to use it.
+   */
+  return 0xFF0000;
 }
 
 void gl_rect(hwrbitmap dest,s16 x,s16 y,s16 w, s16 h, hwrcolor c,s16 lgop) {
