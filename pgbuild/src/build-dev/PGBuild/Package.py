@@ -130,8 +130,8 @@ class PackageVersion(object):
             self.update(mergeTask)
         if performMount:
             self.config.dirMount(self.getLocalPath(), mergeTask.task("Mounting config files"))
-        import PGBuild.SConsGlue
-        PGBuild.SConsGlue.loadScriptDir(self.getLocalPath(), mergeTask.task("Loading SCons scripts"))
+        import PGBuild.Build
+        PGBuild.Build.loadScriptDir(self.getLocalPath(), mergeTask.task("Loading SCons scripts"))
 
         
 class Package(object):

@@ -1,8 +1,9 @@
-""" PGBuild.SConsGlue
+""" PGBuild.Build
 
-Glue between SCons and PGBuild. This includes facilities to construct
-an SCons environment using the configuration database, to set up other
-SCons parameters, execute SConscripts, and build targets.
+Manages the actual build process using SCons.
+This includes facilities to construct an SCons environment using the
+configuration database, to set up other SCons parameters, execute
+SConscripts, and build targets.
 """
 # 
 # PicoGUI Build System

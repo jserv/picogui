@@ -22,11 +22,8 @@ Base classes for all UI modules, doesn't implement any UI at all.
 # 
 _svn_id = "$Id$"
 
-import PGBuild.Errors
-import PGBuild.SConsGlue
 import time, sys
 import StringIO
-
 
 class TimeStamp(object):
     """This time stamp object is applied to tasks and individual progress reports.
@@ -180,8 +177,9 @@ class Interface(object):
         for package in self.config.packages.getBootstrapPackages():
             self.config.packages.findPackageVersion(package).merge(bootMergeTask, False)
 
-        # Set up SCons
-        PGBuild.SConsGlue.startup(self.config)
+        # Set up the build environment
+        import PGBuild.Build
+        PGBuild.Build.startup(self.config)
 
         # Handle --nuke command line option
         if self.config.eval("invocation/option[@name='nuke']/text()"):
@@ -201,7 +199,7 @@ class Interface(object):
                 self.config.packages.findPackageVersion(name).merge(mergeTask)
 
         # Run SCons tasks
-        PGBuild.SConsGlue.run(self.config, self.progress)
+        PGBuild.Build.run(self.config, self.progress)
 
         # Interface cleanup- options that dump to stdout and don't use any UI features
         #                    should be placed after this line!
@@ -227,6 +225,7 @@ class Interface(object):
            implementation gives subclasses a chance to clean up, then tries to convert
            the exception into an error for the Progress class if it's one of our types.
            """
+        import PGBuild.Errors
         if isinstance(exc_info[1], PGBuild.Errors.ExternalError) and not \
                self.config.eval("invocation/option[@name='traceback']/text()"):
             # Pretty-print ExternalErrors a bit, hiding the details that might scare people
