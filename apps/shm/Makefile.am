@@ -1,0 +1,7 @@
+bin_PROGRAMS = shmtest
+shmtest_SOURCES = shmtest.c
+
+LDFLAGS += @PICOGUI_LDFLAGS@
+LDADD = @PICOGUI_LIBS@
+
+CFLAGS = @CFLAGS@ @PICOGUI_CFLAGS@

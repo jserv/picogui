@@ -111,7 +111,11 @@ runtime = [
               help = "Scribble Pad" ),
      Runtime ( 'atomicnav', 'atomicnav',
               content = [ 'bin/atomicnav' ],
-              help = "Atomic Web Navigator" ),
+              help = "Atomic Web Navigator"),
+     Runtime ( 'shmtest', 'shmtest',
+              depends = [ 'picoguiclient/library' ],
+              content = [ 'bin/shmtest' ],
+              help = "Shared memory test" ),
 
     SharedRuntime ('library', 'pgboard shared library',
                    content = ['lib/libpgboard.so.0.0.0',

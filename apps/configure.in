@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl
-dnl $Id: configure.in,v 1.32 2002/12/19 19:46:10 bornet Exp $
+dnl $Id: configure.in,v 1.33 2003/01/09 15:56:11 pney Exp $
 dnl
 
 AC_INIT(pgboard/pgboard.c)
@@ -179,4 +179,5 @@ AC_OUTPUT(
 	canvastiles/Makefile
 	textedit/Makefile
 	msgdemo/Makefile
+	shm/Makefile
 )
