@@ -55,6 +55,9 @@ void aicall(struct board *it)
     case 6:
       ai6(it);
       break;
+    case 10:
+      ai10(it);
+      break;
     }
 
 #ifdef FUNCTION_DEBUG

@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 	      PG_WP_ALIGN,PG_A_CENTER,PG_WP_FONT,
 	      pgNewFont(NULL,0,PG_FSTYLE_BOLD),0);
   
-  pgReplaceTextFmt(info,"Click New Game to pick a level.");
+  pgReplaceTextFmt(info,"Click Menu to pick a level.");
   
   pgEventLoop();
 }
@@ -77,7 +77,7 @@ int NewGame(struct pgEvent *evt)
 {
   int ail;
   board *gee;
-  switch(ail = pgMenuFromString("Skill Level One|Skill Level Two|Skill Level Three|Skill Level Four|Skill Level Five|Skill Level Six|Quit"))
+  switch(ail = pgMenuFromString("Skill Level One|Skill Level Two|Skill Level Three|Skill Level Four|Skill Level Five|Skill Level Six|Skill Level Ten|Quit"))
     {
     case 1:
       pgReplaceTextFmt(info,"Skill Level One");
@@ -98,6 +98,10 @@ int NewGame(struct pgEvent *evt)
       pgReplaceTextFmt(info,"Skill Level Six");
       break;
     case 7:
+      pgReplaceTextFmt(info,"Skill Level Ten");
+      ail = 10;
+      break;
+    case 8:
       exit(0);
       break;
     default:
