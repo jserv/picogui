@@ -33,9 +33,7 @@ if sys.hexversion < 0x020200F0:
     print "This version of Python is too old. At least verison 2.2 is required."
     sys.exit(1)
 
-import PGBuild.Package
 import PGBuild.UI
-import PGBuild.Config
 import PGBuild.Errors
 import optik
 import PGBuild
@@ -43,54 +41,48 @@ import os, re, shutil
 import StringIO
 
 
-def parseCommandLine(config, argv):
-    """Entry point for PGBuild command line parsing
-         config: configuration tree to put results in
-           argv: list of command line arguments
-       """
+class OptionParser(optik.OptionParser):
+    def __init__(self):
+        optik.OptionParser.__init__(self, formatter=HelpFormatter(),
+                                    usage="%prog [options] [targets] ...",
+                                    version=PGBuild.version,
+                                    option_class=Option)
+        
+        # Override Optik's default options (for consistent grammar and capitalization)
+        
+        optik.STD_HELP_OPTION.help    = "Shows this help message and exits."
+        optik.STD_VERSION_OPTION.help = "Shows the version number and exits."
 
-    parser = optik.OptionParser(formatter=HelpFormatter(),
-                                usage="%prog [options] [targets] ...",
-                                version=PGBuild.version,
-                                option_class=Option)
+        ############# General options
+        
+        self.add_option("-v", "--verbose", action="count", dest="verbosity", default=1,
+                          help="Reports progress in more detail.")    
+        self.add_option("-q", "--quiet", action="uncount", dest="verbosity", default=1,
+                          help="Reports progress in less detail.")    
+        self.add_option("-u", "--ui", action="store", dest="ui", metavar="MODULE",
+                          help="Selects a front-end module. Try --ui=help to list the available modules.")
+        self.add_option("--traceback", action="store_true", dest="traceback",
+                          help="Disables the user-friendly exception handler and gives a traceback when an error occurs.")
+         
+        ############# Configuration management
 
-    # Override Optik's default options (for consistent grammar and capitalization)
-
-    optik.STD_HELP_OPTION.help    = "Shows this help message and exits."
-    optik.STD_VERSION_OPTION.help = "Shows the version number and exits."
-
-    ############# General options
-
-    parser.add_option("-v", "--verbose", action="count", dest="verbosity", default=1,
-                      help="Reports progress in more detail.")    
-    parser.add_option("-q", "--quiet", action="uncount", dest="verbosity", default=1,
-                      help="Reports progress in less detail.")    
-    parser.add_option("-u", "--ui", action="store", dest="ui", metavar="MODULE",
-                      help="Selects a front-end module. Try --ui=help to list the available modules.")
-    parser.add_option("--traceback", action="store_true", dest="traceback",
-                      help="Disables the user-friendly exception handler and gives a traceback when an error occurs.")
-
-    ############# Configuration management
-
-    configGroup = parser.add_option_group("Configuration Management")
-    configGroup.add_option("--dump-tree", dest="treeDumpFile",
-                           help="Dumps the configuration tree to FILE.", metavar="FILE")
-    configGroup.add_option("--retest-mirrors", dest="retestMirrors", action="store_true",
-                           help="Re-runs any mirror speed tests, ignoring saved results.")
-    configGroup.add_option("-l", "--list", dest="listPath", metavar="XPATH",
-                           help="Lists configuration data from the given path. " +
-                                'If you don\'t know how to use PGBuild\'s XPaths, try ".", "sites", or "packages".')
-
-    ############# Package management
-
-    packageGroup = parser.add_option_group("Package Management")
-    packageGroup.add_option("--nuke", dest="nuke", action="store_true",
-                            help="Unconditionally deletes local copies of all non-bootstrap packages.")
-    packageGroup.add_option("-m", "--merge", dest="merge", action="append", metavar="PACKAGE",
-                            help="Forcibly updates the specified package and merges its configuration.")
-
-    config.mount(OptionsXML(parser.parse_args(argv[1:])))
-
+        configGroup = self.add_option_group("Configuration Management")
+        configGroup.add_option("--dump-tree", dest="treeDumpFile",
+                               help="Dumps the configuration tree to FILE.", metavar="FILE")
+        configGroup.add_option("--retest-mirrors", dest="retestMirrors", action="store_true",
+                               help="Re-runs any mirror speed tests, ignoring saved results.")
+        configGroup.add_option("-l", "--list", dest="listPath", metavar="XPATH",
+                               help="Lists configuration data from the given path. " +
+                               'If you don\'t know how to use PGBuild\'s XPaths, try ".", "sites", or "packages".')
+        
+        ############# Package management
+        
+        packageGroup = self.add_option_group("Package Management")
+        packageGroup.add_option("--nuke", dest="nuke", action="store_true",
+                                help="Unconditionally deletes local copies of all non-bootstrap packages.")
+        packageGroup.add_option("-m", "--merge", dest="merge", action="append", metavar="PACKAGE",
+                                help="Forcibly updates the specified package and merges its configuration.")
+        
 
 class HelpFormatter(optik.IndentedHelpFormatter):
     """Custom help formatting- provides some extra information about
@@ -191,8 +183,18 @@ class PackageXML:
         return self.xml.getvalue()
         
 
-def boot(config, bootstrap, argv):
+def boot(bootstrap, argv):
     """Performs initial setup of PGBuild's configuration tree"""
+
+    # Parse the args as soon as possible- this ensures that getting output
+    # from --help doesn't require initializing the config tree.
+    parsedArgs = OptionParser().parse_args(argv[1:])
+
+    # Initialize the config tree. Import modules here to make sure the
+    # option parser runs as soon as possible
+    import PGBuild.Package
+    import PGBuild.Config
+    config = PGBuild.Config.Tree()
 
     # Mount in an XML representation of the bootstrap object
     config.mount(BootstrapXML(bootstrap))
@@ -233,9 +235,10 @@ def boot(config, bootstrap, argv):
     # uneventfully on other platforms.
     config.dirMount(os.path.expanduser("~/.pgbuild"))
     
-    # Parse command line options into the <invocation> section
-    parseCommandLine(config, argv)
-    
+    # Mount command line options
+    config.mount(OptionsXML(parsedArgs))
+    return config
+
 
 def main(bootstrap, argv):
     """The entry point called by build.py. Most of the work is done by run(),
@@ -246,7 +249,7 @@ def main(bootstrap, argv):
          - Exception catching
        """
 
-    config = PGBuild.Config.Tree()
+    config = None
     ui = None
     # Outer try - cleanups
     try:
@@ -254,9 +257,9 @@ def main(bootstrap, argv):
         try:
             # Inner try - Exception rewriting
             try:
-            
+                
                 # Set up the configuration tree
-                boot(config, bootstrap, argv)
+                config = boot(bootstrap, argv)
 
                 # Load a UI module and run it
                 ui = PGBuild.UI.find(config.eval("invocation/option[@name='ui']/text()")).Interface(config)
@@ -271,7 +274,8 @@ def main(bootstrap, argv):
             else:
                 raise
     finally:
-        config.commit()
+        if config:
+            config.commit()
 
 ### The End ###
         
