@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.2 2001/11/19 18:49:16 micahjd Exp $
+/* $Id: x11input.c,v 1.3 2001/11/19 23:44:58 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -31,9 +31,11 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+/* Hooks for interfacing with the x11 video driver */
 extern Display *xdisplay;    /* X display from the x11.c driver */
 int x11_fd;                  /* X display's file descriptor */
- 
+void x11_expose(int x, int y, int w, int h);
+
 g_error x11input_init(null) {
   /* Get a file descriptor for the X11 display */
   if (!xdisplay)
@@ -51,15 +53,24 @@ void x11input_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
 /* Recieve and process X events */
 int x11input_fd_activate(int fd) {
   int i;
-  XEvent xevent;
+  XEvent ev;
   if(fd != x11_fd) return 0;
 
   for (i=XPending(xdisplay);i;i--) {
-    XNextEvent(xdisplay, &xevent);
+    XNextEvent(xdisplay, &ev);
+    switch (ev.type) {
+
+    case Expose:
+      x11_expose(ev.xexpose.x,
+		 ev.xexpose.y,
+		 ev.xexpose.width,
+		 ev.xexpose.height);
+      break;
 
 
-    printf("Event\n");
+ 
 
+    }
   }
   return 1;
 }

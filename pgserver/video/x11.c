@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.2 2001/11/19 18:46:24 micahjd Exp $
+/* $Id: x11.c,v 1.3 2001/11/19 23:44:58 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -47,6 +47,9 @@ struct x11bitmap {
 
 /* A table of graphics contexts for each LGOP mode */
 GC x11_gctab[PG_LGOPMAX+1];
+
+/* Hook for handling expose events from the input driver */
+void x11_expose(int x, int y, int w, int h);
 
 /******************************************** Implementations */
 
@@ -133,7 +136,7 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
   errorcheck;
 #else
   /* Draw directly to the output window */
-  vid->display = &x11_display;
+  vid->display = (hwrbitmap) &x11_display;
 #endif
 
   /* Set the window title
@@ -142,6 +145,12 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
   	  vid->xres,vid->yres,vid->bpp);
   XStoreName(xdisplay, x11_display.d, title);
 
+  /* Set input event mask */
+  XSelectInput(xdisplay, x11_display.d,
+	       KeyPressMask | KeyReleaseMask | ExposureMask | 
+	       ButtonPressMask | ButtonReleaseMask | PointerMotionMask);
+
+  XFlush(xdisplay);
   return sucess;
 }
 
@@ -160,7 +169,7 @@ void x11_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
   struct x11bitmap *xb = (struct x11bitmap *) dest;
   GC g = x11_gctab[lgop];
 
-#if 1         /* We can comment out pixel() so it's easy to see what's
+#if 0         /* We can comment out pixel() so it's easy to see what's
 	       * being done by X and what defaultvbl has to do
 	       */
   if (!g) {
@@ -255,7 +264,50 @@ void x11_update(s16 x,s16 y,s16 w,s16 h) {
   XCopyArea(xdisplay,((struct x11bitmap*)vid->display)->d,x11_display.d,
 	    x11_gctab[PG_LGOP_NONE],x,y,w,h,x,y);
 #endif
-  XSync(xdisplay,False);
+  XFlush(xdisplay);
+}
+
+/* Similar to the update function, but triggered by the X server */
+void x11_expose(int x,int y,int w,int h) {
+#ifdef CONFIG_X11_DOUBLEBUFFER
+
+  /* If we're double-buffered, this is just x11_update without the XFlush */
+  XCopyArea(xdisplay,((struct x11bitmap*)vid->display)->d,x11_display.d,
+	    x11_gctab[PG_LGOP_NONE],x,y,w,h,x,y);
+
+#else
+
+  /* We're not so lucky... set all the GCs to clip to this expose rectangle,
+   * redraw all the divtree layers, then set the GCs back to normal.
+   * Ugly, but avoids an extra buffer.
+   */
+
+  struct divtree *p;
+  int i;
+  XRectangle cliprect;
+
+  cliprect.x      = x;
+  cliprect.y      = y;
+  cliprect.width  = w;
+  cliprect.height = h;
+
+  for (i=0;i<=PG_LGOPMAX;i++)
+    if (x11_gctab[i])
+      XSetClipRectangles(xdisplay, x11_gctab[i], 0, 0, &cliprect, 1, Unsorted);
+
+  for (p=dts->top;p;p=p->next)
+    p->flags |= DIVTREE_ALL_REDRAW;
+  update(NULL,1);
+
+  cliprect.x      = 0;
+  cliprect.y      = 0;
+  cliprect.width  = vid->xres;
+  cliprect.height = vid->yres;
+
+  for (i=0;i<=PG_LGOPMAX;i++)
+    if (x11_gctab[i])
+      XSetClipRectangles(xdisplay, x11_gctab[i], 0, 0, &cliprect, 1, Unsorted);
+#endif
 }
 
 g_error x11_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
