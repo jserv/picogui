@@ -1,0 +1,8 @@
+VERBOSE=on
+PMDIR=$HOME/.procmail
+LOGFILE=$PMDIR/log
+
+# send mythtv commits to 'filter'
+:0
+* ^Subject:.*\[mythtv-commits\]
+| /home/mythtv_commits/filter.py
