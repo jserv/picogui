@@ -1,4 +1,4 @@
-/* $Id: render.h,v 1.4 2001/08/04 16:20:16 micahjd Exp $
+/* $Id: render.h,v 1.5 2001/08/05 10:50:52 micahjd Exp $
  *
  * render.h - data structures and functions for rendering and manipulating
  *            gropnodes (Graphics Operation nodes)
@@ -137,7 +137,7 @@ void grop_render(struct divnode *div);
  * that grop_render was becoming
  */
 
-void groplist_scroll(struct groprender *r);
+void groplist_scroll(struct groprender *r, struct divnode *div);
 void gropnode_nonvisual(struct groprender *r, struct gropnode *n);
 void gropnode_map(struct groprender *r, struct gropnode *n);
 void gropnode_clip(struct groprender *r, struct gropnode *n);

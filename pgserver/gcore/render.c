@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.9 2001/08/04 16:20:16 micahjd Exp $
+/* $Id: render.c,v 1.10 2001/08/05 10:50:52 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -61,7 +61,7 @@ void grop_render(struct divnode *div) {
    rend.lgop = PG_LGOP_NONE;
    rend.output = vid->display;
    rend.hfont = defaultfont;
-
+   
    /* Add in the divnode-level scrolling if necessary */
    if ((div->flags & DIVNODE_DIVSCROLL) && div->divscroll) {
      dtx = div->divscroll->tx;
@@ -81,10 +81,10 @@ void grop_render(struct divnode *div) {
    rend.clip.y2 = div->y+div->h-1;
    rend.translation.x = div->tx;
    rend.translation.y = div->ty;
-   rend.scroll.x = div->tx+dtx - div->otx;
-   rend.scroll.y = div->ty+dty - div->oty;
-   div->otx = div->tx+dtx;
-   div->oty = div->ty+dty;
+   rend.scroll.x = dtx - div->otx;
+   rend.scroll.y = dty - div->oty;
+   div->otx = dtx;
+   div->oty = dty;
    rend.output_rect.x = div->w;
    rend.output_rect.y = div->h;
 
@@ -111,7 +111,7 @@ void grop_render(struct divnode *div) {
    /* Scrolling updates */
    if ((div->flags & DIVNODE_SCROLL_ONLY) && 
        !(div->flags & DIVNODE_NEED_REDRAW))
-     groplist_scroll(&rend);
+     groplist_scroll(&rend,div);
    
    /* Get rid of any pesky sprites in the area. If this isn't incremental
     * go ahead and protect the whole divnode */
@@ -237,58 +237,93 @@ void grop_render(struct divnode *div) {
 
 /****************************************************** groplist_scroll */
 
-void groplist_scroll(struct groprender *r) {
-#if 0     /* Scrolling is broke right now */
-   
-   int ydif;
-     
-    /**** Scroll-only redraw */
+/* Some utilities for groplist_scroll... */
 
-    /* Get deltas now to prevent a race condition? */
-    ydif = div->ty-div->oty;
+/* Truncate the given clipping rectangle to include only the new
+ * areas to draw when the specified scroll is processed
+ */
+void scroll_clip(struct quad *clip, struct pair *scroll) {
+  s16 i;
 
-    /* Shift the existing image, and draw the strip along the edge */
-    if (ydif<0) {
-      /* Go up */
+  /* Vertical scroll */
+  if (scroll->y) {
 
-      if ((div->h+ydif)>0) {
-	cr.x1 = div->x;
-	cr.y1 = div->y;
-	cr.x2 = div->x + div->w - 1;
-	cr.y2 = div->y + div->h + ydif - 1;
-	add_updarea(cr.x1,cr.y1,cr.x2,cr.y2);
-	VID(sprite_protectarea) (&cr,spritelist);
-
-	VID(blit) (NULL,div->x,div->y-ydif,
-		     div->x,div->y,
-		     div->w,div->h+ydif,PG_LGOP_NONE);
-      }
-
-      if (cr.y2>cy1)
-	cy1 = cr.y2;
+    /* Scroll the region up */
+    if (scroll->y < 0) {
+      i = clip->y1;
+      clip->y1 = clip->y2 + scroll->y + 1;
+      if (clip->y1<i)
+	clip->y1 = i;
     }
-    else if (ydif>0) {
-      /* Go down */
-
-      if ((div->h-ydif)>0) {
-	cr.x1 = div->x;
-	cr.y1 = div->y + ydif;
-	cr.x2 = div->x + div->w - 1;
-	cr.y2 = div->y + div->h - 1;
-	add_updarea(cr.x1,cr.y1,cr.x2,cr.y2);
-	VID(sprite_protectarea) (&cr,spritelist);
-
-	VID(scrollblit) (div->x,div->y,div->x,div->y+ydif,
-			   div->w,div->h-ydif);
-      }      
-
-      if (cr.y1<cy2)
-	cy2 = cr.y1;
+    /* Scroll the region down */
+    else {
+      i = clip->y2;
+      clip->y2 = clip->y1 + scroll->y - 1;
+      if (clip->y2>i)
+	clip->y2 = i;
     }
-    else
-      return;
 
-#endif /* 0 */
+  }
+}
+
+
+void groplist_scroll(struct groprender *r, struct divnode *div) {
+
+  if ((div->flags & DIVNODE_DIVSCROLL) && div->divscroll!=div) {
+    /* This is not the scrollable divnode itself, it is a child. 
+     * We don't need to do any blitting here, but we do need to draw in
+     * the correct clipping rectangle
+     */
+
+    /* First, reproduce the truncated clipping rectangle used by the 
+     * head scrolling node.
+     */
+    struct quad trclip;
+    trclip.x1 = div->divscroll->calcx;
+    trclip.y1 = div->divscroll->calcy;
+    trclip.x2 = trclip.x1 + div->divscroll->calcw - 1;
+    trclip.y2 = trclip.y1 + div->divscroll->calch - 1;
+    scroll_clip(&trclip,&r->scroll);
+
+    /* Clip ourselves to this also */
+    if (r->clip.x1 < trclip.x1)
+      r->clip.x1 = trclip.x1;
+    if (r->clip.x2 > trclip.x2)
+      r->clip.x2 = trclip.x2;
+    if (r->clip.y1 < trclip.y1)
+      r->clip.y1 = trclip.y1;
+    if (r->clip.y2 > trclip.y2)
+      r->clip.y2 = trclip.y2;
+
+    r->clip = trclip;
+  }
+  else {
+    /* This is the head scrolling node! We are in charge of clearing
+     * all sprites out of the area and performing the scroll's blit
+     */
+
+    /* Prepare the whole area for drawing */
+    VID(sprite_protectarea) (&r->clip,spritelist);
+
+    /* Vertical scroll: blit up or down */
+    if (r->scroll.y) {
+      if (r->scroll.y < 0)
+	VID(blit) (r->output,r->clip.x1,r->clip.y1,
+		   r->clip.x2 - r->clip.x1 + 1,r->clip.y2 - r->clip.y1 + 
+		   1 + r->scroll.y,
+		   r->output,r->clip.x1,r->clip.y1 - r->scroll.y,
+		   PG_LGOP_NONE);
+      else
+	VID(scrollblit) (r->output,r->clip.x1,r->clip.y1 + r->scroll.y,
+			 r->clip.x2 - r->clip.x1 + 1,r->clip.y2 - r->clip.y1 +
+			 1 - r->scroll.y,
+			 r->output,r->clip.x1,r->clip.y1,
+			 PG_LGOP_NONE);
+    }      
+    
+    /* Truncate our own clipping rectangle */
+    scroll_clip(&r->clip,&r->scroll);
+  }
 }
 
 

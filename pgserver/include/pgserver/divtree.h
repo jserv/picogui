@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.25 2001/08/04 16:20:16 micahjd Exp $
+/* $Id: divtree.h,v 1.26 2001/08/05 10:50:52 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -210,6 +210,10 @@ struct divnode {
 					  *
 					  * Along with DIVNODE_EXTEND_HEIGHT or _WIDTH this
 					  * implements divnode-level scrollin
+					  */
+#define DIVNODE_PROPAGATE_SCROLL (1<<26) /* This is used in divnode_redraw to give all children
+					  * of a scrolled node the DIVNODE_SCROLL_ONLY flag
+					  * when the scrolled node gets it 
 					  */
 
 /* Side value macros and stuff */

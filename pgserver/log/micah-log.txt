@@ -21,6 +21,32 @@ Requirements for scrolling:
 		* widget/label.c: Removing PG_WP_VIRTUALH, now we can just use the
 		  preferred size
 
+		* include/pgserver/divtree.h: Added 3 new divnode flags for scrolling
+		
+		* gcore/div.c: Implemented new flags during recalc
+		
+		* gcore/render.c: Implemented divscroll translation and clipping
+		
+		* cli_c/src/dlg_colorpicker.c: Wrote a simple color picker
+		
+		* widget/scroll.c: Fixed bugs
+
+		* vidbase/defaultvbl.c, vidbase/linear8.c: Fixing charblit()
+		  clipping bug: clip rectangles can now be shorter than the height
+		  of one character with no problems
+		  
+		* gcore/render.c: Implementing scroll-only redraws
+
+		* widget/label.c: Removed PG_GROPF_TRANSLATE (messes up new scrolling)
+		
+		* vidbase/defaultvbl.c: Implemented a default version of scrollblit()
+		  for doing bottom-up blits when scrolling
+		  
+		* gcore/div.c: scroll-only redraws now propagate only a scroll-only
+		  redraw to the 'div' child, not a full redraw.
+		  
+		* gcore/render.c: More rendering engine changes so children of scrolling
+		  boxes are clipped correctly
 
 2001-08-03    Micah Dowty <micahjd@users.sourceforge.net>
 

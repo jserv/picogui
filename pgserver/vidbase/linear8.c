@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.20 2001/05/13 04:12:29 micahjd Exp $
+/* $Id: linear8.c,v 1.21 2001/08/05 10:50:52 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -196,13 +196,13 @@ void linear8_charblit_v(hwrbitmap dest,u8 *chardat,s16 dest_x,
 
   /* Do vertical clipping ahead of time (it does not require a special case) */
   if (clip) {
+    if (clip->x2<(dest_x+h-1))
+      h = clip->x2-dest_x+2;
     if (clip->x1>dest_x) {
       hc = clip->x1-dest_x; /* Do it this way so skewing doesn't mess up when clipping */
       destline = (dst += hc);
       chardat += hc*bw;
     }
-    if (clip->x2<(dest_x+h-1))
-      h = clip->x2-dest_x+2;
     
     /* Setup for horizontal clipping (if so, set a special case) */
     if (clip->y1>dest_y-w+1) {
@@ -298,13 +298,13 @@ void linear8_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,
 
   /* Do vertical clipping ahead of time (it does not require a special case) */
   if (clip) {
+    if (clip->y2<(dest_y+h))
+      h = clip->y2-dest_y+1;
     if (clip->y1>dest_y) {
       hc = clip->y1-dest_y; /* Do it this way so skewing doesn't mess up when clipping */
       destline = (dst += hc * FB_BPL);
       chardat += hc*bw;
     }
-    if (clip->y2<(dest_y+h))
-      h = clip->y2-dest_y+1;
     
     /* Setup for horizontal clipping (if so, set a special case) */
     if (clip->x1>dest_x) {

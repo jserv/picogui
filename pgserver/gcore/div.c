@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.51 2001/08/05 00:35:18 micahjd Exp $
+/* $Id: div.c,v 1.52 2001/08/05 10:50:52 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -358,13 +358,18 @@ void divnode_redraw(struct divnode *n,int all) {
 			   DIVNODE_SCROLL_ONLY | 
 			   DIVNODE_INCREMENTAL) )) { 
      grop_render(n);
-     if (n->flags & DIVNODE_PROPAGATE_REDRAW)
-       if (n->next)
+     if (n->next && (n->flags & DIVNODE_PROPAGATE_REDRAW))
 	 n->next->flags |= DIVNODE_NEED_REDRAW | DIVNODE_PROPAGATE_REDRAW;
-     if (n->div)
+     if (n->div && !(n->flags & DIVNODE_SCROLL_ONLY))
        n->div->flags |= DIVNODE_NEED_REDRAW | DIVNODE_PROPAGATE_REDRAW;
+     if (n->next && (n->flags & DIVNODE_PROPAGATE_SCROLL))
+       n->next->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_PROPAGATE_SCROLL;
+     if (n->div && (n->flags & DIVNODE_SCROLL_ONLY))
+       n->div->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_PROPAGATE_SCROLL;
+
      n->flags &= ~(DIVNODE_NEED_REDRAW | DIVNODE_PROPAGATE_REDRAW |
-		   DIVNODE_SCROLL_ONLY | DIVNODE_INCREMENTAL);
+		   DIVNODE_SCROLL_ONLY | DIVNODE_INCREMENTAL |
+		   DIVNODE_PROPAGATE_SCROLL);
    }
 
    divnode_redraw(n->next,all);

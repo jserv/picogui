@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.36 2001/08/04 16:20:16 micahjd Exp $
+/* $Id: label.c,v 1.37 2001/08/05 10:50:52 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -79,7 +79,6 @@ void build_label(struct gropctxt *c,unsigned short state,struct widget *self) {
    
   addgropsz(c,PG_GROP_TEXT,x,y,w,h);
   c->current->param[0] = DATA->text;
-  c->current->flags |= PG_GROPF_TRANSLATE;
 }
 
 /* Pointers, pointers, and more pointers. What's the point?

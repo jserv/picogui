@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.39 2001/07/11 07:38:20 micahjd Exp $
+/* $Id: video.c,v 1.40 2001/08/05 10:50:52 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -342,7 +342,11 @@ void realize_updareas(void) {
 	upd_h = vid->lyres-upd_y;
 #ifdef DEBUG_VIDEO
       /* Show update rectangles */
-      //      VID(frame) (upd_x,upd_y,upd_w,upd_h,(*vid->color_pgtohwr)(0xFF0000));
+      /*
+	VID(rect) (vid->display,
+		 upd_x,upd_y,upd_w,upd_h,(*vid->color_pgtohwr)(0xFF0000),
+		 PG_LGOP_STIPPLE);
+      */
 #endif
       VID(update) (upd_x,upd_y,upd_w,upd_h);
       upd_x = upd_y = upd_w = upd_h = 0;

@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.49 2001/07/25 21:08:21 epchristi Exp $
+/* $Id: video.h,v 1.50 2001/08/05 10:50:52 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -286,6 +286,15 @@ struct vidlib {
    */
   void (*blit)(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 	       s16 src_x, s16 src_y, s16 lgop);
+
+  /* Optional
+   *   A version of blit() that blits bottom-up rather than top-down.
+   *   This is needed for scrolling a region downwards.
+   *
+   * Default implementation: A call to blit() for each line
+   */
+  void (*scrollblit)(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
+		     s16 src_x, s16 src_y, s16 lgop);
 
   /* Reccomended
    *   Blits a bitmap or a section of a bitmap repeatedly

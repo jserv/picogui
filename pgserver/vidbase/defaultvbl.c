@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.46 2001/07/25 21:08:21 epchristi Exp $
+/* $Id: defaultvbl.c,v 1.47 2001/08/05 10:50:52 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -625,13 +625,13 @@ void def_charblit_0(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 
   /* Do vertical clipping ahead of time (it does not require a special case) */
   if (clip) {
+    if (clip->y2<(dest_y+h))
+      h = clip->y2-dest_y+1;
     if (clip->y1>dest_y) {
       hc = clip->y1-dest_y; /* Do it this way so skewing doesn't mess up when clipping */
       dest_y += hc;
       chardat += hc*bw;
     }
-    if (clip->y2<(dest_y+h))
-      h = clip->y2-dest_y+1;
     
     /* Setup for horizontal clipping (if so, set a special case) */
     if (clip->x1>dest_x)
@@ -690,13 +690,13 @@ void def_charblit_90(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 
   /* Do vertical clipping ahead of time (it does not require a special case) */
   if (clip) {
+    if (clip->x2<(dest_x+h-1))
+      h = clip->x2-dest_x+1;
     if (clip->x1>dest_x) {
       hc = clip->x1-dest_x; /* Do it this way so skewing doesn't mess up when clipping */
       dest_x += hc;
       chardat += hc*bw;
     }
-    if (clip->x2<(dest_x+h-1))
-      h = clip->x2-dest_x+1;
     
     /* Setup for horizontal clipping (if so, set a special case) */
     if (clip->y1>dest_y-w+1)
@@ -750,13 +750,13 @@ void def_charblit_180(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
 
   /* Do vertical clipping ahead of time (it does not require a special case) */
   if (clip) {
+    if (clip->y1>(dest_y-h))
+      h = dest_y-clip->y1+1;
     if (clip->y2<dest_y) {
       hc = dest_y-clip->y2; /* Do it this way so skewing doesn't mess up when clipping */
       dest_y -= hc;
       chardat += hc*bw;
     }
-    if (clip->y1>(dest_y-h))
-      h = dest_y-clip->y1+1;
     
     /* Setup for horizontal clipping (if so, set a special case) */
     if (clip->x2<dest_x)
@@ -1032,6 +1032,13 @@ void def_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 	(*vid->pixel) (dest,x+i,y,(*vid->getpixel)(src,src_x+i,src_y),lgop);
 }
 
+/* Copy it... Backwards! */
+void def_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
+		    s16 src_x, s16 src_y, s16 lgop) {
+  for (y+=h-1,src_y+=h-1;h;h--,y--,src_y--)
+    (*vid->blit) (dest,x,y,w,1,src,src_x,src_y,lgop);
+}
+
 void def_sprite_show(struct sprite *spr) {
 #ifdef DEBUG_VIDEO
    printf("def_sprite_show\n");
@@ -1128,7 +1135,7 @@ void def_sprite_show(struct sprite *spr) {
 */
 
    /**** A very similar debuggative cruft to test text clipping ****/
-/*
+  /*
     {
       struct quad cr;
       struct fontdesc fd;
@@ -1141,14 +1148,14 @@ void def_sprite_show(struct sprite *spr) {
       cr.x1 = 100;
       cr.y1 = 100;
       cr.x2 = 150;
-      cr.y2 = 150;
-      VID(rect) (cr.x1,cr.y1,cr.x2-cr.x1+1,cr.y2-cr.y1+1,(*vid->color_pgtohwr)(0x004000));
-//      outtext(&fd,spr->x,spr->y,(*vid->color_pgtohwr) (0xFFFF80),"Hello,\nWorld!",&cr);
-      outtext_v(&fd,spr->x,spr->y,(*vid->color_pgtohwr) (0xFFFF80),"Hello,\nWorld!",&cr);
+      cr.y2 = 110;
+      VID(rect) (vid->display,cr.x1,cr.y1,cr.x2-cr.x1+1,cr.y2-cr.y1+1,(*vid->color_pgtohwr)(0x004000),PG_LGOP_NONE);
+      outtext(vid->display,&fd,spr->x,spr->y,(*vid->color_pgtohwr) (0xFFFF80),"Hello,\nWorld!",&cr,0,0,PG_LGOP_NONE,0);
+      //      outtext_v(&fd,spr->x,spr->y,(*vid->color_pgtohwr) (0xFFFF80),"Hello,\nWorld!",&cr);
 //      outtext_v(&fd,spr->x,spr->y,(*vid->color_pgtohwr) (0xFFFF80),"E",&cr);
       VID(update) (0,0,vid->lxres,vid->lyres);
     }
-*/
+  */
    
 }
 
@@ -1422,6 +1429,7 @@ void setvbl_default(struct vidlib *vid) {
   vid->gradient = &def_gradient;
   vid->charblit = &def_charblit;
   vid->tileblit = &def_tileblit;
+  vid->scrollblit = &def_scrollblit;
   vid->ellipse = &def_ellipse; 
   vid->fellipse = &def_fellipse; 
 #ifdef CONFIG_FORMAT_XBM
