@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.61 2002/04/09 05:55:35 micahjd Exp $
+/* $Id: memtheme.c,v 1.62 2002/04/09 21:20:16 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -243,7 +243,12 @@ u32 theme_lookup(u16 object, u16 property) {
   case PGTH_P_STRING_PGUIWARN:  return string_pguiwarn;
   case PGTH_P_STRING_PGUIERRDLG:return string_pguierrdlg;
   case PGTH_P_STRING_PGUICOMPAT:return string_pguicompat;
-  case PGTH_P_SIDE:             return object == PGTH_O_PANEL ? PG_S_BOTTOM : PG_S_LEFT;
+  case PGTH_P_SIDE:
+    switch (object) {
+    case PGTH_O_PANEL:    return PG_S_BOTTOM;
+    case PGTH_O_TOOLBAR:  return PG_S_TOP;
+    default:              return PG_S_LEFT;
+    }
   case PGTH_P_HOTKEY_OK:        return PGKEY_RETURN;
   case PGTH_P_HOTKEY_CANCEL:    return PGKEY_ESCAPE;
   case PGTH_P_HOTKEY_YES:       return PGKEY_y;

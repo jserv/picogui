@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.170 2002/03/27 15:09:25 lonetech Exp $
+/* $Id: widget.c,v 1.171 2002/04/09 21:20:16 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -103,6 +103,7 @@ struct widget *capture;
 struct widget *kbdfocus;
 int capturebtn;           /* Button that is holding the capture */
 s16 last_char_key;        /* Key for the last character event received */
+s16 last_pressed_key;     /* Key for the last keydown even received */
 
 /* Sorted (chronological order) list of widgets
    with timers
@@ -1012,9 +1013,21 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
   printf("Keyboard event: 0x%08X (#%d, '%c') mod:0x%08X\n",type,key,key,mods);
 #endif
 
+  /* The user can optionally double-press escape to suspend the device */
+#ifdef CONFIG_SUSPEND_DBLESC
+  if (last_pressed_key==PGKEY_ESCAPE && type==PG_TRIGGER_KEYDOWN && key==PGKEY_ESCAPE)
+    drivermessage(PGDM_POWER, PG_POWER_SLEEP, NULL);
+#endif
+
   /* Store the last character event sent */
-  if (type == PG_TRIGGER_CHAR)
+  switch (type) {
+  case PG_TRIGGER_CHAR:
     last_char_key = key;
+    break;
+  case PG_TRIGGER_KEYDOWN:
+    last_pressed_key = key;
+    break;
+  }
 
   /* If the keyboard has been captured by a client, redirect everything
      to them.  This would seem a bit selfish of the client to want ALL

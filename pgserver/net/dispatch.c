@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.90 2002/04/09 05:55:35 micahjd Exp $
+/* $Id: dispatch.c,v 1.91 2002/04/09 21:20:16 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -443,7 +443,7 @@ g_error rqh_register(int owner, struct pgrequest *req,
   i.name = ntohl(arg->name);
   i.type = ntohs(arg->type);
 
-  i.side = theme_lookup(PGTH_O_PANEL, PGTH_P_SIDE);
+  i.side = theme_lookup(i.type==PG_APP_TOOLBAR ? PGTH_O_TOOLBAR : PGTH_O_PANEL, PGTH_P_SIDE);
   i.sidemask = 0xFFFF;
   i.w = 10000;           /* !!! like i said... */
   i.h = 10000;

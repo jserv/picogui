@@ -1,4 +1,4 @@
-/* $Id: zaurus.c,v 1.3 2002/02/23 09:56:12 micahjd Exp $
+/* $Id: zaurus.c,v 1.4 2002/04/09 21:20:16 micahjd Exp $
  *
  * zaurus.c - Input driver for the Sharp Zaurus SL-5000. This includes a
  *            simple touchscreen driver, and some extras to handle sound
@@ -121,6 +121,16 @@ int zaurus_ts_fd_activate(int fd) {
 
 void zaurus_message(u32 message, u32 param, u32 *ret) {
   switch (message) {
+
+  case PGDM_POWER:
+    if (param <= PG_POWER_SLEEP) {
+      int fd = open("/proc/sys/pm/suspend",O_WRONLY);
+      write(fd,"1\n",2);
+      close(fd);
+      /* Now it's waking up from sleep */
+      inactivity_reset();
+    }
+    break;
   
   case PGDM_SOUNDFX:
     ioctl(zaurus_buz_fd, SHARP_BUZZER_MAKESOUND,param);
