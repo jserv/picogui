@@ -1,4 +1,4 @@
-/* $Id: terminal_textgrid.c,v 1.1 2002/09/26 14:11:03 micahjd Exp $
+/* $Id: terminal_textgrid.c,v 1.2 2002/10/11 12:32:37 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -281,19 +281,13 @@ void term_clearbuf(struct widget *self,int fromx,int fromy,int chars) {
 /* Copy a rectangle between two text buffers */
 void textblit(struct pgstring *src,struct pgstring *dest,int src_x,int src_y,int src_w,
 	      int dest_x,int dest_y,int dest_w,int w,int h) {
-  int srcoffset  = src_w;
-  int destoffset = dest_w;
+  int src_chr,dest_chr;
 
-  /* FIXME: Update this for pgstrings */
-
-  /*
-  src  += (src_x + src_y * src_w) << 1;
-  dest += (dest_x + dest_y * dest_w) << 1;
-  w <<= 1;
-
-  for (;h;h--,src+=srcoffset,dest+=destoffset)
-    memcpy(dest,src,w);
-  */
+  src_chr  = src_x + src_y * src_w;
+  dest_chr = dest_x + dest_y * dest_w;
+  
+  for (;h;h--,src_chr+=src_w,dest_chr+=dest_w)
+    pgstring_chrcpy(dest,src,dest_chr,src_chr,w);
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: pgstring.c,v 1.5 2002/10/11 09:44:38 micahjd Exp $
+/* $Id: pgstring.c,v 1.6 2002/10/11 12:32:36 micahjd Exp $
  *
  * pgstring.c - String data type to handle various encodings
  *
@@ -266,19 +266,20 @@ u32 pgstring_encoded_length(struct pgstring *str, u32 ch) {
 /* Copy a block of characters to another location within the string.
  * This may not work as you expect on formats that use variable length encodings.
  */
-void pgstring_chrcpy(struct pgstring *str,u32 dest_chr, u32  src_chr, u32 num_chars) {
+void pgstring_chrcpy(struct pgstring *deststr, struct pgstring *srcstr,
+		     u32 dest_chr, u32  src_chr, u32 num_chars) {
   struct pgstr_iterator dest = PGSTR_I_NULL,src = PGSTR_I_NULL;
 
   /* FIXME: This is cheesy, need to support UTF-8 and textbox encodings.
    *        as-is this is just enough for the terminal.
    */
 
-  pgstring_seek(str,&src,src_chr);
-  pgstring_seek(str,&dest,dest_chr);
-  num_chars *= pgstring_encoded_length(str,' ');
-  if (dest.offset + num_chars > str->num_bytes)
-    num_chars = str->num_bytes - num_chars - dest.offset;
-  memmove(str->buffer + dest.offset,str->buffer + src.offset,num_chars);
+  pgstring_seek(srcstr,&src,src_chr);
+  pgstring_seek(deststr,&dest,dest_chr);
+  num_chars *= pgstring_encoded_length(deststr,' ');
+  if (dest.offset + num_chars > deststr->num_bytes)
+    num_chars = deststr->num_bytes - num_chars - dest.offset;
+  memmove(deststr->buffer + dest.offset,srcstr->buffer + src.offset,num_chars);
 }
 
 /* Comparison function for pgstring iterators. Returns:

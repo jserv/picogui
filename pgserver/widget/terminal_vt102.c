@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.1 2002/09/26 14:11:03 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.2 2002/10/11 12:32:37 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -161,7 +161,7 @@ void term_char(struct widget *self,u8 c) {
 	if (DATA->current.crsry >= DATA->bufferh) {  /* Scroll vertically */
           DATA->current.crsry = DATA->bufferh-1;
 
-	  pgstring_chrcpy(DATA->buffer, 0, DATA->bufferw, 
+	  pgstring_chrcpy(DATA->buffer, DATA->buffer, 0, DATA->bufferw, 
 			  DATA->buffer->num_chars - DATA->bufferw);
           term_clearbuf(self,0,DATA->bufferh-1,DATA->bufferw);
 
@@ -187,7 +187,7 @@ void term_char(struct widget *self,u8 c) {
     DATA->current.crsry = 0;
   else if (DATA->current.crsry >= DATA->bufferh) {  /* Scroll vertically */
     DATA->current.crsry = DATA->bufferh-1;
-    pgstring_chrcpy(DATA->buffer, 0, DATA->bufferw, 
+    pgstring_chrcpy(DATA->buffer, DATA->buffer, 0, DATA->bufferw, 
 		    DATA->buffer->num_chars - DATA->bufferw);
     term_clearbuf(self,0,DATA->bufferh-1,DATA->bufferw);
 
