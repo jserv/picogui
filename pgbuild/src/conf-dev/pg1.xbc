@@ -3,7 +3,7 @@
     
 	<package name="pg1/server">
 		<description>
-			<summary>PicoGUI Server.</summary>
+			<summary>PicoGUI Server</summary>
 			<detail>
 				In the PicoGUI 1.x architecture, the server is the component that manages
 				and contains drivers, widgets, and all subsystems except the client and client
@@ -11,6 +11,66 @@
 			</detail>
 		</description>
 		<versiongroup name="picogui-versions" path="pg1/server"/>
+	</package>
+
+	<package name="pg1/doc">
+		<description><summary>Documentation for the PicoGUI 1.x architecture and implementation</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/doc"/>
+	</package>
+
+	<package name="pg1/tools/pgbg">
+		<description>
+			<summary>PicoGUI background tool</summary>
+			<detail>
+				This tool generates PicoGUI themes for background images or solid colors.
+			</detail>
+		</description>
+		<versiongroup name="picogui-versions" path="pg1/tools/pgbg"/>
+	</package>
+
+	<package name="pg1/tools/thdump">
+		<description>
+			<summary>PicoGUI theme dump tool</summary>
+			<detail>
+				This is a low-level tool for dumping the raw contents of a PicoGUI theme.
+				It's probably only useful for those interested in hacking on the theme compiler,
+				loader, or interpreter.
+			</detail>
+		</description>
+		<versiongroup name="picogui-versions" path="pg1/tools/thdump"/>
+	</package>
+
+	<package name="pg1/tools/themec">
+		<description>
+			<summary>PicoGUI theme compiler</summary>
+			<detail>
+				The theme compiler converts a ".ths" theme source file into a self-contained
+				".th" compiled theme. Themes must be compiled before they can be loaded.
+			</detail>
+		</description>
+		<versiongroup name="picogui-versions" path="pg1/tools/themec"/>
+	</package>
+
+	<package name="pg1/tools/themedc">
+		<description>
+			<summary>PicoGUI theme de-compiler</summary>
+			<detail>
+				The theme de-compiler tries to convert a ".th" compiled theme back into
+				a ".ths" source file and accompanying data files.
+			</detail>
+		</description>
+		<versiongroup name="picogui-versions" path="pg1/tools/themedc"/>
+	</package>
+
+	<package name="pg1/tools/xwt">
+		<description>
+			<summary>XML Widget Template tools</summary>
+			<detail>
+				Scripts for working with XML widget templates. Currently consists of a
+				compiler, for converting XML widget templates into binary widget templates.
+			</detail>
+		</description>
+		<versiongroup name="picogui-versions" path="pg1/tools/xwt"/>
 	</package>
 
 </pgbuild>

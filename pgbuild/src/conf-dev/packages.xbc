@@ -16,4 +16,24 @@
 		<versiongroup name="picogui-versions" path="media/images"/>
 	</package>
 
+	<package name="tools/css">
+		<description><summary>Miscellaneous Cascading Style Sheets used in the PicoGUI repository</summary></description>
+		<versiongroup name="picogui-versions" path="tools/css"/>
+	</package>
+
+	<package name="tools/irc">
+		<description><summary>Utilities for the #picogui IRC channel</summary></description>
+		<versiongroup name="picogui-versions" path="tools/irc"/>
+	</package>
+
+	<package name="tools/svn">
+		<description><summary>Tools for analysis, notification, and backups of the Subversion repository</summary></description>
+		<versiongroup name="picogui-versions" path="tools/svn"/>
+	</package>
+
+	<package name="tools/xslt">
+		<description><summary>XML stylesheets for viewing and translating the XML formats PicoGUI uses</summary></description>
+		<versiongroup name="picogui-versions" path="tools/xslt"/>
+	</package>
+
 </pgbuild>

@@ -244,7 +244,7 @@ class Interface(object):
                     description = self.config.xpath('description/summary/text()', node)[0].data
                 except IndexError:
                     description = ""
-                print "%s%-20s%s" % (indentString, node.attributes['name'].value, description)
+                print "%s%-25s %s" % (indentString, node.attributes['name'].value, description)
             except KeyError:
                 # An element without a name, try to treat it as a container and recurse into its children
                 print "%s%s:" % (indentString, node.tagName)
