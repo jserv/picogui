@@ -80,7 +80,8 @@ PGSERVER_LDFLAGS=""
 
 AC_ARG_WITH(pgserver,
 	[  --with-pgserver=...        prefix of the pgserver installation path],
-	PGSERVER_CFLAGS="-I${withval}/include")
+	[ PGSERVER_DIR=${withval}
+          PGSERVER_CFLAGS="-I${withval}/include"] )
 
 dnl Check that we can compile with the specified paths
 dnl 1.- save the old flags
@@ -100,6 +101,7 @@ dnl 4.- restore everything
 CFLAGS="${old_CFLAGS}"
 
 dnl 5.- ...and export our symbol
+AC_SUBST(PGSERVER_DIR)
 AC_SUBST(PGSERVER_CFLAGS)
 
 

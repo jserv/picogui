@@ -6,3 +6,8 @@ include_HEADERS = \
 	stddialog.h \
 	applet.h
 
+install-data-hook:
+	if ! test x"@PGSERVER_DIR@" = x$(prefix) ; then \
+		echo "Copying pgserver's include files ..." ; \
+		cp ${PGSERVER_DIR}/include/picogui/*.h ${includedir}/ ; \
+	fi
