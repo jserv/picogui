@@ -1,6 +1,6 @@
 dnl -*- m4 -*-
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(appmgr/global.c)
+AC_INIT(pgmain.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(picogui-server, 0.0)
 AM_ACLOCAL_INCLUDE(macros)

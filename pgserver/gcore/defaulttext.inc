@@ -146,3 +146,6 @@
 /* 138 */ "Unsupported widget: simplemenu",
 /* 139 */ "Unsupported widget: dialogbox",
 /* 140 */ "Unsupported widget: messagedialog",
+/* 141 */ "All installed application managers failed to load",
+/* 142 */ "This application manager requres a rootless capable video driver",
+/* 143 */ "Unknown application manager specified",

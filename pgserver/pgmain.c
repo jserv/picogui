@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.46 2002/10/23 16:13:33 micahjd Exp $
+/* $Id: pgmain.c,v 1.47 2002/10/24 03:00:52 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -36,6 +36,7 @@
 #include <pgserver/configfile.h>
 #include <pgserver/timer.h>
 #include <pgserver/hotspot.h>
+#include <pgserver/appmgr.h>
 
 #ifdef CONFIG_FONTENGINE_BDF
 #include <pgserver/font_bdf.h>
@@ -277,7 +278,7 @@ int main(int argc, char **argv) {
 	  }
 	}
 
-	printf("\n   Input drivers:");
+	printf("\n\n   Input drivers:");
 	{
 	  struct inputinfo *p = inputdrivers;
 	  while (p->name) {
@@ -286,7 +287,7 @@ int main(int argc, char **argv) {
 	  }
 	}
 	
-	printf("\n    Font engines:");
+	printf("\n\n    Font engines:");
 	{
 	  struct fontengine *p = fontengine_list;
 	  while (p->name) {
@@ -296,7 +297,7 @@ int main(int argc, char **argv) {
 	}
 
 #ifdef CONFIG_FONTENGINE_BDF
-	printf("\n       BDF fonts:");
+	printf("\n\n       BDF fonts:");
 	{
 	  struct bdf_fontstyle_node *p = bdf_fontstyles;
 	  while (p) {
@@ -319,7 +320,7 @@ int main(int argc, char **argv) {
 	}
 #endif
 
-	puts("\n         Widgets:"
+	puts("\n\n         Widgets:"
 #ifdef CONFIG_WIDGET_BACKGROUND
 	     " background"
 #endif
@@ -400,19 +401,16 @@ int main(int argc, char **argv) {
 #endif
 	     );
 
-	puts("    App Managers:"
-#ifdef CONFIG_APPMGR_MANAGED_ROOTLESS
-	     " managed_rootless"
-#endif
-#ifdef CONFIG_APPMGR_PANEL
-	     " panel"
-#endif
-#ifdef CONFIG_APPMGR_NULL
-	     " null"
-#endif
-	     );
+	printf("\n    App managers:");
+	{
+	  struct appmgr **p = appmgr_modules;
+	  while (*p) {
+	    printf(" %s",(*p)->name);
+	    p++;
+	  }
+	}
 
-	printf("  Bitmap formats:");
+	printf("\n\n  Bitmap formats:");
 	{
 	  struct bitformat *p = bitmap_formats;
 	  char name[5] = {0,0,0,0,0};
@@ -636,6 +634,10 @@ int main(int argc, char **argv) {
     printf("Init: net\n");
 #endif
     if (iserror(prerror(net_init())))    return 1;
+#ifdef DEBUG_INIT
+    printf("Init: globals\n");
+#endif
+    if (iserror(prerror(globals_init()))) return 1;
 #ifdef DEBUG_INIT
     printf("Init: appmgr\n");
 #endif

@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.104 2002/10/23 02:09:04 micahjd Exp $
+/* $Id: video.h,v 1.105 2002/10/24 03:00:54 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -239,6 +239,14 @@ struct vidlib {
 
   /******************************************** Window management */
 
+  /* The functions in this section are used by rootless mode.
+   * A driver may support both rootless and monolithic modes:
+   * rootless mode will be entered by calling setmode with the
+   * PG_VID_ROOTLESS flag turned on. If the driver has been successfully
+   * put into rootless mode, the is_rootless function should return 1.
+   * In a driver that supports both rootless and conventional modes,
+   * the user or package maintainer will select this via the app manager.
+   */
 
   /* Optional
    *   Return a bitmap used for drawing debug information.

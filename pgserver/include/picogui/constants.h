@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.167 2002/10/23 06:17:25 micahjd Exp $
+/* $Id: constants.h,v 1.168 2002/10/24 03:00:54 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -801,6 +801,8 @@ typedef unsigned long pghandle;
 
 #define PG_VID_FULLSCREEN     0x0001  //!< Deprecated
 #define PG_VID_DOUBLEBUFFER   0x0002  //!< Deprecated
+#define PG_VID_ROOTLESS       0x0100
+
 #define PG_VID_ROTATE90       0x0004  //!< Rotate flags are mutually exclusive
 #define PG_VID_ROTATE180      0x0008
 #define PG_VID_ROTATE270      0x0010

@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.110 2002/10/23 02:09:05 micahjd Exp $
+/* $Id: dispatch.c,v 1.111 2002/10/24 03:00:54 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -393,23 +393,18 @@ g_error rqh_register(int owner, struct pgrequest *req,
 
   memset(&i,0,sizeof(i));
 
-  /* Note: most of this doesn't work yet, just trying to
-     get a framework in place so apps written now won't
-     break later.
-  */
-
   i.owner = owner;
   i.name = ntohl(arg->name);
   i.type = ntohs(arg->type);
 
   i.side = theme_lookup(i.type==PG_APP_TOOLBAR ? PGTH_O_TOOLBAR : PGTH_O_PANEL, PGTH_P_SIDE);
   i.sidemask = 0xFFFF;
-  i.w = 10000;           /* !!! like i said... */
-  i.h = 10000;
-  i.minw = -1;
-  i.maxw = -1;
-  i.minh = -1;
-  i.maxh = -1;
+  i.default_size.w = 0x7FFF;
+  i.default_size.h = 0x7FFF;
+  i.min_size.w = -1;
+  i.max_size.w = -1;
+  i.min_size.h = -1;
+  i.max_size.h = -1;
 
   /* Process APPSPECs */
   for (;remaining >= 4;remaining -= 4) {
@@ -428,27 +423,27 @@ g_error rqh_register(int owner, struct pgrequest *req,
       break;
 
     case PG_APPSPEC_WIDTH:
-      i.w = value;
+      i.default_size.w = value;
       break;
 
     case PG_APPSPEC_HEIGHT:
-      i.h = value;
+      i.default_size.h = value;
       break;
 
     case PG_APPSPEC_MINWIDTH:
-      i.minw = value;
+      i.min_size.w = value;
       break;
 
     case PG_APPSPEC_MAXWIDTH:
-      i.maxw = value;
+      i.max_size.w = value;
       break;
 
     case PG_APPSPEC_MINHEIGHT:
-      i.minh = value;
+      i.min_size.h = value;
       break;
 
     case PG_APPSPEC_MAXHEIGHT:
-      i.maxh = value;
+      i.max_size.h = value;
       break;
 
     default:

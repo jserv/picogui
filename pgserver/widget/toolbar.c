@@ -1,4 +1,4 @@
-/* $Id: toolbar.c,v 1.25 2002/10/11 11:58:45 micahjd Exp $
+/* $Id: toolbar.c,v 1.26 2002/10/24 03:00:55 micahjd Exp $
  *
  * toolbar.c - container widget for buttons
  *
@@ -79,21 +79,6 @@ void toolbar_remove(struct widget *self) {
     for (tree=dts->top;tree;tree=tree->next) {
       tree->head->flags |= DIVNODE_NEED_RECALC;
       tree->flags |= DIVTREE_NEED_RECALC | DIVTREE_ALL_REDRAW;
-    }
-  }
-
-
-  /* If this widget is the htbboundary, set it to the previous
-     widget instead. To do this we have to iterate through the
-     divtree. */
-  if (wtbboundary == self) {
-    struct divnode *p = dts->root->head;
-    while (p) {
-      if ((&p->next == self->where) && p->owner) {
-	htbboundary = hlookup(p->owner,NULL);
-	break;
-      }
-      p = p->next;
     }
   }
 

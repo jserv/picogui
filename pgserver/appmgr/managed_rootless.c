@@ -1,4 +1,4 @@
-/* $Id: managed_rootless.c,v 1.1 2002/10/23 16:13:34 micahjd Exp $
+/* $Id: managed_rootless.c,v 1.2 2002/10/24 03:00:53 micahjd Exp $
  *
  * managed_rootless.c - Application management for rootless modes 
  *                      managed by a host GUI
@@ -30,6 +30,42 @@
 #include <pgserver/widget.h>
 #include <pgserver/appmgr.h>
 
+
+/**************************************** Public interface */
+
+g_error appmgr_managed_rootless_init(void) {
+  g_error e;
+
+  /* Try to put the driver in rootless mode */
+  e = video_setmode(0,0,0,PG_FM_ON,PG_VID_ROOTLESS);
+  errorcheck;
+  if (!VID(is_rootless)())
+    return mkerror(PG_ERRT_BADPARAM,142);  /* Requires rootless mode */
+
+
+  return success;
+}
+
+void appmgr_managed_rootless_shutdown(void) {
+}
+
+g_error appmgr_managed_rootless_reg(struct app_info *i) {
+  return success;
+}
+
+void appmgr_managed_rootless_unreg(struct app_info *i) {
+}
+
+
+/**************************************** Registration */
+
+struct appmgr appmgr_managed_rootless = {
+             name:  "managed_rootless",
+             init:  appmgr_managed_rootless_init,
+         shutdown:  appmgr_managed_rootless_shutdown,
+              reg:  appmgr_managed_rootless_reg,
+            unreg:  appmgr_managed_rootless_unreg,
+};
 
 /* The End */
 

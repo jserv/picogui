@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.33 2002/07/04 20:00:31 micahjd Exp $
+/* $Id: handle.h,v 1.34 2002/10/24 03:00:54 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -79,6 +79,10 @@ struct handlenode {
    *
    */
 };
+
+/* Global objects */
+extern handle res[PGRES_NUM];
+g_error globals_init();
 
 /* Find the handlenode associated with a handle ID */
 struct handlenode *htree_find(handle id);

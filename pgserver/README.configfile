@@ -114,6 +114,9 @@ quoted appropriately. For example:
 - font_engine
   Force the default font engine for the server to use
 
+- appmgr
+  Force the application manager to use
+
 [sound]
 
 - click

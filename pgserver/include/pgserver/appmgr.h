@@ -1,7 +1,6 @@
-/* $Id: appmgr.h,v 1.21 2002/07/03 22:03:29 micahjd Exp $
+/* $Id: appmgr.h,v 1.22 2002/10/24 03:00:54 micahjd Exp $
  *
- * appmgr.h - All the window-manager-ish functionality, except we don't
- * do windows (X windows, that is?)
+ * appmgr.h - Generic interface to application manager modules
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -31,58 +30,54 @@
 
 #include <picogui/constants.h>
 #include <pgserver/handle.h>
-#include <pgserver/video.h>
+#include <pgserver/widget.h>
+#include <pgserver/divtree.h>
+
+
+/**************************************** Public interface */
 
 /* Parameters defining an application */
 struct app_info {
-  /* These should be provided by the client */
-  handle name;
-  int type;
-  int minw,maxw,minh,maxh;     /* 0 for no restrictions */
-  int sidemask;                /* Mask of allowed sides */
+  /* Client-provided data  */
+  handle name;      /* Name of the app, as a string */
+  int type;         /* PG_APP_* constant */  
+  struct sizepair default_size, min_size, max_size;
+  int side,sidemask;
 
-  /* Filled initially with suggested values, later replaced by actual
-     values. */
-  int side;
-  int w,h;   /* w is used if side is a vertical split, h if it is a
-		horizontal split */
+  int owner;        /* This should be managed by the request system. */
+  handle rootw;     /* Root widget handle */
 
-  /* This should be managed by the request system. */
-  int owner;
+  void *private;    /* Data owned by the app manager module */
 
-  /* Root widget handle (Filled in on app registration) */
-  handle rootw; 
-
-  /* Yep, it's a linked list */
   struct app_info *next;
 };
 
-/* Global objects */
-extern handle res[PGRES_NUM];
+/* most-recently-used ordered linked list of all loaded apps */
 extern struct app_info *applist;
-extern handle htbboundary;       /* The last toolbar, represents the boundary between
-				    toolbars and application panels */
-extern struct widget *wtbboundary;  /* htbboundary, dereferenced. Only used for comparison
-				       when deleting a toolbar. Do not rely on the
-				       validity of this pointer, dereferencing it could
-				       cause a segfault! */
 
 /* Init & Free */
 g_error appmgr_init(void);
 void appmgr_free(void);
 
-/* Register a new application. 
-   Fill out the app_info structure, then call this.
-   The app_info structure can be on the stack - a dynamically allocated
-   copy is stored.
-*/
+/* Register a new application.
+ * Any information provided by the client (Usually name and type)
+ * should be filled in this structure before calling, the final values
+ * will be stored by the app manager and returned in the structure.
+ */
 g_error appmgr_register(struct app_info *i);
 
-/* Unregisters applications owned by a given connection */
+/* Unregister one application. Delete its app_info record, and remove
+ * its root widget if it still exists.
+ */
+void appmgr_unregister(struct app_info **i);
+
+/* Unregisters all applications owned by a given connection */
 void appmgr_unregowner(int owner);
 
 /* Return a pointer to a divnode specifying the non-toolbar area that
- * applications and popup boxes may normally inhabit. */
+ * applications and popup boxes may normally inhabit. 
+ * This returns NULL if this is not applicable.
+ */
 struct divnode *appmgr_nontoolbar_area(void);
 
 /* Given a widget, finds the app it belongs to */
@@ -90,6 +85,47 @@ struct app_info **appmgr_findapp(struct widget *w);
 
 /* Focus the app by moving it to the front of the app list */
 void appmgr_focus(struct app_info **app);
+
+
+/**************************************** App manager module interface */
+
+struct appmgr {
+
+  /* The name the user can refer to this module as */
+  const char *name;
+
+  /* Optional: Appmgr-specific initialization and shutdown */
+  g_error (*init)(void);
+  void (*shutdown)(void);
+
+  /* Required: 
+   * The provided app_info structure has already been initialized
+   * with the data provided by our client. If this call succeeds, it will
+   * be added to the linked list of apps.
+   */
+  g_error (*reg)(struct app_info *i);  
+
+  /* Optional:
+   * The provided app_info has already been delinked from the list,
+   * and after this call it will be freed. Perform any appmgr-specific
+   * cleanups on it. If i->rootw is nonzero after this call, it will be
+   * automatically deleted.
+   */
+  void (*unreg)(struct app_info *i);
+
+  /* Optional:
+   * Return the nontoolbar area if this appmgr has such a concept
+   */
+  struct divnode *(*nontoolbar_area)(void);
+
+};
+
+extern struct appmgr *appmgr_modules[];
+
+extern struct appmgr appmgr_null;
+extern struct appmgr appmgr_panel;
+extern struct appmgr appmgr_managed_rootless;
+
 
 #endif /* __H_APPMGR */
 /* The End */
