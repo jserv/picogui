@@ -23,13 +23,11 @@ with methods to determine if the working copy is up to date and update it.
 # 
 _svn_id = "$Id$"
 
-import urlparse, os
-import PGBuild.Errors
-
 def open(url):
     """Repository factory- given a URL, this guesses what type of repository
        it points to and instantiates the proper Repository object for it.
        """
+    import urlparse
     (scheme, server, path, parameters, query, fragment) = urlparse.urlparse(url)
 
     # Anything ending in .tar, .tar.gz, or .tar.bz2 is a tar file
@@ -41,7 +39,7 @@ def open(url):
     if scheme == "http" or scheme == "https" or scheme == "svn":
         import PGBuild.Repository.Subversion
         return PGBuild.Repository.Subversion.Repository(url)
-
+    import PGBuild.Errors
     raise PGBuild.Errors.ConfigError("Unable to determine repository type for the URL '%s'" % url)
 
 
@@ -71,6 +69,7 @@ class RepositoryBase(object):
            """
         # Unless the repository implementation has something better to do, we'll just
         # check whether the directory exists.
+        import os
         return os.path.isdir(destination)
 
 ### The End ###

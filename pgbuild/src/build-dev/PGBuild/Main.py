@@ -33,11 +33,9 @@ if sys.hexversion < 0x020200F0:
     print "This version of Python is too old. At least verison 2.2 is required."
     sys.exit(1)
 
-import PGBuild.UI
-import PGBuild.Errors
 import optik
 import PGBuild
-import os, re, shutil
+import os, re
 import StringIO
 
 
@@ -224,6 +222,7 @@ def boot(bootstrap, argv):
         if re.match(".*\.%s" % PGBuild.Config.configFileExtension, skelFile):
             if os.path.isfile(os.path.join(skelPath, skelFile)):
                 if not os.path.isfile(os.path.join(bootstrap.paths['localConf'], skelFile)):
+                    import shutil
                     shutil.copyfile(os.path.join(skelPath, skelFile),
                                     os.path.join(bootstrap.paths['localConf'], skelFile))
 
@@ -267,15 +266,17 @@ def main(bootstrap, argv):
         try:
             # Inner try - Exception rewriting
             try:
-                
+
                 # Set up the configuration tree
                 config = boot(bootstrap, argv)
 
                 # Load a UI module and run it
+                import PGBuild.UI
                 ui = PGBuild.UI.find(config.eval("invocation/option[@name='ui']/text()")).Interface(config)
                 ui.run()
 
             except KeyboardInterrupt:
+                import PGBuild.Errors
                 raise PGBuild.Errors.InterruptError()
         except:
             # If we have a UI yet, try to let it handle the exception. Otherwise just reraise it.

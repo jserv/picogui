@@ -42,9 +42,8 @@ The extra rules imposed on the XML:
 # 
 _svn_id = "$Id$"
 
-import xml.sax._exceptions
 import PGBuild.XMLUtil
-import PGBuild.Errors
+import xml.sax._exceptions
 import re, shutil, os, sys
 
 configFileExtension = "xbc"
@@ -211,6 +210,7 @@ class Tree(PGBuild.XMLUtil.Document):
                 mergeElements(self)
                 # Still multiple matches? We can't continue
                 if len(self.xpath(mountPath)) > 1:
+                    import PGBuild.Errors
                     raise PGBuild.Errors.UserError("Ambiguous mount point")
 
             # No match? Create elements as needed to match the path.
@@ -219,6 +219,7 @@ class Tree(PGBuild.XMLUtil.Document):
             if len(matches) == 0:
                 # We don't even try to process anything but the simplest XPaths here
                 if re.search("[^a-zA-Z\-_/]", mountPath):
+                    import PGBuild.Errors
                     raise PGBuild.Errors.UserError(
                         "Mount point doesn't exist, too complex to automatically create")
                 # Make it absolute
@@ -236,6 +237,7 @@ class Tree(PGBuild.XMLUtil.Document):
                         n.appendChild(newN)
                         n = newN
                 if len(self.xpath(mountPath)) == 0:
+                    import PGBuild.Errors
                     raise PGBuild.Errors.InternalError("Automatic mount point creation failed")
         return mountElement
 
@@ -251,14 +253,16 @@ class Tree(PGBuild.XMLUtil.Document):
            in which case the file isn't merged in on mount, but
            does save changes.
            """
-
+        global PGBuild
         try:
             dom = PGBuild.XMLUtil.Document(file)
         except xml.sax._exceptions.SAXParseException:
+            import PGBuild.Errors
             raise PGBuild.Errors.ConfigError("The file %s is not well-formed (%s)" % (file, sys.exc_info()[1]))
 
         # Validate the <pgbuild> tag
         if dom.getRoot().nodeName != self.rootName:
+            import PGBuild.Errors
             raise PGBuild.Errors.UserError(
                 "Trying to mount a config tree with a <%s> root where <%s> is expected" %
                 (dom.getRoot().nodeName,self.rootName))

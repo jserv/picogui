@@ -23,10 +23,6 @@ Objects to support package manipulation.
 _svn_id = "$Id$"
 
 import os, shutil
-import PGBuild.Errors
-import PGBuild.Site
-import PGBuild.Repository
-import PGBuild.Version
 
 class PackageVersion(object):
     """A single version of a package, representing a local copy and a repository.
@@ -54,11 +50,13 @@ class PackageVersion(object):
     def findMirror(self, progress):
         """Find the fastest mirror for this package version. Returns a PGBuild.Site.Location"""
         task = progress.task("Finding the fastest mirror for %s" % self)
+        import PGBuild.Site
         return PGBuild.Site.resolve(self.config, self.configNode.getElementsByTagName('a'), task, self.appendPaths)
 
     def getRepository(self, progress):
         """Get a Repository class for the fastest mirror of this package version"""
         if not self.repository:
+            import PGBuild.Repository
             self.repository = PGBuild.Repository.open(self.findMirror(progress).absoluteURI)
         return self.repository
 
@@ -102,6 +100,7 @@ class PackageVersion(object):
                        os.rename(localPath, tempPathOld)
                        os.rename(tempPathNew, localPath)
                    except OSError:
+                       import PGBuild.Errors
                        raise PGBuild.Errors.EnvironmentError(
                            ("There was a problem renaming the %s package to install an update.\n" +
                            "This will happen on Windows systems if you have a file open in that package.") % self)
@@ -131,6 +130,7 @@ class PackageVersion(object):
             self.update(mergeTask)
         if performMount:
             self.config.dirMount(self.getLocalPath(), mergeTask.task("Mounting config files"))
+        import PGBuild.SConsGlue
         PGBuild.SConsGlue.loadScriptDir(self.getLocalPath(), mergeTask.task("Loading SCons scripts"))
 
         
@@ -147,8 +147,10 @@ class Package(object):
         # Save the root of the package configuration
         self.configNode = self.config.xpath('packages/package[@name="%s"]' % self.name)
         if len(self.configNode) > 1:
+            import PGBuild.Errors
             raise PGBuild.Errors.ConfigError("More than one package with the name '%s'" % self.name)
         if len(self.configNode) == 0:
+            import PGBuild.Errors
             raise PGBuild.Errors.ConfigError("Can't find a package with the name '%s'" % self.name)
         self.configNode = self.configNode[0]
 
@@ -163,6 +165,7 @@ class Package(object):
             try:
                 groupName = groupNode.attributes['name'].value
             except KeyError:
+                import PGBuild.Errors
                 raise PGBuild.Errors.ConfigError("Found a <versiongroup> tag with no 'name' attribute in package %s" % self.name)
             try:
                 groupPath = [groupNode.attributes['path'].value]
@@ -170,8 +173,10 @@ class Package(object):
                 groupPath = []
             groupNode = self.config.xpath('versiongroups/versiongroup[@name="%s"]' % groupName)
             if len(groupNode) > 1:
+                import PGBuild.Errors
                 raise PGBuild.Errors.ConfigError("More than one version group with the name '%s'" % groupName)
             if len(groupNode) == 0:
+                import PGBuild.Errors
                 raise PGBuild.Errors.ConfigError("Can't find a version group with the name '%s'" % groupName)
             self._loadVersions(groupNode[0], paths + groupPath)
 
@@ -179,6 +184,7 @@ class Package(object):
         """Find a particular version of thie package. If the given version
            isn't already a VersionSpec it is converted to one.
            """
+        import PGBuild.Version
         if not isinstance(version, PGBuild.Version.VersionSpec):
             version = PGBuild.Version.VersionSpec(version)
 
@@ -187,6 +193,7 @@ class Package(object):
         # by a VersionSpec-defined quality factor).
         matches = version.matchList(self.versions.keys())
         if len(matches) == 0:
+            import PGBuild.Errors
             raise PGBuild.Errors.ConfigError(
                 "Can't find version '%s' of package '%s'" % (version, self.name))
         return self.versions[matches[-1]]

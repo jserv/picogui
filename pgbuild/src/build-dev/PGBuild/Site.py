@@ -23,10 +23,6 @@ site speed and picking mirrors.
 #
 _svn_id = "$Id$"
 
-import PGBuild.Errors
-import urlparse, urllib2, time, random, sys
-
-
 def findSite(config, name):
     """Look up a site name, returning a list of <a> tags.
        This can be passed a <site> tag or a simple name string.
@@ -43,6 +39,7 @@ def urljoin(a, b):
        """
     if a[-1] != '/':
         a = a + '/'
+    import urlparse
     return urlparse.urljoin(a,b)
 
 
@@ -68,6 +65,7 @@ class Location(object):
            the speed. If the site is down, set the speed to zero.
            """
         try:
+            import urllib2, time
             bytes = 0
             startTime = time.time()
             url = urllib2.urlopen(self.absoluteURI)
@@ -105,6 +103,7 @@ class Location(object):
                 self.retested = 1
 
         if needTest:
+            import urlparse
             progress.showTaskHeading()
             self.testSpeed()
             server = urlparse.urlparse(self.absoluteURI)[1]
@@ -125,6 +124,7 @@ def expand(config, tags):
         sites = tag.getElementsByTagName('site')
         href = tag.attributes['href'].value
         if len(sites) > 1:
+            import PGBuild.Errors
             raise PGBuild.Errors.ConfigError("Found an <a> tag with more than one <site> tag inside")
         if sites:
             # This is a site-relative link. Find the site and expand it.
