@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.24 2002/07/09 08:52:24 micahjd Exp $
+/* $Id: linear4.c,v 1.25 2002/07/09 10:19:48 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -463,10 +463,8 @@ void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s1
 		  }
 	  }
   }
-
-
 }
-#endif
+
 
 /*
  * This is a relatively complicated 4bpp packed-pixel blit that does
