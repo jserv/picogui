@@ -277,6 +277,7 @@ client lib equivalent: pgAppMessage()
 additional data      : <link linkend="pgreqdhandlestruct">struct pgreqd_handlestruct</>
                        data
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : none
    </programlisting>
    <para>
 	Send a message to a widget owned by any application.
@@ -294,6 +295,7 @@ type                 : PGREQ_ATTACHWIDGET
 client lib equivalent: pgAttachWidget()
 additional data      : <link linkend="pgreqdattachwidget">struct pgreqd_attachwidget</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : none
    </programlisting>
    <para>
 	Attach a widget to a new parent.
@@ -327,6 +329,7 @@ type                 : PGREQ_BATCH
 client lib equivalent: none
 additional data      : requests
 server response type : set to response type of the last request
+server returned data : set to returned data of the last request
    </programlisting>
    <para>
 	This request allows to send a batch of multiple requests that will
@@ -347,6 +350,7 @@ type                 : PGREQ_CHCONTEXT
 client lib equivalent: pgChangeContext()
 additional data      : <link linkend="pgreqdchcontext">struct pgreqd_chcontext</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : none
    </programlisting>
    <para>
 	Change the handle context of an object.
@@ -378,9 +382,11 @@ type                 : PGREQ_CHECKEVENT
 client lib equivalent: pgCheckEvent()
 additional data      : none
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : <structfield>pgresponse_ret.data</>
    </programlisting>
    <para>
-	Check the number of pending events.
+	Check the number of pending events as an integer in
+	<structfield>pgresponse_ret.data</>.
    </para>
    <para>
 	The PicoGUI server keeps a ring buffer of waiting events for each
@@ -406,6 +412,7 @@ type                 : PGREQ_CREATEWIDGET
 client lib equivalent: pgCreateWidget()
 additional data      : <link linkend="pgreqdcreatewidget">struct pgreqd_createwidget</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : <structfield>presponse_ret.data</>
    </programlisting>
    <para>
 	Create a widget, but does not attach it to the parent widget. You can
@@ -413,6 +420,10 @@ server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
 	one, but the widget cannot be drawn until a
 	<constant>PGREQ_ATTACHWIDGET</constant> request successfully
 	completed.
+   </para>
+   <para>
+	Then handle of the widget created is returned in
+	<structfield>pgresponse_ret.data</>.
    </para>
    <figure id="pgreqdcreatewidget"><title>struct pgreqd_createwidget</><programlisting>
 struct pgreqd_createwidget {
@@ -433,6 +444,7 @@ type                 : PGREQ_DRIVERMSG
 client lib equivalent: pgDriverMessage()
 additional data      : <link linkend="pgreqddrivermsg">struct pgreqd_drivermsg</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : none
    </programlisting>
    <para>
 	This command can send 'extra' commands that may be
@@ -460,11 +472,11 @@ type                 : PGREQ_DUP
 client lib equivalent: pgDup()
 additional data      : <link linkend="pgreqdhandlestruct">struct pgreqd_handlestruct</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : <structfield>pgresponse_ret.data</>
    </programlisting>
    <para>
-	Duplicate an object that has a handle. See
-	<xref linkend="pgreqdhandlestruct"> for
-	<structname>pgreqd_handlestruct</> structure format.
+	Duplicate an object that has a handle. The handle of the new created
+	object is returned in <structfield>pgresponse_ret.data</>.
    </para>
    <para>
 	Some objects simply can't be duplicated: For example, it would not
@@ -481,6 +493,7 @@ type                 : PGREQ_FINDTHOBJ
 client lib equivalent: pgFindThemeObject()
 additional data      : data (name)
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : <structfield>pgresponse_ret.data</>
    </programlisting>
    <para>
 	Find a theme object's ID given its name.  Theme objects defined as
@@ -490,6 +503,8 @@ server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
    </para>
    <para>
 	The <structfield>data</> is the name of the property to search for.
+	The theme ID is returned as an integer in 
+	<structfield>pgresponse_ret.data</>.
    </para>
   </sect2>
 
@@ -500,9 +515,11 @@ type                 : PGREQ_FINDWIDGET
 client lib equivalent: pgFindWidget()
 additional data      : data (name)
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : <structfield>pgresponse_ret.data</>
    </programlisting>
    <para>
-	Search for a widget by its PG_WP_NAME property.
+	Search for a widget by its PG_WP_NAME property.  The handle of the
+	found widget is returned in <structfield>pgresponse_ret.data</>.
    </para>
    <para>
 	Every widget can be given a name by setting it's PG_WP_NAME property
@@ -519,6 +536,7 @@ type                 : PGREQ_FOCUS
 client lib equivalent: pgFocus()
 additional data      : <link linkend="pgreqdhandlestruct">struct pgreqd_handlestruct</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : none
    </programlisting>
    <para>
 	Give a widget the keyboard focus.
@@ -536,6 +554,7 @@ type                 : PGREQ_FREE
 client lib equivalent: pgDelete()
 additional data      : <link linkend="pgreqdhandlestruct">struct pgreqd_handlestruct</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : none
    </programlisting>
    <para>
 	Free the handle specified and delete its associated object.
@@ -557,9 +576,11 @@ type                 : PGREQ_GET
 client lib equivalent: pgGetWidget()
 additional data      : <link linkend="pgreqdget">struct pgreqd_get</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : <structfield>pgresponse_ret.data</>
    </programlisting>
    <para>
-	Get a widget property.
+	Get a widget property.  The value of the wdiget is returned as
+	a long in <structfield>pgresponse_ret.data</>.
    </para>
    <figure id="pgreqdget"><title>struct pgreqd_get</><programlisting>
 struct pgreqd_get {
@@ -585,6 +606,7 @@ type                 : PGREQ_GETFSTYLE
 client lib equivalent: pgGetFontStyle()
 additional data      : <link linkend="pgreqdgetfstyle">struct pgreqd_getfstyle</>
 server response type : <link linkend="pgresponsedata">PG_RESPONSE_DATA</>
+server returned data : <link linkend="pgdatagetfstyle">struct pgdata_getfstyle</>
    </programlisting>
    <para>
 	Get information about a font style
@@ -599,6 +621,35 @@ struct pgreqd_getfstyle {
 	The <structfield>index</> is a zero-based index to select a font style
 	in the order that the were compiled or loaded into pgserver.
    </para>
+   <figure id="pgdatagetfstyle"><title>struct pgdata_getfstyle</><programlisting>
+struct pgdata_getfstyle {
+  char name[40];
+  unsigned short size;
+  unsigned short fontrep;
+  unsigned long  flags;
+};
+   </programlisting></figure>
+   <para>
+	The <structfield>name</> is the name of the font family.  If the first
+	char of the name (Name[0]) is 0, the index requested was invalid.
+	<footnote><para>It is expected in the future protocol version that a
+	<constant>PG_RESPONSE_ERR</> will be returned if the index is invalid
+	rather than returning a NULL name.</para></footnote>
+   </para>
+   <para>
+	If the font is bitmapped, the <structfield>size</> is the height
+	in pixels, otherwise the value is undetermined.
+   </para>
+   <para>
+	The <structfield>fontrep</> is a bitmask of <constant>PG_FR_*</>
+	constants for the font representation (see
+	<xref linkend="fontreps"> for a complete listing).
+   </para>
+   <para>
+	The <structfield>flags</> is a bitmask of <constant>PG_FSTYLE_*</>
+	constants for the font style itself (see
+	<xref linkend="fontstyles"> for a complete listing).
+   </para>
   </sect2>
 
   <sect2 id="pgreq-getinactive">
@@ -608,9 +659,11 @@ type                 : PGREQ_GETINACTIVE
 client lib equivalent: pgGetInactivity()
 additional data      : none
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : <structfield>pgresponse_ret.data</>
    </programlisting>
    <para>
-	Get the number of miliseconds of inactivity.
+	Get the number of miliseconds of inactivity.  The value is returned
+	as a unsigned long in <structfield>pgresponse_ret.data</>.
    </para>
   </sect2>
 
@@ -621,6 +674,7 @@ type                 : PGREQ_GETMODE
 client lib equivalent: pgGetVideoMode()
 additional data      : none
 server response type : <link linkend="pgresponsedata">PG_RESPONSE_DATA</>
+server returned data : 
    </programlisting>
    <para>
 	Get information about the current video mode.
@@ -634,6 +688,7 @@ type                 : PGREQ_GETPAYLOAD
 client lib equivalent: pgGetPayload()
 additional data      : <link linkend="pgreqdhandlestruct">struct pgreqd_handlestruct</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Get an object's payload.  See <xref linkend="pgreq-setpayload"> for
@@ -648,6 +703,7 @@ type                 : PGREQ_GETSTRING
 client lib equivalent: pgGetString()
 additional data      : <link linkend="pgreqdhandlestruct">struct pgreqd_handlestruct</>
 server response type : <link linkend="pgresponsedata">PG_RESPONSE_DATA</>
+server returned data : 
    </programlisting>
    <para>
 	Get the contents of a string handle.  See
@@ -663,6 +719,7 @@ type                 : PGREQ_IN_KEY
 client lib equivalent: pgDispatchEvent()
 additional data      : <link linkend="pgreqdinkey">struct pgreqd_in_key</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Dispatch a keyboard input.
@@ -709,6 +766,7 @@ type                 : PGREQ_IN_POINT
 client lib equivalent: pgDispatchEvent()
 additional data      : <link linkend="pgreqdinpoint">struct pgreqd_in_point</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
  	Dispatch a pointing device input
@@ -742,6 +800,7 @@ type                 : PGREQ_LOADDRIVER
 client lib equivalent: pgLoadDriver()
 additional data      : data
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Load a named driver.  The name is specified as the
@@ -756,6 +815,7 @@ type                 : PGREQ_MKARRAY
 client lib equivalent: pgNewArray()
 additional data      : data
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Create a new array object.  Each array entry is 32bit and must be sent
@@ -771,6 +831,7 @@ type                 : PGREQ_MKBITMAP
 client lib equivalent: pgCreateBitmap
 additional data      : <link linkend="pgreqdnewbitmap">struct pgreqd_newbitmap</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Create a new bitmap object.
@@ -794,6 +855,7 @@ type                 : PGREQ_MKCONTEXT
 client lib equivalent: pgEnterContext()
 additional data      : none
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Enter a new context.
@@ -813,6 +875,7 @@ type                 : PGREQ_MKFILLSTYLE
 client lib equivalent: none
 additional data      : raw fillstyle bytecode
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	This request is used by the compiled theme and should not be used by
@@ -828,6 +891,7 @@ type                 : PGREQ_MKFONT
 client lib equivalent: pgNewFont()
 additional data      : <link linkend="pgreqdmkfont">struct pgreqd_mkfont</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Create a new font object using the specified font name and properties.
@@ -863,6 +927,7 @@ type                 : PGREQ_MKPOPUP
 client lib equivalent: pgNewPopup() and pgNewPopupAt()
 additional data      : <link linkend="pgreqdmkpopup">struct pgreqd_mkpopup</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Create a popup root widget.
@@ -908,6 +973,7 @@ type                 : PGREQ_MKSTRING
 client lib equivalent: pgNewString()
 additional data      : string
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Create a new string object.
@@ -925,6 +991,7 @@ type                 : PGREQ_MKTHEME
 client lib equivalent: pgLoadTheme()
 additional data      : compiled theme data
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Load a compiled theme and return the handle for it.
@@ -938,6 +1005,7 @@ type                 : PGREQ_MKWIDGET
 client lib equivalent: pgNewWidget()
 additional data      : <link linkend="pgreqdmkwidget">struct pgreqd_mkwidget</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Create a new widget, derived from a parent widget.
@@ -971,12 +1039,12 @@ client lib equivalent: pgNewbitmap()
 additional data      : <link linkend="pgreqdnewbitmap">struct pgreqd_newbitmap</>
                        image data
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Create a new bitmap object from existing data.  This request is
-	similar to <constant>PGREQ_MKBITMAP</>
-	(<xref linkend="pgreq-mkbitmap">) with the difference that the
-	initial image data is provided.
+	similar to <link linkend="pgreq-mkbitmap"><constant>PGREQ_MKBITMAP</></>
+	with the difference that the initial image data is provided.
    </para>
    <para>
 	The image data <emphasis>must</> follow immediately after the
@@ -995,6 +1063,7 @@ type                 : PGREQ_PING
 client lib equivalent: none
 additional data      : none
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	return <constant>success</> if the server connection is ok.
@@ -1008,6 +1077,7 @@ type                 : PGREQ_REGISTER
 client lib equivalent: pgRegisterApp()
 additional data      : <link linkend="pgreqdregister">struct pgreqd_register</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Create a root window of an application.
@@ -1048,6 +1118,7 @@ type                 : PGREQ_REGOWNER
 client lib equivalent: pgRegisterOwner()
 additional data      : <link linkend="pgreqdregowner">struct pgreqd_regowner</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Register exclusive access to a resouce.
@@ -1086,6 +1157,7 @@ client lib equivalent: pgRender()
 additional data      : <link linkend="pgreqdrender">struct pgreqd_render</>
                        gropnode data
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Render a gropnode to a bitmap
@@ -1118,6 +1190,7 @@ type                 : PGREQ_RMCONTEXT
 client lib equivalent: pgLeaveContext()
 additional data      : none
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Leave a context.
@@ -1134,6 +1207,7 @@ type                 : PGREQ_SET
 client lib equivalent: pgSetWidget()
 additional data      : <link linkend="pgreqdset">struct pgreqd_set</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Set the properties of a widget.
@@ -1166,6 +1240,7 @@ type                 : PGREQ_SETINACTIVE
 client lib equivalent: pgSetInactivity()
 additional data      : <link linkend="pgreqdsetinactive">struct pgreqd_setinactive</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Set the number of milisecond of inactivity.
@@ -1188,6 +1263,7 @@ type                 : PGREQ_SETMODE
 client lib equivalent: pgSetVideoMode()
 additional data      : <link linkend="pgreqdsetmode">struct pgreqd_setmode</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Change video mode/depth/rotation at runtime.
@@ -1265,6 +1341,7 @@ type                 : PGREQ_SETPAYLOAD
 client lib equivalent: pgSetPayload()
 additional data      : <link linkend="pgreqdsetpayload">struct pgreqd_setpayload</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Set an object's payload.  The "payload" is a client-defined chunk of
@@ -1308,6 +1385,7 @@ type                 : PGREQ_SIZEBITMAP
 client lib equivalent: pgSizeBitmap()
 additional data      : <link linkend="pgreqdhandlestruct">struct pgreqd_handlestruct</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Find the width and height of a bitmap matching the provided handle
@@ -1326,6 +1404,7 @@ type                 : PGREQ_SIZETEXT
 client lib equivalent: pgSizeText()
 additional data      : <link linkend="pgreqdsizetext">struct pgreqd_sizetext</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Measure the length and height of a string of text.
@@ -1349,6 +1428,7 @@ type                 : PGREQ_THLOOKUP
 client lib equivalent: pgThemeLookup()
 additional data      : <link linkend="pgreqdthlookup">struct pgreqd_thlookup</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Retrieve a theme property.
@@ -1377,6 +1457,7 @@ type                 : PGREQ_TRAVERSEWGT
 client lib equivalent: pgTraverseWidget()
 additional data      : <link linkend="pgreqdtraversewgt">struct pgreqd_traversewgt</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Finds a widget in relation to another widget.
@@ -1422,6 +1503,7 @@ type                 : PGREQ_UNREGOWNER
 client lib equivalent: pgUnregisterOwner()
 additional data      : <link linkend="pgreqdregowner">struct pgreqd_regowner</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Unregister exclusive access to a resouce.  An error will be returned
@@ -1440,6 +1522,7 @@ type                 : PGREQ_UPDATE
 client lib equivalent: pgUpdate()
 additional data      : none
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Redraw portions of the screen if necessary. This forces all unsent
@@ -1455,6 +1538,7 @@ type                 : PGREQ_UPDATEPART
 client lib equivalent: pgSubUpdate()
 additional data      : <link linkend="pgreqdhandlestruct">struct pgreqd_handlestruct</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Update a subsection of the screen.
@@ -1474,6 +1558,7 @@ type                 : PGREQ_WAIT
 client lib equivalent: pgEvent()
 additional data      : none
 server response type : <link linkend="pgresponseevent">PG_RESPONSE_EVENT</>
+server returned data : 
    </programlisting>
    <para>
 	Indicate to the server that the client is waiting for an event, if
@@ -1503,6 +1588,7 @@ client lib equivalent: pgWriteData()
 additional data      : <link linkend="pgreqdhandlestruct">struct pgreqd_handlestruct</>
                        data
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
+server returned data : 
    </programlisting>
    <para>
 	Write a chunk of widget-defined data to a widget. For example, this
