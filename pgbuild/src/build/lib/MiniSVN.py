@@ -170,6 +170,15 @@ class DavObject:
         for response in parser.responses.keys():
             obj = DavObject(urlparse.urlunparse(('http', self.server, response, '', '', '')))
             obj.properties = parser.responses[response]
+
+            # If the child isn't a collection, give it an empty children list to
+            # save us from having to call propfind() to figure that out later.
+            if hasattr(obj.properties, 'DAV::resourcetype'):
+                if obj.properties['DAV::resourcetype'] != 'DAV::collection':
+                    obj.children = []
+            else:
+                obj.children = []
+
             self.children.append(obj)
 
     def getChildren(self):
