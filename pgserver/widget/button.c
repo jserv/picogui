@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.107 2002/05/20 23:01:54 micahjd Exp $
+/* $Id: button.c,v 1.108 2002/05/22 00:09:58 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -59,8 +59,10 @@ struct btndata {
   /* Set if the client is overriding the theme's setting */
   unsigned int alignset : 1;
   unsigned int colorset : 1;
+  unsigned int spacingset : 1;
 
   handle bitmap,bitmask,text,font;
+  int spacing;
   
   pgcolor color;
   short align, direction, lgop;
@@ -116,7 +118,7 @@ void button_setstate(struct widget *self) {
 
 void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
   struct btnposition bp;
-  int sp = theme_lookup(DATA->state,PGTH_P_SPACING);
+  int sp = DATA->spacingset ? DATA->spacing : theme_lookup(DATA->state,PGTH_P_SPACING);
 
   /* Shave off the space between buttons */
   switch (self->in->flags & (~SIDEMASK)) {
@@ -393,6 +395,14 @@ g_error button_set(struct widget *self,int property, glob data) {
     set_widget_rebuild(self);
     break;
 
+  case PG_WP_SPACING:
+    DATA->spacing = data;
+    DATA->spacingset = 1;
+    self->in->flags |= DIVNODE_NEED_RECALC;
+    self->dt->flags |= DIVTREE_NEED_RECALC;
+    redraw_bg(self);
+    break;
+
   default:
     return mkerror(ERRT_PASS,0);
   }
@@ -461,6 +471,9 @@ glob button_get(struct widget *self,int property) {
 
   case PG_WP_LGOP:
     return (glob) DATA->lgop;
+
+  case PG_WP_SPACING:
+    return (glob) DATA->spacing;
 
   default:
     return 0;

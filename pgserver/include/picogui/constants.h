@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.141 2002/05/20 22:46:01 micahjd Exp $
+/* $Id: constants.h,v 1.142 2002/05/22 00:09:58 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -928,6 +928,7 @@ typedef unsigned long pghandle;
 #define PG_WP_HOTKEY_CONSUME  52  /* Flag indicating whether to consume the key event when a hotkey comes in */
 #define PG_WP_WIDTH           53  /* A read only property for all widgets (use PG_WP_SIZE to change the size). Always in pixels */
 #define PG_WP_HEIGHT          54  /* A read only property for all widgets (use PG_WP_SIZE to change the size). Always in pixels */
+#define PG_WP_SPACING         55  /* Override the normal spacing between buttons */
 
 
 /* Constants for SIZEMODE */
