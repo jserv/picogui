@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: mk_theme_hierarchy.pl,v 1.3 2000/10/02 22:39:01 micahjd Exp $
+# $Id: mk_theme_hierarchy.pl,v 1.4 2000/10/10 00:38:54 micahjd Exp $
 #
 # This is a small script that uses dot(1) from the
 # open source AT&T Graphvis program to create a theme
@@ -7,7 +7,7 @@
 # source code itself.
 #
 # PicoGUI small and efficient client/server GUI
-# Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
+# Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
