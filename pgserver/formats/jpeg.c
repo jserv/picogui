@@ -1,4 +1,4 @@
-/* $Id: jpeg.c,v 1.15 2003/03/10 23:48:01 micahjd Exp $
+/* $Id: jpeg.c,v 1.16 2003/04/16 14:05:02 cgrigis Exp $
  *
  * jpeg.c - Functions to convert any of the jpeg formats 
  *
@@ -182,21 +182,40 @@ void jpeg_mem_src (j_decompress_ptr cinfo, unsigned char  *inbuf, int size)
 /**************************** Detect */
 
 bool jpeg_detect(const u8 *data, u32 datalen) {
-  char jfifmagic1[4] = { 0xFF, 0xD8, 0xFF, 0xE0 };
-  char jfifmagic2[]  = "JFIF";
-  char exifmagic1[4] = { 0xFF, 0xD8, 0xFF, 0xE1 };
-  char exifmagic2[]  = "Exif";
-  
-  /* Detect jfif (normal jpeg) and exif (digital camera jpeg) using the
-   * first 4 bytes, and a string 6 bytes into the file
+  /* 
+   * According to CCITT Rec. T.81, Annex B, the standard JPEG 
+   * interchange format can be identified by a start-of-image 
+   * marker (SOI: 0xFF 0xD8) at the beginning of the file, an 
+   * end-of-image marker (EOI: 0xFF 0xD9) at the end of the file, 
+   * and various marker segments in the middle, depending on the 
+   * encoding.
+   *
+   * A marker segment is a 2-byte value always starting with 0xFF,
+   * possibly followed by a segment length and parameters, but not
+   * always.
+   *
+   * Most JPEG-encoded images use the JPEG File Interchange Format
+   * (JFIF), which is a subset of the standard JPEG interchange format,
+   * but not all.
+   * To keep the  detection simple yet not totally trivial, and allow
+   * detection of JPEG data not following the JFIF format (i.e.
+   * not using an APPx (0xE?) marker right after SOI), we will check:
+   *
+   *  - 0xFF 0xD8 0xFF   at the beginning
+   *  - 0xFF 0xD9        at the end
    */
 
-  if ((!strncmp(jfifmagic1,data,4)) && (!strncmp(jfifmagic2,data+6,4)))
-    return 1;
-  if ((!strncmp(exifmagic1,data,4)) && (!strncmp(exifmagic2,data+6,4)))
-    return 1;
+  char jpeg_start [3] = { 0xFF, 0xD8, 0xFF };
+  char jpeg_end   [2] = { 0xFF, 0xD9 };
 
-  return 0;
+  if (datalen < 2) return 0;
+
+  if ( (strncmp (jpeg_start, data,               3) == 0) &&
+       (strncmp (jpeg_end,   data + datalen - 2, 2) == 0) ) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 
