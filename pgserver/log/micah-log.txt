@@ -1,3 +1,24 @@
+---- Thursday, March 8
+
+Split up the client library into multiple files
+- cli_c/src/picogui_client.c
++ cli_c/src/netcore.c
++ cli_c/src/api.c
++ cli_c/src/clientlib.h
+
+Because uClinux doesn't have a libtool AFAIK, it would be too messy to
+integrate uClinux into the existing makefile. Making a second makefile just
+for uClinux
++ cli_c/Makefile.uclinux
+
+It seems to work except for a linker problem with _cleanup.
+I had the same thing with the pgserver, and 'fixed' it by removing _cleanup
+from the crt0 and using the _cleanup in platform.c
+Any ideas?
+
+Made icons for the terminal (preparing to add resource directory support,
+including standard icons)
+
 ---- Wednesday, March 7
 
 Adding flexible bitmap loading/saving
