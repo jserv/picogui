@@ -9,9 +9,15 @@ object custom {
     SetColor(0x808080);
     SetOffset(-1,-1,2,2);
     Frame(x,y,w,h);
+
+    /* Prepare for the BGEVEN fill here.
+     * This code is executed only once, while BGEVEN is executed
+     * once every other game square, so this generates far fewer gropnodes.
+     */
+    SetOffset(0,0,0,0);
+    SetColor(0x8080FF);
   };
   BGEVEN = fillstyle {
-    SetColor(0x8080FF);
     Rect(x,y,w,h);
   };
 }
