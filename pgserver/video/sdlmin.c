@@ -1,4 +1,4 @@
-/* $Id: sdlmin.c,v 1.8 2000/10/29 01:45:35 micahjd Exp $
+/* $Id: sdlmin.c,v 1.9 2000/12/16 18:37:47 micahjd Exp $
  *
  * sdlmin.c - video driver wrapper for SDL.
  *            this 'min' version defines only the
@@ -293,6 +293,8 @@ void sdlmin_clip_set(int x1,int y1,int x2,int y2) {
 
 /* This func. is passed to registervid */
 g_error sdlmin_regfunc(struct vidlib *v) {
+  setvbl_default(v);
+
   v->init = &sdlmin_init;
   v->close = &sdlmin_close;   /* Not strictly required (raw framebuffers
 				 might not need it) but SDL needs this */

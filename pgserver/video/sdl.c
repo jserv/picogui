@@ -1,4 +1,4 @@
-/* $Id: sdl.c,v 1.11 2000/10/29 08:16:44 micahjd Exp $
+/* $Id: sdl.c,v 1.12 2000/12/16 18:37:47 micahjd Exp $
  *
  * sdl.c - video driver wrapper for SDL.
  *
@@ -580,6 +580,8 @@ void sdl_gradient(int x,int y,int w,int h,int angle,
 /******************************************** Driver registration */
 
 g_error sdl_regfunc(struct vidlib *v) {
+  setvbl_default(v);
+
   v->init = &sdl_init;
   v->close = &sdl_close;   /* Not strictly required (raw framebuffers
 				 might not need it) but SDL needs this */

@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.10 2000/11/19 04:48:20 micahjd Exp $
+/* $Id: video.h,v 1.11 2000/12/16 18:37:46 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -30,6 +30,7 @@
 #define __H_VIDEO
 
 #include <pgserver/g_error.h>
+#include <pgserver/divtree.h>
 
 /* Hardware-specific color value */
 typedef unsigned long hwrcolor;
@@ -105,6 +106,10 @@ struct vidlib {
    */
   int xres,yres,bpp;
   unsigned long flags;
+
+  /* Framebuffer information (for framebuffer Video Base Libraries) */
+  unsigned char *fb_mem;
+  unsigned int fb_bpl;   /* Bytes Per Line */
 
   /***************** Clipping */
 
@@ -401,9 +406,7 @@ g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
 g_error sdlmin_regfunc(struct vidlib *v);
 g_error sdl_regfunc(struct vidlib *v);
 g_error svga_regfunc(struct vidlib *v);
-#ifdef DRIVER_EZ328_CHIPSLICE
 g_error chipslice_video_regfunc(struct vidlib *v);
-#endif
 
 /* List of installed video drivers */
 struct vidinfo {
@@ -418,6 +421,10 @@ g_error (*find_videodriver(const char *name))(struct vidlib *v);
 g_error new_sprite(struct sprite **ps,int w,int h);
 void free_sprite(struct sprite *s);
 
+/* Sprite vars */
+extern struct sprite *spritelist;
+extern unsigned char sprites_hidden;
+
 /* Helper functions for keeping an update region, used
    for double-buffering by the video drivers */
 extern int upd_x;
@@ -428,6 +435,48 @@ void add_updarea(int x,int y,int w,int h);
 
 hwrcolor textcolors[16];   /* Table for converting 16 text colors
 			      to hardware colors */
+
+/** Generic functions from the default VBL that other VBLs might find useful */
+
+g_error def_setmode(int xres,int yres,int bpp,unsigned long flags);
+void emulate_dos(void);
+void def_clip_set(int x1,int y1,int x2,int y2);
+void def_clip_off(void);
+hwrcolor def_color_pgtohwr(pgcolor c);
+pgcolor def_color_hwrtopg(hwrcolor c);
+void def_addpixel(int x,int y,pgcolor c);
+void def_subpixel(int x,int y,pgcolor c);
+void def_clear(void);
+void def_slab(int x,int y,int w,hwrcolor c);
+void def_bar(int x,int y,int h,hwrcolor c);
+void def_line(int x1,int y1,int x2,int y2,hwrcolor c);
+void def_rect(int x,int y,int w,int h,hwrcolor c);
+void def_gradient(int x,int y,int w,int h,int angle,
+		  pgcolor c1, pgcolor c2,int translucent);
+void def_frame(int x,int y,int w,int h,hwrcolor c);
+void def_dim(void);
+void def_scrollblit(int src_x,int src_y,int dest_x,int dest_y,int w,int h);
+void def_charblit(unsigned char *chardat,int dest_x,
+		  int dest_y,int w,int h,int lines,hwrcolor c);
+void def_charblit_v(unsigned char *chardat,int dest_x,
+		    int dest_y,int w,int h,int lines,hwrcolor c);
+g_error def_bitmap_loadxbm(struct stdbitmap **bmp,unsigned char *data,
+			   int w,int h,hwrcolor fg,hwrcolor bg);
+g_error def_bitmap_loadpnm(struct stdbitmap **bmp,unsigned char *data,
+			   unsigned long datalen);
+g_error def_bitmap_new(struct stdbitmap **bmp,int w,int h);
+void def_bitmap_free(struct stdbitmap *bmp);
+g_error def_bitmap_getsize(struct stdbitmap *bmp,int *w,int *h);
+void def_tileblit(struct stdbitmap *src,
+		  int src_x,int src_y,int src_w,int src_h,
+		  int dest_x,int dest_y,int dest_w,int dest_h);
+void def_sprite_show(struct sprite *spr);
+void def_sprite_update(struct sprite *spr);
+void def_sprite_showall(void);
+void def_sprite_hideall(void);
+
+/************** Registration functions for Video Base Libraries */
+void setvbl_default(struct vidlib *vid);
 
 #endif /* __H_VIDEO */
 

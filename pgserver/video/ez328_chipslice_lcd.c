@@ -1,4 +1,4 @@
-/* $Id: ez328_chipslice_lcd.c,v 1.2 2000/10/30 11:35:22 bauermeister Exp $
+/* $Id: ez328_chipslice_lcd.c,v 1.3 2000/12/16 18:37:47 micahjd Exp $
  *
  * ez328_chipslice_lcd.c
  *           LCD video drivers for the DragonBall-based ChipSlice.
@@ -281,6 +281,8 @@ static void lcd_gradient(int x,int y,int w,int h,int angle,
 g_error chipslice_video_regfunc(struct vidlib *v)
 {
   g_error e;
+
+  setvbl_default(v);
 
   /* we allocate mem now, not in lcd_init() */
   e = g_malloc((void **)&shd_buffer, SHD_BUFFER_SIZE);

@@ -1,4 +1,4 @@
-/* $Id: svga.c,v 1.17 2000/12/12 00:51:47 micahjd Exp $
+/* $Id: svga.c,v 1.18 2000/12/16 18:37:47 micahjd Exp $
  *
  * svga.c - video driver for (S)VGA cards, via vgagl and svgalib
  * 
@@ -373,6 +373,8 @@ void svga_charblit(unsigned char *chardat,int dest_x,
 
 /* This func. is passed to registervid */
 g_error svga_regfunc(struct vidlib *v) {
+  setvbl_default(v);
+
   v->init = &svga_init;
   v->close = &svga_close;
   v->pixel = &svga_pixel;

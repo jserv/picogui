@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.27 2000/11/19 04:48:20 micahjd Exp $
+/* $Id: constants.h,v 1.28 2000/12/16 18:37:47 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -28,6 +28,11 @@
 
 #ifndef _H_PG_CONSTANTS
 #define _H_PG_CONSTANTS
+
+/* Just to make sure... */
+#ifndef NULL
+#define NULL ((void*)0)
+#endif
 
 /******************** Keyboard constants */
 
