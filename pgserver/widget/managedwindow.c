@@ -1,4 +1,4 @@
-/* $Id: managedwindow.c,v 1.10 2002/11/06 19:08:12 micahjd Exp $
+/* $Id: managedwindow.c,v 1.11 2002/11/06 22:18:45 micahjd Exp $
  *
  * managedwindow.c - A root widget representing a window managed by a host GUI
  *
@@ -63,6 +63,8 @@ g_error managedwindow_install(struct widget *self) {
   e = widget_attach(self,DATA->my_dt,&DATA->my_dt->head->next,0);  
   errorcheck;
   self->isroot = 1;
+
+  self->trigger_mask = PG_TRIGGER_CLOSE;
 
   return success;
 }
@@ -174,6 +176,11 @@ void managedwindow_resize(struct widget *self) {
     DATA->last_w = w;
     DATA->last_h = h;
   }
+}
+
+void managedwindow_trigger(struct widget *self,s32 type,union trigparam *param) {
+  /* The only event we accept is PG_TRIGGER_CLOSE */
+  post_event(PG_WE_CLOSE, self, 0,0,NULL);
 }
 
 /* The End */

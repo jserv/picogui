@@ -1,4 +1,4 @@
-/* $Id: widget_table.c,v 1.2 2002/11/04 00:24:39 micahjd Exp $
+/* $Id: widget_table.c,v 1.3 2002/11/06 22:18:46 micahjd Exp $
  *
  * widget_table.c - Table defining all the installed widgets
  *
@@ -64,7 +64,7 @@ DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,124))
 #endif
 
 #ifdef CONFIG_WIDGET_MANAGEDWINDOW
-DEF_STATICWIDGET_TABLE(0,managedwindow)
+DEF_WIDGET_TABLE(0,managedwindow)
 #else
 DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,120))
 #endif
