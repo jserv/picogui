@@ -1045,6 +1045,9 @@ typedef unsigned long pghandle;
 #define PG_EXEV_EXCLUSIVE  0x0080  /* Button is mutually exclusive */
 #define PG_EXEV_FOCUS      0x0100  /* We want to receive PG_WE_FOCUS */
 #define PG_EXEV_NO_HOTSPOT 0x0200  /* Disable hotspot navigation for this button */
+#define PG_EXEV_RESIZE     0x0400  /* Send WE_RESIZE when widget is rebuilt
+				      (currently only works for buttons, the terminal
+				       always sends this event) */
 
 /* Constants for PG_WP_DIRECTION */
 #define PG_DIR_HORIZONTAL     0
