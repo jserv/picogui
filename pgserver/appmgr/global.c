@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.3 2000/05/28 16:59:22 micahjd Exp $
+/* $Id: global.c,v 1.4 2000/06/01 21:30:45 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -150,6 +150,20 @@ g_error appmgr_register(struct app_info *i) {
        They won't be moved by the appmgr, so sidemask has no effect.
        Set the side here, though.
     */
+    e = widget_set(w,WP_SIDE,i->side);
+    if (e.type != ERRT_NONE) return e;
+    
+    break;
+
+  case APP_NORMAL:
+    /* Use a panel */
+    e = widget_create(&w,WIDGET_PANEL,dts,dts->top,&dts->top->head->next);
+    if (e.type != ERRT_NONE) return e;
+    w->isroot = 1;
+    e = mkhandle(&i->rootw,TYPE_WIDGET,i->owner,w);
+    if (e.type != ERRT_NONE) return e;    
+
+    /* Set all the properties */
     e = widget_set(w,WP_SIDE,i->side);
     if (e.type != ERRT_NONE) return e;
     
