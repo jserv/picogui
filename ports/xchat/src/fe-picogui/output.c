@@ -157,12 +157,14 @@ void palette_load(void)
 	}
 	if(themehandle)
 		pgDelete(themehandle);
+#if 0
 	{
 		FILE *f;
 		f=fopen("ircterm.th", "w");
 		fwrite(&termtheme, sizeof termtheme, 1, f);
 		fclose(f);
 	}
+#endif
 	themehandle=pgLoadTheme(pgFromMemory(&termtheme, sizeof termtheme));
 	ircterm=pgFindThemeObject(termthemename);
 	if(!ircterm)
