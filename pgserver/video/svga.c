@@ -1,4 +1,4 @@
-/* $Id: svga.c,v 1.13 2000/10/21 18:57:39 micahjd Exp $
+/* $Id: svga.c,v 1.14 2000/10/29 08:16:44 micahjd Exp $
  *
  * svga.c - video driver for (S)VGA cards, via vgagl and svgalib
  *
@@ -104,6 +104,9 @@ void svga_close(void) {
 }
 
 void svga_pixel(int x,int y,hwrcolor c) {
+#ifdef DOUBLEBUFFER
+  add_updarea(x,y,1,1);
+#endif
   gl_setpixel(x,y,c);
 }
 
@@ -113,50 +116,59 @@ hwrcolor svga_getpixel(int x,int y) {
 
 void svga_update(void) {
 #ifdef DOUBLEBUFFER
-  gl_copyscreen(svga_physical);
+  gl_setcontext(svga_physical);
+  gl_disableclipping();
+  gl_copyboxfromcontext(svga_virtual,upd_x,upd_y,upd_w,upd_h,upd_x,upd_y);
+  gl_setcontext(svga_virtual);
+  upd_x = upd_y = upd_w = upd_h = 0;
 #endif
 }
 
 void svga_clip_set(int x1,int y1,int x2,int y2) {
   gl_setclippingwindow(x1,y1,x2,y2);
-  gl_enableclipping();
   vid->clip_x1 = x1;
   vid->clip_y1 = y1;
   vid->clip_x2 = x2;
   vid->clip_y2 = y2;
 }
 
-void svga_clip_off(void) {
-  gl_disableclipping();
-}
-
 void svga_blit(struct stdbitmap *src,int src_x,int src_y,
-		 struct stdbitmap *dest,int dest_x,int dest_y,
+		 int dest_x,int dest_y,
 		 int w,int h,int lgop) {
 
   if (lgop==PG_LGOP_NULL) return;
   if (w<=0) return;
   if (h<=0) return;
   
-  if (dest) return;   /*** FIX THIS ***/
-  
+  if (!src) {
+    /* Screen-to-screen copy */
+    for (;h;h--,dest_y++,src_y++) {
+      gl_getbox(src_x,src_y,w,1,svga_buf);
+      gl_putbox(dest_x,dest_y,w,1,svga_buf);
+    }
+    return;
+  }
+
   if (w>(src->w-src_x) || h>(src->h-src_y)) {
     int i,j;
 
     /* Do a tiled blit */
     for (i=0;i<w;i+=src->w)
       for (j=0;j<h;j+=src->h)
-        svga_blit(src,0,0,dest,dest_x+i,dest_y+j,src->w,src->h,lgop);
+        svga_blit(src,0,0,dest_x+i,dest_y+j,src->w,src->h,lgop);
 
     return;
   }
+#ifdef DOUBLEBUFFER
+  else
+    add_updarea(dest_x,dest_y,w,h);
+#endif
+
   
-  if (lgop==PG_LGOP_NONE)
-    if (src_x==0 && src_y==0)
-      gl_putbox(dest_x,dest_y,src->w,src->h,src->bits);
-    else
-      gl_putboxpart(dest_x,dest_y,src->w,src->h,w,h,src->bits,src_x,src_y);
-  {
+  if (lgop==PG_LGOP_NONE) {
+    gl_putboxpart(dest_x,dest_y,w,h,src->w,src->h,src->bits,src_x,src_y);
+  }
+  else {
     unsigned char *s,*b;
     int iw,lo,bytew;
 
@@ -242,7 +254,21 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
   }
 }
 
+void svga_unblit(int src_x,int src_y,
+		 struct stdbitmap *dest,int dest_x,int dest_y,
+		 int w,int h) {
+
+  if (w<=0) return;
+  if (h<=0) return;
+  
+  if (dest_x==0 && dest_y==0)
+    gl_getbox(src_x,src_y,dest->w,dest->h,dest->bits);
+}
+
 void svga_rect(int x,int y,int w,int h,hwrcolor c) {
+#ifdef DOUBLEBUFFER
+  add_updarea(x,y,w,h);
+#endif
   gl_fillbox(x,y,w,h,c);
 }
 
@@ -261,6 +287,10 @@ void svga_charblit(unsigned char *chardat,int dest_x,
   /* Is it at all in the clipping rect? */
   if (dest_x>vid->clip_x2 || dest_y>vid->clip_y2 || 
       (dest_x+w)<vid->clip_x1 || (dest_y+h)<vid->clip_y1) return;
+
+#ifdef DOUBLEBUFFER
+  add_updarea(dest_x,dest_y,w,h);
+#endif
 
   /* Find the width of the source data in bytes */
   if (bw & 7) bw += 8;
@@ -294,8 +324,8 @@ g_error svga_regfunc(struct vidlib *v) {
   v->getpixel = &svga_getpixel;
   v->update = &svga_update;
   v->blit = &svga_blit;
+  v->unblit = &svga_unblit;
   v->clip_set = &svga_clip_set;
-  v->clip_off = &svga_clip_off;
   v->rect = &svga_rect;
   v->color_pgtohwr = &svga_color_pgtohwr;
   v->charblit = &svga_charblit;

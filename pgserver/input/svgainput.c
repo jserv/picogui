@@ -1,4 +1,4 @@
-/* $Id: svgainput.c,v 1.9 2000/10/21 18:57:39 micahjd Exp $
+/* $Id: svgainput.c,v 1.10 2000/10/29 08:16:44 micahjd Exp $
  *
  * svgainput.h - input driver for SVGAlib
  *
@@ -260,10 +260,6 @@ void svgainput_mousehandler(int button,int dx,int dy,int dz,
        button,dx,dy,dz,drx,dry,drx,x,y);
   */
 #endif
-
-  /* We're going to need a real cursor here soon... :) */
-  (*vid->pixel)(x,y,(*vid->color_pgtohwr)(0xFF0000));
-  (*vid->update)();
 
   /* So, what just happened? */
   if (button & (~prevbutton))

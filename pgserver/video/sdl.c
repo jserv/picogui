@@ -1,4 +1,4 @@
-/* $Id: sdl.c,v 1.10 2000/10/29 01:45:35 micahjd Exp $
+/* $Id: sdl.c,v 1.11 2000/10/29 08:16:44 micahjd Exp $
  *
  * sdl.c - video driver wrapper for SDL.
  *
@@ -33,36 +33,6 @@
 #include <SDL.h>
 
 SDL_Surface *sdl_vidsurf;
-int sdl_upd_x;
-int sdl_upd_y;
-int sdl_upd_w;
-int sdl_upd_h;
-
-/******************************************** Utils */
-
-/* Assimilates the given area into the update rectangle */
-void sdl_addarea(int x,int y,int w,int h) {
-  if (sdl_upd_w) {
-    if (x < sdl_upd_x) {
-      sdl_upd_w += sdl_upd_x - x;
-      sdl_upd_x = x;
-    }
-    if (y < sdl_upd_y) {
-      sdl_upd_h += sdl_upd_y - y;
-      sdl_upd_y = y;
-    }
-    if ((w+x) > (sdl_upd_x+sdl_upd_w))
-      sdl_upd_w = w+x-sdl_upd_x;
-    if ((h+y) > (sdl_upd_y+sdl_upd_h))
-      sdl_upd_h = h+y-sdl_upd_y;
-  }
-  else {
-    sdl_upd_x = x;
-    sdl_upd_y = y;
-    sdl_upd_w = w;
-    sdl_upd_h = h;
-  }
-}
 
 /******************************************** Implementations */
 
@@ -133,7 +103,7 @@ void sdl_pixel(int x,int y,hwrcolor c) {
       y<vid->clip_y1 || y>vid->clip_y2)
     return;
 
-  sdl_addarea(x,y,1,1);
+  add_updarea(x,y,1,1);
 
   /* SDL doesn't have a good ol' pixel function... */
 
@@ -170,13 +140,12 @@ hwrcolor sdl_getpixel(int x,int y) {
 }
 
 void sdl_update(void) {
-  if (!sdl_upd_w) return;
-
-  SDL_UpdateRect(sdl_vidsurf,sdl_upd_x,sdl_upd_y,sdl_upd_w,sdl_upd_h);
-  sdl_upd_x = 0;
-  sdl_upd_y = 0;
-  sdl_upd_w = 0;
-  sdl_upd_h = 0;
+  if (!upd_w) return;
+  SDL_UpdateRect(sdl_vidsurf,upd_x,upd_y,upd_w,upd_h);
+  upd_x = 0;
+  upd_y = 0;
+  upd_w = 0;
+  upd_h = 0;
 }
 
 void sdl_blit(struct stdbitmap *src,int src_x,int src_y,
@@ -221,7 +190,7 @@ void sdl_blit(struct stdbitmap *src,int src_x,int src_y,
   if (!src) {
     src = &screenb;
   }
-  sdl_addarea(dest_x,dest_y,w,h);
+  add_updarea(dest_x,dest_y,w,h);
 
   /* set up pointers */
   s_of = src->w * vid->bpp / 8;
@@ -336,7 +305,7 @@ void sdl_rect(int x,int y,int w,int h,hwrcolor c) {
   }
   if (w<=0 || h<=0) return;
 
-  sdl_addarea(x,y,w,h);
+  add_updarea(x,y,w,h);
 
   r.x = x;
   r.y = y;
@@ -392,7 +361,7 @@ void sdl_gradient(int x,int y,int w,int h,int angle,
   }
   if (w<=0 || h<=0) return;
 
-  sdl_addarea(x,y,w,h);
+  add_updarea(x,y,w,h);
 
   /* Look up the sine and cosine */
   angle %= 360;

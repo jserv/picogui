@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.6 2000/10/29 01:45:35 micahjd Exp $
+/* $Id: video.h,v 1.7 2000/10/29 08:16:44 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -404,6 +404,14 @@ g_error (*find_videodriver(const char *name))(struct vidlib *v);
 /* Sprite helper functions */
 g_error new_sprite(struct sprite **ps,int w,int h);
 void free_sprite(struct sprite *s);
+
+/* Helper functions for keeping an update region, used
+   for double-buffering by the video drivers */
+extern int upd_x;
+extern int upd_y;
+extern int upd_w;
+extern int upd_h;
+void add_updarea(int x,int y,int w,int h);
 
 #endif /* __H_VIDEO */
 

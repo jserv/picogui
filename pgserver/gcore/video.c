@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.14 2000/10/29 02:54:19 micahjd Exp $
+/* $Id: video.c,v 1.15 2000/10/29 08:16:42 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -38,6 +38,10 @@ struct vidlib *vid;
 struct vidlib vidlib_static;
 struct sprite *spritelist;
 unsigned char sprites_hidden;
+int upd_x;
+int upd_y;
+int upd_w;
+int upd_h;
 
 /* Trig table used in hwr_gradient (sin*256 for theta from 0 to 90) */
 unsigned char trigtab[] = {
@@ -983,6 +987,29 @@ g_error (*find_videodriver(const char *name))(struct vidlib *v) {
     p++;
   }
   return NULL;
+}
+
+void add_updarea(int x,int y,int w,int h) {
+  if (upd_w) {
+    if (x < upd_x) {
+      upd_w += upd_x - x;
+      upd_x = x;
+    }
+    if (y < upd_y) {
+      upd_h += upd_y - y;
+      upd_y = y;
+    }
+    if ((w+x) > (upd_x+upd_w))
+      upd_w = w+x-upd_x;
+    if ((h+y) > (upd_y+upd_h))
+      upd_h = h+y-upd_y;
+  }
+  else {
+    upd_x = x;
+    upd_y = y;
+    upd_w = w;
+    upd_h = h;
+  }
 }
 
 /* The End */
