@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.23 2001/08/14 07:07:52 micahjd Exp $
+/* $Id: sdlinput.c,v 1.24 2001/08/30 00:38:51 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -59,6 +59,8 @@ u8 sdlinput_autowarp;
 u8 sdlinput_pgcursor;
 u8 sdlinput_foldbuttons;
 u8 sdlinput_upmove;
+u8 sdlinput_nomouse;
+u8 sdlinput_nokeyboard;
 
 /* Munge coordinates for skin support */
 #ifdef CONFIG_SDLSKIN
@@ -140,7 +142,7 @@ void sdlinput_poll(void) {
       evt.motion.state = evt.motion.state!=0;
 
     if ((evt.motion.x==ox) && (evt.motion.y==oy)) break;
-    if (sdlinput_upmove || evt.motion.state)
+    if ( (sdlinput_upmove || evt.motion.state) && !sdlinput_nomouse)
       dispatch_pointing(TRIGGER_MOVE,
 			(-sdlfb_display_x + (ox = evt.motion.x)) / sdlfb_scale,
 			(-sdlfb_display_y + (oy = evt.motion.y)) / sdlfb_scale,
@@ -159,14 +161,15 @@ void sdlinput_poll(void) {
     if (sdlinput_foldbuttons)
       evt.button.button = evt.button.button!=0;
 
-    dispatch_pointing(TRIGGER_DOWN,
-		      (-sdlfb_display_x + 
-		      (sdlinput_autowarp ? cursorx : evt.button.x))
-		      /sdlfb_scale,
-		      (-sdlfb_display_y + 
-		      (sdlinput_autowarp ? cursory : evt.button.y))
-		      /sdlfb_scale,
-		      btnstate |= 1<<(evt.button.button-1));
+    if (!sdlinput_nomouse)
+      dispatch_pointing(TRIGGER_DOWN,
+			(-sdlfb_display_x + 
+			 (sdlinput_autowarp ? cursorx : evt.button.x))
+			/sdlfb_scale,
+			(-sdlfb_display_y + 
+			 (sdlinput_autowarp ? cursory : evt.button.y))
+			/sdlfb_scale,
+			btnstate |= 1<<(evt.button.button-1));
     break;
     
   case SDL_MOUSEBUTTONUP:
@@ -179,25 +182,29 @@ void sdlinput_poll(void) {
 
     if (sdlinput_foldbuttons)
       evt.button.button = evt.button.button!=0;
-    
-    dispatch_pointing(TRIGGER_UP,
-		      (-sdlfb_display_x + 
-		      (sdlinput_autowarp ? cursorx : evt.button.x))
-		      /sdlfb_scale,
-		      (-sdlfb_display_y + 
-		      (sdlinput_autowarp ? cursory : evt.button.y))
-		      /sdlfb_scale,
-		      btnstate &= ~(1<<(evt.button.button-1)));
+
+    if (!sdlinput_nomouse)    
+      dispatch_pointing(TRIGGER_UP,
+			(-sdlfb_display_x + 
+			 (sdlinput_autowarp ? cursorx : evt.button.x))
+			/sdlfb_scale,
+			(-sdlfb_display_y + 
+			 (sdlinput_autowarp ? cursory : evt.button.y))
+			/sdlfb_scale,
+			btnstate &= ~(1<<(evt.button.button-1)));
     break;
     
   case SDL_KEYDOWN:
-    if (evt.key.keysym.unicode)
-      dispatch_key(TRIGGER_CHAR,evt.key.keysym.unicode,evt.key.keysym.mod);
-    dispatch_key(TRIGGER_KEYDOWN,evt.key.keysym.sym,evt.key.keysym.mod);
+    if (!sdlinput_nokeyboard) {
+      if (evt.key.keysym.unicode)
+	dispatch_key(TRIGGER_CHAR,evt.key.keysym.unicode,evt.key.keysym.mod);
+      dispatch_key(TRIGGER_KEYDOWN,evt.key.keysym.sym,evt.key.keysym.mod);
+    }
     break;
     
   case SDL_KEYUP:
-    dispatch_key(TRIGGER_KEYUP,evt.key.keysym.sym,evt.key.keysym.mod);
+    if (!sdlinput_nokeyboard)
+      dispatch_key(TRIGGER_KEYUP,evt.key.keysym.sym,evt.key.keysym.mod);
     break;
       
   case SDL_QUIT:
@@ -216,6 +223,8 @@ g_error sdlinput_init(void) {
   sdlinput_pgcursor = get_param_int("input-sdlinput","pgcursor",1);
   sdlinput_foldbuttons = get_param_int("input-sdlinput","foldbuttons",0);
   sdlinput_upmove = get_param_int("input-sdlinput","upmove",1);
+  sdlinput_nomouse = get_param_int("input-sdlinput","nomouse",0);
+  sdlinput_nokeyboard = get_param_int("input-sdlinput","nokeyboard",0);
   SDL_ShowCursor(get_param_int("input-sdlinput","sdlcursor",0));
 
 #ifdef CONFIG_SDLSKIN

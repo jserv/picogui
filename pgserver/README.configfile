@@ -181,6 +181,13 @@ quoted appropriately. For example:
   Convert all mouse button clicks to button 1, to simulate a one-button
   mouse or touchpad
 
+- nomouse
+  Disable normal mouse input. This does not interfere with silkscreen/hardware
+  buttons defined by 'map'
+
+- nokeyboard
+  Disable normal keyboard input
+
 - map
   (requires 'Skin support' config option)
   This is the filename of an  imagemap defining hotspots on the skin.
