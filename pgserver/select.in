@@ -196,6 +196,7 @@ open_section OS
 
 add_if_true posix.c              $CONFIG_OS_POSIX
 add_if_true posix_signals.c      $CONFIG_OS_POSIX
+add_if_true posix_commandline.c  $CONFIG_OS_POSIX
 add_if_true uclinux.c            $CONFIG_OS_UCLINUX
 
 close_section

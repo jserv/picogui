@@ -15,7 +15,6 @@ libgcore_la_SOURCES = \
 	configfile.c     \
 	pgstring.c       \
 	globals.c        \
-	commandline.c    \
 	init.c
 
 EXTRA_DIST = inputdrivers.inc videodrivers.inc defaulttext.inc

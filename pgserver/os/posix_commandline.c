@@ -1,7 +1,7 @@
-/* $Id: commandline.c,v 1.1 2002/11/03 04:54:23 micahjd Exp $
+/* $Id: posix_commandline.c,v 1.1 2002/11/03 23:33:23 micahjd Exp $
  *
- * commandline.c - Process pgserver's command line, adding the
- *                 resulting data to the config database
+ * posix_commandline.c - Process pgserver's command line, adding the
+ *                       resulting data to the config database
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>

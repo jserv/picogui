@@ -1,4 +1,4 @@
-/* $Id: init.c,v 1.3 2002/11/03 22:44:47 micahjd Exp $
+/* $Id: init.c,v 1.4 2002/11/03 23:33:23 micahjd Exp $
  *
  * init.c - High level pgserver initialization and shutdown
  *
@@ -64,11 +64,13 @@ g_error pgserver_init(int flags, int argc, char **argv) {
     errorcheck;
   }
 
+#ifdef CONFIG_OS_POSIX
   if (!(flags & PGINIT_NO_COMMANDLINE)) {
     DBG("command line");
     e = commandline_parse(argc,argv);
     errorcheck;
   }
+#endif
   
 #ifdef RUNTIME_FUNCPTR
   DBG("runtime function pointer tables");
