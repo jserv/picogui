@@ -1,4 +1,4 @@
-/* $Id: eventbroker.c,v 1.10 2002/05/14 14:38:03 cgrigis Exp $
+/* $Id: eventbroker.c,v 1.11 2002/05/31 09:41:19 gobry Exp $
  *
  * eventbroker.c - input driver to manage driver messages
  *
@@ -117,8 +117,7 @@ static int eventbroker_fd_activate(int fd)
   int index;
 
   /* is the fd mine ? */
-  if(fd!=rm_fd)
-    return 0;
+  if (fd != rm_fd) return 0;
 
   /* run the RM event pump by 1 step */
   rm_loop(1);
@@ -130,11 +129,12 @@ static int eventbroker_fd_activate(int fd)
 static void eventbroker_fd_init(int *n, fd_set *readfds,
 				struct timeval *timeout)
 {
+  if (rm_fd <= 0) return;
+
   /* register the RM's fd in the set of fd pgserver will watch */
-  if ((*n)<(rm_fd+1))
-    *n = rm_fd+1;
-  if (rm_fd>0)
-    FD_SET(rm_fd, readfds);
+  if ((*n) < rm_fd + 1) *n = rm_fd + 1;
+
+  FD_SET(rm_fd, readfds);
 }
 
 #endif /* RM_ENABLED */
