@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.62 2001/07/26 10:11:22 micahjd Exp $
+/* $Id: panel.c,v 1.63 2001/08/12 22:53:10 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -171,7 +171,8 @@ void build_panelbar(struct gropctxt *c,unsigned short state,
     y = c->h - y;
 
   addgrop(c,PG_GROP_SETCOLOR);
-  c->current->param[0] = theme_lookup(state,PGTH_P_FGCOLOR);
+  c->current->param[0] = VID(color_pgtohwr) 
+    (theme_lookup(state,PGTH_P_FGCOLOR));
   addgrop(c,PG_GROP_SETFONT);
   c->current->param[0] = theme_lookup(state,PGTH_P_FONT);
   if (c->w < c->h) {
