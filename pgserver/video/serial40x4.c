@@ -1,4 +1,4 @@
-/* $Id: serial40x4.c,v 1.3 2001/05/12 21:04:55 micahjd Exp $
+/* $Id: serial40x4.c,v 1.4 2001/05/12 22:45:51 micahjd Exp $
  *
  * serial40x4.c - PicoGUI video driver for a serial wall-mounted
  *                40x4 character LCD I put together about a year ago.
@@ -75,6 +75,9 @@
 /* Macros to easily access the members of vid->display */
 #define FB_MEM   (((struct stdbitmap*)vid->display)->bits)
 #define FB_BPL   (((struct stdbitmap*)vid->display)->pitch)
+
+/* A shadow buffer so we can see what has changed */
+u8 *lcd_shadow;
 
 int lcd_fd;
 
@@ -176,7 +179,7 @@ u8 const cg1[] = {
      0x00,0x00,0x00,0x01,0x03,0x07,0x0F,0x1F,
      0x00,0x00,0x00,0x10,0x18,0x1C,0x1E,0x1F,
      0x1F,0x1F,0x1E,0x1E,0x1C,0x1C,0x18,0x10,
-     0x05,0x00,0x05,0x00,0x05,0x00,0x05,0x00,
+     0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,
      0x00,0x00,0x15,0x00,0x00,0x15,0x00,0x00
 };
 u8 const cg2[] = {
@@ -186,7 +189,7 @@ u8 const cg2[] = {
      0x1F,0x0F,0x07,0x03,0x01,0x00,0x00,0x00,
      0x1F,0x1E,0x1C,0x18,0x10,0x00,0x00,0x00,
      0x10,0x18,0x1C,0x1C,0x1E,0x1E,0x1F,0x1F,
-     0x05,0x00,0x05,0x00,0x05,0x00,0x05,0x00,
+     0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,
      0x00,0x00,0x15,0x00,0x00,0x15,0x00,0x00
 };
 
@@ -201,19 +204,19 @@ g_error serial40x4_init(void) {
    vid->xres = 40;
    vid->yres = 4;
    vid->bpp  = 8;
-   FB_BPL = 40;
+   FB_BPL = 64;
    
-   /* Allocate our buffer */
-   e = g_malloc((void**) &FB_MEM,vid->xres * vid->yres);
+   /* Allocate our buffer (framebuffer and shadow) */
+   e = g_malloc((void**) &FB_MEM,FB_BPL * vid->yres * 2);
    errorcheck;
-   for (p=FB_MEM,size=vid->xres*vid->yres;size;size--,p++)
-     *p = ' ';
+   lcd_shadow = FB_MEM + FB_BPL * vid->yres;
+   memset(FB_MEM,0,FB_BPL * vid->yres * 2);
    
    /* Open LCD device */
    lcd_fd = open("/dev/lcd",O_WRONLY);
    if (lcd_fd<=0)
      return mkerror(PG_ERRT_IO,46);
-
+    
    /* Download custom characters to the LCD */
    write(lcd_fd,"\\1\\g",4);
    write(lcd_fd,cg1,64);
@@ -224,19 +227,68 @@ g_error serial40x4_init(void) {
 }
 
 void serial40x4_close(void) {
-   g_free(FB_MEM);
+   g_free(FB_MEM);   /* And shadow buffer */
    close(lcd_fd);
 }
 
+/* Use a shadow buffer to send RLE-delta encoded data to the LCD.
+ *
+ * Cruftily hardcoded to a split 40x4 Hitachi-compatible LCD
+ */
 void serial40x4_update(s16 x,s16 y,s16 w,s16 h) {
-   write(lcd_fd,"\\1\\d",4);
-   write(lcd_fd,FB_MEM,40);
-   write(lcd_fd,"\\n",2);
-   write(lcd_fd,FB_MEM+40,40);
-   write(lcd_fd,"\\2\\d",4);
-   write(lcd_fd,FB_MEM+80,40);
-   write(lcd_fd,"\\n",2);
-   write(lcd_fd,FB_MEM+120,40);   
+   int i_lcd,i;
+   u8 *oldp,*newp;
+   /* Output buffer big enough to hold one frame with worst-case encoding */
+   u8 outbuf[1024];
+   u8 *outp = outbuf;
+   
+   /* start comparing the buffers */
+   i_lcd = -1;
+   oldp = lcd_shadow;
+   newp = FB_MEM;
+   for (i=0;i<256;oldp++,newp++,i++) {
+      if (*oldp == *newp)
+	continue;
+      
+      /* Move the hardware cursor if necessary*/
+      if (i_lcd != i) {
+
+	 /* set the proper controller */
+	 if (i>=128) {
+	    if (i_lcd < 128) {
+	       *(outp++) = '\\';
+	       *(outp++) = '2';
+	    }
+	 }
+	 else {
+	    if (i_lcd<0 || i_lcd>=128) {
+	       *(outp++) = '\\';
+	       *(outp++) = '1';
+	    }
+	 }
+
+	 /* set address */
+	 *(outp++) = '\\';
+	 *(outp++) = 'c';
+	 *(outp++) = 0x80 + (i%128);   /* HD44780 DDRAM command */
+	 i_lcd = i;
+      }
+      
+      /* Output character */
+      *(outp++) = *newp;
+      if (i_lcd!=127)            /* barrier between controllers */
+	i_lcd++;
+      if (i_lcd==40)             /* Weird line wrapping */
+	i_lcd = 64;
+      if (i_lcd==168)            /* Weird line wrapping */
+	i_lcd = 192;
+   }
+
+   /* Write buffer contents */
+   write(lcd_fd,outbuf,outp-outbuf);
+   
+   /* Update the shadow buffer */
+   memcpy(lcd_shadow,FB_MEM,256);
 }
 
 /**** Hack the normal font rendering a bit so we use regular text */
@@ -250,9 +302,10 @@ void serial40x4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,
 		dest_x>clip->x2 || dest_y>clip->y2))
      return;   
 
-   /* Not entirely correct, but seems to give the best results */
-   if (fill && c==' ')
-     (*vid->pixel)(dest,dest_x,dest_y,bg,lgop);
+   /* Not at all correct, but until terminal theming support works it's
+    * the only way to make pterm look ok */
+   if (fill)
+     (*vid->pixel)(dest,dest_x,dest_y,0,lgop);
    else
      (*vid->pixel)(dest,dest_x,dest_y,*chardat,lgop);
 }
@@ -265,7 +318,7 @@ void serial40x4_font_newdesc(struct fontdesc *fd) {
    fd->fs = &serial40x4_font_style;
 }
 
-/* Like the ncurses driver, if 0x20000000 is set, it's a raw color.
+/* Like the ncurses driver, if 0x20000000 is set, it's a raw character code.
  * Otherwise, convert to black-and-white */
 
 hwrcolor serial40x4_color_pgtohwr(pgcolor c) {
