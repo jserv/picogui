@@ -1,4 +1,4 @@
-/* $Id: theme.c,v 1.7 2000/06/01 23:11:42 micahjd Exp $
+/* $Id: theme.c,v 1.8 2000/06/02 22:02:46 micahjd Exp $
  *
  * theme.h - This defines the structures and functions for themes,
  * parameters defining the way widgets are drawn that are reconfigurable
@@ -28,37 +28,58 @@
  */
 
 #include <theme.h>
+#include <divtree.h>
+#include <widget.h>
 
 /* Creates a gropnode representing an element.
  * Depending on the type and the size, create a gradient, rectangle,
  * slab, bar, or frame.
  */
-void addelement(struct gropnode **headpp,struct element *el,
-		int *x,int *y,int *w,int *h,int setp) {
+void addelement(struct divnode *d,struct element *el,
+		int *x,int *y,int *w,int *h) {
   
   if (el->type == ELEM_GRADIENT) {
-    grop_gradient(headpp,*x,*y,*w,*h,el->state[STATE_NORMAL].c1,
+    grop_gradient(&d->grop,*x,*y,*w,*h,el->state[STATE_NORMAL].c1,
 		  el->state[STATE_NORMAL].c2,el->state[STATE_NORMAL].angle,
 		  el->state[STATE_NORMAL].translucent);
   }
   else if (el->type == ELEM_FLAT) {
-    if (el->w==0 && el->h==-1)
-      grop_slab(headpp,*x,*y,*w,el->state[STATE_NORMAL].c1);
-    else if (el->w==-1 && el->h==0)
-      grop_bar(headpp,*x,*y,*h,el->state[STATE_NORMAL].c1);
-    else if (el->w==-2 && el->h==-2)
-      grop_frame(headpp,*x,*y,*w,*h,el->state[STATE_NORMAL].c1);
+    if (el->width==1)
+      grop_frame(&d->grop,*x,*y,*w,*h,el->state[STATE_NORMAL].c1);
     else
-      grop_rect(headpp,*x,*y,*w,*h,el->state[STATE_NORMAL].c1);
+      grop_rect(&d->grop,*x,*y,*w,*h,el->state[STATE_NORMAL].c1);
   }
   else
-    grop_null(headpp);
+    grop_null(&d->grop);
 
-  if (setp) {
-    *x += el->x;
-    *y += el->y;
-    *w += el->w;
-    *h += el->h;
+  if (el->width > 0) {
+    *x += el->width;
+    *y += el->width;
+    *w -= el->width <<1;
+    *h -= el->width <<1;
+  }
+  else if (el->width < 0) {
+    switch (d->owner->in->flags & (~SIDEMASK)) {
+
+    case S_LEFT:
+      *w += el->width;
+      break;
+
+    case S_RIGHT:
+      *w += el->width;
+      *x -= el->width;
+      break;
+
+    case S_TOP:
+      *h += el->width;
+      break;
+
+    case S_BOTTOM:
+      *h += el->width;
+      *y -= el->width;
+      break;
+
+    }
   }
 }
 
@@ -76,17 +97,8 @@ void themeset(int element,int state,int param,unsigned long value) {
   if ((element<0) || (element>=E_NUM)) return;
   el = &current_theme[element];
   switch (param) {
-  case EPARAM_X:
-    el->x = value;
-    break;
-  case EPARAM_Y:
-    el->y = value;
-    break;
-  case EPARAM_W:
-    el->w = value;
-    break;
-  case EPARAM_H:
-    el->h = value;
+  case EPARAM_WIDTH:
+    el->width = value;
     break;
   case EPARAM_TYPE:
     el->type = value;

@@ -1,4 +1,4 @@
-/* $Id: toolbar.c,v 1.1 2000/04/29 22:34:50 micahjd Exp $
+/* $Id: toolbar.c,v 1.2 2000/06/02 22:02:46 micahjd Exp $
  *
  * toolbar.c - container widget for buttons
  *
@@ -34,8 +34,8 @@ void toolbar(struct divnode *d) {
   int x,y,w,h;
   x=y=0; w=d->w; h=d->h;
 
-  addelement(&d->grop,&current_theme[E_TOOLBAR_BORDER],&x,&y,&w,&h,1);
-  addelement(&d->grop,&current_theme[E_TOOLBAR_FILL],&x,&y,&w,&h,0);
+  addelement(d,&current_theme[E_TOOLBAR_BORDER],&x,&y,&w,&h);
+  addelement(d,&current_theme[E_TOOLBAR_FILL],&x,&y,&w,&h);
 }
 
 /* Pointers, pointers, and more pointers. What's the point?

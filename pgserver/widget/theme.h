@@ -1,4 +1,4 @@
-/* $Id: theme.h,v 1.7 2000/06/02 07:44:03 micahjd Exp $
+/* $Id: theme.h,v 1.8 2000/06/02 22:02:46 micahjd Exp $
  *
  * theme.h - This defines the structures and functions for themes,
  * parameters defining the way widgets are drawn that are reconfigurable
@@ -52,14 +52,20 @@
 #define STATE_NUM       3
 
 struct element {
-  /* Delta values from the divnode's size */
-  int x,y,w,h;
 
-  int type;
+  /* If this is 0,the element is solid.  A positive value indicates that
+     it forms a border of this width on each side.
+     A negative value forms a border only on the exposed side (the
+     one opposite the widget's 'side')
+  */
+  signed char width;
+
+  unsigned char type;
 
   struct {
     devcolort c1,c2;
-    int angle,translucent;
+    int angle;
+    signed char translucent;
   } state[3];
 };
 
@@ -87,15 +93,12 @@ struct element {
 
 #define E_NUM 19
 
-#define EPARAM_X            1
-#define EPARAM_Y            2
-#define EPARAM_W            3
-#define EPARAM_H            4 
-#define EPARAM_TYPE         5
-#define EPARAM_C1           6
-#define EPARAM_C2           7
-#define EPARAM_ANGLE        8
-#define EPARAM_TRANSLUCENT  9
+#define EPARAM_WIDTH        1
+#define EPARAM_TYPE         2
+#define EPARAM_C1           3
+#define EPARAM_C2           4
+#define EPARAM_ANGLE        5
+#define EPARAM_TRANSLUCENT  6
 
 extern struct element current_theme[E_NUM];
 
@@ -103,8 +106,8 @@ extern struct element current_theme[E_NUM];
 
 /* Creates a gropnode representing an element 
  * If setp is nonzero, then x,y,w,h are updated. */
-void addelement(struct gropnode **headpp,struct element *el,
-		int *x,int *y,int *w,int *h,int setp);
+void addelement(struct divnode *d,struct element *el,
+		int *x,int *y,int *w,int *h);
 
 /* Apply a state to an existing gropnode */
 void applystate(struct gropnode *n,struct element *el,int state);

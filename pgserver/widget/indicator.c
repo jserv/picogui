@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.6 2000/05/06 14:38:14 micahjd Exp $
+/* $Id: indicator.c,v 1.7 2000/06/02 22:02:46 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -33,8 +33,8 @@ void indicator(struct divnode *d) {
 
   /* Background for the whole bar */
   x=y=0; w=d->w; h=d->h;
-  addelement(&d->grop,&current_theme[E_INDICATOR_BORDER],&x,&y,&w,&h,1);
-  addelement(&d->grop,&current_theme[E_INDICATOR_FILL],&x,&y,&w,&h,1);
+  addelement(d,&current_theme[E_INDICATOR_BORDER],&x,&y,&w,&h);
+  addelement(d,&current_theme[E_INDICATOR_FILL],&x,&y,&w,&h);
 
   /* Within the remaining space, figure out where the indicator is
      hilighted. */
@@ -48,7 +48,7 @@ void indicator(struct divnode *d) {
   }
 
   /* Add the hilight */
-  addelement(&d->grop,&current_theme[E_INDICATOR_OVERLAY],&x,&y,&w,&h,0);
+  addelement(d,&current_theme[E_INDICATOR_OVERLAY],&x,&y,&w,&h);
 
   /* If this is a vertical indicator, rotate the gradients */
   if (d->h >= d->w) {

@@ -1,4 +1,4 @@
-/* $Id: default_theme.c,v 1.2 2000/06/02 07:44:03 micahjd Exp $
+/* $Id: default_theme.c,v 1.3 2000/06/02 22:02:46 micahjd Exp $
  *
  * default_theme.h - Theme table initialized with the default theme
  *
@@ -32,9 +32,9 @@
  * This format is more limiting than the actual theme definition format,
  * but the default theme needs to be simple enough to work on any hardware.
  */
-#define EL_NULL {0,0,0,0,ELEM_NULL}
-#define EL_FLAT(w,c) {w,w,-2*w,-2*w,ELEM_FLAT,{{c}}}
-#define EL_ACTIVE(c1,c2,c3) {0,0,0,0,ELEM_FLAT,{{c1},{c2},{c3}}}
+#define EL_NULL {0,ELEM_NULL}
+#define EL_FLAT(w,c) {w,ELEM_FLAT,{{c}}}
+#define EL_ACTIVE(c1,c2,c3) {0,ELEM_FLAT,{{c1},{c2},{c3}}}
 
 /* This is initialized to the default theme */
 struct element current_theme[E_NUM] = {
@@ -49,13 +49,13 @@ struct element current_theme[E_NUM] = {
   EL_NULL,
 
   /* 03 toolbar.border */
-  EL_FLAT(1,mkcolor(0,0,0)),  
+  EL_FLAT(-1,mkcolor(0,0,0)),  
 
   /* 04 toolbar.fill */
   EL_FLAT(0,mkcolor(220,255,220)),
 
   /* 05 scrollbar.border */ 
-  EL_FLAT(1,mkcolor(0,0,0)),  
+  EL_FLAT(-1,mkcolor(0,0,0)),  
 
   /* 06 scrollbar.fill */
   EL_FLAT(0,mkcolor(220,220,255)),
@@ -85,7 +85,7 @@ struct element current_theme[E_NUM] = {
   EL_FLAT(0,mkcolor(255,255,255)),  
 
   /* 15 panelbar.border */
-  EL_FLAT(1,mkcolor(127,127,127)),  
+  EL_FLAT(-1,mkcolor(127,127,127)),  
 
   /* 16 panelbar.fill */
   EL_FLAT(0,mkcolor(192,192,192)),  

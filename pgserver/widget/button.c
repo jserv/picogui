@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.13 2000/05/06 06:42:21 micahjd Exp $
+/* $Id: button.c,v 1.14 2000/06/02 22:02:46 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -61,8 +61,8 @@ void bitbutton(struct divnode *d) {
 
   ex=ey=0; ew=d->w; eh=d->h;
 
-  addelement(&d->grop,&current_theme[E_BUTTON_BORDER],&ex,&ey,&ew,&eh,1);
-  addelement(&d->grop,&current_theme[E_BUTTON_FILL],&ex,&ey,&ew,&eh,1);
+  addelement(d,&current_theme[E_BUTTON_BORDER],&ex,&ey,&ew,&eh);
+  addelement(d,&current_theme[E_BUTTON_FILL],&ex,&ey,&ew,&eh);
 
   /* We need at least the main bitmap for alignment.  The mask
      bitmap is optional, but without it what's the point... */
@@ -87,7 +87,7 @@ void bitbutton(struct divnode *d) {
     grop_null(&d->grop);
   }
 
-  addelement(&d->grop,&current_theme[E_BUTTON_OVERLAY],&ex,&ey,&ew,&eh,0);
+  addelement(d,&current_theme[E_BUTTON_OVERLAY],&ex,&ey,&ew,&eh);
 }
 
 /* Pointers, pointers, and more pointers. What's the point?

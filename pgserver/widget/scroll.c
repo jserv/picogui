@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.9 2000/05/24 04:31:30 micahjd Exp $
+/* $Id: scroll.c,v 1.10 2000/06/02 22:02:46 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -49,17 +49,17 @@ void scrollbar(struct divnode *d) {
 
   /* Background for the whole bar */
   x=y=0; w=d->w; h=d->h;
-  addelement(&d->grop,&current_theme[E_SCROLLBAR_BORDER],&x,&y,&w,&h,1);
-  addelement(&d->grop,&current_theme[E_SCROLLBAR_FILL],&x,&y,&w,&h,1);
+  addelement(d,&current_theme[E_SCROLLBAR_BORDER],&x,&y,&w,&h);
+  addelement(d,&current_theme[E_SCROLLBAR_FILL],&x,&y,&w,&h);
 
   /* Within the remaining space, figure out where the indicator goes */
   y += d->param.i * (h-(h>>HEIGHT_DIV)) / DATA->res;
   h = h>>HEIGHT_DIV;
 
   /* Add the indicator elements */
-  addelement(&d->grop,&current_theme[E_SCROLLIND_BORDER],&x,&y,&w,&h,1);
-  addelement(&d->grop,&current_theme[E_SCROLLIND_FILL],&x,&y,&w,&h,1);
-  addelement(&d->grop,&current_theme[E_SCROLLIND_OVERLAY],&x,&y,&w,&h,0);
+  addelement(d,&current_theme[E_SCROLLIND_BORDER],&x,&y,&w,&h);
+  addelement(d,&current_theme[E_SCROLLIND_FILL],&x,&y,&w,&h);
+  addelement(d,&current_theme[E_SCROLLIND_OVERLAY],&x,&y,&w,&h);
 }
 
 /* When param.i changes, update the grop coordinates */
@@ -127,9 +127,7 @@ void scrollupdate(struct widget *self) {
     (self->in->div->grop->next->next->next->y = 
      (self->in->div->grop->next->next->y = 
       (self->in->div->param.i * (self->in->div->h-
-				 (self->in->div->h>>HEIGHT_DIV)) / DATA->res))
-      + current_theme[E_SCROLLIND_BORDER].y) 
-     + current_theme[E_SCROLLIND_FILL].y;
+	       		 (self->in->div->h>>HEIGHT_DIV)) / DATA->res)));
 
   self->in->div->flags |= DIVNODE_NEED_REDRAW;
   self->dt->flags |= DIVTREE_NEED_REDRAW;   

@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.11 2000/06/01 23:11:42 micahjd Exp $
+/* $Id: panel.c,v 1.12 2000/06/02 22:02:46 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -36,8 +36,8 @@ void panelbar(struct divnode *d) {
   int x,y,w,h;
   x=y=0; w=d->w; h=d->h;
 
-  addelement(&d->grop,&current_theme[E_PANELBAR_BORDER],&x,&y,&w,&h,1);
-  addelement(&d->grop,&current_theme[E_PANELBAR_FILL],&x,&y,&w,&h,1);
+  addelement(d,&current_theme[E_PANELBAR_BORDER],&x,&y,&w,&h);
+  addelement(d,&current_theme[E_PANELBAR_FILL],&x,&y,&w,&h);
 
 }
 
@@ -45,8 +45,8 @@ void panel(struct divnode *d) {
   int x,y,w,h;
   x=y=0; w=d->w; h=d->h;
 
-  addelement(&d->grop,&current_theme[E_PANEL_BORDER],&x,&y,&w,&h,1);
-  addelement(&d->grop,&current_theme[E_PANEL_FILL],&x,&y,&w,&h,0);
+  addelement(d,&current_theme[E_PANEL_BORDER],&x,&y,&w,&h);
+  addelement(d,&current_theme[E_PANEL_FILL],&x,&y,&w,&h);
 }
 
 /* Pointers, pointers, and more pointers. What's the point?
