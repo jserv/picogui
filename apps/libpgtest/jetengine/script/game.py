@@ -12,7 +12,8 @@ def thread():
 
     # Event handler for the velocity slider
     def velocityChange(ev, widget):
-        world.velocity = widget.value / 10000.0
+        world.velocity = (100-widget.value) / 10000.0
+    app.VelocitySlider.value = 100
     app.link(velocityChange,app.VelocitySlider,'activate')
     
     app.run()
