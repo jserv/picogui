@@ -8,6 +8,11 @@ body {
   padding: 0;
 }
 
+img {
+  border: none;
+  vertical-align: middle;
+}
+
 .dateBox {
   float: right;
   padding: 0.5em;
@@ -59,9 +64,24 @@ span.section {
   border-bottom: #dee7ec 1px solid;
   color: #436976;
   font: 120% Bold;
-  margin: 1.5em 2em 0em 2em;
+  margin: 1.5em 0.5em 0em 2em;
   padding: 0em 2em;
 }
+
+a.section {
+  background: #ced7dc;
+  border: 1px solid #8CACBB;
+  border-bottom: #dee7ec 1px solid;
+  color: #000080;
+  margin: 1.5em 0.5em 0em 0.5em;
+  padding: 0em 0.5em;
+  text-decoration: none; 
+}
+
+a.section:hover {
+  background: #dee7ec;
+}
+
 
 div.sectionTop {
   background: #dee7ec;
