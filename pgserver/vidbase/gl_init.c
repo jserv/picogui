@@ -1,4 +1,4 @@
-/* $Id: gl_init.c,v 1.3 2002/11/25 08:44:31 micahjd Exp $
+/* $Id: gl_init.c,v 1.4 2002/11/25 13:43:01 micahjd Exp $
  *
  * sdlgl_init.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has initialization, shutdown, and registration.
@@ -40,7 +40,7 @@ g_error gl_init(void) {
 
   s = get_param_str(GL_SECTION,"texture_filtering","linear");
   if (!strcmp(s,"linear")) {
-    gl_global.texture_filtering = GL_LINEAR;
+    gl_global.texture_filtering = GL_LINEAR_MIPMAP_LINEAR;
   }
   else {
     gl_global.texture_filtering = GL_NEAREST;

@@ -1,4 +1,4 @@
-/* $Id: gl_util.c,v 1.4 2002/11/25 13:14:55 micahjd Exp $
+/* $Id: gl_util.c,v 1.5 2002/11/25 13:43:01 micahjd Exp $
  *
  * gl_util.c - OpenGL driver for picogui
  *             This file has utilities shared by multiple components of the driver.
@@ -444,8 +444,8 @@ void gl_bind_texture(struct glbitmap *glb) {
     }
     
     /* Send it to opengl, ditch our temporary */
-    glTexImage2D(GL_TEXTURE_2D, 0, 4, glb->tw, glb->th, 0, 
-		 GL_BGRA_EXT, GL_UNSIGNED_BYTE, ((struct glbitmap*)tmpbit)->sb->bits);
+    gluBuild2DMipmaps(GL_TEXTURE_2D, 4, glb->tw, glb->th,
+		      GL_BGRA_EXT, GL_UNSIGNED_BYTE, ((struct glbitmap*)tmpbit)->sb->bits);
     vid->bitmap_free(tmpbit);
   }      
   else {
