@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.94 2001/10/26 23:56:32 micahjd Exp $
+/* $Id: constants.h,v 1.95 2001/10/29 23:57:55 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -173,6 +173,9 @@
 #define PG_FSTYLE_ENCODING_IBM        (1<<5)  //!< IBM-PC extended characters
 #define PG_FSTYLE_ENCODING_UNICODE    (1<<17) //!< Unicode encoding
 
+#define PG_FSTYLE_ENCODING_MASK       (PG_FSTYLE_ENCODING_ISOLATIN1|\
+                                       PG_FSTYLE_ENCODING_IBM|\
+                                       PG_FSTYLE_ENCODING_UNICODE)
 
 //! \}
 

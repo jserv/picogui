@@ -111,7 +111,7 @@ void tuxts_poll(void) {
   if(b>0) {
     /* Show the cursor if 'showcursor' is on */
     if (showcursor)
-      drivermessage(PGDM_CURSORVISIBLE,1);
+      drivermessage(PGDM_CURSORVISIBLE,1,NULL);
 
     if(PEN_DOWN) {
       dispatch_pointing(TRIGGER_MOVE,x,y,1);
@@ -144,7 +144,7 @@ void tuxts_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
   timeout->tv_usec = POLL_USEC;
 }
 
-void tuxts_message(u32 message, u32 param) {
+void tuxts_message(u32 message, u32 param, u32 *ret) {
   switch (message) {
 
     /* Tuxscreen ioctls:

@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.34 2001/10/13 01:10:09 micahjd Exp $
+/* $Id: terminal.c,v 1.35 2001/10/29 23:57:56 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -763,7 +763,7 @@ void term_char(struct widget *self,char c) {
       
     case '\a':
       /* Ding! */
-      drivermessage(PGDM_SOUNDFX,PG_SND_BEEP);
+      drivermessage(PGDM_SOUNDFX,PG_SND_BEEP,NULL);
       return;
       
     case '\n':

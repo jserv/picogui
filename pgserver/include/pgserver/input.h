@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.17 2001/10/23 13:31:41 pney Exp $
+/* $Id: input.h,v 1.18 2001/10/29 23:57:55 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -90,7 +90,7 @@ struct inlib {
   int (*ispending)(void);
 
   /* For recieving driver messages */
-  void (*message)(u32 message, u32 param);
+  void (*message)(u32 message, u32 param, u32 *ret);
    
   /* Do not touch (drivers) */
   g_error (*regfunc)(struct inlib *i);  /* For avoiding duplicates */

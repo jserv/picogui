@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.27 2001/09/27 16:18:37 micahjd Exp $
+/* $Id: sdlinput.c,v 1.28 2001/10/29 23:57:55 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -147,7 +147,7 @@ void sdlinput_poll(void) {
 			(-sdlfb_display_y + (oy = evt.motion.y)) / sdlfb_scale,
 			btnstate=evt.motion.state);
     if (sdlinput_pgcursor)
-      drivermessage(PGDM_CURSORVISIBLE,1);
+      drivermessage(PGDM_CURSORVISIBLE,1,NULL);
     break;
     
   case SDL_MOUSEBUTTONDOWN:

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.120 2001/10/19 22:24:14 micahjd Exp $
+/* $Id: widget.c,v 1.121 2001/10/29 23:57:56 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -651,7 +651,7 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
 
   if (type == TRIGGER_DOWN &&
       get_param_int("sound","click",0))
-    drivermessage(PGDM_SOUNDFX,PG_SND_KEYCLICK);
+    drivermessage(PGDM_SOUNDFX,PG_SND_KEYCLICK,NULL);
 
   /* Convert coordinates from physical to logical */
   physx = x;
@@ -910,7 +910,7 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
 
   if (type == TRIGGER_KEYDOWN &&
       get_param_int("sound","keyclick",0))
-    drivermessage(PGDM_SOUNDFX,PG_SND_KEYCLICK);
+    drivermessage(PGDM_SOUNDFX,PG_SND_KEYCLICK,NULL);
 
   /* First, process magic 'double bucky' keys */
   if (type==TRIGGER_KEYDOWN &&

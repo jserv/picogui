@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.55 2001/10/27 20:43:25 bornet Exp $
+/* $Id: video.h,v 1.56 2001/10/29 23:57:55 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -195,7 +195,7 @@ struct vidlib {
   hwrbitmap display;
    
   /* Optionally process driver messages */
-  void (*message)(u32 message, u32 param);
+  void (*message)(u32 message, u32 param, u32 *ret);
 
   /***************** Fonts */
    
@@ -593,7 +593,7 @@ void videotest_benchmark(void);
 
 /************** Send a driver message (to all loaded drivers) */
 
-void drivermessage(u32 message, u32 param);
+void drivermessage(u32 message, u32 param, u32 *ret);
 
 #endif /* __H_VIDEO */
 

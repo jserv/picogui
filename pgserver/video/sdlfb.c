@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.28 2001/10/20 01:13:38 micahjd Exp $
+/* $Id: sdlfb.c,v 1.29 2001/10/29 23:57:55 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -558,7 +558,7 @@ pgcolor sdlfbemu_color_hwrtopg(hwrcolor c) {
 }
 #endif
 
-void sdlfb_message(u32 message, u32 param) {
+void sdlfb_message(u32 message, u32 param, u32 *ret) {
   switch (message) {
 
   case PGDM_SOUNDFX:

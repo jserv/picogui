@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.13 2001/10/26 10:14:08 micahjd Exp $
+/* $Id: font.h,v 1.14 2001/10/29 23:57:55 micahjd Exp $
  *
  * font.h - structures for representing fonts
  *
@@ -133,6 +133,9 @@ g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags);
  * If it decodes an invalid character, it returns -1
  */
 int decode_utf8(u8 **str);
+
+/* Very simple decoder for ASCII and ISO Latin-1 */
+int decode_ascii(u8 **str);
 
 #endif /* __H_FONT */
 

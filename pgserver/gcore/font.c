@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.35 2001/10/26 23:56:32 micahjd Exp $
+/* $Id: font.c,v 1.36 2001/10/29 23:57:55 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -433,12 +433,8 @@ int fontcmp(struct fontstyle_node *fs,char *name, int size, stylet flags) {
   if ( ((flags&PG_FSTYLE_SYMBOL)==(fs->flags&PG_FSTYLE_SYMBOL)) &&
        ((flags&PG_FSTYLE_SUBSET)==(fs->flags&PG_FSTYLE_SUBSET)))
     result |= FCMP_TYPE;
-  if ( ((flags&PG_FSTYLE_ENCODING_ISOLATIN1)==
-	(fs->flags&PG_FSTYLE_ENCODING_ISOLATIN1)) &&
-       ((flags&PG_FSTYLE_ENCODING_UNICODE)==
-	(fs->flags&PG_FSTYLE_ENCODING_UNICODE)) &&
-       ((flags&PG_FSTYLE_ENCODING_IBM)==
-	(fs->flags&PG_FSTYLE_ENCODING_IBM)))
+  if ((flags&PG_FSTYLE_ENCODING_MASK) && (flags&PG_FSTYLE_ENCODING_MASK)==
+      (fs->flags&PG_FSTYLE_ENCODING_MASK))
     result |= FCMP_CHARSET;
 
   return result;
@@ -509,6 +505,11 @@ int decode_utf8(u8 **str) {
   if (ch <= 0x3FFFFFF && length > 5) return -1;
 
   return ch;
+}
+
+/* Simple decoder for 8-bit text */
+int decode_ascii(u8 **str) {
+  return *((*str)++);
 }
 
 /* The End */

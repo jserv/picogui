@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.44 2001/10/27 20:43:25 bornet Exp $
+/* $Id: video.c,v 1.45 2001/10/29 23:57:55 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -456,18 +456,22 @@ g_error array_palettize(handle h, int owner) {
 }
 
 /* Send the message to all loaded drivers */
-void drivermessage(u32 message, u32 param) {
+void drivermessage(u32 message, u32 param, u32 *ret) {
   struct inlib *p;
   
+  if (!ret)
+    ret = alloca(sizeof(u32));
+  *ret = 0;
+
   /* Current video driver */
   if (vid->message)
-    (*vid->message)(message,param);
+    (*vid->message)(message,param,ret);
 
   /* All input drivers loaded */
   p = inlib_list;
   while (p) {
     if (p->message)
-      (*p->message)(message,param);
+      (*p->message)(message,param,ret);
     p = p->next;
   }
 
