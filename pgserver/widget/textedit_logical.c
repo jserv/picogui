@@ -1,4 +1,4 @@
-/* $Id: textedit_logical.c,v 1.7 2002/10/28 13:06:22 pney Exp $
+/* $Id: textedit_logical.c,v 1.8 2002/10/28 16:40:00 pney Exp $
  *
  * textedit_logical.c - Backend for multi-line text widget. This
  * defines the behavior of a generic wrapping text widget, and is not
@@ -198,19 +198,6 @@ int utf8ToWchart (char * inBuf, int inNbChars, wchar_t * outBuf)
     size_t iSize, oSize;
     char * oBufp = (char *) outBuf;
 
-// DEBUG --------------------------------------------------------
-{
-  int i;
-
-  printf ("\nutf-8 : len = %d\n", strlen (inBuf));
-//  for (i = 0; i < strlen (inBuf); i++)
-//    printf ("%c", inBuf [i] & 0xFF);
-//  printf ("\n");
-//  for (i = 0; i < strlen (inBuf); i++)
-//    printf (" 0x%x", inBuf [i] & 0xFF);
-}
-// DEBUG --------------------------------------------------------
-
     /* define useful size */
     iSize = strlen (inBuf);
     oSize = inNbChars * 4;    /* each chars use 32 bits */
@@ -237,20 +224,6 @@ int utf8ToWchart (char * inBuf, int inNbChars, wchar_t * outBuf)
     /* release conversion handle */
     iconv_close (ihandle);
 
-// DEBUG --------------------------------------------------------
-{
-  int i;
-  /* length of the wchar_t string */
-  printf ("\n-> wchar_t : len = %d\n", wcslen (outBuf));
-//  /* replace the pointer to the beginning of the string */
-//  oBufp = (char *) outBuf;
-//  /* print the wchar_t string byte per byte */
-//  for (i = 0; i < 4 * wcslen (outBuf); i++)
-//    printf (" 0x%x", oBufp [i] & 0xFF);
-//  printf ("\n");
-}
-// DEBUG --------------------------------------------------------
-
     return 0;
 }
 
@@ -265,6 +238,7 @@ int wchartToUtf8 (wchar_t * inBuf, char * outBuf, int * outSize)
     iconv_t ihandle;
     size_t iSize;
     char * iBufp = (char *) inBuf;
+    char * keepp = outBuf;      /* keep a ref to the beginning of the buffer */
 
     /* define useful size */
     iSize = wcslen (inBuf) * 4;
@@ -290,6 +264,8 @@ int wchartToUtf8 (wchar_t * inBuf, char * outBuf, int * outSize)
      * the outBuf pointer is set to the first free room by iconv
      */
     *outBuf = '\0';
+    /* re-position the pointer */
+    outBuf = keepp;
 
     /* release conversion handle */
     iconv_close (ihandle);
@@ -325,6 +301,9 @@ void text_backend_init ( text_widget * widget ) {
     widget->border_h = 2;
     widget->border_v = 2;
     widget->selection = SELECTION_NONE;
+
+    widget->client_data = NULL;
+    widget->client_data_h = 0;
 }
 
 
@@ -678,38 +657,82 @@ void text_backend_set_v_top ( text_widget * widget,
  * buffer, widget->data. This is used for passing widget text to the
  * client. The function name is possibly misleading, and may be changed.
  */
-void text_backend_save ( text_widget * widget ) {
+g_error text_backend_save ( text_widget * widget ) {
     u32 len, k;
     LList * ll_b;
     g_error e;
     u16 gap_len;
     block * b;
+    TEXTEDIT_CHAR * iBuf;  /* buffer to re-arrange the text */
 
     if (widget->client_data_h)
-        handle_free(widget->self->owner, widget->client_data_h);
+      handle_free(widget->self->owner, widget->client_data_h);
     widget->client_data = NULL;
     widget->client_data_h = 0;
 
+    /* determine the length of the text */
     for (len = 0, ll_b = widget->current; ll_b; ll_b = llist_next(ll_b))
-        len += BLOCK(ll_b)->len;
+      len += BLOCK(ll_b)->len;
 
-    /* FIXME: need error checking here! */
-    pgstring_new(&widget->client_data, PGSTR_ENCODE_UTF8, len, NULL);
-    mkhandle(&widget->client_data_h, PG_TYPE_WIDGET, widget->self->owner, widget->client_data);
-
-    /* FIXME: This doesn't handle Unicode properly 
-     * (Is this an issue? I'm not sure if this widget makes any attempt at Unicode support)
+    /* allocate buffer
+     * it will be use as input buffer for iconv ifdef CONFIG_TEXTEDIT_WCHART
      */
+    iBuf = malloc (sizeof (TEXTEDIT_CHAR) * (len + 1));
+
+    /* fulfill the buffer */
     for (k = 0, ll_b = widget->current; ll_b; ll_b = llist_next(ll_b)) {
-        b = BLOCK(ll_b);
-        gap_len = b->data_size - b->len;
-        memcpy(widget->client_data->buffer + k, b->data, b->b_gap);
-        k += b->b_gap;
-        strncpy(widget->client_data->buffer + k, 
-		b->data + b->b_gap + gap_len,  
-		b->len - b->b_gap);
-        k += b->len - b->b_gap;
+      b = BLOCK(ll_b);
+      gap_len = b->data_size - b->len;
+      TEXTEDIT_MEMCPY(iBuf + k, b->data, b->b_gap);
+      k += b->b_gap;
+      TEXTEDIT_STRNCPY(iBuf + k, b->data + b->b_gap + gap_len,  
+		       b->len - b->b_gap);
+      k += b->len - b->b_gap;
     }
+    /* null terminate the buffer */
+    iBuf [len] = '\0';
+
+
+#ifdef CONFIG_TEXTEDIT_WCHART /* we need to convert the buffer to utf-8 */
+    {
+      char * oBuf;
+      int oSize = len * 6;
+      int keepSize = oSize;
+
+      /* allocate the max possible buffer for iconv output encoded utf-8 */
+      oBuf = malloc (oSize);
+
+      /* convert */
+      wchartToUtf8 (iBuf, oBuf, & oSize);
+
+      /* oSize is the number of free rooms in the output buffer. Then the real
+       * length of the string is the following:
+       */
+      keepSize -= oSize;
+
+      pgstring_new (& widget->client_data, PGSTR_ENCODE_UTF8, keepSize, oBuf);
+      errorcheck;
+
+      /* free memory */
+      free (oBuf);
+    }
+
+#else  /* ! CONFIG_TEXTEDIT_WCHART */
+
+    pgstring_new (& widget->client_data, PGSTR_ENCODE_UTF8, len, iBuf);
+    errorcheck;
+
+#endif /* CONFIG_TEXTEDIT_WCHART */
+
+    /* make the handle to pass to client applications */
+    e = mkhandle (& widget->client_data_h, PG_TYPE_PGSTRING,
+		  widget->self->owner, widget->client_data);
+    errorcheck;
+
+    /* free memory */
+    free (iBuf);
+
+    return success;
 }
 
 

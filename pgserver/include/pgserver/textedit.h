@@ -1,4 +1,4 @@
-/* $Id: textedit.h,v 1.5 2002/10/25 15:25:34 pney Exp $
+/* $Id: textedit.h,v 1.6 2002/10/28 16:40:00 pney Exp $
  *
  * Multi-line text widget. The widget is divided into PicoGUI specific
  * code in widget/textedit.c, and abstract text widget code in
@@ -287,7 +287,7 @@ void    text_backend_set_text        ( text_widget * widget,
                                        struct pgstring * text );
 void    text_backend_set_selection   ( text_widget * widget,
                                        struct pgstring * text );
-void    text_backend_save            ( text_widget * widget );
+g_error text_backend_save            ( text_widget * widget );
 void    text_backend_store_selection ( text_widget * widget );
 void    text_backend_insert_char     ( text_widget * widget,
                                        TEXTEDIT_UCHAR ch ); 
