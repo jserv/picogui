@@ -28,9 +28,11 @@
 #include "ai1.h"
 #include "ai2.h"
 #include "ai3.h"
+
 /*
 #define DEBUG
 */
+
 void ai3(struct board *it)
 {
   int temp = nextmovewin(it);

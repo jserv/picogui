@@ -45,15 +45,17 @@ void aicall(struct board *it)
     case 3:
       ai3(it);
       break;
-      /*case 4:
+    case 4:
       ai4(it);
       break;
-     */}
+    }
 }
 
 void randommove(struct board *it)
 {
-  while(move(it,rand()%7) < 0);
+  int i = 0;
+  while(move(it,rand()%7) < 0)
+    fprintf(stderr,"randommove itteration %d\n",++i);
 }
 
 int move(struct board *it, int location)

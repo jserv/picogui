@@ -37,6 +37,7 @@ int NewGame(struct pgEvent *evt);
 int piecedrop(struct pgEvent *evt);
 int dummy(struct pgEvent *evt);
 
+
 /* Non-Event stuff */
 int redraw();
 void drawpiece(int x, int y, int type);

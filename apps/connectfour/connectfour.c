@@ -52,9 +52,9 @@ int main(int argc, char **argv)
   pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,bar);
   pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("New Game"),
 	      PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,0);
-  
+
   pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&NewGame,NULL);
-  
+   
   info = pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(PGDEFAULT,PG_WP_SIDE,PG_S_ALL,PG_WP_TRANSPARENT,0,
 	      PG_WP_ALIGN,PG_A_CENTER,PG_WP_FONT,
@@ -76,7 +76,7 @@ int NewGame(struct pgEvent *evt)
 {
   int ail;
   board *gee;
-  switch(ail = pgMenuFromString("Skill Level One|Skill Level Two|Skill Level Three"/*|Skill Level Four"*/))
+  switch(ail = pgMenuFromString("Skill Level One|Skill Level Two|Skill Level Three|Skill Level Four"))
     {
     case 1:
       pgReplaceTextFmt(info,"Skill Level One");
