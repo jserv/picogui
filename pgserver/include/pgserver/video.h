@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.118 2003/01/19 07:04:24 micahjd Exp $
+/* $Id: video.h,v 1.119 2003/01/20 17:12:13 thierrythevoz Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -801,6 +801,10 @@ void linear32_bar(hwrbitmap dest, s16 x,s16 y,s16 h,hwrcolor c, s16 lgop);
 void linear32_rect(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop);
 void linear32_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 		   s16 src_x, s16 src_y, s16 lgop);
+void yuv16_422_planar_pixel(hwrbitmap dest, s16 x, s16 y, hwrcolor c, s16 lgop);
+hwrcolor yuv16_422_planar_getpixel(hwrbitmap src, s16 x, s16 y);
+void yuv16_422_planar_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
+		   s16 src_x, s16 src_y, s16 lgop);
 void def_ellipse(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
 void def_fellipse(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
 void def_fpolygon(hwrbitmap dest, s32* array, s16 xoff, s16 yoff , hwrcolor c, s16 lgop);
@@ -846,6 +850,7 @@ g_error ncurses_regfunc(struct vidlib *v);
 g_error null_regfunc(struct vidlib *v);
 g_error nullfb_regfunc(struct vidlib *v);
 g_error fbdev_regfunc(struct vidlib *v);
+g_error yuv16_422_planar_regfunc(struct vidlib *v);
 g_error serial40x4_regfunc(struct vidlib *v);
 g_error scrshot_regfunc(struct vidlib *v);
 g_error s1d13806_regfunc(struct vidlib *v);
@@ -863,6 +868,7 @@ void setvbl_linear8(struct vidlib *vid);
 void setvbl_linear16(struct vidlib *vid);
 void setvbl_linear24(struct vidlib *vid);
 void setvbl_linear32(struct vidlib *vid);
+void setvbl_yuv16_422_planar(struct vidlib *vid);
 void setvbl_slowvbl(struct vidlib *vid);
 void setvbl_gl(struct vidlib *vid);
 

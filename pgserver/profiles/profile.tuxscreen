@@ -71,7 +71,7 @@ DRIVER_FBDEV=y
 # CONFIG_FB_NOGRAPHICS is not set
 CONFIG_FB_VT=y
 # CONFIG_FB_PSION is not set
-# CONFIG_FB_YUV16 is not set
+# CONFIG_FB_YUV16_422_PLANAR is not set
 # CONFIG_FB_SYNC is not set
 # CONFIG_FB_PAGEFLIP is not set
 # DRIVER_SDLFB is not set

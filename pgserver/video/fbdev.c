@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.42 2003/01/01 03:43:06 micahjd Exp $
+/* $Id: fbdev.c,v 1.43 2003/01/20 17:12:23 thierrythevoz Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -46,10 +46,6 @@
 #include <linux/kd.h>
 #include <linux/vt.h>
 #include <signal.h>
-
-#ifdef CONFIG_FB_YUV16
-# include "yuv.h"
-#endif
 
 #ifdef DEBUG_VT
 #define DEBUG_FILE
@@ -142,104 +138,6 @@ hwrcolor fbdev_color_pgtohwr(pgcolor c) {
          ( (((u32)getgreen(c)) >> (8 - varinfo.green.length)) << varinfo.green.offset ) |
          ( (((u32)getblue(c))  >> (8 - varinfo.blue.length )) << varinfo.blue.offset  );
 }
-
-/**************************************** YUV memory format */
-
-#ifdef CONFIG_FB_YUV16
-
-/* The length of the Y plane */
-static size_t yuv16_y_seg_size  = 0;
-static size_t yuv16_y_seg_pitch = 0;
-
-/* The RGB shadow buffer.
- *
- * Note: we are not using the double buffer, because it is working
- * on an update() base, and we want to buffer on a pixel() base.
- * Our shadow buffer is here for getpixel() to avoid having to do
- * a YUV->RGB conversion.
- */
-hwrcolor* yuv_rgb_shadow_buffer = 0;
-
-
-/* Our own conversion routines for YUV 16
- */
-pgcolor yuv16_color_hwrtopg(hwrcolor c)
-{
-  /* hwrcolor is in RGB until very hardware access */
-  return c;
-}
-
-hwrcolor yuv16_color_pgtohwr(pgcolor c)
-{
-  /* hwrcolor is in RGB until very hardware access */
-  return c;
-}
-
-static inline int fbdev_yuv16_is_offscreen(u8* bits)
-{
-  return bits<FB_MEM || bits>=FB_MEM+yuv16_y_seg_size;
-}
-
-static hwrcolor fbdev_yuv16_getpixel(hwrbitmap src, s16 x, s16 y)
-{
-  struct stdbitmap *bmp = (struct stdbitmap *)src;
-  u8* bits = bmp->bits;
-
-  if( fbdev_yuv16_is_offscreen(bits) ) {
-    /* we are offscreen */
-    return def_getpixel(src, x, y);
-  }
-  else {
-    size_t offset = yuv16_y_seg_pitch*y + x;
-    return yuv_rgb_shadow_buffer[offset];
-  }
-}
-
-static void fbdev_yuv16_pixel(hwrbitmap dest,
-			      s16 x, s16 y, hwrcolor c,
-			      s16 lgop)
-{
-  /* no special check: if we are here, it is because we are in YUV16 */
-
-  struct stdbitmap *bmp = (struct stdbitmap *) dest;
-  u8* bits = bmp->bits;
-
-  if( fbdev_yuv16_is_offscreen(bits) ) {
-    /* we are offscreen */
-    def_pixel(dest, x, y, c, lgop);
-    return;
-  }
-  else {
-    unsigned long r = getred(c);
-    unsigned long g = getgreen(c);
-    unsigned long b = getblue(c);
-
-    size_t offset = yuv16_y_seg_pitch*y + x;
-    
-    u8 *dst_y  = FB_MEM + offset;
-    u8 *dst_uv = FB_MEM + yuv16_y_seg_size + (offset&~1);
-
-    switch (lgop) {      
-    case PG_LGOP_NONE: {
-      int y, cb, cr;
-      
-      yuv_rgb_shadow_buffer[offset] = c;
-      rgb_to_ycbcr(r, g, b, &y, &cb, &cr);
-      *dst_y = (char)y;
-      *dst_uv++ = (char)cb;
-      *dst_uv = (char)cr;
-      
-      break; 
-    }
-    
-    default:
-    /* Not supported yet */
-      return;
-    }
-  }
-}
-
-#endif
 
 
 /**************************************** Virtual Terminals */
@@ -378,12 +276,11 @@ g_error fbdev_initvt(void) {
 /**************************************** Framebuffer initalization */
 
 g_error fbdev_init(void) {
+
 #ifdef CONFIG_FB_VT
    g_error e;
 #endif
-#ifdef CONFIG_FB_YUV16
-   int yuv_bpp;
-#endif
+  
    /* Open the framebuffer device */
    if (!(fbdev_fd = open(get_param_str("video-fbdev","device",DEFAULT_FB), O_RDWR)))
      return mkerror(PG_ERRT_IO,95);        /* Error opening framebuffer */
@@ -407,11 +304,9 @@ g_error fbdev_init(void) {
    vid->yres   = varinfo.yres;
    vid->bpp    = varinfo.bits_per_pixel;
 
-#ifdef CONFIG_FB_YUV16
-   yuv16_y_seg_size  = vid->xres * vid->yres;
-   yuv16_y_seg_pitch = vid->xres;
-   yuv_bpp = vid->bpp;
-   if(yuv_bpp == 16) vid->bpp = 32; /* so that we have 32bpp offscreen bmaps */
+#ifdef CONFIG_FB_YUV16_422_PLANAR
+   vid->bpp = 32; 
+   /* So that we have 32 bits RGB offscreen bitmaps */
 #endif
 
    /* Load a VBL */
@@ -457,11 +352,10 @@ g_error fbdev_init(void) {
 
 #ifdef CONFIG_VBL_LINEAR32
     case 32:
-# ifdef CONFIG_FB_YUV16
-      if(yuv_bpp==16) setvbl_default(vid);
-      else            setvbl_linear32(vid);
+# ifdef CONFIG_FB_YUV16_422_PLANAR
+      setvbl_yuv16_422_planar(vid);
 # else
-	setvbl_linear32(vid);
+	    setvbl_linear32(vid);
 # endif
       break;
 #endif
@@ -489,17 +383,10 @@ g_error fbdev_init(void) {
     * functions use the info in the 'varinfo' structure to handle
     * any encoding.
     */
+#ifndef CONFIG_FB_YUV16_422_PLANAR
    if (vid->bpp > 8) {
      vid->color_hwrtopg = &fbdev_color_hwrtopg;
      vid->color_pgtohwr = &fbdev_color_pgtohwr;
-   }
-
-#ifdef CONFIG_FB_YUV16
-   if (yuv_bpp == 16) {
-     vid->color_hwrtopg = &yuv16_color_hwrtopg;
-     vid->color_pgtohwr = &yuv16_color_pgtohwr;
-     vid->pixel         = &fbdev_yuv16_pixel;
-     vid->getpixel      = &fbdev_yuv16_getpixel;
    }
 #endif
 
@@ -548,10 +435,10 @@ g_error fbdev_init(void) {
       colors.transp = NULL;
       
       for (i=0;i<256;i++) { 
-	pgc = vid->color_hwrtopg(i);
-	reds[i]   = (getred(pgc) << 8) | getred(pgc);
-	greens[i] = (getgreen(pgc) << 8) | getgreen(pgc);
-	blues[i]  = (getblue(pgc) << 8) | getblue(pgc);
+        pgc = vid->color_hwrtopg(i);
+        reds[i]   = (getred(pgc) << 8) | getred(pgc);
+        greens[i] = (getgreen(pgc) << 8) | getgreen(pgc);
+        blues[i]  = (getblue(pgc) << 8) | getblue(pgc);
       }
       
       ioctl(fbdev_fd,FBIOPUTCMAP,&colors);
@@ -641,26 +528,10 @@ g_error fbdev_init(void) {
      vid->update = def_update;
    }
 
-#ifdef CONFIG_FB_YUV16
-   if(yuv_bpp == 16) {
-     yuv_rgb_shadow_buffer = malloc(vid->xres * vid->yres * sizeof(hwrcolor));
-     if(yuv_rgb_shadow_buffer==0) {
-       fbdev_close();
-       return mkerror(PG_ERRT_MEMORY, 25); /* No mem for RGB shadow buffer */
-     }
-   }
-#endif
-
    return success;
 }
 
 void fbdev_close(void) {
-
-#ifdef CONFIG_FB_YUV16
-  /* free RGB shadow buffer */
-  if(yuv_rgb_shadow_buffer) free(yuv_rgb_shadow_buffer);
-#endif
-
   /* If the page is flipped, flip it back to normal */
 #ifdef CONFIG_FB_PAGEFLIP
   if (fbdev_flipped) {
@@ -782,13 +653,19 @@ void fbdev_doublebuffer_update(hwrbitmap d,s16 x,s16 y,s16 w,s16 h) {
 }
 
 g_error fbdev_regfunc(struct vidlib *v) {
+  g_error e;
    v->init = &fbdev_init;
    v->close = &fbdev_close;
 
 #ifdef CONFIG_FB_VT
    v->message = &fbdev_message;
 #endif
-
+  
+#ifdef CONFIG_FB_YUV16_422_PLANAR
+   e = yuv16_422_planar_regfunc(v);
+   errorcheck;
+#endif
+   
    return success;
 }
 

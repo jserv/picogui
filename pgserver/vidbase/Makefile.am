@@ -21,6 +21,7 @@ EXTRA_libvidbase_la_SOURCES = \
 	linear16.c      \
 	linear24.c      \
 	linear32.c      \
+	yuv16_422_planar.c \
 	slowvbl.c       \
 	dvbl_dither.c   \
 	visibone2.c     \
@@ -37,6 +38,9 @@ EXTRA_libvidbase_la_SOURCES = \
 	gl_primitives.c	\
 	gl_util.c	\
 	gl_grop.c
+
+noinst_HEADERS = \
+	yuv.h
 
 libvidbase_la_LIBADD       = $(VIDBASE:%.c=%.lo)
 libvidbase_la_DEPENDENCIES = $(VIDBASE:%.c=%.lo)

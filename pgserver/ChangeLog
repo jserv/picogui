@@ -1,3 +1,9 @@
+2003-01-15  Thierry Thévoz  <thierry.thevoz@smartdata.ch>
+
+	* Renamed CONFIG_FB_YUV16 into CONFIG_FB_YUV16_422_PLANAR
+	
+	* Created a separate driver for YUV16 : vidbase/yuv16_422_planar.c
+
 2002-04-23  Pascal Bauermeister  <pascal.bauermeister@smartdata.ch>
 
 	* config.in configure.in video/x11.c x11logo/pglogo-big.bmp

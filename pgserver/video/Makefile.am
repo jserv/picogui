@@ -29,9 +29,6 @@ EXTRA_libvideo_la_SOURCES = \
 	glcontext.c \
 	vncserver.c
 
-noinst_HEADERS = \
-	yuv.h
-
 libvideo_la_LIBADD       = $(DRIVER:%.c=%.lo)
 libvideo_la_DEPENDENCIES = $(DRIVER:%.c=%.lo)
 

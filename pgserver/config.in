@@ -96,7 +96,7 @@ if [ "$DRIVER_FBDEV" = "y" ]; then
    bool '  Dont enable graphics-only mode' CONFIG_FB_NOGRAPHICS
    bool '  Virtual Terminal switching'     CONFIG_FB_VT
    bool '  Psion framebuffer hack'         CONFIG_FB_PSION
-   bool '  YUV16'                          CONFIG_FB_YUV16
+   bool '  YUV16'                          CONFIG_FB_YUV16_422_PLANAR
    bool '  Sync double-buffered updates'   CONFIG_FB_SYNC
    bool '  Use page flipping for double-buffered updates' CONFIG_FB_PAGEFLIP
 fi
