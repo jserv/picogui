@@ -1,4 +1,4 @@
-/* $Id: svgagl.c,v 1.3 2001/01/14 18:42:14 micahjd Exp $
+/* $Id: svgagl.c,v 1.4 2001/01/16 02:12:36 micahjd Exp $
  *
  * svgagl.c - video driver for (S)VGA cards, via vgagl and svgalib
  * 
@@ -87,6 +87,10 @@ int svgagl_closest_mode(int xres,int yres,int bpp) {
 g_error svgagl_init(int xres,int yres,int bpp,unsigned long flags) {
   g_error e;
   int mode;
+
+  /* Must be root for this */
+  if (geteuid())
+     return mkerror(PG_ERRT_IO,46);
    
   /* In a GUI environment, we don't want VC switches,
      plus they usually crash on my system anyway,

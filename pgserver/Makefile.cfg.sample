@@ -1,4 +1,4 @@
-# $Id: Makefile.cfg.sample,v 1.12 2001/01/16 02:07:17 micahjd Exp $
+# $Id: Makefile.cfg.sample,v 1.13 2001/01/16 02:12:36 micahjd Exp $
 #
 # This file has compile-time options for PicoGUI, including
 # which fonts and drivers are to be compiled in.
@@ -73,7 +73,7 @@ DRV := $(DRV) -DDRIVER_SDL        # SDL driver
 DRV := $(DRV) -DDRIVER_SDLFB      # For testing the linear VFBs 
 DRV := $(DRV) -DDRIVER_SVGAGL     # SVGAlib with vgagl (crufty but compatible)
 DRV := $(DRV) -DDRIVER_SVGAFB     # SVGAlib driver with linear framebuffer
-#DRV := $(DRV) -DDRIVER_NCURSES    # PicoGUI can do text mode too!
+DRV := $(DRV) -DDRIVER_NCURSES    # PicoGUI can do text mode too!
 #DRV := $(DRV) -DDRIVER_NULL       # Dummy driver, produces no output
 
 #### Input drivers. Uncomment any number of
@@ -81,6 +81,6 @@ DRV := $(DRV) -DDRIVER_SVGAFB     # SVGAlib driver with linear framebuffer
 #### will not link without a matching input driver
 DRV := $(DRV) -DDRIVER_SDLINPUT     # For the SDL driver
 DRV := $(DRV) -DDRIVER_SVGAINPUT    # For the SVGA driver
-#DRV := $(DRV) -DDRIVER_NCURSESINPUT # For the ncurses driver
+DRV := $(DRV) -DDRIVER_NCURSESINPUT # For the ncurses driver
 
 ### The End ###

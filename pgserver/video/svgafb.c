@@ -1,4 +1,4 @@
-/* $Id: svgafb.c,v 1.4 2001/01/13 09:49:59 micahjd Exp $
+/* $Id: svgafb.c,v 1.5 2001/01/16 02:12:36 micahjd Exp $
  *
  * svgafb.c - A driver for linear-framebuffer svga devices that uses the linear*
  *          VBLs instead of the default vbl and libvgagl.
@@ -108,6 +108,10 @@ g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags) {
    vga_modeinfo *mi;
 
 #ifndef VIRTUAL
+   
+   /* Must be root for this */
+   if (geteuid())
+     return mkerror(PG_ERRT_IO,46);
    
    svgafb_flags = flags & PG_VID_DOUBLEBUFFER ? SVGAFB_DOUBLEBUFFER : 0;
    
