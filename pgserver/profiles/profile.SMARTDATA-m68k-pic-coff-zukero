@@ -14,7 +14,7 @@ CONFIG_CHIPSLICE=y
 # CONFIG_SOFT_CHIPSLICE is not set
 # CONFIG_XCOPILOT is not set
 # ASM_68000 is not set
-# CONFIG_UNIX_SOCKET is not set
+CONFIG_UNIX_SOCKET=y
 # CONFIG_OPTIMIZE_SIZE is not set
 CONFIG_OPTIMIZE_SPEED=y
 
@@ -36,6 +36,9 @@ CONFIG_OPTIMIZE_SPEED=y
 # DEBUG_INIT is not set
 # DEBUG_MEMORY is not set
 # CONFIG_STDERR_GURU is not set
+# DEBUG_HTML is not set
+# CONFIG_X11_NOPIXEL is not set
+# CONFIG_SDL_FULLUPDATE is not set
 
 #
 # Fonts
@@ -53,12 +56,14 @@ FONT_HELVETICA14=y
 FONT_HELVETICA24=y
 # FONT_TIMES10 is not set
 # FONT_UTOPIA25 is not set
+# FONT_FIXED13JA is not set
 
 #
 # Video Drivers
 #
 # DRIVER_FBDEV is not set
 # DRIVER_SDLFB is not set
+# DRIVER_X11 is not set
 # DRIVER_SVGAFB is not set
 # DRIVER_EZ328 is not set
 # DRIVER_EZ328VGA is not set
@@ -72,13 +77,20 @@ DRIVER_S1D13806=y
 #
 # Input Drivers
 #
+# CONFIG_TOUCHSCREEN is not set
 # DRIVER_SDLINPUT is not set
+# DRIVER_X11INPUT is not set
 # DRIVER_SVGAINPUT is not set
 # DRIVER_NCURSESINPUT is not set
+# DRIVER_GPM is not set
 # DRIVER_CHIPSLICETS is not set
 DRIVER_EVENTBROKER=y
 # DRIVER_R3912TS is not set
 # DRIVER_VR3TS is not set
+# DRIVER_TUXTS is not set
+# DRIVER_UCB1X00 is not set
+# DRIVER_TTYKB is not set
+# DRIVER_REMORAKB is not set
 # DRIVER_SERIALMOUSE is not set
 
 #
@@ -94,7 +106,11 @@ CONFIG_VBL_LINEAR16=y
 # CONFIG_ROTATE is not set
 # CONFIG_ROTATE180 is not set
 # CONFIG_ROTATE270 is not set
+# CONFIG_ROTATIONBASE_0 is not set
 CONFIG_ROTATIONBASE_90=y
+# CONFIG_ROTATIONBASE_180 is not set
+# CONFIG_ROTATIONBASE_270 is not set
+# CONFIG_ROTATIONBASE_NOKEYS is not set
 
 #
 # Widget Options
@@ -105,14 +121,16 @@ CONFIG_WIDGET_CANVAS=y
 # CONFIG_DRAGSOLID is not set
 CONFIG_MAX_ZOMBIEGROPS=30
 # CONFIG_KEY_ALPHA is not set
+# CONFIG_BUTTON_BEEP is not set
 
 #
-# Bitmap Formats
+# File Formats
 #
 CONFIG_FORMAT_XBM=y
 CONFIG_FORMAT_PNM=y
 # CONFIG_FORMAT_JPEG is not set
 CONFIG_FORMAT_BMP=y
+# CONFIG_FORMAT_HTML is not set
 
 #
 # Security
@@ -122,3 +140,4 @@ CONFIG_FORMAT_BMP=y
 # CONFIG_NOCLIENTDRIVERMSG is not set
 CONFIG_MAXPACKETSZ=5000000
 # CONFIG_QUOTA is not set
+CONFIG_PGSERVER_CONF="m68k-pic-coff-zukero"
