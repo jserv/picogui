@@ -399,11 +399,12 @@ int recieveMessage(struct pgEvent *evt){
   pglMessage *inMessage, *inMessageTmp;
   char *data;
   
-  pgEnterContext();
-
   inMessageTmp = (pglMessage *)evt->e.data.pointer;
   inMessage = malloc(evt->e.data.size);
   memcpy(inMessage, inMessageTmp, evt->e.data.size);
+
+  pgEnterContext();
+
   inMessage = pglDecodeMessage(inMessage);
   switch(inMessage->messageType){
   case PGL_LOADPREFS:

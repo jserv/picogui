@@ -1,4 +1,4 @@
-/* $Id: pgl-clock.c,v 1.3 2002/06/12 14:16:43 micahjd Exp $
+/* $Id: pgl-clock.c,v 1.4 2002/08/23 17:32:27 micahjd Exp $
  * 
  * pgl-clock.c - This is a simple clock applet for PGL
  *
@@ -115,11 +115,12 @@ int recieveMessage(struct pgEvent *evt){
   pglMessage *inMessage, *inMessageTmp;
   char *data;
   
-  pgEnterContext();
-
   inMessageTmp = (pglMessage *)evt->e.data.pointer;
   inMessage = malloc(evt->e.data.size);
   memcpy(inMessage, inMessageTmp, evt->e.data.size);
+
+  pgEnterContext();
+
   inMessage = pglDecodeMessage(inMessage);
   switch(inMessage->messageType){
   case PGL_LOADPREFS:
