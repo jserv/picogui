@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<!--
+  This defines an XSLT stylesheet for the configuration tree, so
+  when you do a dump-tree command, the resulting XML should be
+  viewable in a web browser.
+-->
+<?xml-stylesheet type="text/xsl" href="http://navi.picogui.org/svn/picogui/trunk/tools/xslt/pgbuild.xsl"?>
+<pgbuild title="Stylesheet definition" />
