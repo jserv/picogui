@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.25 2003/03/26 08:58:11 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.26 2003/03/26 09:02:19 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -62,8 +62,13 @@ void term_xterm(struct widget *self);
 void term_debug_printbuffer(struct widget *self) {
   u8 *p;
   
-  /* Keep this from messing up the debug terminal! */
-  DATA->escapebuf[ESCAPEBUF_SIZE-1] = 0;
+  /* properly terminate the buffer */
+  if (DATA->escbuf_pos < ESCAPEBUF_SIZE)
+    DATA->escapebuf[DATA->escbuf_pos-1] = 0;
+  else
+    DATA->escapebuf[ESCAPEBUF_SIZE] = 0;
+
+  /* Convert escapes to "^" characters so they don't mess up our terminal */
   p = DATA->escapebuf;
   while (*p) {
     if (*p == '\033')
