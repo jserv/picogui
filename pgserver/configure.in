@@ -296,6 +296,7 @@ AM_CONDITIONAL(ENABLE_BEE, test "${enable_bee}" = "yes")
 AC_OUTPUT(
 	Makefile
 	etc/Makefile
+	etc/configurator.mk
 	widget/Makefile
 	appmgr/Makefile
 	debug/Makefile

@@ -1,0 +1,65 @@
+#!/bin/sh
+
+# This script should generate a sensible default configuration file
+# for a specific configuration of PicoGUI. It has access to all the
+# configuration symbols of the current profile, especially the
+# CONFIG_PGSERVER_CONF symbol, which should help selecting the desired
+# behavior.
+
+. @CONFIG_FILE@
+
+case ${CONFIG_PGSERVER_CONF} in
+
+    # ------------------------------
+    m68k-pic-coff-zukero)
+    # ------------------------------
+
+cat<<EOF
+# configuration for a zukero device
+[pgserver]
+@INPUTDRIVERS@
+depth = 16
+
+[timers]
+cursorhide = 0
+backlightoff = 300
+sleep = 0
+
+[sound]
+keyclick = 1
+
+. /var/pgserver.dynconf
+EOF
+;;
+
+    # ------------------------------
+    m68k-pic-coff-*)
+    # ------------------------------
+
+cat<<EOF
+[pgserver]
+@INPUTDRIVERS@
+depth = 1
+
+[timers]
+cursorhide = 10
+backlightoff = 300
+sleep = 3000
+
+[sound]
+keyclick = 1
+
+. /var/pgserver.dynconf
+EOF
+;;
+
+    # ------------------------------
+    *)
+    # ------------------------------
+
+cat<<EOF
+  
+EOF
+;;
+esac
+
