@@ -1,0 +1,10 @@
+Todo:
+=====
+
+uSpread: (micro-spreadsheet application for PicoGUI)
+--------
+
+* implement save and save as... menus.
+* figure out to add rows to a loaded sheet
+* ask size of sheet when New menuitem is clicked
+* add to cvs

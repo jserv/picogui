@@ -1,0 +1,20 @@
+2001-08-13    Tasnim Ahmed <tasnim@users.sourceforge.net>
+
+      * uSpread: implemented dynamic allocation for data and widgets
+      * uSpread: removed PG_SIZE and PG_SIZEMODE parameters to allow
+                 widgets autosize themselves.
+      * uSpread: csv's first row is used as column headers and second
+                 as column widths.
+      * uSpread: Open, New, Quit menu items functional
+
+
+2001-08-12    Tasnim Ahmed <tasnim@users.sourceforge.net>
+
+      * uSpread: fields added to hold cell data
+
+
+2001-08-11    Tasnim Ahmed <tasnim@users.sourceforge.net>
+
+      * uSpread: started a micro-spreadsheet application speaking csv
+      * uSpread: menu, scroll box, and standard dialogs added
+
