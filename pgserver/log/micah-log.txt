@@ -23,6 +23,10 @@ them for linear2 and linear4.
 	and calls blit(). Fast!
 	
       * debug/videotest.c: Added a video test mode for text
+      
+      * video/nullfb.c: For easier benchmarking and profiling, added a video
+        driver that utilizes linear* but does nothing with the generated
+        frames
 
 2001-05-31    Micah Dowty <micahjd@users.sourceforge.net>
 

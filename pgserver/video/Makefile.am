@@ -10,6 +10,7 @@ EXTRA_libvideo_a_SOURCES = \
 	fbdev.c   \
 	ncurses.c \
 	null.c 	  \
+	nullfb.c  \
 	sdlfb.c   \
 	svgafb.c  \
 	serial40x4.c

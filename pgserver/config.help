@@ -185,6 +185,9 @@ DRIVER_NULL
       Produces no actual output, but if DEBUG_VIDEO is on it performs
       bounds-checking on calls to pixel() and getpixel()
       
+DRIVER_NULLFB
+      Sets up a virtual framebuffer, and uses linear* VBLs to render.
+      Produces no actual output. Good for benchmarking and profiling.
       
 DRIVER_SDLINPUT
       Input driver for the SDL event system

@@ -59,6 +59,7 @@ add_if_true sdlfb.c      $DRIVER_SDLFB
 add_if_true svgafb.c     $DRIVER_SVGAFB
 add_if_true ncurses.c    $DRIVER_NCURSES
 add_if_true null.c       $DRIVER_NULL
+add_if_true nullfb.c     $DRIVER_NULLFB
 add_if_true fbdev.c      $DRIVER_FBDEV
 add_if_true serial40x4.c $DRIVER_SERIAL40X4
 

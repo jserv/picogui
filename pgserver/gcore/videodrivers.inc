@@ -34,6 +34,10 @@
   DRV("serial40x4",&serial40x4_regfunc)
 #endif   
 
+#ifdef DRIVER_NULLFB
+  DRV("nullfb",&nullfb_regfunc)
+#endif DRIVER_NULLFB
+
 #ifdef DRIVER_NULL
   DRV("null",&null_regfunc)
 #endif DRIVER_NULL
