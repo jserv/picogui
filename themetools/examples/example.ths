@@ -55,7 +55,7 @@ object default {
 };
 
 object toolbar bgfill = fillstyle {
-  Gradient(x,y,w,h,90,0x000000,panel:bgcolor,0);
+  Gradient(x,y,w,h,90,0x000000,panel::bgcolor,0);
 };
 
 object panel bgfill = fillstyle {

@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.l,v 1.17 2000/10/15 16:39:43 micahjd Exp $
+/* $Id: pgtheme.l,v 1.18 2000/10/16 22:57:41 micahjd Exp $
  *
  * pgtheme.l - lexer for processing PicoGUI theme source code
  *
@@ -40,8 +40,6 @@
 obj(ect)?       { return OBJ; }
 fillstyle       { return FILLSTYLE; }
 var             { return VAR; }
-"<<"            { return SHIFTL; }
-">>"            { return SHIFTR; }
 ColorConv       { return CNVCOLOR; }
 ColorAdd        { return COLORADD; }
 ColorSub        { return COLORSUB; }
@@ -51,6 +49,14 @@ LoadBitmap      { return LOADBITMAP; }
 Copy            { return COPY; }
 
    /* symbols, operators, and strings */
+
+"<<"            { return SHIFTL; }
+">>"            { return SHIFTR; }
+"::"            { return CLASS; }
+"=="            { return EQUAL; }
+"<="            { return LTEQ; }
+">="            { return GTEQ; }
+"!="            { return NOT; }
 
 [a-zA-Z_][a-zA-Z0-9_\.]* { 
   int i;
@@ -65,7 +71,7 @@ Copy            { return COPY; }
   /* Next the constant symbol table */
   return symlookup(yytext,&yylval.num);
 }
-[-+*/()=;{},\&\|:]        { return yytext[0]; }
+[-+*/()=;{},\&\|:?<>]        { return yytext[0]; }
 
 \"([^\"\n\\]*(\\.)*)+[\"\n] { 
   char *a,*b;

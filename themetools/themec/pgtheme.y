@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.21 2000/10/16 17:35:50 micahjd Exp $
+/* $Id: pgtheme.y,v 1.22 2000/10/16 22:57:41 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -81,13 +81,16 @@
 
    /* Reserved words */
 %token OBJ FILLSTYLE VAR SHIFTR SHIFTL CNVCOLOR COLORADD COLORSUB COLORDIV COLORMULT
+%token CLASS EQUAL NOT LTEQ GTEQ
 
+%right '?' ':'
 %left '|'
 %left '&'
+%left EQUAL NOT LTEQ GTEQ '<' '>'
 %left SHIFTL SHIFTR
 %left '-' '+'
 %left '*' '/'
-%left ':'
+%left CLASS
 
 %start unitlist
 
@@ -168,7 +171,7 @@ property: PROPERTY
 
 propertyval:  constexp          { $$.data = $1; $$.loader = PGTH_LOAD_NONE; $$.ldnode = NULL;}
            |  fillstyle         { $$ = $1; }
-           |  COPY '(' THOBJ ':' PROPERTY ')' {
+           |  COPY '(' THOBJ CLASS PROPERTY ')' {
   $$.data   = ($3 << 16) | $5;
   $$.loader = PGTH_LOAD_COPY;
 }     
@@ -396,6 +399,12 @@ fsexp: '(' fsexp ')'    { $$ = $2; }
      | fsexp '/' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_DIVIDE)); }
      | fsexp '|' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_OR)); }
      | fsexp '&' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_AND)); }
+     | fsexp EQUAL fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_EQ)); }
+     | fsexp NOT fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_NOT)); }
+     | fsexp GTEQ fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_GTEQ)); }
+     | fsexp LTEQ fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_LTEQ)); }
+     | fsexp '<' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_LT)); }
+     | fsexp '>' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_GT)); }
      | fsexp SHIFTL fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_SHIFTL)); }
      | fsexp SHIFTR fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_SHIFTR)); }
      | NUMBER              { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = $1; }     
@@ -406,9 +415,11 @@ fsexp: '(' fsexp ')'    { $$ = $2; }
      | COLORSUB '(' fsarglist ')' { $$ = fsnodecat($3,fsnewnode(PGTH_OPCMD_COLORSUB)); }
      | COLORMULT '(' fsarglist ')' { $$ = fsnodecat($3,fsnewnode(PGTH_OPCMD_COLORMULT)); }
      | COLORDIV '(' fsarglist ')' { $$ = fsnodecat($3,fsnewnode(PGTH_OPCMD_COLORDIV)); }
+     | fsexp '?' fsexp ':' fsexp { $$ = fsnodecat(fsnodecat(fsnodecat($5,$3),$1),
+						  fsnewnode(PGTH_OPCMD_QUESTIONCOLON)); }
      ;
 
-fsprop: THOBJ ':' PROPERTY { $$ = fsnewnode(PGTH_OPCMD_PROPERTY); $$->param = $1; $$->param2 = $3; }
+fsprop: THOBJ CLASS PROPERTY { $$ = fsnewnode(PGTH_OPCMD_PROPERTY); $$->param = $1; $$->param2 = $3; }
       | PROPERTY           { $$ = fsnewnode(PGTH_OPCMD_LOCALPROP); $$->param = $1; }
       ;
 
