@@ -1,4 +1,4 @@
-/* $Id: tsinput.c,v 1.18 2001/06/21 17:23:01 bauermeister Exp $
+/* $Id: tsinput.c,v 1.19 2001/08/08 12:43:39 bauermeister Exp $
  *
  * tsinput.c - input driver for touch screen
  *
@@ -227,29 +227,24 @@ g_error tsinput_init(void) {
     ts_params.x_max          = 240-1;
     ts_params.x_min          = 0;
     ts_params.y_max          = 400;
-/*
-    mx1 =  440; ux1 =   0;
-    my1 = 3350; uy1 =   0;
-    mx2 = 3680; ux2 = 320;
-    my2 =  710; uy2 = 240;
-*/
     mx1 = 3680; ux1 =   0;
     my1 = 3350; uy1 =   0;
     mx2 =  440; ux2 = 240;
     my2 =  710; uy2 = 320;
+#endif
 
     /* env var will override default values (but only in ChipSlice!!) */
     if( pg_ts_env = (char*)getenv(PG_TS_ENV_NAME) ) {
-      sscanf(pg_ts_env, "%d %d %d %d %d %d",
-	     &mx1, &my1, &mx2, &my2, &offx, &offy);
+      sscanf(pg_ts_env, "%d %d %d %d %d %d %d %d %d %d",
+	     &mx1, &my1, &mx2, &my2, &offx, &offy, &ux1, &uy1, &ux2, &uy2);
 #  ifdef DEBUG_INIT
-      printf("%s: taking m1 and m2 points for env var: '%s'\n",
+      printf("%s: taking m1 and m2 points from env var: '%s'\n",
 	     _file_, pg_ts_env);
-      printf("  mx1=%d my1=%d mx2=%d my2=%d offx=%d offy=%d\n",
-	     mx1, my1, mx2, my2, offx, offy);
+      printf("  mx1=%d my1=%d mx2=%d my2=%d offx=%d offy=%d "
+	     "ux1=%d uy1=%d ux2=%d uy2=%d\n",
+	     mx1, my1, mx2, my2, offx, offy, ux1, uy1, ux2, uy2);
 #  endif
     }
-#endif
 
     ux1 += offx;
     uy1 += offy;
@@ -265,7 +260,6 @@ g_error tsinput_init(void) {
     ts_params.y_ratio_den    = my1 - my2;
     ts_params.y_offset       =
       uy1 - my1 * ts_params.y_ratio_num / ts_params.y_ratio_den;
-
 
     ret_val=ioctl(fd,TS_PARAMS_SET,&ts_params);
     if(ret_val < 0) {
