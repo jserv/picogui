@@ -1,4 +1,4 @@
-/* $Id: bmp.c,v 1.9 2002/01/20 03:03:17 lonetech Exp $
+/* $Id: bmp.c,v 1.10 2002/01/21 13:44:47 micahjd Exp $
  *
  * bmp.c - Functions to detect and load files compatible with the Windows BMP
  *         file format. This format is good for palettized images and/or
@@ -36,6 +36,11 @@
 
 #include <pgserver/common.h>
 #include <pgserver/video.h>
+
+#ifdef DEBUG_VIDEO
+#define DEBUG_FILE
+#endif
+#include <pgserver/debug.h>
 
 /**************************** Format Spec */
 
@@ -149,7 +154,7 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
    }
   
   /* Load palette */
-  fprintf(stderr, "%dx%d, %d bpp, compression %d, %d/%d colors\n", w, h, bpp,
+  DBG("%dx%d, %d bpp, compression %d, %d/%d colors\n", w, h, bpp,
       compression, numcolors, LITTLE_LONG(ihdr->colors_important));
   if (FILEHEADER_LEN+INFOHEADER_LEN+4*numcolors>datalen)
     return mkerror(PG_ERRT_BADPARAM,41);	/* Corrupt BMP header */
@@ -157,7 +162,7 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   for(index=0;index<numcolors;index++)
    {
     colortable[index]=LITTLE_LONG(u32p[index]);
-    fprintf(stderr, "Color %d: %06x\n", index, colortable[index]);
+    DBG("Color %d: %06x\n", index, colortable[index]);
    }
 
   /* Find the raster data */
@@ -253,7 +258,7 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 	unsigned char rle_n, rle_c;
 	rle_n=*(rasterdata++);
 	rle_c=*(rasterdata++);
-	fprintf(stderr, "RLE: %d,%d %#02x %#02x\n", x, y, rle_n, rle_c);
+	DBG("RLE: %d,%d %#02x %#02x\n", x, y, rle_n, rle_c);
 	if(rle_n)	/* RLE pixels */
 	 {
 	  if(compression=1)	/* 8-bit */
