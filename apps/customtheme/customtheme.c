@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
   pgInit(argc,argv);
 
   /* Create a custom theme */
-  tiled_bitmap_theme(MY_OBJECT,pgNewBitmap(pgFromFile("demos/data/fogstreaks.pnm")));
+  tiled_bitmap_theme(MY_OBJECT,pgNewBitmap(pgFromFile("data/fogstreaks.pnm")));
 
   /* Theme our app panel with it */
   pgRegisterApp(PG_APP_NORMAL,"Theme Customization Demo",0);
@@ -118,8 +118,8 @@ int main(int argc, char **argv) {
   pgNewWidget(PG_WIDGET_BITMAP,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_ALL,
-	      PG_WP_BITMAP,pgNewBitmap(pgFromFile("demos/data/dustpuppy.pnm")),
-	      PG_WP_BITMASK,pgNewBitmap(pgFromFile("demos/data/dustpuppy_mask.pnm")),
+	      PG_WP_BITMAP,pgNewBitmap(pgFromFile("data/dustpuppy.pnm")),
+	      PG_WP_BITMASK,pgNewBitmap(pgFromFile("data/dustpuppy_mask.pnm")),
 	      0);
 
   pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wTB);
