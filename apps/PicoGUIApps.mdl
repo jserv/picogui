@@ -47,9 +47,14 @@ runtime = [
 
 def prepare (module, platform, project):
 
-    command = "../configure --with-rpm-prefix=%s --prefix=%s --with-prefix --host=%s --enable-bee" % \
-              ( module.install_path (platform, project, standard = 1),
-                module.feature ['prefix'],
+    command = "../configure"
+
+    command = command + " --with-rpm-root=%s --with-rpm-platform=%s --enable-bee" % \
+              ( module.install_root (platform, project, standard = 1),
+                platform.feature ['platform'] )
+
+    command = command + " --prefix=%s --with-prefix --host=%s" % \
+              ( module.feature ['prefix'],
                 platform.feature ['platform'] )
 
     command = command + " --enable-optimisation"
