@@ -1,4 +1,4 @@
-/* $Id: if_hotspot.c,v 1.6 2002/10/26 07:53:07 micahjd Exp $
+/* $Id: if_hotspot.c,v 1.7 2002/11/12 23:20:07 micahjd Exp $
  *
  * if_hotspot.c - Use arrow keys to navigate around the screen.
  *                Besides the actual input filter, this has utilities to build the
@@ -314,6 +314,7 @@ void hotspot_traverse(short direction) {
    */
   cursor_getposition(dts->top->hotspot_cursor,&x,&y,&dt);
   p = hotspot_closest(x,y);
+
   if (!p)
     return;
 
@@ -333,14 +334,11 @@ void hotspot_traverse(short direction) {
   }
 
   /* Make sure the divnode is scrolled in and focused now */
-  if (p->div) {
+  if (p->div)
     request_focus(p->div->owner);
-    /* request_focus will warp the cursor for us */
-  }
-  else {
-    /* Warp the hotspot cursor to the new hotspot location */
-    cursor_move(dts->top->hotspot_cursor,p->x,p->y,dt);
-  }
+
+  /* Warp the hotspot cursor to the new hotspot location */
+  cursor_move(dts->top->hotspot_cursor,p->x,p->y,dt);
 }
 
 void scroll_to_divnode(struct divnode *div) {
