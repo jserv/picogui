@@ -1,4 +1,4 @@
-/* $Id: linear2.c,v 1.6 2001/06/05 18:15:57 micahjd Exp $
+/* $Id: linear2.c,v 1.7 2001/11/06 10:42:39 cgrigis Exp $
  *
  * Video Base Library:
  * linear2.c - For 2-bit packed pixel devices (4 grayscales)
@@ -55,7 +55,7 @@ void linear2_pixel(hwrbitmap dest, s16 x,s16 y,hwrcolor c,s16 lgop) {
    }
    p = PIXELBYTE(x,y);
    *p &= notmask2[x&3];
-   *p |= c << ((3-(x&3))<<1);
+   *p |= (c & 3) << ((3-(x&3))<<1);
 }
 hwrcolor linear2_getpixel(hwrbitmap dest, s16 x, s16 y) {
    return ((*PIXELBYTE(x,y)) >> ((3-(x&3))<<1)) & 0x03;

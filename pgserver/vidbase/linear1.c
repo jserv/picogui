@@ -1,4 +1,4 @@
-/* $Id: linear1.c,v 1.17 2001/10/09 05:15:26 micahjd Exp $
+/* $Id: linear1.c,v 1.18 2001/11/06 10:42:39 cgrigis Exp $
  *
  * Video Base Library:
  * linear1.c - For 1-bit packed pixel devices (most black and white displays)
@@ -62,7 +62,7 @@ void linear1_pixel(hwrbitmap dest, s16 x,s16 y,hwrcolor c,s16 lgop) {
    }
    
    p = PIXELBYTE(x,y);
-   if (c)
+   if (c & 1)
      *p |= pxlmask1[x&7];
    else
      *p &= notmask1[x&7];

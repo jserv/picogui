@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.15 2001/06/05 21:05:31 micahjd Exp $
+/* $Id: linear4.c,v 1.16 2001/11/06 10:42:39 cgrigis Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -60,7 +60,7 @@ void linear4_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
    }
    p = PIXELBYTE(x,y);
    *p &= notmask4[x&1];
-   *p |= c << ((1-(x&1))<<2);
+   *p |= (c & 15) << ((1-(x&1))<<2);
 }
 hwrcolor linear4_getpixel(hwrbitmap dest,s16 x,s16 y) {
    return ((*PIXELBYTE(x,y)) >> ((1-(x&1))<<2)) & 0x0F;
