@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
- StdProgress.py - A progress reporter using stdout
+ CommandLine.py - Utilities specific to operating in a command line environment
 """
 # 
 # PicoGUI Build System
@@ -65,8 +65,8 @@ class Colorizer:
             self.set(('reset',))
         
 
-class StdProgress:
-    """Progress reporter based on stdout and Colorizer"""
+class Progress:
+    """Progress reporter based on Colorizer"""
 
     def __init__(self):
         self.color = Colorizer()
@@ -102,20 +102,7 @@ class StdProgress:
             self.color.write("\n")
             bullet = ' '
         self.color.write("\n")
-    
-if __name__ == '__main__':
-    p = StdProgress()
-    task = p.task('Frobbing sprockets in group A')
-    task.report('frobbed', 'super sprocket')
-    task.report('frobbed', '/dev/sprocket')
-    task.report('frobbed', 'more sprockets')
-    subtask = task.task('Cleaning up')
-    subtask.report('scrubbed', 'super sprocket')
-    subtask.report('scrubbed', '/dev/sprocket')
-    subtask.warning("Something bad might have happened!\nOr not...")
-    subtask.report('scrubbed', 'more sprockets')
-    task = p.task('And now for something completely different')
-    task.report('eating', 'my hat')
-    subtask.error("Choking!")
 
+### The End ###
+        
     

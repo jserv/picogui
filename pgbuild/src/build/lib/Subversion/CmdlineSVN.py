@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
  CmdlineSVN.py - A wrapper around the command line Subversion client
 """
@@ -138,14 +137,5 @@ class Repository:
         else:
             # No working copy- do a complete download
             self.download(destination, progress)
-
-
-if __name__ == '__main__':
-    import sys
-    from StdProgress import StdProgress
-    repo = Repository(sys.argv[1])
-    progress = StdProgress()
-    progress.task('Checking for updates').report('result', repo.isUpdateAvailable(sys.argv[2]))
-    repo.update(sys.argv[2], progress.task('Testing CmdlineSVN update()'))
 
 ### The End ###

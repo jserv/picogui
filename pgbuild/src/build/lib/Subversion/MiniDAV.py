@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
  A minimal read-only WebDAV client
 """
@@ -207,19 +206,5 @@ class DavObject:
         if not hasattr(self, "type"):
             self.propfind()
         return self.type
-
-
-if __name__ == '__main__':
-    import sys
-    obj = DavObject(sys.argv[1])
-    print "\nURL: %s" % obj.url
-
-    print "\nChildren:"
-    for child in obj.getChildren():
-        print "\t%s" % child.path
-
-    print "\nProperties:"
-    for property in obj.getProperties():
-        print "\t%s = %s" % (property, obj.getProperties()[property])
 
 ### The End ###

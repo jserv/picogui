@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
  MiniSVN.py - A minimalist Subversion client capable of doing
               atomic checkouts using only the Python standard
@@ -141,14 +140,5 @@ class Repository:
         if self.isUpdateAvailable(destination):
             # We can't update, just redownload the sources.
             self.download(destination, progress)
-
-
-if __name__ == '__main__':
-    import sys
-    from StdProgress import StdProgress
-    repo = Repository(sys.argv[1])
-    progress = StdProgress()
-    progress.task('Checking for updates').report('result', repo.isUpdateAvailable(sys.argv[2]))
-    repo.update(sys.argv[2], progress.task('Testing MiniSVN update()'))
 
 ### The End ###
