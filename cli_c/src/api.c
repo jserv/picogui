@@ -1,11 +1,11 @@
-/* $Id: api.c,v 1.17 2001/07/12 00:17:18 micahjd Exp $
+/* $Id: api.c,v 1.18 2001/07/28 10:42:12 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
  *                 to provide the interface described in client_c.h
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -424,17 +424,6 @@ pghandle pgNewPopupAt(int x,int y,int width,int height) {
   return _pg_return.e.retdata;
 }
 
-/* Just a little helper to make it easy to do dialog boxes correctly */
-pghandle pgDialogBox(const char *title) {
-  pgNewPopup(0,0);
-  pgNewWidget(PG_WIDGET_LABEL,0,0);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgNewString(title),
-	      PG_WP_TRANSPARENT,0,
-	      PG_WP_STATE,PGTH_O_LABEL_DLGTITLE,
-	      0);
-}
-
 pghandle pgNewFont(const char *name,short size,unsigned long style) {
   struct pgreqd_mkfont arg;
   memset(&arg,0,sizeof(arg));
@@ -608,115 +597,6 @@ void pgReplaceTextFmt(pghandle widget,const char *fmt, ...) {
   pgReplaceText(widget,p);
   free(p);
   va_end(ap);
-}
-
-/* Like pgMessageDialog, but uses printf-style formatting */
-int pgMessageDialogFmt(const char *title,unsigned long flags,const char *fmt, ...) {
-  char *p;
-  int ret;
-  va_list ap;
-
-  va_start(ap,fmt);
-  if (!(p = _pg_dynformat(fmt,ap)))
-    return;
-  ret = pgMessageDialog(title,p,flags);
-  free(p);
-  va_end(ap);
-  return ret;
-}
-
-/* Create a message box, wait until it is
- * answered, then return the answer.
- */
-int pgMessageDialog(const char *title,const char *text,unsigned long flags) {
-  struct pgreqd_mkmsgdlg arg;
-  pghandle from;
-  unsigned long ret;
-
-  /* New context for us! */
-  pgEnterContext();
-
-  /* Build the dialog box */
-  arg.title = htonl(pgNewString(title));
-  arg.text =  htonl(pgNewString(text));
-  arg.flags = htonl(flags);
-  _pg_add_request(PGREQ_MKMSGDLG,&arg,sizeof(arg));
-
-  /* Run it (ignoring zero-payload events) */
-  while (!(ret = pgGetPayload(pgGetEvent()->from)));
-
-  /* Go away now */
-  pgLeaveContext();
-
-  return ret;
-}
-
-/* There are many ways to create a menu in PicoGUI
- * (at the lowest level, using pgNewPopupAt and the menuitem widget)
- *
- * This creates a static popup menu from a "|"-separated list of
- * menu items, and returns the number (starting with 1) of the chosen
- * item, or 0 for cancel.
- */
-int pgMenuFromString(char *items) {
-  struct pgreqd_mkmsgdlg arg;
-  pghandle from;
-  unsigned long ret;
-  unsigned long *handletab;
-  int i;
-  char *p;
-
-  if (!items || !*items) return 0;
-
-  /* Count how many items we'll need */
-  i = 1;
-  p = items;
-  while (*p) {
-    if (*p == '|') i++;
-    p++;
-  }
-  if (!(handletab = alloca(4*i)))
-    return;
-
-  /* New context for us! */
-  pgEnterContext();
-  
-  /* Send over the strings individually, store handles */
-  i = 0;
-  do {
-    if (!(p = strchr(items,'|'))) p = items + strlen(items);
-    _pg_add_request(PGREQ_MKSTRING,(void *) items,p-items);
-    items = p+1;
-    pgFlushRequests();
-    handletab[i++] = _pg_return.e.retdata;
-  } while (*p);
-
-  ret = pgMenuFromArray(handletab,i);
-  pgLeaveContext();
-  return ret;
-}
-
-/* This creates a menu from an array of string handles. 
- * Same return values as pgMenuFromString above.
- *
- * Important note: pgMenuFromArray expects that a new
- *                 context will be entered before the
- *                 string handles are created.
- *                 Therefore, it contains a call to
- *                 pgLeaveContext() as part of its clean-up.
- */
-int pgMenuFromArray(pghandle *items,int numitems) {
-  int i;
-  /* This function's a lot smaller than it sounds :) */
-
-  for (i=0;i<numitems;i++)         /* Swap bytes */
-    items[i] = htonl(items[i]);
-  _pg_add_request(PGREQ_MKMENU,items,4*numitems);
-  for (i=0;i<numitems;i++)         /* Unswap */
-    items[i] = ntohl(items[i]);
-
-  /* Return event */
-  return pgGetPayload(pgGetEvent()->from);
 }
 
 /* Write data to a widget.

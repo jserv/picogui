@@ -1,9 +1,9 @@
-/* $Id: client_c.h,v 1.54 2001/07/26 10:11:22 micahjd Exp $
+/* $Id: client_c.h,v 1.55 2001/07/28 10:42:12 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -564,19 +564,6 @@ pghandle pgNewPopup(int width,int height);
 pghandle pgNewPopupAt(int x,int y,int width,int height);
 
 /*!
- * \brief Create a dialog box with title
- *
- * This helpful function creates a centered, automatically sized dialog box
- * equivalent to "pgNewPopup(PGDEFAULT,PGDEFAULT)" and creates a title widget
- * with the given text.
- *
- * \returns A handle to the dialog box title widget
- *
- * \sa pgNewPopup, pgNewPopupAt
- */
-pghandle pgDialogBox(const char *title);
-
-/*!
  * \brief Set widget properties
  * 
  * \param widget Widget handle, may be PGDEFAULT
@@ -1039,68 +1026,6 @@ void pgEnterContext(void);
  * \sa pgEnterContext
  */
 void pgLeaveContext(void);
-
-/*!
- * \brief Create a message dialog box
- *
- * \param title The title string displayed across the dialog's top
- * \param text Text to display within the dialog box
- * \param flags One or more PG_MSGBTN_* constants or'ed together, or zero for the default
- * \returns The PG_MSGBTN_* constant indicating which button was activated
- * 
- * This creates a modal dialog box in the center of the screen, displaying the
- * given message, and waits for an answer. If \p flags is zero, a simple dialog
- * with only an "Ok" button is created. Possible PG_MSGBTN_* flags include:
- *  - PG_MSGBTN_OK
- *  - PG_MSGBTN_CANCEL
- *  - PG_MSGBTN_YES
- *  - PG_MSGBTN_NO
- * 
- * \sa pgMessageDialogFmt
- */
-int pgMessageDialog(const char *title,const char *text,unsigned long flags);
-
-/*!
- * \brief Create a message dialog box, with formatting
- * 
- * This function is equivalent to pgMessage, with support for printf-style formatting
- * 
- * \sa pgMessageDialog
- */
-int pgMessageDialogFmt(const char *title,unsigned long flags,const char *fmt, ...);
-
-/*! 
- * \brief Create a popup menu from a string
- * 
- * \param items A list of menu items, separated by pipe characters. The menu items may contain newlines.
- * \returns The number (starting with 1) of the chosen item, or zero for a click outside the menu
- * 
- * This function is a high-level way to create simple menus, equivalent to calling pgNewPopupAt to create
- * a popup menu and filling it with menuitem widgets.
- * 
- * \sa pgMenuFromArray, pgNewPopup, pgNewPopupAt
- */
-int pgMenuFromString(char *items);
-
-/*!
- * \brief Create a popup menu from string handles
- * 
- * \param items An array of handles to string objects for each menu item
- * \param numitems The number of string handles
- * \returns The number (starting with 1) of the chosen item, or zero for a click outside the menu
- * 
- * Unlike pgMenuFromString, this function does not perform memory
- * management automatically. Before the client begins creating string
- * objects for the \p items array, call pgEnterContext.
- * After pgMenuFromArray returns, call pgLeaveContext to free the string
- * handles and destroy the popup menu. Note that the popup menu will not
- * disappear until the call to pgLeaveContext. This means it is possible to delay
- * calling pgLeaveContext to display other popups on top of the menu, for
- * example to create a tree of popup menus.
- *
- * \sa pgMenuFromString, pgNewPopup, pgNewPopupAt
- */
-int pgMenuFromArray(pghandle *items,int numitems); 
 
 #endif /* __H_PG_CLI_C */
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: picogui.h,v 1.8 2001/04/13 05:03:06 micahjd Exp $
+/* $Id: picogui.h,v 1.9 2001/07/28 10:42:12 micahjd Exp $
  *
  * picogui.h - Include file for your average PicoGUI client using the
  *             C client library
@@ -29,6 +29,7 @@
 #include <picogui/constants.h>   /* PicoGUI client/server shared constants */
 #include <picogui/network.h>     /* Client/server shared data structures */
 #include <picogui/client_c.h>    /* Client API */
+#include <picogui/stddialog.h>   /* Client-side standard dialogs */
 #include <picogui/canvas.h>      /* Canvas widget low-level interface */
 #include <picogui/pgfx.h>        /* PGFX abstract graphics interface
 

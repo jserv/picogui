@@ -9,6 +9,7 @@ libpgui_la_SOURCES = \
 	clientlib.h \
 	pgfx_canvas.c \
 	pgfx_bitmap.c \
+	stddialog.c \
 	$(PLATFORM)
 
 EXTRA_libpgui_la_SOURCES = platform.c

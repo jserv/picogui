@@ -1,3 +1,22 @@
+2001-07-27    Micah Dowty <micahjd@users.sourceforge.net>
+
+I'm starting standard dialog support today. Probably the largest decision to
+make here is what to implement in the server and what to implement in the
+client. The dialogs can't be implemented completely in the server, and
+implementing them partially in each (like the message dialogs and menus are
+done already) would probably just complicate things. The standard dialogs
+and the existing dialog code (message boxes and menus) will be moved to a
+seperate module in the client library, like PGFX.
+
+      * net/dispatch.c: Removed the server requests for making
+		  message dialogs and menus
+		  
+		* cli_c/src/stddialog.c: moved pgDialog, pgMessageDialog,
+		  pgMessageDialogFmt, pgMenuFromString, and pgMenuFromArray to
+		  this file and removed all code dependant on the server requests.
+		  All this now uses the normal PicoGUI API and is smaller than
+		  the original low-level code. Not to mention easier to read!
+
 2001-07-25    Micah Dowty <micahjd@users.sourceforge.net>
 
 Just a few things to finish up with the darn popup nontoolbar area stuff...
