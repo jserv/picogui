@@ -1,0 +1,20 @@
+These are some utility programs I use with my now-PicoGUI-powered LCD
+wall clock. It is a 40x4 character LCD with a Hitachi HD44780 controller
+and a PIC16C84 microcontroller to interface it to my desktop computer's
+serial port. The PIC runs the program included in pgserver's source as
+video/serial40x4.firmware.c compiled with the 'c2c' compiler. The desktop
+computer needs to have a serial port configured for 9600 baud symlinked to
+/dev/lcd, and a pgserver running with the serial40x4 driver and text_lcd.th
+theme.
+
+The included lcdclock.c program displays a clock in large numbers on the
+left half of the LCD. The right half is left open for other PicoGUI
+connections, which may be from various system monitor modules or anything
+else. Message dialogs show up full-screen on the LCD. Console programs run
+nicely using pterm.
+
+The LCD also has an LED it can flash, and a small beeper. Both were used
+by the previous software (all written in perl) to indicate network errors
+and such, but aren't yet used by PicoGUI.
+
+-- Micah
