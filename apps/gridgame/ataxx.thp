@@ -1,0 +1,23 @@
+object custom {
+  name = "ataxx";
+  BGEVEN = fillstyle {
+    SetColor(0x8080FF);
+    Rect(x,y,w,h);
+  };
+}
+
+/* NOTE: must be BEFORE its parent? */
+object custom {
+  name = "ataxx.player2";
+  bgcolor = 0xFF00FF;
+  parent = FindThemeObject("ataxx.player1");
+}
+
+object custom {
+  name = "ataxx.player1";
+  bgcolor = 0xFFFF00;
+  PIECE = fillstyle {
+    SetColor(bgcolor);
+    Fellipse(x,y,w,h);
+  };
+}
