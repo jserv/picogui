@@ -1,4 +1,4 @@
-/* $Id: dlg_fontpicker.c,v 1.4 2001/08/06 07:50:06 micahjd Exp $
+/* $Id: dlg_fontpicker.c,v 1.5 2001/09/08 22:23:23 micahjd Exp $
  *
  * dlg_datepicker.c - Implementation of the pgFontPicker function, allowing
  *                    the user to choose any installed font
@@ -76,6 +76,7 @@ void fontpicker_style(pghandle str, unsigned long style, short int rship,
 
 pghandle pgFontPicker(const char *title) {
   pghandle wTB,wNames,wSizes,wStyles,wSample,wOk,wCancel,wSampleBox;
+  pghandle wNameHeading,wSizeHeading;
   pghandle wLeftBox,wRightBox,wScroll;
   pghandle fSelected = 0, sA;
   int maxSize = 0;
@@ -136,30 +137,30 @@ pghandle pgFontPicker(const char *title) {
 	      0);
 
   wScroll = pgNewWidget(PG_WIDGET_SCROLL,PG_DERIVE_INSIDE,wLeftBox);
-  pgNewWidget(PG_WIDGET_LABEL,0,0);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgNewString("Name:"),
-	      PG_WP_SIDE,PG_S_TOP,
-	      PG_WP_ALIGN,PG_A_LEFT,
-	      0);
   wNames = pgNewWidget(PG_WIDGET_BOX,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_ALL,
 	      0);
   pgSetWidget(wScroll,PG_WP_BIND,wNames,0);
+  wNameHeading = pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_INSIDE,wNames);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString("Name:"),
+	      PG_WP_SIDE,PG_S_TOP,
+	      PG_WP_TRANSPARENT,0,
+	      0);
 
   wScroll = pgNewWidget(PG_WIDGET_SCROLL,PG_DERIVE_INSIDE,wRightBox);
-  pgNewWidget(PG_WIDGET_LABEL,0,0);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgNewString("Size:"),
-	      PG_WP_SIDE,PG_S_TOP,
-	      PG_WP_ALIGN,PG_A_LEFT,
-	      0);
   wSizes = pgNewWidget(PG_WIDGET_BOX,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_ALL,
 	      0);
   pgSetWidget(wScroll,PG_WP_BIND,wSizes,0);
+  wSizeHeading = pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_INSIDE,wSizes);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString("Size:"),
+	      PG_WP_SIDE,PG_S_TOP,
+	      PG_WP_TRANSPARENT,0,
+	      0);
 
   /********* Create widgets */
 
@@ -212,7 +213,7 @@ pghandle pgFontPicker(const char *title) {
       continue;
 
     pgNewWidget(PG_WIDGET_LISTITEM,
-		i ? 0 : PG_DERIVE_INSIDE, i ? 0 : wNames);
+		i ? 0 : PG_DERIVE_AFTER, i ? 0 : wNameHeading);
     pgSetWidget(PGDEFAULT,
 		PG_WP_TEXT,pgNewString(n->name),
 		0);
@@ -264,7 +265,7 @@ pghandle pgFontPicker(const char *title) {
 	
 	sprintf(buf,"%d",n->size);
 	pgNewWidget(PG_WIDGET_LISTITEM,
-		    s ? 0 : PG_DERIVE_INSIDE, s ? 0 : wSizes);
+		    s ? 0 : PG_DERIVE_AFTER, s ? 0 : wSizeHeading);
 	pgSetWidget(PGDEFAULT,
 		    PG_WP_TEXT,pgNewString(buf),
 		    0);

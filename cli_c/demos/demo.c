@@ -1,4 +1,4 @@
-/* $Id: demo.c,v 1.20 2001/04/05 05:26:28 micahjd Exp $
+/* $Id: demo.c,v 1.21 2001/09/08 22:23:22 micahjd Exp $
  *
  * demo.c -   source file for testing PicoGUI
  *
@@ -178,11 +178,12 @@ int main(int argc, char *argv[])
 	      0);
 
   /* Add a scrollbar */
-  pgNewWidget(PG_WIDGET_SCROLL,PG_DERIVE_BEFORE,wText);
-  pgSetWidget(0,
-	      PG_WP_BIND,wText,
-	      0);
-
+//  pgNewWidget(PG_WIDGET_SCROLL,PG_DERIVE_BEFORE,wText);
+//  pgSetWidget(0,PG_WP_BIND,wText,0);
+		  pgNewWidget(PG_WIDGET_SCROLL, PG_DERIVE_BEFORE, wBox);
+		  pgSetWidget(0, PG_WP_BIND, wBox, 0);
+		  
+		  
   /**** Add a handler that catches everything and prints it */
 
   pgBind(PGBIND_ANY,PGBIND_ANY,&myDebugEvtHandler,NULL);
