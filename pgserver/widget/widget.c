@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.165 2002/02/25 04:05:21 micahjd Exp $
+/* $Id: widget.c,v 1.166 2002/03/01 21:17:13 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -809,6 +809,10 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
   if (disable_input)
     return;
 
+  /* See if the video driver wants it instead */
+  if (vid->pointing_event_hook(&type, &x, &y, &btn))
+    return;
+
   inactivity_reset();
 
   if (type == TRIGGER_DOWN &&
@@ -984,6 +988,10 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
 #endif
 
   if (disable_input)
+    return;
+
+  /* See if the video driver wants it instead */
+  if (vid->key_event_hook(&type, &key, &mods))
     return;
 
   inactivity_reset();

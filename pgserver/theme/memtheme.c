@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.57 2002/02/12 23:54:36 micahjd Exp $
+/* $Id: memtheme.c,v 1.58 2002/03/01 21:17:12 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -260,6 +260,7 @@ unsigned long theme_lookup(unsigned short object,
   case PGTH_P_TIME_ON:          return 250;
   case PGTH_P_TIME_OFF:         return 125;
   case PGTH_P_TIME_DELAY:       return 500;
+  case PGTH_P_TICKS:            return getticks();
 
   default:
     return 0;       /* Couldn't hurt? */

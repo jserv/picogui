@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.79 2002/02/27 18:12:03 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.80 2002/03/01 21:17:13 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -112,6 +112,14 @@ void def_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
 void def_font_outchar_hook(hwrbitmap *dest, struct fontdesc **fd,
 			   s16 *x,s16 *y,hwrcolor *col,int *c,
 			   struct quad **clip, s16 *lgop, s16 *angle) {
+}
+
+int def_key_event_hook(u32 *type, s16 *key, s16 *mods) {
+  return 0;
+}
+
+int def_pointing_event_hook(u32 *type, s16 *x, s16 *y, s16 *btn) {
+  return 0;
 }
 
 /******* colors */
@@ -1988,6 +1996,8 @@ void setvbl_default(struct vidlib *vid) {
   vid->font_sizetext_hook = &def_font_sizetext_hook;
   vid->font_outtext_hook = &def_font_outtext_hook;
   vid->font_outchar_hook = &def_font_outchar_hook;
+  vid->key_event_hook = &def_key_event_hook;
+  vid->pointing_event_hook = &def_pointing_event_hook;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: sdlgl.c,v 1.7 2002/02/28 08:06:33 micahjd Exp $
+/* $Id: sdlgl.c,v 1.8 2002/03/01 21:17:13 micahjd Exp $
  *
  * sdlgl.c - OpenGL driver for picogui, using SDL for portability
  *
@@ -54,17 +54,15 @@
 #endif
 
 #include <math.h>       /* Floating point math in picogui? Blasphemy :) */
-
-#include <sys/time.h>   /* gettimeofday() for FPS calculations */
-#include <time.h>
+#include <stdarg.h>     /* for gl_osd_printf */
 
 /************************************************** Definitions */
 
 /* Perspective values */
 #define GL_FOV          45      /* Vertical field of view in degrees */
-#define GL_MINDEPTH     0.1
-#define GL_MAXDEPTH     100
-#define GL_DEFAULTDEPTH 50
+#define GL_MINDEPTH     0.01
+#define GL_MAXDEPTH     (vid->xres*2)
+#define GL_DEFAULTDEPTH (vid->xres)
 #define GL_SCALE        (tan(GL_FOV/360.0f*3.141592654)*GL_DEFAULTDEPTH)
 
 SDL_Surface *sdlgl_vidsurf;
@@ -85,9 +83,6 @@ float gl_fps;
  * values update the FPS value faster. Units are seconds.
  */
 float gl_fps_interval;
-
-/* 0 to hide the FPS display, or the FPS display's font */
-handle gl_fps_font;
 
 /* Input library optionally loaded to make this driver continously redraw */
 struct inlib *gl_continuous;
@@ -122,6 +117,11 @@ struct glbitmap {
  */
 #define GL_TILESIZE 256
 
+struct subtexture {
+  GLuint texture;
+  float w,h;
+};
+
 /* Macro to determine when to redirect drawing to linear32 */
 #define GL_LINEAR32(dest) (dest)
 
@@ -130,6 +130,22 @@ struct glbitmap {
 
 /* Groprender structure for the display */
 struct groprender *gl_display_rend = NULL;
+
+/* Camera modes that let the user move the camera around */
+int gl_camera_mode;
+#define SDLGL_CAMERAMODE_NONE      0
+#define SDLGL_CAMERAMODE_TRANSLATE 1
+#define SDLGL_CAMERAMODE_ROTATE  2
+
+/* For the camera movement, keep track of which keys are pressed */
+u8 gl_pressed_keys[PGKEY_MAX];
+
+/* Font for onscreen display */
+handle gl_osd_font;
+
+/* More flags */
+int gl_grid;
+int gl_showfps;
 
 inline void gl_color(hwrcolor c);
 inline float gl_dist_line_to_point(float point_x, float point_y, 
@@ -157,6 +173,13 @@ g_error sdlgl_bitmap_new(hwrbitmap *bmp,s16 w,s16 h,u16 bpp);
 void sdlgl_bitmap_free(hwrbitmap bmp);
 void gl_continuous_init(int *n,fd_set *readfds,struct timeval *timeout);
 g_error gl_continuous_regfunc(struct inlib *i);
+hwrbitmap gl_surface2bitmap(SDL_Surface *surf);
+void gl_osd_printf(int *y, const char *fmt, ...);
+void gl_matrix_pixelcoord(void);
+int sdlgl_key_event_hook(u32 *type, s16 *key, s16 *mods);
+int sdlgl_pointing_event_hook(u32 *type, s16 *x, s16 *y, s16 *btn);
+void gl_process_camera_keys(void);
+void gl_render_grid(void);
 
 /************************************************** Utilities */
 
@@ -240,29 +263,34 @@ inline void gl_lgop(s16 lgop) {
     glEnable(GL_BLEND);
     glDisable(GL_LOGIC_OP);
     glBlendFunc(GL_ONE,GL_ONE);
+    glBlendEquation(GL_FUNC_ADD);
     break;
 
   case PG_LGOP_SUBTRACT:
-    glDisable(GL_BLEND);
-    glEnable(GL_LOGIC_OP);
-    glLogicOp(GL_NOOP);
+    glEnable(GL_BLEND);
+    glDisable(GL_LOGIC_OP);
+    glBlendFunc(GL_ONE,GL_ONE);
+    glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
     break;
 
   case PG_LGOP_MULTIPLY:
     glEnable(GL_BLEND);
     glDisable(GL_LOGIC_OP);
     glBlendFunc(GL_ZERO,GL_SRC_COLOR);
+    glBlendEquation(GL_FUNC_ADD);
     break;
 
   case PG_LGOP_STIPPLE:
     glDisable(GL_LOGIC_OP);
     glDisable(GL_BLEND);
+    glBlendEquation(GL_FUNC_ADD);
     break;
 
   case PG_LGOP_ALPHA:
     glEnable(GL_BLEND);
     glDisable(GL_LOGIC_OP);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+    glBlendEquation(GL_FUNC_ADD);
     break;
 
   }
@@ -294,9 +322,12 @@ int gl_power2_round(int x) {
 void gl_frame(void) {
   struct divtree *p;
   static u32 frames = 0;
-  static struct timeval then = {0,0};
-  struct timeval now;
+  static u32 then = 0;
+  u32 now;
   float interval;
+
+  if (gl_grid)
+    gl_render_grid();
 
   /* Redraw the whole frame */
   for (p=dts->top;p;p=p->next)
@@ -304,14 +335,95 @@ void gl_frame(void) {
   update(NULL,1);
 
   /* FPS calculations */
-  gettimeofday(&now,NULL);
+  now = getticks();
   frames++;
-  interval = (now.tv_sec - then.tv_sec) - (now.tv_usec - then.tv_usec)/1000000.0f;
+  interval = (now-then)/1000.0f;
   if (interval > gl_fps_interval) {
     then = now;
     gl_fps = frames / interval;
     frames = 0;
   }
+
+  gl_process_camera_keys();
+}
+
+/* Copy an SDL surface into a picogui bitmap, and discard the surface */
+hwrbitmap gl_surface2bitmap(SDL_Surface *surf) {
+  hwrbitmap b;
+
+  vid->bitmap_new(&b, surf->w, surf->h, vid->bpp);
+  memcpy(((struct glbitmap *)b)->sb->bits, surf->pixels, surf->pitch * surf->h);
+  
+  SDL_FreeSurface(surf);
+  return b;
+}
+
+void gl_osd_printf(int *y, const char *fmt, ...) {
+  char buf[256];
+  va_list v;
+  struct fontdesc *fd;
+  int i,j;
+
+  if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,gl_osd_font)))
+    return;
+
+  va_start(v,fmt);
+  vsnprintf(buf,sizeof(buf),fmt,v);
+  va_end(v);
+
+  /* Save the current matrix, set up a pixel coordinates matrix */
+  glPushMatrix();
+  glLoadIdentity();
+  gl_matrix_pixelcoord();
+
+  /* Draw the text multiple times to get a border effect */
+  for (i=-1;i<=1;i++)
+    for (j=-1;j<=1;j++)
+      outtext(vid->display,fd,5+i,5+*y+j,0x202020,buf,NULL,PG_LGOP_NONE,0);
+  outtext(vid->display,fd,5,5+*y,0xFFFF00,buf,NULL,PG_LGOP_NONE,0);
+
+  /* 1.5 spacing between items */
+  *y += fd->font->h + (fd->font->h>>1);
+
+  /* Restore matrix */
+  glPopMatrix();
+}
+
+void gl_matrix_pixelcoord(void) {
+  glScalef(GL_SCALE,GL_SCALE,1.0f);
+  glScalef(2.0f/vid->xres,-2.0f/vid->yres,1.0f);
+  glTranslatef(-vid->xres/2,-vid->yres/2,-GL_DEFAULTDEPTH);
+}
+
+void gl_render_grid(void) {
+  int i,j;
+
+  /* Clear background */
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  glClearDepth(1.0);
+
+  /* Reset matrix */
+  glPushMatrix();
+  glLoadIdentity();
+  gl_matrix_pixelcoord();
+
+  /* Green mesh */
+  glColor3f(0.0f, 0.5f, 0.0f);
+  glBegin(GL_LINES);
+  /* Horizontal lines. */
+  for (i=0; i<=vid->yres; i+=32) {
+    glVertex2f(0, i);
+    glVertex2f(vid->xres, i);
+  }
+  /* Vertical lines. */
+  for (i=0; i<=vid->xres; i+=32) {
+    glVertex2f(i, 0);
+    glVertex2f(i, vid->yres);
+  }
+  glEnd();
+
+  glPopMatrix();
 }
 
 /************************************************** Basic primitives */
@@ -323,9 +435,12 @@ void sdlgl_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
   }
 
   gl_lgop(lgop);
-  glBegin(GL_POINTS);
+  glBegin(GL_QUADS);
   gl_color(c);
   glVertex2f(x,y);
+  glVertex2f(x+1,y);
+  glVertex2f(x+1,y+1);
+  glVertex2f(x,y+1);
   glEnd();
 }
 
@@ -345,28 +460,28 @@ hwrcolor sdlgl_getpixel(hwrbitmap dest,s16 x,s16 y) {
   return mkcolor(r,g,b);
 }
 
-/* It's double-buffered */
+/*
+ * This driver uses a game-like rendering approach of always drawing
+ * onscreen displays before swapping the buffers. This almost always
+ * means a lot of wasted drawing, but OpenGL is designed for that.
+ */
 void sdlgl_update(s16 x, s16 y, s16 w, s16 h) {
-  struct fontdesc *fd;
+  int i = 0;
 
-  /* Show the FPS display here if needed */
-  if (gl_fps_font) {
-    char buf[40];
-    
-    if (!iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,gl_fps_font))) {
+  if (gl_showfps)
+    gl_osd_printf(&i,"FPS: %.2f",gl_fps);
 
-    snprintf(buf,sizeof(buf),"FPS: %.2f",gl_fps);
-    
-    /* Draw the text multiple times to get a border effect */
-    outtext(vid->display,fd,6,5,0x202020,buf,NULL,PG_LGOP_NONE,0);
-    outtext(vid->display,fd,5,6,0x202020,buf,NULL,PG_LGOP_NONE,0);
-    outtext(vid->display,fd,6,6,0x202020,buf,NULL,PG_LGOP_NONE,0);
-    outtext(vid->display,fd,4,5,0x202020,buf,NULL,PG_LGOP_NONE,0);
-    outtext(vid->display,fd,5,4,0x202020,buf,NULL,PG_LGOP_NONE,0);
-    outtext(vid->display,fd,4,4,0x202020,buf,NULL,PG_LGOP_NONE,0);
-    outtext(vid->display,fd,5,5,0xFFFF00,buf,NULL,PG_LGOP_NONE,0);
-    }
+  switch (gl_camera_mode) {
+  case SDLGL_CAMERAMODE_TRANSLATE:
+    gl_osd_printf(&i,"Camera pan/zoom mode");
+    break;
+  case SDLGL_CAMERAMODE_ROTATE:
+    gl_osd_printf(&i,"Camera rotate mode");
+    break;
   }
+
+  if (gl_grid)
+    gl_osd_printf(&i,"Grid enabled");
 
   SDL_GL_SwapBuffers();
 };  
@@ -570,8 +685,6 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
       glGenTextures(1,&glsrc->texture);
       glBindTexture(GL_TEXTURE_2D, glsrc->texture);
 
-      /* Linear filtering */
-
       glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,gl_texture_filtering);
       glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,gl_texture_filtering);
 
@@ -703,6 +816,146 @@ void sdlgl_bitmap_free(hwrbitmap bmp) {
   g_free(glb);
 }
 
+/************************************************** Input hooks for camera movement */
+
+int sdlgl_key_event_hook(u32 *type, s16 *key, s16 *mods) {
+
+  /* Entering/leaving modes */
+
+  if ((*mods & PGMOD_CTRL) && (*mods & PGMOD_ALT) && *type==PG_TRIGGER_KEYDOWN)
+    switch (*key) {
+    case PGKEY_q:
+      if (gl_camera_mode == SDLGL_CAMERAMODE_TRANSLATE)
+	gl_camera_mode = SDLGL_CAMERAMODE_NONE;
+      else
+	gl_camera_mode = SDLGL_CAMERAMODE_TRANSLATE;
+      return 1;
+    case PGKEY_e:
+      if (gl_camera_mode == SDLGL_CAMERAMODE_ROTATE)
+	gl_camera_mode = SDLGL_CAMERAMODE_NONE;
+      else
+	gl_camera_mode = SDLGL_CAMERAMODE_ROTATE;
+      return 1;
+    case PGKEY_r:
+      gl_camera_mode = SDLGL_CAMERAMODE_NONE;
+      glLoadIdentity();
+      gl_matrix_pixelcoord();
+      return 1;
+    case PGKEY_f:
+      gl_showfps = !gl_showfps;
+      return 1;
+    case PGKEY_g:
+      gl_grid = !gl_grid;
+      return 1;
+    default:
+      return 0;
+    }
+     
+  /* In a camera mode? */
+ 
+  if (gl_camera_mode != SDLGL_CAMERAMODE_NONE) {
+    /* Keep track of pressed keys */
+
+    if (*type == PG_TRIGGER_KEYDOWN)
+      gl_pressed_keys[*key] = 1;
+    if (*type == PG_TRIGGER_KEYUP)
+      gl_pressed_keys[*key] = 0;
+
+    /* A couple keys should exit camera mode... */
+    switch (*key) {
+    case PGKEY_ESCAPE:
+    case PGKEY_SPACE:
+    case PGKEY_RETURN:
+      gl_camera_mode = SDLGL_CAMERAMODE_NONE;
+    }
+
+    /* Trap events */
+    return 1;
+  }
+
+  /* Pass the event */
+  return 0;
+}
+
+int sdlgl_pointing_event_hook(u32 *type, s16 *x, s16 *y, s16 *btn) {
+  int dx,dy,dz=0;
+  s16 cursorx,cursory;
+
+  /* Just pass the event if we're not in a camera mode */
+  if (gl_camera_mode == SDLGL_CAMERAMODE_NONE)
+    return 0;
+
+  /* Get the physical position of PicoGUI's cursor */
+  cursorx = cursor->x;
+  cursory = cursor->y;
+  VID(coord_physicalize)(&cursorx,&cursory);
+  
+  /* get the movement since last time and warp the mouse back */
+  dx = *x - cursorx;
+  dy = *y - cursory;
+  SDL_WarpMouse(cursorx,cursory);
+
+  /* Translate the mouse wheel into Z motion */
+  if (*type == PG_TRIGGER_DOWN && (*btn & 8))
+    dz = 20;
+  if (*type == PG_TRIGGER_DOWN && (*btn & 16))
+    dz = -20;
+
+  switch (gl_camera_mode) {
+
+  case SDLGL_CAMERAMODE_TRANSLATE:
+    glTranslatef(dx,dy,dz);
+    break;
+
+  case SDLGL_CAMERAMODE_ROTATE:
+    glRotatef(dy/10.0,1,0,0);
+    glRotatef(dx/10.0,0,1,0);
+    glRotatef(dz/10.0,0,0,1);
+    break;
+
+  }
+  
+  /* Absorb the event */
+  return 1;
+}
+
+void gl_process_camera_keys(void) {
+  /* Process camera movement keys */
+  switch (gl_camera_mode) {
+    
+  case SDLGL_CAMERAMODE_TRANSLATE:
+    if (gl_pressed_keys[PGKEY_w])
+      glTranslatef(0.0,0.0,5.0);
+    if (gl_pressed_keys[PGKEY_s])
+      glTranslatef(0.0,0.0,-5.0);
+    if (gl_pressed_keys[PGKEY_UP])
+      glTranslatef(0.0,5.0,0.0);
+    if (gl_pressed_keys[PGKEY_DOWN])
+      glTranslatef(0.0,-5.0,0.0);
+    if (gl_pressed_keys[PGKEY_LEFT])
+      glTranslatef(5.0,0.0,0.0);
+    if (gl_pressed_keys[PGKEY_RIGHT])
+      glTranslatef(-5.0,0.0,0.0);
+    break;
+
+  case SDLGL_CAMERAMODE_ROTATE:
+    if (gl_pressed_keys[PGKEY_w])
+      glRotatef(0.4,0.0,0.0,1.0);
+    if (gl_pressed_keys[PGKEY_s])
+      glRotatef(-0.4,0.0,0.0,1.0);
+    if (gl_pressed_keys[PGKEY_UP])
+      glRotatef(0.4,1.0,0.0,0.0);
+    if (gl_pressed_keys[PGKEY_DOWN])
+      glRotatef(-0.4,1.0,0.0,0.0);
+    if (gl_pressed_keys[PGKEY_LEFT])
+      glRotatef(0.4,0.0,1.0,0.0);
+    if (gl_pressed_keys[PGKEY_RIGHT])
+      glRotatef(-0.4,0.0,1.0,0.0);
+    break;
+    
+  }
+}
+
 /************************************************** Initialization */
 
 g_error sdlgl_init(void) {
@@ -746,11 +999,8 @@ g_error sdlgl_init(void) {
 
   sscanf(get_param_str("video-sdlgl","fps_interval","0.25"),"%f",&gl_fps_interval);
   
-  i = get_param_int("video-sdlgl","showfps",0);
-  if (i) {
-    e = findfont(&gl_fps_font,-1,NULL,i,0);
-    errorcheck;
-  }
+  e = findfont(&gl_osd_font,-1,NULL,get_param_int("video-sdlgl","osd_fontsize",14),0);
+  errorcheck;
 
   /* Load a main input driver */
   return load_inlib(&sdlinput_regfunc,&inlib_main);
@@ -817,10 +1067,7 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   glTranslatef(x,y,z);
 
   /* Now convert to pixel coordinates */
-
-  glScalef(GL_SCALE,GL_SCALE,1.0f);
-  glScalef(2.0f/xres,-2.0f/yres,1.0f);
-  glTranslatef(-xres/2,-yres/2,-GL_DEFAULTDEPTH);
+  gl_matrix_pixelcoord();
 
   /* Apply the transformations that should be done in pixels
    */
@@ -845,8 +1092,8 @@ void sdlgl_close(void) {
   unload_inlib(inlib_main);   /* Take out our input driver */
   if (gl_continuous)
     unload_inlib(gl_continuous);
-  if (gl_fps_font)
-    handle_free(gl_fps_font,-1);
+  if (gl_osd_font)
+    handle_free(gl_osd_font,-1);
   SDL_Quit();
 }
 
@@ -882,6 +1129,8 @@ g_error sdlgl_regfunc(struct vidlib *v) {
   v->bitmap_new = &sdlgl_bitmap_new;
   v->bitmap_free = &sdlgl_bitmap_free;
   v->blit = &sdlgl_blit;
+  v->key_event_hook = &sdlgl_key_event_hook;
+  v->pointing_event_hook = &sdlgl_pointing_event_hook;
 
   return success;
 }

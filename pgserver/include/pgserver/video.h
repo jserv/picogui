@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.77 2002/02/27 18:12:03 micahjd Exp $
+/* $Id: video.h,v 1.78 2002/03/01 21:17:12 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -202,8 +202,12 @@ struct vidlib {
   /* Optionally process driver messages */
   void (*message)(u32 message, u32 param, u32 *ret);
 
-  /***************** Fonts */
-   
+  /***************** Hooks */
+
+  /* These hooks let picogui video drivers take over functionality
+   * normally handled by other parts of picogui.
+   */
+
   /* Optional
    *   Called after a new fontdesc is created. The video driver
    *   may choose to modify the font or cache things or something.
@@ -250,6 +254,18 @@ struct vidlib {
   void (*font_outchar_hook)(hwrbitmap *dest, struct fontdesc **fd,
 			    s16 *x,s16 *y,hwrcolor *col,int *c,
 			    struct quad **clip, s16 *lgop, s16 *angle);
+
+  /* Optional
+   *   Called for every incoming key event. Return 1 to prevent normal
+   *   key processing.
+   */
+  int (*key_event_hook)(u32 *type, s16 *key, s16 *mods);
+
+  /* Optional
+   *   Called for every incoming pointing event. Return 1 to prevent normal
+   *   processing.
+   */
+  int (*pointing_event_hook)(u32 *type, s16 *x, s16 *y, s16 *btn);
 
   /***************** Colors */
 

@@ -437,8 +437,19 @@ quoted appropriately. For example:
   Larger values give more accurate results, smaller values update the FPS display faster.
   Defaults to 0.25
 
-- showfps
-  If nonzero, this is the font size to show the frames per second in.
+- osd_fontsize
+  Font size to render the onscreen display in
+
+- fontpath
+  This is the directory to search for TrueType fonts. It's searched recursively,
+  and all files ending with .ttf will be loaded.
+  Defaults to /usr/share/fonts/truetype
+
+- fontresolution
+  This is the height that the truetype fonts are rendered into textures at.
+  Sizes above this can still be output, but the result will be fuzzy. For efficient
+  operation this should be a power of 2.
+  Defaults to 32
 
 --- The End ---
 

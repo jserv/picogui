@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
  
   wText = pgNewWidget(PG_WIDGET_TEXTBOX, PG_DERIVE_INSIDE, app);
   pgSetWidget(PGDEFAULT, PG_WP_SIDE,PG_S_ALL,
-	      PG_WP_TRIGGERMASK, 0x67f5,  /* not all constants are defined */
+	      PG_WP_TRIGGERMASK, 0x67fd,  /* not all constants are defined */
 	      0);
 
   pgNewWidget(PG_WIDGET_SCROLL,PG_DERIVE_BEFORE,wText);
