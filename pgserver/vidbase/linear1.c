@@ -1,4 +1,4 @@
-/* $Id: linear1.c,v 1.14 2001/05/31 11:57:44 micahjd Exp $
+/* $Id: linear1.c,v 1.15 2001/06/05 18:15:57 micahjd Exp $
  *
  * Video Base Library:
  * linear1.c - For 1-bit packed pixel devices (most black and white displays)
@@ -44,12 +44,12 @@
 #define PIXELBYTE(x,y) (((x)>>3)+LINE(y))
 
 /* Table of masks used to isolate pixels within a byte */
-unsigned const char notmask1[]  = { 0x7F, 0xBF, 0xDF, 0xEF,
-                                    0xF7, 0xFB, 0xFD, 0xFE };
-unsigned const char pxlmask1[]  = { 0x80, 0x40, 0x20, 0x10,
-                                    0x08, 0x04, 0x02, 0x01 };
-unsigned const char slabmask1[] = { 0xFF, 0x7F, 0x3F, 0x1F,
-                                    0x0F, 0x07, 0x03, 0x01, 0x00 };
+const u8 notmask1[]  = { 0x7F, 0xBF, 0xDF, 0xEF,
+                         0xF7, 0xFB, 0xFD, 0xFE };
+const u8 pxlmask1[]  = { 0x80, 0x40, 0x20, 0x10,
+                         0x08, 0x04, 0x02, 0x01 };
+const u8 slabmask1[] = { 0xFF, 0x7F, 0x3F, 0x1F,
+                         0x0F, 0x07, 0x03, 0x01, 0x00 };
 
 /************************************************** Minimum functionality */
 

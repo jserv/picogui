@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.41 2001/05/31 07:17:06 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.42 2001/06/05 18:15:57 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -81,7 +81,7 @@ hwrcolor def_color_pgtohwr(pgcolor c) {
   }
   else if(vid->bpp<8) {
     /* grayscale */
-    return (getred(c)+getgreen(c)+getblue(c)) * ((1<<vid->bpp)-1) / 768;
+    return (getred(c)+getgreen(c)+getblue(c)) * ((1<<vid->bpp)-1) / 765;
   }
   else if (vid->bpp==8) {
     /* 2-3-3 color */

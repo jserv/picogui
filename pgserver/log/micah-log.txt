@@ -1,3 +1,16 @@
+2001-06-5    Micah Dowty <micahjd@users.sourceforge.net>
+
+Now that linear1 has good, fast primitives, it should be a breeze to modify
+them for linear2 and linear4.
+
+      * debug/videotest.c: Added some bars to the slab test screen
+      
+      * vidbase/defaultvbl.c: Fixed pallete conversion error that affected
+        linear2 dramatically
+
+      * vidbase/linear2.c: Adding line,slab,bar, and blit based on linear1
+        code
+
 2001-05-31    Micah Dowty <micahjd@users.sourceforge.net>
 
 It's taken a while longer than I expected, but I wrote a fast blitter for

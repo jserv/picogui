@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.13 2001/05/29 22:31:22 micahjd Exp $
+/* $Id: videotest.c,v 1.14 2001/06/05 18:15:54 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -238,6 +238,8 @@ void testpat_slab(void) {
 
       VID(slab) (vid->display,5,45+(i<<1),i+1,fg,PG_LGOP_NONE);
       VID(slab) (vid->display,35+i,45+(i<<1),i+1,fg,PG_LGOP_NONE);
+
+      VID(bar) (vid->display,80+(i<<1),5+i,10,fg,PG_LGOP_NONE);
    }
 }
 
