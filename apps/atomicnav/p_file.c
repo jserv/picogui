@@ -1,4 +1,4 @@
-/* $Id: p_file.c,v 1.2 2002/01/07 06:28:08 micahjd Exp $
+/* $Id: p_file.c,v 1.3 2002/01/07 09:05:51 micahjd Exp $
  *
  * p_file.c - Local disk access for the Atomic Navigator web browser
  *
@@ -28,7 +28,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <stdio.h>
+#include <fcntl.h>
 #include <alloca.h>
 #include <string.h>
 #include <errno.h>
@@ -38,9 +38,8 @@
 #include "protocol.h"
 
 void p_file_connect(struct url *u) {
-  FILE *f;
   char *buf;
-  int len;
+  int len, fd;
   struct stat st;
 
   /* First a little workaround...
@@ -74,8 +73,8 @@ void p_file_connect(struct url *u) {
 
   u->size = st.st_size;
 
-  f = fopen(buf,"r");
-  if (!f) {
+  fd = open(buf,O_RDONLY);
+  if (fd<=0) {
     browserwin_errormsg(u->browser,strerror(errno));
     url_setstatus(u,URL_STATUS_ERROR);
     return;
@@ -90,20 +89,22 @@ void p_file_connect(struct url *u) {
   }
 
   /* Ready to read from file */
-  u->proto_extra = f;
+  u->proto_extra = (void*) fd;
   url_setstatus(u,URL_STATUS_READ);
   url_activate(u);
 }
 
 void p_file_stop(struct url *u) {
-  FILE *f = (FILE *) u->proto_extra;
-  if (f)
-    fclose(f);
+  int fd = (int) u->proto_extra;
+  url_deactivate(u);
+  if (fd)
+    close(fd);
+  if (u->status == URL_STATUS_READ)
+    url_setstatus(u,URL_STATUS_STOPPED);
 }
 
 void p_file_fd_init(struct url *u, int *n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds) {
-  FILE *f = (FILE *) u->proto_extra;
-  int fd = fileno(f);
+  int fd = (int) u->proto_extra;
   
   if (u->status == URL_STATUS_READ) {
     if (fd+1 > *n)
@@ -112,17 +113,26 @@ void p_file_fd_init(struct url *u, int *n, fd_set *readfds, fd_set *writefds, fd
   }
 }
 
+/* Normally we should be able to get the whole file in one read, but just in case...
+ */
 void p_file_fd_activate(struct url *u, fd_set *readfds, fd_set *writefds, fd_set *exceptfds) {
-  FILE *f = (FILE *) u->proto_extra;
-  int fd = fileno(f);
+  int fd = (int) u->proto_extra;
   size_t s;
+  size_t chunk;
 
   if (FD_ISSET(fd,readfds)) {
-    s = fread(u->data + u->size_received, 1, 1 /*u->size - u->size_received*/ , f);
+    s = read(fd,u->data + u->size_received, u->size - u->size_received);
+    if (!s) {
+      browserwin_errormsg(u->browser,"Error reading from file");
+      url_setstatus(u,URL_STATUS_ERROR);
+      url_deactivate(u);
+    }
     if (s > 0)
       u->size_received += s;
-    if (u->size_received == u->size)
+    if (u->size_received == u->size) {
       url_setstatus(u, URL_STATUS_DONE);
+      url_deactivate(u);
+    }
     url_progress(u);
   }
 }

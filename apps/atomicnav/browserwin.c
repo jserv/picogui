@@ -1,4 +1,4 @@
-/* $Id: browserwin.c,v 1.3 2002/01/07 06:28:08 micahjd Exp $
+/* $Id: browserwin.c,v 1.4 2002/01/07 09:05:51 micahjd Exp $
  *
  * browserwin.c - User interface for a browser window in Atomic Navigator
  *
@@ -56,11 +56,8 @@ int btnGo(struct pgEvent *evt) {
 int btnStop(struct pgEvent *evt) {
   struct browserwin *w = (struct browserwin *) evt->extra;
 
-  if (w->page) {
-    url_delete(w->page);
-    w->page = NULL;
-  }
-  browserwin_showstatus(w,NULL);
+  if (w->page)
+    w->page->handler->stop(w->page);
 }
 
 int btnBack(struct pgEvent *evt) {
@@ -77,8 +74,6 @@ int btnForward(struct pgEvent *evt) {
 
 void pageStatus(struct url *u) {
   browserwin_showstatus(u->browser, u);
-
-  printf("Status: %d\n" ,u->status);
 }
 
 void pageProgress(struct url *u) {
