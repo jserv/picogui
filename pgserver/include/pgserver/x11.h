@@ -1,4 +1,4 @@
-/* $Id: x11.h,v 1.7 2002/11/06 03:00:22 micahjd Exp $
+/* $Id: x11.h,v 1.8 2002/11/06 22:54:38 micahjd Exp $
  *
  * x11.h - Header shared by all the x11 driver components in picogui
  *
@@ -159,6 +159,8 @@ void x11_window_set_position(hwrbitmap window, s16 x, s16 y);
 void x11_window_set_size(hwrbitmap window, s16 w, s16 h);
 void x11_window_get_position(hwrbitmap window, s16 *x, s16 *y);
 void x11_window_get_size(hwrbitmap window, s16 *w, s16 *h);
+void x11_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
+		   hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 xo, s16 yo, s16 lgop);
 
 #endif /* __H_PGX11 */
 

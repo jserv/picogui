@@ -1,4 +1,4 @@
-/* $Id: x11_init.c,v 1.9 2002/11/06 20:23:46 micahjd Exp $
+/* $Id: x11_init.c,v 1.10 2002/11/06 22:54:39 micahjd Exp $
  *
  * x11_init.c - Initialization for picogui'x driver for the X window system
  *
@@ -149,6 +149,7 @@ g_error x11_regfunc(struct vidlib *v) {
   v->window_set_size       = &x11_window_set_size;
   v->window_get_position   = &x11_window_get_position;
   v->window_get_size       = &x11_window_get_size;
+  v->multiblit             = &x11_multiblit;
 
   return success;
 }

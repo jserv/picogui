@@ -1,4 +1,4 @@
-/* $Id: x11_primitives.c,v 1.5 2002/11/06 22:22:40 micahjd Exp $
+/* $Id: x11_primitives.c,v 1.6 2002/11/06 22:54:39 micahjd Exp $
  *
  * x11_primitives.c - Implementation of picogui primitives on top of the
  *                    X window system.
@@ -147,6 +147,34 @@ void x11_update(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h) {
   if (XB(dest)->frontbuffer)
     XCopyArea(x11_display, XB(dest)->d, XB(XB(dest)->frontbuffer)->d,
 	      x11_gctab[PG_LGOP_NONE],x,y,w,h,x,y);
+}
+
+void x11_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
+		   hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 xo, s16 yo, s16 lgop) {
+  GC g;
+  
+  /* Use the default multiblit if:
+   *   1. The source isn't the entire bitmap. X can't handle this case
+   *   2. We're using stippling. This needs to set the X fill style too, so there
+   *      would be a conflict and the stipple GC would be reset incorrectly.
+   *   3. The destination rectangle isn't larger than the source. In this case the
+   *      extra setup work here isn't worth it.
+   */
+  if (sx!=0 || sy!=0 || sw!=XB(src)->w || sh!=XB(src)->h || 
+      lgop==PG_LGOP_STIPPLE || (w<=sw && h<=sh)) {
+    def_multiblit(dest,x,y,w,h,src,sx,sy,sw,sh,xo,yo,lgop);
+    return;
+  }
+
+  /* Now if we got this far, this is probably a large background area that's
+   * tiled with a complete pixmap, so it will be efficiently handled by X (we hope)
+   */
+  g = x11_gctab[lgop];
+  XSetTile(x11_display,g,XB(src)->d);
+  XSetTSOrigin(x11_display,g,x-xo,y-yo);
+  XSetFillStyle(x11_display,g,FillTiled);
+  x11_rect(dest,x,y,w,h,0,lgop);
+  XSetFillStyle(x11_display,g,FillSolid);
 }
 
 /* The End */
