@@ -18,7 +18,7 @@ allowedTextCommands = ("Announce",)
 allowedControlCommands = ("JoinChannel", "PartChannel")
 
 # Prohibited channels
-BadChannels = ("shell","123")
+badChannels = ("shell","123")
 
 
 def incrementProjectCommits(project):
