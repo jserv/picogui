@@ -4,10 +4,12 @@
 
 import os
 
-statDir = "/home/commits/stats"
+baseDir = "/home/commits"
+statDir = os.path.join(baseDir, "stats")
+urlDir = os.path.join(baseDir, "urls")
 mtbcSubdir = 'mtbc'
-channelFile = "/home/commits/channels.list"
-commandLog = "/home/commits/commands.log"
+channelFile = os.path.join(baseDir, "channels.list")
+commandLog = os.path.join(baseDir, "commands.log")
 
 # List out the subdirs explicitly so we can set the order-
 # the first one here is used as the sort key, and for definatively
@@ -38,7 +40,7 @@ def readStats():
     """Stats are automatically read into the module on import,
        this can be called separately to refresh them.
        """
-    global projects, channels, projectCounts, projectMTBC, totalMTBC
+    global projects, channels, projectCounts, projectMTBC, totalMTBC, projectURL
 
     # Add all projects that we aren't excempting from stats
     projects = []
@@ -81,6 +83,14 @@ def readStats():
         except IOError:
             projectMTBC[project] = None
     totalMTBC = projectMTBC['commits']
+
+    # Get project URLs
+    projectURL = {}
+    for project in projects:
+        try:
+            projectURL[project] = open(os.path.join(urlDir, project)).read().strip()
+        except IOError:
+            projectURL[project] = None
 
 def readLatestCommands(n=20):
     """Read the n latest commands, returning a list of (command, project, message) tuples"""
