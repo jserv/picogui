@@ -1,4 +1,4 @@
-/* $Id: types.h,v 1.1 2002/01/16 15:25:21 bauermeister Exp $
+/* $Id: types.h,v 1.1 2002/01/23 01:14:47 micahjd Exp $
  *
  * pgserver/common.h - things every file in pgserver should need,
  *                     including memory management, error handling,

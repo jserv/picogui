@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.78 2002/01/16 15:25:20 bauermeister Exp $
+/* $Id: network.h,v 1.79 2002/01/23 01:14:47 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -38,33 +38,7 @@
 					* are made */
 #define PG_REQUEST_MAGIC   0x31415926
 
-/******* Fixed-sized types */
-
-#include <asm/types.h>
-
-#ifndef u8
-# define u8 __u8
-#endif
-
-#ifndef s8
-# define s8 __s8
-#endif
-
-#ifndef u16
-# define u16 __u16
-#endif
-
-#ifndef s16
-# define s16 __s16
-#endif
-
-#ifndef u32
-# define u32 __u32
-#endif
-
-#ifndef s32
-# define s32 __s32
-#endif
+#include <picogui/types.h>
 
 /******* Packet structures */
 
@@ -138,7 +112,7 @@ struct pghello {
 #define PGREQ_MKTHEME      9   /* Load a compiled theme          |  theme  */
 #define PGREQ_IN_KEY       10  /* Dispatch keyboard input        |  struct */
 #define PGREQ_IN_POINT     11  /* Dispatch pointing device input |  struct */
-#define PGREQ_IN_DIRECT    12  /* Dispatch direct input          |  struct */
+#define PGREQ_DEPRECATED_1 12  /* Depreacated, replace this with a new entry */
 #define PGREQ_WAIT         13  /* Wait for an event              |  none   */
 #define PGREQ_MKFILLSTYLE  14  /* Load a fill style,return handle|  fillstyle */
 #define PGREQ_REGISTER     15  /* Register a new application     |  struct */
@@ -176,6 +150,8 @@ struct pghello {
 #define PGREQ_ATTACHWIDGET 47  /* Attach widget                  |  struct */
 #define PGREQ_FINDTHOBJ    48  /* Find theme object by name      |   chars */
 #define PGREQ_TRAVERSEWGT  49  /* Find widgets after this one    | struct */
+
+/* NOTE: Before adding new entries to the end, replace any deprecated entries above */
 
 #define PGREQ_UNDEF        50  /* types > this will be truncated. return error */
 
