@@ -1,3 +1,10 @@
+---- Tuesday, March 6
+
+Implemented PG_SZMODE_CNTFRACT. Added a PG_WP_TRANSPARENT to the box widget.
+Added a real grid to the calculator demo
+
+Made small adjustments to pseudo3d_modcolor.ths
+
 ---- Friday, March 2
 
 The panelbar disabling works now.
@@ -14,8 +21,6 @@ for now) to the code in widget_set that handles a few common properties.
 Now I can easily implement sizing modes and things like that.
 
 Implemented PG_WP_SIZEMODE
-
-(cvs commit)
 
 Some fixes to makefile config system
 Made an updated defaults file

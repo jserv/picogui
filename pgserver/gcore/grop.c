@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.39 2001/02/17 05:18:40 micahjd Exp $
+/* $Id: grop.c,v 1.40 2001/03/07 04:10:11 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -394,9 +394,9 @@ void grop_render(struct divnode *div) {
 	 (*vid->slab)(x,y,w,list->param[0]);
        if ((oy+oh-1)>=cy1 && (oy+oh-1)<=cy2)
 	 (*vid->slab)(x,y+h-1,w,list->param[0]);
-       if (ox>=cx1 && ox<=cx2)
+       if (ox>=cx1 && ox<=cx2 && h>2)
 	 (*vid->bar)(x,y+1,h-2,list->param[0]);
-       if ((ox+ow-1)>=cx1 && (ox+ow-1)<=cx2)
+       if ((ox+ow-1)>=cx1 && (ox+ow-1)<=cx2 && h>2)
 	 (*vid->bar)(x+w-1,y+1,h-2,list->param[0]);
        break;
        

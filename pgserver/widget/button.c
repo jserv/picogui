@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.50 2001/03/03 01:44:27 micahjd Exp $
+/* $Id: button.c,v 1.51 2001/03/07 04:10:13 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -77,7 +77,16 @@ void position_button(struct widget *self,struct btnposition *bp);
 
 void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
   struct btnposition bp;
+  int sp = theme_lookup(DATA->state,PGTH_P_SPACING);
 
+  /* Shave off the space between buttons */
+  switch (self->in->flags & (~SIDEMASK)) {
+   case PG_S_BOTTOM: c->y += sp; c->h -= sp; break;
+   case PG_S_RIGHT:  c->x += sp; c->w -= sp; break;
+   case PG_S_LEFT:   c->w -= sp; break;
+   case PG_S_TOP:    c->h -= sp; break;
+  }
+   
   /* Background */
   exec_fillstyle(c,state,PGTH_P_BGFILL);
 
@@ -138,15 +147,11 @@ g_error button_install(struct widget *self) {
   self->in->div->build = &build_button;
   self->in->div->state = DATA->state;
 
-  /* Spacer (between buttons) */
-  e = newdiv(&self->in->next,self);
-  errorcheck;
-  self->in->next->flags |= PG_S_LEFT;
-  self->out = &self->in->next->next;
-
   self->trigger_mask = TRIGGER_ENTER | TRIGGER_LEAVE | TRIGGER_HOTKEY |
     TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_DIRECT;
 
+  self->out = &self->in->next;
+  self->sub = &self->in->div->div;
   self->resize = &resize_button;
 
   return sucess;
@@ -166,13 +171,6 @@ g_error button_set(struct widget *self,int property, glob data) {
   int psplit;
 
   switch (property) {
-
-  case PG_WP_SIDE:
-    if (data!=PG_S_ALL) {
-      self->in->next->flags &= SIDEMASK;
-      self->in->next->flags |= ((sidet)data);
-    }
-    return mkerror(ERRT_PASS,0);
 
   case PG_WP_BITMAP:
     if (!iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)) && bit) {
@@ -344,9 +342,6 @@ void resize_button(struct widget *self) {
 
   /* With PG_S_ALL we'll get ignored anyway... */
   if (self->in->flags & PG_S_ALL) return;
-
-  /* Space between buttons */
-  self->in->next->split = theme_lookup(DATA->state,PGTH_P_SPACING);
 
   /* Minimum size and margin */
   w = theme_lookup(DATA->state,PGTH_P_WIDTH);

@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.5 2001/02/17 05:18:40 micahjd Exp $
+/* $Id: font.h,v 1.6 2001/03/07 04:10:13 micahjd Exp $
  *
  * font.h - structures for representing fonts
  *
@@ -117,10 +117,9 @@ void outtext_v(struct fontdesc *fd,
 void sizetext(struct fontdesc *fd, int *w, int *h, char *txt);
 
 /* Find a font with specified characteristics, and prepare
-   a fontdesc structure for it.  The closest font will be matched.
-   Any of the FSTYLE_* flags can be used to indicate that attribute
-   is required. 
-*/
+ * a fontdesc structure for it.  The closest font will be matched.
+ * Any of the FSTYLE_* flags can be used to indicate that attribute
+ * is required. */
 g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags);
 
 #endif /* __H_FONT */

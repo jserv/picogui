@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.9 2001/02/17 05:18:40 micahjd Exp $
+/* $Id: handle.h,v 1.10 2001/03/07 04:10:13 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -43,7 +43,7 @@
  * the clients store handles in a long for
  * compatibility's sake.
  */
-typedef unsigned short handle;
+typedef u16 handle;
 #define HANDLE_BITS     16
 #define HANDLE_SIZE (1<<HANDLE_BITS)
 

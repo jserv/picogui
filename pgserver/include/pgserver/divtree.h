@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.11 2001/02/17 05:18:40 micahjd Exp $
+/* $Id: divtree.h,v 1.12 2001/03/07 04:10:13 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -85,7 +85,8 @@ struct divnode {
   struct gropnode *grop;
   
   /* Widget that owns it, used for updating widget 'where' pointers
-     on deleting a widget */
+   * on deleting a widget, and to determine the container when using
+   * DIVNODE_UNIT_CNTFRACT */
   struct widget *owner;
   
   /* Absolute coordinates of the node on the screen.  This is usually
@@ -93,21 +94,21 @@ struct divnode {
    * the coordinates can be specified absolutely, however this is normally
    * not reccomended (but could be useful for constructs such as popup menus)
    */
-  short int x,y;
+  s16 x,y;
   
   /* Width and height, of course */
-  short int w,h;
+  s16 w,h;
   
   /* Coordinates to translate the grop's by, for scrolling */
-  short int tx,ty;
+  s16 tx,ty;
   /* Scrolling coordinates as of last redraw */
-  short int otx,oty;
+  s16 otx,oty;
 
-  unsigned short int flags;
-  short int split;   /* Depending on flags, the pixels or percent to split at */
+  u16 flags;
+  u16 split;   /* Depending on flags, the pixels or percent to split at */
 
   /* The divnode's state - indicates which theme object to get parameters from */
-  unsigned short state;
+  u16 state;
 };
    
 /* flags used in divnode.flags */
@@ -126,7 +127,13 @@ struct divnode {
 #define DIVNODE_PROPAGATE_REDRAW (1<<12) /* redraw spreads through next also*/
 #define DIVNODE_SCROLL_ONLY     (1<<13)  /* Only tx/ty changed */
 #define DIVNODE_INCREMENTAL     (1<<14)  /* Only incremental redraw */
-
+#define DIVNODE_UNIT_CNTFRACT   (1<<15)  /* This is used to build grids of
+					  * self-resizing widgets. The size
+					  * is specified as a fraction of the
+					  * container's size. The fraction
+					  * is packed with numerator in high
+					  * byte and denominator in low byte */
+					  
 /* Side value macros and stuff */
 typedef unsigned short int sidet;
 #define VALID_SIDE(x) (x==PG_S_LEFT || x==PG_S_RIGHT || x==PG_S_TOP || x==PG_S_BOTTOM \

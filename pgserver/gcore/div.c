@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.34 2001/02/17 05:18:40 micahjd Exp $
+/* $Id: div.c,v 1.35 2001/03/07 04:10:11 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -60,8 +60,18 @@ void divnode_recalc(struct divnode *n) {
 
      /* Vertical */
      else if (n->flags & (DIVNODE_SPLIT_TOP|DIVNODE_SPLIT_BOTTOM)) {
+
        if (n->flags & DIVNODE_UNIT_PERCENT)
 	 split = (n->h*split)/100;
+	
+       else if ( (n->flags & DIVNODE_UNIT_CNTFRACT) && 
+		n->owner && (split & 0xFF)) {
+	  struct widget *container;
+	  if (!iserror(rdhandle((void**)&container,PG_TYPE_WIDGET,
+				-1,n->owner->container)))
+	    split = container->in->div->h * (split >> 8) / (split & 0xFF);
+       }
+	
        if (split>n->h) split = n->h;
        if (n->div) {
 	 n->div->x = n->x;
@@ -97,6 +107,15 @@ void divnode_recalc(struct divnode *n) {
      else if (n->flags & (DIVNODE_SPLIT_LEFT|DIVNODE_SPLIT_RIGHT)) {
        if (n->flags & DIVNODE_UNIT_PERCENT)
 	 split = (n->w*split)/100;
+       
+       else if ( (n->flags & DIVNODE_UNIT_CNTFRACT) && 
+		n->owner && (split & 0xFF)) {
+	  struct widget *container;
+	  if (!iserror(rdhandle((void**)&container,PG_TYPE_WIDGET,
+				-1,n->owner->container)))
+	    split = container->in->div->w * (split >> 8) / (split & 0xFF);
+       }
+
        if (split>n->w) split = n->w;
        if (n->div) {
 	 n->div->y = n->y;

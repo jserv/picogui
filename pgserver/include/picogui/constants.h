@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.40 2001/03/03 01:44:26 micahjd Exp $
+/* $Id: constants.h,v 1.41 2001/03/07 04:10:13 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -459,7 +459,8 @@ typedef unsigned long pghandle;
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0
 #define PG_SZMODE_PERCENT       (1<<2)    /* The DIVNODE_UNIT_PERCENT flag */
-#define PG_SZMODEMASK           (PG_SZMODE_PERCENT|PG_SZMODE_PIXEL)
+#define PG_SZMODE_CNTFRACT      (1<<15)   /* The DIVNODE_UNIT_CNTFRACT flag */
+#define PG_SZMODEMASK           (PG_SZMODE_PERCENT|PG_SZMODE_PIXEL|PG_SZMODE_CNTFRACT)
 
 /* Constants for the message dialog box flags */
 #define PG_MSGBTN_OK      0x0001

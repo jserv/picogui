@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.22 2001/03/01 02:23:11 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.23 2001/03/07 04:10:13 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -79,8 +79,26 @@ hwrcolor def_color_pgtohwr(pgcolor c) {
 }
 
 pgcolor def_color_hwrtopg(hwrcolor c) {
-   /* FIXME please! */
-   return c;
+  if (vid->bpp<8) {
+    /* grayscale */
+    return (((getred(c)*3+getgreen(c)*6+getblue(c))/10) >>
+	    (8-vid->bpp))&((1<<vid->bpp)-1);
+  }
+  else if (vid->bpp==8) {
+    /* 2-3-3 color */
+    return ((getred(c) & 0xC0) |
+	    ((getgreen(c) >> 2) & 0x38) |
+	    ((getblue(c) >> 5) & 0x07));
+  }
+  else if (vid->bpp==16) {
+    /* 5-6-5 color */
+    return (((getred(c) << 8) & 0xF800) |
+	    ((getgreen(c) << 3) & 0x07E0) |
+	    ((getblue(c) >> 3) & 0x001F));
+  }
+  else
+    /* True color */
+    return c;
 }
 
 void def_addpixel(int x,int y,pgcolor c) {
@@ -832,6 +850,17 @@ void def_blit(struct stdbitmap *srcbit,int src_x,int src_y,
    int shiftset = 8-vid->bpp;
    int oshift;
    
+   if (srcbit && (w>(srcbit->w-src_x) || h>(srcbit->h-src_y))) {
+      int i,j;
+      
+      /* Do a tiled blit */
+      for (i=0;i<w;i+=srcbit->w)
+	for (j=0;j<h;j+=srcbit->h)
+	  def_blit(srcbit,0,0,dest_x+i,dest_y+j,min(srcbit->w,w-i),min(srcbit->h,h-j),lgop);
+    
+      return;
+   }
+   
    /* Screen-to-screen blit */
    if (!srcbit) {
       srcbit = &screen;
@@ -840,7 +869,9 @@ void def_blit(struct stdbitmap *srcbit,int src_x,int src_y,
       screen.h = vid->yres;
    }
    
-   for (srcline=src=srcbit->bits;h;h--,src_y++,dest_y++,src=srcline+=srcbit->pitch)
+   src = srcline = srcbit->bits + ((src_x*vid->bpp)>>3) + src_y*srcbit->pitch;
+   
+   for (;h;h--,src_y++,dest_y++,src=srcline+=srcbit->pitch)
      for (oshift=shiftset,i=0;i<w;i++) {
 	if (lgop!=PG_LGOP_NONE)
 	  s = (*vid->getpixel)(dest_x+i,dest_y);

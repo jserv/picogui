@@ -1,4 +1,4 @@
-/* $Id: box.c,v 1.12 2001/03/03 01:44:27 micahjd Exp $
+/* $Id: box.c,v 1.13 2001/03/07 04:10:13 micahjd Exp $
  *
  * box.c - Generic container for holding a group of widgets. It's sizing and
  *         appearance are defined by the theme.
@@ -32,15 +32,23 @@
 #define MANUALSIZE  ((int)self->data)   /* nonzero to disregard theme sizing */
 
 void resize_box(struct widget *self) {
-  int m = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
-
-  if (!MANUALSIZE)
-    if (self->in->flags & (PG_S_TOP | PG_S_BOTTOM))
-      self->in->split = theme_lookup(PGTH_O_BUTTON,PGTH_P_HEIGHT)+(m<<1);
-    else
-      self->in->split = theme_lookup(PGTH_O_BUTTON,PGTH_P_WIDTH)+(m<<1);
-
-  self->in->div->split = m;
+   int m;
+   
+   /* Transparent boxen have the same margin as a button
+    * (necessary for grids to look good) */
+   if (self->in->div->build)
+     m = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
+   else
+     m = theme_lookup(PGTH_O_BUTTON,PGTH_P_SPACING) >> 1;
+   
+   if (!MANUALSIZE) {
+      if (self->in->flags & (PG_S_TOP | PG_S_BOTTOM))
+	self->in->split = theme_lookup(PGTH_O_BUTTON,PGTH_P_HEIGHT)+(m<<1);
+      else
+	self->in->split = theme_lookup(PGTH_O_BUTTON,PGTH_P_WIDTH)+(m<<1);
+   }
+   
+   self->in->div->split = m;
 }
 
 g_error box_install(struct widget *self) {
@@ -68,9 +76,19 @@ void box_remove(struct widget *self) {
 }
 
 g_error box_set(struct widget *self,int property, glob data) {
-   if (property==PG_WP_SIZE)
-     MANUALSIZE = 1;
-   return mkerror(ERRT_PASS,0);
+   switch (property) {
+      
+    case PG_WP_TRANSPARENT:
+      self->in->div->build = data ? NULL : (&build_bgfill_only);
+      break;	
+      
+    case PG_WP_SIZE:
+      MANUALSIZE = 1;
+      /* Fall through to default */
+    default:
+      return mkerror(ERRT_PASS,0);
+   }
+   return sucess;
 }
 
 glob box_get(struct widget *self,int property) {

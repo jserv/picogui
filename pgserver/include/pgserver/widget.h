@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.19 2001/02/23 04:44:47 micahjd Exp $
+/* $Id: widget.h,v 1.20 2001/03/07 04:10:13 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -126,19 +126,17 @@ struct widget {
   /***** 16/8-bit packed values */
    
   /* Defines the type of widget */
-  int type;
-
-  /* Connection that created the widget.  Any handles the widget make
-   * take on this owner
-   */
-  int owner;
-
+  u8 type;
 
   /* If not null, the widget is contained within this widget (a toolbar,
    * panel, etc...
    */
   handle container;
 
+  /* Connection that created the widget.  Any handles the widget make
+   * take on this owner
+   */
+  int owner;
 
   /***** 32-bit values */
    
@@ -174,18 +172,18 @@ struct widget {
  
   /* widget sets this to accept triggers.  TRIGGER_* constants or'ed
      together. */
-  long trigger_mask;
+  u32 trigger_mask;
 
   /* Name of an active direct trigger */
   char *direct_trigger;
 
   /* Active hotkey */
-  long hotkey;
+  u32 hotkey;
   /* The widgets with assigned hotkeys are stored in a linked list */
   struct widget *hknext;
 
   /* Time (in ticks) for a TRIGGER_TIMER */
-  unsigned long time;
+  u32 time;
   /* Widgets with timers are in a linked list */
   struct widget *tnext;
 };
