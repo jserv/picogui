@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.27 2000/10/29 02:54:19 micahjd Exp $
+/* $Id: div.c,v 1.28 2000/11/04 07:50:42 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -445,6 +445,33 @@ void align(struct gropctxt *d,alignt align,int *w,int *h,int *x,int *y) {
   }
   *x += d->x;
   *y += d->y;
+}
+
+/* Little helper to rotate a side constant 90 degrees counterclockwise */
+int rotate_side(int s) {
+  switch (s) {
+  case PG_S_TOP:    s = PG_S_LEFT;   break;
+  case PG_S_LEFT:   s = PG_S_BOTTOM; break;
+  case PG_S_BOTTOM: s = PG_S_RIGHT;  break;
+  case PG_S_RIGHT:  s = PG_S_TOP;    break;
+  }
+  return s;
+}
+
+/* Rotate them 90 degrees counterclockwise, then mirror
+   across the horizontal axis */
+int mangle_align(int al) {
+  switch (al) {
+  case PG_A_TOP:    al = PG_A_LEFT;   break;
+  case PG_A_NE:     al = PG_A_SW;     break;
+  case PG_A_RIGHT:  al = PG_A_BOTTOM; break;
+  case PG_A_SE:     al = PG_A_SE;     break;
+  case PG_A_BOTTOM: al = PG_A_RIGHT;  break;
+  case PG_A_SW:     al = PG_A_NE;     break;
+  case PG_A_LEFT:   al = PG_A_TOP;    break;
+  case PG_A_NW:     al = PG_A_NW;     break;
+  }   
+  return al;
 }
 
 /* The End */

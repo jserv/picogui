@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.36 2000/11/04 07:03:42 micahjd Exp $
+/* $Id: panel.c,v 1.37 2000/11/04 07:50:42 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -73,8 +73,20 @@ struct paneldata {
 void themeify_panel(struct widget *self);
 
 void resize_panel(struct widget *self) {
+  int s;
+
   self->in->div->split = theme_lookup(DATA->panelbar->state,PGTH_P_MARGIN);
   self->in->next->split = theme_lookup(DATA->panelbar->state,PGTH_P_WIDTH);
+
+  s = theme_lookup(PGTH_O_CLOSEBTN,PGTH_P_SIDE);
+  if ((self->in->flags & (~SIDEMASK)) & (PG_S_LEFT|PG_S_RIGHT))
+    s = rotate_side(s);
+  widget_set(DATA->btn_close,PG_WP_SIDE,s);  
+
+  s = theme_lookup(PGTH_O_ROTATEBTN,PGTH_P_SIDE);
+  if ((self->in->flags & (~SIDEMASK)) & (PG_S_LEFT|PG_S_RIGHT))
+    s = rotate_side(s);
+  widget_set(DATA->btn_rotate,PG_WP_SIDE,s);  
 }
 
 void build_panelbar(struct gropctxt *c,unsigned short state,
@@ -93,17 +105,8 @@ void build_panelbar(struct gropctxt *c,unsigned short state,
       || !fd) return;
   if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,DATA->text))
       || !str) return;
-  if (c->h > c->w) {      /* mangle the alignment if necessary */
-    switch (al) {
-    case PG_A_TOP:    al = PG_A_LEFT;   break;
-    case PG_A_NE:     al = PG_A_SW;     break;
-    case PG_A_RIGHT:  al = PG_A_BOTTOM; break;
-    case PG_A_SE:     al = PG_A_SE;     break;
-    case PG_A_BOTTOM: al = PG_A_RIGHT;  break;
-    case PG_A_SW:     al = PG_A_NE;     break;
-    case PG_A_LEFT:   al = PG_A_TOP;    break;
-    case PG_A_NW:     al = PG_A_NW;     break;
-    }   
+  if (c->h > c->w) {
+    al = mangle_align(al);
     sizetext(fd,&h,&w,str);
   }
   else
@@ -137,6 +140,9 @@ void panelbtn_rotate(struct widget *self,struct widget *button) {
   case PG_S_LEFT:   panel_set(self,PG_WP_SIDE,PG_S_TOP); break;
 
   }
+
+  resize_panel(self);
+  update();
 }
 
 /* Pointers, pointers, and more pointers. What's the point?

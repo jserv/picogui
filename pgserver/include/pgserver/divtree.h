@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.5 2000/10/29 01:45:35 micahjd Exp $
+/* $Id: divtree.h,v 1.6 2000/11/04 07:50:42 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -188,6 +188,12 @@ void divnode_recalc(struct divnode *n);
 void divnode_redraw(struct divnode *n,int all);
 g_error newdiv(struct divnode **p,struct widget *owner);
 void r_divnode_free(struct divnode *n);
+
+/* Little helper to rotate a side constant 90 degrees counterclockwise */
+int rotate_side(int s);
+/* Rotate them 90 degrees counterclockwise, then mirror
+   across the horizontal axis */
+int mangle_align(int al);
 
 /***************** divtree management */
 
