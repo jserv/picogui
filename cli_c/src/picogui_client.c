@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.7 2000/09/22 11:06:40 micahjd Exp $
+/* $Id: picogui_client.c,v 1.8 2000/09/22 18:04:28 pney Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -91,6 +91,20 @@ struct {
 
   } e;  /* e for extra? ;-) */
 } _pg_return;
+
+/* Structure to define a singly linked list for Bind entries. */
+struct pgbindlist {
+  pghandle widgetkey;        /* Store the widget handel */
+  unsigned short eventkey;   /* Store the event */
+  unsigned long *fctkey;     /* Store the pointer to the associated function */
+  struct pgbindlist *next;   /* Pointer to the next widget/event pair */
+};
+
+/* Variable to old the first Bind entrie of the list
+ * Used in 'pgEventLoop()' to look for matching widget/event pair. (TODO...)
+ */
+struct pgbindlist *top;
+    
 
 #define clienterr(msg)        (*_pgerrhandler)(PG_ERRT_CLIENT,msg)
 
@@ -441,6 +455,7 @@ void pgFlushRequests(void) {
    bound to.
 */
 void pgEventLoop(void) {
+
   _pgeventloop_on = 1;
 
   /* Good place for an update...  (probably the first update) */
@@ -451,21 +466,20 @@ void pgEventLoop(void) {
     _pg_add_request(PGREQ_WAIT,NULL,0);
     pgFlushRequests();
     
+    /* look in the linked list of Bind entries to see if a function is
+     * attached to the incomming event
+     * TODO....
+     */
+
+printf("-------------------------------> We got the EVENT: %i\n", _pg_return.e.event.event);
+printf("                                  From the WIDGET: %i\n", _pg_return.e.event.from);
+
+
+
     /* FIXME: see the information on pgBind in client_c.h
      *   The event loop should look in a linked list of Bind entries
      *   and call any functions that match.
      */
-
-/*    ($event, $from, $param) = _wait();
-	
-    # Package the 'from' handle in an object
-    bless $fromobj;
-    $fromobj->{'h'} = $from;
-
-    # Call the code reference
-    $r = $bindings{$from.':'.$event};
-    &$r($fromobj,$param) if (defined $r);
-*/    
   }
 
 }
@@ -548,22 +562,55 @@ pghandle pgRegisterApp(short int type,const char *name, ...) {
   return _pg_return.e.retdata;
 }
 
+struct pgbindlist *pgBindAdd(struct pgbindlist *bind) {
+  static struct pgbindlist *last = NULL;       /* start with null link */
+  short int ret = 0;
+  
+  if(!last) {
+    last = bind;                       /* first pair in the list.    */
+    ret = 1;                           /* Then return the pointer to */
+  }                                    /* the first item.            */
+  else last->next = bind;              
+  bind->next = NULL;
+  last = bind;
+  if(ret) return last;
+  return NULL;
+}
+
+
 void  pgSetWidget(pghandle widget, ...) {
   va_list v;
   struct pgreqd_set arg;
   short *spec;
   int numspecs,i;
+  struct pgbindlist *new;
 
   /* Set defaults values */
   arg.widget = htonl(widget ? widget : _pgdefault_widget);
   arg.dummy = 0;
 
-  for(va_start(v,widget);i;){
+  for(va_start(v,widget);i;) {
     i = va_arg(v,short);
-    if(i){
-      arg.property = htons(i);
-      arg.glob = htonl(va_arg(v,long));
-      _pg_add_request(PGREQ_SET,&arg,sizeof(arg));
+    if(i) {
+      if(i > PG_WPMAX) {                          /* the properties is an event */
+        new = malloc(sizeof(struct pgbindlist));  /* allocate memory to save it */
+	new->widgetkey = widget;
+	new->eventkey = i;
+	new->fctkey = va_arg(v,long);
+	new->next = NULL;
+	pgBindAdd(new);
+	
+	/* FIXME: retrieve the address of the first item of the list */
+	
+printf("-------------------------------> Insert: WIDGET: %i\n",widget);
+printf("                                          EVENT: %i\n",i);
+printf("                               FUNCTION ADDRESS: %i\n",new->fctkey);
+      }
+      else {
+        arg.property = htons(i);
+        arg.glob = htonl(va_arg(v,long));
+        _pg_add_request(PGREQ_SET,&arg,sizeof(arg));
+      }
     }
   }
   va_end(v);
