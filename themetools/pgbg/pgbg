@@ -9,13 +9,13 @@
 #
 
 if (!@ARGV) {
-    $id = '$Id: pgbg,v 1.2 2002/03/29 16:25:28 micahjd Exp $';
+    $id = '$Id: pgbg,v 1.3 2002/03/29 16:36:26 micahjd Exp $';
     print <<EOF;
 
 Create a PicoGUI background theme
 $id
 
-usage: pgbg [-i <image file>] [-c <color>] [-e]
+usage: pgbg [-i <image file>] [-c <color>] [-e] [-p]
             [-s <width>x<height>] [-f <format>] [-o <file>]
 
      <image file>: Use this image in the background
@@ -25,9 +25,7 @@ usage: pgbg [-i <image file>] [-c <color>] [-e]
          <format>: Convert the image to this format
            <file>: Write out this compiled theme file. If not specified, loads
                    the theme into pgserver
-
- TODO: add an option to preview the theme in a running pgserver
-    
+	       -p: Preview the theme on the default PicoGUI server
 EOF
 exit(1);
 }
@@ -39,6 +37,7 @@ while ($opt = shift @ARGV) {
     if ($opt eq "-i") {
 	$image = shift @ARGV;
 	$image =~ /([^\/]+)$/;
+	$image_shortname = $1;
 	$description .= "image $1, ";
     }
     elsif ($opt eq "-c") {
@@ -91,6 +90,8 @@ $theme = "object default name = \"$description\";\n";
 # 3. A centered bitmap, with fill color
 
 if (defined $image and !defined $center) {
+    $shortname = $image_shortname.".th";
+
     $theme .= <<EOF;
     obj background {
 	bitmap1 = LoadBitmap("$image");
@@ -102,16 +103,26 @@ EOF
 }
 
 elsif (defined $image) {
-    # Find the size of the image
-    open IMGINFO,"file $image|";
-    $image_info = <IMGINFO>;
-    close IMGINFO;
-    $image_info =~ /([0-9])+ x ([0-9]+)/;
-    $image_w = $1;
-    $image_h = $2;
-    die "Can't find image size\n" if (!$image_w or !$image_h);
+    $shortname = $image_shortname.".th";
 
-    die "Background color required\n" if (!defined $color);
+    # Find the size of the image
+    if ($size) {
+	$size =~ /([0-9]+)x([0-9]+)/;
+	$image_w = $1;
+	$image_h = $2;
+    }
+    else {
+	open IMGINFO,"file $image|";
+	$image_info = <IMGINFO>;
+	close IMGINFO;
+	$image_info =~ /([0-9]+) x ([0-9]+)/;
+	$image_w = $1;
+	$image_h = $2;
+	die "Can't find image size\n" if (!$image_w or !$image_h);
+    }
+
+    $color = "0x000000" if (!defined $color);
+    print "Size $image_w by $image_h\n";
     $theme .= <<EOF;
     obj background {
 	bitmap1 = LoadBitmap("$image");
@@ -130,13 +141,15 @@ elsif (defined $image) {
 	    Rect(x,y,w,by);
 	    Rect(x,y+by+$image_h,w,h-by-$image_h);
 	    Rect(x,y+by,bx,$image_h);
-	    Rect(x+bw+$image_w,y+by,w-bx-$image_w,$image_h);
+	    Rect(x+bx+$image_w,y+by,w-bx-$image_w,$image_h);
 	};
     }
 EOF
 }
 
 else {
+    $shortname = $color.".th";
+
     $theme .= <<EOF;
     obj background {
 	bgfill = fillstyle {
@@ -148,7 +161,7 @@ EOF
 }    
 
 # Now compile the theme
-die "Output file is required\n" if (!defined $output);
+$output = $shortname if (!defined $output);
 open THS, "|themec -o $output";
 print THS $theme;
 close THS;
