@@ -33,9 +33,10 @@
 #include <pgserver/render.h>
 #include <pgserver/font.h>
 #include <pgserver/appmgr.h>
-#include <stdio.h>
 #include <stdarg.h>
 #endif
+
+#include <stdio.h>
 
 #ifdef CONFIG_ERROR_TRACE
 const char *errtrace_fmt = "=== Trace message (not necessarily bad)\n    %s in %s, line %d: ";
