@@ -1,4 +1,4 @@
-/* $Id: paragraph.h,v 1.6 2002/10/31 19:40:42 micahjd Exp $
+/* $Id: paragraph.h,v 1.7 2002/11/01 02:10:58 micahjd Exp $
  *
  * paragraph.h - Build upon the text storage capabilities of pgstring, adding word
  *               wrapping, formatting, and UI.
@@ -105,6 +105,11 @@ struct paragraph_cursor {
   int width;
   hwrcolor color;
 
+  /* The location this cursor was most recently rendered
+   * at, in absolute logical coordinates. 
+   */
+  struct rect last_rect;
+
   unsigned int visible : 1;
 };
 
@@ -182,6 +187,11 @@ g_error paragraph_insert_char(struct paragraph_cursor *crsr, u32 ch,
 /* Hide/show the cursor */
 void paragraph_hide_cursor(struct paragraph_cursor *crsr);
 void paragraph_show_cursor(struct paragraph_cursor *crsr);
+
+/* Make sure the cursor is visible in the scrolled area
+ * if autoscrolling is on and this is possible, otherwise do nothing.
+ */
+void paragraph_scroll_to_cursor(struct paragraph_cursor *crsr);
 
 /* Set this cursor as the last change location, for incremental redraws */
 void paragraph_set_last_change(struct paragraph_cursor *crsr);

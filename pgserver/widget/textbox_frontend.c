@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.29 2002/10/31 20:33:58 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.30 2002/11/01 02:11:02 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -280,6 +280,7 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
     paragraph_show_cursor(DATA->doc->crsr);
     textbox_reset_inactivity(self);
     request_focus(self);
+    paragraph_scroll_to_cursor(DATA->doc->crsr);
     break;
 
   case PG_TRIGGER_KEYUP:
@@ -326,6 +327,7 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
       return; /* Skip update */
     }
     paragraph_show_cursor(DATA->doc->crsr);
+    paragraph_scroll_to_cursor(DATA->doc->crsr);
     break;
 
   case PG_TRIGGER_CHAR:
@@ -354,6 +356,7 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
 
     /* The cursor might have been hidden if we added a paragraph */
     paragraph_show_cursor(DATA->doc->crsr);
+    paragraph_scroll_to_cursor(DATA->doc->crsr);
     break;
     
   }

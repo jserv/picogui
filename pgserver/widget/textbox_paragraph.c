@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.21 2002/10/31 23:25:45 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.22 2002/11/01 02:11:03 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -411,8 +411,25 @@ void paragraph_show_cursor(struct paragraph_cursor *crsr) {
     crsr->visible = 1;
     paragraph_update_cursor(crsr);
   }
+}
 
-  /* Just like the terminal widget, have the scrolling track the cursor */
+/* Make sure the cursor is visible in the scrolled area
+ * if autoscrolling is on and this is possible, otherwise do nothing.
+ */
+void paragraph_scroll_to_cursor(struct paragraph_cursor *crsr) {
+  /* Just like the terminal widget, have the scrolling track the cursor.
+   * This is a good time to do it, since we need to know the cursor's
+   * absolute location.
+   */
+  if (crsr->par->doc && crsr->par->doc->autoscroll) {
+    struct divnode fakediv = *crsr->par->doc->container_div->owner->in->div;
+
+    /* FIXME: Using update() like this is very extremely sloppy! */
+    update(NULL,1);
+    fakediv.r = crsr->last_rect;
+    scroll_to_divnode(&fakediv);
+    update(NULL,1);
+  }
 }
 
 /******************************************************** Internal Methods **/
@@ -796,6 +813,7 @@ void paragraph_render_cursor(struct groprender *r, struct paragraph_cursor *crsr
   n.r.w = crsr->width;
   n.r.h = m.ascent + m.descent;
   n.param[0] = crsr->color;
+  crsr->last_rect = n.r;
 
   gropnode_clip(r,&n);
   gropnode_draw(r,&n);

@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.55 2002/10/31 20:33:56 micahjd Exp $
+/* $Id: textbox_document.c,v 1.56 2002/11/01 02:11:01 micahjd Exp $
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and
@@ -242,19 +242,33 @@ void document_seek(struct textbox_document *doc, s32 offset, int whence) {
 /* Seek up/down in the document, snapping the cursor to the nearest character */
 void document_lineseek(struct textbox_document *doc, s32 offset) {
   struct pgstr_iterator i;
+  struct paragraph *par;
 
-  /* Repeat the below code for offsets other than -1 or 1 */
-  if (offset < -1)
-    while (offset++)
-      document_lineseek(doc,-1);
-  else if (offset > 1)
-    while (offset--)
-      document_lineseek(doc,1);
-  else if (!offset)
-    return;
-
-  /* Find the line (and paragraph) we want */
-  /* FIXME: finish this function */
+  /* Up */
+  while (offset<0) {
+    par = doc->crsr->par;
+    if (!doc->crsr->line->prev)
+      par = par->prev;
+    if (!par)
+      return;
+    paragraph_movecursor(doc->crsr, par,
+			 doc->crsr->last_rect.x - par->div->div->r.x,
+			 doc->crsr->last_rect.y - par->div->div->r.y - 1);
+    offset++;
+  }
+    
+  /* Down */
+  while (offset>0) {
+    par = doc->crsr->par;
+    if (!doc->crsr->line->next)
+      par = par->next;
+    if (!par)
+      return;
+    paragraph_movecursor(doc->crsr, par,
+			 doc->crsr->last_rect.x - par->div->div->r.x,
+			 doc->crsr->last_rect.y + doc->crsr->line->height + 1 - par->div->div->r.y);
+    offset--;
+  }
 }
 
 
