@@ -1,4 +1,4 @@
-/* $Id: input_drivers.c,v 1.3 2002/11/03 04:54:24 micahjd Exp $
+/* $Id: input_drivers.c,v 1.4 2002/11/08 08:23:06 micahjd Exp $
  *
  * input_drivers.c - Abstract input driver interface
  *
@@ -48,7 +48,14 @@ g_error input_init(void) {
   char *inputs,*str;
   char *tok;
   g_error e;
-  
+  struct inputinfo *p;
+    
+#ifdef CONFIG_INPUT_AUTOLOAD
+  /* Automatically try to load all input drivers */
+  for (p=inputdrivers;p->name;p++)
+    load_inlib(p->regfunc,NULL);
+#else
+  /* Only load specified drivers */
   if ((constinputs = get_param_str("pgserver","input",NULL))) {
     str = inputs = strdup(constinputs);
     
@@ -59,6 +66,8 @@ g_error input_init(void) {
     }
     free(inputs);
   }
+#endif
+
   return success;
 }
 

@@ -81,7 +81,9 @@ quoted appropriately. For example:
   Directory to prefix each theme with. Makes typing in the 'themes' line a lot less tedious
 
 - input
-  Whitespace-separated list of input drivers to load
+  Whitespace-separated list of input drivers to load. If
+  CONFIG_INPUT_AUTOLOAD is turned on, instead of scanning this list
+  pgserver will attempt to load all installed drivers.
 
 - rotate
   Number of degrees to rotate the screen. The proper video wrappers must be

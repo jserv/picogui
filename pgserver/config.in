@@ -126,6 +126,7 @@ endmenu
 
 mainmenu_option next_comment
 comment 'Input Drivers'
+bool 'Automatically attempt to load all input drivers'  CONFIG_INPUT_AUTOLOAD
 bool 'Unified touchscreen support'	                 CONFIG_TOUCHSCREEN
 if [ "$CONFIG_TOUCHSCREEN" = "y" ]; then
    bool '  Palmax touchscreen driver'	                 DRIVER_PALMAXTS

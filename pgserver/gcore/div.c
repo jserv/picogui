@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.102 2002/11/06 06:40:32 micahjd Exp $
+/* $Id: div.c,v 1.103 2002/11/08 08:23:06 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -522,9 +522,16 @@ g_error divtree_new(struct divtree **dt) {
 
 /* Delete a divtree */
 void divtree_free(struct divtree *dt) {
-  r_divnode_free(dt->head);               /* Delete the tree of divnodes */
+  /* Unlink the head divnode and delete it */
+  dt->head->div  = NULL;
+  dt->head->next = NULL;
+  r_divnode_free(dt->head);
+
+  /* Delete the hotspot cursor */
   if (dt->hotspot_cursor)
-    pointer_free(-1,dt->hotspot_cursor);  /* Delete the hotspot cursor   */
+    pointer_free(-1,dt->hotspot_cursor);
+  
+  /* Delete any associated window */
   VID(window_free)(dt->display);
 
   /* Delete the dt structure itself, and the associated handle */

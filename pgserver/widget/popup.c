@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.72 2002/11/06 09:28:39 micahjd Exp $
+/* $Id: popup.c,v 1.73 2002/11/08 08:23:06 micahjd Exp $
  *
  * popup.c - A root widget for modal dialogs that display above the
  *           root divtree.
@@ -196,11 +196,8 @@ void popup_remove(struct widget *self) {
 
   oldflags = self->in->div->flags;
 
-  /* We must use our saved divtree pointer to delete the divtree
-   * instead of self->dt, since by this time the widget has been
-   * detatched from the divtree. Our self->dt and all our childrens'
-   * self->dt should already be set to DT_NIL.
-   */
+  /* Delete this widget's divnodes, and the divtree itself */
+  r_divnode_free(self->in);
   dts_pop(DATA->my_dt);
  
   /* If applicable, don't redraw toolbars on the root divtree.
