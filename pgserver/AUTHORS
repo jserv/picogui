@@ -1,0 +1,23 @@
+  This AUTHORS file uses mostly the same format as Linux's CREDITS file.
+  It is sorted alphabetically by name, formatted for both machine
+  and human readability. The fields are: name (N), email address (E),
+  web address (W), PGP key ID and fingerprint (P), description (D),
+  snail-mail address (S), instant messaging address (I).
+  
+  Feel free to add yourself to this, whether you rewrote all of pgserver
+  in a weekend, wrote documentation, or made a 1-line bugfix to someone else's
+  app.
+  
+  -- Micah
+  
+-------------------------------------------------------------------------------
+
+N: Micah Dowty
+E: micahjd@users.sourceforge.net
+W: http://picogui.org
+D: Original PicoGUI hacker, wrote most of pgserver
+S: (ask for current address)
+S: Colorado, USA
+I: dustpuppygeek on AIM
+I: scanline on irc.openprojects.net
+
