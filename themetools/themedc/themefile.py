@@ -77,9 +77,9 @@ def lookup_propname(value):
   if properties.has_key(value):
     return properties[value]
   elif value > constants['PGTH_P_THEMEAUTO']:
-    return 'themeauto+%d'%(value-constants['PGTH_P_THEMEAUTO'])
+    return 'themeauto%d'%(value-constants['PGTH_P_THEMEAUTO'])
   elif value > constants['PGTH_P_USER']:
-    return 'user+%d'%(value-constants['PGTH_P_USER'])
+    return 'user%d'%(value-constants['PGTH_P_USER'])
   else:
     return str(value)
 
