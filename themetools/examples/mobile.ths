@@ -1,0 +1,312 @@
+/* $Id: mobile.ths,v 1.1 2001/08/31 13:50:51 micahjd Exp $
+ *
+ * Theme for small mobile communications devices with very limited screen space
+ * and only a keypad for input. This would be good for a cell phone, credit
+ * card terminal, or other specialized mobile device with a small (less than
+ * 160x160) display and limited grayscale support.
+ *
+ * This theme recommends the following fonts:
+ *  - Helvetica8: This is the default text font
+ *  - Helvetica12: This slightly larger font is used for field input. It is
+ *    almost the perfect size to fit a credit card number on a 128x64 display.
+ *  - Clean6: For making small titlebars 
+ *
+ * If you want to use the background picture to advertise your company/device
+ * instead of PicoGUI (that's silly, isn't it :) you can change the file
+ * specified in the LoadBitmap() below. Make sure to change the 32s to the
+ * width and height of your logo bitmap. If you think it's just stupid to waste
+ * a couple kilobytes on a pG logo, you can just comment out the whole
+ * 'background' object and the background will be blank.
+ *
+ * Version 0.50
+ *
+ * -- Micah Dowty <micahjd@users.sourceforge.net>
+ */
+
+/* Background for when no apps are loaded :) */
+object background {
+  bitmap1 = LoadBitmap("data/pglogo32.pgm");
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+    Bitmap(x+((w-32)>>1),y+((h-32)>>1),32,32,bitmap1);
+
+    SetColor(fgcolor);
+    Pixel(5,5,1,1);
+    SetFont(font);
+    Text(5,5,1,1,default::name);
+  };
+  font = Font("Clean",6,PG_FSTYLE_FIXED);
+}
+
+object default {
+  name = "Mobile Device Theme";
+
+  /* Simple black-on-white background */
+  bgcolor = 0xFFFFFF;
+  fgcolor = 0x000000;
+  spacing = 0;
+  margin = 0;
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+  };
+
+  /* Small, but still plenty readable is the goal here... */
+  font = Font("Helvetica",8,0);
+  height = 12;
+  width = 12;
+
+  /* Remap buttons for devices with only 'cancel' and 'enter' */
+  hotkey.ok      = PGKEY_RETURN;
+  hotkey.cancel  = PGKEY_ESCAPE;
+  hotkey.yes     = PGKEY_RETURN;
+  hotkey.no      = PGKEY_ESCAPE;
+  hidehotkeys    = PG_HHK_RETURN_ESCAPE;
+}
+
+/* Spiffy input fields */
+object field {
+  bgfill = fillstyle {
+    SetColor(0xCCCCCC);
+    Frame(x,y,w,h);
+    SetColor(0x888888);
+    Frame(x+1,y+1,w-2,h-2);
+    SetColor(0x000000);
+    Frame(x+2,y+2,w-4,h-4);
+    SetColor(0xFFFFFF);
+    x = x+3;
+    y = y+3;
+    w = w-6;
+    h = h-6;
+    Rect(x,y,w,h);
+  };
+
+  /* Size it perfectly to fit a credit card number in a 128x64 display.
+   * At 128x64, this can fit 17 characters horizontally. The largest credit
+   * card numbers are 16 digits.
+   */
+  height = 18;
+  font = Font("Helvetica",12,0);
+}
+
+/* No border on popups, and always make them fullscreen */
+object popup {
+  width = 0x7FFF;  /* This will pass for infinity today :) */
+  height = 0x7FFF;
+} 
+
+/* Nothing special about popup menus. They don't really make sense on such
+ * a tiny screen, so hopefully the app won't rely on them too much!
+ */
+object popup.menu {
+  width = 0;       /* Not fullscreen */
+  height = 0;
+} 
+
+/* We do want a good title label though */
+object label.dlgtitle {
+  fgcolor = 0xFFFFFF;
+  bgcolor = 0x000000;
+  align = PG_A_LEFT;
+  margin = 2;
+
+  /* The fillstyle uses no hardcoded height values, so this font can change
+   * without disrupting the nifty special effects
+   */
+  font = Font("clean",6,PG_FSTYLE_FIXED);
+
+  bitmap1 = LoadBitmap("data/tiny_sphere.pgm");
+  bitmap2 = LoadBitmap("data/line_gradients.pgm");
+  
+  bgfill = fillstyle {
+    var spheredist;
+
+    /* Rectangle with a light border */
+    SetColor(0xCCCCCC);
+    Frame(x,y,w,h);
+    SetColor(bgcolor);
+    Rect(x+1,y+1,w-2,h-2);
+
+    /* Center the line gradients on the other end */
+    Bitmap(x+w-31,y+1,30,h-2,bitmap2);
+
+    /* Place the small sphere, centered vertically and equidistant from the
+     * top and left sides of the widget. Position the text at the same
+     * distance from the sphere.
+     */
+    spheredist = 1 + ((h-8)>>1);
+    Bitmap(x+spheredist,y+spheredist,8,8,bitmap1);
+    x = x+8+spheredist;
+  };
+}
+
+/* Rounded rectangle buttons */
+object button {
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x+1,y+1,w-2,h-2);
+    SetColor(0x000000);
+    Slab(x+4,y,w-8,1);
+    Slab(x+4,y+h-1,w-8,1);
+    Bar(x,y+4,1,h-8);
+    Bar(x+w-1,y+4,1,h-8);
+    Line(x,y+3,3,-3);
+    Line(x+w-1,y+3,-3,-3);
+    Line(x,y+h-4,3,3);
+    Line(x+w-1,y+h-4,-3,3);
+    Pixel(x+1,y+1,1,1);
+    Pixel(x+w-2,y+1,1,1);
+    Pixel(x+1,y+h-2,1,1);
+    Pixel(x+w-2,y+h-2,1,1);
+  };
+  spacing = 2;
+  width = 15;
+}
+object button.hilight {
+  fgcolor = 0xFFFFFF;
+  bgcolor = 0x000000;
+}
+
+/* If the panelbar is compiled in (doesn't need to be) just hide it */
+object panelbar width = 0;    
+
+/* Light toolbar border */
+object toolbar {
+  margin = 0;
+  bgfill = fillstyle {
+    SetColor(0xCCCCCC);
+    Frame(x,y,w,h);
+    SetColor(bgcolor);
+    Rect(x+1,y+1,w-2,h-2);
+  };
+
+  /* This, combined with 'hidehotkeys' above, will make toolbars disappear
+   * when there's nothing in them but duplicates of the hardware buttons
+   */
+  width = 0;
+  height = 0;
+}
+
+/* Menuitems can be used in scrolling menu lists,
+ * without occupying a popup menu.
+ */
+object menuitem {
+  margin = 30;  /* Space for check column and right arrow */
+  height = 11;  /* Must be at least as big as
+		 * PicoGUI's calculated size, or it
+		 * will instead use the calculated
+		 * size plus the margin. In this case
+		 * that would result in gigantic
+		 * buttons.
+		 */
+  align = PG_A_LEFT;
+
+  /* Extra margin on the left where a checkbox
+   * would be if this was a checkbox. Makes
+   * combinations of checkboxes and menuitems
+   * line up nicely.
+   */
+  bgfill = fillstyle {
+
+    /* Background common between checkboxes and menuitems */
+    SetColor(bgcolor);
+    Rect(x+11,y,w-11,h);
+    SetColor(0xCCCCCC);
+    Rect(x,y,11,h-1);
+    Slab(x,y+h-1,w,1);
+
+    /* Right arrow */
+    SetLgop(PG_LGOP_AND);
+    Bitmap(x+w-7,0,6,9,bitmap1);
+    SetLgop(PG_LGOP_OR);
+    Bitmap(x+w-7,0,6,9,bitmap2);
+    SetLgop(PG_LGOP_NONE);
+
+    x = x+11;
+    w = w-30;
+  };
+}
+object menuitem.hilight {
+  bgcolor = 0x000000;
+  fgcolor = 0xFFFFFF;
+}
+object submenuitem {
+  bitmap1 = LoadBitmap("data/r_arrow_mask.pbm");
+  bitmap2 = LoadBitmap("data/r_arrow.pbm");
+}
+object submenuitem.hilight {
+  bitmap1 = Copy(submenuitem::bitmap1);
+  bitmap2 = Copy(submenuitem::bitmap2);
+}
+
+/* the check boxes are designed to line up with menuitems */
+object checkbox {
+  margin = 30;  /* Space for check column and right arrow */
+  height = 11;  /* Must be at least as big as
+		 * PicoGUI's calculated size, or it
+		 * will instead use the calculated
+		 * size plus the margin. In this case
+		 * that would result in gigantic
+		 * buttons.
+		 */
+  align = PG_A_LEFT;
+
+  bitmap1 = LoadBitmap("data/check9_off.pgm");
+
+  bgfill = fillstyle {
+
+    /* Background common between checkboxes and menuitems */
+    SetColor(bgcolor);
+    Rect(x+11,y,w-11,h);
+    SetColor(0xCCCCCC);
+    Rect(x,y,11,h-1);
+    Slab(x,y+h-1,w,1);
+
+    /* Checkbox */
+    Bitmap(x+1,y+((h-9)>>1),9,9,bitmap1);
+
+    x = x+11;
+    w = w-30;
+  };
+}
+object checkbox.hilight {
+  bgcolor = 0x000000;
+  fgcolor = 0xFFFFFF;
+}
+object checkbox.on bitmap1 = LoadBitmap("data/check9_on.pgm");
+object checkbox.on.nohilight {
+  fgcolor = 0x000000;
+  bgcolor = 0xFFFFFF;
+}
+
+/* Radio button is like check box, but with different bitmaps */
+object radiobutton bitmap1 = LoadBitmap("data/radio9_off.pgm");
+object radiobutton.hilight bitmap1 = Copy(radiobutton::bitmap1);
+object radiobutton.on bitmap1 = LoadBitmap("data/radio9_on.pgm");
+object radiobutton.on.nohilight bitmap1 = Copy(radiobutton.on::bitmap1);
+
+/* Simple scrollbars. They probably won't be clicked much, but a simple
+ * scrollbar is nice to indicate scroll position.
+ */
+object scroll {
+  bitmap1 = LoadBitmap("data/thumb6x8.pgm");
+  width = 7;
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+    SetColor(0x808080);
+    Rect(x+3,2,2,h-4);
+  };
+  overlay = fillstyle {
+    Bitmap(x+1,y,6,3,bitmap1);
+    SetSrc(0,5,0,0);
+    Bitmap(x+1,y+h-3,6,3,bitmap1);
+    SetSrc(0,3,6,2);
+    Tilebitmap(x+1,y+3,6,h-6,bitmap1);
+  };
+}
+
+/* The End */
+
+
