@@ -1,5 +1,5 @@
 /*
- * $Id: pgboard_cmds.c,v 1.3 2001/10/30 09:47:57 cgrigis Exp $
+ * $Id: pgboard_cmds.c,v 1.4 2001/11/01 17:17:33 cgrigis Exp $
  *
  * Small test appllication displaying buttons allowing the user to send various
  * commands to the virtual keyboard.
@@ -152,6 +152,12 @@ int main (int argc, char * argv [])
 	       PG_WP_FONT, font,
 	       0);
   pgBind (PGDEFAULT, PG_WE_ACTIVATE, &handleButton, &cmd_pop_context);
+
+  pgNewWidget (PG_WIDGET_FIELD, PG_DERIVE_AFTER, lastBox);
+  pgSetWidget (PGDEFAULT,
+	       PG_WP_SIZE, 16,
+	       PG_WP_FONT, font,
+	       0);
 
   /* Wait for events */
   pgEventLoop ();

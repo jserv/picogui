@@ -1,4 +1,4 @@
-/* $Id: pgboard_api.c,v 1.1 2001/10/30 09:47:57 cgrigis Exp $
+/* $Id: pgboard_api.c,v 1.2 2001/11/01 17:17:31 cgrigis Exp $
  *
  * kbd_api.c - high-level API to manipulate the PicoGUI virtual keyboard
  * 
@@ -49,7 +49,7 @@
 /*
  * Run the 'pgboard' process
  */
-static void run_pgboard ();
+static int run_pgboard ();
 
 /*
  * Test the presence of a physical keyboard.
@@ -71,9 +71,13 @@ static void send_command (struct keyboard_command * cmd, int force);
 
 /*
  * Run the 'pgboard' process
+ *
+ * return : 1 if success, 0 if an error occurred
  */
-void run_pgboard ()
+int run_pgboard ()
 {
+  int retValue = 0;
+
 #ifdef POCKETBEE  
   switch (vfork ())
     {
@@ -81,20 +85,23 @@ void run_pgboard ()
       /* Child */
       if (!execl (PGBOARD_PATH, PGBOARD_PATH, PGBOARD_KEYMAP, NULL))
 	{
-	  perror ("pgboard_api run_pgboard()");
+	  perror ("pgboard_api/run_pgboard()/execl()");
 	}
       break;
 
     case -1:
       /* Error */
-      perror ("pgboard_api run_pgboard()");
+      perror ("pgboard_api/run_pgboard()/vfork()");
       break;
 
     default:
       /* Parent */
+      retValue = 1;
       break;
     }
 #endif /* POCKETBEE */
+
+  return retValue;
 }
 
 
@@ -128,14 +135,37 @@ void send_command (struct keyboard_command * cmd, int force)
       struct pgmemdata data = {cmd, sizeof (struct keyboard_command), 0};
       pghandle kb;
 
-      while ( !(kb = pgFindWidget (PG_KEYBOARD_APPNAME)) )
+      if ( !(kb = pgFindWidget (PG_KEYBOARD_APPNAME)) )
 	{
-	  printf ("'pgboard' not running, attempting to start it ... ");
- 	  run_pgboard ();
-	  sleep (5);
+	  /* Command to hide the keyboard */
+	  struct keyboard_command hide_cmd = {htons (PG_KEYBOARD_HIDE)};
+	  struct pgmemdata hide_data = {&hide_cmd, sizeof (struct keyboard_command), 0};
+	  printf ("'pgboard' not running, attempting to start it ...\n");
+
+	  /* Start the virtual keyboard */
+ 	  if (!run_pgboard ()) return;
+
+	  /* Wait until it has started */
+	  do
+	    {
+	      printf ("Waiting for pgboard ...\n");
+	      sleep (1);
+	    }
+	  while ( !(kb = pgFindWidget (PG_KEYBOARD_APPNAME)) );
+
+	  /* 
+	   * If the user command is TOGGLE, send a HIDE command first, so as
+	   * to have the intended result.
+	   */
+	  if (cmd->type == PG_KEYBOARD_TOGGLE)
+	    {
+	      pgAppMessage (kb, hide_data);
+	    }
+
 	  printf ("done.\n");
 	}
 
+      /* Send the user command */
       pgAppMessage (kb, data);
     }
 }
