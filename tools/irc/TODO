@@ -9,8 +9,6 @@ RED:
  * Allow the bot to register with NickServ so we don't have to keep re-opping it in #only-commits
  * Allow the bot to op itself on freenode (OPER)
  * BUG: python filter script doesn't strip dupes
- * shell script to reboot multiple bots at once
 
 GREEN:
- * Look into MTBC calculation - is that really correct?
  * Make BonsaiBot not suck
