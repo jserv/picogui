@@ -1,4 +1,4 @@
-/* $Id: platform.c,v 1.5 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: platform.c,v 1.6 2001/04/04 18:35:51 pney Exp $
  *
  * platforms.c - Contains platform-dependant stuff
  *
@@ -43,15 +43,144 @@
 #include <stdarg.h>
 #include <linux/types.h>
 #include <linux/string.h>
-#include <linux/ctype.h>
 
-static char _buf[1024];
 
-int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
-{
-  vsprintf(_buf, fmt, args);
-  strncpy(buf, _buf, size);
-  buf[size-1] = '\0';
+/* Define G_VA_COPY() to do the right thing for copying va_list variables.
+ * va_list is a pointer.
+ * From code in 'glib.h'
+ */
+#define G_VA_COPY(ap1, ap2)     ((ap1) = (ap2))
+
+
+/* Return the size of the list
+ * Code derived from the on in the 'glib'
+ */
+int g_printf_string_upper_bound (const char* format, va_list args) {
+  int len = 1;
+
+  while (*format) {
+    int long_int   = 0;
+    int extra_long = 0;
+    char c;
+
+    c = *format++;
+    if (c == '%') {
+      int done = 0;
+
+      while (*format && !done) {
+        switch (*format++) {
+          char *string_arg;
+
+          case '*':
+            len += va_arg (args, int);
+            break;
+          case '1':
+          case '2':
+          case '3':
+          case '4':
+          case '5':
+          case '6':
+          case '7':
+          case '8':
+          case '9':
+            /* add specified format length, since it might exceed the
+             * size we assume it to have.
+             */
+            format -= 1;
+            len += strtol (format, (char**) &format, 10);
+            break;
+          case 'h':
+            /* ignore short int flag, since all args have at least the
+             * same size as an int
+             */
+            break;
+          case 'l':
+            if (long_int)
+              extra_long = 1; /* linux specific */
+            else
+              long_int = 1;
+            break;
+          case 'q':
+          case 'L':
+            long_int = 1;
+            extra_long = 1;
+            break;
+          case 's':
+            string_arg = va_arg (args, char *);
+            if (string_arg)
+              len += strlen (string_arg);
+            else {
+              /* add enough padding to hold "(null)" identifier */
+              len += 16;
+            }
+            done = 1;
+            break;
+          case 'd':
+          case 'i':
+          case 'o':
+          case 'u':
+          case 'x':
+          case 'X':
+            if (long_int)
+              (void) va_arg (args, long);
+            else
+              (void) va_arg (args, int);
+            len += extra_long ? 64 : 32;
+            done = 1;
+            break;
+          case 'D':
+          case 'O':
+          case 'U':
+            (void) va_arg (args, long);
+            len += 32;
+            done = 1;
+            break;
+          case 'e':
+          case 'E':
+          case 'f':
+          case 'g':
+              (void) va_arg (args, double);
+            len += extra_long ? 128 : 64;
+            done = 1;
+            break;
+          case 'c':
+            (void) va_arg (args, int);
+            len += 1;
+            done = 1;
+            break;
+          case 'p':
+          case 'n':
+            (void) va_arg (args, void*);
+            len += 32;
+            done = 1;
+            break;
+          case '%':
+            len += 1;
+            done = 1;
+            break;
+          default:
+            /* ignore unknow/invalid flags */
+            break;
+        }
+      }
+    }
+    else
+      len += 1;
+  }
+  return len;
+}
+
+/* Emulate a vsnprintf function. */
+int vsnprintf(char *buf, size_t size, const char *fmt, va_list args) {
+  va_list args2;
+
+  G_VA_COPY (args2, args);
+
+  /* if the size of the args to write is bigger than 'size' return -1 */
+  if((g_printf_string_upper_bound (fmt,args)) > size)
+    return -1;
+    
+  return (vsprintf(buf,fmt,args2));
 }
 
 #endif
