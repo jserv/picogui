@@ -1,3 +1,16 @@
+2001-06-28    Micah Dowty <micahjd@users.sourceforge.net>
+
+Continuing interationalizing server
+
+		* gcore/defaulttext.inc: Cleaning up error messages
+		
+		* gcore/defaulttext.inc, include/picogui/constants.h, appmgr/global.c:
+		  Added the client lib's messages to the error table, and made them
+		  available in the default theme through PGTH_P_STRING_* properties.
+		
+		* net/dispatch.c: Implemented the new PGREQ_THLOOKUP request, for
+		  performing theme lookups on the client side.
+
 2001-06-27    Micah Dowty <micahjd@users.sourceforge.net>
 
 After some email with Pascal, the internationalization problem has been better
@@ -9,6 +22,11 @@ retrieved.
 
       * gcore/errortext.c: Removing Brandon's haiku errors. (Sorry Brandon,
 		  I will reincarnate them as a 'translation' of the original errors)
+
+		* gcore/defaulttext.inc: Moved default text table to a separate file
+		
+		* script/lserrors.pl: Wrote a little perl script to check pgserver
+		  error text consistancy
 
 2001-06-25    Micah Dowty <micahjd@users.sourceforge.net>
 

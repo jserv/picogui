@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.80 2001/06/25 00:48:50 micahjd Exp $
+/* $Id: widget.c,v 1.81 2001/06/28 21:06:44 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -128,19 +128,12 @@ g_error widget_create(struct widget **w,int type,
       return (g_error) (*w)->def->remove;
    }
    
-  if ((*w)->in && (*w)->out) {
-     /* If it has an input and output like any well-behaved widget
-      * should, we can add it */
-     *(*w)->out = *where;
-     *where = (*w)->in;
-     (*w)->where = where;
-     if (*(*w)->out && (*(*w)->out)->owner)
-       	(*(*w)->out)->owner->where = (*w)->out;
-  }
-  else {
-     g_free(*w);
-     return mkerror(PG_ERRT_INTERNAL,21);
-  }
+  /* Add the widget to the divtree */
+  *(*w)->out = *where;
+  *where = (*w)->in;
+  (*w)->where = where;
+  if (*(*w)->out && (*(*w)->out)->owner)
+    (*(*w)->out)->owner->where = (*w)->out;
      
   /* Resize for the first time */
   resizewidget(*w);

@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.39 2001/06/26 11:31:27 micahjd Exp $
+/* $Id: dispatch.c,v 1.40 2001/06/28 21:06:44 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -510,7 +510,7 @@ g_error rqh_regowner(int owner, struct pgrequest *req,
 
     case PG_OWN_POINTER:
       if (pointer_owner)
-	return mkerror(PG_ERRT_BUSY,65);
+	return mkerror(PG_ERRT_BUSY,66);
       pointer_owner = owner;
       break;
       
@@ -976,6 +976,14 @@ g_error rqh_newbitmap(int owner, struct pgrequest *req,
   errorcheck;
   
   *ret = h;
+  return sucess;
+}
+
+g_error rqh_thlookup(int owner, struct pgrequest *req,
+		     void *data, unsigned long *ret, int *fatal) {
+  reqarg(newbitmap);
+  
+  *ret = theme_lookup(ntohs(arg->object),ntohs(arg->property));
   return sucess;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.39 2001/05/29 16:04:10 micahjd Exp $
+/* $Id: handle.c,v 1.40 2001/06/28 21:06:44 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -407,7 +407,7 @@ g_error mkhandle(handle *h,unsigned char type,int owner,void *obj) {
   if ((owner!=-1) && (owner_conbuf = find_conbuf(owner)))
     context = owner_conbuf->context;
 
-  if (!h) return mkerror(PG_ERRT_INTERNAL,24);
+  if (!h) return mkerror(PG_ERRT_INTERNAL,25);
   if (obj==NULL) {
     *h = 0;
     return sucess;
@@ -565,7 +565,7 @@ g_error handle_bequeath(handle dest, handle src, int srcowner) {
   printf("handle_bequeath(0x%08X,0x%08X,%d)\n",dest,src,srcowner);
 #endif   
 
-  if (!(src && s && dest && d)) return mkerror(PG_ERRT_HANDLE,29);
+  if (!(src && s && dest && d)) return mkerror(PG_ERRT_HANDLE,26);
   if (srcowner>=0 && s->owner != srcowner) 
     return mkerror(PG_ERRT_HANDLE,27);
   if ((s->type & ~(HFLAG_RED|HFLAG_NFREE)) !=

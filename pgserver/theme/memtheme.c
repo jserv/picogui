@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.30 2001/06/01 01:00:47 micahjd Exp $
+/* $Id: memtheme.c,v 1.31 2001/06/28 21:06:44 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -174,24 +174,30 @@ unsigned long theme_lookup(unsigned short object,
 
   switch (property) {
     
-  case PGTH_P_BGCOLOR:        return 0xFFFFFF;
-  case PGTH_P_FGCOLOR:        return 0x000000;
-  case PGTH_P_FONT:           return defaultfont;
-  case PGTH_P_ALIGN:          return PG_A_CENTER;
-  case PGTH_P_BITMAPSIDE:     return PG_S_LEFT;
-  case PGTH_P_BITMAPMARGIN:   return 2;
-  case PGTH_P_MARGIN:         return 2;
-  case PGTH_P_WIDTH:          return 12;
-  case PGTH_P_HEIGHT:         return 15;
-  case PGTH_P_STRING_OK:      return string_ok;
-  case PGTH_P_STRING_CANCEL:  return string_cancel;
-  case PGTH_P_STRING_YES:     return string_yes;
-  case PGTH_P_STRING_NO:      return string_no;
-  case PGTH_P_SIDE:           return PG_S_LEFT;
-  case PGTH_P_HOTKEY_OK:      return PGKEY_RETURN;
-  case PGTH_P_HOTKEY_CANCEL:  return PGKEY_ESCAPE;
-  case PGTH_P_HOTKEY_YES:     return PGKEY_y;
-  case PGTH_P_HOTKEY_NO:      return PGKEY_n;
+  case PGTH_P_BGCOLOR:          return 0xFFFFFF;
+  case PGTH_P_FGCOLOR:          return 0x000000;
+  case PGTH_P_FONT:             return defaultfont;
+  case PGTH_P_ALIGN:            return PG_A_CENTER;
+  case PGTH_P_BITMAPSIDE:       return PG_S_LEFT;
+  case PGTH_P_BITMAPMARGIN:     return 2;
+  case PGTH_P_MARGIN:           return 2;
+  case PGTH_P_WIDTH:            return 12;
+  case PGTH_P_HEIGHT:           return 15;
+  case PGTH_P_STRING_OK:        return string_ok;
+  case PGTH_P_STRING_CANCEL:    return string_cancel;
+  case PGTH_P_STRING_YES:       return string_yes;
+  case PGTH_P_STRING_NO:        return string_no;
+  case PGTH_P_STRING_SEGFAULT:  return string_segfault;
+  case PGTH_P_STRING_MATHERR:   return string_matherr;
+  case PGTH_P_STRING_PGUIERR:   return string_pguierr;
+  case PGTH_P_STRING_PGUIWARN:  return string_pguiwarn;
+  case PGTH_P_STRING_PGUIERRDLG:return string_pguierrdlg;
+  case PGTH_P_STRING_PGUICOMPAT:return string_pguicompat;
+  case PGTH_P_SIDE:             return PG_S_LEFT;
+  case PGTH_P_HOTKEY_OK:        return PGKEY_RETURN;
+  case PGTH_P_HOTKEY_CANCEL:    return PGKEY_ESCAPE;
+  case PGTH_P_HOTKEY_YES:       return PGKEY_y;
+  case PGTH_P_HOTKEY_NO:        return PGKEY_n;
 
   default:
     return 0;       /* Couldn't hurt? */

@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.26 2001/06/26 11:31:27 micahjd Exp $
+/* $Id: network.h,v 1.27 2001/06/28 21:06:44 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -130,8 +130,9 @@ struct pghello {
 #define PGREQ_MKARRAY      33  /* Makes a array, returns handle  |    data */  
 #define PGREQ_RENDER       34  /* Render gropnode(s) to a bitmap |  struct */
 #define PGREQ_NEWBITMAP    35  /* Creates a blank bitmap         |  struct */
+#define PGREQ_THLOOKUP     36  /* Perform a theme lookup         |  struct */
 
-#define PGREQ_UNDEF        36  /* types > this will be truncated. return error */
+#define PGREQ_UNDEF        37  /* types > this will be truncated. return error */
 
 /******* Request data structures */
 
@@ -252,6 +253,10 @@ struct pgreqd_newbitmap {
   u16 width;
   u16 height;
 };
+struct pgreqd_thlookup {
+  u16 object;
+  u16 property;
+}
 
 /* A structure for encapsulating commands, for example in canvas, within
  * a RQH_WRITETO */

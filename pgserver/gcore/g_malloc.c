@@ -1,4 +1,4 @@
-/* $Id: g_malloc.c,v 1.13 2001/02/17 05:18:40 micahjd Exp $
+/* $Id: g_malloc.c,v 1.14 2001/06/28 21:06:44 micahjd Exp $
  *
  * g_malloc.c - malloc wrapper providing error handling
  *
@@ -47,7 +47,7 @@ long num_handles = 0;  /* Number of handles */
 #endif
 
 g_error g_malloc(void **p,size_t s) {
-  if (!p) return mkerror(PG_ERRT_INTERNAL,24);
+  if (!p) return mkerror(PG_ERRT_INTERNAL,25);
 
 #ifdef DEBUG_ANY
   *p = malloc(s+sizeof(size_t));
@@ -93,7 +93,7 @@ g_error g_realloc(void **p,size_t s) {
   size_t from;
 #endif
 
-  if (!p) return mkerror(PG_ERRT_BADPARAM,24);
+  if (!p) return mkerror(PG_ERRT_BADPARAM,25);
 
 #ifdef DEBUG_ANY
   ((size_t*)(*p))--;    /* Get the _real_ pointer so realloc will like us */

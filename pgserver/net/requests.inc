@@ -37,6 +37,7 @@ RQH(updatepart)
 RQH(undef)        /* Shane's mkarray code goes here */
 RQH(render)
 RQH(newbitmap)
+RQH(thlookup)
 RQH(undef)
 
 /* The End */

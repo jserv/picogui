@@ -16,7 +16,7 @@ libgcore_a_SOURCES = \
 	input.c 	\
 	driverinfo.c
 
-EXTRA_DIST = inputdrivers.inc videodrivers.inc
+EXTRA_DIST = inputdrivers.inc videodrivers.inc defaulttext.inc
 
 libgcore_a_DEPENDENCIES = inputdrivers.inc videodrivers.inc
 

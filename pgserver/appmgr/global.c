@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.41 2001/06/04 16:36:36 bauermeister Exp $
+/* $Id: global.c,v 1.42 2001/06/28 21:06:43 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -73,13 +73,23 @@ struct widget *bgwidget;
 handle hbgwidget;
 struct sprite *cursor;
 hwrbitmap defaultcursor_bitmap,defaultcursor_bitmask;
-handle string_ok,string_cancel,string_yes,string_no;
 handle htbboundary;       /* The last toolbar, represents the boundary between
 			     toolbars and application panels */
 struct widget *wtbboundary;  /* htbboundary, dereferenced. Only used for comparison
 				when deleting a toolbar. Do not rely on the
 				validity of this pointer, dereferencing it could
 				cause a segfault! */
+
+handle string_ok;
+handle string_cancel;
+handle string_yes;
+handle string_no;
+handle string_segfault;
+handle string_matherr;
+handle string_pguierr;
+handle string_pguiwarn;
+handle string_pguierrdlg;
+handle string_pguicompat;
 
 g_error appmgr_init(void) {
   hwrbitmap bgbits;
@@ -150,13 +160,35 @@ g_error appmgr_init(void) {
 #endif
    
   /* Default strings */
-  e = mkhandle(&string_ok,PG_TYPE_STRING | HFLAG_NFREE,-1,"Ok");
+  e = mkhandle(&string_ok,PG_TYPE_STRING | HFLAG_NFREE,-1,
+	       errortext(mkerror(0,1)));  /* Ok */
   errorcheck;
-  e = mkhandle(&string_cancel,PG_TYPE_STRING | HFLAG_NFREE,-1,"Cancel");
+  e = mkhandle(&string_cancel,PG_TYPE_STRING | HFLAG_NFREE,-1,
+	       errortext(mkerror(0,7)));  /* Cancel */
   errorcheck;
-  e = mkhandle(&string_yes,PG_TYPE_STRING | HFLAG_NFREE,-1,"Yes");
+  e = mkhandle(&string_yes,PG_TYPE_STRING | HFLAG_NFREE,-1,
+	       errortext(mkerror(0,14)));  /* Yes */
   errorcheck;
-  e = mkhandle(&string_no,PG_TYPE_STRING | HFLAG_NFREE,-1,"No");
+  e = mkhandle(&string_no,PG_TYPE_STRING | HFLAG_NFREE,-1,
+	       errortext(mkerror(0,15)));  /* No */
+  errorcheck;
+  e = mkhandle(&string_segfault,PG_TYPE_STRING | HFLAG_NFREE,-1,
+	       errortext(mkerror(0,16)));
+  errorcheck;
+  e = mkhandle(&string_matherr,PG_TYPE_STRING | HFLAG_NFREE,-1,
+	       errortext(mkerror(0,19)));
+  errorcheck;
+  e = mkhandle(&string_pguierr,PG_TYPE_STRING | HFLAG_NFREE,-1,
+	       errortext(mkerror(0,24)));
+  errorcheck;
+  e = mkhandle(&string_pguiwarn,PG_TYPE_STRING | HFLAG_NFREE,-1,
+	       errortext(mkerror(0,29)));
+  errorcheck;
+  e = mkhandle(&string_pguierrdlg,PG_TYPE_STRING | HFLAG_NFREE,-1,
+	       errortext(mkerror(0,31)));
+  errorcheck;
+  e = mkhandle(&string_pguicompat,PG_TYPE_STRING | HFLAG_NFREE,-1,
+	       errortext(mkerror(0,32)));
   errorcheck;
   
   return sucess;
