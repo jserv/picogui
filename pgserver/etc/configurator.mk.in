@@ -94,9 +94,32 @@ sleep = 3000
 [sound]
 keyclick = 1
 
-. /var/pgserver.dynconf
 EOF
 ;;
+
+    # ------------------------------
+    native-linux)
+    # ------------------------------
+
+cat<<EOF
+[pgserver]
+input = eventbroker
+depth = 16
+
+[input-ttykb]
+device = /dev/tty1
+
+[timers]
+cursorhide = 10
+backlightoff = 300
+sleep = 3000
+
+[sound]
+keyclick = 1
+
+EOF
+;;
+
 
     # ------------------------------
     *)

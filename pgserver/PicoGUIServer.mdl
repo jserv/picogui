@@ -80,15 +80,37 @@ def install (module, platform, project):
     makedirs (os.path.dirname (file))
 
     fd = open (file, 'w')
-    
-    fd.write ('''
+
+    if platform.platform == 'm68k-pic-coff':
+        fd.write ('''
 name = picogui-server
 argv = pgserver
 
 restart  = 1
 announce = 1
-blocked  = %d
-    ''' % (platform.platform == 'm68k-pic-coff'))
+blocked  = 1
+    ''')
+
+    elif platform.platform == 'native-linux':
+        fd.write ('''
+name = picogui-server
+argv = pgserver -c etc/pgserver.conf
+
+restart  = 1
+announce = 1
+blocked  = 0
+    ''')
+
+    else:
+        fd.write ('''
+name = picogui-server
+argv = pgserver
+
+restart  = 1
+announce = 1
+blocked  = 0
+    ''')
+        
     
     fd.close ()
 
