@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.58 2001/11/15 14:48:58 micahjd Exp $
+/* $Id: video.h,v 1.59 2001/11/19 00:12:38 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -349,7 +349,7 @@ struct vidlib {
    *   Allocates a new bitmap, and loads the
    *   formatted bitmap data into it
    *
-   * Default implementation: uses stdbitmap structure
+   * Default implementation: transcribes pixels with vid->pixel()
    */
 
 #ifdef CONFIG_FORMAT_XBM
@@ -551,7 +551,7 @@ struct fontglyph const *def_font_getglyph(struct fontdesc *fd, int ch);
 /************* Registration functions for video drivers */
 
 g_error sdlfb_regfunc(struct vidlib *v);
-g_error sdl_regfunc(struct vidlib *v);
+g_error sdlaccel_regfunc(struct vidlib *v);
 g_error svgagl_regfunc(struct vidlib *v);
 g_error svgafb_regfunc(struct vidlib *v);
 g_error chipslice_video_regfunc(struct vidlib *v);

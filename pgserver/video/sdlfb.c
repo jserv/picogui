@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.30 2001/11/09 08:53:42 micahjd Exp $
+/* $Id: sdlfb.c,v 1.31 2001/11/19 00:12:38 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -302,7 +302,7 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   }
    
   /* Info */
-  sprintf(str,get_param_str("video-sdlfb","caption","PicoGUI (sdl@%dx%dx%d)"),
+  sprintf(str,get_param_str("video-sdlfb","caption","PicoGUI (sdlfb@%dx%dx%d)"),
 	  vid->xres,vid->yres,bpp);
   SDL_WM_SetCaption(str,NULL);
 

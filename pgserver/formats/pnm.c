@@ -1,4 +1,4 @@
-/* $Id: pnm.c,v 1.7 2001/07/25 21:08:21 epchristi Exp $
+/* $Id: pnm.c,v 1.8 2001/11/19 00:12:38 micahjd Exp $
  *
  * pnm.c - Functions to convert any of the pbmplus formats (PGM, PBM, PPM)
  *         collectively referred to as PNM
@@ -76,20 +76,14 @@ int ascread(const u8 **dat,u32 *datlen) {
 
 g_error pnm_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   /* Convert from any of the pbmplus formats in binary or ascii */
-  struct stdbitmap **bmp = (struct stdbitmap **) hbmp;
   char format;
   int bin = 0;
   int bpp;
   int has_maxval=1;
-  int w,h,max;
-  int i,val,bit,r,g,b;
-  unsigned char *p,*pline;
-  int shiftset = 8-vid->bpp;
-  int oshift;
+  int x,y,w,h,max;
+  int val,bit,r,g,b;
   g_error e;
-
-   g_error efmt = mkerror(PG_ERRT_BADPARAM,48);
-  hwrcolor hc;
+  g_error efmt = mkerror(PG_ERRT_BADPARAM,48);
 
   ascskip(&data,&datalen);
   if (!datalen) return efmt;
@@ -137,27 +131,13 @@ g_error pnm_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
     return efmt;
 
   /* Set up the bitmap */
-  e = (*vid->bitmap_new) ((hwrbitmap *)bmp,w,h);
+  e = VID(bitmap_new)(hbmp,w,h);
   errorcheck;
-  pline = p = (*bmp)->bits;
 
-  /* Special case: bitmap and screen are black&white, 
-   * no pixel width conversion is necessary.
-   * PBM stores the pixels in the same order as PicoGUI,
-   * but the color is inverted.
-   */
-  if (bpp==1 && vid->bpp==1 && bin) {
-     unsigned long size = (*bmp)->pitch * h;
-     for (;size;size--,p++,data++)
-       *p = (*data) ^ 0xFF;
-     return sucess;
-  }
-   
   /* Read in the values, convert colors, output them... */
-  for (;h>0;h--,p=pline+=(*bmp)->pitch) {
-    oshift=shiftset;
+  for (y=0;y<h;y++) {
     bit = 0;
-    for (i=w;i;i--) {
+    for (x=0;x<w;x++) {
       if (!bit)
 	if (bin)
 	  val = *(data++);
@@ -210,58 +190,8 @@ g_error pnm_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 
       }
 
-      /* Convert to hwrcolor */
-      hc = VID(color_pgtohwr) (mkcolor(r,g,b));
-
-      /* Output them in the device's bpp */
-      switch (vid->bpp) {
-
-      case 1:
-      case 2:
-      case 4:
-	if (oshift==shiftset)
-	   *p = hc << oshift;
-	else
-	   *p |= hc << oshift;
-	if (!oshift) {
-	  oshift = shiftset;
-	  p++;
-	}
-	 else
-	   oshift -= vid->bpp;
-	break;
-
-      case 8:
-	*(((unsigned char *)p)++) = hc;
-	break;
-	 
-      case 16:
-	*(((unsigned short *)p)++) = hc;
-	break;
-
-      case 24:
-	*(p++) = (unsigned char) hc;
-	*(p++) = (unsigned char) (hc >> 8);
-	*(p++) = (unsigned char) (hc >> 16);
-	break;
-
-      case 32:
-	*(((unsigned long *)p)++) = hc;
-	break;
-
-#if DEBUG_VIDEO
-	/* Probably not worth the error-checking time
-	   in non-debug versions, as it would be caught
-	   earlier (hopefully?)
-	*/
-
-      default:
-	printf("Converting to unsupported BPP\n");
-	exit(1);
-#endif
-	
-      }
-      
+      /* Store it in the picogui bitmap */
+      VID(pixel)(*hbmp,x,y,VID(color_pgtohwr)(mkcolor(r,g,b)),PG_LGOP_NONE);
     }
   }
   

@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.57 2001/11/17 09:43:25 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.58 2001/11/19 00:12:38 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -1377,19 +1377,21 @@ void def_tileblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
 void def_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 	      s16 src_x, s16 src_y, s16 lgop) {
    int i;
-   struct stdbitmap *srcbit = (struct stdbitmap *) src;
+   s16 bw,bh;
    
-   if (srcbit && (w>(srcbit->w-src_x) || h>(srcbit->h-src_y))) {
+   (*vid->bitmap_getsize)(src,&bw,&bh);
+
+   if (w>(bw-src_x) || h>(bh-src_y)) {
       int i,j,sx,sy;
-      src_x %= srcbit->w;
-      src_y %= srcbit->h;
+      src_x %= bw;
+      src_y %= bh;
       
       /* Do a tiled blit */
-      for (i=0,sx=src_x;i<w;i+=srcbit->w-sx,sx=0)
-	for (j=0,sy=src_y;j<h;j+=srcbit->h-sy,sy=0)
+      for (i=0,sx=src_x;i<w;i+=bw-sx,sx=0)
+	for (j=0,sy=src_y;j<h;j+=bh-sy,sy=0)
 	  (*vid->blit) (dest,x+i,y+j,
-			min(srcbit->w-sx,w-i),min(srcbit->h-sy,h-j),
-			srcbit,sx,sy,lgop);
+			min(bw-sx,w-i),min(bh-sy,h-j),
+			src,sx,sy,lgop);
       return;
    }
    
@@ -1763,7 +1765,7 @@ g_error def_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
 
   if (b->rend) {
     *rend = b->rend;
-    return;
+    return sucess;
   }
 
   /* ack... we need to make a new context */

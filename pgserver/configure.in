@@ -117,7 +117,7 @@ dnl Extra libraries depending on the selected profile
 dnl ==================================================
 
 dnl Eventually check for SDL
-AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_SDLFB DRIVER_SDL, [ 
+AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_SDLFB DRIVER_SDLACCEL, [ 
 
   AM_PATH_SDL(1.0.0, , AC_MSG_WARN(cannot find SDL))
 

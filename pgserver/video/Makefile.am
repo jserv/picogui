@@ -6,14 +6,22 @@ libvideo_a_SOURCES = \
     $(DRIVER)
 
 EXTRA_libvideo_a_SOURCES = \
-	ez328.c   \
-	fbdev.c   \
-	ncurses.c \
-	null.c 	  \
-	nullfb.c  \
-	sdlfb.c   \
-	svgafb.c  \
-	serial40x4.c
+	ez328.c    \
+	ez328vga.c \
+	fbdev.c    \
+	ncurses.c  \
+	null.c 	   \
+	nullfb.c   \
+	sdlfb.c    \
+	svgafb.c   \
+	serial40x4.c \
+	SDL_gfxPrimitives.c \
+	sdlaccel.c \
+	scrshot.c  \
+	s1d13806.c
+
+noinst_HEADERS = \
+	SDL_gfxPrimitives.h
 
 libvideo_a_LIBADD       = $(DRIVER:%.c=%.o)
 libvideo_a_DEPENDENCIES = $(DRIVER:%.c=%.o)

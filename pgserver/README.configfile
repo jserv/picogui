@@ -112,6 +112,15 @@ quoted appropriately. For example:
 - vidblank
   Inactivity time before blanking the display, in 1/10 seconds
 
+[vide-sdlaccel]
+
+- caption
+  Set the window caption when PicoGUI is run in a window. This is a printf
+  format string with 3 integer parameters: width, height, and color depth.
+  
+- fullscreen
+  Set to 1 to enable fullscreen mode
+
 [video-sdlfb]
 
 - caption

@@ -331,3 +331,21 @@ CONFIG_ROTATIONBASE_0
       the client or the config file. This is useful when the
       display hardware must be rotated, but the user and
       applications shouldn't be aware of it.
+
+CONFIG_SDL_FULLUPDATE
+      Instead of only updating the changed areas of the screen
+      this updates everything. It will slow things down
+      substantially, but could be helpful for tracking down
+      graphics primitives scribbling where they're not
+      supposed to on the screen.
+
+DRIVER_SDLACCEL
+      While the sdlfb driver was designed for compatibility,
+      this driver is designed for speed. It uses the highest
+      level SDL primitives possible, and supports various
+      libraries that sit on top of SDL. This driver does
+      _not_ require any linear VBLs.
+
+CONFIG_SDLAA
+      Since SDL_gfxPrimitives supports antialiasing in its line
+      and ellipse primitives, this will use the antialiased versions.

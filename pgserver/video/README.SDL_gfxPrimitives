@@ -1,0 +1,143 @@
+ ****** Editor's Note ******
+
+ This file is from the SDL_gfxPrimitives library:
+  http://freshmeat.net/projects/sdl_gfxprimitives/
+
+ This library is licensed under the LGPL or the GPL.
+
+ It has been modified some for use in pgserver:
+ Unnecessary functions were removed, bugs fixed, and
+ the header file hacked up.
+
+    -- Micah
+
+ ***************************
+
+SDL_gfxPrimitives - SDL graphics primitives, a collection of drawing routines
+======================================================================================
+
+A. Schiffler, aschiffler@home.com to contact the author.
+Licenced under the LGPL, see the file LICENSE for details. 
+
+INTRO
+-----
+
+The SDL_gfxPrimitives library provides basic drawing routines such as lines, circles or 
+polygons for SDL Surfaces. 
+
+Care has been taken so that all routines are fully alpha-aware and can blend any 
+primitive onto the target surface if ALPHA<255. Surface depth supported are 1,2,3 and 
+4 bytes per pixel. Surface locking is implemented in each routine and the library 
+should work well with hardware accelerated surfaces. 
+
+Currently, The following Anti-Aliased primitives are available:
+* AA-line
+* AA-circle
+* AA-ellipse
+
+INTERFACE
+---------
+
+See SDL_gfxPrimitives.h for a list of functions provided.
+
+
+CHANGES/VERSION
+---------------
+
+Ver 1.5 - Mon Jul  2 11:27:40 EDT 2001
+
+* New alpha blending code for factor 4 speedups if a<255 on all functions.
+* Modified include file for W32 DLL support.
+* Added VC6 project files for DLL and static library building.
+* Added simple AA-circle/-ellipse routine - quality needs improvement.
+* Removed 32bit shift on 64bit number from aaline for better portability
+  across platforms.
+* Removed a couple more compiler warnings (i.e. purely cosmetic fix).
+
+Ver 1.4 - Sun Jun  3 11:52:07 EDT 2001
+
+* Fixed hline, vline and rectangle clipping and result codes.
+* Fixed AA-line arithmetic (was alpha subtraction, should be alpha ratio).
+* More caching on fonts for speedups.
+* More pointer checks in several places.
+* New special cases for ellipses for rx=0/ry=0.
+* Same sanity checks for circles/ellipses.
+* Same return code for polygon/filledpolygon.
+
+Ver 1.3 - Thu May 31 12:41:35 EDT 2001
+
+* Minor cleanups and fixes (gcc -Wall is your friend).
+
+Ver 1.2 again - Thu Apr  5 07:50:57 EDT 2001
+
+* Fixed lineRGBA and aalineRGBA calls (had coordinate-passing mixed up twice,
+  thanks Lion for pointing this out)
+
+Ver 1.2 - Wed Apr  4 08:32:42 EDT 2001
+
+* Changed to a dual, you-have-the-choice(TM) licencing system 
+  to accomodate GPL developments using SDL_gfxPrimitives.
+* Some minor fixes (thanks Karl).
+* All routines return proper result code now.
+* Clipping for aaline, circle and ellipse.
+
+Ver 1.1 - Thu Mar 22 15:28:27 EST 2001
+
+* Added code for Alpha=255 pixel drawing through direct memory writes to all routines
+resulting in a much faster performance (factor 5 to 20) for non transparent pixels.
+* New test and benchmark program with better info and nicer look.
+* More info in README. Proper licence file. Comment cleanup.
+
+Ver 1.0 - Fri Mar 16 08:38:07 EST 2001
+
+* Initial release
+
+
+
+INSTALLATION AND TEST
+---------------------
+
+Run
+	./autogen.sh
+	./configure
+	make
+
+to compile the code and a test program.
+
+Run
+	./TestGfxPrimitives
+
+for a demo and simple benchmark.
+
+Unzip the file VisualC.zip for VC6 project files.
+
+
+COMMENTS
+--------
+
+If you have any ideas on how to make this better looking, faster running, less
+resource hungry, add MMX-optimized inline assembly, more state-of-the-art
+algorithmes ... well, send me the changes for inclusion in the next release 
+so that we all benefit. :-)
+
+Code that would be nice to have in particular, are routines for:
+- faster, higher euality anti-aliased circles and ellipses
+- anti-aliased circles and ellipses filled
+- anti-aliased filled polygons
+- B-splines or other types of curves of that sort
+
+
+CONTRIBUTORS
+------------
+
+* Non-alpha line drawing code adapted from routine 
+  by Pete Shinners, pete@shinners.org - thanks Pete.
+* More fixes by Karl Bartel, karlb@gmx.net - thanks Karl.
+* Much testing and suggestions for fixes from Danny van Bruggen,
+  danny@froukepc.dhs.org - thanks Danny.
+* VC6 DLL and static library project files from Michael Chen, 
+  machenmusik@home.com - thanks Michael.
+* AA-circle/-ellipse code idea from Stephane Magnenat, 
+  nct@wg0.ysagoon.com - thanks Stephane.
+* Faster blending routines contributed by Anders Lindström,
+  cal@swipnet.se - thanks Anders.
