@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: mk_theme_hierarchy.pl,v 1.1 2000/10/02 04:47:56 micahjd Exp $
+# $Id: mk_theme_hierarchy.pl,v 1.2 2000/10/02 04:52:29 micahjd Exp $
 #
 # This is a small script that uses dot(1) from the
 # open source AT&T Graphvis program to create a theme
@@ -55,6 +55,7 @@ open DOTF,"| dot -Tps -o $postscript" or die "Can't pipe to dot: $!";
 print DOTF <<EOF;
 digraph L0 {
     node [shape=box];
+    rotate=90;
     $objs $cons
     label = "\\nPicoGUI Theme Object Hierarchy";
     fontsize=18;
