@@ -1,4 +1,4 @@
-/* $Id: panelbar.c,v 1.6 2002/03/26 03:47:20 instinc Exp $
+/* $Id: panelbar.c,v 1.7 2002/05/20 19:18:38 micahjd Exp $
  *
  * panelbar.c - Container and draggable bar for resizing panels
  *
@@ -185,8 +185,7 @@ void panelbar_remove(struct widget *self) {
     DATA->sbit = NULL;
   }
   g_free(self->data);
-  if (!in_shutdown)
-    r_divnode_free(self->in);
+  r_divnode_free(self->in);
 }
 
 g_error panelbar_set(struct widget *self,int property, glob data) {

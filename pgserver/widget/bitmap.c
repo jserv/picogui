@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.38 2002/02/20 04:52:42 micahjd Exp $
+/* $Id: bitmap.c,v 1.39 2002/05/20 19:18:38 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -102,8 +102,7 @@ g_error bitmap_install(struct widget *self) {
 
 void bitmap_remove(struct widget *self) {
   g_free(self->data);
-  if (!in_shutdown)
-    r_divnode_free(self->in);
+  r_divnode_free(self->in);
 }
 
 g_error bitmap_set(struct widget *self,int property, glob data) {

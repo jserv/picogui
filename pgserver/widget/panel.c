@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.77 2002/03/26 03:47:20 instinc Exp $
+/* $Id: panel.c,v 1.78 2002/05/20 19:18:38 micahjd Exp $
  *
  * panel.c - Holder for applications. It uses a panelbar for resizing purposes,
  *           and optionally supplies some standard buttons for the panel.
@@ -229,8 +229,7 @@ g_error panel_install(struct widget *self) {
 void panel_remove(struct widget *self) {
   handle_free(-1, DATA->hbar);
   g_free(self->data);
-  if (!in_shutdown)
-    r_divnode_free(self->in);
+  r_divnode_free(self->in);
 }
 
 g_error panel_set(struct widget *self,int property, glob data) {

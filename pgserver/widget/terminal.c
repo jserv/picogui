@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.50 2002/03/26 03:47:20 instinc Exp $
+/* $Id: terminal.c,v 1.51 2002/05/20 19:18:38 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -382,8 +382,7 @@ void terminal_remove(struct widget *self) {
   handle_free(-1,DATA->hbuffer);   /* Free our system handles */
   handle_free(-1,DATA->deffont);
   g_free(self->data);
-  if (!in_shutdown)
-    r_divnode_free(self->in);
+  r_divnode_free(self->in);
 }
 
 g_error terminal_set(struct widget *self,int property, glob data) {

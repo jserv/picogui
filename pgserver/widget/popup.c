@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.54 2002/04/16 18:45:32 micahjd Exp $
+/* $Id: popup.c,v 1.55 2002/05/20 19:18:38 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -213,12 +213,10 @@ void popup_remove(struct widget *self) {
 
   oldflags = self->in->div->flags;
 
-  if (!in_shutdown) {
-    r_divnode_free(self->in);
-    dts_pop(self->dt);
-    self->dt = NULL;
-  }
-
+  r_divnode_free(self->in);
+  dts_pop(self->dt);
+  self->dt = NULL;
+  
   /* If applicable, don't redraw toolbars on the root divtree.
    * Normally we could just use popup_toolbar_passthrough() but we
    * also take into account the tree we just deleted.

@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.55 2002/03/27 15:09:25 lonetech Exp $
+/* $Id: field.c,v 1.56 2002/05/20 19:18:38 micahjd Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -164,8 +164,7 @@ void field_remove(struct widget *self) {
   g_free(DATA->buffer);
 
   g_free(self->data);
-  if (!in_shutdown)
-    r_divnode_free(self->in);
+  r_divnode_free(self->in);
 }
 
 g_error field_set(struct widget *self,int property, glob data) {

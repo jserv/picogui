@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.35 2002/03/26 03:47:20 instinc Exp $
+/* $Id: textbox_main.c,v 1.36 2002/05/20 19:18:38 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -100,8 +100,7 @@ void textbox_remove(struct widget *self) {
   g_free(DATA->c.c_cn);
 
   g_free(self->data);
-  if (!in_shutdown)
-     r_divnode_free(self->in);
+  r_divnode_free(self->in);
 }
 
 void textbox_resize(struct widget *self) {

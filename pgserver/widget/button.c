@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.103 2002/04/15 02:40:31 micahjd Exp $
+/* $Id: button.c,v 1.104 2002/05/20 19:18:38 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -217,8 +217,7 @@ g_error button_install(struct widget *self) {
 
 void button_remove(struct widget *self) {
   g_free(self->data);
-  if (!in_shutdown)
-    r_divnode_free(self->in);
+  r_divnode_free(self->in);
 }
 
 g_error button_set(struct widget *self,int property, glob data) {

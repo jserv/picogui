@@ -1,4 +1,4 @@
-/* $Id: toolbar.c,v 1.22 2002/02/11 19:39:24 micahjd Exp $
+/* $Id: toolbar.c,v 1.23 2002/05/20 19:18:38 micahjd Exp $
  *
  * toolbar.c - container widget for buttons
  *
@@ -71,9 +71,6 @@ g_error toolbar_install(struct widget *self) {
 }
 
 void toolbar_remove(struct widget *self) {
-
-  if (in_shutdown) return;
-
   /* If this is an application toolbar, and there is a popup in the 
    * nontoolbar area only, redraw the screen */
   if (self->isroot && popup_toolbar_passthrough()) {

@@ -1,4 +1,4 @@
-/* $Id: background.c,v 1.11 2002/03/26 03:47:20 instinc Exp $
+/* $Id: background.c,v 1.12 2002/05/20 19:18:38 micahjd Exp $
  *
  * background.c - an internal widget for drawing the screen background
  *
@@ -55,8 +55,7 @@ g_error background_install(struct widget *self) {
 }
 
 void background_remove(struct widget *self) {
-  if (!in_shutdown)
-    r_divnode_free(self->in);
+  r_divnode_free(self->in);
 }
 
 g_error background_set(struct widget *self,int property, glob data) {

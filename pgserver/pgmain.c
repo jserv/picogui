@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.34 2002/04/04 22:44:03 micahjd Exp $
+/* $Id: pgmain.c,v 1.35 2002/05/20 19:18:38 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -52,7 +52,7 @@ extern char **environ;
 #endif
 
 volatile u8 mainloop_proceed = 1;
-volatile u8 in_shutdown = 0, in_init = 1;
+volatile u8 in_init = 1;
 volatile u8 use_sessionmgmt = 0;           /* Using session manager, exit after last client */
 volatile u8 use_tpcal = 0;                 /* Run tpcal before running the session manager */
 volatile u8 sessionmgr_secondary = 0;      /* Need to run session manager after tpcal */
@@ -597,9 +597,6 @@ int main(int argc, char **argv) {
   }
 
   /*************************************** cleanup time */
-
-  in_shutdown = 1;          /* Disables most individual cleanups in favor
-			     * of this bulk extinction of memory */
 
   timer_release();
   handle_cleanup(-1,-1);

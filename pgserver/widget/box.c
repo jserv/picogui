@@ -1,4 +1,4 @@
-/* $Id: box.c,v 1.24 2002/03/26 17:15:00 instinc Exp $
+/* $Id: box.c,v 1.25 2002/05/20 19:18:38 micahjd Exp $
  *
  * box.c - Generic container for holding a group of widgets. It's sizing and
  *         appearance are defined by the theme.
@@ -69,8 +69,7 @@ g_error box_install(struct widget *self) {
 }
 
 void box_remove(struct widget *self) {
-  if (!in_shutdown)
-    r_divnode_free(self->in);
+  r_divnode_free(self->in);
 }
 
 g_error box_set(struct widget *self,int property, glob data) {

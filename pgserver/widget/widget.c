@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.179 2002/05/20 19:11:20 micahjd Exp $
+/* $Id: widget.c,v 1.180 2002/05/20 19:18:38 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -335,91 +335,88 @@ void widget_remove(struct widget *w) {
 
   DBG("%p\n",w);
 
-  if (!in_shutdown) {
-    /* Get out of the timer list */
-    remove_from_timerlist(w);
-
-    /* Get rid of any pointers we have to it */
-    if (w==under) under = NULL;
-    if (w==lastclicked) lastclicked = NULL;
-    if (w==prev_under) prev_under = NULL;
-    if (w==capture) capture = NULL;
-    if (w==kbdfocus) kbdfocus = NULL;
-
-    /* Remove inner widgets if it can be done safely
-       (only remove if they have handles) */
-    while (w->sub && *w->sub) {    
-      if ((*w->sub)->owner && (hw = hlookup((*w->sub)->owner,NULL))) {
-	DBG("Removing inner widget %d\n",hw);
-	handle_free(-1,hw);
-      }
-      else {
-	DBG("Can't remove inner widget!\n");
-	break;
-      }
-    }
-    
-    if (w->sub && *w->sub) {    
-      /* More pointer mangling...  :) If this widget has other 
-	 widgets inside of it, we will need to insert the 'sub'
-	 list. This is a desperate attempt to not segfault. */
-
-      DBG("************** Relocating sub list. w=%p\n",w);
-      
-      sub_end = *w->sub;
-      while (sub_end->next) 
-	sub_end = sub_end->next;
-
-      if (w->where) 
-	*w->where = *w->sub;
-      
-      if (w->sub && *w->sub && (*w->sub)->owner)
-	(*w->sub)->owner->where = w->where;
-	
-      if (w->out) {
-	sub_end->next = *w->out;
-	if (*w->out && (*w->out)->owner)
-	  (*w->out)->owner->where = &sub_end->next;
-      }     
-      else
-	sub_end->next = NULL;
-
+  /* Get out of the timer list */
+  remove_from_timerlist(w);
+  
+  /* Get rid of any pointers we have to it */
+  if (w==under) under = NULL;
+  if (w==lastclicked) lastclicked = NULL;
+  if (w==prev_under) prev_under = NULL;
+  if (w==capture) capture = NULL;
+  if (w==kbdfocus) kbdfocus = NULL;
+  
+  /* Remove inner widgets if it can be done safely
+     (only remove if they have handles) */
+  while (w->sub && *w->sub) {    
+    if ((*w->sub)->owner && (hw = hlookup((*w->sub)->owner,NULL))) {
+      DBG("Removing inner widget %d\n",hw);
+      handle_free(-1,hw);
     }
     else {
-      if (w->out && *w->out && w->where) {
-	DBG("Reattaching *w->where to *w->out\n");
-	*w->where = *w->out;
-
-	/* We must make sure the new where pointer would be valid
-	 * before we set it. This is important when a tree of widgets
-	 * is completely self-contained within another widget, as in
-	 * the case of the panelbar inside the panel widget.
-	 */
-       	if (*w->out && (*w->out)->owner && *w->where==(*w->out)->owner->in)
-	  (*w->out)->owner->where = w->where;
-      }
-      else if ( w->where ) {
-	DBG("Setting *w->where = NULL\n");
-	*w->where = NULL;
-      }
+      DBG("Can't remove inner widget!\n");
+      break;
     }
-    
-    /* If we don't break this link, then deleting
-       the widget's divtree will keep on going
-       and delete other widgets' divtrees */
-    if (w->out) *w->out = NULL; 
-    if (w->sub) *w->sub = NULL;
   }
   
-  if (w->def->remove) (*w->def->remove)(w);
-
-  if (!in_shutdown) {
-    /* Set the flags for redraw */
-    if (w->dt && w->dt->head) {
-      w->dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC;
-      w->dt->flags |= DIVTREE_NEED_RECALC;
-    }   
+  if (w->sub && *w->sub) {    
+    /* More pointer mangling...  :) If this widget has other 
+       widgets inside of it, we will need to insert the 'sub'
+       list. This is a desperate attempt to not segfault. */
+    
+    DBG("************** Relocating sub list. w=%p\n",w);
+    
+    sub_end = *w->sub;
+    while (sub_end->next) 
+      sub_end = sub_end->next;
+    
+    if (w->where) 
+      *w->where = *w->sub;
+    
+    if (w->sub && *w->sub && (*w->sub)->owner)
+      (*w->sub)->owner->where = w->where;
+    
+    if (w->out) {
+      sub_end->next = *w->out;
+      if (*w->out && (*w->out)->owner)
+	(*w->out)->owner->where = &sub_end->next;
+    }     
+    else
+      sub_end->next = NULL;
+    
   }
+  else {
+    if (w->out && *w->out && w->where) {
+      DBG("Reattaching *w->where to *w->out\n");
+      *w->where = *w->out;
+      
+      /* We must make sure the new where pointer would be valid
+       * before we set it. This is important when a tree of widgets
+       * is completely self-contained within another widget, as in
+       * the case of the panelbar inside the panel widget.
+       */
+      if (*w->out && (*w->out)->owner && *w->where==(*w->out)->owner->in)
+	(*w->out)->owner->where = w->where;
+    }
+    else if ( w->where ) {
+      DBG("Setting *w->where = NULL\n");
+      *w->where = NULL;
+    }
+  }
+  
+  /* If we don't break this link, then deleting
+   * the widget's divtree will keep on going
+   * and delete other widgets' divtrees 
+   */
+  if (w->out) *w->out = NULL; 
+  if (w->sub) *w->sub = NULL;
+ 
+  if (w->def->remove) (*w->def->remove)(w);
+  
+  /* Set the flags for redraw */
+  if (w->dt && w->dt->head) {
+    w->dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC;
+    w->dt->flags |= DIVTREE_NEED_RECALC;
+  }   
 
 #ifdef DEBUG_KEYS
   num_widgets--;

@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.31 2002/03/26 17:08:00 instinc Exp $
+/* $Id: indicator.c,v 1.32 2002/05/20 19:18:38 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -87,8 +87,7 @@ g_error indicator_install(struct widget *self) {
 }
 
 void indicator_remove(struct widget *self) {
-  if (!in_shutdown)
-    r_divnode_free(self->in);
+  r_divnode_free(self->in);
 }
 
 g_error indicator_set(struct widget *self,int property, glob data) {

@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.62 2002/04/09 21:20:16 micahjd Exp $
+/* $Id: memtheme.c,v 1.63 2002/05/20 19:18:38 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -742,14 +742,11 @@ void theme_remove(struct pgmemtheme *th) {
     }
   }
 
-  /* Schedule a global recalc (Yikes!) so it takes effect */
-  if (!in_shutdown) {
-     /* Reload the mouse cursor */
-     appmgr_loadcursor(PGTH_O_DEFAULT);
-     
-     /* Set flags for an update due to loading/unloading the theme */
-     theme_divtree_update(th);
-  }
+  /* Reload the mouse cursor */
+  appmgr_loadcursor(PGTH_O_DEFAULT);
+  
+  /* Set flags for an update due to loading/unloading the theme */
+  theme_divtree_update(th);
 
   g_free(th);
 }

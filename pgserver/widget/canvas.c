@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.40 2002/03/26 03:47:20 instinc Exp $
+/* $Id: canvas.c,v 1.41 2002/05/20 19:18:38 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -126,9 +126,7 @@ g_error canvas_install(struct widget *self) {
 
 void canvas_remove(struct widget *self) {
    g_free(self->data);
-   
-   if (!in_shutdown)
-     r_divnode_free(self->in);
+   r_divnode_free(self->in);
 }
 
 g_error canvas_set(struct widget *self,int property, glob data) {

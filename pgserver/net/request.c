@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.47 2002/04/11 08:44:59 micahjd Exp $
+/* $Id: request.c,v 1.48 2002/05/20 19:18:38 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -154,8 +154,7 @@ void closefd(int fd) {
     g_free(condemn);
   }
 
-  if (!in_shutdown)
-    update(NULL,1);
+  update(NULL,1);
 }
 
 void newfd(int fd) {
