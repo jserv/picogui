@@ -25,10 +25,9 @@ class Widget(object):
             self.parent._notify_new_widget(new)
 
     def addWidget(self, wtype, relationship=None):
-        new_id = self.server.createWidget(wtype)
+        new_id = self.server.mkWidget(relationship or self.default_relationship, wtype, self.handle)
         new = Widget(self.server, new_id, self)
         self._notify_new_widget(new)
-        self.server.attachWidget(self.handle, new_id, relationship or self.default_relationship)
         return new
 
     def __setattr__(self, name, value):

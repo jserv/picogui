@@ -55,7 +55,7 @@ def drivermsg(message, param, id=None):
 def dup(obj_id, id=None):
 	return request(27, pack('L', obj_id), id=id)
 	
-def findobj(name, id=None):
+def findwidget(name, id=None):
 	return request(42, name + '\x00', id=id)
 	
 def focus(obj_id, id=None):
