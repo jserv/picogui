@@ -122,10 +122,7 @@ class Document(Element):
        tree populated with Element nodes.
        """
     def __init__(self, file):
-        if isinstance(file, SCons.Node.Node):
-            dom = PGBuild.XML.dom.minidom.parseString(file.get_contents())
-        else:
-            dom = PGBuild.XML.dom.minidom.parse(file)
+        dom = PGBuild.XML.dom.minidom.parseString(file.get_contents())
         Element.__init__(self, dom)
 
 ### The End ###

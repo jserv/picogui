@@ -33,9 +33,52 @@ modified configuration document.
 
 import PGBuild.Node.XML
 
-class Element(PGBuild.Node.XML.Element):
-    
+class DefaultDocument:
+    """Default contents of the config tree, passable to
+       PGBuild.Node.XML.Document()
+       """
+    def get_contents(self):
+        return "<pgbuild/>"
+
+def merge(self, element):
+    """Merge all identical elements under the given one,
+       as defined in this module's document string.
+       """
+    pass
+
+class MountedDocument:
+    """Object defining the file and mode of a mounted
+       document, attached to each node in the tree.
+       """
+    def __init__(self, file, mode):
+        self.file = file
+        self.mode = mode
+
+class Tree(PGBuild.Node.XML.Document):
+    """Configuration tree- an XML document with a <pgbuild> root
+       that supports merging in other documents with a <pgbuild>
+       root, then saving changes back to those documents.
+       """
+    def __init__(self):
+        PGBuild.Node.XML.Document(DefaultDocument())
+
+    def mount(self, file, mode="r"):
+        """Mount the given document in the config tree, at the
+           location specified in that document's pgbuild/@root.
+           The default mode of "r" prevents writing changes back,
+           a mode of "w" allows writing back changes.
+           """
+        mdoc = MountedDocument(file, mode)
+        dom = PGBuild.Node.XML.Document(file)
+
+        # Recursively tag all objects in the
+        # new DOM with their MountedDocument
+        def rTag(element, mdoc):
+            element.mdoc = mdoc
+            for child in element.childNodes:
+                rTag(child, mdoc)
+        rTag(dom, mdoc)
+
+default = Tree()
 
 ### The End ###
-        
-    
