@@ -1,4 +1,4 @@
-/* $Id: if_magic.c,v 1.9 2002/10/25 06:30:42 micahjd Exp $
+/* $Id: if_magic.c,v 1.10 2002/11/03 04:54:24 micahjd Exp $
  *
  * if_magic.c - Trap magic debug keys
  *
@@ -33,6 +33,8 @@
 #include <pgserver/appmgr.h>
 #include <pgserver/widget.h>
 #include <pgserver/hotspot.h>
+#include <pgserver/os.h>
+#include <pgserver/pgnet.h>
 #include <string.h>
 
 void magic_button(s16 key);
@@ -312,7 +314,7 @@ void magic_button(s16 key) {
   switch (key) {
     
   case PGKEY_SLASH:       /* CTRL-ALT-SLASH exits */
-    request_quit();
+    mainloop_stop();
     return;
     
 #ifdef DEBUG_KEYS           /* The rest only work in debug mode */

@@ -1,4 +1,4 @@
-/* $Id: if_touchscreen.c,v 1.7 2002/10/02 22:23:22 micahjd Exp $
+/* $Id: if_touchscreen.c,v 1.8 2002/11/03 04:54:24 micahjd Exp $
  *
  * if_touchscreen.c - Touchscreen calibration and filtering
  *
@@ -28,6 +28,7 @@
 #include <pgserver/common.h>
 #include <pgserver/input.h>
 #include <pgserver/configfile.h>
+#include <pgserver/init.h>      /* For starting tpcal */
 #include <pgserver/widget.h>	/* for screen size and pointer owner */
 #include <stdio.h>
 
@@ -106,8 +107,9 @@ struct infilter infilter_touchscreen = {
 
 /******************************************* Public functions ******/
 
-g_error touchscreen_init(int *need_calibration) {
+g_error touchscreen_init(void) {
   int calwidth, calheight, values;
+  g_error
 
   calib_file=get_param_str("pgserver", "pointercal", "/etc/pointercal");
   calwidth=get_param_int("pgserver", "calwidth", 640);
@@ -115,7 +117,10 @@ g_error touchscreen_init(int *need_calibration) {
   touchscreen_cal_load(&ts_global_cal, calib_file);
 
   /* Trigger running the tpcal app if we don't have a valid configuration */
-  *need_calibration = !ts_global_cal.valid;
+  if (!ts_global_cal.valid) {
+    e = childqueue_push(get_param_str("pgserver","tpcal",NULL));
+    errorcheck;
+  }
 
   return success;
 }

@@ -1,6 +1,6 @@
-/* $Id: pgmain.c,v 1.51 2002/11/03 04:54:23 micahjd Exp $
+/* $Id: os_posix.h,v 1.1 2002/11/03 04:54:24 micahjd Exp $
  *
- * pgmain.c - Entry point for a standalone pgserver
+ * os_posix.h - Shared components of the POSIX-compatible OS module
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -25,20 +25,14 @@
  * 
  */
 
-#include <pgserver/common.h>
-#include <pgserver/init.h>
-#include <pgserver/os.h>
+#ifndef __H_OSPOSIX
+#define __H_OSPOSIX
 
-int main(int argc, char **argv) {
-  g_error e;
+void os_posix_signals_install(void);
 
-  e = pgserver_main(0,argc,argv);
-  if (iserror(e)) {
-    os_show_error(e);
-    return 1;
-  }
+/* Return value of the last process to exit */
+extern int os_posix_child_return;
 
-  return os_child_returncode();
-}
+#endif /* __H_OSPOSIX */
 
 /* The End */

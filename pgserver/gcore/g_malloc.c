@@ -1,4 +1,4 @@
-/* $Id: g_malloc.c,v 1.24 2002/03/27 15:09:24 lonetech Exp $
+/* $Id: g_malloc.c,v 1.25 2002/11/03 04:54:23 micahjd Exp $
  *
  * g_malloc.c - malloc wrapper providing error handling
  *
@@ -47,19 +47,25 @@ int num_widgets = 0;  /* Number of widgets */
 int num_handles = 0;  /* Number of handles */
 #endif
 
-#ifdef DEBUG_MEMORY
 struct memtrack_struct *memtrack=NULL;
 
-void memoryleak_trace(void)
- {
+g_error memoryleak_trace(void) {
   int i;
 
+  if (memref==0)
+    return success;
+  
+#ifdef DEBUG_MEMORY
   for(i=0;i<memref;i++)
     printf("!%d #%d %p %s\n", memtrack[i].size, i,
-	memtrack[i].mem, memtrack[i].where);
-  prerror(mkerror(PG_ERRT_MEMORY,56));
- }
+	   memtrack[i].mem, memtrack[i].where);
+#endif
+  
+  return mkerror(PG_ERRT_MEMORY,56);  /* Memory leak */
+}
 
+
+#ifdef DEBUG_MEMORY
 g_error g_dmalloc(void **p,size_t s,const char *where) {
 #else
 g_error g_malloc(void **p,size_t s) {

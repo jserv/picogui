@@ -60,7 +60,7 @@
 /* 52 */  "Error in bind() - Is there already a PicoGUI server running here?",
 /* 53 */  "Error in listen() Hmm...",
 /* 54 */  "Can't set up a signal handler",
-/* 55 */  "Unable to execute the session manager. Check the command line",
+/* 55 */  "Unable to execute the session manager",
 /* 56 */  "Memory leak detected on exit.  Fire up gdb and call a plumber",
 /* 57 */  "Request data structure is too small. It's all the client lib's fault!",
 /* 58 */  "Bad insertion mode",
@@ -149,3 +149,4 @@
 /* 141 */ "All installed application managers failed to load",
 /* 142 */ "This application manager requres a rootless capable video driver",
 /* 143 */ "Unknown application manager specified",
+/* 144 */ "Badly formed command line",

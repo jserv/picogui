@@ -1,4 +1,4 @@
-/* $Id: g_malloc.h,v 1.13 2002/03/27 15:09:25 lonetech Exp $
+/* $Id: g_malloc.h,v 1.14 2002/11/03 04:54:24 micahjd Exp $
  *
  * g_malloc.h - malloc wrapper providing error handling
  *
@@ -38,8 +38,9 @@
 
 #include <pgserver/g_error.h>
 
+g_error memoryleak_trace(void);
+
 #ifdef DEBUG_MEMORY
-void memoryleak_trace(void);
 g_error g_dmalloc(void **p,size_t s,const char *where);
 void g_dfree(const void *p,const char *where);
 g_error g_drealloc(void **p,size_t s,const char *where);
@@ -53,7 +54,6 @@ g_error g_realloc(void **p,size_t s);
 #define g_dmalloc(p,s,where) g_malloc(p,s)
 #define g_dfree(p,where) g_free(p)
 #define g_drealloc(p,s,where) g_realloc(p,s)
-#define memoryleak_trace() prerror(mkerror(PG_ERRT_MEMORY,56))
 #endif
 
 #ifdef DEBUG_KEYS

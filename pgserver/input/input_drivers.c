@@ -1,4 +1,4 @@
-/* $Id: input_drivers.c,v 1.2 2002/07/03 22:03:30 micahjd Exp $
+/* $Id: input_drivers.c,v 1.3 2002/11/03 04:54:24 micahjd Exp $
  *
  * input_drivers.c - Abstract input driver interface
  *
@@ -28,8 +28,8 @@
 #include <string.h>
 
 #include <pgserver/common.h>
-
 #include <pgserver/input.h>
+#include <pgserver/configfile.h>
 
 /******************************************** Vars */
 
@@ -41,6 +41,26 @@ struct inlib *inlib_main;
 int disable_input;
 
 /******************************************** Inlib management */
+
+/* Load all input drivers specified in the config database */
+g_error input_init(void) {
+  const char *constinputs;
+  char *inputs,*str;
+  char *tok;
+  g_error e;
+  
+  if ((constinputs = get_param_str("pgserver","input",NULL))) {
+    str = inputs = strdup(constinputs);
+    
+    while ((tok = strtok(str," \t"))) {
+      e = load_inlib(find_inputdriver(tok),NULL);
+      errorcheck;
+      str = NULL;
+    }
+    free(inputs);
+  }
+  return success;
+}
 
 /* Loads an input driver, and puts a pointer 
    to it in 'inl' */

@@ -1,4 +1,4 @@
-/* $Id: video_drivers.c,v 1.10 2002/10/23 02:09:08 micahjd Exp $
+/* $Id: video_drivers.c,v 1.11 2002/11/03 04:54:25 micahjd Exp $
  *
  * video_drivers.c - handles loading/switching video drivers and modes
  *
@@ -29,7 +29,7 @@
 #include <string.h>
 
 #include <pgserver/common.h>
-
+#include <pgserver/configfile.h>
 #include <pgserver/video.h>
 #include <pgserver/input.h>
 #include <pgserver/divtree.h>
@@ -111,6 +111,71 @@ void free_sprite(struct sprite *s) {
 }
 
 /******************************************** Vidlib admin functions */
+
+g_error video_init(void) {
+  g_error e;
+  int vidw,vidh,vidd,vidf;
+  const char *str;
+  g_error (*viddriver)(struct vidlib *v);
+
+  /* Load a custom palette if necessary */
+  e = load_custom_palette(get_param_str("pgserver","palette",NULL));
+  errorcheck;
+  
+  /* Process video driver config options */
+  vidw = get_param_int("pgserver","width",0);
+  vidh = get_param_int("pgserver","height",0);
+  vidd = get_param_int("pgserver","depth",0);
+  vidf = get_param_int("pgserver","vidflags",0);
+  sscanf(get_param_str("pgserver","mode",""),"%dx%dx%d",&vidw,&vidh,&vidd);
+  
+  /* Add rotation flags */
+  switch (get_param_int("pgserver","rotate",0)) {
+  case 90:
+    vidf |= PG_VID_ROTATE90;
+    break;
+  case 180:
+    vidf |= PG_VID_ROTATE180;
+    break;
+  case 270:
+    vidf |= PG_VID_ROTATE270;
+    break;
+  }
+  
+  /* Force a specific video driver? */
+  if ((str = get_param_str("pgserver","video",NULL))) {
+    if (!(viddriver = find_videodriver(str)))
+      return mkerror(PG_ERRT_BADPARAM,77);;
+    e = load_vidlib(viddriver,vidw,vidh,vidd,vidf);
+    errorcheck;
+  }
+  else {
+    /* Try to detect a driver (see driverinfo.c) */
+    struct vidinfo *p = videodrivers;
+    
+    while (p->name) {
+      if (!iserror(load_vidlib(p->regfunc,vidw,vidh,vidd,vidf)))
+	/* Yay, found one that works */
+	break;
+      p++;
+    }
+    if (!p->name) {
+      /* Oh well... */
+      return mkerror(PG_ERRT_IO,78);
+    }
+  }
+
+  return success;
+}
+
+void video_shutdown(void) {
+  if (vid) {
+    if (vid->display && vid->bitmap_getsize==def_bitmap_getsize && 
+	((struct stdbitmap *)vid->display)->rend)
+      g_free(((struct stdbitmap *)vid->display)->rend);
+    VID(close) ();
+  }
+}
 
 /* Let the driver register itself, and initialize things */
 g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),

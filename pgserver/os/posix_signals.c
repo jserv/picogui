@@ -1,8 +1,7 @@
-/* $Id: signals.c,v 1.12 2002/09/23 22:51:25 micahjd Exp $
+/* $Id: posix_signals.c,v 1.1 2002/11/03 04:54:24 micahjd Exp $
  *
- * signal.c - Handle some fatal and not-so-fatal signals gracefully
- *            The SIGSEGV handling et cetera was inspired by SDL's
- *            "parachute" in SDL_fatal.c
+ * posix_signals.c - Handle signals necessary for subprocess termination,
+ *                   quit requests, and VT switching
  * 
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -28,7 +27,7 @@
  */
 
 #include <pgserver/common.h>
-#include <pgserver/pgmain.h>  /* main loop flags */
+#include <pgserver/os_posix.h>
 #include <pgserver/video.h>   /* drivermessage() */
 #include <pgserver/input.h>   /* cleanup_inlib() */
 
@@ -74,13 +73,8 @@ void signals_handler(int sig) {
   case SIGCHLD:
     /* Wait for child so we don't have zombies */
     waitpid(-1, &i, WNOHANG);
-    server_returnval = WEXITSTATUS(i);
-
-    /* Need to start the session manager? */
-    if (sessionmgr_secondary) {
-      sessionmgr_start = 1;
-      sessionmgr_secondary = 0;
-    }
+    os_posix_child_return = WEXITSTATUS(i);
+    childqueue_pop();
     break;
 
   case SIGUSR1:
@@ -101,8 +95,7 @@ void signals_handler(int sig) {
 
   case SIGTERM:
   case SIGINT:
-    /* We should exit gracefully */
-    mainloop_proceed = 0;
+    mainloop_stop();
     break;
 
   default:
@@ -144,12 +137,11 @@ void signals_handler(int sig) {
     if (lock++) break;
 
     /* Try to shutdown the video driver if it's on */
-    if (vid && !in_init)
+    if (vid)
       VID(close)();
 
     /* It would also be nice not to hose the console.. */
-    if (!in_init)
-      cleanup_inlib();
+    cleanup_inlib();
      
     /* Print an appropriate error message for the most popular signals */
     switch (sig) {
@@ -177,7 +169,7 @@ void signals_handler(int sig) {
 
 /* Someone set up us the signal!
  */
-void signals_install(void) {
+void os_posix_signals_install(void) {
   int *sig;
 
   for (sig=pgserver_signals;*sig;sig++) {

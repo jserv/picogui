@@ -4,21 +4,10 @@ mainmenu_option next_comment
 comment 'Target System'
 
 choice 'Platform' \
-	"Linux-generic                  CONFIG_LINUX_GENERIC \
-	 uClinux-m68k 	        	UCLINUX \
-	 Linux-mips                     CONFIG_LINUX_MIPS \
-	 
-	 Windows			WINDOWS" Linux-generic
-if [ "$UCLINUX" = "y" ]; then
-    choice 'Platform running uClinux' \
-        "Generic                CONFIG_UCLINUX_GENERIC \
-	 Real_ChipSlice         CONFIG_CHIPSLICE \
-         Soft_ChipSlice         CONFIG_SOFT_CHIPSLICE \
-         Xcopilot               CONFIG_XCOPILOT" Generic
-    bool 'm68k asm optimization (not implemented)' ASM_68000
-fi
-if [ "$CONFIG_LINUX_GENERIC" = "y" ]; then
-    bool 'x86 asm optimization'             ASM_INTEL
+	"POSIX-compatible               CONFIG_OS_POSIX \
+	 Windows			CONFIG_OS_WINDOWS" POSIX-compatible
+if [ "$CONFIG_OS_POSIX" = "y" ]; then
+    bool '  uClinux'           		CONFIG_OS_UCLINUX
 fi
 
 bool 'Use UNIX sockets instead of TCP/IP'   CONFIG_UNIX_SOCKET
@@ -284,6 +273,12 @@ if [ "$CONFIG_APPMGR_PANEL" = "y" ]; then
   bool '  Support for solid panel dragging'   CONFIG_DRAGSOLID
 fi
 bool 'Null app manager'                       CONFIG_APPMGR_NULL
+endmenu
+
+mainmenu_option next_comment
+comment 'Client/Server Networking'
+bool 'TCP/IP sockets'                         CONFIG_NET_TCPIP
+bool 'libpgserver'                            CONFIG_NET_LIBPGSERVER
 endmenu
 
 mainmenu_option next_comment

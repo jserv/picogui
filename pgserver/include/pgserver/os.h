@@ -1,6 +1,8 @@
-/* $Id: pgmain.c,v 1.51 2002/11/03 04:54:23 micahjd Exp $
+/* $Id: os.h,v 1.1 2002/11/03 04:54:24 micahjd Exp $
  *
- * pgmain.c - Entry point for a standalone pgserver
+ * os.h - Interface to OS-specific functions used by pgserver, independent
+ *        of the actual OS in use. Functions that only exist in a particular
+ *        OS should go in a separate os_*.h header.
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -25,20 +27,25 @@
  * 
  */
 
-#include <pgserver/common.h>
-#include <pgserver/init.h>
-#include <pgserver/os.h>
+#ifndef __H_OS
+#define __H_OS
 
-int main(int argc, char **argv) {
-  g_error e;
+/* Os-specific init shutdown, always called first and last respectively.
+ * os_init gets a copy of the flags from pgserver_init, it is expected
+ * to obey applicable flags like PGINIT_NO_SIGNALS
+ */
+g_error os_init(int flags);
+void os_shutdown(void);
 
-  e = pgserver_main(0,argc,argv);
-  if (iserror(e)) {
-    os_show_error(e);
-    return 1;
-  }
+/* Present a g_error message to the user */
+void os_show_error(g_error e);
 
-  return os_child_returncode();
-}
+/* Run a child process with the given command line */
+g_error os_child_run(const char *cmdline);
+
+/* Get the return code from the most recently exited child process. */
+int os_child_returncode(void);
+
+#endif /* __H_OS */
 
 /* The End */

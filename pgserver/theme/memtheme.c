@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.74 2002/10/23 06:17:26 micahjd Exp $
+/* $Id: memtheme.c,v 1.75 2002/11/03 04:54:25 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -36,6 +36,7 @@
 #include <pgserver/divtree.h>
 #include <pgserver/pgnet.h>
 #include <pgserver/pgstring.h>
+#include <pgserver/configfile.h>
 #include <picogui/theme.h>
 
 #include <stdio.h>  /* for NULL */
@@ -141,6 +142,12 @@ u16 thobj_ancestry[PGTH_ONUM] = {
 };
 
 struct pgmemtheme *memtheme;
+
+/* Store handles of all server-loaded themes so they can be freed */
+static struct themenode {
+  handle h;
+  struct themenode *next;
+} *themelist = NULL;
 
 /***************** Theme searching */
 
@@ -766,6 +773,83 @@ void theme_remove(struct pgmemtheme *th) {
   post_event_global(PG_NWE_THEME_REMOVED,NULL,th->h,NULL);
 
   g_free(th);
+}
+
+/* Reload themes according to the ones set in the config database 
+ * FIXME: This should be replaced with something more flexible that can be
+ *        modified at runtime by apps.
+ */
+g_error reload_initial_themes(void) {
+  const char *constthemes, *themedir;
+  char *themes,*str,*fullpath;
+  char *tok;
+  g_error e;
+  FILE *f;
+  u32 themesize;
+  u8 *themebuf;
+  struct themenode *tn;
+
+  /* If we don't have a divtree yet, skip this reload */
+  if (!dts)
+    return success;
+
+  theme_shutdown();
+  themedir = get_param_str("pgserver","themedir","");
+
+  if ((constthemes = get_param_str("pgserver","themes",NULL))) {
+    str = themes = strdup(constthemes);
+    while ((tok = strtok(str," \t"))) {
+
+      /* Make a full path for this theme */
+      e = g_malloc((void**)&fullpath, strlen(themedir)+strlen(tok)+2);
+      errorcheck;
+      strcpy(fullpath,themedir);
+      if (*fullpath)
+	strcat(fullpath,"/");
+      strcat(fullpath,tok);
+
+      /* Make a node in our theme list so we can delete the handle later */
+      e = g_malloc((void**)&tn, sizeof(struct themenode));
+      errorcheck;
+      tn->next = themelist;
+      themelist = tn;
+
+      /* Load the theme */
+      if (!(f = fopen(fullpath,"rb")))
+	return mkerror(PG_ERRT_IO,109);       /* Can't find a theme file */
+      fseek(f,0,SEEK_END);
+      themesize = ftell(f);
+      fseek(f,0,SEEK_SET);
+      e = g_malloc((void**)&themebuf,themesize);
+      errorcheck;
+      fread(themebuf,1,themesize,f);
+      fclose(f);
+      e = theme_load(&tn->h,-1,themebuf,themesize);
+      errorcheck;
+
+      g_free(themebuf);
+      g_free(fullpath);
+      str = NULL;
+    }
+    free(themes);
+  }
+  
+  /* Default hotkeys, from the theme */
+  reload_hotkeys();
+
+  return success; 
+}
+
+/* Free all memory used by server-loaded themes */
+void theme_shutdown(void) {
+  struct themenode *tn, *dead_tn;
+
+  for (tn=themelist;tn;) {
+    dead_tn = tn;
+    tn = tn->next;
+    handle_free(-1,dead_tn->h);
+    g_free(dead_tn);
+  }
 }
 
 /* The End */

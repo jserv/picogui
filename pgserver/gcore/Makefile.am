@@ -1,8 +1,8 @@
 INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include
 
-noinst_LIBRARIES = libgcore.a
+noinst_LTLIBRARIES = libgcore.la
 
-libgcore_a_SOURCES = \
+libgcore_la_SOURCES = \
 	grop.c 		 \
 	render.c 	 \
 	g_malloc.c 	 \
@@ -13,12 +13,11 @@ libgcore_a_SOURCES = \
 	errortext.c      \
 	driverinfo.c     \
 	configfile.c     \
-	signals.c	 \
 	pgstring.c       \
-	globals.c
+	globals.c        \
+	commandline.c    \
+	init.c
 
 EXTRA_DIST = inputdrivers.inc videodrivers.inc defaulttext.inc
 
-libgcore_a_DEPENDENCIES = inputdrivers.inc videodrivers.inc
-
-
+libgcore_la_DEPENDENCIES = inputdrivers.inc videodrivers.inc defaulttext.inc

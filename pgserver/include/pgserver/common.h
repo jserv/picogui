@@ -1,4 +1,4 @@
-/* $Id: common.h,v 1.13 2002/10/12 14:46:34 micahjd Exp $
+/* $Id: common.h,v 1.14 2002/11/03 04:54:24 micahjd Exp $
  *
  * pgserver/common.h - things every file in pgserver should need,
  *                     including memory management, error handling,
@@ -28,7 +28,6 @@
  */
 
 #define PGSERVER
-
 
 /* We'll need this if we don't already have it... */
 #ifndef max

@@ -1,9 +1,6 @@
-/* $Id: pgnet.h,v 1.26 2002/06/12 14:34:05 micahjd Exp $
+/* $Id: pgnet.h,v 1.27 2002/11/03 04:54:24 micahjd Exp $
  *
- * pgnet.h - definitions and stuff for the picogui server
- *           networking code. Most of the interesting code
- *           is needed by the client and the server, and is
- *           in picogui/network.h
+ * pgnet.h - Server-side networking interface common to all transports
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -79,6 +76,7 @@ extern fd_set evtwait;
 /*  #define htonl(x) (x) */
 /*  #define htons(x) (x) */
 /*  #endif */
+
 
 /********* Functions provided by dispatch.c */
 

@@ -22,88 +22,88 @@ add_if_false () {
 
 open_section WIDGET
 
-add_if_true  background.c          $CONFIG_WIDGET_BACKGROUND
-add_if_true  box.c                 $CONFIG_WIDGET_BOX
-add_if_true  button.c              $CONFIG_WIDGET_BUTTON
-add_if_true  checkbox.c            $CONFIG_WIDGET_CHECKBOX
-add_if_true  flatbutton.c          $CONFIG_WIDGET_FLATBUTTON
-add_if_true  label.c               $CONFIG_WIDGET_LABEL
-add_if_true  listitem.c            $CONFIG_WIDGET_LISTITEM
-add_if_true  menuitem.c            $CONFIG_WIDGET_MENUITEM
-add_if_true  radiobutton.c         $CONFIG_WIDGET_RADIOBUTTON
-add_if_true  submenuitem.c         $CONFIG_WIDGET_SUBMENUITEM
-add_if_true  canvas.c              $CONFIG_WIDGET_CANVAS
-add_if_true  dialogbox.c           $CONFIG_WIDGET_DIALOGBOX
-add_if_true  messagedialog.c       $CONFIG_WIDGET_MESSAGEDIALOG
-add_if_true  indicator.c           $CONFIG_WIDGET_INDICATOR
-add_if_true  managedwindow.c       $CONFIG_WIDGET_MANAGEDWINDOW
-add_if_true  panelbar.c            $CONFIG_WIDGET_PANELBAR
-add_if_true  panel.c               $CONFIG_WIDGET_PANEL
-add_if_true  popup.c               $CONFIG_WIDGET_POPUP
-add_if_true  scroll.c              $CONFIG_WIDGET_SCROLL
-add_if_true  scrollbox.c           $CONFIG_WIDGET_SCROLLBOX
-add_if_true  simplemenu.c          $CONFIG_WIDGET_SIMPLEMENU
-add_if_true  terminal_frontend.c   $CONFIG_WIDGET_TERMINAL
-add_if_true  terminal_vt102.c      $CONFIG_WIDGET_TERMINAL
-add_if_true  terminal_textgrid.c   $CONFIG_WIDGET_TERMINAL
-add_if_true  textbox_frontend.c    $CONFIG_WIDGET_TEXTBOX
-add_if_true  textbox_document.c    $CONFIG_WIDGET_TEXTBOX
-add_if_true  textbox_paragraph.c   $CONFIG_WIDGET_TEXTBOX
-add_if_true  pgstr_textbuffers.c   $CONFIG_WIDGET_TEXTBOX
-add_if_true  field.c               $CONFIG_WIDGET_FIELD
-add_if_true  textedit_frontend.c   $CONFIG_WIDGET_TEXTEDIT
-add_if_true  textedit_llist.c      $CONFIG_WIDGET_TEXTEDIT
-add_if_true  textedit_logical.c    $CONFIG_WIDGET_TEXTEDIT
-add_if_true  toolbar.c             $CONFIG_WIDGET_TOOLBAR
+add_if_true  background.c        $CONFIG_WIDGET_BACKGROUND
+add_if_true  box.c               $CONFIG_WIDGET_BOX
+add_if_true  button.c            $CONFIG_WIDGET_BUTTON
+add_if_true  checkbox.c          $CONFIG_WIDGET_CHECKBOX
+add_if_true  flatbutton.c        $CONFIG_WIDGET_FLATBUTTON
+add_if_true  label.c             $CONFIG_WIDGET_LABEL
+add_if_true  listitem.c          $CONFIG_WIDGET_LISTITEM
+add_if_true  menuitem.c          $CONFIG_WIDGET_MENUITEM
+add_if_true  radiobutton.c       $CONFIG_WIDGET_RADIOBUTTON
+add_if_true  submenuitem.c       $CONFIG_WIDGET_SUBMENUITEM
+add_if_true  canvas.c            $CONFIG_WIDGET_CANVAS
+add_if_true  dialogbox.c         $CONFIG_WIDGET_DIALOGBOX
+add_if_true  messagedialog.c     $CONFIG_WIDGET_MESSAGEDIALOG
+add_if_true  indicator.c         $CONFIG_WIDGET_INDICATOR
+add_if_true  managedwindow.c     $CONFIG_WIDGET_MANAGEDWINDOW
+add_if_true  panelbar.c          $CONFIG_WIDGET_PANELBAR
+add_if_true  panel.c             $CONFIG_WIDGET_PANEL
+add_if_true  popup.c             $CONFIG_WIDGET_POPUP
+add_if_true  scroll.c            $CONFIG_WIDGET_SCROLL
+add_if_true  scrollbox.c         $CONFIG_WIDGET_SCROLLBOX
+add_if_true  simplemenu.c        $CONFIG_WIDGET_SIMPLEMENU
+add_if_true  terminal_frontend.c $CONFIG_WIDGET_TERMINAL
+add_if_true  terminal_vt102.c    $CONFIG_WIDGET_TERMINAL
+add_if_true  terminal_textgrid.c $CONFIG_WIDGET_TERMINAL
+add_if_true  textbox_frontend.c  $CONFIG_WIDGET_TEXTBOX
+add_if_true  textbox_document.c  $CONFIG_WIDGET_TEXTBOX
+add_if_true  textbox_paragraph.c $CONFIG_WIDGET_TEXTBOX
+add_if_true  pgstr_textbuffers.c $CONFIG_WIDGET_TEXTBOX
+add_if_true  field.c             $CONFIG_WIDGET_FIELD
+add_if_true  textedit_frontend.c $CONFIG_WIDGET_TEXTEDIT
+add_if_true  textedit_llist.c    $CONFIG_WIDGET_TEXTEDIT
+add_if_true  textedit_logical.c  $CONFIG_WIDGET_TEXTEDIT
+add_if_true  toolbar.c           $CONFIG_WIDGET_TOOLBAR
 
 close_section
 
 # Debugging
 open_section DEBUGGING
 
-add_if_true videotest.c $CONFIG_VIDEOTEST
-add_if_true benchmark.c $CONFIG_VIDEOTEST
+add_if_true videotest.c          $CONFIG_VIDEOTEST
+add_if_true benchmark.c          $CONFIG_VIDEOTEST
 
 close_section
 
 # Video base libraries
 open_section VIDBASE
 
-add_if_true linear1.c     $CONFIG_VBL_LINEAR1
-add_if_true linear2.c     $CONFIG_VBL_LINEAR2
-add_if_true linear4.c     $CONFIG_VBL_LINEAR4
-add_if_true linear8.c     $CONFIG_VBL_LINEAR8
-add_if_true linear16.c    $CONFIG_VBL_LINEAR16
-add_if_true linear24.c    $CONFIG_VBL_LINEAR24
-add_if_true linear32.c    $CONFIG_VBL_LINEAR32
-add_if_true vgaplan4.c    $CONFIG_VBL_VGAPLAN4
-add_if_true slowvbl.c     $CONFIG_VBL_SLOWVBL
-add_if_true dvbl_dither.c $CONFIG_DITHER
-add_if_true visibone2.c   $CONFIG_PAL8_VISIBONE2
+add_if_true linear1.c            $CONFIG_VBL_LINEAR1
+add_if_true linear2.c            $CONFIG_VBL_LINEAR2
+add_if_true linear4.c            $CONFIG_VBL_LINEAR4
+add_if_true linear8.c            $CONFIG_VBL_LINEAR8
+add_if_true linear16.c           $CONFIG_VBL_LINEAR16
+add_if_true linear24.c           $CONFIG_VBL_LINEAR24
+add_if_true linear32.c           $CONFIG_VBL_LINEAR32
+add_if_true vgaplan4.c           $CONFIG_VBL_VGAPLAN4
+add_if_true slowvbl.c            $CONFIG_VBL_SLOWVBL
+add_if_true dvbl_dither.c        $CONFIG_DITHER
+add_if_true visibone2.c          $CONFIG_PAL8_VISIBONE2
 add_if_true dvbl_primitives_aa.c $CONFIG_ANTIALIAS
-add_if_false dvbl_primitives.c $CONFIG_ANTIALIAS
-add_if_true font_bdf.c      $CONFIG_FONTENGINE_BDF
-add_if_true font_freetype.c $CONFIG_FONTENGINE_FREETYPE
+add_if_false dvbl_primitives.c   $CONFIG_ANTIALIAS
+add_if_true font_bdf.c           $CONFIG_FONTENGINE_BDF
+add_if_true font_freetype.c      $CONFIG_FONTENGINE_FREETYPE
 
 close_section
 
 # Drivers
 open_section DRIVER
 
-add_if_true ez328.c      $DRIVER_EZ328
-add_if_true ez328vga.c   $DRIVER_EZ328VGA
-add_if_true sdlfb.c      $DRIVER_SDLFB
-add_if_true svgafb.c     $DRIVER_SVGAFB
-add_if_true ncurses.c    $DRIVER_NCURSES
-add_if_true null.c       $DRIVER_NULL
-add_if_true nullfb.c     $DRIVER_NULLFB
-add_if_true fbdev.c      $DRIVER_FBDEV
-add_if_true serial40x4.c $DRIVER_SERIAL40X4
-add_if_true scrshot.c    $DRIVER_SCRSHOT
-add_if_true s1d13806.c   $DRIVER_S1D13806
-add_if_true sed133x.c    $DRIVER_SED133X
-add_if_true x11.c        $DRIVER_X11
-add_if_true mgl2fb.c     $DRIVER_MGL2FB
+add_if_true ez328.c              $DRIVER_EZ328
+add_if_true ez328vga.c           $DRIVER_EZ328VGA
+add_if_true sdlfb.c              $DRIVER_SDLFB
+add_if_true svgafb.c             $DRIVER_SVGAFB
+add_if_true ncurses.c            $DRIVER_NCURSES
+add_if_true null.c               $DRIVER_NULL
+add_if_true nullfb.c             $DRIVER_NULLFB
+add_if_true fbdev.c              $DRIVER_FBDEV
+add_if_true serial40x4.c         $DRIVER_SERIAL40X4
+add_if_true scrshot.c            $DRIVER_SCRSHOT
+add_if_true s1d13806.c           $DRIVER_S1D13806
+add_if_true sed133x.c            $DRIVER_SED133X
+add_if_true x11.c                $DRIVER_X11
+add_if_true mgl2fb.c             $DRIVER_MGL2FB
 add_if_true sdlgl_bitmap.c       $DRIVER_SDLGL
 add_if_true sdlgl_camera.c       $DRIVER_SDLGL
 add_if_true sdlgl_font.c         $DRIVER_SDLGL
@@ -117,9 +117,9 @@ close_section
 # Video wrappers
 open_section VIDWRAP
 
-add_if_true rotate90.c $CONFIG_ROTATE
-add_if_true rotate180.c $CONFIG_ROTATE180
-add_if_true rotate270.c $CONFIG_ROTATE270
+add_if_true rotate90.c           $CONFIG_ROTATE
+add_if_true rotate180.c          $CONFIG_ROTATE180
+add_if_true rotate270.c          $CONFIG_ROTATE270
 
 close_section
 
@@ -127,66 +127,76 @@ close_section
 
 open_section INPUT
 
-add_if_true sdlinput.c     $DRIVER_SDLINPUT
-add_if_true svgainput.c    $DRIVER_SVGAINPUT
-add_if_true ncursesinput.c $DRIVER_NCURSESINPUT
-add_if_true gpm.c          $DRIVER_GPM
-add_if_true chipslicets.c  $DRIVER_CHIPSLICETS
-add_if_true rrts.c         $DRIVER_RRTS
-add_if_true eventbroker.c  $DRIVER_EVENTBROKER
-add_if_true r3912ts.c      $DRIVER_R3912TS
-add_if_true rr_sim.c       $DRIVER_RRSIM
-add_if_true rrts.c         $DRIVER_RRTS
-add_if_true vr3ts.c        $DRIVER_VR3TS
-add_if_true h3600ts.c      $DRIVER_H3600TS
-add_if_true tuxts.c        $DRIVER_TUXTS
-add_if_true ucb1x00.c      $DRIVER_UCB1X00
-add_if_true ttykb.c        $DRIVER_TTYKB
-add_if_true remorakb.c     $DRIVER_REMORAKB
-add_if_true serialmouse.c  $DRIVER_SERIALMOUSE
-add_if_true ps2mouse.c     $DRIVER_PS2MOUSE
-add_if_true x11input.c     $DRIVER_X11INPUT
-add_if_true palmaxts.c	   $DRIVER_PALMAXTS
-add_if_true sc3ts.c        $DRIVER_SC3TS
-add_if_true mgl2input.c    $DRIVER_MGL2INPUT
-add_if_true adc7843.c      $DRIVER_ADC7843
-add_if_true zaurus.c       $DRIVER_ZAURUS
-add_if_true ericsson_cb.c  $DRIVER_ERICSSON_CHATBOARD
-add_if_true ps2mouse.c     $DRIVER_PS2MOUSE
-add_if_true jsdev.c        $DRIVER_JSDEV
-add_if_true rrttykb.c      $DRIVER_RRTTYKB
-add_if_true rawttykb.c     $DRIVER_RAWTTYKB
-add_if_true if_touchscreen.c $CONFIG_TOUCHSCREEN
+add_if_true sdlinput.c           $DRIVER_SDLINPUT
+add_if_true svgainput.c          $DRIVER_SVGAINPUT
+add_if_true ncursesinput.c       $DRIVER_NCURSESINPUT
+add_if_true gpm.c                $DRIVER_GPM
+add_if_true chipslicets.c        $DRIVER_CHIPSLICETS
+add_if_true rrts.c               $DRIVER_RRTS
+add_if_true eventbroker.c        $DRIVER_EVENTBROKER
+add_if_true r3912ts.c            $DRIVER_R3912TS
+add_if_true rr_sim.c             $DRIVER_RRSIM
+add_if_true rrts.c               $DRIVER_RRTS
+add_if_true vr3ts.c              $DRIVER_VR3TS
+add_if_true h3600ts.c            $DRIVER_H3600TS
+add_if_true tuxts.c              $DRIVER_TUXTS
+add_if_true ucb1x00.c            $DRIVER_UCB1X00
+add_if_true ttykb.c              $DRIVER_TTYKB
+add_if_true remorakb.c           $DRIVER_REMORAKB
+add_if_true serialmouse.c        $DRIVER_SERIALMOUSE
+add_if_true ps2mouse.c           $DRIVER_PS2MOUSE
+add_if_true x11input.c           $DRIVER_X11INPUT
+add_if_true palmaxts.c	         $DRIVER_PALMAXTS
+add_if_true sc3ts.c              $DRIVER_SC3TS
+add_if_true mgl2input.c          $DRIVER_MGL2INPUT
+add_if_true adc7843.c            $DRIVER_ADC7843
+add_if_true zaurus.c             $DRIVER_ZAURUS
+add_if_true ericsson_cb.c        $DRIVER_ERICSSON_CHATBOARD
+add_if_true ps2mouse.c           $DRIVER_PS2MOUSE
+add_if_true jsdev.c              $DRIVER_JSDEV
+add_if_true rrttykb.c            $DRIVER_RRTTYKB
+add_if_true rawttykb.c           $DRIVER_RAWTTYKB
+add_if_true if_touchscreen.c     $CONFIG_TOUCHSCREEN
 add_if_false if_client_adaptor.c $CONFIG_NOREMOTEINPUT
-add_if_true if_key_alpha.c $CONFIG_KEY_ALPHA
+add_if_true if_key_alpha.c       $CONFIG_KEY_ALPHA
 
 close_section
 
 # File formats
 open_section FORMATS
 
-add_if_true pnm.c $CONFIG_FORMAT_PNM
-add_if_true jpeg.c $CONFIG_FORMAT_JPEG
-add_if_true bmp.c $CONFIG_FORMAT_BMP
-add_if_true html.c $CONFIG_FORMAT_HTML
-add_if_true png.c $CONFIG_FORMAT_PNG
-add_if_true gif.c $CONFIG_FORMAT_GIF
-add_if_true plaintext.c $CONFIG_WIDGET_TEXTBOX
+add_if_true pnm.c                $CONFIG_FORMAT_PNM
+add_if_true jpeg.c               $CONFIG_FORMAT_JPEG
+add_if_true bmp.c                $CONFIG_FORMAT_BMP
+add_if_true html.c               $CONFIG_FORMAT_HTML
+add_if_true png.c                $CONFIG_FORMAT_PNG
+add_if_true gif.c                $CONFIG_FORMAT_GIF
+add_if_true plaintext.c          $CONFIG_WIDGET_TEXTBOX
 
 close_section
 
 # Compiled-in fonts
 open_section FONT
 
-add_if_true bdf_fonts.c $CONFIG_FONTENGINE_BDF
+add_if_true bdf_fonts.c          $CONFIG_FONTENGINE_BDF
 
 close_section
 
 # Application management
 open_section APPMGR
 
-add_if_true panel.c             $CONFIG_APPMGR_PANEL
-add_if_true null.c              $CONFIG_APPMGR_NULL
-add_if_true managed_rootless.c  $CONFIG_APPMGR_MANAGED_ROOTLESS
+add_if_true panel.c              $CONFIG_APPMGR_PANEL
+add_if_true null.c               $CONFIG_APPMGR_NULL
+add_if_true managed_rootless.c   $CONFIG_APPMGR_MANAGED_ROOTLESS
 
 close_section
+
+# OS-specific modules
+open_section OS
+
+add_if_true posix.c              $CONFIG_OS_POSIX
+add_if_true posix_signals.c      $CONFIG_OS_POSIX
+add_if_true uclinux.c            $CONFIG_OS_UCLINUX
+
+close_section
+

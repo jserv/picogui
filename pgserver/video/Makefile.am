@@ -1,12 +1,12 @@
 INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include $(DRIVER_CFLAGS)
 
-noinst_LIBRARIES = libvideo.a
+noinst_LTLIBRARIES = libvideo.la
 
-libvideo_a_SOURCES = \
+libvideo_la_SOURCES = \
 	video_drivers.c \
 	$(DRIVER)
 
-EXTRA_libvideo_a_SOURCES = \
+EXTRA_libvideo_la_SOURCES = \
 	ez328.c    \
 	ez328vga.c \
 	fbdev.c    \
@@ -31,7 +31,7 @@ EXTRA_libvideo_a_SOURCES = \
 noinst_HEADERS = \
 	yuv.h
 
-libvideo_a_LIBADD       = $(DRIVER:%.c=%.o)
-libvideo_a_DEPENDENCIES = $(DRIVER:%.c=%.o)
+libvideo_la_LIBADD       = $(DRIVER:%.c=%.lo)
+libvideo_la_DEPENDENCIES = $(DRIVER:%.c=%.lo)
 
 

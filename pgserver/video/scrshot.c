@@ -1,4 +1,4 @@
-/* $Id: scrshot.c,v 1.10 2002/10/23 02:09:07 micahjd Exp $
+/* $Id: scrshot.c,v 1.11 2002/11/03 04:54:25 micahjd Exp $
  *
  * scrshot.c - Maintains a virtual framebuffer, taking screenshots on update
  *
@@ -179,7 +179,7 @@ void scrshot_update(hwrbitmap d,s16 unusedx, s16 unusedy, s16 w, s16 h) {
 
   if (scrshot_total==scrshot_frame) {
     printf("scrshot: Done with screenshots, exiting\n");
-    request_quit();
+    mainloop_stop();
   }
 }
 

@@ -81,6 +81,7 @@ AC_SUBST(INPUT)
 AC_SUBST(FORMATS)
 AC_SUBST(FONT)
 AC_SUBST(APPMGR)
+AC_SUBST(OS)
 
 dnl Check for perl
 
@@ -150,6 +151,15 @@ AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_SDLGL, [
   DRIVER_LIBS="$DRIVER_LIBS ${SDL_LIBS} -lGL -lGLU -lSDL_ttf" 
 ])
 
+dnl Configure libtool
+if test "$CONFIG_NET_LIBPGSERVER" = "y"; then
+  AC_ENABLE_SHARED
+  AC_DISABLE_STATIC
+else
+  AC_ENABLE_STATIC
+  AC_DISABLE_SHARED
+fi
+AM_PROG_LIBTOOL
 
 dnl jpeg
 echo "checking whether user wants jpeg... $CONFIG_FORMAT_JPEG"
@@ -309,15 +319,10 @@ AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_NOSTRIP, [
 AC_SUBST(DRIVER_CFLAGS)
 AC_SUBST(DRIVER_LIBS)
 
-dnl Check target architecture
-
-LIB_OS=""
-
+dnl Architecture-specific CFLAGS
 case "$host" in
   m68k-pic-*)
 	CFLAGS="${CFLAGS} -fPIC -DRUNTIME_FUNCPTR"
-	PLATFORM="uclinux"
-	LIB_OS="os/${PLATFORM}/libos.a"
 	;;
   mipsel-*-netbsd*)
 	CFLAGS="${CFLAGS}"
@@ -326,10 +331,6 @@ case "$host" in
 	CFLAGS="${CFLAGS} -msoft-float"
 	;;
 esac
-
-AC_SUBST(PLATFORM)
-AC_SUBST(LIB_OS)
-
 
 dnl Checks for header files.
 AC_HEADER_DIRENT
@@ -353,8 +354,6 @@ AC_CHECK_FUNCS(gettimeofday select socket strerror strspn strtol)
 
 AC_OUTPUT(
 	Makefile
-	etc/Makefile
-	etc/configurator.mk
 	widget/Makefile
 	appmgr/Makefile
 	debug/Makefile
@@ -364,7 +363,6 @@ AC_OUTPUT(
 	theme/Makefile
 	video/Makefile
 	os/Makefile
-	os/uclinux/Makefile
 	vidwrap/Makefile
 	input/Makefile
 	font/Makefile
@@ -384,26 +382,15 @@ echo "--------------------------------------------------"
 echo
 echo "Profile read from: $with_profile"
 echo
-echo "widgets:  $WIDGET"
-echo "debug:    $DEBUGGING"
-echo "vidbase:  $VIDBASE"
-echo "driver:   $DRIVER"
-echo "wrappers: $VIDWRAP"
-echo "input:    $INPUT"
-echo "formats:  $FORMATS"
-echo 
-
-AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_LINUX_GENERIC,   [echo "target:   Linux generic"])
-AM_PGUI_CONFIG($CONFIG_FILE, WINDOWS,                [echo "target:   Windows"])
-AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_UCLINUX_GENERIC, [echo "target:   uClinux generic"])
-AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_CHIPSLICE,       [echo "target:   ChipSlice"])
-AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_SOFT_CHIPSLICE,  [echo "target:   Soft ChipSlice"])
-AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_XCOPILOT,        [echo "target:   XCopilot"])
-AM_PGUI_CONFIG($CONFIG_FILE, ASM_68000,              [echo "target:   ASM 68000"])
-
-echo
-
-echo "compiler: ${CC} ${CFLAGS}"
-echo "linker  : ${LD:-ld} ${LDFLAGS}"
+echo " widgets:  $WIDGET"
+echo "   debug:  $DEBUGGING"
+echo " vidbase:  $VIDBASE"
+echo "  driver:  $DRIVER"
+echo "wrappers:  $VIDWRAP"
+echo "   input:  $INPUT"
+echo " formats:  $FORMATS"
+echo "      os:  $OS"
+echo "compiler:  ${CC} ${CFLAGS}"
+echo "  linker:  ${LD:-ld} ${LDFLAGS}"
 echo "--------------------------------------------------"
 echo

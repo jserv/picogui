@@ -2,7 +2,7 @@ SUBDIRS = \
 	include \
 	widget appmgr debug gcore net \
 	vidbase theme video os vidwrap \
-	input font formats etc \
+	input font formats \
 	profiles \
 	.
 
@@ -14,23 +14,28 @@ bin_PROGRAMS = pgserver
 
 pgserver_SOURCES = pgmain.c
 
-pgserver_LDADD = \
-	gcore/libgcore.a	\
-	widget/libwidget.a 	\
-	appmgr/libappmgr.a	\
-	net/libnet.a		\
-	theme/libtheme.a	\
-	debug/libdebug.a	\
-	video/libvideo.a	\
-	vidwrap/libvidwrap.a	\
-	vidbase/libvidbase.a	\
-	input/libinput.a	\
-	formats/libformats.a	\
-	font/libfont.a		\
-	@LIB_OS@		\
+pgserver_LDADD = libpgserver.la
+
+lib_LTLIBRARIES = libpgserver.la
+
+libpgserver_la_SOURCES =
+
+libpgserver_la_LIBADD = \
+	net/libnet.la		\
+	theme/libtheme.la	\
+	debug/libdebug.la	\
+	input/libinput.la	\
+	video/libvideo.la	\
+	gcore/libgcore.la	\
+	appmgr/libappmgr.la	\
+	widget/libwidget.la 	\
+	vidwrap/libvidwrap.la	\
+	vidbase/libvidbase.la	\
+	formats/libformats.la	\
+	font/libfont.la		\
+	os/libos.la		\
 	$(DRIVER_LIBS)		\
 	@RM_LIBS@
-
 
 EXTRA_DIST = \
 	script/fontdef.pl 		\

@@ -1,7 +1,6 @@
-/* $Id: configfile.h,v 1.2 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: configfile.h,v 1.3 2002/11/03 04:54:24 micahjd Exp $
  *
- * pgserver/configfile.h - Header for the configuration file utilities
- *                         in configfile.c
+ * pgserver/configfile.h - Header for pgserver's configuration database
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -29,18 +28,35 @@
 #ifndef __H_CONFIGFILE
 #define __H_CONFIGFILE
 
+/* Parse the given config file and add its contents to the config database */
 g_error configfile_parse(const char *filename);
+
+/* Parse config files found in the default locations */
+g_error configfile_parse_default(void);
+
+/* Free the config database containing data from everything read so far */
 void configfile_free(void);
 
+/* Add or modify a value in the config database */
 g_error set_param_str(const char *section, const char *key, const char *value);
 
-int get_param_int(const char *section, const char *key, int def); 
-const char *get_param_str(const char *section, const char* key, 
-			  const char *def); 
+/* If the key exists, append separator and value, if not set it to value */
+g_error append_param_str(const char *section, const char *key, 
+			 const char *separator, const char *value);
 
+/* Retrieve a value formatted as an integer/string, or if it doesn't
+ * exist return the supplied default 
+ */
+int get_param_int(const char *section, const char *key, int def); 
+const char *get_param_str(const char *section, const char* key, const char *def); 
+
+/* Parse a command line, and add it to the config file database.
+ * If the command line was invalid or the user requested help, a help string
+ * will be printed and an error will be returned.
+ */
+g_error commandline_parse(int argc, char **argv);
 
 #endif /* __H_CONFIGFILE */
-
 /* The End */
 
 

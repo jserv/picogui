@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.108 2002/10/27 19:03:18 micahjd Exp $
+/* $Id: video.h,v 1.109 2002/11/03 04:54:24 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -884,10 +884,19 @@ g_error bitmap_iterate(handle_iterator iterator, void *extra);
 /* Rotate _all_ loaded bitmaps by the given angle */
 g_error bitmap_rotate_all(s16 angle);
 
+
+/***************************************** Initialization */
+
+g_error video_init(void);
+void video_shutdown(void);
+
+
 /***************************************** Debugging */
+
 void videotest_run(s16 number);
 void videotest_help(void);
 void videotest_benchmark(void);
+
 
 /***************************************** Send a driver message (to all loaded drivers) */
 

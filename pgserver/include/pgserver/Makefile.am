@@ -12,7 +12,6 @@ include_HEADERS = \
 	handle.h 	\
 	inlstring.h 	\
 	input.h 	\
-	pgmain.h 	\
 	pgnet.h 	\
 	render.h 	\
 	svrtheme.h 	\
@@ -32,7 +31,10 @@ include_HEADERS = \
 	llist.h		\
 	font.h		\
 	types.h		\
-	font_bdf.h
+	font_bdf.h	\
+	init.h		\
+	os.h		\
+	os_posix.h
 
 CONFIG_CLEAN_FILES = autoconf.h
 

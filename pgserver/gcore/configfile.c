@@ -1,4 +1,4 @@
-/* $Id: configfile.c,v 1.11 2002/03/27 15:09:24 lonetech Exp $
+/* $Id: configfile.c,v 1.12 2002/11/03 04:54:23 micahjd Exp $
  *
  * configfile.c - Utilities for loading, storing, and retrieving
  *                configuration options
@@ -37,8 +37,6 @@
 /* Maximum parseable line size in a config file */
 #define LINESIZE  256
 
-/******** Data structures */
-
 /* The config options are stored as a linked list of sections,
  * each section with a linked list of key-value pairs.
  */
@@ -55,7 +53,123 @@ struct cfg_section {
 
 struct cfg_section *sections;
 
-/******** Internal functions */
+struct cfg_section *configfile_getsection(const char *section);
+struct cfg_section *configfile_makesection(const char *section);
+g_error configfile_set(struct cfg_section *sect, const char *key, const char *value);
+char *strip_head(char *s);
+void strip_tail(char *s);
+g_error sub_configfile_parse(const char *filename, struct cfg_section **section);
+g_error configfile_parse_if_exists(const char *filename);
+
+
+/******************************************************** Public functions **/
+
+g_error configfile_parse(const char *filename) {
+  struct cfg_section *section = NULL;
+  return sub_configfile_parse(filename, &section);
+}
+
+void configfile_free(void) {
+  struct cfg_section *sect;
+  struct cfg_item *p;
+  void *condemn;
+
+  sect = sections;
+  while (sect) {
+
+    p = sect->items;
+    while (p) {
+      if (p->value)
+	g_free(p->value);
+
+      condemn = p;
+      p = p->next;
+      g_free(condemn);
+    }
+
+    condemn = sect;
+    sect = sect->next;
+    g_free(condemn);
+  }
+
+  sections = NULL;
+}
+
+g_error set_param_str(const char *section, const char *key,
+		      const char *value) {
+  return configfile_set(configfile_makesection(section),key,value);
+}
+
+/* If the key exists, append separator and value, if not set it to value */
+g_error append_param_str(const char *section, const char *key, 
+			 const char *separator, const char *value) {
+  char *newvalue;
+  const char *oldvalue;
+  
+  oldvalue = get_param_str(section,key,NULL);
+
+  if (oldvalue) {
+    /* Append to an existing value */ 
+    newvalue = alloca(strlen(oldvalue)+strlen(separator)+strlen(value)+1);
+    strcpy(newvalue,oldvalue);
+    strcat(newvalue,separator);
+    strcat(newvalue,value);
+    return set_param_str(section,key,newvalue);
+  }
+    
+  return set_param_str(section,key,value);
+}
+
+int get_param_int(const char *section, const char* key, int def) {
+  const char *strval;
+  strval = get_param_str(section,key,NULL);
+  if (strval)
+    return atoi(strval);
+  return def;
+}
+
+const char *get_param_str(const char *section, const char* key, 
+			  const char *def) {
+  struct cfg_section *sect;
+  struct cfg_item *p;
+
+  sect = configfile_getsection(section);
+  if (!sect)
+    return def;
+  
+  p = sect->items;
+  while (p) {
+    if (!strcmp(p->key,key))
+      return p->value;
+    p = p->next;
+  }
+  return def;
+}
+
+/* Parse config files found in the default locations */
+g_error configfile_parse_default(void) {
+  g_error e;
+  char *rcpath;
+  const char *home = getenv("HOME");
+  const char *rcname = "/.pgserverrc";
+
+  e = configfile_parse_if_exists("/etc/pgserver.conf");
+  errorcheck;
+
+  /* ~/.pgserverrc */
+  if (home) {
+    rcpath = alloca(strlen(home)+strlen(rcname)+1);
+    strcpy(rcpath,home);
+    strcat(rcpath,rcname);
+    e = configfile_parse_if_exists(rcpath);
+    errorcheck;
+  }
+
+  return success;
+}
+
+
+/******************************************************** Internal utilities **/
 
 /* Get a pointer to the named section. If it does not exist return NULL */
 struct cfg_section *configfile_getsection(const char *section) {
@@ -166,8 +280,6 @@ void strip_tail(char *s) {
   }
 }
 
-/******** Public functions */
-
 g_error sub_configfile_parse(const char *filename, struct cfg_section **section) {
   FILE *f;
   char line[LINESIZE];
@@ -243,66 +355,17 @@ g_error sub_configfile_parse(const char *filename, struct cfg_section **section)
   return success;
 }
 
-g_error configfile_parse(const char *filename) {
-  struct cfg_section *section = NULL;
-  return sub_configfile_parse(filename, &section);
-}
-
-void configfile_free(void) {
-  struct cfg_section *sect;
-  struct cfg_item *p;
-  void *condemn;
-
-  sect = sections;
-  while (sect) {
-
-    p = sect->items;
-    while (p) {
-      if (p->value)
-	g_free(p->value);
-
-      condemn = p;
-      p = p->next;
-      g_free(condemn);
-    }
-
-    condemn = sect;
-    sect = sect->next;
-    g_free(condemn);
-  }
-
-  sections = NULL;
-}
-
-g_error set_param_str(const char *section, const char *key,
-		      const char *value) {
-  return configfile_set(configfile_makesection(section),key,value);
-}
-
-int get_param_int(const char *section, const char* key, int def) {
-  const char *strval;
-  strval = get_param_str(section,key,NULL);
-  if (strval)
-    return atoi(strval);
-  return def;
-}
-
-const char *get_param_str(const char *section, const char* key, 
-			  const char *def) {
-  struct cfg_section *sect;
-  struct cfg_item *p;
-
-  sect = configfile_getsection(section);
-  if (!sect)
-    return def;
+/* Try to parse a config file if it exists */
+g_error configfile_parse_if_exists(const char *filename) {
+  FILE *f;
   
-  p = sect->items;
-  while (p) {
-    if (!strcmp(p->key,key))
-      return p->value;
-    p = p->next;
+  f = fopen(filename,"r");
+  if (f) {
+    fclose(f);
+    return configfile_parse(filename);
   }
-  return def;
+
+  return success;
 }
 
 /* The End */

@@ -1,13 +1,13 @@
 INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include
 
-noinst_LIBRARIES = libwidget.a
+noinst_LTLIBRARIES = libwidget.la
 
-libwidget_a_SOURCES = \
+libwidget_la_SOURCES = \
     widget.c \
     widget_table.c \
     $(WIDGET)
 
-EXTRA_libwidget_a_SOURCES = \
+EXTRA_libwidget_la_SOURCES = \
     terminal_frontend.c \
     terminal_textgrid.c \
     terminal_vt102.c \
@@ -42,7 +42,5 @@ EXTRA_libwidget_a_SOURCES = \
     messagedialog.c \
     scrollbox.c
 
-libwidget_a_LIBADD       = $(WIDGET:%.c=%.o)
-libwidget_a_DEPENDENCIES = $(WIDGET:%.c=%.o)
-
-
+libwidget_la_LIBADD       = $(WIDGET:%.c=%.lo)
+libwidget_la_DEPENDENCIES = $(WIDGET:%.c=%.lo)

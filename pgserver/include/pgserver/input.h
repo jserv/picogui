@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.46 2002/10/29 08:15:44 micahjd Exp $
+/* $Id: input.h,v 1.47 2002/11/03 04:54:24 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -281,6 +281,9 @@ void unload_inlib(struct inlib *inl);
  * This calls the driver's ispending function */
 int events_pending(void);
 
+/* Load all input drivers specified in the config database */
+g_error input_init(void);
+
 /* Unload all drivers */
 void cleanup_inlib(void);
 
@@ -362,7 +365,7 @@ g_error infilter_insert(struct infilter **insertion, handle *h, int owner,
 			struct infilter *template);
 void infilter_delete(struct infilter *node);
 g_error infilter_init(void);
-g_error touchscreen_init(int *need_calibration);
+g_error touchscreen_init(void);
 
 /********************************************** Input filter client-side adaptor */
 

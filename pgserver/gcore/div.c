@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.97 2002/10/27 23:56:10 micahjd Exp $
+/* $Id: div.c,v 1.98 2002/11/03 04:54:23 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -42,6 +42,9 @@ struct divtree fakedt = {
   head: &fakedt_head
 };
 
+struct dtstack *dts;
+
+/******************************************************** Public functions **/
 
 /* Check flags for divnode-level scrolling, and modify the
  * divnode's size if necessary. We must do this before

@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.41 2002/10/25 06:30:42 micahjd Exp $
+/* $Id: sdlinput.c,v 1.42 2002/11/03 04:54:24 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -31,6 +31,7 @@
 #include <pgserver/widget.h>
 #include <pgserver/pgnet.h>
 #include <pgserver/configfile.h>
+#include <pgserver/os.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -178,7 +179,7 @@ void sdlinput_poll(void) {
       break;
       
     case SDL_QUIT:
-      request_quit();
+      mainloop_stop();
       break;
       
     case SDL_VIDEORESIZE:

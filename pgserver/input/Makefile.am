@@ -1,10 +1,10 @@
 INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include $(DRIVER_CFLAGS) @RM_CFLAGS@ @PM_CFLAGS@
 
-noinst_LIBRARIES = libinput.a
+noinst_LTLIBRARIES = libinput.la
 
 LIBS   = @LIBS@ @RM_LIBS@
 
-libinput_a_SOURCES =		\
+libinput_la_SOURCES =		\
 	input_drivers.c		\
 	input_filters.c		\
 	input_util.c		\
@@ -15,10 +15,9 @@ libinput_a_SOURCES =		\
 	if_hotspot.c		\
 	if_key_preprocess.c	\
 	if_pntr_dispatch.c	\
-	if_pntr_preprocess.c	\
-	$(INPUT)
+	if_pntr_preprocess.c	
 
-EXTRA_libinput_a_SOURCES = \
+EXTRA_libinput_la_SOURCES = \
 	ncursesinput.c \
 	gpm.c \
 	r3912ts.c \
@@ -49,7 +48,7 @@ EXTRA_libinput_a_SOURCES = \
 	if_client_adaptor.c \
 	if_key_alpha.c
 
-libinput_a_LIBADD       = $(INPUT:%.c=%.o)
-libinput_a_DEPENDENCIES = $(INPUT:%.c=%.o)
+libinput_la_LIBADD       = $(INPUT:%.c=%.lo)
+libinput_la_DEPENDENCIES = $(INPUT:%.c=%.lo)
 
 

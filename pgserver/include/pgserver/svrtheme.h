@@ -1,4 +1,4 @@
-/* $Id: svrtheme.h,v 1.13 2002/09/15 10:51:48 micahjd Exp $
+/* $Id: svrtheme.h,v 1.14 2002/11/03 04:54:24 micahjd Exp $
  * 
  * svrtheme.h - functions and data structures for themes, used
  *              only in the server
@@ -78,6 +78,12 @@ struct pgmemtheme_thobj {
 };
 
 /**** Functions for manipulating in-memory themes */
+
+/* Reload themes according to the ones set in the config database */
+g_error reload_initial_themes(void);
+
+/* Free all memory used by server-loaded themes */
+void theme_shutdown(void);
 
 /* Searches for a thobj in a sorted array. Null if none found */
 struct pgmemtheme_thobj *find_thobj(struct pgmemtheme *th,unsigned short id);
