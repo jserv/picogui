@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.189 2002/09/25 15:26:08 micahjd Exp $
+/* $Id: widget.c,v 1.190 2002/09/27 01:14:08 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -799,6 +799,36 @@ void widget_set_numcursors(struct widget *self, int num) {
     send_trigger(self,PG_TRIGGER_ENTER,NULL);  
 
   self->numcursors = num;
+}
+
+/* Communication between widget_find and iterator */
+struct widget_find_data {
+  struct widget *result;
+  const struct pgstring *string;
+};
+
+/* Iterator function for widget_find */
+g_error widget_find_iterator(const void **p, void *extra) {
+  struct widget *w = (struct widget *) (*p);
+  const struct pgstring *str;
+  struct widget_find_data *data = (struct widget_find_data *) extra;
+
+  if (iserror(rdhandle((void**)&str,PG_TYPE_PGSTRING,-1,w->name)) || !str)
+    return success;
+  if (!pgstring_cmp(data->string,str))
+    data->result = w;
+  return success;
+}
+
+/* Find a widget by name, or NULL if it doesn't exist. The widget chosen in the case of
+ * duplicate names is undefined.
+ */
+struct widget *widget_find(const struct pgstring *name) {
+  struct widget_find_data iterator_data;
+  iterator_data.result = NULL;
+  iterator_data.string = name;
+  handle_iterate(PG_TYPE_WIDGET,&widget_find_iterator,&iterator_data);
+  return iterator_data.result;
 }
 
 /* The End */

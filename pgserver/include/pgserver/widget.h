@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.66 2002/09/25 15:26:07 micahjd Exp $
+/* $Id: widget.h,v 1.67 2002/09/27 01:14:07 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -292,6 +292,11 @@ void r_widget_setcontainer(struct widget *w, handle oldcontainer,
  * triggers due to the change.
  */
 void widget_set_numcursors(struct widget *self, int num);
+
+/* Find a widget by name, or NULL if it doesn't exist. The widget chosen in the case of
+ * duplicate names is undefined.
+ */
+struct widget *widget_find(const struct pgstring *name);
 
 #endif /* __WIDGET_H */
 

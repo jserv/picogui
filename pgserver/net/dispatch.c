@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.104 2002/09/25 15:26:08 micahjd Exp $
+/* $Id: dispatch.c,v 1.105 2002/09/27 01:14:08 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -1057,37 +1057,11 @@ g_error rqh_getfstyle(int owner, struct pgrequest *req,
   return ERRT_NOREPLY;
 }
 
-/* Communication between rqh_findwidget and iterator */
-struct rqh_findwidget_data {
-  handle result;
-  const char *string;
-  u32 len;
-};
-
-/* Iterator function for rqh_findwidget() */
-g_error rqh_findwidget_iterate(const void **p, void *extra) {
-  struct widget *w = (struct widget *) (*p);
-  const char *str;
-  struct rqh_findwidget_data *data = (struct rqh_findwidget_data *) extra;
-
-  if (iserror(rdhandle((void**)&str,PG_TYPE_PGSTRING,-1,w->name)) || !str)
-    return success;
-  if (!strncmp(data->string,str,data->len))
-    data->result = hlookup(w,NULL);
-  return success;
-}
-/* Find a widget by name 
- *
- * FIXME: modify handle_iterate so we don't need to use hlookup() above.
- */
 g_error rqh_findwidget(int owner, struct pgrequest *req,
 		       void *data, u32 *ret, int *fatal) {
-  struct rqh_findwidget_data iterator_data;
-  iterator_data.result = 0;
-  iterator_data.string = (const char *) data;
-  iterator_data.len = req->size;
-  handle_iterate(PG_TYPE_WIDGET,&rqh_findwidget_iterate,&iterator_data);
-  *ret = iterator_data.result;
+  /* FIXME: Is this unicode safe? */
+  handle h = hlookup(widget_find(pgstring_tmpwrap(data)),NULL);
+  *ret = h;
   return success;
 }
 
