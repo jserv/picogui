@@ -1,4 +1,4 @@
-/* $Id: lucid.ths,v 1.3 2002/10/27 00:03:34 micahjd Exp $
+/* $Id: lucid.ths,v 1.4 2002/10/28 03:02:07 micahjd Exp $
  *
  * Lucid - A simple and clean solid color and thin outline theme, where
  *         most elements are translucent.
@@ -52,7 +52,7 @@ object default {
 
   fgcolor = 0x000000;
   bgcolor = 0xffffff;
-  alpha   = 0x60000000;
+  alpha   = 0x68000000;
 
   margin  = 5;
   spacing = 5;
@@ -126,6 +126,12 @@ object panel {
     fBackground(x,y+h-border.size+1,w,border.size-1);
     fFramedTranslucent(x+border.size-1,y+border.size-1,w-border.size*2+2,h-border.size*2+2);
   };
+}
+
+object field {
+  bgfill = Copy(default::fFramedTranslucent);
+  frameColor = Copy(button::fgcolor);
+  margin = 3;
 }
 
 object scroll {
