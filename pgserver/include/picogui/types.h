@@ -1,4 +1,4 @@
-/* $Id: types.h,v 1.1 2002/01/23 01:14:47 micahjd Exp $
+/* $Id: types.h,v 1.2 2002/02/11 20:17:04 micahjd Exp $
  *
  * pgserver/common.h - things every file in pgserver should need,
  *                     including memory management, error handling,
@@ -30,7 +30,17 @@
 #define _H_PG_TYPES
 
 /******* Fixed-sized types */
+
+#if (defined(__APPLE__) && defined(__MACH__)) // Mac OS X and Darwin 
+typedef unsigned char __u8;
+typedef signed char __s8;
+typedef unsigned short __u16;
+typedef signed short __s16;
+typedef unsigned long __u32;
+typedef signed long __s32;
+#else
 #include <asm/types.h>
+#endif
 
 #ifndef u8
 # define u8 __u8
