@@ -499,5 +499,10 @@ quoted appropriately. For example:
 - buttonN-mousebutton
   Mouse button mask to map the button to. Left button is 1, Middle is 2, Right is 4, etc.
 
+[input-ttykb]
+
+- device
+  The name of the device for the keyboard. Defaults to /dev/tty.
+
 --- The End ---
 
