@@ -237,3 +237,8 @@ CONFIG_ROTATE
       This adds extra "video wrapper" libraries that allow the entire
       screen to be rotated into a portrait or landscape mode. Good for
       small LCD devices.
+
+CONFIG_ROTATE180
+      Make the whole display rotated by 180 degree. This is for the case
+      the display is rotated physically.
+

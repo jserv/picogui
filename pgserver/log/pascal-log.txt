@@ -15,7 +15,7 @@ dynamic option).
 
 Currently only the linear1 driver is done.
 
-	* config.in: added option CONFIG_ROTATE180
+	* config.in config.help: added option CONFIG_ROTATE180
 
 	* vidbase/linear1.c: added handling for CONFIG_ROTATE180
 
