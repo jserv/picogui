@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.5 2000/06/08 05:28:28 micahjd Exp $
+/* $Id: popup.c,v 1.6 2000/06/10 00:31:36 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -42,7 +42,7 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt) {
   if (e.type != ERRT_NONE) return e;
 
   /* Add the new popup widget - a simple theme-enabled container widget */
-  e = widget_create(wgt,WIDGET_POPUP,dts->top,&dts->top->head->next);
+  e = widget_create(wgt,WIDGET_POPUP,dts->top,&dts->top->head->next,0);
   if (e.type != ERRT_NONE) return e;
 
   (*wgt)->isroot = 1;  /* This widget has no siblings, so no point going

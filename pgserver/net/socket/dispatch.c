@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.4 2000/06/08 20:27:46 micahjd Exp $
+/* $Id: dispatch.c,v 1.5 2000/06/10 00:31:36 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -137,6 +137,7 @@ g_error rqh_mkwidget(int owner, struct uipkt_request *req,
   struct rqhd_mkwidget *arg = (struct rqhd_mkwidget *) data;
   struct widget *w,*parent;
   handle h;
+  handle xh;
   g_error e;
 
   if (req->size < sizeof(struct rqhd_mkwidget)) 
@@ -151,7 +152,7 @@ g_error rqh_mkwidget(int owner, struct uipkt_request *req,
     return mkerror(ERRT_BADPARAM,"Cannot create special widget with mkwidget");
   }
 
-  e = rdhandle((void**) &parent,TYPE_WIDGET,owner,ntohl(arg->parent));
+  e = rdhandle((void**) &parent,TYPE_WIDGET,owner,xh=ntohl(arg->parent));
   if (e.type != ERRT_NONE) return e;
   if (!parent) return mkerror(ERRT_BADPARAM,"NULL parent widget");
 
@@ -160,7 +161,7 @@ g_error rqh_mkwidget(int owner, struct uipkt_request *req,
     return mkerror(ERRT_BADPARAM,
 		   "App attempted to derive before or after a root widget");
 
-  e = widget_derive(&w,ntohs(arg->type),parent,ntohs(arg->rship));
+  e = widget_derive(&w,ntohs(arg->type),parent,xh,ntohs(arg->rship));
   if (e.type != ERRT_NONE) return e;
 
   e = mkhandle(&h,TYPE_WIDGET,owner,w);

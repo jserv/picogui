@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.19 2000/06/08 20:27:46 micahjd Exp $
+/* $Id: widget.h,v 1.20 2000/06/10 00:31:36 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -126,6 +126,11 @@ struct widget {
      widgets inside it, not before or after it */
   int isroot;
 
+  /* If not null, the widget is contained within this widget (a toolbar,
+     panel, etc...
+  */
+  handle container;
+
   /* Widget's private data (Properties) */
   void *data;
 
@@ -208,12 +213,18 @@ DEF_STATICWIDGET_PROTO(popup)
 g_error create_popup(int x,int y,int w,int h,struct widget **wgt);
 
 g_error widget_create(struct widget **w,int type,
-		      struct divtree *dt,struct divnode **where);
+		      struct divtree *dt,struct divnode **where,
+		      handle container);
 g_error widget_derive(struct widget **w,int type,struct widget *parent,
-		      int rship);
+		      handle hparent,int rship);
 void widget_remove(struct widget *w);
 g_error widget_set(struct widget *w, int property, glob data);
 glob widget_get(struct widget *w, int property);
+
+/* This is used in transparent widgets - it propagates a redraw through
+   the container the widget is in, in order to redraw the background
+*/
+void redraw_bg(struct widget *self);
 
 /* Widget must set their trigger_mask to accept triggers.  This defines
    parameters for some of the triggers.

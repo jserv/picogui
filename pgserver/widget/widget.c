@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.21 2000/06/08 20:27:46 micahjd Exp $
+/* $Id: widget.c,v 1.22 2000/06/10 00:31:36 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -56,7 +56,8 @@ struct widget *capture;
 /******** Widget interface functions */
 
 g_error widget_create(struct widget **w,int type,
-		      struct divtree *dt,struct divnode **where) {
+		      struct divtree *dt,struct divnode **where,
+		      handle container) {
   g_error e;
 
   if ((type > WIDGETMAX) || (!dt) || (!where)) return 
@@ -69,6 +70,7 @@ g_error widget_create(struct widget **w,int type,
   (*w)->type = type;
   (*w)->def = widgettab + type;
   (*w)->dt = dt;
+  (*w)->container = container;
 
   if ((*w)->def->install) (*(*w)->def->install)(*w);
   if ((*w)->in && (*w)->out) {
@@ -90,13 +92,14 @@ g_error widget_create(struct widget **w,int type,
 }
 
 g_error widget_derive(struct widget **w,
-			     int type,struct widget *parent,int rship) {
+		      int type,struct widget *parent,
+		      handle hparent,int rship) {
   if (rship==DERIVE_INSIDE)
-    return widget_create(w,type,parent->dt,parent->sub);
+    return widget_create(w,type,parent->dt,parent->sub,hparent);
   else if (rship==DERIVE_AFTER)
-    return widget_create(w,type,parent->dt,parent->out);
+    return widget_create(w,type,parent->dt,parent->out,parent->container);
   else if (rship==DERIVE_BEFORE)
-    return widget_create(w,type,parent->dt,parent->where);
+    return widget_create(w,type,parent->dt,parent->where,parent->container);
   else
     return mkerror(ERRT_BADPARAM,"widget_derive bad derive constant");
 }
@@ -167,6 +170,23 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
 glob inline widget_get(struct widget *w, int property) {
   if (w && w->def->get) return (*w->def->get)(w,property);
   return 0;
+}
+
+/* This is used in transparent widgets - it propagates a redraw through
+   the container the widget is in, in order to redraw the background
+*/
+void redraw_bg(struct widget *self) {
+  struct widget *container;
+
+  /* Dereference the handle */
+  if (rdhandle((void **)&container,TYPE_WIDGET,-1,self->container).type!=
+      ERRT_NONE || ! container) return;
+
+  /* Flags! Redraws automatically propagate through all child nodes of the
+     container's div.
+  */
+  container->in->flags |= DIVNODE_NEED_RECALC;
+  container->dt->flags |= DIVTREE_NEED_RECALC;
 }
 
 /***** Trigger stuff **/

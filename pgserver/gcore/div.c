@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.14 2000/06/09 21:54:34 micahjd Exp $
+/* $Id: div.c,v 1.15 2000/06/10 00:31:36 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -236,7 +236,12 @@ void divnode_redraw(struct divnode *n,int all) {
    if (all || (n->flags & DIVNODE_NEED_REDRAW)) {
      grop_render(n);
    }
-   n->flags &= ~DIVNODE_NEED_REDRAW;
+   if (n->flags & DIVNODE_PROPAGATE_REDRAW)
+     if (n->next)
+       n->next->flags |= DIVNODE_NEED_REDRAW | DIVNODE_PROPAGATE_REDRAW;
+   if (n->div)
+     n->div->flags |= DIVNODE_NEED_REDRAW | DIVNODE_PROPAGATE_REDRAW;
+   n->flags &= ~(DIVNODE_NEED_REDRAW | DIVNODE_PROPAGATE_REDRAW);
 
    divnode_redraw(n->next,all);
    divnode_redraw(n->div,all);

@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.20 2000/06/09 23:10:47 micahjd Exp $
+/* $Id: button.c,v 1.21 2000/06/10 00:31:36 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -228,6 +228,7 @@ g_error button_set(struct widget *self,int property, glob data) {
     self->in->next->flags |= ((sidet)data);
     resizebutton(self);
     self->dt->flags |= DIVTREE_NEED_RECALC;
+    redraw_bg(self);
     break;
 
   case WP_ALIGN:
@@ -249,8 +250,10 @@ g_error button_set(struct widget *self,int property, glob data) {
       DATA->bitmap = (handle) data;
       psplit = self->in->split;
       resizebutton(self);
-      if (self->in->split != psplit)
+      if (self->in->split != psplit) {
+	redraw_bg(self);
 	self->in->flags |= DIVNODE_PROPAGATE_RECALC;
+      }
       self->in->flags |= DIVNODE_NEED_RECALC;
       self->dt->flags |= DIVTREE_NEED_RECALC;
     }
@@ -272,8 +275,10 @@ g_error button_set(struct widget *self,int property, glob data) {
     DATA->font = (handle) data;
     psplit = self->in->split;
     resizebutton(self);
-    if (self->in->split != psplit)
+    if (self->in->split != psplit) {
+      redraw_bg(self);
       self->in->flags |= DIVNODE_PROPAGATE_RECALC;
+    }
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -284,8 +289,10 @@ g_error button_set(struct widget *self,int property, glob data) {
     DATA->text = (handle) data;
     psplit = self->in->split;
     resizebutton(self);
-    if (self->in->split != psplit)
+    if (self->in->split != psplit) {
+      redraw_bg(self);
       self->in->flags |= DIVNODE_PROPAGATE_RECALC;
+    }
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -307,6 +314,21 @@ glob button_get(struct widget *self,int property) {
 
   case WP_ALIGN:
     return DATA->align;
+
+  case WP_COLOR:
+    return DATA->textcolor;
+
+  case WP_BITMAP:
+    return DATA->bitmap;
+
+  case WP_BITMASK:
+    return DATA->bitmask;
+
+  case WP_FONT:
+    return (glob) DATA->font;
+
+  case WP_TEXT:
+    return (glob) DATA->text;
 
   default:
     return 0;
