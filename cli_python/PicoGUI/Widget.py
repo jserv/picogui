@@ -66,7 +66,8 @@ class Widget(object):
         #        This can be implemented here pending a protocol change in pgserver.
         return Widget(self.server,self.server.findwidget(name),self.parent)
 
-    def stream(self, data):
+    # This is write, so a widget can be used like a file object
+    def write(self, data):
         self.server.writedata(self.handle,data)
 
     def command(self, command, *parameters):

@@ -23,7 +23,7 @@ class DebugBuffer(Buffer):
         if self.observers:
             for o in self.observers:
                 o.readonly = 0
-                o.stream(text)
+                o.write(text)
                 o.readonly = 1
         else:
             self.frame.open(self)

@@ -73,7 +73,7 @@ def h_char(ev):
     print 'received %r' % ev
     if is_posting:
         print '(inserting)'
-        w.stream(ev.char)
+        w.write(ev.char)
 
 def h_keydown(ev):
     print 'received %r' % ev
@@ -84,7 +84,7 @@ def h_keyup(ev):
     if ev.hasMod('ctrl'):
         if ev.char == 's':
             # stream
-            w.stream('\nsome more text\n')
+            w.write('\nsome more text\n')
         elif ev.char == 'n':
             # nuke
             w.nuke()
