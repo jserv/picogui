@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.23 2001/01/21 21:42:38 micahjd Exp $
+/* $Id: dispatch.c,v 1.24 2001/01/21 22:20:48 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -65,7 +65,6 @@ DEF_REQHANDLER(getpayload)
 DEF_REQHANDLER(mkmenu)
 DEF_REQHANDLER(writeto)
 DEF_REQHANDLER(updatepart)
-DEF_REQHANDLER(unwait)
 DEF_REQHANDLER(undef)
 g_error (*rqhtab[])(int,struct pgrequest*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(ping)
@@ -101,7 +100,6 @@ g_error (*rqhtab[])(int,struct pgrequest*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(mkmenu)
   TAB_REQHANDLER(writeto)
   TAB_REQHANDLER(updatepart)
-  TAB_REQHANDLER(unwait)
   TAB_REQHANDLER(undef)
 };
 
@@ -887,18 +885,6 @@ g_error rqh_updatepart(int owner, struct pgrequest *req,
   update(w->in->div,1);
 
   return sucess;
-}
-
-g_error rqh_unwait(int owner, struct pgrequest *req,
-		 void *data, unsigned long *ret, int *fatal) {
-   
-   /* This call is needed to avoid a race condition in the client's
-    * idle handling. This request sends no reply packet. The process
-    * of sending the request in the first place takes the client
-    * off the waiting list, but this gives no messy response packet
-    * to gum up the works. */
-   
-   return ERRT_NOREPLY;
 }
 
 /* The End */
