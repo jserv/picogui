@@ -177,7 +177,7 @@ struct pghello {
 	The <structfield>protover</structfield> identifies the protocol
 	version in use.	The version number is incremented every time a
 	change is made to the protocol specifications.  At the time of
-	writing this document the latest value was <constant>0x000C</constant>.
+	writing this document the latest value was <constant>14</constant>.
    </para>
   </sect2>
  </sect1>
@@ -880,7 +880,7 @@ type                 : PGREQ_MKCONTEXT (23)
 client lib equivalent: pgEnterContext()
 additional data      : none
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
-server returned data : none
+server returned data : <structfield>pgresponse_ret.data</>
    </programlisting>
    <para>
 	Enter a new context.
@@ -889,7 +889,8 @@ server returned data : none
 	PicoGUI uses a context system, similar to a variable's scope in C.
 	Whenever the program leaves a context, all objects created while in
 	that context are deleted. No memory is used by creating a context,
-	and they can be nested a very large number of times.
+	and they can be nested a very large number of times. An ID number
+        for the newly entered context is returned.
    </para>
   </sect2>
 
@@ -1227,12 +1228,24 @@ struct pgreqd_render {
    <programlisting>
 type                 : PGREQ_RMCONTEXT (24)
 client lib equivalent: pgLeaveContext()
-additional data      : none
+additional data      : optional <link linkend="pgreqdrmcontext">struct pgreqd_rmcontext</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
 server returned data : none
    </programlisting>
    <para>
-	Leave a context.
+	Leave a context. This takes one optional parameter, specifying the context ID.
+	Without that parameter, the context system is treated like a stack. The current
+	context number (the last one returned by PGREQ_MKCONTEXT) is deleted, and
+	the current context number is decremented.
+   </para>
+   <figure id="pgreqdrmcontext"><title>struct pgreqd_rmcontext</><programlisting>
+struct pgreqd_rmcontext {
+  u32 context;
+};
+   </programlisting></figure>
+   <para>
+        With the optional pgreqd_rmcontext structure, the context specified therein in
+        deleted without effecting the current context number used by PGREQ_MKCONTEXT.
    </para>
    <para>
 	When leaving a context, all objects created within it are deleted.
