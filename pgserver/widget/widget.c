@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.195 2002/10/04 05:20:30 micahjd Exp $
+/* $Id: widget.c,v 1.196 2002/10/04 07:13:57 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -254,7 +254,7 @@ g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **wher
     resizewidget(w);
   }
   
-  if (w->dt && w->dt->head) {
+  if (dt && dt->head) {
     dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC;
     dt->flags |= DIVTREE_NEED_RECALC;
   }
@@ -323,12 +323,12 @@ void widget_remove(struct widget *w) {
 
   /* Detach the widget from the widget tree */
   old_where = w->where;
-  widget_attach(w,w->dt,NULL,0,w->owner);
+  widget_attach(w,NULL,NULL,0,w->owner);
 
   /* Detach all children from this widget */
   while ((child = widget_traverse(w,PG_TRAVERSE_CHILDREN,0))) {
     DBG("removing child %p, type %d. where %p\n",child,child->type,child->where);
-    widget_attach(child,child->dt,NULL,0,child->owner);
+    widget_attach(child,NULL,NULL,0,child->owner);
   }
 
   /* Note that the widget may have it's 'sub' attachment point filled even
