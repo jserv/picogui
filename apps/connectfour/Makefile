@@ -1,4 +1,4 @@
-connectfour: connectfour.o rules.o ai.o ai1.o ai2.o ai3.o ai4.o
+connectfour: connectfour.o rules.o ai.o ai1.o ai2.o #ai3.o ai4.o
 	gcc -o connectfour *.o -lpgui
 
 run: connectfour
