@@ -25,8 +25,14 @@ from httplib import HTTPConnection
 from urlparse import *
 from xml.parsers import expat
 
-rev = "$Rev$"
-userAgent = "PicoGUI-MiniDAV/r" + rev.split()[1]
+try:
+    revision = "$Rev$".split()[1]
+except IndexError:
+    revision = None
+
+userAgent = "PicoGUI-MiniDAV"
+if revision:
+    userAgent += "/r%s" % rev
 
 
 class MiniDAVException(Exception):
