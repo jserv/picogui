@@ -1,4 +1,4 @@
-/* $Id: chipslicets.c,v 1.3 2001/11/06 09:10:17 bauermeister Exp $
+/* $Id: chipslicets.c,v 1.4 2001/11/09 16:35:25 pney Exp $
  *
  * chipslicets.c - input driver for touch screen
  *
@@ -45,16 +45,13 @@
 #include <rm_client.h>
 
 
-#define IDLE                      0
-#define RUN                       1
-
 #define POLL_USEC                100
 
 /*
- * timeout for pointing display, backlight (not yet implemented)
- * and sleep mode
+ * timeout for sleep mode and backlight (not yet implemented)
+ * show/hide pointing use now the pgserver timers and drivermessages
+ * See gcore/video.c for the PGDM_CURSORVISIBLE message
  */
-#define POINTING_IDLE_MAX_SEC      1
 #define SLEEP_IDLE_MAX_SEC       100
 //#define BACKLIGHT_IDLE_MAX_SEC    50
 
@@ -64,8 +61,6 @@ static const char *_file_ = __FILE__;
 static int fd=0;
 static int bytes_transfered=0;
 static int iIsPenUp = 1;
-static int iIsPointingDisplayed = 1;
-static int chipslicetsSTATE = RUN;
 
 static struct timeval lastEvent;
 
@@ -82,14 +77,12 @@ int chipslicets_sleep(void) {
   printf("-- send RM_EV_IDLE to RM\n");
 #endif
 
-  /* set state to IDLE */
-  chipslicetsSTATE = IDLE;
-
   /* call bios sleep function throught Ressources Manager */
   rm_emit(RM_EV_IDLE);
 
   /*
    * the hit to wake up the ChipSlice isn't catch by the chipslicets driver.
+   * This because kernel is interrupt-off when it occure.
    * It's then necessary to re-initiate the time of the last event.
    */
   gettimeofday(&lastEvent,NULL);
@@ -104,8 +97,6 @@ void chipslicets_poll(void) {
 
   if(pen_info.x != -1) {
 
-    if(!chipslicetsSTATE) chipslicetsSTATE = RUN;
-
     switch(pen_info.event) {
     case EV_PEN_UP:
       if(pen_info.x > 350) {
@@ -113,16 +104,16 @@ void chipslicets_poll(void) {
 	break;
       }
       dispatch_pointing(TRIGGER_UP,pen_info.x,pen_info.y,0);
+      drivermessage(PGDM_CURSORVISIBLE,1,NULL);
       gettimeofday(&lastEvent,NULL);
       iIsPenUp = 1;
-      iIsPointingDisplayed = 1;
       break;
       
     case EV_PEN_DOWN:
       dispatch_pointing(TRIGGER_DOWN,pen_info.x,pen_info.y,1);
+      drivermessage(PGDM_CURSORVISIBLE,1,NULL);
       gettimeofday(&lastEvent,NULL);
       iIsPenUp = 0;
-      iIsPointingDisplayed = 1;
       break;
       
     case EV_PEN_MOVE:
@@ -135,6 +126,7 @@ void chipslicets_poll(void) {
       //	VID(sprite_hide) (cursor);
       //	iIsPointingDisplayed = 0;
       //      }
+      drivermessage(PGDM_CURSORVISIBLE,1,NULL);
       gettimeofday(&lastEvent,NULL);
       iIsPenUp = 0;
       break;
@@ -160,15 +152,8 @@ void chipslicets_poll(void) {
     gettimeofday(&lastIdle,NULL);
     delay_sec = lastIdle.tv_sec - lastEvent.tv_sec;
 
-    /* Management for pointing display, sleep mode and backlight */
-    if((delay_sec > POINTING_IDLE_MAX_SEC) && iIsPointingDisplayed) {
-      VID(sprite_hide) (cursor);
-      iIsPointingDisplayed = 0;
-#ifdef DEBUG_EVENT
-      printf("-- hide pointing\n");
-#endif
-    }
-    if((delay_sec > SLEEP_IDLE_MAX_SEC) && (chipslicetsSTATE != IDLE))
+    /* Management sleep mode */
+    if(delay_sec > SLEEP_IDLE_MAX_SEC)
       chipslicets_sleep();
   }
 }
