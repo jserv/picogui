@@ -4,5 +4,5 @@ LOGFILE=$PMDIR/log
 
 # send perl5 commits to 'filter'
 :0
-* ^To: perl5-changes@perl.org
+* ^Mailing-List: contact perl5-changes-help@perl.org
 | /home/perl5_commits/filter.py

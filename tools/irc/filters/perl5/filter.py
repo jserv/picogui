@@ -2,10 +2,10 @@
 import sys, email, smtplib, re
 from StringIO import StringIO
 
-returnAddress = "perl_commits@picogui.org"
+returnAddress = "perl5_commits@picogui.org"
 toAddress = "commits@picogui.org"
-projectName = "perl"
-logFile = "/home/perl_commits/mail.log"
+projectName = "perl5"
+logFile = "/home/perl5_commits/mail.log"
 
 message = email.message_from_file(sys.stdin)
 body = StringIO(message.get_payload())
@@ -37,5 +37,5 @@ s = smtplib.SMTP()
 s.connect()
 s.sendmail(returnAddress, toAddress,
            "From: %s\nTo: %s\nSubject: Announce %s\n\n%s" % \
-           (returnAddress, toAddress, projectName, ciaMessage))
+          (returnAddress, toAddress, projectName, ciaMessage))
 s.close()
