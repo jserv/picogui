@@ -1,4 +1,4 @@
-/* $Id: benchmark.c,v 1.1 2002/10/20 15:09:59 micahjd Exp $
+/* $Id: benchmark.c,v 1.2 2002/10/20 15:12:15 micahjd Exp $
  *
  * benchmark.c - Run benchmarks on vidlib functions
  *
@@ -338,8 +338,8 @@ void benchmark_run_one(struct benchmark_test *test, struct benchmark_param *b) {
 
   result = (end.tv_sec - start.tv_sec)*1000000 + (end.tv_usec - start.tv_usec);
 
-  printf("%12d ns  %-30s %-15s %-3d\n",
-	 result, test->name, lgop_names[b->lgop], b->w);
+  printf("%12d ns  %-30s %-15s %dx%d\n",
+	 result, test->name, lgop_names[b->lgop], b->w,b->h);
 }
 
 /* Run a benchmark at multiple sizes if necessary */
