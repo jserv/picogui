@@ -1,8 +1,8 @@
 #!/usr/bin/perl
-# $Id: mk_theme_hierarchy.pl,v 1.5 2002/10/04 16:05:50 micahjd Exp $
+# $Id$
 #
 # This is a small script that uses dot(1) from the
-# open source AT&T Graphvis program to create a theme
+# open source AT&T Graphviz program to create a theme
 # hierarchy graph, using the hierarchy table in the
 # source code itself.
 #
@@ -30,7 +30,7 @@
 #
 ####### configuration
 
-$srcfile = "../pgserver/theme/memtheme.c";
+$srcfile = "../server/theme/memtheme.c";
 $basename = "themehierarchy";
 
 ####### Main program
