@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.26 2001/12/12 22:54:14 micahjd Exp $
+/* $Id: g_error.c,v 1.27 2002/01/06 03:35:47 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -37,6 +37,9 @@
 #include <stdarg.h>
 #endif
 
+#ifdef CONFIG_ERROR_TRACE
+const char *errtrace_fmt = "%s in %s, line %d: ";
+#endif
 
 g_error prerror(g_error e) {
   if (!iserror(e)) return e;
