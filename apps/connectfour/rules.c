@@ -28,9 +28,7 @@
 #include "ai.h"
 #include "rules.h"
 
-int wincheck(board *foo)
+int wincheck(struct board *foo)
 {
   int i, j, total;
-
-  for(i=0;i<
 }
