@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.13 2001/12/18 04:53:05 micahjd Exp $
+/* $Id: main.c,v 1.14 2001/12/29 21:41:53 micahjd Exp $
  *
  * main.c - PicoGUI Terminal (the 'p' is silent :)
  *          This handles the PicoGUI init and events
@@ -37,7 +37,6 @@
 #include "pterm.h"
 
 #define BUFFERSIZE    1024  /* Size of output buffer */
-#define UPDATE_PERIOD 50    /* Minimum milliseconds between updates */
 int ptyfd;                  /* file descriptor of the pty master */
 pghandle wTerminal;         /* Widgets */
 
@@ -85,9 +84,6 @@ int mySelect(int n, fd_set *readfds, fd_set *writefds,
 
 /* Bottom-half for the select, allowed to make PicoGUI calls */
 void mySelectBH(int result, fd_set *readfds) {
-  static unsigned long previous_update;
-  unsigned long this_update;
-  struct timeval now;
   int chars;
   static char buf[BUFFERSIZE];
   
@@ -100,18 +96,7 @@ void mySelectBH(int result, fd_set *readfds) {
        
   /* Send it to the terminal */
   pgWriteData(wTerminal,pgFromMemory(buf,chars));
-  
-  /* Get the time */
-  gettimeofday(&now,NULL);
-  this_update = now.tv_sec*1000 + now.tv_usec/1000;
-  
-  /* Only update if sufficient time has passed.
-   * This reduces wasted updates so scrolling junk is drawn
-   * all at once, not line by line */
-  if ((this_update - previous_update) >= UPDATE_PERIOD) {
-    pgSubUpdate(wTerminal);
-    previous_update = this_update;  /* Save time :) */
-  }
+  pgSubUpdate(wTerminal);
 }
 
 /****************************** Main Program ***/
@@ -176,7 +161,8 @@ int main(int argc, char **argv) {
   wTerminal = pgNewWidget(PG_WIDGET_TERMINAL,0,0);   /* Make a terminal */
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_TOP,
-	      //      PG_WP_LINES,100,
+	      PG_WP_LINES,300,
+	      PG_WP_AUTOSCROLL,1,
 	      0);
   if (fontsize)
      pgSetWidget(PGDEFAULT,PG_WP_FONT,
@@ -187,12 +173,10 @@ int main(int argc, char **argv) {
   pgFocus(PGDEFAULT);
   
   /* Scroll bar */
-  /*
   pgNewWidget(PG_WIDGET_SCROLL,PG_DERIVE_BEFORE,wTerminal);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_BIND,wTerminal,
 	      0);
-  */
 
   /*** Start up subprocess */
 
