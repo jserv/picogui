@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.12 2001/01/13 10:06:14 micahjd Exp $
+/* $Id: terminal.c,v 1.13 2001/01/13 10:45:45 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -178,14 +178,17 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
 	*(p++) = DATA->attr;
 	*(p++) = ' ';
       }
+
+      /* Cursor off */
+      term_setcursor(self,0);
       
       /* Start off assuming the new buffer is smaller, then perform clipping */
-      
+
       dest_y = 0;
       w = neww;
       h = newh;
       src_y = DATA->bufferh - newh;
-      
+
       if (src_y<0) {
 	h += src_y;
 	src_y = 0;
@@ -203,7 +206,7 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
 	src_y += DATA->crsry;
 	DATA->crsry = 0;
       }
-      
+ 
       /* Blit! */
       textblit(DATA->buffer,newbuffer,0,src_y,
 	       DATA->bufferw,0,dest_y,neww,w,h);
@@ -996,17 +999,15 @@ void term_othercsi(struct widget *self,char c) {
 /* Copy a rectangle between two text buffers */
 void textblit(char *src,char *dest,int src_x,int src_y,int src_w,
 	      int dest_x,int dest_y,int dest_w,int w,int h) {
-  int srcoffset = (src_w - w) << 1;
-  int destoffset = (dest_w - w) << 1;
-  int ix;
+  int srcoffset  = src_w << 1;
+  int destoffset = dest_w << 1;
 
   src  += (src_x + src_y * src_w) << 1;
   dest += (dest_x + dest_y * dest_w) << 1;
   w <<= 1;
 
   for (;h;h--,src+=srcoffset,dest+=destoffset)
-    for (ix=w;w;w--,dest++,src++)
-      *dest = *src;
+    memcpy(dest,src,w);
 }
 
 /* The End */
