@@ -1,0 +1,41 @@
+<application text="Widget Foundry">
+
+	<box side="left">
+	    <tabpage text="Widget Tree">
+		    <scrollbox name="WidgetTree"/>
+		</tabpage>
+	    <tabpage text="Properties">
+		    <label name="WidgetInfo"/>
+		    <scrollbox name="Properties"/>
+		</tabpage>
+	</box>
+
+	<box side="bottom">
+	    <tabpage text="Widget Palette">
+		    <scrollbox name="WidgetPalette"/>
+		</tabpage>
+
+	    <tabpage text="Python Console">
+			<box side="bottom" transparent="1">
+			    <label side="left" name="PythonPrompt"/>
+				<field side="all" name="PythonCommand"/>
+			</box> 
+		    <scrollbox>
+				<textbox side="all" readonly="1" name="PythonConsole"/>
+			</scrollbox>
+		</tabpage>
+	</box>
+
+	<box side="all">
+		<tabpage text="Work Area">
+		    <scrollbox name="WorkArea"/>
+		</tabpage>
+
+		<tabpage text="XML Widget Template">
+    		<scrollbox>
+			    <textbox side="all" readonly="1" name="XWTViewer"/>
+    		</scrollbox>
+		</tabpage>
+	</box>
+
+</application>
