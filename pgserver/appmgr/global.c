@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.33 2001/03/08 01:22:22 micahjd Exp $
+/* $Id: global.c,v 1.34 2001/03/12 17:37:49 pney Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -38,6 +38,13 @@
 
 /* XBM loader is needed! */
 #ifdef CONFIG_FORMAT_XBM
+#ifdef CONFIG_CHIPSLICE
+/* Simple rectangular cursor (that loock like a square on the screen) */
+#define cursor_width 4
+#define cursor_height 6
+unsigned char const cursor_bits[]      = { 0x0,0x0,0x0,0x0,0x0,0x0 };
+unsigned char const cursor_mask_bits[] = { 0xF,0xF,0xF,0xF,0xF,0xF };
+#else
 #define cursor_width 8
 #define cursor_height 14
 unsigned char const cursor_bits[] = {
@@ -46,7 +53,8 @@ unsigned char const cursor_bits[] = {
 unsigned char const cursor_mask_bits[] = {
 0x01,0x03,0x07,0x0F,0x1F,0x3F,0x7F,0xFF,0xFF,0x3F,0x3F,0x7B,0x70,0x70
 };
-#endif
+#endif /* CONFIG_CHIPSLICE  */
+#endif /* CONFIG_FORMAT_XBM */
 
 struct app_info *applist;
 handle defaultfont;
