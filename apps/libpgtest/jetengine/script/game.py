@@ -3,7 +3,7 @@ import PicoGUI, math
 
 def inputHandler(t, sender):
     # Move the ship and camera in reaction to the mouse position
-    if t.dev == 'mouse' and t.name == 'down':
+    if t.dev == 'mouse' and t.name == 'move':
          camera.yaw = -t.x
          camera.pitch = t.y
         
