@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.18 2001/07/11 07:38:20 micahjd Exp $
+/* $Id: sdlinput.c,v 1.19 2001/07/11 09:22:28 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -59,8 +59,14 @@ void sdlinput_poll(void) {
   SDL_Event evt;
   int ox=-1,oy=-1;
   static int btnstate=0;
+  s16 cursorx,cursory;
 
   if (!SDL_PollEvent(&evt)) return;
+
+  /* Get the physical position of PicoGUI's cursor */
+  cursorx = cursor->x;
+  cursory = cursor->y;
+  VID(coord_physicalize)(&cursorx,&cursory);
 
   switch (evt.type) {
     
@@ -68,10 +74,10 @@ void sdlinput_poll(void) {
     /* If SDL's old mouse position doesn't jive with our cursor position,
      * warp the mouse and try again.
      */
-    if ((evt.motion.x-evt.motion.xrel)!=cursor->x ||
-	(evt.motion.y-evt.motion.yrel)!=cursor->y) {
-      SDL_WarpMouse(cursor->x,
-		    cursor->y);
+    if ((evt.motion.x-evt.motion.xrel)!=cursorx ||
+	(evt.motion.y-evt.motion.yrel)!=cursory) {
+      SDL_WarpMouse(cursorx,
+		    cursory);
       break;
     }
 
@@ -83,24 +89,24 @@ void sdlinput_poll(void) {
     
   case SDL_MOUSEBUTTONDOWN:
     /* Also auto-warp for button clicks */
-    if (evt.button.x!=cursor->x ||
-	evt.button.y!=cursor->y)
-      SDL_WarpMouse(cursor->x,
-		    cursor->y);
+    if (evt.button.x!=cursorx ||
+	evt.button.y!=cursory)
+      SDL_WarpMouse(cursorx,
+		    cursory);
 
-    dispatch_pointing(TRIGGER_DOWN,cursor->x,
-		      cursor->y,btnstate |= 1<<(evt.button.button-1));
+    dispatch_pointing(TRIGGER_DOWN,cursorx,
+		      cursory,btnstate |= 1<<(evt.button.button-1));
     break;
     
   case SDL_MOUSEBUTTONUP:
     /* Also auto-warp for button clicks */
-    if (evt.button.x!=cursor->x ||
-	evt.button.y!=cursor->y)
-      SDL_WarpMouse(cursor->x,
-		    cursor->y);
+    if (evt.button.x!=cursorx ||
+	evt.button.y!=cursory)
+      SDL_WarpMouse(cursorx,
+		    cursory);
 
-    dispatch_pointing(TRIGGER_UP,cursor->x,
-		      cursor->y,btnstate &= ~(1<<(evt.button.button-1)));
+    dispatch_pointing(TRIGGER_UP,cursorx,
+		      cursory,btnstate &= ~(1<<(evt.button.button-1)));
     break;
     
   case SDL_KEYDOWN:

@@ -1,4 +1,4 @@
-/* $Id: rotate180.c,v 1.2 2001/05/01 01:31:27 micahjd Exp $
+/* $Id: rotate180.c,v 1.3 2001/07/11 09:22:28 micahjd Exp $
  *
  * rotate180.c - Video wrapper to rotate the screen 180 degrees
  *
@@ -188,6 +188,7 @@ void vidwrap_rotate180(struct vidlib *vid) {
    vid->tileblit = &rotate180_tileblit;
    vid->charblit = &rotate180_charblit;
    vid->coord_logicalize = &rotate180_coord_logicalize;
+   vid->coord_physicalize = &rotate180_coord_logicalize;
 #ifdef CONFIG_FORMAT_XBM
    vid->bitmap_loadxbm = &rotate180_bitmap_loadxbm;
 #endif

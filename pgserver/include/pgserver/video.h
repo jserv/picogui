@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.46 2001/07/11 07:38:20 micahjd Exp $
+/* $Id: video.h,v 1.47 2001/07/11 09:22:27 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -152,6 +152,13 @@ struct vidlib {
    * Default implementation: does nothing
    */
   void (*coord_logicalize)(s16 *x,s16 *y);
+
+  /* Optional
+   *   Converts logical coordinates back to physical
+   *
+   * Default implementation: does nothing
+   */
+  void (*coord_physicalize)(s16 *x,s16 *y);
 
   /* Reccomended (without double-buffer, it looks really dumb)
    *   Update changes to the screen, if device is double-buffered or

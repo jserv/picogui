@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.43 2001/06/26 11:31:27 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.44 2001/07/11 09:22:28 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -1432,6 +1432,7 @@ void setvbl_default(struct vidlib *vid) {
   vid->sprite_protectarea = &def_sprite_protectarea;
   vid->blit = &def_blit;
   vid->coord_logicalize = &def_coord_logicalize;
+  vid->coord_physicalize = &def_coord_logicalize;
   vid->bitmap_rotate90 = &def_bitmap_rotate90;
   vid->entermode = &def_enterexitmode;
   vid->exitmode = &def_enterexitmode;

@@ -1,6 +1,13 @@
 2001-07-10    Micah Dowty <micahjd@users.sourceforge.net>
 
 Fixing a few bugs, continuing on the meta-input features.
+-
+Still one feature to add for the meta-input phase (I think):
+ - Client-side loading and unloading of input drivers
+And a few bugs related to physical/logical coordinate translation:
+ - Hotspots don't work when the screen is rotated
+ - The screensaver segfaults when rotated 90 degrees
+
 
 	   * widget/scroll.c: Fixed the scrollbar drag bug pointed out by Philippe
 
@@ -40,6 +47,11 @@ Fixing a few bugs, continuing on the meta-input features.
 		* gcore/widget.c: Added support for those annoying clicking noises when
 		  you click or press a key. This is controlled by a config file
 		  entry.
+
+		* include/pgserver/video.h: Added the coord_physicalize() vidlib function
+		
+		* input/sdlinput.c: Added code to convert coordinates from logical to
+		  physical when necessary
 
 2001-07-09    Micah Dowty <micahjd@users.sourceforge.net>
 

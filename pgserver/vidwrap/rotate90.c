@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.14 2001/05/01 01:12:29 micahjd Exp $
+/* $Id: rotate90.c,v 1.15 2001/07/11 09:22:28 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -58,6 +58,11 @@ void rotate90_coord_logicalize(s16 *x,s16 *y) {
    s16 tx = *x;
    *x = vid->yres-1-*y;
    *y = tx;
+}
+void rotate90_coord_physicalize(s16 *x,s16 *y) {
+   s16 tx = *x;
+   *x = *y;
+   *y = vid->yres-1-tx;
 }
 
 /******* Special-case wrapper functions */
@@ -202,6 +207,7 @@ void vidwrap_rotate90(struct vidlib *vid) {
    vid->tileblit = &rotate90_tileblit;
    vid->charblit = &rotate90_charblit;
    vid->coord_logicalize = &rotate90_coord_logicalize;
+   vid->coord_physicalize = &rotate90_coord_physicalize;
 #ifdef CONFIG_FORMAT_XBM
    vid->bitmap_loadxbm = &rotate90_bitmap_loadxbm;
 #endif
