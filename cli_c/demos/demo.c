@@ -1,4 +1,4 @@
-/* $Id: demo.c,v 1.15 2000/11/05 05:22:08 micahjd Exp $
+/* $Id: demo.c,v 1.16 2000/11/05 20:20:45 micahjd Exp $
  *
  * demo.c -   source file for testing PicoGUI
  *
@@ -132,6 +132,8 @@ int main(int argc, char *argv[])
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(0,
 	      PG_WP_TEXT,pgNewString("Bitmap"),
+	      PG_WP_BITMAP,pgNewBitmap(pgFromFile("demos/data/tux.pnm")),
+	      PG_WP_BITMASK,pgNewBitmap(pgFromFile("demos/data/tux_mask.pnm")),
 	      0);
 
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
