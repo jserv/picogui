@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.12 2000/10/31 01:46:48 micahjd Exp $
+/* $Id: dispatch.c,v 1.13 2000/11/04 22:33:47 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -701,7 +701,7 @@ g_error dlgbtn(int owner, struct widget *tb, handle htb,
   errorcheck;
   e = widget_set(w,PG_WP_SIDE,PG_S_RIGHT);
   errorcheck;
-  e = widget_set(w,PG_WP_HOTKEY,key);
+  e = widget_set(w,PG_WP_HOTKEY,theme_lookup(PGTH_O_POPUP,key));
   errorcheck;
 }
 
@@ -772,10 +772,14 @@ g_error rqh_mkmsgdlg(int owner, struct pgrequest *req,
   errorcheck;
 
   /* Buttons */
+  if (flags & PG_MSGBTN_YES)
+    dlgbtn(owner,tb,htb,PG_MSGBTN_YES,PGTH_P_STRING_YES,PGTH_P_HOTKEY_YES);
+  if (flags & PG_MSGBTN_NO)
+    dlgbtn(owner,tb,htb,PG_MSGBTN_NO,PGTH_P_STRING_NO,PGTH_P_HOTKEY_NO);
   if (flags & PG_MSGBTN_OK)
-    dlgbtn(owner,tb,htb,PG_MSGBTN_OK,PGTH_P_STRING_OK,PGKEY_RETURN);
+    dlgbtn(owner,tb,htb,PG_MSGBTN_OK,PGTH_P_STRING_OK,PGTH_P_HOTKEY_OK);
   if (flags & PG_MSGBTN_CANCEL)
-    dlgbtn(owner,tb,htb,PG_MSGBTN_CANCEL,PGTH_P_STRING_CANCEL,PGKEY_ESCAPE);
+    dlgbtn(owner,tb,htb,PG_MSGBTN_CANCEL,PGTH_P_STRING_CANCEL,PGTH_P_HOTKEY_CANCEL);
 
   return sucess;
 }

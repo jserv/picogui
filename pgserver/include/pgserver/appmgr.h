@@ -1,4 +1,4 @@
-/* $Id: appmgr.h,v 1.6 2000/10/29 20:52:35 micahjd Exp $
+/* $Id: appmgr.h,v 1.7 2000/11/04 22:33:47 micahjd Exp $
  *
  * appmgr.h - All the window-manager-ish functionality, except we don't
  * do windows (X windows, that is?)
@@ -59,7 +59,7 @@ struct app_info {
 extern handle defaultfont;
 extern struct app_info *applist;
 struct sprite *pointer;
-extern handle string_ok,string_cancel;
+extern handle string_ok,string_cancel,string_yes,string_no;
 
 /* Init & Free */
 g_error appmgr_init(void);

@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.18 2000/11/04 21:25:29 micahjd Exp $
+/* $Id: constants.h,v 1.19 2000/11/04 22:33:47 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -259,10 +259,18 @@ typedef unsigned long pghandle;
 /* String properties (usually part of PGTH_O_DEFAULT) */
 #define PGTH_P_STRING_OK             501
 #define PGTH_P_STRING_CANCEL         502
+#define PGTH_P_STRING_YES            503
+#define PGTH_P_STRING_NO             504
 
 /* Icon properties (usually part of PGTH_O_DEFAULT) */
 #define PGTH_P_ICON_OK               1001
 #define PGTH_P_ICON_CANCEL           1002
+
+/* Hotkey properties (usually part of PGTH_O_DEFAULT) */
+#define PGTH_P_HOTKEY_OK             1501
+#define PGTH_P_HOTKEY_CANCEL         1502
+#define PGTH_P_HOTKEY_YES            1503
+#define PGTH_P_HOTKEY_NO             1504
 
 /*** Tag IDs */
 
@@ -424,6 +432,8 @@ typedef unsigned long pghandle;
 /* Constants for the message dialog box flags */
 #define PG_MSGBTN_OK      0x0001
 #define PG_MSGBTN_CANCEL  0x0002
+#define PG_MSGBTN_YES     0x0004
+#define PG_MSGBTN_NO      0x0008
 
 /******************** Events */
 
