@@ -1,4 +1,4 @@
-/* $Id: sdlgl.c,v 1.5 2002/02/28 05:58:18 micahjd Exp $
+/* $Id: sdlgl.c,v 1.6 2002/02/28 07:09:05 micahjd Exp $
  *
  * sdlgl.c - OpenGL driver for picogui, using SDL for portability
  *
@@ -37,6 +37,7 @@
 #include <pgserver/input.h>       /* For loading our corresponding input lib */
 #include <pgserver/configfile.h>  /* For loading our configuration */
 #include <pgserver/appmgr.h>      /* Default font */
+#include <pgserver/font.h>        /* font rendering */
 
 #include <SDL/SDL.h>
 
@@ -53,6 +54,9 @@
 #endif
 
 #include <math.h>       /* Floating point math in picogui? Blasphemy :) */
+
+#include <sys/time.h>   /* gettimeofday() for FPS calculations */
+#include <time.h>
 
 /************************************************** Definitions */
 
@@ -73,6 +77,20 @@ extern u16 sdlfb_scale;
 
 /* Type of texture filtering to use */
 GLint gl_texture_filtering;
+
+/* Frames per second, calculated in gl_frame() */
+float gl_fps;
+
+/* FPS calculation interval. Larger values are more accurate, smaller
+ * values update the FPS value faster. Units are seconds.
+ */
+float gl_fps_interval;
+
+/* Nonzero to show the frames per second counter */
+int gl_showfps;
+
+/* Input library optionally loaded to make this driver continously redraw */
+struct inlib *gl_continuous;
 
 /* Redefine PicoGUI's hwrbitmap
  * Note that it's very likely we'll want to use this as a texture, yet
@@ -137,6 +155,8 @@ g_error sdlgl_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend);
 g_error sdlgl_bitmap_getsize(hwrbitmap bmp,s16 *w,s16 *h);
 g_error sdlgl_bitmap_new(hwrbitmap *bmp,s16 w,s16 h,u16 bpp);
 void sdlgl_bitmap_free(hwrbitmap bmp);
+void gl_continuous_init(int *n,fd_set *readfds,struct timeval *timeout);
+g_error gl_continuous_regfunc(struct inlib *i);
 
 /************************************************** Utilities */
 
@@ -273,13 +293,25 @@ int gl_power2_round(int x) {
 /* Re-render the whole frame, keep track of frames per second */
 void gl_frame(void) {
   struct divtree *p;
-  static u32 frames;
+  static u32 frames = 0;
+  static struct timeval then = {0,0};
+  struct timeval now;
+  float interval;
 
+  /* Redraw the whole frame */
   for (p=dts->top;p;p=p->next)
     p->flags |= DIVTREE_ALL_REDRAW;
   update(NULL,1);
 
+  /* FPS calculations */
+  gettimeofday(&now,NULL);
   frames++;
+  interval = (now.tv_sec - then.tv_sec) - (now.tv_usec - then.tv_usec)/1000000.0f;
+  if (interval > gl_fps_interval) {
+    then = now;
+    gl_fps = frames / interval;
+    frames = 0;
+  }
 }
 
 /************************************************** Basic primitives */
@@ -289,7 +321,6 @@ void sdlgl_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
     linear32_pixel(STDB(dest),x,y,c,lgop);
     return;
   }
-  return;
 
   gl_lgop(lgop);
   glBegin(GL_POINTS);
@@ -308,7 +339,6 @@ hwrcolor sdlgl_getpixel(hwrbitmap dest,s16 x,s16 y) {
   if (GL_LINEAR32(dest))
     return linear32_getpixel(STDB(dest),x,y);
 
-  return 0;
   glReadPixels(x,y,1,1,GL_RED,GL_UNSIGNED_BYTE,&r);
   glReadPixels(x,y,1,1,GL_GREEN,GL_UNSIGNED_BYTE,&g);
   glReadPixels(x,y,1,1,GL_BLUE,GL_UNSIGNED_BYTE,&b);
@@ -317,6 +347,26 @@ hwrcolor sdlgl_getpixel(hwrbitmap dest,s16 x,s16 y) {
 
 /* It's double-buffered */
 void sdlgl_update(s16 x, s16 y, s16 w, s16 h) {
+
+  /* Show the FPS display here if needed */
+  if (gl_showfps) {
+    char buf[40];
+    struct fontdesc *fd;
+    
+    if (!iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,defaultfont))) {
+      snprintf(buf,sizeof(buf),"FPS: %.2f",gl_fps);
+
+      /* Draw the text multiple times to get a border effect */
+      outtext(vid->display,fd,6,5,0x202020,buf,NULL,PG_LGOP_NONE,0);
+      outtext(vid->display,fd,5,6,0x202020,buf,NULL,PG_LGOP_NONE,0);
+      outtext(vid->display,fd,6,6,0x202020,buf,NULL,PG_LGOP_NONE,0);
+      outtext(vid->display,fd,4,5,0x202020,buf,NULL,PG_LGOP_NONE,0);
+      outtext(vid->display,fd,5,4,0x202020,buf,NULL,PG_LGOP_NONE,0);
+      outtext(vid->display,fd,4,4,0x202020,buf,NULL,PG_LGOP_NONE,0);
+      outtext(vid->display,fd,5,5,0xFFFF00,buf,NULL,PG_LGOP_NONE,0);
+    }
+  }
+
   SDL_GL_SwapBuffers();
 };  
 
@@ -646,7 +696,7 @@ void sdlgl_bitmap_free(hwrbitmap bmp) {
   struct glbitmap *glb = (struct glbitmap *) bmp;
   def_bitmap_free(glb->sb);
   if (glb->tile)
-    sdlgl_bitmap_free(glb->tile);
+    sdlgl_bitmap_free((hwrbitmap)glb->tile);
   if (glb->texture)
     glDeleteTextures(1,&glb->texture);
   g_free(glb);
@@ -655,6 +705,8 @@ void sdlgl_bitmap_free(hwrbitmap bmp) {
 /************************************************** Initialization */
 
 g_error sdlgl_init(void) {
+  const char *s;
+
   /* Default mode: 640x480 */
   if (!vid->xres) vid->xres = 640;
   if (!vid->yres) vid->yres = 480;
@@ -675,6 +727,24 @@ g_error sdlgl_init(void) {
   sdlfb_scale     = 1;
 #endif
 
+  /* Optionally load the continuous-running "input driver" */
+  if (get_param_int("video-sdlgl","continuous",0)) {
+    g_error e;
+    e = load_inlib(&gl_continuous_regfunc,&gl_continuous);
+    errorcheck;
+  }
+
+  s = get_param_str("video-sdlgl","texture_filtering","linear");
+  if (!strcmp(s,"linear")) {
+    gl_texture_filtering = GL_LINEAR;
+  }
+  else {
+    gl_texture_filtering = GL_NEAREST;
+  }
+
+  sscanf(get_param_str("video-sdlgl","fps_interval","0.25"),"%f",&gl_fps_interval);
+  gl_showfps = get_param_int("video-sdlgl","showfps",0);
+
   /* Load a main input driver */
   return load_inlib(&sdlinput_regfunc,&inlib_main);
 }
@@ -683,7 +753,6 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   unsigned long sdlflags = SDL_RESIZABLE | SDL_OPENGL;
   char str[80];
   float a,x,y,z;
-  const char *s;
    
   /* Interpret flags */
   if (get_param_int("video-sdlgl","fullscreen",0))
@@ -705,16 +774,6 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   snprintf(str,sizeof(str),get_param_str("video-sdlgl","caption","PicoGUI (sdlgl@%dx%d)"),
 	   vid->xres,vid->yres,bpp);
   SDL_WM_SetCaption(str,NULL);
-
-  /* Load params */
-  
-  s = get_param_str("video-sdlgl","texture_filtering","linear");
-  if (!strcmp(s,"linear")) {
-    gl_texture_filtering = GL_LINEAR;
-  }
-  else {
-    gl_texture_filtering = GL_NEAREST;
-  }
 
   /********** OpenGL setup */
 
@@ -777,7 +836,20 @@ void sdlgl_close(void) {
     gl_display_rend = NULL;
   }
   unload_inlib(inlib_main);   /* Take out our input driver */
+  if (gl_continuous)
+    unload_inlib(gl_continuous);
   SDL_Quit();
+}
+
+void gl_continuous_init(int *n,fd_set *readfds,struct timeval *timeout) {
+  timeout->tv_sec = 0;
+  timeout->tv_usec = 0;
+}
+
+g_error gl_continuous_regfunc(struct inlib *i) {
+  i->poll = gl_frame;
+  i->fd_init = gl_continuous_init;
+  return success;
 }
 
 /************************************************** Registration */

@@ -429,5 +429,16 @@ quoted appropriately. For example:
 - texture_filtering
   This may be "linear" or "nearest". Defaults to "linear"
 
+- continuous
+  Nonzero to update the screen continuously, rather than just when picogui calls for it
+
+- fps_interval
+  Floating point number indicating how many seconds between frames per second calculations.
+  Larger values give more accurate results, smaller values update the FPS display faster.
+  Defaults to 0.25
+
+- showfps
+  Show the frames per second in the corner of the screen, when doing continuous updating.
+
 --- The End ---
 
