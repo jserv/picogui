@@ -30,7 +30,7 @@ addheader( char * sender, char * title, int msg )
                         row ? PGDEFAULT : PG_DERIVE_INSIDE,
                         row ? PGDEFAULT : wBox);
         
-    pgReplaceTextFmt(PGDEFAULT,"[%d] %s - (%s)",msg, title, sender);
+    pgReplaceTextFmt(PGDEFAULT,"[%d] %s - (%s)",1, "Title", "Sender");
 
     row++;
 }
