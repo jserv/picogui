@@ -9,7 +9,7 @@
 
 pghandle wBox;
 int row;
-int selectedMessage;
+int selectedMessage = -1;
 
 int closeboxHandler(struct pgEvent *evt) {
   return 0;
@@ -25,10 +25,14 @@ int deleteMessage(struct pgEvent *evt) {
 }
 
 int readMessage(struct pgEvent *evt) {
+	if (selectedMessage>0)
+		imap_getmesg(selectedMessage);
+	else
   	   pgMessageDialog (
 	       "PicoMail", 
-	       "This function is not implemented (yet).",
+	       "Please select a message first!",
 	       PG_MSGBTN_OK );
+		
    return 0;
 }
 
@@ -38,6 +42,8 @@ int getList(struct pgEvent *evt) {
 }
 
 int setSelected( struct pgEvent *evt ) {
+	selectedMessage = (int)(evt->extra);
+	printf("Message %d selected.\n", selectedMessage);
 	return 0;
 }
 
@@ -51,7 +57,7 @@ addheader( char * sender, char * title, int msg )
                         row ? PGDEFAULT : wBox);
         
     pgReplaceTextFmt(wItem,"[%d] %s - (%s)",msg, title, sender);
-    pgBind( wItem, PG_WE_PNTR_DOWN, &setSelected, (void *)(msg) );
+    pgBind( wItem, PG_WE_ACTIVATE, &setSelected, (void *)(msg) );
     pgEventPoll();
 
     row++;
@@ -80,7 +86,7 @@ int main(int argc, char *argv[])
 	       "PicoMail", 
 	       "Configuration file could not be parsed.\n"
 	       "Please make sure you have a good '~/.picomail.conf'!",
-	       PG_MSGBTN_OK );
+	       PG_MSGBTN_OK || PG_MSGICON_ERROR );
            exit(1);
        }
        free(conffile);

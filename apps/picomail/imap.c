@@ -161,8 +161,14 @@ donothing( char * line )
 int
 doheader( char * line )
 {
+    int msg;
+    int i=0;
+    
     if (strncmp(line,"* ", 2) == 0)
-        addheader( line, "Title", 0 );
+    {
+	sscanf(line, "* %i FLAGS ", &msg);
+        addheader( line, "Title", msg );
+    }
     return SUCCESS;
 }
 
