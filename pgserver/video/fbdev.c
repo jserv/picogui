@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.33 2002/03/27 19:44:48 bauermeister Exp $
+/* $Id: fbdev.c,v 1.34 2002/03/29 13:21:18 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -106,6 +106,11 @@ static short fbdev_saved_b[16];
  * real screen while vid->display is the backbuffer.
  */
 hwrbitmap screen_buffer;
+
+#ifdef CONFIG_FB_PAGEFLIP
+/* If this is 1, then screen_buffer and vid->display are flipped */
+int fbdev_flipped;
+#endif
 
 void fbdev_doublebuffer_update(s16 x,s16 y,s16 w,s16 h);
 void fbdev_close(void);
@@ -588,12 +593,39 @@ g_error fbdev_init(void) {
      g_error e;
      
      screen_buffer = vid->display;
-     ((struct stdbitmap *)screen_buffer)->w   = vid->xres;
-     ((struct stdbitmap *)screen_buffer)->h   = vid->yres;
-     ((struct stdbitmap *)screen_buffer)->bpp = vid->bpp;
+     ((struct stdbitmap *)screen_buffer)->w     = vid->xres;
+     ((struct stdbitmap *)screen_buffer)->h     = vid->yres;
+     ((struct stdbitmap *)screen_buffer)->bpp   = vid->bpp;
+     ((struct stdbitmap *)screen_buffer)->pitch = fixinfo.line_length;
 
+#ifdef CONFIG_FB_PAGEFLIP
+     /* If we're page flipping, create the backbuffer in VRAM
+      */
+     e = g_malloc((void**)&vid->display, sizeof(struct stdbitmap));
+     errorcheck;
+     memset(vid->display,0,sizeof(struct stdbitmap));
+     ((struct stdbitmap *)vid->display)->w     = vid->xres;
+     ((struct stdbitmap *)vid->display)->h     = vid->yres;
+     ((struct stdbitmap *)vid->display)->bpp   = vid->bpp;
+     ((struct stdbitmap *)vid->display)->pitch = fixinfo.line_length;
+     ((struct stdbitmap *)vid->display)->bits  = 
+       ((struct stdbitmap *)screen_buffer)->bits + fixinfo.line_length * vid->yres;
+     fbdev_flipped = 0;
+
+     /* And set up the virtual resolution for 2 buffers stacked vertically
+      */
+     varinfo.xres_virtual = varinfo.xres;
+     varinfo.yres_virtual = varinfo.yres << 1;
+     varinfo.xoffset = 0;
+     varinfo.yoffset = 0;
+     ioctl(fbdev_fd,FBIOPUT_VSCREENINFO,&varinfo);  
+#else
+     /* Otherwise create it in system memory
+      */
      e = VID(bitmap_new)(&vid->display, vid->xres, vid->yres, vid->bpp);
      errorcheck;
+#endif
+
      vid->update = fbdev_doublebuffer_update;
    }
    else {
@@ -621,10 +653,25 @@ void fbdev_close(void) {
   if(yuv_rgb_shadow_buffer) free(yuv_rgb_shadow_buffer);
 #endif
 
+  /* If the page is flipped, flip it back to normal */
+#ifdef CONFIG_FB_PAGEFLIP
+  if (fbdev_flipped) {
+    hwrbitmap tmp = vid->display;
+    vid->display = screen_buffer;
+    screen_buffer = tmp;
+  }
+#endif
 
    /* Shut down double-buffer */
    if (screen_buffer) {
+#ifdef CONFIG_FB_PAGEFLIP
+     /* The page flipping buffer is in VRAM, so we
+      * only need to free a stdbitmap structure
+      */
+     g_free(vid->display);
+#else
      VID(bitmap_free)(vid->display);
+#endif
      vid->display = screen_buffer;
      screen_buffer = NULL;
      vid->update = def_update;
@@ -686,7 +733,39 @@ void fbdev_close(void) {
 }
 
 void fbdev_doublebuffer_update(s16 x,s16 y,s16 w,s16 h) {
+#ifdef CONFIG_FB_SYNC
+  /* My first attempt at a VBL-sync'ed framebuffer...
+   * IMHO this method sucks so hopefully there's a better way.
+   */
+  struct fb_vblank vb;
+  do {
+    ioctl(fbdev_fd, FBIOGET_VBLANK, &vb);
+  } while ((vb.flags & FB_VBLANK_HAVE_VSYNC) && !(vb.flags & FB_VBLANK_VSYNCING));
+#endif
+
+#ifdef CONFIG_FB_PAGEFLIP
+  /* Flip the buffers, then blit changed areas back to the old buffer */
+
+  if (fbdev_flipped) {
+    fbdev_flipped = 0;
+    varinfo.yoffset = -vid->yres;
+  }
+  else {
+    fbdev_flipped = 1;
+    varinfo.yoffset = vid->yres;
+  }
+  {
+    hwrbitmap tmp = vid->display;
+    vid->display = screen_buffer;
+    screen_buffer = tmp;
+  }
+  ioctl(fbdev_fd,FBIOPAN_DISPLAY,&varinfo);
+  vid->blit(vid->display, x,y,w,h, screen_buffer, x,y, PG_LGOP_NONE);
+
+#else
+  /* Just blit the changed areas */
   vid->blit(screen_buffer, x,y,w,h, vid->display, x,y, PG_LGOP_NONE);
+#endif
 }
 
 g_error fbdev_regfunc(struct vidlib *v) {

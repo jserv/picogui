@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.13 2002/03/29 06:40:28 micahjd Exp $
+/* $Id: linear16.c,v 1.14 2002/03/29 13:21:18 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -233,7 +233,7 @@ void linear16_blit(hwrbitmap dest,
 
     case PG_LGOP_NONE: 
 #ifdef CONFIG_NO_VRAM_MEMCPY
-#define OP(d,s) (*d|=*s)
+#define OP(d,s) (*d=*s)
       TILEBLITLOOP;
 #undef OP
 #else

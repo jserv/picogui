@@ -1,4 +1,4 @@
-/* $Id: jsdev.c,v 1.2 2002/03/27 15:09:25 lonetech Exp $
+/* $Id: jsdev.c,v 1.3 2002/03/29 13:21:18 micahjd Exp $
  *
  * jsdev.c - Driver for cursor control and key input using a joystick,
  *           reads from the linux joystick device. Note that all joystick 
@@ -321,17 +321,27 @@ void jsdev_close(void){
 void jsdev_poll(void) {
   s16 cursorx,cursory;
 
-  /* Get the cursor position in physical coordinates */
-  cursorx = cursor->x;
-  cursory = cursor->y;
-  VID(coord_physicalize)(&cursorx,&cursory);
-
-  /* Integrate the velocity */
-  cursorx += jsdev_cursorvx;
-  cursory += jsdev_cursorvy;
-  
-  /* Move the cursor */
-  dispatch_pointing(TRIGGER_MOVE,cursorx,cursory,0);
+  if (jsdev_cursorvx || jsdev_cursorvy) {
+    /* Get the cursor position in physical coordinates */
+    cursorx = cursor->x;
+    cursory = cursor->y;
+    VID(coord_physicalize)(&cursorx,&cursory);
+    
+    /* Integrate the velocity */
+    cursorx += jsdev_cursorvx;
+    cursory += jsdev_cursorvy;
+ 
+    /* Constrain to physical screen size */
+    if (cursorx >= vid->xres)
+      cursorx=vid->xres-1;
+    if (cursory >= vid->yres)
+      cursory=vid->yres-1;
+    if (cursorx < 0)cursorx=0;
+    if (cursory < 0)cursory=0;
+   
+    /* Move the cursor */
+    dispatch_pointing(TRIGGER_MOVE,cursorx,cursory,0);
+  }
 }
 
 g_error jsdev_regfunc(struct inlib *i) {
