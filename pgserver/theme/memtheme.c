@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.54 2002/02/06 10:05:45 micahjd Exp $
+/* $Id: memtheme.c,v 1.55 2002/02/07 01:44:25 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -272,6 +272,16 @@ void div_rebuild(struct divnode *d) {
    struct gropctxt c;
    struct widget *w;
    if (!d->build) return;
+
+#ifdef DEBUG_VIDEO
+   printf("div_rebuild: div %p at %d,%d,%d,%d\n", d,d->x,d->y,d->w,d->h);
+#endif
+
+   /* Save the position of the last rebuild */
+   d->ox = d->x;
+   d->oy = d->y;
+   d->ow = d->w;
+   d->oh = d->h;
 
    /* Unless it's a raw build, clear the groplist. */
    if (!(d->owner && d->owner->rawbuild)) {
