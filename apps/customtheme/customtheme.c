@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
   /* Theme our app panel with it */
   pgRegisterApp(PG_APP_NORMAL,"Theme Customization Demo",0);
   pgSetWidget(PGDEFAULT,
-	      PG_WP_STATE,MY_OBJECT,
+	      PG_WP_THOBJ,MY_OBJECT,
 	      0);
 
   /* Some fun stuff */
