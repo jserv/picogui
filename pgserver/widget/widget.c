@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.105 2001/09/02 19:10:26 micahjd Exp $
+/* $Id: widget.c,v 1.106 2001/09/03 02:04:00 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -345,17 +345,31 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
       break;
 
     case PG_WP_SCROLL_X:
-      w->in->div->tx = -data;
-      w->in->div->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_DIVSCROLL | DIVNODE_EXTEND_HEIGHT;
-      w->dt->flags |= DIVTREE_NEED_REDRAW;
-      hotspot_free();
+      if (data < 0)
+	data = 0;
+      if (data > w->in->cw-w->in->w)
+	data = w->in->cw-w->in->w;
+      if (w->in->div->tx != -data) {
+	w->in->div->tx = -data;
+	w->in->div->flags |= DIVNODE_SCROLL_ONLY;
+	w->dt->flags |= DIVTREE_NEED_REDRAW;
+	hotspot_free();
+      }
+      w->in->div->flags |= DIVNODE_DIVSCROLL | DIVNODE_EXTEND_HEIGHT;
       break;
 
     case PG_WP_SCROLL_Y:
-      w->in->div->ty = -data;
-      w->in->div->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_DIVSCROLL | DIVNODE_EXTEND_HEIGHT;
-      w->dt->flags |= DIVTREE_NEED_REDRAW;
-      hotspot_free();
+      if (data < 0)
+	data = 0;
+      if (data > w->in->ch-w->in->h)
+	data = w->in->ch-w->in->h;
+      if (w->in->div->ty != -data) {
+	w->in->div->ty = -data;
+	w->in->div->flags |= DIVNODE_SCROLL_ONLY;
+	w->dt->flags |= DIVTREE_NEED_REDRAW;
+	hotspot_free();
+      }
+	w->in->div->flags |= DIVNODE_DIVSCROLL | DIVNODE_EXTEND_HEIGHT;
       break;
 
     case PG_WP_NAME:
@@ -367,6 +381,10 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
     case PG_WP_PUBLICBOX:
       w->publicbox = data;
       break;
+
+   case PG_WP_BIND:
+     w->scrollbind = data;
+     break;
 
    case PG_WP_STATE:
      w->in->div->state = data;
@@ -412,6 +430,9 @@ glob inline widget_get(struct widget *w, int property) {
 
    case PG_WP_STATE:
      return w->in->div->state;
+     
+   case PG_WP_BIND:
+     return w->scrollbind;
      
    default:
      return (*w->def->get)(w,property);

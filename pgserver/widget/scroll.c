@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.43 2001/08/14 03:18:56 micahjd Exp $
+/* $Id: scroll.c,v 1.44 2001/09/03 02:04:00 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -47,10 +47,6 @@ struct scrolldata {
 		       the point that was clicked */
   int release_delta;
   int value,old_value;
-  handle binding;  /* If nonzero, this widget's PG_WP_SCROLL property will
-		      be set in response to scrollbar movement instead of
-		      an event being sent back to the client */
-
   unsigned long wait_tick;
   int thumbscale;
 };
@@ -80,7 +76,7 @@ void build_scroll(struct gropctxt *c,unsigned short state,struct widget *self) {
   /* Size ourselves to fit the widget we are bound to */
   oldres = DATA->res;
   if (!iserror(rdhandle((void **)&wgt,PG_TYPE_WIDGET,-1,
-			DATA->binding)) && wgt) 
+			self->scrollbind)) && wgt) 
     DATA->res = wgt->in->ch - wgt->in->h;
   if (DATA->res < 0)
     DATA->res = 0;
@@ -107,10 +103,10 @@ void build_scroll(struct gropctxt *c,unsigned short state,struct widget *self) {
 void scrollevent(struct widget *self) {
   struct widget *w;
 
-  if (DATA->binding) {
+  if (self->scrollbind) {
     /* Send to a widget */
     if (!iserror(rdhandle((void **)&w,PG_TYPE_WIDGET,
-			  -1,DATA->binding)) && w) 
+			  -1,self->scrollbind)) && w) 
       widget_set(w,PG_WP_SCROLL,DATA->value);
   }
   else {
@@ -186,20 +182,26 @@ g_error scroll_set(struct widget *self,int property, glob data) {
 
   case PG_WP_BIND:
     if (!data) {
-      DATA->binding = 0;
+      self->scrollbind = 0;
       break;
     }
 
     if (iserror(rdhandle((void **)&w,PG_TYPE_WIDGET,-1,data)) || !w) 
       return mkerror(PG_ERRT_HANDLE,17);
 
-    DATA->binding = (handle) data;
+    self->scrollbind = (handle) data;
  
     /* If applicable, turn off transparency in the widget */
     widget_set(w,PG_WP_TRANSPARENT,0);
 
     /* Reset scrolling */
     widget_set(w,PG_WP_SCROLL,0);
+
+    /* Set the other widget's binding, as long as it's not a scrollbar!
+     * (That wouldn't make much sense, plus it would cause an infinite loop)
+     */
+    if (w->type != PG_WIDGET_SCROLL)
+      widget_set(w,PG_WP_BIND,hlookup(self,NULL));
 
     /* Use a special scroll-enhanced theme if possible */
     if (w->type == PG_WIDGET_LABEL)

@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.39 2001/09/02 19:10:26 micahjd Exp $
+/* $Id: widget.h,v 1.40 2001/09/03 02:04:00 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -176,6 +176,9 @@ struct widget {
 
   /* The widget's optional name (string handle) */
   handle name;
+
+  /* This is the scroll bar bound to us, set with the PG_WP_BIND property. */
+  handle scrollbind;
 
   /* Used for management of triggers: */
  

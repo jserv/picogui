@@ -1,4 +1,4 @@
-/* $Id: hotspot.c,v 1.9 2001/09/03 00:28:39 micahjd Exp $
+/* $Id: hotspot.c,v 1.10 2001/09/03 02:04:00 micahjd Exp $
  *
  * hotspot.c - This is an interface for managing hotspots.
  *             The divtree is scanned for hotspot divnodes.
@@ -283,6 +283,7 @@ void hotspot_traverse(short direction) {
   if (p->divscroll) {
     s16 dx = 0,dy = 0;
     struct divnode *ds = p->divscroll;
+    struct widget *w;
 
     /* Figure out how much to scroll */
     if (p->x < ds->calcx || p->x >= (ds->calcx + ds->calcw))
@@ -294,14 +295,17 @@ void hotspot_traverse(short direction) {
     px = p->x - dx;
     py = p->y - dy;
 
-    /* Scroll, relative to current position */
-    if (dx)
-      widget_set(ds->owner,PG_WP_SCROLL_X,
-		 widget_get(ds->owner,PG_WP_SCROLL_X) + dx);
-    if (dy)
-      widget_set(ds->owner,PG_WP_SCROLL_Y,
-		 widget_get(ds->owner,PG_WP_SCROLL_Y) + dy);
-    update(NULL,1);
+    /* Get a pointer to the scroll bar */
+    if (!iserror(rdhandle((void **)&w,PG_TYPE_WIDGET,-1,
+			  ds->owner->scrollbind)) && w) {
+
+      /* FIXME: horizontal scroll here! */
+
+      if (dy)
+	widget_set(w,PG_WP_VALUE,widget_get(w,PG_WP_VALUE) + dy);
+
+      update(NULL,1);
+    }
   }
   else {
     /* Move cursor to the hotspot position */
