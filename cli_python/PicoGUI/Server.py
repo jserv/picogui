@@ -78,7 +78,7 @@ constants = {
         }),
         'side':				(2, {
             'top':	(1<<3, {}),	# stick to the top edge
-            'botton':	(1<<4, {}),	# stick to the bottom edge
+            'bottom':	(1<<4, {}),	# stick to the bottom edge
             'left':	(1<<5, {}),	# stick to the left edge
             'right':	(1<<6, {}),	# stick to the right edge
             'all':	(1<<11, {}),	# occupy all available space
