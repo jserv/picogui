@@ -120,8 +120,8 @@ g_error protected_main(int argc, char **argv) {
   e = set_param_str("pgserver", "themes", "gl_lucid.th");
   errorcheck;
 
-  /* Force BDF fonts, since the freetype engine is slow in sdlgl */
-  e = set_param_str("pgserver", "font_engine", "bdf");
+  /* Use the Freetype2 OpenGL font engine */
+  e = set_param_str("pgserver", "font_engine", "ftgl");
   errorcheck;
 
   /* No need for sprite dragging */

@@ -1,6 +1,6 @@
-/* $Id: font_ttfgl.c,v 1.3 2002/11/21 15:12:48 micahjd Exp $
+/* $Id: font_ftgl.c,v 1.1 2002/11/21 15:18:02 micahjd Exp $
  *
- * font_ttfgl.c - Font engine that uses OpenGL textures prepared with SDL_ttf.
+ * font_ftgl.c - Font engine that uses OpenGL textures prepared with SDL_ttf.
  *                This engine is very minimalistic compared to the freetype engine:
  *                it doesn't support caching, font indexing, or Unicode.
  *
@@ -51,83 +51,83 @@
 /* This driver doesn't support Unicode! This is the number of glyphs from each font to load */
 #define NUM_GLYPHS 128
 
-#define CFGSECTION "font-ttfgl"
+#define CFGSECTION "font-ftgl"
 
 
 /********************************** Data structures ***/
 
-struct ttfgl_data {
+struct ftgl_data {
   float scale;
   int style;
-  struct ttfgl_font *font;
+  struct ftgl_font *font;
 };
-#define DATA ((struct ttfgl_data*)self->data)
+#define DATA ((struct ftgl_data*)self->data)
 
 /* Texture and texture coordinates for a glyph */
-struct ttfgl_glyph {
+struct ftgl_glyph {
   GLuint texture;
   float tx1,ty1,tx2,ty2;   /* Texture coords */
   int x,y,w,h;             /* Character cel */
   int advance;
 };  
 
-struct ttfgl_fontload {
+struct ftgl_fontload {
   FT_Library ft_lib;
   GLuint texture;
   u8 *pixels;
   int tx,ty,tline;   
 };
 
-struct ttfgl_font {
-  struct ttfgl_glyph glyphs[NUM_GLYPHS];
+struct ftgl_font {
+  struct ftgl_glyph glyphs[NUM_GLYPHS];
   struct font_style style;
   struct font_metrics metrics;
-  struct ttfgl_font *next;
+  struct ftgl_font *next;
 };
 
-struct ttfgl_font *ttfgl_font_list = NULL;
-struct ttfgl_fontload *ttfgl_load;
+struct ftgl_font *ftgl_font_list = NULL;
+struct ftgl_fontload *ftgl_load;
 
 
 /********************************** Utility declarations ***/
 
-g_error ttfgl_load_font(struct ttfgl_fontload *fl, const char *file, int size);
-void ttfgl_fontload_storetexture(struct ttfgl_fontload *fl);
-g_error ttfgl_fontload_init(struct ttfgl_fontload **fl);
-void ttfgl_fontload_finish(struct ttfgl_fontload *fl);
-int ttfgl_fontcmp(const struct ttfgl_font *f, const struct font_style *fs);
-void ttfgl_load_callback(const char *file, int pathlen);
+g_error ftgl_load_font(struct ftgl_fontload *fl, const char *file, int size);
+void ftgl_fontload_storetexture(struct ftgl_fontload *fl);
+g_error ftgl_fontload_init(struct ftgl_fontload **fl);
+void ftgl_fontload_finish(struct ftgl_fontload *fl);
+int ftgl_fontcmp(const struct ftgl_font *f, const struct font_style *fs);
+void ftgl_load_callback(const char *file, int pathlen);
 
 
 /********************************** Implementations ***/
 
-g_error ttfgl_engine_init(void) {
+g_error ftgl_engine_init(void) {
   g_error e;
 
-  e = ttfgl_fontload_init(&ttfgl_load);
+  e = ftgl_fontload_init(&ftgl_load);
   errorcheck;
 
-  os_dir_scan(get_param_str(CFGSECTION,"path","/usr/share/fonts"), &ttfgl_load_callback);
+  os_dir_scan(get_param_str(CFGSECTION,"path","/usr/share/fonts"), &ftgl_load_callback);
 
-  if (!ttfgl_font_list)
+  if (!ftgl_font_list)
     return mkerror(PG_ERRT_IO, 66);  /* Can't find fonts */
 
-  ttfgl_fontload_finish(ttfgl_load);
+  ftgl_fontload_finish(ftgl_load);
   return success;
 }
 
-void ttfgl_engine_shutdown(void) {
-  while (ttfgl_font_list) {
-    struct ttfgl_font *f = ttfgl_font_list;
-    ttfgl_font_list = f->next;
+void ftgl_engine_shutdown(void) {
+  while (ftgl_font_list) {
+    struct ftgl_font *f = ftgl_font_list;
+    ftgl_font_list = f->next;
     free((void*) f->style.name);   /* Created with strdup(), use free() instead of g_free() */
     g_free(f);
   }
 }
 
-void ttfgl_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
+void ftgl_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
 		   hwrcolor col, int ch, struct quad *clip, s16 lgop, s16 angle) {
-  struct ttfgl_glyph *g;
+  struct ftgl_glyph *g;
   if (ch > NUM_GLYPHS)
     return;
   g = &DATA->font->glyphs[ch];
@@ -163,16 +163,16 @@ void ttfgl_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *
   gl_lgop(PG_LGOP_NONE);
 }
 
-void ttfgl_measure_char(struct font_descriptor *self, struct pair *position,
+void ftgl_measure_char(struct font_descriptor *self, struct pair *position,
 		      int ch, s16 angle) {
   if (ch >= NUM_GLYPHS)
     return;
   position->x += DATA->font->glyphs[ch].advance * DATA->scale + 0.5;
 }
 
-g_error ttfgl_create(struct font_descriptor *self, const struct font_style *fs) {
+g_error ftgl_create(struct font_descriptor *self, const struct font_style *fs) {
   g_error e;
-  struct ttfgl_font *closest, *f;
+  struct ftgl_font *closest, *f;
   int r, closeness = -1;
   struct font_style s;
 
@@ -198,13 +198,13 @@ g_error ttfgl_create(struct font_descriptor *self, const struct font_style *fs) 
   if (!s.size)
     s.size = get_param_int(CFGSECTION,"default_size",14);
 
-  e = g_malloc((void**)&self->data, sizeof(struct ttfgl_data));
+  e = g_malloc((void**)&self->data, sizeof(struct ftgl_data));
   errorcheck;
   DATA->style = s.style;
 
   /* Pick the closest font face */
-  for (f=ttfgl_font_list;f;f=f->next) {
-    r = ttfgl_fontcmp(f,&s);
+  for (f=ftgl_font_list;f;f=f->next) {
+    r = ftgl_fontcmp(f,&s);
     if (r > closeness) {
       closeness = r;
       closest = f;
@@ -218,12 +218,12 @@ g_error ttfgl_create(struct font_descriptor *self, const struct font_style *fs) 
   return success;
 }
 
-void ttfgl_destroy(struct font_descriptor *self) {
+void ftgl_destroy(struct font_descriptor *self) {
   g_free(DATA);
 }
  
-void ttfgl_getstyle(int i, struct font_style *fs) {
-  struct ttfgl_font *f = ttfgl_font_list;
+void ftgl_getstyle(int i, struct font_style *fs) {
+  struct ftgl_font *f = ftgl_font_list;
 
   for (;i&&f;i--,f=f->next);
   if (f)
@@ -232,7 +232,7 @@ void ttfgl_getstyle(int i, struct font_style *fs) {
     memset(fs, 0, sizeof(struct font_style));
 }
 
-void ttfgl_getmetrics(struct font_descriptor *self, struct font_metrics *m) {
+void ftgl_getmetrics(struct font_descriptor *self, struct font_metrics *m) {
   /* Scale the font's metrics to the size we're using */
   m->charcell.w = DATA->font->metrics.charcell.w * DATA->scale + 0.5;
   m->charcell.h = DATA->font->metrics.charcell.h * DATA->scale + 0.5;
@@ -253,22 +253,22 @@ void ttfgl_getmetrics(struct font_descriptor *self, struct font_metrics *m) {
 /* Convert a TrueType font to a series of textures and store the metadata
  * in picogui's fontstyle list.
  */
-g_error ttfgl_load_font(struct ttfgl_fontload *fl,const char *file,int size) {
+g_error ftgl_load_font(struct ftgl_fontload *fl,const char *file,int size) {
   FT_Face face;
   g_error e;
   Uint16 ch;
-  struct ttfgl_font *f;
+  struct ftgl_font *f;
   int load_flags;
 
   if (FT_New_Face( fl->ft_lib, file, 0, &face))
     return mkerror(PG_ERRT_IO, 66);  /* Can't find font */
   
   /* New font structure */
-  e = g_malloc((void**)&f, sizeof(struct ttfgl_font));
+  e = g_malloc((void**)&f, sizeof(struct ftgl_font));
   errorcheck;
-  memset(f,0,sizeof(struct ttfgl_font));
-  f->next = ttfgl_font_list;
-  ttfgl_font_list = f;
+  memset(f,0,sizeof(struct ftgl_font));
+  f->next = ftgl_font_list;
+  ftgl_font_list = f;
 
   /* Convert the ttfstyle to a picogui style */
   f->style.representation = PG_FR_SCALABLE;
@@ -307,7 +307,7 @@ g_error ttfgl_load_font(struct ttfgl_fontload *fl,const char *file,int size) {
     load_flags |= FT_LOAD_FORCE_AUTOHINT;
 
   for (ch=0;ch<NUM_GLYPHS;ch++) {
-    struct ttfgl_glyph *g = &f->glyphs[ch];
+    struct ftgl_glyph *g = &f->glyphs[ch];
     static SDL_Color white = {0xFF,0xFF,0xFF,0};
     static SDL_Color black = {0x00,0x00,0x00,0};
     int i;
@@ -323,7 +323,7 @@ g_error ttfgl_load_font(struct ttfgl_fontload *fl,const char *file,int size) {
 
     /* Texture nonexistant or full? Make a new one */
     if (!fl->texture || fl->ty + face->glyph->bitmap.rows + 1 > GL_FONT_TEX_SIZE)
-      ttfgl_fontload_storetexture(fl);
+      ftgl_fontload_storetexture(fl);
 
     /* copy it into the right spot in our buffer */
     src = face->glyph->bitmap.buffer;
@@ -356,7 +356,7 @@ g_error ttfgl_load_font(struct ttfgl_fontload *fl,const char *file,int size) {
 }
 
 /* Convert the bitmap for a font into a texture, get a new texture */
-void ttfgl_fontload_storetexture(struct ttfgl_fontload *fl) {
+void ftgl_fontload_storetexture(struct ftgl_fontload *fl) {
   if ((fl->tx || fl->ty) && fl->texture) {
     glBindTexture(GL_TEXTURE_2D, fl->texture);
     
@@ -372,32 +372,32 @@ void ttfgl_fontload_storetexture(struct ttfgl_fontload *fl) {
   glGenTextures(1,&fl->texture);
 }
  
-g_error ttfgl_fontload_init(struct ttfgl_fontload **fl) {
+g_error ftgl_fontload_init(struct ftgl_fontload **fl) {
   g_error e;
 
-  e = g_malloc((void**) fl, sizeof(struct ttfgl_fontload));
+  e = g_malloc((void**) fl, sizeof(struct ftgl_fontload));
   errorcheck;
-  memset(*fl,0,sizeof(struct ttfgl_fontload));
+  memset(*fl,0,sizeof(struct ftgl_fontload));
 
   if (FT_Init_FreeType(&(*fl)->ft_lib))
     return mkerror(PG_ERRT_IO,119);   /* Error initializing font engine */
 
   /* The "pixels" pointer is an 8bpp bitmap holding the font texture
-   * as we assemble it. In ttfgl_fontload_storetexture it gets converted into
+   * as we assemble it. In ftgl_fontload_storetexture it gets converted into
    * a texture and several mipmaps.
    */
   e = g_malloc((void**) &(*fl)->pixels, GL_FONT_TEX_SIZE*GL_FONT_TEX_SIZE);
   errorcheck;
 
   /* Prime the pump by clearing the texture buffer and getting a new texture ID */
-  ttfgl_fontload_storetexture(*fl);
+  ftgl_fontload_storetexture(*fl);
 
   return success;
 }
 
-void ttfgl_fontload_finish(struct ttfgl_fontload *fl) {
+void ftgl_fontload_finish(struct ftgl_fontload *fl) {
   /* Store the last texture we were working on */
-  ttfgl_fontload_storetexture(fl);
+  ftgl_fontload_storetexture(fl);
 
   glDeleteTextures(1,&fl->texture);
   g_free(fl->pixels);
@@ -406,7 +406,7 @@ void ttfgl_fontload_finish(struct ttfgl_fontload *fl) {
 }
 
 /* Version of fontcmp that counts the name, style, and size */
-int ttfgl_fontcmp(const struct ttfgl_font *f, const struct font_style *fs) {
+int ftgl_fontcmp(const struct ftgl_font *f, const struct font_style *fs) {
   int result;
   int szdif;
   
@@ -436,23 +436,23 @@ int ttfgl_fontcmp(const struct ttfgl_font *f, const struct font_style *fs) {
   return result;
 }
 
-void ttfgl_load_callback(const char *file, int pathlen) {
+void ftgl_load_callback(const char *file, int pathlen) {
   /* Load one of our fonts at all sizes */
-  ttfgl_load_font(ttfgl_load,file,14); 
+  ftgl_load_font(ftgl_load,file,14); 
 }
 
 
 /********************************** Registration ***/
 
-g_error ttfgl_regfunc(struct fontlib *f) {
-  f->engine_init = &ttfgl_engine_init;
-  f->engine_shutdown = &ttfgl_engine_shutdown;
-  f->draw_char = &ttfgl_draw_char;
-  f->measure_char = &ttfgl_measure_char;
-  f->create = &ttfgl_create;
-  f->destroy = &ttfgl_destroy;
-  f->getstyle = &ttfgl_getstyle;
-  f->getmetrics = &ttfgl_getmetrics;
+g_error ftgl_regfunc(struct fontlib *f) {
+  f->engine_init = &ftgl_engine_init;
+  f->engine_shutdown = &ftgl_engine_shutdown;
+  f->draw_char = &ftgl_draw_char;
+  f->measure_char = &ftgl_measure_char;
+  f->create = &ftgl_create;
+  f->destroy = &ftgl_destroy;
+  f->getstyle = &ftgl_getstyle;
+  f->getmetrics = &ftgl_getmetrics;
   return success;
 }
 
