@@ -16,8 +16,7 @@ pgserver_SOURCES = pgmain.c
 
 pgserver_LDADD = \
 	libpgserver.la	\
-	$(DRIVER_LIBS)	\
-	@RM_LIBS@
+	$(DRIVER_LIBS)	
 
 lib_LTLIBRARIES = libpgserver.la
 
@@ -37,8 +36,7 @@ libpgserver_la_LIBADD = \
 	formats/libformats.la	\
 	font/libfont.la		\
 	os/libos.la		\
-	$(DRIVER_LIBS)		\
-	@RM_LIBS@
+	$(DRIVER_LIBS)		
 
 EXTRA_DIST = \
 	script/fontdef.pl 		\

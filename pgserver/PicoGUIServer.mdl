@@ -34,8 +34,7 @@ runtime = [
 
             Runtime ('install', 'Install PicoGUI Server',
                      content = [ 'bin/pgserver'],
-                     depends = [ 'resourcemanager/install',
-                                 'kernel/video',
+                     depends = [ 'kernel/video',
                                  ('kernel/keyboard', S ('product/remora')),
                                  ('libjpeg/library', ~ S ('platform/m68k-pic-coff'))
                                  ],
@@ -47,8 +46,7 @@ runtime = [
                                  'bin/picogui-launcher.sh' ],
                      
                      depends = [ 'picoguiserver/install',
-                                 'processmanager/start',
-                                 'resourcemanager/start', ],
+                                 'processmanager/start' ],
 
                      rcscript = "\n# launch pgserver\npicogui-launcher.sh\n",
                      
@@ -60,9 +58,8 @@ def prepare (module, platform, project):
     profile = "../profiles/profile.SMARTDATA-%s" % \
               platform.fqn ()
 
-    cflags, libs = flags ((('resourcemanager', 'library'),
-                           ('processmanager', 'library')),
-                          platform, project)
+    cflags, libs = flags ((('processmanager', 'library'),),
+                           platform, project)
 
     command = [
         "--sysconfdir=/etc",
@@ -93,7 +90,7 @@ def install (module, platform, project):
     # try to install the mdl file in the root of the frozen directory
     installfile (module.file, module.path ['r_frz'])
 
-    # generate the RM file
+    # generate the PM file
     file = os.path.join (module.path ['d_frz'], 'etc', 'rm.d', 'picoguiserver')
     makedirs (os.path.dirname (file))
 
@@ -103,8 +100,6 @@ def install (module, platform, project):
         fd.write ('''
 name = picogui-server
 argv = pgserver
-
-wait = resource-manager
 
 restart  = 1
 announce = 1
@@ -116,8 +111,6 @@ blocked  = 1
 name = picogui-server
 argv = pgserver
 
-wait = resource-manager
-
 restart  = 1
 announce = 1
 blocked  = 1
@@ -127,8 +120,6 @@ blocked  = 1
         fd.write ('''
 name = picogui-server
 argv = pgserver -m 320x240x16
-
-wait = resource-manager
 
 restart  = 1
 announce = 1
@@ -140,8 +131,6 @@ blocked  = 0
 name = picogui-server
 argv = pgserver --input-ttykb.device=/dev/tty1
 
-wait = resource-manager
-
 restart  = 1
 announce = 1
 blocked  = 0
@@ -151,8 +140,6 @@ blocked  = 0
         fd.write ('''
 name = picogui-server
 argv = pgserver
-
-wait = resource-manager
 
 restart  = 1
 announce = 1
