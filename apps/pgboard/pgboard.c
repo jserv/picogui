@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.17 2001/11/07 13:34:52 cgrigis Exp $
+/* $Id: pgboard.c,v 1.18 2001/11/07 17:38:50 cgrigis Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -27,8 +27,16 @@
  * 
  */
 
+#include "config.h"
 #include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#ifdef POCKETBEE
+#include <signal.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#endif /* POCKETBEE */
 #include <netinet/in.h>
 #include <picogui.h>
 #include "pgboard.h"
@@ -335,9 +343,43 @@ void drawDisabledKeyboard ()
   pgDeleteContext (gc);
 }
 
+#ifdef POCKETBEE
+/*
+ * Release the lock preventing multiple instances.
+ */
+void release_lock ()
+{
+  /* Delete lock file */
+  unlink (PG_KEYBOARD_LOCKFILE);
+}
+
+/*
+ * Handler for TERM signal.
+ */
+void sig_handler (int sig)
+{
+  release_lock ();
+  _exit (1);
+}
+#endif /* POCKETBEE */
+
 int main(int argc,char **argv) {
   /* File data */
   unsigned char * file_data;
+
+#ifdef POCKETBEE
+  /* Register the handler for SIGTERM */
+  signal (SIGTERM, sig_handler);
+  /* Register exit function */
+  atexit (release_lock);
+
+  /* Try to obtain the file lock */
+  if (open (PG_KEYBOARD_LOCKFILE, O_CREAT | O_EXCL) == -1 && errno == EEXIST)
+    {
+      /* File already locked -> another instance is running -> exit */
+      _exit (1);
+    }
+#endif /* POCKETBEE */
 
   /* Make a 'toolbar' app */
   pgInit(argc,argv);
@@ -390,6 +432,11 @@ int main(int argc,char **argv) {
 
   /* Set up an event handler for the received messages */
   pgBind (wApp, PG_WE_APPMSG, &evtMessage, NULL);
+
+#ifdef POCKETBEE
+  /* Signal the parent of a proper start */
+  kill (getppid (), SIGUSR1);
+#endif /* POCKETBEE */
 
   pgEventLoop();
   return 0;

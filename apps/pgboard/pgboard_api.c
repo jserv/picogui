@@ -1,4 +1,4 @@
-/* $Id: pgboard_api.c,v 1.3 2001/11/02 15:47:35 cgrigis Exp $
+/* $Id: pgboard_api.c,v 1.4 2001/11/07 17:38:50 cgrigis Exp $
  *
  * kbd_api.c - high-level API to manipulate the PicoGUI virtual keyboard
  * 
@@ -26,13 +26,18 @@
  * 
  */
 
+#include "config.h"
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/types.h>
+#ifdef POCKETBEE
+#include <sys/wait.h>
+#include <signal.h>
+#endif /* POCKETBEE */
 #include <netinet/in.h>
 #include <picogui.h>
 #include "pgboard.h"
 #include "pgboard_api.h"
-#include "config.h"
 
 #ifdef POCKETBEE
 
@@ -68,6 +73,16 @@ static int physical_keyboard_available ();
 static void send_command (struct keyboard_command * cmd, int force);
 
 
+#ifdef POCKETBEE
+/*
+ * Signal handler activated when 'pgboard' has normally started.
+ */
+void sig_pgboard_ok (int sig)
+{
+  fprintf (stderr, "'pgboard' started properly\n");
+}
+#endif /* POCKETBEE */
+
 
 /*
  * Run the 'pgboard' process
@@ -79,7 +94,13 @@ int run_pgboard ()
   int retValue = 0;
 
 #ifdef POCKETBEE  
-  switch (vfork ())
+  pid_t pid;
+  int status;
+
+  /* Register handler to receive signal from 'pgboard' */
+  signal (SIGUSR1, sig_pgboard_ok);
+
+  switch (pid = vfork ())
     {
     case 0:
       /* Child */
@@ -96,7 +117,22 @@ int run_pgboard ()
 
     default:
       /* Parent */
-      retValue = 1;
+
+      /* Wait on 'pgboard' */
+      waitpid (pid, &status, 0);
+
+      if (WIFEXITED (status))
+	{
+	  /* 'pgboard' did not start properly and exited */
+	  retValue = 0;
+	}
+      else
+	{
+	  /* 'pgboard' signalled a proper start */
+	  retValue = 1;
+	  /* Ignore termination signals from 'pgboard' */
+	  signal (SIGCHLD, SIG_IGN);
+	}
       break;
     }
 #endif /* POCKETBEE */
