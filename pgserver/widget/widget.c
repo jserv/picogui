@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.157 2002/02/04 03:26:55 micahjd Exp $
+/* $Id: widget.c,v 1.158 2002/02/04 07:32:49 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -838,7 +838,8 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
   /* Update the cursor */
   cursor->x = x;
   cursor->y = y;
-  VID(sprite_update) (cursor);
+  if (!events_pending())
+    VID(sprite_update) (cursor);
 
   /* Selfish apps that don't like using widgets can just steal the pointing
      device for themselves.  Probably not something a word processor would
