@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.13 2000/08/03 04:32:46 micahjd Exp $
+/* $Id: dispatch.c,v 1.14 2000/08/13 04:10:19 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -374,11 +374,27 @@ g_error rqh_in_direct(int owner, struct uipkt_request *req,
 
 g_error rqh_wait(int owner, struct uipkt_request *req,
 		 void *data, unsigned long *ret, int *fatal) {
+  struct event *q;
+
+  /* Is there anything here already? */
+  if (q = get_event(owner,1)) {
+    struct response_event rsp;
+
+    rsp.type = htons(RESPONSE_EVENT);
+    rsp.event = htons(q->event);
+    rsp.from = htonl(q->from);
+    rsp.param = htonl(q->param);
+    send(owner,&rsp,sizeof(rsp),0);
+  }
+  else {
+    /* Nop. Off to the waiting list... */
   
-  FD_SET(owner,&evtwait);
+    FD_SET(owner,&evtwait);
 #ifdef DEBUG
     printf("Client (#%d) added to waiting list\n",owner);
 #endif
+  }
+
   return mkerror(ERRT_NOREPLY,NULL);
 }
 

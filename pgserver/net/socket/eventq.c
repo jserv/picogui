@@ -1,4 +1,4 @@
-/* $Id: eventq.c,v 1.5 2000/06/11 17:59:18 micahjd Exp $
+/* $Id: eventq.c,v 1.6 2000/08/13 04:10:19 micahjd Exp $
  *
  * eventq.c - This implements the post_event function that the widgets
  *            use to send events to the client.  It stores these in a
@@ -39,6 +39,7 @@
 */
 void post_event(int event,struct widget *from,long param,int owner) {
   handle hfrom;
+  struct conbuf *cb;
 
   /* Determine the owner of the originating widget */
   hfrom = hlookup(from,&owner);
@@ -58,15 +59,44 @@ void post_event(int event,struct widget *from,long param,int owner) {
     rsp.from = htonl(hfrom);
     rsp.param = htonl(param);
     send(owner,&rsp,sizeof(rsp),0);
-    return;
   }
-
-  /* Store it in the queue */
+  else {
+    /* Store it in the queue */
+    cb = find_conbuf(owner);
+    if (!cb) return;   /* Sanity check */
+    
+    cb->in->event = event;
+    cb->in->from = hfrom;
+    cb->in->param = param;
+    
+    if ((++cb->in) >= (cb->q+EVENTQ_LEN))   /* Wrap around */
+      cb->in = cb->q;
+    
+#ifdef DEBUG
+    if (cb->in == cb->out)
+      printf("*** Event queue overflow!\n");
+#endif
+  }
 }
 
 struct event *get_event(int owner,int remove) {
+  struct event *q;
+  struct conbuf *cb;
 
-  return NULL;
+  cb = find_conbuf(owner);
+  if (!cb) return NULL;   /* Sanity check */
+
+  /* Either we're messed up (overflowed) or (more likely)
+     the queue is just empty */
+  if (cb->in == cb->out) return NULL;
+
+  q = cb->out;
+
+  if (remove)
+    if ((++cb->out) >= (cb->q+EVENTQ_LEN))   /* Wrap around */
+      cb->out = cb->q;
+
+  return q;
 }
 
 /* The End */
