@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.38 2002/03/15 08:31:03 micahjd Exp $
+/* $Id: canvas.c,v 1.39 2002/03/25 02:25:29 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -224,8 +224,8 @@ void canvas_trigger(struct widget *self,long type,union trigparam *param) {
      post_event(evt,self,
 		(param->mouse.btn << 28) |
 		(param->mouse.chbtn << 24) |
-		(my << 12) |
-		mx,
+		((my&0xFFF) << 12) |
+		(mx & 0xFFF),
 		0,NULL);
 
      return;
