@@ -1,4 +1,4 @@
-/* $Id: dlg_fontpicker.c,v 1.2 2001/08/03 14:56:11 micahjd Exp $
+/* $Id: dlg_fontpicker.c,v 1.3 2001/08/04 18:08:03 micahjd Exp $
  *
  * dlg_datepicker.c - Implementation of the pgFontPicker function, allowing
  *                    the user to choose any installed font
@@ -76,7 +76,7 @@ void fontpicker_style(pghandle str, unsigned long style, short int rship,
 
 pghandle pgFontPicker(const char *title) {
   pghandle wTB,wNames,wSizes,wStyles,wSample,wOk,wCancel,wSampleBox;
-  pghandle wLeftBox,wRightBox;
+  pghandle wLeftBox,wRightBox,wScroll;
   pghandle fSelected = 0, sA;
   int maxSize = 0;
   char name[40];
@@ -135,7 +135,7 @@ pghandle pgFontPicker(const char *title) {
 	      PG_WP_TRANSPARENT,1,
 	      0);
 
-  pgNewWidget(PG_WIDGET_SCROLL,PG_DERIVE_INSIDE,wLeftBox);
+  wScroll = pgNewWidget(PG_WIDGET_SCROLL,PG_DERIVE_INSIDE,wLeftBox);
   pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("Name:"),
@@ -146,8 +146,9 @@ pghandle pgFontPicker(const char *title) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_ALL,
 	      0);
+  pgSetWidget(wScroll,PG_WP_BIND,wNames,0);
 
-  pgNewWidget(PG_WIDGET_SCROLL,PG_DERIVE_INSIDE,wRightBox);
+  wScroll = pgNewWidget(PG_WIDGET_SCROLL,PG_DERIVE_INSIDE,wRightBox);
   pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("Size:"),
@@ -158,6 +159,7 @@ pghandle pgFontPicker(const char *title) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_ALL,
 	      0);
+  pgSetWidget(wScroll,PG_WP_BIND,wSizes,0);
 
   /********* Create widgets */
 

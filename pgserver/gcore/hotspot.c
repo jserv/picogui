@@ -1,4 +1,4 @@
-/* $Id: hotspot.c,v 1.5 2001/07/26 10:11:22 micahjd Exp $
+/* $Id: hotspot.c,v 1.6 2001/08/04 18:08:03 micahjd Exp $
  *
  * hotspot.c - This is an interface for managing hotspots.
  *             The divtree is scanned for hotspot divnodes.
@@ -111,14 +111,24 @@ g_error hotspot_build(struct divnode *n, struct divnode *ntb) {
     /* Find a good place within the node for the hotspot */
     x = n->x + n->w - 8;
     y = n->y + n->h - 8;
-    
     if (x<n->x)
       x = n->x;
     if (y<n->y)
       y = n->y;
 
-    e = hotspot_add(x,y);
-    errorcheck;
+    /* If this is a scrolled divnode, see if it's not visible */
+    if ((n->flags & DIVNODE_DIVSCROLL) && n->divscroll && 
+	(x < n->divscroll->calcx || y < n->divscroll->calcy ||
+	 x >= (n->divscroll->calcx+n->divscroll->calcw) || 
+	 y >= (n->divscroll->calcy+n->divscroll->calch))) {
+
+      /* FIXME: Scroll to currently invisible hotspots when they are selected */
+
+    } 
+    else { 
+      e = hotspot_add(x,y);
+      errorcheck;
+    }
   }
 
   /* Recursively add all divnodes */

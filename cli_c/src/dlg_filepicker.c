@@ -1,4 +1,4 @@
-/* $Id: dlg_filepicker.c,v 1.9 2001/08/04 16:31:40 micahjd Exp $
+/* $Id: dlg_filepicker.c,v 1.10 2001/08/04 18:08:03 micahjd Exp $
  *
  * dlg_filepicker.c - Display a dialog box the user can use to select
  *                    a file to open or save. It is customizable with flags
@@ -76,6 +76,7 @@ struct filepickdata {
   /* Important containers */
   pghandle wDirectory;
   pghandle wFileList;
+  pghandle wScroll;
 
   /* Filter parameters */
   int flags;
@@ -424,6 +425,14 @@ void filepicker_setdir(struct filepickdata *dat) {
   /* Clear the directory context */
   pgLeaveContext();
   pgEnterContext();
+
+  /* Scroll back to the top */
+  pgSetWidget(dat->wFileList,
+	      PG_WP_SCROLL,0,            /* Reset the list itself */
+	      0);
+  pgSetWidget(dat->wScroll,
+	      PG_WP_VALUE,0,             /* Reset the scroll bar */
+	      0);
   
   /* Set the directory button's text. We don't need to use replacetext here
    * because clearing the context also takes care of this string handle.
@@ -604,7 +613,7 @@ void filepicker_setdir(struct filepickdata *dat) {
 const char *pgFilePicker(pgfilter filefilter, const char *pattern,
 			 const char *deffile, int flags, const char *title) {
 
-  pghandle wTB, wOk, wCancel, wUp, wScroll;
+  pghandle wTB, wOk, wCancel, wUp;
   struct pgEvent evt;
   struct filepickdata dat;
   int w,h;
@@ -668,13 +677,13 @@ const char *pgFilePicker(pgfilter filefilter, const char *pattern,
 	      PG_WP_SIDE,PG_S_TOP,
 	      0);
 
-  wScroll = pgNewWidget(PG_WIDGET_SCROLL,0,0);
+  dat.wScroll = pgNewWidget(PG_WIDGET_SCROLL,0,0);
   dat.wFileList = pgNewWidget(PG_WIDGET_BOX,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_ALL,
 	      PG_WP_SCROLL,0,
 	      0);
-  pgSetWidget(wScroll,
+  pgSetWidget(dat.wScroll,
 	      PG_WP_BIND,dat.wFileList,
 	      0);
 

@@ -151,19 +151,21 @@ int btnTarget(struct pgEvent *evt) {
 /******************* Main program */
 
 int main(int argc,char **argv) {
+  pghandle wBox, wScroll;
+  
   pgInit(argc,argv);
   pgRegisterApp(PG_APP_NORMAL,"Standard Dialogs",0);
 
-  /* Custom dialog box */
-  pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  /* Scrollable box */
+  wScroll = pgNewWidget(PG_WIDGET_SCROLL,0,0);
+  wBox = pgNewWidget(PG_WIDGET_BOX,0,0);
   pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgNewString("pgDialogBox: Target"),
-	      PG_WP_SIDE,PG_S_TOP,
+	      PG_WP_SIDE,PG_S_ALL,
 	      0);
-  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnTarget,NULL);
+  pgSetWidget(wScroll,PG_WP_BIND,wBox,0);
 
   /* Message Dialog */
-  pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wBox);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("pgMessageDialog: Quote"),
 	      PG_WP_SIDE,PG_S_TOP,
@@ -175,6 +177,14 @@ int main(int argc,char **argv) {
 	      PG_WP_SIDE,PG_S_TOP,
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnConfirm,NULL);
+
+  /* Custom dialog box */
+  pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString("pgDialogBox: Target"),
+	      PG_WP_SIDE,PG_S_TOP,
+	      0);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnTarget,NULL);
 
   /* Date picker */
   wDate = pgNewWidget(PG_WIDGET_BUTTON,0,0);
