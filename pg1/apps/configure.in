@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl
-dnl $Id: configure.in,v 1.33 2003/01/09 15:56:11 pney Exp $
+dnl $Id$
 dnl
 
 AC_INIT(working/pgboard/pgboard.c)
@@ -164,6 +164,7 @@ AC_OUTPUT(
 	test/hello/Makefile
 	test/msgdemo/Makefile
 	test/omnibar/Makefile
+	test/themebar/Makefile
 	test/shm/Makefile
 	test/textedit/Makefile
 	working/Makefile

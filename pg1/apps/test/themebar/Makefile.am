@@ -1,5 +1,5 @@
-bin_PROGRAMS = omnibar
-omnibar_SOURCES = omnibar.c
+bin_PROGRAMS = themebar
+themebar_SOURCES = themebar.c
 
 LDFLAGS += @PICOGUI_LDFLAGS@
 LDADD = @PICOGUI_LIBS@

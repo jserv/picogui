@@ -20,7 +20,8 @@ SUBDIRS =		\
 	galaxy		\
 	hello		\
 	msgdemo		\
-	omnibar
+	omnibar		\
+	themebar
 
 # not working in separate directory:
 #	canvastiles	\

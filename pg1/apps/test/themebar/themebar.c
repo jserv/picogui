@@ -1,4 +1,4 @@
-/* $Id: themebar.c,v 1.1 2002/02/13 00:04:24 micahjd Exp $
+/* $Id$
  * 
  * this is a really quick and hackish theme picker app.
  * It will be replaced by a PGL applet or menu that reads a theme's
