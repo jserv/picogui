@@ -1,4 +1,5 @@
 import PicoGUI
+from Minibuffer import Minibuffer
 #import pax.backwards_compatibility
 
 class Frame(object):
@@ -8,23 +9,16 @@ class Frame(object):
         self._boxes = []
         self._app = PicoGUI.Application(title)
 
-        self._box = self._app.addWidget('Box')
+        self._box = self.addWidget('Box')
         self._box.side = 'All'
 
-        bar = self._app.panelbar() or self._app.addWidget('toolbar')
+        bar = self._app.panelbar() or self.addWidget('toolbar')
         bt = bar.addWidget('Button', 'inside')
         bt.text = 'Save'
 
-        self._app.link(self._save_button_handler, bt, 'activate')
+        self.link(self._save_button_handler, bt, 'activate')
 
-        python = self._app.addWidget('field')
-        python.side = 'bottom'
-        python.locals = {}
-        python.globals = {'frame': self}
-        self._globals = python.globals
-        exec 'from Nifty import FileBuffer, ScratchBuffer' in python.globals
-
-        self._app.link(self._python_handler, python, 'activate')
+        self.minibuffer = Minibuffer(self)
 
     def get_current(self):
         for box in self._boxes:
@@ -44,7 +38,8 @@ class Frame(object):
             page = parent.addWidget('tabpage')
         except IndexError:
             page = self._box.addWidget('tabpage', 'inside')
-            self._globals['tabbar'] = PicoGUI.Widget(self._app.server, page.tab_bar, self._app, type='tabbar')
+            self.minibuffer.bind(tabbar = PicoGUI.Widget(self._app.server, page.tab_bar,
+                                                         self._app, type='tabbar'))
         self._boxes.append(page)
         t = page.addWidget('scrollbox', 'inside').addWidget('Textbox','inside')
         t.tabpage = page
@@ -61,20 +56,14 @@ class Frame(object):
         buffer.save()
         print 'buffer %r saved' % buffer.name
 
-    def _save_button_handler(self, ev, b):
+    def _save_button_handler(self, ev):
         self.save()
 
-    def _python_handler(self, ev, field):
-        st = field.text
-        field.text = ''
-        self._globals['buffer'] = self.current
-        try:
-            exec st in field.globals, field.locals
-        except SystemExit:
-            self._app.send(self._app, 'stop')
-        except:
-            import traceback
-            traceback.print_exc()
+    def link(self, *args):
+        self._app.link(*args)
+
+    def addWidget(self, *args):
+        return self._app.addWidget(*args)
 
     def run(self):
-        self._app.run()
+        return self._app.run()

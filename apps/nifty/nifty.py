@@ -8,5 +8,4 @@ else:
     for name in sys.argv[1:]:
         frame.open(FileBuffer(name))
 
-frame.run()
-
+sys.exit(frame.run())
