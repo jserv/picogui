@@ -1,4 +1,4 @@
-/* $Id: vr3ts.c,v 1.9 2002/07/03 22:03:31 micahjd Exp $
+/* $Id: vr3ts.c,v 1.10 2002/08/02 06:11:35 lalo Exp $
  *
  * vr3ts.c - input driver for the Agenda VR3. This contains code from
  *           Agenda's xfree86 patch along with the framework from
@@ -55,9 +55,6 @@ static int VrTpanelInit() {
   int result;
   int fd;
 
-  /* Read the calibration file first for scan interval and settling time. */
-  GetPointerCalibrationData();
-
   /* Open the touch-panel device. */
   fd = open("/dev/tpanel", O_NONBLOCK);
   if(fd < 0) {
@@ -93,7 +90,7 @@ void vr3ts_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
 }
 
 int vr3ts_fd_activate(int fd) {
-  short data[6];
+  short data[6], data_x, data_y, data_z;
   int bytes_read;
 
   /* Is this for us? */
