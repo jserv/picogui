@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.67 2001/09/07 00:23:53 micahjd Exp $
+/* $Id: client_c.h,v 1.68 2001/09/09 04:06:04 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -1229,7 +1229,7 @@ i = pgGetPayload( pgGetEvent()->from );
 struct pgEvent *pgGetEvent(void);
 
 /*!
- * \ brief Check the number of pending events
+ * \brief Check the number of pending events
  * 
  * \returns The number of events in the application's queue
  * 
