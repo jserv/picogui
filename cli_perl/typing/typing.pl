@@ -5,7 +5,7 @@
 # This is really messy, I'll write an easier-to-follow example
 # program later.
 #
-# Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
+# Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License

@@ -1,11 +1,11 @@
-/* $Id: themedemo.c,v 1.2 2000/10/09 04:17:00 micahjd Exp $
+/* $Id: themedemo.c,v 1.3 2000/10/10 00:22:33 micahjd Exp $
  *
  * themedemo.c - Test proggie for the new theme stuff I've been
  *               working on in the theme_overhaul branch of
  *               the PicoGUI server
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
+ * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

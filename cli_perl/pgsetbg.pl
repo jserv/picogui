@@ -3,9 +3,9 @@
 # A small program to set the background bitmap of a PicoGUI server
 # to a PNM file specified on the command line.  Calling with no
 # filename args will restore the background to its default.
-# $Revision: 1.2 $
+# $Revision: 1.3 $
 #
-# Micah Dowty <micah@homesoftware.com>
+# Micah Dowty <micahjd@users.sourceforge.net>
 #
 # This file is released under the GPL. Please see the file COPYING that
 # came with this distribution.

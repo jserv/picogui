@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.33 2000/09/23 07:06:03 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.34 2000/10/10 00:25:32 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -6,7 +6,7 @@
 # use it for anything, bug me (micah) to fix it.
 #
 # PicoGUI small and efficient client/server GUI
-# Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
+# Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
