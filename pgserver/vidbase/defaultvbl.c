@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.9 2001/01/15 07:50:23 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.10 2001/01/15 09:41:01 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -122,7 +122,7 @@ void def_subpixel(int x,int y,pgcolor c) {
 
 /* Should be more than OK for most situations */
 void def_clear(void) {
-  (*vid->rect)(0,0,vid->xres,vid->yres,0);
+  (*vid->rect)(0,0,vid->xres,vid->yres,(*vid->color_pgtohwr)(0));
 }
 
 void def_slab(int x,int y,int w,hwrcolor c) {
