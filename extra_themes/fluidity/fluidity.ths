@@ -138,6 +138,7 @@ object panelbar {
   align = PG_A_LEFT;
   fgcolor = 0x57596F;
   margin = 2;
+  font = Font("Gelly",10,0);
 }
 
 object base.panelbtn {
