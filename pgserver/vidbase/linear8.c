@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.27 2002/01/30 12:03:16 micahjd Exp $
+/* $Id: linear8.c,v 1.28 2002/03/26 03:56:57 instinc Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -462,7 +462,7 @@ void linear8_blit(hwrbitmap dest,
 #define BLITLOOP(op)                                               \
     for (;h;h--,src+=offset_src,dst+=offset_dst) {                 \
       for (i=w>>2;i;i--,src+=4,dst+=4)                             \
-	*((unsigned long *)dst) op *((unsigned long *)src);        \
+	*((u32 *)dst) op *((u32 *)src);        \
       for (i=w&3;i;i--,src++,dst++)                                \
 	*dst op *src;                                              \
     }
@@ -494,7 +494,7 @@ void linear8_blit(hwrbitmap dest,
 	 swm = (swp < w) ? swp : w;                                       \
 	 for (dw=w;dw;) {                                                 \
 	    for (sw=swm>>2;sw;sw--,dw-=4,src+=4,dst+=4)                   \
-	      *((unsigned long *)dst) op *((unsigned long *)src);         \
+	      *((u32 *)dst) op *((u32 *)src);         \
 	    for (sw=swm&3;sw;sw--,src++,dst++,dw--)                       \
 	      *dst op *src;                                               \
 	    src = src_line;                                               \

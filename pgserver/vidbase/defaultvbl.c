@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.83 2002/03/06 11:38:46 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.84 2002/03/26 03:56:57 instinc Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -573,9 +573,9 @@ void def_ellipse(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgo
  
 void def_fellipse(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop) { 
   s16 xoff, yoff; 
-  long int conda, condb, ddinc0, ddinc1; 
+  s32 conda, condb, ddinc0, ddinc1; 
   /* Change following var's to long long if you want to draw *huge* ellipses */ 
-  long int dd, w22, h22, w2, h2; 
+  s32 dd, w22, h22, w2, h2; 
   w=--w>>1; 
   h=--h>>1; 
   w2 = w*w; 
@@ -965,8 +965,8 @@ void def_gradient(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,s16 angle,
   else                   c = -trigtab[360-angle];
 
   /* Calculate denominator of the scale value */
-  sc_d = h*((s<0) ? -((long)s) : ((long)s)) +
-    w*((c<0) ? -((long)c) : ((long)c));
+  sc_d = h*((s<0) ? -((s32)s) : ((s32)s)) +
+    w*((c<0) ? -((s32)c) : ((s32)c));
 
   /* Decode colors */
   r_v1 = getred(c1);
@@ -986,12 +986,12 @@ void def_gradient(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,s16 angle,
   r_sa = g_sa = b_sa = r_ca = g_ca = b_ca = r_ica = g_ica = b_ica = 0;
 
   /* Calculate the sine and cosine scales */
-  r_vsc = (r_vs*((long)c)) >> 8;
-  r_vss = (r_vs*((long)s)) >> 8;
-  g_vsc = (g_vs*((long)c)) >> 8;
-  g_vss = (g_vs*((long)s)) >> 8;
-  b_vsc = (b_vs*((long)c)) >> 8;
-  b_vss = (b_vs*((long)s)) >> 8;
+  r_vsc = (r_vs*((s32)c)) >> 8;
+  r_vss = (r_vs*((s32)s)) >> 8;
+  g_vsc = (g_vs*((s32)c)) >> 8;
+  g_vss = (g_vs*((s32)s)) >> 8;
+  b_vsc = (b_vs*((s32)c)) >> 8;
+  b_vss = (b_vs*((s32)s)) >> 8;
 
   /* If the scales are negative, start from the opposite side */
   if (r_vss<0) r_sa  = -r_vss*h;
@@ -1432,7 +1432,7 @@ g_error def_bitmap_new(hwrbitmap *b, s16 w,s16 h,u16 bpp) {
   */
   
   /* Pad the line width up to the nearest byte */
-  lw = (unsigned long) w * bpp;
+  lw = (u32) w * bpp;
   if ((bpp<8) && (lw & 7))
      lw += 8;
   lw >>= 3;
@@ -1824,7 +1824,7 @@ g_error def_bitmap_modeconvert(struct stdbitmap **bmp) {
 	    break;
 	    
 	  case 32:
-	    *(((unsigned long *)dest)++) = c;
+	    *(((u32 *)dest)++) = c;
 	    break;
 	 }
       }   

@@ -1,4 +1,4 @@
-/* $Id: linear32.c,v 1.4 2002/02/27 18:12:03 micahjd Exp $
+/* $Id: linear32.c,v 1.5 2002/03/26 03:56:57 instinc Exp $
  *
  * Video Base Library:
  * linear32.c - For 32bpp linear framebuffers
@@ -353,8 +353,8 @@ void linear32_gradient(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,s16 angle,
   else                   c = -trigtab[360-angle];
 
   /* Calculate denominator of the scale value */
-  sc_d = h*((s<0) ? -((long)s) : ((long)s)) +
-    w*((c<0) ? -((long)c) : ((long)c));
+  sc_d = h*((s<0) ? -((s32)s) : ((s32)s)) +
+    w*((c<0) ? -((s32)c) : ((s32)c));
 
   /* Decode colors */
   r_v1 = getred(c1);
@@ -374,12 +374,12 @@ void linear32_gradient(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,s16 angle,
   r_sa = g_sa = b_sa = r_ca = g_ca = b_ca = r_ica = g_ica = b_ica = 0;
 
   /* Calculate the sine and cosine scales */
-  r_vsc = (r_vs*((long)c)) >> 8;
-  r_vss = (r_vs*((long)s)) >> 8;
-  g_vsc = (g_vs*((long)c)) >> 8;
-  g_vss = (g_vs*((long)s)) >> 8;
-  b_vsc = (b_vs*((long)c)) >> 8;
-  b_vss = (b_vs*((long)s)) >> 8;
+  r_vsc = (r_vs*((s32)c)) >> 8;
+  r_vss = (r_vs*((s32)s)) >> 8;
+  g_vsc = (g_vs*((s32)c)) >> 8;
+  g_vss = (g_vs*((s32)s)) >> 8;
+  b_vsc = (b_vs*((s32)c)) >> 8;
+  b_vss = (b_vs*((s32)s)) >> 8;
 
   /* If the scales are negative, start from the opposite side */
   if (r_vss<0) r_sa  = -r_vss*h;
