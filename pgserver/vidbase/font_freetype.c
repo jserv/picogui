@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.35 2002/11/04 00:04:04 micahjd Exp $
+/* $Id: font_freetype.c,v 1.36 2002/12/07 03:56:03 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -223,7 +223,7 @@ void ft_face_load(const char *file, int base_len) {
  */
 int ft_face_scan_list(const char *file, const char *path) {
   FILE *f;
-  char buf[NAME_MAX+80]; /* Big enough for a big path plus the style itself */
+  char buf[256];
   char *filename;
   char *style;
   struct ft_face_id *pfid;
