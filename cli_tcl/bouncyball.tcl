@@ -26,6 +26,7 @@ set bmp [pgNewBitmap $img(0)]
 pgSetText $ok "Ok"
 pgSetSide $ok bottom
 pgSetSide $bmp all
+pgSetWidget $bmp $pg_wp(transparent) 0
 pgAttach $ok inside $dlg
 pgAttach $bmp after $ok
 
