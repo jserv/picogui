@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.20 2000/08/27 05:54:27 micahjd Exp $
+# $Id: Makefile,v 1.21 2000/08/27 08:31:00 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -33,7 +33,8 @@ SRC := widget/bitmap.c widget/indicator.c widget/label.c \
        gcore/handle.c gcore/g_error.c appmgr/global.c widget/button.c \
        widget/panel.c widget/default_theme.c widget/popup.c widget/box.c \
        widget/field.c gcore/timer.c gcore/errortext.c gcore/video.c \
-       video/sdlmin.c video/sdl.c
+       video/svga.c
+#       video/sdlmin.c video/sdl.c \
 
 HDR := widget/widget.h gcore/divtree.h gcore/g_malloc.h \
        gcore/font.h gcore/handle.h gcore/g_error.h gcore/video.h \
@@ -110,13 +111,10 @@ endif
 	endif
 
 	# Libraries and includes for SDL
-	CFLAGS := $(CFLAGS) $(shell $(SDLCONFIG) --cflags)
-	LDFLAGS := $(LDFLAGS) $(shell $(SDLCONFIG) --libs)
-#endif
-#ifeq ($(strip $(VIDLIB)),svgalib)
-#	# SVGAlib and vgagl
-#	LDFLAGS := $(LDFLAGS) -lvgagl -lvga
-#endif
+#	CFLAGS := $(CFLAGS) $(shell $(SDLCONFIG) --cflags) 
+#	LDFLAGS := $(LDFLAGS) $(shell $(SDLCONFIG) --libs)
+
+	LDFLAGS := $(LDFLAGS) -lvgagl -lvga
 
 # Network-specific source files
 SRC := $(SRC) net/$(NET)/request.c net/$(NET)/mainloop.c \
