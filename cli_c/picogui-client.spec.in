@@ -4,10 +4,10 @@
 Summary: PicoGUI Client library
 Name: @PACKAGE@
 Version: @VERSION@
-Release: sd.1
+Release: sd.4
 Copyright: GPL
 Group: PicoGUI/Library
-Packager: Frédéric Gobry <frederic.gobry@smartdata.ch>
+Packager: Olivier Bornet <Olivier.Bornet@smartdata.ch>
 Source: @PACKAGE@-@VERSION@.tar.gz
 Vendor: SMARTDATA
 
@@ -25,7 +25,7 @@ Requires: @PACKAGE@-mdl = @VERSION@
 %package mdl
 Summary: bee module
 Group: PicoGUI/Library
-Requires: bee >= 0.13
+Requires: bee >= 1.0.4
 
 %description @RPM_PLATFORM@
 The PicoGUI client library, which provides the necessary files for
