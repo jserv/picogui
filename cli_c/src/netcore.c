@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.21 2001/11/14 02:09:40 micahjd Exp $
+/* $Id: netcore.c,v 1.22 2001/11/16 17:42:58 gobry Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -86,9 +86,15 @@ int _pg_send(void *data,unsigned long datasize) {
 
 /* Receive... */
 int _pg_recv(void *data,unsigned long datasize) {
-  if (recv(_pgsockfd,data,datasize,0) < 0) {
-    clienterr("recv error");
-    return 1;
+  while (1) {
+    if (recv(_pgsockfd,data,datasize,0) >= 0) break;
+    
+    /* if we have been interrupted (by a signal for instance), restart
+       the reception */
+    if (errno != EINTR) {
+      clienterr("recv error");
+      return 1;
+    }
   }
   return 0;
 }
@@ -844,7 +850,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.21 2001/11/14 02:09:40 micahjd Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.22 2001/11/16 17:42:58 gobry Exp $\n");
 	exit(1);
       }
 
