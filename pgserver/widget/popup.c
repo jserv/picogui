@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.34 2001/07/24 12:43:09 micahjd Exp $
+/* $Id: popup.c,v 1.35 2001/07/26 10:11:22 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -130,6 +130,9 @@ g_error popup_install(struct widget *self) {
 
 void popup_remove(struct widget *self) {
   struct divtree *p;
+  u32 oldflags;
+
+  oldflags = self->in->div->flags;
 
   if (!in_shutdown) {
     r_divnode_free(self->in);
@@ -137,7 +140,16 @@ void popup_remove(struct widget *self) {
     self->dt = NULL;
   }
 
-  /* Redraw the top and everything below it */
+  /* If applicable, don't redraw toolbars on the root divtree.
+   * Normally we could just use popup_toolbar_passthrough() but we
+   * also take into account the tree we just deleted.
+   */
+  if ((oldflags & DIVNODE_POPUP_NONTOOLBAR) && 
+      (popup_toolbar_passthrough() ||
+       dts->top==dts->root))
+    dts->root->flags |= DIVTREE_ALL_NONTOOLBAR_REDRAW;
+
+  /* Set the normal 'redraw everything' flags for all layers */
   p = dts->top;
   while (p) {
     p->flags |= DIVTREE_ALL_REDRAW;

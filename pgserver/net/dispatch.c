@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.47 2001/07/12 00:17:18 micahjd Exp $
+/* $Id: dispatch.c,v 1.48 2001/07/26 10:11:22 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -873,9 +873,6 @@ g_error rqh_updatepart(int owner, struct pgrequest *req,
   
   e = rdhandle((void**) &w,PG_TYPE_WIDGET,owner,ntohl(arg->h));
   errorcheck;
-
-  /* If the divtree is hidden, don't even bother */
-  if (w->dt != dts->top) return sucess;
 
   update(w->in,1);
 

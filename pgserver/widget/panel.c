@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.61 2001/06/25 00:48:50 micahjd Exp $
+/* $Id: panel.c,v 1.62 2001/07/26 10:11:22 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -436,7 +436,7 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
      
     /* Update the screen now, so we have an up-to-date picture
        of the panelbar stored in DATA->bar */
-    themeify_panel(self,0);
+    themeify_panel(self,1);
     VID(sprite_hideall) ();   /* This line combined with the zero flag on */
     update(NULL,0);             /*  the next gets a clean spriteless grab */
 
@@ -469,8 +469,10 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
 	       PG_LGOP_NONE);
     DATA->s->clip_to = self->in;
 
-#endif /* CONFIG_DRAGSOLID */
+    return;
+#else
     break;
+#endif /* CONFIG_DRAGSOLID */
 
   case TRIGGER_UP:
   case TRIGGER_RELEASE:

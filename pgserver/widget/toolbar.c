@@ -1,4 +1,4 @@
-/* $Id: toolbar.c,v 1.16 2001/07/23 00:38:01 micahjd Exp $
+/* $Id: toolbar.c,v 1.17 2001/07/26 10:11:22 micahjd Exp $
  *
  * toolbar.c - container widget for buttons
  *
@@ -72,6 +72,18 @@ g_error toolbar_install(struct widget *self) {
 void toolbar_remove(struct widget *self) {
 
   if (in_shutdown) return;
+
+  /* If this is an application toolbar, and there is a popup in the 
+   * nontoolbar area only, redraw the screen */
+  if (self->isroot && popup_toolbar_passthrough()) {
+    struct divtree *tree;
+
+    for (tree=dts->top;tree;tree=tree->next) {
+      tree->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+      tree->flags |= DIVTREE_NEED_RECALC | DIVTREE_ALL_REDRAW;
+    }
+  }
+
 
   /* If this widget is the htbboundary, set it to the previous
      widget instead. To do this we have to iterate through the

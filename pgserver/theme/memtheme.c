@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.31 2001/06/28 21:06:44 micahjd Exp $
+/* $Id: memtheme.c,v 1.32 2001/07/26 10:11:22 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -278,8 +278,7 @@ void div_setstate(struct divnode *d,u16 state,bool force) {
    
    /* state changes are caused by interaction with the user, and should
     be reported ASAP back to the user */
-   if (d->owner && d->owner->dt == dts->top)
-     update(NULL,1);
+   update(force ? NULL : d,1);
 }
 
 /* Small build function for widgets that only need a background */

@@ -1,4 +1,4 @@
-/* $Id: hotspot.c,v 1.4 2001/07/12 03:00:24 micahjd Exp $
+/* $Id: hotspot.c,v 1.5 2001/07/26 10:11:22 micahjd Exp $
  *
  * hotspot.c - This is an interface for managing hotspots.
  *             The divtree is scanned for hotspot divnodes.
@@ -97,14 +97,16 @@ g_error hotspot_add(s16 x, s16 y) {
 }
 
 /* Recursively add hotspots for all applicable divnodes */
-g_error hotspot_build(struct divnode *n) {
+g_error hotspot_build(struct divnode *n, struct divnode *ntb) {
   s16 x,y;
   g_error e;
 
   if (!n) return sucess;
   
   /* shall this be a hotspot? */
-  if ((n->flags & DIVNODE_HOTSPOT) && n->w>0 && n->h>0) {
+  if ((n->flags & DIVNODE_HOTSPOT) && n->w>0 && n->h>0 &&
+      ((!ntb) || n->x < ntb->x || n->y < ntb->y ||
+       n->x >= ntb->x+ntb->w || n->y >= ntb->y+ntb->h)) {
 
     /* Find a good place within the node for the hotspot */
     x = n->x + n->w - 8;
@@ -120,9 +122,9 @@ g_error hotspot_build(struct divnode *n) {
   }
 
   /* Recursively add all divnodes */
-  e = hotspot_build(n->div);
+  e = hotspot_build(n->div,ntb);
   errorcheck;
-  e = hotspot_build(n->next);
+  e = hotspot_build(n->next,ntb);
   errorcheck;
   return sucess;
 }
@@ -245,7 +247,9 @@ void hotspot_traverse(short direction) {
 
   /* rebuild the graph */
   if (!hotspotlist) {
-    hotspot_build(dts->top->head);
+    hotspot_build(dts->top->head,NULL);
+    if (popup_toolbar_passthrough())
+      hotspot_build(dts->root->head,appmgr_nontoolbar_area());
     hotspot_graph();
   }
 

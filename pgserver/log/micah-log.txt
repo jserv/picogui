@@ -1,3 +1,18 @@
+2001-07-25    Micah Dowty <micahjd@users.sourceforge.net>
+
+Just a few things to finish up with the darn popup nontoolbar area stuff...
+- Redraw/reclip when toolbars are added or deleted and a popup is onscreen
+- Make this stuff work with hotspots.
+
+      * gcore/div.c: Added a flag to reclip popups on update
+		
+		* appmgr/global.c: Redraw when a toolbar app is registered
+		 
+		* widget/toolbar.c: Redraw when a root toolbar is destroyed
+		  behind a nontoolbar popup
+		  
+		* gcore/hotspot.c: Add toolbars to hotspot graph when necessary
+
 2001-07-24    Micah Dowty <micahjd@users.sourceforge.net>
 
 One last thing that needs to be done to the keyboard now... Making it usable
@@ -23,6 +38,24 @@ position. (which is the easiest way to check if it is a menu)
 		* include/pgserver/divtree.h: Added the DIVNODE_POPUP_NONTOOLBAR
 		  flag that will trigger the extra clipping and other modifications
 		  for non-menu popups.
+		  
+		* widget/widget.c: Events occuring within toolbars when qualifying popup
+		  boxes are onscreen are passed through to the root divtree
+		  
+		* gcore/div.c: Added a little hack to allow toolbar updates through
+        when all popups are in the nontoolbar area
+		  
+		* theme/memtheme.c: theme_setstate now does a SubUpdate as long as the
+		  'force' flag is zero, otherwise a normal update is done. Now almost
+		  all widgets (I think all except scrollbars) should work within toolbars
+		  when popups are onscreen.
+		  
+		* widget/popup.c: When a popup is closed, the nontoolbar region is
+		  not redrawn unless there is a menu on the screen also
+		  
+		* appmgr/global.c: For the user to pop up an onscreen keyboard while in
+		  a dialog box, adding a toolbar app needs to recalc everything and
+		  reclip the popups.
 
 2001-07-23    Micah Dowty <micahjd@users.sourceforge.net>
 

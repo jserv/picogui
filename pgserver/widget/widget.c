@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.88 2001/07/25 00:51:46 micahjd Exp $
+/* $Id: widget.c,v 1.89 2001/07/26 10:11:22 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -600,7 +600,8 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
 	y < ntb->y ||
 	x >= ntb->x+ntb->w ||
 	y >= ntb->y+ntb->h) {
-      printf("Nyap!\n");
+      
+      /* Get a widget from the bottom layer, with the toolbars */
       widgetunder(x,y,dts->root->head);
     }
     else

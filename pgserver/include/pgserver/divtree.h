@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.21 2001/07/25 00:51:46 micahjd Exp $
+/* $Id: divtree.h,v 1.22 2001/07/26 10:11:22 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -66,6 +66,8 @@ struct divtree {
 #define DIVTREE_NEED_RECALC	  (1<<0)
 #define DIVTREE_NEED_REDRAW	  (1<<1)
 #define DIVTREE_ALL_REDRAW	  (1<<2)
+#define DIVTREE_ALL_NONTOOLBAR_REDRAW (1<<3)
+#define DIVTREE_CLIP_POPUP        (1<<4)
 
 typedef short int alignt;
 
@@ -225,6 +227,9 @@ void update(struct divnode *subtree,int show);
 /* This function returns nonzero if there is more than one divtree layer,
    and all layers except for the root divtree has DIVNODE_POPUP_NONTOOLBAR */
 int popup_toolbar_passthrough(void);
+
+/* Returns nonzero if the specified divnode is within a toolbar root widget */
+int divnode_in_toolbar(struct divnode *div);
 
 /***************** smart resizing */
 

@@ -27,6 +27,9 @@ Fix svgalib ctrl-C and other bucky bits
 Finish terminal widget: vt100, smarter incremental updates
 terminal theme support
 
+Compile-time option to save the screen behind popups rather than redraw
+it from the divtree
+
 compressed bitmaps, more bitmap formats
 
 Intelligent heap management including gropnode/divnode/widget/handlenode
@@ -57,3 +60,6 @@ PicoGUI Bugs
 - Clicking a panelbar in solid mode doesn't shade/unshade it
 - Disappearing handles??
 - A new command prompt appears each time pterm is resized
+- Fragments of the mouse cursor appear on the panelbar sometimes when it
+  is dragged in sprite drag mode.
+  

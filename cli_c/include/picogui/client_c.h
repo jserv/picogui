@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.53 2001/07/12 00:17:18 micahjd Exp $
+/* $Id: client_c.h,v 1.54 2001/07/26 10:11:22 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -296,7 +296,9 @@ void pgUpdate(void);
  * The request buffer is flushed and the section is redrawn
  * independantly and immediately.
  *
- * This function is recommended for animation.
+ * This function is recommended for animation. Areas of the screen other than
+ * the specified widget and its children are never updated, and SubUpdates can
+ * occur in toolbars even while a popup dialog is onscreen.
  * 
  * \sa pgUpdate, pgFlushRequests
  */

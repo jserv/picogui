@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.44 2001/07/25 00:51:46 micahjd Exp $
+/* $Id: div.c,v 1.45 2001/07/26 10:11:22 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -370,7 +370,15 @@ void update(struct divnode *subtree,int show) {
   if (subtree) {
     /* Subtree update */
     
-    if (subtree->owner->dt != dts->top) return;
+    if (subtree->owner->dt != dts->top) {
+      /* Well, it's not from around here. Only allow it if the popups
+       * are in the nontoolbar area and the update is in a toolbar */
+
+      if (!popup_toolbar_passthrough())
+	return;
+      if (!divnode_in_toolbar(subtree))
+	return;
+    }
 
     divnode_recalc(subtree);
     divnode_redraw(subtree,0);
@@ -401,6 +409,15 @@ void r_dtupdate(struct divtree *dt) {
   /* Draw on the way back up from the recursion, so the layers appear
      in the right order */
 
+  /* If we're drawing everything anyway, might as well take this opportunity
+   * to update the popup clipping. This is necessary when toolbars are added
+   * when a popup is onscreen */
+  if (dt->flags & DIVTREE_CLIP_POPUP) {
+    if (dt->head->next && dt->head->next->owner &&
+	dt->head->next->owner->type == PG_WIDGET_POPUP)
+      clip_popup(dt->head->next->div);
+  }
+  
   if (dt->flags & DIVTREE_NEED_RECALC) {
 #ifdef DEBUG_VIDEO
     printf("divnode_recalc\n",dt->head);
@@ -416,12 +433,16 @@ void r_dtupdate(struct divtree *dt) {
 #ifdef DEBUG_VIDEO
     printf("divnode_redraw\n");
 #endif
-    divnode_redraw(dt->head,dt->flags & DIVTREE_ALL_REDRAW);
+
+    if (dt->flags & DIVTREE_ALL_NONTOOLBAR_REDRAW)
+      divnode_redraw(appmgr_nontoolbar_area(),dt->flags & DIVTREE_ALL_REDRAW);
+    else
+      divnode_redraw(dt->head,dt->flags & DIVTREE_ALL_REDRAW);
   }
 
   /* All clean now, clear flags. */
   dt->flags &= ~(DIVTREE_ALL_REDRAW | DIVTREE_NEED_REDRAW | 
-		 DIVTREE_NEED_RECALC);
+		 DIVTREE_NEED_RECALC | DIVTREE_ALL_NONTOOLBAR_REDRAW);
 }
 
 /*********** Functions for managing the dtstack */
@@ -675,6 +696,21 @@ int popup_toolbar_passthrough(void) {
   }
 
   return 1;
+}
+
+/* Returns nonzero if the specified divnode is within a toolbar root widget */
+int divnode_in_toolbar(struct divnode *div) {
+  struct widget *w;
+
+  w = div->owner;
+  if (!w)
+    return 0;
+
+  /* Find the root divnode by following the container handles */
+  while (!w->isroot)
+    if (iserror(rdhandle((void**) &w,PG_TYPE_WIDGET,-1,w->container)) || !w)
+      return 0;
+  return w->type == PG_WIDGET_TOOLBAR;
 }
 
 /* The End */

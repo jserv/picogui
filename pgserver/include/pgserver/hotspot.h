@@ -1,4 +1,4 @@
-/* $Id: hotspot.h,v 1.1 2001/07/10 09:21:13 micahjd Exp $
+/* $Id: hotspot.h,v 1.2 2001/07/26 10:11:22 micahjd Exp $
  *
  * pgserver/hotspot.h - This is an interface for managing hotspots.
  *                      The divtree is scanned for hotspot divnodes.
@@ -61,8 +61,10 @@ void hotspot_free(void);
 /* Add a new hotspot to the list, don't reconfigure graph */
 g_error hotspot_add(s16 x, s16 y);
 
-/* Recursively add hotspots for all applicable divnodes */
-g_error hotspot_build(struct divnode *n);
+/* Recursively add hotspots for all applicable divnodes 
+ * If 'ntb' is non-NULL, only add hotspots outside it.
+ */
+g_error hotspot_build(struct divnode *n, struct divnode *ntb);
 
 /* Return the closest hotspot to the given position */
 struct hotspot *hotspot_closest(s16 x,s16 y);

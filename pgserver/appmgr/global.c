@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.44 2001/07/24 12:43:08 micahjd Exp $
+/* $Id: global.c,v 1.45 2001/07/26 10:11:22 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -240,6 +240,7 @@ g_error appmgr_register(struct app_info *i) {
   struct app_info *dest;
   struct widget *w;
   struct divnode *p;
+  struct divtree *tree;
   g_error e;
 
   /* Dereference the toolbar boundary */
@@ -268,6 +269,18 @@ g_error appmgr_register(struct app_info *i) {
     */
     e = widget_set(w,PG_WP_SIDE,i->side);
     errorcheck;
+
+    /* If there is a popup in the nontoolbar area, we need to update all layers
+     * and reclip the popups. This is necessary because, for example, the user
+     * may want to turn on a virtual keyboard while in a dialog box.
+     */
+    if (popup_toolbar_passthrough()) {
+      for (tree=dts->top;tree;tree=tree->next) {
+	tree->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+	tree->flags |= DIVTREE_NEED_RECALC | DIVTREE_ALL_REDRAW | 
+	  DIVTREE_CLIP_POPUP;
+      }
+    }
     
     break;
 
@@ -363,5 +376,6 @@ struct divnode *appmgr_nontoolbar_area(void) {
 }
 
 /* The End */
+
 
 
