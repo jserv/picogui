@@ -1,4 +1,4 @@
-/* $Id: ptyfork.c,v 1.3 2001/01/13 09:47:38 micahjd Exp $
+/* $Id: ptyfork.c,v 1.4 2001/01/31 03:55:54 micahjd Exp $
  *
  * ptyfork.c - Create a subprocess running under a pty
  *
@@ -41,7 +41,7 @@
 #include <string.h>
 
 /* Error details when enabled */
-#define DEBUG
+//#define DEBUG
 
 /* Returns -1 on error, 0 for child, and a pid for parent 
  * For the parent, returns the pty's fd in *ptyfd

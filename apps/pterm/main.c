@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.4 2001/01/13 09:47:37 micahjd Exp $
+/* $Id: main.c,v 1.5 2001/01/31 03:55:54 micahjd Exp $
  *
  * main.c - PicoGUI Terminal (the 'p' is silent :)
  *          This handles the PicoGUI init and events
@@ -56,9 +56,14 @@ int termInput(pghandle from,long size,char *data) {
 /* Terminal was resized, pass on the news */
 int termResize(short event, pghandle from, long param) {
   struct winsize size;
+
+  /* If we're rolled up just stay calm... */
+  if (!(PG_W || PG_H))
+     return;
+   
   memset(&size,0,sizeof(size));
-  size.ws_row = param & 0xFFFF;   /* Width and height are packed in param: */
-  size.ws_col = param >> 16;      /* param = (width << 16) | height;       */
+  size.ws_row = PG_H;
+  size.ws_col = PG_W;
   ioctl(ptyfd,TIOCSWINSZ,(char *) &size);
 }
 
@@ -85,8 +90,8 @@ int mySelect(int n, fd_set *readfds, fd_set *writefds,
    static char buf[BUFFERSIZE];
 
    if ((chars = read(ptyfd,buf,BUFFERSIZE)) <= 0)
-     exit(0);
-
+       return result;
+       
    /* Send it to the terminal */
    pgWriteData(wTerminal,pgFromMemory(buf,chars));
 
@@ -108,17 +113,69 @@ int mySelect(int n, fd_set *readfds, fd_set *writefds,
 
 /****************************** Main Program ***/
 
+void sigChild(int x) {
+  exit(0);
+}
+
+void printHelp(void) {
+  puts("PicoGUI terminal (pgui.sourceforge.net)\n\n"
+       "usage: pterm [options] [subprocess [subprocess args]]\n"
+       "If no subprocess is given, \"/bin/sh\" is run as a login shell\n"
+       "\n"
+       "  -f size      Try to use a font of the given size (in pixels)\n"
+       "  -t title     Set the window title\n"
+       "  -p           Pause after subprocess exits");
+ 
+  exit(1);
+}
+
 int main(int argc, char **argv) {
   int childpid;
-
-  /*** PicoGUI Initialization */
+  char *title = "Terminal";
+  unsigned char fontsize = 0;
+  unsigned char noexit = 0;
   pgInit(argc,argv);
-  pgRegisterApp(PG_APP_NORMAL,"Terminal",0);         /* Register app */
+
+  /* Process arguments */
+   
+  argc--;                   /* Skip program name */
+  argv++;
+  while (argc) {            /* Process switch(es) */
+     if (**argv != '-')
+       break;               /* Out of switches, rest is for subprocess */
+     switch ((*argv)[1]) {  /* Switch :-) */
+	
+      case 'f':             /* Font size */
+	argc--;
+	argv++;
+	fontsize = atoi(*argv);
+	break;
+	
+      case 't':             /* Title */
+	argc--;
+	argv++;
+	title = *argv;
+	break;
+	
+      case 'p':             /* Pause */
+	noexit = 1;
+	break;
+	
+      default:
+	printHelp();
+     }
+     argc--;
+     argv++;
+  }	
+   
+  /*** PicoGUI Initialization */
+
+  pgRegisterApp(PG_APP_NORMAL,title,0);              /* Register app */
   
   wTerminal = pgNewWidget(PG_WIDGET_TERMINAL,0,0);   /* Make a terminal */
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_SIDE,PG_S_ALL,
-	      0);
+  if (fontsize)
+     pgSetWidget(PGDEFAULT,PG_WP_FONT,
+		 pgNewFont(NULL,fontsize,PG_FSTYLE_FIXED),0);
   pgBindData(PGDEFAULT,&termInput);                  /* Input handler */
   pgCustomizeSelect(&mySelect);                      /* select() wrapper for output */
   pgBind(PGDEFAULT,PG_WE_RESIZE,&termResize);        /* Resize handler */
@@ -126,6 +183,10 @@ int main(int argc, char **argv) {
   
   /*** Start up subprocess */
 
+  /* So we know when the subprocess exits... */
+  if (!noexit)
+     signal(SIGCHLD,&sigChild);
+   
   /* Fork! */  
   if ( (childpid = ptyfork(&ptyfd)) < 0 ) {
     pgMessageDialogFmt(argv[0],0,"Error acquiring pseudoterminal:\n%s",
@@ -134,7 +195,14 @@ int main(int argc, char **argv) {
   }
   if (!childpid) {
     /* This is the child process */
-    execlp("/bin/sh","-sh",NULL);
+
+    if (argc)
+       /* Run specified program */
+       execvp(argv[0],argv);
+    else
+       /* A login shell */
+       execlp("/bin/sh","-sh",NULL);
+       
     perror("Starting subprocess");
     pause();        /* Give a chance to read the error */
     _exit(127);
@@ -142,7 +210,7 @@ int main(int argc, char **argv) {
 
   /*** Event loop */
   pgEventLoop();
-
+   
   /*** Cleanup */
   kill(childpid,SIGTERM);  /* If the child is still alive, fix that */
   return 0;
