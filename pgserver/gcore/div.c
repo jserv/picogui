@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.53 2001/08/30 02:52:33 micahjd Exp $
+/* $Id: div.c,v 1.54 2001/09/21 20:48:14 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -365,7 +365,10 @@ void divnode_redraw(struct divnode *n,int all) {
    if (all || (n->flags & (DIVNODE_NEED_REDRAW | 
 			   DIVNODE_SCROLL_ONLY | 
 			   DIVNODE_INCREMENTAL) )) { 
-     grop_render(n);
+     
+     if (n->w && n->h)
+       grop_render(n);
+
      if (n->next && (n->flags & DIVNODE_PROPAGATE_REDRAW))
 	 n->next->flags |= DIVNODE_NEED_REDRAW | DIVNODE_PROPAGATE_REDRAW;
      if (n->div && !(n->flags & DIVNODE_SCROLL_ONLY))
@@ -380,8 +383,11 @@ void divnode_redraw(struct divnode *n,int all) {
 		   DIVNODE_PROPAGATE_SCROLL);
    }
 
-   divnode_redraw(n->next,all);
-   divnode_redraw(n->div,all);
+   /* Don't propagate if this node is invisible */
+   if (n->w && n->h) {
+     divnode_redraw(n->div,all);
+     divnode_redraw(n->next,all);
+   }
 }
 
 /************* Functions for building the divtree */
@@ -668,8 +674,12 @@ int mangle_align(int al) {
 void divresize_split(struct divnode *div) {
   s16 oldsplit = div->split;
 
-  if (div->flags & DIVNODE_SIZE_AUTOSPLIT) {
+  if ((div->flags & DIVNODE_SIZE_AUTOSPLIT) && div->div) {
 
+    /* Calculate the correct split value based on the preferred size of
+     * this node, the preferred size of its children, and this node's
+     * orientation.
+     */
     switch (div->flags & ~SIDEMASK) {
     case PG_S_TOP:
     case PG_S_BOTTOM:

@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.26 2001/08/05 10:50:52 micahjd Exp $
+/* $Id: divtree.h,v 1.27 2001/09/21 20:48:14 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -80,6 +80,9 @@ struct divnode {
   
   /* This is used by the DIVNODE_DIVSCROLL flag */
   struct divnode *divscroll;
+
+  /* Used by the DIVNODE_AUTOWRAP flag */
+  struct divnode *nextline;
 
   /* When the widget is resized or changes state, this is used to rebuild the
      groplist. It defines the appearance of the widget. */
@@ -214,6 +217,14 @@ struct divnode {
 #define DIVNODE_PROPAGATE_SCROLL (1<<26) /* This is used in divnode_redraw to give all children
 					  * of a scrolled node the DIVNODE_SCROLL_ONLY flag
 					  * when the scrolled node gets it 
+					  */
+#define DIVNODE_AUTOWRAP         (1<<27) /* This divnode flag implements word wrapping, or anything
+					  * similar. For example, it may be useful to have toolbar
+					  * buttons automatically flow onto a second toolbar.
+					  * By setting a node's 'nextline' pointer to the container
+					  * representing the line after this one, the layout
+					  * engine will automatically shuffle nodes between lines
+					  * to implement word wrapping.
 					  */
 
 /* Side value macros and stuff */

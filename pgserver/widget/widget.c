@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.111 2001/09/18 21:51:50 micahjd Exp $
+/* $Id: widget.c,v 1.112 2001/09/21 20:48:14 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -827,7 +827,8 @@ void r_grop_dump(struct divnode *div) {
    
    if (!div) return;
    if (div->grop) {
-      printf("Divnode 0x%08X: ",div);
+      printf("Divnode 0x%08X at (%d,%d,%d,%d): ",div,
+	     div->x,div->y,div->w,div->h);
       if (div->owner)
 	printf("Owned by widget 0x%08X, type %d\n",div->owner,div->owner->type);
       else
