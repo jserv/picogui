@@ -1,4 +1,4 @@
-/* $Id: hotspot.c,v 1.14 2001/12/15 21:47:06 micahjd Exp $
+/* $Id: hotspot.c,v 1.15 2001/12/15 21:48:01 micahjd Exp $
  *
  * hotspot.c - This is an interface for managing hotspots.
  *             The divtree is scanned for hotspot divnodes.
@@ -261,7 +261,7 @@ void hotspot_traverse(short direction) {
 	(cursor->x >= p->x-5) &&
 	(cursor->y <= p->y+5) &&
 	(cursor->y >= p->y-5))) ||
-       (p->div &&
+       (p->div &&                        /* use divnode as a border */
 	(cursor->x < p->div->x + p->div->w) &&
 	(cursor->x >= p->div->x) &&
 	(cursor->y < p->div->y + p->div->h) &&
