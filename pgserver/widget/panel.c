@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.63 2001/08/12 22:53:10 micahjd Exp $
+/* $Id: panel.c,v 1.64 2001/08/30 03:56:50 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -121,10 +121,9 @@ void panel_resize(struct widget *self) {
   int s;
 
   /* Spacings */
-  self->in->div->next->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
   self->in->div->next->split = theme_lookup(DATA->panelbar->state,PGTH_P_MARGIN);
   BARWIDTH = theme_lookup(DATA->panelbar->state,PGTH_P_WIDTH);
-
+   
   /* Button placement */
   s = theme_lookup(PGTH_O_CLOSEBTN,PGTH_P_SIDE);
   if ((self->in->flags & (~SIDEMASK)) & (PG_S_LEFT|PG_S_RIGHT))
@@ -264,11 +263,13 @@ g_error panel_install(struct widget *self) {
   e = newdiv(&self->in->div,self);
   errorcheck;
   self->in->div->flags |= PG_S_BOTTOM;
+  self->in->div->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
 
   /* This draws the panel background  */
   e = newdiv(&self->in->div->next,self);
   errorcheck;
   self->in->div->next->flags |= DIVNODE_SPLIT_BORDER;
+  self->in->div->next->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
   self->in->div->next->build = &build_bgfill_only;
   self->in->div->next->state = PGTH_O_PANEL;
 
