@@ -1,4 +1,4 @@
-/* $Id: configfile.h,v 1.1 2001/12/14 12:42:25 carpman Exp $
+/* $Id: configfile.h,v 1.2 2001/12/15 23:53:07 carpman Exp $
  *
  * pgserver/configfile.h - Header for the configuration file utilities
  *                         in configfile.c
@@ -40,6 +40,8 @@ int get_param_int(const char *section, const char *key, int def);
 const char *get_param_str(const char *section, const char* key, 
 			  const char *def); 
 
+
+g_error configfile_write(const char *filename);
 
 #endif /* __H_CONFIGFILE */
 

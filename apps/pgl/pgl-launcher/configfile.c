@@ -1,4 +1,4 @@
-/* $Id: configfile.c,v 1.3 2001/12/15 16:02:47 lonetech Exp $
+/* $Id: configfile.c,v 1.4 2001/12/15 23:53:07 carpman Exp $
  *
  * configfile.c - Utilities for loading, storing, and retrieving
  *                configuration options
@@ -283,6 +283,33 @@ const char *get_param_str(const char *section, const char* key,
     p = p->next;
   }
   return def;
+}
+
+g_error configfile_write(const char *filename){
+  FILE *outputFile = NULL;
+  struct cfg_section *thisSection;
+  struct cfg_item *thisItem;
+
+  if(sections){
+    thisSection = &sections[0];
+    if((outputFile = fopen(filename, "w"))){
+      while(thisSection){
+	fprintf(outputFile, "[%s]\n", thisSection->name);
+	thisItem = &thisSection->items[0];
+	while(thisItem){
+	  fprintf(outputFile, "%s=%s\n", thisItem->key, thisItem->value);
+	  thisItem = thisItem->next;
+	}
+	thisSection = thisSection->next;
+      }
+      fclose(outputFile);
+      return 1;
+    }else{
+      return 0;
+    }
+  }else{
+    return 0;
+  }
 }
 
 /* The End */

@@ -9,7 +9,7 @@ $(BINNAME): $(SRC) $(OBJ)
 	$(CC) -o $@ $(LDFLAGS) $(OBJ)
 
 .c.o:
-	$(CC) $(CFLAGS) -g $(INCLUDE) -c $<
+	$(CC) $(CFLAGS) $(INCLUDE) -c $<
 
 clean:
 	rm -f $(BINNAME) *.o
