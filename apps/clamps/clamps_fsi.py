@@ -6,9 +6,10 @@ import os
 #The generic file system interface defines an interface for
 #the local disk. Override for other filesystems as appropriate
 class filesystemInterface:
-    def __init__(self):
+    def __init__(self, mime):
         self.path = '/'
         self.URI = "file://"
+        self.mime = mime
 
     def listFiles(self):
         fileList = dict()
@@ -48,8 +49,17 @@ class filesystemInterface:
     def executeFile(self, filename, args):
         if os.fork() == 0:
             os.execl(os.path.join(self.path, filename), os.path.join(self.path, filename))
-        
 
+    def handleFile(self, filename):
+        self.mime.callHandler(os.path.join(self.path, filename))
+
+    def getMimeType(self, filename):
+        return self.mime.getMimeType(os.path.join(self.path, filename))
+
+    def getFileSize(self, filename):
+        if self.fileList.has_key(filename):
+            return self.fileList[filename][2]
+    
     def isRootDir(self):
         if self.path == '/':
             return 1
@@ -66,6 +76,11 @@ class filesystemInterface:
         else:
             return 0
 
+    def isDirectory(self, filename):
+        if self.fileList[filename][1] == "Directory":
+            return 1
+        else:
+            return 0
                           
 class filesystemAbstractor:
     def __init__(self):
