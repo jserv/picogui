@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.2 2001/02/12 05:29:17 micahjd Exp $
+/* $Id: linear4.c,v 1.3 2001/02/13 04:05:12 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -531,7 +531,37 @@ void linear4_blit(struct stdbitmap *srcbit,int src_x,int src_y,
 void linear4_unblit(int src_x,int src_y,
 		    struct stdbitmap *destbit,int dest_x,int dest_y,
 		    int w,int h) {
-   /* FIXME! */
+   unsigned char *dest,*destline,*src,*srcline;
+   int i,bw = w>>1;
+   unsigned char flag_l,flag_r;
+   
+   dest = destline = destbit->bits + (dest_x>>1) + dest_y*destbit->pitch;
+   src  = srcline  = PIXELBYTE(src_x,src_y);
+   flag_l = src_x&1;
+   flag_r = (src_x^w) & 1;
+   
+   for (;h;h--,src=srcline+=vid->fb_bpl,dest=destline+=destbit->pitch) {
+      /* Check for an extra nibble at the beginning, and shift
+       * pixels while blitting */
+      if (flag_l) {
+	 *dest &= 0xF0;
+	 *dest |= (*src) >> 4;
+	 dest++;
+	 for (i=bw;i;i--,dest++,src++)
+	   *dest = ((*src) << 4) | ((*(src+1)) >> 4);
+      }
+      else {
+	 /* Normal byte copy */
+	 __memcpy(dest,src,bw);
+	 dest+=bw;
+	 src+=bw;
+      }
+      if (flag_r) {
+	 /* Extra nibble on the right */
+	 *dest &= 0x0F;
+	 *dest |= (*src) & 0xF0;
+      }
+   }
 }
    
 /************************************************** Registration */
@@ -562,7 +592,7 @@ void setvbl_linear4(struct vidlib *vid) {
 //  vid->charblit_v     = &linear4_charblit_v;
 //  vid->tileblit       = &linear4_tileblit;
   vid->blit           = &linear4_blit;
-//  vid->unblit         = &linear4_unblit;
+  vid->unblit         = &linear4_unblit;
 }
 
 /* The End */
