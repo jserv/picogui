@@ -1,4 +1,4 @@
-/* $Id: wt.c,v 1.6 2002/11/20 09:37:47 micahjd Exp $
+/* $Id: wt.c,v 1.7 2002/11/20 12:18:22 micahjd Exp $
  * 
  * wt.c - Loading and instantiation of PicoGUI's Widget Templates
  *
@@ -197,7 +197,6 @@ g_error wt_run_requests(handle group, int owner, const u8 **requests, int *reque
     handle_group(owner,group,r.out.ret,owner);
 
     /* Now stick the return value in the handle table if we need to */
-    req.id = htonl(req.id);
     if (req.id < num_handles)
       htable[req.id] = r.out.ret;
 

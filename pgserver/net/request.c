@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.54 2002/11/20 03:46:06 micahjd Exp $
+/* $Id: request.c,v 1.55 2002/11/20 12:18:22 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -249,9 +249,6 @@ void readfd(int from) {
 		 reqsize-buf->data_size,0);      
       }
 
-#ifdef DEBUG_NET
-      printf("SERVER recv data = %d\n",r);
-#endif
       if (r<=0) {
 	if (errno!=EAGAIN)
 	  /* Something bad happened, (the client probably disconnected)
@@ -284,7 +281,7 @@ void readfd(int from) {
 
 	errlen = strlen(errmsg = errortext(e));
 	rsp.type = htons(PG_RESPONSE_ERR);
-	rsp.id = buf->req.id;
+	rsp.id = htonl(buf->req.id);
 	rsp.errt = htons(errtype(e));
 	rsp.msglen = htons(errlen);
 	
@@ -302,8 +299,6 @@ void readfd(int from) {
 	}	
       }
       else {
-	g_error e;
-
 	/* Yahoo, got a complete packet! */
 	struct request_data r;
 	memset(&r,0,sizeof(r));
@@ -311,13 +306,9 @@ void readfd(int from) {
 	r.in.data = buf->data;
 	r.in.owner = from;
 
-	e = request_exec(&r);
+	request_exec(&r);
 	
-	printf("SERVER Executed request packet: type %d, size %d, ret %d, error %04X\n",
-	       r.in.req->type, r.in.req->size, r.out.ret, e);
-
 	if (r.out.block) {
-	  printf("SERVER blocking\n");
 	  /* Put this client on the waitlist */
 	  FD_SET(from, &evtwait);
 	}
@@ -325,26 +316,26 @@ void readfd(int from) {
 	  /* Send the response request_exec returned, closing the connection
 	   * if there is any error sending it.
 	   */
-	  printf("SERVER Sending response, len %d, type %d\n",r.out.response_len,ntohs(r.out.response.type));
-	  if (send_response(from,&r.out.response,r.out.response_len)) 
+	  if (send_response(from,&r.out.response,r.out.response_len)) {
 	    closefd(from);
-	  else {
-	    printf("SERVER Sending response data %p, len %d\n",r.out.response_data,r.out.response_data_len);
-	    if (r.out.response_data && 
-		send_response(from,&r.out.response_data,r.out.response_data_len))
+	    return;
+	  }
+	  if (r.out.response_data) {
+	    if (send_response(from,r.out.response_data,r.out.response_data_len)) {
 	      closefd(from);
-	    else {
-	      printf("SERVER Finished sending\n");
-	      /* Reset the structure for another packet */
-	      g_free(buf->data_dyn);
-	      buf->data_dyn = NULL;
-	      buf->data_size = buf->header_size = 0;
-	      buf->data = NULL;
+	      return;
 	    }
 	  }
 	}
+
+	/* Reset the structure for another packet */
 	if (r.out.free_response_data)
 	  g_free(r.out.response_data);
+
+	g_free(buf->data_dyn);
+	buf->data_dyn = NULL;
+	buf->data_size = buf->header_size = 0;
+	buf->data = NULL;
       }
     }  
   }

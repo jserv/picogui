@@ -1,4 +1,4 @@
-/* $Id: requests.c,v 1.2 2002/11/20 03:46:06 micahjd Exp $
+/* $Id: requests.c,v 1.3 2002/11/20 12:18:21 micahjd Exp $
  *
  * requests.c - Process the requests that form picogui's network
  *              protocol and several file formats.
@@ -71,6 +71,7 @@ g_error request_exec(struct request_data *r) {
   /* Convert request to host byte order */
   r->in.req->type = ntohs(r->in.req->type);
   r->in.req->size = ntohl(r->in.req->size);
+  r->in.req->id   = ntohl(r->in.req->id);
 
   /* Undefined requests are undefined! */
   if (r->in.req->type > PGREQ_UNDEF)
@@ -90,7 +91,7 @@ g_error request_exec(struct request_data *r) {
       errmsg = errortext(e);
       errlen = strlen(errmsg);
       r->out.response.err.type   = htons(PG_RESPONSE_ERR);
-      r->out.response.err.id     = r->in.req->id;
+      r->out.response.err.id     = htonl(r->in.req->id);
       r->out.response.err.errt   = htons(errtype(e));
       r->out.response.err.msglen = htons(errlen);
       r->out.response_len = sizeof(r->out.response.err);
@@ -101,7 +102,7 @@ g_error request_exec(struct request_data *r) {
     else {
       /* No error, send a return code packet */
       r->out.response.ret.type = htons(PG_RESPONSE_RET);
-      r->out.response.ret.id   = r->in.req->id;
+      r->out.response.ret.id   = htonl(r->in.req->id);
       r->out.response.ret.data = htonl(r->out.ret);
       r->out.response_len = sizeof(r->out.response.ret);
       r->out.has_response = 1;
@@ -324,8 +325,6 @@ g_error rqh_undef(struct request_data *r) {
 g_error rqh_wait(struct request_data *r) {
   struct event *q;
 
-  post_event(PG_WE_FOCUS,NULL,0,r->in.owner,NULL);
-
   /* Is there anything here already? */
   if ((q = get_event(r->in.owner,1))) {
 
@@ -509,7 +508,7 @@ g_error rqh_batch(struct request_data *r) {
   /* use the return value from the last packet we got */
   memcpy(&r->out, &subreq.out, sizeof(r->out));
 
-  return success;
+  return e;
 }
 
 g_error rqh_regowner(struct request_data *r) {
@@ -637,7 +636,7 @@ g_error rqh_getstring(struct request_data *r) {
   
   /* Send a PG_RESPONSE_DATA back */
   r->out.response.data.type = htons(PG_RESPONSE_DATA);
-  r->out.response.data.id = r->in.req->id;
+  r->out.response.data.id = htonl(r->in.req->id);
   r->out.response_len = sizeof(r->out.response.data);
   r->out.has_response = 1;
 
@@ -763,7 +762,7 @@ g_error rqh_getmode(struct request_data *r) {
    
   /* Send a PG_RESPONSE_DATA back */
   r->out.response.data.type = htons(PG_RESPONSE_DATA);
-  r->out.response.data.id   = r->in.req->id;
+  r->out.response.data.id   = htonl(r->in.req->id);
   r->out.response.data.size = htonl(sizeof(*mi));
   r->out.response_len = sizeof(r->out.response.data);
   r->out.response_data = mi;
@@ -952,7 +951,7 @@ g_error rqh_getfstyle(struct request_data *r) {
 
   /* Send a PG_RESPONSE_DATA back */
   r->out.response.data.type = htons(PG_RESPONSE_DATA);
-  r->out.response.data.id   = r->in.req->id;
+  r->out.response.data.id   = htonl(r->in.req->id);
   r->out.response.data.size = htonl(sizeof(*gfs));
   r->out.response_len = sizeof(r->out.response.data);
   r->out.response_data = gfs;
@@ -1185,7 +1184,7 @@ g_error rqh_mkshmbitmap(struct request_data *r) {
 
   /* Send a PG_RESPONSE_DATA back */
   r->out.response.data.type = htons(PG_RESPONSE_DATA);
-  r->out.response.data.id   = r->in.req->id;
+  r->out.response.data.id   = htonl(r->in.req->id);
   r->out.response.data.size = htonl(sizeof(*shm));
   r->out.response_len = sizeof(r->out.response.data);
   r->out.response_data = shm;
