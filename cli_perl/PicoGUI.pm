@@ -1,7 +1,7 @@
 #############################################################################
 #
 # PicoGUI client module for Perl
-# $Revision: 1.3 $
+# $Revision: 1.4 $
 #
 # Micah Dowty <micah@homesoftware.com>
 #
@@ -10,6 +10,7 @@
 #
 #############################################################################
 package PicoGUI;
+use Carp;
 require Exporter;
 @ISA       = qw(Exporter);
 @EXPORT    = qw(NewWidget %ServerInfo Update NewString
@@ -68,7 +69,8 @@ require Exporter;
 	   'label' => 1,
 	   'scroll' => 2,
 	   'indicator' => 3,
-	   'bitmap' => 4
+	   'bitmap' => 4,
+	   'button' => 5
 	   );
 
 %WPROP = (
@@ -128,19 +130,19 @@ sub _init {
     }
     $remote = pack("S n a4 x8", 2, $options{'port'}, $addrs[0]);
     socket(S, 2, 1, join("", getprotobyname('tcp')))
-	or die "PicoGUI - socket(): $!\n";
+	or croak "PicoGUI - socket(): $!\n";
     connect(S, $remote) 
-	or die "PicoGUI - connect(): $!\n";
+	or croak "PicoGUI - connect(): $!\n";
     select((select(S),$|=1)[0]);
     
     # Now we have a socket, read the hello packet
     read S,$pkt,64;
     ($magic,$protover,$width,$height,$bpp,$title) = unpack("Nn4a50",$pkt);
     $magic==$MAGIC or 
-	die "PicoGUI - incorrect magic number ($MAGIC -> $magic)\n";
+	croak "PicoGUI - incorrect magic number ($MAGIC -> $magic)\n";
 
     # TODO: fix this
-    $protover==$PROTOVER or die "PicoGUI - protocol version not supported\n"; 
+    $protover==$PROTOVER or croak "PicoGUI - protocol version not supported\n"; 
 
     %ServerInfo = (
 	'Width' => $width,
@@ -153,7 +155,7 @@ sub _init {
 
 # Close the connection on exit
 END {
-    close(S) || die "close: $!";
+    close(S);
 }
 
 ######### Internal subs
@@ -165,8 +167,8 @@ sub _request {
     print S $data;
     read S,$rsp,88;
     ($r_id,$errt,$ret,$msg) = unpack("nnNa56",$rsp);
-    $r_id == $id or die "PicoGUI - incorrect packet ID ($id -> $r_id)\n";
-    $errt and die "PicoGUI - ERROR($ERRT[$errt]) $msg\n";
+    $r_id == $id or croak "PicoGUI - incorrect packet ID ($id -> $r_id)\n";
+    $errt and croak "PicoGUI - ERROR($ERRT[$errt]) $msg\n";
     return $ret;
 }
 
@@ -231,7 +233,7 @@ sub SetWidget {
 	$arg = $ALIGN{$arg} if (/align/);
 	$arg = $SIDE{$arg} if (/side/);
 	$arg = $arg->GetHandle() if (/text/ or /bitmap/ or /font/);
-	die "Undefined property" if (!defined $prop);
+	croak "Undefined property" if (!defined $prop);
 	_set($self->GetHandle(),$arg,$prop);
     }
 }
@@ -244,7 +246,7 @@ sub NewFont {
 
     foreach (@styles) {
 	$s = $STYLES{$_};
-	die "Undefined font style\n" if (!defined $s);
+	croak "Undefined font style\n" if (!defined $s);
 	$flags |= $s;
     }
 
@@ -275,7 +277,7 @@ sub NewWidget {
 	if ($_ eq '-type') {
 	    $typenam = $args{$_}; 
 	    $type = $WTYPES{$args{$_}};
-	    die "Undefined widget type\n" if (!defined $type);
+	    croak "Undefined widget type\n" if (!defined $type);
 	}
 	elsif (defined $RSHIPS{$_}) {
 	    $rship = $RSHIPS{$_};
@@ -285,7 +287,7 @@ sub NewWidget {
 	    $set_arg{$_} = $args{$_};
 	}
     }
-    die "Widget type was not specified\n" if (!defined $type);
+    croak "Widget type was not specified\n" if (!defined $type);
     $h = _mkwidget($rship,$type,$parent);
 
     # Important stuff done, now make perl happy
@@ -325,13 +327,13 @@ sub NewBitmap {
 	    $data = $args{$_};
 	}
 	elsif ($_ eq '-file') {
-	    open BFILE,$args{$_} or die
+	    open BFILE,$args{$_} or croak
 		"Error opening bitmap file: $args{$_}\n";
 	    $data = join('',<BFILE>);
 	    close BFILE;
 	}
 	else {
-	    die "Unknown parameter to NewBitmap\n";
+	    croak "Unknown parameter to NewBitmap\n";
 	}
     }
     $h = _mkbitmap($w,$h,$fg,$bg,$data);

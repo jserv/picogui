@@ -23,8 +23,8 @@ NewWidget(-type => scroll,
 
 # Make a panel with the side param
 # set
-NewWidget(-type => panel,
-	  -side => top);
+$toppanel = NewWidget(-type => panel,
+	    -side => top);
 
 # Set the panel's color
 $p->SetWidget(-bgcolor => 0xE0E0C0);
@@ -69,6 +69,11 @@ for ($i=0;$i<10;$i++) {
 	      -side => left,
 	      -bitmap => $bits
 	      );
+}
+
+# Buttons
+for ($i=0;$i<10;$i++) {
+	NewWidget(-type => button, -inside => $toppanel);
 }
 
 Update(); <STDIN>;
