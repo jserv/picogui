@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.5 2001/10/19 22:09:09 micahjd Exp $
+/* $Id: linear16.c,v 1.6 2001/11/06 10:51:09 gobry Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers (5-6-5 RGB mapping)
@@ -48,18 +48,40 @@
 #define PIXELADDR(x,y) ((x)+LINE(y))
 #define PIXEL(x,y)     (*PIXELADDR(x,y))
 
+#undef DEBUG
+
 /************************************************** Minimum functionality */
 
 void linear16_pixel(hwrbitmap dest, s16 x,s16 y,hwrcolor c,s16 lgop) {
+#ifdef DRIVER_S1D13806
+# ifdef DEBUG
+  unsigned short * addr = PIXELADDR (x,y);
+# endif /* DEBUG */
+#endif
+
    if (lgop != PG_LGOP_NONE) {
       def_pixel(dest,x,y,c,lgop);
       return;
    }
+#ifdef DRIVER_S1D13806
+# ifdef DEBUG
+   printf ("set %dx%d @ %p\n", x, y, addr);
+# endif /* DEBUG */
+#endif
+
    PIXEL(x,y) = c;
 }
 hwrcolor linear16_getpixel(hwrbitmap dest, s16 x,s16 y) {
 #ifdef DRIVER_S1D13806
-  hwrcolor c = PIXEL(x,y);
+  unsigned short * addr = PIXELADDR (x,y);
+  hwrcolor c;
+
+#ifdef DEBUG
+  printf ("get %dx%d @ %p\n", x, y, addr);
+#endif /* DEBUG */
+
+  c = * addr;
+
   return c << 8 | c >> 8;
 #else
   return PIXEL(x,y);

@@ -17,11 +17,13 @@ runtime = [
             Runtime ('install', 'Install PicoGUI Server',
                      content = [ 'bin/pgserver',
                                  'etc/pgserver.conf'],
+                     depends = [ 'resourcemanager/install' ],
                      help = "Install the PicoGUI Server" ),
 
             Runtime ('server', 'Run PicoGUI Server',
                      depends = [ 'picoguiserver/install',
                                  'pocketapps/bioscall',
+                                 'resourcemanager/server',
                                  'pocketapps/initenv' ],
                      rcscript = '''
 # calibration
