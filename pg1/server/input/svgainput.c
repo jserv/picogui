@@ -227,16 +227,16 @@ void svgainput_kbdhandler(int scancode,int press) {
 	  b &= scancode == SCANCODE_REMOVE ? ~2 : ~1;
 	}
 	infilter_send_pointing(press ? PG_TRIGGER_DOWN : PG_TRIGGER_UP,
-			       cursor->x,cursor->y,b,svga_cursor);
+			       svga_cursor->x,svga_cursor->y,b,svga_cursor);
 	return;
      }
      else
        goto nomousekey;
 
 	  infilter_send_pointing(PG_TRIGGER_MOVE,
-				 cursor->x+((e-w)<<scale),
-				 cursor->y+((s-n)<<scale),b,svga_cursor);
-     mouse_setposition(cursor->x,cursor->y);
+				 svga_cursor->x+((e-w)<<scale),
+				 svga_cursor->y+((s-n)<<scale),b,svga_cursor);
+     mouse_setposition(svga_cursor->x,svga_cursor->y);
      return;
   }
    nomousekey:
