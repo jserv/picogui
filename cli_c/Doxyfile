@@ -27,7 +27,7 @@ VERBATIM_HEADERS       = YES
 SHOW_INCLUDE_FILES     = YES
 JAVADOC_AUTOBRIEF      = NO
 INHERIT_DOCS           = YES
-INLINE_INFO            = YES
+INLINE_INFO            = NO
 SORT_MEMBER_DOCS       = YES
 DISTRIBUTE_GROUP_DOC   = NO
 TAB_SIZE               = 8
@@ -115,10 +115,11 @@ MAN_EXTENSION          = .3
 ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = NO
 EXPAND_ONLY_PREDEF     = NO
-SEARCH_INCLUDES        = YES
+SEARCH_INCLUDES        = NO
 INCLUDE_PATH           = 
 INCLUDE_FILE_PATTERNS  = 
-PREDEFINED             = FD_SET
+PREDEFINED             = FD_SET \
+                         NULL
 EXPAND_AS_DEFINED      = 
 #---------------------------------------------------------------------------
 # Configuration::addtions related to external references   

@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.46 2001/05/16 02:48:43 micahjd Exp $
+/* $Id: client_c.h,v 1.47 2001/05/17 04:46:36 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -490,7 +490,7 @@ pgSetWidget(PGDEFAULT,
             0);
  * \endcode
  * 
- * \sa pgNewWidget, pgSetWidget, pgNewPopup
+ * \sa pgNewWidget, pgSetWidget, pgNewPopup, PG_APP_NORMAL, PG_APP_TOOLBAR
  */
 pghandle pgRegisterApp(short int type,const char *name, ...);
 
