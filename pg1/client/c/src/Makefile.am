@@ -1,7 +1,7 @@
 INCLUDES = -I$(top_srcdir)/include $(PGSERVER_CFLAGS)
 
-keynames.c: ../../../server/include/picogui/pgkeys.h
-	(cd ..; python grab_keynames.py)
+keynames.c: $(top_srcdir)/../../server/include/picogui/pgkeys.h
+	(cd $(top_srcdir); python grab_keynames.py ; cd -; mv $(top_srcdir)/keynames.c .)
 
 lib_LTLIBRARIES = libpgui.la
 
