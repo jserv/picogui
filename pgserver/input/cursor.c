@@ -1,4 +1,4 @@
-/* $Id: cursor.c,v 1.7 2002/10/25 06:30:42 micahjd Exp $
+/* $Id: cursor.c,v 1.8 2002/10/25 18:49:15 micahjd Exp $
  *
  * cursor.c - Cursor abstraction and multiplexing layer 
  *
@@ -374,18 +374,11 @@ void r_cursor_widgetunder(struct cursor *crsr, struct divnode *div,int x,int y) 
 	 (y > div->divscroll->r.y + div->divscroll->r.h - 1) ))
     return;
 
-  printf("Cursor visiting div %p\n",div);
-  if (div->owner)
-    printf("Cursor visiting widget %p, type %d, trigmask 0x%08X, grop %p, build %p\n",
-	   div->owner,div->owner->type,div->owner->trigger_mask,div->grop,div->build);
-
   /* If this divnode has an interactive widget as its owner, and it
    * is visible, store it in crsr->under
    */
-  if (div->owner && div->owner->trigger_mask && (div->grop || div->build)) {
+  if (div->owner && div->owner->trigger_mask && (div->grop || div->build))
     crsr->ctx.div_under = div;
-    printf("Cursor matching widget %p, type %d\n",div->owner,div->owner->type);
-  }
   
   /* Always store the deepest match in here */
   crsr->ctx.deepest_div = div;
