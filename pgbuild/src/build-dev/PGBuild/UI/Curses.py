@@ -31,22 +31,125 @@ except ImportError:
     raise PGBuild.Errors.EnvironmentError("Curses doesn't seem to be installed")
 
 
+class Rect(object):
+    """Rectangle wrapper that provides some layout functionality"""
+    def __init__(self, x, y, w, h):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+
+    def __str__(self):
+        return "(%s, %s, %s, %s)" % (self.x, self.y, self.w, self.h)
+
+    def __repr__(self):
+        return "<%s.%s %s>" % (self.__module__, self.__class__.__name__, self)
+
+    def set(self, r):
+        """Set this rectangle to be equal to the given one"""
+        self.x = r.x
+        self.y = r.y
+        self.w = r.w
+        self.h = r.h
+
+    def hSplit(self, topHeight):
+        """Split the rectangle into two horizontally, given the height
+           of the top window. Returns a tuple of the form (top, bottom)
+           """
+        return (Rect(self.x, self.y, self.w, topHeight),
+                Rect(self.x, self.y+topHeight, self.w, self.h-topHeight))
+
+    def vSplit(self, leftWidth):
+        """Split the rectangle into two vertically, given the width
+           of the left window. Returns a tuple of the form (left, right)
+           """
+        return (Rect(self.x, self.y, leftWidth, self.h),
+                Rect(self.x+leftWidth, self.y, self.w-leftWidth, self.h))
+
+    def sliceTop(self, topHeight):
+        """Slice a rectangle off the top of this one, returning the new
+           rectangle and shortening this rectangle.
+           """
+        (top, bottom) = self.hSplit(topHeight)
+        self.set(bottom)
+        return top
+
+    def sliceBottom(self, bottomHeight):
+        """Slice a rectangle off the bottom of this one, returning the new
+           rectangle and shortening this rectangle.
+           """
+        (top, bottom) = self.hSplit(self.h-bottomHeight)
+        self.set(top)
+        return bottom
+
+    def sliceLeft(self, leftWidth):
+        """Slice a rectangle off the left side of this one, returning the new
+           rectangle and shortening this rectangle.
+           """
+        (left, right) = self.vSplit(leftWidth)
+        self.set(right)
+        return left
+
+    def sliceRight(self, rightWidth):
+        """Slice a rectangle off the right side of this one, returning the new
+           rectangle and shortening this rectangle.
+           """
+        (left, right) = self.vSplit(self.w-rightWidth)
+        self.set(left)
+        return right
+
+
 class Window(object):
-    """Wrapper around a curses window, provides extra initialization and a heading"""
-    def __init__(self, x, y, w, h, heading):
-        self.win = curses.newwin(h,w,y,x)
-        self.win.hline(0,0,curses.ACS_HLINE,w)
-        self.win.setscrreg(1,h-1)
+    """Base class for wrapping a curses window. Adds some initialization
+       and constructs the window from a Rect object.
+       """
+    def __init__(self, rect):
+        self.rect = rect
+        self.win = curses.newwin(rect.h,rect.w,rect.y,rect.x)
         self.win.idlok(1)
         self.win.scrollok(1)
-        self.win.addstr(0, w - len(heading) - 10, " %s " % heading)
-        self.win.move(1,1)
-        self.win.refresh()
+        
 
-    def addLine(self, line):
-        self.win.addstr(line + "\n")
+class Heading(Window):
+    """Curses window providing a heading with left, right, or center justified
+       text and arbitrary background and foreground.
+       """
+    def __init__(self, rect, text, side='left', bgChar=None, sideMargin=10):
+        Window.__init__(self, rect)
+        self.sideMargin = sideMargin
+        text = " %s " % text
+        textX = getattr(self,'align_%s' % side)(rect.w, len(text))
+        if not bgChar:
+            bgChar = curses.ACS_HLINE
+        self.win.hline(0,0,bgChar,rect.w)
+        self.win.addstr(0, textX, text)
         self.win.refresh()
         
+    def align_left(self, container, text):
+        return self.sideMargin
+
+    def align_right(self, container, text):
+        return container-text-self.sideMargin
+
+    def align_center(self, container, text):
+        return (container-text)/2
+
+    
+class ScrollingWindow(Window):
+    """Window that scrolls new text in from the bottom """
+    def addLine(self, line):
+        self.win.move(self.rect.h-1, 0)
+        self.win.addstr(line + "\n")
+        self.win.refresh()
+
+
+class TaskWindow(Window):
+    """Window that displays the list of active tasks"""
+    def show(self, list):
+        self.win.clear()
+        for level in xrange(len(list)):
+            self.win.addstr(level, 1, "-"*(level+1) + " " + list[level])
+        self.win.refresh()
 
 class CursesWrangler(object):
     """Abstraction for our particular interface built with curses"""
@@ -71,16 +174,21 @@ class CursesWrangler(object):
         curses.endwin()
 
     def resize(self, signum=None, frame=None):
-        # Yucky hardcoded layout
-        (height, width) = self.getHeightWidth()
-        self.stdscr.addstr(0,0,"%s version %s - Curses frontend" % (PGBuild.name, PGBuild.version))
-        self.stdscr.refresh()
-        taskHeight = height/3
-        self.taskWin = Window(0,1,width,taskHeight, "Active Tasks")
-        self.reportWin = Window(0,taskHeight+1,width,height-taskHeight-1, "Progress")
-        
+        """Called on terminal resize, and once to get the initial size"""
+        (self.height, self.width) = self.getHeightWidth()
+        self.layout()
+
+    def layout(self):
+        """Set up us our windows, called whenever the size changes"""
+        remaining = Rect(0,0,self.width,self.height)
+        Heading(remaining.sliceTop(1), "%s version %s - Curses frontend" % (PGBuild.name, PGBuild.version), 'center', ' ')
+        Heading(remaining.sliceTop(1), "Active Tasks")
+        self.taskWin = TaskWindow(remaining.sliceTop(remaining.h / 4))
+        Heading(remaining.sliceTop(1), "Progress")
+        self.reportWin = ScrollingWindow(remaining)
+
     def getHeightWidth(self):
-        """ getwidth() -> (int, int)
+        """ getHeightWidth() -> (int, int)
             Return the height and width of the console in characters
             This is from:
             http://groups.google.com/groups?selm=uk7xtwasm.fsf%40python.net
@@ -95,11 +203,21 @@ class CursesWrangler(object):
         
 
 class Progress(PGBuild.UI.None.Progress):
+    """Progress reporter using Curses via the CursesWrangler"""
     def _init(self):
         if self.parent:
             self.curses = self.parent.curses
         else:
             self.curses = CursesWrangler()
+
+    def _showTaskHeading(self):
+        task = self
+        list = []
+        while task:
+            if task.taskName:
+                list.insert(0, task.taskName)
+            task = task.parent
+        self.curses.taskWin.show(list)
 
     def cleanup(self):
         self.curses.cleanup()
@@ -109,7 +227,12 @@ class Progress(PGBuild.UI.None.Progress):
         
 
 class Interface(PGBuild.UI.None.Interface):
+    """PGBuild Interface implementation using our Curses-based progress reporter"""
     progressClass = Progress
+
+    def run(self):
+        super(Interface, self).run()
+        print "Done."
 
     def cleanup(self):
         self.progress.cleanup()
