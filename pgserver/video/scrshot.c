@@ -1,4 +1,4 @@
-/* $Id: scrshot.c,v 1.1 2001/07/05 06:17:57 micahjd Exp $
+/* $Id: scrshot.c,v 1.2 2001/07/05 09:05:59 micahjd Exp $
  *
  * scrshot.c - Maintains a virtual framebuffer, taking screenshots on update
  *
@@ -48,7 +48,7 @@ g_error scrshot_init(void) {
    if (!vid->yres) vid->yres = 480;
 
    scrshot_frame = 0;
-   scrshot_file = get_param_int("video-scrshot","file","pgshot%04d.ppm");
+   scrshot_file = get_param_str("video-scrshot","file","pgshot%04d.ppm");
    scrshot_skip = get_param_int("video-scrshot","skip",1);
    scrshot_total = get_param_int("video-scrshot","total",1);
    
