@@ -85,11 +85,9 @@ sendcmd( char * command )
 int
 docmd( char * command, int (*fnt)( char * ) )
 {
-    char **result;
     char *buffer;
     char cmdid[5];
     
-    result = malloc( sizeof( char * ) * 10 );
     sendcmd( command );
     getcmdid( cmdid );
    
