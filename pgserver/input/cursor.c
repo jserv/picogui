@@ -1,4 +1,4 @@
-/* $Id: cursor.c,v 1.8 2002/10/25 18:49:15 micahjd Exp $
+/* $Id: cursor.c,v 1.9 2002/10/26 07:53:07 micahjd Exp $
  *
  * cursor.c - Cursor abstraction and multiplexing layer 
  *
@@ -52,7 +52,7 @@ g_error cursor_new(struct cursor **crsr, handle *h, int owner) {
   memset(c,0,sizeof(struct cursor));
 
   /* Default at the screen center */
-  cursor_getposition(NULL,&c->x, &c->y);
+  cursor_getposition(NULL,&c->x, &c->y,NULL);
 
   /* Add to list */
   c->next = cursor_list;
@@ -136,18 +136,20 @@ g_error cursor_set_theme(struct cursor *crsr, int thobj) {
 
   if (!crsr->sprite) {
     int x,y;
+    struct divtree *dt;
+
     /* Get the default position */
-    cursor_getposition(crsr,&x,&y);
+    cursor_getposition(crsr,&x,&y,&dt);
 
     /* Create a new sprite (default hidden, as per description in input.h) */
-    e = new_sprite(&crsr->sprite,dts->root,w,h);
+    e = new_sprite(&crsr->sprite,dt,w,h);
     errorcheck;
     crsr->sprite->visible = 0;
     
     /* Set the bitmap up, and move it */
     crsr->sprite->bitmap = bitmap;
     crsr->sprite->mask = mask;
-    cursor_move(crsr, x,y);
+    cursor_move(crsr, x,y, dt);
   }
   else {
 
@@ -189,7 +191,7 @@ g_error cursor_set_theme(struct cursor *crsr, int thobj) {
 /* This function has the job of determining what divnode the cursor
  * is hovering over, and if necessary sending enter/leave events.
  */
-void cursor_move(struct cursor *crsr, int x, int y) {
+void cursor_move(struct cursor *crsr, int x, int y, struct divtree *dt) {
   handle old_under = crsr->ctx.widget_under;
 
   /* clip to the screen edge */
@@ -200,6 +202,7 @@ void cursor_move(struct cursor *crsr, int x, int y) {
 
   crsr->x = x;
   crsr->y = y;
+  crsr->divtree = dt->h;
 
   /* Move the cursor to the head of the activity list */
   if (crsr != cursor_list) {
@@ -289,17 +292,24 @@ g_error cursor_retheme(void) {
   return success;
 }
 
-void cursor_getposition(struct cursor *crsr, int *x, int *y) {
+void cursor_getposition(struct cursor *crsr, int *x, int *y, struct divtree **dt) {
   if (!crsr)
     crsr = cursor_get_default();
   if (!crsr) {
     /* Start cursors out near the top-left corner */
     *x = 16;
     *y = 16;
+    if (dt)
+      *dt = dts->top;
   }
   else {
     *x = crsr->x;
     *y = crsr->y;
+
+    if (dt) {
+      if (iserror(rdhandle((void**)dt, PG_TYPE_DIVTREE, -1, crsr->divtree)) || !*dt)
+	*dt = dts->top;
+    }
   }
 }
 
@@ -308,8 +318,11 @@ void cursor_getposition(struct cursor *crsr, int *x, int *y) {
 
 void cursor_widgetunder(struct cursor *crsr) {
   int x,y;
-  struct divnode *div = dts->top->head;
-  cursor_getposition(crsr, &x, &y);
+  struct divnode *div;
+  struct divtree *dt;
+
+  cursor_getposition(crsr, &x, &y, &dt);
+  div = dt->head;
 
   /* If there are popups and they're all in the nontoolbar area,
    * we can pass toolbar's events through to the bottom layer in the dtstack

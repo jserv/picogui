@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.94 2002/10/25 23:59:55 micahjd Exp $
+/* $Id: div.c,v 1.95 2002/10/26 07:53:07 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -180,7 +180,7 @@ void divnode_split(struct divnode *n, struct rect *divrect,
       }
       else {
 	/* exactly at the cursor */
-	cursor_getposition(NULL,&x,&y);
+	cursor_getposition(NULL,&x,&y,NULL);
       } 
     }
     

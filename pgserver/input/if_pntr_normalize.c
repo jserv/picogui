@@ -1,4 +1,4 @@
-/* $Id: if_pntr_normalize.c,v 1.12 2002/10/07 19:04:51 micahjd Exp $
+/* $Id: if_pntr_normalize.c,v 1.13 2002/10/26 07:53:07 micahjd Exp $
  *
  * if_pntr_normalize.c - Convert the various pointer events to a standard form
  *
@@ -45,7 +45,7 @@ void infilter_pntr_normalize_handler(struct infilter *self, u32 trigger, union t
   }
 
   /* Get physical cursor position for use later */
-  cursor_getposition(param->mouse.cursor, &x, &y);
+  cursor_getposition(param->mouse.cursor, &x, &y,NULL);
   if (!param->mouse.is_logical) {
     /* Normal rotation handling */
     VID(coord_physicalize)(&x,&y);

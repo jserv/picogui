@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.68 2002/09/25 15:26:08 micahjd Exp $
+/* $Id: network.h,v 1.69 2002/10/26 07:53:07 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -115,6 +115,7 @@ union pg_client_trigger {
 	u32 cursor_handle;
 	u32 is_logical;          /* Nonzero if events are in logical coordinates */
 	u32 ts_calibration;      /* Handle of a calibration string for the touchscreen */
+	u32 divtree;             /* The divtree to dispatch the event to, 0 for top */
       } mouse;
 
       struct {
@@ -122,6 +123,7 @@ union pg_client_trigger {
 	u32 mods;                /* PGMOD_* constant */
 	u32 flags;               /* PG_KF_* constants */
 	u32 consume;             /* Consume event during widget propagation */
+	u32 divtree;             /* The divtree to dispatch the event to, 0 for top */
       } kbd;
 
     } u;

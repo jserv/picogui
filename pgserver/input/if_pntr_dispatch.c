@@ -1,4 +1,4 @@
-/* $Id: if_pntr_dispatch.c,v 1.5 2002/10/25 06:30:42 micahjd Exp $
+/* $Id: if_pntr_dispatch.c,v 1.6 2002/10/26 07:53:07 micahjd Exp $
  *
  * if_pntr_dispatch.c - Dispatch mouse pointer events to widgets
  *
@@ -48,13 +48,19 @@ void infilter_pntr_dispatch_handler(struct infilter *self, u32 trigger, union tr
   /* Move the cursor */
   if (trigger==PG_TRIGGER_MOVE) {
     int cx,cy;
+    struct divtree *new_dt, *old_dt;
+
+    /* Default to the topmost divtree, but allow the event to override */
+    if (iserror(rdhandle((void**)&new_dt, PG_TYPE_DIVTREE, -1, 
+			 param->mouse.divtree)) || !new_dt)
+      new_dt = dts->top;
 
     /* If the cursor is already at the destination, throw away this event */
-    cursor_getposition(param->mouse.cursor,&cx,&cy);
-    if (cx == param->mouse.x && cy == param->mouse.y)
+    cursor_getposition(param->mouse.cursor,&cx,&cy,&old_dt);
+    if (cx == param->mouse.x && cy == param->mouse.y && new_dt == old_dt)
       return;
 
-    cursor_move(param->mouse.cursor,param->mouse.x,param->mouse.y);
+    cursor_move(param->mouse.cursor,param->mouse.x,param->mouse.y,new_dt);
   }
 
   inactivity_reset();

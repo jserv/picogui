@@ -1,4 +1,4 @@
-/* $Id: if_hotspot.c,v 1.5 2002/10/11 11:58:44 micahjd Exp $
+/* $Id: if_hotspot.c,v 1.6 2002/10/26 07:53:07 micahjd Exp $
  *
  * if_hotspot.c - Use arrow keys to navigate around the screen.
  *                Besides the actual input filter, this has utilities to build the
@@ -35,6 +35,7 @@
 #include <pgserver/video.h>
 
 struct hotspot *hotspotlist;
+
 int hotspot_compare(struct hotspot *a, struct hotspot *b);
 
 /******************************************* Input filter ******/
@@ -294,6 +295,7 @@ void hotspot_graph(void) {
 void hotspot_traverse(short direction) {
   struct hotspot *p;
   int x,y;
+  struct divtree *dt;
 
   /* rebuild the graph */
   if (!hotspotlist) {
@@ -310,7 +312,7 @@ void hotspot_traverse(short direction) {
 
   /* Find the current node 
    */
-  cursor_getposition(dts->top->hotspot_cursor,&x,&y);
+  cursor_getposition(dts->top->hotspot_cursor,&x,&y,&dt);
   p = hotspot_closest(x,y);
   if (!p)
     return;
@@ -337,7 +339,7 @@ void hotspot_traverse(short direction) {
   }
   else {
     /* Warp the hotspot cursor to the new hotspot location */
-    cursor_move(dts->top->hotspot_cursor,p->x,p->y);
+    cursor_move(dts->top->hotspot_cursor,p->x,p->y,dt);
   }
 }
 

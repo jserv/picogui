@@ -1,4 +1,4 @@
-/* $Id: if_client_adaptor.c,v 1.3 2002/08/06 22:22:01 micahjd Exp $
+/* $Id: if_client_adaptor.c,v 1.4 2002/10/26 07:53:07 micahjd Exp $
  *
  * if_client_adaptor.c - Send events to clients, for client-side input filters
  *
@@ -48,6 +48,7 @@ void infilter_client_adaptor_handler(struct infilter *self, u32 trigger, union t
     cli_trig.content.u.kbd.mods    = param->kbd.mods;
     cli_trig.content.u.kbd.flags   = param->kbd.flags;
     cli_trig.content.u.kbd.consume = param->kbd.consume;
+    cli_trig.content.u.kbd.divtree = param->kbd.divtree;
   }
   else if (trigger & PG_TRIGGERS_MOUSE) {
     cli_trig.content.u.mouse.x              = param->mouse.x;
@@ -58,6 +59,7 @@ void infilter_client_adaptor_handler(struct infilter *self, u32 trigger, union t
     cli_trig.content.u.mouse.is_logical     = param->mouse.is_logical;
     cli_trig.content.u.mouse.cursor_handle  = hlookup(param->mouse.cursor,NULL); 
     cli_trig.content.u.mouse.ts_calibration = param->mouse.ts_calibration;
+    cli_trig.content.u.mouse.divtree        = param->mouse.divtree;
   }
   
   /* Convert it to network byte order
@@ -130,6 +132,7 @@ g_error infilter_client_send(union pg_client_trigger *client_trig) {
     tp.kbd.mods    = client_trig->content.u.kbd.mods;
     tp.kbd.flags   = client_trig->content.u.kbd.flags;
     tp.kbd.consume = client_trig->content.u.kbd.consume;
+    tp.kbd.divtree = client_trig->content.u.kbd.divtree;
   }
   else if (client_trig->content.type & PG_TRIGGERS_MOUSE) {
     tp.mouse.x          = client_trig->content.u.mouse.x;
@@ -138,6 +141,7 @@ g_error infilter_client_send(union pg_client_trigger *client_trig) {
     tp.mouse.chbtn      = client_trig->content.u.mouse.chbtn;
     tp.mouse.pressure   = client_trig->content.u.mouse.pressure;
     tp.mouse.is_logical = client_trig->content.u.mouse.is_logical;
+    tp.mouse.divtree    = client_trig->content.u.mouse.divtree;
     e = rdhandle((void**)&tp.mouse.cursor, PG_TYPE_CURSOR, -1,
 		 client_trig->content.u.mouse.cursor_handle);
     tp.mouse.ts_calibration = client_trig->content.u.mouse.ts_calibration;
@@ -155,9 +159,3 @@ g_error infilter_client_send(union pg_client_trigger *client_trig) {
 } 
 
 /* The End */
-
-
-
-
-
-

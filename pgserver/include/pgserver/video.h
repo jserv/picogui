@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.105 2002/10/24 03:00:54 micahjd Exp $
+/* $Id: video.h,v 1.106 2002/10/26 07:53:07 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -286,7 +286,8 @@ struct vidlib {
   /* Optional
    *   In a rootless driver, create a new window and return a hwrbitmap
    *   describing it. The divtree this window is housing is specified,
-   *   as it should be resized when the window is.
+   *   as it should be resized when the window is. The driver will need
+   *   to save this divtree and use it when sending input events.
    *
    *   The returned hwrbitmap will be freed with window_free
    *

@@ -1,4 +1,4 @@
-/* $Id: input_util.c,v 1.3 2002/09/28 06:25:05 micahjd Exp $
+/* $Id: input_util.c,v 1.4 2002/10/26 07:53:07 micahjd Exp $
  *
  * input_util.c - Collection of utilities used by the input code
  *
@@ -133,7 +133,7 @@ void request_focus(struct widget *self) {
   if (dts->top->hotspot_cursor) {
     int x,y;
     divnode_hotspot_position(self->in->div, &x, &y);
-    cursor_move(dts->top->hotspot_cursor,x,y);
+    cursor_move(dts->top->hotspot_cursor,x,y,dts->top);
   }
 }
 

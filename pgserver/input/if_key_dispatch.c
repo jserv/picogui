@@ -1,4 +1,4 @@
-/* $Id: if_key_dispatch.c,v 1.2 2002/07/03 22:03:30 micahjd Exp $
+/* $Id: if_key_dispatch.c,v 1.3 2002/10/26 07:53:07 micahjd Exp $
  *
  * if_key_dispatch.c - Send key events to widgets
  *
@@ -51,9 +51,16 @@ void infilter_key_dispatch_handler(struct infilter *self, u32 trigger, union tri
 
   inactivity_reset();
 
-  /* A little preparation.. get the focused widget */
+  /* Find the divtree we should get the focused widget from.
+   * Normally this is the topmost divtree, but it can be overridden
+   * by the incoming trigger. This is necessary for rootless and multihead.
+   */
+  if (iserror(rdhandle((void**)&dt, PG_TYPE_DIVTREE, -1, param->kbd.divtree)) || !dt)
+    dt = dts->top;
+
+  /* Get the focused widget */
   kbdfocus = NULL;
-  rdhandle((void**)&kbdfocus, PG_TYPE_WIDGET, -1, dts->top->focus);
+  rdhandle((void**)&kbdfocus, PG_TYPE_WIDGET, -1, dt->focus);
 
   /*
    *  Now for the fun part... propagating this event to all the widgets.

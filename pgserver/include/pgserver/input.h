@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.44 2002/09/28 06:25:05 micahjd Exp $
+/* $Id: input.h,v 1.45 2002/10/26 07:53:07 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -88,6 +88,7 @@ struct cursor {
   struct sprite *sprite;
   int hotspot_x, hotspot_y;      /* Location of hotspot on the sprite */
   int x,y;
+  handle divtree;
 
   struct cursor *next;
 };
@@ -116,8 +117,8 @@ g_error cursor_set_theme(struct cursor *crsr, int thobj);
  * passing NULL to cursor_getposition will return the position of the
  * default cursor.
  */
-void cursor_move(struct cursor *crsr, int x, int y);
-void cursor_getposition(struct cursor *crsr, int *x, int *y);
+void cursor_move(struct cursor *crsr, int x, int y, struct divtree *dt);
+void cursor_getposition(struct cursor *crsr, int *x, int *y, struct divtree **dt);
 
 /* Hide and show the cursor sprite, while also managing enter/leave events
  */
@@ -174,6 +175,11 @@ union trigparam {
      */
     handle ts_calibration;
 
+    /* The handle to a divtree to dispatch this to, or 0 to send it to
+     * the top divtree.
+     */
+    handle divtree;
+
   } mouse;
 
   struct {
@@ -181,6 +187,12 @@ union trigparam {
     int mods;     /* PGMOD_* constant */
     int flags;    /* PG_KF_* constants */
     int consume;  /* Increment this to consume the key event */
+
+    /* The handle to a divtree to dispatch this to, or 0 to send it to
+     * the top divtree.
+     */
+    handle divtree;
+
   } kbd;
 
   struct {
