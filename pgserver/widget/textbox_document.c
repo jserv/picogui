@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.50 2002/10/30 05:44:25 micahjd Exp $
+/* $Id: textbox_document.c,v 1.51 2002/10/30 05:53:25 micahjd Exp $
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and
@@ -143,7 +143,7 @@ g_error document_insert_char(struct textbox_document *doc, u32 ch, void *metadat
   g_error e;
 
   /* Insert us the paragraph! */
-  if (ch == '\n') {
+  if (ch == '\n' || ch == '\r') {
     int was_visible = doc->crsr->visible;
 
     e = textbox_new_par_div(&doc->crsr->par->next, &doc->crsr->par->div->next,
@@ -156,10 +156,6 @@ g_error document_insert_char(struct textbox_document *doc, u32 ch, void *metadat
     doc->crsr = &doc->crsr->par->next->cursor;
     if (was_visible)
       paragraph_show_cursor(doc->crsr);
-  }
-
-  else if (ch == '\r') {
-    /* Ignore \r */
   }
   
   /* Normal character */
