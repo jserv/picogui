@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.10 2001/01/07 23:18:40 micahjd Exp $
+/* $Id: terminal.c,v 1.11 2001/01/13 06:18:28 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -210,6 +210,9 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
       DATA->bufferw = neww;
       DATA->bufferh = newh;
       DATA->buffersize = newbuffer_size;
+
+      /* Notify the application */
+      post_event(PG_WE_RESIZE,self,(neww << 16) | newh,0,NULL);
     }
   }
 

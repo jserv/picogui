@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.31 2001/01/13 02:16:09 micahjd Exp $
+/* $Id: constants.h,v 1.32 2001/01/13 06:18:26 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -478,6 +478,8 @@ typedef unsigned long pghandle;
 #define PG_WE_PNTR_DOWN   4     /* The "mouse" button is now down */
 #define PG_WE_PNTR_UP     5     /* The "mouse" button is now up */
 #define PG_WE_DATA        6     /* Widget is streaming data to the app */
+#define PG_WE_RESIZE      7     /* For terminal widgets, passes size in chars packed
+				 * 16 bits for width and 16 for height: 0xWWWWHHHH */
 
 /* Non-widget events */
 #define PG_NWE_KBD_CHAR    10   /* These are sent if the client has captured the */
@@ -486,7 +488,7 @@ typedef unsigned long pghandle;
 #define PG_NWE_PNTR_MOVE   13
 #define PG_NWE_PNTR_UP     14
 #define PG_NWE_PNTR_DOWN   15
-
+#define PG_NWE_BGCLICK     16   /* The user clicked the background widget */
 
 #endif /* __H_PG_CONSTANTS */
 /* The End */
