@@ -2,6 +2,8 @@ dnl usage: AM_PGUI_CROSSCOMPILE
 dnl 
 dnl Tests the compilation environment, add the --with-cross option and
 dnl define CC_FOR_BUILD variable to the build-platform compiler
+dnl
+dnl $Id: crosspgui.m4,v 1.2 2001/04/25 13:50:43 gobry Exp $
 
 AC_DEFUN(AM_PGUI_CROSSCOMPILE, [
 
@@ -24,6 +26,7 @@ if test "$host" != "NONE" ; then
     CC="${with_prefix}-gcc"
     LD="${with_prefix}-ld"
     AR="${with_prefix}-ar"
+    NM="${with_prefix}-nm"
     RANLIB="${with_prefix}-ranlib"
   fi
 fi
@@ -33,7 +36,9 @@ dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_RANLIB
+
 AC_CHECK_PROG(AR, ${AR:-ar}, ${AR:-ar})
+AC_CHECK_PROG(NM, ${NM:-nm}, ${NM:-nm})
 
 dnl if we don't cross-compile, the build compiler is the host compiler
 
