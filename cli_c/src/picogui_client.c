@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.13 2000/10/19 17:00:38 pney Exp $
+/* $Id: picogui_client.c,v 1.14 2000/10/26 19:59:51 pney Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -29,6 +29,7 @@
 
 /* System includes */
 #include <sys/socket.h>
+#include <sys/time.h>  /* for time_t type (used in timeval structure) */
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -38,6 +39,7 @@
 #include <malloc.h>
 #include <string.h>   /* for memcpy(), memset(), strcpy() */
 #include <stdarg.h>   /* needed for pgRegisterApp and pgSetWidget */
+#include <math.h>     /* for floor() */
 
 /* PicoGUI */
 #include <picogui.h>            /* Basic PicoGUI include */
@@ -76,6 +78,10 @@ void (*_pgerrhandler)(unsigned short errortype,const char *msg);
                                 /* Error handler */
 struct _pghandlernode *_pghandlerlist;  /* List of pgBind event handlers */
 
+long _pgnonblocking_on;         /* To set a timeout in the pgEventLoop */
+typedef int (*wrapper_f)(void *data,unsigned long datasize);
+                                /* Pointer to IO wrappers */
+
 /* Structure for a retrieved and validated response code,
    the data collected by _pg_flushpackets is stored here. */
 struct {
@@ -110,6 +116,7 @@ struct {
 /* IO wrappers.  On error, they return nonzero and call clienterr() */
 int _pg_send(void *data,unsigned long datasize);
 int _pg_recv(void *data,unsigned long datasize);
+int _pg_recvtimout(void *data,unsigned long datasize);
 
 /* Malloc wrapper. Reports errors */
 void *_pg_malloc(size_t size);
@@ -149,6 +156,35 @@ int _pg_recv(void *data,unsigned long datasize) {
     return 1;
   }
   return 0;
+}
+
+/* Timout receive.. */
+int _pg_recvtimeout(void *data,unsigned long datasize) {
+  struct timeval tv;
+  fd_set readfds;
+
+  tv.tv_sec = floor(_pgnonblocking_on / 100);
+  tv.tv_usec = (_pgnonblocking_on - (tv.tv_sec * 100)) * 10000;
+
+  FD_ZERO(&readfds);
+  FD_SET(_pgsockfd,&readfds);
+
+  /* don't care about writefds and exceptfds: */
+  select(_pgsockfd+1,&readfds,NULL,NULL,&tv);
+
+  if (FD_ISSET(_pgsockfd, &readfds)) {
+#ifdef DEBUG
+    printf("Something happened on socket!\n");
+#endif
+    return _pg_recv(data,datasize);
+  }
+  else {
+#ifdef DEBUG
+    printf("Timed out.\n");
+#endif
+    pgExitEventLoop();
+    return 1;
+  }
 }
 
 /* Malloc wrapper */
@@ -220,10 +256,13 @@ void _pg_add_request(short reqtype,void *data,unsigned long datasize) {
 
 void _pg_getresponse(void) {
   short rsp_id = 0;
-
+  wrapper_f pf;
+  
+  if(!_pgnonblocking_on) pf = &_pg_recv;
+  else                   pf = &_pg_recvtimeout;
   /* Read the response type */
-  if (_pg_recv(&_pg_return.type,sizeof(_pg_return.type)))
-    return;
+    if ((*pf)(&_pg_return.type,sizeof(_pg_return.type)))
+      return;
   _pg_return.type = ntohs(_pg_return.type);
 
   switch (_pg_return.type) {
@@ -236,7 +275,7 @@ void _pg_getresponse(void) {
 
       /* Read the rest of the error (already have response type) */
       pg_err.type = _pg_return.type;
-      if (_pg_recv(((char*)&pg_err)+sizeof(_pg_return.type),
+      if ((*pf)(((char*)&pg_err)+sizeof(_pg_return.type),
 		   sizeof(pg_err)-sizeof(_pg_return.type)))
 	return;
       rsp_id = pg_err.id;
@@ -261,7 +300,7 @@ void _pg_getresponse(void) {
       
       /* Read the rest of the error (already have response type) */
       pg_ret.type = _pg_return.type;
-      if (_pg_recv(((char*)&pg_ret)+sizeof(_pg_return.type),
+      if ((*pf)(((char*)&pg_ret)+sizeof(_pg_return.type),
 		   sizeof(pg_ret)-sizeof(_pg_return.type)))
 	return;
       rsp_id = pg_ret.id;
@@ -276,7 +315,7 @@ void _pg_getresponse(void) {
 
       /* Read the rest of the event (already have response type) */
       pg_ev.type = _pg_return.type;
-      if (_pg_recv(((char*)&pg_ev)+sizeof(_pg_return.type),
+      if ((*pf)(((char*)&pg_ev)+sizeof(_pg_return.type),
 		   sizeof(pg_ev)-sizeof(_pg_return.type)))
 	return;
       _pg_return.e.event.event = ntohs(pg_ev.event);
@@ -292,7 +331,7 @@ void _pg_getresponse(void) {
       
       /* Read the rest of the error (already have response type) */
       pg_data.type = _pg_return.type;
-      if (_pg_recv(((char*)&pg_data)+sizeof(_pg_return.type),
+      if ((*pf)(((char*)&pg_data)+sizeof(_pg_return.type),
 		   sizeof(pg_data)-sizeof(_pg_return.type)))
 	return;
       rsp_id = pg_data.id;
@@ -301,7 +340,7 @@ void _pg_getresponse(void) {
       if (!(_pg_return.e.data.data = 
 	    _pg_malloc(_pg_return.e.data.size)))
 	return;
-      if (_pg_recv(_pg_return.e.data.data,_pg_return.e.data.size))
+      if ((*pf)(_pg_return.e.data.data,_pg_return.e.data.size))
 	return;
     }
     break;
@@ -367,6 +406,9 @@ void pgInit(int argc, char **argv)
   /* atexit() handler */
   atexit(&_pg_cleanup);
 
+  /* Set default to blocking receive state */
+  pgSetnonblocking(0);
+
   /* Should use a getopt-based system here to process various args, leaving
      the extras for the client app to process. But this is ok temporarily.
   */
@@ -430,6 +472,14 @@ const char *pgErrortypeString(unsigned short errortype) {
   case PG_ERRT_NONE:       return "NONE";
   }
   return "UNKNOWN";
+}
+
+/* Timeout setting */
+void pgSetnonblocking(long Hundredthseconds) {
+  if(Hundredthseconds >= 0)
+    _pgnonblocking_on = Hundredthseconds;
+  else
+    _pgnonblocking_on = -Hundredthseconds;
 }
 
 /* Flushes the buffer of packets - if there's only one, it gets sent as is
@@ -521,6 +571,8 @@ void pgEventLoop(void) {
   }
 
 }
+
+void pgExitEventLoop(void) { _pgeventloop_on=0; }
 
 /* Add the specified handler to the list */
 void pgBind(pghandle widgetkey,unsigned short eventkey,

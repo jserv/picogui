@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.13 2000/10/19 17:01:36 pney Exp $
+/* $Id: client_c.h,v 1.14 2000/10/26 20:00:53 pney Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -85,6 +85,11 @@ void pgSetErrorHandler(void (*handler)(unsigned short errortype,
  * error handlers
  */
 const char *pgErrortypeString(unsigned short errortype);
+
+/* Set receive state to blocking or not. To have the possibility
+ * to introduce a timeout in the EventLoop
+ */
+void pgSetnonblocking(long state);
 
 /* Flush the request buffer, make sure everything is sent to
  * the server. Usually this is handled automatically, but
@@ -213,6 +218,7 @@ struct pgmemdata pgFromFile(const char *file);
  * ready.
  */
 void pgEventLoop(void);
+void pgExitEventLoop(void);
 
 /* PicoGUI uses a context system, similar to contexts in C.
  * Whenever the program leaves a context, all objects created
