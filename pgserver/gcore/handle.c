@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.60 2002/09/17 22:50:17 micahjd Exp $
+/* $Id: handle.c,v 1.61 2002/10/12 14:46:34 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -387,6 +387,9 @@ void object_free(struct handlenode *n) {
       break;
     case PG_TYPE_PGSTRING:
       pgstring_delete((struct pgstring *)n->obj);
+      break;
+    case PG_TYPE_FONTDESC:
+      font_descriptor_destroy((struct font_descriptor *)n->obj);
       break;
 #ifdef CONFIG_WIDGET_TEXTBOX
     case PG_TYPE_PARAGRAPH:

@@ -6,10 +6,10 @@ libvidbase_a_SOURCES = 	\
 	dvbl_bitmap.c   \
 	dvbl_color.c	\
 	dvbl_effects.c	\
-	dvbl_font.c	\
 	dvbl_init.c	\
 	dvbl_lgop.c	\
 	dvbl_sprite.c	\
+	font_base.c	\
 	$(VIDBASE)
 
 EXTRA_libvidbase_a_SOURCES = \
@@ -23,8 +23,10 @@ EXTRA_libvidbase_a_SOURCES = \
 	slowvbl.c       \
 	dvbl_dither.c   \
 	visibone2.c     \
-	dvbl_primitives.c\
-	dvbl_primitives_aa.c
+	dvbl_primitives.c \
+	dvbl_primitives_aa.c \
+	font_bdf.c	\
+	font_freetype.c
 
 libvidbase_a_LIBADD       = $(VIDBASE:%.c=%.o)
 libvidbase_a_DEPENDENCIES = $(VIDBASE:%.c=%.o)

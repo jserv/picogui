@@ -1,8 +1,7 @@
-/* $Id: common.h,v 1.13 2002/10/12 14:46:34 micahjd Exp $
+/* $Id: types.h,v 1.3 2002/10/12 14:46:34 micahjd Exp $
  *
- * pgserver/common.h - things every file in pgserver should need,
- *                     including memory management, error handling,
- *                     and configuration info.
+ * pgserver/types.h - Common types used throughout pgserver
+ *                    (but only in pgserver)
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -27,22 +26,35 @@
  * 
  */
 
-#define PGSERVER
+#ifndef __SERVER_TYPES_H
+#define __SERVER_TYPES_H
 
+typedef short int alignt;
 
-/* We'll need this if we don't already have it... */
-#ifndef max
-#define max(a,b) (((a) > (b)) ? (a) : (b))
-#endif
-#ifndef min
-#define min(a,b) (((a) < (b)) ? (a) : (b))
-#endif
+struct fraction {
+  int n,d;
+};
 
-#include <picogui/types.h>
-#include <picogui/constants.h>
-#include <pgserver/types.h>
-#include <pgserver/autoconf.h>
-#include <pgserver/g_error.h>
-#include <pgserver/g_malloc.h>
+struct pair {
+  s16 x,y;
+};
+
+struct sizepair {
+  s16 w,h;
+};
+
+struct fractionpair {
+  struct fraction x,y;
+};
+
+struct quad {
+  s16 x1,y1,x2,y2;
+};
+
+struct rect {
+  s16 x,y,w,h;
+};
+
+#endif __SERVER_TYPES_H
 
 /* The End */

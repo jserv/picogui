@@ -63,6 +63,8 @@ add_if_true dvbl_dither.c $CONFIG_DITHER
 add_if_true visibone2.c   $CONFIG_PAL8_VISIBONE2
 add_if_true dvbl_primitives_aa.c $CONFIG_ANTIALIAS
 add_if_false dvbl_primitives.c $CONFIG_ANTIALIAS
+add_if_true font_bdf.c      $CONFIG_FONTENGINE_BDF
+add_if_true font_freetype.c $CONFIG_FONTENGINE_FREETYPE
 
 close_section
 
@@ -154,3 +156,9 @@ add_if_true plaintext.c $CONFIG_WIDGET_TEXTBOX
 
 close_section
 
+# Compiled-in fonts
+open_section FONT
+
+add_if_true bdf_fonts.c $CONFIG_FONTENGINE_BDF
+
+close_section

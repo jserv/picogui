@@ -1,4 +1,4 @@
-/* $Id: if_magic.c,v 1.4 2002/10/11 11:58:44 micahjd Exp $
+/* $Id: if_magic.c,v 1.5 2002/10/12 14:46:35 micahjd Exp $
  *
  * if_magic.c - Trap magic debug keys
  *
@@ -72,13 +72,15 @@ g_error debug_bitmaps(const void **pobj, void *extra) {
   hwrbitmap bmp = (hwrbitmap) *pobj;
   s16 w,h;
   int has_alpha, i;
-  struct fontdesc *df=NULL;
+  struct font_descriptor *df=NULL;
   struct quad screenclip;
+  struct font_metrics m;
+
   screenclip.x1 = screenclip.y1 = 0;
   screenclip.x2 = vid->lxres-1;
   screenclip.y2 = vid->lyres-1;
   rdhandle((void**)&df,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
-
+  df->lib->getmetrics(df,&m);
 
   VID(bitmap_getsize) (bmp,&w,&h);
   if (data->db_x+10+w>vid->lxres) {
@@ -90,9 +92,11 @@ g_error debug_bitmaps(const void **pobj, void *extra) {
      data->db_h = h;
    
    if (data->db_y+45+h>vid->lyres) {
-      outtext(vid->display,df,10,vid->lyres-df->font->h*3,VID(color_pgtohwr) (0xFFFF00),
-	      pgstring_tmpwrap("Too many bitmaps for this screen.\nChange video mode and try again"),
-	      &screenclip,PG_LGOP_NONE,0);
+     df->lib->draw_string(df,vid->display,xy_to_pair(10,vid->lyres-m.charcell.h*3),
+			  VID(color_pgtohwr) (0xFFFF00),
+			  pgstring_tmpwrap("Too many bitmaps for this screen.\n"
+					   "Change video mode and try again"),
+			  &screenclip,PG_LGOP_NONE,0);
 
       return success;   /* Lies! :) */
    }
@@ -109,8 +113,10 @@ g_error debug_bitmaps(const void **pobj, void *extra) {
      for (i=0;i<h;i++)
        VID(slab) (vid->display, data->db_x+5, data->db_y+40+i, w,
 		  VID(color_pgtohwr)(i&1 ? 0xFFFFFF : 0xCCCCCC), PG_LGOP_NONE);
-     outtext(vid->display,df,data->db_x+5,data->db_y+40,VID(color_pgtohwr)(0x000000),
-	     pgstring_tmpwrap("Alpha"), &screenclip, PG_LGOP_NONE,0);
+
+     df->lib->draw_string(df,vid->display,xy_to_pair(data->db_x+5,data->db_y+40),
+			  VID(color_pgtohwr)(0x000000),
+			  pgstring_tmpwrap("Alpha"), &screenclip, PG_LGOP_NONE,0);
    }
 
    VID(blit) (vid->display,data->db_x+5,data->db_y+40,w,h,bmp,0,0,

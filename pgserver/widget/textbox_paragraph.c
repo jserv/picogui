@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.5 2002/10/11 23:19:41 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.6 2002/10/12 14:46:35 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -51,7 +51,7 @@ g_error paragraph_wrap_line(struct paragraph *par, struct paragraph_line **line,
 g_error paragraph_wrap(struct paragraph *par, int force);
 
 /* Determine the amount of vertical space to reserve for text in a given font */
-int paragraph_font_height(struct fontdesc *fd);
+int paragraph_font_height(struct font_descriptor *fd);
 
 /* Skip from one line to the next, updating the metadata and iterator cache. 
  * - On the first call, *line should equal par->line and *valid should be 1.
@@ -152,7 +152,7 @@ void paragraph_render(struct groprender *r, struct gropnode *n) {
   struct paragraph *par;
   struct pgstr_iterator p = PGSTR_I_NULL;
   u32 ch;
-  s16 x,y;
+  struct pair xy;
   struct paragraph_metadata *meta;
   struct paragraph_line *line;
   struct paragraph_formatting fmt;
@@ -163,8 +163,8 @@ void paragraph_render(struct groprender *r, struct gropnode *n) {
     return;
 
   line = par->lines;
-  x = n->r.x;
-  y = n->r.y;
+  xy.x = n->r.x;
+  xy.y = n->r.y;
   if (!line)
     return;
   fmt = line->cache.fmt;
@@ -176,8 +176,8 @@ void paragraph_render(struct groprender *r, struct gropnode *n) {
     line->wrap_need_render = 0;
 
     /* Skip lines completely off the top of our clipping rectangle */
-    if (line->height + y < r->clip.y1) {
-      y += line->height;
+    if (line->height + xy.y < r->clip.y1) {
+      xy.y += line->height;
       paragraph_line_skip(par, &line, &valid);
       if (!line)
 	return;
@@ -186,7 +186,7 @@ void paragraph_render(struct groprender *r, struct gropnode *n) {
     }
 
     /* Quit if we're past the bottom of the clipping rectangle */
-    else if (y > r->clip.y2) {
+    else if (xy.y > r->clip.y2) {
       return;
     }
 
@@ -198,11 +198,11 @@ void paragraph_render(struct groprender *r, struct gropnode *n) {
 	ch = pgstring_decode_meta(par->content, &p, (void**) &meta);
 	if (meta) 
 	  paragraph_apply_metadata(meta, &fmt);
-	old_x = x;
+	old_x = xy.x;
 	if (ch)
-	  outchar(r->output, fmt.fd, &x, &y, fmt.color, ch, &r->clip, r->lgop, 0);
+	  fmt.fd->lib->draw_char(fmt.fd,r->output,&xy,fmt.color,ch,&r->clip,r->lgop,0);
 	if (draw_cursor)
-	  paragraph_render_cursor(r,&par->cursor,old_x,y);
+	  paragraph_render_cursor(r,&par->cursor,old_x,xy.y);
       }
 
       /* Drat, there's a special case: if the cursor is at the very end of the
@@ -212,11 +212,11 @@ void paragraph_render(struct groprender *r, struct gropnode *n) {
        */
       if ((!line->next) && par->cursor.visible &&
 	  !pgstring_iteratorcmp(&p, &par->cursor.iterator))
-	  paragraph_render_cursor(r,&par->cursor,x,y);
+	  paragraph_render_cursor(r,&par->cursor,xy.x,xy.y);
 
       /* Next line */
-      y += line->height;
-      x = n->r.x;
+      xy.y += line->height;
+      xy.x = n->r.x;
       line = line->next;
     }
   }
@@ -274,8 +274,8 @@ void paragraph_render_inc(struct groprender *r, struct gropnode *n) {
 /* Move a paragraph's cursor as close as possible to the given coordinates */
 void paragraph_movecursor(struct paragraph_cursor *crsr,
 			  struct paragraph *par, int x, int y) {
-  int line_y = 0, i;
-  s16 line_x = 0;
+  int i;
+  struct pair line_xy = {0,0};
   int cache_valid = 1;
   struct paragraph_formatting fmt;
   u32 ch;
@@ -295,7 +295,7 @@ void paragraph_movecursor(struct paragraph_cursor *crsr,
   else {
 
     /* First find the line */
-    while (y > line_y + crsr->line->height) {
+    while (y > line_xy.y + crsr->line->height) {
       if (!crsr->line->next) {
 	/* We've run past the last line.. position the cursor at the end */
 	crsr->iterator = crsr->line->cache.iterator;
@@ -304,7 +304,7 @@ void paragraph_movecursor(struct paragraph_cursor *crsr,
 	    crsr->iterator.offset,crsr->iterator.buffer,crsr->iterator.invalid);
 	return;
       }
-      line_y += crsr->line->height;
+      line_xy.y += crsr->line->height;
       paragraph_line_skip(par,&crsr->line,&cache_valid);
     }
 
@@ -315,8 +315,8 @@ void paragraph_movecursor(struct paragraph_cursor *crsr,
       ch = pgstring_decode_meta(par->content, &crsr->iterator, (void**) &meta);
       if (meta)
 	paragraph_apply_metadata(meta,&fmt);
-      outchar_fake(fmt.fd,&line_x,ch);
-      if (line_x > x) {
+      fmt.fd->lib->measure_char(fmt.fd,&line_xy,ch,0);
+      if (line_xy.x > x) {
 	/* We just passed the character that was clicked */
 	pgstring_seek(par->content, &crsr->iterator, -1);
 	break;
@@ -399,14 +399,14 @@ g_error paragraph_wrap_line(struct paragraph *par, struct paragraph_line **line,
 			    int *cache_valid, int force) {
   struct paragraph_metadata *meta;
   g_error e;
-  s16 x;
+  struct pair xy;
   u32 ch;
   int spaces;
   int old_height;
   struct paragraph_line *deadline;
   struct pgstr_iterator i;
   int old_char_width;
-  struct fontdesc *fd;
+  struct font_descriptor *fd;
 
   /* If this line doesn't need wrapping, skip it */
   if ((*line)->wrapped && !force) {
@@ -422,7 +422,7 @@ g_error paragraph_wrap_line(struct paragraph *par, struct paragraph_line **line,
   (*line)->char_width = 0;
   old_height = (*line)->height;
   (*line)->height = paragraph_font_height((*line)->cache.fmt.fd);
-  x = 0;
+  xy.x = 0;
   spaces = 0;
   fd = (*line)->cache.fmt.fd;
   i = (*line)->cache.iterator;
@@ -442,11 +442,11 @@ g_error paragraph_wrap_line(struct paragraph *par, struct paragraph_line **line,
     if (ch) {
       if (isspace(ch))
 	spaces++;
-      outchar_fake(fd,&x,ch);
+      fd->lib->measure_char(fd,&xy,ch,0);
       (*line)->char_width++;
       
       /* Over our limit yet? */
-      if (x >= par->width && spaces) {
+      if (xy.x >= par->width && spaces) {
 
 	/* Step back until we get to a breaking space */
 	pgstring_seek(par->content,&i,-1);
@@ -560,8 +560,10 @@ g_error paragraph_wrap(struct paragraph *par, int force) {
 }
 
 /* Determine the amount of vertical space to reserve for text in a given font */
-int paragraph_font_height(struct fontdesc *fd) {
-  return fd->font->h + fd->interline_space + fd->font->descent;
+int paragraph_font_height(struct font_descriptor *fd) {
+  struct font_metrics m;
+  fd->lib->getmetrics(fd,&m);
+  return m.ascent + m.descent;
 }
 
 /* Skip from one line to the next, updating the metadata and iterator cache. 
@@ -625,13 +627,15 @@ void paragraph_rerender_line(struct groprender *r, struct gropnode *n,
 			     s16 *y, struct pgstr_iterator *skip_to, int *nchars) {
   u32 ch;
   s16 old_x;
-  s16 x = n->r.x;
+  struct pair xy;
   int i = line->char_width;
   struct paragraph_metadata *meta;
   struct pgstr_iterator p = line->cache.iterator;
   struct paragraph_formatting fmt = line->cache.fmt;
   struct quad clip;
   int draw_cursor;
+
+  xy.x = n->r.x;
 
   /* If nchars starts out 0, there's no limit to the number of characters we should
    * draw after the cursor.
@@ -649,7 +653,7 @@ void paragraph_rerender_line(struct groprender *r, struct gropnode *n,
 	paragraph_apply_metadata(meta, &fmt);
       if (!ch)
 	return;
-      outchar_fake(fmt.fd, &x, ch);
+      fmt.fd->lib->measure_char(fmt.fd,&xy,ch,0);
       i--;
     }
   }
@@ -662,7 +666,7 @@ void paragraph_rerender_line(struct groprender *r, struct gropnode *n,
    * so adding up the space needed beforehand wouldn't necessarily be faster.
    */
   if (!nchars) {
-    clip.x1 = x;
+    clip.x1 = xy.x;
     clip.y1 = *y;
     clip.x2 = n->r.x + n->r.w - 1;
     clip.y2 = *y + line->height - 1;
@@ -701,24 +705,27 @@ void paragraph_rerender_line(struct groprender *r, struct gropnode *n,
     ch = pgstring_decode_meta(par->content, &p, (void**) &meta);
     if (meta) 
       paragraph_apply_metadata(meta, &fmt);
-    old_x = x;
+    old_x = xy.x;
 
     if (nchars) {
       /* If we're counting characters here, draw the background
        * on each character separately 
        */
-      outchar_fake(fmt.fd, &x, ch);
+      
+      fmt.fd->lib->measure_char(fmt.fd,&xy,ch,0);
       clip.x1 = old_x;
       clip.y1 = *y;
-      clip.x2 = x - 1;
+      clip.x2 = xy.x - 1;
       clip.y2 = *y + line->height - 1;
       quad_intersect(&clip, rect_to_quad(&par->background->r));
       grop_render(par->background, &clip);
-      x = old_x;
+      xy.x = old_x;
     }
 
-    if (ch && i)
-      outchar(r->output, fmt.fd, &x, y, fmt.color, ch, &r->clip, r->lgop, 0);    
+    if (ch && i) {
+      xy.y = *y;
+      fmt.fd->lib->draw_char(fmt.fd,r->output,&xy,fmt.color,ch,&r->clip,r->lgop,0);
+    }
 
     if (draw_cursor) {
       //  DBG("Draw_cursor at %d,%d\n",old_x,*y);

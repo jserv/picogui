@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: fontdef.pl,v 1.21 2001/11/04 11:51:28 micahjd Exp $
+# $Id: fontdef.pl,v 1.22 2002/10/12 14:46:35 micahjd Exp $
 #
 # This script turns a directory full of .fi and .bdf font files
 # into C source code that is compiled into the PicoGUI server.
@@ -35,7 +35,7 @@
 
 print <<EOF;
 #include <pgserver/common.h>
-#include <pgserver/font.h>
+#include <pgserver/font_bdf.h>
 
 EOF
 
@@ -71,19 +71,19 @@ foreach $file (@fontfiles) {
     $fiparam{'STYLE'} = 0 if (!$fiparam{'STYLE'});
 
     if ($fiparam{'NORMAL'}) {
-	$norm = '(struct font *) &'.$fiparam{'NORMAL'};
+	$norm = '(struct bdf_font *) &'.$fiparam{'NORMAL'};
 	$fdfs{$fiparam{'NORMAL'}} = 1;
     }
     if ($fiparam{'BOLD'}) {
-	$bold = '(struct font *) &'.$fiparam{'BOLD'};
+	$bold = '(struct bdf_font *) &'.$fiparam{'BOLD'};
 	$fdfs{$fiparam{'BOLD'}} = 1;
     } 
     if ($fiparam{'ITALIC'}) {
-	$ital = '(struct font *) &'.$fiparam{'ITALIC'};
+	$ital = '(struct bdf_font *) &'.$fiparam{'ITALIC'};
 	$fdfs{$fiparam{'ITALIC'}} = 1;
     } 
     if ($fiparam{'BOLDITALIC'}) {
-	$bital = '(struct font *) &'.$fiparam{'BOLDITALIC'}; 
+	$bital = '(struct bdf_font *) &'.$fiparam{'BOLDITALIC'}; 
 	$fdfs{$fiparam{'BOLDITALIC'}} = 1;
     }
 
@@ -178,7 +178,7 @@ foreach $fntname (sort keys %fdfs) {
     
     # ************ Output glyph table
 
-    print "\nstruct fontglyph const ${fntname}_glyphs[$numglyphs] = {\n";
+    print "\nstruct bdf_fontglyph const ${fntname}_glyphs[$numglyphs] = {\n";
     foreach (@glyphs) {
 	print "{$_},\n";
     }
@@ -195,7 +195,7 @@ foreach $fntname (sort keys %fdfs) {
 
     # ************ Font structure
     
-    print "\nstruct font const $fntname = {\n\t";
+    print "\nstruct bdf_font const $fntname = {\n\t";
     print "numglyphs: $numglyphs, defaultglyph: $defaultglyph, w: $fw,\n";
     print "h: $h, ascent: $ascent, descent: $descent,\n"; 
     print "glyphs: ${fntname}_glyphs, bitmaps: ${fntname}_bits\n";
@@ -218,12 +218,12 @@ $link = 'NULL';
 $fnode = 0;
 foreach (sort @defs) {
     $fnode++;
-    print "struct fontstyle_node const fsn$fnode = {\n";
+    print "struct bdf_fontstyle_node const fsn$fnode = {\n";
     s/###/$link/;
     print "$_ };\n";
-    $link = "(struct fontstyle_node *) &fsn$fnode";
+    $link = "(struct bdf_fontstyle_node *) &fsn$fnode";
 }
 
-print "struct fontstyle_node *fontstyles = $link;\n/* The End */\n";
+print "struct bdf_fontstyle_node *bdf_fontstyles = $link;\n/* The End */\n";
 
 # The End #

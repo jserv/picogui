@@ -1,4 +1,4 @@
-/* $Id: textedit_logical.c,v 1.4 2002/10/05 11:37:23 micahjd Exp $
+/* $Id: textedit_logical.c,v 1.5 2002/10/12 14:46:35 micahjd Exp $
  *
  * textedit_logical.c - Backend for multi-line text widget. This
  * defines the behavior of a generic wrapping text widget, and is not
@@ -243,13 +243,15 @@ void text_backend_build ( text_widget * widget,
                           u16 h ) {
     LList * ll_b, * ll_p;
     u16 p_offset;
+    struct font_metrics m;
     
     if (! ((widget->fd) && (widget->bit)) ) 
         return;
 
     /* Refuse to do anything if width or height is less than size of
        font */
-    if ((w < widget->fd->font->w) || (h < widget->fd->font->h))
+    widget->fd->lib->getmetrics(widget->fd,&m);
+    if ((w < m.charcell.w) || (h < m.charcell.h))
         return;
 
     widget->width = w;
@@ -1533,6 +1535,8 @@ static void widget_insert_chars ( text_widget * widget,
     u32 chunk_len;
     u8 new_para;
     u8 widget_realized = TRUE;
+    struct font_metrics m;
+    widget->fd->lib->getmetrics(widget->fd,&m);
 
     /* If there is a selected region, delete it */
     widget_clear_selection(widget);
@@ -1542,8 +1546,8 @@ static void widget_insert_chars ( text_widget * widget,
 
     if (! ((widget->fd) && (widget->bit)) ) 
         widget_realized = FALSE;
-    else if ((widget->width < widget->fd->font->w) || 
-        (widget->height < widget->fd->font->h))
+    else if ((widget->width < m.charcell.w) || 
+        (widget->height < m.charcell.h))
         widget_realized = FALSE;
 
     while (len) {

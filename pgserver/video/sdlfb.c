@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.46 2002/10/07 10:21:58 micahjd Exp $
+/* $Id: sdlfb.c,v 1.47 2002/10/12 14:46:35 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -73,9 +73,9 @@ pgcolor sdlsdc_fg,sdlsdc_bg;
 handle sdlsdc_font;
 s16 sdlsdc_x,sdlsdc_y;
 s16 sdlsdc_w,sdlsdc_h;
-/* variables */
+ /* variables */
 hwrcolor sdlsdc_hfg,sdlsdc_hbg;
-s16 sdlsdc_cx,sdlsdc_cy;
+struct pair sdlsdc_c;
 struct stdbitmap sdlsdc_bits;
 
 #endif
@@ -631,7 +631,8 @@ void sdlfb_message(u32 message, u32 param, u32 *ret) {
 #ifdef CONFIG_SDLSDC
 g_error sdlfb_sdc_char(char c) {
   g_error e;
-  struct fontdesc *fd;
+  struct font_descriptor *fd;
+  struct font_metrics m;
 
   /* Don't bother if the SDC hasn't been configured */
   if (!(sdlsdc_w && sdlsdc_h))
@@ -639,10 +640,15 @@ g_error sdlfb_sdc_char(char c) {
 
   /* If the font hasn't yet been allocated, set things up now */
   if (!sdlsdc_font) {
-    e = findfont(&sdlsdc_font,-1,
-		 get_param_str("video-sdlfb","sdc_font_name",""),
-		 get_param_int("video-sdlfb","sdc_font_size",0),
-		 get_param_int("video-sdlfb","sdc_font_style",0));
+    struct font_style fs;
+
+    memset(&fs,0,sizeof(fs));
+    fs.name = get_param_str("video-sdlfb","sdc_font_name","");
+    fs.size = get_param_int("video-sdlfb","sdc_font_size",0);
+    fs.style = get_param_int("video-sdlfb","sdc_font_style",0);
+    e = font_descriptor_create(&fd,&fs);
+    errorcheck;
+    e = mkhandle(&sdlsdc_font,PG_TYPE_FONTDESC,-1,fd);
     errorcheck;
 
     /* Convert colors to hwrcolor (ignore tint, simulated grays) */
@@ -653,32 +659,30 @@ g_error sdlfb_sdc_char(char c) {
     VID(rect) (&sdlsdc_bits, 0,0,sdlsdc_w,sdlsdc_h, sdlsdc_hbg, PG_LGOP_NONE);
     SDL_UpdateRect(sdl_vidsurf,sdlsdc_x,sdlsdc_y,sdlsdc_w,sdlsdc_h);
     
-    /* Look up the font */
-    e = rdhandle((void**) &fd, PG_TYPE_FONTDESC, -1, sdlsdc_font);
-    errorcheck;
-    
     /* Set the initial cursor position */
-    sdlsdc_cx = 0;
-    sdlsdc_cy = sdlsdc_h - fd->font->ascent - fd->font->descent;
+    fd->lib->getmetrics(fd,&m);
+    sdlsdc_c.x = 0;
+    sdlsdc_c.y = sdlsdc_h - m.ascent - m.descent;
   }
   
   /* Look up the font */
   e = rdhandle((void**) &fd, PG_TYPE_FONTDESC, -1, sdlsdc_font);
   errorcheck;
+  fd->lib->getmetrics(fd,&m);
 
   /* If we got an explicit newline or the line is full,
    * scroll the display
    */
-  if (c=='\n' || sdlsdc_cx+fd->font->w >= sdlsdc_w) {
+  if (c=='\n' || sdlsdc_c.x+m.charcell.w >= sdlsdc_w) {
 
     /* Reset cursor */
-    sdlsdc_cx = 0;
+    sdlsdc_c.x = 0;
 
     /* Scroll */
-    VID(blit) (&sdlsdc_bits,0,0,sdlsdc_w,sdlsdc_h-fd->font->h,
-	       &sdlsdc_bits,0,fd->font->h,PG_LGOP_NONE);
-    VID(rect) (&sdlsdc_bits,0,sdlsdc_h-fd->font->h,
-	       sdlsdc_w,fd->font->h, sdlsdc_hbg, PG_LGOP_NONE);
+    VID(blit) (&sdlsdc_bits,0,0,sdlsdc_w,sdlsdc_h-m.charcell.h,
+	       &sdlsdc_bits,0,m.charcell.h,PG_LGOP_NONE);
+    VID(rect) (&sdlsdc_bits,0,sdlsdc_h-m.charcell.h,
+	       sdlsdc_w,m.charcell.h, sdlsdc_hbg, PG_LGOP_NONE);
 
     /* Update the whole thing */
     SDL_UpdateRect(sdl_vidsurf,sdlsdc_x,sdlsdc_y,sdlsdc_w,sdlsdc_h);
@@ -687,22 +691,21 @@ g_error sdlfb_sdc_char(char c) {
   /* Handle backspace for overstriking- this will only look right for
    * fixed-width fonts */
   if (c == '\b') {
-    sdlsdc_cx -= fd->font->w;
-    if (sdlsdc_cx < 0)
-      sdlsdc_cx = 0;
+    sdlsdc_c.x -= m.charcell.w;
+    if (sdlsdc_c.x < 0)
+      sdlsdc_c.x = 0;
   }
 
   /* Plot a character */
   if (c!='\n' && c!='\r' && c!='\b') {
-    outchar(&sdlsdc_bits,fd,&sdlsdc_cx,&sdlsdc_cy,sdlsdc_hfg,c,NULL,
-	    PG_LGOP_NONE,0);
+    fd->lib->draw_char(fd,&sdlsdc_bits,&sdlsdc_c,sdlsdc_hfg,c,NULL,PG_LGOP_NONE,0);
     
     /* Update the screen */
     SDL_UpdateRect(sdl_vidsurf,
-		   sdlsdc_x+sdlsdc_cx-fd->font->w,
-		   sdlsdc_y+sdlsdc_cy,
-		   fd->font->w,
-		   fd->font->ascent + fd->font->descent);
+		   sdlsdc_x+sdlsdc_c.x-m.charcell.w,
+		   sdlsdc_y+sdlsdc_c.y,
+		   m.charcell.w,
+		   m.ascent + m.descent);
   }
 
   return success;

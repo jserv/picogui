@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.40 2002/09/26 14:30:58 micahjd Exp $
+/* $Id: pgmain.c,v 1.41 2002/10/12 14:46:34 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -36,6 +36,10 @@
 #include <pgserver/configfile.h>
 #include <pgserver/timer.h>
 #include <pgserver/hotspot.h>
+
+#ifdef CONFIG_FONTENGINE_BDF
+#include <pgserver/font_bdf.h>
+#endif
 
 #include <stdlib.h>
 #include <string.h>   /* For strdup() */
@@ -282,9 +286,19 @@ int main(int argc, char **argv) {
 	  }
 	}
 	
-	printf("\n           Fonts:");
+	printf("\n    Font engines:");
 	{
-	  struct fontstyle_node *p = fontstyles;
+	  struct fontengine *p = fontengine_list;
+	  while (p->name) {
+	    printf(" %s",p->name);
+	    p++;
+	  }
+	}
+
+#ifdef CONFIG_FONTENGINE_BDF
+	printf("\n       BDF fonts:");
+	{
+	  struct bdf_fontstyle_node *p = bdf_fontstyles;
 	  while (p) {
 	    printf(" %s%d[",p->name,p->size);
 	    if (p->normal)
@@ -303,13 +317,20 @@ int main(int argc, char **argv) {
 	    p = p->next;
 	  }
 	}
+#endif
 
 	puts("\nOptional widgets:"
 #ifdef CONFIG_WIDGET_TERMINAL
-	     " Terminal"
+	     " terminal"
 #endif
 #ifdef CONFIG_WIDGET_CANVAS
-	     " Canvas  "
+	     " canvas"
+#endif
+#ifdef CONFIG_WIDGET_TEXTBOX
+	     " textbox"
+#endif
+#ifdef CONFIG_WIDGET_TEXTEDIT
+	     " tetedit"
 #endif
 	     );
 
@@ -524,6 +545,10 @@ int main(int argc, char **argv) {
 
     /* Subsystem initialization and error check */
 
+#ifdef DEBUG_INIT
+    printf("Init: font\n");
+#endif
+    if (iserror(prerror(font_init())))   return 1;
 #ifdef DEBUG_INIT
     printf("Init: divtree\n");
 #endif

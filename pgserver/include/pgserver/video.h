@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.98 2002/10/11 11:58:44 micahjd Exp $
+/* $Id: video.h,v 1.99 2002/10/12 14:46:34 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -138,7 +138,7 @@ struct vidlib {
    *   when adding new primitives to the vidlib, update the rotation wrappers if necessary!
    */
 
-  /***************** Initializing and video modes */
+  /******************************************** Initializing and video modes */
 
   /* Required
    *   initializes graphics device. Setmode will be called immediately
@@ -231,58 +231,11 @@ struct vidlib {
   /* Optionally process driver messages */
   void (*message)(u32 message, u32 param, u32 *ret);
 
-  /***************** Hooks */
+  /******************************************** Hooks */
 
   /* These hooks let picogui video drivers take over functionality
    * normally handled by other parts of picogui.
    */
-
-  /* Optional
-   *   Called after a new fontdesc is created. The video driver
-   *   may choose to modify the font or cache things or something.
-   *   The name,size, and flags passed to findfont are also included.
-   * 
-   * Default implementation: none
-   */
-  void (*font_newdesc)(struct fontdesc *fd, const u8 *name, int size, int flags);
-  /* Utility to do a binary search for a font glyph */
-  
-  /* Optional
-   *   Called to look up the glyph associated with a character encoding.
-   *   The video driver may modify this to implement fake font logic,
-   *   for an ASCII display or something other strange device.
-   *
-   * Default implementation: binary search of the font's glyph table
-   */
-  struct fontglyph const *(*font_getglyph)(struct fontdesc *fd, int ch);
-   
-  /* Optional
-   *   Called after sizetext has run, giving the driver an opportunity
-   *   to modify the sizes reported by it
-   *
-   * Default implementation: none
-   */
-  void (*font_sizetext_hook)(struct fontdesc *fd, s16 *w, s16 *h, const struct pgstring *txt);
-
-  /* Optional
-   *   Called before outtext, giving the driver an opportunity to modify
-   *   or observe the data sent to it
-   *
-   * Default implementation: none
-   */
-  void (*font_outtext_hook)(hwrbitmap *dest, struct fontdesc **fd,
-			    s16 *x,s16 *y,hwrcolor *col,const struct pgstring **txt,
-			    struct quad **clip, s16 *lgop, s16 *angle);
-
-  /* Optional
-   *   Called before outchar, giving the driver an opportunity to modify
-   *   or observe the data sent to it
-   *
-   * Default implementation: none
-   */
-  void (*font_outchar_hook)(hwrbitmap *dest, struct fontdesc **fd,
-			    s16 *x,s16 *y,hwrcolor *col,int *c,
-			    struct quad **clip, s16 *lgop, s16 *angle);
 
   /* Optional
    *   Called at the beginning of grop_render, before anything has been set up.
@@ -322,7 +275,7 @@ struct vidlib {
    */
   void (*grop_handler)(struct groprender *r, struct gropnode *n);
 
-  /***************** Colors */
+  /******************************************** Colors */
 
   /* Optional
    *   Convert a color to/from the driver's native format
@@ -336,7 +289,7 @@ struct vidlib {
   hwrcolor (*color_pgtohwr)(pgcolor c);
   pgcolor (*color_hwrtopg)(hwrcolor c);
 
-  /***************** Primitives */
+  /******************************************** Primitives */
 
   /* Required
    *   Draw a pixel to the screen, in the hardware's color format
@@ -426,22 +379,6 @@ struct vidlib {
   void (*multiblit)(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
 		    hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 xo, s16 yo, s16 lgop);
 
-  /* Reccomended
-   *   Used for character data.  Blits 1bpp data from
-   *   chardat to the screen, filling '1' bits with the
-   *   color 'col'.  If lines > 0, every 'lines' lines
-   *   the image is left-shifted one pixel, to simulate
-   *   italics.
-   * 
-   *   Although in the future arbitrary rotation may be supported, currently
-   *   'angle' must be a PG_DIR_* constant (measured in degrees)
-   *
-   * Default implementation: pixel(). Need I say more?
-   */
-  void (*charblit)(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
-		   s16 lines, s16 angle, hwrcolor c, struct quad *clip,
-		   s16 lgop);
-
   /* Reccomended on platforms that are usually rotated
    *   Copy a source rectangle (in the source bitmap's coordinates)
    *   rotated to a new angle. The source x,y is always anchored at
@@ -469,7 +406,7 @@ struct vidlib {
    */
   void (*blur) (hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius);
    
-  /***************** Bitmaps */
+  /******************************************** Bitmaps */
 
   /* These functions all use the stdbitmap structure.
      If your driver needs a different bitmap format,
@@ -574,7 +511,7 @@ struct vidlib {
 
 #endif /* CONFIG_DITHER */
 
-  /***************** Sprites */
+  /******************************************** Sprites */
 
   /* Optional
    *   Draws the bitmap
@@ -614,7 +551,25 @@ struct vidlib {
    * Default implementation: Calls sprite_hide for sprites in the area
    */
   void (*sprite_protectarea)(struct quad *in,struct sprite *from);
-   
+
+
+  /******************************************** Text/fonts */
+
+  /* Reccomended when using BDF fonts
+   *   Used for character data.  Blits 1bpp data from
+   *   chardat to the screen, filling '1' bits with the
+   *   color 'col'.  If lines > 0, every 'lines' lines
+   *   the image is left-shifted one pixel, to simulate
+   *   italics.
+   * 
+   *   Although in the future arbitrary rotation may be supported, currently
+   *   'angle' must be a PG_DIR_* constant (measured in degrees)
+   *
+   * Default implementation: pixel(). Need I say more?
+   */
+  void (*charblit)(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
+		   s16 lines, s16 angle, hwrcolor c, struct quad *clip,
+		   s16 lgop);
 };
 
 /* Currently in-use video driver */
@@ -754,7 +709,7 @@ void def_dither_store(hwrdither d, pgcolor pixel, s16 lgop);
 void def_dither_finish(hwrdither d);
 #endif
 
-/************* Registration functions for video drivers */
+/**************************************** Registration functions for video drivers */
 
 g_error sdlfb_regfunc(struct vidlib *v);
 g_error sdlgl_regfunc(struct vidlib *v);
@@ -774,7 +729,7 @@ g_error sed133x_regfunc(struct vidlib *v);
 g_error x11_regfunc(struct vidlib *v);
 g_error mgl2fb_regfunc(struct vidlib *v);
 
-/************** Registration functions for Video Base Libraries */
+/***************************************** Registration functions for Video Base Libraries */
 void setvbl_default(struct vidlib *vid);
 void setvbl_linear1(struct vidlib *vid);
 void setvbl_linear2(struct vidlib *vid);
@@ -785,12 +740,12 @@ void setvbl_linear24(struct vidlib *vid);
 void setvbl_linear32(struct vidlib *vid);
 void setvbl_slowvbl(struct vidlib *vid);
 
-/************** Registration functions for video wrapper libraries */
+/***************************************** Registration functions for video wrapper libraries */
 void vidwrap_rotate90(struct vidlib *vid);
 void vidwrap_rotate180(struct vidlib *vid);
 void vidwrap_rotate270(struct vidlib *vid);
 
-/************** Bitmap format functions */
+/***************************************** Bitmap format functions */
 extern struct bitformat bitmap_formats[];
 
 bool pnm_detect(const u8 *data, u32 datalen);
@@ -819,17 +774,17 @@ g_error bitmap_iterate(handle_iterator iterator, void *extra);
 /* Rotate _all_ loaded bitmaps by the given angle */
 g_error bitmap_rotate_all(s16 angle);
 
-/************** Debugging */
+/***************************************** Debugging */
 void videotest_run(s16 number);
 void videotest_help(void);
 void videotest_benchmark(void);
 
-/************** Send a driver message (to all loaded drivers) */
+/***************************************** Send a driver message (to all loaded drivers) */
 
 void drivermessage(u32 message, u32 param, u32 *ret);
 
 
-/************** Palettes */
+/***************************************** Palettes */
 
 #ifdef CONFIG_PAL8_CUSTOM
 extern pgcolor palette8_custom[256];

@@ -1,4 +1,4 @@
-/* $Id: terminal_textgrid.c,v 1.3 2002/10/11 15:40:18 micahjd Exp $
+/* $Id: terminal_textgrid.c,v 1.4 2002/10/12 14:46:35 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -49,7 +49,8 @@ void textgrid_render(struct groprender *r, struct gropnode *n) {
   struct groprender br;
   struct pgstr_iterator stri = PGSTR_I_NULL;
   struct pgstring *str;
-  struct fontdesc *fd;
+  struct font_descriptor *fd;
+  struct font_metrics m;
 
   if (iserror(rdhandle((void**)&str,PG_TYPE_PGSTRING,-1,
 		       n->param[0])) || !str)
@@ -73,8 +74,9 @@ void textgrid_render(struct groprender *r, struct gropnode *n) {
   
   /* Should be fine for fixed width fonts
    * and pseudo-acceptable for others? */
-  celw      = fd->font->w;  
-  celh      = fd->font->h;
+  fd->lib->getmetrics(fd,&m);
+  celw      = m.charcell.w;
+  celh      = m.charcell.h;
   
   /* n->param[1]'s low u16 is the buffer width, the high u16 is
    * an offset from the beginning of the buffer.
@@ -125,11 +127,10 @@ void textgrid_render(struct groprender *r, struct gropnode *n) {
 	gropnode_draw(&br,&bn);
       }
       
-      temp_x = n->r.x;
+      fd->lib->draw_char(fd,r->output,xy_to_pair(n->r.x,n->r.y),
+			 textcolors[attr & 0x0F],
+			 ch, &r->clip,r->lgop, 0);
       n->r.x += celw;
-      outchar(r->output, fd, &temp_x, &n->r.y, 
-	      textcolors[attr & 0x0F],
-	      ch, &r->clip,r->lgop, 0);
     }
   }
 }

@@ -1,4 +1,4 @@
-/* $Id: paragraph.h,v 1.2 2002/09/15 10:51:48 micahjd Exp $
+/* $Id: paragraph.h,v 1.3 2002/10/12 14:46:34 micahjd Exp $
  *
  * paragraph.h - Build upon the text storage capabilities of pgstring, adding word
  *               wrapping, formatting, and UI.
@@ -45,7 +45,7 @@ struct paragraph_metadata {
 
   int type;          /* Selects which member of the union to use */
   union {
-    struct fontdesc *fd;
+    struct font_descriptor *fd;
     hwrcolor color;
     struct widget *embedwidget;
   } u;
@@ -58,7 +58,7 @@ struct paragraph_metadata {
  * paragraph. This data can be altered by metadata nodes.
  */
 struct paragraph_formatting {
-  struct fontdesc *fd;
+  struct font_descriptor *fd;
   hwrcolor color;
 };
 

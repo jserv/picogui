@@ -72,23 +72,27 @@ endmenu
 
 mainmenu_option next_comment
 comment 'Fonts'
-bool 'Helvetica 10 (default font)'         FONT_HELVETICA10
-bool 'Clean 12 (default fixed-width font)' FONT_CLEAN12
-bool 'Lucida 10'                           FONT_LUCIDA10
-bool 'Clean 6'                             FONT_CLEAN6
-bool 'Clean 8'                             FONT_CLEAN8
-bool 'Console 8'                           FONT_CONSOLE8
-bool 'Courier 12, 12b'                     FONT_COURIER12
-bool 'Gelly 10'                            FONT_GELLY10
-bool 'Helvetica 8'                         FONT_HELVETICA8
-bool 'Helvetica 12, 12b'                   FONT_HELVETICA12
-bool 'Helvetica 14, 14b'                   FONT_HELVETICA14
-bool 'Helvetica 14 unicode'                FONT_HELVETICA14UNICODE
-bool 'Helvetica 18, 18b'                   FONT_HELVETICA18
-bool 'Helvetica 24, 24b'                   FONT_HELVETICA24
-bool 'Times 10, 10b'                       FONT_TIMES10
-bool 'Utopia 25'                           FONT_UTOPIA25
-bool 'Fixed 13 ja (Japanese Unicode)'      FONT_FIXED13JA
+bool 'Freetype2 font engine'                     CONFIG_FONTENGINE_FREETYPE
+bool 'Internal BDF font engine'                  CONFIG_FONTENGINE_BDF
+if [ "$CONFIG_FONTENGINE_BDF" = "y" ]; then
+    bool '  Helvetica 10 (default font)'         FONT_HELVETICA10
+    bool '  Clean 12 (default fixed-width font)' FONT_CLEAN12
+    bool '  Lucida 10'                           FONT_LUCIDA10
+    bool '  Clean 6'                             FONT_CLEAN6
+    bool '  Clean 8'                             FONT_CLEAN8
+    bool '  Console 8'                           FONT_CONSOLE8
+    bool '  Courier 12, 12b'                     FONT_COURIER12
+    bool '  Gelly 10'                            FONT_GELLY10
+    bool '  Helvetica 8'                         FONT_HELVETICA8
+    bool '  Helvetica 12, 12b'                   FONT_HELVETICA12
+    bool '  Helvetica 14, 14b'                   FONT_HELVETICA14
+    bool '  Helvetica 14 unicode'                FONT_HELVETICA14UNICODE
+    bool '  Helvetica 18, 18b'                   FONT_HELVETICA18
+    bool '  Helvetica 24, 24b'                   FONT_HELVETICA24
+    bool '  Times 10, 10b'                       FONT_TIMES10
+    bool '  Utopia 25'                           FONT_UTOPIA25
+    bool '  Fixed 13 ja (Japanese Unicode)'      FONT_FIXED13JA
+fi
 endmenu
 
 mainmenu_option next_comment

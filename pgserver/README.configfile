@@ -111,6 +111,9 @@ quoted appropriately. For example:
   Force the video driver pgserver should load. The default is to try each driver
   in a predefined order until one loads successfully.
 
+- font_engine
+  Force the default font engine for the server to use
+
 [sound]
 
 - click
@@ -507,6 +510,18 @@ quoted appropriately. For example:
 
 - device
   The name of the device for the keyboard. Defaults to /dev/tty.
+
+[font-freetype]
+
+- path
+  The path to search for TrueType and Type1 font files
+  Defaults to /usr/share/fonts
+
+- force_autohint
+  Force Freetype to ignore the hinting in truetype fonts and use its own autohinting engine.
+  This can dramatically improve the look of most fonts at small sizes, but for fonts with
+  good quality hinting (like most of the microsoft core fonts) this can make them look worse.
+  Defaults to 1
 
 --- The End ---
 

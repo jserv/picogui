@@ -1,4 +1,4 @@
-/* $Id: textedit.h,v 1.3 2002/10/05 11:31:38 micahjd Exp $
+/* $Id: textedit.h,v 1.4 2002/10/12 14:46:34 micahjd Exp $
  *
  * Multi-line text widget. The widget is divided into PicoGUI specific
  * code in widget/textedit.c, and abstract text widget code in
@@ -155,7 +155,7 @@ struct texteditdata {
                                 valid. */
 
     /* We currently use only a single font */
-    struct fontdesc *fd;
+    struct font_descriptor *fd;
     
     /* For drawing the widget, we keep track of the updated rect */
     u8      update_clean;

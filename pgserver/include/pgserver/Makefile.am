@@ -5,7 +5,6 @@ noinst_HEADERS = \
 	autoconf.h 	\
 	common.h 	\
 	divtree.h 	\
-	font.h 		\
 	g_error.h 	\
 	g_malloc.h 	\
 	handle.h 	\
@@ -28,7 +27,10 @@ noinst_HEADERS = \
 	paragraph.h     \
 	terminal.h      \
 	textedit.h	\
-	llist.h
+	llist.h		\
+	font.h		\
+	types.h		\
+	font_bdf.h
 
 CONFIG_CLEAN_FILES = autoconf.h
 

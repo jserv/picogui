@@ -1,4 +1,4 @@
-/* $Id: render.h,v 1.16 2002/10/11 11:58:44 micahjd Exp $
+/* $Id: render.h,v 1.17 2002/10/12 14:46:34 micahjd Exp $
  *
  * render.h - data structures and functions for rendering and manipulating
  *            gropnodes (Graphics Operation nodes)
@@ -57,32 +57,6 @@ extern int disable_output;
 			       * 3 should be enough for almost anything, if
 			       * more space is really neaded the primitive
 			       * should be split up somehow. */
-
-typedef short int alignt;
-
-struct fraction {
-  int n,d;
-};
-
-struct pair {
-  s16 x,y;
-};
-
-struct sizepair {
-  s16 w,h;
-};
-
-struct fractionpair {
-  struct fraction x,y;
-};
-
-struct quad {
-  s16 x1,y1,x2,y2;
-};
-
-struct rect {
-  s16 x,y,w,h;
-};
 
 struct gropnode {
    u32 param[NUMGROPPARAMS];
@@ -174,6 +148,7 @@ void gropnode_draw(struct groprender *r, struct gropnode *n);
 
 void quad_intersect(struct quad *dest, struct quad *src);
 struct quad *rect_to_quad(struct rect *rect);
+struct pair *xy_to_pair(s16 x, s16 y);
 
 #endif /* __RENDER_H */
 

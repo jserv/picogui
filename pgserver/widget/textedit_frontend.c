@@ -1,4 +1,4 @@
-/* $Id: textedit_frontend.c,v 1.3 2002/10/11 11:58:45 micahjd Exp $
+/* $Id: textedit_frontend.c,v 1.4 2002/10/12 14:46:35 micahjd Exp $
  *
  * textedit.c - Multi-line text widget. By Chuck Groom,
  * cgroom@bluemug.com, Blue Mug, Inc, July 2002. Intended to be
@@ -207,8 +207,6 @@ void textedit_build ( struct gropctxt *c,
     if (!DATA->fd){
         /* FIXME: Theme lookup foreground, background colors, border */
         textedit_set_font (self, theme_lookup (state, PGTH_P_FONT));
-        /* FIXME: theme */
-        DATA->fd->interline_space = 2;
     }
     assert (DATA->fd);
 
@@ -279,8 +277,6 @@ g_error textedit_set ( struct widget *self,
         if (iserror(rdhandle((void **)&DATA->fd,
                              PG_TYPE_FONTDESC,-1,data)) || !DATA->fd) 
             return mkerror(PG_ERRT_HANDLE,44); 
-        /* Fixme: theme */
-        DATA->fd->interline_space = 2;
         text_backend_build(DATA, DATA->width, DATA->height);
         break;
     case PG_WP_SELECTION:
@@ -548,15 +544,16 @@ void textedit_draw_str ( struct widget * self,
                          s16 x, 
                          s16 y,
                          u8 highlight) {
-    s16 tx, ty, w, h;
+    s16 w, h;
+    struct pair t;
     size_t k;
     u8 ch;
 
     if (len == 0)
         return;
     
-    tx = x;
-    ty = y - DATA->fd->interline_space/2;
+    t.x = x;
+    t.y = y;
     
     textedit_str_size ( self, txt, len, &w, &h);
     textedit_draw_rect ( self, x, y, w, h, 
@@ -566,20 +563,19 @@ void textedit_draw_str ( struct widget * self,
         ch = (char) *(txt + k);
         if (ch == '\t') {
             textedit_str_size (self, &ch, 1, &w, &h);
-            tx += w;
+            t.x += w;
         } else if (ch != '\n') {
             /* Clipping should work, but doesn't. So we have to be totally
-               lame and not display chars that would be cut off */
-            if (ty + h >= DATA->height)
+             * lame and not display chars that would be cut off 
+	     *
+	     * Note to Chuck from Micah:
+	     *   Clipping should work... what's the problem specifically?
+	     */
+            if (t.y + h >= DATA->height)
                 continue;
-            outchar (DATA->bit, 
-                     DATA->fd,
-                     &tx,
-                     &ty,
-                     DATA->fg,
-                     ch,
-                     NULL, 
-                     PG_LGOP_NONE, 0);
+
+	    DATA->fd->lib->draw_char(DATA->fd,DATA->bit,&t,
+				     DATA->fg,ch,NULL,PG_LGOP_NONE,0);
         }
     }
 }
@@ -592,17 +588,23 @@ void textedit_str_size ( struct widget *self,
                          s16 * w, 
                          s16 * h ) {
     int ch;
-    s16 tab_w;
-    *h = DATA->fd->font->h + DATA->fd->interline_space;
+    struct pair p;
+    struct font_metrics m;
+
+    DATA->fd->lib->getmetrics(DATA->fd,&m);  
+    *h = m.ascent + m.descent;
+
     for (*w = 0; len; len--) {
         ch = *txt;
         txt++;
         if (ch == '\t') {
-            tab_w = 0;
-            outchar_fake(DATA->fd, &tab_w, ' ');
-            *w += tab_w*4;
+	    p.x = 0;
+	    DATA->fd->lib->measure_char(DATA->fd,&p,' ',0);
+            *w += p.x * 4;
         } else if (ch != '\n') {
-            outchar_fake(DATA->fd, w, ch);
+	    p.x = 0;
+	    DATA->fd->lib->measure_char(DATA->fd,&p,ch,0);
+	    *w += p.x;
         } 
     }
 }

@@ -1,4 +1,4 @@
-/* $Id: pgstring.c,v 1.6 2002/10/11 12:32:36 micahjd Exp $
+/* $Id: pgstring.c,v 1.7 2002/10/12 14:46:34 micahjd Exp $
  *
  * pgstring.c - String data type to handle various encodings
  *
@@ -29,6 +29,7 @@
 #include <pgserver/pgstring.h>
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
 
 #ifdef DEBUG_PGSTRING_MEM
 #define DEBUG_FILE

@@ -1,4 +1,4 @@
-/* $Id: terminal_frontend.c,v 1.4 2002/10/11 15:40:17 micahjd Exp $
+/* $Id: terminal_frontend.c,v 1.5 2002/10/12 14:46:35 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -38,6 +38,8 @@ void build_terminal(struct gropctxt *c,u16 state,struct widget *self);
 
 g_error terminal_install(struct widget *self) {
   g_error e;
+  struct font_style fs;
+  struct font_descriptor *fd;
 
   /* Make divnodes */
   e = newdiv(&self->in,self);
@@ -72,7 +74,11 @@ g_error terminal_install(struct widget *self) {
   errorcheck;
      
   /* Default terminal font */
-  e = findfont(&DATA->deffont,-1,NULL,0,PG_FSTYLE_FIXED | PG_FSTYLE_DEFAULT);
+  memset(&fs,0,sizeof(fs));
+  fs.style = PG_FSTYLE_FIXED | PG_FSTYLE_DEFAULT;
+  e = font_descriptor_create(&fd,&fs);
+  errorcheck;
+  e = mkhandle(&DATA->deffont,PG_TYPE_FONTDESC,-1,fd);
   errorcheck;
   terminal_set(self,PG_WP_FONT,DATA->deffont);
    
@@ -91,7 +97,8 @@ void terminal_remove(struct widget *self) {
 }
 
 g_error terminal_set(struct widget *self,int property, glob data) {
-  struct fontdesc *fd;
+  struct font_descriptor *fd;
+  struct font_metrics m;
 
   switch (property) {
 
@@ -102,8 +109,10 @@ g_error terminal_set(struct widget *self,int property, glob data) {
     
     /* Get the character cell size, we need it early 
      * on to calculate preferred size */
-    sizetext(fd,&DATA->celw,&DATA->celh,NULL);
-    DATA->fontmargin = fd->margin;
+    fd->lib->getmetrics(fd,&m);
+    DATA->fontmargin = m.margin;
+    DATA->celw = m.charcell.w;
+    DATA->celh = m.charcell.h;
     set_widget_rebuild(self);
     resizewidget(self);
     break;

@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.120 2002/10/11 11:58:44 micahjd Exp $
+/* $Id: button.c,v 1.121 2002/10/12 14:46:35 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -30,6 +30,7 @@
 #include <pgserver/widget.h>
 #include <pgserver/appmgr.h>
 #include <pgserver/hotspot.h>
+#include <pgserver/font.h>
 
 struct btndata {
   unsigned int on : 1;
@@ -254,7 +255,7 @@ void button_remove(struct widget *self) {
 g_error button_set(struct widget *self,int property, glob data) {
   hwrbitmap bit;
   char *str;
-  struct fontdesc *fd;
+  struct font_descriptor *fd;
 
   switch (property) {
 
@@ -828,7 +829,7 @@ void button_resize(struct widget *self) {
 /* Code to generate the button coordinates, needed to resize or build the button */
 void position_button(struct widget *self,struct btnposition *bp) {
   hwrbitmap bit = NULL,bitmask = NULL;
-  struct fontdesc *fd = NULL;
+  struct font_descriptor *fd = NULL;
   struct pgstring *text = NULL;
 
   bp->font = DATA->font ? DATA->font : 
@@ -860,10 +861,10 @@ void position_button(struct widget *self,struct btnposition *bp) {
 
   /* Find sizes */
   if (text) {
-    if (DATA->direction == PG_DIR_VERTICAL || DATA->direction == PG_DIR_ANTIVERTICAL)
-      sizetext(fd,&bp->th,&bp->tw,text);
+    if (DATA->direction == 90 || DATA->direction == 270)
+      fd->lib->measure_string(fd,text,0,&bp->th,&bp->tw);
     else
-      sizetext(fd,&bp->tw,&bp->th,text);
+      fd->lib->measure_string(fd,text,0,&bp->tw,&bp->th);
   }
   if (bit)
     VID(bitmap_getsize) (bit,&bp->bw,&bp->bh);
@@ -959,7 +960,7 @@ void position_button(struct widget *self,struct btnposition *bp) {
     bp->h = 0;
   }
 
-  /* Munge the text coordinates a bit according to its direction */
+  /* Put the text x,y position at the first character's top-left */
   switch (DATA->direction) {
   case PG_DIR_VERTICAL:  
     bp->ty += bp->th; 

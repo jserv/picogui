@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.107 2002/09/28 20:54:22 micahjd Exp $
+/* $Id: dispatch.c,v 1.108 2002/10/12 14:46:35 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -260,9 +260,18 @@ g_error rqh_mkfont(int owner, struct pgrequest *req,
 		   void *data, u32 *ret, int *fatal) {
   handle h;
   g_error e;
+  struct font_style fs;
+  struct font_descriptor *fd;
   reqarg(mkfont);
 
-  e = findfont(&h,owner,arg->name,ntohs(arg->size),ntohl(arg->style));
+  memset(&fs,0,sizeof(fs));
+  fs.name = arg->name;
+  fs.size = ntohs(arg->size);
+  fs.style = ntohl(arg->style);
+
+  e = font_descriptor_create(&fd,&fs);
+  errorcheck;
+  e = mkhandle(&h,PG_TYPE_FONTDESC,owner,fd);
   errorcheck;
 
   *ret = h;
@@ -457,7 +466,7 @@ g_error rqh_register(int owner, struct pgrequest *req,
 
 g_error rqh_sizetext(int owner, struct pgrequest *req,
 		     void *data, u32 *ret, int *fatal) {
-  struct fontdesc *fd;
+  struct font_descriptor *fd;
   struct pgstring *str;
   s16 w,h;
   g_error e;
@@ -472,7 +481,7 @@ g_error rqh_sizetext(int owner, struct pgrequest *req,
   e = rdhandle((void**) &str,PG_TYPE_PGSTRING,owner,ntohl(arg->text));
   errorcheck;
 
-  sizetext(fd,&w,&h,str);
+  fd->lib->measure_string(fd,str,0,&w,&h);
 
   /* Pack w and h into ret */
   *ret = (((u32)w)<<16) | h;
@@ -1014,34 +1023,17 @@ g_error rqh_getfstyle(int owner, struct pgrequest *req,
 		      void *data, u32 *ret, int *fatal) {
   struct pgresponse_data rsp;
   struct pgdata_getfstyle gfs;
-  int i;
-  u16 fontrep;
-  struct fontstyle_node *n;
+  struct font_style fs;
   reqarg(getfstyle);
   memset(&gfs,0,sizeof(gfs));
 
-  /* Iterate to the selected font style */
-  for (i=ntohs(arg->index),n=fontstyles;i&&n;i--,n=n->next);
+  font_getstyle(ntohs(arg->index),&fs);
 
-  /* If it's good, return the info. Otherwise, name[0] stays zero */
-  if (n) {
-
-    /* Put together representation flags */
-    fontrep = 0;
-    if (n->normal)
-      fontrep |= PG_FR_BITMAP_NORMAL;
-    if (n->bold)
-      fontrep |= PG_FR_BITMAP_BOLD;
-    if (n->italic)
-      fontrep |= PG_FR_BITMAP_ITALIC;
-    if (n->bolditalic)
-      fontrep |= PG_FR_BITMAP_BOLDITALIC;
-
-    strncpy(gfs.name,n->name,sizeof gfs.name);
-    gfs.size = htons(n->size);
-    gfs.fontrep = htons(fontrep);
-    gfs.flags = htonl(n->flags);
-  }
+  if (fs.name)
+    strncpy(gfs.name,fs.name,sizeof(gfs.name));
+  gfs.size = htons(fs.size);
+  gfs.fontrep = htons(fs.representation);
+  gfs.flags = htonl(fs.style);
 
   /* Send a PG_RESPONSE_DATA back */
   rsp.type = htons(PG_RESPONSE_DATA);

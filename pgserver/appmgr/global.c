@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.70 2002/10/07 07:08:07 micahjd Exp $
+/* $Id: global.c,v 1.71 2002/10/12 14:46:34 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -85,6 +85,7 @@ g_error appmgr_load_strings(void);
 
 g_error appmgr_init(void) {
   g_error e;
+  struct font_descriptor *fd;
   hwrbitmap defaultcursor_bitmap, defaultcursor_bitmask;
 
   applist = NULL;  /* No apps yet! */
@@ -94,7 +95,9 @@ g_error appmgr_init(void) {
 #endif
 
   /* Allocate default font */
-  e = findfont(&res[PGRES_DEFAULT_FONT],-1,NULL,0,PG_FSTYLE_DEFAULT);
+  e = font_descriptor_create(&fd,NULL);
+  errorcheck;
+  e = mkhandle(&res[PGRES_DEFAULT_FONT],PG_TYPE_FONTDESC,-1,fd);
   errorcheck;
 
 #ifdef DEBUG_INIT

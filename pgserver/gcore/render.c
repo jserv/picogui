@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.43 2002/10/11 11:58:43 micahjd Exp $
+/* $Id: render.c,v 1.44 2002/10/12 14:46:34 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -584,6 +584,7 @@ void gropnode_clip(struct groprender *r, struct gropnode *n) {
   case PG_GROP_TEXTGRID:
   case PG_GROP_PARAGRAPH:
   case PG_GROP_PARAGRAPH_INC:
+  case PG_GROP_TEXTRECT:
     if (n->r.x>r->clip.x2 || n->r.y>r->clip.y2)
       goto skip_this_node;
     break;
@@ -755,7 +756,7 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
   hwrbitmap bit;
   s16 bw,bh;
   hwrcolor c;
-  struct fontdesc *fd;
+  struct font_descriptor *fd;
   struct rect clipsrc;
 
   /* Normally get color from r->color, but if this gropnode has 
@@ -833,8 +834,16 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 			 n->param[0])) || !str) break;
     if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
 			 r->hfont)) || !fd) break;
-    outtext(r->output,fd,n->r.x,n->r.y,c,str,&r->clip,
-	    r->lgop,r->angle);
+    fd->lib->draw_string(fd,r->output,xy_to_pair(n->r.x,n->r.y),c,
+			 str,&r->clip,r->lgop,r->angle);
+    break;
+
+  case PG_GROP_TEXTRECT:
+    if (iserror(rdhandle((void**)&str,PG_TYPE_PGSTRING,-1,
+			 n->param[0])) || !str) break;
+    if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
+			 r->hfont)) || !fd) break;
+    //    textrect(r->output,fd,&n->r,str,c,&r->clip,r->lgop,r->angle);
     break;
 
 #ifdef CONFIG_WIDGET_TERMINAL
@@ -980,6 +989,14 @@ struct quad *rect_to_quad(struct rect *rect) {
   q.y2 = rect->y + rect->h - 1;
   return &q;
 }
+
+struct pair *xy_to_pair(s16 x, s16 y) {
+  static struct pair p;
+  p.x = x;
+  p.y = y;
+  return &p;
+}
+
 /* The End */
 
   

@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.49 2002/10/11 11:58:44 micahjd Exp $
+/* $Id: canvas.c,v 1.50 2002/10/12 14:46:35 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -414,12 +414,12 @@ void canvas_command(struct widget *self, u16 command,
 	  * Has a couple issues... see above FIXMEs 
 	  */
 	 if (params[0] == PG_GROP_TEXT) {
-	   struct fontdesc *fd = NULL;
+	   struct font_descriptor *fd = NULL;
 	   struct pgstring *str = NULL;
 	   rdhandle((void **) &fd,PG_TYPE_FONTDESC,-1,DATA->lastfont);
 	   rdhandle((void **) &str,PG_TYPE_PGSTRING,-1,params[5]);
 	   if (fd && str)
-	     sizetext(fd,&CTX->current->r.w,&CTX->current->r.h,str);
+	     fd->lib->measure_string(fd,str,0,&CTX->current->r.w,&CTX->current->r.h);
 	 }
 
 	 /* Update bounding box */

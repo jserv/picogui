@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.34 2002/09/15 10:51:47 micahjd Exp $
+/* $Id: g_error.c,v 1.35 2002/10/12 14:46:34 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -82,7 +82,7 @@ const u8 deadcomp_bits[] = {
 #endif
 
 void guru(const char *fmt, ...) {
-  struct fontdesc *df=NULL;
+  struct font_descriptor *df=NULL;
   char msgbuf[512];  /* Cruftee! */
   char *p,*pline;
   char c;
@@ -129,9 +129,10 @@ void guru(const char *fmt, ...) {
     /* To appease the below code */
 # define deadcomp_width 0
 #endif
-    
-    outtext(vid->display,df,10+deadcomp_width,5,VID(color_pgtohwr) (0xFFFFFF),
-	    pgstring_tmpwrap(msgbuf), &screenclip,PG_LGOP_NONE,0);
+  
+    df->lib->draw_string(df,vid->display,xy_to_pair(10+deadcomp_width,5),
+			 VID(color_pgtohwr)(0xFFFFFF),pgstring_tmpwrap(msgbuf),
+			 &screenclip,PG_LGOP_NONE,0);
     VID(update) (0,0,vid->lxres,vid->lyres);    
   }
   

@@ -7,7 +7,6 @@ libgcore_a_SOURCES = \
 	render.c 	 \
 	g_malloc.c 	 \
 	div.c 		 \
-	font.c 		 \
 	handle.c 	 \
 	g_error.c 	 \
 	timer.c 	 \

@@ -2,9 +2,11 @@ INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include
 
 noinst_LIBRARIES = libfont.a
 
-BUILT_SOURCES = fonts.c
+BUILT_SOURCES = bdf_fonts.c
 
-libfont_a_SOURCES = fonts.c
+libfont_a_SOURCES =
+
+EXTRA_libfont_a_SOURCES = bdf_fonts.c
 
 FDF_FILES = \
         clean12.bdf \
@@ -50,7 +52,9 @@ FI_FILES = \
 
 EXTRA_DIST = $(FDF_FILES) $(FI_FILES)
 
+libfont_a_LIBADD       = $(FONT:%.c=%.o)
+libfont_a_DEPENDENCIES = $(FONT:%.c=%.o)
 
-fonts.c: $(CONFIG_FILE) $(top_srcdir)/script/fontdef.pl $(srcdir)/*.bdf $(srcdir)/*.fi
+bdf_fonts.c: $(CONFIG_FILE) $(top_srcdir)/script/fontdef.pl $(srcdir)/*.bdf $(srcdir)/*.fi
 	$(PERL) $(top_srcdir)/script/fontdef.pl \
-		$(CONFIG_FILE) $(srcdir) > fonts.c
+		$(CONFIG_FILE) $(srcdir) > bdf_fonts.c

@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.161 2002/10/11 10:41:18 micahjd Exp $
+/* $Id: constants.h,v 1.162 2002/10/12 14:46:34 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -671,6 +671,7 @@ typedef unsigned long pghandle;
 #define PG_GROP_PARAGRAPH     0x54   //!< Param: paragraph handle
 #define PG_GROP_PARAGRAPH_INC 0x64   //!< Param: paragraph handle
 #define PG_GROP_ROTATEBITMAP  0x74   //!< Param: bitmap 
+#define PG_GROP_TEXTRECT      0x84   //!< Param: string 
 #define PG_GROP_GRADIENT      0x0C   //!< Param: angle, c1, c2 
 #define PG_GROP_TEXTGRID      0x1C   //!< Param: string, bufferw, offset
 #define PG_GROP_NOP           0x03
