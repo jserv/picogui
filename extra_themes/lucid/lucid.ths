@@ -1,4 +1,4 @@
-/* $Id: lucid.ths,v 1.4 2002/10/28 03:02:07 micahjd Exp $
+/* $Id: lucid.ths,v 1.5 2002/10/29 23:32:58 micahjd Exp $
  *
  * Lucid - A simple and clean solid color and thin outline theme, where
  *         most elements are translucent.
@@ -54,7 +54,7 @@ object default {
   bgcolor = 0xffffff;
   alpha   = 0x68000000;
 
-  margin  = 5;
+  margin  = 0;
   spacing = 5;
   width   = 20;
   height  = 20;
@@ -81,6 +81,7 @@ object popup {
 object label.dlgtitle parent = PGTH_O_PANELBAR;
 
 object panelbar {
+  margin = 1;
   font = Font(NULL,0,PG_FSTYLE_BOLD);
   align = PG_A_LEFT;
   bgfill = fillstyle {
