@@ -140,10 +140,16 @@ class Application(Widget.Widget):
         self._event_registry.add(handler, widget, evname)
 
     def delWidget(self, widget):
-        widget.server.free(widget.handle)
-        self._event_registry.remove(widget)
-        if self._widget_registry.has_key(widget.handle):
-            del self._widget_registry[widget.handle]
+        if hasattr(widget, 'handle'):
+            handle = widget.handle
+            server = widget.server
+            self._event_registry.remove(widget)
+        else:
+            handle = widget
+            server = self.server
+        server.free(handle)
+        if self._widget_registry.has_key(handle):
+            del self._widget_registry[handle]
 
     def getWidget(self, handle):
         return self._widget_registry[handle]
