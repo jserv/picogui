@@ -52,7 +52,11 @@ for project in projects:
         count = projectCounts[project][statSubdirs[statIndex]]
         if count:
             # Get a fraction of this count compared to the highest in the column
-            fraction = math.log(count) / math.log(columnMaxima[statIndex])
+            logMax = math.log(columnMaxima[statIndex])
+            if logMax > 0:
+                fraction = math.log(count) / logMax
+            else:
+                fraction = 1.0
             # Multiply by the desired maximum bar length in EMs, add the minimum bar padding
             width = fraction * 4 + 0.2
             # A stupid trick for making bargraph thingies
