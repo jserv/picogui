@@ -1,0 +1,128 @@
+What is pgMerlin
+----------------
+
+pgMerlin is the port of Merlin to PicoGUI. :)
+
+PORT NOTES:
+   * -geometry parameter works relative to the canvas widget
+
+TODO:
+   * multiple stroke mode doesn't work yet, but you will enter by
+     doing down-up line, and then you are lost!...
+
+BigThor
+bigthor@softhome.net
+
+Merlin Original README follows...
+---8<---
+
+What is Merlin
+--------------
+
+Merlin is a simple, small footprint single character recognition
+engine originally implemented for a small Linux based
+phone with limited resources. Back then it read input from a
+microcontroller and fed output to the console. Then I transformed this
+into an X application which generates KeyEvents to the window in
+focus, suitable for small web pads with a touchscreen and an X
+windowing system. But the core part which is the method "recognize"
+could easily be used in other contexts or replaced if one prefers
+other methods of recognition. 
+
+Merlin currently implements online sigle character recognition using a
+technique called elastic matching. There are some images in the doc
+directory of the characters. No claim that this elastic matching
+method should be something better or worse than anything else. It
+works for me and I'm happy with that. A new user could need some
+training though. Character recognition is always a compromise between
+factors such as recognition rate, recognition speed, usability (how
+easy it is to write the characters) and CPU and memory usage. This
+implementation found a balance of these factors for the special
+hardware it was targeted for in the beginning and it worked ok
+there. On a fast computer with lots of memory and with a floating
+point unit one could of course implement something much better. 
+
+
+Howto write
+------------
+The window is divided into two areas. An alpha-area and a numerical
+area. Large letters are written by overlapping the character over the
+two regions. 
+
+You write all simple characters without lifting the pen.
+
+What also can be mentioned is the Extended mode which can be set by
+drawing a straight line upwards. In extended mode you can then input
+characters which contain more than one stroke. Several of the extended
+characters is not working at the moment (in the X version of merlin)
+however 'cause I could not find the keycode to generate them (which
+means that Merlin will recognize them but cannot transfer them to X,
+for instance, how do you write the characters (r) or (c) with a
+keyboard? If you know please tell me.) 
+
+
+How does it work
+----------------
+After recognizing a character Merlin transforms the ascii character
+into a X keycode which is sent to the window in focus. This
+translation can currently be done in two ways depending on what
+keyboard layout you are using. It supports English keyboards and
+Swedish. English is now the default layout. Remove -DUSE_ENGLISH in
+Makefile if you prefer a Swedish layout. You can probably figure it
+out by looking in swedish-kbd.map and edit it to fit your system if
+needed. There is probably a better way to do this than to hardcode it
+for a specific keyboard layout but I didn't have the time to find out. 
+
+Merlin uses "Redirection override" to stay away from the window
+manager. It makes the focus issue much nicer for instance if you're
+using sloppy focus (because it would not be good if Merlin got the
+focus when you write on it since it would lead to that it would send 
+the "keypress" to itself). Despite of this click-to-focus is
+recommended. 
+
+
+Problems with some programs
+---------------------------
+Like all SendEvent programs like gtkeyboard and such, there are
+problems with programs that refuses to accept SendEvents. Xterm and
+XEmacs are two such programs. Xterm is fixed by setting the vt100
+Xresource allowSendEvents or by control-clicking on an xterm and
+choosing allow send events (see 'man xterm'). XEmacs is fixed by adding 
+(custom-set-variables '(x-allow-sendevents t)) to your .emacs. 
+
+
+Usage
+------
+Merlin accepts the usual X option -geometry but that's it.
+If you don't specify an option Merlin will start in the upper left
+corner with a 200x100-window.
+
+Example:   merlin -geometry 200x100-10-10
+           Starts Merlin ten pixels in and up from the lower right
+           corner with a 200x100 - window.
+
+
+Environment variables
+----------------------
+If you set the environment variable MERLIN_HOME to a suitable
+directory merlin will look there for pattern samples instead of in the 
+default directory.
+
+
+Questions, bug reports etc. goes to xmerlin@hellkvist.org. Since my
+time is limited I would prefer patches instead of bug reports though.
+
+If you like this program you could (if you want to) let me know by
+sending me a postcard. 
+
+Send it to:
+Stefan Hellkvist
+Tistelv. 6
+S-193 34 SIGTUNA
+SWEDEN
+
+
+Best wishes
+
+Stefan 
+
