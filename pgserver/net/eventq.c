@@ -1,4 +1,4 @@
-/* $Id: eventq.c,v 1.7 2001/01/05 06:42:28 micahjd Exp $
+/* $Id: eventq.c,v 1.8 2001/01/21 21:42:38 micahjd Exp $
  *
  * eventq.c - This implements the post_event function that the widgets
  *            use to send events to the client.  It stores these in a
@@ -53,10 +53,10 @@ void post_event(int event,struct widget *from,long param,int owner,char *data) {
     struct pgresponse_event rsp;
 
     FD_CLR(owner,&evtwait);
-#ifdef DEBUG_NET
-    printf("Client (#%d) removed from waiting list\n",owner);
+#if defined(DEBUG_NET) || defined(DEBUG_EVENT)
+    printf("Client (#%d) removed from waiting list, sending event %d\n",owner,event);
 #endif
-
+     
     rsp.type = htons(PG_RESPONSE_EVENT);
     rsp.event = htons(event);
     rsp.from = htonl(hfrom);
