@@ -56,6 +56,7 @@ try:
 except:
     pass
 
+connected = 0 # false
 
 accounts = [
     ircsupport.IRCAccount("IRC", 1,
@@ -87,6 +88,8 @@ class AccountManager (baseaccount.AccountManager):
 
         for chan in channelList:
             acct.client.join(chan)
+
+        connected = 1 # true
 
 
 class AnnounceServer(LineReceiver):
@@ -180,7 +183,8 @@ class BotChat(basechat.ChatUI):
 
     def unregisterAccountClient(self, client):
         basechat.ChatUI.unregisterAccountClient(self, client)
-        accounts[0].logOn(self)
+        if connected:
+            accounts[0].logOn(self)
 
 from twisted.internet.app import Application
 application = Application("announceBot")
