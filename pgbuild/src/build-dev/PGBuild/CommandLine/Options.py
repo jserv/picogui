@@ -74,10 +74,12 @@ class Option(optik.Option):
 
     ACTIONS = optik.Option.ACTIONS + ("uncount",)
     STORE_ACTIONS = optik.Option.STORE_ACTIONS + ("uncount",)
-
+    
     def take_action(self, action, dest, opt, value, values, parser):
         if action == "uncount":
             setattr(values, dest, values.ensure_value(dest, 0) - 1)
+        else:
+            optik.Option.take_action(self, action, dest, opt, value, values, parser)
 
     
 class OptionsXML:
