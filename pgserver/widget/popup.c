@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.20 2000/11/05 10:24:48 micahjd Exp $
+/* $Id: popup.c,v 1.21 2000/11/12 09:00:44 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -55,9 +55,24 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   }
 
   if (((signed short)x) == PG_POPUP_ATCURSOR) {
-    x = pointer->x+(pointer->w/2);
-    y = pointer->y-(pointer->h/2);;
- 
+    if (under && under->type == PG_WIDGET_BUTTON) {
+      /* snap to a button edge */
+      x = under->in->div->x;
+      y = under->in->div->y + under->in->div->h;
+      if ((y+h)>=vid->yres)
+	y = under->in->div->y - h;
+    }
+    else if (under && under->type == PG_WIDGET_MENUITEM) {
+      /* snap to a menuitem edge */
+      x = under->in->div->x + under->in->div->w;
+      y = under->in->div->y;
+    }
+    else {
+      /* exactly at the cursor */
+      x = pointer->x;
+      y = pointer->y;
+    } 
+
     /* pop vertically if the cursor is on the bottom half of the screen */
     // y = (pointer->y > (vid->yres>>1)) ? (pointer->y - h) : pointer->y;
 

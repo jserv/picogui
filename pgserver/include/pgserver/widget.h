@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.8 2000/11/05 05:08:19 micahjd Exp $
+/* $Id: widget.h,v 1.9 2000/11/12 09:00:39 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -291,6 +291,13 @@ void dispatch_direct(char *name,long param);
 
 /* The divnode currently occupied by the pointing device */
 extern struct divnode *div_under_crsr;
+
+/* Other status variables */
+/* These are needed to determine which widget is under the pointing
+   device, keep track of status */
+extern struct widget *under;
+extern struct widget *capture;
+extern struct widget *kbdfocus;
 
 /* Customizes the button's appearance
    (used by other widgets that embed buttons in themeselves) */
