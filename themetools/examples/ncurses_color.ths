@@ -1,4 +1,4 @@
-/* $Id: ncurses_color.ths,v 1.1 2001/01/15 01:19:29 micahjd Exp $
+/* $Id: ncurses_color.ths,v 1.2 2001/01/15 06:10:59 micahjd Exp $
  *
  * PicoGUI theme for the ncurses video driver.
  * Nice colorful buttons and things, as provided by programs like dialog
@@ -10,13 +10,13 @@ object default {
    bgfill = fillstyle {
       Rect(x,y,w,h,ColorConv(bgcolor));
    };
-   bgcolor = 0x808080;
-   fgcolor = 0x000000;
+   bgcolor = 0x000000;
+   fgcolor = 0x808080;
    
    width = 1;
    height = 1;
    margin = 0;
-   spacing = 1;
+   spacing = 0;
 }
 
 object panelbar {
@@ -24,4 +24,79 @@ object panelbar {
    fgcolor = 0xFFFFFF;
 }
 
+object background bgcolor = 0x008080;
+
+object popup {
+   height = 4;
+   width  = 2;
+   margin = 1;
+   bgcolor = 0x000080;
+   bgfill = fillstyle {
+      /* Rectangle with an ascii border */
+      
+      var c,fc;
+      c = ColorConv(bgcolor);
+      fc = c & 0xFFFFFF00;    /* Strip off character, leaving attribute */
+      
+      Slab(x+1,y,w-2,1,fc | '-');
+      Slab(x+1,y+h-1,w-2,1,fc | '-');
+      Bar(x,y+1,1,h-2,fc | '|');
+      Bar(x+w-1,y+1,1,h-2,fc | '|');
+      Pixel(x,y,1,1,fc | '+');
+      Pixel(x+w-1,y,1,1,fc | '+');
+      Pixel(x,y+h-1,1,1,fc | '+');
+      Pixel(x+w-1,y+h-1,1,1,fc | '+');      
+      Rect(x+1,y+1,w-2,h-2,c);
+   };
+}
+
+object label.dlgtitle {
+   bgcolor = 0x000080;
+   fgcolor = 0xFFFF00;
+}
+
+object toolbar {
+   margin = 1;
+   /* Same framed fillstyle */
+   bgfill = Copy(popup::bgfill);
+}
+
+object button {
+   width = 1;
+   height = 1;
+   margin = 2;
+   fgcolor = 0x00FF00;
+}
+
+obj button.hilight fgcolor = 0xFFFFFF;
+obj button.on fgcolor = 0xFFFF00;
+
+object menuitem bgcolor = Copy(popup::bgcolor);
+object menuitem.hilight fgcolor = Copy(button.hilight::fgcolor);
+
+object scroll {
+   overlay = fillstyle {
+      Rect(x,y,w,h,ColorConv(0x008000));
+   };
+   bgcolor = 0x808080;
+}
+
+object base.panelbtn {
+   width = 3;
+   height = 3;
+   fgcolor = 0xFFFFFF;
+}
+object closebtn {
+   bgcolor = 0x800000;
+   text = "X";
+}
+object rotatebtn {
+   bgcolor = 0x808000;
+   text = "/";
+}
+object zoombtn {
+   bgcolor = 0x008000;
+   text = "+";
+}
+   
 /* The End */
