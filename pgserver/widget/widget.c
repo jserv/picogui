@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.87 2001/07/12 03:00:25 micahjd Exp $
+/* $Id: widget.c,v 1.88 2001/07/25 00:51:46 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -590,7 +590,25 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
   }
 
   div_under_crsr = NULL;
-  widgetunder(x,y,dts->top->head);
+
+  /* If we need to worry about toolbars under the popup boxes, pass events
+     occurring in the toolbar area to the root divtree */
+  if (popup_toolbar_passthrough()) {
+    struct divnode *ntb = appmgr_nontoolbar_area();
+
+    if (x < ntb->x ||
+	y < ntb->y ||
+	x >= ntb->x+ntb->w ||
+	y >= ntb->y+ntb->h) {
+      printf("Nyap!\n");
+      widgetunder(x,y,dts->root->head);
+    }
+    else
+      widgetunder(x,y,dts->top->head);
+  }
+  else
+    widgetunder(x,y,dts->top->head);
+
   if (div_under_crsr) {
     under = div_under_crsr->owner;
 

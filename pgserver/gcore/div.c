@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.43 2001/07/24 12:43:08 micahjd Exp $
+/* $Id: div.c,v 1.44 2001/07/25 00:51:46 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -656,6 +656,25 @@ void divresize_recursive(struct divnode *div) {
   }    
 
   divresize_split(div);
+}
+
+/* This function returns nonzero if there is more than one divtree layer,
+   and all layers except for the root divtree has DIVNODE_POPUP_NONTOOLBAR */
+int popup_toolbar_passthrough(void) {
+  struct divtree *t;
+
+  if (dts->top == dts->root)
+    return 0;
+
+  t = dts->top;
+  while (t && t!=dts->root) {
+    if (t->head && t->head->next && t->head->next->div)
+      if (!(t->head->next->div->flags & DIVNODE_POPUP_NONTOOLBAR))
+	return 0;
+    t = t->next;
+  }
+
+  return 1;
 }
 
 /* The End */
