@@ -9,16 +9,36 @@
 
 pghandle wBox;
 int row;
-
+int selectedMessage;
 
 int closeboxHandler(struct pgEvent *evt) {
   return 0;
 }
 
 
+int deleteMessage(struct pgEvent *evt) {
+  	   pgMessageDialog (
+	       "PicoMail", 
+	       "This function is not implemented (yet).",
+	       PG_MSGBTN_OK );
+   return 0;
+}
+
+int readMessage(struct pgEvent *evt) {
+  	   pgMessageDialog (
+	       "PicoMail", 
+	       "This function is not implemented (yet).",
+	       PG_MSGBTN_OK );
+   return 0;
+}
+
 int getList(struct pgEvent *evt) {
    imap_getlist();
    return 0;
+}
+
+int setSelected( struct pgEvent *evt ) {
+	return 0;
 }
 
 void
@@ -31,6 +51,8 @@ addheader( char * sender, char * title, int msg )
                         row ? PGDEFAULT : wBox);
         
     pgReplaceTextFmt(wItem,"[%d] %s - (%s)",msg, title, sender);
+    pgBind( wItem, PG_WE_PNTR_DOWN, &setSelected, (void *)(msg) );
+    pgEventPoll();
 
     row++;
 }
@@ -78,6 +100,24 @@ int main(int argc, char *argv[])
 
    
     
+   pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
+   pgSetWidget(PGDEFAULT,
+               PG_WP_TEXT,pgNewString("Read Message"),
+               PG_WP_SIDE,PG_S_LEFT,
+               PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
+               0);
+   pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&readMessage,NULL);
+
+   
+   pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
+   pgSetWidget(PGDEFAULT,
+               PG_WP_TEXT,pgNewString("Delete Message"),
+               PG_WP_SIDE,PG_S_LEFT,
+               PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
+               0);
+   pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&deleteMessage,NULL);
+
+
    pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
    pgSetWidget(PGDEFAULT,
                PG_WP_TEXT,pgNewString("Get list of messages!"),
