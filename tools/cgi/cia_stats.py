@@ -101,7 +101,8 @@ class StatPage(navi_cgi.NaviPage):
             write("<tr><td>%s%s%s</td><td>%s</td>" % (linkOpen, project, linkClose, convertDuration(cia_statreader.projectMTBC[project])))
             for statIndex in xrange(len(cia_statreader.statSubdirs)):
                 count = cia_statreader.projectCounts[project][cia_statreader.statSubdirs[statIndex]]
-                if count:
+		write("<td>")
+		if count:
                     # Get a fraction of this count compared to the highest in the column
                     logMax = math.log(columnMaxima[statIndex])
                     if logMax > 0:
@@ -111,9 +112,8 @@ class StatPage(navi_cgi.NaviPage):
                     # Multiply by the desired maximum bar length in EMs, add the minimum bar padding
                     width = fraction * 4 + 0.2
                     # A stupid trick for making bargraph thingies
-                    write('<td><span class="bargraph" style="padding: 0em %.4fem;">%s</span></td>' % (width, count))
-                else:
-                    write("<td></td>")
+                    write('<span class="bargraph" style="padding: 0em %.4fem;">%s</span>' % (width, count))
+                write("</td>")
             write("</tr>")
             
         write("""
