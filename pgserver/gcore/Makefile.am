@@ -12,8 +12,6 @@ libgcore_a_SOURCES = \
 	g_error.c 	 \
 	timer.c 	 \
 	errortext.c      \
-	video.c 	 \
-	input.c 	 \
 	driverinfo.c     \
 	configfile.c     \
 	hotspot.c        \

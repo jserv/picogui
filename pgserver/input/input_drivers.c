@@ -1,6 +1,6 @@
-/* $Id: input.c,v 1.16 2002/05/20 19:11:20 micahjd Exp $
+/* $Id: input_drivers.c,v 1.1 2002/05/21 19:45:33 micahjd Exp $
  *
- * input.c - Abstract input driver interface
+ * input_drivers.c - Abstract input driver interface
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>

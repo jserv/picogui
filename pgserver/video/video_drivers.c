@@ -1,7 +1,6 @@
-/* $Id: video.c,v 1.61 2002/05/20 19:11:20 micahjd Exp $
+/* $Id: video_drivers.c,v 1.1 2002/05/21 19:45:33 micahjd Exp $
  *
- * video.c - handles loading/switching video drivers, provides
- *           default implementations for video functions
+ * video_drivers.c - handles loading/switching video drivers and modes
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>

@@ -6,7 +6,8 @@ CFLAGS = @CFLAGS@ @RM_CFLAGS@
 LIBS   = @LIBS@ @RM_LIBS@
 
 libinput_a_SOURCES = \
-    $(INPUT)
+	input_drivers.c \
+	$(INPUT)
 
 EXTRA_libinput_a_SOURCES = \
 	ncursesinput.c \

@@ -3,7 +3,8 @@ INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include $(DRIVER_CFLAGS)
 noinst_LIBRARIES = libvideo.a
 
 libvideo_a_SOURCES = \
-    $(DRIVER)
+	video_drivers.c \
+	$(DRIVER)
 
 EXTRA_libvideo_a_SOURCES = \
 	ez328.c    \
