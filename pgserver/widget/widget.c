@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.102 2001/08/30 16:38:07 micahjd Exp $
+/* $Id: widget.c,v 1.103 2001/08/30 18:00:22 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -331,6 +331,15 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
       break;
       
     case PG_WP_HOTKEY:
+      /* Process PGTH_P_HIDEHOTKEYS if it is set */
+      switch (theme_lookup(widget_get(w,PG_WP_STATE),PGTH_P_HIDEHOTKEYS)) {
+	
+      case PG_HHK_RETURN_ESCAPE:
+	if (data == PGKEY_RETURN || data == PGKEY_ESCAPE)
+	  widget_set(w,PG_WP_SIZE,0);
+	break;
+
+      }
       install_hotkey(w,data);
       break;
 

@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.77 2001/08/30 16:38:07 micahjd Exp $
+/* $Id: constants.h,v 1.78 2001/08/30 18:00:22 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -416,6 +416,7 @@ typedef unsigned long pghandle;
 #define PGTH_P_WIDGETBITMASK 25  //!< Bitmask for something like a button 
 #define PGTH_P_CURSORBITMAP  26  //!< Bitmap for the (mouse) pointer 
 #define PGTH_P_CURSORBITMASK 27  //!< Bitmask for the (mouse) pointer 
+#define PGTH_P_HIDEHOTKEYS   28  //!< Set to a PG_HHK_* constant
 
 #define PGTH_P_STRING_OK          501    //!< String property (usually in PGTH_O_DEFAULT)
 #define PGTH_P_STRING_CANCEL      502    //!< String property (usually in PGTH_O_DEFAULT)
@@ -447,6 +448,9 @@ typedef unsigned long pghandle;
 #define PGTH_P_HOTKEY_CANCEL 1502        //!< Hotkey property (usually in PGTH_O_DEFAULT) 
 #define PGTH_P_HOTKEY_YES    1503        //!< Hotkey property (usually in PGTH_O_DEFAULT)   
 #define PGTH_P_HOTKEY_NO     1504        //!< Hotkey property (usually in PGTH_O_DEFAULT) 
+
+#define PG_HHK_NONE          0           //!< Do not hide any buttons
+#define PG_HHK_RETURN_ESCAPE 1           //!< Hide buttons hotkeyed to return or escape
 
 //! \}
 
