@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use PicoGUI;
 
-RegisterApp(-name => NewString("App"));
+RegisterApp(-name => NewString("Toolbar test"),-type => toolbar);
 
 NewWidget(-type => label,-side => left,
 	  -text => NewString("Click tux: "),-transparent => 1,

@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.12 2000/05/28 16:57:20 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.13 2000/06/01 23:46:27 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -330,7 +330,7 @@ sub _themeset {
     _request(14,pack('Nnnnn',@_));
 }
 sub _register {
-    _request(15,pack('a40nnnnnnnnnnn',@_));
+    _request(15,pack('Nnnnnnnnnnn',@_));
 }
 
 ######### Public functions

@@ -10,7 +10,7 @@ while (<>) {
 	if (/\s*(\S+)\s*=\s*(\S+)/) {
 		if ($1 eq 'background') {
 			$bmp = NewBitmap(-file => $2); 
-			$bmp->MakeBackground();
+			$bmp->SetBackground();
 		}
 		else {
 			ThemeSet($1 => eval($2));
