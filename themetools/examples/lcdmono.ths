@@ -1,4 +1,4 @@
-/* $Id: lcdmono.ths,v 1.1 2001/02/07 08:25:11 micahjd Exp $
+/* $Id: lcdmono.ths,v 1.2 2001/02/08 06:00:31 micahjd Exp $
  *
  * Monochrome theme for LCDs
  *
@@ -8,15 +8,22 @@
 object default {
    bgcolor = 0xFFFFFF;
    fgcolor = 0x000000;
-   spacing = 1;
-   margin = 1;
-   height = 11;
-   width = 11;
-   font = Font(NULL,8,0);
+   spacing = 0;
+   margin = 0;
    bgfill = fillstyle {
       Rect(x,y,w,h,ColorConv(bgcolor));
    };
+
+   /* Helvetica8 is nice, but it's kinda broken now
+    * so use Lucida if possible */
+   
+   // font = Font("Helvetica",8,0);
+   font = Font("Lucida",10,0);
+   height = 14;
+   width = 14;
 }
+
+object toolbar margin = 1;
 
 object button {
    bgfill = fillstyle {
@@ -38,8 +45,13 @@ object button {
       Pixel(x+1,y+h-2,1,1,fgc);
       Pixel(x+w-2,y+h-2,1,1,fgc);
    };
+   spacing = 2;
 }
 object button.on {
+   fgcolor = 0xFFFFFF;
+   bgcolor = 0x404040;
+}
+object menuitem.hilight {
    fgcolor = 0xFFFFFF;
    bgcolor = 0x404040;
 }
@@ -52,7 +64,7 @@ object indicator overlay = fillstyle {
  * much better than the usual bitmap-or-nothing mentality... */
 object background {
    text = "PicoGUI";
-//   font = Font("Utopia",25,PG_FSTYLE_BOLD);
+   font = Font("Utopia",25,PG_FSTYLE_BOLD);
    bgfill = fillstyle {
       Rect(x+30,y,w-30,h,ColorConv(0xFFFFFF));
       Rect(x,y,30,h,ColorConv(0x808080));
@@ -64,7 +76,7 @@ object popup {
    width = 5;
    height = 5;
    margin = 4;
-   bgcolor = 0xA0A0A0;
+//   bgcolor = 0xA0A0A0;
    
    bgfill = fillstyle {
       var f,b;
@@ -96,9 +108,34 @@ object popup {
    };
 }
 
-object panelbar {
-   font = Font("Times",10,PG_FSTYLE_BOLD);
+object label.dlgtitle {
+   bgcolor = 0x000000;
+   fgcolor = 0xFFFFFF;
+   bgfill = fillstyle {
+      var bgc;
+      bgc = ColorConv(0xFFFFFF);
+      
+      Rect(x,y,w,h,ColorConv(bgcolor));
+      Pixel(x,y,1,1,bgc);
+      Pixel(x+w-1,y+h-1,1,1,bgc);
+      Pixel(x+w-1,y,1,1,bgc);
+      Pixel(x,y+h-1,1,1,bgc);
+   };
 }
+
+object panelbar {
+   bgfill  = Copy(label.dlgtitle::bgfill);
+   bgcolor = 0x000000;
+   fgcolor = 0xFFFFFF;
+}
+object base.panelbtn {
+   spacing = 0;
+   margin = 0;
+   font = Font("Clean",6,PG_FSTYLE_FIXED);
+}
+object closebtn  text = "X";
+object rotatebtn text = "/";
+object zoombtn   text = "-";
 
 object scroll width = 4;
 

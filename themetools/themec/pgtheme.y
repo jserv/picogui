@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.26 2001/02/07 08:25:11 micahjd Exp $
+/* $Id: pgtheme.y,v 1.27 2001/02/08 06:00:31 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -194,7 +194,7 @@ propertyval:  constexp          { $$.data = $1; $$.loader = PGTH_LOAD_NONE; $$.l
   /* Two structures in the buffer */
   memset(buf,0,sizeof(struct pgrequest) + sizeof(struct pgreqd_mkfont));
   req = (struct pgrequest *) buf;
-  rqd = (struct pgreqd_mkfont *) (req+1)
+  rqd = (struct pgreqd_mkfont *) (req+1);
 
   req->type = htons(PGREQ_MKFONT);
   req->size = htonl(sizeof(struct pgreqd_mkfont));
