@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.25 2002/10/29 23:20:55 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.26 2002/10/30 06:18:06 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -49,20 +49,24 @@ struct textboxdata {
 
   int insertmode;       /* PG_INSERT_* constant, set by PG_WP_INSERTMODE */
 
+  u32 update_time;      /* Timer to make the cursor only flash when inactive */
+  u32 time_on;          /* Timers, defined in the theme */
+  u32 time_off;
+  u32 time_delay;
+
   unsigned int focus : 1;
   unsigned int flash_on : 1;
   unsigned int readonly : 1;
 };
 #define DATA WIDGET_DATA(0,textboxdata)
 
-#define FLASHTIME_ON   250
-#define FLASHTIME_OFF  150
-
 /* Get a pgstring for the current text format */
 g_error textbox_getformat(struct widget *self, struct pgstring **fmt);
 
 /* Find keys to ignore */
 int textbox_ignorekey(struct widget *self, int key);
+
+void textbox_reset_inactivity(struct widget *self);
 
 /********************************************** standard widget functions */
 
@@ -107,6 +111,9 @@ void textbox_remove(struct widget *self) {
 
 void textbox_resize(struct widget *self) {
   self->in->div->split = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
+  DATA->time_on = theme_lookup(self->in->div->state,PGTH_P_TIME_ON);
+  DATA->time_off = theme_lookup(self->in->div->state,PGTH_P_TIME_OFF);
+  DATA->time_delay = theme_lookup(self->in->div->state,PGTH_P_TIME_DELAY);
 }
 
 g_error textbox_set(struct widget *self,int property, glob data) {
@@ -246,14 +253,15 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
   case PG_TRIGGER_TIMER:
     if (DATA->focus==0) break;
 
-    if (DATA->flash_on = !DATA->flash_on)
-      paragraph_show_cursor(DATA->doc->crsr);
-    else
-      paragraph_hide_cursor(DATA->doc->crsr);
+    if (getticks() > DATA->update_time + DATA->time_delay) {
+      if (DATA->flash_on = !DATA->flash_on)
+	paragraph_show_cursor(DATA->doc->crsr);
+      else
+	paragraph_hide_cursor(DATA->doc->crsr);
+    }
 
     /* Set it again... */
-    install_timer(self,(DATA->flash_on ? 
-			FLASHTIME_ON : FLASHTIME_OFF ));
+    install_timer(self,(DATA->flash_on ? DATA->time_on : DATA->time_off));
     break;
    
   case PG_TRIGGER_DOWN:
@@ -262,52 +270,54 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
     paragraph_hide_cursor(DATA->doc->crsr);
     document_mouseseek(DATA->doc, &param->mouse);
     paragraph_show_cursor(DATA->doc->crsr);
+    textbox_reset_inactivity(self);
     request_focus(self);
     break;
 
   case PG_TRIGGER_KEYUP:
+    if (!(param->kbd.flags & PG_KF_FOCUSED))
+      return;
     if (textbox_ignorekey(self,param->kbd.key))
       return;
-
-    if (param->kbd.flags & PG_KF_FOCUSED)
-      param->kbd.consume++;
+    param->kbd.consume++;
+    textbox_reset_inactivity(self);
     return;   /* Skip update */
 
   case PG_TRIGGER_KEYDOWN:
+    if (!(param->kbd.flags & PG_KF_FOCUSED))
+      return;
     if (textbox_ignorekey(self,param->kbd.key))
       return;
 
-    if (param->kbd.flags & PG_KF_FOCUSED) {
-      param->kbd.consume++;
-      switch (param->kbd.key) {
-
-      case PGKEY_LEFT:
-	paragraph_hide_cursor(DATA->doc->crsr);
-	document_bounded_seek(DATA->doc,-1,PGSEEK_CUR);
-	break;
-
-      case PGKEY_RIGHT:
-	paragraph_hide_cursor(DATA->doc->crsr);
-	document_bounded_seek(DATA->doc,1,PGSEEK_CUR);
-	break;
-
-      case PGKEY_UP:
-	paragraph_hide_cursor(DATA->doc->crsr);
-	document_lineseek(DATA->doc,-1);
-	break;
-	
-      case PGKEY_DOWN:
-	paragraph_hide_cursor(DATA->doc->crsr);
-	document_lineseek(DATA->doc,1);
-	break;
-
-      default:
-	return; /* Skip update */
-      }
-      paragraph_show_cursor(DATA->doc->crsr);
+    param->kbd.consume++;
+    textbox_reset_inactivity(self);
+    
+    switch (param->kbd.key) {
+      
+    case PGKEY_LEFT:
+      paragraph_hide_cursor(DATA->doc->crsr);
+      document_bounded_seek(DATA->doc,-1,PGSEEK_CUR);
+      break;
+      
+    case PGKEY_RIGHT:
+      paragraph_hide_cursor(DATA->doc->crsr);
+      document_bounded_seek(DATA->doc,1,PGSEEK_CUR);
+      break;
+      
+    case PGKEY_UP:
+      paragraph_hide_cursor(DATA->doc->crsr);
+      document_lineseek(DATA->doc,-1);
+      break;
+      
+    case PGKEY_DOWN:
+      paragraph_hide_cursor(DATA->doc->crsr);
+      document_lineseek(DATA->doc,1);
+      break;
+      
+    default:
+      return; /* Skip update */
     }
-    else
-      return;   /* Skip update */
+    paragraph_show_cursor(DATA->doc->crsr);
     break;
 
   case PG_TRIGGER_CHAR:
@@ -315,25 +325,26 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
       return;
 
     if (param->kbd.key == PGKEY_RETURN && !DATA->doc->multiline) {
-      param->kbd.consume++;      
+      param->kbd.consume++;
+      textbox_reset_inactivity(self);
       post_event(PG_WE_ACTIVATE,self,0,0,NULL);
     }
 
     if (textbox_ignorekey(self,param->kbd.key))
       return;
 
-    if (param->kbd.flags & PG_KF_FOCUSED) {
-      param->kbd.consume++;
-      if (param->kbd.key == PGKEY_BACKSPACE)
-	document_backspace_char(DATA->doc);
-      else if (param->kbd.key == PGKEY_DELETE)
-	document_delete_char(DATA->doc);
-      else
-	document_insert_char(DATA->doc, param->kbd.key, NULL);
-      paragraph_wrap(DATA->doc->crsr->par,0);
-    }
+    param->kbd.consume++;
+    textbox_reset_inactivity(self);
+    
+    if (param->kbd.key == PGKEY_BACKSPACE)
+      document_backspace_char(DATA->doc);
+    else if (param->kbd.key == PGKEY_DELETE)
+      document_delete_char(DATA->doc);
+    else
+      document_insert_char(DATA->doc, param->kbd.key, NULL);
+    paragraph_wrap(DATA->doc->crsr->par,0);
     break;
-
+    
   }
 
   update(NULL,1);
@@ -379,6 +390,14 @@ int textbox_ignorekey(struct widget *self, int key) {
     }
 
   return 0;
+}
+
+void textbox_reset_inactivity(struct widget *self) {
+  if (!DATA->flash_on) {
+    DATA->flash_on = 1;
+    paragraph_show_cursor(DATA->doc->crsr);
+  }
+  DATA->update_time = getticks();
 }
 
 /* The End */
