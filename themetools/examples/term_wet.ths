@@ -35,5 +35,5 @@ obj terminal {
   attr.cursor = 0x9E;
 
   /* Nifty background tile */
-  bitmap1 = LoadBitmap("water_light.jpeg");
+  bitmap1 = LoadBitmap("data/water_light.jpeg");
 }
