@@ -1,4 +1,4 @@
-/* $Id: llist.h,v 1.2 2002/10/05 11:21:04 micahjd Exp $
+/* $Id: llist.h,v 1.3 2002/10/29 22:23:55 cgroom Exp $
  * 
  * llist.h - generic doubly-linked list. Note that this list includes
  * metadata which allow for fast lookup of start/end of list. API modeled
@@ -23,7 +23,7 @@
  * 
  * Contributors: 
  *   LList by Chuck Groom, cgroom@bluemug.com, Blue Mug, Inc. July
- *   2002. Used by edittext widget.
+ *   2002. Used by textedid widget.
  */
 
 #include <picogui/types.h>
@@ -35,32 +35,45 @@ typedef struct _LList LList;
 typedef void (*LListFunc)                 ( void * data,
                                             void * userdata );
 
-LList *      llist_append                 ( LList * llist,
+/* Actions which manipulate llists */
+g_error      llist_append                 ( LList ** new,
+                                            LList * list,
                                             void * data );
-LList *      llist_prepend                ( LList * llist,
+g_error      llist_prepend                ( LList ** new,
+                                            LList * list,
                                             void * data );
-LList *      llist_insert_after           ( LList * llist,
+g_error      llist_insert_after           ( LList ** new,
+                                            LList * list,
                                             void * data );
-LList *      llist_insert                 ( LList * llist,
+g_error      llist_insert                 ( LList ** new, 
+                                            LList * list,
                                             void * data,
                                             s16 position );
-LList *      llist_remove                 ( LList * llist );
-LList *      llist_remove_data            ( LList * llist,
+void         llist_remove                 ( LList ** new, 
+                                            LList * list );
+void         llist_remove_data            ( LList ** new, 
+                                            LList * list,
                                             void * data );
-LList *      llist_remove_link            ( LList * llist,
+g_error      llist_remove_link            ( LList ** new, 
+                                            LList * list,
                                             LList ** llink );
-void         llist_free                   ( LList * llist ); 
-LList *      llist_alloc                  ( void );
-u16          llist_length                 ( LList * llist );
-LList *      llist_copy                   ( LList * llist );
-LList *      llist_concat                 ( LList * llist1, 
+g_error      llist_alloc                  ( LList ** new );
+g_error      llist_copy                   ( LList ** new_list,
+                                            LList * list );
+void         llist_concat                 ( LList ** new,
+                                            LList * llist1, 
                                             LList * llist2 );
-void         llist_split                  ( LList * llist,
+g_error      llist_split                  ( LList * llist,
                                             LList **before,
                                             LList **after);
+void         llist_free                   ( LList * llist );
+
+
+/* Actions which get/set llist info */
 void         llist_foreach                ( LList * llist,
                                             LListFunc func, 
                                             void * user_data );
+u16          llist_length                 ( LList * llist );
 LList *      llist_first                  ( LList * llist );
 LList *      llist_last                   ( LList * llist );
 LList *      llist_next                   ( LList * llist );

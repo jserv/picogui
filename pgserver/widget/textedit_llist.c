@@ -1,8 +1,8 @@
-/* $Id: textedit_llist.c,v 1.1 2002/10/05 11:21:05 micahjd Exp $
+/* $Id: textedit_llist.c,v 1.2 2002/10/29 22:23:54 cgroom Exp $
  * 
- * llist.c - generic doubly-linked list. Note that this list includes
- * metadata which allow for fast lookup of start/end of list. API modeled
- * after glib's GLList.
+ * textedit_llist.c - generic doubly-linked list. Note that this list
+ * includes metadata which allow for fast lookup of start/end of
+ * list. API modeled after glib's GLList.
  *
  * NOTE: This is bundled with the textedit widget right now because
  *       it's the only part of pgserver using it. When other parts of
@@ -53,57 +53,67 @@ struct _LListMeta {
 };
 
 
-/* Append a new node to the end of the list. Return the start of the
- * list. */
-LList * llist_append ( LList * list,
+/* Append a new node containing 'data' to the list 'list', set 'new'
+   to the start of the resultant list. */
+g_error llist_append ( LList ** new,
+                       LList * list,
                        void * data ) {
-    LList * new;
-
+    g_error e;    
     assert(data);
-    if (list == NULL)
-        list = llist_alloc();
+    if (list == NULL) {
+        e = llist_alloc(&list);
+        errorcheck;
+    }
     
     if (list->meta->len == 0) {
         /* LList consists of one empty node */
         list->data = data;
     } else {
-        g_malloc((void **) &new, sizeof(LList));
+        e = g_malloc((void **) new, sizeof(LList));
+        errorcheck;
+
         list = llist_last(list);
-        new->meta = list->meta;
-        new->data = data;
-        new->next = NULL;
-        new->prev = list;
-        list->next = new;
-        list->meta->tail = new;
+        (*new)->meta = list->meta;
+        (*new)->data = data;
+        (*new)->next = NULL;
+        (*new)->prev = list;
+        list->next = *new;
+        list->meta->tail = *new;
     }
     list->meta->len++;
-    return llist_first(list);
+    *new = llist_first(list);
+    return success;
 }
 
 
-LList * llist_prepend ( LList * list,
+g_error llist_prepend ( LList ** new,
+                        LList * list,
                         void * data ) {
-    LList * new;
+    g_error e;
 
-    assert(data);
+    if (list == NULL) {
+        e = llist_alloc(&list);
+        errorcheck;
+    }    
 
-    if (list == NULL)
-        list = llist_alloc();    
     if (list->meta->len == 0) {
         /* A list is empty if list->data is NULL. */ 
         list->data = data;
     } else {
-        g_malloc((void **) &new, sizeof(LList));
+        e = g_malloc((void **) new, sizeof(LList));
+        errorcheck;
+
         list = llist_first(list);
-        new->meta = list->meta;
-        new->data = data;
-        new->next = list;
-        new->prev = NULL;
-        list->prev = new;
-        list->meta->head = new;
+        (*new)->meta = list->meta;
+        (*new)->data = data;
+        (*new)->next = list;
+        (*new)->prev = NULL;
+        list->prev = (*new);
+        list->meta->head = (*new);
     } 
     list->meta->len++;
-    return llist_first(list);
+    *new = llist_first(list);
+    return success;
 }
 
 
@@ -111,23 +121,28 @@ LList * llist_prepend ( LList * list,
  * Insert an element into the list after the item currently in 'list'.
  * Returns the head of the resulting list.
  */
-LList * llist_insert_after ( LList * list, 
+g_error llist_insert_after ( LList ** new,
+                             LList * list, 
                              void * data ) {
-    LList * new;
+    g_error e;
 
     assert(data);
     if ((!list) || (!list->data) || (!list->next)) 
-        return llist_append(list, data);
+        return llist_append(new, list, data);
+    
+    e = g_malloc((void **) new, sizeof(LList));
+    errorcheck;
 
-    g_malloc((void **) &new, sizeof(LList));
-    new->meta = list->meta;
-    new->data = data;
-    new->prev = list;
-    new->next = list->next;
-    list->next->prev = new;
-    list->next = new;
+    (*new)->meta = list->meta;
+    (*new)->data = data;
+    (*new)->prev = list;
+    (*new)->next = list->next;
+    list->next->prev = *new;
+    list->next = *new;
     list->meta->len++;
-    return llist_first(list);
+
+    *new = llist_first(list);
+    return success;
 }
 
 
@@ -135,7 +150,8 @@ LList * llist_insert_after ( LList * list,
  * Insert an element into the list at the given position.  If this is
  * negative, or is larger than the number of elements in the list, the
  * new element is added on to the end of the list.  */
-LList * llist_insert ( LList * list, 
+g_error llist_insert ( LList ** new,
+                       LList * list, 
                        void * data, 
                        s16 position ) { 
     u16 count;
@@ -150,31 +166,29 @@ LList * llist_insert ( LList * list,
             ;
     }
     
-    if (current) {
-        return llist_insert_after(current, data);
-    } else {
-        return llist_append(llist_last(list), data);
-    }
+    if (current) 
+        return llist_insert_after(new, current, data);
+    return llist_append(new, llist_last(list), data);
 }
 
 
 /* Remove an element containing data from the list, returns the head
  * of the list. */
-LList * llist_remove_data ( LList * list,
-                            void * data ) {
+void llist_remove_data ( LList ** new, 
+                         LList * list,
+                         void * data ) {
     LList * victim;
     
-    assert(list && data);
-    assert(list->meta->len);
-    
     if (victim = llist_find(list, data)) 
-        return llist_remove(victim);
-    return llist_first(list);
+        llist_remove(new, victim);
+    else 
+        *new = llist_first(list);
 }
 
 
-/* Remove the link at list, return the head of the resulting list. */
-LList * llist_remove ( LList * list ) {
+/* Remove the link at list, set 'new' to the head of the resulting list. */
+void llist_remove ( LList ** new,
+                    LList * list ) {
     LListMeta * meta;
 
     assert(list);
@@ -182,7 +196,8 @@ LList * llist_remove ( LList * list ) {
     if (meta->len == 1) {
         g_free(list);
         g_free(meta);
-        return NULL;
+        new = NULL;
+        return;
     } else {
         if (list->prev)
             list->prev->next = list->next;
@@ -195,21 +210,25 @@ LList * llist_remove ( LList * list ) {
         g_free(list);
     }
     meta->len--;
-    return meta->head;
+    *new = meta->head;
 }
 
 
 /* Remove an element from the list, set it to a new one-element list.
- * Return the new head of the list. */
-LList * llist_remove_link ( LList * list,
+ * Set 'new' to 'list' minus llink. */
+g_error llist_remove_link ( LList ** new,
+                            LList * list,
                             LList ** llink ) {
-    assert(list);
-
-    *llink = llist_alloc();
-    *llink = llist_append(*llink, list->data);
-
-    list = llist_remove(list);
-    return llist_first(list);
+    g_error e;
+    
+    e = llist_alloc(llink);
+    errorcheck;
+    
+    e = llist_append (llink, *llink, list->data);
+    errorcheck;
+    
+    llist_remove(new, list);
+    return success;
 }
 
 
@@ -240,57 +259,63 @@ void llist_free_data ( LList * list ) {
 }
 
 
-LList * llist_alloc ( void ) {
-    LList * list;
+g_error llist_alloc ( LList ** new ) {
+    g_error e;
     LListMeta * meta;
-    g_malloc((void **) &list, sizeof(LList));
-    g_malloc((void **) &meta, sizeof(LListMeta));
-    list->meta = meta;
-    list->meta->len = 0;
-    list->meta->head = list;
-    list->meta->tail = list;
-    list->data = NULL;
-    list->next = NULL;
-    list->prev = NULL;
-    return list;
+
+    e = g_malloc((void **) &meta, sizeof(LListMeta));
+    errorcheck;
+   
+    e = g_malloc((void **) new, sizeof(LList));
+    errorcheck;
+    
+    (*new)->meta = meta;
+    (*new)->meta->len = 0;
+    (*new)->meta->head = (*new);
+    (*new)->meta->tail = (*new);
+    (*new)->data = NULL;
+    (*new)->next = NULL;
+    (*new)->prev = NULL;
+    return success;
 }
 
 
-u16 llist_length ( LList * list ) {
-    return list->meta->len;
-}
-
-
-LList * llist_copy ( LList * list ) {
-    LList * new;
+g_error llist_copy ( LList ** new, 
+                     LList * list ) {
+    g_error e;
     
     assert(list);
-    new = llist_alloc();
-    for (list = llist_first(list); list; list = llist_next(list)) 
-        new = llist_append(new, list->data);
-    return new;
+    e = llist_alloc(new);
+    errorcheck;
+
+    for (list = llist_first(list); list; list = llist_next(list)) {
+        e = llist_append(new, *new, list->data);
+        errorcheck;
+    }
+    return success;
 }
 
 
 /* Concatenate lists 1 and 2 (1 ahead of 2), altering both to return
  * the head of the new list */
-LList * llist_concat ( LList * list1,
-                       LList * list2 ) {
+void llist_concat ( LList ** new,
+                    LList * list1,
+                    LList * list2 ) {
     LList * current;
     LListMeta * m1, *m2;
-
-    assert(list1 && list2);
 
     m1 = list1->meta;
     m2 = list2->meta;
     
     if (m1->len == 0) {
         llist_free(list1);
-        return list2;
+        new = &list2;
+        return;
     } 
     if (m2->len == 0) {
         llist_free(list2);
-        return list1;
+        new = &list1;
+        return;
     } 
     m1->len += m2->len;
     m1->tail->next = m2->head;
@@ -300,33 +325,33 @@ LList * llist_concat ( LList * list1,
         current->meta = m1;
     m1->tail = m2->tail;
     g_free(m2);
-    return llist_first(list1);
+    *new = llist_first(list1);
 }
 
 
 /* Break the list apart into two lists, 'before' (non-inclusive) and
  * 'after' (includes 'list' element, which is the new head of after).
  * 'before' is set to the start of the new list. */
-void llist_split ( LList *  list,
-                   LList ** before,
-                   LList ** after ) {
+g_error llist_split ( LList *  list,
+                      LList ** before,
+                      LList ** after ) {
+    g_error e;
     LList * current;
     LListMeta * meta;
     int len;
 
-    assert(list);
-
     if ((list->meta->len == 0) || (list->prev == NULL)) {
         *before = NULL;
         *after = list;
-        return;
+        return success;
     }
 
     *before = llist_first(list);
     *after = list;
 
-    g_malloc((void **) &meta, sizeof(LListMeta));
-        
+    e = g_malloc((void **) &meta, sizeof(LListMeta));
+    errorcheck;
+
     /* Scan over elements in new list to change meta information and 
      * count elements. */
     for (len = 0, current = *before; 
@@ -341,6 +366,12 @@ void llist_split ( LList *  list,
     (*after)->meta->len -= len;
     (*after)->meta->head = list;
     (*after)->meta->head->prev = NULL;
+    return success;
+}
+
+
+u16 llist_length ( LList * list ) {
+    return list->meta->len;
 }
 
 

@@ -1,4 +1,4 @@
-/* $Id: textedit_logical.c,v 1.9 2002/10/29 12:47:38 pney Exp $
+/* $Id: textedit_logical.c,v 1.10 2002/10/29 22:23:54 cgroom Exp $
  *
  * textedit_logical.c - Backend for multi-line text widget. This
  * defines the behavior of a generic wrapping text widget, and is not
@@ -25,8 +25,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
- * Textedit widget by Chuck Groom, cgroom@bluemug.com, Blue Mug, Inc,
- * Other contributors include:
+ * Contributors:
+ * 
+ *   June 2002
+ *   Chuck Groom (cgroom@bluemug.com) - Original Version
+ *   
  *   July 2002
  *   Philippe Ney - patch to fix backspace on last char bug
  *
@@ -34,7 +37,10 @@
  *   Philippe Ney - global text clipboard to all instance of the widget.
  *                  Embryo of the future pgserver global clipboard support,
  *                - support for ctrl-[xcv] keyboard event.
- *
+ *   
+ *   October 28, 2002
+ *   Chuck Groom  - Cleaned up memory allocation, error handling
+ *                - Scrolling support
  */
 
 #include <pgserver/common.h>     /* for g_malloc, g_free */
@@ -50,14 +56,17 @@
 #define PARAGRAPH(l) ((paragraph *)  llist_data(l))
 #define ATOM(l)      ((atom *)       llist_data(l))
 
-
 /**
- *  clipboard stuff 
+ * Clipboard 
+ *
+ * NOTE: This is a temporary kludge until the picogui server has a 
+ * standardized clipboard.
  */
-/* the text clipboard itself. Global to all instance of the widget */
+/* the text clipboard itself. Global to all instances of the widget */
 static struct pgstring * textedit_clipboard = NULL;
-/* number of textedit widget that could use the clipboard */
+/* number of textedit widgets that could use the clipboard */
 static int               clipboard_client = 0;
+
 
 /** 
  * Widget methods
@@ -68,16 +77,16 @@ static u32     widget_cursor_v_y       ( text_widget * widget );
 static void    widget_set_v_top        ( text_widget * widget,
                                          u32 v_top );
 static void    widget_cursor_stay_on   ( text_widget * widget );
-static void    widget_move_cursor_dir  ( text_widget * widget,
+static g_error widget_move_cursor_dir  ( text_widget * widget,
                                          cursor_direction dir,
                                          u8 unset_selection,
                                          u8 unite );
-static void    widget_move_cursor_xy  ( text_widget * widget,
+static g_error widget_move_cursor_xy  ( text_widget * widget,
                                         u16 x, 
                                         u16 y,
                                         u8 unset_selection,
                                         u8 unite );
-static void    widget_move_cursor      ( text_widget * widget,
+static g_error widget_move_cursor      ( text_widget * widget,
                                          LList * ll_new_block,
                                          size_t offset,
                                          u8 unite);
@@ -88,11 +97,11 @@ static void    widget_selection_to_cursor ( text_widget * widget,
                                             u16 len,
                                             u8 sel_up);
 static void    widget_unset_selection  ( text_widget * widget );
-static void    widget_clear_selection  ( text_widget * widget );
-static void    widget_insert_chars ( text_widget * widget,
+static g_error widget_clear_selection  ( text_widget * widget );
+static g_error widget_insert_chars ( text_widget * widget,
                                      TEXTEDIT_UCHAR * str,
                                      u32 len );
-static void    widget_delete_chars ( text_widget * widget,
+static g_error widget_delete_chars ( text_widget * widget,
                                      LList * ll_b,
                                      LList * ll_p,
                                      LList * ll_a,
@@ -102,7 +111,7 @@ static void    widget_delete_chars ( text_widget * widget,
 /**
  * Block methods 
  */
-static block * block_create          ( void );
+static g_error block_create          ( block ** b );
 static void    block_destroy         ( block * b );
 static void    block_set_bgap        ( block * b, 
                                        u16 offset );
@@ -114,10 +123,10 @@ static void    block_string_size     ( text_widget * widget,
                                        u16 len,
                                        s16 * w,
                                        s16 * h );
-static void    block_data_resize     ( text_widget * widget,
+static g_error block_data_resize     ( text_widget * widget,
                                        block * b,
                                        u16 new_size );
-static void    block_shed_last_para  ( text_widget * widget,
+static g_error block_shed_last_para  ( text_widget * widget,
                                        LList * ll_b );
 #define        block_char_at(b,o)    (*block_str_at(b,o))
 #define        block_char_size(wi,b,o,w,h) (textedit_char_size(wi->self, \
@@ -126,14 +135,15 @@ static void    block_shed_last_para  ( text_widget * widget,
 /**
  * Paragraph methods 
  */
-static paragraph * paragraph_create   ( void );
+static g_error     paragraph_create   ( paragraph **p );
 static void        paragraph_destroy  ( paragraph * p);
 
 
 /**
  * Atom methods 
  */
-static atom *      atom_create        ( atom_type type, 
+static g_error     atom_create        ( atom ** a,
+                                        atom_type type, 
                                         u8 flags );
 static atom_type   atom_get_type      ( atom * a );
 static void        atom_destroy       ( atom * a );
@@ -147,7 +157,7 @@ static void        join_atom_next     ( text_widget * widget,
 /**
  * Break apart the atom a_ll such that the first chunk is of len 
  */
-static void        split_atom         ( text_widget * widget,
+static g_error     split_atom         ( text_widget * widget,
                                         block * b,
                                         LList * a_ll,
                                         size_t offset,
@@ -172,14 +182,14 @@ static LList *     prev_atom          ( LList * b_ll,
                                         LList ** prev_p_ll);
 
 /**
- * Wrapping fun. Wrap checks to see whether we need to wrap, rewrap
+ * Wrapping fun. wrap() checks to see whether we need to wrap; rewrap()
  * does the work of wrapping.
  */
-static void    wrap                   ( text_widget * widget,
+static g_error wrap                   ( text_widget * widget,
                                         block * b,
                                         paragraph * p, 
                                         LList * a_ll );
-static void    rewrap                 ( text_widget * widget,
+static g_error rewrap                 ( text_widget * widget,
                                         block * b,
                                         paragraph * p, 
                                         LList * a_ll, 
@@ -274,9 +284,13 @@ int wchartToUtf8 (wchar_t * inBuf, char * outBuf, int * outSize)
 }
 #endif /* CONFIG_TEXTEDIT_WCHART */
 
-void text_backend_init ( text_widget * widget ) {
+
+g_error text_backend_init ( text_widget * widget ) {
+    g_error e;
     LList * l;
+    paragraph * p;
     block * b;
+
     assert(widget);
 
     /* clipboard client registration */
@@ -286,11 +300,22 @@ void text_backend_init ( text_widget * widget ) {
     for (l = widget->blocks; l; l = llist_next(l)) 
         block_destroy(BLOCK(l));
     llist_free(widget->blocks);
-    b = block_create();
-    b->paragraphs = llist_append(NULL, paragraph_create());
+
+    e = block_create(&b);
+    errorcheck;
+
+    e = paragraph_create(&p);
+    errorcheck;
+
+    e = llist_append(&b->paragraphs, NULL, p);
+    errorcheck;
+
     b->cursor_paragraph = b->paragraphs;
     b->cursor_atom = PARAGRAPH(b->paragraphs)->atoms;
-    widget->blocks = llist_append(widget->blocks, b);
+
+    e = llist_append(&widget->blocks, widget->blocks, b);
+    errorcheck;
+
     widget->current = widget->blocks;
     widget->v_height = 0;
     widget->v_y_top = 0;
@@ -304,6 +329,7 @@ void text_backend_init ( text_widget * widget ) {
 
     widget->client_data = NULL;
     widget->client_data_h = 0;
+    return success;
 }
 
 
@@ -321,8 +347,8 @@ void text_backend_destroy (  text_widget * widget ) {
     clipboard_client--;
     /* destroy clipboard */
     if (!clipboard_client && textedit_clipboard) {
-      pgstring_delete (textedit_clipboard);
-      textedit_clipboard = NULL;
+        pgstring_delete (textedit_clipboard);
+        textedit_clipboard = NULL;
     }
 }
 
@@ -330,9 +356,10 @@ void text_backend_destroy (  text_widget * widget ) {
 /**
  * (Re)build the text backend. This sets the width and height, rewraps,
  * and renders. Simply returns if the widget isn't ready to be drawn. */
-void text_backend_build ( text_widget * widget,
-                          u16 w,
-                          u16 h ) {
+g_error text_backend_build ( text_widget * widget,
+                             u16 w,
+                             u16 h ) {
+    g_error e;
     LList * ll_b, * ll_p;
     u16 p_offset;
     struct font_metrics m;
@@ -356,17 +383,21 @@ void text_backend_build ( text_widget * widget,
     for (ll_b = widget->blocks; ll_b; ll_b = llist_next(ll_b)) {
         for (ll_p = BLOCK(ll_b)->paragraphs, p_offset = 0; ll_p; 
              ll_p = llist_next(ll_p)) {
-            rewrap(widget, BLOCK(ll_b), PARAGRAPH(ll_p), 
-                   PARAGRAPH(ll_p)->atoms, p_offset, p_offset);
+            e = rewrap(widget, BLOCK(ll_b), PARAGRAPH(ll_p), 
+                       PARAGRAPH(ll_p)->atoms, p_offset, p_offset);
+            errorcheck;
             p_offset += PARAGRAPH(ll_p)->len;
         }
     }
     widget_render(widget);
+    return success;
 }
 
+
 #ifdef CONFIG_TEXTEDIT_WCHART
-void text_backend_set_text ( text_widget * widget,
+g_error text_backend_set_text ( text_widget * widget,
                              struct pgstring * text ) {
+    g_error e;
     LList * ll_b, * ll_p, * ll_a;
     size_t para_len;
     block * b;
@@ -388,9 +419,12 @@ void text_backend_set_text ( text_widget * widget,
     llist_free(widget->blocks);
     widget->blocks = NULL;
 
-    b = block_create();
+    e = block_create(&b);
+    errorcheck;
+
     b->b_gap = 0;
-    widget->blocks = llist_append(widget->blocks, b);
+    e = llist_append(&widget->blocks, widget->blocks, b);
+    errorcheck;
 
     len = text->num_chars;
     while (len) {
@@ -410,16 +444,24 @@ void text_backend_set_text ( text_widget * widget,
         while (para_len + 1 > b->data_size - b->len) {
             /* Paragraph won't fit into b */
             if (b->len) {
-                 b = block_create();
-                 widget->blocks = llist_append(widget->blocks, b);
+                e = block_create(&b);
+                errorcheck;
+                
+                e = llist_append(&widget->blocks, widget->blocks, b);
+                errorcheck;
             } else { 
                 /* Single long para */
-                block_data_resize (widget, b, b->len + para_len + BUFFER_GROW);
+                e = block_data_resize (widget, b, b->len + para_len + BUFFER_GROW);
+                errorcheck;
             }
         }
         TEXTEDIT_STRNCPY(b->data + b->b_gap, txt, para_len);
-        p = paragraph_create();
-        b->paragraphs = llist_append(b->paragraphs, p);
+        e = paragraph_create(&p);
+        errorcheck;
+
+        e = llist_append(&b->paragraphs, b->paragraphs, p);
+        errorcheck;
+
         p->len = para_len;
         len -= para_len;
         b->len += para_len;
@@ -438,20 +480,25 @@ void text_backend_set_text ( text_widget * widget,
     block_set_bgap(b, 0);
     p = PARAGRAPH(b->cursor_paragraph);
     UNSET_FLAG(ATOM(p->atoms)->flags, ATOM_FLAG_LEFT);
-    p->atoms = llist_prepend(p->atoms, atom_create(ATOM_TEXT, ATOM_FLAG_LEFT));
+    e = llist_prepend(&p->atoms, p->atoms, atom_create(ATOM_TEXT, ATOM_FLAG_LEFT));
+    errorcheck;
     b->cursor_atom = p->atoms;
 
-    text_backend_build(widget, widget->width, widget->height);
+    e = text_backend_build(widget, widget->width, widget->height);
+    errorcheck;
+    return success;
 }
 
 #else /* ! CONFIG_TEXTEDIT_WCHART */
 
-void text_backend_set_text ( text_widget * widget,
+g_error text_backend_set_text ( text_widget * widget,
                              struct pgstring * text ) {
+    g_error e;
     LList * ll_b, * ll_p, * ll_a;
     size_t para_len;
     block * b;
     paragraph * p;
+    atom * a;
     u8 * txt = text->buffer;
     u16 len = text->num_bytes;
 
@@ -461,10 +508,13 @@ void text_backend_set_text ( text_widget * widget,
     llist_free(widget->blocks);
     widget->blocks = NULL;
 
-    b = block_create();
+    e = block_create(&b);
+    errorcheck;
+    
     b->b_gap = 0;
-    widget->blocks = llist_append(widget->blocks, b);
-
+    e = llist_append(&widget->blocks, widget->blocks, b);
+    errorcheck;
+    
     while (len) {
         for (para_len = 0;
              (para_len < len) && (txt[para_len] != '\n'); 
@@ -482,16 +532,21 @@ void text_backend_set_text ( text_widget * widget,
         while (para_len + 1 > b->data_size - b->len) {
             /* Paragraph won't fit into b */
             if (b->len) {
-                 b = block_create();
-                 widget->blocks = llist_append(widget->blocks, b);
+                e = block_create(&b);
+                errorcheck;
+                
+                e = llist_append(&widget->blocks, widget->blocks, b);
+                errorcheck;
             } else { 
                 /* Single long para */
-                block_data_resize (widget, b, b->len + para_len + BUFFER_GROW);
+                e = block_data_resize (widget, b, b->len + para_len + BUFFER_GROW);
+                errorcheck;
             }
         }
         TEXTEDIT_STRNCPY(b->data + b->b_gap, txt, para_len);
-        p = paragraph_create();
-        b->paragraphs = llist_append(b->paragraphs, p);
+        e = paragraph_create(&p);
+        errorcheck;
+        e = llist_append(&b->paragraphs, b->paragraphs, p);
         p->len = para_len;
         len -= para_len;
         b->len += para_len;
@@ -510,16 +565,23 @@ void text_backend_set_text ( text_widget * widget,
     block_set_bgap(b, 0);
     p = PARAGRAPH(b->cursor_paragraph);
     UNSET_FLAG(ATOM(p->atoms)->flags, ATOM_FLAG_LEFT);
-    p->atoms = llist_prepend(p->atoms, atom_create(ATOM_TEXT, ATOM_FLAG_LEFT));
+    e = atom_create(&a, ATOM_TEXT, ATOM_FLAG_LEFT);
+    errorcheck;
+
+    e = llist_prepend(&p->atoms, p->atoms, a);
+    errorcheck;
     b->cursor_atom = p->atoms;
 
-    text_backend_build(widget, widget->width, widget->height);
+    e = text_backend_build(widget, widget->width, widget->height);
+    errorcheck;
+    return success;
 }
-
 #endif /* CONFIG_TEXTEDIT_WCHART */
 
-void text_backend_set_selection ( text_widget * widget,
-                                  struct pgstring * text ) {
+
+g_error text_backend_set_selection ( text_widget * widget,
+                                     struct pgstring * text ) {
+    g_error e;
 #ifdef CONFIG_TEXTEDIT_WCHART
     wchar_t * wBuffer;
 
@@ -535,7 +597,8 @@ void text_backend_set_selection ( text_widget * widget,
     utf8ToWchart ((char *) text->buffer, text->num_chars, wBuffer);
 
     /* insert chars */
-    widget_insert_chars (widget, (wint_t *) wBuffer, wcslen (wBuffer));
+    e = widget_insert_chars (widget, (wint_t *) wBuffer, wcslen (wBuffer));
+    errorcheck;
 
     /* free memory */
     free (wBuffer);
@@ -547,19 +610,21 @@ void text_backend_set_selection ( text_widget * widget,
     SET_FLAG(ATOM(BLOCK(widget->current)->cursor_atom)->flags,
              ATOM_FLAG_DRAW);
 
-    widget_insert_chars(widget, text->buffer, text->num_bytes);
-
+    e = widget_insert_chars(widget, text->buffer, text->num_bytes);
+    errorcheck;
 #endif /* CONFIG_TEXTEDIT_WCHART */
+    return success;
 }
 
 
-void text_backend_insert_char ( text_widget * widget,
+g_error text_backend_insert_char ( text_widget * widget,
                                 TEXTEDIT_UCHAR ch ) {
-    widget_insert_chars(widget, &ch, 1);
+    return widget_insert_chars(widget, &ch, 1);
 }
  
 
-void text_backend_delete_char  ( text_widget * widget ) {
+g_error text_backend_delete_char  ( text_widget * widget ) {
+    g_error e; 
     block * b;
     paragraph * p;
     atom * a;
@@ -579,66 +644,73 @@ void text_backend_delete_char  ( text_widget * widget ) {
              ll_a = llist_prev(ll_a)) 
             offset += ATOM(ll_a)->len;
         
-        widget_delete_chars(widget, 
-                            widget->current,
-                            BLOCK(widget->current)->cursor_paragraph,
-                            BLOCK(widget->current)->cursor_atom,
-                            offset, 
-                            1);
+        e = widget_delete_chars(widget, 
+                                widget->current,
+                                BLOCK(widget->current)->cursor_paragraph,
+                                BLOCK(widget->current)->cursor_atom,
+                                offset, 
+                                1);
+        errorcheck;
     } else {
-        widget_clear_selection(widget);
+        e = widget_clear_selection(widget);
+        errorcheck;
     }
     
     widget_cursor_v_y (widget);
     widget_scroll_to_cursor(widget);
     widget_render(widget); 
     widget_cursor_stay_on (widget);
+    return success;
 }
 
 
-void  text_backend_cursor_move_dir ( text_widget * widget,
+g_error text_backend_cursor_move_dir ( text_widget * widget,
                                      cursor_direction dir ) {
-    widget_move_cursor_dir (widget, dir, TRUE, TRUE);
+    return widget_move_cursor_dir (widget, dir, TRUE, TRUE);
 }
 
 
-void text_backend_cursor_move_xy ( text_widget * widget,
-                                   u16 x, 
-                                   u16 y ) {
-    widget_move_cursor_xy (widget, x, y, TRUE, TRUE);
+g_error text_backend_cursor_move_xy ( text_widget * widget,
+                                      u16 x, 
+                                      u16 y ) {
+    return widget_move_cursor_xy (widget, x, y, TRUE, TRUE);
 }
 
-void text_backend_cut_copy_paste ( text_widget * widget,
-				   char ch ) {
 
-  switch (ch) {
+g_error text_backend_cut_copy_paste ( text_widget * widget,
+                                      char ch ) {
+    g_error e;
 
-  case PGKEY_x:
-
-    /* copy the selection */
-    text_backend_cut_copy_paste (widget, PGKEY_c);
-    /* delete the selection */
-    text_backend_delete_char (widget);
-    break;
-
-  case PGKEY_c:
-
-    /* store selection in the clipboard */
-    text_backend_store_selection (widget);
-    break;
-
-  case PGKEY_v:
-
-    if (textedit_clipboard) {
-    /* set the selection from the clipboard */
-      text_backend_set_selection (widget, textedit_clipboard);
+    switch (ch) {
+    case PGKEY_x:
+        if (widget->selection != SELECTION_NONE) {
+            /* copy the selection */
+            e = text_backend_cut_copy_paste (widget, PGKEY_c);
+            errorcheck;
+            /* delete the selection */
+            e = text_backend_delete_char (widget);
+            errorcheck;
+        }
+        break;
+        
+    case PGKEY_c:
+        /* store selection in the clipboard */
+        e = text_backend_store_selection (widget);
+        errorcheck;
+        break;
+        
+    case PGKEY_v:
+        if (textedit_clipboard) {
+            /* set the selection from the clipboard */
+            e = text_backend_set_selection (widget, textedit_clipboard);
+            errorcheck;
+        }
+        break;
+        
+    default:
+        break;
     }
-    break;
-
-  default:
-
-    break;
-  }
+    return success;
 }
  
 
@@ -651,6 +723,7 @@ void text_backend_cut_copy_paste ( text_widget * widget,
  */
 void text_backend_set_v_top ( text_widget * widget,
                               u32 v_top ) {
+    g_error e;
     v_top = MIN(v_top, widget->v_height - (widget->height - 2*widget->border_v));
     widget_set_v_top (widget, v_top);
     if ((widget->cursor_v_y < widget->v_y_top) || 
@@ -748,7 +821,8 @@ g_error text_backend_save ( text_widget * widget ) {
 }
 
 
-void text_backend_store_selection ( text_widget * widget) {
+g_error text_backend_store_selection ( text_widget * widget) {
+    g_error e;
     u32 len, offset, k, b_gap;
     LList * ll_b, * ll_p, * ll_a, * temp_ll;
     block * b;
@@ -758,8 +832,9 @@ void text_backend_store_selection ( text_widget * widget) {
     textedit_clipboard = NULL;
 
     if (widget->selection == SELECTION_NONE) {
-        pgstring_new(&textedit_clipboard, PGSTR_ENCODE_UTF8, 0, NULL);
-        return;
+        e = pgstring_new(&textedit_clipboard, PGSTR_ENCODE_UTF8, 0, NULL);
+        errorcheck;
+        return success;
     }
 
     ll_b = widget->current;
@@ -828,15 +903,17 @@ void text_backend_store_selection ( text_widget * widget) {
        */
       keepSize -= oSize;
 
-	pgstring_new (&textedit_clipboard, PGSTR_ENCODE_UTF8, keepSize, oBuf);
+      e = pgstring_new (&textedit_clipboard, PGSTR_ENCODE_UTF8, keepSize, oBuf);
+      errorcheck;
 //	memcpy (textedit_clipboard->buffer, oBuf, k);
-
+        
       /* free memory */
       free (oBuf);
       free (iBuf);
     }
 #else
-    pgstring_new (&textedit_clipboard, PGSTR_ENCODE_UTF8, k, b->data + offset);
+    e = pgstring_new (&textedit_clipboard, PGSTR_ENCODE_UTF8, k, b->data + offset);
+    errorcheck;
 //	  memcpy(textedit_clipboard->buffer, b->data + offset, k);
 #endif
 
@@ -873,11 +950,13 @@ void text_backend_store_selection ( text_widget * widget) {
 //	    len -= MIN(len, b->len);
 //	    block_set_bgap(b, b_gap);
 //    }
+    return success;
 }
 
 
-void text_backend_selection_dir ( text_widget * widget,
+g_error text_backend_selection_dir ( text_widget * widget,
                                   cursor_direction dir ) {
+    g_error e;
     LList * a_ll, * b_ll, * p_ll;
     u16 len;
     u8 sel_up;
@@ -898,21 +977,24 @@ void text_backend_selection_dir ( text_widget * widget,
     a_ll = BLOCK(b_ll)->cursor_atom;
     len = ATOM(a_ll)->len;
 
-    widget_move_cursor_dir(widget, dir, FALSE, FALSE);
+    e = widget_move_cursor_dir(widget, dir, FALSE, FALSE);
+    errorcheck;
     widget_selection_to_cursor ( widget,
                                  b_ll,
                                  p_ll,
                                  a_ll, 
                                  len, 
                                  sel_up);
+    return success;
 }
 
 
 /* Move the cursor. Find out if this was before or after the
    prev. cursor locaion. */
-void text_backend_selection_xy ( text_widget * widget,
+g_error text_backend_selection_xy ( text_widget * widget,
                                  u16 x, 
                                  u16 y) {
+    g_error e;
     LList * b_ll, * p_ll, * a_ll; /* The old cursor position */
     u16 len; /* Old cursor atom len */
     LList * n_b_ll, * n_p_ll, * n_a_ll; /* Scan forward from new cursor */
@@ -924,8 +1006,9 @@ void text_backend_selection_xy ( text_widget * widget,
     o_a_ll = a_ll = BLOCK(b_ll)->cursor_atom;
     len = ATOM(a_ll)->len;
     
-    widget_move_cursor_xy(widget, x, y, FALSE, FALSE);
-    
+    e = widget_move_cursor_xy(widget, x, y, FALSE, FALSE);
+    errorcheck;
+
     n_b_ll = widget->current;
     n_p_ll = BLOCK(b_ll)->cursor_paragraph;
     n_a_ll = BLOCK(b_ll)->cursor_atom;
@@ -951,6 +1034,7 @@ void text_backend_selection_xy ( text_widget * widget,
                                  a_ll, 
                                  len, 
                                  sel_up);
+    return success;
 }
 
 
@@ -1225,7 +1309,8 @@ static void widget_render ( text_widget * widget ) {
                     } 
                     if ((ll_p == b->cursor_paragraph) &&
                         (ll_a == b->cursor_atom)) {
-                        textedit_move_cursor (widget->self, x + a->width, y, 
+                        textedit_move_cursor (widget->self, 
+                                              x + a->width, y, 
                                               a->height ? a->height :
                                               widget->cursor_grop->r.h);
                     }
@@ -1292,7 +1377,7 @@ static u32 widget_cursor_v_y ( text_widget * widget ) {
         }
     }
     assert(0); // We shouldn't get here
-    return 0;
+    return cursor_v_y;
 }
 
 
@@ -1305,15 +1390,14 @@ static void widget_scroll_to_cursor ( text_widget * widget ) {
     u16 widget_height;
     widget_height = widget->height - widget->border_h * 2;
     widget_height -= widget_height % widget->cursor_grop->r.h;
-    
+
     if ((widget->v_height > widget_height) &&
         (widget->v_height - widget->v_y_top < widget_height)) {
         widget_set_v_top (widget, widget->v_height - widget_height);
-    }
-    if (widget->cursor_v_y < widget->v_y_top ) {
+    } else if (widget->cursor_v_y < widget->v_y_top ) {
         widget_set_v_top (widget, widget->cursor_v_y);
-    } else if (widget->v_y_top + widget_height < 
-               widget->cursor_v_y + widget->cursor_grop->r.h) {
+    } else if (widget->cursor_v_y + widget->cursor_grop->r.h > 
+               widget->v_y_top + widget_height) {
         widget_set_v_top (widget, widget->cursor_v_y + 
                           widget->cursor_grop->r.h -
                           widget_height);
@@ -1383,10 +1467,11 @@ static void  widget_cursor_stay_on ( text_widget * widget ) {
  * before moving the cursor. This is usually TRUE unless we're doing
  * fancy things with selections.
  */
-static void widget_move_cursor_dir ( text_widget * widget,
-                                     cursor_direction dir,
-                                     u8 unset_selection,
-                                     u8 unite) {
+static g_error widget_move_cursor_dir ( text_widget * widget,
+                                        cursor_direction dir,
+                                        u8 unset_selection,
+                                        u8 unite) {
+    g_error e;
     LList * ll_b, * ll_p, * ll_a;
     block * b;
     atom * a;
@@ -1540,22 +1625,25 @@ static void widget_move_cursor_dir ( text_widget * widget,
         }
     }
 
-    widget_move_cursor ( widget, 
-                         ll_b,
-                         cursor,
-                         unite); 
+    e = widget_move_cursor ( widget, 
+                             ll_b,
+                             cursor,
+                             unite); 
+    errorcheck;
     widget_cursor_stay_on ( widget );
+    return success;
 }
 
 
 /**
  * Move the cursor to an (x, y) coordinate (0,0 is topleft corner of widget).
  */
-static void widget_move_cursor_xy  ( text_widget * widget,
-                                     u16 x, 
-                                     u16 y,
-                                     u8 unset_selection,
-                                     u8 unite) {
+static g_error widget_move_cursor_xy  ( text_widget * widget,
+                                        u16 x, 
+                                        u16 y,
+                                        u8 unset_selection,
+                                        u8 unite) {
+    g_error e;
     LList * ll_b, * ll_p, * ll_a;
     block * b;
     atom * a;
@@ -1632,20 +1720,23 @@ static void widget_move_cursor_xy  ( text_widget * widget,
          (block_char_at(b, cursor - 1) == '\n')))
         cursor--;
         
-    widget_move_cursor ( widget, 
-                         ll_b,
-                         cursor, 
-                         unite );
+    e = widget_move_cursor ( widget, 
+                             ll_b,
+                             cursor, 
+                             unite );
+    errorcheck;
+    return success;
 }
 
 
 /**
  * Move the cursor to the offset in the given block.  
  */
-static void widget_move_cursor ( text_widget * widget,
-                                 LList * ll_new_block,
-                                 size_t offset,
-                                 u8 unite) {
+static g_error widget_move_cursor ( text_widget * widget,
+                                    LList * ll_new_block,
+                                    size_t offset,
+                                    u8 unite) {
+    g_error e;
     block * b, * old_block;
     atom * a, * n_a;
     paragraph * p;
@@ -1700,9 +1791,10 @@ static void widget_move_cursor ( text_widget * widget,
         if (GET_FLAG(a->flags, ATOM_FLAG_LEFT))
             x = 0;
         
-        if (offset < count + a->len) 
-            split_atom(widget, b, ll_a, count, offset - count);
-
+        if (offset < count + a->len) { 
+            e = split_atom(widget, b, ll_a, count, offset - count);
+            errorcheck;
+        }
         count += a->len;
         p_len += a->len;
         x += a->width; 
@@ -1742,6 +1834,7 @@ static void widget_move_cursor ( text_widget * widget,
                               widget->v_y_top,
                               widget->cursor_grop->r.h);
     }
+    return success;
 }
 
 
@@ -1782,7 +1875,8 @@ static void widget_unset_selection ( text_widget * widget ) {
 }
 
 
-static void widget_clear_selection  ( text_widget * widget ) {
+static g_error widget_clear_selection  ( text_widget * widget ) {
+    g_error e;
     LList *ll_b, * ll_p, * ll_a, *ll;
     u32 offset, len;
 
@@ -1824,15 +1918,18 @@ static void widget_clear_selection  ( text_widget * widget ) {
              ll = llist_prev(ll))
             offset += ATOM(ll)->len;
         
-        widget_delete_chars(widget, ll_b, ll_p, ll_a, offset, len);
+        e = widget_delete_chars(widget, ll_b, ll_p, ll_a, offset, len);
+        errorcheck;
         widget->selection = SELECTION_NONE;
     }
+    return success;
 }
 
 
-static void widget_insert_chars ( text_widget * widget,
-                                  TEXTEDIT_UCHAR * str,
-                                  u32 len ) {
+static g_error widget_insert_chars ( text_widget * widget,
+                                     TEXTEDIT_UCHAR * str,
+                                     u32 len ) {
+    g_error e;
     block * b;
     paragraph * p;
     atom * a;
@@ -1844,7 +1941,8 @@ static void widget_insert_chars ( text_widget * widget,
     widget->fd->lib->getmetrics(widget->fd,&m);
 
     /* If there is a selected region, delete it */
-    widget_clear_selection(widget);
+    e = widget_clear_selection(widget);
+    errorcheck;
 
     /* Invalidate cursor's preferred x position */
     widget->cursor_x_stash = -1;
@@ -1870,11 +1968,13 @@ static void widget_insert_chars ( text_widget * widget,
 
         /* Make sure there is enough room in block to insert chunk */
         if (b->len + chunk_len >= b->data_size) {
-            block_shed_last_para (widget, widget->current);
+            e = block_shed_last_para (widget, widget->current);
+            errorcheck;
             if (b->len == b->data_size) {
                 /* If shedding didn't reduce block size, grow block */
-                block_data_resize ( widget, b, 
-                                    b->len + chunk_len + BUFFER_GROW);
+                e = block_data_resize ( widget, b, 
+                                        b->len + chunk_len + BUFFER_GROW);
+                errorcheck;
             } 
             b = BLOCK(widget->current);
             p = PARAGRAPH(b->cursor_paragraph);
@@ -1892,15 +1992,17 @@ static void widget_insert_chars ( text_widget * widget,
             /* Create a new paragraph */
             SET_FLAG ( a->flags, ATOM_FLAG_DRAW | ATOM_FLAG_RIGHT );
             ll_a = llist_next(b->cursor_atom);
-            p = paragraph_create();
+            e = paragraph_create(&p);
+            errorcheck;
 
             if (ll_a) {
                 /* Split ll_a list at ll_a, insert after 0-len atom which
                  * starts paragraph p */
-                llist_split( ll_a,
-                             &PARAGRAPH(b->cursor_paragraph)->atoms,
-                             &ll_a_temp);
-                p->atoms = llist_concat(p->atoms, ll_a_temp);
+                e = llist_split( ll_a,
+                                 &PARAGRAPH(b->cursor_paragraph)->atoms,
+                                 &ll_a_temp);
+                errorcheck;
+                llist_concat(&p->atoms, p->atoms, ll_a_temp);
                 /* Get paragraph len */
                 for (ll_a = p->atoms; ll_a; ll_a = llist_next(ll_a))
                     p->len += ATOM(ll_a)->len;
@@ -1908,7 +2010,9 @@ static void widget_insert_chars ( text_widget * widget,
                 UNSET_FLAG(ATOM(p->atoms)->flags, ATOM_FLAG_RIGHT);
             }
 
-            b->paragraphs = llist_insert_after (b->cursor_paragraph, p);
+            e = llist_insert_after (&b->paragraphs, b->cursor_paragraph, p);
+            errorcheck;
+            
             b->cursor_paragraph = llist_next(b->cursor_paragraph);
             b->cursor_atom = p->atoms;
 
@@ -1921,8 +2025,10 @@ static void widget_insert_chars ( text_widget * widget,
 
             /* Wrap end of previous paragraph -- inserting a newline could
                cause the end of a line to move up */
-            wrap(widget, b, PARAGRAPH(llist_prev(b->cursor_paragraph)), 
-                 llist_last(PARAGRAPH(llist_prev(b->cursor_paragraph))->atoms));
+            e = wrap(widget, b, 
+                     PARAGRAPH(llist_prev(b->cursor_paragraph)), 
+                     llist_last(PARAGRAPH(llist_prev(b->cursor_paragraph))->atoms));
+            errorcheck;
         } else {
             if (widget_realized) {
                 SET_FLAG(a->flags, ATOM_FLAG_DRAW_LAST_CHAR);
@@ -1930,7 +2036,8 @@ static void widget_insert_chars ( text_widget * widget,
                 SET_FLAG( PARAGRAPH(b->cursor_paragraph)->flags,
                           PARAGRAPH_FLAG_DRAW_ALL);
             }
-            wrap(widget, b, p, b->cursor_atom);
+            e = wrap(widget, b, p, b->cursor_atom);
+            errorcheck;
         }
 
         len -= chunk_len;
@@ -1939,20 +2046,24 @@ static void widget_insert_chars ( text_widget * widget,
 
     if (widget_realized) {
         widget_scroll_to_cursor (widget);
+        if (new_para)
+            widget_cursor_v_y(widget);
         widget_render (widget);
         widget_cursor_stay_on (widget);
     }
+    return success;
 }
 
 
 /* Delete len chars before offset in block ll_b. The atom ll_a is the
  * atom where the delete starts, on the right edge. */
-static void widget_delete_chars ( text_widget * widget,
-                                  LList * ll_b,
-                                  LList * ll_p,
-                                  LList * ll_a,
-                                  u32 offset,
-                                  u32 len ) {
+static g_error widget_delete_chars ( text_widget * widget,
+                                     LList * ll_b,
+                                     LList * ll_p,
+                                     LList * ll_a,
+                                     u32 offset,
+                                     u32 len ) {
+    g_error e;
     LList * ll_start_b, * ll_start_p, * ll_start_a, * ll_temp;
     LList * cursor_b, * cursor_p, * cursor_a;
     block * b;
@@ -1999,7 +2110,7 @@ static void widget_delete_chars ( text_widget * widget,
             b = BLOCK(llist_next(ll_start_b));
             len -= b->len;
             block_destroy(b);
-            widget->blocks = llist_remove(llist_next(ll_start_b));
+            llist_remove(&widget->blocks, llist_next(ll_start_b));
         } 
         /* Remove paragraphs after ll_start_p */
         for (b = BLOCK(ll_start_b); llist_next(ll_start_p); ) {
@@ -2009,7 +2120,7 @@ static void widget_delete_chars ( text_widget * widget,
             b->len -= p->len;
             len -= p->len;
             paragraph_destroy(p);
-            b->paragraphs = llist_remove(llist_next(ll_start_p)); 
+            llist_remove(&b->paragraphs, llist_next(ll_start_p)); 
         }
         /* Remove paragraphs before ll_p */
         for (b = BLOCK(ll_b); llist_prev(ll_p); ) {
@@ -2020,7 +2131,7 @@ static void widget_delete_chars ( text_widget * widget,
             offset -= p->len;
             len -= p->len;
             paragraph_destroy(p);
-            b->paragraphs = llist_remove(llist_prev(ll_p)); 
+            llist_remove(&b->paragraphs, llist_prev(ll_p)); 
         }
         b = BLOCK(ll_start_b);
         p = PARAGRAPH(ll_p);
@@ -2028,8 +2139,9 @@ static void widget_delete_chars ( text_widget * widget,
            ll_b. Note that we rely on the idle routine to break large,
            multi-paragraph blocks apart. */
         if (b->data_size - b->len <= p->len + 1) {
-            block_data_resize (widget, b, 
-                               b->len + p->len + BUFFER_GROW);
+            e = block_data_resize (widget, b, 
+                                   b->len + p->len + BUFFER_GROW);
+            errorcheck;
         }
         block_set_bgap(b, b->len); 
         block_set_bgap(BLOCK(ll_b), 0);
@@ -2041,15 +2153,17 @@ static void widget_delete_chars ( text_widget * widget,
         offset += b->len;
         b->len += p->len;
         b->b_gap += p->len;
-        b->paragraphs = llist_append (b->paragraphs, p);
+        e = llist_append (&b->paragraphs, b->paragraphs, p);
+        errorcheck;
+
         BLOCK(ll_b)->len -= p->len;
         BLOCK(ll_b)->b_gap += p->len;
-        BLOCK(ll_b)->paragraphs = llist_remove(ll_p);
+        llist_remove(&BLOCK(ll_b)->paragraphs, ll_p);
 
          /* Remove block if empty */
         if (BLOCK(ll_b)->len == 0) {
             block_destroy(BLOCK(ll_b));
-            widget->blocks = llist_remove(ll_b);
+            llist_remove(&widget->blocks, ll_b);
         }
         ll_b = ll_start_b;
         ll_p = llist_last(b->paragraphs);
@@ -2071,17 +2185,17 @@ static void widget_delete_chars ( text_widget * widget,
                 p = PARAGRAPH(llist_next(ll_start_p));
                 len -= p->len;
                 paragraph_destroy(p);
-                b->paragraphs = llist_remove(llist_next(ll_start_p)); 
+                llist_remove(&b->paragraphs, llist_next(ll_start_p)); 
             }
             /* Append ll_p's atoms to ll_start_p */
             p = PARAGRAPH(ll_p);
-            PARAGRAPH(ll_start_p)->atoms = 
-                llist_concat(PARAGRAPH(ll_start_p)->atoms, 
-                             p->atoms);
+            llist_concat(&PARAGRAPH(ll_start_p)->atoms,
+                         PARAGRAPH(ll_start_p)->atoms, 
+                         p->atoms);
             PARAGRAPH(ll_start_p)->len += p->len;
             p->atoms = NULL;
             paragraph_destroy(p);
-            b->paragraphs = llist_remove(ll_p);                
+            llist_remove(&b->paragraphs, ll_p);                
         }
         p = PARAGRAPH(ll_start_p);
         /* Remove atoms ll_a */
@@ -2092,7 +2206,7 @@ static void widget_delete_chars ( text_widget * widget,
             ll_a = llist_prev(ll_a);
             p->len -= ATOM(ll_temp)->len;
             atom_destroy(ATOM(ll_temp));
-            p->atoms = llist_remove(ll_temp);
+            llist_remove(&p->atoms, ll_temp);
         }
     }
     p = PARAGRAPH(ll_start_p);
@@ -2105,7 +2219,7 @@ static void widget_delete_chars ( text_widget * widget,
         ll_a = ll_start_a;
         ll_start_a = llist_prev(ll_a);
         atom_destroy(ATOM(ll_a));
-        p->atoms = llist_remove(ll_a);
+        llist_remove(&p->atoms, ll_a);
     }
 
     SET_FLAG(ATOM(ll_start_a)->flags, ATOM_FLAG_DRAW_LAST_CHAR);
@@ -2121,38 +2235,37 @@ static void widget_delete_chars ( text_widget * widget,
         SET_FLAG(PARAGRAPH(ll_start_p)->flags, 
                  PARAGRAPH_FLAG_DRAW_ALL | PARAGRAPH_FLAG_H_INVALID);
     }
-    wrap(widget, 
-         BLOCK(ll_start_b), 
-         PARAGRAPH(ll_start_p),
-         ll_start_a);
+
+    e = wrap(widget, 
+             BLOCK(ll_start_b), 
+             PARAGRAPH(ll_start_p),
+             ll_start_a);
+    errorcheck;
+    return success;
 }
 
 
 /**
  * Block methods 
  */
-static block * block_create ( void ) {
+static g_error block_create ( block ** b ) {
     g_error e;
-    block * b;
-    
-    /* FIXME: errorcheck can not be used here since block_create must return
-     * g_error */
 
-    e = g_malloc ((void **) &b, sizeof(block));
-    //    errorcheck;
-
-    e = g_malloc ((void **) &b->data,
+    e = g_malloc ((void **) b, sizeof(block));
+    errorcheck;
+   
+    e = g_malloc ((void **) &((*b)->data),
 		  sizeof(TEXTEDIT_CHAR) * FIXED_BUFFER_LEN);
-    //    errorcheck;
+    errorcheck;
 
-    b->data_size = FIXED_BUFFER_LEN;
-    b->b_gap = 0;
-    b->len = 0;
-    b->paragraphs = NULL;
-    b->cursor_paragraph = NULL;
-    b->cursor_atom = NULL;
-    SET_FLAG(b->flags, BLOCK_FLAG_MFC);    
-    return b;
+    (*b)->data_size = FIXED_BUFFER_LEN;
+    (*b)->b_gap = 0;
+    (*b)->len = 0;
+    (*b)->paragraphs = NULL;
+    (*b)->cursor_paragraph = NULL;
+    (*b)->cursor_atom = NULL;
+    SET_FLAG((*b)->flags, BLOCK_FLAG_MFC);    
+    return success;
 }
 
 
@@ -2245,9 +2358,9 @@ static void block_string_size ( text_widget * widget,
  * offset. We cannot resize to a size smaller than the block's data
  * length.
  */
-static void block_data_resize ( text_widget * widget,
-                                block * b,
-                                u16 new_size ) {
+static g_error block_data_resize ( text_widget * widget,
+                                   block * b,
+                                   u16 new_size ) {
     TEXTEDIT_CHAR * data;
     u16 b_gap;
     g_error e;
@@ -2257,15 +2370,15 @@ static void block_data_resize ( text_widget * widget,
     b_gap = b->b_gap;
     block_set_bgap (b, b->len);
 
-    /* FIXME: This function must return g_error for errorcheck to work */
     e = g_malloc ((void**) &data, sizeof(TEXTEDIT_CHAR) * new_size);
-    //    errorcheck;
+    errorcheck;
 
     TEXTEDIT_STRNCPY(data, b->data, b->len);
     g_free(b->data);
     b->data = data;
     b->data_size = new_size;
     block_set_bgap (b, b_gap);
+    return success;
 }
 
 
@@ -2279,9 +2392,10 @@ static void block_data_resize ( text_widget * widget,
  *
  * Note that we don't do anything if the block only has one paragraph. 
  */
-static void block_shed_last_para ( text_widget * widget,
+static g_error block_shed_last_para ( text_widget * widget,
                                    LList * ll_b ) {
-    LList * ll_p, * ll_a;
+    g_error e;
+    LList * ll_p, * ll_a, *ll_head;
     block * b, * b_next;
     paragraph * p;
     u16 b_gap, offset; 
@@ -2306,7 +2420,7 @@ static void block_shed_last_para ( text_widget * widget,
         (llist_prev(ll_p) != b->paragraphs)) {
         ll_p = llist_prev(ll_p);
         paragraph_destroy(p);
-        llist_remove(llist_next(ll_p));
+        llist_remove(&ll_head, llist_next(ll_p));
         p = PARAGRAPH(ll_p);
     }
 
@@ -2318,10 +2432,16 @@ static void block_shed_last_para ( text_widget * widget,
     if (!llist_next(ll_b) ||
         (BLOCK(llist_next(ll_b))->data_size - BLOCK(llist_next(ll_b))->len < 
          p->len + 1)) {
-        b_next = block_create();
-        if (b_next->data_size < p->len + BUFFER_GROW)
-            block_data_resize (widget, b_next, p->len + BUFFER_GROW);
-        llist_insert_after (ll_b, b_next);
+        e = block_create(&b_next);
+        errorcheck;
+
+        if (b_next->data_size < p->len + BUFFER_GROW) {
+            e = block_data_resize (widget, b_next, p->len + BUFFER_GROW);
+            errorcheck;
+        }
+
+        e = llist_insert_after (&ll_head, ll_b, b_next);
+        errorcheck;
     } else {
         b_next = BLOCK(llist_next(ll_b));
         block_set_bgap(b_next, 0);
@@ -2335,8 +2455,9 @@ static void block_shed_last_para ( text_widget * widget,
     b->b_gap -= p->len;
     b->len -= p->len;
 
-    b->paragraphs = llist_remove(ll_p);
-    b_next->paragraphs = llist_prepend(b_next->paragraphs, p);
+    llist_remove(&b->paragraphs, ll_p);
+    e = llist_prepend(&b_next->paragraphs, b_next->paragraphs, p);
+    errorcheck;
 
     if (move_cursor) {
         widget->current = llist_next(ll_b);
@@ -2354,25 +2475,30 @@ static void block_shed_last_para ( text_widget * widget,
     } else {
         block_set_bgap(b, b_gap);
     }
+    return success;
 }
 
 
 /**
  * Paragraph methods 
  */
-static paragraph * paragraph_create ( void ) {
-    paragraph * p;
+static g_error paragraph_create ( paragraph ** p ) {
     g_error e;
+    atom * a;
 
-    /* FIXME: errorcheck can not be used here since block_create must return g_error */
-    e = g_malloc((void **) &p, sizeof(paragraph));
-    //    errorcheck;
+    e = g_malloc((void **) p, sizeof(paragraph));
+    errorcheck;
 
-    p->atoms = llist_append(NULL, atom_create(ATOM_TEXT, ATOM_FLAG_LEFT | ATOM_FLAG_RIGHT));
-    p->len = 0;
-    p->height = 0;
-    p->flags = PARAGRAPH_FLAG_H_INVALID;
-    return p;
+    e = atom_create(&a, ATOM_TEXT, ATOM_FLAG_LEFT | ATOM_FLAG_RIGHT);
+    errorcheck;
+
+    e = llist_append(&(*p)->atoms, NULL, a);
+    errorcheck;
+    
+    (*p)->len = 0;
+    (*p)->height = 0;
+    (*p)->flags = PARAGRAPH_FLAG_H_INVALID;
+    return success;
 }
 
 
@@ -2388,18 +2514,19 @@ static void paragraph_destroy ( paragraph * p) {
 /**
  * Atom methods 
  */
-static atom * atom_create ( atom_type type, 
-                            u8 flags ) {
-    atom * a = NULL;
+static g_error atom_create ( atom ** a, 
+                             atom_type type, 
+                             u8 flags ) {
     g_error e;
-    /* FIXME: errorcheck can not be used here since block_create must return g_error */
-    e = g_malloc ((void**)&a, sizeof(atom));
-    //    errorcheck;
-    a->flags = type | flags;
-    a->width = 0;
-    a->height = 0;
-    a->len = 0;
-    return a;
+
+    e = g_malloc ((void**) a, sizeof(atom));
+    errorcheck;
+
+    (*a)->flags = type | flags;
+    (*a)->width = 0;
+    (*a)->height = 0;
+    (*a)->len = 0;
+    return success;
 }
 
 
@@ -2421,6 +2548,7 @@ static void atom_destroy ( atom * a ) {
 static void join_atom_next ( text_widget * widget,
                              LList * a_ll ) {
     atom * a, * next;
+    LList * l_head;
 
     if (!llist_next(a_ll))
         return;
@@ -2436,7 +2564,7 @@ static void join_atom_next ( text_widget * widget,
         if (BLOCK(widget->current)->cursor_atom == llist_next(a_ll)) 
             BLOCK(widget->current)->cursor_atom = a_ll;
         atom_destroy(next);
-        llist_remove(llist_next(a_ll));
+        llist_remove(&l_head, llist_next(a_ll));
     }
 }
 
@@ -2446,27 +2574,34 @@ static void join_atom_next ( text_widget * widget,
  * Split the atom such that the first chunk is len chars. Offset is
  * the offset of the start of a_ll in the block.
  */
-static void  split_atom ( text_widget * widget,
-                          block * b,
-                          LList * a_ll,
-                          size_t offset,
-                          size_t len ) {
+static g_error split_atom ( text_widget * widget,
+                            block * b,
+                            LList * a_ll,
+                            size_t offset,
+                            size_t len ) {
+    g_error e;
     atom * a, * n_atom;
-    
+    LList * l_head;
+
     a = ATOM(a_ll);
     assert(a->len >= len);
 
-    n_atom = atom_create(ATOM_TEXT, a->flags);
+    e = atom_create(&n_atom, ATOM_TEXT, a->flags);
+    errorcheck;
+
     n_atom->len = a->len - len;
     n_atom->height = a->height;
     a->len = len;
     block_string_size( widget, b, 
                        offset + a->len, n_atom->len, 
                        &n_atom->width, &n_atom->height);
-    llist_insert_after(a_ll, n_atom);
+    e = llist_insert_after(&l_head, a_ll, n_atom);
+    errorcheck;
+    
     a->width -= n_atom->width;
     UNSET_FLAG(n_atom->flags, ATOM_FLAG_LEFT);
     UNSET_FLAG(a->flags, ATOM_FLAG_RIGHT);
+    return success;
 }
 
 
@@ -2527,10 +2662,11 @@ static LList * prev_atom ( LList * b_ll,
  * Checks the wrapping from atom a_ll on. Assume everything before
  * this atom is properly wrapped. Sets a_ll's width.
  */
-static void wrap ( text_widget * widget,
-                   block * b,
-                   paragraph * p, 
-                   LList * a_ll ) {
+static g_error wrap ( text_widget * widget,
+                      block * b,
+                      paragraph * p, 
+                      LList * a_ll ) {
+    g_error e;
     atom * a;
     LList * l;
     u8 wrap_para = FALSE;
@@ -2573,10 +2709,11 @@ static void wrap ( text_widget * widget,
         
         if (width + line_width < widget_width) {
             a_ll = llist_prev(a_ll);
-            rewrap(widget, b, p, 
-                   a_ll, 
-                   offset - ATOM(a_ll)->len,
-                   p_offset);
+            e = rewrap(widget, b, p, 
+                       a_ll, 
+                       offset - ATOM(a_ll)->len,
+                       p_offset);
+            errorcheck;
             return;
         }
     }
@@ -2619,14 +2756,18 @@ static void wrap ( text_widget * widget,
         l = llist_next(l);
     }
 
-    if (width >= widget_width) 
-        rewrap(widget, b, p, a_ll, offset, p_offset);
+    if (width >= widget_width) {
+        e = rewrap(widget, b, p, a_ll, offset, p_offset);
+        errorcheck;
+    }
     /* Case 3: This line is too short; we can pull a word from the
        next line */
-    else if ((next_line_word_w) && (width + next_line_word_w < widget_width)) 
-        rewrap(widget, b, p, a_ll, offset, p_offset);
-    else 
+    else if ((next_line_word_w) && (width + next_line_word_w < widget_width)) { 
+        e = rewrap(widget, b, p, a_ll, offset, p_offset);
+        errorcheck;
+    } else {
         block_string_size(widget, b, offset, a->len, &a->width, &a->height);
+    }
 
     if (GET_FLAG(p->flags, PARAGRAPH_FLAG_H_INVALID)) {
         UNSET_FLAG(p->flags, PARAGRAPH_FLAG_H_INVALID);
@@ -2638,6 +2779,7 @@ static void wrap ( text_widget * widget,
         }
         widget->v_height += p->height;
     }
+    return success;
 } 
 
 
@@ -2648,13 +2790,14 @@ static void wrap ( text_widget * widget,
  * for sure to be accurate), and p_offset is the offset of the start of the 
  * paragraph within block b.
  */
-static void rewrap ( text_widget * widget,
-                     block * b,
-                     paragraph * p, 
-                     LList * a_ll, 
-                     u16 offset,
-                     u16 p_offset) {
-    LList * l;
+static g_error rewrap ( text_widget * widget,
+                        block * b,
+                        paragraph * p, 
+                        LList * a_ll, 
+                        u16 offset,
+                        u16 p_offset) {
+    g_error e;
+    LList * l, * l_head;
     s16 w, h, width;
     u16 p_height;
     u16 a_start, a_len, a_width; 
@@ -2670,7 +2813,7 @@ static void rewrap ( text_widget * widget,
     /* Destroy atoms after a_ll */
     for (l = llist_next(a_ll); l && (l != a_ll); l = llist_next(a_ll)) {
         atom_destroy(ATOM(l));
-        llist_remove(l);
+        llist_remove(&l_head, l);
     }
 
     /* Set default width and height to that of a null str */
@@ -2700,8 +2843,13 @@ static void rewrap ( text_widget * widget,
             a_len = 0;
             a_width = 0;
             width = 0;
-            a = atom_create(ATOM_TEXT, ATOM_FLAG_LEFT);
-            llist_append(a_ll, a);
+            
+            e = atom_create(&a, ATOM_TEXT, ATOM_FLAG_LEFT);
+            errorcheck;
+
+            e = llist_append(&l_head, a_ll, a);
+            errorcheck;
+
             offset = a_start + a_len - 1;
         } else if (break_char(block_char_at(b, offset))) {
             a_len = offset - a_start + 1;
@@ -2731,8 +2879,12 @@ static void rewrap ( text_widget * widget,
         if ((p == PARAGRAPH(b->cursor_paragraph)) && (!set_cursor)) {
             if ((offset <= b->b_gap) && 
                 (offset + ATOM(l)->len > b->b_gap)) {
-                a = atom_create(ATOM_TEXT, ATOM(l)->flags);
-                llist_insert_after(l, a);
+                e = atom_create(&a, ATOM_TEXT, ATOM(l)->flags);
+                errorcheck;
+
+                e = llist_insert_after(&l_head, l, a);
+                errorcheck;
+
                 UNSET_FLAG(ATOM(l)->flags, ATOM_FLAG_RIGHT);
                 UNSET_FLAG(a->flags, ATOM_FLAG_LEFT);
                 a->height = ATOM(l)->height;
@@ -2770,4 +2922,5 @@ static void rewrap ( text_widget * widget,
 
     /* Calculate the cursor's virtual y position */
     widget_cursor_v_y (widget);
+    return success;
 }

@@ -1,4 +1,4 @@
-/* $Id: textedit.h,v 1.6 2002/10/28 16:40:00 pney Exp $
+/* $Id: textedit.h,v 1.7 2002/10/29 22:23:55 cgroom Exp $
  *
  * Multi-line text widget. The widget is divided into PicoGUI specific
  * code in widget/textedit.c, and abstract text widget code in
@@ -168,6 +168,8 @@ struct texteditdata {
     /* Scrollbar */
     u16     thumbsize;
     u16     drag_start; /* Start of a drag, relative to top of thumb */
+    u8      scroll_lock; /* Internal lock for preventing
+                            self-generated scroll events */
 
     /* Cursor */
     struct  gropnode * cursor_grop;
@@ -268,7 +270,7 @@ void textedit_char_size   ( struct widget * self,
                             TEXTEDIT_CHAR ch,
                             s16 * w, 
                             s16 * h );
-void textedit_set_font    ( struct widget * self,
+g_error textedit_set_font ( struct widget * self,
                             handle font );
 void textedit_scrollevent ( struct widget * self );
 
@@ -276,33 +278,32 @@ void textedit_scrollevent ( struct widget * self );
 /**
  * Back-end services (textedit_logical.c)
  */
-void    text_backend_init            ( text_widget * widget );
+g_error text_backend_init            ( text_widget * widget );
 void    text_backend_destroy         ( text_widget * widget );
-void    text_backend_build           ( text_widget * widget,
+g_error text_backend_build           ( text_widget * widget,
                                        u16 w,
                                        u16 h );
 void    text_backend_set_v_top       ( text_widget * widget,
                                        u32 v_top );
-void    text_backend_set_text        ( text_widget * widget,
+g_error text_backend_set_text        ( text_widget * widget,
                                        struct pgstring * text );
-void    text_backend_set_selection   ( text_widget * widget,
+g_error text_backend_set_selection   ( text_widget * widget,
                                        struct pgstring * text );
 g_error text_backend_save            ( text_widget * widget );
-void    text_backend_store_selection ( text_widget * widget );
-void    text_backend_insert_char     ( text_widget * widget,
+g_error text_backend_store_selection ( text_widget * widget );
+g_error text_backend_insert_char     ( text_widget * widget,
                                        TEXTEDIT_UCHAR ch ); 
-void    text_backend_delete_char     ( text_widget * widget );
-void    text_backend_cursor_move_dir ( text_widget * widget,
+g_error text_backend_delete_char     ( text_widget * widget );
+g_error text_backend_cursor_move_dir ( text_widget * widget,
                                        cursor_direction dir );
-void    text_backend_cursor_move_xy  ( text_widget * widget,
+g_error text_backend_cursor_move_xy  ( text_widget * widget,
                                        u16 x, 
                                        u16 y );
-void    text_backend_selection_dir   ( text_widget * widget,
+g_error text_backend_selection_dir   ( text_widget * widget,
                                        cursor_direction dir );
-void    text_backend_selection_xy    ( text_widget * widget,
+g_error text_backend_selection_xy    ( text_widget * widget,
                                        u16 x, 
                                        u16 y);
-
 
 
 #ifdef TEXTEDIT_DEBUG

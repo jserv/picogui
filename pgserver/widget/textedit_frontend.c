@@ -1,4 +1,4 @@
-/* $Id: textedit_frontend.c,v 1.11 2002/10/29 12:47:38 pney Exp $
+/* $Id: textedit_frontend.c,v 1.12 2002/10/29 22:23:54 cgroom Exp $
  *
  * textedit.c - Multi-line text widget. By Chuck Groom,
  * cgroom@bluemug.com, Blue Mug, Inc, July 2002. Intended to be
@@ -13,10 +13,6 @@
  * (ASCII). The user can type, move the cursor around with the mouse
  * or arrows, and scroll around.
  *
- * Open issues:
- *   - Should we introduce concept of text selection? This may imply a 
- *     clipboard, which to my knowledge is not part of pgui.
- *
  * TBD; Short term:
  *   - Beat up on widget to identify bugs (yes, there are several)
  *   - The scrollbar implementation is shameful
@@ -30,7 +26,6 @@
  *     - Scroll to virtual y
  *     - Get virtual y height
  *     - Set cursor width, blink 
- *     - Get text selection
  *   - Add client events for
  *     - Insert
  *     - Delete
@@ -44,13 +39,15 @@
  *   - Widget draws on top of background, not a solid rect
  * TBD; Very long term
  *   - Unicode
- *   - On-demand (read-only)
+ *   - On-demand (read-only). This is useful for reading very large text files
+ *     without storing everything on the server.
  *
  * Overview: 
  * 
  * The code is divided into two sections: the part which is
- * pgui-specific (textedit.c) and the part which manages a generic
- * text editor (textedit_logical.c).
+ * pgui-specific (textedit_frontend.c) and the part which manages a generic
+ * text editor (textedit_logical.c). There is also a generic linked list 
+ * (textedit_llist.c).
  *
  * The text editor widget has a bitmap, a scrollbar, and a cursor. It
  * draws directly to the bitmap; no grops. When the pgui drawing
@@ -59,21 +56,21 @@
  * update rect.
  *
  * Text is stored in the following manner:
- *   The widget has a list of blocks
- *   A block has a text buffer and a list of paragraphs
- *   A paragraph has a list of atoms
- *   An atom describes the content in a line or partial line.
- *  
- * Paragraphs cannot span blocks. Atoms cannot span lines. The block's
- * text buffer is buffer-gapped. When a paragraph grows too large to fit
- * in a block, we shed the last paragraph to a new block or, if the block
- * only contains a single paragraph, grow the size of the block's buffer. 
+ *   - The widget has a list of blocks
+ *   -  A block has a text buffer and a list of paragraphs
+ *   -  A paragraph has a list of atoms
+ *         o  Paragraphs cannot span blocks
+ *   -  An atom describes the content in a line or partial line.
+ *         o  Atoms cannot span lines 
+ * 
+ * The block's text buffer is buffer-gapped. When a paragraph grows
+ * too large to fit in a block, we shed the last paragraph to a new
+ * block; if the block only contains a single paragraph, grow the
+ * size of the block's buffer.
  * 
  * Atoms have flags. The most useful are the text atom's left/right
  * flags, which are really useful for quickly wrapping and drawing.
  * 
- * We make extensive use of a generic linked list API, gcore/llist.c.
- *
  * About PicoGUI:
  * 
  * PicoGUI small and efficient client/server GUI
@@ -113,7 +110,7 @@
 #define DATA WIDGET_DATA(0,texteditdata)
 #define CTX  (&DATA->ctx)
 
-/* Cursor properties (TBD: Theme) */
+/* Cursor properties (TBD: Theme these) */
 #define CURSORWIDTH     2
 #define FLASHTIME_ON    700
 #define FLASHTIME_OFF   300
@@ -137,7 +134,6 @@ void        textedit_build_scroll   ( struct gropctxt *c,
                                       unsigned short state,
                                       struct widget *self );
 void        textedit_draw_update    ( struct widget * self );
-
 static TEXTEDIT_CHAR upper          ( TEXTEDIT_CHAR ch );
 static void add_update_region       ( struct widget * self,
                                       s16 x, s16 y, 
@@ -158,7 +154,8 @@ g_error textedit_install(struct widget *self) {
 
     /* main split */
     e = newdiv(&self->in, self);  
-    errorcheck;    
+    errorcheck;
+    
     self->in->flags |= PG_S_ALL;
 
     /* Visible node */
@@ -180,17 +177,18 @@ g_error textedit_install(struct widget *self) {
     self->in->div->flags |= PG_S_RIGHT;
     self->in->div->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
 
-    SET_FLAG(DATA->flags, TEXT_WIDGET_HAS_SCROLLBAR);
-
     DATA->fg =        VID(color_pgtohwr) (TEXT_FG);
     DATA->bg =        VID(color_pgtohwr) (TEXT_BG);
     DATA->highlight = VID(color_pgtohwr) (TEXT_HIGHLIGHT);
            
     DATA->bit = NULL;
-    text_backend_init(DATA);
+    e = text_backend_init(DATA);
+    errorcheck;
+
     DATA->self = self;
     return success;
 }
+
 
 void textedit_build ( struct gropctxt *c,
                       unsigned short state,
@@ -198,7 +196,7 @@ void textedit_build ( struct gropctxt *c,
     s16 w, h, tw;
     g_error e;
 
-    w = self->in->div->r.w;
+    w = self->in->div->r.w -10;
     h = self->in->div->r.h;
 
     /* Set scrollbar properties */
@@ -206,7 +204,8 @@ void textedit_build ( struct gropctxt *c,
 
     if (!DATA->fd){
         /* FIXME: Theme lookup foreground, background colors, border */
-        textedit_set_font (self, theme_lookup (state, PGTH_P_FONT));
+        e = textedit_set_font (self, theme_lookup (state, PGTH_P_FONT));
+//        errorcheck;
     }
     assert (DATA->fd);
 
@@ -217,15 +216,22 @@ void textedit_build ( struct gropctxt *c,
     handle_free(self->owner,DATA->bit_h);
 
     e = VID(bitmap_new) (&(DATA->bit), w, h, vid->bpp);
+//    errorcheck;
+
     /* the handle should be owned by the application not by pgserver itself */
     e = mkhandle(&DATA->bit_h, PG_TYPE_BITMAP, self->owner, DATA->bit);
+//    errorcheck;
 
     /* Size and add the bitmap itself */
     e = addgropsz(c, PG_GROP_BITMAP, 0, 0, w, h);
+//    errorcheck;
+
     c->current->param[0] = DATA->bit_h;
 
     /* Create cursor */
-    addgropsz(c,PG_GROP_RECT, 0, 0, 0, 0);
+    e = addgropsz(c,PG_GROP_RECT, 0, 0, 0, 0);
+//    errorcheck;
+    
     c->current->flags |= PG_GROPF_COLORED;
     DATA->cursor_grop = c->current;
     DATA->cursor_state = 1;
@@ -236,7 +242,11 @@ void textedit_build ( struct gropctxt *c,
     DATA->cursor_grop->r.x = DATA->border_h;
     DATA->cursor_grop->r.y = DATA->border_v;
 
-    text_backend_build( DATA, w, h);
+    e = text_backend_build( DATA, w, h);
+//    errorcheck;
+
+    DATA->scroll_lock = 0;
+//    return success;
 }
 
 
@@ -253,8 +263,11 @@ void textedit_remove(struct widget *self) {
 }
 
 
-void textedit_resize(struct widget *self) {
-    return;
+void textedit_resize(struct widget *self) { 
+    // FIXME
+    self->in->div->preferred.w = self->in->div->r.w;
+    self->in->div->preferred.h = self->in->div->r.h;
+    printf("Resize*********\n");
 }
 
 
@@ -298,16 +311,22 @@ g_error textedit_set ( struct widget *self,
         }
         break;
     case PG_WP_SCROLL_Y:
-        if (self->in->div->r.h) {
-            struct divnode * p_node;
-            struct widget * parent;
-            int top;
-            p_node = divnode_findparent(self->dt->head, self->in);
-            parent = p_node->owner;
-            top = ((u32) data) * DATA->v_height /
-                DATA->height;
-            text_backend_set_v_top(DATA, top); 
+#if 0
+        printf("PG_WP_SCROLL_Y %d\n", 
+               DATA->scroll_lock);
+        if (DATA->scroll_lock) {
+            DATA->scroll_lock--;
+        } else {
+            if (self->in->div->r.h) {
+                struct divnode * p_node;
+                struct widget * parent;
+                p_node = divnode_findparent(self->dt->head, self->in);
+                parent = p_node->owner;
+                text_backend_set_v_top(DATA, 
+                                       MAX(0, (((u32) data) * DATA->v_height)/100 - DATA->height));
+            }
         }
+#endif
         break;
     }
     return success;
@@ -412,25 +431,6 @@ void textedit_trigger ( struct widget *self,
         case PGKEY_F3:
             print_block(DATA, DATA->current);
             break;
-        case PGKEY_F10:
-            /* Screen shot. Code taken from scrshot.c */
-            {
-                FILE *f;
-                int x,y;
-                f = fopen("temp.ppm","wb");  
-                fprintf(f,"P6\n%d %d\n255\n",vid->xres,vid->yres);
-                for (y=0;y<vid->yres;y++) {
-                    for (x=0;x<vid->xres;x++) {
-                        pgcolor c;
-                        c = VID(color_hwrtopg)(VID(getpixel)(DATA->dt->display,x,y));
-                        fputc(getred(c),f);
-                        fputc(getgreen(c),f);
-                        fputc(getblue(c),f);
-                    }
-                }
-                fclose(f);
-            }
-            break;
 #endif /* DEBUG_TEXTEDIT */
         case PGKEY_RETURN:
             text_backend_insert_char(DATA, '\n');
@@ -438,7 +438,7 @@ void textedit_trigger ( struct widget *self,
         case PGKEY_BACKSPACE:
         case PGKEY_DELETE:
             /* Screw "backspace" vs. "delete". This is my widget, and
-               I say they're going to be the same thing. So, there. */
+             * I say they're going to be the same thing. So, there. */
             text_backend_delete_char(DATA);
             break;
         case PGKEY_TAB:
@@ -493,14 +493,15 @@ void textedit_trigger ( struct widget *self,
  * This is bad, wicked, naughty, and in all ways reprehensible. 
  */
 struct scrolldata {
-  int horizontal;
-  int on,over;
-  int res;       
-  int grab_offset;
-  int release_delta;
-  int value,old_value;
-  u32 wait_tick;
-  int thumbscale;
+    int horizontal;
+    int on,over;
+    int res;        /* Scroll bar's resolution - maximum value */
+    int grab_offset;  /* The difference from the top of the indicator to
+                         the point that was clicked */
+    int release_delta;
+    int value,old_value;
+    u32 wait_tick;
+    int thumbscale;
 };
 
 
@@ -509,8 +510,9 @@ void textedit_scrollevent( struct widget *self ) {
     struct divnode * p_node;
     struct widget * parent;
     struct scrolldata * p_data;
-    
-    p_node = divnode_findparent(self->dt->head, self->in);
+    s16 oldres;
+
+ p_node = divnode_findparent(self->dt->head, self->in);
     parent = p_node->owner;
     p_data = (struct scrolldata *) (parent->data);
     value = (p_data->res * DATA->v_y_top) / DATA->v_height;
@@ -530,6 +532,59 @@ void textedit_scrollevent( struct widget *self ) {
         self->dt->flags |= DIVTREE_NEED_RESIZE;
         post_event(PG_WE_ACTIVATE,parent,0,0,NULL);
     }
+/* IN DEVEL -- ignore */
+#if 0
+    /* Must prevent reentrancy to avoid an infinite
+     * recursion when widget_set() is called */
+    
+    if (DATA->scroll_lock) 
+        return;
+    DATA->scroll_lock = 1;
+
+    p_node = divnode_findparent(self->dt->head, self->in);
+    parent = p_node->owner;
+    p_data = ((struct scrolldata *)(parent->data[0])) ;
+    height = MAX(DATA->height, DATA->v_height);
+
+    parent->in->div->flags |= DIVNODE_NEED_REDRAW;
+    parent->dt->flags |= DIVTREE_NEED_REDRAW;
+    self->in->flags |= DIVTREE_NEED_REDRAW;
+    
+    printf(" ** %d %d %d\n", 
+           self->in->div->preferred.h,
+           self->in->child.h,
+           self->in->r.h);
+
+    self->in->div->preferred.h = height;
+    divtree_size_and_calc(self->dt);
+    divtree_size_and_calc(parent->dt);
+
+    printf(" (** %d %d %d\n", 
+           self->in->div->preferred.h,
+           self->in->child.h,
+           self->in->r.h);
+
+    set_widget_rebuild(parent);
+
+/* Other in devel segment... also ignore ... */
+
+    p_node = divnode_findparent(self->dt->head, self->in);
+    parent = p_node->owner;
+    p_data = ((struct scrolldata *)(parent->data[0])) ;
+    height = MAX(DATA->height, DATA->v_height);
+
+    p_data->ext_res = 100;
+    p_data->ext_thumbsize = (DATA->height * 100) / height;
+    if (height <= DATA->height)
+        p_data->value = 0;
+    else
+        p_data->value = (DATA->v_y_top * 100) / (height - DATA->height);
+    
+    set_widget_rebuild(parent);
+    post_event(PG_WE_ACTIVATE,parent,0,0,NULL);
+
+    DATA->scroll_lock = 0;
+#endif /* 0 */
 }
 
 
@@ -619,13 +674,14 @@ void textedit_char_size  ( struct widget * self,
 }
 
 
-void textedit_set_font ( struct widget *self,
-                         handle font ) {
-    rdhandle((void **)&(DATA->fd), PG_TYPE_FONTDESC, -1, font);
+g_error textedit_set_font ( struct widget *self,
+                            handle font ) {
+    return rdhandle((void **)&(DATA->fd), PG_TYPE_FONTDESC, -1, font);
 }
 
 
 void textedit_draw_update ( struct widget *self ) {
+    g_error e;
     struct cursor * c;
     if (!DATA->update_clean) {
         /* Translate to screen coordinates */
