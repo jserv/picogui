@@ -1,4 +1,4 @@
-/* $Id: x11_init.c,v 1.7 2002/11/06 01:19:59 micahjd Exp $
+/* $Id: x11_init.c,v 1.8 2002/11/06 03:00:23 micahjd Exp $
  *
  * x11_init.c - Initialization for picogui'x driver for the X window system
  *
@@ -96,6 +96,7 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   rect.width = rootw;
   rect.height = rooth;
   XUnionRectWithRegion(&rect,x11_display_region,x11_display_region);
+  x11_current_region = x11_display_region;
 
   x11_monolithic_window_update();
   return success;

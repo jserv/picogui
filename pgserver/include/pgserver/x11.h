@@ -1,4 +1,4 @@
-/* $Id: x11.h,v 1.6 2002/11/06 02:42:14 micahjd Exp $
+/* $Id: x11.h,v 1.7 2002/11/06 03:00:22 micahjd Exp $
  *
  * x11.h - Header shared by all the x11 driver components in picogui
  *
@@ -91,6 +91,9 @@ extern struct x11bitmap *x11_window_list;
 
 /* A region specifying the entire display */
 Region x11_display_region;
+
+/* A region specifying the area we're currently rendering to */
+Region x11_current_region;
 
 
 /******************************************************** Shared utilities */

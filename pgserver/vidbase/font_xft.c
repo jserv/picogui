@@ -1,4 +1,4 @@
-/* $Id: font_xft.c,v 1.4 2002/11/06 02:42:14 micahjd Exp $
+/* $Id: font_xft.c,v 1.5 2002/11/06 03:00:23 micahjd Exp $
  *
  * font_xft.c - Font engine for X implemented using Xft
  *
@@ -181,8 +181,8 @@ void xft_draw_setup(hwrbitmap dest, hwrcolor col, struct quad *clip, XftColor *x
 
   XftDrawChange(xft_draw, XB(dest)->d);
 
-  /* Yucky way of setting the clip rectangle... 
-   * this is messy and probably slow 
+  /* Set up the clip rectangle to the intercection of clip and our
+   * global clipping rectangle (needed to handle expose events right)
    */
   r = XCreateRegion();
   rect.x = clip->x1;
@@ -190,6 +190,7 @@ void xft_draw_setup(hwrbitmap dest, hwrcolor col, struct quad *clip, XftColor *x
   rect.width = clip->x2 - clip->x1 + 1;
   rect.height = clip->y2 - clip->y1 + 1;
   XUnionRectWithRegion(&rect,r,r);
+  XIntersectRegion(x11_current_region,r,r);
   XftDrawSetClip(xft_draw,r);
   XDestroyRegion(r);
 

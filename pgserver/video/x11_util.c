@@ -1,4 +1,4 @@
-/* $Id: x11_util.c,v 1.9 2002/11/06 02:42:14 micahjd Exp $
+/* $Id: x11_util.c,v 1.10 2002/11/06 03:00:24 micahjd Exp $
  *
  * x11_util.c - Utility functions for picogui's driver for the X window system
  *
@@ -337,7 +337,8 @@ void x11_expose(struct x11bitmap *xb, Region r) {
     for (i=0;i<=PG_LGOPMAX;i++)
       if (x11_gctab[i])
 	XSetRegion(x11_display,x11_gctab[i],r);
-    
+    x11_current_region = r;
+
     for (p=dts->top;p;p=p->next)
       if (p->display == (hwrbitmap)xb)
 	p->flags |= DIVTREE_ALL_REDRAW;
@@ -346,6 +347,7 @@ void x11_expose(struct x11bitmap *xb, Region r) {
     for (i=0;i<=PG_LGOPMAX;i++)
       if (x11_gctab[i])
 	XSetRegion(x11_display,x11_gctab[i],x11_display_region);
+    x11_current_region = x11_display_region;
   }
 }
 
