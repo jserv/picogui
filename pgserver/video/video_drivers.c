@@ -1,4 +1,4 @@
-/* $Id: video_drivers.c,v 1.11 2002/11/03 04:54:25 micahjd Exp $
+/* $Id: video_drivers.c,v 1.12 2002/11/05 12:41:21 bornet Exp $
  *
  * video_drivers.c - handles loading/switching video drivers and modes
  *
@@ -118,9 +118,11 @@ g_error video_init(void) {
   const char *str;
   g_error (*viddriver)(struct vidlib *v);
 
+#ifdef CONFIG_PAL8_CUSTOM
   /* Load a custom palette if necessary */
   e = load_custom_palette(get_param_str("pgserver","palette",NULL));
   errorcheck;
+#endif
   
   /* Process video driver config options */
   vidw = get_param_int("pgserver","width",0);
