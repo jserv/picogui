@@ -1,4 +1,4 @@
-/* $Id: cursor.c,v 1.2 2002/07/03 22:03:29 micahjd Exp $
+/* $Id: cursor.c,v 1.3 2002/10/02 21:25:07 micahjd Exp $
  *
  * cursor.c - Cursor abstraction and multiplexing layer 
  *
@@ -387,8 +387,7 @@ void cursor_change_under(struct cursor *crsr, handle old_under) {
   struct widget *new_w, *old_w;
 
   new_w = NULL;
-  if (crsr->sprite->visible)
-    rdhandle((void**)&new_w, PG_TYPE_WIDGET, -1, crsr->ctx.widget_under);
+  rdhandle((void**)&new_w, PG_TYPE_WIDGET, -1, crsr->ctx.widget_under);
   old_w = NULL;
   rdhandle((void**)&old_w, PG_TYPE_WIDGET, -1, old_under);
 
