@@ -1,11 +1,11 @@
-DIST_SUBDIRS = configscript
-
 SUBDIRS = \
 	include \
 	widget appmgr debug gcore net \
 	vidbase theme video os vidwrap \
 	input font formats \
 	.
+
+DIST_SUBDIRS = configscript $(SUBDIRS)
 
 INCLUDES = -Iinclude -I$(srcdir)/include $(DRIVER_CFLAGS)
 
@@ -62,9 +62,8 @@ menuconfig: configscript/lxdialog/lxdialog
 	@echo "type make to build the program"
 
 configscript/lxdialog/lxdialog:
-	@(cd configscript/lxdialog && $(MAKE) $(AM_MAKEFLAGS) all)
+	@(cd configscript && $(MAKE) $(AM_MAKEFLAGS) all)
 
 distclean-local:
-	list='$(DIST_SUBDIRS)'; for subdir in $$list; do \
-	  test "$$subdir" = . || (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) distclean); \
-	done
+	(cd configscript && $(MAKE) $(AM_MAKEFLAGS) distclean)
+

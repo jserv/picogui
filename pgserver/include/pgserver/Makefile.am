@@ -1,23 +1,24 @@
 BUILT_SOURCES = autoconf.h
 
 noinst_HEADERS = \
-	appmgr.h \
-	autoconf.h \
-	common.h \
-	divtree.h \
-	font.h \
-	g_error.h \
-	g_malloc.h \
-	handle.h \
-	inlstring.h \
-	input.h \
-	mc68328digi.h \
-	pgmain.h \
-	pgnet.h \
-	svrtheme.h \
-	theme.h \
-	timer.h \
-	video.h \
+	appmgr.h 	\
+	autoconf.h 	\
+	common.h 	\
+	divtree.h 	\
+	font.h 		\
+	g_error.h 	\
+	g_malloc.h 	\
+	handle.h 	\
+	inlstring.h 	\
+	input.h 	\
+	mc68328digi.h 	\
+	pgmain.h 	\
+	pgnet.h 	\
+	render.h 	\
+	svrtheme.h 	\
+	theme.h 	\
+	timer.h 	\
+	video.h 	\
 	widget.h
 
 CONFIG_CLEAN_FILES = autoconf.h

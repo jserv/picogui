@@ -1,4 +1,4 @@
-SUBDIRS = lxdialog
+DIST_SUBDIRS = lxdialog
 
 SUBDIRS = @LXDIALOG@
 
