@@ -26,13 +26,13 @@ def _getFont(str, server):
 def _getBitmap(str, server):
     return server.mkbitmap(str), _getBitmap
 
-def _getSize(str, server):
+def _getSize(s, server):
     # This converts fractions of the form "numerator/denominator"
     # into pgserver 8:8 bit fractions if necessary.
-    fraction = string.split(str,'/')
+    fraction = string.split(str(s),'/')
     if len(fraction) > 1:
         return (int(fraction[0])<<8) | int(fraction[1]), _getSize
-    return str, _getSize
+    return int(s), _getSize
 
 
 _wtype_consts = {
