@@ -1,4 +1,4 @@
-/* $Id: tsinput.c,v 1.7 2001/04/16 17:21:44 pney Exp $
+/* $Id: tsinput.c,v 1.8 2001/04/17 15:14:22 bauermeister Exp $
  *
  * tsinput.c - input driver for touch screen
  *
@@ -46,6 +46,7 @@
 
 static const char *DEVICE_FILE_NAME = "/dev/ts";
 static const char *_file_ = __FILE__; 
+static const char *PG_TS_ENV_NAME = "PG_TS_CALIBRATION";
 
 static int fd=0;
 static int bytes_transfered=0;
@@ -93,7 +94,7 @@ void tsinput_poll(void) {
 
     switch(pen_info.event) {
     case EV_PEN_UP:
-      if(pen_info.x > 200) {
+      if(pen_info.x > 350) {
         tsinput_sleep();
 	break;
       }
@@ -157,6 +158,7 @@ g_error tsinput_init(void) {
   else {
     int mx1, mx2, my1, my2;
     int ux1, ux2, uy1, uy2;
+    char* pg_ts_env;
 
     ret_val=ioctl(fd,TS_PARAMS_GET,&ts_params);
     if(ret_val < 0) {
@@ -204,8 +206,9 @@ g_error tsinput_init(void) {
     ts_params.y_min          = 0;
     ts_params.x_max          = 240-1;
     ts_params.x_min          = 0;
-
-/*    mx1 =  440; ux1 =   0;
+    ts_params.y_max          = 400;
+/*
+    mx1 =  440; ux1 =   0;
     my1 = 3350; uy1 =   0;
     mx2 = 3680; ux2 = 320;
     my2 =  710; uy2 = 240;
@@ -215,6 +218,17 @@ g_error tsinput_init(void) {
     mx2 =  440; ux2 = 240;
     my2 =  710; uy2 = 320;
 #endif
+
+    /* env var will override default values */
+    if( pg_ts_env = (char*)getenv(PG_TS_ENV_NAME) ) {
+      sscanf(pg_ts_env, "%d %d %d %d", &mx1, &my1, &mx2, &my2);
+#ifdef DEBUG_INIT
+      printf("%s: taking m1 and m2 points for env var: '%s'\n",
+	     _file_, pg_ts_env);
+      printf("  mx1=%d my1=%d mx2=%d my2=%d\n", mx1, my1, mx2, my2);
+#endif
+    }
+
     ts_params.x_ratio_num    = ux1 - ux2;
     ts_params.x_ratio_den    = mx1 - mx2;
     ts_params.x_offset       =
