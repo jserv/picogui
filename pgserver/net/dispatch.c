@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.111 2002/10/24 03:00:54 micahjd Exp $
+/* $Id: dispatch.c,v 1.112 2002/10/24 21:58:49 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -95,6 +95,7 @@ int dispatch_packet(int from,struct pgrequest *req,void *data) {
     /* No error, send a return code packet */
 
     struct pgresponse_ret rsp;
+    memset(&rsp,0,sizeof(rsp));
     
     rsp.type = htons(PG_RESPONSE_RET);
     rsp.id = htonl(req->id);
@@ -109,6 +110,7 @@ int dispatch_packet(int from,struct pgrequest *req,void *data) {
     int errlen;
     struct pgresponse_err rsp;
     const char *errmsg;
+    memset(&rsp,0,sizeof(rsp));
 
     errlen = strlen(errmsg = errortext(e));
     

@@ -1,4 +1,4 @@
-/* $Id: pgstring.c,v 1.7 2002/10/12 14:46:34 micahjd Exp $
+/* $Id: pgstring.c,v 1.8 2002/10/24 21:58:49 micahjd Exp $
  *
  * pgstring.c - String data type to handle various encodings
  *
@@ -56,8 +56,8 @@ static const struct pgstr_format *pgstr_format_table[] = {
 
 /* Memory management constants for pgstring insert/delete
  */
-#define BUFFER_GROW_MARGIN    1024
-#define BUFFER_MAX_EMPTY      2048
+#define BUFFER_GROW_MARGIN    512
+#define BUFFER_MAX_EMPTY      1024
 #define BUFFER_SHRINK_MARGIN  256
 
 
