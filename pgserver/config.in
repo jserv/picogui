@@ -131,11 +131,12 @@ bool 'Support for Alpha key'                  CONFIG_KEY_ALPHA
 endmenu
 
 mainmenu_option next_comment
-comment 'Bitmap Formats'
+comment 'File Formats'
 bool 'Internal XBM loader'                    CONFIG_FORMAT_XBM
 bool 'PNM: portable anymap'                   CONFIG_FORMAT_PNM
 bool 'JPEG: jpeg library'                     CONFIG_FORMAT_JPEG
 bool 'BMP: windows bitmap'                    CONFIG_FORMAT_BMP
+bool 'HTML: hypertext markup'                 CONFIG_FORMAT_HTML
 endmenu
 
 mainmenu_option next_comment

@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.6 2001/10/07 07:01:25 micahjd Exp $
+/* $Id: textbox_document.c,v 1.7 2001/10/14 09:21:59 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -31,6 +31,17 @@
 #include <pgserver/widget.h>
 #include <pgserver/font.h>
 #include <pgserver/textbox.h>
+
+/************************* Supported format loaders */
+
+struct txtformat text_formats[] = {
+  
+#ifdef CONFIG_FORMAT_HTML
+  { {'H','T','M','L'}, &html_load, NULL },
+#endif
+
+  { {0,0,0,0}, NULL, NULL }
+};
 
 /************************* Formatting */
 
@@ -291,6 +302,20 @@ g_error text_caret_off(struct textbox_cursor *c) {
     update(c->caret_div,1);
   }
   return sucess;
+}
+
+/* Load text of the specified format */
+g_error text_load(struct textbox_cursor *c, const char *fmt_code,
+		  const u8 *data, u32 datalen) {
+  struct txtformat *f = text_formats;
+
+  while (f && strncmp(f->name,fmt_code,4))
+    f++;
+
+  if (!f)
+    return mkerror(PG_ERRT_BADPARAM,51);  /* Unsupported text format */
+
+  return (*f->load)(c,data,datalen);
 }
 
 /* The End */

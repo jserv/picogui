@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.8 2001/10/13 20:43:37 micahjd Exp $
+/* $Id: textbox_main.c,v 1.9 2001/10/14 09:21:59 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -72,27 +72,12 @@ g_error textbox_install(struct widget *self) {
 
    /* Add some demo text */
 
-   {   
-     int i;
-     text_format_modifyfont(&DATA->c,PG_FSTYLE_FLUSH,0,0);
-     text_insert_string(&DATA->c,"Hello ");
-     text_insert_wordbreak(&DATA->c);
-     text_format_color(&DATA->c,0x008000);
-     text_insert_string(&DATA->c,"World! ");
-     text_insert_linebreak(&DATA->c);
-     text_insert_string(&DATA->c,"This ");
-     text_insert_wordbreak(&DATA->c);
-     text_format_modifyfont(&DATA->c,PG_FSTYLE_BOLD,0,10);
-     text_format_color(&DATA->c,0x000080);
-     text_insert_string(&DATA->c,"is ");
-     text_format_modifyfont(&DATA->c,PG_FSTYLE_ITALIC,PG_FSTYLE_BOLD,-5);
-     text_insert_wordbreak(&DATA->c);
-     text_insert_string(&DATA->c,"nifty. ");
-     text_insert_linebreak(&DATA->c);
-     for (i=0;i<100;i++) {
-       text_insert_string(&DATA->c,"foo ");
-       text_insert_wordbreak(&DATA->c);
-     }
+   { 
+     const char *t = 
+       "Hello, World!<P>"
+       "<B><i>This</i></B> is a <u>test...</u> foo!";
+     
+     text_load(&DATA->c,"HTML",t,strlen(t));
    }
    
    return sucess;

@@ -92,12 +92,13 @@ add_if_true serialmouse.c  $DRIVER_SERIALMOUSE
 
 close_section
 
-# Bitmap formats
+# File formats
 open_section FORMATS
 
 add_if_true pnm.c $CONFIG_FORMAT_PNM
 add_if_true jpeg.c $CONFIG_FORMAT_JPEG
 add_if_true bmp.c $CONFIG_FORMAT_BMP
+add_if_true html.c $CONFIG_FORMAT_HTML
 
 close_section
 
