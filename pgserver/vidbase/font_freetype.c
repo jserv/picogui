@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.15 2002/10/14 11:00:45 micahjd Exp $
+/* $Id: font_freetype.c,v 1.16 2002/10/14 11:03:10 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -479,7 +479,7 @@ g_error freetype_create(struct font_descriptor *self, const struct font_style *f
   if (DATA->flags & PG_FSTYLE_FLUSH)
     DATA->metrics.margin = 0;
   else
-    DATA->metrics.margin = DATA->metrics.linegap;
+    DATA->metrics.margin = DATA->metrics.descent;
 
   return success;
 }

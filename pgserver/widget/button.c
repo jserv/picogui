@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.121 2002/10/12 14:46:35 micahjd Exp $
+/* $Id: button.c,v 1.122 2002/10/14 11:03:11 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -787,7 +787,7 @@ void button_resize(struct widget *self) {
   position_button(self,&bp);
 
   if (bp.h > h)
-     h = bp.h + m;
+     h = bp.h;
   if ((bp.w+m) > w)
      w = bp.w + m;
    
