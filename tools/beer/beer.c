@@ -6,7 +6,7 @@
  * also requires gcc 3.2. This might not work when
  * compiled by Debian's gcc. If you want to see
  * the results but your compiler isn't supported,
- * binary has been included. Do not compile with
+ * a binary has been included. Do not compile with
  * optimization enabled.
  */
 
