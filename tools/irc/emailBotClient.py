@@ -18,8 +18,30 @@ allowedTextCommands = ("Announce",)
 allowedControlCommands = ("JoinChannel", "PartChannel")
 
 # Prohibited channels
-badChannels = ("shell","123")
-
+# List from http://www.freenode.net/drones.shtml
+badChannels = ("#!~!raisin!!",
+               "0-xdcc!",
+               "03337",
+               "123",
+               "acs45",
+               "conscriptp",
+               "efferz",
+               "hackers",
+               "infected",
+               "livethisgame",
+               "nodo747",
+               "nonsense",
+               "plazateam",
+               "r3p4d",
+               "scan",
+               "secrets",
+               "shell",
+               "soviet-union",
+               "techno-sound",
+               "test12",
+               "[alpha]",
+               "\247\246\247\246\247",
+               "\247\247\247")
 
 def incrementProjectCommits(project):
     if project.find(os.sep) >= 0:
@@ -43,8 +65,8 @@ class AnnounceClient(protocol.Protocol):
         import sys
         mailMsg  = email.message_from_file(sys.stdin)
         f = open(logFile, "a")
-	f.write(mailMsg.as_string())
-	f.close()
+        f.write(mailMsg.as_string())
+        f.close()
         subjectFields = mailMsg['Subject'].split(" ")
         # This limits the length of the maximum message, mainly to prevent DOS'ing the bot too badly
         messages = mailMsg.get_payload().split("\n")[:40]
