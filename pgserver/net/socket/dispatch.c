@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.3 2000/06/08 06:06:56 micahjd Exp $
+/* $Id: dispatch.c,v 1.4 2000/06/08 20:27:46 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -305,7 +305,7 @@ g_error rqh_in_key(int owner, struct uipkt_request *req,
   struct rqhd_in_key *arg = (struct rqhd_in_key *) data;
   if (req->size < sizeof(struct rqhd_in_key)) 
     return mkerror(ERRT_BADPARAM,"rqhd_in_key too small");
-  dispatch_key(ntohl(arg->type),(int) ntohl(arg->key));
+  dispatch_key(ntohl(arg->type),(int) ntohs(arg->key),ntohs(arg->mods));
   return sucess;
 }
 

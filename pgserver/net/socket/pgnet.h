@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.6 2000/06/08 07:51:40 micahjd Exp $
+/* $Id: pgnet.h,v 1.7 2000/06/08 20:27:46 micahjd Exp $
  *
  * pgnet.h - header for all PicoGUI networking stuff (request/packet/event...)
  *
@@ -251,7 +251,8 @@ struct rqhd_setbg {
 };
 struct rqhd_in_key {
   unsigned long type;   /* A TRIGGER_* constant */
-  unsigned long key;
+  unsigned short key;
+  unsigned short mods;
 };
 struct rqhd_in_point {
   unsigned long type;   /* A TRIGGER_* constant */

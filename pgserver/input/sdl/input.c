@@ -1,4 +1,4 @@
-/* $Id: input.c,v 1.4 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: input.c,v 1.5 2000/06/08 20:27:46 micahjd Exp $
  *
  * input.c - Input layer for SDL
  * 
@@ -58,6 +58,8 @@ void (*quitreq)(void);
 /* Create the thread */
 g_error input_init(void (*request_quit)(void)) {
   quitreq = request_quit;
+  SDL_EnableUNICODE(1);
+  SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,SDL_DEFAULT_REPEAT_INTERVAL);
 #ifndef WINDOWS
   thread = SDL_CreateThread(&threadfunc,NULL);
   if (!thread) return mkerror(ERRT_IO,"Can't create input thread");
@@ -80,6 +82,7 @@ void windows_inputpoll_hack(void) {
 #endif
   SDL_Event evt;
   int ox=-1,oy=-1;
+  static int prevsym=-1;
 #ifndef WINDOWS
   for (;;) {
     SDL_WaitEvent(&evt);
@@ -103,6 +106,29 @@ void windows_inputpoll_hack(void) {
     case SDL_MOUSEBUTTONUP:
       dispatch_pointing(TRIGGER_UP,evt.button.x,
 			evt.button.y,btnstate &= ~(1<<(evt.button.button-1)));
+      break;
+
+    case SDL_KEYDOWN:
+      /* Is this the special exit key? (CTRL-ALT-SLASH) */
+      if (evt.key.keysym.sym==PGKEY_SLASH &&
+	  (evt.key.keysym.mod & PGMOD_CTRL) &&
+	  (evt.key.keysym.mod & PGMOD_ALT)) {
+	(*quitreq)();
+	break;
+      }
+
+      if (evt.key.keysym.unicode)
+	dispatch_key(TRIGGER_CHAR,evt.key.keysym.unicode,evt.key.keysym.mod);
+
+      /* Make this ignore repeat */
+      if (prevsym!=evt.key.keysym.sym)
+	dispatch_key(TRIGGER_KEYDOWN,prevsym=evt.key.keysym.sym,
+		     evt.key.keysym.mod);
+      break;
+
+    case SDL_KEYUP:
+      prevsym = -1;
+      dispatch_key(TRIGGER_KEYUP,evt.key.keysym.sym,evt.key.keysym.mod);
       break;
 
     case SDL_QUIT:

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.20 2000/06/08 00:15:57 micahjd Exp $
+/* $Id: widget.c,v 1.21 2000/06/08 20:27:46 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -268,10 +268,11 @@ void dispatch_pointing(long type,int x,int y,int btn) {
     send_trigger(capture,TRIGGER_DRAG,&param);
 }
 
-void dispatch_key(long type,int key) {
+void dispatch_key(long type,int key,int mods) {
 #ifdef DEBUG
-  printf("Keyboard event: 0x%08X (#%d, '%c')\n",type,key,key);
+  printf("Keyboard event: 0x%08X (#%d, '%c') mod:0x%08X\n",type,key,key,mods);
 #endif
+
 }
 
 void dispatch_direct(char *name,long param) {

@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.18 2000/06/08 00:15:57 micahjd Exp $
+/* $Id: widget.h,v 1.19 2000/06/08 20:27:46 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -36,6 +36,7 @@
 #include <g_error.h>
 #include <g_malloc.h>
 #include <pgnet.h>
+#include <pgkeys.h>
 
 struct blob;
 struct widgetdef;
@@ -59,7 +60,7 @@ typedef long glob;
 #define TRIGGER_DIRECT     (1<<2)  /* A trigger sent explicitely */
 #define TRIGGER_ACTIVATE   (1<<3)  /* Sent when it receives focus */
 #define TRIGGER_DEACTIVATE (1<<4)  /* Losing focus */
-#define TRIGGER_KEYUP      (1<<5)  /* Ignores autorepeat, etc. */
+#define TRIGGER_KEYUP      (1<<5)  /* Ignores autorepeat, etc. Raw key codes*/
 #define TRIGGER_KEYDOWN    (1<<6)  /* Ditto. */
 #define TRIGGER_RELEASE    (1<<7)  /* Mouse up (see note) */
 #define TRIGGER_UP         (1<<8)  /* Mouse up in specified divnode */
@@ -68,6 +69,7 @@ typedef long glob;
 #define TRIGGER_ENTER      (1<<11) /* Mouse moves inside widget */
 #define TRIGGER_LEAVE      (1<<12) /* Mouse moves outside widget */
 #define TRIGGER_DRAG       (1<<13) /* Mouse move when captured */
+#define TRIGGER_CHAR       (1<<14) /* A processed ASCII/Unicode character */
 
 /* Note on TRIGGER_RELEASE:  This is when the mouse was pressed inside
    the widget, then released elsewhere.  */
@@ -260,7 +262,7 @@ void dispatch_pointing(long type,int x,int y,int btn);
    key owner table, and if not found there it is sent to the currently 
    focused widget.  The key is passed as the trigger param.
 */
-void dispatch_key(long type,int key);
+void dispatch_key(long type,int key,int mods);
   
 /* Dispatch a direct trigger to the widget with a matching direct_trigger.
    The param is passed directly
