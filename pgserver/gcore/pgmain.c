@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.14 2000/10/30 11:35:22 bauermeister Exp $
+/* $Id: pgmain.c,v 1.15 2000/12/12 00:51:47 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -286,7 +286,7 @@ int main(int argc, char **argv) {
 #endif
 
   /* initial update */
-  update();
+  update(NULL,1);
 
   /* Now that the socket is listening, run the session manager */
 

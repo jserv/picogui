@@ -1,6 +1,8 @@
-/* $Id: svga.c,v 1.16 2000/11/18 06:32:33 micahjd Exp $
+/* $Id: svga.c,v 1.17 2000/12/12 00:51:47 micahjd Exp $
  *
  * svga.c - video driver for (S)VGA cards, via vgagl and svgalib
+ * 
+ * This driver supports 8,16,24, and 32 bit color at any resolution.
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -33,7 +35,7 @@
 #include <vga.h>
 #include <vgagl.h>
 
-#define DOUBLEBUFFER
+// #define DOUBLEBUFFER
 
 GraphicsContext *svga_virtual,*svga_physical;
 
@@ -42,16 +44,50 @@ unsigned char *svga_buf;
 
 /******************************************** Implementations */
 
+#define dist(a,b) (((a)>(b))?((a)-(b)):((b)-(a)))
+
+int svga_closest_mode(int xres,int yres,int bpp) {
+   int i,x,xbpp;
+   int best = -1;
+   unsigned int best_xresd = -1;
+   unsigned int best_yresd = -1;
+   int best_bpp = -1;
+   vga_modeinfo *inf;
+   
+   for (i=1;i<vga_lastmodenumber();i++)
+     if (vga_hasmode(i)) {
+	inf = vga_getmodeinfo(i);
+	xbpp = inf->bytesperpixel << 3;
+	if (!xbpp) continue;   /* vgagl doesn't support these modes */
+
+	/** Compare xres **/
+	x = dist(inf->width,xres);
+	if (x<best_xresd) goto newbestmode;
+	if (x>best_xresd) continue;
+	
+	/** Compare yres **/
+	x = dist(inf->height,yres);
+	if (x<best_yresd) goto newbestmode;
+	if (x>best_yresd) continue;
+	
+	/** Compare bpp **/
+	if (xbpp<best_bpp) continue;
+	if (xbpp>bpp) continue;
+	
+ newbestmode:
+	best = i;
+	best_bpp = xbpp;
+	best_xresd = dist(inf->width,xres);
+	best_yresd = dist(inf->height,yres);	
+     }
+   
+   return best;
+}
+
 g_error svga_init(int xres,int yres,int bpp,unsigned long flags) {
   g_error e;
-  
-  /* 100% hackish here.
-     Trying to get something that just runs, then make it 
-     PicoGUI compliant...
-  */
-
-#define VGA_MODE G320x200x256
-
+  int mode;
+   
   /* In a GUI environment, we don't want VC switches,
      plus they usually crash on my system anyway,
      and they use extra signals that might confuse 
@@ -60,27 +96,30 @@ g_error svga_init(int xres,int yres,int bpp,unsigned long flags) {
 
   vga_init();
 
+  /* Find a good mode */
+  mode = svga_closest_mode(xres,yres,bpp);
+   
   /* Load a main input driver. Do this before setting
    * video mode, so that the mouse is initialized
    * correctly.
-   **/
+   */
   e = load_inlib(&svgainput_regfunc,&inlib_main);
   errorcheck;
 
-  vga_setmode(VGA_MODE);
-  gl_setcontextvga(VGA_MODE);
+  vga_setmode(mode);
+  gl_setcontextvga(mode);
   svga_physical = gl_allocatecontext();
   gl_getcontext(svga_physical);
 
 #ifdef DOUBLEBUFFER
-  gl_setcontextvgavirtual(VGA_MODE);
+  gl_setcontextvgavirtual(mode);
   svga_virtual = gl_allocatecontext();
   gl_getcontext(svga_virtual);
 #endif
 
   gl_setrgbpalette();
-
-
+  gl_setwritemode(WRITEMODE_MASKED | FONT_COMPRESSED);
+   
   /* Save the actual video mode (might be different than what
      was requested) */
   vid->xres = WIDTH;
@@ -88,7 +127,7 @@ g_error svga_init(int xres,int yres,int bpp,unsigned long flags) {
   vid->bpp  = BITSPERPIXEL;
   
   /* Allocate scanline buffer */
-  e = g_malloc((void**)&svga_buf,WIDTH*BYTESPERPIXEL);
+   e = g_malloc((void**)&svga_buf,WIDTH*BYTESPERPIXEL);
   errorcheck;
 
   return sucess;
@@ -154,7 +193,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
     /* Do a tiled blit */
     for (i=0;i<w;i+=src->w)
       for (j=0;j<h;j+=src->h)
-        svga_blit(src,0,0,dest_x+i,dest_y+j,src->w,src->h,lgop);
+        svga_blit(src,src_x,src_y,dest_x+i,dest_y+j,src->w,src->h,lgop);
     return;
   }
 
@@ -170,8 +209,9 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
     src_y += vid->clip_y1 - dest_y;
     dest_y = vid->clip_y1;
   }
-  if (w<=0 || h<=0) return;
-
+  if (w<=0 || h<=0) return;  
+ 
+   
 #ifdef DOUBLEBUFFER
   add_updarea(dest_x,dest_y,w,h);
 #endif
@@ -188,7 +228,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
        the sdl driver blits, but this can't assume the video is mappable
        into system memory. Let vgagl take care of the graphics card's oddities.
     */
-    s = src->bits+src_x+src_y*WIDTH;
+    s = src->bits+src_x+src_y*src->w;
     bytew = w*BYTESPERPIXEL;
     lo = (src->w-w)*BYTESPERPIXEL;
     switch (lgop) {
@@ -297,26 +337,36 @@ void svga_charblit(unsigned char *chardat,int dest_x,
   add_updarea(dest_x,dest_y,w,h);
 #endif
 
-  /* Find the width of the source data in bytes */
-  if (bw & 7) bw += 8;
-  bw = bw >> 3;
-  bw &= 0x1F;
-
-  for (i=0;i<h;i++,dest_y++) {
-    /* Skewing */
-    if (olines && lines==i) {
-      lines += olines;
-      dest_x--;
-    }
-    for (x=dest_x,iw=bw;iw;iw--)
-      for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,x++)
-	/* FIXME: This still needs lots of optimization. I'm sure
-	   we're involving at least a multiplication and some bitshifting
-	   per-pixel that we don't need, not to mention the function
-	   call...
-	*/
-	if (ch&0x80)   gl_setpixel(x,dest_y,c);
+  /* If we're skewing, use the slower write. Otherwise use vgagl's built-in
+   * font things */
+  if (lines) {
+   
+     /* Find the width of the source data in bytes */
+     if (bw & 7) bw += 8;
+     bw = bw >> 3;
+     bw &= 0x1F;
+     
+     for (i=0;i<h;i++,dest_y++) {
+	/* Skewing */
+	if (lines==i) {
+	   lines += olines;
+	   dest_x--;
+	}
+	for (x=dest_x,iw=bw;iw;iw--)
+	  for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,x++)
+	    if (ch&0x80)   gl_setpixel(x,dest_y,c);
+     }
+     
   }
+  else {
+     
+     gl_setfont(w,h,chardat);
+     if (!c) c = 1;            /* Eep! Vgagl chokes on a fg color of 0 */
+     gl_setfontcolors(0,c);
+     ch = 0;
+     gl_writen(dest_x,dest_y,1,&ch);
+     
+  }  
 }
 
 /******************************************** Driver registration */

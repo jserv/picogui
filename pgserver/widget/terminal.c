@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.1 2000/11/19 04:48:20 micahjd Exp $
+/* $Id: terminal.c,v 1.2 2000/12/12 00:51:47 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -164,7 +164,7 @@ void terminal_trigger(struct widget *self,long type,union trigparam *param) {
       if (DATA->cursor >= DATA->buffer + DATA->buffersize)
 	DATA->cursor = DATA->buffer;
     }
-    self->in->flags |= DIVNODE_NEED_REDRAW;
+    self->in->div->flags |= DIVNODE_NEED_REDRAW;
     self->dt->flags |= DIVTREE_NEED_REDRAW;
     break;
 

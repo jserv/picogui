@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.29 2000/11/12 20:06:53 micahjd Exp $
+/* $Id: div.c,v 1.30 2000/12/12 00:51:47 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -273,46 +273,32 @@ void r_divnode_free(struct divnode *n) {
   g_free(n);
 }
 
-/* Master update function, does everything necessary to redraw the screen */
-void update(void) {
-  if (dts->update_lock) {
-#ifdef DEBUG
-    printf("***** Locked update! *****");
-#endif
-    return;   /* Don't want multiple threads updating */
+void update(struct divnode *subtree,int show) {
+  /* FIXME: Only hide sprites when really necessary! */
+  (*vid->sprite_hideall)();
+
+  if (subtree) {
+    /* Subtree update */
+    
+    if (subtree->owner->dt != dts->top) return;
+
+    divnode_recalc(subtree);
+    divnode_redraw(subtree,0);
   }
-  dts->update_lock++;           /* at the same time !                   */
-
-  if (dts->update_lock==1) {
-
-    (*vid->sprite_hideall)();
+  else 
+    /* Full update */
     r_dtupdate(dts->top);
+  
+  if (show) {
     (*vid->sprite_showall)();
     
     /* NOW we update the hardware */
     (*vid->update)();
-  }
-#ifdef DEBUG
-  else
-    printf("***** Locked update! (stage 2) *****");
-#endif
-
-  dts->update_lock = 0;
+  }    
 
 #ifdef DEBUG
-  printf("****************** Update\n");
+  printf("****************** Update (sub: 0x%08X)\n",subtree);
 #endif
-}
-
-/* Like regular update, but don't turn sprites back on and don't update hardware */
-void update_nosprite(void) {
-  if (dts->update_lock) return; 
-  dts->update_lock++;
-  if (dts->update_lock==1) {
-    (*vid->sprite_hideall)();
-    r_dtupdate(dts->top);
-  }
-  dts->update_lock = 0;
 }
 
 /* Update the divtree's calculations and render (both only if necessary) */

@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.17 2000/11/19 04:48:20 micahjd Exp $
+/* $Id: video.c,v 1.18 2000/12/12 00:51:47 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -859,7 +859,7 @@ void def_sprite_hide(struct sprite *spr) {
 }
 
 void def_sprite_update(struct sprite *spr) {
-  if (sprites_hidden || dts->update_lock) return;
+  if (sprites_hidden) return;
 
   if (spr->next) {
     (*vid->sprite_hideall)();

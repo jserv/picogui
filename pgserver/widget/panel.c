@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.42 2000/11/13 01:20:37 micahjd Exp $
+/* $Id: panel.c,v 1.43 2000/12/12 00:51:47 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -153,7 +153,7 @@ void panelbtn_rotate(struct widget *self,struct widget *button) {
   }
 
   resize_panel(self);
-  update();
+  update(NULL,1);
 }
 
 void panelbtn_zoom(struct widget *self,struct widget *button) {
@@ -191,7 +191,7 @@ void panelbtn_zoom(struct widget *self,struct widget *button) {
   /* tada! */
   self->dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
   self->dt->flags |= DIVTREE_NEED_RECALC;
-  update();
+  update(NULL,1);
 }
 
 /**** Installation */
@@ -390,7 +390,7 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     /* Update the screen now, so we have an up-to-date picture
        of the panelbar stored in DATA->bar */
     themeify_panel(self);
-    update_nosprite();
+    update(NULL,0);
 
     /* Allocate the new sprite */
     if(iserror(new_sprite(&DATA->s,BARDIV->w,BARDIV->h)))

@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.14 2000/11/12 02:49:55 micahjd Exp $
+/* $Id: memtheme.c,v 1.15 2000/12/12 00:51:47 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -186,23 +186,10 @@ unsigned long theme_lookup(unsigned short object,
 void div_rebuild(struct divnode *d) {
   struct gropctxt c;
 
-  if ((!d->build) || d->grop_lock) {
-#ifdef DEBUG
-    printf("***** Locked grop rebuild!  *****");
-#endif
-    return;
-  }
-  d->grop_lock++;
-  if (d->grop_lock == 1) {
-    grop_free(&d->grop);
-    gropctxt_init(&c,d);
-    (*d->build)(&c,d->state,d->owner);
-  }
-#ifdef DEBUG
-  else
-    printf("***** Locked grop rebuild! (stage 2) *****");
-#endif
-  d->grop_lock = 0;
+  if (!d->build) return;
+  grop_free(&d->grop);
+  gropctxt_init(&c,d);
+  (*d->build)(&c,d->state,d->owner);
   d->flags |= DIVNODE_NEED_REDRAW;
   if (d->owner)
     d->owner->dt->flags |= DIVTREE_NEED_REDRAW;
@@ -216,7 +203,7 @@ void div_setstate(struct divnode *d,unsigned short state) {
   /* state changes are caused by interaction with the user, and should
      be reported ASAP back to the user */
   if (d->owner && d->owner->dt == dts->top)
-    update();
+    update(NULL,1);
 }
 
 /* Small build function for widgets that only need a background */

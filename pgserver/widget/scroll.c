@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.27 2000/10/19 01:21:24 micahjd Exp $
+/* $Id: scroll.c,v 1.28 2000/12/12 00:51:47 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -302,8 +302,7 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
     else
       div_setstate(self->in->div,PGTH_O_SCROLL);
   
-  /* Use a precious update to animate the scrollbar */
-  if (self->dt==dts->top) update();
+  update(NULL,1);
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.35 2000/11/19 04:48:20 micahjd Exp $
+# $Id: Makefile,v 1.36 2000/12/12 00:51:42 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -46,7 +46,7 @@ CFLAGS := -Iinclude
 ######## Flags and Tools
 
 CFLAGS := $(CFLAGS) -g -c
-LDFLAGS := 
+LDFLAGS :=
 
 # These are default, can be overridden later
 GCC := gcc

@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.5 2000/10/30 11:35:22 bauermeister Exp $
+/* $Id: pgnet.h,v 1.6 2000/12/12 00:51:47 micahjd Exp $
  *
  * pgnet.h - definitions and stuff for the picogui server
  *           networking code. Most of the interesting code
@@ -160,6 +160,10 @@ struct event *get_event(int owner,int remove);
 
 /* Request handler table */
 extern g_error (*rqhtab[])(int,struct pgrequest*,void*,unsigned long*,int*);
+
+/* Nonzero when the main program is waiting for network/user input 
+   in a select() call */
+extern unsigned char req_in_select;
 
 #endif /* __H_PGNET */
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: svgainput.c,v 1.11 2000/11/18 06:32:31 micahjd Exp $
+/* $Id: svgainput.c,v 1.12 2000/12/12 00:51:47 micahjd Exp $
  *
  * svgainput.h - input driver for SVGAlib
  *
@@ -264,7 +264,7 @@ void svgainput_kbdhandler(int scancode,int press) {
 
 
 #ifdef DEBUG
-    guru("Translated key: %c (%d) (mods: %d)",c,c,svgainput_mod);
+    //    guru("Translated key: %c (%d) (mods: %d)",c,c,svgainput_mod);
 #endif
 
     if (c)

@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.18 2000/11/19 04:48:20 micahjd Exp $
+/* $Id: dispatch.c,v 1.19 2000/12/12 00:51:47 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -64,6 +64,7 @@ DEF_REQHANDLER(setpayload)
 DEF_REQHANDLER(getpayload)
 DEF_REQHANDLER(mkmenu)
 DEF_REQHANDLER(writeto)
+DEF_REQHANDLER(updatepart)
 DEF_REQHANDLER(undef)
 g_error (*rqhtab[])(int,struct pgrequest*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(ping)
@@ -98,6 +99,7 @@ g_error (*rqhtab[])(int,struct pgrequest*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(getpayload)
   TAB_REQHANDLER(mkmenu)
   TAB_REQHANDLER(writeto)
+  TAB_REQHANDLER(updatepart)
   TAB_REQHANDLER(undef)
 };
 
@@ -165,7 +167,7 @@ g_error rqh_ping(int owner, struct pgrequest *req,
 
 g_error rqh_update(int owner, struct pgrequest *req,
 		   void *data, unsigned long *ret, int *fatal) {
-  update();
+  update(NULL,1);
   return sucess;
 }
 
@@ -861,6 +863,26 @@ g_error rqh_writeto(int owner, struct pgrequest *req,
   e = rdhandle((void**) &w,PG_TYPE_WIDGET,owner,ntohl(arg->h));
   errorcheck;
   send_trigger(w,TRIGGER_STREAM,&tp);
+
+  return sucess;
+}
+
+g_error rqh_updatepart(int owner, struct pgrequest *req,
+		       void *data, unsigned long *ret, int *fatal) {
+  union trigparam tp;
+  struct widget *w;
+  g_error e;
+  reqarg(handlestruct);
+  
+  e = rdhandle((void**) &w,PG_TYPE_WIDGET,owner,ntohl(arg->h));
+  errorcheck;
+
+  /* If the divtree is hidden, don't even bother */
+  if (w->dt != dts->top) return sucess;
+
+  update(w->in->div,1);
+
+  return sucess;
 }
 
 /* The End */

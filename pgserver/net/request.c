@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.9 2000/11/12 02:49:55 micahjd Exp $
+/* $Id: request.c,v 1.10 2000/12/12 00:51:47 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -33,6 +33,10 @@
 
 /* Socket */
 int s = 0;
+
+/* Nonzero when the main program is waiting for network/user input 
+   in a select() call */
+unsigned char req_in_select;
 
 /* File descriptors of all open connections */
 fd_set con;
@@ -99,7 +103,7 @@ void closefd(int fd) {
   }
 
   if (!in_shutdown)
-    update();
+    update(NULL,1);
 }
 
 void newfd(int fd) {
@@ -359,16 +363,19 @@ void net_iteration(void) {
     n = n->next;
   }
 
+  req_in_select = 1;
   i = select(con_n,&rfds,NULL,NULL,&tv);
+  req_in_select = 0;
 
 #ifdef DEBUG
   /* For some reason, extra signals interrupt select() before it's done.
      FIXME.
      Uncomment this guru event for more information:
-
+  */
+  /*
   if (i<0)
     guru("Return from select()\ni = %d\ntv.tv_sec = %d\ntv.tv_usec = %d\nerrno = %d",
-          i,tv.tv_sec,tv.tv_usec,errno);
+	 i,tv.tv_sec,tv.tv_usec,errno);
   */
 #endif
 

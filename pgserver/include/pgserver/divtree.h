@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.6 2000/11/04 07:50:42 micahjd Exp $
+/* $Id: divtree.h,v 1.7 2000/12/12 00:51:47 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -49,8 +49,6 @@ struct gropctxt;
 struct dtstack {
   struct divtree *top;  /* The top of the stack, currently active tree */
   struct divtree *root;  /* The bottom of the stack, root tree */
-
-  int update_lock;
 };
 
 /* The One True Stack */
@@ -88,8 +86,6 @@ struct divnode {
   
   /* If this pointer is not null, the groplist is rendered to this divnode */
   struct gropnode *grop;
-  int grop_lock;  /* Nonzero when groplist is being built and it shouldn't
-		      be modified */
   
   /* The divnode's state - indicates which theme object to get parameters from */
   unsigned short state;
@@ -199,13 +195,20 @@ int mangle_align(int al);
 
 g_error divtree_new(struct divtree **dt);
 void divtree_free(struct divtree *dt);
-void update(void);
-void update_nosprite(void);
 void r_dtupdate(struct divtree *dt);
 g_error dts_new(void);
 void dts_free(void);
 g_error dts_push(void);
 void dts_pop(void);
+
+/* Update the screen, starting at 'subtree'
+   Sprites are hidden first, if needed.
+   If show is nonzero, sprites are shown and
+   the hardware is updated, completing the process.
+
+   The old update function is equivalent to update(dts->top,1);
+*/
+void update(struct divnode *subtree,int show);
 
 #endif /* __DIVTREE_H */
 
