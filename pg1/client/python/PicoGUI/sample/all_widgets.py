@@ -22,12 +22,11 @@ b.text = 'dialogbox'
 b = b.addWidget('button')
 b.text = 'messagedialog'
 
-lbox = sb.addWidget('box','inside')
-lbox.sizemode = 'percent'
-lbox.size = 50
-lbox.side = 'left'
+page1 = tb.addWidget('tabpage')
+page1.text = 'complex'
+sb = page1.addWidget('scrollbox', 'inside')
 
-s = lbox.addWidget('scroll','inside')
+s = sb.addWidget('scroll','inside')
 s.side = 'right'
 s = s.addWidget('scroll')
 s.side = 'bottom'
@@ -57,7 +56,12 @@ panel.text = 'panel'
 
 panel.addWidget('background')
 
-f = lbox.addWidget('field')
+page2 = page1.addWidget('tabpage')
+page2.on = 1
+page2.text = 'simple'
+sb = page2.addWidget('scrollbox', 'inside')
+
+f = sb.addWidget('field', 'inside')
 f.text = 'field'
 f.side = 'top'
 
