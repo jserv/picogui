@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.13 2002/10/14 08:14:38 micahjd Exp $
+/* $Id: font_freetype.c,v 1.14 2002/10/14 10:13:46 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -78,6 +78,11 @@ FTC_Manager        ft_cache_manager;
 FTC_ImageCache     ft_image_cache;
 FTC_CMapCache      ft_cmap_cache;
 
+/* x,y pair in 26.6 fixed point */
+struct pair26_6 {
+  s32 x,y;
+};
+
 /* Various bits turned on for matches in fontcmp.  The order
  * of these bits defines the priority of the various
  * attributes
@@ -96,7 +101,7 @@ void ft_get_descriptor_face(struct font_descriptor *self, FT_Face *aface);
 static FT_Error ft_face_requester(FTC_FaceID face_id, FT_Library library,
 				  FT_Pointer request_data, FT_Face *aface );
 void ft_load_image(struct font_descriptor *self, int ch, FT_Glyph *g);
-void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
+void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair26_6 *position,
 			   hwrcolor col, int ch, struct quad *clip, s16 lgop, s16 angle);
 
 /************************************************* Initialization ***/
@@ -261,15 +266,16 @@ void ft_face_load(const char *file) {
 /* Wrapper for ft_subpixel_draw_char, rounding to whole pixels */
 void freetype_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
 		   hwrcolor col, int ch, struct quad *clip, s16 lgop, s16 angle) {
-  position->x <<= 6;
-  position->y <<= 6;
-  ft_subpixel_draw_char(self,dest,position,col,ch,clip,lgop,angle);
-  position->x >>= 6;
-  position->y >>= 6;
+  struct pair26_6 subpos;
+  subpos.x = ((s32)position->x) << 6;
+  subpos.y = ((s32)position->y) << 6;
+  ft_subpixel_draw_char(self,dest,&subpos,col,ch,clip,lgop,angle);
+  position->x = subpos.x >> 6;
+  position->y = subpos.y >> 6;
 }
 
 /* Guts of freetype_draw_char, using subpixel units */
-void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
+void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair26_6 *position,
 			   hwrcolor col, int ch, struct quad *clip, s16 lgop, s16 angle) {
   int x,y,i,j;
   FT_Glyph g;
@@ -335,36 +341,37 @@ void freetype_draw_string(struct font_descriptor *self, hwrbitmap dest, struct p
 			  s16 lgop, s16 angle) {
   struct pgstr_iterator p = PGSTR_I_NULL;
   int margin,lh,b,ch;
+  struct pair26_6 subpos;
+  subpos.x = ((s32)position->x) << 6;
+  subpos.y = ((s32)position->y) << 6;
 
-  position->x <<= 6;
-  position->y <<= 6;
   margin = DATA->metrics.margin << 6;
   lh = DATA->metrics.lineheight << 6;
 
   switch (angle) {
     
   case 0:
-    position->x += margin;
-    position->y += margin;
-    b = position->x;
+    subpos.x += margin;
+    subpos.y += margin;
+    b = subpos.x;
     break;
     
   case 90:
-    position->x += margin;
-    position->y -= margin;
-    b = position->y;
+    subpos.x += margin;
+    subpos.y -= margin;
+    b = subpos.y;
     break;
     
   case 180:
-    position->x -= margin;
-    position->y -= margin;
-    b = position->x;
+    subpos.x -= margin;
+    subpos.y -= margin;
+    b = subpos.x;
     break;
 
   case 270:
-    position->x -= margin;
-    position->y += margin;
-    b = position->y;
+    subpos.x -= margin;
+    subpos.y += margin;
+    b = subpos.y;
     break;
   }
   
@@ -373,33 +380,33 @@ void freetype_draw_string(struct font_descriptor *self, hwrbitmap dest, struct p
       switch (angle) {
 	
       case 0:
-	position->y += lh;
-	position->x = b;
+	subpos.y += lh;
+	subpos.x = b;
 	break;
 	
       case 90:
-	position->x += lh;
-	position->y = b;
+	subpos.x += lh;
+	subpos.y = b;
 	break;
 	
       case 180:
-	position->y -= lh;
-	position->x = b;
+	subpos.y -= lh;
+	subpos.x = b;
 	break;
 	
       case 270:
-	position->x -= lh;
-	position->y = b;
+	subpos.x -= lh;
+	subpos.y = b;
 	break;
 	
       }
     else if (ch!='\r') {
-      ft_subpixel_draw_char(self,dest,position,col,ch,clip,lgop,angle);
+      ft_subpixel_draw_char(self,dest,&subpos,col,ch,clip,lgop,angle);
     }
   }
 
-  position->x >>= 6;
-  position->y >>= 6;
+  position->x = subpos.x >> 6;
+  position->y = subpos.y >> 6;
 }
 
 #ifdef CONFIG_FREETYPE_GAMMA
