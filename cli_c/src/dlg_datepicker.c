@@ -1,4 +1,4 @@
-/* $Id: dlg_datepicker.c,v 1.2 2001/07/30 05:42:40 micahjd Exp $
+/* $Id: dlg_datepicker.c,v 1.3 2001/07/30 05:52:21 micahjd Exp $
  *
  * dlg_datepicker.c - Implementation of the pgDatePicker() function. Display
  *                    a date on a calendar, and allow the user to select a
@@ -52,7 +52,7 @@ const char *weekdays[] = {
  * numdays;
  */
 void datepicker_drawmonth(pghandle canvas, pghandle title, 
-			  int year,int month,int day,
+			  int year,int month,int *day,
 			  pghandle fHeading,
 			  int *firstday, int *numdays) {
 
@@ -103,6 +103,10 @@ void datepicker_drawmonth(pghandle canvas, pghandle title,
   just_then = mktime(&then);
   *numdays = localtime(&just_then)->tm_mday;
 
+  /* Make sure we're not about to draw something dumb, like February 31 */
+  if (*day > *numdays)
+    *day = *numdays;
+
   /* Setup for calendar drawing. If possible, leave a blank row on top */
   x = first_weekday;
   y = 1 + (first_weekday + *numdays <= 35);
@@ -113,7 +117,7 @@ void datepicker_drawmonth(pghandle canvas, pghandle title,
     sprintf(tmpstr,"%d",i);
     
     /* Hilight the selected day */
-    if (day==i) {
+    if (*day==i) {
       pgSetFont(gc,fHeading);
       pgSetColor(gc,0xFF0000);
       pgText(gc,x,y,pgNewString(tmpstr));
@@ -134,7 +138,7 @@ void datepicker_drawmonth(pghandle canvas, pghandle title,
   pgDeleteContext(gc);
 
   /* Calendar title */
-  pgReplaceTextFmt(title, "%s %d, %d",months[month],day,year);
+  pgReplaceTextFmt(title, "%s %d, %d",months[month],*day,year);
 }
 
 int pgDatePicker(int *year, int *month, int *day, const char *title) {
@@ -249,7 +253,7 @@ int pgDatePicker(int *year, int *month, int *day, const char *title) {
 
   /* Draw the months in a separate context */
   pgEnterContext();
-  datepicker_drawmonth(wCalendar,wTitle, *year,*month,*day,fHeading,
+  datepicker_drawmonth(wCalendar,wTitle, *year,*month,day,fHeading,
 		       &firstday,&numdays);
 
   for (;;) {
@@ -301,7 +305,7 @@ int pgDatePicker(int *year, int *month, int *day, const char *title) {
 
     /* Change month or year */
     datepicker_drawmonth(wCalendar,wTitle, 
-			 *year,*month,*day,
+			 *year,*month,day,
 			 fHeading,&firstday,&numdays);
   }
 
