@@ -27,7 +27,7 @@ depends = [
 asserts = [
     (S ('module/picoguiserver/start') & S ('platform/m68k-pic-coff')) >> S ('module/pocketapps/bioscall'),
     (S ('module/picoguiserver/start') & S ('platform/m68k-pic-coff')) >> S ('module/pocketapps/initenv'),
-    (S ('module/picoguiserver/start') & S ('platform/ppc-linux')) >> S ('module/ibm-dcr'),
+    (S ('module/picoguiserver/start') & S ('platform/ppc-linux/redwood4')) >> S ('module/ibm-dcr'),
     ]
 
 runtime = [
