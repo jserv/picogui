@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.37 2001/01/05 09:28:21 micahjd Exp $
+/* $Id: picogui_client.c,v 1.38 2001/01/13 07:11:47 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -77,9 +77,10 @@ void (*_pgerrhandler)(unsigned short errortype,const char *msg);
                                 /* Error handler */
 struct _pghandlernode *_pghandlerlist;  /* List of pgBind event handlers */
 
-struct timeval _pgidle_period;  /* Centiseconds before calling idle handler */
+struct timeval _pgidle_period;  /* Period before calling idle handler */
 pgidlehandler _pgidle_handler;  /* Idle handler */
 char *_pg_appname;              /* Name of the app's binary */
+pgselecthandler _pgselect_handler;   /* Normally a pointer to select() */
 
 /* Structure for a retrieved and validated response code,
    the data collected by _pg_flushpackets is stored here. */
@@ -182,7 +183,7 @@ int _pg_recvtimeout(void *data,unsigned long datasize) {
      tv = _pgidle_period;
    
      /* don't care about writefds and exceptfds: */
-     select(_pgsockfd+1,&readfds,NULL,NULL,&tv);
+     (*_pgselect_handler)(_pgsockfd+1,&readfds,NULL,NULL,&tv);
      
      if (FD_ISSET(_pgsockfd, &readfds)) {
 #ifdef DEBUG
@@ -300,7 +301,8 @@ void _pg_getresponse(void) {
    * all it's time waiting (and the only safe place to interrupt)
    * so handle the idling here.
    */
-  if ((_pgidle_period.tv_sec + _pgidle_period.tv_usec) ?
+  if (( (_pgidle_period.tv_sec + _pgidle_period.tv_usec) ||
+	(_pgselect_handler != &select) ) ?
       _pg_recvtimeout(&_pg_return.type,sizeof(_pg_return.type)) :
       _pg_recv(&_pg_return.type,sizeof(_pg_return.type)))
      return;
@@ -490,8 +492,9 @@ void pgInit(int argc, char **argv)
   /* Get the app's name */
   _pg_appname = argv[0];
 
-  /* Set default error handler */
+  /* Set default handlers */
   pgSetErrorHandler(&_pg_defaulterr);
+  _pgselect_handler = &select;
 
   /* Default tunables */
   hostname = PG_REQUEST_SERVER;
@@ -513,7 +516,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: picogui_client.c,v 1.37 2001/01/05 09:28:21 micahjd Exp $\n");
+	fprintf(stderr,"$Id: picogui_client.c,v 1.38 2001/01/13 07:11:47 micahjd Exp $\n");
 	exit(1);
       }
       
@@ -780,6 +783,14 @@ void pgBind(pghandle widgetkey,unsigned short eventkey,
 
   n->next = _pghandlerlist;
   _pghandlerlist = n;
+}
+
+/* Set a custom handler instead of the usual select() */
+void pgCustomizeSelect(pgselecthandler handler) {
+  if (handler)
+    _pgselect_handler = handler;
+  else
+    _pgselect_handler = &select;
 }
 
 /******* The simple functions that don't need args or return values */

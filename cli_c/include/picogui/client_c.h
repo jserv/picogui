@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.28 2001/01/05 09:28:20 micahjd Exp $
+/* $Id: client_c.h,v 1.29 2001/01/13 07:11:46 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -54,6 +54,11 @@ typedef int (*pgevthandler)(short event,pghandle from,long param);
 typedef void (*pgidlehandler)(void);
 /* event handler for pgBindData */
 typedef int (*pgdataevthandler)(pghandle from,long size,char *data);
+#ifdef FD_SET
+/* event hander for pgCustomizeSelect */
+typedef int (*pgselecthandler)(int n, fd_set *readfds, fd_set *writefds,
+			       fd_set *exceptfds, struct timeval *timeout);
+#endif
 
 /* Structure representing data, loaded or mapped into memory.
  * This is returned by the pgFrom* series of functions for loading
@@ -147,6 +152,19 @@ void pgSubUpdate(pghandle widget);
  */
 void pgBind(pghandle widgetkey,unsigned short eventkey,
 	    pgevthandler handler);
+
+/* This is how to wait for your own file descriptors during the
+ * PicoGUI event loop's select(). If the handler is non-null,
+ * use the user-supplied handler instead of select()
+ *
+ * To cancel this, call with a NULL handler
+ *
+ * To use this function, the proper header files must be included
+ * before picogui.h for select()
+ */
+#ifdef FD_SET
+void pgCustomizeSelect(pgselecthandler handler);
+#endif
 
 /******************** Objects */
 
