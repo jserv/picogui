@@ -16,9 +16,12 @@
    Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.
 
-   $Id: gen-pgserver-conf.c,v 1.1 2001/11/06 08:12:43 bauermeister Exp $
+   $Id: gen-pgserver-conf.c,v 1.2 2001/11/07 14:56:26 bauermeister Exp $
 
    $Log: gen-pgserver-conf.c,v $
+   Revision 1.2  2001/11/07 14:56:26  bauermeister
+   Fixed bug when no input drivers are selected
+
    Revision 1.1  2001/11/06 08:12:43  bauermeister
    Added etc directory
 
@@ -31,7 +34,7 @@
 
 void gen_inputdrivers(void)
 {
-  int nb =
+  int nb = 0
 #define DRV(name, dummy) +1
 #include <inputdrivers.inc>
     ;
