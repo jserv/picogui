@@ -1,4 +1,4 @@
-/* $Id: stddialog.c,v 1.11 2002/01/06 09:22:56 micahjd Exp $
+/* $Id: stddialog.c,v 1.12 2002/03/03 07:36:24 micahjd Exp $
  *
  * stddialog.c - Various preconstructed dialog boxes the application
  *               may use. These are implemented 100% client-side using
@@ -126,7 +126,7 @@ int pgMessageDialog(const char *title,const char *text,unsigned long flags) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_BOTTOM,
 	      0);
-  pgNewWidget(PG_WIDGET_TEXTBOX,0,0);
+  pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_ALL,
 	      PG_WP_TEXT,pgNewString(text),
@@ -275,7 +275,7 @@ pghandle pgInputDialog(const char *title, const char *message,
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_BOTTOM,
 	      0);
-  pgNewWidget(PG_WIDGET_TEXTBOX,0,0);
+  pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_ALL,
 	      PG_WP_TEXT,pgNewString(message),
