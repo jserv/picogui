@@ -1,4 +1,4 @@
-/* $Id: chipslicets.c,v 1.4 2001/11/09 16:35:25 pney Exp $
+/* $Id: chipslicets.c,v 1.5 2001/11/09 19:43:04 bauermeister Exp $
  *
  * chipslicets.c - input driver for touch screen
  *
@@ -58,8 +58,7 @@
 static const char *DEVICE_FILE_NAME = "/dev/ts";
 static const char *_file_ = __FILE__; 
 
-static int fd=0;
-static int bytes_transfered=0;
+static int ts_fd = 0;
 static int iIsPenUp = 1;
 
 static struct timeval lastEvent;
@@ -71,6 +70,7 @@ void chipslicets_message(u32 message, u32 param, u32 *ret);
 */
 
 /******************************************** Implementations */
+#include <stdio.h>
 
 int chipslicets_sleep(void) {
 #ifdef DEBUG_EVENT
@@ -88,14 +88,17 @@ int chipslicets_sleep(void) {
   gettimeofday(&lastEvent,NULL);
 }
 
-void chipslicets_poll(void) {
+static int chipslicets_fd_activate(int fd) {
   struct ts_pen_info pen_info;
-  
-  pen_info.x = -1; pen_info.y = -1;
+  int bytes_transferred;
 
-  bytes_transfered=read(fd,(char *)&pen_info,sizeof(pen_info));
+  /* is the fd mine ? */
+  if(fd!=ts_fd)
+    return 0; /* no */
 
-  if(pen_info.x != -1) {
+  bytes_transferred=read(ts_fd,(char *)&pen_info,sizeof(pen_info));
+
+  if(bytes_transferred>0) {
 
     switch(pen_info.event) {
     case EV_PEN_UP:
@@ -156,6 +159,8 @@ void chipslicets_poll(void) {
     if(delay_sec > SLEEP_IDLE_MAX_SEC)
       chipslicets_sleep();
   }
+
+  return 1;
 }
 
 
@@ -166,10 +171,11 @@ g_error chipslicets_init(void) {
 #ifdef DEBUG_INIT
   printf("%s: Opening device %s\n", _file_, DEVICE_FILE_NAME);
 #endif
-  fd = open(DEVICE_FILE_NAME,O_RDWR | O_NONBLOCK);
-  if(fd < 0) {
-    printf("%s: Can't open device file: %s\n", _file_, DEVICE_FILE_NAME);
-    printf("Error: %s\n",strerror(errno));
+  ts_fd = open(DEVICE_FILE_NAME,O_RDWR | O_NONBLOCK);
+  if(ts_fd < 0) {
+    fprintf(stderr, "%s: Can't open device file: %s\n", _file_,
+	    DEVICE_FILE_NAME);
+    fprintf(stderr, "Error: %s\n",strerror(errno));
     goto error;
   }
   else {
@@ -178,9 +184,9 @@ g_error chipslicets_init(void) {
     int offx = 0, offy = 0;
     const char* calibration_string;
 
-    ret_val=ioctl(fd,TS_PARAMS_GET,&ts_params);
+    ret_val=ioctl(ts_fd,TS_PARAMS_GET,&ts_params);
     if(ret_val < 0) {
-      printf("ioctl get error: %s\n",strerror(errno));
+      fprintf(stderr, "ioctl get error: %s\n",strerror(errno));
       goto error_close;
     }
 
@@ -271,9 +277,9 @@ g_error chipslicets_init(void) {
     ts_params.y_offset       =
       uy1 - my1 * ts_params.y_ratio_num / ts_params.y_ratio_den;
 
-    ret_val=ioctl(fd,TS_PARAMS_SET,&ts_params);
+    ret_val=ioctl(ts_fd,TS_PARAMS_SET,&ts_params);
     if(ret_val < 0) {
-      printf("ioctl set error: %s\n",strerror(errno));
+      sprintf(stderr, "ioctl set error: %s\n",strerror(errno));
       goto error_close;
     }
 
@@ -284,8 +290,8 @@ g_error chipslicets_init(void) {
     return sucess;
 
   error_close:
-    close(fd);
-    fd = 0;
+    close(ts_fd);
+    ts_fd = 0;
     goto error;
   }
 
@@ -299,25 +305,20 @@ void chipslicets_close(void) {
   printf("%s: Closing device %s\n",_file_, DEVICE_FILE_NAME);
 #endif
 
-  if(fd)
-    close(fd);
+  if(ts_fd)
+    close(ts_fd);
 
 /* Disconnects the client from the Resource Manager */
   rm_exit ();
 }
 
 
-/* Polling time for the input driver */ 
+/* We insert our fd in the set for the server's select */ 
 void chipslicets_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
-  
-  /* Don't increase the poll time, but try to decrease it to POLL_USEC */
-
-  if (timeout->tv_sec) {
-    timeout->tv_sec = 0;
-    timeout->tv_usec = POLL_USEC;
-  }
-  else if (timeout->tv_usec > POLL_USEC)
-    timeout->tv_usec = POLL_USEC;
+  if ((*n)<(ts_fd+1))
+    *n = ts_fd+1;
+  if (ts_fd>0)
+    FD_SET(ts_fd, readfds);
 }
 
 /* message between driver to provide sound (for exemple) */
@@ -353,21 +354,21 @@ void chipslicets_message(u32 message, u32 param, u32 *ret) {
     {
       int snd_freq = get_param_int("input-chipslicets","snd_frequency",8000);
       int snd_leng = get_param_int("input-chipslicets","snd_length",50);
-      int fd = 0;
+      int snd_fd = 0;
 
       /* if no frequency defined, get_param_int return 5000.
        * if no length defined, get_param_int return 300.
        */
 
       /* open virtual terminal read only */
-      fd = open("/dev/tty2",O_RDONLY);
+      snd_fd = open("/dev/tty2",O_RDONLY);
 
-      if(fd < 1) {
+      if(snd_fd < 1) {
 	printf("/dev/tty2: open error\n");
 	return;
       }
-      ioctl(fd,snd_type,(snd_freq + (snd_leng << 16)));
-      close(fd);
+      ioctl(snd_fd,snd_type,(snd_freq + (snd_leng << 16)));
+      close(snd_fd);
     }
 # endif /* defined(CONFIG_XCOPILOT) || defined(CONFIG_SOFT_CHIPSLICE) */
 #endif /* DRIVER_CHIPSLICETS_SND */
@@ -385,9 +386,8 @@ void chipslicets_message(u32 message, u32 param, u32 *ret) {
 g_error chipslicets_regfunc(struct inlib *i) {
   i->init = &chipslicets_init;
   i->close = &chipslicets_close;
-  i->poll = &chipslicets_poll;
+  i->fd_activate = &chipslicets_fd_activate;
   i->fd_init = &chipslicets_fd_init;
-  i->message = &chipslicets_message;
   return sucess;
 }
 
