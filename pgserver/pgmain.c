@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.31 2002/04/01 12:38:05 micahjd Exp $
+/* $Id: pgmain.c,v 1.32 2002/04/01 12:51:58 lonetech Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -311,7 +311,7 @@ int main(int argc, char **argv) {
 	p->name = optarg;  /* Optarg points inside argv so it
 			    * will stick around for a while */
 	p->next = NULL;
-	p->h = NULL;
+	p->h = 0;
 	if (tail)
 	  tail->next = p;
 	else
@@ -404,7 +404,7 @@ int main(int argc, char **argv) {
 	   if (iserror(prerror(g_malloc((void**)&p,
 					sizeof(struct themefilenode)))))
 	     return 1;
-	   p->h = NULL;
+	   p->h = 0;
 	   p->name = tok;
 	   p->next = NULL;
 	   if (tail)
