@@ -23,7 +23,7 @@ with methods to determine if the working copy is up to date and update it.
 # 
 _svn_id = "$Id$"
 
-import urlparse
+import urlparse, os
 import PGBuild.Errors
 
 def open(url):
@@ -65,6 +65,13 @@ class RepositoryBase(object):
            """
         pass
 
+    def isLocalCopyValid(self, destination):
+        """Check whether the local copy is valid. A local copy is still valid if it's
+           older than the repository, so this should not perform any network access.
+           """
+        # Unless the repository implementation has something better to do, we'll just
+        # check whether the directory exists.
+        return os.path.isdir(destination)
 
 ### The End ###
 

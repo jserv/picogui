@@ -59,8 +59,8 @@ class OptionParser(optik.OptionParser):
                           help="Reports progress in more detail.")    
         self.add_option("-q", "--quiet", action="uncount", dest="verbosity", default=1,
                           help="Reports progress in less detail.")    
-        self.add_option("-u", "--ui", action="store", dest="ui", metavar="MODULE",
-                          help="Selects a front-end module. Try --ui=help to list the available modules.")
+        self.add_option("-i", "--ui", action="store", dest="ui", metavar="MODULE",
+                          help="Selects a user interface module. Try --ui=help to list the available modules.")
         self.add_option("--traceback", action="store_true", dest="traceback",
                           help="Disables the user-friendly exception handler and gives a traceback when an error occurs.")
          
@@ -80,10 +80,12 @@ class OptionParser(optik.OptionParser):
         packageGroup = self.add_option_group("Package Management")
         packageGroup.add_option("--nuke", dest="nuke", action="store_true",
                                 help="Unconditionally deletes local copies of all non-bootstrap packages.")
-        packageGroup.add_option("-m", "--merge", dest="merge", action="append", metavar="PACKAGE",
+        packageGroup.add_option("-u", "--update", dest="update", action="store_true", 
                                 help="Updates the specified package and merges its configuration.")
+        packageGroup.add_option("-m", "--merge", dest="merge", action="append", metavar="PACKAGE",
+                                help="Explicitly merges configuration from the specified package.")
         packageGroup.add_option("--merge-all", dest="mergeAll", action="store_true",
-                                help="Updates and merges all available packages- could take a while.")
+                                help="Merges configuration from all available packages.")
         
 
 class HelpFormatter(optik.IndentedHelpFormatter):

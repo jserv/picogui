@@ -72,13 +72,12 @@ class PackageVersion(object):
 
     def update(self, progress):
        """Update the package if possible. Return 1 if there was an update available, 0 if not."""
-       # If we are doing a bunch of update checks but not actually updating anything, we should
-       # still report our progress. This makes a --merge-all with an already up to date local
-       # packages directory much less uninteresting.
-       progress.showTaskHeading()
        localPath = self.getLocalPath()
        task = progress.task("Checking for updates in package %s" % self)
        repo = self.getRepository(progress)
+
+       # Since this could involve a lot of slow network activity, show our task heading now
+       task.showTaskHeading()
 
        # If we're updating a bootstrap package we have to do a little dance
        # so that our build system doesn't get hosed if the update fails.
@@ -104,8 +103,13 @@ class PackageVersion(object):
 
     def merge(self, progress):
         """Make sure a package is up to date, then load in configuration and build targets from it"""
-        mergeTask = progress.task("Updating package %s and merging configuration" % self)
-        self.update(mergeTask)
+        mergeTask = progress.task("Merging configuration from package %s" % self)
+
+        # We only update a package if there's no local copy, or if the --update option was
+        # specified. This avoids having to wait on a lot of network traffic for every single invocation.
+        if (not self.getRepository(mergeTask).isLocalCopyValid(self.getLocalPath())) or \
+           self.config.eval("invocation/option[@name='update']/text()"):
+            self.update(mergeTask)
         self.config.dirMount(self.getLocalPath(), mergeTask.task("Mounting config files"))
         PGBuild.SConsGlue.loadScriptDir(self.getLocalPath(), mergeTask.task("Loading SCons scripts"))
 
