@@ -1,3 +1,7 @@
+#include <netinet/in.h>
+#include <string.h>
+#include <stdlib.h>
+
 #include <picogui.h>
 
 #define PG_KEYBOARD_TOGGLE          3  /* Toggle between SHOW and HIDE */
