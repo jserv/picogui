@@ -21,7 +21,7 @@ EOF
 cd $STATDIR
 (for file in *; do
   echo "<tr><td>" $file "</td><td>" `cat $file` "</td></tr>"
-done) | sort -n -r +4
+done) | sort -n -r +3
 
 cat <<EOF
 </table>

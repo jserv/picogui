@@ -1,4 +1,2 @@
 This directory includes the source to the "CIA" bot that keeps an eye on Subversion :)
-
-There is a simple client for it included in tools/svn/hooks.
-
+More information on using this bot with your own projects is in "cia.html" in this directory.
