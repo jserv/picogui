@@ -21,7 +21,7 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
-import os
+import os, re
 
 # The name of the svn command to use. This should be made customizable.
 svnCommand = "svn"
@@ -47,6 +47,34 @@ def openSvn(args):
     global svnCommand
     return os.popen('%s --non-interactive %s' % (svnCommand, args))
 
+def expandStatus(line):
+    if len(line) < 2:
+        return None
+    if line[1] != ' ':
+        return None
+    try:
+        return {
+            'A': 'added',
+            'D': 'deleted',
+            'U': 'updated',
+            'C': 'conflict',
+            'G': 'merged',
+            }[line[0]]
+    except KeyError:
+        return None
+
+def collectProgress(file, progress):
+    while 1:
+        line = file.readline()
+        if not line:
+            break
+        status = expandStatus(line)
+        if status:
+            progress.report(status, line[2:].strip())
+    if file.close():
+        raise ErrorReturnCode()
+
+
 # Since exceptions during import will be used to autodetect which Subversion
 # module to use, we want to cause an exception here if it looks like the
 # command line client is missing or broken.
@@ -57,24 +85,53 @@ class SVNRepository:
     def __init__(self, url):
         self.url = url
 
-    def download(self, destination):
-        openSvn('co "%s" "%s"' % (self.url, destination))
+    def download(self, destination, progress):
+        finished = 0
+        try:
+            collectProgress(openSvn('co "%s" "%s"' % (self.url, destination)),progress)
+            finished = 1
+        finally:
+            if not finished:
+                progress.warning("The Subversion download was interrupted!\n" +
+                                 "You might have to delete the working copy before trying again.\n" +
+                                 "Working copy:\n    " + destination)
 
-    def isUpdateAvailable(self, destination):
-        pass
-            
-    def update(self, destination):
+    def isWorkingCopyPresent(self, destination):
         try:
             # Determine if the destination has a repository. This will fail if not.
             open(os.path.join(destination, os.path.join(".svn", "format"))).close()
+            return 1
         except IOError:
-            # Do a complete download and return
-            self.download(destination)
-            return
-        runCommand('up "%s"' % destination)
+            return 0
+        
+    def isUpdateAvailable(self, destination):
+        if not self.isWorkingCopyPresent(destination):
+            return 1
+
+        svn = openSvn('status --show-updates "%s"' % destination)
+        # If we have any lines beginning with (ignoring whitespace) an asterisk,
+        # we need to update something.
+        while 1:
+            line = svn.readline()
+            if not line:
+                svn.close()
+                return 0
+            if destination.lstrip()[0] == '*':
+                svn.close()
+                return 1
+            
+    def update(self, destination, progress):
+        if self.isWorkingCopyPresent(destination):
+            collectProgress(openSvn('up "%s"' % destination), progress)
+        else:
+            # No working copy- do a complete download
+            self.download(destination, progress)
 
 
 if __name__ == '__main__':
     import sys
+    from StdProgress import StdProgress
     repo = SVNRepository(sys.argv[1])
-    repo.update(sys.argv[2])
+    progress = StdProgress()
+    progress.task('Checking for updates').report('result', repo.isUpdateAvailable(sys.argv[2]))
+    repo.update(sys.argv[2], progress.task('Testing CmdlineSVN update()'))

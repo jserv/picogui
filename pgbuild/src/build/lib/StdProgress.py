@@ -33,7 +33,7 @@ class Colorizer:
     attrMap = {
         'reset': 0,
         'bold': 1,
-        'red': 32,
+        'red': 31,
         'green': 32,
         'brown': 33,
         'blue': 34,
@@ -78,13 +78,30 @@ class StdProgress:
         self.color.write(" %s\n" % noun)
 
     def task(self, name):
-        self.color.write(" - " * len(self.taskStack))
+        self.color.write(" -" * len(self.taskStack))
         self.color.write(" - ", ('bold',))
-        self.color.write("%s...\n" % name, ('bold', 'cyan'))
+        self.color.write("%s..." % name, ('bold', 'cyan'))
+        self.color.write("\n")
         newProgress = StdProgress()
         newProgress.taskStack = self.taskStack[:]
         newProgress.taskStack.append(name)
         return newProgress
+
+    def warning(self, text):
+        self.message("Warning: " + text, ('bold', 'brown'))
+
+    def error(self, text):
+        self.message("Error: " + text, ('bold', 'red'))
+
+    def message(self, text, color=None):
+        self.color.write("\n")
+        bullet = '*'
+        for line in text.split("\n"):
+            self.color.write(" %s " % bullet, ('bold',))
+            self.color.write(line, color)
+            self.color.write("\n")
+            bullet = ' '
+        self.color.write("\n")
     
 if __name__ == '__main__':
     p = StdProgress()
@@ -95,8 +112,10 @@ if __name__ == '__main__':
     subtask = task.task('Cleaning up')
     subtask.report('scrubbed', 'super sprocket')
     subtask.report('scrubbed', '/dev/sprocket')
+    subtask.warning("Something bad might have happened!\nOr not...")
     subtask.report('scrubbed', 'more sprockets')
     task = p.task('And now for something completely different')
     task.report('eating', 'my hat')
+    subtask.error("Choking!")
 
     

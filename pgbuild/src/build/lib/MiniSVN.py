@@ -28,12 +28,17 @@ from MiniDAV import DavObject
 import os, re, time
 import pickle
 
-class SVNRepository(DavObject):
+class SVNRepository:
     def __init__(self, url):
+        self.url = url
+        self.root = None
+
+    def connect(self):
         # The caller may pass a URL of the form "/repository/!svn/bc/<revision>/path"
         # to check out a particular revision. If they haven't already specified a
         # special path like this, find the latest revision number and use that.
         # This part is what makes checkouts atomic.
+        url = self.url
         if url.find("!svn") < 0:
             # This part comes from guesstimation and looking at apache logs...
             # I couldn't find any docs on the WebDAV URLs used by Subversion, and
@@ -42,7 +47,7 @@ class SVNRepository(DavObject):
             reposPath = reposPath.replace("/!svn/ver/", "/!svn/bc/")
             parsed = urlparse(url)
             url = urlunparse((parsed[0], parsed[1], reposPath, '', '', ''))
-        DavObject.__init__(self, url)
+        self.root = DavObject(url)
 
     def getPropertyFile(self, destination):
         """Get the properties filename associated with the given destination directory"""
@@ -54,7 +59,7 @@ class SVNRepository(DavObject):
         except OSError:
             pass
         propFile = open(self.getPropertyFile(destination), "w")
-        pickle.dump(self.getProperties(), propFile)
+        pickle.dump(self.root.getProperties(), propFile)
         propFile.close()
 
     def getSavedProperties(self, destination):
@@ -64,17 +69,18 @@ class SVNRepository(DavObject):
         return props
 
     def download(self, destination, progress, numThreads=5):
+        self.connect()
         downloadComplete = 0
         try:
             self.saveProperties(destination)
 
             # If this repository consists of just one file, go ahead and join that to
             # the destination path.
-            if len(self.getChildren()) == 0:
-                suffix = re.search("/([^/]+)$", self.path).group(1)
+            if len(self.root.getChildren()) == 0:
+                suffix = re.search("/([^/]+)$", self.root.path).group(1)
                 destination = os.path.join(destination, suffix)
 
-            queue = [(self, destination)]
+            queue = [(self.root, destination)]
 
             while len(queue) > 0:
                 item = queue.pop()
@@ -114,13 +120,14 @@ class SVNRepository(DavObject):
                 os.unlink(self.getPropertyFile(destination))
 
     def isUpdateAvailable(self, destination):
+        self.connect()
         try:
             # DAV::version-name should have the latest revision that this subdirectory
             # or any of its children were modified in. This means that if we only have a
             # subdirectory of the repository checked out, we won't have to do an update
             # if some other part of it changes
             downloadedVersion = self.getSavedProperties(destination)['DAV::version-name']
-            latestVersion = self.getProperties()['DAV::version-name']
+            latestVersion = self.root.getProperties()['DAV::version-name']
             if downloadedVersion == latestVersion:
                 return 0
         except IOError:
@@ -130,6 +137,7 @@ class SVNRepository(DavObject):
         return 1
             
     def update(self, destination, progress):
+        self.connect()
         if self.isUpdateAvailable(destination):
             # We can't update, just redownload the sources.
             self.download(destination, progress)
@@ -139,4 +147,6 @@ if __name__ == '__main__':
     import sys
     from StdProgress import StdProgress
     repo = SVNRepository(sys.argv[1])
-    repo.update(sys.argv[2], StdProgress().task('Testing update()'))
+    progress = StdProgress()
+    progress.task('Checking for updates').report('result', repo.isUpdateAvailable(sys.argv[2]))
+    repo.update(sys.argv[2], progress.task('Testing MiniSVN update()'))
