@@ -6,11 +6,13 @@ import struct
 
 class Error(Exception): pass
 class ProtocolError(Error):
-	def __init__(self, data_len):
+	def __init__(self, id, data_len):
+		self.id = id
 		self.additional_data_wanted = data_len
 
 	def setData(self, data):
-		self.args = data
+		# data is a C string
+		self.args = data[:-1]
 
 class MemoryError(ProtocolError): pass
 class IOError(ProtocolError): pass
@@ -23,7 +25,7 @@ class FileFormatError(ProtocolError): pass
 
 class Dead(Error): pass
 
-def NoError(data):
+def NoError(id, data_len):
 	return None
 
 _error_types = {
@@ -68,7 +70,8 @@ class Data(object):
 	"""Encapsulates returned data, which will be in a string format but usually isn't
 	really a string. To retrieve the data, call the instance passing a struct format.
 	"""
-	def __init__(self, data_len):
+	def __init__(self, id, data_len):
+		self.id = id
 		self.additional_data_wanted = data_len
 		self.data = ''
 
@@ -90,7 +93,7 @@ class Data(object):
 		return self('!LHHHHHxx')
 
 def _data(args):
-	return args[0], Data(args[1])
+	return args[0], Data(*args)
 
 _formats = (
 	#handler,	format
@@ -127,10 +130,10 @@ def get(connection):
 	format = '!' + format
 	resp_size = struct.calcsize(format)
 	response = struct.unpack(format, safe_read(resp_size))
-	obj = handler(response)
+	id, obj = handler(response)
 	if hasattr(obj, 'additional_data_wanted'):
 		obj.setData(safe_read(obj.additional_data_wanted))
-	return obj
+	return id, obj
 
 def next(connection):
 	# call get() and process when necessary
