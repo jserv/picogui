@@ -1,4 +1,4 @@
-/* $Id: hardware.c,v 1.7 2000/04/27 00:17:32 micahjd Exp $
+/* $Id: hardware.c,v 1.8 2000/04/27 03:27:36 micahjd Exp $
  *
  * hardware.c - SDL "hardware" layer
  * Anything that makes any kind of assumptions about the display hardware
@@ -142,14 +142,18 @@ void hwr_bar(struct cliprect *clip,int x,int y,int l,devcolort c) {
 }
 
 void hwr_line(struct cliprect *clip,int x1,int y1,int x2,int y2,devcolort c) {
-  /* Implementation of Bresenham's algorithm */
-
   int stepx, stepy;
+  int cx,cy,cstepy;
   int dx = x2-x1;
   int dy = y2-y1;
   int fraction;
+
+  /* Implementation of Bresenham's algorithm */
   
   SDL_LockSurface(screen);
+
+  dx = x2-x1;
+  dy = y2-y1;
 
   if (dx<0) { 
     dx = -(dx << 1);
@@ -161,9 +165,11 @@ void hwr_line(struct cliprect *clip,int x1,int y1,int x2,int y2,devcolort c) {
   if (dy<0) { 
     dy = -(dy << 1);
     stepy = -HWR_WIDTH; 
+    cstepy = -1;
   } else {
     dy = dy << 1;
     stepy = HWR_WIDTH;
+    cstepy = 1;
   }
 
   y1 *= HWR_WIDTH;
@@ -171,34 +177,147 @@ void hwr_line(struct cliprect *clip,int x1,int y1,int x2,int y2,devcolort c) {
 
   ((devbmpt)screen->pixels)[x1+y1] = c;
 
-  /* Major axis is horizontal */
-  if (dx > dy) {
-    fraction = dy - (dx >> 1);
-    while (x1 != x2) {
-      if (fraction >= 0) {
-	y1 += stepy;
-	fraction -= dx;
-      }
-      x1 += stepx;
-      fraction += dy;
+  /* Clipping? */
+  if (clip && ((clip->x > x1) || (clip->y > y1) || 
+	       (clip->x2 < x2) || (clip->y2 < y2))) {
+    /* Yes! */
+    cx = x1;   /* Keep track of our actual position in absolute */
+    cy = y1;   /* coordinates for clipping purposes */
 
-      ((devbmpt)screen->pixels)[x1+y1] = c;
-    }
-  } 
-
-  /* Major axis is vertical */
-  else {
-    fraction = dx - (dy >> 1);
-    while (y1 != y2) {
-      if (fraction >= 0) {
+    /* Major axis is horizontal */
+    if (dx > dy) {
+      fraction = dy - (dx >> 1);
+      while (x1 != x2) {
+	if (fraction >= 0) {
+	  y1 += stepy;
+	  cy += cstepy;
+	  fraction -= dx;
+	}
 	x1 += stepx;
-	fraction -= dy;
-      }
-      y1 += stepy;
-      fraction += dx;
+	cx += stepx;
+	fraction += dy;
 
-      ((devbmpt)screen->pixels)[x1+y1] = c;
+	if ((clip->x <= cx) && (clip->y <= cy) && 
+	    (clip->x2 >= cx) && (clip->y2 >= cy))
+	  ((devbmpt)screen->pixels)[x1+y1] = c;
+      }
+    } 
+    
+    /* Major axis is vertical */
+    else {
+      fraction = dx - (dy >> 1);
+      while (y1 != y2) {
+	if (fraction >= 0) {
+	  x1 += stepx;
+	  cx += stepx;
+	  fraction -= dy;
+	}
+	y1 += stepy;
+	cy += cstepy;
+	fraction += dx;
+	
+	if ((clip->x <= cx) && (clip->y <= cy) && 
+	    (clip->x2 >= cx) && (clip->y2 >= cy))
+	  ((devbmpt)screen->pixels)[x1+y1] = c;
+      }
     }
+
+  }
+  else { /* Non-clipped version */
+
+    /* Major axis is horizontal */
+    if (dx > dy) {
+      fraction = dy - (dx >> 1);
+      while (x1 != x2) {
+	if (fraction >= 0) {
+	  y1 += stepy;
+	  fraction -= dx;
+	}
+	x1 += stepx;
+	fraction += dy;
+
+	((devbmpt)screen->pixels)[x1+y1] = c;
+      }
+    } 
+    
+    /* Major axis is vertical */
+    else {
+      fraction = dx - (dy >> 1);
+      while (y1 != y2) {
+	if (fraction >= 0) {
+	  x1 += stepx;
+	  fraction -= dy;
+	}
+	y1 += stepy;
+	fraction += dx;
+	
+	((devbmpt)screen->pixels)[x1+y1] = c;
+      }
+    }
+  }
+
+  SDL_UnlockSurface(screen);
+}
+
+/* Implementation of this function in a driver is optional - 
+   not implementing gradients will only mean that gradient-enhanced
+   themes will not look as good.  If you choose not to implement it,
+   just make hwr_gradient call hwr_rect and send it the average of the
+   two colors.
+
+   This is a vertical gradient, which is sheared by 'sy' pixels vertically
+   every 'sx' horizontal pixels.
+*/
+void hwr_vgradient(struct cliprect *clip,int x,int y,int w,int h,
+		  devcolort c1,devcolort c2,int sx,int sy) {
+  devbmpt p,line;
+  int i,isx,j;
+  int r,g,b;    /* Current rgb values */
+  int or,og,ob;    /* Original rgb values */
+  int dr,dg,db; /* total rgb deltas */
+  int lr,lg,lb; /* rgb at the beginning of a line */
+  
+  if (w<=0) return;
+  if (h<=0) return;
+  if (clip) {
+    if ((x+w-1)>clip->x2) w = clip->x2-x+1;
+    if ((y+h-1)>clip->y2) h = clip->y2-y+1;
+    if (x<clip->x) {
+      w -= clip->x - x;
+      x = clip->x;
+    }
+    if (y<clip->y) {
+      h -= clip->y - y;
+      y = clip->y;
+    }
+    if (w<=0 || h<=0) return;
+  }
+
+  SDL_LockSurface(screen);
+  p = ((devbmpt) screen->pixels)+x+y*HWR_WIDTH;
+
+  /* This method of color interpolation (RGB) is portable, but
+     pallete-based or grayscale drivers could perform much better if they
+     worked directly with device-specific colors here instead of using
+     the conversion macros.
+  */
+  or = r = getred(c1);
+  og = g = getgreen(c1);
+  ob = b = getblue(c1);
+  dr = getred(c2) - r;
+  dg = getgreen(c2) - g;
+  db = getblue(c2) - b;
+
+  for (line=p,j=h,lr=lg=lb=0;j;j--,line=(p+=HWR_WIDTH)) {
+    for (i=0,isx=0;i<w;i++,isx++,line++) {
+      /* Draw a pixel */
+      *line = mkcolor(r,g,b);
+    }
+
+    /* Set the RGB values up for the next scan line. (Yuk, division!) */
+    r = or+(lr += dr)/h;
+    g = og+(lg += dg)/h;
+    b = ob+(lb += db)/h;
   }
 
   SDL_UnlockSurface(screen);

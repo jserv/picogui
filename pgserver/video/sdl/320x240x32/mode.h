@@ -1,4 +1,4 @@
-/* $Id: mode.h,v 1.4 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: mode.h,v 1.5 2000/04/27 03:27:36 micahjd Exp $
  *
  * Definitions for 320x240x32 mode. Not very practical for real applications,
  * but it's handy to use a less-than-full-screen mode for testing.
@@ -49,6 +49,10 @@ typedef Uint32 * devbmpt;
  * Values between 0 and 255
  */
 #define mkcolor(r,g,b) ((devcolort) (((r)<<16) | ((g)<<8) | (b)))
+/* Reverses of mkcolor */
+#define getred(c) (((c)>>16)&0xFF)
+#define getgreen(c) (((c)>>8)&0xFF)
+#define getblue(c) ((c)&0xFF)
 /* Same thing, but for a grayscale v between 0 and m */
 #define mkgray(v,m) mkcolor(v*255/m,v*255/m,v*255/m)
 

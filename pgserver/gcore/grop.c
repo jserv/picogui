@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.4 2000/04/27 00:17:32 micahjd Exp $
+/* $Id: grop.c,v 1.5 2000/04/27 03:27:36 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -31,6 +31,8 @@
 #include <font.h>
 #include <handle.h>
 
+#include <math.h>
+
 /* This renders a divnode's groplist using the x,y,w,h,tx,ty from 
  * the divnode. The grop is translated by (x+tx,y+ty) and clipped to
  * x,y,w,h. 
@@ -42,6 +44,8 @@ void grop_render(struct divnode *div) {
   struct bitmap *bit;
   int x,y,w,h;
   char *str;
+
+  static float angle = 0;
 
   if (!div) return;
   list = div->grop;
@@ -71,7 +75,9 @@ void grop_render(struct divnode *div) {
       hwr_line(&clip,x,y,w+div->x+div->tx,h+div->y+div->ty,list->param.c);
       break;
     case GROP_RECT:
-      hwr_rect(&clip,x,y,w,h,list->param.c);
+      //      hwr_rect(&clip,x,y,w,h,list->param.c);
+      hwr_vgradient(&clip,x,y,w,h,list->param.c,black,sin(angle)*10,cos(angle)*10);
+      angle += 0.1;
       break;
     case GROP_DIM:
       hwr_dim(&clip);
