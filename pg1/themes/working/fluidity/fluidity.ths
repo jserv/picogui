@@ -41,7 +41,7 @@
 prop bDarkInterlace;
 
 /* Fillstyles */
-prop fBitmap, fNop, fExpand, fDarkInterlace, fDeEmphasize;
+prop fBitmap, fBitmapNoAlpha, fNop, fExpand, fDarkInterlace, fDeEmphasize;
 
 /* X and Y of source bitmap */
 prop srcx, srcy, srcw, srch;
@@ -66,6 +66,12 @@ object default {
   };
 
   fBitmap = fillstyle {
+    SetLgop(PG_LGOP_ALPHA);
+    Bitmap(x,y,w,h,bitmap1);
+    SetLgop(PG_LGOP_NONE);
+  };
+
+  fBitmapNoAlpha = fillstyle {
     Bitmap(x,y,w,h,bitmap1);
   };
 
@@ -93,6 +99,8 @@ object default {
     /* Some common subexpressions */
     bsy = sy+sh-b;
     by  = y+my_h-b;
+
+    SetLgop(PG_LGOP_ALPHA);
 
     /* Top-left */
     SetSrc(sx,sy,l,t);
@@ -132,6 +140,7 @@ object default {
 
     /* Reset params to not mess up the widget.. */
     SetSrc(0,0,0,0);
+    SetLgop(PG_LGOP_NONE);
   };    
 
   /* Draw our interlaced background, making sure it lines up */
@@ -139,7 +148,9 @@ object default {
     SetSrc(widget::PG_WP_ABSOLUTEX - widget->app[0]::PG_WP_ABSOLUTEX + x,
 	   widget::PG_WP_ABSOLUTEY - widget->app[0]::PG_WP_ABSOLUTEY + y,
 	   w,h);
+    SetLgop(PG_LGOP_ALPHA);
     Bitmap(x,y,w,h,bDarkInterlace);
+    SetLgop(PG_LGOP_NONE);
     SetSrc(0,0,0,0);
   };
 
@@ -168,7 +179,7 @@ object default {
 /********************************** Background */
 
 object background {
-  bgfill = Copy(default::fBitmap);
+  bgfill = Copy(default::fBitmapNoAlpha);
   bitmap1 = LoadBitmap("data/background.jpeg");
 }
 
@@ -316,7 +327,9 @@ object checkbox {
 
   bgfill = fillstyle {
     fDarkInterlace(x,y,w,h);
+    SetLgop(PG_LGOP_ALPHA);
     Bitmap(x,y,18,18,bitmap1);
+    SetLgop(PG_LGOP_NONE);
     x = x + 20;
   };
 
@@ -574,11 +587,15 @@ object indicator.h {
   bitmap2 = LoadBitmap("data/indicator_h.png");
 
   bgfill = fillstyle {
+    SetLgop(PG_LGOP_ALPHA);
     Bitmap(x,y+(h-15)/2,w,15,bitmap1);
+    SetLgop(PG_LGOP_NONE);
   };
     
   overlay = fillstyle {
+    SetLgop(PG_LGOP_ALPHA);
     Bitmap(x-w,y+(h-15)/2,w*2,15,bitmap2);
+    SetLgop(PG_LGOP_NONE);
   };
 } 
 
@@ -587,11 +604,15 @@ object indicator.v {
   bitmap2 = LoadBitmap("data/indicator_v.png");
 
   bgfill = fillstyle {
+    SetLgop(PG_LGOP_ALPHA);
     Bitmap(x+(w-15)/2,y,15,h,bitmap1);
+    SetLgop(PG_LGOP_NONE);
   };
     
   overlay = fillstyle {
+    SetLgop(PG_LGOP_ALPHA);
     Bitmap(x+(w-15)/2,y-h,15,h*2,bitmap1);
+    SetLgop(PG_LGOP_NONE);
   };
 }
 

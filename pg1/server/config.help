@@ -280,7 +280,45 @@ CONFIG_FORMAT_XBM
 CONFIG_FORMAT_PNM
       This is capable of loading any binary or ascii Portable
       Anymap in black and white, grayscale, or true color.
-      
+
+
+CONFIG_FORMAT_BMP
+      A loader for Windows(TM) bitmaps.
+
+
+CONFIG_FORMAT_GIF
+      A built-in loader for the ex-standard GIF format.
+
+
+CONFIG_FORMAT_JPEG
+      A loader for JPEG images, using libjpeg.
+
+
+CONFIG_FORMAT_PNG
+      A loader for the new standard PNG image format, using libpng.
+
+
+CONFIG_PNG_LOWLEVEL
+      When this option is unset, the PNG loader lets libpng handle
+      palette images (by translating them to RGB or RGBA).  When it is
+      set, the loader handles palettes itself (which sometimes yields
+      incorrect results).
+
+      Perhaps more importantly, when this is set images loaded from
+      PNGs will have an alpha channel if and only if the PNG has one;
+      therefore if you plan to blit it yourself to a canvas or another
+      bitmap, you must find out yourself whether it does have alpha,
+      and set the correct LGOP.  When this is unset, images loaded
+      from PNG will always have an alpha channel.
+
+      This setting may be removed in the future, if the alternative
+      proves stable enough and nobody comes up with an use for the
+      low-level version.
+
+
+CONFIG_FORMAT_HTML
+      A loader for HyperText Markup Language (currently unused).
+
 
 CONFIG_ROTATE
       This adds extra "video wrapper" libraries that allow the entire

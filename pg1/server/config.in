@@ -304,8 +304,11 @@ bool 'GIF: graphics interchange format'                  CONFIG_FORMAT_GIF
 comment 'Graphics - libraries'
 bool 'JPEG: lossy compression (needs libjpeg)'           CONFIG_FORMAT_JPEG
 bool 'PNG: portable network graphic (needs libpng)'      CONFIG_FORMAT_PNG
+if [ "$CONFIG_FORMAT_PNG" = "y" ]; then
+  bool '  Use low-level loading logic (incomplete)'      CONFIG_PNG_LOWLEVEL
+fi
 comment 'Text'
-bool 'HTML: hypertext markup'                            CONFIG_FORMAT_HTML
+bool 'HTML: hypertext markup'                            CONFIG_FORMAT_HTML 
 endmenu
 
 mainmenu_option next_comment
