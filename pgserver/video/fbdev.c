@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.9 2001/06/29 04:02:37 sbarnes Exp $
+/* $Id: fbdev.c,v 1.10 2001/10/05 19:40:04 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -148,8 +148,7 @@ g_error fbdev_init(void) {
    }
 
    /* Put the console into graphics-only mode */
-#ifdef CONFIG_LINUX_MIPS
-   /* horrible hack (from wserver's linux.c) */
+#ifndef CONFIG_FB_NOGRAPHICS
    {
       int xx = open("/dev/tty1", O_RDWR);
       if (xx >= 0) {

@@ -9,13 +9,7 @@
  * Requires ucb1200-ts kernel driver
  */
 
-#define KDSETMODE       0x4B3A  /* set text/graphics mode */
-#define KD_TEXT         0x00
-#define KD_GRAPHICS     0x01
-
 #include <pgserver/common.h>
- 
-#ifdef DRIVER_TUXTS
  
 #include <unistd.h>
  
@@ -50,19 +44,6 @@ g_error tuxts_init(void)
 	 * Return the fd if successful, or negative if unsuccessful.
 	 */
 
-        /* open tty, enter graphics mode*/
-	tty = open ("/dev/tty0", O_RDWR);
-        if(tty < 0) {
-	        printf("Error can't open /dev/tty0: %m\n");
-	        return mkerror(PG_ERRT_IO, 74);
-  	}
-        if(ioctl (tty, KDSETMODE, KD_GRAPHICS) == -1) {
-		printf("Error setting graphics mode: %m\n");
-		close(tty);
-	        return mkerror(PG_ERRT_IO, 74);
-	}
-        close(tty);
-					
 	fd = open(DEVICE_FILE_NAME, O_NONBLOCK);
 	if (fd < 0) {
 		printf("Error %d opening touch panel\n", errno);
@@ -213,4 +194,4 @@ g_error tuxts_regfunc(struct inlib *i) {
 	return sucess;
 }
 
-#endif
+/* The End */
