@@ -11,5 +11,5 @@
 #include <arpa/inet.h>
 #include <sys/types.h>
 
-FILE *tcp_connect( char *host, int port );
-void tcp_disconnect( FILE *fp );
+FILE *tcp_connect (char *host, int port);
+void tcp_disconnect (FILE * fp);

@@ -1,4 +1,4 @@
-/* $Id: configfile.h,v 1.1 2002/02/04 10:43:23 tader Exp $
+/* $Id: configfile.h,v 1.2 2002/02/06 12:40:27 tader Exp $
  *
  * pgserver/configfile.h - Header for the configuration file utilities
  *                         in configfile.c
@@ -31,22 +31,20 @@
 
 typedef short g_error;
 
-g_error configfile_parse(const char *filename);
-void configfile_free(void);
+g_error configfile_parse (const char *filename);
+void configfile_free (void);
 
-g_error set_param_str(const char *section, const char *key, const char *value);
+g_error set_param_str (const char *section, const char *key,
+		       const char *value);
 
-int get_param_int(const char *section, const char *key, int def); 
-const char *get_param_str(const char *section, const char* key, 
-			  const char *def); 
+int get_param_int (const char *section, const char *key, int def);
+const char *get_param_str (const char *section, const char *key,
+			   const char *def);
 
-const char **get_section_params(const char *section, int *count);
+const char **get_section_params (const char *section, int *count);
 
-g_error configfile_write(const char *filename);
+g_error configfile_write (const char *filename);
 
 #endif /* __H_CONFIGFILE */
 
 /* The End */
-
-
-

@@ -29,26 +29,25 @@ int connectionLocked = false;
 int cmd;
 char cmdchar = 'A';
 
-char * imapCurrentHeader;
-char * imapCurrentMessage;
-int imapCurrentHeaderAlloc,
-	imapCurrentMessageAlloc;
+char *imapCurrentHeader;
+char *imapCurrentMessage;
+int imapCurrentHeaderAlloc, imapCurrentMessageAlloc;
 
 
 /* Reads a line from the fp. */
 char *
-getrow( )
+getrow ()
 {
-    char row[BUFFERSIZE];
-    char *newrow;
-    
-    fgets( row, BUFFERSIZE, imapfp);
-    newrow = (char *) malloc( strlen( row ) + 1 );
-    strcpy(newrow, row);
-    
-    printf("DEBUG RCV: %s", newrow );
+  char row[BUFFERSIZE];
+  char *newrow;
 
-    return newrow;
+  fgets (row, BUFFERSIZE, imapfp);
+  newrow = (char *) malloc (strlen (row) + 1);
+  strcpy (newrow, row);
+
+  printf ("DEBUG RCV: %s", newrow);
+
+  return newrow;
 }
 
 
@@ -56,9 +55,9 @@ getrow( )
 
 /* Generates the current cmdid string... */
 void
-getcmdid( char * cmdid )
+getcmdid (char *cmdid)
 {
-    sprintf( cmdid, "%c%03d", cmdchar, cmd );
+  sprintf (cmdid, "%c%03d", cmdchar, cmd);
 }
 
 
@@ -66,20 +65,20 @@ getcmdid( char * cmdid )
 
 /* Increments the cmdid, sends a command to fp. */
 void
-sendcmd( char * command )
+sendcmd (char *command)
 {
-    char cmdid[5];
-    
-    if ( ++cmd >= 1000 )
+  char cmdid[5];
+
+  if (++cmd >= 1000)
     {
-        cmd = 0;
-        cmdchar++;
+      cmd = 0;
+      cmdchar++;
     }
-    
-    getcmdid( cmdid );
-    
-    fprintf(imapfp, "%s %s\n", cmdid, command );
-    printf("DEBUG SND: %s %s\n", cmdid, command );
+
+  getcmdid (cmdid);
+
+  fprintf (imapfp, "%s %s\n", cmdid, command);
+  printf ("DEBUG SND: %s %s\n", cmdid, command);
 }
 
 
@@ -89,22 +88,22 @@ sendcmd( char * command )
  * calls the process function...
  */
 int
-docmd( char * command, int (*fnt)( char * ) )
+docmd (char *command, int (*fnt) (char *))
 {
-    char *buffer;
-    char cmdid[5];
-    
-    sendcmd( command );
-    getcmdid( cmdid );
-   
-    do
-    {
-        buffer = getrow();
-        (fnt)( buffer );
-    }
-    while ( strncmp( buffer, cmdid, 4 ) != 0 );
+  char *buffer;
+  char cmdid[5];
 
-    return SUCCESS;
+  sendcmd (command);
+  getcmdid (cmdid);
+
+  do
+    {
+      buffer = getrow ();
+      (fnt) (buffer);
+    }
+  while (strncmp (buffer, cmdid, 4) != 0);
+
+  return SUCCESS;
 }
 
 
@@ -112,16 +111,16 @@ docmd( char * command, int (*fnt)( char * ) )
 
 /* Just checks if the next line on the fp begins with "* OK"... */
 int
-check_ok()
+check_ok ()
 {
-    char *buffer;
+  char *buffer;
 
-    buffer = getrow();
+  buffer = getrow ();
 
-    if ( strncmp( buffer, IMAP_WELCOME, sizeof(IMAP_WELCOME) ) )
-        return true;
-    else
-        return false;
+  if (strncmp (buffer, IMAP_WELCOME, sizeof (IMAP_WELCOME)))
+    return true;
+  else
+    return false;
 }
 
 
@@ -131,23 +130,21 @@ check_ok()
  * messages -> sets the messages var...
  */
 int
-mesgcount( char * line )
+mesgcount (char *line)
 {
-    int i = 0;
-    
-    if ( strncmp( line+(strlen(line)-8), "EXISTS", 5 ) == 0 )
-    {
-        line += 2;
-        while ( ( ( line[i] >= '0' ) && (line[i] <='9') ) )
-            i++;
+  int i = 0;
 
-        line[i] = '\0';
-        messages = atoi( line );
-        printf( "Messages Count: %d\n", messages );
+  if (strncmp (line + (strlen (line) - 8), "EXISTS", 5) == 0)
+    {
+      line += 2;
+      while (((line[i] >= '0') && (line[i] <= '9')))
+	i++;
+
+      line[i] = '\0';
+      messages = atoi (line);
+      printf ("Messages Count: %d\n", messages);
     }
-  //  else
-  //      free(line);
-    return SUCCESS;
+  return SUCCESS;
 }
 
 
@@ -155,54 +152,57 @@ mesgcount( char * line )
 
 /* This function does nothing ;) */
 int
-donothing( char * line )
+donothing (char *line)
 {
-//    free(line);
-    return SUCCESS;
+  return SUCCESS;
 }
 
 
 /* This function doesn't nothing ;) */
 int
-doheader( char * line )
+doheader (char *line)
 {
-    int msg;
-    int i=0;
-    
-    if (strncmp(line,"* ", 2) == 0)
+  int msg;
+  int i = 0;
+
+  if (strncmp (line, "* ", 2) == 0)
     {
-	sscanf(line, "* %i FLAGS ", &msg);
-        addheader( line, "Title", msg );
+      sscanf (line, "* %i FLAGS ", &msg);
+      addheader (line, "Title", msg);
     }
-    return SUCCESS;
+  return SUCCESS;
 }
 
 int
-domessage( char * line )
+domessage (char *line)
 {
-	if (imapCurrentMessageAlloc < (strlen(line)+strlen(imapCurrentMessage) +3) )
-	{
-		imapCurrentMessageAlloc = strlen(line) + strlen(imapCurrentMessage) + 1024;
-		imapCurrentMessage = realloc(imapCurrentMessage, imapCurrentMessageAlloc);
-	}
-	strcat(imapCurrentMessage, line);
-	strcat(imapCurrentMessage, "\n");
+  if (imapCurrentMessageAlloc <
+      (strlen (line) + strlen (imapCurrentMessage) + 1))
+    {
+      imapCurrentMessageAlloc =
+	strlen (line) + strlen (imapCurrentMessage) + 1024;
+      imapCurrentMessage =
+	realloc (imapCurrentMessage, imapCurrentMessageAlloc);
+    }
+  strcat (imapCurrentMessage, line);
 
-	return SUCCESS;
+  return SUCCESS;
 }
 
 
 /* Login to the IMAP server... */
 int
-imap_login()
+imap_login ()
 {
-    char *command;
-    command = malloc(512);
-    sprintf(command, "LOGIN %s %s", get_param_str( "imap", "username", "guest" ),
-                                    get_param_str( "imap", "password", "guest" ) );
-    docmd( command, &donothing);
-    
-    return 0;
+  char *command;
+  command = malloc (512);
+  sprintf (command, "LOGIN %s %s",
+	   get_param_str ("imap", "username", "guest"),
+	   get_param_str ("imap", "password", "guest")
+	   );
+  docmd (command, &donothing);
+
+  return 0;
 }
 
 
@@ -213,20 +213,20 @@ imap_login()
  * Select folder, get message count.
  */
 void
-imap_init()
+imap_init ()
 {
-    char *command;
-    command = malloc(512);
-    printf("Connection to IMAP...\n");
-    imapfp = tcp_connect( get_param_str( "imap", "server", "127.0.0.1" ),
-                      get_param_int( "imap", "port", 143 ) );
-    if (!check_ok())
-        exit(2);
-    
-    imap_login();
-    
-    sprintf( command, "SELECT %s", get_param_str( "imap", "folder", "INBOX" ) );
-    docmd(command, &mesgcount);
+  char *command;
+  command = malloc (512);
+  printf ("Connection to IMAP...\n");
+  imapfp = tcp_connect (get_param_str ("imap", "server", "127.0.0.1"),
+			get_param_int ("imap", "port", 143));
+  if (!check_ok ())
+    exit (2);
+
+  imap_login ();
+
+  sprintf (command, "SELECT %s", get_param_str ("imap", "folder", "INBOX"));
+  docmd (command, &mesgcount);
 }
 
 
@@ -236,10 +236,10 @@ imap_init()
  * not -> make one ;)
  */
 void
-check_connection()
+check_connection ()
 {
-    if ( imapfp == NULL )
-        imap_init();
+  if (imapfp == NULL)
+    imap_init ();
 }
 
 
@@ -247,14 +247,14 @@ check_connection()
 
 /* A function to get a list of messages... */
 void
-imap_getlist()
+imap_getlist ()
 {
-    char *command;
-    command = malloc(64);
-    printf("imap_getlist\n");
-    check_connection();
-    sprintf( command, "FETCH %d:%d FULL", 1, messages );
-    docmd(command, &doheader);
+  char *command;
+  command = malloc (64);
+  printf ("imap_getlist\n");
+  check_connection ();
+  sprintf (command, "FETCH %d:%d FULL", 1, messages);
+  docmd (command, &doheader);
 }
 
 
@@ -262,29 +262,29 @@ imap_getlist()
 
 /* Get a message from server... */
 char *
-imap_getmesg( int mesg )
+imap_getmesg (int mesg)
 {
-    char *header;
-    char *text;
+  char *header;
+  char *text;
 
-    header = malloc(512);
-    text = malloc(512);
-    
-    imapCurrentMessageAlloc = 4048;
-    imapCurrentMessage = malloc ( imapCurrentMessageAlloc );
+  header = malloc (512);
+  text = malloc (512);
 
-    imapCurrentHeaderAlloc = 4048;
-    imapCurrentHeader = malloc( imapCurrentHeaderAlloc );
+  imapCurrentMessageAlloc = 4048;
+  imapCurrentMessage = malloc (imapCurrentMessageAlloc);
 
-    sprintf( header, "FETCH %d RFC822.HEADER", mesg );
-    sprintf( text, "FETCH %d RFC822.TEXT", mesg );
-    printf("imap_getmesg: %d\n", mesg);
-    check_connection();
-    docmd( header, &donothing );
-    docmd( text, &donothing );
+  imapCurrentHeaderAlloc = 4048;
+  imapCurrentHeader = malloc (imapCurrentHeaderAlloc);
 
-    printf("GETMESSAGEMESSAGE: %s\n", imapCurrentMessage);
-    return imapCurrentMessage;
+  sprintf (header, "FETCH %d RFC822.HEADER", mesg);
+  sprintf (text, "FETCH %d RFC822.TEXT", mesg);
+  
+  check_connection ();
+  docmd (header, &donothing);
+  docmd (text, &domessage);
+
+  printf ("GETMESSAGEMESSAGE: %s\n", imapCurrentMessage);
+  return imapCurrentMessage;
 }
 
 
@@ -292,8 +292,8 @@ imap_getmesg( int mesg )
 
 /* Should I explain? */
 void
-imap_disconnect()
+imap_disconnect ()
 {
-    docmd("LOGOUT", &mesgcount);
-    fclose(imapfp);
+  docmd ("LOGOUT", &mesgcount);
+  fclose (imapfp);
 }
