@@ -25,8 +25,9 @@ there will be a new version.
 # 
 
 import os, tarfile, urllib2, shutil
+import PGBuild.Repository
 
-class Repository:
+class Repository(PGBuild.Repository.RepositoryBase):
     def __init__(self, url):
         self.url = url
 

@@ -30,7 +30,7 @@ except ImportError:
     raise PGBuild.Errors.EnvironmentError("Curses doesn't seem to be installed")
 
 
-class CursesWrangler:
+class CursesWrangler(object):
     """Abstraction for our particular interface built with curses"""
     def __init__(self):
         try:

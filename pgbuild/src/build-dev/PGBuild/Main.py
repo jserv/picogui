@@ -72,7 +72,7 @@ def parseCommandLine(config, argv):
 
     configGroup = parser.add_option_group("Configuration Management")
     configGroup.add_option("-t", "--dump-tree", dest="treeDumpFile",
-                           help="Dump the configuration tree to FILE.", metavar="FILE")
+                           help="Dumps the configuration tree to FILE.", metavar="FILE")
     configGroup.add_option("--retest-mirrors", dest="retestMirrors", action="store_true",
                            help="Re-runs any mirror speed tests, ignoring saved results.")
 
@@ -82,7 +82,7 @@ def parseCommandLine(config, argv):
     packageGroup.add_option("--nuke", dest="nuke", action="store_true",
                             help="Unconditionally deletes local copies of all non-bootstrap packages.")
     packageGroup.add_option("--merge", dest="merge", action="append", metavar="PACKAGE",
-                            help="Forcibly updates the specified package and merge its configuration.")
+                            help="Forcibly updates the specified package and merges its configuration.")
 
     config.mount(OptionsXML(parser.parse_args(argv[1:])))
 
@@ -116,7 +116,7 @@ class Option(optik.Option):
             optik.Option.take_action(self, action, dest, opt, value, values, parser)
 
     
-class OptionsXML:
+class OptionsXML(object):
     """Convert options from the supplied hash into XML, suitable
        for mounting into the configuration tree.
        """

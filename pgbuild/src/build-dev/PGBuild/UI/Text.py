@@ -25,7 +25,7 @@ specific to running in a command line environment.
 import PGBuild.UI.None
 import sys, os
 
-class Colorizer:
+class Colorizer(object):
     """Detect whether VT100-style color escape codes are supported,
        and if so, provide an interface for outputting them.
        """

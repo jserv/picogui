@@ -26,7 +26,7 @@ import PGBuild.Errors
 import PGBuild.Site
 import PGBuild.Repository
 
-class PackageVersion:
+class PackageVersion(object):
     """A single version of a package, representing a local copy and a repository.
        Supports updating the local copy from the repository, and performing builds
        on the local copy.
@@ -121,7 +121,7 @@ def compareVersion(a,b):
     return 0
 
         
-class VersionSpec:
+class VersionSpec(object):
     """A specification for one or more versions of a package.
 
        FIXME: For now this only supports simple version names, but
@@ -161,7 +161,7 @@ class VersionSpec:
         return matches
         
         
-class Package:
+class Package(object):
     """A package object, initialized from the configuration tree.
        Holds details common to all package versions.
        """
@@ -210,7 +210,7 @@ def splitPackageName(name):
     return l
 
 
-class PackageList:
+class PackageList(object):
     """Represents all the packages specified in a given configuration tree,
        and performs lookups on packages and package versions.
        """

@@ -28,7 +28,7 @@ import SCons.Node
 from xml.dom import minidom
 import dmutil.xsl.xpath
 
-class XPathParser:
+class XPathParser(object):
     """Utility class to abstract the XPath implementation in use.
        Normally you should call the xpath() member of an Element
        instead of using this directly.

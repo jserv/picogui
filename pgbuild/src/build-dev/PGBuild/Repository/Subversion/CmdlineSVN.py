@@ -28,6 +28,7 @@ import os, re, shutil
 svnCommand = "svn"
 
 import PGBuild.Errors
+import PGBuild.Repository
 
 def detectVersion():
     # Get the complete output from svn --version
@@ -40,7 +41,7 @@ def detectVersion():
         raise PGBuild.Errors.EnvironmentError("The command line subversion client is broken or not installed")
     return ver
 
-class ptyopen:
+class ptyopen(object):
     """Helper class that emulates popen() to the extent we'll
        need below, using pseudoterminals
        """
@@ -111,7 +112,7 @@ def collectProgress(file, progress):
 version = detectVersion()
 
 
-class Repository:
+class Repository(PGBuild.Repository.RepositoryBase):
     def __init__(self, url):
         self.url = url
 

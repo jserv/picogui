@@ -26,8 +26,9 @@ from urlparse import *
 from MiniDAV import DavObject
 import os, re, time
 import pickle
+import PGBuild.Repository
 
-class Repository:
+class Repository(PGBuild.Repository.RepositoryBase):
     def __init__(self, url):
         self.url = url
         self.root = None

@@ -128,7 +128,7 @@ def stripElements(root):
         else:
             stripElements(child)
 
-class MountInfo:
+class MountInfo(object):
     """Object defining the file and mode of a mounted
        document, attached to each node in the tree.
        """

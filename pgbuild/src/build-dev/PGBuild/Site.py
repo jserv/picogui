@@ -45,7 +45,7 @@ def urljoin(a, b):
     return urlparse.urljoin(a,b)
 
 
-class Location:
+class Location(object):
     """Encapsulate one download location. Stores the aboslute URI for
        that location and reference to the <a> tag for its host.
        Includes methods to perform speed testing.

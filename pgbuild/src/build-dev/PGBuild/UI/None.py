@@ -24,7 +24,7 @@ Base classes for all UI modules, doesn't implement any UI at all.
 import PGBuild.Errors
 
 
-class Progress:
+class Progress(object):
     """Base class for progress reporting. This manages verbosity levels and other such
        tedium, passing on the actual message output to a subclass to handle.
 
@@ -129,7 +129,7 @@ class Progress:
             self._message(text)
 
 
-class Interface:
+class Interface(object):
     """Class responsible for driving PGBuild's execution based on user input
        and configuration settings. This base class only considers configuration
        settings, but it includes hooks for adding a UI.

@@ -35,7 +35,7 @@ userAgent = "PGBuild-MiniDAV"
 if revision:
     userAgent += "/r%s" % revision
 
-class DavPropertyParser:
+class DavPropertyParser(object):
     """Utility to parse the XML responses from a PROPFIND request"""
 
     # Note: this should probably be rewritten to use PGBuild.XML.dom.minidom. At the
@@ -97,7 +97,7 @@ class DavPropertyParser:
         Parser.Parse(data)
 
         
-class DavObject:
+class DavObject(object):
     """Represent an object on a WebDAV server"""
     def __init__(self, url):
         parsedURL = urlparse(url)
