@@ -1,4 +1,4 @@
-CFLAGS = -lpgui
+CFLAGS = -lpgui -g -O2
 
 all: lcdclock
 
