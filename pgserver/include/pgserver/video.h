@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.28 2001/03/19 05:59:28 micahjd Exp $
+/* $Id: video.h,v 1.29 2001/03/19 06:34:05 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -134,6 +134,12 @@ struct vidlib {
    */
   void (*close)(void);
 
+  /* Optional
+   *   Converts physical coordinates (from an input device)
+   *   into logical coordinates
+   */
+  void (*coord_logicalize)(int *x,int *y);
+   
   /* Current mode (only used in driver)
    *
    * The default bitmap functions should handle 1,2,4,8,16,24,32 bpp ok

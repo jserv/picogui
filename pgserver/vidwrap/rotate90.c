@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.3 2001/03/19 05:59:28 micahjd Exp $
+/* $Id: rotate90.c,v 1.4 2001/03/19 06:34:05 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -54,6 +54,11 @@ void rotate90_rect(int x,int y,int w,int h,hwrcolor c) {
 void rotate90_dim(int x,int y,int w,int h) {
    (*vid->dim)(y,vid->yres-x-w,h,w);
 }
+void rotate90_coord_logicalize(int *x,int *y) {
+   int tx = *x;
+   *x = vid->yres-1-*y;
+   *y = tx;
+}
 
 /******* Special-case wrapper functions */
 
@@ -73,6 +78,8 @@ void rotate90_line(int x1,int y1,int x2,int y2,hwrcolor c) {
 void rotate90_blit(hwrbitmap src,int src_x,int src_y,
 		   int dest_x,int dest_y,int w,int h,int lgop) {
    /* FIXME */
+   
+   VID(rect) (dest_x,dest_y,w,h,50);
 }
 void rotate90_unblit(int src_x,int src_y,hwrbitmap dest,int dest_x,
 		     int dest_y,int w,int h) {
@@ -91,13 +98,18 @@ void rotate90_charblit(unsigned char *chardat,int dest_x,int dest_y,
 		       int w,int h,int lines,hwrcolor c,
 		       struct cliprect *clip) {
    struct cliprect cr;
-/*
-   cr.x1 = clip->y1;
-   cr.y1 = vid->yres-1-clip->x1;
-   cr.x2 = clip->y2;
-   cr.y2 = vid->yres-1-clip->x2;
- */
-   (*vid->charblit_v)(chardat,dest_y,vid->yres-1-dest_x,w,h,lines,c,NULL);
+   struct cliprect *crp;
+   
+   if (clip) {
+      cr.x1 = clip->y1;
+      cr.y1 = vid->yres-1-clip->x2;
+      cr.x2 = clip->y2;
+      cr.y2 = vid->yres-1-clip->x1;
+      crp = &cr;
+   }
+   else
+     crp = NULL;
+   (*vid->charblit_v)(chardat,dest_y,vid->yres-1-dest_x,w,h,lines,c,crp);
 }
 void rotate90_charblit_v(unsigned char *chardat,int dest_x,int dest_y,
 		       int w,int h,int lines,hwrcolor c,
@@ -125,6 +137,7 @@ void vidwrap_rotate90(struct vidlib *vid) {
    vid->tileblit = &rotate90_tileblit;
    vid->charblit = &rotate90_charblit;
    vid->charblit_v = &rotate90_charblit_v;
+   vid->coord_logicalize = &rotate90_coord_logicalize;
 }
 
 /* The End */

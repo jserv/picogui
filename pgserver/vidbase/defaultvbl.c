@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.27 2001/03/19 02:00:10 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.28 2001/03/19 06:34:05 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -62,6 +62,9 @@ void emulate_dos(void) {
 }
 
 void def_update(int x,int y,int w,int h) {
+}
+
+void def_coord_logicalize(int *x,int *y) {
 }
 
 /******* colors */
@@ -842,17 +845,17 @@ void def_sprite_show(struct sprite *spr) {
      */
     if (spr->x<0) 
        spr->x = 0;
-    else if (spr->x>(vid->xres-1))
-       spr->x = vid->xres-1;
+    else if (spr->x>(vid->lxres-1))
+       spr->x = vid->lxres-1;
      
     if (spr->y<0)
        spr->y = 0;
-    else if (spr->y>(vid->yres-1))
-       spr->y = vid->yres-1;
+    else if (spr->y>(vid->lyres-1))
+       spr->y = vid->lyres-1;
     
-    spr->ow = vid->xres - spr->x;
+    spr->ow = vid->lxres - spr->x;
     if (spr->ow > spr->w) spr->ow = spr->w;
-    spr->oh = vid->yres - spr->y;
+    spr->oh = vid->lyres - spr->y;
     if (spr->oh > spr->h) spr->oh = spr->h;     
   }
 
@@ -860,20 +863,20 @@ void def_sprite_show(struct sprite *spr) {
   spr->ox = spr->x; spr->oy = spr->y;
   
   /* Grab a new backbuffer */
-  (*vid->unblit) (spr->x,spr->y,spr->backbuffer,
+  VID(unblit) (spr->x,spr->y,spr->backbuffer,
   	       0,0,spr->ow,spr->oh);
 
   /* Display the sprite */
- if (spr->mask) {
-    (*vid->blit) (spr->mask,0,0,
-		 spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_AND);
-    (*vid->blit) (spr->bitmap,0,0,
-		 spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_OR);
+  if (spr->mask) {
+     VID(blit) (spr->mask,0,0,
+		spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_AND);
+     VID(blit) (spr->bitmap,0,0,
+		spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_OR);
   }
-  else
-   (*vid->blit) (spr->bitmap,0,0,
-		 spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_NONE);
-
+   else
+     VID(blit) (spr->bitmap,0,0,
+		spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_NONE);
+   
   add_updarea(spr->x,spr->y,spr->ow,spr->oh);
 
   spr->onscreen = 1;
@@ -899,7 +902,7 @@ void def_sprite_show(struct sprite *spr) {
 	d.grop = &g;
 	g.type = PG_GROP_LINE;
 	g.param[0] = (*vid->color_pgtohwr) (0xFFFF00);
-	(*vid->rect) (d.x,d.y,d.w,d.h,(*vid->color_pgtohwr)(0x004000));
+	VID(rect) (d.x,d.y,d.w,d.h,(*vid->color_pgtohwr)(0x004000));
 	g.x = spr->x-d.x;
 	g.y = spr->y-d.y;
 	for (i=0;i<8;i++) {
@@ -909,7 +912,7 @@ void def_sprite_show(struct sprite *spr) {
 	   g.h = yp[i];
 	   grop_render(&d);
 	}
-	(*vid->update) (d.x,d.y,d.w,d.h);
+	VID(update) (d.x,d.y,d.w,d.h);
      }
 */
 
@@ -928,11 +931,11 @@ void def_sprite_show(struct sprite *spr) {
       cr.y1 = 100;
       cr.x2 = 150;
       cr.y2 = 150;
-      (*vid->rect) (cr.x1,cr.y1,cr.x2-cr.x1+1,cr.y2-cr.y1+1,(*vid->color_pgtohwr)(0x004000));
+      VID(rect) (cr.x1,cr.y1,cr.x2-cr.x1+1,cr.y2-cr.y1+1,(*vid->color_pgtohwr)(0x004000));
 //      outtext(&fd,spr->x,spr->y,(*vid->color_pgtohwr) (0xFFFF80),"Hello,\nWorld!",&cr);
 //      outtext_v(&fd,spr->x,spr->y,(*vid->color_pgtohwr) (0xFFFF80),"Hello,\nWorld!",&cr);
         outtext_v(&fd,spr->x,spr->y,(*vid->color_pgtohwr) (0xFFFF80),"E",&cr);
-      (*vid->update) (0,0,vid->xres,vid->yres);
+      VID(update) (0,0,vid->xres,vid->yres);
     }
 */
    
@@ -958,8 +961,8 @@ void def_sprite_hide(struct sprite *spr) {
   def_sprite_protectarea(&cr,spr->next);
    
   /* Put back the old image */
-  (*vid->blit) (spr->backbuffer,0,0,
-	       spr->ox,spr->oy,spr->ow,spr->oh,PG_LGOP_NONE);
+  VID(blit) (spr->backbuffer,0,0,
+	     spr->ox,spr->oy,spr->ow,spr->oh,PG_LGOP_NONE);
   add_updarea(spr->ox,spr->oy,spr->ow,spr->oh);
 
   spr->onscreen = 0;
@@ -1056,6 +1059,7 @@ void setvbl_default(struct vidlib *vid) {
   vid->sprite_protectarea = &def_sprite_protectarea;
   vid->blit = &def_blit;
   vid->unblit = &def_unblit;
+  vid->coord_logicalize = &def_coord_logicalize;
 }
 
 /* The End */

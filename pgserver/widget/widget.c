@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.67 2001/03/19 05:59:29 micahjd Exp $
+/* $Id: widget.c,v 1.68 2001/03/19 06:34:05 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -513,6 +513,9 @@ void dispatch_pointing(long type,int x,int y,int btn) {
   union trigparam param;
   memset(&param,0,sizeof(param));
 
+  /* Convert coordinates from physical to logical */
+  VID(coord_logicalize) (&x,&y);
+   
   param.mouse.x = x;
   param.mouse.y = y;
   param.mouse.btn = btn;
