@@ -3,7 +3,7 @@
 <book id="PicoGUI.Protocol">
  <bookinfo>
   <title>PicoGUI Protocol</title>
-  <subtitle>Version 18</>
+  <subtitle>Version 19</>
 
   <authorgroup>
    <author>
@@ -178,7 +178,7 @@ struct pghello {
 	The <structfield>protover</structfield> identifies the protocol
 	version in use.	The version number is incremented every time a
 	change is made to the protocol specifications.  At the time of
-	writing this document the latest value was <constant>18</constant>.
+	writing this document the latest value was <constant>19</constant>.
    </para>
   </sect2>
  </sect1>
@@ -1083,6 +1083,73 @@ struct pgreqd_mkpopup {
    </tbody>
    </tgroup>
    </table>
+  </sect2>
+
+  <sect2 id="pgreq-mkshmbitmap">
+   <title>PGREQ_MKSHMBITMAP - Convert a picogui bitmap to a shared memory segment</>
+   <programlisting>
+type                 : PGREQ_MKSHMBITMAP (54)
+client lib equivalent: pgMakeSHMBitmap()
+additional data      : <link linkend="pgreqdmkshmbitmap">struct pgreqd_mkshmbitmap</>
+server response type : <link linkend="pgresponsedata">PG_RESPONSE_DATA</>
+server returned data : <link linkend="pgshmbitmap">struct pgshmbitmap</>
+   </programlisting>
+   <para>
+        Convert a PicoGUI bitmap to a shared memory segment. This allows very low-level
+        access to the contents of a picogui bitmaps, suitable for 2D games and media players.
+        The application must write data in the video driver's native format and this only
+        works on systems that support shared memory and where the client and server are on
+        the same machine, so this request should be avoided when possible.
+   </para>
+   <figure id="pgreqdmkshmbitmap"><title>struct pgreqd_mkshmbitmap</><programlisting>
+struct pgreqd_mkshmbitmap {
+  u32 bitmap;    /* Bitmap handle to memory map */
+  u32 uid;       /* UID of the client process   */
+};
+   </programlisting></figure>
+   <para>
+        The bitmap handle supplied is converted to a shared memory segment. The supplied
+        UID is used for setting permissions on that memory segment so that the client may
+        access it. After this call, the bitmap can be used as normal in PicoGUI requests,
+        as well as by the client using the information returned:
+   </para>
+   <figure id="pgshmbitmap"><title>struct pgshmbitmap</><programlisting>
+/* Returned by rqh_mkshmbitmap, represents a picogui bitmap
+ * that has been exported as shared memory. The returned SHM key
+ * will be valid as long as the bitmap it was created from exists.
+ * This structure supplies as much information about the bitmap's
+ * internal representation as possible, as the client must manipulate
+ * the bitmap in our video driver's native format, whatever that
+ *  might be. All values here are in network byte order.
+ */
+struct pgshmbitmap {
+  u32 shm_key;             /* System V shared memory key          */
+  u32 shm_length;          /* Length in bytes of shared segment   */
+
+  u32 format;              /* PG_BITFORMAT_* flags                */
+  u32 palette;             /* A handle to the associated palette  */
+
+  u16 width;               /* Physical resolution of bitmap       */
+  u16 height;              /*   (doesn't account for rotation)    */
+  u16 bpp;
+  u16 pitch;
+
+  u32 red_mask;            /* For true color modes, masks of bits */
+  u32 green_mask;          /*   occupied by all the color fields  */
+  u32 blue_mask;
+  u32 alpha_mask;
+
+  u16 red_shift;           /* For true color modes, number of     */
+  u16 green_shift;         /*   bits each color field is shifted  */
+  u16 blue_shift;          /*   left.                             */
+  u16 alpha_shift;
+
+  u16 red_length;          /* For true color modes, length        */
+  u16 green_length;        /*   in bits of each color field       */
+  u16 blue_length;
+  u16 alpha_length;
+};  
+   </programlisting></figure>
   </sect2>
 
   <sect2 id="pgreq-mkstring">
@@ -2239,6 +2306,7 @@ chbtn = (<structfield>pgresponse_event.param</> &gt;&gt; 28) &amp; 0xF;
   <row><entry>PGREQ_SETCONTEXT</><entry>51</><entry>Set the app's current handle context</></>
   <row><entry>PGREQ_GETCONTEXT</><entry>52</><entry>Get the app's current handle context</></>
   <row><entry>PGREQ_INFILTERSEND</><entry>53</><entry>Send a trigger to an input filter</></>
+  <row><entry>PGREQ_MKSHMBITMAP</><entry>54</><entry>Convert a picogui bitmap to a shared memory segment</></>
   </tbody></tgroup></table>
  </appendix>
 
