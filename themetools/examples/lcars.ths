@@ -1,0 +1,255 @@
+/* $Id: lcars.ths,v 1.1 2002/08/02 05:21:47 lalo Exp $
+ *
+ * a theme that looks more or less like the LCARS display in
+ * Star Trek: TnG computer displays.
+ *
+ * This is more eye candy than anything.
+ *
+ * Star Trek and LCARS are (C) and TM by Paramount Pictures
+ * the use of these names doesn't imply approval by Paramount neither
+ * intends to challenge their rights.
+ *
+ *
+ * LCARS wishlist - things that can't be done yet:
+ *
+ * - merge the panel in the LCARS border. For that, panels have to be
+ * able to draw a border around the widget they wrap and have a
+ * different fillstyle depending on their orientation
+ * (top/bottom/left/right), or something like that.
+ *
+ * - pgserver should redraw the background before a window is
+ * rendered. This makes alpha and transparent borders much more
+ * interesting.
+ *
+ * - fellipse has to clip correctly.
+ *
+ * - the label in a panel's title has to be able to have its own
+ * background (so that I may make it orange-on-black).
+ *
+ * Lalo Martins/Micah Dowty/Simon Howard
+ */
+
+
+object default {
+  name = "LCARS";
+
+  bgcolor = 0x000000;
+  fgcolor = 0x9999cc;
+  spacing = 0;
+  margin = 0;
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+  };
+
+  /* font = Font("Helvetica",8,0); */
+  height = 14;
+  width = 14;
+
+  hotkey.ok      = PGKEY_RETURN;
+  hotkey.cancel  = PGKEY_ESCAPE;
+  hotkey.yes     = PGKEY_RETURN;
+  hotkey.no      = PGKEY_ESCAPE;
+}
+
+object button {
+  fgcolor = 0x000000;
+  bgcolor = 0x9999cc;
+  /* Rounded rectangle */
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x+1,y+1,w-2,h-2);
+    Slab(x+4,y,w-8,1);
+    Slab(x+4,y+h-1,w-8,1);
+    Bar(x,y+4,1,h-8);
+    Bar(x+w-1,y+4,1,h-8);
+    Line(x,y+3,3,-3);
+    Line(x+w-1,y+3,-3,-3);
+    Line(x,y+h-4,3,3);
+    Line(x+w-1,y+h-4,-3,3);
+    Pixel(x+1,y+1,1,1);
+    Pixel(x+w-2,y+1,1,1);
+    Pixel(x+1,y+h-2,1,1);
+    Pixel(x+w-2,y+h-2,1,1);
+  };
+  spacing = 3;
+  margin = 4;
+}
+object button.on {
+  fgcolor = 0xFF9900;
+  bgcolor = 0x000000;
+}
+object button.hilight {
+  fgcolor = 0x000000;
+  bgcolor = 0xFF9900;
+}
+
+object menuitem align = PG_A_LEFT;
+object menuitem.hilight {
+  fgcolor = 0x000000;
+  bgcolor = 0xff9900;
+}
+
+object indicator {
+  overlay = fillstyle {
+    SetColor(0xff9900);
+    Rect(x+1,y+1,w-2,h-2);
+  };
+  bgfill = fillstyle {
+    SetColor(0xff9900);
+    Frame(x,y,w,h);
+    SetColor(0x000000);
+    Rect(x+1,y+1,w-2,h-2);
+  };
+}
+
+object label.dlgtitle {
+  bgcolor = 0x000000;
+  fgcolor = 0xFF9900;
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+  };
+  font = Copy(panelbar::font);
+}
+
+object base.tlcontainer {
+  hilightcolor = 0xff9900;
+  margin = 55;
+  bgfill = fillstyle {
+    var indiam = 20;
+    SetColor(0x000000);
+    Rect(x+53,y+1,w-108,h-3);
+    SetColor(0xFF9900);
+    // top bar
+    Rect(x+104,y+1,w-122,17);
+    // bottom bar
+    Rect(x+165,y+h-19,w-183,17);
+    // topleft
+    SetColor(0x9999cc);
+    Fellipse(x+1,y+1,42,42);
+    Rect(x,y+21,53,9);
+    Rect(x+20,y+1,44,29);
+    Rect(x+20,y+1,80,17);
+    SetColor(0x000000);
+    Fellipse(x+54,y+18,20,20);
+    // bottomleft
+    SetColor(0xbe7ea3);
+    Fellipse(x+1,y+h-43,42,42);
+    Rect(x,y+h-31,53,9);
+    Rect(x+20,y+h-31,44,29);
+    Rect(x+20,y+h-19,141,17);
+    SetColor(0x000000);
+    Fellipse(x+54,y+h-38,20,20);
+    // clean up left side
+    Rect(x,y+30,53,h-61);
+    SetColor(0xFF9900);
+    // left bar
+    Rect(x,y+34,53,h-70);
+    // topright
+    Fellipse(x+w-15,y+1,15,17);
+    Rect(x+w-15,y+1,8,17);
+    // bottomright
+    Fellipse(x+w-15,y+h-19,15,17);
+    Rect(x+w-15,y+h-19,8,17);
+  };
+}
+
+object popup.menu {
+  margin = 0;
+  bgfill = fillstyle {
+    SetColor(0x000000);
+    Rect(x,y,w,h);
+  };
+}
+
+object panelbar {
+  bgfill = fillstyle {
+    SetColor(0x000000);
+    Rect(x,y,w,h);
+  };
+  fgcolor = 0xff9900;
+  bgcolor = 0x000000;
+  width = 19;
+  margin = 0;
+  align = PG_A_RIGHT;
+  font = Font("Helvetica",14,PG_FSTYLE_BOLD);
+}
+object base.panelbtn {
+  bgfill  = fillstyle {
+    SetColor(bgcolor);
+    Rect(x+1,y+1,w-2,h-2);
+  };
+  bgcolor = 0x000000;
+  fgcolor = 0x000000;
+  font = Font("Helvetica",10,PG_FSTYLE_BOLD);
+  spacing = 1;
+  margin = 2;
+  side = PG_S_LEFT;
+  // wish
+  //direction = PG_DIR_VERTICAL;
+  width = 19;
+  height = 19;
+}
+object closebtn  {
+  bgcolor = 0xff9900;
+  text = "Close";
+}
+object rotatebtn {
+  bgcolor = 0xbe7ea3;
+  text = "Rotate";
+}
+object zoombtn {
+  bgcolor = 0x9999cc;
+  text = "Zoom";
+}
+
+object scroll {
+  width = 8;
+  bgfill = fillstyle {
+    SetColor(0x000000);
+    Rect(x,y,w,h);
+    SetColor(0x9999cc);
+    Rect(x+2,y+2,w-4,h-4);
+    SetColor(0x000000);
+  };
+  overlay = fillstyle {
+    var midline,sx,sw;
+
+    sx = x+1;
+    sw = w-2;
+    SetColor(0xff9900);
+    Rect(sx,y+1,sw,h-2);
+    midline = y+(h>>1);
+    SetColor(0x000000);
+    sx = sx+1;
+    sw = sw-2;
+    Slab(sx,midline,sw,1);
+    Slab(sx,midline+2,sw,1);
+    Slab(sx,midline-2,sw,1);
+  };
+}
+
+/* Check boxes */
+object checkbox {
+  bgfill = fillstyle {
+    Bitmap(x+1,y+((h-12)>>1)-1,11,11,bitmap1);
+    x = x + 15;
+  };
+  bitmap1 = LoadBitmap("data/lcars-check.png");
+  align = PG_A_LEFT;
+  margin = 10;
+}
+object checkbox.on bitmap1 = LoadBitmap("data/lcars-check-on.png");
+
+object toolbar {
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+    SetColor(fgcolor);
+    Slab(x,y+h-1,w,1);
+  };
+  margin = 2;
+}
+
+/* The End */
