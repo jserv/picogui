@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.20 2003/03/26 00:29:08 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.21 2003/03/26 02:14:58 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -134,12 +134,8 @@ void term_char(struct widget *self,u8 c) {
   /* Clamp by default rather than wrapping/scrolling */
   DATA->clamp_flag = 1;
 
-  /* Handling an escape code? */
-  if (DATA->escapemode)
-    term_char_escapemode(self,c);
-
   /* Is it a control character? */
-  else if (c <= '\033')
+  if (c <= '\033')
     switch (c) {
     case '\033':        /* Escape */
       DATA->escapemode = 1;
@@ -182,6 +178,10 @@ void term_char(struct widget *self,u8 c) {
       DATA->current.crsrx--;
       break;
     }
+
+  /* Handling an escape code? */
+  else if (DATA->escapemode)
+    term_char_escapemode(self,c);
 
   /* Normal character */
   else

@@ -1,4 +1,4 @@
-/* $Id: terminal_textgrid.c,v 1.18 2003/03/26 00:29:08 micahjd Exp $
+/* $Id: terminal_textgrid.c,v 1.19 2003/03/26 02:14:58 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -146,10 +146,9 @@ void textgrid_render(struct groprender *r, struct gropnode *n) {
 
 /* Build an incremental gropnode from the update rectangle */
 void term_realize(struct widget *self) {
-   
-   /* Is an update unnecessary? */
-   if (!DATA->updw)
-     return;
+    /* Is an update unnecessary? */
+    if (!DATA->updw)
+      return;
    
    /* Go ahead and set the master redraw flag */
    self->dt->flags |= DIVTREE_NEED_REDRAW;
