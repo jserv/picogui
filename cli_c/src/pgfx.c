@@ -1,4 +1,4 @@
-/* $Id: pgfx.c,v 1.10 2003/01/01 03:42:54 micahjd Exp $
+/* $Id: pgfx.c,v 1.11 2003/01/17 15:03:15 bornet Exp $
  *
  * picogui/pgfx.c - PGFX general-purpose utility functions
  * 
@@ -76,6 +76,9 @@ inline pgprim pgText(pgcontext c,pgu x,pgu y,pghandle string) {
 }
 inline pgprim pgBitmap(pgcontext c,pgu x,pgu y,pgu w,pgu h,pghandle bitmap) {
    return (*(c)->lib->bitmap)(c,x,y,w,h,bitmap);
+}
+inline pgprim pgRotateBitmap(pgcontext c,pgu x,pgu y,pgu w,pgu h,pghandle bitmap) {
+   return (*(c)->lib->rotatebitmap)(c,x,y,w,h,bitmap);
 }
 inline pgprim pgTileBitmap(pgcontext c,pgu x,pgu y,pgu w,pgu h,pghandle bitmap) {
    return (*(c)->lib->tilebitmap)(c,x,y,w,h,bitmap);

@@ -1,4 +1,4 @@
-/* $Id: pgfx.h,v 1.20 2003/01/01 03:42:53 micahjd Exp $
+/* $Id: pgfx.h,v 1.21 2003/01/17 15:03:13 bornet Exp $
  *
  * picogui/pgfx.h - The PicoGUI abstract graphics interface
  * 
@@ -121,7 +121,7 @@ typedef struct pgfx_context {
  *
  * pgfx_lib defines the set of functions a PGFX backend needs to implement.
  *
- * \sa pgPixel, pgLine, pgRect, pgFrame, pgSlab, pgBar, pgText, pgBitmap, pgTileBitmap, pgGradient
+ * \sa pgPixel, pgLine, pgRect, pgFrame, pgSlab, pgBar, pgText, pgBitmap, pgRotateBitmap, pgTileBitmap, pgGradient
  */
 struct pgfx_lib {
    //! Implementation of pgPixel
@@ -147,6 +147,9 @@ struct pgfx_lib {
    //! Implementation of pgBitmap
    pgprim (*bitmap)    (pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
 			pghandle bitmap);
+   //! Implementation of pgRotateBitmap
+   pgprim (*rotatebitmap) (pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
+			   pghandle bitmap);
    //! Implementation of pgTileBitmap
    pgprim (*tilebitmap)(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
 			pghandle bitmap);
@@ -235,9 +238,25 @@ inline pgprim pgText(pgcontext c,pgu x,pgu y,pghandle string);
  * to the destination (x,y) is determined by the x any y components of the
  * source rectangle.
  * 
- * \sa pgSetLgop, pgSetSrc, pgTileBitmap
+ * \sa pgSetLgop, pgSetSrc, pgTileBitmap, pgRotateBitmap
  */
 inline pgprim pgBitmap(pgcontext c,pgu x,pgu y,pgu w,pgu h,pghandle bitmap);
+/*!
+ * \brief Rotate and draw a bitmap
+ * 
+ * The source bitmap is rotated around the top-left corner, and
+ * shifted of the given x,y.
+ * 
+ * So, if with all other parameters remain the same and you change the
+ * rotation angle, the bitmap will appear to rotate around it's
+ * original top-left corner.
+ *
+ * The angle for the rotation is given via pgSetAngle. The portion of
+ * the original bitmap to rotate is choosed via pgSetSrc.
+ * 
+ * \sa pgSetLgop, pgSetSrc, pgSetAngle, pgBitmap, pgRotateBitmap
+ */
+inline pgprim pgRotateBitmap(pgcontext c,pgu x,pgu y,pgu w,pgu h,pghandle bitmap);
 /*!
  * \brief Tile a portion of a bitmap
  * 
@@ -286,7 +305,7 @@ inline pgprim pgSetFont(pgcontext c,pghandle font);
  */
 inline pgprim pgSetLgop(pgcontext c,short lgop);
 /*!
- * \brief Set the angle for text
+ * \brief Set the angle for text and bitmap
  * 
  * The angle is measured in degrees:
  *  - 0: Horizontal, left to right
@@ -301,7 +320,7 @@ inline pgprim pgSetAngle(pgcontext c,pgu angle);
  * The bitmap source rectangle is selects which piece of
  * the source bitmap to use in bitmap primitives
  * 
- * \sa pgBitmap, pgTileBitmap
+ * \sa pgBitmap, pgTileBitmap, pgRotateBitmap
  */
 inline pgprim pgSetSrc(pgcontext c,pgu x,pgu y,pgu w,pgu h);
 /*!
@@ -321,10 +340,11 @@ inline pgprim pgSetSrc(pgcontext c,pgu x,pgu y,pgu w,pgu h);
  */
 inline pgprim pgSetMapping(pgcontext c,pgu x,pgu y,pgu w,pgu h,short type);
 
-/*
+/*!
  * \brief Sets the context's clipping rectangle
  *
  * Set the clipping rectangle to the supplied coordinates
+ *
  */
 inline pgprim pgSetClip(pgcontext c,pgu x,pgu y,pgu w,pgu h);
 

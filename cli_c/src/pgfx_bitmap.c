@@ -1,4 +1,4 @@
-/* $Id: pgfx_bitmap.c,v 1.6 2003/01/01 03:42:54 micahjd Exp $
+/* $Id: pgfx_bitmap.c,v 1.7 2003/01/17 15:03:15 bornet Exp $
  *
  * picogui/pgfx_bitmap.c - lib functions and registration for offscreen bitmap
  *                         drawing through the PGFX interface
@@ -91,6 +91,12 @@ pgprim _pgfxbitmap_bitmap(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
    return 0;
 }
 
+pgprim _pgfxbitmap_rotatebitmap(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
+				pghandle bitmap) {
+   pgRender(c->device,PG_GROP_ROTATEBITMAP,x,y,w,h,bitmap);
+   return 0;
+}
+
 pgprim _pgfxbitmap_tilebitmap(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
 			      pghandle bitmap) {
    pgRender(c->device,PG_GROP_TILEBITMAP,x,y,w,h,bitmap);
@@ -164,28 +170,29 @@ pgcontext pgNewBitmapContext(pghandle bitmap) {
    if (!ctx) return NULL;
    memset(ctx,0,sizeof(struct pgfx_context));
 
-   l.pixel      = _pgfxbitmap_pixel;
-   l.line       = _pgfxbitmap_line;
-   l.rect       = _pgfxbitmap_rect;
-   l.frame      = _pgfxbitmap_frame;
-   l.blur       = _pgfxbitmap_blur;
-   l.slab       = _pgfxbitmap_slab;
-   l.bar        = _pgfxbitmap_bar;
-   l.ellipse    = _pgfxbitmap_ellipse; 
-   l.fellipse   = _pgfxbitmap_fellipse; 
-   l.fpolygon   = _pgfxbitmap_fpolygon; 
-   l.text       = _pgfxbitmap_text;
-   l.bitmap     = _pgfxbitmap_bitmap;
-   l.tilebitmap = _pgfxbitmap_tilebitmap;
-   l.gradient   = _pgfxbitmap_gradient;
-   l.setcolor   = _pgfxbitmap_setcolor;
-   l.setfont    = _pgfxbitmap_setfont;
-   l.setlgop    = _pgfxbitmap_setlgop;
-   l.setangle   = _pgfxbitmap_setangle;
-   l.setsrc     = _pgfxbitmap_setsrc;
-   l.setmapping = _pgfxbitmap_setmapping;
-   l.setclip    = _pgfxbitmap_setclip;
-   l.update     = _pgfxbitmap_update;
+   l.pixel        = _pgfxbitmap_pixel;
+   l.line         = _pgfxbitmap_line;
+   l.rect         = _pgfxbitmap_rect;
+   l.frame        = _pgfxbitmap_frame;
+   l.blur         = _pgfxbitmap_blur;
+   l.slab         = _pgfxbitmap_slab;
+   l.bar          = _pgfxbitmap_bar;
+   l.ellipse      = _pgfxbitmap_ellipse; 
+   l.fellipse     = _pgfxbitmap_fellipse; 
+   l.fpolygon     = _pgfxbitmap_fpolygon; 
+   l.text         = _pgfxbitmap_text;
+   l.bitmap       = _pgfxbitmap_bitmap;
+   l.rotatebitmap = _pgfxbitmap_rotatebitmap;
+   l.tilebitmap   = _pgfxbitmap_tilebitmap;
+   l.gradient     = _pgfxbitmap_gradient;
+   l.setcolor     = _pgfxbitmap_setcolor;
+   l.setfont      = _pgfxbitmap_setfont;
+   l.setlgop      = _pgfxbitmap_setlgop;
+   l.setangle     = _pgfxbitmap_setangle;
+   l.setsrc       = _pgfxbitmap_setsrc;
+   l.setmapping   = _pgfxbitmap_setmapping;
+   l.setclip      = _pgfxbitmap_setclip;
+   l.update       = _pgfxbitmap_update;
    
    ctx->lib = &l;
    ctx->device = bitmap;

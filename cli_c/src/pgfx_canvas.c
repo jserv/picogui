@@ -1,4 +1,4 @@
-/* $Id: pgfx_canvas.c,v 1.14 2003/01/01 03:42:54 micahjd Exp $
+/* $Id: pgfx_canvas.c,v 1.15 2003/01/17 15:03:17 bornet Exp $
  *
  * picogui/pgfx_canvas.c - lib functions and registration for canvas
  *                         drawing through the PGFX interface
@@ -90,6 +90,12 @@ pgprim _pgfxcanvas_bitmap(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
    return 0;
 }
 
+pgprim _pgfxcanvas_rotatebitmap(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
+				pghandle bitmap) {
+   pgWriteCmd(c->device,PGCANVAS_GROP,6,PG_GROP_ROTATEBITMAP,x,y,w,h,bitmap);
+   return 0;
+}
+
 pgprim _pgfxcanvas_tilebitmap(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
 			      pghandle bitmap) {
    pgWriteCmd(c->device,PGCANVAS_GROP,6,PG_GROP_TILEBITMAP,x,y,w,h,bitmap);
@@ -160,28 +166,29 @@ pgcontext pgNewCanvasContext(pghandle canvas,short mode) {
    if (!ctx) return NULL;
    memset(ctx,0,sizeof(struct pgfx_context));
 
-   l.pixel      = _pgfxcanvas_pixel;
-   l.line       = _pgfxcanvas_line;
-   l.rect       = _pgfxcanvas_rect;
-   l.blur       = _pgfxcanvas_blur;
-   l.frame      = _pgfxcanvas_frame;
-   l.slab       = _pgfxcanvas_slab;
-   l.bar        = _pgfxcanvas_bar;
-   l.ellipse    = _pgfxcanvas_ellipse; 
-   l.fellipse   = _pgfxcanvas_fellipse; 
-   l.fpolygon   = _pgfxcanvas_fpolygon; 
-   l.text       = _pgfxcanvas_text;
-   l.bitmap     = _pgfxcanvas_bitmap;
-   l.tilebitmap = _pgfxcanvas_tilebitmap;
-   l.gradient   = _pgfxcanvas_gradient;
-   l.setcolor   = _pgfxcanvas_setcolor;
-   l.setfont    = _pgfxcanvas_setfont;
-   l.setlgop    = _pgfxcanvas_setlgop;
-   l.setangle   = _pgfxcanvas_setangle;
-   l.setsrc     = _pgfxcanvas_setsrc;
-   l.setmapping = _pgfxcanvas_setmapping;
-   l.setclip    = _pgfxcanvas_setclip;
-   l.update     = _pgfxcanvas_update;
+   l.pixel        = _pgfxcanvas_pixel;
+   l.line         = _pgfxcanvas_line;
+   l.rect         = _pgfxcanvas_rect;
+   l.blur         = _pgfxcanvas_blur;
+   l.frame        = _pgfxcanvas_frame;
+   l.slab         = _pgfxcanvas_slab;
+   l.bar          = _pgfxcanvas_bar;
+   l.ellipse      = _pgfxcanvas_ellipse; 
+   l.fellipse     = _pgfxcanvas_fellipse; 
+   l.fpolygon     = _pgfxcanvas_fpolygon; 
+   l.text         = _pgfxcanvas_text;
+   l.bitmap       = _pgfxcanvas_bitmap;
+   l.rotatebitmap = _pgfxcanvas_rotatebitmap;
+   l.tilebitmap   = _pgfxcanvas_tilebitmap;
+   l.gradient     = _pgfxcanvas_gradient;
+   l.setcolor     = _pgfxcanvas_setcolor;
+   l.setfont      = _pgfxcanvas_setfont;
+   l.setlgop      = _pgfxcanvas_setlgop;
+   l.setangle     = _pgfxcanvas_setangle;
+   l.setsrc       = _pgfxcanvas_setsrc;
+   l.setmapping   = _pgfxcanvas_setmapping;
+   l.setclip      = _pgfxcanvas_setclip;
+   l.update       = _pgfxcanvas_update;
    
    ctx->lib = &l;
    ctx->device = canvas ? canvas : _pgdefault_widget;
