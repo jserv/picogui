@@ -6,20 +6,20 @@
  * (see driverinfo.c for more info)
  */
 
-#ifdef DRIVER_SDLGL
-  DRV("sdlgl",&sdlgl_regfunc)
-#endif
-
-#ifdef DRIVER_X11
-  DRV("x11",&x11_regfunc)
+#ifdef DRIVER_SDLFB
+  DRV("sdlfb",&sdlfb_regfunc)
 #endif
 
 #ifdef DRIVER_FBDEV
   DRV("fbdev",&fbdev_regfunc)
 #endif
    
-#ifdef DRIVER_SDLFB
-  DRV("sdlfb",&sdlfb_regfunc)
+#ifdef DRIVER_X11
+  DRV("x11",&x11_regfunc)
+#endif
+
+#ifdef DRIVER_SDLGL
+  DRV("sdlgl",&sdlgl_regfunc)
 #endif
 
 #ifdef DRIVER_SVGAFB      
