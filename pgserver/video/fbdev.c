@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.16 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: fbdev.c,v 1.17 2002/01/14 09:06:17 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -117,6 +117,8 @@ g_error fbdev_init(void) {
 #endif
       
 #ifdef CONFIG_VBL_LINEAR16
+    case 12:
+    case 15:
     case 16:
       setvbl_linear16(vid);
       break;

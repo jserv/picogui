@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.67 2002/01/10 15:22:12 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.68 2002/01/14 09:06:17 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -140,6 +140,12 @@ hwrcolor def_color_pgtohwr(pgcolor c) {
 	    ((getgreen(c) << 2) & 0x03E0) |
 	    ((getblue(c) >> 3) & 0x001F));
   }
+  else if (vid->bpp==12) {
+    /* 4-4-4 color */
+    return (((getred(c) << 4) & 0x0F00) |
+	    (getgreen(c) & 0x00F0) |
+	    ((getblue(c) >> 4) & 0x000F));
+  }
   else
     /* True color */
     return c;
@@ -172,6 +178,12 @@ pgcolor def_color_hwrtopg(hwrcolor c) {
      return mkcolor( (c&0x7C00) >> 7,
 		     (c&0x03E0) >> 2,
 		     (c&0x001F) << 3 );
+  }
+  else if (vid->bpp==12) {
+     /* 4-4-4 color */
+     return mkcolor( (c&0x0F00) >> 4,
+		     (c&0x00F0),
+		     (c&0x000F) << 4 );
   }
   else
     /* True color */
