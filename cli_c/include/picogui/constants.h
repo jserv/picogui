@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.50 2001/06/26 11:34:38 micahjd Exp $
+/* $Id: constants.h,v 1.51 2001/06/28 21:12:42 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -386,10 +386,16 @@ typedef unsigned long pghandle;
 #define PGTH_P_CURSORBITMAP  26  //!< Bitmap for the (mouse) pointer 
 #define PGTH_P_CURSORBITMASK 27  //!< Bitmask for the (mouse) pointer 
 
-#define PGTH_P_STRING_OK     501         //!< String property (usually in PGTH_O_DEFAULT)
-#define PGTH_P_STRING_CANCEL 502         //!< String property (usually in PGTH_O_DEFAULT)
-#define PGTH_P_STRING_YES    503         //!< String property (usually in PGTH_O_DEFAULT)
-#define PGTH_P_STRING_NO     504         //!< String property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_STRING_OK          501    //!< String property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_STRING_CANCEL      502    //!< String property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_STRING_YES         503    //!< String property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_STRING_NO          504    //!< String property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_STRING_SEGFAULT    505    //!< String property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_STRING_MATHERR     506    //!< String property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_STRING_PGUIERR     507    //!< String property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_STRING_PGUIWARN    508    //!< String property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_STRING_PGUIERRDLG  509    //!< String property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_STRING_PGUICOMPAT  510    //!< String property (usually in PGTH_O_DEFAULT)
 
 #define PGTH_P_ICON_OK       1001        //!< Icon property (usually in PGTH_O_DEFAULT)
 #define PGTH_P_ICON_CANCEL   1002        //!< Icon property (usually in PGTH_O_DEFAULT)
