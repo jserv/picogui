@@ -15,7 +15,7 @@
 $option{'side'} = PG_S_BOTTOM;
 $option{'size'} = 60;
 $option{'sizemode'} = PG_SZMODE_NORMAL;
-$option{'path'} = 'examples/img/';
+$option{'path'} = './img/';
 
 ####################################### Subroutines
 

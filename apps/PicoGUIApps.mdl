@@ -1,0 +1,62 @@
+# -*- python -*-
+
+from beeconfig import compile, install, distrib, clean
+
+multicompile     = 1
+
+help = """
+Provides the PicoGUI demonstration applications
+"""
+
+prefix = '/usr'
+
+depends = [ 'picoguiclient' ]
+
+runtime = [
+    Runtime ( 'pgboard', 'Virtual Keyboard',
+              content = [ 'bin/pgboard' ],
+              help = "Virtual Keyboard for PicoGUI" ),
+    Runtime ( 'fitaly', 'Fitaly Keymap',
+              depends = [ 'picoguiapps/pgboard' ],
+              content = [ 'share/pgboard/us_fitaly_160.kb' ],
+              help = "Fitaly Keymap for the PicoGUI Virtual Keyboard" ),
+    Runtime ( 'us_qwerty', 'US QWERTY Keymap',
+              depends = [ 'picoguiapps/pgboard' ],
+              content = [ 'share/pgboard/us_qwerty_scalable.kb' ],
+              help = "US QWERTY keymap for the PicoGUI Virtual Keyboard" ),
+    Runtime ( 'ch_qwertz', 'CH QWERTZ Keymap',
+              depends = [ 'picoguiapps/pgboard' ],
+              content = [ 'share/pgboard/ch_qwertz_scalable.kb' ],
+              help = "CH QWERTZ keymap for the PicoGUI Virtual Keyboard" ),
+    Runtime ( 'pgboard_run_fitaly', 'Run PGBoard with Fitaly keymap',
+              depends = [ 'picoguiserver/server',
+                          'picoguiapps/fitaly' ],
+              rcscript = "# start pgboard\n%s/bin/pgboard %s/share/pgboard/us_fitaly_160.kb&\n\n" % \
+                         ( prefix, prefix )),
+    Runtime ( 'pgboard_run_us_qwerty', 'Run PGBoard with US QWERTY keymap',
+               depends = [ 'picoguiserver/server',
+                           'picoguiapps/us_qwerty' ],
+               rcscript = "# start pgboard\n%s/bin/pgboard %s/share/pgboard/us_qwerty_scalable.kb&\n\n" % \
+                          ( prefix, prefix )),
+    Runtime ( 'pgboard_run_ch_qwertz', 'Run PGBoard with CH QWERTZ keymap',
+               depends = [ 'picoguiserver/server',
+                           'picoguiapps/ch_qwertz' ],
+               rcscript = "# start pgboard\n%s/bin/pgboard %s/share/pgboard/ch_qwertz_scalable.kb&\n\n" % \
+                          ( prefix, prefix ))
+    ]
+
+def prepare (module, platform, project):
+
+    command = "../configure --with-rpm-prefix=%s --prefix=%s --with-prefix --host=%s --enable-bee" % \
+              ( module.install_path (platform, project, standard = 1),
+                module.feature ['prefix'],
+                platform.feature ['platform'] )
+
+    command = command + " --enable-optimisation"
+
+    command = command + " --with-picogui=%s" % \
+              project.modules ['picoguiclient'].install_path (platform, project)
+
+    message ("running: %s" % command)
+    sequence (command)
+    return

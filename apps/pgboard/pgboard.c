@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.7 2001/07/23 08:32:51 micahjd Exp $
+/* $Id: pgboard.c,v 1.8 2001/10/23 17:25:05 cgrigis Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 #include <picogui.h>
+#include <picogui/pgboard.h>
 #include "kbfile.h"
 
 FILE *fpat;
@@ -36,6 +37,9 @@ struct mem_pattern mpat;
 pghandle wCanvas, wApp;
 struct key_entry *keydown = NULL;
 int current_pat;
+
+int initKbdCanvas ();
+void disableKbdCanvas ();
 
 /* Small utility function to XOR a key's rectangle */
 void xorKey(struct key_entry *k) {
@@ -48,6 +52,83 @@ void xorKey(struct key_entry *k) {
   pgRect(gc,k->x,k->y,k->w,k->h);
   pgContextUpdate(gc);
   pgDeleteContext(gc);
+}
+
+/*
+ * Handler for messages sent to the keyboard
+ */
+int evtMessage (struct pgEvent * evt)
+{
+  /* Received command */
+  struct keyboard_command * cmd;
+
+  /* Keyboard's new size */
+  int newSize = -1;
+
+  /* Internal status reprenting the stats of the keyboard (enabled/disabled) */
+  static int status = 0;
+      
+  switch (evt->type)
+    {
+    case PG_WE_APPMSG:
+      cmd = (struct keyboard_command *) evt->e.data.pointer;
+
+      switch (cmd->type)
+	{
+	case PG_KEYBOARD_SHOW:
+	  newSize = mpat.app_size;
+	  break;
+
+	case PG_KEYBOARD_HIDE:
+	  newSize = 0;
+	  break;
+
+	case PG_KEYBOARD_TOGGLE:
+	  newSize = mpat.app_size - pgGetWidget (wApp, PG_WP_SIZE);
+	  break;
+
+	case PG_KEYBOARD_ENABLE:
+	  initKbdCanvas ();
+	  status = 0;
+	  break;
+
+	case PG_KEYBOARD_DISABLE:
+	  disableKbdCanvas ();
+	  status = 1;
+	  break;
+
+	case PG_KEYBOARD_TOGGLE_DISPLAY:
+	  if (status)
+	    {
+	      initKbdCanvas ();
+	    }
+	  else
+	    {
+	      disableKbdCanvas ();
+	    }
+	  status = !status;
+	  break;
+
+	default:
+	  printf ("Unknown command: %d\n", cmd->type);
+	  break;
+	}
+
+      if (newSize >= 0)
+	{
+	  pgSetWidget(wApp,
+		      PG_WP_SIZE, newSize,
+		      0);
+	}
+      
+      break;
+     
+    default:
+      /* Ignore */
+      break;
+    }
+
+  return 1;
 }
 
 int evtMouse(struct pgEvent *evt) {
@@ -111,10 +192,55 @@ int evtMouse(struct pgEvent *evt) {
   return 0;
 }
 
+/*
+ * Initialize the keyboard canvas
+ */
+int initKbdCanvas ()
+{
+  if (mpat.keys == 0)
+    {
+      rewind (fpat);
+      pgEnterContext ();
+      if (kb_loadpattern (fpat, &mpat, current_pat = 0, wCanvas)) {
+	pgMessageDialog("Virtual Keyboard", "Error loading keyboard pattern", 0);
+	return 1;
+      }
+    }
+  pgWriteCmd (wCanvas, PGCANVAS_REDRAW, 0);
+  pgSubUpdate (wCanvas);
+  
+  /* Set up an event handler for the keyboard */
+  pgBind (wCanvas, PG_WE_PNTR_DOWN, &evtMouse, NULL);
+  pgBind (wCanvas, PG_WE_PNTR_RELEASE, &evtMouse, NULL);
+  pgBind (wCanvas, PG_WE_PNTR_UP, &evtMouse, NULL);
+
+  return 0;
+}
+
+/*
+ * Disable the keyboard canvas by clearing it
+ */
+void disableKbdCanvas ()
+{
+  pgcontext gc;
+
+  gc = pgNewCanvasContext (wCanvas, PGFX_IMMEDIATE);
+  pgSetColor (gc, 0xFFFFFF);
+  pgRect (gc, 0, 0, 100, pgGetWidget (wApp, PG_WP_SIZE));
+  pgContextUpdate (gc);
+  pgDeleteContext (gc);
+
+  /* Clear event handlers for the keyboard */
+  pgBind (wCanvas, PG_WE_PNTR_DOWN, NULL, NULL);
+  pgBind (wCanvas, PG_WE_PNTR_RELEASE, NULL, NULL);
+  pgBind (wCanvas, PG_WE_PNTR_UP, NULL, NULL);
+}
+
 int main(int argc,char **argv) {
   /* Make a 'toolbar' app */
   pgInit(argc,argv);
   wApp = pgRegisterApp(PG_APP_TOOLBAR,"Keyboard",0);
+
   wCanvas = pgNewWidget(PG_WIDGET_CANVAS,0,0);
 
   if (!argv[1] || argv[2]) {
@@ -136,25 +262,18 @@ int main(int argc,char **argv) {
 
   /* Resize app widget */
   pgSetWidget(wApp,
+              PG_WP_NAME,pgNewString(PG_KEYBOARD_APPNAME),
 	      PG_WP_SIDE,mpat.app_side,
 	      PG_WP_SIZE,mpat.app_size,
 	      PG_WP_SIZEMODE,mpat.app_sizemode,
 	      PG_WP_TRANSPARENT,1,
 	      0);
 
-  pgEnterContext();
-  if (kb_loadpattern(fpat,&mpat,current_pat = 0,wCanvas)) {
-    pgMessageDialog(*argv,"Error loading keyboard pattern",0);
-    return 1;
-  }
-  pgWriteCmd(wCanvas,PGCANVAS_REDRAW,0);
-  pgSubUpdate(wCanvas);
-   
-  /* Set up an event handler */
-  pgBind(wCanvas,PG_WE_PNTR_DOWN,&evtMouse,NULL);
-  pgBind(wCanvas,PG_WE_PNTR_RELEASE,&evtMouse,NULL);
-  pgBind(wCanvas,PG_WE_PNTR_UP,&evtMouse,NULL);
-   
+  initKbdCanvas ();
+
+  /* Set up an event handler for the received messages */
+  pgBind (wApp, PG_WE_APPMSG, &evtMessage, NULL);
+
   pgEventLoop();
   return 0;
 }

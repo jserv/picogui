@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: kbcompile.pl,v 1.9 2001/08/01 06:39:40 micahjd Exp $
+# $Id: kbcompile.pl,v 1.10 2001/10/23 17:25:05 cgrigis Exp $
 #
 # This script converts a .kbs keyboard definition source to the .kb
 # binary representation as defined in kbfile.h
@@ -233,6 +233,13 @@ sub setfont {
     canvas($symbols{'PGCANVAS_GROP'},$symbols{'PG_GROP_SETFONT'},
 	   $f);
 }
+
+sub font {
+    my ($name,$size,$flags) = @_;
+    request(2,'MKFONT',pack("a40Nnn",$name,$flags,$size,0));
+    canvas($symbols{'PGCANVAS_GROP'},$symbols{'PG_GROP_SETFONT'},0);
+}
+
 
 sub setlgop {
     my ($l) = @_;

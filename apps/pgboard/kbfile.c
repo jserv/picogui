@@ -1,4 +1,4 @@
-/* $Id: kbfile.c,v 1.4 2001/10/05 20:44:52 micahjd Exp $
+/* $Id: kbfile.c,v 1.5 2001/10/23 17:25:05 cgrigis Exp $
   *
   * kbfile.c - Functions to validate and load patterns from a keyboard file
   * 
@@ -85,7 +85,7 @@ int kb_validate(FILE *f, struct mem_pattern *pat) {
    pat->app_size = hdr.app_size;
    pat->app_sizemode = hdr.app_sizemode;
    pat->app_side = hdr.app_side;
-   
+
    return 0;
 }
 
@@ -106,7 +106,7 @@ int kb_loadpattern(FILE *f, struct mem_pattern *pat,
    unsigned long x;
    struct key_entry *k;
    char *canvasbuf;
-   
+
    /* If necessary, free the previous key table */
    if (pat->keys)
      free(pat->keys);
@@ -154,6 +154,7 @@ int kb_loadpattern(FILE *f, struct mem_pattern *pat,
    
    /* Load the canvasdata */
    canvasbuf = (char *) malloc(pathdr.canvasdata_len);
+
    if (!canvasbuf)
      return 1;
    fread(canvasbuf,1,pathdr.canvasdata_len,f);
@@ -186,7 +187,7 @@ int kb_loadpattern(FILE *f, struct mem_pattern *pat,
 
    /* Send to canvas (client lib frees memory) */
    pgWriteData(canvas,pgFromTempMemory(canvasbuf,pathdr.canvasdata_len));
-   
+
    /* Load key table into memory */
    if (pat->num_keys) {
       x = sizeof(struct key_entry) * pat->num_keys;
