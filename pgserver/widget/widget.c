@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.141 2002/01/15 07:35:15 micahjd Exp $
+/* $Id: widget.c,v 1.142 2002/01/15 10:17:04 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -1478,7 +1478,7 @@ struct widget *widget_traverse(struct widget *w, int direction, int count) {
     /* Traverse to the first child, then go forward 
      */
   case PG_TRAVERSE_CHILDREN:
-    if (!*w->sub)
+    if (!w->sub || !*w->sub)
       return NULL;
     return widget_traverse((*w->sub)->owner,PG_TRAVERSE_FORWARD,count);
 
