@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.5 2000/09/04 02:43:04 micahjd Exp $
+/* $Id: pgmain.c,v 1.6 2000/09/04 03:04:20 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -84,8 +84,48 @@ int main(int argc, char **argv) {
 	vidf |= PGVID_FULLSCREEN;
 	break;
 
+#ifndef TINY_MESSAGES
       case 'l':        /* List */
-	break;
+
+	puts("\nVideo drivers:");
+	{
+	  struct vidinfo *p = videodrivers;
+	  while (p->name) {
+	    printf("  %s",p->name);
+	    p++;
+	  }
+	}
+
+	puts("\n\nInput drivers:");
+	{
+	  struct inputinfo *p = inputdrivers;
+	  while (p->name) {
+	    printf("  %s",p->name);
+	    p++;
+	  }
+	}
+	
+	puts("\n\nFonts:");
+	{
+	  struct fontstyle_node *p = fontstyles;
+	  puts("  Name              Size Normal Bold Italic BoldItalic Fixed Default\n");
+	  while (p) {
+	    printf("  %-18s%4d   %c     %c     %c        %c        %c      %c\n",
+		   p->name,p->size,
+		   p->normal ? '*' : ' ',
+		   p->bold ? '*' : ' ',
+		   p->italic ? '*' : ' ',
+		   p->bolditalic ? '*' : ' ',
+		   (p->flags & FSTYLE_FIXED) ? '*' : ' ',
+		   (p->flags & FSTYLE_DEFAULT) ? '*' : ' ');
+
+	    p = p->next;
+	  }
+	}
+
+	puts("");
+	exit(1);
+#endif
 
       case 'x':        /* Width */
        	vidw = atoi(optarg);
@@ -108,6 +148,9 @@ int main(int argc, char **argv) {
 	puts("Commandline error");
 #else
 	puts("PicoGUI server (pgui.sourceforge.net)\n\n"
+#ifdef DEBUG
+	     "DEBUG MODE ON\n\n"
+#endif
 	     "usage: pgserver [-fhl] [-x width] [-y height] [-d depth] [-v driver]\n"
 	     "                [-i driver] [session manager...]\n\n"
 	     "  f : Fullscreen mode (if the driver supports it)\n"
@@ -122,7 +165,7 @@ int main(int argc, char **argv) {
 	     "  initialization is done, and the server will quit after the last\n"
 	     "  client disconencts.");
 #endif
-	exit(0);
+	exit(1);
       }
       
     }
