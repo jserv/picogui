@@ -1,4 +1,4 @@
-/* $Id: clientlib.h,v 1.9 2001/09/27 16:18:37 micahjd Exp $
+/* $Id: clientlib.h,v 1.10 2001/09/27 16:28:20 micahjd Exp $
  *
  * clientlib.h - definitions used only within the client library code itself
  *
@@ -43,9 +43,15 @@
 #endif
 #include <netdb.h>
 #include <stdio.h>    /* for fprintf() */
-#include <sys/malloc.h>
-#include <signal.h>
 
+/* FIXME: Check for Mac OS X using autoconf */
+#if (defined(__APPLE__) && defined(__MACH__)) // Mac OS X and Darwin 
+#include <sys/malloc.h>
+#else
+#include <malloc.h>
+#endif
+
+#include <signal.h>
 #include <unistd.h>   /* select() */
 #include <string.h>   /* for memcpy(), memset(), strcpy() */
 #include <stdarg.h>   /* needed for pgRegisterApp and pgSetWidget */

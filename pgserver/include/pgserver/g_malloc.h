@@ -1,4 +1,4 @@
-/* $Id: g_malloc.h,v 1.7 2001/09/27 16:18:37 micahjd Exp $
+/* $Id: g_malloc.h,v 1.8 2001/09/27 16:28:20 micahjd Exp $
  *
  * g_malloc.h - malloc wrapper providing error handling
  *
@@ -28,8 +28,14 @@
 #ifndef __H_GMALLOC
 #define __H_GMALLOC
 
+/* FIXME: Check for Mac OS X using autoconf */
+#if (defined(__APPLE__) && defined(__MACH__)) // Mac OS X and Darwin 
 #include <sys/types.h>
 #include <sys/malloc.h>
+#else
+#include <malloc.h>
+#endif
+
 #include <pgserver/g_error.h>
 
 g_error g_malloc(void **p,size_t s);

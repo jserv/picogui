@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.30 2001/09/27 16:18:37 micahjd Exp $
+/* $Id: pgtheme.y,v 1.31 2001/09/27 16:28:20 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -26,8 +26,14 @@
  * 
  */
 
+/* FIXME: Check for Mac OS X using autoconf */
+#if (defined(__APPLE__) && defined(__MACH__)) // Mac OS X and Darwin 
 #include <sys/types.h>
 #include <sys/malloc.h>
+#else
+#include <malloc.h>
+#endif
+
 #include "themec.h"
 
 %}
