@@ -50,13 +50,21 @@ echo "`svnlook author -r $REV $REPOS`" committed revision $REV: "`svnlook log -r
     
     <p> That would be scanline (Micah Dowty), in #picogui. This page is written by TD (Mike Hearn) in #autopackage.</p>
 
-    <h1> Why is it called CIA? </h1>
+    <h1> Why is this here? </h1>
 
-    <p> Lalo Martins' joke: CIA was originally written to monitor the PicoGUI subversion repository, so the bot is a
-      brainless entity designed to monitor subversion. If you don't get it, forget it :) </p>
+    <p> Micah was reading about extreme version control on the <a href="http://c2.com/cgi/wiki?WelcomeVisitors">C2 Wiki</a>, which
+        mentioned a chat room bot that shows commit information. He wrote the first version of the CIA bot to receive messages
+        from PicoGUI's subversion repository and splat them out into #picogui with a little formatting. Lalo Martins named it:
+        CIA was originally written to monitor PicoGUI's Subversion repository, so the bot is a brainless entity designed to
+        monitor subversion. </p>
+
+    <p> About a week later, Mike Hearn made the suggestion that as many open source projects as possible should use the bot, and
+        it should report all messages to a central channel that people could join to bask in the warm glow of code in development.
+        After some quick hacking, Micah got the first version of the bot online. Only 5 hours after opening the #commits channel
+        there were around 50 users occupying it and several projects sending their commit messages to CIA.</p>
 
     <hr>
-    <p>1st June 2003</p>
+    <p>$Id$</p>
   </body>
 
 </html>
