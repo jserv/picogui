@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.20 2002/10/15 02:45:38 micahjd Exp $
+/* $Id: font_freetype.c,v 1.21 2002/10/16 11:05:46 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -546,7 +546,7 @@ g_error freetype_create(struct font_descriptor *self, const struct font_style *f
   }
 
   /* If they asked for a default font, give it to them */
-  if (fs->style & PG_FSTYLE_DEFAULT) {
+  if (!fs->name || (fs->style & PG_FSTYLE_DEFAULT)) {
     int saved_size = fs->size;
     int saved_style = fs->style;
 
@@ -568,22 +568,35 @@ g_error freetype_create(struct font_descriptor *self, const struct font_style *f
   }
   DATA->face = closest;
 
-  DATA->size = fs->size ? fs->size : 
-    (fs->style & PG_FSTYLE_FIXED ? &ft_default_fixed_fs : &ft_default_fs)->size;
-  if (DATA->size < ft_minimum_size)
-    DATA->size = ft_minimum_size;
+  /* If the font is scalable, pick the size intelligently, otherwise
+   * we have to use whatever was chosen above.
+   */
+  if (fs->representation & PG_FR_SCALABLE) {
+    DATA->size = fs->size ? fs->size : 
+      (fs->style & PG_FSTYLE_FIXED ? &ft_default_fixed_fs : &ft_default_fs)->size;
+    if (DATA->size < ft_minimum_size)
+      DATA->size = ft_minimum_size;
+  }
+  else
+    DATA->size = closest->fs.size;
   DATA->flags = fs->style;
 
   /* Store the font metrics now, since they'll be needed frequently */
   ft_get_descriptor_face(self,&face);
 
-  DATA->metrics.ascent = face->size->metrics.ascender >> 6;
-  DATA->metrics.descent = (-face->size->metrics.descender) >> 6;
-  DATA->metrics.lineheight = face->size->metrics.height >> 6;
-  DATA->metrics.linegap = DATA->metrics.lineheight - 
-    DATA->metrics.ascent - DATA->metrics.descent;
-  DATA->metrics.charcell.w = face->size->metrics.max_advance >> 6;
-  DATA->metrics.charcell.h = DATA->metrics.ascent + DATA->metrics.descent;
+  if (fs->representation & PG_FR_SCALABLE) {
+    DATA->metrics.ascent = face->size->metrics.ascender >> 6;
+    DATA->metrics.descent = (-face->size->metrics.descender) >> 6;
+    DATA->metrics.lineheight = face->size->metrics.height >> 6;
+    DATA->metrics.linegap = DATA->metrics.lineheight - 
+      DATA->metrics.ascent - DATA->metrics.descent;
+    DATA->metrics.charcell.w = face->size->metrics.max_advance >> 6;
+    DATA->metrics.charcell.h = DATA->metrics.ascent + DATA->metrics.descent;
+  }
+  else {
+    DATA->metrics.charcell.w = face->available_sizes->width;
+    DATA->metrics.charcell.w = face->available_sizes->height;
+  }
 
   if (DATA->flags & PG_FSTYLE_FLUSH)
     DATA->metrics.margin = 0;
@@ -726,6 +739,7 @@ void freetype_getstyle(int i, struct font_style *fs) {
 }
 
 void ft_get_face_style(FT_Face f, struct font_style *fs) {
+  int i;
   memset(fs,0,sizeof(*fs));
 
   fs->name = f->family_name;
@@ -735,9 +749,33 @@ void ft_get_face_style(FT_Face f, struct font_style *fs) {
   if (f->face_flags & FT_FACE_FLAG_SCALABLE)    fs->representation |= PG_FR_SCALABLE;
   if (f->face_flags & FT_FACE_FLAG_FIXED_WIDTH) fs->style |= PG_FSTYLE_FIXED;
 
+  for (i=0;i<f->num_charmaps;i++) {
+    switch (f->charmaps[i]->encoding) {
+
+    case FT_ENCODING_UNICODE:
+      fs->style |= PG_FSTYLE_ENCODING_UNICODE;
+      break;
+
+    case FT_ENCODING_ADOBE_LATIN_1:
+      fs->style |= PG_FSTYLE_ENCODING_ISOLATIN1;
+      break;
+
+    case FT_ENCODING_MS_SYMBOL:
+      fs->style |= PG_FSTYLE_SYMBOL;
+      break;
+    }
+  }
+
   /* Is there no better way to detect a condensed font? */
   if (f->style_name && strstr(f->style_name,"ondensed"))
     fs->style |= PG_FSTYLE_CONDENSED;
+
+  /* If the font has "Mono" in the name, trust that it's a fixed width
+   * (Added because Nimbus Mono L doesn't have the fixedwidth flag set)
+   */
+  if (f->family_name && strstr(f->family_name,"Mono"))
+    fs->style |= PG_FSTYLE_FIXED;
+
 }
 
 
