@@ -216,7 +216,6 @@ fe_print_text_textbox (struct session *sess, char *text)
 		case '\n':
 			if (prefs.timestamp)
 				dotime = TRUE;
-		case '\r':
 			strcpy(&newtext[j], "<br>");
 			j += 4;
 			break;
@@ -270,10 +269,10 @@ fe_print_text_terminal (struct session *sess, char *text)
 		comma, k, i = 0, j = 2, len = strlen (text);
 	unsigned char *newtext = malloc (len + 1024);
 
+	newtext[0] = '\r';
+	newtext[1] = '\n';
 	if (prefs.timestamp)
 	{
-		newtext[0] = '\r';
-		newtext[1] = '\n';
 		newtext[2] = 0;
 		j += timecat (newtext);
 	}
@@ -292,12 +291,8 @@ fe_print_text_terminal (struct session *sess, char *text)
 			if (!isdigit (text[i]))
 			{
 				color = FALSE;
-				newtext[j] = '\e';
-				j++;
-				newtext[j] = '[';
-				j++;
-				newtext[j] = 'm';
-				j++;
+				strcpy (&newtext[j], "\e[m");
+				j += 3;
 				continue;
 			}
 			k = 0;
@@ -313,14 +308,11 @@ fe_print_text_terminal (struct session *sess, char *text)
 					int col, mirc;
 					color = TRUE;
 					num[k] = 0;
-					newtext[j] = '\e';
-					j++;
-					newtext[j] = '[';
-					j++;
+					newtext[j++] = '\e';
+					newtext[j++] = '[';
 					if (k == 0)
 					{
-						newtext[j] = 'm';
-						j++;
+						newtext[j++] = 'm';
 					} else
 					{
 						if (comma)
@@ -337,7 +329,7 @@ fe_print_text_terminal (struct session *sess, char *text)
 						{
 							sprintf ((char *) &newtext[j], "%dm", mirc + col);
 						}
-						j = strlen (newtext);
+						j += strlen (newtext+j);
 					}
 					if(text[i]==',' && !comma)
 						comma = TRUE;
@@ -358,7 +350,7 @@ fe_print_text_terminal (struct session *sess, char *text)
 				reverse = TRUE;
 				strcpy (&newtext[j], "\e[7m");
 			}
-			j = strlen (newtext);
+			j += strlen (newtext+j);
 			break;
 		case '\037':				  /* underline */
 			if (under)
@@ -370,7 +362,7 @@ fe_print_text_terminal (struct session *sess, char *text)
 				under = TRUE;
 				strcpy (&newtext[j], "\e[4m");
 			}
-			j = strlen (newtext);
+			j += strlen (newtext+j);
 			break;
 		case '\002':				  /* bold */
 			if (bold)
@@ -382,13 +374,12 @@ fe_print_text_terminal (struct session *sess, char *text)
 				bold = TRUE;
 				strcpy (&newtext[j], "\e[1m");
 			}
-			j = strlen (newtext);
+			j += strlen (newtext+j);
 			break;
 		case '\007':
 			if (!prefs.filterbeep)
 			{
-				newtext[j] = text[i];
-				j++;
+				newtext[j++] = text[i];
 			}
 			break;
 		case '\017':				  /* reset all */
@@ -397,10 +388,10 @@ fe_print_text_terminal (struct session *sess, char *text)
 			reverse = FALSE;
 			bold = FALSE;
 			under = FALSE;
+			color = FALSE;
 			break;
 		case '\t':
-			newtext[j] = ' ';
-			j++;
+			newtext[j++] = ' ';
 			break;
 		case '\n':
 			newtext[j++] = '\r';
