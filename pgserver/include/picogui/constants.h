@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.70 2001/08/06 05:57:27 micahjd Exp $
+/* $Id: constants.h,v 1.71 2001/08/06 06:20:22 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -425,13 +425,20 @@ typedef unsigned long pghandle;
 #define PGTH_P_STRING_PGUIERRDLG  509    //!< String property (usually in PGTH_O_DEFAULT)
 #define PGTH_P_STRING_PGUICOMPAT  510    //!< String property (usually in PGTH_O_DEFAULT)
 
-#define PGTH_P_ICON_OK       1001        //!< Icon property (usually in PGTH_O_DEFAULT)
-#define PGTH_P_ICON_CANCEL   1002        //!< Icon property (usually in PGTH_O_DEFAULT)
-#define PGTH_P_ICON_YES      1003        //!< Icon property (usually in PGTH_O_DEFAULT)
-#define PGTH_P_ICON_NO       1004        //!< Icon property (usually in PGTH_O_DEFAULT)
-#define PGTH_P_ICON_ERROR    1005        //!< Icon property (usually in PGTH_O_DEFAULT)
-#define PGTH_P_ICON_MESSAGE  1006        //!< Icon property (usually in PGTH_O_DEFAULT)
-#define PGTH_P_ICON_QUESTION 1007        //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_OK            1000   //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_OK_MASK       1001   //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_CANCEL        1002   //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_CANCEL_MASK   1003   //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_YES           1004   //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_YES_MASK      1005   //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_NO            1006   //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_NO_MASK       1007   //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_ERROR         1008   //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_ERROR_MASK    1009   //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_MESSAGE       1010   //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_MESSAGE_MASK  1011   //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_QUESTION      1012   //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_QUESTION_MASK 1013   //!< Icon property (usually in PGTH_O_DEFAULT)
 
 #define PGTH_P_HOTKEY_OK     1501        //!< Hotkey property (usually in PGTH_O_DEFAULT) 
 #define PGTH_P_HOTKEY_CANCEL 1502        //!< Hotkey property (usually in PGTH_O_DEFAULT) 

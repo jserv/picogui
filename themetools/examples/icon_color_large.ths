@@ -1,0 +1,28 @@
+/* Icon theme:
+ * Button and 64-pixel dialog icons
+ *
+ * Version 1.0
+ */
+
+obj default {
+  name = "Large button and dialog icons";
+
+  icon.ok = LoadBitmap("data/check.pnm");
+  icon.ok.mask = LoadBitmap("data/check_mask.pnm");
+  icon.cancel = LoadBitmap("data/x.pnm");
+  icon.cancel.mask = LoadBitmap("data/x_mask.pnm");
+
+  icon.yes = Copy(default::icon.ok);
+  icon.yes.mask = Copy(default::icon.ok.mask);
+  icon.no = Copy(default::icon.no);
+  icon.no.mask = Copy(default::icon.no.mask);
+
+  icon.error = LoadBitmap("data/icon_color_64_error.pnm");
+  icon.error.mask = LoadBitmap("data/icon_color_64_error.mask.pnm");
+  icon.message = LoadBitmap("data/icon_color_64_message.pnm");
+  icon.message.mask = LoadBitmap("data/icon_color_64_message.mask.pnm");
+  icon.question = LoadBitmap("data/icon_color_64_question.pnm");
+  icon.question.mask = LoadBitmap("data/icon_color_64_question.mask.pnm");
+}
+
+/* The End */
