@@ -1,4 +1,4 @@
-/* $Id: backend.c,v 1.7 2001/08/03 16:54:40 gobry Exp $
+/* $Id: backend.c,v 1.8 2002/01/03 23:53:34 micahjd Exp $
  *
  * backend.c - convert the in-memory representation of the
  *             theme data to the actual compiled theme file
@@ -218,7 +218,11 @@ int compare_thobj(struct pgtheme_thobj *a,struct pgtheme_thobj *b) {
     return -1;
   if (ntohs(a->id) > ntohs(b->id))
     return 1;
-  beerror("duplicate theme objects");
+
+  if (ntohs(a->id) != PGTH_O_CUSTOM)
+    beerror("duplicate theme objects");
+
+  return 0;
 }
 
 /* The End */
