@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.46 2001/09/23 00:05:55 micahjd Exp $
+/* $Id: global.c,v 1.47 2001/10/10 20:40:04 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -304,7 +304,12 @@ g_error appmgr_register(struct app_info *i) {
   default:
     return mkerror(PG_ERRT_BADPARAM,30);
   }
-
+   
+  /* Set the widget name, so we can use pgFindWidget with the app title */
+  e = widget_set(w,PG_WP_NAME,i->name);
+  errorcheck;
+   
+  /* Yep, it's a root widget */  
   w->isroot = 1;
 
   /* Copy to a new structure */
