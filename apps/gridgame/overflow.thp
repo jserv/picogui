@@ -7,22 +7,60 @@ object custom {
   FOURQUARTERS = fillstyle {
     SetColor(bgcolor);
     Fellipse(x,y,w,h);
+    SetColor(fgcolor);
+    Ellipse(x,y,w,h);
   };
   THREEQUARTERS = fillstyle {
+    var ox, oy;
+    ox=500*w/7464;
+    oy=500*h/7464;
+    x=x+ox;
+    y=y+oy;
+    w=w-2*ox;
+    h=h-2*oy;
     SetColor(bgcolor);
-    Fellipse(x+50-100*w/230,y+50-100*w/230,100*w/115,100*h/115);
+    Fellipse(x,y,w,h);
+    SetColor(fgcolor);
+    Ellipse(x,y,w,h);
   };
   TWOQUARTERS = fillstyle {
+    var ox, oy;
+    ox=500*w/3414;
+    oy=500*w/3414;
+    x=x+ox;
+    y=y+oy;
+    w=w-2*ox;
+    h=h-2*oy;
     SetColor(bgcolor);
-    Fellipse(x+50-100*w/286,y+50-100*h/286,100*w/143,100*h/143);
+    Fellipse(x,y,w,h);
+    SetColor(fgcolor);
+    Ellipse(x,y,w,h);
   };
   ONEQUARTER = fillstyle {
+    var ox, oy;
+    ox=w/4;
+    oy=h/4;
+    x=x+ox;
+    y=y+oy;
+    w=w-2*ox;
+    h=h-2*oy;
     SetColor(bgcolor);
-    Fellipse(x+50-w/4,y+50-w/4,w/2,h/2);
+    Fellipse(x,y,w,h);
+    SetColor(fgcolor);
+    Ellipse(x,y,w,h);
   };
   OWNEDBUTEMPTY = fillstyle {
+    x=x+w/4;
+    y=y+h/4;
+    w=w/2;
+    h=h/2;
+    SetColor(fgcolor);
+    Ellipse(x,y,w,h);
     SetColor(bgcolor);
-    Ellipse(x+50-w/4,y+50-w/4,w/2,h/2);
+    SetOffset(-1,-1,2,2);
+    Ellipse(x,y,w,h);
+    SetOffset(1,1,-2,-2);
+    Ellipse(x,y,w,h);
   };
 }
 
