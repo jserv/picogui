@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.6 2001/01/29 00:22:34 micahjd Exp $
+/* $Id: fillstyle.c,v 1.7 2001/02/08 07:36:27 micahjd Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -35,6 +35,19 @@
 #define FSSTACKSIZE  32
 unsigned long fsstack[FSSTACKSIZE];
 int fsstkpos;  /* position in the stack */
+
+/* Macros to get the next short/long from the fillstyle buffer */
+#ifdef UCLINUX   /* needs word alignment, so we can't do it the simple way */
+
+#define NEXTSHORT (unsigned short)( (unsigned short)(p[0])<<8 | (unsigned short)(p[1]) )
+#define NEXTLONG  (unsigned long)( (unsigned long)(p[0])<<24 | (unsigned long)(p[1])<<16 | (unsigned long)(p[2])<<8 | (unsigned short)(p[3]) )
+
+#else
+
+#define NEXTLONG ntohl(*(((unsigned long*)p)++))
+#define NEXTSHORT ntohs(*(((unsigned short*)p)++))
+
+#endif /* UCLINUX */
 
 /* Little utility functions */
 
@@ -120,13 +133,13 @@ g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
       case PGTH_OPCMD_LONGLITERAL:
 	if ((plimit-p)<4)
 	  return mkerror(PG_ERRT_BADPARAM,91);  /* Truncated opcode */
-	fsstack[fsstkpos++] = ntohl(*(((unsigned long*)p)++));
-	break;
+	 fsstack[fsstkpos++] = NEXTLONG;
+	 break;
 
       case PGTH_OPCMD_LONGGROP:
 	if ((plimit-p)<2)
 	  return mkerror(PG_ERRT_BADPARAM,91);  /* Truncated opcode */
-	e = fsgrop(ctx,ntohs(*(((unsigned short*)p)++)));
+	e = fsgrop(ctx,NEXTSHORT);
 	errorcheck;
 	break;
 
@@ -147,15 +160,19 @@ g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
       case PGTH_OPCMD_PROPERTY:
 	if ((plimit-p)<4)
 	  return mkerror(PG_ERRT_BADPARAM,91);  /* Truncated opcode */
-	fsa = ntohs(*(((unsigned short*)p)++));
-	fsb = ntohs(*(((unsigned short*)p)++));
+	fsa = NEXTSHORT;
+	fsb = NEXTSHORT;
 	fsstack[fsstkpos++] = theme_lookup(fsa,fsb);
 	break;
 
       case PGTH_OPCMD_LOCALPROP:
 	if ((plimit-p)<2)
 	  return mkerror(PG_ERRT_BADPARAM,91);  /* Truncated opcode */
-	fsstack[fsstkpos++] = theme_lookup(state,ntohs(*(((unsigned short*)p)++)));
+	 fsa = NEXTSHORT;
+#ifdef DEBUG_THEME
+	 printf("Local theme lookup, property %d\n",fsa);
+#endif
+	 fsstack[fsstkpos++] = theme_lookup(state,fsa);
 	break;
 
       case PGTH_OPCMD_COLOR:

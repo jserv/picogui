@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.19 2001/01/20 22:52:11 micahjd Exp $
+/* $Id: memtheme.c,v 1.20 2001/02/08 07:36:28 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -143,15 +143,25 @@ unsigned long theme_lookup(unsigned short object,
     }
     
     /* Got it? */
-    if (pprop)
-      return pprop->data;
-
+    if (pprop) {
+#ifdef DEBUG_THEME
+       printf("theme_lookup(0x%04X,0x%04X) = 0x%08X\n",
+	      object,property,pprop->data);
+#endif
+       return pprop->data;
+    }
+       
     /* Try another theme */
     ptheme = ptheme->next;
   }
 
   /************** Theme defaults */
 
+#ifdef DEBUG_THEME
+       printf("theme_lookup(0x%04X,0x%04X) = (not found)\n",
+	      object,property);
+#endif
+   
   /* This defines defaults for values the pgserver itself needs, so we can
      function even without a theme loaded */
 
@@ -377,6 +387,12 @@ g_error theme_load(handle *h,int owner,char *themefile,
 	  handle_free(owner,*h);
 	  return mkerror(PG_ERRT_FILEFMT,86); /* Out-of-range  */
 	}
+#ifdef UCLINUX
+	if (mpropp->data & 3) {
+	   handle_free(owner,*h);
+	   return mkerror(PG_ERRT_FILEFMT,100); /* not aligned */
+	}
+#endif  
 	req = (struct pgrequest *) (themefile_start + mpropp->data);
 	req->type = ntohs(req->type);
 	req->size = ntohl(req->size);

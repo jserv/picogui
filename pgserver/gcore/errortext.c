@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.15 2001/02/07 08:45:07 micahjd Exp $
+/* $Id: errortext.c,v 1.16 2001/02/08 07:36:27 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -162,6 +162,7 @@ static const char *errors[] = {
      /* 97 */  "Framebuffer ioctl error",
      /* 98 */  "Another application is already registered for system events",
      /* 99 */  "Application attempting to own unknown system resource",     
+     /* 100 */ "Theme is not word-aligned, use a newer version of themec",
 };
 
 #else 
@@ -268,6 +269,7 @@ static const char *errors[] = {
   /* 97 */  "Framebuffer ioctl error",
   /* 98 */  "Another application is already registered for system events",
   /* 99 */  "Application attempting to own unknown system resource",
+  /* 100 */ "Theme is not word-aligned, use a newer version of themec",
 };
 
 #endif /* HAIKU_MESSAGES */
