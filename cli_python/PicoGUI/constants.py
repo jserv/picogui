@@ -512,6 +512,10 @@ _constants = {
 
 # names of all properties
 propnames = _constants['set'].keys()
+# namespace for property values, to pass to resolve()
+def prop_ns(name):
+    return _constants['set'][name][1]
+
 # names of all commands
 cmdnames = _constants['writecmd'][0].keys()
 # namespace for command arguments, to pass to resolve()

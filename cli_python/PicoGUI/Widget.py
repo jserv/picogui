@@ -2,7 +2,7 @@
 
 default_relationship = 'after'
 
-import Server, constants, struct, types
+import constants, struct, types
 
 class Command_Proxy(object):
     def __init__(self, widget, name, ns=None, args=()):
@@ -80,7 +80,7 @@ class Widget(object):
         pname = name.lower().replace('_', ' ')
         if pname in constants.propnames:
             result = self.server.get(self.handle, pname)
-            ns = Server.constants['set'].get(pname)[1]
+            ns = constants.prop_ns(pname)
             return constants.unresolve(result, ns, self.server)
         elif pname in constants.cmdnames:
             return Command_Proxy(self, pname)
