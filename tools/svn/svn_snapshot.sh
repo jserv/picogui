@@ -8,6 +8,7 @@
 #  --Micah
 #
 
+SVN=/usr/local/bin/svn
 URL=$1
 PREFIX=$2
 DEST=$3
@@ -15,8 +16,8 @@ DEST=$3
 TMPDIR=/tmp/svn_snapshot.$$
 mkdir $TMPDIR
 
-for package in `/usr/bin/env svn list $URL | sed 's/\///'`; do
-     /usr/bin/env svn export $URL/$package $TMPDIR/$package
+for package in `$SVN list $URL | sed 's/\///'`; do
+     $SVN export $URL/$package $TMPDIR/$package
      (cd $TMPDIR; tar jcvf $package.tar.bz2 $package)
      mv $TMPDIR/$package.tar.bz2 $DEST/$PREFIX$package.tar.bz2
 done
