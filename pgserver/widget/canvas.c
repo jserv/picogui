@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.2 2001/01/20 09:52:01 micahjd Exp $
+/* $Id: canvas.c,v 1.3 2001/01/20 11:41:52 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -153,10 +153,11 @@ void canvas_trigger(struct widget *self,long type,union trigparam *param) {
    
 void canvas_command(struct widget *self, unsigned short command, 
 		    unsigned short numparams,signed long *params) {
+   int i;
    switch (command) {
 
     case PGCANVAS_NUKE:
-      grop_free(self->in->div->grop);
+      grop_free(&self->in->div->grop);
       gropctxt_init(CTX,self->in->div);
       break;
       
@@ -176,15 +177,35 @@ void canvas_command(struct widget *self, unsigned short command,
       break;
       
     case PGCANVAS_FINDGROP:
+      if (numparams<1) return;
+      CTX->current = self->in->div->grop;
+      for (i=params[0];i && CTX->current;i--)
+	CTX->current = CTX->current->next;
+      break;
       
     case PGCANVAS_SETGROP:
+      if (!CTX->current) return;
+      if (numparams>NUMGROPPARAMS) numparams = NUMGROPPARAMS;
+      for (i=0;i<numparams;i++)
+        CTX->current->param[i] = params[i];
+      break;
       
     case PGCANVAS_MOVEGROP:
+      if (numparams<4 || !CTX->current) return;
+      CTX->current->x = params[0];
+      CTX->current->y = params[1];
+      CTX->current->w = params[2];
+      CTX->current->h = params[3];
+      break;
       
     case PGCANVAS_MUTATEGROP:
       
     case PGCANVAS_COLORCONV:
-  
+      if (numparams<1 || !CTX->current) return;
+      for (i=0;i<NUMGROPPARAMS;i++,params[0]>>1)
+	if (params[0] & 1)
+	  CTX->current->param[i] = (*vid->color_pgtohwr)(CTX->current->param[i]);
+      break;
       
     case PGCANVAS_GROPFLAGS:
       if (numparams<1 || !CTX->current) return;
