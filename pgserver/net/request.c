@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.22 2001/07/03 02:36:52 micahjd Exp $
+/* $Id: request.c,v 1.23 2001/07/03 05:48:15 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -31,11 +31,12 @@
 #include <pgserver/common.h>
 #include <pgserver/pgnet.h>
 #include <pgserver/input.h>
-#ifdef CONFIG_UNIX_SOCKET
+#ifndef CONFIG_UNIX_SOCKET
 #include <netinet/tcp.h>
 #else
 #include <sys/un.h>
 
+/* Default server unix domain socket path */
 #define PG_REQUEST_SERVER "/tmp/.pgui"
 #endif
 
@@ -281,9 +282,9 @@ int send_response(int to,const void *data,size_t len) {
 /* Bind the socket and start listening */
 g_error net_init(void) {
 #ifdef CONFIG_UNIX_SOCKET
-  struct sockaddr_in server_sockaddr;
-#else
   struct sockaddr_un server_sockaddr;
+#else
+  struct sockaddr_in server_sockaddr;
 #endif
   volatile int tmp;
 #ifdef WINDOWS
@@ -304,14 +305,16 @@ g_error net_init(void) {
     return mkerror(PG_ERRT_NETWORK,49);
 #endif
 
-#ifdef CONFIG_UNIX_SOCKET
+#ifndef CONFIG_UNIX_SOCKET
   if((s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
 #else
   if((s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
 #endif
     return mkerror(PG_ERRT_NETWORK,50);
 
-#ifdef CONFIG_UNIX_SOCKET
+#ifndef CONFIG_UNIX_SOCKET
+  /* Setup TCP socket */
+
   /* Try to avoid blocking the port up... */
   tmp = 1;
   setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (void *)&tmp,sizeof(tmp));
@@ -326,14 +329,21 @@ g_error net_init(void) {
 
   if(bind(s, (struct sockaddr *)&server_sockaddr, 
      sizeof(server_sockaddr)) == -1)
+    return mkerror(PG_ERRT_NETWORK,52);
+
 #else
+  /* Setup unix domain socket */
+
   server_sockaddr.sun_family = AF_UNIX;
   strcpy(server_sockaddr.sun_path,PG_REQUEST_SERVER);
+  /* Remove possible previous sockets */
   unlink(server_sockaddr.sun_path);
   tmp = strlen(server_sockaddr.sun_path) + sizeof(server_sockaddr.sun_family);
+
   if(bind(s, (struct sockaddr *)&server_sockaddr, tmp) == -1)
-#endif
     return mkerror(PG_ERRT_NETWORK,52);
+
+#endif
 
   if(listen(s, REQUEST_BACKLOG) == -1)
     return mkerror(PG_ERRT_NETWORK,53);

@@ -33,7 +33,15 @@ ASM_INTEL
       This enables intel-specific assembly language optimizations
       where implemented. It will cause compile-time errors on
       other architectures.
-      
+
+CONFIG_UNIX_SOCKET
+      This option enables the use of unix domain sockets instead
+      of TCP/IP sockets.  The main difference is that unix domain
+      sockets are local only and the system doesn't need TCP/IP
+      framework in the kernel to operate.  Notice: You _must_
+      configure both pgserver and client library with same setting
+      or your clients will not be able to connect to one another.
+
 
 CONFIG_NO_OPTIMIZE
       Turns off the compiler's optimization. This speeds up the

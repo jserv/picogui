@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.7 2001/07/03 02:36:52 micahjd Exp $
+/* $Id: netcore.c,v 1.8 2001/07/03 05:48:15 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -490,7 +490,7 @@ void pgInit(int argc, char **argv)
 {
   int  numbytes;
   struct pghello ServerInfo;
-#ifdef CONFIG_UNIX_SOCKET
+#ifndef CONFIG_UNIX_SOCKET
   struct hostent *he;
   struct sockaddr_in server_addr; /* connector's address information */
 #else
@@ -537,7 +537,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.7 2001/07/03 02:36:52 micahjd Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.8 2001/07/03 05:48:15 micahjd Exp $\n");
 	exit(1);
       }
       
@@ -575,7 +575,7 @@ void pgInit(int argc, char **argv)
     return;
   }
 #else
-#if CONFIG_UNIX_SOCKET
+#ifndef CONFIG_UNIX_SOCKET
   if ((he=gethostbyname(hostname)) == NULL) {  /* get the host info */
     clienterr("Error resolving server hostname");
     return;
@@ -584,7 +584,7 @@ void pgInit(int argc, char **argv)
 #endif
 
 
-#ifdef CONFIG_UNIX_SOCKET
+#ifndef CONFIG_UNIX_SOCKET
   if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 #else
   if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
@@ -593,7 +593,7 @@ void pgInit(int argc, char **argv)
     return;
   }
 
-#ifdef CONFIG_UNIX_SOCKET
+#ifndef CONFIG_UNIX_SOCKET
   /* Try disabling the "Nagle algorithm" or "tinygram prevention" */
   tmp = 1;
   setsockopt(fd,6 /*PROTO_TCP*/,TCP_NODELAY,(void *)&tmp,sizeof(tmp));

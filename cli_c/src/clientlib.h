@@ -1,4 +1,4 @@
-/* $Id: clientlib.h,v 1.6 2001/07/03 02:36:52 micahjd Exp $
+/* $Id: clientlib.h,v 1.7 2001/07/03 05:48:15 micahjd Exp $
  *
  * clientlib.h - definitions used only within the client library code itself
  *
@@ -36,7 +36,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#ifdef CONFIG_UNIX_SOCKET
+#ifndef CONFIG_UNIX_SOCKET
 #include <netinet/in.h>
 #else
 #include <sys/un.h>
@@ -62,7 +62,7 @@
 //#define DEBUG_EVT
 
 /* Default server */
-#ifdef CONFIG_UNIX_SOCKET
+#ifndef CONFIG_UNIX_SOCKET 
 #define PG_REQUEST_SERVER       "127.0.0.1"
 #else
 #define PG_REQUEST_SERVER	"/tmp/.pgui"
