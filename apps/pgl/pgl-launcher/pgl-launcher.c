@@ -44,7 +44,7 @@
 pgllApp **gAppList = NULL;
 int gAppCount = 0;
 
-char appDir[] = "/usr/local/apps";
+char appDir[] = "/usr/share/picogui/apps";
 char *confPath = NULL;
 char *toolbarResponse = NULL;
 char *architecture = NULL;
