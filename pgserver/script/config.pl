@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: config.pl,v 1.9 2000/08/27 05:54:27 micahjd Exp $
+# $Id: config.pl,v 1.10 2000/09/02 22:33:34 micahjd Exp $
 #
 # Configuration options for PicoGUI.
 # This creates the .config file that Makefile uses.
@@ -33,7 +33,6 @@
 	    'NET' => 'Network type',
 	    'FONTSET' => 'Font set',
 	    'STRIPBIN' => 'Strip binary',
-	    'INPUT' => 'Input driver',
 	    'PLATFORM' => 'Target platform'
 	    );
 
@@ -42,7 +41,6 @@
 	 'NET' => 'socket',
 	 'FONTSET' => 'all',
 	 'STRIPBIN' => 'no',
-	 'INPUT' => 'sdl',
 	 'PLATFORM' => 'linux'
 	 );
 
@@ -60,8 +58,6 @@
 	                 'standard=Helvetica, Console, Times, Tiny',
 	    'STRIPBIN' => 'no=Leave debugging symbols:'.
 	               'yes=Zap debugging symbols',
-	    'INPUT' => 'sdl=Input from SDL event loop:'.
-	               'null=No input driver (network only)',
 	    'PLATFORM' => 'linux=Compile natively for linux:'.
 		          'windows=Cross-compile for M$ windoze'
 	    );

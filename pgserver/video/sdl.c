@@ -1,4 +1,4 @@
-/* $Id: sdl.c,v 1.2 2000/08/27 05:54:27 micahjd Exp $
+/* $Id: sdl.c,v 1.3 2000/09/02 22:33:34 micahjd Exp $
  *
  * sdl.c - video driver wrapper for SDL.
  *
@@ -26,6 +26,8 @@
  */
 
 #include <video.h>
+#include <input.h>
+
 #include <SDL.h>
 
 SDL_Surface *sdl_vidsurf;
@@ -107,10 +109,14 @@ g_error sdl_init(int xres,int yres,int bpp,unsigned long flags) {
   /* Clipping off */
   (*vid->clip_off)();
 
-  return sucess;
+  /* Load a main input driver */
+  return load_inlib(&sdlinput_regfunc,&inlib_main);
 }
 
 void sdl_close(void) {
+  /* Take out our input driver */
+  unload_inlib(inlib_main);
+
   SDL_Quit();
 }
 
@@ -545,7 +551,6 @@ void sdl_gradient(int x,int y,int w,int h,int angle,
 
 /******************************************** Driver registration */
 
-/* This func. is passed to registervid */
 g_error sdl_regfunc(struct vidlib *v) {
   v->init = &sdl_init;
   v->close = &sdl_close;   /* Not strictly required (raw framebuffers
