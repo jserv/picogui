@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.15 2001/11/25 02:47:35 micahjd Exp $
+/* $Id: x11.c,v 1.16 2001/11/25 03:54:14 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -71,7 +71,7 @@ struct x11bitmap *x11_backbuffer;
 GC x11_gctab[PG_LGOPMAX+1];
 
 /* Hook for handling expose events from the input driver */
-void (*x11_expose)(int x, int y, int w, int h);
+void (*x11_expose)(Region r);
 
 /* Saved config options */
 int x11_autowarp;
@@ -82,6 +82,9 @@ int x11_sound;
 #define stipple_height 8
 static unsigned char stipple_bits[] = {
    0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa};
+
+/* A region specifying the entire screen, for resetting clipping */
+Region display_region;
 
 /******************************************** Low-level primitives */
 
@@ -217,42 +220,35 @@ void x11_nonbuffered_update(s16 x,s16 y,s16 w,s16 h) {
 }
 
 /* Similar to the update function, but triggered by the X server */
-void x11_buffered_expose(int x,int y,int w,int h) {
-  /* If we're double-buffered, this is just x11_buffered_update without the XFlush */
+void x11_buffered_expose(Region r) {
+  /* If we're double-buffered, this is just 
+   * x11_buffered_update without the XFlush */
+
+  XSetRegion(xdisplay,x11_gctab[PG_LGOP_NONE],r);
   XCopyArea(xdisplay,((struct x11bitmap*)vid->display)->d,x11_display.d,
-	    x11_gctab[PG_LGOP_NONE],x,y,w,h,x,y);
+	    x11_gctab[PG_LGOP_NONE],0,0,vid->xres,vid->yres,0,0);
+  XSetRegion(xdisplay,x11_gctab[PG_LGOP_NONE],display_region);
 }
 
-/* We're not so lucky... set all the GCs to clip to this expose rectangle,
+/* We're not so lucky... set all the GCs to clip to this expose region,
  * redraw all the divtree layers, then set the GCs back to normal.
  * Ugly, but avoids an extra buffer.
  */
-void x11_nonbuffered_expose(int x,int y,int w,int h) {
+void x11_nonbuffered_expose(Region r) {
   struct divtree *p;
   int i;
-  XRectangle cliprect;
-  
-  cliprect.x      = x;
-  cliprect.y      = y;
-  cliprect.width  = w;
-  cliprect.height = h;
   
   for (i=0;i<=PG_LGOPMAX;i++)
     if (x11_gctab[i])
-      XSetClipRectangles(xdisplay, x11_gctab[i], 0, 0, &cliprect, 1, Unsorted);
+      XSetRegion(xdisplay,x11_gctab[i],r);
 
   for (p=dts->top;p;p=p->next)
     p->flags |= DIVTREE_ALL_REDRAW;
   update(NULL,1);
 
-  cliprect.x      = 0;
-  cliprect.y      = 0;
-  cliprect.width  = vid->xres;
-  cliprect.height = vid->yres;
-
   for (i=0;i<=PG_LGOPMAX;i++)
     if (x11_gctab[i])
-      XSetClipRectangles(xdisplay, x11_gctab[i], 0, 0, &cliprect, 1, Unsorted);
+      XSetRegion(xdisplay,x11_gctab[i],display_region);
 }
 
 g_error x11_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
@@ -442,8 +438,8 @@ void x11_message(u32 message, u32 param, u32 *ret) {
 u16 x11_font_bitmap;
 
 struct font const x11_font = {
-   w: 5, 
-   h: 5,
+   w: 1, 
+   h: 1,
    defaultglyph: ' ',
    ascent: 1,
    descent: 0,
@@ -499,8 +495,7 @@ void x11_xft_font_sizetext_hook(struct fontdesc *fd, s16 *w, s16 *h,
     XftTextExtents8(xdisplay,font,txt,strlen(txt),&xgi);
   
   if (w) *w = xgi.xOff;
-  if (h) *h = xgi.yOff;
-  printf("'%s' %d,%d\n",txt,*w,*h);
+  if (h) *h = xgi.height;
 }
 
 /* Override outtext to provide proper sub-pixel character spacing */
@@ -511,6 +506,7 @@ void x11_xft_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
   struct x11bitmap *xb = (struct x11bitmap *) (*dest); 
   XftColor color;
   pgcolor pgc = vid->color_hwrtopg(*col);
+  XGlyphInfo xgi;
 
   color.color.red = getred(pgc) << 8;
   color.color.green = getgreen(pgc) << 8;
@@ -518,8 +514,12 @@ void x11_xft_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
   color.color.alpha = 0x00FFFF;
   color.pixel = *col;
 
-  /* FreeType measures y coordinates relative to the baseline */
-  *y += font->ascent;
+  /* FreeType measures y coordinates relative to the bottom-left */
+  if ((*fd)->style & PG_FSTYLE_ENCODING_UNICODE)
+    XftTextExtentsUtf8(xdisplay,font,*txt,strlen(*txt),&xgi);
+  else
+    XftTextExtents8(xdisplay,font,*txt,strlen(*txt),&xgi);
+  *y += xgi.height;
 
   if ((*fd)->style & PG_FSTYLE_ENCODING_UNICODE)  
     XftDrawStringUtf8(xb->xftd,&color,font,*x,*y,*txt,strlen(*txt));
@@ -552,9 +552,9 @@ struct fontglyph const *x11_xft_font_getglyph(struct fontdesc *fd, int ch) {
   fakeglyph.encoding  = ch;
   fakeglyph.bitmap    = 0;
   x11_font_bitmap = ch;
-  fakeglyph.dwidth    = 5;
+  fakeglyph.dwidth    = 1;
   fakeglyph.w         = 1;
-  fakeglyph.h         = 25;
+  fakeglyph.h         = 1;
   fakeglyph.x         = 0;
   fakeglyph.y         = 0;
   
@@ -582,6 +582,7 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
   char title[80];
   g_error e;
   Visual *xvisual;
+  XRectangle rect;
 
   /* Default resolution is 640x480 
    */
@@ -668,6 +669,15 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
   XSetFunction(xdisplay,x11_gctab[PG_LGOP_INVERT_OR], GXorInverted);
   XSetFunction(xdisplay,x11_gctab[PG_LGOP_INVERT_AND],GXandInverted);
   XSetFunction(xdisplay,x11_gctab[PG_LGOP_INVERT_XOR],GXequiv);
+
+  /* Save a region specifying the entire display */
+  if (display_region)
+    XDestroyRegion(display_region);
+  display_region = XCreateRegion();
+  rect.x = rect.y = 0;
+  rect.width = vid->xres;
+  rect.height = vid->yres;
+  XUnionRectWithRegion(&rect,display_region,display_region);
 
   /* Set up a stipple bitmap for PG_LGOP_STIPPLE */
   XSetLineAttributes(xdisplay,x11_gctab[PG_LGOP_STIPPLE],

@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.9 2001/11/23 11:00:15 micahjd Exp $
+/* $Id: x11input.c,v 1.10 2001/11/25 03:54:14 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -44,7 +44,7 @@
 /* Hooks for interfacing with the x11 video driver */
 extern Display *xdisplay;    /* X display from the x11.c driver */
 int x11_fd;                  /* X display's file descriptor */
-void (*x11_expose)(int x, int y, int w, int h);
+void (*x11_expose)(Region r);
 
 /* Some config options */
 int x11input_pgcursor;
@@ -84,6 +84,8 @@ int x11input_fd_activate(int fd) {
   int i;
   XEvent ev;
   s16 mod,sym,chr;
+  Region expose_region = XCreateRegion();
+  XRectangle rect;
 
   if(fd != x11_fd) return 0;
 
@@ -97,10 +99,19 @@ int x11input_fd_activate(int fd) {
        */
 
     case Expose:
-      (*x11_expose)(ev.xexpose.x,
-		    ev.xexpose.y,
-		    ev.xexpose.width,
-		    ev.xexpose.height);
+      /* Union our current expose rectangle with this one */
+      rect.x = ev.xexpose.x;
+      rect.y = ev.xexpose.y;
+      rect.width = ev.xexpose.width;
+      rect.height = ev.xexpose.height;
+      XUnionRectWithRegion(&rect,expose_region,expose_region);
+
+      /* If this is the last contiguous expose event, go ahead and draw */
+      if (!ev.xexpose.count) {
+	(*x11_expose)(expose_region);
+	XDestroyRegion(expose_region);
+	expose_region = XCreateRegion();
+      }
       break;
 
       /****************** Mouse events
