@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.31 2001/02/17 05:18:40 micahjd Exp $
+/* $Id: global.c,v 1.32 2001/03/01 02:23:10 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -98,7 +98,8 @@ g_error appmgr_init(void) {
   errorcheck;
   e = (*vid->bitmap_loadxbm)(&defaultcursor_bitmask,cursor_mask_bits,
 			     cursor_width,cursor_height,
-			     0,0xFFFFFFFF);
+			     (*vid->color_pgtohwr)(0x000000),
+			     (*vid->color_pgtohwr)(0xFFFFFF));
   errorcheck;
 
 #ifdef DEBUG_INIT

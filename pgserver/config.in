@@ -85,6 +85,7 @@ bool 'Linear framebuffer @ 1bpp' CONFIG_VBL_LINEAR1
 bool 'Linear framebuffer @ 2bpp' CONFIG_VBL_LINEAR2
 bool 'Linear framebuffer @ 4bpp' CONFIG_VBL_LINEAR4
 bool 'Linear framebuffer @ 8bpp' CONFIG_VBL_LINEAR8
+bool 'Linear framebuffer @ 16bpp' CONFIG_VBL_LINEAR16
 endmenu
 
 mainmenu_option next_comment

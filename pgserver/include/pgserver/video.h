@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.23 2001/02/23 04:44:47 micahjd Exp $
+/* $Id: video.h,v 1.24 2001/03/01 02:23:11 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -515,6 +515,7 @@ void setvbl_linear1(struct vidlib *vid);
 void setvbl_linear2(struct vidlib *vid);
 void setvbl_linear4(struct vidlib *vid);
 void setvbl_linear8(struct vidlib *vid);
+void setvbl_linear16(struct vidlib *vid);
 
 /************** Debugging */
 void videotest_run(int number);

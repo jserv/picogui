@@ -1,3 +1,18 @@
+---- Wednesday, February 28
+
+Finished SDL emulation of low bit depths
+Fixed a serious bug in XBM loading for bpp < 8
+
+The linear1 and linear2 stubs work nicely (but I need to verify color
+conversion in gradients works ok)
+
+linear4 is usually nice but the blit sometimes crashes.
+Commented out the currently-non-good blits.
+Added a stub for linear16
+
+Now I have stub functionality for most bit depths, I will start
+starting/finishing the 'real' code for drivers now.
+
 ---- Tuesday, February 27
 
 Added emulation of low bit depths to sdlfb via color palette munging.

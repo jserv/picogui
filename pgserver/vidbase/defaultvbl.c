@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.21 2001/02/28 00:19:07 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.22 2001/03/01 02:23:11 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -79,7 +79,8 @@ hwrcolor def_color_pgtohwr(pgcolor c) {
 }
 
 pgcolor def_color_hwrtopg(hwrcolor c) {
-  return c;
+   /* FIXME please! */
+   return c;
 }
 
 void def_addpixel(int x,int y,pgcolor c) {
@@ -500,20 +501,15 @@ g_error def_bitmap_loadxbm(struct stdbitmap **bmp,
   unsigned char c;
   unsigned char *p,*pline;
   g_error e;
+  int shift;
 
   e = (*vid->bitmap_new)((hwrbitmap *) bmp,w,h);
   errorcheck;
   p = pline = (*bmp)->bits;
-
-  /* The easy case */
-  if (vid->bpp == 1) {
-    memcpy(p,data,h*(w/8));
-    return sucess;
-  }
-
+   
   /* Shift in the pixels! */
-  for (;h>0;h--,p=pline+=(*bmp)->pitch)
-    for (bit=0,i=0;i<w;i++) {
+  for (;h;h--,p=pline+=(*bmp)->pitch)
+    for (bit=0,i=w;i>0;i--) {
       if (!bit) c = *(data++);
       
       switch (vid->bpp) {
@@ -523,24 +519,19 @@ g_error def_bitmap_loadxbm(struct stdbitmap **bmp,
 	   (Unless we add a 3bpp or a 7bpp mode or something
 	   really freaky like that)
 	*/
-      case 2:
-	*p = ((c&1) ? fg : bg) << 6;
-	c = c>>1;
-	bit++;
-	*p |= ((c&1) ? fg : bg) << 4;	
-	c = c>>1;
-	bit++;
-	*p |= ((c&1) ? fg : bg) << 2;	
-	c = c>>1;
-	bit++;
-	*(p++) |= ((c&1) ? fg : bg);
-	break;
 
+      case 1:
+      case 2:
       case 4:
-	*p = ((c&1) ? fg : bg) << 4;
-	c = c>>1;
-	bit++;
-	*(p++) |= ((c&1) ? fg : bg);	
+        *p = 0;
+	for (shift=8-vid->bpp;shift && i;shift-=vid->bpp) {
+	   *p |= ((c&1) ? fg : bg) << shift;
+	   c >>= 1;
+	   bit++;
+	   i--;
+	}
+	if (i)
+	   *(p++) |= ((c&1) ? fg : bg);
 	break;
 
       case 8:
@@ -580,9 +571,9 @@ g_error def_bitmap_loadxbm(struct stdbitmap **bmp,
 
       }
 
-      c = c>>1;
+      c >>= 1;
       bit++;
-      if (bit==8) bit = 0;
+      bit &= 7;
     }
 
   return sucess;
@@ -787,7 +778,9 @@ g_error def_bitmap_new(struct stdbitmap **bmp,
   if ((vid->bpp<8) && (lw & 7))
      lw += 8;
   lw >>= 3;
-  e = g_malloc((void **) bmp,sizeof(struct stdbitmap) + (lw * h));
+  /* The +1 is to make blits for < 8bpp simpler. Shouldn't really
+   * be necessary, though. FIXME */
+  e = g_malloc((void **) bmp,sizeof(struct stdbitmap) + (lw * h) + 1);
   errorcheck;
 
   (*bmp)->pitch = lw;

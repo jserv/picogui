@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.14 2001/02/28 00:19:07 micahjd Exp $
+/* $Id: linear8.c,v 1.15 2001/03/01 02:23:11 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -51,42 +51,6 @@ pgcolor linear8_color_hwrtopg(hwrcolor c) {
   return mkcolor( (c&0xC0),
 		  (c&0x38) << 2,
 		  c << 5 );
-}
-
-/* Simple enough... */
-void linear8_clear(void) {
-  __memset(vid->fb_mem,0,vid->fb_bpl*vid->yres);
-}
-
-/* Add colors, truncating if we overflow */
-void linear8_addpixel(int x,int y,pgcolor c) {
-  unsigned char o = PIXEL(x,y); /* Load original pixel color */
-  unsigned char d;              /* Working variable for building result */
-
-  /* Add and truncate each component */
-  d = (o & 0x07) + (getblue(c) >> 5);            /* Blue */
-  if (d & 0xF8) d = 0xFF;
-  d |= (o & 0x38) + ((getgreen(c) >> 2) & 0x38); /* Green */
-  if (d & 0xC0) d = (d & 0xFF) | 0xFF00;
-  d |= (o & 0xC0) + (getred(c) & 0xC0);          /* Red */
-
-  /* Store it  */
-  PIXEL(x,y) = d;
-}
-
-/* Subtract, truncating to 0 if a component is larger than the original */
-void linear8_subpixel(int x,int y,pgcolor c) {
-  unsigned char o = PIXEL(x,y); /* Load original pixel color */
-  unsigned char d = 0;          /* Working variable for building result */
-  int q;                        /* Store components */
-
-  /* Subtract each component, storing if it's nonzero */
-  if ( (q = (o & 0xC0) - (getred(c) & 0xC0)) > 0x3F )          d  = q; 
-  if ( (q = (o & 0x38) - ((getgreen(c) >> 2) & 0x38)) > 0x03 ) d |= q; 
-  if ( (q = (o & 0x07) - (getblue(c) >> 5)) > 0 )              d |= q; 
-
-  /* Store it */
-  PIXEL(x,y) = d;  
 }
 
 /* Simple horizontal and vertical straight lines */
@@ -629,9 +593,6 @@ void setvbl_linear8(struct vidlib *vid) {
   /* In this linear8 driver, replacing the default version */
   vid->color_pgtohwr  = &linear8_color_pgtohwr;
   vid->color_hwrtopg  = &linear8_color_hwrtopg;
-  vid->addpixel       = &linear8_addpixel;
-  vid->subpixel       = &linear8_subpixel;
-  vid->clear          = &linear8_clear;
   vid->slab           = &linear8_slab;
   vid->bar            = &linear8_bar;
   vid->line           = &linear8_line;

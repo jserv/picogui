@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.8 2001/02/23 04:44:47 micahjd Exp $
+/* $Id: linear4.c,v 1.9 2001/03/01 02:23:11 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -543,8 +543,8 @@ void setvbl_linear4(struct vidlib *vid) {
   vid->charblit       = &linear4_charblit;
 //  vid->charblit_v     = &linear4_charblit_v;
 //  vid->tileblit       = &linear4_tileblit;
-  vid->blit           = &linear4_blit;
-  vid->unblit         = &linear4_unblit;
+//  vid->blit           = &linear4_blit;
+//  vid->unblit         = &linear4_unblit;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.8 2001/02/28 00:19:07 micahjd Exp $
+/* $Id: sdlfb.c,v 1.9 2001/03/01 02:23:11 micahjd Exp $
  *
  * sdlfb.c - Video driver for SDL using a linear framebuffer.
  *           This will soon replace sdl.c, but only after the
@@ -84,8 +84,6 @@ g_error sdlfb_init(int xres,int yres,int bpp,unsigned long flags) {
      int colors = 1<<bpp;
      pgcolor pc;
      sdlfb_emucolors = colors-1;
-     vid->color_pgtohwr = &sdlfbemu_color_pgtohwr;
-     vid->color_hwrtopg = &sdlfbemu_color_hwrtopg;
      for (i=0;i<colors;i++) {
 	pc = sdlfbemu_color_hwrtopg(i);
 	palette[i].r = getred(pc);
@@ -130,8 +128,16 @@ g_error sdlfb_init(int xres,int yres,int bpp,unsigned long flags) {
 #ifdef CONFIG_VBL_LINEAR8
    case 8:
      setvbl_linear8(vid);
+
+#ifdef CONFIG_SDLEMU_COLOR
+     if (sdlfb_emucolors) {
+	vid->color_pgtohwr = &sdlfbemu_color_pgtohwr;
+	vid->color_hwrtopg = &sdlfbemu_color_hwrtopg;
+     }
+     else
      /* If this is 8bpp set up a 2-3-3 palette for pseudo-RGB */
-     if (bpp==8 && !sdlfb_emucolors) {
+#endif
+     {
 	for (i=0;i<256;i++) {
 	   palette[i].r = (i & 0xC0) * 255 / 0xC0;
 	   palette[i].g = (i & 0x38) * 255 / 0x38;
@@ -202,16 +208,24 @@ void sdlfb_update(int x,int y,int w,int h) {
 #ifdef CONFIG_SDLEMU_BLIT
    /* Do we need to convert and blit to the SDL buffer? */
    if (vid->fb_mem != sdl_vidsurf->pixels) {
-      unsigned char *src = vid->fb_mem + ((x * vid->bpp) >> 3) +y*vid->fb_bpl;
-      unsigned char *dest = sdl_vidsurf->pixels + x + y*vid->xres;
-      unsigned char *srcline = src;
-      unsigned char *destline = dest;
+      unsigned char *src;
+      unsigned char *dest;
+      unsigned char *srcline;
+      unsigned char *destline;
       int i,bw,j;
       int maxshift = 8 - vid->bpp;
       int shift;
       unsigned char c, mask = (1<<vid->bpp) - 1;
-      bw = 1 + ((w * vid->bpp) >> 3);
-      if (bw>vid->fb_bpl) bw = vid->fb_bpl;
+
+      /* Align it to an 8-pixel boundary (simplifies blit) */
+      w += (x&7) + 7;
+      w &= ~7;
+      x &= ~7;
+      
+      /* Calculations */
+      srcline = src = vid->fb_mem + ((x * vid->bpp) >> 3) +y*vid->fb_bpl;
+      destline = dest = sdl_vidsurf->pixels + x + y*vid->xres;
+      bw = (w * vid->bpp) >> 3;
       
       /* Slow but it works (this is debug code, after all...) */
       for (j=h;j;j--,src=srcline+=vid->fb_bpl,dest=destline+=sdl_vidsurf->pitch)

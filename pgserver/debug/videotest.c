@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.2 2001/02/21 03:17:21 micahjd Exp $
+/* $Id: videotest.c,v 1.3 2001/03/01 02:23:11 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -121,7 +121,12 @@ void testpat_color(void) {
    y+=h;
    (*vid->gradient)(0,y,vid->xres,h*2,0,0x000000,0xFFFFFF,0);
    y+=2*h;
-   
+
+   outtext(&fd,0,y,fg,"White -> Black",NULL);
+   y+=h;
+   (*vid->gradient)(0,y,vid->xres,h*2,0,0xFFFFFF,0x000000,0);
+   y+=2*h;
+
    outtext(&fd,0,y,fg,"Black -> Red",NULL);
    y+=h;
    (*vid->gradient)(0,y,vid->xres,h*2,0,0x000000,0xFF0000,0);

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.61 2001/02/28 00:19:05 micahjd Exp $
+# $Id: Makefile,v 1.62 2001/03/01 02:23:09 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -21,6 +21,9 @@
 #
 #
 # $Log: Makefile,v $
+# Revision 1.62  2001/03/01 02:23:09  micahjd
+# Finished SDL emulation of low bit depths, got at least stubs working for linear1,linear2,linear4,and linear16.
+#
 # Revision 1.61  2001/02/28 00:19:05  micahjd
 # Added low bit depth emulation to the SDL driver, removed the broken cruft from
 # svgafb, and updated the menus
@@ -155,6 +158,9 @@ ifneq ($(CONFIG_VBL_LINEAR4),)
 endif
 ifneq ($(CONFIG_VBL_LINEAR8),)
     SRC := $(SRC) vidbase/linear8.c
+endif
+ifneq ($(CONFIG_VBL_LINEAR16),)
+    SRC := $(SRC) vidbase/linear16.c
 endif
 
 # Optional widgets
