@@ -1,3 +1,5 @@
+PGSERVER_DIR = @PGSERVER_DIR@
+
 includedir = @includedir@/picogui
 
 include_HEADERS = \
@@ -7,7 +9,7 @@ include_HEADERS = \
 	applet.h
 
 install-data-hook:
-	if ! test x"@PGSERVER_DIR@" = x$(prefix) ; then \
+	if ! test x"$(PGSERVER_DIR)" = x$(prefix) ; then \
 		echo "Copying pgserver's include files ..." ; \
-		cp ${PGSERVER_DIR}/include/picogui/*.h ${includedir}/ || true; \
+		cp $(PGSERVER_DIR)/include/picogui/*.h $(DESTDIR)$(includedir)/ || true; \
 	fi
