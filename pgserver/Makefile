@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.54 2001/02/14 05:13:18 micahjd Exp $
+# $Id: Makefile,v 1.55 2001/02/14 11:34:56 bauermeister Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -20,6 +20,11 @@
 # Contributors:
 #
 #
+# $Log: Makefile,v $
+# Revision 1.55  2001/02/14 11:34:56  bauermeister
+# If make is invoked with DEFCONFIGFROM=<file> and .config does not exist,
+# the config is first reconstructed using the given <file>. This allows
+# fully non-interactive builds.
 #
 #
 
@@ -194,14 +199,20 @@ font/fontdata.o : font/*.fdf font/*.fi script/fontdef.pl .config
 	$(GCC) -o $@ $< $(CFLAGS)
 
 .config: 
+ifeq ($(DEFCONFIGFROM),)
 	make -C configscript/lxdialog all
 	sh configscript/Menuconfig config.in
 	@exit 1	 
+else
+	@echo "Using default config file: $(DEFCONFIGFROM)"
+	cp $(DEFCONFIGFROM) .config
+	(sed "s/.*//g" config.in | sh configscript/Configure config.in);
+endif
 
 menuconfig:
 	make -C configscript/lxdialog all
 	sh configscript/Menuconfig config.in
-	
+
 config:
 	sh configscript/Configure config.in
 
