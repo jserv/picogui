@@ -2,8 +2,8 @@
    theme file */
 
 obj default bgfill = fillstyle {
-  var z;
-  x = 1;
+  /*  var z;
+      x = 1; */
   rect(1,2,156*(8+2),2);
 };
 

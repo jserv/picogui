@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.6 2000/10/07 05:49:30 micahjd Exp $
+/* $Id: main.c,v 1.7 2000/10/07 07:47:03 micahjd Exp $
  *
  * main.c - main() and some parser utility functions for
  *          the PicoGUI theme compiler.  The actual parsing
@@ -103,5 +103,29 @@ int symlookup(const char *sym,unsigned long *value) {
   }
   return UNKNOWNSYM;
 }
+
+/* Concatenate two fsnode lists */
+struct fsnode *fsnodecat(struct fsnode *a,struct fsnode *b) {
+  struct fsnode *p = a;
+  if (!p) return b;
+  while (p->next) p = p->next;
+  p->next = b;
+  return a;  
+}
+
+/* Allocate an fsnode */
+struct fsnode *fsnewnode(int op,unsigned long param) {
+  struct fsnode *n;
+  n = malloc(sizeof(struct fsnode));
+  if (n) {
+    memset(n,0,sizeof(struct fsnode));
+    n->op = op;
+    n->param = param;
+  }
+  else
+    yyerror("memory allocation error");
+  return n;
+}
+
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: themec.h,v 1.6 2000/09/26 00:46:14 micahjd Exp $
+/* $Id: themec.h,v 1.7 2000/10/07 07:47:03 micahjd Exp $
  *
  * themec.h - definitions used internally in the theme compiler
  *
@@ -71,6 +71,13 @@ struct objectnode {
   struct objectnode *next;
 };
 
+/* Opcode(s) in a fill style */
+struct fsnode {
+  int op;
+  unsigned long param;
+  struct fsnode *next;
+};
+
 extern struct objectnode *objectlist;
 extern unsigned long num_tags;
 extern unsigned long num_thobj;
@@ -95,6 +102,8 @@ extern struct pgtheme_thobj  *thobjarray;
 
 int yyerror(const char *s);   /* Error reporting */
 int symlookup(const char *sym,unsigned long *value);
+struct fsnode *fsnodecat(struct fsnode *a,struct fsnode *b);
+struct fsnode *fsnewnode(int op,unsigned long param);
 
 /*** Important functions ***/
 

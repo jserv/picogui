@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.8 2000/10/07 05:49:30 micahjd Exp $
+/* $Id: pgtheme.y,v 1.9 2000/10/07 07:47:03 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -41,6 +41,7 @@
   } propval;
   struct propnode *prop;
   struct objectnode *obj;
+  struct fsnode *fsn;
 }
 
    /* Data types */
@@ -58,6 +59,16 @@
 %type <prop>     compount_stmt
 %type <obj>      objectdef
 %type <propval>  fillstyle
+%type <fsn>      fsexp
+%type <fsn>      fsarglist
+%type <fsn>      fsstmt
+%type <fsn>      fsstmt_list
+%type <fsn>      fsexp
+%type <fsn>      fsvar_list
+%type <fsn>      fsdecl
+%type <fsn>      fsdecl_list
+%type <fsn>      fsbody
+%type <fsn>      fsvar
 
    /* Reserved words */
 %token UNKNOWNSYM OBJ FILLSTYLE VAR FSVAR FSFUNC
@@ -167,43 +178,55 @@ constexp: constexp '+' constexp { $$ = $1 + $3; }
 fillstyle: FILLSTYLE  { yyerror("fillstyle requires parameters"); }
          | FILLSTYLE '{' '}' { yyerror("empty fillstyle"); }
          | FILLSTYLE '{' fsbody '}' {
+  struct fsnode *p = $3;
+
   $$.data = 0;
   $$.loader = 0;
+
+  /* For now list out the opcodes */
+  while (p) {
+    printf("Op: 0x%02X Param: 0x%08X\n",p->op,p->param);
+    p = p->next;
+  }
 }
          ;
 
-fsbody: fsdecl_list fsstmt_list
-      | fsstmt_list
-      | fsdecl_list   { yyerror("fillstyle has no statements"); }
+fsbody: fsdecl_list fsstmt_list  { $$ = fsnodecat($1,$2); }
+      | fsstmt_list              { $$ = $1; }
+      | fsdecl_list              { $$ = NULL; yyerror("fillstyle has no statements"); }
       ;
 
-fsdecl_list: fsdecl
-           | fsdecl_list fsdecl
+fsdecl_list: fsdecl              { $$ = $1; } 
+           | fsdecl_list fsdecl  { $$ = fsnodecat($1,$2); } 
            ;
 
-fsdecl: VAR fsvar_list ';'
+fsdecl: VAR fsvar_list ';'       { $$ = $2; }
       ;
 
-fsvar_list: UNKNOWNSYM
-          | fsvar_list ',' UNKNOWNSYM
+fsvar_list: fsvar                { $$ = $1; }
+          | fsvar_list ',' fsvar { $$ = fsnodecat($1,$3); }
           ;
 
-fsstmt_list: fsstmt
-           | fsstmt_list fsstmt
+fsvar: UNKNOWNSYM                { $$ = fsnewnode(0,0); }
+     ;
+
+fsstmt_list: fsstmt              { $$ = $1; }
+           | fsstmt_list fsstmt  { $$ = fsnodecat($1,$2); }
 	   ;
 
-fsstmt: FSVAR '=' fsexp ';'
-      | FSFUNC '(' fsarglist ')' ';'
+fsstmt: FSVAR '=' fsexp ';'          { $$ = fsnodecat($3,fsnewnode(0,0)); }
+      | FSFUNC '(' fsarglist ')' ';' { $$ = fsnodecat($3,fsnewnode(0,0)); }
       ;
 
-fsarglist:
-         | fsarglist ',' fsexp
+fsarglist:                     { $$ = NULL; }
+         | fsexp               { $$ = $1; }
+         | fsarglist ',' fsexp { $$ = fsnodecat($1,$3); }
          ;
 
-fsexp: '(' fsexp ')'    %prec VARPAREN
-     | fsexp '+' fsexp  %prec VARPLUS
-     | fsexp '*' fsexp  %prec VARMULT
-     | NUMBER {printf("DEBUG(%d)\n",$1);}
+fsexp: '(' fsexp ')'    { $$ = $2; }                                         %prec VARPAREN 
+     | fsexp '+' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(0,0)); } %prec VARPLUS  
+     | fsexp '*' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(0,0)); } %prec VARMULT  
+     | NUMBER           { $$ = fsnewnode(0,$1); }               
      ;
 
 %%
