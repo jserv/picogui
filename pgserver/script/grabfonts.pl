@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: grabfonts.pl,v 1.5 2001/02/17 05:18:41 micahjd Exp $
+# $Id: grabfonts.pl,v 1.6 2001/08/31 05:26:06 micahjd Exp $
 #
 # This script uses fstobdf to grab fonts from a font server,
 # and munge them into fdf files
@@ -44,20 +44,53 @@ if (!$fstructname) {
 	($xfntname,$fsize,$fstructname) = @ARGV;
 }
 
+# Make a pass through the font to find the maximum overlap past the edge
+# of the character. This will determine how much extra width the character
+# cells need, and how much the renderer will move backwards after each
+# character. This isn't a great way to handle overlapping characters, but
+# until I rework PicoGUI's font system to load BDF data directly or something
+# this should work alright.
+
+open BDFF,"fstobdf -s localhost:7100 -fn $xfntname |";
+$max_overlap = 0;
+while (<BDFF>) {
+    if (/^DWIDTH ([0-9]+)/) {
+	$deltax = $1;
+    }
+    elsif (/^ENCODING ([0-9]+)/) {
+	$c = $1;
+    }
+    elsif (/^BBX (\S+) (\S+) (\S+) (\S+)/) {
+	$charw = $1 + $3;
+	$overlap = $charw - $deltax;
+
+	# Ignore after 128- some fonts do weird things there
+	$max_overlap = $overlap if ($overlap > $max_overlap and $c < 128);
+    }
+}
+close BDFF;
+
+
+# Another pass, to actually output the font data in .fdf format
+
 open BDFF,"fstobdf -s localhost:7100 -fn $xfntname |";
 
 print "# This font was converted from a BDF to FDF using fstobdf\n";
 print "# Please see comments below for notices regarding this font\n#\n";
-print "[${fstructname}] (0,1) b3\n\n";
-
+print "[${fstructname}] (-$max_overlap,0) b3\n\n";
 
 while (<BDFF>) {
     chomp;
     if (/^(COMMENT|FONT|COPYRIGHT|NOTICE) (.*)/) {
 	print "# $2\n";
     }
+    elsif (/^FONT_ASCENT (.*)/) {
+	$ascent = $1;
+	$celheight = $descent + $ascent;
+    }
     elsif (/^FONT_DESCENT (.*)/) {
 	$descent = $1;
+	$celheight = $descent + $ascent;
     }
     elsif (/^STARTCHAR (.*)/) {
 	$chr = $1;
@@ -70,18 +103,19 @@ while (<BDFF>) {
 		$c = "#".$1;
 	    }
 	    elsif (/^DWIDTH ([0-9]+)/) {
-		$w = $1;
+		$w = $1 + $max_overlap;
 	    }
 	    elsif (/^BBX (\S+) (\S+) (\S+) (\S+)/) {
 		$h = $2;
-		$top_pad = $fsize - $descent - $h - $4;
-		$bot_pad = $fsize - $h - $top_pad;
+		$left_pad = $3;
+		$top_pad = $ascent - $h - $4;
+		$bot_pad = $celheight - $h - $top_pad;
 		$hl = 0;
 	    }
 	    elsif (/^BITMAP/) {
 		print "\n: $c\n";
 		for ($i=0;$i<$top_pad;$i++) {
-		    last if ($hl>=$fsize);
+		    last if ($hl>=$celheight);
 		    for ($j=0;$j<$w;$j++) {
 			print '. ';
 		    }
@@ -108,7 +142,9 @@ while (<BDFF>) {
 		s/E/# # # . /g;
 		s/F/# # # # /g;
 		chomp;
-		$_ = substr($_,0,$w*2);
+      $_ = (". " x $left_pad) . $_;
+
+      $_ = substr($_,0,$w*2);
 
 		# Calculate actual width, we might need padding
 		$aw_s = $_;
@@ -116,12 +152,12 @@ while (<BDFF>) {
 		$aw = length $aw_s;
 
 		++$hl;
-		if ($hl<=$fsize) {
+		if ($hl<=$celheight) {
 			print;	
 	
 			if ($aw<$w) {
-			    for ($i=0;$i<($w-$aw);$i++) {
-				print ". ";
+			   for ($i=0;$i<($w-$aw);$i++) {
+			      print ". ";
 		    	}
 			}
 			print "\n";
@@ -129,7 +165,7 @@ while (<BDFF>) {
 	    }
 	}
 	for ($i=0;$i<$bot_pad;$i++) {
-	    last if ($hl>=$fsize);
+	    last if ($hl>=$celheight);
 	    for ($j=0;$j<$w;$j++) {
 		print '. ';
 	    }
