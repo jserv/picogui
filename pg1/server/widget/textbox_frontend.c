@@ -574,6 +574,7 @@ g_error textbox_write(struct widget *self, struct pgstring *str) {
   e = document_load(DATA->doc, fmt, str);
   errorcheck;
   
+  paragraph_wrap(DATA->doc->crsr->par,0);
   return success;
 }
 
