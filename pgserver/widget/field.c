@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.19 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: field.c,v 1.20 2001/03/03 01:44:27 micahjd Exp $
  *
  * Single-line no-frills text editing box
  *
@@ -156,14 +156,6 @@ g_error field_set(struct widget *self,int property, glob data) {
 
   switch (property) {
 
-  case PG_WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,43);
-    self->in->flags &= SIDEMASK;
-    self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC |
-      DIVNODE_PROPAGATE_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
-    break;
-
   case PG_WP_FONT:
     if (iserror(rdhandle((void **)&fd,
 			 PG_TYPE_FONTDESC,-1,data)) || !fd) 
@@ -183,8 +175,8 @@ g_error field_set(struct widget *self,int property, glob data) {
        break;
     */
 
-  default:
-    return mkerror(PG_ERRT_BADPARAM,45);
+   default:
+     return mkerror(ERRT_PASS,0);
   }
   return sucess;
 }

@@ -1,4 +1,5 @@
-/* $Id: panel.c,v 1.49 2001/02/17 05:18:41 micahjd Exp $
+
+/* $Id: panel.c,v 1.50 2001/03/03 01:44:27 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -284,19 +285,15 @@ g_error panel_set(struct widget *self,int property, glob data) {
   switch (property) {
 
   case PG_WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,38);
-    self->in->flags &= SIDEMASK;
-    self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
-      DIVNODE_PROPAGATE_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
-    self->in->div->flags &= SIDEMASK;
-    switch (data) {    /* Invert the side for the panelbar */
-    case PG_S_TOP:    self->in->div->flags |= PG_S_BOTTOM; break;
-    case PG_S_BOTTOM: self->in->div->flags |= PG_S_TOP; break;
-    case PG_S_LEFT:   self->in->div->flags |= PG_S_RIGHT; break;
-    case PG_S_RIGHT:  self->in->div->flags |= PG_S_LEFT; break;
-    }
-    return sucess;
+     /* Set extra flags for the panelbar */
+     self->in->div->flags &= SIDEMASK;
+     switch (data) {    /* Invert the side for the panelbar */
+      case PG_S_TOP:    self->in->div->flags |= PG_S_BOTTOM; break;
+      case PG_S_BOTTOM: self->in->div->flags |= PG_S_TOP; break;
+      case PG_S_LEFT:   self->in->div->flags |= PG_S_RIGHT; break;
+      case PG_S_RIGHT:  self->in->div->flags |= PG_S_LEFT; break;
+     }
+     return mkerror(ERRT_PASS,0);
 
   case PG_WP_SIZE:
     if (data<0)
@@ -317,7 +314,7 @@ g_error panel_set(struct widget *self,int property, glob data) {
     break;
 
   default:
-    return mkerror(PG_ERRT_BADPARAM,39);
+    return mkerror(ERRT_PASS,0);
 
   }
   return sucess;

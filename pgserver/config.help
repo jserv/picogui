@@ -214,3 +214,8 @@ CONFIG_HAIKU_BRANDON
       Replaces the 'normal' errors with Brandon's cryptic but funny haikus
 
 
+CONFIG_NOPANELBAR
+      Disable the panelbar in the panel widget, making it impossible
+      for users to manually resize applications
+      
+      

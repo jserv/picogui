@@ -1,4 +1,4 @@
-/* $Id: box.c,v 1.11 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: box.c,v 1.12 2001/03/03 01:44:27 micahjd Exp $
  *
  * box.c - Generic container for holding a group of widgets. It's sizing and
  *         appearance are defined by the theme.
@@ -68,31 +68,9 @@ void box_remove(struct widget *self) {
 }
 
 g_error box_set(struct widget *self,int property, glob data) {
-  switch (property) {
-
-  case PG_WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,41);
-    redraw_bg(self);
-    self->in->flags &= SIDEMASK;
-    self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
-      DIVNODE_PROPAGATE_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
-    break;
-
-  case PG_WP_SIZE:
-    if (data<0) data = 0;
-    self->in->split = data;
-    MANUALSIZE = 1;
-    redraw_bg(self);
-    self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
-    break;
-
-  default:
-    return mkerror(PG_ERRT_BADPARAM,42);
-
-  }
-  return sucess;
+   if (property==PG_WP_SIZE)
+     MANUALSIZE = 1;
+   return mkerror(ERRT_PASS,0);
 }
 
 glob box_get(struct widget *self,int property) {

@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.28 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: label.c,v 1.29 2001/03/03 01:44:27 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -33,7 +33,7 @@
 struct labeldata {
   handle text,font;
   unsigned char transparent;
-  short int align,direction;
+  short int align,direction,osplit;
 };
 #define DATA ((struct labeldata *)(self->data))
 
@@ -111,13 +111,6 @@ g_error label_set(struct widget *self,int property, glob data) {
 
   switch (property) {
 
-  case PG_WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,11);
-    self->in->flags &= SIDEMASK;
-    self->in->flags |= ((sidet)data);
-    resizelabel(self);
-    break;
-
   case PG_WP_TRANSPARENT:
     DATA->transparent = (data != 0);
     self->in->flags |= DIVNODE_NEED_RECALC;
@@ -163,7 +156,7 @@ g_error label_set(struct widget *self,int property, glob data) {
     break;
 
   default:
-    return mkerror(PG_ERRT_BADPARAM,14);
+    return mkerror(ERRT_PASS,0);
   }
   return sucess;
 }
@@ -218,10 +211,13 @@ glob label_get(struct widget *self,int property) {
 void resizelabel(struct widget *self) {
   int w,h,m = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
   struct fontdesc *fd;
-  int osplit;
   char *str;
   handle font = DATA->font ? DATA->font : 
     theme_lookup(self->in->div->state,PGTH_P_FONT);
+
+  /* Redraw the containing widget if we're transparent */
+  if (DATA->transparent || DATA->osplit!=self->in->split)
+     redraw_bg(self);
 
   /* With PG_S_ALL we'll get ignored anyway... */
   if (self->in->flags & PG_S_ALL) return;
@@ -236,7 +232,7 @@ void resizelabel(struct widget *self) {
   else
     sizetext(fd,&w,&h,str);
 
-  osplit = self->in->split;
+  DATA->osplit = self->in->split;
   if ((self->in->flags & PG_S_TOP) ||
       (self->in->flags & PG_S_BOTTOM))
     self->in->split = h+m;
@@ -244,9 +240,7 @@ void resizelabel(struct widget *self) {
 	   (self->in->flags & PG_S_RIGHT))
     self->in->split = w+m;
 
-  if (DATA->transparent || osplit!=self->in->split)
-    redraw_bg(self);
-  if (osplit!=self->in->split) {
+  if (DATA->osplit!=self->in->split) {
     self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
   }

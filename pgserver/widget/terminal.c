@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.20 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: terminal.c,v 1.21 2001/03/03 01:44:27 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -326,14 +326,6 @@ g_error terminal_set(struct widget *self,int property, glob data) {
 
   switch (property) {
 
-  case PG_WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,11);
-    self->in->flags &= SIDEMASK;
-    self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC |
-      DIVNODE_PROPAGATE_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
-    break;
-
   case PG_WP_FONT:
     if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,data)) || !fd) 
       return mkerror(PG_ERRT_HANDLE,12);
@@ -351,7 +343,7 @@ g_error terminal_set(struct widget *self,int property, glob data) {
     break;
 
   default:
-    return mkerror(PG_ERRT_BADPARAM,14);
+    return mkerror(ERRT_PASS,0);
   }
   return sucess;
 }

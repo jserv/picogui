@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.31 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: scroll.c,v 1.32 2001/03/03 01:44:27 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -179,7 +179,7 @@ g_error scroll_set(struct widget *self,int property, glob data) {
     break;
 
   default:
-    return mkerror(PG_ERRT_BADPARAM,19);
+    return mkerror(ERRT_PASS,0);
   }
   return sucess;
 }

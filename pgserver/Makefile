@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.62 2001/03/01 02:23:09 micahjd Exp $
+# $Id: Makefile,v 1.63 2001/03/03 01:44:24 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -21,6 +21,11 @@
 #
 #
 # $Log: Makefile,v $
+# Revision 1.63  2001/03/03 01:44:24  micahjd
+# Added an option to disable the panelbar.
+# Fixed a bug in container redrawing.
+# Cleaned up widget_set and implemented PG_WP_SIZEMODE.
+#
 # Revision 1.62  2001/03/01 02:23:09  micahjd
 # Finished SDL emulation of low bit depths, got at least stubs working for linear1,linear2,linear4,and linear16.
 #
@@ -69,7 +74,6 @@ SRC := \
     widget/scroll.c \
     widget/widget.c \
     widget/button.c \
-    widget/panel.c \
     widget/popup.c \
     widget/box.c \
     widget/field.c \
@@ -169,6 +173,11 @@ ifneq ($(CONFIG_WIDGET_TERMINAL),)
 endif
 ifneq ($(CONFIG_WIDGET_CANVAS),)
     SRC := $(SRC) widget/canvas.c
+endif
+ifneq ($(CONFIG_NOPANELBAR),)
+    SRC := $(SRC) widget/panel_nobar.c
+else
+    SRC := $(SRC) widget/panel.c
 endif
 
 # These are lists used in macro-driven function tables

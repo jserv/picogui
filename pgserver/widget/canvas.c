@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.7 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: canvas.c,v 1.8 2001/03/03 01:44:27 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -81,22 +81,7 @@ void canvas_remove(struct widget *self) {
 }
 
 g_error canvas_set(struct widget *self,int property, glob data) {
-
-  switch (property) {
-
-  case PG_WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,31);
-    self->in->flags &= SIDEMASK;
-    self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC |
-      DIVNODE_PROPAGATE_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
-    redraw_bg(self);
-    break;
-
-   default:
-    return mkerror(PG_ERRT_BADPARAM,37);
-  }
-  return sucess;
+   return mkerror(ERRT_PASS,0);
 }
 
 glob canvas_get(struct widget *self,int property) {

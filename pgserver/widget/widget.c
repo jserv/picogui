@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.63 2001/02/23 04:44:47 micahjd Exp $
+/* $Id: widget.c,v 1.64 2001/03/03 01:44:27 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -45,7 +45,13 @@ DEF_WIDGET_TABLE(scroll)
 DEF_STATICWIDGET_TABLE(indicator)
 DEF_STATICWIDGET_TABLE(bitmap)
 DEF_WIDGET_TABLE(button)
+	       
+#ifdef CONFIG_NOPANELBAR
+DEF_STATICWIDGET_TABLE(panel)
+#else
 DEF_WIDGET_TABLE(panel)
+#endif
+		 
 DEF_WIDGET_TABLE(popup)
 DEF_STATICWIDGET_TABLE(box)
 DEF_WIDGET_TABLE(field)
@@ -272,8 +278,56 @@ void widget_remove(struct widget *w) {
 }
 
 g_error inline widget_set(struct widget *w, int property, glob data) {
-  if (w && w->def->set) return (*w->def->set)(w,property,data);
-  return mkerror(PG_ERRT_INTERNAL,23);
+   g_error e;
+   
+   if (!(w && w->def->set))
+     return mkerror(PG_ERRT_INTERNAL,23);
+   
+   /* If the widget has a handler, go with that */
+   e = (*w->def->set)(w,property,data);
+   if (errtype(e)!=ERRT_PASS)
+     return e;
+   
+   /* Otherwise provide some defaults */
+   switch (property) {
+    
+      /* Set the size, assuming initial split at w->in.
+       * Calls resize handler if it exists, and sets the
+       * appropriate flags.
+       */
+    case PG_WP_SIDE:
+      if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,2);
+      w->in->flags &= SIDEMASK;
+      w->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
+	DIVNODE_PROPAGATE_RECALC;
+      if (w->resize && data!=PG_S_ALL)
+	(*w->resize)(w);
+      w->dt->flags |= DIVTREE_NEED_RECALC;
+      redraw_bg(w);
+      break;
+
+    case PG_WP_SIZE:
+      if (data<0) data = 0;
+      w->in->split = data;
+      w->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+      w->dt->flags |= DIVTREE_NEED_RECALC;
+      redraw_bg(w);
+      break;
+
+    case PG_WP_SIZEMODE:
+      w->in->flags &= ~PG_SZMODEMASK;
+      w->in->flags |= data & PG_SZMODEMASK;
+      redraw_bg(w);
+      break;
+      
+    case PG_WP_HOTKEY:
+      install_hotkey(w,data);
+      break;
+      
+    default:
+      return mkerror(PG_ERRT_BADPARAM,6);   /* Unknown property */
+   }
+   return sucess;
 }
 
 glob inline widget_get(struct widget *w, int property) {
@@ -294,9 +348,11 @@ void redraw_bg(struct widget *self) {
   /* Flags! Redraws automatically propagate through all child nodes of the
      container's div.
   */
+#ifndef CONFIG_NOPANELBAR
   if (container->type == PG_WIDGET_PANEL) /* Optimize for panels: don't redraw panelbar */
     container->in->div->next->flags |= DIVNODE_NEED_REDRAW;
   else
+#endif
     container->in->flags |= DIVNODE_NEED_REDRAW;
   container->dt->flags |= DIVTREE_NEED_REDRAW;
 }

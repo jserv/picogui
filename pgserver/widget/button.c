@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.49 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: button.c,v 1.50 2001/03/03 01:44:27 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -168,18 +168,11 @@ g_error button_set(struct widget *self,int property, glob data) {
   switch (property) {
 
   case PG_WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,31);
-    self->in->flags &= SIDEMASK;
-    self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC |
-      DIVNODE_PROPAGATE_RECALC;
     if (data!=PG_S_ALL) {
       self->in->next->flags &= SIDEMASK;
       self->in->next->flags |= ((sidet)data);
-      resize_button(self);
     }
-    self->dt->flags |= DIVTREE_NEED_RECALC;
-    redraw_bg(self);
-    break;
+    return mkerror(ERRT_PASS,0);
 
   case PG_WP_BITMAP:
     if (!iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)) && bit) {
@@ -233,16 +226,12 @@ g_error button_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case PG_WP_HOTKEY:
-    install_hotkey(self,data);
-    break;
-
   case PG_WP_EXTDEVENTS:
     DATA->extdevents = data;
     break;
 
-  default:
-    return mkerror(PG_ERRT_BADPARAM,37);
+   default:
+     return mkerror(ERRT_PASS,0);
   }
   return sucess;
 }

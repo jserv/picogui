@@ -1,4 +1,4 @@
-/* $Id: toolbar.c,v 1.12 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: toolbar.c,v 1.13 2001/03/03 01:44:27 micahjd Exp $
  *
  * toolbar.c - container widget for buttons
  *
@@ -85,25 +85,12 @@ void toolbar_remove(struct widget *self) {
 }
 
 g_error toolbar_set(struct widget *self,int property, glob data) {
-  switch (property) {
-
-  case PG_WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,15);
-    self->in->flags &= SIDEMASK;
-    self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
-      DIVNODE_PROPAGATE_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
-    break;
-
-  default:
-    return mkerror(PG_ERRT_BADPARAM,16);
-  }
-  return sucess;
+  return mkerror(ERRT_PASS,0);
 }
 
 glob toolbar_get(struct widget *self,int property) {
   switch (property) {
-
+     
   case PG_WP_SIDE:
     return self->in->flags & (~SIDEMASK);
 

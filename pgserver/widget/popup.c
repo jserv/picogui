@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.26 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: popup.c,v 1.27 2001/03/03 01:44:27 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -157,7 +157,7 @@ g_error popup_set(struct widget *self,int property, glob data) {
   /* Because the layer(s) under a popup are 'frozen' it can't be moved
      after it is created.  Therefore, there isn't anything to change.
   */
-  return mkerror(PG_ERRT_BADPARAM,40);
+  return mkerror(ERRT_PASS,0);
 }
 
 glob popup_get(struct widget *self,int property) {

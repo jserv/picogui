@@ -1,3 +1,25 @@
+---- Friday, March 2
+
+The panelbar disabling works now.
+Fixed a long-standing bug in container redrawing that would mess up 'demo'
+sometimes.
+
+Added real data type definitions to include/pgserver/common.h
+I will gradually migrate to them
+
+Starting to clean up widget set/get code so sizing, sides, and other common
+things are in one place and not duplicated.
+Got this implemented so widgets can pass on unhandled properties (only sets
+for now) to the code in widget_set that handles a few common properties.
+Now I can easily implement sizing modes and things like that.
+
+Implemented PG_WP_SIZEMODE
+
+---- Thursday, March 1
+
+Added the possibility to disable the panelbar (repalces panel.c with a
+much simpler version) and prevent users from manually resizing
+
 ---- Wednesday, February 28
 
 Finished SDL emulation of low bit depths

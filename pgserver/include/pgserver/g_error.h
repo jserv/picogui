@@ -1,4 +1,4 @@
-/* $Id: g_error.h,v 1.7 2001/02/17 05:18:40 micahjd Exp $
+/* $Id: g_error.h,v 1.8 2001/03/03 01:44:26 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -38,6 +38,8 @@ typedef unsigned int g_error;
 				no reply packet- assumes that
 				no reply is needed or that one
 				will be sent seperately */
+#define ERRT_PASS     0xF100 /* Returned from a widget's set/get to
+			      * let the generic handler handle it */
 
 #define mkerror(type,number) ((type)|(number))
 #define iserror(e)           (((e) & 0xFF00)!=PG_ERRT_NONE)

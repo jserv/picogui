@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.17 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: indicator.c,v 1.18 2001/03/03 01:44:27 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -88,16 +88,8 @@ g_error indicator_set(struct widget *self,int property, glob data) {
     div_setstate(self->in->div,PGTH_O_INDICATOR);
     break;
 
-  case PG_WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,8);
-    self->in->flags &= SIDEMASK;
-    self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
-      DIVNODE_PROPAGATE_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
-    break;
-    
   default:
-    return mkerror(PG_ERRT_BADPARAM,9);
+    return mkerror(ERRT_PASS,0);
   }
   return sucess;
 }

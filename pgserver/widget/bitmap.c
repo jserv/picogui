@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.26 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: bitmap.c,v 1.27 2001/03/03 01:44:27 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -105,15 +105,6 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
 
   switch (property) {
 
-  case PG_WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,2);
-    self->in->flags &= SIDEMASK;
-    self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
-      DIVNODE_PROPAGATE_RECALC;
-    resizebitmap(self);
-    self->dt->flags |= DIVTREE_NEED_RECALC;
-    break;
-
   case PG_WP_TRANSPARENT:
     DATA->transparent = (data != 0);
     self->in->flags |= DIVNODE_NEED_RECALC;
@@ -160,8 +151,8 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
     else return mkerror(PG_ERRT_HANDLE,5);
     break;
 
-  default:
-    return mkerror(PG_ERRT_BADPARAM,6);
+   default:
+     return mkerror(ERRT_PASS,0);
   }
 
   return sucess;
