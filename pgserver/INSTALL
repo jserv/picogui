@@ -3,6 +3,9 @@
 * Installation from CVS :
   -----------------------
 
+ Installing from CVS requires the usual GNU tools, like autoconf, automake
+ and libtool.
+
  1. - run ./autogen.sh *once*, tu setup your autoconf environment.
  2. - from there, proceed as for the tarball installation
 
