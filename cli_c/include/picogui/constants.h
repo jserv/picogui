@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.33 2001/03/30 04:39:07 micahjd Exp $
+/* $Id: constants.h,v 1.34 2001/03/30 08:29:05 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -468,7 +468,7 @@ typedef unsigned long pghandle;
 #define PG_WP_DIRECTION   21
 #define PG_WP_ABSOLUTEX   22    /* read-only, relative to screen */
 #define PG_WP_ABSOLUTEY   23
-#define PG_WP_BUTTONFLAGS 
+#define PG_WP_ON          24    /* on-off state of button/checkbox/etc */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0

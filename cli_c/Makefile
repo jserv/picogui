@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.19 2001/03/16 03:13:23 micahjd Exp $
+# $Id: Makefile,v 1.20 2001/03/30 08:29:05 micahjd Exp $
 #
 # C client library (libpgui) makefile
 #
@@ -42,7 +42,7 @@ SRC := src/netcore.c src/api.c
 DEMOSRC := demos/demo.c demos/themedemo.c demos/msgdialog.c \
            demos/imgview.c demos/menutest.c demos/omnibar.c \
            demos/fieldtest.c demos/calc.c demos/canvastst.c \
-	   demos/abstest.c
+	   demos/abstest.c demos/vidpopup.c
 
 HDR := include/*.h include/picogui/*.h
 
@@ -104,9 +104,11 @@ demos : $(DEMOBIN)
 	ln -fs msgdialog "demos/Message Dialog Demo.app"
 	ln -fs menutest "demos/Menu Test.app"
 	ln -fs calc "demos/Calculator.app"
-	ln -fs canvastst "demos/Canvas Test.app"
+	ln -fs canvastst "demos/Canvas Test.app"	
+	ln -fs vidpopup "demos/Set Video Mode.app"
 	ln -fs ../../apps/pterm/pterm "demos/Terminal (pterm).app"
 	ln -fs ../../apps/blackout/blackout "demos/Blackout.app"
+	ln -fs ../../apps/battleship/battleship "demos/Battleship.app"
 
 # Demo object files (each one to a seperate binary)
 % : %.c $(HDR) $(LIBNAME).la
