@@ -6,6 +6,8 @@ try:
 except:
     thread = None
 
+debug_threads = 0
+
 def PlatformIncompatibility(exception):
     pass
 
@@ -27,6 +29,24 @@ class Request(object):
 
 def noop(*a, **kw):
     pass
+
+class verbose_lock(object):
+    # verbose wrapper for thread locks - useful for debugging
+    def __init__(self):
+        self._real_lock = thread.allocate_lock()
+
+    def acquire(self):
+        print 'trying to acquire lock', id(self), 'from thread', thread.get_ident()
+        self._real_lock.acquire()
+        print 'acquired lock', id(self), 'from thread', thread.get_ident()
+
+    def release(self):
+        print 'releasing lock', id(self), 'from thread', thread.get_ident()
+        self._real_lock.release()
+
+    def locked(self):
+        print 'checking lock', id(self), 'from thread', thread.get_ident()
+        return self._real_lock.locked()
 
 class Server(object):
     def __init__(self, address=None, display=None, stream=None, stream_read=0, poll=None):
@@ -53,7 +73,10 @@ class Server(object):
         self.lost_and_found = []
         self.event_queue = []
         if thread is not None:
-            self._write_lock = thread.allocate_lock()
+            if debug_threads:
+                self._write_lock = verbose_lock()
+            else:
+                self._write_lock = thread.allocate_lock()
 
     def _mkrequest(self, handler, args, id=None):
         return handler(*args, **{'id': id})
