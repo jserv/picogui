@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.11 2002/10/14 07:38:30 micahjd Exp $
+/* $Id: font_freetype.c,v 1.12 2002/10/14 07:58:27 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -50,9 +50,8 @@ u8 ft_light_gamma_table[256];
 u8 ft_dark_gamma_table[256];
 int ft_gamma_light_dark_threshold;     /* Premultiplied by 3 */
 void ft_build_gamma_table(u8 *table, float gamma);
-void ft_apply_gamma_table(u8 *table, FT_Bitmap *b);
-u8 *ft_pick_gamma_table(hwrcolor c);
 #endif
+u8 *ft_pick_gamma_table(hwrcolor c);
 
 struct ft_face_id {
   const char *file_path;
@@ -306,7 +305,8 @@ void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct 
   }
   
   VID(alpha_charblit)(dest,bg->bitmap.buffer,x,y,bg->bitmap.width,
-		      bg->bitmap.rows,bg->bitmap.pitch,angle,col,clip,lgop);
+		      bg->bitmap.rows,bg->bitmap.pitch,ft_pick_gamma_table(col),
+		      angle,col,clip,lgop);
 
   switch (angle) {
   case 0:
@@ -409,22 +409,16 @@ void ft_build_gamma_table(u8 *table, float gamma) {
     table[i] = 255 * pow(i/255.0, 1/gamma);
 }
 
-void ft_apply_gamma_table(u8 *table, FT_Bitmap *b) {
-  u8 *l,*p;
-  int i,j;
-
-  l = b->buffer;
-  for (j=0;j<b->rows;j++,l+=b->pitch)
-    for (i=0,p=l;i<b->width;i++,p++)
-      *p = table[*p];
-}
-
 /* Use one table for light fonts, another for dark fonts */
 u8 *ft_pick_gamma_table(hwrcolor c) {
   pgcolor pgc = vid->color_hwrtopg(c);
   if (getred(pgc)+getgreen(pgc)+getblue(pgc) >= ft_gamma_light_dark_threshold)
     return ft_light_gamma_table;
   return ft_dark_gamma_table;
+}
+#else
+u8 *ft_pick_gamma_table(hwrcolor c) {
+  return NULL;
 }
 #endif /* CONFIG_FREETYPE_GAMMA */
 

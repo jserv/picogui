@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.100 2002/10/12 19:53:48 micahjd Exp $
+/* $Id: video.h,v 1.101 2002/10/14 07:58:27 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -578,11 +578,12 @@ struct vidlib {
    *   Alpha blend the given color to the destination using 
    *   the supplied bytes as alpha mask.
    *   Origin, rotation, and clipping are handled just like charblit above.
+   *   If gammatable is not NULL, use it for gamma correction.
    *
    * Default implementation: pixel
    */
   void (*alpha_charblit)(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
-			 int char_pitch, s16 angle, hwrcolor c,
+			 int char_pitch, u8 *gammatable, s16 angle, hwrcolor c,
 			 struct quad *clip, s16 lgop);
 #endif
 };
@@ -672,7 +673,7 @@ void def_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
 		  s16 lgop);
 void def_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
-			int char_pitch, s16 angle, hwrcolor c,
+			int char_pitch, u8 *gammatable, s16 angle, hwrcolor c,
 			struct quad *clip, s16 lgop);
 void def_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 		    s16 src_x, s16 src_y, s16 lgop);
@@ -720,9 +721,6 @@ g_error def_bitmap_modeconvert(hwrbitmap *bmp);
 g_error def_bitmap_modeunconvert(hwrbitmap *bmp);
 g_error def_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend);
 void def_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius);
-void def_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
-			int char_pitch, s16 angle, hwrcolor c,
-			struct quad *clip, s16 lgop);
 #ifdef CONFIG_DITHER
 g_error def_dither_start(hwrdither *d, hwrbitmap dest, int vflip, 
 			 int x, int y, int w, int h);

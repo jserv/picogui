@@ -1,4 +1,4 @@
-/* $Id: rotate180.c,v 1.19 2002/10/13 13:04:11 micahjd Exp $
+/* $Id: rotate180.c,v 1.20 2002/10/14 07:58:27 micahjd Exp $
  *
  * rotate180.c - Video wrapper to rotate the screen 180 degrees
  *
@@ -186,7 +186,7 @@ void rotate180_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
 #endif
 #ifdef CONFIG_FONTENGINE_FREETYPE
 void rotate180_alpha_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
-			      s16 w,s16 h,int char_pitch,s16 angle,hwrcolor c,
+			      s16 w,s16 h,int char_pitch, u8 *gammatable,s16 angle,hwrcolor c,
 			      struct quad *clip,s16 lgop) {
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
@@ -197,7 +197,7 @@ void rotate180_alpha_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
    if (angle<0) angle += 360;
    
    (*vid->alpha_charblit)(dest,chardat,dx-1-dest_x,dy-1-dest_y,w,h,
-			  char_pitch,angle,c,rotate180_rotateclip(clip),lgop);
+			  char_pitch,gammatable,angle,c,rotate180_rotateclip(clip),lgop);
 }
 #endif
 

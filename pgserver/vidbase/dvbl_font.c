@@ -1,4 +1,4 @@
-/* $Id: dvbl_font.c,v 1.6 2002/10/13 03:54:19 micahjd Exp $
+/* $Id: dvbl_font.c,v 1.7 2002/10/14 07:58:27 micahjd Exp $
  *
  * dvbl_font.c - Low level implementations for font rendering
  *
@@ -310,7 +310,7 @@ void def_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
 
 #ifdef CONFIG_FONTENGINE_FREETYPE
 void def_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
-			int char_pitch, s16 angle, hwrcolor c,
+			int char_pitch, u8 *gammatable, s16 angle, hwrcolor c,
 			struct quad *clip, s16 lgop) {
   int i,j,xp,yp;
   u8 *l;
@@ -350,7 +350,10 @@ void def_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 	  continue;
       
       oc = vid->color_hwrtopg(vid->getpixel(dest,xp,yp));
-      a_ = *l;
+      if (gammatable)
+	a_ = gammatable[*l];
+      else
+	a_ = *l;
       a = 255-a_;
 
       r = ((getred(c) * a_) >> 8) + ((getred(oc) * a) >> 8);
