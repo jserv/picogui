@@ -24,24 +24,74 @@ print "Dialog returned: ".
       pgMessageDialog("Perl Module","This is a test!\nHello, world",
 			       PG_MSGBTN_OK | PG_MSGBTN_CANCEL)."\n";
 			       
-# Make a custom dialog
+##### Popup box to test pgGetEvent
+
 pgEnterContext();
-pgNewPopup(160,80);
+$popup = pgNewPopup(160,100);
+pgNewWidget(PG_WIDGET_LABEL); 
+pgReplaceText(PGDEFAULT,"pgGetEvent() Test");
+
 $toolbar = pgNewWidget(PG_WIDGET_TOOLBAR);
 pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,$toolbar);
 pgReplaceText(PGDEFAULT,"Thwamp!");
 pgNewWidget(PG_WIDGET_BUTTON);
 pgReplaceText(PGDEFAULT,"Quack!");
+
 $wLabel = pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_AFTER,$toolbar);
 pgNewWidget(PG_WIDGET_CANVAS);
-pgUpdate();
 # Little event loop
-while (1) {
-      pgReplaceText($wLabel,join ',',pgGetEvent());
+while ($evt{from} != $popup) {
+      %evt = pgGetEvent();
+      pgReplaceText($wLabel,join(',',%evt));
 }
 pgLeaveContext();
 
-# Make an application
+### Make an application with a 'real' event loop
+### As a bonus, it uses anonymous subroutines to show pgBind the way
+### it was meant to work! (reminds ya of Perl/Tk, doesn't it ;-)
+
 pgRegisterApp(PG_APP_NORMAL,"Perl PicoGUI test app");
-pgUpdate();
-<STDIN>;
+$toolbar = pgNewWidget(PG_WIDGET_TOOLBAR);
+$wLabel1 = pgNewWidget(PG_WIDGET_LABEL);
+$wLabel2 = pgNewWidget(PG_WIDGET_LABEL);
+
+# Some buttons with their own handlers
+pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,$toolbar);
+pgReplaceText(PGDEFAULT,"Start");
+pgBind(PGDEFAULT,PGBIND_ANY,sub {
+    pgReplaceText($wLabel1,"Clickski!");
+    return 0;
+});
+
+pgNewWidget(PG_WIDGET_BUTTON);
+pgReplaceText(PGDEFAULT,"Stop");
+pgBind(PGDEFAULT,PGBIND_ANY,sub {
+    pgReplaceText($wLabel1,"Exski!");
+    return 0;
+});
+
+pgNewWidget(PG_WIDGET_BUTTON);
+pgReplaceText(PGDEFAULT,"Procrastinate");
+pgBind(PGDEFAULT,PGBIND_ANY,sub {
+    pgReplaceText($wLabel1,"Checkski!");
+    return 0;
+});
+
+# plus a generic handler, using the pgEvent it was passed  
+pgBind(PGBIND_ANY,PGBIND_ANY,sub {
+    my %evt = @_;
+    my $text = "\n\n";
+    
+    foreach (sort keys %evt) {
+        $text .= "$_ = $evt{$_}\n";
+    }
+    $text .= "\nWidget text: ".pgGetString(pgGetWidget($evt{from},PG_WP_TEXT));
+    
+    pgReplaceText($wLabel2,$text);
+    return 0;
+});
+
+pgEventLoop();
+
+
+### The End ###

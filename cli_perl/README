@@ -21,29 +21,27 @@ The following lists all exceptions to this rule:
 
 - pgInit is called automatically, but does not yet support command-line
   arguments (you can still set the server using the pgserver environment var)
-  
-- The folowing functions are unsupported so far:
+
+- pgRegisterApp does not support APPSPEC parameters
+
+- pgBind's 'extra' parameter is not supported because it is used
+  internally to associate the C event handler and Perl event handler
+
+- The folowing functions are unsupported so far but are planned:
 
 pgSetErrorHandler: requires pointer to C function
 pgSetIdle: requires pointer to C function
-pgBind: requires pointer to C function
 pgCustomizeSelect: requires pointer to C function
 pgGetVideoMode: returns structure
-pgRegisterApp: variable param list
 pgSetWidget: variable param list
 pgNewBitmap: uses pgmemdata
-pgReplaceTextFmt: not necessary in perl
 pgSizeText: needs to return list
 pgLoadTheme: uses pgmemdata
 pgWriteData: uses pgmemdata
 pgWriteCmd: variable arg list
 pgFromMemory: uses pgmemdata
 pgFromFile: uses pgmemdata
-pgEventLoop: pgBind not supported
-pgExitEventLoop: pgBind not supported
-pgGetEvent: returns structure
-pgMessageDialogFmt: not necessary in perl
-pgMenuFromArray: not necessary in perl?
+pgMenuFromArray: variable param list
 
 ** The End **
 
