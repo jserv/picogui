@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.123 2001/11/16 03:34:48 micahjd Exp $
+/* $Id: widget.c,v 1.124 2001/11/23 11:00:16 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -595,6 +595,7 @@ void request_focus(struct widget *self) {
     divnode_hotspot_position(self->in->div,&px,&py);
     VID(coord_physicalize)(&px,&py);
     dispatch_pointing(PG_TRIGGER_MOVE,px,py,0);
+    drivermessage(PGDM_CURSORWARP,0,NULL);
   }
 }
 

@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.8 2001/11/21 06:52:01 micahjd Exp $
+/* $Id: x11input.c,v 1.9 2001/11/23 11:00:15 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -47,7 +47,6 @@ int x11_fd;                  /* X display's file descriptor */
 void (*x11_expose)(int x, int y, int w, int h);
 
 /* Some config options */
-int x11input_autowarp;
 int x11input_pgcursor;
 
 /* Keyboard translation utilities */
@@ -69,7 +68,6 @@ g_error x11input_init(null) {
   x11input_init_keymap();
   
   /* Store other config options */
-  x11input_autowarp = get_param_int("input-x11","autowarp",1);
   x11input_pgcursor = get_param_int("input-x11","pgcursor",0);
 
   return sucess;

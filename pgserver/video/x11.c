@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.11 2001/11/21 09:03:16 micahjd Exp $
+/* $Id: x11.c,v 1.12 2001/11/23 11:00:15 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -68,6 +68,7 @@ GC x11_gctab[PG_LGOPMAX+1];
 void (*x11_expose)(int x, int y, int w, int h);
 
 /* Saved config options */
+int x11_autowarp;
 int x11_sound;
 
 /******************************************** Implementations */
@@ -391,6 +392,20 @@ void x11_message(u32 message, u32 param, u32 *ret) {
     if (x11_sound)
       XBell(xdisplay,50);
     break;
+
+
+    /* Handle cursor warping */
+  case PGDM_CURSORWARP: 
+    if (x11_autowarp) {
+      /* Get the physical coordinates of the new mouse position */
+      s16 cx,cy;
+      cx = cursor->x;
+      cy = cursor->y;
+      VID(coord_physicalize)(&cx,&cy);
+      XWarpPointer(xdisplay,None,x11_display.d,0,0,0,0,cx,cy);
+    }
+    break;
+
   }
 }
 
@@ -531,6 +546,7 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
 
   /* Save other settings */
   x11_sound = get_param_int("video-x11","sound",1);
+  x11_autowarp = get_param_int("input-x11","autowarp",1);
 
   XFlush(xdisplay);
   return sucess;
