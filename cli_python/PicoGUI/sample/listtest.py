@@ -1,5 +1,7 @@
 import PicoGUI
 
+# keep track of "internal names" for the widgets, for the sake
+# of our informational event handler
 wnames = {}
 def name(widget, name):
     wnames[widget] = name
@@ -62,6 +64,8 @@ def evtHilight(ev, widget):
     wname = wnames.get(widget, widget)
     if ev.name != 'idle':
         print `ev`, wname
+        # this is a test case for a bug, and should be removed
+        # when this bug is fixed
         app.server.free(widget)
         app.server.update()
 app.link(evtHilight)

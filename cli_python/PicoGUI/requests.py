@@ -163,8 +163,8 @@ def traversewidget(widget, direction, count, id=None):
 def disown(res, id=None):
 	return request(20, pack('H', res), id=id)
 	
-def updatepart(widget_id, property, value, id=None):
-	return request(32, pack('LLHxx', widget_id, value, property), id=id)
+def updatepart(widget_id, id=None):
+	return request(32, pack('L', widget_id), id=id)
 
 def update(id=None):
 	return request(1, id=id)
