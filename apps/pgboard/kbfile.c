@@ -1,4 +1,4 @@
-/* $Id: kbfile.c,v 1.3 2001/05/06 00:16:40 micahjd Exp $
+/* $Id: kbfile.c,v 1.4 2001/10/05 20:44:52 micahjd Exp $
   *
   * kbfile.c - Functions to validate and load patterns from a keyboard file
   * 
@@ -26,6 +26,7 @@
   */
 
 #include <stdio.h>
+#include <netinet/in.h>
 #include <picogui.h>
 #include "kbfile.h"
 

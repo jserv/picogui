@@ -6,7 +6,7 @@ EXAMPLES = $(wildcard examples/*.kbs)
 all: $(BINNAME) $(EXAMPLES:.kbs=.kb)
 
 $(BINNAME): $(SRC)
-	gcc -o $(BINNAME) $(SRC) -lpgui -g
+	arm-uclibc-gcc -o $(BINNAME) $(SRC) -lpgui -g
 
 %.kb : %.kbs kbcompile.pl
 	perl kbcompile.pl < $< > $@
