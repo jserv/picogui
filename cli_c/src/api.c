@@ -1,24 +1,14 @@
-/* $Id: api.c,v 1.45 2002/07/26 11:29:45 micahjd Exp $
+/* $Id: api.c,v 1.46 2002/07/28 17:06:48 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
  *                 to provide the interface described in client_c.h
  *
- *      BIG FAT WARNING!
- *        I'm pissed off at this library... it needs rewriting REALLY badly!
- *        It's not just the ENABLE_THREADING_SUPPORT crap, but the whole thing
- *        is a mess.. no support for multiple servers, too much code duplication
- *        in the individual API handlers.. it's a fucking mess.
- *        </rant>
- *      -- Micah
+ *    This library is in need of an overhaul... (thread support, multiple pgserver..)
  *
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
- * Thread-safe code added by RidgeRun Inc.
- * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
- * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.
- * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.  
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -51,46 +41,26 @@
 /******* The simple functions that don't need args or return values */
 
 void pgUpdate(void) {
-#ifdef ENABLE_THREADING_SUPPORT
-   _pg_add_request(PGREQ_UPDATE,NULL,0, -1, 1);
-#else   
   _pg_add_request(PGREQ_UPDATE,NULL,0);
   /* Update forces a buffer flush */
   pgFlushRequests();
-#endif  
 }
 
 int pgEnterContext(void) {
-#ifdef ENABLE_THREADING_SUPPORT   
-   pgClientReturnData retData;
-   sem_init(&retData.sem, 0, 0);
-   _pg_add_request(PGREQ_MKCONTEXT,NULL,0, -1, 0);
-   sem_wait(&retData.sem);
-   return retData.ret.e.retdata;
-#else   
   _pg_add_request(PGREQ_MKCONTEXT,NULL,0);
   pgFlushRequests();
   return _pg_return.e.retdata;
-#endif  
 }
 
 void pgLeaveContext(void) {
-#ifdef ENABLE_THREADING_SUPPORT   
-   _pg_add_request(PGREQ_RMCONTEXT,NULL,0, -1, 0);
-#else   
   _pg_add_request(PGREQ_RMCONTEXT,NULL,0);
-#endif  
 }  
 
 void pgDeleteHandleContext(int id) {
   struct pgreqd_rmcontext arg;
   arg.context = htonl(id);
 
-#ifdef ENABLE_THREADING_SUPPORT   
-   _pg_add_request(PGREQ_RMCONTEXT,&arg,sizeof(arg), -1, 0);
-#else   
   _pg_add_request(PGREQ_RMCONTEXT,&arg,sizeof(arg));
-#endif  
 }  
 
 pghandle pgDataString(struct pgmemdata obj) {
@@ -105,23 +75,11 @@ pghandle pgDataString(struct pgmemdata obj) {
 
      The current method is memory hungry when dealing with larger files.
   */
-#ifdef ENABLE_THREADING_SUPPORT  
-  {
-    pgClientReturnData retData;
-    sem_init(&retData.sem, 0, 0);
-    _pg_add_request(PGREQ_MKSTRING,obj.pointer,obj.size, 
-		    (unsigned int)&retData, 1);
-    _pg_free_memdata(obj);
-    sem_wait(&retData.sem);
-    return retData.ret.e.retdata;
-  }
-#else  
   _pg_add_request(PGREQ_MKSTRING,obj.pointer,obj.size);
   _pg_free_memdata(obj);
 
   pgFlushRequests();
   return _pg_return.e.retdata;
-#endif  
 }
 
 pghandle pgLoadTheme(struct pgmemdata obj) {
@@ -136,23 +94,11 @@ pghandle pgLoadTheme(struct pgmemdata obj) {
 
      The current method is memory hungry when dealing with larger files.
   */
-#ifdef ENABLE_THREADING_SUPPORT  
-  {
-    pgClientReturnData retData;
-    sem_init(&retData.sem, 0, 0);
-    _pg_add_request(PGREQ_MKTHEME,obj.pointer,obj.size, 
-		    (unsigned int)&retData, 1);
-    _pg_free_memdata(obj);
-    sem_wait(&retData.sem);
-    return retData.ret.e.retdata;
-  }
-#else  
   _pg_add_request(PGREQ_MKTHEME,obj.pointer,obj.size);
   _pg_free_memdata(obj);
 
   pgFlushRequests();
   return _pg_return.e.retdata;
-#endif  
 }
 
 pghandle pgLoadWidgetTemplate(struct pgmemdata obj) {
@@ -167,23 +113,11 @@ pghandle pgLoadWidgetTemplate(struct pgmemdata obj) {
 
      The current method is memory hungry when dealing with larger files.
   */
-#ifdef ENABLE_THREADING_SUPPORT  
-  {
-    pgClientReturnData retData;
-    sem_init(&retData.sem, 0, 0);
-    _pg_add_request(PGREQ_MKTEMPLATE,obj.pointer,obj.size, 
-		    (unsigned int)&retData, 1);
-    _pg_free_memdata(obj);
-    sem_wait(&retData.sem);
-    return retData.ret.e.retdata;
-  }
-#else  
   _pg_add_request(PGREQ_MKTEMPLATE,obj.pointer,obj.size);
   _pg_free_memdata(obj);
 
   pgFlushRequests();
   return _pg_return.e.retdata;
-#endif  
 }
 
 u32 pgThemeLookup(s16 object, s16 property) {
@@ -192,19 +126,9 @@ u32 pgThemeLookup(s16 object, s16 property) {
   arg.object = htons(object);
   arg.property = htons(property);
 
-#ifdef ENABLE_THREADING_SUPPORT
-{
-   pgClientReturnData retData;
-   sem_init(&retData.sem, 0, 0);
-   _pg_add_request(PGREQ_THLOOKUP,&arg,sizeof(arg), (unsigned int)&retData, 1);
-   sem_wait(&retData.sem);
-   return retData.ret.e.retdata;
-}
-#else 
   _pg_add_request(PGREQ_THLOOKUP,&arg,sizeof(arg));
   pgFlushRequests();
   return _pg_return.e.retdata;
-#endif  
 }  
 
 /******* Data loading */
@@ -228,56 +152,6 @@ struct pgmemdata pgFromTempMemory(void *data,u32 length) {
   x.flags = PGMEMDAT_NEED_FREE;;
   return x;
 }
-
-#if 0                         /* RESOURCE STUFF IS UNDECIDED SO FAR */
-/* Load a resource file 
- *
- * If program is non-null, load from the resource associated with that
- * binary. Otherwise load from ourselves.
- * 
- * name is the name of a resource, like icon/32
- * 
- * Currently this simply corresponds to a file in a .res directory, but
- * this allows for expansion, and possibly some form of virtual file system.
- */
-struct pgmemdata pgFromResource(const char *program,const char *name) {
-  char *realname;
-   
-  if (!program)
-     program = _pg_appname;
-   
-  /* Get the app's real name */
-  if (lstat(program,&st)<0) {
-    /* FIXME: Better error message / a way for the app to catch this error */
-    clienterr("Error opening program file in pgFromResource()");
-    x.pointer = NULL;
-    return x;
-  }
-  if (S_ISLNK(st.st_mode)) {
-     realname = alloca(200);
-     tmp = readlink(_pg_appname,realname,200);
-     if (tmp<0) {
-	_pg_free(realname);
-	x.pointer = NULL;    /* This is unlikely */
-	return x;
-     }
-     realname[tmp] = 0;
-
-     /* If that was a relative link, we need to make it absolute */
-     if (realname[0] != '/') {
-	char *nstr;
-	nstr = malloc(strlen(_pg_appname)+strlen(realname)+1);
-	strcpy(nstr,_pg_appname);
-	*(strrchr(nstr,'/')+1) = 0;
-	strcat(nstr,realname);
-	free(realname);
-	realname = nstr;
-     }
-  }
-   else
-     realname = _pg_appname;
-}
-#endif
 
 /* Load from a normal disk file */
 struct pgmemdata pgFromFile(const char *file) {
@@ -333,31 +207,19 @@ void pgSetPayload(pghandle object,u32 payload) {
   struct pgreqd_setpayload arg;
   arg.h = htonl(object ? object : _pgdefault_widget);
   arg.payload = htonl(payload);
-#ifdef ENABLE_THREADING_SUPPORT
-  _pg_add_request(PGREQ_SETPAYLOAD,&arg,sizeof(arg), -1, 0);
-#else  
   _pg_add_request(PGREQ_SETPAYLOAD,&arg,sizeof(arg));
-#endif  
 }
 
 void pgRegisterOwner(int resource) {
   struct pgreqd_regowner arg;
   arg.res = htons(resource);
-#ifdef ENABLE_THREADING_SUPPORT
-  _pg_add_request(PGREQ_REGOWNER,&arg,sizeof(arg), -1, 0);
-#else  
   _pg_add_request(PGREQ_REGOWNER,&arg,sizeof(arg));
-#endif  
 }
 
 void pgUnregisterOwner(int resource) {
   struct pgreqd_regowner arg;
   arg.res = htons(resource);
-#ifdef ENABLE_THREADING_SUPPORT
-  _pg_add_request(PGREQ_UNREGOWNER,&arg,sizeof(arg), -1, 0);
-#else  
   _pg_add_request(PGREQ_UNREGOWNER,&arg,sizeof(arg));
-#endif  
 }
 
 void pgSetVideoMode(u16 xres, u16 yres,
@@ -369,110 +231,53 @@ void pgSetVideoMode(u16 xres, u16 yres,
   arg.bpp      = htons(bpp);
   arg.flagmode = htons(flagmode);
   arg.flags    = htonl(flags);
-#ifdef ENABLE_THREADING_SUPPORT
-  _pg_add_request(PGREQ_SETMODE,&arg,sizeof(arg), -1, 0);
-#else  
   _pg_add_request(PGREQ_SETMODE,&arg,sizeof(arg));
-#endif  
 }
 
 u32 pgGetPayload(pghandle object) {
   object = htonl(object);
-#ifdef ENABLE_THREADING_SUPPORT
-{
-  pgClientReturnData retData;
-  sem_init(&retData.sem, 0, 0);
-  _pg_add_request(PGREQ_GETPAYLOAD,&object,sizeof(object), (unsigned int)&retData, 1);
-  sem_wait(&retData.sem);
-  return retData.ret.e.retdata;
-}
-#else 
   _pg_add_request(PGREQ_GETPAYLOAD,&object,sizeof(object));
   pgFlushRequests();
   return _pg_return.e.retdata;
-#endif  
 }
 
 pghandle pgGetServerRes(u32 res) {
   struct pgreqd_getresource arg;
   arg.id = htonl(res);
-
-#ifdef ENABLE_THREADING_SUPPORT
-{
-  pgClientReturnData retData;
-  sem_init(&retData.sem, 0, 0);
-  _pg_add_request(PGREQ_GETRESOURCE,&arg,sizeof(arg), (unsigned int)&retData, 1);
-  sem_wait(&retData.sem);
-  return retData.ret.e.retdata;
-}
-#else 
   _pg_add_request(PGREQ_GETRESOURCE,&arg,sizeof(arg));
   pgFlushRequests();
   return _pg_return.e.retdata;
-#endif  
 }
 
 void pgSetInactivity(u32 time) {
   struct pgreqd_setinactive arg;
   arg.time = htonl(time);
-#ifdef ENABLE_THREADING_SUPPORT  
-  _pg_add_request(PGREQ_SETINACTIVE,&arg,sizeof(arg), -1, 0);
-#else  
   _pg_add_request(PGREQ_SETINACTIVE,&arg,sizeof(arg));
-#endif  
 }
 
 u32 pgGetInactivity(void) {
-#ifdef ENABLE_THREADING_SUPPORT
-{
-  pgClientReturnData retData;
-  sem_init(&retData.sem, 0, 0);
-  _pg_add_request(PGREQ_GETINACTIVE,NULL,0, (unsigned int)&retData, 1);
-  sem_wait(&retData.sem);
-  return retData.ret.e.retdata;
-}
-#else
   _pg_add_request(PGREQ_GETINACTIVE,NULL,0);
   pgFlushRequests();
   return _pg_return.e.retdata;
-#endif  
 }
 
 pghandle pgNewCursor(void) {
-#ifdef ENABLE_THREADING_SUPPORT
-{
-  pgClientReturnData retData;
-  sem_init(&retData.sem, 0, 0);
-  _pg_add_request(PGREQ_MKCURSOR,NULL,0, (unsigned int)&retData, 1);
-  sem_wait(&retData.sem);
-  return retData.ret.e.retdata;
-}
-#else
   _pg_add_request(PGREQ_MKCURSOR,NULL,0);
   pgFlushRequests();
   return _pg_return.e.retdata;
-#endif  
 }
 
 void pgSubUpdate(pghandle widget) {
   struct pgreqd_handlestruct arg;
   arg.h = htonl(widget ? widget : _pgdefault_widget);
-#ifdef ENABLE_THREADING_SUPPORT
-  _pg_add_request(PGREQ_UPDATEPART,&arg,sizeof(arg), -1, 1);
-#else  
   _pg_add_request(PGREQ_UPDATEPART,&arg,sizeof(arg));
   pgFlushRequests();  
-#endif  
 }
 
 void pgFocus(pghandle widget) {
   struct pgreqd_handlestruct arg;
   arg.h = htonl(widget ? widget : _pgdefault_widget);
-#ifdef ENABLE_THREADING_SUPPORT
-   _pg_add_request(PGREQ_FOCUS,&arg,sizeof(arg), -1, 0);
-#else   
   _pg_add_request(PGREQ_FOCUS,&arg,sizeof(arg));
-#endif  
 }
 
 void pgDelete(pghandle object) {
@@ -483,11 +288,7 @@ void pgDelete(pghandle object) {
   if (!object) return;
 
   arg.h = htonl(object);
-#ifdef ENABLE_THREADING_SUPPORT
-  _pg_add_request(PGREQ_FREE,&arg,sizeof(arg), -1, 0);
-#else  
   _pg_add_request(PGREQ_FREE,&arg,sizeof(arg));
-#endif  
 
   /* Delete handlers that rely on this widget */
   if (_pghandlerlist) {
@@ -555,22 +356,12 @@ pghandle pgRegisterApp(s16 type,const char *name, ...) {
 	 i--,*(spec++)=htons(va_arg(v,s32)));
     va_end(v);
 
-#ifdef ENABLE_THREADING_SUPPORT
-{
-    pgClientReturnData retData;
-    sem_init(&retData.sem, 0, 0);
-    _pg_add_request(PGREQ_REGISTER,arg, sizeof(struct pgreqd_register)+numspecs*4, (unsigned int)&retData, 1);
-    sem_wait(&retData.sem);
-    ret = retData.ret.e.retdata;
-}
-#else 
     _pg_add_request(PGREQ_REGISTER,arg,
 		    sizeof(struct pgreqd_register)+numspecs*4);
     
     /* Because we need a result now, flush the buffer */
     pgFlushRequests();
     ret = _pg_return.e.retdata;
-#endif
   }
 
   /* Default is inside this widget */
@@ -597,11 +388,7 @@ void  pgSetWidget(pghandle widget, ...) {
     if (!i) break;
     arg.property = htons(i);
     arg.glob = htonl(va_arg(v,s32));
-#ifdef ENABLE_THREADING_SUPPORT    
-    _pg_add_request(PGREQ_SET,&arg,sizeof(arg), -1, 0);
-#else    
     _pg_add_request(PGREQ_SET,&arg,sizeof(arg));
-#endif    
   }
   va_end(v);
 }
@@ -611,17 +398,6 @@ pghandle pgCreateWidget(s16 type) {
 
    arg.type = htons(type);
 
-#ifdef ENABLE_THREADING_SUPPORT  
-{
-  pgClientReturnData retData;
-  sem_init(&retData.sem, 0, 0);
-  _pg_add_request(PGREQ_CREATEWIDGET,&arg,sizeof(arg), (unsigned int)&retData, 1);
-  sem_wait(&retData.sem);
-  _pgdefault_rship = PG_DERIVE_AFTER;
-  _pgdefault_widget = retData.ret.e.retdata;
-  return retData.ret.e.retdata;
-}
-#else
   _pg_add_request(PGREQ_CREATEWIDGET,&arg,sizeof(arg));
 
   /* Because we need a result now, flush the buffer */
@@ -633,7 +409,6 @@ pghandle pgCreateWidget(s16 type) {
   
   /* Return the new handle */
   return _pg_return.e.retdata;
-#endif  
 }
 
 pghandle pgNewInFilter(pghandle insert_after, u32 accept_trigs, u32 absorb_trigs) {
@@ -643,17 +418,6 @@ pghandle pgNewInFilter(pghandle insert_after, u32 accept_trigs, u32 absorb_trigs
    arg.accept_trigs = htonl(accept_trigs);
    arg.absorb_trigs = htonl(absorb_trigs);
 
-#ifdef ENABLE_THREADING_SUPPORT  
-{
-  pgClientReturnData retData;
-  sem_init(&retData.sem, 0, 0);
-  _pg_add_request(PGREQ_MKINFILTER,&arg,sizeof(arg), (unsigned int)&retData, 1);
-  sem_wait(&retData.sem);
-  _pgdefault_rship = PG_DERIVE_AFTER;
-  _pgdefault_widget = retData.ret.e.retdata;
-  return retData.ret.e.retdata;
-}
-#else
   _pg_add_request(PGREQ_MKINFILTER,&arg,sizeof(arg));
 
   /* Because we need a result now, flush the buffer */
@@ -665,7 +429,6 @@ pghandle pgNewInFilter(pghandle insert_after, u32 accept_trigs, u32 absorb_trigs
   
   /* Return the new handle */
   return _pg_return.e.retdata;
-#endif  
 }
 
 void pgAttachWidget(pghandle parent, s16 rship, pghandle widget) {
@@ -676,12 +439,7 @@ void pgAttachWidget(pghandle parent, s16 rship, pghandle widget) {
    arg.parent = htonl(parent);   
    arg.rship  = htons(rship  ? rship  : _pgdefault_rship);
    
-#ifdef ENABLE_THREADING_SUPPORT
-  _pg_add_request(PGREQ_ATTACHWIDGET,&arg,sizeof(arg), -1, 0);
-#else  
   _pg_add_request(PGREQ_ATTACHWIDGET,&arg,sizeof(arg));
-#endif  
-   
 }
 
 
@@ -693,11 +451,7 @@ void pgInFilterSend(union pg_client_trigger *trig) {
   for (i=0;i<(sizeof(arg.trig.array)/sizeof(arg.trig.array[0]));i++)
     arg.trig.array[i] = htonl(trig->array[i]);
 
-#ifdef ENABLE_THREADING_SUPPORT
-  _pg_add_request(PGREQ_INFILTERSEND,&arg,sizeof(arg), -1, 0);
-#else  
   _pg_add_request(PGREQ_INFILTERSEND,&arg,sizeof(arg));
-#endif    
 }
 
 
@@ -714,18 +468,6 @@ pghandle pgNewWidget(s16 type, s16 rship,pghandle parent) {
   arg.parent = htonl(parent ? parent : _pgdefault_widget);
   arg.rship  = htons(rship  ? rship  : _pgdefault_rship);
 
-#ifdef ENABLE_THREADING_SUPPORT  
-{
-  pgClientReturnData retData;
-  sem_init(&retData.sem, 0, 0);
-  _pg_add_request(PGREQ_MKWIDGET,&arg,sizeof(arg), (unsigned int)&retData, 1);
-  sem_wait(&retData.sem);
-  _pgdefault_rship = PG_DERIVE_AFTER;
-  _pgdefault_widget = retData.ret.e.retdata;
-  return retData.ret.e.retdata;
-}
- 
-#else
   _pg_add_request(PGREQ_MKWIDGET,&arg,sizeof(arg));
 
   /* Because we need a result now, flush the buffer */
@@ -737,7 +479,6 @@ pghandle pgNewWidget(s16 type, s16 rship,pghandle parent) {
   
   /* Return the new handle */
   return _pg_return.e.retdata;
-#endif  
 }
 
 pghandle pgNewPopupAt(int x,int y,int width,int height) {
@@ -746,17 +487,7 @@ pghandle pgNewPopupAt(int x,int y,int width,int height) {
   arg.y = htons(y);
   arg.w = htons(width);
   arg.h = htons(height);
-#ifdef ENABLE_THREADING_SUPPORT
-{
-   pgClientReturnData retData;
-   sem_init(&retData.sem, 0, 0);
-   _pg_add_request(PGREQ_MKPOPUP,&arg,sizeof(arg), (unsigned int)&retData, 1);
-   sem_wait(&retData.sem);
-    _pgdefault_rship = PG_DERIVE_INSIDE;
-   _pgdefault_widget = retData.ret.e.retdata;
-   return retData.ret.e.retdata;
-}
-#else  
+
   _pg_add_request(PGREQ_MKPOPUP,&arg,sizeof(arg));
 
   /* Because we need a result now, flush the buffer */
@@ -768,7 +499,6 @@ pghandle pgNewPopupAt(int x,int y,int width,int height) {
   
   /* Return the new handle */
   return _pg_return.e.retdata;
-#endif  
 }
 
 pghandle pgNewFont(const char *name, s16 size, u32 style) {
@@ -781,15 +511,7 @@ pghandle pgNewFont(const char *name, s16 size, u32 style) {
     *arg.name = 0;
   arg.style = htonl(style);
   arg.size = htons(size);
-#ifdef ENABLE_THREADING_SUPPORT
-{
-   pgClientReturnData retData;
-   sem_init(&retData.sem, 0, 0);
-   _pg_add_request(PGREQ_MKFONT,&arg,sizeof(arg), (unsigned int)&retData, 1);
-   sem_wait(&retData.sem);
-   return retData.ret.e.retdata;
-}
-#else  
+
   _pg_add_request(PGREQ_MKFONT,&arg,sizeof(arg));
 
   /* Because we need a result now, flush the buffer */
@@ -797,7 +519,6 @@ pghandle pgNewFont(const char *name, s16 size, u32 style) {
 
   /* Return the new handle */
   return _pg_return.e.retdata;
-#endif  
 }
 
 pghandle pgNewPopup(int width,int height) {
@@ -817,26 +538,16 @@ pghandle pgNewBitmap(struct pgmemdata obj) {
 
      The current method is memory hungry when dealing with larger files.
   */
-#ifdef ENABLE_THREADING_SUPPORT
-{
-   pgClientReturnData retData;
-   sem_init(&retData.sem, 0, 0);
-   _pg_add_request(PGREQ_MKBITMAP,obj.pointer,obj.size, (unsigned int)&retData, 1);
-   sem_wait(&retData.sem);
-   return retData.ret.e.retdata;
-}
-#else  
+
   _pg_add_request(PGREQ_MKBITMAP,obj.pointer,obj.size);
 
   /* Because we need a result now, flush the buffer */
   pgFlushRequests();
 
+  _pg_free_memdata(obj);
+
   /* Return the property */
   return _pg_return.e.retdata;
-#endif
-  
-  _pg_free_memdata(obj);
-  
 }
 
 pghandle pgCreateBitmap(s16 width, s16 height) {
@@ -845,15 +556,6 @@ pghandle pgCreateBitmap(s16 width, s16 height) {
   arg.width = htons(width);
   arg.height = htons(height);
 
-#ifdef ENABLE_THREADING_SUPPORT
-{
-   pgClientReturnData retData;
-   sem_init(&retData.sem, 0, 0);
-   _pg_add_request(PGREQ_NEWBITMAP,&arg,sizeof(arg), (unsigned int)&retData, 1);
-   sem_wait(&retData.sem);
-   return retData.ret.e.retdata;
-}
-#else  
   _pg_add_request(PGREQ_NEWBITMAP,&arg,sizeof(arg));
 
   /* Because we need a result now, flush the buffer */
@@ -861,7 +563,6 @@ pghandle pgCreateBitmap(s16 width, s16 height) {
 
   /* Return the property */
   return _pg_return.e.retdata;
-#endif  
 }
 
 pghandle pgNewString(const char* str) {
@@ -870,15 +571,6 @@ pghandle pgNewString(const char* str) {
   /* Passing the NULL terminator to the server is redundant.
    * no need for a +1 on that strlen...
    */
-#ifdef ENABLE_THREADING_SUPPORT
-{
-   pgClientReturnData retData;
-   sem_init(&retData.sem, 0, 0);
-   _pg_add_request(PGREQ_MKSTRING,(void *) str,strlen(str), (unsigned int)&retData, 1);
-   sem_wait(&retData.sem);
-   return retData.ret.e.retdata;
-}
-#else  
   _pg_add_request(PGREQ_MKSTRING,(void *) str,strlen(str));
 
   /* Because we need a result now, flush the buffer */
@@ -886,7 +578,6 @@ pghandle pgNewString(const char* str) {
 
   /* Return the new handle */
   return _pg_return.e.retdata;
-#endif  
 }
 
 /* Works just like pgNewString :) */
@@ -896,15 +587,6 @@ pghandle pgFindWidget(const char* str) {
   /* Passing the NULL terminator to the server is redundant.
    * no need for a +1 on that strlen...
    */
-#ifdef ENABLE_THREADING_SUPPORT
-{
-   pgClientReturnData retData;
-   sem_init(&retData.sem, 0, 0);
-   _pg_add_request(PGREQ_FINDWIDGET,(void *) str,strlen(str), (unsigned int)&retData, 1);
-   sem_wait(&retData.sem);
-   return retData.ret.e.retdata;
-}
-#else
   _pg_add_request(PGREQ_FINDWIDGET,(void *) str,strlen(str));
 
   /* Because we need a result now, flush the buffer */
@@ -912,7 +594,6 @@ pghandle pgFindWidget(const char* str) {
 
   /* Return the new handle */
   return _pg_return.e.retdata;
-#endif  
 }
 
 /* Works just like pgNewString :) */
@@ -922,15 +603,6 @@ int pgFindThemeObject(const char* str) {
   /* Passing the NULL terminator to the server is redundant.
    * no need for a +1 on that strlen...
    */
-#ifdef ENABLE_THREADING_SUPPORT
-{
-   pgClientReturnData retData;
-   sem_init(&retData.sem, 0, 0);
-   _pg_add_request(PGREQ_FINDTHOBJ,(void *) str,strlen(str), (unsigned int)&retData, 1);
-   sem_wait(&retData.sem);
-   return retData.ret.e.retdata;
-}
-#else
   _pg_add_request(PGREQ_FINDTHOBJ,(void *) str,strlen(str));
 
   /* Because we need a result now, flush the buffer */
@@ -938,7 +610,6 @@ int pgFindThemeObject(const char* str) {
 
   /* Return the new handle */
   return _pg_return.e.retdata;
-#endif  
 }
 
 pghandle pgNewArray(const s32* dat, u16 size) {  
@@ -950,35 +621,15 @@ pghandle pgNewArray(const s32* dat, u16 size) {
   for (i=0;i<size;i++)
     swapped[i] = htonl(dat[i]);
 
-#ifdef ENABLE_THREADING_SUPPORT
-{
-   pgClientReturnData retData;
-   sem_init(&retData.sem, 0, 0);
-   _pg_add_request(PGREQ_MKARRAY,(void *) swapped, size * sizeof(s32), (unsigned int)&retData, 1);
-   sem_wait(&retData.sem);
-    return retData.ret.e.retdata;
-}
-#else  
   _pg_add_request(PGREQ_MKARRAY,(void *) swapped, size * sizeof(s32));  
   pgFlushRequests();  
   return _pg_return.e.retdata;
-#endif  
 }  
   
 pghandle pgEvalRequest(s16 reqtype, void *data, u32 datasize) {
-#ifdef ENABLE_THREADING_SUPPORT
-{
-   pgClientReturnData retData;
-   sem_init(&retData.sem, 0, 0);
-   _pg_add_request(reqtype,data,datasize, (unsigned int)&retData, 1);
-   sem_wait(&retData.sem);
-   return retData.ret.e.retdata;
-}
-#else   
   _pg_add_request(reqtype,data,datasize);
   pgFlushRequests();
   return _pg_return.e.retdata;
-#endif  
 }
 
 s32 pgGetWidget(pghandle widget, s16 property) {
@@ -986,15 +637,7 @@ s32 pgGetWidget(pghandle widget, s16 property) {
   arg.widget = htonl(widget ? widget : _pgdefault_widget);
   arg.property = htons(property);
   arg.dummy = 0;
-#ifdef ENABLE_THREADING_SUPPORT
-{
-  pgClientReturnData retData;
-  sem_init(&retData.sem, 0, 0);
-  _pg_add_request(PGREQ_GET,&arg,sizeof(arg), (unsigned int)&retData, 1);
-  sem_wait(&retData.sem);
-  return retData.ret.e.retdata;
-}
-#else  
+
   _pg_add_request(PGREQ_GET,&arg,sizeof(arg));
 
   /* Because we need a result now, flush the buffer */
@@ -1002,7 +645,6 @@ s32 pgGetWidget(pghandle widget, s16 property) {
 
   /* Return the property */
   return _pg_return.e.retdata;
-#endif  
 }
 
 pghandle pgTraverseWidget(pghandle widget, int direction, int count) {
@@ -1010,15 +652,7 @@ pghandle pgTraverseWidget(pghandle widget, int direction, int count) {
   arg.widget = htonl(widget);
   arg.direction = htons(direction);
   arg.count = htons(count);
-#ifdef ENABLE_THREADING_SUPPORT
-{
-  pgClientReturnData retData;
-  sem_init(&retData.sem, 0, 0);
-  _pg_add_request(PGREQ_TRAVERSEWGT,&arg,sizeof(arg), (unsigned int)&retData, 1);
-  sem_wait(&retData.sem);
-  return retData.ret.e.retdata;
-}
-#else  
+
   _pg_add_request(PGREQ_TRAVERSEWGT,&arg,sizeof(arg));
 
   /* Because we need a result now, flush the buffer */
@@ -1026,7 +660,6 @@ pghandle pgTraverseWidget(pghandle widget, int direction, int count) {
 
   /* Return the property */
   return _pg_return.e.retdata;
-#endif
 }
 
 /* Measure a piece of text in a font, in pixels */
@@ -1034,62 +667,31 @@ void pgSizeText(int *w,int *h,pghandle font,pghandle text) {
   struct pgreqd_sizetext arg;
   arg.text = htonl(text);
   arg.font = htonl(font);
-#ifdef ENABLE_THREADING_SUPPORT  
-{
-   pgClientReturnData retData;
-   sem_init(&retData.sem, 0, 0);
-   _pg_add_request(PGREQ_SIZETEXT,&arg,sizeof(arg), (unsigned int)&retData, 1);
-   sem_wait(&retData.sem);
-   if (w) *w = retData.ret.e.retdata >> 16;
-   if (h) *h = retData.ret.e.retdata & 0xFFFF;
-}
-#else  
+
   _pg_add_request(PGREQ_SIZETEXT,&arg,sizeof(arg));
    
   /* Get the return value */
   pgFlushRequests();
   if (w) *w = _pg_return.e.retdata >> 16;
   if (h) *h = _pg_return.e.retdata & 0xFFFF;
-#endif
-  
 }
 
 void pgSizeBitmap(int *w, int *h, pghandle bitmap) {
   bitmap = htonl(bitmap);
-#ifdef ENABLE_THREADING_SUPPORT    
-{
-  pgClientReturnData retData;
-  sem_init(&retData.sem, 0, 0);
-  _pg_add_request(PGREQ_SIZEBITMAP,&bitmap,sizeof(pghandle), (unsigned int)&retData, 1);
-  sem_wait(&retData.sem);
-  if (w) *w = retData.ret.e.retdata >> 16;
-  if (h) *h = retData.ret.e.retdata & 0xFFFF;
-}
-#else  
+
   _pg_add_request(PGREQ_SIZEBITMAP,&bitmap,sizeof(pghandle));
   /* Get the return value */
   pgFlushRequests();
   if (w) *w = _pg_return.e.retdata >> 16;
   if (h) *h = _pg_return.e.retdata & 0xFFFF;
-#endif  
 }
    
 /* Get the contents of a string handle. */
 char *pgGetString(pghandle string) {
   string = htonl(string);
-#ifdef ENABLE_THREADING_SUPPORT      
-{
-   pgClientReturnData retData;
-   sem_init(&retData.sem, 0, 0);
-   _pg_add_request(PGREQ_GETSTRING,&string,sizeof(pghandle), (unsigned int)&retData, 1);
-   sem_wait(&retData.sem);
-   return retData.ret.e.data.data;
-}
-#else
   _pg_add_request(PGREQ_GETSTRING,&string,sizeof(pghandle));
   pgFlushRequests();
   return _pg_return.e.data.data;
-#endif  
 }
 
 struct pgshmbitmap *pgMakeSHMBitmap(pghandle bitmap) {
@@ -1135,19 +737,9 @@ int pgGetFontStyle(s16 index, char *name, u16 *size,
 
   arg.index = htons(index);
   arg.dummy = 0;
-#ifdef ENABLE_THREADING_SUPPORT        
-{
-   pgClientReturnData retData;
-   sem_init(&retData.sem, 0, 0);
-   _pg_add_request(PGREQ_GETFSTYLE,&arg,sizeof(arg), (unsigned int)&retData, 1);
-   sem_wait(&retData.sem);
-   gfs = (struct pgdata_getfstyle *) retData.ret.e.data.data;
-}
-#else  
   _pg_add_request(PGREQ_GETFSTYLE,&arg,sizeof(arg));
   pgFlushRequests();
   gfs = (struct pgdata_getfstyle *) _pg_return.e.data.data;
-#endif
   
   if (name)
     strcpy(name,gfs->name);
@@ -1164,19 +756,9 @@ int pgGetFontStyle(s16 index, char *name, u16 *size,
 /* Get video mode data */
 struct pgmodeinfo *pgGetVideoMode(void) {
   struct pgmodeinfo *mi;
-#ifdef ENABLE_THREADING_SUPPORT          
-{
-    pgClientReturnData retData;
-    sem_init(&retData.sem, 0, 0);
-    _pg_add_request(PGREQ_GETMODE,NULL,0, (unsigned int)&retData, 1);
-    sem_wait(&retData.sem);
-    mi = (struct pgmodeinfo *) retData.ret.e.data.data;
-}
-#else
   _pg_add_request(PGREQ_GETMODE,NULL,0);
   pgFlushRequests();
   mi = (struct pgmodeinfo *) _pg_return.e.data.data;   
-#endif
   
   /* Convert byte order */
   mi->flags = ntohl(mi->flags);
@@ -1193,11 +775,7 @@ void pgDriverMessage(u32 message, u32 param) {
   struct pgreqd_drivermsg arg;
   arg.message = htonl(message);
   arg.param = htonl(param);
-#ifdef ENABLE_THREADING_SUPPORT            
-  _pg_add_request(PGREQ_DRIVERMSG,&arg,sizeof(arg), -1, 0);
-#else  
   _pg_add_request(PGREQ_DRIVERMSG,&arg,sizeof(arg));
-#endif  
 }
 
 
@@ -1239,11 +817,7 @@ void pgWriteData(pghandle widget,struct pgmemdata data) {
   if (!(buf = _pg_malloc(data.size+4))) return;
   *buf = htonl(widget ? widget : _pgdefault_widget);
   memcpy(buf+1,data.pointer,data.size);
-#ifdef ENABLE_THREADING_SUPPORT              
-  _pg_add_request(PGREQ_WRITETO,buf,data.size+4, -1, 0);
-#else  
   _pg_add_request(PGREQ_WRITETO,buf,data.size+4);
-#endif
   _pg_free_memdata(data);
   free(buf);
 }
@@ -1303,11 +877,7 @@ void pgRender(pghandle bitmap, s16 groptype, ...) {
     params++;
   }
   va_end(v);
-#ifdef ENABLE_THREADING_SUPPORT                
-  _pg_add_request(PGREQ_RENDER,arg,size, -1, 0);
-#else  
   _pg_add_request(PGREQ_RENDER,arg,size);
-#endif  
 }
 
 pghandle pgLoadDriver(const char *name) {
@@ -1316,15 +886,6 @@ pghandle pgLoadDriver(const char *name) {
   /* Passing the NULL terminator to the server is redundant.
    * no need for a +1 on that strlen...
    */
-#ifdef ENABLE_THREADING_SUPPORT
-{
-   pgClientReturnData retData;
-   sem_init(&retData.sem, 0, 0);
-   _pg_add_request(PGREQ_LOADDRIVER,(void *) name,strlen(name), (unsigned int)&retData, 1);
-   sem_wait(&retData.sem);
-   return retData.ret.e.retdata;
-}
-#else  
   _pg_add_request(PGREQ_LOADDRIVER,(void *) name,strlen(name));
 
   /* Because we need a result now, flush the buffer */
@@ -1332,24 +893,13 @@ pghandle pgLoadDriver(const char *name) {
 
   /* Return the new handle */
   return _pg_return.e.retdata;
-#endif  
 }
 
 pghandle pgDup(pghandle object) {
   object = htonl(object);
-#ifdef ENABLE_THREADING_SUPPORT
-{
-   pgClientReturnData retData;
-   sem_init(&retData.sem, 0, 0);
-   _pg_add_request(PGREQ_DUP,&object,sizeof(object), (unsigned int)&retData, 1);
-   sem_wait(&retData.sem);
-   return retData.ret.e.retdata;
-}
-#else  
   _pg_add_request(PGREQ_DUP,&object,sizeof(object));
   pgFlushRequests();
   return _pg_return.e.retdata;
-#endif  
 }
 
 void pgChangeContext(pghandle object, s16 delta) {
@@ -1357,30 +907,15 @@ void pgChangeContext(pghandle object, s16 delta) {
   arg.handle = htonl(object);
   arg.delta  = htons(delta);
   arg.dummy  = 0;
-#ifdef ENABLE_THREADING_SUPPORT
-  _pg_add_request(PGREQ_CHCONTEXT,&arg,sizeof(arg), -1, 0);
-#else  
   _pg_add_request(PGREQ_CHCONTEXT,&arg,sizeof(arg));
-#endif  
 }
 
 int pgCheckEvent(void) {
-#ifdef ENABLE_THREADING_SUPPORT   
-{
-   pgClientReturnData retData;
-   sem_init(&retData.sem, 0, 0);
-   _pg_add_request(PGREQ_CHECKEVENT,NULL,0, -1, 1);
-   sem_wait(&retData.sem);
-   return retData.ret.e.retdata;
-}
-#else 
   _pg_add_request(PGREQ_CHECKEVENT,NULL,0);
   pgFlushRequests();
   return _pg_return.e.retdata;
-#endif  
 }
 
-#ifndef ENABLE_THREADING_SUPPORT   
 void pgEventPoll(void) {
   /* This is like pgEventLoop, but completely nonblocking */
   
@@ -1389,7 +924,6 @@ void pgEventPoll(void) {
     pgDispatchEvent(&evt);
   }
 }
-#endif
 
 /* This is almost exacly like pgWriteData */
 void pgAppMessage(pghandle dest, struct pgmemdata data) {
@@ -1402,11 +936,7 @@ void pgAppMessage(pghandle dest, struct pgmemdata data) {
   *buf = htonl(dest);
   memcpy(buf+1,data.pointer,data.size);
   
-#ifdef ENABLE_THREADING_SUPPORT   
-  _pg_add_request(PGREQ_APPMSG,buf,data.size+4, -1, 1);
-#else  
   _pg_add_request(PGREQ_APPMSG,buf,data.size+4);
-#endif
   
   _pg_free_memdata(data);
   free(buf);

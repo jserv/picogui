@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.57 2002/07/03 22:03:32 micahjd Exp $
+/* $Id: popup.c,v 1.58 2002/07/28 17:06:49 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -7,8 +7,6 @@
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
- * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.
- * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
  *   
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

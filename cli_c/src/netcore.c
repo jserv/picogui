@@ -1,13 +1,10 @@
-/* $Id: netcore.c,v 1.36 2002/07/28 16:40:10 micahjd Exp $
+/* $Id: netcore.c,v 1.37 2002/07/28 17:06:48 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
- * Thread-safe code added by RidgeRun Inc.
- * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
- * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -33,18 +30,6 @@
 #include <ctype.h>
 #include <stdlib.h>    /* for atol() */
 #include <errno.h>
-
-#ifdef ENABLE_THREADING_SUPPORT
-#include <pthread.h>
-static sem_t _pgreqbufferSem;
-static void pgFlushRequests(void);
-static pthread_t idleLoopThread;
-static pthread_t eventLoopThread;
-static sem_t idleLoopSem;
-static sem_t eventLoopSem;
-static struct pgEvent pgEventThreadEvent;
-static void *pgDispatchEvent(void *na);
-#endif
 
 /* Global vars for the client lib */
 int _pgsockfd;                  /* Socket fd to the pgserver */
@@ -158,11 +143,7 @@ int _pg_recvtimeout(s16 *rsptype) {
       * PGREQ_PING takes us off the waiting list. Wait for a return code: if it's an event,
       * Go ahead and return it. (There will still be a return packet on it's way, but
       * we skip that) If it's a return packet, ignore it and go on with the idle handler */
-#ifdef ENABLE_THREADING_SUPPORT
-     _pg_add_request(PGREQ_PING, NULL, 0, -1, 1);
-#else
      _pg_send(&unwaitreq,sizeof(unwaitreq));
-#endif     
      if (_pg_recv(rsptype,sizeof(s16)))
        return 1;
      if ((*rsptype) == htons(PG_RESPONSE_EVENT))
@@ -174,10 +155,7 @@ int _pg_recvtimeout(s16 *rsptype) {
       
      /* At this point either it was a client-defined fd or a timeout.
 	Either way we need to kickstart the event loop. */
-#ifdef ENABLE_THREADING_SUPPORT
-      sem_post(&idleLoopSem);
-      _pg_add_request(PGREQ_WAIT, NULL, 0, -1, 1);
-#else      
+
      /* At this point, it's safe to make PicoGUI API calls. */
      if (_pgselect_bottomhalf)
        (*_pgselect_bottomhalf)(result,&readfds,&writefds,&exceptfds);
@@ -186,7 +164,6 @@ int _pg_recvtimeout(s16 *rsptype) {
      /* Clear the pipes... */
      pgFlushRequests();
      _pg_send(&waitreq,sizeof(waitreq));  /* Kickstart the event loop */
-#endif     
   }
 }
    
@@ -264,19 +241,11 @@ void _pgsig(int sig) {
 }
 
 /* Put a request into the queue */
-#ifdef ENABLE_THREADING_SUPPORT
-void _pg_add_request(s16 reqtype,void *data,u32 datasize, unsigned int id, unsigned char flush) {
-#else   
 void _pg_add_request(s16 reqtype,void *data,u32 datasize) {
-#endif
    
   struct pgrequest *newhdr;
   int padding;
 
-#ifdef ENABLE_THREADING_SUPPORT  
-  sem_wait(&_pgreqbufferSem);
-#endif
-  
   /* If this will overflow the buffer, flush it and send this packet
    * individually. This has two possible uses:
    *    - there are many packets in the buffer, so it flushes them 
@@ -292,11 +261,7 @@ void _pg_add_request(s16 reqtype,void *data,u32 datasize) {
 
     /* Send this one */
     req.type = htons(reqtype);
-#ifdef ENABLE_THREADING_SUPPORT
-    req.id = id;
-#else    
     req.id = ++_pgrequestid;
-#endif    
     req.size = htonl(datasize);
     _pg_send(&req,sizeof(struct pgrequest));
     _pg_send(data,datasize);
@@ -305,35 +270,18 @@ void _pg_add_request(s16 reqtype,void *data,u32 datasize) {
     printf("Forced buffer flush. New request: type = %d, size = %d\n",reqtype,datasize);
 #endif
 
-#ifdef ENABLE_THREADING_SUPPORT
-    //
-    // Flush the buffer if the event loop is *not* started
-    //
-    if ( !_pgeventloop_on )
-       _pg_getresponse(0);
-
-    sem_post(&_pgreqbufferSem);
-#else    
-    _pg_getresponse(0);
-#endif
-    
+    _pg_getresponse(0);    
     return;
   } 
 
   padding = _pgreqbuffer_size & 3;  
-#ifdef ENABLE_THREADING_SUPPORT
-  if (padding) {
-     fprintf(stderr, "What the heck is this.  The server does not take into account this padding!\n");
-     exit(-1);
-  }
-#else  
+
   /* Pad the request buffer to a 32-bit boundary */
   if (padding) {
     padding = 4-padding;
     memset(_pgreqbuffer + _pgreqbuffer_size, 0, padding);
     _pgreqbuffer_size += padding;
   }
-#endif
   
   /* Find a good place for the new header in the buffer and fill it in */
   newhdr = (struct pgrequest *) (_pgreqbuffer + _pgreqbuffer_size);
@@ -341,11 +289,7 @@ void _pg_add_request(s16 reqtype,void *data,u32 datasize) {
   _pgreqbuffer_size += sizeof(struct pgrequest);
   _pgreqbuffer_lasttype = reqtype;
   newhdr->type = htons(reqtype);
-#ifdef ENABLE_THREADING_SUPPORT
-  newhdr->id = id;
-#else  
   newhdr->id = ++_pgrequestid;
-#endif  
   newhdr->size = htonl(datasize);
 
 #ifdef DEBUG
@@ -354,18 +298,7 @@ void _pg_add_request(s16 reqtype,void *data,u32 datasize) {
 
   /* Now the data */
   memcpy(_pgreqbuffer + _pgreqbuffer_size,data,datasize);
-  _pgreqbuffer_size += datasize;
-
-#ifdef ENABLE_THREADING_SUPPORT  
-  //
-  // If intentional flush is set, flush the buffer
-  //
-  if ( flush )
-     pgFlushRequests();
-  
-  sem_post(&_pgreqbufferSem);
-#endif
-  
+  _pgreqbuffer_size += datasize;  
 }
 
 void _pg_getresponse(int eventwait) {
@@ -377,13 +310,8 @@ void _pg_getresponse(int eventwait) {
    * so handle the idling here.
    */
 
-#ifdef ENABLE_THREADING_SUPPORT
-  if ( eventwait && ( (_pgidle_period.tv_sec + _pgidle_period.tv_usec) || 
-		      (_pgselect_handler != &select) ) ) {
-#else     
   if ( eventwait && ( ((_pgidle_period.tv_sec + _pgidle_period.tv_usec)&&!_pgidle_lock) ||
 		      (_pgselect_handler != &select) ) ) {
-#endif       
      
     /* Use the interruptable wait (only for event waits!) */
     switch (_pg_recvtimeout(&_pg_return.type)) {
@@ -411,50 +339,6 @@ void _pg_getresponse(int eventwait) {
 
   switch (_pg_return.type) {
 
-#ifdef ENABLE_THREADING_SUPPORT
-  case PG_RESPONSE_ERR:
-    {
-      /* Error */
-      struct pgresponse_err pg_err;
-      char *msg;
-      pg_err.type = _pg_return.type;
-      
-      //
-      // Read the rest of the return error.  Don't panic if we can't read it all
-      //
-      if ( ! _pg_recv(((char*)&pg_err)+sizeof(_pg_return.type), sizeof(pg_err)-sizeof(_pg_return.type)) ) {
-
-         pg_err.errt = ntohs(pg_err.errt);
-         pg_err.msglen = ntohs(pg_err.msglen);
-         
-         /* Dynamically allocated buffer for the error message */ 
-         msg = alloca(pg_err.msglen+1);
-
-         //
-         // Read the message
-         //
-         if( !_pg_recv(msg,pg_err.msglen)) {
-            msg[pg_err.msglen] = 0;
-         }
-         
-         (*_pgerrhandler)(pg_err.errt,msg);
-
-         //
-         // If a proper id, extract the semaphore and post
-         //
-         if ( pg_err.id != -1 ) {
-            
-            pgClientReturnData *crd = (pgClientReturnData *)pg_err.id;
-            crd->ret.type = pg_err.type;
-            sem_post(&crd->sem);
-         
-         }  // End of reading the error packet
-      
-      }
-    }
-    break;
-
-#else     
   case PG_RESPONSE_ERR:
     {
       /* Error */
@@ -479,43 +363,7 @@ void _pg_getresponse(int eventwait) {
       (*_pgerrhandler)(pg_err.errt,msg);
     }
     break;
-#endif
 
-#ifdef ENABLE_THREADING_SUPPORT
-  case PG_RESPONSE_RET:
-    {
-      /* Return value */
-      struct pgresponse_ret pg_ret;
-      pg_ret.type = _pg_return.type;
-      
-      //
-      // Read the rest of the return error.  Don't panic if we can't read it all
-      //
-      if ( !_pg_recv(((char*)&pg_ret)+sizeof(_pg_return.type), sizeof(pg_ret)-sizeof(_pg_return.type)) ) {
-
-         if ( pg_ret.id != -1 ) {
-
-            pgClientReturnData *crd = (pgClientReturnData *)pg_ret.id;
-            crd->ret.type = pg_ret.type;
-            crd->ret.e.retdata = ntohl(pg_ret.data);
-            sem_post(&crd->sem);
-            
-         }  // End of client API call response handling
-         else {
-
-            //
-            // I don't think I need this stuff, because this case should only be necessary for the event loop, but
-            // .....
-            //
-            _pg_return.e.retdata = ntohl(pg_ret.data);
-         }
-         
-      }  // End of reading response packet
-
-    }
-    break;
-
-#else    
   case PG_RESPONSE_RET:
     {
       /* Return value */
@@ -530,7 +378,6 @@ void _pg_getresponse(int eventwait) {
       _pg_return.e.retdata = ntohl(pg_ret.data);
     }
     break;
-#endif
     
   case PG_RESPONSE_EVENT:
     {
@@ -611,61 +458,6 @@ void _pg_getresponse(int eventwait) {
     }
     break;
 
-#ifdef ENABLE_THREADING_SUPPORT
-  case PG_RESPONSE_DATA:
-    {
-      /* Something larger- return it in a dynamically allocated buffer */
-      struct pgresponse_data pg_data;
-      pg_data.type = _pg_return.type;
-      
-      //
-      // Read the rest of the return error.  Don't panic if we can't read it all
-      //
-      if ( !_pg_recv(((char*)&pg_data)+sizeof(_pg_return.type), sizeof(pg_data)-sizeof(_pg_return.type)) )
-
-         //
-         // Is this a client API call?
-         //
-         if ( pg_data.id != -1 ) {
-
-            pgClientReturnData *crd = (pgClientReturnData *)pg_data.id;
-            crd->ret.type = pg_data.type;            
-            crd->ret.e.data.size = ntohl(pg_data.size);
-
-            //
-            // Allocate return data
-            //
-            if ( (crd->ret.e.data.data = _pg_malloc(pg_data.size)) ) {
-
-               //
-               // Receive the data into the buffer.  Add a null terminator because the original pgui code did ;)
-               //
-               _pg_recv(crd->ret.e.data.data, crd->ret.e.data.size);
-               ((char *)crd->ret.e.data.data)[crd->ret.e.data.size] = 0;
-            }
-
-            sem_post(&crd->sem);            
-
-         }  // End of Client API processing
-         else {
-
-            //
-            // Don't know if this case is really valid, since the event loop should not receive and handle these
-            // types of responses, but I'll do this anyway.
-            //
-            _pg_return.e.data.size = ntohl(pg_data.size);
-            if (!(_pg_return.e.data.data = _pg_malloc(_pg_return.e.data.size+1))) {
-               if (_pg_recv(_pg_return.e.data.data,_pg_return.e.data.size)) {
-                  /* Add a null terminator */
-                  ((char *)_pg_return.e.data.data)[_pg_return.e.data.size] = 0;
-               }
-            }
-         }  
-
-    }   // End of handling PG_RESPONSE_DATA
-    break;
-
-#else    
   case PG_RESPONSE_DATA:
     {
       /* Something larger- return it in a dynamically allocated buffer */
@@ -689,13 +481,11 @@ void _pg_getresponse(int eventwait) {
       ((char *)_pg_return.e.data.data)[_pg_return.e.data.size] = 0;
     }
     break;
-#endif
     
   default:
       clienterr("Unexpected response type");
   }
 
-#ifndef ENABLE_THREADING_SUPPORT   
 #ifdef DEBUG
   if(rsp_id && (rsp_id != _pgrequestid)) {
     /* ID mismatch. This shouldn't happen, but if it does it's probably
@@ -710,7 +500,6 @@ void _pg_getresponse(int eventwait) {
      printf("Event is %d after case\n",
 	    _pg_return.e.event.type);
 #endif
-#endif  //    ENABLE_THREADING_SUPPORT
 
    /* If there was an extra packet (left over from a 'ping') 
     * we should suck that up now
@@ -765,15 +554,6 @@ char * _pg_dynformat(const char *fmt,va_list ap) {
 }
 
 /* Idle handler */
-#ifdef ENABLE_THREADING_SUPPORT
-void * _pg_idle(void *na) {
-   while (1) {
-      sem_wait(&idleLoopSem);
-      if ( _pgidle_handler)
-         (*_pgidle_handler)();
-   }
-}
-#else   
 void _pg_idle(void) {
 #if 0
   struct timeval now, elapsed;
@@ -808,8 +588,6 @@ void _pg_idle(void) {
   _pgidle_lock = 0;
 }
 
-#endif  //  ENABLE_THREADING_SUPPORT
- 
 /******************* API functions */
 
 /* Open a connection to the server, parsing PicoGUI commandline options
@@ -872,7 +650,7 @@ void pgInit(int argc, char **argv)
 	
 	else if (!strcmp(arg,"version")) {
 	  /* --pgversion : For now print CVS id */
-	  fprintf(stderr,"$Id: netcore.c,v 1.36 2002/07/28 16:40:10 micahjd Exp $\n");
+	  fprintf(stderr,"$Id: netcore.c,v 1.37 2002/07/28 17:06:48 micahjd Exp $\n");
 	  exit(1);
 	}
 	
@@ -1027,18 +805,6 @@ void pgInit(int argc, char **argv)
     else
       _pg_appletbox = pgFindWidget(appletparam);
   }
-
-#ifdef ENABLE_THREADING_SUPPORT
-   //
-   // Setup the _pgreqbuffer semaphore as a MUTEX
-   //
-   sem_init(&_pgreqbufferSem, 0, 1 /* initial value */);
-   sem_init(&idleLoopSem, 0, 0);
-   sem_init(&eventLoopSem, 0, 0);
-   pthread_create(&idleLoopThread, NULL, _pg_idle, NULL);
-   pthread_create(&eventLoopThread, NULL, pgDispatchEvent, NULL);
-#endif
-   
 }
 
 void pgSetErrorHandler(void (*handler)(u16 errortype,
@@ -1085,62 +851,6 @@ pgidlehandler pgSetIdle(s32 t,pgidlehandler handler) {
   efficient than a static variable in the function that must be passed out as
   a pointer) I believe in niceness for APIs and efficiency for the guts 8-)
 */
-#ifdef ENABLE_THREADING_SUPPORT
-void pgFlushRequests(void) {
-
-  //
-  // Send something if we've got something
-  //
-  if ( _pgreqbuffer_count > 0 ) {
-     
-     //
-     // Two cases.  If we've got one packet, just send the one.  Else we've got many requests, batch
-     // them.
-     //
-     if ( _pgreqbuffer_count == 1 ) {
-        _pg_send(_pgreqbuffer,_pgreqbuffer_size);
-     }
-     else {
-
-        /* Many packets - use a batch packet */
-        struct pgrequest batch_header;
-        unsigned char *ptr = _pgreqbuffer;
-        struct pgrequest *req;
-        int index = 1;
-
-        batch_header.type = htons(PGREQ_BATCH);
-
-        //
-        // In the case of batch, the id needs to be that of the previous entry
-        //
-        while ( index < _pgreqbuffer_count ) {
-           req = (struct pgrequest *)ptr;
-           ptr += (sizeof(struct pgrequest) + ntohl(req->size));
-           ++index;
-        }
-
-        batch_header.id = ((struct pgrequest *)ptr)->id;
-        batch_header.size = htonl(_pgreqbuffer_size);
-        _pg_send(&batch_header,sizeof(batch_header));
-        _pg_send(_pgreqbuffer,_pgreqbuffer_size);
-    }
-
-    /* Reset buffer */
-    _pgreqbuffer_size = _pgreqbuffer_count = 0;
-    
-    //
-    // Flush the buffer if the event loop is *not* started
-    //
-    if ( !_pgeventloop_on ) {
-      /* Need a response packet back... If the last packet added to the buffer was a 'wait',
-       * flag _pg_getresponse that it's ok to run idle handlers and select handlers. */
-      _pg_getresponse(_pgreqbuffer_lasttype == PGREQ_WAIT);
-    }
-
-  }  // End if _pgreqbuffer_count > 0
-
-}  // End of pgFlushRequests
-#else 
 void pgFlushRequests(void) {
 
 #ifdef DEBUG
@@ -1188,86 +898,7 @@ void pgFlushRequests(void) {
    * flag _pg_getresponse that it's ok to run idle handlers and select handlers. */
   _pg_getresponse(_pgreqbuffer_lasttype == PGREQ_WAIT);
 }
-#endif // ENABLE_THREADING_SUPPORT
 
-#ifdef ENABLE_THREADING_SUPPORT
-void *pgDispatchEvent(void *na) {
-  struct _pghandlernode *n;
-  struct pgEvent *currentEvent;
-  
-  /* Search the handler list, executing the applicable ones */
-
-  //
-  // Top-level loop forever
-  //
-  while ( 1 ) {
-
-     //
-     // Sync with the system.  Only run this handler when prompted to do so
-     //
-     sem_wait(&eventLoopSem);
-     currentEvent = &pgEventThreadEvent;
-     
-     //
-     // Get pointer to the handler list & search it
-     //
-     n = _pghandlerlist;
-     while (n) {
-        
-       if ( (((s32)n->widgetkey)==PGBIND_ANY || n->widgetkey==currentEvent->from) &&
-	         (((s16)n->eventkey)==PGBIND_ANY || n->eventkey==currentEvent->type) ) {
-
-          //
-          // Found an event.  Process it
-          //
-          currentEvent->extra = n->extra;
-
-          //
-          // Run the event handler if present.  If the event handler returns something other than 0,
-          // don't check for any more handlers for this input.
-          //
-          if ( n->handler(currentEvent) )
-             break;   // Break out of inner loop
-          
-       }  // End of if found event
-       
-       //
-       // Goto the next possible handler
-       //
-       n = n->next;
-
-     }  // End of handler iteration
-  
-     /* Various default actions */
-  
-     if (currentEvent->type == PG_WE_CLOSE)
-        exit(0);
-
-  }  // End of forever event loop
-  
-} // End of pgDispatchEvent
- 
-/* This is called after the app finishes it's initialization.
-   It waits for events, and dispatches them to the functions they're
-   bound to.
-*/
-void pgEventLoop(void) {
-
-  _pgeventloop_on = 1;
-
-  while (_pgeventloop_on) {
-
-    /* Wait for and event and save a copy
-     * (a handler might call pgFlushRequests and overwrite it) */
-
-    pgGetEvent();
-    memcpy(&pgEventThreadEvent, &_pg_return.e.event, sizeof(struct pgEvent));
-    sem_post(&eventLoopSem);
-
-  }
-}
-
-#else 
 /* This is called after the app finishes it's initialization.
    It waits for events, and dispatches them to the functions they're
    bound to.
@@ -1316,31 +947,9 @@ void pgDispatchEvent(struct pgEvent *evt) {
   if (evt->type == PG_WE_CLOSE)
     exit(0);
 }
-#endif
  
 void pgExitEventLoop(void) { _pgeventloop_on=0; }
 
-#ifdef ENABLE_THREADING_SUPPORT
-struct pgEvent *pgGetEvent(void) {
-  
-  //
-  // Run the idle loop.
-  //
-  sem_post(&idleLoopSem);
-  
-  /* Update before waiting for the user */
-  pgUpdate();
-
-  /* Wait for a new event */
-  do {
-     _pg_add_request(PGREQ_WAIT,NULL,0, -1, 1);
-     _pg_getresponse(1);
-  } while (_pg_return.type != PG_RESPONSE_EVENT);
-
-  return &_pg_return.e.event;
-  
-}
-#else 
 struct pgEvent *pgGetEvent(void) {
 
   /* Run the idle handler here too, so it still gets a chance
@@ -1358,8 +967,6 @@ struct pgEvent *pgGetEvent(void) {
 
   return &_pg_return.e.event;
 }
-
-#endif // ENABLE_THREADING_SUPPORT
  
 /* Add the specified handler to the list */
 void pgBind(pghandle widgetkey,s16 eventkey,
@@ -1431,16 +1038,5 @@ void pgCustomizeSelect(pgselecthandler handler, pgselectbh bottomhalf) {
     _pgselect_bottomhalf = NULL;
   }
 }
- 
-#ifdef ENABLE_THREADING_SUPPORT 
-void pgEventPoll(void) {
-  /* This is like pgEventLoop, but completely nonblocking */
-  
-  while (pgCheckEvent()) {
-    pgGetEvent();
-    sem_post(&eventLoopSem);    
-  }
-}
-#endif
  
 /* The End */

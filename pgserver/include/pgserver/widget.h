@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.63 2002/07/03 22:03:29 micahjd Exp $
+/* $Id: widget.h,v 1.64 2002/07/28 17:06:49 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -6,8 +6,6 @@
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
- * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.
- * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.   
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

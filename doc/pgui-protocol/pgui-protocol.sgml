@@ -2695,7 +2695,6 @@ chbtn = (<structfield>pgresponse_event.param</> &gt;&gt; 28) &amp; 0xF;
   <row><entry>PGTH_O_RADIOBUTTON_ON_NOHILIGHT</><entry>56</><entry>Radio button (cust. button)</></>
   <row><entry>PGTH_O_TEXTBOX</><entry>57</><entry>Textbox widget</></>
   <row><entry>PGTH_O_TERMINAL</><entry>58</><entry>Terminal widget</></>
-  <row><entry>PGTH_O_LIST</><entry>59</><entry>RidgeRun's list box widget</></>
   <row><entry>PGTH_O_MENUBUTTON</><entry>60</><entry>DSPLinux Application Menu</></>
   <row><entry>PGTH_O_MENUBUTTON_ON</><entry>61</><entry>DSPLinux Application Menu</></>
   <row><entry>PGTH_O_MENUBUTTON_HILIGHT</><entry>62</><entry>DSPLinux Application Menu</></>

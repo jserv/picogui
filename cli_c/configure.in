@@ -51,17 +51,6 @@ AC_ARG_ENABLE(bee,
 
 AM_CONDITIONAL(ENABLE_BEE, test "${enable_bee}" = "yes")
 
-dnl Check for threading support
-threading_enable=no
-AC_ARG_ENABLE(threading,
-        [ --enable-threading            enable threading support (default disabled)],
-        test $enable_threading = "yes" && threading_enable=yes,
-        )
-
-if test "$threading_enable" = "yes"; then
-   CFLAGS="$CFLAGS -DENABLE_THREADING_SUPPORT"
-fi
-
 dnl Check for UNIX sockets
 unix_sockets_enabled="no"
 AC_ARG_ENABLE(unix-sockets,

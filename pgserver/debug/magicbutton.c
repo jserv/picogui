@@ -1,11 +1,9 @@
-/* $Id: magicbutton.c,v 1.10 2002/05/22 09:26:32 micahjd Exp $
+/* $Id: magicbutton.c,v 1.11 2002/07/28 17:06:49 micahjd Exp $
  *
  * magicbutton.c - CTRL-ALT-foo is magical
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
- * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.
- * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
  *    
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,4 +1,4 @@
-/* $Id: libpg_dirview.c,v 1.1 2002/07/08 04:29:43 bauermeister Exp $
+/* $Id: libpg_dirview.c,v 1.2 2002/07/28 17:06:48 micahjd Exp $
  *
  * libpg_dirview - A directory browser based on the source code of cli_c's
  *                 dlg_filepicker.c
@@ -15,9 +15,6 @@
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
- * Thread-safe code added by RidgeRun Inc.
- * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
- * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -289,10 +286,6 @@ dirview_pathmenu(struct filepickdata *dat)
   int ret;
   int i;
   struct stat st;
-#ifdef ENABLE_THREADING_SUPPORT
-  pgClientReturnData retData;
-  sem_init(&retData.sem, 0, 0);
-#endif
   
   /* Create the menu popup in its own context */
   pgEnterContext();
@@ -346,17 +339,9 @@ dirview_pathmenu(struct filepickdata *dat)
     if (p==items)
       str = pgNewString("/");   /* Root directory */
     else {
-#ifdef ENABLE_THREADING_SUPPORT       
-      _pg_add_request(PGREQ_MKSTRING,(void *) items,p-items, (unsigned int)&retData, 1);
-      sem_wait(&retData.sem);
-      str = retData.ret.e.retdata;
-#else      
       _pg_add_request(PGREQ_MKSTRING,(void *) items,p-items);
       pgFlushRequests();
       str = _pg_return.e.retdata;      
-#endif      
-
-
     }
     items = p+1;
 

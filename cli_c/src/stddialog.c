@@ -1,4 +1,4 @@
-/* $Id: stddialog.c,v 1.15 2002/05/22 09:26:31 micahjd Exp $
+/* $Id: stddialog.c,v 1.16 2002/07/28 17:06:48 micahjd Exp $
  *
  * stddialog.c - Various preconstructed dialog boxes the application
  *               may use. These are implemented 100% client-side using
@@ -6,9 +6,6 @@
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
- *
- * Thread-safe code added by RidgeRun Inc.
- * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -177,11 +174,7 @@ int pgMenuFromString(char *items) {
   pghandle str;
   int ret;
   int i;
-#ifdef ENABLE_THREADING_SUPPORT  
-  pgClientReturnData retData;
-  sem_init(&retData.sem, 0, 0);
-#endif
-  
+
   if (!items || !*items) return 0;
 
   /* Create the menu popup in its own context */
@@ -195,17 +188,9 @@ int pgMenuFromString(char *items) {
      * length instead of having strlen() do it for us.
      */
     if (!(p = strchr(items,'|'))) p = items + strlen(items);
-#ifdef ENABLE_THREADING_SUPPORT
-    _pg_add_request(PGREQ_MKSTRING,(void *) items,p-items, (unsigned int)&retData, 1);
-#else    
     _pg_add_request(PGREQ_MKSTRING,(void *) items,p-items);
-#endif
     items = p+1;
-#ifdef ENABLE_THREADING_SUPPORT    
-    sem_wait(&retData.sem);
-#else    
     pgFlushRequests();
-#endif    
     str = _pg_return.e.retdata;
 
     /* Create each menu item */
@@ -230,11 +215,7 @@ int pgMenuFromString(char *items) {
  *                 context will be entered before the
  *                 string handles are created
  */
-#ifdef ENABLE_THREADING_SUPPORT
-int pgMenuFromArray(pghandle *items,int numitems, pgevthandler handler) {
-#else
 int pgMenuFromArray(pghandle *items,int numitems) {
-#endif  
   int i;
   pghandle returnHandle;
   returnHandle = pgNewPopupAt(PG_POPUP_ATEVENT,PG_POPUP_ATEVENT,0,0);
@@ -247,13 +228,8 @@ int pgMenuFromArray(pghandle *items,int numitems) {
     pgSetPayload(PGDEFAULT,i+1);
   }
 
-#ifdef ENABLE_THREADING_SUPPORT
-  pgUpdate();
-  pgBind(PGBIND_ANY, PGBIND_ANY, handler, returnHandle);
-#else  
   /* Return event */
   return pgGetPayload(pgGetEvent()->from);
-#endif  
 }
 
 /* Like a messge dialog, with an input field */

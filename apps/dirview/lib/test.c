@@ -1,4 +1,4 @@
-/* $Id: test.c,v 1.2 2002/07/16 19:45:07 bauermeister Exp $
+/* $Id: test.c,v 1.3 2002/07/28 17:06:48 micahjd Exp $
  *
  * libpg_dirview - A directory browser based on the source code of cli_c's
  *                 dlg_filepicker.c
@@ -15,9 +15,6 @@
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
- * Thread-safe code added by RidgeRun Inc.
- * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
- * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either

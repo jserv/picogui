@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.101 2002/07/26 11:11:37 micahjd Exp $
+/* $Id: dispatch.c,v 1.102 2002/07/28 17:06:49 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -8,10 +8,6 @@
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
- * Thread-safe code added by RidgeRun Inc.
- * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
- * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.
- * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

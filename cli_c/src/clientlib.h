@@ -1,12 +1,9 @@
-/* $Id: clientlib.h,v 1.16 2002/03/26 16:27:27 instinc Exp $
+/* $Id: clientlib.h,v 1.17 2002/07/28 17:06:48 micahjd Exp $
  *
  * clientlib.h - definitions used only within the client library code itself
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
- *
- * Thread-safe code added by RidgeRun Inc.
- * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -81,10 +78,6 @@
 #include <picogui.h>            /* Basic PicoGUI include */
 #include <picogui/network.h>    /* Network interface to the server */
 
-#ifdef ENABLE_THREADING_SUPPORT
-#include <semaphore.h>
-#endif
-
 //#define DEBUG
 //#define DEBUG_EVT
 
@@ -134,14 +127,6 @@ struct _pg_return_type {
   } e;  /* e for extra? ;-) */
 };
 
-#ifdef ENABLE_THREADING_SUPPORT
-typedef struct ClientReturn {
-   struct _pg_return_type ret;
-   sem_t sem;
-} pgClientReturnData;
-#endif
-
-
 /* Global vars for the client lib */
 extern int _pgsockfd;                  /* Socket fd to the pgserver */
 extern s16 _pgrequestid;             /* Request ID to detect errors */
@@ -187,11 +172,7 @@ void *_pg_malloc(size_t size);
 void _pg_defaulterr(u16 errortype,const char *msg);
 
 /* Put a request into the queue */
-#ifdef ENABLE_THREADING_SUPPORT
-void _pg_add_request(s16 reqtype,void *data, u32 datasize, unsigned int id, unsigned char flush);
-#else
 void _pg_add_request(s16 reqtype,void *data,u32 datasize);
-#endif
 
 /* Receive a response packet and store its contents in _pg_return
  * (handling errors if necessary)
@@ -209,11 +190,7 @@ void _pg_free_memdata(struct pgmemdata memdat);
 char * _pg_dynformat(const char *fmt,va_list ap);
 
 /* Idle handler */
-#ifdef ENABLE_THREADING_SUPPORT
-void *_pg_idle(void *);
-#else
 void _pg_idle(void);
-#endif
 
 /**** Platform-dependant functions (platform.c) */
 

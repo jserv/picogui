@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.148 2002/07/26 11:11:37 micahjd Exp $
+/* $Id: constants.h,v 1.149 2002/07/28 17:06:49 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -352,7 +352,6 @@ typedef unsigned long pghandle;
 #define PGTH_O_RADIOBUTTON_ON_NOHILIGHT 56 //!< Radio button (cust. button)
 #define PGTH_O_TEXTBOX               57   //!< Textbox widget
 #define PGTH_O_TERMINAL              58   //!< Terminal widget
-#define PGTH_O_LIST                  59   //!< RidgeRun's list box widget
 #define PGTH_O_MENUBUTTON            60   //!< DSPLinux Application Menu
 #define PGTH_O_MENUBUTTON_ON         61   //!< DSPLinux Application Menu
 #define PGTH_O_MENUBUTTON_HILIGHT    62   //!< DSPLinux Application Menu

@@ -1,12 +1,10 @@
-/* $Id: panel.c,v 1.78 2002/05/20 19:18:38 micahjd Exp $
+/* $Id: panel.c,v 1.79 2002/07/28 17:06:49 micahjd Exp $
  *
  * panel.c - Holder for applications. It uses a panelbar for resizing purposes,
  *           and optionally supplies some standard buttons for the panel.
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
- * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.
- * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
  *  
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,4 +1,4 @@
-/* $Id: stddialog.h,v 1.13 2002/03/26 16:27:27 instinc Exp $
+/* $Id: stddialog.h,v 1.14 2002/07/28 17:06:48 micahjd Exp $
  *
  * picogui/stddialog.h - Various preconstructed dialog boxes the application
  *                       may use. These are implemented 100% client-side using
@@ -122,11 +122,7 @@ int pgMenuFromString(char *items);
  *
  * \sa pgMenuFromString, pgNewPopup, pgNewPopupAt
  */
-#ifdef ENABLE_THREADING_SUPPORT
-int pgMenuFromArray(pghandle *items,int numitems, pgevthandler handler);
-#else
 int pgMenuFromArray(pghandle *items,int numitems); 
-#endif
 
 /*!
  * \brief Show a date on a calendar, allow the user to select a new date
