@@ -133,13 +133,8 @@ class AnnounceClient(protocol.Protocol):
                     updateStats(subjectFields[1])
                 
                 # This limits the length of the maximum message, mainly to prevent DOS'ing the bot too badly
-                for line in message.split("\n")[:40]:
-                    line = line.strip()
-                    if len(line) > 0:
-                        commandLine = "%s %s %s\r\n" % (subjectFields[0], subjectFields[1], line)
-                        # Log the message before we colorize it, so it can be used in places other than IRC.
-                        logCommand(commandLine)
-                        self.transport.write(applyColorTags(commandLine))
+                for l in lines:
+                    self.transport.write(l)
 
             # Send allowed control commands
             elif subjectFields[0] in allowedControlCommands:
@@ -193,7 +188,7 @@ if __name__ == '__main__':
             channelFilesCurrentlyInExistance = glob.glob(channelFile + ".*");
             channelFilesCurrentlyInExistance.sort()
             socketName = socketBaseName
-            lastBotID = ""
+            lastBotID = "1"
             for cf in channelFilesCurrentlyInExistance:
                 f = open(cf)
                 channelList = {}
@@ -211,6 +206,18 @@ if __name__ == '__main__':
                 # we always choose the last bot to be started for joining channels
                 socketName = socketBaseName + "." + lastBotID;
                 #print "socketName is " + socketName
+
+            # convert the message into the lines to send to the socket, and log it
+            # This limits the length of the maximum message, mainly to prevent DOS'ing the bot too badly
+            lines = []
+            for line in message.split("\n")[:40]:
+                line = line.strip()
+                if len(line) > 0:
+                    commandLine = "%s %s %s\r\n" % (subjectFields[0], subjectFields[1], line)
+                    # Log the message before we colorize it, so it can be used in places other than IRC.
+                    logCommand(commandLine)
+                    lines.append(applyColorTags(commandLine))
+
                 
             # now launch the client object for the channel-specific bot
             f = AnnounceClientFactory()
