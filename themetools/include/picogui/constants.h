@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.32 2001/08/06 07:50:06 micahjd Exp $
+/* $Id: constants.h,v 1.33 2001/08/30 05:42:56 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -335,9 +335,10 @@ typedef unsigned long pghandle;
 #define PGTH_O_LISTITEM              47   //!< Listitem (customized button)
 #define PGTH_O_LISTITEM_HILIGHT      48   //!< Listitem with mouse over it
 #define PGTH_O_LISTITEM_ON           49   //!< Selected listitem
+#define PGTH_O_CHECKBOX_ON_NOHILIGHT 50   //!< checkbox when on but not hilighted
 
 //! If you add a themeobject, be sure to increment this and add an inheritance entry in theme/memtheme.c
-#define PGTH_ONUM                    50
+#define PGTH_ONUM                    51
 
 //! \}
 
@@ -773,7 +774,9 @@ typedef unsigned long pghandle;
 #define PG_WP_VALUE       14
 #define PG_WP_BITMASK     15
 #define PG_WP_BIND        16
-#define PG_WP_SCROLL      17    /* Scroll bar binds here on scrollable widgets */
+#define PG_WP_SCROLL_X    17    /* Horizontal and vertical scrolling amount */
+#define PG_WP_SCROLL_Y    18
+#define PG_WP_SCROLL      PG_WP_SCROLL_Y   /* For backwards compatibility */
 #define PG_WP_HOTKEY      19
 #define PG_WP_EXTDEVENTS  20    /* For buttons, a mask of extra events to send */
 #define PG_WP_DIRECTION   21
@@ -781,6 +784,9 @@ typedef unsigned long pghandle;
 #define PG_WP_ABSOLUTEY   23
 #define PG_WP_ON          24    /* on-off state of button/checkbox/etc */
 #define PG_WP_STATE       25    /* theme object - the widget's current state */
+#define PG_WP_NAME        26    /* A widget's name (for named containers, etc) */
+#define PG_WP_PUBLICBOX   27    /* Set to 1 to allow other apps to make widgets
+				 * in this container */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0

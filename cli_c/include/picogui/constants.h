@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.69 2001/08/25 17:53:43 micahjd Exp $
+/* $Id: constants.h,v 1.70 2001/08/30 05:42:55 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -335,9 +335,10 @@ typedef unsigned long pghandle;
 #define PGTH_O_LISTITEM              47   //!< Listitem (customized button)
 #define PGTH_O_LISTITEM_HILIGHT      48   //!< Listitem with mouse over it
 #define PGTH_O_LISTITEM_ON           49   //!< Selected listitem
+#define PGTH_O_CHECKBOX_ON_NOHILIGHT 50   //!< checkbox when on but not hilighted
 
 //! If you add a themeobject, be sure to increment this and add an inheritance entry in theme/memtheme.c
-#define PGTH_ONUM                    50
+#define PGTH_ONUM                    51
 
 //! \}
 
