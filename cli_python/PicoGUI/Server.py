@@ -210,6 +210,12 @@ constants = {
         }),
         'hotkey consume':		(52, {	# flag indicating whether to consume the key event when a hotkey comes in
         }),
+        'width':			(53, {
+        }),
+        'height':			(54, {
+        }),
+        'spacing':			(55, {
+        }),
     },
     'traversewidget': {
         'children':	(1, {}),	# starting with first child, traverse forward
