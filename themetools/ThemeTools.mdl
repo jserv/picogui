@@ -10,7 +10,7 @@ depends = [ 'picoguiserver' ]
 def prepare (module, platform, project):
     sequence ("rm -f config.status",
               "test ! -f ../autogen.sh || (cd .. ; ./autogen.sh || true)",
-              "../configure --prefix=%s " % module.path ['dfl'] +
+              "../configure --prefix=%s " % module.path ['prefix'] +
               "--with-pgserver=%s " % project ['module/picoguiserver'].path ['dfl'])
     return
 
