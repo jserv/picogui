@@ -155,8 +155,10 @@ void divnode_recalc(struct divnode *n) {
        n->div->flags |= DIVNODE_NEED_RECALC | 
 	 (n->flags & DIVNODE_PROPAGATE_RECALC);
        if (n->div->on_recalc) {
+	 n->div->grop_lock = 1;
 	 grop_free(&n->div->grop);
 	 (*n->div->on_recalc)(n->div);
+	 n->div->grop_lock = 0;
 #ifdef DEBUG
 	 printf("div: on_recalc(0x%X)\n",n->div);
 #endif
@@ -170,8 +172,10 @@ void divnode_recalc(struct divnode *n) {
        if (n->next) {
 	 n->next->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
 	 if (n->next->on_recalc) {
+	   n->next->grop_lock = 1;
 	   grop_free(&n->next->grop);
 	   (*n->next->on_recalc)(n->next);
+	   n->next->grop_lock = 0;
 #ifdef DEBUG
 	   printf("next: on_recalc(0x%X)\n",n->next);
 #endif

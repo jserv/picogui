@@ -1,7 +1,7 @@
 
 /*
  * divtree.h - define data structures related to divtree management
- * $Revision: 1.5 $
+ * $Revision: 1.6 $
  * 
  * This file contains structures defining and surrounding the divtree, 
  * PicoGUI's method of organizing screen space.
@@ -134,6 +134,8 @@ struct divnode {
    
    /* If this pointer is not null, the groplist is rendered to this divnode */
    struct gropnode *grop;
+   int grop_lock;  /* Nonzero when groplist is being built and it shouldn't
+		      be modified */
    
   /* Widget that owns it, used for updating widget 'where' pointers
      on deleting a widget */

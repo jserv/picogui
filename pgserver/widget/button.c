@@ -213,6 +213,11 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     
   }
 
+  /* If we're busy rebuilding the grop list, don't bother poking
+     at the individual nodes */
+  if (self->in->div->grop_lock)
+    return;
+
   /* This code for updating the button's appearance modifies
      the grops directly because it does not need a recalc, only
      a single-node redraw. Recalcs propagate like a virus, and
