@@ -1,0 +1,220 @@
+/* $Id: beveled.ths,v 1.1 2001/10/28 00:26:04 micahjd Exp $
+ *
+ * Another theme based on pseudo3d. This one has extra beveling on the buttons,
+ * slightly larger and with more feedback when a button is clicked. It might
+ * be better for low-contrast color displays.
+ *
+ * Version 1.0
+ *
+ * Micah Dowty
+ */
+
+object default {
+  name = "Beveled Buttons Pseudo-3D";
+
+  /* Simple fill */
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+  };
+
+  bgcolor = 0xC0C0C0;
+  hilightcolor = 0xFFFFFF;
+  shadowcolor = 0x808080;
+
+  /* Some consistant spacings and margins */
+  spacing = 3;
+  margin = 3;
+}
+
+/* Beveled fill for buttons and things */
+object base.interactive {
+  bgcolor = 0xaab6db;
+
+  /* Black border, hilights, and a dynamic offset */
+  bgfill = fillstyle {
+    SetColor(0x000000);
+    Frame(x,y,w,h);
+
+    SetColor(bgcolor);
+    Rect(x+2,y+2,w-4,h-4);
+
+    SetColor(hilightcolor);
+    Slab(x+1,y+1,w-2,1);
+    Bar(x+1,y+1,1,h-2);
+    Slab(x+3,y+h-4,w-4,1);
+    Bar(x+w-4,y+3,1,h-4);
+    SetColor(shadowcolor);
+    Slab(x+1,y+h-2,w-2,1);
+    Bar(x+w-2,y+1,1,h-2);
+    Slab(x+3,y+3,w-4,1);
+    Bar(x+3,y+3,1,h-4);
+
+    x = x + offset;
+    y = y + offset;
+  };
+  overlay = fillstyle {
+    SetColor(0x000000);
+    Frame(x,y,w,h);
+
+    SetColor(0xC0C0C0);
+    Rect(x+2,y+2,w-4,h-4);
+
+    SetColor(hilightcolor);
+    Slab(x+1,y+1,w-2,1);
+    Bar(x+1,y+1,1,h-2);
+    SetColor(shadowcolor);
+    Slab(x+1,y+h-2,w-2,1);
+    Bar(x+w-2,y+1,1,h-2);
+
+    x = x + offset;
+    y = y + offset;
+  };
+}
+
+object scroll {
+  bgcolor = 0x808080;
+  shadowcolor = 0x000000;
+}
+object scroll.on {
+  bgcolor = 0xFFFF00;
+}
+
+/* Check boxes */
+object checkbox {
+   bgfill = fillstyle {
+      Bitmap(x+1,y+((h-12)>>1)-1,12,12,bitmap1);
+      x = x + 16;
+   };
+   bitmap1 = LoadBitmap("data/check_unchecked.pnm");
+   align = PG_A_LEFT;
+   margin = 10;
+}
+object checkbox.on bitmap1 = LoadBitmap("data/check_checked.pnm");
+  
+/* Top-level containers need the same bevel */
+object base.tlcontainer bgfill = Copy(base.interactive::bgfill);
+
+/* A slightly simpler bevel for containers */
+object base.container {
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x+1,y+1,w-2,h-2);
+    SetColor(hilightcolor);
+    Slab(x,y,w-1,1);
+    Bar(x,y,1,h-1);
+    SetColor(shadowcolor);
+    Slab(x,y+h-1,w-1,1);
+    Bar(x+w-1,y,1,h-1);
+    x = x+2; y = y+2;
+    w = w-4; h = h-4;
+  };
+  /* Containers are beveled 'in to the screen' */
+  hilightcolor = Copy(default::shadowcolor);
+  shadowcolor = Copy(default::hilightcolor);
+}
+
+/* Display widgets are similar */
+object base.display bgfill = Copy(base.container::bgfill);
+
+/* Special overlay for indicators */
+object indicator overlay = fillstyle {
+  SetColor(0x000080);
+  Rect(x,y,w,h);
+};
+
+/* Button sizing */
+object button {
+  height = 25;
+  width = 25;
+}
+
+/* Special stuff for panelbuttons */
+object base.panelbtn {
+  width = Copy(panelbar::width);
+  height = Copy(panelbar::width);
+  spacing = 0;
+}
+object closebtn  {
+  widgetbitmap = LoadBitmap("data/tiny_x.pnm");
+  side = PG_S_LEFT;
+}
+object rotatebtn {
+  widgetbitmap = LoadBitmap("data/tiny_arrow.pnm");
+  side = PG_S_RIGHT;
+}
+object zoombtn {
+  widgetbitmap = LoadBitmap("data/tiny_expand.pnm");
+  side = PG_S_RIGHT;
+}
+
+/* Button click effects! */
+object button.on {
+  hilightcolor = Copy(button::shadowcolor);
+  shadowcolor = Copy(button::hilightcolor);
+  bgcolor = 0xFFFF00;
+  offset = 1;
+}
+object closebtn.on {
+  hilightcolor = Copy(button::shadowcolor);
+  shadowcolor = Copy(button::hilightcolor);
+  offset = 1;
+  bgcolor = 0xFFFF00;
+}
+object zoombtn.on {
+  hilightcolor = Copy(button::shadowcolor);
+  shadowcolor = Copy(button::hilightcolor);
+  offset = 1;
+  bgcolor = 0xFFFF00;
+}
+object rotatebtn.on {
+  hilightcolor = Copy(button::shadowcolor);
+  shadowcolor = Copy(button::hilightcolor);
+  offset = 1;
+  bgcolor = 0xFFFF00;
+}
+
+/* Panelbars */
+object panelbar {
+  width = 20;
+  fgcolor = 0xFFFFFF;
+  bgcolor = 0x000080;
+  hilightcolor = 0x0000FF;
+  shadowcolor = 0x000000;
+}
+obj panelbar.on {
+  bgcolor = 0xFFFF00;
+  fgcolor = 0x000000;
+}
+
+/* Dialog box title, just like a panelbar */
+object label.dlgtitle {
+  margin = 5;
+  bgfill = Copy(panelbar::bgfill);
+  fgcolor = Copy(panelbar::fgcolor);
+  bgcolor = Copy(panelbar::bgcolor);
+  hilightcolor = Copy(panelbar::hilightcolor);
+  shadowcolor = Copy(panelbar::shadowcolor);
+}
+
+object background bgcolor = 0x5592B6;
+
+/* Menu items are pretty simple */
+object menuitem {
+  bgfill = Copy(default::bgfill);
+  spacing = 0;
+  height = 25;
+  align = PG_A_LEFT;
+}
+object menuitem.hilight {
+  bgcolor = Copy(menuitem::fgcolor);
+  fgcolor = Copy(menuitem::bgcolor);
+}
+
+/* A little 'fudge factor' for the dialogs */
+object popup.messagedlg {
+  width = 10;
+  height = 30;
+}
+
+/* The End */
