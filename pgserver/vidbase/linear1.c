@@ -1,4 +1,4 @@
-/* $Id: linear1.c,v 1.12 2001/05/31 11:09:09 micahjd Exp $
+/* $Id: linear1.c,v 1.13 2001/05/31 11:32:29 micahjd Exp $
  *
  * Video Base Library:
  * linear1.c - For 1-bit packed pixel devices (most black and white displays)
@@ -276,6 +276,17 @@ void linear1_blit(hwrbitmap dest,
    int bw,xb,s,rs,tp,lp,rlp;
    int i;
 
+   /* Pass on the blit if it is unsupported */
+   switch (lgop) {
+    case PG_LGOP_NONE:
+    case PG_LGOP_OR:
+    case PG_LGOP_AND:
+      break;
+    default:
+      def_blit(dest,dst_x,dst_y,w,h,sbit,src_x,src_y,lgop);
+      return;
+   }
+   
    /* Initializations */ 
    src = srcline = srcbit->bits + (src_x>>3) + src_y*srcbit->pitch;
    dst = dstline = PIXELBYTE(dst_x,dst_y);
@@ -286,35 +297,63 @@ void linear1_blit(hwrbitmap dest,
       src=--srcline;
    }
    rs = 8-s;
-   
-   /* Special case when it fits entirely within one byte */
-   if ((xb+w)<=8) {
-      mask = slabmask1[xb] & ~slabmask1[xb+w];
-      for (;h;h--,src+=srcbit->pitch,dst+=FB_BPL)
-	*dst = (((src[0] << s) | (src[1] >> rs)) 
-		& mask) | (*dst & ~mask);
-   }
-   else { 
-      tp = (dst_x+w)&7;        /* Trailing pixels */
-      lp = (8-xb)&7;           /* Leading pixels */
-      bw = (w-tp-lp)>>3;       /* Width in whole bytes */
-      rlp = 8-lp;
-      
-      /* Bit-banging blitter loop */
-      for (;h;h--,src=srcline+=srcbit->pitch,dst=dstline+=FB_BPL) {
-	 if (lp) {
-	    *dst = (((src[0] << s) | (src[1] >> rs))
-		    & slabmask1[rlp]) | (*dst & ~slabmask1[rlp]);
-	    src++,dst++;
-	 }
-	 for (i=bw;i>0;i--,src++,dst++)
-	   *dst = (src[0] << s) | (src[1] >> rs);
-	 if (tp)
-	   *dst = (((src[0] << s) | (src[1] >> rs)) 
-		   & ~slabmask1[tp]) | (*dst & slabmask1[tp]);
-      }
-   }
 
+   /* The blitter core is a macro so various LGOPs can be used */
+   
+#define BLITCORE                                                          \
+   /* Special case when it fits entirely within one byte */               \
+   if ((xb+w)<=8) {                                                       \
+      mask = slabmask1[xb] & ~slabmask1[xb+w];                            \
+      for (;h;h--,src+=srcbit->pitch,dst+=FB_BPL)                         \
+	BLITCOPY(((src[0] << s) | (src[1] >> rs)),mask);                  \
+   }                                                                      \
+   else {                                                                 \
+      tp = (dst_x+w)&7;        /* Trailing pixels */                      \
+      lp = (8-xb)&7;           /* Leading pixels */                       \
+      bw = (w-tp-lp)>>3;       /* Width in whole bytes */                 \
+      rlp = 8-lp;                                                         \
+                                                                          \
+      /* Bit-banging blitter loop */                                      \
+      for (;h;h--,src=srcline+=srcbit->pitch,dst=dstline+=FB_BPL) {       \
+	 if (lp) {                                                        \
+	    BLITCOPY(((src[0] << s) | (src[1] >> rs)),slabmask1[rlp]);    \
+	    src++,dst++;                                                  \
+	 }                                                                \
+	 for (i=bw;i>0;i--,src++,dst++)                                   \
+	   BLITMAINCOPY(((src[0] << s) | (src[1] >> rs)));                \
+	 if (tp)                                                          \
+	    BLITCOPY(((src[0] << s) | (src[1] >> rs)),(~slabmask1[tp]));  \
+      }                                                                   \
+   }
+   
+   /* Select a blitter based on the current LGOP mode */
+   switch (lgop) {
+   
+    case PG_LGOP_NONE:
+#define BLITCOPY(d,m)   *dst = (d & m) | (*dst & ~m)
+#define BLITMAINCOPY(d) *dst = d
+   BLITCORE
+#undef BLITMAINCOPY
+#undef BLITCOPY
+	return;
+
+    case PG_LGOP_OR:
+#define BLITCOPY(d,m)   *dst |= d & m
+#define BLITMAINCOPY(d) *dst |= d
+   BLITCORE
+#undef BLITMAINCOPY
+#undef BLITCOPY
+	return;
+      
+    case PG_LGOP_AND:
+#define BLITCOPY(d,m)   *dst &= d | ~m
+#define BLITMAINCOPY(d) *dst &= d
+   BLITCORE
+#undef BLITMAINCOPY
+#undef BLITCOPY
+	return;
+      
+   }
 }
    
 /*********************************************** Registration */
@@ -328,7 +367,7 @@ void setvbl_linear1(struct vidlib *vid) {
    vid->slab           = &linear1_slab;
    vid->bar            = &linear1_bar;
    vid->line           = &linear1_line;
-//   vid->blit           = &linear1_blit;
+   vid->blit           = &linear1_blit;
 }
 
 /* The End */
