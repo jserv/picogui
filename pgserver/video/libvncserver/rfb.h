@@ -279,6 +279,7 @@ typedef struct _rfbScreenInfo
 
 #ifdef HAVE_PTHREADS
     Bool backgroundLoop;
+    pthread_t listener_thread;
 #endif
 
 } rfbScreenInfo, *rfbScreenInfoPtr;

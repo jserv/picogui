@@ -694,11 +694,8 @@ void rfbRunEventLoop(rfbScreenInfoPtr rfbScreen, long usec, Bool runInBackground
 {
   if(runInBackground) {
 #ifdef HAVE_PTHREADS
-       pthread_t listener_thread;
-
        rfbScreen->backgroundLoop = TRUE;
-
-       pthread_create(&listener_thread, NULL, listenerRun, rfbScreen);
+       pthread_create(&rfbScreen->listener_thread, NULL, listenerRun, rfbScreen);
     return;
 #else
     fprintf(stderr,"Can't run in background, because I don't have PThreads!\n");

@@ -3,6 +3,7 @@ pgserver inteagration
    Swapped RGB order
    Removed cursor support (Not sufficient to handle picogui's cursors)
    Removed httpd
+   Moved listener_thread to rfbScreenInfo
 
 0.4
    support for NewFB from Const Kaplinsky

@@ -1,4 +1,4 @@
-/* $Id: vncserver.c,v 1.8 2003/01/19 19:35:09 micahjd Exp $
+/* $Id: vncserver.c,v 1.9 2003/01/19 23:46:22 micahjd Exp $
  *
  * vncserver.c - Video driver that runs a VNC server and processes
  *               input events for multiple clients, using the
@@ -54,11 +54,13 @@ g_error vncserver_init(void) {
 }
 
 void vncserver_close(void) {
+  pthread_kill(vncserver_screeninfo->listener_thread, 2);
+
   unload_inlib(inlib_main);   /* Take out our input driver */
   if (FB_MEM) {
     g_free(FB_MEM);
     vid->bitmap_free(vncserver_buffer);
-  }
+  } 
 }
 
 g_error vncserver_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
