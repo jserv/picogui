@@ -1,4 +1,4 @@
-/* $Id: requests.c,v 1.1 2002/11/19 13:16:11 micahjd Exp $
+/* $Id: requests.c,v 1.2 2002/11/20 03:46:06 micahjd Exp $
  *
  * requests.c - Process the requests that form picogui's network
  *              protocol and several file formats.
@@ -323,6 +323,8 @@ g_error rqh_undef(struct request_data *r) {
 
 g_error rqh_wait(struct request_data *r) {
   struct event *q;
+
+  post_event(PG_WE_FOCUS,NULL,0,r->in.owner,NULL);
 
   /* Is there anything here already? */
   if ((q = get_event(r->in.owner,1))) {
@@ -666,7 +668,6 @@ g_error rqh_getpayload(struct request_data *r) {
   
   e = handle_payload(&ppayload,r->in.owner,ntohl(arg->h));
   errorcheck;
-  
   r->out.ret = *ppayload;
 
   return success;

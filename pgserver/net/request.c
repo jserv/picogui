@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.53 2002/11/19 13:16:11 micahjd Exp $
+/* $Id: request.c,v 1.54 2002/11/20 03:46:06 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -171,6 +171,7 @@ void newfd(int fd) {
 void readfd(int from) {
   struct conbuf *buf = find_conbuf(from);
   int r;
+  u32 reqsize;
   
   /* Do we have a header yet? */
   if (buf->header_size < sizeof(buf->req)) {
@@ -192,31 +193,25 @@ void readfd(int from) {
       buf->header_size += r;
     }
   }
-  
+
+  reqsize = ntohl(buf->req.size);
+ 
   /* Yep, get data */
   if (buf->header_size >= sizeof(buf->req)) {
     /* need prep to receive data? */
     if (!buf->data) {
-      /* Reorder the bytes in the header */
-      buf->req.type = ntohs(buf->req.type);
-      buf->req.id = ntohl(buf->req.id);
-      buf->req.size = ntohl(buf->req.size);
 
-#ifdef DEBUG_NET
-      printf("prep data (type %u, #%u, %lu bytes)\n",buf->req.type,
-	     buf->req.id,(unsigned long)buf->req.size);
-#endif
       /* Will the data fit in the static buffer? */
-      if (buf->req.size < PKTBUF_LEN) {
+      if (reqsize < PKTBUF_LEN) {
 	buf->data = buf->data_stat;
       }
       else {
 	/* Allocate and use a dynamic buffer (set the limit at 6 meg, this should be
 	 * enough for even the most insanely large images (1280x1024x32) but will catch
 	 * stuff before ElectricFence chokes on it. */
-	if ((buf->req.size > CONFIG_MAXPACKETSZ) ||
+	if ((reqsize > CONFIG_MAXPACKETSZ) ||
 	    iserror(prerror(g_malloc((void**)&buf->data_dyn,
-				     buf->req.size+1)))) {
+				     reqsize)))) {
 
 	  /* Oops, the client asked for too much memory!
 	   * Discard this packet and send an error later.
@@ -234,13 +229,9 @@ void readfd(int from) {
 	printf("Using a dynamic packet buffer\n");
 #endif
       }
-      
-      /* Null-terminate it. Only YOU can prevent runaway strings! */
-      if (!buf->no_buffer)
-	buf->data[buf->req.size] = 0;
     }
 
-    if (buf->data_size < buf->req.size) {
+    if (buf->data_size < reqsize) {
       /* NOW we can get the packet data */
       
       errno = 0;
@@ -250,16 +241,16 @@ void readfd(int from) {
 	 * into the static buffer.
 	 */
 	r = recv(from,buf->data,
-		 (buf->req.size-buf->data_size) > PKTBUF_LEN ?
-		 PKTBUF_LEN : (buf->req.size-buf->data_size),0);
+		 (reqsize-buf->data_size) > PKTBUF_LEN ?
+		 PKTBUF_LEN : (reqsize-buf->data_size),0);
       }
       else {
 	r = recv(from,buf->data+buf->data_size,
-		 buf->req.size-buf->data_size,0);      
+		 reqsize-buf->data_size,0);      
       }
 
 #ifdef DEBUG_NET
-      printf("recv data = %d\n",r);
+      printf("SERVER recv data = %d\n",r);
 #endif
       if (r<=0) {
 	if (errno!=EAGAIN)
@@ -274,7 +265,7 @@ void readfd(int from) {
     }
 
     /* Are we there yet? */
-    if (buf->data_size >= buf->req.size) {
+    if (buf->data_size >= reqsize) {
       if (buf->no_buffer) {
 	/* The packet finished, but we had nowhere to store it.
 	 * Send an error message to that effect..
@@ -293,7 +284,7 @@ void readfd(int from) {
 
 	errlen = strlen(errmsg = errortext(e));
 	rsp.type = htons(PG_RESPONSE_ERR);
-	rsp.id = htonl(buf->req.id);
+	rsp.id = buf->req.id;
 	rsp.errt = htons(errtype(e));
 	rsp.msglen = htons(errlen);
 	
@@ -311,15 +302,22 @@ void readfd(int from) {
 	}	
       }
       else {
+	g_error e;
+
 	/* Yahoo, got a complete packet! */
 	struct request_data r;
 	memset(&r,0,sizeof(r));
 	r.in.req = &buf->req;
 	r.in.data = buf->data;
 	r.in.owner = from;
-	request_exec(&r);
+
+	e = request_exec(&r);
+	
+	printf("SERVER Executed request packet: type %d, size %d, ret %d, error %04X\n",
+	       r.in.req->type, r.in.req->size, r.out.ret, e);
 
 	if (r.out.block) {
+	  printf("SERVER blocking\n");
 	  /* Put this client on the waitlist */
 	  FD_SET(from, &evtwait);
 	}
@@ -327,13 +325,16 @@ void readfd(int from) {
 	  /* Send the response request_exec returned, closing the connection
 	   * if there is any error sending it.
 	   */
+	  printf("SERVER Sending response, len %d, type %d\n",r.out.response_len,ntohs(r.out.response.type));
 	  if (send_response(from,&r.out.response,r.out.response_len)) 
 	    closefd(from);
 	  else {
+	    printf("SERVER Sending response data %p, len %d\n",r.out.response_data,r.out.response_data_len);
 	    if (r.out.response_data && 
 		send_response(from,&r.out.response_data,r.out.response_data_len))
 	      closefd(from);
 	    else {
+	      printf("SERVER Finished sending\n");
 	      /* Reset the structure for another packet */
 	      g_free(buf->data_dyn);
 	      buf->data_dyn = NULL;
@@ -342,6 +343,8 @@ void readfd(int from) {
 	    }
 	  }
 	}
+	if (r.out.free_response_data)
+	  g_free(r.out.response_data);
       }
     }  
   }
