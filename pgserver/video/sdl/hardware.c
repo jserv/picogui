@@ -1,6 +1,6 @@
 /*
  * hardware.c - SDL "hardware" layer
- * $Revision: 1.4 $
+ * $Revision: 1.5 $
  * 
  * Emulate display hardware using SDL
  *
@@ -39,9 +39,9 @@ g_error hwr_init() {
 #if HWR_BPP == 4
   /* Set up a 16-gray palette, Out-of-range values set to red. */
   for ( i=0; i<16; ++i ) {
-    palette[i].r = (15-i)<<4 | (15-i);
-    palette[i].g = (15-i)<<4 | (15-i);
-    palette[i].b = (15-i)<<4 | (15-i);
+    palette[i].r = i<<4 | i;
+    palette[i].g = i<<4 | i;
+    palette[i].b = i<<4 | i;
   }
   for (; i<256; ++i ) {
     palette[i].r = 255;

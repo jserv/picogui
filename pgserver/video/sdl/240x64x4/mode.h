@@ -27,22 +27,17 @@ typedef Uint8 * devbmpt;
 /* Macro to make a color from RGB values (grayscale weighted average) 
  * Values between 0 and 255
  */
-#define mkcolor(r,g,b) ((devcolort) 15-(((((r)*3+(g)*6+(b))/10)>>4) & 0x0F))
+#define mkcolor(r,g,b) ((devcolort) (((((r)*3+(g)*6+(b))/10)>>4) & 0x0F))
 /* Same thing, but for a grayscale v between 0 and m */
-#define mkgray(v,m) ((devcolort) black - ((v) * black / (m)))
+#define mkgray(v,m) ((devcolort) ((v) * white / (m)))
 
 
 /* Generic colors */
-#define black   15
-#define white   0
+#define black   0
+#define white   15
 #define gray    7
-#define dkgray  11
-#define ltgray  3
-
-/* Bevel colors */
-#define bevmid  5
-#define bevnw   12
-#define bevse   9
+#define dkgray  3
+#define ltgray  11
 
 /* panel */
 #define panelmid  ltgray

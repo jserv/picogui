@@ -1,7 +1,7 @@
 /*
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
- * $Revision: 1.8 $
+ * $Revision: 1.9 $
  *
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -32,6 +32,7 @@ struct divnode *divmatch;
 struct widget *under;
 struct widget *prev_under;
 int prev_btn;
+struct widget *capture;
 
 /******** Widget interface functions */
 
@@ -178,6 +179,7 @@ int inline send_trigger(struct widget *w, long type,
 void dispatch_pointing(long type,int x,int y,int btn) {
   union trigparam param;
   int call_update=0;
+  int i;
 
   if (!(dts && dts->top && dts->top->head)) {
 #ifdef DEBUG
@@ -192,13 +194,25 @@ void dispatch_pointing(long type,int x,int y,int btn) {
   param.mouse.chbtn = btn ^ prev_btn;
   prev_btn = btn;
 
+  if (type == TRIGGER_UP && capture) {
+    call_update |= send_trigger(capture,TRIGGER_RELEASE,&param);
+    capture == NULL;
+  }
+
   divmatch = NULL;
   widgetunder(x,y,dts->top->head);
   if (divmatch) {
     under = divmatch->owner;
 
     /* First send the 'raw' event, then handle the cooked ones. */
-    call_update |= send_trigger(under,type,&param);
+    call_update |= (i = send_trigger(under,type,&param));
+
+    if (type==TRIGGER_DOWN) {
+      if (i)
+	capture = under;
+      else
+	capture = NULL;
+    }
 
   }
   else

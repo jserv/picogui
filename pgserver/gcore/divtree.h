@@ -1,6 +1,7 @@
+
 /*
  * divtree.h - define data structures related to divtree management
- * $Revision: 1.2 $
+ * $Revision: 1.3 $
  * 
  * This file contains structures defining and surrounding the divtree, 
  * PicoGUI's method of organizing screen space.
@@ -69,20 +70,24 @@ typedef short int alignt;
 union div_param {
   /* Stuff for drawing text */
   struct {          /* This structure is used when on_recalc == &text */
+    alignt align;
+    devcolort fill;
+    int transparent;
+
     handle string;
     handle fd;
-    alignt align;
-    int transparent;
-    devcolort fill,col;
+    devcolort col;
   } text;
 
   /* Bitmaps */
   struct {
-    handle bitmap;
-    int lgop;
     alignt align;
-    int transparent;
     devcolort fill;
+    int transparent;
+
+    handle bitmap;
+    handle mask;
+    int lgop;
   } bitmap;
 
   /* colors */

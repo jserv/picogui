@@ -42,13 +42,15 @@ typedef long glob;
 #define TRIGGER_DEACTIVATE (1<<4)  /* Losing focus */
 #define TRIGGER_KEYUP      (1<<5)  /* Ignores autorepeat, etc. */
 #define TRIGGER_KEYDOWN    (1<<6)  /* Ditto. */
-#define TRIGGER_CLICK      (1<<7)  /* A sucessful press and release */
+#define TRIGGER_RELEASE    (1<<7)  /* Mouse up (see note) */
 #define TRIGGER_UP         (1<<8)  /* Mouse up in specified divnode */
 #define TRIGGER_DOWN       (1<<9)  /* Mouse down in divnode */
 #define TRIGGER_MOVE       (1<<10) /* Triggers on any mouse movement in node */
-#define TRIGGER_DRAG       (1<<11) /* Only while pointing device is down */
-#define TRIGGER_ENTER      (1<<12) /* Mouse moves inside widget */
-#define TRIGGER_LEAVE      (1<<13) /* Mouse moves outside widget */
+#define TRIGGER_ENTER      (1<<11) /* Mouse moves inside widget */
+#define TRIGGER_LEAVE      (1<<12) /* Mouse moves outside widget */
+
+/* Note on TRIGGER_RELEASE:  This is when the mouse was pressed inside
+   the widget, then released elsewhere.  */
 
 /* Trigger param union */
 union trigparam {
@@ -85,7 +87,6 @@ struct widget {
   /* Defines the type of widget */
   int type;
   struct widgetdef *def;  /* (Methods) */
-  void (*on_event)(struct widget *self,int event);  /* (Events) */
    
   /* These pointers indicate the input, output, and sub of the
    * local divtree */
@@ -161,6 +162,7 @@ DEF_WIDGET_PROTO(button)
 #define WP_BITMAP      12
 #define WP_LGOP        13
 #define WP_VALUE       14
+#define WP_BITMASK     15
 
 /* Constants for SIZEMODE */
 #define SZMODE_PIXEL         0
@@ -169,11 +171,9 @@ DEF_WIDGET_PROTO(button)
 #define SZMODE_MASK          (~DIVNODE_UNIT_PERCENT)
 
 /* Widget events */
-#define WE_ACTIVATE          0
-#define WE_CHANGE            1
-#define WE_FOCUS             2
-#define WE_UNFOCUS           3
-#define WE_KEY               4
+#define WE_ACTIVATE    1  /* Gets focus (or for a non-focusing widget such
+			     as a button, it has been clicked/selected  */
+#define WE_DEACTIVATE  2  /* Lost focus */
 
 /******* These functions define the 'public' methods for widgets */
 

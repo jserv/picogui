@@ -60,10 +60,10 @@ typedef Uint32 * devbmpt;
 
 /* button */
 #define btn_b1     0x00000000
-#define btn_b2     0x00404040
-#define btn_on     0x00707070
+#define btn_b2     0x00585858
+#define btn_on     0x009090B0
 #define btn_off    0x00B0B0B0
-#define btn_over   0x00FFFFA0
+#define btn_over   0x00FFFFB0
 
 /* Hardware-customized Widget Geometry */
 #define HWG_BUTTON  32
