@@ -47,8 +47,19 @@
 #define RES_APPCONF 0
 #define RES_ELF 1
 
+#ifndef u32
+typedef unsigned long u32;
+#endif
+
+typedef struct{
+  void *data;
+  u32 size;
+} resElement;
+
 typedef struct{
   char *workingDir;
+  resElement **resourceTable;
+  int resourceCount;
   short resourceType;
 } resResource;
 
@@ -61,6 +72,24 @@ char **resGetAppPaths(char *rootPath);
 //-------Resource related code----------------------------------------
 resResource *resLoadResource(char *path);
 char *resGetProperty(resResource *resource, char *section, char *property);
+void resSetProperty(resResource *resource, char *section, char *property, char *data);
 void *resGetResouce(resResource *resource, char *section, char *property, int *size);
 void resUnloadResource(resResource *resource);
 
+
+//#ifndef PGMEMDAT_NEED_FREE
+
+//typedef long u32;
+
+//struct pgmemdata {
+//  void *pointer;       //!< when null, indicates error
+//  u32 size;  //!< size in bytes of data block
+//  int flags;           //!< PGMEMDAT_* flags or'ed together
+//};
+//#define PGMEMDAT_NEED_FREE    0x0001   //!< pgmemdata should be free()'d when done
+//#define PGMEMDAT_NEED_UNMAP   0x0002   //!< pgmemdata should be munmap()'d when done
+
+//------------PicoGUI specific functions-----------------------
+//struct pgmemdata pgFromResource(resResource *resource, char *resourceName);
+
+//#endif
