@@ -1,4 +1,4 @@
-/* $Id: pgfx_bitmap.c,v 1.4 2002/01/06 09:22:56 micahjd Exp $
+/* $Id: pgfx_bitmap.c,v 1.5 2002/10/21 18:18:10 micahjd Exp $
  *
  * picogui/pgfx_bitmap.c - lib functions and registration for offscreen bitmap
  *                         drawing through the PGFX interface
@@ -42,6 +42,11 @@ pgprim _pgfxbitmap_line(pgcontext c, pgu x1, pgu y1, pgu x2, pgu y2) {
 
 pgprim _pgfxbitmap_rect(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h) {
    pgRender(c->device,PG_GROP_RECT,x,y,w,h);
+   return 0;
+}
+
+pgprim _pgfxbitmap_blur(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,  pgu radius) {
+   pgRender(c->device,PG_GROP_BLUR,x,y,w,h,radius);
    return 0;
 }
 
@@ -163,6 +168,7 @@ pgcontext pgNewBitmapContext(pghandle bitmap) {
    l.line       = _pgfxbitmap_line;
    l.rect       = _pgfxbitmap_rect;
    l.frame      = _pgfxbitmap_frame;
+   l.blur       = _pgfxbitmap_blur;
    l.slab       = _pgfxbitmap_slab;
    l.bar        = _pgfxbitmap_bar;
    l.ellipse    = _pgfxbitmap_ellipse; 
