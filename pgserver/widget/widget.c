@@ -1,6 +1,7 @@
 /*
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
+ * $Revision: 1.7 $
  *
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -23,6 +24,14 @@ DEF_STATICWIDGET_TABLE(indicator)
 DEF_STATICWIDGET_TABLE(bitmap)
 };
 
+/* These are needed to determine which widget is under the pointing
+   device, keep track of status */
+struct dtstack *dts;
+struct divnode *divmatch;
+struct widget *under;
+struct widget *prev_under;
+int prev_btn;
+
 /******** Widget interface functions */
 
 g_error widget_create(struct widget **w,int type,struct dtstack *ds,
@@ -31,6 +40,8 @@ g_error widget_create(struct widget **w,int type,struct dtstack *ds,
 
   if ((type > WIDGETMAX) || (!ds) || (!dt) || (!where)) return 
       mkerror(ERRT_BADPARAM,"widget_create bad arguments");
+
+  dts = ds;  /* Save it for later */
 
   e = g_malloc((void **)w,sizeof(struct widget));
   if (e.type != ERRT_NONE) return e;
@@ -122,11 +133,11 @@ void widget_remove(struct widget *w) {
   g_free(w);
 }
 
-g_error widget_set(struct widget *w, int property, glob data) {
+g_error inline widget_set(struct widget *w, int property, glob data) {
   if (w && w->def->set) return (*w->def->set)(w,property,data);
 }
 
-glob widget_get(struct widget *w, int property) {
+glob inline widget_get(struct widget *w, int property) {
   if (w && w->def->get) return (*w->def->get)(w,property);
   return 0;
 }
@@ -136,22 +147,86 @@ glob widget_get(struct widget *w, int property) {
 int find_hotkey(void) {
 }
 
+/*
+   Finds the topmost interactive widget under the (x,y) coords.
+   Recursive. On first call, div should be set
+   to dts->top->head
+   NULL if nothing found.
+   divmatch should be set to NULL ahead of time, afterwards it is the
+   result.
+*/
+void widgetunder(int x,int y,struct divnode *div) {
+  if (!div) return;
+  if (div->x<=x && div->y<=y && (div->x+div->w)>x && (div->y+div->h)>y
+      && div->owner && div->owner->trigger_mask)
+    divmatch = div;
+  widgetunder(x,y,div->next);
+  widgetunder(x,y,div->div);
+}
+
+/* Internal function that sends a trigger to a widget if it accepts it. */
+void inline send_trigger(struct widget *w, long type,
+			 union trigparam *param) {
+  if (w && w->def->trigger && (w->trigger_mask & type)) 
+    (*w->def->trigger)(w,type,param);
+}
+
 void dispatch_pointing(long type,int x,int y,int btn) {
+  union trigparam param;
+
+  if (!(dts && dts->top && dts->top->head)) {
 #ifdef DEBUG
-  printf("Pointing device event: 0x%08X (%d %d %c%c%c)\n",type,x,y,
+    printf("Pointer event with invalid tree\n");
+#endif
+    return;   /* Without a valid tree, pointer events are meaningless */
+  }
+
+  param.mouse.x = x;
+  param.mouse.y = y;
+  param.mouse.btn = btn;
+  param.mouse.chbtn = btn ^ prev_btn;
+  prev_btn = btn;
+
+  divmatch = NULL;
+  widgetunder(x,y,dts->top->head);
+  if (!(divmatch && divmatch->owner))
+    return; /* No widget, or widget is not interactive. */
+  under = divmatch->owner;
+
+#ifdef DEBUG
+  printf("Pointer: 0x%08X (%3d %3d %c%c%c) @ 0x%08X in 0x%08X\n",type,x,y,
 	 (btn & 1) ? '*' : '-',
 	 (btn & 2) ? '*' : '-',
-	 (btn & 4) ? '*' : '-');
+	 (btn & 4) ? '*' : '-',divmatch,under);
 #endif
+
+  /* First send the 'raw' event, then handle the cooked ones. */
+  send_trigger(under,type,&param);
+
+  if (under!=prev_under) {
+    /* Mouse has moved over a different widget */
+    send_trigger(under,TRIGGER_ENTER,&param);
+    send_trigger(prev_under,TRIGGER_LEAVE,&param);
+    prev_under = under;
+  }
+
+  update(dts);
 }
 
 void dispatch_key(long type,int key) {
 #ifdef DEBUG
   printf("Keyboard event: 0x%08X (#%d, '%c')\n",type,key,key);
 #endif
+
+  update(dts);
 }
 
 void dispatch_direct(char *name,long param) {
+#ifdef DEBUG
+  printf("Direct event: %s(0x%08X)\n",name,param);
+#endif
+
+  update(dts);
 }
 
 /* The End */

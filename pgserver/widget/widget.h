@@ -47,6 +47,19 @@ typedef long glob;
 #define TRIGGER_DOWN       (1<<9)  /* Mouse down in divnode */
 #define TRIGGER_MOVE       (1<<10) /* Triggers on any mouse movement in node */
 #define TRIGGER_DRAG       (1<<11) /* Only while pointing device is down */
+#define TRIGGER_ENTER      (1<<12) /* Mouse moves inside widget */
+#define TRIGGER_LEAVE      (1<<13) /* Mouse moves outside widget */
+
+/* Trigger param union */
+union trigparam {
+  struct {
+    int x,y,btn;  /* Current mouse status */
+    int chbtn;    /* Changed buttons */
+  } mouse;
+  struct {
+    int key;
+  } kbd;
+};
 
 /* This contains function pointers for the widget methods that define
    how a widget acts and what it does.
@@ -57,12 +70,7 @@ struct widgetdef {
   void (*remove)(struct widget *self);
 
   /* Optional, only for interactive controls */
-  void (*activate)(struct widget *self);   /* If this is non-NULL, this
-					      widget will get a key assigned
-					      to it */
-  void (*getfocus)(struct widget *self);
-  void (*removefocus)(struct widget *self);
-  void (*trigger)(struct widget *self,long type,long param);
+  void (*trigger)(struct widget *self,long type,union trigparam *param);
 
   /* Setting/getting properties */
   g_error (*set)(struct widget *self, int property, glob data);
@@ -106,17 +114,13 @@ struct widget {
 
 /* Macros to help define widgets */
 #define DEF_WIDGET_TABLE(n) \
-  n##_install, n##_remove, n##_activate, n##_getfocus, n##_removefocus, \
-  n##_trigger, n##_set, n##_get,
+  n##_install, n##_remove, n##_trigger, n##_set, n##_get,
 #define DEF_STATICWIDGET_TABLE(n) \
-  n##_install, n##_remove, NULL,NULL,NULL,NULL, n##_set, n##_get,
+  n##_install, n##_remove, NULL, n##_set, n##_get,
 #define DEF_WIDGET_PROTO(n) \
   g_error n##_install(struct widget *self); \
   void n##_remove(struct widget *self); \
-  void n##_activate(struct widget *self); \
-  void n##_getfocus(struct widget *self); \
-  void n##_removefocus(struct widget *self); \
-  void n##_keyevent(struct widget *self, char k); \
+  void n##_trigger(struct widget *self,long type,union trigparam *param); \
   g_error n##_set(struct widget *self, int property, void *data); \
   void * n##_get(struct widget *self, int property);
 #define DEF_STATICWIDGET_PROTO(n) \
@@ -215,9 +219,7 @@ int find_hotkey(void);
 
    btn specifies the buttons down on the pointing device. Bit 0 is the
    first mouse button, bit 1 is the second, etc.
-   Pointing device events need only be sent here for MOVE, UP, DOWN.
-   The other events will be generated, however they can be sent directly
-   if needed.
+   Pointing device events should only be sent here for MOVE, UP, DOWN.
 */
 void dispatch_pointing(long type,int x,int y,int btn);
 
