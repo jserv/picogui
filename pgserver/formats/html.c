@@ -1,4 +1,4 @@
-/* $Id: html.c,v 1.12 2001/11/17 10:08:48 micahjd Exp $
+/* $Id: html.c,v 1.13 2001/11/17 22:40:40 micahjd Exp $
  *
  * html.c - Use the textbox_document inferface to load HTML markup
  *
@@ -175,6 +175,7 @@ struct html_charname {
   { "lt",       '<' },  /* less-than */
   { "gt",       '>' },  /* greater-than */
   { "quot",     '"' },  /* Quotation mark */
+  { "amp",      '&' },  /* Ampersand */
   { "iexcl",	161 },	/* inverted exclamation mark */
   { "cent",	162 },	/* cent sign */
   { "pound",	163 },	/* pound sterling sign */
@@ -769,16 +770,21 @@ g_error html_textfragment(struct html_parse *hp,
   e = g_malloc((void**)&str, length+1);
   errorcheck;
   str[length] = 0;
-  for (p=start,q=str; p<=end && length; p++, q++, length--)
-    if (*p == '&') {
-      /* Character name */
+  p = start;
+  q = str;
+  while (p<=end && length) {
+    if (*p == '&') {                       /* Character name */     
       cname = p+1;
       for (;p<=end && *p!=';';p++);
       *q = html_findchar(cname,p-cname);
     }
-    else
-      /* Normal character */
+    else                                   /* Normal character */      
       *q = *p;
+
+    p++;
+    q++;
+    length--;
+  }
   
   /* Send it to the textbox */
   return text_insert_string(hp->c,str,0);

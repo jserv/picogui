@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.39 2001/11/17 10:08:48 micahjd Exp $
+/* $Id: font.c,v 1.40 2001/11/17 22:40:41 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -272,7 +272,7 @@ void outtext(hwrbitmap dest, struct fontdesc *fd,
 	   break;
 	   
 	}
-      else
+      else if (ch!='\r')
 	outchar(dest,fd,&x,&y,col,ch,clip,lgop,angle);
    }
 }
@@ -302,7 +302,7 @@ void sizetext(struct fontdesc *fd, s16 *w, s16 *h, char *txt) {
       if ((*w)>o_w) o_w = *w;
       *w = fd->margin << 1;
     }
-    else {
+    else if (ch!='\r') {
       outchar_fake(fd,w,ch);
     }
   }
