@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.19 2000/11/05 10:25:45 micahjd Exp $
+/* $Id: constants.h,v 1.20 2000/11/05 19:50:49 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -429,6 +429,7 @@ typedef unsigned long pghandle;
 #define PG_WP_VIRTUALH    18    /* Basically, the maximum vertical scroll */
 #define PG_WP_HOTKEY      19
 #define PG_WP_EXTDEVENTS  20    /* For buttons, a mask of extra events to send */
+#define PG_WP_DIRECTION   21
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0
@@ -450,6 +451,10 @@ typedef unsigned long pghandle;
 #define PG_EXEV_PNTR_UP   0x0001
 #define PG_EXEV_PNTR_DOWN 0x0002
 #define PG_EXEV_NOCLICK   0x0004  /* (ignore clicks) */
+
+/* Constants for PG_WP_DIRECTION */
+#define PG_DIR_HORIZONTAL 0
+#define PG_DIR_VERTICAL   90
 
 /******************** Events */
 

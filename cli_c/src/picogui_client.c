@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.24 2000/11/05 18:20:35 micahjd Exp $
+/* $Id: picogui_client.c,v 1.25 2000/11/05 19:50:49 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -899,9 +899,12 @@ pghandle pgNewFont(const char *name,short size,unsigned long style) {
   struct pgreqd_mkfont arg;
   memset(&arg,0,sizeof(arg));
 
-  strcpy(arg.name,name);
-  arg.style = style;
-  arg.size = size;
+  if (name)
+    strcpy(arg.name,name);
+  else
+    *arg.name = 0;
+  arg.style = htonl(style);
+  arg.size = htons(size);
   _pg_add_request(PGREQ_MKFONT,&arg,sizeof(arg));
 
   /* Because we need a result now, flush the buffer */
