@@ -1784,12 +1784,6 @@ server returned data : depends of the event type
 	new request would be a <constant>PGREQ_MKWAIT</>, the client is sent
 	back in the waiting queue after discarding the previous request.
    </para>
-   <para>
- 	<emphasis>IMPORTANT NOTE:</> The behaviour of this request will
-	change in a future implementation of this protocol, the client should
-	for now restrict itself from sending any other request after a
-	<constant>PGREQ_MKWAIT</> is sent.
-   </para>
   </sect2>
 
   <sect2 id="pgreq-writeto">
