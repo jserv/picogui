@@ -1,6 +1,6 @@
 /*
  * hardware.c - SDL "hardware" layer
- * $Revision: 1.3 $
+ * $Revision: 1.4 $
  * 
  * Emulate display hardware using SDL
  *
@@ -27,8 +27,12 @@ g_error hwr_init() {
   SDL_Color palette[256];
 #endif  
 
+  if (SDL_Init(SDL_INIT_VIDEO))
+    return mkerror(ERRT_IO,SDL_GetError());
+
   /* Set the video mode */
-  screen = SDL_SetVideoMode(HWR_WIDTH, HWR_HEIGHT, sizeof(devcolort)*8, 0);
+  screen = SDL_SetVideoMode(HWR_WIDTH, HWR_HEIGHT, sizeof(devcolort)*8, 
+			    SDLFLAG);
   if ( screen == NULL )
     return mkerror(ERRT_IO,SDL_GetError());
 

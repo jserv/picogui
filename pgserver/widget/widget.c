@@ -1,7 +1,7 @@
 /*
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
- * $Revision: 1.7 $
+ * $Revision: 1.8 $
  *
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -22,6 +22,7 @@ DEF_STATICWIDGET_TABLE(label)
 DEF_STATICWIDGET_TABLE(scroll)
 DEF_STATICWIDGET_TABLE(indicator)
 DEF_STATICWIDGET_TABLE(bitmap)
+DEF_WIDGET_TABLE(button)
 };
 
 /* These are needed to determine which widget is under the pointing
@@ -158,21 +159,25 @@ int find_hotkey(void) {
 void widgetunder(int x,int y,struct divnode *div) {
   if (!div) return;
   if (div->x<=x && div->y<=y && (div->x+div->w)>x && (div->y+div->h)>y
-      && div->owner && div->owner->trigger_mask)
+      && div->owner && div->on_recalc && div->owner->trigger_mask)
     divmatch = div;
   widgetunder(x,y,div->next);
   widgetunder(x,y,div->div);
 }
 
 /* Internal function that sends a trigger to a widget if it accepts it. */
-void inline send_trigger(struct widget *w, long type,
+int inline send_trigger(struct widget *w, long type,
 			 union trigparam *param) {
-  if (w && w->def->trigger && (w->trigger_mask & type)) 
+  if (w && w->def->trigger && (w->trigger_mask & type)) {
     (*w->def->trigger)(w,type,param);
+    return 1;
+  }
+  return 0;
 }
 
 void dispatch_pointing(long type,int x,int y,int btn) {
   union trigparam param;
+  int call_update=0;
 
   if (!(dts && dts->top && dts->top->head)) {
 #ifdef DEBUG
@@ -189,44 +194,49 @@ void dispatch_pointing(long type,int x,int y,int btn) {
 
   divmatch = NULL;
   widgetunder(x,y,dts->top->head);
-  if (!(divmatch && divmatch->owner))
-    return; /* No widget, or widget is not interactive. */
-  under = divmatch->owner;
+  if (divmatch) {
+    under = divmatch->owner;
 
-#ifdef DEBUG
-  printf("Pointer: 0x%08X (%3d %3d %c%c%c) @ 0x%08X in 0x%08X\n",type,x,y,
-	 (btn & 1) ? '*' : '-',
-	 (btn & 2) ? '*' : '-',
-	 (btn & 4) ? '*' : '-',divmatch,under);
-#endif
+    /* First send the 'raw' event, then handle the cooked ones. */
+    call_update |= send_trigger(under,type,&param);
 
-  /* First send the 'raw' event, then handle the cooked ones. */
-  send_trigger(under,type,&param);
+  }
+  else
+    under = NULL;
 
   if (under!=prev_under) {
     /* Mouse has moved over a different widget */
-    send_trigger(under,TRIGGER_ENTER,&param);
-    send_trigger(prev_under,TRIGGER_LEAVE,&param);
+    call_update |= send_trigger(under,TRIGGER_ENTER,&param);
+    call_update |= send_trigger(prev_under,TRIGGER_LEAVE,&param);
     prev_under = under;
   }
 
-  update(dts);
+  if (call_update) {
+#ifdef DEBUG
+    printf("Pointer: 0x%08X (%3d %3d %c%c%c %c%c%c) @ 0x%08X in 0x%08X\n",type,x,y,
+	   (btn & 1) ? '*' : '-',
+	   (btn & 2) ? '*' : '-',
+	   (btn & 4) ? '*' : '-',
+	   (param.mouse.chbtn & 1) ? '*' : '-',
+	   (param.mouse.chbtn & 2) ? '*' : '-',
+	   (param.mouse.chbtn & 4) ? '*' : '-',
+	   divmatch,under);
+#endif
+
+    update(dts);   /* Do all the updates at once, if any are needed */ 
+  }
 }
 
 void dispatch_key(long type,int key) {
 #ifdef DEBUG
   printf("Keyboard event: 0x%08X (#%d, '%c')\n",type,key,key);
 #endif
-
-  update(dts);
 }
 
 void dispatch_direct(char *name,long param) {
 #ifdef DEBUG
   printf("Direct event: %s(0x%08X)\n",name,param);
 #endif
-
-  update(dts);
 }
 
 /* The End */

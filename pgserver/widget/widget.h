@@ -121,8 +121,8 @@ struct widget {
   g_error n##_install(struct widget *self); \
   void n##_remove(struct widget *self); \
   void n##_trigger(struct widget *self,long type,union trigparam *param); \
-  g_error n##_set(struct widget *self, int property, void *data); \
-  void * n##_get(struct widget *self, int property);
+  g_error n##_set(struct widget *self, int property, glob data); \
+  glob n##_get(struct widget *self, int property);
 #define DEF_STATICWIDGET_PROTO(n) \
   g_error n##_install(struct widget *self); \
   void n##_remove(struct widget *self); \
@@ -135,6 +135,7 @@ DEF_STATICWIDGET_PROTO(scroll)
 DEF_STATICWIDGET_PROTO(label)      /* Text, resizes to fit */
 DEF_STATICWIDGET_PROTO(indicator)
 DEF_STATICWIDGET_PROTO(bitmap)
+DEF_WIDGET_PROTO(button)
 
 /* Types of widgets (in the same order they are in the table in widget.c) */
 #define WIDGET_PANEL      0
@@ -142,7 +143,8 @@ DEF_STATICWIDGET_PROTO(bitmap)
 #define WIDGET_SCROLL     2
 #define WIDGET_INDICATOR  3
 #define WIDGET_BITMAP     4
-#define WIDGETMAX         4    /* For error checking */
+#define WIDGET_BUTTON     5
+#define WIDGETMAX         5    /* For error checking */
      
 /* Constants for properties */
 #define WP_SIZE        1

@@ -1,5 +1,5 @@
 # Makefile for PicoGUI
-# $Revision: 1.3 $
+# $Revision: 1.4 $
 #
 # Micah Dowty <micah@homesoftware.com> 
 #
@@ -14,7 +14,7 @@ BINNAME = pgserver
 SRC := widget/bitmap.c widget/indicator.c widget/label.c \
        widget/panel.c widget/scroll.c widget/widget.c gcore/grop.c \
        gcore/g_malloc.c gcore/div.c gcore/font.c \
-       gcore/handle.c gcore/g_error.c appmgr/global.c
+       gcore/handle.c gcore/g_error.c appmgr/global.c widget/button.c
 
 HDR := widget/widget.h gcore/divtree.h gcore/g_malloc.h \
        gcore/font.h gcore/handle.h gcore/g_error.h gcore/video.h \

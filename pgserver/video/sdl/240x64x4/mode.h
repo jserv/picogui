@@ -11,6 +11,8 @@
 typedef Uint8 devcolort;
 typedef Uint8 * devbmpt;
 
+#define SDLFLAG 0
+
 /* Geometry */
 #define HWR_WIDTH   240  /* Emulate 240x64, 16 grayscale */
 #define HWR_HEIGHT  64
@@ -55,6 +57,13 @@ typedef Uint8 * devbmpt;
 #define ind_b3     ltgray
 #define ind_midon  gray
 #define ind_midoff white
+
+/* button */
+#define btn_b1     black
+#define btn_b2     dkgray
+#define btn_on     dkgray
+#define btn_off    ltgray
+#define btn_over   white
 
 /* Hardware-customized Widget Geometry */
 #define HWG_BUTTON  16

@@ -11,6 +11,8 @@
 typedef Uint32 devcolort;
 typedef Uint32 * devbmpt;
 
+#define SDLFLAG SDL_FULLSCREEN
+
 /* Geometry */
 #define HWR_WIDTH   640
 #define HWR_HEIGHT  480
@@ -55,6 +57,13 @@ typedef Uint32 * devbmpt;
 #define ind_b3     0x008080FF
 #define ind_midon  0x000000FF
 #define ind_midoff 0x00FFFFFF
+
+/* button */
+#define btn_b1     0x00000000
+#define btn_b2     0x00404040
+#define btn_on     0x00707070
+#define btn_off    0x00B0B0B0
+#define btn_over   0x00FFFFA0
 
 /* Hardware-customized Widget Geometry */
 #define HWG_BUTTON  32

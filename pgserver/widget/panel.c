@@ -11,9 +11,6 @@
 #include <divtree.h>
 #include <g_malloc.h>
 
-#define HWG_TOOLBARSIDE  S_LEFT
-#define HWG_BUTTONSIDE   S_TOP
-
 /* param.c - color */
 void fill(struct divnode *d) {
   grop_rect(&d->grop,0,0,d->w,d->h,d->param.c);
@@ -27,11 +24,11 @@ g_error panel_install(struct widget *self) {
 
   e = newdiv(&self->in,self);
   if (e.type != ERRT_NONE) return e;
-  self->in->flags |= HWG_TOOLBARSIDE;
+  self->in->flags |= S_TOP;
   self->in->split = HWG_BUTTON+HWG_MARGIN*2;
   e = newdiv(&self->in->next,self);
   if (e.type != ERRT_NONE) return e;
-  self->in->next->flags |= HWG_TOOLBARSIDE;
+  self->in->next->flags |= S_TOP;
   self->in->next->split = 1;
   self->out = &self->in->next->next;
   e = newdiv(&self->in->div,self);
