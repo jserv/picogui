@@ -25,6 +25,7 @@ depends = [
     ('libjpeg', ~S ('platform/m68k-pic-coff')),
     ('libpng', ~S ('platform/m68k-pic-coff')),
     ('busybox', S ('platform/ppc-linux')),
+    'btkey-report',
     ]
 
 asserts = [
@@ -73,7 +74,8 @@ def prepare (module, platform, project):
         "--prefix=%s" % module.path ['prefix'],
         "--with-profile=%s" % profile,
         "--enable-bee",
-        "--with-extra-ipath=%s/include" % project ['module/kernel'].path ['dfl'],
+        "--with-extra-ipath='%s/include -I%s/include'" % (project ['module/kernel'].path ['dfl'],
+                                                          project ['module/btkey-report'].path['dfl']),
         "--with-pm-cflags='%s'" % cflags,
         ]
 

@@ -125,6 +125,7 @@ DRIVER_EVENTBROKER=y
 # DRIVER_PS2MOUSE is not set
 # DRIVER_JSDEV is not set
 # CONFIG_KEY_ALPHA is not set
+DRIVER_BTKEY=y
 
 #
 # Video Base Libraries

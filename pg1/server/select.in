@@ -177,6 +177,7 @@ add_if_true rawttykb.c           $DRIVER_RAWTTYKB
 add_if_true if_touchscreen.c     $CONFIG_TOUCHSCREEN
 add_if_false if_client_adaptor.c $CONFIG_NOREMOTEINPUT
 add_if_true if_key_alpha.c       $CONFIG_KEY_ALPHA
+add_if_true btkey.c              $DRIVER_BTKEY
 
 close_section
 

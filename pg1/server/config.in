@@ -164,6 +164,7 @@ bool 'Ericsson chatboard driver (see input/README.ericsson_cb)' DRIVER_ERICSSON_
 bool 'PS/2 mouse driver (Also works with USB and Maple) (GPL)' DRIVER_PS2MOUSE
 bool 'Joystick driver'                                  DRIVER_JSDEV
 bool 'Alpha key support (for text entry on numeric keypads)' CONFIG_KEY_ALPHA
+bool 'Bluetooth key reporting'                          DRIVER_BTKEY
 endmenu
 
 mainmenu_option next_comment

@@ -47,7 +47,8 @@ EXTRA_libinput_la_SOURCES = \
 	rawttykb.c \
 	if_touchscreen.c \
 	if_client_adaptor.c \
-	if_key_alpha.c
+	if_key_alpha.c \
+	btkey.c
 
 libinput_la_LIBADD       = $(INPUT:%.c=%.lo)
 libinput_la_DEPENDENCIES = $(INPUT:%.c=%.lo)

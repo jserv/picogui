@@ -1,0 +1,49 @@
+README for btkey.c file
+
+/* Written by Alain Paschoud <alain.paschoud@smartdata.ch>, 03 jun
+2003 */
+
+Btkey input driver has been design for SMARTDATA specific use. It's
+goal is to get key events from Bluetooth keyboards and from bluetooth
+phones. There is a layer between the Bluetooth stack and this input
+driver. It is called btkey-report. This layer is not distributed with
+PicoGUI. However, you will find here the necessary information to
+implement it if you want to use this input driver.
+
+btkey.c communicates with btkey-report through a FIFO. Through this
+FIFO, two types of information can be sent : Characters or Events.
+
+The protocol is made of two integer values: I'll call them val1 and
+val2. The first one can have three differents values :
+
+0 : means that a key has been released
+1 : means that a key has been pressed
+2 (BTKEYREPORT_MESSAGE) : indicates a message
+
+If val1 is 0 or 1, val2 contains the ASCII code of the character
+related to the key.  If val1 is 2, val2 contains a message
+
+There are four different messages :
+
+A keyboard has been connected
+A keyboard has been disconnected
+A phone has been connected
+A phone has been disconnected
+
+You can redefine the symbols used in btkey.c as you want. I'll provide
+here how they are defined for our own use :
+
+#define	BTKEY_FIFO_PATH	"/dev/btfifo"
+
+#define BTKEYREPORT_MESSAGE 2
+
+/* Here is the messages enumeration */
+
+enum btkeyreport_messages{
+  BTKEYREPORT_KBD_CONNECTED = 0,
+  BTKEYREPORT_KBD_NOT_CONNECTED,
+  BTKEYREPORT_PHONE_CONNECTED,
+  BTKEYREPORT_PHONE_NOT_CONNECTED,
+};
+
+These definitions should be enough to compile btkey.c

@@ -335,6 +335,7 @@ g_error ericsson_cb_regfunc(struct inlib *i);
 g_error ps2mouse_regfunc(struct inlib *i);
 g_error jsdev_regfunc(struct inlib *i);
 g_error rawttykb_regfunc(struct inlib *i);
+g_error btkey_regfunc(struct inlib *i);
 
 /* List of installed input drivers */
 struct inputinfo {

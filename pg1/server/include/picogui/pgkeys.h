@@ -35,6 +35,8 @@
    go to www.libsdl.org!)
 */
 
+#include <pgserver/autoconf.h>
+
 #define PGKEY_BACKSPACE          8
 #define PGKEY_TAB  	         9 
 #define PGKEY_CLEAR  	         12
@@ -270,9 +272,18 @@
 #define PGKEY_POWER        	 320		/* Power Macintosh power key */
 #define PGKEY_EURO        	 321		/* Some european keyboards */
 #define PGKEY_ALPHA              322   /* Selects letters on a numeric keypad
-					* (for celphones and similar devices */
+					* (for celphones and similar devices) */
 
-#define PGKEY_MAX                322
+#ifdef DRIVER_BTKEY
+# define PG_KBD_CONNECTED        323
+# define PG_KBD_NOT_CONNECTED    324
+# define PG_PHONE_CONNECTED      325
+# define PG_PHONE_NOT_CONNECTED  326
+
+# define PGKEY_MAX               326
+#else
+# define PGKEY_MAX               322
+#endif
 
 /* Modifier keys (also from SDL) */
 #define PGMOD_LSHIFT  0x0001

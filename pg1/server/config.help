@@ -233,6 +233,13 @@ DRIVER_EZ328VGA
 DRIVER_SCRSHOT
       Writes the virtual framebuffer to a file on update.
       See README.configfile for the options.
+
+
+DRIVER_BTKEY
+      Is used by SMARTDATA for incomming character from bluetooth
+      keyboards and phones. Please see pgserver/input/README.btkey
+      for more details. To use this input driver, you need to write
+      and extra definition file.
       
 CONFIG_VIDEOTEST
       This adds command line options to invoke a video driver test

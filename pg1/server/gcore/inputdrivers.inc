@@ -109,4 +109,8 @@
   DRV("rawttykb", &rawttykb_regfunc)
 #endif
 
+#ifdef DRIVER_BTKEY
+  DRV("btkey", &btkey_regfunc)
+#endif
+
 /* The End */
