@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.34 2001/08/09 09:00:45 micahjd Exp $
+/* $Id: widget.h,v 1.35 2001/08/09 09:57:48 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -129,6 +129,11 @@ struct widget {
   /* If this is a root widget, an unprivelidged app can only derive
      widgets inside it, not before or after it */
   unsigned int isroot : 1;
+
+  /* If this flag is set, other applications can derive widgets inside
+   * this container. (They cannot modify it in any other way
+   */
+  unsigned int publicbox : 1;
 
   /***** 16/8-bit packed values */
    

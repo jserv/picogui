@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.95 2001/08/09 09:00:46 micahjd Exp $
+/* $Id: widget.c,v 1.96 2001/08/09 09:57:48 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -346,6 +346,10 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
       w->name = data;
       break;
 
+    case PG_WP_PUBLICBOX:
+      w->publicbox = data;
+      break;
+
     default:
       return mkerror(PG_ERRT_BADPARAM,6);   /* Unknown property */
    }
@@ -372,6 +376,9 @@ glob inline widget_get(struct widget *w, int property) {
 
     case PG_WP_NAME:
       return w->name;
+
+    case PG_WP_PUBLICBOX:
+      return w->publicbox;
 
     default:
       return (*w->def->get)(w,property);

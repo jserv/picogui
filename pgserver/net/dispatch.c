@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.53 2001/08/09 09:00:46 micahjd Exp $
+/* $Id: dispatch.c,v 1.54 2001/08/09 09:57:48 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -136,7 +136,7 @@ g_error rqh_mkwidget(int owner, struct pgrequest *req,
   struct widget *w,*parent;
   handle h;
   handle xh;
-  g_error e;
+  g_error e,etmp;
   reqarg(mkwidget);
 
   /* Don't allow direct creation of 'special' widgets that must
@@ -149,8 +149,20 @@ g_error rqh_mkwidget(int owner, struct pgrequest *req,
     return mkerror(PG_ERRT_BADPARAM,58);
   }
 
-  e = rdhandle((void**) &parent,PG_TYPE_WIDGET,owner,xh=ntohl(arg->parent));
-  errorcheck;
+  etmp = rdhandle((void**) &parent,PG_TYPE_WIDGET,owner,xh=ntohl(arg->parent));
+  if (iserror(etmp)) {
+    if (ntohs(arg->rship) == PG_DERIVE_INSIDE) {
+      /* Allow creating widgets in foreign containers if the container
+       * has its 'publicbox' bit set
+       */
+      e = rdhandle((void**) &parent,PG_TYPE_WIDGET,-1,xh);
+      errorcheck;
+      if (!parent->publicbox)
+	return etmp;
+    }
+    else
+      return etmp;
+  }
   if (!parent) return mkerror(PG_ERRT_BADPARAM,59);
 
   /* Don't let an app put stuff outside its root widget */

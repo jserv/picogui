@@ -13,7 +13,12 @@ to reference that container by name and create a root widget inside it.
 		* include/picogui/network.h: Adding PGREQ_FINDWIDGET
 		
 		* net/dispatch.c: Implemented PGREQ_FINDWIDGET
+
+      * cli_c/src/api.c: Implemented pgFindWidget
 		
+		* include/picogui/constants.h: Added the PG_WP_PUBLICBOX
+		
+		* net/dispatch.c, widget/widget.c: Implemented the PG_WP_PUBLICBOX flag
 		
 
 2001-08-05    Micah Dowty <micahjd@users.sourceforge.net>
