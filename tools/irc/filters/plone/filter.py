@@ -17,8 +17,8 @@ open(logFile, "a").write(str(message))
 if message['subject'].strip().lower().find("re") == 0:
     sys.exit(0)
 
-# Directory name is the first token in the subject
-dirName = message['subject'].split(" ")[0]
+# Directory name is the second token in the subject
+dirName = message['subject'].split(" ")[1]
 
 # Use the from address as the author
 author = message['from']
