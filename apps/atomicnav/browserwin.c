@@ -1,4 +1,4 @@
-/* $Id: browserwin.c,v 1.4 2002/01/07 09:05:51 micahjd Exp $
+/* $Id: browserwin.c,v 1.5 2002/01/07 09:39:04 micahjd Exp $
  *
  * browserwin.c - User interface for a browser window in Atomic Navigator
  *
@@ -74,6 +74,17 @@ int btnForward(struct pgEvent *evt) {
 
 void pageStatus(struct url *u) {
   browserwin_showstatus(u->browser, u);
+
+  /* Done loading a page? */
+  if (u->status == URL_STATUS_DONE) {
+    pghandle page = pgDataString(pgFromTempMemory(u->data,u->size));
+    u->data = NULL;
+
+    pgSetWidget(u->browser->wView,
+		PG_WP_TEXTFORMAT, pgNewString("HTML"),
+		PG_WP_TEXT,page,
+		0);
+  }
 }
 
 void pageProgress(struct url *u) {
