@@ -1,4 +1,4 @@
-/* $Id: pgl-cpu.c,v 1.1 2001/08/12 00:24:40 micahjd Exp $
+/* $Id: pgl-cpu.c,v 1.2 2001/08/12 00:28:07 micahjd Exp $
  * 
  * pgl-cpu.c - PGL applet to display a simple CPU monitor
  *
@@ -45,8 +45,10 @@ void sysIdle(void) {
   sscanf(buf,"cpu %lu %lu %lu %lu",&cpu_user,&cpu_nice,&cpu_sys,&cpu_idle);  
   crun = cpu_user + cpu_sys;
   ctotal = crun + cpu_nice + cpu_idle;
-  if (crun==ocrun || ctotal==octotal) return; /* Prevent SIGFPE */
-  wval = (crun-ocrun) * 100 / (ctotal-octotal);
+  if (crun==ocrun || ctotal==octotal)
+    wval = 0;
+  else
+    wval = (crun-ocrun) * 100 / (ctotal-octotal);
 
   if (wval!=owval) {
     pgSetWidget(wLoad,PG_WP_VALUE,wval,0);
