@@ -1,5 +1,6 @@
 pgserver inteagration
    Removed argument processing
+   Swapped RGB order
 
 0.4
    support for NewFB from Const Kaplinsky

@@ -1,4 +1,4 @@
-/* $Id: vncserver.c,v 1.1 2003/01/19 07:04:24 micahjd Exp $
+/* $Id: vncserver.c,v 1.2 2003/01/19 07:36:08 micahjd Exp $
  *
  * vncserver.c - Video driver that runs a VNC server and processes
  *               input events for multiple clients, using the
@@ -61,10 +61,12 @@ g_error vncserver_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
    if (vncserver_screeninfo) {
      if (xres == vid->xres && yres == vid->yres)
        return success;
-     else
-       return mkerror(PG_ERRT_BADPARAM, 47);   /* Error setting video mode
-						* (we can't stop the event thread yet)
-						*/
+     else {
+       /* Error setting video mode
+	* (we can't stop the event thread yet)
+	*/
+       return mkerror(PG_ERRT_BADPARAM, 47); 
+     }
    }
    
    /* Free the old buffer */

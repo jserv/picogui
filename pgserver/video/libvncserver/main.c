@@ -497,18 +497,18 @@ static void rfbInitServerFormat(rfbScreenInfoPtr rfbScreen, int bitsPerSample)
      format->greenMax = (1 << bitsPerSample) - 1;
      format->blueMax = (1 << bitsPerSample) - 1;
      if(rfbEndianTest) {
-       format->redShift = 0;
+       format->blueShift = 0;
        format->greenShift = bitsPerSample;
-       format->blueShift = bitsPerSample * 2;
+       format->redShift = bitsPerSample * 2;
      } else {
        if(format->bitsPerPixel==8*3) {
-	 format->redShift = bitsPerSample*2;
+	 format->blueShift = bitsPerSample*2;
 	 format->greenShift = bitsPerSample*1;
-	 format->blueShift = 0;
+	 format->redShift = 0;
        } else {
-	 format->redShift = bitsPerSample*3;
+	 format->blueShift = bitsPerSample*3;
 	 format->greenShift = bitsPerSample*2;
-	 format->blueShift = bitsPerSample;
+	 format->redShift = bitsPerSample;
        }
      }
    }
