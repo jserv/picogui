@@ -17,7 +17,8 @@ open(logFile, "a").write(str(message))
 if message['subject'].strip().lower().find("re") == 0:
     sys.exit(0)
 
-# Author is the fourth token of the first line
+# Author is the fourth token of the second line
+body.readline()
 author = body.readline().strip().split(" ")[3]
 
 # The body is the set of non-blank lines starting after the "Log Message" line
