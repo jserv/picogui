@@ -213,7 +213,11 @@ NewWidget(-type=>button,-inside => $tb,-side => left,
 	      $str = '';
 	      $correct = 0;
 	      $incorrect = 0;
+	      $starttime = 0;
+	      $wpm = 0;
 	
+	      $typeinfo = NewWidget(-type => label,-side => bottom,-bgcolor => 0x000000,
+				    -color => 0xFFFFFF,-font => $boldfont);
 	      $typespace = NewWidget(-type => label,-side => all);
 
 	      NewWidget(-type => button,-inside => $tb,-bitmap=>$ex,
@@ -748,7 +752,10 @@ sub setlesson {
 }
 
 sub typechar {
+
     if ($_[1]) {
+	$starttime = time() if (!$starttime);
+
 	$c = pack 'c',($_[1] & 0xFF);
 	
 	if (length $lessontext[$lessonline] == length $str) {
@@ -776,6 +783,13 @@ sub typechar {
 	else {
 	    $incorrect++;
 	}
+
+	if (($currenttime=time()) != $starttime) {
+	    # WPM calculations from 1968
+	    
+	    $wpm = sprintf "%.1f",($correct/5.0) / (($currenttime-$starttime)/60.0);
+	}
+
     }	
     
     if (length $lessontext[$lessonline] > 45) {
@@ -785,8 +799,22 @@ sub typechar {
 	$typespace->SetWidget(-font => $bigfont);
     }
     $typespace->ReplaceText($lessontext[$lessonline]."\n".$str.'_');
+
+    $total = $correct+$incorrect;
+    if ($total) {
+	$accuracy = sprintf "%.1f",100.0 * $correct / $total;
+    }
+    else {
+	$accuracy = '100.0';
+    }
+
+    $typeinfo->ReplaceText("Total keys: $total  Errors: $incorrect  Accuracy: $accuracy%  WPM: $wpm");
     Update;
 }
 
 
 ### The End ###
+
+
+
+
