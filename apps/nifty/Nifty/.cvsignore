@@ -3,3 +3,11 @@ FileBuffer.pyc
 Frame.pyc
 ScratchBuffer.pyc
 __init__.pyc
+DebugBuffer.pyc
+Minibuffer.pyc
+Subprocess.pyc
+Terminal.pyc
+Textbox.pyc
+Workspace.pyc
+keybindings.pyc
+
