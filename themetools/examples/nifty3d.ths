@@ -1,4 +1,4 @@
-/* $Id: nifty3d.ths,v 1.7 2001/11/06 08:22:51 micahjd Exp $
+/* $Id: nifty3d.ths,v 1.8 2001/11/06 08:34:47 micahjd Exp $
  *
  * This theme's pretty darn cpu-intensive, but it
  * demonstrates the neat things that can be done with
@@ -16,7 +16,7 @@
  */
 
 object default {
-  name = "Nifty 3D";
+  name = "Nifty 3D v1.1";
 
   /* This generates a beveled surface, based on 'bgcolor'.
      The amount of shading is determined by 'hilightcolor'
