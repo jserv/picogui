@@ -1,11 +1,16 @@
-/* $Id: aqua.ths,v 1.31 2001/09/02 17:23:18 micahjd Exp $
+/* $Id: aqua.ths,v 1.32 2001/12/16 19:45:12 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
  *
- * Version 1.0
+ * Version 1.01
  *
- * Micah Dowty
+ * -- Micah Dowty
+ *
+ * Changelog:
+ *
+ *  1.01 - Fixed terminal background
+ *  1.0  - First stable release
  */
 
 /* The stripey background */
@@ -17,6 +22,42 @@ object default {
   };
   bitmap1 = LoadBitmap("data/aq_bg.pnm");
 margin=0;
+}
+
+object terminal {
+  /*
+   * 'textcolors' is an array of 16 pgcolor values to use as a palette.
+   * This one has darker colors than the default, 
+   * and black and white are swapped.
+   */
+  textcolors = Array(0xFFFFFF,
+		     0x000080,
+		     0x008000,
+		     0x008080,
+		     0x800000,
+		     0x800080,
+		     0x808000,
+		     0x808080,
+		     0x000000,
+		     0x0000A0,
+		     0x00A000,
+		     0x00A0A0,
+		     0xA00000,
+		     0xA000A0,
+		     0xA0A000,
+		     0x000000);
+
+  /* In color attributes, the high nibble is an index to the background
+   * color and the low nibble is an index to the foreground color.
+   * This sets up black text and a blue cursor. Note that the forground color
+   * for the cursor only shows if there is a character under it, and that
+   * a background color of 0 allows the bitmap to show through.
+   */
+  attr.default = 0x0F;
+  attr.cursor = 0x9E;
+
+  /* Aqua stripey background */
+  bitmap1 = Copy(default::bitmap1);
 }
 
 /* Jellybean-like buttons! */
