@@ -1,4 +1,4 @@
-/* $Id: terminal_frontend.c,v 1.10 2002/11/06 09:08:04 micahjd Exp $
+/* $Id: terminal_frontend.c,v 1.11 2002/12/23 22:40:13 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -201,6 +201,9 @@ void build_terminal(struct gropctxt *c,u16 state,struct widget *self) {
    * calculate a good size for us */
   neww = c->r.w / DATA->celw - (DATA->fontmargin ? 1 : 0);   /* A little margin */
   newh = c->r.h / DATA->celh - (DATA->fontmargin ? 1 : 0);
+
+  if (neww < 0) neww = 0;
+  if (newh < 0) newh = 0;
 
   /* If we're rolled up, don't bother */
   if ((neww>0) && (newh>0)) {
