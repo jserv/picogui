@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.83 2001/07/10 09:21:13 micahjd Exp $
+/* $Id: widget.c,v 1.84 2001/07/10 21:30:34 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -502,6 +502,19 @@ int send_trigger(struct widget *w, long type,
     (*w->def->trigger)(w,type,param);
     return 1;
   }
+  else {
+    
+    /* Some default handlers */
+    switch (type) {
+
+    case TRIGGER_KEYDOWN:
+    case TRIGGER_KEYUP:
+    case TRIGGER_CHAR:
+      global_hotkey(param->kbd.key,param->kbd.mods,type);
+      return 1;
+
+    }
+  }
   return 0;
 }
 
@@ -871,9 +884,6 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
   /* Ignore CHAR events for keys modified by anything other than shift */
   if (type == TRIGGER_CHAR && (mods & ~PGMOD_SHIFT)) return;
 
-  /* Process global hotkeys */
-  suppress |= global_hotkey(keycode,type);
-
   /* Iterate through the hotkey-owning widgets if there's a KEYDOWN */
   p = dts->top->hkwidgets;
   while (p) {
@@ -892,6 +902,10 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
     param.kbd.mods = mods;
     send_trigger(kbdfocus,type,&param);
   }
+  /* Otherwise process global hotkeys here */
+  /* Process global hotkeys */
+  else
+    global_hotkey(key,mods,type);
 }
 
 void dispatch_direct(char *name,u32 param) {
@@ -921,47 +935,44 @@ void resizeall(void) {
 }
 
 /* Check for global hotkeys, like those used to move between widgets.
- * If the key pressed was a global hotkey, it should be processed and this
- * function should return nonzero.
+ * Widgets that can be focused (this includes widgets with hotspots)
+ * should send unused keys here.
  */
-u8 global_hotkey(u32 keycode, u32 type) {
-  switch (keycode) {
+void global_hotkey(u16 key,u16 mods, u32 type) {
+  if (type == TRIGGER_KEYDOWN) {
+   
+    if (!mods) {
+      /* Key down, no modifiers */
 
-  case PGKEY_TAB:
-    if (type == TRIGGER_KEYDOWN)
-      hotspot_traverse(HOTSPOT_NEXT);
-    return 1;
-
-  case PGKEY_UP:
-    if (type == TRIGGER_KEYDOWN)
-      hotspot_traverse(HOTSPOT_UP);
-    return 1;
-
-  case PGKEY_DOWN:
-    if (type == TRIGGER_KEYDOWN)
-      hotspot_traverse(HOTSPOT_DOWN);
-    return 1;
-
-  case PGKEY_LEFT:
-    if (type == TRIGGER_KEYDOWN)
-      hotspot_traverse(HOTSPOT_LEFT);
-    return 1;
-
-  case PGKEY_RIGHT:
-    if (type == TRIGGER_KEYDOWN)
-      hotspot_traverse(HOTSPOT_RIGHT);
-    return 1;
-
-  default:
-    /* Shift-tab */
-    if ((keycode & 0xFFFF) == PGKEY_TAB && (keycode & (PGMOD_SHIFT<<16))) {
-      if (type == TRIGGER_KEYDOWN)
-	hotspot_traverse(HOTSPOT_PREV);
-      return 1;
+      switch (key) {
+      case PGKEY_TAB:
+	hotspot_traverse(HOTSPOT_NEXT);
+	break;
+      case PGKEY_UP:
+	hotspot_traverse(HOTSPOT_UP);
+	break;
+      case PGKEY_DOWN:
+	hotspot_traverse(HOTSPOT_DOWN);
+	break;
+      case PGKEY_LEFT:
+	hotspot_traverse(HOTSPOT_LEFT);
+	break;
+      case PGKEY_RIGHT:
+	hotspot_traverse(HOTSPOT_RIGHT);
+	break;
+      }
     }
+    
+    else if (mods & PGMOD_SHIFT) {
+      /* Key down with shift */
 
-  }
-  return 0;
+      switch (key) {
+      case PGKEY_TAB:
+	hotspot_traverse(HOTSPOT_PREV);
+	break;
+      }
+    }
+  } 
 }
 
 /* The End */

@@ -4,6 +4,12 @@ Fixing a few bugs...
 
 	   * widget/scroll.c: Fixed the scrollbar drag bug pointed out by Philippe
 
+		* widget/widget.c: Reworked global_hotkey() code so global hotkeys
+		  are processed by widget.c only if the individual widget doesn't want
+		  them. This means that tab and arrow keys in the terminal widget
+		  will be passed on to the terminal rather than just focus another	
+		  widget.
+
 2001-07-09    Micah Dowty <micahjd@users.sourceforge.net>
 
 Continuing work on focusing. I'm adding a 'hotspot' interface that allows

@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.64 2001/07/10 11:46:53 micahjd Exp $
+/* $Id: button.c,v 1.65 2001/07/10 21:30:34 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -287,8 +287,10 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     break;
    
   case TRIGGER_KEYDOWN:
-    if (param->kbd.key != PGKEY_SPACE)
+    if (param->kbd.key != PGKEY_SPACE) {
+      global_hotkey(param->kbd.key,param->kbd.mods,type);
       return;
+    }
     param->mouse.chbtn = 1;
   case TRIGGER_DOWN:
     if (DATA->extdevents & PG_EXEV_PNTR_DOWN)
@@ -300,8 +302,10 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     break;
 
   case TRIGGER_KEYUP:
-    if (param->kbd.key != PGKEY_SPACE)
+    if (param->kbd.key != PGKEY_SPACE) {
+      global_hotkey(param->kbd.key,param->kbd.mods,type);
       return;
+    }
     param->mouse.chbtn = 1;
   case TRIGGER_UP:
     if (DATA->extdevents & PG_EXEV_PNTR_UP)
