@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.103 2002/01/14 07:52:38 micahjd Exp $
+/* $Id: constants.h,v 1.104 2002/01/14 11:01:03 cgrigis Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -960,6 +960,8 @@ typedef unsigned long pghandle;
 /* These are event constants used for networked input drivers. It is a subset
  * of the TRIGGER_* constants in the server, representing only those needed
  * for input drivers. */
+#define PG_TRIGGER_ACTIVATE   (1<<3)  /* Sent when it receives focus */
+#define PG_TRIGGER_DEACTIVATE (1<<4)  /* Losing focus */
 #define PG_TRIGGER_KEYUP      (1<<5)  /* Ignores autorepeat, etc. Raw key codes*/
 #define PG_TRIGGER_KEYDOWN    (1<<6)  /* Ditto. */
 #define PG_TRIGGER_UP         (1<<8)  /* Mouse up */
