@@ -41,12 +41,6 @@ static void ataxx_drag(int x1, int y1, int x2, int y2)
     return;
   ts.player=fs.player;
   ts.bricktype=fs.bricktype;
-  ggmove(fp, tp, ts);
-  if(abs(fp.x-tp.x)==2 || abs(fp.y-tp.y)==2)
-   {
-    fs.bricktype=fs.player=0;
-    ggmove(fp, fp, fs);
-   }
   for(i=-1;i<=1;i++)
     for(j=-1;j<=1;j++)
      {
@@ -56,6 +50,11 @@ static void ataxx_drag(int x1, int y1, int x2, int y2)
       if(fs.player>0 && fs.player!=ts.player)
 	ggmove(tp, fp, ts);
      }
+  fp.x=x1/SCALE;
+  fp.y=y1/SCALE;
+  ggmove(fp, tp, ts);
+  if(abs(fp.x-tp.x)<2 && abs(fp.y-tp.y)<2)
+    ggmove(fp, fp, ts);	/* keep original piece if short move */
   currentplayer^=3;
  }
 

@@ -7,7 +7,7 @@ struct gridgame *register_ataxx(void);
 
 static struct gridgame **games=NULL, *game=NULL;
 static int currentgame=-1, totalgames=0, thobj=0;
-static int bgfill, bgevenodd[2];
+static int bgfill, bgevenodd[2], doredraw;
 static int player[MAXPLAYERS];
 static pghandle toolbar, canvas, app, theme=0;
 static squarestatus *squares=NULL;
@@ -38,7 +38,9 @@ void ggmove(gridpos from, gridpos to, squarestatus newstatus)
   if(ggisvalid(to) && memcmp(&SQ(to),&newstatus,sizeof(newstatus)))
    {
     SQ(to)=newstatus;
-    redraw();
+    doredraw=1;
+    if(to.x!=from.x || to.y!=from.y)
+      SQ(from).player=SQ(from).bricktype=0;
    }
  }
 
@@ -161,16 +163,18 @@ static int evtPtrDown(struct pgEvent *evt)
 
 static int evtPtrUp(struct pgEvent *evt)
  {
-  if(game)
+  if(game && game->drag)
    {
-    if(game->drag)
-      game->drag(ptrx, ptry, evt->e.pntr.x, evt->e.pntr.y);
+    doredraw=0;
+    game->drag(ptrx, ptry, evt->e.pntr.x, evt->e.pntr.y);
+    if(doredraw)
+      redraw();
    }
  }
 
 static int evtBuild(struct pgEvent *evt)
  {
-  if(squares)
+  if(game)
     redraw();
  }
 
