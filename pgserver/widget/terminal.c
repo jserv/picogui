@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.41 2001/12/18 07:04:39 lonetech Exp $
+/* $Id: terminal.c,v 1.42 2001/12/29 21:33:26 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -90,6 +90,9 @@ struct termdata {
 
   /* Handling an escape code? */
   unsigned int escapemode : 1;
+
+  /* Automatically scroll on cursor movement */
+  unsigned int autoscroll : 1;
 
   /* Theme settings */
   u8 attr_default, attr_cursor;
@@ -408,6 +411,10 @@ g_error terminal_set(struct widget *self,int property, glob data) {
     resizewidget(self);
     break;
 
+  case PG_WP_AUTOSCROLL:
+    DATA->autoscroll = data;
+    break;
+
   default:
     return mkerror(ERRT_PASS,0);
   }
@@ -431,7 +438,10 @@ glob terminal_get(struct widget *self,int property) {
 
   case PG_WP_LINES:
     return DATA->bufferh;
-
+    
+  case PG_WP_AUTOSCROLL:
+    return DATA->autoscroll;
+    
   default:
     return 0;
   }
@@ -467,6 +477,23 @@ void terminal_trigger(struct widget *self,long type,union trigparam *param) {
       for (;*param->stream.data;param->stream.data++)
 	term_char(self,*param->stream.data);
       
+      /* If we're autoscrolling, make sure the new cursor position is scrolled in */
+      if (DATA->autoscroll) {
+	/* More trickery... we'd like to be able to use scroll_to_divnode() on this,
+	 * but unfortunately the cursor isn't a divnode. It isn't even a gropnode,
+	 * just a couple bytes set in the terminal's textgrid. So, here we manufacture
+	 * a termporary divnode to feed to scroll_to_divnode.
+	 */
+
+	struct divnode fakediv = *self->in->div;
+	fakediv.x += DATA->x + DATA->celw * DATA->crsrx;
+	fakediv.y += DATA->y + DATA->celh * DATA->crsry;
+	fakediv.w  = DATA->celw;
+	fakediv.h  = DATA->celh;
+	
+	scroll_to_divnode(&fakediv);
+      }
+
       term_realize(self);  /* Realize rects, but don't do a full update */
 
       /* Reset the cursor timer */
@@ -828,7 +855,7 @@ void term_char(struct widget *self,u8 c) {
 
           /* Two methods here - just redraw the screen or try a scroll blit */
 
-          term_updrect(self,0,0,DATA->bufferw,DATA->bufferh);
+	  term_updrect(self,0,0,DATA->bufferw,DATA->bufferh);
 
           //self->in->div->flags |= DIVNODE_SCROLL_ONLY;
           //self->in->div->oty = DATA->celh;

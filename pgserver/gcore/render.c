@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.21 2001/12/16 23:02:55 micahjd Exp $
+/* $Id: render.c,v 1.22 2001/12/29 21:33:26 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -488,6 +488,12 @@ void gropnode_clip(struct groprender *r, struct gropnode *n) {
 	 
       }
       break;
+
+      /* Similar deal with textgrid, easier to handle clipping later */
+    case PG_GROP_TEXTGRID:
+      if (n->r.x>r->clip.x2 || n->r.y>r->clip.y2)
+	goto skip_this_node;
+      break;
 	 
     case PG_GROP_LINE:
       
@@ -739,6 +745,12 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 	   struct fontglyph *glyph;
 	   u32 *textcolors;
 	   s16 temp_x;
+	   struct gropnode bn;
+	   
+	   /* Set up background color node (we'll need it later) */
+	   memset(&bn,0,sizeof(bn));
+	   bn.type = PG_GROP_RECT;
+	   bn.flags = PG_GROPF_COLORED;
 
 	   /* Read textcolors parameter */
 	   if (iserror(rdhandle((void**)&textcolors,PG_TYPE_PALETTE,-1,
@@ -769,22 +781,36 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 	     charh = bufferh;
 	   
 	   r->orig.x = n->r.x;
-	   for (;charh;charh--,n->r.y+=celh,str+=offset)
+	   for (;charh;charh--,n->r.y+=celh,str+=offset) {
+
+	     /* Skip the entire line if it's clipped out */
+	     if (n->r.y > r->clip.y2 ||
+		 (n->r.y+celh) < r->clip.y1) {
+	       str += charw << 1;
+	       continue;
+	     }
+
 	     for (n->r.x=r->orig.x,i=charw;i;i--,str++) {
 		attr = *(str++);
 
-		/* Background color */
-		if ((attr & 0xF0)!=0)
-		  VID(rect)(r->output,n->r.x,n->r.y,celw,celh,
-			    textcolors[attr>>4],r->lgop); 
+		/* Background color (clipped rectangle) */
+		if ((attr & 0xF0)!=0) {
+		  bn.r.x = n->r.x;
+		  bn.r.y = n->r.y;
+		  bn.r.w = celw;
+		  bn.r.h = celh;
+		  bn.param[0] = textcolors[attr>>4];
+		  gropnode_clip(r,&bn);
+		  gropnode_draw(r,&bn);
+		}
 
 		temp_x = n->r.x;
 		n->r.x += celw;
 		outchar(r->output, fd, &temp_x, &n->r.y, 
 			textcolors[attr & 0x0F],
-			*str, NULL,r->lgop, 0);
+			*str, &r->clip,r->lgop, 0);
 	     }
-	   
+	   }
 	}
       break;      
       
