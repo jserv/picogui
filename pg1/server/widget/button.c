@@ -229,6 +229,10 @@ void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
     addgropsz(c,PG_GROP_TEXT,bp.x+bp.tx,bp.y+bp.ty,bp.tw,bp.th);
     c->current->param[0] = DATA->text;
   }
+
+  /* Notify the application */
+  if (DATA->extdevents & PG_EXEV_RESIZE)
+    post_event(PG_WE_RESIZE,self,(c->r.w << 16) | c->r.h,0,NULL);
 }
 
 /* Pointers, pointers, and more pointers. What's the point?
@@ -555,10 +559,14 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
   switch (type) {
 
   case PG_TRIGGER_ENTER:
+    if (DATA->extdevents & PG_EXEV_PNTR_MOVE)
+      post_event(PG_WE_PNTR_ENTER,self,(param->mouse.btn << 28) | (param->mouse.chbtn << 24),0,NULL);
     DATA->over=1;
     break;
     
   case PG_TRIGGER_LEAVE:
+    if (DATA->extdevents & PG_EXEV_PNTR_MOVE)
+      post_event(PG_WE_PNTR_LEAVE,self,(param->mouse.btn << 28) | (param->mouse.chbtn << 24),0,NULL);
     DATA->over=0;
     break;
    
