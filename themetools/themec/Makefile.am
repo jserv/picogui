@@ -18,7 +18,7 @@ CONSTANTS := $(PGSERVER_INCLUDES)/picogui/constants.h \
 GLHEADER := /usr/include/GL/gl.h
 if OPENGL
   CONSTANTS := $(CONSTANTS) \
-	       $(top_srcdir)/include/picogui/opengl.h \
+	       $(PGSERVER_INCLUDES)/picogui/opengl.h \
 	       $(GLHEADER)
 endif
 
