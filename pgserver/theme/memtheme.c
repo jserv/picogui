@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.28 2001/04/05 05:33:36 micahjd Exp $
+/* $Id: memtheme.c,v 1.29 2001/05/10 20:57:30 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -216,9 +216,54 @@ void div_rebuild(struct divnode *d) {
    }
 }
 
+/* This is used in div_setstate() to compare theme objects.
+ * It finds the theme object as high as possible in the theme
+ * hierarchy that will act equivalently to the specified theme object.
+ */
+u16 trace_thobj(u16 obj) {
+   struct pgmemtheme *ptheme;
+   struct pgmemtheme_thobj *pobj;
+   
+   while (obj && (obj<PGTH_ONUM)) {
+   
+      /* If this object is defined in any loaded themes, return it */
+      for (ptheme=memtheme;ptheme;ptheme=ptheme->next)
+	if (find_thobj(ptheme,obj))
+	  return obj;
+      
+      /* Next object in the hierarchy */
+      obj = thobj_ancestry[obj];
+   }
+   
+   return obj;
+}
+
 /* Change a divnode's state, and update the necessary things. */
-void div_setstate(struct divnode *d,unsigned short state) {
+void div_setstate(struct divnode *d,u16 state) {
+  u16 prevstate = d->state;
+  if (state==prevstate)
+     return;             /* exact same state */
   d->state = state;
+
+  /* Try to determine if the new state and old state look exactly the same,
+   * and avoid redrawing if possible. This isn't as easy as I thought it would
+   * be. Simply comparing the fillstyle handle for both state's bgfill
+   * properties didn't work, as most themes use changes in color, bitmap,
+   * or other parameters to indicate state changes. The next thing that comes
+   * to mind is to check whether the theme object is exactly the same. This
+   * doesn't work either, because due to the hierarchial nature of the theme,
+   * different theme objects may be used for different properties.
+   * 
+   * Though I don't think it's optimal, this is the best method I could come
+   * up with. (and it seems to work pretty well) It uses the trace_thobj()
+   * function (defined above) to check whether the new theme object is any
+   * different than the currently selected theme object.
+   * trace_thobj() finds the theme object as high as possible in the theme
+   * hierarchy that will act equivalently to the specified theme object.
+   */
+  if (trace_thobj(state) == trace_thobj(prevstate))
+     return;
+
   div_rebuild(d);
 
   /* state changes are caused by interaction with the user, and should
