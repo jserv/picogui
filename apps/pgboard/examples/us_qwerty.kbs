@@ -1,4 +1,7 @@
-# Keyboard source for the US 'qwerty' layout
+# Keyboard source for the US 'qwerty' layout. This is a fairly generic
+# keyboard that should work at any screen resolution. It draws the keyboard
+# with vector graphics, using gropnode coordinate mapping to have the server
+# scale the keyboard to fit the screen
 #
 # This keyboard compiler is a relatively braindead perl script, so the
 # formatting isn't as nifty as the theme format.  
@@ -20,6 +23,10 @@
 #
 # -- Micah Dowty <micahjd@users.sourceforge.net>
 
+side = PG_S_BOTTOM
+size = 25
+sizemode = PG_SZMODE_PERCENT
+
 [normal]
 
 :pattern
@@ -27,7 +34,14 @@
 # Setup
 
 PGCANVAS_NUKE
+PGCANVAS_DEFAULTFLAGS,PG_GROPF_UNIVERSAL
 PGCANVAS_GROP,PG_GROP_SETMAPPING,0,0,30,4,PG_MAP_SCALE
+PGCANVAS_DEFAULTFLAGS,0
+PGCANVAS_INPUTMAPPING,0,0,30,4,PG_MAP_SCALE
+
+# Border
+
+PGCANVAS_GROP,PG_GROP_FRAME,0,0,30,4
 
 # Horizontal lines
 
@@ -101,7 +115,7 @@ PGCANVAS_GROP,PG_GROP_TEXT,19,0,1,1,"o"
 PGCANVAS_GROP,PG_GROP_TEXT,21,0,1,1,"p"
 PGCANVAS_GROP,PG_GROP_TEXT,23,0,1,1,"["
 PGCANVAS_GROP,PG_GROP_TEXT,25,0,1,1,"]"
-PGCANVAS_GROP,PG_GROP_TEXT,27,0,1,1,"\"
+PGCANVAS_GROP,PG_GROP_TEXT,27,0,1,1,"<--"
 
 PGCANVAS_GROP,PG_GROP_TEXT,0,1,1,1,"caps"
 PGCANVAS_GROP,PG_GROP_TEXT,4,1,1,1,"a"
@@ -115,6 +129,7 @@ PGCANVAS_GROP,PG_GROP_TEXT,18,1,1,1,"k"
 PGCANVAS_GROP,PG_GROP_TEXT,20,1,1,1,"l"
 PGCANVAS_GROP,PG_GROP_TEXT,22,1,1,1,";"
 PGCANVAS_GROP,PG_GROP_TEXT,24,1,1,1,"'"
+PGCANVAS_GROP,PG_GROP_TEXT,26,1,1,1,"ent"
 
 PGCANVAS_GROP,PG_GROP_TEXT,0,2,1,1,"shift"
 PGCANVAS_GROP,PG_GROP_TEXT,5,2,1,1,"z"
@@ -136,5 +151,45 @@ PGCANVAS_GROP,PG_GROP_TEXT,0,3,1,1,"ctrl"
 #PGCANVAS_GROP,PG_GROP_TEXT,20,3,1,1,"num"
 
 :keys
-10,10,20,20,0,'q',PGKEY_q,0,0
+
+0,0,3,1,0,PGKEY_TAB,PGKEY_TAB,0,0
+3,0,2,1,0,'q',PGKEY_q,0,0
+5,0,2,1,0,'w',PGKEY_w,0,0
+7,0,2,1,0,'e',PGKEY_e,0,0
+9,0,2,1,0,'r',PGKEY_r,0,0
+11,0,2,1,0,'t',PGKEY_t,0,0
+13,0,2,1,0,'y',PGKEY_y,0,0
+15,0,2,1,0,'u',PGKEY_u,0,0
+17,0,2,1,0,'i',PGKEY_i,0,0
+19,0,2,1,0,'o',PGKEY_o,0,0
+21,0,2,1,0,'p',PGKEY_p,0,0
+23,0,2,1,0,'[',PGKEY_LEFTBRACKET,0,0
+25,0,2,1,0,']',PGKEY_RIGHTBRACKET,0,0
+27,0,3,1,0,PGKEY_BACKSPACE,PGKEY_BACKSPACE,0,0
+
+4,1,2,1,0,'a',PGKEY_a,0,0
+6,1,2,1,0,'s',PGKEY_s,0,0
+8,1,2,1,0,'d',PGKEY_d,0,0
+10,1,2,1,0,'f',PGKEY_f,0,0
+12,1,2,1,0,'g',PGKEY_g,0,0
+14,1,2,1,0,'h',PGKEY_h,0,0
+16,1,2,1,0,'j',PGKEY_j,0,0
+18,1,2,1,0,'k',PGKEY_k,0,0
+20,1,2,1,0,'l',PGKEY_l,0,0
+22,1,2,1,0,';',PGKEY_SEMICOLON,0,0
+24,1,2,1,0,PGKEY_QUOTE,PGKEY_QUOTE,0,0
+26,1,4,1,0,PGKEY_RETURN,PGKEY_RETURN,0,0
+
+5,2,2,1,0,'z',PGKEY_z,0,0
+7,2,2,1,0,'x',PGKEY_x,0,0
+9,2,2,1,0,'c',PGKEY_c,0,0
+11,2,2,1,0,'v',PGKEY_v,0,0
+13,2,2,1,0,'b',PGKEY_b,0,0
+15,2,2,1,0,'n',PGKEY_n,0,0
+17,2,2,1,0,'m',PGKEY_m,0,0
+19,2,2,1,0,PGKEY_COMMA,PGKEY_COMMA,0,0
+21,2,2,1,0,'.',PGKEY_PERIOD,0,0
+23,2,2,1,0,'/',PGKEY_SLASH,0,0
+
+10,3,10,1,0,PGKEY_SPACE,PGKEY_SPACE,0,0
 

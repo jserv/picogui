@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: kbcompile.pl,v 1.4 2001/05/04 23:27:29 micahjd Exp $
+# $Id: kbcompile.pl,v 1.5 2001/05/06 00:16:40 micahjd Exp $
 #
 # This script converts a .kbs keyboard definition source to the .kb
 # binary representation as defined in kbfile.h
@@ -40,10 +40,22 @@ foreach $file (map {glob($_)}
 
       open HFILE,$file;
       while (<HFILE>) {
-      	    $symbols{$1} = $2 if (/#define\s+(\S+)\s+(\S+)/);
+	    if (/#define\s+(\S+)\s+(\S+)/) {
+                # Yes, the eval here can be a bit insecure if the header
+	        # files are compromised...
+	        # Necessary to handle things like (1<<5) in the headers
+		$sym = $1;
+		$val = $2;
+		$val = eval($val) if ($val =~ /<</);
+		$symbols{$sym} = $val;
+	    }
       }
       close HFILE;
 }
+
+$options{'side'} = $symbols{'PG_S_BOTTOM'};
+$options{'size'} = 25;
+$options{'sizemode'} = $symbols{'PG_SZMODE_PERCENT'};
 
 # Actual processing
 while (<>) {
@@ -68,6 +80,12 @@ while (<>) {
       }
       s/(0x[0-9A-Fa-f]+)/eval($1)/ge;
       s/\'(.)\'/ord($1)/ge;
+
+      # Miscellaneous options
+      if ((!$pattern) && /^\s*(\S+)\s*=\s*(\S+)/) {
+      	 $options{$1} = $2;
+	 next;
+      }
 
       # An entry in the :pattern section.
       if ($section eq 'pattern') {
@@ -94,6 +112,7 @@ while (<>) {
 	      die "Unknown request?";
  	   }
 	 }
+
 	 # Pack into a pgcommand structure
 	 $pat_table{$pattern} .= pack "n2N*", $cmd, scalar(@param), @param;
 	 next;
@@ -119,7 +138,9 @@ foreach $pattern (@pattern_list) {
 }
 
 # Assemble the patterns, name, and all header fields after the checksum
-$file_data = pack("n2",$formatver,scalar(@pattern_list)).$pattern_data;
+$file_data = pack("n6",$formatver,scalar(@pattern_list),
+	          $options{'side'},$options{'size'},$options{'sizemode'},0
+		  ).$pattern_data;
 
 # Assemble the chunk before the checksum (magic and length)
 $file_prefix = "PGkb".pack("N",length($file_data)+12);

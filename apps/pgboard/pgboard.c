@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.4 2001/05/04 23:27:29 micahjd Exp $
+/* $Id: pgboard.c,v 1.5 2001/05/06 00:16:40 micahjd Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -33,9 +33,9 @@
 
 FILE *fpat;
 struct mem_pattern mpat;
-pghandle wCanvas;
+pghandle wCanvas, wApp;
 
-int evtMouseDown(struct pgEvent *evt) {
+int evtMouse(struct pgEvent *evt) {
    struct key_entry *k;
    short n;
    
@@ -47,27 +47,32 @@ int evtMouseDown(struct pgEvent *evt) {
       if (evt->e.pntr.y > (k->y+k->h-1)) continue;
    
       /* If we got this far, it was clicked */
-      pgSendKeyInput(PG_TRIGGER_CHAR,k->key,k->mods);
-      pgSendKeyInput(PG_TRIGGER_KEYDOWN,k->pgkey,k->mods);
-
-      /* For aestheticness? */
-      pgWriteCmd(evt->from,PGCANVAS_DEFAULTFLAGS,1,
-		 PG_GROPF_TRANSIENT | PG_GROPF_COLORED);
+      if (evt->type == PG_WE_PNTR_DOWN) {
+	 if (k->key)
+	   pgSendKeyInput(PG_TRIGGER_CHAR,k->key,k->mods);
+	 pgSendKeyInput(PG_TRIGGER_KEYDOWN,k->pgkey,k->mods);
+      }
+      else {
+	 pgSendKeyInput(PG_TRIGGER_KEYUP,k->pgkey,k->mods);
+      }
+	 
+      /* Flash the clicked key with an XOR'ed rectangle */
       pgWriteCmd(evt->from,PGCANVAS_GROP,2,PG_GROP_SETLGOP,PG_LGOP_XOR);
+      pgWriteCmd(evt->from,PGCANVAS_GROPFLAGS,1,PG_GROPF_TRANSIENT);
       pgWriteCmd(evt->from,PGCANVAS_GROP,6,
 		 PG_GROP_RECT,k->x,k->y,k->w,k->h,0xFFFFFF);
+      pgWriteCmd(evt->from,PGCANVAS_GROPFLAGS,1,
+		 PG_GROPF_TRANSIENT | PG_GROPF_COLORED);
       pgWriteCmd(evt->from,PGCANVAS_INCREMENTAL,0);
+      pgSubUpdate(evt->from);
    }
    return 0;
 }
 
 int main(int argc,char **argv) {
-   /* Initialize drawing, set mapping */
+   /* Make a 'toolbar' app */
    pgInit(argc,argv);
-   pgRegisterApp(PG_APP_NORMAL,"Keyboard",       /* FIXME. Better way of     */
-		 PG_APPSPEC_SIDE, PG_S_BOTTOM,   /* defining size, maybe an  */
-		 PG_APPSPEC_HEIGHT,75,           /* app type with small/no   */
-		 0);                             /* panelbar?                */
+   wApp = pgRegisterApp(PG_APP_TOOLBAR,"Keyboard",0);
    wCanvas = pgNewWidget(PG_WIDGET_CANVAS,0,0);
 
    /* Load a pattern */
@@ -81,13 +86,22 @@ int main(int argc,char **argv) {
       pgMessageDialog(*argv,"Invalid keyboard file",0);
       return 1;
    }
+
+   /* Resize app widget */
+   pgSetWidget(wApp,
+	       PG_WP_SIDE,mpat.app_side,
+	       PG_WP_SIZE,mpat.app_size,
+	       PG_WP_SIZEMODE,mpat.app_sizemode,
+	       0);
+   
    if (kb_loadpattern(fpat,&mpat,0,wCanvas)) {
       pgMessageDialog(*argv,"Error loading keyboard pattern",0);
       return 1;
    }
    
    /* Set up an event handler */
-   pgBind(wCanvas,PG_WE_PNTR_DOWN,&evtMouseDown,NULL);
+   pgBind(wCanvas,PG_WE_PNTR_DOWN,&evtMouse,NULL);
+   pgBind(wCanvas,PG_WE_PNTR_UP,&evtMouse,NULL);
    
    pgEventLoop();
    return 0;

@@ -1,4 +1,4 @@
-/* $Id: kbfile.c,v 1.2 2001/05/04 23:27:29 micahjd Exp $
+/* $Id: kbfile.c,v 1.3 2001/05/06 00:16:40 micahjd Exp $
   *
   * kbfile.c - Functions to validate and load patterns from a keyboard file
   * 
@@ -53,6 +53,9 @@ int kb_validate(FILE *f, struct mem_pattern *pat) {
    hdr.file_sum32 = ntohl(hdr.file_sum32);
    hdr.file_ver = ntohs(hdr.file_ver);
    hdr.num_patterns = ntohs(hdr.num_patterns);
+   hdr.app_size = ntohs(hdr.app_size);
+   hdr.app_sizemode = ntohs(hdr.app_sizemode);
+   hdr.app_side = ntohs(hdr.app_side);
    
    /* Check file version */
    if (hdr.file_ver > PGKB_FORMATVERSION)
@@ -78,6 +81,9 @@ int kb_validate(FILE *f, struct mem_pattern *pat) {
 
    /* Looks ok, store data */
    pat->num_patterns = hdr.num_patterns;
+   pat->app_size = hdr.app_size;
+   pat->app_sizemode = hdr.app_sizemode;
+   pat->app_side = hdr.app_side;
    
    return 0;
 }
