@@ -126,6 +126,8 @@ int ttykb_fd_activate(int fd)
 	int	curkey;
 	unsigned char buf[1];
 
+	if(fd != ttykb_fd) return 0;
+
 	cc = read(fd, buf, 1);
 	if (cc > 0) {
 		curkey = buf[0];
