@@ -1,4 +1,4 @@
-/* $Id: omnibar.c,v 1.10 2001/04/05 03:26:13 micahjd Exp $
+/* $Id: omnibar.c,v 1.11 2001/04/25 13:58:32 gobry Exp $
  * 
  * omnibar.c - hopefully this will grow into a general interface
  *             for starting and manipulating applications, but
@@ -38,6 +38,7 @@
 #include <stdio.h>       /* file IO for getting CPU load */
 
 #include <picogui.h>
+#include <unistd.h>
 
 pghandle wClock,wLoad;
 
@@ -86,7 +87,7 @@ int btnAppMenu(struct pgEvent *evt) {
     strcpy(buf,"demos/");
     strcat(buf,pgGetString(items[i-1]));
     strcat(buf,".app");
-    if (!fork()) {
+    if (!vfork()) {
       execlp(buf,buf,NULL);
       pgMessageDialogFmt("Error",0,"There was an error starting the\nfollowing program:\n%s",buf);
       exit(1);

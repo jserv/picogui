@@ -1,4 +1,4 @@
-/* $Id: platform.c,v 1.2 2001/03/22 00:22:18 micahjd Exp $
+/* $Id: platform.c,v 1.3 2001/04/25 13:58:32 gobry Exp $
  *
  * platforms.c - Contains platform-dependant stuff
  *
@@ -177,5 +177,3 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args) {
 }
 
 /* Kludge? */
-void __cleanup(void) {
-}

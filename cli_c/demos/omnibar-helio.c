@@ -1,4 +1,4 @@
-/* $Id: omnibar-helio.c,v 1.1 2001/04/18 01:09:35 micahjd Exp $
+/* $Id: omnibar-helio.c,v 1.2 2001/04/25 13:58:32 gobry Exp $
  * 
  * omnibar-helio.c - omnibar, hacked up a bit to look good on Helio
  *
@@ -36,6 +36,7 @@
 #include <stdio.h>       /* file IO for getting CPU load */
 
 #include <picogui.h>
+#include <unistd.h>
 
 pghandle wClock,wBatt;
 
@@ -84,7 +85,7 @@ int btnAppMenu(struct pgEvent *evt) {
     strcpy(buf,"demos/");
     strcat(buf,pgGetString(items[i-1]));
     strcat(buf,".app");
-    if (!fork()) {
+    if (!vfork()) {
       execlp(buf,buf,NULL);
       pgMessageDialogFmt("Error",0,"There was an error starting the\nfollowing program:\n%s",buf);
       exit(1);
