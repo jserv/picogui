@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.38 2001/12/16 23:02:55 micahjd Exp $
+/* $Id: terminal.c,v 1.39 2001/12/17 22:39:22 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -77,6 +77,9 @@ struct termdata {
   
   /* Cursor visible? */
   unsigned int cursor_on : 1;
+
+  /* Client has hidden the cursor w/ VT100 commands? */
+  unsigned int cursor_hidden : 1;
 
   /* Do we have keyboard focus? */
   unsigned int focus : 1;
@@ -818,18 +821,21 @@ void term_char(struct widget *self,u8 c) {
 
 /* Hide/show cursor */
 void term_setcursor(struct widget *self,int flag) {
-   if (flag == DATA->cursor_on)
-     return;
-   
-   if (flag)
-     /* Show cursor */
-     DATA->attr_under_crsr = term_chattr(self,DATA->crsrx,
-					 DATA->crsry,DATA->attr_cursor);
-   else
-     /* Hide cursor */
-     term_chattr(self,DATA->crsrx,DATA->crsry,DATA->attr_under_crsr);
-   
-   DATA->cursor_on = flag;
+  if (DATA->cursor_hidden)
+    flag = 0;
+
+  if (flag == DATA->cursor_on)
+    return;
+  
+  if (flag)
+    /* Show cursor */
+    DATA->attr_under_crsr = term_chattr(self,DATA->crsrx,
+					DATA->crsry,DATA->attr_cursor);
+  else
+    /* Hide cursor */
+    term_chattr(self,DATA->crsrx,DATA->crsry,DATA->attr_under_crsr);
+  
+  DATA->cursor_on = flag;
 }
 
 /* Prepare for adding more update rectangles.
@@ -1039,6 +1045,29 @@ void term_othercsi(struct widget *self,u8 c) {
       term_clearbuf(self,DATA->crsrx,DATA->crsry,DATA->bufferw-DATA->crsrx);
     }
     break;
+
+    /* l and h - DECSET/DECRST sequence */
+  case 'h':  /* SET */
+  case 'l':  /* RST */
+    switch (DATA->csiargs[0]) {
+
+      /* ESC [ ? 25 h - Cursor on/off */
+    case 25:
+      if (c=='h')
+	DATA->cursor_hidden = 0;
+      else {
+	DATA->cursor_hidden = 1;
+	term_setcursor(self,0);
+      }
+      break;
+
+#ifdef BOTHERSOME_TERMINAL
+    default:
+      printf("term: Unknown DECSET/DECRST number = %d\n",DATA->csiargs[0]);
+#endif
+    }
+    break;
+
 
 #ifdef BOTHERSOME_TERMINAL
     default:
