@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.22 2001/09/27 03:14:47 micahjd Exp $
+/* $Id: linear8.c,v 1.23 2001/10/07 07:48:08 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -442,13 +442,13 @@ void linear8_blit(hwrbitmap dest,
   */
 
   /* Normal blit loop */
-#ifdef UCLINUX   /* The 32-bit stuff isn't aligned, crashes uclinux */
 #define BLITLOOP(op)                                               \
     for (;h;h--,src+=offset_src,dst+=offset_dst) {                 \
       for (i=w;i;i--,src++,dst++)                                  \
 	*dst op *src;                                              \
     }
-#else
+  
+#if 0 /* This attempt at a 32-bit blitter is broke */
 #define BLITLOOP(op)                                               \
     for (;h;h--,src+=offset_src,dst+=offset_dst) {                 \
       for (i=w>>2;i;i--,src+=4,dst+=4)                             \
@@ -460,7 +460,6 @@ void linear8_blit(hwrbitmap dest,
    
   /* Tiled blit loop - similar to tileblit() but always restarts the bitmap
    * on a tile boundary, instead of tiling a bitmap section */
-#ifdef UCLINUX   /* The 32-bit stuff isn't aligned, crashes uclinux */
 #define TILEBLITLOOP(op)                                           \
    while (h) {                                                            \
       for (;sh && h;sh--,h--,src_line+=srcbit->pitch,dst+=offset_dst) {       \
@@ -476,7 +475,8 @@ void linear8_blit(hwrbitmap dest,
       sh = srcbit->h;                                                     \
       src_line = srcbit->bits;                                            \
    }
-#else
+
+#if 0 /* This attempt at a 32-bit blitter is broke */
 #define TILEBLITLOOP(op)                                                  \
    while (h) {                                                            \
       for (;sh && h;sh--,h--,src_line+=srcbit->pitch,dst+=offset_dst) {       \
