@@ -1,4 +1,4 @@
-/* $Id: dlg_filepicker.c,v 1.4 2001/08/03 16:08:03 bauermeister Exp $
+/* $Id: dlg_filepicker.c,v 1.5 2001/08/04 07:55:43 micahjd Exp $
  *
  * dlg_filepicker.c - Display a dialog box the user can use to select
  *                    a file to open or save. It is customizable with flags
@@ -82,7 +82,10 @@ struct filepickdata {
   const char *pattern;
   
   /* Fonts */
-  pghandle fDirectory, fLink;
+  pghandle fDirectory, fLink, fHeading;
+
+  /* Selected file */
+  pghandle sFileName, wFile;
 };
 
 /* This is the type of node used to hold a directory entry */
@@ -111,15 +114,50 @@ void filepicker_pathmenu(struct filepickdata *dat) {
   pghandle str;
   int ret;
   int i;
-
-  /* Don't bother if we're already at root */
-  if (!items[1])
-    return;
-
+  struct stat st;
+  
   /* Create the menu popup in its own context */
   pgEnterContext();
   pgNewPopupAt(PG_POPUP_ATCURSOR,PG_POPUP_ATCURSOR,0,0);
-  
+
+  /* Add helpful tools! */
+
+  pgNewWidget(PG_WIDGET_MENUITEM,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_BOTTOM,
+	      PG_WP_TEXT,pgNewString("Rename"),
+	      0);
+  pgSetPayload(PGDEFAULT,-4);
+
+  pgNewWidget(PG_WIDGET_MENUITEM,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_BOTTOM,
+	      PG_WP_TEXT,pgNewString("Delete"),
+	      0);
+  pgSetPayload(PGDEFAULT,-3);
+
+  pgNewWidget(PG_WIDGET_MENUITEM,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_BOTTOM,
+	      PG_WP_TEXT,pgNewString("New Directory"),
+	      0);
+  pgSetPayload(PGDEFAULT,-2);
+
+  pgNewWidget(PG_WIDGET_MENUITEM,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_BOTTOM,
+	      PG_WP_TEXT,pgNewString("Home"),
+	      0);
+  pgSetPayload(PGDEFAULT,-1);
+
+  pgNewWidget(PG_WIDGET_LABEL,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_BOTTOM,
+	      PG_WP_TEXT,pgNewString("Tools:"),
+	      0);
+  pgSetPayload(PGDEFAULT,-4);
+
+  /* Add directories above this one */
   i=0;
   do {
     /* Do a little fancy stuff to make the string handle.
@@ -159,9 +197,78 @@ void filepicker_pathmenu(struct filepickdata *dat) {
   /* Run the menu */
   ret = pgGetPayload(pgGetEvent()->from);
   pgLeaveContext();
-  if (ret) {
+  if (ret>0) {
     filepicker_dir[ret] = 0;
     filepicker_setdir(dat);
+  }
+  else if (ret<0) {
+    /* Update selected file string */
+    if (dat->wFile)
+      dat->sFileName = pgGetWidget(dat->wFile,PG_WP_TEXT);
+    
+    switch (-ret) {
+
+    case 1 :    /* Home */
+      filepicker_dir[FILEMAX-1] = 0;
+      strncpy(filepicker_dir,getenv("HOME"),FILEMAX-1);
+      filepicker_setdir(dat);
+      break;
+      
+    case 2:     /* New Directory */
+      str = pgInputDialog("New Directory", "Name:",0);
+      if (str) {
+	filepicker_fullpath(pgGetString(str));
+	pgDelete(str);
+	
+	if (mkdir(filepicker_buf,0777)) 
+	  pgMessageDialogFmt("Error",0,"Unable to create directory:\n%s",
+			     filepicker_buf);
+	else
+	  filepicker_setdir(dat);
+    }
+      break;
+      
+    case 3:     /* Delete */
+      if (dat->sFileName) {
+	filepicker_fullpath(pgGetString(dat->sFileName));
+	if (pgMessageDialog("Delete?",filepicker_buf,
+			    PG_MSGBTN_YES | PG_MSGBTN_NO) == PG_MSGBTN_YES) {
+	  
+	  if (unlink(filepicker_buf))
+	    pgMessageDialogFmt("Error",0,"Unable to delete file:\n%s",
+			       filepicker_buf);
+	  else
+	    filepicker_setdir(dat);
+	}
+      }
+      break;
+      
+    case 4:     /* Rename */
+      printf("Renaming action yay!\n");
+      if (dat->sFileName) {
+	filepicker_fullpath(pgGetString(dat->sFileName));
+	str = pgInputDialog("Rename File",filepicker_buf,0);
+	if (str) {
+	  char *oldname, *newname;
+	  oldname = strdup(filepicker_buf);
+	  newname = pgGetString(str);
+	  if (newname[0] != '/') {
+	    filepicker_fullpath(newname);
+	    newname = filepicker_buf;
+	  }
+	  
+	  if (rename(oldname,newname))
+	    pgMessageDialogFmt("Error",0,"Unable to rename file:\n%s\nto\n%s",
+			       oldname,newname);
+	  else
+	    filepicker_setdir(dat);
+	  
+	  free(oldname);
+	}
+      }
+      break;
+            
+    }
   }
 }
 
@@ -308,8 +415,11 @@ void filepicker_setdir(struct filepickdata *dat) {
   struct stat st;
   struct filenode *names, *p;
   int total = 0, count, i;
+  int itemheight;
   char *s;
   pghandle font;
+  pghandle wNameBoxP, wSizeBoxP;
+  char buf[20];
 
   /* Clear the directory context */
   pgLeaveContext();
@@ -363,59 +473,126 @@ void filepicker_setdir(struct filepickdata *dat) {
     }
   }
   closedir(d);
- 
-  /* Sort them */
-  qsort(names,count,sizeof(struct filenode),&filepicker_compare);
 
-  /* List all the items */
-  for (p=names,i=0;i<count;p++,i++) {
-
-    /* Normally we'd use the default font, but directories and links
-     * get special fonts
-     */
-    font = 0;
-    if (S_ISLNK(p->st.st_mode))
-      font = dat->fLink;
-    /*
-     * IMPORTANT: Directory must override link for directory symlinks
-     *            to be followed. Currently the event loop checks the font
-     *            to see if an item is a file or directory
-     */
-    if (S_ISDIR(p->st.st_mode))
-      font = dat->fDirectory;
-
-    /* Create the new widget, position the first one inside the
-     * file list box. The rest will follow automatically.
-     */
-    pgNewWidget(PG_WIDGET_LISTITEM,
-		i ? 0 : PG_DERIVE_INSIDE, i ? 0 : dat->wFileList);
+  if (!count) {
+    /* No items? It's like a "this page intentionally left blank" message */
+    pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_INSIDE,dat->wFileList);
     pgSetWidget(PGDEFAULT,
-		PG_WP_TEXT,pgNewString(p->name),
-		PG_WP_FONT,font,
+		PG_WP_SIDE,PG_S_ALL,
+		PG_WP_TEXT,pgNewString("(no visible files)"),
 		0);
-    pgSetPayload(PGDEFAULT,FILETAG);
-
-    /* Listitems normally have PG_EXEV_TOGGLE and PG_EXEV_EXCLUSIVE turned
-     * on. This makes them work basically like a radio button would.
-     * They automatically turn off other listitems in the same container,
-     * and they send an activate event when the mouse is pressed down.
-     *
-     * For directories, we don't care about hilighting (because we will redraw
-     * it all anyway) and we want an activate when the mouse is released
-     * after being pressed. In other words, a normal button.
-     * If it's a directory, turn off all the EXEVs
-     */
-    if (font == dat->fDirectory)
-      pgSetWidget(PGDEFAULT,
-		  PG_WP_EXTDEVENTS,0,
-		  0);
- 
-    /* FIXME: We'd like some icons here to indicate file type...
-     * The icons themselves could be stored in a theme.
-     * Determining file types might be more complex.
-     */
   }
+  else {
+    /* Normal item drawing stuff... */
+
+    /* Get the height for list items */
+    itemheight = pgThemeLookup(PGTH_O_LISTITEM,PGTH_P_HEIGHT);
  
+    /* Sort them */
+    qsort(names,count,sizeof(struct filenode),&filepicker_compare);
+    
+    /* Make Columns */
+    wNameBoxP = pgNewWidget(PG_WIDGET_BOX,PG_DERIVE_INSIDE,dat->wFileList);
+    pgSetWidget(PGDEFAULT,
+		PG_WP_TRANSPARENT,1,
+		PG_WP_SIDE,PG_S_LEFT,
+		0);
+    wSizeBoxP = pgNewWidget(PG_WIDGET_BOX,0,0);
+    pgSetWidget(PGDEFAULT,
+		PG_WP_TRANSPARENT,1,
+		PG_WP_SIDE,PG_S_ALL,
+		0);
+    
+    /* Column headings */
+    wNameBoxP = pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_INSIDE,wNameBoxP);
+    pgSetWidget(PGDEFAULT,
+		PG_WP_TRANSPARENT,0,
+		PG_WP_FONT,dat->fHeading,
+		PG_WP_TEXT,pgNewString("Name"),
+		PG_WP_ALIGN,PG_A_LEFT,
+		PG_WP_SIZE,itemheight,
+		0);
+    
+    wSizeBoxP = pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_INSIDE,wSizeBoxP);
+    pgSetWidget(PGDEFAULT,
+		PG_WP_TRANSPARENT,0,
+		PG_WP_FONT,dat->fHeading,
+		PG_WP_TEXT,pgNewString("Size"),
+		PG_WP_ALIGN,PG_A_LEFT,
+		PG_WP_SIZE,itemheight,
+		0);
+    
+    
+    /* List all the items */
+    for (p=names,i=0;i<count;p++,i++) {
+      
+      /* Normally we'd use the default font, but directories and links
+       * get special fonts
+       */
+      font = 0;
+      if (S_ISLNK(p->st.st_mode))
+	font = dat->fLink;
+      /*
+       * IMPORTANT: Directory must override link for directory symlinks
+       *            to be followed. Currently the event loop checks the font
+       *            to see if an item is a file or directory
+       */
+      if (S_ISDIR(p->st.st_mode))
+	font = dat->fDirectory;
+      
+      /* Create the file name widget */
+      wNameBoxP = pgNewWidget(PG_WIDGET_LISTITEM,PG_DERIVE_AFTER,wNameBoxP);
+      pgSetWidget(PGDEFAULT,
+		  PG_WP_TEXT,pgNewString(p->name),
+		  PG_WP_FONT,font,
+		  0);
+      pgSetPayload(PGDEFAULT,FILETAG);
+      
+      /* Listitems normally have PG_EXEV_TOGGLE and PG_EXEV_EXCLUSIVE turned
+       * on. This makes them work basically like a radio button would.
+       * They automatically turn off other listitems in the same container,
+       * and they send an activate event when the mouse is pressed down.
+       *
+       * For directories, we don't care about hilighting (because we will redraw
+       * it all anyway) and we want an activate when the mouse is released
+       * after being pressed. In other words, a normal button.
+       * If it's a directory, turn off all the EXEVs
+       */
+      if (font == dat->fDirectory)
+	pgSetWidget(PGDEFAULT,
+		    PG_WP_EXTDEVENTS,0,
+		    0);
+      
+      /* FIXME: We'd like some icons here to indicate file type...
+       * The icons themselves could be stored in a theme.
+       * Determining file types might be more complex.
+       */
+      
+      /* Make a more human-readable size */
+ 
+      if (font)                                 /* Non-normal file? */
+	strcpy(buf," -");
+      else if (p->st.st_size > 1048576)         /* Megabytes? */
+	sprintf(buf,"%d.%02d M",
+		p->st.st_size / 1048576,
+		(p->st.st_size / 10485) % 100);
+      else if (p->st.st_size > 1024)            /* Kilobytes? */
+	sprintf(buf,"%d.%02d K",
+		p->st.st_size / 1024,
+		(p->st.st_size / 10) % 100);
+      else                                      /* Bytes? */
+	sprintf(buf,"%d",p->st.st_size);
+      
+      /* Add another widget for size */
+      wSizeBoxP = pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_AFTER,wSizeBoxP);
+      pgSetWidget(PGDEFAULT,
+		  PG_WP_TEXT,pgNewString(buf),
+		  PG_WP_ALIGN,PG_A_LEFT,
+		  PG_WP_SIZE,itemheight,
+		  0);
+    }
+  }
+
   /* Free the memory! */
   free(names);
 }
@@ -425,17 +602,18 @@ void filepicker_setdir(struct filepickdata *dat) {
 const char *pgFilePicker(pgfilter filefilter, const char *pattern,
 			 const char *deffile, int flags, const char *title) {
 
-  pghandle wButtons, wFile, wOk, wCancel, wUp, wHome, sFileName; 
+  pghandle wTB, wOk, wCancel, wUp;
   struct pgEvent evt;
-  char *p;
   struct filepickdata dat;
   int w,h;
+  char *p;
 
   /* If this is the first invocation, use the current directory */
   if (!filepicker_dir[0])
     getcwd(filepicker_dir,FILEMAX);
 
   /* Store picker data */
+  memset(&dat,0,sizeof(dat));
   dat.flags = flags;
   dat.filefilter = filefilter;
   dat.pattern = pattern;
@@ -473,23 +651,16 @@ const char *pgFilePicker(pgfilter filefilter, const char *pattern,
   /* Special fonts for directories and links */
   dat.fDirectory = pgNewFont(NULL,0,PG_FSTYLE_DEFAULT | PG_FSTYLE_BOLD);
   dat.fLink      = pgNewFont(NULL,0,PG_FSTYLE_DEFAULT | PG_FSTYLE_ITALIC);
+  dat.fHeading   = pgNewFont(NULL,0,PG_FSTYLE_DEFAULT | PG_FSTYLE_BOLD |
+			     PG_FSTYLE_UNDERLINE);
   
-  wButtons = pgNewWidget(PG_WIDGET_TOOLBAR,0,0);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_SIDE,PG_S_RIGHT,
-	      0);
-
   /* Make containers for the directory and file. They are ok without
    * containers, but it looks better putting them in toolbars.
    */
-  if (dat.flags & PG_FILE_FIELD) {
-    wFile = pgNewWidget(PG_WIDGET_TOOLBAR,0,0);
-    pgSetWidget(PGDEFAULT,
-		PG_WP_SIDE,PG_S_BOTTOM,
-		0);
-  }
-  else
-    wFile = NULL;
+  wTB = pgNewWidget(PG_WIDGET_TOOLBAR,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_BOTTOM,
+	      0);
   dat.wDirectory = pgNewWidget(PG_WIDGET_TOOLBAR,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_TOP,
@@ -502,8 +673,8 @@ const char *pgFilePicker(pgfilter filefilter, const char *pattern,
 	      0);
 
   /* Put the file and directory in their toolbars */
-  if (wFile) {
-    wFile = pgNewWidget(PG_WIDGET_FIELD,PG_DERIVE_INSIDE,wFile);
+  if (flags & PG_FILE_FIELD) {
+    dat.wFile = pgNewWidget(PG_WIDGET_FIELD,PG_DERIVE_INSIDE,wTB);
     pgSetWidget(PGDEFAULT,
 		PG_WP_SIDE,PG_S_ALL,
 		0);
@@ -511,8 +682,12 @@ const char *pgFilePicker(pgfilter filefilter, const char *pattern,
       pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString(deffile),0);
   }
 
-  dat.wDirectory = pgNewWidget(PG_WIDGET_BUTTON,
-			       PG_DERIVE_INSIDE,dat.wDirectory);
+  wUp = pgNewWidget(PG_WIDGET_BUTTON,
+		    PG_DERIVE_INSIDE,dat.wDirectory);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString(".."),
+	      0);
+  dat.wDirectory = pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_ALL,
 	      PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
@@ -520,30 +695,19 @@ const char *pgFilePicker(pgfilter filefilter, const char *pattern,
 
   /********** Widgets */
 
-  wUp = pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wButtons);
+  wCancel = pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wTB);
   pgSetWidget(PGDEFAULT,
-	      PG_WP_SIDE,PG_S_TOP,
-	      PG_WP_TEXT,pgNewString(".."),
-	      0);
-
-  wOk = pgNewWidget(PG_WIDGET_BUTTON,0,0);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_SIDE,PG_S_BOTTOM,
-	      PG_WP_TEXT,pgNewString((flags&PG_FILE_SAVEBTN) ? "Save":"Open"),
-	      PG_WP_HOTKEY,PGKEY_RETURN,
-	      0);
-
-  wCancel = pgNewWidget(PG_WIDGET_BUTTON,0,0);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_SIDE,PG_S_BOTTOM,
+	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_TEXT,pgNewString("Cancel"),
 	      PG_WP_HOTKEY,PGKEY_ESCAPE,
 	      0);
 
-  wHome = pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  wOk = pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wTB);
   pgSetWidget(PGDEFAULT,
-	      PG_WP_SIDE,PG_S_TOP,
-	      PG_WP_TEXT,pgNewString("Home"),
+	      PG_WP_SIDE,PG_S_RIGHT,
+	      PG_WP_TEXT,pgNewString((flags&PG_FILE_SAVEBTN) ? 
+				     "Save" : "Open"),
+	      PG_WP_HOTKEY,PGKEY_RETURN,
 	      0);
 
   /********** Run the dialog */
@@ -551,6 +715,10 @@ const char *pgFilePicker(pgfilter filefilter, const char *pattern,
   /* Set up the default directory in it's own directory context */
   pgEnterContext();
   filepicker_setdir(&dat);
+
+  /* If we have a field, focus it first */
+  if (dat.wFile)
+    pgFocus(dat.wFile);
 
   for (;;) {
     evt = *pgGetEvent();
@@ -560,22 +728,16 @@ const char *pgFilePicker(pgfilter filefilter, const char *pattern,
     if (evt.from==wOk || evt.from==wCancel)
       break;
 
-    else if (evt.from==wUp) {
-      /* Chop off the slash unless it's already at root */
+    if (evt.from==wUp) {
+      /* Go up one level: chop off the slash until we have only one */
       p = strrchr(filepicker_dir,'/');
       if (p) {
 	if (p==filepicker_dir)
 	  p[1] = 0;
 	else
-	  *p = 0;
-	filepicker_setdir(&dat);	
+	  p[0] = 0;
+	filepicker_setdir(&dat);
       }
-    }
-
-    else if (evt.from==wHome) {
-      filepicker_dir[FILEMAX-1] = 0;
-      strncpy(filepicker_dir,getenv("HOME"),FILEMAX-1);
-      filepicker_setdir(&dat);
     }
 
     else if (evt.from==dat.wDirectory && evt.type==PG_WE_PNTR_DOWN)
@@ -591,21 +753,26 @@ const char *pgFilePicker(pgfilter filefilter, const char *pattern,
 	filepicker_fullpath(pgGetString(pgGetWidget(evt.from,PG_WP_TEXT)));
 	strcpy(filepicker_dir,filepicker_buf);
 	filepicker_setdir(&dat);
+
+	/* No valid file */
+	dat.sFileName = 0;
       }
       else {
 	/* Select the file */
 	
-	sFileName = pgGetWidget(evt.from, PG_WP_TEXT);
-	if (wFile)
-	  pgSetWidget(wFile,PG_WP_TEXT,sFileName,0);
+	dat.sFileName = pgGetWidget(evt.from, PG_WP_TEXT);
+	if (dat.wFile)
+	  pgSetWidget(dat.wFile,PG_WP_TEXT,dat.sFileName,0);
       }
     }
   }
 
   /* Put together a full path for the final file name */
-  if (wFile)
-    sFileName = pgGetWidget(wFile,PG_WP_TEXT);
-  filepicker_fullpath(pgGetString(sFileName));
+  if (evt.from!=wCancel) {
+    if (dat.wFile)
+      dat.sFileName = pgGetWidget(dat.wFile,PG_WP_TEXT);
+    filepicker_fullpath(pgGetString(dat.sFileName));
+  }    
 
   /* FIXME: Validate file name */
 
