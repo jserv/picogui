@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.70 2002/01/06 09:23:00 micahjd Exp $
+/* $Id: panel.c,v 1.71 2002/01/07 08:14:47 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -123,7 +123,7 @@ void panel_resize(struct widget *self) {
   int s;
 
   /* Spacings */
-  self->in->div->next->split = theme_lookup(DATA->panelbar->state,PGTH_P_MARGIN);
+  self->in->div->next->split = theme_lookup(self->in->div->next->state,PGTH_P_MARGIN);
   BARWIDTH = theme_lookup(DATA->panelbar->state,PGTH_P_WIDTH);
    
   /* Button placement */

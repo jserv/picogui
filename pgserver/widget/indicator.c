@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.24 2002/01/06 09:23:00 micahjd Exp $
+/* $Id: indicator.c,v 1.25 2002/01/07 08:14:47 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -31,6 +31,12 @@
 #define VALUE ((int)self->data)
 
 void build_indicator(struct gropctxt *c,unsigned short state,struct widget *self) {
+  /* Set orientation */
+  if (c->w > c->h)
+    self->in->div->state = PGTH_O_INDICATOR_H;
+  else
+    self->in->div->state = PGTH_O_INDICATOR_V;
+
   exec_fillstyle(c,state,PGTH_P_BGFILL);
 
   /* Within the remaining space, figure out where the indicator is
@@ -50,15 +56,15 @@ void build_indicator(struct gropctxt *c,unsigned short state,struct widget *self
 void indicator_resize(struct widget *self) {
    if ((self->in->flags & PG_S_TOP) ||
        (self->in->flags & PG_S_BOTTOM)) {
-      
-      self->in->div->pw = 0;
-      self->in->div->ph = theme_lookup(self->in->div->state,PGTH_P_WIDTH);
+ 
+     self->in->div->pw = 0;
+     self->in->div->ph = theme_lookup(self->in->div->state,PGTH_P_WIDTH);
    }
    else if ((self->in->flags & PG_S_LEFT) ||
 	    (self->in->flags & PG_S_RIGHT)) {
       
-      self->in->div->ph = 0;
-      self->in->div->pw = theme_lookup(self->in->div->state,PGTH_P_WIDTH);
+     self->in->div->ph = 0;
+     self->in->div->pw = theme_lookup(self->in->div->state,PGTH_P_WIDTH);
    }
 }
 
