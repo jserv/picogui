@@ -64,8 +64,8 @@ def focus(obj_id, id=None):
 def free(obj_id, id=None):
 	return request (6, pack('L', obj_id), id=id)
 	
-def get(widget_id, property, value, id=None):
-	return request(8, pack('LLHxx', widget_id, value, property), id=id)
+def get(widget_id, property, id=None):
+	return request(8, pack('LHxx', widget_id, property), id=id)
 
 def getfstyle(index, id=None):
 	return request(41, pack('Hxx', index), id=id)
