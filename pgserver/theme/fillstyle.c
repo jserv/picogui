@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.4 2000/11/11 18:32:07 micahjd Exp $
+/* $Id: fillstyle.c,v 1.5 2000/12/17 05:53:50 micahjd Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -324,14 +324,12 @@ g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
       errorcheck;
     }
 
-#ifdef DEBUG
+#ifdef DEBUG_THEME
     /* trace */
-    /*    
     printf("FILLSTYLE --- Op: 0x%02X Stk:",op);
     for (fsa=0;fsa<fsstkpos;fsa++)
       printf(" %d",fsstack[fsa]);
     printf("\n"); 
-    */
 #endif
     
     /* check for stack over/underflow */

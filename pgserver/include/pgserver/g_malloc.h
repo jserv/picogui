@@ -1,4 +1,4 @@
-/* $Id: g_malloc.h,v 1.3 2000/11/12 20:06:54 micahjd Exp $
+/* $Id: g_malloc.h,v 1.4 2000/12/17 05:53:50 micahjd Exp $
  *
  * g_malloc.h - malloc wrapper providing error handling
  *
@@ -35,14 +35,17 @@ g_error g_malloc(void **p,size_t s);
 void g_free(void *p);
 g_error g_realloc(void **p,size_t s);
 
-#ifdef DEBUG
-/* Memory allocation statistics, for debugging and profiling */
-extern long memamt;       /* Bytes of memory total */
+#ifdef DEBUG_KEYS
+/* Memory allocation statistics, for CTRL-ALT-M */
 extern long num_grops;    /* Number of gropnodes */
 extern long num_divs;     /* Number of divnodes */
 extern long num_widgets;  /* Number of widgets */
 extern long num_handles;  /* Number of handles */
 extern long memref;       /* Total allocations */
+#endif
+
+#ifdef DEBUG_ANY
+extern long memamt;       /* Bytes of memory total */
 #endif
 
 #endif /* __H_GMALLOC */

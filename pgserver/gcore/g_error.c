@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.10 2000/10/29 01:45:35 micahjd Exp $
+/* $Id: g_error.c,v 1.11 2000/12/17 05:53:49 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -27,7 +27,7 @@
 
 #include <pgserver/g_error.h>
 
-#ifdef DEBUG
+#ifdef DEBUG_ANY
 /* Extra includes needed for guru screen */
 #include <pgserver/video.h>
 #include <pgserver/font.h>
@@ -59,7 +59,7 @@ g_error prerror(g_error e) {
 }
 
 /* graphical error/info screen, only in debug mode */
-#ifdef DEBUG
+#ifdef DEBUG_ANY
 
 #define deadcomp_width 20
 #define deadcomp_height 28
@@ -82,7 +82,6 @@ void guru(const char *fmt, ...) {
   if (!vid) return;
 
   /* Setup */
-  (*vid->clip_off)();
   (*vid->clear)();
   rdhandle((void**)&df,PG_TYPE_FONTDESC,-1,defaultfont);
 
@@ -101,10 +100,10 @@ void guru(const char *fmt, ...) {
   va_end(ap);
 
   outtext(df,20+deadcomp_width,10,(*vid->color_pgtohwr)(0xFFFFFF),msgbuf);
-  (*vid->update)();
+  (*vid->update)(0,0,vid->xres,vid->yres);
 }
 
-#endif /* DEBUG */
+#endif /* DEBUG_ANY */
 
 /* The End */
 

@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.30 2000/12/12 00:51:47 micahjd Exp $
+/* $Id: div.c,v 1.31 2000/12/17 05:53:49 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -230,7 +230,7 @@ void divnode_redraw(struct divnode *n,int all) {
 /* Allocate an empty divnode */
 g_error newdiv(struct divnode **p,struct widget *owner) {
   g_error e;
-#ifdef DEBUG
+#ifdef DEBUG_KEYS
   num_divs++;
 #endif
   e = g_malloc((void **)p,sizeof(struct divnode));
@@ -267,7 +267,7 @@ void r_divnode_free(struct divnode *n) {
   r_divnode_free(n->next);
   r_divnode_free(n->div);
   grop_free(&n->grop);
-#ifdef DEBUG
+#ifdef DEBUG_KEYS
   num_divs--;
 #endif
   g_free(n);
@@ -293,10 +293,17 @@ void update(struct divnode *subtree,int show) {
     (*vid->sprite_showall)();
     
     /* NOW we update the hardware */
-    (*vid->update)();
-  }    
+    if (upd_w) {
+#ifdef DEBUG_VIDEO
+      /* Show update rectangles */
+      (*vid->frame)(upd_x,upd_y,upd_w,upd_h,(*vid->color_pgtohwr)(0xFF0000));
+#endif
+      (*vid->update)(upd_x,upd_y,upd_w,upd_h);
+      upd_x = upd_y = upd_w = upd_h = 0;
+    }    
+  }
 
-#ifdef DEBUG
+#ifdef DEBUG_VIDEO
   printf("****************** Update (sub: 0x%08X)\n",subtree);
 #endif
 }
@@ -312,7 +319,7 @@ void r_dtupdate(struct divtree *dt) {
      in the right order */
 
   if (dt->flags & DIVTREE_NEED_RECALC) {
-#ifdef DEBUG
+#ifdef DEBUG_VIDEO
     printf("divnode_recalc\n",dt->head);
 #endif
     divnode_recalc(dt->head);
@@ -320,7 +327,7 @@ void r_dtupdate(struct divtree *dt) {
     dt->flags |= DIVTREE_NEED_REDRAW;
   }
   if (dt->flags &(DIVTREE_NEED_REDRAW|DIVTREE_ALL_REDRAW)) {
-#ifdef DEBUG
+#ifdef DEBUG_VIDEO
     printf("divnode_redraw\n");
 #endif
     divnode_redraw(dt->head,dt->flags & DIVTREE_ALL_REDRAW);

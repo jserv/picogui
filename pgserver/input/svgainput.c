@@ -1,4 +1,4 @@
-/* $Id: svgainput.c,v 1.12 2000/12/12 00:51:47 micahjd Exp $
+/* $Id: svgainput.c,v 1.13 2000/12/17 05:53:50 micahjd Exp $
  *
  * svgainput.h - input driver for SVGAlib
  *
@@ -263,7 +263,7 @@ void svgainput_kbdhandler(int scancode,int press) {
       c = KVAL(svgainput_vga_keymap[map][scancode]);
 
 
-#ifdef DEBUG
+#ifdef DEBUG_EVENT
     //    guru("Translated key: %c (%d) (mods: %d)",c,c,svgainput_mod);
 #endif
 
@@ -299,7 +299,7 @@ void svgainput_mousehandler(int button,int dx,int dy,int dz,
   x = mouse_getx();
   y = mouse_gety();
 
-#ifdef DEBUG
+#ifdef DEBUG_EVENT
   /*
   guru("svgainput_mousehandler:\n"
        "button = %d\ndx = %d\ndy = %d\ndz = %d\ndrx = %d\ndry = %d\ndrz = %d"

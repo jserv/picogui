@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.2 2000/12/16 20:08:46 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.3 2000/12/17 05:53:50 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -40,17 +40,6 @@ g_error def_setmode(int xres,int yres,int bpp,unsigned long flags) {
 }
 
 void emulate_dos(void) {
-}
-
-void def_clip_set(int x1,int y1,int x2,int y2) {
-  vid->clip_x1 = x1;
-  vid->clip_y1 = y1;
-  vid->clip_x2 = x2;
-  vid->clip_y2 = y2;
-}
-
-void def_clip_off(void) {
-  (*vid->clip_set)(0,0,vid->xres-1,vid->yres-1);
 }
 
 hwrcolor def_color_pgtohwr(pgcolor c) {
@@ -168,8 +157,6 @@ void def_line(int x1,int y1,int x2,int y2,hwrcolor c) {
 
   (*vid->pixel)(x1,y1,c);
 
-  /* Clipping */
-  
   /* Major axis is horizontal */
   if (dx > dy) {
     fraction = dy - (dx >> 1);
@@ -339,16 +326,16 @@ void def_frame(int x,int y,int w,int h,hwrcolor c) {
   (*vid->bar)(x+w-1,y+1,h-2,c);
 }
 
-void def_dim(void) {
-  int x,y;
+void def_dim(int x,int y,int w,int h) {
+  int i,xx;
 
   /* 'Cute' little checkerboard thingy. Devices with high/true color
    * or even 256 color should make this do real dimming to avoid
    * looking stupid  ;-)
    */
-  for (y=vid->clip_y1;y<=vid->clip_y2;y++)
-    for (x=vid->clip_x1+(y&1);x<=vid->clip_x2;x+=2)
-      (*vid->pixel)(x,y,0);
+  for (;h;h--,y++)
+    for (xx=x+(h&1),i=w;i;i--,xx+=2)
+      (*vid->pixel)(xx,y,0);
 }
 
 void def_scrollblit(int src_x,int src_y,
@@ -371,10 +358,6 @@ void def_charblit(unsigned char *chardat,int dest_x,
   int iw,bit,x,i;
   int olines = lines;
   unsigned char ch;
-
-  /* Is it at all in the clipping rect? */
-  if (dest_x>vid->clip_x2 || dest_y>vid->clip_y2 || 
-      (dest_x+w)<vid->clip_x1 || (dest_y+h)<vid->clip_y1) return;
 
   /* Find the width of the source data in bytes */
   if (bw & 7) bw += 8;
@@ -401,10 +384,6 @@ void def_charblit_v(unsigned char *chardat,int dest_x,
   int iw,bit,y,i;
   int olines = lines;
   unsigned char ch;
-
-  /* Is it at all in the clipping rect? */
-  //  if (dest_x>vid->clip_x2 || dest_y>vid->clip_y2 || 
-  //      (dest_x+w)<vid->clip_x1 || (dest_y+h)<vid->clip_y1) return;
 
   /* Find the width of the source data in bytes */
   if (bw & 7) bw += 8;
@@ -504,7 +483,7 @@ g_error def_bitmap_loadxbm(struct stdbitmap **bmp,
 	*(((unsigned long *)p)++) = (c&1) ? fg : bg;
 	break;
 
-#if DEBUG
+#if DEBUG_VIDEO
 	/* Probably not worth the error-checking time
 	   in non-debug versions, as it would be caught
 	   earlier (hopefully?)
@@ -683,7 +662,7 @@ g_error def_bitmap_loadpnm(struct stdbitmap **bmp,
 	*(((unsigned long *)p)++) = hc;
 	break;
 
-#if DEBUG
+#if DEBUG_VIDEO
 	/* Probably not worth the error-checking time
 	   in non-debug versions, as it would be caught
 	   earlier (hopefully?)
@@ -760,38 +739,45 @@ void def_sprite_show(struct sprite *spr) {
       spr->x = spr->clip_to->x + spr->clip_to->w - spr->w;
     if (spr->y+spr->h > spr->clip_to->y+spr->clip_to->h)
       spr->y = spr->clip_to->y + spr->clip_to->h - spr->h;
-  }
 
-  /* no clipping (in the driver) for sprites */
-  (*vid->clip_off)();
+    spr->ow = spr->w; spr->oh = spr->h;
+  }
+  else {
+    /* Clip width and height to screen edge */
+    spr->ow = vid->xres - spr->x;
+    if (spr->ow > spr->w) spr->ow = spr->w;
+    spr->oh = vid->yres - spr->y;
+    if (spr->oh > spr->h) spr->oh = spr->h;
+  }
 
   /* Update coordinates */
   spr->ox = spr->x; spr->oy = spr->y;
   
   /* Grab a new backbuffer */
   (*vid->unblit)(spr->x,spr->y,spr->backbuffer,
-  	       0,0,spr->w,spr->h);
+  	       0,0,spr->ow,spr->oh);
   
   /* Display the sprite */
   if (spr->mask) {
     (*vid->blit)(spr->mask,0,0,
-		 spr->x,spr->y,spr->w,spr->h,PG_LGOP_AND);
+		 spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_AND);
     (*vid->blit)(spr->bitmap,0,0,
-		 spr->x,spr->y,spr->w,spr->h,PG_LGOP_OR);
+		 spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_OR);
   }
   else
     (*vid->blit)(spr->bitmap,0,0,
-		 spr->x,spr->y,spr->w,spr->h,PG_LGOP_NONE);
+		 spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_NONE);
+
+  add_updarea(spr->x,spr->y,spr->ow,spr->oh);
 }
 
 void def_sprite_hide(struct sprite *spr) {
-  /* no clipping for sprites */
-  (*vid->clip_off)();
+  if (spr->ox == -1) return;
 
   /* Put back the old image */
-  if (spr->ox != -1)
   (*vid->blit)(spr->backbuffer,0,0,
-	       spr->ox,spr->oy,spr->w,spr->h,PG_LGOP_NONE);
+	       spr->ox,spr->oy,spr->ow,spr->oh,PG_LGOP_NONE);
+  add_updarea(spr->ox,spr->oy,spr->ow,spr->oh);
 }
 
 void def_sprite_update(struct sprite *spr) {
@@ -811,7 +797,14 @@ void def_sprite_update(struct sprite *spr) {
   }
 
   /* Redraw */
-  (*vid->update)();
+  if (upd_w) {
+#ifdef DEBUG_VIDEO
+    /* Show update rectangles */
+    //    (*vid->frame)(upd_x,upd_y,upd_w,upd_h,(*vid->color_pgtohwr)(0xFF0000));
+#endif
+    (*vid->update)(upd_x,upd_y,upd_w,upd_h);
+    upd_x = upd_y = upd_w = upd_h = 0;
+  } 
 }
 
 /* Traverse first -> last, showing sprites */
@@ -842,8 +835,6 @@ void setvbl_default(struct vidlib *vid) {
   /* Set defaults */
   vid->setmode = &def_setmode;
   vid->close = &emulate_dos;
-  vid->clip_set = &def_clip_set;
-  vid->clip_off = &def_clip_off;
   vid->color_pgtohwr = &def_color_pgtohwr;
   vid->color_hwrtopg = &def_color_hwrtopg;
   vid->addpixel = &def_addpixel;

@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.2 2000/12/16 20:08:46 micahjd Exp $
+/* $Id: linear8.c,v 1.3 2000/12/17 05:53:50 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -165,123 +165,65 @@ void linear8_rect(int x,int y,int w,int h,hwrcolor c) {
       *p = c;
 }
 
-/* For details on this function's workings see defaultvbl.c
- * This is just a framebuffer-optimized version. 
- * A significant change is that values are converted to hwrcolors,
- * then only one channel is used for the arithmetic.
- *
- * could be a problem on 24 or 32 bit framebuffers, but for 8 and 16 bit
- * it really cuts down on the registers and additions needed.
+/* Gradients look really cheesy in 8bpp anyway, so just
+ * fake it with a rectangle
  */
 void linear8_gradient(int x,int y,int w,int h,int angle,
 		      pgcolor c1, pgcolor c2,int translucent) {
-  long vs,sa,ca,ica;
-  long vsc,vss;
-  long v1,v2;
-  int i,s,c;
+  hwrcolor c;
+  int i,offset = vid->fb_bpl - w;
   unsigned char *p = LINE(y) + x;
-
-  unsigned char o,d,e;  /* Temp vars for color add/subtract */
+  unsigned char o,d;
   int q;
 
-  /* Look up the sine and cosine */
-  angle %= 360;
-  if (angle<0) angle += 360;
-  if      (angle <= 90 ) s =  trigtab[angle];
-  else if (angle <= 180) s =  trigtab[180-angle];
-  else if (angle <= 270) s = -trigtab[angle-180];
-  else                   s = -trigtab[360-angle];
-  angle += 90;
-  if (angle>=360) angle -= 360;
-  if      (angle <= 90 ) c =  trigtab[angle];
-  else if (angle <= 180) c =  trigtab[180-angle];
-  else if (angle <= 270) c = -trigtab[angle-180];
-  else                   c = -trigtab[360-angle];
+  /* Find a reasonable in-between color to use */
+  c = linear8_color_pgtohwr(mkcolor((getred(c2)+getred(c1))>>1,
+				    (getgreen(c2)+getgreen(c1))>>1,
+				    (getblue(c2)+getblue(c1))>>1));
 
-  /* Decode colors (go ahead and squash to our RGB mapping.
-   * Not quite kosher, but it saves a lot of per-pixel work) */
-  v1 = linear8_color_pgtohwr(c1);
-  v2 = linear8_color_pgtohwr(c2);
+  if (translucent==0)           /* Normal opaque rectangle */
+    linear8_rect(x,y,w,h,c);
 
-  /* Calculate the scale values and 
-   * scaled sine and cosine */
-  vs = ((v2<<16)-(v1<<16)) / 
-    (h*((s<0) ? -((long)s) : ((long)s)) +
-     w*((c<0) ? -((long)c) : ((long)c)));
-
-  /* Zero the accumulators */
-  sa = ca = ica = 0;
-
-  /* Calculate the sine and cosine scales */
-  vsc = (vs*((long)c)) >> 8;
-  vss = (vs*((long)s)) >> 8;
-
-  /* If the scales are negative, start from the opposite side 
-   * (FIXME: This must be calculated for each component) */
-  if (vss<0) sa  = -vss*h;
-  if (vsc<0) ica = -vsc*w; 
-  if (v2<v1) v1 = v2;
-
-  /* Finally, the loop! */
-
-  if (translucent==0) {
-
-    /* Normal opaque gradient */
-    for (;h;h--,sa+=vss,p+=vid->fb_bpl)
-      for (ca=ica,i=w;i;i--,ca+=vsc,p++)
-	*p = v1 + ((ca+sa) >> 8);
-
-  }
-  else if (translucent>0) {
-
-    /* Addition */
-    for (;h;h--,sa+=vss,p+=vid->fb_bpl)
-      for (ca=ica,i=w;i;i--,ca+=vsc,p++) {
-	e = v1 + ((ca+sa) >> 8);
+  else if (translucent>0)       /* Additive translucency */
+    for (;h;h--,p+=offset)
+      for (i=w;i;i--,p++) {
 	o = *p;    /* Load original pixel color */
-
+	
 	/* Add and truncate each component */
-	d = (o & 0x07) + (e & 0x07);                   /* Blue */
+	d = (o & 0x07) + (c & 0x07);                   /* Blue */
 	if (d & 0xF8) d = 0xFF;
-	d |= (o & 0x38) + (e & 0x38);                  /* Green */
+	d |= (o & 0x38) + (c & 0x38);                  /* Green */
 	if (d & 0xC0) d = (d & 0xFF) | 0xFF00;
-	d |= (o & 0xC0) + (e & 0xC0);                  /* Red */
+	d |= (o & 0xC0) + (c & 0xC0);                  /* Red */
 	
 	/* Store it  */
 	*p = d;
       }
-    
-  }
-  else {
-    
-    /* Subtraction */
-    for (;h;h--,sa+=vss,p+=vid->fb_bpl)
-      for (ca=ica,i=w;i;i--,ca+=vsc,p++) {
-	e = v1 + ((ca+sa) >> 8);
+
+  else                          /* Subtractive translucency */
+    for (;h;h--,p+=offset)
+      for (i=w;i;i--,p++) {
 	o = *p;
 	d = 0;
 
 	/* Subtract each component, storing if it's nonzero */
-	if ( (q = (o & 0xC0) - (e & 0xC0)) > 0x3F ) d  = q; 
-	if ( (q = (o & 0x38) - (e & 0x38)) > 0x03 ) d |= q; 
-	if ( (q = (o & 0x07) - (e & 0x07)) > 0 )    d |= q; 
+	if ( (q = (o & 0xC0) - (c & 0xC0)) > 0x3F ) d  = q; 
+	if ( (q = (o & 0x38) - (c & 0x38)) > 0x03 ) d |= q; 
+	if ( (q = (o & 0x07) - (c & 0x07)) > 0 )    d |= q; 
 	
 	/* Store it */
 	*p = d;  
       }
-  }
 }
 
 /* Bit-shift dimming */
-void linear8_dim(void) {
-  int w = vid->clip_x2 - vid->clip_x1 + 1;
-  int h = vid->clip_y2 - vid->clip_y1 + 1;
-  unsigned char *p = LINE(vid->clip_y1) + vid->clip_x1;
+void linear8_dim(int x,int y,int w,int h) {
+  unsigned char *p = LINE(y) + x;
   int i,offset = vid->fb_bpl - w;
 
   for (;h;h--,p += offset)
     for (i=w;i;i--,p++)
-      *p &= (*p & 0xB6) >> 1;
+      *p = (*p & 0xB6) >> 1;
 }
 
 /* Screen-to-screen bottom-up blit */
@@ -294,7 +236,7 @@ void linear8_scrollblit(int src_x,int src_y,
 
   /* Do most of the blit in 32 bits, pick up the crumbs in 8 bits */
   for (;h;h--,src+=offset,dest+=offset) {
-    for (i=(w&0xFFFC)>>2;i;i--,src+=4,dest+=4)
+    for (i=w>>2;i;i--,src+=4,dest+=4)
       *((unsigned long *)dest) = *((unsigned long *)src);
     for (i=w&3;i;i--,src++,dest++)
       *dest = *src;
@@ -392,7 +334,7 @@ void linear8_tileblit(struct stdbitmap *srcbit,
   /* Restart values for the tile */
   unsigned char *src;
   unsigned char *src_line;
-  int sh,sw;
+  int sh,sw,swm;
 
   /* This horrifying loop scans across the destination rectangle one
    * line at at time, copying the source bitmap's scanline and letting
@@ -403,12 +345,12 @@ void linear8_tileblit(struct stdbitmap *srcbit,
    */
   while (dest_h) {
     for (src_line=src_top,sh=src_h;sh && dest_h;
-	 sh--,dest_h--,src_line+=src_w,dest+=offset) { 
-      for (dw=dest_w;dw;) { 
-	for (src=src_line,sw=(( (src_w < dw) ? src_w : dw ) & 
-			       0xFFFC)>>2;sw;sw--,dw-=4,src+=4,dest+=4)
+	 sh--,dest_h--,src_line+=srcbit->w,dest+=offset) { 
+      for (dw=dest_w;dw;) {
+	swm = (src_w < dw) ? src_w : dw;
+	for (src=src_line,sw=swm>>2;sw;sw--,dw-=4,src+=4,dest+=4)
 	  *((unsigned long *)dest) = *((unsigned long *)src);
-	for (sw=(( (src_w < dw) ? src_w : dw ) & 3);sw;sw--,src++,dest++,dw--)
+	for (sw=swm&3;sw;sw--,src++,dest++,dw--)
 	  *dest = *src;
       }
     }
@@ -424,15 +366,78 @@ hwrcolor linear8_getpixel(int x,int y) {
 }
 
 /* Fun-fun-fun blit functions! */
-void linear8_blit(hwrbitmap src,int src_x,int src_y,
+void linear8_blit(struct stdbitmap *srcbit,int src_x,int src_y,
 		  int dest_x, int dest_y,
 		  int w, int h, int lgop) {
+  struct stdbitmap screen;
+  unsigned char *src,*dest;
+  int i,offset_src,offset_dest;
+
+  /* Screen-to-screen blit */
+  if (!srcbit) {
+    srcbit = &screen;
+    screen.bits = vid->fb_mem;
+    screen.w = vid->fb_bpl;
+    screen.h = vid->yres;
+  }
+
+  /* A few calculations */
+  src = srcbit->bits + src_x + src_y*srcbit->w;
+  dest = LINE(dest_y) + dest_x;
+  offset_src = srcbit->w - w;
+  offset_dest = vid->fb_bpl - w;
+
+  /* The following little macro mess is to repeat the
+     loop using different logical operations.
+     (Putting the switch inside the loop would be
+     easier to read, but much slower)
+
+     You still have to admit that this blitter is _much_ better
+     written than the one on the old SDL driver...
+
+     This loop does as much as possible 32 bits at a time
+  */
+
+#define BLITLOOP(op,xtra32,xtra8) \
+    for (;h;h--,src+=offset_src,dest+=offset_dest) {                \
+      for (i=w>>2;i;i--,src+=4,dest+=4)                  \
+	*((unsigned long *)dest) op *((unsigned long *)src) xtra32; \
+      for (i=w&3;i;i--,src++,dest++)                                \
+	*dest op *src xtra8;                                        \
+    }
+
+  switch (lgop) {
+  case PG_LGOP_NONE:       BLITLOOP(= ,,);                   break;
+  case PG_LGOP_OR:         BLITLOOP(|=,,);                   break;
+  case PG_LGOP_AND:        BLITLOOP(&=,,);                   break;
+  case PG_LGOP_XOR:        BLITLOOP(^=,,);                   break;
+  case PG_LGOP_INVERT:     BLITLOOP(= ,^ 0xFFFFFFFF,^ 0xFF); break;
+  case PG_LGOP_INVERT_OR:  BLITLOOP(|=,^ 0xFFFFFFFF,^ 0xFF); break;
+  case PG_LGOP_INVERT_AND: BLITLOOP(&=,^ 0xFFFFFFFF,^ 0xFF); break;
+  case PG_LGOP_INVERT_XOR: BLITLOOP(^=,^ 0xFFFFFFFF,^ 0xFF); break;
+  }
 }
 
-/* Simpler than blit, thank goodness. */
+/* Nice simple screen-to-bitmap blit */
 void linear8_unblit(int src_x,int src_y,
-		    hwrbitmap dest,int dest_x,int dest_y,
+		    struct stdbitmap *destbit,int dest_x,int dest_y,
 		    int w,int h) {
+  unsigned char *src,*dest;
+  int i,offset_src,offset_dest;
+
+  /* A few calculations */
+  src  = LINE(src_y) + src_x;
+  dest = destbit->bits + dest_x + dest_y*destbit->w;
+  offset_src  = vid->fb_bpl - w;
+  offset_dest = destbit->w - w;
+
+  /* Another nifty 32-bit loop */
+  for (;h;h--,src+=offset_src,dest+=offset_dest) {
+    for (i=w>>2;i;i--,src+=4,dest+=4)
+      *((unsigned long *)dest) = *((unsigned long *)src);
+    for (i=w&3;i;i--,src++,dest++)
+      *dest = *src;
+  }
 }
 
 /* Load our driver functions into a vidlib */
@@ -440,8 +445,6 @@ void setvbl_linear8(struct vidlib *vid) {
   /* We take the default for these */
   vid->setmode        = &def_setmode;
   vid->close          = &emulate_dos;
-  vid->clip_set       = &def_clip_set;
-  vid->clip_off       = &def_clip_off;
   vid->update         = &emulate_dos;
   vid->frame          = &def_frame;
   vid->bitmap_loadxbm = &def_bitmap_loadxbm;

@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.12 2000/12/16 20:08:45 micahjd Exp $
+/* $Id: video.h,v 1.13 2000/12/17 05:53:50 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -44,8 +44,13 @@ typedef unsigned long pgcolor;
 #define getblue(pgc)   ((pgc)&0xFF)
 #define mkcolor(r,g,b) (((r)<<16)|((g)<<8)|(b))
 
-/* Hardware-specific bitmap */
-typedef void * hwrbitmap;
+/* Can be a hardware-specific bitmap, but usually is
+ * a stdbitmap pointer. This is driver dependant.
+ * It really doesn't matter what type of pointer
+ * this is defined as, but it affects the compiler
+ * warnings.
+ */
+typedef struct stdbitmap *hwrbitmap;
 
 /* The hwrbitmap used in the default implementation
    (should be sufficient for most drivers)
@@ -62,6 +67,7 @@ struct sprite {
   int x,y;   /* Current coordinates */
   int ox,oy; /* Coordinates last time it was drawn */
   int w,h;   /* Dimensions of all buffers */
+  int ow,oh; /* The blit last time, with clipping */
   struct divnode *clip_to;
   struct sprite *next;
 };
@@ -110,25 +116,6 @@ struct vidlib {
   /* Framebuffer information (for framebuffer Video Base Libraries) */
   unsigned char *fb_mem;
   unsigned int fb_bpl;   /* Bytes Per Line */
-
-  /***************** Clipping */
-
-  /* Reccomended
-   *   Set a new clipping rectangle
-   *
-   * Default implementation: just stores it
-   */
-  void (*clip_set)(int x1,int y1,int x2,int y2);
-
-  /* Reccomended
-   *   Turns off clipping
-   *
-   * Default implementation: sets clip to full screen
-   */
-  void (*clip_off)(void);
-
-  /* Current clipping (read only to all but driver) */
-  int clip_x1,clip_y1,clip_x2,clip_y2;
 
   /***************** Colors */
 
@@ -179,7 +166,7 @@ struct vidlib {
    *
    * Default implementation: does nothing (assumes changes are immediate)
    */
-  void (*update)(void);
+  void (*update)(int x,int y,int w,int h);
 
   /* Optional
    *   draws a continuous horizontal run of pixels
@@ -233,11 +220,11 @@ struct vidlib {
   void (*frame)(int x,int y,int w,int h,hwrcolor c);
 
   /* Optional
-   *   Dims or 'grays out' everything in the clipping rectangle
+   *   Dims or 'grays out' everything in the rectangle
    *
    * Default implementation: color #0 checkerboard pattern
    */
-  void (*dim)(void);
+  void (*dim)(int x,int y,int w,int h);
 
   /* Required (The alternative, pixel(), is just too scary)
    *   Blits a bitmap to screen, optionally using lgop.
@@ -258,7 +245,6 @@ struct vidlib {
   /* Optional
    *   Does a bottom-up blit from an area on the screen
    *   to an area on the screen. Used for scrolling down.
-   *   This doesn't need to worry about clipping 
    *
    * Default implementation: Calls blit() for every line,
    *   starting at the bottom
@@ -440,8 +426,6 @@ hwrcolor textcolors[16];   /* Table for converting 16 text colors
 
 g_error def_setmode(int xres,int yres,int bpp,unsigned long flags);
 void emulate_dos(void);
-void def_clip_set(int x1,int y1,int x2,int y2);
-void def_clip_off(void);
 hwrcolor def_color_pgtohwr(pgcolor c);
 pgcolor def_color_hwrtopg(hwrcolor c);
 void def_addpixel(int x,int y,pgcolor c);
@@ -454,7 +438,7 @@ void def_rect(int x,int y,int w,int h,hwrcolor c);
 void def_gradient(int x,int y,int w,int h,int angle,
 		  pgcolor c1, pgcolor c2,int translucent);
 void def_frame(int x,int y,int w,int h,hwrcolor c);
-void def_dim(void);
+void def_dim(int x,int y,int w,int h);
 void def_scrollblit(int src_x,int src_y,int dest_x,int dest_y,int w,int h);
 void def_charblit(unsigned char *chardat,int dest_x,
 		  int dest_y,int w,int h,int lines,hwrcolor c);

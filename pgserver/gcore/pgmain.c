@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.15 2000/12/12 00:51:47 micahjd Exp $
+/* $Id: pgmain.c,v 1.16 2000/12/17 05:53:49 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -190,7 +190,7 @@ int main(int argc, char **argv) {
 	puts("Commandline error");
 #else
 	puts("PicoGUI server (pgui.sourceforge.net)\n\n"
-#ifdef DEBUG
+#ifdef DEBUG_ANY
 	     "DEBUG MODE ON\n\n"
 #endif
 	     "usage: pgserver [-fhl] [-x width] [-y height] [-d depth] [-v driver]\n"

@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.43 2000/12/12 00:51:47 micahjd Exp $
+/* $Id: panel.c,v 1.44 2000/12/17 05:53:50 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -401,7 +401,6 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     }
     
     /* Grab a bitmap of the panelbar to use as the sprite */
-    (*vid->clip_off)();
     (*vid->unblit)(DATA->s->x = BARDIV->x,DATA->s->y = BARDIV->y,
 		   DATA->s->bitmap,0,0,
 		   BARDIV->w,BARDIV->h);

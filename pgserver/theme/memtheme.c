@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.15 2000/12/12 00:51:47 micahjd Exp $
+/* $Id: memtheme.c,v 1.16 2000/12/17 05:53:50 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -291,7 +291,7 @@ g_error theme_load(handle *h,int owner,char *themefile,
     return e;
   }
 
-#ifdef DEBUG
+#ifdef DEBUG_THEME
   printf("Allocated an internal theme heap: %d bytes\n",heaplen);
 #endif
 
@@ -379,7 +379,7 @@ g_error theme_load(handle *h,int owner,char *themefile,
 	data = (void *) (req+1);
 	if (req->type>PGREQ_UNDEF) req->type = PGREQ_UNDEF;
 
-#ifdef DEBUG
+#ifdef DEBUG_THEME
 	printf("Theme request loader executing: type = %d, size = %d\n",req->type,req->size);
 #endif
 	

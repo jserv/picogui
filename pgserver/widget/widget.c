@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.53 2000/11/19 04:48:20 micahjd Exp $
+/* $Id: widget.c,v 1.54 2000/12/17 05:53:50 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -77,7 +77,7 @@ g_error widget_create(struct widget **w,int type,
   if ((type > PG_WIDGETMAX) || (!dt) || (!where)) return 
       mkerror(PG_ERRT_BADPARAM,20);
 
-#ifdef DEBUG
+#ifdef DEBUG_KEYS
   num_widgets++;
 #endif
   e = g_malloc((void **)w,sizeof(struct widget));
@@ -156,10 +156,6 @@ void widget_remove(struct widget *w) {
   struct divnode *sub_end;  
   handle hw;
 
-#ifdef DEBUG
-  printf("widget_remove(0x%08X)\n",w);
-#endif
-
   if (!in_shutdown) {
     /* Get us out of the hotkey list */
     install_hotkey(w,0);
@@ -187,7 +183,7 @@ void widget_remove(struct widget *w) {
 	 widgets inside of it, we will need to insert the 'sub'
 	 list. This is a desperate attempt to not segfault. */
 
-#ifdef DEBUG
+#ifdef DEBUG_WIDGET
       printf("************** Relocating sub list. w=0x%08X\n",w);
 #endif
       
@@ -239,7 +235,7 @@ void widget_remove(struct widget *w) {
     }   
   }
 
-#ifdef DEBUG
+#ifdef DEBUG_KEYS
   num_widgets--;
 #endif
   g_free(w);
@@ -465,7 +461,7 @@ void dispatch_pointing(long type,int x,int y,int btn) {
   }
 
   if (!(dts && dts->top && dts->top->head)) {
-#ifdef DEBUG
+#ifdef DEBUG_EVENT
     printf("Pointer event with invalid tree\n");
 #endif
     return;   /* Without a valid tree, pointer events are meaningless */
@@ -532,7 +528,7 @@ void dispatch_key(long type,int key,int mods) {
       request_quit();
       return;
     
-#ifdef DEBUG                /* The rest only work in debug mode */
+#ifdef DEBUG_KEYS           /* The rest only work in debug mode */
 
     case PGKEY_g:           /* Just for fun :) */
       guru("GURU MEDITATION #%08X\n\nCongratulations!\n"
@@ -556,24 +552,58 @@ void dispatch_key(long type,int key,int mods) {
       return;
 
     case PGKEY_b:           /* CTRL-ALT-b blanks the screen */
-      (*vid->clip_off)();
       (*vid->clear)();
-      (*vid->update)();
+      (*vid->update)(0,0,vid->xres,vid->yres);
+      return;
+
+    case PGKEY_y:           /* CTRL-ALT-y unsynchronizes the screen buffers */
+      {
+	/* The buffers in PicoGUI normally like to be synchronized.
+	 * Data flows from the divtree to the backbuffer to the screen.
+	 * The purpose of this debugging key is to put a different
+	 * image on the screen (a black rectangle) than is in the rest
+	 * of the pipeline, so that by watching the data ooze out one
+	 * can tell if the correct update regions are being used and
+	 * in general prod at the video driver.
+	 * This would be very simple if not for the fact that only the video
+	 * driver has access to the screen's buffer. The procedure here is
+	 * to pump the black screen all the way through, then reinitializing
+	 * the backbuffer while being very carefull not to update right away
+	 * or mess up the sprites.
+	 */
+
+	struct divtree *p;
+	/* Push through the black screen */
+	(*vid->clear)();
+	(*vid->update)(0,0,vid->xres,vid->yres);
+	/* Force redrawing everything to the backbuffer */
+	p = dts->top;
+	while (p) {
+	  p->flags |= DIVTREE_ALL_REDRAW;
+	  p = p->next;
+	}
+	update(NULL,0);  /* Note the zero flag! */
+	/* Clear the update rectangle, breaking the
+	   pipeline that usually works so well :) */
+	upd_w = 0;
+	/* The above zero flag left sprites off.
+	   With sprites off it's tough to use the mouse! */
+	(*vid->sprite_showall)();
+      }
       return;
 
     case PGKEY_u:           /* CTRL-ALT-u makes a blue screen */
-      (*vid->clip_off)();
       (*vid->rect)(0,0,vid->xres,vid->yres,
 		   (*vid->color_pgtohwr)(0x0000FF));
-      (*vid->update)();
+      (*vid->update)(0,0,vid->xres,vid->yres);
       return;
 
-#endif
+#endif /* DEBUG_KEYS */
 
     }
   }
 
-#ifdef DEBUG
+#ifdef DEBUG_EVENT
   printf("Keyboard event: 0x%08X (#%d, '%c') mod:0x%08X\n",type,key,key,mods);
 #endif
 
@@ -629,7 +659,7 @@ void dispatch_key(long type,int key,int mods) {
 }
 
 void dispatch_direct(char *name,long param) {
-#ifdef DEBUG
+#ifdef DEBUG_EVENT
   printf("Direct event: %s(0x%08X)\n",name,param);
 #endif
 }

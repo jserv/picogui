@@ -1,4 +1,4 @@
-/* $Id: svga.c,v 1.18 2000/12/16 18:37:47 micahjd Exp $
+/* $Id: svga.c,v 1.19 2000/12/17 05:53:50 micahjd Exp $
  *
  * svga.c - video driver for (S)VGA cards, via vgagl and svgalib
  * 
@@ -163,21 +163,9 @@ void svga_update(void) {
 #endif
 }
 
-void svga_clip_set(int x1,int y1,int x2,int y2) {
-  gl_setclippingwindow(x1,y1,x2,y2);
-  vid->clip_x1 = x1;
-  vid->clip_y1 = y1;
-  vid->clip_x2 = x2;
-  vid->clip_y2 = y2;
-}
-
 void svga_blit(struct stdbitmap *src,int src_x,int src_y,
 		 int dest_x,int dest_y,
 		 int w,int h,int lgop) {
-
-  if (lgop==PG_LGOP_NULL) return;
-  if (w<=0) return;
-  if (h<=0) return;
   
   if (!src) {
     /* Screen-to-screen copy */
@@ -197,25 +185,6 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
     return;
   }
 
-  if ((dest_x+w-1)>vid->clip_x2) w = vid->clip_x2-dest_x+1;
-  if ((dest_y+h-1)>vid->clip_y2) h = vid->clip_y2-dest_y+1;
-  if (dest_x<vid->clip_x1) {
-    w -= vid->clip_x1 - dest_x;
-    src_x += vid->clip_x1 - dest_x;
-    dest_x = vid->clip_x1;
-  }
-  if (dest_y<vid->clip_y1) {
-    h -= vid->clip_y1 - dest_y;
-    src_y += vid->clip_y1 - dest_y;
-    dest_y = vid->clip_y1;
-  }
-  if (w<=0 || h<=0) return;  
- 
-   
-#ifdef DOUBLEBUFFER
-  add_updarea(dest_x,dest_y,w,h);
-#endif
-  
   if (lgop==PG_LGOP_NONE) {
     gl_putboxpart(dest_x,dest_y,w,h,src->w,src->h,src->bits,src_x,src_y);
   }
@@ -329,14 +298,6 @@ void svga_charblit(unsigned char *chardat,int dest_x,
   int olines = lines;
   unsigned char ch;
 
-  /* Is it at all in the clipping rect? */
-  if (dest_x>vid->clip_x2 || dest_y>vid->clip_y2 || 
-      (dest_x+w)<vid->clip_x1 || (dest_y+h)<vid->clip_y1) return;
-
-#ifdef DOUBLEBUFFER
-  add_updarea(dest_x,dest_y,w,h);
-#endif
-
   /* If we're skewing, use the slower write. Otherwise use vgagl's built-in
    * font things */
   if (lines) {
@@ -382,7 +343,6 @@ g_error svga_regfunc(struct vidlib *v) {
   v->update = &svga_update;
   v->blit = &svga_blit;
   v->unblit = &svga_unblit;
-  v->clip_set = &svga_clip_set;
   v->rect = &svga_rect;
   v->color_pgtohwr = &svga_color_pgtohwr;
   v->charblit = &svga_charblit;

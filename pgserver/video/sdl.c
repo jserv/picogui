@@ -1,4 +1,4 @@
-/* $Id: sdl.c,v 1.12 2000/12/16 18:37:47 micahjd Exp $
+/* $Id: sdl.c,v 1.13 2000/12/17 05:53:50 micahjd Exp $
  *
  * sdl.c - video driver wrapper for SDL.
  *
@@ -82,9 +82,6 @@ g_error sdl_init(int xres,int yres,int bpp,unsigned long flags) {
 	  vid->xres,vid->yres,vid->bpp);
   SDL_WM_SetCaption(str,NULL);
 
-  /* Clipping off */
-  (*vid->clip_off)();
-
   /* Load a main input driver */
   return load_inlib(&sdlinput_regfunc,&inlib_main);
 }
@@ -98,12 +95,6 @@ void sdl_close(void) {
 
 void sdl_pixel(int x,int y,hwrcolor c) {
   unsigned long *p;
-
-  if (x<vid->clip_x1 || x>vid->clip_x2 ||
-      y<vid->clip_y1 || y>vid->clip_y2)
-    return;
-
-  add_updarea(x,y,1,1);
 
   /* SDL doesn't have a good ol' pixel function... */
 
@@ -139,13 +130,8 @@ hwrcolor sdl_getpixel(int x,int y) {
   }
 }
 
-void sdl_update(void) {
-  if (!upd_w) return;
-  SDL_UpdateRect(sdl_vidsurf,upd_x,upd_y,upd_w,upd_h);
-  upd_x = 0;
-  upd_y = 0;
-  upd_w = 0;
-  upd_h = 0;
+void sdl_update(int x,int y,int w,int h) {
+  SDL_UpdateRect(sdl_vidsurf,x,y,w,h);
 }
 
 void sdl_blit(struct stdbitmap *src,int src_x,int src_y,
@@ -169,20 +155,6 @@ void sdl_blit(struct stdbitmap *src,int src_x,int src_y,
     return;
   }
 
-  if ((dest_x+w-1)>vid->clip_x2) w = vid->clip_x2-dest_x+1;
-  if ((dest_y+h-1)>vid->clip_y2) h = vid->clip_y2-dest_y+1;
-  if (dest_x<vid->clip_x1) {
-    w -= vid->clip_x1 - dest_x;
-    src_x += vid->clip_x1 - dest_x;
-    dest_x = vid->clip_x1;
-  }
-  if (dest_y<vid->clip_y1) {
-    h -= vid->clip_y1 - dest_y;
-    src_y += vid->clip_y1 - dest_y;
-    dest_y = vid->clip_y1;
-  }
-  if (w<=0 || h<=0) return;
-
   screenb.bits = sdl_vidsurf->pixels;
   screenb.w    = vid->xres;
   screenb.h    = vid->yres;
@@ -190,7 +162,6 @@ void sdl_blit(struct stdbitmap *src,int src_x,int src_y,
   if (!src) {
     src = &screenb;
   }
-  add_updarea(dest_x,dest_y,w,h);
 
   /* set up pointers */
   s_of = src->w * vid->bpp / 8;
@@ -257,20 +228,6 @@ void sdl_unblit(int src_x,int src_y,
   int i,j,s_of,d_of;
   unsigned char *s,*sl,*d,*dl;
 
-  if ((src_x+w-1)>vid->clip_x2) w = vid->clip_x2-src_x+1;
-  if ((src_y+h-1)>vid->clip_y2) h = vid->clip_y2-src_y+1;
-  if (src_x<vid->clip_x1) {
-    w -= vid->clip_x1 - src_x;
-    dest_x += vid->clip_x1 - src_x;
-    src_x = vid->clip_x1;
-  }
-  if (src_y<vid->clip_y1) {
-    h -= vid->clip_y1 - src_y;
-    dest_y += vid->clip_y1 - src_y;
-    src_y = vid->clip_y1;
-  }
-  if (w<=0 || h<=0) return;
-
   /* set up pointers */
   s_of = vid->xres * vid->bpp / 8;
   d_of = dest->w * vid->bpp / 8;
@@ -282,30 +239,8 @@ void sdl_unblit(int src_x,int src_y,
     memcpy(d,s,w);
 }
 
-void sdl_clip_set(int x1,int y1,int x2,int y2) {
-  SDL_SetClipping(sdl_vidsurf,y1,x1,y2,x2);
-  vid->clip_x1 = x1;
-  vid->clip_y1 = y1;
-  vid->clip_x2 = x2;
-  vid->clip_y2 = y2;
-}
-
 void sdl_rect(int x,int y,int w,int h,hwrcolor c) {
   SDL_Rect r;
-
-  if ((x+w-1)>vid->clip_x2) w = vid->clip_x2-x+1;
-  if ((y+h-1)>vid->clip_y2) h = vid->clip_y2-y+1;
-  if (x<vid->clip_x1) {
-    w -= vid->clip_x1 - x;
-    x = vid->clip_x1;
-  }
-  if (y<vid->clip_y1) {
-    h -= vid->clip_y1 - y;
-    y = vid->clip_y1;
-  }
-  if (w<=0 || h<=0) return;
-
-  add_updarea(x,y,w,h);
 
   r.x = x;
   r.y = y;
@@ -341,27 +276,14 @@ void sdl_gradient(int x,int y,int w,int h,int angle,
   long r_vsc,g_vsc,b_vsc,r_vss,g_vss,b_vss,sc_d;
   long r_v1,g_v1,b_v1,r_v2,g_v2,b_v2;
   unsigned char *p;
-  int r,g,b,i,s,c;
+  int r,g,b;
+  int i,s,c;
   int line_offset;
   hwrcolor hc;
 #ifdef QUANTIZE_4COLOR
   static unsigned char graytab[] = {0,85,170,255};
   int gray;
 #endif /* QUANTIZE_4COLOR */
-
-  if ((x+w-1)>vid->clip_x2) w = vid->clip_x2-x+1;
-  if ((y+h-1)>vid->clip_y2) h = vid->clip_y2-y+1;
-  if (x<vid->clip_x1) {
-    w -= vid->clip_x1 - x;
-    x = vid->clip_x1;
-  }
-  if (y<vid->clip_y1) {
-    h -= vid->clip_y1 - y;
-    y = vid->clip_y1;
-  }
-  if (w<=0 || h<=0) return;
-
-  add_updarea(x,y,w,h);
 
   /* Look up the sine and cosine */
   angle %= 360;
@@ -590,9 +512,6 @@ g_error sdl_regfunc(struct vidlib *v) {
   v->update = &sdl_update; /* Again not required, but good for SDL */
   v->blit = &sdl_blit;
   v->unblit = &sdl_unblit;
-  v->clip_set = &sdl_clip_set; /* If the underlying driver supports it,
-				     go for it. Simplifies this driver a lot. */
-
   v->rect = &sdl_rect;
   v->color_pgtohwr = &sdl_color_pgtohwr;
   v->color_hwrtopg = &sdl_color_hwrtopg;

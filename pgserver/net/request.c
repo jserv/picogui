@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.10 2000/12/12 00:51:47 micahjd Exp $
+/* $Id: request.c,v 1.11 2000/12/17 05:53:50 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -71,7 +71,7 @@ void closefd(int fd) {
   if (pointer_owner==fd)
     pointer_owner = 0;
 
-#ifdef DEBUG 
+#ifdef DEBUG_NET 
   printf("Close. fd = %d\n",fd);
 #endif
   handle_cleanup(fd,-1);
@@ -140,7 +140,7 @@ void readfd(int from) {
     errno = 0;
     r = recv(from,((unsigned char*)(&buf->req))+buf->header_size,
 	     sizeof(buf->req)-buf->header_size,0);
-#ifdef DEBUG
+#ifdef DEBUG_NET
     printf("recv header = %d (have %d out of %d)\n",r,buf->header_size,
 	   sizeof(buf->req));
 #endif
@@ -165,7 +165,7 @@ void readfd(int from) {
       buf->req.id = ntohs(buf->req.id);
       buf->req.size = ntohl(buf->req.size);
 
-#ifdef DEBUG
+#ifdef DEBUG_NET
       printf("prep data (type %u, #%u, %lu bytes)\n",buf->req.type,
 	     buf->req.id,buf->req.size);
 #endif
@@ -187,7 +187,7 @@ void readfd(int from) {
 	  closefd(from);
 	  return;
 	}
-#ifdef DEBUG
+#ifdef DEBUG_NET
 	printf("Using a dynamic packet buffer\n");
 #endif
 	buf->data = buf->data_dyn;
@@ -203,7 +203,7 @@ void readfd(int from) {
       errno = 0;
       r = recv(from,buf->data+buf->data_size,
 	       buf->req.size-buf->data_size,0);      
-#ifdef DEBUG
+#ifdef DEBUG_NET
       printf("recv data = %d\n",r);
 #endif
       if (r<=0) {
@@ -252,7 +252,7 @@ struct conbuf *find_conbuf(int fd) {
 */
 int send_response(int to,const void *data,size_t len) {
   if (send(to,data,len,0)!=len) {
-#ifdef DEBUG
+#ifdef DEBUG_NET
     printf("Error in send()\n");
 #endif
     closefd(to);
@@ -367,7 +367,7 @@ void net_iteration(void) {
   i = select(con_n,&rfds,NULL,NULL,&tv);
   req_in_select = 0;
 
-#ifdef DEBUG
+#ifdef DEBUG_NET
   /* For some reason, extra signals interrupt select() before it's done.
      FIXME.
      Uncomment this guru event for more information:
@@ -387,7 +387,7 @@ void net_iteration(void) {
 
       len = sizeof(struct sockaddr_in);
       if((fd = accept(s, (void *)&ec, &len)) == -1) {
-#ifdef DEBUG
+#ifdef DEBUG_NET
 	printf("accept() returned -1\n");
 #ifdef WINDOWS
 	printf("WSAGetLastError() = %d\n",WSAGetLastError());
@@ -403,7 +403,7 @@ void net_iteration(void) {
       FD_SET(fd,&con);
       if ((fd+1)>con_n) con_n = fd+1;
 
-#ifdef DEBUG
+#ifdef DEBUG_NET
       printf("Accepted. fd = %d, con_n = %d\n",fd,con_n);
 #endif
       
@@ -420,7 +420,7 @@ void net_iteration(void) {
 	    /* Well, we're not waiting now! */
 	    FD_CLR(fd,&evtwait);
 	    
-#ifdef DEBUG
+#ifdef DEBUG_NET
 	    printf("Incoming. fd = %d\n",fd);
 #endif
 	    

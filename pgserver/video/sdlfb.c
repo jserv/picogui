@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.2 2000/12/16 20:08:46 micahjd Exp $
+/* $Id: sdlfb.c,v 1.3 2000/12/17 05:53:50 micahjd Exp $
  *
  * sdlfb.c - Video driver for SDL using a linear framebuffer.
  *           This will soon replace sdl.c, but only after the
@@ -53,9 +53,6 @@ g_error sdlfb_init(int xres,int yres,int bpp,unsigned long flags) {
   if (flags & PG_VID_FULLSCREEN)
     sdlflags |= SDL_FULLSCREEN;
 
-  /* ONLY 8BPP is supported so far! Emulate an 8 bit framebuffer */
-  bpp = 8;
-
   /* Set the video mode */
   sdl_vidsurf = SDL_SetVideoMode(xres,yres,bpp,sdlflags);
   if (!sdl_vidsurf)
@@ -66,6 +63,10 @@ g_error sdlfb_init(int xres,int yres,int bpp,unsigned long flags) {
   vid->xres = sdl_vidsurf->w;
   vid->yres = sdl_vidsurf->h;
   vid->bpp  = sdl_vidsurf->format->BitsPerPixel;
+
+  /* Save the linear framebuffer */
+  vid->fb_mem = sdl_vidsurf->pixels;
+  vid->fb_bpl = sdl_vidsurf->pitch;
 
   /* If this is 8bpp (SDL doesn't support <8bpp modes) 
      set up a 2-3-3 palette for pseudo-RGB */
@@ -95,10 +96,15 @@ void sdlfb_close(void) {
   SDL_Quit();
 }
 
+void sdlfb_update(int x,int y,int w,int h) {
+  SDL_UpdateRect(sdl_vidsurf,x,y,w,h);
+}
+
 g_error sdlfb_regfunc(struct vidlib *v) {
   setvbl_linear8(v);          /* For now just support 8bpp */
   v->init = &sdlfb_init;
-  v->close = &sdlfb_close;    
+  v->close = &sdlfb_close;
+  v->update = &sdlfb_update;    
   return sucess;
 }
 

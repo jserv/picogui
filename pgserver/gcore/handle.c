@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.22 2000/11/12 20:06:53 micahjd Exp $
+/* $Id: handle.c,v 1.23 2000/12/17 05:53:49 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -332,7 +332,7 @@ handle newhandle(void) {
 
 /* Free any object in a handlenode */
 void object_free(struct handlenode *n) {
-#ifdef DEBUG
+#ifdef DEBUG_KEYS
   num_handles--;
 #endif
   if (!(n->type & HFLAG_NFREE)) {
@@ -370,7 +370,7 @@ g_error mkhandle(handle *h,unsigned char type,int owner,void *obj) {
     *h = 0;
     return sucess;
   }
-#ifdef DEBUG
+#ifdef DEBUG_KEYS
   num_handles++;
 #endif
   e = g_malloc((void **) &n,sizeof(struct handlenode));
@@ -449,7 +449,7 @@ g_error handle_free(int owner,handle h) {
   struct handlenode *n = htree_find(h);
   struct handlenode ncopy;
 
-#ifdef DEBUG
+#ifdef DEBUG_MEMORY
   printf("handle_free(%d,0x%08X): node=0x%08X\n",owner,h,n);
 #endif
 

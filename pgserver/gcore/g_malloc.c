@@ -1,4 +1,4 @@
-/* $Id: g_malloc.c,v 1.10 2000/11/12 20:06:53 micahjd Exp $
+/* $Id: g_malloc.c,v 1.11 2000/12/17 05:53:49 micahjd Exp $
  *
  * g_malloc.c - malloc wrapper providing error handling
  *
@@ -34,9 +34,12 @@
 
 long memref = 0;
 
-#ifdef DEBUG
-/* Memory allocation statistics, for debugging and profiling */
+#ifdef DEBUG_ANY
 long memamt = 0;       /* Bytes of memory total */
+#endif
+
+#ifdef DEBUG_KEYS
+/* Memory allocation statistics, for debugging and profiling */
 long num_grops = 0;    /* Number of gropnodes */
 long num_divs = 0;     /* Number of divnodes */
 long num_widgets = 0;  /* Number of widgets */
@@ -46,17 +49,19 @@ long num_handles = 0;  /* Number of handles */
 g_error g_malloc(void **p,size_t s) {
   if (!p) return mkerror(PG_ERRT_INTERNAL,24);
 
-#ifdef DEBUG
+#ifdef DEBUG_ANY
   *p = malloc(s+sizeof(size_t));
 #else
   *p = malloc(s);
 #endif
   if (!(*p)) return mkerror(PG_ERRT_MEMORY,25);
   memref++;
-#ifdef DEBUG
+#ifdef DEBUG_ANY
   *(((size_t *)(*p))++) = s;
   memamt += s;
+#endif
 
+#ifdef DEBUG_MEMORY
   printf("+%d #%d (%d) 0x%08X\n",s,memref,memamt,*((char**)p));
 #endif
 
@@ -64,17 +69,19 @@ g_error g_malloc(void **p,size_t s) {
 }
 
 void g_free(void *p) {
-#ifdef DEBUG
+#ifdef DEBUG_ANY
   size_t s;
   char *adr = p;
 #endif
   if (!p) return;
-#ifdef DEBUG
+#ifdef DEBUG_ANY
   ((size_t*)p)--;
 #endif
   memref--;
-#ifdef DEBUG
+#ifdef DEBUG_ANY
   memamt -= (s = *((size_t*)p));
+#endif
+#ifdef DEBUG_MEMORY
   printf("-%d #%d (%d) 0x%08X\n",s,memref,memamt,adr);
 #endif
 
@@ -82,13 +89,13 @@ void g_free(void *p) {
 }
 
 g_error g_realloc(void **p,size_t s) {
-#ifdef DEBUG
+#ifdef DEBUG_ANY
   size_t from;
 #endif
 
   if (!p) return mkerror(PG_ERRT_BADPARAM,24);
 
-#ifdef DEBUG
+#ifdef DEBUG_ANY
   ((size_t*)(*p))--;    /* Get the _real_ pointer so realloc will like us */
   memamt -= (from = *((size_t*)(*p)));  /* Store original size */
   *p = realloc(*p,s+sizeof(size_t));
@@ -97,10 +104,12 @@ g_error g_realloc(void **p,size_t s) {
 #endif
   if (!(*p)) return mkerror(PG_ERRT_MEMORY,25);
 
-#ifdef DEBUG
+#ifdef DEBUG_ANY
   *(((size_t *)(*p))++) = s;
   memamt += s;
+#endif
 
+#ifdef DEBUG_MEMORY
   printf("* [%d -> %d] #%d (%d) 0x%08X\n",from,s,memref,memamt,*((char**)p));
 #endif
 
