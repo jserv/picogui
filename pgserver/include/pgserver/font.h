@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.21 2002/01/18 16:42:59 pney Exp $
+/* $Id: font.h,v 1.22 2002/02/20 20:27:30 lonetech Exp $
  *
  * font.h - structures for representing fonts
  *
@@ -116,6 +116,8 @@ struct font {
 void outchar(hwrbitmap dest, struct fontdesc *fd,
 	     s16 *x, s16 *y,hwrcolor col,int c,struct quad *clip,
 	     s16 lgop, s16 angle);
+/* Add the width of a character to the given variable */
+void outchar_fake(struct fontdesc *fd, s16 *x, int c);
 
 /* These functions interpret the '\n' character, but no other control
  * chars

@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.30 2002/02/11 19:39:24 micahjd Exp $
+/* $Id: textbox_document.c,v 1.31 2002/02/20 20:27:30 lonetech Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -138,13 +138,11 @@ void text_unformat_top(struct textbox_cursor *c) {
 
   /* Is this node used? */
   if (n->font_refcnt) {
-
     /* Move it to the f_used list */
     n->next = c->f_used;
     c->f_used = n;
   }
   else {
-
     /* Delete it, and its associated handles */
     if (n->fontdef)
       handle_free(c->widget->owner,n->fontdef);
@@ -159,6 +157,59 @@ void text_unformat_all(struct textbox_cursor *c) {
 }
 
 /************************* Text */
+
+/* Populates the index and width lists in the cursor */
+g_error textbox_cursor_indexwidth(struct textbox_cursor *c) {
+  g_error e;
+  const u8 *gropstr, *chp;
+  s16 cw[256], cn[256];
+  int index, oindex, xoff=c->c_gx;
+  struct gropnode *grop=c->c_div->div->grop;
+  struct fontdesc *fd;
+
+  while(grop && grop->type!=PG_GROP_SETFONT)
+    grop=grop->next;
+  if(!grop)
+    return mkerror(PG_ERRT_INTERNAL, 12);	/* no font */
+  e = rdhandle((void**) &fd, PG_TYPE_FONTDESC, c->widget->owner,
+      grop->param[0]);
+  errorcheck;
+  while(grop && grop->type!=PG_GROP_TEXT)
+    grop=grop->next;
+  if(!grop)
+    return mkerror(PG_ERRT_INTERNAL, 13);	/* no text */
+  e = rdhandle((void**)&gropstr, PG_TYPE_STRING, c->widget->owner,
+      grop->param[0]);
+  errorcheck;
+  chp=gropstr;
+  oindex=0;
+  while(*chp)
+   {
+    memset(cw, 0, sizeof(cw));
+    for(index=0; index<sizeof(cw)/sizeof(*cw) && *chp; index++)
+     {
+      outchar_fake(fd, &cw[index], fd->decoder(&chp));
+      cn[index]=chp-gropstr;
+      xoff-=cw[index];
+      if(xoff<0)
+       {
+	c->c_char=oindex+index;
+	xoff=INT_MAX;
+       }
+     }
+    e=g_realloc((void**)&c->c_cn, oindex+sizeof(*cn)*index);
+    errorcheck;
+    e=g_realloc((void**)&c->c_cw, oindex+sizeof(*cw)*index);
+    errorcheck;
+    memcpy(c->c_cn+oindex*sizeof(*c->c_cn), cn, index*sizeof(*cn));
+    memcpy(c->c_cw+oindex*sizeof(*c->c_cw), cw, index*sizeof(*cw));
+    oindex+=index;
+   }
+  if(xoff<=c->c_gx)	/* didn't match any of the characters */
+    c->c_char=oindex;
+  c->c_len=oindex;
+  return success;
+}
 
 /* Inserts a breaking space between words at the cursor */
 g_error text_insert_wordbreak(struct textbox_cursor *c) {
@@ -249,11 +300,13 @@ g_error text_insert_word_div(struct textbox_cursor *c, struct divnode *div) {
 
 /* Insert text with the current formatting at the cursor. This will not
  * generate breaking spaces. */
-g_error text_insert_string(struct textbox_cursor *c, const char *str,
+g_error text_insert_string(struct textbox_cursor *c, const u8 *str,
 			   u32 hflag) {
   g_error e;
   struct fontdesc *fd;
-  s16 tw,th;
+  s16 tw=0, th, cw[256], cn[256];
+  int index, oindex, newlen, oldlen, inspos;
+  u8 **gropstr;
   handle hstr;
 
   /*** First thing to do is make sure we have a valid insertion point. */
@@ -279,12 +332,12 @@ g_error text_insert_string(struct textbox_cursor *c, const char *str,
     e = newdiv(&c->c_div->div,c->widget);
     c->c_div->div->flags &= ~DIVNODE_UNDERCONSTRUCTION;
     errorcheck;
+    c->c_div->div->ph = th;
   }
 
   /* No grop context */
   if (!c->c_gctx.current) {
     gropctxt_init(&c->c_gctx,c->c_div->div);
-    c->c_gx = c->c_gy = 0;
 
     if(!c->c_div->div->grop) {
       /* Add font */
@@ -300,53 +353,97 @@ g_error text_insert_string(struct textbox_cursor *c, const char *str,
       }
     }
   }
-  
+
+  /* Retrieve font */
+  if (c->c_div->div->grop->type==PG_GROP_SETFONT)
+    e = rdhandle((void**) &fd, PG_TYPE_FONTDESC, c->widget->owner,
+	c->c_div->div->grop->param[0]);
+  else
+    e = rdhandle((void**) &fd, PG_TYPE_FONTDESC, -1, defaultfont);
+  errorcheck;
+
+  th = fd->font->ascent+fd->font->descent+fd->interline_space+fd->margin;
+
   /* Make sure we're at a text gropnode */
   if(c->c_gctx.current && c->c_gctx.current->type==PG_GROP_TEXT)
    {
-    void **oldstr;
-    size_t ol, nl;
-
     hstr=c->c_gctx.current->param[0];
-    e=rdhandlep(&oldstr, PG_TYPE_STRING, c->widget->owner, hstr);
+    e=rdhandlep((void***)&gropstr, PG_TYPE_STRING, c->widget->owner, hstr);
     errorcheck;
-    ol=strlen(*oldstr);
-    nl=strlen(str);
-    e=g_realloc(oldstr, ol+nl+1);
-    errorcheck;
-    strcpy(*oldstr+ol, str);
-    if(!(hflag&HFLAG_NFREE))
-      g_free(str);
-    str=*oldstr;
    }
   else
    {
-    e = mkhandle(&hstr,PG_TYPE_STRING | hflag,c->widget->owner,str);
+    /* dummy placeholder pointer - mkhandle doesn't accept NULL */
+    e = mkhandle(&hstr,PG_TYPE_STRING,c->widget->owner,
+	text_insert_string);
     errorcheck;
-    addgropsz(&c->c_gctx,PG_GROP_TEXT,c->c_gx,c->c_gy,1,1);
+    e=rdhandlep((void***)&gropstr, PG_TYPE_STRING, c->widget->owner, hstr);
+    errorcheck;
+    /* set *gropstr to NULL and clear NFREE flag */
+    rehandle(hstr, NULL, PG_TYPE_STRING);
+    addgropsz(&c->c_gctx,PG_GROP_TEXT,0,0,1,th);
     c->c_gctx.current->param[0] = hstr;
+    c->c_len=0;
+    c->c_char=0;
    }
-  /* Measure the text */
-  if (c->f_top && c->f_top->fontdef)
-    e = rdhandle((void**) &fd,PG_TYPE_FONTDESC,c->widget->owner,
-		 c->f_top->fontdef);
-  else
-    e = rdhandle((void**) &fd,PG_TYPE_FONTDESC,-1,defaultfont);
+
+  /* Copy the text */
+  newlen=strlen(str);
+  oldlen=*gropstr?strlen(*gropstr):0;
+  e=g_realloc((void**)gropstr, oldlen+newlen+1);
   errorcheck;
-  sizetext(fd,&tw,&th,str);
-  th = fd->font->ascent + fd->font->descent + fd->interline_space + fd->margin;
+  inspos=c->c_char?c->c_cn[c->c_char-1]:0;
+  memmove(*gropstr+inspos+newlen, *gropstr+inspos, oldlen-inspos);
+  memcpy(*gropstr+inspos, str, newlen);
+  (*gropstr)[oldlen+newlen]=0;
 
-  c->c_gctx.current->r.w=tw;
-  c->c_gctx.current->r.h=th;
+  /* Free the original */
+  if(!(hflag&HFLAG_NFREE))
+    g_free(str);
 
-  /* Update cursor and preferred size. Add the width of a space to
-   * the preferred size so we have space between words. */
-  c->c_gx = tw;
-  c->c_div->div->pw = c->c_gx;
-  if (th > c->c_div->div->ph)
-    c->c_div->div->ph = th;
-  sizetext(fd,&tw,&th," ");
-  c->c_div->div->pw += tw;
+  /* Measure it */
+  tw=0;		/* first sum the unchanged characters */
+  for(oindex=0; oindex<c->c_char-1; oindex++)
+    tw+=c->c_cw[oindex];
+  if(oindex)
+    str=*gropstr+c->c_cn[oindex-1];
+  else
+    str=*gropstr;
+  c->c_char=oldlen+newlen;	/* last character */
+  while(*str)
+   {
+    memset(cw, 0, sizeof(cw));
+    for(index=0; index<sizeof(cw)/sizeof(*cw) && *str; index++)
+     {
+      outchar_fake(fd, &cw[index], fd->decoder(&str));
+      tw+=cw[index];
+      cn[index]=str-*gropstr;
+      if(cn[index]>=inspos+newlen && c->c_char==oldlen+newlen)
+       {
+	c->c_char=oindex+index+1;	/* current position */
+	c->c_gx=tw;
+       }
+     }
+    e=g_realloc((void**)&c->c_cn, sizeof(*cn)*(index+oindex));
+    errorcheck;
+    e=g_realloc((void**)&c->c_cw, sizeof(*cw)*(index+oindex));
+    errorcheck;
+    memcpy(c->c_cn+oindex, cn, index*sizeof(*cn));
+    memcpy(c->c_cw+oindex, cw, index*sizeof(*cw));
+    oindex+=index;
+   }
+  if(c->c_char==oldlen+newlen)
+    c->c_gx=tw;
+  c->c_len=oindex+index;
+  /* Add the width of a space to preferred width for space between words */
+  outchar_fake(fd, &tw, ' ');
+
+  printf("String width: %d, contents: \"%s\"\n", tw, *gropstr);
+
+  /* update grop width */
+  c->c_div->div->pw = tw;
+  c->c_gctx.current->r.w = tw;
+
   c->c_div->split = c->c_div->div->pw;
   c->c_div->flags |= DIVNODE_NEED_RECALC | DIVNODE_NEED_REDRAW | 
     DIVNODE_PROPAGATE_REDRAW;
@@ -401,7 +498,7 @@ g_error text_caret_on(struct textbox_cursor *c) {
   /* Make the caret visible */
   (*c->caret)->param[0] = 0x000000;
   (*c->caret)->r.x = c->c_gx;
-  (*c->caret)->r.y = c->c_gy;
+  (*c->caret)->r.y = 0;
   c->c_div->flags |= DIVNODE_INCREMENTAL;
   c->caret_div = c->c_div;
   update(c->c_div,1);
@@ -444,6 +541,10 @@ g_error text_nuke(struct textbox_cursor *c) {
   /* Delete our formatting stacks and associated fonts */
   textbox_delete_formatstack(c->widget, c->f_used);
   textbox_delete_formatstack(c->widget, c->f_top);
+
+  /* character width and index lists */
+  g_free(c->c_cw);
+  g_free(c->c_cn);
 
   /* Delete divnodes */
   if (c->head) {

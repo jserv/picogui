@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.32 2002/02/11 19:39:24 micahjd Exp $
+/* $Id: textbox_main.c,v 1.33 2002/02/20 20:27:30 lonetech Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -94,6 +94,10 @@ void textbox_remove(struct widget *self) {
   /* Delete our formatting stacks and associated fonts */
   textbox_delete_formatstack(self, DATA->c.f_used);
   textbox_delete_formatstack(self, DATA->c.f_top);
+
+  /* character width and index lists */
+  g_free(DATA->c.c_cw);
+  g_free(DATA->c.c_cn);
 
   g_free(self->data);
   if (!in_shutdown)
@@ -208,8 +212,8 @@ void textbox_move_cursor(struct widget *self, union trigparam *param) {
   DATA->c.c_div = divnode_findparent(self->dt->head, deepest_div_under_crsr);
   DATA->c.c_line = divnode_findbranch(self->dt->head, DATA->c.c_div);
   DATA->c.c_gx = param->mouse.x - deepest_div_under_crsr->x;
-  DATA->c.c_gy = 0;
   DATA->c.c_gctx.current = NULL;
+  textbox_cursor_indexwidth(&DATA->c);
   text_caret_on(&DATA->c);
 }
 

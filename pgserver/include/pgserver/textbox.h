@@ -1,4 +1,4 @@
-/* $Id: textbox.h,v 1.12 2002/02/03 16:07:58 lonetech Exp $
+/* $Id: textbox.h,v 1.13 2002/02/20 20:27:30 lonetech Exp $
  *
  * textbox.h - Interface definitions for the textbox widget. This allows
  *             the main textbox widget functions and the text format loaders
@@ -50,11 +50,13 @@ struct textbox_cursor {
   struct divnode *c_line;    /* Line the cursor is in */
   struct divnode *c_div;     /* Divnode the cursor is in */
   struct gropctxt c_gctx;    /* Gropnode context the cursor is in */
-  s16 c_gx, c_gy;            /* Cursor location within gropnode */
   struct formatnode *f_top;  /* Top of formatting stack */
   struct formatnode *f_used; /* Formats not on stack with refcnt != 0 */
   struct gropnode **caret;   /* Gropnode for the caret, if it is on */
   struct divnode *caret_div; /* Divnode containing the caret */
+  s16 c_gx;		     /* Cursor location within gropnode */
+  s16 *c_cw, *c_cn;	     /* character width and index of next char */
+  s16 c_char, c_len;	     /* current character and string length */
 };
 
 /************************* Formatting */
@@ -75,6 +77,8 @@ void text_unformat_all(struct textbox_cursor *c);
 
 /************************* Text */
 
+/* Calculates character widths from c_div and c_gx */
+g_error textbox_cursor_indexwidth(struct textbox_cursor *c);
 /* Inserts a breaking space between words at the cursor */
 g_error text_insert_wordbreak(struct textbox_cursor *c);
 /* Begin a new paragraph at the cursor */
@@ -85,7 +89,7 @@ g_error text_insert_linebreak(struct textbox_cursor *c);
  * hflag is or'ed with the handle flags on the string, so if it is a constant
  * string hflag needs to be HFLAG_NFREE
  */
-g_error text_insert_string(struct textbox_cursor *c, const char *str,
+g_error text_insert_string(struct textbox_cursor *c, const u8 *str,
 			   u32 hflag);
 
 /* Inserts the specified divnode as a line or as a word */
