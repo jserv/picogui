@@ -1,5 +1,7 @@
+DIST_SUBDIRS = configscript
+
 SUBDIRS = \
-	configscript include \
+	include \
 	widget appmgr debug gcore net \
 	vidbase theme video os vidwrap \
 	input font formats \
