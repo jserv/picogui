@@ -8,7 +8,7 @@ obj default name = "Swirlypond Background";
 object background {
    bitmap1 = LoadBitmap("data/swirlypond.jpeg");
    bgfill = fillstyle {
-      Bitmap(x+(w-640)>>1,y+(h-480)>>1,640,480,bitmap1);
+      Bitmap(x+((w-640)>>1),y+((h-480)>>1),640,480,bitmap1);
    };
 }
 
