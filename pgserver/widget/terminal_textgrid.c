@@ -1,4 +1,4 @@
-/* $Id: terminal_textgrid.c,v 1.16 2003/03/24 01:11:52 micahjd Exp $
+/* $Id: terminal_textgrid.c,v 1.17 2003/03/24 05:14:06 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -273,7 +273,6 @@ void term_rectprepare(struct widget *self) {
 /* Clear a chunk of buffer */
 void term_clearbuf(struct widget *self,int fromx,int fromy,int chars) {
   struct pgstr_iterator p;
-  int i;
 
   pgstring_seek(DATA->buffer, &p, fromx + fromy * DATA->bufferw, PGSEEK_SET);
 
@@ -281,10 +280,7 @@ void term_clearbuf(struct widget *self,int fromx,int fromy,int chars) {
     pgstring_encode_meta(DATA->buffer, &p, ' ', (void*)(u32) DATA->current.attr);
 
   /* Add update rectangle for the effected lines */
-  i = (chars+fromx) / DATA->bufferh;
-  if ((chars+fromx) % DATA->bufferh)
-    i++;
-  term_updrect(self,0,fromy,DATA->bufferw,i);
+  term_updrect(self,0,fromy,DATA->bufferw,(chars+fromx+1) / DATA->bufferh);
 }
 
 /* Copy a rectangle between two text buffers */

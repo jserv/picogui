@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.18 2003/03/24 01:11:52 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.19 2003/03/24 05:14:07 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -295,44 +295,44 @@ void term_csi(struct widget *self, u8 c) {
     /* @ - Insert the indicated # of blank characters */
   case '@':
     DBG("Insert %d blank characters\n", DATA->csiargs[0]);
-    term_insert(self, DATA->csiargs[0]);
+    term_insert(self, DATA->csiargs[0] ? DATA->csiargs[0] : 1);
     break;
 
     /* A - Move cursor up */
   case 'A':
     DBG("move cursor up\n");
-    DATA->current.crsry -= DATA->csiargs[0];
+    DATA->current.crsry -= DATA->csiargs[0] ? DATA->csiargs[0] : 1;
     break;
 
     /* B - Move cursor down */
   case 'B':
     DBG("move cursor down\n");
-    DATA->current.crsry += DATA->csiargs[0];
+    DATA->current.crsry += DATA->csiargs[0] ? DATA->csiargs[0] : 1;
     break;
 
     /* C - Move cursor right */
   case 'C':
-    DBG("move cursor right\n");
-    DATA->current.crsrx += DATA->csiargs[0];
+    DBG("move cursor right by %d\n", DATA->csiargs[0]);
+    DATA->current.crsrx += DATA->csiargs[0] ? DATA->csiargs[0] : 1;
     break;
 
     /* D - Move cursor left */
   case 'D':
-    DBG("move cursor left\n");
-    DATA->current.crsrx -= DATA->csiargs[0];
+    DBG("move cursor left by %d\n", DATA->csiargs[0]);
+    DATA->current.crsrx -= DATA->csiargs[0] ? DATA->csiargs[0] : 1;
     break;
 
     /* E - Move cursor down and to column 1 */
   case 'E':
     DBG("move cursor down and to column 1\n");
-    DATA->current.crsry += DATA->csiargs[0];
+    DATA->current.crsry += DATA->csiargs[0] ? DATA->csiargs[0] : 1;
     DATA->current.crsrx = 0;
     break;
 
     /* F - Move cursor up and to column 1 */
   case 'F':
     DBG("move cursor up and to column 1\n");
-    DATA->current.crsry -= DATA->csiargs[0];
+    DATA->current.crsry -= DATA->csiargs[0] ? DATA->csiargs[0] : 1;
     DATA->current.crsrx = 0;
     break;
 
@@ -361,7 +361,7 @@ void term_csi(struct widget *self, u8 c) {
       term_clearbuf(self,0,0,DATA->bufferw * DATA->bufferh);
       break;
     default:
-      DBG("erase from cursor to and of display\n");
+      DBG("erase from cursor to end of display\n");
       term_clearbuf(self,DATA->current.crsrx,DATA->current.crsry,
 		    (DATA->bufferw * DATA->bufferh) -
 		    (DATA->current.crsrx + DATA->current.crsry * DATA->bufferw));
@@ -388,31 +388,31 @@ void term_csi(struct widget *self, u8 c) {
     /* L - Insert blank lines */
   case 'L':
     DBG("insert %d blank lines\n", DATA->csiargs[0]);
-    term_scroll(self,DATA->current.crsry,DATA->current.scroll_bottom,DATA->csiargs[0]);
+    term_scroll(self,DATA->current.crsry,DATA->current.scroll_bottom,DATA->csiargs[0] ? DATA->csiargs[0] : 1);
     break;
 
     /* M - Delete lines */
   case 'M':
     DBG("delete %d lines\n", DATA->csiargs[0]);
-    term_scroll(self,DATA->current.crsry,DATA->current.scroll_bottom,-DATA->csiargs[0]);
+    term_scroll(self,DATA->current.crsry,DATA->current.scroll_bottom,-DATA->csiargs[0] ? DATA->csiargs[0] : 1);
     break;
 
     /* P - Delete characters */
   case 'P':
-    DBG("delete %d characters\n", DATA->csiargs[0]);
+    DBG("delete %d characters\n", DATA->csiargs[0] ? DATA->csiargs[0] : 1);
     term_delete(self, DATA->csiargs[0]);
     break;
     
     /* X - Erase characters */
   case 'X':
-    DBG("erase %d characters\n", DATA->csiargs[0]);
+    DBG("erase %d characters\n", DATA->csiargs[0] ? DATA->csiargs[0] : 1);
     for (i=0;i<DATA->csiargs[0];i++)
       term_char(self,' ');
     break;
 
     /* a - Move cursor right */
   case 'a':
-    DBG("-UNIMPLEMENTED- move right %d columns\n", DATA->csiargs[0]);
+    DBG("-UNIMPLEMENTED- move right %d columns\n", DATA->csiargs[0] ? DATA->csiargs[0] : 1);
     break;
     
     /* c - Identify as a VT102 terminal */
