@@ -1,0 +1,124 @@
+/* $Id: photonic.ths,v 1.1 2002/08/21 12:19:22 micahjd Exp $
+ *
+ * Inspired by QNX- It's a lot like pseudo3d, but with
+ * subtle gradients, hilighting, and rounded edges
+ *
+ * Version 1.0
+ *
+ * Micah Dowty
+ */
+
+prop topleft_outer_color, bottomright_outer_color;
+prop topleft_inner_color, bottomright_inner_color;
+prop gradient_top_color, gradient_bottom_color, gradient_angle;
+
+object default {
+  name = "Photonic";
+
+  /* Default fill is flat gray */
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+  };
+  bgcolor = 0xd8d8d8;
+
+  /* Default colors for the fillstyles */
+  topleft_outer_color = 0xC0C0C0;
+  bottomright_outer_color = 0xE0E0E0;
+  topleft_inner_color = 0xFFFFFF;
+  bottomright_inner_color = 0xB0B0B0;
+  gradient_top_color = 0xEEEEEE;
+  gradient_bottom_color = 0xC0C0C0;
+  gradient_angle = 90;
+}
+
+object background bgcolor = 0xA8AA95;
+
+/* Beveled gradient fill */
+object base.interactive {
+  bgfill = fillstyle {
+    SetColor(0x000000);
+    Frame(x+1,y+1,w-2,h-2);
+    SetColor(topleft_outer_color);
+    Slab(x,y,w-1,1);
+    Bar(x,y+1,1,h-2);
+    SetColor(bottomright_outer_color);
+    Slab(x,y+h-1,w,1);
+    Bar(x+w-1,y,1,h);
+    SetColor(topleft_inner_color);
+    Slab(x+2,y+2,w-5,1);
+    Bar(x+2,y+2,1,h-5);
+    SetColor(bottomright_inner_color);
+    Slab(x+2,y+h-3,w-5,1);
+    Bar(x+w-3,y+2,1,h-5);
+    Gradient(x+3,y+3,w-6,h-6,90,gradient_top_color,gradient_bottom_color);
+    x = x+offset;
+    y = y+offset;
+  };
+}
+
+/* Beveled flat fill */
+object base.tlcontainer {
+  bgfill = fillstyle {
+    SetColor(0x454545);
+    Frame(x+1,y+1,w-2,h-2);
+    SetColor(topleft_outer_color);
+    Slab(x,y,w-1,1);
+    Bar(x,y+1,1,h-2);
+    SetColor(bottomright_outer_color);
+    Slab(x,y+h-1,w,1);
+    Bar(x+w-1,y,1,h);
+    SetColor(topleft_inner_color);
+    Slab(x+2,y+2,w-5,1);
+    Bar(x+2,y+2,1,h-5);
+    SetColor(bottomright_inner_color);
+    Slab(x+2,y+h-3,w-5,1);
+    Bar(x+w-3,y+2,1,h-5);
+    SetColor(bgcolor);
+    Rect(x+3,y+3,w-6,h-6);
+  };
+  margin = 4;
+}
+
+object button {
+  height = 22;
+  spacing = 2;
+  margin = 4;
+}
+object button.on {
+  topleft_inner_color = 0xA49F99;
+  bottomright_inner_color = 0xF6F2E9;
+  gradient_top_color = 0xDBD7CE;
+  gradient_bottom_color = 0xE2DBD5;
+  offset = 1;
+}  
+
+object scroll {
+  /* Gradient fill without outer border */
+  overlay = fillstyle {
+    SetColor(0x000000);
+    Frame(x,y,w,h);
+    SetColor(topleft_inner_color);
+    Slab(x+1,y+1,w-3,1);
+    Bar(x+1,y+1,1,h-3);
+    SetColor(bottomright_inner_color);
+    Slab(x+1,y+h-2,w-3,1);
+    Bar(x+w-2,y+1,1,h-3);
+    Gradient(x+2,y+2,w-4,h-4,gradient_angle,gradient_top_color,gradient_bottom_color);
+  };
+  gradient_angle = 180;
+  width = 12;
+
+  /* Basic fill with a shadow on the edge */
+  bgfill = fillstyle {
+    SetColor(0x606060);
+    Frame(x,y,w,h);
+    SetColor(0xa6a6a6);
+    Slab(x+1,y+1,w-2,1);
+    Bar(x+1,y+2,1,h-3);
+    SetColor(0xb5b5b5);
+    Rect(x+2,y+2,w-3,h-3);
+  };
+}
+
+/* The End */
