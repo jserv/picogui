@@ -4,6 +4,7 @@ AC_INIT(src/api.c)
 AM_INIT_AUTOMAKE(picogui-client, 0.0)
 
 AM_CONFIG_HEADER(config.h)
+
 AM_ACLOCAL_INCLUDE(macros)
 
 AM_PGUI_CROSSCOMPILE
@@ -42,8 +43,18 @@ AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(socket strtol)
 
+dnl for integration in the bee compilation system
+AM_BEE_RPMPROFILE
+
+AC_ARG_ENABLE(bee, 
+[  --enable-bee     use the bee building system])
+
+AM_CONDITIONAL(ENABLE_BEE, test "${enable_bee}" = "yes")
+
+
 AC_OUTPUT(
 	Makefile
+	picogui-client.spec
 	src/Makefile
 	demos/Makefile
 	include/Makefile

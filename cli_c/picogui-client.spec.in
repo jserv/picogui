@@ -1,0 +1,60 @@
+%define prefix @RPM_PREFIX@
+%define module %{prefix}/../bee
+
+Summary: PicoGUI Client library
+Name: @PACKAGE@
+Version: @VERSION@
+Release: sd.1
+Copyright: GPL
+Group: PicoGUI/Library
+Packager: Frédéric Gobry <frederic.gobry@smartdata.ch>
+Source: @PACKAGE@-@VERSION@.tar.gz
+Vendor: SMARTDATA
+
+Buildroot: %{_tmppath}/@PACKAGE@
+
+%description
+The PicoGUI client library, which provides the necessary files for
+compiling PicoGUI client applications.
+
+%package @RPM_PLATFORM@
+Summary: executable and headers
+Group: PicoGUI/Library
+Requires: @PACKAGE@-mdl = @VERSION@
+
+%package mdl
+Summary: bee module
+Group: PicoGUI/Library
+Requires: bee >= 0.13
+
+%description @RPM_PLATFORM@
+The PicoGUI client library, which provides the necessary files for
+compiling PicoGUI client applications.
+
+%description mdl
+The PicoGUI client library, which provides the necessary files for
+compiling PicoGUI client applications.
+
+
+%prep
+%setup -n @PACKAGE@-@VERSION@
+
+%build
+@RPM_CONFIGURE@
+make
+
+%install
+make install prefix=$RPM_BUILD_ROOT%{prefix}
+
+install -D -m 0644 PicoGUIClient.mdl $RPM_BUILD_ROOT%{module}/PicoGUIClient.mdl
+
+%files @RPM_PLATFORM@
+%{prefix}/lib/*
+%{prefix}/include/*
+
+%files mdl
+%{module}/*
+
+%clean
+[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf ${RPM_BUILD_ROOT}
+
