@@ -1,4 +1,4 @@
-/* $Id: html.c,v 1.9 2001/11/07 09:19:36 micahjd Exp $
+/* $Id: html.c,v 1.10 2001/11/17 08:23:07 micahjd Exp $
  *
  * html.c - Use the textbox_document inferface to load HTML markup
  *
@@ -17,6 +17,7 @@
  *   <body> *
  *   <head>
  *   <address> *
+ *   <h1> to <h6>
  *   <p>
  *   <ul> *
  *   <ol> *
@@ -105,6 +106,12 @@ struct html_parse {
    * reflect an alternate parsing mode.
    */
   g_error (*parsemode)(struct html_parse *hp, const u8 *start, const u8 *end);
+
+  /* Keep track of the number of blank lines we've added since adding
+   * text, so we can use linebreaks to separate paragraphs without
+   * adding too much space.
+   */
+  int blank_lines;
 };
 
 /* Parameters for HTML tags */
@@ -161,6 +168,7 @@ struct html_charname {
   { "nbsp",	' ' },	/* no-break space */
   { "lt",       '<' },  /* less-than */
   { "gt",       '>' },  /* greater-than */
+  { "quot",     '"' },  /* Quotation mark */
   { "iexcl",	161 },	/* inverted exclamation mark */
   { "cent",	162 },	/* cent sign */
   { "pound",	163 },	/* pound sterling sign */
@@ -289,18 +297,21 @@ struct html_colorname {
    
 /*************************************** HTML tag handlers */
 
-/* Insert a blank line (next paragraph) */
+/* Start a new block of text (paragraph)
+ * Insert linebreaks until this line and the one preceeding it are blank
+ */
 g_error html_tag_p(struct html_parse *hp, struct html_tag_params *tag) {
   g_error e;
-  e = text_insert_linebreak(hp->c);
-  errorcheck;
-  e = text_insert_linebreak(hp->c);
-  errorcheck;
+  for (;hp->blank_lines < 2;hp->blank_lines++) {
+    e = text_insert_linebreak(hp->c);
+    errorcheck;
+  }
   return sucess;
 }
 
 /* Line break */
 g_error html_tag_br(struct html_parse *hp, struct html_tag_params *tag) {
+  hp->blank_lines++;
   return text_insert_linebreak(hp->c);
 }
 
@@ -308,6 +319,24 @@ g_error html_tag_br(struct html_parse *hp, struct html_tag_params *tag) {
 g_error html_tag_unformat(struct html_parse *hp, struct html_tag_params *tag) {
   text_unformat_top(hp->c);
   return sucess;
+}
+
+/* New paragraph, big font */
+g_error html_tag_h(struct html_parse *hp, struct html_tag_params *tag) {
+  g_error e;
+  static const int heading_fonts[] = {
+    10,5,0,0,0,0
+  };
+
+  e = html_tag_p(hp,tag);
+  errorcheck;
+  return text_format_modifyfont(hp->c,PG_FSTYLE_BOLD,0,heading_fonts[tag->tag[1]-'1']);
+}
+
+/* Turn off big font, new paragraph */
+g_error html_tag_end_h(struct html_parse *hp, struct html_tag_params *tag) {
+  text_unformat_top(hp->c);
+  return html_tag_p(hp,tag);
 }
 
 /* Simple font flags */
@@ -432,6 +461,18 @@ struct html_taghandler {
   { "/head",   &html_tag_end_head },
   { "font",    &html_tag_font },
   { "/font",   &html_tag_unformat },
+  { "h1",      &html_tag_h },
+  { "/h1",     &html_tag_end_h },
+  { "h2",      &html_tag_h },
+  { "/h2",     &html_tag_end_h },
+  { "h3",      &html_tag_h },
+  { "/h3",     &html_tag_end_h },
+  { "h4",      &html_tag_h },
+  { "/h4",     &html_tag_end_h },
+  { "h5",      &html_tag_h },
+  { "/h5",     &html_tag_end_h },
+  { "h6",      &html_tag_h },
+  { "/h6",     &html_tag_end_h },
 
   { NULL, NULL }
 };
@@ -620,6 +661,7 @@ g_error html_parse_pre(struct html_parse *hp,
 	errorcheck;
 	fragment = NULL;
 
+	hp->blank_lines++;
 	e = text_insert_linebreak(hp->c);
 	errorcheck;
       }
@@ -628,6 +670,7 @@ g_error html_parse_pre(struct html_parse *hp,
       /* Look for the beginning */
 
       if (*start=='\n') {
+	hp->blank_lines++;
 	e = text_insert_linebreak(hp->c);
 	errorcheck;
       }
@@ -657,6 +700,8 @@ g_error html_textfragment(struct html_parse *hp,
   const u8 *p,*cname;
   char *str, *q;
   g_error e;
+
+  hp->blank_lines = 0;
 
   /* Count the number of characters in the string, treating &foo; sequences
    * as 1 character.
