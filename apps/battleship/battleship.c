@@ -111,13 +111,11 @@ int clickski(struct pgEvent *evt)
   evt->e.size.w = sizex;
   evt->e.size.h = sizey;
 
-  if(guessx > 21 || guessy > 9 || guessx == 10) return 0;
+  if(guessx > 20 || guessy < 0 || guessx == 10) return 0;
   if(guessx > 10) guessx -= 11;
 
-  draw_miss(guessx,guessy);
-
-  pgUpdate();
-
+  //draw_miss(guessx,guessy);
+  fprintf(stderr,"you guessed x=%d and y=%d\n",guessx,guessy);
   //pgMessageDialogFmt("DEBUG",PG_MSGBTN_OK,"X location %d, Y location %d",guessx,guessy);
 
   if(placement)
@@ -142,7 +140,10 @@ int clickski(struct pgEvent *evt)
 		return 0;
 	      }
 	  for(i=0;i<size;i++)
-	    board[PLAY_PIECE][guessy+i][guessx]= placement;
+	    {
+	      board[PLAY_PIECE][guessy+i][guessx]= placement;
+	      draw_ship(guessx+11,guessy+i,placement);
+	    }
 	}
       if(direction == PG_MSGBTN_NO)	
 	{
@@ -158,7 +159,10 @@ int clickski(struct pgEvent *evt)
 		return 0;
 	      }
 	  for(i=0;i<size;i++)
-	    board[PLAY_PIECE][guessy][guessx+i]= placement;
+	    {
+	      board[PLAY_PIECE][guessy][guessx+i]= placement;
+	      draw_ship(guessx+i+11,guessy,placement);
+	    }
 	}
       if(direction == PG_MSGBTN_CANCEL) placement ++;
       placement--;
@@ -177,7 +181,8 @@ int clickski(struct pgEvent *evt)
 	{
 	  if(board[COMP_PIECE][guessy][guessx])
 	    {
-	      pgMessageDialogFmt("DEBUG",PG_MSGBTN_OK,"-%d--%d-",aivalues.comp_ships[board[COMP_PIECE][guessy][guessx]],board[COMP_PIECE][guessy][guessx]);
+	      //pgMessageDialogFmt("DEBUG",PG_MSGBTN_OK,"-%d--%d-",aivalues.comp_ships[board[COMP_PIECE][guessy][guessx]],board[COMP_PIECE][guessy][guessx]);
+	      fprintf(stderr,"YOU GOT A HIT");
 	      aivalues.play_points++;
 	      aivalues.comp_ships[board[COMP_PIECE][guessy][guessx]]++;
 	      if(aivalues.comp_ships[board[COMP_PIECE][guessy][guessx]]+1 == aivalues.comp_ships[board[COMP_PIECE][guessx][guessy]])
@@ -234,6 +239,7 @@ int clickski(struct pgEvent *evt)
 	}
     }
   draw_spot(guessx,guessy,PLAY_GUESS);
+  pgWriteCmd(canvas,PGCANVAS_REDRAW,0);
   pgUpdate();
   picked_color = 1;
   return 0;
@@ -258,6 +264,7 @@ int redraw(struct pgEvent *evt)
   int i;
   int j;
 
+  fprintf(stderr,"FULL REDRAW CALLED FOR\n");
 
   sizex = evt->e.size.w;
   sizey = evt->e.size.h;
@@ -381,19 +388,25 @@ void draw_spot (int x, int y, int side)
   switch(side)
     {
     case COMP_GUESS:
+      fprintf(stderr,"draw_spot called with %d and %d for COMP_GUESS\n",x%11,y);
       break;
     case COMP_PIECE:
+      fprintf(stderr,"draw_spot called with %d and %d for COMP_PIECE\n",x%11,y);
       break;
     case PLAY_GUESS:
-      if(board[side][x][y] == HIT)
+      fprintf(stderr,"draw_spot called with %d and %d for PLAY_GUESS\n",x%11,y);
+      if(board[side][y][x%11] == HIT)
 	draw_hit(x,y);
-      if(board[side][x][y] == MISS)
+      if(board[side][y][x%11] == MISS)
 	draw_miss(x,y);
       break;
     case PLAY_PIECE:
-      if(board[side][x][y] <= 5 && board[side][x][y] >= 1)
+      fprintf(stderr,"draw_spot called with %d and %d for PLAY_PIECE -- %d\n",x,y,board[side][y][x%11]);
+      if(board[side][y][x%11] == MISS)
+	draw_miss(x+11,y);
+      if(board[side][y][x%11] <= 5 && board[side][y][x%11] >= 1)
 	draw_ship(x+11,y,board[side][x][y]);
-      if(board[side][x][y] <= 10 && board[side][x][y] >= 6)
+      if(board[side][y][x%11] <= 10 && board[side][y][x%11] >= 6)
 	draw_hit_ship(x+11,y);
       break;
     }
@@ -402,13 +415,15 @@ void draw_spot (int x, int y, int side)
 void draw_miss(int x, int y)
 {
   int bit = ss >> 3;
+
+  //This is a simple X
+
   //forward slash
-  
-  
   pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,(x*ss)+xleft+bit,(y*ss)+yleft+bit,ss-(2*bit),ss-(2*bit));
   //back slash
   pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,(x*ss)+xleft+bit,((y+1)*ss)+yleft-bit,ss-(2*bit),-ss+(2*bit));
-  //draw_hit(x,y);
+  
+  pgWriteCmd(canvas,PGCANVAS_REDRAW,0);
   
   pgSubUpdate(canvas);
 
@@ -421,11 +436,13 @@ void draw_hit(int x, int y)
  
   //pgMessageDialogFmt("Alert!",PG_MSGBTN_OK,"ss = %d. ss/2 = %d. ss/4 = %d",ss,halfss,quarterss);
   
+  //This is a dumbed down form of an H
   pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,(x*ss)+xleft-unit+center,(y*ss)+yleft-unit+center,0,center);
   pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,(x*ss)+xleft+unit+center,(y*ss)+yleft-unit+center,0,center);
 
   pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,(x*ss)+xleft-unit+center,(y*ss)+yleft+center,2*unit,0);
-  pgSubUpdate(canvas);
+  pgWriteCmd(canvas,PGCANVAS_REDRAW,0);
+  pgUpdate();
 }
 
 void draw_ship(int x, int y, int type)
@@ -433,13 +450,15 @@ void draw_ship(int x, int y, int type)
   int unit = ss >> 2;
   int center = ss >> 1;
 
-  pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,(x*ss)+xleft-unit+center,(y*ss)-yleft-unit+center,0,2*unit);
-  pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,(x*ss)+xleft-unit+center,(y*ss)-yleft-unit+center,2*unit,0);
+  //This is an empty box
+  pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,(x*ss)+xleft-unit+center,(y*ss)+yleft-unit+center,0,2*unit);
+  pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,(x*ss)+xleft-unit+center,(y*ss)+yleft-unit+center,2*unit,0);
 
-  pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,(x*ss)+xleft+unit+center,(y*ss)-yleft+unit+center,-2*unit,0);
-  pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,(x*ss)+xleft+unit+center,(y*ss)-yleft+unit+center,0,-2*unit);
+  pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,(x*ss)+xleft+unit+center,(y*ss)+yleft+unit+center,-2*unit,0);
+  pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,(x*ss)+xleft+unit+center,(y*ss)+yleft+unit+center,0,-2*unit);
+  pgWriteCmd(canvas,PGCANVAS_REDRAW,0);
 
-  pgSubUpdate(canvas);
+  pgUpdate();
 }
 
 void draw_hit_ship(int x, int y)
@@ -447,8 +466,10 @@ void draw_hit_ship(int x, int y)
   int unit = ss >> 2;
   int center = ss >> 1;
 
-  pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_RECT,(x*ss)+xleft-unit+center,(y*ss)-yleft+unit+center,2*unit,2*unit);
-  pgSubUpdate(canvas);
+  //This is a filled box
+  pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_RECT,(x*ss)+xleft + (center - unit),(y*ss)+yleft-unit+center,2*unit,2*unit);
+  pgWriteCmd(canvas,PGCANVAS_REDRAW,0);
+  pgUpdate();
 }
 
 void quoe(int x)
@@ -770,5 +791,5 @@ void aicall(void)
 	}
       break;
     }
-  draw_spot(alpha,numeric,PLAY_PIECE);
+  draw_spot(numeric,alpha,PLAY_PIECE);
 }
