@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.63 2001/08/09 09:00:45 micahjd Exp $
+/* $Id: client_c.h,v 1.64 2001/09/03 05:31:42 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -221,11 +221,12 @@ typedef int (*pgfilter)(const char *string,const char *pattern);
 #define PG_MSGICON_ERROR    0x0010
 #define PG_MSGICON_MESSAGE  0x0020
 #define PG_MSGICON_QUESTION 0x0040
+#define PG_MSGICON_WARNING  0x0080
 
 #define PG_MSGBTNMASK       (PG_MSGBTN_OK|PG_MSGBTN_CANCEL|\
                              PG_MSGBTN_YES|PG_MSGBTN_NO)
 #define PG_MSGICONMASK      (PG_MSGICON_ERROR|PG_MSGICON_MESSAGE|\
-                             PG_MSGICON_QUESTION)
+                             PG_MSGICON_QUESTION|PG_MSGICON_WARNING)
 
 /*!
  * \brief A structure representing data, loaded or mapped into memory

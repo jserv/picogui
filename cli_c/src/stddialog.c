@@ -1,4 +1,4 @@
-/* $Id: stddialog.c,v 1.6 2001/08/17 01:37:28 micahjd Exp $
+/* $Id: stddialog.c,v 1.7 2001/09/03 05:31:43 micahjd Exp $
  *
  * stddialog.c - Various preconstructed dialog boxes the application
  *               may use. These are implemented 100% client-side using
@@ -148,6 +148,8 @@ int pgMessageDialog(const char *title,const char *text,unsigned long flags) {
     dlgicon(wToolbar,PGTH_P_ICON_MESSAGE);
   if (flags & PG_MSGICON_QUESTION)
     dlgicon(wToolbar,PGTH_P_ICON_QUESTION);
+  if (flags & PG_MSGICON_WARNING)
+    dlgicon(wToolbar,PGTH_P_ICON_WARNING);
 
   /* Run it (ignoring zero-payload events) */
   while (!(ret = pgGetPayload(pgGetEvent()->from)));
