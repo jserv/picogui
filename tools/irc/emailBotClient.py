@@ -20,7 +20,7 @@ socketName = "/tmp/announceBot.socket"
 import re, time
 
 # Allowed commands, split up into those with content and those without
-allowedTextCommands = ("Announce",)
+allowedTextCommands = ("Announce", "SendToChannels")
 allowedControlCommands = ("JoinChannel", "PartChannel")
 
 # Prohibited channels

@@ -68,6 +68,14 @@ class AnnounceServer(LineReceiver):
             except KeyError:
 	        pass
             time.sleep(1)
+
+        elif command == "SendToChannels":
+            # Send a message to a comma-separated list of channels.
+            for channel in project.split(','):
+                try:
+                    groups[channel].sendText(message)
+                except KeyError:
+                    pass
             
         elif command == "JoinChannel":
             accounts[0].client.join(project)
