@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.60 2002/09/28 10:58:10 micahjd Exp $
+/* $Id: popup.c,v 1.61 2002/10/04 07:33:23 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -34,6 +34,11 @@
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <pgserver/appmgr.h>
+
+struct popupdata {
+  struct divtree *my_dt;
+};
+#define DATA WIDGET_DATA(0,popupdata)
 
 /* Clipping for popup boxes. Mainly used in create_popup, but it is
  * also called when switching video modes */
@@ -136,6 +141,8 @@ void build_popup(struct gropctxt *c,unsigned short state,struct widget *self) {
 g_error popup_install(struct widget *self) {
   g_error e;
 
+  WIDGET_ALLOC_DATA(0,popupdata)
+
   /* Before freezing the current layer, make sure it's up to date */
   activate_client_divnodes(self->owner);
   update(NULL,1);
@@ -143,6 +150,7 @@ g_error popup_install(struct widget *self) {
   /* Freeze the existing layer and make a new one */
   e = dts_push();
   errorcheck;
+  DATA->my_dt = dts->top;
 
   /* This is positioned absolutely, so don't bother with the layout engine,
    * let create_popup position it.
@@ -166,7 +174,7 @@ g_error popup_install(struct widget *self) {
   self->trigger_mask = PG_TRIGGER_DOWN | PG_TRIGGER_KEYUP | PG_TRIGGER_KEYDOWN | PG_TRIGGER_CHAR;
 
   /* Attach ourselves as a root widget in the new divtree */
-  e = widget_attach(self,dts->top,&dts->top->head->next,0,self->owner);  
+  e = widget_attach(self,DATA->my_dt,&DATA->my_dt->head->next,0,self->owner);  
   errorcheck;
   self->isroot = 1;
 
@@ -192,7 +200,12 @@ void popup_remove(struct widget *self) {
   oldflags = self->in->div->flags;
 
   r_divnode_free(self->in);
-  dts_pop(self->dt);
+
+  /* We must use our saved divtree pointer to delete the divtree
+   * instead of self->dt, since by this time the widget has been
+   * detatched from the divtree.
+   */
+  dts_pop(DATA->my_dt);
   self->dt = NULL;
   
   /* If applicable, don't redraw toolbars on the root divtree.
@@ -210,6 +223,8 @@ void popup_remove(struct widget *self) {
     p->flags |= DIVTREE_ALL_REDRAW;
     p = p->next;
   }
+
+  g_free(DATA);
 }
 
 g_error popup_set(struct widget *self,int property, glob data) {
