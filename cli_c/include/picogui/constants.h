@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.15 2000/11/05 01:07:55 micahjd Exp $
+/* $Id: constants.h,v 1.16 2000/11/05 03:13:28 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -424,6 +424,7 @@ typedef unsigned long pghandle;
 #define PG_WP_SCROLL      17    /* Scroll bar binds here on scrollable widgets */
 #define PG_WP_VIRTUALH    18    /* Basically, the maximum vertical scroll */
 #define PG_WP_HOTKEY      19
+#define PG_WP_EXTDEVENTS  20    /* For buttons, a mask of extra events to send */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0
@@ -448,6 +449,8 @@ typedef unsigned long pghandle;
 			           as a button, it has been clicked/selected  */
 #define PG_WE_DEACTIVATE  2     /* Lost focus */
 #define PG_WE_CLOSE       3     /* A top-level widget has closed */
+#define PG_WE_PNTR_DOWN   4     /* The "mouse" button is now down */
+#define PG_WE_PNTR_UP     5     /* The "mouse" button is now up */
 
 /* Non-widget events */
 #define PG_NWE_KBD_CHAR    10   /* These are sent if the client has captured the */
