@@ -101,10 +101,12 @@ class statPage:
         scriptName = os.getenv("REQUEST_URI").split("?")[0].split("/")[-1]
 
         # Stick together a new URL
-        if mutableForm:
-            attributes = []
-            for key in mutableForm:
+        attributes = []
+        for key in mutableForm:
+            value = mutableForm[key]
+            if value is not None:
                 attributes.append("%s=%s" % (key, mutableForm[key]))
+        if attributes:
             return scriptName + "?" + "&".join(attributes)
         else:
             return scriptName
@@ -168,11 +170,11 @@ class statPage:
               """ % time.strftime("%c"))
 
         if self.sections != self.allSections: 
-            write('<a class="headingTab" href="%s">all sections</a>' % self.linkURL({'sections': ''}))
+            write('<a class="headingTab" href="%s">all sections</a>' % self.linkURL({'sections': None}))
         if self.form.keys():
             write('<a class="headingTab" href="%s">defaults</a>' % self.linkURL({}, False))
         if self.refresh:
-            write('<a class="headingTab" href="%s">refresh off</a>' % self.linkURL({'refresh': 0}))
+            write('<a class="headingTab" href="%s">refresh off</a>' % self.linkURL({'refresh': None}))
         else:
             write('<a class="headingTab" href="%s">refresh on</a>' % self.linkURL({'refresh': 30}))
 
