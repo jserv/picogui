@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.17 2000/11/04 20:26:51 micahjd Exp $
+/* $Id: constants.h,v 1.18 2000/11/04 21:25:29 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -201,10 +201,14 @@ typedef unsigned long pghandle;
 #define PGTH_O_ROTATEBTN             31   /* A panelbar rotate button */
 #define PGTH_O_ROTATEBTN_ON          32   /* A panelbar rotate button, mouse down */
 #define PGTH_O_ROTATEBTN_HILIGHT     33   /* A panelbar rotate button, mouse over */
+#define PGTH_O_ZOOMBTN               34   /* A panelbar zoom button */
+#define PGTH_O_ZOOMBTN_ON            35   /* A panelbar zoom button, mouse down */
+#define PGTH_O_ZOOMBTN_HILIGHT       36   /* A panelbar zoom button, mouse over */
+
 
 /* If you add a themeobject, be sure to increment this and add
    an inheritance entry in theme/thobjtab.c */
-#define PGTH_ONUM                  34
+#define PGTH_ONUM                  37
 
 /*** Loaders */
 

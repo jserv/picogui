@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.39 2000/11/04 20:26:51 micahjd Exp $
+/* $Id: panel.c,v 1.40 2000/11/04 21:25:29 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -66,7 +66,7 @@ struct paneldata {
   handle text;
 
   /* buttons on the panelbar */
-  struct widget *btn_close,*btn_rotate;
+  struct widget *btn_close,*btn_rotate,*btn_zoom;
 
   /* The panelbar */
   struct divnode *panelbar;
@@ -74,6 +74,8 @@ struct paneldata {
 #define DATA ((struct paneldata *)(self->data))
 
 void themeify_panel(struct widget *self);
+
+/**** Build and resize */
 
 void resize_panel(struct widget *self) {
   int s;
@@ -92,6 +94,11 @@ void resize_panel(struct widget *self) {
   if ((self->in->flags & (~SIDEMASK)) & (PG_S_LEFT|PG_S_RIGHT))
     s = rotate_side(s);
   widget_set(DATA->btn_rotate,PG_WP_SIDE,s);  
+
+  s = theme_lookup(PGTH_O_ZOOMBTN,PGTH_P_SIDE);
+  if ((self->in->flags & (~SIDEMASK)) & (PG_S_LEFT|PG_S_RIGHT))
+    s = rotate_side(s);
+  widget_set(DATA->btn_zoom,PG_WP_SIDE,s);  
 }
 
 void build_panelbar(struct gropctxt *c,unsigned short state,
@@ -128,7 +135,7 @@ void build_panelbar(struct gropctxt *c,unsigned short state,
   c->current->param[2] = theme_lookup(state,PGTH_P_FGCOLOR);
 }
 
-/** Handlers for the panelbar buttons */
+/**** Handlers for the panelbar buttons */
 
 void panelbtn_close(struct widget *self,struct widget *button) {
   post_event(PG_WE_CLOSE,self,0,self->owner);
@@ -147,6 +154,35 @@ void panelbtn_rotate(struct widget *self,struct widget *button) {
   resize_panel(self);
   update();
 }
+
+void panelbtn_zoom(struct widget *self,struct widget *button) {
+  struct divnode **where;
+
+  /* This requires a bit of black magic, but fear not, it's not
+     as bad as widget.c ;-) */
+  
+  /* Remove from our current position */
+  *self->where = *self->out;
+  if (*self->out && (*self->out)->owner)
+    (*self->out)->owner->where = self->where;
+
+  /* Where to move ourselves to */
+  where = &self->dt->head->next;
+
+  /* Add again */
+  *self->out = *where;
+  *where = self->in;
+  self->where = where;
+  if (*self->out && (*self->out)->owner)
+    (*self->out)->owner->where = self->out;
+
+  /* tada! */
+  self->dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+  self->dt->flags |= DIVTREE_NEED_RECALC;
+  update();
+}
+
+/**** Installation */
 
 /* Pointers, pointers, and more pointers. What's the point?
    Set up some divnodes!
@@ -190,10 +226,17 @@ g_error panel_install(struct widget *self) {
   customize_button(DATA->btn_rotate,PGTH_O_ROTATEBTN,PGTH_O_ROTATEBTN_ON,
 		   PGTH_O_ROTATEBTN_HILIGHT,self,&panelbtn_rotate);
 
-  /* And finally, the divnode that draws the panelbar */
-  e = newdiv(DATA->btn_rotate->out,self);
+  /* Zoom Button */
+  e = widget_create(&DATA->btn_zoom,PG_WIDGET_BUTTON,self->dt,DATA->btn_rotate->out,
+		    self->container,self->owner);
   errorcheck;
-  DATA->panelbar = *DATA->btn_rotate->out;
+  customize_button(DATA->btn_zoom,PGTH_O_ZOOMBTN,PGTH_O_ZOOMBTN_ON,
+		   PGTH_O_ZOOMBTN_HILIGHT,self,&panelbtn_zoom);
+
+  /* And finally, the divnode that draws the panelbar */
+  e = newdiv(DATA->btn_zoom->out,self);
+  errorcheck;
+  DATA->panelbar = *DATA->btn_zoom->out;
   DATA->panelbar->build = &build_panelbar;
   DATA->panelbar->state = PGTH_O_PANELBAR;
 
@@ -209,10 +252,13 @@ g_error panel_install(struct widget *self) {
   return sucess;
 }
 
+/**** Properties */
+
 void panel_remove(struct widget *self) {
   /* Kill the buttons */
   widget_remove(DATA->btn_close);
   widget_remove(DATA->btn_rotate);
+  widget_remove(DATA->btn_zoom);
 
   g_free(self->data);
   if (!in_shutdown)
