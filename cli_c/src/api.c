@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.44 2002/07/03 22:03:26 micahjd Exp $
+/* $Id: api.c,v 1.45 2002/07/26 11:29:45 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -1090,6 +1090,42 @@ char *pgGetString(pghandle string) {
   pgFlushRequests();
   return _pg_return.e.data.data;
 #endif  
+}
+
+struct pgshmbitmap *pgMakeSHMBitmap(pghandle bitmap) {
+  struct pgshmbitmap *s;
+  struct pgreqd_mkshmbitmap arg;
+
+  arg.bitmap = htonl(bitmap);
+  arg.uid = htonl(getuid());
+
+  _pg_add_request(PGREQ_MKSHMBITMAP,&arg,sizeof(arg));
+  pgFlushRequests();
+  s = (struct pgshmbitmap *) _pg_return.e.data.data;
+
+  /* Convert to host byte order */
+  s->shm_key = ntohl(s->shm_key);
+  s->shm_length = ntohl(s->shm_length);
+  s->format = ntohl(s->format);
+  s->palette = ntohl(s->palette);
+  s->width = ntohs(s->width);
+  s->height = ntohs(s->height);
+  s->bpp = ntohs(s->bpp);
+  s->pitch = ntohs(s->pitch);
+  s->red_mask = ntohl(s->red_mask);
+  s->green_mask = ntohl(s->green_mask);
+  s->blue_mask = ntohl(s->blue_mask);
+  s->alpha_mask = ntohl(s->alpha_mask);
+  s->red_shift = ntohs(s->red_shift);
+  s->green_shift = ntohs(s->green_shift);
+  s->blue_shift = ntohs(s->blue_shift);
+  s->alpha_shift = ntohs(s->alpha_shift);
+  s->red_length = ntohs(s->red_length);
+  s->green_length = ntohs(s->green_length);
+  s->blue_length = ntohs(s->blue_length);
+  s->alpha_length = ntohs(s->alpha_length);
+
+  return s;
 }
 
 int pgGetFontStyle(s16 index, char *name, u16 *size,

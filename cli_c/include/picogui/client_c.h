@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.89 2002/07/09 17:13:11 epchristi Exp $
+/* $Id: client_c.h,v 1.90 2002/07/26 11:29:44 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -871,6 +871,19 @@ pghandle pgNewBitmap(struct pgmemdata obj);
  * \sa pgNewBitmap
  */
 pghandle pgCreateBitmap(s16 width, s16 height);
+
+/*!
+ * \brief Map a bitmap into a shared memory segment
+ *
+ * \param bitmap Handle to the bitmap to map
+ * \returns A pgshmbitmap structure with the SHM key and format info, valid until the next PicoGUI call
+ *
+ * This isn't well documented yet, see picogui/network.h for the pgshmbitmap
+ * structure.
+ *
+ * \sa pgNewBitmap, pgCreateBitmap
+ */
+struct pgshmbitmap *pgMakeSHMBitmap(pghandle bitmap);
 
 /*!
  * \brief Create a new string object 
