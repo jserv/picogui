@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.36 2002/11/03 23:25:31 micahjd Exp $
+/* $Id: videotest.c,v 1.37 2002/11/03 23:26:34 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -29,12 +29,7 @@
 #include <pgserver/common.h>
 #include <pgserver/video.h>
 #include <pgserver/render.h>
-#include <pgserver/appmgr.h>
-#include <time.h>               /* For benchmarking */
-#include <unistd.h>		/* sleep() */
 
-#define NUM_PATTERNS    8
-#define TEST_DURATION   2      /* Length of each benchmark run, in seconds */
 
 /************ Line test pattern */
 
