@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.42 2001/05/01 23:16:15 micahjd Exp $
+/* $Id: constants.h,v 1.43 2001/05/05 02:04:00 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -424,6 +424,7 @@ typedef unsigned long pghandle;
 				       * contains a color for that node and
 				       * the color set with SETCOLOR is
 				       * ignored */
+#define PG_GROPF_UNIVERSAL    (1<<5)  /* This gropnode is always rendered */
 
 /* Flags to be used with PG_GROP_SETMAPPING */
 #define PG_MAP_NONE           0
