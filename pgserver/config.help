@@ -145,6 +145,9 @@ FONT_COURIER12
 FONT_HELVETICA8
       A smaller version of Helvetica
       
+FONT_HELVETICA14UNICODE
+      A unicode version of helvetica14 font
+
       
 FONT_TIMES10
       Characters are smaller than Helvetica, includes a bold version

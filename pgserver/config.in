@@ -83,6 +83,7 @@ bool 'Gelly 10'                            FONT_GELLY10
 bool 'Helvetica 8'                         FONT_HELVETICA8
 bool 'Helvetica 12, 12b'                   FONT_HELVETICA12
 bool 'Helvetica 14, 14b'                   FONT_HELVETICA14
+bool 'Helvetica 14 unicode'                FONT_HELVETICA14UNICODE
 bool 'Helvetica 18, 18b'                   FONT_HELVETICA18
 bool 'Helvetica 24, 24b'                   FONT_HELVETICA24
 bool 'Times 10, 10b'                       FONT_TIMES10

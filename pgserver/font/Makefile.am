@@ -19,6 +19,7 @@ FDF_FILES = \
         helvetica12b.bdf \
         helvetica14.bdf \
         helvetica14b.bdf \
+        helvetica14unicode.bdf \
         helvetica18.bdf \
         helvetica18b.bdf \
         helvetica24.bdf \
@@ -39,6 +40,7 @@ FI_FILES = \
         helvetica10.fi \
         helvetica12.fi \
         helvetica14.fi \
+        helvetica14unicode.fi \
         helvetica18.fi \
         helvetica24.fi \
         helvetica8.fi \
