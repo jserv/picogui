@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.16 2000/10/10 00:49:06 micahjd Exp $
+/* $Id: pgtheme.y,v 1.17 2000/10/14 03:54:50 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -78,7 +78,7 @@
 %type <fsn>      fsprop
 
    /* Reserved words */
-%token OBJ FILLSTYLE VAR SHIFTR SHIFTL
+%token OBJ FILLSTYLE VAR SHIFTR SHIFTL CNVCOLOR
 
 %left '|'
 %left '&'
@@ -358,6 +358,7 @@ fsexp: '(' fsexp ')'    { $$ = $2; }
      | NUMBER              { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = $1; }     
      | FSVAR               { $$ = fsnewnode(PGTH_OPCMD_LONGGET); $$->param = $1; }
      | fsprop              { $$ = $1; }
+     | CNVCOLOR '(' fsexp ')' { $$ = fsnodecat($3,fsnewnode(PGTH_OPCMD_COLOR)); }
      ;
 
 fsprop: THOBJ ':' PROPERTY { $$ = fsnewnode(PGTH_OPCMD_PROPERTY); $$->param = $1; $$->param2 = $3; }

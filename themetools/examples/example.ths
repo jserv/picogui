@@ -6,13 +6,35 @@
 */
 
 object default {
+  
+  /* Cute little fillstyle that demonstrates
+     local variables and some arithmetic */
   bgfill = fillstyle {
-    Frame(x,y,w,h,fgcolor);
-    Rect(x+1,y+1,w-2,h-2,bgcolor);
+    var gw1,gw2;
+
+    /* thin border */
+    Frame(x,y,w,h,Color(fgcolor));
+    x = x+1;
+    y = y+1;
+    w = w-2;
+    h = h-2;
+
+    /* Hilight with gradients! */
+    gw1 = 5+w/20;   // Width of left gradient
+    gw2 = w/10;   // Width of right gradient
+    Gradient(x,y,gw1,h,0,bgcolor >> 1,bgcolor,0);
+    Rect(x+gw1,y,w-gw1-gw2,h,Color(bgcolor));
+    Gradient(x+w-gw2,y,gw2,h,0,bgcolor,0xDDDDDD,0);
+    Gradient(x+w/4,y+h*7/8,w,h,34,0x000000,0x303000,1);
   };
+
+  /* Default colors */
   fgcolor = 0x000000;
-  bgcolor = 0xFFFFFF;
+  bgcolor = 0x808080;
 };
+
+//object panel {
+  
 
 object themeinfo name = "Example theme";
 object button bgcolor = 0x8080FF;
