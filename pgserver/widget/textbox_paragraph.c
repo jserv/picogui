@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.7 2002/10/12 15:13:32 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.8 2002/10/14 15:59:32 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -75,7 +75,7 @@ void paragraph_set_last_change(struct paragraph_cursor *crsr);
 
 /* Draw the cursor at the given location */
 void paragraph_render_cursor(struct groprender *r, struct paragraph_cursor *crsr,
-			     s16 x, s16 y);
+			     s16 x, s16 y, struct font_descriptor *fd);
 
 /* Mark the cursor and the area overlapping it for rerendering */
 void paragraph_update_cursor(struct paragraph_cursor *crsr);
@@ -202,7 +202,7 @@ void paragraph_render(struct groprender *r, struct gropnode *n) {
 	if (ch)
 	  fmt.fd->lib->draw_char(fmt.fd,r->output,&xy,fmt.color,ch,&r->clip,r->lgop,0);
 	if (draw_cursor)
-	  paragraph_render_cursor(r,&par->cursor,old_x,xy.y);
+	  paragraph_render_cursor(r,&par->cursor,old_x,xy.y,fmt.fd);
       }
 
       /* Drat, there's a special case: if the cursor is at the very end of the
@@ -212,7 +212,7 @@ void paragraph_render(struct groprender *r, struct gropnode *n) {
        */
       if ((!line->next) && par->cursor.visible &&
 	  !pgstring_iteratorcmp(&p, &par->cursor.iterator))
-	  paragraph_render_cursor(r,&par->cursor,xy.x,xy.y);
+	  paragraph_render_cursor(r,&par->cursor,xy.x,xy.y,fmt.fd);
 
       /* Next line */
       xy.y += line->height;
@@ -729,7 +729,7 @@ void paragraph_rerender_line(struct groprender *r, struct gropnode *n,
 
     if (draw_cursor) {
       //  DBG("Draw_cursor at %d,%d\n",old_x,*y);
-      paragraph_render_cursor(r,&par->cursor,old_x,*y);
+      paragraph_render_cursor(r,&par->cursor,old_x,*y,fmt.fd);
     }
 
     if (nchars && !--*nchars)
@@ -755,14 +755,17 @@ void paragraph_set_last_change(struct paragraph_cursor *crsr) {
 
 /* Draw the cursor at the given location */
 void paragraph_render_cursor(struct groprender *r, struct paragraph_cursor *crsr,
-			     s16 x, s16 y) {
+			     s16 x, s16 y, struct font_descriptor *fd) {
   struct gropnode n;
+  struct font_metrics m;
+  fd->lib->getmetrics(fd,&m);
+
   n.type = PG_GROP_RECT;
   n.flags = PG_GROPF_COLORED;
   n.r.x = x;
   n.r.y = y;
   n.r.w = crsr->width;
-  n.r.h = crsr->line->height;
+  n.r.h = m.ascent + m.descent;
   n.param[0] = crsr->color;
 
   gropnode_clip(r,&n);
