@@ -41,40 +41,49 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("0"),
 	      PG_WP_TRANSPARENT,0,
+	      PG_WP_FONT,pgNewFont(NULL,pgThemeLookup(PGTH_O_BUTTON,PGTH_P_HEIGHT),0),
+	      PG_WP_ALIGN, PG_A_RIGHT,
 	      0);
   //Container for the buttons
   box=pgNewWidget(PG_WIDGET_BOX,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_ALL,
+	      PG_WP_TRANSPARENT,1,
+	      PG_WP_MARGIN,0,
 	      0);
   row1=pgNewWidget(PG_WIDGET_BOX,PG_DERIVE_INSIDE,box);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,5),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_TRANSPARENT,1,
 	      0);
 
   row2=pgNewWidget(PG_WIDGET_BOX,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,5),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_TRANSPARENT,1,
 	      0);
 
   row3=pgNewWidget(PG_WIDGET_BOX,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,5),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_TRANSPARENT,1,
 	      0);
 
   row4=pgNewWidget(PG_WIDGET_BOX,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,5),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_TRANSPARENT,1,
 	      0);
 
   row5=pgNewWidget(PG_WIDGET_BOX,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIZE,pgFraction(1,5),
 	      PG_WP_SIZEMODE,PG_SZMODE_CNTFRACT,
+	      PG_WP_TRANSPARENT,1,
 	      0);
 
   pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,row1);
