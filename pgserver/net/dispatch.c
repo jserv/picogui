@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.54 2001/08/09 09:57:48 micahjd Exp $
+/* $Id: dispatch.c,v 1.55 2001/08/13 19:03:01 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -841,6 +841,11 @@ g_error rqh_render(int owner, struct pgrequest *req,
     for (i=4;i<numparams;i++)
       grop.param[i-4] = ntohl(params[i]);
   }
+
+  /* Convert color */
+  if (grop.type == PG_GROP_SETCOLOR ||
+      grop.flags == PG_GROPF_COLORED)
+    grop.param[0] = VID(color_pgtohwr)(grop.param[0]);
 
   /* Take care of nonvisual nodes */
   if (PG_GROP_IS_NONVISUAL(grop.type)) {
