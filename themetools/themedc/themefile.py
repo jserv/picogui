@@ -144,11 +144,15 @@ class PgFillstyle:
       return lookup_constname('PG_DIR_', value[0])
     elif value[1]=='lgop':
       return lookup_constname('PG_LGOP_', value[0])
+    elif value[1]=='glconst':
+      return lookup_constname('GL_', value[0])
     elif value[1]=='color':
       if type(value[0]) == StringType:
         return value[0]
       else:
 	return '0x%06x'%value[0]
+    elif value[1]=='fixedpoint16':
+	return '0x%x'%value[0]
     elif value[1]=='function':
       res=value[0]+'('
       for arg in value[2:]:
@@ -229,6 +233,55 @@ class PgFillstyle:
         self.assigntype(arg[0],'direction')
         self.assigntype(arg[1],'color')
         self.assigntype(arg[2],'color')
+      elif gropcode == constants['PG_GROP_GL_BINDTEXTURE']:
+        self.assigntype(arg[0],'bitmap')
+      elif gropcode == constants['PG_GROP_GL_ENABLE']:
+        self.assigntype(arg[0],'glconst')
+      elif gropcode == constants['PG_GROP_GL_DISABLE']:
+        self.assigntype(arg[0],'glconst')
+      elif gropcode == constants['PG_GROP_GL_DEPTHFUNC']:
+        self.assigntype(arg[0],'glconst')
+      elif gropcode == constants['PG_GROP_GL_SHADEMODEL']:
+        self.assigntype(arg[0],'glconst')
+      elif gropcode == constants['PG_GROP_GL_MATRIXMODE']:
+        self.assigntype(arg[0],'glconst')
+      elif gropcode == constants['PG_GROP_GL_TRANSLATEF']:
+        self.assigntype(arg[0],'fixedpoint16')
+        self.assigntype(arg[1],'fixedpoint16')
+        self.assigntype(arg[2],'fixedpoint16')
+      elif gropcode == constants['PG_GROP_GL_ROTATEF']:
+        self.assigntype(arg[0],'fixedpoint16')
+        self.assigntype(arg[1],'fixedpoint16')
+        self.assigntype(arg[2],'fixedpoint16')
+      elif gropcode == constants['PG_GROP_GL_SCALEF']:
+        self.assigntype(arg[0],'fixedpoint16')
+        self.assigntype(arg[1],'fixedpoint16')
+        self.assigntype(arg[2],'fixedpoint16')
+      elif gropcode == constants['PG_GROP_GL_BEGIN']:
+        self.assigntype(arg[0],'glconst')
+      elif gropcode == constants['PG_GROP_GL_TEXCOORD2F']:
+        self.assigntype(arg[0],'fixedpoint16')
+        self.assigntype(arg[1],'fixedpoint16')
+      elif gropcode == constants['PG_GROP_GL_VERTEX3F']:
+        self.assigntype(arg[0],'fixedpoint16')
+        self.assigntype(arg[1],'fixedpoint16')
+        self.assigntype(arg[2],'fixedpoint16')
+      elif gropcode == constants['PG_GROP_GL_COLOR']:
+        self.assigntype(arg[0],'color')
+      elif gropcode == constants['PG_GROP_GL_HINT']:
+        self.assigntype(arg[0],'glconst')
+        self.assigntype(arg[1],'glconst')
+      elif gropcode == constants['PG_GROP_GL_NORMAL3F']:
+        self.assigntype(arg[0],'fixedpoint16')
+        self.assigntype(arg[1],'fixedpoint16')
+        self.assigntype(arg[2],'fixedpoint16')
+      elif gropcode == constants['PG_GROP_GL_LIGHTFV']:
+        self.assigntype(arg[0],'fixedpoint16')
+        self.assigntype(arg[1],'fixedpoint16')
+        self.assigntype(arg[2],'fixedpoint16')
+      elif gropcode == constants['PG_GROP_GL_BLENDFUNC']:
+        self.assigntype(arg[0],'glconst')
+        self.assigntype(arg[1],'glconst')
       else:
         raise "Unimplemented gropnode %s"%lookup_constname('PG_GROP_', gropcode)
       while len(arg):

@@ -4,7 +4,7 @@ from string import capitalize, maketrans, translate
 from re import compile
 from types import IntType
 
-pgconstant=compile('^#define\\s+(PG[_A-Z0-9]+)\\s+(\\S+)\\s*(/[*/].*)?$')
+pgconstant=compile('^#define\\s+((PG|GL)[_A-Z0-9]+)\\s+(\\S+)\\s*(/[*/].*)?$')
 namify=maketrans('ABCDEFGHIJKLMNOPQRSTUVWXYZ_', 'abcdefghijklmnopqrstuvwxyz.')
 
 globals={}
@@ -22,7 +22,7 @@ for line in input():
   if(len(fullline)>=2 and fullline[-2]!='\\'):
     m=pgconstant.match(line)
     if(m):
-      value=eval(m.group(2), globals, constants)
+      value=eval(m.group(3), globals, constants)
       if(type(value) == IntType):
 	if not constants.has_key(value):
 	  constants[value]=m.group(1)	# first define regarded as authoritative
