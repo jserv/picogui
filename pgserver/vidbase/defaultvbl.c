@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.89 2002/04/02 21:19:44 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.90 2002/04/02 21:20:17 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -2160,7 +2160,7 @@ void def_dither_store(hwrdither *d, pgcolor pixel, s16 lgop) {
 
   /* If this pixel has extra flags, like alpha channel, pass it straight through */
   if (pixel>>24) {
-    vid->pixel(sd->dest, sd->x + sd->i, sd->y, vid->color_pgtohwr(pixel), PG_LGOP_NONE);    
+    vid->pixel(sd->dest, sd->x + sd->i, sd->y, vid->color_pgtohwr(pixel), lgop);    
   }
   else {
 
