@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.58 2001/09/24 17:20:31 micahjd Exp $
+/* $Id: div.c,v 1.59 2001/09/25 17:51:19 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -410,6 +410,9 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
 	  * I would prefer to do here, but a change here could possibly
 	  * change the sizing for an entire application. The autosplit
 	  * code is smart enough to set flags properly.
+	  *
+	  * Normally we schedule a resize using DIVTREE_NEED_RESIZE, but
+	  * in this case it must be done immediately.
 	  */
 	 divresize_recursive(n->owner->dt->head);
 	 
@@ -476,6 +479,9 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
 	    * I would prefer to do here, but a change here could possibly
 	    * change the sizing for an entire application. The autosplit
 	    * code is smart enough to set flags properly.
+	    *
+	    * Normally we schedule a resize using DIVTREE_NEED_RESIZE, but
+	    * in this case it must be done immediately.
 	    */
 	   divresize_recursive(n->owner->dt->head);
 	   
@@ -647,6 +653,10 @@ void r_dtupdate(struct divtree *dt) {
 	dt->head->next->owner->type == PG_WIDGET_POPUP)
       clip_popup(dt->head->next->div);
   }
+
+  /* Perform a divresize_recursive if it has been requested */
+  if (dt->flags & DIVTREE_NEED_RESIZE)
+    divresize_recursive(dt->head);
   
   if (dt->flags & DIVTREE_NEED_RECALC) {
 #ifdef DEBUG_VIDEO
@@ -675,7 +685,8 @@ void r_dtupdate(struct divtree *dt) {
 
   /* All clean now, clear flags. */
   dt->flags &= ~(DIVTREE_ALL_REDRAW | DIVTREE_NEED_REDRAW | 
-		 DIVTREE_NEED_RECALC | DIVTREE_ALL_NONTOOLBAR_REDRAW);
+		 DIVTREE_NEED_RECALC | DIVTREE_ALL_NONTOOLBAR_REDRAW |
+		 DIVTREE_NEED_RESIZE);
 }
 
 /*********** Functions for managing the dtstack */

@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.22 2001/09/04 18:21:35 micahjd Exp $
+/* $Id: canvas.c,v 1.23 2001/09/25 17:51:20 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -237,13 +237,25 @@ void canvas_extendbox(struct widget *self, struct gropnode *n) {
     return;
 
   i = n->r.x * DATA->gridw;
-  if (i > self->in->div->pw) self->in->div->pw = i;
+  if (i > self->in->div->pw) {
+    self->in->div->pw = i;
+    self->dt->flags = DIVTREE_NEED_RESIZE;
+  }
   i += n->r.w;
-  if (i > self->in->div->pw) self->in->div->pw = i;
+  if (i > self->in->div->pw) {
+    self->in->div->pw = i;
+    self->dt->flags = DIVTREE_NEED_RESIZE;
+  }
   i = n->r.y * DATA->gridh;
-  if (i > self->in->div->ph) self->in->div->ph = i;
+  if (i > self->in->div->ph) {
+    self->in->div->ph = i;
+    self->dt->flags = DIVTREE_NEED_RESIZE;
+  }
   i += n->r.h;
-  if (i > self->in->div->ph) self->in->div->ph = i;
+  if (i > self->in->div->ph) {
+    self->in->div->ph = i;
+    self->dt->flags = DIVTREE_NEED_RESIZE;
+  }
 }
 
 void canvas_resize(struct widget *self) {

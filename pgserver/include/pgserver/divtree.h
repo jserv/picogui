@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.31 2001/09/24 17:20:31 micahjd Exp $
+/* $Id: divtree.h,v 1.32 2001/09/25 17:51:20 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -68,6 +68,7 @@ struct divtree {
 #define DIVTREE_ALL_REDRAW	  (1<<2)
 #define DIVTREE_ALL_NONTOOLBAR_REDRAW (1<<3)
 #define DIVTREE_CLIP_POPUP        (1<<4)
+#define DIVTREE_NEED_RESIZE       (1<<5)
 
 typedef short int alignt;
 

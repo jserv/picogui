@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.113 2001/09/23 00:05:55 micahjd Exp $
+/* $Id: widget.c,v 1.114 2001/09/25 17:51:20 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -1090,7 +1090,7 @@ void dispatch_direct(char *name,u32 param) {
 
 void resizewidget(struct widget *w) {
   (*w->def->resize)(w);
-  divresize_recursive(w->dt->head);
+  w->dt->flags |= DIVTREE_NEED_RESIZE;
 }
    
 /* Iterator function used by resizeall() */
@@ -1105,7 +1105,7 @@ void resizeall(void) {
   handle_iterate(PG_TYPE_WIDGET,&resizeall_iterate);
   
   for (tree=dts->top;tree;tree=tree->next)
-    divresize_recursive(tree->head);
+    tree->flags |= DIVTREE_NEED_RESIZE;
 }
 
 /* Global hotkeys, and a function to load them */
