@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.73 2001/11/01 18:32:43 epchristi Exp $
+/* $Id: client_c.h,v 1.74 2001/11/09 09:04:32 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -998,6 +998,20 @@ void pgSizeBitmap(int *w, int *h, pghandle bitmap);
  * \sa pgFromMemory, pgFromFile, pgFromStream, pgFromTempMemory, pgDelete, pgEnterContext, pgLeaveContext
  */
 pghandle pgLoadTheme(struct pgmemdata obj);
+
+/*!
+ * \brief Load memory into a string handle
+ * 
+ * \param A pgmemdata structure, as returned by a pgFrom* function
+ * \returns A handle to the new string object created in the PicoGUI server
+ * 
+ * This is like pgNewString() except that the string is loaded from
+ * a pgmemdata structure, and it does not need to be null-terminated. This
+ * makes it easy to load text files, for instance.
+ * 
+ * \sa pgFromMemory, pgFromFile, pgFromStream, pgFromTempMemory, pgDelete, pgEnterContext, pgLeaveContext
+ */
+pghandle pgDataString(struct pgmemdata obj);
 
 /*!
  * \brief Retrieve a theme property

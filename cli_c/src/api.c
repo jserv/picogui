@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.31 2001/11/01 18:35:54 epchristi Exp $
+/* $Id: api.c,v 1.32 2001/11/09 09:04:32 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -64,6 +64,37 @@ void pgLeaveContext(void) {
 #endif  
 }  
 
+pghandle pgDataString(struct pgmemdata obj) {
+
+  /* Error */
+  if (!obj.pointer) return 0;
+
+  /* FIXME: I should probably find a way to do this that
+     doesn't involve copying the data- probably flushing any
+     pending packets, then writing the mmap'd file data directly
+     to the socket.
+
+     The current method is memory hungry when dealing with larger files.
+  */
+#ifdef ENABLE_THREADING_SUPPORT  
+  {
+    pgClientReturnData retData;
+    sem_init(&retData.sem, 0, 0);
+    _pg_add_request(PGREQ_MKSTRING,obj.pointer,obj.size, 
+		    (unsigned int)&retData, 1);
+    _pg_free_memdata(obj);
+    sem_wait(&retData.sem);
+    return retData.ret.e.retdata;
+  }
+#else  
+  _pg_add_request(PGREQ_MKSTRING,obj.pointer,obj.size);
+  _pg_free_memdata(obj);
+
+  pgFlushRequests();
+  return _pg_return.e.retdata;
+#endif  
+}
+
 pghandle pgLoadTheme(struct pgmemdata obj) {
 
   /* Error */
@@ -77,11 +108,22 @@ pghandle pgLoadTheme(struct pgmemdata obj) {
      The current method is memory hungry when dealing with larger files.
   */
 #ifdef ENABLE_THREADING_SUPPORT  
-  _pg_add_request(PGREQ_MKTHEME,obj.pointer,obj.size, -1, 0);
+  {
+    pgClientReturnData retData;
+    sem_init(&retData.sem, 0, 0);
+    _pg_add_request(PGREQ_MKTHEME,obj.pointer,obj.size, 
+		    (unsigned int)&retData, 1);
+    _pg_free_memdata(obj);
+    sem_wait(&retData.sem);
+    return retData.ret.e.retdata;
+  }
 #else  
   _pg_add_request(PGREQ_MKTHEME,obj.pointer,obj.size);
-#endif  
   _pg_free_memdata(obj);
+
+  pgFlushRequests();
+  return _pg_return.e.retdata;
+#endif  
 }
 
 unsigned long pgThemeLookup(short object, short property) {
