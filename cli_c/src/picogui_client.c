@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.33 2001/01/03 09:34:27 micahjd Exp $
+/* $Id: picogui_client.c,v 1.34 2001/01/03 10:06:08 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -221,11 +221,15 @@ void _pg_defaulterr(unsigned short errortype,const char *msg) {
   static unsigned char in_defaulterr = 0;
 
   /* Are we unable to make a dialog? (no connection, or we already tried) */  
-  if (in_defaulterr || !_pgsockfd)
+  if (in_defaulterr)
     exit(errortype);
 
   /* Print on stderr too in case the dialog fails */
   fprintf(stderr,"*** PicoGUI ERROR (%s) : %s\n",pgErrortypeString(errortype),msg);
+
+  /* We haven't even established a connection? (let the error print first) */
+  if (!_pgsockfd)
+    exit(errortype);
 
   /* Try a dialog box */
   in_defaulterr = 1;
@@ -466,7 +470,8 @@ void pgInit(int argc, char **argv)
   struct hostent *he;
   struct sockaddr_in server_addr; /* connector's address information */
   const char *hostname;
-  int fd;
+  int fd,i,j,args_to_shift;
+  char *arg;
 
   /* Get the app's name */
   _pg_appname = argv[0];
@@ -474,14 +479,43 @@ void pgInit(int argc, char **argv)
   /* Set default error handler */
   pgSetErrorHandler(&_pg_defaulterr);
 
-  /*  FIXME: client argument handling
-     Should use a getopt-based system here to process various args, leaving
-     the extras for the client app to process. But this is ok temporarily.
-  */
-  if (argc != 2)
-    hostname = PG_REQUEST_SERVER;
-  else
-    hostname = argv[1];
+  /* Default tunables */
+  hostname = PG_REQUEST_SERVER;
+
+  /* Handle arguments we recognize, Leave others for the app */
+  for (i=1;i<argc;i++) {
+    arg = argv[i];
+
+    /* It's ours if it starts with --pg */
+    if (!bcmp(arg,"--pg",4)) {
+      arg+=4;
+      args_to_shift = 1;
+
+      if (!strcmp(arg,"server")) {
+	/* --pgserver : Next argument is the picogui server */
+	args_to_shift = 2;
+	hostname = argv[i+1];
+      }
+
+      else if (!strcmp(arg,"version")) {
+	/* --pgversion : For now print CVS id */
+	fprintf(stderr,"$Id: picogui_client.c,v 1.34 2001/01/03 10:06:08 micahjd Exp $\n");
+      }
+      
+      else {
+	/* Other command, print some help */
+	fprintf(stderr,"PicoGUI Client Library\nCommands: --pgserver --pgversion\n");
+	exit(1);
+      }
+
+      /* Remove this argument - shuffle all future args back a space */
+      argc -= args_to_shift;
+      for (j=i;j<argc;j++)
+	argv[j] = argv[j+args_to_shift];
+    }
+  }
+  /* Some programs might rely on this? */
+  argv[argc] = NULL;
 
   if ((he=gethostbyname(hostname)) == NULL) {  /* get the host info */
     clienterr("Error resolving server hostname");
