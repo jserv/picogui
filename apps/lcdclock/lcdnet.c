@@ -1,4 +1,4 @@
-/* $Id: lcdnet.c,v 1.1 2002/01/30 04:43:27 micahjd Exp $
+/* $Id: lcdnet.c,v 1.2 2002/01/30 04:45:47 micahjd Exp $
  * 
  * lcdnet.c - Network monitor designed for use with a wall-mounted
  *            LCD (see README) but maybe with other uses
@@ -37,8 +37,8 @@
 
 #define NET_PROC_FILE "/proc/net/dev"
 #define NET_IFACE     "eth0"
-#define IDLE_TIME     120
-#define SAMPLE_TIME   250
+#define IDLE_TIME     500
+#define SAMPLE_TIME   1000
 
 pghandle wTXlabel, wTX, wRXlabel, wRX;
 
