@@ -1,0 +1,5 @@
+This is the 'conf' package- it is processed the same as the
+top-level 'conf' directory, but whereas that directory is for
+user customization, this directory includes automatically
+updateable configuration used to bootstrap the build process.
+
