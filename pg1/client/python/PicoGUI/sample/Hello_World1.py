@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # As simple as it gets
 import PicoGUI
 # for PG_APP_TOOLBAR you'd use PicoGUI.ToolbarApp()

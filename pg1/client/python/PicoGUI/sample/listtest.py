@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import PicoGUI
 
 # keep track of "internal names" for the widgets, for the sake

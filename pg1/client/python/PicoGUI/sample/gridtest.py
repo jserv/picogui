@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import PicoGUI
 app = PicoGUI.Application('Pseudo-grid-test')
 box = app.addWidget('scrollbox')

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Like Hello_World1 but with a close button
 import PicoGUI
 app = PicoGUI.Application('Greetings')

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import PicoGUI, threading, thread
 PicoGUI.server.debug_threads = 1
 app = PicoGUI.Application('Greetings')

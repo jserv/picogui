@@ -1,4 +1,5 @@
-#!/usr/bin/python2.2
+#!/usr/bin/env python
+
 import PicoGUI
 app = PicoGUI.InvisibleApp()
 def myfilter(t, sender):

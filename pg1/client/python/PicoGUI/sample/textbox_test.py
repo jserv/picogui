@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import PicoGUI
 app = PicoGUI.Application('Textbox Test')
 tb = app.addWidget('scrollbox').addWidget('Textbox','inside')

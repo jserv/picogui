@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Demonstrates Unicode support in PicoGUI
 import PicoGUI
 app = PicoGUI.Application('Unicode Test')

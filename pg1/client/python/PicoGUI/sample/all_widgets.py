@@ -1,4 +1,5 @@
-#!/usr/bin/python2.2
+#!/usr/bin/env python
+
 #
 # Show all widgets
 #

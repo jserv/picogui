@@ -1,4 +1,5 @@
-#!/usr/bin/python2.2
+#!/usr/bin/env python
+
 import PicoGUI
 app = PicoGUI.Application('infilter')
 print 'filter handle is', app.server.mkinfilter(0, 0xFFFFFFFFL, 0)

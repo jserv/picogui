@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Demonstrate that everything in picogui is a widget :)
 import PicoGUI
 
