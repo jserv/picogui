@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.12 2002/08/15 02:34:27 micahjd Exp $
+/* $Id: sdlgl_util.c,v 1.13 2002/08/19 06:00:15 micahjd Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.
@@ -337,6 +337,8 @@ void gl_showtexture(GLuint tex, int w, int h) {
 }
 
 void gl_make_texture(struct glbitmap *glb) {
+  if (glb->volatilesb)
+    gl_invalidate_texture(glb);
   if (!glb->texture) {
     hwrbitmap tmpbit;
     u32 *p;

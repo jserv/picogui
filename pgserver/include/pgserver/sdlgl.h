@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.13 2002/07/03 22:03:29 micahjd Exp $
+/* $Id: sdlgl.h,v 1.14 2002/08/19 06:00:14 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -82,6 +82,7 @@
  */
 struct glbitmap {
   struct stdbitmap *sb;
+  int volatilesb;           /* Indicates that the stdbitmap's contents may be changed without notice */
 
   /* OpenGL texture, valid if texture is nonzero */
   GLuint texture;
@@ -283,6 +284,7 @@ int sdlgl_grop_render_postsetup_hook(struct divnode **div, struct gropnode ***li
 				     struct groprender *rend);
 void sdlgl_grop_render_end_hook(struct divnode **div, struct gropnode ***listp,
 				struct groprender *rend);
+g_error sdlgl_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm);
 
 #endif /* _H_SDLGL */
 

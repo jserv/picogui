@@ -1,4 +1,4 @@
-/* $Id: sdlgl_bitmap.c,v 1.4 2002/05/22 09:26:33 micahjd Exp $
+/* $Id: sdlgl_bitmap.c,v 1.5 2002/08/19 06:00:15 micahjd Exp $
  *
  * sdlgl_bitmap.c - OpenGL driver for picogui, using SDL for portability
  *                  Functions to replace PicoGUI's normal bitmap data type
@@ -122,6 +122,22 @@ int gl_invalidate_texture(hwrbitmap bit) {
   }
 
   return 1;
+}
+
+/* Move the bitmap's contents to a shared memory segment,
+ * and fill out a pgshmbitmap structure. For OpenGL this is kind of awkward, since our
+ * bitmap has been moved to a texture. Since the client may update this bitmap at any time,
+ * we mark the bitmap as 'volatile' and recreate the texture every time we blit. This is crufty!
+ * FIXME: Need to implement a lock/unlock method of controlling bitmap access to avoid that
+ */
+g_error sdlgl_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm) {
+  g_error e;
+
+  gl_invalidate_texture(bmp);
+  e = def_bitmap_getshm(((struct glbitmap*)bmp)->sb,uid,shm);
+  errorcheck;
+  ((struct glbitmap*)bmp)->volatilesb = 1;
+  return success;
 }
 
 /* The End */
