@@ -1978,14 +1978,11 @@ chbtn = (<structfield>pgresponse_event.param</> &gt;&gt; 28) &amp; 0xF;
 
  <appendix id="propertytypes"><title>Property Types</title>
   <para>
-  (why should I write here?)
-  </para>
-  <para>
 	Latest values may be found in
 	<filename class=headerfile>picogui/constants.h</filename> or on cvs in
 	<filename class=headerfile>pgserver/include/picogui/constants.h</filename>
   </para>
-  <table frame=none pgwide=1><title>PGREQ values</title>
+  <table frame=none pgwide=1><title>PG_WP values</title>
   <tgroup cols=3 align=left>
   <colspec colwidth="45*">
   <colspec colwidth="10*">
