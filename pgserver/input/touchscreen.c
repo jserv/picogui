@@ -59,7 +59,7 @@ void touchscreen_pentoscreen(s16 *x, s16 *y)
 g_error touchscreen_init(void)
 {
 	FILE *fp=NULL;
-	int calwidth, calheight;
+	int calwidth, calheight, values;
 
 	calib_file=get_param_str("pgserver", "pointercal", "/etc/pointercal");
 	calwidth=get_param_int("pgserver", "calwidth", 640);
@@ -67,18 +67,23 @@ g_error touchscreen_init(void)
 	fp=fopen(calib_file, "r");
 	if(fp!=NULL)
 	{
-		fscanf(fp, "%d %d %d %d %d %d %d", &tc.a, &tc.b, &tc.c,
-				&tc.d, &tc.e, &tc.f, &tc.s);
+		values=fscanf(fp, "%d %d %d %d %d %d %d %d %d", &tc.a, &tc.b,
+		    &tc.c, &tc.d, &tc.e, &tc.f, &tc.s, &calwidth, &calheight);
 		/* tc.s will normally be 65536, enough to cover the
 		 * inaccuracies of this scaling, I hope - otherwise
 		 * we need to scale it here */
-		tc.a/=calwidth;
-		tc.b/=calwidth;
-		tc.c/=calwidth;
-		tc.d/=calheight;
-		tc.e/=calheight;
-		tc.f/=calheight;
-		touchscreen_calibrated=1;
+		if(values==9)
+		 {
+		  tc.a/=calwidth;
+		  tc.b/=calwidth;
+		  tc.c/=calwidth;
+		  tc.d/=calheight;
+		  tc.e/=calheight;
+		  tc.f/=calheight;
+		  touchscreen_calibrated=1;
+		 }
+		else if(values==7)
+		  touchscreen_calibrated=1;
 		fclose(fp);
 	}
 	return success;
@@ -104,20 +109,24 @@ void touchscreen_message(u32 message, u32 param, u32 *ret)
 
 				if(!calib_file)
 				{
-					/* report faulty driver */
-#ifdef DEBUG_INPUT
-					fputs("Touchscreen driver didn't call touchscreen_init()!\n", stderr);
-#endif
-					touchscreen_init();
+				  /* report faulty driver */
+				  guru("Touchscreen driver didn't call touchscreen_init()");
 				}
-				fp=fopen(calib_file, "w");
+				else
+				  fp=fopen(calib_file, "w");
 				if(fp!=NULL)
-				{
-					fprintf(fp, "%d %d %d %d %d %d %d\n",
-							tc.a, tc.b, tc.c, tc.d,
-							tc.e, tc.f, tc.s);
-					fclose(fp);
-				}
+				 {
+				  fprintf(fp, "%d %d %d %d %d %d %d %d %d\n",
+				      tc.a, tc.b, tc.c, tc.d, tc.e, tc.f, tc.s,
+				      vid->xres, vid->yres);
+				      fclose(fp);
+				 }
+				tc.a/=vid->xres;
+				tc.b/=vid->xres;
+				tc.c/=vid->xres;
+				tc.d/=vid->yres;
+				tc.e/=vid->yres;
+				tc.f/=vid->yres;
 			}
 			break;
 	}

@@ -1,4 +1,4 @@
-/* $Id: palmaxts.c,v 1.4 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: palmaxts.c,v 1.5 2002/01/07 18:26:12 lonetech Exp $
  *
  * palmaxts.c - input driver for Palmax touchscreens.
  *
@@ -70,6 +70,7 @@
 #include <pgserver/input.h>
 #include <pgserver/widget.h>
 #include <pgserver/configfile.h>
+#include <pgserver/touchscreen.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -85,7 +86,7 @@ struct termios options;
 int palmaxts_fd_activate(int fd) {
   u8 buttons;
   u8 packet[5];
-  static s16 cursorx,cursory;
+  static int cursorx,cursory;
 
   if (fd != palmaxts_fd)
     return 0;

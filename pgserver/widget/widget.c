@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.136 2002/01/06 09:23:00 micahjd Exp $
+/* $Id: widget.c,v 1.137 2002/01/07 18:26:13 lonetech Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -32,6 +32,9 @@
 #include <pgserver/widget.h>
 #include <pgserver/pgnet.h>
 #include <pgserver/hotspot.h>
+#ifdef CONFIG_TOUCHSCREEN
+#include <pgserver/touchscreen.h>
+#endif
 
 /* Table of widgets */
 #ifdef RUNTIME_FUNCPTR
@@ -772,9 +775,15 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
     drivermessage(PGDM_SOUNDFX,PG_SND_KEYCLICK,NULL);
 
   /* Convert coordinates from physical to logical */
-  physx = x;
-  physy = y;
-  VID(coord_logicalize) (&x,&y);
+#ifdef CONFIG_TOUCHSCREEN
+  /* To allow calibration to function while using rotated display */
+  if(touchscreen_calibrated)
+#endif
+   {
+    physx = x;
+    physy = y;
+    VID(coord_logicalize) (&x,&y);
+   }
 
   /* If this is a button up/down event and we're not already at the
    * specified coordinates, move there. This is almost completely unnecessary

@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.29 2002/01/07 15:48:42 lonetech Exp $
+/* $Id: input.h,v 1.30 2002/01/07 18:26:12 lonetech Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -121,19 +121,6 @@ int events_pending(void);
 
 /* Unload all drivers */
 void cleanup_inlib(void);
-
-/* Touchscreen calibration */
-#ifdef CONFIG_TOUCHSCREEN
-/* don't restrict output to screen size or calibration will fail */
-void touchscreen_pentoscreen(s16 *x, s16 *y);
-/* message function for the calibration codes */
-void touchscreen_message(u32 message, u32 param, u32 *ret);
-/* loads touchscreen calibration - CALL THIS! */
-g_error touchscreen_init(void);
-/* 1 if touchscreen has been calibrated - run tpcal if not, and DO NOT process
- * pointer coordinates in any way! */
-extern u8 touchscreen_calibrated;
-#endif
 
 /* Registration functions */
 g_error sdlinput_regfunc(struct inlib *i);
