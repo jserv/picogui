@@ -44,10 +44,10 @@
 #include <dirent.h>
 #include <stdio.h>
 
-#ifdef __NAME_MAX__
+#ifndef NAME_MAX
 #warning "NAME_MAX is not defined on your system: Guessing..."
 #define NAME_MAX 512
-#endif /* __NAME_MAX__ */
+#endif /* NAME_MAX */
 
 extern char **environ;
 

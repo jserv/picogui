@@ -1,4 +1,4 @@
-/* $Id: posix_signals.c,v 1.5 2003/03/10 23:48:21 micahjd Exp $
+/* $Id$
  *
  * posix_signals.c - Handle signals necessary for subprocess termination,
  *                   quit requests, and VT switching
@@ -35,6 +35,10 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+
+#ifdef __CYGWIN__
+#undef DEBUG_SIGTRACE
+#endif
 
 /* Signals we need to handle... */
 static int pgserver_signals[] = {
