@@ -675,6 +675,7 @@ our %EXPORT_TAGS = ( 'all' => [ qw(
 	pgMenuFromArray
 	pgSetWidget
 	pgWriteCmd
+	pgThemeLookup
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
