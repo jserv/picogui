@@ -21,7 +21,9 @@ print """Content-type: text/html
 <body>
 
 <div class="heading">
-   <div class="title">CIA bot statistics</div>
+   <div class="title">
+      <a href="http://navi.picogui.org/svn/picogui/trunk/tools/irc/cia.html">CIA bot</a> statistics
+   </div>
    <div class="subtitle">Because SF stats weren't pointless enough</div>
 </div>
 
