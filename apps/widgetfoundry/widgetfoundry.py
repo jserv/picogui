@@ -3,14 +3,11 @@ import PicoGUI
 import Components, CommandLine, Toolbox, WTWidget
 
 
-def saveXWT(ev, widget):
-    print widget.main.selection.toXWT()
-
-
 class Main:
     def __init__(self):
         self.app = PicoGUI.Application('Widget Foundry')
         self.selectNotify = {}
+        self.changeNotify = {}
         self.selection = None
 
         # Give the window an initial size if it supports it
@@ -34,7 +31,6 @@ class Main:
                 'component'  : CommandLine.CommandLine,
                 'attr'       : 'commandLine'
                 }),
-            ('Save XWT',       saveXWT, {} ),
             ])
 
     def select(self, widget):
@@ -46,11 +42,12 @@ class Main:
 class WorkArea:
     "This is where widget templates are constructed"
     def __init__(self, main):
-        self.widget = WTWidget.Widget(main.app,main.toolbar.widget.addWidget('box'))
-        self.widget.side = 'all'
+        self.root = WTWidget.Widget(main.app,main.toolbar.widget.addWidget('box'))
+        self.root.side = 'all'
         self.main = main
+        self.root.changeNotify = self.changeNotify
         
-        w1 = self.widget.addWidget('label','inside')
+        w1 = self.root.addWidget('label','inside')
         w2 = w1.addWidget('label')
         w3 = w2.addWidget('button')
 
@@ -59,8 +56,12 @@ class WorkArea:
         w3.text = "Yay"
         w3.side = "top"
         
-        main.select(self.widget)
+        main.select(w3)
 
+    def changeNotify(self, widget, property):
+        for i in self.main.changeNotify.keys():
+            self.main.changeNotify[i](widget,property)
+       
 
 if __name__ == '__main__':
     Main().app.run()

@@ -26,15 +26,21 @@ class Widget:
             'parent': None,
            })
 
+    def changeNotify(self, widget, property):
+        if self.parent:
+            self.parent.changeNotify(widget,property)
+
     def __eq__(self, other):
         return self.pgwidget == other.pgwidget
 
-    def __delattr__(self, property):
+    def __delattr__(self, name):
         # Standard picogui widgets don't support deleting properties.
         # Here we delete it from our list and set the pgwidget's property
         # to what we think is the default.
-        del self.properties[property]
-        setattr(self.pgwidget,property,self.wtype.defaults[property])
+        pname = name.lower().replace('_', ' ')
+        del self.properties[pname]
+        setattr(self.pgwidget,pname,self.wtype.defaults[pname])
+        self.changeNotify(self,pname)
 
     def __setattr__(self, name, value):
         pname = name.lower().replace('_', ' ')
@@ -42,6 +48,7 @@ class Widget:
             # Set it in our list and the pgwidget
             self.properties[pname] = value
             setattr(self.pgwidget,pname,value)
+            self.changeNotify(self,pname)
         else:
             self.__dict__[name] = value
             
@@ -193,16 +200,20 @@ class PropertyEdit:
     def destroy(self):
 	self.deleteEditorWidgets()
 	self.app.delWidget(self.checkbox)
+	self.app.delWidget(self.box)
 	
     def show(self):
 	if not self.visible:
-            setattr(self.widget,self.property,
-                    self.widget.wtype.defaults[self.property])
+            # Set the property to the default if it's not set yet
+            if not self.widget.properties.has_key(self.property):
+                setattr(self.widget,self.property,
+                        self.widget.wtype.defaults[self.property])
 	    self.editor = StringPropertyEditor(self)
 	    self.visible = True
 
     def deleteEditorWidgets(self):
-	self.editor.destroy()
+        if hasattr(self,'editor'):
+            self.editor.destroy()
         if hasattr(self,'errorLabel'):
             self.app.delWidget(self.errorLabel)	
 
