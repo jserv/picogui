@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.5 2000/05/06 06:42:21 micahjd Exp $
+/* $Id: indicator.c,v 1.6 2000/05/06 14:38:14 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -42,7 +42,7 @@ void indicator(struct divnode *d) {
     w = w*d->param.i/100;
   else {
     int t;
-    t = h*d->param.i/100;
+    t = h*(100-d->param.i)/100;
     y += t;
     h -= t;
   }
@@ -97,11 +97,13 @@ g_error indicator_set(struct widget *self,int property, glob data) {
       self->in->div->grop->next->next->w = 
 	self->in->div->grop->next->w *
 	self->in->div->param.i/100;
-    else
-      self->in->div->grop->next->next->h = 
-	self->in->div->grop->next->h * 
-	self->in->div->param.i/100;
-    
+    else {
+      int t = self->in->div->grop->next->h * 
+	(100-self->in->div->param.i)/100;
+      self->in->div->grop->next->next->h = self->in->div->grop->next->h - t;
+      self->in->div->grop->next->next->y = self->in->div->grop->next->y + t;
+    }    
+
     self->in->div->flags |= DIVNODE_NEED_REDRAW;
     self->dt->flags |= DIVTREE_NEED_REDRAW;   
     break;
