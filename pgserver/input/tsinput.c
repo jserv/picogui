@@ -1,4 +1,4 @@
-/* $Id: tsinput.c,v 1.21 2001/09/21 03:50:56 micahjd Exp $
+/* $Id: tsinput.c,v 1.22 2001/10/22 13:46:08 pney Exp $
  *
  * tsinput.c - input driver for touch screen
  *
@@ -33,6 +33,9 @@
 
 #include <unistd.h>
 
+#include <fcntl.h>     /* File control definitions (provide O_RDONLY) */
+#include <linux/kd.h>  /* for KIOCSOUND and KDMKTONE */
+
 #include <pgserver/input.h>
 #include <pgserver/widget.h>    /* for dispatch_pointing */
 #include <pgserver/pgnet.h>
@@ -62,6 +65,7 @@ static int iIsPointingDisplayed = 1;
 
 static struct timeval lastEvent;
 
+void tsinput_message(u32 message, u32 param);
 
 /******************************************** Implementations */
 
@@ -318,6 +322,63 @@ void tsinput_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
     timeout->tv_usec = POLL_USEC;
 }
 
+/* message between driver to provide sound (for exemple) */
+void tsinput_message(u32 message, u32 param) {
+
+  int snd_type,snd_freq,snd_leng;
+
+  switch (message) {
+
+#ifdef DRIVER_TSINPUT_SND
+  /* sound support through /dev/tty2 implemented in drivers/char/vt.c */
+  case PGDM_SOUNDFX:
+
+    switch(param) {
+
+    case PG_SND_SHORTBEEP:
+      snd_type = KDMKTONE;
+      snd_freq = 5000;
+      snd_leng = 300;
+      break;
+
+    case PG_SND_KEYCLICK:
+      snd_type = KDMKTONE;
+      snd_freq = 5000;
+      snd_leng = 300;
+      break;
+
+    default:
+      break;
+    }
+
+# if defined(CONFIG_XCOPILOT) || defined(CONFIG_SOFT_CHIPSLICE)
+    printf("beep\n");
+
+# elif defined(CONFIG_CHIPSLICE)
+    {
+      int fd = 0;
+
+      /* open virtual terminal read only */
+      fd = open("/dev/tty2",O_RDONLY);
+
+      if(fd < 1) {
+	printf("/dev/tty2: open error\n");
+	return;
+      }
+      ioctl(fd,snd_type,(snd_freq + (snd_leng << 16)));
+      close(fd);
+    }
+# endif /* defined(CONFIG_XCOPILOT) || defined(CONFIG_SOFT_CHIPSLICE) */
+#endif /* DRIVER_TSINPUT_SND */
+
+  default:
+    break;
+  }
+  return;
+}
+
+
+
 /******************************************** Driver registration */
 
 g_error tsinput_regfunc(struct inlib *i) {
@@ -325,6 +386,7 @@ g_error tsinput_regfunc(struct inlib *i) {
   i->close = &tsinput_close;
   i->poll = &tsinput_poll;
   i->fd_init = &tsinput_fd_init;
+  i->message = &tsinput_message;
   return sucess;
 }
 
