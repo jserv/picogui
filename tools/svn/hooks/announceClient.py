@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
  A quick and dirty client for the annouceBot. Usage:
-   announceClient.py server channel message
+   announceClient.py <channel> <message>
 """
 socketName = "/tmp/announceBot.socket"
 
