@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.15 2001/03/26 05:35:35 micahjd Exp $
+/* $Id: sdlinput.c,v 1.16 2001/07/10 08:10:13 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -65,6 +65,16 @@ void sdlinput_poll(void) {
   switch (evt.type) {
     
   case SDL_MOUSEMOTION:
+    /* If SDL's old mouse position doesn't jive with our cursor position,
+     * warp the mouse and try again.
+     */
+    if ((evt.motion.x-evt.motion.xrel)!=cursor->x ||
+	(evt.motion.y-evt.motion.yrel)!=cursor->y) {
+      SDL_WarpMouse(cursor->x,
+		    cursor->y);
+      break;
+    }
+
     if ((evt.motion.x==ox) && (evt.motion.y==oy)) break;
     dispatch_pointing(TRIGGER_MOVE,ox = evt.motion.x,
 		      oy = evt.motion.y,btnstate=evt.motion.state);
