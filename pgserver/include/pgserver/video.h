@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.87 2002/07/26 11:11:37 micahjd Exp $
+/* $Id: video.h,v 1.88 2002/08/15 07:24:24 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -547,12 +547,12 @@ struct vidlib {
   /* Optional
    *   Dither this pixel and store it in the bitmap
    */
-  void (*dither_store)(hwrdither *d, pgcolor pixel, s16 lgop);
+  void (*dither_store)(hwrdither d, pgcolor pixel, s16 lgop);
 
   /* Optional
    *   Free the dithering structure
    */
-  void (*dither_finish)(hwrdither *d);
+  void (*dither_finish)(hwrdither d);
 
 #endif /* CONFIG_DITHER */
 

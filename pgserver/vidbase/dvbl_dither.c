@@ -1,4 +1,4 @@
-/* $Id: dvbl_dither.c,v 1.1 2002/04/03 08:08:41 micahjd Exp $
+/* $Id: dvbl_dither.c,v 1.2 2002/08/15 07:24:24 micahjd Exp $
  *
  * dvbl_dither.c - This file is part of the Default Video Base Library,
  *                 providing the basic video functionality in picogui but
@@ -101,7 +101,7 @@ g_error def_dither_start(hwrdither *d, hwrbitmap dest,
 /*
  *   Dither this pixel and store it in the bitmap
  */
-void def_dither_store(hwrdither *d, pgcolor pixel, s16 lgop) {
+void def_dither_store(hwrdither d, pgcolor pixel, s16 lgop) {
   pgcolor pgc, quantized;
   hwrcolor hwc;
   int error[3];
@@ -178,7 +178,7 @@ void def_dither_store(hwrdither *d, pgcolor pixel, s16 lgop) {
 /*
  *   Free the dithering structure
  */
-void def_dither_finish(hwrdither *d) {
+void def_dither_finish(hwrdither d) {
   struct stddither *sd = (struct stddither *) d;
   int i;
   for (i=0;i<3;i++) {
