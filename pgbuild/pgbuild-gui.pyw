@@ -5,5 +5,5 @@ command line options, causing a graphical interface module to be automatically
 detected and loaded. This is for the convenience of pointy-clicky operating
 systems. You know who you are.
 """
-import pgbuild
-pgbuild.main(['--ui=auto'])
+import pgbuild, sys
+pgbuild.main(sys.argv[0], ['--ui=auto'] + sys.argv[1:])

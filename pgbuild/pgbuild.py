@@ -45,12 +45,12 @@ class Bootstrap:
         self.packages['build'] = "build-dev"
         self.packages['conf']  = "conf-dev"
 
-def main(extraArgs=[]):
+def main(scriptName=sys.argv[0], args=sys.argv[1:]):
     # Use the Bootstrap class to locate our build package and call its Main
     boot = Bootstrap()
     sys.path.insert(0, os.path.join(boot.paths['packages'], boot.packages['build']))
     import PGBuild.Main
-    PGBuild.Main.main(boot, [sys.argv[0]] + extraArgs + sys.argv[1:])
+    PGBuild.Main.main(boot, [sys.argv[0]] + args)
 
 if __name__ == '__main__':
     main()
