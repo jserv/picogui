@@ -41,7 +41,7 @@ static const char termthemename[]="IRCterm";
 
 #define TOTAL_COLORS 16
 
-static u32 colconv_rgb[TOTAL_COLORS] = { 0xcfcfcf, 0x000000, 0x0000cc,
+static pgcolor colconv_rgb[TOTAL_COLORS] = { 0xcfcfcf, 0x000000, 0x0000cc,
 	0x00cc00, 0xdd0000, 0xaa0000, 0xbb00bb, 0xffaa00, 0xeedd22, 0x33de55,
 	0x00cccc, 0x33ddee, 0x0000ff, 0xee22ee, 0x777777, 0x999999 };
 static const char *colconv_termfg[TOTAL_COLORS] = { "22;30", "22;34", "22;32",
@@ -58,7 +58,7 @@ struct termtheme_struct {
 	struct pgrequest namereq;
 	char name[sizeof termthemename-1];
 	struct pgrequest palreq;
-	u32 array[TOTAL_COLORS];
+	pgcolor array[TOTAL_COLORS];
 };
 
 void palette_load(void)
