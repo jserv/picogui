@@ -71,9 +71,10 @@ class PropertyEdit:
         self.settingsBox.side = 'bottom'
         self.settingsBox.transparent = 1
 
+        self.value = getattr(self.widget, self.property)
         self.editWidget = self.settingsBox.addWidget('field','inside')
         self.editWidget.side = 'top'
-        self.editWidget.text = repr(self.widget.server.get(self.widget.handle, self.property))
+        self.editWidget.text = str(self.value)
         self.app.link(self._modify, self.editWidget, 'activate')
 
     def hide(self):
@@ -95,9 +96,9 @@ class PropertyEdit:
 
         # If we have an exception setting the property,
         # slap an invalid warning on this property
-        self.value = widget.server.getstring(widget.text).data
+        self.value = widget.text
         try:
-            self.widget.server.set(self.widget.handle, self.property, self.value)
+            setattr(self.widget, self.property, self.value)
             self.valid = 1
         except:
             self.errorLabel = self.settingsBox.addWidget('label','inside')

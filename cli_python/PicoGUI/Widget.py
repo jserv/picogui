@@ -45,6 +45,8 @@ class Widget(object):
     def __getattr__(self, name):
         pname = name.lower().replace('_', ' ')
         if pname in _propnames:
-            return self.server.get(self.handle, pname)
+            result = self.server.get(self.handle, pname)
+            ns = Server.constants['set'].get(pname)[1]
+            return Server.unresolve_constant(result, ns, self.server) 
         else:
             raise AttributeError(name)

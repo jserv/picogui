@@ -4,40 +4,78 @@ import string
 
 # constant maps
 
-def _getString(str, server):
-    # check if it's already a handle, too
-    if not server:
-        return str, _getString
-    try:
-        str.upper()
-    except:
-        return str, _getString
-    return server.getString(str), _getString
+def _getString(str, server, reverse=0):
+    if reverse:
+        if str == 0:
+            return ''
+        else:
+            return denullify(server.getstring(str).data)
+    else:
+        # check if it's already a handle, too
+        if not server:
+            return str, _getString
+        try:
+            str.upper()
+        except:
+            return str, _getString
+        return server.getString(str), _getString        
 
-def _getFont(str, server):
-    if not server:
-        return str, _getFont
-    try:
-        str.upper()
-    except:
-        return str, _getFont
-    return server.getFont(str), _getFont
+def _getFont(str, server, reverse=0):
+    if reverse:
+        return str
+    else:
+        if not server:
+            return str, _getFont
+        try:
+            str.upper()
+        except:
+            return str, _getFont
+        return server.getFont(str), _getFont
 
-def _getBitmap(str, server):
-    return server.mkbitmap(str), _getBitmap
+def _getBitmap(str, server, reverse=0):
+    if reverse:
+        return str
+    else:
+        return server.mkbitmap(str), _getBitmap
 
-def _getSize(s, server):
-    # This converts fractions of the form "numerator/denominator"
-    # into pgserver 8:8 bit fractions if necessary.
-    # Also, allow "None" to indicate automatic sizing,
-    # represented in the server by -1.
-    if s == None:
-        return 0xFFFFFFFF, _getSize
-    fraction = string.split(str(s),'/')
-    if len(fraction) > 1:
-        return (int(fraction[0])<<8) | int(fraction[1]), _getSize
-    return int(s), _getSize
+def _getSize(s, server, reverse=0):
+    if reverse:
+        return s
+    else:
+        # This converts fractions of the form "numerator/denominator"
+        # into pgserver 8:8 bit fractions if necessary.
+        # Also, allow "None" to indicate automatic sizing,
+        # represented in the server by -1.
+        if s == None:
+            return 0xFFFFFFFFL, _getSize
+        fraction = string.split(str(s),'/')
+        if len(fraction) > 1:
+            return (int(fraction[0])<<8) | int(fraction[1]), _getSize
+        return int(s), _getSize
 
+_color_consts = {
+    'black':     (0x000000, {}),
+    'green':     (0x008000, {}),
+    'silver':    (0xC0C0C0, {}),
+    'lime':      (0x00FF00, {}),
+    'gray':      (0x808080, {}),
+    'olive':     (0x808000, {}),
+    'white':     (0xFFFFFF, {}),
+    'yellow':    (0xFFFF00, {}),
+    'maroon':    (0x800000, {}),
+    'navy':      (0x000080, {}),
+    'red':       (0xFF0000, {}),
+    'blue':      (0x0000FF, {}),
+    'purple':    (0x800080, {}),
+    'teal':      (0x008080, {}),
+    'fuchsia':   (0xFF00FF, {}),
+    'aqua':      (0x00FFFF, {}),
+    }
+
+_thobj_consts = {
+    'true':      (1, {}),
+    'false':     (0, {}),
+    }
 
 _wtype_consts = {
             'toolbar':		(0, {}),
@@ -124,7 +162,8 @@ constants = {
         'infilter pntr dispatch':	(19, {}),
     },
     'set': {
-        'size':				(1, _getSize),
+        'size':				(1,
+            _getSize),
         'side':				(2, {
             'top':	(1<<3, {}),	# stick to the top edge
             'bottom':	(1<<4, {}),	# stick to the bottom edge
@@ -144,29 +183,31 @@ constants = {
             'se':	(8, {}),	# stick to the southeast corner
             'all':	(9, {}),	# occupy all available space (good for tiled bitmaps)
         }),
-        'bgcolor':			(4, {
-        }),
-        'color':			(5, {
-        }),
+        'bgcolor':			(4,
+            _color_consts),
+        'color':			(5,
+            _color_consts),
         'sizemode':			(6, {
             'pixel':	(0, {}),
             'percent':	(1<<2, {}),
             'cntfrac':	(1<<15, {}),               # Container fraction
             'container fraction':  (1<<15, {}),    # Less stupidly named version of the same
         }),
-        'text':				(7, _getString),
-        'font':				(8, _getFont),
-        'transparent':			(9, {
-        }),
-        'bordercolor':			(10, {
-        }),
-        'bitmap':			(12, _getBitmap),
+        'text':				(7,
+            _getString),
+        'font':				(8,
+            _getFont),
+        'transparent':			(9, {}),
+        'bordercolor':			(10,
+            _color_consts),
+        'bitmap':			(12,
+            _getBitmap),
         'lgop':				(13, {
         }),
         'value':			(14, {
         }),
-        'bitmask':			(15, {
-        }),
+        'bitmask':			(15,
+            _getBitmap),
         'bind':				(16, {
         }),
         'scroll x':			(17, {	# horizontal and vertical scrolling amount
@@ -188,23 +229,20 @@ constants = {
         }),
         'absolutey':			(23, {
         }),
-        'on':				(24, {	# on-off state of button/checkbox/etc
+        'on':				(24, {  # on-off state of button/checkbox/etc
         }),
-        'state':			(25, {	# deprecated! use thobj instead
+        'thobj':			(25,    # set a widget's theme object
+            _thobj_consts),
+        'name':				(26,    # a widget's name (for named containers, etc)
+            _getString),
+        'publicbox':			(27, {  # set to 1 to allow other apps to make widgets in this container
         }),
-        'thobj':			(25, {	# set a widget's theme object
-        }),
-        'name':				(26, _getString), # a widget's name (for named containers, etc)
-        'publicbox':			(27, {	# set to 1 to allow other apps to make widgets in this container
-        }),
-        'disabled':			(28, {	# for buttons, grays out text and prevents clicking
+        'disabled':			(28, {  # for buttons, grays out text and prevents clicking
         }),
         'margin':			(29, {	# for boxes, overrides the default margin
         }),
-        'textformat':			(30, 	# for the textbox, defines a format for text. fourcc format,
-                                                # with optional preceeding '+' to prevent erasing existing data,
-                                                # just append at the cursor position/
-        _getString),
+        'textformat':			(30, 	# for the textbox, defines a format for text.
+            _getString),
         'triggermask':			(31, {	# mask of extra triggers accepted (self->trigger_mask)
         }),
         'hilighted':			(32, {	# widget property to hilight a widget and all it's children
@@ -266,7 +304,8 @@ constants = {
         }),
         'multiline':			(57, {
         }),
-        'selection':			(58, _getString),
+        'selection':			(58,
+            _getString),
         'readonly':			(59, {
         }),
         'insertmode':			(60, {
@@ -324,6 +363,23 @@ def resolve_constant(name, namespace=constants, server=None):
     # otherwise, it's just a namespace
     return None, r
 
+def unresolve_constant(name, namespace=constants, server=None):
+    print "unresolve_constant: %s, %s, %s" % (repr(name),repr(namespace),repr(server))
+    if callable(namespace):
+        # If we need additional processing,
+        # call the namespace with the reverse flag on
+        return namespace(name, server, 1)
+    for n in namespace.keys():
+        if namespace[n][0] == name:
+            return n
+    return name
+
+def denullify(str):
+    # Remove trailing nulls from pgserver C strings
+    if str[-1] == '\0':
+        str = str[:-1]
+    return str
+    
 
 # imports
 
