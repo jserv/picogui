@@ -9,6 +9,10 @@ linear1! I think I'll get some sleep now...
         past the end of the bitmap, fudged the malloc a bit to keep
 	electric fence from complaining :)
 
+      * formats/pnm.c: Inverted the horizontal loop (slight optimization) and
+        added a very simple alternate loop for black&white pbm files that
+	should make pbm loading in 1bpp mode much faster.
+
 2001-05-29    Micah Dowty <micahjd@users.sourceforge.net>
 
 I'm starting the extreme video driver fixink today. Basically this means

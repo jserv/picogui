@@ -1,4 +1,4 @@
-/* $Id: pnm.c,v 1.4 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: pnm.c,v 1.5 2001/05/31 20:38:41 micahjd Exp $
  *
  * pnm.c - Functions to convert any of the pbmplus formats (PGM, PBM, PPM)
  *         collectively referred to as PNM
@@ -140,11 +140,23 @@ g_error pnm_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   errorcheck;
   pline = p = (*bmp)->bits;
 
+  /* Special case: bitmap and screen are black&white, 
+   * no pixel width conversion is necessary.
+   * PBM stores the pixels in the same order as PicoGUI,
+   * but the color is inverted.
+   */
+  if (bpp==1 && vid->bpp==1) {
+     unsigned long size = (*bmp)->pitch * h;
+     for (;size;size--,p++,data++)
+       *p = (*data) ^ 0xFF;
+     return sucess;
+  }
+   
   /* Read in the values, convert colors, output them... */
   for (;h>0;h--,p=pline+=(*bmp)->pitch) {
     oshift=shiftset;
     bit = 0;
-    for (i=0;i<w;i++) {
+    for (i=w;i;i--) {
       if (!bit)
 	if (bin)
 	  val = *(data++);
