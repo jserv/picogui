@@ -27,7 +27,8 @@ EXTRA_libvidbase_la_SOURCES = \
 	dvbl_primitives.c \
 	dvbl_primitives_aa.c \
 	font_bdf.c	\
-	font_freetype.c
+	font_freetype.c	\
+	font_textmode.c
 
 libvidbase_la_LIBADD       = $(VIDBASE:%.c=%.lo)
 libvidbase_la_DEPENDENCIES = $(VIDBASE:%.c=%.lo)

@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.29 2002/10/16 11:54:41 micahjd Exp $
+/* $Id: font.h,v 1.30 2002/11/04 03:40:33 micahjd Exp $
  *
  * font.h - Common structures for defining fonts, and an interface
  *          for specific font engines to attach to
@@ -90,6 +90,7 @@ g_error font_find_engine(struct fontengine **fe, const char *name);
 /* Font engine registration functions */
 g_error bdf_regfunc(struct fontlib *f);
 g_error freetype_regfunc(struct fontlib *f);
+g_error textmode_regfunc(struct fontlib *f);
 
 
 /********************************** Font engine interface ***/

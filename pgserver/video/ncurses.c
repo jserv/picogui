@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.32 2002/11/04 02:45:46 micahjd Exp $
+/* $Id: ncurses.c,v 1.33 2002/11/04 03:40:34 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -98,10 +98,45 @@ void ncurses_close(void) {
 }
 
 void ncurses_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
-   if (dest || (lgop!=PG_LGOP_NONE))
-     def_pixel(dest,x,y,c,lgop);
-   else
-     mvaddch(y,x,ncurses_screen[x + vid->xres * y] = c);
+  if (dest || (lgop!=PG_LGOP_NONE)) {
+    def_pixel(dest,x,y,c,lgop);
+    return;
+  }
+  ncurses_screen[x + vid->xres * y] = c;
+
+  if (c & PGCF_TEXT_ASCII) {
+    /* Normal character:  0x20BBFFCC
+     * BB = background
+     * FF = foreground
+     * CC = character
+     */
+
+    c = COLOR_PAIR( ((c & 0x070000)>>13) | ((c & 0x000700)>>8) ) |
+      ((c & 0x000800) ? A_BOLD : 0) | (c & 0x0000FF);
+  }
+  else if (c & PGCF_TEXT_ACS) {
+    /* ACS character:  0x40BBFFCC
+     * BB = background
+     * FF = foreground
+     * CC = ACS character code
+     */
+    
+    c = COLOR_PAIR( ((c & 0x070000)>>13) | ((c & 0x000700)>>8) ) |
+      ((c & 0x000800) ? A_BOLD : 0) | acs_map[c & 0x0000FF];
+  }
+  else {
+    /* RGB value interpreted as a background attribute */
+    
+    int sc = 7;
+    if ((c & 0xFF0000) > 0x400000) sc |= 32;
+    if ((c & 0x00FF00) > 0x004000) sc |= 16;
+    if ((c & 0x0000FF) > 0x000040) sc |= 8;
+    c = (COLOR_PAIR(sc) | ( ((c&0xFF0000) > 0xA00000) || 
+			    ((c&0x00FF00) > 0x00A000) || 
+			    ((c&0x0000FF) > 0x0000A0) ? A_BOLD : 0)) | ' ';
+  }
+  
+  mvaddch(y,x,c);
 }
 
 hwrcolor ncurses_getpixel(hwrbitmap src,s16 x,s16 y) {
@@ -122,45 +157,18 @@ void ncurses_update(hwrbitmap d,s16 x,s16 y,s16 w,s16 h) {
 }
 
 hwrcolor ncurses_color_pgtohwr(pgcolor c) {
+  return c;
+}
 
-   if (c & PGCF_TEXT_ASCII) {
-      /* Normal character:  0x20BBFFCC
-       * BB = background
-       * FF = foreground
-       * CC = character
-       */
-      
-      return COLOR_PAIR( ((c & 0x070000)>>13) | ((c & 0x000700)>>8) ) |
-	((c & 0x000800) ? A_BOLD : 0) | (c & 0x0000FF);
-   }
-   
-   else if (c & PGCF_TEXT_ACS) {
-      /* ACS character:  0x40BBFFCC
-       * BB = background
-       * FF = foreground
-       * CC = ACS character code
-       */
-      
-      return COLOR_PAIR( ((c & 0x070000)>>13) | ((c & 0x000700)>>8) ) |
-	((c & 0x000800) ? A_BOLD : 0) | acs_map[c & 0x0000FF];
-   }
+hwrcolor ncurses_color_hwrtopg(pgcolor c) {
+  /* Convert the background to an RGB color, quantized to the 8 colors we get */
 
-   else if (c & PGCF_ALPHA) {
-     /* Default conversion for alpha values (premultiply) */
-     return def_color_pgtohwr(c);
-   }
+  if (c & (PGCF_TEXT_ASCII | PGCF_TEXT_ACS))
+    return ((c & 0x00040000) ? 0xFF0000 : 0) |
+           ((c & 0x00020000) ? 0x00FF00 : 0) |
+           ((c & 0x00010000) ? 0x0000FF : 0);
 
-   else {
-     /* RGB value interpreted as a background attribute */
-      
-     int sc = 7;
-     if ((c & 0xFF0000) > 0x400000) sc |= 32;
-     if ((c & 0x00FF00) > 0x004000) sc |= 16;
-     if ((c & 0x0000FF) > 0x000040) sc |= 8;
-     return (COLOR_PAIR(sc) | ( ((c&0xFF0000) > 0xA00000) || 
-				((c&0x00FF00) > 0x00A000) || 
-				((c&0x0000FF) > 0x0000A0) ? A_BOLD : 0)) | ' ';
-   }
+  return c & 0xFFFFFF;
 }
 
 /******************************************** Driver registration */
@@ -174,6 +182,7 @@ g_error ncurses_regfunc(struct vidlib *v) {
    v->getpixel = &ncurses_getpixel;
    v->update = &ncurses_update;  
    v->color_pgtohwr = &ncurses_color_pgtohwr;
+   v->color_hwrtopg = &ncurses_color_hwrtopg;
    
    return success;
 }
