@@ -10,8 +10,8 @@
 #define NUMTUXES  20
 #define TUXWIDTH  16
 #define TUXHEIGHT 16
-#define TUXFILE   "demos/data/tux.pnm"
-#define TUXMASK   "demos/data/tux_mask.pnm"
+#define TUXFILE   "data/tux.pnm"
+#define TUXMASK   "data/tux_mask.pnm"
 #define PRECISION 8
 #define SPEEDVAR  200
 #define SPEEDMIN  200
@@ -96,18 +96,14 @@ int buildCanvas(struct pgEvent *evt) {
   /* Store width and height */
   f->w = evt->e.size.w;
   f->h = evt->e.size.h;
-
-  /* Redraw background */
-  pgSetColor(f->gc,f->bg);
-  pgRect(f->gc,0,0,f->w,f->h);
-
   return 0;
 }
 
 int main(int argc,char **argv) {
   pghandle canvas;
   struct flock f;
-
+  pgcontext gc;
+   
   pgInit(argc,argv);
 
   /* Load bitmaps */
@@ -127,6 +123,14 @@ int main(int argc,char **argv) {
   else
     f.bg = 0x404040;
 
+      
+  /* Draw the background on a persistent context */
+  gc = pgNewCanvasContext(canvas,PGFX_PERSISTENT);
+  pgSetColor(gc,f.bg);
+  pgRect(gc,0,0,0x7FFF,0x7FFF);
+  pgDeleteContext(gc);
+   
+
   /* Init tuxes */
   f.gc = pgNewCanvasContext(canvas,PGFX_IMMEDIATE);
   init_flock(&f);
@@ -134,7 +138,7 @@ int main(int argc,char **argv) {
   /* Animation loop */
   while (1) {
     draw_flock(&f);
-    usleep(2);
+//    usleep(2);
     pgEventPoll();
   }
 
