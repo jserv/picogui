@@ -22,9 +22,16 @@ The main package for the PGBuild configuration and build utility
 # 
 _svn_id = "$Id$"
 
+import PGBuild.Version
+
+# This section defines the name of the package, and the current version.
+# The 'release' below should be set to a version number for releases,
+# and left as None for development checkouts.
+
 name = "PGBuild"
 description = "configuration and build tool"
-version = "svn-dev"
+release = None
+version = PGBuild.Version.determineVersion()
 
 about = "%s %s\nVersion %s" % (name, description, version)
 

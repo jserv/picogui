@@ -26,6 +26,7 @@ import os, shutil
 import PGBuild.Errors
 import PGBuild.Site
 import PGBuild.Repository
+import PGBuild.Version
 
 class PackageVersion(object):
     """A single version of a package, representing a local copy and a repository.
@@ -75,92 +76,6 @@ class PackageVersion(object):
         confTask = mergeTask.task("Mounting config files", 1)
         self.config.dirMount(self.getLocalPath(), confTask)
         
-
-def decomposeVersion(version):
-    """Utility for version number manipulation- separate a version number into
-       groups of numbers, punctuation, and letters.
-       """
-    groups = [""]
-
-    def categorize(char):
-        if char.isalpha():
-            return 0
-        if char.isdigit():
-            return 1
-        if char.isspace():
-            return 2
-        return 3
-    
-    for char in version:
-        if len(groups[-1]) == 0 or categorize(char) == categorize(groups[-1][-1]):
-            groups[-1] = groups[-1] + char
-        else:
-            groups.append(char)
-
-    # Convert numeric parts of the version to numbers
-    for i in xrange(len(groups)):
-        try:
-            groups[i] = int(groups[i])
-        except ValueError:
-            pass
-    return groups
-            
-
-def compareVersion(a,b):
-    """Try to compare two versions, determining which is newer"""
-    a = decomposeVersion(a)
-    b = decomposeVersion(b)
-    if len(a) < len(b):
-        return -1
-    if len(a) > len(b):
-        return 1
-    for i in xrange(len(a)):
-        if a[i] < b[i]:
-            return -1
-        if a[i] > b[i]:
-            return 1
-    return 0
-
-        
-class VersionSpec(object):
-    """A specification for one or more versions of a package.
-
-       FIXME: For now this only supports simple version names, but
-              this is the place to add support for version lists and
-              ranges.
-    """
-    def __init__(self, specString):
-        self.specString = specString
-
-    def __str__(self):
-        return self.specString
-
-    def match(self, version):
-        """Return true if the given version name matches this spec"""
-        # If we have no spec, match all versions
-        if self.specString == None:
-            return 1
-        # We only support exact matches so far
-        if version == self.specString:
-            return 1
-        else:
-            return 0
-
-    def compareMatch(self, a, b):
-        """Given two versions that match the spec, compare their quality.
-           For now this just favors newer versions.
-           """
-        return compareVersion(a,b)
-
-    def matchList(self, list):
-        """Return all the matches in the given list, sorted using compareMatch"""
-        matches = []
-        for versionName in list:
-            if self.match(versionName):
-                matches.append(versionName)
-        matches.sort(self.compareMatch)
-        return matches
-        
         
 class Package(object):
     """A package object, initialized from the configuration tree.
@@ -189,8 +104,8 @@ class Package(object):
         """Find a particular version of thie package. If the given version
            isn't already a VersionSpec it is converted to one.
            """
-        if not isinstance(version, VersionSpec):
-            version = VersionSpec(version)
+        if not isinstance(version, PGBuild.Version.VersionSpec):
+            version = PGBuild.Version.VersionSpec(version)
 
         # Find all nodes that the VersionSpec matches-
         # If there is more than one match, use the last one (they're sorted
