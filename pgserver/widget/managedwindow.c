@@ -1,4 +1,4 @@
-/* $Id: managedwindow.c,v 1.18 2003/03/19 19:19:38 lalo Exp $
+/* $Id: managedwindow.c,v 1.19 2003/03/19 19:21:03 lalo Exp $
  *
  * managedwindow.c - A root widget representing a window managed by a host GUI
  *
@@ -94,7 +94,7 @@ g_error managedwindow_set(struct widget *self,int property, glob data) {
     if (iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)))
        return mkerror(PG_ERRT_HANDLE,33);
      
-    DATA->image = handle_canonicalize((handle) data);
+    DATA->icon = handle_canonicalize((handle) data);
     break;
 
   case PG_WP_TEXT:
@@ -210,7 +210,7 @@ glob managedwindow_get(struct widget *self,int property) {
   switch (property) {
 
   case PG_WP_IMAGE:
-    return (glob) DATA->image;
+    return (glob) DATA->icon;
 
   case PG_WP_TEXT:
     return DATA->text;
