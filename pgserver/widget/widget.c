@@ -126,16 +126,19 @@ int find_hotkey(void) {
 }
 
 void dispatch_pointing(long type,int x,int y) {
+#ifdef DEBUG
+  printf("Pointing device event: 0x%08X (%d %d)\n",type,x,y);
+#endif
 }
 
 void dispatch_key(long type,int key) {
+#ifdef DEBUG
+  printf("Keyboard event: 0x%08X (#%d, '%c')\n",type,key,key);
+#endif
 }
 
 void dispatch_direct(char *name,long param) {
 }
-
-#endif /* __WIDGET_H */
-
 
 /* The End */
 

@@ -1,7 +1,7 @@
 /*
  * request.h - this connection is for sending requests to the server
  *             and passing return values back to the client
- * $Revision: 1.2 $ 
+ * $Revision: 1.3 $ 
  *
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -60,18 +60,21 @@ int reqproc(void);
 #define TAB_REQHANDLER(n) &rqh_##n ,
 
 /* Constants for request handlers                                 args  */
-#define RQH_PING     0      /* Simply returns if server is ok |   none  */
-#define RQH_UPDATE   1      /* Call update()                  |   none  */
-#define RQH_MKWIDGET 2      /* Makes a widget, returns handle |  struct */
-#define RQH_MKBITMAP 3      /* Makes a bitmap, returns handle |  struct */
-#define RQH_MKFONT   4      /* Makes a fontdesc, ret's handle |  struct */
-#define RQH_MKSTRING 5      /* Makes a string, returns handle |  chars  */
-#define RQH_FREE     6      /* Frees a handle                 |  struct */
-#define RQH_SET      7      /* Set a widget param             |  struct */
-#define RQH_GET      8      /* Get a widget param, return it  |  struct */
-#define RQH_SETBG    9      /* bequeath a new background bmp  |  struct */
+#define RQH_PING      0      /* Simply returns if server is ok |   none  */
+#define RQH_UPDATE    1      /* Call update()                  |   none  */
+#define RQH_MKWIDGET  2      /* Makes a widget, returns handle |  struct */
+#define RQH_MKBITMAP  3      /* Makes a bitmap, returns handle |  struct */
+#define RQH_MKFONT    4      /* Makes a fontdesc, ret's handle |  struct */
+#define RQH_MKSTRING  5      /* Makes a string, returns handle |  chars  */
+#define RQH_FREE      6      /* Frees a handle                 |  struct */
+#define RQH_SET       7      /* Set a widget param             |  struct */
+#define RQH_GET       8      /* Get a widget param, return it  |  struct */
+#define RQH_SETBG     9      /* bequeath a new background bmp  |  struct */
+#define RQH_IN_KEY    10     /* Dispatch keyboard input        |  struct */
+#define RQH_IN_POINT  11     /* Dispatch pointing device input |  struct */
+#define RQH_IN_DIRECT 12     /* Dispatch direct input          |  struct */
 
-#define RQH_UNDEF    10     /* types > this will be truncated. return error */
+#define RQH_UNDEF     13     /* types > this will be truncated. return error */
 
 /* Structures passed to request handlers as 'data'.
  * Dummy variables pad it to a multiple of 4 bytes (compiler likes it?)
@@ -110,6 +113,19 @@ struct rqhd_get {
 };
 struct rqhd_setbg {
   unsigned long h;   /* 0 to restore original */
+};
+struct rqhd_in_key {
+  unsigned long type;   /* A TRIGGER_* constant */
+  unsigned long key;
+};
+struct rqhd_in_point {
+  unsigned long type;   /* A TRIGGER_* constant */
+  unsigned short x;
+  unsigned short y;
+};
+struct rqhd_in_direct {
+  unsigned long param;   /* The arbitrary parameter */
+  /* The rest of the packet is read as a string */
 };
 
 #endif /* __H_REQUEST */

@@ -1,7 +1,7 @@
 /*
  * request.c - this connection is for sending requests to the server
  *             and passing return values back to the client
- * $Revision: 1.2 $
+ * $Revision: 1.3 $
  * 
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -15,6 +15,7 @@
 #include <handle.h>
 #include <widget.h>
 #include <appmgr.h>
+#include <widget.h>
 
 /* #define NONBLOCKING */
 
@@ -45,6 +46,9 @@ DEF_REQHANDLER(free)
 DEF_REQHANDLER(set)
 DEF_REQHANDLER(get)
 DEF_REQHANDLER(setbg)
+DEF_REQHANDLER(in_key)
+DEF_REQHANDLER(in_point)
+DEF_REQHANDLER(in_direct)
 DEF_REQHANDLER(undef)
 g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(ping)
@@ -57,6 +61,9 @@ g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(set)
   TAB_REQHANDLER(get)
   TAB_REQHANDLER(setbg)
+  TAB_REQHANDLER(in_key)
+  TAB_REQHANDLER(in_point)
+  TAB_REQHANDLER(in_direct)
   TAB_REQHANDLER(undef)
 };
 
@@ -220,7 +227,7 @@ int reqproc(void) {
 #endif
 
 	  if (req.size) {
-	    if (prerror(g_malloc((void **) &data, req.size)
+	    if (prerror(g_malloc((void **) &data, req.size+1)
 			).type != ERRT_NONE) {
 	      /* The request's size is too big. Be gone with this client,
 	       * either it thinks we have more memory than we do, in which
@@ -246,6 +253,8 @@ int reqproc(void) {
 	      pd += de;
 	      remaining -= de;
 	    }
+	    /* Tack on a null terminator */
+	    ((char *)data)[req.size] = 0;
 	  }
 	  else
 	    data = NULL;
@@ -470,6 +479,34 @@ g_error rqh_setbg(int owner, struct uipkt_request *req,
 g_error rqh_undef(int owner, struct uipkt_request *req,
 		   void *data, unsigned long *ret, int *fatal) {
   return mkerror(ERRT_BADPARAM,"Undefined request type");
+}
+
+g_error rqh_in_key(int owner, struct uipkt_request *req,
+		   void *data, unsigned long *ret, int *fatal) {
+  struct rqhd_in_key *arg = (struct rqhd_in_key *) data;
+  if (req->size < sizeof(struct rqhd_in_key)) 
+    return mkerror(ERRT_BADPARAM,"rqhd_in_key too small");
+  dispatch_key(ntohl(arg->type),(int) ntohl(arg->key));
+  return sucess;
+}
+
+g_error rqh_in_point(int owner, struct uipkt_request *req,
+		     void *data, unsigned long *ret, int *fatal) {
+  struct rqhd_in_point *arg = (struct rqhd_in_point *) data;
+  if (req->size < sizeof(struct rqhd_in_point)) 
+    return mkerror(ERRT_BADPARAM,"rqhd_in_point too small");
+  dispatch_pointing(ntohl(arg->type),ntohs(arg->x),ntohs(arg->y));
+  return sucess;
+}
+
+g_error rqh_in_direct(int owner, struct uipkt_request *req,
+		   void *data, unsigned long *ret, int *fatal) {
+  struct rqhd_in_direct *arg = (struct rqhd_in_direct *) data;
+  if (req->size < (sizeof(struct rqhd_in_direct)+1)) 
+    return mkerror(ERRT_BADPARAM,"rqhd_in_direct too small");
+  dispatch_direct(((char*)arg)+sizeof(struct rqhd_in_direct),
+		  ntohl(arg->param));
+  return sucess;
 }
 
 /* The End */
