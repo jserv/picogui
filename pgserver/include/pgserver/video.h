@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.91 2002/10/02 20:46:57 micahjd Exp $
+/* $Id: video.h,v 1.92 2002/10/02 22:00:32 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -402,6 +402,8 @@ struct vidlib {
   /* Optional
    *   A version of blit() with the restriction on overlapping source
    *   and destination rectangles removed
+   *   Also note that this does _not_ need to support tiling, and
+   *   it is almost always called with PG_LGOP_NONE
    *
    * Default implementation: Multiple calls to blit()
    *                        (can be very slow in some directions)

@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.17 2002/09/29 12:21:04 micahjd Exp $
+/* $Id: linear16.c,v 1.18 2002/10/02 22:00:34 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -334,6 +334,34 @@ void linear16_blit(hwrbitmap dest,
   }
 }
 
+/* This is a backwards blit that handles overlapping cases blit() doesn't */
+void linear16_scrollblit(hwrbitmap dest,
+			 s16 dst_x, s16 dst_y,s16 w, s16 h,
+			 hwrbitmap sbit,s16 src_x,s16 src_y,
+			 s16 lgop) {
+  u16 *dst;
+  struct stdbitmap *srcbit = (struct stdbitmap *) sbit;
+  s16 i,offset_dst;
+  s16 offset_src;
+  u16 *src;
+  
+  if ((dst_x < src_x) || (dst_y < src_y) || (!FB_ISNORMAL(dest,lgop))) {
+     def_blit(dest,dst_x,dst_y,w,h,sbit,src_x,src_y,lgop);
+     return;
+  }
+
+  /* This blit starts at the lower-right, moves right-to-left, bottom-to-top */
+  dst = PIXELADDR(dst_x+w-1,dst_y+h-1);
+  offset_dst = (FB_BPL>>1) - w;
+  src = ((u16*)srcbit->bits) + (((src_x+w-1)*srcbit->bpp)>>4) + (src_y+h-1)*(srcbit->pitch>>1);
+  offset_src = (srcbit->pitch>>1) - ((w*srcbit->bpp)>>4);
+
+  for (;h;h--,src-=offset_src,dst-=offset_dst) {
+    for (i=w;i;i--,src--,dst--)
+      *dst = *src;
+  }
+}
+
 #ifdef CONFIG_FAST_BLUR
 /* This is the standard blurring algorithm, but with
  * optimizations for 16-bit 5-6-5 framebuffers
@@ -624,6 +652,7 @@ void setvbl_linear16(struct vidlib *vid) {
   vid->getpixel       = &linear16_getpixel;
   vid->slab           = &linear16_slab;
   vid->blit           = &linear16_blit;
+  vid->scrollblit     = &linear16_scrollblit;
 
 #if defined(CONFIG_FAST_BLUR) || defined(CONFIG_FASTER_BLUR)
   vid->blur = &linear16_blur;
