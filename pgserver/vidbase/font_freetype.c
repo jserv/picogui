@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.31 2002/10/22 13:51:23 micahjd Exp $
+/* $Id: font_freetype.c,v 1.32 2002/10/22 14:00:52 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -347,29 +347,33 @@ void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct 
   case 0:
     if (x > clip->x2 ||
 	y > clip->y2 ||
-	x + DATA->metrics.charcell.w < clip->x1 ||
 	y + DATA->metrics.charcell.h < clip->y1)
+      return;
+    if (x + DATA->metrics.charcell.w < clip->x1)
       lgop = PG_LGOP_NULL;
     break;
   case 90:
     if (x > clip->x2 ||
 	y < clip->y1 ||
-	x + DATA->metrics.charcell.h < clip->x1 ||
-	y - DATA->metrics.charcell.w > clip->y2)
+	x + DATA->metrics.charcell.h < clip->x1)
+      return;
+    if (y - DATA->metrics.charcell.w > clip->y2)
       lgop = PG_LGOP_NULL;
     break;
   case 180:
     if (x < clip->x1 ||
 	y < clip->y1 ||
-	x - DATA->metrics.charcell.w > clip->x2 ||
 	y - DATA->metrics.charcell.h > clip->y2)
+      return;
+    if (x - DATA->metrics.charcell.w > clip->x2)
       lgop = PG_LGOP_NULL;
     break;
   case 270:
     if (x < clip->x1 ||
 	y > clip->y2 ||
-	x - DATA->metrics.charcell.h > clip->x2 ||
-	y + DATA->metrics.charcell.w < clip->y1)
+	x - DATA->metrics.charcell.h > clip->x2)
+      return;
+    if (y + DATA->metrics.charcell.w < clip->y1)
       lgop = PG_LGOP_NULL;
     break;
   }
