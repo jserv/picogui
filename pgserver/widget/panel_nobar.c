@@ -1,4 +1,4 @@
-/* $Id: panel_nobar.c,v 1.5 2002/01/06 09:23:00 micahjd Exp $
+/* $Id: panel_nobar.c,v 1.6 2002/01/15 07:35:15 micahjd Exp $
  *
  * panel_nobar.c - A simple replacement for panel that doesn't allow resizing
  *
@@ -78,15 +78,6 @@ g_error panel_set(struct widget *self,int property, glob data) {
 }
 
 glob panel_get(struct widget *self,int property) {
-  switch (property) {
-
-  case PG_WP_SIDE:
-    return self->in->flags & (~SIDEMASK);
-
-  case PG_WP_SIZE:
-    return self->in->split;
-
-  }
   return 0;
 }
 

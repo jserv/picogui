@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.45 2002/01/14 07:52:38 micahjd Exp $
+/* $Id: widget.h,v 1.46 2002/01/15 07:35:14 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -137,6 +137,11 @@ struct widget {
    */
   unsigned int publicbox : 1;
 
+  /* When this widget's orientation (horizontal/vertical), set the
+   * orientation of all children to the opposite. Useful for toolbars
+   */
+  unsigned int auto_orientation : 1;
+
   /***** 16/8-bit packed values */
    
   /* Defines the type of widget */
@@ -207,6 +212,12 @@ struct widget {
   u32 time;
   /* Widgets with timers are in a linked list */
   struct widget *tnext;
+
+  /* Other widgets in pgserver may set up a callback to recieve events
+   * from the widget. If the callback returns false, the widget is passed
+   * on to the client normally, if it returns true the event is absorbed.
+   */
+  int (*callback)(int event, struct widget *from, long param, int owner, char *data);
 };
 
 /* Macros to help define widgets */
@@ -262,9 +273,8 @@ DEF_WIDGET_PROTO(listitem)
 DEF_WIDGET_PROTO(submenuitem);
 DEF_WIDGET_PROTO(radiobutton);
 DEF_WIDGET_PROTO(textbox);			
-DEF_WIDGET_PROTO(keyscroll)
-DEF_WIDGET_PROTO(list)
-DEF_WIDGET_PROTO(menubar)
+DEF_WIDGET_PROTO(list);
+DEF_WIDGET_PROTO(panelbar);
     
 /* Set to the client # if a client has taken over the system resource */
 extern int keyboard_owner;
@@ -358,14 +368,6 @@ extern struct widget *under;
 extern struct widget *lastclicked;    /* Most recently clicked widget */
 extern struct widget *capture;
 extern struct widget *kbdfocus;
-
-/* Customizes the button's appearance
-   (used by other widgets that embed buttons in themeselves) */
-void customize_button(struct widget *self,int state,int state_on,
-		      int state_hilight,int state_on_nohilight,
-		      void *extra, void (*event)(struct widget *extra,
-						 struct widget *button));
-void customize_button_text(struct widget *self, glob data);
 
 /* Clips a popup's main divnode to fit on the screen,
  * used when changing video modes */

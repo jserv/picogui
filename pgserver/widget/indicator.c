@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.25 2002/01/07 08:14:47 micahjd Exp $
+/* $Id: indicator.c,v 1.26 2002/01/15 07:35:15 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -113,9 +113,6 @@ glob indicator_get(struct widget *self,int property) {
 
   case PG_WP_VALUE:
     return VALUE;
-
-  case PG_WP_SIDE:
-    return self->in->flags & (~SIDEMASK);
 
   }
   return 0;

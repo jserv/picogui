@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.85 2002/01/14 08:52:38 micahjd Exp $
+/* $Id: button.c,v 1.86 2002/01/15 07:35:15 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -30,59 +30,32 @@
 #include <pgserver/appmgr.h>
 
 struct btndata {
-   unsigned int on : 1;
-   unsigned int over : 1;
-   unsigned int toggle : 1;
-   unsigned int disabled : 1;
+  unsigned int on : 1;
+  unsigned int over : 1;
+  unsigned int toggle : 1;
+  unsigned int disabled : 1;
+  
+  /* These keep track of when one of the parameters was customized by
+   * a theme (as opposed to the app) so it can be appropriately unloaded */
+  unsigned int theme_bitmap : 1;
+  unsigned int theme_bitmask : 1;
+  unsigned int theme_text : 1;
 
-   /* These keep track of when one of the parameters was customized by
-    * a theme (as opposed to the app) so it can be appropriately unloaded */
-   unsigned int theme_bitmap : 1;
-   unsigned int theme_bitmask : 1;
-   unsigned int theme_text : 1;
-   
-   handle bitmap,bitmask,text,font;
-   
-   /* Hooks for embedding a button in another widget */
-   int state,state_on,state_hilight,state_on_nohilight;
-   struct widget *extra;  /* the owner of a customized button */
-   void (*event)(struct widget *extra,struct widget *button);
-   
-   /* Mask of extended (other than ACTIVATE) events to send
-    * and other flags*/
-   int extdevents;
+  /* Normally the side is specified manually, but if it isn't,
+   * get it from the theme.
+   */
+  unsigned int theme_side : 1;
+  
+  handle bitmap,bitmask,text,font;
+  
+  /* Values set by PG_WP_THOBJ_BUTTON_* */
+  int state,state_on,state_hilight,state_on_nohilight;
+  
+  /* Mask of extended (other than ACTIVATE) events to send
+   * and other flags*/
+  int extdevents;
 };
 #define DATA ((struct btndata *)(self->data))
-
-/* Customizes the button's appearance
-   (used by other widgets that embed buttons in themeselves) */
-void customize_button(struct widget *self,int state,int state_on,
-		      int state_hilight, int state_on_nohilight,
-		      void *extra, void (*event)(struct widget *extra,
-						 struct widget *button)) {
-  self->in->div->state = DATA->state = state;
-  DATA->state_on = state_on;
-  DATA->state_hilight = state_hilight;
-  DATA->state_on_nohilight = state_on_nohilight;
-  DATA->extra = extra;
-  DATA->event = event;
-
-  resizewidget(self);
-}
-
-void customize_button_text(struct widget *self, glob data)
-{
-  char *str;
-
-  printf(__FUNCTION__ ":button_text %x\n",data);
-
-  if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,data))) 
-    return mkerror(PG_ERRT_HANDLE,13);
-  DATA->text = (handle) data;
-  resizewidget(self);
-  self->in->flags |= DIVNODE_NEED_RECALC;
-  self->dt->flags |= DIVTREE_NEED_RECALC;
-}
 
 struct btnposition {
   /* Coordinates calculated in position_button */
@@ -96,6 +69,18 @@ struct btnposition {
 
 /* Code to generate the button coordinates, needed to resize or build the button */
 void position_button(struct widget *self,struct btnposition *bp);
+
+/* Determine the current state of the button and draw it */
+void button_setstate(struct widget *self) {
+  if (DATA->on && DATA->over)
+    div_setstate(self->in->div,DATA->state_on,0);
+  else if (DATA->on)
+    div_setstate(self->in->div,DATA->state_on_nohilight,0);
+  else if (DATA->over)
+    div_setstate(self->in->div,DATA->state_hilight,0);
+  else
+    div_setstate(self->in->div,DATA->state,0);
+}
 
 void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
   struct btnposition bp;
@@ -167,6 +152,8 @@ g_error button_install(struct widget *self) {
   errorcheck;
   memset(self->data,0,sizeof(struct btndata));
 
+  DATA->theme_side = 1;
+
   /* Default states */
   DATA->state = PGTH_O_BUTTON;
   DATA->state_on = PGTH_O_BUTTON_ON;
@@ -229,7 +216,7 @@ g_error button_set(struct widget *self,int property, glob data) {
     break;
 
   case PG_WP_FONT:
-    if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,data))) 
+    if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,self->owner,data))) 
 	 return mkerror(PG_ERRT_HANDLE,35);
     DATA->font = (handle) data;
     resizewidget(self);
@@ -238,7 +225,7 @@ g_error button_set(struct widget *self,int property, glob data) {
     break;
 
   case PG_WP_TEXT:
-    if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,data))) 
+    if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,self->owner,data))) 
        return mkerror(PG_ERRT_HANDLE,13);
     DATA->text = (handle) data;
     resizewidget(self);
@@ -261,6 +248,35 @@ g_error button_set(struct widget *self,int property, glob data) {
     /* Just do a rebuild/redraw */
     div_rebuild(self->in->div);
     break;
+
+  case PG_WP_THOBJ_BUTTON:
+    DATA->state = data;
+    button_setstate(self);
+    button_resize(self);
+    break;
+     
+  case PG_WP_THOBJ_BUTTON_HILIGHT:
+    DATA->state_hilight = data;
+    button_setstate(self);
+    button_resize(self);
+    break;
+     
+  case PG_WP_THOBJ_BUTTON_ON:
+    DATA->state_on = data;
+    button_setstate(self);
+    button_resize(self);
+    break;
+     
+  case PG_WP_THOBJ_BUTTON_ON_NOHILIGHT:
+    DATA->state_on_nohilight = data;
+    button_setstate(self);
+    button_resize(self);
+    break;
+
+  case PG_WP_SIDE:
+    /* Remember that the side was set manually, then pass it on */
+    DATA->theme_side = 0;
+    return mkerror(ERRT_PASS,0);
      
   default:
     return mkerror(ERRT_PASS,0);
@@ -273,9 +289,6 @@ glob button_get(struct widget *self,int property) {
   handle h;
 
   switch (property) {
-
-  case PG_WP_SIDE:
-    return (glob) (self->in->flags & (~SIDEMASK));
 
   case PG_WP_BITMAP:
     return (glob) DATA->bitmap;
@@ -300,6 +313,18 @@ glob button_get(struct widget *self,int property) {
 
   case PG_WP_DISABLED:
     return (glob) DATA->disabled;
+
+  case PG_WP_THOBJ_BUTTON:
+    return (glob) DATA->state;
+
+  case PG_WP_THOBJ_BUTTON_HILIGHT:
+    return (glob) DATA->state_hilight;
+
+  case PG_WP_THOBJ_BUTTON_ON:
+    return (glob) DATA->state_on;
+
+  case PG_WP_THOBJ_BUTTON_ON_NOHILIGHT:
+    return (glob) DATA->state_on_nohilight;
 
   default:
     return 0;
@@ -453,25 +478,14 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     w = widget_traverse(w, PG_TRAVERSE_FORWARD,1);
   }
 
-  if (DATA->on && DATA->over)
-    div_setstate(self->in->div,DATA->state_on,0);
-  else if (DATA->on)
-    div_setstate(self->in->div,DATA->state_on_nohilight,0);
-  else if (DATA->over)
-    div_setstate(self->in->div,DATA->state_hilight,0);
-  else
-    div_setstate(self->in->div,DATA->state,0);
+  button_setstate(self);
 
   if (event>=0) {
-    if (DATA->event)
-      (*DATA->event)(DATA->extra,self);
-    else {
 #ifdef CONFIG_BUTTON_BEEP
-      /* Little compile-time hack to make the button beep */
-      drivermessage(PGDM_SOUNDFX,PG_SND_SHORTBEEP,NULL);
+    /* Little compile-time hack to make the button beep */
+    drivermessage(PGDM_SOUNDFX,PG_SND_SHORTBEEP,NULL);
 #endif
-      post_event(PG_WE_ACTIVATE,self,event,0,NULL);
-    }
+    post_event(PG_WE_ACTIVATE,self,event,0,NULL);
   }
 }
 
@@ -497,6 +511,7 @@ void button_resize(struct widget *self) {
      widget_set(self,PG_WP_TEXT,0);
      DATA->theme_text = 0;
   }
+
   t = theme_lookup(DATA->state,PGTH_P_WIDGETBITMAP);
   if (t) {
      widget_set(self,PG_WP_BITMAP,t);
@@ -506,6 +521,7 @@ void button_resize(struct widget *self) {
      widget_set(self,PG_WP_BITMAP,0);
      DATA->theme_bitmap = 0;
   }
+
   t = theme_lookup(DATA->state,PGTH_P_WIDGETBITMASK);
   if (t) {
      widget_set(self,PG_WP_BITMASK,t);
@@ -515,7 +531,16 @@ void button_resize(struct widget *self) {
      widget_set(self,PG_WP_BITMASK,0);
      DATA->theme_bitmask = 0;
   }
-   
+
+  if (DATA->theme_side) {
+    widget_set(self,PG_WP_SIDE, theme_lookup(DATA->state, PGTH_P_SIDE));
+
+    /* widget_set will set theme_side to zero since it thinks we're 
+     * doing it manually. Prove widget_set wrong:
+     */
+    DATA->theme_side = 1;
+  }
+
   lock = 0;
    
   /* Minimum size and margin */

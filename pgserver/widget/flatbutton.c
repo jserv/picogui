@@ -1,4 +1,4 @@
-/* $Id: flatbutton.c,v 1.4 2002/01/06 09:23:00 micahjd Exp $
+/* $Id: flatbutton.c,v 1.5 2002/01/15 07:35:15 micahjd Exp $
  *
  * flatbutton.c - another custom border, simply using an alternate theme object
  *                without the usual border
@@ -35,8 +35,11 @@ g_error flatbutton_install(struct widget *self) {
   errorcheck;
 
   /* Customize */
-  customize_button(self,PGTH_O_FLATBUTTON,PGTH_O_FLATBUTTON_ON,
-		   PGTH_O_FLATBUTTON_HILIGHT,PGTH_O_FLATBUTTON_ON,NULL,NULL);
+  widget_set(self, PG_WP_THOBJ_BUTTON,              PGTH_O_FLATBUTTON);
+  widget_set(self, PG_WP_THOBJ_BUTTON_ON,           PGTH_O_FLATBUTTON_ON);
+  widget_set(self, PG_WP_THOBJ_BUTTON_HILIGHT,      PGTH_O_FLATBUTTON_HILIGHT);
+  widget_set(self, PG_WP_THOBJ_BUTTON_ON_NOHILIGHT, PGTH_O_FLATBUTTON_ON);
+
   return success;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.51 2002/01/06 09:22:57 micahjd Exp $
+/* $Id: global.c,v 1.52 2002/01/15 07:35:14 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -300,7 +300,8 @@ g_error appmgr_register(struct app_info *i) {
 
   case PG_APP_NORMAL:
     /* Put the new app right before the background widget */
-    e = widget_derive(&w,PG_WIDGET_PANEL,bgwidget,hbgwidget,PG_DERIVE_BEFORE,i->owner);
+    e = widget_derive(&w,PG_WIDGET_PANEL,bgwidget,hbgwidget,
+		      PG_DERIVE_BEFORE,i->owner);
     errorcheck;
     e = mkhandle(&i->rootw,PG_TYPE_WIDGET,i->owner,w);
     errorcheck;    
@@ -312,23 +313,16 @@ g_error appmgr_register(struct app_info *i) {
     errorcheck;
     e = widget_set(w,PG_WP_SIZE,(i->side & (PG_S_LEFT|PG_S_RIGHT)) ? i->w : i->h);
     errorcheck;
-    
-    break;
 
-  case PG_APP_MENUBAR:
-    /* Put the new app right before the background widget */
-    e = widget_derive(&w,PG_WIDGET_MENUBAR,bgwidget,hbgwidget,PG_DERIVE_BEFORE,i->owner);
+    /* bind the embedded panelbar to the panel. It's rather messy to do this here,
+     * but there's no good way to do it in panel_install because the panel has
+     * no handle at that point.
+     */
+    e = rdhandle((void**) &w, PG_TYPE_WIDGET,i->owner,widget_get(w,PG_WP_PANELBAR));
     errorcheck;
-    e = mkhandle(&i->rootw,PG_TYPE_WIDGET,i->owner,w);
+    e = widget_set(w,PG_WP_BIND,i->rootw);
     errorcheck;    
 
-    /* Set all the properties */
-    e = widget_set(w,PG_WP_TEXT,i->name);
-    errorcheck;
-    e = widget_set(w,PG_WP_SIDE,i->side);
-    errorcheck;
-    e = widget_set(w,PG_WP_SIZE,(i->side & (PG_S_LEFT|PG_S_RIGHT)) ? i->w : i->h);
-    errorcheck;
     break;
 
   default:

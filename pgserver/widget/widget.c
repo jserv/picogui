@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.140 2002/01/14 08:52:38 micahjd Exp $
+/* $Id: widget.c,v 1.141 2002/01/15 07:35:15 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -33,6 +33,11 @@
 #include <pgserver/pgnet.h>
 #include <pgserver/hotspot.h>
 
+#ifdef DEBUG_WIDGET
+#define DEBUG_FILE
+#endif
+#include <pgserver/debug.h>
+
 /* Table of widgets */
 #ifdef RUNTIME_FUNCPTR
 struct widgetdef widgettab[PG_WIDGETMAX+1];
@@ -48,13 +53,7 @@ DEF_WIDGET_TABLE(scroll)
 DEF_STATICWIDGET_TABLE(indicator)
 DEF_STATICWIDGET_TABLE(bitmap)
 DEF_WIDGET_TABLE(button)
-	       
-#ifdef CONFIG_NOPANELBAR
 DEF_STATICWIDGET_TABLE(panel)
-#else
-DEF_WIDGET_TABLE(panel)
-#endif
-		 
 DEF_WIDGET_TABLE(popup)
 DEF_STATICWIDGET_TABLE(box)
 DEF_WIDGET_TABLE(field)
@@ -79,7 +78,7 @@ DEF_HYBRIDWIDGET_TABLE(listitem,button)
 DEF_HYBRIDWIDGET_TABLE(submenuitem,button)
 DEF_HYBRIDWIDGET_TABLE(radiobutton,button)
 DEF_WIDGET_TABLE(textbox)
-DEF_WIDGET_TABLE(menubar)
+DEF_WIDGET_TABLE(panelbar)
 };
 
 /* These are needed to determine which widget is under the pointing
@@ -110,6 +109,8 @@ int timerlock = 0;
 g_error widget_create(struct widget **w, int type, struct divtree *dt, handle container, int owner) {
 
    g_error e;
+
+   DBG("type %d, container %d, owner %d\n",type,container,owner);
 
    //
    // Check the type.
@@ -160,6 +161,8 @@ g_error widget_create(struct widget **w, int type, struct divtree *dt, handle co
 g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **where, handle container, int owner) {
   g_error e;
   struct divnode *div;
+
+  DBG("widget 0x%08X, container %d, owner %d\n",w,container,owner);
   
   //
   // Initial error checking
@@ -226,6 +229,8 @@ g_error widget_derive(struct widget **w,
 		      handle hparent,int rship,int owner) {
 
   g_error e;
+
+  DBG("type %d, rship %d, parent 0x%08X, owner %d\n",type,rship,parent,owner);
   
   switch (rship) {
 
@@ -281,6 +286,8 @@ void widget_remove(struct widget *w) {
   struct divnode *sub_end;  
   handle hw;
 
+  DBG("0x%08X\n",w);
+
   if (!in_shutdown) {
     /* Get us out of the hotkey list */
     install_hotkey(w,0);
@@ -298,10 +305,14 @@ void widget_remove(struct widget *w) {
     /* Remove inner widgets if it can be done safely
        (only remove if they have handles) */
     while (w->sub && *w->sub) {    
-      if ((*w->sub)->owner && (hw = hlookup((*w->sub)->owner,NULL)))
+      if ((*w->sub)->owner && (hw = hlookup((*w->sub)->owner,NULL))) {
+	DBG("Removing inner widget %d\n",hw);
 	handle_free(-1,hw);
-      else
+      }
+      else {
+	DBG("Can't remove inner widget!\n");
 	break;
+      }
     }
     
     if (w->sub && *w->sub) {    
@@ -309,19 +320,17 @@ void widget_remove(struct widget *w) {
 	 widgets inside of it, we will need to insert the 'sub'
 	 list. This is a desperate attempt to not segfault. */
 
-#ifdef DEBUG_WIDGET
-      printf("************** Relocating sub list. w=0x%08X\n",w);
-#endif
+      DBG("************** Relocating sub list. w=0x%08X\n",w);
       
       sub_end = *w->sub;
       while (sub_end->next) 
 	sub_end = sub_end->next;
 
-      //      if (w->where) 
-      *w->where = *w->sub;
-
-	//      if (w->sub && *w->sub && (*w->sub)->owner)
-      (*w->sub)->owner->where = w->where;
+      if (w->where) 
+	*w->where = *w->sub;
+      
+      if (w->sub && *w->sub && (*w->sub)->owner)
+	(*w->sub)->owner->where = w->where;
 	
       if (w->out) {
 	sub_end->next = *w->out;
@@ -331,17 +340,24 @@ void widget_remove(struct widget *w) {
       else
 	sub_end->next = NULL;
 
-      //      if (w->out && *w->out && (*w->out)->owner)
-
     }
     else {
-      if (w->out && *w->out) {
+      if (w->out && *w->out && w->where) {
+	DBG("Reattaching *w->where to *w->out\n");
 	*w->where = *w->out;
-       	if (*w->out && (*w->out)->owner)
+
+	/* We must make sure the new where pointer would be valid
+	 * before we set it. This is important when a tree of widgets
+	 * is completely self-contained within another widget, as in
+	 * the case of the panelbar inside the panel widget.
+	 */
+       	if (*w->out && (*w->out)->owner && *w->where==(*w->out)->owner->in)
 	  (*w->out)->owner->where = w->where;
       }
-      else if ( w->where )
+      else if ( w->where ) {
+	DBG("Setting *w->where = NULL\n");
 	*w->where = NULL;
+      }
     }
     
     /* If we don't break this link, then deleting
@@ -394,6 +410,55 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
       resizewidget(w);
       w->dt->flags |= DIVTREE_NEED_RECALC;
       redraw_bg(w);
+
+      if (w->auto_orientation) {
+	/* Set orientation on all child widgets */
+
+	struct widget *p;
+	p = widget_traverse(w, PG_TRAVERSE_CHILDREN, 0);
+	while (p) {
+	  switch (data) {
+
+	  case PG_S_LEFT:
+	  case PG_S_RIGHT:
+	   
+	    widget_set(p, PG_WP_DIRECTION, PG_DIR_VERTICAL);
+
+	    switch (widget_get(p, PG_WP_SIDE)) {
+	      
+	    case PG_S_LEFT:
+	      widget_set(p, PG_WP_SIDE, PG_S_TOP);
+	      break;
+
+	    case PG_S_RIGHT:
+	      widget_set(p, PG_WP_SIDE, PG_S_BOTTOM);
+	      break;
+
+	    }
+	    break;
+
+	  case PG_S_TOP:
+	  case PG_S_BOTTOM:
+
+	    widget_set(p, PG_WP_DIRECTION, PG_DIR_HORIZONTAL);
+
+	    switch (widget_get(p, PG_WP_SIDE)) {
+	      
+	    case PG_S_TOP:
+	      widget_set(p, PG_WP_SIDE, PG_S_LEFT);
+	      break;
+
+	    case PG_S_BOTTOM:
+	      widget_set(p, PG_WP_SIDE, PG_S_RIGHT);
+	      break;
+
+	    }
+	    break;
+
+	  }
+	  p = widget_traverse(p, PG_TRAVERSE_FORWARD,1);
+	}
+      }
       break;
 
     case PG_WP_SIZE:
@@ -498,6 +563,10 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
     }
     break;
 
+   case PG_WP_AUTO_ORIENTATION:
+     w->auto_orientation = data;
+     break;
+
     default:
       return mkerror(PG_ERRT_BADPARAM,6);   /* Unknown property */
    }
@@ -549,6 +618,9 @@ glob widget_get(struct widget *w, int property) {
    case PG_WP_PREFERRED_H:
      resizewidget(w);
      return max(w->in->div->ph, w->in->div->ch);
+
+   case PG_WP_AUTO_ORIENTATION:
+     return w->auto_orientation;
      
    default:
      return (*w->def->get)(w,property);

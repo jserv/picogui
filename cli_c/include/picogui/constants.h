@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.104 2002/01/14 11:01:03 cgrigis Exp $
+/* $Id: constants.h,v 1.105 2002/01/15 07:35:14 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -73,8 +73,7 @@
 
 #define PG_APP_NORMAL   1     //!< Normal application for pgRegisterApp
 #define PG_APP_TOOLBAR  2     //!< Toolbar application for pgRegisterApp
-#define PG_APP_MENUBAR  3     //!< RidgeRun application for pgRegisterApp
-#define PG_APPMAX       3     //!< Current maximum value used in PG_APP_* constants
+#define PG_APPMAX       2     //!< Current maximum value used in PG_APP_* constants
 
 #define PG_APPSPEC_SIDE      1    //!< Force the app to a specified side
 #define PG_APPSPEC_SIDEMASK  2    //!< A bitmask of acceptable sides for an application
@@ -841,7 +840,8 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_SUBMENUITEM 17    /* Menuitem with a submenu arrow */
 #define PG_WIDGET_RADIOBUTTON 18    /* Like a check box, but exclusive */
 #define PG_WIDGET_TEXTBOX     19    /* Client-side text layout */
-#define PG_WIDGETMAX          19    /* For error checking */
+#define PG_WIDGET_PANELBAR    20    /* Draggable bar and container */
+#define PG_WIDGETMAX          20    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1
@@ -884,10 +884,22 @@ typedef unsigned long pghandle;
 #define PG_WP_HILIGHTED   32    /* Widget property to hilight a widget and all it's children */
 #define PG_WP_SELECTED    33    /* List property to select a row. */
 #define PG_WP_SELECTED_HANDLE 34 /* List property to return a handle to the selected row */
-#define PG_WP_AUTOSCROLL  35    /* For the textbox, scroll to any new text that's inserted */
+#define PG_WP_AUTOSCROLL  35    /* For the textbox or terminal, scroll to any new
+				 * text that's inserted */
 #define PG_WP_LINES       36    /* Height, in lines */
 #define PG_WP_PREFERRED_W 37    /* Read only (for now) properties to get any widget's preferred size */
 #define PG_WP_PREFERRED_H 38
+#define PG_WP_PANELBAR    39    /* Read-only property for panels returns a handle
+				 * to its embedded panelbar widget */
+#define PG_WP_AUTO_ORIENTATION 40 /* Automatically reorient child widgets when PG_WP_SIDE changes */
+#define PG_WP_THOBJ_BUTTON              41  /* These four theme properties set the theme objects used for the */
+#define PG_WP_THOBJ_BUTTON_HILIGHT      42  /* three possible states of the button widget. */
+#define PG_WP_THOBJ_BUTTON_ON           43
+#define PG_WP_THOBJ_BUTTON_ON_NOHILIGHT 44
+#define PG_WP_PANELBAR_LABEL  45  /* More read-only panelbar properties to get the built-in panelbar widgets */
+#define PG_WP_PANELBAR_CLOSE  46
+#define PG_WP_PANELBAR_ROTATE 47
+#define PG_WP_PANELBAR_ZOOM   48
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0
@@ -960,8 +972,6 @@ typedef unsigned long pghandle;
 /* These are event constants used for networked input drivers. It is a subset
  * of the TRIGGER_* constants in the server, representing only those needed
  * for input drivers. */
-#define PG_TRIGGER_ACTIVATE   (1<<3)  /* Sent when it receives focus */
-#define PG_TRIGGER_DEACTIVATE (1<<4)  /* Losing focus */
 #define PG_TRIGGER_KEYUP      (1<<5)  /* Ignores autorepeat, etc. Raw key codes*/
 #define PG_TRIGGER_KEYDOWN    (1<<6)  /* Ditto. */
 #define PG_TRIGGER_UP         (1<<8)  /* Mouse up */

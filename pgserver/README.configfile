@@ -92,6 +92,10 @@ quoted appropriately. For example:
   small nonzero integer. In the current implementation, this is used to
   select a TCP/IP port.
 
+- dragsolid
+  Set to nonzero to use solid panel dragging, which is cool but very CPU heavy
+  Requires the CONFIG_DRAGSOLID compile-time option
+
 [sound]
 
 - click

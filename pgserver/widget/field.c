@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.37 2002/01/06 09:23:00 micahjd Exp $
+/* $Id: field.c,v 1.38 2002/01/15 07:35:15 micahjd Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -211,9 +211,6 @@ glob field_get(struct widget *self,int property) {
   struct fontdesc *fd;
 
   switch (property) {
-
-  case PG_WP_SIDE:
-    return self->in->flags & (~SIDEMASK);
 
   case PG_WP_FONT:
     return (glob) DATA->font;

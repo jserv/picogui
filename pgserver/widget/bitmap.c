@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.33 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: bitmap.c,v 1.34 2002/01/15 07:35:15 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -160,9 +160,6 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
 
 glob bitmap_get(struct widget *self,int property) {
   switch (property) {
-
-  case PG_WP_SIDE:
-    return self->in->flags & (~SIDEMASK);
 
   case PG_WP_TRANSPARENT:
     return DATA->transparent;

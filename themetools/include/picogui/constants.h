@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.52 2002/01/15 02:30:32 micahjd Exp $
+/* $Id: constants.h,v 1.53 2002/01/15 07:35:15 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -891,6 +891,15 @@ typedef unsigned long pghandle;
 #define PG_WP_PREFERRED_H 38
 #define PG_WP_PANELBAR    39    /* Read-only property for panels returns a handle
 				 * to its embedded panelbar widget */
+#define PG_WP_AUTO_ORIENTATION 40 /* Automatically reorient child widgets when PG_WP_SIDE changes */
+#define PG_WP_THOBJ_BUTTON              41  /* These four theme properties set the theme objects used for the */
+#define PG_WP_THOBJ_BUTTON_HILIGHT      42  /* three possible states of the button widget. */
+#define PG_WP_THOBJ_BUTTON_ON           43
+#define PG_WP_THOBJ_BUTTON_ON_NOHILIGHT 44
+#define PG_WP_PANELBAR_LABEL  45  /* More read-only panelbar properties to get the built-in panelbar widgets */
+#define PG_WP_PANELBAR_CLOSE  46
+#define PG_WP_PANELBAR_ROTATE 47
+#define PG_WP_PANELBAR_ZOOM   48
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0

@@ -1,4 +1,4 @@
-/* $Id: toolbar.c,v 1.20 2002/01/06 09:23:00 micahjd Exp $
+/* $Id: toolbar.c,v 1.21 2002/01/15 07:35:15 micahjd Exp $
  *
  * toolbar.c - container widget for buttons
  *
@@ -122,12 +122,6 @@ g_error toolbar_set(struct widget *self,int property, glob data) {
 }
 
 glob toolbar_get(struct widget *self,int property) {
-  switch (property) {
-     
-  case PG_WP_SIDE:
-    return self->in->flags & (~SIDEMASK);
-
-  }
   return 0;
 }
 

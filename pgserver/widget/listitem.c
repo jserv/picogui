@@ -1,4 +1,4 @@
-/* $Id: listitem.c,v 1.4 2002/01/06 09:23:00 micahjd Exp $
+/* $Id: listitem.c,v 1.5 2002/01/15 07:35:15 micahjd Exp $
  *
  * listitem.c - a customized button, used for items in a listbox
  *
@@ -35,9 +35,11 @@ g_error listitem_install(struct widget *self) {
   e = button_install(self);
   errorcheck;
 
-  /* Customize */
-  customize_button(self,PGTH_O_LISTITEM,PGTH_O_LISTITEM_ON,
-		   PGTH_O_LISTITEM_HILIGHT,PGTH_O_LISTITEM_ON,NULL,NULL);
+  /* Customize themes */
+  widget_set(self, PG_WP_THOBJ_BUTTON,              PGTH_O_LISTITEM);
+  widget_set(self, PG_WP_THOBJ_BUTTON_ON,           PGTH_O_LISTITEM_ON);
+  widget_set(self, PG_WP_THOBJ_BUTTON_HILIGHT,      PGTH_O_LISTITEM_HILIGHT);
+  widget_set(self, PG_WP_THOBJ_BUTTON_ON_NOHILIGHT, PGTH_O_LISTITEM_ON);
 
   /* We need extra events */
   widget_set(self,PG_WP_EXTDEVENTS,PG_EXEV_TOGGLE | PG_EXEV_EXCLUSIVE);

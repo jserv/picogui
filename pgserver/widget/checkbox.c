@@ -1,4 +1,4 @@
-/* $Id: checkbox.c,v 1.6 2002/01/06 09:23:00 micahjd Exp $
+/* $Id: checkbox.c,v 1.7 2002/01/15 07:35:15 micahjd Exp $
  *
  * checkbox.c - a customized button, used for "check boxes"
  *
@@ -36,9 +36,10 @@ g_error checkbox_install(struct widget *self) {
   errorcheck;
 
   /* Customize */
-  customize_button(self,PGTH_O_CHECKBOX,PGTH_O_CHECKBOX_ON,
-		   PGTH_O_CHECKBOX_HILIGHT,PGTH_O_CHECKBOX_ON_NOHILIGHT,
-		   NULL,NULL);
+  widget_set(self, PG_WP_THOBJ_BUTTON,              PGTH_O_CHECKBOX);
+  widget_set(self, PG_WP_THOBJ_BUTTON_ON,           PGTH_O_CHECKBOX_ON);
+  widget_set(self, PG_WP_THOBJ_BUTTON_HILIGHT,      PGTH_O_CHECKBOX_HILIGHT);
+  widget_set(self, PG_WP_THOBJ_BUTTON_ON_NOHILIGHT, PGTH_O_CHECKBOX_ON_NOHILIGHT);
 
   /* Use alternate click event handling to toggle */
   widget_set(self,PG_WP_EXTDEVENTS,PG_EXEV_TOGGLE);

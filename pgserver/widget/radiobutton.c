@@ -1,4 +1,4 @@
-/* $Id: radiobutton.c,v 1.3 2002/01/06 09:23:00 micahjd Exp $
+/* $Id: radiobutton.c,v 1.4 2002/01/15 07:35:15 micahjd Exp $
  *
  * radiobutton.c - a customized button, used for "radio" buttons
  *
@@ -35,10 +35,11 @@ g_error radiobutton_install(struct widget *self) {
   e = button_install(self);
   errorcheck;
 
-  /* Customize */
-  customize_button(self,PGTH_O_RADIOBUTTON,PGTH_O_RADIOBUTTON_ON,
-		   PGTH_O_RADIOBUTTON_HILIGHT,PGTH_O_RADIOBUTTON_ON_NOHILIGHT,
-		   NULL,NULL);
+  /* Customize themes */
+  widget_set(self, PG_WP_THOBJ_BUTTON,              PGTH_O_RADIOBUTTON);
+  widget_set(self, PG_WP_THOBJ_BUTTON_ON,           PGTH_O_RADIOBUTTON_ON);
+  widget_set(self, PG_WP_THOBJ_BUTTON_HILIGHT,      PGTH_O_RADIOBUTTON_HILIGHT);
+  widget_set(self, PG_WP_THOBJ_BUTTON_ON_NOHILIGHT, PGTH_O_RADIOBUTTON_ON_NOHILIGHT);
 
   /* Use alternate click event handling to toggle */
   widget_set(self,PG_WP_EXTDEVENTS,PG_EXEV_TOGGLE | PG_EXEV_EXCLUSIVE);

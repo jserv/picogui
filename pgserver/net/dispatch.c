@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.74 2002/01/14 07:52:39 micahjd Exp $
+/* $Id: dispatch.c,v 1.75 2002/01/15 07:35:15 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -148,7 +148,6 @@ g_error rqh_mkwidget(int owner, struct pgrequest *req,
   */
   switch (ntohs(arg->type)) {
   case PG_WIDGET_PANEL:
-  case PG_WIDGET_MENUBAR:
   case PG_WIDGET_POPUP:
   case PG_WIDGET_BACKGROUND:
     return mkerror(PG_ERRT_BADPARAM,58);

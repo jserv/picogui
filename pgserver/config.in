@@ -157,8 +157,8 @@ mainmenu_option next_comment
 comment 'Widget Options'
 bool 'Terminal widget (VT102 emulator)'       CONFIG_WIDGET_TERMINAL
 bool 'Canvas widget (for arbitrary graphics)' CONFIG_WIDGET_CANVAS
-bool 'Disable panelbar'                       CONFIG_NOPANELBAR
-bool 'Solid panel dragging'                   CONFIG_DRAGSOLID
+bool 'Disable panelbar on app panels'         CONFIG_NOPANELBAR
+bool 'Support for solid panel dragging'       CONFIG_DRAGSOLID
 int  'Maximum number of zombie gropnodes'     CONFIG_MAX_ZOMBIEGROPS
 bool 'Support for Alpha key'                  CONFIG_KEY_ALPHA
 bool 'Play the "short beep" sound on button press (hack)' CONFIG_BUTTON_BEEP
