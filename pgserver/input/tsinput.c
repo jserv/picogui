@@ -1,4 +1,4 @@
-/* $Id: tsinput.c,v 1.13 2001/06/01 16:09:45 pney Exp $
+/* $Id: tsinput.c,v 1.14 2001/06/01 16:32:09 pney Exp $
  *
  * tsinput.c - input driver for touch screen
  *
@@ -113,11 +113,11 @@ void tsinput_poll(void) {
        * don't display pointing device when move for speed reason 
        * this may certainly change in the future
        */
-//      dispatch_pointing(TRIGGER_MOVE,pen_info.x,pen_info.y,1);
-      if(iIsPointingDisplayed) {
-	VID(sprite_hide) (cursor);
-	iIsPointingDisplayed = 0;
-      }
+      dispatch_pointing(TRIGGER_MOVE,pen_info.x,pen_info.y,1);
+      //      if(iIsPointingDisplayed) {
+      //	VID(sprite_hide) (cursor);
+      //	iIsPointingDisplayed = 0;
+      //      }
       gettimeofday(&lastEvent,NULL);
       iIsPenUp = 0;
       break;
