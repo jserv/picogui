@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.66 2001/09/06 23:47:30 micahjd Exp $
+/* $Id: client_c.h,v 1.67 2001/09/07 00:23:53 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -1248,6 +1248,36 @@ struct pgEvent *pgGetEvent(void);
  * \sa pgGetEvent, pgEventLoop
  */
 int pgCheckEvent(void);
+
+/*!
+ * \brief Dispatch an event to registered handlers
+ *
+ * \param evt Pointer to the event to dispatch. This should not be the same
+ *            pointer returned by pgGetEvent(), as it is only valid until the
+ *            next PicoGUI call! See pgGetEvent() for more information.
+ *
+ * This function searches all registered event handlers, and dispatches the
+ * event to any applicable handlers. It also provides various default handlers,
+ * such as closing the program on recieving PG_WE_CLOSE.
+ *
+ * \sa pgGetEvent, pgCheckEvent, pgEventLoop
+ */
+void pgDispatchEvent(struct pgEvent *evt);
+
+/*!
+ * \brief Get and dispatch new events if there are any
+ *
+ * This function is a non-blocking version of pgEventLoop().
+ * It calls pgCheckEvent(), and if there are any new events it uses
+ * pgGetEvent() and pgDispatchEvent() to retrieve and process any
+ * pending events.
+ *
+ * This is good to call during an animation or other lengthy operation to
+ * check for the user clicking the close button, canceling the operation, etc.
+ *
+ * \sa pgGetEvent, pgCheckEvent, pgDispatchEvent
+ */
+void pgEventPoll(void);
 
 /*!
  * \brief Enter a new context

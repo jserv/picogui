@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.12 2001/09/02 19:57:46 micahjd Exp $
+/* $Id: netcore.c,v 1.13 2001/09/07 00:23:53 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -546,7 +546,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.12 2001/09/02 19:57:46 micahjd Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.13 2001/09/07 00:23:53 micahjd Exp $\n");
 	exit(1);
       }
 
@@ -783,8 +783,6 @@ void pgFlushRequests(void) {
    bound to.
 */
 void pgEventLoop(void) {
-  struct _pghandlernode *n;
-  int num;
   struct pgEvent evt;
 
   _pgeventloop_on = 1;
@@ -793,34 +791,39 @@ void pgEventLoop(void) {
 
     /* Wait for and event and save a copy
      * (a handler might call pgFlushRequests and overwrite it) */
+
     evt = *pgGetEvent();
-
-#ifdef DEBUG_EVT
-     printf("Recieved event %d from 0x%08X with param 0x%08X\n",
-	    evt.type,evt.from,evt.e.param);
-#endif
-
-    /* Search the handler list, executing the applicable ones */
-    n = _pghandlerlist;
-    num = 0;
-    while (n) {
-      if ( (((signed long)n->widgetkey)==PGBIND_ANY || n->widgetkey==evt.from) &&
-	   (((signed short)n->eventkey)==PGBIND_ANY || n->eventkey==evt.type) ) {
-	 evt.extra = n->extra;
-	 if ((*n->handler)(&evt))
-	   goto skiphandlers;
-      }
-
-       n = n->next;
-    }
-
-    /* Various default actions */
-      
-    if (evt.type == PG_WE_CLOSE)
-      exit(0);
-
-  skiphandlers:
+    pgDispatchEvent(&evt);
   }
+}
+
+void pgDispatchEvent(struct pgEvent *evt) {
+  struct _pghandlernode *n;
+  
+  /* Search the handler list, executing the applicable ones */
+  
+  n = _pghandlerlist;
+  while (n) {
+    if ( (((signed long)n->widgetkey)==PGBIND_ANY || 
+	  n->widgetkey==evt->from) &&
+	 (((signed short)n->eventkey)==PGBIND_ANY || 
+	  n->eventkey==evt->type) ) {
+      evt->extra = n->extra;
+      
+      /* Run the handler, and quit processing the
+       * event if it returns nonzero.
+       */
+      if ((*n->handler)(evt))
+	return;
+    }
+    
+    n = n->next;
+  }
+  
+  /* Various default actions */
+  
+  if (evt->type == PG_WE_CLOSE)
+    exit(0);
 }
 
 void pgExitEventLoop(void) { _pgeventloop_on=0; }

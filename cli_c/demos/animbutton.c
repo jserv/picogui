@@ -35,7 +35,28 @@ int main(int argc, char **argv) {
 	       PG_WP_TEXT,pgNewString("Nifty!"),
 	       PG_WP_BITMAP,bBitmap,
 	       0);
-   pgSetIdle(75,&animate);
-   pgEventLoop();  
+
+   /* One method of doing animation: set up an idle handler that gets called
+    * periodically during a normal event loop. This spends most of the time
+    * waiting for an event, so the animation does not use much of the CPU.
+    */
+   
+   //pgSetIdle(75,&animate);
+   //pgEventLoop();  
+
+   /* An alternate method of doing animation. This spends all the CPU it can
+    * get to do the animation, but polls for new PicoGUI events so the close
+    * button still works.
+    * 
+    * The pgEventPoll is a non-blocking event loop constructed with
+    * the pgCheckEvent, pgGetEvent, and pgDispatchEvent functions. It will
+    * dispatch all waiting events then return.
+    */
+   
+   while (1) {
+      animate();
+      pgEventPoll();
+   }
+   
    return 0;
 }
