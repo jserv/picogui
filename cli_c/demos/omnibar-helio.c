@@ -1,4 +1,4 @@
-/* $Id: omnibar-helio.c,v 1.2 2001/04/25 13:58:32 gobry Exp $
+/* $Id: omnibar-helio.c,v 1.3 2001/09/27 16:18:36 micahjd Exp $
  * 
  * omnibar-helio.c - omnibar, hacked up a bit to look good on Helio
  *
@@ -31,7 +31,7 @@
 
 #include <time.h>        /* For clock */
 
-#include <malloc.h>      /* Dynamic memory is used for the array */
+#include <sys/malloc.h>      /* Dynamic memory is used for the array */
 
 #include <stdio.h>       /* file IO for getting CPU load */
 

@@ -1,4 +1,4 @@
-/* $Id: clientlib.h,v 1.8 2001/08/09 10:57:01 micahjd Exp $
+/* $Id: clientlib.h,v 1.9 2001/09/27 16:18:37 micahjd Exp $
  *
  * clientlib.h - definitions used only within the client library code itself
  *
@@ -30,10 +30,10 @@
 #define _CLIENTLIB_H
 
 /* System includes */
+#include <sys/types.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <sys/time.h>  /* for time_t type (used in timeval structure) */
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #ifndef CONFIG_UNIX_SOCKET
@@ -43,13 +43,10 @@
 #endif
 #include <netdb.h>
 #include <stdio.h>    /* for fprintf() */
-#include <malloc.h>
+#include <sys/malloc.h>
 #include <signal.h>
 
-#ifndef UCLINUX
-#  include <alloca.h> /* for uClinux 'alloca' is in malloc.h */
-#endif
-
+#include <unistd.h>   /* select() */
 #include <string.h>   /* for memcpy(), memset(), strcpy() */
 #include <stdarg.h>   /* needed for pgRegisterApp and pgSetWidget */
 #include <stdlib.h>   /* for getenv() */

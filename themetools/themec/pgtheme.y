@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.29 2001/08/06 05:57:27 micahjd Exp $
+/* $Id: pgtheme.y,v 1.30 2001/09/27 16:18:37 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -26,7 +26,8 @@
  * 
  */
 
-#include <malloc.h>
+#include <sys/types.h>
+#include <sys/malloc.h>
 #include "themec.h"
 
 %}

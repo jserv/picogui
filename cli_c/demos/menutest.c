@@ -5,7 +5,7 @@
 #include <sys/types.h>   /* For making directory listings */
 #include <dirent.h>
 
-#include <malloc.h>      /* Dynamic memory is used for the array */
+#include <sys/malloc.h>      /* Dynamic memory is used for the array */
 
 /* The simplest way to make a menu */
 int btnMenuFromString(struct pgEvent *evt) {

@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.26 2001/08/30 01:49:32 micahjd Exp $
+/* $Id: sdlinput.c,v 1.27 2001/09/27 16:18:37 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -32,8 +32,7 @@
 #include <pgserver/pgnet.h>
 #include <pgserver/configfile.h>
 
-#include <SDL.h>
-#include <SDL_thread.h>
+#include <SDL/SDL.h>
 
 /* I have tried various methods for this SDL input driver. For quite a
  * while it was threaded. This offered fast response and no CPU overhead,

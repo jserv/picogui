@@ -1,4 +1,4 @@
-/* $Id: g_malloc.h,v 1.6 2001/04/14 02:59:57 micahjd Exp $
+/* $Id: g_malloc.h,v 1.7 2001/09/27 16:18:37 micahjd Exp $
  *
  * g_malloc.h - malloc wrapper providing error handling
  *
@@ -28,7 +28,8 @@
 #ifndef __H_GMALLOC
 #define __H_GMALLOC
 
-#include <malloc.h>
+#include <sys/types.h>
+#include <sys/malloc.h>
 #include <pgserver/g_error.h>
 
 g_error g_malloc(void **p,size_t s);

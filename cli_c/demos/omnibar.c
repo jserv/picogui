@@ -1,4 +1,4 @@
-/* $Id: omnibar.c,v 1.12 2001/06/25 00:49:41 micahjd Exp $
+/* $Id: omnibar.c,v 1.13 2001/09/27 16:18:36 micahjd Exp $
  * 
  * omnibar.c - hopefully this will grow into a general interface
  *             for starting and manipulating applications, but
@@ -33,7 +33,7 @@
 
 #include <time.h>        /* For clock */
 
-#include <malloc.h>      /* Dynamic memory is used for the array */
+#include <sys/malloc.h>      /* Dynamic memory is used for the array */
 
 #include <stdio.h>       /* file IO for getting CPU load */
 

@@ -1,5 +1,5 @@
 %{
-/* $Id: pglex.l,v 1.1 2001/08/03 16:52:27 gobry Exp $
+/* $Id: pglex.l,v 1.2 2001/09/27 16:18:37 micahjd Exp $
  *
  * pgtheme.l - lexer for processing PicoGUI theme source code
  *
@@ -28,6 +28,14 @@
 
 #include "themec.h"
 #include "pgtheme.h"
+
+/* This isn't necessary on Linux, but some other Unixes (like Darwin)
+ * seem to need this.
+ */
+#undef yywrap
+int yywrap(void) {
+ return 1;
+}
 
 %}
 

@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.13 2001/09/06 23:42:10 micahjd Exp $
+/* $Id: pgnet.h,v 1.14 2001/09/27 16:18:37 micahjd Exp $
  *
  * pgnet.h - definitions and stuff for the picogui server
  *           networking code. Most of the interesting code
@@ -61,7 +61,6 @@
 #include <signal.h>
 #include <unistd.h>
 #include <errno.h>
-#include <asm/types.h>
 #endif
 
 /* Which clients are waiting for events */
