@@ -122,3 +122,4 @@
 /* 114 */ "Widget template length mismatch",
 /* 115 */ "Incomplete request in widget template",
 /* 116 */ "Computer try to suck watermelon through straw, computer go boom.",
+/* 117 */ "Null widget in attachwidget",

@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.93 2002/04/12 12:47:11 bauermeister Exp $
+/* $Id: dispatch.c,v 1.94 2002/04/12 22:19:48 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -274,6 +274,9 @@ g_error rqh_attachwidget(int owner, struct pgrequest *req,
   etmp = rdhandle((void **) &w, PG_TYPE_WIDGET, owner, ntohl(arg->widget));
   if ( iserror(etmp) )
      return etmp;
+
+  if (!w)
+    return mkerror(PG_ERRT_BADPARAM,117);   /* Null widget in attachwidget */
 
   //
   // Call widget_derive to actually do the attaching.  widget_derive will notice that the widget already

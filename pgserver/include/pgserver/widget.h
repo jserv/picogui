@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.59 2002/03/26 17:07:06 instinc Exp $
+/* $Id: widget.h,v 1.60 2002/04/12 22:19:48 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -396,6 +396,13 @@ void magic_button(s16 key);
  * Assumes that w->in->div is the visible divnode.
  */
 void set_widget_rebuild(struct widget *w);
+
+/* Recursive utilities to change the divtree and container of all widgets in a tree.
+ * Sets the divtree to the given value, and sets the container only if the current
+ * value matches the old value given.
+ */
+void r_widget_setcontainer(struct widget *w, handle oldcontainer,
+			   handle container, struct divtree *dt);
 
 #endif /* __WIDGET_H */
 

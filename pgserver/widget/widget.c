@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.171 2002/04/09 21:20:16 micahjd Exp $
+/* $Id: widget.c,v 1.172 2002/04/12 22:19:49 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -169,37 +169,40 @@ g_error widget_create(struct widget **w, int type, struct divtree *dt, handle co
   return success;
   
 }  // End of widget_create()
+
+/* Recursive utilities to change the divtree and container of all widgets in a tree.
+ * Sets the divtree to the given value, and sets the container only if the current
+ * value matches the old value given.
+ */
+void r_widget_setcontainer(struct widget *w, handle oldcontainer,
+			   handle container, struct divtree *dt) {
+  if (!w)
+    return;
+
+  w->dt = dt;
+  if (w->container == oldcontainer)
+    w->container = container;
+
+  if (w->sub && *w->sub && (*w->sub)->owner)
+    r_widget_setcontainer((*w->sub)->owner,w->container,container,dt);
+  if (w->out && *w->out && (*w->out)->owner)
+    r_widget_setcontainer((*w->out)->owner,w->container,container,dt);
+}
  
 g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **where, handle container, int owner) {
   struct divnode *div;
 
   DBG("widget %p, container %d, owner %d\n",w,container,owner);
   
-  //
-  // Initial error checking
-  //
+  /* Initial error checking */
   if ( (!dt) || (!where) || (w->owner != owner) )
      return  mkerror(PG_ERRT_BADPARAM,20);
 
-  //
-  // Initialize the rest of the widget data structure
-  //
+  /* Change the container and divtree of this and all child widgets */
+  if (w->sub && *w->sub && (*w->sub)->owner)
+    r_widget_setcontainer((*w->sub)->owner,w->container,container,dt);
   w->dt = dt;
   w->container = container;
-
-  //
-  // Change the dt on all subwidgets.  Since this widget is now being attached.
-  //
-  for ( div = w->in->div; div != NULL; div = div->next ) {
-
-     //
-     // Only adjust those we own
-     //
-     if ( div->owner->owner == owner ) {
-        div->owner->dt = dt;
-        div->owner->container = container;
-     }
-  }
   
   /* If we just added a widget that can accept text input, and this is inside
    * a popup box, keep it in the nontoolbar area so keyboards still work */
