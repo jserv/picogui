@@ -15,7 +15,10 @@
    the 'root' attribute on our <pgbuild> tag.)
 -->
 
-<pgbuild title="Local source list modifications">
+<?xml-stylesheet type="text/xsl"
+  href="http://navi.picogui.org/svn/picogui/trunk/tools/xslt/pgbuild.xsl"?>
+
+<pgbuild title="Local modifications to the sources list">
   <sites/>
   <packages/>
 </pgbuild>
