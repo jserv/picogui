@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.16 2003/03/23 21:19:55 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.17 2003/03/23 23:00:12 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -752,6 +752,7 @@ int term_misc_code(struct widget *self,u8 c) {
 	DBG("reset palette\n");
 	handle_free(-1, DATA->htextcolors); 	/* Delete our copy of the palette if we have one */
 	DATA->htextcolors = 0;
+	set_widget_rebuild(self);               /* Necessary to update background color */
 	return 1;
       }
       break;
