@@ -1,4 +1,4 @@
-/* $Id: text_lcd.ths,v 1.1 2001/05/12 21:22:41 micahjd Exp $
+/* $Id: text_lcd.ths,v 1.2 2001/05/13 04:15:15 micahjd Exp $
  *
  * PicoGUI theme for text LCD drivers like serial40x4.
  * Minimalistic theme. Designed to be used without a panelbar compiled
@@ -26,11 +26,9 @@ object background {
 }
 
 object popup {
-   height = 1;
-   width  = 1;
+   height = 100;            /* Use the whole LCD */
+   width  = 200;
    margin = 0;
-   bgcolor = 0x000000;
-   bgfill = 0;
 }
 
 object label.dlgtitle {

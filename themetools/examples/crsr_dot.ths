@@ -1,0 +1,12 @@
+/* $Id: crsr_dot.ths,v 1.1 2001/05/13 04:15:15 micahjd Exp $
+ *
+ * Single pixel, good for very low resolution displays like
+ * ncurses or serial40x4
+ *
+ * Micah Dowty
+ */
+ 
+object default {
+   cursorbitmap = LoadBitmap("data/black_pixel.pnm");
+   cursorbitmask = Copy(default::cursorbitmap);
+}
