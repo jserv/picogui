@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.37 2002/03/22 21:01:45 micahjd Exp $
+/* $Id: input.h,v 1.38 2002/03/27 12:50:47 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -148,6 +148,7 @@ g_error adc7843_regfunc(struct inlib *i);
 g_error zaurus_regfunc(struct inlib *i);
 g_error ericsson_cb_regfunc(struct inlib *i);
 g_error ps2mouse_regfunc(struct inlib *i);
+g_error jsdev_regfunc(struct inlib *i);
 
 /* List of installed input drivers */
 struct inputinfo {

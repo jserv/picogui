@@ -439,6 +439,53 @@ quoted appropriately. For example:
   for each pixel rather than taking advantage of texture mapping. Without the 'antialias'
   option on, the standard fonts will look pretty bad when scaled.
 
+[input-jsdev]
+
+- polltime
+  This is the interval, in microseconds, to set pgserver's polling to. The mouse
+  velocity is integrated at each polling. So smaller values here make the cursor
+  move faster for the same joystick position, multiplier, and divisor.
+  Defaults to 300.
+
+- axisN-type
+  N is the axis number, and this specifies the type of mapping associated with the
+  joystick axis:
+    - ignore
+      This is the default value
+    - pointer
+      This axis controls the velocity of the mouse pointer. It uses the parameters
+      pointer-axis, deadzone, multiplier, and divisor
+    - keys
+      This definestwo ranges of values that are mapped to keys. Useful for joysticks
+      that map buttons or D-pads to axes. Uses the parameters key0, min0, max0, key1, min1,
+      and max1.
+
+- axisN-pointer-axis
+  Define the pointer axis associated with joystick axis N. Should be "x" or "y"
+
+- axisN-deadzone
+  If the absolute value of the axis is less than this, it is treated as zero. Defaults to zero.
+
+- axisN-multiplier
+  Axis is multiplied by this before becoming the pointer velocity, defaults to 1
+
+- axisN-divisor
+  Axis is divided by this before becoming the pointer velocity, defaults to 6000
+
+- buttonN-type
+  N is the button number, and this specifies the mapping associated with the button:
+    - ignore
+      This is the default value
+    - key
+      Maps the button to one keyboard key. Uses the key parameter.
+    - click
+      Maps the button to one mouse button, Uses the mousebutton parameter.
+
+- buttonN-key
+  Decimal PGKEY value of the key to map the button to, see pgserver/pgkeys.h
+
+- buttonN-mousebutton
+  Mouse button mask to map the button to. Left button is 1, Middle is 2, Right is 4, etc.
 
 --- The End ---
 

@@ -93,4 +93,8 @@
   DRV("ps2mouse", &ps2mouse_regfunc)
 #endif
 
+#ifdef DRIVER_JSDEV
+  DRV("jsdev", &jsdev_regfunc)
+#endif
+
 /* The End */

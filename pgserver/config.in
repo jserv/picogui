@@ -140,6 +140,7 @@ bool 'Serial mouse input driver'                        DRIVER_SERIALMOUSE
 bool 'MGL2 input driver'                                DRIVER_MGL2INPUT
 bool 'Ericsson chatboard driver (see input/README.ericsson_cb)' DRIVER_ERICSSON_CHATBOARD
 bool 'PS/2 mouse driver (Also works with USB and Maple)' DRIVER_PS2MOUSE
+bool 'Joystick driver'                                  DRIVER_JSDEV
 endmenu
 
 mainmenu_option next_comment

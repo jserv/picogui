@@ -25,7 +25,8 @@ EXTRA_libinput_a_SOURCES = \
 	adc7843.c \
 	zaurus.c \
         ericsson_cb.c \
-	ps2mouse.c
+	ps2mouse.c \
+	jsdev.c
 
 libinput_a_LIBADD       = $(INPUT:%.c=%.o)
 libinput_a_DEPENDENCIES = $(INPUT:%.c=%.o)
