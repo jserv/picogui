@@ -1,0 +1,16 @@
+object "imgview.box" {
+  margin = 0;
+  bitmap1 = LoadBitmap("checkers.bmp");
+  bgfill = fillstyle {
+    Bitmap(x,y,w,h,bitmap1);
+  };	
+}	
+
+object "imgview.panel" {
+  margin = 0;
+  bgfill = fillstyle {
+    Nop();
+  };
+}
+
+ 	
