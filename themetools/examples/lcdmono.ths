@@ -1,14 +1,20 @@
-/* $Id: lcdmono.ths,v 1.16 2002/02/02 17:09:54 lonetech Exp $
+/* $Id: lcdmono.ths,v 1.17 2002/02/05 23:04:12 micahjd Exp $
  *
  * Monochrome theme for LCDs. Rounded buttons and dialogs, a background
  * that looks good on a handheld, and handheld-friendly key mappings
  *
- * Version 1.01
+ * This theme recommends the following pgserver options:
+ *  - pnm bitmaps
+ *  - Utopia25 font
+ *  - Helvetica8 font
+ *  - Clean6 font
+ *
+ * Version 1.02
  *
  * Micah Dowty
  */
 
-object terminal font = Font(NULL, 0, PG_FSTYLE_FIXED);
+object terminal font = Font("Clean", 6, PG_FSTYLE_FIXED);
 
 object default {
   name = "LCD Classic (Monochrome) v1.01";
@@ -22,11 +28,7 @@ object default {
     Rect(x,y,w,h);
   };
 
-  /* Helvetica8 is nice, but it's kinda broken now
-   * so use Lucida if possible */
-   
-  // font = Font("Helvetica",8,0);
-  font = Font("Lucida",10,0);
+  font = Font("Helvetica",8,0);
   height = 14;
   width = 14;
 
@@ -149,7 +151,7 @@ object label.dlgtitle {
     Pixel(x+w-1,y,1,1);
     Pixel(x,y+h-1,1,1);
   };
-  font = Font(NULL,10,PG_FSTYLE_BOLD);
+  font = Copy(panelbar::font);
 }
 
 object panelbar {
@@ -166,19 +168,20 @@ object panelbar {
   };
   bgcolor = 0x000000;
   fgcolor = 0xFFFFFF;
-  font = Font(NULL,10,PG_FSTYLE_BOLD);
-  width = 12;
+  width = 13;
   margin = 0;
 }
 object base.panelbtn {
-  bgfill  = Copy(default::bgfill);
-  bgcolor = 0xFFFFFF;
-  fgcolor = 0x000000;
-  spacing = 0;
+  bgfill  = fillstyle {
+    Nop();
+  };
+  bgcolor = 0x000000;
+  fgcolor = 0xFFFFFF;
+  spacing = 1;
   margin = 0;
   side = PG_S_RIGHT;
-  width = 12;
-  height = 12;
+  width = 13;
+  height = 13;
 }
 object closebtn  {
   widgetbitmap = LoadBitmap("data/mono_x.pbm");
@@ -192,6 +195,7 @@ object zoombtn {
   widgetbitmap = LoadBitmap("data/mono_zoom.pbm");
   side = PG_S_LEFT;
 }
+object zoombtn.hilight widgetbitmap = LoadBitmap("data/mono_zoom_on.pbm");
 
 object scroll {
   width = 8;
