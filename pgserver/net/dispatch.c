@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.112 2002/10/24 21:58:49 micahjd Exp $
+/* $Id: dispatch.c,v 1.113 2002/11/04 00:24:39 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -45,30 +45,11 @@
 #include "requests.inc"
 #undef RQH
 
-/* Normal function table? */
-
-#ifndef RUNTIME_FUNCPTR
-/* Yep */
-
 #define RQH TAB_REQHANDLER
 g_error (*rqhtab[])(int,struct pgrequest*,void*,u32*,int*) = {
 #include "requests.inc"
 };
 #undef RQH
-
-#else
-/* Nope, do some funky stuff */
-
-#define RQH(x) *p = &rqh_##x; p++;
-g_error (*rqhtab[PGREQ_UNDEF+1])(int,struct pgrequest*,void*,u32*,int*);
-void rqhtab_init(void) {
-   g_error (**p)(int,struct pgrequest*,void*,u32*,int*);
-   p = rqhtab;
-#include "requests.inc"
-}
-#undef RQH
-   
-#endif /* RUNTIME_FUNCPTR */
 
 /* Macro for casting the arguments */
 #define reqarg(x) \

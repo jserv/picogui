@@ -1,4 +1,4 @@
-/* $Id: driverinfo.c,v 1.17 2002/01/06 09:22:57 micahjd Exp $
+/* $Id: driverinfo.c,v 1.18 2002/11/04 00:24:38 micahjd Exp $
  *
  * driverinfo.c - has a static array with information about
  *                installed drivers.
@@ -36,57 +36,16 @@
 #include <pgserver/video.h>
 #include <pgserver/input.h>
 
-/*********** Normal version *****/
-#ifndef RUNTIME_FUNCPTR
-
 #define DRV(name,reg) {name,reg},
 
 struct vidinfo videodrivers[] = {
 #include "videodrivers.inc"
-   DRV(NULL,NULL)
+  DRV(NULL,NULL)
 };
 
 struct inputinfo inputdrivers[] = {
 #include "inputdrivers.inc"
-  /* End */ DRV(NULL,NULL)
+  DRV(NULL,NULL)
 };
-
-/*********** Runtime table junk ***/
-
-#else /* RUNTIME_FUNCPTR */
-
-/***** Video */
-
-/* First count the elements to allocate the array 
- * (yes, I do abuse the preprocessor...) 
- */
-
-#define DRV(x,y) +1
-struct vidinfo videodrivers[1
-#include "videodrivers.inc"
-			    ];
-struct inputinfo inputdrivers[1
-#include "inputdrivers.inc"
-			      ];
-#undef DRV
-
-/* Initialization function */
-
-#define DRV(x,y) p->name = x; p->regfunc = y; p++;
-
-void drivertab_init(void) {
-     {
-	struct vidinfo *p = videodrivers;
-#include "videodrivers.inc"
-	DRV(NULL,NULL);
-     }
-     {
-	struct inputinfo *p = inputdrivers;
-#include "inputdrivers.inc"
-	DRV(NULL,NULL);
-     }
-}
-
-#endif /* RUNTIME_FUNCPTR */
   
 /* The End */

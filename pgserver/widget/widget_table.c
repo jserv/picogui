@@ -1,4 +1,4 @@
-/* $Id: widget_table.c,v 1.1 2002/10/23 06:17:26 micahjd Exp $
+/* $Id: widget_table.c,v 1.2 2002/11/04 00:24:39 micahjd Exp $
  *
  * widget_table.c - Table defining all the installed widgets
  *
@@ -37,13 +37,7 @@
  */
 
 /* Table of widgets */
-#ifdef RUNTIME_FUNCPTR
-struct widgetdef widgettab[PG_WIDGETMAX+1];
-void widgettab_init(void) {
-   struct widgetdef *p = widgettab;
-#else
 struct widgetdef widgettab[] = {
-#endif
    
 #ifdef CONFIG_WIDGET_TOOLBAR
 DEF_STATICWIDGET_TABLE(0,toolbar)

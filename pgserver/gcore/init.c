@@ -1,4 +1,4 @@
-/* $Id: init.c,v 1.4 2002/11/03 23:33:23 micahjd Exp $
+/* $Id: init.c,v 1.5 2002/11/04 00:24:38 micahjd Exp $
  *
  * init.c - High level pgserver initialization and shutdown
  *
@@ -71,14 +71,7 @@ g_error pgserver_init(int flags, int argc, char **argv) {
     errorcheck;
   }
 #endif
-  
-#ifdef RUNTIME_FUNCPTR
-  DBG("runtime function pointer tables");
-  widgettab_init();
-  drivertab_init();
-  rqhtab_init();
-#endif
-
+ 
   DBG("error message table");
   e = errorload(get_param_str("pgserver","messagefile",NULL));
   errorcheck;

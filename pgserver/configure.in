@@ -322,7 +322,7 @@ AC_SUBST(DRIVER_LIBS)
 dnl Architecture-specific CFLAGS
 case "$host" in
   m68k-pic-*)
-	CFLAGS="${CFLAGS} -fPIC -DRUNTIME_FUNCPTR"
+	CFLAGS="${CFLAGS} -fPIC"
 	;;
   mipsel-*-netbsd*)
 	CFLAGS="${CFLAGS}"

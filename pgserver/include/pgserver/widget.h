@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.74 2002/11/03 05:22:12 micahjd Exp $
+/* $Id: widget.h,v 1.75 2002/11/04 00:24:38 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -173,20 +173,6 @@ struct widget {
   int (*callback)(int event, struct widget *from, s32 param, int owner, char *data);
 };
 
-/* Macros to help define widgets */
-#ifdef RUNTIME_FUNCPTR   /* If we can't use function pointers at compile-time */
-
-# define DEF_WIDGET_TABLE(n) \
-  p->install = &n##_install; p->remove = &n##_remove; p->trigger = &n##_trigger; p->set = &n##_set; p->get = &n##_get; p->resize = &n##_resize; p++;
-# define DEF_HYBRIDWIDGET_TABLE(n,m) \
-  p->install = &n##_install; p->remove = &m##_remove; p->trigger = &m##_trigger; p->set = &m##_set; p->get = &m##_get; p->resize = &m##_resize; p++;
-# define DEF_STATICWIDGET_TABLE(n) \
-  p->install = &n##_install; p->remove = &n##_remove; p->trigger = NULL; p->set = &n##_set; p->get = &n##_get; p->resize = &n##_resize; p++;
-# define DEF_ERRORWIDGET_TABLE(s) \
-  p->install = NULL; p->remove = (void *) s; p->trigger = NULL; p->set = NULL; p->get = NULL; p->resize = NULL; p++;
-
-#else  /* ! RUNTIME_FUNCPTR */
-
 # define DEF_WIDGET_TABLE(s,n) \
   {s, n##_install, n##_remove, n##_trigger, n##_set, n##_get, n##_resize},
 # define DEF_HYBRIDWIDGET_TABLE(n,m) \
@@ -196,7 +182,6 @@ struct widget {
 # define DEF_ERRORWIDGET_TABLE(s) \
   {0, NULL, (void *) s, NULL, NULL, NULL, NULL},
 
-#endif  /* RUNTIME_FUNCPTR */
 #define DEF_WIDGET_PROTO(n) \
   g_error n##_install(struct widget *self); \
   void n##_remove(struct widget *self); \

@@ -1,4 +1,4 @@
-/* $Id: init.h,v 1.2 2002/11/03 22:44:47 micahjd Exp $
+/* $Id: init.h,v 1.3 2002/11/04 00:24:38 micahjd Exp $
  *
  * init.h - High level pgserver initialization, main loop, and shutdown
  *
@@ -27,16 +27,6 @@
 
 #ifndef __H_INIT
 #define __H_INIT
-
-/* Functions for initializing function pointer tables when they can't
- * be done at compile time (ucLinux, for example) 
- * FIXME: This is a hack, is it still necessary in recent versions of uClinux?
- */
-#ifdef RUNTIME_FUNCPTR
-void widgettab_init(void);
-void drivertab_init(void);
-void rqhtab_init(void);
-#endif
 
 /* Flags for init */
 #define PGINIT_NO_CONFIGFILE   (1<<1)
