@@ -1,4 +1,4 @@
-/* $Id: aqua.ths,v 1.12 2000/10/17 04:04:02 micahjd Exp $
+/* $Id: aqua.ths,v 1.13 2000/10/29 18:28:23 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
@@ -131,6 +131,23 @@ object box {
   margin = 4;
   bgfill = Copy(base.display::bgfill);     // Use the same nifty box
   bitmap1 = Copy(base.display::bitmap1);
+}
+
+/* Toolbars are completely transparent */
+object toolbar {
+  bgfill = fillstyle { Null(); };
+}
+
+object popup {
+  /* Normal background, but with shading on the edge, and 
+     a thin black border */
+  bgfill = fillstyle {
+    Bitmap(x,y,w,h,bitmap1,PG_LGOP_NONE,0,0);
+    Frame(x,y,w,h,ColorConv(0x000000));
+    Gradient(x+w-margin,y,margin,h,0,0x000000,0x808080,0-1);
+    Gradient(x,y+h-margin,w,margin,90,0x000000,0x808080,0-1);
+  };
+  margin = 7;
 }
 
 /* The End */

@@ -1,0 +1,28 @@
+/* $Id: wavyinsomnia.ths,v 1.1 2000/10/29 18:28:23 micahjd Exp $
+ *
+ * This is a port of "wavyinsomnia.theme" to the new theme system
+ *
+ * Micah Dowty
+ */
+
+object background {
+  bgfill = fillstyle {
+    Bitmap(x,y,w,h,bitmap1,PG_LGOP_NONE,0,0);
+  };
+  bitmap1 = LoadBitmap("data/vol5_10a.pnm");
+}
+
+object button {
+  bgfill = fillstyle {
+    Gradient(x,y,w,h,10,0x000000,0x606060,0);
+    x = x+1; y = y+1;
+    w = w-2; h = h-2;
+    Gradient(x,y,w,h,bitmap4,0xC0D0F0,0x405060,0);
+  };
+  bgcolor = 0xC0E0FF;
+  height = 22;
+  width = 22;
+  spacing = 2;
+  bitmap4 = 240;
+}
+object button.on bitmap4 = 24;
