@@ -59,6 +59,7 @@ extern Bool SendPointerEvent(int x, int y, int buttonMask) {
   else
     pgSendPointerInput(PG_TRIGGER_MOVE,x,y,buttonMask);
   
+   pgDriverMessage(PGDM_CURSORVISIBLE,1);
   pgFlushRequests();
   old_buttonMask = buttonMask;
   return 1;
