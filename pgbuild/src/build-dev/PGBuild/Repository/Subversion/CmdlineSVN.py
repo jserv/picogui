@@ -103,7 +103,7 @@ def collectProgress(file, progress, destination):
         allOutput += line
         status = expandStatus(line)
         if status:
-            path = line[2:].strip()
+            path = os.path.normpath(line[2:].strip())
             # Try to strip off the destination path
             if path.startswith(destination):
                 path = path[len(destination)+1:]

@@ -111,8 +111,10 @@ class PackageVersion(object):
            isUpdated = repo.update(localPath, task)
        return isUpdated
 
-    def merge(self, progress):
-        """Make sure a package is up to date, then load in configuration and build targets from it"""
+    def merge(self, progress, performMount=True):
+        """Make sure a package is up to date, then load in configuration and build targets from it
+           To handle bootstrap packages more efficiently, the actual config mounting can be disabled.
+           """
         mergeTask = progress.task("Merging configuration from package %s" % self)
 
         # We only update a package if there's no local copy, or if the --update option was
@@ -120,7 +122,8 @@ class PackageVersion(object):
         if (not self.getRepository(mergeTask).isLocalCopyValid(self.getLocalPath())) or \
            self.config.eval("invocation/option[@name='update']/text()"):
             self.update(mergeTask)
-        self.config.dirMount(self.getLocalPath(), mergeTask.task("Mounting config files"))
+        if performMount:
+            self.config.dirMount(self.getLocalPath(), mergeTask.task("Mounting config files"))
         PGBuild.SConsGlue.loadScriptDir(self.getLocalPath(), mergeTask.task("Loading SCons scripts"))
 
         

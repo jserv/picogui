@@ -173,6 +173,13 @@ class Interface(object):
         # Note that order is important here!
         # It wouldn't make sense to run --nuke after --merge, for example.
 
+        # Merge the bootstrap packages. This performs everything
+        # except the actual configuration mount, since we had to do that
+        # during PGBuild.Main.boot()
+        bootMergeTask = self.progress.task("Merging bootstrap packages")
+        for package in self.config.packages.getBootstrapPackages():
+            self.config.packages.findPackageVersion(package).merge(bootMergeTask, False)
+
         # Set up SCons
         PGBuild.SConsGlue.startup(self.config)
 
@@ -183,7 +190,9 @@ class Interface(object):
         # Handle --merge-all command line option
         if self.config.eval("invocation/option[@name='mergeAll']/text()"):
             mergeTask = self.progress.task("Merging all packages")
-            for name in self.config.listEval("packages/package/@name"):
+            packages = self.config.listEval("packages/package/@name")
+            packages.sort()
+            for name in packages:
                 self.config.packages.findPackageVersion(name).merge(mergeTask)
         else:
             # Handle --merge command line option

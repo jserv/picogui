@@ -229,6 +229,10 @@ def boot(bootstrap, argv):
     config.packages = PGBuild.Package.PackageList(config)
 
     # Read in configuration from the bootstrap packages
+    # Alas, this has to be done in a separate step from actually merging the
+    # bootstrap packages since their configuration is necessary for merging :)
+    # We do the merge after the UI is set up, so that if the packages are updated
+    # we can get progress reports.
     for package in bootstrap.packages.values():
         config.dirMount(os.path.join(bootstrap.paths['packages'], package))
 
