@@ -2,8 +2,10 @@ PicoGUI Freetype Font Package
 -----------------------------
 
 This is a set of core fonts to use with PicoGUI's Freetype font backend.
-It contains fonts taken from OpenOffice, Ghostscript, and X11. They are
-all licensed in a GPL-compatible way as far as I know.
+It contains fonts taken from various sources, documented below. All the
+original licenses are included in the LICENSE.* files in this directory. As
+far as I know there is no problem distributing these with GPL'ed software,
+if you know otherwise please let me know (micahjd@users.sourceforge.net)
 
 Hopefully this will form a base set of fonts for themes and defaults to
 refer to, and to be included in most products using PicoGUI and Freetype.
@@ -27,6 +29,11 @@ scan_list = /usr/share/picogui/fonts/font.index
   - Nimbus Mono L
     From Ghostscript, a scalable monospaced font
     
-  - Clean (6,8,12)
+  - Clean
     From X11, a bitmapped font that works nicely for
-    terminals at small sizes
+    terminals at small sizes. See LICENSE.schumacher
+
+  - Caliban
+    From George Williams, a sans-serif Unicode font containing
+    latin, greek, and cyrillic character sets.
+    
