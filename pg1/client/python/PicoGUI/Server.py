@@ -79,6 +79,7 @@ class Server(object):
         self._poll_handlers = {}
         self.lost_and_found = []
         self.event_queue = []
+        self._held = None
         if thread is not None:
             if debug_threads:
                 self._write_lock = verbose_lock()
@@ -100,6 +101,8 @@ class Server(object):
             import sys
             print >> sys.stderr, corpse
             raise SystemExit
+        if PGDEBUG:
+            print 'PGDEBUG: got response: %r (%r) while waiting for %r' % (resp, resp_id, req_id)
         if isinstance(resp, Exception):
             raise resp
         if resp_id == req_id:
@@ -179,7 +182,11 @@ class Server(object):
         self._counter += 1
         if PGDEBUG:
             print 'PGDEBUG:', handler, args
-        return self._do_send_and_wait(self._mkrequest(handler, args, req_id), req_id, timeout)
+        if self._held is None:
+            return self._do_send_and_wait(self._mkrequest(handler, args, req_id), req_id, timeout)
+        else:
+            self._held.append(self._mkrequest(handler, args, req_id))
+            return None
 
     def getString(self, text):
         if type(text) is unicode:
@@ -210,6 +217,20 @@ class Server(object):
     def checkevent(self):
         server_evts = self.send_and_wait(requests.checkevent) or 0
         return server_evts + len(self.event_queue)
+
+    def hold(self):
+        if self._held is None:
+            self._held = []
+
+    def flush(self, timeout=None):
+        if self._held is None:
+            return
+        batch = self._held
+        self._held = None
+        if not batch:
+            return
+        req_id = self._counter - 1 # will always be the last batched request
+        return self._do_send_and_wait(requests.batch(batch, req_id), req_id, timeout)
 
     def wait(self, timeout=None):
         # the wait request is a special case, since events don't have an id,
