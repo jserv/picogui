@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.18 2001/03/12 04:25:20 micahjd Exp $
+# $Id: Makefile,v 1.19 2001/03/16 03:13:23 micahjd Exp $
 #
 # C client library (libpgui) makefile
 #
@@ -41,7 +41,8 @@ SRC := src/netcore.c src/api.c
 # Demo program files (each .c is a self-contained demo proggie)
 DEMOSRC := demos/demo.c demos/themedemo.c demos/msgdialog.c \
            demos/imgview.c demos/menutest.c demos/omnibar.c \
-           demos/fieldtest.c demos/calc.c demos/canvastst.c
+           demos/fieldtest.c demos/calc.c demos/canvastst.c \
+	   demos/abstest.c
 
 HDR := include/*.h include/picogui/*.h
 
