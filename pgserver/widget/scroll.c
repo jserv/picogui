@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.20 2000/08/06 02:48:18 micahjd Exp $
+/* $Id: scroll.c,v 1.21 2000/08/09 20:45:41 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -48,7 +48,7 @@ struct scrolldata {
   int grab_offset;  /* The difference from the top of the indicator to
 		       the point that was clicked */
   int release_delta;
-  int value;
+  int value,old_value;
   handle binding;  /* If nonzero, this widget's WP_SCROLL property will
 		      be set in response to scrollbar movement instead of
 		      an event being sent back to the client */
@@ -230,7 +230,6 @@ glob scroll_get(struct widget *self,int property) {
 
 void scroll_trigger(struct widget *self,long type,union trigparam *param) {
   unsigned long tick;
-  int old_value;
 
   switch (type) {
 
@@ -292,7 +291,6 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
 
   case TRIGGER_DRAG:
     if (!DATA->on) return;
-    old_value = DATA->value;
 
     /* Button 1 is being dragged through our widget. */
     DATA->value = (param->mouse.y - self->in->div->y - 
@@ -303,13 +301,18 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
     if (DATA->value < 0) DATA->value =   0;
 
     /* Same old value... */
-    if (old_value==DATA->value) return;
+    if (DATA->old_value==DATA->value) return;
 
     /* If we haven't waited long enough since the last update,
        go away */
     tick = getticks();
     if (tick < DATA->wait_tick) break;
     DATA->wait_tick = tick + SCROLL_DELAY;
+
+    /* Only store the old value if we're actually redrawing this
+       time. Otherwise, scrolling to the top or bottom very fast
+       will leave the last update somewhere in between */
+    DATA->old_value = DATA->value;
 
     scrollevent(self);
     break;
