@@ -94,7 +94,8 @@ array set pg_we {\
 	close		3
 }
 
-set binds(any) {any "parray event"}
+set binds(any) "any {parray event} $pg_we(close) exit"
+
 set connection 0
 set defaultparent 0
 set defaultrship $pg_derive(inside)

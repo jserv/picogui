@@ -7,4 +7,4 @@ set l [pgNewLabel "Hello World"]
 pgSetFont $l [pgNewFont "" $pg_fstyle(bold) 24]
 pgSetSide $l all
 pgUpdate
-pgWaitEvent
+pgEventLoop

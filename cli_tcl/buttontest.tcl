@@ -8,5 +8,5 @@ pgSetFont $l [pgNewFont "" $pg_fstyle(bold) 24]
 pgSetSide $l all
 pgUpdate
 pgBind $l $pg_we(activate) {puts "hello"}
-pgBind any $pg_we(close) exit
+pgBind any $pg_we(close) {puts "goodby"; exit}
 pgEventLoop
