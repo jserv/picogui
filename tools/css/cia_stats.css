@@ -1,0 +1,100 @@
+/* CSS for CIA bot.. oddly similar to the CSS I wrote for the PGBuild XBC stylesheet :) */
+
+body {
+  font: 80% Verdana, Helvetica, Arial, sans-serif;
+  background: #eef4eb;
+  color: Black;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  text-decoration: none;
+  color: #436976;
+  background-color: transparent;
+}
+
+.heading {
+  background: White;
+  border-bottom: 1px solid Black;
+  padding: 0.5em;
+  margin: 0em 0em 2.0em 0em;
+}
+
+.title {
+  font: 250% bold;
+}
+
+.subtitle {
+  font: 100% italic;
+  margin: 0em 3em;
+}
+
+span.section {
+  background: #dee7ec;
+  border: 1px solid #8CACBB;
+  border-bottom: #dee7ec 1px solid;
+  color: #436976;
+  font: 120% Bold;
+  margin: 1.5em 2em 0em 2em;
+  padding: 0em 2em;
+}
+
+div.sectionTop {
+  background: #dee7ec;
+  border-bpttom: 1px solid Black;
+  padding: 0.4em;
+  margin: 0em 0em 0em 0em;
+}
+
+div.section {
+  background: White;
+  border: 1px solid #8CACBB;
+  margin: 0em 1.5em 2.0em 1.5em;
+}
+
+div.row {
+  padding: 0.5em;
+}
+
+ul {
+  line-height: 1.5em;
+  list-style-name: square;
+  margin-left: 2.0em;
+  padding:0;
+}
+
+/* Most of this table formatting is modified from Plone's default CSS */
+
+table {
+    /* The default table for document listings. Contains name, document types, modification times etc in a file-browser-like fashion */
+    border-collapse: collapse;
+    border-left: 1px solid #8CACBB;
+    border-bottom: 1px solid #8CACBB;
+    margin: 1em;
+    clear: both;
+}
+
+table th {
+    background: #DEE7EC;
+    border-top: 1px solid #8CACBB;
+    border-bottom: 1px solid #8CACBB;
+    border-right: 1px solid #8CACBB;
+    color: Black;
+    font-weight: normal;
+    padding: 0.2em 1em;
+    text-transform: lowercase;
+    white-space: nowrap;
+}
+
+td.top {
+    text-align: center ! important;
+    padding: 0em 1em;
+}
+
+table td {
+    border-right: 1px solid #8CACBB;
+    padding: 0.1em 1em;
+    text-align: left;
+}
+
