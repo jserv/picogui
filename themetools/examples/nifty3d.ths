@@ -1,22 +1,23 @@
-/* $Id: nifty3d.ths,v 1.8 2001/11/06 08:34:47 micahjd Exp $
+/* $Id: nifty3d.ths,v 1.9 2001/11/15 02:11:20 micahjd Exp $
  *
  * This theme's pretty darn cpu-intensive, but it
  * demonstrates the neat things that can be done with
  * fillstyles and gradients.
  * Uses much less memory than Aqua, but probably not faster.
  *
- * Version 1.1
+ * Version 1.2
  *
  * -- Micah Dowty
  *
  * Changelog:
  *
+ *  1.2 - Fixed menuitem background
  *  1.1 - Added alpha blending effects on popup windows
  *  1.0 - First 'stable' release
  */
 
 object default {
-  name = "Nifty 3D v1.1";
+  name = "Nifty 3D v1.11";
 
   /* This generates a beveled surface, based on 'bgcolor'.
      The amount of shading is determined by 'hilightcolor'
@@ -185,28 +186,44 @@ object popup.menu {
   height = 0;
 
   bgfill = fillstyle {
-    SetLgop(PG_LGOP_ADD);
-    Gradient(x,y,w,h,0,0x808080,0x000000);
+    // Very simple shaded border
     SetLgop(PG_LGOP_MULTIPLY);
-    SetColor(bgcolor);
-    Rect(x,y,w,h);
-    SetColor(fgcolor);
-    Frame(x,y,w,h);
+    SetColor(0xA0A0A0);
+    Bar(x+w-2,y+4,1,h-5);
+    Slab(x+4,y+h-2,w-6,1);
+    SetColor(0xE0E0E0);
+    Bar(x+w-1,y+4,1,h-3);
+    Slab(x+4,y+h-1,w-5,1);
+
+    // Gray background
+    SetLgop(PG_LGOP_NONE);
+    SetColor(0x808080);
+    Rect(x+2,y+2,w-4,h-4);
+
+    // Black border within the menu to cap the top and sides
+    SetColor(0x000000);
+    Frame(x+2,y+1,w-4,h-3);
   };
-  bgcolor = 0x8080C0;
-  fgcolor = 0x404040;
+  bgcolor = 0xAAAAFF;
 }
 object menuitem {
   bgfill = fillstyle {
-    SetLgop(PG_LGOP_NONE);
+    SetColor(bgcolor);
+    Rect(x+1,y+1,w-2,h-2);
+    SetColor(0x000000);
+    Frame(x,y-1,w,h+1);
+    SetColor(0xA0A0A0);
+    Slab(x+1,y,w-2,1);
   };
-  font = Font(NULL,0,PG_FSTYLE_DEFAULT | PG_FSTYLE_BOLD);
-  fgcolor = 0x000000;
+  bgcolor = 0x808080;
+  fgcolor = 0xFFFFFF;
   align = PG_A_LEFT;
   margin = 2;
+  spacing = 0;
 }
 object menuitem.hilight {
-  fgcolor = 0xFFFFFF;
+  fgcolor = 0x000080;
+  bgcolor = 0xA0A0A0;
 }
 
 /* A little 'fudge factor' for the dialogs */
