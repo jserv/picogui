@@ -1,4 +1,4 @@
-/* $Id: terminal_frontend.c,v 1.17 2003/03/23 09:38:48 micahjd Exp $
+/* $Id: terminal_frontend.c,v 1.18 2003/03/23 11:32:55 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -177,9 +177,10 @@ void build_terminal(struct gropctxt *c,u16 state,struct widget *self) {
   int neww,newh;
   struct gropnode *grid;
   pghandle bitmap = theme_lookup(self->in->div->state,PGTH_P_BITMAP1);
-  pghandle htextcolors = theme_lookup(self->in->div->state,PGTH_P_TEXTCOLORS);
   u32 *textcolors;
   g_error e;
+  pghandle htextcolors = DATA->htextcolors ? 
+    DATA->htextcolors : theme_lookup(self->in->div->state,PGTH_P_TEXTCOLORS);
 
   /* Get a pointer to the text palette */
   e = rdhandle((void**)&textcolors,PG_TYPE_PALETTE,-1,htextcolors);

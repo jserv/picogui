@@ -1,4 +1,4 @@
-/* $Id: terminal.h,v 1.5 2003/03/23 09:24:20 micahjd Exp $
+/* $Id: terminal.h,v 1.6 2003/03/23 11:32:55 micahjd Exp $
  *
  * terminal.h - Header file shared by components of the terminal emulator widget
  *
@@ -63,6 +63,7 @@ struct terminaldata {
   handle hbuffer;                      /* Text buffer */
   struct pgstring *buffer;
   int bufferw,bufferh;
+  handle htextcolors;                  /* If nonzero, a custom palette to override the theme */
 
   u8 escapebuf[ESCAPEBUF_SIZE];        /* Escape code buffer */
   int escbuf_pos;                      /* Position in buffer */
@@ -135,6 +136,8 @@ void textblit(struct pgstring *src,struct pgstring *dest,
 /* Shift all the text at and after the cursor right by 'n' characters */
 void term_insert(struct widget *self, int n);
 
+/* Set a palette entry, making a mutable copy of the palette if necessary */
+void term_setpalette(struct widget *self, int n, pgcolor color);
 
 /******************************************************** VT102 emulation **/
 

@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.14 2003/03/23 09:28:52 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.15 2003/03/23 11:32:55 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -191,12 +191,12 @@ void term_char(struct widget *self,u8 c) {
     DATA->current.crsrx = 0;
     DATA->current.crsry++;
   }
-  if (DATA->current.crsry < 0) {
-    DATA->current.crsry = 0;
+  if (DATA->current.crsry < DATA->current.scroll_top) {
+    DATA->current.crsry = DATA->current.scroll_top;
     term_scroll(self,DATA->current.scroll_top,DATA->current.scroll_bottom,1);
   }
-  else if (DATA->current.crsry >= DATA->bufferh) {  /* Scroll vertically */
-    DATA->current.crsry = DATA->bufferh-1;
+  else if (DATA->current.crsry > DATA->current.scroll_bottom) {  /* Scroll vertically */
+    DATA->current.crsry = DATA->current.scroll_bottom;
     term_scroll(self,DATA->current.scroll_top,DATA->current.scroll_bottom,-1);
   }
   
@@ -749,7 +749,9 @@ int term_misc_code(struct widget *self,u8 c) {
       /* ]R - Reset palette */
     case ']':
       if (c == 'R') {
-	DBG("-UNIMPLEMENTED- reset palette\n");
+	DBG("reset palette\n");
+	handle_free(-1, DATA->htextcolors); 	/* Delete our copy of the palette if we have one */
+	DATA->htextcolors = 0;
 	return 1;
       }
       break;
@@ -758,11 +760,23 @@ int term_misc_code(struct widget *self,u8 c) {
   /* Wonky code that doesn't fit anywhere else... */
   if (DATA->escbuf_pos == 9 && DATA->escapebuf[0] == ']' && DATA->escapebuf[1] == 'P') {
     char digits[8];
+    int n;
+    pgcolor color;
+
+    /* Slurp the 7 digits after the escape into our buffer */
     memcpy(digits, DATA->escapebuf+2, 6);
     digits[6] = c;
     digits[7] = 0;
 
-    DBG("-UNIMPLEMENTED- set palette '%s'\n", digits);
+    /* All digits except the first are the color */
+    sscanf(digits+1, "%X", &color);
+
+    /* The first is the index */
+    digits[1] = 0;
+    sscanf(digits, "%X", &n);
+
+    DBG("set palette entry %d to 0x%06X\n", n, color);
+    term_setpalette(self, n, color);
     return 1;
   }
 

@@ -1,4 +1,4 @@
-/* $Id: terminal_textgrid.c,v 1.13 2003/03/23 09:25:47 micahjd Exp $
+/* $Id: terminal_textgrid.c,v 1.14 2003/03/23 11:32:55 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -364,5 +364,35 @@ void term_insert(struct widget *self, int n) {
 	       DATA->bufferw - DATA->current.crsrx, 1);
 }
 
+void term_setpalette(struct widget *self, int n, pgcolor color) {
+  int *palette;
+
+  /* Create a mutable copy of the theme's palette if we haven't already */
+  if (!DATA->htextcolors) {
+    
+    /* FIXME: This is bad, need to make it copy the palette rather than
+     *        stomping all over the theme's palette!
+     */
+
+    DATA->htextcolors = theme_lookup(self->in->div->state,PGTH_P_TEXTCOLORS);
+/*
+    if (iserror(handle_dup(&DATA->htextcolors,  
+*/
+  }
+
+  if (iserror(rdhandle((void **) &palette, PG_TYPE_PALETTE, -1, DATA->htextcolors)))
+    return;
+
+  if (n<palette[0]) {
+    color = VID(color_pgtohwr)(color);
+    if (palette[n+1] != color) {
+      if (n==0)
+	set_widget_rebuild(self);       /* Rebuild necessary to set the background color */
+      else
+	term_updrect(self, 0, 0, DATA->bufferw, DATA->bufferh);
+    }
+    palette[n+1] = color;
+  }
+}
 
 /* The End */
