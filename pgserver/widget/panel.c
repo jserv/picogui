@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.46 2001/01/05 06:42:28 micahjd Exp $
+/* $Id: panel.c,v 1.47 2001/01/15 09:01:01 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -33,12 +33,12 @@
 #define DRAG_DELAY    20   /* Min. # of milliseconds between
 			      updates while dragging */
 
-#define MINDRAGLEN    4    /* Min. # of pixels movement for a click to be
-			      interpreted as a drag */
+#define MINDRAGLEN    (vid->xres/100)    /* Min. # of pixels movement for a click to be
+		                     	    interpreted as a drag */
 
-#define MAXROLLUP     10   /* If the user resizes the panel to this
-			      or smaller, it will be interpreted
-			      as a panel roll-up */
+#define MAXROLLUP     (vid->xres/50)     /* If the user resizes the panel to this
+			                    or smaller, it will be interpreted
+			                    as a panel roll-up */
 
 /* the divnode making the whole (draggable) panelbar, including buttons */
 #define BARDIV        self->in->div->div
