@@ -1,4 +1,4 @@
-/* $Id: url.c,v 1.1 2002/01/06 12:32:41 micahjd Exp $
+/* $Id: url.c,v 1.2 2002/01/06 15:34:23 micahjd Exp $
  *
  * url.c - framework for parsing and retrieving URLs
  *
@@ -28,7 +28,7 @@
 #include <malloc.h>
 #include <string.h>
 #include "url.h"
-
+#include "protocol.h"
 
 /********************************* Methods */
 
@@ -38,10 +38,11 @@
  * so the parameter only needs to be valid for the duration of
  * this function call.
  */
-struct url * url_new(const char *url) {
+struct url * url_new(struct browserwin *browser, const char *url) {
   struct url *u;
   const char *p;
   int n;
+  struct protocol **h;
 
   /* Allocate the URL itself */
   u = malloc(sizeof(struct url));
@@ -49,12 +50,17 @@ struct url * url_new(const char *url) {
     return NULL;
   memset(u,0,sizeof(struct url));
 
+  u->progress = -1;
+  u->browser = browser;
+
   /* Make a local copy of the entire URL */
   u->url = strdup(url);
   if (!u->url) {
     free(u);
     return NULL;
   }
+
+  printf("1 u->url = %s, url = %s, u->protocol = %s\n",u->url,url,u->protocol);
 
   /* Is there a protocol specified? It should be at the beginning
    * of the URL, preceeding a "://"
@@ -70,10 +76,8 @@ struct url * url_new(const char *url) {
     }
     url = p+3;
   }
-
-  /* No protocol? Default to http */
-  if (!u->protocol)
-    u->protocol = strdup("http");
+  
+  printf("2 u->url = %s, url = %s, u->protocol = %s\n",u->url,url,u->protocol);
 
   /* Next will come the server */
   n = strcspn(url,":/#");
@@ -113,6 +117,29 @@ struct url * url_new(const char *url) {
   if (*url == '#' && url[1])
     u->anchor = strdup(url+1);
 
+  /* No protocol?
+   * See if we can guess...
+   * Use http normally, but if there's no server use file
+   */
+  if (!u->protocol) {
+    if (u->server)
+      u->protocol = strdup("http");
+    else
+      u->protocol = strdup("file");
+  }
+
+  /* Figure out which protocol handler to use */
+  h = supported_protocols;
+  while (*h && strcasecmp(u->protocol,(*h)->name))
+    h++;
+  if (!*h) {
+    /* Didn't find a protocol */
+    browserwin_errormsg(browser,"Unsupported protocol.");
+    url_delete(u);
+    return NULL;
+  }
+  u->handler = *h;
+
   return u;
 }
 
@@ -120,13 +147,27 @@ struct url * url_new(const char *url) {
  * If a transfer is in progress, abort the transfer.
  */
 void url_delete(struct url *u) {
+  if (u->handler)
+    u->handler->stop(u);
+  if (u->url)       free(u->url);
+  if (u->protocol)  free(u->protocol);
+  if (u->user);     free(u->user);
+  if (u->password); free(u->password);
+  if (u->server);   free(u->server);
+  if (u->path);     free(u->path);
+  if (u->filename); free(u->filename);
+  if (u->anchor);   free(u->anchor);
+  if (u->type);     free(u->type);
+  free(u);
 }
 
-/* Start downloading data from the URL, call the supplied function
- * when the transfer status changes. It is possible for the
- * callback to call url_delete().
+/* This is called by the protocol handler to change the
+ * URL's status. It calls the url->callback.
  */
-void url_download(struct url *u, void (*callback)(struct url *u)) {
+void url_setstatus(struct url *u, int status) {
+  u->status = status;
+  if (u->callback)
+    u->callback(u);
 }
 
 /* The End */

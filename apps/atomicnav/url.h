@@ -1,4 +1,4 @@
-/* $Id: url.h,v 1.1 2002/01/06 12:32:41 micahjd Exp $
+/* $Id: url.h,v 1.2 2002/01/06 15:34:23 micahjd Exp $
  *
  * url.h - framework for parsing and retrieving URLs
  *
@@ -28,11 +28,24 @@
 #ifndef __H_URL
 #define __H_URL
 
-
 /********************************* Structure */
+
+struct protocol;
+struct browserwin;
 
 struct url {
   char *url;
+
+  /* Browser window this URL is associated with.
+   * Useful for error reporting via browserwin_errormsg()
+   * and for use by the callback.
+   */
+  struct browserwin *browser;
+
+  /* The owner of the url will usually set a callback
+   * to be called when the URL's status changes.
+   */
+  void (*callback)(struct url *u);
   
   /* Parsed from the name (zero/NULL for none) */
   char *protocol;
@@ -43,7 +56,31 @@ struct url {
   char *filename;  /* Just the file */
   char *anchor;
   int port;
+
+  /* This is a pointer to the current protocol handler for this URL */
+  struct protocol *handler;
+
+  /* Connection status for this URL (a URL_STATUS_* constant) */
+  int status;
+
+  /* Progress. -1 for unknown, or a number between 0 and 100 */
+  int progress;
+
+  /* By the time status is URL_STATUS_READ we should know the content type */
+  char *type;
+
+  /* this is a block of data that may be used by the protocol */
+  void *proto_extra;
 };
+
+/********************************* Constants */
+
+#define URL_STATUS_IDLE       0
+#define URL_STATUS_RESOLVING  1
+#define URL_STATUS_CONNECTING 2
+#define URL_STATUS_WRITE      3
+#define URL_STATUS_READ       4
+#define URL_STATUS_DONE       5
 
 /********************************* Methods */
 
@@ -53,18 +90,17 @@ struct url {
  * so the parameter only needs to be valid for the duration of
  * this function call.
  */
-struct url * url_new(const char *url);
+struct url * url_new(struct browserwin *browser, const char *url);
 
 /* Free all memory associated with the URL.
  * If a transfer is in progress, abort the transfer.
  */
 void url_delete(struct url *u);
 
-/* Start downloading data from the URL, call the supplied function
- * when the transfer status changes. It is possible for the
- * callback to call url_delete().
+/* This is called by the protocol handler to change the
+ * URL's status. It calls the url->callback.
  */
-void url_download(struct url *u, void (*callback)(struct url *u));
+void url_setstatus(struct url *u, int status);
 
 #endif /* __H_BROWSERWIN */
 

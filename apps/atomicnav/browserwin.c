@@ -1,4 +1,4 @@
-/* $Id: browserwin.c,v 1.1 2002/01/06 12:32:41 micahjd Exp $
+/* $Id: browserwin.c,v 1.2 2002/01/06 15:34:23 micahjd Exp $
  *
  * browserwin.c - User interface for a browser window in Atomic Navigator
  *
@@ -28,11 +28,14 @@
 #include <picogui.h>
 #include <malloc.h>
 #include "browserwin.h"
+#include "url.h"
+#include "protocol.h"
 
 const char *status_names[] = {
   "Done.",
   "Loading page...",
   "Loading images...",
+  "Error loading page!",
 };
 
 /********************************* GUI Events */
@@ -158,31 +161,31 @@ void browserwin_setstatus(struct browserwin *w, int status) {
 void browserwin_seturl(struct browserwin *w, const char *url) {
   if (w->page)
     url_delete(w->page);
-  
-  w->page = url_new(url);
 
-  printf("url: %s\n"
-	 "protocol: %s\n"
-	 "user: %s\n"
-	 "password: %s\n"
-	 "server: %s\n"
-	 "path: %s\n"
-	 "filename: %s\n"
-	 "anchor: %s\n"
-	 "port: %d\n"
-	 "\n",
-	 w->page->url,
-	 w->page->protocol,
-	 w->page->user,
-	 w->page->password,
-	 w->page->server,
-	 w->page->path,
-	 w->page->filename,
-	 w->page->anchor,
-	 w->page->port);
+  browserwin_setstatus(w,STATUS_LOADING_PAGE);  
 
-  url_download(w->page, pageLoadCallback);
+  w->page = url_new(w,url);
+  if (!w->page)
+    return;
+
+  w->page->callback = pageLoadCallback;
+  w->page->handler->connect(w->page);
 }
+
+void browserwin_errormsg(struct browserwin *w, const char *msg) {
+  /* Display the error message on a web page */
+
+  /* FIXME: This is a memory leak! */
+  pgSetWidget(w->wView,
+	      PG_WP_TEXTFORMAT,pgNewString("HTML"),
+	      PG_WP_TEXT,pgNewString("<font size=+5>Error:</font><hr><p>"),
+	      PG_WP_TEXTFORMAT,pgNewString("+HTML"),
+	      PG_WP_TEXT,pgNewString(msg),
+	      0);
+
+  browserwin_setstatus(w,STATUS_ERROR);
+}
+
 
 /* The End */
 
