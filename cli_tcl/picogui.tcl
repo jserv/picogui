@@ -73,7 +73,7 @@ proc send_packet {packet} {
 	flush $connection
 }
 proc pgGetVideoMode {} {
-	global pg_request pg_response connection
+	global pg_request pg_response
 	send_packet [pack_pgrequest 1 0 $pg_request(PGREQ_GETMODE)]
 	set data [pgGetResponse]
 	binary scan $data "ISSSSSS" res(flags) res(xres) res(yres) \
@@ -101,10 +101,10 @@ proc pgNewString {text} {
 	send_packet $text
 	return [pgGetResponse]
 }
-proc pgGetString {text} {
-	global pg_request pg_response connection
+proc pgGetString {textid} {
+	global pg_request pg_response 
 	send_packet [pack_pgrequest 1 4 $pg_request(PGREQ_GETSTRING)]
-	send_packet [binary format "I" $text]
+	send_packet [binary format "I" $textid]
 	return [pgGetResponse]
 }
 proc pgNewWidget {rship type parent} {
