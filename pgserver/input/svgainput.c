@@ -1,4 +1,4 @@
-/* $Id: svgainput.c,v 1.3 2000/09/04 08:19:52 micahjd Exp $
+/* $Id: svgainput.c,v 1.4 2000/09/04 21:46:56 micahjd Exp $
  *
  * svgainput.h - input driver for SVGAlib
  *
@@ -61,7 +61,7 @@ void svgainput_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
   FD_SET(__svgalib_kbd_fd,readfds);
 }
 
-void svgainput_fd_activate(int fd) {
+int svgainput_fd_activate(int fd) {
   if (fd==__svgalib_mouse_fd) {
     mouse_update();
   }
@@ -76,8 +76,7 @@ void svgainput_fd_activate(int fd) {
 
 void svgainput_poll(void) {
 #ifdef DEBUG
-  guru("svgainput_poll()");
-  sleep(50);
+  //  guru("svgainput_poll()");
 #endif
 }
 

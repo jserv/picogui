@@ -1,4 +1,4 @@
-/* $Id: svga.c,v 1.7 2000/09/03 23:40:59 micahjd Exp $
+/* $Id: svga.c,v 1.8 2000/09/04 21:46:56 micahjd Exp $
  *
  * svga.c - video driver for (S)VGA cards, via vgagl and svgalib
  *
@@ -52,6 +52,12 @@ g_error svga_init(int xres,int yres,int bpp,unsigned long flags) {
 
 #define VGA_MODE G640x480x16M
 
+  /* In a GUI environment, we don't want VC switches,
+     plus they usually crash on my system anyway,
+     and they use extra signals that might confuse 
+     select. */
+  vga_lockvc();
+
   vga_init();
 
   /* Load a main input driver. Do this before setting
@@ -84,11 +90,6 @@ g_error svga_init(int xres,int yres,int bpp,unsigned long flags) {
   /* Allocate scanline buffer */
   e = g_malloc((void**)&svga_buf,WIDTH*BYTESPERPIXEL);
   errorcheck;
-
-  /* In a GUI environment, we don't want VC switches,
-     plus they usually crash on my system anyway ;-)
-  */
-  vga_lockvc();
 
   return sucess;
 }

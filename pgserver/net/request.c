@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.4 2000/09/04 08:19:52 micahjd Exp $
+/* $Id: request.c,v 1.5 2000/09/04 21:46:56 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -344,6 +344,10 @@ void net_iteration(void) {
   for (i=0;i<con_n;i++)     /* con stores all the active connections */
     if (FD_ISSET(i,&con)) FD_SET(i,&rfds);
 
+  /* Default timeout */
+  tv.tv_sec = 5;
+  tv.tv_usec = 0;
+
   /* Give the input driver(s) a chance to modify things */
   n = inlib_list;
   while (n) {
@@ -353,6 +357,17 @@ void net_iteration(void) {
   }
 
   i = select(con_n,&rfds,NULL,NULL,&tv);
+
+#ifdef DEBUG
+  /* For some reason, extra signals interrupt select() before it's done.
+     FIXME.
+     Uncomment this guru event for more information:
+
+  if (i<0)
+    guru("Return from select()\ni = %d\ntv.tv_sec = %d\ntv.tv_usec = %d\nerrno = %d",
+          i,tv.tv_sec,tv.tv_usec,errno);
+  */
+#endif
 
   if (i>0) {
     /* Something is active */
