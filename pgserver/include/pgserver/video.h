@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.88 2002/08/15 07:24:24 micahjd Exp $
+/* $Id: video.h,v 1.89 2002/08/15 09:30:45 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -730,8 +730,8 @@ void def_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius);
 #ifdef CONFIG_DITHER
 g_error def_dither_start(hwrdither *d, hwrbitmap dest, int vflip, 
 			 int x, int y, int w, int h);
-void def_dither_store(hwrdither *d, pgcolor pixel, s16 lgop);
-void def_dither_finish(hwrdither *d);
+void def_dither_store(hwrdither d, pgcolor pixel, s16 lgop);
+void def_dither_finish(hwrdither d);
 #endif
 
 /************* Registration functions for video drivers */
