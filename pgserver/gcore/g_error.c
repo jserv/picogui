@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.12 2000/12/29 22:31:58 micahjd Exp $
+/* $Id: g_error.c,v 1.13 2001/01/15 09:42:51 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -92,7 +92,8 @@ void guru(const char *fmt, ...) {
   /* Icon (if this fails, no big deal) */
   if (!iserror((*vid->bitmap_loadxbm)(&icon,deadcomp_bits,
 				      deadcomp_width,deadcomp_height,
-				      (*vid->color_pgtohwr)(0xFFFF80),0))) {
+				      (*vid->color_pgtohwr)(0xFFFF80),
+				      (*vid->color_pgtohwr)(0x000000)))) {
     (*vid->blit)(icon,0,0,10,10,deadcomp_width,deadcomp_height,PG_LGOP_NONE);
     (*vid->bitmap_free)(icon);
   }
