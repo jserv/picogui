@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.1 2000/09/24 22:02:33 micahjd Exp $
+/* $Id: constants.h,v 1.2 2000/10/07 08:15:26 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -129,6 +129,7 @@
 #define PG_ERRT_HANDLE   0x0500
 #define PG_ERRT_INTERNAL 0x0600
 #define PG_ERRT_BUSY     0x0700
+#define PG_ERRT_FILEFMT  0x0800
 
 /* Reserved for client-side errors (not used by the server) */
 #define PG_ERRT_CLIENT   0x8000
@@ -143,6 +144,7 @@ typedef unsigned long pghandle;
 #define PG_TYPE_WIDGET     2
 #define PG_TYPE_FONTDESC   3
 #define PG_TYPE_STRING     4
+#define PG_TYPE_THEME      5
 
 /******************** Theme constants */
 
@@ -219,6 +221,45 @@ typedef unsigned long pghandle;
 #define PGTH_TAG_AUTHOREMAIL   2
 #define PGTH_TAG_URL           3
 #define PGTH_TAG_README        4
+
+/*** Fillstyle opcodes */
+
+/* Bits:  7 6 5 4 3 2 1 0
+          
+          1 L L L L L L L    Short numeric literal
+	  0 1 G G G G G G    Build gropnode
+	  0 0 1 C C C C C    Command code
+          0 0 0 1 V V V V    Retrieve variable
+	  0 0 0 0 V V V V    Set variable 
+
+   L - numeric literal
+   G - gropnode type
+   V - variable offset
+   C - command code constant
+*/
+
+/* Simple opcodes (or'ed with data) */
+#define PGTH_OPSIMPLE_LITERAL    0x80
+#define PGTH_OPSIMPLE_GROP       0x40
+#define PGTH_OPSIMPLE_CMDCODE    0x20
+#define PGTH_OPSIMPLE_GET        0x10
+#define PGTH_OPSIMPLE_SET        0x00
+
+/* Command codes */
+#define PGTH_OPCMD_LONGLITERAL   0x20  /* Followed by a 4-byte literal */
+#define PGTH_OPCMD_PLUS          0x21
+#define PGTH_OPCMD_MINUS         0x22
+#define PGTH_OPCMD_MULTIPLY      0x23
+#define PGTH_OPCMD_DIVIDE        0x24
+#define PGTH_OPCMD_SHIFTL        0x25
+#define PGTH_OPCMD_SHIFTR        0x26
+#define PGTH_OPCMD_OR            0x27
+#define PGTH_OPCMD_AND           0x28
+#define PGTH_OPCMD_LONGGROP      0x29  /* Followed by a 2-byte grop code */
+#define PGTH_OPCMD_LONGGET       0x2A  /* Followed by a 1-byte var offset */
+#define PGTH_OPCMD_LONGSET       0x2A  /* Followed by a 1-byte var offset */
+#define PGTH_OPCMD_PROPERTY      0x30  /* Followed by 2-byte object code and 2-byte property code */
+#define PGTH_OPCMD_LOCALPROP     0x31  /* Followed by 2-byte property code */
 
 /******************** Video */
 
