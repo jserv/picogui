@@ -1,6 +1,10 @@
 #!/usr/bin/perl
 #
 # PicoGUI/Perl typing program
+#
+# This is really messy, I'll write an easier-to-follow example
+# program later.
+#
 # Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
 #
 # This program is free software; you can redistribute it and/or
@@ -45,6 +49,9 @@ while (<LESSONF>) {
     }
 }
 close LESSONF;
+foreach (keys %lesson) {
+    chomp $lesson{$_};
+};
 
 # Load resources into the server's memory, and save
 # the handles.
@@ -181,6 +188,48 @@ LeaveContext;
 $typingpanel = RegisterApp(-side => top,-height => 350);
 $lessonname = NewWidget(-type => label,-font => NewFont("Utopia",25,grayline,italic),
 			-transparent => 1, -align => right);
+$lessoninfo = NewWidget(-type => label,-font => $boldfont,
+			-transparent => 1, -align => nw);
+$tb = NewWidget(-type => toolbar, -side => bottom);
+
+NewWidget(-type => label, -color => 0xFFFFFF, -bgcolor => 0x000000,
+	  -side => top,-text => NewString("Lesson contents:"),
+	  -font => NewFont("Times",0,bold));
+
+$lessontextwidget = NewWidget(-type => label,-transparent => 1,
+			      -side => top, -align => nw,
+			      -font => NewFont("Times"));
+
+NewWidget(-type=>button,-inside => $tb,-side => left,
+	  -bitmap => $circ,-bitmask => $circmask,
+	  -text => NewString("Try this lesson"),
+	  -onclick => sub {
+	      EnterContext;
+	      NewPopup(600,380);
+	      $tb = NewWidget(-type => toolbar,-side => bottom);
+
+	      @lessontext = split /\n/,$lesson{$lname};
+	      $lessonline = 0;
+	      $str = '';
+	      $correct = 0;
+	      $incorrect = 0;
+	
+	      $typespace = NewWidget(-type => label,-side => all);
+
+	      NewWidget(-type => button,-inside => $tb,-bitmap=>$ex,
+			-bitmask=>$exmask,-text=>NewString("Give up"),-side=>left,
+			-onclick => sub {
+			    GiveKeyboard;
+			    LeaveContext;
+			    undef $tstext;
+			    Update;
+			});
+
+	      GrabKeyboard(-onchar => \&typechar);
+
+	      # Set things up initially
+	      typechar();
+	  });
 
 ############################################################ Lesson panel
 
@@ -193,9 +242,11 @@ foreach (@lesson_names) {
     NewWidget(-type => bitmap,-inside => $p,-side => right,
 	      -transparent => 1,-lgop => 'or',
 	      -bitmap => $redbox,-bitmask => $boxmask);
-    NewWidget(-type => button,-side => all,
-	      -text => NewString($_),-onclick => \&setlesson);
-}			     
+    $w = NewWidget(-type => button,-side => all,
+		   -text => NewString($_),-onclick => \&setlesson);
+    $setlessonto = $w if (!$setlessonto);
+}
+setlesson($setlessonto) if ($setlessonto);
 
 ############################################################ Load info bar
 
@@ -228,6 +279,8 @@ NewWidget(-type => button, -side => left, -text => NewString("Exit"),
      NewWidget(-type => button,
 	       -text=>NewString("Start Over"),-side=>left,
 	       -onclick => sub {
+		   # This is messy. Must fix.
+
 		   LeaveContext;  # This message box
 		   LeaveContext;  # Most of the program (except the pnm's, etc)
 		   goto restartprog;  # Eek!
@@ -671,10 +724,72 @@ sub Finis {
 
 sub setlesson {
     my ($self) = @_;
+    my ($str,$hlname);
 
-    $lessonname->SetWidget(-text => $self->GetWidget(-text));
+    $currentlessonwidget = $self;
 
-    Update();
+    $lessonname->SetWidget(-text => $hlname = $self->GetWidget(-text));
+    $lname = $hlname->GetString;
+    $ltext->delete if ($ltext);
+    $litext->delete if ($litext);
+    $lessontextscroll->delete if ($lessontextscroll);
+
+    if ($student{$lname}) {
+	$str = "You have completed \"$lname.\" Your scores were:";
+    }
+    else {
+	$str = "You have not completed \"$lname\" yet.";
+    }
+
+    $lessoninfo->SetWidget(-text => $litext = NewString("\n$str\n"));
+    $lessontextwidget->SetWidget(-text => $ltext = NewString($lesson{$lname}));
+
+    Update;
 }
+
+sub typechar {
+    $tstext->delete if ($tstext);
+
+    if ($_[1]) {
+	$c = pack 'c',($_[1] & 0xFF);
+	
+	if (length $lessontext[$lessonline] == length $str) {
+	    if ($c eq "\r") {
+		$str = '';
+		$lessonline++;
+		if (!$lessontext[$lessonline]) {
+		    GiveKeyboard;
+		    LeaveContext;
+		    undef $tstext;
+		    Update;
+		    return;
+		}
+		$correct++;
+	    }
+	    else {
+		$incorrect++;
+	    }
+	}
+	
+	elsif (substr($lessontext[$lessonline],length $str,1) eq $c) {
+	    $str .= $c;
+	    $correct++;
+	}
+	else {
+	    $incorrect++;
+	}
+    }	
+    
+    if (length $lessontext[$lessonline] > 45) {
+	$typespace->SetWidget(-font => $boldfont);
+    }
+    else {
+	$typespace->SetWidget(-font => $bigfont);
+    }
+    $typespace->SetWidget(-text => $tstext = 
+			  NewString($lessontext[$lessonline]."\n".$str.'_'));
+    Update;
+}
+
 
 ### The End ###

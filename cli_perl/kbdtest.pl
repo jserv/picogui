@@ -14,7 +14,7 @@ GrabKeyboard(-onchar => \&keysub);
 EventLoop;
 
 sub keysub {
-    printf "Key code: 0x%08X\n",$c = $_[0];
+    printf "Key code: 0x%08X\n",$c = $_[1];
     $c &= 0xFF;
 
     if ($c==0xD) {
