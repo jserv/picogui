@@ -1,4 +1,4 @@
-/* $Id: p_http.c,v 1.7 2002/02/04 15:23:02 bornet Exp $
+/* $Id: p_http.c,v 1.8 2002/02/06 21:10:53 bornet Exp $
  *
  * p_http.c - Local disk access for the Atomic Navigator web browser
  *
@@ -86,6 +86,7 @@ void p_http_header(struct url *u, const char *name, const char *value) {
 void p_http_connect(struct url *u) {
   struct http_data *hd;
   char *p;
+  struct in_addr saddr;
 
   /* Create our http_data */
   hd = malloc(sizeof(struct http_data));
@@ -97,15 +98,20 @@ void p_http_connect(struct url *u) {
     u->port = 80;
   if (!u->path)
     u->path = strdup("/");
-  
-  /* Resolve hostname */
-  url_setstatus(u,URL_STATUS_RESOLVING);
-  hd->he = gethostbyname(u->server);
-  if (!hd->he) {
-    browserwin_errormsg(u->browser,"The web server could not be found<br>(DNS error)");
-    url_setstatus(u,URL_STATUS_ERROR);
-    return;
-  }    
+
+  /* First try it as aaa.bbb.ccc.ddd. */
+  saddr.s_addr = inet_addr(u->server);
+  if (saddr.s_addr == -1) {
+
+    /* Resolve hostname */
+    url_setstatus(u,URL_STATUS_RESOLVING);
+    hd->he = gethostbyname(u->server);
+    if (!hd->he) {
+      browserwin_errormsg(u->browser,"The web server could not be found<br>(DNS error)");
+      url_setstatus(u,URL_STATUS_ERROR);
+      return;
+    }    
+  }
     
   /* Create TCP socket */
   hd->fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -122,7 +128,13 @@ void p_http_connect(struct url *u) {
   memset(&hd->server_addr,0,sizeof(hd->server_addr));
   hd->server_addr.sin_family = AF_INET;
   hd->server_addr.sin_port = htons(u->port);
-  hd->server_addr.sin_addr = *((struct in_addr *)hd->he->h_addr);
+
+  if (saddr.s_addr == -1) {
+    hd->server_addr.sin_addr = *((struct in_addr *)hd->he->h_addr);
+  } else {
+    hd->server_addr.sin_addr.s_addr = saddr.s_addr;
+  }
+
   if (connect(hd->fd, (struct sockaddr *)&hd->server_addr, sizeof(struct sockaddr)) == -1) {
     browserwin_errormsg(u->browser,
 			"Can't connect to the web server. "
