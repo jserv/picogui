@@ -14,6 +14,17 @@ AC_ARG_WITH(profile,
   test -f profile.user || cp "${srcdir}/profile.defaults" profile.user
   with_profile="profile.user")
 
+AC_ARG_WITH(extra-ipath,
+[  --with-extra-ipath=<extra include path>   To specify extra include paths],
+  DRIVER_CFLAGS="$DRIVER_CFLAGS -I`echo ${withval} | sed 's/:/ -I/g' `")
+
+AC_ARG_WITH(extra-lpath,
+[  --with-extra-lpath=<extra lib path>   To specify extra library paths],
+  LDFLAGS="$LDFLAGS -L`echo ${withval} | sed 's/:/ -L/g' `")
+
+AC_ARG_WITH(extra-libs,
+[  --with-extra-libs=<extra libs>   To specify extra libraries],
+  LIBS="$LIBS `echo ${withval} | sed 's/:/ /g' `")
 
 dnl normalize the path somehow
 CONFIG_FILE=$with_profile

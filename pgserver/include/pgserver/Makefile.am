@@ -11,7 +11,6 @@ noinst_HEADERS = \
 	handle.h 	\
 	inlstring.h 	\
 	input.h 	\
-	mc68328digi.h 	\
 	pgmain.h 	\
 	pgnet.h 	\
 	render.h 	\

@@ -1,4 +1,4 @@
-/* $Id: tsinput.c,v 1.17 2001/06/04 17:25:23 pney Exp $
+/* $Id: tsinput.c,v 1.18 2001/06/21 17:23:01 bauermeister Exp $
  *
  * tsinput.c - input driver for touch screen
  *
@@ -38,7 +38,7 @@
 #include <pgserver/pgnet.h>
 
 #include <linux/mc68328digi.h>
-#include <rm/rm_client.h>
+#include <rm_client.h>
 
 
 #define POLL_USEC                100
