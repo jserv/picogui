@@ -1,8 +1,5 @@
 package provide picogui 0.4
 
-if { [catch {package require picoconstants}]!=0 } {
-	source picoconstants.tcl
-}
 set binds(any) "any {parray event} $pg_we(close) exit"
 
 set connection 0
