@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.24 2002/01/06 09:22:57 micahjd Exp $
+/* $Id: render.c,v 1.25 2002/01/11 09:22:21 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -793,6 +793,7 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 	   u32 *textcolors;
 	   s16 temp_x;
 	   struct gropnode bn;
+	   struct groprender br;
 	   
 	   /* Set up background color node (we'll need it later) */
 	   memset(&bn,0,sizeof(bn));
@@ -842,13 +843,14 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 
 		/* Background color (clipped rectangle) */
 		if ((attr & 0xF0)!=0) {
+		  br = *r;
 		  bn.r.x = n->r.x;
 		  bn.r.y = n->r.y;
 		  bn.r.w = celw;
 		  bn.r.h = celh;
 		  bn.param[0] = textcolors[attr>>4];
-		  gropnode_clip(r,&bn);
-		  gropnode_draw(r,&bn);
+		  gropnode_clip(&br,&bn);
+		  gropnode_draw(&br,&bn);
 		}
 
 		temp_x = n->r.x;
