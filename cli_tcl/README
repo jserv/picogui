@@ -1,4 +1,3 @@
-pgui checkevent
 pgui connect ?-server servername? ?-display displaynum?
 pgui create bitmap -name filename|-data filedata
 pgui create bitmap -width width -height height
@@ -7,9 +6,12 @@ pgui entercontext
 pgui leavecontext ?-id contextid?
 pgui register -title title -type normal|toolbar
 pgui update
-pgui waitevent
 
-pgwidget bind widget event script
-pgwidget create type ?options?
-pgwidget attach widget before|inside|after parent
-pgwidget set -side side -text text -bitmap bitmapid
+picoevent bind widget event script
+picoevent check
+picoevent get
+picoevent loop
+
+picowidget attach widget before|inside|after parent
+picowidget create type ?options?
+picowidget set -side side -text text -bitmap bitmapid

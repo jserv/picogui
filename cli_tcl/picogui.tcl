@@ -119,40 +119,53 @@ proc isInteger {test} {
 	}
 	return 0
 }
-proc pgEventLoop {} {
-	global binds
-	pgui update
-	while {1} {
-		array set event [pgui waitevent]
-		set indexes [array names binds]
-		if {[lsearch $indexes $event(from)] == -1} {
-			array set handlers $binds(any)
-		} else {
-			array set handlers $binds($event(from))
-		}
-		set indexes [array names handlers]
-		if {[lsearch $indexes $event(event)] == -1} {
-			if {[info exists handlers(any)]} {
-				eval $handlers(any)
+proc picoevent {command args} {
+	global binds pg_request pg_we
+	if {$command=="loop"} {
+		picogui update
+		while {1} {
+			array set event [picoevent get]
+			set indexes [array names binds]
+			if {[lsearch $indexes $event(from)] == -1} {
+				array set handlers $binds(any)
+			} else {
+				array set handlers $binds($event(from))
 			}
-		} else {
-			eval $handlers($event(event))
+			set indexes [array names handlers]
+			if {[lsearch $indexes $event(event)] == -1} {
+				if {[info exists handlers(any)]} {
+					eval $handlers(any)
+				}
+			} else {
+				eval $handlers($event(event))
+			}
 		}
+	} elseif {$command =="check"} {
+		send_packet [pack_pgrequest 1 0 $pg_request(checkevent)]
+		array set ret [pgGetResponse]
+	} elseif {$command =="get"} {
+		send_packet [pack_pgrequest 1 0 $pg_request(wait)]
+		array set ret [pgGetResponse]
+	} elseif {$command=="bind"} {
+		if {[info exists binds([lindex $args 0])]} {
+			array set handlers $binds([lindex $args 0])
+		}
+		set handlers($pg_we([lindex $args 1])) [lindex $args 2]
+		set binds([lindex $args 0]) [array get handlers]
+	}
+	if {[info exists ret(data)]} {
+		return $ret(data)
+	} else {
+		return [array get ret]
 	}
 }
-proc pgwidget {command arg1 args} {
-	global pg_request pg_widget pg_derive pg_wp pg_s binds pg_we
+proc picowidget {command arg1 args} {
+	global pg_request pg_widget pg_derive pg_wp pg_s
 	if {$command=="attach"} {
 		send_packet [pack_pgrequest 1 12 $pg_request(attachwidget)]
 		send_packet [binary format "IISS" [lindex $args 1] $arg1 \
 			$pg_derive([lindex $args 0]) 0]
 		array set ret [pgGetResponse]
-	} elseif {$command=="bind"} {
-		if {[info exists binds($arg1)]} {
-			array set handlers $binds($arg1)
-		}
-		set handlers($pg_we([lindex $args 0])) [lindex $args 1]
-		set binds($arg1) [array get handlers]
 	} else {
 		array set aa $args
 	}
@@ -162,7 +175,7 @@ proc pgwidget {command arg1 args} {
 		array set ret [pgGetResponse]
 		set id $ret(data)
 		if {[array size aa] >0} {
-			eval "pgwidget set $id $args"
+			eval "picowidget set $id $args"
 		}
 		return $id
 	} elseif {$command=="set"} {
@@ -185,7 +198,7 @@ proc pgwidget {command arg1 args} {
 		}
 	}
 }
-proc pgui {command args} {
+proc picogui {command args} {
 	global connection pg_request pg_app
 	global display server
 	set creatables {bitmap font}
@@ -226,12 +239,6 @@ proc pgui {command args} {
 			send_packet [binary format "I" $aa(-id)]
 		}
 		array set ret [pgGetResponse]
-	} elseif {$command =="checkevent"} {
-		send_packet [pack_pgrequest 1 0 $pg_request(checkevent)]
-		array set ret [pgGetResponse]
-	} elseif {$command =="waitevent"} {
-		send_packet [pack_pgrequest 1 0 $pg_request(wait)]
-		array set ret [pgGetResponse]
 	} elseif {$command =="update"} {
 		send_packet [pack_pgrequest 1 0 $pg_request(update)]
 		array set ret [pgGetResponse]
@@ -254,9 +261,9 @@ proc pgui {command args} {
 			send_packet [binary format "SS" $aa(-width) $aa(-height)]
 			array set ret [pgGetResponse]
 		} elseif {[expr [info exists aa(-width)] || [info exists aa(-height)]]} {
-			puts "wrong # args: should be pgui $command -width width -height height"
+			puts "wrong # args: should be picogui $command -width width -height height"
 		} else {
-			puts "unknown arguments for pgui createbitmap"
+			puts "unknown arguments for picogui createbitmap"
 		}
 	} elseif {$command =="font"} {
 		if {[info exists aa(-name]} {

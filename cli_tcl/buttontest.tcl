@@ -1,14 +1,14 @@
 #!/usr/bin/tclsh
 source picogui.tcl
-pgui connect localhost 0
+picogui connect
 
-set p [pgui register -title "Button Test" -type toolbar]
+set p [picogui register -title "Button Test" -type normal]
 
-set l [pgwidget create button -text "Hello World" -side all -font \
-	[pgui create font  -style $pg_fstyle(bold) -size 24]]
+set l [picowidget create button -text "Hello World" -side all -font \
+	[picogui create font  -style $pg_fstyle(bold) -size 24]]
 
-pgwidget attach  $l inside $p
-pgui update
-pgwidget bind $l activate {puts "hello"}
-pgwidget bind any close {puts "goodby"; exit}
-pgEventLoop
+picowidget attach  $l inside $p
+picogui update
+picoevent bind $l activate {puts "hello"}
+picoevent bind any close {puts "goodby"; exit}
+picoevent loop

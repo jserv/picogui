@@ -1,12 +1,11 @@
 #!/usr/bin/tclsh
 source picogui.tcl
-pgui connect localhost 0
+picogui connect localhost 0
 
-set p [pgRegisterApp "Greetings" $pg_app(normal)]
-set l [pgCreateWidget label]
-pgSetText $l "Hello World!"
-pgAttach $l inside $p
-pgSetFont $l [pgNewFont "" $pg_fstyle(bold) 24]
-pgSetSide $l all
-pgui update
-pgEventLoop
+set p [picogui register -title "Greetings" -type normal]
+set l [picowidget create label -text "Hello World!" -side all -font \
+	[picogui create font -style $pg_fstyle(bold) -size 24]
+]
+picowidget attach $l inside $p
+picogui update
+picoevent loop

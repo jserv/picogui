@@ -4,35 +4,34 @@ source picogui.tcl
 set NUMFRAMES 13
 set imagebase "../apps/bouncyball/data/ball%02d.jpeg"
 
-#pgui connect -server localhost -display 0
-pgui connect
+#picogui connect -server localhost -display 0
+picogui connect
 if { $connection == 0 } {
 	puts "unable to connect to display"
 	exit 1
 }
 
-set context [pgui entercontext]
+set context [picogui entercontext]
 
 set imgnr 0
 while {$imgnr<$NUMFRAMES} {
-	set img($imgnr) [pgui create bitmap -name [format $imagebase $imgnr]]
+	set img($imgnr) [picogui create bitmap -name [format $imagebase $imgnr]]
 	incr imgnr
 }
-set dlg [pgwidget create dialogbox -text Boing!]
-set ok [pgwidget create button -text Ok -side bottom]
-set bmp [pgwidget create label -side all]
+set dlg [picowidget create dialogbox -text Boing!]
+set ok [picowidget create button -text Ok -side bottom]
+set bmp [picowidget create label -side all]
 
-pgwidget attach $ok inside $dlg
-pgwidget attach $bmp after $ok
+picowidget attach $ok inside $dlg
+picowidget attach $bmp after $ok
 
 set i 0
 set d 1
 while { 1 } {
-	pgwidget set $bmp -bitmap $img($i)
-#	pgSetBitmap $bmp $img($i)
-	pgui update
-	if { [pgui checkevent] >0 } {
-		array set event [pgui waitevent]
+	picowidget set $bmp -bitmap $img($i)
+	picogui update
+	if { [picoevent check] >0 } {
+		array set event [picoevent get]
 		if { $event(from) == $ok } {
 			break
 		}
@@ -46,4 +45,4 @@ while { 1 } {
 	}
 	incr i $d
 }
-pgui leavecontext -id $context
+picogui leavecontext -id $context
