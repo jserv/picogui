@@ -148,6 +148,7 @@ if test "$CONFIG_FORMAT_JPEG" = "y"; then
             AC_MSG_ERROR(libjpeg not found! try --with-jpeg-dir=<DIR>)
 	fi
 
+	LIBS="$LIBS -ljpeg"
   else
 
 	echo "user defined jpeg path: $PGUI_WITH_JPEG_DIR"
