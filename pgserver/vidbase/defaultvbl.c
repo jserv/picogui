@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.45 2001/07/12 03:00:24 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.46 2001/07/25 21:08:21 epchristi Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -46,6 +46,10 @@ struct bitformat bitmap_formats[] = {
 
 #ifdef CONFIG_FORMAT_PNM
      { {'P','N','M',0}, &pnm_detect, &pnm_load, NULL },
+#endif
+
+#ifdef CONFIG_FORMAT_JPEG
+     { {'J','P','E','G'}, &jpeg_detect, &jpeg_load, NULL },
 #endif
    
      { {0,0,0,0}, NULL, NULL, NULL }

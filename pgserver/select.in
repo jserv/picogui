@@ -92,6 +92,7 @@ close_section
 open_section FORMATS
 
 add_if_true pnm.c $CONFIG_FORMAT_PNM
+add_if_true jpeg.c $CONFIG_FORMAT_JPEG
 
 close_section
 

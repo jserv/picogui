@@ -1,4 +1,4 @@
-/* $Id: configfile.c,v 1.3 2001/07/10 09:21:12 micahjd Exp $
+/* $Id: configfile.c,v 1.4 2001/07/25 21:08:21 epchristi Exp $
  *
  * configfile.c - Utilities for loading, storing, and retrieving
  *                configuration options
@@ -32,6 +32,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 /* Maximum parseable line size in a config file */
 #define LINESIZE  256

@@ -1,4 +1,4 @@
-/* $Id: pnm.c,v 1.6 2001/05/31 20:42:43 micahjd Exp $
+/* $Id: pnm.c,v 1.7 2001/07/25 21:08:21 epchristi Exp $
  *
  * pnm.c - Functions to convert any of the pbmplus formats (PGM, PBM, PPM)
  *         collectively referred to as PNM
@@ -26,6 +26,7 @@
  * 
  */
 
+#include <stdlib.h>
 #include <pgserver/common.h>
 #include <pgserver/video.h>
 

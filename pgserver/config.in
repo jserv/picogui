@@ -126,6 +126,7 @@ mainmenu_option next_comment
 comment 'Bitmap Formats'
 bool 'Internal XBM loader'                    CONFIG_FORMAT_XBM
 bool 'PNM: portable anymap'                   CONFIG_FORMAT_PNM
+bool 'JPEG: jpeg library'                     CONFIG_FORMAT_JPEG
 endmenu
 
 mainmenu_option next_comment

@@ -106,8 +106,6 @@ fi
 AC_SUBST(LXDIALOG)
 
 
-CFLAGS=""
-
 dnl ==================================================
 dnl Extra libraries depending on the selected profile
 dnl ==================================================
@@ -120,6 +118,45 @@ AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_SDLFB DRIVER_SDL, [
   DRIVER_CFLAGS="${SDL_CFLAGS}"
   DRIVER_LIBS="${SDL_LIBS}" 
 ])
+
+dnl jpeg
+echo "checking whether user wants jpeg... $CONFIG_FORMAT_JPEG"
+
+if test "$CONFIG_FORMAT_JPEG" = "y"; then
+
+
+  AC_ARG_WITH(jpeg-dir,
+  [  --with-jpeg-dir[=DIR]   PGUI: define libjpeg install directory],
+     PGUI_WITH_JPEG_DIR="`echo ${withval} | sed 's/:/ /g' `", PGUI_WITH_JPEG_DIR="no")
+
+  if test "$PGUI_WITH_JPEG_DIR" = "no"; then
+	AC_CHECK_HEADERS(jpeglib.h)
+
+	if test "$HAVE_JPEGLIB_H" = "no"; then
+            AC_MSG_ERROR(jpeglib.h not found! try --with-jpeg-dir=<DIR>)
+	fi
+
+        AC_CHECK_LIB(jpeg,jpeg_read_header)
+
+	if test "$HAVE_LIBJPEG" = "no"; then
+            AC_MSG_ERROR(libjpeg not found! try --with-jpeg-dir=<DIR>)
+	fi
+
+  else
+
+	echo "user defined jpeg path: $PGUI_WITH_JPEG_DIR"
+	
+	if [ ! test -f $PGUI_WITH_JPEG_DIR/jpeglib.h ]; then
+            AC_MSG_ERROR(jpeglib.h not found! Make sure $PGUI_WITH_JPEG_DIR has jpeglib.h)
+	fi
+
+	LIBS="$LIBS -L $PGUI_WITH_JPEG_DIR -ljpeg"
+	CFLAGS="-I $PGUI_WITH_JPEG_DIR"
+  fi
+
+fi
+
+
 
 dnl Check for VGA & VGAGL
 AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_SVGAGL, [

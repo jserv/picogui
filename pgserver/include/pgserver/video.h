@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.48 2001/07/12 03:00:24 micahjd Exp $
+/* $Id: video.h,v 1.49 2001/07/25 21:08:21 epchristi Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -562,6 +562,9 @@ extern struct bitformat bitmap_formats[];
 
 bool pnm_detect(const u8 *data, u32 datalen);
 g_error pnm_load(hwrbitmap *bmp, const u8 *data, u32 datalen);
+
+bool jpeg_detect(const u8 *data, u32 datalen);
+g_error jpeg_load(hwrbitmap *bmp, const u8 *data, u32 datalen);
 
 /* Runs the supplied function for all loaded bitmaps
  * (a superset of handle_iterate's results)
