@@ -82,12 +82,12 @@ if test "$cross_compiling" = "yes" ; then
 else
 
   AC_CHECK_LIB(ncurses, delscreen, [
-      LXDIALOG="lxdialog"
-      AC_CHECK_HEADERS(ncurses/ncurses.h ncurses/curses.h ncurses.h curses.h)
-    ], [  
-      LXDIALOG="" 
-      AC_MSG_WARN([menuconfig won't be available])
-    ])
+    LXDIALOG="lxdialog"
+    AC_CHECK_HEADERS(ncurses/ncurses.h ncurses/curses.h ncurses.h curses.h)
+  ], [  
+    LXDIALOG="" 
+    AC_MSG_WARN([menuconfig won't be available])
+  ])
 
 fi
 
@@ -103,7 +103,7 @@ dnl ==================================================
 dnl Eventually check for SDL
 AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_SDLFB DRIVER_SDL, [ 
 
-  AM_PATH_SDL(1.0.0, , AC_MSG_ERROR(cannot find SDL))
+  AM_PATH_SDL(1.0.0, , AC_MSG_WARN(cannot find SDL))
 
   DRIVER_CFLAGS="${SDL_CFLAGS}"
   DRIVER_LIBS="${SDL_LIBS}" 
@@ -113,14 +113,14 @@ dnl Check for VGA & VGAGL
 AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_SVGAGL, [
 
   AC_CHECK_LIB(vga, vga_init,, AC_MSG_ERROR([cannot find libvga]))
-  AC_CHECK_LIB(vgagl, gl_clearscreen,, AC_MSG_ERROR([can't find libvgagl]))
+  AC_CHECK_LIB(vgagl, gl_clearscreen,, AC_MSG_WARN([can't find libvgagl]))
 
   DRIVER_LIBS="-lvga -lvgagl"
 ])
 
 AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_SVGAFB, [
 
-  AC_CHECK_LIB(vga, vga_init,, AC_MSG_ERROR(cannot find libvga))
+  AC_CHECK_LIB(vga, vga_init,, AC_MSG_WARN(cannot find libvga))
 
   DRIVER_LIBS="-lvga"
 ])
@@ -130,14 +130,14 @@ dnl check for ncurses & gpm
 
 AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_NCURSES, [
 
-  AC_CHECK_LIB(ncurses, delscreen,, AC_MSG_ERROR([can't find libncurses]))
+  AC_CHECK_LIB(ncurses, delscreen,, AC_MSG_WARN([can't find libncurses]))
 
   DRIVER_LIBS="-lncurses"
 ])
 
 AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_NCURSES, [
 
-  AC_CHECK_LIB(gpm, Gpm_Open,, AC_MSG_ERROR([can't find libgpm]))
+  AC_CHECK_LIB(gpm, Gpm_Open,, AC_MSG_WARN([can't find libgpm]))
 
   DRIVER_LIBS="-lgpm"
 ])
