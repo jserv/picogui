@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.54 2002/09/04 04:15:50 viking667 Exp $
+/* $Id: terminal.c,v 1.55 2002/09/08 08:24:30 viking667 Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -1026,10 +1026,11 @@ void term_ecma48sgr(struct widget *self) {
       DATA->attr = (DATA->attr & 0x0F) | (DATA->attr_default & 0xF0);
       break;
 
-#ifdef BOTHERSOME_TERMINAL
     default:
+#ifdef BOTHERSOME_TERMINAL
       printf("term: Unknown ECMA-48 SGR number = %d\n",*arg);
 #endif
+      break;
 
     }
 
@@ -1140,10 +1141,11 @@ void term_othercsi(struct widget *self,u8 c) {
       }
       break;
 
-#ifdef BOTHERSOME_TERMINAL
     default:
+#ifdef BOTHERSOME_TERMINAL
       printf("term: Unknown DECSET/DECRST number = %d\n",DATA->csiargs[0]);
 #endif
+      break;
     }
     break;
 
@@ -1157,12 +1159,12 @@ void term_othercsi(struct widget *self,u8 c) {
   case 'u':
     DATA->crsry = DATA->savcrsry;
     DATA->crsrx = DATA->savcrsrx;
-     break;
+    break;
+  default:
 #ifdef BOTHERSOME_TERMINAL
-    default:
       printf("term: Unknown final character in CSI escape = %c\n",c);
 #endif
-
+      break;
 
   }
 }
