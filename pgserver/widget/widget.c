@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.35 2000/08/06 00:56:47 micahjd Exp $
+/* $Id: widget.c,v 1.36 2000/08/06 02:48:18 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -330,14 +330,11 @@ void install_timer(struct widget *self,unsigned long interval) {
 
     self->tnext = timerwidgets;
     timerwidgets = self;
-
-    /* Set (reset?) the timer */
-    settimer(interval);
   }
 }
 
 /* Trigger and remove the next timer trigger */
-void trigger_timer(void) {
+void inline trigger_timer(void) {
   struct widget *w;
 
   /* Verify that the trigger is actually due.
@@ -350,15 +347,6 @@ void trigger_timer(void) {
     timerwidgets = timerwidgets->tnext;
 
     send_trigger(w,TRIGGER_TIMER,NULL);
-  }
-
-  /* Set up the next one */
-  if (timerwidgets) {
-    unsigned long tick = getticks();
-    if (timerwidgets->time < tick)
-      trigger_timer();
-    else
-      settimer(timerwidgets->time - tick);
   }
 }
 

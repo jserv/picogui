@@ -1,4 +1,4 @@
-/* $Id: timer.h,v 1.2 2000/08/06 00:50:53 micahjd Exp $
+/* $Id: timer.h,v 1.3 2000/08/06 02:48:17 micahjd Exp $
  *
  * timer.h - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -39,11 +39,6 @@ void timer_release(void);
    in milliseconds
 */
 unsigned long getticks(void);
-
-/* Used in widget.c to set the time for the
-   next call to trigger_timer
-*/
-unsigned long settimer(unsigned long interval);
 
 #endif /* __H_TIMER */
 

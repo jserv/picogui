@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.19 2000/08/06 00:50:53 micahjd Exp $
+/* $Id: scroll.c,v 1.20 2000/08/06 02:48:18 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -35,7 +35,7 @@
 #define SCROLL_DELAY 50
 
 /* # of milliseconds between scrolls when holding down the mouse */
-#define SCROLLSPEED  100
+#define SCROLLSPEED  50
 
 /* A power of two to divide the scroll bar's height by to get the
    indicator's height */
@@ -257,7 +257,7 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
       }
 
       /* Set up a timer for repeating the scroll */
-      if (DATA->release_delta)
+      if (DATA->release_delta != 0)
 	install_timer(self,SCROLLSPEED);
     }
     break;
@@ -265,15 +265,19 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
     /* Well, it gets the job done: */
     
   case TRIGGER_TIMER:
-    if (!DATA->on) return;
+    if (DATA->release_delta == 0) return;
   case TRIGGER_UP:
     if (DATA->release_delta) {
       DATA->value += DATA->release_delta;
 
-      if (DATA->value > DATA->res) 
+      if (DATA->value > DATA->res) {
 	DATA->value = DATA->res;
-      if (DATA->value < 0) 
+	DATA->release_delta = 0;
+      }
+      if (DATA->value < 0) {
 	DATA->value =   0;
+	DATA->release_delta = 0;
+      }
       
       scrollevent(self);
     }
