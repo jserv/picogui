@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.26 2002/10/17 00:21:59 micahjd Exp $
+/* $Id: font_freetype.c,v 1.27 2002/10/17 00:27:07 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -157,6 +157,9 @@ g_error freetype_engine_init(void) {
     /* It's ok to exit here, fonts are initialized before drivers */
     exit(0);
   }
+
+  if (get_param_int("pgserver","ramen",0))
+    printf("Mmmmm, tasty!\n");
 
   if (!ft_facelist)
     return mkerror(PG_ERRT_IO,66);  /* Can't find fonts */
