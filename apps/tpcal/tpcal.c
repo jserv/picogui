@@ -310,10 +310,9 @@ int main(int argc, char *argv[])
     break;
   }
 
-  pgNewPopup(mi.lxres, mi.lyres);
-
   pgLoadTheme(pgFromFile("calth.th"));
   calth = pgFindThemeObject("tpcal");
+  pgNewPopup(mi.lxres, mi.lyres);
   wCanvas = pgNewWidget(PG_WIDGET_CANVAS,0,0);
   pgSetWidget(0, PG_WP_THOBJ, calth, 0);
   pgBind(PGDEFAULT,PG_WE_BUILD,&evtBuild,NULL);
