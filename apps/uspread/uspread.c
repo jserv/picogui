@@ -35,6 +35,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define DEF_W 20
+
 pghandle wBox, *wRow, wHead, wHBox;
 char **data;
 int dc, dr;
@@ -42,10 +44,10 @@ int dc, dr;
 void loadFile ( char *fileName )
 {
    int i, j;
-   int h=13, w=45;
 
-   data = (char **) malloc ( 1024 );
-   parse_csv ( fileName, data, &dc, &dr);
+   csv_info ( fileName, &dc, &dr );
+   data = (char **) malloc ( dc*dr*sizeof(char*) );
+   parse_csv ( fileName, data, dc, dr);
 
    //dr -= 2; //first header, 2nd widths
    wRow = (pghandle *) malloc ( (dr-2) * sizeof ( pghandle ) );
@@ -62,37 +64,95 @@ void loadFile ( char *fileName )
    for ( j=dc-1; j >= 0; j-- )
    {
       pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_INSIDE,wHead);
-      pgSetWidget(PGDEFAULT,
-               PG_WP_TEXT, pgNewString( data[j] ),
-               PG_WP_SIDE, PG_S_LEFT,
-               PG_WP_SIZE, atoi( data[j+dc] ),
-               PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
-               0);
-      i++;
+      if ( data[j] != NULL && data[j+dc] != NULL )
+         pgSetWidget(PGDEFAULT,
+                  PG_WP_TEXT, pgNewString( data[j] ),
+                  PG_WP_SIDE, PG_S_LEFT,
+                  PG_WP_SIZE, atoi( data[j+dc] ),
+                  PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
+                  0);
+      else
+         if ( data[j] == NULL )
+         {
+            if ( data[j+dc] == NULL )
+               pgSetWidget(PGDEFAULT,
+                        PG_WP_TEXT, pgNewString( ":)" ),
+                        PG_WP_SIDE, PG_S_LEFT,
+                        PG_WP_SIZE, DEF_W,
+                        PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
+                        0);
+            else
+               pgSetWidget(PGDEFAULT,
+                        PG_WP_TEXT, pgNewString( ":)" ),
+                        PG_WP_SIDE, PG_S_LEFT,
+                        PG_WP_SIZE, atoi( data[j+dc] ),
+                        PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
+                        0);
+         }
+         else
+            pgSetWidget(PGDEFAULT,
+                     PG_WP_TEXT, pgNewString( data[j] ),
+                     PG_WP_SIDE, PG_S_LEFT,
+                     PG_WP_SIZE, DEF_W,
+                     PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
+                     0);
    }
    /**** </widgets> ****/
 
    /**** <widgets where="client area"> ****/
-   for ( i=2; i<dr; i++ )
+   for ( i=(dr-1); i>=2; i-- )
    {
       wRow [i-2] = pgNewWidget(PG_WIDGET_BOX,PG_DERIVE_INSIDE,wBox);
       pgSetWidget(PGDEFAULT,
-                  PG_WP_SIDE, PG_S_BOTTOM,
+                  PG_WP_SIDE, PG_S_TOP,
                   0);
 
       for ( j=dc-1; j >= 0; j-- )
       {
-//printf( "%s , ", data[j+(i*dc)] );
          pgNewWidget(PG_WIDGET_FIELD,PG_DERIVE_INSIDE,wRow[i-2]);
+/*
          pgSetWidget(PGDEFAULT,
                   PG_WP_TEXT, pgNewString( data[j+(i*dc)] ),
                   PG_WP_SIDE, PG_S_LEFT,
                   PG_WP_SIZE, atoi( data[j+dc] ),
                   PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
-                  0);
+                  0);*/
+         if ( data[j+(i*dc)] != NULL && data[j+dc] != NULL )
+            pgSetWidget(PGDEFAULT,
+                     PG_WP_TEXT, pgNewString( data[j+(i*dc)] ),
+                     PG_WP_SIDE, PG_S_LEFT,
+                     PG_WP_SIZE, atoi( data[j+dc] ),
+                     PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
+                     0);
+         else
+            if ( data[j+(i*dc)] == NULL )
+            {
+               if ( data[j+dc] == NULL )
+                  pgSetWidget(PGDEFAULT,
+                           PG_WP_TEXT, pgNewString( ":)" ),
+                           PG_WP_SIDE, PG_S_LEFT,
+                           PG_WP_SIZE, DEF_W,
+                           PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
+                           0);
+               else
+                  pgSetWidget(PGDEFAULT,
+                           PG_WP_TEXT, pgNewString( ":)" ),
+                           PG_WP_SIDE, PG_S_LEFT,
+                           PG_WP_SIZE, atoi( data[j+dc] ),
+                           PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
+                           0);
+            }
+            else
+               pgSetWidget(PGDEFAULT,
+                        PG_WP_TEXT, pgNewString( data[j+(i*dc)] ),
+                        PG_WP_SIDE, PG_S_LEFT,
+                        PG_WP_SIZE, DEF_W,
+                        PG_WP_SIZEMODE, PG_SZMODE_PIXEL,
+                        0);
       }
     }
    /**** </widgets> ****/
+   free ( data );
 }
 
 int closeboxHandler(struct pgEvent *evt) {

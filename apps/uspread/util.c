@@ -237,11 +237,13 @@ str_to_array(char * str, char * buf, char * delim, int multiple_delim,
 
     return 0;
 }
-/* incomplete */
-/*
-int csv_info ( int *cols, int *rows )
+
+int csv_info ( char *fileName, int *cols, int *rows )
 {
-	int c, r;
+	char input[1024], temp[1024];
+	char *data[50];
+	int c=0, r=0, i;
+   FILE *csv;
 
 //quick and dirty hack to count lines
 	if( ( csv = fopen ( fileName, "rt" ) ) == NULL)
@@ -251,26 +253,34 @@ int csv_info ( int *cols, int *rows )
 	}
 	while( !feof ( csv ) )
 	{
-		fgets ( input, sizeof ( input ), csv );
+	   if ( fgets ( input, sizeof ( input ), csv ) == NULL )
+			break;
+		if ( c==0 )
+		{
+			strip_newline ( input );
+			str_to_array ( input, temp, ",", 0, data, &i );
+			c = i;
+		}
 		r++;
 	}
 	fclose ( csv );
-	
+
 	*cols = c ;
 	*rows = r ;
 
 }
-*/
 
-int parse_csv ( char *fileName, char **target, int * cols, int * rows )
+
+int parse_csv ( char *fileName, char **target, int cols, int rows )
 {
 	char input[1024], temp[1024];
-	int i, k, c, r;
+	int i, k, r=0;
 	FILE *csv;
-	char *data[50];
+	char **data;
 
-	c=1;
-	r=0;
+	data = (char **) malloc ( cols );
+	for ( k = 0; k < cols; k++ )
+      data[k] = malloc ( 1024 );
 
 	if( ( csv = fopen ( fileName, "rt" ) ) == NULL)
 	{
@@ -284,19 +294,15 @@ int parse_csv ( char *fileName, char **target, int * cols, int * rows )
 			break;
 		strip_newline ( input );
 		str_to_array ( input, temp, ",", 0, data, &i );
-		if ( r==0 )
-			c = i;
-		for ( k = 0; k < c; k++ )
+
+		for ( k = 0; k < cols; k++ )
 		{
-			target [ (r*c) + k] = malloc ( 1024 );
-			strcpy ( target [ (r*c) + k], data[k] );
+			target [ (r*cols) + k] = malloc ( 1024 );
+			strcpy ( target [ (r*cols) + k], data[k] );
 		}
-		r++;
+      r++;
 	}
 	fclose ( csv );
-
-	*cols = c;
-	*rows = r;
 
 	return 0;
 }

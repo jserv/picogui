@@ -11,7 +11,12 @@ int csv_to_array(char *str, char *buf, char **array, int *count);
 int str_to_array(char *str, char *buf, char *delim, int multiple_delim,
 		 char **array, int *count_ptr);
 
-/* Parse a whole file ** Tasnim Ahmed <tasnim@users.sourceforge.net> ** */
-int parse_csv ( char *fileName, char **target, int *cols, int *rows );
+/* ** Tasnim Ahmed <tasnim@users.sourceforge.net> ** */
+
+/* get estimated rows and columns from a file */
+int csv_info ( char *fileName, int *cols, int *rows );
+
+/* Parse a whole file */
+int parse_csv ( char *fileName, char **target, int cols, int rows );
 
 #endif
