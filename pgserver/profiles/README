@@ -1,0 +1,14 @@
+This directory contains sample configurations to optimize pgserver for a
+particular target platform. The profile.* files are compile-time
+configurations that can be loaded using something like:
+  
+  ./configure --with-profile=profiles/profile.foo
+  
+You may still customize these settings using 'make menuconfig' if needed.
+
+The *.conf files are sample runtime configurations for various platforms.
+Where the compile-time options turn on and off various features, the runtime
+options set paths and configure default values for drivers. See
+README.configfile for more information on the settings available in the
+configuration files. pgserver will look for runtime configuration at
+/etc/pgserver.conf, ~/.pgserverrc, or on the command line.
