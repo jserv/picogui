@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.14 2001/10/12 06:20:44 micahjd Exp $
+/* $Id: render.c,v 1.15 2001/10/20 01:13:38 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -309,19 +309,22 @@ void groplist_scroll(struct groprender *r, struct divnode *div) {
 
     /* Vertical scroll: blit up or down */
     if (r->scroll.y) {
-      if (r->scroll.y < 0)
-	VID(blit) (r->output,r->clip.x1,r->clip.y1,
-		   r->clip.x2 - r->clip.x1 + 1,r->clip.y2 - r->clip.y1 + 
-		   1 + r->scroll.y,
-		   r->output,r->clip.x1,r->clip.y1 - r->scroll.y,
-		   PG_LGOP_NONE);
-      else
-	VID(scrollblit) (r->output,r->clip.x1,r->clip.y1 + r->scroll.y,
-			 r->clip.x2 - r->clip.x1 + 1,r->clip.y2 - r->clip.y1 +
-			 1 - r->scroll.y,
-			 r->output,r->clip.x1,r->clip.y1,
-			 PG_LGOP_NONE);
-    }      
+      s16 h = r->clip.y2 - r->clip.y1 + 1 + r->scroll.y;
+      
+      /* If h<=0 the whole area is new, so we have nothing to blit */
+      if (h>0) {
+	if (r->scroll.y < 0)
+	  VID(blit) (r->output,r->clip.x1,r->clip.y1,
+		     r->clip.x2 - r->clip.x1 + 1,h,
+		     r->output,r->clip.x1,r->clip.y1 - r->scroll.y,
+		     PG_LGOP_NONE);
+	else
+	  VID(scrollblit) (r->output,r->clip.x1,r->clip.y1 + r->scroll.y,
+			   r->clip.x2 - r->clip.x1 + 1,h,
+			   r->output,r->clip.x1,r->clip.y1,
+			   PG_LGOP_NONE);
+      }      
+    }
     
     /* Truncate our own clipping rectangle */
     scroll_clip(&r->clip,&r->scroll);
