@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.32 2002/07/03 22:03:29 micahjd Exp $
+/* $Id: handle.h,v 1.33 2002/07/04 20:00:31 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -64,8 +64,7 @@ struct handlenode {
   u8 type;                /* Most of this represents the data type
 			   * that this handle points to. Upper 2 bits
 			   * are for HFLAGs */
-  s8 context;             /* Would usually be a short- trying char to
-			   * make this structure pack better */
+  s8 context;
 
   /* 32-bit fields */
   u32 payload;   /* Client-definable data */
