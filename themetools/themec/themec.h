@@ -1,4 +1,4 @@
-/* $Id: themec.h,v 1.1 2000/09/25 00:15:26 micahjd Exp $
+/* $Id: themec.h,v 1.2 2000/09/25 03:18:45 micahjd Exp $
  *
  * themec.h - definitions used internally in the theme compiler
  *
@@ -34,9 +34,14 @@
 #include <picogui/constants.h>
 #include <picogui/theme.h>
 
+#define MAXERRORS  20
+
 /* Parser globals */
 extern int lineno;
 extern int errors;
+extern char *yytext;
+extern char *filename;
+extern FILE *yyin;
 
 /* An entry in the symbol table */
 struct symnode {
@@ -44,6 +49,12 @@ struct symnode {
   const char *name;
   unsigned long value;
 };
+
+extern struct symnode symboltab[];
+
+/* Utility functions */
+int yyerror(const char *s);   /* Error reporting */
+int symlookup(const char *sym,unsigned long *value);
  
 #endif /* _H_THEMEC */
 /* The End */

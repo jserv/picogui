@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.3 2000/09/25 00:15:26 micahjd Exp $
+/* $Id: pgtheme.y,v 1.4 2000/09/25 03:18:45 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -40,28 +40,67 @@
   } propval;
 }
 
+   /* Data types */
 %token <num>     NUMBER
 %token <propid>  PROPERTY
 %token <thobjid> THOBJ
-%token STRING
+%token STRING 
+
+   /* Reserved words */
+%token UNKNOWNSYM OBJ
 
 %left '-' '+'
 %left '*' '/'
 
 %type <num>      constexp
 %type <propval>  propertyval
-%type <propval>  statement
+%type <thobjid>  thobj
+%type <propid>   property
+
+%start unitlist
 
 %%
-statementlist: statement
-             | statementlist statement
-             ;
 
-statement:  PROPERTY '=' propertyval ';' { printf("=%d\n",$3); }
+unitlist: unit
+        | unitlist unit
+        ;
+
+   /* This is a list of the structures that can appear
+      unenclosed in the file */
+unit: objectdef
+    | ';'        /* No real purpose but to satisfy people that
+		    insist on ending object definitions with a ';' */
+    ;
+
+objectdef:  OBJ thobj compount_stmt { printf("--- object %d",$2); }
          ;
 
-propertyval:  constexp
-           |  statement
+compount_stmt:  statement
+             |  '{' '}'
+             |  '{' stmt_list '}'
+             ;
+
+statement:  property '=' propertyval ';' { printf("=%d\n",$3); }
+         |  ';'
+	 |  error ';'
+	 |  error '}'
+         ;
+
+stmt_list: statement
+         | stmt_list statement
+         ;
+
+thobj: THOBJ
+     | PROPERTY       { yyerror("Property found in place of theme object"); } 
+     | UNKNOWNSYM     { $$ = 0; }
+     ;
+
+property: PROPERTY
+        | THOBJ       { yyerror("Theme object found in place of property"); }
+        | UNKNOWNSYM  { $$ = 0; }
+        ;
+
+propertyval:  constexp          { $$.data = $1; $$.loader = PGTH_LOAD_NONE; }
            ;
 
 constexp: constexp '+' constexp { $$ = $1 + $3; }
@@ -74,4 +113,29 @@ constexp: constexp '+' constexp { $$ = $1 + $3; }
 	    $$ = $1 / $3; }
         | '(' constexp ')' { $$ = $2; }
         | NUMBER
+	| UNKNOWNSYM            { $$ = 0; }
         ;
+
+%%
+
+/* Generic error reporting function for parsing errors */
+int yyerror(const char *s) {
+  if (YYRECOVERING)
+    return;
+
+  if (errors >= MAXERRORS) {
+    fprintf(stderr,"Too many errors!\n");
+    exit(1);
+  }
+
+  fprintf(stderr,"Error on %s:%d: %s",filename,lineno,s);
+  if (yytext[0])
+    fprintf(stderr," at \"%s\"\n",yytext);
+  else
+    fprintf(stderr,"\n");
+
+  errors++;
+  return 1;
+}
+
+/* The End */

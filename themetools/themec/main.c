@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.1 2000/09/25 00:50:48 micahjd Exp $
+/* $Id: main.c,v 1.2 2000/09/25 03:18:45 micahjd Exp $
  *
  * main.c - main() and some parser utility functions for
  *          the PicoGUI theme compiler.  The actual parsing
@@ -29,16 +29,20 @@
  */
 
 #include "themec.h"
+#include "y.tab.h"
 
 int lineno = 1;
 int errors = 0;
 
-extern FILE *yyin;
+char *filename;
 
 int main(int argc, char **argv) {
 
+  /* I will put in a nice getopt-based arg processor later */
+
+  filename = "stdin";
   if (argc==2) {
-    yyin = fopen(argv[1],"r");
+    yyin = fopen(filename = argv[1],"r");
     if (!yyin) {
       perror("Error opening file");
       return 2;
@@ -51,10 +55,21 @@ int main(int argc, char **argv) {
   return (errors ? 1 : 0);
 }
 
-int yyerror(const char *s) {
-  fprintf(stderr,"Error on line %d: %s\n",lineno,s);
-  errors++;
-  return 1;
+/* Symbol table lookup, optionally putting the symbol's
+   value in *value.  The symbol's type is returned. */
+int symlookup(const char *sym,unsigned long *value) {
+  struct symnode *n = symboltab;
+
+  while (n->name) {
+    if (!strcmp(sym,n->name)) {
+      if (value) *value = n->value;
+      return n->type;
+    }
+    n++;
+  }
+  
+  yyerror("Unrecognized symbol");
+  return UNKNOWNSYM;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-# $Id: mksymtab.pl,v 1.2 2000/09/25 00:15:26 micahjd Exp $
+# $Id: mksymtab.pl,v 1.3 2000/09/25 03:18:45 micahjd Exp $
 #
 # mksymtab.pl - convert the constant definitions in constants.h
 #               into a symbol table to compile into the theme
@@ -35,7 +35,7 @@ while (<>) {
 	print "// $1\n";
 
 	# Start the rest of the file
-	print "\n#include \"themec.h\"\n#include \"y.tab.h\"\n\nstatic struct symnode symboltab[] = {\n";
+	print "\n#include \"themec.h\"\n#include \"y.tab.h\"\n\nstruct symnode symboltab[] = {\n";
 
 	next;
     }
@@ -44,7 +44,7 @@ while (<>) {
     # the C compiler sort that out. Just get a list of 'em
     # so we can make a table
 
-    next if (!/^\#define\s*(\S+)/);
+    next if (!/^\#define\s*(PG\S+)/);
     $n = $1;
 
     # All values can be used as-is as a numerical constant
@@ -65,7 +65,7 @@ while (<>) {
     }
 }
 
-print "\t{0,NULL,0},\n};\n/* The End */\n";
+print "\t{0,NULL,0}\n};\n\n/* The End */\n";
 
 ### The End ###
 
