@@ -14,6 +14,7 @@ from twisted.internet.protocol import Factory
 from twisted.internet.app import Application
 from twisted.internet import reactor
 from twisted.protocols.basic import LineReceiver
+from twisted.python import log
 import time, irc_colors, glob, sys, re, os
 
 # Figure out what our botID is.
@@ -53,7 +54,7 @@ print channelList.keys();
 password = ""
 try:
     f = open("/home/commits/.fnpass")
-    password = f.readline()
+    password = f.readline().rstrip()
 except:
     pass
 
@@ -81,21 +82,26 @@ class AccountManager (baseaccount.AccountManager):
         for acct in accounts:
             defer = acct.logOn(self.chatui)
             defer.addCallback(self.logonCallback)
+            defer.addErrback(log.err)
+
+    def errback(self, acct):
+        print "Error! "
 
     def logonCallback(self, acct):
         print "Logged on OK"
+        time.sleep(4) # so it won't count towards our limit as much
         if password != "":
-            print "Sending OPER line"
-            acct.client.sendLine("OPER "+botNick+" "+password) # identify to freenode
-            ##time.sleep(10) # so it won't count towards our limit as much
+            print "Sending OPER"
+            accounts[0].client.sendLine("OPER "+botNick+" "+password)  # identify to freenode
             print "Sending SILENCE line"
-            acct.client.sendLine("SILENCE +*@*") # as we don't accept commands via IRC, silence incoming messages to make it more DoS resistant
+            accounts[0].client.sendLine("SILENCE +*@*") # as we don't accept commands via IRC, silence incoming messages to make it more DoS resistant
 
         for chan in channelList:
             print "Joining "+chan
-            acct.client.join(chan)
+            accounts[0].client.join(chan)
 
         connected = 1 # true
+        print "Done"
 
 
 class AnnounceServer(LineReceiver):
