@@ -22,8 +22,12 @@ author = message['from']
 
 # The body is the set of non-blank lines starting after "Log Message:"
 log = ""
-while body.readline().strip() != "Log Message:":
-    pass
+line = ""
+tag = ""
+while line != "Log Message:":
+    if line.startswith("Tag:"):
+        tag = line[4:]
+    line = body.readline().strip()
 while True:
     line = body.readline().strip()
     if not line:
@@ -31,6 +35,8 @@ while True:
     log += line + "\n"
 
 ciaMessage = "%s {green}%s{normal}: %s" % (dirName, author, log)
+if tag:
+    ciaMessage = "[tag={yellow}%s{normal}] %s" % (tag, ciaMessage)
 
 s = smtplib.SMTP()
 s.connect()
