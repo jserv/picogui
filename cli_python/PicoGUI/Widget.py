@@ -28,7 +28,7 @@ class Command_Proxy(object):
         return Command_Proxy(self.widget, self.name, ns, self.args + (name,))
 
 class Widget(object):
-    def __init__(self, server, handle, parent=None):
+    def __init__(self, server, handle, parent=None, type=None):
         # we do this instead of self.server = server
         # to avoid calling __setattr__
         self.__dict__.update({
@@ -36,6 +36,7 @@ class Widget(object):
             'handle': handle,
             'default_relationship': default_relationship,
             'parent': parent,
+            'type': type,
             })
 
     def __eq__(self, other):
@@ -48,7 +49,7 @@ class Widget(object):
 
     def addWidget(self, wtype, relationship=None):
         new_id = self.server.mkWidget(relationship or self.default_relationship, wtype, self.handle)
-        new = Widget(self.server, new_id, self)
+        new = Widget(self.server, new_id, self, type=wtype)
         self._notify_new_widget(new)
         return new
 
