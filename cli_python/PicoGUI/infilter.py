@@ -11,7 +11,8 @@ trigger_types = {
   1<<4:		'deactivate',	# Losing focus 
   1<<5:		'key up',	# Ignores autorepeat, etc. Raw key codes
   1<<6:		'key down',	# Ditto. 
-  1<<7:		'release',	# Mouse up (see note) 
+  1<<7:		'release',	# Mouse up (This is when the mouse was pressed
+                                # inside the widget, then released elsewhere.)
   1<<8:		'up',		# Mouse up in specified divnode 
   1<<9:		'down',		# Mouse down in divnode 
   1<<10:	'move',		# Triggers on any mouse movement in node 
@@ -49,10 +50,14 @@ kbd = 'kbd'
 unknown = 'unknown'
 
 class Trigger(object):
-    def __init__(self, data='\0'*64):
+    def __init__(self, data='\0'*64, name=None, sender=None):
         self._data = list(struct.unpack(trigger_base_format, data))
-        self.sender, ttype = struct.unpack('!LL', data[:8])
-        self.name = trigger_types.get(ttype, ttype)
+        if sender:
+            self.sender = sender
+            ttype = None
+        else:
+            self.sender, ttype = struct.unpack('!LL', data[:8])
+        self.name = name or trigger_types.get(ttype, ttype)
         if self.name in mouse_triggers:
             self.dev = mouse
         elif self.name in kbd_triggers:
