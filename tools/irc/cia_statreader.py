@@ -8,7 +8,7 @@ baseDir = "/home/commits"
 statDir = os.path.join(baseDir, "stats")
 urlDir = os.path.join(baseDir, "urls")
 mtbcSubdir = 'mtbc'
-channelBaseFile = os.path.join(baseDir, "channels.list")
+channelFile = os.path.join(baseDir, "channels.list")
 commandLog = os.path.join(baseDir, "commands.log")
 
 # List out the subdirs explicitly so we can set the order-
@@ -51,18 +51,11 @@ def readStats():
         if not project in hiddenProjects:
             projects.append(project)
 
-    # Yucky hack to strip off "#"
-
-    # Add channels from all bots, remove duplicates, sort
     channels = []
-    channelTemp = {}
-    for channelFile in glob.glob(channelBaseFile + ".*"):
-        for channel in open(channelFile).read().split("\n"):
-	    channel = channel.strip()
-	    if channel:
-	        channelTemp[channel] = 1
-    for key in channelTemp:
-        channels += [key]
+    for channel in open(channelFile).read().split("\n"):
+        channel = channel.strip()
+	if channel:
+	    channels.append(channel)
     channels.sort()
 
     projectCounts = {}
