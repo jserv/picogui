@@ -21,6 +21,7 @@ for package in `(cd $WC; ls)`; do
      $SVN export $WC/$package $TMPDIR/$package
      (cd $TMPDIR; tar jcvf $package.tar.bz2 $package)
      mv $TMPDIR/$package.tar.bz2 $DEST/$PREFIX$package.tar.bz2
+     chmod a+r $DEST/$PREFIX$package.tar.bz2
 done
 
 rm -Rf $TMPDIR
