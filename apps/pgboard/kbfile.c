@@ -1,4 +1,4 @@
-/* $Id: kbfile.c,v 1.11 2002/06/17 09:14:59 lalo Exp $
+/* $Id: kbfile.c,v 1.12 2002/06/18 09:12:54 lalo Exp $
   *
   * kbfile.c - Functions to validate and load patterns from a keyboard file
   * 
@@ -243,14 +243,12 @@ int kb_loadpatterns (unsigned char * file_buffer)
 	 {
 	   current_pat->ptype = PGKB_REQUEST_EXEC;
 	   /* Read raw data */
-	   current_pat->canvas_buffer = (char *) malloc (current_pat->canvasdata_len + 2);
+	   current_pat->canvas_buffer = (char *) malloc (current_pat->canvasdata_len + 1);
 	   if (!current_pat->canvas_buffer)
 	     return 1;
 	   memcpy (current_pat->canvas_buffer, file_buffer, current_pat->canvasdata_len * sizeof (char));
 	   file_buffer += current_pat->canvasdata_len * sizeof (char);
-	   /* FIXME: does this work on all platforms pgui runs on? */
-	   current_pat->canvas_buffer[current_pat->canvasdata_len] = '&';
-	   current_pat->canvas_buffer[current_pat->canvasdata_len + 1] = 0;
+	   current_pat->canvas_buffer[current_pat->canvasdata_len] = 0;
 	 }
        else
 	 {
@@ -261,6 +259,22 @@ int kb_loadpatterns (unsigned char * file_buffer)
 
    return 0;
 }
+
+/* execute a command in a subprocess */
+void spawn_process (const char *command)
+     {
+       pid_t pid;
+       static SHELL = "/bin/sh";
+     
+       pid = fork ();
+       if (pid == 0)
+         {
+           /* This is the child process.  Execute the shell command. */
+           execl (SHELL, SHELL, "-c", command, NULL);
+           _exit (EXIT_FAILURE);
+         }
+     }
+
 
 /* Select a pattern from the ones loaded in memory, and load it into the
    specified canvas widget */
@@ -293,7 +307,7 @@ void kb_selectpattern (unsigned short pattern_num, pghandle canvas)
 	}
       else if (current_pat->ptype = PGKB_REQUEST_EXEC)
 	{
-	  system (current_pat->canvas_buffer);
+	  spawn_process (current_pat->canvas_buffer);
 	}
     }
 }
