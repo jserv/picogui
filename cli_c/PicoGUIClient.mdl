@@ -41,3 +41,10 @@ def prepare (module, platform, project):
               command)
     return
 
+def linkinfo (module, platform, project):
+
+    cflags = '-I%s/include' % module.path ['dfl']
+    libs   = '-L%s/lib -lpgui' % module.path ['dfl']
+    
+    return { 'library' : { 'cflags' : cflags,
+                           'libs'   : libs} }
