@@ -1,4 +1,4 @@
-/* $Id: ez328.c,v 1.9 2001/03/12 17:25:44 pney Exp $
+/* $Id: ez328.c,v 1.10 2001/03/19 23:00:32 bauermeister Exp $
  *
  * ez328.c - Driver for the 68EZ328's (aka Motorola Dragonball EZ)
  *           built-in LCD controller. It assumes the LCD parameters
@@ -45,7 +45,7 @@ g_error ez328_regfunc(struct vidlib *v);
 
 g_error ez328_init(int xres,int yres,int bpp,unsigned long flags) {
    g_error e;
-   
+
 #ifdef CONFIG_CHIPSLICE
    LCKCON = 0;     /* LCKCON - LCD is off */
    LVPW   = 0x50;
@@ -58,10 +58,16 @@ g_error ez328_init(int xres,int yres,int bpp,unsigned long flags) {
 
    LCKCON = 0x81;
    PCPDEN = 0xff00;     /* LCD pins */
-#endif
 
    /* Save existing register settings */
    memcpy(ez328_saveregs,REGS_START,REGS_LEN);
+
+#elif defined(CONFIG_XCOPILOT)
+   LXMAX  = 160;
+   LYMAX  = 160-1;
+   bpp = 1;
+#endif
+
 
    if (!bpp) bpp = 1;        /* Default to black and white */
 
@@ -111,7 +117,7 @@ g_error ez328_init(int xres,int yres,int bpp,unsigned long flags) {
    errorcheck;
    LSSA = (unsigned long) vid->fb_mem;
 
-#ifdef CONFIG_CHIPSLICE
+#if defined(CONFIG_CHIPSLICE) || defined(CONFIG_XCOPILOT)
    /* Load the ts driver as the main input driver */
    return load_inlib(&tsinput_regfunc,&inlib_main);
 #else
@@ -120,8 +126,10 @@ g_error ez328_init(int xres,int yres,int bpp,unsigned long flags) {
 }
 
 void ez328_close(void) {
+#if !defined(CONFIG_XCOPILOT)
    /* Restore register settings, free video memory */
    memcpy(REGS_START,ez328_saveregs,REGS_LEN);   
+#endif
 
 #ifdef CONFIG_CHIPSLICE
    unload_inlib(inlib_main);   /* Chipslice loaded an input driver */
