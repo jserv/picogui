@@ -1,0 +1,13 @@
+ <application text="JetEngine Python Console">
+	<box side="bottom" transparent="1" margin="0">	
+		<label side="left" name="PythonPrompt"/>
+              	<field side="all" name="PythonCommand"/>
+	</box> 
+       	<scrollbox transparent = "1" margin = "0">
+             	<textbox side="all" 
+                         readonly="1" 
+                         insertmode="append"
+                         name="PythonConsole"
+                         />
+  	</scrollbox>
+</application>

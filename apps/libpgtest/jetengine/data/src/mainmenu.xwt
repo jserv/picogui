@@ -1,4 +1,4 @@
-<application>
+<toolbarapp side="all">
 	<box>
 		<label side="all" font=":20:bold">
 			Title goes here
@@ -25,4 +25,4 @@
 	<box side="all">
 		<label side="all" font=":30" text="Preview"/>
 	</box>
-</application>
+</toolbarapp>

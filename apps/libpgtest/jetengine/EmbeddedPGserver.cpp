@@ -1,4 +1,4 @@
-/* $Id: EmbeddedPGserver.cpp,v 1.4 2002/11/26 19:18:07 micahjd Exp $
+/* $Id: EmbeddedPGserver.cpp,v 1.5 2002/11/26 22:06:13 micahjd Exp $
  *
  * EmbeddedPGserver.c - Implementation of a simple wrapper around libpgserver
  *
@@ -40,7 +40,7 @@ EmbeddedPGserver::EmbeddedPGserver(int argc, char **argv) {
   setParam("pgserver", "dragsolid", "1");
   setParam("video-sdlgl", "caption", "JetEngine");
   setParam("opengl", "continuous", "1");
-  setParam("pgserver", "appmgr", "null");
+  setParam("pgserver", "appmgr", "panel");
   setParam("pgserver", "themedir", "data");
   setParam("pgserver", "themes", "textures.th holographic.th");
 

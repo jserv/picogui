@@ -52,7 +52,7 @@ LDFLAGS += -export-dynamic
 XWTCOMPILE = ../../../../../cli_python/PicoGUI/sample/xwtcompile.py
 
 
-$(BIN): $(OBJS) data/holographic.th data/textures.th data/mainmenu.wt data/hud.wt
+$(BIN): $(OBJS) data/holographic.th data/textures.th data/mainmenu.wt data/hud.wt data/console.wt
 	$(CXX) -o $@ $(LDFLAGS) $(OBJS) $(LIBS) 
 
 %.o: %.cpp $(HEADERS)
@@ -69,6 +69,9 @@ data/mainmenu.wt: data/src/mainmenu.xwt
 
 data/hud.wt: data/src/hud.xwt
 	cd data/src && $(XWTCOMPILE) hud.xwt ../hud.wt
+
+data/console.wt: data/src/console.xwt
+	cd data/src && $(XWTCOMPILE) console.xwt ../console.wt
 
 clean:
 	rm $(OBJS) $(BIN) data/*.th data/*.wt

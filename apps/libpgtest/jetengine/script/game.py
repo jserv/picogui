@@ -1,4 +1,4 @@
-# $Id: game.py,v 1.24 2002/11/26 19:24:58 micahjd Exp $
+# $Id: game.py,v 1.25 2002/11/26 22:06:16 micahjd Exp $
 #
 # game.py - The main module imported by the game engine,
 #           and containing the thread() function it invokes.
@@ -21,7 +21,7 @@
 #
 
 import PicoGUI, math, time
-import hud, input, mainmenu
+import hud, input, mainmenu, console
 
 print "Python module imported"
 
@@ -45,14 +45,14 @@ class game:
         self.skybox = skybox
         self.ship = ship
         
-#        self.hud = hud.Hud(self)
         self.input = input.Input(self)
-        self.mainmenu = mainmenu.MainMenu(self)
+        self.hud = hud.Hud(self)
+        #self.mainmenu = mainmenu.MainMenu(self)
+        self.console = console.Console(self)
 
         self.setVelocity(10)
         self.setLasers(100)
 
-        print "Running"
         self.app.run()
 
 
