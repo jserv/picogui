@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.2 2000/09/25 03:18:45 micahjd Exp $
+/* $Id: main.c,v 1.3 2000/09/25 06:19:28 micahjd Exp $
  *
  * main.c - main() and some parser utility functions for
  *          the PicoGUI theme compiler.  The actual parsing
@@ -70,6 +70,18 @@ int symlookup(const char *sym,unsigned long *value) {
   
   yyerror("Unrecognized symbol");
   return UNKNOWNSYM;
+}
+
+/* This is called when a completed theme object
+   definition is read, including a linked list of
+   statement nodes */
+void add_objectdef(unsigned long thobj,struct propnode *props) {
+  printf("Theme object %d:\n",thobj);
+  while (props) {
+    printf("\t property %d = 0x%08X with loader %d\n",props->propid,
+	   props->data,props->loader);
+    props = props->next;
+  }
 }
 
 /* The End */

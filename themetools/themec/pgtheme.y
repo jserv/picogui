@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.4 2000/09/25 03:18:45 micahjd Exp $
+/* $Id: pgtheme.y,v 1.5 2000/09/25 06:19:28 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -35,9 +35,11 @@
   unsigned short propid;
   unsigned short thobjid;
   struct {
+    unsigned long loader;
+    unsigned long propid;
     unsigned long data;
-    unsigned short loader;
   } propval;
+  struct propnode *prop;
 }
 
    /* Data types */
@@ -46,16 +48,20 @@
 %token <thobjid> THOBJ
 %token STRING 
 
-   /* Reserved words */
-%token UNKNOWNSYM OBJ
-
-%left '-' '+'
-%left '*' '/'
-
 %type <num>      constexp
 %type <propval>  propertyval
 %type <thobjid>  thobj
 %type <propid>   property
+%type <prop>     statement
+%type <prop>     stmt_list
+%type <prop>     compount_stmt
+
+   /* Reserved words */
+%token UNKNOWNSYM OBJ
+
+
+%left '-' '+'
+%left '*' '/'
 
 %start unitlist
 
@@ -72,25 +78,44 @@ unit: objectdef
 		    insist on ending object definitions with a ';' */
     ;
 
-objectdef:  OBJ thobj compount_stmt { printf("--- object %d",$2); }
+objectdef:  OBJ thobj compount_stmt      { add_objectdef($2,$3); }
          ;
 
-compount_stmt:  statement
-             |  '{' '}'
-             |  '{' stmt_list '}'
+compount_stmt:  statement                { $$ = $1; }
+             |  '{' stmt_list '}'        { $$ = $2; }
              ;
 
-statement:  property '=' propertyval ';' { printf("=%d\n",$3); }
-         |  ';'
-	 |  error ';'
-	 |  error '}'
+statement:  property '=' propertyval ';' { 
+  $$ = malloc(sizeof(struct propnode));
+  if ($$) {
+    memset($$,0,sizeof(struct propnode));
+    $$->loader = $3.loader;
+    $$->data   = $3.data;
+    $$->propid = $1;
+  }
+  else
+    yyerror("memory allocation error");
+}
+         |  ';'         { $$ = NULL; }
+	 |  error ';'   { $$ = NULL; }
+	 |  error '}'   { $$ = NULL; }
          ;
 
-stmt_list: statement
-         | stmt_list statement
+    /* stmt_list makes a linked list of statements */ 
+stmt_list: statement               { $$ = $1; }
+         | stmt_list statement     { 
+  if ($2) {
+    $2->next = $1; 
+    $$ = $2; 
+  }
+  else       /* This handles skipping invalid statements
+		for error recovery (nice error messages
+		instead of a segfault ;-) */
+    $$ = $1;
+}
          ;
 
-thobj: THOBJ
+thobj: THOBJ          { $$ = $1; }
      | PROPERTY       { yyerror("Property found in place of theme object"); } 
      | UNKNOWNSYM     { $$ = 0; }
      ;
