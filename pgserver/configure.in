@@ -193,8 +193,8 @@ if test "$CONFIG_FORMAT_JPEG" = "y"; then
             AC_MSG_ERROR(jpeglib.h not found! Make sure $PGUI_WITH_JPEG_DIR has jpeglib.h)
 	fi
 
-	LIBS="$LIBS -L $PGUI_WITH_JPEG_DIR/lib -ljpeg"
-	CFLAGS="-I $PGUI_WITH_JPEG_DIR/include"
+	LIBS="$LIBS -L$PGUI_WITH_JPEG_DIR/lib -ljpeg"
+	CFLAGS="-I$PGUI_WITH_JPEG_DIR/include"
   fi
 
 fi
