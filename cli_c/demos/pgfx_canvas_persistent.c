@@ -6,23 +6,43 @@
 int main(int argc,char **argv) {
    pgcontext gc;
    
+   /* Initialize PicoGUI, create an application with a canvas widget,
+    * and get a PGFX context for the canvas */
    pgInit(argc,argv);
    pgRegisterApp(PG_APP_NORMAL,"PGFX Persistent Canvas",0);
    pgNewWidget(PG_WIDGET_CANVAS,0,0);
    gc = pgNewCanvasContext(PGDEFAULT,PGFX_PERSISTENT);
+
+   /* Set coordinate mapping. There might be a cleaner way to do this soon,
+    * but I'm not sure it belongs in PGFX because it's probably canvas
+    * specific. 
+    *
+    * This sets up a transformation to scale 0,0,100,100 to whatever size the
+    * canvas widget is. Now we have a 100x100 unit virtual area to draw
+    * in, and it is scaled to the canvas widget's size
+    */
+   pgWriteCmd(PGDEFAULT,PGCANVAS_GROP,6,PG_GROP_SETMAPPING,
+	      0,0,100,100,PG_MAP_SCALE);
    
-   /* FIXME: once coordinate translation is implemented you will know
-    * the size of the canvas (in arbitrary units) beforehand */
-   pgGradient(gc,0,0,1000,1000,0,0x000000,0x0000A0);
-
    /* Some good ol'fashioned drawing */
-   pgSetColor(gc,0xFF0000);
-   pgText(gc,10,10,pgNewString("Hello,\nWorld!"));
-   pgFrame(gc,10,60,50,50);
-   pgSetColor(gc,0x0000FF);
-   pgGradient(gc,11,61,48,48,25,0xFFFF00,0x0000FF);
-   pgRect(gc,20,70,30,30);
-   pgSetColor(gc,0xFFFFFF);
 
+   pgSetColor(gc,0x000000);        /* An 'X' across the canvas */
+   pgLine(gc,0,0,100,100);
+   pgLine(gc,100,0,0,100);
+   pgSetColor(gc,0x000080);        /* Blue text */
+   pgText(gc,50,10,pgNewString("Hello,\nWorld!"));   
+   pgSetColor(gc,0xFFFFFF);        /* Gradient thingy */
+   pgGradient(gc,30,30,40,40,25,0x8080FF,0xF0F080);
+   pgFrame(gc,30,30,40,40);
+   pgSetColor(gc,0xFFFFFF);        /* XOR a stripe down the middle */
+   pgWriteCmd(PGDEFAULT,PGCANVAS_GROP,2,PG_GROP_SETLGOP,PG_LGOP_XOR);
+   pgRect(gc,0,45,100,10);
+   pgWriteCmd(PGDEFAULT,PGCANVAS_GROP,2,PG_GROP_SETLGOP,PG_LGOP_NONE);
+   pgSetColor(gc,0x000000);        /* Use offset to make a gap 2 pixels wide */
+   pgWriteCmd(PGDEFAULT,PGCANVAS_GROP,5,PG_GROP_SETOFFSET,0,3,0,0);
+   pgLine(gc,30,85,70,85);
+   pgWriteCmd(PGDEFAULT,PGCANVAS_GROP,5,PG_GROP_SETOFFSET,0,0,0,0);
+   pgLine(gc,30,85,70,85);
+   
    pgEventLoop();
 }
