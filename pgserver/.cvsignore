@@ -15,4 +15,4 @@ config.h
 config.cache
 aclocal.m4
 .menuconfig.log
-
+ircterm.th
