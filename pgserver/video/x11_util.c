@@ -1,4 +1,4 @@
-/* $Id: x11_util.c,v 1.4 2002/11/04 12:11:32 micahjd Exp $
+/* $Id: x11_util.c,v 1.5 2002/11/04 12:24:36 micahjd Exp $
  *
  * x11_util.c - Utility functions for picogui's driver for the X window system
  *
@@ -205,7 +205,17 @@ void x11_window_free(hwrbitmap window) {
 
 void x11_window_set_title(hwrbitmap window, const struct pgstring *title) {
   struct x11bitmap *xb = XB(window)->frontbuffer ? XB(window)->frontbuffer : XB(window);
-  XStoreName(x11_display, xb->d, title->buffer);
+  struct pgstring *s;
+  struct pgstr_iterator i;
+
+  /* Make a null-terminated UTF-8 string 
+   */
+  if (!iserror(pgstring_convert(&s, PGSTR_ENCODE_UTF8, title))) {
+    pgstring_seek(s, &i, 1, PGSEEK_END);
+    if (!iserror(pgstring_insert_char(s, &i, 0, NULL)))
+      XStoreName(x11_display, xb->d, s->buffer);
+    pgstring_delete(s);
+  }
 }
 
 void x11_window_set_position(hwrbitmap window, s16 x, s16 y) {
