@@ -1,0 +1,6 @@
+Sorry, this will not compile out of the PicoGUI source tree.  You need
+to copy this directory inside your crossfire-client source tree (so
+that you have subdirs 'x11 gtk gnome pgui').
+
+This is a client for the Crossfire multiplayer game.  Check
+http://crossfire.real-time.com/ for info.
