@@ -4,11 +4,11 @@
 obj default bgfill = fillstyle {
   /*  var z;
       x = 1; */
-  rect(1,2,156*(8+2),2);
+  rect(1,2,(1+1+1+1+1+1+1)>>2,2);
 };
 
 obj button.on bgcolor = 5;
-object themeinfo name = 325;
+object themeinfo name = "Example theme";
 
 object button {
     font = 0xFFFFFF;

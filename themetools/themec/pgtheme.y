@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.10 2000/10/07 22:06:08 micahjd Exp $
+/* $Id: pgtheme.y,v 1.11 2000/10/07 23:27:12 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -44,6 +44,7 @@
   struct propnode *prop;
   struct objectnode *obj;
   struct fsnode *fsn;
+  char *str;
 }
 
    /* Data types */
@@ -52,7 +53,7 @@
 %token <thobjid> THOBJ
 %token <num>     FSVAR
 %token <num>     FSFUNC
-%token STRING 
+%token <str>     STRING 
 
 %type <num>      constexp
 %type <propval>  propertyval
@@ -171,6 +172,30 @@ property: PROPERTY
 
 propertyval:  constexp          { $$.data = $1; $$.loader = PGTH_LOAD_NONE; $$.ldnode = NULL;}
            |  fillstyle         { $$ = $1; }
+           |  STRING {
+  unsigned char *buf;
+  struct pgrequest *req;
+
+  /* Allocate the buffer */
+  if (!(buf = malloc(sizeof(struct pgrequest)+strlen($1))))
+    yyerror("memory allocation error");
+
+  /* Reserve space for the request header */
+  req = (struct pgrequest *) buf;
+  memset(req,0,sizeof(struct pgrequest));
+  req->type = htons(PGREQ_MKSTRING);
+  req->size = htonl(strlen($1));
+
+  /* copy string and discard original */
+  memcpy(buf+sizeof(struct pgrequest),$1,strlen($1));
+  free($1);
+
+  /* We add the loader node here, the loadernode is given
+     its object and property fields when it is assigned to
+     a property, and the backend inserts and links it. */
+  $$.ldnode = newloader(buf,(sizeof(struct pgrequest)+strlen($1)));
+  $$.loader = PGTH_LOAD_REQUEST;
+}
            ;
 
 constexp: constexp '+' constexp { $$ = $1 + $3; }

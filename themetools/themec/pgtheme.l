@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.l,v 1.9 2000/10/07 22:06:08 micahjd Exp $
+/* $Id: pgtheme.l,v 1.10 2000/10/07 23:27:12 micahjd Exp $
  *
  * pgtheme.l - lexer for processing PicoGUI theme source code
  *
@@ -51,7 +51,14 @@ h               { yylval.num = 3; return FSVAR; }
 
 [a-zA-Z_][a-zA-Z0-9_\.]* { return symlookup(yytext,&yylval.num); }
 [-+*/()=;{},\&\|]        { return yytext[0]; }
-\"[^"\n]*["\n]           { return STRING; }
+\"([^\"\n\\]*(\\.)*)+[\"\n] { 
+  yylval.str = strdup(yytext+1);
+  if (yylval.str[yyleng-2] != '\"')
+    yyerror("unterminated string");
+  else
+    yylval.str[yyleng-2] = 0;
+  return STRING;
+}
 
    /* numeric constants */
 
