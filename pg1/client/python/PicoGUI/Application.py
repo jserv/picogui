@@ -137,6 +137,11 @@ class Application(Widget.Widget):
         if type(widget) == type(''):
             evname = widget
             widget = None
+        if type(widget) in (type(0), type(0L)):
+            try:
+                widget = self.getWidget(widget)
+            except KeyError:
+                widget = Widget.Widget(self.server, widget, self)
         self._event_registry.add(handler, widget, evname)
 
     def delWidget(self, widget):
