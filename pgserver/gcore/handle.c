@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.38 2001/05/14 03:35:19 micahjd Exp $
+/* $Id: handle.c,v 1.39 2001/05/29 16:04:10 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -318,6 +318,12 @@ struct handlenode *htree_find(handle id) {
  * around, checking them for Bad Things before returning them.
  * Might improve this later, but at least the current implementation is less
  * error-prone than the last
+ * 
+ * FIXME: There is still something wrong with the handle system. When
+ *        handles are repeatedly deleted and created, for example when
+ *        calling pgReplaceText in an idle handler, a particular handle
+ *        ID will eventually trigger a handle error.
+ * 
  */
 handle newhandle(void) {
   static handle h = 1;
@@ -328,6 +334,8 @@ handle newhandle(void) {
        h = 1;
   } while (htree_find(h));
 
+/*   printf("New handle 0x%08X\n",h);  */
+   
   return h;
 }
 
