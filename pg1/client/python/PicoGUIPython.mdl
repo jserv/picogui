@@ -2,7 +2,7 @@
 
 # This file is only useful for SMARTDATA's build system
 
-import os
+import os, re
 
 multicompile = 0
 
@@ -12,11 +12,61 @@ description = ''' PicoGUI python interface '''
 
 license = ''' GNU LGPL '''
 
-runtime = [
-    SharedRuntime ('install', 'Install PicoGUI python interface',
-                   content = [],
+help = """
+Provides the PicoGUI Python client interface
+"""
 
-                   depends = [])
+prefix = '/usr'
+
+def listdir (dir, pattern):
+    content = []
+  
+    for f in os.listdir (dir or '.'):
+        if dir: f = os.path.join (dir, f)
+  
+        if os.path.isdir (f):
+            content = content + listdir (f, pattern)
+        else:
+            if re.search (pattern, f) is not None:
+                content.append (f)
+  
+    return content
+
+def package_contents (module, platform, project):
+    path = module.path ['dfl']
+    old  = os.getcwd ()
+    os.chdir (path)
+    # select the dir to list
+    ret = listdir ('lib', 'pyc')
+    os.chdir (old)
+    return ret
+
+def package_contents (module, platform, project):
+    path = module.path ['dfl']
+    old  = os.getcwd ()
+    os.chdir (path)
+    # select the dir to list
+    ret = listdir ('lib', 'pyc$')
+    os.chdir (old)
+    return ret
+
+def sample_contents (module, platform, project):
+    path = module.path ['dfl']
+    old  = os.getcwd ()
+    os.chdir (path)
+    # select the dir to list
+    ret = listdir ('share', 'py$')
+    os.chdir (old)
+    return ret
+
+runtime = [
+    Runtime ('install', 'Install PicoGUI python interface',
+             content = package_contents,
+             depends = []),
+    
+    Runtime ('samples', 'Install PicoGUI python interface',
+             content = sample_contents,
+             depends = [])
     ]
 
 def clean (module, platform, project):
