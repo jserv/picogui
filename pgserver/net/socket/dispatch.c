@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.14 2000/08/13 04:10:19 micahjd Exp $
+/* $Id: dispatch.c,v 1.15 2000/08/14 19:35:45 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -108,7 +108,7 @@ int dispatch_packet(int from,struct uipkt_request *req,void *data) {
   /* Dispatch to one of the handlers in the table */
   e = (*rqhtab[req->type])(from,req,data,&ret_data,&fatal);
   
-  if (e.type == ERRT_NONE) {
+  if (errtype(e) == ERRT_NONE) {
     /* No error, send a return code packet */
 
     struct response_ret rsp;
@@ -120,21 +120,23 @@ int dispatch_packet(int from,struct uipkt_request *req,void *data) {
     /* Send the return packet */
     fatal |= send_response(from,&rsp,sizeof(rsp));
   }
-  else if (e.type != ERRT_NOREPLY) {
+  else if (e != ERRT_NOREPLY) {
     /* If we need a reply, send error message */
 
     int errlen;
     struct response_err rsp;
-    errlen = strlen(e.msg);
+    const char *errmsg;
+
+    errlen = strlen(errmsg = errortext(e));
     
     rsp.type = htons(RESPONSE_ERR);
     rsp.id = htons(req->id);
-    rsp.errt = htons(e.type);
+    rsp.errt = htons(neterrtype(e));
     rsp.msglen = htons(errlen);
 
     /* Send the error */
     fatal |= send_response(from,&rsp,sizeof(rsp)) | 
-             send_response(from,e.msg,errlen);
+             send_response(from,errmsg,errlen);
   }
 
   return fatal;
@@ -162,7 +164,7 @@ g_error rqh_mkwidget(int owner, struct uipkt_request *req,
   g_error e;
 
   if (req->size < sizeof(struct rqhd_mkwidget)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_mkwidget too small");
+    return mkerror(ERRT_BADPARAM,57);
 
   /* Don't allow direct creation of 'special' widgets that must
      be created by other means (app registration, popup boxes)
@@ -170,23 +172,22 @@ g_error rqh_mkwidget(int owner, struct uipkt_request *req,
   switch (ntohs(arg->type)) {
   case WIDGET_PANEL:
   case WIDGET_POPUP:
-    return mkerror(ERRT_BADPARAM,"Cannot create special widget with mkwidget");
+    return mkerror(ERRT_BADPARAM,58);
   }
 
   e = rdhandle((void**) &parent,TYPE_WIDGET,owner,xh=ntohl(arg->parent));
-  if (e.type != ERRT_NONE) return e;
-  if (!parent) return mkerror(ERRT_BADPARAM,"NULL parent widget");
+  errorcheck;
+  if (!parent) return mkerror(ERRT_BADPARAM,59);
 
   /* Don't let an app put stuff outside its root widget */
   if (owner>=0 && parent->isroot && ntohs(arg->rship)!=DERIVE_INSIDE)
-    return mkerror(ERRT_BADPARAM,
-		   "App attempted to derive before or after a root widget");
+    return mkerror(ERRT_BADPARAM,60);
 
   e = widget_derive(&w,ntohs(arg->type),parent,xh,ntohs(arg->rship),owner);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   e = mkhandle(&h,TYPE_WIDGET,owner,w);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   
   *ret = h;
 
@@ -204,7 +205,7 @@ g_error rqh_mkbitmap(int owner, struct uipkt_request *req,
   int w;
 
   if (req->size <= sizeof(struct rqhd_mkbitmap)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_mkbitmap too small");
+    return mkerror(ERRT_BADPARAM,57);
 
   bits = ((unsigned char *)data)+sizeof(struct rqhd_mkbitmap);
   bitsz = req->size - sizeof(struct rqhd_mkbitmap);
@@ -217,7 +218,7 @@ g_error rqh_mkbitmap(int owner, struct uipkt_request *req,
     else
       w = w/8;
     if (bitsz < (w*ntohs(arg->h)))
-      return mkerror(ERRT_BADPARAM,"XBM data too small");
+      return mkerror(ERRT_BADPARAM,61);
     e = hwrbit_xbm(&bmp,bits,ntohs(arg->w),ntohs(arg->h),
 		   cnvcolor(ntohl(arg->fg)),cnvcolor(ntohl(arg->bg)));
   }
@@ -225,10 +226,10 @@ g_error rqh_mkbitmap(int owner, struct uipkt_request *req,
     /* PNM */
     e = hwrbit_pnm(&bmp,bits,bitsz);
   }
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   e = mkhandle(&h,TYPE_BITMAP,owner,bmp);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   
   *ret = h;
 
@@ -242,10 +243,10 @@ g_error rqh_mkfont(int owner, struct uipkt_request *req,
   g_error e;
 
   if (req->size <= sizeof(struct rqhd_mkfont)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_mkfont too small");
+    return mkerror(ERRT_BADPARAM,57);
 
   e = findfont(&h,owner,arg->name,ntohs(arg->size),ntohl(arg->style));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   *ret = h;
   return sucess;
@@ -258,12 +259,12 @@ g_error rqh_mkstring(int owner, struct uipkt_request *req,
   g_error e;
 
   e = g_malloc((void **) &buf, req->size+1);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   memcpy(buf,data,req->size);
   buf[req->size] = 0;  /* Null terminate it if it isn't already */
 
   e = mkhandle(&h,TYPE_STRING,owner,buf);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   *ret = h;
   return sucess;
@@ -273,7 +274,7 @@ g_error rqh_free(int owner, struct uipkt_request *req,
 		   void *data, unsigned long *ret, int *fatal) {
   struct rqhd_free *arg = (struct rqhd_free *) data;
   if (req->size < sizeof(struct rqhd_free)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_free too small");
+    return mkerror(ERRT_BADPARAM,57);
   
   return handle_free(owner,ntohl(arg->h));
 }
@@ -285,9 +286,9 @@ g_error rqh_set(int owner, struct uipkt_request *req,
   g_error e;
 
   if (req->size < sizeof(struct rqhd_set)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_set too small");
+    return mkerror(ERRT_BADPARAM,57);
   e = rdhandle((void**) &w,TYPE_WIDGET,owner,ntohl(arg->widget));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   return widget_set(w,ntohs(arg->property),ntohl(arg->glob));
 }
@@ -299,9 +300,9 @@ g_error rqh_get(int owner, struct uipkt_request *req,
   g_error e;
 
   if (req->size < sizeof(struct rqhd_get)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_get too small");
+    return mkerror(ERRT_BADPARAM,57);
   e = rdhandle((void**) &w,TYPE_WIDGET,owner,ntohl(arg->widget));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   *ret = widget_get(w,ntohs(arg->property));
 
@@ -312,21 +313,21 @@ g_error rqh_setbg(int owner, struct uipkt_request *req,
 		   void *data, unsigned long *ret, int *fatal) {
   struct rqhd_setbg *arg = (struct rqhd_setbg *) data;
   if (req->size < sizeof(struct rqhd_setbg)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_setbg too small");
+    return mkerror(ERRT_BADPARAM,57);
   
   return appmgr_setbg(owner,ntohl(arg->h));
 }
 
 g_error rqh_undef(int owner, struct uipkt_request *req,
 		   void *data, unsigned long *ret, int *fatal) {
-  return mkerror(ERRT_BADPARAM,"Undefined request type");
+  return mkerror(ERRT_BADPARAM,62);
 }
 
 g_error rqh_in_key(int owner, struct uipkt_request *req,
 		   void *data, unsigned long *ret, int *fatal) {
   struct rqhd_in_key *arg = (struct rqhd_in_key *) data;
   if (req->size < sizeof(struct rqhd_in_key)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_in_key too small");
+    return mkerror(ERRT_BADPARAM,57);
   dispatch_key(ntohl(arg->type),(int) ntohs(arg->key),ntohs(arg->mods));
   return sucess;
 }
@@ -335,7 +336,7 @@ g_error rqh_in_point(int owner, struct uipkt_request *req,
 		     void *data, unsigned long *ret, int *fatal) {
   struct rqhd_in_point *arg = (struct rqhd_in_point *) data;
   if (req->size < sizeof(struct rqhd_in_point)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_in_point too small");
+    return mkerror(ERRT_BADPARAM,57);
   dispatch_pointing(ntohl(arg->type),ntohs(arg->x),ntohs(arg->y),
 		    ntohs(arg->btn));
   return sucess;
@@ -345,7 +346,7 @@ g_error rqh_themeset(int owner, struct uipkt_request *req,
 		     void *data, unsigned long *ret, int *fatal) {
   struct rqhd_themeset *arg = (struct rqhd_themeset *) data;
   if (req->size < sizeof(struct rqhd_themeset)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_themeset too small");
+    return mkerror(ERRT_BADPARAM,57);
 
   /* Don't worry about errors here.  If they try to set a nonexistant
      theme, its no big deal.  Just means that the theme is a later
@@ -366,7 +367,7 @@ g_error rqh_in_direct(int owner, struct uipkt_request *req,
 		   void *data, unsigned long *ret, int *fatal) {
   struct rqhd_in_direct *arg = (struct rqhd_in_direct *) data;
   if (req->size < (sizeof(struct rqhd_in_direct)+1)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_in_direct too small");
+    return mkerror(ERRT_BADPARAM,57);
   dispatch_direct(((char*)arg)+sizeof(struct rqhd_in_direct),
 		  ntohl(arg->param));
   return sucess;
@@ -395,7 +396,7 @@ g_error rqh_wait(int owner, struct uipkt_request *req,
 #endif
   }
 
-  return mkerror(ERRT_NOREPLY,NULL);
+  return ERRT_NOREPLY;
 }
 
 g_error rqh_register(int owner, struct uipkt_request *req,
@@ -405,7 +406,7 @@ g_error rqh_register(int owner, struct uipkt_request *req,
   g_error e;
   memset(&i,0,sizeof(i));
   if (req->size < (sizeof(struct rqhd_register))) 
-    return mkerror(ERRT_BADPARAM,"rqhd_register too small");
+    return mkerror(ERRT_BADPARAM,57);
 
   i.owner = owner;
   i.name = ntohl(arg->name);
@@ -434,13 +435,13 @@ g_error rqh_mkpopup(int owner, struct uipkt_request *req,
   g_error e;
 
   if (req->size < (sizeof(struct rqhd_mkpopup))) 
-    return mkerror(ERRT_BADPARAM,"rqhd_mkpopup too small");
+    return mkerror(ERRT_BADPARAM,57);
 
   e = create_popup(ntohs(arg->x),ntohs(arg->y),ntohs(arg->w),ntohs(arg->h),&w,owner);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   e = mkhandle(&h,TYPE_WIDGET,owner,w);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   
   *ret = h;
 
@@ -456,16 +457,16 @@ g_error rqh_sizetext(int owner, struct uipkt_request *req,
   g_error e;
 
   if (req->size < (sizeof(struct rqhd_sizetext))) 
-    return mkerror(ERRT_BADPARAM,"rqhd_sizetext too small");
+    return mkerror(ERRT_BADPARAM,57);
 
   if (arg->font)
     e = rdhandle((void**) &fd,TYPE_FONTDESC,owner,ntohl(arg->font));
   else
     e = rdhandle((void**) &fd,TYPE_FONTDESC,-1,defaultfont);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   e = rdhandle((void**) &txt,TYPE_STRING,owner,ntohl(arg->text));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   sizetext(fd,&w,&h,txt);
 
@@ -496,7 +497,7 @@ g_error rqh_batch(int owner, struct uipkt_request *req,
     p += sizeof(struct uipkt_request);
     remaining -= sizeof(struct uipkt_request);    
     if (remaining<0)
-      return mkerror(ERRT_BADPARAM,"Partial request header in batch");
+      return mkerror(ERRT_BADPARAM,63);
 
     /* Reorder the bytes in the header */
     subreq->type = ntohs(subreq->type);
@@ -508,7 +509,7 @@ g_error rqh_batch(int owner, struct uipkt_request *req,
     p += subreq->size;
     remaining -= subreq->size;
     if (remaining<0)
-      return mkerror(ERRT_BADPARAM,"Partial request data in batch");    
+      return mkerror(ERRT_BADPARAM,64);    
 
     /* _temporarily_ insert a null terminator (writing over the next
        request header, then putting it back)
@@ -521,7 +522,7 @@ g_error rqh_batch(int owner, struct uipkt_request *req,
     
     /* Dispatch to one of the handlers in the table */
     e = (*rqhtab[subreq->type])(owner,subreq,subdata,ret,fatal);
-    if (e.type!=ERRT_NONE) break;
+    errorcheck;
 
     /* Undo the null terminator */
     *p = null_save;
@@ -533,7 +534,7 @@ g_error rqh_batch(int owner, struct uipkt_request *req,
 g_error rqh_grabkbd(int owner, struct uipkt_request *req,
 		    void *data, unsigned long *ret, int *fatal) {
   if (keyboard_owner)
-    return mkerror(ERRT_BUSY,"Exclusive keyboard access already in use");
+    return mkerror(ERRT_BUSY,65);
   keyboard_owner = owner;
   return sucess;
 }
@@ -541,8 +542,7 @@ g_error rqh_grabkbd(int owner, struct uipkt_request *req,
 g_error rqh_grabpntr(int owner, struct uipkt_request *req,
 		     void *data, unsigned long *ret, int *fatal) {
   if (pointer_owner)
-    return mkerror(ERRT_BUSY,
-		   "Exclusive pointing device access already in use");
+    return mkerror(ERRT_BUSY,65);
   pointer_owner = owner;
   return sucess;
 }
@@ -550,7 +550,7 @@ g_error rqh_grabpntr(int owner, struct uipkt_request *req,
 g_error rqh_givekbd(int owner, struct uipkt_request *req,
 		    void *data, unsigned long *ret, int *fatal) {
   if (keyboard_owner!=owner)
-    return mkerror(ERRT_BADPARAM,"Not the current owner of the keyboard");
+    return mkerror(ERRT_BADPARAM,67);
   keyboard_owner = 0;
   return sucess;
 }
@@ -558,8 +558,7 @@ g_error rqh_givekbd(int owner, struct uipkt_request *req,
 g_error rqh_givepntr(int owner, struct uipkt_request *req,
 		     void *data, unsigned long *ret, int *fatal) {
   if (pointer_owner!=owner)
-    return mkerror(ERRT_BADPARAM,
-		   "Not the current owner of the pointing device");
+    return mkerror(ERRT_BADPARAM,68);
   pointer_owner = 0;
   return sucess;
 }
@@ -567,7 +566,7 @@ g_error rqh_givepntr(int owner, struct uipkt_request *req,
 g_error rqh_mkcontext(int owner, struct uipkt_request *req,
 		      void *data, unsigned long *ret, int *fatal) {
   struct conbuf *cb = find_conbuf(owner);
-  if (!cb) return mkerror(ERRT_INTERNAL,"mkcontext: NULL connection buffer");
+  if (!cb) return mkerror(ERRT_INTERNAL,69);
 
   cb->context++;
 
@@ -577,8 +576,8 @@ g_error rqh_mkcontext(int owner, struct uipkt_request *req,
 g_error rqh_rmcontext(int owner, struct uipkt_request *req,
 		      void *data, unsigned long *ret, int *fatal) {
   struct conbuf *cb = find_conbuf(owner);
-  if (!cb) return mkerror(ERRT_INTERNAL,"rmcontext: NULL connection buffer");
-  if (cb->context<=0) return mkerror(ERRT_BADPARAM,"Context underflow");
+  if (!cb) return mkerror(ERRT_INTERNAL,69);
+  if (cb->context<=0) return mkerror(ERRT_BADPARAM,70);
 
   handle_cleanup(owner,cb->context);
   cb->context--;
@@ -593,10 +592,10 @@ g_error rqh_focus(int owner, struct uipkt_request *req,
   struct widget *w;
 
   if (req->size < (sizeof(struct rqhd_focus))) 
-    return mkerror(ERRT_BADPARAM,"rqhd_focus too small");
+    return mkerror(ERRT_BADPARAM,57);
 
   e = rdhandle((void**) &w,TYPE_WIDGET,owner,ntohl(arg->h));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   
   request_focus(w);
 
@@ -612,10 +611,10 @@ g_error rqh_getstring(int owner, struct uipkt_request *req,
   g_error e;
 
   if (req->size < (sizeof(struct rqhd_getstring))) 
-    return mkerror(ERRT_BADPARAM,"rqhd_getstring too small");
+    return mkerror(ERRT_BADPARAM,57);
 
   e = rdhandle((void**) &string,TYPE_STRING,owner,ntohl(arg->h));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   /* Send a RESPONSE_DATA back */
   rsp.type = htons(RESPONSE_DATA);
@@ -626,7 +625,7 @@ g_error rqh_getstring(int owner, struct uipkt_request *req,
   
   *fatal |= send_response(owner,&rsp,sizeof(rsp));  
   *fatal |= send_response(owner,string,size);  
-  return mkerror(ERRT_NOREPLY,NULL);
+  return ERRT_NOREPLY;
 }
 
 g_error rqh_restoretheme(int owner, struct uipkt_request *req,

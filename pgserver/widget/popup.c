@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.8 2000/08/07 05:33:53 micahjd Exp $
+/* $Id: popup.c,v 1.9 2000/08/14 19:35:45 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -39,11 +39,11 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
 
   /* Freeze the existing layer and make a new one */
   e = dts_push();
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   /* Add the new popup widget - a simple theme-enabled container widget */
   e = widget_create(wgt,WIDGET_POPUP,dts->top,&dts->top->head->next,0,owner);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   (*wgt)->isroot = 1;  /* This widget has no siblings, so no point going
 			  outside it anyway */
@@ -85,11 +85,11 @@ g_error popup_install(struct widget *self) {
      let create_popup position it.
   */
   e = newdiv(&self->in,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->flags = DIVNODE_SPLIT_IGNORE;
 
   e = newdiv(&self->in->div,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->div->on_recalc = &popup;
   self->in->div->flags = DIVNODE_SPLIT_BORDER;
   self->in->div->split = current_theme[E_POPUP_BORDER].width;
@@ -121,7 +121,7 @@ g_error popup_set(struct widget *self,int property, glob data) {
   /* Because the layer(s) under a popup are 'frozen' it can't be moved
      after it is created.  Therefore, there isn't anything to change.
   */
-  return mkerror(ERRT_BADPARAM,"Invalid property for popup");
+  return mkerror(ERRT_BADPARAM,40);
 }
 
 glob popup_get(struct widget *self,int property) {

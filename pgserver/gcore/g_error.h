@@ -1,4 +1,4 @@
-/* $Id: g_error.h,v 1.4 2000/08/02 03:23:16 micahjd Exp $
+/* $Id: g_error.h,v 1.5 2000/08/14 19:35:45 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -30,32 +30,46 @@
 
 #include <stdio.h>
 
-typedef struct {
-  unsigned char type;   /* Basic type of error */
-  const char *msg;   /* Static error message detailing the situation */
-} g_error;
+/* Error type or'ed with error number */
+typedef unsigned int g_error;
 
 /* Error types */
-#define ERRT_NONE     0
-#define ERRT_MEMORY   1
-#define ERRT_IO       2
-#define ERRT_NETWORK  3
-#define ERRT_BADPARAM 4
-#define ERRT_HANDLE   5
-#define ERRT_INTERNAL 6
-#define ERRT_BUSY     7
+#define ERRT_NONE     0x0000
+#define ERRT_MEMORY   0x0100
+#define ERRT_IO       0x0200
+#define ERRT_NETWORK  0x0300
+#define ERRT_BADPARAM 0x0400
+#define ERRT_HANDLE   0x0500
+#define ERRT_INTERNAL 0x0600
+#define ERRT_BUSY     0x0700
 
-#define ERRT_NOREPLY  100    /* This special error type sends
+#define ERRT_NOREPLY  0xF000 /* This special error type sends
 				no reply packet- assumes that
 				no reply is needed or that one
 				will be sent seperately */
 
-extern g_error sucess;
+#define mkerror(type,number) ((type)|(number))
+#define iserror(e)           (((e) & 0xFF00)!=ERRT_NONE)
+#define errtype(e)           ((e) & 0xFF00)    /* Matches the ERRT_* */
+#define neterrtype(e)        (errtype(e)>>8)   /* To send to the client */
 
-g_error inline mkerror(unsigned char type, char *msg);
+#define sucess               ERRT_NONE
+
+/* It's so common, let's make it a macro */
+#define errorcheck           if (iserror(e)) return e;
+
+const char *errortext(g_error e);
 g_error prerror(g_error e);
 
 #endif /* __H_GERROR */
 /* The End */
+
+
+
+
+
+
+
+
 
 

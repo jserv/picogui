@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.10 2000/06/09 01:53:39 micahjd Exp $
+/* $Id: indicator.c,v 1.11 2000/08/14 19:35:45 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -68,12 +68,12 @@ g_error indicator_install(struct widget *self) {
   g_error e;
 
   e = newdiv(&self->in,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->flags |= S_TOP;
   self->in->split = 10;
   self->out = &self->in->next;
   e = newdiv(&self->in->div,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->div->on_recalc = &indicator;
 
   return sucess;
@@ -112,16 +112,14 @@ g_error indicator_set(struct widget *self,int property, glob data) {
     break;
 
   case WP_SIZE:
-    if (data < 0) return mkerror(ERRT_BADPARAM,
-				 "WP_SIZE param is negative (indicator)");
+    if (data < 0) return mkerror(ERRT_BADPARAM,7);
     self->in->split = (int) data;
     self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
   case WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,
-	"WP_SIDE param is not a valid side value (indicator)");
+    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,8);
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
       DIVNODE_PROPAGATE_RECALC;
@@ -129,7 +127,7 @@ g_error indicator_set(struct widget *self,int property, glob data) {
     break;
     
   default:
-    return mkerror(ERRT_BADPARAM,"Invalid property for indicator");
+    return mkerror(ERRT_BADPARAM,9);
   }
   return sucess;
 }

@@ -1,4 +1,4 @@
-/* $Id: hardware.c,v 1.17 2000/08/07 10:04:13 micahjd Exp $
+/* $Id: hardware.c,v 1.18 2000/08/14 19:35:45 micahjd Exp $
  *
  * hardware.c - SDL "hardware" layer
  * Anything that makes any kind of assumptions about the display hardware
@@ -59,13 +59,13 @@ g_error hwr_init() {
 #endif  
 
   if (SDL_Init(SDL_INIT_VIDEO))
-    return mkerror(ERRT_IO,SDL_GetError());
+    return mkerror(ERRT_IO,46);
 
   /* Set the video mode */
   screen = SDL_SetVideoMode(HWR_WIDTH, HWR_HEIGHT, sizeof(devcolort)*8, 
 			    SDLFLAG);
   if ( screen == NULL )
-    return mkerror(ERRT_IO,SDL_GetError());
+    return mkerror(ERRT_IO,47);
 
 #if HWR_BPP == 4
   /* Set up a 16-gray palette, Out-of-range values set to red. */
@@ -775,10 +775,10 @@ g_error hwrbit_new(struct bitmap **bmp,int w,int h) {
   g_error e;
 
   e = g_malloc((void **) &b,w*h*HWR_PIXELW);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   e = g_malloc((void **) bmp,sizeof(struct bitmap));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   (*bmp)->bits = b;
   (*bmp)->freebits = 1;
@@ -805,10 +805,10 @@ g_error hwrbit_xbm(struct bitmap **bmp,
   g_error e;
 
   e = g_malloc((void **) &b,w*h*HWR_PIXELW);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   e = g_malloc((void **) bmp,sizeof(struct bitmap));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   p = b;
 
@@ -884,7 +884,7 @@ g_error hwrbit_pnm(struct bitmap **bmp,
   int i,val,bit,r,g,b;
   devbmpt bits,p;
   g_error e;
-  g_error efmt = mkerror(ERRT_BADPARAM,"pnm format error");
+  g_error efmt = mkerror(ERRT_BADPARAM,48);
 
   ascskip(&data,&datalen);
   if (!datalen) return efmt;
@@ -930,10 +930,10 @@ g_error hwrbit_pnm(struct bitmap **bmp,
 
   /* Set up the bitmap */
   e = g_malloc((void **) &bits,w*h*HWR_PIXELW);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   p = bits;
   e = g_malloc((void **) bmp,sizeof(struct bitmap));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   (*bmp)->bits = bits;
   (*bmp)->freebits = 1;
   (*bmp)->w = w;

@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.7 2000/08/06 00:50:53 micahjd Exp $
+/* $Id: field.c,v 1.8 2000/08/14 19:35:45 micahjd Exp $
  *
  * Single-line no-frills text editing box
  *
@@ -72,8 +72,8 @@ void field(struct divnode *d) {
   struct widget *self = d->owner;
 
   /* Center the font vertically and use the same amount of margin on the side */
-  if (rdhandle((void **)&fd,TYPE_FONTDESC,-1,DATA->font).type
-      != ERRT_NONE || !fd) return;
+  if (iserror(rdhandle((void **)&fd,TYPE_FONTDESC,-1,
+		       DATA->font)) || !fd) return;
   
   /* Draw order: background, text, cursor, border */
   grop_rect(&d->grop,-1,-1,-1,-1,DATA->bg);
@@ -93,26 +93,26 @@ g_error field_install(struct widget *self) {
   int owner=-1;
 
   e = g_malloc(&self->data,sizeof(struct fielddata));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   memset(self->data,0,sizeof(struct fielddata));
 
   /* Set up the buffer */
   e = g_malloc((void *) &DATA->buffer,FIELDBUF_DEFAULTSIZE);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   *DATA->buffer = 0;
   DATA->bufmax  = FIELDBUF_DEFAULTMAX;
   DATA->bufsize = FIELDBUF_DEFAULTSIZE;
   DATA->bufuse  = 1;
   e = mkhandle(&DATA->hbuffer,TYPE_STRING | HFLAG_NFREE,self->owner,DATA->buffer);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   e = newdiv(&self->in,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->flags |= S_TOP;
   self->in->split = 20;
   self->out = &self->in->next;
   e = newdiv(&self->in->div,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->div->on_recalc = &field;
   DATA->bg = white;
   DATA->font = defaultfont;
@@ -141,8 +141,7 @@ g_error field_set(struct widget *self,int property, glob data) {
   switch (property) {
 
   case WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,
-	"WP_SIDE param is not a valid side value (field)");
+    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,43);
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC |
       DIVNODE_PROPAGATE_RECALC;
@@ -162,8 +161,9 @@ g_error field_set(struct widget *self,int property, glob data) {
     break;
 
   case WP_FONT:
-    if (rdhandle((void **)&fd,TYPE_FONTDESC,-1,data).type!=ERRT_NONE || !fd) 
-      return mkerror(ERRT_HANDLE,"WP_FONT invalid font handle (field)");
+    if (iserror(rdhandle((void **)&fd,
+			 TYPE_FONTDESC,-1,data)) || !fd) 
+      return mkerror(ERRT_HANDLE,44); 
     DATA->font = (handle) data;
     psplit = self->in->split;
     if (self->in->split != psplit) {
@@ -173,12 +173,14 @@ g_error field_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case WP_TEXT:
-    printf("Field WP_TEXT: implement me please!\n");
-    break;
+    /* FIXME: WP_TEXT
+       case WP_TEXT:
+
+       break;
+    */
 
   default:
-    return mkerror(ERRT_BADPARAM,"Invalid property for field");
+    return mkerror(ERRT_BADPARAM,45);
   }
   return sucess;
 }
@@ -317,8 +319,8 @@ void fieldstate(struct widget *self) {
      total of the text width as it is done, but this whole widget
      so far is a quick hack anyway...
   */
-  if (rdhandle((void**)&fd,TYPE_FONTDESC,-1,DATA->font).type != 
-      ERRT_NONE || !fd) return;
+  if (iserror(rdhandle((void**)&fd,TYPE_FONTDESC,-1,
+		       DATA->font)) || !fd) return;
   sizetext(fd,&tw,&th,DATA->buffer);
 
   /* If the whole text fits in the field, left justify it. Otherwise, 
@@ -355,7 +357,7 @@ g_error bufcheck_grow(struct widget *self) {
   if (DATA->bufsize > DATA->bufmax) DATA->bufsize = DATA->bufmax;
 
   e = g_realloc((void *)&DATA->buffer,DATA->bufsize);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   /* Possible race condition here? */
 
@@ -371,7 +373,7 @@ g_error bufcheck_shrink(struct widget *self) {
   DATA->bufsize -= FIELDBUF_MAXCRUFT;
 
   e = g_realloc((void *)&DATA->buffer,DATA->bufsize);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   /* Possible race condition here? */
 

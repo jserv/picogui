@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.3 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: font.c,v 1.4 2000/08/14 19:35:45 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -146,9 +146,9 @@ g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
   g_error e;
 
   e = g_malloc((void **) &fd,sizeof(struct fontdesc));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   e = mkhandle(pfh,TYPE_FONTDESC,owner,fd);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   /* Initialize the fd */
   memset(fd,0,sizeof(struct fontdesc));

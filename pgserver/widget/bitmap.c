@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.12 2000/08/05 06:17:29 micahjd Exp $
+/* $Id: bitmap.c,v 1.13 2000/08/14 19:35:45 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -45,15 +45,15 @@ void bitmap(struct divnode *d) {
 
   /* Here if the bitmap is null we don't want to be blitting from the
      screen... */
-  if (DATA->bitmap && (rdhandle((void **) &bit,TYPE_BITMAP,-1,
-      DATA->bitmap).type==ERRT_NONE) && bit) {
+  if (DATA->bitmap && !iserror(rdhandle((void **) &bit,TYPE_BITMAP,-1,
+      DATA->bitmap)) && bit) {
     w = bit->w;
     h = bit->h;
     align(d,DATA->align,&w,&h,&x,&y);
 
     /* Optional bitmask */
-    if (DATA->bitmask && (rdhandle((void **) &bit,TYPE_BITMAP,-1,
-	DATA->bitmask).type==ERRT_NONE) && bit)
+    if (DATA->bitmask && !iserror(rdhandle((void **) &bit,TYPE_BITMAP,-1,
+	DATA->bitmask)) && bit)
       grop_bitmap(&d->grop,x,y,w,h,DATA->bitmask,LGOP_AND);
     else
       grop_null(&d->grop);
@@ -71,16 +71,16 @@ g_error bitmap_install(struct widget *self) {
   g_error e;
 
   e = g_malloc(&self->data,sizeof(struct bitmapdata));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   memset(self->data,0,sizeof(struct bitmapdata));
 
   e = newdiv(&self->in,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->flags |= S_TOP;
   self->in->split = 0;
   self->out = &self->in->next;
   e = newdiv(&self->in->div,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->div->on_recalc = &bitmap;
   DATA->fill = white;
   DATA->align = A_CENTER;
@@ -102,8 +102,7 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
   switch (property) {
 
   case WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,
-	"WP_SIDE param is not a valid side value (bitmap)");
+    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,2);
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
       DIVNODE_PROPAGATE_RECALC;
@@ -125,16 +124,14 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
     break;
 
   case WP_ALIGN:
-    if (data > AMAX) return mkerror(ERRT_BADPARAM,
-		     "WP_ALIGN param is not a valid align value (bitmap)");
+    if (data > AMAX) return mkerror(ERRT_BADPARAM,2);
     DATA->align = (alignt) data;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
   case WP_LGOP:
-    if (data > LGOPMAX) return mkerror(ERRT_BADPARAM,
-		     "WP_LGOP param is not a valid lgop value (bitmap)");
+    if (data > LGOPMAX) return mkerror(ERRT_BADPARAM,3);
     DATA->lgop = data;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
@@ -145,7 +142,7 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
       self->in->div->flags |= DIVNODE_NEED_REDRAW;
       self->dt->flags |= DIVTREE_NEED_REDRAW;
     }
-    else if (rdhandle((void **)&bit,TYPE_BITMAP,-1,data).type==ERRT_NONE && bit) {
+    else if (!iserror(rdhandle((void **)&bit,TYPE_BITMAP,-1,data)) && bit) {
       DATA->bitmap = (handle) data;
       psplit = self->in->split;
       resizebitmap(self);
@@ -154,20 +151,20 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
       self->in->flags |= DIVNODE_NEED_RECALC;
       self->dt->flags |= DIVTREE_NEED_RECALC;
     }
-    else return mkerror(ERRT_HANDLE,"WP_BITMAP invalid bitmap handle");
+    else return mkerror(ERRT_HANDLE,4);
     break;
 
   case WP_BITMASK:
-    if (rdhandle((void **)&bit,TYPE_BITMAP,-1,data).type==ERRT_NONE && bit) {
+    if (!iserror(rdhandle((void **)&bit,TYPE_BITMAP,-1,data)) && bit) {
       DATA->bitmask = (handle) data;
       self->in->flags |= DIVNODE_NEED_RECALC;
       self->dt->flags |= DIVTREE_NEED_RECALC;
     }
-    else return mkerror(ERRT_HANDLE,"WP_BITMASK invalid bitmap mask handle");
+    else return mkerror(ERRT_HANDLE,5);
     break;
 
   default:
-    return mkerror(ERRT_BADPARAM,"Invalid property for bitmap");
+    return mkerror(ERRT_BADPARAM,6);
   }
 
   return sucess;
@@ -203,8 +200,7 @@ glob bitmap_get(struct widget *self,int property) {
 void resizebitmap(struct widget *self) {
   struct bitmap *bit;
  
-  if (rdhandle((void **) &bit,TYPE_BITMAP,-1,
-	       DATA->bitmap).type!=ERRT_NONE)
+  if (iserror(rdhandle((void **) &bit,TYPE_BITMAP,-1,DATA->bitmap)))
     return;
   if (!bit) return;
 

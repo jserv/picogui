@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.14 2000/06/11 17:59:18 micahjd Exp $
+/* $Id: label.c,v 1.15 2000/08/14 19:35:45 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -53,10 +53,10 @@ void text(struct divnode *d) {
   struct widget *self = d->owner;
 
   /* Measure the exact width and height of the text and align it */
-  if (rdhandle((void **)&fd,TYPE_FONTDESC,-1,DATA->font).type
-      != ERRT_NONE || !fd) return;
-  if (rdhandle((void **)&str,TYPE_STRING,-1,DATA->text).type
-      != ERRT_NONE || !str) return;
+  if (iserror(rdhandle((void **)&fd,TYPE_FONTDESC,-1,DATA->font))
+      || !fd) return;
+  if (iserror(rdhandle((void **)&str,TYPE_STRING,-1,DATA->text))
+      || !str) return;
   sizetext(fd,&w,&h,str);
   if (w>d->w) w = d->w;
   if (h>d->h) h = d->h;
@@ -75,16 +75,16 @@ g_error label_install(struct widget *self) {
   g_error e;
 
   e = g_malloc(&self->data,sizeof(struct labeldata));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   memset(self->data,0,sizeof(struct labeldata));
 
   e = newdiv(&self->in,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->flags |= S_TOP;
   self->in->split = 0;
   self->out = &self->in->next;
   e = newdiv(&self->in->div,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->div->on_recalc = &text;
   DATA->bg = white;
   DATA->align = A_CENTER;
@@ -108,8 +108,7 @@ g_error label_set(struct widget *self,int property, glob data) {
   switch (property) {
 
   case WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,
-	"WP_SIDE param is not a valid side value (label)");
+    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,11);
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC |
       DIVNODE_PROPAGATE_RECALC;
@@ -141,8 +140,7 @@ g_error label_set(struct widget *self,int property, glob data) {
     break;
 
   case WP_ALIGN:
-    if (data > AMAX) return mkerror(ERRT_BADPARAM,
-		     "WP_ALIGN param is not a valid align value (label)");
+    if (data > AMAX) return mkerror(ERRT_BADPARAM,11);
     DATA->align = (alignt) data;
     if (DATA->transparent)
       redraw_bg(self);
@@ -151,8 +149,8 @@ g_error label_set(struct widget *self,int property, glob data) {
     break;
 
   case WP_FONT:
-    if (rdhandle((void **)&fd,TYPE_FONTDESC,-1,data).type!=ERRT_NONE || !fd) 
-      return mkerror(ERRT_HANDLE,"WP_FONT invalid font handle (label)");
+    if (iserror(rdhandle((void **)&fd,TYPE_FONTDESC,-1,data)) || !fd) 
+      return mkerror(ERRT_HANDLE,12);
     DATA->font = (handle) data;
     psplit = self->in->split;
     resizelabel(self);
@@ -166,8 +164,8 @@ g_error label_set(struct widget *self,int property, glob data) {
     break;
 
   case WP_TEXT:
-    if (rdhandle((void **)&str,TYPE_STRING,-1,data).type!=ERRT_NONE || !str) 
-      return mkerror(ERRT_HANDLE,"WP_TEXT invalid string handle (label)");
+    if (iserror(rdhandle((void **)&str,TYPE_STRING,-1,data)) || !str) 
+      return mkerror(ERRT_HANDLE,13);
     DATA->text = (handle) data;
     psplit = self->in->split;
     resizelabel(self);
@@ -187,7 +185,7 @@ g_error label_set(struct widget *self,int property, glob data) {
     break;
 
   default:
-    return mkerror(ERRT_BADPARAM,"Invalid property for label");
+    return mkerror(ERRT_BADPARAM,14);
   }
   return sucess;
 }
@@ -226,10 +224,10 @@ glob label_get(struct widget *self,int property) {
     return -self->in->div->ty;
 
   case WP_VIRTUALH:
-    if (rdhandle((void**)&str,TYPE_STRING,-1,DATA->text).type != 
-	ERRT_NONE || !str) break;
-    if (rdhandle((void**)&fd,TYPE_FONTDESC,-1,DATA->font).type != 
-	ERRT_NONE || !fd) break;
+    if (iserror(rdhandle((void**)&str,TYPE_STRING,-1,DATA->text)) 
+        || !str) break;
+    if (iserror(rdhandle((void**)&fd,TYPE_FONTDESC,-1,DATA->font)) 
+        || !fd) break;
     sizetext(fd,&tw,&th,str);
     return th;
 
@@ -246,10 +244,10 @@ void resizelabel(struct widget *self) {
   /* With S_ALL we'll get ignored anyway... */
   if (self->in->flags & S_ALL) return;
 
-  if (rdhandle((void **)&fd,TYPE_FONTDESC,-1,DATA->font).
-      type != ERRT_NONE || !fd) return;
-  if (rdhandle((void **)&str,TYPE_STRING,-1,DATA->text).
-      type != ERRT_NONE || !str) return;
+  if (iserror(rdhandle((void **)&fd,TYPE_FONTDESC,-1,DATA->font))
+	      || !fd) return;
+  if (iserror(rdhandle((void **)&str,TYPE_STRING,-1,DATA->text))
+	      || !str) return;
   
   sizetext(fd,&w,&h,str);
   

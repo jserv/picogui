@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.12 2000/06/10 21:26:42 micahjd Exp $
+/* $Id: grop.c,v 1.13 2000/08/14 19:35:45 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -117,16 +117,16 @@ void grop_render(struct divnode *div) {
       hwr_bar(&clip,x,y,h,list->param.c);
       break;
     case GROP_TEXT:
-      if (rdhandle((void**)&str,TYPE_STRING,-1,list->param.text.string).type != 
-	  ERRT_NONE || !str) break;
-      if (rdhandle((void**)&fd,TYPE_FONTDESC,-1,list->param.text.fd).type != 
-	  ERRT_NONE || !fd) break;
+      if (iserror(rdhandle((void**)&str,TYPE_STRING,-1,
+			   list->param.text.string)) || !str) break;
+      if (iserror(rdhandle((void**)&fd,TYPE_FONTDESC,-1,
+			   list->param.text.fd)) || !fd) break;
 
       outtext(&clip,fd,x,y,list->param.text.col,str);
       break;
     case GROP_BITMAP:
-      if (rdhandle((void**)&bit,TYPE_BITMAP,-1,list->param.bitmap.bitmap)
-	  .type != ERRT_NONE || !bit) break;
+      if (iserror(rdhandle((void**)&bit,TYPE_BITMAP,-1,
+			   list->param.bitmap.bitmap)) || !bit) break;
       hwr_blit(&clip,list->param.bitmap.lgop,bit,0,0,NULL,x,y,w,h);
       break;
     case GROP_GRADIENT:
@@ -267,7 +267,7 @@ g_error grop_pixel(struct gropnode **headpp,
   struct gropnode *n;
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   n->type = GROP_PIXEL;
   n->x = x;
   n->y = y;
@@ -281,7 +281,7 @@ g_error grop_line(struct gropnode **headpp,
   struct gropnode *n;
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   n->type = GROP_LINE;
   n->x = x1;
   n->y = y1;
@@ -297,7 +297,7 @@ g_error grop_rect(struct gropnode **headpp,
   struct gropnode *n;
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   n->type = GROP_RECT;
   n->x = x;
   n->y = y;
@@ -312,7 +312,7 @@ g_error grop_dim(struct gropnode **headpp) {
   struct gropnode *n;
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   n->type = GROP_DIM;
   n->x = n->y = n->w = n->h = 0;
   grop_addnode(headpp,n);
@@ -324,7 +324,7 @@ g_error grop_frame(struct gropnode **headpp,
   struct gropnode *n;
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   n->type = GROP_FRAME;
   n->x = x;
   n->y = y;
@@ -340,7 +340,7 @@ g_error grop_slab(struct gropnode **headpp,
   struct gropnode *n;
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   n->type = GROP_SLAB;
   n->x = x;
   n->y = y;
@@ -356,7 +356,7 @@ g_error grop_bar(struct gropnode **headpp,
   struct gropnode *n;
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   n->type = GROP_BAR;
   n->x = x;
   n->y = y;
@@ -372,7 +372,7 @@ g_error grop_text(struct gropnode **headpp,
   struct gropnode *n;
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   n->type = GROP_TEXT;
   n->x = x;
   n->y = y;
@@ -389,7 +389,7 @@ g_error grop_bitmap(struct gropnode **headpp,
   struct gropnode *n;
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   n->type = GROP_BITMAP;
   n->x = x;
   n->y = y;
@@ -407,7 +407,7 @@ g_error grop_gradient(struct gropnode **headpp,
   struct gropnode *n;
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   n->type = GROP_GRADIENT;
   n->x = x;
   n->y = y;
@@ -425,7 +425,7 @@ g_error grop_null(struct gropnode **headpp) {
   struct gropnode *n;
   g_error e;
   e = g_malloc((void **) &n,sizeof(struct gropnode));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   n->type = GROP_NULL;
   n->x = n->y = n->w = n->h = 0;
   grop_addnode(headpp,n);

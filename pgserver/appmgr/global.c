@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.13 2000/08/07 19:44:08 micahjd Exp $
+/* $Id: global.c,v 1.14 2000/08/14 19:33:30 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -77,26 +77,26 @@ g_error appmgr_init(void) {
 
   /* Allocate default font */
   e = findfont(&defaultfont,-1,NULL,0,FSTYLE_DEFAULT);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   /* Load the default background */
   e = hwrbit_pnm(&bgbits,bg_bits,bg_len);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   e = mkhandle(&background,TYPE_BITMAP,-1,bgbits);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   /* Make the background widget */
   e = widget_create(&bgwidget,WIDGET_BITMAP,dts->root,
 		    &dts->root->head->next,0,-1);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   e = widget_set(bgwidget,WP_BITMAP,(glob)background);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   e = widget_set(bgwidget,WP_ALIGN,A_ALL);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   e = widget_set(bgwidget,WP_SIDE,S_ALL);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   e = mkhandle(&hbgwidget,TYPE_WIDGET,-1,bgwidget);   
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   return sucess;
 }
@@ -121,14 +121,14 @@ g_error appmgr_setbg(int owner,handle bitmap) {
   if (!bitmap) {
     /* Load our default */
     e = hwrbit_pnm(&bgbits,bg_bits,bg_len);
-    if (e.type != ERRT_NONE) return e;
+    errorcheck;
     e = mkhandle(&bitmap,TYPE_BITMAP,-1,bgbits);
-    if (e.type != ERRT_NONE) return e;
+    errorcheck;
     owner = -1;
   }
 
   e = handle_bequeath(background,bitmap,owner);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   return widget_set(bgwidget,WP_BITMAP,0);
 }
 
@@ -167,43 +167,43 @@ g_error appmgr_register(struct app_info *i) {
   case APP_TOOLBAR:
     /* Create a simple toolbar as a root widget */
     e = widget_create(&w,WIDGET_TOOLBAR,dts->root,&dts->root->head->next,0,i->owner);
-    if (e.type != ERRT_NONE) return e;
+    errorcheck;
     e = mkhandle(&i->rootw,TYPE_WIDGET,i->owner,w);
-    if (e.type != ERRT_NONE) return e;    
+    errorcheck;    
 
     /* Size specs are ignored for the toolbar.
        They won't be moved by the appmgr, so sidemask has no effect.
        Set the side here, though.
     */
     e = widget_set(w,WP_SIDE,i->side);
-    if (e.type != ERRT_NONE) return e;
+    errorcheck;
     
     break;
 
   case APP_NORMAL:
     /* Use a panel */
     e = widget_create(&w,WIDGET_PANEL,dts->root,&dts->root->head->next,0,i->owner);
-    if (e.type != ERRT_NONE) return e;
+    errorcheck;
     e = mkhandle(&i->rootw,TYPE_WIDGET,i->owner,w);
-    if (e.type != ERRT_NONE) return e;    
+    errorcheck;    
 
     /* Set all the properties */
     e = widget_set(w,WP_SIDE,i->side);
-    if (e.type != ERRT_NONE) return e;
+    errorcheck;
     e = widget_set(w,WP_SIZE,(i->side & (S_LEFT|S_RIGHT)) ? i->w : i->h);
-    if (e.type != ERRT_NONE) return e;
+    errorcheck;
     
     break;
 
   default:
-    return mkerror(ERRT_BADPARAM,"Unsupported application type");
+    return mkerror(ERRT_BADPARAM,30);
   }
 
   w->isroot = 1;
 
   /* Copy to a new structure */
   e = g_malloc((void **) &dest,sizeof(struct app_info));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   memcpy(dest,i,sizeof(struct app_info));
 
   /* Insert it */

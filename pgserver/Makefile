@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.18 2000/08/05 18:28:53 micahjd Exp $
+# $Id: Makefile,v 1.19 2000/08/14 19:33:30 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -32,7 +32,7 @@ SRC := widget/bitmap.c widget/indicator.c widget/label.c \
        gcore/g_malloc.c gcore/div.c gcore/font.c widget/theme.c \
        gcore/handle.c gcore/g_error.c appmgr/global.c widget/button.c \
        widget/panel.c widget/default_theme.c widget/popup.c widget/box.c \
-       widget/field.c gcore/timer.c
+       widget/field.c gcore/timer.c gcore/errortext.c
 
 HDR := widget/widget.h gcore/divtree.h gcore/g_malloc.h \
        gcore/font.h gcore/handle.h gcore/g_error.h gcore/video.h \
@@ -64,6 +64,9 @@ ifeq ($(strip $(PLATFORM)),windows)
 endif
 
 # Set debugging variables
+ifeq ($(strip $(DEBUG)),tiny)
+	CFLAGS := $(CFLAGS) -DTINY_MESSAGES
+endif
 ifeq ($(strip $(DEBUG)),efence)
 	# ElectricFence debugging
 	LDFLAGS := $(LDFLAGS) -lefence

@@ -1,4 +1,4 @@
-/* $Id: toolbar.c,v 1.4 2000/06/08 00:15:57 micahjd Exp $
+/* $Id: toolbar.c,v 1.5 2000/08/14 19:35:45 micahjd Exp $
  *
  * toolbar.c - container widget for buttons
  *
@@ -45,13 +45,13 @@ g_error toolbar_install(struct widget *self) {
   g_error e;
 
   e = newdiv(&self->in,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->flags |= S_TOP;
   self->in->split = HWG_BUTTON+HWG_MARGIN*2;
   self->out = &self->in->next;
 
   e = newdiv(&self->in->div,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->div->on_recalc = &toolbar;
   self->in->div->flags |= DIVNODE_SPLIT_BORDER;
   self->in->div->split = HWG_MARGIN;
@@ -69,8 +69,7 @@ g_error toolbar_set(struct widget *self,int property, glob data) {
   switch (property) {
 
   case WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,
-	"WP_SIDE param is not a valid side value (toolbar)");
+    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,15);
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
       DIVNODE_PROPAGATE_RECALC;
@@ -78,7 +77,7 @@ g_error toolbar_set(struct widget *self,int property, glob data) {
     break;
 
   default:
-    return mkerror(ERRT_BADPARAM,"Invalid property for toolbar");
+    return mkerror(ERRT_BADPARAM,16);
   }
   return sucess;
 }

@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.2 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: g_error.c,v 1.3 2000/08/14 19:35:45 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -27,27 +27,24 @@
 
 #include <g_error.h>
 
-g_error sucess = {ERRT_NONE,NULL};
-
-g_error mkerror(unsigned char type, char *msg) {
-  g_error e = {type,msg};
-  return e;
-}
-
 g_error prerror(g_error e) {
-  if (e.type == ERRT_NONE) return sucess;
-  if (!e.msg) e.msg = "?";
+  if (!iserror(e)) return e;
+#ifndef TINY_MESSAGES
   printf("*** ERROR (");
-  switch (e.type) {
+  switch (errtype(e)) {
   case ERRT_MEMORY: printf("MEMORY"); break;
   case ERRT_IO: printf("IO"); break;
   case ERRT_NETWORK: printf("NETWORK"); break;
   case ERRT_BADPARAM: printf("BADPARAM"); break;
   case ERRT_HANDLE: printf("HANDLE"); break;
   case ERRT_INTERNAL: printf("INTERNAL"); break;
+  case ERRT_BUSY: printf("BUSY"); break;
   default: printf("?");
   }
-  printf(") : %s\n",e.msg);
+  printf(") : %s\n",errortext(e));
+#else
+  puts(errortext(e));
+#endif
   return e;
 }
 

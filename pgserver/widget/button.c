@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.27 2000/08/05 06:17:29 micahjd Exp $
+/* $Id: button.c,v 1.28 2000/08/14 19:35:45 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -173,7 +173,7 @@ g_error button_install(struct widget *self) {
   g_error e;
 
   e = g_malloc(&self->data,sizeof(struct btndata));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   memset(self->data,0,sizeof(struct btndata));
 
   DATA->font = defaultfont;
@@ -181,18 +181,18 @@ g_error button_install(struct widget *self) {
 
   /* Main split */
   e = newdiv(&self->in,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->flags |= S_LEFT;
   self->in->split = HWG_BUTTON;
 
   /* Visible node */
   e = newdiv(&self->in->div,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->div->on_recalc = &button;
 
   /* Spacer (between buttons) */
   e = newdiv(&self->in->next,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->next->flags |= S_LEFT;
   self->in->next->split = HWG_MARGIN;
   self->out = &self->in->next->next;
@@ -219,8 +219,7 @@ g_error button_set(struct widget *self,int property, glob data) {
   switch (property) {
 
   case WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,
-	"WP_SIDE param is not a valid side value (button)");
+    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,31);
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC |
       DIVNODE_PROPAGATE_RECALC;
@@ -234,8 +233,7 @@ g_error button_set(struct widget *self,int property, glob data) {
     break;
 
   case WP_ALIGN:
-    if (data > AMAX) return mkerror(ERRT_BADPARAM,
-		     "WP_ALIGN param is not a valid align value (button)");
+    if (data > AMAX) return mkerror(ERRT_BADPARAM,32);
     DATA->align = (alignt) data;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
@@ -248,7 +246,7 @@ g_error button_set(struct widget *self,int property, glob data) {
     break;
 
   case WP_BITMAP:
-    if (rdhandle((void **)&bit,TYPE_BITMAP,-1,data).type==ERRT_NONE && bit) {
+    if (!iserror(rdhandle((void **)&bit,TYPE_BITMAP,-1,data)) && bit) {
       DATA->bitmap = (handle) data;
       psplit = self->in->split;
       resizebutton(self);
@@ -259,21 +257,21 @@ g_error button_set(struct widget *self,int property, glob data) {
       self->in->flags |= DIVNODE_NEED_RECALC;
       self->dt->flags |= DIVTREE_NEED_RECALC;
     }
-    else return mkerror(ERRT_HANDLE,"WP_BITMAP invalid bitmap handle");
+    else return mkerror(ERRT_HANDLE,33);
     break;
 
   case WP_BITMASK:
-    if (rdhandle((void **)&bit,TYPE_BITMAP,-1,data).type==ERRT_NONE && bit) {
+    if (!iserror(rdhandle((void **)&bit,TYPE_BITMAP,-1,data)) && bit) {
       DATA->bitmask = (handle) data;
       self->in->flags |= DIVNODE_NEED_RECALC;
       self->dt->flags |= DIVTREE_NEED_RECALC;
     }
-    else return mkerror(ERRT_HANDLE,"WP_BITMASK invalid bitmap mask handle");
+    else return mkerror(ERRT_HANDLE,34);
     break;
 
   case WP_FONT:
-    if (rdhandle((void **)&fd,TYPE_FONTDESC,-1,data).type!=ERRT_NONE || !fd) 
-      return mkerror(ERRT_HANDLE,"WP_FONT invalid font handle (button)");
+    if (!iserror(rdhandle((void **)&fd,TYPE_FONTDESC,-1,data)) || !fd) 
+      return mkerror(ERRT_HANDLE,35);
     DATA->font = (handle) data;
     psplit = self->in->split;
     resizebutton(self);
@@ -286,8 +284,8 @@ g_error button_set(struct widget *self,int property, glob data) {
     break;
 
   case WP_TEXT:
-    if (rdhandle((void **)&str,TYPE_STRING,-1,data).type!=ERRT_NONE || !str) 
-      return mkerror(ERRT_HANDLE,"WP_TEXT invalid string handle (button)");
+    if (iserror(rdhandle((void **)&str,TYPE_STRING,-1,data)) || !str) 
+      return mkerror(ERRT_HANDLE,36);
     DATA->text = (handle) data;
     psplit = self->in->split;
     resizebutton(self);
@@ -304,7 +302,7 @@ g_error button_set(struct widget *self,int property, glob data) {
     break;
 
   default:
-    return mkerror(ERRT_BADPARAM,"Invalid property for button");
+    return mkerror(ERRT_BADPARAM,37);
   }
   return sucess;
 }

@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.21 2000/08/09 20:45:41 micahjd Exp $
+/* $Id: scroll.c,v 1.22 2000/08/14 19:35:45 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -63,8 +63,8 @@ void scrollbar(struct divnode *d) {
   struct widget *wgt;
   
   /* Size ourselves to fit the widget we are bound to */
-  if (rdhandle((void **)&wgt,TYPE_WIDGET,-1,DATA->binding)
-      .type==ERRT_NONE && wgt) 
+  if (!iserror(rdhandle((void **)&wgt,TYPE_WIDGET,-1,
+			DATA->binding)) && wgt) 
     DATA->res = widget_get(wgt,WP_VIRTUALH) - wgt->in->h;
 
   /* Background for the whole bar */
@@ -88,8 +88,8 @@ void scrollevent(struct widget *self) {
 
   if (DATA->binding) {
     /* Send to a widget */
-    if (rdhandle((void **)&w,TYPE_WIDGET,-1,DATA->binding)
-	.type==ERRT_NONE && w) 
+    if (!iserror(rdhandle((void **)&w,TYPE_WIDGET,
+			  -1,DATA->binding)) && w) 
       widget_set(w,WP_SCROLL,DATA->value);
   }
   else {
@@ -152,16 +152,16 @@ g_error scroll_install(struct widget *self) {
   g_error e;
   
   e = g_malloc(&self->data,sizeof(struct scrolldata));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   memset(self->data,0,sizeof(struct scrolldata));
   DATA->res = 100;    /* By default, make it compatible with percent */
 
   e = newdiv(&self->in,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->flags |= S_RIGHT;
   self->in->split = HWG_SCROLL;
   e = newdiv(&self->in->div,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->div->on_recalc = &scrollbar;
   self->out = &self->in->next;
 
@@ -198,19 +198,18 @@ g_error scroll_set(struct widget *self,int property, glob data) {
       break;
     }
 
-    if (rdhandle((void **)&w,TYPE_WIDGET,-1,data).type!=ERRT_NONE || !w) 
-      return mkerror(ERRT_HANDLE,"WP_BIND invalid widget handle (scroll)");
+    if (iserror(rdhandle((void **)&w,TYPE_WIDGET,-1,data)) || !w) 
+      return mkerror(ERRT_HANDLE,17);
 
     /* Do a test run to see if the widget supports WP_SCROLL */
-    if (widget_set(w,WP_SCROLL,DATA->value).type!=ERRT_NONE)
-      return mkerror(ERRT_BADPARAM,
-		   "Argument to WP_BIND does not support WP_SCROLL property");
+    if (iserror(widget_set(w,WP_SCROLL,DATA->value)))
+      return mkerror(ERRT_BADPARAM,18);
     DATA->binding = (handle) data;
 
     break;
 
   default:
-    return mkerror(ERRT_BADPARAM,"Invalid property for scroll");
+    return mkerror(ERRT_BADPARAM,19);
   }
   return sucess;
 }

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.37 2000/08/06 05:56:31 micahjd Exp $
+/* $Id: widget.c,v 1.38 2000/08/14 19:35:45 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -72,10 +72,10 @@ g_error widget_create(struct widget **w,int type,
   g_error e;
 
   if ((type > WIDGETMAX) || (!dt) || (!where)) return 
-      mkerror(ERRT_BADPARAM,"widget_create bad arguments");
+      mkerror(ERRT_BADPARAM,20);
 
   e = g_malloc((void **)w,sizeof(struct widget));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   memset(*w,0,sizeof(struct widget));
 
   (*w)->owner = owner;
@@ -95,8 +95,7 @@ g_error widget_create(struct widget **w,int type,
        	(*(*w)->out)->owner->where = (*w)->out;
   }
   else
-    return mkerror(ERRT_INTERNAL,
-		   "widget_create Widget I/O pointers nonexistant");
+    return mkerror(ERRT_INTERNAL,21);
 
   dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
   dt->flags |= DIVTREE_NEED_RECALC;
@@ -113,7 +112,7 @@ g_error widget_derive(struct widget **w,
   else if (rship==DERIVE_BEFORE)
     return widget_create(w,type,parent->dt,parent->where,parent->container,owner);
   else
-    return mkerror(ERRT_BADPARAM,"widget_derive bad derive constant");
+    return mkerror(ERRT_BADPARAM,22);
 }
 
 /* Used internally */
@@ -228,7 +227,7 @@ void widget_remove(struct widget *w) {
 
 g_error inline widget_set(struct widget *w, int property, glob data) {
   if (w && w->def->set) return (*w->def->set)(w,property,data);
-  return mkerror(ERRT_INTERNAL,"Widget is not settable?");
+  return mkerror(ERRT_INTERNAL,23);
 }
 
 glob inline widget_get(struct widget *w, int property) {
@@ -243,8 +242,8 @@ void redraw_bg(struct widget *self) {
   struct widget *container;
 
   /* Dereference the handle */
-  if (rdhandle((void **)&container,TYPE_WIDGET,-1,self->container).type!=
-      ERRT_NONE || ! container) return;
+  if (iserror(rdhandle((void **)&container,TYPE_WIDGET,-1,
+		       self->container)) || ! container) return;
 
   /* Flags! Redraws automatically propagate through all child nodes of the
      container's div.

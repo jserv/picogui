@@ -1,4 +1,4 @@
-/* $Id: mainloop.c,v 1.16 2000/08/09 20:49:06 micahjd Exp $
+/* $Id: mainloop.c,v 1.17 2000/08/14 19:35:45 micahjd Exp $
  *
  * mainloop.c - initializes and shuts down everything, main loop
  *
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
 	
       default:   /* Catches -, -h, --help, etc... */
 	puts("\nPicoGUI server (http://pgui.sourceforge.net)\n"
-	     "$Id: mainloop.c,v 1.16 2000/08/09 20:49:06 micahjd Exp $\n\n"
+	     "$Id: mainloop.c,v 1.17 2000/08/14 19:35:45 micahjd Exp $\n\n"
 	     "pgserver [-h] [--] [session manager prog]\n\n"
 	     "\t-h: Displays this usage screen\n"
 	     "\nIf a session manager program is specified, it will be run when PicoGUI\n"
@@ -94,17 +94,17 @@ int main(int argc, char **argv) {
   /*************************************** Initialization */
 
   /* Subsystem initialization and error check */
-  if (prerror(hwr_init()).type != ERRT_NONE) exit(1);
-  if (prerror(dts_new()).type != ERRT_NONE) exit(1);
-  if (prerror(req_init()).type != ERRT_NONE) exit(1);
-  if (prerror(appmgr_init()).type != ERRT_NONE) exit(1);
-  if (prerror(input_init(&request_quit)).type != ERRT_NONE) exit(1);
-  if (prerror(timer_init()).type != ERRT_NONE) exit(1);
+  if (iserror(prerror(hwr_init()))) exit(1);
+  if (iserror(prerror(dts_new()))) exit(1);
+  if (iserror(prerror(req_init()))) exit(1);
+  if (iserror(prerror(appmgr_init()))) exit(1);
+  if (iserror(prerror(input_init(&request_quit)))) exit(1);
+  if (iserror(prerror(timer_init()))) exit(1);
 
 #ifndef WINDOWS
   /* Signal handler (it's usually good to have a way to exit!) */
   if (signal(SIGTERM,&sigterm_handler)==SIG_ERR) {
-    prerror(mkerror(ERRT_INTERNAL,"error setting signal handler"));
+    prerror(mkerror(ERRT_INTERNAL,54));
     exit(1);
   }
 #endif
@@ -119,13 +119,13 @@ int main(int argc, char **argv) {
 
 #ifdef WINDOWS
     if (_spawnvp(_P_NOWAIT,argv[argi],argv+argi)<=0) {
-      puts("Unable to start session manager!");
+      prerror(mkerror(ERRT_BADPARAM,55));
       exit(1);
     }
 #else
     if (!fork()) {
       execvp(argv[argi],argv+argi);
-      puts("Unable to start session manager!");
+      prerror(mkerror(ERRT_BADPARAM,55));
       kill(my_pid,SIGTERM);
       exit(1);
     }
@@ -151,7 +151,7 @@ int main(int argc, char **argv) {
   req_free();
   appmgr_free();
   hwr_release();
-  if (memref!=0) prerror(mkerror(ERRT_MEMORY,"Memory leak detected on exit"));
+  if (memref!=0) prerror(mkerror(ERRT_MEMORY,56));
   exit(0);
 }
 

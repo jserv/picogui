@@ -1,4 +1,4 @@
-/* $Id: input.c,v 1.7 2000/08/08 16:59:11 micahjd Exp $
+/* $Id: input.c,v 1.8 2000/08/14 19:35:45 micahjd Exp $
  *
  * input.c - Input layer for SDL
  * 
@@ -62,7 +62,7 @@ g_error input_init(void (*request_quit)(void)) {
   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,SDL_DEFAULT_REPEAT_INTERVAL);
 #ifndef WINDOWS
   thread = SDL_CreateThread(&threadfunc,NULL);
-  if (!thread) return mkerror(ERRT_IO,"Can't create input thread");
+  if (!thread) return mkerror(ERRT_IO,71);
 #endif
   return sucess;
 }

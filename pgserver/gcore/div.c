@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.19 2000/08/07 05:33:53 micahjd Exp $
+/* $Id: div.c,v 1.20 2000/08/14 19:35:44 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -255,7 +255,7 @@ void divnode_redraw(struct divnode *n,int all) {
 g_error newdiv(struct divnode **p,struct widget *owner) {
   g_error e;
   e = g_malloc((void **)p,sizeof(struct divnode));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   memset(*p,0,sizeof(struct divnode));
   (*p)->flags = DIVNODE_NEED_RECALC;
   (*p)->owner = owner;
@@ -267,9 +267,9 @@ g_error divtree_new(struct divtree **dt) {
   g_error e;
   e = g_malloc((void **) dt,sizeof(struct divtree));
   memset(*dt,0,sizeof(struct divtree));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   e = newdiv(&(*dt)->head,NULL);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   (*dt)->head->w = HWR_WIDTH;
   (*dt)->head->h = HWR_HEIGHT;
   (*dt)->flags = DIVTREE_ALL_REDRAW;
@@ -346,12 +346,12 @@ void r_dtupdate(struct divtree *dt) {
 g_error dts_new(void) {
   g_error e;
   e = g_malloc((void **) &dts,sizeof(struct dtstack));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   memset(dts,0,sizeof(struct dtstack));
   
   /* Make the root tree */
   e = divtree_new(&dts->root);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   dts->top = dts->root;
 
   return sucess;
@@ -379,7 +379,7 @@ g_error dts_push(void) {
   struct divtree *t;
 
   e = divtree_new(&t);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
 
   t->next = dts->top;
   dts->top = t;

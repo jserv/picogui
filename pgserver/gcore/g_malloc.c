@@ -1,5 +1,5 @@
 
-/* $Id: g_malloc.c,v 1.4 2000/08/01 06:31:39 micahjd Exp $
+/* $Id: g_malloc.c,v 1.5 2000/08/14 19:35:45 micahjd Exp $
  *
  * g_malloc.c - malloc wrapper providing error handling
  *
@@ -40,14 +40,14 @@ long memamt = 0;
 #endif
 
 g_error g_malloc(void **p,size_t s) {
-  if (!p) return mkerror(ERRT_BADPARAM,"p==NULL in g_malloc");
+  if (!p) return mkerror(ERRT_INTERNAL,24);
 
 #ifdef DEBUG
   *p = malloc(s+sizeof(size_t));
 #else
   *p = malloc(s);
 #endif
-  if (!(*p)) return mkerror(ERRT_MEMORY,"Allocation error");
+  if (!(*p)) return mkerror(ERRT_MEMORY,25);
   memref++;
 #ifdef DEBUG
   *(((size_t *)(*p))++) = s;
@@ -82,7 +82,7 @@ g_error g_realloc(void **p,size_t s) {
   size_t from;
 #endif
 
-  if (!p) return mkerror(ERRT_BADPARAM,"p==NULL in g_realloc");
+  if (!p) return mkerror(ERRT_BADPARAM,24);
 
 #ifdef DEBUG
   ((size_t*)(*p))--;    /* Get the _real_ pointer so realloc will like us */
@@ -91,7 +91,7 @@ g_error g_realloc(void **p,size_t s) {
 #else
   *p = realloc(*p,s);
 #endif
-  if (!(*p)) return mkerror(ERRT_MEMORY,"Reallocation error");
+  if (!(*p)) return mkerror(ERRT_MEMORY,25);
 
 #ifdef DEBUG
   *(((size_t *)(*p))++) = s;

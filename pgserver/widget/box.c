@@ -1,4 +1,4 @@
-/* $Id: box.c,v 1.3 2000/08/05 18:28:53 micahjd Exp $
+/* $Id: box.c,v 1.4 2000/08/14 19:35:45 micahjd Exp $
  *
  * box.c - Generic container for laying out widgets
  *
@@ -47,13 +47,13 @@ g_error box_install(struct widget *self) {
   g_error e;
 
   e = newdiv(&self->in,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->flags |= S_TOP;
   self->in->split = HWG_BUTTON+(BOXMARGIN<<1);
   self->out = &self->in->next;
 
   e = newdiv(&self->in->div,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->div->flags |= DIVNODE_SPLIT_BORDER;
   self->in->div->split = BOXMARGIN;
   self->sub = &self->in->div->div;
@@ -70,8 +70,7 @@ g_error box_set(struct widget *self,int property, glob data) {
   switch (property) {
 
   case WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,
-	"WP_SIDE param is not a valid side value (toolbar)");
+    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,41);
     redraw_bg(self);
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
@@ -95,7 +94,7 @@ g_error box_set(struct widget *self,int property, glob data) {
     break;
 
   default:
-    return mkerror(ERRT_BADPARAM,"Invalid property for box");
+    return mkerror(ERRT_BADPARAM,42);
 
   }
   return sucess;

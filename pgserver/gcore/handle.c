@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.11 2000/08/05 01:08:35 micahjd Exp $
+/* $Id: handle.c,v 1.12 2000/08/14 19:35:45 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -357,13 +357,13 @@ g_error mkhandle(handle *h,unsigned char type,int owner,void *obj) {
   if ((owner!=-1) && (owner_conbuf = find_conbuf(owner)))
     context = owner_conbuf->context;
 
-  if (!h) return mkerror(ERRT_BADPARAM,"mkhandle - NULL handle pointer");
+  if (!h) return mkerror(ERRT_INTERNAL,24);
   if (obj==NULL) {
     *h = 0;
     return sucess;
   }
   e = g_malloc((void **) &n,sizeof(struct handlenode));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   n->id = newhandle();
   n->type = type;
   n->context = context;
@@ -378,17 +378,17 @@ g_error mkhandle(handle *h,unsigned char type,int owner,void *obj) {
    doesn't match the required type */
 g_error rdhandle(void **p,unsigned char reqtype,int owner,handle h) {
   struct handlenode *n;
-  if (!p) return mkerror(ERRT_HANDLE,"rdhandle - p == NULL");
+  if (!p) return mkerror(ERRT_INTERNAL,24);
   if (!h) {
     *p = NULL;
     return sucess;
   }
   n = htree_find(h);
-  if (!n) return mkerror(ERRT_HANDLE,"rdhandle - nonexistant handle");
-  if ((n->type & ~(HFLAG_RED|HFLAG_NFREE)) != reqtype) return mkerror(ERRT_HANDLE,
-						       "rdhandle - incorrect type");
+  if (!n) return mkerror(ERRT_HANDLE,26);
+  if ((n->type & ~(HFLAG_RED|HFLAG_NFREE)) != reqtype) 
+    return mkerror(ERRT_HANDLE,28);
   if (owner>=0 && n->owner != owner) 
-    return mkerror(ERRT_HANDLE,"rdhandle - permission denied");;
+    return mkerror(ERRT_HANDLE,27);
   *p = n->obj;
   return sucess;
 }
@@ -402,13 +402,14 @@ g_error handle_free(int owner,handle h) {
   printf("handle_free(%d,0x%08X): node=0x%08X\n",owner,h,n);
 #endif
 
-  if (!h) return mkerror(ERRT_HANDLE,"handle_free - null handle");
-  if (!n) return mkerror(ERRT_HANDLE,"handle_free - invalid handle");
+  /* Already gone - don't complain */
+  if (!h) return sucess;
+  if (!n) return sucess;
 
   ncopy = *n;
 
   if (owner>=0 && n->owner != owner) 
-    return mkerror(ERRT_HANDLE,"handle_free - permission denied");
+    return mkerror(ERRT_HANDLE,27);
   htree_delete(n);    /* Remove from the handle tree BEFORE deleting the object itself */
   object_free(&ncopy);
 
@@ -448,19 +449,12 @@ g_error handle_bequeath(handle dest, handle src, int srcowner) {
   /* First, validate both handles */
   struct handlenode *s = htree_find(src);
   struct handlenode *d = htree_find(dest);
-  if (!src) return mkerror(ERRT_HANDLE,
-			   "handle_bequeath - null source handle");
-  if (!s) return mkerror(ERRT_HANDLE,
-			 "handle_bequeath - invalid source handle");
-  if (!dest) return mkerror(ERRT_HANDLE,
-			    "handle_bequeath - null dest handle");
-  if (!d) return mkerror(ERRT_HANDLE,
-			 "handle_bequeath - invalid dest handle");
+  if (!(src && s && dest && d)) return mkerror(ERRT_HANDLE,29);
   if (srcowner>=0 && s->owner != srcowner) 
-    return mkerror(ERRT_HANDLE,"handle_bequeath - permission denied");
+    return mkerror(ERRT_HANDLE,27);
   if ((s->type & ~(HFLAG_RED|HFLAG_NFREE)) !=
       (d->type & ~(HFLAG_RED|HFLAG_NFREE)))
-    return mkerror(ERRT_HANDLE,"handle_bequeath - incompatible handle types");
+    return mkerror(ERRT_HANDLE,28);
 
   object_free(d);
   d->obj = s->obj;
@@ -489,7 +483,7 @@ handle hlookup(void *obj,int *owner) {
 /* Changes the object pointer of a handle */
 g_error rehandle(handle h, void *obj) {
   struct handlenode *hn = htree_find(h);
-  if (!hn) return mkerror(ERRT_HANDLE,"rehandle() - invalid handle");
+  if (!hn) return mkerror(ERRT_HANDLE,26);
   hn->obj = obj;
   return sucess;
 }

@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.24 2000/08/09 09:24:04 micahjd Exp $
+/* $Id: panel.c,v 1.25 2000/08/14 19:35:45 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -97,24 +97,24 @@ g_error panel_install(struct widget *self) {
 
   /* Allocate data structure */
   e = g_malloc(&self->data,sizeof(struct paneldata));
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   memset(self->data,0,sizeof(struct paneldata));
 
   /* This split determines the size of the main panel area */
   e = newdiv(&self->in,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->flags |= S_TOP;
 
   /* This draws the panel background and provides a border */
   e = newdiv(&self->in->div,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->div->flags |= DIVNODE_SPLIT_BORDER;
   self->in->div->split = PANELMARGIN;
   self->in->div->on_recalc = &panel;
 
   /* Split off another chunk of space for the bar */
   e = newdiv(&self->in->next,self);
-  if (e.type != ERRT_NONE) return e;
+  errorcheck;
   self->in->next->flags |= S_TOP;
   self->in->next->split = PANELBAR_SIZE;
 
@@ -142,8 +142,7 @@ g_error panel_set(struct widget *self,int property, glob data) {
   switch (property) {
 
   case WP_SIDE:
-    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,
-	"WP_SIDE param is not a valid side value (panel)");
+    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,38);
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
       DIVNODE_PROPAGATE_RECALC;
@@ -162,7 +161,7 @@ g_error panel_set(struct widget *self,int property, glob data) {
     break;
 
   default:
-    return mkerror(ERRT_BADPARAM,"Invalid property for panel");
+    return mkerror(ERRT_BADPARAM,39);
 
   }
   return sucess;

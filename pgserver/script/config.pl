@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: config.pl,v 1.7 2000/06/04 08:53:14 micahjd Exp $
+# $Id: config.pl,v 1.8 2000/08/14 19:35:45 micahjd Exp $
 #
 # Configuration options for PicoGUI.
 # This creates the .config file that Makefile uses.
@@ -49,11 +49,12 @@
 	 );
 
 %optopts = (
-	    'DEBUG' => 'none=No debugging:'.
+	    'DEBUG' => 'tiny=Numerical errors:'.
+		       'none=Verbose errors, but no debugging:'.
+	               'src=Source code DEBUG flag'.
 	               'efence=ElectricFence malloc debug:'.
 	               'gcov=Coverage analysis:'.
-	               'gprof=Profiling:'.
-	               'src=Source code DEBUG flag',
+	               'gprof=Profiling',
 	    'VID' => 'sdl 320x240x32=SDL driver @ 320x240, 32bpp:'.
 	             'sdl 640x480x32=SDL driver @ 640x480, 32bpp (fullscreen):'.
 	             'sdl 240x64x4=SDL driver @ 240x64, 16 grays:'.

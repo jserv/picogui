@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.23 2000/08/09 06:57:49 micahjd Exp $
+/* $Id: request.c,v 1.24 2000/08/14 19:35:45 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -109,8 +109,8 @@ void newfd(int fd) {
   numclients++;
 
   /* Allocate connection buffers */
-  if (prerror(g_malloc((void **)&mybuf,sizeof(struct conbuf)))
-      .type != ERRT_NONE) {
+  if (iserror(prerror(g_malloc((void **)&mybuf,
+			       sizeof(struct conbuf))))) {
     closefd(fd);
     return;
   }
@@ -174,8 +174,8 @@ void readfd(int from) {
       }
       else {
 	/* Allocate and use a dynamic buffer */
-	if (prerror(g_malloc((void**)&buf->data_dyn,buf->req.size+1))
-	    .type!=ERRT_NONE) {
+	if (iserror(prerror(g_malloc((void**)&buf->data_dyn,
+				     buf->req.size+1)))) {
 	  /* Oops, the client asked for too much memory!
 	     Bad client!
 	     Make them disappear.
@@ -276,15 +276,15 @@ g_error req_init(void) {
 		     programmers would accept WinSock, but incompatible enough
 		     to break everything.  Another Microsoft 'innovation' */
   if (WSAStartup(MAKEWORD(2,0),&wsad))
-    return mkerror(ERRT_NETWORK,"Error in WSAStartup()");
+    return mkerror(ERRT_NETWORK,49);
 #endif
 
   if((s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
-    return mkerror(ERRT_NETWORK,"Error in socket()");
+    return mkerror(ERRT_NETWORK,50);
   
   if((setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (void *)&true, 
      sizeof(true))) == -1)
-    return mkerror(ERRT_NETWORK,"Error in setsockopt()");
+    return mkerror(ERRT_NETWORK,51);
 
   server_sockaddr.sin_family = AF_INET;
   server_sockaddr.sin_port = htons(REQUEST_PORT);
@@ -292,11 +292,10 @@ g_error req_init(void) {
 
   if(bind(s, (struct sockaddr *)&server_sockaddr, 
      sizeof(server_sockaddr)) == -1)
-    return mkerror(ERRT_NETWORK,
-	   "Error in bind() - Is there already a PicoGUI server running?");
+    return mkerror(ERRT_NETWORK,52);
 
   if(listen(s, REQUEST_BACKLOG) == -1)
-    return mkerror(ERRT_NETWORK,"Error in listen()");
+    return mkerror(ERRT_NETWORK,53);
 
   con_n = s+1;
   FD_ZERO(&con);
