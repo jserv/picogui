@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.77 2001/04/14 02:59:57 micahjd Exp $
+/* $Id: widget.c,v 1.78 2001/04/18 03:09:53 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -524,6 +524,10 @@ void dispatch_pointing(long type,int x,int y,int btn) {
   param.mouse.btn = btn;
   param.mouse.chbtn = btn ^ prev_btn;
   prev_btn = btn;
+
+#ifdef DEBUG_EVENT
+  printf("Pointing event: 0x%08X (%d,%d) %d\n",type,x,y,btn);
+#endif
 
   /* Update the cursor */
   cursor->x = x;
