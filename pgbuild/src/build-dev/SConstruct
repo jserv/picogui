@@ -3,18 +3,50 @@
 #
 
 import PGBuild.Node.XML
+import PGBuild.CommandLine
 env = Environment()
+p = PGBuild.CommandLine.Progress().task("Testing XML support")
 
 # Create an SCons node wrapper for the XML document's DOM
 testFile = env.fs.Entry("test.xml")
 doc = PGBuild.Node.XML.Document(testFile)
 
-# Look up a tag using DOM notation
-tag = doc.childNodes[0].getElementsByTagName("important")[0]
-print tag.toprettyxml()
+p.task("Looking up the second duck using DOM")
+tag = doc.childNodes[0].getElementsByTagName("ducks")[0].getElementsByTagName("duck")[1]
+print tag
+print tag.toxml()
 
-# Look up a tag using XPath
-print doc.xpath('boing/important')
+p.task("Testing relative addressing")
+tag = doc.xpath('/test-fu')[0]
+tag = tag.xpath('ducks')
+print tag
+
+p.task("Looking up the second duck using XPath")
+tags = doc.xpath('/test-fu/ducks/duck[2]')
+print tags
+for tag in tags:
+    print tag.toxml()
+
+p.task("Looking up all the ducks in /test-fu/ducks using XPath")
+tags = doc.xpath('/test-fu/ducks/duck')
+print tags
+for tag in tags:
+    print tag.toxml()
+
+p.task("Looking up all quotations using XPath")
+tags = doc.xpath('//quotation')
+print tags
+for tag in tags:
+    print tag.toxml()
+
+p.task("Looking up Murray the Duck using XPath")
+tags = doc.xpath('//duck[@name = "murray"]')
+print tags
+for tag in tags:
+    print tag.toxml()
+
+
+
 
 # Build a 'hello world'
 prog = env.Program('hello', 'hello.c')

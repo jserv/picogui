@@ -1,4 +1,16 @@
-<boing>
-   <unimportant>crufty</unimportant>
-   <important>not so crufty</important>
-</boing>
+<test-fu>
+
+   <ducks>
+
+     <duck name="fred"/>
+     <duck name="murray"/>
+
+     <duck name="henry">
+       <quotation>
+          Thribble thribbly wonk!
+       </quotation>
+     </duck>
+
+   </ducks>
+
+</test-fu>
