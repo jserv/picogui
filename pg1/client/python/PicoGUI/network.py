@@ -1,5 +1,7 @@
 import socket, struct, os
 
+__all__ = 'Error', 'ProtocolError', 'sock', 'poll_for'
+
 base_port = 30450
 magic = 0x31415926L
 proto_version_min = 21
@@ -38,43 +40,55 @@ def sock(address=None, display=None):
     #s.setblocking(0)
     return s
 
-#FIXME: make this conditional; in case of import error, define a class based on select
-import select
+try:
+    import select
+except ImportError:
+    select = None
 
-# A wrapper around select.poll that lets us use strings rather than bitmasks for register(),
-# so the user of this class doesn't have to know about the select module. This can't be a
-# subclass, since select.poll is a builtin.
-class poll_for:
-    def __init__(self, connection):
-        self._p = select.poll()
-        self.register(connection, 'r')
+try:
+    poll = select.poll
+except AttributeError:
+    poll = None
 
-    def register(self, file, modes):
-        eventmask = 0
-        for char in modes:
-            if char == 'w':
-                eventmask |= select.POLLOUT
-            elif char == 'r':
-                eventmask |= select.POLLIN
-            elif char == 'p':
-                eventmask |= select.POLLPRI
-        self._p.register(file, eventmask)
+if poll:
+    # A wrapper around select.poll that lets us use strings rather than bitmasks for register(),
+    # so the user of this class doesn't have to know about the select module. This can't be a
+    # subclass, since select.poll is a builtin.
+    class poll_for:
+        def __init__(self, connection):
+            self._p = poll()
+            self.register(connection, 'r')
 
-    def unregister(self, file):
-        self._p.unregister(file)
+        def register(self, file, modes):
+            eventmask = 0
+            for char in modes:
+                if char == 'w':
+                    eventmask |= select.POLLOUT
+                elif char == 'r':
+                    eventmask |= select.POLLIN
+                elif char == 'p':
+                    eventmask |= select.POLLPRI
+            self._p.register(file, eventmask)
 
-    def poll(self, timeout=None):
-        result = self._p.poll(timeout)
-        if result == None:
-            return None
-        for i in range(0, len(result)):
-            (fd,eventmask) = result[i]
-            modes = ''
-            if eventmask & select.POLLOUT:
-                modes += 'w'
-            if eventmask & select.POLLIN:
-                modes += 'r'
-            if eventmask & select.POLLPRI:
-                modes += 'p'
-            result[i] = (fd, modes)
-        return result
+        def unregister(self, file):
+            self._p.unregister(file)
+
+        def poll(self, timeout=None):
+            result = self._p.poll(timeout)
+            if result == None:
+                return None
+            for i in range(0, len(result)):
+                (fd,eventmask) = result[i]
+                modes = ''
+                if eventmask & select.POLLOUT:
+                    modes += 'w'
+                if eventmask & select.POLLIN:
+                    modes += 'r'
+                if eventmask & select.POLLPRI:
+                    modes += 'p'
+                result[i] = (fd, modes)
+            return result
+else:
+    #FIXME: define a class based on select
+    def poll_for(*a):
+        return None

@@ -6,6 +6,9 @@ try:
 except:
     thread = None
 
+def PlatformIncompatibility(exception):
+    pass
+
 class Request(object):
     def __init__(self, server, name):
         self.server = server
@@ -72,6 +75,8 @@ class Server(object):
         return None
 
     def poll(self, handler, fd, mask='r'):
+        if not self._poll:
+            raise PlatformIncompatibility, 'poll not available'
         try:
             fd = fd.fileno()
         except:
