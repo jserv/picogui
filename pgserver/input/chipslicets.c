@@ -1,4 +1,4 @@
-/* $Id: chipslicets.c,v 1.6 2001/11/12 00:58:25 bauermeister Exp $
+/* $Id: chipslicets.c,v 1.7 2001/11/13 10:53:34 bauermeister Exp $
  *
  * chipslicets.c - input driver for touch screen
  *
@@ -51,7 +51,8 @@
 
 static const char *DEVICE_FILE_NAME = "/dev/ts";
 
-static int ts_fd = 0;
+static int ts_fd = -1;
+static int inhibited = 0;
 
 /* ------------------------------------------------------------------------- */
 
@@ -78,8 +79,11 @@ static int ts_fd = 0;
 /* We insert our fd in the set for the server's select */ 
 void chipslicets_fd_init(int *n,fd_set *readfds,struct timeval *timeout)
 {
+  if(ts_fd<0) return;
+
   if ((*n)<(ts_fd+1))
     *n = ts_fd+1;
+
   if (ts_fd>0)
     FD_SET(ts_fd, readfds);
 }
@@ -91,9 +95,16 @@ static int chipslicets_fd_activate(int fd)
   struct ts_pen_info pen_info;
   int bytes_transferred;
 
+#if LOCAL_TRACE
+  printf(" a(%d:%d)",fd,ts_fd); fflush(stdout);
+#endif
   /* is the fd mine ? */
   if(fd!=ts_fd)
     return 0; /* no */
+
+#if LOCAL_TRACE
+  printf("A"); fflush(stdout);
+#endif
 
   bytes_transferred=read(ts_fd,(char *)&pen_info,sizeof(pen_info));
 
@@ -139,15 +150,46 @@ static int chipslicets_fd_activate(int fd)
 /*                             Un/initializations                            */
 /* ------------------------------------------------------------------------- */
 
+int init_device()
+{
+  TRACEF(">>> init_device\n");
+
+  if(ts_fd<0) {
+    DPRINTF("Opening device %s\n", DEVICE_FILE_NAME);
+    ts_fd = open(DEVICE_FILE_NAME,O_RDWR | O_NONBLOCK);
+    if(ts_fd < 0) {
+      fprintf(stderr, "%s: Can't open device: %s (%s)\n", __FILE__,
+	      DEVICE_FILE_NAME, strerror(errno)
+	      );
+    }
+  }
+  return ts_fd;
+}
+
+
+void uninit_device()
+{
+  TRACEF(">>> uninit_device\n");
+  DPRINTF("Closing device %s (fd=%d)\n", DEVICE_FILE_NAME, ts_fd);
+
+  if(ts_fd>0)
+    close(ts_fd);
+  ts_fd = -1;
+}
+
+
 g_error chipslicets_init(void)
 {
   struct ts_drv_params  ts_params;
   int                   ret_val;
 
-  DPRINTF("Opening device %s\n", DEVICE_FILE_NAME);
+  TRACEF(">>> chipslicets_init\n");
 
-  ts_fd = open(DEVICE_FILE_NAME,O_RDWR | O_NONBLOCK);
-  if(ts_fd < 0) {
+  ts_fd = -1;
+  inhibited = 0;
+
+  init_device();
+  if(ts_fd<0) {
     fprintf(stderr, "%s: Can't open device: %s (%s)\n", __FILE__,
 	    DEVICE_FILE_NAME, strerror(errno)
 	    );
@@ -266,7 +308,7 @@ g_error chipslicets_init(void)
 
   error_close:
     close(ts_fd);
-    ts_fd = 0;
+    ts_fd = -1;
     goto error;
   }
 
@@ -278,14 +320,37 @@ g_error chipslicets_init(void)
 
 void chipslicets_close(void)
 {
-  DPRINTF("Closing device %s\n", DEVICE_FILE_NAME);
+  TRACEF(">>> chipslicets_close\n");
 
-  if(ts_fd)
-    close(ts_fd);
-  ts_fd = 0;
+  uninit_device();
 
-/* Disconnects the client from the Resource Manager */
+  /* Disconnects the client from the Resource Manager */
   rm_exit ();
+}
+
+/* ------------------------------------------------------------------------- */
+/*                      PicoGUI driver messages handling                     */
+/* ------------------------------------------------------------------------- */
+
+/* Process messages comming from PicoGui */
+void chipslicets_message(u32 message, u32 param, u32 *ret)
+{
+  TRACEF(">>> chipslicets_message\n");
+
+  DPRINTF("message=%d param=%d\n", message, param);
+
+  if(ret) *ret = 0;
+
+  switch (message) {
+  case PGDM_INPUT_CALEN:
+    DPRINTF("PGDM_INPUT_CALEN:%d\n", param);
+    inhibited = param!=0;
+
+    if(inhibited)
+      uninit_device();
+    else
+      init_device();
+  }
 }
 
 /* ------------------------------------------------------------------------- */
@@ -298,6 +363,7 @@ g_error chipslicets_regfunc(struct inlib *i)
   i->close = &chipslicets_close;
   i->fd_activate = &chipslicets_fd_activate;
   i->fd_init = &chipslicets_fd_init;
+  i->message = &chipslicets_message;
   return sucess;
 }
 
