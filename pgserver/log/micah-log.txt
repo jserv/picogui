@@ -1,3 +1,17 @@
+2001-08-05    Micah Dowty <micahjd@users.sourceforge.net>
+
+The last thing I think I need to finish up for the standard dialogs to be
+complete is: Icons! I just need to add theme properties for common dialog
+icons, use these icons in the standard dialogs, then make an icon theme or
+two.
+
+      * themetools/themec/pgtheme.y: Found the bug preventing themec from
+		  working on big-endian systems
+		  
+		* include/picogui/constants.h: Added more icon theme properties
+		
+		* images/icons/*: Adding icons themselves
+
 2001-08-04    Micah Dowty <micahjd@users.sourceforge.net>
 
 Yay, the file dialog is finally done. It has some powerful features: You can

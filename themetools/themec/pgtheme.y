@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.28 2001/04/29 17:29:06 micahjd Exp $
+/* $Id: pgtheme.y,v 1.29 2001/08/06 05:57:27 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -33,8 +33,8 @@
 
 %union {
   unsigned long num;
-  unsigned short propid;
-  unsigned short thobjid;
+  unsigned long propid;   /* short would be big enough, but this needs to */
+  unsigned long thobjid;  /* be the same length as 'num' for big-endian */
   struct {
     unsigned long loader;
     unsigned long propid;

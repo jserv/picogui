@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.69 2001/08/04 16:20:16 micahjd Exp $
+/* $Id: constants.h,v 1.70 2001/08/06 05:57:27 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -427,6 +427,11 @@ typedef unsigned long pghandle;
 
 #define PGTH_P_ICON_OK       1001        //!< Icon property (usually in PGTH_O_DEFAULT)
 #define PGTH_P_ICON_CANCEL   1002        //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_YES      1003        //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_NO       1004        //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_ERROR    1005        //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_MESSAGE  1006        //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_QUESTION 1007        //!< Icon property (usually in PGTH_O_DEFAULT)
 
 #define PGTH_P_HOTKEY_OK     1501        //!< Hotkey property (usually in PGTH_O_DEFAULT) 
 #define PGTH_P_HOTKEY_CANCEL 1502        //!< Hotkey property (usually in PGTH_O_DEFAULT) 

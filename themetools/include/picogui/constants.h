@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.29 2001/06/28 21:55:41 micahjd Exp $
+/* $Id: constants.h,v 1.30 2001/08/06 05:57:27 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -172,6 +172,27 @@
 
 //! \}
 
+/*!
+ * \defgroup fontrep Font representations
+ * 
+ * These flags can be returned by pgGetFontStyle, indicating supported
+ * methods of graphically representing a font.
+ *
+ * Currently this can only indicate whether a font has built-in bold, italic,
+ * or bolditalic bitmaps, but in the future could be used to indicate whether
+ * a style is bitmapped or scalable.
+ * 
+ * \{
+ */
+
+#define PG_FR_BITMAP_NORMAL        (1<<0)    //!< Normal bitmapped font
+#define PG_FR_BITMAP_BOLD          (1<<1)    //!< Bitmapped font with bold
+#define PG_FR_BITMAP_ITALIC        (1<<2)    //!< Bitmapped font with italic
+#define PG_FR_BITMAP_BOLDITALIC    (1<<3)    //!< Bitmapped font with bold and italic
+#define PG_FR_SCALABLE             (1<<4)    //!< Wishful thinking :)
+
+//! \}
+
 /******************** Errors */
 
 /*! 
@@ -223,6 +244,10 @@ typedef unsigned long pghandle;
 #define PG_TYPE_STRING     4    //!< Created by pgNewString()
 #define PG_TYPE_THEME      5    //!< Created by pgLoadTheme()
 #define PG_TYPE_FILLSTYLE  6    //!< Used internally to store a theme's fillstyles
+#define PG_TYPE_ARRAY      7
+#define PG_TYPE_DRIVER     8    //!< Created by pgLoadDriver()
+
+#define PG_TYPEMASK        0x1F
 
 //! \}
 
@@ -307,9 +332,12 @@ typedef unsigned long pghandle;
 #define PGTH_O_FLATBUTTON            44   //!< Flat button (customized button) 
 #define PGTH_O_FLATBUTTON_HILIGHT    45   //!< flatbutton with mouse over it 
 #define PGTH_O_FLATBUTTON_ON         46   //!< flatbutton with mouse down 
+#define PGTH_O_LISTITEM              47   //!< Listitem (customized button)
+#define PGTH_O_LISTITEM_HILIGHT      48   //!< Listitem with mouse over it
+#define PGTH_O_LISTITEM_ON           49   //!< Selected listitem
 
 //! If you add a themeobject, be sure to increment this and add an inheritance entry in theme/memtheme.c
-#define PGTH_ONUM                    47
+#define PGTH_ONUM                    50
 
 //! \}
 
@@ -399,6 +427,11 @@ typedef unsigned long pghandle;
 
 #define PGTH_P_ICON_OK       1001        //!< Icon property (usually in PGTH_O_DEFAULT)
 #define PGTH_P_ICON_CANCEL   1002        //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_YES      1003        //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_NO       1004        //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_ERROR    1005        //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_MESSAGE  1006        //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_QUESTION 1007        //!< Icon property (usually in PGTH_O_DEFAULT)
 
 #define PGTH_P_HOTKEY_OK     1501        //!< Hotkey property (usually in PGTH_O_DEFAULT) 
 #define PGTH_P_HOTKEY_CANCEL 1502        //!< Hotkey property (usually in PGTH_O_DEFAULT) 
@@ -535,7 +568,7 @@ typedef unsigned long pghandle;
  * \{
  */
 
-#define PG_GROP_RECT	   0x00   
+#define PG_GROP_RECT	      0x00   
 #define PG_GROP_FRAME      0x10   
 #define PG_GROP_SLAB       0x20   
 #define PG_GROP_BAR        0x30   
@@ -559,6 +592,7 @@ typedef unsigned long pghandle;
 #define PG_GROP_SETFONT    0x17   //!< Param: font
 #define PG_GROP_SETLGOP    0x27   //!< Param: lgop
 #define PG_GROP_SETANGLE   0x37   //!< Param: angle in degrees
+#define PG_GROP_VIDUPDATE 0x800   //!< Forces a video update
 
 //! Find any gropnode's number of parameters
 #define PG_GROPPARAMS(x)   (((x)>>2)&0x03)
@@ -648,8 +682,8 @@ typedef unsigned long pghandle;
  * \{
  */
 
-#define PG_VID_FULLSCREEN     0x0001
-#define PG_VID_DOUBLEBUFFER   0x0002
+#define PG_VID_FULLSCREEN     0x0001  //!< Deprecated
+#define PG_VID_DOUBLEBUFFER   0x0002  //!< Deprecated
 #define PG_VID_ROTATE90       0x0004  //!< Rotate flags are mutually exclusive
 #define PG_VID_ROTATE180      0x0008
 #define PG_VID_ROTATE270      0x0010
@@ -661,8 +695,31 @@ typedef unsigned long pghandle;
 
 //! \}
 
-/******************** Widgets */
+/*!
+ * \defgroup drvmsgs Driver messages
+ * 
+ * These flags specify hardware-specific commands that can be
+ * sent from driver to driver or from applciation to driver.
+ *
+ * \{
+ */
 
+#define PGDM_CURSORVISIBLE    1   //!< Turn the cursor on/off 
+#define PGDM_BACKLIGHT        2   //!< Turn the backlight on/off
+#define PGDM_SOUNDFX          3   //!< Parameter is a PG_SND_* constant
+#define PGDM_POWER            4   //!< Enter the power mode, PG_POWER_*
+
+#define PG_SND_KEYCLICK       1   //!< Short click
+#define PG_SND_BEEP           2   //!< Terminal beep
+#define PG_SND_VISUALBELL     3   //!< Flash the visual bell if available
+
+#define PG_POWER_OFF          0   //!< Turn completely off
+#define PG_POWER_SLEEP       50   //!< Stop CPU, turn off peripherals
+#define PG_POWER_FULL       100   //!< Full speed
+
+//! \}
+
+/******************** Widgets */
 
 
 /* Constants used for rship, the relationship between 
@@ -690,7 +747,8 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_CANVAS     13
 #define PG_WIDGET_CHECKBOX   14    /* Another variation of button */
 #define PG_WIDGET_FLATBUTTON 15    /* Yet another customized button */
-#define PG_WIDGETMAX         15    /* For error checking */
+#define PG_WIDGET_LISTITEM   16    /* Still yet another... */
+#define PG_WIDGETMAX         16    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1
@@ -709,7 +767,6 @@ typedef unsigned long pghandle;
 #define PG_WP_BITMASK     15
 #define PG_WP_BIND        16
 #define PG_WP_SCROLL      17    /* Scroll bar binds here on scrollable widgets */
-#define PG_WP_VIRTUALH    18    /* Basically, the maximum vertical scroll */
 #define PG_WP_HOTKEY      19
 #define PG_WP_EXTDEVENTS  20    /* For buttons, a mask of extra events to send */
 #define PG_WP_DIRECTION   21
@@ -743,6 +800,7 @@ typedef unsigned long pghandle;
 #define PG_EXEV_KEY       0x0010  /* Raw key events KEYUP and KEYDOWN */
 #define PG_EXEV_CHAR      0x0020  /* Processed characters */
 #define PG_EXEV_TOGGLE    0x0040  /* Clicks toggle the button's state */
+#define PG_EXEV_EXCLUSIVE 0x0080  /* Button is mutually exclusive */
 
 /* Constants for PG_WP_DIRECTION */
 #define PG_DIR_HORIZONTAL     0
@@ -766,10 +824,12 @@ typedef unsigned long pghandle;
 /* Widget events */
 #define PG_WE_ACTIVATE    0x001 /* Gets focus (or for a non-focusing widget such
 			           as a button, it has been clicked/selected  */
-#define PG_WE_DEACTIVATE  0x002 /* Lost focus */
-#define PG_WE_CLOSE       0x003 /* A top-level widget has closed */
-#define PG_WE_PNTR_DOWN   0x204 /* The "mouse" button is now down */
-#define PG_WE_PNTR_UP     0x205 /* The "mouse" button is now up */
+#define PG_WE_DEACTIVATE   0x002 /* Lost focus */
+#define PG_WE_CLOSE        0x003 /* A top-level widget has closed */
+#define PG_WE_PNTR_DOWN    0x204 /* The "mouse" button is now down */
+#define PG_WE_PNTR_UP      0x205 /* The "mouse" button is now up */
+#define PG_WE_PNTR_RELEASE 0x206 /* The "mouse" button was released outside
+				  * the widget */
 #define PG_WE_DATA        0x306 /* Widget is streaming data to the app */
 #define PG_WE_RESIZE      0x107 /* For terminal widgets */
 #define PG_WE_BUILD       0x108 /* Sent from a canvas, clients can rebuild groplist */

@@ -1,4 +1,4 @@
-/* $Id: theme.h,v 1.12 2001/08/03 14:56:11 micahjd Exp $
+/* $Id: theme.h,v 1.13 2001/08/06 05:57:27 micahjd Exp $
  * 
  * theme.h - Defines the theme file format, used by the server and by
  *           programs that read and write theme files

@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.7 2001/06/28 21:55:41 micahjd Exp $
+/* $Id: network.h,v 1.8 2001/08/06 05:57:27 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -30,12 +30,14 @@
 #define _H_PG_NETWORK
 
 #define PG_REQUEST_PORT    30450
-#define PG_PROTOCOL_VER    0x0004      /* Increment this whenever changes are made */
+#define PG_PROTOCOL_VER    0x0006      /* Increment this whenever changes are made */
 #define PG_REQUEST_MAGIC   0x31415926
 
 #ifndef PGSERVER
 typedef unsigned short u16;
 typedef unsigned long  u32;
+typedef signed short   s16;
+typedef signed long    s32;
 #endif
 
 /******* Packet structures */
@@ -121,18 +123,23 @@ struct pghello {
 #define PGREQ_RMCONTEXT    24  /* Cleans up and kills the context|  none */
 #define PGREQ_FOCUS        25  /* Force focus to specified widget|  handle */
 #define PGREQ_GETSTRING    26  /* Returns a RESPONSE_DATA        |  handle */
-#define PGREQ_MKMSGDLG     27  /* Creates a message dialog box   |  struct */
+#define PGREQ_DUP          27  /* Duplicates an object           |  handle */
 #define PGREQ_SETPAYLOAD   28  /* Sets an object's payload       |  struct */
 #define PGREQ_GETPAYLOAD   29  /* Gets an object's payload       |  handle */
-#define PGREQ_MKMENU       30  /* Creates a simple popup menu    |  handle[] */
+#define PGREQ_CHCONTEXT    30  /* Change a handle's context      |  struct */
 #define PGREQ_WRITETO      31  /* Stream data to a widget        |  handle + data */
 #define PGREQ_UPDATEPART   32  /* Updates subtree defined by wgt |  handle */
 #define PGREQ_MKARRAY      33  /* Makes a array, returns handle  |    data */  
 #define PGREQ_RENDER       34  /* Render gropnode(s) to a bitmap |  struct */
 #define PGREQ_NEWBITMAP    35  /* Creates a blank bitmap         |  struct */
 #define PGREQ_THLOOKUP     36  /* Perform a theme lookup         |  struct */
+#define PGREQ_GETINACTIVE  37  /* get milliseconds of inactivity |    none */
+#define PGREQ_SETINACTIVE  38  /* set milliseconds of inactivity |  struct */
+#define PGREQ_DRIVERMSG    39  /* Send a message to all drivers  |  struct */
+#define PGREQ_LOADDRIVER   40  /* Load input/misc (not video)    |   chars */
+#define PGREQ_GETFSTYLE    41  /* Get info on a font style       |  struct */
 
-#define PGREQ_UNDEF        37  /* types > this will be truncated. return error */
+#define PGREQ_UNDEF        42  /* types > this will be truncated. return error */
 
 /******* Request data structures */
 
@@ -256,6 +263,35 @@ struct pgreqd_newbitmap {
 struct pgreqd_thlookup {
   u16 object;
   u16 property;
+};
+struct pgreqd_setinactive {
+  u32 time;
+};
+struct pgreqd_drivermsg {
+  u32 message;
+  u32 param;
+};
+struct pgreqd_chcontext {
+  u32 handle;
+  s16 delta;   /* Add this value to the context, may be negative */
+  u16 dummy;
+};
+struct pgreqd_getfstyle {
+  /* The index of a font style, in the order that it has been
+   * compiled/loaded into pgserver. Starts with zero, increment it until
+   * an invalid font style is returned 
+   */
+  u16 index;
+  u16 dummy;
+};
+struct pgdata_getfstyle {
+  /* This is returned by getfstyle.
+   * If name[0] is 0, the font style index was invalid
+   */
+  char name[40];          /* Name of the font family */
+  unsigned short size;    /* Height in pixels (for bitmapped fonts) */
+  unsigned short fontrep; /* PG_FR_* flags for font representation */
+  unsigned long  flags;   /* PG_FSTYLE_* flags for font style itself */
 };
 
 /* A structure for encapsulating commands, for example in canvas, within

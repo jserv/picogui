@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.63 2001/08/03 14:56:11 micahjd Exp $
+/* $Id: constants.h,v 1.64 2001/08/06 05:57:27 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -427,6 +427,11 @@ typedef unsigned long pghandle;
 
 #define PGTH_P_ICON_OK       1001        //!< Icon property (usually in PGTH_O_DEFAULT)
 #define PGTH_P_ICON_CANCEL   1002        //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_YES      1003        //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_NO       1004        //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_ERROR    1005        //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_MESSAGE  1006        //!< Icon property (usually in PGTH_O_DEFAULT)
+#define PGTH_P_ICON_QUESTION 1007        //!< Icon property (usually in PGTH_O_DEFAULT)
 
 #define PGTH_P_HOTKEY_OK     1501        //!< Hotkey property (usually in PGTH_O_DEFAULT) 
 #define PGTH_P_HOTKEY_CANCEL 1502        //!< Hotkey property (usually in PGTH_O_DEFAULT) 
@@ -762,7 +767,6 @@ typedef unsigned long pghandle;
 #define PG_WP_BITMASK     15
 #define PG_WP_BIND        16
 #define PG_WP_SCROLL      17    /* Scroll bar binds here on scrollable widgets */
-#define PG_WP_VIRTUALH    18    /* Basically, the maximum vertical scroll */
 #define PG_WP_HOTKEY      19
 #define PG_WP_EXTDEVENTS  20    /* For buttons, a mask of extra events to send */
 #define PG_WP_DIRECTION   21
