@@ -1,6 +1,15 @@
+from __future__ import generators
 from PicoGUI import Widget
 from Nifty.Workspace import Workspace
 import persistence
+
+# copied from pax.backwards_compatibility_2_2
+try:
+    enumerate(())
+except:
+    def enumerate(thing):
+        for index in range(len(thing)):
+            yield index, thing[index]
 
 class Viewer(Workspace):
     widget_type = 'box'
@@ -86,3 +95,76 @@ class Viewer(Workspace):
     def update_buffer(self):
         for field in self.buffer.Schema():
             self.buffer.setField(field.name, self.fields[field.name].text)
+
+class Lister(Workspace):
+    widget_type = 'Box'
+    
+    def open(self, frame, page, buffer):
+        self._title = self.addWidget('Label', 'inside')
+        self._title.text = 'Poing listing'
+        Workspace.open(self, frame, page, buffer)
+        self.children = []
+        if hasattr(buffer, 'name'):
+            self.tabpage.text = buffer.name
+        if hasattr(self.buffer, 'dir'):
+            self._get = self._get_attr
+        else:
+            self._get = self._get_item
+        self.update()
+
+    def update(self):
+        for child in self.children:
+            self.frame.delWidget(child)
+        self.children = []
+        if hasattr(self.buffer, 'dir'):
+            items = self.buffer.dir()
+        elif len(self.buffer):
+            items = enumerate(self.buffer)
+        else:
+            items = ()
+        item = self._title
+        if not items:
+            item = item.addWidget('Label')
+            item.side = 'all'
+            item.text = 'empty'
+            item.font = ':23:italic'
+            self.children = [item]
+        for key, obj in items:
+            item = item.addWidget('MenuItem')
+            item._key = key
+            item.text = str(key)
+            self.frame.link(self._click, item, 'pntr up')
+            self.children.append(item)
+            name = getattr(obj, 'name', None)
+            if name and name != str(key):
+                n = item.addWidget('Label', 'inside')
+                n.text = '(%s)' % name
+            t = item.addWidget('Label', 'inside')
+            t.side = 'right'
+            if hasattr(obj, 'schema'):
+                t.text = obj.schema.name
+            else:
+                t.text = type(obj).__name__
+                t.font = ':0:bold'
+
+    def _get_attr(self, key):
+        return getattr(self.buffer, key)
+
+    def _get_item(self, key):
+        return self.buffer[key]
+
+    def _report(self, ev):
+        import sys
+        print >>sys.stderr, repr(ev)
+
+    def _click(self, ev):
+        key = ev.widget._key
+        obj = self._get(key)
+        for ws in self.frame.workspaces():
+            if ws.buffer is obj:
+                self.frame.current = ws
+                return
+        ws = self.frame.open(obj)
+        if not hasattr(obj, 'name'):
+            ws.tabpage.text = str(key)
+        self.frame.current = ws

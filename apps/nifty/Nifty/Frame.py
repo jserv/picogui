@@ -57,8 +57,9 @@ class Frame(object):
             self.bind(tabbar = PicoGUI.Widget(self._app.server, page.tab_bar,
                                               self._app, type='tabbar'))
         self._pages.append(page)
-        t = page.addWidget('scrollbox', 'inside').addWidget(buffer.widget, 'inside')
-        t.open(self, page, buffer)
+        ws = page.addWidget('scrollbox', 'inside').addWidget(buffer.widget, 'inside')
+        ws.open(self, page, buffer)
+        return ws
 
     def close(self, workspace=None):
         if workspace is None:
@@ -105,11 +106,6 @@ class Frame(object):
 
     def delWidget(self, *args):
         return self._app.delWidget(*args)
-
-    def focus_workspace(self):
-        if not self._pages:
-            return
-        self._app.server.focus(self.current)
 
     def workspaces(self):
         return [page.workspace for page in self._pages]

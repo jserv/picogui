@@ -11,7 +11,8 @@ class Workspace(Widget):
         page.workspace = self
         self.buffer = buffer
         self.frame = frame
-        buffer.add_observer(self)
+        if hasattr(buffer, 'add_observer'):
+            buffer.add_observer(self)
 
     def link(self, handler, evname=None):
         self.frame.link(handler, self, evname)
