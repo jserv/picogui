@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.22 2002/03/26 04:13:14 instinc Exp $
+/* $Id: pgnet.h,v 1.23 2002/03/26 07:30:31 instinc Exp $
  *
  * pgnet.h - definitions and stuff for the picogui server
  *           networking code. Most of the interesting code
@@ -104,7 +104,7 @@ int send_response(int to,const void *data,size_t len);
 struct event {
   int event;
   handle from;
-  long param;
+  s32 param;
   char *data;
 };
 
@@ -132,7 +132,7 @@ struct conbuf {
   /* The amount of data received.  When this equals req.size, the packet
      is ready for dispatching
   */
-  unsigned long data_size; 
+  u32 data_size; 
 
   /* Amount of the header received.  When this equals sizeof(req), data
      can be received */
