@@ -1,4 +1,4 @@
-/* $Id: textbox.h,v 1.19 2002/10/31 11:21:22 micahjd Exp $
+/* $Id: textbox.h,v 1.20 2002/10/31 11:45:44 micahjd Exp $
  *
  * textbox.h - Interface definitions for the textbox widget. This allows
  *             the main textbox widget functions and the text format loaders
@@ -89,21 +89,18 @@ int document_eof(struct textbox_document *doc);
 /* Delete the character after the cursor. If there's no cursor to delete,
  * document_eof() should be true
  */
-void document_delete_char(struct textbox_document *doc);
+g_error document_delete_char(struct textbox_document *doc);
 
 /* Delete the cursor before the cursor
  * This doesn't allow the action if it's at the edge of the document.
  */
-void document_backspace_char(struct textbox_document *doc);
+g_error document_backspace_char(struct textbox_document *doc);
 
 /* Retrieve the paragraph associated with a divnode */
 struct paragraph *document_get_div_par(struct divnode *div);
 
 /* Seek the cursor to the mouse location */
 void document_mouseseek(struct textbox_document *doc, struct trigparam_mouse *m);
-
-/* Delete the paragraph the cursor is on */
-void document_delete_paragraph(struct textbox_document *doc);
 
 /* Insert a new paragraph after the one the cursor is on */
 g_error document_insert_paragraph(struct textbox_document *doc);

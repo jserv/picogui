@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.27 2002/10/31 11:21:23 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.28 2002/10/31 11:45:44 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -344,7 +344,7 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
       document_insert_char(DATA->doc, param->kbd.key, NULL);
     paragraph_wrap(DATA->doc->crsr->par,0);
 
-    /* The cursor might have been hidden if we crossed a paragraph boundary */
+    /* The cursor might have been hidden if we added a paragraph */
     paragraph_show_cursor(DATA->doc->crsr);
     break;
     

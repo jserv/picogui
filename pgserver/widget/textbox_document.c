@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.52 2002/10/31 11:21:23 micahjd Exp $
+/* $Id: textbox_document.c,v 1.53 2002/10/31 11:45:44 micahjd Exp $
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and
@@ -278,17 +278,26 @@ int document_eof(struct textbox_document *doc) {
 /* Delete the character after the cursor. If there's no cursor to delete,
  * document_eof() should be true
  */
-void document_delete_char(struct textbox_document *doc) {
+g_error document_delete_char(struct textbox_document *doc) {
+  g_error e;
 
-  /* No character to delete? Should we merge this paragraph and the next paragraph? */
-  if (doc->crsr->iterator.invalid) {
-    
+  /* No character to delete? Merge this paragraph and the next paragraph */
+  if (pgstring_eof(doc->crsr->par->content, &doc->crsr->iterator) > 0) {
+    if (doc->crsr->par->next) {
+      /* Save the iterator, since we don't want to advance the cursor */
+      struct pgstr_iterator saved_iterator = doc->crsr->iterator;
+      e = document_insert_string(doc, doc->crsr->par->next->content);
+      errorcheck;
+      doc->crsr->iterator = saved_iterator;
+      paragraph_delete(doc->crsr->par->next);
+    }
   }
 
   /* Yep, just delete the next character */
-  else {
+  else
     paragraph_delete_char(doc->crsr);
-  }
+
+  return success;
 }
 
 /* Retrieve the paragraph associated with a divnode */
@@ -327,12 +336,13 @@ void document_mouseseek(struct textbox_document *doc, struct trigparam_mouse *m)
 }
 
 /* Delete the cursor before the cursor */
-void document_backspace_char(struct textbox_document *doc) {
+g_error document_backspace_char(struct textbox_document *doc) {
   document_seek(doc,-1,PGSEEK_CUR);
   if (document_eof(doc))
     document_seek(doc,1,PGSEEK_CUR);
   else
-    document_delete_char(doc);
+    return document_delete_char(doc);
+  return success;
 }
 
 /* Like document_seek, but bound it at the edges of the document.
@@ -341,18 +351,6 @@ void document_backspace_char(struct textbox_document *doc) {
 void document_bounded_seek(struct textbox_document *doc, s32 offset, int whence) {
   document_seek(doc,offset,whence);
   document_seek(doc,-document_eof(doc),PGSEEK_CUR);
-}
-
-/* Delete the paragraph the cursor is on */
-void document_delete_paragraph(struct textbox_document *doc) {
-  struct paragraph *dead;
-
-  dead = doc->crsr->par;
-  dead->prev->next = dead->next;
-  dead->next->prev = dead->prev;
-  dead->div->owner->dt->flags |= DIVTREE_NEED_RESIZE;
-
-  paragraph_delete(dead);
 }
 
 /* Insert a new paragraph after the one the cursor is on.

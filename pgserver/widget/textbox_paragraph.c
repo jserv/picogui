@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.17 2002/10/31 11:21:24 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.18 2002/10/31 11:45:44 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -141,6 +141,19 @@ g_error paragraph_new(struct paragraph **par, struct divnode *div) {
 void paragraph_delete(struct paragraph *par) {
   struct paragraph_line *p, *dead;
 
+  /* Unlink this from the divtree */
+  if (par->prev)
+    par->prev->div->next = par->div->next;
+  par->div->next = NULL;
+  r_divnode_free(par->div);
+  
+  /* Unlink this from the list */
+  if (par->prev)
+    par->prev->next = par->next;
+  if (par->next)
+    par->next->prev = par->prev;
+  par->div->owner->dt->flags |= DIVTREE_NEED_RESIZE;
+
   /* Delete linked list of lines */
   p = par->lines;
   while (p) {
@@ -148,10 +161,6 @@ void paragraph_delete(struct paragraph *par) {
     p = p->next;
     g_free(dead);
   }
-
-  /* Delete associated divnodes */
-  par->div->next = NULL;
-  r_divnode_free(par->div);
 
   pgstring_delete(par->content);
 
@@ -383,7 +392,7 @@ void paragraph_update_cursor(struct paragraph_cursor *crsr) {
 
 void paragraph_hide_cursor(struct paragraph_cursor *crsr) {
   /* Nothing to hide? */
-  if (!crsr->par)
+  if (!crsr->par || !crsr->visible)
     return;
 
   crsr->visible = 0;
@@ -396,9 +405,11 @@ void paragraph_hide_cursor(struct paragraph_cursor *crsr) {
 
 void paragraph_show_cursor(struct paragraph_cursor *crsr) {
   /* Make the cursor visible, and take it's color from the default foreground for now */
-  crsr->color = VID(color_pgtohwr)(theme_lookup(PGTH_O_DEFAULT, PGTH_P_FGCOLOR));
-  crsr->visible = 1;
-  paragraph_update_cursor(crsr);
+  if (!crsr->visible) {
+    crsr->color = VID(color_pgtohwr)(theme_lookup(PGTH_O_DEFAULT, PGTH_P_FGCOLOR));
+    crsr->visible = 1;
+    paragraph_update_cursor(crsr);
+  }
 }
 
 /******************************************************** Internal Methods **/
