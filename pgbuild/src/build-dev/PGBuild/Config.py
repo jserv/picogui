@@ -132,7 +132,7 @@ def stripElements(root):
         else:
             stripElements(child)
 
-class MountInfo(PGBuild.XMLUtil.Document):
+class MountInfo:
     """Object defining the file and mode of a mounted
        document, attached to each node in the tree.
        """
@@ -140,7 +140,25 @@ class MountInfo(PGBuild.XMLUtil.Document):
         self.file = file
         self.mode = mode
         self.attributes = attributes
-        self.dom = dom
+        self.dom = None
+
+        if mode != 'r' and mode != 'rw':
+            raise PGBuild.Errors.InternalError("Unknown mount mode")
+
+        # Tree will end up destroying the original DOM as it moves nodes out
+        # of it for the merge process. Normally this is fine, but we'll need
+        # to save a pristine deep copy for any read-write mounts so we can edit
+        # and save them.
+        if mode == 'rw':
+            self.dom = dom.cloneNode(1)
+            # At this point it's easy to point our original to the pristine copy,
+            # so let's do so and save us much headache when it comes time to call
+            # Tree.commit().
+            def link(copy, original):
+                original.minfoNode = copy
+                for i in xrange(len(original.childNodes)):
+                    link(copy.childNodes[i], original.childNodes[i])
+            link(self.dom, dom)
 
     def __str__(self):
         # This makes deciphering the mounts array of the Tree much easier
@@ -152,7 +170,8 @@ class MountInfo(PGBuild.XMLUtil.Document):
             mountSpec = " mounted at %s" % self.attributes['root'].value
         except:
             mountSpec = ""
-        return "<%s.%s %s%s>" % (self.__module__, self.__class__.__name__, name, mountSpec)
+        return "<%s.%s %s from %s%s with mode '%s'>" % (
+            self.__module__, self.__class__.__name__, name, self.file, mountSpec, self.mode)
 
     def __repr__(self):
         return self.__str__()
@@ -183,18 +202,23 @@ class Tree(PGBuild.XMLUtil.Document):
                 "Trying to mount a config tree with a <%s> root where <%s> is expected" %
                 (dom.getRoot().nodeName,self.rootName))
 
+        # Recursively tag all objects in the
+        # new DOM with their MountInfo
+        def rTag(element, minfo):
+            # minfo is a reference to the MountInfo() object for this node's mount.
+            # minfoNode is a reference to the original DOM node corresponding to a
+            #   mounted node, only set for writeable mounts. It is assigned in
+            #   MountInfo() after it has made a copy of the original DOM.
+            element.minfo = minfo
+            element.minfoNode = None
+            for child in element.childNodes:
+                rTag(child, minfo)
+        rTag(dom, minfo)
+
         # Save the document's attributes and it's original DOM in the
         # MountInfo for later access via mounts[]
         minfo = MountInfo(file, mode, dom.getRoot().attributes, dom)
         self.mounts.append(minfo)
-
-        # Recursively tag all objects in the
-        # new DOM with their MountInfo
-        def rTag(element, minfo):
-            element.minfo = minfo
-            for child in element.childNodes:
-                rTag(child, minfo)
-        rTag(dom, minfo)
 
         # Merge any top-level processing instruction nodes regardless
         # of mount points. This, for example, lets our tree painlessly
@@ -272,6 +296,40 @@ class Tree(PGBuild.XMLUtil.Document):
         stripElements(self)
         self.normalize()
         mergeElements(self)
+
+    def commit(self):
+        """Save all changes to the config tree. This involves first propagating
+           changes from the config tree into the pristine DOMs, then saving those DOMs.
+           Note that changes to areas of the tree without read-write mounts are ignored,
+           since this doesn't yet have any way to find out whether a change has been made-
+           read-write mounts always get written to when this is called.
+           """
+
+        def propagate(node):
+            # Note: this doesn't yet support deleting nodes out of the originals
+            #       that have been deleted in the mounted copy.
+
+            # Do we have a place to store this node?
+            if node.minfoNode:
+                # Store attributes and data
+                if node.nodeType == node.ELEMENT_NODE:
+                    node.minfoNode.attributes = node.attributes
+                if node.nodeType == node.TEXT_NODE:
+                    node.minfoNode.data = node.data
+                    
+            for child in node.childNodes:
+                if not child.minfoNode and node.minfoNode:
+                    # This is an 
+                    child.minfoNode = node.minfoNode
+                self.
+
+                # 
+                
+
+        # Start the propagation at the document root. Note that this means nodes like
+        # XML processing instructions that are outside the root node won't be
+        # automatically saved.
+        propagate(self.getRoot())
                     
 default = Tree()
 
