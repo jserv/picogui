@@ -1,4 +1,4 @@
-/* $Id: terminal_frontend.c,v 1.12 2003/01/01 03:43:09 micahjd Exp $
+/* $Id: terminal_frontend.c,v 1.13 2003/01/20 10:25:15 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -348,10 +348,15 @@ void terminal_trigger(struct widget *self,s32 type,union trigparam *param) {
     return;
     
   case PG_TRIGGER_STREAM:
-    /* Output each character */
-    for (;*param->stream.data;param->stream.data++)
-      term_char(self,*param->stream.data);
-    
+    /* Output each character
+     * FIXME: this doesn't do unicode
+     */
+    {
+      u32 bytes = param->stream.size;
+      for (;bytes;param->stream.data++, bytes--)
+	term_char(self,*param->stream.data);
+    }    
+
     /* If we're autoscrolling, make sure the new cursor position is scrolled in */
     if (DATA->autoscroll) {
       /* More trickery... we'd like to be able to use scroll_to_divnode() on this,
