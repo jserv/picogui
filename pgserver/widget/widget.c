@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.61 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: widget.c,v 1.62 2001/02/17 10:14:50 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -50,8 +50,7 @@ DEF_WIDGET_TABLE(popup)
 DEF_STATICWIDGET_TABLE(box)
 DEF_WIDGET_TABLE(field)
 DEF_WIDGET_TABLE(background)
-/* menuitem is a hybrid :) */
-menuitem_install,button_remove,button_trigger,button_set,button_get,
+DEF_HYBRIDWIDGET_TABLE(menuitem,button)
 DEF_WIDGET_TABLE(terminal)
 DEF_WIDGET_TABLE(canvas)
 };
