@@ -1,25 +1,84 @@
 import PicoGUI, string, sys
 
-widgetTypes = {}
 
-# Get the WidgetType class for a widget type
-def getType(app, type):
-    if not widgetTypes.has_key(type):
-	widgetTypes[type] = WidgetType(app, type)
-    return widgetTypes[type]
-    
+class Widget:
+    """
+    A wrapper around the PicoGUI widget that is selectable, stores
+    properties more reliably, can enumerate its supported
+    properties and defaults, and dump itself to XWT format.
+    """
+    def __init__(self,app,pgwidget):
+        self.pgwidget = pgwidget
+        self.app = app
 
-# Get a widget's property list
-def getList(widget, app):
-    if not hasattr(widget,'properties'):
-	# We need to generate the list
-	widget.properties = {}
-	type = getType(app, widget.type)
-	for prop in type.properties:
-	    value = getattr(widget, prop)
-	    if value != type.defaults[prop]:
-		widget.properties[prop] = value
-    return widget.properties
+        # Get a WidgetType class for this widget.
+        # Cache the WidgetType objects per-app.
+        if not hasattr(app,'widgetTypes'):
+            app.widgetTypes = {}
+        type = pgwidget.type
+        if not app.widgetTypes.has_key(type):
+           app. widgetTypes[type] = WidgetType(app, type)
+        self.type = app.widgetTypes[type]
+
+        self.properties = {}
+        self.children = []
+
+    # Settings for outputting XWTs
+    indentSize = 4
+    maxInlineLength = 70
+
+    def getIndent(self, indentLevel):
+        return ' ' * (self.indentSize * indentLevel)
+
+    def unset(self, property):
+        del self.properties[property]
+        setattr(self.pgwidget,property,self.type.defaults[property])
+
+    def set(self, property, value):
+        self.properties[property] = value
+        setattr(self.pgwidget,property,value)
+
+    # Returns the attribute list, with separator before each pair
+    def getAttributes(self, properties=None, separator=' '):
+        attr = ''
+        if properties == None:
+            properties = self.properties
+        for prop in properties:
+            attr += '%s%s="%s"' % (separator, prop, self.properties[prop])
+        return attr
+
+    def toXWT(self, indentLevel=0):
+        indent = self.getIndent(indentLevel)
+        properties = self.properties.copy()  # Copy it so we can remove 'text' below
+        
+        # Text goes in the tag's data unless there are children
+        if len(self.children) == 0 and properties.has_key('text'):
+            data = properties['text']
+            del properties['text']
+        else:
+            data = ''
+            
+        xwt = "%s<%s%s" % (indent, self.type.name, self.getAttributes(properties))
+            
+        # Was that too long? We can put properties on individual lines
+        if len(xwt) > self.maxInlineLength:
+            separator = '\n' + getIndent(indentLevel+1)
+            xwt = '%s<%s%s%s' % (indent, self.type.name,
+                                 self.getAttributes(properties,separator), separator)
+            
+        # If we have no widgets or data, make this a self-closing tag and exit
+        if len(self.children) == 0 and len(data) == 0:
+            return xwt + '/>\n'
+        else:
+            xwt += '>\n'
+
+        if len(data) > 0:
+            xwt += self.getIndent(indentLevel+1) + data + '\n'
+
+        for child in self.children:
+            xwt += child.toXWT(indentLevel+1)
+
+        return '%s%s</%s>\n' % (xwt, indent, self.type.name)
 
 
 class WidgetType:
@@ -33,6 +92,7 @@ class WidgetType:
         widget = app.createWidget(type)
         self.properties = []
         self.defaults = {}
+        self.name = type
         for prop in PicoGUI.server.constants['set'].keys():
             try:
                 default = getattr(widget, prop)
@@ -53,9 +113,8 @@ class PropertyList:
         self.widget = widget
         self.container = container
         self.list = []
-	self.type = getType(app, widget.type)
 
-        for i in self.type.properties:
+        for i in widget.type.properties:
             self.list.append(PropertyEdit(self,i))
 
     def destroy(self):
@@ -70,7 +129,6 @@ class PropertyEdit:
         self.property = property
         self.widget = self.plist.widget
         self.app = self.plist.app
-	self.type = self.plist.type
 	self.visible = False
 
         if len(self.plist.list) == 0:
@@ -86,8 +144,7 @@ class PropertyEdit:
         self.checkbox.side = 'all'
         self.app.link(self._show_hide, self.checkbox, 'activate')
 
-        self.value = getattr(self.widget, self.property)
-        if self.value != self.type.defaults[self.property]:
+        if self.widget.properties.has_key(self.property):
             self.checkbox.on = 1
             self.show()
 	    self.propertyValid()
@@ -98,6 +155,7 @@ class PropertyEdit:
 	
     def show(self):
 	if not self.visible:
+            self.widget.set(self.property,self.widget.type.defaults[self.property])
 	    self.editor = StringPropertyEditor(self)
 	    self.visible = True
 
@@ -109,9 +167,7 @@ class PropertyEdit:
     def hide(self):
 	if self.visible:
 	    self.deleteEditorWidgets()
-	    self.value = self.type.defaults[self.property]
-	    setattr(self.widget, self.property, self.value)
-	    self.propertyInvalid()
+            self.widget.unset(self.property)
 	    self.visible = False
 
     def _show_hide(self, ev, widget):
@@ -129,25 +185,12 @@ class PropertyEdit:
 
         # If we have an exception setting the property,
         # slap an invalid warning on this property
-        self.value = value
         try:
-            setattr(self.widget, self.property, self.value)
-	    if not hasattr(self.widget,'properties'):
-		self.widget.properties = {}
-	    self.propertyValid()
+            self.widget.set(self.property, value)
         except:
             self.errorLabel = self.box.addWidget('label','inside')
             self.errorLabel.side = 'bottom'
             self.errorLabel.text = 'Invalid Value'
-	    self.propertyInvalid()
-
-    def propertyValid(self):
-	self.widget.properties[self.property] = self.value
-
-    def propertyInvalid(self):
-	if hasattr(self.widget,'properties'):
-	    if self.widget.properties.has_key(self.property):
-		del self.widget.properties[self.property]
 
 
 class StringPropertyEditor:
@@ -158,7 +201,7 @@ class StringPropertyEditor:
 
 	self.editWidget = self.pedit.box.addWidget('field','inside')
         self.editWidget.side = 'bottom'
-        self.editWidget.text = str(self.pedit.value)
+        self.editWidget.text = str(self.pedit.widget.properties[self.pedit.property])
         self.app.link(self._modify, self.editWidget, 'activate')
 
     def _modify(self, ev, widget):
@@ -166,3 +209,4 @@ class StringPropertyEditor:
 
     def destroy(self):
         self.app.delWidget(self.editWidget)
+

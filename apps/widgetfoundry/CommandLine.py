@@ -7,11 +7,18 @@ class CommandLine(PanelComponent, InteractiveConsole):
     def __init__(self, main):
         PanelComponent.__init__(self,main)
 
+        # Redirect stdout and stderr to our own write() function
+        self.saved_stdout = sys.stdout
+        self.saved_stderr = sys.stderr
+        sys.stdout = self
+        sys.stderr = self
         
         locals = {
-            "__name__": "__console__",
-            "__doc__":  None,
-            "main":     main,
+            "__name__":   "__console__",
+            "__doc__":    None,
+            "main":       main,
+            "PicoGUI":    PicoGUI,
+            "sys":        sys,
             }
         InteractiveConsole.__init__(self,locals)
 
@@ -26,7 +33,6 @@ class CommandLine(PanelComponent, InteractiveConsole):
 
         self.widget.side = 'bottom'
         self.widget.text = 'Python Command Line'
-        self.widget.margin = 0
         self.scroll = self.widget.addWidget('scrollbox','inside')
         self.textbox = self.scroll.addWidget('textbox','inside')
         self.textbox.readonly = 1
@@ -41,10 +47,13 @@ class CommandLine(PanelComponent, InteractiveConsole):
         self.line.side = 'all'
         main.app.link(self.enterLine, self.line, 'activate')
 
-        self.write("Python %s on %s\n(Widget Foundry shell)\n" %
+        self.write("Python %s on %s\n(Widget Foundry shell, See main.__dict__ for useful variables)\n" %
                    (sys.version, sys.platform))
 
     def destroy(self):
+        sys.stdout = self.saved_stdout
+        sys.stderr = self.saved_stderr
+
         self.main.app.delWidget(self.textbox)
         self.main.app.delWidget(self.scroll)
         self.main.app.delWidget(self.commandBox)
@@ -54,9 +63,6 @@ class CommandLine(PanelComponent, InteractiveConsole):
 
     def write(self, data):
         self.textbox.text = data
-
-    def resetBuffer(self):
-        self.buffer = []
 
     def enterLine(self, ev, widget):
         line = widget.text[:]
