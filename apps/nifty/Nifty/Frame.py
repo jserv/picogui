@@ -16,7 +16,7 @@ class Frame(object):
         self._box.side = 'All'
 
         self.python_ns = {'frame': self}
-        exec 'from Nifty import FileBuffer, ScratchBuffer, keybindings' in self.python_ns
+        exec 'from Nifty import FileBuffer, ScratchBuffer, Subprocess, keybindings' in self.python_ns
 
         bar = self._app.panelbar() or self.addWidget('toolbar')
         bt = bar.addWidget('Button', 'inside')
