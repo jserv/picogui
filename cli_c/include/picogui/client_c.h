@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.65 2001/09/06 23:42:09 micahjd Exp $
+/* $Id: client_c.h,v 1.66 2001/09/06 23:47:30 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -1199,8 +1199,32 @@ void pgExitEventLoop(void);
  * This is good for small dialog boxes, or other situations when pgBind and
  * pgEventLoop are overkill. pgGetEvent can be used while an event loop is already
  * in progress, for example in a pgSetIdle or pgBind handler function.
+ *
+ * You can also use this in combination with pgCheckEvent to passively check
+ * for new events while performing some other operation, such as animation.
+ *
+ * Important! Note that the returned pointer is only valid until the next
+ * PicoGUI call! It's usually a good idea to use something like this:
+ *
+ * \code
+
+struct pgEvent evt;
+
+evt = *pgGetEvent();
+
+ * \endcode
+ *
+ * If the relevant values from the pgEvent structure will be copied elsewhere
+ * before the next PicoGUI call, that is alright too. Thus, the following code
+ * is perfectly fine:
+ *
+ * \code
+
+i = pgGetPayload( pgGetEvent()->from );
+
+ * \endcode
  * 
- * \sa pgEventLoop, pgBind, pgSetIdle, pgSetPayload, pgGetPayload
+ * \sa pgEventLoop, pgBind, pgSetIdle, pgSetPayload, pgGetPayload, pgCheckEvent
  */
 struct pgEvent *pgGetEvent(void);
 
