@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.28 2000/12/16 18:37:47 micahjd Exp $
+/* $Id: constants.h,v 1.29 2000/12/31 16:59:26 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -375,7 +375,9 @@ typedef unsigned long pghandle;
 #define PG_GROPPARAMS(x)   (((x)>>4)&0x0F)
 
 /* Grop flags */
-#define PG_GROPF_TRANSLATE 0x0001  /* Apply the divnode's tx,ty */
+#define PG_GROPF_TRANSLATE    (1<<0)  /* Apply the divnode's tx,ty */
+#define PG_GROPF_INCREMENTAL  (1<<1)  /* Defines nodes used for incremental
+				       * updates. Not rendered normally. */
 
 /* Video mode flags */
 #define PG_VID_FULLSCREEN     0x0001
