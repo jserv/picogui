@@ -7,7 +7,7 @@ INCLUDES = -I$(top_srcdir)/include
 
 YACC = @YACC@ -d
 
-MKSYMTAB := perl mksymtab.pl
+MKSYMTAB := perl $(srcdir)/mksymtab.pl
 
 LDADD = @LEXLIB@
 
@@ -15,8 +15,8 @@ CONSTANTS := $(top_srcdir)/include/picogui/*.h
 
 DISTCLEANFILES = symtab.c pgtheme.c pgtheme.h pglex.c
 
-EXTRA_DIST = mksymtab.pl
+EXTRA_DIST = $(srcdir)/mksymtab.pl
 
-symtab.c : $(CONSTANTS) mksymtab.pl
+symtab.c : $(CONSTANTS) $(srcdir)/mksymtab.pl
 	$(MKSYMTAB) $(CONSTANTS) > symtab.c
 
