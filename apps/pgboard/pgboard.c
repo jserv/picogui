@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.27 2002/01/06 09:22:56 micahjd Exp $
+/* $Id: pgboard.c,v 1.28 2002/02/05 15:46:34 cgrigis Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -28,7 +28,7 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h"
 #endif
 
 #include <stdio.h>
@@ -36,9 +36,12 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #ifdef POCKETBEE
-#include <signal.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#  include <signal.h>
+#  include <sys/stat.h>
+#  include <fcntl.h>
+#  ifdef USE_RM
+#    include <rm_client.h>
+#  endif /* USE_RM */
 #endif /* POCKETBEE */
 #include <netinet/in.h>
 #include <picogui.h>
@@ -63,6 +66,14 @@ static int enable_status = 1;
 static unsigned short current_patnum;
 /* Flag indicating whether the keyboard is blocked */
 static int blocked = 0;
+
+#ifdef USE_RM
+
+/* Status code for all RM operations */
+RMStatus rm_status;
+
+#endif /* USE_RM */
+
 
 /* Structure to hold the current keyboard context */
 struct keyboard_context
@@ -118,7 +129,7 @@ void popKeyboardContext ()
   if (context_top == NULL)
     {
       /* No context to pop -> ignore */
-      printf ("[pgboard] popKeyboardContext() on empty context stack --> ignored\n");
+      DPRINTF ("popKeyboardContext() on empty context stack --> ignored\n");
       return;
     }
 
@@ -165,7 +176,7 @@ int evtMessage (struct pgEvent * evt)
 
       /* Command structure is in network byte order */
       cmd->type = ntohs(cmd->type);
-/*       printf ("[pgboard] received command: %d\n", cmd->type); */
+      DPRINTF ("received command: %d\n", cmd->type);
 
       if (blocked)
 	{
@@ -229,7 +240,7 @@ int evtMessage (struct pgEvent * evt)
 	      break;
 
 	    default:
-	      printf ("[pgboard] Unknown command: %d\n", cmd->type);
+	      DPRINTF ("Unknown command: %d\n", cmd->type);
 	      break;
 	    }
 
@@ -372,12 +383,19 @@ void drawDisabledKeyboard ()
 #ifdef POCKETBEE
 
 /*
- * Release the lock preventing multiple instances.
+ * Properly exit
  */
-void release_lock ()
+void proper_exit ()
 {
-  /* Delete lock file */
-  unlink (PG_KEYBOARD_LOCKFILE);
+
+#ifdef USE_RM
+
+  if ( (rm_status = rm_exit ()) != RM_OK ) {
+    DPRINTF ("cannot exit RM (error: %d)\n", rm_status);
+  }
+
+#endif /* USE_RM */
+
 }
 
 /*
@@ -385,7 +403,7 @@ void release_lock ()
  */
 void sig_handler (int sig)
 {
-  release_lock ();
+  proper_exit ();
   _exit (1);
 }
 
@@ -418,17 +436,12 @@ int main(int argc,char **argv) {
   unsigned char * file_data;
 
 #ifdef POCKETBEE
+
   /* Register the handler for SIGTERM */
   signal (SIGTERM, sig_handler);
   /* Register exit function */
-  atexit (release_lock);
+  atexit (proper_exit);
 
-  /* Try to obtain the file lock */
-  if (open (PG_KEYBOARD_LOCKFILE, O_CREAT | O_EXCL) == -1 && errno == EEXIST)
-    {
-      /* File already locked -> another instance is running -> exit */
-      _exit (1);
-    }
 #endif /* POCKETBEE */
 
   /* Make a 'toolbar' app */
@@ -484,8 +497,22 @@ int main(int argc,char **argv) {
 	      0);
 
 #ifdef POCKETBEE
-  /* Signal the parent of a proper start */
-  kill (getppid (), SIGUSR1);
+
+#  ifdef USE_RM
+
+  /* Initialize RM */
+  if ( (rm_status = rm_init ()) != RM_OK ) {
+    DPRINTF ("cannot init RM (error: %d)\n", rm_status);
+  }
+  
+  DPRINTF ("about to tell RM we are ready\n");
+  
+  /* Signal the RM of a proper start */
+  if ( (rm_status = rm_monitor_ready ()) != RM_OK ) {
+    DPRINTF ("cannot signal RM (error: %d)\n", rm_status);
+  }
+
+#  endif /* USE_RM */
 
   /* Find the public box in the finder */
   {
@@ -494,7 +521,7 @@ int main(int argc,char **argv) {
 
     while ( !(box = pgFindWidget ("FinderKbdBox")) && i < 5 )
       {
-	printf ("[pgboard] Finder public box not found, waiting ...\n");
+	DPRINTF ("Finder public box not found, waiting ...\n");
 	sleep (1);
 	i++;
       }
@@ -511,6 +538,7 @@ int main(int argc,char **argv) {
 	pgBind (PGDEFAULT, PG_WE_ACTIVATE, &kbd_btn_handler, NULL);
       }
   }
+
 #endif /* POCKETBEE */
 
   initKbdCanvas ();

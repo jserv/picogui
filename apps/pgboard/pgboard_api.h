@@ -1,4 +1,4 @@
-/* $Id: pgboard_api.h,v 1.3 2002/01/06 09:22:56 micahjd Exp $
+/* $Id: pgboard_api.h,v 1.4 2002/02/05 15:46:34 cgrigis Exp $
  *
  * pgboard_api.h - high-level API to manipulate the PicoGUI virtual keyboard
  * 
@@ -29,6 +29,16 @@
 #ifndef _PGBOARD_API_H
 #define _PGBOARD_API_H
 
+#ifdef HAVE_CONFIG_H
+#  include "config.h"
+#endif
+
+#undef DPRINTF
+#ifdef DEBUG
+#  define DPRINTF(arg...) printf ("[pgboard_api] " arg)
+#else
+#  define DPRINTF(arg...)
+#endif
 
 /* Prototype declarations */
 

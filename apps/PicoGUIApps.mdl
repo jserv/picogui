@@ -1,6 +1,8 @@
 # -*- python -*-
 
 from beeconfig import compile, install, distrib, clean
+from Bee.Logic import S
+import os
 
 multicompile     = 1
 
@@ -8,7 +10,7 @@ help = """
 Provides the PicoGUI demonstration applications
 """
 
-prefix = '/usr'
+prefix = '/'
 
 depends = [ 'picoguiclient' ]
 
@@ -38,27 +40,43 @@ runtime = [
     Runtime ( 'pgboard_run_fitaly', 'Run PGBoard with Fitaly keymap',
               depends = [ 'picoguiserver/server',
                           'picoguiapps/fitaly',
-                          'pocketguiapps/sd_finder_run' ],
-              rcscript = "# start pgboard\nsleep 4\n%s/bin/pgboard %s/share/pgboard/us_fitaly_160.kb&\n\n" % \
-                         ( prefix, prefix )),
+                          'pocketguiapps/sd_finder_run',
+                          S ('module/picoguiapps/pgboard_run_fitaly') >>
+                          ( ~ S ('module/picoguiapps/pgboard_run_us_qwerty') &
+                            ~ S ('module/picoguiapps/pgboard_run_us_qwerty_bitmap') &
+                            ~ S ('module/picoguiapps/pgboard_run_us_qwerty') )
+                          ],
+              content = [ 'etc/rm.d/picoguiapps' ]),
     Runtime ( 'pgboard_run_us_qwerty', 'Run PGBoard with US QWERTY keymap',
               depends = [ 'picoguiserver/server',
                           'picoguiapps/us_qwerty',
-                          'pocketguiapps/sd_finder_run' ],
-               rcscript = "# start pgboard\nsleep 4\n%s/bin/pgboard %s/share/pgboard/us_qwerty_scalable.kb&\n\n" % \
-                          ( prefix, prefix )),
+                          'pocketguiapps/sd_finder_run',
+                          S ('module/picoguiapps/pgboard_run_us_qwerty') >>
+                          ( ~ S ('module/picoguiapps/pgboard_run_fitaly') &
+                            ~ S ('module/picoguiapps/pgboard_run_us_qwerty_bitmap') &
+                            ~ S ('module/picoguiapps/pgboard_run_us_qwerty') )
+                          ],
+              content = [ 'etc/rm.d/picoguiapps' ]),
     Runtime ( 'pgboard_run_us_qwerty_bitmap', 'Run PGBoard with US QWERTY keymap (Bitmap 240x80)',
               depends = [ 'picoguiserver/server',
                           'picoguiapps/us_qwerty_bitmap',
-                          'pocketguiapps/sd_finder_run' ],
-               rcscript = "# start pgboard\nsleep 4\n%s/bin/pgboard %s/share/pgboard/us_qwerty_240.kb&\n\n" % \
-                          ( prefix, prefix )),
+                          'pocketguiapps/sd_finder_run',
+                          S ('module/picoguiapps/pgboard_run_us_qwerty_bitmap') >>
+                          ( ~ S ('module/picoguiapps/pgboard_run_fitaly') &
+                            ~ S ('module/picoguiapps/pgboard_run_us_qwerty') &
+                            ~ S ('module/picoguiapps/pgboard_run_ch_qwertz') )
+                          ],
+              content = [ 'etc/rm.d/picoguiapps' ]),
     Runtime ( 'pgboard_run_ch_qwertz', 'Run PGBoard with CH QWERTZ keymap',
               depends = [ 'picoguiserver/server',
                           'picoguiapps/ch_qwertz',
-                          'pocketguiapps/sd_finder_run' ],
-               rcscript = "# start pgboard\nsleep 4\n%s/bin/pgboard %s/share/pgboard/ch_qwertz_scalable.kb&\n\n" % \
-                          ( prefix, prefix )),
+                          'pocketguiapps/sd_finder_run',
+                          S ('module/picoguiapps/pgboard_run_ch_qwertz') >>
+                          ( ~ S ('module/picoguiapps/pgboard_run_fitaly') &
+                            ~ S ('module/picoguiapps/pgboard_run_us_qwerty') &
+                            ~ S ('module/picoguiapps/pgboard_run_us_qwerty_bitmap') )
+                          ],
+              content = [ 'etc/rm.d/picoguiapps' ]),
     Runtime ( 'pgboard_cmds', 'Virtual Keyboard Tester',
               content = [ 'bin/pgboard_cmds' ],
               help = "Test application to send commands to the Virtual Keyboard" ),
@@ -110,10 +128,41 @@ def prepare (module, platform, project):
     command = command + " --with-picogui=%s" % \
               project.modules ['picoguiclient'].install_path (platform, project)
 
+    command = command + " --with-rm=%s" % \
+              project.modules ['resourcemanager'].install_path (platform, project)
+
     message ("running: %s" % command)
 
     sequence ("rm -f config.status",
               "test ! -f ../autogen.sh || (cd .. ; ./autogen.sh || true)",
               command)
  
+    # Determine pgboard keymap file
+    pgboard_arg = ""
+
+    if project.value ['module/picoguiapps/pgboard_run_fitaly'] :
+        pgboard_arg = "%s/share/pgboard/us_fitaly_160.kb" % prefix
+    elif project.value ['module/picoguiapps/pgboard_run_us_qwerty'] :
+        pgboard_arg = "%s/share/pgboard/us_qwerty_scalable.kb" % prefix
+    elif project.value ['module/picoguiapps/pgboard_run_us_qwerty_bitmap'] :
+        pgboard_arg = "%s/share/pgboard/us_qwerty_240.kb" % prefix
+    elif project.value ['module/picoguiapps/pgboard_run_ch_qwerty'] :
+        pgboard_arg = "%s/share/pgboard/ch_qwertz_scalable.kb" % prefix
+        
+    # generate the RM file
+    file = os.path.join (module.path ['frz'], 'etc', 'rm.d', 'picoguiapps')
+    makedirs (os.path.dirname (file))
+
+    fd = open (file, 'w')
+    fd.write ('''
+name = pgboard
+argv = %s/bin/pgboard %s
+
+wait = sd-finder
+restart  = 1
+announce = 1
+blocked  = 0
+    ''' % (prefix, pgboard_arg) )
+    fd.close ()
+
     return

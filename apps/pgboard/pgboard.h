@@ -1,4 +1,4 @@
-/* $Id: pgboard.h,v 1.6 2002/01/22 17:04:29 cgrigis Exp $
+/* $Id: pgboard.h,v 1.7 2002/02/05 15:46:34 cgrigis Exp $
  *
  * pgboard.h - declarations associated with the virtual keyboard (pgboard)
  * 
@@ -30,13 +30,15 @@
 #define _PGBOARD_H
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#  include "config.h"
 #endif
 
-#ifdef POCKETBEE
-/* Lock file to prevent multiple instances */
-#define PG_KEYBOARD_LOCKFILE "/var/pgboard.lock"
-#endif /* POCKETBEE */
+#undef DPRINTF
+#ifdef DEBUG
+#  define DPRINTF(arg...) printf ("[pgboard] " arg)
+#else
+#  define DPRINTF(arg...)
+#endif
 
 /* Keyboard application name */
 #define PG_KEYBOARD_APPNAME "app/Keyboard"
