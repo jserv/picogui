@@ -22,7 +22,7 @@ a Repository implementation.
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
-import os, re
+import os, re, shutil
 
 # The name of the svn command to use. This should be made customizable.
 svnCommand = "svn"
@@ -102,18 +102,6 @@ def collectProgress(file, progress):
     if file.close():
         raise PGBuild.Errors.InternalError("The Subversion command returned an error code")
 
-def rmtree(path, progress):
-    try:
-        if os.path.isdir(path):
-            for file in os.listdir(path):
-                rmtree(os.path.join(path, file), progress)
-            os.rmdir(path)
-        else:
-            os.unlink(path)
-    except OSError, IOError:
-        pass
-
-
 # Since exceptions during import will be used to autodetect which Subversion
 # module to use, we want to cause an exception here if it looks like the
 # command line client is missing or broken.
@@ -137,7 +125,7 @@ class Repository:
                 # changes that this will nuke. If we don't do this, another attempt to
                 # download() will fail, because svn can't currently resume checkouts.
                 progress.warning("Removing partial Subversion checkout")
-                rmtree(destination, progress)
+                shutils.rmtree(destination, 1)
 
     def isWorkingCopyPresent(self, destination):
         try:

@@ -43,7 +43,9 @@ The extra rules imposed on the XML:
 
 import PGBuild.XMLUtil
 import PGBuild.Errors
-import re
+import re, shutil, os
+
+configFileExtension = "xbc"
 
 def prependElements(src, dest):
     """Move all children from the 'src' into 'dest'.
@@ -303,9 +305,9 @@ class Tree(PGBuild.XMLUtil.Document):
             mergeElements(self)
 
     def dirMount(self, dir):
-        """Mount all .xbc files in the given directory"""
+        """Mount all config files in the given directory"""
         import glob, os
-        for file in glob.glob(os.path.join(dir, "*.xbc")):
+        for file in glob.glob(os.path.join(dir, "*.%s" % configFileExtension)):
             self.mount(file)
 
     def commit(self):
@@ -342,6 +344,16 @@ class Tree(PGBuild.XMLUtil.Document):
 
         # Mount in an XML representation of the bootstrap object
         self.mount(BootstrapXML(bootstrap))
+
+        # Copy skeleton local files from the conf package if they haven't been
+        # copied or manually created yet.
+        skelPath = os.path.join(bootstrap.confPackagePath, 'local')
+        for skelFile in os.listdir(skelPath):
+            if re.match(".*\.%s" % configFileExtension, skelFile):
+                if os.path.isfile(os.path.join(skelPath, skelFile)):
+                    if not os.path.isfile(os.path.join(bootstrap.localConfPath, skelFile)):
+                        shutil.copyfile(os.path.join(skelPath, skelFile),
+                                        os.path.join(bootstrap.localConfPath, skelFile))
 
         # Mount our config directories
         self.dirMount(bootstrap.confPackage)

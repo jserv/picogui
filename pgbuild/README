@@ -16,6 +16,7 @@ free to use this in other projects if it's helpful.
   conf/
     XML Build Configuration files for local modifications to the build system.
     Any files with a .xbc extension are automatically mounted into PGBuild's
-    configuration tree. The default files in this directory will store modifications
-    made to the build options, package list, or download sites.
+    configuration tree.
+    This directory should be automatically populated with skeleton files
+    from the conf-dev package.
 
