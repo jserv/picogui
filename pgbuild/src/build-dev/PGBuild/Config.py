@@ -320,6 +320,7 @@ class Tree(PGBuild.XMLUtil.Document):
                    """
         
         for minfo in self.mounts:
+            print minfo
             if minfo.hasMode("w"):
                 mountElement = self.resolveMountPath(minfo.getRoot())
                 PGBuild.XMLUtil.writeSubtree(mountElement, minfo.file,
@@ -356,7 +357,7 @@ class Tree(PGBuild.XMLUtil.Document):
                                         os.path.join(bootstrap.localConfPath, skelFile))
 
         # Mount our config directories
-        self.dirMount(bootstrap.confPackage)
+        self.dirMount(bootstrap.confPackagePath)
         self.dirMount(bootstrap.localConfPath)
 
                 
