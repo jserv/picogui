@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.1 2001/10/02 05:57:46 micahjd Exp $
+/* $Id: textbox_document.c,v 1.2 2001/10/02 08:47:50 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -29,12 +29,15 @@
 
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
+#include <pgserver/font.h>
 #include <pgserver/textbox.h>
 
 /************************* Formatting */
 
 /* Add a format node to the stack */
 g_error text_format_add(struct textbox_cursor *c, struct formatnode *f) {
+  f->next = c->f_top;
+  c->f_top = f;
   return sucess;
 }
 
@@ -45,12 +48,54 @@ g_error text_format_color(struct textbox_cursor *c, pgcolor color) {
 
 /* Add a node to change the font completely */
 g_error text_format_font(struct textbox_cursor *c, handle font) {
-  return sucess;
+  struct formatnode *fn;
+  struct fontdef *fd;
+  const char *font_name = NULL;
+  g_error e;
+  int font_size = 0;
+  u32 font_flags = 0;
+
+  /* Empty formatnode */
+  e = g_malloc((void**) &fn,sizeof(struct formatnode));
+  errorcheck;
+  memset(fn,0,sizeof(struct formatnode));
+
+  /* Same color, new font */
+  if (c->f_top)
+    fn->color = c->f_top->color;
+  fn->fontdef = font;
+
+  return text_format_add(c,fn);
 }
 
 /* Add a node to change font flag(s) */
 g_error text_format_font_flags(struct textbox_cursor *c,u32 on, u32 off) {
-  return sucess;
+  struct fontdesc *fd;
+  const char *font_name = NULL;
+  g_error e;
+  int font_size = 0;
+  u32 font_style = 0;
+  handle font;
+
+  /* Use previous font as a starting point */
+  if (c->f_top && c->f_top->fontdef) {
+    e = rdhandle((void**) &fd,PG_TYPE_FONTDESC,c->widget->owner,
+		 c->f_top->fontdef);
+    errorcheck;
+    font_name  = fd->fs->name;
+    font_size  = fd->fs->size;
+    font_style = fd->style;
+  }
+
+  /* Change flags */
+  font_style |= on;
+  font_style &= ~off;
+
+  /* New font */
+  e = findfont(&font,c->widget->owner,font_name,font_size,font_style);
+  errorcheck;
+
+  return text_format_font(c,font);
 }
 
 /* Add a node to change font size relative to the current size */
@@ -88,6 +133,27 @@ g_error text_insert_wordbreak(struct textbox_cursor *c) {
 
 /* Begin a new paragraph at the cursor */
 g_error text_insert_linebreak(struct textbox_cursor *c) {
+  /* Would a line break make sense here? */
+  if (c->c_line) {
+    struct divnode *newline;
+    g_error e;
+
+    /* Construct a new line node with the same flags & size */
+    e = newdiv(&newline, c->widget);
+    errorcheck;
+    newline->flags = c->c_line->flags;
+    newline->split = c->c_line->split;
+    
+    /* Insert after this line, don't link nextline pointers */
+    c->c_line->nextline = NULL;
+    r_set_nextline(c->c_line->div,NULL);
+    newline->next = c->c_line->next;
+    c->c_line->next = newline;
+    c->c_line = newline;
+
+    c->c_div = NULL;
+    c->c_gctx.current = NULL;
+  }
   return sucess;
 }
 
@@ -170,116 +236,4 @@ g_error text_compact(struct textbox_cursor *c) {
   return sucess;
 }
 
-/********************************** CRUFT BARRIER ***********************/
-#if 0
-
-/* Create a divnode containing a piece of text */
-g_error text_div(struct divnode **where, struct widget *self,
-		 char *str, pgcolor c, handle font) {
-  g_error e;
-  handle h;
-  struct gropctxt ctx;
-  struct fontdesc *fd;
-
-  /* Init divnode and context */
-  e = newdiv(where,self);
-  errorcheck;
-  gropctxt_init(&ctx,*where);
-
-  /* Make a string handle */
-  e = mkhandle(&h,PG_TYPE_STRING | HFLAG_NFREE,self->owner,str);
-  errorcheck;
-
-  /* color node */
-  if (c) {
-    addgrop(&ctx,PG_GROP_SETCOLOR);
-    ctx.current->param[0] = VID(color_pgtohwr)(c);
-  }
-
-  /* font node */
-  if (font) {
-    addgrop(&ctx,PG_GROP_SETFONT);
-    ctx.current->param[0] = font;
-  }
-
-  /* Text node */
-  addgropsz(&ctx,PG_GROP_TEXT,0,0,1,1);
-  ctx.current->param[0] = h;
-
-  /* Lookup font */
-  if (font)
-    e = rdhandle((void**) &fd,PG_TYPE_FONTDESC,self->owner,font);
-  else
-    e = rdhandle((void**) &fd,PG_TYPE_FONTDESC,-1,defaultfont);
-  errorcheck;
-
-  /* Preferred size */
-  sizetext(fd,&(*where)->pw,&(*where)->ph,str);
-  (*where)->flags |= PG_S_LEFT | DIVNODE_AUTOWRAP;
-  (*where)->split = (*where)->pw;
- 
-  /* For debugging, show the extent of the divnode */
-  //  addgropsz(&ctx,PG_GROP_FRAME,0,0,(*where)->pw,(*where)->ph);
-
-  return sucess;
-}
-
-g_error textbox_install(struct widget *self) {
-   g_error e;
-   struct divnode **w;
-   int i;
-   char *p,*q;
-
-   static char teststr[] = 
-     "This is a test of text layout capability in PicoGUI. Right now "
-     "it's just tokenizing this string into a bunch of divnodes with "
-     "the DIVNODE_AUTOWRAP flag. The nifty thing is, with all these "
-     "divnode flags we've accumulated (28!) it shouldn't be too hard "
-     "to convert HTML, RTF, or whatever directly into a PicoGUI divtree. "
-     "Tables, images, weird formatting, embedded widgets- you name it, "
-     "this thing should support it. But for any of that to happen, I "
-     "have to use this string to debug the DIVNODE_AUTOWRAP flag :)";
-
-   /* Disable the usual method of building groplists. */
-   self->rawbuild = 1;
-   
-   /* Main split */
-   e = newdiv(&self->in,self);
-   errorcheck;
-   self->in->flags |= PG_S_TOP;
-   self->out = &self->in->next;
-   
-   /* 1st line */
-   e = newdiv(&self->in->div,self);
-   errorcheck;
-   self->in->div->flags |= PG_S_TOP;
-
-   /* Start at 1st line */
-   w = &self->in->div->div;   
-
-   /* Hackishly tokenize a string into text divnodes */
-   p = teststr;
-   while (p) {
-     q = strchr(p,' ');
-     if (q)
-       *q = 0;
-
-     e = text_div(w,self,p,0,0);
-     errorcheck;
-
-     /* Tell it where our second line is */
-     (*w)->nextline = self->in->div->next;
-     /* Move 'where' pointer to the next position */
-     w = &((*w)->next);
-
-     p = q;
-     if (p)
-       p++;
-   }
-
-   return sucess;
-}
-
-#endif
-   
 /* The End */

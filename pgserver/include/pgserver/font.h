@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.9 2001/09/01 23:12:10 micahjd Exp $
+/* $Id: font.h,v 1.10 2001/10/02 08:47:50 micahjd Exp $
  *
  * font.h - structures for representing fonts
  *
@@ -46,6 +46,7 @@ typedef long stylet;
 struct fontdesc {
   struct font *font;
   struct fontstyle_node *fs;   /* The fontstyle this was generated from */
+  u32 style;            /* Store the style that created this fontdesc */
   int interline_space;  /* Extra spacing between lines, for
 			   doublespace, etc. */
   int interchar_space;  /* Extra spacing between characters,

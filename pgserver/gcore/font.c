@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.27 2001/09/02 20:49:25 micahjd Exp $
+/* $Id: font.c,v 1.28 2001/10/02 08:47:50 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -344,6 +344,7 @@ g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
    memset(fd,0,sizeof(struct fontdesc));
    fd->hline = -1;
    fd->hline_c = VID(color_pgtohwr) (0x000000);
+   fd->style = flags;
    
    if (!(flags & PG_FSTYLE_FLUSH)) fd->margin = 2;
    if (flags & PG_FSTYLE_GRAYLINE) {
