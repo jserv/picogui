@@ -1,4 +1,4 @@
-/* $Id: eventbroker.c,v 1.4 2001/11/12 10:57:02 bauermeister Exp $
+/* $Id: eventbroker.c,v 1.5 2001/11/29 10:44:14 pney Exp $
  *
  * eventbroker.c - input driver to manage driver messages
  *
@@ -41,8 +41,9 @@
 #include <pgserver/configfile.h>
 #include <pgserver/timer.h>
 
-#include <rm_client.h> /* to access the PocketBee ResourceManager */
-
+#if defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE)
+# include <rm_client.h> /* to access the PocketBee ResourceManager */
+#endif
 
 #define LOCAL_DEBUG 0
 #define LOCAL_TRACE 0
@@ -76,6 +77,8 @@ static int keyclick_len;
 /*                     Resource Manager events handling                      */
 /* ------------------------------------------------------------------------- */
 
+#if defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE)
+
 void rm_event_callback (RMStateEvent ev)
 {
   TRACEF(">>> rm_event_callback\n");
@@ -97,9 +100,13 @@ void rm_event_callback (RMStateEvent ev)
 
 }
 
+#endif /* defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE) */
+
 /* ------------------------------------------------------------------------- */
 /*                      PicoGUI input events handling                        */
 /* ------------------------------------------------------------------------- */
+
+#if defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE)
 
 static int eventbroker_fd_activate(int fd)
 {
@@ -125,6 +132,8 @@ static void eventbroker_fd_init(int *n, fd_set *readfds,
   if (rm_fd>0)
     FD_SET(rm_fd, readfds);
 }
+
+#endif /* defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE) */
 
 /* ------------------------------------------------------------------------- */
 /*                      PicoGUI driver messages handling                     */
@@ -183,8 +192,10 @@ void eventbroker_message(u32 message, u32 param, u32 *ret)
   case PGDM_POWER:
     switch(param) {
     case PG_POWER_SLEEP:
+#if defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE)
       DPRINTF("PG_POWER_SLEEP => rm_emit(RM_EV_IDLE)\n");
       rm_emit(RM_EV_IDLE);
+#endif /* defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE) */
       break;
     case PG_POWER_OFF:
     case PG_POWER_VIDBLANK:
@@ -212,22 +223,24 @@ static g_error eventbroker_init(void)
   keyclick_freq   = get_param_int("eventbroker", "keyclick_freq", 16000);
   keyclick_len    = get_param_int("eventbroker", "keyclick_len",     30);
 
+#if defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE)
   /* init the Ressources Manager */
   rm_init();
 
   /* set the rm event handlers */
   rm_set_event_callback(rm_event_callback);
 
-#if !LOCAL_DEBUG
+# if !LOCAL_DEBUG
   rm_register(RM_ST_CPU_RUNNING);
-#else
+# else
   DPRINTF("registering to all RM events\n");
   {
     int i;
     for(__RM_ST_INITIAL__ +1; i<__RM_LAST_EVENT__; ++i)
       rm_register(i);
   }
-#endif
+# endif
+#endif /* defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE) */
 }
 
 /* ------------------------------------------------------------------------- */
@@ -236,19 +249,21 @@ static void eventbroker_close(void)
 {
   TRACEF(">>> void eventbroker_close\n");
 
-#if !LOCAL_DEBUG
+#if defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE)
+# if !LOCAL_DEBUG
   rm_unregister(RM_ST_CPU_RUNNING);
-#else
+# else
   DPRINTF("unregistering from all RM events\n");
   {
     int i;
     for(__RM_ST_INITIAL__ +1; i<__RM_LAST_EVENT__; ++i)
       rm_unregister(i);
   }
-#endif
+# endif
 
   /* Disconnects the client from the Resource Manager */
   rm_exit ();
+#endif /* defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE) */
 }
 
 /* ------------------------------------------------------------------------- */
@@ -259,8 +274,10 @@ g_error eventbroker_regfunc(struct inlib *i) {
   TRACEF(">>> eventbroker_regfunc\n");
   i->init = &eventbroker_init;
   i->close = &eventbroker_close;
+#if defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE)
   i->fd_activate = &eventbroker_fd_activate;
   i->fd_init = &eventbroker_fd_init;
+#endif /* defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE) */
   i->message = &eventbroker_message;
   return sucess;
 }
