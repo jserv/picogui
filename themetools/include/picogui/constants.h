@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.2 2000/10/07 08:15:26 micahjd Exp $
+/* $Id: constants.h,v 1.3 2000/10/07 20:23:56 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -145,6 +145,7 @@ typedef unsigned long pghandle;
 #define PG_TYPE_FONTDESC   3
 #define PG_TYPE_STRING     4
 #define PG_TYPE_THEME      5
+#define PG_TYPE_FILLSTYLE  6
 
 /******************** Theme constants */
 
@@ -257,9 +258,9 @@ typedef unsigned long pghandle;
 #define PGTH_OPCMD_AND           0x28
 #define PGTH_OPCMD_LONGGROP      0x29  /* Followed by a 2-byte grop code */
 #define PGTH_OPCMD_LONGGET       0x2A  /* Followed by a 1-byte var offset */
-#define PGTH_OPCMD_LONGSET       0x2A  /* Followed by a 1-byte var offset */
-#define PGTH_OPCMD_PROPERTY      0x30  /* Followed by 2-byte object code and 2-byte property code */
-#define PGTH_OPCMD_LOCALPROP     0x31  /* Followed by 2-byte property code */
+#define PGTH_OPCMD_LONGSET       0x2B  /* Followed by a 1-byte var offset */
+#define PGTH_OPCMD_PROPERTY      0x2C  /* Followed by 2-byte object code and 2-byte property code */
+#define PGTH_OPCMD_LOCALPROP     0x2D  /* Followed by 2-byte property code */
 
 /******************** Video */
 
