@@ -1,4 +1,4 @@
-/* $Id: ez328.c,v 1.6 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: ez328.c,v 1.7 2001/02/23 17:46:42 pney Exp $
  *
  * ez328.c - Driver for the 68EZ328's (aka Motorola Dragonball EZ)
  *           built-in LCD controller. It assumes the LCD parameters
@@ -31,6 +31,7 @@
 #include <pgserver/common.h>
 
 #include <pgserver/video.h>
+#include <pgserver/input.h>
 #include <asm/MC68EZ328.h>   /* Defines the CPU and peripheral's registers */
 
 /* Save all LCD registers, restore on exit */
@@ -41,6 +42,20 @@ unsigned char *ez328_saveregs[REGS_LEN];
 g_error ez328_init(int xres,int yres,int bpp,unsigned long flags) {
    g_error e;
    
+#ifdef CONFIG_CHIPSLICE
+   LCKCON = 0;     /* LCKCON - LCD is off */
+   LVPW   = 0x50;
+   LXMAX  = 0x140;
+   LYMAX  = 0x0EF;  /* because of a 'LYMAX+1' somewhere */
+   LRRA   = 0;
+   LPXCD  = 0;
+   LPICF  = 0x0A;   /* =1010 = 16 grey 4 bits */
+   LPOLCF = 0x00;
+
+   LCKCON = 0x81;
+   PCPDEN = 0xff00;     /* LCD pins */
+#endif
+
    /* Save existing register settings */
    memcpy(ez328_saveregs,REGS_START,REGS_LEN);
    
@@ -54,7 +69,12 @@ g_error ez328_init(int xres,int yres,int bpp,unsigned long flags) {
    errorcheck;
    LSSA = (unsigned long) vid->fb_mem;
 
+#ifdef CONFIG_CHIPSLICE
+   /* Load the ts driver as the main input driver */
+   return load_inlib(&tsinput_regfunc,&inlib_main);
+#else
    return sucess;
+#endif
 }
 
 void ez328_close(void) {
