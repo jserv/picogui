@@ -1,4 +1,4 @@
-/* $Id: textbox.h,v 1.17 2002/10/29 08:15:45 micahjd Exp $
+/* $Id: textbox.h,v 1.18 2002/10/30 05:09:12 micahjd Exp $
  *
  * textbox.h - Interface definitions for the textbox widget. This allows
  *             the main textbox widget functions and the text format loaders
@@ -44,12 +44,6 @@ struct textbox_document {
   int password;                   /* Character to use for password hiding, if nonzero */
   unsigned int multiline : 1;
 };
-
-/* Constants for document_seek, same meaning as in fseek
-*/
-#define PGSEEK_SET   0   /* Seek from beginning */
-#define PGSEEK_CUR   1   /* Seek from cursor    */
-#define PGSEEK_END   2   /* Seek from the end   */
 
 /******************************************************** Public Methods **/
 

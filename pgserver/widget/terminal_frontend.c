@@ -1,4 +1,4 @@
-/* $Id: terminal_frontend.c,v 1.7 2002/10/27 16:25:08 micahjd Exp $
+/* $Id: terminal_frontend.c,v 1.8 2002/10/30 05:09:13 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -207,17 +207,18 @@ void build_terminal(struct gropctxt *c,u16 state,struct widget *self) {
     /* Resize the buffer if necessary */
     if (neww != DATA->bufferw || newh != DATA->bufferh) {
       struct pgstring *newbuffer;
-      struct pgstr_iterator p = PGSTR_I_NULL;
+      struct pgstr_iterator p;
       s32 newbuffer_size,i;
       /* Blit parameters */
       int src_y,dest_y,w,h;
-      
+
       /* Allocate */
       newbuffer_size = neww * newh * pgstring_encoded_length(DATA->buffer,' ');
       if (iserror(pgstring_new(&newbuffer,DATA->buffer->flags,newbuffer_size,NULL)))
 	return;
       
       /* Clear the new buffer */
+      pgstring_seek(newbuffer, &p, 0, PGSEEK_SET);
       do {
 	pgstring_encode_meta(newbuffer, &p, ' ', (void*)(u32) DATA->current.attr);
       } while (!p.invalid);

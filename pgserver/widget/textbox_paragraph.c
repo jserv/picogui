@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.14 2002/10/29 08:15:49 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.15 2002/10/30 05:09:13 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -162,7 +162,7 @@ void paragraph_delete(struct paragraph *par) {
 /* Draw a gropnode containing a PG_GROP_PARAGRAPH */
 void paragraph_render(struct groprender *r, struct gropnode *n) {
   struct paragraph *par;
-  struct pgstr_iterator p = PGSTR_I_NULL;
+  struct pgstr_iterator p;
   u32 ch;
   struct pair xy;
   struct paragraph_metadata *meta;
@@ -173,6 +173,8 @@ void paragraph_render(struct groprender *r, struct gropnode *n) {
 
   if (iserror(rdhandle((void**)&par,PG_TYPE_PARAGRAPH,-1,n->param[0])) || !par)
     return;
+
+  pgstring_seek(par->content, &p, 0, PGSEEK_SET);
 
   line = par->lines;
   xy.x = n->r.x;
@@ -303,7 +305,7 @@ void paragraph_movecursor(struct paragraph_cursor *crsr,
   if (y < 0) {
     crsr->iterator = crsr->line->cache.iterator;
     /* Point the cursor before the first character */
-    pgstring_seek(par->content, &crsr->iterator, 0);
+    pgstring_seek(par->content, &crsr->iterator, 0, PGSEEK_SET);
   }
   else {
 
@@ -312,9 +314,7 @@ void paragraph_movecursor(struct paragraph_cursor *crsr,
       if (!crsr->line->next) {
 	/* We've run past the last line.. position the cursor at the end */
 	crsr->iterator = crsr->line->cache.iterator;
-	while (paragraph_decode_meta(par, &crsr->iterator, NULL));
-	DBG("Moved cursor to END at %d,%p,%d\n",
-	    crsr->iterator.offset,crsr->iterator.buffer,crsr->iterator.invalid);
+	pgstring_seek(par->content, &crsr->iterator, 0, PGSEEK_END);
 	return;
       }
       line_xy.y += crsr->line->height;
@@ -332,7 +332,7 @@ void paragraph_movecursor(struct paragraph_cursor *crsr,
       fmt.fd->lib->measure_char(fmt.fd,&ch_size,ch,0);
       if (line_xy.x+(ch_size.x>>1) > x) {
 	/* We just passed the character that was clicked */
-	pgstring_seek(par->content, &crsr->iterator, -1);
+	pgstring_seek(par->content, &crsr->iterator, -1, PGSEEK_CUR);
 	break;
       }
       line_xy.x += ch_size.x;
@@ -342,17 +342,15 @@ void paragraph_movecursor(struct paragraph_cursor *crsr,
      * go back one so the cursor is positioned at that space
      */
     if (crsr->line->char_width && isspace(ch) && !i)
-      pgstring_seek(par->content, &crsr->iterator, -1);
+      pgstring_seek(par->content, &crsr->iterator, -1, PGSEEK_CUR);
   }
   DBG("Moved cursor to %d,%p,%d\n",
       crsr->iterator.offset,crsr->iterator.buffer,crsr->iterator.invalid);
 }
 
-/* Move the cursor back or forward by some number of characters. This handles
- * moving across paragraph boundaries correctly.
- */
-void paragraph_seekcursor(struct paragraph_cursor *crsr, int num_chars) {
-  pgstring_seek(crsr->par->content, &crsr->iterator, num_chars);
+/* Move the cursor in the paragraph, works like fseek() */
+void paragraph_seekcursor(struct paragraph_cursor *crsr, int offset, int whence) {
+  pgstring_seek(crsr->par->content, &crsr->iterator, offset, whence);
   paragraph_validate_cursor_line(crsr);
 }
 
@@ -464,7 +462,7 @@ g_error paragraph_wrap_line(struct paragraph *par, struct paragraph_line **line,
       if (xy.x >= par->width && spaces) {
 
 	/* Step back until we get to a breaking space */
-	pgstring_seek(par->content,&i,-1);
+	pgstring_seek(par->content,&i,-1,PGSEEK_CUR);
 	for (;;) {
 	  ch = paragraph_decode_meta(par, &i, (void**)&meta);
 	  
@@ -480,7 +478,7 @@ g_error paragraph_wrap_line(struct paragraph *par, struct paragraph_line **line,
 	  
 	  /* Reverse our previous step */
 	  (*line)->char_width--;
-	  pgstring_seek(par->content,&i,-2);
+	  pgstring_seek(par->content,&i,-2,PGSEEK_CUR);
 	}
 
 	/* Apply changes to this line height */

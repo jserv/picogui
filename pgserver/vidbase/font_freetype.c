@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.33 2002/10/24 21:58:49 micahjd Exp $
+/* $Id: font_freetype.c,v 1.34 2002/10/30 05:09:13 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -450,9 +450,11 @@ void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct 
 void freetype_draw_string(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
 			  hwrcolor col, const struct pgstring *str, struct quad *clip,
 			  s16 lgop, s16 angle) {
-  struct pgstr_iterator p = PGSTR_I_NULL;
+  struct pgstr_iterator p;
   int margin,lh,b,ch;
   struct pair26_6 subpos;
+
+  pgstring_seek(str,&p,0,PGSEEK_SET);
   subpos.x = ((s32)position->x) << 6;
   subpos.y = ((s32)position->y) << 6;
 
@@ -708,9 +710,10 @@ void freetype_getmetrics(struct font_descriptor *self, struct font_metrics *m) {
 void freetype_measure_string(struct font_descriptor *self, const struct pgstring *str,
 			     s16 angle, s16 *w, s16 *h) {
   int max_x = 0, ch, x, y, original_x;
-  struct pgstr_iterator p = PGSTR_I_NULL;
+  struct pgstr_iterator p;
   FT_Glyph g;
 
+  pgstring_seek(str,&p,0,PGSEEK_SET);
   original_x = x = DATA->metrics.margin << 7;
 
   /* Centering looks best when we shave 1/2 the descent off

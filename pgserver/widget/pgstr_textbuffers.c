@@ -1,4 +1,4 @@
-/* $Id: pgstr_textbuffers.c,v 1.1 2002/09/17 22:50:19 micahjd Exp $
+/* $Id: pgstr_textbuffers.c,v 1.2 2002/10/30 05:09:13 micahjd Exp $
  *
  * pgstr_textbuffers.c - An encoding for pgstrings that uses an array of small buffers,
  *                       providing fast insertion/deletion, Unicode support, and the
@@ -58,7 +58,7 @@ u32 pgstr_textbuffers_encoded_length(struct pgstr_char ch) {
 void pgstr_textbuffers_encode(struct pgstring *str, struct pgstr_iterator *p, struct pgstr_char ch) {
 }
 
-void pgstr_textbuffers_seek(const struct pgstring *str, struct pgstr_iterator *p, s32 char_num) {
+void pgstr_textbuffers_seek(const struct pgstring *str, struct pgstr_iterator *p, s32 char_num, int whence) {
 }
 
 const struct pgstr_format pgstrf_textbuffers = {

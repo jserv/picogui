@@ -1,4 +1,4 @@
-/* $Id: paragraph.h,v 1.4 2002/10/28 01:00:21 micahjd Exp $
+/* $Id: paragraph.h,v 1.5 2002/10/30 05:09:12 micahjd Exp $
  *
  * paragraph.h - Build upon the text storage capabilities of pgstring, adding word
  *               wrapping, formatting, and UI.
@@ -169,8 +169,8 @@ void paragraph_render_inc(struct groprender *r, struct gropnode *n);
 void paragraph_movecursor(struct paragraph_cursor *crsr, 
 			  struct paragraph *par, int x, int y);
 
-/* Move the cursor back or forward by some number of characters. */
-void paragraph_seekcursor(struct paragraph_cursor *crsr, int num_chars);
+/* Move the cursor in the paragraph, works like fseek() */
+void paragraph_seekcursor(struct paragraph_cursor *crsr, int offset, int whence);
 
 /* Delete a character at the cursor */
 g_error paragraph_delete_char(struct paragraph_cursor *crsr);

@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.48 2002/10/29 08:15:46 micahjd Exp $
+/* $Id: textbox_document.c,v 1.49 2002/10/30 05:09:13 micahjd Exp $
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and
@@ -168,11 +168,12 @@ g_error document_insert_char(struct textbox_document *doc, u32 ch, void *metadat
 
 /* No special way to insert strings yet */
 g_error document_insert_string(struct textbox_document *doc, struct pgstring *str) {
-  struct pgstr_iterator i = PGSTR_I_NULL;
+  struct pgstr_iterator i;
   u32 ch;
   void *meta;
   g_error e;
 
+  pgstring_seek(str,&i,0,PGSEEK_SET);
   while ((ch = pgstring_decode_meta(str,&i,&meta))) {
     e = document_insert_char(doc,ch,meta);
     errorcheck;
@@ -184,12 +185,13 @@ g_error document_insert_string(struct textbox_document *doc, struct pgstring *st
  * If this seeks past the end of the stream, document_eof will return true
  */
 void document_seek(struct textbox_document *doc, s32 offset, int whence) {
-  DBG("(%p, %d, %d), iterator offset before is %d\n", doc, offset, whence,
-      doc->crsr->iterator.offset);
+  switch (whence) {
 
-  paragraph_seekcursor(doc->crsr,offset);
+  case PGSEEK_SET:
+  }
 
-  DBG("iterator offset after is %d\n", doc->crsr->iterator.offset);
+  paragraph_seekcursor(doc->crsr,offset,whence);
+
 }
 
 /* Seek up/down in the document, snapping the cursor to the nearest character */

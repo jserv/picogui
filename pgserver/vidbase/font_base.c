@@ -1,4 +1,4 @@
-/* $Id: font_base.c,v 1.4 2002/10/13 03:54:19 micahjd Exp $
+/* $Id: font_base.c,v 1.5 2002/10/30 05:09:13 micahjd Exp $
  *
  * font_base.c - Handles multiple font backends, and provides default
  *               implementations of fontlib functions
@@ -129,9 +129,10 @@ void def_draw_string(struct font_descriptor *fd, hwrbitmap dest, struct pair *po
 		     hwrcolor col, const struct pgstring *str, struct quad *clip,
 		     s16 lgop, s16 angle) {
   struct font_metrics m;
-  struct pgstr_iterator p = PGSTR_I_NULL;
+  struct pgstr_iterator p;
   int ch;
   s16 b;
+  pgstring_seek(str,&p,0,PGSEEK_SET);
   fd->lib->getmetrics(fd,&m);
 
   switch (angle) {
@@ -200,7 +201,8 @@ void def_measure_string(struct font_descriptor *fd, const struct pgstring *str,
 			s16 angle, s16 *w, s16 *h) {
   struct font_metrics m;
   int o_w=0, ch;
-  struct pgstr_iterator p = PGSTR_I_NULL;
+  struct pgstr_iterator p;
+  pgstring_seek(str,&p,0,PGSEEK_SET);
   fd->lib->getmetrics(fd,&m);
 
   *w = m.margin << 1;

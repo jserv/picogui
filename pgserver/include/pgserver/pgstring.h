@@ -1,4 +1,4 @@
-/* $Id: pgstring.h,v 1.4 2002/10/29 08:15:45 micahjd Exp $
+/* $Id: pgstring.h,v 1.5 2002/10/30 05:09:12 micahjd Exp $
  *
  * pgstring.h - String data type to handle various encodings
  *
@@ -51,6 +51,11 @@
 #define PGSTR_ENCODE_MASK    0x0000FFFF   /* Mask of encoding bits used for actual encoding */
 #define PGSTR_STORAGE_MASK   0x00FF0000   /* Mask of encoding bits used for storage */
 
+/* Constants for seeking, same meaning as in fseek */
+#define PGSEEK_SET   0   /* Seek from beginning */
+#define PGSEEK_CUR   1   /* Seek from cursor    */
+#define PGSEEK_END   2   /* Seek from the end   */
+
 struct pgstring {
   u8 *buffer;
   u32 buffer_bytes;           /* Total buffer length in bytes */
@@ -64,8 +69,6 @@ struct pgstr_iterator {
   void *buffer;               /* Format-specific buffer pointer */
   unsigned int invalid:1;     /* Nonzero if this is outside the string */
 };
-
-#define PGSTR_I_NULL        {0,NULL,0}     /* Initialization value for pgstr_iterator */
 
 #define PGCHAR_UNDEF        0xFFFFFFFF      /* Undefined character (bad encoding) */
 
@@ -82,7 +85,7 @@ struct pgstr_format {
   struct pgstr_char (*decode)(const struct pgstring *str, struct pgstr_iterator *p);
   u32 (*encoded_length)(struct pgstr_char ch);
   void (*encode)(struct pgstring *str, struct pgstr_iterator *p, struct pgstr_char ch);
-  void (*seek)(const struct pgstring *str, struct pgstr_iterator *p, s32 char_num);
+  void (*seek)(const struct pgstring *str, struct pgstr_iterator *p, s32 char_num, int whence);
   void (*delete)(struct pgstring *str);
 };
 
@@ -130,11 +133,11 @@ int pgstring_cmp(const struct pgstring *a, const struct pgstring *b);
 u32 pgstring_decode(const struct pgstring *str, struct pgstr_iterator *p);
 
 /* Seek a pgstr_iterator to some relative position in the string.
- * If the iterator begins as NULL, it will seek from the beginning. Otherwise
- * it seeks from the iterator position, forward or backward.
- * If the position can't be found, the iterator will be set to NULL
+ * The semantics are similar to fseek(), except that the iterator is allowed to go
+ * past the edge of the string. When the iterator is past the string edge,
+ * pgstring_eof should be nonzero.
  */
-void pgstring_seek(const struct pgstring *str, struct pgstr_iterator *p, s32 char_num);
+void pgstring_seek(const struct pgstring *str, struct pgstr_iterator *p, s32 char_num, int whence);
 
 /* like pgstring_seek, but use units of bytes instead of characters
  */

@@ -1,4 +1,4 @@
-/* $Id: terminal_textgrid.c,v 1.5 2002/10/27 16:50:28 micahjd Exp $
+/* $Id: terminal_textgrid.c,v 1.6 2002/10/30 05:09:13 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -47,7 +47,7 @@ void textgrid_render(struct groprender *r, struct gropnode *n) {
   s16 temp_x;
   struct gropnode bn;
   struct groprender br;
-  struct pgstr_iterator stri = PGSTR_I_NULL;
+  struct pgstr_iterator stri;
   struct pgstring *str;
   struct font_descriptor *fd;
   struct font_metrics m;
@@ -83,7 +83,7 @@ void textgrid_render(struct groprender *r, struct gropnode *n) {
    */
   bufferw = n->param[1] >> 16;
   buffersz = str->num_chars - (n->param[1] & 0xFFFF);
-  pgstring_seek(str,&stri, n->param[1] & 0xFFFF);
+  pgstring_seek(str,&stri, n->param[1] & 0xFFFF, PGSEEK_SET);
   bufferh = buffersz / bufferw;
   if (buffersz<=0) return;
   
@@ -98,12 +98,12 @@ void textgrid_render(struct groprender *r, struct gropnode *n) {
     charh = bufferh;
   
   r->orig.x = n->r.x;
-  for (;charh;charh--,n->r.y+=celh,pgstring_seek(str,&stri,offset)) {
+  for (;charh;charh--,n->r.y+=celh,pgstring_seek(str,&stri,offset,PGSEEK_CUR)) {
       
     /* Skip the entire line if it's clipped out */
     if (n->r.y > r->clip.y2 ||
 	(n->r.y+celh) < r->clip.y1) {
-      pgstring_seek(str,&stri,bufferw);
+      pgstring_seek(str,&stri,bufferw,PGSEEK_CUR);
       continue;
     }
     
@@ -210,20 +210,20 @@ void term_updrect(struct widget *self,int x,int y,int w,int h) {
 
 /* Plot a character at an x,y position */
 void term_plot(struct widget *self,int x,int y,u8 c) {
-  struct pgstr_iterator p = PGSTR_I_NULL;
+  struct pgstr_iterator p;
   if (x<0 || y<0 || x>=DATA->bufferw || y>=DATA->bufferh)
     return;
-  pgstring_seek(DATA->buffer, &p, x + y * DATA->bufferw);
+  pgstring_seek(DATA->buffer, &p, x + y * DATA->bufferw, PGSEEK_SET);
   pgstring_encode_meta(DATA->buffer, &p, c, (void*)(u32) DATA->current.attr);
   term_updrect(self,x,y,1,1);
 }
 
 /* Change attribute at an x,y position */
 u8 term_chattr(struct widget *self,int x,int y,u8 c) {
-  struct pgstr_iterator i = PGSTR_I_NULL,j;
+  struct pgstr_iterator i,j;
   u32 ch;
   void *metadata;
-  pgstring_seek(DATA->buffer, &i, x + y * DATA->bufferw);
+  pgstring_seek(DATA->buffer, &i, x + y * DATA->bufferw, PGSEEK_SET);
 
   j = i;
   ch = pgstring_decode_meta(DATA->buffer, &j, &metadata);
@@ -266,10 +266,10 @@ void term_rectprepare(struct widget *self) {
 
 /* Clear a chunk of buffer */
 void term_clearbuf(struct widget *self,int fromx,int fromy,int chars) {
-  struct pgstr_iterator p = PGSTR_I_NULL;
+  struct pgstr_iterator p;
   int i;
 
-  pgstring_seek(DATA->buffer, &p, fromx + fromy * DATA->bufferw);
+  pgstring_seek(DATA->buffer, &p, fromx + fromy * DATA->bufferw, PGSEEK_SET);
 
   while (!p.invalid && chars--)
     pgstring_encode_meta(DATA->buffer, &p, ' ', (void*)(u32) DATA->current.attr);

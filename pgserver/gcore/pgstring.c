@@ -1,4 +1,4 @@
-/* $Id: pgstring.c,v 1.10 2002/10/29 08:15:41 micahjd Exp $
+/* $Id: pgstring.c,v 1.11 2002/10/30 05:09:12 micahjd Exp $
  *
  * pgstring.c - String data type to handle various encodings
  *
@@ -162,15 +162,18 @@ const struct pgstring *pgstring_tmpwrap(const char *cstring) {
 /* Print a string in UTF-8 encoding, return the number of characters output. */
 int pgstring_print(const struct pgstring *str) {
   struct pgstring *tmpstr;
-  struct pgstr_iterator p = PGSTR_I_NULL;
+  struct pgstr_iterator p;
   u32 ch;
+
+  pgstring_seek(str,&p,0,PGSEEK_SET);
 
   /* 8-byte character buffer for UTF-8 encoding */
   if (iserror(pgstring_new(&tmpstr,PGSTR_ENCODE_UTF8,8,NULL)))
     return 0;
 
   while (ch = pgstring_decode(str,&p)) {
-    struct pgstr_iterator q = PGSTR_I_NULL;
+    struct pgstr_iterator q;
+    pgstring_seek(str,&q,0,PGSEEK_SET);
     pgstring_encode_meta(tmpstr, &q, ch, NULL);
     fwrite(tmpstr->buffer, q.offset,1,stdout);
   }
@@ -187,7 +190,8 @@ g_error pgstring_dup(struct pgstring **dest, struct pgstring *src) {
 /* Convert one pgstring to a new encoding in a new pgstring */
 g_error pgstring_convert(struct pgstring **dest, int encoding, struct pgstring *src) {
   g_error e;
-  struct pgstr_iterator i = PGSTR_I_NULL;
+  struct pgstr_iterator i;
+  pgstring_seek(*dest,&i,0,PGSEEK_SET);
 
   e = pgstring_new(dest, encoding, 0, NULL);
   errorcheck;
@@ -199,8 +203,11 @@ g_error pgstring_convert(struct pgstring **dest, int encoding, struct pgstring *
 
 /* An implementation of strcmp() for pgstrings */
 int pgstring_cmp(const struct pgstring *a, const struct pgstring *b) {
-  struct pgstr_iterator ia = PGSTR_I_NULL, ib = PGSTR_I_NULL;
+  struct pgstr_iterator ia, ib;
   u32 ca,cb;
+
+  pgstring_seek(a,&ia,0,PGSEEK_SET);
+  pgstring_seek(b,&ib,0,PGSEEK_SET);
 
   do {
     ca = pgstring_decode(a,&ia);
@@ -228,8 +235,8 @@ u32 pgstring_decode(const struct pgstring *str, struct pgstr_iterator *p) {
 /* Seek a pgstr_iterator to some position in the string. If the position can't be
  * found, the iterator will be set to NULL
  */
-void pgstring_seek(const struct pgstring *str, struct pgstr_iterator *p, s32 char_num) {
-  pgstr_getformat(str)->seek(str,p,char_num);
+void pgstring_seek(const struct pgstring *str, struct pgstr_iterator *p, s32 char_num, int whence) {
+  pgstr_getformat(str)->seek(str,p,char_num,whence);
   pgstr_boundscheck(str,p);
 }
 
@@ -280,14 +287,14 @@ u32 pgstring_encoded_length(struct pgstring *str, u32 ch) {
  */
 void pgstring_chrcpy(struct pgstring *deststr, struct pgstring *srcstr,
 		     u32 dest_chr, u32  src_chr, u32 num_chars) {
-  struct pgstr_iterator dest = PGSTR_I_NULL,src = PGSTR_I_NULL;
+  struct pgstr_iterator dest,src;
 
   /* FIXME: This is cheesy, need to support UTF-8 and textbox encodings.
    *        as-is this is just enough for the terminal.
    */
 
-  pgstring_seek(srcstr,&src,src_chr);
-  pgstring_seek(deststr,&dest,dest_chr);
+  pgstring_seek(srcstr,&src,src_chr,PGSEEK_SET);
+  pgstring_seek(deststr,&dest,dest_chr,PGSEEK_SET);
   num_chars *= pgstring_encoded_length(deststr,' ');
   if (dest.offset + num_chars > deststr->num_bytes)
     num_chars = deststr->num_bytes - num_chars - dest.offset;
@@ -355,10 +362,11 @@ g_error pgstring_insert_char(struct pgstring *str, struct pgstr_iterator *p, u32
 g_error pgstring_insert_string(struct pgstring *str, struct pgstr_iterator *p, 
 			       struct pgstring *substring) {
   g_error e;
-  struct pgstr_iterator sub_i = PGSTR_I_NULL;
+  struct pgstr_iterator sub_i;
   u32 ch;
   void *meta;
-  
+
+  pgstring_seek(substring, &sub_i, 0, PGSEEK_SET);
   while ((ch = pgstring_decode_meta(substring, &sub_i, &meta))) {
     e = pgstring_insert_char(str,p,ch,meta);
     errorcheck;
@@ -377,7 +385,7 @@ g_error pgstring_delete_char(struct pgstring *str, struct pgstr_iterator *p) {
   g_error e;
 
   /* Measure the character we're about to delete */
-  pgstring_seek(str,&p2,1);
+  pgstring_seek(str,&p2,1,PGSEEK_CUR);
   len = p2.offset - p->offset;
 
   e = pgstring_resize(str, str->num_bytes - len);
@@ -438,8 +446,21 @@ void pgstr_ascii_encode(struct pgstring *str, struct pgstr_iterator *p, struct p
   str->buffer[p->offset++] = ch.ch;
 }
 
-void pgstr_ascii_seek(const struct pgstring *str, struct pgstr_iterator *p, s32 char_num) {
-  p->offset += char_num;
+void pgstr_ascii_seek(const struct pgstring *str, struct pgstr_iterator *p, s32 char_num, int whence) {
+  switch (whence) {
+
+  case PGSEEK_SET:
+    p->offset = char_num;
+    break;
+
+  case PGSEEK_CUR:
+    p->offset += char_num;
+    break;
+
+  case PGSEEK_END:
+    p->offset = str->num_chars - 1 + char_num;
+    break;
+  }
 }
 
 static const struct pgstr_format pgstrf_ascii = {
@@ -459,8 +480,9 @@ static const struct pgstr_format pgstrf_ascii = {
 
 u32 pgstr_utf8_length(struct pgstring *str) {
   int i = 0;
-  struct pgstr_iterator p = PGSTR_I_NULL;
+  struct pgstr_iterator p;
 
+  pgstring_seek(str,&p,0,PGSEEK_SET);
   while (pgstring_decode(str,&p))
     i++;
 
@@ -589,7 +611,18 @@ void pgstr_utf8_encode(struct pgstring *str, struct pgstr_iterator *p, struct pg
   }
 }
 
-void pgstr_utf8_seek(const struct pgstring *str, struct pgstr_iterator *p, s32 char_num) {
+void pgstr_utf8_seek(const struct pgstring *str, struct pgstr_iterator *p, s32 char_num, int whence) {
+  switch (whence) {
+
+  case PGSEEK_SET:
+    p->offset = 0;
+    break;
+
+  case PGSEEK_END:
+    p->offset = str->num_chars - 1;
+    break;
+  }
+
   /* FIXME: handle negative char_num */
 
   while (char_num) {
@@ -630,8 +663,21 @@ void pgstr_term16_encode(struct pgstring *str, struct pgstr_iterator *p, struct 
   str->buffer[p->offset++] = (u8) (u32) ch.metadata;
 }
 
-void pgstr_term16_seek(const struct pgstring *str, struct pgstr_iterator *p, s32 char_num) {
-  p->offset += char_num<<1;
+void pgstr_term16_seek(const struct pgstring *str, struct pgstr_iterator *p, s32 char_num, int whence) {
+  switch (whence) {
+
+  case PGSEEK_SET:
+    p->offset = char_num*2;
+    break;
+
+  case PGSEEK_CUR:
+    p->offset += char_num*2;
+    break;
+
+  case PGSEEK_END:
+    p->offset = str->num_chars - 1 + char_num*2;
+    break;
+  }
 }
 
 static const struct pgstr_format pgstrf_term16 = {
@@ -674,8 +720,21 @@ void pgstr_term32_encode(struct pgstring *str, struct pgstr_iterator *p, struct 
   p->offset += 4;
 }
 
-void pgstr_term32_seek(const struct pgstring *str, struct pgstr_iterator *p, s32 char_num) {
-  p->offset += char_num<<2;
+void pgstr_term32_seek(const struct pgstring *str, struct pgstr_iterator *p, s32 char_num, int whence) {
+  switch (whence) {
+
+  case PGSEEK_SET:
+    p->offset = char_num*4;
+    break;
+
+  case PGSEEK_CUR:
+    p->offset += char_num*4;
+    break;
+
+  case PGSEEK_END:
+    p->offset = str->num_chars - 1 + char_num*4;
+    break;
+  }
 }
 
 static const struct pgstr_format pgstrf_term32 = {
