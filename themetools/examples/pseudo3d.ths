@@ -1,9 +1,9 @@
-/* $Id: pseudo3d.ths,v 1.7 2001/07/05 07:53:59 micahjd Exp $
+/* $Id: pseudo3d.ths,v 1.8 2001/12/12 19:47:18 micahjd Exp $
  *
  * Theme with simple (and boring?) grey 3d-ish hilights
  * But hey, it works on a 16-color display!
  *
- * Version 1.0
+ * Version 1.1
  *
  * Micah Dowty
  */
@@ -176,6 +176,16 @@ object menuitem.hilight {
 object popup.messagedlg {
   width = 10;
   height = 30;
+}
+
+/* Hilight definitions */
+object label.hilight {
+  fgcolor = Copy(label::bgcolor);
+  bgcolor = Copy(label::fgcolor);
+}
+object box.hilight {
+  fgcolor = Copy(box::bgcolor);
+  bgcolor = Copy(box::fgcolor);
 }
 
 /* The End */
