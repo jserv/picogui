@@ -1,4 +1,4 @@
-/* $Id: yuv16_422_planar.c,v 1.1 2003/01/20 17:12:21 thierrythevoz Exp $
+/* $Id: yuv16_422_planar.c,v 1.2 2003/02/19 14:35:06 cgrigis Exp $
  *
  * Video Base Library:
  * yuv16_422_planar.c - For 16bpp YUV 422 planar framebuffer
@@ -133,8 +133,8 @@ void yuv16_422_planar_pixel(hwrbitmap dest,
 
 /*********************************************** Accelerated primitives */
 
-/* Blit function */
-void yuv16_422_planar_blit(hwrbitmap dest,
+/* Scrollblit function */
+void yuv16_422_planar_scrollblit(hwrbitmap dest,
 		   s16 dst_x, s16 dst_y,s16 w, s16 h,
 		   hwrbitmap sbit,s16 src_x,s16 src_y,
 		   s16 lgop) {
@@ -152,6 +152,10 @@ void yuv16_422_planar_blit(hwrbitmap dest,
   unsigned char *dst;
   unsigned char *src;
 
+  s16 saved_h = h;
+
+  fprintf (stderr, "YUV scrollblit()\n");
+  
   /* Only provides fast blit within the same framebuffer,
    * Check that we blit YUV -> YUV.
    */
@@ -163,25 +167,56 @@ void yuv16_422_planar_blit(hwrbitmap dest,
   /* We only support LGOP_NONE for now */
   switch (lgop) {
   case PG_LGOP_NONE: 
-    /* Blit in YUV buffer */
-    dst = dstbit->bits + dst_y*dstbit->pitch + dst_x;
-    src = srcbit->bits + src_y*srcbit->pitch + src_x;
-    if ((dst_dx==1) || (src_dx==1) || (dw==1)) {
-      dw = 1;
+    if (dst_y <= src_y) {   /* Blit top-down */
+      fprintf (stderr, "Blitting top-down\n");
+      
+      /* Blit in YUV buffer */
+      dst = dstbit->bits + dst_y*dstbit->pitch + dst_x;
+      src = srcbit->bits + src_y*srcbit->pitch + src_x;
+      if ((dst_dx==1) || (src_dx==1) || (dw==1)) {
+	dw = 1;
+      }
+      for (;h;h--,src+=srcbit->pitch,dst+=dstbit->pitch) {
+	memmove(dst,src,w); /* Y plane */
+	memmove(dst-dst_dx+yuv16_422_planar_y_plane_size,
+		src-src_dx+yuv16_422_planar_y_plane_size,w+dw);
+      }
+      h = saved_h;
+      
+      /* Also blit in shadow buffer */
+      dst = ((unsigned char *)yuv16_rgb_shadow_buffer) + (dst_x<<2) 
+	+ ((dst_y*dstbit->pitch)<<2);
+      src = ((unsigned char *)yuv16_rgb_shadow_buffer) + (src_x<<2) 
+	+ ((src_y*srcbit->pitch)<<2);
+      for (;h;h--,src+=(srcbit->pitch<<2),dst+=(dstbit->pitch<<2)) {
+	memmove(dst,src,w<<2);
+      }
+    } else {   /* Blit bottom-up */
+      fprintf (stderr, "Blitting bottom-up\n");
+
+      /* Blit in YUV buffer */
+      dst = dstbit->bits + (dst_y+h-1)*dstbit->pitch + dst_x;
+      src = srcbit->bits + (src_y+h-1)*srcbit->pitch + src_x;
+      if ((dst_dx==1) || (src_dx==1) || (dw==1)) {
+	dw = 1;
+      }
+      for (;h;h--,src-=srcbit->pitch,dst-=dstbit->pitch) {
+	memmove(dst,src,w); /* Y plane */
+	memmove(dst-dst_dx+yuv16_422_planar_y_plane_size,
+		src-src_dx+yuv16_422_planar_y_plane_size,w+dw);
+      }
+      h = saved_h;
+      
+      /* Also blit in shadow buffer */
+      dst = ((unsigned char *)yuv16_rgb_shadow_buffer) + (dst_x<<2) 
+	+ (((dst_y+h-1)*dstbit->pitch)<<2);
+      src = ((unsigned char *)yuv16_rgb_shadow_buffer) + (src_x<<2) 
+	+ (((src_y+h-1)*srcbit->pitch)<<2);
+      for (;h;h--,src-=(srcbit->pitch<<2),dst-=(dstbit->pitch<<2)) {
+	memmove(dst,src,w<<2);
+      }
     }
-    for (;h;h--,src+=srcbit->pitch,dst+=dstbit->pitch) {
-      memmove(dst,src,w); /* Y plane */
-      memmove(dst-dst_dx+yuv16_422_planar_y_plane_size,
-            src-src_dx+yuv16_422_planar_y_plane_size,w+dw);
-    }
-    /* Also blit in shadow buffer */
-    dst = ((unsigned char *)yuv16_rgb_shadow_buffer) + (dst_x<<2) 
-          + ((dst_y*dstbit->pitch)<<2);
-    src = ((unsigned char *)yuv16_rgb_shadow_buffer) + (src_x<<2) 
-          + ((src_y*srcbit->pitch)<<2);
-    for (;h;h--,src+=(srcbit->pitch<<2),dst+=(dstbit->pitch<<2)) {
-      memmove(dst,src,w<<2);
-    }
+    
     
     break;
     
@@ -208,7 +243,7 @@ void setvbl_yuv16_422_planar(struct vidlib *vid) {
   
   vid->pixel         = &yuv16_422_planar_pixel;
   vid->getpixel      = &yuv16_422_planar_getpixel;
-  vid->blit          = &yuv16_422_planar_blit;
+  vid->scrollblit    = &yuv16_422_planar_scrollblit;
 }
 
 void yuv16_422_planar_close (void) { 
