@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.73 2001/08/30 21:06:56 micahjd Exp $
+/* $Id: constants.h,v 1.74 2001/08/30 22:56:27 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -448,10 +448,15 @@ typedef unsigned long pghandle;
 #define PGTH_P_ICON_QUESTION      1012   //!< Icon property (usually in PGTH_O_DEFAULT)
 #define PGTH_P_ICON_QUESTION_MASK 1013   //!< Icon property (usually in PGTH_O_DEFAULT)
 
-#define PGTH_P_HOTKEY_OK     1501        //!< Hotkey property (usually in PGTH_O_DEFAULT) 
-#define PGTH_P_HOTKEY_CANCEL 1502        //!< Hotkey property (usually in PGTH_O_DEFAULT) 
-#define PGTH_P_HOTKEY_YES    1503        //!< Hotkey property (usually in PGTH_O_DEFAULT)   
-#define PGTH_P_HOTKEY_NO     1504        //!< Hotkey property (usually in PGTH_O_DEFAULT) 
+#define PGTH_P_HOTKEY_OK          1501   //!< Hotkey property (usually in PGTH_O_DEFAULT) 
+#define PGTH_P_HOTKEY_CANCEL      1502   //!< Hotkey property (usually in PGTH_O_DEFAULT) 
+#define PGTH_P_HOTKEY_YES         1503   //!< Hotkey property (usually in PGTH_O_DEFAULT)   
+#define PGTH_P_HOTKEY_NO          1504   //!< Hotkey property (usually in PGTH_O_DEFAULT) 
+#define PGTH_P_HOTKEY_UP          1505   //!< Hotkey property (usually in PGTH_O_DEFAULT) 
+#define PGTH_P_HOTKEY_DOWN        1506   //!< Hotkey property (usually in PGTH_O_DEFAULT) 
+#define PGTH_P_HOTKEY_LEFT        1507   //!< Hotkey property (usually in PGTH_O_DEFAULT) 
+#define PGTH_P_HOTKEY_RIGHT       1508   //!< Hotkey property (usually in PGTH_O_DEFAULT) 
+#define PGTH_P_HOTKEY_ACTIVATE    1509   //!< Hotkey property (usually in PGTH_O_DEFAULT) 
 
 #define PG_HHK_NONE          0           //!< Do not hide any buttons
 #define PG_HHK_RETURN_ESCAPE 1           //!< Hide buttons hotkeyed to return or escape
