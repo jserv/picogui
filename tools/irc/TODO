@@ -7,3 +7,7 @@ probably won't get done unless I'm sent patches.
 
 RED:
  * If lilo doesn't sort things out on freenode, proper throttling and flood detection
+ * Allow the bot to register with NickServ so we don't have to keep re-opping it in #only-commits
+
+GREEN:
+ * Look into MTBC calculation - is that really correct?
