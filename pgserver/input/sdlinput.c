@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.1 2000/09/02 17:19:15 micahjd Exp $
+/* $Id: sdlinput.c,v 1.2 2000/09/03 16:48:29 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -84,37 +84,6 @@ void sdlinput_poll(void) {
       break;
 
     case SDL_KEYDOWN:
-      /* Is this the special exit key? (CTRL-ALT-SLASH) */
-      if (evt.key.keysym.sym==PGKEY_SLASH &&
-          (evt.key.keysym.mod & PGMOD_CTRL) &&
-          (evt.key.keysym.mod & PGMOD_ALT)) {
-	request_quit();
-        break;
-      }
-
-#ifdef DEBUG
-      /* Some magic keys for debugging */
-
-      /* Blank the screen on alt-b */
-      if (evt.key.keysym.sym==PGKEY_b &&
-          (evt.key.keysym.mod & PGMOD_ALT)) {
-        (*vid->clip_off)();
-        (*vid->clear)();
-        (*vid->update)();
-        break;
-      }
-
-      /* Blue screen on alt-u */
-      if (evt.key.keysym.sym==PGKEY_u &&
-          (evt.key.keysym.mod & PGMOD_ALT)) {
-        (*vid->clip_off)();
-        (*vid->rect)(0,0,vid->xres,vid->yres,
-                     (*vid->color_pgtohwr)(0x0000FF));
-        (*vid->update)();
-        break;
-      }
-#endif
-
       if (evt.key.keysym.unicode)
         dispatch_key(TRIGGER_CHAR,evt.key.keysym.unicode,evt.key.keysym.mod);
 

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.38 2000/08/14 19:35:45 micahjd Exp $
+/* $Id: widget.c,v 1.39 2000/09/03 16:48:30 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -495,6 +495,37 @@ void dispatch_key(long type,int key,int mods) {
 
   long keycode = (mods<<16) | key;     /* Combines mods and the key */
   
+  /* First, process magic keys */
+  if (type==TRIGGER_KEYDOWN &&
+      (mods & PGMOD_CTRL) &&
+      (mods & PGMOD_ALT)) {
+
+    switch (key) {
+
+    case PGKEY_SLASH:       /* CTRL-ALT-SLASH exits */
+      request_quit();
+      return;
+    
+#ifdef DEBUG                /* The rest only work in debug mode */
+
+    case PGKEY_b:           /* CTRL-ALT-b blanks the screen */
+      (*vid->clip_off)();
+      (*vid->clear)();
+      (*vid->update)();
+      return;
+
+    case PGKEY_u:           /* CTRL-ALT-u makes a blue screen */
+      (*vid->clip_off)();
+      (*vid->rect)(0,0,vid->xres,vid->yres,
+		   (*vid->color_pgtohwr)(0x0000FF));
+      (*vid->update)();
+      return;
+
+#endif
+
+    }
+  }
+
 #ifdef DEBUG
   printf("Keyboard event: 0x%08X (#%d, '%c') mod:0x%08X\n",type,key,key,mods);
 #endif

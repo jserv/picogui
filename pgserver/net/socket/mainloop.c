@@ -1,4 +1,4 @@
-/* $Id: mainloop.c,v 1.20 2000/09/02 17:19:15 micahjd Exp $
+/* $Id: mainloop.c,v 1.21 2000/09/03 16:48:30 micahjd Exp $
  *
  * mainloop.c - initializes and shuts down everything, main loop
  *
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
 	
       default:   /* Catches -, -h, --help, etc... */
 	puts("\nPicoGUI server (http://pgui.sourceforge.net)\n"
-	     "$Id: mainloop.c,v 1.20 2000/09/02 17:19:15 micahjd Exp $\n\n"
+	     "$Id: mainloop.c,v 1.21 2000/09/03 16:48:30 micahjd Exp $\n\n"
 	     "pgserver [-h] [--] [session manager prog]\n\n"
 	     "\t-h: Displays this usage screen\n"
 	     "\nIf a session manager program is specified, it will be run when PicoGUI\n"
@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
 
   /* HACK ALERT */
   if (iserror(prerror(load_vidlib(
-				sdl_regfunc,500,500,0,0	
+				  sdl_regfunc,500,500,0,0 	
 		      )))) exit(1);  
 
   /* Subsystem initialization and error check */
