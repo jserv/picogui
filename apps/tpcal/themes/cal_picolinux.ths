@@ -1,0 +1,46 @@
+prop center, scale;
+prop message1, message2, message1font, message2font;
+prop logo, logo_bgcolor;
+
+obj "tpcal" {
+  /* FIXME: if we could measure the text, this would 
+   * work on different display sizes and fonts better.
+   */
+  bgfill = fillstyle {
+      var ypos;
+  
+      /* Approximately center the whole thing vertically */
+      ypos = y+((h - 145)>>1);
+  
+      SetColor(bgcolor);
+      Rect(x,y,w,h);
+
+      /* logo */
+      SetColor(logo_bgcolor);
+      Rect(x+((w-60)>>1),ypos,60,60);
+      Bitmap(x+((w-60)>>1) + 7, ypos+14, 48,36, logo);
+      ypos = ypos + 85;
+      
+      /* Messages */
+      SetColor(fgcolor);
+      SetFont(message1font);
+      Text(x + ((w-127)>>1), ypos, 1, 1, message1);
+      ypos = ypos + 20;
+      SetFont(message2font);
+      Text(x + ((w-120)>>1), ypos, 1, 1, message2);
+    };
+  PGTH_P_USER = fillstyle {
+      Frame(x-center, y-center, center*2+1, center*2+1);
+      Bar(x, y-scale, 1, scale*2+1);
+      Slab(x-scale, y, scale*2+1, 1);
+    };
+  center = 3;
+  scale = 9;
+  message1 = "Welcome to Pico/Linux!";
+  message2 = "Tap each target firmly to\ncalibrate your touchscreen.";
+  logo = LoadBitmap("picolinux_logo_tiny.bmp");
+  logo_bgcolor = 0xD2D2D2;
+  fgcolor = 0x000000;
+  message1font = Font("Helvetica",10,PG_FSTYLE_BOLD);
+  message2font = Font("Helvetica",10,0);
+}
