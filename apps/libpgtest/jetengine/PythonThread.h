@@ -21,7 +21,7 @@ class PythonThread {
   void addPath(char *path);
 
   SDL_Thread *thread;
-  PyObject *module, *args;
+  char *modulename;
   bool running;
 };
 

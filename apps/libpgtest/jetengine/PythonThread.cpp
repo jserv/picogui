@@ -2,21 +2,24 @@
 
 #include "PythonThread.h"
 
+/* FIXME: used for the mainloop hack below */
+extern "C" {
+#include <pgserver/common.h>
+#include <pgserver/init.h>
+}
+
+
 /* Wrapper so C code can call our handler */
 int PythonThreadCallback(void *data) {
   PythonThread *t = (PythonThread*) data;
   return t->threadHandler();
 }
 
-PythonThread::PythonThread(char *path,char *modulename) {
+PythonThread::PythonThread(char *path,char *modulename_) {
+  modulename = modulename_;
   Py_Initialize();
   addPath(path);
-
-  module = PyImport_ImportModule(modulename);
-  if (!module)
-    throw PythonException();
   
-  args  = Py_BuildValue("()");
   running = true;
   thread = SDL_CreateThread(&PythonThreadCallback, this);
 }
@@ -51,7 +54,16 @@ void PythonThread::addPath(char *path) {
 }
 
 int PythonThread::threadHandler(void) {
-  PyEval_CallObject(module,args);
+  /* FIXME: Pass errors like this back to the other thread */
+  if (!PyImport_ImportModule(modulename))
+    PyErr_Print();
+
+  /* Signal the main thread to terminate 
+   * FIXME: This is an ugly method, we should have a callback or something
+   *        so this is handled by the EmbeddedPGserver class.
+   */
+  pgserver_mainloop_stop();
+  
   return 0;
 }
 

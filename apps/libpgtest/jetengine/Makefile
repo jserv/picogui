@@ -22,8 +22,13 @@ LIBS += -lpgserver \
 	-lutil /usr/lib/python2.2/config/libpython2.2.a
 CXXFLAGS += -I/usr/include/python2.2 -g
 
+# This is needed for libraries dlopen'ed by python to find
+# symbols from libpython.a
+LDFLAGS += -export-dynamic
+
+
 $(BIN): $(OBJS)
-	$(CXX) -o $@ $(OBJS) $(LIBS) 
+	$(CXX) -o $@ $(LDFLAGS) $(OBJS) $(LIBS) 
 
 %.o: %.cpp $(HEADERS)
 	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) $< -o $@
