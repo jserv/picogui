@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.47 2002/10/25 06:30:41 micahjd Exp $
+/* $Id: render.c,v 1.48 2003/01/01 03:42:59 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -7,7 +7,7 @@
  * 
  * 
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

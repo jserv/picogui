@@ -1,9 +1,9 @@
-/* $Id: if_pntr_normalize.c,v 1.14 2002/11/04 04:46:21 micahjd Exp $
+/* $Id: if_pntr_normalize.c,v 1.15 2003/01/01 03:43:03 micahjd Exp $
  *
  * if_pntr_normalize.c - Convert the various pointer events to a standard form
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

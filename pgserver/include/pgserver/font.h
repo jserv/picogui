@@ -1,10 +1,10 @@
-/* $Id: font.h,v 1.34 2002/11/21 15:18:01 micahjd Exp $
+/* $Id: font.h,v 1.35 2003/01/01 03:43:00 micahjd Exp $
  *
  * font.h - Common structures for defining fonts, and an interface
  *          for specific font engines to attach to
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

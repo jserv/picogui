@@ -1,9 +1,9 @@
-/* $Id: uclinux.c,v 1.1 2002/11/03 04:54:24 micahjd Exp $
+/* $Id: uclinux.c,v 1.2 2003/01/01 03:43:04 micahjd Exp $
  *
  * uclinux.c - Platform-specific code for uClinux
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micah@homesoftware.com>
+ * Copyright (C) 2000-2003 Micah Dowty <micah@homesoftware.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,10 +1,10 @@
-/* $Id: font_freetype.c,v 1.36 2002/12/07 03:56:03 micahjd Exp $
+/* $Id: font_freetype.c,v 1.37 2003/01/01 03:43:05 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.36 2002/11/30 20:27:30 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.37 2003/01/01 03:43:09 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -6,7 +6,7 @@
  *                      functionality is in textbox_paragraph.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

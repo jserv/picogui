@@ -1,10 +1,10 @@
-/* $Id: wt.h,v 1.2 2002/04/07 01:26:17 micahjd Exp $
+/* $Id: wt.h,v 1.3 2003/01/01 03:43:02 micahjd Exp $
  * 
  * wt.h - Defines the Widget Template file format, used by the server and by
  *        programs that read and write Widget Template files
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.33 2002/11/04 03:40:34 micahjd Exp $
+/* $Id: ncurses.c,v 1.34 2003/01/01 03:43:06 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -7,7 +7,7 @@
  *             you should probably load a theme designed for this.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,10 +1,10 @@
-/* $Id: popup.c,v 1.74 2002/11/21 10:35:53 thierrythevoz Exp $
+/* $Id: popup.c,v 1.75 2003/01/01 03:43:08 micahjd Exp $
  *
  * popup.c - A root widget for modal dialogs that display above the
  *           root divtree.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *   
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

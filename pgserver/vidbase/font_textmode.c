@@ -1,9 +1,9 @@
-/* $Id: font_textmode.c,v 1.1 2002/11/04 03:40:34 micahjd Exp $
+/* $Id: font_textmode.c,v 1.2 2003/01/01 03:43:05 micahjd Exp $
  *
  * font_textmode.c - Font rendering in text mode, for ncurses and LCD drivers
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

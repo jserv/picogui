@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.35 2002/10/22 23:08:12 micahjd Exp $
+/* $Id: rotate90.c,v 1.36 2003/01/01 03:43:07 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -6,7 +6,7 @@
  * bog down the drivers when not rotated.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

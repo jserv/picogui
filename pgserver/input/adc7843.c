@@ -1,11 +1,11 @@
-/* $Id: adc7843.c,v 1.7 2002/11/06 00:30:10 micahjd Exp $
+/* $Id: adc7843.c,v 1.8 2003/01/01 03:43:02 micahjd Exp $
  *
  * adc7843.c - input driver for adc7843.c touch screen found on the Psion 5mx
  *             Other touch screens using the same data format should
  *             work too.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

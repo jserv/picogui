@@ -1,9 +1,9 @@
-/* $Id: ntohs_fr.h,v 1.2 2002/01/06 09:22:56 micahjd Exp $
+/* $Id: ntohs_fr.h,v 1.3 2003/01/01 03:42:49 micahjd Exp $
   *
   * ntohs_fr.h - definition of ntohs friends for system don't having them
   * 
   * PicoGUI small and efficient client/server GUI
-  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+  * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
   *
   * This program is free software; you can redistribute it and/or
   * modify it under the terms of the GNU General Public License

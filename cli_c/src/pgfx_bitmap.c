@@ -1,10 +1,10 @@
-/* $Id: pgfx_bitmap.c,v 1.5 2002/10/21 18:18:10 micahjd Exp $
+/* $Id: pgfx_bitmap.c,v 1.6 2003/01/01 03:42:54 micahjd Exp $
  *
  * picogui/pgfx_bitmap.c - lib functions and registration for offscreen bitmap
  *                         drawing through the PGFX interface
  * 
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

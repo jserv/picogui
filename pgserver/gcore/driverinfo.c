@@ -1,4 +1,4 @@
-/* $Id: driverinfo.c,v 1.18 2002/11/04 00:24:38 micahjd Exp $
+/* $Id: driverinfo.c,v 1.19 2003/01/01 03:42:58 micahjd Exp $
  *
  * driverinfo.c - has a static array with information about
  *                installed drivers.
@@ -9,7 +9,7 @@
  *                inputdrivers.inc
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

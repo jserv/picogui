@@ -1,10 +1,10 @@
-/* $Id: paragraph.h,v 1.7 2002/11/01 02:10:58 micahjd Exp $
+/* $Id: paragraph.h,v 1.8 2003/01/01 03:43:00 micahjd Exp $
  *
  * paragraph.h - Build upon the text storage capabilities of pgstring, adding word
  *               wrapping, formatting, and UI.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

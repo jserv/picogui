@@ -1,10 +1,10 @@
-/* $Id: nullfb.c,v 1.6 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: nullfb.c,v 1.7 2003/01/01 03:43:06 micahjd Exp $
  *
  * nullfb.c - For testing and profiling. Uses linear* VBLs to generate a frame
  *            but does not blit the buffer to any actual hardware
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,10 +1,10 @@
-/* $Id: configfile.c,v 1.12 2002/11/03 04:54:23 micahjd Exp $
+/* $Id: configfile.c,v 1.13 2003/01/01 03:42:58 micahjd Exp $
  *
  * configfile.c - Utilities for loading, storing, and retrieving
  *                configuration options
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

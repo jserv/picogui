@@ -1,9 +1,9 @@
-/* $Id: field.c,v 1.60 2002/09/27 02:59:27 micahjd Exp $
+/* $Id: field.c,v 1.61 2003/01/01 03:43:08 micahjd Exp $
  *
  * field.c - A single line text editor, based (hybrid, not subclassed) on textbox
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

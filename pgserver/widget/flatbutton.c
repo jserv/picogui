@@ -1,10 +1,10 @@
-/* $Id: flatbutton.c,v 1.5 2002/01/15 07:35:15 micahjd Exp $
+/* $Id: flatbutton.c,v 1.6 2003/01/01 03:43:08 micahjd Exp $
  *
  * flatbutton.c - another custom border, simply using an alternate theme object
  *                without the usual border
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

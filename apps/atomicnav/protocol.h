@@ -1,9 +1,9 @@
-/* $Id: protocol.h,v 1.2 2002/01/07 06:28:08 micahjd Exp $
+/* $Id: protocol.h,v 1.3 2003/01/01 03:42:47 micahjd Exp $
  *
  * protocol.h - Definition of the protocol handler object
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

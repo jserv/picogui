@@ -1,11 +1,11 @@
-/* $Id: simplemenu.c,v 1.3 2002/09/28 10:58:11 micahjd Exp $
+/* $Id: simplemenu.c,v 1.4 2003/01/01 03:43:09 micahjd Exp $
  *
  * simplemenu.c - This is a type of popup widget that builds a simple popup menu from
  *                either a single string of pipe-separated items or an array
  *                of string handles set with the PG_WP_TEXT property.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

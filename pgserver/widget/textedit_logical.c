@@ -1,4 +1,4 @@
-/* $Id: textedit_logical.c,v 1.14 2002/11/12 23:18:08 cgroom Exp $
+/* $Id: textedit_logical.c,v 1.15 2003/01/01 03:43:09 micahjd Exp $
  *
  * textedit_logical.c - Backend for multi-line text widget. This
  * defines the behavior of a generic wrapping text widget, and is not
@@ -9,7 +9,7 @@
  * An overview is given in textedit_frontend.c. 
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

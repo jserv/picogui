@@ -1,11 +1,11 @@
-/* $Id: s1d13806.c,v 1.8 2002/03/26 03:12:35 instinc Exp $
+/* $Id: s1d13806.c,v 1.9 2003/01/01 03:43:06 micahjd Exp $
  *
  * s1d13806.c - use a Epson S1D13806 video chip with a M68VZ328
  *
  * This driver supports 8,16,24, and 32 bit color at any resolution.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

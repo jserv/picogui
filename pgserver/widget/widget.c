@@ -1,10 +1,10 @@
-/* $Id: widget.c,v 1.218 2002/11/27 01:05:10 micahjd Exp $
+/* $Id: widget.c,v 1.219 2003/01/01 03:43:09 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *    
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

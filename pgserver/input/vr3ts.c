@@ -1,4 +1,4 @@
-/* $Id: vr3ts.c,v 1.10 2002/08/02 06:11:35 lalo Exp $
+/* $Id: vr3ts.c,v 1.11 2003/01/01 03:43:03 micahjd Exp $
  *
  * vr3ts.c - input driver for the Agenda VR3. This contains code from
  *           Agenda's xfree86 patch along with the framework from
@@ -6,7 +6,7 @@
  *
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

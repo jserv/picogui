@@ -1,4 +1,4 @@
-/* $Id: textedit_llist.c,v 1.2 2002/10/29 22:23:54 cgroom Exp $
+/* $Id: textedit_llist.c,v 1.3 2003/01/01 03:43:09 micahjd Exp $
  * 
  * textedit_llist.c - generic doubly-linked list. Note that this list
  * includes metadata which allow for fast lookup of start/end of
@@ -12,7 +12,7 @@
  * this widget has not been extensively tested, and may be buggy. 
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

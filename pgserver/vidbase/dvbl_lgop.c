@@ -1,11 +1,11 @@
-/* $Id: dvbl_lgop.c,v 1.2 2002/04/11 04:25:03 micahjd Exp $
+/* $Id: dvbl_lgop.c,v 1.3 2003/01/01 03:43:05 micahjd Exp $
  *
  * dvbl_lgop.c - This file is part of the Default Video Base Library,
  *               providing the basic video functionality in picogui but
  *               easily overridden by drivers.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License  

@@ -1,9 +1,9 @@
-/* $Id: grop.c,v 1.54 2002/10/11 11:58:43 micahjd Exp $
+/* $Id: grop.c,v 1.55 2003/01/01 03:42:58 micahjd Exp $
  *
  * grop.c - grop-list management
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

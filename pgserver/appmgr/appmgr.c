@@ -1,10 +1,10 @@
-/* $Id: appmgr.c,v 1.2 2002/11/06 09:16:52 micahjd Exp $
+/* $Id: appmgr.c,v 1.3 2003/01/01 03:42:56 micahjd Exp $
  *
  * appmgr.c - Manage the application list, and use one of the installed
  *            app manager modules to determine app policy.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,9 +1,9 @@
-/* $Id: divtree.h,v 1.48 2002/10/25 23:59:55 micahjd Exp $
+/* $Id: divtree.h,v 1.49 2003/01/01 03:43:00 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

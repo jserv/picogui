@@ -1,4 +1,4 @@
-/* $Id: ez328.c,v 1.25 2002/07/03 22:03:31 micahjd Exp $
+/* $Id: ez328.c,v 1.26 2003/01/01 03:43:06 micahjd Exp $
  *
  * ez328.c - Driver for the 68EZ328's (aka Motorola Dragonball EZ)
  *           built-in LCD controller. It assumes the LCD parameters
@@ -6,7 +6,7 @@
  *           and uses them to set up the driver.
  * 
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

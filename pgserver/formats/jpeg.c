@@ -1,9 +1,9 @@
-/* $Id: jpeg.c,v 1.13 2002/04/02 21:16:51 micahjd Exp $
+/* $Id: jpeg.c,v 1.14 2003/01/01 03:42:57 micahjd Exp $
  *
  * jpeg.c - Functions to convert any of the jpeg formats 
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

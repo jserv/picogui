@@ -1,9 +1,9 @@
-/* $Id: appmgr.h,v 1.23 2002/11/06 09:16:52 micahjd Exp $
+/* $Id: appmgr.h,v 1.24 2003/01/01 03:42:59 micahjd Exp $
  *
  * appmgr.h - Generic interface to application manager modules
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

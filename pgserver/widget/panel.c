@@ -1,10 +1,10 @@
-/* $Id: panel.c,v 1.91 2002/12/03 16:09:59 micahjd Exp $
+/* $Id: panel.c,v 1.92 2003/01/01 03:43:08 micahjd Exp $
  *
  * panel.c - Resizable container with decorations. It uses a panelbar for resizing purposes,
  *           and optionally supplies some standard buttons for the panel.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *  
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

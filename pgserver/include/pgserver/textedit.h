@@ -1,11 +1,11 @@
-/* $Id: textedit.h,v 1.8 2002/11/12 18:24:36 cgroom Exp $
+/* $Id: textedit.h,v 1.9 2003/01/01 03:43:00 micahjd Exp $
  *
  * Multi-line text widget. The widget is divided into PicoGUI specific
  * code in widget/textedit.c, and abstract text widget code in
  * widget/text_behavior.c.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  * Copyright (C) 2002 Blue Mug, Inc.
  *
  * This program is free software; you can redistribute it and/or

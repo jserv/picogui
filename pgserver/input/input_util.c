@@ -1,9 +1,9 @@
-/* $Id: input_util.c,v 1.6 2002/11/25 19:43:11 micahjd Exp $
+/* $Id: input_util.c,v 1.7 2003/01/01 03:43:03 micahjd Exp $
  *
  * input_util.c - Collection of utilities used by the input code
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,4 +1,4 @@
-/* $Id: ez328vga.c,v 1.5 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: ez328vga.c,v 1.6 2003/01/01 03:43:06 micahjd Exp $
  *
  * ez328vga.c - Another of my strange drivers...
  *              Using the 68EZ328's LCD controller and a few logic gates,
@@ -87,7 +87,7 @@
  * -------------------------------8<---------------------------------
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,10 +1,10 @@
-/* $Id: linear2.c,v 1.12 2002/10/23 02:09:07 micahjd Exp $
+/* $Id: linear2.c,v 1.13 2003/01/01 03:43:05 micahjd Exp $
  *
  * Video Base Library:
  * linear2.c - For 2-bit packed pixel devices (4 grayscales)
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,10 +1,10 @@
-/* $Id: linear16.c,v 1.36 2002/10/23 02:09:06 micahjd Exp $
+/* $Id: linear16.c,v 1.37 2003/01/01 03:43:05 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

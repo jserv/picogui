@@ -1,4 +1,4 @@
-/* $Id: zaurus.c,v 1.13 2002/11/03 22:44:47 micahjd Exp $
+/* $Id: zaurus.c,v 1.14 2003/01/01 03:43:03 micahjd Exp $
  *
  * zaurus.c - Input driver for the Sharp Zaurus SL-5000. This includes a
  *            simple touchscreen driver, and some extras to handle sound
@@ -7,7 +7,7 @@
  *            and Zaurus-dependant, so why not combine them...
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

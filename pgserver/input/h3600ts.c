@@ -1,7 +1,7 @@
-/* $Id: h3600ts.c,v 1.5 2002/11/11 01:18:02 micahjd Exp $
+/* $Id: h3600ts.c,v 1.6 2003/01/01 03:43:02 micahjd Exp $
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * Touchscreen driver for PicoGUI on Compaq iPAQ h3600 
  * Copyright (C) 2002 Arnd Bergmann <arnd@bergmann-dalldorf.de>

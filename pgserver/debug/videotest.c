@@ -1,10 +1,10 @@
-/* $Id: videotest.c,v 1.37 2002/11/03 23:26:34 micahjd Exp $
+/* $Id: videotest.c,v 1.38 2003/01/01 03:42:57 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,9 +1,9 @@
-/* $Id: main.c,v 1.4 2002/10/11 10:43:12 micahjd Exp $
+/* $Id: main.c,v 1.5 2003/01/01 03:42:47 micahjd Exp $
  *
  * main.c - Initialization and event loop for Atomic Navigator
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

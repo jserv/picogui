@@ -1,9 +1,9 @@
-/* $Id: x11.h,v 1.13 2002/11/07 20:36:45 micahjd Exp $
+/* $Id: x11.h,v 1.14 2003/01/01 03:43:01 micahjd Exp $
  *
  * x11.h - Header shared by all the x11 driver components in picogui
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

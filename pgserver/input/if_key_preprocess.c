@@ -1,9 +1,9 @@
-/* $Id: if_key_preprocess.c,v 1.2 2002/07/03 22:03:30 micahjd Exp $
+/* $Id: if_key_preprocess.c,v 1.3 2003/01/01 03:43:02 micahjd Exp $
  *
  * if_key_preprocess.c - Perform various processing on keys before dispatch
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

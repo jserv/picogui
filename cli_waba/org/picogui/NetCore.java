@@ -1,9 +1,9 @@
-/* $Id: NetCore.java,v 1.1 2002/02/17 03:46:04 bornet Exp $
+/* $Id: NetCore.java,v 1.2 2003/01/01 03:42:55 micahjd Exp $
  *
  * NetCore.java - core networking code for the Waba/Java client library
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * Waba/Java client library done by Olivier Bornet, SMARTDATA
  * 
@@ -696,7 +696,7 @@ public class NetCore {
 		} else if (argument.equals ("version")) {
 
 		    /* --pgversion : For now print CVS id */
-		    _pgUtils._client_err ("$Id: NetCore.java,v 1.1 2002/02/17 03:46:04 bornet Exp $");
+		    _pgUtils._client_err ("$Id: NetCore.java,v 1.2 2003/01/01 03:42:55 micahjd Exp $");
 
 		    return false;
 

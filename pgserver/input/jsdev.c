@@ -1,11 +1,11 @@
-/* $Id: jsdev.c,v 1.6 2002/10/24 17:21:05 micahjd Exp $
+/* $Id: jsdev.c,v 1.7 2003/01/01 03:43:03 micahjd Exp $
  *
  * jsdev.c - Driver for cursor control and key input using a joystick,
  *           reads from the linux joystick device. Note that all joystick 
  *           mapping is specified in a config file, so read README.configfile
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

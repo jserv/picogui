@@ -1,10 +1,10 @@
-/* $Id: posix_commandline.c,v 1.1 2002/11/03 23:33:23 micahjd Exp $
+/* $Id: posix_commandline.c,v 1.2 2003/01/01 03:43:04 micahjd Exp $
  *
  * posix_commandline.c - Process pgserver's command line, adding the
  *                       resulting data to the config database
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

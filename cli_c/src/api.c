@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.48 2002/12/18 09:43:14 gobry Exp $
+/* $Id: api.c,v 1.49 2003/01/01 03:42:54 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -8,7 +8,7 @@
  *
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

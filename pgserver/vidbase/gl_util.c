@@ -1,10 +1,10 @@
-/* $Id: gl_util.c,v 1.11 2002/12/24 11:40:37 micahjd Exp $
+/* $Id: gl_util.c,v 1.12 2003/01/01 03:43:05 micahjd Exp $
  *
  * gl_util.c - OpenGL driver for picogui
  *             This file has utilities shared by multiple components of the driver.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

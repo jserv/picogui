@@ -1,9 +1,9 @@
-/* $Id: client_c.h,v 1.92 2002/09/25 04:07:44 micahjd Exp $
+/* $Id: client_c.h,v 1.93 2003/01/01 03:42:53 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

@@ -1,9 +1,9 @@
-/* $Id: wt.c,v 1.8 2002/11/26 22:03:25 micahjd Exp $
+/* $Id: wt.c,v 1.9 2003/01/01 03:43:04 micahjd Exp $
  * 
  * wt.c - Loading and instantiation of PicoGUI's Widget Templates
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

@@ -1,11 +1,11 @@
-/* $Id: testPgserver.java,v 1.1 2002/02/17 03:47:04 bornet Exp $ */
+/* $Id: testPgserver.java,v 1.2 2003/01/01 03:42:54 micahjd Exp $ */
 
 /*
  * testPgserver.java - a small class to test the org.picogui.NetCore
  *                     and associated classes
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * Waba/Java client library done by Olivier Bornet, SMARTDATA
  * 

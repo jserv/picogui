@@ -1,4 +1,4 @@
-/* $Id: opengl.h,v 1.6 2002/11/28 11:08:26 micahjd Exp $
+/* $Id: opengl.h,v 1.7 2003/01/01 03:43:02 micahjd Exp $
  *
  * picogui/opengl.h - This is an extension to PicoGUI, supported by the sdlgl
  *                    driver, for including OpenGL commands in groplists.
@@ -6,7 +6,7 @@
  *                    must include this header file separately.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

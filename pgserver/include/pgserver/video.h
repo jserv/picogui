@@ -1,10 +1,10 @@
-/* $Id: video.h,v 1.116 2002/11/25 05:56:02 micahjd Exp $
+/* $Id: video.h,v 1.117 2003/01/01 03:43:01 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

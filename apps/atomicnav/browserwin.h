@@ -1,9 +1,9 @@
-/* $Id: browserwin.h,v 1.4 2002/01/08 11:36:06 micahjd Exp $
+/* $Id: browserwin.h,v 1.5 2003/01/01 03:42:47 micahjd Exp $
  *
  * browserwin.h - User interface for a browser window in Atomic Navigator
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

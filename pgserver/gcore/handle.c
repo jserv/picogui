@@ -1,11 +1,11 @@
-/* $Id: handle.c,v 1.64 2002/11/26 22:03:23 micahjd Exp $
+/* $Id: handle.c,v 1.65 2003/01/01 03:42:58 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
  *            Implemented with a red-black tree
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

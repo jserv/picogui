@@ -1,9 +1,9 @@
-/* $Id: if_touchscreen.c,v 1.9 2002/11/07 23:04:06 micahjd Exp $
+/* $Id: if_touchscreen.c,v 1.10 2003/01/01 03:43:03 micahjd Exp $
  *
  * if_touchscreen.c - Touchscreen calibration and filtering
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,9 +1,9 @@
-/* $Id: gl.h,v 1.4 2002/12/24 11:29:49 micahjd Exp $
+/* $Id: gl.h,v 1.5 2003/01/01 03:43:00 micahjd Exp $
  *
  * gl.h - Components defined and used by the OpenGL VBL for PicoGUI
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

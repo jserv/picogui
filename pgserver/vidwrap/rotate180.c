@@ -1,4 +1,4 @@
-/* $Id: rotate180.c,v 1.22 2002/10/22 23:08:12 micahjd Exp $
+/* $Id: rotate180.c,v 1.23 2003/01/01 03:43:07 micahjd Exp $
  *
  * rotate180.c - Video wrapper to rotate the screen 180 degrees
  *
@@ -7,7 +7,7 @@
  * down too much, but if it is there's an easy solution.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

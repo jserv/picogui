@@ -1,10 +1,10 @@
-/* $Id: null.c,v 1.9 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: null.c,v 1.10 2003/01/01 03:43:06 micahjd Exp $
  *
  * null.c - A dummy driver that produces no actual output but can do
  *          some error checking and debuggative things
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,10 +1,10 @@
-/* $Id: gl_primitives.c,v 1.5 2002/12/03 02:53:39 micahjd Exp $
+/* $Id: gl_primitives.c,v 1.6 2003/01/01 03:43:05 micahjd Exp $
  *
  * gl_primitives.c - OpenGL driver for picogui
  *                   Implement standard picogui primitives using OpenGL
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

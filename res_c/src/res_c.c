@@ -4,7 +4,7 @@
  *
  *
  * libres resource control system
- * Copyright (C) 2000-2002 Daniel Jackson <carpman@voidptr.org>
+ * Copyright (C) 2000-2003 Daniel Jackson <carpman@voidptr.org>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,10 +25,10 @@
  * 
  */
 
-/* 	$Id: res_c.c,v 1.6 2002/10/13 12:36:43 carpman Exp $	 */
+/* 	$Id: res_c.c,v 1.7 2003/01/01 03:43:10 micahjd Exp $	 */
 
 #ifndef lint
-static char vcid[] = "$Id: res_c.c,v 1.6 2002/10/13 12:36:43 carpman Exp $";
+static char vcid[] = "$Id: res_c.c,v 1.7 2003/01/01 03:43:10 micahjd Exp $";
 #endif /* lint */
 
 

@@ -1,9 +1,9 @@
-/* $Id: glcontext.c,v 1.1 2002/11/25 05:56:02 micahjd Exp $
+/* $Id: glcontext.c,v 1.2 2003/01/01 03:43:06 micahjd Exp $
  *
  * glcontext.c - Driver for using an existing OpenGL context
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

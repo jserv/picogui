@@ -1,4 +1,4 @@
-/* $Id: g_malloc.c,v 1.25 2002/11/03 04:54:23 micahjd Exp $
+/* $Id: g_malloc.c,v 1.26 2003/01/01 03:42:58 micahjd Exp $
  *
  * g_malloc.c - malloc wrapper providing error handling
  *
@@ -6,7 +6,7 @@
  * allocated memory, and keeps track of memory usage
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

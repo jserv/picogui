@@ -1,10 +1,10 @@
-/* $Id: pgfx_canvas.c,v 1.13 2002/10/20 17:16:22 micahjd Exp $
+/* $Id: pgfx_canvas.c,v 1.14 2003/01/01 03:42:54 micahjd Exp $
  *
  * picogui/pgfx_canvas.c - lib functions and registration for canvas
  *                         drawing through the PGFX interface
  * 
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.80 2002/12/03 12:28:24 micahjd Exp $
+/* $Id: memtheme.c,v 1.81 2003/01/01 03:43:04 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -7,7 +7,7 @@
  * Magic Algorithm for General Interface Configurability
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

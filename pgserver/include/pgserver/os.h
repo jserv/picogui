@@ -1,11 +1,11 @@
-/* $Id: os.h,v 1.6 2002/11/07 04:48:56 micahjd Exp $
+/* $Id: os.h,v 1.7 2003/01/01 03:43:00 micahjd Exp $
  *
  * os.h - Interface to OS-specific functions used by pgserver, independent
  *        of the actual OS in use. Functions that only exist in a particular
  *        OS should go in a separate os_*.h header.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,9 +1,9 @@
-/* $Id: div.c,v 1.103 2002/11/08 08:23:06 micahjd Exp $
+/* $Id: div.c,v 1.104 2003/01/01 03:42:58 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

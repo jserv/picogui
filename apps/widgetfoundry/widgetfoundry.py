@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-# $Id: widgetfoundry.py,v 1.9 2002/11/19 00:20:30 micahjd Exp $
+# $Id: widgetfoundry.py,v 1.10 2003/01/01 03:42:53 micahjd Exp $
 #
 # widgetfoundry.py - Main module for the Widget Foundry WT editor
 #
 # PicoGUI small and efficient client/server GUI
-# Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+# Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License

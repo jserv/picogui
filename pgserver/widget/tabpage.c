@@ -1,4 +1,4 @@
-/* $Id: tabpage.c,v 1.5 2002/12/16 04:43:13 micahjd Exp $
+/* $Id: tabpage.c,v 1.6 2003/01/01 03:43:09 micahjd Exp $
  *
  * tabpage.c - A page in a tabbed book. It can be inserted into any
  *             container and automatically link with other tab pages
@@ -14,7 +14,7 @@
  *      toolbar widget.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

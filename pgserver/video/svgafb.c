@@ -1,4 +1,4 @@
-/* $Id: svgafb.c,v 1.14 2002/10/22 23:08:12 micahjd Exp $
+/* $Id: svgafb.c,v 1.15 2003/01/01 03:43:07 micahjd Exp $
  *
  * svgafb.c - A driver for linear-framebuffer svga devices that uses the linear*
  *          VBLs instead of the default vbl and libvgagl.
@@ -8,7 +8,7 @@
  * This driver supports 8,16,24, and 32 bit color at any resolution.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,4 +1,4 @@
-/* $Id: null.c,v 1.3 2002/11/04 10:40:14 micahjd Exp $
+/* $Id: null.c,v 1.4 2003/01/01 03:42:56 micahjd Exp $
  *
  * null.c - Simple noninteractive app management
  *
@@ -6,7 +6,7 @@
  *         just that this uses a box widget instead of panel.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

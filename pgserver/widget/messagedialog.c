@@ -1,10 +1,10 @@
-/* $Id: messagedialog.c,v 1.6 2002/11/06 09:28:39 micahjd Exp $
+/* $Id: messagedialog.c,v 1.7 2003/01/01 03:43:08 micahjd Exp $
  *
  * messagedialog.c - A type of dialog box that can display a message and get
  *                   a user's response to it.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

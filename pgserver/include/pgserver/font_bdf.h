@@ -1,10 +1,10 @@
-/* $Id: font_bdf.h,v 1.1 2002/10/12 14:46:34 micahjd Exp $
+/* $Id: font_bdf.h,v 1.2 2003/01/01 03:43:00 micahjd Exp $
  *
  * font_bdf.h - Definitions shared between the BDF font engine and the
  *              set of compiled-in fonts.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

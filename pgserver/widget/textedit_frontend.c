@@ -1,4 +1,4 @@
-/* $Id: textedit_frontend.c,v 1.16 2002/11/12 23:18:08 cgroom Exp $
+/* $Id: textedit_frontend.c,v 1.17 2003/01/01 03:43:09 micahjd Exp $
  *
  * textedit.c - Multi-line text widget. By Chuck Groom,
  * cgroom@bluemug.com, Blue Mug, Inc, July 2002. Intended to be
@@ -74,7 +74,7 @@
  * About PicoGUI:
  * 
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

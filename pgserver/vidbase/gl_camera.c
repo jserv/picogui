@@ -1,11 +1,11 @@
-/* $Id: gl_camera.c,v 1.1 2002/11/25 05:48:52 micahjd Exp $
+/* $Id: gl_camera.c,v 1.2 2003/01/01 03:43:05 micahjd Exp $
  *
  * gl_camera.c - OpenGL driver for picogui
  *               This is an input filter that traps keyboard and mouse
  *               input for camera control and other on-the-fly settings.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

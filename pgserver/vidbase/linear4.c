@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.32 2002/11/06 00:52:50 micahjd Exp $
+/* $Id: linear4.c,v 1.33 2003/01/01 03:43:06 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -7,7 +7,7 @@
  * 68EZ328 look nice!
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

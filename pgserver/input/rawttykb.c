@@ -1,4 +1,4 @@
-/* $Id: rawttykb.c,v 1.5 2002/10/17 02:29:50 micahjd Exp $
+/* $Id: rawttykb.c,v 1.6 2003/01/01 03:43:03 micahjd Exp $
  *
  * rawttykb.c - A medium-raw TTY keyboard driver that accurately
  *              represents the keyboard at the risk of less compatibility
@@ -8,7 +8,7 @@
  *              This is still rather messy.. but it works better than ttykb.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

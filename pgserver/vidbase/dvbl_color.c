@@ -1,11 +1,11 @@
-/* $Id: dvbl_color.c,v 1.4 2002/10/27 17:34:04 micahjd Exp $
+/* $Id: dvbl_color.c,v 1.5 2003/01/01 03:43:05 micahjd Exp $
  *
  * dvbl_color.c - This file is part of the Default Video Base Library,
  *                providing the basic video functionality in picogui but
  *                easily overridden by drivers.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License  

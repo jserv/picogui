@@ -1,5 +1,5 @@
 /* -*- mode: c; c-basic-offset: 2 -*-
- * $Id: html.c,v 1.19 2002/11/03 23:28:29 micahjd Exp $
+ * $Id: html.c,v 1.20 2003/01/01 03:42:57 micahjd Exp $
  *
  * html.c - Use the textbox_document inferface to load HTML markup
  *
@@ -63,7 +63,7 @@
  * ----------
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,9 +1,9 @@
-/* $Id: ncursesinput.c,v 1.23 2002/07/03 22:03:30 micahjd Exp $
+/* $Id: ncursesinput.c,v 1.24 2003/01/01 03:43:03 micahjd Exp $
  *
  * ncursesinput.h - input driver for ncurses
  * 
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

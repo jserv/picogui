@@ -1,9 +1,9 @@
-/* $Id: sdlinput.c,v 1.46 2002/11/25 05:48:52 micahjd Exp $
+/* $Id: sdlinput.c,v 1.47 2003/01/01 03:43:03 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

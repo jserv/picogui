@@ -1,9 +1,9 @@
-/* $Id: kbfile.c,v 1.14 2002/09/26 19:48:46 lalo Exp $
+/* $Id: kbfile.c,v 1.15 2003/01/01 03:42:48 micahjd Exp $
   *
   * kbfile.c - Functions to validate and load patterns from a keyboard file
   * 
   * PicoGUI small and efficient client/server GUI
-  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+  * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
   *
   * This program is free software; you can redistribute it and/or
   * modify it under the terms of the GNU General Public License

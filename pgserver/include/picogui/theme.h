@@ -1,4 +1,4 @@
-/* $Id: theme.h,v 1.8 2002/10/04 17:22:11 micahjd Exp $
+/* $Id: theme.h,v 1.9 2003/01/01 03:43:02 micahjd Exp $
  * 
  * theme.h - Defines the theme file format, used by the server and by
  *           programs that read and write theme files
@@ -7,7 +7,7 @@
  * Magic Algorithm for General Interface Configurability
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

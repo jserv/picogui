@@ -1,11 +1,11 @@
-/* $Id: font_ftgl.c,v 1.8 2002/12/03 11:12:16 micahjd Exp $
+/* $Id: font_ftgl.c,v 1.9 2003/01/01 03:43:05 micahjd Exp $
  *
  * font_ftgl.c - Font engine that uses OpenGL textures prepared with SDL_ttf.
  *                This engine is very minimalistic compared to the freetype engine:
  *                it doesn't support caching, font indexing, or Unicode.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

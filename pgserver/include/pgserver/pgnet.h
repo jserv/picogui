@@ -1,9 +1,9 @@
-/* $Id: pgnet.h,v 1.28 2002/11/19 13:16:11 micahjd Exp $
+/* $Id: pgnet.h,v 1.29 2003/01/01 03:43:00 micahjd Exp $
  *
  * pgnet.h - Server-side networking interface common to all transports
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

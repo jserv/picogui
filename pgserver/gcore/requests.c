@@ -1,10 +1,10 @@
-/* $Id: requests.c,v 1.4 2002/11/20 12:29:32 micahjd Exp $
+/* $Id: requests.c,v 1.5 2003/01/01 03:42:59 micahjd Exp $
  *
  * requests.c - Process the requests that form picogui's network
  *              protocol and several file formats.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

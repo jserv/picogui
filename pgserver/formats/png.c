@@ -1,9 +1,9 @@
-/* $Id: png.c,v 1.3 2002/04/02 21:16:51 micahjd Exp $
+/* $Id: png.c,v 1.4 2003/01/01 03:42:57 micahjd Exp $
  *
  * png.c - Use the libpng library to load PNG graphics into PicoGUI 
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

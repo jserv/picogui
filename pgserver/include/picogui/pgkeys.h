@@ -1,9 +1,9 @@
-/* $Id: pgkeys.h,v 1.11 2002/07/03 22:03:29 micahjd Exp $
+/* $Id: pgkeys.h,v 1.12 2003/01/01 03:43:02 micahjd Exp $
  *
  * pgkeys.h - Constants for the keyboard keys and modifiers
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

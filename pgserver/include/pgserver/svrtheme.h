@@ -1,10 +1,10 @@
-/* $Id: svrtheme.h,v 1.16 2002/12/03 12:28:24 micahjd Exp $
+/* $Id: svrtheme.h,v 1.17 2003/01/01 03:43:00 micahjd Exp $
  * 
  * svrtheme.h - functions and data structures for themes, used
  *              only in the server
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

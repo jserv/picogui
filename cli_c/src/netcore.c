@@ -1,9 +1,9 @@
-/* $Id: netcore.c,v 1.40 2002/12/18 08:37:52 pney Exp $
+/* $Id: netcore.c,v 1.41 2003/01/01 03:42:54 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -658,7 +658,7 @@ void pgInit(int argc, char **argv)
 	
 	else if (!strcmp(arg,"version")) {
 	  /* --pgversion : For now print CVS id */
-	  fprintf(stderr,"$Id: netcore.c,v 1.40 2002/12/18 08:37:52 pney Exp $\n");
+	  fprintf(stderr,"$Id: netcore.c,v 1.41 2003/01/01 03:42:54 micahjd Exp $\n");
 	  exit(1);
 	}
 	

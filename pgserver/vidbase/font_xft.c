@@ -1,4 +1,4 @@
-/* $Id: font_xft.c,v 1.7 2002/11/08 01:25:37 micahjd Exp $
+/* $Id: font_xft.c,v 1.8 2003/01/01 03:43:05 micahjd Exp $
  *
  * font_xft.c - Font engine for X implemented using Xft
  *
@@ -7,7 +7,7 @@
  *          time soon, as the freetype font engine looks and works better.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

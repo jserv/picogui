@@ -1,9 +1,9 @@
-/* $Id: errortext.c,v 1.35 2002/03/27 15:09:24 lonetech Exp $
+/* $Id: errortext.c,v 1.36 2003/01/01 03:42:58 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

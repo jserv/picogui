@@ -1,9 +1,9 @@
-/* $Id: posix.c,v 1.8 2002/11/07 04:48:56 micahjd Exp $
+/* $Id: posix.c,v 1.9 2003/01/01 03:43:04 micahjd Exp $
  *
  * posix.c - Implementation of OS-specific functions for POSIX-compatible systems
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micah@homesoftware.com>
+ * Copyright (C) 2000-2003 Micah Dowty <micah@homesoftware.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,10 +1,10 @@
-/* $Id: gl_init.c,v 1.4 2002/11/25 13:43:01 micahjd Exp $
+/* $Id: gl_init.c,v 1.5 2003/01/01 03:43:05 micahjd Exp $
  *
  * sdlgl_init.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has initialization, shutdown, and registration.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

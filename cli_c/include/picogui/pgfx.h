@@ -1,4 +1,4 @@
-/* $Id: pgfx.h,v 1.19 2002/10/20 17:16:21 micahjd Exp $
+/* $Id: pgfx.h,v 1.20 2003/01/01 03:42:53 micahjd Exp $
  *
  * picogui/pgfx.h - The PicoGUI abstract graphics interface
  * 
@@ -6,7 +6,7 @@
  * a canvas (persistant or immediate mode) and other fast graphics interfaces
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

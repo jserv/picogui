@@ -1,10 +1,10 @@
-/* $Id: font_bdf.c,v 1.5 2002/10/16 22:33:41 micahjd Exp $
+/* $Id: font_bdf.c,v 1.6 2003/01/01 03:43:05 micahjd Exp $
  *
  * font_bdf.c - Font engine that uses fonts compiled into pgserver,
  *              converted from BDF fonts at compile-time.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,11 +1,11 @@
-/* $Id: dvbl_bitmap.c,v 1.17 2002/11/07 04:48:56 micahjd Exp $
+/* $Id: dvbl_bitmap.c,v 1.18 2003/01/01 03:43:05 micahjd Exp $
  *
  * dvbl_bitmap.c - This file is part of the Default Video Base Library,
  *                 providing the basic video functionality in picogui but
  *                 easily overridden by drivers.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License  

@@ -1,9 +1,9 @@
-/* $Id: scrshot.c,v 1.13 2002/11/23 12:23:35 micahjd Exp $
+/* $Id: scrshot.c,v 1.14 2003/01/01 03:43:06 micahjd Exp $
  *
  * scrshot.c - Maintains a virtual framebuffer, taking screenshots on update
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,4 +1,4 @@
-/* $Id: pgstr_textbuffers.c,v 1.2 2002/10/30 05:09:13 micahjd Exp $
+/* $Id: pgstr_textbuffers.c,v 1.3 2003/01/01 03:43:08 micahjd Exp $
  *
  * pgstr_textbuffers.c - An encoding for pgstrings that uses an array of small buffers,
  *                       providing fast insertion/deletion, Unicode support, and the
@@ -13,7 +13,7 @@
  *
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

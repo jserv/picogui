@@ -1,10 +1,10 @@
-/* $Id: terminal_frontend.c,v 1.11 2002/12/23 22:40:13 micahjd Exp $
+/* $Id: terminal_frontend.c,v 1.12 2003/01/01 03:43:09 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

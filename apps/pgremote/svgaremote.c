@@ -1,10 +1,10 @@
-/* $Id: svgaremote.c,v 1.4 2002/07/03 22:03:25 micahjd Exp $
+/* $Id: svgaremote.c,v 1.5 2003/01/01 03:42:51 micahjd Exp $
  *
  * svgaremote.c - This is the svgainput driver for pgserver, hacked up to
  *                work as a good networked input driver
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,10 +1,10 @@
-# $Id: WTWidget.py,v 1.5 2002/11/15 07:38:21 micahjd Exp $
+# $Id: WTWidget.py,v 1.6 2003/01/01 03:42:53 micahjd Exp $
 #
 # WTWidget.py - Extensions to the PicoGUI widget class to support
 #               Widget Foundry's XWT exporting and property editing
 #
 # PicoGUI small and efficient client/server GUI
-# Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+# Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License

@@ -1,11 +1,11 @@
-/* $Id: stddialog.h,v 1.14 2002/07/28 17:06:48 micahjd Exp $
+/* $Id: stddialog.h,v 1.15 2003/01/01 03:42:53 micahjd Exp $
  *
  * picogui/stddialog.h - Various preconstructed dialog boxes the application
  *                       may use. These are implemented 100% client-side using
  *                       the normal C client API.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

@@ -1,9 +1,9 @@
-/* $Id: label.c,v 1.53 2002/09/25 15:26:08 micahjd Exp $
+/* $Id: label.c,v 1.54 2003/01/01 03:43:08 micahjd Exp $
  *
  * label.c - A customized button for displaying static text and/or bitmaps
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,11 +1,11 @@
-/* $Id: scrollbox.c,v 1.7 2002/11/06 09:08:04 micahjd Exp $
+/* $Id: scrollbox.c,v 1.8 2003/01/01 03:43:09 micahjd Exp $
  *
  * scrollbox.c - A box widget that includes scrollbars. It also
  *               conglomerates properties and events as necessary
  *               to support multiple scrollbars, and scroll wheels
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

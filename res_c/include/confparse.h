@@ -4,7 +4,7 @@
  *
  *
  * libres resource control system
- * Copyright (C) 2000-2002 Daniel Jackson <carpman@voidptr.org>
+ * Copyright (C) 2000-2003 Daniel Jackson <carpman@voidptr.org>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

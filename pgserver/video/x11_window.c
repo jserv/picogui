@@ -1,9 +1,9 @@
-/* $Id: x11_window.c,v 1.10 2002/11/11 09:46:50 micahjd Exp $
+/* $Id: x11_window.c,v 1.11 2003/01/01 03:43:07 micahjd Exp $
  *
  * x11_util.c - Utility functions for picogui's driver for the X window system
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
