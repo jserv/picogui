@@ -130,8 +130,15 @@ int ttykb_fd_activate(int fd)
 	if (cc > 0) {
 		curkey = buf[0];
 
-		if (keymap[curkey] != 0)
-			dispatch_key(TRIGGER_CHAR,keymap[curkey],0);
+		if (keymap[curkey] != 0) {
+		  dispatch_key(TRIGGER_CHAR,keymap[curkey],0);
+
+		  /* FIXME: TRIGGER_KEYUP is not implemented yet, but we at
+		   * least need this so that hotkeys work correctly. This
+		   * needs to respond to a few keys TRIGGER_CHAR does not,
+		   * like the arrow keys */
+		  dispatch_key(TRIGGER_KEYDOWN,keymap[curkey],0);
+		}
 		return 1;		/* keypress*/
 	}
 	if ((cc < 0) && (errno != EINTR) && (errno != EAGAIN)) {
