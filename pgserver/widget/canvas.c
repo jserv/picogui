@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.10 2001/04/05 03:05:49 micahjd Exp $
+/* $Id: canvas.c,v 1.11 2001/04/14 07:47:53 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -164,6 +164,16 @@ void canvas_trigger(struct widget *self,long type,union trigparam *param) {
 void canvas_command(struct widget *self, unsigned short command, 
 		    unsigned short numparams,signed long *params) {
    int i;
+
+   /* Must we fix the gropctxt's pointers? */
+   if (self->in->div->flags & DIVNODE_GROPLIST_DIRTY) {
+      CTX->current = self->in->div->grop;
+      for (i=CTX->n-1;i && CTX->current;i--)
+	CTX->current = CTX->current->next;
+      CTX->n -= i;
+      self->in->div->flags &= ~DIVNODE_GROPLIST_DIRTY;
+   }
+   
    switch (command) {
 
     case PGCANVAS_NUKE:

@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.42 2001/04/14 02:59:52 micahjd Exp $
+/* $Id: grop.c,v 1.43 2001/04/14 07:47:52 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -83,13 +83,16 @@ void gropnode_free(struct gropnode *n) {
 
 /* For cleanup time, delete all gropnodes in the zombie list */
 void grop_kill_zombies(void) {
-   struct gropnode *p, *condemn
-     ;
+   struct gropnode *p, *condemn;
+   
    if (!grop_zombie_list) return;
    p = grop_zombie_list;
    while (p) {
       condemn = p;
       p = p->next;
+#ifdef DEBUG_KEYS
+   num_grops--;
+#endif
       g_free(condemn);
    }
    grop_zombie_list = NULL;
@@ -172,7 +175,7 @@ void gropctxt_init(struct gropctxt *ctx, struct divnode *div) {
  * x,y,w,h. 
  */
 void grop_render(struct divnode *div) {
-  struct gropnode *list;
+  struct gropnode *list, **listp;
   struct fontdesc *fd;
   hwrbitmap bit;
   int x,y,w,h,ydif,bw,bh;
@@ -184,9 +187,10 @@ void grop_render(struct divnode *div) {
   int type;
   struct cliprect cr;
   unsigned int incflag;
-   
+  
+  listp = &div->grop;
   list = div->grop;
-
+   
   /* Normally the clipping is set to the divnode */
   cx1 = div->x;
   cx2 = div->x+div->w-1;
@@ -642,12 +646,15 @@ void grop_render(struct divnode *div) {
     /* Delete the grop if it was transient */
     if (list->flags & PG_GROPF_TRANSIENT) {
        struct gropnode *condemn;
+       *listp = list->next;   /* close up the hole */
        condemn = list;
        list = list->next;
-       gropnode_free(list);
+       gropnode_free(condemn);
+       div->flags |= DIVNODE_GROPLIST_DIRTY;
     }
     else {
        /* Otherwise just move on */
+       listp = &list->next;
        list = list->next;
     }
   }

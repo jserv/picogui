@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.15 2001/04/14 02:59:56 micahjd Exp $
+/* $Id: divtree.h,v 1.16 2001/04/14 07:47:53 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -88,7 +88,9 @@ struct divnode {
    * on deleting a widget, and to determine the container when using
    * DIVNODE_UNIT_CNTFRACT */
   struct widget *owner;
-  
+   
+  u32 flags;
+   
   /* Absolute coordinates of the node on the screen.  This is usually
    * calculated by various flags using split, but if no such flags are used
    * the coordinates can be specified absolutely, however this is normally
@@ -104,7 +106,6 @@ struct divnode {
   /* Scrolling coordinates as of last redraw */
   s16 otx,oty;
 
-  u16 flags;
   s16 split;   /* Depending on flags, the pixels or percent to split at */
 
   /* The divnode's state - indicates which theme object to get parameters from */
@@ -133,7 +134,14 @@ struct divnode {
 					  * container's size. The fraction
 					  * is packed with numerator in high
 					  * byte and denominator in low byte */
-					  
+#define DIVNODE_GROPLIST_DIRTY  (1<<16)  /* Set whenever the order or
+					  * length of the groplist is modified,
+					  * lets the owner widget
+					  * know when it needs to update
+					  * pointers. It's the widget's
+					  * responsibility to clear the flag
+					  * if necessary */
+
 /* Side value macros and stuff */
 typedef unsigned short int sidet;
 #define VALID_SIDE(x) (x==PG_S_LEFT || x==PG_S_RIGHT || x==PG_S_TOP || x==PG_S_BOTTOM \
@@ -162,7 +170,9 @@ extern short int defaultgropflags;
 /***************** grop contexts */
 
 /* The grop context stores the information necessary for one 'session' of
-   gropnode building or updating */
+ * gropnode building or updating. The groplist's structure may change
+ * during rendering, so this context can only be valid for a short time!
+ */
 
 struct gropctxt {
   struct gropnode **headpp;   /* Head of groplist */
