@@ -6,7 +6,7 @@
     -- one place, and to make mirroring as easy as possible.
     --
     -- Site names can not contain slashes, since the slash is used
-    -- to separate sites from the rest of the package path.
+    -- to separate site names from a suffix in <sitepath>
     -->
   <sites>
 
