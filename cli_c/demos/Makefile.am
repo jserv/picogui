@@ -1,8 +1,7 @@
-# $Id: Makefile.am,v 1.3 2001/07/11 01:30:56 micahjd Exp $
+# $Id: Makefile.am,v 1.4 2001/07/29 07:48:45 micahjd Exp $
 
 noinst_PROGRAMS = \
 	abstest 		\
-	calc 			\
 	canvastst 		\
 	demo 			\
 	fieldtest 		\
@@ -30,7 +29,6 @@ LDADD    = ../src/libpgui.la
 INCLUDES = -I$(top_srcdir)/include
 
 abstest_SOURCES   = abstest.c
-calc_SOURCES      = calc.c
 canvastst_SOURCES = canvastst.c
 demo_SOURCES      = demo.c
 fieldtest_SOURCES = fieldtest.c
