@@ -28,8 +28,9 @@ echo "`svnlook author -r $REV $REPOS`" committed revision $REV: "`svnlook log -r
    head -n 1 | mail -s "Announce <i>channelname</i>" commits@picogui.org&
     </pre></code>
 
-    <p>Substitute the name of your channel, without leading "#" character, for <i>channelname</i>. You can see an example of the
-    post-commit script used in the PicoGUI repository <a href="http://navi.picogui.org/svn/picogui/trunk/tools/svn/hooks/">here</a> </p>
+    <p>Substitute the name of your channel for <i>channelname</i>. There is a slightly more complex
+       example including colorizing and a commit directory name in the 
+       <a href="http://navi.picogui.org/svn/picogui/trunk/tools/svn/hooks/">PicoGUI repository's post-commit script</a>. </p>
 
     <h1>Controlling the bot</h1>
 
