@@ -1,44 +1,4 @@
-This perl library is completely rewritten. It now aims to create an interface
-for perl that exactly mirrors the one for C, and uses the C client library.
+This is the third incarnation of a Perl client lib for picogui...
+This time it's designed more like Perl/Tk, and it is completely standalone.
+--Micah
 
-Note: This is my first attempt at an XS module, so please let me know where
-i messed up ;)
-  -- Micah
-
--------------------- Quick and inadequate documentation
-
-For the most part, the perl client library is just like the C client lib.
-The following lists all exceptions to this rule:
-
-- The *Fmt functions like pgMessageDialogFmt are not implemented because
-  they are unnecessary in perl
-  
-- Functions that accept a variable-length param list do not need to specify
-  the number of args (pgWriteCmd) or zero-terminate the list (pgSetWidget
-  and others)
-  
-- Trailing optional parameters (like in pgNewWidget) may be omitted
-
-- pgInit is called automatically, but does not yet support command-line
-  arguments (you can still set the server using the pgserver environment var)
-
-- pgRegisterApp does not support APPSPEC parameters yet
-
-- pgBind's 'extra' parameter is not supported because it is used
-  internally to associate the C event handler and Perl event handler
-
-- pgFrom* are gone, and pgmemdata has been replaced by a simple string scalar
-
-- The folowing functions are unsupported so far but are planned:
-
-pgSetErrorHandler
-pgSetIdle
-pgCustomizeSelect
-pgGetVideoMode
-pgSetWidget
-pgNewBitmap
-pgSizeText
-pgLoadTheme
-pgWriteData
-
-** The End **
