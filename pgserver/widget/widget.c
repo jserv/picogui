@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.72 2001/04/05 03:32:25 micahjd Exp $
+/* $Id: widget.c,v 1.73 2001/04/05 05:23:16 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -71,6 +71,7 @@ DEF_ERRORWIDGET_TABLE(mkerror(PG_ERRT_BADPARAM,103))
 #endif
 				     
 DEF_HYBRIDWIDGET_TABLE(checkbox,button)
+DEF_HYBRIDWIDGET_TABLE(flatbutton,button)
 };
 
 /* These are needed to determine which widget is under the pointing

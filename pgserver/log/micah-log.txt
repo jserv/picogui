@@ -44,6 +44,21 @@ reload (from file) all themes passed on the command line.
       * widget/canvas.c: Fixed a bug in colorconv as pointed out by Oliver
         that prevented colored text from converting properly
 
+      * widget/flatbutton.c: Added all 7 lines of code it takes to make a
+        customized button
+	
+      * include/picogui/constants.h: Added new theme objects and widget type
+        for flatbutton
+      
+      * widget/widget.c: Added widget table entry for flatbutton
+      
+      * include/pgserver/widget.h: Added widget prototype for flatbutton
+      
+      * theme/memtheme.c: Added theme inheritance entries for the
+        flatbutton's new theme objects
+
+      * Makefile: Added widget/flatbutton.c to project
+
 2001-04-03    Micah Dowty <micahjd@users.sourceforge.net>
 
 Got linux booting on the Nino ok, but the framebuffer doesn't work.
@@ -76,9 +91,15 @@ Happy Friday!
 
       * widget/field.c: Fixed bug in cursor positioning when PG_WP_TEXT is set
 
+<<<<<<< micah-log.txt
+      * widget/widget.c: For better mode switch and memory utilization info,
+        adding CTRL-ALT-P (for pictures?) to show all loaded bitmaps
+
+=======
       * widget/widget.c: Added a new debugging key, CTRL-ALT-P, to display
         all loaded bitmaps
 
+>>>>>>> 1.41
 2001-03-29    Micah Dowty <micahjd@users.sourceforge.net>
 
 Ugh. Spent the last 3 days installing a network for some jerk who doesn't

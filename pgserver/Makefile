@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.67 2001/03/29 20:37:58 micahjd Exp $
+# $Id: Makefile,v 1.68 2001/04/05 05:23:16 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -21,6 +21,9 @@
 #
 #
 # $Log: Makefile,v $
+# Revision 1.68  2001/04/05 05:23:16  micahjd
+# Added the new flatbutton widget to the server
+#
 # Revision 1.67  2001/03/29 20:37:58  micahjd
 # Added the checkbox widget
 #
@@ -98,6 +101,7 @@ SRC := \
     widget/background.c \
     widget/menuitem.c \
     widget/checkbox.c \
+    widget/flatbutton.c \
     \
     gcore/grop.c \
     gcore/g_malloc.c \

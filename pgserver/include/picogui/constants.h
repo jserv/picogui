@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.45 2001/03/30 05:01:23 micahjd Exp $
+/* $Id: constants.h,v 1.46 2001/04/05 05:23:16 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -223,10 +223,13 @@ typedef unsigned long pghandle;
 #define PGTH_O_CHECKBOX              41   /* Check box (customized button) */
 #define PGTH_O_CHECKBOX_HILIGHT      42   /* checkbox with mouse over it */
 #define PGTH_O_CHECKBOX_ON           43   /* checkbox when on */
+#define PGTH_O_FLATBUTTON            44   /* Flat button (customized button) */
+#define PGTH_O_FLATBUTTON_HILIGHT    45   /* flatbutton with mouse over it */
+#define PGTH_O_FLATBUTTON_ON         46   /* flatbutton with mouse down */
 
 /* If you add a themeobject, be sure to increment this and add
    an inheritance entry in theme/memtheme.c */
-#define PGTH_ONUM                    44
+#define PGTH_ONUM                    47
 
 /*** Loaders */
 
@@ -443,7 +446,8 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_TERMINAL   12    /* A full terminal emulator */
 #define PG_WIDGET_CANVAS     13
 #define PG_WIDGET_CHECKBOX   14    /* Another variation of button */
-#define PG_WIDGETMAX         14    /* For error checking */
+#define PG_WIDGET_FLATBUTTON 15    /* Yet another customized button */
+#define PG_WIDGETMAX         15    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1
