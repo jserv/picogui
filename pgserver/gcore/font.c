@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.4 2000/08/14 19:35:45 micahjd Exp $
+/* $Id: font.c,v 1.5 2000/08/27 05:54:27 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -55,8 +55,8 @@ int fontcmp(struct fontstyle_node *fs,char *name, int size, stylet flags);
  * To use this for measuring text but not actually outputting it, set
  * clip to NULL
  */
-void outchar(struct cliprect *clip, struct fontdesc *fd,
-	     int *x, int *y,devcolort col,char c) {
+void outchar(struct fontdesc *fd,
+	     int *x, int *y,hwrcolor col,char c) {
   int i,j;
   int cel_w; /* Total width of this character cel */
   int glyph_w,glyph_h;
@@ -68,20 +68,37 @@ void outchar(struct cliprect *clip, struct fontdesc *fd,
     glyph = (((unsigned char *)fd->font->bitmaps)+fd->font->trtab[c]);
     glyph_h = fd->font->h;
 
-    if (clip) {
-      /* underline, overline, strikeout */
-      if (fd->hline>=0)
-	hwr_slab(clip,*x,fd->hline+(*y),cel_w,fd->hline_c);
-      
-      /* The actual character */
-      i=0;
-      if (fd->skew) i = fd->italicw;
-      hwr_chrblit(clip,glyph,(*x)+i,*y,glyph_w,glyph_h,fd->skew,col);
-      
-      /* bold */
+    /* underline, overline, strikeout */
+    if (fd->hline>=0)
+      (*vid->slab)(*x,fd->hline+(*y),cel_w,fd->hline_c);
+    
+    /* The actual character */
+    i=0;
+    if (fd->skew) 
+      i = fd->italicw;
+    (*vid->charblit)(glyph,(*x)+i,*y,glyph_w,glyph_h,fd->skew,col);
+    
+    /* bold */
     for (i++,j=0;j<fd->boldw;i++,j++)
-      hwr_chrblit(clip,glyph,(*x)+i,*y,glyph_w,glyph_h,fd->skew,col);
-    }
+      (*vid->charblit)(glyph,(*x)+i,*y,glyph_w,glyph_h,fd->skew,col);
+  }
+  *x += cel_w;  
+}
+
+/* A version of outchar that doesn't make any
+   output. Used for sizetext */
+void outchar_fake(struct fontdesc *fd,
+	     int *x, int *y,char c) {
+  int i,j;
+  int cel_w; /* Total width of this character cel */
+  int glyph_w,glyph_h;
+  unsigned char *glyph;
+
+  glyph_w = fd->font->vwtab[c];
+  cel_w = glyph_w + fd->font->hspace + fd->boldw + fd->interchar_space;
+  if (fd->font->trtab[c] >= 0) {
+    glyph = (((unsigned char *)fd->font->bitmaps)+fd->font->trtab[c]);
+    glyph_h = fd->font->h;
   }
   *x += cel_w;  
 }
@@ -89,8 +106,8 @@ void outchar(struct cliprect *clip, struct fontdesc *fd,
 /* Output text, interpreting '\n' but no other control chars.
  * This function does add the margin as specified by fd->margin.
 */
-void outtext(struct cliprect *clip,struct fontdesc *fd,
-	     int x,int y,devcolort col,char *txt) {
+void outtext(struct fontdesc *fd,
+	     int x,int y,hwrcolor col,char *txt) {
   int xbase;
   x += fd->margin;
   y += fd->margin;
@@ -104,7 +121,7 @@ void outtext(struct cliprect *clip,struct fontdesc *fd,
       x = xbase;
     }
     else
-      outchar(clip,fd,&x,&y,col,*txt);
+      outchar(fd,&x,&y,col,*txt);
     txt++;
   }
 }
@@ -127,7 +144,7 @@ void sizetext(struct fontdesc *fd, int *w, int *h, char *txt) {
       *w = fd->margin << 1;
     }
     else {
-      outchar(NULL,fd,w,h,black,*txt);
+      outchar_fake(fd,w,h,*txt);
     }
     txt++;
   }

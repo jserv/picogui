@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.8 2000/08/14 19:35:45 micahjd Exp $
+/* $Id: field.c,v 1.9 2000/08/27 05:54:28 micahjd Exp $
  *
  * Single-line no-frills text editing box
  *
@@ -45,7 +45,7 @@
 
 struct fielddata {
   handle font;
-  devcolort fg,bg;
+  hwrcolor fg,bg;
   int focus,on,flash_on;
 
   /* Maximum size the field can hold */
@@ -149,13 +149,13 @@ g_error field_set(struct widget *self,int property, glob data) {
     break;
 
   case WP_COLOR:
-    DATA->fg = cnvcolor(data);
+    DATA->fg = (*vid->color_pgtohwr)(data);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
   case WP_BGCOLOR:
-    DATA->bg = cnvcolor(data);
+    DATA->bg = (*vid->color_pgtohwr)(data);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;

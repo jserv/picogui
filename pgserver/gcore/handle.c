@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.12 2000/08/14 19:35:45 micahjd Exp $
+/* $Id: handle.c,v 1.13 2000/08/27 05:54:27 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -333,7 +333,7 @@ void object_free(struct handlenode *n) {
   if (!(n->type & HFLAG_NFREE)) {
     switch (n->type & ~(HFLAG_RED|HFLAG_NFREE)) {
     case TYPE_BITMAP:
-      hwrbit_free(n->obj);
+      (*vid->bitmap_free)(n->obj);
       break;
     case TYPE_WIDGET:
       widget_remove(n->obj);

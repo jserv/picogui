@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.28 2000/08/14 19:35:45 micahjd Exp $
+/* $Id: button.c,v 1.29 2000/08/27 05:54:28 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -42,7 +42,7 @@ struct btndata {
   int dyt;    /* Ditto, for the text's Y */
   handle bitmap,bitmask,text,font;
   int align;
-  devcolort textcolor;
+  hwrcolor textcolor;
 };
 #define DATA ((struct btndata *)(self->data))
 
@@ -53,6 +53,7 @@ void button(struct divnode *d) {
   int ex,ey,ew,eh,x,y,txt_h;
   int w=0,h=0; /* Size of the bitmap and text combined */
   struct bitmap *bit=NULL,*bitmask=NULL;
+  int bw,bh;  /* Bitmap size */
   char *text=NULL;
   struct fontdesc *fd=NULL;
   struct widget *self = d->owner;
@@ -78,8 +79,9 @@ void button(struct divnode *d) {
     txt_h = h;
   }
   if (bit) {
-    w += bit->w;
-    if (bit->h>h) h = bit->h;
+    (*vid->bitmap_getsize)(bit,&bw,&bh);
+    w += bw;
+    if (bh>h) h = bh;
   }
   if (bit && text)
     w += HWG_MARGIN;
@@ -88,8 +90,8 @@ void button(struct divnode *d) {
   align(d,DATA->align,&w,&h,&x,&y);
 
   /* If the text is bigger than the bitmap, center the bitmap in the text */
-  if (text && bit && bit->h<txt_h)
-      y-=(DATA->dyt=(bit->h>>1)-(txt_h>>1));
+  if (text && bit && bh<txt_h)
+      y-=(DATA->dyt=(bh>>1)-(txt_h>>1));
 
   DATA->x = x;
   DATA->y = y;
@@ -100,11 +102,11 @@ void button(struct divnode *d) {
     y+=ON_OFFSET;
   }
   if (DATA->bitmask)
-    grop_bitmap(&d->grop,x,y,bitmask->w,bitmask->h,DATA->bitmask,LGOP_AND);
+    grop_bitmap(&d->grop,x,y,bw,bh,DATA->bitmask,LGOP_AND);
   else
     grop_null(&d->grop);
   if (DATA->bitmap)
-    grop_bitmap(&d->grop,x,y,bit->w,bit->h,DATA->bitmap,LGOP_OR);
+    grop_bitmap(&d->grop,x,y,bw,bh,DATA->bitmap,LGOP_OR);
   else
     grop_null(&d->grop);
 
@@ -113,10 +115,10 @@ void button(struct divnode *d) {
    */
   if (DATA->text) {
     if (bit) {
-      x+=(DATA->dxt=bit->w+HWG_MARGIN);
+      x+=(DATA->dxt=bw+HWG_MARGIN);
       /* If the bitmap is bigger, center the text relative to the bitmap */
-      if (bit->h>txt_h) 
-	DATA->dyt=(bit->h>>1)-(txt_h>>1);
+      if (bh>txt_h) 
+	DATA->dyt=(bh>>1)-(txt_h>>1);
       y+=DATA->dyt;
     }
     else
@@ -240,7 +242,7 @@ g_error button_set(struct widget *self,int property, glob data) {
     break;
 
   case WP_COLOR:
-    DATA->textcolor = cnvcolor(data);
+    DATA->textcolor = (*vid->color_pgtohwr)(data);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -409,6 +411,7 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
 */
 void resizebutton(struct widget *self) {
   int w=0,h=0; /* Size of the bitmap and text combined */
+  int bw,bh; /* Bitmap size */
   struct bitmap *bit=NULL,*bitmask=NULL;
   char *text=NULL;
   struct fontdesc *fd=NULL;
@@ -430,8 +433,9 @@ void resizebutton(struct widget *self) {
   if (text)
     sizetext(fd,&w,&h,text);
   if (bit) {
-    w += bit->w;
-    if (bit->h>h) h = bit->h;
+    (*vid->bitmap_getsize)(bit,&bw,&bh);
+    w += bw;
+    if (bh>h) h = bh;
   }
   if (bit && text)
     w += HWG_MARGIN;

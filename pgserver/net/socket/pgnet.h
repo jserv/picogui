@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.13 2000/08/09 06:57:49 micahjd Exp $
+/* $Id: pgnet.h,v 1.14 2000/08/27 05:54:27 micahjd Exp $
  *
  * pgnet.h - header for all PicoGUI networking stuff (request/packet/event...)
  *
@@ -102,12 +102,9 @@ struct response_data {
   /* 'size' bytes of data follow */;
 };
 struct uipkt_hello {
-  unsigned long  magic; /* These 2 from this file */
+  unsigned long  magic;
   unsigned short protover;
-  unsigned short width;  /* These 4 values from hardware.h */
-  unsigned short height;
-  unsigned short bpp;
-  char title[50];
+  unsigned short dummy;   /* padding */
 };
 
 /********* Functions provided by dispatch.c */

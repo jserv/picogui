@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.20 2000/08/14 19:35:44 micahjd Exp $
+/* $Id: div.c,v 1.21 2000/08/27 05:54:27 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -270,8 +270,8 @@ g_error divtree_new(struct divtree **dt) {
   errorcheck;
   e = newdiv(&(*dt)->head,NULL);
   errorcheck;
-  (*dt)->head->w = HWR_WIDTH;
-  (*dt)->head->h = HWR_HEIGHT;
+  (*dt)->head->w = vid->xres;
+  (*dt)->head->h = vid->yres;
   (*dt)->flags = DIVTREE_ALL_REDRAW;
   return sucess;
 }
@@ -300,7 +300,7 @@ void update(void) {
     r_dtupdate(dts->top);
     
     /* NOW we update the hardware */
-    hwr_update();
+    (*vid->update)();
   }
 
   dts->update_lock = 0;

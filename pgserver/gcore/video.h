@@ -1,6 +1,7 @@
-/* $Id: video.h,v 1.8 2000/08/07 10:04:11 micahjd Exp $
+/* $Id: video.h,v 1.9 2000/08/27 05:54:27 micahjd Exp $
  *
- * video.h - generic hardware defines (common to all drivers)
+ * video.h - Defines an API for writing PicoGUI video
+ *           drivers
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -28,44 +29,12 @@
 #ifndef __H_VIDEO
 #define __H_VIDEO
 
-#include <mode.h>
 #include <g_error.h>
 
-/* Generic bitmap structure in hardware-dependant format
-*/
-struct bitmap {
-  devbmpt bits;
-  int w,h;
-  int freebits;    /* Should 'bits' be freed also when bitmap is freed? */
-};
+/* Flags used for 'flags' in init and setmode */
+#define PGVID_FULLSCREEN     0x0001
 
-/* This defines the current clipping rectangle.  It is necessary for proper
-   scrolling!  Passed to all hwr_* functions. Absolute coordinates, just
-   like everything else in hardware.h
-*/
-struct cliprect {
-  int x,y;        /* These upper-left and lower-right pixels are both */
-  int x2,y2;      /* inside the clipping rect. */
-};
-
-g_error hwr_init();
-void hwr_release();
-void hwr_clear();
-void hwr_update();
-
-void hwr_pixel(struct cliprect *clip,int x,int y,devcolort c);
-void hwr_slab(struct cliprect *clip,int x,int y,int l,devcolort c);
-void hwr_bar(struct cliprect *clip,int x,int y,int l,devcolort c);
-void hwr_line(struct cliprect *clip,int x1,int y1,int x2,int y2,devcolort c);
-void hwr_rect(struct cliprect *clip,int x,int y,int w,int h,devcolort c);
-void hwr_gradient(struct cliprect *clip,int x,int y,int w,int h,
-		  devcolort c1,devcolort c2,int angle,int translucent);
-void hwr_frame(struct cliprect *clip,int x,int y,int w,int h,devcolort c);
-void hwr_dim(struct cliprect *clip);  /* This dims (in a method appropriate
-					 to the hardware) all pixels in the
-					 clipping rectangle
-				      */
-
+/* Logical operations for blits */
 #define LGOP_NULL        0   /* Don't blit */
 #define LGOP_NONE        1   /* Blit, but don't use an LGOP */
 #define LGOP_OR          2
@@ -77,57 +46,317 @@ void hwr_dim(struct cliprect *clip);  /* This dims (in a method appropriate
 #define LGOP_INVERT_XOR  8
 #define LGOPMAX          8   /* For error-checking */
 
-/* The generic all-purpose blitter.
-   Either of the bitmaps can be null, indicating to use the screen
-   instead of an off-screen bitmap. lgop is an optional logical operation
-   to preform on the blitted data.  See above #define's.
-   Clipping rectangle if specified is applied relative to destination
-   bitmap.
+/* Hardware-specific color value */
+typedef unsigned long hwrcolor;
+
+/* PicoGUI color (24-bit RGB)
+   Usually converted to a hwrcolor at the first opportunity
 */
-void hwr_blit(struct cliprect *clip, int lgop,
-	      struct bitmap *src, int src_x, int src_y,
-	      struct bitmap *dest, int dest_x, int dest_y,
-	      int w, int h);
+typedef unsigned long pgcolor;
+#define getred(pgc)    (((pgc)>>16)&0xFF)
+#define getgreen(pgc)  (((pgc)>>8)&0xFF)
+#define getblue(pgc)   ((pgc)&0xFF)
+#define mkcolor(r,g,b) (((r)<<16)|((g)<<8)|(b))
 
-/* This blit is for displaying one glyph of a font.  The 1bpp character data
-   is in chardat, the width and height of the glyph in w and h.
-   If lines is > 0, then every 'lines' lines, the image is left-shifted
-   one pixel.
-*/
-void hwr_chrblit(struct cliprect *clip, unsigned char *chardat,
-		 int dest_x, int dest_y, int w, int h,int lines,devcolort col);
-
-/* Bitmap converters, creating a bitmap structure with various types of
-   data. This is how most bitmaps should be created.
-*/
-g_error hwrbit_xbm(struct bitmap **bmp,
-		   unsigned char *data, int w, int h,
-		   devcolort fg, devcolort bg);
-g_error hwrbit_pnm(struct bitmap **bmp,
-		   unsigned char *data,unsigned long datalen);
-
-/* Create an empty bitmap of w,h pixels
-   (for use with hwr_blit- backing stores, screenshots, etc...)
-*/
-g_error hwrbit_new(struct bitmap **bmp,int w,int h);
-
-/* Free an allocated bitmap */
-void hwrbit_free(struct bitmap *b);
-
-/* Converts a color from the portable format */
-devcolort cnvcolor(unsigned long c);
-
-/* Colors */
-#define white mkcolor(255,255,255)
-#define black mkcolor(0,0,0)
-#define gray  mkcolor(127,127,127)
-
-/* Sizes */
+/* HACK ALERT!!!! This stuff needs to be integrated into the
+   themes... Save this for the theme overhaul. */
+#define white          0xFFFFFF
+#define black          0x000000
+#define gray           0x808080
 #define HWG_BUTTON 22
 #define HWG_MARGIN 2
 #define HWG_SCROLL 10
 
-#endif /* __GUWI_HARDWARE */
+/* Hardware-specific bitmap */
+typedef void * hwrbitmap;
+
+/* The hwrbitmap used in the default implementation
+   (should be sufficient for most drivers)
+*/
+struct stdbitmap {
+  unsigned char *bits;    /* actual format depends on bpp */
+  int w,h;
+  int freebits;    /* Should 'bits' be freed also when bitmap is freed? */
+};
+
+
+/* This structure contains a pointer to each graphics function
+   in use, forming a definition for a driver. Initially, all functions
+   point to default implementations. It is only necessary for a driver
+   to implement a few functions, but it can optionally implement others
+   if they can be accelerated
+*/
+
+struct vidlib {
+
+  /***************** Initializing and video modes */
+
+  /* Required
+   *   initializes graphics device, given a default mode.
+   *   If the driver doesn't support that mode it can choose something
+   *   else, or even ignore it all together. 
+   */
+  g_error (*init)(int xres,int yres,int bpp,unsigned long flags);
+
+  /* Reccomended if the device supports mode switching
+   *   Changes the video mode after initialization
+   *
+   * Default implementation: returns error
+   */
+  g_error (*setmode)(int xres,int yres,int bpp,unsigned long flags);
+
+  /* Reccomended
+   *   free memory, close device, etc. 
+   * 
+   * Default implementation: does nothing
+   */
+  void (*close)(void);
+
+  /* Current mode (read only to all but driver)
+   *
+   * The default bitmap functions should handle 1,2,4,8,16,24,32 bpp ok
+   */
+  int xres,yres,bpp;
+  unsigned long flags;
+
+  /***************** Clipping */
+
+  /* Reccomended
+   *   Set a new clipping rectangle
+   *
+   * Default implementation: just stores it
+   */
+  void (*clip_set)(int x1,int y1,int x2,int y2);
+
+  /* Reccomended
+   *   Turns off clipping
+   *
+   * Default implementation: sets clip to full screen
+   */
+  void (*clip_off)(void);
+
+  /* Current clipping (read only to all but driver) */
+  int clip_x1,clip_y1,clip_x2,clip_y2;
+
+  /***************** Colors */
+
+  /* Reccomended
+   *   Convert a color to/from the driver's native format
+   *
+   * Default implementation:
+   *    < 8bpp:  Assumes grayscale
+   *      8bpp:  2-3-3 color
+   *     16bpp:  5-6-5 color
+   *  >= 24bpp:  No change
+   */
+  hwrcolor (*color_pgtohwr)(pgcolor c);
+  pgcolor (*color_hwrtopg)(hwrcolor c);
+
+  /***************** Primitives */
+
+  /* Required
+   *   Draw a pixel to the screen, in the hardware's color format
+   */
+  void (*pixel)(int x,int y,hwrcolor c);
+
+  /* Required
+   *   Get a pixel, in hwrcolor format
+   */
+  hwrcolor (*getpixel)(int x,int y);
+
+  /* Reccomended
+   *   Add/subtract the color from the
+   *   existing pixel
+   *
+   * Default implementation: getpixel, modifies it, then putpixel
+   */
+  void (*addpixel)(int x,int y,pgcolor c);
+  void (*subpixel)(int x,int y,pgcolor c);
+
+  /* Optional
+   *   clear screen
+   *   
+   * Default implementation: draws a rectangle of 
+   *   color 0 over the screen
+   */
+  void (*clear)(void);
+
+  /* Reccomended (without double-buffer, it looks really dumb)
+   *   Update changes to the screen, if device is double-buffered or
+   *   uses page flipping
+   *
+   * Default implementation: does nothing (assumes changes are immediate)
+   */
+  void (*update)(void);
+
+  /* Optional
+   *   draws a continuous horizontal run of pixels
+   *
+   * Default implementation: draws a 1 pixel high rectangle
+   */
+  void (*slab)(int x,int y,int w,hwrcolor c);
+
+  /* Optional
+   *   draws a vertical bar of pixels (a sideways slab)
+   *
+   * Default implementation: draws a 1 pixel wide rectangle
+   */
+  void (*bar)(int x,int y,int h,hwrcolor c);
+
+  /* Optional
+   *   draws an arbitrary line between 2 points
+   *
+   * Default implementation: bresenham algrorithm and
+   *   many calls to pixel()
+   */
+  void (*line)(int x1,int y1,int x2,int y2,hwrcolor c);
+
+  /* Reccomended
+   *   fills a rectangular area with a color
+   *
+   * Default implementation: for loops and many pixel()s
+   */
+  void (*rect)(int x,int y,int w,int h,hwrcolor c);
+
+  /* Reccomended for high color/true color devices
+   *   fills a rectangular area with a linear gradient
+   *   of an arbitrary angle (in degrees), between two colors.
+   *   If angle==0, c1 is at the left and c2 is at the
+   *   right.  The gradient rotates clockwise as angle
+   *   increases.
+   *   If translucent==0, the gradient overwrites existing
+   *   stuff on the screen. -1, it subtracts, and +1, it 
+   *   adds.
+   *
+   * Default implementation: interpolation algorithm, pixel()
+   */
+  void (*gradient)(int x,int y,int w,int h,int angle,
+		   pgcolor c1, pgcolor c2,int translucent);
+  
+  /* Optional
+   *   Frames an area with a hollow rectangle
+   *
+   * Default implementation: uses slab() and bar()
+   */
+  void (*frame)(int x,int y,int w,int h,hwrcolor c);
+
+  /* Optional
+   *   Dims or 'grays out' everything in the clipping rectangle
+   *
+   * Default implementation: color #0 checkerboard pattern
+   */
+  void (*dim)(void);
+
+  /* Required (The alternative, pixel(), is just too scary)
+   *   Blits between two bitmaps (if src or dest is NULL,
+   *   it goes from/to the screen) optionally using lgop.
+   *   If w and/or h is bigger than the source bitmap, it
+   *   should tile.
+   */
+  void (*blit)(hwrbitmap src,int src_x,int src_y,
+	       hwrbitmap dest,int dest_x,int dest_y,
+	       int w,int h,int lgop);
+
+  /* Optional
+   *   Does a bottom-up blit from an area on the screen
+   *   to an area on the screen. Used for scrolling down.
+   *   This doesn't need to worry about clipping 
+   *
+   * Default implementation: Calls blit() for every line,
+   *   starting at the bottom
+   */
+  void (*scrollblit)(int src_x,int src_y,
+		     int dest_x,int dest_y,
+		     int w,int h);
+
+  /* Reccomended
+   *   Used for character data.  Blits 1bpp data from
+   *   chardat to the screen, filling '1' bits with the
+   *   color 'col'.  If lines > 0, every 'lines' lines
+   *   the image is left-shifted one pixel, to simulate
+   *   italics
+   *
+   * Default implementation: pixel(). Need I say more?
+   */
+  void (*charblit)(unsigned char *chardat,int dest_x,
+		   int dest_y,int w,int h,int lines,
+		   hwrcolor c);
+     
+  /***************** Bitmaps */
+
+  /* These functions all use the stdbitmap structure.
+     If your driver needs a different bitmap format,
+     implement all these functions.  If not, you should
+     be ok leaving these with the defaults.
+  */
+
+  /* Optional
+   *   Allocates a new bitmap, and loads the
+   *   formatted bitmap data into it
+   *
+   * Default implementation: uses stdbitmap structure
+   */
+
+  /* XBM 1-bit data */
+  g_error (*bitmap_loadxbm)(hwrbitmap *bmp,
+			    unsigned char *data,
+			    int w,int h,
+			    hwrcolor fg,
+			    hwrcolor bg);
+
+  /* PNM 8/16/24-bit portable graphics */
+  g_error (*bitmap_loadpnm)(hwrbitmap *bmp,
+			    unsigned char *data,
+			    unsigned long datalen);
+
+  /* Optional
+   *   Allocates an empty bitmap
+   *
+   * Default implementation: g_malloc, of course!
+   */
+  g_error (*bitmap_new)(hwrbitmap *bmp,
+			int w,int h);
+
+  /* Optional
+   *   Frees bitmap memory
+   *
+   * Default implementation: g_free...
+   */
+  void (*bitmap_free)(hwrbitmap bmp);
+
+  /* Optional
+   *   Gets size of a bitmap
+   *
+   * Default implementation: stdbitmap
+   */
+  g_error (*bitmap_getsize)(hwrbitmap bmp,int *w,int *h);
+
+};
+
+/* Currently in-use video driver */
+extern struct vidlib *vid;
+
+/* Trig (sin*256 from 0 to 90 degrees) */
+extern unsigned char trigtab[];
+
+/* Some helper functions for PNM files */
+void ascskip(unsigned char **dat,unsigned long *datlen);
+int ascread(unsigned char **dat,unsigned long *datlen);
+
+/*
+  Unloads previous driver, sets up a new driver and
+  initializes it.  This is for changing the driver,
+  and optionally changing the mode.  If you just
+  want to change the mode use vid->setmode
+*/
+g_error setdriver(g_error (*regfunc)(struct vidlib *v),
+		  int xres,int yres,int bpp,unsigned long flags);
+
+/* Registration functions */
+g_error sdlmin_regfunc(struct vidlib *v);
+g_error sdl_regfunc(struct vidlib *v);
+
+#endif /* __H_VIDEO */
 
 /* The End */
 

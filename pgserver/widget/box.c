@@ -1,4 +1,4 @@
-/* $Id: box.c,v 1.4 2000/08/14 19:35:45 micahjd Exp $
+/* $Id: box.c,v 1.5 2000/08/27 05:54:28 micahjd Exp $
  *
  * box.c - Generic container for laying out widgets
  *
@@ -34,7 +34,7 @@
 /* The only data to store is a color, so just stick it in the data
    pointer... 
 */
-#define BOXCOLOR ((devcolort)self->data)
+#define BOXCOLOR ((hwrcolor)self->data)
 
 void box(struct divnode *d) {
   struct widget *self = d->owner;

@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.13 2000/08/14 19:35:45 micahjd Exp $
+/* $Id: bitmap.c,v 1.14 2000/08/27 05:54:28 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -30,7 +30,7 @@
 struct bitmapdata {
   handle bitmap,bitmask;
   int align,lgop,transparent;
-  devcolort fill;
+  hwrcolor fill;
 };
 #define DATA ((struct bitmapdata *)(self->data))
 
@@ -47,8 +47,7 @@ void bitmap(struct divnode *d) {
      screen... */
   if (DATA->bitmap && !iserror(rdhandle((void **) &bit,TYPE_BITMAP,-1,
       DATA->bitmap)) && bit) {
-    w = bit->w;
-    h = bit->h;
+    (*vid->bitmap_getsize)(bit,&w,&h);
     align(d,DATA->align,&w,&h,&x,&y);
 
     /* Optional bitmask */
@@ -111,7 +110,7 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
     break;
 
   case WP_BGCOLOR:
-    DATA->fill = cnvcolor(data);
+    DATA->fill = (*vid->color_pgtohwr)(data);
     DATA->transparent = 0;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
@@ -199,17 +198,19 @@ glob bitmap_get(struct widget *self,int property) {
  
 void resizebitmap(struct widget *self) {
   struct bitmap *bit;
+  int w,h;
  
   if (iserror(rdhandle((void **) &bit,TYPE_BITMAP,-1,DATA->bitmap)))
     return;
   if (!bit) return;
+  (*vid->bitmap_getsize)(bit,&w,&h);
 
   if ((self->in->flags & DIVNODE_SPLIT_TOP) ||
       (self->in->flags & DIVNODE_SPLIT_BOTTOM))
-    self->in->split = bit->h;
+    self->in->split = h;
   else if ((self->in->flags & DIVNODE_SPLIT_LEFT) ||
 	   (self->in->flags & DIVNODE_SPLIT_RIGHT))
-    self->in->split = bit->w;
+    self->in->split = w;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.19 2000/08/14 19:33:30 micahjd Exp $
+# $Id: Makefile,v 1.20 2000/08/27 05:54:27 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -32,7 +32,8 @@ SRC := widget/bitmap.c widget/indicator.c widget/label.c \
        gcore/g_malloc.c gcore/div.c gcore/font.c widget/theme.c \
        gcore/handle.c gcore/g_error.c appmgr/global.c widget/button.c \
        widget/panel.c widget/default_theme.c widget/popup.c widget/box.c \
-       widget/field.c gcore/timer.c gcore/errortext.c
+       widget/field.c gcore/timer.c gcore/errortext.c gcore/video.c \
+       video/sdlmin.c video/sdl.c
 
 HDR := widget/widget.h gcore/divtree.h gcore/g_malloc.h \
        gcore/font.h gcore/handle.h gcore/g_error.h gcore/video.h \
@@ -100,18 +101,8 @@ ifeq ($(strip $(FONTSET)),standard)
 	FONTS := font/helvetica.fi font/console.fi font/times.fi font/tiny.fi
 endif
 
-# Break apart the hardware string
-VIDLIB := $(word 1, $(strip $(VID)))
-VIDMODE := $(word 2, $(strip $(VID)))
-
-# Make these available for the source files
-CFLAGS := $(CFLAGS) \
-	  -DHWRLIB=\"$(strip $(VIDLIB))\" \
-	  -DHWRMODE=\"$(strip $(VIDMODE))\" \
-	  -DHWR=\"$(strip $(VIDLIB)):$(strip $(VIDMODE))\"
-
 # Set any necessary flags peculiar to a hardware library
-ifeq ($(strip $(VIDLIB)),sdl)
+#ifeq ($(strip $(VIDLIB)),sdl)
 	# Which sdl-config?
 	SDLCONFIG := sdl-config
 	ifeq ($(strip $(PLATFORM)),windows)
@@ -121,16 +112,11 @@ ifeq ($(strip $(VIDLIB)),sdl)
 	# Libraries and includes for SDL
 	CFLAGS := $(CFLAGS) $(shell $(SDLCONFIG) --cflags)
 	LDFLAGS := $(LDFLAGS) $(shell $(SDLCONFIG) --libs)
-endif
-ifeq ($(strip $(VIDLIB)),svgalib)
-	# SVGAlib and vgagl
-	LDFLAGS := $(LDFLAGS) -lvgagl -lvga
-endif
-
-# Hardware-specific source files
-SRC := $(SRC) video/$(VIDLIB)/hardware.c
-CFLAGS := $(CFLAGS) -Ivideo/$(VIDLIB)/$(VIDMODE)
-HDR := $(HDR) video/$(VIDLIB)/$(VIDMODE)/mode.h
+#endif
+#ifeq ($(strip $(VIDLIB)),svgalib)
+#	# SVGAlib and vgagl
+#	LDFLAGS := $(LDFLAGS) -lvgagl -lvga
+#endif
 
 # Network-specific source files
 SRC := $(SRC) net/$(NET)/request.c net/$(NET)/mainloop.c \

@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.15 2000/08/14 19:35:45 micahjd Exp $
+/* $Id: dispatch.c,v 1.16 2000/08/27 05:54:27 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -219,12 +219,13 @@ g_error rqh_mkbitmap(int owner, struct uipkt_request *req,
       w = w/8;
     if (bitsz < (w*ntohs(arg->h)))
       return mkerror(ERRT_BADPARAM,61);
-    e = hwrbit_xbm(&bmp,bits,ntohs(arg->w),ntohs(arg->h),
-		   cnvcolor(ntohl(arg->fg)),cnvcolor(ntohl(arg->bg)));
+    e = (*vid->bitmap_loadxbm)(&bmp,bits,ntohs(arg->w),ntohs(arg->h),
+			       (*vid->color_pgtohwr)(ntohl(arg->fg)),
+			       (*vid->color_pgtohwr)(ntohl(arg->bg)));
   }
   else {
     /* PNM */
-    e = hwrbit_pnm(&bmp,bits,bitsz);
+    e = (*vid->bitmap_loadpnm)(&bmp,bits,bitsz);
   }
   errorcheck;
 

@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.1 2000/08/14 19:35:45 micahjd Exp $
+/* $Id: errortext.c,v 1.2 2000/08/27 05:54:27 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -114,6 +114,7 @@ static const char *errors[] = {
   /* 69 */  "Can't find a connection buffer for the client! Network code must be haunted",
   /* 70 */  "Context underflow",
   /* 71 */  "Can't create the input thread!",
+  /* 72 */  "This driver doesn't support changing video modes",
 };
 
 #endif /* TINY_MESSAGES */

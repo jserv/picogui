@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.25 2000/08/14 19:35:45 micahjd Exp $
+/* $Id: panel.c,v 1.26 2000/08/27 05:54:28 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -56,7 +56,7 @@ struct paneldata {
 		       and the point it was clicked */
   unsigned long wait_tick;    /* To limit the frame rate */
 
-  struct bitmap *bar,*behindbar;
+  hwrbitmap bar,behindbar;
 
   /* Saved split value before a drag, used to
      calculate whether it should be interpreted as
@@ -241,17 +241,18 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
 
     /* Lock the screen */
     dts_push();
+    (*vid->clip_off)();
 
     /* Create a bitmap for the panelbar, and for
        the stuff behind it */
     DATA->bar = DATA->behindbar = NULL;
-    hwrbit_new(&DATA->bar,PANELBAR_DIV->w,PANELBAR_DIV->h);
-    hwrbit_new(&DATA->behindbar,PANELBAR_DIV->w,PANELBAR_DIV->h);
+    (*vid->bitmap_new)(&DATA->bar,PANELBAR_DIV->w,PANELBAR_DIV->h);
+    (*vid->bitmap_new)(&DATA->behindbar,PANELBAR_DIV->w,PANELBAR_DIV->h);
 
     /* Grab a bitmap of the panelbar */
-    hwr_blit(NULL,LGOP_NONE,NULL,PANELBAR_DIV->x,
-	     PANELBAR_DIV->y,DATA->bar,0,0,
-	     PANELBAR_DIV->w,PANELBAR_DIV->h);
+    (*vid->blit)(NULL,PANELBAR_DIV->x,
+		 PANELBAR_DIV->y,DATA->bar,0,0,
+		 PANELBAR_DIV->w,PANELBAR_DIV->h,LGOP_NONE);
 
     /* Reset ox and oy */
     DATA->ox = DATA->oy = -1;
@@ -323,8 +324,8 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     /* Unlock it */
     dts_pop();
 
-    hwrbit_free(DATA->bar);
-    hwrbit_free(DATA->behindbar);
+    (*vid->bitmap_free)(DATA->bar);
+    (*vid->bitmap_free)(DATA->behindbar);
 
     DATA->on = 0;
     break;
@@ -347,7 +348,7 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     /* If we haven't waited long enough since the last update,
        go away */
     tick = getticks();
-    if (tick < DATA->wait_tick) break;
+    if (tick < DATA->wait_tick) return;
     DATA->wait_tick = tick + DRAG_DELAY;
 
     /* Determine where to blit the bar to... */
@@ -379,21 +380,24 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
 
     /* Put back the old image */
     if (DATA->ox != -1)
-      hwr_blit(NULL,LGOP_NONE,DATA->behindbar,0,0,NULL,
-	       DATA->ox,DATA->oy,PANELBAR_DIV->w,PANELBAR_DIV->h);
+      (*vid->blit)(DATA->behindbar,0,0,NULL,
+		   DATA->ox,DATA->oy,PANELBAR_DIV->w,
+		   PANELBAR_DIV->h,LGOP_NONE);
     
     /* Grab a new one */
     DATA->ox = DATA->x; DATA->oy = DATA->y;
-    hwr_blit(NULL,LGOP_NONE,NULL,DATA->ox,DATA->oy,DATA->behindbar,
-	     0,0,PANELBAR_DIV->w,PANELBAR_DIV->h);
+    (*vid->blit)(NULL,DATA->ox,DATA->oy,DATA->behindbar,
+		 0,0,PANELBAR_DIV->w,PANELBAR_DIV->h,
+		 LGOP_NONE);
 
     /* Do a Bit Block Transfer (tm)   :-)  */
-    hwr_blit(NULL,LGOP_NONE,DATA->bar,0,0,NULL,
-	     DATA->x,DATA->y,PANELBAR_DIV->w,PANELBAR_DIV->h);
+    (*vid->blit)(DATA->bar,0,0,NULL,
+		 DATA->x,DATA->y,PANELBAR_DIV->w,
+		 PANELBAR_DIV->h,LGOP_NONE);
 
     /* Because we have this divtree to ourselves, do
      * the hwr_update() directly. */
-    hwr_update();
+    (*vid->update)();
 
     return;
 

@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.19 2000/08/06 00:50:53 micahjd Exp $
+/* $Id: divtree.h,v 1.20 2000/08/27 05:54:27 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -84,7 +84,7 @@ typedef short int alignt;
 union grop_param {
   /* Stuff for drawing text */
   struct {          /* This structure is used when on_recalc == &text */
-    devcolort col;
+    hwrcolor col;
     handle string,fd;
   } text;
 
@@ -96,12 +96,12 @@ union grop_param {
 
   /* Gradient */
   struct {
-    devcolort c1,c2;
+    hwrcolor c1,c2;
     int angle,translucent;
   } gradient;
 
   /* colors */
-  devcolort c;
+  hwrcolor c;
 };
 
 struct divnode {
@@ -211,24 +211,24 @@ void grop_addnode(struct gropnode **headpp,struct gropnode *node);
 void grop_free(struct gropnode **headpp);
 void grop_getextent(struct gropnode *head,int *x1,int *y1,int *x2,int *y2);
 g_error grop_pixel(struct gropnode **headpp,
-		   int x, int y, devcolort c);
+		   int x, int y, hwrcolor c);
 g_error grop_line(struct gropnode **headpp,
-		  int x1, int y1, int x2, int y2, devcolort c);
+		  int x1, int y1, int x2, int y2, hwrcolor c);
 g_error grop_rect(struct gropnode **headpp,
-		  int x, int y, int w, int h, devcolort c);
+		  int x, int y, int w, int h, hwrcolor c);
 g_error grop_dim(struct gropnode **headpp);
 g_error grop_frame(struct gropnode **headpp,
-		   int x, int y, int w, int h, devcolort c);
+		   int x, int y, int w, int h, hwrcolor c);
 g_error grop_slab(struct gropnode **headpp,
-		  int x, int y, int l, devcolort c);
+		  int x, int y, int l, hwrcolor c);
 g_error grop_bar(struct gropnode **headpp,
-		 int x, int y, int l, devcolort c);
+		 int x, int y, int l, hwrcolor c);
 g_error grop_text(struct gropnode **headpp,
-		  int x, int y, handle fd, devcolort col, handle str);
+		  int x, int y, handle fd, hwrcolor col, handle str);
 g_error grop_bitmap(struct gropnode **headpp,
 		    int x, int y, int w, int h, handle b, int lgop);
 g_error grop_gradient(struct gropnode **headpp,
-		      int x, int y, int w, int h, devcolort c1, devcolort c2,
+		      int x, int y, int w, int h, hwrcolor c1, hwrcolor c2,
 		      int angle,int translucent);
 g_error grop_null(struct gropnode **headpp);
 

@@ -1,4 +1,4 @@
-/* $Id: theme.h,v 1.12 2000/08/03 04:32:46 micahjd Exp $
+/* $Id: theme.h,v 1.13 2000/08/27 05:54:28 micahjd Exp $
  *
  * theme.h - This defines the structures and functions for themes,
  * parameters defining the way widgets are drawn that are reconfigurable
@@ -64,7 +64,7 @@ struct element {
   unsigned char type;
 
   struct {
-    devcolort c1,c2;
+    hwrcolor c1,c2;
     int angle;
     signed char translucent;
   } state[3];

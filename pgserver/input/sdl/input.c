@@ -1,4 +1,4 @@
-/* $Id: input.c,v 1.8 2000/08/14 19:35:45 micahjd Exp $
+/* $Id: input.c,v 1.9 2000/08/27 05:54:27 micahjd Exp $
  *
  * input.c - Input layer for SDL
  * 
@@ -123,8 +123,19 @@ void windows_inputpoll_hack(void) {
       /* Blank the screen on alt-b */
       if (evt.key.keysym.sym==PGKEY_b &&
 	  (evt.key.keysym.mod & PGMOD_ALT)) {
-	hwr_clear();
-	hwr_update();
+	(*vid->clip_off)();
+	(*vid->clear)();
+	(*vid->update)();
+	break;
+      }
+
+      /* Blue screen on alt-u */
+      if (evt.key.keysym.sym==PGKEY_u &&
+	  (evt.key.keysym.mod & PGMOD_ALT)) {
+	(*vid->clip_off)();
+	(*vid->rect)(0,0,vid->xres,vid->yres,
+		     (*vid->color_pgtohwr)(0x0000FF));
+	(*vid->update)();
 	break;
       }
 #endif

@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.24 2000/08/14 19:35:45 micahjd Exp $
+/* $Id: request.c,v 1.25 2000/08/27 05:54:27 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -123,10 +123,6 @@ void newfd(int fd) {
   /* Say Hi!  Send a structure with information about the server */
   hi.magic = htonl(REQUEST_MAGIC);
   hi.protover = htons(PROTOCOL_VER);
-  hi.width = htons(HWR_WIDTH);
-  hi.height = htons(HWR_HEIGHT);
-  hi.bpp = htons(HWR_BPP);
-  strcpy(hi.title,HWR);
   if (send_response(fd,&hi,sizeof(hi))) closefd(fd);
 }
 
