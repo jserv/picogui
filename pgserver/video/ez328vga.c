@@ -1,4 +1,4 @@
-/* $Id: ez328vga.c,v 1.2 2001/09/05 03:09:13 micahjd Exp $
+/* $Id: ez328vga.c,v 1.3 2001/09/05 03:15:06 micahjd Exp $
  *
  * ez328vga.c - Another of my strange drivers...
  *              Using the 68EZ328's LCD controller and a few logic gates,
@@ -120,7 +120,6 @@
 #define HSYNCWIDTH  2     /* In bytes */
 #define PHYSLINES   512
 #define VIRTLINES   480
-#define PGUILINES   120   /* Resolution after line repetition */
 #define VSYNCSTART  494   /* In lines */
 #define VSYNCWIDTH  378   /* In bytes */
 #define FBSIZE      ((PHYSWIDTH*PHYSLINES)>>1)
@@ -138,7 +137,7 @@ g_error ez328vga_init(void) {
    
    vid->display = NULL;
    vid->xres    = VIRTWIDTH;
-   vid->yres    = PGUILINES;
+   vid->yres    = VIRTLINES;
    vid->bpp     = 4;
    
    e = g_malloc((void**) &ez328vga_fb,FBSIZE);
@@ -166,9 +165,9 @@ g_error ez328vga_init(void) {
     * (see above schematic explanation) */
    
    memset(ez328vga_fb,0,FBSIZE);
-   for (i=PHYSLINES,p=ez328vga_fb+HSYNCSTART;i;i--,p+=FBBPL)
+   for (i=PHYSLINES,p=ez328vga_fb+HSYNCSTART;i;i--,p+=FB_BPL)
      memset(p,0x99,HSYNCWIDTH);
-   p = ez328vga_fb + VSYNCSTART*FBBPL;
+   p = ez328vga_fb + VSYNCSTART*FB_BPL;
    for (i=VSYNCWIDTH;i;i--,p++) {
       if (*p == 0x99)
 	*p = 0xBB;
@@ -187,7 +186,7 @@ void ez328vga_close(void) {
 hwrcolor ez328vga_color_pgtohwr(pgcolor c) {
    return ((getred(c)&0x80) >> 5) |
           ((getgreen(c)&0x80) >> 6) |
-          ((getblue(c)&0x80) >> 7);
+          ((getblue(c)&0x80) >> 7) & 0x7;
 }
 
 pgcolor ez328vga_color_hwrtopg(hwrcolor c) {
@@ -203,8 +202,6 @@ g_error ez328vga_regfunc(struct vidlib *v) {
    v->color_hwrtopg = &ez328vga_color_hwrtopg;
    v->color_pgtohwr = &ez328vga_color_pgtohwr;   
    v->close    = &ez328vga_close;
-   v->pixel    = &ez328vga_pixel;
-   v->getpixel = &ez328vga_getpixel;
    return sucess;
 }
 
