@@ -45,3 +45,11 @@ P: F01A BB22 765A 17FC 13C4  079A A5F6 0044 4469 07BE
 D: Smartdata's head of SW development. Wrote very few lines of code; made Smartdata
 D: (on September 2000) be the first company to adopt and support PicoGUI.
 S: (see web site)
+
+N: Frederic Gobry
+E: frederic.gobry@smartdata.ch
+W: http://www.smartdata.ch
+P: B10B F4A8 5F45 F409 364E  6DDF 1634 07A6 5B44 F4A5
+D: Autoconfization of the client and server
+S: Lausanne, Switzerland
+
