@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.35 2001/01/03 10:11:49 micahjd Exp $
+/* $Id: picogui_client.c,v 1.36 2001/01/05 06:41:40 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -95,6 +95,7 @@ struct {
       unsigned short event;
       pghandle from;
       unsigned long param;
+      char *data;
     } event;
 
     /* if type == PG_RESPONSE_DATA */
@@ -362,6 +363,19 @@ void _pg_getresponse(void) {
       _pg_return.e.event.event = ntohs(pg_ev.event);
       _pg_return.e.event.from = ntohl(pg_ev.from);      
       _pg_return.e.event.param = ntohl(pg_ev.param);      
+
+      /* If this is a data event, get the data */
+      if (_pg_return.e.event.event == PG_WE_DATA) {
+
+	if (!(_pg_return.e.event.data = 
+	      _pg_malloc(_pg_return.e.event.param+1)))
+	  return;
+	if (_pg_recv(_pg_return.e.event.data,_pg_return.e.event.param))
+	  return;
+	
+      /* Add a null terminator */
+      ((char *)_pg_return.e.event.data)[_pg_return.e.event.param] = 0;
+      }
     }
     break;
 
@@ -370,7 +384,7 @@ void _pg_getresponse(void) {
       /* Something larger- return it in a dynamically allocated buffer */
       struct pgresponse_data pg_data;
       
-      /* Read the rest of the error (already have response type) */
+      /* Read the rest of the response (already have response type) */
       pg_data.type = _pg_return.type;
       if (_pg_recv(((char*)&pg_data)+sizeof(_pg_return.type),
 		   sizeof(pg_data)-sizeof(_pg_return.type)))
@@ -499,7 +513,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: picogui_client.c,v 1.35 2001/01/03 10:11:49 micahjd Exp $\n");
+	fprintf(stderr,"$Id: picogui_client.c,v 1.36 2001/01/05 06:41:40 micahjd Exp $\n");
 	exit(1);
       }
       
@@ -617,6 +631,11 @@ void pgFlushRequests(void) {
     free(_pg_return.e.data.data);
     _pg_return.e.data.data = NULL;
   }
+  if (_pg_return.type == PG_RESPONSE_EVENT &&
+      _pg_return.e.event.data) {
+    free(_pg_return.e.event.data);
+    _pg_return.e.event.data = NULL;
+  }
 
   if (!_pgreqbuffer_count) {
     /* No packets */
@@ -656,6 +675,7 @@ void pgEventLoop(void) {
   pghandle from;
   long param;
   int num;
+  char *data;
 
   _pgeventloop_on = 1;
 
@@ -676,6 +696,7 @@ void pgEventLoop(void) {
     event = _pg_return.e.event.event;
     from = _pg_return.e.event.from;
     param = _pg_return.e.event.param;
+    data = _pg_return.e.event.data;
 
     /* Search the handler list, executing the applicable ones */
     n = _pghandlerlist;
@@ -683,8 +704,14 @@ void pgEventLoop(void) {
     while (n) {
       if ( (((signed long)n->widgetkey)==PGBIND_ANY || n->widgetkey==from) &&
 	   (((signed short)n->eventkey)==PGBIND_ANY || n->eventkey==event) )
-	if ((*n->handler)(event,from,param))
-	  goto skiphandlers;
+	if (event == PG_WE_DATA) {
+	  if ((*((pgdataevthandler)n->handler))(from,param,data))
+	    goto skiphandlers;
+	}
+	else {
+	  if ((*n->handler)(event,from,param))
+	    goto skiphandlers;
+	}
       n = n->next;
     }
 
@@ -714,6 +741,11 @@ pghandle pgGetEvent(unsigned short *event, unsigned long *param) {
   if (param) *param = _pg_return.e.event.param;
 
   return _pg_return.e.event.from;
+}
+
+/* Add a handler for incoming data */
+void pgBindData(pghandle widgetkey,pgdataevthandler handler) {
+  pgBind(widgetkey,PG_WE_DATA,(pgevthandler) handler);
 }
 
 /* Add the specified handler to the list */
@@ -1220,7 +1252,7 @@ int pgMenuFromArray(pghandle *items,int numitems) {
 /* Write data to a widget.
  * (for example, a terminal widget)
  */
-void pgWriteTo(pghandle widget,struct pgmemdata data) {
+void pgWriteData(pghandle widget,struct pgmemdata data) {
   unsigned long *buf;
 
   /* FIXME: Shouln't be recopying this... */

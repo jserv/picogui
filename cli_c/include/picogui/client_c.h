@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.26 2000/12/12 00:55:53 micahjd Exp $
+/* $Id: client_c.h,v 1.27 2001/01/05 06:41:39 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -52,6 +52,8 @@
 typedef int (*pgevthandler)(short event,pghandle from,long param);
 /* event handler for pgSetIdle */
 typedef void (*pgidlehandler)(void);
+/* event handler for pgBindData */
+typedef int (*pgdataevthandler)(pghandle from,long size,char *data);
 
 /* Structure representing data, loaded or mapped into memory.
  * This is returned by the pgFrom* series of functions for loading
@@ -218,9 +220,9 @@ void pgReplaceText(pghandle widget,const char *str);
 void pgReplaceTextFmt(pghandle widget,const char *fmt, ...);
 
 /* Create a new font object based on the given
-   parameters. Any of them can be 0 (or PGFONT_ANY)
-   to ignore that parameter.
-*/
+ * parameters. Any of them can be 0 (or PGFONT_ANY)
+ * to ignore that parameter.
+ */
 pghandle pgNewFont(const char *name,short size,unsigned long style);
 
 /* Load a compiled theme file into the server */
@@ -237,7 +239,19 @@ unsigned long pgGetPayload(pghandle object);
 /* Write data to a widget.
  * (for example, a terminal widget)
  */
-void pgWriteTo(pghandle widget,struct pgmemdata data);
+void pgWriteData(pghandle widget,struct pgmemdata data);
+
+/* Opposite of pgWriteData - set's up an event handler for data coming
+ * from the widget.
+ * 
+ * Just like pgBind, 
+ * A NULL widget uses the default, as usual. Either the handle or the
+ * event (or both!) can be the wildcard PGBIND_ANY to match all
+ * handles/events. If a handler with these properties already
+ * exists, it is not removed. If the widget a handler refers to
+ * is deleted, the handler is deleted however.
+ */
+void pgBindData(pghandle widgetkey,pgdataevthandler handler);
 
 /******************** Data loading */
 

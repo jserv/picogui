@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.21 2000/11/19 04:47:20 micahjd Exp $
+/* $Id: constants.h,v 1.22 2001/01/05 06:41:39 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -28,6 +28,11 @@
 
 #ifndef _H_PG_CONSTANTS
 #define _H_PG_CONSTANTS
+
+/* Just to make sure... */
+#ifndef NULL
+#define NULL ((void*)0)
+#endif
 
 /******************** Keyboard constants */
 
@@ -370,7 +375,9 @@ typedef unsigned long pghandle;
 #define PG_GROPPARAMS(x)   (((x)>>4)&0x0F)
 
 /* Grop flags */
-#define PG_GROPF_TRANSLATE 0x0001  /* Apply the divnode's tx,ty */
+#define PG_GROPF_TRANSLATE    (1<<0)  /* Apply the divnode's tx,ty */
+#define PG_GROPF_INCREMENTAL  (1<<1)  /* Defines nodes used for incremental
+				       * updates. Not rendered normally. */
 
 /* Video mode flags */
 #define PG_VID_FULLSCREEN     0x0001
@@ -469,6 +476,7 @@ typedef unsigned long pghandle;
 #define PG_WE_CLOSE       3     /* A top-level widget has closed */
 #define PG_WE_PNTR_DOWN   4     /* The "mouse" button is now down */
 #define PG_WE_PNTR_UP     5     /* The "mouse" button is now up */
+#define PG_WE_DATA        6     /* Widget is streaming data to the app */
 
 /* Non-widget events */
 #define PG_NWE_KBD_CHAR    10   /* These are sent if the client has captured the */
