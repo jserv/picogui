@@ -1,4 +1,4 @@
-/* $Id: managedwindow.c,v 1.11 2002/11/06 22:18:45 micahjd Exp $
+/* $Id: managedwindow.c,v 1.12 2002/11/07 09:47:15 micahjd Exp $
  *
  * managedwindow.c - A root widget representing a window managed by a host GUI
  *
@@ -35,6 +35,11 @@ struct managedwindowdata {
   /* These values are used to detect whether the window should automatically resize */
   int last_w, last_h;
   unsigned int already_sized : 1;
+
+  /* Allow the app to override margin */
+  int margin;
+  unsigned int margin_override:1;
+
 };
 #define WIDGET_SUBCLASS 0
 #define DATA WIDGET_DATA(managedwindowdata)
@@ -53,6 +58,7 @@ g_error managedwindow_install(struct widget *self) {
   /* Take up the entire size of the divtree root */
   e = newdiv(&self->in,self);
   errorcheck;
+  self->in->flags |= DIVNODE_SPLIT_BORDER;
   self->in->build = &build_bgfill_only;
   self->in->state = PGTH_O_MANAGEDWINDOW;
 
@@ -113,6 +119,12 @@ g_error managedwindow_set(struct widget *self,int property, glob data) {
     VID(window_set_size)(self->dt->display, x, data);
     break;
 
+  case PG_WP_MARGIN:
+    DATA->margin = data;
+    DATA->margin_override = data >= 0;
+    resizewidget(self);
+    break;
+
   default:
     return mkerror(ERRT_PASS,0);
   }
@@ -143,6 +155,9 @@ glob managedwindow_get(struct widget *self,int property) {
     VID(window_get_size)(self->dt->display, &x, &y);
     return y;
 
+  case PG_WP_MARGIN:
+    return DATA->margin;
+
   }
   return widget_base_get(self,property);
 }
@@ -150,6 +165,11 @@ glob managedwindow_get(struct widget *self,int property) {
 void managedwindow_resize(struct widget *self) {
   s16 w,h,maxw,maxh;
   VID(window_get_size)(DATA->my_dt->display,&w,&h);
+  
+  if (DATA->margin_override)
+    self->in->split = DATA->margin;
+  else
+    self->in->split = theme_lookup(self->in->state,PGTH_P_MARGIN);
 
   /* Detect whether the size has been changed by some
    * external force (the user probably) since the last time
