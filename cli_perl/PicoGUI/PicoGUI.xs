@@ -9369,7 +9369,12 @@ pgGetWidget(widget,property)
 pghandle
 pgNewString(str)
 	const char *str
-	
+
+long
+pgThemeLookup(object,property)
+   short object
+	short property
+
 char *
 pgGetString(string)
 	pghandle string
