@@ -19,7 +19,12 @@ EXTRA_libvideo_a_SOURCES = \
 	s1d13806.c \
 	x11.c      \
 	mgl2fb.c   \
-	sdlgl.c
+	sdlgl_bitmap.c \
+	sdlgl_camera.c \
+	sdlgl_font.c \
+	sdlgl_init.c \
+	sdlgl_primitives.c \
+	sdlgl_util.c
 
 libvideo_a_LIBADD       = $(DRIVER:%.c=%.o)
 libvideo_a_DEPENDENCIES = $(DRIVER:%.c=%.o)

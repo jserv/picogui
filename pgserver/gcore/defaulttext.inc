@@ -45,7 +45,7 @@
 /* 37 */  "Unable to open configuration file",
 /* 38 */  "Missing ']' in configuration file",
 /* 39 */  "Key/value line in undefined configuration file section",
-/* 40 */  "Missing '=' in configuration file",
+/* 40 */  NULL,
 /* 41 */  "Corrupt header in BMP file",
 /* 42 */  "Unsupported format for BMP file",
 /* 43 */  "Error opening mouse device",

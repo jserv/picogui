@@ -20,6 +20,7 @@ configuration files, this is represented by the following format
  - Comment lines begin with '#'
  - The current section is set with a "[section]" line
  - Key-value pair lines are in the format "key = value"
+ - Set an key to 1 with "key", for boolean values
  - A dash, whitespace(s) and a file name instruct to source the given file
  
 For example:
@@ -29,11 +30,13 @@ For example:
 [pgserver]
 xres = 640
 yres = 480
+fullscreen
 
 . /tmp/more-config-in-this-file
 
 [video-sdl]
 caption = Welcome to PicoGUI!
+
 ----------------------->8------------------------
 
 Config options can be specified on the command line using the format:
@@ -454,6 +457,25 @@ quoted appropriately. For example:
   into textures at. Sizes above this can still be output, but the result will be fuzzy. 
   It is usually most efficient for this to be a power of two.
   Defaults to 32
+
+- font_antialias
+  If nonzero, fonts are rendered into the texture antialiased. This is off by default,
+  since it usually makes the font look worse! You may want to turn this off if you're
+  usually rendering fonts at or above the font_resolution size. Note that though this
+  may increase the loading time unnoticeably, this has NO penalty on runtime performance
+  since the font texture is blended with or without this option.
+
+- antialias
+  With this option on, all lines and polygons in picogui are antialiased. It makes things
+  look a LOT better when the camera controls are used or when anything has a scale or rotation
+  applied. This option is _highly_ recommended for any sort of real 3D work, but since
+  under normal use it just slows things down it's disabled by default.
+
+- standard_fonts
+  This option disables sdlgl's truetype font code and uses PicoGUI's normal font
+  renderer. Note that this usually makes rendering _much slower_ since it draws two triangles
+  for each pixel rather than taking advantage of texture mapping. Without the 'antialias'
+  option on, the standard fonts will look pretty bad when scaled.
 
 --- The End ---
 

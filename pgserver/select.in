@@ -69,7 +69,12 @@ add_if_true s1d13806.c   $DRIVER_S1D13806
 add_if_true sed133x.c    $DRIVER_SED133X
 add_if_true x11.c        $DRIVER_X11
 add_if_true mgl2fb.c     $DRIVER_MGL2FB
-add_if_true sdlgl.c      $DRIVER_SDLGL
+add_if_true sdlgl_bitmap.c       $DRIVER_SDLGL
+add_if_true sdlgl_camera.c       $DRIVER_SDLGL
+add_if_true sdlgl_font.c         $DRIVER_SDLGL
+add_if_true sdlgl_init.c         $DRIVER_SDLGL
+add_if_true sdlgl_primitives.c   $DRIVER_SDLGL
+add_if_true sdlgl_util.c         $DRIVER_SDLGL
 
 close_section
 

@@ -1,4 +1,4 @@
-/* $Id: configfile.c,v 1.9 2002/01/06 09:22:57 micahjd Exp $
+/* $Id: configfile.c,v 1.10 2002/03/03 05:42:26 micahjd Exp $
  *
  * configfile.c - Utilities for loading, storing, and retrieving
  *                configuration options
@@ -214,10 +214,14 @@ g_error sub_configfile_parse(const char *filename, struct cfg_section **section)
 
     /* Get a pointer to the key in p and a pointer to the value in q */
     q = strchr(p,'=');
-    if (!q)
-      return mkerror(PG_ERRT_BADPARAM,40);   /* Missing '=' */
-    *q = 0;
-    q++;
+    if (!q) {
+      /* Missing "=", assume the value is boolean and it's being defined as 1 */
+      q = "1";
+    }
+    else {
+      *q = 0;
+      q++;
+    }
 
     /* Cut leading whitespace from q */
     q = strip_head(q);

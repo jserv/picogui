@@ -24,13 +24,15 @@ use for debugging while PicoGUI is running:
  - CTRL-ALT-Q: camera zoom/pan mode. While in this mode, you can pan the
                camera using the arrow keys or the mouse, and zoom using
                the W and S keys or the mouse wheel. Exit this with space,
-               escape, or CTRL-ALT-Q.
+               escape, or CTRL-ALT-Q. Hold down shift for slower movement,
+               control for faster.
 
  - CTRL-ALT-E: camera rotate mode. While in this mode, you can rotate
                the screen about the X and Y axes using the mouse or
                arrow keys, and you can rotate it about the Z axis using
                the W and S keys or the mouse wheel. Exit this with space,
-               escape, or CTRL-ALT-E.
+               escape, or CTRL-ALT-E. Hold down shift for slower movement,
+               control for faster.
 
  - CTRL-ALT-R: Reset the camera to its original position
 
