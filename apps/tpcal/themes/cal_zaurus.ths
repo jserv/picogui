@@ -1,0 +1,44 @@
+prop center, scale;
+prop message1, message2, message1font, message2font;
+prop logo;
+
+obj "tpcal" {
+  /* FIXME: if we could measure the text, this would 
+   * work on different display sizes and fonts better.
+   */
+  bgfill = fillstyle {
+      var ypos;
+  
+      /* Approximately center the whole thing vertically */
+      ypos = y+((h - 280)>>1);
+  
+      SetColor(bgcolor);
+      Rect(x,y,w,h);
+
+      /* logo */
+      Bitmap(x+((w-95)>>1) + 7, ypos+14, 95,100, logo);
+      ypos = ypos + 170;
+      
+      /* Messages */
+      SetColor(fgcolor);
+      SetFont(message1font);
+      Text(x + ((w-150)>>1), ypos, 1, 1, message1);
+      ypos = ypos + 40;
+      SetFont(message2font);
+      Text(x + ((w-150)>>1), ypos, 1, 1, message2);
+    };
+  PGTH_P_USER = fillstyle {
+      Frame(x-center, y-center, center*2+1, center*2+1);
+      Bar(x, y-scale, 1, scale*2+1);
+      Slab(x-scale, y, scale*2+1, 1);
+    };
+  center = 3;
+  scale = 9;
+  message1 = "Welcome to PicoGUI!";
+  message2 = "Tap each target firmly and\naccurately to calibrate\nyour touchscreen.";
+  logo = LoadBitmap("data/micropingizauru.png");
+  bgcolor = 0xE0E0D0;
+  fgcolor = 0x000000;
+  message1font = Font("Helvetica",14,PG_FSTYLE_BOLD);
+  message2font = Font("Helvetica",12,0);
+}
