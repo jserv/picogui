@@ -9113,7 +9113,7 @@ not_there:
 
 MODULE = PicoGUI		PACKAGE = PicoGUI		
 
-PROTOTYPES: DISABLE
+PROTOTYPES: ENABLE
 
 double
 constant(sv,arg)
@@ -9129,16 +9129,16 @@ constant(sv,arg)
 	RETVAL
 
 void
-pgInit(argc, argv)
-        int argc
-	char *argv
-	CODE:
-	        pgInit(argc,argv);
-	OUTPUT:
-	
-	
+_pgInit()
+    CODE:
+    	{
+	   char *temp = NULL;
+    	   pgInit(0,&temp);
+	}
+ 
+
 int
-pgMessageDialog(title,text,flags)
+pgMessageDialog(title,text,flags=0)
 	const char *title
 	const char *text
 	unsigned long flags
@@ -9179,7 +9179,7 @@ pgSendPointerInput(type,x,y,btn)
 	unsigned short btn
 	
 void
-pgSetVideoMode(xres,yres,bpp,flagmode,flags)
+pgSetVideoMode(xres=0,yres=0,bpp=0,flagmode=PG_FM_ON,flags=0)
 	unsigned short xres
 	unsigned short yres
 	unsigned short bpp
@@ -9195,18 +9195,18 @@ pgFocus(widget)
         pghandle widget
 	
 pghandle
-pgNewWidget(type,rship,parent)
+pgNewWidget(type,rship=0,parent=0)
         short int type
 	short int rship
 	pghandle parent
 
 pghandle
-pgNewPopup(width,height)
+pgNewPopup(width=0,height=0)
 	int width
 	int height
 	
 pghandle
-pgNewPopupAt(x,y,width,height)
+pgNewPopupAt(x=0,y=0,width=0,height=0)
 	int x
 	int y
 	int width
@@ -9231,13 +9231,13 @@ pgReplaceText(widget,str)
 	const char *str
 	
 pghandle
-pgNewFont(name,size,style)
+pgNewFont(name=0,size=0,style=0)
 	const char *name
 	short size
 	unsigned long style
 	
 void
-pgSetPayload(object,payload)
+pgSetPayload(object,payload=0)
         pghandle object
 	unsigned long payload
 	

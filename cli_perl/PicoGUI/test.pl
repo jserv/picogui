@@ -18,7 +18,7 @@ print "ok 1\n";
 # (correspondingly "not ok 13") depending on the success of chunk 13
 # of the test code):
 
-PicoGUI::pgInit(0,"hi");
+PicoGUI::pgMessageDialog("PicoGUI test","Hello!\nThis is a simple dialog");
 
 print "Dialog returned: ".
       PicoGUI::pgMessageDialog("Perl Module","This is a test!\nHello, world",
@@ -30,6 +30,8 @@ PicoGUI::pgNewPopup(160,80);
 $toolbar = PicoGUI::pgNewWidget(PG_WIDGET_TOOLBAR,0,0);
 PicoGUI::pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,$toolbar);
 PicoGUI::pgReplaceText(PGDEFAULT,"Thwamp!");
+PicoGUI::pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_AFTER,$toolbar);
+PicoGUI::pgReplaceText(PGDEFAULT,"Send a line to stdin\nto continue");
 PicoGUI::pgUpdate();
 <STDIN>;
 PicoGUI::pgLeaveContext();

@@ -1311,26 +1311,30 @@ bootstrap PicoGUI $VERSION;
 
 # Autoload methods go after =cut, and are processed by the autosplit program.
 
+# Initialize PicoGUI connection (doesn't support command line args yet)
+_pgInit();
+
 1;
 __END__
 # Below is stub documentation for your module. You better edit it!
 
 =head1 NAME
 
-PicoGUI - Perl extension for blah blah blah
+PicoGUI - Perl client library for PicoGUI
 
 =head1 SYNOPSIS
 
   use PicoGUI;
-  blah blah blah
+
+  PicoGUI::pgMessageDialog("PicoGUI", "Hello, World!");
 
 =head1 DESCRIPTION
 
-Stub documentation for PicoGUI, created by h2xs. It looks like the
-author of the extension was negligent enough to leave the stub
-unedited.
-
-Blah blah blah.
+This is a Perl port of the PicoGUI client library. The API is the same as
+the C client library, with exceptions noted in the README. Most notably:
+pgInit is called automatically, trailing optional parameters can be omitted,
+and variable-length argument lists do not need to be counted (as with
+pgWriteCmd) or terminated with 0.
 
 =head2 EXPORT
 
@@ -1963,10 +1967,12 @@ None by default.
 
 =head1 AUTHOR
 
-A. U. Thor, a.u.thor@a.galaxy.far.far.away
+Micah Dowty, micahjd@users.sourceforge.net
 
 =head1 SEE ALSO
 
 perl(1).
+
+PicoGUI news, development, and code: pgui.sourceforge.net
 
 =cut

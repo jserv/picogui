@@ -4,3 +4,51 @@ for perl that exactly mirrors the one for C, and uses the C client library.
 Note: This is my first attempt at an XS module, so please let me know where
 i messed up ;)
   -- Micah
+
+-------------------- Quick and inadequate documentation
+
+For the most part, the perl client library is just like the C client lib.
+The following lists all exceptions to this rule:
+
+- The *Fmt functions like pgMessageDialogFmt are not implemented because
+  they are unnecessary in perl
+  
+- Functions that accept a variable-length param list do not need to specify
+  the number of args (pgWriteCmd) or zero-terminate the list (pgSetWidget
+  and others)
+  
+- Trailing optional parameters (like in pgNewWidget) may be omitted
+
+- pgInit is called automatically, but does not yet support command-line
+  arguments (you can still set the server using the pgserver environment var)
+  
+- The folowing functions are unsupported so far:
+
+pgSetErrorHandler: requires pointer to C function
+pgSetIdle: requires pointer to C function
+pgBind: requires pointer to C function
+pgCustomizeSelect: requires pointer to C function
+pgGetVideoMode: returns structure
+pgRegisterApp: variable param list
+pgSetWidget: variable param list
+pgNewBitmap: uses pgmemdata
+pgReplaceTextFmt: not necessary in perl
+pgSizeText: needs to return list
+pgLoadTheme: uses pgmemdata
+pgWriteData: uses pgmemdata
+pgWriteCmd: variable arg list
+pgFromMemory: uses pgmemdata
+pgFromFile: uses pgmemdata
+pgEventLoop: pgBind not supported
+pgExitEventLoop: pgBind not supported
+pgGetEvent: returns structure
+pgMessageDialogFmt: not necessary in perl
+pgMenuFromArray: not necessary in perl?
+
+** The End **
+
+
+
+
+
+
