@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.42 2001/05/02 03:57:33 micahjd Exp $
+/* $Id: client_c.h,v 1.43 2001/05/04 23:26:55 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -296,6 +296,18 @@ pghandle pgNewBitmap(struct pgmemdata obj);
 /* Create a new string object */
 pghandle pgNewString(const char *str);
 
+/* Evaluate a PicoGUI request packet. This is a good way
+ * to reuse PicoGUI's serialization capabilities to load
+ * a generic binary object from file. It is advisable to
+ * validate the request's type first so you don't allow
+ * the input to do wierd things like change video mode
+ * or leave the current context. 
+ *
+ * If the request does not return a handle, it will still
+ * run but pgEvalRequest()'s return value is undefined
+ */
+pghandle pgEvalRequest(short reqtype, void *data, unsigned long datasize);
+
 /* Get the contents of a string handle.
  *
  * The dynamically allocated string is managed by PicoGUI,
@@ -357,6 +369,9 @@ void pgWriteCmd(pghandle widget,short command,short numparams, ...);
 
 /* Data already loaded in memory */
 struct pgmemdata pgFromMemory(void *data,unsigned long length);
+
+/* Data already loaded in memory, client lib will free it when done */
+struct pgmemdata pgFromTempMemory(void *data,unsigned long length);
 
 /* Load from a normal disk file */
 struct pgmemdata pgFromFile(const char *file);

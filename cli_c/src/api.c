@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.8 2001/05/02 03:57:33 micahjd Exp $
+/* $Id: api.c,v 1.9 2001/05/04 23:26:55 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -71,6 +71,16 @@ struct pgmemdata pgFromMemory(void *data,unsigned long length) {
   x.pointer = data;
   x.size = length;
   x.flags = 0;
+  return x;
+}
+
+/* Data already loaded in memory, need to free it */
+struct pgmemdata pgFromTempMemory(void *data,unsigned long length) {
+  static struct pgmemdata x;    /* Maybe make something like this
+				   global to use less memory? */
+  x.pointer = data;
+  x.size = length;
+  x.flags = PGMEMDAT_NEED_FREE;;
   return x;
 }
 
@@ -451,6 +461,12 @@ pghandle pgNewString(const char* str) {
   pgFlushRequests();
 
   /* Return the new handle */
+  return _pg_return.e.retdata;
+}
+
+pghandle pgEvalRequest(short reqtype, void *data, unsigned long datasize) {
+  _pg_add_request(reqtype,data,datasize);
+  pgFlushRequests();
   return _pg_return.e.retdata;
 }
 
