@@ -74,21 +74,34 @@ class Application(Widget.Widget):
     # If this is None, a blocking event wait is performed rather than a poll.
     idle_delay = None
     
-    def __init__(self, title='', server=None, handle=0):
+    def __init__(self, title='', server=None, handle=0, parent=None):
         if not server:
-            server = Server.Server()
-        if self._type:
-            Widget.Widget.__init__(self, server, server.register(title, self._type))
+            if parent:
+                server = parent.server
+            else:
+                server = Server.Server()
+        if handle or not self._type:
+            Widget.Widget.__init__(self, server, handle, parent)
         else:
-            Widget.Widget.__init__(self, server, handle)
+            Widget.Widget.__init__(self, server, server.register(title, self._type), parent)
         self.default_relationship = 'inside'
-        self._widget_registry = {self.handle: self}
-        self._event_registry = EventRegistry()
-        self._event_stack = []
-        self._infilter_registry = {}
-        if thread is not None:
-            self._run_lock = thread.allocate_lock()
-            self._dispatch_lock = thread.allocate_lock()
+        if parent is None:
+            self._widget_registry = {self.handle: self}
+            self._event_registry = EventRegistry()
+            self._event_stack = []
+            self._infilter_registry = {}
+            if thread is not None:
+                self._run_lock = thread.allocate_lock()
+                self._dispatch_lock = thread.allocate_lock()
+        else:
+            parent._notify_new_widget(self)
+            self._widget_registry = parent._widget_registry
+            self._event_registry = parent._event_registry
+            self._event_stack = parent._event_stack
+            self._infilter_registry = parent._infilter_registry
+            if thread is not None:
+                self._run_lock = parent._run_lock
+                self._dispatch_lock = parent._dispatch_lock
 
     def panelbar(self):
         handle = self.__getattr__('panelbar')
