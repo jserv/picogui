@@ -1,4 +1,4 @@
-/* $Id: rotate270.c,v 1.5 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: rotate270.c,v 1.6 2002/01/30 12:03:16 micahjd Exp $
  *
  * rotate270.c - Video wrapper to rotate the screen 270 degrees
  *
@@ -157,8 +157,8 @@ void rotate270_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
 
 /* Tack that rotation onto any bitmap loading */
 
-g_error rotate270_bitmap_new(hwrbitmap *bmp,s16 w,s16 h) {
-   return (*vid->bitmap_new)(bmp,h,w);
+g_error rotate270_bitmap_new(hwrbitmap *bmp,s16 w,s16 h,u16 bpp) {
+   return (*vid->bitmap_new)(bmp,h,w,bpp);
 }
 
 #ifdef CONFIG_FORMAT_XBM

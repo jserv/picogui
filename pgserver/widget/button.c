@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.93 2002/01/28 09:53:50 micahjd Exp $
+/* $Id: button.c,v 1.94 2002/01/30 12:03:16 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -45,6 +45,9 @@ struct btndata {
    * get it from the theme.
    */
   unsigned int theme_side : 1;
+
+  /* Use the PG_LGOP_ALPHA operation to draw the bitmap */
+  unsigned int has_alpha : 1;
   
   handle bitmap,bitmask,text,font;
   
@@ -118,6 +121,13 @@ void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
        addgrop(c,PG_GROP_SETLGOP);
        c->current->param[0] = PG_LGOP_OR;
     }
+
+    /* Automatically use alpha blending if necessary */
+    if (DATA->has_alpha) {
+      addgrop(c,PG_GROP_SETLGOP);
+      c->current->param[0] = PG_LGOP_ALPHA;
+    }
+
     addgropsz(c,PG_GROP_BITMAP,bp.x+bp.bx,bp.y+bp.by,bp.bw,bp.bh);
     c->current->param[0] = DATA->bitmap;
     if (DATA->bitmask) {
@@ -791,6 +801,9 @@ void position_button(struct widget *self,struct btnposition *bp) {
     bp->w = 0;
     bp->h = 0;
   }
+
+  /* Remember if the bitmap has an alpha channel */
+  DATA->has_alpha = bit && bp->bw && ( VID(getpixel)(bit,0,0) & PGCF_ALPHA );
 }
 
 /* The End */

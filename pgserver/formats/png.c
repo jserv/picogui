@@ -1,4 +1,4 @@
-/* $Id: png.c,v 1.1 2002/01/10 15:22:12 micahjd Exp $
+/* $Id: png.c,v 1.2 2002/01/30 12:03:15 micahjd Exp $
  *
  * png.c - Use the libpng library to load PNG graphics into PicoGUI 
  *
@@ -68,7 +68,7 @@ g_error png_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   png_uint_32 width, height;
   int bit_depth,colortype;
   int x,y;
-  u8 r,g,b;
+  u8 r,g,b,a;
   pgcolor c;
   png_bytep p;
   g_error e;
@@ -100,7 +100,6 @@ g_error png_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   /* Read the png into memory */
   png_read_png(png_ptr, info_ptr, 
 	       PNG_TRANSFORM_STRIP_16 | 
-	       PNG_TRANSFORM_STRIP_ALPHA |
 	       PNG_TRANSFORM_PACKING, 
 	       NULL);
   row_pointers = png_get_rows(png_ptr, info_ptr);
@@ -109,8 +108,17 @@ g_error png_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   if (colortype == PNG_COLOR_TYPE_PALETTE)
     png_get_PLTE(png_ptr, info_ptr, &palette, &num_palette);
   
-  /* Allocate the picogui bitmap */
-  e = vid->bitmap_new(hbmp,width,height);
+  /* Allocate the picogui bitmap
+   *
+   * Important note: normally we create bitmaps at the display's
+   *                 color depth, but if we have an alpha channel
+   *                 we need room for ARGB colors.
+   */
+  if (colortype == PNG_COLOR_TYPE_GRAY_ALPHA ||
+      colortype == PNG_COLOR_TYPE_RGB_ALPHA)
+    e = vid->bitmap_new(hbmp,width,height,32);
+  else
+    e = vid->bitmap_new(hbmp,width,height,vid->bpp);
   if (iserror(e))
     png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);    
   errorcheck;
@@ -128,6 +136,12 @@ g_error png_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 	c = mkcolor(g,g,g);
 	break;
 
+      case PNG_COLOR_TYPE_GRAY_ALPHA:
+	g = *(p++);
+	a = *(p++);
+	c = mkcolora(a>>1,g,g,g);
+	break;
+
       case PNG_COLOR_TYPE_PALETTE:
 	pp = &palette[ (*(p++)) % num_palette ];
 	c = mkcolor(pp->red, pp->green, pp->blue);
@@ -138,6 +152,14 @@ g_error png_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 	g = *(p++);
 	b = *(p++);
 	c = mkcolor(r,g,b);
+	break;
+
+      case PNG_COLOR_TYPE_RGB_ALPHA:
+	r = *(p++);
+	g = *(p++);
+	b = *(p++);
+	a = *(p++);
+	c = mkcolora(a>>1,r,g,b);
 	break;
 	
       }

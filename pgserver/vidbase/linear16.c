@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.7 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: linear16.c,v 1.8 2002/01/30 12:03:16 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers (5-6-5 RGB mapping)
@@ -39,6 +39,7 @@
 /* Macros to easily access the members of vid->display */
 #define FB_MEM     (((struct stdbitmap*)dest)->bits)
 #define FB_BPL     (((struct stdbitmap*)dest)->pitch)
+#define FB_ISNORMAL(bmp,lgop) (lgop == PG_LGOP_NONE && ((struct stdbitmap*)bmp)->bpp == vid->bpp)
 
 /* Macro for addressing framebuffer pixels. Note that this is only
  * used when an accumulator won't do, but it is a macro so a line address
@@ -59,10 +60,11 @@ void linear16_pixel(hwrbitmap dest, s16 x,s16 y,hwrcolor c,s16 lgop) {
 # endif /* DEBUG */
 #endif
 
-   if (lgop != PG_LGOP_NONE) {
-      def_pixel(dest,x,y,c,lgop);
-      return;
-   }
+  if (!FB_ISNORMAL(dest,lgop)) {
+    def_pixel(dest,x,y,c,lgop);
+    return;
+  }
+
 #ifdef DRIVER_S1D13806
 # ifdef DEBUG
    printf ("set %dx%d @ %p\n", x, y, addr);
@@ -73,13 +75,15 @@ void linear16_pixel(hwrbitmap dest, s16 x,s16 y,hwrcolor c,s16 lgop) {
 }
 hwrcolor linear16_getpixel(hwrbitmap dest, s16 x,s16 y) {
 #ifdef DRIVER_S1D13806
-  unsigned short * addr = PIXELADDR (x,y);
+  unsigned short * addr;
   hwrcolor c;
+#endif
 
-#ifdef DEBUG
-  printf ("get %dx%d @ %p\n", x, y, addr);
-#endif /* DEBUG */
-
+  if (!FB_ISNORMAL(dest,PG_LGOP_NONE))
+    return def_getpixel(dest,x,y);
+  
+#ifdef DRIVER_S1D13806
+  addr = PIXELADDR (x,y);
   c = * addr;
 
   return c << 8 | c >> 8;
@@ -94,7 +98,7 @@ hwrcolor linear16_getpixel(hwrbitmap dest, s16 x,s16 y) {
 void linear16_slab(hwrbitmap dest, s16 x,s16 y,s16 w,hwrcolor c,s16 lgop) {
   u16 *p;
 
-  if (lgop != PG_LGOP_NONE) {
+  if (!FB_ISNORMAL(dest,lgop)) {
     def_slab(dest,x,y,w,c,lgop);
     return;
   }

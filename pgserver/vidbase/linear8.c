@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.26 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: linear8.c,v 1.27 2002/01/30 12:03:16 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -38,6 +38,7 @@
 /* Macros to easily access the members of vid->display */
 #define FB_MEM     (((struct stdbitmap*)dest)->bits)
 #define FB_BPL     (((struct stdbitmap*)dest)->pitch)
+#define FB_ISNORMAL(bmp,lgop) (lgop == PG_LGOP_NONE && ((struct stdbitmap*)bmp)->bpp == vid->bpp)
 
 /* Macro for addressing framebuffer pixels. Note that this is only
  * used when an accumulator won't do, but it is a macro so a line address
@@ -48,14 +49,14 @@
 
 /* Simple horizontal and vertical straight lines */
 void linear8_slab(hwrbitmap dest, s16 x,s16 y,s16 w,hwrcolor c,s16 lgop) {
-   if (lgop != PG_LGOP_NONE)
-     def_slab(dest,x,y,w,c,lgop);
-   else
-     __memset(LINE(y) + x,c,w);
+  if (!FB_ISNORMAL(dest,lgop))
+    def_slab(dest,x,y,w,c,lgop);
+  else
+    __memset(LINE(y) + x,c,w);
 }
 void linear8_bar(hwrbitmap dest, s16 x,s16 y,s16 h,hwrcolor c,s16 lgop) {
   unsigned char *p;
-  if (lgop != PG_LGOP_NONE) {
+  if (!FB_ISNORMAL(dest,lgop)) {
      def_bar(dest,x,y,h,c,lgop);
      return;
   }
@@ -73,7 +74,7 @@ void linear8_line(hwrbitmap dest, s16 x1,s16 yy1,s16 x2,s16 yy2,hwrcolor c,
   u32 y1 = yy1,y2 = yy2;   /* Convert y coordinates to 32-bits because
 			    * they will be converted to framebuffer offsets */
   
-  if (lgop != PG_LGOP_NONE) {
+  if (!FB_ISNORMAL(dest,lgop)) {
      def_line(dest,x1,y1,x2,y2,c,lgop);
      return;
   }
@@ -135,7 +136,7 @@ void linear8_rect(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,
 		  hwrcolor c,s16 lgop) {
   unsigned char *p;
  
-  if (lgop != PG_LGOP_NONE) {
+  if (!FB_ISNORMAL(dest,lgop)) {
      def_rect(dest,x,y,w,h,c,lgop);
      return;
   }
@@ -266,7 +267,7 @@ void linear8_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,
   s16 bw,iw,hc,olines,bit,flag,xpix,xmin,xmax,clipping;
   u8 ch;
 
-  if ((lgop != PG_LGOP_NONE) || (angle && (angle != 90))) {
+  if (!FB_ISNORMAL(dest,lgop) || (angle && (angle != 90))) {
     def_charblit(dest,chardat,dest_x,dest_y,w,h,lines,angle,c,clip,lgop);
      return;
   }
@@ -368,7 +369,7 @@ void linear8_tileblit(hwrbitmap dest,
    * be useful is with PG_LGOP_MULTIPLY to texturize something, but that would
    * require fast hardware anyway! */
 
-  if (lgop != PG_LGOP_NONE) {
+  if (!FB_ISNORMAL(dest,lgop)) {
      def_tileblit(dest,dest_x,dest_y,dest_w,dest_h,srcbit,
 		  src_x,src_y,src_h,src_h,lgop);
      return;
@@ -394,13 +395,16 @@ void linear8_tileblit(hwrbitmap dest,
 
 /* Ugh. Evil but necessary... I suppose... */
 void linear8_pixel(hwrbitmap dest, s16 x,s16 y,hwrcolor c,s16 lgop) {
-   if (lgop != PG_LGOP_NONE) {
+  if (!FB_ISNORMAL(dest,lgop)) {
       def_pixel(dest,x,y,c,lgop);
       return;
    }
    PIXEL(x,y) = c;
 }
 hwrcolor linear8_getpixel(hwrbitmap dest, s16 x,s16 y) {
+  if (!FB_ISNORMAL(dest,PG_LGOP_NONE))
+    return def_getpixel(dest,x,y);
+
   return PIXEL(x,y);
 }
 
@@ -413,6 +417,11 @@ void linear8_blit(hwrbitmap dest,
   struct stdbitmap *srcbit = (struct stdbitmap *) sbit;
   s16 i,offset_dst;
   
+  if (!FB_ISNORMAL(dest,PG_LGOP_NONE)) {
+     def_blit(dest,dst_x,dst_y,w,h,sbit,src_x,src_y,lgop);
+     return;
+  }
+
   /* We support a few common LGOPs, but supporting all of them would just
    * waste space. */
   switch (lgop) {

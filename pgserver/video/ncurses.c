@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.25 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: ncurses.c,v 1.26 2002/01/30 12:03:16 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -210,7 +210,7 @@ void ncurses_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,
 
 hwrcolor ncurses_color_pgtohwr(pgcolor c) {
 
-   if (c & 0x20000000) {
+   if (c & PGCF_TEXT_ASCII) {
       /* Normal character:  0x20BBFFCC
        * BB = background
        * FF = foreground
@@ -221,7 +221,7 @@ hwrcolor ncurses_color_pgtohwr(pgcolor c) {
 	((c & 0x000800) ? A_BOLD : 0) | (c & 0x0000FF);
    }
    
-   else if (c & 0x40000000) {
+   else if (c & PGCF_TEXT_ACS) {
       /* ACS character:  0x40BBFFCC
        * BB = background
        * FF = foreground

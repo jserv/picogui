@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.20 2002/01/16 19:47:25 lonetech Exp $
+/* $Id: videotest.c,v 1.21 2002/01/30 12:03:15 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -199,7 +199,7 @@ void testpat_unblit(void) {
       outtext(vid->display,fd,patx+2,paty+2,fg,buf,NULL,PG_LGOP_NONE,0);
       
       /* Blit the bounding box */
-      VID(bitmap_new) (&bit,patw+1,patw+1);
+      VID(bitmap_new) (&bit,patw+1,patw+1,vid->bpp);
       VID(blit) (bit,0,0,patw+1,patw+1,vid->display,patx,paty,PG_LGOP_NONE);
       
       /* Same pattern, shifted to the side in various alignments */

@@ -1,4 +1,4 @@
-/* $Id: linear24.c,v 1.2 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: linear24.c,v 1.3 2002/01/30 12:03:16 micahjd Exp $
  *
  * Video Base Library:
  * linear24.c - For 24bpp linear framebuffers
@@ -38,6 +38,7 @@
 /* Macros to easily access the members of vid->display */
 #define FB_MEM     (((struct stdbitmap*)dest)->bits)
 #define FB_BPL     (((struct stdbitmap*)dest)->pitch)
+#define FB_ISNORMAL(bmp,lgop) (lgop == PG_LGOP_NONE && ((struct stdbitmap*)bmp)->bpp == vid->bpp)
 
 /* Macro for addressing framebuffer pixels. Note that this is only
  * used when an accumulator won't do, but it is a macro so a line address
@@ -51,7 +52,7 @@
 void linear24_pixel(hwrbitmap dest, s16 x,s16 y,hwrcolor c,s16 lgop) {
    u8 *p;
    
-   if (lgop != PG_LGOP_NONE) {
+   if (!FB_ISNORMAL(dest,lgop)) {
       def_pixel(dest,x,y,c,lgop);
       return;
    }
@@ -62,7 +63,12 @@ void linear24_pixel(hwrbitmap dest, s16 x,s16 y,hwrcolor c,s16 lgop) {
    *p     = (u8) (c >> 16);
 }
 hwrcolor linear24_getpixel(hwrbitmap dest, s16 x,s16 y) {
-   u8 *s = PIXELADDR(x,y);
+   u8 *s;
+
+   if (!FB_ISNORMAL(dest,PG_LGOP_NONE))
+     return def_getpixel(dest,x,y);  
+
+   s = PIXELADDR(x,y);
    return s[2] | (s[1]<<8) | (s[0]<<16);
 }
 

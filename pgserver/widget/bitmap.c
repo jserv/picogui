@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.34 2002/01/15 07:35:15 micahjd Exp $
+/* $Id: bitmap.c,v 1.35 2002/01/30 12:03:16 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -62,12 +62,14 @@ void build_bitmap(struct gropctxt *c,unsigned short state,struct widget *self) {
 	 DATA->bitmask = 0;
     }
 
+    /* Automatically use alpha blending if necessary */
+    if (w && ( VID(getpixel)(bit,0,0) & PGCF_ALPHA )) {
+      addgrop(c,PG_GROP_SETLGOP);
+      c->current->param[0] = PG_LGOP_ALPHA;
+    }
+
     addgropsz(c,PG_GROP_BITMAP,x,y,w,h);
     c->current->param[0] = DATA->bitmap;
-    if (DATA->bitmask) {
-       addgrop(c,PG_GROP_SETLGOP);
-       c->current->param[0] = PG_LGOP_NONE;
-    }
   }
 }
 

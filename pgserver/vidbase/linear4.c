@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.18 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: linear4.c,v 1.19 2002/01/30 12:03:16 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -38,6 +38,7 @@
 /* Macros to easily access the members of vid->display */
 #define FB_MEM     (((struct stdbitmap*)dest)->bits)
 #define FB_BPL     (((struct stdbitmap*)dest)->pitch)
+#define FB_ISNORMAL(bmp,lgop) (lgop == PG_LGOP_NONE && ((struct stdbitmap*)bmp)->bpp == vid->bpp)
 
 /* Macro for addressing framebuffer pixels. Note that this is only
  * used when an accumulator won't do, but it is a macro so a line address
@@ -53,17 +54,20 @@ unsigned const char slabmask4[] = { 0xFF, 0x0F, 0x00 };
 /************************************************** Minimum functionality */
 
 void linear4_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
-   char *p;
-   if (lgop != PG_LGOP_NONE) {
-      def_pixel(dest,x,y,c,lgop);
-      return;
-   }
-   p = PIXELBYTE(x,y);
-   *p &= notmask4[x&1];
-   *p |= (c & 15) << ((1-(x&1))<<2);
+  char *p;
+  if (!FB_ISNORMAL(dest,lgop)) {
+    def_pixel(dest,x,y,c,lgop);
+    return;
+  }
+  p = PIXELBYTE(x,y);
+  *p &= notmask4[x&1];
+  *p |= (c & 15) << ((1-(x&1))<<2);
 }
 hwrcolor linear4_getpixel(hwrbitmap dest,s16 x,s16 y) {
-   return ((*PIXELBYTE(x,y)) >> ((1-(x&1))<<2)) & 0x0F;
+  if (!FB_ISNORMAL(dest,PG_LGOP_NONE))
+    return def_getpixel(dest,x,y);
+  
+  return ((*PIXELBYTE(x,y)) >> ((1-(x&1))<<2)) & 0x0F;
 }
    
 /************************************************** Accelerated (?) primitives */
@@ -122,16 +126,16 @@ void linear4_slab(hwrbitmap dest,s16 x,s16 y,s16 w,hwrcolor c,s16 lgop) {
    u8 mask, remainder;
    s16 bw;
    
-   if (lgop == PG_LGOP_NONE)
-     c = c | (c<<4);                       /* Expand color to 8 bits */
-   else if (lgop == PG_LGOP_STIPPLE) {
+   if (lgop == PG_LGOP_STIPPLE) {
       linear4_slab_stipple(dest,x,y,w,c);
       return;
    }
-   else {
+   else if (!FB_ISNORMAL(dest,lgop)) {
       def_slab(dest,x,y,w,c,lgop);
       return;
    }
+  
+   c = c | (c<<4);
    
    p = PIXELBYTE(x,y);
    remainder = x&1;
@@ -169,7 +173,7 @@ void linear4_bar(hwrbitmap dest,s16 x,s16 y,s16 h,hwrcolor c,s16 lgop) {
    char *p;
    unsigned char mask;
 
-   if (lgop != PG_LGOP_NONE) {
+   if (!FB_ISNORMAL(dest,lgop)) {
       def_bar(dest,x,y,h,c,lgop);
       return;
    }
@@ -196,9 +200,9 @@ void linear4_line(hwrbitmap dest,s16 x1,s16 yy1,s16 x2,s16 yy2,
    
   char *p;
    
-  if (lgop != PG_LGOP_NONE) {
-     def_line(dest,x1,y1,x2,y2,c,lgop);
-     return;
+  if (!FB_ISNORMAL(dest,lgop)) {
+    def_line(dest,x1,y1,x2,y2,c,lgop);
+    return;
   }
 
   dx = x2-x1;
@@ -267,9 +271,9 @@ void linear4_rect(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,hwrcolor c,s16 lgop) {
    u8 *l,*p;
    s16 w2;
    
-   if (lgop != PG_LGOP_NONE) {
-      def_rect(dest,x,y,w,h,c,lgop);
-      return;
+   if (!FB_ISNORMAL(dest,lgop)) {
+     def_rect(dest,x,y,w,h,c,lgop);
+     return;
    }
 
    p = l = PIXELBYTE(x,y);
@@ -423,6 +427,11 @@ void linear4_blit(hwrbitmap dest,
    struct stdbitmap *srcbit = (struct stdbitmap *) sbit;
    int bw,xb,s,rs,tp,lp;
    int i;
+
+   if (!FB_ISNORMAL(dest,PG_LGOP_NONE)) {
+     def_blit(dest,dst_x,dst_y,w,h,sbit,src_x,src_y,lgop);
+     return;
+   }
 
    /* Pass on the blit if it is an unsupported LGOP */
    switch (lgop) {

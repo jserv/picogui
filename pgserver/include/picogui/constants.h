@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.125 2002/01/28 09:53:49 micahjd Exp $
+/* $Id: constants.h,v 1.126 2002/01/30 12:03:15 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -738,8 +738,9 @@ typedef unsigned long pghandle;
 #define PG_LGOP_SUBTRACT    10
 #define PG_LGOP_MULTIPLY    11
 #define PG_LGOP_STIPPLE     12
+#define PG_LGOP_ALPHA       13  //!< Alpha blending using colors with the PGCF_ALPHA flag
 
-#define PG_LGOPMAX          12  //!< For error-checking
+#define PG_LGOPMAX          13  //!< For error-checking
 
 //! \}
 
@@ -997,6 +998,49 @@ typedef unsigned long pghandle;
 #define PG_KF_CONTAINER_FOCUSED (1<<2)  /* Any container of this widget is focused */
 #define PG_KF_ALWAYS            (1<<3)  /* This is always on */
 #define PG_KF_APP_TOPMOST       (1<<4)  /* Set if the widget's app is top in "z-order" */
+
+/******************** pgcolor flags */
+
+#define PGCF_TEXT_ASCII       (0x20 << 24) /* The color is encoded as 0x20BBFFCC, for the
+					    * background color, foreground color, and ascii
+					    * character. This is only used by the ncurses
+					    * driver.
+					    */
+
+#define PGCF_TEXT_ACS         (0x40 << 24) /* This is encoded like PGCF_NCURSES_ASCII,
+					    * except that an ACS code for special characters
+					    * is used instead of a normal ASCII code.
+					    */
+
+#define PGCF_ALPHA            (0x80 << 24) /* This indicates an RGB color with an alpha channel,
+					    * in the format 0xAARRGGBB. Note that the alpha channel
+					    * loses one bit due to this flag, so only 7 bits of alpha
+					    * are used.
+					    * The corresponding hwrcolor has the same format, except that
+					    * the RGB color is in premul format, i.e. each
+					    * color has already been multiplied by the alpha channel
+					    * then divided by 128.
+					    */  
+/******************** pgcolors */
+
+/* Standard HTML colors */
+#define PGC_BLACK     0x000000
+#define PGC_GREEN     0x008000
+#define PGC_SILVER    0xC0C0C0
+#define PGC_LIME      0x00FF00
+#define PGC_GRAY      0x808080
+#define PGC_OLIVE     0x808000
+#define PGC_WHITE     0xFFFFFF
+#define PGC_YELLOW    0xFFFF00
+#define PGC_MAROON    0x800000
+#define PGC_NAVY      0x000080
+#define PGC_RED       0xFF0000
+#define PGC_BLUE      0x0000FF
+#define PGC_PURPLE    0x800080
+#define PGC_TEAL      0x008080
+#define PGC_FUCHSIA   0xFF00FF
+#define PGC_AQUA      0x00FFFF
+
 
 //! \}
 #endif /* __H_PG_CONSTANTS */

@@ -1,4 +1,4 @@
-/* $Id: panelbar.c,v 1.2 2002/01/16 19:47:27 lonetech Exp $
+/* $Id: panelbar.c,v 1.3 2002/01/30 12:03:16 micahjd Exp $
  *
  * panelbar.c - Container and draggable bar for resizing panels
  *
@@ -278,7 +278,7 @@ void panelbar_trigger_sprite(struct widget *self,long type,union trigparam *para
        DATA->s = NULL;
        return;
     }
-    if (iserror(VID(bitmap_new) (&DATA->sbit,DATA->panelbar->w,DATA->panelbar->h))) {
+    if (iserror(VID(bitmap_new) (&DATA->sbit,DATA->panelbar->w,DATA->panelbar->h,vid->bpp))) {
        free_sprite(DATA->s);
        DATA->s = NULL;
        DATA->sbit = NULL;

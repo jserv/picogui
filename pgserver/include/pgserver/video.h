@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.72 2002/01/23 14:49:50 abergmann Exp $
+/* $Id: video.h,v 1.73 2002/01/30 12:03:15 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -45,10 +45,12 @@ typedef u32 hwrcolor;
    Usually converted to a hwrcolor at the first opportunity
 */
 typedef u32 pgcolor;
-#define getred(pgc)    (((pgc)>>16)&0xFF)
-#define getgreen(pgc)  (((pgc)>>8)&0xFF)
-#define getblue(pgc)   ((pgc)&0xFF)
-#define mkcolor(r,g,b) (((r)<<16)|((g)<<8)|(b))
+#define getalpha(pgc)     (((pgc)>>24)&0x7F)
+#define getred(pgc)       (((pgc)>>16)&0xFF)
+#define getgreen(pgc)     (((pgc)>>8)&0xFF)
+#define getblue(pgc)      ((pgc)&0xFF)
+#define mkcolor(r,g,b)    (((r)<<16)|((g)<<8)|(b))
+#define mkcolora(a,r,g,b) (((a)<<24)|((r)<<16)|((g)<<8)|(b)|PGCF_ALPHA)
 
 /* Can be a hardware-specific bitmap, but usually is
  * a stdbitmap pointer. This is driver dependant.
@@ -66,6 +68,8 @@ struct stdbitmap {
   struct groprender *rend;   /* State for offscreen rendering */
   s16 w,h;
   u16 pitch;                 /* Spacing between lines, in bytes */
+  u16 bpp;                   /* Bits per pixel of bitmap */
+
   /* Should 'bits' be freed also when bitmap is freed? */
   u16 freebits;    
 };  /* NOTE: Allocating freebits as u16 is overkill, but this struct
@@ -403,7 +407,7 @@ struct vidlib {
    * Default implementation: g_malloc, of course!
    */
   g_error (*bitmap_new)(hwrbitmap *bmp,
-			s16 w,s16 h);
+			s16 w,s16 h,u16 bpp);
 
   /* Optional
    *   Frees bitmap memory

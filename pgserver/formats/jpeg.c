@@ -1,4 +1,4 @@
-/* $Id: jpeg.c,v 1.8 2002/01/16 19:47:25 lonetech Exp $
+/* $Id: jpeg.c,v 1.9 2002/01/30 12:03:15 micahjd Exp $
  *
  * jpeg.c - Functions to convert any of the jpeg formats 
  *
@@ -240,7 +240,7 @@ g_error jpeg_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 
   /* Set up the bitmap */
   e = VID (bitmap_new) ((hwrbitmap *)bmp,cinfo.output_width,
-			cinfo.output_height);
+			cinfo.output_height,vid->bpp);
   errorcheck;
 
   /* Make a one-row-high sample array that will go away when done with image */

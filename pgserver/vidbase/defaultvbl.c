@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.70 2002/01/18 09:32:13 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.71 2002/01/30 12:03:16 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -116,7 +116,15 @@ void def_font_outchar_hook(hwrbitmap *dest, struct fontdesc **fd,
 /******* colors */
 
 hwrcolor def_color_pgtohwr(pgcolor c) {
-  if (vid->bpp==1) {
+  if (c & PGCF_ALPHA) {
+    /* ARGB conversion, just premultiply the RGB color */
+    return mkcolora( getalpha(c),
+		     (getred(c)   * getalpha(c)) >> 7,
+		     (getgreen(c) * getalpha(c)) >> 7,
+		     (getblue(c)  * getalpha(c)) >> 7
+		     );
+  }
+  else if (vid->bpp==1) {
     /* Black and white, tweaked for better contrast */
     return (getred(c)+getgreen(c)+getblue(c)) >= 382;
   }
@@ -154,7 +162,15 @@ hwrcolor def_color_pgtohwr(pgcolor c) {
 }
 
 pgcolor def_color_hwrtopg(hwrcolor c) {
-  if (vid->bpp==1) {
+  if (c & PGCF_ALPHA) {
+    /* ARGB conversion, un-premultiply the RGB color */
+    return mkcolora( getalpha(c),
+		     (getred(c)   << 7) / getalpha(c),
+		     (getgreen(c) << 7) / getalpha(c),
+		     (getblue(c)  << 7) / getalpha(c)
+		     );
+  }
+  else if (vid->bpp==1) {
     return c ? 0xFFFFFF : 0x000000;  
   }
   else if (vid->bpp<8) {
@@ -200,16 +216,16 @@ void def_pixel(hwrbitmap dest, s16 x, s16 y, hwrcolor c, s16 lgop){
     case PG_LGOP_NONE:   /* Generic access to packed-pixel bitmaps */
 	{
 	   struct stdbitmap *bmp = (struct stdbitmap *) dest;
-	   u8 *dst = bmp->bits + bmp->pitch*y + ((x*vid->bpp)>>3);
+	   u8 *dst = bmp->bits + bmp->pitch*y + ((x*bmp->bpp)>>3);
 	   u8 shift,mask;
 	   s16 subpixel,subpixel2;
-	   switch (vid->bpp) {
+	   switch (bmp->bpp) {
 	    case 1:
 	    case 2:
 	    case 4:
-	      subpixel  = ((8/vid->bpp)-1);
-	      subpixel2 = ((1<<vid->bpp)-1);
-	      shift = (subpixel-(x&subpixel)) * vid->bpp;
+	      subpixel  = ((8/bmp->bpp)-1);
+	      subpixel2 = ((1<<bmp->bpp)-1);
+	      shift = (subpixel-(x&subpixel)) * bmp->bpp;
 	      mask  = subpixel2<<shift;
 	      *dst &= ~mask;
 	      *dst |= (c << shift) & mask;
@@ -343,21 +359,37 @@ void def_pixel(hwrbitmap dest, s16 x, s16 y, hwrcolor c, s16 lgop){
       if ((x+y)&1)
 	(*vid->pixel) (dest,x,y,c,PG_LGOP_NONE);
       break;
-      
+
+   case PG_LGOP_ALPHA:
+     {
+       /* Alpha blending, assuming c is a hwrcolor with the PGCF_ALPHA flag.
+	* The color has already been premultiplied.
+	*/
+       pgcolor oc = (*vid->color_hwrtopg) ((*vid->getpixel)(dest,x,y));
+       u8 r,g,b,a;
+
+       a = 128 - getalpha(c);
+       r = getred(c) + ((getred(oc) * a) >> 7);
+       g = getgreen(c) + ((getgreen(oc) * a) >> 7);
+       b = getblue(c) + ((getblue(oc) * a) >> 7);
+
+       (*vid->pixel) (dest,x,y,(*vid->color_pgtohwr)(mkcolor(r,g,b)),
+		      PG_LGOP_NONE); 
+     }
    }
 }
    
 hwrcolor def_getpixel(hwrbitmap src, s16 x, s16 y) {
    struct stdbitmap *bmp = (struct stdbitmap *) src;
-   u8 *s = bmp->bits + bmp->pitch*y + ((x*vid->bpp)>>3);
+   u8 *s = bmp->bits + bmp->pitch*y + ((x*bmp->bpp)>>3);
    u8 subpixel,shift;
-   switch (vid->bpp) {
+   switch (bmp->bpp) {
     case 1:
     case 2:
     case 4:
-      subpixel  = ((8/vid->bpp)-1);
-      shift = (subpixel-(x&subpixel)) * vid->bpp;
-      return ((*s) >> shift) & ((1<<vid->bpp)-1);
+      subpixel  = ((8/bmp->bpp)-1);
+      shift = (subpixel-(x&subpixel)) * bmp->bpp;
+      return ((*s) >> shift) & ((1<<bmp->bpp)-1);
       
     case 16:
       return *((u16*)s);
@@ -1232,7 +1264,7 @@ g_error def_bitmap_loadxbm(hwrbitmap *bmp,const u8 *data, s16 w, s16 h,
    unsigned char c;
    g_error e;
    
-   e = (*vid->bitmap_new)(bmp,w,h);
+   e = (*vid->bitmap_new)(bmp,w,h,vid->bpp);
    errorcheck;
    
    /* Shift in the pixels! */
@@ -1262,34 +1294,33 @@ g_error def_bitmap_load(hwrbitmap *bmp,const u8 *data,u32 datalen) {
 
 /* 90 degree anticlockwise rotation */
 g_error def_bitmap_rotate90(hwrbitmap *b) {
-   struct stdbitmap *destbit,*srcbit;
+   struct stdbitmap *destbit,*srcbit = (struct stdbitmap *) (*b);
    u8 *src,*srcline,*dest;
    int oshift,shift,mask;
-   int shiftset  = 8-vid->bpp;
-   int subpixel  = ((8/vid->bpp)-1);
-   int subpixel2 = ((1<<vid->bpp)-1);
+   int shiftset  = 8-srcbit->bpp;
+   int subpixel  = ((8/srcbit->bpp)-1);
+   int subpixel2 = ((1<<srcbit->bpp)-1);
    g_error e;
    int h,i,x,y;
    hwrcolor c;
    
    /* New bitmap with width/height reversed */
-   srcbit = (struct stdbitmap *) (*b);
-   e = (*vid->bitmap_new)(&destbit,srcbit->h,srcbit->w);
+   e = (*vid->bitmap_new)(&destbit,srcbit->h,srcbit->w,srcbit->bpp);
    errorcheck;
    
    src = srcline = srcbit->bits;
    for (h=srcbit->h,x=y=0;h;h--,y++,src=srcline+=srcbit->pitch) {
 
       /* Per-line mask calculations for <8bpp destination blits */
-      if (vid->bpp<8) {
-	 shift = (subpixel-(y&subpixel)) * vid->bpp;
+      if (srcbit->bpp<8) {
+	 shift = (subpixel-(y&subpixel)) * srcbit->bpp;
 	 mask  = subpixel2<<shift;
       }
       
       for (oshift=shiftset,i=srcbit->w,x=0;i;i--,x++) {
 	 
 	 /* Read in a pixel */
-	 switch (vid->bpp) {
+	 switch (srcbit->bpp) {
 	  case 1:
 	  case 2:
 	  case 4:
@@ -1299,7 +1330,7 @@ g_error def_bitmap_rotate90(hwrbitmap *b) {
 	       src++;
 	    }
 	    else
-	      oshift -= vid->bpp;
+	      oshift -= srcbit->bpp;
 	    break; 
 	    
 	  case 8:
@@ -1321,9 +1352,9 @@ g_error def_bitmap_rotate90(hwrbitmap *b) {
 	 }
 	 
 	 /* Plot the pixel */
-	 dest = destbit->bits + ((y*vid->bpp)>>3) + 
+	 dest = destbit->bits + ((y*srcbit->bpp)>>3) + 
 	   (srcbit->w-1-x)*destbit->pitch;
-	 switch (vid->bpp) {
+	 switch (srcbit->bpp) {
 	  case 1:
 	  case 2:
 	  case 4:
@@ -1358,7 +1389,7 @@ g_error def_bitmap_rotate90(hwrbitmap *b) {
    return success;
 }
 
-g_error def_bitmap_new(hwrbitmap *b, s16 w,s16 h) {
+g_error def_bitmap_new(hwrbitmap *b, s16 w,s16 h,u16 bpp) {
   g_error e;
   struct stdbitmap **bmp = (struct stdbitmap **) b;
   int lw;
@@ -1368,10 +1399,10 @@ g_error def_bitmap_new(hwrbitmap *b, s16 w,s16 h) {
      but usually it is sufficient to make them one big
      chunk of memory.  It's 1 alloc vs 2.
   */
-
+  
   /* Pad the line width up to the nearest byte */
-  lw = (unsigned long) w * vid->bpp;
-  if ((vid->bpp<8) && (lw & 7))
+  lw = (unsigned long) w * bpp;
+  if ((bpp<8) && (lw & 7))
      lw += 8;
   lw >>= 3;
 
@@ -1387,6 +1418,7 @@ g_error def_bitmap_new(hwrbitmap *b, s16 w,s16 h) {
     sizeof(struct stdbitmap);
   (*bmp)->w = w;
   (*bmp)->h = h;
+  (*bmp)->bpp = bpp;
   
   return success;
 }
@@ -1681,7 +1713,7 @@ void def_sprite_protectarea(struct quad *in,struct sprite *from) {
  * Default implementation: stdbitmap
  */
 g_error def_bitmap_modeconvert(struct stdbitmap **bmp) {
-   struct stdbitmap *destbit,*srcbit;
+   struct stdbitmap *destbit,*srcbit = *bmp;
    u32 *src;
    u8 *destline,*dest;
    int oshift;
@@ -1689,10 +1721,11 @@ g_error def_bitmap_modeconvert(struct stdbitmap **bmp) {
    g_error e;
    int h,i,x,y;
    hwrcolor c;
+
+   /* FIXME: this should check whether the image has an alpha channel */
    
    /* New bitmap at our present bpp */
-   srcbit = *bmp;
-   e = (*vid->bitmap_new)(&destbit,srcbit->w,srcbit->h);
+   e = (*vid->bitmap_new)(&destbit,srcbit->w,srcbit->h,vid->bpp);
    errorcheck;
 
    src = (u32 *) srcbit->bits;
@@ -1763,15 +1796,15 @@ g_error def_bitmap_modeunconvert(struct stdbitmap **bmp) {
    g_error e;
    int h,i,x,y;
    hwrcolor c;
+
+   if (srcbit->bpp == 32)
+     return success;
    
    /* New bitmap at 32bpp (this is hackish, but I don't see anything
     * seriously wrong with it... yet...) 
     */
    srcbit = *bmp;
-   i = vid->bpp;
-   vid->bpp = 32;
-   e = (*vid->bitmap_new)(&destbit,srcbit->w,srcbit->h);
-   vid->bpp = i;
+   e = (*vid->bitmap_new)(&destbit,srcbit->w,srcbit->h,32);
    errorcheck;
    
    src = srcline = srcbit->bits;

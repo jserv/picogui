@@ -1,4 +1,4 @@
-/* $Id: pnm.c,v 1.12 2002/01/16 19:47:25 lonetech Exp $
+/* $Id: pnm.c,v 1.13 2002/01/30 12:03:15 micahjd Exp $
  *
  * pnm.c - Functions to convert any of the pbmplus formats (PGM, PBM, PPM)
  *         collectively referred to as PNM
@@ -131,7 +131,7 @@ g_error pnm_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
     return efmt;
 
   /* Set up the bitmap */
-  e = vid->bitmap_new(hbmp,w,h);
+  e = vid->bitmap_new(hbmp,w,h,vid->bpp);
   errorcheck;
 
   /* Read in the values, convert colors, output them... */

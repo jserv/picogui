@@ -1,4 +1,4 @@
-/* $Id: gif.c,v 1.2 2002/01/16 19:47:25 lonetech Exp $
+/* $Id: gif.c,v 1.3 2002/01/30 12:03:15 micahjd Exp $
  *
  * gif.c - Read only GIF loader based on libungif
  *
@@ -1028,7 +1028,7 @@ g_error gif_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   }
 
   /* Now we know how big the image is, so allocate it */
-  e = vid->bitmap_new(hbmp,f->Image.Width, f->Image.Height);
+  e = vid->bitmap_new(hbmp,f->Image.Width, f->Image.Height, vid->bpp);
   if (iserror(e))
     DGifCloseFile(f);
   errorcheck;

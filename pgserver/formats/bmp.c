@@ -1,4 +1,4 @@
-/* $Id: bmp.c,v 1.10 2002/01/21 13:44:47 micahjd Exp $
+/* $Id: bmp.c,v 1.11 2002/01/30 12:03:15 micahjd Exp $
  *
  * bmp.c - Functions to detect and load files compatible with the Windows BMP
  *         file format. This format is good for palettized images and/or
@@ -181,7 +181,7 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
    * free the bitmap. It hasn't been assigned a handle yet, so failing
    * to free the bitmap would introduce a memory leak!
    */
-  e = (*vid->bitmap_new) (hbmp,w,h);
+  e = (*vid->bitmap_new) (hbmp,w,h,vid->bpp);
   errorcheck;
 
   /* If we're converting from < 8bpp, make a mask */

@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.21 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: rotate90.c,v 1.22 2002/01/30 12:03:16 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -156,8 +156,8 @@ void rotate90_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
 
 /* Tack that rotation onto any bitmap loading */
 
-g_error rotate90_bitmap_new(hwrbitmap *bmp,s16 w,s16 h) {
-   return (*vid->bitmap_new)(bmp,h,w);
+g_error rotate90_bitmap_new(hwrbitmap *bmp,s16 w,s16 h,u16 bpp) {
+   return (*vid->bitmap_new)(bmp,h,w,bpp);
 }
 
 #ifdef CONFIG_FORMAT_XBM

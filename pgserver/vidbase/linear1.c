@@ -1,4 +1,4 @@
-/* $Id: linear1.c,v 1.20 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: linear1.c,v 1.21 2002/01/30 12:03:16 micahjd Exp $
  *
  * Video Base Library:
  * linear1.c - For 1-bit packed pixel devices (most black and white displays)
@@ -43,6 +43,7 @@
  */
 #define LINE(y)        ((y)*FB_BPL+FB_MEM)
 #define PIXELBYTE(x,y) (((x)>>3)+LINE(y))
+#define FB_ISNORMAL(bmp,lgop) (lgop == PG_LGOP_NONE && ((struct stdbitmap*)bmp)->bpp == vid->bpp)
 
 /* Table of masks used to isolate pixels within a byte */
 const u8 notmask1[]  = { 0x7F, 0xBF, 0xDF, 0xEF,
@@ -55,21 +56,24 @@ const u8 slabmask1[] = { 0xFF, 0x7F, 0x3F, 0x1F,
 /************************************************** Minimum functionality */
 
 void linear1_pixel(hwrbitmap dest, s16 x,s16 y,hwrcolor c,s16 lgop) {
-   u8 *p;
-   if (lgop != PG_LGOP_NONE) {
-      def_pixel(dest,x,y,c,lgop);
-      return;
-   }
-   
-   p = PIXELBYTE(x,y);
-   if (c & 1)
-     *p |= pxlmask1[x&7];
-   else
-     *p &= notmask1[x&7];
+  u8 *p;
+  if (!FB_ISNORMAL(dest,lgop)) {
+    def_pixel(dest,x,y,c,lgop);
+    return;
+  }
+  
+  p = PIXELBYTE(x,y);
+  if (c & 1)
+    *p |= pxlmask1[x&7];
+  else
+    *p &= notmask1[x&7];
 }
 
 hwrcolor linear1_getpixel(hwrbitmap dest, s16 x,s16 y) {
-   return ((*PIXELBYTE(x,y)) >> (7-(x&7))) & 1;
+  if (!FB_ISNORMAL(dest,PG_LGOP_NONE))
+    return def_getpixel(dest,x,y);
+  
+  return ((*PIXELBYTE(x,y)) >> (7-(x&7))) & 1;
 }
    
 /*********************************************** Accelerated (?) primitives */
@@ -128,16 +132,16 @@ void linear1_slab(hwrbitmap dest,s16 x,s16 y,s16 w,hwrcolor c,s16 lgop) {
    u8 mask, remainder;
    s16 bw;
    
-   if (lgop == PG_LGOP_NONE)
-     c = c ? 0xFF : 0x00;                    /* Expand color to 8 bits */
-   else if (lgop == PG_LGOP_STIPPLE) {
+   if (lgop == PG_LGOP_STIPPLE) {
       linear1_slab_stipple(dest,x,y,w,c);
       return;
    }
-   else {
+   else if (!FB_ISNORMAL(dest,lgop)) {
       def_slab(dest,x,y,w,c,lgop);
       return;
    }
+
+   c = c ? 0xFF : 0x00;                    /* Expand color to 8 bits */
    
    p = PIXELBYTE(x,y);
    remainder = x&7;   
@@ -175,8 +179,8 @@ void linear1_bar(hwrbitmap dest,s16 x,s16 y,s16 h,hwrcolor c,s16 lgop) {
    char *p;
    u8 mask,remainder;
 
-   if (lgop != PG_LGOP_NONE) {
-      def_bar(dest,x,y,h,c,lgop);
+   if (!FB_ISNORMAL(dest,lgop)) {
+     def_bar(dest,x,y,h,c,lgop);
       return;
    }
    
@@ -200,7 +204,7 @@ void linear1_line(hwrbitmap dest, s16 x1,s16 yy1,s16 x2,s16 yy2,hwrcolor c,
   u32 y1 = yy1,y2 = yy2;   /* Convert y coordinates to 32-bits because
 			    * they will be converted to framebuffer offsets */
   
-  if (lgop != PG_LGOP_NONE) {
+  if (!FB_ISNORMAL(dest,lgop)) {
      def_line(dest,x1,y1,x2,y2,c,lgop);
      return;
   }
@@ -283,6 +287,11 @@ void linear1_blit(hwrbitmap dest,
    struct stdbitmap *srcbit = (struct stdbitmap *) sbit;
    int bw,xb,s,rs,tp,lp,rlp;
    int i;
+
+   if (!FB_ISNORMAL(dest,PG_LGOP_NONE)) {
+     def_blit(dest,dst_x,dst_y,w,h,sbit,src_x,src_y,lgop);
+     return;
+   }
 
    /* Pass on the blit if it is an unsupported LGOP */
    switch (lgop) {
@@ -410,13 +419,14 @@ void linear1_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
       /* PG_LGOP_MULTIPLY   */   PG_LGOP_INVERT_AND, PG_LGOP_NULL,
 	                         PG_LGOP_INVERT_AND, PG_LGOP_AND,
    };
-	
+
    /* Pass rotated or skewed blits on somewhere else. Also skip charblits
     * with LGOPs above PG_LGOP_MULTIPLY. If there's clipping involved,
     * don't bother. */
    if (angle || lines || (lgop>PG_LGOP_MULTIPLY) ||
        (clip && (x<clip->x1 || y<clip->y1 || 
-		 (x+w)>=clip->x2 || (y+h)>=clip->y2))) {
+		 (x+w)>=clip->x2 || (y+h)>=clip->y2)) ||
+       !FB_ISNORMAL(dest,PG_LGOP_NONE)) {
       def_charblit(dest,chardat,x,y,w,h,lines,angle,c,clip,lgop);
       return;
    }

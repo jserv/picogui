@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.53 2002/01/16 19:47:25 lonetech Exp $
+/* $Id: video.c,v 1.54 2002/01/30 12:03:15 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -75,7 +75,7 @@ g_error new_sprite(struct sprite **ps,s16 w,s16 h) {
   (*ps)->ox = -1;
   (*ps)->w = w;
   (*ps)->h = h;
-  VID(bitmap_new) (&(*ps)->backbuffer,w,h);
+  VID(bitmap_new) (&(*ps)->backbuffer,w,h,vid->bpp);
   (*ps)->next = spritelist;
   (*ps)->visible = 1;
   spritelist = *ps;
@@ -204,6 +204,7 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
      ((struct stdbitmap *)vid->display)->freebits = 0;
      ((struct stdbitmap *)vid->display)->w = vid->xres;
      ((struct stdbitmap *)vid->display)->h = vid->yres;
+     ((struct stdbitmap *)vid->display)->bpp = vid->bpp;
    }
       
    /* Reset wrapper library (before using VID macro) */
