@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.44 2001/07/10 22:56:38 micahjd Exp $
+/* $Id: dispatch.c,v 1.45 2001/07/11 00:25:53 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -559,8 +559,19 @@ g_error rqh_unregowner(int owner, struct pgrequest *req,
       break;
 
     case PG_OWN_DISPLAY:
-      if (display_owner==owner)
+      if (display_owner==owner) {
+	struct divtree *p;
+
 	display_owner = 0;
+
+	/* Force redraw everything */
+	p = dts->top;
+	while (p) {
+	  p->flags |= DIVTREE_ALL_REDRAW;
+	  p = p->next;
+	}
+	update(NULL,1);
+      }
       break;
 
    }

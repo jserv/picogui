@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.23 2001/07/03 05:48:15 micahjd Exp $
+/* $Id: request.c,v 1.24 2001/07/11 00:25:53 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -85,9 +85,20 @@ void closefd(int fd) {
     pointer_owner = 0;
   if (sysevent_owner==fd)
     sysevent_owner = 0;
-  if (display_owner==fd)
+  if (display_owner==fd) {
+    struct divtree *p;
+    
     display_owner = 0;
-
+    
+    /* Force redraw everything */
+    p = dts->top;
+    while (p) {
+      p->flags |= DIVTREE_ALL_REDRAW;
+      p = p->next;
+    }
+    update(NULL,1);
+  }
+  
 #ifdef DEBUG_NET 
   printf("Close. fd = %d\n",fd);
 #endif
