@@ -520,6 +520,7 @@ fe_print_text_terminal (struct session *sess, char *text)
 		j+=3;
 	}
 
+#if 0
 	{
 		FILE *f;
 		f=fopen("outputlog", "a");
@@ -529,6 +530,7 @@ fe_print_text_terminal (struct session *sess, char *text)
 			fclose(f);
 		}
 	}
+#endif
 
 	pgWriteData(sess->gui->output, pgFromTempMemory(newtext,j));
 }
