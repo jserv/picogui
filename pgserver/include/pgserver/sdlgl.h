@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.3 2002/03/03 11:21:11 micahjd Exp $
+/* $Id: sdlgl.h,v 1.4 2002/03/03 14:07:49 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -96,11 +96,12 @@ struct glbitmap {
  * large per-blit penalty. This becomes a big problem when drawing tiled
  * bitmaps. OpenGL natively handles tiling textures, but that doesn't help
  * us much since textures have to be a power of two in size. We solve this
- * by storing a pre-tiled copy of the bitmap. Bitmaps below the following size
- * are tiled and stored in the bitmap's 'tile' variable. This size should
- * be a power of two.
+ * by storing a pre-tiled copy of the bitmap. The GL_TILESIZE_IDEAL
+ * should be at least twice GL_TILESIZE_MIN or pgserver could get stuck
+ * in an infinite loop tiling bitmaps!
  */
-#define GL_TILESIZE 256
+#define GL_TILESIZE_MIN   128   /* If a texture dimension is less than this, pretile it */
+#define GL_TILESIZE_IDEAL 256   /* Create pretiled textures at this size. Should be a power of 2! */
 
 /* Texture and coordinates for one glyph. A table of these is in the font's
  * "bitmaps" array.
@@ -252,6 +253,7 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 float gl_get_key_scale(void);
 void gl_fontstyle_free(struct fontstyle_node *fsn);
 void gl_font_free(struct font *f);
+void gl_showtexture(GLuint tex, int w, int h);
 
 #endif /* _H_SDLGL */
 

@@ -1,4 +1,4 @@
-/* $Id: sdlgl_primitives.c,v 1.2 2002/03/03 11:47:18 micahjd Exp $
+/* $Id: sdlgl_primitives.c,v 1.3 2002/03/03 14:07:50 micahjd Exp $
  *
  * sdlgl_primitives.c - OpenGL driver for picogui, using SDL for portability.
  *                      Implement standard picogui primitives using OpenGL
@@ -266,22 +266,30 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
      * size if necessary, and use that to reduce the number of separate
      * quads we have to send to OpenGL
      */
-#if 0
     if ((w > glsrc->sb->w || h > glsrc->sb->h) && 
-	(glsrc->sb->w < GL_TILESIZE || glsrc->sb->h < GL_TILESIZE)) {
+	(glsrc->sb->w < GL_TILESIZE_MIN || glsrc->sb->h < GL_TILESIZE_MIN)) {
       /* Create a pre-tiled image */
       if (!glsrc->tile) {
-	vid->bitmap_new( (hwrbitmap*)&glsrc->tile,
-			 (GL_TILESIZE/glsrc->sb->w + 1) * glsrc->sb->w,
-			 (GL_TILESIZE/glsrc->sb->h + 1) * glsrc->sb->h, vid->bpp );
+	int neww, newh;
+
+	/* Calculate new width and height of the pretiled texture. */
+	neww = glsrc->sb->w;
+	if (neww < GL_TILESIZE_MIN)
+	  neww = (GL_TILESIZE_IDEAL / glsrc->sb->w) * glsrc->sb->w;
+	newh = glsrc->sb->h;
+	if (newh < GL_TILESIZE_MIN)
+	  newh = (GL_TILESIZE_IDEAL / glsrc->sb->h) * glsrc->sb->h;
+
+	
+	DBG("Expand tile from %dx%d to %dx%d\n",
+	    glsrc->sb->w, glsrc->sb->h,neww,newh);	    
+
+	vid->bitmap_new( (hwrbitmap*)&glsrc->tile,neww,newh, vid->bpp );
 	def_blit((hwrbitmap)glsrc->tile,0,0,glsrc->tile->sb->w,
 		 glsrc->tile->sb->h,src,0,0,PG_LGOP_NONE);
-
-	DBG("Expand tile to %d,%d\n",glsrc->tile->sb->w,glsrc->tile->sb->h);
       }
       glsrc = glsrc->tile;
     }
-#endif
 
     /* If we still have to tile, let defaulvbl do it
      */
@@ -292,6 +300,8 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 
     /* Make sure the bitmap has a corresponding texture */
     if (!glsrc->texture) {
+      hwrbitmap tmpbit;
+
       glGenTextures(1,&glsrc->texture);
       glBindTexture(GL_TEXTURE_2D, glsrc->texture);
 
@@ -309,22 +319,42 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
       glsrc->tx2 = ((float)glsrc->sb->w) / ((float)glsrc->tw);
       glsrc->ty2 = ((float)glsrc->sb->h) / ((float)glsrc->th);
       
-      /* Allocate texture */
-      glTexImage2D(GL_TEXTURE_2D, 0, 4, glsrc->tw, glsrc->th, 0, 
-		   GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-
-      /* Paste our subimage into it.
-       * We put additional copies offset one pixel so that the row or column
-       * immediately past the bitmap has the same data as the edge of the
-       * bitmap, to eliminate rendering artifacts
+      /* Paste our image into it.
+       * Note that the linear filtering depends on the value of the pixel adjacent to
+       * the one being rendered as well, so to minimize rendering artifacts we copy
+       * strips of the original bitmap to the sides of the new texture.
        */
-      glTexSubImage2D(GL_TEXTURE_2D,0, 1,0, glsrc->sb->w, glsrc->sb->h,
-		      GL_BGRA_EXT, GL_UNSIGNED_BYTE, glsrc->sb->bits);
-      glTexSubImage2D(GL_TEXTURE_2D,0, 0,1, glsrc->sb->w, glsrc->sb->h,
-		      GL_BGRA_EXT, GL_UNSIGNED_BYTE, glsrc->sb->bits);
-      glTexSubImage2D(GL_TEXTURE_2D,0, 0,0, glsrc->sb->w, glsrc->sb->h,
-		      GL_BGRA_EXT, GL_UNSIGNED_BYTE, glsrc->sb->bits);
 
+      if (iserror(vid->bitmap_new(&tmpbit, glsrc->tw, glsrc->th, vid->bpp))) return;
+      
+      /* Texture itself */
+      vid->blit(tmpbit, 0,0, glsrc->sb->w, glsrc->sb->h, glsrc, 0,0, PG_LGOP_NONE);
+
+      /* Left and right edges */
+      if (glsrc->tw > glsrc->sb->w) {
+	vid->blit(tmpbit, glsrc->sb->w,0, 1, glsrc->sb->h, glsrc, glsrc->sb->w-1,0, PG_LGOP_NONE);
+	vid->blit(tmpbit, glsrc->tw-1,0, 1,glsrc->sb->h, glsrc, 0,0, PG_LGOP_NONE);
+      }
+
+      /* Top and bottom edges */
+      if (glsrc->th > glsrc->sb->h) {
+	vid->blit(tmpbit, 0,glsrc->sb->h, glsrc->sb->w, 1, glsrc, 0,glsrc->sb->h-1, PG_LGOP_NONE);
+	vid->blit(tmpbit, 0,glsrc->th-1, glsrc->sb->w,1, glsrc, 0,0, PG_LGOP_NONE);
+      }
+
+      /* Corners */
+      if (glsrc->tw > glsrc->sb->w && glsrc->th > glsrc->sb->h) {
+	vid->blit(tmpbit, glsrc->sb->w,glsrc->sb->h, 1, 1, glsrc, 
+		  glsrc->sb->w-1,glsrc->sb->h-1, PG_LGOP_NONE);
+	vid->blit(tmpbit, glsrc->tw-1,glsrc->th-1, 1,1, glsrc, 0,0, PG_LGOP_NONE);
+      }
+
+      /* Send it to opengl, ditch our temporary */
+      glTexImage2D(GL_TEXTURE_2D, 0, 4, glsrc->tw, glsrc->th, 0, 
+		   GL_BGRA_EXT, GL_UNSIGNED_BYTE, ((struct glbitmap*)tmpbit)->sb->bits);
+      vid->bitmap_free(tmpbit);
+
+      //  gl_showtexture(glsrc->texture, glsrc->tw, glsrc->th);
     }      
     
     /* Calculate texture coordinates */

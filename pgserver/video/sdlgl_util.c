@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.1 2002/03/03 05:42:26 micahjd Exp $
+/* $Id: sdlgl_util.c,v 1.2 2002/03/03 14:07:50 micahjd Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.
@@ -245,6 +245,37 @@ void gl_render_grid(void) {
   glPopMatrix();
 }
 
+/* Show a texture on the screen and pause, for debugging
+ */
+void gl_showtexture(GLuint tex, int w, int h) {
+  printf("Showing texture %d\n", tex);
+  gl_lgop(PG_LGOP_NONE);
+  glDisable(GL_TEXTURE_2D);
+  glBegin(GL_QUADS);
+  gl_color(0x000080);
+  glVertex2f(0,0);
+  glVertex2f(10000,0);
+  glVertex2f(10000,10000);
+  glVertex2f(0,10000);
+  glEnd();
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, tex);
+  glBegin(GL_QUADS);
+  gl_color(0xFFFFFF);
+  glNormal3f(0.0f,0.0f,1.0f);
+  glTexCoord2f(0,0);
+  glVertex2f(0,0);
+  glTexCoord2f(1,0);
+  glVertex2f(w,0);
+  glTexCoord2f(1,1);
+  glVertex2f(w,h);
+  glTexCoord2f(0,1);
+  glVertex2f(0,h);
+  glEnd();
+  glDisable(GL_TEXTURE_2D);
+  SDL_GL_SwapBuffers();
+  sleep(2);
+}
 
 /* The End */
 

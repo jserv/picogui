@@ -1,4 +1,4 @@
-/* $Id: sdlgl_font.c,v 1.4 2002/03/03 11:21:11 micahjd Exp $
+/* $Id: sdlgl_font.c,v 1.5 2002/03/03 14:07:50 micahjd Exp $
  *
  * sdlgl_font.c - OpenGL driver for picogui, using SDL for portability.
  *                Replace PicoGUI's normal font rendering with TrueType
@@ -279,35 +279,7 @@ void gl_fontload_storetexture(struct gl_fontload *fl) {
     gluBuild2DMipmaps(GL_TEXTURE_2D, GL_INTENSITY4, GL_FONT_TEX_SIZE, GL_FONT_TEX_SIZE,
 		      GL_LUMINANCE, GL_UNSIGNED_BYTE, fl->pixels);
 
-#if 0    /** Debuggative cruft **/
-    printf("Showing texture %d\n", fl->texture);
-    gl_lgop(PG_LGOP_NONE);
-    glDisable(GL_TEXTURE_2D);
-    glBegin(GL_QUADS);
-    gl_color(0x000080);
-    glVertex2f(0,0);
-    glVertex2f(10000,0);
-    glVertex2f(10000,10000);
-    glVertex2f(0,10000);
-    glEnd();
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, fl->texture);
-    glBegin(GL_QUADS);
-    gl_color(0xFFFFFF);
-    glNormal3f(0.0f,0.0f,1.0f);
-    glTexCoord2f(0,0);
-    glVertex2f(0,0);
-    glTexCoord2f(1,0);
-    glVertex2f(GL_FONT_TEX_SIZE,0);
-    glTexCoord2f(1,1);
-    glVertex2f(GL_FONT_TEX_SIZE,GL_FONT_TEX_SIZE);
-    glTexCoord2f(0,1);
-    glVertex2f(0,GL_FONT_TEX_SIZE);
-    glEnd();
-    glDisable(GL_TEXTURE_2D);
-    SDL_GL_SwapBuffers();
-    usleep(100000);
-#endif
+    // gl_showtexture(fl->texture, GL_FONT_TEX_SIZE, GL_FONT_TEX_SIZE);
   }
 
   fl->tx = fl->ty = fl->tline = 0;
