@@ -1,4 +1,4 @@
-/* $Id: ericsson_cb.c,v 1.2 2002/03/04 16:26:18 bauermeister Exp $
+/* $Id: ericsson_cb.c,v 1.3 2002/03/05 21:14:26 bauermeister Exp $
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -46,28 +46,30 @@
 
 #define LOCAL_INFO  1
 #define LOCAL_DEBUG 1
-#define LOCAL_TRACE 1
+#define LOCAL_TRACE 0
 
 /* ------------------------------------------------------------------------- */
 
+#define _printf(x...) { usleep(1000000/10); printf(x); usleep(1000000/10); }
+
 #if LOCAL_INFO
-# define INFO(x...)    printf(__FILE__": " x)
+# define INFO(x...)    _printf(__FILE__": " x)
 #else
 # define INFO(x...)
 #endif
 
 #if LOCAL_DEBUG
-# define DPRINTF(x...) printf(__FILE__": " x)
-# define WARNF(x...)   printf(__FILE__": " x)
+# define DPRINTF(x...) _printf(__FILE__": " x)
+# define WARNF(x...)   _printf(__FILE__": " x)
 #else
 # define DPRINTF(x...)
-# define WARNF(x...)   printf(__FILE__": " x)
+# define WARNF(x...)   _printf(__FILE__": " x)
 # undef LOCAL_TRACE
 # define LOCAL_TRACE 0
 #endif
 
 #if LOCAL_TRACE
-# define TRACEF(x...)  printf(__FILE__": " x)
+# define TRACEF(x...)  _printf(__FILE__": " x)
 #else
 # define TRACEF(x...)
 #endif
@@ -244,14 +246,21 @@ static const KeyStr key_str_table[] = {
 static int lookup(char* str, int buflen)
 {
   int i, j;
+  static const char* head = "AT+CKPD=\"";
   TRACEF(">>> lookup"NL);
 
   /* we look for AT+CKPD commands */
   DPRINTF("> str = [%s]"NL, str);
-  if(strncmp(str, "AT+CKPD=\"", 9))
+  if(strncmp(str, head, 9))
     return -1;
 
-  /* process the string a bit */
+  /* skip command */
+  str += 9;
+
+  /* filter the string a bit :
+   * - remobe dbl quotes
+   * - char 'c' deletes the previous char
+   */
   for(i=j=0; i<buflen; ++i) {
     register char c = str[i];
     if(c=='"') continue; /* remove dbl quotes */
@@ -264,6 +273,11 @@ static int lookup(char* str, int buflen)
   }
   DPRINTF("> str = [%s]"NL, str);
 
+  /* lookup resulting string */
+  // TODO: Do it 
+
+
+  /* done */
   return -1;
 }
 
@@ -294,6 +308,17 @@ static void cb_init_mods()
   skip_line = 0;
 }
 
+static void outc(int fd, unsigned char c)
+{
+  // usleep(1000000/20); /* throttle */
+  write(fd, &c, 1);
+}
+
+static void outs(int fd, const char* str)
+{
+  for(; *str; ++str) outc(fd, *str);
+}
+
 /*****************************************************************************/
 
 static int cb_getchar(int fd)
@@ -304,44 +329,49 @@ static int cb_getchar(int fd)
   int index;
   u16 hwcode = 0;
 
-  TRACEF(">>> cb_getkey_index()"NL);
+  TRACEF(">>> cb_getchar()"NL);
 
-  while(1) {
-    /* try to read a valid char */
-    n = read(fd, &c, 1);
+  /* try to read a valid char */
+  n = read(fd, &c, 1);
 
-    /* no key or error */
-    if(n<=0) {
-      TRACEF("==> n<=0"NL);
-      skip_line = 1;
+  /* no key or error */
+  if(n<=0) {
+    DPRINTF("==> n<=0"NL);
+    skip_line = 1;
+    return -1;
+  }
+  
+  /* echo */
+  outc(fd, c);
+  
+  //DPRINTF("<%02x>"NL, c);
+  
+  if(c=='\n') {
+    static const char* ok_str = "OK\r\n";
+    outs(fd, ok_str);
+    DPRINTF("==>OK"NL);
+    if(skip_line) {
+      skip_line = 0;
+      chars_in_buffer = 0;
       return -1;
     }
-
-    TRACEF("<%02x>"NL, c);
-
-    if(c=='\n') {
-      write(fd, "OK\n", 3);
-      TRACEF("==>OK"NL);
-      if(skip_line) {
-	skip_line = 0;
-	chars_in_buffer = 0;
-	continue;
-      }
-      else {
-	buffer[chars_in_buffer] = 0;
-	chars_in_buffer = 0;
-	return lookup(buffer, sizeof(buffer));
-      }
-    }
-
-    if(c<' ') continue;
-
-    if(chars_in_buffer>=sizeof(buffer))
-      skip_line = 1;
     else {
-      buffer[chars_in_buffer++] = c;
+      buffer[chars_in_buffer] = 0;
+      chars_in_buffer = 0;
+      return lookup(buffer, sizeof(buffer));
     }
   }
+  
+  if(c<' ') return -1;
+  
+  if(chars_in_buffer>=sizeof(buffer)-1) {
+    skip_line = 1;
+  }
+  else {
+    buffer[chars_in_buffer++] = c;
+  }
+
+  return -1;
 }
 
 /*****************************************************************************/
@@ -406,7 +436,6 @@ static g_error cb_init(void)
   tcgetattr(cb_fd, &options);          /* Work copy that will be modified */
 
   /* uart settings */
-TRACEF("ericsson_cb: **1"NL);
   cfsetispeed(&options, B9600);        /* 9600 baud rates */
   options.c_cflag |= (CLOCAL | CREAD); /* Enable rx and set the local mode */
   options.c_cflag &= ~PARENB;          /* None parity */
@@ -415,19 +444,15 @@ TRACEF("ericsson_cb: **1"NL);
   options.c_cflag &= ~CSTOPB;          /* 1 stop bits */
   options.c_cflag &= ~CRTSCTS;         /* Disable hardware flow control */
   options.c_iflag &= ~(IXON | IXOFF | IXANY); /* Disable sw flow control */
-  options.c_oflag &= ~(IXON | IXOFF | IXANY); /* Disable sw flow control */
-TRACEF("ericsson_cb: **2"NL);
 
   /* driver settings for raw input and output */
   options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
   options.c_oflag &= ~OPOST;
 
   /* set parameters */  
-TRACEF("ericsson_cb: **3"NL);                      
   tcsetattr(cb_fd, TCSANOW, &options);
 
   /* init states*/
-TRACEF("ericsson_cb: **4"NL);
   cb_init_mods();
 
   TRACEF("ericsson_cb: done"NL);
