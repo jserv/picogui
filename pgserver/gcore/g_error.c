@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.21 2001/03/19 05:59:28 micahjd Exp $
+/* $Id: g_error.c,v 1.22 2001/04/05 03:32:25 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -79,6 +79,8 @@ char const deadcomp_bits[] = {
 void guru(const char *fmt, ...) {
   struct fontdesc *df=NULL;
   char msgbuf[256];  /* Cruftee! */
+  char *p,*pline;
+  char c;
   va_list ap;
   struct cliprect screenclip;
    
@@ -116,6 +118,15 @@ void guru(const char *fmt, ...) {
   outtext(df,10+deadcomp_width,5,VID(color_pgtohwr) (0xFFFFFF),msgbuf,
 	  &screenclip);
   VID(update) (0,0,vid->lxres,vid->lyres);
+
+#ifdef CONFIG_STDERR_GURU
+  /* Mirror the message on stderr, prefix each line with "GURU:  " */
+  for (c=1,pline=msgbuf;c;pline=p+1) {
+     for (p=pline;*p && *p!='\n';p++);
+     c=*p; *p=0;
+     fprintf(stderr,"GURU:  %s\n",pline); 
+  }
+#endif
 }
 
 #endif /* DEBUG_ANY */

@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.33 2001/03/26 02:20:18 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.34 2001/04/05 03:32:25 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -1170,6 +1170,154 @@ void def_sprite_protectarea(struct cliprect *in,struct sprite *from) {
      (*vid->sprite_hide) (from);
 }
 
+/* Optional
+ *   This is called for every bitmap when entering a new bpp or loading
+ *   a new driver. Converts a bitmap from a linear array of 32-bit
+ *   pgcolor values to the hwrcolors for this mode
+ *
+ * Default implementation: stdbitmap
+ */
+g_error def_bitmap_modeconvert(struct stdbitmap **bmp) {
+   struct stdbitmap *destbit,*srcbit;
+   u32 *src;
+   u8 *destline,*dest;
+   int oshift;
+   int shiftset  = 8-vid->bpp;
+   g_error e;
+   int h,i,x,y;
+   hwrcolor c;
+   
+   /* New bitmap at our present bpp */
+   srcbit = *bmp;
+   e = (*vid->bitmap_new)(&destbit,srcbit->w,srcbit->h);
+   errorcheck;
+
+   src = (u32 *) srcbit->bits;
+   dest = destline = destbit->bits;
+   
+   for (h=srcbit->h,x=y=0;h;h--,y++,dest=destline+=destbit->pitch) {      
+      for (oshift=shiftset,i=srcbit->w,x=0;i;i--,x++) {	 
+	 /* Read in a pixel */
+	 c = (*vid->color_pgtohwr)(*(src++));
+	 
+	 /* Output in new device bpp */
+	 switch (vid->bpp) {
+	  case 1:
+	  case 2:
+	  case 4:
+	    if (oshift==shiftset)
+	      *dest = c << oshift;
+	    else
+	      *dest |= c << oshift;
+	    if (!oshift) {
+	       oshift = shiftset;
+	       dest++;
+	    }
+	    else
+	      oshift -= vid->bpp;
+	    break;
+	    
+	  case 8:
+	    *(((unsigned char *)dest)++) = c;
+	    break;
+	    
+	  case 16:
+	    *(((unsigned short *)dest)++) = c;
+	    break;
+	    
+	  case 24:
+	    *(dest++) = (unsigned char) c;
+	    *(dest++) = (unsigned char) (c >> 8);
+	    *(dest++) = (unsigned char) (c >> 16);
+	    break;
+	    
+	  case 32:
+	    *(((unsigned long *)dest)++) = c;
+	    break;
+	 }
+      }   
+   }
+   
+   /* Clean up */
+   *bmp = destbit;
+   (*vid->bitmap_free)(srcbit);
+   return sucess;
+}
+   
+/* Optional
+ *   The reverse of bitmap_modeconvert, this converts the bitmap from
+ *    the hardware-specific format to a pgcolor array
+ * 
+ * Default implementation: stdbitmap
+ */
+g_error def_bitmap_modeunconvert(struct stdbitmap **bmp) {
+   struct stdbitmap *destbit,*srcbit;
+   u8 *src,*srcline;
+   u32 *dest;  /* Must be word-aligned, this is always the case if
+		* struct stdbitmap is padded correctly */
+   int oshift;
+   int shiftset  = 8-vid->bpp;
+   g_error e;
+   int h,i,x,y;
+   hwrcolor c;
+   
+   /* New bitmap at 32bpp (this is hackish, but I don't see anything
+    * seriously wrong with it... yet...) 
+    */
+   srcbit = *bmp;
+   i = vid->bpp;
+   vid->bpp = 32;
+   e = (*vid->bitmap_new)(&destbit,srcbit->w,srcbit->h);
+   vid->bpp = i;
+   errorcheck;
+   
+   src = srcline = srcbit->bits;
+   dest = destbit->bits;
+   
+   for (h=srcbit->h,x=y=0;h;h--,y++,src=srcline+=srcbit->pitch) {      
+      for (oshift=shiftset,i=srcbit->w,x=0;i;i--,x++) {
+	 
+	 /* Read in a pixel */
+	 switch (vid->bpp) {
+	  case 1:
+	  case 2:
+	  case 4:
+	    c = ((*src) >> oshift) & ((1<<vid->bpp)-1);
+	    if (!oshift) {
+	       oshift = shiftset;
+	       src++;
+	    }
+	    else
+	      oshift -= vid->bpp;
+	    break; 
+	    
+	  case 8:
+	    c = *(src++);
+	    break;
+	    
+	  case 16:
+	    c = *(((u16*)src)++);
+	    break;
+	    
+	  case 24:
+	    c = (*(src++)) | ((*(src++))<<8) | ((*(src++))<<16);
+	    break;
+	    
+	  case 32:
+	    c = *(((u32*)src)++);
+	    break;     
+	 }
+	 
+	 *(dest++) = (*vid->color_hwrtopg)(c);
+      }   
+   }
+   
+   /* Clean up */
+   *bmp = destbit;
+   (*vid->bitmap_free)(srcbit);
+   return sucess;
+}
+   
 /* Load our driver functions into a vidlib */
 void setvbl_default(struct vidlib *vid) {
   /* Set defaults */
@@ -1211,6 +1359,8 @@ void setvbl_default(struct vidlib *vid) {
   vid->bitmap_rotate90 = &def_bitmap_rotate90;
   vid->entermode = &def_enterexitmode;
   vid->exitmode = &def_enterexitmode;
+  vid->bitmap_modeconvert = &def_bitmap_modeconvert;
+  vid->bitmap_modeunconvert = &def_bitmap_modeunconvert;
 }
 
 /* The End */

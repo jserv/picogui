@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.71 2001/03/31 01:17:00 micahjd Exp $
+/* $Id: widget.c,v 1.72 2001/04/05 03:32:25 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -378,7 +378,7 @@ void redraw_bg(struct widget *self) {
 /* This is called to reinit the cursor handling when a layer is
    popped from the dtstack
 */
-void reset_pointer(void) {
+void reset_widget_pointers(void) {
   under = prev_under = capture = NULL;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.33 2001/03/26 00:27:12 micahjd Exp $
+/* $Id: video.h,v 1.34 2001/04/05 03:32:25 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -59,10 +59,10 @@ struct stdbitmap {
   u8  *bits;    /* actual format depends on bpp */
   s16 w,h;
   u16 pitch;       /* Spacing between lines, in bytes */
-
   /* Should 'bits' be freed also when bitmap is freed? */
-  unsigned int freebits : 1;    
-};
+  u16 freebits;    
+};  /* NOTE: Allocating freebits as u16 is overkill, but this struct
+     * must be word-aligned! */
 
 /* A group of functions to deal with one bitmap format */
 struct bitformat {
@@ -417,6 +417,23 @@ struct vidlib {
    */
   g_error (*bitmap_getsize)(hwrbitmap bmp,int *w,int *h);
 
+  /* Optional
+   *   This is called for every bitmap when entering a new bpp or loading
+   *   a new driver. Converts a bitmap from a linear array of 32-bit
+   *   pgcolor values to the hwrcolors for this mode
+   *
+   * Default implementation: stdbitmap
+   */
+  g_error (*bitmap_modeconvert)(hwrbitmap *bmp);
+   
+  /* Optional
+   *   The reverse of bitmap_modeconvert, this converts the bitmap from
+   *    the hardware-specific format to a pgcolor array
+   * 
+   * Default implementation: stdbitmap
+   */
+  g_error (*bitmap_modeunconvert)(hwrbitmap *bmp);
+   
   /***************** Sprites */
 
   /* Optional
@@ -594,6 +611,11 @@ extern struct bitformat bitmap_formats[];
 
 int pnm_detect(u8 *data, u32 datalen);
 g_error pnm_load(struct stdbitmap **bmp, u8 *data, u32 datalen);
+
+/* Runs the supplied function for all loaded bitmaps
+ * (a superset of handle_iterate's results)
+ */
+g_error bitmap_iterate(g_error (*iterator)(void **pbit));
 
 /************** Debugging */
 void videotest_run(int number);

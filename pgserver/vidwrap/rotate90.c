@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.10 2001/03/26 00:27:14 micahjd Exp $
+/* $Id: rotate90.c,v 1.11 2001/04/05 03:32:25 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -177,28 +177,7 @@ g_error rotate90_bitmap_getsize(hwrbitmap *bmp,int *w,int *h) {
 /* Rotate all loaded bitmaps when this mode is entered/exited */
 
 g_error rotate90_entermode(void) {
-   /* Rotate all bitmaps with handles, the default cursor,
-    * and al sprite backbuffers */
-   struct sprite *spr;
-   g_error e;
-   
-   e = handle_iterate(PG_TYPE_BITMAP,vid->bitmap_rotate90);
-   errorcheck;
-   
-   if (defaultcursor_bitmap) {           /* If we are rotating by default
-					  * this might be during init
-					  * before cursor is alloc'd */
-      e = (*vid->bitmap_rotate90)(&defaultcursor_bitmap);
-      errorcheck;
-      e = (*vid->bitmap_rotate90)(&defaultcursor_bitmask);
-      errorcheck;
-   }
-   for (spr=spritelist;spr;spr=spr->next) {
-      e = (*vid->bitmap_rotate90)(&spr->backbuffer);
-      errorcheck;
-   }
-      
-   return sucess;
+   return bitmap_iterate(vid->bitmap_rotate90);
 }
 
 g_error rotate90_exitmode(void) {

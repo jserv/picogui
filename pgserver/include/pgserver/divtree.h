@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.13 2001/03/23 00:35:05 micahjd Exp $
+/* $Id: divtree.h,v 1.14 2001/04/05 03:32:25 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -207,7 +207,7 @@ void r_dtupdate(struct divtree *dt);
 g_error dts_new(void);
 void dts_free(void);
 g_error dts_push(void);
-void dts_pop(void);
+void dts_pop(struct divtree *dt);
 
 /* Update the screen, starting at 'subtree'
    Sprites are hidden first, if needed.

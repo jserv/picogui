@@ -1,3 +1,70 @@
+
+2001-04-04    Micah Dowty <micahjd@users.sourceforge.net>
+
+In working on video mode code, found an old bug bothering me: closing a
+popup box that isn't on top instead deletes the top popup box's divtree and
+leaves a blank divtree that freezes the screen. This bug is demonstrated
+when, in omnibar, the vidpopup app starts before it closes the application
+menu.
+
+Got the mode conversion working! Because PicoGUI only stores bitmaps in the
+device-dependant format, detail is permanently lost when converting to a
+lower bpp. For this reason, themes and possibly app bitmaps should be reloaded
+when switching to a higher bpp. There will be a new event to request
+reloading from the client, and the server will automatically be able to
+reload (from file) all themes passed on the command line.
+
+      * vidwrap/rotate90.c: Removed the 'iterate for all bitmaps' code
+        to place it in its own function
+	
+      * gcore/video.c: Added a utility function, bitmap_iterate, that calls
+        a callback function for all loaded bitmaps, added calls to modeconvert
+	and modeunconvert in setmode.
+	
+      * widget/widget.c: Renaming reset_pointer() to reset_widget_pointers()
+        so it can stop confusing me
+	
+      * gcore/div.c: dts_pop() now makes you specify which divtree to delete
+      
+      * widget/popup.c: Changed for new dts_pop() syntax (currently this is
+        the only place dts_push() and dts_pop() are used)
+	
+      * gcore/g_error.c: Added code to guru() so it mirrors its messages
+        on stderr
+
+      * config.in: Added compile-time option to control stderr GURU output
+
+      * gcore/defaultvbl.c: Added the actual depth-conversion loops in
+        modeconvert and modeunconvert. Now the runtime depth switching works!
+
+      * cli_c/demos/omnibar.c: Fixed a divide-by-zero SIGFPE that I noticed.
+        It's interesting how testing PicoGUI on computers of all different
+	speeds helps catch the weird race conditions :)
+	
+      * widget/canvas.c: Fixed a bug in colorconv as pointed out by Oliver
+        that prevented colored text from converting properly
+
+2001-04-03    Micah Dowty <micahjd@users.sourceforge.net>
+
+Got linux booting on the Nino ok, but the framebuffer doesn't work.
+
+2001-04-02    Micah Dowty <micahjd@users.sourceforge.net>
+
+I didn't get much done over spring break, but maybe I'll get a lot done today!
+(Hahahaha!) Oh well...
+Nifty!! A friend of the network admin here at our school had an extra
+"Palm-Size" PC, a Philips Nino 300-series with 8MB memory. You know what
+they say about giving geeks hardware! Expect a PicoGUI port to this soon. It
+runs WinCE (which I discovered is awfully confusing on a palm computer) so
+maybe a PicoGUI port to WinCE is in order first, but it it reported to run
+Linux too!
+      
+      * include/pgserver/video.h: Adding new video functions to convert
+        between depths at runtime. Similar to entermode and exitmode, the
+	function bitmap_modeconvert and bitmap_modeunconvert convert a bitmap
+	between a linear array of 32-bit pgcolors and a color-depth-specific
+	format used by the driver.
+
 2001-03-30    Micah Dowty <micahjd@users.sourceforge.net>
 
 Still don't have bit depth changing working correctly, but there are a lot
@@ -8,6 +75,9 @@ Happy Friday!
         backups when I realized it wasn't in CVS
 
       * widget/field.c: Fixed bug in cursor positioning when PG_WP_TEXT is set
+
+      * widget/widget.c: Added a new debugging key, CTRL-ALT-P, to display
+        all loaded bitmaps
 
 2001-03-29    Micah Dowty <micahjd@users.sourceforge.net>
 

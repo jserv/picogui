@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.37 2001/03/19 05:59:28 micahjd Exp $
+/* $Id: div.c,v 1.38 2001/04/05 03:32:25 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -379,9 +379,7 @@ void dts_free(void) {
   g_free(dts);
 }
 
-/* dts_push creates a new layer, and dts_pop discards the top layer, and
-   sets the DIVTREE_ALL_REDRAW flag on the new top tree
-*/
+/* dts_push creates a new layer, and dts_pop deletes a layer */
 
 g_error dts_push(void) {
   g_error e;
@@ -396,13 +394,23 @@ g_error dts_push(void) {
   return sucess;
 }
 
-void dts_pop(void) {
-  struct divtree *condemn;
+void dts_pop(struct divtree *dt) {
+  struct divtree **p;
 
-  reset_pointer();
-  condemn = dts->top;
-  dts->top = dts->top->next;
-  divtree_free(condemn);
+  /* Traverse the stack, find the pointer to this tree */
+  p = &dts->top;
+  while (*p) {
+     if (*p == dt) break;
+     p = &((*p)->next);
+  }
+#ifdef DEBUG_WIDGET
+   if (*p != dt)
+     guru("In dts_pop(): This shouldn't happen!");
+#endif
+   
+  reset_widget_pointers();
+  *p = (*p)->next;
+  divtree_free(dt);
 }
 
 /* Aligns a 'thing' of specified width and height in the specified divnode

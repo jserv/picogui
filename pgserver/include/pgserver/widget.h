@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.22 2001/03/29 20:38:04 micahjd Exp $
+/* $Id: widget.h,v 1.23 2001/04/05 03:32:25 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -300,7 +300,7 @@ void request_focus(struct widget *self);
 /**** These are entry points for the various input drivers. */
 
 /* Reset pointers for the pointing device when a layer is popped */
-void reset_pointer(void);
+void reset_widget_pointers(void);
 
 /* This is a pointing device event.
    The trigger parameter is a struct pointing_trigger.

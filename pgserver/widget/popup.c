@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.29 2001/03/23 00:35:05 micahjd Exp $
+/* $Id: popup.c,v 1.30 2001/04/05 03:32:25 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -148,7 +148,7 @@ void popup_remove(struct widget *self) {
 
   if (!in_shutdown) {
     r_divnode_free(self->in);
-    dts_pop();
+    dts_pop(self->dt);
     self->dt = NULL;
   }
 

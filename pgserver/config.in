@@ -42,6 +42,7 @@ bool 'Theme debugging'                  DEBUG_THEME
 bool 'Client/server debugging'          DEBUG_NET
 bool 'Initialization debugging'         DEBUG_INIT
 bool 'Memory debugging'                 DEBUG_MEMORY
+bool 'Mirror guru() output on stderr'   CONFIG_STDERR_GURU
 endmenu
 
 mainmenu_option next_comment

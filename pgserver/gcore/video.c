@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.33 2001/03/23 00:35:05 micahjd Exp $
+/* $Id: video.c,v 1.34 2001/04/05 03:32:25 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -147,10 +147,18 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
    g_error e;
    struct divtree *tree;
    struct sprite *spr;
-   u8 i;
+   u8 i,converting_mode;
 
+   /* Must be done first */
    if (vidwrap->exitmode) {
       e = VID(exitmode)();
+      errorcheck;
+   }
+   
+   /* If the new bpp is different, use modeconvert/modeunconvert */
+   converting_mode = (bpp != vid->bpp);
+   if (converting_mode) {
+      e = bitmap_iterate(vid->bitmap_modeunconvert);
       errorcheck;
    }
       
@@ -227,6 +235,12 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
 	  clip_popup(tree->head->next->div);
      }
 
+   /* Convert to the new color depth if necessary */
+   if (converting_mode) {
+      e = bitmap_iterate(vid->bitmap_modeconvert);
+      errorcheck;
+   }
+   
    return VID(entermode)();
 }
 
@@ -296,6 +310,32 @@ void realize_updareas(void) {
    } 
    
    lock = 0;
+}
+
+g_error bitmap_iterate(g_error (*iterator)(void **pbit)) {   
+   
+   /* Rotate all bitmaps with handles, the default cursor,
+    * and all sprite backbuffers */
+   struct sprite *spr;
+   g_error e;
+   
+   e = handle_iterate(PG_TYPE_BITMAP,iterator);
+   errorcheck;
+   
+   if (defaultcursor_bitmap) {           /* If we are rotating by default
+					  * this might be during init
+					  * before cursor is alloc'd */
+      e = (*iterator)(&defaultcursor_bitmap);
+      errorcheck;
+      e = (*iterator)(&defaultcursor_bitmask);
+      errorcheck;
+   }
+   for (spr=spritelist;spr;spr=spr->next) {
+      e = (*iterator)(&spr->backbuffer);
+      errorcheck;
+   }
+      
+   return sucess;
 }
 
 /* The End */

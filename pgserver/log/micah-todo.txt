@@ -57,6 +57,7 @@ PicoGUI Bugs
 - FIXMEs
 - retest all video drivers
 - tiled blit() src_x and src_y ignored in most drivers
+- tileblit() hangs in linear8
 - pgGetText of non-text handles crashes server
 - memory leak (doesn't delete app_info)
 - Deleting a handle returned from WP_TEXT of a field crashes the server. Need
