@@ -82,7 +82,7 @@ table th {
     border-right: 1px solid #8CACBB;
     color: Black;
     font-weight: normal;
-    padding: 0.2em 1em;
+    padding: 0.4em 1em;
     text-transform: lowercase;
     white-space: nowrap;
 }
@@ -94,11 +94,11 @@ td.top {
 
 table td {
     border-right: 1px solid #8CACBB;
-    padding: 0.3em 1em;
+    padding: 0.2em 1em;
     text-align: left;
 }
 
 .bargraph {
-    background: #DEE7EC;
-    border: 1px solid #8CACBB;
+    background: #DEECE7;
+    border: 1px solid #8CBBAC;
 }
