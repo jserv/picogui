@@ -15,11 +15,7 @@
 /* Texture properties */
 prop tInterlace, tWater, tPanel;
 
-/************************************ default *******/
-
 object default name = "Spinning Cube Demo (OpenGL)";
-
-/************************************ background *******/
 
 object background {
 
@@ -121,7 +117,6 @@ object background {
     
     Gl_disable(GL_TEXTURE_2D);
     Gl_disable(GL_DEPTH_TEST);
-    Gl_disable(GL_POLYGON_SMOOTH);
     Gl_popmatrix();
   };
 }
