@@ -1,4 +1,4 @@
-/* $Id: sc3ts.c,v 1.1 2002/01/10 13:50:44 micahjd Exp $
+/* $Id: sc3ts.c,v 1.2 2002/01/10 20:48:10 lonetech Exp $
  *
  * sc3ts.c - input driver for sc3 compatible touch screens
  *
@@ -54,12 +54,6 @@ struct sc3_event {
   u8 y_low;            /* upper half of vertical position */
   u8 pad;              /* pad to 32 bit */
 };                                                                                    
-
-static int minx = 76;
-static int miny = 86;
-static int maxx = 950;
-static int maxy = 935;
-
 int sc3_fd_activate(int fd) {
   u8 buttons;
   static u8 packet[3];
