@@ -1,4 +1,4 @@
-/* $Id: r3912ts.c,v 1.2 2001/04/18 01:08:43 micahjd Exp $
+/* $Id: r3912ts.c,v 1.3 2001/08/14 07:04:23 micahjd Exp $
  *
  * r3912ts.c - input driver for r3912 touch screen found on the VTech Helio
  *             and others. Other touch screens using the same data format should
@@ -157,8 +157,8 @@ void handle_silkscreen_buttons(int x, int y, int state) {
    short key;
    /* Mapping of silkscreen buttons to keys. */
    static short keymap[] = {
-      PGKEY_MENU, PGKEY_RETURN, PGKEY_LSUPER,
-      PGKEY_CAPSLOCK, PGKEY_ESCAPE, PGKEY_NUMLOCK
+      PGKEY_F1, PGKEY_RETURN, PGKEY_F3,
+      PGKEY_F2, PGKEY_ESCAPE, PGKEY_F4
    };
 
    /* Ignore stylus dragging in buttons */
