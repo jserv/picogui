@@ -1,4 +1,4 @@
-/* $Id: theme.c,v 1.4 2000/04/29 21:57:45 micahjd Exp $
+/* $Id: theme.c,v 1.5 2000/05/05 22:28:07 micahjd Exp $
  *
  * theme.h - This defines the structures and functions for themes,
  * parameters defining the way widgets are drawn that are reconfigurable
@@ -76,10 +76,59 @@ struct element current_theme[E_NUM] = {
     {
       {dtc_toolbar,black,0,0}
     }
-  }
-  
-};
+  },
 
+  /* scrollbar.border */ {
+    1,1,-2,-2,
+    ELEM_FLAT,
+    {
+      {black,black,0,0},
+      {black,black,0,0},
+      {black,black,0,0}
+    }
+  },
+
+  /* scrollbar.fill */ {
+    0,0,0,0,
+    ELEM_FLAT,
+    {
+      {dtc_toolbar,black,0,0},
+      {dtc_toolbar,black,0,0},
+      {dtc_toolbar,black,0,0}  
+    }
+  },
+
+  /* scrollind.border */ {
+    0,1,0,-2,
+    ELEM_FLAT,
+    {
+      {black,black,0,0},
+      {black,black,0,0},
+      {black,black,0,0}
+    }
+  },
+
+  /* scrollind.fill */ {
+    0,0,0,0,
+    ELEM_FLAT,
+    {
+      {white,black,0,0},
+      {white,black,0,0},
+      {dtc_btn,black,0,0}
+    }
+  },
+  
+  /* scrollind.overlay */ {
+    0,0,0,0,
+    ELEM_NULL,
+    {
+      {black,black,0,0},
+      {black,black,0,0},
+      {black,black,0,0}
+    }
+  },
+
+};
 
 /* Creates a gropnode representing an element.
  * Depending on the type and the size, create a gradient, rectangle,

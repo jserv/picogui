@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.4 2000/04/29 21:57:45 micahjd Exp $
+/* $Id: scroll.c,v 1.5 2000/05/05 22:28:07 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -26,19 +26,25 @@
  */
 
 #include <widget.h>
+#include <theme.h>
+#include <g_error.h>
 
 void scrollbar(struct divnode *d) {
-  int ind_h = d->param.i * (d->h-5) / 100;
+  int x,y,w,h;
 
-  /*
-  grop_rect(&d->grop,1,0,d->w-1,d->h,0); 
-  grop_bar(&d->grop,0,0,d->h,paneledge);
-  grop_slab(&d->grop,1,ind_h++,d->w-1,);
-  grop_slab(&d->grop,1,ind_h++,d->w-1,gray);
-  grop_slab(&d->grop,1,ind_h++,d->w-1,ltgray);
-  grop_slab(&d->grop,1,ind_h++,d->w-1,gray);
-  grop_slab(&d->grop,1,ind_h,d->w-1,black);
-  */
+  /* Background for the whole bar */
+  x=y=0; w=d->w; h=d->h;
+  addelement(&d->grop,&current_theme[E_SCROLLBAR_BORDER],&x,&y,&w,&h,1);
+  addelement(&d->grop,&current_theme[E_SCROLLBAR_FILL],&x,&y,&w,&h,1);
+
+  /* Within the remaining space, figure out where the indicator goes */
+  y += d->param.i * (h-HWG_BUTTON) / 100;
+  h = HWG_BUTTON;
+
+  /* Add the indicator elements */
+  addelement(&d->grop,&current_theme[E_SCROLLIND_BORDER],&x,&y,&w,&h,1);
+  addelement(&d->grop,&current_theme[E_SCROLLIND_FILL],&x,&y,&w,&h,1);
+  addelement(&d->grop,&current_theme[E_SCROLLIND_OVERLAY],&x,&y,&w,&h,1);
 }
 
 /* Nice and simple, the oncalc does most of the work */
