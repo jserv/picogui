@@ -1,0 +1,28 @@
+/* The Clipper's Dream
+
+   Not a real useful theme or anything, but a useful device for testing
+   the rendering engine's clipping capabilities
+*/
+
+object default {
+   bgfill = fillstyle {
+      var bright,dark;
+      var delta,i;
+      
+      bright = ColorConv(0x008000);
+      dark = ColorConv(0x004000);
+      Rect(x,y,w,h,ColorConv(0x000000));
+
+      Frame(x-4,y-4,w,h,bright);
+      Frame(x+4,y+4,w,h,bright);
+
+      Line(x-20,y,w+40,h,dark);
+   };
+   
+   fgcolor = 0xFFFF00;
+   spacing = 0;
+   margin = 0;
+   width = 17;
+   height = 17;
+}
+   

@@ -1,4 +1,4 @@
-/* $Id: aqua.ths,v 1.23 2000/11/05 05:08:08 micahjd Exp $
+/* $Id: aqua.ths,v 1.24 2000/12/29 21:19:21 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
@@ -59,8 +59,8 @@ object base.display {
     Rect(x+5,y+10,w-10,h-20,ColorConv(0xe7e7e7));
 
     /* space from the edge */
-    x = x+3; y = y+3;
-    w = w-6; h = h-6;
+    x = x+2; y = y+2;
+    w = w-4; h = h-4;
   };
 }
 
@@ -68,26 +68,22 @@ object indicator {
   /* Same overlay as scroll bar */
   overlay = Copy(scroll::overlay);
   width = 16;
-  margin = 3;
+  margin = 0;
 }
 
 /* Nice scrollbar thumb (doubles as indicator overlay) */
 object scroll {
   bitmap2 = LoadBitmap("data/aq_thumb_v.pnm");
+  bitmap3 = LoadBitmap("data/aq_thumb_h.pnm");
   overlay = fillstyle {
+    /* This would all be much nicer with real if/else conditionals */
+    var hz,bmp;
+    hz = w>h;
+    bmp = hz ? scroll::bitmap3 : scroll::bitmap2;
 
-    /* Make a minimum height 
-     * FIXME: With real if/else conditionals this would
-     * be _much_ nicer
-     */
-    var z;
-    z = h<10 ? 10-h : 0;
-    h = h>10 ? h : 10;
-    y = z ? y-z : y;
-
-    Bitmap(x,y,10,5,scroll::bitmap2,PG_LGOP_NONE,0,0);
-    Tilebitmap(x,y+5,10,h-10,scroll::bitmap2,0,5,10,10);
-    Bitmap(x,y+h-5,10,5,scroll::bitmap2,PG_LGOP_NONE,0,17);
+    Bitmap(x,y,hz?5:10,hz?10:5,bmp,PG_LGOP_NONE,0,0);
+    Tilebitmap(x+(hz?5:0),y+(hz?0:5),hz?w-10:w,hz?h:h-10,bmp,hz?5:0,hz?0:5,10,10);
+    Bitmap(hz?x+w-5:x,hz?y:y+h-5,hz?5:10,hz?10:5,bmp,PG_LGOP_NONE,hz?17:0,hz?0:17);
   };
   width = 13;
   margin = 0;
@@ -152,7 +148,7 @@ object zoombtn.hilight bitmap1 = LoadBitmap("data/aq_zoombtn_over.pnm");
 
 object box {
   height = 30;
-  margin = 4;
+  margin = 3;
   bgfill = Copy(base.display::bgfill);     // Use the same nifty box
   bitmap1 = Copy(base.display::bitmap1);
 }

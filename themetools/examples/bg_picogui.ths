@@ -1,0 +1,28 @@
+/* Background theme-
+ * PicoGUI logo centered on a black screen
+ */
+
+object background {
+   bitmap1 = LoadBitmap("data/pglogo.pnm");   /* 230x150 PicoGUI logo */
+   bgfill = fillstyle {
+      var bitmapx1,bitmapy1,bitmapx2,bitmapy2;
+      var bg;
+      
+      bg = ColorConv(0x000000);
+      
+      bitmapx1 = (w>>1) - 115;
+      bitmapy1 = (h>>1) - 75;
+      bitmapx2 = bitmapx1 + 230;
+      bitmapy2 = bitmapy1 + 150;
+      
+      Bitmap(x+bitmapx1,y+bitmapy1,230,150,bitmap1,PG_LGOP_NONE,0,0);
+      
+      /* Cover the sides in 4 pieces to avoid overdraw */
+      Rect(x,y,bitmapx1,h,bg);
+      Rect(x+bitmapx2,y,w-bitmapx2,h,bg);
+      Rect(x+bitmapx1,y,230,bitmapy1,bg);
+      Rect(x+bitmapx1,y+bitmapy2,230,h-bitmapy2,bg);
+   };
+}
+
+/* The End */
