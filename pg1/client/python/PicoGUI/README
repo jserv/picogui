@@ -24,3 +24,9 @@ Usage
   near future. In the meanwhile, it's a moving target, so this would
   be a waste of efforts. So, read the work-in-progress documentation
   at http://PyPicoGUI.laranja.org:8080/ and the sample scripts.
+
+Examples
+
+  There are some simple example applications written using this client
+  libraries in the PicoGUI source distribution, under pg1/apps/test/python.
+

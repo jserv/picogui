@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # A "simple as it gets" widget template
 import PicoGUI
 app = PicoGUI.Application('Greetings', PicoGUI.WTFile())

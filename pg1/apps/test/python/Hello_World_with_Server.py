@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # a version of Hello, World using the Server class
 
 import PicoGUI

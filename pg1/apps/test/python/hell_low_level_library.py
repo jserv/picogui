@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # low-level library version of Hello, World
 
 from PicoGUI import network, requests, responses, events

@@ -1,0 +1,39 @@
+<application text="Tab Test">
+	<tabpage text="Doodads">
+		<label font=":30" side="all"> Page 1 </label>
+	</tabpage>
+	<tabpage text="Widgets" font=":0:bold">
+		<label font=":30" side="all"> Page 2 </label>
+	</tabpage>
+	<tabpage text="Thingies" bitmap_src="/home/micah/software/crystal/16x16/apps/lime.png">
+		<label font=":30" side="all"> Page 3 </label>
+	</tabpage>
+	<tabpage text="Miscellania">
+		<label 
+			side="left"
+			sizemode="container fraction"
+			size="1/3"
+			bitmap_src="/home/micah/software/crystal/128x128/apps/penguin.png"
+			/>
+		<label 
+			side="left"
+			sizemode="container fraction"
+			size="1/3"
+			bitmap_src="/home/micah/software/crystal/128x128/apps/konsole2.png"
+			/>
+		<label 
+			side="left"
+			sizemode="container fraction"
+			size="1/3"
+			bitmap_src="/home/micah/software/crystal/128x128/apps/kscreensaver.png"
+			/>
+	</tabpage>
+	<tabpage text="Cruft" color="red">
+		<label side="all">And now for something completely different...</label>
+	</tabpage>
+	<tabpage text="Humor">
+		<scrollbox>
+			<textbox text_src="/home/micah/samples/albuquerque.txt"/>
+		</scrollbox>
+	</tabpage>
+</application>
