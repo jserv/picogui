@@ -23,7 +23,6 @@ int main(int argc,char **argv) {
    pgGradient(gc,11,61,48,48,25,0xFFFF00,0x0000FF);
    pgRect(gc,20,70,30,30);
    pgSetColor(gc,0xFFFFFF);
-   pgTextV(gc,25,95,pgNewString("pG"),0);
 
    pgEventLoop();
 }
