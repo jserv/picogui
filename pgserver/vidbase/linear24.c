@@ -1,4 +1,4 @@
-/* $Id: linear24.c,v 1.3 2002/01/30 12:03:16 micahjd Exp $
+/* $Id: linear24.c,v 1.4 2002/06/18 19:20:49 micahjd Exp $
  *
  * Video Base Library:
  * linear24.c - For 24bpp linear framebuffers
@@ -69,7 +69,7 @@ hwrcolor linear24_getpixel(hwrbitmap dest, s16 x,s16 y) {
      return def_getpixel(dest,x,y);  
 
    s = PIXELADDR(x,y);
-   return s[2] | (s[1]<<8) | (s[0]<<16);
+   return s[0] | (s[1]<<8) | (s[2]<<16);
 }
 
 /*********************************************** Accelerated (?) primitives */
