@@ -91,7 +91,7 @@ DRIVER_FBDEV=y
 #
 # Input Drivers
 #
-# CONFIG_TOUCHSCREEN is not set
+CONFIG_TOUCHSCREEN=y
 # DRIVER_ADC7843 is not set
 # DRIVER_SDLINPUT is not set
 # DRIVER_X11INPUT is not set
