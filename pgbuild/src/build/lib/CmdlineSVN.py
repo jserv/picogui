@@ -146,4 +146,4 @@ if __name__ == '__main__':
     repo = SVNRepository(sys.argv[1])
     progress = StdProgress()
     progress.task('Checking for updates').report('result', repo.isUpdateAvailable(sys.argv[2]))
-#    repo.update(sys.argv[2], progress.task('Testing CmdlineSVN update()'))
+    repo.update(sys.argv[2], progress.task('Testing CmdlineSVN update()'))
