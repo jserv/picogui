@@ -1,4 +1,4 @@
-/* $Id: textedit_llist.c,v 1.3 2003/01/01 03:43:09 micahjd Exp $
+/* $Id: textedit_llist.c,v 1.4 2003/03/10 23:48:28 micahjd Exp $
  * 
  * textedit_llist.c - generic doubly-linked list. Note that this list
  * includes metadata which allow for fast lookup of start/end of
@@ -14,19 +14,19 @@
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  * 
- * This program is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
  * 
  * Contributors:
  *   Chuck Groom, cgroom@bluemug.com, Blue Mug, Inc. July 2002. Used by
