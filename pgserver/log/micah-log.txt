@@ -1,3 +1,18 @@
+2001-03-23    Micah Dowty <micahjd@users.sourceforge.net>
+
+Cleaning up a few remaining issues... After that, I'm planning on
+implementing the necessary bitmap conversions to make depth switching work
+right. With all these things that can now be changed at runtime it would be
+nice to make some sort of menu to do it from. Ah, that's what pgl was going
+to be for :)
+
+      * config.defaults: Updated defaults, including rotation on by default
+            
+      * gcore/pgmain.c: Added -r command line option to rotate by default
+      
+      * vidwrap/rotate90.c: Now checks whether cursor is allocated before
+        rotating it, this prevents segfault with -r flag.
+
 2001-03-22    Micah Dowty <micahjd@users.sourceforge.net>
 
 Happy Friday! (my last day of school before spring break)

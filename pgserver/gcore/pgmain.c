@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.29 2001/03/17 04:16:34 micahjd Exp $
+/* $Id: pgmain.c,v 1.30 2001/03/23 23:10:19 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
 
     while (1) {
 
-      c = getopt(argc,argv,"fbhlx:y:d:v:i:t:s:");
+      c = getopt(argc,argv,"frbhlx:y:d:v:i:t:s:");
       if (c==-1)
 	break;
       
@@ -127,7 +127,13 @@ int main(int argc, char **argv) {
       case 'b':        /* Double-buffering */
         vidf |= PG_VID_DOUBLEBUFFER;
 	break;
-
+	 
+#ifdef CONFIG_ROTATE
+      case 'r':        /* Rotate */
+	vidf |= PG_VID_ROTATE90;
+	break;
+#endif
+	 
 #ifdef CONFIG_TEXT
       case 'l':        /* List */
 
@@ -265,7 +271,11 @@ int main(int argc, char **argv) {
 	     "  f : Fullscreen mode (if the driver supports it)\n"
 	     "  b : double-buffering (if the driver supports it)\n"
 	     "  h : This help message\n"
-	     "  l : List installed drivers and fonts\n\n"
+	     "  l : List installed drivers and fonts\n"
+#ifdef CONFIG_ROTATE
+	     "  r : Begin with screen rotated\n"
+#endif
+	     "\n"
 	     "  x width   : default screen width\n"
 	     "  y height  : default screen height\n"
 	     "  d depth   : default bits per pixel\n"

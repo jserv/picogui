@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.7 2001/03/22 00:20:38 micahjd Exp $
+/* $Id: rotate90.c,v 1.8 2001/03/23 23:10:19 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -182,8 +182,12 @@ g_error rotate90_entermode(void) {
    struct sprite *spr;
    /* FIXME: this actually could return an error... */
    handle_iterate(PG_TYPE_BITMAP,vid->bitmap_rotate90);
-   (*vid->bitmap_rotate90)(&defaultcursor_bitmap);
-   (*vid->bitmap_rotate90)(&defaultcursor_bitmask);
+   if (defaultcursor_bitmap) {           /* If we are rotating by default
+					  * this might be during init
+					  * before cursor is alloc'd */
+      (*vid->bitmap_rotate90)(&defaultcursor_bitmap);
+      (*vid->bitmap_rotate90)(&defaultcursor_bitmask);
+   }
    for (spr=spritelist;spr;spr=spr->next)
      (*vid->bitmap_rotate90)(&spr->backbuffer);
 
