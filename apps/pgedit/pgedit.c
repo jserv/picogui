@@ -1,4 +1,4 @@
-y/* Demonstrate the textbox widget's editing capabilities */
+/* Demonstrate the textbox widget's editing capabilities */
 
 #include <picogui.h>
 #include <stdio.h>
