@@ -30,8 +30,10 @@ int ggisselected(gridpos square);
 void ggselect(gridpos square);
 /* Deselects a square */
 void ggdeselect(gridpos square);
-/* Moves a brick of type newstatus; use -1,-1 as from coordinates to add */
+/* Moves a brick of type newstatus */
 void ggmove(gridpos from, gridpos to, squarestatus newstatus);
+/* Sets a square */
+void ggset(gridpos pos, squarestatus status);
 /* Finds the last selected square. None if a square has been deselected since */
 gridpos findselected(void);
 /* Gets the status of a square (player and brick type) */

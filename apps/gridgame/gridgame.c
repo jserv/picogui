@@ -4,6 +4,7 @@
 #include "gridgame.h"
 
 struct gridgame *register_ataxx(void);
+struct gridgame *register_overflow(void);
 
 static struct gridgame **games=NULL, *game=NULL;
 static int currentgame, totalgames=0, thobj=0;
@@ -32,15 +33,25 @@ static void redraw(void)
   pgSubUpdate(canvas);
  }
 
+void ggset(gridpos pos, squarestatus status)
+ {
+  if(ggisvalid(pos) && memcmp(&status, &SQ(pos), sizeof(status)))
+   {
+    doredraw=1;
+    SQ(pos)=status;
+   }
+ }
+
 void ggmove(gridpos from, gridpos to, squarestatus newstatus)
  {
   /* this is the only way for the games to put pieces on the board */
-  if(ggisvalid(to) && memcmp(&SQ(to),&newstatus,sizeof(newstatus)))
+  if(ggisvalid(from) && ggisvalid(to) &&
+      memcmp(&SQ(to),&newstatus,sizeof(newstatus)))
    {
     SQ(to)=newstatus;
     doredraw=1;
     if(to.x!=from.x || to.y!=from.y)
-      SQ(from).player=SQ(from).bricktype=0;
+      memset(&SQ(from), 0, sizeof SQ(from));
    }
  }
 
@@ -184,8 +195,12 @@ int main(int argc, char *argv[])
   int i=0, j;
 
   /* Initialize game list */
-  games=realloc(games, ++totalgames);
-  games[totalgames-1]=register_ataxx();
+  games=realloc(games, 2*sizeof(games[0]));
+  games[totalgames++]=register_ataxx();
+  games[totalgames++]=register_overflow();
+  /* For dynamically loaded games:
+   * games=realloc(games, (++totalgames)*sizeof(games[0]));
+   * games[totalgames-1]=register_yourgame(); */
   while(i<totalgames)
    {
     /* TODO: game unloading? */
@@ -199,7 +214,7 @@ int main(int argc, char *argv[])
   pgInit(argc, argv);
   app=pgRegisterApp(PG_APP_NORMAL, "Gridgame", 0);
   toolbar=pgNewWidget(PG_WIDGET_TOOLBAR, 0, 0);
-  canvas=pgNewWidget(PG_WIDGET_CANVAS, 0, 0);
+  canvas=pgNewWidget(PG_WIDGET_CANVAS, PG_DERIVE_AFTER, toolbar);
   pgBind(PGDEFAULT, PG_WE_PNTR_DOWN, evtPtrDown, NULL);
   pgBind(PGDEFAULT, PG_WE_PNTR_UP, evtPtrUp, NULL);
   pgBind(PGDEFAULT, PG_WE_BUILD, evtBuild, NULL);
@@ -207,12 +222,12 @@ int main(int argc, char *argv[])
   for(i=0; i<totalgames; i++)
    {
     pgNewWidget(PG_WIDGET_BUTTON, i?0:PG_DERIVE_INSIDE, i?0:toolbar);
-    pgSetWidget(PGDEFAULT, PG_WP_TEXT, pgNewString(games[i]->name));
+    pgSetWidget(PGDEFAULT, PG_WP_TEXT, pgNewString(games[i]->name), 0);
     pgBind(PGDEFAULT, PG_WE_ACTIVATE, evtNewGame, (void*)i);
    }
 
   /* Start game engine */
-  selectgame(0);	/* TODO: select other games */
+  selectgame(0);
 
   pgEventLoop();
   return 0;

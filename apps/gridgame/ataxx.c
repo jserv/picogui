@@ -9,16 +9,16 @@ static void ataxx_cleanup(void)
 
 static void ataxx_init(void)
  {
-  gridpos outside={-1,-1}, p={0,0};
+  gridpos p={0,0};
   squarestatus s={1, PIECE, 0};
 
-  ggmove(outside, p, s);
+  ggset(p, s);
   p.x=p.y=6;
-  ggmove(outside, p, s);
+  ggset(p, s);
   p.x=0; p.y=6; s.player=2;
-  ggmove(outside, p, s);
+  ggset(p, s);
   p.x=6; p.y=0;
-  ggmove(outside, p, s);
+  ggset(p, s);
  }
 
 static void ataxx_drag(int x1, int y1, int x2, int y2)

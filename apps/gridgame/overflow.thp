@@ -1,0 +1,33 @@
+#include "overflow.h"
+
+/* We're multiplying by odd fractions here */
+
+object custom {
+  name = "checkers.player1";
+  FOURQUARTERS = fillstyle {
+    SetColor(bgcolor);
+    Fellipse(x,y,w,h);
+  };
+  THREEQUARTERS = fillstyle {
+    SetColor(bgcolor);
+    Fellipse(x+50-100*w/230,y+50-100*w/230,100*w/115,100*h/115);
+  };
+  TWOQUARTERS = fillstyle {
+    SetColor(bgcolor);
+    Fellipse(x+50-100*w/286,y+50-100*h/286,100*w/143,100*h/143);
+  };
+  ONEQUARTER = fillstyle {
+    SetColor(bgcolor);
+    Fellipse(x+50-w/4,y+50-w/4,w/2,h/2);
+  };
+  OWNEDBUTEMPTY = fillstyle {
+    SetColor(bgcolor);
+    Ellipse(x+50-w/4,y+50-w/4,w/2,h/2);
+  };
+}
+
+object custom {
+  name = "checkers.player2";
+  parent = FindThemeObject("checkers.player1");
+}
+
