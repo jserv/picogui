@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.78 2002/01/18 11:14:34 lonetech Exp $
+/* $Id: dispatch.c,v 1.79 2002/01/19 08:11:54 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -138,6 +138,14 @@ g_error rqh_ping(int owner, struct pgrequest *req,
 
 g_error rqh_update(int owner, struct pgrequest *req,
 		   void *data, u32 *ret, int *fatal) {
+
+  /* Turn off DIVNODE_UNDERCONSTRUCTION flags for all
+   * divnodes this app owns. This flag ensures that the
+   * app's widgets won't actually be displayed until
+   * that app calls pgUpdate().
+   */
+  activate_client_divnodes(owner);
+
   update(NULL,1);
   return success;
 }

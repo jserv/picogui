@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.69 2002/01/16 19:47:25 lonetech Exp $
+/* $Id: div.c,v 1.70 2002/01/19 08:11:53 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -80,8 +80,23 @@ void divnode_split(struct divnode *n, struct rect *divrect,
   s16 split = n->split;
   int popupclip = 0;
 
+  /* DIVNODE_UNDERCONSTRUCTION _must_ be first, so it can
+   * override all the normal sizing flags.
+   */
+  if (n->flags & DIVNODE_UNDERCONSTRUCTION) {
+    nextrect->x = n->x;
+    nextrect->y = n->y;
+    nextrect->w = n->w;
+    nextrect->h = n->h;
+    
+    divrect->x = n->x;
+    divrect->y = n->y;
+    divrect->w = 0;
+    divrect->h = 0;
+  }
+
   /* Process as a popup box size */
-  if (n->flags & DIVNODE_SPLIT_POPUP) {
+  else if (n->flags & DIVNODE_SPLIT_POPUP) {
     s16 x,y,w,h,margin,i;
 
     n->flags &= ~DIVNODE_SPLIT_POPUP;   /* Clear flag */
@@ -521,7 +536,8 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
      }
      
      /* We're done */
-     n->flags &= ~(DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC);
+     if (!(n->flags & DIVNODE_UNDERCONSTRUCTION))
+       n->flags &= ~(DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC);
    }
    
    /* A child node might need a recalc even if we aren't forcing one */
@@ -538,9 +554,13 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
 void divnode_redraw(struct divnode *n,int all) {
    if (!n) return;
 
-   if (all || (n->flags & (DIVNODE_NEED_REDRAW | 
-			   DIVNODE_SCROLL_ONLY | 
-			   DIVNODE_INCREMENTAL) )) { 
+   /* Make sure the node needs redrawing and it's
+    * ready to be rendered.
+    */
+   if ( (all || (n->flags & (DIVNODE_NEED_REDRAW | 
+			     DIVNODE_SCROLL_ONLY | 
+			     DIVNODE_INCREMENTAL) )) &&
+	!(n->flags & DIVNODE_UNDERCONSTRUCTION) ) { 
      
      if (n->w && n->h)
        grop_render(n);
@@ -578,9 +598,10 @@ g_error newdiv(struct divnode **p,struct widget *owner) {
   errorcheck;
   memset(*p,0,sizeof(struct divnode));
   (*p)->flags = 
-     DIVNODE_NEED_RECALC | 
-     DIVNODE_SIZE_RECURSIVE |
-     DIVNODE_SIZE_AUTOSPLIT;
+    DIVNODE_NEED_RECALC | 
+    DIVNODE_SIZE_RECURSIVE |
+    DIVNODE_SIZE_AUTOSPLIT |
+    DIVNODE_UNDERCONSTRUCTION;
   (*p)->owner = owner;
   return success;
 }
@@ -596,6 +617,7 @@ g_error divtree_new(struct divtree **dt) {
   (*dt)->head->w = vid->lxres;
   (*dt)->head->h = vid->lyres;
   (*dt)->flags = DIVTREE_ALL_REDRAW;
+  (*dt)->head->flags &= ~DIVNODE_UNDERCONSTRUCTION;
   return success;
 }
 
@@ -703,8 +725,6 @@ void r_dtupdate(struct divtree *dt) {
 		 DIVTREE_NEED_RECALC | DIVTREE_ALL_NONTOOLBAR_REDRAW |
 		 DIVTREE_NEED_RESIZE);
 }
-
-/*********** Functions for managing the dtstack */
 
 /* Create a stack and its root node */
 g_error dts_new(void) {
@@ -1070,6 +1090,27 @@ struct divnode *divnode_findparent(struct divnode *tree,
   return NULL;
 }
 
+/* Turn off the DIVNODE_UNDERCONSTRUCTION flags for all divnodes owned by this client
+ */
+void r_activate_client_divnodes(int client, struct divnode *n) {
+  if (!n)
+    return;
+
+  if (n->owner && n->owner->owner==client)
+    n->flags &= ~DIVNODE_UNDERCONSTRUCTION;
+
+  r_activate_client_divnodes(client,n->next);
+  r_activate_client_divnodes(client,n->div);
+}
+void activate_client_divnodes(int client) {
+  struct divtree *dt;
+  for (dt=dts->top;dt;dt=dt->next) {
+    r_activate_client_divnodes(client, dt->head);
+    
+    /* It's likely that the nodes we just activated need to be calculated */
+    dt->flags |= DIVTREE_NEED_RECALC;
+  }
+}
 
 /* The End */
 

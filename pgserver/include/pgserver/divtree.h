@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.35 2002/01/14 07:52:38 micahjd Exp $
+/* $Id: divtree.h,v 1.36 2002/01/19 08:11:54 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -233,6 +233,12 @@ struct divnode {
 					   * calculating the preferred size. This also indicates
 					   * that the line can be automatically removed
 					   */
+#define DIVNODE_UNDERCONSTRUCTION (1<<29) /* This flag prevents a divnode from being calculated
+                                           * or rendered. The 'next' child inherits this div's
+					   * position, and the 'div' child is not calculated or
+					   * rendered. This flag is cleared in all widgets owned
+					   * by an app when that app waits for an event.
+					   */ 
 
 /* Side value macros and stuff */
 typedef unsigned short int sidet;
@@ -312,6 +318,10 @@ int popup_toolbar_passthrough(void);
 
 /* Returns nonzero if the specified divnode is within a toolbar root widget */
 int divnode_in_toolbar(struct divnode *div);
+
+/* Turn off the DIVNODE_UNDERCONSTRUCTION flags for all divnodes owned by this client
+ */
+void activate_client_divnodes(int client);
 
 /***************** smart resizing */
 

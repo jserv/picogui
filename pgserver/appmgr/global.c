@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.54 2002/01/16 23:04:26 micahjd Exp $
+/* $Id: global.c,v 1.55 2002/01/19 08:11:53 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -120,6 +120,10 @@ g_error appmgr_init(void) {
   
   e = mkhandle(&hbgwidget,PG_TYPE_WIDGET,-1,bgwidget);   
   errorcheck;
+
+  /* Turn off the background's DIVNODE_UNDERCONSTRUCTION flags
+   */
+  activate_client_divnodes(-1);
 
 #ifdef DEBUG_INIT
    printf("Init: appmgr: cursor sprite bitmaps\n");
