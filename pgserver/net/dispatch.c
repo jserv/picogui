@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.76 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: dispatch.c,v 1.77 2002/01/18 09:32:13 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -909,6 +909,10 @@ g_error rqh_render(int owner, struct pgrequest *req,
     if (owner != display_owner)
       return mkerror(PG_ERRT_BUSY,9);   /* Not the display owner */
     dest = vid->display;
+    
+    /* Keep quiet if output's disabled */
+    if (disable_output)
+      return success;
   }
   else {
     /* Validate the bitmap handle */

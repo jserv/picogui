@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.30 2002/01/18 00:27:10 micahjd Exp $
+/* $Id: g_error.c,v 1.31 2002/01/18 09:32:13 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -97,50 +97,53 @@ void guru(const char *fmt, ...) {
   }
   semaphore++;
 
-  /* Setup */
-  VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,VID(color_pgtohwr)(0),
-	     PG_LGOP_NONE);
-  rdhandle((void**)&df,PG_TYPE_FONTDESC,-1,defaultfont);
-  screenclip.x1 = screenclip.y1 = 0;
-  screenclip.x2 = vid->lxres-1;
-  screenclip.y2 = vid->lyres-1;
-
-#ifdef CONFIG_FORMAT_XBM
-  /* Icon (if this fails, no big deal) */
-  {
-     hwrbitmap icon;
-     if (!iserror(VID(bitmap_loadxbm) (&icon,deadcomp_bits,
-					 deadcomp_width,deadcomp_height,
-					 VID(color_pgtohwr) (0xFFFF80),
-					 VID(color_pgtohwr) (0x000000)))) {
-	VID(blit) (vid->display,5,5,deadcomp_width,deadcomp_height,
-		   icon,0,0,PG_LGOP_NONE);
-	VID(bitmap_free) (icon);
-     }
-  }
-#else
-   /* To appease the below code */
-# define deadcomp_width 0
-#endif
-     
   /* Format and print message */
   va_start(ap,fmt);
   vsnprintf(msgbuf,512,fmt,ap);
   va_end(ap);
+  
+  if (!disable_output) {
 
-  outtext(vid->display,df,10+deadcomp_width,5,VID(color_pgtohwr) (0xFFFFFF),
-	  msgbuf, &screenclip,PG_LGOP_NONE,0);
-  VID(update) (0,0,vid->lxres,vid->lyres);
-
-#ifdef CONFIG_STDERR_GURU
-  /* Mirror the message on stderr, prefix each line with "GURU:  " */
-  for (c=1,pline=msgbuf;c;pline=p+1) {
-     for (p=pline;*p && *p!='\n';p++);
-     c=*p; *p=0;
-     fprintf(stderr,"GURU:  %s\n",pline); 
-  }
+    /* Setup */
+    VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,VID(color_pgtohwr)(0),
+	       PG_LGOP_NONE);
+    rdhandle((void**)&df,PG_TYPE_FONTDESC,-1,defaultfont);
+    screenclip.x1 = screenclip.y1 = 0;
+    screenclip.x2 = vid->lxres-1;
+    screenclip.y2 = vid->lyres-1;
+    
+#ifdef CONFIG_FORMAT_XBM
+    /* Icon (if this fails, no big deal) */
+    {
+      hwrbitmap icon;
+      if (!iserror(VID(bitmap_loadxbm) (&icon,deadcomp_bits,
+					deadcomp_width,deadcomp_height,
+					VID(color_pgtohwr) (0xFFFF80),
+					VID(color_pgtohwr) (0x000000)))) {
+	VID(blit) (vid->display,5,5,deadcomp_width,deadcomp_height,
+		   icon,0,0,PG_LGOP_NONE);
+	VID(bitmap_free) (icon);
+      }
+    }
+#else
+    /* To appease the below code */
+# define deadcomp_width 0
 #endif
-
+    
+    outtext(vid->display,df,10+deadcomp_width,5,VID(color_pgtohwr) (0xFFFFFF),
+	    msgbuf, &screenclip,PG_LGOP_NONE,0);
+    VID(update) (0,0,vid->lxres,vid->lyres);    
+  }
+  
+#ifdef CONFIG_STDERR_GURU
+    /* Mirror the message on stderr, prefix each line with "GURU:  " */
+    for (c=1,pline=msgbuf;c;pline=p+1) {
+      for (p=pline;*p && *p!='\n';p++);
+      c=*p; *p=0;
+      fprintf(stderr,"GURU:  %s\n",pline); 
+    }
+#endif
+    
   semaphore--;
 }
 

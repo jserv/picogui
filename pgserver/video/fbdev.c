@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.21 2002/01/17 18:19:53 abergmann Exp $
+/* $Id: fbdev.c,v 1.22 2002/01/18 09:32:14 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -23,13 +23,16 @@
  * 
  * Contributors:
  * 
- * 
+ *  A lot of the VT switching code here was based on Microwindows.
+ *  Microwindows is Copyright (c) 2001 Century Software, Inc.
  * 
  */
 
 #include <pgserver/common.h>
 
 #include <pgserver/video.h>
+#include <pgserver/render.h>
+#include <pgserver/configfile.h>
 
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -39,22 +42,27 @@
 #include <linux/fb.h>
 #include <linux/vt.h>
 #include <linux/kd.h>
+#include <linux/vt.h>
+#include <signal.h>
+
+/**************************************** Globals */
 
 /* Macros to easily access the members of vid->display */
 #define FB_MEM   (((struct stdbitmap*)vid->display)->bits)
 #define FB_BPL   (((struct stdbitmap*)vid->display)->pitch)
 #define FB_TYPE(type,bpp)  (((type)<<8)|(bpp))
 
+#define DEFAULT_FB   "/dev/fb0"
+#define DEFAULT_TTY  "/dev/tty0"
+
 /* This information is only saved so we can munmap() and close()... */
 int fbdev_fd;
 unsigned long fbdev_mapsize;
+int ttyfd;
 
 /* Save screen info for color conversion */
 struct fb_fix_screeninfo fixinfo;
 struct fb_var_screeninfo varinfo;
-
-pgcolor fbdev_color_hwrtopg(hwrcolor c);
-hwrcolor fbdev_color_pgtohwr(pgcolor c);
 
 #ifdef CONFIG_FIX_VR3
 //Color map for the Agenda VR3
@@ -78,12 +86,118 @@ static unsigned short vr_lcd_intensity[16] = {
 };
 #endif
 
+/* Saved palette */
+static short fbdev_saved_r[16];
+static short fbdev_saved_g[16];
+static short fbdev_saved_b[16];
+
+/**************************************** Color conversion */
+
+/* Our own conversion routines for true color
+ */
+pgcolor fbdev_color_hwrtopg(hwrcolor c) {
+  return mkcolor( (u8)((c >> varinfo.red.offset  ) << (8 - varinfo.red.length  )),
+		  (u8)((c >> varinfo.green.offset) << (8 - varinfo.green.length)),
+		  (u8)((c >> varinfo.blue.offset ) << (8 - varinfo.blue.length )) );
+
+}
+hwrcolor fbdev_color_pgtohwr(pgcolor c) {
+  return ( (((u32)getred(c))   >> (8 - varinfo.red.length  )) << varinfo.red.offset   ) |
+         ( (((u32)getgreen(c)) >> (8 - varinfo.green.length)) << varinfo.green.offset ) |
+         ( (((u32)getblue(c))  >> (8 - varinfo.blue.length )) << varinfo.blue.offset  );
+}
+
+/**************************************** Virtual Terminals */
+#ifdef CONFIG_FB_VT
+
+/* The virtual terminal we're running on */
+int fbdev_vt;
+
+/* This is set when the SIGVT handler should be active */
+volatile u8 fbdev_handler_on = 0;
+
+/* This uses the null driver to disable all rendering.
+ * Here we store the former video driver so we can restore it.
+ */
+struct vidlib fbdev_savedlib;
+
+/* Signal to use for VT switching */
+#define SIGVT SIGUSR1
+
+/* This is a hack to get the console to realign the virtual screen's origin
+ * with the physical screen. Thanks Microwindows, i probably wouldn't have
+ * figured this one out on my own :)
+ *
+ * FIXME: As microwindows' vtswitch.c states, this is a horrible hack but it works
+ */
+void fbdev_redrawvt(int vt) {
+  ioctl(ttyfd, VT_ACTIVATE, vt == 1 ? 2 : 1);
+  ioctl(ttyfd, VT_ACTIVATE, vt);
+}
+
+/* Get the current VT 
+ */
+int fbdev_getvt(void) {
+  struct vt_stat stat;
+  ioctl(ttyfd, VT_GETSTATE, &stat);
+  return stat.v_active;
+}
+
+/* enable/disable graphical output */
+void fbdev_enable(void) {
+  struct divtree *p;
+  disable_output = 0;
+  for (p=dts->top;p;p=p->next)
+    p->flags |= DIVTREE_ALL_REDRAW;
+  update(NULL,1);
+}
+void fbdev_disable(void) {
+  disable_output = 1;
+}
+
+/* Indirectly, this is the signal handler. A few extra
+ * signals like SIGUSR1 get routed here
+ */
+void fbdev_message(u32 message, u32 param, u32 *ret) {
+  static int disabled = 0;
+  
+  if (message!=PGDM_SIGNAL || param!=SIGVT || !fbdev_handler_on)
+    return;
+
+  /* Toggle in and out of our VT.. 
+   * Set variables, redraw, acknowledge
+   */
+  if (disabled) {
+    ioctl(ttyfd, VT_RELDISP, VT_ACKACQ);
+    fbdev_enable();
+  }
+  else {
+    fbdev_disable();
+    ioctl(ttyfd, VT_RELDISP, 1);
+  }
+
+  disabled = !disabled;
+}
+
+#endif /* CONFIG_FB_VT */
+/**************************************** Framebuffer initalization */
+
 g_error fbdev_init(void) {
-   int fbdev_fd;
-   
    /* Open the framebuffer device */
-   if (!(fbdev_fd = open(get_param_str("video-fbdev","device","/dev/fb0"), O_RDWR)))
+   if (!(fbdev_fd = open(get_param_str("video-fbdev","device",DEFAULT_FB), O_RDWR)))
      return mkerror(PG_ERRT_IO,95);        /* Error opening framebuffer */
+
+   /* Open the tty. It's not a big deal if we can't open it, but we need it for
+    * VT switching and changing the console mode.
+    */
+   ttyfd = open(get_param_str("video-fbdev","ttydev",DEFAULT_TTY), O_RDWR);
+
+   /* Then again, if we're doing VT switching we really should have a TTY...
+    */
+   if (ttyfd <= 0) {
+     close(fbdev_fd);
+     return mkerror(PG_ERRT_IO,107);   /* can't open TTY */
+   }
    
    /* Get info on the framebuffer */
    if ((ioctl(fbdev_fd,FBIOGET_FSCREENINFO,&fixinfo) < 0) ||
@@ -153,6 +267,8 @@ g_error fbdev_init(void) {
       return mkerror(PG_ERRT_BADPARAM,101);   /* Unknown bpp */
    }
 
+   /* Optionally enable the slowvbl for debugging 
+    */
 #ifdef CONFIG_VBL_SLOWVBL
    if (get_param_int("video-fbdev","slowvbl",0))
      setvbl_slowvbl(vid);
@@ -178,14 +294,20 @@ g_error fbdev_init(void) {
 
    /* Put the console into graphics-only mode */
 #ifndef CONFIG_FB_NOGRAPHICS
-   {
-      int xx = open(get_param_str("video-fbdev","ttydev","/dev/tty"), O_RDWR);
-      if (xx >= 0) {
-	 ioctl(xx, KDSETMODE, KD_GRAPHICS);
-	 close(xx);
-      }
-   }
+   ioctl(ttyfd, KDSETMODE, KD_GRAPHICS);
 #endif
+
+   /* Save original palette */
+   {
+      struct fb_cmap colors;
+      colors.start = 0;
+      colors.len = 16;
+      colors.red = fbdev_saved_r;
+      colors.green = fbdev_saved_g;
+      colors.blue = fbdev_saved_b;
+      colors.transp = NULL;
+      ioctl(fbdev_fd, FBIOGETCMAP, &colors);
+   }
    
    /* Set up a palette for RGB simulation */
    if (vid->bpp == 8) {
@@ -232,45 +354,82 @@ g_error fbdev_init(void) {
    } 
 #endif
    
+#ifdef CONFIG_FB_VT
+   {
+     struct vt_mode mode;
+
+     /* Redraw the text mode to put us back at the
+      * top of the virtual screen
+      */
+     fbdev_vt = fbdev_getvt();
+     fbdev_redrawvt(fbdev_vt);
+     
+     /* Get the kernel to bug us about VT changes */
+     ioctl(ttyfd, VT_GETMODE, &mode);
+     mode.mode = VT_PROCESS;
+     mode.relsig = SIGVT;
+     mode.acqsig = SIGVT;
+     ioctl(ttyfd, VT_SETMODE, &mode);
+     
+     /* Ready to process VT switches! */
+     fbdev_handler_on = 1;
+   }
+#endif /* CONFIG_FB_VT */
+
    return success;
-}
-
-/* Our own conversion routines for true color
- */
-pgcolor fbdev_color_hwrtopg(hwrcolor c) {
-  return mkcolor( (u8)((c >> varinfo.red.offset  ) << (8 - varinfo.red.length  )),
-		  (u8)((c >> varinfo.green.offset) << (8 - varinfo.green.length)),
-		  (u8)((c >> varinfo.blue.offset ) << (8 - varinfo.blue.length )) );
-
-}
-hwrcolor fbdev_color_pgtohwr(pgcolor c) {
-  return ( (((u32)getred(c))   >> (8 - varinfo.red.length  )) << varinfo.red.offset   ) |
-         ( (((u32)getgreen(c)) >> (8 - varinfo.green.length)) << varinfo.green.offset ) |
-         ( (((u32)getblue(c))  >> (8 - varinfo.blue.length )) << varinfo.blue.offset  );
 }
 
 void fbdev_close(void) {
    /* Clear the screen before leaving */
    VID(rect)(vid->display,0,0,vid->lxres,vid->lyres,0,PG_LGOP_NONE);
 
+   /* Restore original palette */
+   {
+      struct fb_cmap colors;
+      colors.start = 0;
+      colors.len = 16;
+      colors.red = fbdev_saved_r;
+      colors.green = fbdev_saved_g;
+      colors.blue = fbdev_saved_b;
+      colors.transp = NULL;
+      ioctl(fbdev_fd, FBIOPUTCMAP, &colors);
+   }
+
    munmap(FB_MEM,fbdev_mapsize);
-   close(fbdev_fd);
    
    /* Back to text mode */
 #ifndef CONFIG_FB_NOGRAPHICS
-   {
-      int xx = open(get_param_str("video-fbdev","ttydev","/dev/tty"), O_RDWR);
-      if (xx >= 0) {
-	 ioctl(xx, KDSETMODE, KD_TEXT);
-	 close(xx);
-      }
+   ioctl(ttyfd, KDSETMODE, KD_TEXT);
+#endif
+
+#ifdef CONFIG_FB_VT
+   { 
+     struct vt_mode mode;
+     
+     /* Use automatic vt changes again
+      */
+     fbdev_handler_on = 0;
+     ioctl(ttyfd, VT_GETMODE, &mode);
+     mode.mode = VT_AUTO;
+     ioctl(ttyfd, VT_SETMODE, &mode);
+     
+     /* redraw the text mode screen */
+     fbdev_redrawvt(fbdev_getvt());
    }
 #endif
+
+   close(ttyfd);
+   close(fbdev_fd);
 }
 
 g_error fbdev_regfunc(struct vidlib *v) {
    v->init = &fbdev_init;
    v->close = &fbdev_close;
+
+#ifdef CONFIG_FB_VT
+   v->message = &fbdev_message;
+#endif
+
    return success;
 }
 

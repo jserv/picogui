@@ -1,4 +1,4 @@
-/* $Id: signals.c,v 1.1 2002/01/18 00:27:11 micahjd Exp $
+/* $Id: signals.c,v 1.2 2002/01/18 09:32:13 micahjd Exp $
  *
  * signal.c - Handle some fatal and not-so-fatal signals gracefully
  *            The SIGSEGV handling et cetera was inspired by SDL's
@@ -38,15 +38,18 @@
 
 /* Signals we need to handle... */
 static int pgserver_signals[] = {
+  /* Not-so-fatal signals */
+  SIGPIPE,
+  SIGCHLD,
+  /* Fatal signals */
+  SIGTERM,
   SIGSEGV,
   SIGBUS,
   SIGFPE,
   SIGQUIT,
-  SIGPIPE,
+  /* Extra signals */
   SIGUSR1,
-  SIGUSR2,
-  SIGCHLD,
-  SIGTERM,
+  SIGUNUSED,
   0
 };
 
@@ -70,6 +73,9 @@ void signals_handler(int sig) {
 
   case SIGUSR1:
   case SIGUSR2:
+#ifdef SIGUNUSED
+  case SIGUNUSED:
+#endif
     /* These signals may be used for VT switching,
      * debugging, or other custom doodads...
      */
@@ -97,17 +103,7 @@ void signals_handler(int sig) {
     /* Prevent infinite recursion */
     if (lock++) break;
 
-    /* First put up a guru message if we can, in case we're
-     * unsucessful in closing the video device
-     */
-#ifdef HAS_GURU
-    guru("pgserver received a fatal signal!\n"
-	 "Attempting to shut down...\n"
-	 "(If you can see this message, it probably means\n"
-	 "that shutdown has failed. Sorry.)");
-#endif
-
-    /* Try to shutdown the video driver if it's on */
+     /* Try to shutdown the video driver if it's on */
     if (vid && !in_init)
       VID(close)();
 

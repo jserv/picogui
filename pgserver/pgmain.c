@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.21 2002/01/18 00:27:10 micahjd Exp $
+/* $Id: pgmain.c,v 1.22 2002/01/18 09:32:13 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -129,6 +129,13 @@ int main(int argc, char **argv) {
    
   /*************************************** Command-line processing */
 
+#ifdef DEBUG_INIT
+   printf("Init: signal handler\n");
+#endif
+   
+   /* Get signals.c to init signal handlers */
+   signals_install();
+   
 #ifdef DEBUG_INIT
    printf("Init: processing command line\n");
 #endif
@@ -547,13 +554,6 @@ int main(int argc, char **argv) {
 
   /*************************************** More Initialization */
 
-#ifdef DEBUG_INIT
-   printf("Init: signal handler and subprocess\n");
-#endif
-   
-   /* Get signals.c to init signal handlers */
-   signals_install();
-   
 #ifdef CONFIG_VIDEOTEST   /* Video test mode */
     if (videotest_on==1)
        videotest_run(videotest_mode);

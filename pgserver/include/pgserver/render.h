@@ -1,4 +1,4 @@
-/* $Id: render.h,v 1.11 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: render.h,v 1.12 2002/01/18 09:32:13 micahjd Exp $
  *
  * render.h - data structures and functions for rendering and manipulating
  *            gropnodes (Graphics Operation nodes)
@@ -39,6 +39,11 @@
  * rendering should be disabled.
  */
 extern int display_owner;
+
+/* this can be turned on to disable rendering when pgserver is on a
+ * different virtual terminal, or it's minimized.
+ */
+extern int disable_output;
 
 /* The maximum number of parameters a gropnode could need (client
  * doesn't depend on this number. only for memory allocation purposes!)

@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.69 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: defaultvbl.c,v 1.70 2002/01/18 09:32:13 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -1467,6 +1467,9 @@ void def_sprite_show(struct sprite *spr) {
   static struct quad cr;
 
   DBG("spr = %p\n",spr);
+
+  if (disable_output)
+    return;
    
   if (spr->onscreen || !spr->visible || !vid->xres) return;
    
@@ -1595,6 +1598,9 @@ void def_sprite_hide(struct sprite *spr) {
   static struct quad cr;
 
   DBG("spr = %p\n",spr);
+
+  if (disable_output)
+    return;
    
   if ( (!spr->onscreen) ||
        (spr->ox == -1) )
@@ -1618,7 +1624,7 @@ void def_sprite_hide(struct sprite *spr) {
 
 void def_sprite_update(struct sprite *spr) {
   DBG("spr = %p\n",spr);
-   
+
   (*vid->sprite_hide) (spr);
   (*vid->sprite_show) (spr);
 
