@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.l,v 1.3 2000/09/24 07:28:14 micahjd Exp $
+/* $Id: pgtheme.l,v 1.4 2000/09/24 07:30:08 micahjd Exp $
  *
  * pgtheme.l - lexer for processing PicoGUI theme source code
  *
@@ -56,8 +56,8 @@ int errors = 0;
 \n              { lineno++; }
 [ \t\r]+        ;     /* ignore whitespace */
 "#".*           ;     /* script-style comment */
-"//".*          ;     /* c++ comment */
-"/*"            { BEGIN COMMENT; }
+"//".*          ;     /* C++ comment */
+"/*"            { BEGIN COMMENT; } /* C comment */
 <COMMENT>\n     { lineno++; }
 <COMMENT>"*/"   { BEGIN 0; }
 <COMMENT>.      ;
