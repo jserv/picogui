@@ -1,4 +1,4 @@
-/* $Id: svgafb.c,v 1.1 2000/12/31 22:13:03 micahjd Exp $
+/* $Id: svgafb.c,v 1.2 2001/01/12 04:49:01 micahjd Exp $
  *
  * svgafb.c - A driver for linear-framebuffer svga devices that uses the linear*
  *          VBLs instead of the default vbl and libvgagl.
@@ -32,18 +32,33 @@
 
 #ifdef DRIVER_SVGAFB
 
-//#define DOUBLEBUFFER
-
-/* This creates no actual output, and writes only to the back buffer.
- * For debugging only, and must be used with DOUBLEBUFFER on */
-// #define VIRTUAL
-
+#include <pgserver/inlstring.h>    /* Fast __memcpy inline function */
 #include <pgserver/video.h>
 #include <pgserver/input.h>
 
 #include <vga.h>
 
+/****************************************************** Definitions */
+
 #define dist(a,b) (((a)>(b))?((a)-(b)):((b)-(a)))
+
+/* Global flags for this driver */
+
+#define SVGAFB_DOUBLEBUFFER   (1<<0)    /* Use doublebuffering */
+#define SVGAFB_PAGEDBLITS     (1<<1)    /* Blit to nonlinear memory */
+
+unsigned char svgafb_flags;
+unsigned long svgafb_fbsize;
+
+/* Function prototypes */
+int svgafb_closest_mode(int xres,int yres,int bpp);
+g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags);
+void svgafb_close(void);
+void svgafb_update_linear(int x,int y,int w,int h);
+void svgafb_update_paged(int x,int y,int w,int h);
+g_error svgafb_regfunc(struct vidlib *v);
+
+/****************************************************** Implementations */
 
 /* The find-closest-mode helper function originally presented in svga.c */
 int svgafb_closest_mode(int xres,int yres,int bpp) {
@@ -87,9 +102,9 @@ int svgafb_closest_mode(int xres,int yres,int bpp) {
 g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags) {
    g_error e;
    int mode,i;
-   
-#ifndef VIRTUAL
 
+   svgafb_flags = 0;
+   
    /* In a GUI environment, we don't want VC switches,
     plus they usually crash on my system anyway,
     and they use extra signals that might confuse 
@@ -123,37 +138,51 @@ g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags) {
    vid->yres = vga_getydim();
    vid->bpp  = 8;
 
-#else
-   
-   vid->xres = xres;
-   vid->yres = yres;
-   vid->bpp  = 8;
-   
-#endif /* VIRTUAL */
+   /* Try to get a linear framebuffer, but if we can't we need to use
+    * paged blits */
+   if (((vid->xres * vid->yres * vid->bpp >> 3)>=0x10000) &&
+       (vga_setlinearaddressing() <= 0)) {
+      svgafb_flags |= SVGAFB_PAGEDBLITS | SVGAFB_DOUBLEBUFFER;
+      printf("svgafb: can't get linear addressing, forcing double buffer\n");
+   }  
+
+   /* Calculate the framebuffer's size */
+   svgafb_fbsize = vid->yres * vid->fb_bpl;
    
    /* Set up the linear framebuffer */
    vid->fb_bpl = vid->xres;
-#ifdef DOUBLEBUFFER
-   e = g_malloc((void **)&vid->fb_mem,vid->yres * vid->fb_bpl);
-   errorcheck;
-#else
-   vid->fb_mem = vga_getgraphmem();
-#endif
+   if (svgafb_flags & SVGAFB_DOUBLEBUFFER) {
+      /* Allocate the back buffer */
+      e = g_malloc((void **)&vid->fb_mem,svgafb_fbsize);
+      errorcheck;
+   }
+   else
+     vid->fb_mem = vga_getgraphmem();
+
+   /* Use our flags to choose an update function. Keep the default if we
+    * aren't double-buffering, otherwise choose paged or linear */
+   
+   if (svgafb_flags & SVGAFB_DOUBLEBUFFER) {
+      if (svgafb_flags & SVGAFB_PAGEDBLITS)
+	vid->update = &svgafb_update_paged;
+      else
+	vid->update = &svgafb_update_linear;
+   }
+   else
+     vid->update = &def_update;
    
    return sucess;
 }
 
 void svgafb_close(void) {
-#ifdef DOUBLEBUFFER
-   g_free(vid->fb_mem);
-#endif
+   if (svgafb_flags * SVGAFB_DOUBLEBUFFER)
+     g_free(vid->fb_mem);
    
    unload_inlib(inlib_main);    /* Take out input driver */
    vga_setmode(0);
 }
 
-#if defined(DOUBLEBUFFER) && !defined(VIRTUAL)
-void svgafb_update(int x,int y,int w,int h) {
+void svgafb_update_linear(int x,int y,int w,int h) {
    unsigned char *src,*dest;
    int offset,i;
    unsigned long fbstart;
@@ -175,16 +204,56 @@ void svgafb_update(int x,int y,int w,int h) {
 	*dest = *src;
    }
 }
-#endif
+
+/* Like svgafb_update_linear, but set our 64K page using vga_setpage 
+ * This must be able to handle a page change anywhere, including within
+ * a line or even within a pixel.
+ *
+ * This code is adapted from the __svgalib_driver8p_putbox() function in
+ * vgagl, probably written by Harm Hanemaayer (but if I am wrong please
+ * correct me!)
+ */
+void svgafb_update_paged(int x,int y,int w,int h) {
+   unsigned long vp;
+   int page;
+   char *bp = vid->fb_mem;
+
+   /* Might prevent tearing? */
+   vga_waitretrace();
+
+   vp   = x + y * vid->fb_bpl;
+   page = vp >> 16;
+   vp  &= 0xffff;
+   vga_setpage(page);
+   for (;h;h--) {
+      if (vp + w > 0x10000) {
+	 if (vp >= 0x10000) {
+	    page++;
+	    vga_setpage(page);
+	    vp &= 0xffff;
+	 } else {		/* page break within line */
+//	    __memcpy(graph_mem + vp, bp, 0x10000 - vp);
+	    page++;
+	    vga_setpage(page);
+//	    __memcpy(graph_mem, bp + 0x10000 - vp,
+//		     (vp + w) & 0xffff);
+	    vp = (vp + vid->fb_bpl) & 0xffff;
+	    bp += vid->fb_bpl;
+	    continue;
+	 }
+      };
+//      __memcpy(graph_mem + vp, bp, w);
+      bp += vid->fb_bpl;
+      vp += vid->fb_bpl;
+   }
+}
+
+/****************************************************** Registration */
 
 g_error svgafb_regfunc(struct vidlib *v) {
    setvbl_linear8(v);           /* Only 8bpp so far */
    v->init = &svgafb_init;
    v->close = &svgafb_close;
-#if defined(DOUBLEBUFFER) && !defined(VIRTUAL)
-   v->update = &svgafb_update;
-#endif
-   
    return sucess;
 }
 

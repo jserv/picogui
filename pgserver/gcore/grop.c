@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.32 2001/01/10 04:31:26 micahjd Exp $
+/* $Id: grop.c,v 1.33 2001/01/12 04:49:01 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -423,10 +423,11 @@ void grop_render(struct divnode *div) {
 		 attr = *(str++);
 		 if (attr & 0xF0)
 		   (*vid->rect)(x,y,celw,celh,textcolors[attr>>4]);
-		 (*vid->charblit)((((unsigned char *)fd->font->bitmaps)+
-				   fd->font->trtab[*str]),
-				  x,y,fd->font->vwtab[*str],
-				  celh,0,textcolors[attr & 0x0F],NULL);
+		 if ((*str) != ' ')
+		   (*vid->charblit)((((unsigned char *)fd->font->bitmaps)+
+				     fd->font->trtab[*str]),
+				    x,y,fd->font->vwtab[*str],
+				    celh,0,textcolors[attr & 0x0F],NULL);
 	      }
 	    
 	 }
