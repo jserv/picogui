@@ -1,4 +1,4 @@
-/* $Id: aqua.ths,v 1.16 2000/10/31 01:48:09 micahjd Exp $
+/* $Id: aqua.ths,v 1.17 2000/11/02 05:44:20 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
@@ -123,9 +123,17 @@ object background bitmap1 = LoadBitmap("data/aq_screenbg.pnm");
 object panel margin = 10;
 object panelbar {
   bitmap1 = LoadBitmap("data/aq_title_wht_v.pnm");
+  bitmap2 = LoadBitmap("data/aq_title_wht_h.pnm");
+  bgfill = fillstyle {
+    Bitmap(x,y,w,h,h>w ? bitmap1 : bitmap2,PG_LGOP_NONE,0,0);
+    Frame(x,y,w,h,ColorConv(0xC0C0C0));
+  };
   width = 20;
 }
-object panelbar.hilight bitmap1 = LoadBitmap("data/aq_title_blu_v.pnm");
+object panelbar.hilight {
+  bitmap1 = LoadBitmap("data/aq_title_blu_v.pnm");
+  bitmap2 = LoadBitmap("data/aq_title_blu_h.pnm");
+}
 
 object box {
   height = 30;
