@@ -1,0 +1,91 @@
+/* $Id: pastel_light.ths,v 1.1 2001/03/26 03:42:00 micahjd Exp $
+ *
+ * Light blues and greens, nothing too complicated.
+ *
+ * Micah Dowty
+ */
+
+object default {
+  bgfill = fillstyle {
+     Rect(x,y,w,h,ColorConv(bgcolor));
+  };
+  bgcolor = 0xA2B0DB;
+  spacing = 3;
+  margin = 2;
+  height = 16;
+  width = 16;
+}
+
+object popup {
+   bgfill = fillstyle {
+      Frame(x,y,w,h,ColorConv(ColorDiv(bgcolor,0x020202)));
+      Rect(x+1,y+1,w-2,h-2,ColorConv(bgcolor));
+   };
+}
+
+object toolbar margin = 3;
+
+object indicator {
+   overlay = fillstyle {
+      Frame(x,y,w,h,ColorConv(0xBFCAEF));
+      Rect(x+1,y+1,w-2,h-2,ColorConv(0x4A4F6D));
+   };
+   width = 10;
+}
+   
+object scroll {
+   width = 10;
+   overlay = Copy(button::bgfill);
+}
+
+object menuitem {
+   align = PG_A_RIGHT;
+   spacing = 0;
+}
+object menuitem.hilight bgcolor = 0x93D8C0;
+object background bgcolor = 0xBFCAEF;
+object label.dlgtitle bgcolor = 0xBFCAEF;
+
+object button {
+  bgcolor = 0x949FDB;
+  bgfill = fillstyle {
+     var shadow;
+     shadow = ColorConv(0x6D7AAF);
+     Frame(x,y,w,h,ColorConv(0xBFCAEF));
+     Rect(x+1,y+1,w-2,h-2,ColorConv(bgcolor));
+     Slab(x+1,y+h-2,w-2,1,shadow);
+     Bar(x+w-2,y+1,1,h-2,shadow);
+     x = x+offset;
+     y = y+offset;
+  };
+}
+object button.hilight bgcolor = 0x93D8C0;
+object button.on offset = 1;
+
+object panelbar {
+   bgcolor = 0xBFCAEF;
+   align = PG_A_LEFT;
+}
+object panelbar.hilight bgfill = fillstyle {
+   Gradient(x,y,w,h,w>h ? 0:270,0xBFCAEF,0x93D8C0,0);
+};
+
+object panel {
+   bgfill = Copy(popup::bgfill);
+}
+   
+object base.panelbtn {
+   spacing = 0;
+   margin = 0;
+   bgfill = fillstyle {
+      Bitmap(x,y,w,h,bitmap1,PG_LGOP_NONE,0,0);
+   };
+}
+object closebtn bitmap1 = LoadBitmap("data/pastel_closebtn.pnm");
+object closebtn.hilight bitmap1 = LoadBitmap("data/pastel_closebtn_on.pnm");
+object rotatebtn bitmap1 = LoadBitmap("data/pastel_rotatebtn.pnm");
+object rotatebtn.hilight bitmap1 = LoadBitmap("data/pastel_rotatebtn_on.pnm");
+object zoombtn bitmap1 = LoadBitmap("data/pastel_zoombtn.pnm");
+object zoombtn.hilight bitmap1 = LoadBitmap("data/pastel_zoombtn_on.pnm");
+
+/* The End */
