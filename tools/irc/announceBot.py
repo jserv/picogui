@@ -39,7 +39,7 @@ class AnnounceServer(LineReceiver):
 	fields = line.split(" ", 2)
 	if fields[0] == "Announce":
 	    try:
-	        groups['commits'].sendText(fields[1] + ": " + fields[2])
+	        groups['commits'].sendText(irc_colors.boldify(fields[1] + ": ") + fields[2])
 	        groups[fields[1]].sendText(fields[2])
 		time.sleep(1)
             except KeyError:
