@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.55 2001/02/14 11:34:56 bauermeister Exp $
+# $Id: Makefile,v 1.56 2001/02/15 17:02:19 pney Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -21,6 +21,10 @@
 #
 #
 # $Log: Makefile,v $
+# Revision 1.56  2001/02/15 17:02:19  pney
+# Add dependence on /include/pgserver/autoconf.h. It have to be regenerated
+# when .config is modified.
+#
 # Revision 1.55  2001/02/14 11:34:56  bauermeister
 # If make is invoked with DEFCONFIGFROM=<file> and .config does not exist,
 # the config is first reconstructed using the given <file>. This allows
@@ -215,6 +219,9 @@ menuconfig:
 
 config:
 	sh configscript/Configure config.in
+
+include/pgserver/autoconf.h: .config
+	(sed "s/.*//g" config.in | sh configscript/Configure config.in);
 
 info:
 	@echo "SRC      : [${SRC}]"
