@@ -1,4 +1,4 @@
-/* $Id: aqua.ths,v 1.29 2001/07/05 07:53:59 micahjd Exp $
+/* $Id: aqua.ths,v 1.30 2001/08/29 17:06:49 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
@@ -23,12 +23,39 @@ margin=0;
 object button {
   bitmap1 = LoadBitmap("data/aq_button.pnm");
   bgfill = fillstyle {
-    /* Cut and paste things to resize the button bitmap */
-    Bitmap(x,y,12,20,bitmap1);
+    /* Draw the top and bottom half. Tile the middle horizontally to make
+     * buttons of any width. Usually this is all that needs drawing
+     */
+
+    // Top-left corner
+    Bitmap(x,y,12,10,bitmap1);
+    // Top-right corner
     SetSrc(49,0,0,0);
-    Bitmap(x+w-12,y,12,20,bitmap1);
-    SetSrc(15,0,1,20);
-    Tilebitmap(x+12,y,w-24,20,bitmap1);
+    Bitmap(x+w-12,y,12,10,bitmap1);
+    // Top edge
+    SetSrc(12,0,34,10);
+    Tilebitmap(x+12,y,w-24,10,bitmap1);
+    // Bottom-left corner
+    SetSrc(0,10,0,0);
+    Bitmap(x,y+h-10,12,10,bitmap1);
+    // Bottom-right corner
+    SetSrc(49,10,0,0);
+    Bitmap(x+w-12,y+h-10,12,10,bitmap1);
+    // Bottom edge
+    SetSrc(12,10,34,10);
+    Tilebitmap(x+12,y+h-10,w-24,10,bitmap1);
+
+    /* For taller-than-usual buttons, tile betweent the two halves */
+    
+    // Left edge
+    SetSrc(0,10,12,1);
+    Tilebitmap(x,y+10,12,h-20,bitmap1);
+    // Right edge
+    SetSrc(49,10,12,1);
+    Tilebitmap(x+w-12,y+10,12,h-20,bitmap1);
+    // Center
+    SetSrc(12,10,34,1);
+    Tilebitmap(x+12,y+10,w-24,h-20,bitmap1);
   };
   height = 20;
   width  = 21;   // Tiny buttons get a cute sphere shape :)
@@ -130,7 +157,7 @@ object scroll {
   };
 }
 
-object label margin = 8;
+object label margin = 4;
 
 /* Use a simple scrollbar-safe background when the label scrolls */
 object label.scroll {

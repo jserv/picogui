@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.37 2001/08/05 10:50:52 micahjd Exp $
+/* $Id: label.c,v 1.38 2001/08/29 17:06:49 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -193,7 +193,7 @@ glob label_get(struct widget *self,int property) {
 }
  
 void label_resize(struct widget *self) {
-  s16 w,h;
+  s16 w,h,m;
   struct fontdesc *fd;
   char *str;
   handle font = DATA->font ? DATA->font : 
@@ -209,8 +209,10 @@ void label_resize(struct widget *self) {
   else
     sizetext(fd,&w,&h,str);
 
-  self->in->div->ph = h;
-  self->in->div->pw = w;
+  m = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
+
+  self->in->div->ph = h+m;
+  self->in->div->pw = w+m;
 }
 
 /* The End */
