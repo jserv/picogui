@@ -4,6 +4,7 @@ noinst_LIBRARIES = libgcore.a
 
 libgcore_a_SOURCES = \
     grop.c \
+    render.c \
     g_malloc.c \
     div.c \
     font.c \
