@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.43 2002/05/22 10:01:21 micahjd Exp $
+/* $Id: canvas.c,v 1.44 2002/07/27 09:09:56 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -486,6 +486,7 @@ void canvas_command(struct widget *self, u16 command,
       
     case PGCANVAS_INCREMENTAL:
       self->in->div->flags |= DIVNODE_INCREMENTAL;
+      self->dt->flags |= DIVTREE_NEED_REDRAW;
       break;
       
     case PGCANVAS_SCROLL:
