@@ -2,8 +2,21 @@
 <?testing processing="instructions"?>
 
 <pgbuild title="Test configuration file">
+
+  <!-- Change the description on an existing package -->
   <packages>
-    <!-- Add a new package with multiple versions -->
+    <package name="build">
+      <description>
+        <detail>
+          Wheeeeeeeeeeeeeeeeeeeeeeeee! this is a
+          new description.
+        </detail>
+      </description>
+    </package>
+  </packages>
+
+  <!-- Add a new package with multiple versions -->
+  <packages>    
     <package name="testpkg">
       <version name="1.234">
         <a href="trunk/nonexistant/testpkg-1.234">
@@ -17,10 +30,12 @@
       </version>
     </package>
   </packages>
+
+  <!-- Add a new site -->
   <sites>
-    <!-- Add a new site -->
     <site name="picogui-releases">
       <a href="another test site"/>
     </site>
   </sites>  
+
 </pgbuild>

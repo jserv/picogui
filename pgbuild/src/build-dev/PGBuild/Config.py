@@ -3,17 +3,18 @@
 Implements PGBuild's configuration tree, formed from multiple XML
 documents with some extra rules and a 'mount point' system.
 
-The configuration document is based on PGBuild.Node.XML, so its
-elements are both SCons nodes and XML DOM elements. The configuration
-document is created by 'mounting' XML files. A read-only mount will
-have no further effect after its contents are read and merged with
-the config document. A read-write mount will be used to save a
-modified configuration document.
+The configuration tree is an in-memory XML document, subclassed
+from PGBuild.XMLUtil.Document. This document is populated by
+'mounting' XML files. A read-only mount will have no further
+effect after its contents are read and merged with the config
+document. A read-write mount will allow later saving modifications
+to mounted elements back to the original XML document.
 
 The extra rules imposed on the XML:
 
 1. Any elements with the same parent, name, and attributes, are
-   treated as equal. They will be merged, with child nodes appended.
+   treated as equal. They will be merged- child elements are appended,
+   child text nodes are replaced.
 
 2. In merging child nodes, order is preserved
 
@@ -50,6 +51,47 @@ import PGBuild.XMLUtil
 import PGBuild.Errors
 import re
 
+def prependElements(src, dest):
+    """Move all children from the 'src' into 'dest'.
+       Elements get prepended, text nodes only get
+       moved if dest has no text.
+       After exectuing this, src has no children.
+       """
+    destHasText = 0
+    for child in dest.childNodes:
+        if child.nodeType == child.TEXT_NODE:
+            destHasText = 1
+            break
+    while src.childNodes:
+        last = src.lastChild
+        if last.nodeType == last.TEXT_NODE and destHasText:
+            # Discard this text node, the dest already has text
+            src.removeChild(last)
+        else:
+            if dest.childNodes:
+                dest.insertBefore(last, dest.childNodes[0])
+            else:
+                dest.appendChild(last)
+
+def appendElements(src, dest):
+    """Move all children from the 'src' into 'dest'.
+       Elements are appended, all text nodes in dest are
+       overwritten if src has any text.
+       After exectuing this, src has no children.
+       """
+    srcHasText = 0
+    for child in src.childNodes:
+        if child.nodeType == child.TEXT_NODE:
+            srcHasText = 1
+            break
+    if srcHasText:
+        # Copy the list, since we'll be modifying it
+        for child in dest.childNodes[:]:
+            if child.nodeType == child.TEXT_NODE:
+                dest.removeChild(child)
+    for child in src.childNodes[:]:
+        dest.appendChild(child)
+
 def mergeElements(root):
     """Merge all identical elements under the given one,
        as defined in this module's document string.
@@ -57,19 +99,15 @@ def mergeElements(root):
     # Make a dictionary of signatures to (relatively) efficiently
     # determine whether any of our children are duplicates.
     d = {}
-    # Copy the child list here, so when it's modified below our iteration doesn't go wonky
+    # Duplicate the child list here, so when it's modified below,
+    # our iteration doesn't go all wonky.
     for child in root.childNodes[:]:
-        sig = repr([child.nodeName, PGBuild.XMLUtil.getAttrDict(child)])
+        sig = repr([child.nodeType, child.nodeName, PGBuild.XMLUtil.getAttrDict(child)])
         if d.has_key(sig):
             # This is a duplicate! Prepend all the children from
             # the first one, and delete it.
             old = d[sig]
-            while old.childNodes:
-                last = old.lastChild
-                if child.childNodes:
-                    child.insertBefore(last, child.childNodes[0])
-                else:
-                    child.appendChild(last)
+            prependElements(old, child)
             old.parentNode.removeChild(old)
         d[sig] = child
     del d
@@ -228,17 +266,7 @@ class Tree(PGBuild.XMLUtil.Document):
         # Now that we have the source and destination resolved, we can
         # implement the mount by appending all the children of dom.getRoot()
         # to mountElement. Then, let mergeElements() sort out the rest.
-        for child in dom.getRoot().childNodes:
-            # Clear the parentNode to keep minidom from exploding
-            # when it tries to remove the node from the original DOM.
-            # Note that it's important for parentNode to be valid in
-            # the config tree for areElementsEqual() to be accurate.
-            # The original DOM will not be strictly correct, but
-            # its semantics will still make sense- elements in the
-            # original DOM below the root will have a parentNode
-            # pointing to the mount point.
-            child.parentNode = None
-            mountElement.appendChild(child)
+        appendElements(dom.getRoot(), mountElement)
 
         # Strip whitespace, strip empty text nodes, and merge the tree
         stripElements(self)

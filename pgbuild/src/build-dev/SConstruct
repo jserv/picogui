@@ -22,6 +22,11 @@ print repr(conf.xpath("/pgbuild/@title")[0].value)
 # Print all versions of testpkg
 print map(lambda x: x.value, conf.xpath("packages/package[@name='testpkg']/version/@name"))
 
+# Print some sample mount info objects
+print conf.xpath("packages/package[@name='conf']")[0].minfo
+print conf.xpath("packages/package[@name='testpkg']")[0].minfo
+print conf.xpath("packages")[0].minfo
+
 # Get an SCons node pointing to the 'testpkg' package
 pkg = conf.node("packages/package[@name = 'testpkg']")
 print pkg
