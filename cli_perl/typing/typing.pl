@@ -88,17 +88,20 @@ LeaveContext;
 
 ############################################################ Typing panel
 
-$typingpanel = RegisterApp(-side => top,-height => 400);
-
-NewWidget(-type=>bitmap,-lgop => 'or',
-	  -bitmap=>NewBitmap(-file=>"dustpuppy.pnm"),
-	  -bitmask=>NewBitmap(-file=>"dustpuppy_mask.pnm"),
-	  -side=>all,-align=>all,-transparent=>1,
-	  -inside => $typingpanel);
+$typingpanel = RegisterApp(-side => top,-height => 350);
+$lessonname = NewWidget(-type => label,-font => $bigfont,
+			-transparent => 1, -align => right);
 
 ############################################################ Lesson panel
 
-$lessonpanel = RegisterApp(-side => left,-width => 200);
+$lessonpanel = RegisterApp(-side => left,-width => 150);
+NewWidget(-type => label,-transparent => 1,-side => top,-text => 
+	  NewString("Select a lesson:"),-font => $boldfont);
+
+for ($i=1;$i<=15;$i++) {
+    NewWidget(-type => button,-side => top, -bitmap => $circ,-bitmask=>$circmask,
+	      -text => $l = NewString("Lesson $i"),-onclick => \&setlesson);
+}			     
 
 ############################################################ Load info bar
 
@@ -555,11 +558,21 @@ EOF
 EventLoop;
 Finis;
 
+############################################################ Subs
+
 sub Finis {
     print "Exiting with clean shutdown...\n";
     RestoreBackground;
     Update;
     exit 0;
+}
+
+sub setlesson {
+    my ($self) = @_;
+
+    $lessonname->SetWidget(-text => $self->GetWidget(-text));
+
+    Update();
 }
 
 ### The End ###

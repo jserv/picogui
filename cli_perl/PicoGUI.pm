@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.28 2000/08/07 19:46:07 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.29 2000/08/07 21:03:58 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -876,6 +876,8 @@ sub NewBitmap {
 # It waits for events, and dispatches them to the functions they're
 # bound to.
 sub EventLoop {
+    my $fromobj = {};
+
     $eventloop_on = 1;
 
     # Good place for an update...  (probably the first update)
@@ -884,9 +886,13 @@ sub EventLoop {
     while ($eventloop_on) {
 	($event, $from, $param) = _wait();
 	
+	# Package the 'from' handle in an object
+	bless $fromobj;
+	$fromobj->{'h'} = $from;
+
 	# Call the code reference
 	$r = $bindings{$from.':'.$event};
-	&$r($param) if (defined $r);
+	&$r($fromobj,$param) if (defined $r);
     }
 }
 
