@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.14 2000/06/02 00:16:44 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.15 2000/06/02 07:59:12 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -29,7 +29,7 @@ use Carp;
 @ISA       = qw(Exporter);
 @EXPORT    = qw(NewWidget %ServerInfo Update NewString
 		NewFont NewBitmap delete SetBackground RestoreBackground
-		SendPoint SendKey ThemeSet RegisterApp EventLoop);
+		SendPoint SendKey ThemeSet RegisterApp EventLoop NewPopup);
 
 ################################ Constants
 
@@ -330,10 +330,27 @@ sub _themeset {
     _request(14,pack('Nnnnn',@_));
 }
 sub _register {
-    _request(15,pack('Nnnnnnnnnnnn',@_));
+    _request(15,pack('Nnnnnnnnnnn',@_));
+}
+sub _mkpopup {
+    _request(16,pack('nnnn',@_));
 }
 
 ######### Public functions
+
+sub NewPopup {
+    my ($x,$y,$w,$h) = @_;
+    my $self = {-root => 1};
+
+    bless $self;
+    $self->{'h'} = _mkpopup($x,$y,$w,$h);
+
+    # Default is inside this widget
+    $default_rship = $RSHIPS{-inside};
+    $default_parent = $self->{'h'};
+
+    return $self;
+}
 
 sub RegisterApp {
     my %args = @_;
