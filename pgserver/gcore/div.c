@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.60 2001/11/07 07:35:56 micahjd Exp $
+/* $Id: div.c,v 1.61 2001/11/13 07:51:45 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -161,7 +161,7 @@ void divnode_split(struct divnode *n, struct rect *divrect,
   }
   
   /* All available space for div */
-  if (n->flags & DIVNODE_SPLIT_EXPAND) {
+  else if (n->flags & DIVNODE_SPLIT_EXPAND) {
     divrect->x = n->x;
     divrect->y = n->y;
     divrect->w = n->w;
@@ -294,9 +294,15 @@ void divnode_split(struct divnode *n, struct rect *divrect,
     nextrect->w = n->w;
     nextrect->h = n->h;
   }
-  
+
+  /* Keep existing sizes, ignoring split? */
+  else if (n->flags & DIVNODE_SPLIT_IGNORE) {
+    /* Prevent transferring new rectangles, bail out immediately */
+    return;
+  }
+
   /* Otherwise give children same w,h,x,y */
-  else if (!(n->flags & DIVNODE_SPLIT_IGNORE)) {
+  else {
     nextrect->x = n->x;
     nextrect->y = n->y;
     nextrect->w = n->w;
