@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.11 2002/10/11 11:58:45 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.12 2002/10/11 12:15:52 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -46,6 +46,8 @@ struct textboxdata {
 			 * to a pgstring and/or back. If this is 0, the default
 			 * text format (plaintext) will be used.
 			 */
+
+  int insertmode;       /* PG_INSERT_* constant, set by PG_WP_INSERTMODE */
 
   unsigned int focus : 1;
   unsigned int flash_on : 1;
@@ -120,6 +122,12 @@ g_error textbox_set(struct widget *self,int property, glob data) {
     DATA->textformat = data;
     break;
 
+  case PG_WP_INSERTMODE:
+    if (data < 0 || data > PG_INSERTMAX)
+      return mkerror(PG_ERRT_BADPARAM,58);   /* Bad insertion mode */
+    DATA->insertmode = data;
+    break;
+
   case PG_WP_TEXT:
     e = textbox_getformat(self,&fmt);
     errorcheck;
@@ -147,6 +155,9 @@ glob textbox_get(struct widget *self,int property) {
 
   case PG_WP_TEXTFORMAT:
     return DATA->textformat;
+
+  case PG_WP_INSERTMODE:
+    return DATA->insertmode;
 
   case PG_WP_TEXT:
     e = textbox_getformat(self,&fmt);

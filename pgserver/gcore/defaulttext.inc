@@ -63,7 +63,7 @@
 /* 55 */  "Unable to execute the session manager. Check the command line",
 /* 56 */  "Memory leak detected on exit.  Fire up gdb and call a plumber",
 /* 57 */  "Request data structure is too small. It's all the client lib's fault!",
-/* 58 */  NULL,
+/* 58 */  "Bad insertion mode",
 /* 59 */  "Bad widget parent",
 /* 60 */  "Widget's can't be created outside the root widget",
 /* 61 */  "Bad textformat handle",
