@@ -1,4 +1,4 @@
-/* $Id: dlg_filepicker.c,v 1.12 2001/08/06 07:50:06 micahjd Exp $
+/* $Id: dlg_filepicker.c,v 1.13 2001/08/07 09:34:51 gobry Exp $
  *
  * dlg_filepicker.c - Display a dialog box the user can use to select
  *                    a file to open or save. It is customizable with flags
@@ -46,6 +46,7 @@
 #include <sys/stat.h>   /* stat() */
 #include <unistd.h>
 #include <errno.h>      /* Check errors when validating a filename */
+#include <ctype.h>
 
 /* This is the size of the buffer files are returned in */
 #define FILEMAX 512
@@ -768,7 +769,7 @@ const char *pgFilePicker(pgfilter filefilter, const char *pattern,
 	int file = open(filepicker_buf,O_RDONLY);
 	if (file<0) {
 	  pgMessageDialogFmt("Error",0,"Error reading file:\n%s",
-			     sys_errlist[errno]);
+			     strerror (errno));
 	  continue;
 	}
 	close(file);
@@ -778,7 +779,7 @@ const char *pgFilePicker(pgfilter filefilter, const char *pattern,
 	int file = open(filepicker_buf,O_RDWR);
 	if (file<0) {
 	  pgMessageDialogFmt("Error",0,"Error writing file:\n%s",
-			     sys_errlist[errno]);
+			     strerror (errno));
 	  continue;
 	}
 	close(file);
