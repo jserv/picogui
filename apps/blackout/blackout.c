@@ -1,4 +1,4 @@
-/* $Id: blackout.c,v 1.4 2001/02/14 06:11:58 micahjd Exp $
+/* $Id: blackout.c,v 1.5 2001/04/18 01:22:47 micahjd Exp $
  *
  * blackout.c - "Blackout" game to demonstrate game programming and
  *              canvas widget event handling.
@@ -84,7 +84,7 @@ void invertLightNoupdate(int lx,int ly) {
 
 /* Update the status display with current parameters */
 void updateStatus(void) {
-   pgReplaceTextFmt(wStatusLabel,"Level %d, Move #%d",level,moves);
+   pgReplaceTextFmt(wStatusLabel,"L%d  Move %d",level,moves);
    pgUpdate();
 }
 
@@ -128,9 +128,9 @@ int evtDrawBoard(struct pgEvent *evt) {
 
    /* Extra space on the sides or top and bottom? */
    if (evt->e.size.w < evt->e.size.h)
-     bs = evt->e.size.w-2;
+     bs = evt->e.size.w-4;
    else
-     bs = evt->e.size.h-2;
+     bs = evt->e.size.h-4;
    
    bx = (evt->e.size.w - bs)>>1;
    by = (evt->e.size.h - bs)>>1;
@@ -236,11 +236,11 @@ int main(int argc, char **argv) {
    /* Toolbar thingies */
    
    pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
-   pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("New Game"),0);
+   pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("New"),0);
    pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnNewGame,NULL);
 
    pgNewWidget(PG_WIDGET_BUTTON,0,0);
-   pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("Restart Level"),0);
+   pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("Level"),0);
    pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnRestartLevel,NULL);
 
    wStatusLabel = pgNewWidget(PG_WIDGET_LABEL,0,0);
@@ -248,7 +248,7 @@ int main(int argc, char **argv) {
 	       PG_WP_SIDE,PG_S_ALL,
 	       PG_WP_TRANSPARENT,0,
 	       PG_WP_ALIGN,PG_A_CENTER,
-	       PG_WP_FONT,pgNewFont(NULL,0,PG_FSTYLE_BOLD),
+//	       PG_WP_FONT,pgNewFont(NULL,10,PG_FSTYLE_BOLD),
 	       0);
 
 
