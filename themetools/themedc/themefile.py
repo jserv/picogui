@@ -54,6 +54,7 @@ propertymatch=[
         PM('^(bgfill|overlay|backdrop)$', 'fillstyle', None, None)]
 
 filenumber=0
+userprops=[]
 
 def lookup_proptype(name):
   for pm in propertymatch:
@@ -88,9 +89,13 @@ def lookup_propname(value):
   elif value > constants['PGTH_P_THEMEAUTO']:
     return 'themeauto%d'%(value-constants['PGTH_P_THEMEAUTO'])
   elif value > constants['PGTH_P_USER']:
-    # This must be changed once Prop() is implemented in themec
-    # Currently user properties cannot be read from themes
-    return 'PGTH_P_USER+%d'%(value-constants['PGTH_P_USER'])
+    global userprops
+    for p in userprops:
+      if p[1]==value:
+        return p[0]
+    name='userprop%d'%(value-constants['PGTH_P_USER'])
+    userprops.append((name, value))
+    return name
   else:
     return str(value)
 
@@ -140,7 +145,10 @@ class PgFillstyle:
     elif value[1]=='lgop':
       return lookup_constname('PG_LGOP_', value[0])
     elif value[1]=='color':
-      return '0x%06x'%value[0]
+      if type(value[0]) == StringType:
+        return value[0]
+      else:
+	return '0x%06x'%value[0]
     elif value[1]=='function':
       res=value[0]+'('
       for arg in value[2:]:
@@ -269,7 +277,7 @@ class PgFillstyle:
                 'literal'])
       elif opcode & constants['PGTH_OPSIMPLE_CMDCODE']:
         if opcode == constants['PGTH_OPCMD_LONGLITERAL']:
-          self.stack.append([unpack('!L', bytecode[p:p+4])[0], 'literal'])
+          self.stack.append([unpack('!l', bytecode[p:p+4])[0], 'literal'])
           p=p+4
         elif opcode == constants['PGTH_OPCMD_LONGGROP']:
           self.grop(unpack('!H', bytecode[p:p+2])[0])
@@ -430,6 +438,12 @@ class PgTheme:
     me=''
     for obj in self.obj:
       me=me+str(obj)
+    global userprops
+    if len(userprops):
+      me=';\n\n'+me
+      for p in userprops:
+        me=', %s=PGTH_P_USER+%d'%(p[0], p[1]-constants['PGTH_P_USER'])+me
+      me='prop'+me[1:]
     return me
   def __init__(self):
     self.obj=[]
