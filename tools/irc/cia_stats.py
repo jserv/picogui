@@ -186,6 +186,7 @@ print """
 
 <div class="footer">
    <a href="/"><img src="/images/web/navi64.png" border="0" width="64" height="39" alt="Navi"/></a>
+   <a href="http://freenode.org"><img src="/images/web/freenode.png" border="0" width="137" height="39" alt="freenode"/></a>
 </div>
 
 </body>
