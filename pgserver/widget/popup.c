@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.16 2000/11/05 02:19:54 micahjd Exp $
+/* $Id: popup.c,v 1.17 2000/11/05 03:13:47 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -57,6 +57,8 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   if (((signed short)x) == PG_POPUP_ATCURSOR) {
     x = pointer->x;
     y = pointer->y;
+    /* pop vertically if the cursor is on the bottom half of the screen */
+    // y = (pointer->y > (vid->yres>>1)) ? (pointer->y - h) : pointer->y;
     (*wgt)->in->div->state = PGTH_O_POPUP_MENU;
   }
 
@@ -67,6 +69,10 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   (*wgt)->in->div->y = y-margin;
   (*wgt)->in->div->w = w+(margin<<1);
   (*wgt)->in->div->h = h+(margin<<1);
+  if ((*wgt)->in->div->x+(*wgt)->in->div->w >= vid->xres)
+    (*wgt)->in->div->x = vid->xres - (*wgt)->in->div->w - margin;
+  if ((*wgt)->in->div->y+(*wgt)->in->div->h >= vid->yres)
+    (*wgt)->in->div->y = vid->yres - (*wgt)->in->div->h - margin;
   if ((*wgt)->in->div->x <0) (*wgt)->in->div->x = 0;
   if ((*wgt)->in->div->y <0) (*wgt)->in->div->y = 0;
   if ((*wgt)->in->div->x+(*wgt)->in->div->w >= vid->xres)

@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.38 2000/11/04 23:46:22 micahjd Exp $
+/* $Id: button.c,v 1.39 2000/11/05 03:13:47 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -39,6 +39,9 @@ struct btndata {
   int state,state_on,state_hilight;
   void *extra;
   void (*event)(void *extra,struct widget *button);
+
+  /* Mask of extended (other than ACTIVATE) events to send */
+  int extdevents;
 };
 #define DATA ((struct btndata *)(self->data))
 
@@ -226,6 +229,10 @@ g_error button_set(struct widget *self,int property, glob data) {
     install_hotkey(self,data);
     break;
 
+  case PG_WP_EXTDEVENTS:
+    DATA->extdevents = data;
+    break;
+
   default:
     return mkerror(PG_ERRT_BADPARAM,37);
   }
@@ -246,6 +253,9 @@ glob button_get(struct widget *self,int property) {
 
   case PG_WP_BITMASK:
     return DATA->bitmask;
+
+  case PG_WP_EXTDEVENTS:
+    return DATA->extdevents;
 
   case PG_WP_FONT:
     return (glob) DATA->font;
@@ -276,6 +286,8 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     break;
     
   case TRIGGER_DOWN:
+    if (DATA->extdevents & PG_WE_PNTR_DOWN)
+      post_event(PG_WE_PNTR_DOWN,self,param->mouse.chbtn,0);
     if (param->mouse.chbtn==1)
       DATA->on=1;
     else
@@ -283,6 +295,8 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     break;
 
   case TRIGGER_UP:
+    if (DATA->extdevents & PG_WE_PNTR_UP)
+      post_event(PG_WE_PNTR_UP,self,param->mouse.chbtn,0);
     if (DATA->on && param->mouse.chbtn==1) {
       event = 0;
       DATA->on=0;
