@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.13 2002/10/11 23:19:41 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.14 2002/10/21 12:13:51 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -94,7 +94,6 @@ g_error textbox_install(struct widget *self) {
   e = document_new(&DATA->doc, self->in->div);
   errorcheck;
   
-
   return success;
 }
 
@@ -115,6 +114,10 @@ g_error textbox_set(struct widget *self,int property, glob data) {
   struct pgstring *fmt;
 
   switch (property) {
+
+  case PG_WP_PASSWORD:
+    /* FIXME: Implement this! */
+    break;
 
   case PG_WP_MULTILINE:
     DATA->doc->multiline = data;
@@ -157,6 +160,10 @@ glob textbox_get(struct widget *self,int property) {
   struct pgstring *fmt;
 
   switch (property) {
+
+  case PG_WP_PASSWORD:
+    /* FIXME: Implement this! */
+    return 0;
 
   case PG_WP_MULTILINE:
     return DATA->doc->multiline;

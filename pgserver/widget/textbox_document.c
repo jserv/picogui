@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.42 2002/10/11 23:19:41 micahjd Exp $
+/* $Id: textbox_document.c,v 1.43 2002/10/21 12:13:50 micahjd Exp $
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and
@@ -111,14 +111,21 @@ g_error document_save(struct textbox_document *doc, const struct pgstring *forma
 /* Clear out the existing data and reset the cursor */
 g_error document_nuke(struct textbox_document *doc) {
   g_error e;
+  int was_visible = doc->crsr && doc->crsr->visible;
   
+  if (doc->crsr)
+    paragraph_hide_cursor(doc->crsr);
   textbox_delete_parlist(doc->par_list);
+  doc->par_list = NULL;
   doc->container_div->div = NULL;
 
   /* Initial paragraph, stick the cursor in it */
   e = textbox_new_par_div(&doc->par_list, &doc->container_div->div, doc->container_div);
   errorcheck;
   doc->crsr = &doc->par_list->cursor;
+  doc->crsr->par->div->owner->dt->flags |= DIVTREE_NEED_RESIZE;
+  if (was_visible)
+    paragraph_show_cursor(doc->crsr);
 
   return success;
 }
