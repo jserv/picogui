@@ -14,7 +14,10 @@ bin_PROGRAMS = pgserver
 
 pgserver_SOURCES = pgmain.c
 
-pgserver_LDADD = libpgserver.la
+pgserver_LDADD = \
+	libpgserver.la	\
+	$(DRIVER_LIBS)	\
+	@RM_LIBS@
 
 lib_LTLIBRARIES = libpgserver.la
 
