@@ -32,7 +32,8 @@ declare = [ 'option/picoguiapps/debug' ]
 
 runtime = [
     Runtime ( 'pterm', 'Terminal',
-              content = [ 'bin/pterm' ],
+              content = [ 'bin/pterm',
+                          'share/Terminal.app' ],
               help = "PicoGUI terminal" ),
     Runtime ( 'pgboard', 'Virtual Keyboard',
               content = [ 'bin/pgboard' ],
@@ -153,6 +154,9 @@ def prepare (module, platform, project):
 
 def install (module, platform, project):
     sequence ("make install prefix=%s" % module.path ['frz'])
+
+    sequence ("ln -s %s/bin/pterm %s/share/Terminal.app" % \
+              (module.path ['frz'], module.path ['frz']))
 
     # try to install the mdl file in the root of the frozen directory
     installfile (module.file, module.path ['r_frz'])
