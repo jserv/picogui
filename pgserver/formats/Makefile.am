@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include
+INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include $(DRIVER_CFLAGS)
 
 noinst_LIBRARIES = libformats.a 
 
