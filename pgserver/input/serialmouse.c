@@ -1,4 +1,4 @@
-/* $Id: serialmouse.c,v 1.2 2001/09/21 18:19:35 micahjd Exp $
+/* $Id: serialmouse.c,v 1.3 2001/11/15 12:22:46 micahjd Exp $
  *
  * serialmouse.c - input driver for serial mice.
  *
@@ -86,22 +86,25 @@ int btnstate;
 int multiplier;
 struct termios options;
 
-void serialmouse_fd_activate(int fd) {
+int serialmouse_fd_activate(int fd) {
   u8 buttons;
   s8 dx,dy;
   u8 packet[3];
   s16 cursorx,cursory;
+
+  if (fd != mouse_fd)
+    return 0;
 
   /* Read a correctly-aligned mouse packet. If the first byte isn't 0x40,
    * it isn't correctly aligned. The mouse packet is 4 bytes long.
    */
   
   if (!read(mouse_fd,packet,1))
-    return;
+    return 1;
   if (!(packet[0] & 0x40))
-    return;
+    return 1;
   if (!read(mouse_fd,packet+1,2))
-    return;
+    return 1;
 
   /* Get the cursor position in physical coordinates */
   cursorx = cursor->x;
@@ -145,6 +148,7 @@ void serialmouse_fd_activate(int fd) {
   if((dx!=0)||(dy!=0))
     dispatch_pointing(TRIGGER_MOVE,cursorx,cursory,buttons);
   
+  return 1;
 }
 
 g_error serialmouse_init(void) {
