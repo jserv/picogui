@@ -38,7 +38,7 @@ def run(config, progress):
     t.report('package', p)
     v = p.findVersion()
     t.report('version', v)
-    t.report('site', PGBuild.Site.resolve(config, progress, v.configNode.getElementsByTagName('a')))
+    t.report('site', v.findMirror(progress).absoluteURI)
 
     treeDumpFile = config.eval("invocation/option[@name='treeDumpFile']/text()")
     if treeDumpFile:

@@ -56,9 +56,11 @@ class Location:
         self.host = host
 
     def testSpeed(self):
-        PGBuild.XMLUtil.setChildData(self.host, 'speed', 1234)
+        # FIXME: no speed test yet, just use a random number
+        import random
+        PGBuild.XMLUtil.setChildData(self.host, 'speed', random.random())
 
-    def getSpeed(self):
+    def getSpeed(self, progress=None):
         """Return the speed of this Location's host. This will be loaded
            from the configuration database if it has already been calculated
            and we're not forcing a retest, otherwise it will be tested
@@ -69,6 +71,8 @@ class Location:
         if self.config.eval("invocation/option[@name='retestMirrors']/text()") or \
            not self.host.getElementsByTagName('speed'):
             self.testSpeed()
+            if progress:
+                progress.report("tested", self.absoluteURI)
         return float(PGBuild.XMLUtil.getChildData(self.host, 'speed'))
 
 
@@ -95,15 +99,15 @@ def expand(config, tags):
     return results
             
 
-def resolve(config, progress, tags):
+def resolve(config, tags, progress=None):
     """Given a list of <a> tags, expand them into absolute URIs
        and pick the fastest mirror. Returns a Location.
        """
     mirrors = expand(config, tags)
     def speedSort(a,b):
-        return a.getSpeed() <> b.getSpeed()
+        return cmp(b.getSpeed(progress),a.getSpeed(progress))
     mirrors.sort(speedSort)
-    return mirrors[-1]
+    return mirrors[0]
 
 
 ### The End ###

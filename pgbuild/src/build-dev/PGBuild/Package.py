@@ -23,7 +23,7 @@ Objects to support package manipulation.
 
 import os
 import PGBuild.Errors
-
+import PGBuild.Site
 
 class PackageVersion:
     """A single version of a package, representing a local copy and a repository.
@@ -32,11 +32,25 @@ class PackageVersion:
        """
 
     def __init__(self, package, configNode):
+        self.config = package.config
         self.package = package
         self.configNode = configNode
+        self.name = configNode.attributes['name'].value
 
         # The local path for this package
         #self.path = os.path.join(config.eval('bootstrap/path[@name="packages"]/text()'), self.name)
+
+    def getName(self):
+        """Returns a name of the form packagename-version"""
+        return "%s-%s" % (self.package.name, self.name)
+
+    def findMirror(self, progress=None):
+        """Find the fastest mirror for this package version. Returns a PGBuild.Site.Location"""
+        if progress:
+            task = progress.task("Finding the fastest mirror for %s" % self.getName())
+        else:
+            task = None
+        return PGBuild.Site.resolve(self.config, self.configNode.getElementsByTagName('a'), task)
 
 
 def decomposeVersion(version):
