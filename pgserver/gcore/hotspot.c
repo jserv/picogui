@@ -1,4 +1,4 @@
-/* $Id: hotspot.c,v 1.18 2002/01/28 08:33:20 micahjd Exp $
+/* $Id: hotspot.c,v 1.19 2002/01/28 09:08:53 micahjd Exp $
  *
  * hotspot.c - This is an interface for managing hotspots.
  *             The divtree is scanned for hotspot divnodes.
@@ -52,7 +52,31 @@ int hotspot_compare(struct hotspot *a, struct hotspot *b) {
   if (a->div && a->div->owner && a->div->owner->container &&
       b->div && b->div->owner && b->div->owner->container &&
       a->div->owner->container != b->div->owner->container) {
-    return 0;
+
+    /* Make temporary hotspots for the container */
+    struct hotspot ca, cb;
+    struct widget *wca, *wcb;
+    
+    /* First, we need to be able to read both containers.. */
+    if (!iserror(rdhandle((void**)&wca,PG_TYPE_WIDGET,-1,a->div->owner->container)) &&
+	!iserror(rdhandle((void**)&wcb,PG_TYPE_WIDGET,-1,b->div->owner->container))) {
+      
+      /* We need to use calx/calcy so we don't care about the scrolling
+       */
+      ca.div = NULL;
+      cb.div = NULL;
+      ca.x = wca->in->div->calcx;
+      ca.y = wca->in->div->calcy;
+      cb.x = wcb->in->div->calcx;
+      cb.y = wcb->in->div->calcy;
+
+      /* Sort by container first.
+       * This doesn't become recursive, since we have both hotspot's div parameter
+       * set to NULL. We could easily make it recursive, but that wouldn't make the
+       * hotspots any less confusing
+       */
+      return hotspot_compare(&ca,&cb);
+    }
   }
 
   if (a->y == b->y) {
