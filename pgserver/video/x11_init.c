@@ -1,4 +1,4 @@
-/* $Id: x11_init.c,v 1.15 2002/11/08 05:35:03 micahjd Exp $
+/* $Id: x11_init.c,v 1.16 2002/11/09 02:10:27 micahjd Exp $
  *
  * x11_init.c - Initialization for picogui'x driver for the X window system
  *
@@ -107,14 +107,21 @@ g_error x11_init(void) {
   x11_gc_setup(RootWindow(x11_display, x11_screen));
 
   /* X counts only the color itself in the depth, while
-   * picogui counts the space allocated for the color. So
-   * if the X server says the display is 24bpp, it's really
-   * 32bpp in our terminology. It doesn't seem that the X
-   * server uses 24bpp.
+   * picogui counts the space allocated for the color.
    */  
   vid->bpp  = DefaultDepth(x11_display, x11_screen);
-  if (vid->bpp == 24)
-    vid->bpp = 32; 
+  if (vid->bpp <= 1)
+    vid->bpp = 1;
+  else if (vid->bpp <= 2)
+    vid->bpp = 2;
+  else if (vid->bpp <= 4)
+    vid->bpp = 4;
+  else if (vid->bpp <= 8)
+    vid->bpp = 8;
+  else if (vid->bpp <= 16)
+    vid->bpp = 16;
+  else if (vid->bpp <= 32)
+    vid->bpp = 32;
 
   /* Are SHM pixmaps supported? */
   x11_using_shm = XShmQueryVersion(x11_display, &major, &minor, &pixmaps) && pixmaps;

@@ -1,4 +1,4 @@
-/* $Id: x11_bitmap.c,v 1.3 2002/11/07 07:59:56 micahjd Exp $
+/* $Id: x11_bitmap.c,v 1.4 2002/11/09 02:10:27 micahjd Exp $
  *
  * x11_bitmap.c - Utilities for dealing with bitmaps in X
  *
@@ -138,7 +138,13 @@ g_error x11_new_bitmap_pixmap(struct x11bitmap *xb) {
     return success;
   
   if (x11_using_shm) {
-    xb->sb.pitch = (xb->sb.w * xb->sb.bpp) >> 3;
+
+    /* FIXME: This assumes that the pitch is padded to the
+     *        nearest DWORD, like it is in current implementations
+     *        of XFree86. This should instead use an XImage
+     *        to determine the proper pitch.
+     */
+    xb->sb.pitch = (((xb->sb.w * xb->sb.bpp)>>3) + 3) & ~3;
 
     /* Set up us the SHM segment! 
      * FIXME: These SHM segments are insecure! Is there any way to have the X server,
