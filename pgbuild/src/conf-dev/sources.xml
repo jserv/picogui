@@ -18,7 +18,7 @@
   processing instructions.
 -->
 <?xml-stylesheet type="text/xsl"
-  href="http://navi.picogui.org/svn/picogui/trunk/tools/xslt/pgbuild_to_xhtml.xslt"?>
+  href="http://navi.picogui.org/svn/picogui/trunk/tools/xslt/pgbuild.xsl"?>
 
 <!--
   The PGBuild tag marks data that should be mounted into

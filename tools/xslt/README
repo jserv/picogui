@@ -1,3 +1,9 @@
 This directory contains XSLT translators and related files
 for the XML formats used by PicoGUI.
 
+If a file transforms a document into XHTML, it should have
+a file name of the form <doctype>.xsl
+
+If a file transforms one XML document into another type that
+isn't XHTML, it should have a name of the form <from>_<to>.xslt
+

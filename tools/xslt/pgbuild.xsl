@@ -12,7 +12,7 @@
     <html>
       <head>
         <title><xsl:value-of select="@title"/></title>
-        <style type="text/css" media="all"> @import url(http://navi.picogui.org/svn/picogui/trunk/tools/xslt/pgbuild.css);</style>
+        <style type="text/css" media="all"> @import url(http://navi.picogui.org/svn/picogui/trunk/tools/css/pgbuild.css);</style>
       </head>
       <body>
         <div class="heading">
