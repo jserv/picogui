@@ -78,6 +78,7 @@ fi
 bool 'SVGAlib framebuffer driver'          DRIVER_SVGAFB
 bool 'Motorola 68EZ328 LCD driver'         DRIVER_EZ328
 bool 'Ncurses driver'                      DRIVER_NCURSES
+bool '40x4 character serial LCD'           DRIVER_SERIAL40X4
 bool 'Null driver'                         DRIVER_NULL
 endmenu
 

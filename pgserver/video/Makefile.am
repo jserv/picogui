@@ -11,7 +11,8 @@ EXTRA_libvideo_a_SOURCES = \
 	ncurses.c \
 	null.c 	  \
 	sdlfb.c   \
-	svgafb.c
+	svgafb.c  \
+	serial40x4.c
 
 libvideo_a_LIBADD       = $(DRIVER:%.c=%.o)
 libvideo_a_DEPENDENCIES = $(DRIVER:%.c=%.o)
