@@ -69,6 +69,15 @@ int main(int argc, char **argv) {
 	      PG_WP_SIDE, PG_S_LEFT,
 	      0);
 
+  /* Since the label widget is just a customized button, it can also
+   * display bitmaps. Here we give our title a tux icon.
+   */
+  
+  pgSetWidget(wLabel,
+	      PG_WP_BITMAP, pgNewBitmap(pgFromFile("tux.pnm")),
+	      PG_WP_BITMASK, pgNewBitmap(pgFromFile("tux_mask.pnm")),
+	      0);
+
   /* We can also add any picogui widget to the panelbar. Here we add
    * an indicator widget. You will notice that any non-interactive
    * widget, like this indicator, can be used to drag the panelbar.

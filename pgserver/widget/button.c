@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.106 2002/05/20 22:28:51 micahjd Exp $
+/* $Id: button.c,v 1.107 2002/05/20 23:01:54 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -842,6 +842,16 @@ void position_button(struct widget *self,struct btnposition *bp) {
       s = DATA->bitmap_side;
     }
 
+    /* Rotate the bitmapside depending on the direction */
+    switch (DATA->direction) {
+    case PG_DIR_ANTIVERTICAL:  
+      s = rotate_side(s);
+    case PG_DIR_ANTIHORIZONTAL:  
+      s = rotate_side(s);
+    case PG_DIR_VERTICAL:  
+      s = rotate_side(s);
+    }
+
     if (s & (PG_S_TOP | PG_S_BOTTOM)) {
       /* Horizontal positioning for top/bottom */
       if (bp->bw>bp->tw) {
@@ -919,8 +929,14 @@ void position_button(struct widget *self,struct btnposition *bp) {
   case PG_DIR_VERTICAL:  
     bp->ty += bp->th; 
     break;
+  case PG_DIR_ANTIHORIZONTAL:  
+    bp->tx += bp->tw; 
+    bp->ty += bp->th; 
+    break;
+  case PG_DIR_ANTIVERTICAL:  
+    bp->tx += bp->tw;
+    break;
   }
-
 
   /* Remember if the bitmap has an alpha channel */
   DATA->has_alpha = bit && bp->bw && ( VID(getpixel)(bit,0,0) & PGCF_ALPHA );
