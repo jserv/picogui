@@ -1,5 +1,12 @@
 2002-03-27  Pascal Bauermeister  <pascal.bauermeister@smartdata.ch>
 
+	* video/fbdev.c: now supports offscreen bitmaps and has an RGB
+	shadow buffer
+	
+	* video/README.yuv: updates
+
+2002-03-27  Pascal Bauermeister  <pascal.bauermeister@smartdata.ch>
+
 	* config.in: Added option CONFIG_FB_YUV16
 
 	* profiles/profile.SMARTDATA-ppc-linux-redwood4: uses CONFIG_FB_YUV16
