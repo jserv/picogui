@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.36 2002/01/18 11:14:34 lonetech Exp $
+/* $Id: request.c,v 1.37 2002/01/18 11:48:23 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -461,6 +461,10 @@ void net_iteration(void) {
   sigaddset(&sigmask,SIGPIPE);
   sigaddset(&sigmask,SIGCHLD);
   sigaddset(&sigmask,SIGALRM);
+  sigaddset(&sigmask,SIGTERM);
+  sigaddset(&sigmask,SIGQUIT);
+  sigaddset(&sigmask,SIGUSR1);
+  sigaddset(&sigmask,SIGUNUSED);
 
   sigprocmask(SIG_SETMASK,&sigmask,NULL);
 #endif

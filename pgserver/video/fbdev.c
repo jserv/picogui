@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.22 2002/01/18 09:32:14 micahjd Exp $
+/* $Id: fbdev.c,v 1.23 2002/01/18 11:48:23 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -24,8 +24,8 @@
  * Contributors:
  * 
  *  A lot of the VT switching code here was based on Microwindows.
- *  Microwindows is Copyright (c) 2001 Century Software, Inc.
- * 
+ *    Microwindows is Copyright (c) 2001 Century Software, Inc.
+ *
  */
 
 #include <pgserver/common.h>
@@ -109,9 +109,6 @@ hwrcolor fbdev_color_pgtohwr(pgcolor c) {
 
 /**************************************** Virtual Terminals */
 #ifdef CONFIG_FB_VT
-
-/* The virtual terminal we're running on */
-int fbdev_vt;
 
 /* This is set when the SIGVT handler should be active */
 volatile u8 fbdev_handler_on = 0;
@@ -198,6 +195,13 @@ g_error fbdev_init(void) {
      close(fbdev_fd);
      return mkerror(PG_ERRT_IO,107);   /* can't open TTY */
    }
+
+#ifdef CONFIG_FB_VT
+   /* Redraw the text mode to put us back at the
+    * top of the virtual screen
+    */
+   fbdev_redrawvt(fbdev_getvt());
+#endif /* CONFIG_FB_VT */     
    
    /* Get info on the framebuffer */
    if ((ioctl(fbdev_fd,FBIOGET_FSCREENINFO,&fixinfo) < 0) ||
@@ -358,12 +362,6 @@ g_error fbdev_init(void) {
    {
      struct vt_mode mode;
 
-     /* Redraw the text mode to put us back at the
-      * top of the virtual screen
-      */
-     fbdev_vt = fbdev_getvt();
-     fbdev_redrawvt(fbdev_vt);
-     
      /* Get the kernel to bug us about VT changes */
      ioctl(ttyfd, VT_GETMODE, &mode);
      mode.mode = VT_PROCESS;
@@ -411,15 +409,17 @@ void fbdev_close(void) {
      fbdev_handler_on = 0;
      ioctl(ttyfd, VT_GETMODE, &mode);
      mode.mode = VT_AUTO;
+     mode.relsig = 0;
+     mode.acqsig = 0;
      ioctl(ttyfd, VT_SETMODE, &mode);
-     
-     /* redraw the text mode screen */
+
+     /* Refresh the text mode */
      fbdev_redrawvt(fbdev_getvt());
    }
 #endif
 
-   close(ttyfd);
    close(fbdev_fd);
+   close(ttyfd);
 }
 
 g_error fbdev_regfunc(struct vidlib *v) {

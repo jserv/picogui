@@ -1,4 +1,4 @@
-/* $Id: signals.c,v 1.2 2002/01/18 09:32:13 micahjd Exp $
+/* $Id: signals.c,v 1.3 2002/01/18 11:48:23 micahjd Exp $
  *
  * signal.c - Handle some fatal and not-so-fatal signals gracefully
  *            The SIGSEGV handling et cetera was inspired by SDL's
@@ -47,6 +47,7 @@ static int pgserver_signals[] = {
   SIGBUS,
   SIGFPE,
   SIGQUIT,
+  SIGINT,
   /* Extra signals */
   SIGUSR1,
   SIGUNUSED,
@@ -90,6 +91,7 @@ void signals_handler(int sig) {
     break;
 
   case SIGTERM:
+  case SIGINT:
     /* We should exit gracefully */
     mainloop_proceed = 0;
     break;
