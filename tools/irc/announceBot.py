@@ -10,6 +10,7 @@ from twisted.im import basechat, baseaccount, ircsupport
 from twisted.internet.protocol import Factory
 from twisted.internet.app import Application
 from twisted.protocols.basic import LineReceiver
+import time
 
 accounts = [
     ircsupport.IRCAccount("IRC", 1,
@@ -40,7 +41,8 @@ class AnnounceServer(LineReceiver):
 	    try:
 	        groups['commits'].sendText(fields[1] + ": " + fields[2])
 	        groups[fields[1]].sendText(fields[2])
-	    except KeyError:
+		time.sleep(1)
+            except KeyError:
 	        pass
         elif fields[0] == "JoinChannel":
             accounts[0].client.join(fields[1])
