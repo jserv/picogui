@@ -1,25 +1,19 @@
-/* This is an example
-   theme file */
+/* This is an example theme file.
+   It sets the default fill style to a simple
+   flat background with rectangular frame.
+   Default colors are black on white, but 
+   they are overridden in the button.
+*/
 
-obj default {
+object default {
   bgfill = fillstyle {
     Frame(x,y,w,h,fgcolor);
-    x = x+1;
-    y = y+1;
-    w = w-2;
-    h = h-2;
-    Rect(x,y,w,h,default:bgcolor);
+    Rect(x+1,y+1,w-2,h-2,bgcolor);
   };
   fgcolor = 0x000000;
   bgcolor = 0xFFFFFF;
 };
 
-obj button.on bgcolor = 5;
-object themeinfo name = "Example\n\"theme\"";
-
-object button {
-    font = 0xFFFFFF;
-    fgcolor = 0x000050 + 16000;
-    name = 0x394230;
-    bgcolor = 0x29;
-};
+object themeinfo name = "Example theme";
+object button bgcolor = 0x8080FF;
+object button.hilight bgcolor = 0xB0B0FF;
