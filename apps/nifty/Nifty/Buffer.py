@@ -9,6 +9,7 @@ class Buffer(object):
         self.name = name
         self.text = text
         self.observers = []
+        self.python_ns = {'buffer': self}
 
     def save(self):
         raise NotImplemented

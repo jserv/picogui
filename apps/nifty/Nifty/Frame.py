@@ -16,6 +16,9 @@ class Frame(object):
         self._box = self.addWidget('Box')
         self._box.side = 'All'
 
+        self.python_ns = {'frame': self}
+        exec 'from Nifty import FileBuffer, ScratchBuffer' in self.python_ns
+
         bar = self._app.panelbar() or self.addWidget('toolbar')
         bt = bar.addWidget('Button', 'inside')
         bt.text = 'Save'
@@ -49,8 +52,8 @@ class Frame(object):
             page = parent.addWidget('tabpage')
         except IndexError:
             page = self._box.addWidget('tabpage', 'inside')
-            self.minibuffer.bind(tabbar = PicoGUI.Widget(self._app.server, page.tab_bar,
-                                                         self._app, type='tabbar'))
+            self.bind(tabbar = PicoGUI.Widget(self._app.server, page.tab_bar,
+                                              self._app, type='tabbar'))
         self._pages.append(page)
         t = page.addWidget('scrollbox', 'inside').addWidget('Textbox','inside', wrapper_class=Textbox)
         t.open(self, page, buffer)
@@ -81,6 +84,10 @@ class Frame(object):
 
     def _save_button_handler(self, ev):
         self.save()
+
+    def bind(__self, **kw):
+        __self.python_ns.update(kw)
+        # we use __self instead of self so that someone may bind the name 'self'
 
     def link(self, *args):
         self._app.link(*args)

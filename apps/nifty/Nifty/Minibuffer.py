@@ -7,9 +7,7 @@ class Minibuffer(object):
         self._field.side = 'bottom'
         self._saved_text = None
         self._history = []
-        self._locals = {}
-        self._globals = {'frame': frame}
-        exec 'from Nifty import FileBuffer, ScratchBuffer' in self._globals
+        self.python_ns = {}
 
         frame.link(self._python_handler, self._field, 'activate')
         frame.link(self._key_handler, self._field, 'kbd keyup')
@@ -50,7 +48,7 @@ class Minibuffer(object):
             # no buffers open
             self.bind(buffer = None)
         try:
-            exec self._history[-1] in self._globals, self._locals
+            exec self._history[-1] in self._frame.python_ns, self.python_ns
         except SystemExit:
             raise
         except:
@@ -87,5 +85,5 @@ class Minibuffer(object):
         self._frame.focus_textbox()
 
     def bind(__self, **kw):
-        __self._globals.update(kw)
+        __self.python_ns.update(kw)
         # we use __self instead of self so that someone may bind the name 'self'
