@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.68 2001/08/09 09:57:48 micahjd Exp $
+/* $Id: constants.h,v 1.69 2001/08/25 17:53:43 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -773,7 +773,9 @@ typedef unsigned long pghandle;
 #define PG_WP_VALUE       14
 #define PG_WP_BITMASK     15
 #define PG_WP_BIND        16
-#define PG_WP_SCROLL      17    /* Scroll bar binds here on scrollable widgets */
+#define PG_WP_SCROLL_X    17    /* Horizontal and vertical scrolling amount */
+#define PG_WP_SCROLL_Y    18
+#define PG_WP_SCROLL      PG_WP_SCROLL_Y   /* For backwards compatibility */
 #define PG_WP_HOTKEY      19
 #define PG_WP_EXTDEVENTS  20    /* For buttons, a mask of extra events to send */
 #define PG_WP_DIRECTION   21

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.98 2001/08/18 06:33:31 micahjd Exp $
+/* $Id: widget.c,v 1.99 2001/08/25 17:53:44 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -333,7 +333,14 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
       install_hotkey(w,data);
       break;
 
-    case PG_WP_SCROLL:
+    case PG_WP_SCROLL_X:
+      w->in->div->tx = -data;
+      w->in->div->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_DIVSCROLL | DIVNODE_EXTEND_HEIGHT;
+      w->dt->flags |= DIVTREE_NEED_REDRAW;
+      hotspot_free();
+      break;
+
+    case PG_WP_SCROLL_Y:
       w->in->div->ty = -data;
       w->in->div->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_DIVSCROLL | DIVNODE_EXTEND_HEIGHT;
       w->dt->flags |= DIVTREE_NEED_REDRAW;
@@ -368,7 +375,9 @@ glob inline widget_get(struct widget *w, int property) {
     case PG_WP_ABSOLUTEY:
       return w->in->div->y;
 
-    case PG_WP_SCROLL:
+    case PG_WP_SCROLL_X:
+      return -w->in->div->tx;
+    case PG_WP_SCROLL_Y:
       return -w->in->div->ty;
 
     case PG_WP_SIDE:
