@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.38 2001/05/01 01:31:26 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.39 2001/05/10 04:12:28 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -271,6 +271,11 @@ void def_pixel(hwrbitmap dest, s16 x, s16 y, hwrcolor c, s16 lgop){
 	   (*vid->pixel) (dest,x,y,(*vid->color_pgtohwr)(mkcolor(r,g,b)),
 			  PG_LGOP_NONE);
 	}
+      break;
+
+    case PG_LGOP_STIPPLE:
+      if ((x+y)&1)
+	(*vid->pixel) (dest,x,y,c,PG_LGOP_NONE);
       break;
       
    }

@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.53 2001/05/05 02:00:08 micahjd Exp $
+/* $Id: constants.h,v 1.54 2001/05/10 04:12:28 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -461,8 +461,9 @@ typedef unsigned long pghandle;
 #define PG_LGOP_ADD         9
 #define PG_LGOP_SUBTRACT    10
 #define PG_LGOP_MULTIPLY    11
+#define PG_LGOP_STIPPLE     12
 
-#define PG_LGOPMAX          11  /* For error-checking */
+#define PG_LGOPMAX          12  /* For error-checking */
 
 /******************** Widgets */
 
