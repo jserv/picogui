@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.56 2002/02/11 19:39:23 micahjd Exp $
+/* $Id: memtheme.c,v 1.57 2002/02/12 23:54:36 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -271,32 +271,34 @@ unsigned long theme_lookup(unsigned short object,
 void div_rebuild(struct divnode *d) {
    struct gropctxt c;
    struct widget *w;
-   if (!d->build) return;
 
 #ifdef DEBUG_VIDEO
    printf("div_rebuild: div %p at %d,%d,%d,%d\n", d,d->x,d->y,d->w,d->h);
 #endif
 
-   /* Unless it's a raw build, clear the groplist. */
-   if (!(d->owner && d->owner->rawbuild)) {
-      grop_free(&d->grop);
-      gropctxt_init(&c,d);
+   if (d->build) {
+
+     /* Unless it's a raw build, clear the groplist. */
+     if (!(d->owner && d->owner->rawbuild)) {
+       grop_free(&d->grop);
+       gropctxt_init(&c,d);
+     }
+     
+     (*d->build)(&c,d->state,d->owner);
+     
+     /* Unless this is a raw build, set redraw flags */
+     if (!(d->owner && d->owner->rawbuild)) {
+       d->flags |= DIVNODE_NEED_REDRAW;
+       if (d->owner)
+	 d->owner->dt->flags |= DIVTREE_NEED_REDRAW;
+     }
    }
 
-   (*d->build)(&c,d->state,d->owner);
-
-   /* Unless this is a raw build, set redraw flags */
-   if (!(d->owner && d->owner->rawbuild)) {
-      d->flags |= DIVNODE_NEED_REDRAW;
-      if (d->owner)
-	d->owner->dt->flags |= DIVTREE_NEED_REDRAW;
-
-      /* If this node has children, rebuild them, etc.. */
-      if (d->div)
-	d->div->flags |= DIVNODE_NEED_REBUILD;
-      if (d->next)
-	d->next->flags |= DIVNODE_NEED_REBUILD;
-   }
+   /* If this node has children, rebuild them, etc.. */
+   if (d->div)
+     d->div->flags |= DIVNODE_NEED_REBUILD;
+   if (d->next)
+     d->next->flags |= DIVNODE_NEED_REBUILD;
 
    d->flags &= ~DIVNODE_NEED_REBUILD;
 }
@@ -423,6 +425,25 @@ int find_named_thobj(const u8 *name, s16 *id) {
 
 /***************** Theme loading */
 
+void theme_divtree_update(struct pgmemtheme *th) {
+  if (th->requires_full_update) {
+    struct divtree *tree;
+    
+    /* To make the them take effect:
+     *  - call widget_resize() on all widgets
+     *  - recalc all divnodes
+     *  - rebuild all applicable divnodes
+     *  - redraw all divtree layers
+     *  - reclip all popups
+     */
+    resizeall();
+    for (tree=dts->top;tree;tree=tree->next) {
+      tree->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC | DIVNODE_NEED_REBUILD;
+      tree->flags |= DIVTREE_NEED_RECALC | DIVTREE_ALL_REDRAW | DIVTREE_CLIP_POPUP;
+    }
+  }
+}
+
 g_error theme_load(handle *h,int owner,char *themefile,
 		   unsigned long themefile_len) {
   g_error e;
@@ -442,7 +463,6 @@ g_error theme_load(handle *h,int owner,char *themefile,
   struct pgmemtheme_prop *mpropp;
   struct pgmemtheme *th;
   char *objname;
-  short requires_full_update = 0;
 
   /* Get the header */
   if (themefile_remaining < sizeof(struct pgtheme_header))
@@ -514,6 +534,7 @@ g_error theme_load(handle *h,int owner,char *themefile,
 
   /* Fill in the pgmemetheme header */
   th->num_thobj = hdr->num_thobj;
+  th->requires_full_update = 0;
 
   /* Allocate thobj array on the heap */
   mthop = thobjarray = (struct pgmemtheme_thobj *) heap;
@@ -583,7 +604,7 @@ g_error theme_load(handle *h,int owner,char *themefile,
 	break;
 
       default:
-	requires_full_update = 1;
+	th->requires_full_update = 1;
 	break;
       }
 
@@ -692,13 +713,9 @@ g_error theme_load(handle *h,int owner,char *themefile,
 
   /* Reload global hotkeys from the theme */
   reload_hotkeys();
-
-  if (requires_full_update) {
-    /* Schedule a global recalc (Yikes!) so it takes effect */
-    resizeall();
-    dts->top->head->flags |= DIVNODE_NEED_RECALC;
-    dts->top->flags |= DIVTREE_NEED_RECALC;
-  }
+  
+  /* Set flags for an update due to loading/unloading the theme */
+  theme_divtree_update(th);
 
   return success;
 }
@@ -724,10 +741,9 @@ void theme_remove(struct pgmemtheme *th) {
   if (!in_shutdown) {
      /* Reload the mouse cursor */
      appmgr_loadcursor(PGTH_O_DEFAULT);
-
-     resizeall();
-     dts->top->head->flags |= DIVNODE_NEED_RECALC;
-     dts->top->flags |= DIVTREE_NEED_RECALC;
+     
+     /* Set flags for an update due to loading/unloading the theme */
+     theme_divtree_update(th);
   }
 
   g_free(th);

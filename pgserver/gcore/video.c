@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.58 2002/02/11 19:39:23 micahjd Exp $
+/* $Id: video.c,v 1.59 2002/02/12 23:54:36 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -379,16 +379,8 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
      for (tree=dts->top;tree;tree=tree->next) {
 	tree->head->w = vid->lxres;
 	tree->head->h = vid->lyres;
-	tree->head->flags |= DIVNODE_NEED_RECALC;
-	tree->flags |= DIVTREE_NEED_RECALC | DIVTREE_ALL_REDRAW;
-	
-	/* More work for us if this is a popup layer... 
-	 * Need to reclip the popup so it doesn't go off the
-	 * edge of the screen.
-	 */
-	if (tree->head->next && tree->head->next->owner &&
-	    tree->head->next->owner->type == PG_WIDGET_POPUP)
-	  clip_popup(tree->head->next->div);
+	tree->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC | DIVNODE_NEED_REBUILD;
+	tree->flags |= DIVTREE_NEED_RECALC | DIVTREE_ALL_REDRAW | DIVTREE_CLIP_POPUP;
      }
 
    /* Convert to the new color depth if necessary */

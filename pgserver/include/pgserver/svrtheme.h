@@ -1,4 +1,4 @@
-/* $Id: svrtheme.h,v 1.9 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: svrtheme.h,v 1.10 2002/02/12 23:54:36 micahjd Exp $
  * 
  * svrtheme.h - functions and data structures for themes, used
  *              only in the server
@@ -37,7 +37,11 @@
 struct pgmemtheme {
   /* Next theme loaded */
   struct pgmemtheme *next;
-  
+
+  /* Does this theme require a full redraw on load/unload, 
+   * or is it simple enough not to need that? */
+  bool requires_full_update;
+
   /* Immediately following this header is an array of theme objects */
   unsigned short num_thobj;  /* Number of objects in the array */
 };
