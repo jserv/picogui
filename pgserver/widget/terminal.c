@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.53 2002/05/22 10:01:22 micahjd Exp $
+/* $Id: terminal.c,v 1.54 2002/09/04 04:15:50 viking667 Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -54,6 +54,7 @@ struct termdata {
   u8 *buffer;
   int bufferw,bufferh,buffersize;
   int crsrx,crsry;
+  int savcrsrx, savcrsry;
   u8 attr_under_crsr;
   u8 attr;             /* Default attribute for new characters */
 
@@ -1147,6 +1148,16 @@ void term_othercsi(struct widget *self,u8 c) {
     break;
 
 
+ /* ESC [ s - Save cursor position */
+  case 's':
+    DATA->savcrsry = DATA->crsry;
+    DATA->savcrsrx = DATA->crsrx;
+    break;
+ /* ESC [ u - Restore cursor position */
+  case 'u':
+    DATA->crsry = DATA->savcrsry;
+    DATA->crsrx = DATA->savcrsrx;
+     break;
 #ifdef BOTHERSOME_TERMINAL
     default:
       printf("term: Unknown final character in CSI escape = %c\n",c);

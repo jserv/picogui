@@ -1,0 +1,527 @@
+#
+# Keyboard source for the US 'dvorak' layout. This is a fairly generic
+# keyboard that should work at any screen resolution. It draws the keyboard
+# with vector graphics, using gropnode coordinate mapping to have the server
+# scale the keyboard to fit the screen
+#
+# This keyboard works nicely at 320x240 and 240x320. It is a little tight
+# but still fully usable at 160x240. At 160x160 is is quite mushed and probably
+# not very fun to use.
+#
+# Keyboard source is in the form of a perl script that uses functions
+# built into kbcompile.pl to generate the keyboard data.
+#
+# This code is released into the public domain. Feel free to use it in whole
+# or in part for your own keyboard layouts.
+#
+# -- Micah Dowty <micahjd@users.sourceforge.net>
+# -- Eric Gillespie <viking@caverock.net.nz>
+#
+
+$option{'side'} = PG_S_BOTTOM;
+$option{'size'} = 25;
+$option{'sizemode'} = PG_SZMODE_PERCENT;
+$option{'path'} = './img/';
+
+####################################### Subroutines
+
+sub initpattern {
+    newpattern;
+    clear;
+    setmapping(0,0,$width = 50,4,PG_MAP_SCALE);
+    setcolor(0xFFFFFF);
+    rect(0,0,$width,4);
+    setcolor(0);
+    font("Helvetica", 14, PG_FSTYLE_BOLD);
+    frame(0,0,$width,4);
+    
+    $defaultpat = $defaultmods = 0;
+}
+
+sub keyrow {
+    ($num,$start,$end) = @_;
+
+    slab(0,$num,$width);
+    drawkey(0,$num,$start,$grid[$j++]);
+    for ($i=$start;$i<=$end;$i+=4) {
+	bar($i,$num,1);
+	drawkey($i,$num,4,$grid[$j++]);
+    }
+    bar($i,$num,1);
+    drawkey($i,$num,$width-$end,$grid[$j++]);
+}
+
+sub addkey {
+    my ($pos, $width, $height) = @_;
+
+    drawkey ($pos, $height, $width, $grid [$j++]);
+    $pos += $width;
+    bar ($pos, $height, 1);
+
+    return $pos;
+}
+
+sub drawgrid {
+    $j = 0;
+    @grid = @_;
+    
+    keyrow(0,6,42);
+    keyrow(1,7,43);
+    keyrow(2,9,41);
+
+    # Spacebar messes up the last row
+    slab(0,3,$width);
+    $pos = 0;
+    $pos = addkey ($pos, 5, 3);
+    $pos = addkey ($pos, 5, 3);
+    $pos = addkey ($pos, 6, 3);
+    $pos = addkey ($pos, 11, 3);
+    $pos = addkey ($pos, 5, 3);
+    $pos = addkey ($pos, 5, 3);
+    $pos = addkey ($pos, 5, 3);
+    $pos = addkey ($pos, 8, 3);
+#    drawkey(0,3,6,$grid[$j++]);
+#    bar(6,3,1);
+#    drawkey(6,3,4,$grid[$j++]);
+#    bar(10,3,1);
+#    drawkey(10,3,4,$grid[$j++]);
+#    bar(14,3,1);
+#    drawkey(14,3,20,$grid[$j++]);
+#    bar(34,3,1);
+#    drawkey(34,3,4,$grid[$j++]);
+#    bar(38,3,1);
+#    drawkey(38,3,4,$grid[$j++]);
+#    bar(42,3,1);
+#    drawkey(42,3,4,$grid[$j++]);
+#    bar(46,3,1);
+#    drawkey(46,3,4,$grid[$j++]);
+}
+
+sub drawkey {
+    my ($x,$y,$w,$keycode,$h) = @_;
+    
+    ($name,$key,$pgkey,$mods,$pat) = split /:/,$keycode;
+
+    $name =~ s/colon/:/;
+    $key =~ s/colon/:/;
+    $key = chr(substr($key,1)) if (length($key) > 1 && $key=~/^#/);
+
+    $mods = $defaultmods if (!defined $mods);
+    $mods = eval($mods);
+    $pat = $defaultpat if (!defined $pat);
+    $h = 1 if (!defined $h);
+
+    if (defined $name && $name ne "") {
+	text($x,$y,$name);
+    }
+
+    hotspot($x,$y,$w,$h,0,ord($key),$pgkey,$mods,$pat);
+}
+    
+
+####################################### Main pattern (1)
+
+initpattern;
+
+drawgrid(" ->|:\t:PGKEY_TAB",
+	 " ':':PGKEY_QUOTE",
+	 " ,:,:PGKEY_COMMA",
+	 " .:.:PGKEY_PERIOD",
+	 " p:p:PGKEY_p",
+	 " y:y:PGKEY_y",
+	 " f:f:PGKEY_f",
+	 " g:g:PGKEY_g",
+	 " c:c:PGKEY_c",
+	 " r:r:PGKEY_r",
+	 " l:l:PGKEY_l",
+	 "<x|:\b:PGKEY_BACKSPACE",
+
+#	 "del:\b:PGKEY_BACKSPACE",
+
+	 " cap::::3",
+	 " a:a:PGKEY_a",
+	 " o:o:PGKEY_o",
+	 " e:e:PGKEY_e",
+	 " u:u:PGKEY_u",
+	 " i:i:PGKEY_i",
+	 " d:d:PGKEY_d",
+	 " h:h:PGKEY_h",
+	 " t:t:PGKEY_t",
+	 " n:n:PGKEY_n",
+	 " s:s:PGKEY_s",
+	 "  /:/:PGKEY_SLASH",
+
+#	 "ret:\r:PGKEY_RETURN",
+
+	 "  shf::::2",
+	 " ;:;:PGKEY_SEMICOLON",
+	 " q:q:PGKEY_q",
+	 " j:j:PGKEY_j",
+	 " k:k:PGKEY_k",
+	 " x:x:PGKEY_x",
+	 " b:b:PGKEY_b",
+	 " m:m:PGKEY_m",
+	 " w:w:PGKEY_w",
+	 " v:v:PGKEY_v",
+	 " z:z:PGKEY_z",
+#	 "shf::::2",
+
+	 " ctl::::4",
+	 "123::::5",
+	 "sym::::6",
+	 ": :PGKEY_SPACE",
+#	 "/\\::PGKEY_UP",
+#	 "\\/::PGKEY_DOWN",
+	 " <-::PGKEY_LEFT",
+	 " ->::PGKEY_RIGHT",
+	 " -:-:PGKEY_MINUS",
+	 "  ret:\r:PGKEY_RETURN");
+
+####################################### Shift pattern (2)
+
+initpattern;
+
+# Jump back to the normal pattern after a keypress
+$defaultpat = 1;
+
+# Shift modifier, of course
+$defaultmods = PGMOD_SHIFT;
+
+drawgrid(" ->|:\t:PGKEY_TAB",
+	 " \":\":PGKEY_QUOTEDBL",
+	 " <:<:PGKEY_LESS",
+	 " >:>:PGKEY_GREATER",
+	 " P:P:PGKEY_p",
+	 " Y:Y:PGKEY_y",
+	 " F:F:PGKEY_f",
+	 " G:G:PGKEY_g",
+	 " C:C:PGKEY_c",
+	 " R:R:PGKEY_r",
+	 " L:L:PGKEY_l",
+	 "<x|:\b:PGKEY_BACKSPACE",
+#	 "del:\b:PGKEY_BACKSPACE",
+
+	 " cap::::3",
+	 " A:A:PGKEY_a",
+	 " O:O:PGKEY_o",
+	 " E:E:PGKEY_e",
+	 " U:U:PGKEY_u",
+	 " I:I:PGKEY_i",
+	 " D:D:PGKEY_d",
+	 " H:H:PGKEY_h",
+	 " T:T:PGKEY_t",
+	 " N:N:PGKEY_n",
+	 " S:S:PGKEY_s",
+	 "  ?:?:PGKEY_QUESTION",
+#	 "ret:\r:PGKEY_RETURN",
+
+	 "  shf",
+	 " colon:colon:PGKEY_COLON",
+	 " Q:Q:PGKEY_q",
+	 " J:J:PGKEY_j",
+	 " K:K:PGKEY_k",
+	 " X:X:PGKEY_x",
+	 " B:B:PGKEY_b",
+	 " M:M:PGKEY_m",
+	 " W:W:PGKEY_w",
+	 " V:V:PGKEY_v",
+	 " Z:Z:PGKEY_z",
+#	 "shf",
+
+	 " ctl::::4",
+	 "123::::5",
+	 "sym::::6",
+	 ": :PGKEY_SPACE",
+#	 "/\\::PGKEY_UP",
+#	 "\\/::PGKEY_DOWN",
+	 " <-::PGKEY_LEFT",
+	 " ->::PGKEY_RIGHT",
+	 " _:_:PGKEY_UNDERSCORE",
+	 "  ret:\r:PGKEY_RETURN");
+
+# Show the shift keys as inverted
+setlgop(PG_LGOP_XOR);
+setcolor(0xFFFFFF);
+rect(0,2,9,1);
+#rect($width-9,2,9,1);
+
+####################################### Capslock pattern (3)
+
+initpattern;
+
+# Shift modifier, of course
+$defaultmods = PGMOD_SHIFT;
+
+drawgrid(" ->|:\t:PGKEY_TAB",
+	 " ':':PGKEY_QUOTE",
+	 " ,:,:PGKEY_COMMA",
+	 " .:.:PGKEY_PERIOD",
+	 " P:P:PGKEY_p",
+	 " Y:Y:PGKEY_y",
+	 " F:F:PGKEY_f",
+	 " G:G:PGKEY_g",
+	 " C:C:PGKEY_c",
+	 " R:R:PGKEY_r",
+	 " L:L:PGKEY_l",
+	 "<x|:\b:PGKEY_BACKSPACE",
+#	 "del:\b:PGKEY_BACKSPACE",
+
+	 " cap::::1",
+	 " A:A:PGKEY_a",
+	 " O:O:PGKEY_o",
+	 " E:E:PGKEY_e",
+	 " U:U:PGKEY_u",
+	 " I:I:PGKEY_i",
+	 " D:D:PGKEY_d",
+	 " H:H:PGKEY_h",
+	 " T:T:PGKEY_t",
+	 " N:N:PGKEY_n",
+	 " S:S:PGKEY_s",
+	 "  /:/:PGKEY_SLASH",
+#	 "ret:\r:PGKEY_RETURN",
+
+	 "  shf::::1",
+	 " ;:;:PGKEY_SEMICOLON",
+	 " Q:Q:PGKEY_q",
+	 " J:J:PGKEY_j",
+	 " K:K:PGKEY_k",
+	 " X:X:PGKEY_x",
+	 " B:B:PGKEY_b",
+	 " M:M:PGKEY_m",
+	 " W:W:PGKEY_w",
+	 " V:V:PGKEY_v",
+	 " Z:Z:PGKEY_z",
+#	 "shf::::1",
+
+	 " ctl::::4",
+	 "123::::5",
+	 "sym::::6",
+	 ": :PGKEY_SPACE",
+#	 "/\\::PGKEY_UP",
+#	 "\\/::PGKEY_DOWN",
+	 " <-::PGKEY_LEFT",
+	 " ->::PGKEY_RIGHT",
+	 " -:-:PGKEY_MINUS",
+	 "  ret:\r:PGKEY_RETURN");
+
+# Show the caps lock as inverted
+setlgop(PG_LGOP_XOR);
+setcolor(0xFFFFFF);
+rect(0,1,7,1);
+
+####################################### Control pattern (4)
+
+initpattern;
+$defaultpat = 1;
+$defaultmods = PGMOD_CTRL;
+
+drawgrid(" ->|:\t:PGKEY_TAB",
+	 " ':':PGKEY_QUOTE",
+	 " ,:,:PGKEY_COMMA",
+	 " .:.:PGKEY_PERIOD",
+	 "^p:#16:PGKEY_p",
+	 "^y:#25:PGKEY_y",
+	 "^f:#6:PGKEY_f",
+	 "^g:#7:PGKEY_g",
+	 "^c:#3:PGKEY_c",
+	 "^r:#18:PGKEY_r",
+	 "^l:#12:PGKEY_l",
+	 "<x|:\b:PGKEY_BACKSPACE",
+#	 "del:\b:PGKEY_BACKSPACE",
+
+	 " cap::::3",
+	 "^a:#1:PGKEY_a",
+	 "^o:#15:PGKEY_o",
+	 "^e:#5:PGKEY_e",
+	 "^u:#21:PGKEY_u",
+	 "^i:#9:PGKEY_i",
+	 "^d:#4:PGKEY_d",
+	 "^h:#8:PGKEY_h",
+	 "^t:#20:PGKEY_t",
+	 "^n:#14:PGKEY_n",
+	 "^s:#19:PGKEY_s",
+	 "  /:/:PGKEY_SLASH",
+#	 "ret:\r:PGKEY_RETURN",
+
+	 "  shf::::2",
+	 " ;:;:PGKEY_SEMICOLON",
+	 "^q:#17:PGKEY_q",
+	 "^j:#10:PGKEY_j",
+	 "^k:#11:PGKEY_k",
+	 "^x:#24:PGKEY_x",
+	 "^b:#2:PGKEY_b",
+	 "^m:#13:PGKEY_m",
+	 "^w:#23:PGKEY_w",
+	 "^v:#22:PGKEY_v",
+	 "^z:#26:PGKEY_z",
+# To send a CTRL-ALT-m
+#	 "^m:#13:PGKEY_m:PGMOD_CTRL | PGMOD_ALT",
+#	 "shf::::2",
+
+	 " ctl",
+	 "123::::5",
+	 "sym::::6",
+	 ": :PGKEY_SPACE",
+#	 "/\\::PGKEY_UP",
+#	 "\\/::PGKEY_DOWN",
+	 " <-::PGKEY_LEFT",
+	 " ->::PGKEY_RIGHT",
+	 " -:-:PGKEY_MINUS",
+	 "  ret:\r:PGKEY_RETURN");
+
+# Show the ctrl as inverted
+setlgop(PG_LGOP_XOR);
+setcolor(0xFFFFFF);
+rect(0,3,5,1);
+
+####################################### Numbers pattern (5)
+
+initpattern;
+
+# Control keys
+bar(6,0,4);
+slab(0,1,6);
+slab(0,2,6);
+slab(0,3,6);
+drawkey(0,0,6," ins::PGKEY_INSERT");
+drawkey(0,1,6," ->|:\t:PGKEY_TAB");
+drawkey(0,2,6," <x|:\b:PGKEY_BACKSPACE");
+#drawkey(0,3,7," ret:\r:PGKEY_KP_ENTER");
+drawkey(0,3,6," abc::::1");
+
+setcolor (0x0);
+
+# Number grid
+bar(6,0,4);
+bar(12,0,3);
+bar(18,0,4);
+bar(24,0,4);
+slab(6,1,18);
+slab(6,2,18);
+slab(6,3,18);
+drawkey(6,0,6,"  7:7:PGKEY_KP7");
+drawkey(12,0,6,"  8:8:PGKEY_KP8");
+drawkey(18,0,6,"  9:9:PGKEY_KP9");
+drawkey(6,1,6,"  4:4:PGKEY_KP4");
+drawkey(12,1,6,"  5:5:PGKEY_KP5");
+drawkey(18,1,6,"  6:6:PGKEY_KP6");
+drawkey(6,2,6,"  1:1:PGKEY_KP1");
+drawkey(12,2,6,"  2:2:PGKEY_KP2");
+drawkey(18,2,6,"  3:3:PGKEY_KP3");
+drawkey(6,3,12,"  0:0:PGKEY_KP0");
+drawkey(18,3,6,"  .:.:PGKEY_KP_PERIOD");
+
+# Arithmetic keys
+bar(27,0,4);
+bar(31,0,4);
+bar(35,0,4);
+slab(27,1,8);
+slab(27,2,8);
+slab(27,3,8);
+drawkey(27,0,4," +:+:PGKEY_KP_PLUS");
+drawkey(27,1,4," -:-:PGKEY_KP_MINUS");
+drawkey(27,2,4," colon:colon:PGKEY_COLON");
+drawkey(27,3,4," =:=:PGKEY_KP_EQUALS");
+drawkey(31,0,4," *:*:PGKEY_KP_MULTIPLY");
+drawkey(31,1,4," /:/:PGKEY_KP_DIVIDE");
+drawkey(31,2,4," ^:^:PGKEY_6:PGMOD_SHIFT");
+drawkey(31,3,4," %:%:PGKEY_5:PGMOD_SHIFT");
+
+# Hex keys
+bar (35, 0, 4);
+bar (40, 0, 4);
+bar (45, 0, 4);
+slab (35, 1, 15);
+slab (35, 2, 15);
+drawkey(35,0,5," a:a:PGKEY_a:PGMOD_SHIFT");
+drawkey(40,0,5," b:b:PGKEY_b:PGMOD_SHIFT");
+drawkey(45,0,5," c:c:PGKEY_c:PGMOD_SHIFT");
+drawkey(35,1,5," d:d:PGKEY_d:PGMOD_SHIFT");
+drawkey(40,1,5," e:e:PGKEY_e:PGMOD_SHIFT");
+drawkey(45,1,5," f:f:PGKEY_f:PGMOD_SHIFT");
+
+# Navigation grid
+slab (35, 3, 15);
+drawkey(35,2,5," pu::PGKEY_PAGEUP");
+drawkey(40,2,5," /\\::PGKEY_UP");
+drawkey(45,2,5," pd::PGKEY_PAGEDOWN");
+drawkey(35,3,5," <-::PGKEY_LEFT");
+drawkey(40,3,5," \\/::PGKEY_DOWN");
+drawkey(45,3,5," ->::PGKEY_RIGHT");
+
+#bar (46, 0, 4);
+#slab (46, 1, 4);
+#slab (46, 2, 4);
+#slab (46, 3, 4);
+#drawkey(46,0,4," h::PGKEY_HOME");
+#drawkey(46,1,4," pu::PGKEY_PAGEUP");
+#drawkey(46,2,4," pd::PGKEY_PAGEDOWN");
+#drawkey(46,3,4," e::PGKEY_END");
+
+####################################### Symbols pattern (6)
+
+initpattern;
+$defaultpat = 1;
+drawgrid(" esc:\e:PGKEY_ESCAPE",
+	 " 1:1:PGKEY_1",
+	 " 2:2:PGKEY_2",
+	 " 3:3:PGKEY_3",
+	 " 4:4:PGKEY_4",
+	 " 5:5:PGKEY_5",
+	 " 6:6:PGKEY_6",
+	 " 7:7:PGKEY_7",
+	 " 8:8:PGKEY_8",
+	 " 9:9:PGKEY_9",
+	 " 0:0:PGKEY_0",
+	 "<x|:\b:PGKEY_BACKSPACE",
+#	 "\\:\\:PGKEY_BACKSLASH",
+
+	 "  ~:~:126",
+	 " !:!:PGKEY_1:PGMOD_SHIFT",
+	 "\@:\@:PGKEY_2:PGMOD_SHIFT",
+	 " #:#:PGKEY_3:PGMOD_SHIFT",
+	 " \$:\$:PGKEY_4:PGMOD_SHIFT",
+	 " %:%:PGKEY_5:PGMOD_SHIFT",
+	 " ^:^:PGKEY_6:PGMOD_SHIFT",
+	 " &:&:PGKEY_7:PGMOD_SHIFT",
+	 " *:*:PGKEY_8:PGMOD_SHIFT",
+	 " (:(:PGKEY_9:PGMOD_SHIFT",
+	 " ):):PGKEY_0:PGMOD_SHIFT",
+	 " `:`:PGKEY_BACKQUOTE",
+#	 "ret:\r:PGKEY_RETURN",
+
+	 "  shf::::2",
+	 " {:{:123",
+	 " }:}:125",
+	 " [:[:PGKEY_LEFTBRACKET",
+	 " ]:]:PGKEY_RIGHTBRACKET",
+	 " +:+:PGKEY_PLUS",
+	 " =:=:PGKEY_EQUALS",
+	 " ?:?:PGKEY_QUESTION",
+	 " ,:,:PGKEY_COMMA",
+	 " .:.:PGKEY_PERIOD",
+#	 "/:/:PGKEY_SLASH",
+	 "  \\:\\:PGKEY_BACKSLASH",
+#	 "shf::::2",
+
+	 " ctl::::4",
+	 "123::::5",
+	 "sym",
+	 ": :PGKEY_SPACE",
+#	 "/\\::PGKEY_UP",
+#	 "\\/::PGKEY_DOWN",
+	 " <-::PGKEY_LEFT",
+	 " ->::PGKEY_RIGHT",
+	 " |:|:124",
+	 "  ret:\r:PGKEY_RETURN");
+
+# Show the symbol button as inverted
+setlgop(PG_LGOP_XOR);
+setcolor(0xFFFFFF);
+rect(10,3,6,1);
+
+### The End ###
+
+
+
+
