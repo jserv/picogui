@@ -1,4 +1,4 @@
-/* $Id: ptyfork.c,v 1.1 2001/01/05 09:13:28 micahjd Exp $
+/* $Id: ptyfork.c,v 1.2 2001/01/13 06:32:49 micahjd Exp $
  *
  * ptyfork.c - Create a subprocess running under a pty
  *
@@ -40,6 +40,9 @@
 #include <sys/ioctl.h>
 #include <string.h>
 
+/* Error details when enabled */
+//#define DEBUG
+
 /* Returns -1 on error, 0 for child, and a pid for parent 
  * For the parent, returns the pty's fd in *ptyfd
  *
@@ -65,8 +68,12 @@ int ptyfork(int *ptyfd) {
       
       /* Try to open each */
       if ((master = open(fname,O_RDWR)) < 0) {
-	if (errno == ENOENT)
+	if (errno == ENOENT) {
+#ifdef DEBUG
+	  perror("opening pseudoterminal");
+#endif
 	  return -1;
+	}
 	else
 	  continue;
       }
@@ -75,15 +82,23 @@ int ptyfork(int *ptyfd) {
       fname[5] = 't';
 
       /* Fork! */
-      if ( (pid = fork()) < 0 )
+      if ( (pid = fork()) < 0 ) {
+#ifdef DEBUG
+	perror("fork");
+#endif
 	return -1;
+      }
 
       if (!pid) {
 	/* Child */
 	
 	/* Shed our old controlling terminal and get a new session */
-	if (setsid() < 0)
+	if (setsid() < 0) {
+#ifdef DEBUG
+	  perror("setsid");
+#endif
 	  return -1;
+	}
 
 	/* Try to make the device our own, but this won't work unless the
 	 * terminal is setuid root */
@@ -103,6 +118,9 @@ int ptyfork(int *ptyfd) {
 	/* Open the slave device */
 	if ( (slave = open(fname,O_RDWR)) < 0) {
 	  close(master);
+#ifdef DEBUG
+	  perror("opening slave pty");
+#endif
 	  return -1;
 	}
 
@@ -113,12 +131,24 @@ int ptyfork(int *ptyfd) {
 	ioctl(slave,TIOCSCTTY,NULL);
 
 	/* Make the slave pty our stdin/out/err */
-	if (dup2(slave, STDIN_FILENO) != STDIN_FILENO)
+	if (dup2(slave, STDIN_FILENO) != STDIN_FILENO) {
+#ifdef DEBUG
+	  perror("dup2 stdin");
+#endif
 	  return -1;
-	if (dup2(slave, STDOUT_FILENO) != STDOUT_FILENO)
+	}
+	if (dup2(slave, STDOUT_FILENO) != STDOUT_FILENO) {
+#ifdef DEBUG
+	  perror("dup2 stdout");
+#endif
 	  return -1;
-	if (dup2(slave, STDERR_FILENO) != STDERR_FILENO)
+	}
+	if (dup2(slave, STDERR_FILENO) != STDERR_FILENO) {
+#ifdef DEBUG
+	  perror("dup2 stderr");
+#endif
 	  return -1;
+	}
 	if (slave > STDERR_FILENO)
 	  close(slave);
 
@@ -135,7 +165,10 @@ int ptyfork(int *ptyfd) {
 
     }
   }
-  return -1;   /* Failed to find a pty */
+#ifdef DEBUG
+  perror("finding pseudoterminal");
+#endif
+  return -1;
 }
 
 

@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.2 2001/01/05 09:30:14 micahjd Exp $
+/* $Id: main.c,v 1.3 2001/01/13 06:32:49 micahjd Exp $
  *
  * main.c - PicoGUI Terminal (the 'p' is silent :)
  *          This handles the PicoGUI init and events
@@ -49,6 +49,16 @@ pghandle wTerminal;
 int termInput(pghandle from,long size,char *data) {
    /* Write the input character to the subprocess */
    write(ptyfd,data,size);
+   return 0;
+}
+
+/* Terminal was resized, pass on the news */
+int termResize(short event, pghandle from, long param) {
+  struct winsize size;
+  memset(&size,0,sizeof(size));
+  size.ws_row = param & 0xFFFF;
+  size.ws_col = param >> 16;
+  ioctl(ptyfd,TIOCSWINSZ,(char *) &size);
 }
 
 /* FIXME: so far the only way this could work is by
@@ -59,12 +69,12 @@ void termOutput(void) {
    int chars;
    static char buf[4096];
    while ((chars = read(ptyfd,buf,4096)) > 0) {
-      pgWriteData(wTerminal,pgFromMemory(&buf,chars));
+      pgWriteData(wTerminal,pgFromMemory(buf,chars));
       pgSubUpdate(wTerminal);
    }
 
-   /* Read error - we're done! */
-   if (chars<0 && errno != EAGAIN)
+   /* If this wasn't an EAGAIN we're done */
+   if (chars==0 || errno!=EAGAIN)
      exit(0);
 }
 
@@ -82,22 +92,24 @@ int main(int argc, char *argv[],char *envp[]) {
 	      PG_WP_SIDE,PG_S_ALL,
 	      0);
   pgBindData(PGDEFAULT,&termInput);
+  pgBind(PGDEFAULT,PG_WE_RESIZE,&termResize);
   pgFocus(PGDEFAULT);
   
   /*** Start up subprocess */
-  
+
+  /* Fork! */  
   if ( (childpid = ptyfork(&ptyfd)) < 0 ) {
-    /* I would hope this is a rare error, so don't spend much effort on it */
-    pgMessageDialog(argv[0],"Error acquiring pseudoterminal",0);
+    pgMessageDialogFmt(argv[0],0,"Error acquiring pseudoterminal:\n%s",
+		       strerror(errno));
     exit(1);
   }
 
   if (!childpid) {
     /* This is the child process */
-
-    char *args[] = { "-sh", NULL };
-    execve("/bin/sh",args,envp);
-    perror("execve");
+    execlp("/bin/sh","-sh",NULL);
+    perror("Starting subprocess");
+    pause();        /* Give a chance to read the error */
+    _exit(127);
   }
 
   /*** These two are for the polling hack (ick. See the above FIXME) */
