@@ -19,7 +19,7 @@ $x = NewWidget(-type => button, -inside => $p,
 	-bitmask => NewBitmap(-file => '../images/button/x_mask.pnm'));
 
 # Junk button
-NewWidget(-type => button,-side => right);
+NewWidget(-type => button,-side => right,-inside => $p);
 
 Update(); 
 
