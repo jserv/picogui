@@ -1,4 +1,4 @@
-/* $Id: if_client_adaptor.c,v 1.2 2002/07/03 22:03:29 micahjd Exp $
+/* $Id: if_client_adaptor.c,v 1.3 2002/08/06 22:22:01 micahjd Exp $
  *
  * if_client_adaptor.c - Send events to clients, for client-side input filters
  *
@@ -50,13 +50,14 @@ void infilter_client_adaptor_handler(struct infilter *self, u32 trigger, union t
     cli_trig.content.u.kbd.consume = param->kbd.consume;
   }
   else if (trigger & PG_TRIGGERS_MOUSE) {
-    cli_trig.content.u.mouse.x             = param->mouse.x;
-    cli_trig.content.u.mouse.y             = param->mouse.y;
-    cli_trig.content.u.mouse.btn           = param->mouse.btn;
-    cli_trig.content.u.mouse.chbtn         = param->mouse.chbtn;
-    cli_trig.content.u.mouse.pressure      = param->mouse.pressure;
-    cli_trig.content.u.mouse.is_logical    = param->mouse.is_logical;
-    cli_trig.content.u.mouse.cursor_handle = hlookup(param->mouse.cursor,NULL); 
+    cli_trig.content.u.mouse.x              = param->mouse.x;
+    cli_trig.content.u.mouse.y              = param->mouse.y;
+    cli_trig.content.u.mouse.btn            = param->mouse.btn;
+    cli_trig.content.u.mouse.chbtn          = param->mouse.chbtn;
+    cli_trig.content.u.mouse.pressure       = param->mouse.pressure;
+    cli_trig.content.u.mouse.is_logical     = param->mouse.is_logical;
+    cli_trig.content.u.mouse.cursor_handle  = hlookup(param->mouse.cursor,NULL); 
+    cli_trig.content.u.mouse.ts_calibration = param->mouse.ts_calibration;
   }
   
   /* Convert it to network byte order
@@ -139,6 +140,7 @@ g_error infilter_client_send(union pg_client_trigger *client_trig) {
     tp.mouse.is_logical = client_trig->content.u.mouse.is_logical;
     e = rdhandle((void**)&tp.mouse.cursor, PG_TYPE_CURSOR, -1,
 		 client_trig->content.u.mouse.cursor_handle);
+    tp.mouse.ts_calibration = client_trig->content.u.mouse.ts_calibration;
     errorcheck;
   }
 
