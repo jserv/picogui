@@ -1,0 +1,564 @@
+# Makefile.in generated automatically by automake 1.4-p1 from Makefile.am
+
+# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+
+SHELL = @SHELL@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+
+DESTDIR =
+
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
+
+top_builddir = ../..
+
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+transform = @program_transform_name@
+
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
+CATALOGS = @CATALOGS@
+CATOBJEXT = @CATOBJEXT@
+CC = @CC@
+CPP = @CPP@
+DATADIRNAME = @DATADIRNAME@
+GENCAT = @GENCAT@
+GLIB_CFLAGS = @GLIB_CFLAGS@
+GLIB_CONFIG = @GLIB_CONFIG@
+GLIB_LIBS = @GLIB_LIBS@
+GMOFILES = @GMOFILES@
+GMSGFMT = @GMSGFMT@
+GTK_CFLAGS = @GTK_CFLAGS@
+GTK_CONFIG = @GTK_CONFIG@
+GTK_LIBS = @GTK_LIBS@
+GT_NO = @GT_NO@
+GT_YES = @GT_YES@
+GUI_CFLAGS = @GUI_CFLAGS@
+GUI_LIBS = @GUI_LIBS@
+INCLUDE_LOCALE_H = @INCLUDE_LOCALE_H@
+INSTOBJEXT = @INSTOBJEXT@
+INTLDEPS = @INTLDEPS@
+INTLLIBS = @INTLLIBS@
+INTLOBJS = @INTLOBJS@
+MAKEINFO = @MAKEINFO@
+MKINSTALLDIRS = @MKINSTALLDIRS@
+MSGFMT = @MSGFMT@
+PACKAGE = @PACKAGE@
+POFILES = @POFILES@
+POSUB = @POSUB@
+RANLIB = @RANLIB@
+USE_INCLUDED_LIBINTL = @USE_INCLUDED_LIBINTL@
+USE_NLS = @USE_NLS@
+VERSION = @VERSION@
+gdkpixbufpath = @gdkpixbufpath@
+gnomepath = @gnomepath@
+l = @l@
+perlpath = @perlpath@
+pythonpath = @pythonpath@
+sedpath = @sedpath@
+sortpath = @sortpath@
+trpath = @trpath@
+unamepath = @unamepath@
+uniqpath = @uniqpath@
+
+bin_PROGRAMS = xchat
+
+CFLAGS = $(GUI_CFLAGS)
+LIBS = $(GUI_LIBS)
+
+INCLUDES = -I$(includedir)
+
+xchat_LDADD = ../common/libxchatmain.a
+
+EXTRA_DIST = makefile.msc 	about.h ascii.h banlist.h chanlist.h dialog.h editlist.h fake_gnome.h 	fe-gtk.h fkeys.h gtkutil.h maingui.h menu.h mmx_cmod.S mmx_cmod.h 	notifygui.h palette.h panel.c panel.h pixmaps.h plugingui.c rawlog.h 	search.h serverlist.h settings.h textgui.h urlgrab.h userlistgui.h 	usermenu.h wins.h xtext.h
+
+
+@USE_MMX_TRUE@mmx_cmod_S = mmx_cmod.S
+
+@DO_PANEL_TRUE@panel_c = panel.c
+
+@DO_PLUGIN_TRUE@plugingui_c = plugingui.c
+
+xchat_SOURCES = about.c ascii.c banlist.c chanlist.c dccgui.c dialog.c 			editlist.c fe-gtk.c fkeys.c gtkutil.c ignoregui.c 			maingui.c menu.c $(mmx_cmod_S) notifygui.c palette.c $(panel_c) 			pixmaps.c $(plugingui_c) rawlog.c search.c serverlist.c settings.c 			textgui.c usermenu.c urlgrab.c userlistgui.c wins.c xtext.c
+
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ../../config.h
+CONFIG_CLEAN_FILES = 
+PROGRAMS =  $(bin_PROGRAMS)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I../..
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@xchat_OBJECTS =  about.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@ascii.o banlist.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@chanlist.o dccgui.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@dialog.o editlist.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@fe-gtk.o fkeys.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@gtkutil.o ignoregui.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@maingui.o menu.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@notifygui.o palette.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@pixmaps.o rawlog.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@search.o serverlist.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@settings.o textgui.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@usermenu.o urlgrab.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@userlistgui.o wins.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@xtext.o
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@xchat_OBJECTS =  about.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@ascii.o banlist.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@chanlist.o dccgui.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@dialog.o editlist.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@fe-gtk.o fkeys.o gtkutil.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@ignoregui.o maingui.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@menu.o mmx_cmod.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@notifygui.o palette.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@panel.o pixmaps.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@plugingui.o rawlog.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@search.o serverlist.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@settings.o textgui.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@usermenu.o urlgrab.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@userlistgui.o wins.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@xtext.o
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@xchat_OBJECTS =  about.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@ascii.o banlist.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@chanlist.o dccgui.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@dialog.o editlist.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@fe-gtk.o fkeys.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@gtkutil.o ignoregui.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@maingui.o menu.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@mmx_cmod.o notifygui.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@palette.o pixmaps.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@rawlog.o search.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@serverlist.o settings.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@textgui.o usermenu.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@urlgrab.o userlistgui.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@wins.o xtext.o
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@xchat_OBJECTS =  about.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@ascii.o banlist.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@chanlist.o dccgui.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@dialog.o editlist.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@fe-gtk.o fkeys.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@gtkutil.o ignoregui.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@maingui.o menu.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@mmx_cmod.o notifygui.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@palette.o panel.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@pixmaps.o rawlog.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@search.o serverlist.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@settings.o textgui.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@usermenu.o urlgrab.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@userlistgui.o wins.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_TRUE@xtext.o
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@xchat_OBJECTS =  about.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@ascii.o banlist.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@chanlist.o dccgui.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@dialog.o editlist.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@fe-gtk.o fkeys.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@gtkutil.o ignoregui.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@maingui.o menu.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@mmx_cmod.o notifygui.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@palette.o pixmaps.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@plugingui.o rawlog.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@search.o serverlist.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@settings.o textgui.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@usermenu.o urlgrab.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@userlistgui.o wins.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_TRUE@xtext.o
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@xchat_OBJECTS =  about.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@ascii.o banlist.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@chanlist.o dccgui.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@dialog.o editlist.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@fe-gtk.o fkeys.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@gtkutil.o ignoregui.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@maingui.o menu.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@notifygui.o palette.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@panel.o pixmaps.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@rawlog.o search.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@serverlist.o settings.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@textgui.o usermenu.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@urlgrab.o userlistgui.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_FALSE@@USE_MMX_FALSE@wins.o xtext.o
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@xchat_OBJECTS =  about.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@ascii.o banlist.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@chanlist.o dccgui.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@dialog.o editlist.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@fe-gtk.o fkeys.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@gtkutil.o ignoregui.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@maingui.o menu.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@notifygui.o palette.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@pixmaps.o plugingui.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@rawlog.o search.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@serverlist.o settings.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@textgui.o usermenu.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@urlgrab.o userlistgui.o \
+@DO_PANEL_FALSE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@wins.o xtext.o
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@xchat_OBJECTS =  about.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@ascii.o banlist.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@chanlist.o dccgui.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@dialog.o editlist.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@fe-gtk.o fkeys.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@gtkutil.o ignoregui.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@maingui.o menu.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@notifygui.o palette.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@panel.o pixmaps.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@plugingui.o rawlog.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@search.o serverlist.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@settings.o textgui.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@usermenu.o urlgrab.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@userlistgui.o wins.o \
+@DO_PANEL_TRUE@@DO_PLUGIN_TRUE@@USE_MMX_FALSE@xtext.o
+xchat_DEPENDENCIES =  ../common/libxchatmain.a
+xchat_LDFLAGS = 
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+DIST_COMMON =  Makefile.am Makefile.in
+
+
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
+
+TAR = gtar
+GZIP_ENV = --best
+SOURCES = $(xchat_SOURCES)
+OBJECTS = $(xchat_OBJECTS)
+
+all: all-redirect
+.SUFFIXES:
+.SUFFIXES: .S .c .o .s
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps src/fe-gtk/Makefile
+
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+
+mostlyclean-binPROGRAMS:
+
+clean-binPROGRAMS:
+	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+
+distclean-binPROGRAMS:
+
+maintainer-clean-binPROGRAMS:
+
+install-binPROGRAMS: $(bin_PROGRAMS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(bindir)
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo "  $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`"; \
+	     $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
+	  else :; fi; \
+	done
+
+uninstall-binPROGRAMS:
+	@$(NORMAL_UNINSTALL)
+	list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
+	done
+
+.c.o:
+	$(COMPILE) -c $<
+
+.s.o:
+	$(COMPILE) -c $<
+
+.S.o:
+	$(COMPILE) -c $<
+
+mostlyclean-compile:
+	-rm -f *.o core *.core
+
+clean-compile:
+
+distclean-compile:
+	-rm -f *.tab.c
+
+maintainer-clean-compile:
+
+xchat: $(xchat_OBJECTS) $(xchat_DEPENDENCIES)
+	@rm -f xchat
+	$(LINK) $(xchat_LDFLAGS) $(xchat_OBJECTS) $(xchat_LDADD) $(LIBS)
+
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES) $(LISP)
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	here=`pwd` && cd $(srcdir) \
+	  && mkid -f$$here/ID $$unique $(LISP)
+
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	-rm -f TAGS ID
+
+maintainer-clean-tags:
+
+distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
+
+subdir = src/fe-gtk
+
+distdir: $(DISTFILES)
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
+	  if test -d $$d/$$file; then \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
+	  else \
+	    test -f $(distdir)/$$file \
+	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	    || cp -p $$d/$$file $(distdir)/$$file || :; \
+	  fi; \
+	done
+about.o: about.c fe-gtk.h ../../config.h fake_gnome.h ../common/xchat.h \
+	../common/../../config.h ../common/history.h ../common/util.h \
+	palette.h gtkutil.h about.h
+ascii.o: ascii.c fe-gtk.h ../../config.h fake_gnome.h ../common/xchat.h \
+	../common/../../config.h ../common/history.h ../common/xchatc.h \
+	gtkutil.h wins.h ascii.h
+banlist.o: banlist.c fe-gtk.h ../../config.h fake_gnome.h \
+	../common/xchat.h ../common/../../config.h ../common/history.h \
+	../common/outbound.h ../common/xchatc.h gtkutil.h wins.h \
+	banlist.h
+chanlist.o: chanlist.c ../../config.h fe-gtk.h fake_gnome.h \
+	../common/xchat.h ../common/../../config.h ../common/history.h \
+	../common/xchatc.h ../common/outbound.h ../common/util.h \
+	gtkutil.h wins.h
+dccgui.o: dccgui.c ../common/inet.h fe-gtk.h ../../config.h fake_gnome.h \
+	../common/xchat.h ../common/../../config.h ../common/history.h \
+	../common/xchatc.h ../common/plugin.h ../common/fe.h \
+	../common/userlist.h ../common/dcc.h ../common/util.h \
+	../common/network.h gtkutil.h wins.h palette.h
+dialog.o: dialog.c fe-gtk.h ../../config.h fake_gnome.h \
+	../common/xchat.h ../common/../../config.h ../common/history.h \
+	../common/fe.h ../common/userlist.h ../common/dcc.h \
+	../common/text.h ../common/util.h ../common/outbound.h \
+	../common/xchatc.h gtkutil.h menu.h xtext.h wins.h fkeys.h \
+	maingui.h palette.h dialog.h
+editlist.o: editlist.c fe-gtk.h ../../config.h fake_gnome.h \
+	../common/xchat.h ../common/../../config.h ../common/history.h \
+	../common/cfgfiles.h ../common/xchatc.h ../common/fe.h \
+	../common/userlist.h ../common/dcc.h menu.h gtkutil.h \
+	usermenu.h wins.h editlist.h
+fe-gtk.o: fe-gtk.c ../../config.h fe-gtk.h fake_gnome.h \
+	../common/xchat.h ../common/../../config.h ../common/history.h \
+	../common/fe.h ../common/userlist.h ../common/dcc.h \
+	../common/util.h ../common/text.h ../common/cfgfiles.h \
+	../common/xchatc.h gtkutil.h maingui.h pixmaps.h xtext.h \
+	palette.h menu.h notifygui.h textgui.h fkeys.h urlgrab.h
+fkeys.o: fkeys.c ../../config.h fe-gtk.h fake_gnome.h ../common/xchat.h \
+	../common/../../config.h ../common/history.h ../common/xchatc.h \
+	../common/cfgfiles.h ../common/userlist.h ../common/outbound.h \
+	../common/util.h ../common/text.h gtkutil.h menu.h xtext.h \
+	wins.h palette.h maingui.h textgui.h fkeys.h
+gtkutil.o: gtkutil.c fe-gtk.h ../../config.h fake_gnome.h \
+	../common/xchat.h ../common/../../config.h ../common/history.h \
+	gtkutil.h
+ignoregui.o: ignoregui.c fe-gtk.h ../../config.h fake_gnome.h \
+	../common/xchat.h ../common/../../config.h ../common/history.h \
+	../common/ignore.h ../common/plugin.h ../common/cfgfiles.h \
+	gtkutil.h wins.h
+maingui.o: maingui.c ../../config.h fe-gtk.h fake_gnome.h \
+	../common/inet.h ../common/xchat.h ../common/../../config.h \
+	../common/history.h ../common/fe.h ../common/userlist.h \
+	../common/dcc.h ../common/xchatc.h ../common/util.h \
+	../common/outbound.h ascii.h banlist.h dialog.h gtkutil.h \
+	menu.h palette.h panel.h pixmaps.h xtext.h wins.h fkeys.h \
+	userlistgui.h maingui.h
+menu.o: menu.c fe-gtk.h ../../config.h fake_gnome.h ../common/xchat.h \
+	../common/../../config.h ../common/history.h ../common/xchatc.h \
+	../common/cfgfiles.h ../common/outbound.h ../common/ignore.h \
+	../common/fe.h ../common/userlist.h ../common/dcc.h \
+	../common/util.h ../common/plugin.h ../common/perlc.h xtext.h \
+	about.h banlist.h chanlist.h editlist.h fkeys.h gtkutil.h \
+	maingui.h notifygui.h rawlog.h palette.h search.h settings.h \
+	textgui.h usermenu.h urlgrab.h menu.h
+notifygui.o: notifygui.c fe-gtk.h ../../config.h fake_gnome.h \
+	../common/xchat.h ../common/../../config.h ../common/history.h \
+	../common/notify.h ../common/cfgfiles.h ../common/plugin.h \
+	../common/util.h ../common/userlist.h gtkutil.h wins.h \
+	palette.h notifygui.h
+palette.o: palette.c fe-gtk.h ../../config.h fake_gnome.h \
+	../common/xchat.h ../common/../../config.h ../common/history.h \
+	../common/util.h ../common/xchatc.h ../common/cfgfiles.h \
+	gtkutil.h xtext.h wins.h
+panel.o: panel.c ../common/xchat.h ../common/../../config.h \
+	../common/history.h ../common/xchatc.h fe-gtk.h ../../config.h \
+	gtkutil.h wins.h maingui.h about.h
+pixmaps.o: pixmaps.c fe-gtk.h ../../config.h fake_gnome.h \
+	../common/xchat.h ../common/../../config.h ../common/history.h \
+	gtkutil.h ../pixmaps/globe.xpm ../pixmaps/server.xpm \
+	../pixmaps/admin.xpm ../pixmaps/op.xpm ../pixmaps/hop.xpm \
+	../pixmaps/voice.xpm ../pixmaps/xchat_mini.xpm \
+	../pixmaps/xchat.xpm
+plugingui.o: plugingui.c fe-gtk.h ../../config.h ../common/xchat.h \
+	../common/../../config.h ../common/history.h ../common/plugin.h \
+	../common/text.h ../common/util.h gtkutil.h
+rawlog.o: rawlog.c fe-gtk.h ../../config.h fake_gnome.h \
+	../common/xchat.h ../common/../../config.h ../common/history.h \
+	../common/xchatc.h gtkutil.h palette.h wins.h rawlog.h
+search.o: search.c fe-gtk.h ../../config.h fake_gnome.h \
+	../common/xchat.h ../common/../../config.h ../common/history.h \
+	../common/util.h ../common/xchatc.h gtkutil.h xtext.h wins.h
+serverlist.o: serverlist.c fe-gtk.h ../../config.h fake_gnome.h \
+	../common/xchat.h ../common/../../config.h ../common/history.h \
+	../common/cfgfiles.h ../common/fe.h ../common/userlist.h \
+	../common/dcc.h ../common/server.h ../common/xchatc.h \
+	serverlist.h gtkutil.h pixmaps.h wins.h
+settings.o: settings.c fe-gtk.h ../../config.h fake_gnome.h \
+	../common/xchat.h ../common/../../config.h ../common/history.h \
+	../common/cfgfiles.h ../common/fe.h ../common/userlist.h \
+	../common/dcc.h ../common/util.h ../common/outbound.h \
+	../common/notify.h ../common/xchatc.h settings.h gtkutil.h \
+	xtext.h palette.h maingui.h menu.h pixmaps.h
+textgui.o: textgui.c fe-gtk.h ../../config.h fake_gnome.h \
+	../common/xchat.h ../common/../../config.h ../common/history.h \
+	../common/xchatc.h ../common/cfgfiles.h ../common/plugin.h \
+	../common/outbound.h ../common/text.h gtkutil.h xtext.h wins.h \
+	palette.h textgui.h
+urlgrab.o: urlgrab.c ../../config.h fe-gtk.h fake_gnome.h \
+	../common/xchat.h ../common/../../config.h ../common/history.h \
+	../common/cfgfiles.h ../common/util.h ../common/xchatc.h \
+	gtkutil.h menu.h wins.h urlgrab.h
+userlistgui.o: userlistgui.c fe-gtk.h ../../config.h fake_gnome.h \
+	../common/xchat.h ../common/../../config.h ../common/history.h \
+	../common/util.h ../common/userlist.h ../common/modes.h \
+	../common/notify.h ../common/xchatc.h ../common/dcc.h gtkutil.h \
+	palette.h maingui.h pixmaps.h userlistgui.h
+usermenu.o: usermenu.c fe-gtk.h ../../config.h fake_gnome.h \
+	../common/xchat.h ../common/../../config.h ../common/history.h \
+	../common/xchatc.h menu.h
+wins.o: wins.c fe-gtk.h ../../config.h fake_gnome.h ../common/xchat.h \
+	../common/../../config.h ../common/history.h ../common/fe.h \
+	../common/userlist.h ../common/dcc.h pixmaps.h gtkutil.h \
+	maingui.h panel.h wins.h
+xtext.o: xtext.c ../../config.h xtext.h mmx_cmod.h
+
+info-am:
+info: info-am
+dvi-am:
+dvi: dvi-am
+check-am: all-am
+check: check-am
+installcheck-am:
+installcheck: installcheck-am
+install-exec-am: install-binPROGRAMS
+install-exec: install-exec-am
+
+install-data-am:
+install-data: install-data-am
+
+install-am: all-am
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
+install: install-am
+uninstall-am: uninstall-binPROGRAMS
+uninstall: uninstall-am
+all-am: Makefile $(PROGRAMS)
+all-redirect: all-am
+install-strip:
+	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
+installdirs:
+	$(mkinstalldirs)  $(DESTDIR)$(bindir)
+
+
+mostlyclean-generic:
+
+clean-generic:
+
+distclean-generic:
+	-rm -f Makefile $(CONFIG_CLEAN_FILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+
+maintainer-clean-generic:
+mostlyclean-am:  mostlyclean-binPROGRAMS mostlyclean-compile \
+		mostlyclean-tags mostlyclean-generic
+
+mostlyclean: mostlyclean-am
+
+clean-am:  clean-binPROGRAMS clean-compile clean-tags clean-generic \
+		mostlyclean-am
+
+clean: clean-am
+
+distclean-am:  distclean-binPROGRAMS distclean-compile distclean-tags \
+		distclean-generic clean-am
+
+distclean: distclean-am
+
+maintainer-clean-am:  maintainer-clean-binPROGRAMS \
+		maintainer-clean-compile maintainer-clean-tags \
+		maintainer-clean-generic distclean-am
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+maintainer-clean: maintainer-clean-am
+
+.PHONY: mostlyclean-binPROGRAMS distclean-binPROGRAMS clean-binPROGRAMS \
+maintainer-clean-binPROGRAMS uninstall-binPROGRAMS install-binPROGRAMS \
+mostlyclean-compile distclean-compile clean-compile \
+maintainer-clean-compile tags mostlyclean-tags distclean-tags \
+clean-tags maintainer-clean-tags distdir info-am info dvi-am dvi check \
+check-am installcheck-am installcheck install-exec-am install-exec \
+install-data-am install-data install-am install uninstall-am uninstall \
+all-redirect all-am all installdirs mostlyclean-generic \
+distclean-generic clean-generic maintainer-clean-generic clean \
+mostlyclean distclean maintainer-clean
+
+
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
+.NOEXPORT:

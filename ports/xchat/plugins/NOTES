@@ -1,0 +1,46 @@
+Developer notes for XChat dll's
+
+FIRST: There should be a sample module under the sample directory, this gives a
+general overview of writing a module.
+
+#define USE_PLUGIN BEFORE EVERYTHING!
+
+You must include xchat.h and plugin.h from the xchat main directory. Every
+module MUST export a function called module_init, it is passed the version
+number (an int), a pointer to the module struct for your module and a pointer to
+the current session. It returns an int: 0 = success, 1 = fail. The name and desc
+parts of the module structure must be filled out with strings.
+
+You must check the version number is what you think it is (currently 2) BEFORE
+referencing anthing else.
+
+Any module can hook a signal, using hook_signal and passing a pointer to an
+xp_signal struct, filling in the name, callback, naddr and mod parts. Then whenever
+that signal is sent, your callback will be called. naddr should be a pointer to
+a pointer to a function passed 5 void *'s and a char. At the end of the callback
+you use XP_CALLNEXT(naddrfunction, a, b, c, d, e, f) to call the next callback,
+a to f being the arg you were passed. Beware that XP_CALLNEXT expands to include
+a return. If the chain of callbacks returns a 1 then the normal handler will not
+continue. XP_CALLBACK next returns what ever the next callback returns (0 if it
+is the last callback) while XP_CALLNEXT_ANDSET returns 1.
+
+A signal callback is passed 5 void *'s and a char (just seemed about
+enough), by convention the first void * is a pointer to the session or
+server struct. To cast as a signal callback use the define XP_CALLBACK like
+a GTK cast.
+
+When the module is removed the module_cleanup function is called, it is passed
+the module struct and the current session. You do not have to export a
+module_cleanup as ALL COMMANDS AND HOOKS ARE REMOVED BY THE PLUGIN CODE.
+
+Most modules call module_add_cmds at some point, you pass this function a
+pointer to a module_cmd_set struct and it install hooks to commands and
+messages for you.
+
+See SIGNALS for a list of current signals
+
+To test you module, build it, run xchat and type:
+
+/loaddll /path/to/your/module.so
+
+After this a /listdll should list your module.

@@ -1,0 +1,11 @@
+all:
+	@cd common
+	@-$(MAKE) /NOLOGO -f makefile.msc $@
+	@cd ..\fe-gtk
+	@-$(MAKE) /NOLOGO -f makefile.msc $@
+
+clean:
+	del common\*.obj
+	del common\xchatcommon.lib
+	del fe-gtk\*.obj
+	del fe-gtk\xchat.exe

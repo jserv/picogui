@@ -1,0 +1,160 @@
+#!/usr/bin/make -f
+# -*- Makefile -*-
+
+export pythonpath=/usr/bin/python2.1
+export DH_COMPAT=2
+configure_flags	:= --prefix=/usr --with-gtk-prefix=/usr --sysconfdir=/etc 
+
+CFLAGS := -O2
+ifneq "$(findstring debug,$(DEB_BUILD_OPTIONS))" ""
+CFLAGS += -g
+endif
+
+BUILD_DIR=$(shell pwd)/debian/build
+
+configure: configure-stamp
+configure-stamp: 
+		./configure --prefix=/usr \
+		--disable-gnome --disable-imlib  --disable-gdk-pixbuf \
+		--disable-zvt --enable-ipv6 --disable-mmx \
+		--enable-japanese-conv 
+		 touch configure-stamp
+
+build: configure-stamp build-stamp
+build-stamp: 
+	dh_testdir
+# Build normal (GTK) and text front ends
+	$(MAKE)
+	mv src/fe-gtk/xchat xchat-normal
+	mv src/fe-text/xchat-text xchat-text
+# Build GNOME front end
+	$(MAKE) distclean
+	./configure --prefix=/usr --enable-ipv6 --disable-textfe \
+	--enable-japanese-conv --disable-mmx
+	$(MAKE)
+	mv src/fe-gtk/xchat xchat-gnome
+	touch build-stamp
+
+clean:
+	dh_testdir
+	dh_testroot
+	-$(MAKE) distclean
+	rm -f xchat-normal xchat-gnome xchat-text
+	rm -f build-stamp install-stamp configure-stamp po/stamp-cat-id \
+	      src/fe-text/Makefile stamp-h.in
+	rm -rf debian/build
+	dh_clean
+
+binary-indep: xchat-common
+
+xchat-common: build
+	dh_testdir
+	dh_testroot
+	$(MAKE) install prefix=$(BUILD_DIR)/$@/usr
+	rm -rf $(BUILD_DIR)/$@/usr/bin
+	install -d -o root -g root -m 755 $(BUILD_DIR)/xchat-gnome/usr/share/gnome/apps/Internet
+	find $(BUILD_DIR)/$@/usr/share/gnome/apps/Internet -type f -exec install -m 644 {} /$(BUILD_DIR)/xchat-gnome/usr/share/gnome/apps/Internet \;
+	install -d -o root -g root -m 755 $(BUILD_DIR)/xchat-gnome/usr/share/pixmaps
+	find $(BUILD_DIR)/$@/usr/share/pixmaps -type f -exec install -m644 {} /$(BUILD_DIR)/xchat-gnome/usr/share/pixmaps \;
+	rm -rf $(BUILD_DIR)/$@/usr/share/gnome	
+	rm -rf $(BUILD_DIR)/$@/usr/share/pixmaps
+	dh_installdocs -p$@ -P$(BUILD_DIR)/$@ FAQ README
+	install -d -o root -g root -m 755 $(BUILD_DIR)/xchat-common/usr/share/doc/xchat-common/manual
+	find doc -type f -exec install -m644 {} $(BUILD_DIR)/xchat-common/usr/share/doc/xchat-common/manual \;
+	install -d -o root -g root -m 755 $(BUILD_DIR)/xchat-common/usr/share/doc/xchat-common/scripts-perl
+	find scripts-perl -type f -exec install -m644 {} $(BUILD_DIR)/xchat-common/usr/share/doc/xchat-common/scripts-perl \;
+	install -d -o root -g root -m 755 $(BUILD_DIR)/xchat-common/usr/share/doc/xchat-common/scripts-python
+	find scripts-python -type f -exec install -m644 {} $(BUILD_DIR)/xchat-common/usr/share/doc/xchat-common/scripts-python \;
+	install -d -o root -g root -m 755 $(BUILD_DIR)/xchat-common/usr/share/icons
+	install -p -m 644 src/pixmaps/xchat_mini.xpm $(BUILD_DIR)/xchat-common/usr/share/icons/xchat_mini.xpm
+	dh_installchangelogs -p$@ -P$(BUILD_DIR)/$@ ChangeLog
+	dh_compress -p$@ -P$(BUILD_DIR)/$@ -X.pl
+	dh_fixperms -p$@ -P$(BUILD_DIR)/$@
+	dh_installdeb -p$@ -P$(BUILD_DIR)/$@
+	dh_shlibdeps -p$@ -P$(BUILD_DIR)/$@
+	dh_gencontrol -p$@ -P$(BUILD_DIR)/$@
+	dh_md5sums -p$@ -P$(BUILD_DIR)/$@
+	dh_builddeb -p$@ -P$(BUILD_DIR)/$@
+
+binary-arch: xchat xchat-gnome xchat-text
+
+xchat: build
+	dh_testdir
+	dh_testroot
+	install -d -o root -g root -m 755 $(BUILD_DIR)/$@/usr/bin
+	install -p -o root -g root -m 755 xchat-normal \
+		$(BUILD_DIR)/$@/usr/bin/xchat-normal
+	install -D -p -o root -g root -m 644 debian/xchat-normal.1 \
+	        $(BUILD_DIR)/$@/usr/share/man/man1/xchat-normal.1
+	install -d -o root -g root -m 755 $(BUILD_DIR)/$@/usr/share/doc
+	dh_installdocs -p$@ -P$(BUILD_DIR)/$@
+	rm -rf $(BUILD_DIR)/$@/usr/share/doc/xchat
+	ln -s xchat-common $(BUILD_DIR)/$@/usr/share/doc/xchat
+	dh_installmenu -p$@ -P$(BUILD_DIR)/$@
+	dh_link -p$@ -P$(BUILD_DIR)/$@
+ifeq "$(findstring nostrip,$(DEB_BUILD_OPTIONS))" ""
+	dh_strip -p$@ -P$(BUILD_DIR)/$@
+endif	
+	dh_compress -p$@ -P$(BUILD_DIR)/$@
+	dh_fixperms -p$@ -P$(BUILD_DIR)/$@
+	dh_installdeb -p$@ -P$(BUILD_DIR)/$@
+	dh_shlibdeps -p$@ -P$(BUILD_DIR)/$@
+	dh_gencontrol -p$@ -P$(BUILD_DIR)/$@
+	dh_md5sums -p$@ -P$(BUILD_DIR)/$@
+	dh_builddeb -p$@ -P$(BUILD_DIR)/$@
+
+xchat-gnome: build
+	dh_testdir
+	dh_testroot
+	chmod a+x $(shell pwd)/foo $(shell pwd)/foo2	
+	$(shell pwd)/foo
+	$(shell pwd)/foo2
+	install -d -o root -g root -m 755 $(BUILD_DIR)/$@/usr/bin
+	install -p -o root -g root -m 755 xchat-gnome \
+		$(BUILD_DIR)/$@/usr/bin/xchat-gnome
+	install -D -p -o root -g root -m 644 debian/xchat-gnome.1 \
+	        $(BUILD_DIR)/$@/usr/share/man/man1/xchat-gnome.1
+	install -d -o root -g root -m 755 $(BUILD_DIR)/$@/usr/share/doc
+	dh_installdocs -p$@ -P$(BUILD_DIR)/$@
+	rm -rf $(BUILD_DIR)/$@/usr/share/doc/xchat-gnome
+	ln -s xchat-common $(BUILD_DIR)/$@/usr/share/doc/xchat-gnome
+	dh_installmenu -p$@ -P$(BUILD_DIR)/$@
+	dh_link -p$@ -P$(BUILD_DIR)/$@
+ifeq "$(findstring nostrip,$(DEB_BUILD_OPTIONS))" ""
+	dh_strip -p$@ -P$(BUILD_DIR)/$@
+endif	
+	dh_compress -p$@ -P$(BUILD_DIR)/$@
+	dh_fixperms -p$@ -P$(BUILD_DIR)/$@
+	dh_installdeb -p$@ -P$(BUILD_DIR)/$@
+	dh_shlibdeps -p$@ -P$(BUILD_DIR)/$@
+	dh_gencontrol -p$@ -P$(BUILD_DIR)/$@
+	dh_md5sums -p$@ -P$(BUILD_DIR)/$@
+	dh_builddeb -p$@ -P$(BUILD_DIR)/$@
+
+xchat-text: build
+	dh_testdir
+	dh_testroot
+	install -D -p -o root -g root -m 755 xchat-text \
+		$(BUILD_DIR)/$@/usr/bin/xchat-text
+	install -D -p -o root -g root -m 644 debian/xchat-text.1 \
+	        $(BUILD_DIR)/$@/usr/share/man/man1/xchat-text.1
+	install -d -o root -g root -m 755 $(BUILD_DIR)/$@/usr/share/doc
+	dh_installdocs -p$@ -P$(BUILD_DIR)/$@
+	rm -rf $(BUILD_DIR)/$@/usr/share/doc/xchat-text
+	ln -s xchat-common $(BUILD_DIR)/$@/usr/share/doc/xchat-text
+	dh_installmenu -p$@ -P$(BUILD_DIR)/$@
+ifeq "$(findstring nostrip,$(DEB_BUILD_OPTIONS))" ""
+	dh_strip -p$@ -P$(BUILD_DIR)/$@
+endif	
+	dh_compress -p$@ -P$(BUILD_DIR)/$@
+	dh_fixperms -p$@ -P$(BUILD_DIR)/$@
+	dh_installdeb -p$@ -P$(BUILD_DIR)/$@
+	dh_shlibdeps -p$@ -P$(BUILD_DIR)/$@
+	dh_gencontrol -p$@ -P$(BUILD_DIR)/$@
+	dh_md5sums -p$@ -P$(BUILD_DIR)/$@
+	dh_builddeb -p$@ -P$(BUILD_DIR)/$@
+
+binary: binary-indep binary-arch
+
+.PHONY: binary binary-arch binary-indep clean \
+	xchat-common xchat xchat-gnome xchat-text

@@ -1,0 +1,16 @@
+#!/bin/sh -e
+
+# Automatically added by dh_installdocs
+if [ "$1" = "configure" ]; then
+	if [ -d /usr/doc -a ! -e /usr/doc/xchat-text -a -d /usr/share/doc/xchat-text ]; then
+	ln -sf ../share/doc/xchat-text /usr/doc/xchat-text
+        fi
+fi
+# End automatically added section
+# Automatically added by dh_installmenu
+if [ "$1" = "configure" -a -x /usr/bin/update-menus ]; then update-menus ; fi
+# End automatically added section
+if [ -d /usr/share/doc/xchat-text -a ! -L /usr/share/doc/xchat-text ]; then
+  rm -rf /usr/share/doc/xchat-text
+  ln -sf xchat-common /usr/share/doc/xchat-text
+fi

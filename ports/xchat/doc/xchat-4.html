@@ -1,0 +1,363 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+ <META NAME="GENERATOR" CONTENT="SGML-Tools 1.0.7">
+ <TITLE>XChat 1.2: Getting Started</TITLE>
+ <LINK HREF="xchat-5.html" REL=next>
+ <LINK HREF="xchat-3.html" REL=previous>
+ <LINK HREF="xchat.html#toc4" REL=contents>
+</HEAD>
+<BODY>
+<A HREF="xchat-5.html">Next</A>
+<A HREF="xchat-3.html">Previous</A>
+<A HREF="xchat.html#toc4">Contents</A>
+<HR>
+<H2><A NAME="s4">4. Getting Started</A> </H2>
+
+<P>Firstly, if IRC is new to you then read section 1.2.
+<P>Startup XChat and select &quot;Server List&quot; in the &quot;X-Chat&quot;
+menu. This will display a list of default IRC servers. If you have your own
+IRC server you like then hit &quot;New Server&quot; and enter it's details
+at the bottom.
+<P>Now fill in your personal details at the top.
+<P>I will assume you are using a local server (not in the default list) of
+127.0.0.1 and my nick of Nebulae. If you ever do use my nick I will NOT be
+happy, so choose one of your own or open /usr/dict/words and choose one from
+there.
+<P>Press connect and (hopefully) you will connect. The opening text will scroll
+down the main text-box with the MOTD (Message Of The Day). Once that has stopped
+click on the input box and type: 
+<P>
+<PRE>
+/join #dgg5ds 
+ 
+</PRE>
+<P>Make 'dgg5ds' anything you like. You should see a line saying &lt;your
+nick&gt; (&lt;your address&gt;) has joined #channel and your nick should
+show up in the user-list with a green dot by it showing that you are chanop
+(since you just created the channel). Since you just created the channel you'll
+also see a line saying you have given yourself chanop status.
+<P>If you type normal text (without a leading /) then you will see it come
+up in the channel with your nick before it. If anyone else was in the channel
+they would also see that.
+<P>Click in the text box in the tool-bar, type My Topic and hit enter. The
+topic of the channel is now My Topic, you will see a line telling you so. If
+you play about with the letter buttons on the tool-bar you can change the channel
+modes (more on this later).
+<P>If you hit too much too quickly you will see XChat &quot;slow down&quot;,
+this is because if you flood (send too much data too quickly) the server will
+drop the connection so XChat limits the amount of data it will send, this can
+make it seem slow, but it will always catch up in the end.
+<P>Now if you type /msg &lt;your nick&gt; Hello and hit enter in the input
+box (at the bottom) you send a private message to yourself, saying Hello. You
+wouldn't normally do this, if you have such bad hand-eye co-ordination that
+you need to type something and read it, you need to see a doctor, this is just
+for testing. A new window will be created under the current one, and its leaf
+will appear in the tool-bar, with the text in red to show that it has changed.
+<P>If you click on the new leaf the window will come to the top and you'll
+see the message Hello from yourself. When you type into the input box in this
+window the text will goto the object in the window, in this case yourself,
+in the last case the channel #dgg5ds. If you type anything you will see
+it echoed back at you. Since you aren't all that interested in messaging yourself
+(I hope) click the X button on the tool-bar (top - left) and the window will
+disappear, showing the first window.
+<P>Now if you select your nick in the user-list and hit the button marked
+Whois at the bottom of the user-list your whois information will be shown in
+the text box. This information comes from the server and can be read by anyone
+on IRC.
+<P>The whois information can also be accessed as a command. In the input box
+type /whois &lt;your nick&gt; and hit enter. Note the leading / showing it
+is a command, without this the text would be sent to the channel. The buttons
+map onto these commands, click the Settings menu and select User-list buttons.
+A dialog will appear showing each button and the command it runs when pressed,
+you can add your own. Note that %s in the command is replaced by the
+nick of the selected entry in the user-list.
+<P>Now if you right click your nick in the user-list a number of options come
+up. These map to commands like the buttons, select User-list Pop-up in the
+Settings menu.
+<P>The CTCP (Client To Client Protocol) options send a private message to
+the clicked nick which is picked up by their IRC client and dealt as a type
+of command. Almost always a CTCP message is sent back. These replies can be
+set in Settings - CTCP Replies. The CTCP VERSION reply is automatic and can
+be toggled by a /hidever command, but you can still setup a CTCP reply which
+is run as well as the automatic one.
+<P>If you are stuck typing /help -l (thats an lowercase L and a 1) might give
+you a hint.
+<H2><A NAME="ss4.1">4.1 Mailing Lists</A>
+ </H2>
+
+<P>XChat has two mailing lists which you may want to subscribe to, xchat-discuss
+and xchat-announce (kindly hosted by nl.linux.org). To subscribe send a message
+with no subject and this in the body:
+<P>
+<PRE>
+subscribe list-name
+ 
+</PRE>
+<P>to majordomo@nl.linux.org where list-name is either xchat-discuss or xchat-announce.
+You will be asked in a reply to confirm your subscription. xchat-discuss is
+a general mailing list where you can ask for help, bounce ideas etc off other
+XChat users. xchat-announce is a moderated list (only zed and I can post to
+it) where announcements (such as new versions) are posted. *Do not try to post
+to xchat-announce*.
+<P>If you have any queries about the mailing lists just mail me (Adam Langley)
+at agl@linuxpower.org.
+<H2><A NAME="ss4.2">4.2 Channel Modes</A>
+ </H2>
+
+<P>Each channel can have a series of modes. Only chanop's can change a channels'
+mode. The modes can either by set by the letter buttons on the right of the
+tool-bar or by using the /mode command. Modes can also be set by some other
+commands, like /op, /deop or /ban. The following is a list (which is not complete)
+of the channel modes.
+<P>
+<UL>
+<LI>T - Topic Lock - With this set only chanop's can change the channel topic</LI>
+<LI>N - No outside messages - Normally people not in a channel can /msg the
+channel, with this set only people who have joined the channel can send to
+it</LI>
+<LI>S - Secret - With this set the channel is not listed in the channel list
+(/list), except if you are in it. This cannot be set with Private (see below)</LI>
+<LI>P - Private - With this set the channel name and topic is not listed in
+the channel list (/list), except if you are in it. This cannot be set with
+Secret (see above)</LI>
+<LI>I - Invite Only - With this set people can't just /join the channel, they
+have to be /invite'ed by someone in the channel</LI>
+<LI>M - Moderated - With this set only chanop's and voice'ed nicks can send
+to the channel</LI>
+<LI>L - User Limit - With this set only a set number of people can join the
+channel</LI>
+<LI>K - Key - With this set anyone who tries the join the channel has to pass
+this key (also called the password) as argument 2 to the /join command</LI>
+<LI>B - Ban - This can be set more than once (with different options). Each
+person who tries to join the channel has to be outside all the bans. Simply
+setting a ban stops anyone who matches the bad from joining</LI>
+<LI>O - Op - This can be set more than once (with different options). Each
+nick that is set +o becomes a chanop</LI>
+</UL>
+<H2><A NAME="ss4.3">4.3 Scripts and Plugins</A>
+ </H2>
+
+<P>Scripts and Plugins allow you to extend XChat without editing the code.
+For information about writing them see section 7. Scripts are Perl scripts
+and to use them you must have Perl already on your system and have built Perl
+support in when building XChat. Plugins are shared libraries (.so files) that
+are dynamically linked and unlinked to the XChat process image.
+<P>On startup all files ending with .pl in ~/.xchat are auto loaded.
+To load a script manually either use the /load command or select &quot;Load
+Perl Script&quot; from the &quot;Scripts and Plugins&quot; menu. To unload
+all scripts either use the /unloadall or select &quot;Unload All Scripts&quot;
+from the &quot;Scripts and Plugins&quot; menu.
+<P>To load a plugin either use the /loaddll command or select &quot;Load
+Plugin&quot; from the menu. The plugin should then be listed on a /listdll
+command and in the &quot;Plugin List&quot;. You can either remove plugins
+one by one with the /rmdll command or in the Plugin List, or you can unload
+all by selecting &quot;Unload All Plugins&quot; from the menu.
+<P>You don't have to manually unload scripts and plugins before quitting XChat.
+A list of scripts and plugins for download is on the 
+<A HREF="http://xchat.linuxpower.org">XChat homepage</A>.
+<H2><A NAME="ss4.4">4.4 DCC Support</A>
+ </H2>
+
+<P>DCC stands for Direct Client Connect. It is a system whereby two clients
+connect to each other directly, bypassing the IRC server. XChat supports sending
+3 types of information across a DCC link:
+<P>
+<UL>
+<LI>Files - Text or binary</LI>
+<LI>Text -A direct chat link</LI>
+</UL>
+<P>You can send a file by using the &quot;/dcc send nick file&quot; command
+or by selecting the nick in the user-list and clicking the send button. The
+DCC send window should then show the status of the transmission. When someone
+sends a file to you the DCC Receive window will open up allowing you to accept
+or abort to transfer.
+<P>To setup a DCC chat line either use the &quot;/dcc chat nick&quot; command
+or select the nick from the user-list and click chat. Once the DCC connection
+is accepted any private /msg's to the nick will go across the DCC link instead.
+When someone offers a DCC chat link with you, you can accept with the command
+&quot;/dcc chat offeringnick&quot;
+<H2><A NAME="ss4.5">4.5 Customization</A>
+ </H2>
+
+<P>If you select Settings - User Commands then you get a dialog listing a
+set of shortcut commands. When you type any of the words in the left hand column
+as a command (with a leading /, of course) then the text on the right hand
+side is executed. Any %n (e.g. %2 or %3) are replaced
+with the nth argument to the command. Any &amp;n (e.g. &amp;2 or &amp;3) are
+replaced with the nth argument and all following text, including spaces. %c
+is the current channel and %n is the current nickname. User commands
+can be separated with a ; (semicolon), but be careful not to put a space after
+the ;
+<P>The same goes for CTCP Replies, Userlist Buttons, Userlist Popup, but with
+one exception with Userlist Popup. With this you can create sub-menus by adding
+lines with a name of SUB and a value of the sub-menu name. To end the sub-menu
+use a list with a name of ENDSUB and a value of the same name.
+<H2><A NAME="ss4.6">4.6 Tab Nicks</A>
+ </H2>
+
+<P>Say you were in a channel with these nicks:
+<P>
+<UL>
+<LI>aaaaaaa</LI>
+<LI>aaaaaab</LI>
+<LI>Nebulae (yourself)</LI>
+<LI>zed</LI>
+</UL>
+<P>If you wanted to direct a message to zed you would type "zed: &lt;message&gt;"
+into the input box and hit enter. Rather than do that you can use Tab Nick
+Complete. Just type "z" and hit tab and XChat will find the first nick in the
+current channel that matches what you have typed and use that nick. In this
+case the text in the entry box would become "zed: ". Now if you wanted to direct
+a message to aaaaaab you would type "a" and hit tab. But that will find the first
+matching entry, which in this case is aaaaaaa so the input box would hold "aaaaaaa:
+" - not what you wanted. So hit Shift-Page Down and XChat uses the next entry
+in the user-list (Shift-Page Up uses the next up), the input box will now hold
+"aaaaaab: ". Next time you enter "a" and hit tab, however, XChat will select aaaaaab
+because by using the Shift-Page Down/Up buttons to tell it that it got the
+wrong nick and XChat will learn.
+<H2><A NAME="ss4.7">4.7 Replace</A>
+ </H2>
+
+<P>Now select Settings - Replace Popup. A list dialog will appear with a series
+of default entries (assuming you haven't changed them). One of the entries
+should by "r" and "are", if not add it. Now start typing into any input box and
+at some point type " r ". The "r" will change to "are". 
+<P>The replace feature runs every time you hit space in an input box and finds
+the last word you typed. If that word is in the list it replaces it with its
+entry. If the word is in ' ' marks like 'r' the word is not replaced. If the
+word contains an "'" (that's a single quote mark) in it, the part before the
+quote mark is checked. If that part is found the part is replaced, the quote
+mark dropped and the part after the quote mark is appended. For example if
+you have the entry "u" and "you":
+<P>
+<UL>
+<LI>u - you</LI>
+<LI>u'r - your</LI>
+<LI>u''re - you're</LI>
+</UL>
+<H2><A NAME="ss4.8">4.8 Logging</A>
+ </H2>
+
+<P>If you go into Settings - Setup - Options and enable logging then each
+new session this is opened will be logged. Logs are put into ~/.xchat/xchatlogs
+and have the format of servername,sessionname.xchatlog. For example, some entries
+from my logging directory:
+<P>
+<UL>
+<LI>us.elitenet.org,#linux.xchatlog</LI>
+<LI>irc-2.mint.net,#gimp.xchatlog</LI>
+<LI>ircnet.demon.co.uk,#linux.xchatlog</LI>
+</UL>
+<P>You can also use the No ServerName in Logs option, in which case the filenames
+of the logs do not have the server name prepended, thus:
+<P>
+<UL>
+<LI>#linux.xchatlog</LI>
+<LI>#gimp.xchatlog</LI>
+</UL>
+<P>Note that if you are on two channels with the same name the logs will mix
+<H2><A NAME="ss4.9">4.9 Panel support</A>
+ </H2>
+
+<P>With panel support enabled a new button appears next to the de/link button
+on the tool bar - it has a down arrow on it. This button panelizes the session.
+When you first click this a panel applet will appear. The panel applet is a
+label with "X-Chat" and a series of buttons. The direction of the buttons can
+be set in Settings-&gt;Setup-&gt;Options with the "Layout for a vertical panel"
+option. Note that currently you have to restart XChat to make this option come
+into effect. Each panelized session appears as a button in the panel applet.
+If the "Hide session on panelize" option is ticked the session is hidden when
+panelized. Clicking the button will show the session. The color of the text
+of the button will change as is normal (red or blue), and will set back when
+you focus on the session. Right clicking a panel button displays a list of
+items. At the top are 3 labels with the channel, server and tab state of the
+session. Under them are a series of buttons:
+<P>
+<UL>
+<LI>Close - Closes the session</LI>
+<LI>Remove - Removes the panel button</LI>
+<LI>Hide - Hides the session</LI>
+<LI>Show - Shows the session</LI>
+<LI>De/Link - Toggles the link state of the session</LI>
+<LI>Move here - Moves the session to the mouse position</LI>
+<LI>View - Shows the text box of the session at the mouse, when the mouse leaves
+the window the text box moves back to the session window</LI>
+</UL>
+<H2><A NAME="ss4.10">4.10 Print Events</A>
+ </H2>
+
+<P>As of 0.9.7 you can now change XChat's output strings. Open up Settings
+- Edit Event Texts to display the current settings.
+<P>At the top of the dialog is a list of all the events and the string that
+is displayed when that event happens. Just below is an edit box for changing
+the text. Then there is a text box that shows what the event will look like.
+Under that is a list of the options that is passed to the currently selected
+event (more on this later).
+<P>As an example we'll edit the event text for Join. First select join from
+the list at the top, it should be a first item. If it wasn't already the text
+in the edit box will show the Join event text. At first it looks a little complex
+but it really isn't, it breaks down like this:
+<P>
+<UL>
+<LI>%Cxx is a color - %C4 sets red and so on, '%C ' sets
+the default color (notice the space after it, forget the quote marks)</LI>
+<LI>%B toggles bold</LI>
+<LI>$x includes the option number x, as described in the bottom list</LI>
+<LI>$axxx adds a single byte with value xxx</LI>
+</UL>
+<P>So delete what is already in the edit box and type this:
+<P>
+<PRE>
+%C4*%C *%C4*%C Hey! I can edit the events text!
+ $1 joined $2 (host: $3)
+ 
+</PRE>
+<P>The fist bit is the standard red, white, red stars that XChat uses. After
+that it's pretty clear. In the main XChat window wait for someone to join a
+channel you are on (note we changed the Join event *NOT* the You Joining event,
+so this only works for other people joining) and you will see something like:
+<P>
+<PRE>
+*** Hey! I can edit the events text! Adam joined #a (host: ~Adam@127.0.0.1)
+ 
+</PRE>
+<P>The Sound file entry allows you to enter the name of a sound file that
+will be played (using the play command setting) each time the selected Event
+is triggered.
+<P>The 5 buttons at the bottom do thus:
+<P>
+<UL>
+<LI>Ok - closes and saves the dialog</LI>
+<LI>Test All - Shows all the events in the text box</LI>
+<LI>Load From - Loads a config file</LI>
+<LI>Save As - Saves to a config file</LI>
+<LI>Save - Saves to the default config file (loaded on startup) in ~/.xchat/printevents.conf</LI>
+</UL>
+<H2><A NAME="ss4.11">4.11 Key Bindings</A>
+ </H2>
+
+<P>By selecting Settings - Edit Key Bindings you can edit the key bindings
+XChat uses. The key bindings are sorted by use - so the most recent used are
+at the top. A key binding is:
+<P>
+<UL>
+<LI>A modification (Ctrl, Alt and Shift keys)</LI>
+<LI>A keyname</LI>
+<LI>An action to perform</LI>
+<LI>2 arguments to the action</LI>
+</UL>
+<P>To add a new key binding hit "Add new". An event with &lt;none&gt; will appear
+at the bottom. When you select it (or any binding) the widgets on the right
+change to reflect that binding. To change the key select the entry labeled
+key *and press the key*, *do not try to type in the name!*. The action to perform
+can be selected from the combo at the bottom and help on that action will appear
+in the text box at the bottom.
+<P>Changes in the dialog are always current. When the dialog is closed the
+key bindings information is written to ~/.xchat/keybindings.conf
+<HR>
+<A HREF="xchat-5.html">Next</A>
+<A HREF="xchat-3.html">Previous</A>
+<A HREF="xchat.html#toc4">Contents</A>
+</BODY>
+</HTML>

@@ -1,0 +1,566 @@
+xchat (1.8.5-3) unstable; urgency=low
+
+  * The "Creme Caramel" release.
+  * Now we use "IRC" hint for menu files; closes: #120998.
+
+ -- Davide Puricelli (evo) <evo@debian.org>  Sun, 25 Nov 2001 11:44:58 +0100
+
+xchat (1.8.5-2) unstable; urgency=high
+
+  * The "Desperately seeking a house" release.
+  * Ok, forget last upload, python2.2 is a beta version, now
+    we will depend and build-depend on last stable version, 2.1
+    closes: #118249.
+
+ -- Davide Puricelli (evo) <evo@debian.org>  Sun,  4 Nov 2001 22:14:55 +0100
+
+xchat (1.8.5-1) unstable; urgency=high
+
+  * The "Underlab kicks ass" release.
+  * New upstream version (with two upstream patches).
+  * debian/control: fixed Build-Depends and Depends for python2.2;
+    closes: #117754, #117879.
+  * Please read 1.6.3-2 changelog entry, I won't compile xchat with
+    --enable-panel, so I fixed extended description; closes: #116778.  
+
+ -- Davide Puricelli (evo) <evo@debian.org>  Fri,  2 Nov 2001 19:34:58 +0100
+
+xchat (1.8.4-2) unstable; urgency=low
+
+  * The "Welcome back Natalie" release.
+  * Applied a patch to fix DCC Resume; closes: #115505.
+
+ -- Davide Puricelli (evo) <evo@debian.org>  Sun, 14 Oct 2001 12:36:03 +0200
+
+xchat (1.8.4-1) unstable; urgency=low
+
+  * The "Abraham de Moivre" release.
+  * New upstream version.
+  * Fixed traceroute path, closes: #114636, #114637.
+
+ -- Davide Puricelli (evo) <evo@debian.org>  Mon,  8 Oct 2001 11:45:06 +0200
+
+xchat (1.8.3-1) unstable; urgency=low
+
+  * The "Kimagure Orange Road" release.
+  * New upstream version.
+  * *.menu: added icons; closes: #110523.
+
+ -- Davide Puricelli (evo) <evo@debian.org>  Fri, 31 Aug 2001 23:57:00 +0200
+
+xchat (1.8.2-1) unstable; urgency=low
+
+  * New upstream version, closes: #104465, #107544.
+  * Added alias.pl and unban.pl in /usr/share/doc/xchat-common/scripts-perl,
+    thanks to Vetinari <iranitev@gmx.net>
+  * These memory leaks aren't reproducible by me, upstream author and other
+    people, so they're probably related with specific kernel/configuration;
+    closes: #107076, #105335.
+  * This isn't true, it doesn't require an extra press; closes: #106044.
+  * Now struct module_cmd_set *mod_cmds' isn't static; closes: #106848.
+  * Upstream author said:
+    "I just dont check them, if you run out of memory, it mayaswell just
+     crash; besides, all os'es have virtual memory and mallocs hardly ever
+     fail. If you dont have enough memory to alloca the TINNY amounts xchat
+     allocates, there wont be enough memory to make an error message anyway"
+    closes: #106942.
+  * Now our default terminal is x-terminal-emulator; closes: #107784, #107789.
+    Thanks to Eduard Bloch <edi@gmx.de>
+  * Well, now this is the normal behaviour; an easy workaround could be this:
+    make a UserCommand, Name "myreconnect" Command "/join 0 /reconnect"
+    Try to use alias.pl (/usr/share/doc/xchat-common/scripts-perl/alias.pl)
+  * Sorry, I prefer to use conflicts between xchat and xchat-gnome packages
+    because xchat-text isn't very used like the other two. closes: #98773.
+  * Ircd doesn't support PRIVMSG #chan1,#chan2; closes: #100757.
+  * Upstream author's words:
+    <zed> 104768- this is wishlist, i guess he should mail me about this..
+    or create a patch.. the plugin interface is very rarely used (and not
+    changed in 1+ years).
+    closes: #104768.
+
+ -- Davide Puricelli (evo) <evo@debian.org>  Mon,  6 Aug 2001 17:49:39 +0200
+
+xchat (1.8.1-2) unstable; urgency=low
+
+  * Applied a patch to fix bug in closing dialog windows and another
+    patch to fix /kick breakdown, closes: #105775.
+
+ -- Davide Puricelli (evo) <evo@debian.org>  Sat, 21 Jul 2001 21:16:34 +0200
+
+xchat (1.8.1-1) unstable; urgency=medium
+
+  * New upstream version.
+  * Fixed src/fe-gtk/serverlist.h patch, closes: #104367.
+  * Built with --enable-japanese-conv, closes: #103267. 
+
+ -- Davide Puricelli (evo) <evo@debian.org>  Thu, 12 Jul 2001 10:36:54 +0200
+
+xchat (1.8.0-1) unstable; urgency=high
+
+  * New upstream version, closes: #101660, #101121, #78716, #97536, #100075.
+  * debian/rules: added configure/configure-stamp support; closes: #94218.
+  * Added a lot of docs and rewritten manpages from scratch (except the
+    xchat-text one); closes: #97403.
+  * Now xchat depends on python2-base and builds against python2-dev;
+    closes: #99483.
+  * Enabled ipv6 support.  
+
+ -- Davide Puricelli (evo) <evo@debian.org>  Sun,  1 Jul 2001 17:46:10 +0200
+
+xchat (1.6.4-3) unstable; urgency=high
+
+  * Depends on libgtk1.2 (>= 1.2.10-1); closes: #90785, #90405, #90894.
+  * Fixed Build-Depends; closes: #90887.
+  * Added w3m to URL Menu, anyway remember that this menu is editable and
+    you can add or remove things; closes: #89625.
+  * You can make a UserCommand for that, .e.g:
+    Name            Command
+    ALLAWAY         /ALLSERV /away
+    Then just type /allaway; closes: #90589.
+  * Sorry, upstream said that it's too hard to do; closes: #92877.  
+
+ -- Davide Puricelli (evo) <evo@debian.org>  Tue, 10 Apr 2001 19:56:46 +0200
+
+xchat (1.6.4-2) unstable; urgency=high
+
+  * Hacked debian/rules, now we can use dpkg-buildpackage with -B again.
+    closes: #86221.
+
+ -- Davide Puricelli (evo) <evo@debian.org>  Fri, 16 Feb 2001 22:19:52 +0100
+
+xchat (1.6.4-1) unstable; urgency=low
+
+  * New upstream version, closes: #85471.
+    Richards Fuchs' patches and Anthony Fok's po are now shipped upstream.
+  * Peter said that this is too hard to implement and he won't add it.
+    closes: #56387.
+
+ -- Davide Puricelli (evo) <evo@debian.org>  Mon, 12 Feb 2001 16:06:35 +0100
+
+xchat (1.6.3-2) unstable; urgency=low
+
+  * Added "Hints" to menu files; closes: #82317.
+  * Now actions cause a beep for PM windows (if you enable it).
+    Patch provided by Richard Fuchs <dfx@gmx.at>; closes: #78484.
+  * After a discussion with upstream author I've decided to remove
+    panel applet support from xchat-gnome package; Peter said that
+    "it's not really a maintained piece of code" and I think that it's
+    useless to provide a broken applet (of course if someone would like
+    to take care of code I'll readd it.) closes: #82113, #84723, #84729.
+  * Now messaging channels or nicknames works a bit like in mIRC now,
+    i.e. when there's an open tab for the destination, the message shows
+    up there (usefull for logs); closes: #60104.
+    Patch provided by Richard Fuchs <dfx@gmx.at>.
+  * Peter's words:
+    "<zed> #69765 - with the suggested solution the client could be too
+    easily fooled by people having some fun :) xchat doesnt "handle"
+    netsplits anyway, it just prints out what the server says."
+    "<zed> the netsplit message is no different to a quitmessage unluckily".
+    closes: #69765.
+  * Peter dixit: "thats the way it is", it's not a bug but, a feature.
+    closes: #78494.
+  
+ -- Davide Puricelli (evo) <evo@debian.org>  Sun,  4 Feb 2001 15:05:42 +0100
+
+xchat (1.6.3-1) unstable; urgency=low
+
+  * New upstream version.(closes: #81031, #79674).
+  * xchat-gnome: now built with --enable-panel.
+  * Added zh_CN and zh_TW.Big5 po files; thanks to Anthony Fok <foka@debian.org>.
+  * Upstream author said that all GTK+ apps do this and he can't fix them;
+    closes: #79647, #81385.
+  * That perl script isn't included into xchat upstream tarball and we don't know
+    what it should do, submitter doesn't provide any other info, so we can close
+    it; closes: #79641.
+  * xchat doesn't come with a en_DK po, anyway it should ignore it; I tried to
+    export en_DK and I used xchat 1.6.3 both with and without libc6-i686:
+    it works. closes: #78710.
+
+ -- Davide Puricelli (evo) <evo@debian.org>  Wed, 10 Jan 2001 19:13:40 +0100
+
+xchat (1.6.2-1) unstable; urgency=low
+
+  * New upstream version (closes: #70905, #79138, #76122).
+  * Now xchat, xchat-gnome and xchat-text depend on xchat-common
+    (= ${Source-Version}); closes: #79331. 
+
+ -- Davide Puricelli (evo) <evo@debian.org>  Mon, 11 Dec 2000 19:41:51 +0100
+
+xchat (1.6.0-2) unstable; urgency=low
+
+  * Scrollbar position doesn't depend on your wm theme (it will be forever
+    on the right); closes: #45510.
+  * "Edit event texts menu" works, you need to type enter after having done
+    some changes; closes: #59904.
+  * Socks4 support works, just use "Proxy server" menu; closes: #72952. 
+  * Only previous version was affected by this; closes: #78007.
+  * Docs troubles are fixed; closes: #78008, #78230.
+
+ -- Davide Puricelli (evo) <evo@debian.org>  Tue, 28 Nov 2000 18:48:03 +0100
+
+xchat (1.6.0-1) unstable; urgency=low
+
+  * New upstream version (with upstream patch for xtext.c).
+  (closes: #47244, #50163, #60592, #65080, #66579, #72606, #72618, 
+   #74894, #75203, #76208, #46540, #58897, #59320, #68895, #77390,
+   #44111, #44112, #56380, #56625, #56838, #57428, #57471, #57681,
+   #57683, #60826, #72191.)
+  * Fixed Build-Depends. (closes: #76911, #70408, #72402, #76265, #58293)
+  * Removed stupid depends on libc5 stuff; closes: #77672, #77447.	
+  * Now pixmaps are into xchat-gnome package; closes: #58037.
+  * Some people want to use this button, sorry; closes: #69804.
+  * Autoconnect is now enabled by default (use -a to stop it); closes: #46354.
+  * "Ignore notifies" is only a visual thing, notifies are received but not
+    displayed; anyway don't worry, xchat flood protect works well.
+    (closes: #59320)
+  * We support python and perl scripts, sorry; closes: #60181.
+  * Edit key-bindings is your friend, closes: #65987.
+  * Added checks for DEB_BUILD_OPTIONS for Standards-Version: 3.2.1.
+  
+
+ -- Davide Puricelli (evo) <evo@debian.org>  Sun, 19 Nov 2000 13:10:46 +0100
+
+xchat (1.5.7-3) unstable; urgency=low
+
+  * New maintainer release.
+
+ -- Davide Puricelli (evo) <evo@debian.org>  Sat, 18 Nov 2000 20:35:21 +0100
+
+xchat (1.5.7-2.1) unstable; urgency=low
+
+  * Added --disable-zvt to gtk+ front ends configure call.  Now it really is
+    GNOME free.
+  
+ -- Sean 'Shaleh' Perry <shaleh@debian.org>  Thu,  2 Nov 2000 10:34:48 -0800
+
+xchat (1.5.7-2) unstable; urgency=low
+
+  * Compiled xchat with --disable-{trans,gdk-pixbuf}. This should remove
+    the dependancy on all the GNOME stuff. (Closes: Bug#72191)
+  
+ -- Edward C. Lang <edlang@debian.org>  Fri, 22 Sep 2000 17:31:08 +1100
+
+xchat (1.5.7-1) unstable; urgency=low
+
+  * New upstream version.
+  * Incoming DCC files needn't overwrite already existing files; this can
+    be contolled by selecting a specific download directory, and choosing
+    to appended the sender's nickname to the filename. (Closes: Bug#46527)
+  * Servers selected to be autoconnected to on startup now do
+    this. (Closes: Bug#50160)
+  * More than one channel can be specified to join on startup. 
+  	(Closes: Bug#50162)
+  * /usr/doc -> /usr/share/doc/ symlinks now exist. 
+    (Closes: Bug#58343, Bug#58477)
+  * Compiled with GNOME support. (Closes: Bug#63994)
+  * URLs are quoted. (Closes: Bug#66776)
+  * Bugs still open: 45510 47244 50163 58037 59904 60592 65080 66597
+  
+ -- Edward C. Lang <edlang@debian.org>  Wed, 20 Sep 2000 20:34:31 +1100
+
+xchat (1.4.3-0.1) stable unstable; urgency=high
+
+  * Non-maintainer upload.
+  * New upstream release, which contains the security fix for Bugtraq
+    #1601: X-Chat Command Execution Via URLs Vulnerability.
+    (Closes: Bug#69982)
+  * Added libpanel-applet-dev to Build-Depends.  (Closes: Bug#58293)
+  * Added Chinese support: Added zh_TW.Big5 and zh_CN po files, and
+    turned on fontset by default.
+  * Updated the Spanish and Portugese translations with the ones
+    provided by Conectiva:
+     * Thu Jun 08 2000 Rafael Rigues <rigues@conectiva.com>
+     - Added spanish (es_ES) 1.4.2 potfile.
+     * Mon Jun 05 2000 Rafael Rigues <rigues@conectiva.com>
+     - Added final portuguese (pt_BR) 1.4.2 potfile
+  * Revised the debian/copyright file.
+
+ -- Anthony Fok <foka@debian.org>  Sun, 27 Aug 2000 03:57:26 -0600
+
+xchat (1.4.2-1.1) frozen unstable; urgency=low
+
+  * Non maintainer release.
+
+  * Fix xchat, xchat-gnome and xchat-text to have symlinks from
+    /usr/doc/$pkg to /usr/share/doc/$pkg. Note that /usr/share/doc/$pkg
+    in these cases is itself a link to /usr/share/doc/xchat-common.
+    (Closes: Bug#60826)
+  * Correct spelling of "extension" in control file (lintian)
+  * Call dh_compress to compress the manpage and anything else (lintian)
+
+ -- Anthony Towns <ajt@debian.org>  Fri, 14 Apr 2000 21:13:25 +1000
+
+xchat (1.4.2-1) frozen unstable; urgency=low
+
+  * New upstream release.
+  * #56285 is a GTK problem. (Closes: #56285)
+  * Bigger topic buffer (in src/fe-gtk/chanlist.c). 
+    (Closes: #37018,#52955).
+  * Hopefully deals with #60826. I'll close this in the next revision if
+    it does.
+  * Includes patch for text.c (Closes: #60719)
+  * Includes patch for fkeys.c (Closes: #58957).
+  * Problem with unexpected /nick behaviour fixed. (Closes: #53623)
+  * Unfortunately, to resolve #47343, I would need release n+1 versions
+    for each language. In the meantime, it's possible to override the
+    English autocomplete words by doing Settings -> Replace Popup - Delete 
+    All. In the meantime, I'm going to close this bug. If you feel the
+    need to dicuss it further, don't hesitate mailing me. (Closes: #47343)
+  * Adam Klein split xchat{-gnome,-text} into xchat-common, xchat,
+    xchat-gnome, and xchat-text. This deals with #43760. (Closes: #43760)
+  * /recon now remembers what server to reconnect to. (Closes: #58050)
+  * After thinking long and hard about it (well, not really) I have come
+    to the conclusion that Joey Hess' proposed description is much more
+    appropriate. I've therefore decided to include it. (Closes: #61815)
+
+ -- Edward C. Lang <edlang@debian.org>  Fri, 24 Mar 2000 21:40:37 +1100
+
+xchat (1.4.1-1) frozen unstable; urgency=low
+
+  * The uber magic brand new "I got a new computer so I can maintain my
+  	packages again" release.
+  * New upstream release, which should fix some miscellenous bugs.
+    (Closes: #60906). See the changelog for more info.
+  * They query window seems to have a decent buffer again. 
+  	(Closes: #56576)
+  * The widgets all redraw properly. (Closes: #56575, #56573)
+  * Man page doesn't overwrite between packages. 
+    (Closes: #56567,#56420,#56389)
+  * Away message responds according to preferences. (Closes: #56447)
+  * Highlighting for a string now works. (Closes: #59905,#59898)
+  * I can't reproduce #59116, and it seems to be non-existant in this
+    release, so I'm going to close it. If you notice it again, please
+    reopen it. (Closes: #59116)
+  * As fair as I can tell, these bugs are still open:
+    Important: #60826 - Discussion is taking place between the reporter of
+    this bug (joeyh@varesearch.com) and Adam Klein, who kindly did a NMU
+    release when I was unable to. Many thanks to Adam :)
+	
+    Normal: #37018, #46527, #47244, #47343, #52955, #53623, #56285
+	
+    Wishlist: #43760, #46354, #56387, #58050, #58897, #59320, #60104,
+    #60181 - this one will probably be closed quite soon. I'm still
+    thinking about whether or not to remove python support, or have an
+    xchat-thelot (or whatever) package that has gnome+python+perl+text+*.
+
+ -- Edward C. Lang <edlang@debian.org>  Fri, 24 Mar 2000 19:22:19 +1100
+
+xchat (1.4.0-0.1) frozen unstable; urgency=low
+
+  * Non maintainer upload by request of maintainer
+  * New (stable) upstream release.  Probably closes the following bugs,
+    and maybe more: #56380,#56573,#56575,#56576,#56625,#56838,#57157,#57428,
+                    #57471,#57681,#57683
+  * No new features since 1.3.12, bugfixes only
+  * Uses pristine upstream source
+  * Split out documentation and examples and locale files into xchat-common
+  * Set prefix instead of DESTDIR, so i18n files are installed
+  * Install examples into subdirs
+  * Really complies with policy 3.1.1 now:
+    + Added Build-Depends
+    + Create /usr/doc/xchat-common symlink
+  * Added Replaces: lines to compliment the Conflicts:
+
+ -- Adam Klein <aklein@debian.org>  Sat, 12 Feb 2000 18:15:57 -0800
+
+xchat (1.3.12-2) frozen unstable; urgency=low
+
+  * No more zombied children for URLs. (Closes: #55962)
+  * Can now use mousewheel. (Closes: #52964)
+  * /who only shows up in server tab. (Closes: #55184)
+  * /exec -i now works. (Closes: #45143)
+  * Usability suggestions incorporated upstream. (Closes: #45519)
+
+ -- Edward C. Lang <edlang@debian.org>  Tue, 25 Jan 2000 16:29:47 +0100
+
+xchat (1.3.12-1) frozen unstable; urgency=low
+
+  * New upstream release.
+
+ -- Edward C. Lang <edlang@debian.org>  Sun, 23 Jan 2000 11:29:41 +0100
+
+xchat (1.3.10-2) unstable; urgency=low
+
+  * The "I'm too tired" Release.
+  * xchat-text manpage is really the xchat-text manpage.
+  * Still no message catalogues - unless someone tells me how to get gettext to play ball.
+  * Forgot to sign last upload.
+
+ -- Edward C. Lang <edlang@debian.org>  Sat,  8 Jan 2000 17:59:02 +0100
+
+xchat (1.3.10-0.5) unstable; urgency=low
+
+  * New upstream release.
+  * Closes: #37018, #45143, #52955.
+  * Message catalogues should be in this release, if not, the next one for sure.
+
+ -- Edward C. Lang <edlang@debian.org>  Thu,  6 Jan 2000 15:55:45 +0100
+
+xchat (1.3.8-0.5) unstable; urgency=low
+
+  * New upstream version.
+  * xchat-gnome now actually includes GNOME support.
+
+ -- Edward C. Lang <edlang@debian.org>  Fri,  3 Dec 1999 07:10:39 +0100
+
+xchat (1.3.3-0) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Edward C. Lang <edlang@debian.org>  Wed, 29 Sep 1999 12:49:36 -0700
+
+xchat (1.3.0-0) unstable; urgency=low
+
+  * New upstream release.
+  * Text/console support added.
+
+ -- Edward C. Lang <edlang@debian.org>  Thu,  2 Sep 1999 22:10:17 +1000
+
+xchat (1.2.0-1) unstable; urgency=low
+
+  * New stable upstream release.
+  * Closes: #43760 (See email from Sean Perry, <http://bugs.debian.org/43760/>
+
+ -- Edward C. Lang <edlang@debian.org>  Thu,  2 Sep 1999 10:24:43 +1000
+
+xchat (1.1.9-1) unstable; urgency=low
+
+  * New upstream release
+  * DCC resume fixed.
+  * IRC Server can now be pre-selected (Closes: #35087)
+
+ -- Edward C. Lang <edlang@debian.org>  Sun, 29 Aug 1999 15:13:43 +1000
+
+xchat (1.1.7-0) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Edward C. Lang <edlang@debian.org>  Fri, 13 Aug 1999 19:04:23 +1000
+
+xchat (1.0.0-1) unstable; urgency=low
+
+  * New upstream release.
+  * Error in types.h error for glibc-2.1 fixed. (Closes: #29550)
+  * Hardcoded i386 in make dependencies removed. (Closes: #29697)
+  * Same as above. (Closes: #32266)
+  * Segfault problem on starting fixed with new release. (Closes: #34430)
+  * Problem with with menu in same install run fixed. (Closes: #37088)
+  * #debian on irc.openprojects.net added as default channel. (Closes: #32857)
+
+ -- Edward C. Lang <edlang@debian.org>  Sun,  4 Jul 1999 00:29:38 +1000
+
+xchat (0.9.10-1) unstable; urgency=low
+
+  * New upstream release.
+  * NMU on behalf of Edward Lang <edlang@debian.org> from Feanor.
+
+ -- Konstantinos Margaritis <markos@debian.org>  Fri, 25 Jun 1999 16:42:26 +0300
+
+xchat (0.9.7-2) unstable; urgency=low
+
+  * Closes: #39641
+
+ -- Edward C. Lang <edlang@debian.org>  Fri, 18 Jun 1999 17:35:05 +1000
+
+xchat (0.9.7-1) unstable; urgency=low
+
+  * New upstream release.
+  * No longer crashes when run as root. 
+
+ -- Edward C. Lang <edlang@debian.org>  Wed,  9 Jun 1999 18:26:59 +1000
+
+xchat (0.9.6-0) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Edward C. Lang <edlang@debian.org>  Thu, 20 May 1999 18:07:28 +1000
+
+xchat (0.9.5-0) unstable; urgency=low
+
+  * New upstream Release
+  * HTML documentation now included.
+  * xdcc'n'stuff perl script included.
+
+ -- Edward C. Lang <edlang@debian.org>  Fri,  9 Apr 1999 17:24:26 +1000
+
+xchat (0.9.4-0.1) unstable; urgency=low
+
+  * Official maintainer release.
+  * Added GNOME support 
+
+ -- Edward C. Lang <Ed.Lang@pcug.org.au>  Fri,  9 Apr 1999 02:05:38 +1000
+
+xchat (0.9.4-0) unstable; urgency=low
+
+  * New upstream release
+  * docs for scripts now included, with examples
+
+ -- Sean E. Perry <shaleh@debian.org>  Wed, 31 Mar 1999 00:51:18 -0500
+
+xchat (0.9.1-0) unstable; urgency=low
+
+  * new upstream release
+  * compiled against GTK+ 1.2 and Imlib 1.9.4
+  * fixed the sys/types propblem for glibc2.1 (needs gnu/types)
+
+ -- Sean E. Perry <shaleh@debian.org>  Sat,  6 Mar 1999 13:02:18 -0500
+
+xchat (0.5.0-0.1) unstable; urgency=low
+
+  * fixed the deps problem
+
+ -- Sean E. Perry <shaleh@debian.org>  Thu, 28 Jan 1999 00:52:15 -0500
+
+xchat (0.5.0-0) unstable; urgency=low
+
+  * New upstream version
+
+ -- Sean E. Perry <shaleh@debian.org>  Mon, 11 Jan 1999 23:45:23 -0500
+
+xchat (0.4.2-0.1) unstable; urgency=low
+
+  * non maintainer upload
+  * new upstream release
+
+ -- Brian M. Almeida <bma@debian.org>  Thu, 10 Dec 1998 14:52:26 -0500
+
+xchat (0.3.1-0) unstable; urgency=low
+
+  * new upstream release
+
+ -- Sean E. Perry <shaleh@debian.org>  Fri, 13 Nov 1998 00:06:26 -0500
+
+xchat (0.3.0-2) unstable; urgency=low
+
+  * Fixed bug in Perl #define
+
+ -- Sean E. Perry <shaleh@debian.org>  Mon,  9 Nov 1998 13:56:49 -0500
+
+xchat (0.3.0-0) unstable; urgency=low
+
+  * new upstream release
+
+ -- Sean E. Perry <shaleh@debian.org>  Fri,  6 Nov 1998 15:44:32 -0500
+
+xchat (0.2.5-0) unstable; urgency=low
+
+  * New upstream release
+
+ -- Sean E. Perry <shaleh@debian.org>  Sat, 31 Oct 1998 16:57:24 -0500
+
+xchat (0.2.1-0) unstable; urgency=low
+
+  * new upstream version
+  * Official maintainer release
+
+ -- Sean E. Perry <shaleh@debian.org>  Sun, 11 Oct 1998 23:15:17 -0400
+
+xchat (0.2.0-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- David N. Welton <davidw@efn.org>  Sun, 27 Sep 1998 14:15:53 -0700
+
+Local variables:
+mode: debian-changelog
+End:

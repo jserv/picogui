@@ -1,0 +1,87 @@
+/* **************EXPERIMENTAL*********************/
+
+/* Python support by Adam Langley (agl@linuxpower.org) */
+
+/* Welcome to the all singing, all dancing <crash> python support
+
+   currently this is as stable as an elephant balenced on a bobby pin...
+
+   current objects:
+     XChat
+     Server
+     Session
+     Data
+
+   The first thing a script MUST do is import XChat. All the interface stems from this module.
+   To start the ball rolling set XChat.XChat() to some variable. This is your interface.
+
+   XChat:
+     get_servers: returns a tuple of server objects
+     get_sessions: returns a tuple of session object
+     get_current_session: returns a session object
+     hook_command(name, func): hooks the command @name and each this it is run it calls @func passing (String name, XChat.Session session, String Tuple args)
+     register(name, desc): sets the script's name and description
+     hook_signal(name, func): hooks the signal @name (e.g. "XP_TE_UJOIN") and calls @func everytime that signal fires passing (String name, Int flags, XChat.Data Tuple args)
+       if the called function returns a non-zero integer, the signal won't be processed any further by xchat
+     hook_timeout(msecs, func): one-shot timer, calls @func after @msecs milliseconds have passed
+     info: returns a dict (see .keys())
+
+   Server:
+     send(data): writes @data raw to the server
+     info: returns a dict (see .keys())
+     set(host, port, nick): sets the server that the object acts on to the one matching @host, @port and @nick
+
+   Session:
+     print_text(text): Displays @text on the session
+     handle_cmd(cmd): acts as if @cmd had been typed in, but without putting @cmd in the session history
+     get_users: returns a dict in the form nick:(host, isop, isvoice) (just call it in interactive mode - you'll see what I mean)
+     info: returns a dict (see .keys())
+     set(host, port, nick, channel): sets the session the object refereres to, to the session matching @host, @port, @nick and @channel
+     get_server: returns the server object of the session
+
+   Data:
+     get_string: returns a string from the data
+     get_server: returns a server from the data
+     get_session: returns a session from the data
+     get_number: returns a int *of* the data
+
+
+   That should be resonably basic, the only odd thing is the Data class. Why the hell is it there? Well when the python signal handler gets called it gets 5 void *'s and a char. The void *'s could point to anything, it changes from signal to signal. Rather than try to code in every signal's meta data (and make an ugly mess) it wraps the void *'s up into Data objects which are passed to your python signal handler in a tuple (3rd arg). It's then upto you what you do with the data. For example a possible signal handler for XP_INBOUND:
+
+   def signalhandler(name, flags, args):
+          session = args[0].get_session()
+	  server = args[1].get_server()
+	  message = args[2].get_string()
+
+	  print "Message to " + session.info()['channel'] + " from " + server.info()['hostname'] + ": " + message
+
+  It doesn't do a lot ;) but I hope you get the idea.
+
+  The other wierd thing is the .set() calls to the Server and Session classes. Well XChat is free to kill a server or session struct anytime it likes. So if you keep a Server or Session object between calls then the actual object it acts on could be free()'ed. If you then call it XChat will go down harder than a 6 ton whale from 30,000 feet. So rather then keep the actual object just keep the host, port, nick (for the Server) and channel (Session only) and for each call do something like:
+
+  sess = XChat.Session()
+  try:
+          sess.set (stored_host, stored_port, stored_nick, stored_channel)
+  except LookupError:
+          print "You Git! Give me back my session,  *NOW*!\n"
+
+  you can get the data from:
+    XChat.Sever.info()[x] with x = 'hostname', 'port' and 'nick'
+    OR
+    XChat.Session.info()[x] with x = 'servername', 'serverport', 'servernick' and 'channel'
+
+
+    The function handlers follow this naming system:
+      pysH_(E|D|S|)<function name>
+
+      E = sess obj
+      S = server obj
+      D = data obj
+
+      so a function to handle a session call of some_func() would be
+      pysH_Esome_func
+  Have fun!
+
+  --AGL
+*/
+

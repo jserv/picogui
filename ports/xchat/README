@@ -1,0 +1,62 @@
+X-Chat README
+~~~~~~~~~~~~~
+ X-Chat Copyright (c) 1998-2001 By Peter Zelezny.
+ This software is released under the GNU GPL version 2.
+ See file COPYING for details.
+
+
+What is it?
+~~~~~~~~~~~
+ X-Chat is an IRC client for UNIX operating systems. I.R.C. is Internet
+ Relay Chat, see http://irchelp.org for more information about IRC in
+ general. Xchat runs on most BSD and POSIX compliant operating systems.
+
+
+Requirements:
+~~~~~~~~~~~~~
+ * X11 - X Window System (except on Windows).
+ * GTK+ 1.2.0+ (this is available at http://www.gtk.org).
+
+ X-Chat is known to work on, at least:
+
+	* Linux
+	* FreeBSD
+	* OpenBSD
+	* NetBSD
+	* Solaris
+	* AIX
+	* IRIX
+	* DEC/Compaq Tru64 UNIX
+	* HP-UX 10.20 and 11
+	* MacOS X
+	* Windows 9x/ME/NT/2000
+
+
+Updates?
+~~~~~~~~
+ Latest version is available at:
+
+ http://xchat.org
+
+ Please refer your suggestions/bug reports to zed@linux.com
+
+
+Autoloading Perl Scripts and Plugins
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * X-Chat automatically loads any ~/.xchat/*.pl perl scripts at startup.
+ * X-Chat automatically loads any ~/.xchat/*.so plugins at startup.
+ * X-Chat automatically loads any ~/.xchat/*.py python scripts at startup.
+
+
+Control Codes:
+~~~~~~~~~~~~~~
+ %%     -  A single percentage sign
+ %C     -  Control-C (mIRC color code)
+ %B     -  Bold Text
+ %U     -  Underline Text
+ %R     -  Reverse Text
+ %O     -  Reset all Text attributes
+ %XXX   -  ASCII XXX (where XXX is a decimal 3 digit number)
+           (Eg: %007 sends a BEEP)
+
+ %Cforeground,background will produce a color code, eg: %C03,10

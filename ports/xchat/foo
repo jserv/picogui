@@ -1,0 +1,6 @@
+#!/bin/sh -e 
+
+if [ ! -d debian/build/xchat-gnome/usr/share/gnome/apps/Internet ]; then
+        install -d -o root -g root -m 755 debian/build/xchat-gnome/usr/share/gnome/apps/Internet
+	install -p -o root -g root -m 644 xchat.desktop debian/build/xchat-gnome/usr/share/gnome/apps/Internet
+fi

@@ -1,0 +1,57 @@
+COMPILING ON WIN32
+~~~~~~~~~~~~~~~~~~
+It is not easy! Be warned! You need either one of these compilers:
+
+		* Mingw (http://www.mingw.org)
+		* MS Visual C
+
+
+REQUIREMENTS
+~~~~~~~~~~~~
+ * glib and gtk 1.3.x for win32 http://user.sgic.fi/~tml/gimp/win32/.
+   glib must be from 2001-01-25 or later, these was an important fix
+   on that date. You can build with the headers and import libraries
+   from the webpage above, and use the newer DLLs in the binary package
+   at runtime (binary package available at http://xchat.org/win32/).
+
+
+COMPILING WITH MS VISUAL C
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+	1) Edit src\makeinc.msc
+		* change the paths for glib and gtk headers.
+		* comment out/in PERL or OPENSSL as needed.
+		* change the paths for PERL includes and libs.
+
+	2) In VC's includes directory, copy io.h to unistd.h
+
+	3) In a DOS window type:
+			copy config.h.w32 config.h
+			cd src
+			nmake -f makefile.msc
+
+	4) Copy fe-gtk\xchat.exe where you want it.
+
+
+COMPILING WITH MINGW
+~~~~~~~~~~~~~~~~~~~~
+You'll also need:
+
+ * A Cygwin environment (for bash, sed, make and other unix tools).
+
+ * gcc MinGW http://www.mingw.org (don't use gcc from cygwin!).
+
+ * fudged glib-config/gtk-config to trick configure into working.
+   You'll have to write these yourself, just make them shell scripts
+   that respond to --libs --cflags --prefix and --version. They need
+   to return these flags:
+     CFLAGS: -mpentium -fnative-struct -I/path/to/glib-gdk-gtk/headers
+     LIBS: -mwindows -lwsock32 -lglib-1.3 -lgdk-1.3 -lgtk-1.3
+   Put glib-config/gtk-config in your PATH e.g. /usr/bin. You can just
+   use the scripts from a unix machine and edit them a bit.
+
+ 1) ./configure --prefix=/opt --disable-nls --disable-xlib \
+    --disable-textfe --disable-glibtest --disable-gtktest
+
+ 2) make
+
+ 3) strip src/fe-gtk/xchat.exe

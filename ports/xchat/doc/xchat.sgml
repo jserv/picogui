@@ -1,0 +1,1100 @@
+<!doctype linuxdoc system>
+
+<!-- LinuxDoc file was created by LyX 1.0 (C) 1995-1999 by <Adam> Tue Aug 31 12:28:44 1999
+ -->
+
+ <article>
+ <title>XChat 1.2
+ </title>
+ <author>Peter Zelezny and Adam Langley
+ </author>
+ <date>July 1st, 1999
+ </date>
+ <abstract>This document attempts to document XChat and introduce IRC generally. Large
+ parts of the first section are taken from the alt.irc FAQ, thanks and credit
+ goto the authors of it.
+ </abstract>
+ <toc>
+ <sect>IRC
+ <sect1>What is XChat?
+ <p>XChat is a graphical IRC client that runs on UNIX like systems. It uses
+ the GTK+ toolkit for graphical abstraction. It if GPL'ed software (free software).
+ It is known to run on these systems:
+ </p>
+ <p>
+ <itemize>
+  <item>Linux (primary development platform)
+  <item>FreeBSD
+  <item>OpenBSD
+  <item>NetBSD
+  <item>Solaris
+  <item>AIX
+  <item>IRIX
+  <item>SunOS
+  <item>OS/2
+ </itemize></p>
+ <sect1>Introduction to IRC
+ <p>IRC stands for &dquot;Internet Relay Chat&dquot;. It was originally written
+ by Jarkko Oikarinen (jto@tolsun.oulu.fi) in 1988. Since starting in Finland,
+ it has been used in over 60 countries around the world. It was designed as
+ a replacement for the &dquot;talk&dquot; program but has become much much more
+ than that. IRC is a multi-user chat system, where people convene on &dquot;channels&dquot;
+ (a virtual place, usually with a topic of conversation) to talk in groups,
+ or privately. IRC is constantly evolving, so the way things to work one week
+ may not be the way they work the next. Read the MOTD (message of the day) every
+ time you use IRC to keep up on any new happenings or server updates.
+ </p>
+ <p>IRC gained international fame during the 1991 Persian Gulf War, where updates
+ from around the world came across the wire, and most irc users who were online
+ at the time gathered on a single channel to hear these reports. IRC had similar
+ uses during the coup against Boris Yeltsin in September 1993, where IRC users
+ from Moscow were giving live reports about the unstable situation there.
+ </p>
+ <p>The user runs a &dquot;client&dquot; program which connects to the IRC
+ network via another program called a &dquot;server&dquot;, which runs on another
+ computer. Servers exist to pass messages from user to user over the IRC network.
+ </p>
+ <p>XChat is a graphical client that runs using GTK(<url url="http://www.gtk.org" name="GTK Homepage">), it is mainly designed
+ to run under UNIX (By this I mean all the UNIX's, like Linux, *BSD etc), but
+ also runs under Win32 systems without some features.
+ </p>
+ <sect1>IRC Basics
+ <p>As mentioned above the channel is the basic unit of collective IRC chatting.
+ Everyone who is &dquot;in&dquot; a channel can see all messages written to
+ the channel and can (usually) write to the channel themselves.
+ </p>
+ <p>All IRC commands start with a &dquot;/&dquot;, and most are one word. Typing
+ /help will get you help information etc
+ </p>
+ <p>Once on a server a /join &num;channel command will join you to the channel
+ &num;channel in the current window, any further joins while still joined (e.g.
+ before a /part) will open a new window. Once in a channel just type
+ </p>
+ <p>Channel operators are kings/queens of their channel. This means they can
+ kick you out of their channel for no reason. If you don't like this, you can
+ start your own channel and become a channel operator there. 
+ </p>
+ <p>An IRC operator is someone who maintains the IRC network. They cannot fix
+ channel problems. They cannot kick someone out of a channel for you. They cannot
+ /kill (kick someone out of IRC temporarily) someone just because you gave the
+ offender channel operator privileges and said offender kicked you off.
+ </p>
+ <p>&num;hottub and &num;initgame are almost always teeming with people. &num;hottub
+ is meant to simulate a hot tub, and &num;initgame is a non-stop game of &dquot;inits&dquot;
+ (initials). Just join and find out! 
+ </p>
+ <p>To get a list of channels with their names and topics, do /list -min 20
+ (on ircII) which will show you channels with 20 or more members. You can also
+ do this for smaller numbers.
+ </p>
+ <p>Many IRC operators are in &num;Twilight_Zone ... so if you join that channel
+ be prepared for a lot of senseless dribble, more like what you find on the
+ other channels listed above (&num;hottub). What was once a place of people
+ who could help you has turned into just another place for those who have nothing
+ better to do with themselves than just be there. If you find other documents
+ saying go there to ask questions, ignore them. They should be considered to
+ be out of date. 
+ </p>
+ <p>There are not enough nicknames to have nickname ownership. If someone takes
+ your nickname while you are not on IRC, you can ask for them to give it back,
+ but you can not *demand* it, nor will IRC operators /kill for nickname ownership.
+ If you goto &num;Twilight_zone, you will find a bunch of people who will refuse
+ to do this for you, yet they will do it for themselves or their friends or
+ use /kill for even less reasonable uses. There are, literally, millions of
+ possible channel names, so if someone is on your usual channel, just go to
+ another. You can /msg them and ask for them to leave, but you can't force them
+ to leave.
+ </p>
+ <p>Channel operators are the owner(s) of their respective channels. Keep this
+ in mind when giving out channel operator powers (make sure to give them to
+ enough people so that all of the channel operators don't unexpectedly leave
+ and the channel is stuck without a channel operator).
+ </p>
+ <p>On the other hand, do not give out channel operator to everyone. This causes
+ the possibility of mass-kicking, where the channel would be stuck without any
+ channel operators.
+ </p>
+ <p>You have one option. You can ask everyone to leave and rejoin the channel.
+ This is a good way to get channel operator back. It doesn't work on large channels
+ or ones with bots, for obvious reasons.
+ </p>
+ <p>On IRC, you cannot be banned from every single server. Server-banning exists
+ only on a per-server basis (being banned on one server does not mean you are
+ automatically banned from another). &dquot;Ghosts are not allowed on IRC&dquot;
+ means that you are banned from using that server. The banning is in one of
+ three forms:
+ </p>
+ <p>
+ <itemize>
+  <item>You are banned specifically, you yourself. Only you can be responsible
+ for this (if you are using a shared account, this obviously does not apply).
+ Thus the responsibility lies completely with you and you have no-one to complain
+ to. 
+  <item>Your machine is banned. Chances are it wasn't you who committed the wrongdoing.
+ Try using another machine on campus and seeing if you can use that particular
+ irc server then.
+  <item>Your whole site is banned (where &dquot;site&dquot; == &dquot;school&dquot;,
+ &dquot;company&dquot;, &dquot;country&dquot;). This almost certainly wasn't
+ your fault. And chances are you won't be able to get the server-ban lifted.
+ Try using another server.
+ </itemize></p>
+ <p>The most general answer is "use another server&dquot;, but if it bothers
+ you, try writing to the irc administrator of that site -&gt; /admin server.name.here
+ -- plead your case. It might even get somewhere!
+ </p>
+ <p>The best, basic, IRC user's manual is the IRC Primer, available in plain
+ text, Postscript, and LaTeX from cs-pub.bu.edu:/irc/support ... Another good
+ place to start might be downloading the <url url="ftp://cs-pub.bu.edu/irc/support/" name="IRC tutorials">.
+ </p>
+ <p>The IRC protocol is fully documented in <url url="ftp://cs-pub.bu.edu/irc/support/rfc1459.txt" name="RFC 1459">
+ </p>
+ <sect1>Etiquette
+ <p>This subsection is by Lea Viljanen, Ari Husa and Helen Rose for irc2.9.5,
+ thank you
+ </p>
+ <sect2>Language
+ <p>The most widely understood and spoken language on IRC is English. However!
+ As IRC is used in many different countries, English is by no means the only
+ language. If you want to speak some other language than English (for example
+ with your friends), go to a separate channel and set the topic to indicate
+ that. 
+ </p>
+ <p>On the other hand, you should check the topic before you move to a channel
+ to see if there are any restrictions about language. On a channel not restricted
+ by a topic, please speak a language everybody can understand. If you want to
+ do otherwise, change channels and set the topic accordingly.
+ </p>
+ <sect2>Hello/Goodbye
+ <p>It's not necessary to greet everybody on a channel personally. Usually
+ one &dquot;Hello&dquot; or equivalent is enough. And don't expect everybody
+ to greet you back. On a channel with 20 people that would mean one screenful
+ of hellos. It's sensible not to greet, in order not to be rude to the rest
+ of the channel. If you must say hello, do it with a private /msg. The same
+ applies to goodbyes.
+ </p>
+ <sect2>Discussion
+ <p>When you come to a new channel it's advised you to listen for a while to
+ get an impression of what's discussed. Please feel free to join in, but do
+ not try to force your topic into the discussion if that doesn't come naturally.
+ </p>
+ <sect>Getting, Building and Running
+ <sect1>Getting
+ <p>If you re lazy, or don't want to install any support libraries then Peter
+ Alexandrou has started hosting the <url url="http://www.users.bigpond.com/redowl/xchat/" name="X-Chat static binary webpage">
+ </p>
+ <p>The main distribution point for XChat is <url url="http://xchat.linuxpower.org" name="the XChat homepage">, XChat also needs <url url="http://www.gtk.org" name="GTK">. Optionally
+ XChat can use <url url="http://www.gnome.org" name="GNOME"> and <url url="http://www.perl.com" name="Perl">.
+ </p>
+ <sect1>Building
+ <p>XChat uses the GNU autoconf system, so building it is quite easy, for most
+ systems the auto detection will work:
+ </p>
+ <p>
+ <code>./configure ; make ; su ; make install
+ </code></p>
+ <p>On some systems gmake might be needed rather than make.
+ </p>
+ <p>The configure script can be passed some options as well
+ </p>
+ <p>
+ <itemize>
+  <item>--disable-perl = Disables Perl support
+  <item>--disable-gnome = Disables GNOME support
+ </itemize></p>
+ <p>Be aware that if you don't have perl or GNOME the configure script will
+ pick this up and you don't need to pass these options, they are only if for
+ when you do have them, but don't want support for them.
+ </p>
+ <p>If you are having problems with this method you can try the old method:
+ </p>
+ <p>
+ <code>cp Makefile.gtk Makefile ; make ; su ; make install
+ </code></p>
+ <sect1>Running
+ <p>The build process makes a binary called xchat. If you installed it typing
+ xchat at the console should run it, if not cd into the XChat directory and
+ type ./xchat
+ </p>
+ <p>The directory &tilde;/.xchat should be created for you, XChat uses this
+ directory to store per-user settings and logs.
+ </p>
+ <sect>The GUI
+ <p>When XChat is first started it brings up a window with 5 main parts:
+ </p>
+ <p>
+ <enum>
+  <item>The menu bar
+  <item>The tool-bar
+  <item>The text box (middle - left)
+  <item>The user-list (middle - right)
+  <item>The input box (bottom)
+ </enum></p>
+ <p>On startup 1 window is created with no state (it is labeled &dquot;&lt;none&gt;&dquot;),
+ if you join a channel that window then contains all the information from that
+ channel. If someone /msg's you a new window may be created containing all further
+ /msg's from that person
+ </p>
+ <sect1>The menu bar
+ <p>The menu bar has 6 menus in it (the text may change if you have language
+ packs active):
+ </p>
+ <p>
+ <enum>
+  <item>&dquot;X-Chat&dquot; - Major operations, like a &dquot;File&dquot; menu
+  <item>&dquot;Windows&dquot; - Each of the XChat windows can be called from this
+ menu, it also contains operations affecting the buffer
+  <item>&dquot;User Modes&dquot; - All the items in this menu are toggle items
+ changing the state of the IRC user
+  <item>"Settings&dquot; - All the configuration dialogs can be called from here
+  <item>"Scripts &amp; Plugins&dquot; - Operations effecting these
+  <item>&dquot;Help&dquot; - Standard help menu
+ </enum></p>
+ <sect1>The tool bar
+ <p>The tool-bar contains the leafs of each window attached to the main window,
+ these leafs have the name of the channel or nick of the window. Clicking on
+ one of these leafs brings that window to the front. If the text in a currently
+ hidden window changes the text in the leaf goes red
+ </p>
+ <p>The &dquot;X&dquot; button at the far left closes the currently window.
+ If that is the only window XChat quits. The text box contains the topic of
+ the channel which is currently active in the top window or the address of the
+ nick, if a nick is currently active.
+ </p>
+ <p>The "^" button (or an up arrow if you use GNOME), next to the "X" button, links
+ or delinks the window. If you have a series of tabs then clicking this will
+ delink the window and make it a separate window. After this, clicking it again
+ will link the window back into the notebook. You cannot delink the only window
+ in a notebook and if you try to link a window when there is no notebook window
+ then one will be created.
+ </p>
+ <p>The buttons at the right of the tool-bar set the channel modes, and only
+ have effect when the window contains a channel and you are chanop. They stand
+ for:
+ </p>
+ <p>
+ <itemize>
+  <item>T - Topic lock
+  <item>N - No outside messages to the channel
+  <item>S - Secret
+  <item>I - Invite only
+  <item>P - Private
+  <item>M - Moderated
+  <item>L - User limit (also has a text box)
+  <item>K - Key (also has a text box)
+ </itemize></p>
+ <p>The far right button, with the arrow, toggles the user-list
+ </p>
+ <sect1>The text box
+ <p>The text box contains the text from the contained object (channel, nick
+ etc) and the output from commands entered into the input box.
+ </p>
+ <p>It is usually a GTK text box, whose options can be controlled from &dquot;Settings
+ - Setup - Channel Windows&dquot;. However it can also be a ZVT (Gnome only),
+ and this allows extra options like pseudo-transparent backgrounds.
+ </p>
+ <sect1>The user-list
+ <p>The user-list contains every nick in the current channel. Nicks may have
+ a green or yellow dot to the left of the nick. A green dot marks a chanop and
+ a yellow dot shows the nick has a voice (e.g. can post to a moderated channel)
+ </p>
+ <p>Below the list are a set of buttons, which are controlled from &dquot;Settings
+ - User-list Buttons&dquot;. Clicking on one runs a certain command with reference
+ to the selected nick in the user-list.
+ </p>
+ <p>Right clicking on a nick brings up a pop-up menu which can be configured
+ from &dquot;Settings - User-list Pop-up. Selecting one runs a certain command
+ with reference to the clicked nick in the user-list.
+ </p>
+ <p>Multiple nicks can be selected by holding down the Shift key.
+ </p>
+ <sect1>The input box
+ <p>To the left of the input box there is a label, containing your currently
+ active nick, possibly with a yellow or green dot to the left of it see 3.4.
+ </p>
+ <p>Entering text into the text box and pressing enter will process the entered
+ text. It can be processed in 1 of 2 ways, it is either sent to the contained
+ object (a channel or nick) or if it starts with a &dquot;/&dquot; it is processed
+ as a command.
+ </p>
+ <p>To the right of the input box is the conference toggle. When set this squashes
+ all join/leave messages so you can have an uninterrupted conversation.
+ </p>
+ <sect>Getting Started
+ <p>Firstly, if IRC is new to you then read section 1.2.
+ </p>
+ <p>Startup XChat and select &dquot;Server List&dquot; in the &dquot;X-Chat&dquot;
+ menu. This will display a list of default IRC servers. If you have your own
+ IRC server you like then hit &dquot;New Server&dquot; and enter it's details
+ at the bottom.
+ </p>
+ <p>Now fill in your personal details at the top.
+ </p>
+ <p>I will assume you are using a local server (not in the default list) of
+ 127.0.0.1 and my nick of Nebulae. If you ever do use my nick I will NOT be
+ happy, so choose one of your own or open /usr/dict/words and choose one from
+ there.
+ </p>
+ <p>Press connect and (hopefully) you will connect. The opening text will scroll
+ down the main text-box with the MOTD (Message Of The Day). Once that has stopped
+ click on the input box and type: 
+ </p>
+ <p>
+ <verb>/join &num;dgg5ds 
+ </verb></p>
+ <p>Make 'dgg5ds' anything you like. You should see a line saying &lt;your
+ nick&gt; (&lt;your address&gt;) has joined &num;channel and your nick should
+ show up in the user-list with a green dot by it showing that you are chanop
+ (since you just created the channel). Since you just created the channel you'll
+ also see a line saying you have given yourself chanop status.
+ </p>
+ <p>If you type normal text (without a leading /) then you will see it come
+ up in the channel with your nick before it. If anyone else was in the channel
+ they would also see that.
+ </p>
+ <p>Click in the text box in the tool-bar, type My Topic and hit enter. The
+ topic of the channel is now My Topic, you will see a line telling you so. If
+ you play about with the letter buttons on the tool-bar you can change the channel
+ modes (more on this later).
+ </p>
+ <p>If you hit too much too quickly you will see XChat &dquot;slow down&dquot;,
+ this is because if you flood (send too much data too quickly) the server will
+ drop the connection so XChat limits the amount of data it will send, this can
+ make it seem slow, but it will always catch up in the end.
+ </p>
+ <p>Now if you type /msg &lt;your nick&gt; Hello and hit enter in the input
+ box (at the bottom) you send a private message to yourself, saying Hello. You
+ wouldn't normally do this, if you have such bad hand-eye co-ordination that
+ you need to type something and read it, you need to see a doctor, this is just
+ for testing. A new window will be created under the current one, and its leaf
+ will appear in the tool-bar, with the text in red to show that it has changed.
+ </p>
+ <p>If you click on the new leaf the window will come to the top and you'll
+ see the message Hello from yourself. When you type into the input box in this
+ window the text will goto the object in the window, in this case yourself,
+ in the last case the channel &num;dgg5ds. If you type anything you will see
+ it echoed back at you. Since you aren't all that interested in messaging yourself
+ (I hope) click the X button on the tool-bar (top - left) and the window will
+ disappear, showing the first window.
+ </p>
+ <p>Now if you select your nick in the user-list and hit the button marked
+ Whois at the bottom of the user-list your whois information will be shown in
+ the text box. This information comes from the server and can be read by anyone
+ on IRC.
+ </p>
+ <p>The whois information can also be accessed as a command. In the input box
+ type /whois &lt;your nick&gt; and hit enter. Note the leading / showing it
+ is a command, without this the text would be sent to the channel. The buttons
+ map onto these commands, click the Settings menu and select User-list buttons.
+ A dialog will appear showing each button and the command it runs when pressed,
+ you can add your own. Note that &percnt;s in the command is replaced by the
+ nick of the selected entry in the user-list.
+ </p>
+ <p>Now if you right click your nick in the user-list a number of options come
+ up. These map to commands like the buttons, select User-list Pop-up in the
+ Settings menu.
+ </p>
+ <p>The CTCP (Client To Client Protocol) options send a private message to
+ the clicked nick which is picked up by their IRC client and dealt as a type
+ of command. Almost always a CTCP message is sent back. These replies can be
+ set in Settings - CTCP Replies. The CTCP VERSION reply is automatic and can
+ be toggled by a /hidever command, but you can still setup a CTCP reply which
+ is run as well as the automatic one.
+ </p>
+ <p>If you are stuck typing /help -l (thats an lowercase L and a 1) might give
+ you a hint.
+ </p>
+ <sect1>Mailing Lists
+ <p>XChat has two mailing lists which you may want to subscribe to, xchat-discuss
+ and xchat-announce (kindly hosted by nl.linux.org). To subscribe send a message
+ with no subject and this in the body:
+ </p>
+ <p>
+ <verb>subscribe list-name
+ </verb></p>
+ <p>to majordomo@nl.linux.org where list-name is either xchat-discuss or xchat-announce.
+ You will be asked in a reply to confirm your subscription. xchat-discuss is
+ a general mailing list where you can ask for help, bounce ideas etc off other
+ XChat users. xchat-announce is a moderated list (only zed and I can post to
+ it) where announcements (such as new versions) are posted. *Do not try to post
+ to xchat-announce*.
+ </p>
+ <p>If you have any queries about the mailing lists just mail me (Adam Langley)
+ at agl@linuxpower.org.
+ </p>
+ <sect1>Channel Modes
+ <p>Each channel can have a series of modes. Only chanop's can change a channels'
+ mode. The modes can either by set by the letter buttons on the right of the
+ tool-bar or by using the /mode command. Modes can also be set by some other
+ commands, like /op, /deop or /ban. The following is a list (which is not complete)
+ of the channel modes.
+ </p>
+ <p>
+ <itemize>
+  <item>T - Topic Lock - With this set only chanop's can change the channel topic
+  <item>N - No outside messages - Normally people not in a channel can /msg the
+ channel, with this set only people who have joined the channel can send to
+ it
+  <item>S - Secret - With this set the channel is not listed in the channel list
+ (/list), except if you are in it. This cannot be set with Private (see below)
+  <item>P - Private - With this set the channel name and topic is not listed in
+ the channel list (/list), except if you are in it. This cannot be set with
+ Secret (see above)
+  <item>I - Invite Only - With this set people can't just /join the channel, they
+ have to be /invite'ed by someone in the channel
+  <item>M - Moderated - With this set only chanop's and voice'ed nicks can send
+ to the channel
+  <item>L - User Limit - With this set only a set number of people can join the
+ channel
+  <item>K - Key - With this set anyone who tries the join the channel has to pass
+ this key (also called the password) as argument 2 to the /join command
+  <item>B - Ban - This can be set more than once (with different options). Each
+ person who tries to join the channel has to be outside all the bans. Simply
+ setting a ban stops anyone who matches the bad from joining
+  <item>O - Op - This can be set more than once (with different options). Each
+ nick that is set +o becomes a chanop
+ </itemize></p>
+ <sect1>Scripts and Plugins
+ <p>Scripts and Plugins allow you to extend XChat without editing the code.
+ For information about writing them see section 7. Scripts are Perl scripts
+ and to use them you must have Perl already on your system and have built Perl
+ support in when building XChat. Plugins are shared libraries (.so files) that
+ are dynamically linked and unlinked to the XChat process image.
+ </p>
+ <p>On startup all files ending with .pl in &tilde;/.xchat are auto loaded.
+ To load a script manually either use the /load command or select &dquot;Load
+ Perl Script&dquot; from the &dquot;Scripts and Plugins&dquot; menu. To unload
+ all scripts either use the /unloadall or select &dquot;Unload All Scripts&dquot;
+ from the &dquot;Scripts and Plugins&dquot; menu.
+ </p>
+ <p>To load a plugin either use the /loaddll command or select &dquot;Load
+ Plugin&dquot; from the menu. The plugin should then be listed on a /listdll
+ command and in the &dquot;Plugin List&dquot;. You can either remove plugins
+ one by one with the /rmdll command or in the Plugin List, or you can unload
+ all by selecting &dquot;Unload All Plugins&dquot; from the menu.
+ </p>
+ <p>You don't have to manually unload scripts and plugins before quitting XChat.
+ A list of scripts and plugins for download is on the <url url="http://xchat.linuxpower.org" name="XChat homepage">.
+ </p>
+ <sect1>DCC Support
+ <p>DCC stands for Direct Client Connect. It is a system whereby two clients
+ connect to each other directly, bypassing the IRC server. XChat supports sending
+ 3 types of information across a DCC link:
+ </p>
+ <p>
+ <itemize>
+  <item>Files - Text or binary
+  <item>Text -A direct chat link
+ </itemize></p>
+ <p>You can send a file by using the &dquot;/dcc send nick file&dquot; command
+ or by selecting the nick in the user-list and clicking the send button. The
+ DCC send window should then show the status of the transmission. When someone
+ sends a file to you the DCC Receive window will open up allowing you to accept
+ or abort to transfer.
+ </p>
+ <p>To setup a DCC chat line either use the &dquot;/dcc chat nick&dquot; command
+ or select the nick from the user-list and click chat. Once the DCC connection
+ is accepted any private /msg's to the nick will go across the DCC link instead.
+ When someone offers a DCC chat link with you, you can accept with the command
+ &dquot;/dcc chat offeringnick&dquot;
+ </p>
+ <sect1>Customization
+ <p>If you select Settings - User Commands then you get a dialog listing a
+ set of shortcut commands. When you type any of the words in the left hand column
+ as a command (with a leading /, of course) then the text on the right hand
+ side is executed. Any &percnt;n (e.g. &percnt;2 or &percnt;3) are replaced
+ with the nth argument to the command. Any &amp;n (e.g. &amp;2 or &amp;3) are
+ replaced with the nth argument and all following text, including spaces. &percnt;c
+ is the current channel and &percnt;n is the current nickname. User commands
+ can be separated with a ; (semicolon), but be careful not to put a space after
+ the ;
+ </p>
+ <p>The same goes for CTCP Replies, Userlist Buttons, Userlist Popup, but with
+ one exception with Userlist Popup. With this you can create sub-menus by adding
+ lines with a name of SEP and a value of the sub-menu name. To end the sub-menu
+ use a list with a name of ENDSUB and a value of the same name.
+ </p>
+ <sect1>Tab Nicks
+ <p>Say you were in a channel with these nicks:
+ </p>
+ <p>
+ <itemize>
+  <item>aaaaaaa
+  <item>aaaaaab
+  <item>Nebulae (yourself)
+  <item>zed
+ </itemize></p>
+ <p>If you wanted to direct a message to zed you would type "zed: &lt;message&gt;"
+ into the input box and hit enter. Rather than do that you can use Tab Nick
+ Complete. Just type "z" and hit tab and XChat will find the first nick in the
+ current channel that matches what you have typed and use that nick. In this
+ case the text in the entry box would become "zed: ". Now if you wanted to direct
+ a message to aaaaaab you would type "a" and hit tab. But that will find the first
+ matching entry, which in this case is aaaaaaa so the input box would hold "aaaaaaa:
+ " - not what you wanted. So hit Shift-Page Down and XChat uses the next entry
+ in the user-list (Shift-Page Up uses the next up), the input box will now hold
+ "aaaaaab: ". Next time you enter "a" and hit tab, however, XChat will select aaaaaab
+ because by using the Shift-Page Down/Up buttons to tell it that it got the
+ wrong nick and XChat will learn.
+ </p>
+ <sect1>Replace
+ <p>Now select Settings - Replace Popup. A list dialog will appear with a series
+ of default entries (assuming you haven't changed them). One of the entries
+ should by "r" and "are", if not add it. Now start typing into any input box and
+ at some point type " r ". The "r" will change to "are". 
+ </p>
+ <p>The replace feature runs every time you hit space in an input box and finds
+ the last word you typed. If that word is in the list it replaces it with its
+ entry. If the word is in ' ' marks like 'r' the word is not replaced. If the
+ word contains an "'" (that's a single quote mark) in it, the part before the
+ quote mark is checked. If that part is found the part is replaced, the quote
+ mark dropped and the part after the quote mark is appended. For example if
+ you have the entry "u" and "you":
+ </p>
+ <p>
+ <itemize>
+  <item>u - you
+  <item>u'r - your
+  <item>u''re - you're
+ </itemize></p>
+ <sect1>Logging
+ <p>If you go into Settings - Setup - Options and enable logging then each
+ new session this is opened will be logged. Logs are put into &tilde;/.xchat/xchatlogs
+ and have the format of servername,sessionname.xchatlog. For example, some entries
+ from my logging directory:
+ </p>
+ <p>
+ <itemize>
+  <item>us.elitenet.org,&num;linux.xchatlog
+  <item>irc-2.mint.net,&num;gimp.xchatlog
+  <item>ircnet.demon.co.uk,&num;linux.xchatlog
+ </itemize></p>
+ <p>You can also use the No ServerName in Logs option, in which case the filenames
+ of the logs do not have the server name prepended, thus:
+ </p>
+ <p>
+ <itemize>
+  <item>&num;linux.xchatlog
+  <item>&num;gimp.xchatlog
+ </itemize></p>
+ <p>Note that if you are on two channels with the same name the logs will mix
+ </p>
+ <sect1>Panel support
+ <p>With panel support enabled a new button appears next to the de/link button
+ on the tool bar - it has a down arrow on it. This button panelizes the session.
+ When you first click this a panel applet will appear. The panel applet is a
+ label with "X-Chat" and a series of buttons. The direction of the buttons can
+ be set in Settings-&gt;Setup-&gt;Options with the "Layout for a vertical panel"
+ option. Note that currently you have to restart XChat to make this option come
+ into effect. Each panelized session appears as a button in the panel applet.
+ If the "Hide session on panelize" option is ticked the session is hidden when
+ panelized. Clicking the button will show the session. The color of the text
+ of the button will change as is normal (red or blue), and will set back when
+ you focus on the session. Right clicking a panel button displays a list of
+ items. At the top are 3 labels with the channel, server and tab state of the
+ session. Under them are a series of buttons:
+ </p>
+ <p>
+ <itemize>
+  <item>Close - Closes the session
+  <item>Remove - Removes the panel button
+  <item>Hide - Hides the session
+  <item>Show - Shows the session
+  <item>De/Link - Toggles the link state of the session
+  <item>Move here - Moves the session to the mouse position
+  <item>View - Shows the text box of the session at the mouse, when the mouse leaves
+ the window the text box moves back to the session window
+ </itemize></p>
+ <sect1>Print Events
+ <p>As of 0.9.7 you can now change XChat's output strings. Open up Settings
+ - Edit Event Texts to display the current settings.
+ </p>
+ <p>At the top of the dialog is a list of all the events and the string that
+ is displayed when that event happens. Just below is an edit box for changing
+ the text. Then there is a text box that shows what the event will look like.
+ Under that is a list of the options that is passed to the currently selected
+ event (more on this later).
+ </p>
+ <p>As an example we'll edit the event text for Join. First select join from
+ the list at the top, it should be a first item. If it wasn't already the text
+ in the edit box will show the Join event text. At first it looks a little complex
+ but it really isn't, it breaks down like this:
+ </p>
+ <p>
+ <itemize>
+  <item>&percnt;Cxx is a color - &percnt;C4 sets red and so on, '&percnt;C ' sets
+ the default color (notice the space after it, forget the quote marks)
+  <item>&percnt;B toggles bold
+  <item>&dollar;x includes the option number x, as described in the bottom list
+  <item>&dollar;axxx adds a single byte with value xxx
+ </itemize></p>
+ <p>So delete what is already in the edit box and type this:
+ </p>
+ <p>
+ <verb>&percnt;C4*&percnt;C *&percnt;C4*&percnt;C Hey! I can edit the events text!
+ &dollar;1 joined &dollar;2 (host: &dollar;3)
+ </verb></p>
+ <p>The fist bit is the standard red, white, red stars that XChat uses. After
+ that it's pretty clear. In the main XChat window wait for someone to join a
+ channel you are on (note we changed the Join event *NOT* the You Joining event,
+ so this only works for other people joining) and you will see something like:
+ </p>
+ <p>
+ <verb>*** Hey! I can edit the events text! Adam joined &num;a (host: &tilde;Adam@127.0.0.1)
+ </verb></p>
+ <p>The Sound file entry allows you to enter the name of a sound file that
+ will be played (using the play command setting) each time the selected Event
+ is triggered.
+ </p>
+ <p>The 5 buttons at the bottom do thus:
+ </p>
+ <p>
+ <itemize>
+  <item>Ok - closes and saves the dialog
+  <item>Test All - Shows all the events in the text box
+  <item>Load From - Loads a config file
+  <item>Save As - Saves to a config file
+  <item>Save - Saves to the default config file (loaded on startup) in &tilde;/.xchat/printevents.conf
+ </itemize></p>
+ <sect1>Key Bindings
+ <p>By selecting Settings - Edit Key Bindings you can edit the key bindings
+ XChat uses. The key bindings are sorted by use - so the most recent used are
+ at the top. A key binding is:
+ </p>
+ <p>
+ <itemize>
+  <item>A modification (Ctrl, Alt and Shift keys)
+  <item>A keyname
+  <item>An action to perform
+  <item>2 arguments to the action
+ </itemize></p>
+ <p>To add a new key binding hit "Add new". An event with &lt;none&gt; will appear
+ at the bottom. When you select it (or any binding) the widgets on the right
+ change to reflect that binding. To change the key select the entry labeled
+ key *and press the key*, *do not try to type in the name!*. The action to perform
+ can be selected from the combo at the bottom and help on that action will appear
+ in the text box at the bottom.
+ </p>
+ <p>Changes in the dialog are always current. When the dialog is closed the
+ key bindings information is written to &tilde;/.xchat/keybindings.conf
+ </p>
+ <sect>Settings
+ <sect1>Interface
+ <p>
+ <itemize>
+  <item>No Server List On Startup - When set the server is not shown on program
+ startup
+  <item>Auto Save URL List - Save the URL list on exit
+  <item>Double Click Command - The command that is run when a user in the userlist
+ is double clicked. &percnt;s in the option is replaced with the nickname of
+ that user before running.
+ </itemize></p>
+ <sect2>IRC Input/Output
+ <p>
+ <itemize>
+  <item>Nick Name Completion - When set text put in will be scanned for incomplete
+ nicknames at the beginning and corrected. Also see tab nickname completion
+  <item>Time Stamp All Text - When set a time is printed at the beginning of every
+ line
+  <item>Tab Nicks - When set nicknames and text are aligned with a tab
+  <item>Colored Nicks - When set nicknames are color coded
+  <item>Strip mIRC Color - When set all color codes in received text are stripped
+  <item>Filter out BEEP's - When set all BEEP codes are stripped
+  <item>Text Buffer Size - The number of lines a text box buffers (0 = all lines)
+  <item>ZVT Buffer Size - The number of lines a ZVT text box buffers
+ </itemize></p>
+ <sect2>Window Layout
+ <p>
+ <itemize>
+  <item>Channel Mode Buttons - When set the mode buttons are displayed on the tool
+ bar
+  <item>User List Buttons - When set the command buttons under the userlist are
+ displayed
+  <item>New Tabs to Front - When set new tabs are set to be the visible tab
+  <item>Channel Tabs - When set new channels are displayed in tabs
+  <item>Private Message Tabs - When set private dialogs are displayed in tabs
+  <item>Tabs at bottom - When set the tabs are put at the bottom of the notebook
+  <item>Use a separate tab/window for server messages - When this is set server
+ messages are treated as a channel and are put in their own tab or window
+  <item>Disable Paned Userlist - When this is set the userlist cannot be paned
+ across to be made bigger and is of fixed size
+ </itemize></p>
+ <sect2>Mail Window
+ <p>
+ <itemize>
+  <item>Left and Top set the initial position of the XChat window
+  <item>Width and Height set the size of the XChat window
+ </itemize></p>
+ <sect2>Channel Windows &amp; Dialog Windows
+ <p>These two sections are the same except on what they effect
+ </p>
+ <p>
+ <itemize>
+  <item>Normal Font - The font used for normal text
+  <item>Bold Font - The font used for bold text
+  <item>Background Picture - An image used in the background of the text box
+  <item>Use ZVT - When set a ZVT (Zed Virtual Terminal, no connection to zed) widget
+ is used not a GTK text box
+  <item>Transparent Background - (only with ZVT) When set the background of the
+ ZVT is pseudo-transparent
+  <item>Tint Transparency - (only with above) When set the transparent background
+ is tinted
+ </itemize></p>
+ <sect2>Panel
+ <p>
+ <itemize>
+  <item>Hide Session on Panelize - When set the tab/window is hidden when panelized
+  <item>Layout For a Vertical Panel - When set the panel buttons are packed top
+ to bottom
+ </itemize></p>
+ <sect1>IRC
+ <p>
+ <itemize>
+  <item>Raw Mode Display - When set modes are shown in raw IRC mode rather than
+ descriptive texts
+  <item>Beep on Private Messages - When set the internal bell is sounded on a private
+ message
+  <item>Quit Message - The text sent as a reason for you quitting
+  <item>DNS Lookup Program - The name of the program used to lookup IP's
+  <item>Auto ReConnect Delay - The number of seconds to wait before reconnecting
+ to a server
+ </itemize></p>
+ <sect2>IP Address
+ <p>
+ <itemize>
+  <item>Autodetect hostname - When set the hostname is auto probed
+  <item>Autodetect IP address - When set the local IP is auto probed
+  <item>Hostname - If not auto probing this is the hostname
+  <item>IP address - If not auto probing this is the IP
+  <item>Get my IP from Server - (only if auto probing) Gets the IP address from
+ the server
+ </itemize></p>
+ <sect2>Away
+ <p>
+ <itemize>
+  <item>Show away once - When set away messages are only seen once
+  <item>Announce away messages - When set your away message is broadcast
+  <item>Away Reason - The default away message given
+ </itemize></p>
+ <sect2>Highlighting
+ <p>
+ <itemize>
+  <item>Extra Words to Highlight on - Words other than your nickname that will
+ trigger a highlight
+  <item>Hilighted Nick Color - The color set for highlighted nicks
+ </itemize></p>
+ <sect2>Logging
+ <p>
+ <itemize>
+  <item>Logging - When set logs are created in &tilde;/.xchat/xchatlogs
+  <item>No ServerName in logs - When set the names of the log files do not include
+ the servername so &num;somechannel on two different servers are treated as
+ the same file
+ </itemize></p>
+ <sect2>Notification
+ <p>
+ <itemize>
+  <item>Highlight Notifies - When set nicks in the userlist are set to a highlight
+ color if they are on your notify list
+  <item>Notified User Color - The color used for the above
+  <item>Notify Check Interval - The number of seconds between checking the status
+ of people on your notify list (0 = do not check)
+ </itemize></p>
+ <sect1>DCC
+ <p>
+ <itemize>
+  <item>Auto * - Automatically open the said window when a request/offer comes
+ in
+ </itemize></p>
+ <sect2>File Transfer
+ <p>
+ <itemize>
+  <item>DCC Offers Timeout - The number of seconds before a DCC offer is removed
+ (0 = disable)
+  <item>DCC Stall Timeout - The number of seconds before a stalled connection is
+ dropped (0 = disable)
+  <item>File permissions - The permissions (in octal) of files created by DCC (0600
+ is suggested)
+  <item>Directory to save to - The directory in which DCC files are put
+  <item>Save file with Nickname - Prepend the nickname of the sender to the name
+ of the DCC file
+  <item>Fast DCC Send - When set DCC doesn't wait for ACK's before sending the
+ next packet
+ </itemize></p>
+ <sect1>CTCP
+ <p>
+ <itemize>
+  <item>Hide Version - When set VERSION requests are ignored
+  <item>Sound Dir - The directory to look for sounds
+  <item>Play Command - The command used to play sounds
+ </itemize></p>
+ <sect>Windows
+ <p>These windows can be accessed from the Windows menu
+ </p>
+ <sect1>Channel List
+ <p>This window allows you to list all the channels on the server. The channels
+ are filtered to only list channels with at least the number of users given
+ in &dquot;Minimum Users&dquot;. &dquot;Refresh the list&dquot; clears the list
+ and re-runs the search. &dquot;Save the list&dquot; allows you to write the
+ list to a file while &dquot;Join Channel&dquot; joins you to the selected channel
+ in the list.
+ </p>
+ <p>Be aware that there can be thousands of channels and listing them can flood
+ the connection. The only way to stop a running list is to disconnect.
+ </p>
+ <sect1>DCC Send and DCC Receive
+ <p>These windows show the status of all running DCC sends and receives. &dquot;Status&dquot;
+ shows the status of the file. &dquot;File&dquot; gives the file name. &dquot;Size&dquot;
+ gives the size, in bytes, of the file. &dquot;Position&dquot; gives the number
+ of currently send of received bytes. &dquot;Ack&dquot; (only in Send) gives
+ the number of acknowledged bytes. &dquot;CPS&dquot; gives the number of bytes
+ sent/recv'ed per second. &dquot;From&dquot; gives the nickname of the sending
+ or receiving person. If you have GNOME then you also have a column with the
+ MIME type of the file.
+ </p>
+ <p>The &dquot;Abort&dquot; button kills the send or receive while &dquot;Info&dquot;
+ gives some extra information about the transaction.
+ </p>
+ <p>Only in the Receive window are the &dquot;Accept&dquot; and &dquot;Resume&dquot;
+ buttons. &dquot;Accept&dquot; accepts an offered file, while &dquot;Resume&dquot;
+ does the same but continues a broken transaction. 
+ </p>
+ <p>The text of items in the DCC windows is now color coded with the state
+ of the transaction.
+ </p>
+ <sect1>DCC Chat
+ <p>The DCC Chat window list all current DCC chat sessions. &dquot;To/From&dquot;
+ gives the nick of the other peer. &dquot;Recv&dquot; gives the number of bytes
+ received on the DCC link and &dquot;Send&dquot; gives the number of bytes sent.
+ &dquot;StartTime&dquot; gives the time the link was opened.
+ </p>
+ <sect1>Raw Log
+ <p>The Raw Log window lists the raw data sent to, and received from, the server.
+ Each new line of data is prefixed with either &dquot;&lt;&lt;&dquot; or &dquot;&gt;&gt;&dquot;.
+ A &dquot;&lt;&lt;&dquot; means the rest of the line (after the space) was data
+ to from XChat to the server, &dquot;&gt;&gt;&dquot; means the rest of the line
+ (after the space) was data sent from the server to XChat. You can also hit
+ Alt-s to save the rawlog - you will be prompted for a file name
+ </p>
+ <sect1>URL Grabber
+ <p>When an URL (Uniform Resource Locator) is seen in any window, it is placed
+ in the URL Grabber list. This saves cutting and pasting from the window. The
+ &dquot;Clear&dquot; button wipes the list. The &dquot;Lynx&dquot; and &dquot;Netscape&dquot;
+ start lynx or netscape with the selected URL from the list.
+ </p>
+ <sect1>Notify List
+ <p>The notify list uses the ISON command to find any &dquot;friends&dquot;
+ that may be on IRC. You use the /notify command to add and remove people from
+ the list (it's a toggle function), then the notify list shows which of them
+ are on, and which server they are using. The &dquot;Remove&dquot; button removes
+ the currently selected nick form the notify list.
+ </p>
+ <sect1>Lastlog
+ <p>The Lastlog window allows you to search past text in the current window.
+ Type in the search parameters (straight grep) into the text box at the bottom
+ and the data in the current log is searched and all matching lines are written
+ to the text box.
+ </p>
+ <sect1>Ignore
+ <p>This window controls XChat's ignore engine. This (as the name suggests)
+ lets you setup rules to ignore people's messages. These rules are based on
+ a host mask and a mask of what to ignore. The mask is in the format of Nickname!realname@host,
+ so *!*@*.aol.com matches everyone on AOL and LameNick!*@* would match anyone
+ with the nick of LameNick. The row of buttons along the middle gives the MASK
+ of what to ignore:
+ </p>
+ <p>
+ <itemize>
+  <item>CTCP - All CTCP messages (DCC Send, CTCP Ping etc)
+  <item>Private - All /msg's from them
+  <item>Channel - All channel messages from them
+  <item>Notice - All /notice messages from them
+  <item>Invite - All invite messages from them
+  <item>Unignore - Inverts the mask so you can ban *!*@*.aol.com then unignore.
+ </itemize></p>
+ <p>The text boxes along the bottom show the number of times a certain type
+ of message has been blocked. The unignore engine can also be accessed from
+ the command line:
+ </p>
+ <p>
+ <code>/ignore *!*@*.aol.com ALL /ignore myfriend!myfriend@*.aol.com ALL UNIGNORE (Would ignore everyone on AOL except myfriend).
+ </code></p>
+ <sect>How to help XChat
+ <sect1>Navigating the Code
+ <p>The main source of XChat is in the /src directory. In it are all the .c
+ and .h files that make up XChat. If you are looking round the code here's a
+ little map:
+ </p>
+ <p>
+ <itemize>
+  <item>xchat.c - Main program file, contains main()
+  <item>xchat.h - Main header file, contains most of the major struct's used in
+ XChat
+  <item>editlist.c - Generic code for handling editable lists (like the Userlist
+ Buttons list)
+  <item>fkeys.c - Handles function keys
+  <item>gtkutil.c - Wrappers round GTK
+  <item>outbound.c - Code for handling commands
+  <item>inbound.c - Code for handling data from the server
+  <item>text.c - Code for text handling and logging
+  <item>plugin.c - All the plugin code
+ </itemize></p>
+ <p>Most of the other files are easy to guess.
+ </p>
+ <sect1>Writing Scripts
+ <p>Dagmar d'Surreal has written the documentation for writing scripts, in
+ xchatdox2.html
+ </p>
+ <sect1>Writing Plugins
+ <p>There should be a sample module under the sample directory, this gives
+ a general overview of writing a module.
+ </p>
+ <p>Firstly you must &num;define USE_PLUGIN before any &num;includes. You must
+ also include xchat.h and plugin.h from the xchat main directory. Every module
+ must export a function called module_init, it is passed the version number
+ (an int), a pointer to the module struct for your module and a pointer to the
+ current session. It returns an int
+ </p>
+ <p>
+ <itemize>
+  <item>0 = success
+  <item>1 = fail 
+ </itemize></p>
+ <p>The name and desc parts of the module structure must be filled out with
+ strings.
+ </p>
+ <p>You must check the version number is what you think it is (currently 2)
+ before referencing anything else, the current version number is defined in
+ plugin.h as MODULE_IFACE_VER.
+ </p>
+ <p>The basic hook onto XChat, by a plugin, is a signal. At certain places
+ in the code a signal is emitted. A chain of handlers (if any) are then called,
+ each calling the next. If the first handler (and thus the handler that returns
+ to the emitting function) returns TRUE then the emitting function doesn't carry
+ out the default action. In this way a signal handler can over-right XChat's
+ default actions with its own. Any module can hook a signal, using hook_signal
+ and passing a pointer to an xp_signal struct, filling in the &dquot;signal&dquot;,
+ &dquot;callback&dquot;, &dquot;naddr&dquot; and &dquot;mod&dquot; parts. They
+ should be filled in like thus:
+ </p>
+ <p>
+ <itemize>
+  <item>signal - one of the XP_* defines in plugin.h
+  <item>callback - a pointer to a callback function passed 5 void *'s and a char.
+ Use the XP_CALLBACK() define in plugin.h around it
+  <item>naddr - a pointer to a pointer (yes, double indirect) to a callback function
+ (see last item)
+  <item>mod - your module handle, passed to you in module_init
+ </itemize></p>
+ <p>At the end of the callback you use XP_CALLNEXT(naddrfunction, a, b, c,
+ d, e, f) to call the next callback, a to f being the arguments you were passed.
+ The plugin code in XChat updates the function pointed to by the &dquot;naddr&dquot;
+ field to point to the next handler, or NULL if you are the last handler. You
+ don't have to worry about that. If you don't want the default action to take
+ place then use XP_CALLNEXT_ANDSET() not XP_CALLNEXT. Only 1 handler in a chain
+ needs to use XP_CALLNEXT_ANDSET to abort the default action. Be aware that
+ XP_CALLNEXT&lsqb;_ANDSET&rsqb; expand to include a return, so these must be
+ at the end of the execution paths of your handler.
+ </p>
+ <p>The signal handlers are passed 5 void *'s and a char (just seemed about
+ enough), by convention the first void * is a pointer to the session or server
+ struct. To cast as a signal callback use the define XP_CALLBACK like a GTK
+ cast.
+ </p>
+ <p>Most modules call module_add_cmds at some point. This hooks any commands
+ for you without having to hook and parse all the command signals. You pass
+ it a pointer to a struct module_cmd_set, which should be filled in like this:
+ </p>
+ <p>
+ <itemize>
+  <item>mod - the module handle passed to module_init 
+  <item>cmds - a pointer to an array of struct commands (see below)
+ </itemize></p>
+ <p>See the sample module for an example of the array of struct commands. Be
+ aware that the struct module_cmd_set must be global as XChat uses and changes
+ it.
+ </p>
+ <p>When the module is removed the module_cleanup function is called, it is
+ passed the module struct and the current session. You do not have to export
+ a module_cleanup as all commands and hooks are removed by XChat.
+ </p>
+ <p>Plugins call XChat functions directly and thus are more dependent on the
+ XChat code base than scripts. Some of the common XChat functions that are used
+ are listed below:
+ </p>
+ <p>
+ <itemize>
+  <item>PrintText (struct session *sess, char *text) - Prints &dquot;text&dquot;
+ to the session &dquot;sess&dquot;
+  <item>handle_command (char *cmd, struct session *sess, int log) - Runs &dquot;cmd&dquot;
+ as if it had been entered in the input box in session &dquot;sess&dquot;. If
+ log == 1 then the command it put in the history
+ </itemize></p>
+ <p>I have also written a much more complete (and working) example of a plugin,
+ it's called auto and is on the the <url url="http://xchat.linuxpower.org" name="XChat homepage">.
+ </p>
+ <sect2>Signals
+ <p>There is a list of all the current signals in plugins/SIGNALS. This may
+ be added to in the future. If you think you have a good place for some more
+ signals e-mail me (I'm Adam, see Authors). NOTE: This doesn't include text
+ event signals, look in text.c for those details
+ </p>
+ <sect>I18n
+ <p>i18n stands for internationalization (count the number of letters between
+ the i and n). Since 0.9.8 multiple languages are supported. This effort is
+ still continuing and at the moment only the menus are multi-language. To try
+ and select support for your language type:
+ </p>
+ <p>
+ <verb>export LANG=xx
+ </verb></p>
+ <p>where xx is your two letter language code not country code. If you run
+ a shell other than bash/sh you may need to change this syntax.
+ </p>
+ <sect>Authors
+ <p>Many, many people have helped XChat, too many to list. You know who you
+ are, thank you.
+ </p>
+ <p>
+ <itemize>
+  <item>Peter Zelezny zed@linuxpower.org (Most of X-Chat) 
+  <item>Erik Scrafford eriks@chilisoft.com (perl.c, lastlog.c, color.c) 
+  <item>Adam Langley agl@linuxpower.org (plugins, this documentation, TextEvents,
+ ...)
+  <item>Dagmar d'Surreal nospam@dsurreal.org (rfc1459 string compare util.c, see
+ comments)
+  <item>Matthias Urlichs smurf@noris.de (Perl text events)
+  <item>David Herdeamn david@2gen.com (Ignore GUI, Tree serverlist, submenus in
+ popups)
+  <item>Scott James Remnant scott@netsplit.com (Highlight notifies, Prefs GUI,
+ IP settings)
+ </itemize></p>
+ <p>Many others helped with other changes. If you submitted a patch and want
+ your name included here, let zed@linuxpower.org know
+ </p>
+ <sect1>Maintainers
+ <p>Peter Zelezny (AKA: zed) puts together all the patches into one (hopefully)
+ complete whole. He controls the web site and all 'real' releases of XChat come
+ from him. He also handles the Freshmeat and GNOME AppList announcements. Anything
+ in the ChangeLog without a name by it is usually his work. His e-mail address
+ is zed@linuxpower.org.
+ </p>
+ <p>Adam Langley (AKA: Nebulae) (that's me) handles the documentation and chunks
+ of the code, mostly the signals and plugin code. Releases from me (just ask
+ me for them on elitenet,&num;linux) are not 'real' releases and are not always
+ stable.
+ </p>
+ <p>Other people chip in code and ideas from time to time, mostly to zed, on
+ Elitenet,&num;linux.
+ </p>
+ <p>Patches should be mailed to Peter only unless it's against one of my releases.
+ If you need advice or help on XChat firstly look though this document then
+ ask someone on Elitenet,&num;linux - but beware the people on &num;linux are
+ not support staff, they may just laugh at you ;)
+ </p>
+ <sect>Change Log
+ <p>This lists the changes in each version of XChat. Please note that the ChangeLog
+ file is the definitive reference.
+ </p>
+
+
+ </article>

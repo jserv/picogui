@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+ <META NAME="GENERATOR" CONTENT="SGML-Tools 1.0.7">
+ <TITLE>XChat 1.2: Windows</TITLE>
+ <LINK HREF="xchat-7.html" REL=next>
+ <LINK HREF="xchat-5.html" REL=previous>
+ <LINK HREF="xchat.html#toc6" REL=contents>
+</HEAD>
+<BODY>
+<A HREF="xchat-7.html">Next</A>
+<A HREF="xchat-5.html">Previous</A>
+<A HREF="xchat.html#toc6">Contents</A>
+<HR>
+<H2><A NAME="s6">6. Windows</A> </H2>
+
+<P>These windows can be accessed from the Windows menu
+<H2><A NAME="ss6.1">6.1 Channel List</A>
+ </H2>
+
+<P>This window allows you to list all the channels on the server. The channels
+are filtered to only list channels with at least the number of users given
+in &quot;Minimum Users&quot;. &quot;Refresh the list&quot; clears the list
+and re-runs the search. &quot;Save the list&quot; allows you to write the
+list to a file while &quot;Join Channel&quot; joins you to the selected channel
+in the list.
+<P>Be aware that there can be thousands of channels and listing them can flood
+the connection. The only way to stop a running list is to disconnect.
+<H2><A NAME="ss6.2">6.2 DCC Send and DCC Receive</A>
+ </H2>
+
+<P>These windows show the status of all running DCC sends and receives. &quot;Status&quot;
+shows the status of the file. &quot;File&quot; gives the file name. &quot;Size&quot;
+gives the size, in bytes, of the file. &quot;Position&quot; gives the number
+of currently send of received bytes. &quot;Ack&quot; (only in Send) gives
+the number of acknowledged bytes. &quot;CPS&quot; gives the number of bytes
+sent/recv'ed per second. &quot;From&quot; gives the nickname of the sending
+or receiving person. If you have GNOME then you also have a column with the
+MIME type of the file.
+<P>The &quot;Abort&quot; button kills the send or receive while &quot;Info&quot;
+gives some extra information about the transaction.
+<P>Only in the Receive window are the &quot;Accept&quot; and &quot;Resume&quot;
+buttons. &quot;Accept&quot; accepts an offered file, while &quot;Resume&quot;
+does the same but continues a broken transaction. 
+<P>The text of items in the DCC windows is now color coded with the state
+of the transaction.
+<H2><A NAME="ss6.3">6.3 DCC Chat</A>
+ </H2>
+
+<P>The DCC Chat window list all current DCC chat sessions. &quot;To/From&quot;
+gives the nick of the other peer. &quot;Recv&quot; gives the number of bytes
+received on the DCC link and &quot;Send&quot; gives the number of bytes sent.
+&quot;StartTime&quot; gives the time the link was opened.
+<H2><A NAME="ss6.4">6.4 Raw Log</A>
+ </H2>
+
+<P>The Raw Log window lists the raw data sent to, and received from, the server.
+Each new line of data is prefixed with either &quot;&lt;&lt;&quot; or &quot;&gt;&gt;&quot;.
+A &quot;&lt;&lt;&quot; means the rest of the line (after the space) was data
+to from XChat to the server, &quot;&gt;&gt;&quot; means the rest of the line
+(after the space) was data sent from the server to XChat. You can also hit
+Alt-s to save the rawlog - you will be prompted for a file name
+<H2><A NAME="ss6.5">6.5 URL Grabber</A>
+ </H2>
+
+<P>When an URL (Uniform Resource Locator) is seen in any window, it is placed
+in the URL Grabber list. This saves cutting and pasting from the window. The
+&quot;Clear&quot; button wipes the list. The &quot;Lynx&quot; and &quot;Netscape&quot;
+start lynx or netscape with the selected URL from the list.
+<H2><A NAME="ss6.6">6.6 Notify List</A>
+ </H2>
+
+<P>The notify list uses the ISON command to find any &quot;friends&quot;
+that may be on IRC. You use the /notify command to add and remove people from
+the list (it's a toggle function), then the notify list shows which of them
+are on, and which server they are using. The &quot;Remove&quot; button removes
+the currently selected nick form the notify list.
+<H2><A NAME="ss6.7">6.7 Lastlog</A>
+ </H2>
+
+<P>The Lastlog window allows you to search past text in the current window.
+Type in the search parameters (straight grep) into the text box at the bottom
+and the data in the current log is searched and all matching lines are written
+to the text box.
+<H2><A NAME="ss6.8">6.8 Ignore</A>
+ </H2>
+
+<P>This window controls XChat's ignore engine. This (as the name suggests)
+lets you setup rules to ignore people's messages. These rules are based on
+a host mask and a mask of what to ignore. The mask is in the format of Nickname!realname@host,
+so *!*@*.aol.com matches everyone on AOL and LameNick!*@* would match anyone
+with the nick of LameNick. The row of buttons along the middle gives the MASK
+of what to ignore:
+<P>
+<UL>
+<LI>CTCP - All CTCP messages (DCC Send, CTCP Ping etc)</LI>
+<LI>Private - All /msg's from them</LI>
+<LI>Channel - All channel messages from them</LI>
+<LI>Notice - All /notice messages from them</LI>
+<LI>Invite - All invite messages from them</LI>
+<LI>Unignore - Inverts the mask so you can ban *!*@*.aol.com then unignore.</LI>
+</UL>
+<P>The text boxes along the bottom show the number of times a certain type
+of message has been blocked. The unignore engine can also be accessed from
+the command line:
+<P>
+<HR>
+<PRE>
+/ignore *!*@*.aol.com ALL /ignore myfriend!myfriend@*.aol.com ALL UNIGNORE (Would ignore everyone on AOL except myfriend).
+ 
+</PRE>
+<HR>
+<HR>
+<A HREF="xchat-7.html">Next</A>
+<A HREF="xchat-5.html">Previous</A>
+<A HREF="xchat.html#toc6">Contents</A>
+</BODY>
+</HTML>

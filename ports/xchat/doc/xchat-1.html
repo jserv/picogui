@@ -1,0 +1,170 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+ <META NAME="GENERATOR" CONTENT="SGML-Tools 1.0.7">
+ <TITLE>XChat 1.2: IRC</TITLE>
+ <LINK HREF="xchat-2.html" REL=next>
+
+ <LINK HREF="xchat.html#toc1" REL=contents>
+</HEAD>
+<BODY>
+<A HREF="xchat-2.html">Next</A>
+Previous
+<A HREF="xchat.html#toc1">Contents</A>
+<HR>
+<H2><A NAME="s1">1. IRC</A> </H2>
+
+<H2><A NAME="ss1.1">1.1 What is XChat?</A>
+ </H2>
+
+<P>XChat is a graphical IRC client that runs on UNIX like systems. It uses
+the GTK+ toolkit for graphical abstraction. It if GPL'ed software (free software).
+It is known to run on these systems:
+<P>
+<UL>
+<LI>Linux (primary development platform)</LI>
+<LI>FreeBSD</LI>
+<LI>OpenBSD</LI>
+<LI>NetBSD</LI>
+<LI>Solaris</LI>
+<LI>AIX</LI>
+<LI>IRIX</LI>
+<LI>SunOS</LI>
+<LI>OS/2</LI>
+</UL>
+<H2><A NAME="ss1.2">1.2 Introduction to IRC</A>
+ </H2>
+
+<P>IRC stands for &quot;Internet Relay Chat&quot;. It was originally written
+by Jarkko Oikarinen (jto@tolsun.oulu.fi) in 1988. Since starting in Finland,
+it has been used in over 60 countries around the world. It was designed as
+a replacement for the &quot;talk&quot; program but has become much much more
+than that. IRC is a multi-user chat system, where people convene on &quot;channels&quot;
+(a virtual place, usually with a topic of conversation) to talk in groups,
+or privately. IRC is constantly evolving, so the way things to work one week
+may not be the way they work the next. Read the MOTD (message of the day) every
+time you use IRC to keep up on any new happenings or server updates.
+<P>IRC gained international fame during the 1991 Persian Gulf War, where updates
+from around the world came across the wire, and most irc users who were online
+at the time gathered on a single channel to hear these reports. IRC had similar
+uses during the coup against Boris Yeltsin in September 1993, where IRC users
+from Moscow were giving live reports about the unstable situation there.
+<P>The user runs a &quot;client&quot; program which connects to the IRC
+network via another program called a &quot;server&quot;, which runs on another
+computer. Servers exist to pass messages from user to user over the IRC network.
+<P>XChat is a graphical client that runs using GTK(
+<A HREF="http://www.gtk.org">GTK Homepage</A>), it is mainly designed
+to run under UNIX (By this I mean all the UNIX's, like Linux, *BSD etc), but
+also runs under Win32 systems without some features.
+<H2><A NAME="ss1.3">1.3 IRC Basics</A>
+ </H2>
+
+<P>As mentioned above the channel is the basic unit of collective IRC chatting.
+Everyone who is &quot;in&quot; a channel can see all messages written to
+the channel and can (usually) write to the channel themselves.
+<P>All IRC commands start with a &quot;/&quot;, and most are one word. Typing
+/help will get you help information etc
+<P>Once on a server a /join #channel command will join you to the channel
+#channel in the current window, any further joins while still joined (e.g.
+before a /part) will open a new window. Once in a channel just type
+<P>Channel operators are kings/queens of their channel. This means they can
+kick you out of their channel for no reason. If you don't like this, you can
+start your own channel and become a channel operator there. 
+<P>An IRC operator is someone who maintains the IRC network. They cannot fix
+channel problems. They cannot kick someone out of a channel for you. They cannot
+/kill (kick someone out of IRC temporarily) someone just because you gave the
+offender channel operator privileges and said offender kicked you off.
+<P>#hottub and #initgame are almost always teeming with people. #hottub
+is meant to simulate a hot tub, and #initgame is a non-stop game of &quot;inits&quot;
+(initials). Just join and find out! 
+<P>To get a list of channels with their names and topics, do /list -min 20
+(on ircII) which will show you channels with 20 or more members. You can also
+do this for smaller numbers.
+<P>Many IRC operators are in #Twilight_Zone ... so if you join that channel
+be prepared for a lot of senseless dribble, more like what you find on the
+other channels listed above (#hottub). What was once a place of people
+who could help you has turned into just another place for those who have nothing
+better to do with themselves than just be there. If you find other documents
+saying go there to ask questions, ignore them. They should be considered to
+be out of date. 
+<P>There are not enough nicknames to have nickname ownership. If someone takes
+your nickname while you are not on IRC, you can ask for them to give it back,
+but you can not *demand* it, nor will IRC operators /kill for nickname ownership.
+If you goto #Twilight_zone, you will find a bunch of people who will refuse
+to do this for you, yet they will do it for themselves or their friends or
+use /kill for even less reasonable uses. There are, literally, millions of
+possible channel names, so if someone is on your usual channel, just go to
+another. You can /msg them and ask for them to leave, but you can't force them
+to leave.
+<P>Channel operators are the owner(s) of their respective channels. Keep this
+in mind when giving out channel operator powers (make sure to give them to
+enough people so that all of the channel operators don't unexpectedly leave
+and the channel is stuck without a channel operator).
+<P>On the other hand, do not give out channel operator to everyone. This causes
+the possibility of mass-kicking, where the channel would be stuck without any
+channel operators.
+<P>You have one option. You can ask everyone to leave and rejoin the channel.
+This is a good way to get channel operator back. It doesn't work on large channels
+or ones with bots, for obvious reasons.
+<P>On IRC, you cannot be banned from every single server. Server-banning exists
+only on a per-server basis (being banned on one server does not mean you are
+automatically banned from another). &quot;Ghosts are not allowed on IRC&quot;
+means that you are banned from using that server. The banning is in one of
+three forms:
+<P>
+<UL>
+<LI>You are banned specifically, you yourself. Only you can be responsible
+for this (if you are using a shared account, this obviously does not apply).
+Thus the responsibility lies completely with you and you have no-one to complain
+to. </LI>
+<LI>Your machine is banned. Chances are it wasn't you who committed the wrongdoing.
+Try using another machine on campus and seeing if you can use that particular
+irc server then.</LI>
+<LI>Your whole site is banned (where &quot;site&quot; == &quot;school&quot;,
+&quot;company&quot;, &quot;country&quot;). This almost certainly wasn't
+your fault. And chances are you won't be able to get the server-ban lifted.
+Try using another server.</LI>
+</UL>
+<P>The most general answer is "use another server&quot;, but if it bothers
+you, try writing to the irc administrator of that site -&gt; /admin server.name.here
+-- plead your case. It might even get somewhere!
+<P>The best, basic, IRC user's manual is the IRC Primer, available in plain
+text, Postscript, and LaTeX from cs-pub.bu.edu:/irc/support ... Another good
+place to start might be downloading the 
+<A HREF="ftp://cs-pub.bu.edu/irc/support/">IRC tutorials</A>.
+<P>The IRC protocol is fully documented in 
+<A HREF="ftp://cs-pub.bu.edu/irc/support/rfc1459.txt">RFC 1459</A><H2><A NAME="ss1.4">1.4 Etiquette</A>
+ </H2>
+
+<P>This subsection is by Lea Viljanen, Ari Husa and Helen Rose for irc2.9.5,
+thank you
+<H3>Language </H3>
+
+<P>The most widely understood and spoken language on IRC is English. However!
+As IRC is used in many different countries, English is by no means the only
+language. If you want to speak some other language than English (for example
+with your friends), go to a separate channel and set the topic to indicate
+that. 
+<P>On the other hand, you should check the topic before you move to a channel
+to see if there are any restrictions about language. On a channel not restricted
+by a topic, please speak a language everybody can understand. If you want to
+do otherwise, change channels and set the topic accordingly.
+<H3>Hello/Goodbye </H3>
+
+<P>It's not necessary to greet everybody on a channel personally. Usually
+one &quot;Hello&quot; or equivalent is enough. And don't expect everybody
+to greet you back. On a channel with 20 people that would mean one screenful
+of hellos. It's sensible not to greet, in order not to be rude to the rest
+of the channel. If you must say hello, do it with a private /msg. The same
+applies to goodbyes.
+<H3>Discussion </H3>
+
+<P>When you come to a new channel it's advised you to listen for a while to
+get an impression of what's discussed. Please feel free to join in, but do
+not try to force your topic into the discussion if that doesn't come naturally.
+<HR>
+<A HREF="xchat-2.html">Next</A>
+Previous
+<A HREF="xchat.html#toc1">Contents</A>
+</BODY>
+</HTML>

@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+ <META NAME="GENERATOR" CONTENT="SGML-Tools 1.0.7">
+ <TITLE>XChat 1.2: How to help XChat</TITLE>
+ <LINK HREF="xchat-8.html" REL=next>
+ <LINK HREF="xchat-6.html" REL=previous>
+ <LINK HREF="xchat.html#toc7" REL=contents>
+</HEAD>
+<BODY>
+<A HREF="xchat-8.html">Next</A>
+<A HREF="xchat-6.html">Previous</A>
+<A HREF="xchat.html#toc7">Contents</A>
+<HR>
+<H2><A NAME="s7">7. How to help XChat</A> </H2>
+
+<H2><A NAME="ss7.1">7.1 Navigating the Code</A>
+ </H2>
+
+<P>The main source of XChat is in the /src directory. In it are all the .c
+and .h files that make up XChat. If you are looking round the code here's a
+little map:
+<P>
+<UL>
+<LI>xchat.c - Main program file, contains main()</LI>
+<LI>xchat.h - Main header file, contains most of the major struct's used in
+XChat</LI>
+<LI>editlist.c - Generic code for handling editable lists (like the Userlist
+Buttons list)</LI>
+<LI>fkeys.c - Handles function keys</LI>
+<LI>gtkutil.c - Wrappers round GTK</LI>
+<LI>outbound.c - Code for handling commands</LI>
+<LI>inbound.c - Code for handling data from the server</LI>
+<LI>text.c - Code for text handling and logging</LI>
+<LI>plugin.c - All the plugin code</LI>
+</UL>
+<P>Most of the other files are easy to guess.
+<H2><A NAME="ss7.2">7.2 Writing Scripts</A>
+ </H2>
+
+<P>Dagmar d'Surreal has written the documentation for writing scripts, in
+xchatdox2.html
+<H2><A NAME="ss7.3">7.3 Writing Plugins</A>
+ </H2>
+
+<P>There should be a sample module under the sample directory, this gives
+a general overview of writing a module.
+<P>Firstly you must #define USE_PLUGIN before any #includes. You must
+also include xchat.h and plugin.h from the xchat main directory. Every module
+must export a function called module_init, it is passed the version number
+(an int), a pointer to the module struct for your module and a pointer to the
+current session. It returns an int
+<P>
+<UL>
+<LI>0 = success</LI>
+<LI>1 = fail </LI>
+</UL>
+<P>The name and desc parts of the module structure must be filled out with
+strings.
+<P>You must check the version number is what you think it is (currently 2)
+before referencing anything else, the current version number is defined in
+plugin.h as MODULE_IFACE_VER.
+<P>The basic hook onto XChat, by a plugin, is a signal. At certain places
+in the code a signal is emitted. A chain of handlers (if any) are then called,
+each calling the next. If the first handler (and thus the handler that returns
+to the emitting function) returns TRUE then the emitting function doesn't carry
+out the default action. In this way a signal handler can over-right XChat's
+default actions with its own. Any module can hook a signal, using hook_signal
+and passing a pointer to an xp_signal struct, filling in the &quot;signal&quot;,
+&quot;callback&quot;, &quot;naddr&quot; and &quot;mod&quot; parts. They
+should be filled in like thus:
+<P>
+<UL>
+<LI>signal - one of the XP_* defines in plugin.h</LI>
+<LI>callback - a pointer to a callback function passed 5 void *'s and a char.
+Use the XP_CALLBACK() define in plugin.h around it</LI>
+<LI>naddr - a pointer to a pointer (yes, double indirect) to a callback function
+(see last item)</LI>
+<LI>mod - your module handle, passed to you in module_init</LI>
+</UL>
+<P>At the end of the callback you use XP_CALLNEXT(naddrfunction, a, b, c,
+d, e, f) to call the next callback, a to f being the arguments you were passed.
+The plugin code in XChat updates the function pointed to by the &quot;naddr&quot;
+field to point to the next handler, or NULL if you are the last handler. You
+don't have to worry about that. If you don't want the default action to take
+place then use XP_CALLNEXT_ANDSET() not XP_CALLNEXT. Only 1 handler in a chain
+needs to use XP_CALLNEXT_ANDSET to abort the default action. Be aware that
+XP_CALLNEXT[_ANDSET] expand to include a return, so these must be
+at the end of the execution paths of your handler.
+<P>The signal handlers are passed 5 void *'s and a char (just seemed about
+enough), by convention the first void * is a pointer to the session or server
+struct. To cast as a signal callback use the define XP_CALLBACK like a GTK
+cast.
+<P>Most modules call module_add_cmds at some point. This hooks any commands
+for you without having to hook and parse all the command signals. You pass
+it a pointer to a struct module_cmd_set, which should be filled in like this:
+<P>
+<UL>
+<LI>mod - the module handle passed to module_init </LI>
+<LI>cmds - a pointer to an array of struct commands (see below)</LI>
+</UL>
+<P>See the sample module for an example of the array of struct commands. Be
+aware that the struct module_cmd_set must be global as XChat uses and changes
+it.
+<P>When the module is removed the module_cleanup function is called, it is
+passed the module struct and the current session. You do not have to export
+a module_cleanup as all commands and hooks are removed by XChat.
+<P>Plugins call XChat functions directly and thus are more dependent on the
+XChat code base than scripts. Some of the common XChat functions that are used
+are listed below:
+<P>
+<UL>
+<LI>PrintText (struct session *sess, char *text) - Prints &quot;text&quot;
+to the session &quot;sess&quot;</LI>
+<LI>handle_command (char *cmd, struct session *sess, int log) - Runs &quot;cmd&quot;
+as if it had been entered in the input box in session &quot;sess&quot;. If
+log == 1 then the command it put in the history</LI>
+</UL>
+<P>I have also written a much more complete (and working) example of a plugin,
+it's called auto and is on the the 
+<A HREF="http://xchat.linuxpower.org">XChat homepage</A>.
+<H3>Signals </H3>
+
+<P>There is a list of all the current signals in plugins/SIGNALS. This may
+be added to in the future. If you think you have a good place for some more
+signals e-mail me (I'm Adam, see Authors). NOTE: This doesn't include text
+event signals, look in text.c for those details
+<HR>
+<A HREF="xchat-8.html">Next</A>
+<A HREF="xchat-6.html">Previous</A>
+<A HREF="xchat.html#toc7">Contents</A>
+</BODY>
+</HTML>

@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+ <META NAME="GENERATOR" CONTENT="SGML-Tools 1.0.7">
+ <TITLE>XChat 1.2: The GUI</TITLE>
+ <LINK HREF="xchat-4.html" REL=next>
+ <LINK HREF="xchat-2.html" REL=previous>
+ <LINK HREF="xchat.html#toc3" REL=contents>
+</HEAD>
+<BODY>
+<A HREF="xchat-4.html">Next</A>
+<A HREF="xchat-2.html">Previous</A>
+<A HREF="xchat.html#toc3">Contents</A>
+<HR>
+<H2><A NAME="s3">3. The GUI</A> </H2>
+
+<P>When XChat is first started it brings up a window with 5 main parts:
+<P>
+<OL>
+<LI>The menu bar</LI>
+<LI>The tool-bar</LI>
+<LI>The text box (middle - left)</LI>
+<LI>The user-list (middle - right)</LI>
+<LI>The input box (bottom)</LI>
+</OL>
+<P>On startup 1 window is created with no state (it is labeled &quot;&lt;none&gt;&quot;),
+if you join a channel that window then contains all the information from that
+channel. If someone /msg's you a new window may be created containing all further
+/msg's from that person
+<H2><A NAME="ss3.1">3.1 The menu bar</A>
+ </H2>
+
+<P>The menu bar has 6 menus in it (the text may change if you have language
+packs active):
+<P>
+<OL>
+<LI>&quot;X-Chat&quot; - Major operations, like a &quot;File&quot; menu</LI>
+<LI>&quot;Windows&quot; - Each of the XChat windows can be called from this
+menu, it also contains operations affecting the buffer</LI>
+<LI>&quot;User Modes&quot; - All the items in this menu are toggle items
+changing the state of the IRC user</LI>
+<LI>"Settings&quot; - All the configuration dialogs can be called from here</LI>
+<LI>"Scripts &amp; Plugins&quot; - Operations effecting these</LI>
+<LI>&quot;Help&quot; - Standard help menu</LI>
+</OL>
+<H2><A NAME="ss3.2">3.2 The tool bar</A>
+ </H2>
+
+<P>The tool-bar contains the leafs of each window attached to the main window,
+these leafs have the name of the channel or nick of the window. Clicking on
+one of these leafs brings that window to the front. If the text in a currently
+hidden window changes the text in the leaf goes red
+<P>The &quot;X&quot; button at the far left closes the currently window.
+If that is the only window XChat quits. The text box contains the topic of
+the channel which is currently active in the top window or the address of the
+nick, if a nick is currently active.
+<P>The "^" button (or an up arrow if you use GNOME), next to the "X" button, links
+or delinks the window. If you have a series of tabs then clicking this will
+delink the window and make it a separate window. After this, clicking it again
+will link the window back into the notebook. You cannot delink the only window
+in a notebook and if you try to link a window when there is no notebook window
+then one will be created.
+<P>The buttons at the right of the tool-bar set the channel modes, and only
+have effect when the window contains a channel and you are chanop. They stand
+for:
+<P>
+<UL>
+<LI>T - Topic lock</LI>
+<LI>N - No outside messages to the channel</LI>
+<LI>S - Secret</LI>
+<LI>I - Invite only</LI>
+<LI>P - Private</LI>
+<LI>M - Moderated</LI>
+<LI>L - User limit (also has a text box)</LI>
+<LI>K - Key (also has a text box)</LI>
+</UL>
+<P>The far right button, with the arrow, toggles the user-list
+<H2><A NAME="ss3.3">3.3 The text box</A>
+ </H2>
+
+<P>The text box contains the text from the contained object (channel, nick
+etc) and the output from commands entered into the input box.
+<P>It is usually a GTK text box, whose options can be controlled from &quot;Settings
+- Setup - Channel Windows&quot;. However it can also be a ZVT (Gnome only),
+and this allows extra options like pseudo-transparent backgrounds.
+<H2><A NAME="ss3.4">3.4 The user-list</A>
+ </H2>
+
+<P>The user-list contains every nick in the current channel. Nicks may have
+a green or yellow dot to the left of the nick. A green dot marks a chanop and
+a yellow dot shows the nick has a voice (e.g. can post to a moderated channel)
+<P>Below the list are a set of buttons, which are controlled from &quot;Settings
+- User-list Buttons&quot;. Clicking on one runs a certain command with reference
+to the selected nick in the user-list.
+<P>Right clicking on a nick brings up a pop-up menu which can be configured
+from &quot;Settings - User-list Pop-up. Selecting one runs a certain command
+with reference to the clicked nick in the user-list.
+<P>Multiple nicks can be selected by holding down the Shift key.
+<H2><A NAME="ss3.5">3.5 The input box</A>
+ </H2>
+
+<P>To the left of the input box there is a label, containing your currently
+active nick, possibly with a yellow or green dot to the left of it see 3.4.
+<P>Entering text into the text box and pressing enter will process the entered
+text. It can be processed in 1 of 2 ways, it is either sent to the contained
+object (a channel or nick) or if it starts with a &quot;/&quot; it is processed
+as a command.
+<P>To the right of the input box is the conference toggle. When set this squashes
+all join/leave messages so you can have an uninterrupted conversation.
+<HR>
+<A HREF="xchat-4.html">Next</A>
+<A HREF="xchat-2.html">Previous</A>
+<A HREF="xchat.html#toc3">Contents</A>
+</BODY>
+</HTML>

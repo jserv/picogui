@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+ <META NAME="GENERATOR" CONTENT="SGML-Tools 1.0.7">
+ <TITLE>XChat 1.2: Getting, Building and Running</TITLE>
+ <LINK HREF="xchat-3.html" REL=next>
+ <LINK HREF="xchat-1.html" REL=previous>
+ <LINK HREF="xchat.html#toc2" REL=contents>
+</HEAD>
+<BODY>
+<A HREF="xchat-3.html">Next</A>
+<A HREF="xchat-1.html">Previous</A>
+<A HREF="xchat.html#toc2">Contents</A>
+<HR>
+<H2><A NAME="s2">2. Getting, Building and Running</A> </H2>
+
+<H2><A NAME="ss2.1">2.1 Getting</A>
+ </H2>
+
+<P>If you re lazy, or don't want to install any support libraries then Peter
+Alexandrou has started hosting the 
+<A HREF="http://www.users.bigpond.com/redowl/xchat/">X-Chat static binary webpage</A><P>The main distribution point for XChat is 
+<A HREF="http://xchat.linuxpower.org">the XChat homepage</A>, XChat also needs 
+<A HREF="http://www.gtk.org">GTK</A>. Optionally
+XChat can use 
+<A HREF="http://www.gnome.org">GNOME</A> and 
+<A HREF="http://www.perl.com">Perl</A>.
+<H2><A NAME="ss2.2">2.2 Building</A>
+ </H2>
+
+<P>XChat uses the GNU autoconf system, so building it is quite easy, for most
+systems the auto detection will work:
+<P>
+<HR>
+<PRE>
+./configure ; make ; su ; make install
+ 
+</PRE>
+<HR>
+<P>On some systems gmake might be needed rather than make.
+<P>The configure script can be passed some options as well
+<P>
+<UL>
+<LI>--disable-perl = Disables Perl support</LI>
+<LI>--disable-gnome = Disables GNOME support</LI>
+</UL>
+<P>Be aware that if you don't have perl or GNOME the configure script will
+pick this up and you don't need to pass these options, they are only if for
+when you do have them, but don't want support for them.
+<P>If you are having problems with this method you can try the old method:
+<P>
+<HR>
+<PRE>
+cp Makefile.gtk Makefile ; make ; su ; make install
+ 
+</PRE>
+<HR>
+<H2><A NAME="ss2.3">2.3 Running</A>
+ </H2>
+
+<P>The build process makes a binary called xchat. If you installed it typing
+xchat at the console should run it, if not cd into the XChat directory and
+type ./xchat
+<P>The directory ~/.xchat should be created for you, XChat uses this
+directory to store per-user settings and logs.
+<HR>
+<A HREF="xchat-3.html">Next</A>
+<A HREF="xchat-1.html">Previous</A>
+<A HREF="xchat.html#toc2">Contents</A>
+</BODY>
+</HTML>

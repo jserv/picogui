@@ -1,0 +1,50 @@
+Source: xchat
+Section: net
+Priority: optional
+Maintainer: Davide Puricelli (evo) <evo@debian.org>
+Standards-Version: 3.2.1
+Build-Depends: debhelper, autoconf, gdk-imlib-dev, libgdk-pixbuf-dev, libgdk-pixbuf-gnome-dev, libaudiofile-dev, libesd0-dev, libglib1.2-dev (>= 1.2.10-1), libgtk1.2-dev (>= 1.2.10-1), libperl-dev, gettext (>= 0.10.37-1), libtool, libgnome-dev, libzvt-dev, zlib1g-dev, perl5, python2.1-dev, xlibs-dev
+
+Package: xchat
+Architecture: any
+Replaces: xchat-gnome
+Depends: ${shlibs:Depends}, xchat-common (= ${Source-Version})
+Conflicts: xchat-gnome
+Description: IRC client for X similar to AmIRC
+ XChat is a graphical IRC Client with a GTK+ GUI. It has a look and feel
+ similar to AmIRC for the Amiga. Special features include the mIRC extension
+ DCC RESUME and mIRC color, multiple server/channel windows, dialog
+ windows, and a plugin API.
+
+Package: xchat-gnome
+Architecture: any
+Priority: extra
+Replaces: xchat
+Depends: ${shlibs:Depends}, xchat-common (= ${Source-Version})
+Conflicts: xchat
+Description: IRC client for GNOME similar to AmIRC
+ XChat is a graphical IRC Client with a GTK+ GUI. It has a look and feel
+ similar to AmIRC for the Amiga. Special features include the mIRC extension
+ DCC RESUME and mIRC color, multiple server/channel windows, dialog
+ windows, and a plugin API.
+ .
+ This package has GNOME support.
+
+Package: xchat-text
+Architecture: any
+Depends: ${shlibs:Depends}, xchat-common (= ${Source-Version})
+Description: IRC client for console similar to AmIRC
+ XChat is a graphical IRC Client with a GTK+ GUI. It has a look and feel
+ similar to AmIRC for the Amiga. Special features include the mIRC extension
+ DCC RESUME and mIRC color, multiple server/channel windows, dialog
+ windows, and a plugin API.
+ .
+ This version contains the xchat-text binary.
+
+Package: xchat-common
+Architecture: all
+Recommends: xchat | xchat-gnome | xchat-text
+Description: Common files for X-Chat
+ This package includes documentation, examples, and locale files for
+ the Debian X-Chat packages.  It is useless without one of xchat,
+ xchat-gnome, or xchat-text.

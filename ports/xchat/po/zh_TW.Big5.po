@@ -1,0 +1,5244 @@
+# X-Chat Chinese message translation file.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# Kevin Peng <kevpeng@ihug.co.nz> 2000
+# Minor revision by Anthony Fok <foka@debian.org> 2001
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 0.01\n"
+"POT-Creation-Date: 2001-06-01 14:43+1000\n"
+"PO-Revision-Date: 2000-10-12 01:34+1300\n"
+"Last-Translator: Kevin Peng <kevpeng@ihug.co.nz>\n"
+"Language-Team: Chinese (traditional) <kevpeng@ihug.co.nz>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=big5\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/common/cfgfiles.c:247
+msgid "Cannot create ~/.xchat"
+msgstr ""
+
+#. OS/2 uses UID 0 all the time
+#: src/common/cfgfiles.c:528
+msgid ""
+"The default download directory is your\n"
+"home dir, you should change this at some stage."
+msgstr ""
+
+#: src/common/cfgfiles.c:532
+msgid ""
+"* Running IRC as root is stupid! You should\n"
+"  create a User Account and use that to login.\n"
+"\n"
+"* The default download directory is your\n"
+"  home dir, you should change this at some stage."
+msgstr ""
+
+#: src/common/cfgfiles.c:588
+msgid "I'm busy"
+msgstr ""
+
+#: src/common/cfgfiles.c:589
+#, fuzzy
+msgid "Client Exiting"
+msgstr "¦â±m³z©ú«×"
+
+#: src/common/dcc.c:53
+#, fuzzy
+msgid "Waiting"
+msgstr "­p®É"
+
+#. black
+#: src/common/dcc.c:54
+msgid "Active"
+msgstr ""
+
+#. cyan
+#: src/common/dcc.c:55
+msgid "Failed"
+msgstr ""
+
+#. red
+#: src/common/dcc.c:56
+msgid "Done"
+msgstr ""
+
+#. green
+#: src/common/dcc.c:57 src/fe-gtk/serverlist.c:1255
+msgid "Connect"
+msgstr ""
+
+#. black
+#: src/common/dcc.c:58
+#, fuzzy
+msgid "Aborted"
+msgstr "ÀH«K±Æ"
+
+#: src/common/dcc.c:886
+#, c-format
+msgid "Cannot access %s\n"
+msgstr ""
+
+#: src/common/dcc.c:1277
+msgid "No active DCCs\n"
+msgstr ""
+
+#: src/common/ignore.c:120 src/common/ignore.c:124 src/common/ignore.c:128
+#: src/common/ignore.c:132 src/common/ignore.c:136 src/common/ignore.c:140
+msgid "YES  "
+msgstr ""
+
+#: src/common/ignore.c:122 src/common/ignore.c:126 src/common/ignore.c:130
+#: src/common/ignore.c:134 src/common/ignore.c:138 src/common/ignore.c:142
+msgid "NO   "
+msgstr ""
+
+#. LAME: we can't send more than 512 bytes to the server, but     *
+#. * if we split it in two packets, our offline detection wouldn't  *
+#. work
+#: src/common/notify.c:289 src/common/notify.c:325
+msgid "*** XCHAT WARNING: notify list too large.\n"
+msgstr ""
+
+#: src/common/notify.c:362
+#, c-format
+msgid "  %-20s online\n"
+msgstr ""
+
+#: src/common/notify.c:364
+#, c-format
+msgid "  %-20s offline\n"
+msgstr ""
+
+#: src/common/outbound.c:165
+msgid "No channel joined. Try /join #<channel>\n"
+msgstr ""
+
+#: src/common/outbound.c:171
+msgid "Not connected. Try /server <host> [<port>]\n"
+msgstr ""
+
+#: src/common/outbound.c:469
+msgid "/ADDBUTTON <name> <action>, adds a button under the user-list\n"
+msgstr ""
+
+#: src/common/outbound.c:471
+msgid "/ALLCHAN <cmd>, sends a command to all channels you're in\n"
+msgstr ""
+
+#: src/common/outbound.c:473
+msgid "/ALLSERV <cmd>, sends a command to all servers you're in\n"
+msgstr ""
+
+#: src/common/outbound.c:474
+msgid "/AWAY [<reason>], sets you away\n"
+msgstr ""
+
+#: src/common/outbound.c:476
+msgid ""
+"/BAN <mask> [<bantype>], bans everyone matching the mask from the current "
+"channel. If they are already on the channel this doesn't kick them (needs "
+"chanop)\n"
+msgstr ""
+
+#: src/common/outbound.c:477
+msgid "/CLEAR, Clears the current text window\n"
+msgstr ""
+
+#: src/common/outbound.c:478
+msgid "/CLOSE, Closes the current window/tab\n"
+msgstr ""
+
+#: src/common/outbound.c:481
+msgid ""
+"/CTCP <nick> <message>, send the CTCP message to nick, common messages are "
+"VERSION and USERINFO\n"
+msgstr ""
+
+#: src/common/outbound.c:483
+msgid "/COUNTRY <code>, finds a country code, eg: au = australia\n"
+msgstr ""
+
+#: src/common/outbound.c:485
+msgid "/CYCLE, parts current channel and immediately rejoins\n"
+msgstr ""
+
+#: src/common/outbound.c:487
+msgid ""
+"\n"
+"/DCC GET <nick>          - receive an offered file\n"
+"/DCC SEND <nick> <file>  - send a file to someone\n"
+"/DCC LIST                - show DCC list\n"
+"/DCC CHAT <nick>         - offer DCC CHAT to someone\n"
+"/DCC CLOSE <type> <nick> <file>         example:\n"
+"         /dcc close send johnsmith file.tar.gz\n"
+msgstr ""
+
+#: src/common/outbound.c:496
+msgid "/DELBUTTON <name>, deletes a button from under the user-list\n"
+msgstr ""
+
+#: src/common/outbound.c:498
+msgid ""
+"/DEHOP <nick>, removes chanhalf-op status from the nick on the current "
+"channel (needs chanop)\n"
+msgstr ""
+
+#: src/common/outbound.c:500
+msgid ""
+"/DEOP <nick>, removes chanop status from the nick on the current channel "
+"(needs chanop)\n"
+msgstr ""
+
+#: src/common/outbound.c:502
+msgid ""
+"/DEVOICE <nick>, removes voice status from the nick on the current channel "
+"(needs chanop)\n"
+msgstr ""
+
+#: src/common/outbound.c:503
+msgid "/DISCON, Disconnects from server\n"
+msgstr ""
+
+#: src/common/outbound.c:504
+msgid "/DNS <nick|host|ip>, Finds a users IP number\n"
+msgstr ""
+
+#: src/common/outbound.c:505
+msgid "/ECHO <text>, Prints text locally\n"
+msgstr ""
+
+#: src/common/outbound.c:508
+msgid ""
+"/EXEC [-o] <command>, runs the command. If -o flag is used then output is "
+"sent to current channel, else is printed to current text box\n"
+msgstr ""
+
+#: src/common/outbound.c:510
+msgid ""
+"/EXECKILL [-9], kills a running exec in the current session. If -9 is given "
+"the process is SIGKILL'ed\n"
+msgstr ""
+
+#: src/common/outbound.c:512
+msgid "/EXECSTOP, sends the process SIGSTOP\n"
+msgstr ""
+
+#: src/common/outbound.c:513
+msgid "/EXECCONT, sends the process SIGCONT\n"
+msgstr ""
+
+#: src/common/outbound.c:514
+msgid "/EXECWRITE, sends data to the processes stdin\n"
+msgstr ""
+
+#: src/common/outbound.c:517
+msgid "/FLUSHQ, flushes the current server's send queue\n"
+msgstr ""
+
+#: src/common/outbound.c:519
+msgid "/GATE <host> [<port>], proxies through a host, port defaults to 23\n"
+msgstr ""
+
+#: src/common/outbound.c:522
+msgid "/HOP <nick>, gives chanhalf-op status to the nick (needs chanop)\n"
+msgstr ""
+
+#: src/common/outbound.c:524
+msgid ""
+"/IGNORE <mask> <types..> <options..>\n"
+"    mask - host mask to ignore, eg: *!*@*.aol.com\n"
+"    types - types of data to ignore, one or all of:\n"
+"            PRIV, CHAN, NOTI, CTCP, INVI, ALL\n"
+"    options - NOSAVE, QUIET\n"
+msgstr ""
+
+#: src/common/outbound.c:531
+msgid ""
+"/INVITE <nick> [<channel>], invites someone to a channel, by default the "
+"current channel (needs chanop)\n"
+msgstr ""
+
+#: src/common/outbound.c:532
+msgid "/JOIN <channel>, joins the channel\n"
+msgstr ""
+
+#: src/common/outbound.c:534
+msgid "/KICK <nick>, kicks the nick from the current channel (needs chanop)\n"
+msgstr ""
+
+#: src/common/outbound.c:536
+msgid ""
+"/KICKBAN <nick>, bans then kicks the nick from the current channel (needs "
+"chanop)\n"
+msgstr ""
+
+#: src/common/outbound.c:538
+msgid "/LAGCHECK, forces a new lag check\n"
+msgstr ""
+
+#: src/common/outbound.c:540
+msgid "/LASTLOG <string>, searches for a string in the buffer.\n"
+msgstr ""
+
+#: src/common/outbound.c:544
+msgid "/LISTDLL, Lists all currenly loaded plugins\n"
+msgstr ""
+
+#: src/common/outbound.c:546
+msgid "/LOAD <file>, loads a Perl script\n"
+msgstr ""
+
+#: src/common/outbound.c:548
+msgid "/LOADDLL <file>, loads a plugin\n"
+msgstr ""
+
+#: src/common/outbound.c:552
+msgid ""
+"/MDEHOP, Mass deop's all chanhalf-ops in the current channel (needs chanop)\n"
+msgstr ""
+
+#: src/common/outbound.c:554
+msgid "/MDEOP, Mass deop's all chanops in the current channel (needs chanop)\n"
+msgstr ""
+
+#: src/common/outbound.c:556
+msgid ""
+"/MKICK, Mass kicks everyone except you in the current channel (needs "
+"chanop)\n"
+msgstr ""
+
+#: src/common/outbound.c:558
+msgid ""
+"/MKICKB, Sets a ban of *@* and mass kicks everyone except you in the current "
+"channel (needs chanop)\n"
+msgstr ""
+
+#: src/common/outbound.c:560
+msgid ""
+"/ME <action>, sends the action to the current channel (actions are written "
+"in the 3rd person, like /me jumps)\n"
+msgstr ""
+
+#: src/common/outbound.c:561
+msgid "/MSG <nick> <message>, sends a private message\n"
+msgstr ""
+
+#: src/common/outbound.c:564
+msgid "/NAMES, Lists the nicks on the current channel\n"
+msgstr ""
+
+#: src/common/outbound.c:566
+msgid "/NCTCP <nick> <message>, Sends a CTCP notice\n"
+msgstr ""
+
+#: src/common/outbound.c:567
+msgid "/NEWSERVER <hostname> [<port>]\n"
+msgstr ""
+
+#: src/common/outbound.c:568
+msgid "/NICK <nickname>, sets your nick\n"
+msgstr ""
+
+#: src/common/outbound.c:571
+msgid ""
+"/NOTICE <nick/channel> <message>, sends a notice. Notices are a type of "
+"message that should be auto reacted to\n"
+msgstr ""
+
+#: src/common/outbound.c:573
+msgid "/NOTIFY [<nick>], lists your notify list or adds someone to it\n"
+msgstr ""
+
+#: src/common/outbound.c:575
+msgid "/OP <nick>, gives chanop status to the nick (needs chanop)\n"
+msgstr ""
+
+#: src/common/outbound.c:577
+msgid ""
+"/PART [<channel>] [<reason>], leaves the channel, by default the current "
+"one\n"
+msgstr ""
+
+#: src/common/outbound.c:579
+msgid "/PING <nick | channel>, CTCP pings nick or channel\n"
+msgstr ""
+
+#: src/common/outbound.c:583
+msgid "/PLOAD <name>, kills the script of the given name\n"
+msgstr ""
+
+#: src/common/outbound.c:584
+msgid "/PLIST, lists the current python scripts\n"
+msgstr ""
+
+#: src/common/outbound.c:585
+#, fuzzy
+msgid "/PLOAD loads a python script\n"
+msgstr "¨Ï¥Î Python «ü¥OÀÉ"
+
+#: src/common/outbound.c:589
+msgid "/QUERY <nick>, opens up a new privmsg window to someone\n"
+msgstr ""
+
+#: src/common/outbound.c:591
+msgid "/QUIT [<reason>], disconnects from the current server\n"
+msgstr ""
+
+#: src/common/outbound.c:593
+msgid "/QUOTE <text>, sends the text in raw form to the server\n"
+msgstr ""
+
+#: src/common/outbound.c:596
+msgid ""
+"/RECONENCT [<host>] [<port>] [<password>] [<ssl>] [<accept_invalid_cert>], "
+"Can be called just as /reconnect to reconnect to the current server or with /"
+"reconnect all to reconnect to all the open servers\n"
+msgstr ""
+
+#: src/common/outbound.c:599
+msgid ""
+"/RECONENCT [<host>] [<port>] [<password>], Can be called just as /reconnect "
+"to reconnect to the current server or with /reconnect all to reconnect to "
+"all the open server or with /reconnect all to reconnect to all the open "
+"servers\n"
+msgstr ""
+
+#: src/common/outbound.c:602
+msgid "/RMDLL <dll name>, unloads a plugin\n"
+msgstr ""
+
+#: src/common/outbound.c:606
+msgid "/SAY <text>, sends the text to the object in the current window\n"
+msgstr ""
+
+#: src/common/outbound.c:609
+msgid "/SCPINFO, Lists some information about current Perl bindings\n"
+msgstr ""
+
+#: src/common/outbound.c:611
+msgid "/SET <variable> [<value>]\n"
+msgstr ""
+
+#: src/common/outbound.c:615
+msgid ""
+"/SERVCHAN <host> <port> <channel> [<ssl>] [<accept_invalid_cert>], connects "
+"and joins a channel\n"
+msgstr ""
+
+#: src/common/outbound.c:618
+msgid "/SERVCHAN <host> <port> <channel>, connects and joins a channel\n"
+msgstr ""
+
+#: src/common/outbound.c:622
+msgid ""
+"/SERVER <host> [<port>] [<password>] [<ssl>] [<accept_invalid_cert>], "
+"connects to a server, the default port is 6667\n"
+msgstr ""
+
+#: src/common/outbound.c:625
+msgid ""
+"/SERVER <host> [<port>] [<password>], connects to a server, the default port "
+"is 6667\n"
+msgstr ""
+
+#: src/common/outbound.c:629
+msgid ""
+"/SSLSERVER <host> [<port>] [<accept_invalid_cert (y/n)>] [<password>], "
+"connects to a server, the default port is 994\n"
+msgstr ""
+
+#: src/common/outbound.c:631
+msgid "/TIMER <seconds> <command>\n"
+msgstr ""
+
+#: src/common/outbound.c:633
+msgid ""
+"/TOPIC [<topic>], sets the topic is one is given, else shows the current "
+"topic\n"
+msgstr ""
+
+#: src/common/outbound.c:634
+msgid "/UNIGNORE <mask> [QUIET]\n"
+msgstr ""
+
+#: src/common/outbound.c:636
+msgid "/UNLOADALL, Unloads all perl scripts\n"
+msgstr ""
+
+#: src/common/outbound.c:640
+msgid ""
+"/WALLCHOP <message>, sends the message to all chanops on the current "
+"channel\n"
+msgstr ""
+
+#: src/common/outbound.c:642
+msgid "/WALLCHAN <message>, writes the message to all channels\n"
+msgstr ""
+
+#: src/common/outbound.c:644
+msgid "/VOICE <nick>, gives voice status to someone (needs chanop)\n"
+msgstr ""
+
+#: src/common/outbound.c:660
+msgid "Usage:\n"
+msgstr ""
+
+#: src/common/outbound.c:667
+msgid ""
+"\n"
+"No help available on that command.\n"
+msgstr ""
+
+#: src/common/outbound.c:674
+msgid "No such command.\n"
+msgstr ""
+
+#: src/common/outbound.c:1237
+#, fuzzy
+msgid "Server    Sock  Name\n"
+msgstr "¥N²z¦øªA¾¹(Proxy)¦ì§}:"
+
+#: src/common/outbound.c:1248
+#, c-format
+msgid ""
+"\n"
+"front_session: %lx\n"
+"current_tab: %lx\n"
+"\n"
+msgstr ""
+
+#: src/common/outbound.c:1254
+#, c-format
+msgid ""
+"current mem: %d\n"
+"\n"
+msgstr ""
+
+#: src/common/outbound.c:1512 src/common/outbound.c:1530
+#: src/common/outbound.c:1552
+msgid "Error in kill(2)\n"
+msgstr ""
+
+#: src/common/outbound.c:1733
+msgid "I need /bin/sh to run!\n"
+msgstr ""
+
+#: src/common/outbound.c:1755
+msgid "Pipe create error"
+msgstr ""
+
+#: src/common/outbound.c:1763
+msgid "socketpair(2) failed\n"
+msgstr ""
+
+#. Parent context, fork() failed
+#: src/common/outbound.c:1799
+msgid "Error in fork(2)\n"
+msgstr ""
+
+#: src/common/outbound.c:1863
+msgid ""
+"\n"
+"Commands Available:\n"
+"\n"
+"  "
+msgstr ""
+
+#: src/common/outbound.c:1897
+msgid ""
+"\n"
+"\n"
+"Type /HELP <command> for more information, or /HELP -l\n"
+"\n"
+msgstr ""
+
+#: src/common/outbound.c:1898
+msgid ""
+"User defined commands:\n"
+"\n"
+"  "
+msgstr ""
+
+#: src/common/outbound.c:1990
+#, c-format
+msgid "Unknown arg '%s' ignored."
+msgstr ""
+
+#: src/common/outbound.c:2159
+msgid "Error compiling script\n"
+msgstr ""
+
+#: src/common/outbound.c:2162
+msgid "Error Loading file\n"
+msgstr ""
+
+#: src/common/outbound.c:2167
+msgid "Perl scripting not available in this compilation.\n"
+msgstr ""
+
+#: src/common/outbound.c:3094
+msgid "Bad arguments for user command.\n"
+msgstr ""
+
+#: src/common/outbound.c:3207
+msgid "Unknown Command. Try /help\n"
+msgstr ""
+
+#: src/common/perl.c:189
+msgid "Registered Scripts:\n"
+msgstr ""
+
+#: src/common/perl.c:199
+msgid "Inbound Handlers:\n"
+msgstr ""
+
+#: src/common/perl.c:208
+msgid "Command Handlers:\n"
+msgstr ""
+
+#: src/common/perl.c:217
+#, fuzzy
+msgid "Print Handlers:\n"
+msgstr "ºô§}Æ[¬Ýµ{¦¡.."
+
+#: src/common/text.c:196
+#, c-format
+msgid "**** ENDING LOGGING AT %s\n"
+msgstr ""
+
+#: src/common/text.c:230
+#, c-format
+msgid "**** BEGIN LOGGING AT %s\n"
+msgstr ""
+
+#: src/common/text.c:311
+msgid "The nick of the joining person"
+msgstr ""
+
+#: src/common/text.c:312
+msgid "The channel being joined"
+msgstr ""
+
+#: src/common/text.c:313 src/common/text.c:365 src/common/text.c:424
+msgid "The host of the person"
+msgstr ""
+
+#: src/common/text.c:318 src/common/text.c:324 src/common/text.c:331
+#: src/common/text.c:403 src/common/text.c:551 src/common/text.c:559
+#: src/common/text.c:565 src/common/text.c:571 src/common/text.c:577
+#: src/common/text.c:584 src/common/text.c:590 src/common/text.c:645
+#: src/common/text.c:656 src/common/text.c:662 src/common/text.c:668
+#: src/common/text.c:677 src/common/text.c:689 src/common/text.c:696
+#: src/common/text.c:703 src/common/text.c:710 src/common/text.c:718
+#: src/common/text.c:724 src/common/text.c:731 src/common/text.c:738
+#: src/common/text.c:743 src/common/text.c:750 src/common/text.c:758
+#: src/common/text.c:817
+msgid "Nickname"
+msgstr ""
+
+#: src/common/text.c:319
+msgid "The action"
+msgstr ""
+
+#: src/common/text.c:325
+msgid "The text"
+msgstr ""
+
+#: src/common/text.c:326
+msgid "Mode char"
+msgstr ""
+
+#: src/common/text.c:332 src/common/text.c:398 src/common/text.c:404
+msgid "The message"
+msgstr ""
+
+#: src/common/text.c:337 src/common/text.c:409
+msgid "Old nickname"
+msgstr ""
+
+#: src/common/text.c:338 src/common/text.c:410
+msgid "New nickname"
+msgstr ""
+
+#: src/common/text.c:343
+msgid "Nick of person who changed the topic"
+msgstr ""
+
+#: src/common/text.c:344 src/common/text.c:351 src/fe-gtk/chanlist.c:542
+#: src/fe-gtk/chanlist.c:673
+#, fuzzy
+msgid "Topic"
+msgstr "¤W¤è"
+
+#: src/common/text.c:345 src/common/text.c:350 src/common/text.c:846
+#: src/fe-gtk/chanlist.c:542 src/fe-gtk/chanlist.c:665
+#: src/fe-gtk/ignoregui.c:391
+#, fuzzy
+msgid "Channel"
+msgstr "¨ú®ø"
+
+#: src/common/text.c:356 src/common/text.c:415
+msgid "The nickname of the kicker"
+msgstr ""
+
+#: src/common/text.c:357 src/common/text.c:416
+msgid "The person being kicked"
+msgstr ""
+
+#: src/common/text.c:358 src/common/text.c:366 src/common/text.c:371
+#: src/common/text.c:377 src/common/text.c:417 src/common/text.c:425
+msgid "The channel"
+msgstr ""
+
+#: src/common/text.c:359 src/common/text.c:418 src/common/text.c:426
+msgid "The reason"
+msgstr ""
+
+#: src/common/text.c:364 src/common/text.c:423
+msgid "The nick of the person leaving"
+msgstr ""
+
+#: src/common/text.c:372 src/common/text.c:379
+msgid "The time"
+msgstr ""
+
+#: src/common/text.c:378
+msgid "The creator"
+msgstr ""
+
+#: src/common/text.c:384
+msgid "Nick"
+msgstr ""
+
+#: src/common/text.c:385 src/common/text.c:663
+#, fuzzy
+msgid "Reason"
+msgstr "­ì¦]:"
+
+#: src/common/text.c:386 src/common/text.c:553 src/common/text.c:633
+msgid "Host"
+msgstr ""
+
+#: src/common/text.c:391 src/common/text.c:397
+msgid "Who it's from"
+msgstr ""
+
+#: src/common/text.c:392
+msgid "The time in x.x format (see below)"
+msgstr ""
+
+#: src/common/text.c:431
+msgid "The sound"
+msgstr ""
+
+#: src/common/text.c:432 src/common/text.c:438 src/common/text.c:444
+msgid "The nick of the person"
+msgstr ""
+
+#: src/common/text.c:437 src/common/text.c:443
+msgid "The CTCP event"
+msgstr ""
+
+#: src/common/text.c:445
+#, fuzzy
+msgid "The Channel it's going to"
+msgstr "²á¤Ñ«Ç²M³æ.."
+
+#: src/common/text.c:450
+msgid "The nick of the person who set the key"
+msgstr ""
+
+#: src/common/text.c:451
+msgid "The key"
+msgstr ""
+
+#: src/common/text.c:456
+msgid "The nick of the person who set the limit"
+msgstr ""
+
+#: src/common/text.c:457
+msgid "The limit"
+msgstr ""
+
+#: src/common/text.c:462
+msgid "The nick of the person who has been op'ed"
+msgstr ""
+
+#: src/common/text.c:463
+msgid "The nick of the person of did the op'ing"
+msgstr ""
+
+#: src/common/text.c:468
+msgid "The nick of the person who has been halfop'ed"
+msgstr ""
+
+#: src/common/text.c:469
+msgid "The nick of the person of did the halfop'ing"
+msgstr ""
+
+#: src/common/text.c:474
+msgid "The nick of the person who has been voice'ed"
+msgstr ""
+
+#: src/common/text.c:475
+msgid "The nick of the person of did the voice'ing"
+msgstr ""
+
+#: src/common/text.c:480
+msgid "The nick of the person who did the banning"
+msgstr ""
+
+#: src/common/text.c:481 src/common/text.c:514
+msgid "The ban mask"
+msgstr ""
+
+#: src/common/text.c:486
+msgid "The nick who removed the key"
+msgstr ""
+
+#: src/common/text.c:491
+msgid "The nick who removed the limit"
+msgstr ""
+
+#: src/common/text.c:496
+msgid "The nick of the person of did the deop'ing"
+msgstr ""
+
+#: src/common/text.c:497
+msgid "The nick of the person who has been deop'ed"
+msgstr ""
+
+#: src/common/text.c:501
+msgid "The nick of the person of did the dehalfop'ing"
+msgstr ""
+
+#: src/common/text.c:502
+msgid "The nick of the person who has been dehalfop'ed"
+msgstr ""
+
+#: src/common/text.c:507
+msgid "The nick of the person of did the devoice'ing"
+msgstr ""
+
+#: src/common/text.c:508
+msgid "The nick of the person who has been devoice'ed"
+msgstr ""
+
+#: src/common/text.c:513
+msgid "The nick of the person of did the unban'ing"
+msgstr ""
+
+#: src/common/text.c:519
+msgid "The nick of the person who did the exempt"
+msgstr ""
+
+#: src/common/text.c:520 src/common/text.c:526
+msgid "The exempt mask"
+msgstr ""
+
+#: src/common/text.c:525
+msgid "The nick of the person removed the exempt"
+msgstr ""
+
+#: src/common/text.c:531
+msgid "The nick of the person who did the invite"
+msgstr ""
+
+#: src/common/text.c:532 src/common/text.c:538
+msgid "The invite mask"
+msgstr ""
+
+#: src/common/text.c:537
+msgid "The nick of the person removed the invite"
+msgstr ""
+
+#: src/common/text.c:543
+msgid "The nick of the person setting the mode"
+msgstr ""
+
+#: src/common/text.c:544
+msgid "The mode's sign (+/-)"
+msgstr ""
+
+#: src/common/text.c:545
+msgid "The mode letter"
+msgstr ""
+
+#: src/common/text.c:546
+msgid "The channel it's being set on"
+msgstr ""
+
+#: src/common/text.c:552
+msgid "Username"
+msgstr ""
+
+#: src/common/text.c:554
+msgid "Full name"
+msgstr ""
+
+#: src/common/text.c:560
+msgid "Channel Membership/\"is an IRC operator\""
+msgstr ""
+
+#: src/common/text.c:566
+msgid "Server Information"
+msgstr ""
+
+#: src/common/text.c:572 src/common/text.c:578
+msgid "Idle time"
+msgstr ""
+
+#: src/common/text.c:579
+msgid "Signon time"
+msgstr ""
+
+#: src/common/text.c:585
+#, fuzzy
+msgid "Away reason"
+msgstr "­ì¦]:"
+
+#: src/common/text.c:595 src/common/text.c:609 src/common/text.c:616
+#: src/common/text.c:840
+#, fuzzy
+msgid "Channel Name"
+msgstr "²á¤Ñ«Ç¼ÐÅÒ"
+
+#: src/common/text.c:604 src/common/text.c:773 src/fe-gtk/textgui.c:402
+msgid "Text"
+msgstr ""
+
+#: src/common/text.c:610
+msgid "Nick of person who invited you"
+msgstr ""
+
+#: src/common/text.c:611 src/common/text.c:841
+#, fuzzy
+msgid "Server Name"
+msgstr "¥N²z¦øªA¾¹(Proxy)¦ì§}:"
+
+#: src/common/text.c:617 src/fe-gtk/chanlist.c:542
+#, fuzzy
+msgid "Users"
+msgstr "¦W³æ"
+
+#: src/common/text.c:622
+msgid "Nickname in use"
+msgstr ""
+
+#: src/common/text.c:623
+msgid "Nick being tried"
+msgstr ""
+
+#: src/common/text.c:628
+msgid "Error String"
+msgstr ""
+
+#: src/common/text.c:634 src/common/text.c:784
+msgid "IP"
+msgstr ""
+
+#: src/common/text.c:635
+msgid "Port"
+msgstr ""
+
+#: src/common/text.c:640
+msgid "PID"
+msgstr ""
+
+#: src/common/text.c:650
+#, fuzzy
+msgid "Channel name"
+msgstr "²á¤Ñ«Ç¼ÐÅÒ"
+
+#: src/common/text.c:651 src/common/text.c:657
+msgid "Modes string"
+msgstr ""
+
+#: src/common/text.c:669 src/common/text.c:711
+#, fuzzy
+msgid "IP address"
+msgstr "IP ¦ì§}"
+
+#: src/common/text.c:670
+msgid "port"
+msgstr ""
+
+#: src/common/text.c:675 src/common/text.c:702 src/common/text.c:709
+msgid "DCC Type"
+msgstr ""
+
+#: src/common/text.c:676 src/common/text.c:682 src/common/text.c:687
+#: src/common/text.c:694 src/common/text.c:717 src/common/text.c:723
+#: src/common/text.c:730 src/common/text.c:737 src/common/text.c:744
+#: src/common/text.c:751
+msgid "Filename"
+msgstr ""
+
+#: src/common/text.c:688 src/common/text.c:695
+msgid "Destination filename"
+msgstr ""
+
+#: src/common/text.c:697 src/common/text.c:725 src/fe-gtk/dccgui.c:414
+#: src/fe-gtk/dccgui.c:418 src/fe-gtk/dccgui.c:598
+msgid "CPS"
+msgstr ""
+
+#: src/common/text.c:704
+msgid "Error string"
+msgstr ""
+
+#: src/common/text.c:712
+msgid "{to|from}"
+msgstr ""
+
+#: src/common/text.c:736
+msgid "DCC type"
+msgstr ""
+
+#: src/common/text.c:745 src/fe-gtk/dccgui.c:414 src/fe-gtk/dccgui.c:418
+#: src/fe-gtk/dccgui.c:598
+#, fuzzy
+msgid "Position"
+msgstr "µøµ¡¦ì¸m"
+
+#: src/common/text.c:752 src/fe-gtk/dccgui.c:414 src/fe-gtk/dccgui.c:418
+#: src/fe-gtk/dccgui.c:598
+msgid "Size"
+msgstr ""
+
+#: src/common/text.c:757
+#, fuzzy
+msgid "DCC String"
+msgstr "DCC ³]©w"
+
+#: src/common/text.c:763
+msgid "Number of notify items"
+msgstr ""
+
+#: src/common/text.c:768
+#, fuzzy
+msgid "Servername"
+msgstr "¥N²z¦øªA¾¹(Proxy)¦ì§}:"
+
+#: src/common/text.c:789
+msgid "Old Filename"
+msgstr ""
+
+#: src/common/text.c:790
+msgid "New Filename"
+msgstr ""
+
+#: src/common/text.c:795
+#, fuzzy
+msgid "Receiver"
+msgstr "±µ¦¬ªºÀÉ®×"
+
+#: src/common/text.c:796 src/fe-gtk/gtkutil.c:59
+#, fuzzy
+msgid "Message"
+msgstr "Â÷½u°T®§:"
+
+#: src/common/text.c:801 src/common/text.c:812
+msgid "Hostmask"
+msgstr ""
+
+#: src/common/text.c:802
+msgid "Priv Yes/No"
+msgstr ""
+
+#: src/common/text.c:803
+msgid "Noti Yes/No"
+msgstr ""
+
+#: src/common/text.c:804
+msgid "Chan Yes/No"
+msgstr ""
+
+#: src/common/text.c:805
+msgid "Ctcp Yes/No"
+msgstr ""
+
+#: src/common/text.c:806
+msgid "Invi Yes/No"
+msgstr ""
+
+#: src/common/text.c:807
+msgid "Unig Yes/No"
+msgstr ""
+
+#: src/common/text.c:818
+msgid "Hostname"
+msgstr ""
+
+#: src/common/text.c:823
+msgid "The Packet"
+msgstr ""
+
+#: src/common/text.c:828
+msgid "Number of messages"
+msgstr ""
+
+#: src/common/text.c:829
+msgid "Bytes in mailbox"
+msgstr ""
+
+#: src/common/text.c:834
+#, fuzzy
+msgid "Seconds"
+msgstr "¬í."
+
+#: src/common/text.c:839
+msgid "Nick of person who have been invited"
+msgstr ""
+
+#: src/common/text.c:847
+msgid "Banmask"
+msgstr ""
+
+#: src/common/text.c:848
+msgid "Who set the ban"
+msgstr ""
+
+#: src/common/text.c:849
+msgid "Ban time"
+msgstr ""
+
+#: src/common/text.c:895
+msgid "-%C10-%C11>%O$t%B$1%B %C14(%C10$3%C14)%C has joined $2"
+msgstr ""
+
+#: src/common/text.c:896
+msgid "%C13*%O$t$1 $2%O"
+msgstr ""
+
+#: src/common/text.c:897
+msgid "%C13*%O$t%C8%B$1%B%O $2%O"
+msgstr ""
+
+#: src/common/text.c:898 src/common/text.c:926
+msgid "%C2<%O$1%C2>%O$t$2%O"
+msgstr ""
+
+#: src/common/text.c:899
+msgid "%C2<%C8%B$1%B%C2>%O$t$2%O"
+msgstr ""
+
+#: src/common/text.c:900
+msgid "%C12*%C13$1%C12*$t%O$2%O"
+msgstr ""
+
+#: src/common/text.c:902
+msgid "-%C10-%C11-%O$t$1 is now known as $2"
+msgstr ""
+
+#: src/common/text.c:904
+msgid "-%C10-%C11-%O$t$1 has changed the topic to: $2%O"
+msgstr ""
+
+#: src/common/text.c:905
+msgid "-%C10-%C11-%O$tTopic for %C11$1%C is %C11$2%O"
+msgstr ""
+
+#: src/common/text.c:907
+msgid "<%C10-%C11-%O$t$1 has kicked $2 from $3 ($4%O)"
+msgstr ""
+
+#: src/common/text.c:909
+msgid "<%C10-%C11-%O$t$1 %C14(%O$2%C14)%C has left $3"
+msgstr ""
+
+#: src/common/text.c:912
+msgid "-%C10-%C11-%O$tChannel $1 created on $2"
+msgstr ""
+
+#: src/common/text.c:914
+msgid "-%C10-%C11-%O$tTopic for %C11$1%C set by %C11$2%C at %C11$3%O"
+msgstr ""
+
+#: src/common/text.c:915
+msgid "<%C10-%C11-%O$t$1 has quit %C14(%O$2%O%C14)%O"
+msgstr ""
+
+#: src/common/text.c:918
+msgid "-%C10-%C11-%O$tPing reply from $1 : $2 second(s)"
+msgstr ""
+
+#: src/common/text.c:919
+msgid "%C12-%C13$1%C12-%O$t$2%O"
+msgstr ""
+
+#: src/common/text.c:922
+msgid "-%C10-%C11>%O$t%BYou%B are now talking on %C11$2%O"
+msgstr ""
+
+#: src/common/text.c:923
+msgid "%C6<%O$1%C6>%O$t$2%O"
+msgstr ""
+
+#: src/common/text.c:928
+msgid "-%C10-%C11-%O$tYou are now known as $2"
+msgstr ""
+
+#: src/common/text.c:930
+msgid "-%C10-%C11-%O$tYou have been kicked from $2 by $3 ($4%O)"
+msgstr ""
+
+#: src/common/text.c:931
+msgid "-%C10-%C11-%O$tYou have left channel $3"
+msgstr ""
+
+#: src/common/text.c:934
+msgid "-%C10-%C11-%O$tReceived a CTCP Sound $1 from $2"
+msgstr ""
+
+#: src/common/text.c:936
+msgid "-%C10-%C11-%O$tReceived a CTCP $1 from $2"
+msgstr ""
+
+#: src/common/text.c:938
+msgid "-%C10-%C11-%O$tReceived a CTCP $1 from $2 (to $3)"
+msgstr ""
+
+#: src/common/text.c:940
+msgid "-%C10-%C11-%O$t$1 sets channel keyword to $2"
+msgstr ""
+
+#: src/common/text.c:942
+msgid "-%C10-%C11-%O$t$1 sets channel limit to $2"
+msgstr ""
+
+#: src/common/text.c:944
+msgid "-%C10-%C11-%O$t$1 gives channel half-operator status to $2"
+msgstr ""
+
+#: src/common/text.c:946
+msgid "-%C10-%C11-%O$t$1 gives channel operator status to $2"
+msgstr ""
+
+#: src/common/text.c:948
+msgid "-%C10-%C11-%O$t$1 gives voice to $2"
+msgstr ""
+
+#: src/common/text.c:949
+msgid "-%C10-%C11-%O$t$1 sets ban on $2"
+msgstr ""
+
+#: src/common/text.c:952
+msgid "-%C10-%C11-%O$t$1 removes channel keyword"
+msgstr ""
+
+#: src/common/text.c:954
+msgid "-%C10-%C11-%O$t$1 removes user limit"
+msgstr ""
+
+#: src/common/text.c:956
+msgid "-%C10-%C11-%O$t$1 removes channel half-operator status from $2"
+msgstr ""
+
+#: src/common/text.c:959
+msgid "-%C10-%C11-%O$t$1 removes channel operator status from $2"
+msgstr ""
+
+#: src/common/text.c:961
+msgid "-%C10-%C11-%O$t$1 removes voice from $2"
+msgstr ""
+
+#: src/common/text.c:963
+msgid "-%C10-%C11-%O$t$1 removes ban on $2"
+msgstr ""
+
+#: src/common/text.c:965
+msgid "-%C10-%C11-%O$t$1 sets exempt on $2"
+msgstr ""
+
+#: src/common/text.c:967
+msgid "-%C10-%C11-%O$t$1 removes exempt on $2"
+msgstr ""
+
+#: src/common/text.c:969
+msgid "-%C10-%C11-%O$t$1 sets invite on $2"
+msgstr ""
+
+#: src/common/text.c:971
+msgid "-%C10-%C11-%O$t$1 removes invite on $2"
+msgstr ""
+
+#: src/common/text.c:973
+msgid "-%C10-%C11-%O$t$1 sets mode $2$3 $4"
+msgstr ""
+
+#: src/common/text.c:975
+msgid "-%C10-%C11-%O$t%C12[%O$1%C12] %C14(%O$2@$3%C14) %O: $4%O"
+msgstr ""
+
+#: src/common/text.c:977
+msgid "-%C10-%C11-%O$t%C12[%O$1%C12]%C $2"
+msgstr ""
+
+#: src/common/text.c:979
+msgid "-%C10-%C11-%O$t%C12[%O$1%C12]%O $2"
+msgstr ""
+
+#: src/common/text.c:981
+msgid "-%C10-%C11-%O$t%C12[%O$1%C12]%O idle %C11$2%O"
+msgstr ""
+
+#: src/common/text.c:983
+msgid "-%C10-%C11-%O$t%C12[%O$1%C12]%O idle %C11$2%O, signon: %C11$3%O"
+msgstr ""
+
+#: src/common/text.c:986
+msgid "-%C10-%C11-%O$t%C12[%O$1%C12] %Cis away %C14(%O$2%O%C14)"
+msgstr ""
+
+#: src/common/text.c:988
+msgid "-%C10-%C11-%O$t%C12[%O$1%C12] %CEnd of WHOIS list."
+msgstr ""
+
+#: src/common/text.c:990
+msgid "-%C10-%C11-%O$tCannot join%C11 %B$1 %O(User limit reached)."
+msgstr ""
+
+#: src/common/text.c:992
+msgid "-%C10-%C11-%O$tCannot join%C11 %B$1 %O(You are banned)."
+msgstr ""
+
+#: src/common/text.c:994
+msgid "-%C10-%C11-%O$tCannot join%C11 %B$1 %O(Channel is invite only)."
+msgstr ""
+
+#: src/common/text.c:997
+msgid "-%C10-%C11-%O$tCannot join%C11 %B$1 %O(Requires keyword)."
+msgstr ""
+
+#: src/common/text.c:998
+msgid "-%C10-%C11-%O$tMOTD Skipped."
+msgstr ""
+
+#: src/common/text.c:1000 src/common/text.c:1100 src/common/text.c:1102
+#: src/common/text.c:1146
+msgid "-%C10-%C11-%O$t$1%O"
+msgstr ""
+
+#: src/common/text.c:1003
+msgid "-%C10-%C11-%O$tYou have been invited to %C11$1%C by %C11$2%C (%C11$3%C)"
+msgstr ""
+
+#: src/common/text.c:1006
+msgid "-%C10-%C11-%O$t%C11Users on $1:%C $2"
+msgstr ""
+
+#: src/common/text.c:1008
+msgid "-%C10-%C11-%O$t$1 already in use. Retrying with $2.."
+msgstr ""
+
+#: src/common/text.c:1010
+msgid "-%C10-%C11-%O$tNickname already in use. Use /NICK to try another."
+msgstr ""
+
+#: src/common/text.c:1013
+msgid "-%C10-%C11-%O$tUnknown host. Maybe you misspelled it?"
+msgstr ""
+
+#: src/common/text.c:1015
+msgid "-%C10-%C11-%O$tConnection failed. Error: $1"
+msgstr ""
+
+#: src/common/text.c:1017
+msgid "-%C10-%C11-%O$tConnecting to %C11$1 %C14(%C11$2%C14)%C port %C11$3%C.."
+msgstr ""
+
+#: src/common/text.c:1020
+msgid "-%C10-%C11-%O$tConnected. Now logging in.."
+msgstr ""
+
+#: src/common/text.c:1022
+msgid "-%C10-%C11-%O$tStopped previous connection attempt (pid=$1)"
+msgstr ""
+
+#: src/common/text.c:1024
+msgid "-%C10-%C11-%O$tDisconnected ($1)."
+msgstr ""
+
+#: src/common/text.c:1025
+msgid "-%C10-%C11-%O$tNo such DCC."
+msgstr ""
+
+#: src/common/text.c:1028
+msgid "-%C10-%C11-%O$t$1 deleted from notify list."
+msgstr ""
+
+#: src/common/text.c:1030
+msgid "-%C10-%C11-%O$t$1 added to notify list."
+msgstr ""
+
+#: src/common/text.c:1032
+msgid "-%C10-%C11-%O$tChannel $1 modes: $2"
+msgstr ""
+
+#: src/common/text.c:1034
+msgid "-%C10-%C11-%O$t$1 sets modes%B %C14[%O$2%B%C14]%O"
+msgstr ""
+
+#: src/common/text.c:1036
+msgid "-%C10-%C11-%O$tYou have been killed by $1 ($2%O)"
+msgstr ""
+
+#: src/common/text.c:1038
+msgid "-%C10-%C11-%O$tDCC $1 %C11$2 %Cto %C11$3 %Cstalled - aborting."
+msgstr ""
+
+#: src/common/text.c:1041
+msgid "-%C10-%C11-%O$tDCC $1 %C11$2 %Cto %C11$3 %Ctimed out - aborting."
+msgstr ""
+
+#: src/common/text.c:1044
+msgid ""
+"-%C10-%C11-%O$tDCC CHAT failed. Connection to $1 %C14[%O$2:$3%C14]%O lost."
+msgstr ""
+
+#: src/common/text.c:1047
+msgid "-%C10-%C11-%O$tDCC RECV: Cannot open $1 for writing - aborting."
+msgstr ""
+
+#: src/common/text.c:1050
+msgid "-%C10-%C11-%O$tDCC RECV $1 ($2) failed. Connection to $3 lost."
+msgstr ""
+
+#: src/common/text.c:1053
+msgid ""
+"-%C10-%C11-%O$tDCC RECV %C11$1%O from %C11$3%O complete %C14[%C11$4%O cps%"
+"C14]%O."
+msgstr ""
+
+#: src/common/text.c:1056
+msgid "-%C10-%C11-%O$tDCC $1 connect attempt to %C11$2%O failed (err=$3)."
+msgstr ""
+
+#: src/common/text.c:1059
+msgid "-%C10-%C11-%O$tDCC $1 connection established $4 %C11$2 %C14[%O$3%C14]%O"
+msgstr ""
+
+#: src/common/text.c:1062
+msgid "-%C10-%C11-%O$tDCC SEND %C11$1%O failed. Connection to %C11$2%O lost."
+msgstr ""
+
+#: src/common/text.c:1065
+msgid ""
+"-%C10-%C11-%O$tDCC SEND %C11$1%O to %C11$2%O complete %C14[%C11$3%O cps%C14]%"
+"O."
+msgstr ""
+
+#: src/common/text.c:1068
+msgid "-%C10-%C11-%O$tOffering %C11$1 %Cto %C11$2%O"
+msgstr ""
+
+#: src/common/text.c:1070
+msgid "-%C10-%C11-%O$tDCC $1 %C11$2 %Cto %C11$3 %Caborted."
+msgstr ""
+
+#: src/common/text.c:1072
+msgid "-%C10-%C11-%O$tNo such DCC offer."
+msgstr ""
+
+#: src/common/text.c:1074
+msgid "-%C10-%C11-%O$tAlready offering CHAT to $1"
+msgstr ""
+
+#: src/common/text.c:1076
+msgid "-%C10-%C11-%O$tOffering DCC CHAT to $1"
+msgstr ""
+
+#: src/common/text.c:1078
+msgid "-%C10-%C11-%O$tReceived a DCC CHAT offer from $1"
+msgstr ""
+
+#: src/common/text.c:1080
+msgid "-%C10-%C11-%O$t%C11$1 %Chas requested to resume %C11$2 %Cfrom %C11$3%C."
+msgstr ""
+
+#: src/common/text.c:1083
+msgid "-%C10-%C11-%O$t%C11$1 %Chas offered %C11$2 %C(%C11$3 %Cbytes)"
+msgstr ""
+
+#: src/common/text.c:1085
+msgid "-%C10-%C11-%O$tReceived '$1%O' from $2"
+msgstr ""
+
+#: src/common/text.c:1087
+msgid "-%C10-%C11-%O$tNotify: $1 is online ($2)."
+msgstr ""
+
+#: src/common/text.c:1089
+msgid "-%C10-%C11-%O$t$1 users in notify list."
+msgstr ""
+
+#: src/common/text.c:1091
+msgid "-%C10-%C11-%O$tNotify list is empty."
+msgstr ""
+
+#: src/common/text.c:1093
+msgid "-%C10-%C11-%O$tNo process is currently running"
+msgstr ""
+
+#: src/common/text.c:1095
+msgid "-%C10-%C11-%O$tA process is already running"
+msgstr ""
+
+#: src/common/text.c:1097
+msgid "-%C10-%C11-%O$tLooking up %C11$1%C.."
+msgstr ""
+
+#: src/common/text.c:1098
+msgid "-%C10-%C11-%O$tConnected."
+msgstr ""
+
+#: src/common/text.c:1104
+msgid "-%C10-%C11-%O$tFound your IP: [$1]"
+msgstr ""
+
+#: src/common/text.c:1107
+msgid ""
+"-%C10-%C11-%O$tThe file %C11$1%C already exists, saving it as %C11$2%O "
+"instead."
+msgstr ""
+
+#: src/common/text.c:1109
+msgid "%C3>%O$1%C3<%O$tCTCP $2%O"
+msgstr ""
+
+#: src/common/text.c:1110 src/common/text.c:1111
+msgid "%C3>%O$1%C3<%O$t$2%O"
+msgstr ""
+
+#: src/common/text.c:1114
+msgid "%C12-%C13$1/Wallops%C12-%O$t$2%O"
+msgstr ""
+
+#: src/common/text.c:1117
+msgid "%C08,02 Hostmask             PRIV NOTI CHAN CTCP INVI UNIG %O"
+msgstr ""
+
+#: src/common/text.c:1118
+msgid " $1 $2  $3  $4  $5  $6  $7"
+msgstr ""
+
+#: src/common/text.c:1121
+msgid "%C08,02                                                    %O"
+msgstr ""
+
+#: src/common/text.c:1123
+msgid "%O%C11$1%O added to ignore list."
+msgstr ""
+
+#: src/common/text.c:1125
+msgid "%O%C11$1%O removed from ignore list."
+msgstr ""
+
+#: src/common/text.c:1127
+msgid "-%C10-%C11-%O$tLooking up IP number for%C11 $1%O.."
+msgstr ""
+
+#: src/common/text.c:1128
+msgid "  Ignore list is empty."
+msgstr ""
+
+#: src/common/text.c:1131
+msgid "Ignore on %C11$1%O changed."
+msgstr ""
+
+#: src/common/text.c:1133
+msgid "-%C10-%C11-%O$tNotify: $1 is offline ($2)."
+msgstr ""
+
+#: src/common/text.c:1135
+msgid "-%C10-%C11-%O$tReceived a malformed DCC request from %C11$1%O."
+msgstr ""
+
+#: src/common/text.c:1138
+msgid "-%C10-%C11-%O$tContents of packet: \"$1%O\"."
+msgstr ""
+
+#: src/common/text.c:1140
+msgid "<%C10-%C11-%O$t$1 %C14(%O$2%C14)%C has left $3 %C14(%O$4%C14)%O"
+msgstr ""
+
+#: src/common/text.c:1143
+msgid "-%C10-%C11-%O$tYou have left channel $3 %C14(%O$4%C14)%O"
+msgstr ""
+
+#: src/common/text.c:1145
+msgid "-%C3-%C9-%O$tYou have new mail ($1 messages, $2 bytes total)."
+msgstr ""
+
+#: src/common/text.c:1148
+msgid "-%C10-%C11-%O$tNo ping reply for $1 seconds, disconnecting."
+msgstr ""
+
+#: src/common/text.c:1150
+msgid "-%C10-%C11-%O$tYou're inviting %C11$1%C to %C11$2%C (%C11$3%C)"
+msgstr ""
+
+#: src/common/text.c:1152
+msgid "-%C10-%C11-%O$t$1 Banlist: %C3$4 %C4$2 %C5$3%O"
+msgstr ""
+
+#: src/common/text.c:1153
+msgid "%UChannel          Users   Topic%O"
+msgstr ""
+
+#: src/common/text.c:1154
+msgid "%C08,02 %B-- Notify List --------------- %O"
+msgstr ""
+
+#: src/common/text.c:1155
+msgid ""
+"%C8,2 Type  To/From    Status  Size    Pos     File    %O%010%B%"
+"C9--------------------------------------------------%O"
+msgstr ""
+
+#: src/common/text.c:1202
+#, c-format
+msgid ""
+"Error parsing event %s.\n"
+"Loading default"
+msgstr ""
+
+#: src/common/text.c:1211
+msgid "XChat CRITICAL *** default event text failed to build!\n"
+msgstr ""
+
+#: src/common/text.c:1422
+#, c-format
+msgid "Overflow in display_event (%s)\n"
+msgstr ""
+
+#: src/common/text.c:1434
+#, c-format
+msgid "XChat DEBUG: display_event: arg > numargs (%d %d %s)\n"
+msgstr ""
+
+#: src/common/text.c:1441
+msgid "Error args[a] == NULL in display_event\n"
+msgstr ""
+
+#: src/common/text.c:1527
+msgid "String ends with a $"
+msgstr ""
+
+#: src/common/text.c:1555
+msgid "String ends in $a"
+msgstr ""
+
+#: src/common/text.c:1558
+msgid "$a value is greater then 255"
+msgstr ""
+
+#: src/common/text.c:1581
+#, c-format
+msgid "Error, invalid argument $%c\n"
+msgstr ""
+
+#: src/common/text.c:1683
+#, c-format
+msgid "error, textsignal_handler passed non TE signal (%d)\n"
+msgstr ""
+
+#: src/common/util.c:73 src/common/util.c:115
+#, c-format
+msgid "Out of memory! (%d)\n"
+msgstr ""
+
+#: src/common/util.c:83
+#, c-format
+msgid "Malloc'ed %d bytes, now [35m%d[m\n"
+msgstr ""
+
+#: src/common/util.c:126
+#, c-format
+msgid "strdup (\"%-.40s\") size: %d, total: [35m%d[m\n"
+msgstr ""
+
+#: src/common/util.c:148
+#, c-format
+msgid "[31mTried to free unknown block %lx![m\n"
+msgstr ""
+
+#: src/common/util.c:156
+#, c-format
+msgid "Free'ed %d bytes, usage now [35m%d[m\n"
+msgstr ""
+
+#: src/common/util.c:222
+msgid "Remote host closed socket"
+msgstr ""
+
+#: src/common/util.c:224
+msgid "Connection refused"
+msgstr ""
+
+#: src/common/util.c:227
+msgid "No route to host"
+msgstr ""
+
+#: src/common/util.c:229
+#, fuzzy
+msgid "Connection timed out"
+msgstr "¤W½u´£¿ô®É¶¡¶¡¹j"
+
+#: src/common/util.c:231
+msgid "Cannot assign that address"
+msgstr ""
+
+#: src/common/util.c:233
+msgid "Connection reset by peer"
+msgstr ""
+
+#: src/common/util.c:586
+msgid "Andorra"
+msgstr ""
+
+#: src/common/util.c:587
+msgid "United Arab Emirates"
+msgstr ""
+
+#: src/common/util.c:588
+msgid "Afghanistan"
+msgstr ""
+
+#: src/common/util.c:589
+msgid "Antigua and Barbuda"
+msgstr ""
+
+#: src/common/util.c:590
+msgid "Anguilla"
+msgstr ""
+
+#: src/common/util.c:591
+msgid "Albania"
+msgstr ""
+
+#: src/common/util.c:592
+msgid "Armenia"
+msgstr ""
+
+#: src/common/util.c:593
+msgid "Netherlands Antilles"
+msgstr ""
+
+#: src/common/util.c:594
+msgid "Angola"
+msgstr ""
+
+#: src/common/util.c:595
+msgid "Antarctica"
+msgstr ""
+
+#: src/common/util.c:596
+msgid "Argentina"
+msgstr ""
+
+#: src/common/util.c:597
+msgid "American Samoa"
+msgstr ""
+
+#: src/common/util.c:598
+msgid "Austria"
+msgstr ""
+
+#: src/common/util.c:599
+msgid "Australia"
+msgstr ""
+
+#: src/common/util.c:600
+msgid "Aruba"
+msgstr ""
+
+#: src/common/util.c:601
+msgid "Azerbaijan"
+msgstr ""
+
+#: src/common/util.c:602
+msgid "Bosnia and Herzegovina"
+msgstr ""
+
+#: src/common/util.c:603
+msgid "Barbados"
+msgstr ""
+
+#: src/common/util.c:604
+msgid "Bangladesh"
+msgstr ""
+
+#: src/common/util.c:605
+msgid "Belgium"
+msgstr ""
+
+#: src/common/util.c:606
+msgid "Burkina Faso"
+msgstr ""
+
+#: src/common/util.c:607
+msgid "Bulgaria"
+msgstr ""
+
+#: src/common/util.c:608
+msgid "Bahrain"
+msgstr ""
+
+#: src/common/util.c:609
+msgid "Burundi"
+msgstr ""
+
+#: src/common/util.c:610
+msgid "Benin"
+msgstr ""
+
+#: src/common/util.c:611
+msgid "Bermuda"
+msgstr ""
+
+#: src/common/util.c:612
+msgid "Brunei Darussalam"
+msgstr ""
+
+#: src/common/util.c:613
+msgid "Bolivia"
+msgstr ""
+
+#: src/common/util.c:614
+msgid "Brazil"
+msgstr ""
+
+#: src/common/util.c:615
+msgid "Bahamas"
+msgstr ""
+
+#: src/common/util.c:616
+#, fuzzy
+msgid "Bhutan"
+msgstr "«ö¶s"
+
+#: src/common/util.c:617
+msgid "Bouvet Island"
+msgstr ""
+
+#: src/common/util.c:618
+msgid "Botswana"
+msgstr ""
+
+#: src/common/util.c:619
+msgid "Belarus"
+msgstr ""
+
+#: src/common/util.c:620
+msgid "Belize"
+msgstr ""
+
+#: src/common/util.c:621
+msgid "Canada"
+msgstr ""
+
+#: src/common/util.c:622
+msgid "Cocos Islands"
+msgstr ""
+
+#: src/common/util.c:623
+msgid "Central African Republic"
+msgstr ""
+
+#: src/common/util.c:624
+msgid "Congo"
+msgstr ""
+
+#: src/common/util.c:625
+msgid "Switzerland"
+msgstr ""
+
+#: src/common/util.c:626
+msgid "Cote D'ivoire"
+msgstr ""
+
+#: src/common/util.c:627
+msgid "Cook Islands"
+msgstr ""
+
+#: src/common/util.c:628
+#, fuzzy
+msgid "Chile"
+msgstr "¿ï¾ÜÀÉ®×"
+
+#: src/common/util.c:629
+msgid "Cameroon"
+msgstr ""
+
+#: src/common/util.c:630
+msgid "China"
+msgstr ""
+
+#: src/common/util.c:631
+msgid "Colombia"
+msgstr ""
+
+#: src/common/util.c:632
+msgid "Costa Rica"
+msgstr ""
+
+#: src/common/util.c:633
+msgid "Former Czechoslovakia"
+msgstr ""
+
+#: src/common/util.c:634
+msgid "Cuba"
+msgstr ""
+
+#: src/common/util.c:635
+msgid "Cape Verde"
+msgstr ""
+
+#: src/common/util.c:636
+msgid "Christmas Island"
+msgstr ""
+
+#: src/common/util.c:637
+msgid "Cyprus"
+msgstr ""
+
+#: src/common/util.c:638
+msgid "Czech Republic"
+msgstr ""
+
+#: src/common/util.c:639
+msgid "Germany"
+msgstr ""
+
+#: src/common/util.c:640
+msgid "Djibouti"
+msgstr ""
+
+#: src/common/util.c:641
+msgid "Denmark"
+msgstr ""
+
+#: src/common/util.c:642
+msgid "Dominica"
+msgstr ""
+
+#: src/common/util.c:643
+msgid "Dominican Republic"
+msgstr ""
+
+#: src/common/util.c:644
+msgid "Algeria"
+msgstr ""
+
+#: src/common/util.c:645
+msgid "Ecuador"
+msgstr ""
+
+#: src/common/util.c:646
+msgid "Estonia"
+msgstr ""
+
+#: src/common/util.c:647
+msgid "Egypt"
+msgstr ""
+
+#: src/common/util.c:648
+msgid "Western Sahara"
+msgstr ""
+
+#: src/common/util.c:649
+msgid "Eritrea"
+msgstr ""
+
+#: src/common/util.c:650
+msgid "Spain"
+msgstr ""
+
+#: src/common/util.c:651
+msgid "Ethiopia"
+msgstr ""
+
+#: src/common/util.c:652
+msgid "Finland"
+msgstr ""
+
+#: src/common/util.c:653
+msgid "Fiji"
+msgstr ""
+
+#: src/common/util.c:654
+msgid "Falkland Islands"
+msgstr ""
+
+#: src/common/util.c:655
+msgid "Micronesia"
+msgstr ""
+
+#: src/common/util.c:656
+msgid "Faroe Islands"
+msgstr ""
+
+#: src/common/util.c:657
+#, fuzzy
+msgid "France"
+msgstr "¨ú®ø"
+
+#: src/common/util.c:658
+msgid "France, Metropolitan"
+msgstr ""
+
+#: src/common/util.c:659
+msgid "Gabon"
+msgstr ""
+
+#: src/common/util.c:660
+msgid "Great Britain"
+msgstr ""
+
+#: src/common/util.c:661
+#, fuzzy
+msgid "Grenada"
+msgstr "ºñ:"
+
+#: src/common/util.c:662
+msgid "Georgia"
+msgstr ""
+
+#: src/common/util.c:663
+msgid "French Guiana"
+msgstr ""
+
+#: src/common/util.c:664
+msgid "Ghana"
+msgstr ""
+
+#: src/common/util.c:665
+msgid "Gibraltar"
+msgstr ""
+
+#: src/common/util.c:666
+#, fuzzy
+msgid "Greenland"
+msgstr "ºñ:"
+
+#: src/common/util.c:667
+msgid "Gambia"
+msgstr ""
+
+#: src/common/util.c:668
+#, fuzzy
+msgid "Guinea"
+msgstr "¤@¯ë"
+
+#: src/common/util.c:669
+msgid "Guadeloupe"
+msgstr ""
+
+#: src/common/util.c:670
+msgid "Equatorial Guinea"
+msgstr ""
+
+#: src/common/util.c:671
+#, fuzzy
+msgid "Greece"
+msgstr "ºñ:"
+
+#: src/common/util.c:672
+msgid "S. Georgia and S. Sandwich Isles."
+msgstr ""
+
+#: src/common/util.c:673
+msgid "Guatemala"
+msgstr ""
+
+#: src/common/util.c:674
+msgid "Guam"
+msgstr ""
+
+#: src/common/util.c:675
+msgid "Guinea-Bissau"
+msgstr ""
+
+#: src/common/util.c:676
+msgid "Guyana"
+msgstr ""
+
+#: src/common/util.c:677
+msgid "Hong Kong"
+msgstr ""
+
+#: src/common/util.c:678
+msgid "Heard and McDonald Islands"
+msgstr ""
+
+#: src/common/util.c:679
+msgid "Honduras"
+msgstr ""
+
+#: src/common/util.c:680
+msgid "Croatia"
+msgstr ""
+
+#: src/common/util.c:681
+msgid "Haiti"
+msgstr ""
+
+#: src/common/util.c:682
+msgid "Hungary"
+msgstr ""
+
+#: src/common/util.c:683
+msgid "Indonesia"
+msgstr ""
+
+#: src/common/util.c:684
+msgid "Ireland"
+msgstr ""
+
+#: src/common/util.c:685
+msgid "Israel"
+msgstr ""
+
+#: src/common/util.c:686
+msgid "India"
+msgstr ""
+
+#: src/common/util.c:687
+msgid "British Indian Ocean Territory"
+msgstr ""
+
+#: src/common/util.c:688
+msgid "Iraq"
+msgstr ""
+
+#: src/common/util.c:689
+msgid "Iran"
+msgstr ""
+
+#: src/common/util.c:690
+msgid "Iceland"
+msgstr ""
+
+#: src/common/util.c:691
+msgid "Italy"
+msgstr ""
+
+#: src/common/util.c:692
+msgid "Jamaica"
+msgstr ""
+
+#: src/common/util.c:693
+msgid "Jordan"
+msgstr ""
+
+#: src/common/util.c:694
+msgid "Japan"
+msgstr ""
+
+#: src/common/util.c:695
+msgid "Kenya"
+msgstr ""
+
+#: src/common/util.c:696
+msgid "Kyrgyzstan"
+msgstr ""
+
+#: src/common/util.c:697
+msgid "Cambodia"
+msgstr ""
+
+#: src/common/util.c:698
+msgid "Kiribati"
+msgstr ""
+
+#: src/common/util.c:699
+msgid "Comoros"
+msgstr ""
+
+#: src/common/util.c:700
+msgid "St. Kitts and Nevis"
+msgstr ""
+
+#: src/common/util.c:701
+msgid "North Korea"
+msgstr ""
+
+#: src/common/util.c:702
+msgid "South Korea"
+msgstr ""
+
+#: src/common/util.c:703
+#, fuzzy
+msgid "Kuwait"
+msgstr "Â÷¶}"
+
+#: src/common/util.c:704
+msgid "Cayman Islands"
+msgstr ""
+
+#: src/common/util.c:705
+msgid "Kazakhstan"
+msgstr ""
+
+#: src/common/util.c:706
+msgid "Laos"
+msgstr ""
+
+#: src/common/util.c:707
+msgid "Lebanon"
+msgstr ""
+
+#: src/common/util.c:708
+msgid "Saint Lucia"
+msgstr ""
+
+#: src/common/util.c:709
+msgid "Liechtenstein"
+msgstr ""
+
+#: src/common/util.c:710
+msgid "Sri Lanka"
+msgstr ""
+
+#: src/common/util.c:711
+msgid "Liberia"
+msgstr ""
+
+#: src/common/util.c:712
+msgid "Lesotho"
+msgstr ""
+
+#: src/common/util.c:713
+msgid "Lithuania"
+msgstr ""
+
+#: src/common/util.c:714
+msgid "Luxembourg"
+msgstr ""
+
+#: src/common/util.c:715
+msgid "Latvia"
+msgstr ""
+
+#: src/common/util.c:716
+msgid "Libya"
+msgstr ""
+
+#: src/common/util.c:717
+msgid "Morocco"
+msgstr ""
+
+#: src/common/util.c:718
+msgid "Monaco"
+msgstr ""
+
+#: src/common/util.c:719
+msgid "Moldova"
+msgstr ""
+
+#: src/common/util.c:720
+msgid "Madagascar"
+msgstr ""
+
+#: src/common/util.c:721
+msgid "Marshall Islands"
+msgstr ""
+
+#: src/common/util.c:722
+msgid "Macedonia"
+msgstr ""
+
+#: src/common/util.c:723
+msgid "Mali"
+msgstr ""
+
+#: src/common/util.c:724
+msgid "Myanmar"
+msgstr ""
+
+#: src/common/util.c:725
+msgid "Mongolia"
+msgstr ""
+
+#: src/common/util.c:726
+msgid "Macau"
+msgstr ""
+
+#: src/common/util.c:727
+msgid "Northern Mariana Islands"
+msgstr ""
+
+#: src/common/util.c:728
+msgid "Martinique"
+msgstr ""
+
+#: src/common/util.c:729
+msgid "Mauritania"
+msgstr ""
+
+#: src/common/util.c:730
+msgid "Montserrat"
+msgstr ""
+
+#: src/common/util.c:731
+msgid "Malta"
+msgstr ""
+
+#: src/common/util.c:732
+msgid "Mauritius"
+msgstr ""
+
+#: src/common/util.c:733
+msgid "Maldives"
+msgstr ""
+
+#: src/common/util.c:734
+msgid "Malawi"
+msgstr ""
+
+#: src/common/util.c:735
+msgid "Mexico"
+msgstr ""
+
+#: src/common/util.c:736
+msgid "Malaysia"
+msgstr ""
+
+#: src/common/util.c:737
+msgid "Mozambique"
+msgstr ""
+
+#: src/common/util.c:738
+msgid "Namibia"
+msgstr ""
+
+#: src/common/util.c:739
+msgid "New Caledonia"
+msgstr ""
+
+#: src/common/util.c:740
+msgid "Niger"
+msgstr ""
+
+#: src/common/util.c:741
+msgid "Norfolk Island"
+msgstr ""
+
+#: src/common/util.c:742
+msgid "Nigeria"
+msgstr ""
+
+#: src/common/util.c:743
+msgid "Nicaragua"
+msgstr ""
+
+#: src/common/util.c:744
+msgid "Netherlands"
+msgstr ""
+
+#: src/common/util.c:745
+#, fuzzy
+msgid "Norway"
+msgstr "¦£¸L"
+
+#: src/common/util.c:746
+msgid "Nepal"
+msgstr ""
+
+#: src/common/util.c:747
+msgid "Nauru"
+msgstr ""
+
+#: src/common/util.c:748
+msgid "Neutral Zone"
+msgstr ""
+
+#: src/common/util.c:749
+msgid "Niue"
+msgstr ""
+
+#: src/common/util.c:750
+msgid "New Zealand"
+msgstr ""
+
+#: src/common/util.c:751
+msgid "Oman"
+msgstr ""
+
+#: src/common/util.c:752
+msgid "Panama"
+msgstr ""
+
+#: src/common/util.c:753
+msgid "Peru"
+msgstr ""
+
+#: src/common/util.c:754
+msgid "French Polynesia"
+msgstr ""
+
+#: src/common/util.c:755
+msgid "Papua New Guinea"
+msgstr ""
+
+#: src/common/util.c:756
+msgid "Philippines"
+msgstr ""
+
+#: src/common/util.c:757
+msgid "Pakistan"
+msgstr ""
+
+#: src/common/util.c:758
+#, fuzzy
+msgid "Poland"
+msgstr "¨Ï¥Î"
+
+#: src/common/util.c:759
+msgid "St. Pierre and Miquelon"
+msgstr ""
+
+#: src/common/util.c:760
+msgid "Pitcairn"
+msgstr ""
+
+#: src/common/util.c:761
+msgid "Puerto Rico"
+msgstr ""
+
+#: src/common/util.c:762
+msgid "Portugal"
+msgstr ""
+
+#: src/common/util.c:763
+#, fuzzy
+msgid "Palau"
+msgstr "ªO­±"
+
+#: src/common/util.c:764
+msgid "Paraguay"
+msgstr ""
+
+#: src/common/util.c:765
+msgid "Qatar"
+msgstr ""
+
+#: src/common/util.c:766
+msgid "Reunion"
+msgstr ""
+
+#: src/common/util.c:767
+msgid "Romania"
+msgstr ""
+
+#: src/common/util.c:768
+msgid "Russian Federation"
+msgstr ""
+
+#: src/common/util.c:769
+msgid "Rwanda"
+msgstr ""
+
+#: src/common/util.c:770
+msgid "Saudi Arabia"
+msgstr ""
+
+#: src/common/util.c:771
+msgid "Solomon Islands"
+msgstr ""
+
+#: src/common/util.c:772
+msgid "Seychelles"
+msgstr ""
+
+#: src/common/util.c:773
+#, fuzzy
+msgid "Sudan"
+msgstr "­µ®Ä"
+
+#: src/common/util.c:774
+msgid "Sweden"
+msgstr ""
+
+#: src/common/util.c:775
+msgid "Singapore"
+msgstr ""
+
+#: src/common/util.c:776
+msgid "St. Helena"
+msgstr ""
+
+#: src/common/util.c:777
+msgid "Slovenia"
+msgstr ""
+
+#: src/common/util.c:778
+msgid "Svalbard and Jan Mayen Islands"
+msgstr ""
+
+#: src/common/util.c:779
+msgid "Slovak Republic"
+msgstr ""
+
+#: src/common/util.c:780
+msgid "Sierra Leone"
+msgstr ""
+
+#: src/common/util.c:781
+msgid "San Marino"
+msgstr ""
+
+#: src/common/util.c:782
+#, fuzzy
+msgid "Senegal"
+msgstr "¤@¯ë"
+
+#: src/common/util.c:783
+msgid "Somalia"
+msgstr ""
+
+#: src/common/util.c:784
+msgid "Suriname"
+msgstr ""
+
+#: src/common/util.c:785
+msgid "Sao Tome and Principe"
+msgstr ""
+
+#: src/common/util.c:786
+msgid "Former USSR"
+msgstr ""
+
+#: src/common/util.c:787
+msgid "El Salvador"
+msgstr ""
+
+#: src/common/util.c:788
+msgid "Syria"
+msgstr ""
+
+#: src/common/util.c:789
+msgid "Swaziland"
+msgstr ""
+
+#: src/common/util.c:790
+msgid "Turks and Caicos Islands"
+msgstr ""
+
+#: src/common/util.c:791
+#, fuzzy
+msgid "Chad"
+msgstr "X-Chat"
+
+#: src/common/util.c:792
+msgid "French Southern Territories"
+msgstr ""
+
+#: src/common/util.c:793
+msgid "Togo"
+msgstr ""
+
+#: src/common/util.c:794
+msgid "Thailand"
+msgstr ""
+
+#: src/common/util.c:795
+msgid "Tajikistan"
+msgstr ""
+
+#: src/common/util.c:796
+msgid "Tokelau"
+msgstr ""
+
+#: src/common/util.c:797
+msgid "Turkmenistan"
+msgstr ""
+
+#: src/common/util.c:798
+msgid "Tunisia"
+msgstr ""
+
+#: src/common/util.c:799
+msgid "Tonga"
+msgstr ""
+
+#: src/common/util.c:800
+msgid "East Timor"
+msgstr ""
+
+#: src/common/util.c:801
+msgid "Turkey"
+msgstr ""
+
+#: src/common/util.c:802
+msgid "Trinidad and Tobago"
+msgstr ""
+
+#: src/common/util.c:803
+msgid "Tuvalu"
+msgstr ""
+
+#: src/common/util.c:804
+msgid "Taiwan"
+msgstr ""
+
+#: src/common/util.c:805
+msgid "Tanzania"
+msgstr ""
+
+#: src/common/util.c:806
+msgid "Ukraine"
+msgstr ""
+
+#: src/common/util.c:807
+msgid "Uganda"
+msgstr ""
+
+#: src/common/util.c:808
+msgid "United Kingdom"
+msgstr ""
+
+#: src/common/util.c:809
+msgid "US Minor Outlying Islands"
+msgstr ""
+
+#: src/common/util.c:810
+msgid "United States of America"
+msgstr ""
+
+#: src/common/util.c:811
+msgid "Uruguay"
+msgstr ""
+
+#: src/common/util.c:812
+msgid "Uzbekistan"
+msgstr ""
+
+#: src/common/util.c:813
+msgid "Vatican City State"
+msgstr ""
+
+#: src/common/util.c:814
+msgid "St. Vincent and the grenadines"
+msgstr ""
+
+#: src/common/util.c:815
+msgid "Venezuela"
+msgstr ""
+
+#: src/common/util.c:816
+msgid "British Virgin Islands"
+msgstr ""
+
+#: src/common/util.c:817
+msgid "US Virgin Islands"
+msgstr ""
+
+#: src/common/util.c:818
+msgid "Vietnam"
+msgstr ""
+
+#: src/common/util.c:819
+msgid "Vanuatu"
+msgstr ""
+
+#: src/common/util.c:820
+msgid "Wallis and Futuna Islands"
+msgstr ""
+
+#: src/common/util.c:821
+msgid "Samoa"
+msgstr ""
+
+#: src/common/util.c:822
+msgid "Yemen"
+msgstr ""
+
+#: src/common/util.c:823
+msgid "Mayotte"
+msgstr ""
+
+#: src/common/util.c:824
+msgid "Yugoslavia"
+msgstr ""
+
+#: src/common/util.c:825
+msgid "South Africa"
+msgstr ""
+
+#: src/common/util.c:826
+msgid "Zambia"
+msgstr ""
+
+#: src/common/util.c:827
+msgid "Zaire"
+msgstr ""
+
+#: src/common/util.c:828
+msgid "Zimbabwe"
+msgstr ""
+
+#: src/common/util.c:829
+msgid "Internic Commercial"
+msgstr ""
+
+#: src/common/util.c:830
+msgid "Educational Institution"
+msgstr ""
+
+#: src/common/util.c:831
+msgid "Government"
+msgstr ""
+
+#: src/common/util.c:832
+msgid "International"
+msgstr ""
+
+#: src/common/util.c:833
+msgid "Military"
+msgstr ""
+
+#: src/common/util.c:834
+msgid "Internic Network"
+msgstr ""
+
+#: src/common/util.c:835
+msgid "Internic Non-Profit Organization"
+msgstr ""
+
+#: src/common/util.c:836
+msgid "Old School ARPAnet"
+msgstr ""
+
+#: src/common/util.c:837
+msgid "Nato Fiel"
+msgstr ""
+
+#: src/common/util.c:838
+msgid "United States Medical"
+msgstr ""
+
+#: src/common/util.c:839
+msgid "Reverse DNS"
+msgstr ""
+
+#: src/common/util.c:845 src/common/util.c:853
+msgid "unknown"
+msgstr ""
+
+#: src/fe-gtk/about.c:41
+msgid ""
+"An IRC Client for UNIX.\n"
+"\n"
+"This binary was compiled on "
+msgstr ""
+
+#: src/fe-gtk/about.c:93
+#, fuzzy
+msgid "About X-Chat"
+msgstr "¦³Ãö X-Chat.."
+
+#: src/fe-gtk/about.c:111
+msgid ""
+"(C) 1998-2001 Peter Zelezny <zed@linux.com>\n"
+"\n"
+"An IRC Client for UNIX.\n"
+"\n"
+"This binary was compiled on "
+msgstr ""
+
+#: src/fe-gtk/ascii.c:70
+msgid "Ascii Chart"
+msgstr ""
+
+#: src/fe-gtk/chanlist.c:97
+#, c-format
+msgid "User and Channel Statistics: %d/%d Users on %d/%d Channels"
+msgstr ""
+
+#: src/fe-gtk/chanlist.c:494
+msgid "I can't save an empty list!"
+msgstr ""
+
+#: src/fe-gtk/chanlist.c:497 src/fe-gtk/menu.c:908
+msgid "Select an output filename"
+msgstr ""
+
+#: src/fe-gtk/chanlist.c:553
+#, c-format
+msgid "X-Chat: Channel List (%s)"
+msgstr ""
+
+#: src/fe-gtk/chanlist.c:570
+msgid "List display options:"
+msgstr ""
+
+#: src/fe-gtk/chanlist.c:588
+msgid "Minimum Users: "
+msgstr ""
+
+#: src/fe-gtk/chanlist.c:607
+msgid "Maximum Users: "
+msgstr ""
+
+#: src/fe-gtk/chanlist.c:637
+msgid "Regex Match: "
+msgstr ""
+
+#: src/fe-gtk/chanlist.c:682
+#, fuzzy
+msgid " Apply "
+msgstr "®M¥Î"
+
+#: src/fe-gtk/chanlist.c:724
+msgid "Refresh the list"
+msgstr ""
+
+#: src/fe-gtk/chanlist.c:726
+#, fuzzy
+msgid "Save the list"
+msgstr "¦Û°ÊÀx¦sºô§}¬ö¿ý"
+
+#: src/fe-gtk/chanlist.c:728 src/fe-gtk/menu.c:617
+msgid "Join Channel"
+msgstr ""
+
+#: src/fe-gtk/dccgui.c:88
+#, c-format
+msgid "Send file to %s"
+msgstr ""
+
+#: src/fe-gtk/dccgui.c:285
+#, c-format
+msgid ""
+"      File: %s\n"
+"   To/From: %s\n"
+"      Size: %d\n"
+"      Port: %d\n"
+" IP Number: %s\n"
+"Start Time: %s"
+msgstr ""
+
+#: src/fe-gtk/dccgui.c:414 src/fe-gtk/dccgui.c:418 src/fe-gtk/dccgui.c:598
+#: src/fe-gtk/dccgui.c:729 src/fe-gtk/notifygui.c:154
+msgid "Status"
+msgstr ""
+
+#: src/fe-gtk/dccgui.c:414 src/fe-gtk/dccgui.c:418 src/fe-gtk/dccgui.c:598
+msgid "File"
+msgstr ""
+
+#: src/fe-gtk/dccgui.c:414 src/fe-gtk/dccgui.c:418 src/fe-gtk/dccgui.c:598
+msgid "ETA"
+msgstr ""
+
+#: src/fe-gtk/dccgui.c:414 src/fe-gtk/dccgui.c:418
+msgid "From"
+msgstr ""
+
+#: src/fe-gtk/dccgui.c:415
+msgid "MIME Type"
+msgstr ""
+
+#: src/fe-gtk/dccgui.c:428
+#, fuzzy
+msgid "X-Chat: File Receive List"
+msgstr "³s½u²M³æ.."
+
+#: src/fe-gtk/dccgui.c:457 src/fe-gtk/dccgui.c:756
+msgid "Accept"
+msgstr ""
+
+#: src/fe-gtk/dccgui.c:459
+msgid "Resume"
+msgstr ""
+
+#: src/fe-gtk/dccgui.c:461 src/fe-gtk/dccgui.c:632 src/fe-gtk/dccgui.c:757
+msgid "Abort"
+msgstr ""
+
+#: src/fe-gtk/dccgui.c:463 src/fe-gtk/dccgui.c:633 src/fe-gtk/menu.c:1637
+msgid "Info"
+msgstr "¸ê°T"
+
+#: src/fe-gtk/dccgui.c:465
+msgid "Open"
+msgstr ""
+
+#: src/fe-gtk/dccgui.c:598
+msgid "Ack"
+msgstr ""
+
+#: src/fe-gtk/dccgui.c:599
+#, fuzzy
+msgid "To"
+msgstr "¤W¤è"
+
+#: src/fe-gtk/dccgui.c:609
+#, fuzzy
+msgid "X-Chat: File Send List"
+msgstr "³Ì°ª¥i¥Îªº DCC °eÀÉ°ð:"
+
+#: src/fe-gtk/dccgui.c:729
+msgid "To/From"
+msgstr ""
+
+#: src/fe-gtk/dccgui.c:729
+msgid "Recv"
+msgstr ""
+
+#: src/fe-gtk/dccgui.c:729
+msgid "Sent"
+msgstr ""
+
+#: src/fe-gtk/dccgui.c:729
+msgid "StartTime"
+msgstr ""
+
+#: src/fe-gtk/dccgui.c:739
+msgid "X-Chat: DCC Chat List"
+msgstr ""
+
+#: src/fe-gtk/dialog.c:175
+msgid "WhoIs"
+msgstr ""
+
+#: src/fe-gtk/dialog.c:176
+#, fuzzy
+msgid "Send"
+msgstr "­µ®Ä"
+
+#: src/fe-gtk/dialog.c:177
+#, fuzzy
+msgid "Chat"
+msgstr "X-Chat"
+
+#: src/fe-gtk/dialog.c:178
+#, fuzzy
+msgid "Ping"
+msgstr "­p®É"
+
+#: src/fe-gtk/dialog.c:179 src/fe-gtk/search.c:110 src/fe-gtk/urlgrab.c:171
+#, fuzzy
+msgid "Clear"
+msgstr "Ãö³¬"
+
+#: src/fe-gtk/editlist.c:135
+msgid "*NEW*"
+msgstr ""
+
+#: src/fe-gtk/editlist.c:135
+msgid "EDIT ME"
+msgstr ""
+
+#: src/fe-gtk/editlist.c:297 src/fe-gtk/plugingui.c:94
+msgid "Name"
+msgstr ""
+
+#: src/fe-gtk/editlist.c:297
+#, fuzzy
+msgid "Command"
+msgstr "¼½©ñ«ü¥O:"
+
+#: src/fe-gtk/editlist.c:326
+msgid "Move Up"
+msgstr ""
+
+#: src/fe-gtk/editlist.c:331
+msgid "Move Dn"
+msgstr ""
+
+#: src/fe-gtk/editlist.c:341 src/fe-gtk/ignoregui.c:448
+#: src/fe-gtk/serverlist.c:684 src/fe-gtk/settings.c:1736
+msgid "Cancel"
+msgstr "¨ú®ø"
+
+#: src/fe-gtk/editlist.c:345 src/fe-gtk/textgui.c:481 src/fe-gtk/urlgrab.c:173
+msgid "Save"
+msgstr ""
+
+#: src/fe-gtk/editlist.c:354
+msgid "Add New"
+msgstr ""
+
+#. 2 MORE "NORMAL" BUTTONS
+#: src/fe-gtk/editlist.c:359 src/fe-gtk/fkeys.c:702 src/fe-gtk/ignoregui.c:444
+#: src/fe-gtk/serverlist.c:1310
+msgid "Delete"
+msgstr ""
+
+#: src/fe-gtk/editlist.c:369 src/fe-gtk/ignoregui.c:446
+msgid "Sort"
+msgstr ""
+
+#: src/fe-gtk/editlist.c:373 src/fe-gtk/menu.c:1827
+msgid "Help"
+msgstr "»¡©ú"
+
+#: src/fe-gtk/fe-gtk.c:134
+msgid "Config dir"
+msgstr ""
+
+#: src/fe-gtk/fe-gtk.c:135
+msgid "Don't Auto connect"
+msgstr ""
+
+#: src/fe-gtk/fe-gtk.c:137
+msgid "Don't use GNOME Panel"
+msgstr ""
+
+#: src/fe-gtk/fe-gtk.c:167
+#, c-format
+msgid ""
+"%s %s Options:\n"
+"\n"
+"   --cfgdir <dir> -d\t : use a different config dir\n"
+"   --noauto       -a\t : don't auto connect\n"
+"   --version      -v\t : show version information\n"
+msgstr ""
+
+#: src/fe-gtk/fe-gtk.c:254
+#, c-format
+msgid ""
+"Cannot open font:\n"
+"\n"
+"%s"
+msgstr ""
+
+#: src/fe-gtk/fe-gtk.c:259
+#, fuzzy
+msgid "gdk_font_load failed"
+msgstr "¨Ï¥Î¦r«¬¶° (gdk_fontset_load, ¥i«ü©w¦h®M¦r«¬)"
+
+#: src/fe-gtk/fe-gtk.c:413
+#, c-format
+msgid "Topic for %s is: %s"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:149
+msgid "The Delete Word action deletes the word to the left of the cursor."
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:151
+msgid ""
+"The Delete Word Forward action deletes the word to the right of the cursor."
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:153
+msgid ""
+"The Run Command action runs the data in Data 1 as if it has been typed into "
+"the entry box where you pressed the key sequence. Thus it can contain text "
+"(which will be sent to the channel/person), commands or user commands. When "
+"run all \\n charactors in Data 1 are used to deliminate seperate commands so "
+"it is possible to run more than one command. If you want a \\ in the actual "
+"text run then enter \\\\"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:155
+msgid ""
+"The Change Page command switchs between pages in the notebook. Set Data 1 to "
+"the page you want to switch to. If Data 2 is set to anything then the switch "
+"will be relative to the current position"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:157
+msgid ""
+"The Insert in Buffer command will insert the contents of Data 1 into the "
+"entry where the key sequence was pressed at the current cursor position"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:159
+msgid ""
+"The Scroll Page command scrolls the text widget up or down one page. If Data "
+"1 is set to anything the page scrolls up, else it scrolls down"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:161
+msgid ""
+"The Set Buffer command sets the entry where the key sequence was entered to "
+"the contents of Data 1"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:163
+msgid ""
+"The Last Command command sets the entry to contain the last command entered "
+"- the same as pressing up in a shell"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:165
+msgid ""
+"The Next Command command sets the entry to contain the next command entered "
+"- the same as pressing down in a shell"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:167
+msgid ""
+"This command changes the text in the entry to finish an incomplete nickname "
+"or command. If Data 1 is set then double-tabbing in a string will select the "
+"last nick, not the next"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:169
+msgid ""
+"This command scrolls up and down through the list of nicks. If Data 1 is set "
+"to anything then if scrolls up else if scrolls down"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:171
+msgid ""
+"This command checks the last work entered in the entry against the replace "
+"list and replaces it if it finds a match"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:173
+msgid "This command move the front tab left by one"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:175
+msgid "This command move the front tab right by one"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:177
+msgid "Push input line into history but doesn't send to server"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:189
+msgid "There was an error loading key bindings configuration"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:396 src/fe-gtk/fkeys.c:675 src/fe-gtk/fkeys.c:681
+#: src/fe-gtk/fkeys.c:686 src/fe-gtk/maingui.c:333 src/fe-gtk/maingui.c:1695
+#: src/fe-gtk/maingui.c:1840 src/fe-gtk/maingui.c:1847 src/fe-gtk/panel.c:268
+msgid "<none>"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:446
+msgid "*** key_dialog_delete: couldn't find kb in list!\n"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:480
+msgid "*** key_dialog_sel_row: kb == NULL\n"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:639
+msgid "Mod"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:639 src/fe-gtk/fkeys.c:734
+msgid "Key"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:639
+msgid "Action"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:649
+#, fuzzy
+msgid "X-Chat: Edit Key Bindings"
+msgstr "«öÁä¹ï¬M.."
+
+#: src/fe-gtk/fkeys.c:697
+msgid "Add new"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:727
+msgid "Shift"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:729
+msgid "Alt"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:731
+msgid "Ctrl"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:738
+msgid "Data 1"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:741
+msgid "Data 2"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:782
+msgid "Error opening keys config file\n"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:953
+#, c-format
+msgid ""
+"Unknown keyname %s in key bindings config file\n"
+"Load aborted, please fix ~/.xchat/keybindings.conf\n"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:991
+#, c-format
+msgid ""
+"Unknown action %s in key bindings config file\n"
+"Load aborted, Please fix ~/.xchat/keybindings\n"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:1012
+#, c-format
+msgid ""
+"Expecting Data line (beginning Dx{:|!}) but got:\n"
+"%s\n"
+"\n"
+"Load aborted, Please fix ~/.xchat/keybindings\n"
+msgstr ""
+
+#: src/fe-gtk/fkeys.c:1083
+msgid ""
+"Key bindings config file is corrupt, load aborted\n"
+"Please fix ~/.xchat/keybindings.conf\n"
+msgstr ""
+
+#: src/fe-gtk/gtkutil.c:52 src/fe-gtk/gtkutil.c:68 src/fe-gtk/plugingui.c:122
+#: src/fe-gtk/serverlist.c:682 src/fe-gtk/settings.c:1716
+#: src/fe-gtk/textgui.c:504
+msgid "Ok"
+msgstr "½T©w"
+
+#: src/fe-gtk/gtkutil.c:134
+msgid "Cannot write to that file."
+msgstr ""
+
+#: src/fe-gtk/gtkutil.c:136
+msgid "Cannot read that file."
+msgstr ""
+
+#: src/fe-gtk/ignoregui.c:86 src/fe-gtk/ignoregui.c:89
+#: src/fe-gtk/ignoregui.c:92 src/fe-gtk/ignoregui.c:95
+#: src/fe-gtk/ignoregui.c:98 src/fe-gtk/ignoregui.c:101
+#: src/fe-gtk/ignoregui.c:115 src/fe-gtk/ignoregui.c:119
+#: src/fe-gtk/ignoregui.c:123 src/fe-gtk/ignoregui.c:127
+#: src/fe-gtk/ignoregui.c:131 src/fe-gtk/ignoregui.c:135
+#: src/fe-gtk/ignoregui.c:189 src/fe-gtk/ignoregui.c:244
+#: src/fe-gtk/ignoregui.c:255 src/fe-gtk/ignoregui.c:266
+#: src/fe-gtk/ignoregui.c:277 src/fe-gtk/ignoregui.c:288
+#: src/fe-gtk/ignoregui.c:299
+msgid "Yes"
+msgstr ""
+
+#: src/fe-gtk/ignoregui.c:117 src/fe-gtk/ignoregui.c:121
+#: src/fe-gtk/ignoregui.c:125 src/fe-gtk/ignoregui.c:129
+#: src/fe-gtk/ignoregui.c:133 src/fe-gtk/ignoregui.c:137
+#: src/fe-gtk/ignoregui.c:170 src/fe-gtk/ignoregui.c:171
+#: src/fe-gtk/ignoregui.c:172 src/fe-gtk/ignoregui.c:173
+#: src/fe-gtk/ignoregui.c:174 src/fe-gtk/ignoregui.c:175
+#: src/fe-gtk/ignoregui.c:246 src/fe-gtk/ignoregui.c:257
+#: src/fe-gtk/ignoregui.c:268 src/fe-gtk/ignoregui.c:279
+#: src/fe-gtk/ignoregui.c:290 src/fe-gtk/ignoregui.c:301
+msgid "No"
+msgstr ""
+
+#.
+#. Serverlist copies an existing entry, but not much point to do so here
+#.
+#: src/fe-gtk/ignoregui.c:169
+msgid "new!new@new.com"
+msgstr ""
+
+#: src/fe-gtk/ignoregui.c:339
+msgid "Mask"
+msgstr ""
+
+#: src/fe-gtk/ignoregui.c:339 src/fe-gtk/ignoregui.c:379
+#: src/fe-gtk/settings.c:1858
+msgid "CTCP"
+msgstr "CTCP"
+
+#: src/fe-gtk/ignoregui.c:339 src/fe-gtk/ignoregui.c:385
+#: src/fe-gtk/maingui.c:1940
+msgid "Private"
+msgstr ""
+
+#: src/fe-gtk/ignoregui.c:339
+#, fuzzy
+msgid "Chan"
+msgstr "X-Chat"
+
+#: src/fe-gtk/ignoregui.c:339 src/fe-gtk/ignoregui.c:397
+msgid "Notice"
+msgstr ""
+
+#: src/fe-gtk/ignoregui.c:339 src/fe-gtk/ignoregui.c:403
+#, fuzzy
+msgid "Invite"
+msgstr "Áô§Î"
+
+#: src/fe-gtk/ignoregui.c:339 src/fe-gtk/ignoregui.c:409
+#, fuzzy
+msgid "Unignore"
+msgstr "ÀH«K±Æ"
+
+#: src/fe-gtk/ignoregui.c:349
+msgid "X-Chat: Ignore list"
+msgstr ""
+
+#: src/fe-gtk/ignoregui.c:372
+#, fuzzy
+msgid "Ignore Mask:"
+msgstr "°O¿ýÀÉ®×©R¦W®æ¦¡:"
+
+#: src/fe-gtk/ignoregui.c:419
+msgid "Ignore Stats:"
+msgstr ""
+
+#: src/fe-gtk/ignoregui.c:427
+#, fuzzy
+msgid "CTCP:"
+msgstr "CTCP"
+
+#: src/fe-gtk/ignoregui.c:428
+msgid "Private:"
+msgstr ""
+
+#: src/fe-gtk/ignoregui.c:429
+#, fuzzy
+msgid "Channel:"
+msgstr "¨ú®ø"
+
+#: src/fe-gtk/ignoregui.c:430
+msgid "Notice:"
+msgstr ""
+
+#: src/fe-gtk/ignoregui.c:431
+#, fuzzy
+msgid "Invite:"
+msgstr "Áô§Î"
+
+#: src/fe-gtk/ignoregui.c:440 src/fe-gtk/palette.c:331
+msgid "OK"
+msgstr ""
+
+#: src/fe-gtk/ignoregui.c:442
+msgid "New"
+msgstr ""
+
+#: src/fe-gtk/maingui.c:337 src/fe-gtk/maingui.c:1896
+msgid "The channel topic"
+msgstr ""
+
+#: src/fe-gtk/maingui.c:541 src/fe-gtk/maingui.c:636
+msgid "User limit must be a number!\n"
+msgstr ""
+
+#: src/fe-gtk/maingui.c:1525 src/fe-gtk/maingui.c:1636
+msgid "Open Toolbox"
+msgstr ""
+
+#: src/fe-gtk/maingui.c:1530
+msgid "Close Toolbox"
+msgstr ""
+
+#: src/fe-gtk/maingui.c:1588
+msgid "Conf"
+msgstr ""
+
+#: src/fe-gtk/maingui.c:1591
+msgid "Conference mode (no join/part msgs)"
+msgstr ""
+
+#: src/fe-gtk/maingui.c:1593
+#, fuzzy
+msgid "CP"
+msgstr "CTCP"
+
+#: src/fe-gtk/maingui.c:1598
+#, fuzzy
+msgid "Color Paste"
+msgstr "Ãö³¬"
+
+#: src/fe-gtk/maingui.c:1600
+msgid "Ascii"
+msgstr ""
+
+#: src/fe-gtk/maingui.c:1600
+msgid "Open ASCII Chart"
+msgstr ""
+
+#: src/fe-gtk/maingui.c:1615
+msgid "Underline"
+msgstr ""
+
+#. wid =
+#: src/fe-gtk/maingui.c:1618
+msgid "Bold"
+msgstr ""
+
+#. style = gtk_style_new ();
+#. gdk_font_unref (style->font);
+#. style->font = font_bold;
+#. gdk_font_ref (font_bold);
+#. gtk_widget_set_style (GTK_BIN (wid)->child, style);
+#. gtk_style_unref (style);
+#: src/fe-gtk/maingui.c:1626
+msgid "Plain Text"
+msgstr ""
+
+#: src/fe-gtk/maingui.c:1911
+#, fuzzy
+msgid "Hide/Show Userlist"
+msgstr "¦C¥X¨Ó·½"
+
+#: src/fe-gtk/maingui.c:1925
+msgid "Keyword"
+msgstr ""
+
+#: src/fe-gtk/maingui.c:1925
+msgid "K"
+msgstr ""
+
+#: src/fe-gtk/maingui.c:1937
+#, fuzzy
+msgid "User Limit"
+msgstr "¦W³æ"
+
+#: src/fe-gtk/maingui.c:1938
+#, fuzzy
+msgid "Ban List"
+msgstr "²á¤Ñ«Ç²M³æ.."
+
+#: src/fe-gtk/maingui.c:1939
+msgid "Moderated"
+msgstr ""
+
+#: src/fe-gtk/maingui.c:1941
+msgid "Invite Only"
+msgstr ""
+
+#: src/fe-gtk/maingui.c:1942
+msgid "Secret"
+msgstr ""
+
+#: src/fe-gtk/maingui.c:1943
+msgid "No outside messages"
+msgstr ""
+
+#: src/fe-gtk/maingui.c:1944
+msgid "Topic Protection"
+msgstr ""
+
+#: src/fe-gtk/menu.c:133
+msgid "Host unknown"
+msgstr ""
+
+#: src/fe-gtk/menu.c:385
+#, fuzzy, c-format
+msgid "User: %s"
+msgstr "¦W³æ"
+
+#: src/fe-gtk/menu.c:386 src/fe-gtk/menu.c:390 src/fe-gtk/menu.c:394
+#: src/fe-gtk/menu.c:398 src/fe-gtk/menu.c:402
+msgid "Unknown"
+msgstr ""
+
+#: src/fe-gtk/menu.c:389
+#, c-format
+msgid "Country: %s"
+msgstr ""
+
+#: src/fe-gtk/menu.c:393
+#, c-format
+msgid "Realname: %s"
+msgstr ""
+
+#: src/fe-gtk/menu.c:397
+#, fuzzy, c-format
+msgid "Server: %s"
+msgstr "³s½u²M³æ.."
+
+#: src/fe-gtk/menu.c:401
+#, c-format
+msgid "Last Msg: %s"
+msgstr ""
+
+#: src/fe-gtk/menu.c:497
+msgid "Menu Bar"
+msgstr ""
+
+#: src/fe-gtk/menu.c:498
+msgid "Topic Bar"
+msgstr ""
+
+#: src/fe-gtk/menu.c:499 src/fe-gtk/settings.c:971
+msgid "User List"
+msgstr "¦W³æ"
+
+#: src/fe-gtk/menu.c:621
+msgid "Part Channel"
+msgstr ""
+
+#: src/fe-gtk/menu.c:623
+#, fuzzy
+msgid "Cycle Channel"
+msgstr "·s²á¤Ñ«Ç.."
+
+#: src/fe-gtk/menu.c:850
+msgid ""
+"*WARNING*\n"
+"Auto accepting DCC to your home directory\n"
+"can be dangerous and is exploitable. Eg:\n"
+"Someone could send you a .bash_profile"
+msgstr ""
+
+#: src/fe-gtk/menu.c:968
+#, fuzzy
+msgid "Settings saved."
+msgstr "³]©w"
+
+#: src/fe-gtk/menu.c:1003
+msgid "Select a Perl script to load"
+msgstr ""
+
+#: src/fe-gtk/menu.c:1047
+msgid "Select a Plugin to load"
+msgstr ""
+
+#: src/fe-gtk/menu.c:1091
+msgid "Select a Python script to load"
+msgstr ""
+
+#: src/fe-gtk/menu.c:1160
+msgid "X-Chat: User Defined Commands"
+msgstr ""
+
+#: src/fe-gtk/menu.c:1167
+#, fuzzy
+msgid "X-Chat: Userlist Popup menu"
+msgstr "¦W³æ¿ï³æ©w¸q.."
+
+#: src/fe-gtk/menu.c:1174
+#, fuzzy
+msgid "X-Chat: Replace menu"
+msgstr "X-Chat: ­Ó¤H³ß¦n³]©w"
+
+#: src/fe-gtk/menu.c:1181
+#, fuzzy
+msgid "X-Chat: User menu"
+msgstr "X-Chat: ­Ó¤H³ß¦n³]©w"
+
+#: src/fe-gtk/menu.c:1188
+#, fuzzy
+msgid "X-Chat: URL Handlers"
+msgstr "ºô§}Æ[¬Ýµ{¦¡.."
+
+#: src/fe-gtk/menu.c:1207
+#, fuzzy
+msgid "X-Chat: Userlist buttons"
+msgstr "¦W³æ«ö¶s©w¸q.."
+
+#: src/fe-gtk/menu.c:1214
+#, fuzzy
+msgid "X-Chat: CTCP Replies"
+msgstr "CTCP ¦^À³.."
+
+#: src/fe-gtk/menu.c:1304 src/fe-gtk/menu.c:1729
+msgid "Server List.."
+msgstr "³s½u²M³æ.."
+
+#: src/fe-gtk/menu.c:1311 src/fe-gtk/menu.c:1731
+msgid "New Server Tab.."
+msgstr "·s³s½u.."
+
+#: src/fe-gtk/menu.c:1317 src/fe-gtk/menu.c:1733
+msgid "New Server Window.."
+msgstr "·s³s½uµøµ¡.."
+
+#: src/fe-gtk/menu.c:1323 src/fe-gtk/menu.c:1734
+msgid "New Channel Tab.."
+msgstr "·s²á¤Ñ«Ç.."
+
+#: src/fe-gtk/menu.c:1329 src/fe-gtk/menu.c:1735
+msgid "New Channel Window.."
+msgstr "·s²á¤Ñ«Çµøµ¡.."
+
+#: src/fe-gtk/menu.c:1337 src/fe-gtk/menu.c:1344 src/fe-gtk/menu.c:1738
+msgid "New Shell Tab.."
+msgstr "·s²×ºÝ¾÷.."
+
+#: src/fe-gtk/menu.c:1352 src/fe-gtk/menu.c:1744 src/fe-gtk/panel.c:182
+#: src/fe-gtk/search.c:111
+msgid "Close"
+msgstr "Ãö³¬"
+
+#: src/fe-gtk/menu.c:1359 src/fe-gtk/menu.c:1746
+msgid "Quit"
+msgstr "Â÷¶}"
+
+#: src/fe-gtk/menu.c:1369 src/fe-gtk/menu.c:1749
+msgid "Channel List Window.."
+msgstr "²á¤Ñ«Ç²M³æ.."
+
+#: src/fe-gtk/menu.c:1374 src/fe-gtk/menu.c:1750
+#, fuzzy
+msgid "File Send Window.."
+msgstr "DCC °eÀÉª¬ºA.."
+
+#: src/fe-gtk/menu.c:1379 src/fe-gtk/menu.c:1751
+#, fuzzy
+msgid "File Receive Window.."
+msgstr "DCC ¦¬ÀÉª¬ºA.."
+
+#: src/fe-gtk/menu.c:1384 src/fe-gtk/menu.c:1752
+msgid "DCC Chat Window.."
+msgstr "DCC ¥æ½Í¯Á¨D.."
+
+#: src/fe-gtk/menu.c:1389 src/fe-gtk/menu.c:1753
+msgid "Raw Log Window.."
+msgstr "­ì©l°T®§.."
+
+#: src/fe-gtk/menu.c:1394 src/fe-gtk/menu.c:1754
+msgid "URL Grabber Window.."
+msgstr "ºô§}¬ö¿ý.."
+
+#: src/fe-gtk/menu.c:1399 src/fe-gtk/menu.c:1755
+msgid "Notify List Window.."
+msgstr "¤W½u´£¿ô¦W³æ.."
+
+#: src/fe-gtk/menu.c:1404 src/fe-gtk/menu.c:1757
+#, fuzzy
+msgid "Ban List Window.."
+msgstr "²á¤Ñ«Ç²M³æ.."
+
+#: src/fe-gtk/menu.c:1409 src/fe-gtk/menu.c:1756
+msgid "Ignore Window.."
+msgstr "°Q¹½°­¦W³æ.."
+
+#: src/fe-gtk/menu.c:1415 src/fe-gtk/menu.c:1759
+msgid "Flush Buffer"
+msgstr "²M°£¤º®e"
+
+#: src/fe-gtk/menu.c:1421 src/fe-gtk/menu.c:1760
+msgid "Search Buffer.."
+msgstr "¦r¦ê´M§ä.."
+
+#: src/fe-gtk/menu.c:1427 src/fe-gtk/menu.c:1761
+msgid "Save Buffer.."
+msgstr "Àx¦s¤º®e.."
+
+#: src/fe-gtk/menu.c:1436 src/fe-gtk/menu.c:1764
+msgid "Invisible"
+msgstr "Áô§Î"
+
+#: src/fe-gtk/menu.c:1440 src/fe-gtk/menu.c:1765
+msgid "Receive Wallops"
+msgstr "±µ¦¬¼s¼½°T®§"
+
+#: src/fe-gtk/menu.c:1444 src/fe-gtk/menu.c:1766
+msgid "Receive Server Notices"
+msgstr "±µ¦¬¦øªA¾¹³qª¾"
+
+#: src/fe-gtk/menu.c:1449 src/fe-gtk/menu.c:1768
+msgid "Marked Away"
+msgstr "¦£¸L¤¤"
+
+#: src/fe-gtk/menu.c:1454
+msgid "Auto Rejoin on Kick"
+msgstr "¦Û°Ê­«¦^²á¤Ñ«Ç"
+
+#: src/fe-gtk/menu.c:1458 src/fe-gtk/menu.c:1771
+msgid "Auto ReConnect to Server"
+msgstr "Â_½u¦Û°Ê­«³s"
+
+#: src/fe-gtk/menu.c:1462 src/fe-gtk/menu.c:1772
+msgid "Never-give-up ReConnect"
+msgstr "«ùÄò¹Á¸Õ­«³s"
+
+#. 37
+#: src/fe-gtk/menu.c:1467 src/fe-gtk/menu.c:1774
+msgid "Auto Open Dialog Windows"
+msgstr "®¨®¨¸Ü¨Ï¥Î·sµøµ¡"
+
+#: src/fe-gtk/menu.c:1471 src/fe-gtk/menu.c:1775
+msgid "Auto Accept DCC Chat"
+msgstr "¦Û°Ê±µ¨ü DCC ¥æ½Í¯Á¨D"
+
+#: src/fe-gtk/menu.c:1475 src/fe-gtk/menu.c:1776
+msgid "Auto Accept DCC Send"
+msgstr "¦Û°Ê±µ¨ü DCC °eÀÉ"
+
+#. 41
+#: src/fe-gtk/menu.c:1483 src/fe-gtk/menu.c:1779
+msgid "Setup.."
+msgstr "³]©w.."
+
+#: src/fe-gtk/menu.c:1489 src/fe-gtk/menu.c:1780
+msgid "Palette.."
+msgstr "¦â½L.."
+
+#: src/fe-gtk/menu.c:1495 src/fe-gtk/menu.c:1781
+msgid "User Commands.."
+msgstr "¦Û©w«ü¥O.."
+
+#: src/fe-gtk/menu.c:1501 src/fe-gtk/menu.c:1782
+msgid "CTCP Replies.."
+msgstr "CTCP ¦^À³.."
+
+#: src/fe-gtk/menu.c:1507 src/fe-gtk/menu.c:1783
+msgid "Userlist Buttons.."
+msgstr "¦W³æ«ö¶s©w¸q.."
+
+#: src/fe-gtk/menu.c:1513 src/fe-gtk/menu.c:1784
+msgid "Userlist Popup.."
+msgstr "¦W³æ¿ï³æ©w¸q.."
+
+#: src/fe-gtk/menu.c:1519
+msgid "Replace Popup.."
+msgstr "±`¨£»~¥´¦r­×¥¿.."
+
+#: src/fe-gtk/menu.c:1525 src/fe-gtk/menu.c:1786
+msgid "URL Handlers.."
+msgstr "ºô§}Æ[¬Ýµ{¦¡.."
+
+#: src/fe-gtk/menu.c:1531 src/fe-gtk/menu.c:1787
+msgid "Edit Event Texts.."
+msgstr "°T®§©w¸q.."
+
+#. 50
+#: src/fe-gtk/menu.c:1537 src/fe-gtk/menu.c:1788
+msgid "Edit Key Bindings.."
+msgstr "«öÁä¹ï¬M.."
+
+#: src/fe-gtk/menu.c:1544 src/fe-gtk/menu.c:1790
+msgid "Reload Settings"
+msgstr "­«ÅªÂÂ³]©w.."
+
+#: src/fe-gtk/menu.c:1551 src/fe-gtk/menu.c:1792
+msgid "Save Settings now"
+msgstr "Àx¦s¥Ø«e³]©w.."
+
+#: src/fe-gtk/menu.c:1557 src/fe-gtk/menu.c:1793
+msgid "Save Settings on exit"
+msgstr "Â÷¶}®É¤~Àx¦s³]©w"
+
+#: src/fe-gtk/menu.c:1567 src/fe-gtk/menu.c:1828
+msgid "X-Chat Homepage.."
+msgstr "X-Chat ºô­¶.."
+
+#: src/fe-gtk/menu.c:1573 src/fe-gtk/menu.c:1829
+msgid "Online Docs.."
+msgstr "½u¤W¤å¥ó.."
+
+#: src/fe-gtk/menu.c:1580 src/fe-gtk/menu.c:1831
+msgid "About X-Chat.."
+msgstr "¦³Ãö X-Chat.."
+
+#: src/fe-gtk/menu.c:1590
+msgid "Perl Script.."
+msgstr "Perl «ü¥OÀÉ.."
+
+#: src/fe-gtk/menu.c:1594
+msgid "Python Script.."
+msgstr "Python «ü¥OÀÉ.."
+
+#: src/fe-gtk/menu.c:1598
+msgid "Plugin.."
+msgstr "ÂX¥R¼Ò²Õ.."
+
+#: src/fe-gtk/menu.c:1606 src/fe-gtk/menu.c:1798 src/fe-gtk/menu.c:1802
+msgid "Perl List"
+msgstr "Perl «ü¥OÀÉ¦Cªí"
+
+#: src/fe-gtk/menu.c:1610 src/fe-gtk/menu.c:1817 src/fe-gtk/menu.c:1820
+msgid "Python List"
+msgstr "Python «ü¥OÀÉ¦Cªí"
+
+#: src/fe-gtk/menu.c:1614 src/fe-gtk/menu.c:1808 src/fe-gtk/menu.c:1812
+msgid "Plugin List"
+msgstr "ÂX¥R¼Ò²Õ¦Cªí"
+
+#: src/fe-gtk/menu.c:1622
+msgid "All Perl Scripts"
+msgstr "©Ò¦³ Perl «ü¥OÀÉ"
+
+#: src/fe-gtk/menu.c:1626
+msgid "All Python Scripts"
+msgstr "©Ò¦³ Python «ü¥OÀÉ"
+
+#: src/fe-gtk/menu.c:1630
+msgid "All Plugins"
+msgstr "©Ò¦³ÂX¥R¼Ò²Õ"
+
+#: src/fe-gtk/menu.c:1636
+msgid "Load"
+msgstr "¨Ï¥Î"
+
+#: src/fe-gtk/menu.c:1638
+msgid "Kill"
+msgstr "°±¥Î"
+
+#: src/fe-gtk/menu.c:1645
+msgid "Edit User Menu.."
+msgstr "­Ó¤H¿ï³æ©w¸q.."
+
+#: src/fe-gtk/menu.c:1654
+msgid "_X-Chat"
+msgstr "_X-Chat"
+
+#: src/fe-gtk/menu.c:1655
+msgid "_Windows"
+msgstr "µøµ¡(_W)"
+
+#: src/fe-gtk/menu.c:1656
+msgid "User _Modes"
+msgstr "¼Ò¦¡(_M)"
+
+#: src/fe-gtk/menu.c:1657
+msgid "_Settings"
+msgstr "³]©w(_S)"
+
+#: src/fe-gtk/menu.c:1658
+msgid "S_cripts & Plugins"
+msgstr "ÂX¥R¥\¯à(_C)"
+
+#: src/fe-gtk/menu.c:1659
+msgid "Use_r Menu"
+msgstr "­Ó¤H¿ï³æ(_R)"
+
+#: src/fe-gtk/menu.c:1660
+msgid "_Help"
+msgstr "»¡©ú(_H)"
+
+#: src/fe-gtk/menu.c:1728
+msgid "X-Chat"
+msgstr "X-Chat"
+
+#. 12
+#: src/fe-gtk/menu.c:1748
+msgid "Windows"
+msgstr "µøµ¡"
+
+#. 26
+#: src/fe-gtk/menu.c:1763
+msgid "User Modes"
+msgstr "¼Ò¦¡"
+
+#. 33
+#: src/fe-gtk/menu.c:1770
+msgid "Auto ReJoin on Kick"
+msgstr "³Q½ð¦Û°Ê¦^²á¤Ñ«Ç"
+
+#: src/fe-gtk/menu.c:1778
+msgid "Settings"
+msgstr "³]©w"
+
+#: src/fe-gtk/menu.c:1785
+msgid "Replace.."
+msgstr "¨ú¥N.."
+
+#: src/fe-gtk/menu.c:1794
+msgid "Scripts & Plugins"
+msgstr "«ü¥OÀÉ»PÂX¥R¼Ò²Õ"
+
+#: src/fe-gtk/menu.c:1796 src/fe-gtk/menu.c:1800
+msgid "Load Perl Script.."
+msgstr "¨Ï¥Î Perl «ü¥OÀÉ"
+
+#: src/fe-gtk/menu.c:1797 src/fe-gtk/menu.c:1801
+msgid "Unload All Scripts"
+msgstr "°±¥Î©Ò¦³«ü¥OÀÉ"
+
+#: src/fe-gtk/menu.c:1806 src/fe-gtk/menu.c:1810
+msgid "Load Plugin (*.so).."
+msgstr "¨Ï¥ÎÂX¥R¼Ò²Õ (*.so)"
+
+#: src/fe-gtk/menu.c:1807 src/fe-gtk/menu.c:1811
+msgid "Unload All Plugins"
+msgstr "°±¥Î©Ò¦³¼Ò²Õ"
+
+#: src/fe-gtk/menu.c:1816 src/fe-gtk/menu.c:1819
+msgid "Load Python Script.."
+msgstr "¨Ï¥Î Python «ü¥OÀÉ"
+
+#: src/fe-gtk/menu.c:1823
+msgid "User Menu"
+msgstr "­Ó¤H¿ï³æ"
+
+#: src/fe-gtk/menu.c:1824
+msgid "Edit User Menu"
+msgstr "³]©w­Ó¤H¿ï³æ"
+
+#: src/fe-gtk/notifygui.c:90
+msgid "Offline"
+msgstr ""
+
+#: src/fe-gtk/notifygui.c:93
+msgid "Never"
+msgstr ""
+
+#: src/fe-gtk/notifygui.c:112
+#, fuzzy
+msgid "Online"
+msgstr "½u¤W¤å¥ó.."
+
+#: src/fe-gtk/notifygui.c:147
+msgid "Use the /NOTIFY command to add people to your notify list."
+msgstr ""
+
+#: src/fe-gtk/notifygui.c:154
+#, fuzzy
+msgid "User"
+msgstr "­Ó¤H¿ï³æ"
+
+#: src/fe-gtk/notifygui.c:154
+#, fuzzy
+msgid "Server"
+msgstr "¥N²z¦øªA¾¹(Proxy)"
+
+#: src/fe-gtk/notifygui.c:154
+#, fuzzy
+msgid "Last Seen"
+msgstr "§Ö³t°eÀÉ"
+
+#: src/fe-gtk/notifygui.c:163
+msgid "X-Chat: Notify List"
+msgstr ""
+
+#: src/fe-gtk/notifygui.c:178
+#, fuzzy
+msgid "Add"
+msgstr "¦ì§}"
+
+#: src/fe-gtk/notifygui.c:180 src/fe-gtk/panel.c:187
+msgid "Remove"
+msgstr ""
+
+#: src/fe-gtk/palette.c:84
+msgid "*** X-CHAT: cannot alloc colors\n"
+msgstr ""
+
+#: src/fe-gtk/palette.c:230
+#, fuzzy
+msgid "Select color"
+msgstr "¿ï¾Ü¦r«¬"
+
+#: src/fe-gtk/palette.c:262
+#, fuzzy
+msgid "X-Chat: Palette"
+msgstr "X-Chat: ­Ó¤H³ß¦n³]©w"
+
+#: src/fe-gtk/palette.c:281
+msgid "Foreground"
+msgstr ""
+
+#: src/fe-gtk/palette.c:284
+#, fuzzy
+msgid "Background"
+msgstr "­I´º XPM ÀÉ:"
+
+#: src/fe-gtk/palette.c:287
+#, fuzzy
+msgid "Mark Background"
+msgstr "³z©ú­I´º"
+
+#: src/fe-gtk/palette.c:290
+msgid "Mark Foreground"
+msgstr ""
+
+#: src/fe-gtk/palette.c:293
+#, c-format
+msgid "Color %d"
+msgstr ""
+
+#: src/fe-gtk/panel.c:57
+#, fuzzy
+msgid "About..."
+msgstr "¦³Ãö X-Chat.."
+
+#: src/fe-gtk/panel.c:165
+#, fuzzy
+msgid "No Channel"
+msgstr "·s²á¤Ñ«Ç.."
+
+#: src/fe-gtk/panel.c:172
+#, fuzzy
+msgid "No Server"
+msgstr "¥N²z¦øªA¾¹(Proxy)"
+
+#: src/fe-gtk/panel.c:177
+#, fuzzy
+msgid "Is Tab"
+msgstr "¼Ð°O"
+
+#: src/fe-gtk/panel.c:179
+msgid "Is Not Tab"
+msgstr ""
+
+#: src/fe-gtk/panel.c:191
+#, fuzzy
+msgid "Hide"
+msgstr "ÁôÂÃ"
+
+#: src/fe-gtk/panel.c:195
+msgid "Show"
+msgstr ""
+
+#. wid = gtk_button_new_with_label (_("De/Link"));
+#. gtk_signal_connect (GTK_OBJECT (wid), "clicked",
+#. GTK_SIGNAL_FUNC (relink_window), sess);
+#. gtk_box_pack_start (GTK_BOX (vbox), wid, 0, 0, 0);
+#: src/fe-gtk/panel.c:203
+msgid "Move Here"
+msgstr ""
+
+#: src/fe-gtk/panel.c:207
+msgid "View"
+msgstr ""
+
+#: src/fe-gtk/plugingui.c:94 src/fe-gtk/textgui.c:403
+msgid "Description"
+msgstr ""
+
+#: src/fe-gtk/plugingui.c:107
+#, fuzzy
+msgid "X-Chat Plugins"
+msgstr "©Ò¦³ÂX¥R¼Ò²Õ"
+
+#: src/fe-gtk/plugingui.c:131
+#, fuzzy
+msgid "Unload"
+msgstr "¨Ï¥Î"
+
+#: src/fe-gtk/rawlog.c:70
+msgid "Save rawlog"
+msgstr ""
+
+#: src/fe-gtk/rawlog.c:88
+#, c-format
+msgid "X-Chat: Rawlog (%s) [alt-s to save]"
+msgstr ""
+
+#: src/fe-gtk/search.c:38
+msgid "The window you opened this Search for doesn't exist anymore."
+msgstr ""
+
+#: src/fe-gtk/search.c:84
+#, fuzzy
+msgid "X-Chat: Search"
+msgstr "X-Chat: ­Ó¤H³ß¦n³]©w"
+
+#: src/fe-gtk/search.c:95
+#, fuzzy
+msgid "Find:"
+msgstr "¦r«¬:"
+
+#: src/fe-gtk/search.c:108
+msgid "Find"
+msgstr ""
+
+#: src/fe-gtk/serverlist.c:565
+msgid "X-Chat: Edit entry"
+msgstr ""
+
+#: src/fe-gtk/serverlist.c:586
+msgid "Edit entry:"
+msgstr ""
+
+#: src/fe-gtk/serverlist.c:606
+msgid "Name:"
+msgstr ""
+
+#: src/fe-gtk/serverlist.c:612
+#, fuzzy
+msgid "Server:"
+msgstr "¥N²z¦øªA¾¹(Proxy)"
+
+#: src/fe-gtk/serverlist.c:617
+#, fuzzy
+msgid "Port:"
+msgstr "¦r«¬:"
+
+#: src/fe-gtk/serverlist.c:621
+msgid "Password:"
+msgstr ""
+
+#: src/fe-gtk/serverlist.c:625
+#, fuzzy
+msgid "Channels:"
+msgstr "²á¤Ñ«Ç¼ÐÅÒ"
+
+#: src/fe-gtk/serverlist.c:636
+#, fuzzy
+msgid "Autoconnect"
+msgstr "¦Û°Ê¦w±ÆªÅ¶¡"
+
+#: src/fe-gtk/serverlist.c:640
+#, fuzzy
+msgid "Use Proxy"
+msgstr "­Ó¤H¿ï³æ"
+
+#: src/fe-gtk/serverlist.c:643
+msgid "Use proxy server if one is set in Setup->Proxy Server"
+msgstr ""
+
+#: src/fe-gtk/serverlist.c:645
+#, fuzzy
+msgid "Use SSL"
+msgstr "¦W³æ"
+
+#: src/fe-gtk/serverlist.c:653
+msgid "Accept invalid cert."
+msgstr ""
+
+#: src/fe-gtk/serverlist.c:711 src/fe-gtk/serverlist.c:1280
+#: src/fe-gtk/serverlist.c:1304
+#, fuzzy
+msgid "New Server"
+msgstr "·s³s½u.."
+
+#: src/fe-gtk/serverlist.c:764 src/fe-gtk/serverlist.c:1296
+#: src/fe-gtk/serverlist.c:1305
+msgid "New Group"
+msgstr ""
+
+#: src/fe-gtk/serverlist.c:1000
+msgid ""
+"Cannot use \"root\" as a nickname,\n"
+"please change that first."
+msgstr ""
+
+#: src/fe-gtk/serverlist.c:1158
+#, fuzzy
+msgid "X-Chat: Server List"
+msgstr "³s½u²M³æ.."
+
+#. NICKNAME ETC.
+#. boxes
+#: src/fe-gtk/serverlist.c:1171
+#, fuzzy
+msgid "User info:"
+msgstr "­Ó¤H¿ï³æ"
+
+#. nickboxes
+#: src/fe-gtk/serverlist.c:1189
+msgid "Nicknames:"
+msgstr ""
+
+#. nameboxes
+#: src/fe-gtk/serverlist.c:1200
+msgid "Realname:"
+msgstr ""
+
+#: src/fe-gtk/serverlist.c:1203
+msgid "Username:"
+msgstr ""
+
+#: src/fe-gtk/serverlist.c:1259
+msgid "Connect New"
+msgstr ""
+
+#: src/fe-gtk/serverlist.c:1312
+msgid "Edit"
+msgstr ""
+
+#: src/fe-gtk/serverlist.c:1322
+msgid "Skip MOTD"
+msgstr ""
+
+#: src/fe-gtk/serverlist.c:1328
+msgid "Don't display the message-of-the-day when logging in"
+msgstr ""
+
+#: src/fe-gtk/serverlist.c:1330
+msgid "Show channels"
+msgstr ""
+
+#: src/fe-gtk/serverlist.c:1336
+#, fuzzy
+msgid "No ServerList on startup"
+msgstr "¤£¶}±Ò³s½u²M³æ"
+
+#: src/fe-gtk/settings.c:190
+msgid "Browse..."
+msgstr "ÂsÄý..."
+
+#: src/fe-gtk/settings.c:398
+msgid "Choose File"
+msgstr "¿ï¾ÜÀÉ®×"
+
+#: src/fe-gtk/settings.c:432
+msgid "Select Font"
+msgstr "¿ï¾Ü¦r«¬"
+
+#: src/fe-gtk/settings.c:520
+#, fuzzy
+msgid "Failed to load translation table."
+msgstr "¨Ï¥Î ircII ®æ¦¡ªº¹ï¬MÀÉ."
+
+#: src/fe-gtk/settings.c:677
+msgid ""
+"The following prefs do not take effect\n"
+"immediately, you will have to close the\n"
+"window and re-open it:\n"
+"\n"
+" - Channel Tabs\n"
+" - Channel Mode Buttons\n"
+" - Userlist Buttons\n"
+" - Disable Paned Userlist\n"
+" - Notify User color\n"
+" - Layout for a vertical panel\n"
+" - Auto Indent"
+msgstr ""
+
+#: src/fe-gtk/settings.c:864
+msgid "Appearance"
+msgstr "¥~Æ[³]©w"
+
+#: src/fe-gtk/settings.c:868
+msgid "Font:"
+msgstr "¦r«¬:"
+
+#: src/fe-gtk/settings.c:872
+msgid "Background Picture:"
+msgstr "­I´º¹Ïµe:"
+
+#: src/fe-gtk/settings.c:876
+msgid "Background XPM:"
+msgstr "­I´º XPM ÀÉ:"
+
+#: src/fe-gtk/settings.c:883
+msgid "Indent Nicks"
+msgstr "¦WºÙ¹ï»ô"
+
+#: src/fe-gtk/settings.c:885
+msgid "Make nicknames right justified."
+msgstr "±N¦WºÙ¦V¥k¹ï»ô"
+
+#: src/fe-gtk/settings.c:887
+msgid "Auto Indent"
+msgstr "¦Û°Ê¦w±ÆªÅ¶¡"
+
+#: src/fe-gtk/settings.c:889
+msgid "Auto adjust the separator bar position as needed."
+msgstr "¦Û°Ê²¾°Ê¤À¹j½uªº¦ì¸m"
+
+#: src/fe-gtk/settings.c:891
+msgid "Draw Separator Bar"
+msgstr "µe¤À¹j½u"
+
+#: src/fe-gtk/settings.c:893
+msgid "Make the separator an actual visible line."
+msgstr "´N...Åý§A¬Ý±o¨ì¤À¹j½uÅo.. ^^;"
+
+#: src/fe-gtk/settings.c:895
+msgid "Word Wrap"
+msgstr "³æ¦rÂ_¦r"
+
+#: src/fe-gtk/settings.c:897
+msgid "Don't split words from one line to the next"
+msgstr "Á×§K¤Á¶}¶W¹L¦æ§Àªº­^¤å³æ¦r"
+
+#: src/fe-gtk/settings.c:899
+msgid "Transparent Background"
+msgstr "³z©ú­I´º"
+
+#: src/fe-gtk/settings.c:902
+msgid "Make the text box seem see-through"
+msgstr "Åý¥¦¬Ý°_¨Ó¦³¦p°ê¤ýªº·s¦ç"
+
+#: src/fe-gtk/settings.c:904
+msgid "Tint Transparency"
+msgstr "¬X¦â³z©ú"
+
+#: src/fe-gtk/settings.c:906
+msgid "Tint the see-through text box to make it darker"
+msgstr "Âoºô¯ë­YÁô­Y²{ªº³z©ú­I´º"
+
+#: src/fe-gtk/settings.c:907
+#, fuzzy
+msgid "Use a font set"
+msgstr "¨Ï¥Î¦r«¬¶° (gdk_fontset_load, ¥i«ü©w¦h®M¦r«¬)"
+
+#: src/fe-gtk/settings.c:916
+msgid "Tint Setting"
+msgstr "¦â±m³z©ú«×"
+
+#: src/fe-gtk/settings.c:922
+msgid "Change in realtime"
+msgstr "«ùÄò§ïÅÜÃC¦â"
+
+#: src/fe-gtk/settings.c:925
+msgid "Red:"
+msgstr "¬õ:"
+
+#: src/fe-gtk/settings.c:926
+msgid "Green:"
+msgstr "ºñ:"
+
+#: src/fe-gtk/settings.c:927
+msgid "Blue:"
+msgstr "ÂÅ:"
+
+#: src/fe-gtk/settings.c:953
+msgid "A-Z, Ops first"
+msgstr "A-Z, ¦³ºÞ²zÅvÀu¥ý"
+
+#: src/fe-gtk/settings.c:954
+msgid "A-Z"
+msgstr ""
+
+#: src/fe-gtk/settings.c:955
+msgid "Z-A, Ops last"
+msgstr "Z-A, ¦³ºÞ²zÅv³Ì«á"
+
+#: src/fe-gtk/settings.c:956
+msgid "Z-A"
+msgstr ""
+
+#: src/fe-gtk/settings.c:957
+msgid "Unsorted"
+msgstr "ÀH«K±Æ"
+
+#: src/fe-gtk/settings.c:961
+msgid "Startup and Shutdown"
+msgstr "±Ò°Ê»Pµ²§ô"
+
+#: src/fe-gtk/settings.c:962
+msgid "No Server List On Startup"
+msgstr "¤£¶}±Ò³s½u²M³æ"
+
+#: src/fe-gtk/settings.c:965
+msgid "Don't display the server list on X-Chat startup"
+msgstr "X-Chat ±Ò°Ê®É¤£±a¥X³s½u²M³æ"
+
+#: src/fe-gtk/settings.c:966
+msgid "Auto Save URL list"
+msgstr "¦Û°ÊÀx¦sºô§}¬ö¿ý"
+
+#: src/fe-gtk/settings.c:969
+msgid "Auto save your URL list when exiting from X-Chat"
+msgstr "Â÷¶} X-Chat ®É¦s¤Uºô§}¬ö¿ý"
+
+#: src/fe-gtk/settings.c:972
+msgid "Give the User List style"
+msgstr "§ïÅÜ¦W³æªºÅã¥Ü­·®æ"
+
+#: src/fe-gtk/settings.c:975
+msgid "Show userhost"
+msgstr "¦C¥X¨Ó·½"
+
+#: src/fe-gtk/settings.c:979
+msgid "Show userhost of users in channel userlist"
+msgstr "¦b¦W³æ¤¤¦C¥X¨Ï¥ÎªÌªº¨Ó·½"
+
+#: src/fe-gtk/settings.c:980
+#, fuzzy
+msgid "Enable Paned Userlist"
+msgstr "©T©w¦W³æ¼e«×"
+
+#: src/fe-gtk/settings.c:983
+#, fuzzy
+msgid "Use paned user list instead of a fixed width one"
+msgstr "¥Ñ¥i½Õ¾ã¤j¤p§ï¬°©T©wªº¦W³æ¼e«×"
+
+#: src/fe-gtk/settings.c:984
+#, fuzzy
+msgid "Userlist icons"
+msgstr "¦W³æ«ö¶s©w¸q.."
+
+#: src/fe-gtk/settings.c:989
+msgid "Double Click Command:"
+msgstr "Âù«ö®É°õ¦æ:"
+
+#: src/fe-gtk/settings.c:994
+#, fuzzy
+msgid "Userlist sorted by:"
+msgstr "¦W³æ±Æ¦C¤è¦¡:"
+
+#: src/fe-gtk/settings.c:1007
+msgid "Input Box"
+msgstr "¿é¤J¦C"
+
+#: src/fe-gtk/settings.c:1011
+msgid "Nick Name Completion"
+msgstr "¤H¦W¦Û°Ê¸É»ô"
+
+#: src/fe-gtk/settings.c:1014
+msgid "Complete nicknames when a partial one is entered"
+msgstr "¦Û°Ê±N¥´¤@³¡¥÷ªº¦WºÙ¸É§¹¾ã"
+
+#: src/fe-gtk/settings.c:1015
+msgid "Old-style Nickname Completion"
+msgstr "ÂÂ¦¡¤H¦W¸É»ô"
+
+#: src/fe-gtk/settings.c:1020
+msgid "Nickname completion is old-style (instead of GNU-style)"
+msgstr "¥H©¹«¬¦¡ªº¤H¦W¸É»ô"
+
+#: src/fe-gtk/settings.c:1022
+msgid "Give the Input Box style"
+msgstr "§ïÅÜ¿é¤J¦Cªº­·®æ"
+
+#: src/fe-gtk/settings.c:1025
+msgid "Input box gets same style as main text area"
+msgstr "±N¿é¤J¦C­·®æ§ï¬°»P¤å¦r°Ï¬Û¦P"
+
+#: src/fe-gtk/settings.c:1027
+#, fuzzy
+msgid "Input Box always in focus"
+msgstr "´å¼Ð«O«ù¦b¿é¤J¦C"
+
+#: src/fe-gtk/settings.c:1032
+msgid "Show nickname"
+msgstr ""
+
+#: src/fe-gtk/settings.c:1035
+#, fuzzy
+msgid "Show nickname and op/voice icon before the input box"
+msgstr "¿é¤J¦C«eÅã¥Ü¦Û¤v¦WºÙ"
+
+#: src/fe-gtk/settings.c:1038
+msgid "Nickname Completion Character:"
+msgstr "¤H¦W¸É»ôÃöÁä¦r:"
+
+#: src/fe-gtk/settings.c:1042
+msgid "Character to append to completed nicknames"
+msgstr "¸É»ô§ÀÀH¦r"
+
+#: src/fe-gtk/settings.c:1044
+msgid "Output Box"
+msgstr "¤å¦r°Ï"
+
+#: src/fe-gtk/settings.c:1046
+msgid "Time Stamp All Text"
+msgstr "°T®§«e¼Ð¤W®É¶¡"
+
+#: src/fe-gtk/settings.c:1049
+msgid "Prefix all text with the current time stamp"
+msgstr "¦U°T®§«e­±¥[¤Wµo¥Í®É¶¡"
+
+#: src/fe-gtk/settings.c:1050
+msgid "Colored Nicks"
+msgstr "±m¦â¦W¦r"
+
+#: src/fe-gtk/settings.c:1053
+msgid "Output nicknames in different colors"
+msgstr "¥Î¤£¦Pªº¦â±mÅã¥Ü¦W¦r"
+
+#: src/fe-gtk/settings.c:1054
+#, fuzzy
+msgid "Show invites in active window"
+msgstr "¦b¥Ø«eµøµ¡Åã¥ÜÁÜ½Ð°T®§"
+
+#: src/fe-gtk/settings.c:1060
+msgid "Strip MIRC Color"
+msgstr "Âo±¼ MIRC ÃC¦â½X"
+
+#: src/fe-gtk/settings.c:1063
+msgid "Strip MIRC color codes from text before displaying"
+msgstr "Åã¥Ü°T®§¨ì¤å¦r°Ï«e¹LÂo±¼ MIRC ¨Ï¥ÎªºÃC¦â½X"
+
+#: src/fe-gtk/settings.c:1064
+msgid "Filter out BEEPs"
+msgstr "Âo±¼¹ÍÁn"
+
+#: src/fe-gtk/settings.c:1067
+msgid "Remove ^G BEEP codes from text before displaying"
+msgstr "Âo±¼·|¹Í¤@Ánªº¯S®í¦r¤¸ ^G"
+
+#: src/fe-gtk/settings.c:1069
+msgid "Buffer Settings"
+msgstr "¤å¦r°Ï¼È¦s³]©w"
+
+#: src/fe-gtk/settings.c:1072
+msgid "Text Buffer Size:"
+msgstr "¼È¦sªÅ¶¡:"
+
+#: src/fe-gtk/settings.c:1073
+msgid "lines (0=Unlimited)."
+msgstr "¦æ (0=µL­­¨î)"
+
+#: src/fe-gtk/settings.c:1075
+#, fuzzy
+msgid "Other Settings"
+msgstr "¨ä¥L±Æª©³]©w"
+
+#: src/fe-gtk/settings.c:1076
+msgid "Kanji locale <=> JIS translation"
+msgstr ""
+
+#: src/fe-gtk/settings.c:1113
+msgid "Bottom"
+msgstr "¤U¤è"
+
+#: src/fe-gtk/settings.c:1114
+msgid "Top"
+msgstr "¤W¤è"
+
+#: src/fe-gtk/settings.c:1115
+msgid "Left"
+msgstr "¥ªÃä"
+
+#: src/fe-gtk/settings.c:1116
+msgid "Right"
+msgstr "¥kÃä"
+
+#: src/fe-gtk/settings.c:1117
+msgid "Hidden"
+msgstr "ÁôÂÃ"
+
+#: src/fe-gtk/settings.c:1122
+msgid "Off"
+msgstr ""
+
+#: src/fe-gtk/settings.c:1123
+msgid "Progress bar"
+msgstr ""
+
+#: src/fe-gtk/settings.c:1124
+#, fuzzy
+msgid "Info text"
+msgstr "¸ê°T"
+
+#: src/fe-gtk/settings.c:1125
+#, fuzzy
+msgid "Both"
+msgstr "¤U¤è"
+
+#: src/fe-gtk/settings.c:1129
+msgid "Buttons"
+msgstr "«ö¶s"
+
+#: src/fe-gtk/settings.c:1131
+msgid "Channel Mode Buttons"
+msgstr "²á¤Ñ«Ç¼Ò¦¡«ö¶s"
+
+#: src/fe-gtk/settings.c:1135
+msgid "Show the TNSIPMLK buttons"
+msgstr "Åã¥Ü TNSIPMLK ²á¤Ñ«Ç¥Ø«eª¬ºAªº«ö¶s"
+
+#: src/fe-gtk/settings.c:1136
+msgid "User List Buttons"
+msgstr "¦W³æ«ö¶s"
+
+#: src/fe-gtk/settings.c:1140
+msgid "Show the buttons below the user list"
+msgstr "Åã¥Ü¦W³æ¤U¤èªº«ö¶s"
+
+#: src/fe-gtk/settings.c:1142
+msgid "Meters"
+msgstr ""
+
+#: src/fe-gtk/settings.c:1145
+msgid "Lag meter:"
+msgstr ""
+
+#: src/fe-gtk/settings.c:1148
+msgid "Throttle meter:"
+msgstr ""
+
+#: src/fe-gtk/settings.c:1152
+msgid "Tabs"
+msgstr "¼Ð°O"
+
+#: src/fe-gtk/settings.c:1155
+msgid "Tabs Located at:"
+msgstr ""
+
+#: src/fe-gtk/settings.c:1160
+msgid "Channel Tabs"
+msgstr "²á¤Ñ«Ç¼ÐÅÒ"
+
+#: src/fe-gtk/settings.c:1163
+msgid "Use tabs for channels instead of separate windows"
+msgstr "²á¤Ñ«Ç¨Ï¥Î¼ÐÅÒ¦Ó«D¶}·sµøµ¡"
+
+#: src/fe-gtk/settings.c:1164
+msgid "Limited Tab Highlighting"
+msgstr "­­¨î¼ÐÅÒÅÜ¦â"
+
+#: src/fe-gtk/settings.c:1167
+msgid "Only highlight channel tabs for channel messages and actions"
+msgstr "¥u¦³²á¤Ñ«Ç¦³°T®§©Î°Ê§@®É§ïÅÜ¼ÐÅÒÃC¦â"
+
+#: src/fe-gtk/settings.c:1168
+msgid "New Tabs to front"
+msgstr "·s¼ÐÅÒ¸m«e"
+
+#: src/fe-gtk/settings.c:1171
+msgid "Bring new query/channel tabs to front"
+msgstr "±N·sªº®¨®¨¸Ü/²á¤Ñ«Çªº¼ÐÅÒ©ñ«e­±"
+
+#: src/fe-gtk/settings.c:1172
+msgid "Private Message Tabs"
+msgstr "®¨®¨¸Ü¼ÐÅÒ"
+
+#: src/fe-gtk/settings.c:1175
+msgid "Use tabs for /query instead of separate windows"
+msgstr "®¨®¨¸Ü¨Ï¥Î¼ÐÅÒ¦Ó«D¶}·sµøµ¡"
+
+#: src/fe-gtk/settings.c:1178
+msgid "Use a separate tab/window for server messages"
+msgstr "¨Ï¥Î¤À¶}ªºµøµ¡¦s©ñ¦øªA¾¹°T®§"
+
+#: src/fe-gtk/settings.c:1181
+#, fuzzy
+msgid "Use a separate tab/window for notices and server notices"
+msgstr "¨Ï¥Î¤À¶}ªºµøµ¡¦s©ñ¦øªA¾¹°T®§"
+
+#: src/fe-gtk/settings.c:1185
+msgid "Use tabs for DCC, Ignore, Notify etc windows."
+msgstr "DCC, ©¿²¤, ¤W½u´£¿ôµ¥¨Ï¥Î¼ÐÅÒ"
+
+#: src/fe-gtk/settings.c:1197
+msgid "Window Position"
+msgstr "µøµ¡¦ì¸m"
+
+#: src/fe-gtk/settings.c:1198
+#, fuzzy
+msgid ""
+"If Left and Top are set to zero, X-Chat will use\n"
+"your window manager defaults."
+msgstr "°²¦p¥ª¤W­È§¡¬° 0 «h¨Ï¥Îµøµ¡ºÞ²z­ûªº¤º©w­È"
+
+#: src/fe-gtk/settings.c:1203
+msgid "Left:"
+msgstr "¥ª:"
+
+#: src/fe-gtk/settings.c:1206
+msgid "Top:"
+msgstr "¤W:"
+
+#: src/fe-gtk/settings.c:1209
+msgid "Window Size"
+msgstr "µøµ¡¤j¤p"
+
+#: src/fe-gtk/settings.c:1213
+msgid "Width:"
+msgstr "¼e«×:"
+
+#: src/fe-gtk/settings.c:1216
+msgid "Height:"
+msgstr "°ª«×:"
+
+#: src/fe-gtk/settings.c:1218
+msgid "Show Session Tree View"
+msgstr ""
+
+#: src/fe-gtk/settings.c:1278 src/fe-gtk/settings.c:1301
+#: src/fe-gtk/settings.c:1409 src/fe-gtk/settings.c:1430
+#: src/fe-gtk/settings.c:1458 src/fe-gtk/settings.c:1474
+#: src/fe-gtk/settings.c:1536 src/fe-gtk/settings.c:1557
+msgid "General"
+msgstr "¤@¯ë"
+
+#: src/fe-gtk/settings.c:1279
+msgid "Hide Session on Panelize"
+msgstr "ªO­±®ÉÁôÂÃ"
+
+#: src/fe-gtk/settings.c:1282
+msgid "Hide X-Chat when window moved to the panel"
+msgstr "·í²¾¨ìªO­±®ÉÁôÂÃ X-Chat"
+
+#: src/fe-gtk/settings.c:1284
+msgid "Panel Applet"
+msgstr "ªO­±¼Ò¦¡"
+
+#: src/fe-gtk/settings.c:1285
+msgid "Layout For a Vertical Panel"
+msgstr "Áa¦V±Æ¦C"
+
+#: src/fe-gtk/settings.c:1288
+msgid "Layout the X-Chat panel applet for a vertical panel"
+msgstr "±Æª©®É¥HÁa¦V±Æ¦C¤º®e"
+
+#: src/fe-gtk/settings.c:1303
+msgid "Raw Mode Display"
+msgstr "­ì©l°T®§Åã¥Ü"
+
+#: src/fe-gtk/settings.c:1306
+msgid "Display raw mode changes instead of interpretations"
+msgstr "§ïÅÜ¼Ò¦¡®ÉÅã¥Ü­ì©l°T®§"
+
+#: src/fe-gtk/settings.c:1307
+msgid "Beep on Private Messages"
+msgstr "®¨®¨¸Ü´£¥Ü"
+
+#: src/fe-gtk/settings.c:1310
+msgid "Beep when a private message for you is received"
+msgstr "¦¬¨ì®¨®¨¸Ü®Éµo¥X¹Í¤@Án´£¿ô"
+
+#: src/fe-gtk/settings.c:1311
+#, fuzzy
+msgid "Send /who #chan on join."
+msgstr "¥[¤J®É¤£¬Ý¨Ï¥ÎªÌ"
+
+#: src/fe-gtk/settings.c:1314
+#, fuzzy
+msgid "Find user information when joining a channel."
+msgstr "¥[¤J²á¤Ñ«Ç«á¤£¥Î /who ¨Ó¬Ý¸Ì­±¦³­þ¨Ç¤H"
+
+#: src/fe-gtk/settings.c:1315
+msgid "Perform a periodic mail check."
+msgstr "©w®É E-mail ÀË¬d"
+
+#: src/fe-gtk/settings.c:1318
+msgid "Your irc settings"
+msgstr "±zªº IRC ³]©w"
+
+#: src/fe-gtk/settings.c:1322
+msgid "Quit Message:"
+msgstr "Â÷½u°T®§:"
+
+#: src/fe-gtk/settings.c:1326
+msgid "Part Message:"
+msgstr "Â÷¶}²á¤Ñ«Ç°T®§:"
+
+#: src/fe-gtk/settings.c:1330
+msgid ""
+"These can be a filename relative to ~/.xchat/ to be\n"
+"used as a list of random quit or part reasons."
+msgstr ""
+
+#: src/fe-gtk/settings.c:1333
+msgid "External Programs"
+msgstr "¥~³¡µ{¦¡"
+
+#: src/fe-gtk/settings.c:1336
+msgid "DNS Lookup Program:"
+msgstr "DNS ¬d¸ßµ{¦¡:"
+
+#: src/fe-gtk/settings.c:1341
+msgid "Timing"
+msgstr "­p®É"
+
+#: src/fe-gtk/settings.c:1344
+msgid "Auto ReConnect Delay:"
+msgstr "¦Û°Ê­«³s¶¡¹j"
+
+#: src/fe-gtk/settings.c:1345 src/fe-gtk/settings.c:1598
+#: src/fe-gtk/settings.c:1601
+msgid "seconds."
+msgstr "¬í."
+
+#: src/fe-gtk/settings.c:1356
+msgid "Address"
+msgstr "¦ì§}"
+
+#: src/fe-gtk/settings.c:1359
+msgid "Hostname / IP Number:"
+msgstr "¥D¾÷¦WºÙ / IP ¦ì§}:"
+
+#: src/fe-gtk/settings.c:1363
+msgid ""
+"Most people should leave this blank, it's only\n"
+"usefull for machines with multiple addresses."
+msgstr "¤@¯ë±¡ªp½Ð«O«ùªÅ¥Õ. °w¹ï¨ã¦³¦h­Ó¦ì§}ªº¾÷¾¹¦Ó³]."
+
+#: src/fe-gtk/settings.c:1367
+#, fuzzy
+msgid "Public IP Address"
+msgstr "IP ¦ì§}"
+
+#: src/fe-gtk/settings.c:1371
+#, fuzzy
+msgid "DCC IP Address:"
+msgstr "IP ¦ì§}"
+
+#: src/fe-gtk/settings.c:1375
+msgid ""
+"You may need to set the DCC IP Address if\n"
+"you're behind a NAT router or proxy firewall."
+msgstr ""
+
+#: src/fe-gtk/settings.c:1380
+msgid "Get my IP from Server (for use in DCC Send only)"
+msgstr "±q¦øªA¾¹¬d¥»¦a IP ¦ì§} (¥u¦³ DCC °eÀÉ®É¥Î¨ì)"
+
+#: src/fe-gtk/settings.c:1383
+msgid "For people using a 10.* or 192.168.* IP number."
+msgstr "°w¹ï¨Ï¥Î 10.* ©Î 192.168.* IP ¦ì§}¨p¤Hºô¸ô¤¤ªº¨Ï¥ÎªÌ¦Ó³]"
+
+#: src/fe-gtk/settings.c:1401
+msgid "(Disabled)"
+msgstr "(Ãö³¬)"
+
+#: src/fe-gtk/settings.c:1402
+msgid "Wingate"
+msgstr ""
+
+#: src/fe-gtk/settings.c:1403
+msgid "Socks4"
+msgstr ""
+
+#: src/fe-gtk/settings.c:1404
+msgid "Socks5"
+msgstr ""
+
+#: src/fe-gtk/settings.c:1405
+msgid "HTTP"
+msgstr ""
+
+#: src/fe-gtk/settings.c:1412
+msgid "Proxy Server Hostname:"
+msgstr "¥N²z¦øªA¾¹(Proxy)¦ì§}:"
+
+#: src/fe-gtk/settings.c:1416
+msgid "Proxy Server Port:"
+msgstr "¥N²z¦øªA¾¹(Proxy)³s±µ°ð:"
+
+#: src/fe-gtk/settings.c:1418
+msgid "Proxy Type:"
+msgstr "¦øªA¾¹ºØÃþ:"
+
+#: src/fe-gtk/settings.c:1431
+msgid "Show away once"
+msgstr "¥uÅã¥Ü¦£¸L¤@¦¸"
+
+#: src/fe-gtk/settings.c:1434
+msgid "Only show away messages the first time they're seen"
+msgstr "¥u¦³¦b²Ä¤@¦¸®ÉÅã¥Ü¦£¸L°T®§"
+
+#: src/fe-gtk/settings.c:1435
+msgid "Announce away messsages"
+msgstr "µo¥¬¦£¸L°T®§"
+
+#: src/fe-gtk/settings.c:1440
+msgid "Announce your away message to the channel(s) you are in"
+msgstr "µo¥¬¦£¸Lªº°T®§¨ì¥Ø«e¥[¤Jªº²á¤Ñ«Ç"
+
+#: src/fe-gtk/settings.c:1442
+msgid "Your away settings"
+msgstr "¦£¸L³]©w"
+
+#: src/fe-gtk/settings.c:1445
+msgid "Away Reason:"
+msgstr "­ì¦]:"
+
+#: src/fe-gtk/settings.c:1461
+#, fuzzy
+msgid "Words to Highlight:"
+msgstr "ª`¥ØÃöÁä¦r:"
+
+#: src/fe-gtk/settings.c:1465
+msgid "(separate with commas)"
+msgstr "(½Ð¥Î³r¸¹ , ¤À¹j)"
+
+#: src/fe-gtk/settings.c:1476 src/fe-gtk/settings.c:1841
+msgid "Logging"
+msgstr "°O¿ý"
+
+#: src/fe-gtk/settings.c:1479
+msgid "Enable logging conversations to disk"
+msgstr "°O¿ý¹ï¸Ü¤º®e"
+
+#: src/fe-gtk/settings.c:1480
+msgid "Always timestamp logs"
+msgstr "°O¿ý¥[¤W°T®§ªºµo¥Í®É¶¡"
+
+#: src/fe-gtk/settings.c:1484
+msgid "Always apply timestamp to disk logs"
+msgstr "ºÏºÐ¤¤ªº°O¿ý¥[¤W°T®§µo¥Í®É¶¡"
+
+#: src/fe-gtk/settings.c:1485
+msgid "Log name mask:"
+msgstr "°O¿ýÀÉ®×©R¦W®æ¦¡:"
+
+#: src/fe-gtk/settings.c:1499
+msgid "Generic"
+msgstr "¤@¯ë"
+
+#: src/fe-gtk/settings.c:1500
+msgid "Show notifies in active window"
+msgstr "¦b¥Ø«eµøµ¡¤¤Åã¥Ü¤W½u´£¥Ü°T®§"
+
+#: src/fe-gtk/settings.c:1506
+msgid "Send /whois"
+msgstr "°e¥X /whois"
+
+#: src/fe-gtk/settings.c:1511
+msgid "User List Notify Highlighting"
+msgstr "ª`¥Ø¤W½u´£¿ô¨Ï¥ÎªÌ"
+
+#: src/fe-gtk/settings.c:1512
+msgid "Highlight Notifies"
+msgstr "ª`¥Ø¤W½u´£¿ô¨Ï¥ÎªÌ"
+
+#: src/fe-gtk/settings.c:1515
+msgid "Highlight notified users in the user list"
+msgstr "¦b¦W³æ¤¤§â¤W½u´£¿ôªº¨Ï¥ÎªÌ³]¬°ª`¥Ø¥[¥H¼Ð¥Ü¥X¨Ó"
+
+#: src/fe-gtk/settings.c:1518
+msgid "Notified User Color:"
+msgstr "¤W½u´£¿ô¨Ï¥ÎªÌÃC¦â:"
+
+#: src/fe-gtk/settings.c:1523
+msgid "Notification Timeouts"
+msgstr "¤W½u´£¿ô®É¶¡¶¡¹j"
+
+#: src/fe-gtk/settings.c:1526
+msgid "Notify Check Interval:"
+msgstr "¤W½u´£¿ôÀË¬d¶¡¹j:"
+
+#: src/fe-gtk/settings.c:1527
+msgid "seconds (0=Disable)."
+msgstr "¬í (0=Ãö³¬)."
+
+#: src/fe-gtk/settings.c:1537
+msgid "Enable Character Translation"
+msgstr "±Ò¥Î¦r¤¸¹ï¬M"
+
+#: src/fe-gtk/settings.c:1542
+msgid "Translation File:"
+msgstr "¹ï¬MÀÉ:"
+
+#: src/fe-gtk/settings.c:1547
+msgid "Use a ircII style translation file."
+msgstr "¨Ï¥Î ircII ®æ¦¡ªº¹ï¬MÀÉ."
+
+#: src/fe-gtk/settings.c:1558
+msgid "Auto Open DCC Send Window"
+msgstr "¦Û°Ê¶}±Ò DCC °eÀÉµøµ¡"
+
+#: src/fe-gtk/settings.c:1563
+msgid "Automatically open DCC Send Window"
+msgstr "¦Û°Ê¶}±Ò DCC °eÀÉµøµ¡"
+
+#: src/fe-gtk/settings.c:1564
+msgid "Auto Open DCC Recv Window"
+msgstr "¦Û°Ê¶}±Ò DCC ¦¬ÀÉµøµ¡"
+
+#: src/fe-gtk/settings.c:1569
+msgid "Automatically open DCC Recv Window"
+msgstr "¦Û°Ê¶}±Ò DCC ¦¬ÀÉµøµ¡"
+
+#: src/fe-gtk/settings.c:1570
+msgid "Auto Open DCC Chat Window"
+msgstr "¦Û°Ê¶}±Ò¹ï¸Üµøµ¡"
+
+#: src/fe-gtk/settings.c:1575
+msgid "Automatically open DCC Chat Window"
+msgstr "¦Û°Ê¶}±Ò¹ï¸Üµøµ¡"
+
+#: src/fe-gtk/settings.c:1576
+msgid "Resume on Auto Accept"
+msgstr "¦Û°Ê±µ¦¬ÀÉ®×®É¨Ï¥ÎÄò¶Ç¥\¯à"
+
+#: src/fe-gtk/settings.c:1580
+msgid "When Auto-Accepting DCC, try to resume."
+msgstr "¦Û°Ê±µ¦¬ÀÉ®×®É¹Á¸ÕÄò¶Ç"
+
+#: src/fe-gtk/settings.c:1592
+msgid "Timeouts"
+msgstr "µ¥«Ý®É¶¡"
+
+#: src/fe-gtk/settings.c:1597
+msgid "DCC Offers Timeout:"
+msgstr "DCC ³s½uµ¥«Ý®É¶¡:"
+
+#: src/fe-gtk/settings.c:1600
+msgid "DCC Stall Timeout:"
+msgstr "DCC ¥¢³tµ¥«Ý®É¶¡:"
+
+#: src/fe-gtk/settings.c:1603
+msgid "Received files"
+msgstr "±µ¦¬ªºÀÉ®×"
+
+#: src/fe-gtk/settings.c:1607
+msgid "File Permissions:"
+msgstr "ÀÉ®×Åv­­"
+
+#: src/fe-gtk/settings.c:1609
+msgid "(octal)"
+msgstr "(¤K¶i¦ì)"
+
+#: src/fe-gtk/settings.c:1611
+msgid "Directory to save to:"
+msgstr "¦s©ñ¥Ø¿ý:"
+
+#: src/fe-gtk/settings.c:1614
+msgid "Save file with Nickname"
+msgstr "ÀÉ¦W¥[¤W¹ï¤è¦WºÙ"
+
+#: src/fe-gtk/settings.c:1617
+msgid "Put the sender's nickname in incoming filenames"
+msgstr "ÀÉ¦W¥[¤W¹ï¤è¦WºÙ"
+
+#: src/fe-gtk/settings.c:1619
+msgid "DCC Send Options"
+msgstr "°eÀÉ¿ï¶µ"
+
+#: src/fe-gtk/settings.c:1621
+msgid "Fast DCC Send"
+msgstr "§Ö³t°eÀÉ"
+
+#: src/fe-gtk/settings.c:1624
+msgid "Don't wait for ACKs to send more data"
+msgstr "¤£¶·µ¥«Ý¦¬¨ì½T©w°T®§(ACK)«á¤~Ä~Äò°e¥X¸ê®Æ"
+
+#: src/fe-gtk/settings.c:1627
+msgid "First DCC Send Port:"
+msgstr "³Ì§C¥i¥Îªº DCC °eÀÉ°ð:"
+
+#: src/fe-gtk/settings.c:1628
+msgid "(0=Disabled)"
+msgstr "(0=Ãö³¬)"
+
+#: src/fe-gtk/settings.c:1630
+msgid "Last DCC Send Port:"
+msgstr "³Ì°ª¥i¥Îªº DCC °eÀÉ°ð:"
+
+#: src/fe-gtk/settings.c:1634
+msgid "Send Block Size:"
+msgstr "¶Ç°e°Ï¶ô¤j¤p:"
+
+#: src/fe-gtk/settings.c:1635
+msgid "(1024=Normal)"
+msgstr "(¤@¯ë¬°1024)"
+
+#: src/fe-gtk/settings.c:1646
+msgid "Built-in Replies"
+msgstr "¤º«ØµªÂÐ"
+
+#: src/fe-gtk/settings.c:1647
+msgid "Hide Version"
+msgstr "ÁôÂÃª©¥»¸ê°T"
+
+#: src/fe-gtk/settings.c:1650
+msgid "Do not reply to CTCP version"
+msgstr "¤£¹ï CTCP version §@¥X¦^À³"
+
+#: src/fe-gtk/settings.c:1652 src/fe-gtk/textgui.c:402
+msgid "Sound"
+msgstr "­µ®Ä"
+
+#: src/fe-gtk/settings.c:1655
+msgid "Sound Dir:"
+msgstr "­µ®ÄÀÉ¦s©ñ¥Ø¿ý:"
+
+#: src/fe-gtk/settings.c:1659
+msgid "Play Command:"
+msgstr "¼½©ñ«ü¥O:"
+
+#. prepare the dialog
+#: src/fe-gtk/settings.c:1695
+msgid "X-Chat: Preferences"
+msgstr "X-Chat: ­Ó¤H³ß¦n³]©w"
+
+#: src/fe-gtk/settings.c:1726
+msgid "Apply"
+msgstr "®M¥Î"
+
+#. the tree
+#: src/fe-gtk/settings.c:1753
+msgid "Categories"
+msgstr "¤ÀÃþ"
+
+#: src/fe-gtk/settings.c:1777
+msgid "Interface Settings"
+msgstr "¤¶­±³]©w"
+
+#: src/fe-gtk/settings.c:1778
+msgid "Interface"
+msgstr "¤¶­±"
+
+#: src/fe-gtk/settings.c:1783
+msgid "IRC Input/Output Settings"
+msgstr "IRC ¿é¥X¤J³]©w"
+
+#: src/fe-gtk/settings.c:1784
+msgid "IRC Input/Output"
+msgstr "IRC ¿é¥X¤J"
+
+#: src/fe-gtk/settings.c:1788
+msgid "Window Layout Settings"
+msgstr "µøµ¡±ÆªO³]©w"
+
+#: src/fe-gtk/settings.c:1789
+msgid "Window Layout"
+msgstr "µøµ¡±ÆªO"
+
+#: src/fe-gtk/settings.c:1793
+msgid "Main Window Settings"
+msgstr "¥Dµøµ¡³]©w"
+
+#: src/fe-gtk/settings.c:1794
+msgid "Main Window"
+msgstr "¥Dµøµ¡"
+
+#: src/fe-gtk/settings.c:1798
+msgid "Channel Window Settings"
+msgstr "²á¤Ñ«Çµøµ¡³]©w"
+
+#: src/fe-gtk/settings.c:1799
+msgid "Channel Windows"
+msgstr "²á¤Ñ«Çµøµ¡"
+
+#: src/fe-gtk/settings.c:1803
+msgid "Dialog Window Settings"
+msgstr "¹ï¸Üµøµ¡³]©w"
+
+#: src/fe-gtk/settings.c:1804
+msgid "Dialog Windows"
+msgstr "¹ï¸Üµøµ¡"
+
+#: src/fe-gtk/settings.c:1809
+msgid "Panel Settings"
+msgstr "ªO­±³]©w"
+
+#: src/fe-gtk/settings.c:1810
+msgid "Panel"
+msgstr "ªO­±"
+
+#: src/fe-gtk/settings.c:1815
+msgid "IRC Settings"
+msgstr "IRC ³]©w"
+
+#: src/fe-gtk/settings.c:1816
+msgid "IRC"
+msgstr ""
+
+#: src/fe-gtk/settings.c:1820
+msgid "IP Address Settings"
+msgstr "IP ¦ì§}³]©w"
+
+#: src/fe-gtk/settings.c:1821
+msgid "IP Address"
+msgstr "IP ¦ì§}"
+
+#: src/fe-gtk/settings.c:1825 src/fe-gtk/settings.c:1826
+msgid "Proxy Server"
+msgstr "¥N²z¦øªA¾¹(Proxy)"
+
+#: src/fe-gtk/settings.c:1830
+msgid "Away Settings"
+msgstr "¦£¸L³]©w"
+
+#: src/fe-gtk/settings.c:1831
+msgid "Away"
+msgstr "¦£¸L"
+
+#: src/fe-gtk/settings.c:1835
+msgid "Highlighting Settings"
+msgstr "ª`¥Ø³]©w"
+
+#: src/fe-gtk/settings.c:1836
+msgid "Highlighting"
+msgstr "ª`¥Ø"
+
+#: src/fe-gtk/settings.c:1840
+msgid "Logging Settings"
+msgstr "°O¿ý³]©w"
+
+#: src/fe-gtk/settings.c:1845
+msgid "Notification Settings"
+msgstr "¤W½u´£¿ô³]©w"
+
+#: src/fe-gtk/settings.c:1846
+msgid "Notification"
+msgstr "¤W½u´£¿ô"
+
+#: src/fe-gtk/settings.c:1851
+msgid "Character Set (Translation Tables)"
+msgstr "¦r¤¸¶° (Âà½Xªí)"
+
+#: src/fe-gtk/settings.c:1852
+msgid "Character Set"
+msgstr "¦r¤¸¶°"
+
+#: src/fe-gtk/settings.c:1857
+msgid "CTCP Settings"
+msgstr "CTCP ³]©w"
+
+#: src/fe-gtk/settings.c:1862
+msgid "DCC Settings"
+msgstr "DCC ³]©w"
+
+#: src/fe-gtk/settings.c:1863
+msgid "DCC"
+msgstr ""
+
+#: src/fe-gtk/settings.c:1867
+msgid "File Transfer Settings"
+msgstr "ÀÉ®×¶Ç¿é³]©w"
+
+#: src/fe-gtk/settings.c:1868
+msgid "File Transfer"
+msgstr "ÀÉ®×¶Ç¿é"
+
+#: src/fe-gtk/textgui.c:192
+msgid "There was an error parsing the string"
+msgstr ""
+
+#: src/fe-gtk/textgui.c:200
+#, c-format
+msgid "This signal is only passed %d args, $%d is invalid"
+msgstr ""
+
+#: src/fe-gtk/textgui.c:323 src/fe-gtk/textgui.c:346
+msgid "Print Texts File"
+msgstr ""
+
+#: src/fe-gtk/textgui.c:402
+msgid "Event"
+msgstr ""
+
+#: src/fe-gtk/textgui.c:403
+msgid "$ Number"
+msgstr ""
+
+#: src/fe-gtk/textgui.c:411
+#, fuzzy
+msgid "Edit Events"
+msgstr "°T®§©w¸q.."
+
+#: src/fe-gtk/textgui.c:452
+#, fuzzy
+msgid "Sound file: "
+msgstr "­µ®ÄÀÉ¦s©ñ¥Ø¿ý:"
+
+#: src/fe-gtk/textgui.c:486
+msgid "Save As"
+msgstr ""
+
+#: src/fe-gtk/textgui.c:491
+#, fuzzy
+msgid "Load From"
+msgstr "¨Ï¥Î"
+
+#: src/fe-gtk/textgui.c:496
+msgid "Test All"
+msgstr ""
+
+#: src/fe-gtk/urlgrab.c:115
+#, fuzzy
+msgid "Select a file to save to"
+msgstr "¦s©ñ¥Ø¿ý:"
+
+#: src/fe-gtk/urlgrab.c:155
+msgid "X-Chat: URL Grabber"
+msgstr ""
+
+#~ msgid "Help.."
+#~ msgstr "»¡©ú.."
+
+#, fuzzy
+#~ msgid "Close Channel"
+#~ msgstr "·s²á¤Ñ«Ç.."
+
+#, fuzzy
+#~ msgid "Panelize"
+#~ msgstr "ªO­±"
+
+#, fuzzy
+#~ msgid "Close Tab"
+#~ msgstr "Ãö³¬"
+
+#, fuzzy
+#~ msgid "InterScan"
+#~ msgstr "¤¶­±"
+
+#~ msgid "(Default is \":\" if left blank.)"
+#~ msgstr "¤£¿é¤J«h¥Î¤º©w­È \":\""
+
+#~ msgid "Output Filtering"
+#~ msgstr "¤å¦r°Ï¹LÂo"
+
+#~ msgid "Hilighted Nick Color:"
+#~ msgstr "ª`¥Ø®É¦WºÙªºÃC¦â"

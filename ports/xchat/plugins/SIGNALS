@@ -1,0 +1,183 @@
+Each left flushed line marks the start of a signal and contains its name. From
+then on each line before a blank line is an arg (in order), then there is a
+comment. Good luck!
+
+NOTE: Not all of these have been done!
+
+-- AGL
+
+XP_USERCOMMAND
+	session
+	(char *)  command
+	(char **) word
+	(char **) word_eol
+
+	Called whenever the user enters a command
+XP_PRIVMSG
+	server
+	(char *) from	(e.g. nickname)
+	(char *) ip	(e.g. ^user@host)
+	(char *) text
+	
+	Called on a PRIVMSG command from server (check the RFC)
+XP_CHANACTION
+	session
+	(char *) channel
+	(char *) from	(e.g. nickname)
+	(char *) text
+	NULL
+	fromme
+	
+	Called on an ACTION (/me) message, fromme is a flag
+XP_CHANMSG
+	server
+	(char *) channel
+	(char *) from	(e.g. nickname)
+	(char *) text
+	NULL
+	fromme
+	
+	Called on a channel message, fromme is a flag
+XP_CHANGENICK
+	server
+	(char *) oldnick
+	(char *) newnick
+	NULL
+	NULL
+	me
+	
+	Called when someone changes their nick, me is a flag weather the nick
+	is from us.
+XP_JOIN
+	server
+	(char *) channel
+	(char *) user
+	(char *) ip
+	
+	Called when someone (else) joins a channel
+XP_CHANSETKEY
+	session
+	(char *) channel
+	(char *) nick
+	(char *) key
+	
+	Called when a channel key is set
+XP_CHANSETLIMIT
+	session
+	(char *) channel
+	(char *) nick
+	(char *) limit	(as a string)
+
+	Called when a channel user limit is set
+XP_CHANOP
+	session
+	(char *) channel
+	(char *) opping nick
+	(char *) opped nick
+	
+	Called when a user is opped
+XP_CHANHOP
+	session
+	(char *) channel
+	(char *) half-opping nick
+	(char *) half-opped nick
+	
+	Called when a user is half-opped
+XP_CHANVOICE
+	session
+	(char *) channel
+	(char *) giving nick
+	(char *) voiced nick
+	
+	Called when a user is given a voice
+XP_CHANBAN
+	session
+	(char *) channel
+	(char *) banning person
+	(char *) ban
+	
+	Called when someone set a ban
+XP_CHANRMKEY
+	session
+	(char *) channel
+	(char *) nick
+	
+	Called when someone removes a channel key
+XP_CHANRMLIMIT
+	session
+	(char *) channel
+	(char *) nick
+	
+	Called when someone removes a user limit
+XP_CHANDEOP
+	session
+	(char *) channel
+	(char *) deopping person
+	(char *) deopped person
+	
+	Called when someone deops someone
+XP_CHANDEHOP
+	session
+	(char *) channel
+	(char *) dehalf-opping person
+	(char *) dehalf-opped person
+	
+	Called when someone dehalf-ops someone
+XP_CHANDEVOICE
+	session
+	(char *) channel
+	(char *) taking nick
+	(char *) devoiced nick
+	
+	Called when a user is stripped of his voice
+XP_CHANUNBAN
+	session
+	(char *) channel
+	(char *) unbanning person
+	(char *) ban
+	
+	Called when someone removes a ban
+XP_CHANEXEMPT
+	session
+	(char *) channel
+	(char *) exempting person
+	(char *) exempt
+	
+	Called when someone set a exempt
+XP_CHANRMEXEMPT
+	session
+	(char *) channel
+	(char *) unexempting person
+	(char *) exempt
+	
+	Called when someone removes a exempt
+XP_CHANINVITE
+	session
+	(char *) channel
+	(char *) inviting person
+	(char *) invite
+	
+	Called when someone set a invite
+XP_CHANRMINVITE
+	session
+	(char *) channel
+	(char *) uninviting person
+	(char *) invite
+	
+	Called when someone removes a invite
+XP_INBOUND
+	session
+	server
+	message
+	
+	Called everytime a server sends a message
+XP_HIGHLIGHT
+	session
+	(char *) channel
+	(char *) from
+	(char *) test
+	NULL
+	fromme
+
+	Called when a 'blue string' if found in a channel text
+<more will be added>

@@ -1,0 +1,23 @@
+[Desktop Entry]
+Name=X-Chat IRC client
+Name[de]=X-Chat
+Name[es]=X-Chat aplicación de IRC 
+Name[ko]=X-Chat IRC Å¬¶óÀÌ¾ğÆ®
+Name[no]=X-Chat
+Name[pt_BR]=Cliente de IRC X-Chat
+Name[sv]=IRC-klienten X-Chat
+Name[uk]=IRC X-Chat
+Name[ro]=Clientul de IRC X-Chat
+Comment=IRC Client
+Comment[de]=IRC-Client
+Comment[es]=Aplicación de IRC
+Comment[ko]=IRC Å¬¶óÀÌ¾ğÆ®
+Comment[no]=IRC-klient
+Comment[pt_BR]=Cliente de IRC
+Comment[sv]=IRC-klient
+Comment[uk]=ëÌ¦¤ÎÔ IRC
+Comment[ro]=Client de IRC
+Exec=xchat
+Icon=xchat.png
+Terminal=0
+Type=Application

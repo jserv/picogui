@@ -1,0 +1,73 @@
+### EDIT THESE ################################################
+#OPENSSL = YES
+#PERL = YES
+GLIB = -IC:\Cygwin\usr\src\glib
+GTK = -IC:\Cygwin\usr\src\gtk+\gtk -IC:\Cygwin\usr\src\gtk+\gdk
+PERLPATH = C:\PERL\LIB\CORE
+PERLLIB = perl56.lib
+###############################################################
+
+CC = cl
+LINK = link
+CFLAGS = -J -MD -G5 -O1 -nologo -DWIN32
+LIBS = glib-1.3.lib gdk-1.3.lib gtk-1.3.lib wsock32.lib
+
+!IFDEF OPENSSL
+CFLAGS = $(CFLAGS) -DUSE_OPENSSL
+LIBS = $(LIBS) libeay32.lib libssl32.lib
+SSLOBJ = ssl.obj
+!ENDIF
+
+!IFDEF PERL
+CFLAGS = $(CFLAGS) -DUSE_PERL -I$(PERLPATH)
+LIBS = $(LIBS) $(PERLLIB) /LIBPATH$(PERLPATH)
+PERLOBJ = perl.obj
+!ENDIF
+
+COMMON_OBJECTS = \
+cfgfiles.obj \
+ctcp.obj \
+dcc.obj \
+history.obj \
+ignore.obj \
+inbound.obj \
+modes.obj \
+network.obj \
+notify.obj \
+outbound.obj \
+$(PERLOBJ) \
+plugin.obj \
+server.obj \
+$(SSLOBJ) \
+text.obj \
+userlist.obj \
+util.obj \
+xchat.obj
+
+FEGTK_OBJECTS = \
+about.obj \
+ascii.obj \
+banlist.obj \
+chanlist.obj \
+dccgui.obj \
+dialog.obj \
+editlist.obj \
+fe-gtk.obj \
+fkeys.obj \
+gtkutil.obj \
+ignoregui.obj \
+maingui.obj \
+menu.obj \
+notifygui.obj \
+palette.obj \
+pixmaps.obj \
+rawlog.obj \
+search.obj \
+serverlist.obj \
+settings.obj \
+textgui.obj \
+urlgrab.obj \
+userlistgui.obj \
+usermenu.obj \
+wins.obj \
+xtext.obj

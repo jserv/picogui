@@ -1,0 +1,3 @@
+?package(xchat-gnome):needs=X11 section=Apps/Net\
+  title="X Chat" command="/usr/bin/xchat" hints="IRC"\
+  icon="/usr/share/icons/xchat_mini.xpm"

@@ -1,0 +1,3 @@
+?package(xchat-text):needs=text section=Apps/Net\
+  title="X Chat (Text)" command="/usr/bin/xchat-text" hints="IRC"\
+  icon="/usr/share/icons/xchat_mini.xpm"

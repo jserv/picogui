@@ -1,0 +1,655 @@
+# Makefile.in generated automatically by automake 1.4-p1 from Makefile.am
+
+# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+
+SHELL = @SHELL@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+
+DESTDIR =
+
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
+
+top_builddir = ../..
+
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+transform = @program_transform_name@
+
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
+CATALOGS = @CATALOGS@
+CATOBJEXT = @CATOBJEXT@
+CC = @CC@
+CPP = @CPP@
+DATADIRNAME = @DATADIRNAME@
+GENCAT = @GENCAT@
+GLIB_CFLAGS = @GLIB_CFLAGS@
+GLIB_CONFIG = @GLIB_CONFIG@
+GLIB_LIBS = @GLIB_LIBS@
+GMOFILES = @GMOFILES@
+GMSGFMT = @GMSGFMT@
+GTK_CFLAGS = @GTK_CFLAGS@
+GTK_CONFIG = @GTK_CONFIG@
+GTK_LIBS = @GTK_LIBS@
+GT_NO = @GT_NO@
+GT_YES = @GT_YES@
+GUI_CFLAGS = @GUI_CFLAGS@
+GUI_LIBS = @GUI_LIBS@
+INCLUDE_LOCALE_H = @INCLUDE_LOCALE_H@
+INSTOBJEXT = @INSTOBJEXT@
+INTLDEPS = @INTLDEPS@
+INTLLIBS = @INTLLIBS@
+INTLOBJS = @INTLOBJS@
+MAKEINFO = @MAKEINFO@
+MKINSTALLDIRS = @MKINSTALLDIRS@
+MSGFMT = @MSGFMT@
+PACKAGE = @PACKAGE@
+POFILES = @POFILES@
+POSUB = @POSUB@
+RANLIB = @RANLIB@
+USE_INCLUDED_LIBINTL = @USE_INCLUDED_LIBINTL@
+USE_NLS = @USE_NLS@
+VERSION = @VERSION@
+gdkpixbufpath = @gdkpixbufpath@
+gnomepath = @gnomepath@
+l = @l@
+perlpath = @perlpath@
+pythonpath = @pythonpath@
+sedpath = @sedpath@
+sortpath = @sortpath@
+trpath = @trpath@
+unamepath = @unamepath@
+uniqpath = @uniqpath@
+
+noinst_LIBRARIES = libxchatmain.a
+
+INCLUDES = -I$(includedir)
+
+EXTRA_DIST = makefile.msc 	cfgfiles.h 	ctcp.h 	dcc.h 	fe.h 	history.h 	identd.c 	ignore.h 	inbound.h 	inet.h 	modes.h 	network.h 	notify.h 	outbound.h 	perl.c 	perlc.h 	plugin.h 	pys_signals.h 	python.c 	pythonc.h 	pysig.py 	server.h 	ssl.h 	ssl.c		text.h 	userlist.h 	util.h 	xchat.h 	xchatc.h 	jcode.c 	jcode.h
+
+
+@DO_PERL_TRUE@perl_c = perl.c
+
+@DO_PYTHON_TRUE@python_c = python.c
+
+@USE_OPENSSL_TRUE@ssl_c = ssl.c
+
+@DO_ICONV_TRUE@jcode_c = jcode.c
+
+libxchatmain_a_SOURCES = cfgfiles.c ctcp.c dcc.c       history.c ignore.c inbound.c $(jcode_c) modes.c network.c 		notify.c outbound.c $(perl_c) plugin.c $(python_c) server.c 		$(ssl_c) text.c userlist.c util.c xchat.c
+
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ../../config.h
+CONFIG_CLEAN_FILES = 
+LIBRARIES =  $(noinst_LIBRARIES)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I../..
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+libxchatmain_a_LIBADD = 
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@libxchatmain_a_OBJECTS =  \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@cfgfiles.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@ctcp.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@dcc.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@history.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@ignore.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@inbound.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@modes.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@network.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@notify.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@outbound.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@plugin.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@python.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@server.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@text.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@userlist.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@util.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@xchat.o
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@libxchatmain_a_OBJECTS =  \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@cfgfiles.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@ctcp.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@dcc.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@history.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@ignore.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@inbound.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@jcode.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@modes.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@network.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@notify.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@outbound.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@perl.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@plugin.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@server.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@ssl.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@text.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@userlist.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@util.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@xchat.o
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@libxchatmain_a_OBJECTS =  \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@cfgfiles.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@ctcp.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@dcc.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@history.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@ignore.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@inbound.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@jcode.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@modes.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@network.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@notify.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@outbound.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@plugin.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@python.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@server.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@text.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@userlist.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@util.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@xchat.o
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@libxchatmain_a_OBJECTS =  \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@cfgfiles.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@ctcp.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@dcc.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@history.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@ignore.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@inbound.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@jcode.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@modes.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@network.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@notify.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@outbound.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@plugin.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@server.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@text.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@userlist.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@util.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@xchat.o
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@libxchatmain_a_OBJECTS =  \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@cfgfiles.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@ctcp.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@dcc.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@history.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@ignore.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@inbound.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@jcode.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@modes.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@network.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@notify.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@outbound.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@plugin.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@python.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@server.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@ssl.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@text.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@userlist.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@util.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@xchat.o
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@libxchatmain_a_OBJECTS =  \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@cfgfiles.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@ctcp.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@dcc.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@history.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@ignore.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@inbound.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@modes.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@network.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@notify.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@outbound.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@perl.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@plugin.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@server.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@ssl.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@text.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@userlist.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@util.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@xchat.o
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@libxchatmain_a_OBJECTS =  \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@cfgfiles.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@ctcp.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@dcc.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@history.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@ignore.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@inbound.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@jcode.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@modes.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@network.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@notify.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@outbound.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@perl.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@plugin.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@python.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@server.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@ssl.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@text.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@userlist.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@util.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@xchat.o
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@libxchatmain_a_OBJECTS =  \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@cfgfiles.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@ctcp.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@dcc.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@history.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@ignore.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@inbound.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@modes.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@network.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@notify.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@outbound.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@plugin.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@python.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@server.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@ssl.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@text.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@userlist.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@util.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@xchat.o
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@libxchatmain_a_OBJECTS =  \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@cfgfiles.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@ctcp.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@dcc.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@history.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@ignore.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@inbound.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@modes.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@network.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@notify.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@outbound.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@plugin.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@server.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@ssl.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@text.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@userlist.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@util.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@xchat.o
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@libxchatmain_a_OBJECTS =  \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@cfgfiles.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@ctcp.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@dcc.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@history.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@ignore.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@inbound.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@jcode.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@modes.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@network.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@notify.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@outbound.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@plugin.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@server.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@ssl.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@text.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@userlist.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@util.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_TRUE@@DO_PERL_FALSE@xchat.o
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@libxchatmain_a_OBJECTS =  \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@cfgfiles.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@ctcp.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@dcc.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@history.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@ignore.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@inbound.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@jcode.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@modes.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@network.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@notify.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@outbound.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@perl.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@plugin.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@python.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@server.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@text.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@userlist.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@util.o \
+@DO_ICONV_TRUE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@xchat.o
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@libxchatmain_a_OBJECTS =  \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@cfgfiles.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@ctcp.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@dcc.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@history.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@ignore.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@inbound.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@modes.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@network.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@notify.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@outbound.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@perl.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@plugin.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@python.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@server.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@text.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@userlist.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@util.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@xchat.o
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@libxchatmain_a_OBJECTS =  \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@cfgfiles.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@ctcp.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@dcc.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@history.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@ignore.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@inbound.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@modes.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@network.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@notify.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@outbound.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@plugin.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@server.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@text.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@userlist.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@util.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_FALSE@xchat.o
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@libxchatmain_a_OBJECTS =  \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@cfgfiles.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@ctcp.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@dcc.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@history.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@ignore.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@inbound.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@modes.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@network.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@notify.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@outbound.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@perl.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@plugin.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@python.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@server.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@ssl.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@text.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@userlist.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@util.o \
+@DO_ICONV_FALSE@@DO_PYTHON_TRUE@@USE_OPENSSL_TRUE@@DO_PERL_TRUE@xchat.o
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@libxchatmain_a_OBJECTS =  \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@cfgfiles.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@ctcp.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@dcc.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@history.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@ignore.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@inbound.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@modes.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@network.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@notify.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@outbound.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@perl.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@plugin.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@server.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@text.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@userlist.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@util.o \
+@DO_ICONV_FALSE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@xchat.o
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@libxchatmain_a_OBJECTS =  \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@cfgfiles.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@ctcp.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@dcc.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@history.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@ignore.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@inbound.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@jcode.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@modes.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@network.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@notify.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@outbound.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@perl.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@plugin.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@server.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@text.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@userlist.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@util.o \
+@DO_ICONV_TRUE@@DO_PYTHON_FALSE@@USE_OPENSSL_FALSE@@DO_PERL_TRUE@xchat.o
+AR = ar
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+DIST_COMMON =  Makefile.am Makefile.in
+
+
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
+
+TAR = gtar
+GZIP_ENV = --best
+SOURCES = $(libxchatmain_a_SOURCES)
+OBJECTS = $(libxchatmain_a_OBJECTS)
+
+all: all-redirect
+.SUFFIXES:
+.SUFFIXES: .S .c .o .s
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps src/common/Makefile
+
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+
+mostlyclean-noinstLIBRARIES:
+
+clean-noinstLIBRARIES:
+	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
+
+distclean-noinstLIBRARIES:
+
+maintainer-clean-noinstLIBRARIES:
+
+.c.o:
+	$(COMPILE) -c $<
+
+.s.o:
+	$(COMPILE) -c $<
+
+.S.o:
+	$(COMPILE) -c $<
+
+mostlyclean-compile:
+	-rm -f *.o core *.core
+
+clean-compile:
+
+distclean-compile:
+	-rm -f *.tab.c
+
+maintainer-clean-compile:
+
+libxchatmain.a: $(libxchatmain_a_OBJECTS) $(libxchatmain_a_DEPENDENCIES)
+	-rm -f libxchatmain.a
+	$(AR) cru libxchatmain.a $(libxchatmain_a_OBJECTS) $(libxchatmain_a_LIBADD)
+	$(RANLIB) libxchatmain.a
+
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES) $(LISP)
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	here=`pwd` && cd $(srcdir) \
+	  && mkid -f$$here/ID $$unique $(LISP)
+
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	-rm -f TAGS ID
+
+maintainer-clean-tags:
+
+distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
+
+subdir = src/common
+
+distdir: $(DISTFILES)
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
+	  if test -d $$d/$$file; then \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
+	  else \
+	    test -f $(distdir)/$$file \
+	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	    || cp -p $$d/$$file $(distdir)/$$file || :; \
+	  fi; \
+	done
+cfgfiles.o: cfgfiles.c xchat.h ../../config.h history.h cfgfiles.h \
+	util.h fe.h userlist.h dcc.h text.h xchatc.h
+ctcp.o: ctcp.c xchat.h ../../config.h history.h cfgfiles.h util.h \
+	plugin.h modes.h outbound.h inbound.h dcc.h ctcp.h xchatc.h
+dcc.o: dcc.c inet.h xchat.h ../../config.h history.h perlc.h util.h \
+	plugin.h fe.h userlist.h dcc.h outbound.h inbound.h network.h \
+	text.h xchatc.h
+history.o: history.c history.h
+ignore.o: ignore.c ../../config.h xchat.h history.h ignore.h plugin.h \
+	cfgfiles.h fe.h userlist.h dcc.h text.h util.h xchatc.h
+inbound.o: inbound.c inet.h xchat.h ../../config.h history.h util.h \
+	ignore.h plugin.h perlc.h fe.h userlist.h dcc.h modes.h \
+	notify.h outbound.h inbound.h text.h ctcp.h xchatc.h
+jcode.o: jcode.c jcode.h
+modes.o: modes.c xchat.h ../../config.h history.h xchatc.h modes.h \
+	plugin.h fe.h userlist.h dcc.h
+network.o: network.c inet.h ../../config.h network.h
+notify.o: notify.c ../../config.h xchat.h history.h notify.h cfgfiles.h \
+	plugin.h fe.h userlist.h dcc.h text.h util.h xchatc.h
+outbound.o: outbound.c inet.h xchat.h ../../config.h history.h plugin.h \
+	ignore.h util.h fe.h userlist.h dcc.h cfgfiles.h network.h \
+	modes.h notify.h inbound.h text.h xchatc.h server.h perlc.h \
+	pythonc.h outbound.h
+perl.o: perl.c ../../config.h xchat.h history.h cfgfiles.h util.h \
+	ignore.h notify.h fe.h userlist.h dcc.h text.h outbound.h \
+	xchatc.h perlc.h
+plugin.o: plugin.c xchat.h ../../config.h history.h util.h plugin.h fe.h \
+	userlist.h dcc.h outbound.h cfgfiles.h text.h
+python.o: python.c xchat.h ../../config.h history.h plugin.h \
+	pys_signals.h fe.h userlist.h dcc.h pythonc.h text.h util.h \
+	cfgfiles.h outbound.h xchatc.h
+server.o: server.c inet.h xchat.h ../../config.h history.h plugin.h fe.h \
+	userlist.h dcc.h cfgfiles.h network.h notify.h xchatc.h \
+	inbound.h outbound.h text.h util.h server.h
+ssl.o: ssl.c ssl.h ../../config.h
+text.o: text.c xchat.h ../../config.h history.h cfgfiles.h plugin.h fe.h \
+	userlist.h dcc.h util.h outbound.h perlc.h xchatc.h text.h
+userlist.o: userlist.c ../../config.h xchat.h history.h modes.h fe.h \
+	userlist.h dcc.h notify.h xchatc.h util.h
+util.o: util.c xchat.h ../../config.h history.h util.h
+xchat.o: xchat.c inet.h xchat.h ../../config.h history.h fe.h userlist.h \
+	dcc.h util.h cfgfiles.h ignore.h plugin.h notify.h server.h \
+	pythonc.h outbound.h text.h perlc.h xchatc.h
+
+info-am:
+info: info-am
+dvi-am:
+dvi: dvi-am
+check-am: all-am
+check: check-am
+installcheck-am:
+installcheck: installcheck-am
+install-exec-am:
+install-exec: install-exec-am
+
+install-data-am:
+install-data: install-data-am
+
+install-am: all-am
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
+install: install-am
+uninstall-am:
+uninstall: uninstall-am
+all-am: Makefile $(LIBRARIES)
+all-redirect: all-am
+install-strip:
+	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
+installdirs:
+
+
+mostlyclean-generic:
+
+clean-generic:
+
+distclean-generic:
+	-rm -f Makefile $(CONFIG_CLEAN_FILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+
+maintainer-clean-generic:
+mostlyclean-am:  mostlyclean-noinstLIBRARIES mostlyclean-compile \
+		mostlyclean-tags mostlyclean-generic
+
+mostlyclean: mostlyclean-am
+
+clean-am:  clean-noinstLIBRARIES clean-compile clean-tags clean-generic \
+		mostlyclean-am
+
+clean: clean-am
+
+distclean-am:  distclean-noinstLIBRARIES distclean-compile \
+		distclean-tags distclean-generic clean-am
+
+distclean: distclean-am
+
+maintainer-clean-am:  maintainer-clean-noinstLIBRARIES \
+		maintainer-clean-compile maintainer-clean-tags \
+		maintainer-clean-generic distclean-am
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+maintainer-clean: maintainer-clean-am
+
+.PHONY: mostlyclean-noinstLIBRARIES distclean-noinstLIBRARIES \
+clean-noinstLIBRARIES maintainer-clean-noinstLIBRARIES \
+mostlyclean-compile distclean-compile clean-compile \
+maintainer-clean-compile tags mostlyclean-tags distclean-tags \
+clean-tags maintainer-clean-tags distdir info-am info dvi-am dvi check \
+check-am installcheck-am installcheck install-exec-am install-exec \
+install-data-am install-data install-am install uninstall-am uninstall \
+all-redirect all-am all installdirs mostlyclean-generic \
+distclean-generic clean-generic maintainer-clean-generic clean \
+mostlyclean distclean maintainer-clean
+
+
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
+.NOEXPORT:
