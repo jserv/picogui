@@ -1,4 +1,4 @@
-/* $Id: input.c,v 1.5 2000/06/08 20:27:46 micahjd Exp $
+/* $Id: input.c,v 1.6 2000/08/06 20:35:10 micahjd Exp $
  *
  * input.c - Input layer for SDL
  * 
@@ -116,6 +116,19 @@ void windows_inputpoll_hack(void) {
 	(*quitreq)();
 	break;
       }
+
+#ifdef DEBUG
+      /* Some magic keys for debugging */
+
+      /* Blank the screen on ctrl-alt-b */
+      if (evt.key.keysym.sym==PGKEY_b &&
+	  (evt.key.keysym.mod & PGMOD_CTRL) &&
+	  (evt.key.keysym.mod & PGMOD_ALT)) {
+	hwr_clear();
+	hwr_update();
+	break;
+      }
+#endif
 
       if (evt.key.keysym.unicode)
 	dispatch_key(TRIGGER_CHAR,evt.key.keysym.unicode,evt.key.keysym.mod);
