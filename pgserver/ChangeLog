@@ -1,0 +1,7 @@
+2001-05-11  Frédéric Gobry  <frederic.gobry@smartdata.ch>
+
+	* configure.in: changed option to use the name "profile" for
+	operations concerning the menuconfig profiles
+
+	* Makefile.am: make distclean in the configscript directory
+
