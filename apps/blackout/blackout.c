@@ -1,4 +1,4 @@
-/* $Id: blackout.c,v 1.6 2001/05/01 23:16:52 micahjd Exp $
+/* $Id: blackout.c,v 1.7 2002/09/05 16:09:47 bornet Exp $
  *
  * blackout.c - "Blackout" game to demonstrate game programming and
  *              canvas widget event handling.
@@ -233,8 +233,9 @@ int evtMouseDown(struct pgEvent *evt) {
    /* What light was it in? */
    lx = (evt->e.pntr.x - bx) / lightw;
    ly = (evt->e.pntr.y - by) / lighth;
-   if (lx < 0 || lx >= boardwidth ||
-       ly < 0 || ly >= boardwidth)
+
+   if (evt->e.pntr.x < bx || lx >= boardwidth ||
+       evt->e.pntr.y < by || ly >= boardwidth)
      return 0;
 
    invertLight(lx,ly);
