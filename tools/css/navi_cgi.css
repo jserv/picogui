@@ -122,6 +122,11 @@ div.terminalBox {
   padding: 1em;
 }
 
+div.monoBox {
+  font-family: monospace;
+  padding: 1em;
+}
+
 ul {
   line-height: 1.5em;
   list-style-name: square;

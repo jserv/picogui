@@ -34,7 +34,7 @@ def foldText(text, lineLength=120):
 class NaviPage:
     plainTitle = "Title"
     htmlTitle = None
-    subtitle = "Subtitle"
+    subtitle = ""
     allSections = []
     defaultSections = None
     parameters = [
