@@ -48,7 +48,9 @@ class Bootstrap:
 def main(scriptName=sys.argv[0], args=sys.argv[1:]):
     # Use the Bootstrap class to locate our build package and call its Main
     boot = Bootstrap()
-    sys.path.insert(0, os.path.join(boot.paths['packages'], boot.packages['build']))
+    sys.path.insert(0, os.path.join(boot.paths['root'], 
+                                    boot.paths['packages'], 
+                                    boot.packages['build']))
     import PGBuild.Main
     PGBuild.Main.main(boot, [sys.argv[0]] + args)
 
