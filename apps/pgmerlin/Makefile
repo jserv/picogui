@@ -8,7 +8,7 @@
 SAMPLES_INSTALL_DIR =  /usr/local/share/merlin
 
 # Where the binary is installed
-INSTALL_DIR =   /usr/bin
+INSTALL_DIR =   /usr/local/bin
 
 INCFLAGS    =   -I.
 CFLAGS      =   -O2 -Wall -DDEFAULT_HOME=\"$(SAMPLES_INSTALL_DIR)\" -DUSE_ENGLISH
@@ -65,5 +65,5 @@ install:		$(TARGET)
 			$(STRIP) $(TARGET)
 			install -d $(SAMPLES_INSTALL_DIR)
 			install samples/*.dat $(SAMPLES_INSTALL_DIR)
-			install merlin $(INSTALL_DIR)
+			install $(TARGET) $(INSTALL_DIR)
 
