@@ -78,6 +78,7 @@ bool 'Clean 6'                             FONT_CLEAN6
 bool 'Clean 8'                             FONT_CLEAN8
 bool 'Console 8'                           FONT_CONSOLE8
 bool 'Courier 12, 12b'                     FONT_COURIER12
+bool 'Gelly 10'                            FONT_GELLY10
 bool 'Helvetica 8'                         FONT_HELVETICA8
 bool 'Helvetica 12, 12b'                   FONT_HELVETICA12
 bool 'Helvetica 14, 14b'                   FONT_HELVETICA14
