@@ -1,8 +1,6 @@
-/* This is an example theme file.
-   It sets the default fill style to a simple
-   flat background with rectangular frame.
-   Default colors are black on white, but 
-   they are overridden in the button.
+/*  The PicoGUI Example Theme (tm)
+
+    Shows off many of PicoGUI's theme features
 */
 
 object default {
@@ -22,7 +20,7 @@ object default {
     /* Hilight with gradients! */
     gw1 = 5+w/20;   // Width of left gradient
     gw2 = w/10;   // Width of right gradient
-    Gradient(x,y,gw1,h,0,ColorDiv(bgcolor,0x000202),bgcolor,0);
+    Gradient(x,y,gw1,h,0,ColorDiv(bgcolor,0x020202),bgcolor,0);
     Rect(x+gw1,y,w-gw1-gw2,h,ColorConv(bgcolor));
     Gradient(x+w-gw2,y,gw2,h,0,bgcolor,ColorAdd(bgcolor,0x202040),0);
     Gradient(x+w/4,y+h*7/8,w,h,34,0x000000,0x303000,1);
@@ -30,10 +28,35 @@ object default {
 
   /* Default colors */
   fgcolor = 0x000000;
-  bgcolor = 0x808080;
+  bgcolor = 0xB0B0B0;
 };
 
-object panel.bar bgcolor = 0xD0D0B0;
+object toolbar bgfill = fillstyle {
+  Gradient(x,y,w,h,90,0x000000,panel:bgcolor,0);
+};
+
+object panel bgfill = fillstyle {
+  Frame(x,y,w,h,ColorDiv(bgcolor,0x020202));
+  Rect(x+1,y+1,w-2,h-2,ColorConv(bgcolor));
+};
+
+object panel.bar {
+  bgcolor = 0xD0D0B0;
+  bgfill = fillstyle {
+    /* thin border */
+    Frame(x,y,w,h,ColorConv(fgcolor));
+    x = x+1;
+    y = y+1;
+    w = w-2;
+    h = h-2;
+
+    /* Small hilight */
+    Gradient(x,y,4,h,0,ColorDiv(bgcolor,0x020202),bgcolor,0);
+    Rect(x+4,y,w-4,h,ColorConv(bgcolor));
+  };
+}
+
+object base.text bgcolor = 0xE0E0E0;
 object themeinfo name = "Example theme";
 object button bgcolor = 0x8080FF;
 object button.hilight bgcolor = 0xB0B0FF;

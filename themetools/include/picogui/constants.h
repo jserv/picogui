@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.6 2000/10/15 01:46:50 micahjd Exp $
+/* $Id: constants.h,v 1.7 2000/10/15 03:46:13 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -180,14 +180,16 @@ typedef unsigned long pghandle;
 #define PGTH_O_PANEL_BAR           11   /* The draggable titlebar of a panel */
 #define PGTH_O_POPUP               12   /* Popup window */
 #define PGTH_O_BACKGROUND          13   /* Background widget bitmap */
-#define PGTH_O_BASE_STATIC         14   /* Base for widgets that just display info */
-#define PGTH_O_BASE_TLCONTAINER    15   /* Top-level containers like popups and panels */ 
+#define PGTH_O_BASE_TEXT           14   /* Base for widgets that mostly display text */
+#define PGTH_O_BASE_TLCONTAINER    15   /* Top-level containers like popups, panels */ 
 #define PGTH_O_THEMEINFO           16   /* Information about the theme that should be
 					   loaded into memory, like the name */
+#define PGTH_O_LABEL               17   /* The label widget */
+#define PGTH_O_FIELD               18   /* The field widget */
 
 /* If you add a themeobject, be sure to increment this and add
    an inheritance entry in theme/thobjtab.c */
-#define PGTH_ONUM                  17
+#define PGTH_ONUM                  19
 
 /*** Loaders */
 
@@ -202,6 +204,11 @@ typedef unsigned long pghandle;
 
 /*** Property IDs */
 
+/* The descriptions here are only guidelines. Many of these properties
+   are not used by the server itself, merely assigned IDs for the
+   use of the themes themselves (fillstyles, for example)
+*/
+
 /*                               Handle?
         Name              ID     | Data type   Description */
 
@@ -211,6 +218,12 @@ typedef unsigned long pghandle;
 #define PGTH_P_OVERLAY    4   /* H fillstyle   Fill style applied last  */
 #define PGTH_P_FONT       5   /* H fontdesc    A widget's main font     */
 #define PGTH_P_NAME       6   /* H string      Name of something, like a theme */
+#define PGTH_P_WIDTH      7   /*   int         Reccomended width */
+#define PGTH_P_HEIGHT     8   /*   int         Reccomended width */
+#define PGTH_P_MARGIN     9   /*   int         The border in some objects */
+#define PGTH_P_HILIGHTCOLOR 10/*   pgcolor     Color for hilighting an object */
+#define PGTH_P_SHADOWCOLOR 11 /*   pgcolor     Color for shading an object */
+#define PGTH_P_OFFSET     12  /*   int         an amount to displace something by */
 
 /*** Tag IDs */
 
