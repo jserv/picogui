@@ -14,6 +14,7 @@ endmenu
 
 mainmenu_option next_comment
 comment 'Debugging'
+bool 'Video test mode'                  CONFIG_VIDEOTEST
 bool 'Disable compiler optimization'    CONFIG_NO_OPTIMIZE
 bool 'Electric Fence malloc debugging'  CONFIG_EFENCE
 bool 'gcov coverage analysis'           CONFIG_GCOV
