@@ -38,12 +38,21 @@ class AnnounceServer(LineReceiver):
         global groups
 	fields = line.split(" ", 2)
 	if fields[0] == "Announce":
+            # Now we'll try to send the message to #commits, #<project>, and #<project>-commits.
+            # No big deal if any of them fails becase we're not joined to that channel.
 	    try:
 	        groups['commits'].sendText(irc_colors.boldify(fields[1] + ": ") + fields[2])
+            except KeyError:
+                pass
+            try:
                 groups[fields[1]].sendText(fields[2])
-		time.sleep(1)
             except KeyError:
 	        pass
+            try:
+                groups[fields[1]+"-commits"].sendText(fields[2])
+            except KeyError:
+	        pass
+            time.sleep(1)
         elif fields[0] == "JoinChannel":
             accounts[0].client.join(fields[1])
         elif fields[0] == "PartChannel":
