@@ -1,4 +1,4 @@
-/* $Id: serialmouse.c,v 1.6 2002/01/08 14:37:30 micahjd Exp $
+/* $Id: serialmouse.c,v 1.7 2002/01/17 02:27:06 micahjd Exp $
  *
  * serialmouse.c - input driver for serial mice.
  *
@@ -110,13 +110,6 @@ int serialmouse_fd_activate(int fd) {
     return 1;
   pos = 0;
    
-  if (!read(mouse_fd,packet,1))
-    return 1;
-  if (!(packet[0] & 0x40))
-    return 1;
-  if (!read(mouse_fd,packet+1,2))
-    return 1;
-
   /* Get the cursor position in physical coordinates */
   cursorx = cursor->x;
   cursory = cursor->y;
