@@ -46,7 +46,7 @@ fi
 
 # start pgserver
 pgserver &
-sleep 2\n
+sleep 5
 ''',
                      help = "Start the PicoGUI Server" )
             ]
