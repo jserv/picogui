@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 """
 A quick and dirty twisted.im-based announce bot. It simply says anything it reads
-from clients connecting to it on port 30400
+from clients connecting to it on a UNIX socket
 """
+socketName = "/tmp/announceBot.socket"
+
 
 from twisted.im import basechat, baseaccount, ircsupport 
 from twisted.internet.protocol import Factory
@@ -16,7 +18,7 @@ accounts = [
         "",                 # passwd
         "irc.freenode.net", # irc server
         6667,               # port
-        "picogui",          # comma-seperated list of channels
+        "picogui,commits",  # comma-seperated list of channels
     )
 ]
 
@@ -36,6 +38,7 @@ class AnnounceServer(LineReceiver):
 	fields = line.split(" ", 2)
 	if fields[0] == "Announce":
 	    try:
+	        groups['commits'].sendText(fields[1] + ": " + fields[2])
 	        groups[fields[1]].sendText(fields[2])
 	    except KeyError:
 	        pass
@@ -62,7 +65,7 @@ if __name__ == "__main__":
     AccountManager()
     serv = Factory()
     serv.protocol = AnnounceServer
-    reactor.listenTCP(30400, serv)
+    reactor.listenUNIX(socketName, serv)
     
     reactor.run()
 

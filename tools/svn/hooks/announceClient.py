@@ -3,6 +3,7 @@
  A quick and dirty client for the annouceBot. Usage:
    announceClient.py server channel message
 """
+socketName = "/tmp/announceBot.socket"
 
 from twisted.internet import reactor, protocol
 
@@ -28,5 +29,5 @@ class AnnounceClientFactory(protocol.ClientFactory):
 if __name__ == '__main__':
     import sys
     f = AnnounceClientFactory()
-    reactor.connectTCP(sys.argv[1], 30400, f)
+    reactor.connectUNIX(socketName, f)
     reactor.run()
