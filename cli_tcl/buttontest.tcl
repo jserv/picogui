@@ -5,10 +5,10 @@ pgui connect localhost 0
 set p [pgui register -title "Button Test" -type toolbar]
 
 set l [pgwidget create button -text "Hello World" -side all -font \
-	[pgNewFont "" $pg_fstyle(bold) 24]]
+	[pgui create font  -style $pg_fstyle(bold) -size 24]]
 
 pgwidget attach  $l inside $p
 pgui update
-pgBind $l $pg_we(activate) {puts "hello"}
-pgBind any $pg_we(close) {puts "goodby"; exit}
+pgwidget bind $l activate {puts "hello"}
+pgwidget bind any close {puts "goodby"; exit}
 pgEventLoop

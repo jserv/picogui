@@ -15,7 +15,7 @@ set context [pgui entercontext]
 
 set imgnr 0
 while {$imgnr<$NUMFRAMES} {
-	set img($imgnr) [pgui createbitmap -name [format $imagebase $imgnr]]
+	set img($imgnr) [pgui create bitmap -name [format $imagebase $imgnr]]
 	incr imgnr
 }
 set dlg [pgwidget create dialogbox -text Boing!]

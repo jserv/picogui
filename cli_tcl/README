@@ -1,13 +1,15 @@
 pgui checkevent
 pgui connect ?-server servername? ?-display displaynum?
-pgui createbitmap -name filename|-data filedata
-pgui createbitmap -width width -height height
+pgui create bitmap -name filename|-data filedata
+pgui create bitmap -width width -height height
+pgui create font -name name -style style -size size
 pgui entercontext
 pgui leavecontext ?-id contextid?
 pgui register -title title -type normal|toolbar
 pgui update
 pgui waitevent
 
+pgwidget bind widget event script
 pgwidget create type ?options?
 pgwidget attach widget before|inside|after parent
 pgwidget set -side side -text text -bitmap bitmapid

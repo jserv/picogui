@@ -87,13 +87,6 @@ proc pgGetString {textid} {
 	array set ret [pgGetResponse]
 	return $ret(data)
 }
-proc pgSetWidget {widget property glob} {
-	global pg_request
-	send_packet [pack_pgrequest 1 12 $pg_request(set)]
-	send_packet [binary format "IISS" $widget $glob $property 0]
-	array set ret [pgGetResponse]
-	return $ret(data)
-}
 proc pgGetWidget {widget property} {
 	global pg_request
 	send_packet [pack_pgrequest 1 8 $pg_request(set)]
@@ -108,7 +101,7 @@ proc pgThemeLookup {object property} {
 	array set ret [pgGetResponse]
 	return $ret(data)
 }
-proc pgFromFile { filename } {
+proc pgFromFile {filename} {
 	set data ""
 	set f [open $filename]
 	fconfigure $f -translation binary
@@ -126,30 +119,6 @@ proc isInteger {test} {
 	}
 	return 0
 }
-proc pgNewFont {name style size} {
-	global pg_request
-	set len [string length $name]
-	send_packet [pack_pgrequest 1 48 $pg_request(mkfont)]
-	send_packet $name
-	while {$len < 40 } {
-		send_packet "\0"
-		incr len
-	}
-	send_packet [binary format "ISS" $style $size 0]
-	array set ret [pgGetResponse]
-	return $ret(data)
-}
-proc pgBind {itemid eventid script} {
-	global binds
-	set indexes [array names binds]
-	if {[lsearch $indexes $itemid] == -1} {
-		set handlers($eventid) $script
-	} else {
-		array set handlers $binds($itemid)
-		set handlers($eventid) $script
-	}
-	set binds($itemid) [array get handlers]
-}
 proc pgEventLoop {} {
 	global binds
 	pgui update
@@ -163,23 +132,27 @@ proc pgEventLoop {} {
 		}
 		set indexes [array names handlers]
 		if {[lsearch $indexes $event(event)] == -1} {
-			eval $handlers(any)
+			if {[info exists handlers(any)]} {
+				eval $handlers(any)
+			}
 		} else {
 			eval $handlers($event(event))
 		}
 	}
 }
-proc pgSetFont {widget font} {
-	global pg_wp
-	pgSetWidget $widget $pg_wp(font) $font
-}
 proc pgwidget {command arg1 args} {
-	global pg_request pg_widget pg_derive pg_wp pg_s
+	global pg_request pg_widget pg_derive pg_wp pg_s binds pg_we
 	if {$command=="attach"} {
 		send_packet [pack_pgrequest 1 12 $pg_request(attachwidget)]
 		send_packet [binary format "IISS" [lindex $args 1] $arg1 \
 			$pg_derive([lindex $args 0]) 0]
 		array set ret [pgGetResponse]
+	} elseif {$command=="bind"} {
+		if {[info exists binds($arg1)]} {
+			array set handlers $binds($arg1)
+		}
+		set handlers($pg_we([lindex $args 0])) [lindex $args 1]
+		set binds($arg1) [array get handlers]
 	} else {
 		array set aa $args
 	}
@@ -194,15 +167,17 @@ proc pgwidget {command arg1 args} {
 		return $id
 	} elseif {$command=="set"} {
 		foreach prop [array names aa] {
-			if {$prop=="-side"} {
-				pgSetWidget $arg1 $pg_wp(side) $pg_s($aa(-side))
-			} elseif {$prop=="-text"} {
-				set id [pgNewString $aa(-text)]
-				pgSetWidget $arg1 $pg_wp(text) $id
-			} elseif {$prop=="-bitmap"} {
-				pgSetWidget $arg1 $pg_wp(bitmap) $aa(-bitmap)
-			} elseif {$prop=="-font"} {
-				pgSetWidget $arg1 $pg_wp(font) $aa(-font)
+			set prop [string trimleft $prop -]
+			if {$prop=="side"} {
+				set aa(-side) $pg_s($aa(-side))
+			} elseif {$prop=="text"} {
+				set aa(-text) [pgNewString $aa(-text)]
+			} 
+			if {[info exists pg_wp($prop)]} {
+				send_packet [pack_pgrequest 1 12 $pg_request(set)]
+				send_packet [binary format "IISS" $arg1 \
+					$aa(-$prop) $pg_wp($prop) 0]
+				array set ret [pgGetResponse]
 			} else {
 				puts $prop
 				continue
@@ -213,6 +188,15 @@ proc pgwidget {command arg1 args} {
 proc pgui {command args} {
 	global connection pg_request pg_app
 	global display server
+	set creatables {bitmap font}
+	if {$command=="create"} {
+		set command [lindex $args 0]
+		set args [lrange $args 1 end]
+		if {[lsearch $creatables $command]==-1} {
+			puts "unknown creatable must be one of $creatables"
+			return 0
+		}
+	}
 	array set aa $args
 	if {$command == "connect"} {
 		if {[info exists  aa(-display)]==0} {
@@ -256,7 +240,7 @@ proc pgui {command args} {
 		send_packet [pack_pgrequest 1 8 $pg_request(register)]
 		send_packet [binary format "ISS" $textid $pg_app($aa(-type)) 0]
 		array set ret [pgGetResponse]
-	} elseif {$command =="createbitmap"} {
+	} elseif {$command =="bitmap"} {
 		if {[info exists aa(-name)] == 1} {
 			set aa(-data) [pgFromFile $aa(-name)]
 		} 
@@ -274,6 +258,27 @@ proc pgui {command args} {
 		} else {
 			puts "unknown arguments for pgui createbitmap"
 		}
+	} elseif {$command =="font"} {
+		if {[info exists aa(-name]} {
+			set len [string length $aa(-name)]
+		} else {
+			set len 0
+			set aa(-name) ""
+		}
+		if {[info exists aa(-style)]==0} {
+			set aa(-style) 0
+		}
+		if {[info exists aa(-size)]==0} {
+			set aa(-size) 0
+		}
+		send_packet [pack_pgrequest 1 48 $pg_request(mkfont)]
+		send_packet $aa(-name)
+		while {$len < 40 } {
+			send_packet "\0"
+			incr len
+		}
+		send_packet [binary format "ISS" $aa(-style) $aa(-size) 0]
+		array set ret [pgGetResponse]
 	} else {
 		puts "Unknown command $command"
 		return 0
