@@ -93,7 +93,10 @@ class Location:
         if needTest:
             self.testSpeed()
             if progress:
-                progress.report("tested", self.absoluteURI)
+                # Get a little info to make a more useful progress report
+                server = urlparse.urlparse(self.absoluteURI)[1]
+                speed = float(PGBuild.XMLUtil.getChildData(self.host, 'speed'))
+                progress.report("tested", "%7.2f KB/s - %s" % (speed/1000, server))
         return float(PGBuild.XMLUtil.getChildData(self.host, 'speed'))
 
 
