@@ -72,7 +72,11 @@ class Widget(object):
         self.attach(0)
 
     def attach(self, parent, relationship=None):
-        self.server.attachwidget(parent.handle, self.handle, relationship or self.default_relationship)
+        try:
+            parent = parent.handle
+        except AttributeError:
+            pass
+        self.server.attachwidget(parent, self.handle, relationship or self.default_relationship)
 
     def find(self, name):
         # FIXME: This should find only widgets below this one in the hierarchy.
