@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.49 2002/02/02 20:52:52 lonetech Exp $
+/* $Id: label.c,v 1.50 2002/02/11 19:39:24 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -127,23 +127,20 @@ g_error label_set(struct widget *self,int property, glob data) {
 
   case PG_WP_TRANSPARENT:
     DATA->transparent = (data != 0);
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
+    set_widget_rebuild(self);
     break;
 
   case PG_WP_ALIGN:
     if (data > PG_AMAX) return mkerror(PG_ERRT_BADPARAM,11);
     DATA->align = (alignt) data;
     DATA->alignset = 1;
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
+    set_widget_rebuild(self);
     break;
 
   case PG_WP_DIRECTION:
     DATA->direction = data;
     resizewidget(self);
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
+    set_widget_rebuild(self);
     break;
 
   case PG_WP_FONT:
@@ -151,8 +148,7 @@ g_error label_set(struct widget *self,int property, glob data) {
       return mkerror(PG_ERRT_HANDLE,12);
     DATA->font = (handle) data;
     resizewidget(self);
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
+    set_widget_rebuild(self);
     break;
 
   case PG_WP_TEXT:
@@ -160,8 +156,7 @@ g_error label_set(struct widget *self,int property, glob data) {
       return mkerror(PG_ERRT_HANDLE,13);
     DATA->text = (handle) data;
     resizewidget(self);
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
+    set_widget_rebuild(self);
     break;
     
   case PG_WP_HILIGHTED:
@@ -187,6 +182,7 @@ g_error label_set(struct widget *self,int property, glob data) {
   case PG_WP_COLOR:
     DATA->colorset = 1;
     DATA->color = (pgcolor) data;
+    set_widget_rebuild(self);
     break;
 
   default:

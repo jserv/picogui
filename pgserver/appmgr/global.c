@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.59 2002/02/03 18:50:23 micahjd Exp $
+/* $Id: global.c,v 1.60 2002/02/11 19:39:22 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -295,7 +295,7 @@ g_error appmgr_register(struct app_info *i) {
      */
     if (popup_toolbar_passthrough()) {
       for (tree=dts->top;tree;tree=tree->next) {
-	tree->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+	tree->head->flags |= DIVNODE_NEED_RECALC;
 	tree->flags |= DIVTREE_NEED_RECALC | DIVTREE_ALL_REDRAW | 
 	  DIVTREE_CLIP_POPUP;
       }

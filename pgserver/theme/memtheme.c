@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.55 2002/02/07 01:44:25 micahjd Exp $
+/* $Id: memtheme.c,v 1.56 2002/02/11 19:39:23 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -277,12 +277,6 @@ void div_rebuild(struct divnode *d) {
    printf("div_rebuild: div %p at %d,%d,%d,%d\n", d,d->x,d->y,d->w,d->h);
 #endif
 
-   /* Save the position of the last rebuild */
-   d->ox = d->x;
-   d->oy = d->y;
-   d->ow = d->w;
-   d->oh = d->h;
-
    /* Unless it's a raw build, clear the groplist. */
    if (!(d->owner && d->owner->rawbuild)) {
       grop_free(&d->grop);
@@ -296,7 +290,15 @@ void div_rebuild(struct divnode *d) {
       d->flags |= DIVNODE_NEED_REDRAW;
       if (d->owner)
 	d->owner->dt->flags |= DIVTREE_NEED_REDRAW;
+
+      /* If this node has children, rebuild them, etc.. */
+      if (d->div)
+	d->div->flags |= DIVNODE_NEED_REBUILD;
+      if (d->next)
+	d->next->flags |= DIVNODE_NEED_REBUILD;
    }
+
+   d->flags &= ~DIVNODE_NEED_REBUILD;
 }
 
 /* This is used in div_setstate() to compare theme objects.
@@ -694,7 +696,7 @@ g_error theme_load(handle *h,int owner,char *themefile,
   if (requires_full_update) {
     /* Schedule a global recalc (Yikes!) so it takes effect */
     resizeall();
-    dts->top->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+    dts->top->head->flags |= DIVNODE_NEED_RECALC;
     dts->top->flags |= DIVTREE_NEED_RECALC;
   }
 
@@ -724,7 +726,7 @@ void theme_remove(struct pgmemtheme *th) {
      appmgr_loadcursor(PGTH_O_DEFAULT);
 
      resizeall();
-     dts->top->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+     dts->top->head->flags |= DIVNODE_NEED_RECALC;
      dts->top->flags |= DIVTREE_NEED_RECALC;
   }
 

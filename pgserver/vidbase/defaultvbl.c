@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.74 2002/02/03 18:50:23 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.75 2002/02/11 19:39:23 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -1499,7 +1499,7 @@ void def_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 void def_sprite_show(struct sprite *spr) {
   static struct quad cr;
 
-  DBG("spr = %p\n",spr);
+  //  DBG("spr = %p\n",spr);
 
   if (disable_output)
     return;
@@ -1630,7 +1630,7 @@ void def_sprite_show(struct sprite *spr) {
 void def_sprite_hide(struct sprite *spr) {
   static struct quad cr;
 
-  DBG("spr = %p\n",spr);
+  //  DBG("spr = %p\n",spr);
 
   if (disable_output)
     return;
@@ -1656,7 +1656,7 @@ void def_sprite_hide(struct sprite *spr) {
 }
 
 void def_sprite_update(struct sprite *spr) {
-  DBG("spr = %p\n",spr);
+  //  DBG("spr = %p\n",spr);
 
   (*vid->sprite_hide) (spr);
   (*vid->sprite_show) (spr);
@@ -1693,7 +1693,7 @@ void def_sprite_protectarea(struct quad *in,struct sprite *from) {
    /* Base case: from is null */
    if (!from) return;
 
-   DBG("quad(%d %d %d %d)\n",in->x1,in->y1,in->x2,in->y2);
+   //   DBG("quad(%d %d %d %d)\n",in->x1,in->y1,in->x2,in->y2);
 
    /* Load this all on the stack so we go backwards */
    def_sprite_protectarea(in,from->next);

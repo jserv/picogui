@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.52 2002/02/04 03:26:55 micahjd Exp $
+/* $Id: widget.h,v 1.53 2002/02/11 19:39:23 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -384,6 +384,11 @@ void r_send_trigger(struct widget *w, long type, union trigparam *param,
 
 /* Invokes the spirits of guru() and stdout for debuggativity */
 void magic_button(s16 key);
+
+/* Set flags to rebuild a widget on the next update,
+ * Assumes that w->in->div is the visible divnode.
+ */
+void set_widget_rebuild(struct widget *w);
 
 #endif /* __WIDGET_H */
 

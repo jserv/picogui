@@ -1,4 +1,4 @@
-/* $Id: toolbar.c,v 1.21 2002/01/15 07:35:15 micahjd Exp $
+/* $Id: toolbar.c,v 1.22 2002/02/11 19:39:24 micahjd Exp $
  *
  * toolbar.c - container widget for buttons
  *
@@ -80,7 +80,7 @@ void toolbar_remove(struct widget *self) {
     struct divtree *tree;
 
     for (tree=dts->top;tree;tree=tree->next) {
-      tree->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+      tree->head->flags |= DIVNODE_NEED_RECALC;
       tree->flags |= DIVTREE_NEED_RECALC | DIVTREE_ALL_REDRAW;
     }
   }
@@ -109,10 +109,12 @@ g_error toolbar_set(struct widget *self,int property, glob data) {
     case PG_WP_TRANSPARENT:
       self->in->div->build = data ? (&build_nothing) : (&build_bgfill_only);
       resizewidget(self);
+      set_widget_rebuild(self);
       break;	
 
     case PG_WP_STATE:
       self->in->div->state = data;
+      set_widget_rebuild(self);
       break;
       
     default:

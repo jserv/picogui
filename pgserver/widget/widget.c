@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.159 2002/02/07 01:03:53 micahjd Exp $
+/* $Id: widget.c,v 1.160 2002/02/11 19:39:24 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -214,6 +214,9 @@ g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **wher
     }
     else if ( w->where )
       *w->where = NULL;
+
+    /* Take off all the unnecessary divscroll flags */
+    r_div_unscroll(div);
   }
   
   /* Add the widget to the divtree */
@@ -227,7 +230,7 @@ g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **wher
   /* Resize for the first time */
   resizewidget(w);
 
-  dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+  dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC;
   dt->flags |= DIVTREE_NEED_RECALC;
   return success;
 }
@@ -377,7 +380,7 @@ void widget_remove(struct widget *w) {
   if (!in_shutdown) {
     /* Set the flags for redraw */
     if (w->dt && w->dt->head) {
-      w->dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+      w->dt->head->flags |= DIVNODE_NEED_RECALC;
       w->dt->flags |= DIVTREE_NEED_RECALC;
     }   
   }
@@ -410,8 +413,7 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
     case PG_WP_SIDE:
       if (!VALID_SIDE(data)) return mkerror(PG_ERRT_BADPARAM,2);
       w->in->flags &= SIDEMASK;
-      w->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
-	DIVNODE_PROPAGATE_RECALC;
+      w->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC;
       resizewidget(w);
       w->dt->flags |= DIVTREE_NEED_RECALC;
       redraw_bg(w);
@@ -475,7 +477,7 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
 	w->in->split = data;
 	w->in->flags &= ~DIVNODE_SIZE_AUTOSPLIT;     /* No auto resizing */
       }
-      w->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+      w->in->flags |= DIVNODE_NEED_RECALC;
       w->dt->flags |= DIVTREE_NEED_RECALC;
       redraw_bg(w);
       break;
@@ -509,7 +511,7 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
       DBG("PG_WP_SCROLL_Y: ty = %d, data = %d\n",w->in->div->ty, data);
       if (w->in->div->ty != -data) {
 	w->in->div->ty = -data;
-	w->in->div->flags |= (DIVNODE_SCROLL_ONLY | DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC);
+	w->in->div->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_NEED_RECALC;
 	w->dt->flags |= DIVTREE_NEED_REDRAW;
 	hotspot_free();
       }
@@ -1117,6 +1119,8 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
 }
  
 void resizewidget(struct widget *w) {
+  /* FIXME: only resize when the size actually changes? 
+   */
   (*w->def->resize)(w);
   w->dt->flags |= DIVTREE_NEED_RESIZE;
 }
@@ -1278,6 +1282,14 @@ struct widget *widget_traverse(struct widget *w, int direction, int count) {
 }
 
 
+
+/* Set flags to rebuild a widget on the next update,
+ * Assumes that w->in->div is the visible divnode.
+ */
+void set_widget_rebuild(struct widget *w) {
+  w->in->div->flags |= DIVNODE_NEED_REBUILD;
+  w->dt->flags |= DIVTREE_NEED_RECALC;
+}
 /* The End */
 
 

@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.99 2002/02/11 05:59:33 micahjd Exp $
+/* $Id: button.c,v 1.100 2002/02/11 19:39:23 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -84,7 +84,7 @@ void position_button(struct widget *self,struct btnposition *bp);
 /* Determine the current state of the button and draw it */
 void button_setstate(struct widget *self) {
   int state;
-  
+
   if (DATA->on && DATA->over)
     state = DATA->state_on;
   else if (DATA->on)
@@ -234,8 +234,7 @@ g_error button_set(struct widget *self,int property, glob data) {
      
     DATA->bitmap = (handle) data;
     resizewidget(self);
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
+    set_widget_rebuild(self);
     break;
 
   case PG_WP_BITMASK:
@@ -243,15 +242,13 @@ g_error button_set(struct widget *self,int property, glob data) {
        return mkerror(PG_ERRT_HANDLE,34);
 
     DATA->bitmask = (handle) data;
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
+    set_widget_rebuild(self);
     break;
 
   case PG_WP_BITMAPSIDE:
     DATA->bitmap_side = (int) data;
     resizewidget(self);
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
+    set_widget_rebuild(self);
     break;
 
   case PG_WP_FONT:
@@ -259,8 +256,7 @@ g_error button_set(struct widget *self,int property, glob data) {
 	 return mkerror(PG_ERRT_HANDLE,35);
     DATA->font = (handle) data;
     resizewidget(self);
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
+    set_widget_rebuild(self);
     break;
 
   case PG_WP_TEXT:
@@ -268,8 +264,7 @@ g_error button_set(struct widget *self,int property, glob data) {
        return mkerror(PG_ERRT_HANDLE,13);
     DATA->text = (handle) data;
     resizewidget(self);
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
+    set_widget_rebuild(self);
     break;
 
   case PG_WP_EXTDEVENTS:
@@ -290,8 +285,7 @@ g_error button_set(struct widget *self,int property, glob data) {
 
   case PG_WP_DISABLED:
     DATA->disabled = data;
-    /* Just do a rebuild/redraw */
-    div_rebuild(self->in->div);
+    set_widget_rebuild(self);
     break;
 
   case PG_WP_THOBJ_BUTTON:

@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.29 2002/02/03 16:07:58 lonetech Exp $
+/* $Id: textbox_document.c,v 1.30 2002/02/11 19:39:24 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -213,7 +213,7 @@ g_error text_insert_linebreak(struct textbox_cursor *c) {
     /* Insert after this line, don't link nextline pointers */
     newline->next = c->c_line->next;
     c->c_line->next = newline;
-    c->c_line->flags |= DIVNODE_NEED_RECALC|DIVNODE_PROPAGATE_RECALC;
+    c->c_line->flags |= DIVNODE_NEED_RECALC;
     c->widget->dt->flags |= DIVTREE_NEED_RECALC;
     c->c_line = newline;
 
@@ -261,7 +261,7 @@ g_error text_insert_string(struct textbox_cursor *c, const char *str,
   /* No line? */
   if (!c->c_line) {
     c->c_line = c->head;
-    c->c_line->flags |= DIVNODE_NEED_RECALC|DIVNODE_PROPAGATE_RECALC;
+    c->c_line->flags |= DIVNODE_NEED_RECALC;
     c->widget->in->flags |= DIVNODE_NEED_RECALC;
     c->widget->dt->flags |= DIVTREE_NEED_RESIZE;
   }
@@ -348,8 +348,8 @@ g_error text_insert_string(struct textbox_cursor *c, const char *str,
   sizetext(fd,&tw,&th," ");
   c->c_div->div->pw += tw;
   c->c_div->split = c->c_div->div->pw;
-  c->c_div->flags |= DIVNODE_NEED_RECALC|DIVNODE_PROPAGATE_RECALC
-    |DIVNODE_NEED_REDRAW|DIVNODE_PROPAGATE_REDRAW;
+  c->c_div->flags |= DIVNODE_NEED_RECALC | DIVNODE_NEED_REDRAW | 
+    DIVNODE_PROPAGATE_REDRAW;
   c->widget->dt->flags |= DIVTREE_NEED_RECALC;
 
   return success;

@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.39 2002/02/07 01:44:25 micahjd Exp $
+/* $Id: divtree.h,v 1.40 2002/02/11 19:39:23 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -109,11 +109,6 @@ struct divnode {
   /* Width and height, of course */
   s16 w,h;
 
-  /* Old absolute coordinates, as of the last call to div_rebuild. This is used
-   * to avoid duplicate rebuilding while calculating.
-   */
-  s16 ox,oy,ow,oh;
-
   /* Calculated size. Normally the same as the size above, but:
    *  - The position will be different if DIVNODE_DIVSCROLL is on
    *  - The size will be different if one of the DIVNODE_EXTEND_* flags
@@ -152,7 +147,7 @@ struct divnode {
 #define DIVNODE_SPLIT_RIGHT	(1<<6)
 #define DIVNODE_SPLIT_BORDER	(1<<7) /* Shave 'split' pixels off each side */
 #define DIVNODE_SPLIT_CENTER    (1<<8) /* Keep div's w and h, center it */
-#define DIVNODE_PROPAGATE_RECALC (1<<9) /* recalc spreads through next also */
+#define DIVNODE_NEED_REBUILD    (1<<9) /* Run div_rebuild() on the next update */
 #define DIVNODE_SPLIT_IGNORE   (1<<10) /* Don't bother the nodes' positions */
 #define DIVNODE_SPLIT_EXPAND   (1<<11) /* Expand div to all available space */
 #define DIVNODE_PROPAGATE_REDRAW (1<<12) /* redraw spreads through next also*/
@@ -243,6 +238,9 @@ struct divnode {
 					   * rendered. This flag is cleared in all widgets owned
 					   * by an app when that app waits for an event.
 					   */ 
+#define DIVNODE_FORCE_CHILD_RECALC (1<<30) /* Normally child divnodes are only recalc'ed if 
+					    * the size changes. This forces it.
+					    */
 
 /* Side value macros and stuff */
 typedef unsigned short int sidet;
@@ -292,6 +290,9 @@ struct divnode *divnode_findparent(struct divnode *tree,
 				   struct divnode *dest);
 
 /* Little helper to rotate a side constant 90 degrees counterclockwise */
+
+/* Remove unnecessary scrolling information from the sub-divtree */
+void r_div_unscroll(struct divnode *div);
 int rotate_side(int s);
 /* Rotate them 90 degrees counterclockwise, then mirror
    across the horizontal axis */

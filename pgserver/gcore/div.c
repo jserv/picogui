@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.79 2002/02/07 01:44:25 micahjd Exp $
+/* $Id: div.c,v 1.80 2002/02/11 19:39:22 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -374,12 +374,29 @@ void divnode_split(struct divnode *n, struct rect *divrect,
 int divnode_recalc(struct divnode **pn, struct divnode *parent) {
    struct divnode *n = *pn;
    struct rect divrect, nextrect;
+   struct rect old_divrect, old_nextrect;
 
    if (!n)
      return 0;
 
+   if (n->flags & DIVNODE_NEED_REBUILD)
+     div_rebuild(n);
+
    if (n->flags & DIVNODE_NEED_RECALC) {
-     
+     /* Save the old positions of each child */
+     if (n->div) {
+       old_divrect.x = n->div->calcx;
+       old_divrect.y = n->div->calcy;
+       old_divrect.w = n->div->calcw;     
+       old_divrect.h = n->div->calch;
+     }
+     if (n->next) {
+       old_nextrect.x = n->next->calcx;
+       old_nextrect.y = n->next->calcy;
+       old_nextrect.w = n->next->calcw;
+       old_nextrect.h = n->next->calch;     
+     }
+
      /* Split the rectangle */
      divnode_split(n,&divrect,&nextrect);
      
@@ -438,7 +455,7 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
 	   r_set_nextline(thisline->div,newline);
 
 	   /* Inserted a blank line, set flags to recalc it properly */
-	   thisline->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+	   thisline->flags |= DIVNODE_NEED_RECALC;
 	 }
   
 	 /* Find the end of our subtree */
@@ -513,7 +530,7 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
 	     if (p) {
 	       /* FIXME: This flags line may not work if p->nextline != p->next
 		*/
-	       p->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+	       p->flags |= DIVNODE_NEED_RECALC;
 
 	       p->nextline = blankline->nextline;
 	       r_set_nextline(p->div,blankline->nextline);
@@ -543,32 +560,33 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
        }
      }
      
-     /* Recalc completed.  Propagate the changes- always propagate to
-	div, only propagate to next if our changes affected other nodes. 
-     */
-     if (n->div) {
-       n->div->flags |= DIVNODE_NEED_RECALC | 
-	 (n->flags & DIVNODE_PROPAGATE_RECALC);
-       divnode_divscroll(n->div);
+     /* Recalc completed.  Propagate the changes to child nodes if their
+      * dimensions have changed.
+      */
+     if (n->div && memcmp(&divrect,&old_divrect,sizeof(divrect)))
+       n->div->flags |= DIVNODE_NEED_RECALC | DIVNODE_NEED_REBUILD;
+     if (n->next && memcmp(&nextrect,&old_nextrect,sizeof(nextrect)))
+       n->next->flags |= DIVNODE_NEED_RECALC | DIVNODE_NEED_REBUILD;
 
-       /* Only rebuild if the size has changed */
-       if (n->div->ox != n->div->x || n->div->oy != n->div->y ||
-	   n->div->ow != n->div->w || n->div->oh != n->div->h)
-	 div_rebuild(n->div);
-     }     
-     if ((n->flags & DIVNODE_PROPAGATE_RECALC) && n->next) {
-       n->next->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
-       divnode_divscroll(n->next);
-
-       /* Only rebuild if the size has changed */
-       if (n->next->ox != n->next->x || n->next->oy != n->next->y ||
-	   n->next->ow != n->next->w || n->next->oh != n->next->h)
-	 div_rebuild(n->next);
+     /* Force child recalc if necessary */
+     if (n->flags & DIVNODE_FORCE_CHILD_RECALC) {
+       if (n->div)
+	 n->div->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC;
+       if (n->next)
+	 n->next->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC;
+       n->flags &= ~DIVNODE_FORCE_CHILD_RECALC;
      }
+
+     /* Apply changed necessary for scrolling to the children we just calculated
+      */
+     if (n->div)
+       divnode_divscroll(n->div);
+     if (n->next)
+       divnode_divscroll(n->next);
      
      /* We're done */
      if (!(n->flags & DIVNODE_UNDERCONSTRUCTION))
-       n->flags &= ~(DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC);
+       n->flags &= ~DIVNODE_NEED_RECALC;
    }
    
    /* A child node might need a recalc even if we aren't forcing one */
@@ -598,7 +616,7 @@ void divnode_redraw(struct divnode *n,int all) {
 
      if (n->next && (n->flags & DIVNODE_PROPAGATE_REDRAW))
 	 n->next->flags |= DIVNODE_NEED_REDRAW | DIVNODE_PROPAGATE_REDRAW;
-     if (n->div && !(n->flags & DIVNODE_SCROLL_ONLY))
+     if (n->div && (n->flags & DIVNODE_NEED_REDRAW))
        n->div->flags |= DIVNODE_NEED_REDRAW | DIVNODE_PROPAGATE_REDRAW;
      if (n->next && (n->flags & DIVNODE_PROPAGATE_SCROLL))
        n->next->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_PROPAGATE_SCROLL;
@@ -932,7 +950,7 @@ void divresize_split(struct divnode *div) {
     
     if (div->split != oldsplit) {
       /* recalc! */
-      div->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+      div->flags |= DIVNODE_NEED_RECALC;
       if (div->owner)
 	div->owner->dt->flags |= DIVTREE_NEED_RECALC;
     }
@@ -941,7 +959,11 @@ void divresize_split(struct divnode *div) {
 
 /* Recursively recalculate cw and ch for the given divnode */
 void divresize_recursive(struct divnode *div) {
-  s16 dw,dh,nw,nh;  /* Size of div and next child nodes */
+  s16 dw,dh,nw,nh;     /* Size of div and next child nodes */
+  s16 old_cw, old_ch;  /* Old preffered size for children */
+
+  old_cw = div->cw;
+  old_ch = div->ch;
 
   /* Calculate child nodes' sizes */
 	
@@ -1009,6 +1031,22 @@ void divresize_recursive(struct divnode *div) {
       div->ch = dh + (div->split<<1);
       break;
 
+    }
+
+    if (old_cw != div->cw || old_ch != div->ch) {
+
+      /* If this divnode is under the control of a scrollbar, make sure
+       * we recalc the scrollbar if the preferred size changes
+       */
+      if (div->divscroll && div->divscroll->owner && div->divscroll->owner->scrollbind) {
+	struct widget *w;
+	if (!iserror(rdhandle((void**)&w,PG_TYPE_WIDGET,-1,div->divscroll->owner->scrollbind))) {
+	  w->in->flags |= DIVNODE_NEED_RECALC;
+	  w->dt->flags |= DIVTREE_NEED_RECALC;
+	}
+      }
+
+      div->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC | DIVNODE_NEED_REBUILD;
     }
   }    
 
@@ -1143,6 +1181,19 @@ void activate_client_divnodes(int client) {
     /* It's likely that the nodes we just activated need to be calculated */
     dt->flags |= DIVTREE_NEED_RECALC;
   }
+}
+
+/* Remove scrolling information from the sub-divtree */
+void r_div_unscroll(struct divnode *div) {
+  /* FIXME: this might not work for nested scrolling */
+
+  if (!div) return;
+  if (!(div->owner && div->owner->scrollbind)) {
+    div->divscroll = NULL;
+    div->flags &= ~DIVNODE_DIVSCROLL;
+  }
+  r_div_unscroll(div->div);
+  r_div_unscroll(div->next);
 }
 
 /* The End */

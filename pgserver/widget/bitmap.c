@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.36 2002/02/02 19:52:24 lonetech Exp $
+/* $Id: bitmap.c,v 1.37 2002/02/11 19:39:23 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -113,34 +113,29 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
 
   case PG_WP_TRANSPARENT:
     DATA->transparent = (data != 0);
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
+    set_widget_rebuild(self);
     break;
 
   case PG_WP_ALIGN:
     if (data > PG_AMAX) return mkerror(PG_ERRT_BADPARAM,2);
     DATA->align = (alignt) data;
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
+    set_widget_rebuild(self);
     break;
 
   case PG_WP_LGOP:
     if (data > PG_LGOPMAX) return mkerror(PG_ERRT_BADPARAM,3);
     DATA->lgop = data;
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
+    set_widget_rebuild(self);
     break;
 
   case PG_WP_BITMAP:
     if (!data) {
-      self->in->div->flags |= DIVNODE_NEED_REDRAW;
-      self->dt->flags |= DIVTREE_NEED_REDRAW;
+      set_widget_rebuild(self);
     }
     else if (!iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)) && bit) {
       DATA->bitmap = (handle) data;
       resizewidget(self);
-      self->in->flags |= DIVNODE_NEED_RECALC;
-      self->dt->flags |= DIVTREE_NEED_RECALC;
+      set_widget_rebuild(self);
     }
     else return mkerror(PG_ERRT_HANDLE,4);
     break;
@@ -148,8 +143,7 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
   case PG_WP_BITMASK:
     if (!iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)) && bit) {
       DATA->bitmask = (handle) data;
-      self->in->flags |= DIVNODE_NEED_RECALC;
-      self->dt->flags |= DIVTREE_NEED_RECALC;
+      set_widget_rebuild(self);
     }
     else return mkerror(PG_ERRT_HANDLE,5);
     break;
@@ -192,14 +186,3 @@ void bitmap_resize(struct widget *self) {
 }
 
 /* The End */
-
-
-
-
-
-
-
-
-
-
-

@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.52 2002/02/02 20:52:52 lonetech Exp $
+/* $Id: scroll.c,v 1.53 2002/02/11 19:39:24 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -113,7 +113,7 @@ void build_scroll(struct gropctxt *c,unsigned short state,struct widget *self) {
      * coordinates.
      */
     resizewidget(self);
-    self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+    self->in->flags |= DIVNODE_NEED_RECALC;
     divnode_recalc(&self->in,NULL);
     div_rebuild(self->in->div);
     return;

@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.32 2002/01/22 02:44:55 micahjd Exp $
+/* $Id: sdlinput.c,v 1.33 2002/02/11 19:39:23 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -289,8 +289,8 @@ void sdlinput_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
 
 /* Check the input queue */
 int sdlinput_ispending(void) {
-   sdlinput_poll();
-   return SDL_PollEvent(NULL);
+  sdlinput_poll();
+  return SDL_PollEvent(NULL);
 }
 
 #ifdef CONFIG_SDLSKIN

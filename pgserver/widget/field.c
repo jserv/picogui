@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.51 2002/02/02 20:52:52 lonetech Exp $
+/* $Id: field.c,v 1.52 2002/02/11 19:39:23 micahjd Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -172,7 +172,6 @@ g_error field_set(struct widget *self,int property, glob data) {
   g_error e;
   struct fontdesc *fd;
   char *str;
-  int psplit;
   int passwdc=0; /* to keep password info when updating font */
 
   switch (property) {
@@ -192,13 +191,8 @@ g_error field_set(struct widget *self,int property, glob data) {
     /* restore password property if needed */
     if(passwdc) DATA->fd.passwdc = passwdc;
 
-    psplit = self->in->split;
-    if (self->in->split != psplit) {
-      self->in->flags |= DIVNODE_PROPAGATE_RECALC;
-    }
     resizewidget(self); 
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
+    set_widget_rebuild(self);
     break;
 
   case PG_WP_TEXT:
@@ -220,8 +214,7 @@ g_error field_set(struct widget *self,int property, glob data) {
     /* Update text */
     strcpy(DATA->buffer,str);
     resizewidget(self); 
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
+    set_widget_rebuild(self);
     break;
 
   case PG_WP_PASSWORD:

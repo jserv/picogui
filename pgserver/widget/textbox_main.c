@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.31 2002/02/03 16:07:58 lonetech Exp $
+/* $Id: textbox_main.c,v 1.32 2002/02/11 19:39:24 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -150,6 +150,7 @@ g_error textbox_set(struct widget *self,int property, glob data) {
 
     /* FIXME: For editing we'll want to draw only the new text */
     self->in->flags |= DIVNODE_NEED_RECALC;
+    self->in->div->flags |= DIVNODE_NEED_REBUILD;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 

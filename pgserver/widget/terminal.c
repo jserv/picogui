@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.47 2002/02/02 20:52:52 lonetech Exp $
+/* $Id: terminal.c,v 1.48 2002/02/11 19:39:24 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -401,9 +401,7 @@ g_error terminal_set(struct widget *self,int property, glob data) {
     DATA->celw = fd->font->w;
     DATA->celh = fd->font->h;
     DATA->fontmargin = fd->margin;
-
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
+    set_widget_rebuild(self);
     break;
 
   case PG_WP_LINES:
