@@ -1,25 +1,34 @@
 #!/usr/bin/env python
 """
-A quick and dirty twisted.im-based announce bot. It simply says anything it reads
+A quick and dirty twisted.im based announce bot. It simply says anything it reads
 from clients connecting to it on a UNIX socket
 """
 socketName = "/tmp/announceBot.socket"
-
+channelFile = "/home/commits/channels.list"
 
 from twisted.im import basechat, baseaccount, ircsupport 
 from twisted.internet.protocol import Factory
 from twisted.internet.app import Application
 from twisted.protocols.basic import LineReceiver
-import time, irc_colors
+import time, irc_colors, sys
+
+# List of channels we're in. These will be autojoined by the
+# AccountManager. We update this and save it when we get a mail
+# for joining or parting a channel.
+f = open(channelFile)
+channelList = {}
+for line in f.readlines():
+    channelList[line.strip()] = 1
+f.close()
 
 accounts = [
     ircsupport.IRCAccount("IRC", 1,
         # Lalo's joke: A brainless entity created to keep an eye on subversion                 
-	"CIA",         # nickname
+        "CIA",              # nickname
         "",                 # passwd
         "irc.freenode.net", # irc server
         6667,               # port
-        "commits",          # comma-seperated list of channels
+        ",".join(channelList.keys())
     )
 ]
 
@@ -36,27 +45,42 @@ class AccountManager (baseaccount.AccountManager):
 class AnnounceServer(LineReceiver):
     def lineReceived(self, line):
         global groups
-	fields = line.split(" ", 2)
-	if fields[0] == "Announce":
+        try:
+            (command, project, message) = line.split(" ", 2)
+        except ValueError:
+            (command, project) = line.split(" ", 2)
+        
+	if command == "Announce":
             # Now we'll try to send the message to #commits, #<project>, and #<project>-commits.
             # No big deal if any of them fails becase we're not joined to that channel.
 	    try:
-	        groups['commits'].sendText(irc_colors.boldify(fields[1] + ": ") + fields[2])
+	        groups['commits'].sendText(irc_colors.boldify(project + ": ") + message)
             except KeyError:
                 pass
             try:
-                groups[fields[1]].sendText(fields[2])
+                groups[project].sendText(message)
             except KeyError:
 	        pass
             try:
-                groups[fields[1]+"-commits"].sendText(fields[2])
+                groups[project+"-commits"].sendText(message)
             except KeyError:
 	        pass
             time.sleep(1)
-        elif fields[0] == "JoinChannel":
-            accounts[0].client.join(fields[1])
-        elif fields[0] == "PartChannel":
-            accounts[0].client.leave(fields[1])
+            
+        elif command == "JoinChannel":
+            accounts[0].client.join(project)
+            channelList[project] = 1
+
+        elif command == "PartChannel":
+            accounts[0].client.leave(project)
+            try:
+                del channelList[project]
+            except KeyError:
+                pass
+
+        f = open(channelFile, "w")
+        f.write("\n".join(channelList.keys()))
+        f.close()
 
 class BotConversation(basechat.Conversation):
     pass
