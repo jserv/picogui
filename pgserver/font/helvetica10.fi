@@ -2,4 +2,3 @@ NAME = Helvetica
 SIZE = 10
 STYLE = encoding_isolatin1 default
 NORMAL = helvetica10
-BOLD = helvetica10b
