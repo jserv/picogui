@@ -1,4 +1,4 @@
-/* $Id: dlg_fontpicker.c,v 1.1 2001/08/02 22:19:38 micahjd Exp $
+/* $Id: dlg_fontpicker.c,v 1.2 2001/08/03 14:56:11 micahjd Exp $
  *
  * dlg_datepicker.c - Implementation of the pgFontPicker function, allowing
  *                    the user to choose any installed font
@@ -201,7 +201,7 @@ pghandle pgFontPicker(const char *title) {
     if (s && !strcmp(s,n->name))
       continue;
 
-    pgNewWidget(PG_WIDGET_MENUITEM,
+    pgNewWidget(PG_WIDGET_LISTITEM,
 		i ? 0 : PG_DERIVE_INSIDE, i ? 0 : wNames);
     pgSetWidget(PGDEFAULT,
 		PG_WP_TEXT,pgNewString(n->name),
@@ -253,7 +253,7 @@ pghandle pgFontPicker(const char *title) {
 	  break;
 	
 	sprintf(buf,"%d",n->size);
-	pgNewWidget(PG_WIDGET_MENUITEM,
+	pgNewWidget(PG_WIDGET_LISTITEM,
 		    s ? 0 : PG_DERIVE_INSIDE, s ? 0 : wSizes);
 	pgSetWidget(PGDEFAULT,
 		    PG_WP_TEXT,pgNewString(buf),

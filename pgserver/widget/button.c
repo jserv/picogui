@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.65 2001/07/10 21:30:34 micahjd Exp $
+/* $Id: button.c,v 1.66 2001/08/03 14:56:11 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -295,8 +295,39 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
   case TRIGGER_DOWN:
     if (DATA->extdevents & PG_EXEV_PNTR_DOWN)
       post_event(PG_WE_PNTR_DOWN,self,param->mouse.chbtn,0,NULL);
-    if (param->mouse.chbtn==1 && !(DATA->extdevents & PG_EXEV_NOCLICK))
+    if (param->mouse.chbtn==1 && !(DATA->extdevents & PG_EXEV_NOCLICK)) {
+      /* If this is a toggle button, and we're toggling it on, send the
+       * activate now!
+       */
+      if ((!DATA->on) && (DATA->extdevents & PG_EXEV_TOGGLE)) {
+	event = 0;
+
+	/* Mutually exclusive too? */
+	if (DATA->extdevents & PG_EXEV_EXCLUSIVE) {
+	  struct widget *box;
+
+	  /* Get a pointer to our container */
+	  if (!iserror(rdhandle((void**)&box,PG_TYPE_WIDGET,-1,
+				self->container)) && box) {
+	    struct widget *old;
+
+	    /* If another button is active, disable it */
+	    if ((!iserror(rdhandle((void**)&old,PG_TYPE_WIDGET,-1,
+				  box->activemutex))) && old) {
+
+	      /* Turn it off */
+	      ((struct btndata *)(old->data))->on = 0;
+	      div_setstate(old->in->div,
+			   ((struct btndata *)(old->data))->state,0);
+	    }
+	    
+	    /* We're the new active widget */
+	    box->activemutex = hlookup(self,NULL);
+	  }
+	}
+      }
       DATA->on=1;
+    }
     else
       return;
     break;
@@ -311,11 +342,16 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     if (DATA->extdevents & PG_EXEV_PNTR_UP)
       post_event(PG_WE_PNTR_UP,self,param->mouse.chbtn,0,NULL);
     if (DATA->on && param->mouse.chbtn==1) {
-      event = 0;
-      if (DATA->extdevents & PG_EXEV_TOGGLE)
-	 DATA->on = (DATA->toggle^=1);
-       else
-	 DATA->on = 0;
+      if (DATA->extdevents & PG_EXEV_TOGGLE) {
+	if (!(DATA->extdevents & PG_EXEV_EXCLUSIVE))
+	  DATA->on = (DATA->toggle^=1);
+	if (!DATA->on)
+	  event = 0;
+      }
+      else {
+	event = 0;
+	DATA->on = 0;
+      }
     }
     else
       return;

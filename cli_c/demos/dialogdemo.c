@@ -192,6 +192,14 @@ int main(int argc,char **argv) {
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnInput,NULL);
 
+  /* Font picker */
+  wFontBtn = pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString("pgFontPicker: Select a font"),
+	      PG_WP_SIDE,PG_S_TOP,
+	      0);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnFont,NULL);
+
   /* File open */
   wFileOpenBtn = pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,

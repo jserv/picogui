@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.67 2001/08/01 13:46:42 micahjd Exp $
+/* $Id: constants.h,v 1.68 2001/08/03 14:56:11 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -332,9 +332,12 @@ typedef unsigned long pghandle;
 #define PGTH_O_FLATBUTTON            44   //!< Flat button (customized button) 
 #define PGTH_O_FLATBUTTON_HILIGHT    45   //!< flatbutton with mouse over it 
 #define PGTH_O_FLATBUTTON_ON         46   //!< flatbutton with mouse down 
+#define PGTH_O_LISTITEM              47   //!< Listitem (customized button)
+#define PGTH_O_LISTITEM_HILIGHT      48   //!< Listitem with mouse over it
+#define PGTH_O_LISTITEM_ON           49   //!< Selected listitem
 
 //! If you add a themeobject, be sure to increment this and add an inheritance entry in theme/memtheme.c
-#define PGTH_ONUM                    47
+#define PGTH_ONUM                    50
 
 //! \}
 
@@ -739,7 +742,8 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_CANVAS     13
 #define PG_WIDGET_CHECKBOX   14    /* Another variation of button */
 #define PG_WIDGET_FLATBUTTON 15    /* Yet another customized button */
-#define PG_WIDGETMAX         15    /* For error checking */
+#define PG_WIDGET_LISTITEM   16    /* Still yet another... */
+#define PG_WIDGETMAX         16    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1
@@ -792,6 +796,7 @@ typedef unsigned long pghandle;
 #define PG_EXEV_KEY       0x0010  /* Raw key events KEYUP and KEYDOWN */
 #define PG_EXEV_CHAR      0x0020  /* Processed characters */
 #define PG_EXEV_TOGGLE    0x0040  /* Clicks toggle the button's state */
+#define PG_EXEV_EXCLUSIVE 0x0080  /* Button is mutually exclusive */
 
 /* Constants for PG_WP_DIRECTION */
 #define PG_DIR_HORIZONTAL     0

@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.30 2001/07/10 21:30:34 micahjd Exp $
+/* $Id: widget.h,v 1.31 2001/08/03 14:56:11 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -140,12 +140,17 @@ struct widget {
    */
   handle container;
 
+  /* The currently active mutually exclusive widget. Only applies if this
+   * is a container.
+   */
+  handle activemutex;
+
+  /***** 32-bit values */
+
   /* Connection that created the widget.  Any handles the widget make
    * take on this owner
    */
   int owner;
-
-  /***** 32-bit values */
    
   struct widgetdef *def;  /* (Methods) */
    
@@ -240,6 +245,7 @@ DEF_WIDGET_PROTO(terminal)
 DEF_WIDGET_PROTO(canvas)
 DEF_WIDGET_PROTO(checkbox)
 DEF_WIDGET_PROTO(flatbutton)
+DEF_WIDGET_PROTO(listitem)
 			    
 /* Set to the client # if a client has taken over the system resource */
 extern int keyboard_owner;

@@ -1,4 +1,4 @@
-/* $Id: dlg_filepicker.c,v 1.2 2001/08/03 12:54:59 micahjd Exp $
+/* $Id: dlg_filepicker.c,v 1.3 2001/08/03 14:56:11 micahjd Exp $
  *
  * dlg_filepicker.c - Display a dialog box the user can use to select
  *                    a file to open or save. It is customizable with flags
@@ -158,9 +158,10 @@ void filepicker_pathmenu(struct filepickdata *dat) {
   /* Run the menu */
   ret = pgGetPayload(pgGetEvent()->from);
   pgLeaveContext();
-  if (ret)
+  if (ret) {
     filepicker_dir[ret] = 0;
-  filepicker_setdir(dat);
+    filepicker_setdir(dat);
+  }
 }
 
 /* Sort the files, in a way that should make sense to users.
@@ -385,7 +386,7 @@ void filepicker_setdir(struct filepickdata *dat) {
     /* Create the new widget, position the first one inside the
      * file list box. The rest will follow automatically.
      */
-    pgNewWidget(PG_WIDGET_MENUITEM,
+    pgNewWidget(PG_WIDGET_LISTITEM,
 		i ? 0 : PG_DERIVE_INSIDE, i ? 0 : dat->wFileList);
     pgSetWidget(PGDEFAULT,
 		PG_WP_TEXT,pgNewString(p->name),
@@ -393,6 +394,21 @@ void filepicker_setdir(struct filepickdata *dat) {
 		0);
     pgSetPayload(PGDEFAULT,FILETAG);
 
+    /* Listitems normally have PG_EXEV_TOGGLE and PG_EXEV_EXCLUSIVE turned
+     * on. This makes them work basically like a radio button would.
+     * They automatically turn off other listitems in the same container,
+     * and they send an activate event when the mouse is pressed down.
+     *
+     * For directories, we don't care about hilighting (because we will redraw
+     * it all anyway) and we want an activate when the mouse is released
+     * after being pressed. In other words, a normal button.
+     * If it's a directory, turn off all the EXEVs
+     */
+    if (font == dat->fDirectory)
+      pgSetWidget(PGDEFAULT,
+		  PG_WP_EXTDEVENTS,0,
+		  0);
+ 
     /* FIXME: We'd like some icons here to indicate file type...
      * The icons themselves could be stored in a theme.
      * Determining file types might be more complex.

@@ -11,7 +11,31 @@ I apologize for the sparse logs the last couple of days. I've been furiously
 trying to catch up with Smartdata's schedule. Most of the more recent items
 have been taking much longer than they estimated.
 
-      * cli_c/src/dlg_filepicker.c: Finishing up the file picker dialog  
+      * cli_c/src/dlg_filepicker.c: Added directory popup menu
+
+		* include/picogui/constants.h: Adding constants for listitem widget
+		
+		* widgets/widget.c: Added widget table entry for listitem
+		
+		* include/pgserver/widget.h: Added prototype macro for listitem
+		
+		* widget/listitem.c: Added listitem initialization function
+		
+		* theme/memtheme.c: Added theme inheritance for listitem
+
+		* include/picogui/constants.h: Added PG_EXEV_EXCLUSIVE supporting
+		  mutually exclusive buttons like radio buttons and list items
+
+		* widget/button.c: The widget activate event should be sent
+		  when the state of a toggle button changes, not when the mouse
+		  is released.
+		  
+		* widget/button.c: Implemented mutually exclusive buttons
+		
+		* cli_c/src/dlg_fontpicker.c: Now using the listitem widget
+		
+		* cli_c/src/dlg_filepicker.c: Turns off all EXEVs for directories
+		  so they work like buttons
 
 2001-08-01    Micah Dowty <micahjd@users.sourceforge.net>
 
