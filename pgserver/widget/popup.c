@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.48 2002/02/14 08:52:51 micahjd Exp $
+/* $Id: popup.c,v 1.49 2002/02/18 10:04:58 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -56,25 +56,18 @@ void clip_popup(struct divnode *div) {
   if ( (ntb.y+ntb.h) > vid->lyres )
     ntb.h = vid->lyres - ntb.y;
 
-  if (div->x+div->w >= ntb.x+ntb.w)
-    div->x = ntb.x+ntb.w - div->w;
-  if (div->y+div->h >= ntb.y+ntb.h)
-    div->y = ntb.y+ntb.h - div->h;
-  if (div->x < ntb.x) div->x = ntb.x;
-  if (div->y < ntb.y) div->y = ntb.y;
-  if (div->x+div->w >= ntb.x+ntb.w)
-    div->w = ntb.x+ntb.w - div->x;
-  if (div->y+div->h >= ntb.y+ntb.h)
-    div->h = ntb.y+ntb.h - div->y;
-
-  /* Pretend these were the actual calculated
-   * coordinates so the x,y position propagates through
-   * the layout engine also.
-   */
-  div->calcx = div->x;
-  div->calcy = div->y;
-  div->calcw = div->w;
-  div->calch = div->h;
+  if (div->calcx+div->calcw >= ntb.x+ntb.w)
+    div->x = div->calcx = ntb.x+ntb.w - div->calcw;
+  if (div->calcy+div->calch >= ntb.y+ntb.h)
+    div->y = div->calcy = ntb.y+ntb.h - div->calch;
+  if (div->calcx < ntb.x) 
+    div->x = div->calcx = ntb.x;
+  if (div->calcy < ntb.y) 
+    div->y = div->calcy = ntb.y;
+  if (div->calcx+div->calcw >= ntb.x+ntb.w)
+    div->w = div->calcw = ntb.x+ntb.w - div->calcx;
+  if (div->calcy+div->calch >= ntb.y+ntb.h)
+    div->h = div->calch = ntb.y+ntb.h - div->calcy;
 }
 
 /* We have a /special/ function to create a popup widget from scratch. */
