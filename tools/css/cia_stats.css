@@ -87,3 +87,44 @@ table td {
     background: #DEECE7;
     border: 1px solid #8CBBAC;
 }
+
+/* HTML representation of the IRC colors. Note that this should't be a direct
+ * translation, just a similar way to hilight text.
+ */
+
+.fgColor-green { 
+   color: white;
+   background: #008000;
+   padding: 0em 0.2em;
+}	
+
+.fgColor-light-green { 
+   color: white;
+   background: #008000;
+   padding: 0em 0.2em;
+}	
+
+.fgColor-dark-green { 
+   color: white;
+   background: #008000;
+   padding: 0em 0.2em;
+}	
+
+.fgColor-orange { 
+   color: white;
+   background: #A36D03;
+   padding: 0em 0.2em;
+}	
+
+.fgColor-blue { 
+   color: white;
+   background: #354C93;
+   padding: 0em 0.2em;
+}	
+
+.fgColor-aqua { 
+   color: white;
+   background: #354C93;
+   padding: 0em 0.2em;
+}	
+
