@@ -1,6 +1,6 @@
 # Application class
 
-import Widget, Server, events, time
+import Widget, Server, events, time, infilter
 
 class EventHandled(Exception):
     """raise this from an event handler when you don't want other
@@ -49,14 +49,23 @@ class EventRegistry(object):
 class Application(Widget.Widget):
     _type = 1 # apptype parameter for the register request
     
-    def __init__(self, title, server=None):
+    def __init__(self, title='', server=None):
         if not server:
             server = Server.Server()
-        Widget.Widget.__init__(self, server, server.register(title, self._type))
+        if self._type:
+            Widget.Widget.__init__(self, server, server.register(title, self._type))
+        else:
+            Widget.Widget.__init__(self, server, 0)
         self.default_relationship = 'inside'
         self._widget_registry = {self.handle: self}
         self._event_registry = EventRegistry()
         self._event_stack = []
+        self._infilter_registry = {}
+
+    def addInfilter(self, *args, **kw):
+        filter = infilter.Infilter(self, *args, **kw)
+        self._infilter_registry[filter.handle] = filter
+        return filter
 
     def _notify_new_widget(self, new):
         self._widget_registry[new.handle] = new
@@ -83,12 +92,20 @@ class Application(Widget.Widget):
 
             for i in range(queued):
                 ev = self.server.wait()
-                if ev.widget_id in self._widget_registry.keys():
-                    ev.widget = self._widget_registry[ev.widget_id]
-                elif ev.widget_id is None:
-                    ev.widget = None
+                if ev.widget_id is None:
+                    if ev.name == 'infilter':
+                        ev = ev.trigger
+                        try:
+                            ev.widget = self._infilter_registry[ev.sender]
+                        except KeyError:
+                            ev.widget = self
+                    else:
+                        ev.widget = None
                 else:
-                    ev.widget = Widget.Widget(self.server, ev.widget_id)
+                    try:
+                        ev.widget = self._widget_registry[ev.widget_id]
+                    except KeyError:
+                        ev.widget = Widget.Widget(self.server, ev.widget_id)
                 self._event_stack.append(ev)
             else: #nothing queued - send idle and sleep
                 self.send(self, 'idle')
@@ -112,3 +129,8 @@ class Application(Widget.Widget):
 
 class ToolbarApp(Application):
     _type = 2
+
+class InvisibleApp(Application):
+    _type = 0  # do not register a window
+    def addWidget(self, wtype, relationship=None):
+        raise ValueError, "Invisible applications can't have widgets, silly!"

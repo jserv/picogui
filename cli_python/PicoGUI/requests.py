@@ -91,13 +91,8 @@ def getresource(res_id, id=None):
 def getstring(obj_id, id=None):
 	return request(26, pack('L', obj_id), id=id)
 	
-# How should this work? It should be extensible, and leave fields
-# untouched when the client doesn't know about them. Maybe an
-# associative array?
-# --Micah
-#
-#def infiltersend( id=None):
-#	return request(53,  , id=id)
+def infiltersend(trigger, id=None):
+	return request(53, trigger.pack(), id=id)
 	
 def loaddriver(name,  id=None):
 	return request(40, name + '\x00', id=id)

@@ -1,4 +1,5 @@
 from responses import ProtocolError
+import infilter
 
 class ParameterError(ProtocolError):
     def __init__(self, code):
@@ -76,6 +77,8 @@ class Event(object):
             self.additional_data_wanted = param
         else:
             self.setData(param)
+        if self.name == 'infilter':
+            self.paramtype = 'trigger'
 
     def setData(self, data):
         """Set the parameter data (decode it)
@@ -111,6 +114,9 @@ class Event(object):
         else:
             self.char = ''
         self.mods = data >> 16
+
+    def _decode_trigger(self, data):
+        self.trigger = infilter.Trigger(data)
 
     def hasMod(self, mod):
         """Check for a keyboard modifier"""
