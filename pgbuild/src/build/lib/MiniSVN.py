@@ -99,7 +99,7 @@ class SVNRepository(DavObject):
             url = urlunparse((parsed[0], parsed[1], reposPath, '', '', ''))
         DavObject.__init__(self, url)
 
-    def download(self, destination, numThreads=10):
+    def download(self, destination, numThreads=5):
 
         # If this repository consists of just one file, go ahead and join that to
         # the destination path.
