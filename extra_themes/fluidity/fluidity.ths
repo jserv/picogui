@@ -470,7 +470,7 @@ object base.display {
 /********************************** Terminal */
 
 object terminal {
-  font = Font("Clean",8,0);
+  font = Font("Clean",8,PG_FSTYLE_FIXED);
   bitmap1 = 0;
 }
 
