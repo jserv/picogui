@@ -1,4 +1,4 @@
-/* $Id: classic256.ths,v 1.4 2000/11/11 17:17:41 micahjd Exp $
+/* $Id: classic256.ths,v 1.5 2001/03/30 06:47:14 micahjd Exp $
  *
  * PicoGUI theme, modeled after the original 256-color
  * theme used in the old theme system.
@@ -12,7 +12,7 @@ object background {
   };
   bitmap1 = LoadBitmap("data/bg.pnm");
 }
-object button {
+object base.interactive {
   bgcolor = 0xC0E0FF;
   height = 22;
   width = 22;
@@ -20,6 +20,8 @@ object button {
 }
 object button.hilight bgcolor = 0xC0C0FF;
 object button.on      bgcolor = 0x808080;
+object checkbox.hilight bgcolor = 0xC0C0FF;
+object checkbox.on      bgcolor = 0xF0F080;
 object toolbar        bgcolor = 0xC0C0C0;
 object scroll {
   bgfill = fillstyle {
