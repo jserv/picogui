@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.46 2002/07/28 17:06:48 micahjd Exp $
+/* $Id: api.c,v 1.47 2002/09/25 04:07:44 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -482,23 +482,21 @@ pghandle pgNewWidget(s16 type, s16 rship,pghandle parent) {
 }
 
 pghandle pgNewPopupAt(int x,int y,int width,int height) {
-  struct pgreqd_mkpopup arg;
-  arg.x = htons(x);
-  arg.y = htons(y);
-  arg.w = htons(width);
-  arg.h = htons(height);
+  pghandle h;
 
-  _pg_add_request(PGREQ_MKPOPUP,&arg,sizeof(arg));
-
-  /* Because we need a result now, flush the buffer */
-  pgFlushRequests();
+  h = pgCreateWidget(PG_WIDGET_POPUP);
+  pgSetWidget(h,
+	      PG_WP_ABSOLUTEX, x,
+	      PG_WP_ABSOLUTEY, y,
+	      PG_WP_WIDTH, width,
+	      PG_WP_HEIGHT, height,
+	      0);
 
   /* Default is inside this widget */
   _pgdefault_rship = PG_DERIVE_INSIDE;
   _pgdefault_widget = _pg_return.e.retdata;
   
-  /* Return the new handle */
-  return _pg_return.e.retdata;
+  return h;
 }
 
 pghandle pgNewFont(const char *name, s16 size, u32 style) {

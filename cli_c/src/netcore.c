@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.38 2002/08/19 11:22:21 micahjd Exp $
+/* $Id: netcore.c,v 1.39 2002/09/25 04:07:44 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -632,7 +632,7 @@ void pgInit(int argc, char **argv)
   signal(SIGFPE,&_pgsig);
    
   /* Default tunables */
-  hostname = getenv("pgserver");
+  hostname = getenv("PGSERVER");
   if ((!hostname) || (!*hostname))
      hostname = PG_REQUEST_SERVER;
 
@@ -655,7 +655,7 @@ void pgInit(int argc, char **argv)
 	
 	else if (!strcmp(arg,"version")) {
 	  /* --pgversion : For now print CVS id */
-	  fprintf(stderr,"$Id: netcore.c,v 1.38 2002/08/19 11:22:21 micahjd Exp $\n");
+	  fprintf(stderr,"$Id: netcore.c,v 1.39 2002/09/25 04:07:44 micahjd Exp $\n");
 	  exit(1);
 	}
 	

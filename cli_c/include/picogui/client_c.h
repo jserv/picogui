@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.91 2002/07/28 17:06:48 micahjd Exp $
+/* $Id: client_c.h,v 1.92 2002/09/25 04:07:44 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -764,6 +764,9 @@ pghandle pgTraverseWidget(pghandle widget, int direction, int count);
  * is preferred because the app should assume as little as possible about physical
  * screen coordinates.
  *
+ * NOTE: This function is now just a shortcut for creating a popup widget and setting
+ *       its PG_WP_ABSOLUTEX, PG_WP_ABSOLUTEY, PG_WP_WIDTH, and PG_WP_HEIGHT properties
+ *
  * \sa pgNewPopupAt
  */
 pghandle pgNewPopup(int width,int height);
@@ -810,6 +813,9 @@ void pgInFilterSend(union pg_client_trigger *trig);
  *   - PG_POPUP_CENTER: Centered on the screen, same behavior as pgNewPopup
  *   - PG_POPUP_ATCURSOR: At the pointing device's cursor. If the cursor is over a button or menuitem, the popup snaps to its edge automatically
  * 
+ * NOTE: This function is now just a shortcut for creating a popup widget and setting
+ *       its PG_WP_ABSOLUTEX, PG_WP_ABSOLUTEY, PG_WP_WIDTH, and PG_WP_HEIGHT properties
+ *
  * \sa pgNewPopup
  */
 pghandle pgNewPopupAt(int x,int y,int width,int height);
