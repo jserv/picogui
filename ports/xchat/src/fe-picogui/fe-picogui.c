@@ -679,8 +679,6 @@ fe_userlist_move (struct session *sess, struct User *user, int new_row)
 	for(i=0;i<sess->gui->users;i++)
 		if(sess->gui->uhmap[i].user==user)
 		{
-			printf("Moving %s from row %d to row %d\n",
-					user->nick, i, new_row);
 			tmp=sess->gui->uhmap[i];
 			break;
 		}
