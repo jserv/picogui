@@ -9,7 +9,5 @@ from PicoGUI import XWTParser
 parser = XWTParser.XWTParser()
 wtBinary = parser.Parse(open("test.xwt").read())
 
-app = PicoGUI.InvisibleApp()
-wtHandle = app.server.mktemplate(wtBinary)
-wtInstance = PicoGUI.Widget(app.server,app.server.dup(wtHandle))   
+app = PicoGUI.TemplateApp(wtBinary)
 app.run()
