@@ -35,6 +35,9 @@ REV="$2"
 # Automatic backup
 svnadmin dump --incremental -r "$REV" "$REPOS" > /navi/backups/svn_auto/picogui-incremental.$REV 2> /dev/null&
 
+# Trigger an automatic snapshot
+echo | mail -s "picogui" snapshots@picogui.org
+
 # IRC notification via the CIA bot.
 $REPOS/hooks/ciabot_svn.sh "$REPOS" "$REV" &
 
