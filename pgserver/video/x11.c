@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.3 2001/11/19 23:44:58 micahjd Exp $
+/* $Id: x11.c,v 1.4 2001/11/20 01:42:08 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -147,7 +147,7 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
 
   /* Set input event mask */
   XSelectInput(xdisplay, x11_display.d,
-	       KeyPressMask | KeyReleaseMask | ExposureMask | 
+	       KeyPressMask | KeyReleaseMask | ExposureMask | ButtonMotionMask |
 	       ButtonPressMask | ButtonReleaseMask | PointerMotionMask);
 
   XFlush(xdisplay);
@@ -169,7 +169,7 @@ void x11_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
   struct x11bitmap *xb = (struct x11bitmap *) dest;
   GC g = x11_gctab[lgop];
 
-#if 0         /* We can comment out pixel() so it's easy to see what's
+#if 1         /* We can comment out pixel() so it's easy to see what's
 	       * being done by X and what defaultvbl has to do
 	       */
   if (!g) {

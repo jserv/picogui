@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.3 2001/11/19 23:44:58 micahjd Exp $
+/* $Id: x11input.c,v 1.4 2001/11/20 01:42:08 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -67,8 +67,26 @@ int x11input_fd_activate(int fd) {
 		 ev.xexpose.height);
       break;
 
+    case MotionNotify:
+      dispatch_pointing(TRIGGER_MOVE,ev.xmotion.x, ev.xmotion.y, 
+			ev.xmotion.state >> 8);
+      drivermessage(PGDM_CURSORVISIBLE,1,NULL);
+      break;
 
- 
+    case ButtonPress:
+      printf("Press %d %d\n",ev.xbutton.state >> 8,ev.xbutton.button);
+      dispatch_pointing(TRIGGER_DOWN,ev.xbutton.x, ev.xbutton.y,
+			(ev.xbutton.state >> 8) | (1 << (ev.xbutton.button-1)));
+      drivermessage(PGDM_CURSORVISIBLE,1,NULL);
+      break;
+
+    case ButtonRelease:
+      printf("Release %d %d\n",ev.xbutton.state >> 8,ev.xbutton.button);
+      dispatch_pointing(TRIGGER_UP,ev.xbutton.x, ev.xbutton.y,
+			(ev.xbutton.state >> 8) & (~(1 << (ev.xbutton.button-1))));
+      drivermessage(PGDM_CURSORVISIBLE,1,NULL);
+      break;
+
 
     }
   }
